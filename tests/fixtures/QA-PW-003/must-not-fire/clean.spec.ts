@@ -1,6 +1,6 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-test('checkout flow', async ({ page }) => {
-  await page.goto('/checkout');
-  await expect(page.getByText('ready')).toBeVisible();
+test("checkout flow", async ({ page }) => {
+  await page.goto("/checkout");
+  await expect(page.getByText("ready")).toBeVisible();
 });

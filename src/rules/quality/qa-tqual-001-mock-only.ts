@@ -8,20 +8,20 @@
  * BEHAVIOR VERIFIED" gap from Product.txt §6.
  */
 
-import { defineRule } from '../rule.js';
-import type { Finding } from '../../types.js';
+import { defineRule } from "../rule.js";
+import type { Finding } from "../../types.js";
 
 export const mockOnlyVerification = defineRule({
-  id: 'QA-TQUAL-001',
-  category: 'QA-TQUAL',
-  title: 'Mock-only verification',
-  severity: 'warning',
-  confidence: 'medium',
-  findingType: 'heuristic-risk',
-  qaImpact: 'HYGIENE',
-  appliesTo: 'test-files',
+  id: "QA-TQUAL-001",
+  category: "QA-TQUAL",
+  title: "Mock-only verification",
+  severity: "warning",
+  confidence: "medium",
+  findingType: "heuristic-risk",
+  qaImpact: "HYGIENE",
+  appliesTo: "test-files",
   run(ctx) {
-    const findings: Omit<Finding, 'ruleId' | 'category'>[] = [];
+    const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
     // A test whose ONLY assertions are mock-call checks.
     const testRe =
@@ -45,16 +45,16 @@ export const mockOnlyVerification = defineRule({
 
       if (totalAssertions > 0 && mockAssertions === totalAssertions) {
         findings.push({
-          severity: 'warning',
-          confidence: 'medium',
-          findingType: 'heuristic-risk',
-          qaImpact: 'HYGIENE',
+          severity: "warning",
+          confidence: "medium",
+          findingType: "heuristic-risk",
+          qaImpact: "HYGIENE",
           file: ctx.path,
           line: lineAt(ctx.text, m.index),
           column: colAt(ctx.text, m.index),
-          message: 'All assertions in this test verify mock calls only.',
-          why: 'Asserting that a mock was called proves wiring, not behavior. The real logic behind the mock can be broken and this test stays green.',
-          fix: 'Add at least one assertion on actual output or state, not just on how collaborators were invoked.',
+          message: "All assertions in this test verify mock calls only.",
+          why: "Asserting that a mock was called proves wiring, not behavior. The real logic behind the mock can be broken and this test stays green.",
+          fix: "Add at least one assertion on actual output or state, not just on how collaborators were invoked.",
         });
       }
     }
@@ -68,13 +68,13 @@ function matchBrace(text: string, open: number): number {
   for (let i = open; i < text.length; i++) {
     const ch = text[i];
     if (inStr) {
-      if (ch === '\\') i++;
+      if (ch === "\\") i++;
       else if (ch === inStr) inStr = null;
       continue;
     }
-    if (ch === '"' || ch === "'" || ch === '`') inStr = ch;
-    else if (ch === '{') depth++;
-    else if (ch === '}') {
+    if (ch === '"' || ch === "'" || ch === "`") inStr = ch;
+    else if (ch === "{") depth++;
+    else if (ch === "}") {
       depth--;
       if (depth === 0) return i;
     }
@@ -84,11 +84,11 @@ function matchBrace(text: string, open: number): number {
 
 function lineAt(text: string, index: number): number {
   let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === '\n') line++;
+  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
   return line;
 }
 
 function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf('\n', index - 1);
+  const lastBreak = text.lastIndexOf("\n", index - 1);
   return index - lastBreak;
 }

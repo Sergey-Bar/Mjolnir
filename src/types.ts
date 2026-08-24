@@ -9,41 +9,39 @@
 export const SCHEMA_VERSION = 1 as const;
 
 /** Severity ladder. Order matters for sorting and gating. */
-export const SEVERITY_ORDER = ['error', 'warning', 'info'] as const;
+export const SEVERITY_ORDER = ["error", "warning", "info"] as const;
 export type Severity = (typeof SEVERITY_ORDER)[number];
 
 /**
  * Confidence that the finding is real. `low` findings render dimmer and
  * NEVER gate CI regardless of severity (Product-MVP.txt GAP-E).
  */
-export type Confidence = 'high' | 'medium' | 'low';
+export type Confidence = "high" | "medium" | "low";
 
 /** Epistemic type of the finding (§7). v1 ships deterministic-defect only. */
 export type FindingType =
-  | 'deterministic-defect'
-  | 'heuristic-risk'
-  | 'observation';
+  "deterministic-defect" | "heuristic-risk" | "observation";
 
 /**
  * QA-native impact framing (#21 Legendary Tier 5): what this finding means
  * for the QA engineer's actual job, in their vocabulary.
  */
 export type QaImpact =
-  | 'BLOCKS-RELEASE'   // can hide broken behavior from a release decision
-  | 'FLAKY-RISK'       // will cause intermittent failures / wasted triage
-  | 'FALSE-GREEN'      // makes CI checkmarks untrustworthy
-  | 'HYGIENE';         // maintenance drag, no immediate release risk
+  | "BLOCKS-RELEASE" // can hide broken behavior from a release decision
+  | "FLAKY-RISK" // will cause intermittent failures / wasted triage
+  | "FALSE-GREEN" // makes CI checkmarks untrustworthy
+  | "HYGIENE"; // maintenance drag, no immediate release risk
 
 /** Default QA impact per rule category+severity heuristic. */
 export const QA_IMPACT_LABELS: Record<QaImpact, string> = {
-  'BLOCKS-RELEASE': 'Blocks release confidence',
-  'FLAKY-RISK': 'Flaky-test risk',
-  'FALSE-GREEN': 'False-green risk',
-  'HYGIENE': 'Test hygiene debt',
+  "BLOCKS-RELEASE": "Blocks release confidence",
+  "FLAKY-RISK": "Flaky-test risk",
+  "FALSE-GREEN": "False-green risk",
+  HYGIENE: "Test hygiene debt",
 };
 
 /** Rule namespaces are frozen public API (§18.4). IDs are never reused. */
-export type RuleCategory = 'QA-TEST' | 'QA-TQUAL' | 'QA-PW' | 'QA-CI';
+export type RuleCategory = "QA-TEST" | "QA-TQUAL" | "QA-PW" | "QA-CI";
 
 export interface Finding {
   ruleId: string;
@@ -90,7 +88,7 @@ export interface DimensionScore {
   infos: number;
 }
 
-export type AnalysisStatus = 'complete' | 'partial';
+export type AnalysisStatus = "complete" | "partial";
 
 export interface ScanResult {
   schemaVersion: typeof SCHEMA_VERSION;
@@ -98,9 +96,9 @@ export interface ScanResult {
   partial: boolean;
   /** null when no tests found — never fake 100 (R2 empty-state rule). */
   score: number | null;
-  reason?: 'no-tests-found';
+  reason?: "no-tests-found";
   /** Present when --scope changed was requested. */
-  scope?: 'all' | 'changed';
+  scope?: "all" | "changed";
   scopeDegraded?: string;
   /** Detected test frameworks (0.2). Empty + unknown=true when undetectable. */
   frameworks: string[];

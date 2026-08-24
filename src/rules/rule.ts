@@ -4,7 +4,14 @@
  * Every rule ships with must-fire AND must-not-fire fixtures (§18.1).
  */
 
-import type { Confidence, Finding, FindingType, QaImpact, RuleCategory, Severity } from '../types.js';
+import type {
+  Confidence,
+  Finding,
+  FindingType,
+  QaImpact,
+  RuleCategory,
+  Severity,
+} from "../types.js";
 
 export interface RuleMeta {
   /** Frozen public API — never reused (§18.4). */
@@ -32,11 +39,13 @@ export interface SourceFileContext {
   ast?: unknown;
 }
 
-export type RuleFn = (ctx: SourceFileContext) => Omit<Finding, 'ruleId' | 'category'>[];
+export type RuleFn = (
+  ctx: SourceFileContext,
+) => Omit<Finding, "ruleId" | "category">[];
 
 export interface QADoctorRule extends RuleMeta {
   /** Which file kinds this rule applies to. */
-  appliesTo: 'test-files' | 'ci-workflows' | 'all';
+  appliesTo: "test-files" | "ci-workflows" | "all";
   run: RuleFn;
 }
 

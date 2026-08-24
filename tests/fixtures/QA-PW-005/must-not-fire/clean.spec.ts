@@ -1,4 +1,4 @@
-test('trivial evaluate read', async ({ page }) => {
+test("trivial evaluate read", async ({ page }) => {
   const title = await page.evaluate(() => document.title);
-  expect(title).toContain('Shop');
+  expect(title).toContain("Shop");
 });

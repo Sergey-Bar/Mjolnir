@@ -7,13 +7,13 @@
  * false-green trick.
  */
 
-import { defineRule } from '../rule.js';
-import type { Finding } from '../../types.js';
+import { defineRule } from "../rule.js";
+import type { Finding } from "../../types.js";
 
 interface StepNode {
   run?: string;
   name?: string;
-  'continue-on-error'?: boolean | string;
+  "continue-on-error"?: boolean | string;
 }
 
 interface JobNode {
@@ -25,16 +25,16 @@ interface WorkflowDoc {
 }
 
 export const alwaysSuccessStep = defineRule({
-  id: 'QA-CI-008',
-  category: 'QA-CI',
-  title: 'Always-success step masks failures',
-  severity: 'error',
-  confidence: 'high',
-  findingType: 'deterministic-defect',
-  qaImpact: 'FALSE-GREEN',
-  appliesTo: 'ci-workflows',
+  id: "QA-CI-008",
+  category: "QA-CI",
+  title: "Always-success step masks failures",
+  severity: "error",
+  confidence: "high",
+  findingType: "deterministic-defect",
+  qaImpact: "FALSE-GREEN",
+  appliesTo: "ci-workflows",
   run(ctx) {
-    const findings: Omit<Finding, 'ruleId' | 'category'>[] = [];
+    const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
     const doc = ctx.ast as WorkflowDoc | undefined;
     if (!doc?.jobs) return findings;
@@ -56,20 +56,24 @@ export const alwaysSuccessStep = defineRule({
       // final echo is harmless decoration.
       const earlierTolerant = steps
         .slice(0, -1)
-        .some((s) => s?.['continue-on-error'] === true || /\|\|\s*true\b/.test(s?.run ?? ''));
+        .some(
+          (s) =>
+            s?.["continue-on-error"] === true ||
+            /\|\|\s*true\b/.test(s?.run ?? ""),
+        );
 
       if (suspicious && earlierTolerant) {
         findings.push({
-          severity: 'error',
-          confidence: 'high',
-          findingType: 'deterministic-defect',
+          severity: "error",
+          confidence: "high",
+          findingType: "deterministic-defect",
           file: ctx.path,
           line: findStepLine(ctx.text, last.name ?? last.run),
           column: 1,
           message: `Final step in \`${jobName}\` always succeeds while earlier steps tolerate failure.`,
-          why: 'This combination can flip a failed job to green — the checkmark no longer reflects whether tests passed.',
-          fix: 'Remove the always-success final step and let the real test step determine the job result.',
-          qaImpact: 'FALSE-GREEN',
+          why: "This combination can flip a failed job to green — the checkmark no longer reflects whether tests passed.",
+          fix: "Remove the always-success final step and let the real test step determine the job result.",
+          qaImpact: "FALSE-GREEN",
         });
       }
     }
@@ -81,6 +85,6 @@ function findStepLine(text: string, needle: string): number {
   const idx = text.indexOf(needle);
   if (idx === -1) return 1;
   let line = 1;
-  for (let i = 0; i < idx; i++) if (text[i] === '\n') line++;
+  for (let i = 0; i < idx; i++) if (text[i] === "\n") line++;
   return line;
 }

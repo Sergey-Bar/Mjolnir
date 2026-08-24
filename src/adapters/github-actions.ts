@@ -4,15 +4,15 @@
  * parsed doc via the ast slot.
  */
 
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
 
-import type { LanguageAdapter, ScanContext } from '../engine/adapter.js';
-import { parseWorkflow } from '../discovery/workflow-parser.js';
+import type { LanguageAdapter, ScanContext } from "../engine/adapter.js";
+import { parseWorkflow } from "../discovery/workflow-parser.js";
 
 export const githubActionsAdapter: LanguageAdapter = {
-  id: 'github-actions',
-  extensions: ['.yml', '.yaml'],
+  id: "github-actions",
+  extensions: [".yml", ".yaml"],
 
   isTestFile(path: string): boolean {
     return /(?:^|[\\/])\.github[\\/]workflows[\\/].+\.ya?ml$/.test(path);
@@ -24,7 +24,7 @@ export const githubActionsAdapter: LanguageAdapter = {
   },
 
   discoverTestFiles(ctx: ScanContext): void {
-    const wfDir = join(ctx.workspace.root, '.github', 'workflows');
+    const wfDir = join(ctx.workspace.root, ".github", "workflows");
     if (!existsSync(wfDir)) return;
     let entries;
     try {
@@ -33,7 +33,7 @@ export const githubActionsAdapter: LanguageAdapter = {
       return;
     }
     for (const name of entries) {
-      if (!name.endsWith('.yml') && !name.endsWith('.yaml')) continue;
+      if (!name.endsWith(".yml") && !name.endsWith(".yaml")) continue;
       const full = join(wfDir, name);
       try {
         if (statSync(full).size <= LIMITS_MAX_BYTES) ctx.testFiles.push(full);
@@ -55,7 +55,11 @@ export const githubActionsAdapter: LanguageAdapter = {
     for (const rule of rules) {
       if (!rule.appliesTo.includes(this.id)) continue;
       try {
-        for (const f of rule.run({ path: file.path, text: file.text, ast: doc })) {
+        for (const f of rule.run({
+          path: file.path,
+          text: file.text,
+          ast: doc,
+        })) {
           emit(f, rule.id, rule.category);
         }
       } catch {
@@ -72,7 +76,7 @@ const LIMITS_MAX_BYTES = 1 * 1024 * 1024;
 // Re-exported for cli.ts convenience until full migration.
 export function readWorkflowSafe(fullPath: string): string | null {
   try {
-    return readFileSync(fullPath, 'utf8');
+    return readFileSync(fullPath, "utf8");
   } catch {
     return null;
   }

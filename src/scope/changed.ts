@@ -7,10 +7,10 @@
  * full-file attribution), and detached HEAD.
  */
 
-import { execFileSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
-import type { Finding } from '../types.js';
+import { execFileSync } from "node:child_process";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import type { Finding } from "../types.js";
 
 export interface ChangedLines {
   /** repo-relative path → set of changed line numbers (1-based). */
@@ -26,9 +26,9 @@ export interface DiffResult {
 
 function git(root: string, args: string[]): string | null {
   try {
-    return execFileSync('git', ['-C', root, ...args], {
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'],
+    return execFileSync("git", ["-C", root, ...args], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
       timeout: 15_000,
     });
   } catch {
@@ -36,40 +36,43 @@ function git(root: string, args: string[]): string | null {
   }
 }
 
-export function computeChangedScope(root: string, baseBranch = 'main'): DiffResult {
-  if (!existsSync(join(root, '.git'))) {
-    return { changed: {}, degraded: true, reason: 'not-a-git-repo' };
+export function computeChangedScope(
+  root: string,
+  baseBranch = "main",
+): DiffResult {
+  if (!existsSync(join(root, ".git"))) {
+    return { changed: {}, degraded: true, reason: "not-a-git-repo" };
   }
 
   // Resolve merge-base; on shallow clones or detached HEAD this can fail.
-  let mergeBase = git(root, ['merge-base', 'HEAD', baseBranch])?.trim();
+  let mergeBase = git(root, ["merge-base", "HEAD", baseBranch])?.trim();
   if (!mergeBase) {
     // Fallback: try origin/baseBranch, then just the branch itself.
     mergeBase =
-      git(root, ['merge-base', 'HEAD', `origin/${baseBranch}`])?.trim() ??
-      git(root, ['rev-parse', baseBranch])?.trim();
+      git(root, ["merge-base", "HEAD", `origin/${baseBranch}`])?.trim() ??
+      git(root, ["rev-parse", baseBranch])?.trim();
   }
   if (!mergeBase) {
-    return { changed: {}, degraded: true, reason: 'no-merge-base' };
+    return { changed: {}, degraded: true, reason: "no-merge-base" };
   }
 
   const nameStatus = git(root, [
-    'diff',
-    '--name-status',
-    '-z',
-    '--diff-filter=AMR',
+    "diff",
+    "--name-status",
+    "-z",
+    "--diff-filter=AMR",
     mergeBase,
-    'HEAD',
+    "HEAD",
   ]);
   if (nameStatus === null) {
-    return { changed: {}, degraded: true, reason: 'diff-failed' };
+    return { changed: {}, degraded: true, reason: "diff-failed" };
   }
 
-  const entries = nameStatus.split('\0').filter(Boolean);
+  const entries = nameStatus.split("\0").filter(Boolean);
   const changedFiles: string[] = [];
   for (let i = 0; i < entries.length; i++) {
     const status = entries[i];
-    if (status === 'R') i++; // skip the old-path element of renames
+    if (status === "R") i++; // skip the old-path element of renames
     const file = entries[i + 1];
     if (file && /\.(spec|test)\.(ts|js|tsx|jsx|mjs|cjs)$/.test(file)) {
       changedFiles.push(file);
@@ -78,8 +81,15 @@ export function computeChangedScope(root: string, baseBranch = 'main'): DiffResu
 
   const changed: ChangedLines = {};
   for (const file of changedFiles) {
-    const unified = git(root, ['diff', '--unified=0', mergeBase, 'HEAD', '--', file]);
-    changed[file] = parseChangedLines(unified ?? '');
+    const unified = git(root, [
+      "diff",
+      "--unified=0",
+      mergeBase,
+      "HEAD",
+      "--",
+      file,
+    ]);
+    changed[file] = parseChangedLines(unified ?? "");
   }
 
   return { changed, degraded: false };
@@ -89,17 +99,17 @@ export function computeChangedScope(root: string, baseBranch = 'main'): DiffResu
 export function parseChangedLines(diff: string): Set<number> {
   const lines = new Set<number>();
   let newLine = 0;
-  for (const raw of diff.split('\n')) {
+  for (const raw of diff.split("\n")) {
     const hunk = /^@@\s*-\d+(?:,\d+)?\s*\+(\d+)(?:,(\d+))?\s*@/.exec(raw);
     if (hunk) {
       newLine = Number(hunk[1]);
       continue;
     }
     if (newLine === 0) continue; // still in file header
-    if (raw.startsWith('+')) {
+    if (raw.startsWith("+")) {
       lines.add(newLine);
       newLine++;
-    } else if (raw.startsWith('-')) {
+    } else if (raw.startsWith("-")) {
       // removed line — does not advance newLine
     } else {
       newLine++; // context line
@@ -109,7 +119,10 @@ export function parseChangedLines(diff: string): Set<number> {
 }
 
 /** Filter findings to those touching changed lines (or all, when degraded). */
-export function filterToChanged(findings: Finding[], diff: DiffResult): Finding[] {
+export function filterToChanged(
+  findings: Finding[],
+  diff: DiffResult,
+): Finding[] {
   if (diff.degraded) return findings;
   return findings.filter((f) => {
     const lines = diff.changed[f.file];

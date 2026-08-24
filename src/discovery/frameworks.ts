@@ -11,11 +11,11 @@
  * all test-looking files — stated honestly in output rather than guessed.
  */
 
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
-import type { Workspace } from '../discovery/workspace.js';
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import type { Workspace } from "../discovery/workspace.js";
 
-export type TestFramework = 'jest' | 'vitest' | 'playwright';
+export type TestFramework = "jest" | "vitest" | "playwright";
 
 export interface FrameworkInfo {
   frameworks: TestFramework[];
@@ -25,14 +25,19 @@ export interface FrameworkInfo {
 
 const CONFIG_FILES: Record<TestFramework, string[]> = {
   jest: [
-    'jest.config.ts',
-    'jest.config.js',
-    'jest.config.mjs',
-    'jest.config.cjs',
-    'jest.config.json',
+    "jest.config.ts",
+    "jest.config.js",
+    "jest.config.mjs",
+    "jest.config.cjs",
+    "jest.config.json",
   ],
-  vitest: ['vitest.config.ts', 'vitest.config.js', 'vitest.config.mts', 'vitest.config.cts'],
-  playwright: ['playwright.config.ts', 'playwright.config.js'],
+  vitest: [
+    "vitest.config.ts",
+    "vitest.config.js",
+    "vitest.config.mts",
+    "vitest.config.cts",
+  ],
+  playwright: ["playwright.config.ts", "playwright.config.js"],
 };
 
 export function detectFrameworks(ws: Workspace): FrameworkInfo {
@@ -46,30 +51,31 @@ export function detectFrameworks(ws: Workspace): FrameworkInfo {
   }
 
   // 2. package.json "jest" key (inline config).
-  if (!found.has('jest') && ws.packageJson['jest'] !== undefined) {
-    found.add('jest');
+  if (!found.has("jest") && ws.packageJson["jest"] !== undefined) {
+    found.add("jest");
   }
 
   // 3. Dependencies — weakest signal, but confirms intent when a config
   //    file was already seen; alone it is NOT enough for jest/vitest
   //    because repos often carry transitive test deps.
   const deps = {
-    ...(ws.packageJson['dependencies'] as Record<string, string> | undefined),
-    ...(ws.packageJson['devDependencies'] as Record<string, string> | undefined),
+    ...(ws.packageJson["dependencies"] as Record<string, string> | undefined),
+    ...(ws.packageJson["devDependencies"] as
+      Record<string, string> | undefined),
   };
-  if (deps['@playwright/test']) found.add('playwright');
+  if (deps["@playwright/test"]) found.add("playwright");
 
   // A repo with vitest.config but only jest deps still runs vitest —
   // config wins. But a repo with ONLY deps and no configs stays unknown
   // unless exactly one framework's runner dep is present.
   if (found.size === 0) {
-    if (deps['vitest']) return { frameworks: ['vitest'], unknown: false };
-    if (deps['jest']) return { frameworks: ['jest'], unknown: false };
+    if (deps["vitest"]) return { frameworks: ["vitest"], unknown: false };
+    if (deps["jest"]) return { frameworks: ["jest"], unknown: false };
     return { frameworks: [], unknown: true };
   }
 
   // Sort for deterministic output.
-  const order: TestFramework[] = ['jest', 'vitest', 'playwright'];
+  const order: TestFramework[] = ["jest", "vitest", "playwright"];
   return {
     frameworks: order.filter((f) => found.has(f)),
     unknown: false,

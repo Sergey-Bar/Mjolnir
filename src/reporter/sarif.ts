@@ -6,17 +6,22 @@
  * Usage: qa-doctor --format sarif > qa-doctor.sarif
  */
 
-import type { Finding, ScanResult } from '../types.js';
+import type { Finding, ScanResult } from "../types.js";
 
 /** Map our rule categories to SARIF taxonomies/properties. */
-function sarifLevel(severity: Finding['severity']): 'error' | 'warning' | 'note' {
-  if (severity === 'error') return 'error';
-  if (severity === 'warning') return 'warning';
-  return 'note';
+function sarifLevel(
+  severity: Finding["severity"],
+): "error" | "warning" | "note" {
+  if (severity === "error") return "error";
+  if (severity === "warning") return "warning";
+  return "note";
 }
 
 export function renderSarif(result: ScanResult, repoRootUri?: string): string {
-  const rules = new Map<string, { id: string; short: string; helpUri?: string }>();
+  const rules = new Map<
+    string,
+    { id: string; short: string; helpUri?: string }
+  >();
   for (const f of result.findings) {
     if (!rules.has(f.ruleId)) {
       rules.set(f.ruleId, {
@@ -30,9 +35,9 @@ export function renderSarif(result: ScanResult, repoRootUri?: string): string {
   const run = {
     tool: {
       driver: {
-        name: 'QA Doctor',
-        informationUri: 'https://github.com/Sergey-Bar/QA-Dodctor',
-        version: '0.2.0',
+        name: "QA Doctor",
+        informationUri: "https://github.com/Sergey-Bar/QA-Dodctor",
+        version: "0.2.0",
         rules: [...rules.values()].map((r) => ({
           id: r.id,
           shortDescription: { text: r.short },
@@ -43,7 +48,12 @@ export function renderSarif(result: ScanResult, repoRootUri?: string): string {
     invocations: [
       {
         executionSuccessful: true,
-        ...(result.partial ? { partiallySuccessfulReason: 'Analysis budget expired or files skipped' } : {}),
+        ...(result.partial
+          ? {
+              partiallySuccessfulReason:
+                "Analysis budget expired or files skipped",
+            }
+          : {}),
       },
     ],
     results: result.findings.map((f) => ({
@@ -55,9 +65,12 @@ export function renderSarif(result: ScanResult, repoRootUri?: string): string {
           physicalLocation: {
             artifactLocation: {
               uri: f.file,
-              ...(repoRootUri ? { uriBaseId: 'SRCROOT' } : {}),
+              ...(repoRootUri ? { uriBaseId: "SRCROOT" } : {}),
             },
-            region: { startLine: Math.max(1, f.line), startColumn: Math.max(1, f.column) },
+            region: {
+              startLine: Math.max(1, f.line),
+              startColumn: Math.max(1, f.column),
+            },
           },
         },
       ],
@@ -70,10 +83,12 @@ export function renderSarif(result: ScanResult, repoRootUri?: string): string {
   };
 
   const sarif = {
-    $schema: 'https://json.schemastore.org/sarif-2.1.0.json',
-    version: '2.1.0',
+    $schema: "https://json.schemastore.org/sarif-2.1.0.json",
+    version: "2.1.0",
     runs: [
-      repoRootUri ? { ...run, originalUriBaseIds: { SRCROOT: { uri: repoRootUri } } } : run,
+      repoRootUri
+        ? { ...run, originalUriBaseIds: { SRCROOT: { uri: repoRootUri } } }
+        : run,
     ],
   };
 

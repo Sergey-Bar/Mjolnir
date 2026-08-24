@@ -4,10 +4,10 @@
  * Default gate: advisory (report, never block).
  */
 
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 
-export type GateLevel = 'advisory' | 'error' | 'warning';
+export type GateLevel = "advisory" | "error" | "warning";
 
 const TEMPLATE = (gate: GateLevel): string => `name: QA Doctor
 
@@ -48,21 +48,26 @@ jobs:
             }
             await core.summary.write();
       # Gate enforcement: advisory never blocks; error/warning fail the job.
-      ${gate === 'advisory'
-        ? `- name: Gate (advisory)\n        run: echo "Advisory mode — findings reported, never blocking."`
-        : `- name: Gate (${gate})
+      ${
+        gate === "advisory"
+          ? `- name: Gate (advisory)\n        run: echo "Advisory mode — findings reported, never blocking."`
+          : `- name: Gate (${gate})
         run: |
           node -e "
             const r = require('./qa-doctor.json');
             const sev = r.findings.map(f => f.severity);
-            const bad = sev.includes('${gate === 'error' ? 'error' : 'warning'}') || sev.includes('error');
+            const bad = sev.includes('${gate === "error" ? "error" : "warning"}') || sev.includes('error');
             process.exit(bad ? 1 : 0);
-          "`}
+          "`
+      }
 `;
 
-export function ciInstall(root: string, gate: GateLevel = 'advisory'): { written: string; existed: boolean } {
-  const wfDir = join(root, '.github', 'workflows');
-  const target = join(wfDir, 'qa-doctor.yml');
+export function ciInstall(
+  root: string,
+  gate: GateLevel = "advisory",
+): { written: string; existed: boolean } {
+  const wfDir = join(root, ".github", "workflows");
+  const target = join(wfDir, "qa-doctor.yml");
   if (!existsSync(wfDir)) mkdirSync(wfDir, { recursive: true });
   const existed = existsSync(target);
   writeFileSync(target, TEMPLATE(gate));

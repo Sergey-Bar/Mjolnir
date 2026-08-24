@@ -1,9 +1,9 @@
-describe('sanity', () => {
-  it('is a placeholder', () => {
+describe("sanity", () => {
+  it("is a placeholder", () => {
     expect(true).toBe(true);
   });
 
-  it('compares literals', () => {
+  it("compares literals", () => {
     expect(1 + 1).toBe(2);
   });
 });

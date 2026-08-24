@@ -8,17 +8,21 @@
  * Frameworks: pytest (config files), unittest (detected via imports).
  */
 
-import { existsSync, readdirSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { join } from "node:path";
 
-import { isDefaultIgnored, LIMITS } from '../discovery/ignores.js';
-import type { FrameworkInfo, LanguageAdapter, ScanContext } from '../engine/adapter.js';
+import { isDefaultIgnored, LIMITS } from "../discovery/ignores.js";
+import type {
+  FrameworkInfo,
+  LanguageAdapter,
+  ScanContext,
+} from "../engine/adapter.js";
 
 const PYTHON_TEST_RE = /(?:^|[\\/])(?:test_[^\\/]*|[^\\/]*_test)\.py$/;
 
 export const pythonAdapter: LanguageAdapter = {
-  id: 'python',
-  extensions: ['.py'],
+  id: "python",
+  extensions: [".py"],
 
   isTestFile(path: string): boolean {
     return PYTHON_TEST_RE.test(path);
@@ -27,18 +31,18 @@ export const pythonAdapter: LanguageAdapter = {
   detectFrameworks(root: string): FrameworkInfo {
     const frameworks: string[] = [];
     const hasPytestConfig =
-      existsSync(join(root, 'pytest.ini')) ||
-      existsSync(join(root, 'conftest.py')) ||
-      existsSync(join(root, 'setup.cfg'));
-    if (hasPytestConfig) frameworks.push('pytest');
+      existsSync(join(root, "pytest.ini")) ||
+      existsSync(join(root, "conftest.py")) ||
+      existsSync(join(root, "setup.cfg"));
+    if (hasPytestConfig) frameworks.push("pytest");
 
     // pyproject.toml [tool.pytest] section.
-    const pyproject = join(root, 'pyproject.toml');
+    const pyproject = join(root, "pyproject.toml");
     if (existsSync(pyproject)) {
       try {
         const text = readText(pyproject);
-        if (/\[tool\.pytest/i.test(text) && !frameworks.includes('pytest')) {
-          frameworks.push('pytest');
+        if (/\[tool\.pytest/i.test(text) && !frameworks.includes("pytest")) {
+          frameworks.push("pytest");
         }
       } catch {
         /* unreadable — skip */
@@ -54,7 +58,13 @@ export const pythonAdapter: LanguageAdapter = {
   },
 
   discoverTestFiles(ctx: ScanContext): void {
-    walkPy(ctx.workspace.root, ctx.workspace.root, ctx.testFiles, ctx.deadline, ctx.onSkippedFile);
+    walkPy(
+      ctx.workspace.root,
+      ctx.workspace.root,
+      ctx.testFiles,
+      ctx.deadline,
+      ctx.onSkippedFile,
+    );
   },
 
   runRules(rules, file, emit) {
@@ -71,7 +81,13 @@ export const pythonAdapter: LanguageAdapter = {
   },
 };
 
-function walkPy(dir: string, root: string, out: string[], deadline: number, onSkipped: () => void): void {
+function walkPy(
+  dir: string,
+  root: string,
+  out: string[],
+  deadline: number,
+  onSkipped: () => void,
+): void {
   if (Date.now() > deadline || out.length > 10_000) return;
   let entries;
   try {
@@ -81,12 +97,18 @@ function walkPy(dir: string, root: string, out: string[], deadline: number, onSk
   }
   for (const entry of entries) {
     const full = join(dir, entry.name);
-    const rel = full.slice(root.length + 1).replaceAll('\\', '/');
+    const rel = full.slice(root.length + 1).replaceAll("\\", "/");
     if (isDefaultIgnored(rel)) continue;
     if (entry.isDirectory()) {
       // Skip common virtualenv/dependency dirs.
-      if (['venv', '.venv', 'env', '__pycache__', 'site-packages'].includes(entry.name)) continue;
-      if (rel.split('/').length <= LIMITS.maxDepth) walkPy(full, root, out, deadline, onSkipped);
+      if (
+        ["venv", ".venv", "env", "__pycache__", "site-packages"].includes(
+          entry.name,
+        )
+      )
+        continue;
+      if (rel.split("/").length <= LIMITS.maxDepth)
+        walkPy(full, root, out, deadline, onSkipped);
     } else if (entry.isFile() && PYTHON_TEST_RE.test(entry.name)) {
       try {
         if (statSync(full).size <= LIMITS.maxFileBytes) out.push(full);
@@ -98,7 +120,5 @@ function walkPy(dir: string, root: string, out: string[], deadline: number, onSk
 }
 
 function readText(p: string): string {
-  // Lazy require to avoid loading fs at module top when unused elsewhere.
-  const { readFileSync } = require('node:fs') as typeof import('node:fs');
-  return readFileSync(p, 'utf8');
+  return readFileSync(p, "utf8");
 }

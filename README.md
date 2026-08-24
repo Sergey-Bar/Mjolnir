@@ -82,52 +82,57 @@ Every rule ships with must-fire **and** must-not-fire fixtures. A rule that
 fires on its own negative fixture cannot ship. That's the false-positive firewall.
 
 ### Test Hygiene
-| ID | Rule | Severity |
-|---|---|---|
-| QA-TEST-001 | Focused test committed (`.only`, `fit`) | error |
-| QA-TEST-002 | Skipped test (`.skip`, `xit`) | warning |
-| QA-TEST-003 | Test with no assertions | error |
-| QA-TEST-004 | Hard sleep (`waitForTimeout`, `sleep()`) | warning |
-| QA-TEST-006 | Retry abuse hiding flakiness | warning |
-| QA-TEST-010 | Empty test body | error |
+
+| ID          | Rule                                     | Severity |
+| ----------- | ---------------------------------------- | -------- |
+| QA-TEST-001 | Focused test committed (`.only`, `fit`)  | error    |
+| QA-TEST-002 | Skipped test (`.skip`, `xit`)            | warning  |
+| QA-TEST-003 | Test with no assertions                  | error    |
+| QA-TEST-004 | Hard sleep (`waitForTimeout`, `sleep()`) | warning  |
+| QA-TEST-006 | Retry abuse hiding flakiness             | warning  |
+| QA-TEST-010 | Empty test body                          | error    |
 
 ### Test Quality
-| ID | Rule | Severity |
-|---|---|---|
-| QA-TQUAL-001 | Mock-only verification | warning |
-| QA-TQUAL-002 | Tautological assertion | error |
-| QA-TQUAL-009 | Unawaited promise assertion | error |
-| QA-TQUAL-011 | Commented-out tests | warning |
+
+| ID           | Rule                        | Severity |
+| ------------ | --------------------------- | -------- |
+| QA-TQUAL-001 | Mock-only verification      | warning  |
+| QA-TQUAL-002 | Tautological assertion      | error    |
+| QA-TQUAL-009 | Unawaited promise assertion | error    |
+| QA-TQUAL-011 | Commented-out tests         | warning  |
 
 ### Playwright 🎭
-| ID | Rule | Severity |
-|---|---|---|
-| QA-PW-002 | Unawaited locator assertion | error |
-| QA-PW-003 | `page.pause()` / `test.only()` committed | error |
-| QA-PW-004 | Brittle CSS/XPath selectors | warning |
-| QA-PW-005 | Business logic inside `page.evaluate()` | warning |
-| QA-PW-114 | Legacy element handles (`page.$`) | warning |
-| QA-PW-118 | `networkidle` waits (flaky by design) | warning |
-| QA-PW-123 | Hardcoded environment URLs | warning |
+
+| ID        | Rule                                     | Severity |
+| --------- | ---------------------------------------- | -------- |
+| QA-PW-002 | Unawaited locator assertion              | error    |
+| QA-PW-003 | `page.pause()` / `test.only()` committed | error    |
+| QA-PW-004 | Brittle CSS/XPath selectors              | warning  |
+| QA-PW-005 | Business logic inside `page.evaluate()`  | warning  |
+| QA-PW-114 | Legacy element handles (`page.$`)        | warning  |
+| QA-PW-118 | `networkidle` waits (flaky by design)    | warning  |
+| QA-PW-123 | Hardcoded environment URLs               | warning  |
 
 ### CI Integrity
-| ID | Rule | Severity |
-|---|---|---|
-| QA-CI-001 | `continue-on-error` masks failures | error |
-| QA-CI-002 | `\|\| true` swallows exit codes | error |
-| QA-CI-005 | Report consumed but never generated | error |
-| QA-CI-007 | Retry wrappers around tests | warning |
-| QA-CI-008 | Always-success step masks failures | error |
+
+| ID        | Rule                                | Severity |
+| --------- | ----------------------------------- | -------- |
+| QA-CI-001 | `continue-on-error` masks failures  | error    |
+| QA-CI-002 | `\|\| true` swallows exit codes     | error    |
+| QA-CI-005 | Report consumed but never generated | error    |
+| QA-CI-007 | Retry wrappers around tests         | warning  |
+| QA-CI-008 | Always-success step masks failures  | error    |
 
 ### Python / pytest 🐍
-| ID | Rule | Severity |
-|---|---|---|
-| QA-PY-002 | Skipped test (`skip`, non-strict `xfail`) | warning |
-| QA-PY-003 | Test function with no assertions | error |
-| QA-PY-005 | `time.sleep()` in tests | warning |
-| QA-PY-006 | Empty test body (`pass`) | error |
-| QA-PY-010 | Random/time dependence without freeze | warning |
-| QA-PY-012 | Tautological assertion | error |
+
+| ID        | Rule                                      | Severity |
+| --------- | ----------------------------------------- | -------- |
+| QA-PY-002 | Skipped test (`skip`, non-strict `xfail`) | warning  |
+| QA-PY-003 | Test function with no assertions          | error    |
+| QA-PY-005 | `time.sleep()` in tests                   | warning  |
+| QA-PY-006 | Empty test body (`pass`)                  | error    |
+| QA-PY-010 | Random/time dependence without freeze     | warning  |
+| QA-PY-012 | Tautological assertion                    | error    |
 
 ## 🎭 Selector Health Score
 

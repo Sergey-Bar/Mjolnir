@@ -3,36 +3,39 @@
  * Symbols accompany color for color-blind users.
  */
 
-import type { ScanResult } from '../types.js';
+import type { ScanResult } from "../types.js";
 
-export function renderTerminal(result: ScanResult, opts: { isTTY: boolean }): string {
-  const c = opts.isTTY && !process.env['NO_COLOR'] ? colors : noColors;
+export function renderTerminal(
+  result: ScanResult,
+  opts: { isTTY: boolean },
+): string {
+  const c = opts.isTTY && !process.env["NO_COLOR"] ? colors : noColors;
   const lines: string[] = [];
 
-  lines.push('');
-  lines.push(c.bold('                 QA DOCTOR'));
-  lines.push('');
+  lines.push("");
+  lines.push(c.bold("                 QA DOCTOR"));
+  lines.push("");
   if (result.score === null) {
-    lines.push('          NO TESTS DETECTED');
-    lines.push('');
-    lines.push('No Jest/Vitest/Playwright test files were found.');
-    lines.push('A score cannot be calculated honestly.');
-    lines.push('');
-    lines.push('If your tests live elsewhere: qa-doctor --tests-dir <path>');
-    return lines.join('\n');
+    lines.push("          NO TESTS DETECTED");
+    lines.push("");
+    lines.push("No Jest/Vitest/Playwright test files were found.");
+    lines.push("A score cannot be calculated honestly.");
+    lines.push("");
+    lines.push("If your tests live elsewhere: qa-doctor --tests-dir <path>");
+    return lines.join("\n");
   }
 
   const filled = Math.round(result.score / 5);
-  const bar = '█'.repeat(filled) + '░'.repeat(20 - filled);
+  const bar = "█".repeat(filled) + "░".repeat(20 - filled);
   lines.push(`             SCORE:  ${result.score} / 100`);
-  lines.push('');
+  lines.push("");
   lines.push(`        ${bar}`);
   if (result.frameworks.length > 0) {
-    lines.push(`   Detected: ${result.frameworks.join(', ')}`);
+    lines.push(`   Detected: ${result.frameworks.join(", ")}`);
   } else if (result.frameworkDetectionUnknown) {
-    lines.push('   Framework: unknown — scanning all test-looking files');
+    lines.push("   Framework: unknown — scanning all test-looking files");
   }
-  lines.push('');
+  lines.push("");
 
   const counts = countBySeverity(result);
   lines.push(
@@ -41,26 +44,28 @@ export function renderTerminal(result: ScanResult, opts: { isTTY: boolean }): st
 
   const top = result.findings.slice(0, 5);
   if (top.length > 0) {
-    lines.push('');
-    lines.push('   TOP ISSUES');
-    lines.push('');
+    lines.push("");
+    lines.push("   TOP ISSUES");
+    lines.push("");
     for (const f of top) {
-      const icon = f.severity === 'error' ? '✗' : f.severity === 'warning' ? '⚠' : 'ℹ';
+      const icon =
+        f.severity === "error" ? "✗" : f.severity === "warning" ? "⚠" : "ℹ";
       const sev = f.severity.toUpperCase().padEnd(7);
       lines.push(`   ${icon} ${c[f.severity](sev)} ${f.message}`);
       lines.push(`          ${f.file}:${f.line}`);
     }
     const rest = counts.total - top.length;
-    if (rest > 0) lines.push(`   … +${rest} more. Run with --verbose for all findings.`);
+    if (rest > 0)
+      lines.push(`   … +${rest} more. Run with --verbose for all findings.`);
   }
 
-  lines.push('');
+  lines.push("");
   lines.push(
-    `   Analysis: ${result.analysisStatus.discovery === 'partial' ? 'PARTIAL — verdict may be incomplete' : 'complete'}` +
+    `   Analysis: ${result.analysisStatus.discovery === "partial" ? "PARTIAL — verdict may be incomplete" : "complete"}` +
       ` · ${result.analysisStatus.durationMs}ms`,
   );
-  lines.push('');
-  return lines.join('\n');
+  lines.push("");
+  return lines.join("\n");
 }
 
 function countBySeverity(result: ScanResult) {

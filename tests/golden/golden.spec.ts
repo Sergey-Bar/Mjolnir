@@ -10,15 +10,15 @@
  * Verify:      npm test (this file)
  */
 
-import { readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
-import { describe, expect, it } from 'vitest';
-import { RULES } from '../../src/rules/index.js';
+import { readdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
+import { join } from "node:path";
+import { describe, expect, it } from "vitest";
+import { RULES } from "../../src/rules/index.js";
 
 const HERE = import.meta.dirname;
-const GOLDEN_ROOT = join(HERE, 'repo');
-const EXPECTED_PATH = join(HERE, 'golden-expected.json');
-const UPDATE = process.env['GOLDEN_UPDATE'] === '1';
+const GOLDEN_ROOT = join(HERE, "repo");
+const EXPECTED_PATH = join(HERE, "golden-expected.json");
+const UPDATE = process.env["GOLDEN_UPDATE"] === "1";
 
 interface ExpectedEntry {
   /** ruleId → count of findings in this file. */
@@ -29,10 +29,10 @@ function scanGolden(): ExpectedEntry {
   const result: ExpectedEntry = {};
   const files = listTestFiles(GOLDEN_ROOT);
   for (const rel of files) {
-    const text = readFileSync(join(GOLDEN_ROOT, rel), 'utf8');
+    const text = readFileSync(join(GOLDEN_ROOT, rel), "utf8");
     const counts: Record<string, number> = {};
     for (const rule of RULES) {
-      if (rule.appliesTo !== 'test-files') continue;
+      if (rule.appliesTo !== "test-files") continue;
       try {
         const found = rule.run({ path: rel, text });
         if (found.length > 0) counts[rule.id] = found.length;
@@ -45,7 +45,7 @@ function scanGolden(): ExpectedEntry {
   return result;
 }
 
-function listTestFiles(dir: string, prefix = ''): string[] {
+function listTestFiles(dir: string, prefix = ""): string[] {
   const out: string[] = [];
   let entries;
   try {
@@ -61,24 +61,32 @@ function listTestFiles(dir: string, prefix = ''): string[] {
   return out;
 }
 
-describe('golden repo score lock', () => {
-  it('expectations file exists (run GOLDEN_UPDATE=1 to create)', () => {
-    expect(existsSync(EXPECTED_PATH), 'Run `GOLDEN_UPDATE=1 npx vitest run tests/golden` once').toBe(true);
+describe("golden repo score lock", () => {
+  it("expectations file exists (run GOLDEN_UPDATE=1 to create)", () => {
+    expect(
+      existsSync(EXPECTED_PATH),
+      "Run `GOLDEN_UPDATE=1 npx vitest run tests/golden` once",
+    ).toBe(true);
   });
 
   if (existsSync(EXPECTED_PATH)) {
-    it('findings match locked expectations exactly', () => {
-      const expected: ExpectedEntry = JSON.parse(readFileSync(EXPECTED_PATH, 'utf8'));
+    it("findings match locked expectations exactly", () => {
+      const expected: ExpectedEntry = JSON.parse(
+        readFileSync(EXPECTED_PATH, "utf8"),
+      );
       const actual = scanGolden();
       expect(actual).toEqual(expected);
     });
   }
 
-  it('no rule crashes on the golden corpus', () => {
+  it("no rule crashes on the golden corpus", () => {
     for (const rel of listTestFiles(GOLDEN_ROOT)) {
-      const text = readFileSync(join(GOLDEN_ROOT, rel), 'utf8');
+      const text = readFileSync(join(GOLDEN_ROOT, rel), "utf8");
       for (const rule of RULES) {
-        expect(() => rule.run({ path: rel, text }), `${rule.id} on ${rel}`).not.toThrow();
+        expect(
+          () => rule.run({ path: rel, text }),
+          `${rule.id} on ${rel}`,
+        ).not.toThrow();
       }
     }
   });
@@ -86,5 +94,5 @@ describe('golden repo score lock', () => {
 
 // Regeneration mode: node --experimental-vm-modules not needed; run via env flag.
 if (UPDATE) {
-  writeFileSync(EXPECTED_PATH, JSON.stringify(scanGolden(), null, 2) + '\n');
+  writeFileSync(EXPECTED_PATH, JSON.stringify(scanGolden(), null, 2) + "\n");
 }

@@ -9,8 +9,8 @@
  * Tree-sitter arrives in R2 with Python, where it's actually required.
  */
 
-import type { Finding } from '../types.js';
-import type { Workspace } from '../discovery/workspace.js';
+import type { Finding } from "../types.js";
+import type { Workspace } from "../discovery/workspace.js";
 
 /** Semantic operations a parsed file exposes to rules. */
 export interface ParsedFile {
@@ -44,7 +44,11 @@ export interface LanguageAdapter {
   runRules(
     rules: readonly UniversalRule[],
     file: ParsedFile,
-    emit: (f: Omit<Finding, 'ruleId' | 'category'>, ruleId: string, category: string) => void,
+    emit: (
+      f: Omit<Finding, "ruleId" | "category">,
+      ruleId: string,
+      category: string,
+    ) => void,
   ): void;
 }
 
@@ -57,5 +61,5 @@ export interface UniversalRule {
   id: string;
   category: string;
   appliesTo: readonly string[];
-  run(file: ParsedFile): Array<Omit<Finding, 'ruleId' | 'category'>>;
+  run(file: ParsedFile): Array<Omit<Finding, "ruleId" | "category">>;
 }

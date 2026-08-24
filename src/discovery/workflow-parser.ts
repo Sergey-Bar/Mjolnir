@@ -6,7 +6,7 @@
  * and object-prototype safety. Produces the doc model CI rules expect.
  */
 
-import { parse as yamlParse } from 'yaml';
+import { parse as yamlParse } from "yaml";
 
 /** Hard limits for hostile YAML (billion-laughs style attacks). */
 const LIMITS = {
@@ -19,11 +19,11 @@ export interface WorkflowStep {
   run?: string;
   uses?: string;
   with?: Record<string, unknown>;
-  'continue-on-error'?: boolean | string;
+  "continue-on-error"?: boolean | string;
 }
 
 export interface WorkflowJob {
-  'continue-on-error'?: boolean | string;
+  "continue-on-error"?: boolean | string;
   steps?: WorkflowStep[];
 }
 
@@ -38,50 +38,64 @@ export function parseWorkflow(text: string): WorkflowDoc {
   try {
     doc = yamlParse(text);
   } catch (err) {
-    throw new YamlParseError(`Invalid workflow YAML: ${err instanceof Error ? err.message : String(err)}`);
+    throw new YamlParseError(
+      `Invalid workflow YAML: ${err instanceof Error ? err.message : String(err)}`,
+    );
   }
 
   if (doc === null || doc === undefined) return {};
-  if (typeof doc !== 'object') throw new YamlParseError('Workflow root must be a mapping');
+  if (typeof doc !== "object")
+    throw new YamlParseError("Workflow root must be a mapping");
 
   // Alias-bomb guard: count anchors/aliases textually — the yaml package
   // expands aliases during parse, so we bound the input instead.
   const aliasMatches = text.match(/(?:^|\s)\*(\w+)/g) ?? [];
   if (aliasMatches.length > LIMITS.maxAliases) {
-    throw new YamlParseError(`YAML alias count ${aliasMatches.length} exceeds limit ${LIMITS.maxAliases}`);
+    throw new YamlParseError(
+      `YAML alias count ${aliasMatches.length} exceeds limit ${LIMITS.maxAliases}`,
+    );
   }
 
   const root = doc as Record<string, unknown>;
-  const jobsRaw = root['jobs'];
+  const jobsRaw = root["jobs"];
   if (jobsRaw === undefined || jobsRaw === null) return {};
 
-  if (typeof jobsRaw !== 'object' || Array.isArray(jobsRaw)) {
+  if (typeof jobsRaw !== "object" || Array.isArray(jobsRaw)) {
     throw new YamlParseError('"jobs" must be a mapping');
   }
 
   const jobs: Record<string, WorkflowJob> = {};
-  for (const [jobName, jobVal] of Object.entries(jobsRaw as Record<string, unknown>)) {
-    if (jobVal === null || typeof jobVal !== 'object' || Array.isArray(jobVal)) continue;
+  for (const [jobName, jobVal] of Object.entries(
+    jobsRaw as Record<string, unknown>,
+  )) {
+    if (jobVal === null || typeof jobVal !== "object" || Array.isArray(jobVal))
+      continue;
     const job = jobVal as Record<string, unknown>;
     const parsedJob: WorkflowJob = {};
 
-    if (typeof job['continue-on-error'] === 'boolean' || typeof job['continue-on-error'] === 'string') {
-      parsedJob['continue-on-error'] = job['continue-on-error'];
+    if (
+      typeof job["continue-on-error"] === "boolean" ||
+      typeof job["continue-on-error"] === "string"
+    ) {
+      parsedJob["continue-on-error"] = job["continue-on-error"];
     }
 
-    if (Array.isArray(job['steps'])) {
-      parsedJob.steps = (job['steps'] as unknown[]).map((s): WorkflowStep => {
-        if (s === null || typeof s !== 'object' || Array.isArray(s)) return {};
+    if (Array.isArray(job["steps"])) {
+      parsedJob.steps = (job["steps"] as unknown[]).map((s): WorkflowStep => {
+        if (s === null || typeof s !== "object" || Array.isArray(s)) return {};
         const step = s as Record<string, unknown>;
         return {
-          ...(typeof step['name'] === 'string' ? { name: step['name'] } : {}),
-          ...(typeof step['run'] === 'string' ? { run: step['run'] } : {}),
-          ...(typeof step['uses'] === 'string' ? { uses: step['uses'] } : {}),
-          ...(step['with'] && typeof step['with'] === 'object' && !Array.isArray(step['with'])
-            ? { with: step['with'] as Record<string, unknown> }
+          ...(typeof step["name"] === "string" ? { name: step["name"] } : {}),
+          ...(typeof step["run"] === "string" ? { run: step["run"] } : {}),
+          ...(typeof step["uses"] === "string" ? { uses: step["uses"] } : {}),
+          ...(step["with"] &&
+          typeof step["with"] === "object" &&
+          !Array.isArray(step["with"])
+            ? { with: step["with"] as Record<string, unknown> }
             : {}),
-          ...(typeof step['continue-on-error'] === 'boolean' || typeof step['continue-on-error'] === 'string'
-            ? { 'continue-on-error': step['continue-on-error'] }
+          ...(typeof step["continue-on-error"] === "boolean" ||
+          typeof step["continue-on-error"] === "string"
+            ? { "continue-on-error": step["continue-on-error"] }
             : {}),
         };
       });

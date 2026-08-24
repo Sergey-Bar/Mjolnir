@@ -3,21 +3,21 @@
  * Severity: error · Confidence: high · deterministic-defect
  */
 
-import { defineRule } from '../rule.js';
-import type { Finding } from '../../types.js';
+import { defineRule } from "../rule.js";
+import type { Finding } from "../../types.js";
 
 export const pyTautological = defineRule({
-  id: 'QA-PY-012',
-  category: 'QA-TQUAL',
-  title: 'Tautological assertion',
-  severity: 'error',
-  confidence: 'high',
-  findingType: 'deterministic-defect',
-  qaImpact: 'FALSE-GREEN',
-  appliesTo: 'python' as unknown as 'test-files',
+  id: "QA-PY-012",
+  category: "QA-TQUAL",
+  title: "Tautological assertion",
+  severity: "error",
+  confidence: "high",
+  findingType: "deterministic-defect",
+  qaImpact: "FALSE-GREEN",
+  appliesTo: "python" as unknown as "test-files",
   run(ctx) {
-    const findings: Omit<Finding, 'ruleId' | 'category'>[] = [];
-    if (!ctx.path.endsWith('.py')) return findings;
+    const findings: Omit<Finding, "ruleId" | "category">[] = [];
+    if (!ctx.path.endsWith(".py")) return findings;
 
     const patterns = [
       // [ \t] not \s — \s crosses lines causing duplicate/looping matches.
@@ -35,22 +35,22 @@ export const pyTautological = defineRule({
         const line = lineAt(ctx.text, m.index);
         if (seenLines.has(line)) {
           // Zero-width progress at same position — advance manually.
-          re.lastIndex = ctx.text.indexOf('\n', m.index) + 1;
+          re.lastIndex = ctx.text.indexOf("\n", m.index) + 1;
           if (re.lastIndex === 0) break;
           continue;
         }
         seenLines.add(line);
         findings.push({
-          severity: 'error',
-          confidence: 'high',
-          findingType: 'deterministic-defect',
-          qaImpact: 'FALSE-GREEN',
+          severity: "error",
+          confidence: "high",
+          findingType: "deterministic-defect",
+          qaImpact: "FALSE-GREEN",
           file: ctx.path,
           line: lineAt(ctx.text, m.index),
           column: colAt(ctx.text, m.index),
           message: `Tautological assertion: \`${m[0].trim()}\`.`,
-          why: 'Asserting a literal against itself can never fail — it verifies no system behavior.',
-          fix: 'Assert on actual output of the code under test.',
+          why: "Asserting a literal against itself can never fail — it verifies no system behavior.",
+          fix: "Assert on actual output of the code under test.",
         });
       }
     }
@@ -60,11 +60,11 @@ export const pyTautological = defineRule({
 
 function lineAt(text: string, index: number): number {
   let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === '\n') line++;
+  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
   return line;
 }
 
 function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf('\n', index - 1);
+  const lastBreak = text.lastIndexOf("\n", index - 1);
   return index - lastBreak;
 }

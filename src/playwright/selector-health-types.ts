@@ -1,1 +1,1 @@
-export type LocatorClass = 'role-based' | 'testid' | 'css-chain' | 'xpath';
+export type LocatorClass = "role-based" | "testid" | "css-chain" | "xpath";

@@ -1,9 +1,9 @@
-describe('payments', () => {
+describe("payments", () => {
   // it('charges the card', () => {
   //   expect(charge(100)).toBe(true);
   // });
 
-  it('refunds', () => {
+  it("refunds", () => {
     expect(refund(50)).toBe(true);
   });
 });

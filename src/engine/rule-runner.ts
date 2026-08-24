@@ -3,8 +3,8 @@
  * Replaces the inline loops in cli.ts. Crash isolation per rule (§25).
  */
 
-import type { Finding } from '../types.js';
-import type { LanguageAdapter, UniversalRule } from './adapter.js';
+import type { Finding } from "../types.js";
+import type { LanguageAdapter, UniversalRule } from "./adapter.js";
 
 export interface RunnerResult {
   findings: Finding[];
@@ -15,8 +15,10 @@ export function runRulesForFile(
   adapter: LanguageAdapter,
   rules: readonly UniversalRule[],
   file: { path: string; text: string },
-): Array<Omit<Finding, 'ruleId' | 'category'>> & { ruleRefs?: never } | Array<Omit<Finding, 'ruleId' | 'category'>> {
-  const out: Array<Omit<Finding, 'ruleId' | 'category'>> = [];
+):
+  | (Array<Omit<Finding, "ruleId" | "category">> & { ruleRefs?: never })
+  | Array<Omit<Finding, "ruleId" | "category">> {
+  const out: Array<Omit<Finding, "ruleId" | "category">> = [];
   const parsed = { path: file.path, text: file.text };
   for (const rule of rules) {
     if (!rule.appliesTo.includes(adapter.id)) continue;
@@ -33,8 +35,8 @@ export function runRulesForFile(
 
 /** Legacy appliesTo → adapter id mapping. */
 export function legacyAppliesTo(value: string): string[] {
-  if (value === 'test-files') return ['typescript', 'python'];
-  if (value === 'ci-workflows') return ['github-actions'];
+  if (value === "test-files") return ["typescript", "python"];
+  if (value === "ci-workflows") return ["github-actions"];
   return [value];
 }
 
@@ -43,7 +45,11 @@ export function asUniversal(rule: {
   id: string;
   category: string;
   appliesTo: string;
-  run: (file: { path: string; text: string; ast?: unknown }) => Array<Record<string, unknown>>;
+  run: (file: {
+    path: string;
+    text: string;
+    ast?: unknown;
+  }) => Array<Record<string, unknown>>;
 }): UniversalRule & { legacy: true } {
   return {
     id: rule.id,
@@ -51,7 +57,7 @@ export function asUniversal(rule: {
     appliesTo: legacyAppliesTo(rule.appliesTo),
     legacy: true,
     run(file) {
-      return rule.run(file) as Array<Omit<Finding, 'ruleId' | 'category'>>;
+      return rule.run(file) as Array<Omit<Finding, "ruleId" | "category">>;
     },
   };
 }
