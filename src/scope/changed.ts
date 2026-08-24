@@ -44,10 +44,12 @@ export function computeChangedScope(root: string, baseBranch = 'main'): DiffResu
   // Resolve merge-base; on shallow clones or detached HEAD this can fail.
   let mergeBase = git(root, ['merge-base', 'HEAD', baseBranch])?.trim();
   if (!mergeBase) {
-    // Fallback: try origin/baseBranch, then just the branch itself.
+    // Fallbacks: origin/baseBranch, the branch itself, then HEAD~1
+    // (single-commit repos and unusual default branch names).
     mergeBase =
       git(root, ['merge-base', 'HEAD', `origin/${baseBranch}`])?.trim() ??
-      git(root, ['rev-parse', baseBranch])?.trim();
+      git(root, ['rev-parse', '--verify', baseBranch])?.trim() ??
+      git(root, ['rev-parse', '--verify', 'HEAD~1'])?.trim();
   }
   if (!mergeBase) {
     return { changed: {}, degraded: true, reason: 'no-merge-base' };

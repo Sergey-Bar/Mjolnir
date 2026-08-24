@@ -3,3 +3,5 @@ describe('billing', () => {
     expect(true).toBe(true);
   });
 });
+
+it.skip('new broken test added on branch', () => { expect(1).toBe(1); });
