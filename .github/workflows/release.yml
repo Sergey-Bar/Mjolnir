@@ -50,7 +50,9 @@ jobs:
       - run: npm run build
 
       - name: Pack distribution tarball
-        run: npm pack --pack-destination ./release-assets
+        run: |
+          mkdir -p release-assets
+          npm pack --pack-destination ./release-assets
 
       - name: Create GitHub Release with generated notes
         uses: softprops/action-gh-release@v2
