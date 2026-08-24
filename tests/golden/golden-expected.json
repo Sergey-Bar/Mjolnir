@@ -1,0 +1,11 @@
+{
+  "e2e/checkout.spec.ts": {
+    "QA-PW-002": 1,
+    "QA-PW-003": 1
+  },
+  "src/auth.spec.ts": {
+    "QA-TEST-001": 1,
+    "QA-TEST-002": 1,
+    "QA-TQUAL-002": 1
+  }
+}

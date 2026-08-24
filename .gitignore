@@ -1,0 +1,9 @@
+# Ignore build artifacts and dependencies
+node_modules/
+dist/
+coverage/
+.qa-doctor/logs/
+
+# Environment
+.env
+.env.*
