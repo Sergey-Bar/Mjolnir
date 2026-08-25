@@ -14,20 +14,55 @@
 **The quality scanner for QA engineers.** Audits test suites and CI pipelines,
 reports a health score, and shows exactly where the trust breaks.
 
-[![npm](https://img.shields.io/npm/v/qa-doctor.svg)](https://www.npmjs.com/package/qa-doctor)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Node](https://img.shields.io/node/v/qa-doctor.svg)](https://nodejs.org)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#-contributing)
+[![npm](https://img.shields.io/npm/v/qa-doctor.svg?style=for-the-badge&color=39FF14&label=npm&labelColor=0D0D0D)](https://www.npmjs.com/package/qa-doctor)
+[![downloads](https://img.shields.io/npm/dm/qa-doctor.svg?style=for-the-badge&color=39FF14&label=downloads&labelColor=0D0D0D)](https://www.npmjs.com/package/qa-doctor)
+[![license](https://img.shields.io/badge/license-MIT-39FF14.svg?style=for-the-badge&labelColor=0D0D0D)](LICENSE)
+[![node](https://img.shields.io/node/v/qa-doctor.svg?style=for-the-badge&color=39FF14&labelColor=0D0D0D)](https://nodejs.org)
+[![status](https://img.shields.io/badge/status-●_ONLINE-39FF14.svg?style=for-the-badge&labelColor=0D0D0D)](#-quickstart)
 
 ```bash
 npx qa-doctor@latest
 ```
 
-[Quickstart](#-quickstart) · [Rules](#-the-rules) · [CI Integration](#-ci-integration) · [Contributing](#-contributing)
+[Quickstart](#-quickstart) · [Rules](#-the-rules) · [Selector Health](#-selector-health-score) · [Runtime Evidence](#-runtime-evidence) · [CI Integration](#-ci-integration) · [Contributing](#-contributing)
+
+<br>
+
+<img src="assets/readme/terminal-hero.svg" alt="qa-doctor scan report — SCORE 72/100 NEEDS WORK, error on QA-CI-001 continue-on-error, warning on QA-TEST-004 hard sleep" width="720">
+
+<sub>Real scan output, not a mockup — run it on your own repo above.</sub>
 
 </div>
 
 ---
+
+## ▓▓▓ At a glance
+
+|     |                                                                                                             |
+| --- | ----------------------------------------------------------------------------------------------------------- |
+| 🩺  | **Health score** — one number, transparent deduction table, no black box                                    |
+| 🎭  | **Selector Health Score** — grades your Playwright locators, not just your pass rate                        |
+| 🔬  | **Runtime forensics** — reads real Playwright/JUnit run data to catch `TRUE-FLAKE`, not just static guesses |
+| 🚨  | **CI-integrity rules** — catches `continue-on-error`, `\|\| true`, and other false-green tricks             |
+| 🐍  | **Multi-language** — TypeScript/Playwright and Python/pytest today, one adapter away from more              |
+| 🔒  | **Local-first** — zero network calls while scanning, zero telemetry, runs in seconds                        |
+
+---
+
+## » Not another linter
+
+ESLint checks your code's _syntax_. Coverage checks whether a line _executed_.
+Neither one checks whether the test that ran actually _proved_ anything.
+QA Doctor is the layer underneath both:
+
+|                                                            | ESLint / SonarQube | Coverage tools | Manual review | **QA Doctor** |
+| ---------------------------------------------------------- | :----------------: | :------------: | :-----------: | :-----------: |
+| Catches syntax & style bugs                                |         ✅         |       ❌       |   ✅ (slow)   |       —       |
+| Flags tests with no real assertions                        |         ❌         |       ❌       |   sometimes   |      ✅       |
+| Catches CI false-greens (`\|\| true`, `continue-on-error`) |         ❌         |       ❌       |    rarely     |      ✅       |
+| Reads **real** run data for `TRUE-FLAKE` verdicts          |         ❌         |       ❌       |      ❌       |      ✅       |
+| Grades Playwright locator resilience                       |         ❌         |       ❌       |    rarely     |      ✅       |
+| Runs in seconds, zero network calls                        |         ✅         |       ✅       |       —       |      ✅       |
 
 ## Why
 
@@ -37,37 +72,8 @@ Tests get skipped, focused, emptied of assertions. CI pipelines learn to
 swallow failures with `|| true` and `continue-on-error`. Coverage numbers go
 up while real verification goes down.
 
-And nobody notices — until production.
-
-QA Doctor reads your test files and workflow definitions and tells you exactly
-where the trust breaks:
-
-```text
-  SCORE  72/100  NEEDS WORK
-  ██████████████████████▓░░░░░░░░
-
-  DETECTED [vitest] [playwright]
-
-  ▚ DIAGNOSTICS BY CATEGORY
-  QA-TEST   ████████████████░░  92
-  QA-CI     ██████████░░░░░░░░  61
-
-  ▚ WHERE POINTS WERE LOST
-  ╭──────────────────────────────╮
-  │ 3 × error    −24             │
-  │ 11 × warning −33             │
-  ╰──────────────────────────────╯
-
-  ▚ TOP ISSUES
-
-  ✗ ERROR   Job "security-scan" has continue-on-error: true.
-          QA-CI-001 · .github/workflows/ci.yml:12
-          FALSE-GREEN — this job can fail every day and CI stays green.
-
-  ⚠ WARN    Hard sleep: page.waitForTimeout(3000).
-          QA-TEST-004 · e2e/checkout.spec.ts:88
-          FLAKY-RISK — guesses at timing instead of waiting for state.
-```
+And nobody notices — until production. QA Doctor reads your test files and
+workflow definitions and tells you exactly where the trust breaks.
 
 No config. No server. No telemetry. Runs locally in seconds.
 
@@ -80,47 +86,21 @@ npx qa-doctor@latest
 That's it. Zero configuration — QA Doctor detects your frameworks, finds your
 tests, and reports.
 
-```bash
-# Only findings introduced by YOUR changes (perfect for PRs):
-npx qa-doctor@latest --scope changed
-
-# Machine-readable output:
-npx qa-doctor@latest --json
-
-# GitHub Code Scanning integration:
-npx qa-doctor@latest --format sarif > qa-doctor.sarif
-
-# Playwright-only deep scan + Selector Health Score:
-npx qa-doctor doctor:playwright
-
-# Runtime evidence — retries, true flakes, FLAKY.md artifact:
-npx qa-doctor forensics ./test-results/
-
-# The flaky-triage meeting, in 10 minutes instead of 45:
-npx qa-doctor triage ./test-results/
-
-# Safe auto-fixes with proof (dry-run first):
-npx qa-doctor fix --dry-run
-npx qa-doctor fix
-
-# Test debt register — presentable to management:
-npx qa-doctor debt
-
-# New-QA-onboarding map of the suite:
-npx qa-doctor handover
-
-# Playwright run summary (retries / flakes / slowest):
-npx qa-doctor pw-report ./test-results/
-
-# Evidentiary badge (shields.io endpoint JSON):
-npx qa-doctor badge
-
-# Self-audit — prove QA Doctor's own rule base is healthy:
-npx qa-doctor doctor
-
-# Rule catalog with trust metadata (JSON, or --md for markdown):
-npx qa-doctor rules
-```
+| Command                                                 | What it does                                                   |
+| ------------------------------------------------------- | -------------------------------------------------------------- |
+| `npx qa-doctor@latest --scope changed`                  | Only findings introduced by **your** changes — perfect for PRs |
+| `npx qa-doctor@latest --json`                           | Machine-readable output                                        |
+| `npx qa-doctor@latest --format sarif > qa-doctor.sarif` | GitHub Code Scanning integration                               |
+| `npx qa-doctor doctor:playwright`                       | Playwright-only deep scan + Selector Health Score              |
+| `npx qa-doctor forensics ./test-results/`               | Runtime evidence — retries, true flakes, `FLAKY.md` artifact   |
+| `npx qa-doctor triage ./test-results/`                  | The flaky-triage meeting, in 10 minutes instead of 45          |
+| `npx qa-doctor fix --dry-run` / `fix`                   | Safe auto-fixes with proof (dry-run first)                     |
+| `npx qa-doctor debt`                                    | Test debt register — presentable to management                 |
+| `npx qa-doctor handover`                                | New-QA-onboarding map of the suite                             |
+| `npx qa-doctor pw-report ./test-results/`               | Playwright run summary — retries / flakes / slowest            |
+| `npx qa-doctor badge`                                   | Evidentiary badge (shields.io endpoint JSON)                   |
+| `npx qa-doctor doctor`                                  | Self-audit — prove QA Doctor's own rule base is healthy        |
+| `npx qa-doctor rules` / `rules --md`                    | Rule catalog with trust metadata (JSON or markdown)            |
 
 ## 📋 The Rules
 
@@ -128,7 +108,8 @@ Every rule ships with must-fire **and** must-not-fire fixtures. A rule that
 fires on its own negative fixture cannot ship. That's the false-positive
 firewall.
 
-### Test Hygiene
+<details>
+<summary><strong>Test Hygiene</strong></summary>
 
 | ID          | Rule                                                | Severity |
 | ----------- | --------------------------------------------------- | -------- |
@@ -140,7 +121,10 @@ firewall.
 | QA-TEST-006 | Retry abuse hiding flakiness                        | warning  |
 | QA-TEST-010 | Empty test body                                     | error    |
 
-### Test Quality
+</details>
+
+<details>
+<summary><strong>Test Quality</strong></summary>
 
 | ID           | Rule                        | Severity |
 | ------------ | --------------------------- | -------- |
@@ -149,7 +133,10 @@ firewall.
 | QA-TQUAL-009 | Unawaited promise assertion | error    |
 | QA-TQUAL-011 | Commented-out tests         | warning  |
 
-### Playwright 🎭
+</details>
+
+<details>
+<summary><strong>Playwright 🎭</strong></summary>
 
 | ID        | Rule                                     | Severity |
 | --------- | ---------------------------------------- | -------- |
@@ -161,7 +148,10 @@ firewall.
 | QA-PW-118 | `networkidle` waits (flaky by design)    | warning  |
 | QA-PW-123 | Hardcoded environment URLs               | warning  |
 
-### CI Integrity
+</details>
+
+<details>
+<summary><strong>CI Integrity</strong></summary>
 
 | ID        | Rule                                                              | Severity |
 | --------- | ----------------------------------------------------------------- | -------- |
@@ -173,14 +163,10 @@ firewall.
 | QA-CI-009 | Test exit code not propagated (`\|` without pipefail, `;` chains) | error    |
 | QA-CI-010 | Tests skipped where they must block (skip-on-PR guards)           | error    |
 
-> The full live catalog — every rule with confidence, false-positive risk,
-> and autofix availability — is generated from the registry:
->
-> ```bash
-> npx qa-doctor rules --md
-> ```
+</details>
 
-### Python / pytest 🐍
+<details>
+<summary><strong>Python / pytest 🐍</strong></summary>
 
 | ID        | Rule                                      | Severity |
 | --------- | ----------------------------------------- | -------- |
@@ -190,6 +176,15 @@ firewall.
 | QA-PY-006 | Empty test body (`pass`)                  | error    |
 | QA-PY-010 | Random/time dependence without freeze     | warning  |
 | QA-PY-012 | Tautological assertion                    | error    |
+
+</details>
+
+> The full live catalog — every rule with confidence, false-positive risk,
+> and autofix availability — is generated from the registry:
+>
+> ```bash
+> npx qa-doctor rules --md
+> ```
 
 ## 🎭 Selector Health Score
 
@@ -262,6 +257,9 @@ Or wire it into GitHub Code Scanning natively via SARIF:
 
 ## 🏗️ Architecture
 
+<details>
+<summary>Expand tree</summary>
+
 ```
 qa-doctor/
 ├── src/
@@ -280,6 +278,8 @@ qa-doctor/
     ├── fixtures/        # must-fire / must-not-fire per rule
     └── golden/          # frozen score regression locks
 ```
+
+</details>
 
 Multi-language by design: adding a language = one adapter + its rules.
 Python is live; Java, Go, and C# adapters follow the same path.

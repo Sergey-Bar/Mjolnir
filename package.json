@@ -4,7 +4,7 @@
   "description": "The linter-grade quality scanner for QA engineers. Audits test suites and CI pipelines, reports a health score and prioritized findings.",
   "type": "module",
   "engines": {
-    "node": ">=20"
+    "node": ">=22.18"
   },
   "bin": {
     "qa-doctor": "./dist/cli.mjs"
