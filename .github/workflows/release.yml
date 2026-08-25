@@ -41,6 +41,13 @@ jobs:
 
       - run: npm ci
 
+      # The SARIF reporter hardcodes the tool version (kept honest by
+      # tests/version-consistency.spec.ts). Sync it to the released
+      # package.json version here so a release can never ship with a
+      # stale driver.version — the source of truth is package.json.
+      - name: Sync SARIF driver version to package.json
+        run: node scripts/sync-sarif-version.cjs
+
       - name: Typecheck, lint, test
         run: |
           npm run typecheck
