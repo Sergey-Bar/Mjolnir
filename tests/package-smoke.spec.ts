@@ -18,7 +18,6 @@ import {
   mkdtempSync,
   readFileSync,
   rmSync,
-  symlinkSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -58,21 +57,17 @@ beforeAll(() => {
   binPath = join(pkgDir, pkgJson.bin.qa_doctor ?? pkgJson.bin["qa-doctor"]);
 
   // Give the packed CLI its runtime dependencies without a network install
-  // (a real `npm install qa-doctor` would fetch these from `dependencies`;
-  // symlinking is the offline-safe equivalent for a smoke test).
-  // NOTE: on POSIX, symlinkSync may fail without privileges on some
-  // filesystems — fall back to a recursive copy so the smoke test still
-  // exercises the packed CLI honestly.
+  // (a real `npm install qa-doctor` would fetch these from `dependencies`).
+  // We COPY rather than symlink: symlink behavior differs across platforms
+  // and CI filesystems (junctions are Windows-only; macOS temp dirs may
+  // reject dir symlinks), and a silently-broken link makes the CLI crash
+  // with empty stdout — exactly the failure this test exists to catch.
   mkdirSync(join(pkgDir, "node_modules"), { recursive: true });
   for (const dep of Object.keys(pkgJson.dependencies ?? {})) {
     const src = join(ROOT, "node_modules", dep);
     const dest = join(pkgDir, "node_modules", dep);
     if (!existsSync(src)) continue;
-    try {
-      symlinkSync(src, dest, process.platform === "win32" ? "junction" : "dir");
-    } catch {
-      cpSync(src, dest, { recursive: true, dereference: true });
-    }
+    cpSync(src, dest, { recursive: true, dereference: true });
   }
 }, 60_000);
 
