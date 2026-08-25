@@ -12,6 +12,7 @@
 
 import { execFileSync, execSync } from "node:child_process";
 import {
+  cpSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
@@ -59,16 +60,18 @@ beforeAll(() => {
   // Give the packed CLI its runtime dependencies without a network install
   // (a real `npm install qa-doctor` would fetch these from `dependencies`;
   // symlinking is the offline-safe equivalent for a smoke test).
+  // NOTE: on POSIX, symlinkSync may fail without privileges on some
+  // filesystems — fall back to a recursive copy so the smoke test still
+  // exercises the packed CLI honestly.
   mkdirSync(join(pkgDir, "node_modules"), { recursive: true });
   for (const dep of Object.keys(pkgJson.dependencies ?? {})) {
     const src = join(ROOT, "node_modules", dep);
-    if (existsSync(src)) {
-      // "junction" is Windows-only; POSIX needs a plain directory symlink.
-      symlinkSync(
-        src,
-        join(pkgDir, "node_modules", dep),
-        process.platform === "win32" ? "junction" : "dir",
-      );
+    const dest = join(pkgDir, "node_modules", dep);
+    if (!existsSync(src)) continue;
+    try {
+      symlinkSync(src, dest, process.platform === "win32" ? "junction" : "dir");
+    } catch {
+      cpSync(src, dest, { recursive: true, dereference: true });
     }
   }
 }, 60_000);
@@ -108,9 +111,20 @@ describe("published CLI as a real child process", () => {
     try {
       out = execFileSync("node", [binPath, "--help"], {
         cwd: pkgDir,
+        stdio: "pipe",
       }).toString();
     } catch (err) {
-      out = String((err as { stdout?: unknown }).stdout ?? "");
+      const e = err as { stdout?: unknown; stderr?: unknown };
+      // --help exits 10 by contract (usage path), so a throw here is
+      // expected — what matters is that the CLI produced real output.
+      // If it somehow produced nothing, surface stderr for diagnosis.
+      out = String(e.stdout ?? "");
+      if (out.length === 0) {
+        throw new Error(
+          `packed CLI produced no output: stderr=${String(e.stderr ?? "")}`,
+          { cause: err },
+        );
+      }
     }
     expect(
       out.length,
