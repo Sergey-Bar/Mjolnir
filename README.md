@@ -28,9 +28,14 @@ npx qa-doctor@latest
 
 <br>
 
-<img src="assets/readme/terminal-hero.svg" alt="qa-doctor scan report — SCORE 72/100 NEEDS WORK, error on QA-CI-001 continue-on-error, warning on QA-TEST-004 hard sleep" width="720">
+<img src="assets/readme/terminal-hero.svg" alt="qa-doctor scan report — SCORE 80/100 HEALTHY, error on QA-CI-001 continue-on-error, warning on QA-TEST-004 hard sleep" width="720">
 
-<sub>Real scan output, not a mockup — run it on your own repo above.</sub>
+<sub>Real output from <code>node dist/cli.mjs examples/demo-repo</code> — not a mockup. Reproduce it yourself:</sub>
+
+```bash
+git clone https://github.com/Sergey-Bar/QA-Dodctor && cd QA-Dodctor/qa-doctor/examples/demo-repo
+npx qa-doctor@latest .
+```
 
 </div>
 
@@ -191,11 +196,13 @@ firewall.
 The headline metric for Playwright suites — how resilient your locators are:
 
 ```text
-▚▞ SELECTOR HEALTH — checkout.spec.ts
+▚▞ SELECTOR HEALTH — e2e/checkout.spec.ts
 
-  [████████████████░░░░░░]  72 / 100
-  role/text: 18 · testid: 4 · css-chains: 2 ⚠ · xpath: 0
+  [█████████████████░░░]  83 / 100
+  role/text: 2 · testid: 1 · css-chains: 1 ⚠ · xpath: 0
 ```
+
+<sub>Real output — <code>npx qa-doctor doctor:playwright examples/demo-repo</code>.</sub>
 
 Role-based locators score full credit. CSS class chains and XPath tank the
 score — they break on any DOM refactor without telling you which behavior
@@ -215,9 +222,13 @@ npx qa-doctor forensics ./test-results/
 
 3 tests · 1 failed · 1 flaky · 1 retried
 
-TRUE-FLAKE checkout (pay.spec.ts)
-           ██████████░░░░░░░░░░░ 4.5s · 2 attempts
+TRUE-FLAKE completes checkout with saved card (e2e/checkout.spec.ts)
+           ████████████████████ 6.0s · 2 attempts
+FAILING    declines an expired card (e2e/checkout.spec.ts)
+           ████░░░░░░░░░░░░░░░░ 1.1s · 1 attempt
 ```
+
+<sub>Real output — <code>npx qa-doctor forensics examples/demo-repo/test-results</code>.</sub>
 
 A test that passes only on attempt ≥ 2 is not a passing test — it's a lucky
 test. It gets flagged `TRUE-FLAKE` regardless of the final green checkmark.

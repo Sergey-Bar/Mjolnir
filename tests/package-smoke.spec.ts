@@ -63,7 +63,12 @@ beforeAll(() => {
   for (const dep of Object.keys(pkgJson.dependencies ?? {})) {
     const src = join(ROOT, "node_modules", dep);
     if (existsSync(src)) {
-      symlinkSync(src, join(pkgDir, "node_modules", dep), "junction");
+      // "junction" is Windows-only; POSIX needs a plain directory symlink.
+      symlinkSync(
+        src,
+        join(pkgDir, "node_modules", dep),
+        process.platform === "win32" ? "junction" : "dir",
+      );
     }
   }
 }, 60_000);

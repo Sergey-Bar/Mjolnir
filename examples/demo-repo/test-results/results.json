@@ -1,0 +1,42 @@
+{
+  "suites": [
+    {
+      "suites": [
+        {
+          "specs": [
+            {
+              "title": "completes checkout with saved card",
+              "file": "e2e/checkout.spec.ts",
+              "tests": [
+                {
+                  "results": [
+                    { "status": "failed", "duration": 4210 },
+                    { "status": "passed", "duration": 1830 }
+                  ]
+                }
+              ]
+            },
+            {
+              "title": "shows saved shipping address",
+              "file": "e2e/checkout.spec.ts",
+              "tests": [
+                {
+                  "results": [{ "status": "passed", "duration": 640 }]
+                }
+              ]
+            },
+            {
+              "title": "declines an expired card",
+              "file": "e2e/checkout.spec.ts",
+              "tests": [
+                {
+                  "results": [{ "status": "failed", "duration": 1120 }]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
