@@ -74,6 +74,28 @@ npx qa-doctor@latest --format sarif > qa-doctor.sarif
 
 # Playwright-only deep scan + Selector Health Score:
 npx qa-doctor doctor:playwright
+
+# Runtime evidence — retries, true flakes, FLAKY.md artifact:
+npx qa-doctor forensics ./test-results/
+
+# The flaky-triage meeting, in 10 minutes instead of 45:
+npx qa-doctor triage ./test-results/
+
+# Safe auto-fixes with proof (dry-run first):
+npx qa-doctor fix --dry-run
+npx qa-doctor fix
+
+# Test debt register — presentable to management:
+npx qa-doctor debt
+
+# New-QA-onboarding map of the suite:
+npx qa-doctor handover
+
+# Playwright run summary (retries / flakes / slowest):
+npx qa-doctor pw-report ./test-results/
+
+# Evidentiary badge (shields.io endpoint JSON):
+npx qa-doctor badge
 ```
 
 ## 📋 The Rules
@@ -149,6 +171,31 @@ Role-based locators score full credit. CSS class chains and XPath tank the
 score — they break on any DOM refactor without telling you which behavior
 regressed.
 
+## 🔍 Runtime Evidence
+
+Static flakiness detection is guessing. QA Doctor reads **real execution
+data** — Playwright JSON reports and JUnit XML from any runner:
+
+```bash
+npx qa-doctor forensics ./test-results/
+```
+
+```text
+FLAKINESS LEADERBOARD
+
+3 tests · 1 failed · 1 flaky · 1 retried
+
+TRUE-FLAKE checkout (pay.spec.ts)
+           ██████████░░░░░░░░░░░ 4.5s · 2 attempts
+```
+
+A test that passes only on attempt ≥ 2 is not a passing test — it's a lucky
+test. It gets flagged `TRUE-FLAKE` regardless of the final green checkmark.
+
+`triage` turns the same data into `TRIAGE.md` — the artifact that ends the
+weekly flaky-test meeting. Quarantine proposals are deterministic:
+retried ≥ 2 and failed at least once.
+
 ## 🤖 CI Integration
 
 One command generates a PR workflow — advisory by default, never blocking:
@@ -191,6 +238,8 @@ qa-doctor/
 │   ├── scope/           # git merge-base changed-scope engine
 │   ├── scorer/          # transparent deduction table
 │   ├── reporter/        # terminal · JSON · SARIF 2.1
+│   ├── forensics/       # run-data ingestion · flake verdicts · triage
+│   ├── commands/        # fix · badge · debt · handover · init · create-rule
 │   └── integrations/    # CI workflow generator
 └── tests/
     ├── fixtures/        # must-fire / must-not-fire per rule
@@ -214,8 +263,18 @@ Requires Node.js ≥ 20. Works on Windows, macOS, and Linux.
 
 ## 🤝 Contributing
 
-New rules are the easiest first contribution — the fixture harness walks you
-through it:
+New rules are the easiest first contribution — one command scaffolds
+everything (anti-creep law enforced by the fixture harness):
+
+```bash
+npx tsx src/cli.ts create-rule QA-PW-140 --title "Screenshot without diff bound"
+```
+
+That generates the rule file plus must-fire AND must-not-fire fixture
+skeletons. The generated rule intentionally fails its fixtures until you
+implement real detection — a stub cannot ship.
+
+Manual path:
 
 1. Fork + clone, `npm install`
 2. Copy any rule folder under `src/rules/` as a template

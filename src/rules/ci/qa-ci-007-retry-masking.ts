@@ -52,7 +52,9 @@ export const retryMasking = defineRule({
             /\b(?:npm|yarn|pnpm)\s+(?:test|run\s+test)|\b(?:jest|vitest|pytest|playwright)\b/.test(
               command,
             );
-          if (runsTests || !step.uses.includes("retry")) continue;
+          // Fire only when the retry wrapper actually runs tests; a retry
+          // around a non-test command (curl, deploy…) is legitimate.
+          if (!runsTests) continue;
           findings.push({
             severity: "warning",
             confidence: "high",

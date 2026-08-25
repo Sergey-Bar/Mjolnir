@@ -25,10 +25,19 @@ interface WorkflowDoc {
 }
 
 /** Known report-consumption patterns and the commands that produce them. */
-const CONSUMERS: Array<{ re: RegExp; producer: RegExp; label: string }> = [
+const CONSUMERS: Array<{
+  /** Matches any consumption signal: uses:, with.path, or run text. */
+  re: RegExp;
+  /** Extra per-step signals checked against step objects. */
+  stepRe?: RegExp;
+  producer: RegExp;
+  label: string;
+}> = [
   {
-    // actions/upload-artifact with a coverage path, or lcov mentions
-    re: /upload-artifact[\s\S]*?path\s*:.*(?:coverage|lcov)/i,
+    // coverage upload: codecov/coveralls actions, or artifact upload of
+    // a coverage path (the path lives in `with`, not in run text).
+    re: /codecov|coveralls/i,
+    stepRe: /upload-artifact/i,
     producer: /\b(?:npx\s+)?(?:vitest|jest|nyc)\b[^]*--coverage|--coverage\b/i,
     label: "coverage artifact",
   },
@@ -59,9 +68,22 @@ export const reportNeverGenerated = defineRule({
       const allRunText = steps.map((s) => s?.run ?? "").join("\n");
 
       for (const consumer of CONSUMERS) {
+        // Consumption signal: run text, uses:, or a coverage-ish `with.path`
+        // on an upload step (the path lives in `with`, not in run text).
         const consumes =
-          consumer.re.test(allRunText) ||
-          steps.some((s) => s?.uses && consumer.re.test(s.uses));
+          steps.some((s) => {
+            if (!s) return false;
+            if (s.uses && consumer.re.test(s.uses)) return true;
+            if (
+              consumer.stepRe &&
+              s.uses &&
+              consumer.stepRe.test(s.uses) &&
+              s.with &&
+              /coverage|lcov/i.test(String(s.with["path"] ?? ""))
+            )
+              return true;
+            return false;
+          }) || consumer.re.test(allRunText);
         if (!consumes) continue;
         const produces = consumer.producer.test(allRunText);
         if (!produces) {

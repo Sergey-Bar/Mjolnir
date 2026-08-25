@@ -32,6 +32,7 @@ import { pyRandomTimeDependence } from "./python/qa-py-010-random-time.js";
 import { networkIdleWait } from "./playwright/qa-pw-118-network-idle.js";
 import { legacyElementHandles } from "./playwright/qa-pw-114-legacy-handles.js";
 import { hardcodedBaseUrl } from "./playwright/qa-pw-123-hardcoded-url.js";
+import { envCoupling } from "./quality/qa-env-001-env-coupling.js";
 
 export const RULES: readonly QADoctorRule[] = [
   focusedTestCommitted,
@@ -62,6 +63,7 @@ export const RULES: readonly QADoctorRule[] = [
   networkIdleWait,
   legacyElementHandles,
   hardcodedBaseUrl,
+  envCoupling,
 ];
 
 export function getRule(id: string): QADoctorRule | undefined {
