@@ -15,7 +15,13 @@
  * findings — false fixes would break the brand promise.
  */
 
-import { readFileSync, writeFileSync, renameSync } from "node:fs";
+import {
+  accessSync,
+  constants,
+  readFileSync,
+  writeFileSync,
+  renameSync,
+} from "node:fs";
 import { join } from "node:path";
 
 import type { Finding, ScanResult } from "../types.js";
@@ -205,6 +211,11 @@ export function planAndApplyFixes(
 
     try {
       const abs = join(rootDir, file);
+      // Writability pre-check: on POSIX, a read-only FILE is still
+      // replaceable via rename (dir permissions govern), so the atomic
+      // write below would silently succeed where the user cannot edit.
+      // Refuse up-front so behavior is identical cross-platform.
+      accessSync(abs, constants.W_OK);
       // Atomic write: temp file + rename, so a killed process can never
       // leave the user's test file truncated mid-write.
       const tmp = `${abs}.qa-doctor-tmp`;
