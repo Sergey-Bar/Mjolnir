@@ -102,7 +102,7 @@ export function runInit(
 
 export function renderInit(result: InitResult): string {
   const lines: string[] = [];
-  lines.push("QA DOCTOR INIT");
+  lines.push("▚▞ QA DOCTOR INIT");
   lines.push("");
   for (const s of result.steps) {
     const icon =

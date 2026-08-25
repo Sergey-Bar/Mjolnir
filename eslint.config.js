@@ -8,10 +8,10 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   {
     rules: {
-      // The engine is regex/text-based by design; many rules intentionally
-      // use `any`-ish seams (ast?: unknown) and non-null guards.
-      "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-non-null-assertion": "off",
+      // Type-safety ratchet: the codebase is free of `any` and non-null
+      // assertions — keep them that way.
+      "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/no-non-null-assertion": "error",
       "@typescript-eslint/no-unused-vars": [
         "error",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },

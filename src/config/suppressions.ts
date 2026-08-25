@@ -46,7 +46,7 @@ export function renderSuppressions(report: SuppressionReport): string {
   }
   const lines = [
     "",
-    "QUALITY GOVERNANCE",
+    "▚▞ QUALITY GOVERNANCE",
     "",
     `Suppressed findings: ${report.total}`,
     `Active:              ${report.active}`,

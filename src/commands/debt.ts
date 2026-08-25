@@ -77,23 +77,23 @@ export function computeDebt(result: ScanResult): {
 export function renderDebt(result: ScanResult): string {
   const { classes, totalHours } = computeDebt(result);
   const lines: string[] = [];
-  lines.push("TEST DEBT REGISTER");
+  lines.push("▚▞ TEST DEBT REGISTER");
   lines.push("");
   if (classes.length === 0) {
     lines.push("No tracked debt classes found — the suite is clean.");
     return lines.join("\n");
   }
   lines.push("DEBT CLASS                  COUNT   EST. HOURS/QUARTER");
-  lines.push("──────────────────────────────────────────────────────");
+  lines.push("╞══════════════════════════════════════════════════════╡");
   for (const c of classes) {
-    lines.push(
-      `${c.label.padEnd(26)} ${String(c.count).padStart(5)}   ${c.estHoursPerQuarter.toFixed(1).padStart(8)}`,
-    );
+    const cells = `${c.label.padEnd(26)} ${String(c.count).padStart(5)}   ${c.estHoursPerQuarter.toFixed(1).padStart(8)}`;
+    lines.push(`│ ${cells} │`);
   }
-  lines.push("──────────────────────────────────────────────────────");
+  lines.push("╞══════════════════════════════════════════════════════╡");
   lines.push(
-    `TOTAL ESTIMATED DRAG:       ~${totalHours.toFixed(1)} engineer-hours per quarter`,
+    `│ TOTAL ESTIMATED DRAG:       ~${totalHours.toFixed(1)} engineer-hours/qtr │`,
   );
+  lines.push("╘══════════════════════════════════════════════════════╛");
   lines.push("");
   lines.push(
     "Cost model is conservative and documented in src/commands/debt.ts.",

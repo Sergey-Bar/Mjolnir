@@ -11,9 +11,10 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { isDefaultIgnored } from "../discovery/ignores.js";
-import type { LocatorClass } from "./selector-health-types.js";
+import type { LocatorClass, SelectorRisk } from "./selector-health-types.js";
 
-export type { LocatorClass } from "./selector-health-types.js";
+export type { LocatorClass, SelectorRisk } from "./selector-health-types.js";
+import { LOCATOR_RISK } from "./selector-health-types.js";
 
 export interface SpecSelectorHealth {
   file: string;
@@ -36,6 +37,42 @@ export function classifyLocator(line: string): LocatorClass | null {
   return null;
 }
 
+/**
+ * Risk-score a single locator line (0 safe → 100 critical). Extends the
+ * binary class with structural signals: nth-child/nth chains, deep XPath,
+ * generated-looking class names all raise the score; data-testid and role
+ * selectors stay at zero.
+ */
+export function scoreLocatorRisk(line: string): SelectorRisk {
+  const cls = classifyLocator(line);
+  if (!cls) return { score: 0, reason: "not a locator" };
+  let score = LOCATOR_RISK[cls];
+  const reasons: string[] = [`${cls} base ${score}`];
+  if (/nth-(child|of-type)\s*\(/.test(line)) {
+    score += 25;
+    reasons.push("nth-child positional coupling +25");
+  }
+  // Deep structural chains: 3+ combinators inside the selector literal.
+  const sel = line.match(/['"`]([^'"`]+)['"`]/);
+  if (sel?.[1] && (sel[1].match(/[>+~]\s*\w/g)?.length ?? 0) >= 2) {
+    score += 15;
+    reasons.push("deep combinator chain +15");
+  }
+  // Generated-looking classes (hash suffixes, e.g. .Button-sc-1x2yz-0).
+  if (sel?.[1] && /\.\w+-sc-|__[\w-]{6,}|-[0-9a-f]{6,}\b/.test(sel[1])) {
+    score += 20;
+    reasons.push("generated class name +20");
+  }
+  if (cls === "xpath" && (sel?.[1]?.split("/").length ?? 0) > 4) {
+    score += 10;
+    reasons.push("deep XPath +10");
+  }
+  return {
+    score: Math.min(100, score),
+    reason: reasons.join(" · "),
+  };
+}
+
 export function computeSpecHealth(
   file: string,
   lines: string[],
@@ -52,8 +89,9 @@ export function computeSpecHealth(
     const cls = classifyLocator(line);
     if (cls) {
       counts[cls]++;
+      const risk = scoreLocatorRisk(line);
       if (
-        (cls === "css-chain" || cls === "xpath") &&
+        risk.score >= LOCATOR_RISK["css-chain"] &&
         weakestLine === undefined
       ) {
         weakestLine = i + 1;
@@ -79,12 +117,12 @@ export function computeSpecHealth(
 }
 
 export function renderSelectorHealth(specs: SpecSelectorHealth[]): string {
-  const lines: string[] = ["", "SELECTOR HEALTH", ""];
+  const lines: string[] = ["", "▚▞ SELECTOR HEALTH", ""];
   for (const spec of specs) {
     const filled = Math.round(spec.score / 5);
     const bar = "█".repeat(filled) + "░".repeat(20 - filled);
     lines.push(`${spec.file}`);
-    lines.push(`  ${bar}  ${spec.score} / 100`);
+    lines.push(`  [${bar}]  ${spec.score} / 100`);
     lines.push(
       `  role/text: ${spec.counts["role-based"]} · testid: ${spec.counts.testid}` +
         ` · css-chains: ${spec.counts["css-chain"]} ⚠ · xpath: ${spec.counts.xpath}`,

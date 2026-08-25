@@ -14,6 +14,13 @@ export const hardSleep = defineRule({
   findingType: "deterministic-defect",
   qaImpact: "FLAKY-RISK",
   appliesTo: "test-files",
+  // Trust Metadata
+  languages: ["typescript", "javascript"],
+  frameworks: ["jest", "vitest", "playwright", "mocha"],
+  falsePositiveRisk: "low",
+  autofix: false,
+  detectionStrategy: "regex pattern + behavioral wait-shape matching",
+  introduced: "0.1.0",
   run(ctx) {
     const findings: Omit<
       import("../../types.js").Finding,
@@ -24,6 +31,13 @@ export const hardSleep = defineRule({
       /\bpage\.waitForTimeout\s*\(/g, // Playwright — fix hint: expect(locator).toBeVisible()
       /\bsleep\s*\(\s*\d+\s*\)/g,
       /\bawait\s+new\s+Promise\s*\(\s*\w+\s*=>\s*setTimeout\s*\(\s*\w+\s*,\s*\d+\s*\)\s*\)/g,
+      // Behavioral shapes (not just API names): any promise-returning call
+      // to a delay/sleep/wait-style helper with a numeric literal argument.
+      /\bawait\s+(?:delay|sleep|wait|pause|timeout)\s*\(\s*\d+\s*\)/g,
+      // setTimeout wrapped in a Promise (with or without await / type args).
+      /\b(?:await\s+)?new\s+Promise\s*(?:<[^>]*>)?\s*\(\s*\(?\s*\w+\s*\)?\s*=>\s*setTimeout\s*\(\s*\w+\s*,\s*\d+\s*\)\s*\)/g,
+      // setTimeout-as-promise stored in a helper then awaited.
+      /\bawait\s+\w*[Dd]elay\w*\s*\(\s*\d+\s*\)/g,
     ];
 
     for (const re of patterns) {

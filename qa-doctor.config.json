@@ -1,0 +1,89 @@
+{
+  "ignore": [
+    {
+      "ruleId": "QA-PW-101",
+      "files": ["tests/**"],
+      "reason": "Self-scan dogfooding: this repo's own test suite embeds sample Playwright code inside template-literal strings (the regex engine cannot distinguish string content from live code). The waitForTimeout occurrences are fixture payloads for testing the scanner itself, not real hard sleeps."
+    },
+    {
+      "ruleId": "QA-PW-140",
+      "files": ["tests/**"],
+      "reason": "Self-scan dogfooding: screenshot-name literals inside string-embedded test snippets trigger the diff-tolerance rule. Same string-content limitation as QA-PW-101 above."
+    },
+    {
+      "ruleId": "QA-TQUAL-002",
+      "files": ["tests/**"],
+      "reason": "Self-scan dogfooding: string-embedded sample code (expect(1).toBe(1) payloads written to temp fixture files by the tests themselves)."
+    },
+    {
+      "ruleId": "QA-TEST-001",
+      "files": ["tests/**"],
+      "reason": "Self-scan dogfooding: it.only/test.only literals embedded in test strings to exercise the focused-test rule."
+    },
+    {
+      "ruleId": "QA-TEST-003",
+      "files": ["tests/**"],
+      "reason": "Self-scan dogfooding: assertion-less sample bodies embedded in test strings."
+    },
+    {
+      "ruleId": "QA-PW-003",
+      "files": ["tests/**"],
+      "reason": "Self-scan dogfooding: page.evaluate samples embedded in test strings."
+    },
+    {
+      "ruleId": "QA-TEST-010",
+      "files": ["tests/**"],
+      "reason": "Self-scan dogfooding: empty-body samples embedded in test strings."
+    },
+    {
+      "ruleId": "QA-PW-002",
+      "files": ["tests/**"],
+      "reason": "Self-scan dogfooding: unawaited-assertion samples embedded in test strings."
+    },
+    {
+      "ruleId": "QA-TQUAL-009",
+      "files": ["tests/**"],
+      "reason": "Self-scan dogfooding: promise-assertion samples embedded in test strings."
+    },
+    {
+      "ruleId": "QA-TQUAL-002",
+      "files": ["tests/fixtures/**"],
+      "reason": "Fixture firewall: must-fire fixtures intentionally contain the anti-pattern; cross-rule noise here is expected."
+    },
+    {
+      "ruleId": "QA-TEST-003",
+      "files": ["tests/fixtures/**"],
+      "reason": "Fixture firewall: must-fire fixtures for other rules may legitimately lack assertions."
+    },
+    {
+      "ruleId": "QA-TEST-001",
+      "files": ["tests/fixtures/**"],
+      "reason": "Fixture firewall: focused-test samples are intentional fixture payloads."
+    },
+    {
+      "ruleId": "QA-PW-101",
+      "files": ["tests/fixtures/**"],
+      "reason": "Fixture firewall: hard-sleep samples are intentional fixture payloads."
+    },
+    {
+      "ruleId": "QA-PW-002",
+      "files": ["tests/fixtures/**"],
+      "reason": "Fixture firewall: unawaited-assertion samples are intentional fixture payloads."
+    },
+    {
+      "ruleId": "QA-PW-003",
+      "files": ["tests/fixtures/**"],
+      "reason": "Fixture firewall: evaluate samples are intentional fixture payloads."
+    },
+    {
+      "ruleId": "QA-TEST-010",
+      "files": ["tests/fixtures/**"],
+      "reason": "Fixture firewall: empty-body samples are intentional fixture payloads."
+    },
+    {
+      "ruleId": "QA-PW-119",
+      "files": ["tests/fixtures/**"],
+      "reason": "Fixture firewall: shared-state samples are intentional fixture payloads."
+    }
+  ]
+}

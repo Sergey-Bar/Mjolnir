@@ -14,6 +14,13 @@ export const skippedTest = defineRule({
   findingType: "deterministic-defect",
   qaImpact: "FALSE-GREEN",
   appliesTo: "test-files",
+  // Trust Metadata
+  languages: ["typescript", "javascript"],
+  frameworks: ["jest", "vitest", "mocha"],
+  falsePositiveRisk: "low",
+  autofix: false,
+  detectionStrategy: "regex pattern",
+  introduced: "0.1.0",
   run(ctx) {
     const findings: Omit<
       import("../../types.js").Finding,
@@ -31,17 +38,34 @@ export const skippedTest = defineRule({
     for (const re of skipPatterns) {
       let m: RegExpExecArray | null;
       while ((m = re.exec(ctx.text)) !== null) {
+        // Justification context: an issue reference (#123 / JIRA-42) or a
+        // reason comment on the same line or the line above makes the skip
+        // deliberate — downgrade stays a warning. A bare skip escalates.
+        const lineStart = ctx.text.lastIndexOf("\n", m.index) + 1;
+        const prevLineStart = ctx.text.lastIndexOf("\n", lineStart - 2) + 1;
+        const context =
+          ctx.text.slice(lineStart, m.index + 120) +
+          "\n" +
+          ctx.text.slice(prevLineStart, lineStart);
+        const justified =
+          /#\d+|issues\/\d+|[A-Z][A-Z0-9]+-\d+|(?:\/\/|#)\s*(?:reason|because|until|blocked|flaky)|\/\*\s*(?:reason|because)/i.test(
+            context,
+          );
         findings.push({
-          severity: "warning",
+          severity: justified ? "warning" : "error",
           confidence: "high",
           findingType: "deterministic-defect",
           qaImpact: "FALSE-GREEN",
           file: ctx.path,
           line: lineAt(ctx.text, m.index),
           column: colAt(ctx.text, m.index),
-          message: `Skipped test detected: \`${m[0].trim()}\`.`,
+          message: justified
+            ? `Skipped test detected: \`${m[0].trim()}\`.`
+            : `Skipped test without justification: \`${m[0].trim()}\`.`,
           why: "Skipped tests hide broken or unimplemented behavior behind a green checkmark.",
-          fix: "Fix and re-enable the test, or delete it with a tracked issue reference.",
+          fix: justified
+            ? "Track the skip until it is resolved; remove it once the blocker clears."
+            : "Fix and re-enable the test, or delete it with a tracked issue reference.",
         });
       }
     }

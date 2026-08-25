@@ -14,7 +14,15 @@ export const pyTautological = defineRule({
   confidence: "high",
   findingType: "deterministic-defect",
   qaImpact: "FALSE-GREEN",
-  appliesTo: "python" as unknown as "test-files",
+  appliesTo: "python",
+  // Trust Metadata
+  languages: ["python"],
+  frameworks: ["pytest"],
+  falsePositiveRisk: "low",
+  autofix: false,
+  detectionStrategy: "regex pattern",
+  introduced: "0.3.0",
+
   run(ctx) {
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     if (!ctx.path.endsWith(".py")) return findings;

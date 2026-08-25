@@ -1,6 +1,13 @@
 <div align="center">
 
-# 🔬 QA Doctor
+```
+  ██████╗  █████╗      ██████╗  ██████╗  ██████╗████████╗ ██████╗ ██████╗
+ ██╔═══██╗██╔══██╗    ██╔═══██╗██╔═══██╗██╔════╝╚══██╔══╝██╔═══██╗██╔══██╗
+ ██║   ██║███████║    ██║   ██║██║   ██║██║        ██║   ██║   ██║██████╔╝
+ ██║▄▄ ██║██╔══██║    ██║▄▄▄██║██║   ██║██║        ██║   ██║   ██║██╔══██╗
+ ╚██████╔╝██║  ██║    ╚██████╔╝╚██████╔╝╚██████╗   ██║   ╚██████╔╝██║  ██║
+  ╚══▀▀═╝ ╚═╝  ╚═╝     ╚══▀▀═╝  ╚══▀▀═╝  ╚═════╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝
+```
 
 ### Your tests are lying to you. We prove it.
 
@@ -12,7 +19,9 @@ reports a health score, and shows exactly where the trust breaks.
 [![Node](https://img.shields.io/node/v/qa-doctor.svg)](https://nodejs.org)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#-contributing)
 
-`npx qa-doctor@latest`
+```bash
+npx qa-doctor@latest
+```
 
 [Quickstart](#-quickstart) · [Rules](#-the-rules) · [CI Integration](#-ci-integration) · [Contributing](#-contributing)
 
@@ -26,29 +35,38 @@ Green checkmarks lie.
 
 Tests get skipped, focused, emptied of assertions. CI pipelines learn to
 swallow failures with `|| true` and `continue-on-error`. Coverage numbers go
-up while real verification goes down. And nobody notices — until production.
+up while real verification goes down.
+
+And nobody notices — until production.
 
 QA Doctor reads your test files and workflow definitions and tells you exactly
 where the trust breaks:
 
 ```text
-                 QA DOCTOR
+  SCORE  72/100  NEEDS WORK
+  ██████████████████████▓░░░░░░░░
 
-             SCORE:  72 / 100
+  DETECTED [vitest] [playwright]
 
-        ███████████████░░░░░░░
+  ▚ DIAGNOSTICS BY CATEGORY
+  QA-TEST   ████████████████░░  92
+  QA-CI     ██████████░░░░░░░░  61
 
-   Detected: vitest, playwright
+  ▚ WHERE POINTS WERE LOST
+  ╭──────────────────────────────╮
+  │ 3 × error    −24             │
+  │ 11 × warning −33             │
+  ╰──────────────────────────────╯
 
-   14 issues found (3 errors, 11 warnings)
+  ▚ TOP ISSUES
 
-   ✗ ERROR    Job "security-scan" has continue-on-error: true.
-              .github/workflows/ci.yml:12
-              FALSE-GREEN — this job can fail every day and CI stays green.
+  ✗ ERROR   Job "security-scan" has continue-on-error: true.
+          QA-CI-001 · .github/workflows/ci.yml:12
+          FALSE-GREEN — this job can fail every day and CI stays green.
 
-   ⚠ WARNING  Hard sleep: page.waitForTimeout(3000).
-              e2e/checkout.spec.ts:88
-              FLAKY-RISK — guesses at timing instead of waiting for state.
+  ⚠ WARN    Hard sleep: page.waitForTimeout(3000).
+          QA-TEST-004 · e2e/checkout.spec.ts:88
+          FLAKY-RISK — guesses at timing instead of waiting for state.
 ```
 
 No config. No server. No telemetry. Runs locally in seconds.
@@ -96,23 +114,31 @@ npx qa-doctor pw-report ./test-results/
 
 # Evidentiary badge (shields.io endpoint JSON):
 npx qa-doctor badge
+
+# Self-audit — prove QA Doctor's own rule base is healthy:
+npx qa-doctor doctor
+
+# Rule catalog with trust metadata (JSON, or --md for markdown):
+npx qa-doctor rules
 ```
 
 ## 📋 The Rules
 
 Every rule ships with must-fire **and** must-not-fire fixtures. A rule that
-fires on its own negative fixture cannot ship. That's the false-positive firewall.
+fires on its own negative fixture cannot ship. That's the false-positive
+firewall.
 
 ### Test Hygiene
 
-| ID          | Rule                                     | Severity |
-| ----------- | ---------------------------------------- | -------- |
-| QA-TEST-001 | Focused test committed (`.only`, `fit`)  | error    |
-| QA-TEST-002 | Skipped test (`.skip`, `xit`)            | warning  |
-| QA-TEST-003 | Test with no assertions                  | error    |
-| QA-TEST-004 | Hard sleep (`waitForTimeout`, `sleep()`) | warning  |
-| QA-TEST-006 | Retry abuse hiding flakiness             | warning  |
-| QA-TEST-010 | Empty test body                          | error    |
+| ID          | Rule                                                | Severity |
+| ----------- | --------------------------------------------------- | -------- |
+| QA-TEST-001 | Focused test committed (`.only`, `fit`)             | error    |
+| QA-TEST-002 | Skipped test without justification                  | error    |
+| QA-TEST-002 | Skipped test with tracked justification             | warning  |
+| QA-TEST-003 | Test with no assertions                             | error    |
+| QA-TEST-004 | Hard sleep (`waitForTimeout`, `sleep()`, `delay()`) | warning  |
+| QA-TEST-006 | Retry abuse hiding flakiness                        | warning  |
+| QA-TEST-010 | Empty test body                                     | error    |
 
 ### Test Quality
 
@@ -137,13 +163,22 @@ fires on its own negative fixture cannot ship. That's the false-positive firewal
 
 ### CI Integrity
 
-| ID        | Rule                                | Severity |
-| --------- | ----------------------------------- | -------- |
-| QA-CI-001 | `continue-on-error` masks failures  | error    |
-| QA-CI-002 | `\|\| true` swallows exit codes     | error    |
-| QA-CI-005 | Report consumed but never generated | error    |
-| QA-CI-007 | Retry wrappers around tests         | warning  |
-| QA-CI-008 | Always-success step masks failures  | error    |
+| ID        | Rule                                                              | Severity |
+| --------- | ----------------------------------------------------------------- | -------- |
+| QA-CI-001 | `continue-on-error` masks failures                                | error    |
+| QA-CI-002 | `\|\| true` swallows exit codes                                   | error    |
+| QA-CI-005 | Report consumed but never generated                               | error    |
+| QA-CI-007 | Retry wrappers around tests                                       | warning  |
+| QA-CI-008 | Always-success step masks failures                                | error    |
+| QA-CI-009 | Test exit code not propagated (`\|` without pipefail, `;` chains) | error    |
+| QA-CI-010 | Tests skipped where they must block (skip-on-PR guards)           | error    |
+
+> The full live catalog — every rule with confidence, false-positive risk,
+> and autofix availability — is generated from the registry:
+>
+> ```bash
+> npx qa-doctor rules --md
+> ```
 
 ### Python / pytest 🐍
 
@@ -161,9 +196,9 @@ fires on its own negative fixture cannot ship. That's the false-positive firewal
 The headline metric for Playwright suites — how resilient your locators are:
 
 ```text
-SELECTOR HEALTH — checkout.spec.ts
+▚▞ SELECTOR HEALTH — checkout.spec.ts
 
-  ████████████████░░░░░░  72 / 100
+  [████████████████░░░░░░]  72 / 100
   role/text: 18 · testid: 4 · css-chains: 2 ⚠ · xpath: 0
 ```
 
@@ -181,7 +216,7 @@ npx qa-doctor forensics ./test-results/
 ```
 
 ```text
-FLAKINESS LEADERBOARD
+▚▞ FLAKINESS LEADERBOARD
 
 3 tests · 1 failed · 1 flaky · 1 retried
 
@@ -239,7 +274,7 @@ qa-doctor/
 │   ├── scorer/          # transparent deduction table
 │   ├── reporter/        # terminal · JSON · SARIF 2.1
 │   ├── forensics/       # run-data ingestion · flake verdicts · triage
-│   ├── commands/        # fix · badge · debt · handover · init · create-rule
+│   ├── commands/        # fix · badge · debt · handover · init · create-rule · doctor · rules-catalog
 │   └── integrations/    # CI workflow generator
 └── tests/
     ├── fixtures/        # must-fire / must-not-fire per rule
@@ -294,5 +329,7 @@ it helps other QAs find it.
 <div align="center">
 
 **Star ⭐ · Watch 👀 · Contribute 🤝**
+
+Baked with ❤️ by [Sergey Bar](https://www.linkedin.com/in/sergeybar/)
 
 </div>

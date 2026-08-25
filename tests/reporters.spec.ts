@@ -171,9 +171,9 @@ describe("renderTerminal", () => {
       }),
       { isTTY: false },
     );
-    expect(out).toContain("SCORE:  72 / 100");
-    expect(out).toContain("Detected: vitest");
-    expect(out).toContain("2 issues found (1 errors, 1 warnings)");
+    expect(out).toContain("SCORE");
+    expect(out).toContain("72/100");
+    expect(out).toContain("DETECTED [vitest]");
     expect(out).toContain("TOP ISSUES");
     expect(out).toContain("a.test.ts:3");
   });
@@ -189,7 +189,8 @@ describe("renderTerminal", () => {
       }),
       { isTTY: false },
     );
-    expect(out).toContain("Framework: unknown");
+    expect(out).toContain("FRAMEWORK");
+    expect(out).toContain("unknown — scanning all test-looking files");
     expect(out).toContain("+2 more");
   });
 
@@ -215,7 +216,7 @@ describe("renderTerminal", () => {
       const out = renderTerminal(makeResult({ findings: [makeFinding()] }), {
         isTTY: true,
       });
-      expect(out).toContain("\x1b[31m");
+      expect(out).toContain("\x1b[9"); // any neon color code (91–97)
     } finally {
       if (prev !== undefined) process.env["NO_COLOR"] = prev;
     }

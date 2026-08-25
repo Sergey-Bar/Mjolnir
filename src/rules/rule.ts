@@ -6,6 +6,7 @@
 
 import type {
   Confidence,
+  EvidenceLevel,
   Finding,
   FindingType,
   QaImpact,
@@ -23,8 +24,34 @@ export interface RuleMeta {
   findingType: FindingType;
   /** QA-native impact framing (#21): what this means for the QA engineer. */
   qaImpact: QaImpact;
+  /**
+   * Honesty Core: explicit evidence level. When omitted, findings derive
+   * it from findingType+confidence (deriveEvidenceLevel). Only set this
+   * when the rule's evidence is genuinely stronger/weaker than the
+   * default derivation implies.
+   */
+  evidenceLevel?: EvidenceLevel;
   /** Rule IDs that can fire on the same root cause (dedup pass, R6). */
   overlapWith?: string[];
+
+  // ── Trust Metadata (additive, optional — rules without it stay valid;
+  //    new rules are required to declare it via the registry ratchet spec).
+  /** Languages this rule applies to, e.g. ["typescript", "python"]. */
+  languages?: string[];
+  /** Frameworks the rule is meaningful for, e.g. ["jest", "vitest", "playwright"]. */
+  frameworks?: string[];
+  /**
+   * Declared false-positive risk of the rule as shipped. Part of the
+   * north-star contract: a rule that cannot honestly classify its FP risk
+   * should not be enforced.
+   */
+  falsePositiveRisk?: "low" | "medium" | "high";
+  /** Whether `qa-doctor fix` (or a future autofix) can safely repair it. */
+  autofix?: boolean;
+  /** How detection works, e.g. "regex pattern" | "AST heuristic". */
+  detectionStrategy?: string;
+  /** First released version (semver). Immutable once set. */
+  introduced?: string;
 }
 
 export interface SourceFileContext {
@@ -43,9 +70,11 @@ export type RuleFn = (
   ctx: SourceFileContext,
 ) => Omit<Finding, "ruleId" | "category">[];
 
+export type AppliesTo = "test-files" | "ci-workflows" | "python" | "all";
+
 export interface QADoctorRule extends RuleMeta {
   /** Which file kinds this rule applies to. */
-  appliesTo: "test-files" | "ci-workflows" | "all";
+  appliesTo: AppliesTo;
   run: RuleFn;
 }
 

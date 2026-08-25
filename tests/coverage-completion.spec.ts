@@ -95,10 +95,12 @@ describe("runTriageCommand", () => {
     expect(existsSync(join(dir, "TRIAGE.md"))).toBe(false);
   });
 
-  it("returns 20 on missing target", () => {
+  it("returns 2 (graceful no-op) on missing target", () => {
+    // A missing dir is "nothing recognized" (exit 2), not an internal
+    // error — matches forensics and the README doctest contract.
     const cap = capture();
-    expect(runTriageCommand([join(dir, "gone")], cap.io)).toBe(20);
-    expect(cap.errText()).toContain("internal error");
+    expect(runTriageCommand([join(dir, "gone")], cap.io)).toBe(2);
+    expect(cap.errText()).toContain("No test results recognized");
   });
 });
 
@@ -170,7 +172,9 @@ describe("main dispatch of new subcommands", () => {
 describe("runScan option paths", () => {
   it("marks partial and counts skipped files when a test file vanishes", () => {
     writeFileSync(join(dir, "keep.test.ts"), "");
-    const result = runScan({ ...parseArgs([dir])!, target: dir });
+    const args = parseArgs([dir]);
+    if (!args) throw new Error("parseArgs failed");
+    const result = runScan({ ...args, target: dir });
     expect(result.partial).toBe(false);
     void result;
   });
@@ -178,7 +182,8 @@ describe("runScan option paths", () => {
   it("reports scope info with --scope changed (degraded outside git)", () => {
     writeFileSync(join(dir, "a.test.ts"), "it('x');\n");
     const args = parseArgs([dir, "--scope", "changed"]);
-    const result = runScan({ ...args!, target: dir });
+    if (!args) throw new Error("parseArgs failed");
+    const result = runScan({ ...args, target: dir });
     expect(result.scope).toBe("changed");
     expect(result.scopeDegraded).toBe("not-a-git-repo");
   });
@@ -190,16 +195,22 @@ describe("runScan option paths", () => {
       (_, i) => `it.only('t${i}', () => {});\n`,
     );
     writeFileSync(join(dir, "many.test.ts"), lines.join(""));
-    const plain = runScan({ ...parseArgs([dir])!, target: dir });
+    const plainArgs = parseArgs([dir]);
+    if (!plainArgs) throw new Error("parseArgs failed");
+    const plain = runScan({ ...plainArgs, target: dir });
     expect(plain.findings.length).toBeLessThanOrEqual(50);
-    const verbose = runScan({ ...parseArgs([dir, "--verbose"])!, target: dir });
+    const verboseArgs = parseArgs([dir, "--verbose"]);
+    if (!verboseArgs) throw new Error("parseArgs failed");
+    const verbose = runScan({ ...verboseArgs, target: dir });
     expect(verbose.findings.length).toBeGreaterThan(50);
   });
 
   it("falls back to target-as-workspace without package.json", () => {
     mkdirSync(join(dir, "py"), { recursive: true });
     writeFileSync(join(dir, "py", "test_x.py"), "def test_x():\n    pass\n");
-    const result = runScan({ ...parseArgs([dir])!, target: dir });
+    const pyArgs = parseArgs([dir]);
+    if (!pyArgs) throw new Error("parseArgs failed");
+    const result = runScan({ ...pyArgs, target: dir });
     expect(result.frameworkDetectionUnknown).toBe(true);
   });
 });

@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "label": "QA Doctor",
+  "message": "65/100 · 4 errors",
+  "color": "yellow",
+  "namedLogo": "vitest"
+}

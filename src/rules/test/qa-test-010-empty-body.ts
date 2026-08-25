@@ -15,6 +15,14 @@ export const emptyTestBody = defineRule({
   findingType: "deterministic-defect",
   qaImpact: "FALSE-GREEN",
   appliesTo: "test-files",
+  // Trust Metadata
+  languages: ["typescript", "javascript"],
+  frameworks: ["jest", "vitest", "playwright", "mocha"],
+  falsePositiveRisk: "low",
+  autofix: false,
+  detectionStrategy: "regex pattern",
+  introduced: "0.1.0",
+
   run(ctx) {
     const findings: Omit<
       import("../../types.js").Finding,

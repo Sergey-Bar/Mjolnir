@@ -1,0 +1,22 @@
+name: FP Corpus Audit
+
+# Runs against small real OSS repos to catch false-positive regressions
+# (Test Hardening Plan, P0 #1). Deliberately NOT on `pull_request` — it
+# clones external repos and is slower/network-dependent than the main
+# suite, so it runs nightly plus on-demand, not on every PR.
+on:
+  schedule:
+    - cron: "0 4 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  corpus-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run corpus:audit

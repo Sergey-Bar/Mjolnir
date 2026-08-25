@@ -15,6 +15,14 @@ export const swallowedExitCode = defineRule({
   findingType: "deterministic-defect",
   qaImpact: "FALSE-GREEN",
   appliesTo: "ci-workflows",
+  // Trust Metadata
+  languages: ["yaml"],
+  frameworks: ["github-actions"],
+  falsePositiveRisk: "low",
+  autofix: false,
+  detectionStrategy: "regex pattern",
+  introduced: "0.1.0",
+
   run(ctx) {
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 

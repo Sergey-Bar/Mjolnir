@@ -14,7 +14,15 @@ export const pyRandomTimeDependence = defineRule({
   confidence: "medium",
   findingType: "heuristic-risk",
   qaImpact: "FLAKY-RISK",
-  appliesTo: "python" as unknown as "test-files",
+  appliesTo: "python",
+  // Trust Metadata
+  languages: ["python"],
+  frameworks: ["pytest"],
+  falsePositiveRisk: "medium",
+  autofix: false,
+  detectionStrategy: "regex pattern",
+  introduced: "0.3.0",
+
   run(ctx) {
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     if (!ctx.path.endsWith(".py")) return findings;

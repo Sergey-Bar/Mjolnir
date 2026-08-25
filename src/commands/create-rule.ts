@@ -29,7 +29,7 @@ const FAMILY_META: Record<
   python: {
     dir: "python",
     category: "QA-TEST",
-    appliesTo: "python" as unknown as string,
+    appliesTo: "python",
   },
 };
 
@@ -120,7 +120,7 @@ export const ${camel(parsed.lower)} = defineRule({
   confidence: "medium",
   findingType: "heuristic-risk",
   qaImpact: "HYGIENE",
-  appliesTo: ${JSON.stringify(meta.appliesTo)} as unknown as "test-files",
+  appliesTo: ${JSON.stringify(meta.appliesTo)},
   run(ctx) {
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     void ctx; // TODO: implement detection over ctx.path / ctx.text
@@ -166,7 +166,7 @@ export function renderScaffoldReport(result: ScaffoldResult): string {
     return `create-rule failed: ${result.error}`;
   }
   const lines: string[] = [];
-  lines.push("RULE SCAFFOLD CREATED");
+  lines.push("▚▞ RULE SCAFFOLD CREATED");
   lines.push("");
   for (const f of result.files) lines.push(`  + ${f}`);
   lines.push("");

@@ -58,7 +58,7 @@ function suggestAction(v: TestVerdict): string {
 export function renderTriage(report: ForensicsReport): string {
   const rows = triageRows(report);
   const lines: string[] = [];
-  lines.push("FLAKY TRIAGE — auto-generated, do not edit");
+  lines.push("▚▞ FLAKY TRIAGE — auto-generated, do not edit");
   lines.push("");
   if (rows.length === 0) {
     lines.push("Nothing to triage — no failures or retries in this run.");

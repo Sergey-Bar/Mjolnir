@@ -15,7 +15,15 @@ export const envCoupling = defineRule({
   confidence: "medium",
   findingType: "heuristic-risk",
   qaImpact: "FLAKY-RISK",
-  appliesTo: "test-files" as unknown as "test-files",
+  appliesTo: "test-files",
+  // Trust Metadata
+  languages: ["typescript", "javascript"],
+  frameworks: ["jest", "vitest", "playwright"],
+  falsePositiveRisk: "medium",
+  autofix: false,
+  detectionStrategy: "regex heuristic",
+  introduced: "0.2.0",
+
   run(ctx) {
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 

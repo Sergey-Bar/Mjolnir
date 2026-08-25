@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "partial": false,
+  "score": 65,
+  "frameworks": [],
+  "frameworkDetectionUnknown": true,
+  "dimensions": [
+    {
+      "category": "QA-PW",
+      "score": 84,
+      "errors": 2,
+      "warnings": 0,
+      "infos": 0
+    },
+    {
+      "category": "QA-TEST",
+      "score": 89,
+      "errors": 1,
+      "warnings": 1,
+      "infos": 0
+    },
+    {
+      "category": "QA-TQUAL",
+      "score": 92,
+      "errors": 1,
+      "warnings": 0,
+      "infos": 0
+    }
+  ],
+  "findings": [
+    {
+      "severity": "error",
+      "confidence": "high",
+      "findingType": "deterministic-defect",
+      "qaImpact": "FALSE-GREEN",
+      "file": "e2e/checkout.spec.ts",
+      "line": 2,
+      "column": 1,
+      "message": "`test.only()` committed in an e2e spec.",
+      "why": "test.only() skips every other e2e test while CI reports green.",
+      "fix": "Remove `.only` before committing.",
+      "ruleId": "QA-PW-003",
+      "category": "QA-PW"
+    },
+    {
+      "severity": "error",
+      "confidence": "high",
+      "findingType": "deterministic-defect",
+      "file": "e2e/checkout.spec.ts",
+      "line": 2,
+      "column": 5,
+      "message": "`.only` focus modifier committed.",
+      "why": "Only the focused subset executes; the rest of the suite is silently skipped in CI.",
+      "fix": "Remove `.only` before committing.",
+      "qaImpact": "FALSE-GREEN",
+      "ruleId": "QA-TEST-001",
+      "category": "QA-TEST"
+    },
+    {
+      "severity": "warning",
+      "confidence": "high",
+      "findingType": "deterministic-defect",
+      "file": "e2e/checkout.spec.ts",
+      "line": 3,
+      "column": 9,
+      "message": "Hard sleep: `page.waitForTimeout(`.",
+      "why": "Fixed sleeps make tests both slow and flaky — they guess at timing instead of waiting for state.",
+      "fix": "Replace with a condition wait: `await expect(locator).toBeVisible()`.",
+      "qaImpact": "FLAKY-RISK",
+      "ruleId": "QA-TEST-004",
+      "category": "QA-TEST"
+    },
+    {
+      "severity": "error",
+      "confidence": "high",
+      "findingType": "deterministic-defect",
+      "qaImpact": "FLAKY-RISK",
+      "file": "e2e/checkout.spec.ts",
+      "line": 3,
+      "column": 14,
+      "message": "`waitForTimeout()` hard sleep.",
+      "why": "Fixed waits either wait too long (slow suite) or too little (flaky on slow machines). They encode hope, not synchronization.",
+      "fix": "Replace with a web-first assertion (`await expect(locator).toBeVisible()`) or `locator.waitFor()`.",
+      "ruleId": "QA-PW-101",
+      "category": "QA-PW"
+    },
+    {
+      "severity": "error",
+      "confidence": "high",
+      "findingType": "deterministic-defect",
+      "file": "e2e/checkout.spec.ts",
+      "line": 4,
+      "column": 3,
+      "message": "Tautological assertion: `expect(true).toBe(true)`.",
+      "why": "Asserting a literal against a literal can never fail — it verifies no system behavior.",
+      "fix": "Assert on actual output of the code under test.",
+      "qaImpact": "FALSE-GREEN",
+      "ruleId": "QA-TQUAL-002",
+      "category": "QA-TQUAL"
+    }
+  ],
+  "analysisStatus": {
+    "discovery": "complete",
+    "rules": "complete",
+    "skippedFiles": 0,
+    "durationMs": 11
+  }
+}

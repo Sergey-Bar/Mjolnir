@@ -191,10 +191,13 @@ describe("runForensicsCommand", () => {
     expect(existsSync(join(dir, "FLAKY.md"))).toBe(false);
   });
 
-  it("returns 20 on internal error for missing target", () => {
+  it("returns 2 (not a crash) for missing target — nothing recognized", () => {
     const cap = capture();
-    expect(runForensicsCommand([join(dir, "missing")], cap.io)).toBe(20);
-    expect(cap.errText()).toContain("internal error");
+    // A missing dir is "no results recognized" (exit 2), not an internal
+    // error (20): the README doctest asserts forensics on an absent
+    // ./test-results/ degrades honestly instead of crashing.
+    expect(runForensicsCommand([join(dir, "missing")], cap.io)).toBe(2);
+    expect(cap.errText()).toContain("No test results recognized");
   });
 });
 

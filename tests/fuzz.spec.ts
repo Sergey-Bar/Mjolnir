@@ -69,7 +69,7 @@ describe("crash-proof gate: hostile inputs never throw", () => {
   });
 
   it("prototype pollution does not poison rule behavior", () => {
-    const evil: any = JSON.parse(
+    const evil: Record<string, unknown> = JSON.parse(
       '{"__proto__":{"run":true,"appliesTo":"all"}}',
     );
     expect(evil.run).toBeUndefined(); // Object.create(null)-style safety via plain objects

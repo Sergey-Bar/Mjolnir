@@ -20,6 +20,14 @@ export const mockOnlyVerification = defineRule({
   findingType: "heuristic-risk",
   qaImpact: "HYGIENE",
   appliesTo: "test-files",
+  // Trust Metadata
+  languages: ["typescript", "javascript"],
+  frameworks: ["jest", "vitest", "playwright"],
+  falsePositiveRisk: "medium",
+  autofix: false,
+  detectionStrategy: "regex heuristic",
+  introduced: "0.1.0",
+
   run(ctx) {
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 

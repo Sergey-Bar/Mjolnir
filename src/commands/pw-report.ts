@@ -47,7 +47,7 @@ export function summarizePwRun(report: ForensicsReport): PwRunSummary {
 
 export function renderPwRunSummary(s: PwRunSummary): string {
   const lines: string[] = [];
-  lines.push("QA DOCTOR — RUN SUMMARY");
+  lines.push("▚▞ QA DOCTOR — RUN SUMMARY");
   lines.push("");
   lines.push(
     `${s.total} tests · ${s.passed} passed · ${s.failed} failed · ${s.skipped} skipped`,

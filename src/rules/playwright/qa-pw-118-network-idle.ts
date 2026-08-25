@@ -15,6 +15,14 @@ export const networkIdleWait = defineRule({
   findingType: "deterministic-defect",
   qaImpact: "FLAKY-RISK",
   appliesTo: "test-files",
+  // Trust Metadata
+  languages: ["typescript", "javascript"],
+  frameworks: ["playwright"],
+  falsePositiveRisk: "low",
+  autofix: false,
+  detectionStrategy: "regex pattern",
+  introduced: "0.3.0",
+
   run(ctx) {
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 

@@ -15,7 +15,7 @@
  * findings — false fixes would break the brand promise.
  */
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, renameSync } from "node:fs";
 import { join } from "node:path";
 
 import type { Finding, ScanResult } from "../types.js";
@@ -205,7 +205,11 @@ export function planAndApplyFixes(
 
     try {
       const abs = join(rootDir, file);
-      writeFileSync(abs, text);
+      // Atomic write: temp file + rename, so a killed process can never
+      // leave the user's test file truncated mid-write.
+      const tmp = `${abs}.qa-doctor-tmp`;
+      writeFileSync(tmp, text);
+      renameSync(tmp, abs);
       for (const p of pending) {
         results.push({
           file,
@@ -246,7 +250,7 @@ function fixVerified(edit: FixEdit, fixedText: string): boolean {
 
 export function renderFixReport(results: FixResult[], dryRun: boolean): string {
   const lines: string[] = [];
-  lines.push(dryRun ? "FIX PLAN (dry-run)" : "FIX REPORT");
+  lines.push(dryRun ? "▚▞ FIX PLAN (dry-run)" : "▚▞ FIX REPORT");
   lines.push("");
   if (results.length === 0) {
     lines.push("No safe auto-fixes available for these findings.");

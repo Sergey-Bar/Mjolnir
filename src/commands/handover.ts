@@ -138,7 +138,9 @@ export function buildHandover(
 
 export function renderHandover(map: HandoverMap): string {
   const lines: string[] = [];
-  lines.push("WELCOME TO THE TEST SUITE — WHAT YOU NEED TO KNOW");
+  lines.push("╔══════════════════════════════════════════════╗");
+  lines.push("║ WELCOME TO THE TEST SUITE — WHAT YOU NEED TO KNOW");
+  lines.push("╚══════════════════════════════════════════════╝");
   lines.push("");
   lines.push(map.summaryLine);
   for (const s of map.sections) {

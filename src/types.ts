@@ -23,6 +23,17 @@ export type FindingType =
   "deterministic-defect" | "heuristic-risk" | "observation";
 
 /**
+ * Evidence levels (Product.txt §9, Honesty Core subset E0–E2):
+ *   E0 — observation only: no proof, informational by definition.
+ *   E1 — weak/partial evidence: heuristic pattern, may be context-dependent.
+ *   E2 — strong static evidence: deterministic defect at its boundary.
+ * The product must never turn missing evidence into confidence: an E0
+ * finding can never deduct points or gate CI, regardless of severity.
+ */
+export const EVIDENCE_ORDER = ["E0", "E1", "E2"] as const;
+export type EvidenceLevel = (typeof EVIDENCE_ORDER)[number];
+
+/**
  * QA-native impact framing (#21 Legendary Tier 5): what this finding means
  * for the QA engineer's actual job, in their vocabulary.
  */
@@ -51,6 +62,12 @@ export interface Finding {
   findingType: FindingType;
   /** QA-native impact framing (Tier 5 #21). */
   qaImpact: QaImpact;
+  /**
+   * How strong the evidence behind this finding is (Honesty Core).
+   * Derived from findingType+confidence unless the rule overrides it.
+   * Optional in the JSON contract (additive within schemaVersion 1).
+   */
+  evidenceLevel?: EvidenceLevel;
   /** Repo-relative path with forward slashes, regardless of OS. */
   file: string;
   /** 1-based. */
@@ -65,12 +82,45 @@ export interface Finding {
   docsUrl?: string;
 }
 
+/**
+ * Honest default evidence level for a finding (Honesty Core Phase 1).
+ * Derivation is deterministic and conservative:
+ *   observation → E0 (never proof)
+ *   heuristic-risk → E1 (pattern, not boundary proof)
+ *   deterministic-defect → E2, downgraded to E1 when confidence is low
+ *     (a deterministic detector we're unsure fired correctly is weak
+ *     evidence, not strong).
+ */
+export function deriveEvidenceLevel(
+  findingType: FindingType,
+  confidence: Confidence,
+): EvidenceLevel {
+  if (findingType === "observation") return "E0";
+  if (findingType === "heuristic-risk") return "E1";
+  return confidence === "low" ? "E1" : "E2";
+}
+
+/**
+ * Advisory finding (Honesty Core Phase 2): evidence too weak to cost
+ * points or gate CI. Advisory findings are REPORTED, never hidden —
+ * honesty means showing what we saw and what it's worth, nothing more.
+ */
+export function isAdvisoryFinding(
+  f: Pick<Finding, "evidenceLevel" | "confidence" | "findingType">,
+): boolean {
+  const level =
+    f.evidenceLevel ?? deriveEvidenceLevel(f.findingType, f.confidence);
+  return level === "E0";
+}
+
 /** Canonical sort: file → line → column → ruleId (Sprint-Plan S3). */
 export function compareFindings(a: Finding, b: Finding): number {
   if (a.file !== b.file) return a.file < b.file ? -1 : 1;
   if (a.line !== b.line) return a.line - b.line;
   if (a.column !== b.column) return a.column - b.column;
-  return a.ruleId < b.ruleId ? -1 : a.ruleId > b.ruleId ? 1 : 0;
+  if (a.ruleId < b.ruleId) return -1;
+  if (a.ruleId > b.ruleId) return 1;
+  return 0;
 }
 
 /** Public deduction constants (§8). Changes require changelog + version bump. */

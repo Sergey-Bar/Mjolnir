@@ -16,6 +16,14 @@ export const commentedOutTest = defineRule({
   findingType: "deterministic-defect",
   qaImpact: "HYGIENE",
   appliesTo: "test-files",
+  // Trust Metadata
+  languages: ["typescript", "javascript"],
+  frameworks: ["jest", "vitest", "playwright"],
+  falsePositiveRisk: "medium",
+  autofix: false,
+  detectionStrategy: "regex heuristic",
+  introduced: "0.2.0",
+
   run(ctx) {
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 

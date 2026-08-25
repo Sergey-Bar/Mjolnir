@@ -17,6 +17,14 @@ export const focusedTestCommitted = defineRule({
   findingType: "deterministic-defect",
   qaImpact: "FALSE-GREEN",
   appliesTo: "test-files",
+  // Trust Metadata
+  languages: ["typescript", "javascript"],
+  frameworks: ["jest", "vitest", "playwright", "mocha"],
+  falsePositiveRisk: "low",
+  autofix: true,
+  detectionStrategy: "regex pattern",
+  introduced: "0.1.0",
+
   run(ctx) {
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 

@@ -1,0 +1,31 @@
+name: Release Smoke
+
+# Real `npm install` from a packed tarball, over the network, on all
+# three OSes qa-doctor claims to support — closes the gap
+# package-smoke.spec.ts (in the main suite) leaves open by design: that
+# test symlinks this repo's own node_modules to stay offline-safe, so it
+# can't catch a broken transitive dependency resolution. This can.
+# Not on every PR (network + ~3x slower): nightly + on-demand.
+on:
+  schedule:
+    - cron: "30 4 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  registry-install:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx vitest run tests/registry-install.spec.ts
+        env:
+          RUN_REGISTRY_INSTALL_TEST: "1"

@@ -1,0 +1,14 @@
+name: CI
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - shell: bash
+        run: |
+          set -o pipefail
+          npm test | tee test-output.log
+      - run: npm run build && npm run lint

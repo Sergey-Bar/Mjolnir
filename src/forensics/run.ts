@@ -41,6 +41,17 @@ export function runForensics(
   const records: TestRecord[] = [];
   let source: ForensicsReport["source"] = "playwright-json";
 
+  // Missing target is a "nothing recognized" case, not a crash — the CLI
+  // layer maps totalTests === 0 to exit 2 with an honest message.
+  const targetExists = existsSync(target);
+  if (!targetExists) {
+    const report = analyze(records, source);
+    return {
+      report,
+      output: [renderLeaderboard(report), "", renderFlakyMdHint()].join("\n"),
+    };
+  }
+
   const stat = statSync(target);
   if (stat.isFile()) {
     const text = readFileSync(target, "utf8");

@@ -5,8 +5,9 @@
  */
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { join, relative, resolve } from "node:path";
+import { join, relative, resolve, sep } from "node:path";
 import process from "node:process";
+import { pathToFileURL } from "node:url";
 
 import {
   compareFindings,
@@ -17,11 +18,16 @@ import {
 import { discoverWorkspace } from "./discovery/workspace.js";
 import { detectFrameworks } from "./discovery/frameworks.js";
 import { RULES } from "./rules/index.js";
-import { computeDimensions, computeTotal } from "./scorer/scorer.js";
+import {
+  computeDimensions,
+  computeTotal,
+  stampEvidenceLevels,
+} from "./scorer/scorer.js";
 import { renderTerminal } from "./reporter/terminal.js";
 import { renderSarif } from "./reporter/sarif.js";
 import { computeChangedScope, filterToChanged } from "./scope/changed.js";
 import { asUniversal } from "./engine/rule-runner.js";
+import { isAdvisoryFinding } from "./types.js";
 import { typescriptAdapter } from "./adapters/typescript.js";
 import { githubActionsAdapter } from "./adapters/github-actions.js";
 import { pythonAdapter } from "./adapters/python.js";
@@ -38,6 +44,14 @@ import { buildHandover, renderHandover } from "./commands/handover.js";
 import { runInit, renderInit, tryReadPackageJson } from "./commands/init.js";
 import { renderPwRunSummary, summarizePwRun } from "./commands/pw-report.js";
 import { planAndApplyFixes, renderFixReport } from "./commands/fix.js";
+import { renderDoctorReport, runDoctorSelfAudit } from "./commands/doctor.js";
+import { buildCatalog, renderCatalogMd } from "./commands/rules-catalog.js";
+import { loadSuppressions, renderSuppressions } from "./config/suppressions.js";
+import { loadConfig, applySeverityOverrides } from "./config/config.js";
+import {
+  computeSelectorHealth,
+  renderSelectorHealth,
+} from "./playwright/selector-health.js";
 
 const ADAPTERS = [
   typescriptAdapter,
@@ -45,11 +59,14 @@ const ADAPTERS = [
   githubActionsAdapter,
 ] as const;
 const UNIVERSAL_RULES = RULES.map(asUniversal);
-import { loadSuppressions, renderSuppressions } from "./config/suppressions.js";
-import {
-  computeSelectorHealth,
-  renderSelectorHealth,
-} from "./playwright/selector-health.js";
+
+/** Rule-declared evidence-level overrides (Honesty Core). */
+const EVIDENCE_OVERRIDES: ReadonlyMap<string, string> = new Map(
+  RULES.filter((r) => r.evidenceLevel !== undefined).map((r) => [
+    r.id,
+    r.evidenceLevel as string,
+  ]),
+);
 
 interface CliArgs {
   target: string;
@@ -109,12 +126,23 @@ export function runScan(args: CliArgs): ScanResult {
   const deadline = started + args.maxDurationMs;
   // package.json workspace OR non-JS repo (Python etc.) — fall back to the
   // target dir itself so language adapters can still discover their files.
-  const workspace = discoverWorkspace(args.target) ?? {
-    root: resolve(args.target),
-    name: resolve(args.target).split(/[\\/]/).pop() ?? "repo",
-    packageJson: {},
-    workspaceGlobs: [],
-  };
+  const discovered = discoverWorkspace(args.target);
+  const targetAbs = resolve(args.target);
+  // Scope containment: when the user targets a subdirectory of the
+  // discovered project root (e.g. one package in a monorepo), scan ONLY
+  // that subtree — sibling packages were never pointed at.
+  const scanRoot =
+    discovered &&
+    discovered.root !== targetAbs &&
+    targetAbs.startsWith(discovered.root + sep)
+      ? { ...discovered, root: targetAbs }
+      : (discovered ?? {
+          root: targetAbs,
+          name: targetAbs.split(/[\\/]/).pop() ?? "repo",
+          packageJson: {},
+          workspaceGlobs: [],
+        });
+  const workspace = scanRoot;
   const findings: Finding[] = [];
   let skippedFiles = 0;
   let testFileCount = 0;
@@ -186,7 +214,37 @@ export function runScan(args: CliArgs): ScanResult {
     ? detectFrameworks(workspace)
     : { frameworks: [], unknown: true };
 
+  // Suppression enforcement: active `ignore` entries in
+  // qa-doctor.config.json remove findings from output, scoring, and exit
+  // codes. Expired entries suppress nothing (stale config hides nothing).
+  // An entry with `files` globs only suppresses findings under those paths.
+  if (workspace) {
+    const { config } = loadConfig(workspace.root);
+    applySeverityOverrides(findings, config);
+    const suppressions = loadSuppressions(workspace.root);
+    const active = suppressions.entries.filter((e) => e.status === "active");
+    if (active.length > 0) {
+      const ruleOnly = new Set(
+        active.filter((e) => !e.files?.length).map((e) => e.ruleId),
+      );
+      const kept = findings.filter((f) => {
+        if (ruleOnly.has(f.ruleId)) return false;
+        return !active.some(
+          (e) =>
+            e.files?.length &&
+            e.ruleId === f.ruleId &&
+            e.files.some((g) => pathMatchesGlob(f.file, g)),
+        );
+      });
+      findings.length = 0;
+      findings.push(...kept);
+    }
+  }
+
   findings.sort(compareFindings);
+  // Honesty Core Phase 1: every finding carries its honest evidence level
+  // (rule override wins; otherwise derived from findingType+confidence).
+  stampEvidenceLevels(findings, EVIDENCE_OVERRIDES);
   const dimensions = computeDimensions(findings);
   const total = computeTotal(dimensions, findings);
   const elapsed = Date.now() - started;
@@ -223,6 +281,26 @@ export type Output = (...parts: unknown[]) => void;
 
 const out: Output = (line) => console.log(line);
 const err: Output = (line) => console.error(line);
+
+/**
+ * Minimal glob match for suppression `files` patterns. Supports:
+ *   "tests/**"  — everything under tests/
+ *   "**‍/*.spec.ts" — any depth ending pattern
+ *   "tests/foo.spec.ts" — exact path
+ * Forward slashes only (findings always use normalized paths).
+ */
+export function pathMatchesGlob(path: string, glob: string): boolean {
+  // Single-pass tokenizer: split on "**" first, escape the literal
+  // segments, then rejoin with the right wildcards. Avoids the
+  // replaceAll ordering bugs of multi-pass approaches.
+  const parts = glob.split("**");
+  const pattern = parts
+    .map((p) =>
+      p.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replaceAll("*", "[^/]*"),
+    )
+    .join(".*");
+  return new RegExp(`^${pattern}$`).test(path);
+}
 
 /** Testable `ci install` handler. Returns the process exit code. */
 export function runCiInstall(
@@ -295,7 +373,9 @@ export function runDoctorPlaywright(
 ): number {
   const targetArg = argv[1] && !argv[1].startsWith("-") ? argv[1] : ".";
   const target = resolve(targetArg);
-  const result = runScan({ ...parseArgs([target])!, target });
+  const args = parseArgs([target]);
+  if (!args) return 2;
+  const result = runScan({ ...args, target });
   const pwFindings = result.findings.filter((f) => f.category === "QA-PW");
   io.out(
     renderTerminal(
@@ -307,6 +387,48 @@ export function runDoctorPlaywright(
   // Selector Health per spec.
   const specs = computeSelectorHealth(target);
   io.out(renderSelectorHealth(specs));
+  return 0;
+}
+
+/** Testable `doctor` handler — self-audit of QA Doctor's own rule base. */
+export function runDoctorCommand(
+  argv: string[],
+  io: { out: Output; err: Output } = { out, err },
+): number {
+  const targetArg = argv.find((a) => !a.startsWith("-")) ?? process.cwd();
+  try {
+    // Fixtures live under <repo>/tests/fixtures relative to the target.
+    const fixturesRoot = resolve(join(targetArg, "tests", "fixtures"));
+    if (!existsSync(fixturesRoot)) {
+      io.err(
+        `No fixtures directory at ${fixturesRoot}. Run from the qa-doctor repo root.`,
+      );
+      return 2;
+    }
+    const report = runDoctorSelfAudit(fixturesRoot);
+    io.out(renderDoctorReport(report));
+    return report.healthy ? 0 : 1;
+  } catch (err) {
+    io.err(
+      "qa-doctor internal error:",
+      err instanceof Error ? err.message : String(err),
+    );
+    return 20;
+  }
+}
+
+/** Testable `rules` handler — rule catalog with Trust Metadata. */
+export function runRulesCommand(
+  argv: string[],
+  io: { out: Output; err: Output } = { out, err },
+): number {
+  const catalog = buildCatalog();
+  if (argv.includes("--md")) {
+    io.out(renderCatalogMd(catalog));
+  } else {
+    // Default: JSON (machine-readable, schema-stable).
+    io.out(JSON.stringify(catalog, null, 2));
+  }
   return 0;
 }
 
@@ -330,8 +452,14 @@ export function runScanCommand(
       io.out(renderTerminal(result, { isTTY: process.stdout.isTTY ?? false }));
     }
     // Exit-code × gate semantics (S13): partial scans NEVER block.
+    // Honesty Core Phase 2: advisory (E0) findings never gate CI —
+    // observations are reported but carry no enforcement weight.
     if (result.partial) return 2;
-    return result.findings.some((f) => f.severity === "error") ? 1 : 0;
+    return result.findings.some(
+      (f) => f.severity === "error" && !isAdvisoryFinding(f),
+    )
+      ? 1
+      : 0;
   } catch (err) {
     io.err(
       "qa-doctor internal error:",
@@ -358,10 +486,19 @@ export function runTriageCommand(
       writeFlakyMd: false,
     });
     io.out(renderTriage(report));
-    if (!argv.includes("--no-md")) {
+    // Only write TRIAGE.md when there's something to triage AND the
+    // target dir exists — a missing dir must degrade honestly, not crash.
+    if (!argv.includes("--no-md") && report.totalTests > 0) {
       const mdPath = resolve(join(targetArg, "TRIAGE.md"));
       writeFileSync(mdPath, renderTriageMd(report));
       io.out(`\nWrote ${mdPath}`);
+    }
+    // Nothing recognized (e.g. missing dir) → honest no-op, not a crash.
+    if (report.totalTests === 0) {
+      io.err(
+        "No test results recognized. Expected a Playwright JSON report (report.json) or JUnit XML files.",
+      );
+      return 2;
     }
     return 0;
   } catch (err) {
@@ -588,12 +725,14 @@ export function main(argv: string[] = process.argv.slice(2)): number {
   if (argv[0] === "handover") return runHandoverCommand(argv.slice(1));
   if (argv[0] === "init") return runInitCommand(argv.slice(1));
   if (argv[0] === "pw-report") return runPwReportCommand(argv.slice(1));
+  if (argv[0] === "doctor") return runDoctorCommand(argv.slice(1));
+  if (argv[0] === "rules") return runRulesCommand(argv.slice(1));
   if (argv[0] === "doctor:playwright") return runDoctorPlaywright(argv);
   return runScanCommand(argv);
 }
 
 function printUsage(print: (s: string) => void): void {
-  print(`qa-doctor — quality scanner for test suites and CI pipelines
+  print(`▚▞ qa-doctor — quality scanner for test suites and CI pipelines
 
 Usage: qa-doctor [path] [options]
 
@@ -618,13 +757,22 @@ Subcommands:
   handover                                      new-QA onboarding map of the suite
   init [--interactive]                          detect frameworks + setup checklist
   pw-report <dir|file>                          Playwright run summary (retries/flakes)
+  doctor                                        self-audit: fixture firewall,
+                                                registry sanity, trust metadata
+  rules [--md]                                  rule catalog with trust metadata
+                                                (JSON or markdown)
 
 Exit codes: 0 clean · 1 errors found · 2 partial · 10 usage · 20 crash`);
 }
 
+// Run only when this module is the entry point (not when tests import it).
+// Comparing against import.meta.url instead of matching filename suffixes
+// keeps this correct across cli.ts (dev/tsx) and any built output name
+// (dist/cli.js, dist/cli.mjs, ...) without needing to be updated in lockstep
+// with the build config.
 if (
-  process.argv[1]?.replaceAll("\\", "/").endsWith("cli.ts") ||
-  process.argv[1]?.replaceAll("\\", "/").endsWith("cli.js")
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href
 ) {
   process.exitCode = main();
 }

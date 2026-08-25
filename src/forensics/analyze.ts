@@ -97,7 +97,7 @@ function bar(ms: number, maxMs: number, width = 20): string {
 
 export function renderLeaderboard(report: ForensicsReport): string {
   const lines: string[] = [];
-  lines.push("FLAKINESS LEADERBOARD");
+  lines.push("▚▞ FLAKINESS LEADERBOARD");
   lines.push("");
   lines.push(
     `${report.totalTests} tests · ${report.failed} failed · ${report.flakyTests} flaky · ${report.retriedTests} retried`,

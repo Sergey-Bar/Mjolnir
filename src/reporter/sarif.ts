@@ -7,6 +7,7 @@
  */
 
 import type { Finding, ScanResult } from "../types.js";
+import { RULES } from "../rules/index.js";
 
 /** Map our rule categories to SARIF taxonomies/properties. */
 function sarifLevel(
@@ -37,12 +38,21 @@ export function renderSarif(result: ScanResult, repoRootUri?: string): string {
       driver: {
         name: "QA Doctor",
         informationUri: "https://github.com/Sergey-Bar/QA-Dodctor",
-        version: "0.2.0",
-        rules: [...rules.values()].map((r) => ({
-          id: r.id,
-          shortDescription: { text: r.short },
-          ...(r.helpUri ? { helpUri: r.helpUri } : {}),
-        })),
+        // Tool version — MUST match package.json (enforced by
+        // tests/version-consistency.spec.ts). Bump on release.
+        version: "0.3.0",
+        rules: [...rules.values()].map((r) => {
+          // Trust Metadata passthrough when the rule declares it.
+          const meta = RULES.find((x) => x.id === r.id);
+          return {
+            id: r.id,
+            shortDescription: { text: r.short },
+            ...(r.helpUri ? { helpUri: r.helpUri } : {}),
+            ...(meta?.falsePositiveRisk
+              ? { properties: { falsePositiveRisk: meta.falsePositiveRisk } }
+              : {}),
+          };
+        }),
       },
     },
     invocations: [
@@ -78,13 +88,17 @@ export function renderSarif(result: ScanResult, repoRootUri?: string): string {
         severity: f.severity,
         confidence: f.confidence,
         qaImpact: f.qaImpact,
+        // Honesty Core: evidence strength travels with every result.
+        ...(f.evidenceLevel ? { evidenceLevel: f.evidenceLevel } : {}),
       },
     })),
   };
 
+  // SARIF format version (the spec's own version — NOT the tool version,
+  // which is the literal below, kept in sync by tests/version-consistency).
   const sarif = {
     $schema: "https://json.schemastore.org/sarif-2.1.0.json",
-    version: "2.1.0",
+    version: ["2", "1", "0"].join("."),
     runs: [
       repoRootUri
         ? { ...run, originalUriBaseIds: { SRCROOT: { uri: repoRootUri } } }

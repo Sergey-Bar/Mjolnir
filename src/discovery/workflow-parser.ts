@@ -24,6 +24,8 @@ export interface WorkflowStep {
 
 export interface WorkflowJob {
   "continue-on-error"?: boolean | string;
+  /** Raw `if:` condition text, when present (consumed by CI rules). */
+  if?: string;
   steps?: WorkflowStep[];
 }
 
@@ -78,6 +80,10 @@ export function parseWorkflow(text: string): WorkflowDoc {
       typeof job["continue-on-error"] === "string"
     ) {
       parsedJob["continue-on-error"] = job["continue-on-error"];
+    }
+
+    if (typeof job["if"] === "string") {
+      parsedJob["if"] = job["if"];
     }
 
     if (Array.isArray(job["steps"])) {
