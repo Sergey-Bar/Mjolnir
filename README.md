@@ -14,11 +14,11 @@
 **The quality scanner for QA engineers.** Audits test suites and CI pipelines,
 reports a health score, and shows exactly where the trust breaks.
 
-[![npm](https://img.shields.io/npm/v/qa-doctor.svg?style=for-the-badge&color=39FF14&label=npm&labelColor=0D0D0D)](https://www.npmjs.com/package/qa-doctor)
-[![downloads](https://img.shields.io/npm/dm/qa-doctor.svg?style=for-the-badge&color=39FF14&label=downloads&labelColor=0D0D0D)](https://www.npmjs.com/package/qa-doctor)
-[![license](https://img.shields.io/badge/license-MIT-39FF14.svg?style=for-the-badge&labelColor=0D0D0D)](LICENSE)
-[![node](https://img.shields.io/node/v/qa-doctor.svg?style=for-the-badge&color=39FF14&labelColor=0D0D0D)](https://nodejs.org)
-[![status](https://img.shields.io/badge/status-●_ONLINE-39FF14.svg?style=for-the-badge&labelColor=0D0D0D)](#-quickstart)
+[![npm](https://img.shields.io/npm/v/qa-doctor.svg?style=flat-square&color=15803D&label=npm&labelColor=0D0D0D)](https://www.npmjs.com/package/qa-doctor)
+[![downloads](https://img.shields.io/npm/dm/qa-doctor.svg?style=flat-square&color=146A8C&label=downloads&labelColor=0D0D0D)](https://www.npmjs.com/package/qa-doctor)
+[![license](https://img.shields.io/badge/license-MIT-B45309.svg?style=flat-square&labelColor=0D0D0D)](LICENSE)
+[![node](https://img.shields.io/node/v/qa-doctor.svg?style=flat-square&color=146A8C&labelColor=0D0D0D)](https://nodejs.org)
+[![status](https://img.shields.io/badge/status-●_ONLINE-15803D.svg?style=flat-square&labelColor=0D0D0D)](#-quickstart)
 
 ```bash
 npx qa-doctor@latest
