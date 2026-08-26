@@ -78,12 +78,22 @@ describe.each([40, 80, 120])("renders legibly at %d columns", (width) => {
 describe("--width override", () => {
   it("a narrower width produces a narrower score gauge than a wider one", () => {
     // Formula: max(10, min(30, width - 4)) — differs across 20 vs 40,
-    // both clamp differently below the 30-wide cap.
+    // both clamp differently below the 30-wide cap. Must select the
+    // SCORE gauge line specifically (immediately after the "SCORE" line)
+    // — the per-category DIAGNOSTICS gauges below it render at a fixed
+    // width regardless of the overall terminal width and also match
+    // /[█#]/, so a naive "first gauge-looking line" search can silently
+    // pick the wrong line and compare a constant against itself.
+    const scoreGaugeLine = (s: string): string => {
+      const lines = s.split("\n");
+      const scoreIdx = lines.findIndex((l) => l.includes("SCORE"));
+      return lines[scoreIdx + 1] ?? "";
+    };
     const narrow = renderTerminal(result(), { isTTY: false, width: 20 });
     const wide = renderTerminal(result(), { isTTY: false, width: 40 });
-    const gaugeLine = (s: string) =>
-      s.split("\n").find((l) => /[█#]/.test(l)) ?? "";
-    expect(measure(gaugeLine(narrow))).toBeLessThan(measure(gaugeLine(wide)));
+    expect(measure(scoreGaugeLine(narrow))).toBeLessThan(
+      measure(scoreGaugeLine(wide)),
+    );
   });
 
   it("floors at a minimum readable width even when given something absurd", () => {
