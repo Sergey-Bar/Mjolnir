@@ -190,6 +190,67 @@ package — all previously sitting only in the working tree, undocumented
 as a git-level risk until this session), one for Sprint 0's fixes
 proper.
 
+## Master-Stabilization-Plan.md — Sprint 1 (2026-08-26): ✅ COMPLETE
+
+**Task 5** (extend typecheck to tests+packages): done. Added
+`tsconfig.test.json`, wired `npm run typecheck` to run both configs.
+Surfaced ~320 initial errors; 272 were from `tests/fixtures/**`
+(rule-detection test _data_ consumed via `readFileSync`/regex, never
+imported as TS modules — correctly excluded, not fixed) and
+`tests/golden/repo/**` (a sample repo scanned by the tool, same
+reasoning). The remaining ~50 were real: incomplete mock
+`Finding`/`FixResult` objects in test helpers missing required fields,
+two genuinely invalid literal values (`findingType: "static"`,
+`qaImpact: "Flaky tests reach main"` — neither is a valid enum member;
+real bugs predating this sprint, not just strict-mode noise), several
+`noUncheckedIndexedAccess` violations on array indexing (fixed with
+explicit runtime checks — never `!`, which this repo's own eslint config
+bans), and one call site missing a required argument. All fixed without
+weakening any compiler option. Verified with a negative control (a
+deliberately broken type placed in a `.spec.ts`, confirmed caught at
+exit 2, then removed) that the new coverage is real, per the plan's own
+QA table.
+
+**Task 6** (lint `scripts/`): done. Removed `scripts/` from eslint
+`ignores`; added a scoped override for `scripts/**/*.cjs` declaring the
+Node CommonJS global scope, since `sync-sarif-version.cjs` legitimately
+needs `require`/`__dirname` as a plain CJS release script (the ESM
+`src/` codebase does not) — this is a correctness fix, not a weakened
+rule.
+
+**Task 7** (de-orphan the reporter package): done. Added
+`workspaces: ["packages/*"]`; added `@playwright/test` as a real root
+devDependency (was completely absent — finding #7); wired
+`packages/*/build` into the root `build` script (verified both root
+`dist/cli.mjs` and `packages/playwright-reporter/dist/index.mjs` build
+in one `npm run build`). Rewrote
+`tests/playwright-reporter-package.spec.ts` to feed
+`qaDoctorReporter()`'s output through Playwright's real
+`defineConfig({ reporter: [...] })` — the actual integration point every
+consumer hits — instead of only asserting a bare tuple shape.
+
+**Task 8** (publish integrity): done. Added a `package-smoke.spec.ts`
+check against a fresh `npm pack --dry-run --json` listing (not the
+shared `pkgDir` fixture, which deliberately copies `node_modules` in
+_after_ extraction for its own CLI-invocation tests — checking that
+fixture for `node_modules` would have been a false positive) asserting
+the tarball never contains `scratch/`, `coverage/`, `node_modules/`,
+`tests/`, `.git/`, `docs/`, or `.planning/`. Currently packs clean (6
+files, 77.1 kB) — `package.json`'s `files` whitelist was already
+correct; this test guards it from regressing.
+
+**Standing gate, verified green after all four tasks:** `typecheck`
+(both configs) exit 0; `lint` clean; **69 files / 1658 tests passed, 1
+skipped, 3 tests skipped**; root+workspace `build` succeeds (both
+`dist/` outputs produced); golden lock byte-identical (3/3); self-scan
+gate 0 error-severity findings.
+
+**Not done in Sprint 1** (explicit known-unknowns): `docs/PUBLISHING.md`
+still not written (carried over from Sprint 0, still Sprint-3-adjacent
+territory, not blocking). `test:coverage` scale-benchmark flake (Sprint
+0 finding) not revisited. Linux/macOS gate still only verified via CI
+matrix, not independently re-run locally.
+
 ## Conventions
 
 - User communicates in Hebrew; artifacts in English.
