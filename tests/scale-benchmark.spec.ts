@@ -46,85 +46,104 @@ afterAll(() => {
 });
 
 describe(`scanning a synthetic ${FILE_COUNT}-file repo`, () => {
-  it(`completes within the time budget (${TIME_BUDGET_MS}ms)`, () => {
-    const start = performance.now();
-    const result = runScan({
-      target: dir,
-      json: true,
-      verbose: true,
-      maxDurationMs: TIME_BUDGET_MS,
-      scopeChanged: false,
-      format: "json",
-    });
-    const elapsed = performance.now() - start;
-
-    expect(
-      elapsed,
-      `scanning ${FILE_COUNT} files took ${elapsed.toFixed(0)}ms — ` +
-        `consistent with non-linear behavior in discovery or rule ` +
-        `execution, not normal per-file work.`,
-    ).toBeLessThan(TIME_BUDGET_MS);
-    expect(result.partial, "scan hit its own deadline and had to bail").toBe(
-      false,
-    );
-    expect(
-      result.findings.length,
-      "expected real findings from the .only() files — a 0-finding fast " +
-        "scan could mean discovery silently found nothing, not that it " +
-        "was genuinely fast",
-    ).toBeGreaterThan(0);
-  });
-
-  it("wall-clock time scales roughly linearly, not quadratically, with file count", () => {
-    // Compare a 10% slice against the full set. Quadratic behavior
-    // (e.g. re-listing the whole tree per file) shows up as the full
-    // set taking dramatically more than 10x the slice's time; linear
-    // behavior keeps the ratio close to the size ratio.
-    const smallDir = mkdtempSync(join(tmpdir(), "qa-doctor-scale-small-"));
-    try {
-      mkdirSync(join(smallDir, "e2e"), { recursive: true });
-      const smallCount = Math.floor(FILE_COUNT / 10);
-      for (let i = 0; i < smallCount; i++) {
-        writeFileSync(
-          join(smallDir, "e2e", `case-${i}.spec.ts`),
-          `it('case ${i}', () => { expect(1).toBe(1); });\n`,
-        );
-      }
-
-      const t0 = performance.now();
-      runScan({
-        target: smallDir,
-        json: true,
-        verbose: false,
-        maxDurationMs: TIME_BUDGET_MS,
-        scopeChanged: false,
-        format: "json",
-      });
-      const smallElapsed = performance.now() - t0;
-
-      const t1 = performance.now();
-      runScan({
+  it(
+    `completes within the time budget (${TIME_BUDGET_MS}ms)`,
+    () => {
+      const start = performance.now();
+      const result = runScan({
         target: dir,
         json: true,
-        verbose: false,
+        verbose: true,
         maxDurationMs: TIME_BUDGET_MS,
         scopeChanged: false,
         format: "json",
       });
-      const fullElapsed = performance.now() - t1;
+      const elapsed = performance.now() - start;
 
-      // 10x the files should cost roughly 10x the time, not 50x+.
-      // Floor the denominator so a near-instant small scan can't make
-      // the ratio explode on noise alone.
-      const ratio = fullElapsed / Math.max(smallElapsed, 5);
       expect(
-        ratio,
-        `full scan (${fullElapsed.toFixed(0)}ms) is ${ratio.toFixed(1)}x ` +
-          `the 10%-slice scan (${smallElapsed.toFixed(0)}ms) — expected ` +
-          `roughly linear (~10x), this ratio suggests superlinear cost.`,
-      ).toBeLessThan(50);
-    } finally {
-      rmSync(smallDir, { recursive: true, force: true });
-    }
-  });
+        elapsed,
+        `scanning ${FILE_COUNT} files took ${elapsed.toFixed(0)}ms — ` +
+          `consistent with non-linear behavior in discovery or rule ` +
+          `execution, not normal per-file work.`,
+      ).toBeLessThan(TIME_BUDGET_MS);
+      expect(result.partial, "scan hit its own deadline and had to bail").toBe(
+        false,
+      );
+      expect(
+        result.findings.length,
+        "expected real findings from the .only() files — a 0-finding fast " +
+          "scan could mean discovery silently found nothing, not that it " +
+          "was genuinely fast",
+      ).toBeGreaterThan(0);
+    },
+    // Vitest's default 5000ms per-test timeout is shorter than this
+    // test's own documented TIME_BUDGET_MS assertion — under CPU
+    // contention (e.g. running alongside the full suite, or on a
+    // loaded CI runner) the test was being killed by Vitest's timeout
+    // before its own budget assertion ever ran, producing a flaky
+    // "Test timed out" failure that has nothing to do with the scan
+    // performance this test actually verifies. Give it real headroom
+    // above its own budget instead.
+    TIME_BUDGET_MS + 10_000,
+  );
+
+  it(
+    "wall-clock time scales roughly linearly, not quadratically, with file count",
+    () => {
+      // Compare a 10% slice against the full set. Quadratic behavior
+      // (e.g. re-listing the whole tree per file) shows up as the full
+      // set taking dramatically more than 10x the slice's time; linear
+      // behavior keeps the ratio close to the size ratio.
+      const smallDir = mkdtempSync(join(tmpdir(), "qa-doctor-scale-small-"));
+      try {
+        mkdirSync(join(smallDir, "e2e"), { recursive: true });
+        const smallCount = Math.floor(FILE_COUNT / 10);
+        for (let i = 0; i < smallCount; i++) {
+          writeFileSync(
+            join(smallDir, "e2e", `case-${i}.spec.ts`),
+            `it('case ${i}', () => { expect(1).toBe(1); });\n`,
+          );
+        }
+
+        const t0 = performance.now();
+        runScan({
+          target: smallDir,
+          json: true,
+          verbose: false,
+          maxDurationMs: TIME_BUDGET_MS,
+          scopeChanged: false,
+          format: "json",
+        });
+        const smallElapsed = performance.now() - t0;
+
+        const t1 = performance.now();
+        runScan({
+          target: dir,
+          json: true,
+          verbose: false,
+          maxDurationMs: TIME_BUDGET_MS,
+          scopeChanged: false,
+          format: "json",
+        });
+        const fullElapsed = performance.now() - t1;
+
+        // 10x the files should cost roughly 10x the time, not 50x+.
+        // Floor the denominator so a near-instant small scan can't make
+        // the ratio explode on noise alone.
+        const ratio = fullElapsed / Math.max(smallElapsed, 5);
+        expect(
+          ratio,
+          `full scan (${fullElapsed.toFixed(0)}ms) is ${ratio.toFixed(1)}x ` +
+            `the 10%-slice scan (${smallElapsed.toFixed(0)}ms) — expected ` +
+            `roughly linear (~10x), this ratio suggests superlinear cost.`,
+        ).toBeLessThan(50);
+      } finally {
+        rmSync(smallDir, { recursive: true, force: true });
+      }
+    },
+    // Same rationale as the test above: two full runScan calls under
+    // contention can exceed Vitest's 5000ms default before either
+    // assertion runs.
+    TIME_BUDGET_MS + 10_000,
+  );
 });

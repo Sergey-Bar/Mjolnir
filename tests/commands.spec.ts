@@ -138,6 +138,172 @@ describe("triage", () => {
     const text = renderTriage(report([]));
     expect(text).toContain("Nothing to triage");
   });
+
+  it("renderTriage (terminal) renders a non-empty proposal with singular attempt wording", () => {
+    const text = renderTriage(
+      report([
+        verdict({
+          title: "lucky",
+          attempts: 1,
+          passedOnRetry: true,
+          everFailed: true,
+        }),
+      ]),
+    );
+    expect(text).toContain("FLAKY TRIAGE");
+    expect(text).toContain("TRUE-FLAKE");
+    expect(text).toContain("1 attempt →"); // singular "attempt", no "s"
+    expect(text).toContain("Auto-quarantine proposal: 0 tests ("); // below the quarantine floor
+  });
+
+  it("renderTriage (terminal) singular test-count wording when exactly one quarantine is proposed", () => {
+    const text = renderTriage(
+      report([
+        verdict({
+          title: "lucky",
+          attempts: 2,
+          passedOnRetry: true,
+          everFailed: true,
+        }),
+      ]),
+    );
+    expect(text).toContain("Auto-quarantine proposal: 1 test (");
+  });
+
+  it("renderTriage pluralizes attempts and test counts correctly", () => {
+    const text = renderTriage(
+      report([
+        verdict({
+          title: "a",
+          attempts: 3,
+          passedOnRetry: true,
+          everFailed: true,
+        }),
+        verdict({
+          title: "b",
+          attempts: 3,
+          passedOnRetry: true,
+          everFailed: true,
+        }),
+      ]),
+    );
+    expect(text).toContain("3 attempts →");
+    expect(text).toContain("Auto-quarantine proposal: 2 tests (");
+  });
+
+  it("suggestAction: a hard failure with no retry success suggests 'fix now'", () => {
+    const rows = triageRows(
+      report([
+        verdict({ title: "dead", finalStatus: "failed", everFailed: true }),
+      ]),
+    );
+    expect(rows[0]?.suggestedAction).toBe("fix now — failing");
+    expect(rows[0]?.finalStatus).toBe("failed");
+  });
+
+  it("suggestAction: timedOut with no retry success also suggests 'fix now'", () => {
+    const rows = triageRows(
+      report([
+        verdict({
+          title: "slow",
+          finalStatus: "timedOut",
+          everFailed: true,
+        }),
+      ]),
+    );
+    expect(rows[0]?.suggestedAction).toBe("fix now — failing");
+  });
+
+  it("suggestAction: passed on retry below the quarantine attempt floor suggests fixing nondeterminism", () => {
+    const rows = triageRows(
+      report([
+        verdict({
+          title: "flakyOnce",
+          attempts: 1,
+          passedOnRetry: true,
+          everFailed: true,
+        }),
+      ]),
+    );
+    expect(rows[0]?.suggestedAction).toBe("fix nondeterminism");
+    expect(rows[0]?.proposedQuarantine).toBe(false);
+  });
+
+  it("suggestAction: everFailed but passed on retry, neither failed/timedOut nor retry-eligible falls through to investigate", () => {
+    const rows = triageRows(
+      report([
+        verdict({
+          title: "weird",
+          finalStatus: "passed",
+          everFailed: true,
+          passedOnRetry: false,
+          attempts: 1,
+        }),
+      ]),
+    );
+    expect(rows[0]?.suggestedAction).toBe("investigate");
+  });
+
+  it("sorts TRUE-FLAKE (passedOnRetry) before hard failures", () => {
+    const rows = triageRows(
+      report([
+        verdict({
+          title: "hardfail",
+          finalStatus: "failed",
+          everFailed: true,
+        }),
+        verdict({
+          title: "flaky",
+          attempts: 2,
+          passedOnRetry: true,
+          everFailed: true,
+        }),
+      ]),
+    );
+    expect(rows.map((r) => r.title)).toEqual(["flaky", "hardfail"]);
+  });
+
+  it("breaks a passedOnRetry tie by attempt count (more attempts first)", () => {
+    const rows = triageRows(
+      report([
+        verdict({
+          title: "fewer",
+          attempts: 2,
+          passedOnRetry: true,
+          everFailed: true,
+        }),
+        verdict({
+          title: "more",
+          attempts: 5,
+          passedOnRetry: true,
+          everFailed: true,
+        }),
+      ]),
+    );
+    expect(rows.map((r) => r.title)).toEqual(["more", "fewer"]);
+  });
+
+  it("breaks an attempts tie by total duration (slower first)", () => {
+    const rows = triageRows(
+      report([
+        verdict({
+          title: "fast",
+          attempts: 2,
+          passedOnRetry: true,
+          everFailed: true,
+          totalDurationMs: 100,
+        }),
+        verdict({
+          title: "slow",
+          attempts: 2,
+          passedOnRetry: true,
+          everFailed: true,
+          totalDurationMs: 9000,
+        }),
+      ]),
+    );
+    expect(rows.map((r) => r.title)).toEqual(["slow", "fast"]);
+  });
 });
 
 describe("debt register", () => {

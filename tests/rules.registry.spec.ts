@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { RULES, getRule } from "../src/rules/index.js";
+import { RULES, getRule, RETIRED_RULE_IDS } from "../src/rules/index.js";
 
 describe("RULES registry", () => {
   it("contains no duplicate rule IDs", () => {
@@ -21,6 +21,24 @@ describe("RULES registry", () => {
       expect(["error", "warning", "info"]).toContain(rule.severity);
       expect(typeof rule.run).toBe("function");
     }
+  });
+});
+
+describe("RETIRED_RULE_IDS (docs/RULE-LIFECYCLE.md)", () => {
+  it("never reissues a retired ID to an active rule", () => {
+    const activeIds = new Set(RULES.map((r) => r.id));
+    for (const retired of RETIRED_RULE_IDS) {
+      expect(
+        activeIds.has(retired),
+        `"${retired}" is listed as retired but is also an active rule ID — ` +
+          `the frozen-contracts law forbids reissuing a retired ID, even ` +
+          `to a conceptually different rule.`,
+      ).toBe(false);
+    }
+  });
+
+  it("has no duplicate entries", () => {
+    expect(new Set(RETIRED_RULE_IDS).size).toBe(RETIRED_RULE_IDS.length);
   });
 });
 

@@ -43,14 +43,14 @@ npx qa-doctor@latest .
 
 ## ▓▓▓ At a glance
 
-|     |                                                                                                             |
-| --- | ----------------------------------------------------------------------------------------------------------- |
-| 🩺  | **Health score** — one number, transparent deduction table, no black box                                    |
-| 🎭  | **Selector Health Score** — grades your Playwright locators, not just your pass rate                        |
-| 🔬  | **Runtime forensics** — reads real Playwright/JUnit run data to catch `TRUE-FLAKE`, not just static guesses |
-| 🚨  | **CI-integrity rules** — catches `continue-on-error`, `\|\| true`, and other false-green tricks             |
-| 🐍  | **Multi-language** — TypeScript/Playwright and Python/pytest today, one adapter away from more              |
-| 🔒  | **Local-first** — zero network calls while scanning, zero telemetry, runs in seconds                        |
+|     |                                                                                                                |
+| --- | -------------------------------------------------------------------------------------------------------------- |
+| 🩺  | **Health score** — one number, transparent deduction table, no black box                                       |
+| 🎭  | **Selector Health Score** — grades your Playwright locators, not just your pass rate                           |
+| 🔬  | **Runtime forensics** — reads real Playwright/JUnit run data to catch `TRUE-FLAKE`, not just static guesses    |
+| 🚨  | **CI-integrity rules** — catches `continue-on-error`, `\|\| true`, and other false-green tricks                |
+| 🐍  | **Multi-language** — TypeScript/Playwright, Python/pytest, Java, and C#/.NET today, one adapter away from more |
+| 🔒  | **Local-first** — zero network calls while scanning, zero telemetry, runs in seconds                           |
 
 ---
 
@@ -319,7 +319,11 @@ qa-doctor/
 </details>
 
 Multi-language by design: adding a language = one adapter + its rules.
-Python is live; Java, Go, and C# adapters follow the same path.
+TypeScript/Playwright and Python (with a real tree-sitter AST) are the
+most mature; Java and C#/.NET adapters ship a regex-based core rule
+family (disabled/skipped tests, hard sleeps, missing assertions, shared
+browser state) with tree-sitter WASM AST precision as the next step
+behind the same seam. Go is not yet started.
 
 ## 📦 Install
 

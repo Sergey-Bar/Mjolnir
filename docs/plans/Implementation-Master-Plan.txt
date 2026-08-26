@@ -2,6 +2,12 @@
 ### Executing Upgrade-Plan-v2 + Legendary-Roadmap quick wins
 > Based on a real code audit dated 2026-08-24.
 > STATUS PASS 2026-08-25: verified against src/ + tests/. See `.planning/STATE.md`.
+>
+> STATUS 2026-08-26: SUPERSEDED by `docs/plans/Master-Stabilization-Plan.md`,
+> which explicitly states in its own header that it supersedes this file
+> as stale. Kept for historical audit-trail reference (the per-task
+> status markers below were real findings at the time); do not use for
+> current tracking. Current state lives in `.planning/STATE.md`.
 
 ---
 

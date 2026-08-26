@@ -15,8 +15,10 @@ import {
   classifyLocator,
 } from "../src/playwright/selector-health.js";
 import {
+  checkEvidenceHonesty,
   checkRegistry,
   checkTrustMetadata,
+  renderDoctorReport,
   runDoctorSelfAudit,
 } from "../src/commands/doctor.js";
 import { RULES } from "../src/rules/index.js";
@@ -24,6 +26,15 @@ import { runDoctorCommand } from "../src/cli.js";
 
 function scan(src: string) {
   return hardSleep.run({ path: "x.spec.ts", text: src });
+}
+
+/** First registered rule, as a template for synthetic test rules below —
+ * avoids a non-null assertion (banned by this repo's own eslint config)
+ * on RULES[0]. */
+function firstRule(): (typeof RULES)[number] {
+  const r = RULES[0];
+  if (!r) throw new Error("RULES is empty — cannot build a template rule");
+  return r;
 }
 
 describe("QA-TEST-004 behavioral sleep shapes", () => {
@@ -77,11 +88,46 @@ describe("qa-doctor doctor self-audit", () => {
     expect(check.details).toHaveLength(0);
   });
 
+  it("registry sanity flags a malformed rule ID", () => {
+    const bad: (typeof RULES)[number] = {
+      ...firstRule(),
+      id: "NOT-A-VALID-ID",
+    };
+    const check = checkRegistry([bad]);
+    expect(check.ok).toBe(false);
+    expect(check.details[0]).toContain("malformed rule ID");
+  });
+
+  it("registry sanity flags a duplicate ID registration", () => {
+    const r = firstRule();
+    const check = checkRegistry([r, r]);
+    expect(check.ok).toBe(false);
+    expect(
+      check.details.some((d) => d.includes("duplicate registration")),
+    ).toBe(true);
+  });
+
+  it("registry sanity flags a duplicate title within the same ID family", () => {
+    const a = { ...firstRule(), id: "QA-TEST-901", title: "Same Title" };
+    const b = { ...firstRule(), id: "QA-TEST-902", title: "Same Title" };
+    const check = checkRegistry([a, b]);
+    expect(check.ok).toBe(false);
+    expect(check.details.some((d) => d.includes("duplicate title"))).toBe(true);
+  });
+
   it("trust metadata check passes once every rule declares metadata", () => {
     const check = checkTrustMetadata();
     // Ratchet reached: full adoption — the check is now blocking.
     expect(check.details).toHaveLength(0);
     expect(check.ok).toBe(true);
+  });
+
+  it("trust metadata check flags a rule missing languages/frameworks/falsePositiveRisk", () => {
+    const incomplete: (typeof RULES)[number] = { ...firstRule() };
+    delete (incomplete as { languages?: string[] }).languages;
+    const check = checkTrustMetadata([incomplete]);
+    expect(check.ok).toBe(false);
+    expect(check.details[0]).toContain("missing trust metadata");
   });
 
   it("detects a rule with missing fixtures", () => {
@@ -115,5 +161,59 @@ describe("qa-doctor doctor self-audit", () => {
       err: () => {},
     });
     expect(code).toBe(2);
+  });
+
+  it("evidence-honesty check passes on the real registry (no rule overclaims)", () => {
+    const check = checkEvidenceHonesty();
+    expect(check.ok).toBe(true);
+    expect(check.details).toHaveLength(0);
+  });
+
+  it("evidence-honesty check flags a rule declaring a stronger level than it can support", () => {
+    const overclaiming: (typeof RULES)[number] = {
+      ...firstRule(),
+      id: "QA-TEST-999",
+      findingType: "observation", // derivation caps this at E0
+      confidence: "high",
+      evidenceLevel: "E2", // claims far more than an observation supports
+    };
+    const check = checkEvidenceHonesty([overclaiming]);
+    expect(check.ok).toBe(false);
+    expect(check.details[0]).toContain("QA-TEST-999");
+    expect(check.details[0]).toContain("supports at most E0");
+  });
+
+  it("evidence-honesty check ignores rules that declare no override", () => {
+    const noOverride: (typeof RULES)[number] = {
+      ...firstRule(),
+      id: "QA-TEST-998",
+    };
+    delete (noOverride as { evidenceLevel?: string }).evidenceLevel;
+    const check = checkEvidenceHonesty([noOverride]);
+    expect(check.ok).toBe(true);
+    expect(check.details).toHaveLength(0);
+  });
+
+  it("renderDoctorReport renders a healthy report", () => {
+    const text = renderDoctorReport({
+      checks: [{ name: "registry-sanity", ok: true, details: [] }],
+      healthy: true,
+    });
+    expect(text).toContain("✓ registry-sanity");
+    expect(text).toContain("HEALTHY");
+  });
+
+  it("renderDoctorReport renders violations, truncating past 20 details", () => {
+    const details = Array.from({ length: 25 }, (_, i) => `problem #${i}`);
+    const text = renderDoctorReport({
+      checks: [{ name: "fixture-firewall", ok: false, details }],
+      healthy: false,
+    });
+    expect(text).toContain("✗ fixture-firewall");
+    expect(text).toContain("problem #0");
+    expect(text).toContain("problem #19");
+    expect(text).not.toContain("problem #20");
+    expect(text).toContain("… and 5 more");
+    expect(text).toContain("VIOLATIONS FOUND");
   });
 });

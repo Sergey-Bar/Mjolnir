@@ -2,24 +2,26 @@
 
 ## Status
 
-Every file below and every file in `docs/tiers/` now carries inline
-✅/🟡/⬜ markers showing what's actually shipped in `qa-doctor/src/` as of
-2026-08-25, cross-checked against the code (not just claimed in prose).
-Start with `.planning/STATE.md` for the current one-page summary, then
-`docs/plans/Implementation-Master-Plan.txt` for the phase-by-phase detail.
+Current state: `.planning/STATE.md` — updated after every completed
+sprint, the one-page summary of what's actually shipped versus what's
+still open. `docs/plans/Master-Stabilization-Plan.md` is the active
+plan (stabilization/trust gates for the open beta); everything below it
+in this table predates it and is either superseded or kept for
+historical/audit-trail reference only.
 
 ## Plans (`docs/plans/`)
 
-| File                             | Purpose                                                                                                                                                                                                  | Status                                                                                            |
-| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `Implementation-Master-Plan.txt` | Master implementation plan, phase-by-phase                                                                                                                                                               | **Primary — most accurate to reality**, fully annotated                                           |
-| `Upgrade-Plan-v2.txt`            | R1 LanguageAdapter → R2 Python → R3 Playwright Deep Mode, with rule-ID tables                                                                                                                            | Fully annotated; scheduled to be merged into Implementation-Master-Plan.txt                       |
-| `Upgrade-Plan-v3.txt`            | Priority-ordered plan: new Playwright layers → Playwright-Python → TS AST precision upgrade → Java/.NET Playwright adapters → Plugin API + cross-file analysis; tier-4 delight items explicitly deferred | **Primary for next work** — not yet started, phases 0-6                                           |
-| `Product-MVP.txt`                | MVP §1–35 — rules, scoring, guardrails, risks                                                                                                                                                            | Frozen contract, largely implemented                                                              |
-| `Product.txt`                    | Long-term vision — Evidence Graph, E0–E4, release confidence                                                                                                                                             | Vision only, ~0% implemented                                                                      |
-| `Plan.md`                        | A second, independent long-term vision (Evidence Engine/False-Green Engine/etc)                                                                                                                          | **Duplicate of Product.txt's vision under different names — superseded, kept for reference only** |
-| `Sprint-Plan.txt`                | 13-week sprint plan (Option A: solo dev + AI)                                                                                                                                                            | **Superseded** — predates multi-language/Playwright work already shipped                          |
-| `Legendary-Roadmap.txt`          | Full legendary-OSS roadmap                                                                                                                                                                               | **Duplicate of `docs/tiers/*.md`** — the tier files carry the status markers, this doesn't        |
+| File                             | Purpose                                                                                                                                 | Status                                                                                                                          |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `Master-Stabilization-Plan.md`   | Stabilization & trust plan gating the open beta — sprints 0-9                                                                           | **Primary — current work**                                                                                                      |
+| `Implementation-Master-Plan.txt` | Master implementation plan, phase-by-phase                                                                                              | **Superseded** by Master-Stabilization-Plan.md; kept for its per-task audit trail                                               |
+| `Upgrade-Plan-v2.txt`            | R1 LanguageAdapter → R2 Python → R3 Playwright Deep Mode, with rule-ID tables                                                           | Fully annotated, historical — shipped                                                                                           |
+| `Upgrade-Plan-v3.txt`            | New Playwright layers → Playwright-Python → TS AST precision upgrade → Java/.NET Playwright adapters → Plugin API + cross-file analysis | Shipped (see `.planning/STATE.md`); Sprint 8 of Master-Stabilization-Plan continues the Java/.NET parity work this plan started |
+| `Product-MVP.txt`                | MVP §1–35 — rules, scoring, guardrails, risks                                                                                           | Frozen contract, largely implemented                                                                                            |
+| `Product.txt`                    | Long-term vision — Evidence Graph, E0–E4, release confidence                                                                            | Vision only, ~0% implemented                                                                                                    |
+| `Plan.md`                        | A second, independent long-term vision (Evidence Engine/False-Green Engine/etc)                                                         | **Duplicate of Product.txt's vision under different names — superseded, kept for reference only**                               |
+| `Sprint-Plan.txt`                | 13-week sprint plan (Option A: solo dev + AI)                                                                                           | **Superseded** — predates multi-language/Playwright work already shipped                                                        |
+| `Legendary-Roadmap.txt`          | Full legendary-OSS roadmap                                                                                                              | **Duplicate of `docs/tiers/*.md`** — the tier files carry the status markers, this doesn't                                      |
 
 ## Legendary Roadmap by Tier (`docs/tiers/`) — status-annotated
 
@@ -32,8 +34,14 @@ Start with `.planning/STATE.md` for the current one-page summary, then
 | 5    | [tier-5-qa-war-room.md](tiers/tier-5-qa-war-room.md)                     | QA-speak, triage killer, release report, coverage honesty, debt register                   | 4/10 + 1 partial |
 | 6    | [tier-6-github-stars-playbook.md](tiers/tier-6-github-stars-playbook.md) | README-as-product, launch choreography, trending mechanics, contribution surface           | non-code, N/A    |
 
-## Other folders
+Tier statuses above predate Sprint 6/7/9 of Master-Stabilization-Plan
+(impact/stats commands, living docs, delight features) — treat them as
+historical snapshots, not live counts; `.planning/STATE.md` is current.
 
-- `demos/` — demo outputs and intentionally-broken sample suites
+## Other folders (repo-relative, from this repo's own root)
+
+- `.planning/` — current sprint state (`STATE.md`)
+- `packages/` — workspace member packages (`@qa-doctor/playwright-reporter`)
+- `examples/` — the deliberately-imperfect demo repo used in the README hero
 - `scratch/` — scan artifacts (gitignored)
-- `qa-doctor/` — the product source code
+- `src/`, `tests/` — the product source code and its test suite

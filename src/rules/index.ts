@@ -167,3 +167,15 @@ export const RULES: readonly QADoctorRule[] = [
 export function getRule(id: string): QADoctorRule | undefined {
   return RULES.find((r) => r.id === id);
 }
+
+/**
+ * IDs of rules that have been fully removed from the registry under the
+ * rule lifecycle policy (docs/RULE-LIFECYCLE.md). Frozen contracts law:
+ * rule IDs are never reused. Listing a retired ID here (rather than
+ * simply deleting all trace of it) is what makes that promise checkable
+ * — see tests/rules.registry.spec.ts's "never reissue a retired ID"
+ * test. Empty until the first full removal happens; most deprecations
+ * only need a severity downgrade (see the policy doc) and never reach
+ * this list at all.
+ */
+export const RETIRED_RULE_IDS: readonly string[] = [];

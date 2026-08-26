@@ -73,4 +73,57 @@ describe("QA-CI-009 exit code propagation", () => {
     );
     expect(findings).toHaveLength(0);
   });
+
+  it("does not throw and reports nothing when the workflow has no jobs at all", () => {
+    expect(() => exitCodeNotPropagated.run(ctx("on: push\n"))).not.toThrow();
+    expect(exitCodeNotPropagated.run(ctx("on: push\n"))).toEqual([]);
+  });
+
+  it("does not throw when a job has no steps field", () => {
+    const findings = exitCodeNotPropagated.run(
+      ctx(`jobs:
+  test:
+    runs-on: ubuntu-latest
+`),
+    );
+    expect(findings).toEqual([]);
+  });
+
+  it("does not flag a `;`-sequence guarded by `||` before the semicolon", () => {
+    const findings = exitCodeNotPropagated.run(
+      ctx(`jobs:
+  test:
+    steps:
+      - run: npm test || true; npm run lint
+`),
+    );
+    expect(findings).toHaveLength(0);
+  });
+
+  it("falls back to line 1 when the matched text can't be located verbatim in ctx.text", () => {
+    // findLine's idx===-1 branch: ctx.text here deliberately does not
+    // contain the exact "npm test | tee" substring the rule constructs
+    // internally (workflow-parser normalizes whitespace/quoting), so the
+    // needle search misses and the rule must degrade to line 1, not throw.
+    const findings = exitCodeNotPropagated.run({
+      path: ".github/workflows/ci.yml",
+      text: "totally unrelated text with no run block",
+      ast: { jobs: { test: { steps: [{ run: "npm test | tee out.log" }] } } },
+    });
+    expect(findings).toHaveLength(1);
+    expect(findings[0]?.line).toBe(1);
+  });
+
+  it("flags multiple test-piping lines inside a single multi-line run block", () => {
+    const findings = exitCodeNotPropagated.run(
+      ctx(`jobs:
+  test:
+    steps:
+      - run: |
+          npm test | tee out.log
+          pytest | tee py.log
+`),
+    );
+    expect(findings.length).toBeGreaterThanOrEqual(2);
+  });
 });
