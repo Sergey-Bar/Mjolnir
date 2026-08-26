@@ -251,6 +251,72 @@ territory, not blocking). `test:coverage` scale-benchmark flake (Sprint
 0 finding) not revisited. Linux/macOS gate still only verified via CI
 matrix, not independently re-run locally.
 
+## Master-Stabilization-Plan.md — Sprint 2 (2026-08-26): ✅ COMPLETE
+
+**Task 9** (corpus audit): done, networked run executed for real. First
+run against a leftover `.cache` from earlier manual testing produced
+misleading output (stale content from an interrupted prior clone);
+re-ran against a clean cache and got consistent, reproducible numbers.
+`pallets-click`'s near-total drop to 0 across `QA-PW-*`/`QA-TEST-*`/
+`QA-TQUAL-*` families is a genuine accuracy improvement — those rules
+should never fire on a pure-Python repo, and a direct scan confirmed
+only `QA-PY-*`/`QA-ENV-001` findings remain (adapter-scoping working
+correctly), not a regression masked as "quieter". The three real
+"fires more" flags (`QA-PW-103`, `QA-PW-120`, `QA-PW-145` on
+`microsoft-playwright-mcp`) were individually inspected against their
+actual finding text — all legitimate `info`/`low-confidence`/`E1`
+detections of real code patterns (unguarded `goto()` timeouts, an
+engine-specific test without a browser guard, a UI spec with no a11y
+assertions). Ran `--update`, added two new baselines
+(`pytest-dev-pytest`, `psf-requests`) that had none before, confirmed
+non-update mode now passes clean (`OK: no FP-count regressions`).
+
+**Task 10** (FP-table generator): done. `scripts/generate-fp-audit-table.mjs`
+reads the committed baselines (plus a `CORPUS_NOTES` map kept in sync
+with `tests/corpus/audit.ts`'s `CORPUS` list via a cross-check test) and
+writes `docs/FP-AUDIT.md` — cannot drift from the baselines because it's
+generated, not hand-written. Wired as `npm run fp-audit:generate`.
+Fixed `tests/corpus/audit.ts` to guard its own networked `main()` behind
+an `import.meta.url` check so other scripts can import its exports
+without triggering a full audit as a side effect.
+
+**Task 11** (self-scan artifact): done. The self-scan CI gate already
+existed but only ever printed to a log; `ci.yml`'s `self-scan` job now
+writes `self-scan.json`, generates `qa-doctor-badge.json`, and uploads
+both as a downloadable build artifact with `if: always()` (a red run —
+the one someone most needs to inspect — still gets uploaded). Caught a
+real instance of the exact anti-pattern this tool detects while writing
+this: an initial draft used `|| true` for the best-effort badge step,
+which the tool's own `QA-CI-002` rule correctly flagged when self-scanned.
+Fixed with step-scoped `continue-on-error: true` (the honest mitigation
+`QA-CI-001`'s own fix message recommends) and added
+`tests/ci-self-scan-workflow.spec.ts` as a regression guard.
+
+**Task 12** (evidence metadata in every reporter): done, audited. There
+is no `--format markdown` for scan findings — only `terminal`/`json`/
+`sarif` ship (`qa-doctor rules --md` is a separate rule-catalog
+reporter, audited too as this repo's one markdown output). All three
+carry `evidenceLevel`: JSON via the raw `Finding` field, SARIF via
+`result.properties.evidenceLevel` (already present, verified), terminal
+via a per-finding `[E0]`/`[E1]`/`[E2]` tag plus an honest advisory-count
+footer (already present — `appendTopIssues`/`appendFooter` in
+`terminal.ts`, this sprint only added the test proving it, no source
+change needed here). Added `tests/reporter-evidence-contract.spec.ts`.
+
+**Standing gate, verified green:** typecheck (both configs) exit 0;
+lint clean; **72 files / 1677 tests passed**, 1 skipped, 3 tests
+skipped; build succeeds; golden lock byte-identical; **networked
+corpus audit clean** against the reviewed baseline; self-scan gate 0
+error-severity findings.
+
+**Not done in Sprint 2:** `docs/PUBLISHING.md` still outstanding
+(Sprint 3 territory). The `qa-doctor.yml` PR-annotation workflow still
+calls `npx --yes qa-doctor@latest`, which resolves to the parked/
+unrelated npm package (finding #1) — out of scope for this sprint's
+tasks specifically, but a real, separate risk worth flagging: that
+workflow would currently run a stranger's software, not this repo's
+CLI, on every PR that has it enabled.
+
 ## Conventions
 
 - User communicates in Hebrew; artifacts in English.
