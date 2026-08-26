@@ -1,0 +1,55 @@
+name: Rule request
+description: Propose a new anti-pattern QA Doctor should detect.
+title: "[Rule request] <one-line description of the pattern>"
+labels: ["rule-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        See `CONTRIBUTING.md`'s "Proposing a new rule" section if you'd
+        like to implement this yourself — `qa-doctor create-rule` scaffolds
+        the fixture pairs for you. This template is for proposing the idea
+        even if you can't implement it.
+
+        Note the anti-creep law: every addition to the *launch* rule set
+        needs an equal-size removal. New rules in already-mature families
+        (Playwright, CI-integrity) are more likely to need this tradeoff
+        discussed; genuinely new rule families or language adapters are
+        exempt (see `docs/plans/Master-Stabilization-Plan.md` §2).
+  - type: textarea
+    id: pattern
+    attributes:
+      label: The anti-pattern
+      description: What code pattern should this detect?
+      render: typescript
+    validations:
+      required: true
+  - type: textarea
+    id: why-it-matters
+    attributes:
+      label: Why it matters in production
+      description: What actually breaks, or what false confidence does this pattern create?
+    validations:
+      required: true
+  - type: textarea
+    id: false-positive-risk
+    attributes:
+      label: False-positive risk
+      description: >
+        What legitimate code would look similar to this pattern but NOT
+        have the problem? (This becomes the must-not-fire fixture.)
+    validations:
+      required: true
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language / framework
+      options:
+        - TypeScript / Playwright
+        - Python / pytest
+        - Java
+        - C# / .NET
+        - GitHub Actions (CI rules)
+        - Other (specify below)
+    validations:
+      required: true

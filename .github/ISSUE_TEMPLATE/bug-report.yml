@@ -1,0 +1,55 @@
+name: Bug report
+description: Something crashed, produced wrong output, or didn't behave as documented.
+title: "[Bug] <one-line description>"
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        If a **rule fired on code that isn't actually broken**, please use
+        the "False positive" template instead — it collects the specific
+        details we need to fix that class of issue faster.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you ran, what you expected, what actually happened.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Exact command(s) and, if possible, a minimal repo or snippet.
+      render: bash
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Relevant output
+      description: Terminal output, stack trace, or --json/--format sarif output. Redact anything sensitive.
+      render: text
+  - type: input
+    id: version
+    attributes:
+      label: qa-doctor version
+    validations:
+      required: true
+  - type: input
+    id: node-version
+    attributes:
+      label: Node.js version
+      description: Output of `node --version`.
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Linux
+        - macOS
+        - Windows
+    validations:
+      required: true

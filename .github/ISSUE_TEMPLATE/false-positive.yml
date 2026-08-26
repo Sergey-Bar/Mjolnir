@@ -1,0 +1,58 @@
+name: False positive
+description: A rule fired on code that doesn't actually have the problem it claims.
+title: "[FP] <rule ID>: <one-line description>"
+labels: ["false-positive"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        False-positive reports are the highest-value signal we get during
+        the beta. Every rule ships with a must-fire AND must-not-fire
+        fixture — a real FP report usually means a pattern we didn't
+        think of when writing that must-not-fire case. Thank you for
+        taking the time.
+  - type: input
+    id: rule-id
+    attributes:
+      label: Rule ID
+      description: The rule that fired incorrectly (e.g. QA-PW-004).
+      placeholder: QA-PW-004
+    validations:
+      required: true
+  - type: textarea
+    id: code
+    attributes:
+      label: The code that triggered it
+      description: >
+        A minimal snippet (not your whole file) that reproduces the false
+        positive. This becomes the must-not-fire fixture if we confirm it.
+      render: typescript
+    validations:
+      required: true
+  - type: textarea
+    id: why-not-a-problem
+    attributes:
+      label: Why this isn't actually the problem the rule describes
+      description: Explain the legitimate reason the pattern is fine here.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: qa-doctor version
+      description: Output of `npx qa-doctor@latest --version` or your package.json's pinned version.
+    validations:
+      required: true
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language / adapter
+      options:
+        - TypeScript / Playwright
+        - Python / pytest
+        - Java
+        - C# / .NET
+        - GitHub Actions (CI rules)
+        - Other / not sure
+    validations:
+      required: true

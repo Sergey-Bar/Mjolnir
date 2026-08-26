@@ -118,6 +118,11 @@ already shipped). See
 [`docs/RULE-LIFECYCLE.md`](docs/RULE-LIFECYCLE.md) for the process and
 a worked example.
 
+## Releasing
+
+Maintainers: see [`docs/PUBLISHING.md`](docs/PUBLISHING.md) for the
+release checklist and the npm-provenance publishing runbook.
+
 ## PR expectations
 
 - Keep PRs scoped to one concern. A rule addition and an unrelated

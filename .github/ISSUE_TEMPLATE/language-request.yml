@@ -1,0 +1,43 @@
+name: Language / framework support request
+description: Ask for support for a language, test framework, or CI system not yet covered.
+title: "[Language request] <language/framework>"
+labels: ["language-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        QA Doctor is multi-language by design: adding a language means
+        adding one `LanguageAdapter` (`src/engine/adapter.ts`) plus its
+        rules — everything else (scoring, JSON contract, exit codes,
+        `--scope changed`, reporters, suppressions) is shared. Currently
+        shipped: TypeScript/Playwright, Python/pytest, Java, C#/.NET.
+  - type: input
+    id: language
+    attributes:
+      label: Language or test framework
+      placeholder: "e.g. Go + testing package, Ruby + RSpec, Kotlin + JUnit5"
+    validations:
+      required: true
+  - type: textarea
+    id: conventions
+    attributes:
+      label: Test file and framework conventions
+      description: >
+        How are test files named/located? How is the framework detected
+        (a config file, a dependency manifest entry)? Are there multiple
+        common frameworks (like Java's JUnit vs TestNG) with meaningfully
+        different rule needs (e.g. retry-annotation syntax)?
+    validations:
+      required: true
+  - type: textarea
+    id: top-anti-patterns
+    attributes:
+      label: Top 2-3 anti-patterns worth detecting first
+      description: The equivalent of "hard sleep", "skipped test", "no assertions" for this ecosystem.
+  - type: checkboxes
+    id: interest
+    attributes:
+      label: Your interest
+      options:
+        - label: I'd be willing to help implement this adapter
+        - label: I'd be willing to help test/review a draft adapter
