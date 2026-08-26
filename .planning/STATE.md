@@ -464,6 +464,63 @@ scale-benchmark flake (fixed properly in Sprint 3 — no longer open),
 Linux/macOS gate independent re-verification (relies on CI matrix, not
 blocking).
 
+## Master-Stabilization-Plan.md — Sprint 5 (2026-08-26): ✅ COMPLETE
+
+**Task 19** (`qa-doctor explain <RULE-ID>`): done.
+`src/commands/explain.ts` — presentation layer only, per the plan.
+Metadata renders offline from `RuleMeta`; the concrete example is real
+detector output from running the rule's own `run()` against its own
+committed must-fire fixture, never hand-written prose. Building the
+plan's own required "100% of registered rules" test caught two real
+bugs before they shipped: (1) passing the fixture's raw Windows path
+broke every filename-gated rule (e.g. `QA-PW-121` matching
+`playwright.config.ts` via `ctx.path.split("/")`, which never finds a
+`\` separator) — fixed by normalizing to forward slashes as the real
+engine guarantees; (2) every `QA-CI-*` rule reads a parsed YAML AST
+from `ctx.ast`, never populated unless `explainRule` parses the
+workflow fixture the same way `githubActionsAdapter.runRules` does —
+fixed. Without the test, 12 of 78 rules (15%) would have shipped
+"explainable" in name only.
+
+**Task 20** (fix-this-first prioritization): done.
+`src/scorer/prioritize.ts` ranks by `deductionFor` (the scorer's own
+already-computed, evidence-discounted score-gain — not an invented
+second number) with ties broken by `RuleMeta.autofix` (the only
+non-fabricated effort signal available — a coarse tier, not invented
+effort-hours). New terminal "FIX THIS FIRST" section shows the top 3.
+Confirmed display-only: golden lock stays byte-identical because it
+only checks per-rule finding counts, never terminal text — verified by
+running it, not assumed from the plan's own framing.
+
+**Task 21** (empty states): done. Consolidated
+`tests/empty-states.spec.ts` asserting guidance text **and** the
+documented exit code together for every real dead end. Added an
+explicit note to `create-rule`'s report explaining that seeing failing
+tests immediately after scaffolding is intentional (the plan's own
+called-out risk: "surprising and alarming without explanation").
+Slightly improved the framework-unknown message to state what to do
+next, not just what happened.
+
+**Task 22** (terminal robustness): done. `box()` now reflows via a new
+`wrapText()` word-wrapper instead of assuming unbounded width; `--width`
+CLI flag (defaults to `process.stdout.columns`, then 80) threads through
+to the score gauge and deduction box; `shouldUseAscii()` auto-detects
+cmd.exe/legacy consoles (absence of `WT_SESSION`/`TERM_PROGRAM`/
+`ConEmuANSI` plus `win32` plus no `TERM`) and swaps box-drawing/emoji for
+plain ASCII, with a `QA_DOCTOR_ASCII=1/0` env override and `--ascii`/
+`--no-ascii` CLI flags for when the heuristic guesses wrong. Verified
+interactively at 40/80/120 columns and in explicit ASCII mode on this
+session's real terminal, not only unit-tested in isolation.
+
+**Standing gate, verified green:** typecheck (both configs) exit 0;
+lint clean; **83 files / 2167 tests passed**, 1 skipped, 3 tests
+skipped; coverage passes; build succeeds; golden lock byte-identical;
+self-scan gate 0 error-severity findings.
+
+**Not done in Sprint 5:** nothing outstanding from this sprint's own
+task list. This closes the last sprint before the Open Beta Gate
+checklist.
+
 ## Conventions
 
 - User communicates in Hebrew; artifacts in English.
