@@ -411,6 +411,59 @@ still outstanding — genuinely Sprint 4 territory now (beta readiness),
 not deferred further. The `qa-doctor.yml` npm-name risk flagged in
 Sprint 2 remains open, still correctly out of scope (parked per §5).
 
+## Master-Stabilization-Plan.md — Sprint 4 (2026-08-26): ✅ COMPLETE
+
+**Task 16** (clean-machine first-run validation): done, and genuinely
+executed rather than simulated. Packed a real tarball
+(`npm pack`), extracted it, copied in runtime dependencies the way a
+real `npm install` would, and ran every one of the README's 14
+documented commands against a fresh fixture repo. All work as
+described, including honest degradation on missing inputs (`badge`
+falls back to `commit="unknown"` outside a git repo; `doctor` explains
+it needs the qa-doctor repo root; `forensics`/`triage`/`pw-report`
+report "nothing found" instead of crashing without a `test-results/`
+dir). Verified on this session's OS (Windows) only — Linux/macOS rely
+on the existing 3-OS CI matrix (Sprint 0 finding #10 confirmed that
+matrix is real), not independently re-run here. Added
+`tests/readme-commands.spec.ts`: extracts every documented command and
+checks its subcommand token against `src/cli.ts`'s real dispatch
+strings, read from source so the check can't drift.
+
+**Task 17** (feedback channel): done.
+`.github/ISSUE_TEMPLATE/bug-report.yml`, `false-positive.yml` (the
+highest-value beta signal — collects rule ID, minimal repro, and the
+"why this isn't the problem" explanation that becomes the must-not-fire
+fixture), `rule-request.yml`, `language-request.yml`, `config.yml`
+(blank issues disabled, security reports routed to `SECURITY.md`'s
+private channel instead of a public issue). `tests/issue-templates.spec.ts`
+validates YAML structure and GitHub's required issue-form fields.
+
+**Task 18** (provenance publishing prep): done. `release.yml` was
+correctly noted by the plan as never publishing to npm at all (tarball
+
+- GitHub Release only) — now has a written `npm publish --provenance`
+  step, gated via `if: false` (not merely absent — a real regression
+  guard via `tests/release-workflow.spec.ts` checks specifically for
+  `false`, not just "no publish step"), plus `id-token: write` on the job
+  for the future OIDC token. `docs/PUBLISHING.md` documents the
+  per-release checklist and the one-time npmjs.com trusted-publisher
+  (OIDC) runbook a maintainer must do manually on npmjs.com — explicit
+  that this cannot be automated from inside the repo, and why there's
+  deliberately no `NODE_AUTH_TOKEN` secret (OIDC trusted publishing
+  replaces long-lived tokens).
+
+**Standing gate, verified green:** typecheck (both configs) exit 0;
+lint clean; **79 files / 1937 tests passed**, 1 skipped, 3 tests
+skipped; coverage passes; build succeeds; golden lock byte-identical;
+self-scan gate 0 error-severity findings.
+
+**Not done in Sprint 4:** nothing outstanding from this sprint's own
+task list. Carried-forward, still-open items: the `qa-doctor.yml`
+npm-name risk (Sprint 2, correctly parked), the `test:coverage`
+scale-benchmark flake (fixed properly in Sprint 3 — no longer open),
+Linux/macOS gate independent re-verification (relies on CI matrix, not
+blocking).
+
 ## Conventions
 
 - User communicates in Hebrew; artifacts in English.
