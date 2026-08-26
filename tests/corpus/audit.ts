@@ -70,6 +70,16 @@ export const CORPUS: CorpusRepo[] = [
     url: "https://github.com/psf/requests.git",
     note: "small real pytest suite — Python adapter FP surface",
   },
+  {
+    name: "microsoft-playwright-java",
+    url: "https://github.com/microsoft/playwright-java.git",
+    note: "real Playwright Java test suite — Java adapter FP surface (QA-JV-101..111). Library-suite caveat: this repo tests the Playwright Java bindings themselves, not a consumer app — swap for a better candidate if one emerges (Sprint 8 Task 37's own acknowledged tradeoff).",
+  },
+  {
+    name: "microsoft-playwright-dotnet",
+    url: "https://github.com/microsoft/playwright-dotnet.git",
+    note: "real Playwright .NET test suite — C# adapter FP surface (QA-CS-101..111). Same library-suite caveat as microsoft-playwright-java above.",
+  },
 ];
 
 interface BaselineEntry {

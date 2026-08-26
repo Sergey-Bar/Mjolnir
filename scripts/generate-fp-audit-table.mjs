@@ -43,6 +43,14 @@ const CORPUS_NOTES = {
     url: "https://github.com/psf/requests.git",
     note: "small real pytest suite — Python adapter FP surface",
   },
+  "microsoft-playwright-java": {
+    url: "https://github.com/microsoft/playwright-java.git",
+    note: "real Playwright Java test suite — Java adapter FP surface (library-suite caveat: tests the bindings themselves, not a consumer app)",
+  },
+  "microsoft-playwright-dotnet": {
+    url: "https://github.com/microsoft/playwright-dotnet.git",
+    note: "real Playwright .NET test suite — C# adapter FP surface (same library-suite caveat)",
+  },
 };
 
 function loadBaselines() {

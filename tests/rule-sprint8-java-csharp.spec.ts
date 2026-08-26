@@ -12,6 +12,8 @@ import { describe, expect, it } from "vitest";
 import { jvBrittleSelectors } from "../src/rules/java/qa-jv-106-brittle-selectors.js";
 import { jvNetworkIdle } from "../src/rules/java/qa-jv-107-network-idle.js";
 import { jvHardcodedUrl } from "../src/rules/java/qa-jv-108-hardcoded-url.js";
+import { jvNoAssertions } from "../src/rules/java/qa-jv-103-no-assertions.js";
+import { csNoAssertions } from "../src/rules/csharp/qa-cs-103-no-assertions.js";
 import { jvRetryMasking } from "../src/rules/java/qa-jv-109-retry-masking.js";
 import { jvNoA11yAssertions } from "../src/rules/java/qa-jv-110-no-a11y.js";
 import { jvBlanketRouteMock } from "../src/rules/java/qa-jv-111-blanket-route.js";
@@ -277,6 +279,78 @@ describe("QA-CS-108 hardcoded URL", () => {
       text: 'await Page.GotoAsync("/checkout"); await Page.GotoAsync("http://localhost:3000/checkout"); await Page.GotoAsync("http://127.0.0.1:3000/checkout");',
     });
     expect(findings).toEqual([]);
+  });
+});
+
+describe("QA-JV-103 no assertions", () => {
+  it("ignores non-.java files", () => {
+    expect(
+      jvNoAssertions.run({ path: "T.cs", text: "@Test\nvoid t(){}" }),
+    ).toEqual([]);
+  });
+
+  it("fires on a @Test method with no assertion call", () => {
+    const findings = jvNoAssertions.run({
+      path: "T.java",
+      text: "@Test\nvoid shouldWork() {\n  doSomething();\n}\n",
+    });
+    expect(findings).toHaveLength(1);
+  });
+
+  it.each([
+    "assertEquals(1, 2);",
+    "assertArrayEquals(a, b);",
+    "assertNotEquals(1, 2);",
+    "assertNull(x);",
+    "assertSame(a, b);",
+    "assertJsonEquals(expected, actual);",
+    "assertWebp(bytes);",
+  ])(
+    "does not fire when the body calls %s — real corpus false-positive found against microsoft/playwright-java (Sprint 8 Task 37)",
+    (assertCall) => {
+      const findings = jvNoAssertions.run({
+        path: "T.java",
+        text: `@Test\nvoid shouldWork() {\n  ${assertCall}\n}\n`,
+      });
+      expect(findings).toEqual([]);
+    },
+  );
+});
+
+describe("QA-CS-103 no assertions", () => {
+  it("does not fire on [TestInitialize]/[TestCleanup] setup/teardown methods — real corpus false-positive found against microsoft/playwright-dotnet (Sprint 8 Task 37)", () => {
+    const findings = csNoAssertions.run({
+      path: "T.cs",
+      text: "[TestInitialize]\npublic async Task Setup() {\n  await DoSomething();\n}\n",
+    });
+    expect(findings).toEqual([]);
+  });
+
+  it("still fires on a real [Test] method with no assertion", () => {
+    const findings = csNoAssertions.run({
+      path: "T.cs",
+      text: "[Test]\npublic void ShouldWork() {\n  DoSomething();\n}\n",
+    });
+    expect(findings).toHaveLength(1);
+  });
+
+  it("recognizes [TestCleanup] as non-test (no finding) while a same-file real [Test] method is still flagged", () => {
+    const findings = csNoAssertions.run({
+      path: "T.cs",
+      text:
+        "[TestCleanup]\npublic void Cleanup() {\n  Dispose();\n}\n\n" +
+        "[Test]\npublic void ShouldWork() {\n  DoSomething();\n}\n",
+    });
+    expect(findings).toHaveLength(1);
+    expect(findings[0]?.message).toContain("ShouldWork");
+  });
+
+  it('still recognizes [Test(Description = "...")] with constructor arguments as a real test', () => {
+    const findings = csNoAssertions.run({
+      path: "T.cs",
+      text: '[Test(Description = "checks something")]\npublic void ShouldWork() {\n  DoSomething();\n}\n',
+    });
+    expect(findings).toHaveLength(1);
   });
 });
 

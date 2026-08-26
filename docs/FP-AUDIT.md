@@ -18,6 +18,57 @@ example; this proves it behaves on code nobody wrote for QA Doctor.
 
 Last generated: 2026-08-26.
 
+## microsoft-playwright-dotnet
+
+real Playwright .NET test suite — C# adapter FP surface (same library-suite caveat)
+
+Source: [`https://github.com/microsoft/playwright-dotnet`](https://github.com/microsoft/playwright-dotnet)
+
+Total findings: **550**
+
+| Rule ID     | Findings |
+| ----------- | -------- |
+| QA-CI-002   | 1        |
+| QA-CS-101   | 139      |
+| QA-CS-102   | 52       |
+| QA-CS-103   | 2        |
+| QA-CS-105   | 16       |
+| QA-CS-106   | 31       |
+| QA-CS-107   | 1        |
+| QA-CS-108   | 26       |
+| QA-CS-110   | 135      |
+| QA-CS-111   | 74       |
+| QA-ENV-001  | 55       |
+| QA-PW-145   | 5        |
+| QA-TEST-004 | 13       |
+
+## microsoft-playwright-java
+
+real Playwright Java test suite — Java adapter FP surface (library-suite caveat: tests the bindings themselves, not a consumer app)
+
+Source: [`https://github.com/microsoft/playwright-java`](https://github.com/microsoft/playwright-java)
+
+Total findings: **537**
+
+| Rule ID     | Findings |
+| ----------- | -------- |
+| QA-ENV-001  | 27       |
+| QA-JV-101   | 8        |
+| QA-JV-102   | 1        |
+| QA-JV-103   | 101      |
+| QA-JV-104   | 2        |
+| QA-JV-105   | 40       |
+| QA-JV-106   | 27       |
+| QA-JV-108   | 31       |
+| QA-JV-110   | 110      |
+| QA-JV-111   | 70       |
+| QA-PW-003   | 2        |
+| QA-PW-004   | 8        |
+| QA-PW-101   | 40       |
+| QA-PW-103   | 10       |
+| QA-PW-112   | 16       |
+| QA-TEST-004 | 44       |
+
 ## microsoft-playwright-mcp
 
 real Playwright + GitHub Actions — TS/PW/CI adapter FP surface

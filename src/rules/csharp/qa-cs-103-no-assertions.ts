@@ -28,8 +28,19 @@ export const csNoAssertions = defineRule({
     if (!ctx.path.endsWith(".cs")) return findings;
 
     // [Test]/[Fact]/[TestMethod] methods without assertion calls.
+    // Corpus-audit finding (Sprint 8 Task 37, against
+    // microsoft/playwright-dotnet): the previous regex
+    // `\[(?:Test|Fact|TestMethod)[^\]]*\]` had no boundary after the
+    // `Test` alternative, so it also matched `[TestInitialize]` and
+    // `[TestCleanup]` (MSTest's setup/teardown attributes, NOT test
+    // methods) — `Test` + `Initialize` (absorbed by `[^\]]*`) + `]`.
+    // Real false positives: BrowserSetup/ContextSetup/etc. teardown
+    // methods were flagged as "tests with no assertions" when they are
+    // not tests at all. Fixed by requiring the attribute name to end
+    // exactly at `Test`/`Fact`/`TestMethod` (only optional constructor
+    // arguments like `[Test(Description = "...")]` may follow).
     const attrRe =
-      /\[(?:Test|Fact|TestMethod)[^\]]*\]\s*(?:public\s+)?(?:async\s+)?(?:Task|void)\s+(\w+)\s*\([^)]*\)\s*\{/g;
+      /\[(?:Test|Fact|TestMethod)(?:\([^)]*\))?\]\s*(?:public\s+)?(?:async\s+)?(?:Task|void)\s+(\w+)\s*\([^)]*\)\s*\{/g;
     let m: RegExpExecArray | null;
     while ((m = attrRe.exec(ctx.text)) !== null) {
       const bodyStart = m.index + m[0].length;

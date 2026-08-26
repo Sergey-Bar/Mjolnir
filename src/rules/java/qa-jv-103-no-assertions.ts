@@ -39,7 +39,17 @@ export const jvNoAssertions = defineRule({
       const body = ctx.text.slice(bodyStart, bodyEnd);
 
       const hasCheck =
-        /assert(?:That|True|False|Equals|NotNull|Throws)\s*\(/.test(body) ||
+        // assert*(...) — any JUnit/AssertJ/Hamcrest-style assertion
+        // method, not just a fixed suffix list. Corpus-audit finding
+        // (Sprint 8 Task 37, against microsoft/playwright-java): the
+        // previous fixed list (assertThat/True/False/Equals/NotNull/
+        // Throws) missed assertArrayEquals, assertNotEquals, assertNull,
+        // assertSame, and project-specific helpers like assertJsonEquals
+        // — all real assertions this rule was falsely flagging as
+        // missing. A generic `assert[A-Z]\w*\(` catches any
+        // camelCase-suffixed assert method without hardcoding an
+        // incomplete enumeration.
+        /\bassert[A-Z]\w*\s*\(/.test(body) ||
         /\bfail\s*\(/.test(body) ||
         /verify\s*\(/.test(body);
       if (!hasCheck) {
