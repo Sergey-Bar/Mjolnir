@@ -692,6 +692,85 @@ recorded here rather than silently fixed mid-sprint or silently ignored.
 **Not done in Sprint 6:** nothing outstanding from this sprint's own
 task list (Tasks 23–26 and their full QA table are complete).
 
+## Sprint 7 — Living docs and workflow integration — done 2026-08-26
+
+Tasks 27–30 of `docs/plans/Master-Stabilization-Plan.md`.
+
+**Task 27** (rule documentation generator, `npm run docs:rules`):
+generates `docs/rules/<RULE-ID>.md` for all 78 registered rules plus an
+index page, built directly on Sprint 5's `explainRule` machinery so
+docs cannot drift from actual behavior — each page shows real detector
+output from the rule's own must-fire fixture, confirms the must-not-fire
+fixture correctly does not fire, and (when measured) real corpus
+occurrence counts from Task 10's FP-audit baselines, UNKNOWN rather
+than a fabricated zero when no corpus data exists for that rule. 100%
+rule coverage enforced by test. **Real pre-existing bug found and
+fixed while building this:** `renderCatalogMd` (the existing
+`qa-doctor rules --md` command, shipped since Sprint 2) never escaped
+`|` characters inside rule titles — QA-CI-002's real title is literally
+`"Ignored exit code (|| true)"`, which silently broke that table row's
+own markdown every time anyone ran the command. Fixed in both the
+existing catalog renderer and the new generator, pinned with a
+regression test on that exact rule so it can't silently reland.
+
+**Task 28** (SARIF editor integration docs, `docs/SARIF-INTEGRATION.md`):
+VS Code (SARIF Viewer extension) and JetBrains (native SARIF report
+loading) setup instructions for the existing `--format sarif` output.
+**Caught myself fabricating two claims while drafting this, before
+either shipped:** an invented `--output` CLI flag that does not exist
+anywhere in `parseArgs`, and a claim that GitHub Code Scanning upload
+is "already wired into `ci.yml`" — verified false by grep (no
+`upload-sarif` step exists in this repo's CI at all). Rewrote both
+sections to be accurate: real shell-redirection syntax instead of the
+invented flag, and the Code Scanning section reframed as "how to add
+this yourself" rather than a false "already done" claim. Added a new
+`docs-consistency.spec.ts` guard specifically for this document so
+either fabrication class can't silently reland.
+
+**Task 29** (README hero asset reproducibility): the committed
+`assets/readme/terminal-hero.svg` was a hand-crafted, one-off SVG with
+**no generator and no drift check** — and had, in fact, already
+drifted for real: it was missing the "FIX THIS FIRST" section entirely
+(shipped in Sprint 5, after the SVG was made) and showed stale
+deduction numbers from before evidence-discount scoring landed. Added
+`scripts/generate-readme-hero.ts` (`npm run docs:hero`), which renders
+the SVG directly from `renderTerminal`'s real ANSI output against a
+live scan of `examples/demo-repo` — parsing the actual ANSI SGR color
+codes into SVG `<tspan fill>` elements, so the asset cannot drift from
+real behavior because it IS real behavior, just recolored. Regenerated
+the asset for real; `tests/hero-asset-reproducibility.spec.ts` asserts
+every section header and every rule ID/message appearing in the
+committed SVG matches what the current reporter actually produces for
+that exact scan, closing the exact gap that let the old asset drift
+silently for at least one full sprint.
+
+**Task 30** (anti-pattern catalog content,
+`src/commands/anti-pattern-catalog.ts`): extends Task 27's generated
+pages with a fuller, mechanism-grounded "why this fails in production"
+explanation for all 22 error-severity rules — exceeds the plan's own
+"top 20" bar. **Deliberately does NOT implement two further ideas from
+the plan's own source material** (Tier 1 #4): linking to GitHub
+Discussions threads where users debate severity, and a video/GIF per
+rule. The former would require fabricating citations to discussions
+that do not exist for a pre-launch product; the latter is a production
+asset genuinely outside what can be produced truthfully in this
+context. Every claim in this content about GitHub Actions status-check
+semantics (`continue-on-error`'s effect on job conclusion, a skipped
+required check reporting "success," an always-succeed trailing step)
+was verified against GitHub's own `actions/runner` ADR docs and
+official GitHub Docs before being written — not asserted from memory —
+and is cited by URL in the commit history for this change.
+
+**Standing gate, verified green:** typecheck (both configs) exit 0;
+lint clean; **93 files / 2455 tests passed**, 1 skipped, 3 tests
+skipped; coverage 95.91% lines / 88.17% branches / 97.45% functions /
+96.48% statements (all above the 95/88/96/95 thresholds); build
+succeeds; golden lock byte-identical; self-scan gate 0 error-severity
+findings.
+
+**Not done in Sprint 7:** nothing outstanding from this sprint's own
+task list (Tasks 27–30 and their full QA table are complete).
+
 ## Conventions
 
 - User communicates in Hebrew; artifacts in English.
