@@ -583,6 +583,115 @@ public launch is the parked npm-name decision (§5), which requires a
 choice only the project owner can make (scoped package name vs.
 product rename vs. acquiring the existing name).**
 
+## Sprint 6 — Proof of value (post-beta-gate) — done 2026-08-26
+
+Tasks 23–26 of `docs/plans/Master-Stabilization-Plan.md`. Explicitly
+post-beta per the plan (highest-leverage but not blocking beta).
+
+**Task 23** (`qa-doctor impact [--since <ref>]`): compares the current
+scan against a real prior commit. Materializes that commit's tree into
+a temp directory via `git ls-tree -r` + `git show <ref>:<path>` per
+file — deliberately walks git's own object model rather than shelling
+out to `tar`/`unzip`, so this stays dependency-free beyond git itself
+(already required by `--scope changed`). Re-runs the exact same rule
+engine against the reconstructed tree, then diffs findings against the
+current scan by a `ruleId+file+message` fingerprint — never by line
+number, which shifts on every unrelated edit. **Hard honesty
+constraint, verified by test:** the CI-minutes/engineer-hours-saved
+field is always and only `UNKNOWN`, with an explicit explanation of
+why it can't be computed — never an estimated number. The plan's own
+required test (`reports UNKNOWN when data is absent`) passes.
+
+**Task 24** (`qa-doctor baseline` / `qa-doctor diff`): `baseline`
+snapshots the current finding set to `.qa-doctor/baseline.json`
+(local by default, not gitignored — a team can commit it for a shared
+baseline, a deliberate choice this command doesn't make for them).
+`diff` compares the live scan against that snapshot and reports only
+**new or worsened** debt — pre-existing findings are counted but never
+re-reported as new, closing the exact gap Plan.md Phase 10 / plan §24
+names: existing debt blocking every PR is what drives tools to be
+disabled.
+
+**Task 25** (PR feedback loop): audited the existing
+`.github/workflows/qa-doctor.yml` before building on it, per the task's
+own instruction — and found it was actually broken in two ways: an
+`annotate` step referenced `github.rest.checks` without ever calling
+it (a complete no-op — the "annotation" never did anything), and
+findings only ever landed in a `qa-doctor.json` file inside the runner,
+which no PR reviewer ever opens. Added `qa-doctor pr-comment`
+(pure-function Markdown renderer, scoped to the baseline diff when one
+exists) and rewrote the workflow to actually post/update a PR comment
+via `actions/github-script`'s issues API, keyed on the render's own
+idempotency marker so repeated pushes update one comment instead of
+spamming new ones. Self-scanning my own first draft of this workflow
+caught a real anti-pattern I'd just written: a `|| true` on the `diff`
+step (QA-CI-002, "swallowed exit code") plus a redundant always-succeeds
+tail step (QA-CI-008) — fixed per the rules' own documented advice
+(`continue-on-error: true` on the specific step, remove the redundant
+tail step) rather than suppressing either finding, since both were
+mine and directly fixable, not legitimate exceptions. One `git checkout
+... || echo "..."` fallback line for an intentionally-optional file
+_is_ a legitimate exception (documented in `qa-doctor.config.json`'s
+`ignore` list with reasoning, matching the project's established
+suppression-with-justification pattern) — the difference: that `||`
+branch never hides a test/build command's real pass/fail signal, it's
+an informative fallback for a file that may legitimately not exist yet.
+The parked npm-package-name issue (`qa-doctor@latest` resolving to an
+unrelated package) is called out in a workflow comment, not hidden.
+
+**Task 26** (`qa-doctor stats`): local-only, no telemetry (verified —
+`tests/privacy-network-isolation.spec.ts` scans this file too, along
+with every other new file this sprint). Accumulates strictly from what
+`qa-doctor diff` has personally witnessed being resolved, ever — does
+NOT attempt to reconstruct history from before tracking started,
+because a finding disappearing from a scan could mean "fixed" or "the
+file was deleted," and conflating those into one number would be
+exactly the invented-precision this product exists to catch in other
+tools. A repo with no recorded history reports an honest zero, not a
+fabricated total.
+
+**Real bug this sprint's own tests caught before shipping:** an
+off-by-one in `runImpactCommand`'s argv filtering. `argv.indexOf("--since")`
+returns `-1` when absent; the original code computed
+`argv.filter((a, i) => i !== sinceIdx && i !== sinceIdx + 1)`
+unconditionally, and `-1 + 1 === 0` — so whenever `--since` was NOT
+passed, the filter silently dropped `argv[0]`, which is normally the
+scan target path. A CLI usage-error test
+(`runImpactCommand(["--bogus"], ...)` should return exit 10) instead
+ran a real 17-second scan and returned exit 0, because `--bogus` had
+been silently stripped, leaving an empty argv that defaulted the target
+to `.`. Fixed by only applying the filter when `--since` is actually
+present.
+
+**Standing gate, verified green:** typecheck (both configs) exit 0;
+lint clean; **90 files / 2244 tests passed**, 1 skipped, 3 tests
+skipped; coverage 95.86% lines / 88.24% branches / 97.39% functions /
+96.42% statements (all above the 95/88/96/95 thresholds); build
+succeeds; golden lock byte-identical; self-scan gate 0 error-severity
+findings (after fixing the two self-introduced findings above and
+documenting the one legitimate exception).
+
+**Known pre-existing condition, NOT introduced this sprint** (verified
+by `git stash`-ing all Sprint 6 changes and re-running self-scan against
+the exact prior commit): this repo's own self-scan reports **score: 0**
+despite **0 error-severity findings** — confirmed present before any
+Sprint 6 work. The `QA-PW` (21) and `QA-TEST` (15) dimension scores are
+dragged down by warning/info-level findings concentrated in test files
+that embed sample anti-pattern code as string literals for testing the
+scanner itself (dogfooding noise, not real production bugs) — most of
+this class is already suppressed via `qa-doctor.config.json`'s `ignore`
+list for specific rule+path combinations, but evidently not
+exhaustively for every file that contains such literals (e.g.
+`tests/rule-branch-coverage-java-csharp.spec.ts`,
+`tests/trust-upgrade.spec.ts` are not covered by the existing `tests/**`
+suppression entries, which are scoped per-rule rather than blanket).
+This is a real, pre-existing rough edge in the self-scan badge/score
+story worth a future look — out of scope for Sprint 6's own task list,
+recorded here rather than silently fixed mid-sprint or silently ignored.
+
+**Not done in Sprint 6:** nothing outstanding from this sprint's own
+task list (Tasks 23–26 and their full QA table are complete).
+
 ## Conventions
 
 - User communicates in Hebrew; artifacts in English.
