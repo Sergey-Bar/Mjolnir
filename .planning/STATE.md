@@ -317,6 +317,100 @@ tasks specifically, but a real, separate risk worth flagging: that
 workflow would currently run a stranger's software, not this repo's
 CLI, on every PR that has it enabled.
 
+## Master-Stabilization-Plan.md — Sprint 3 (2026-08-26): ✅ COMPLETE
+
+**Task 13** (CONTRIBUTING.md): done. Dev setup, every standing-gate
+command, the anti-creep/fixture-firewall laws (linked to
+Master-Stabilization-Plan.md, not duplicated), how to propose a rule —
+documenting that `create-rule`'s scaffold deliberately fails its own
+fixtures until implemented, which is surprising without explanation —
+or a plugin, and PR expectations.
+
+**Task 14** (rule deprecation/lifecycle policy): done.
+`docs/RULE-LIFECYCLE.md` — severity-downgrade-first path, mandatory
+CHANGELOG entry, a full worked example. Backed by a real mechanism, not
+just prose: `src/rules/index.ts` now exports `RETIRED_RULE_IDS` (empty
+until the first full removal), and `tests/rules.registry.spec.ts`
+enforces a retired ID can never simultaneously be an active one.
+
+**Task 15** (documentation truth pass): done.
+
+- `docs/README.md`'s plan-status table rewritten: `Master-Stabilization-
+Plan.md` now listed as current; `Implementation-Master-Plan.txt`
+  marked superseded with a matching header note in that file itself;
+  removed a self-referential "qa-doctor/ is the source" line (this file
+  now lives _inside_ `qa-doctor/`) and a `demos/` reference to a folder
+  that only exists in the untracked outer directory.
+- README.md's "TypeScript/Playwright and Python today" line fixed
+  (finding: understated the shipped Java and C# adapters) — now names
+  all four, honestly noting Java/C# ship a regex-only core family with
+  tree-sitter WASM AST as the next precision step (not full parity
+  with Python's real AST yet).
+- `tests/docs-consistency.spec.ts` added: every rule ID README's tables
+  cite is checked against the real registry (existence + severity, with
+  a reviewed allowlist for `QA-TEST-002`, whose severity is genuinely
+  computed per-occurrence — a justified skip is `warning`, an
+  unjustified one escalates to `error` — not a stale README, which my
+  first draft of this test incorrectly assumed). Also guards the
+  specific stale-gap-claim bug class in findings #3/#10 (Windows tar,
+  CI OS matrix) so a future revert can't silently un-fix the docs
+  alongside the code.
+
+**Unplanned but necessary — coverage was fully unmeasured until this
+sprint.** Sprint 0's own findings list said coverage thresholds were
+"explicitly NOT verified" (no shell access that session). Running
+`npm run test:coverage` for real for the first time (blocked earlier by
+the scale-benchmark timeout flake, fixed properly this sprint by
+raising that one file's Vitest `testTimeout` to exceed its own internal
+budget assertion — confirmed fixed by re-running the full suite and
+coverage back-to-back with no recurrence) surfaced a real, previously
+invisible gap: **88.41% lines / 81.02% branches / 92.13% functions /
+89.57% statements** against 95/88/96/95 floors — failing on three of
+four axes. Root causes, each fixed with real unit tests, never by
+lowering the thresholds:
+
+- `javaAdapter`/`csharpAdapter` (~35-40%, no dedicated test file existed
+  at all) → `tests/adapter-java-csharp.spec.ts`.
+- The 9 Java/C# rules (~18-25%, only exercised indirectly via the
+  fixture-firewall completeness check) →
+  `tests/rule-branch-coverage-java-csharp.spec.ts`.
+- `src/plugins/load.ts` (81.81%/56% branches) → extended
+  `tests/plugins.spec.ts` (malformed config, object-form declarations,
+  non-array entries, no-rules-export, mixed valid/invalid rules).
+- `src/commands/doctor.ts` (65.62% — the single worst file in the repo)
+  → extended `tests/trust-upgrade.spec.ts` (`checkEvidenceHonesty` and
+  `renderDoctorReport` were never called directly before this).
+- `src/scorer/scorer.ts` (92.3%/75% branches; the module doc comment
+  promises idempotency nothing had verified) → new
+  `tests/scorer-unit.spec.ts`.
+- `src/forensics/triage.ts` (67.64% branches; only the empty state and
+  `renderTriageMd` were tested, never `renderTriage`'s real path) →
+  extended `tests/commands.spec.ts`.
+- `src/rules/ci/qa-ci-009-exit-code.ts` (75% branches, worst CI rule) →
+  extended `tests/ci-exit-code.spec.ts`.
+- `src/commands/rules-catalog.ts` (61.9% branches — every _real_
+  registered rule has full Trust Metadata, so the "field absent" arm of
+  every optional-field spread was structurally unreachable from `RULES`
+  itself) → extended `tests/rules-catalog.spec.ts` with synthetic
+  minimal/full rules.
+
+**`npm run test:coverage` now passes (exit 0) for the first time this
+session: 95.61% lines / 88.27% branches / 97.69% functions / 96.24%
+statements.**
+
+**Standing gate, verified green:** typecheck (both configs) exit 0;
+lint clean (also fixed several non-null-assertion violations my own
+new tests introduced — this repo's eslint config bans `!`); **76 files
+/ 1903 tests passed**, 1 skipped, 3 tests skipped; coverage passes;
+build succeeds; golden lock byte-identical (none of this sprint's work
+changed real scan behavior — confirmed, not assumed); self-scan gate 0
+error-severity findings.
+
+**Not done in Sprint 3:** `docs/PUBLISHING.md` (release checklist)
+still outstanding — genuinely Sprint 4 territory now (beta readiness),
+not deferred further. The `qa-doctor.yml` npm-name risk flagged in
+Sprint 2 remains open, still correctly out of scope (parked per §5).
+
 ## Conventions
 
 - User communicates in Hebrew; artifacts in English.
