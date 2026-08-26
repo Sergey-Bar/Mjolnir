@@ -5,6 +5,7 @@
  */
 
 import { existsSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { join, relative, resolve, sep } from "node:path";
 import process from "node:process";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -43,6 +44,23 @@ import {
   renderScaffoldReport,
 } from "./commands/create-rule.js";
 import { buildHandover, renderHandover } from "./commands/handover.js";
+import { computeImpact, renderImpact } from "./commands/impact.js";
+import {
+  DEFAULT_BASELINE_PATH,
+  diffAgainstBaseline,
+  loadBaseline,
+  renderBaselineDiff,
+  renderBaselineSaved,
+  saveBaseline,
+} from "./commands/baseline.js";
+import {
+  DEFAULT_STATS_PATH,
+  loadStats,
+  recordResolved,
+  renderStats,
+  saveStats,
+} from "./commands/stats.js";
+import { renderPrComment } from "./commands/pr-comment.js";
 import { runInit, renderInit, tryReadPackageJson } from "./commands/init.js";
 import { renderPwRunSummary, summarizePwRun } from "./commands/pw-report.js";
 import { planAndApplyFixes, renderFixReport } from "./commands/fix.js";
@@ -717,6 +735,159 @@ export function runCreateRuleCommand(
   }
 }
 
+function currentCommit(root: string): string {
+  try {
+    return execFileSync("git", ["-C", root, "rev-parse", "HEAD"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+  } catch {
+    return "unknown";
+  }
+}
+
+/** Testable `impact` handler (Sprint 6 Task 23). */
+export function runImpactCommand(
+  argv: string[],
+  io: { out: Output; err: Output } = { out, err },
+): number {
+  const sinceIdx = argv.indexOf("--since");
+  const since = sinceIdx !== -1 ? argv[sinceIdx + 1] : undefined;
+  const args = parseArgs(
+    sinceIdx === -1
+      ? argv
+      : argv.filter((_a, i) => i !== sinceIdx && i !== sinceIdx + 1),
+  );
+  if (!args) {
+    printUsage(io.out);
+    return 10;
+  }
+  try {
+    const target = resolve(args.target);
+    const report = computeImpact(target, {
+      ...(since ? { since } : {}),
+      runScan: (dir) => runScan({ ...args, target: dir }),
+    });
+    io.out(renderImpact(report));
+    return report.hasComparison ? 0 : 2;
+  } catch (err) {
+    io.err(
+      "qa-doctor internal error:",
+      err instanceof Error ? err.message : String(err),
+    );
+    return 20;
+  }
+}
+
+/** Testable `baseline` handler (Sprint 6 Task 24). */
+export function runBaselineCommand(
+  argv: string[],
+  io: { out: Output; err: Output } = { out, err },
+): number {
+  const args = parseArgs(argv);
+  if (!args) {
+    printUsage(io.out);
+    return 10;
+  }
+  try {
+    const target = resolve(args.target);
+    const result = runScan({ ...args, target });
+    const outPath = join(target, DEFAULT_BASELINE_PATH);
+    saveBaseline(result, currentCommit(target), outPath);
+    io.out(renderBaselineSaved(DEFAULT_BASELINE_PATH, result.findings.length));
+    return 0;
+  } catch (err) {
+    io.err(
+      "qa-doctor internal error:",
+      err instanceof Error ? err.message : String(err),
+    );
+    return 20;
+  }
+}
+
+/** Testable `diff` handler (Sprint 6 Task 24) — new/worsened debt only. */
+export function runDiffCommand(
+  argv: string[],
+  io: { out: Output; err: Output } = { out, err },
+): number {
+  const args = parseArgs(argv);
+  if (!args) {
+    printUsage(io.out);
+    return 10;
+  }
+  try {
+    const target = resolve(args.target);
+    const result = runScan({ ...args, target });
+    const baselinePath = join(target, DEFAULT_BASELINE_PATH);
+    const baseline = loadBaseline(baselinePath);
+    const diff = diffAgainstBaseline(result, baseline);
+    io.out(renderBaselineDiff(diff));
+
+    // Fold resolved findings into all-time stats (Task 26) — only when a
+    // real comparison happened; establishing a baseline records nothing.
+    if (diff.hasBaseline) {
+      const statsPath = join(target, DEFAULT_STATS_PATH);
+      const stats = recordResolved(loadStats(statsPath), diff);
+      saveStats(stats, statsPath);
+    }
+
+    if (!diff.hasBaseline) return 2;
+    return diff.newFindings.some((f) => f.severity === "error") ? 1 : 0;
+  } catch (err) {
+    io.err(
+      "qa-doctor internal error:",
+      err instanceof Error ? err.message : String(err),
+    );
+    return 20;
+  }
+}
+
+/** Testable `pr-comment` handler (Sprint 6 Task 25). */
+export function runPrCommentCommand(
+  argv: string[],
+  io: { out: Output; err: Output } = { out, err },
+): number {
+  const args = parseArgs(argv);
+  if (!args) {
+    printUsage(io.out);
+    return 10;
+  }
+  try {
+    const target = resolve(args.target);
+    const result = runScan({ ...args, target });
+    const baseline = loadBaseline(join(target, DEFAULT_BASELINE_PATH));
+    const diff = baseline ? diffAgainstBaseline(result, baseline) : undefined;
+    io.out(renderPrComment(result, diff ? { diff } : {}));
+    return 0;
+  } catch (err) {
+    io.err(
+      "qa-doctor internal error:",
+      err instanceof Error ? err.message : String(err),
+    );
+    return 20;
+  }
+}
+
+/** Testable `stats` handler (Sprint 6 Task 26). */
+export function runStatsCommand(
+  argv: string[],
+  io: { out: Output; err: Output } = { out, err },
+): number {
+  const targetArg = argv.find((a) => !a.startsWith("-")) ?? ".";
+  try {
+    const target = resolve(targetArg);
+    const stats = loadStats(join(target, DEFAULT_STATS_PATH));
+    io.out(renderStats(stats));
+    return 0;
+  } catch (err) {
+    io.err(
+      "qa-doctor internal error:",
+      err instanceof Error ? err.message : String(err),
+    );
+    return 20;
+  }
+}
+
 /** Testable `handover` handler (Tier 5 #28). */
 export function runHandoverCommand(
   argv: string[],
@@ -825,6 +996,11 @@ export function main(argv: string[] = process.argv.slice(2)): number {
   if (argv[0] === "triage") return runTriageCommand(argv.slice(1));
   if (argv[0] === "badge") return runBadgeCommand(argv.slice(1));
   if (argv[0] === "debt") return runDebtCommand(argv.slice(1));
+  if (argv[0] === "impact") return runImpactCommand(argv.slice(1));
+  if (argv[0] === "baseline") return runBaselineCommand(argv.slice(1));
+  if (argv[0] === "diff") return runDiffCommand(argv.slice(1));
+  if (argv[0] === "pr-comment") return runPrCommentCommand(argv.slice(1));
+  if (argv[0] === "stats") return runStatsCommand(argv.slice(1));
   if (argv[0] === "fix") return runFixCommand(argv.slice(1));
   if (argv[0] === "create-rule") return runCreateRuleCommand(argv.slice(1));
   if (argv[0] === "handover") return runHandoverCommand(argv.slice(1));
@@ -865,6 +1041,12 @@ Subcommands:
   triage <dir|file> [--no-md]                   flaky-triage proposal + TRIAGE.md
   badge                                         shields.io endpoint JSON + snippet
   debt                                          test debt register with cost model
+  impact [--since <ref>]                        what changed since a prior commit —
+                                                fixes and new debt, or UNKNOWN
+  baseline                                       snapshot current findings for later diff
+  diff                                           new/worsened debt only, vs the baseline
+  pr-comment                                     render a scoped PR comment (Markdown)
+  stats                                          all-time local counters of fixes seen
   fix [--dry-run]                               apply safe auto-fixes with proof
   create-rule <ID> --title "..."                scaffold a new rule + fixtures
   handover                                      new-QA onboarding map of the suite

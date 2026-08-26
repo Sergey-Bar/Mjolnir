@@ -26,6 +26,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   parseArgs,
   runBadgeCommand,
+  runBaselineCommand,
   runCreateRuleCommand,
   runDebtCommand,
   runForensicsCommand,
@@ -136,6 +137,20 @@ describe("command handlers report a crash (exit 20) instead of throwing, when th
       });
     }).not.toThrow();
     expect(code).toBe(20);
+  });
+
+  it("`baseline` reports exit 20 instead of throwing when .qa-doctor/ can't be written", () => {
+    if (!locked()) return;
+    const errs: string[] = [];
+    let code: number | undefined;
+    expect(() => {
+      code = runBaselineCommand([dir], {
+        out: () => {},
+        err: (...a) => errs.push(a.map(String).join(" ")),
+      });
+    }).not.toThrow();
+    expect(code).toBe(20);
+    expect(errs.join(" ")).toMatch(/internal error/i);
   });
 });
 

@@ -129,6 +129,11 @@
       "ruleId": "QA-PW-145",
       "files": ["examples/demo-repo/**"],
       "reason": "examples/demo-repo is a deliberately imperfect sample repo used to demonstrate scan output — see QA-PW-101 entry above for the same rationale."
+    },
+    {
+      "ruleId": "QA-CI-002",
+      "files": [".github/workflows/qa-doctor.yml"],
+      "reason": "The 'Restore baseline from base branch' step's `git checkout ... || echo \"...\"` is a genuine best-effort fallback for an OPTIONAL file (.qa-doctor/baseline.json may legitimately not exist on the base branch yet) — not a test/build command whose failure is being hidden. The echo branch is purely informative; nothing about this PR's actual pass/fail signal is swallowed. This is a deliberate, reviewed exception, not an oversight — QA-CI-002's own falsePositiveRisk is documented as low precisely because most `|| true`/`|| echo` uses ARE real problems, and this is the rare legitimate one."
     }
   ]
 }

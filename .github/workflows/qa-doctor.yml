@@ -17,25 +17,58 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # needed for --scope changed merge-base
+          fetch-depth: 0 # needed for --scope changed merge-base and impact/diff history
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      # NOTE: qa-doctor@latest currently resolves to an unrelated package on
+      # the public npm registry (the "qa-doctor" name is owned by a
+      # different project) — tracked in docs/PUBLISHING.md and STATE.md as
+      # the plan's own acknowledged, deliberately parked blocker (§5). This
+      # step is written for the eventual real package and will start
+      # working the day that's resolved; it is not silently broken today
+      # in any way this workflow can detect from inside itself.
+      - name: Restore baseline from base branch (best-effort)
+        run: |
+          git fetch origin ${{ github.event.pull_request.base.ref }} --depth=1
+          git checkout origin/${{ github.event.pull_request.base.ref }} -- .qa-doctor/baseline.json 2>/dev/null || echo "No committed baseline on base branch — diff will report UNKNOWN, not a fabricated zero."
       - run: npx --yes qa-doctor@latest . --scope changed --json > qa-doctor.json
-      - name: Annotate PR
+      # Advisory mode by design (§ Product-MVP): this workflow reports
+      # findings, it never blocks a PR. `diff` legitimately exits 1 when it
+      # finds new/worsened debt — continue-on-error on THIS step only (not
+      # a blanket `|| true`, which the tool's own QA-CI-002 rule flags as a
+      # false-green anti-pattern) keeps that exit code visible in the Job
+      # Summary UI while not failing the job.
+      - name: Diff against baseline (advisory — may exit 1 on new debt)
+        id: diff
+        continue-on-error: true
+        run: npx --yes qa-doctor@latest diff . > qa-doctor-diff.txt
+      - run: npx --yes qa-doctor@latest pr-comment . > qa-doctor-comment.md
+      - name: Post or update PR comment
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
-            const r = JSON.parse(fs.readFileSync('qa-doctor.json', 'utf8'));
-            for (const f of r.findings) {
-              const level = f.severity === 'error' ? 'failure' : 'warning';
-              await core.summary.addRaw(`**${f.ruleId}** (${f.severity}) ${f.file}:${f.line} — ${f.message}\n\n${f.fix}`).addRaw('\n\n');
-              if (f.file && f.line) {
-                github.rest.checks // annotations land via the job summary
-              }
+            const body = fs.readFileSync('qa-doctor-comment.md', 'utf8');
+            const marker = '<!-- qa-doctor-pr-comment -->';
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find((c) => c.body?.startsWith(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
             }
-            await core.summary.write();
-      # Gate enforcement: advisory never blocks; error/warning fail the job.
-      - name: Gate (advisory)
-        run: echo "Advisory mode — findings reported, never blocking."
