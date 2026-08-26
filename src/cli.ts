@@ -48,6 +48,7 @@ import { renderPwRunSummary, summarizePwRun } from "./commands/pw-report.js";
 import { planAndApplyFixes, renderFixReport } from "./commands/fix.js";
 import { renderDoctorReport, runDoctorSelfAudit } from "./commands/doctor.js";
 import { buildCatalog, renderCatalogMd } from "./commands/rules-catalog.js";
+import { explainRule, renderExplain } from "./commands/explain.js";
 import { loadSuppressions, renderSuppressions } from "./config/suppressions.js";
 import { loadConfig, applySeverityOverrides } from "./config/config.js";
 import { loadPlugins } from "./plugins/load.js";
@@ -88,6 +89,10 @@ interface CliArgs {
   maxDurationMs: number;
   scopeChanged: boolean;
   format: "terminal" | "json" | "sarif";
+  /** --width override for terminal box/gauge wrapping (Sprint 5 Task 22). */
+  width?: number;
+  /** --ascii / --no-ascii override for shouldUseAscii()'s heuristic. */
+  ascii?: boolean;
 }
 
 export function parseArgs(argv: string[]): CliArgs | null {
@@ -120,6 +125,14 @@ export function parseArgs(argv: string[]): CliArgs | null {
       const v = Number(argv[++i]);
       if (!Number.isFinite(v) || v <= 0) return null;
       args.maxDurationMs = v * 1000;
+    } else if (a === "--width") {
+      const v = Number(argv[++i]);
+      if (!Number.isFinite(v) || v <= 0) return null;
+      args.width = v;
+    } else if (a === "--ascii") {
+      args.ascii = true;
+    } else if (a === "--no-ascii") {
+      args.ascii = false;
     } else if (a === "--help" || a === "-h") {
       return null;
     } else if (!a.startsWith("-")) {
@@ -480,6 +493,43 @@ export function runRulesCommand(
   return 0;
 }
 
+/**
+ * Testable `explain <RULE-ID>` handler (Plan.md Sprint 1.3,
+ * Master-Stabilization-Plan Sprint 5 Task 19). Metadata always renders
+ * offline from the registry; the concrete example is real detector
+ * output from the rule's own must-fire fixture when one is findable
+ * (this repo checkout, or --fixtures-root), and honestly omitted
+ * otherwise — never a fabricated example.
+ */
+export function runExplainCommand(
+  argv: string[],
+  io: { out: Output; err: Output } = { out, err },
+): number {
+  const ruleId = argv.find((a) => !a.startsWith("-"));
+  if (!ruleId) {
+    io.err("Usage: qa-doctor explain <RULE-ID>");
+    return 10;
+  }
+  const fixturesRootIdx = argv.indexOf("--fixtures-root");
+  const explicitRoot =
+    fixturesRootIdx !== -1 ? argv[fixturesRootIdx + 1] : undefined;
+  const fixturesRoot = resolve(
+    explicitRoot ?? join(process.cwd(), "tests", "fixtures"),
+  );
+  try {
+    const result = explainRule(ruleId, fixturesRoot);
+    io.out(renderExplain(result));
+    if (!result.ok) return 10; // unknown rule ID is a usage error, not a crash
+    return 0;
+  } catch (err) {
+    io.err(
+      "qa-doctor internal error:",
+      err instanceof Error ? err.message : String(err),
+    );
+    return 20;
+  }
+}
+
 /** Testable default scan path. */
 export function runScanCommand(
   argv: string[],
@@ -501,6 +551,8 @@ export function runScanCommand(
         renderTerminal(result, {
           isTTY: process.stdout.isTTY ?? false,
           verbose: args.verbose,
+          ...(args.width !== undefined ? { width: args.width } : {}),
+          ...(args.ascii !== undefined ? { ascii: args.ascii } : {}),
         }),
       );
     }
@@ -780,6 +832,7 @@ export function main(argv: string[] = process.argv.slice(2)): number {
   if (argv[0] === "pw-report") return runPwReportCommand(argv.slice(1));
   if (argv[0] === "doctor") return runDoctorCommand(argv.slice(1));
   if (argv[0] === "rules") return runRulesCommand(argv.slice(1));
+  if (argv[0] === "explain") return runExplainCommand(argv.slice(1));
   if (argv[0] === "doctor:playwright") return runDoctorPlaywright(argv);
   return runScanCommand(argv);
 }
@@ -795,6 +848,13 @@ Options:
   --verbose             show all findings
   --scope changed       only findings on new/changed lines vs merge-base
   --max-duration <sec>  stop analysis after N seconds (partial results flagged)
+  --width <cols>        override terminal width for box/gauge wrapping
+                        (defaults to the detected terminal width, or 80)
+  --ascii               force plain-ASCII glyphs/box-drawing (auto-detected
+                        for cmd.exe/legacy consoles; use this to force it
+                        anywhere, e.g. an unrecognized CI log renderer)
+  --no-ascii            force Unicode box-drawing even where auto-detection
+                        would have chosen ASCII
   -h, --help            show this help
 
 Subcommands:
@@ -814,6 +874,9 @@ Subcommands:
                                                 registry sanity, trust metadata
   rules [--md]                                  rule catalog with trust metadata
                                                 (JSON or markdown)
+  explain <RULE-ID> [--fixtures-root <dir>]     what/why/fix for one rule,
+                                                with a real example from its
+                                                own must-fire fixture
 
 Exit codes: 0 clean · 1 errors found · 2 partial · 10 usage · 20 crash`);
 }

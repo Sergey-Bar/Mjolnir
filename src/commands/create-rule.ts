@@ -179,5 +179,14 @@ export function renderScaffoldReport(result: ScaffoldResult): string {
     "  3. Run: npm test — must-fire AND must-not-fire must pass",
     "  4. A rule whose fixtures fail CANNOT ship (anti-creep law)",
   );
+  lines.push("");
+  lines.push(
+    "Note: running the test suite right now will show the new fixtures " +
+      "FAILING. This is intentional, not a bug in the scaffold — the " +
+      "rule above returns zero findings on purpose, so its must-fire " +
+      "fixture cannot pass until you implement real detection logic. A " +
+      "rule that ships as a silent no-op stub would violate the " +
+      "fixture-firewall law without anyone noticing.",
+  );
   return lines.join("\n");
 }

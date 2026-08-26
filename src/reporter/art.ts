@@ -14,6 +14,16 @@ export const LOGO = `
   ╚══▀▀═╝ ╚═╝  ╚═╝     ╚══▀▀═╝  ╚══▀▀═╝  ╚═════╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝
 `;
 
+/** Plain-ASCII fallback logo for cmd.exe/legacy consoles where the
+ * block-drawing LOGO above renders as mangled "?" glyphs. */
+export const LOGO_ASCII = `
+  ___    _        ____   ___   ____ _____ ___  ____
+ / _ \\  / \\      |  _ \\ / _ \\ / ___|_   _/ _ \\|  _ \\
+| | | |/ _ \\     | | | | | | | |     | || | | | |_) |
+| |_| / ___ \\    | |_| | |_| | |___  | || |_| |  _ <
+ \\__\\/_/   \\_\\   |____/ \\___/ \\____| |_| \\___/|_| \\_\\
+`;
+
 export const TROPHY = String.raw`
         ___________
        '._==_==_=_.'

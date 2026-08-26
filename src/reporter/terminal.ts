@@ -7,43 +7,67 @@
 import type { ScanResult } from "../types.js";
 import { DEDUCTIONS, deriveEvidenceLevel } from "../types.js";
 import { computeDimensions, deductionFor } from "../scorer/scorer.js";
+import { topFixes } from "../scorer/prioritize.js";
 import {
   palette,
   shouldColorize,
+  shouldUseAscii,
   scoreGauge,
   severityTag,
   box,
   padTo,
 } from "./theme.js";
-import { LOGO, TROPHY, DIVIDER } from "./art.js";
+import { LOGO, LOGO_ASCII, TROPHY, DIVIDER } from "./art.js";
 
 /** Terminal display cap — the JSON/SARIF contract always carries ALL findings. */
 const MAX_DISPLAYED = 50;
 
+/** Reflow floor: below this, box wrapping targets a minimum readable
+ * width rather than shrinking further (an 8-column box is useless). */
+const MIN_BOX_WIDTH = 20;
+
+export interface RenderTerminalOpts {
+  isTTY: boolean;
+  verbose?: boolean;
+  /** Explicit column width override (--width). Defaults to
+   * process.stdout.columns, then 80 when neither is known (piped/CI). */
+  width?: number;
+  /** Force ASCII glyphs/box-drawing. Defaults to shouldUseAscii()'s
+   * cmd.exe/legacy-console heuristic when omitted. */
+  ascii?: boolean;
+}
+
 export function renderTerminal(
   result: ScanResult,
-  opts: { isTTY: boolean; verbose?: boolean },
+  opts: RenderTerminalOpts,
 ): string {
   const p = palette(shouldColorize(opts.isTTY));
+  const width = Math.max(
+    MIN_BOX_WIDTH,
+    opts.width ?? process.stdout.columns ?? 80,
+  );
+  const ascii = opts.ascii ?? shouldUseAscii();
   const lines: string[] = [];
 
-  for (const l of LOGO.split("\n")) if (l.trim()) lines.push(p.accent(l));
+  const logo = ascii ? LOGO_ASCII : LOGO;
+  for (const l of logo.split("\n")) if (l.trim()) lines.push(p.accent(l));
   lines.push("");
 
   if (result.score === null) {
-    return renderNoTests(p);
+    return renderNoTests(p, ascii);
   }
 
   const counts = countBySeverity(result);
 
-  appendScoreSection(lines, result, p);
+  appendScoreSection(lines, result, p, width, ascii);
   appendFrameworks(lines, result, p);
-  appendDimensions(lines, result, p);
-  appendDeductions(lines, result, counts, p);
-  appendTopIssues(lines, result, counts, opts.verbose === true, p);
+  appendDimensions(lines, result, p, ascii);
+  appendDeductions(lines, result, counts, p, width, ascii);
+  appendFixThisFirst(lines, result, p);
+  appendTopIssues(lines, result, counts, opts.verbose === true, p, ascii);
   if (counts.total === 0 && result.score === 100) {
     lines.push(
-      p.ok(TROPHY),
+      p.ok(ascii ? "*** FLAWLESS VICTORY ***" : TROPHY),
       p.ok("  FLAWLESS VICTORY — zero findings. The suite is clean."),
       "",
     );
@@ -61,6 +85,8 @@ function appendScoreSection(
   lines: string[],
   result: ScanResult,
   p: ReturnType<typeof palette>,
+  width: number,
+  ascii: boolean,
 ): void {
   if (result.score === null) return;
   const verdict = verdictFor(result.score);
@@ -69,7 +95,10 @@ function appendScoreSection(
   lines.push(
     `  ${p.bold("SCORE")} ${p.bold(scoreText)}${p.dim("/100")}  ${verdictColored}`,
   );
-  lines.push(`  ${scoreGauge(result.score, p)}`, "");
+  // Gauge width tracks the terminal so it never wraps awkwardly on a
+  // narrow window; floors at 10 blocks so the gauge stays legible.
+  const gaugeWidth = Math.max(10, Math.min(30, width - 4));
+  lines.push(`  ${scoreGauge(result.score, p, gaugeWidth, ascii)}`, "");
 }
 
 function colorizeVerdict(
@@ -90,7 +119,8 @@ function appendFrameworks(
     lines.push(`  ${p.dim("DETECTED")} ${p.info(tags)}`);
   } else if (result.frameworkDetectionUnknown) {
     lines.push(
-      `  ${p.dim("FRAMEWORK")} unknown — scanning all test-looking files`,
+      `  ${p.dim("FRAMEWORK")} unknown — scanning all test-looking files. ` +
+        `Add a package.json/config the detector recognizes for framework-aware scoring.`,
     );
   }
   lines.push("");
@@ -100,6 +130,7 @@ function appendDimensions(
   lines: string[],
   result: ScanResult,
   p: ReturnType<typeof palette>,
+  ascii: boolean,
 ): void {
   const dims =
     result.dimensions.length > 0
@@ -111,7 +142,7 @@ function appendDimensions(
   for (const d of dims) {
     const label = padTo(d.category, width);
     const scoreText = String(d.score).padStart(3);
-    lines.push(`  ${label}  ${scoreGauge(d.score, p, 16)} ${scoreText}`);
+    lines.push(`  ${label}  ${scoreGauge(d.score, p, 16, ascii)} ${scoreText}`);
   }
   lines.push("");
 }
@@ -121,6 +152,8 @@ function appendDeductions(
   result: ScanResult,
   counts: { error: number; warning: number; info: number; total: number },
   p: ReturnType<typeof palette>,
+  width: number,
+  ascii: boolean,
 ): void {
   if (counts.total === 0) return;
   lines.push(`  ${p.accent("▚ WHERE POINTS WERE LOST")}`);
@@ -151,7 +184,26 @@ function appendDeductions(
       `${s.n} × ${sev.padEnd(7)} −${String(s.ded).padStart(3)}${discounted ? p.dim(" (evidence-discounted)") : ""}`,
     );
   }
-  for (const row of box(rows)) lines.push(`  ${row}`);
+  for (const row of box(rows, 1, { maxWidth: width - 2, ascii }))
+    lines.push(`  ${row}`);
+  lines.push("");
+}
+
+function appendFixThisFirst(
+  lines: string[],
+  result: ScanResult,
+  p: ReturnType<typeof palette>,
+): void {
+  const fixes = topFixes(result.findings, 3);
+  if (fixes.length === 0) return;
+  lines.push(`  ${p.accent("▚ FIX THIS FIRST")}`);
+  for (const { finding: f, scoreGain, autofixable } of fixes) {
+    const gainText = `+${scoreGain} pt${scoreGain === 1 ? "" : "s"}`;
+    const autofixTag = autofixable ? p.ok(" [autofix available]") : "";
+    lines.push(
+      `  ${p.bold(gainText)}  ${f.ruleId} · ${f.file}:${f.line}${autofixTag}`,
+    );
+  }
   lines.push("");
 }
 
@@ -161,6 +213,7 @@ function appendTopIssues(
   counts: { total: number },
   verbose: boolean,
   p: ReturnType<typeof palette>,
+  ascii: boolean,
 ): void {
   const top = verbose
     ? result.findings
@@ -174,7 +227,7 @@ function appendTopIssues(
     const level =
       f.evidenceLevel ?? deriveEvidenceLevel(f.findingType, f.confidence);
     lines.push(
-      `  ${severityTag(f.severity, p)} ${p.bold(f.message)} ${p.dim(`[${level}]`)}`,
+      `  ${severityTag(f.severity, p, ascii)} ${p.bold(f.message)} ${p.dim(`[${level}]`)}`,
     );
     lines.push(`         ${p.dim(loc)}`);
   }
@@ -213,15 +266,20 @@ function appendFooter(
   lines.push("");
 }
 
-function renderNoTests(p: ReturnType<typeof palette>): string {
+function renderNoTests(p: ReturnType<typeof palette>, ascii: boolean): string {
+  const warnGlyph = ascii ? "!" : "⚠";
   const lines = [
     "",
-    p.warning("  ⚠ NO TESTS DETECTED"),
+    p.warning(`  ${warnGlyph} NO TESTS DETECTED`),
     "",
-    ...box([
-      "No Jest/Vitest/Playwright test files were found.",
-      "A score cannot be calculated honestly.",
-    ]).map((l) => `  ${l}`),
+    ...box(
+      [
+        "No Jest/Vitest/Playwright test files were found.",
+        "A score cannot be calculated honestly.",
+      ],
+      1,
+      { ascii },
+    ).map((l) => `  ${l}`),
     "",
     "  If your tests live elsewhere: qa-doctor --tests-dir <path>",
     "",

@@ -91,21 +91,22 @@ npx qa-doctor@latest
 That's it. Zero configuration — QA Doctor detects your frameworks, finds your
 tests, and reports.
 
-| Command                                                 | What it does                                                   |
-| ------------------------------------------------------- | -------------------------------------------------------------- |
-| `npx qa-doctor@latest --scope changed`                  | Only findings introduced by **your** changes — perfect for PRs |
-| `npx qa-doctor@latest --json`                           | Machine-readable output                                        |
-| `npx qa-doctor@latest --format sarif > qa-doctor.sarif` | GitHub Code Scanning integration                               |
-| `npx qa-doctor doctor:playwright`                       | Playwright-only deep scan + Selector Health Score              |
-| `npx qa-doctor forensics ./test-results/`               | Runtime evidence — retries, true flakes, `FLAKY.md` artifact   |
-| `npx qa-doctor triage ./test-results/`                  | The flaky-triage meeting, in 10 minutes instead of 45          |
-| `npx qa-doctor fix --dry-run` / `fix`                   | Safe auto-fixes with proof (dry-run first)                     |
-| `npx qa-doctor debt`                                    | Test debt register — presentable to management                 |
-| `npx qa-doctor handover`                                | New-QA-onboarding map of the suite                             |
-| `npx qa-doctor pw-report ./test-results/`               | Playwright run summary — retries / flakes / slowest            |
-| `npx qa-doctor badge`                                   | Evidentiary badge (shields.io endpoint JSON)                   |
-| `npx qa-doctor doctor`                                  | Self-audit — prove QA Doctor's own rule base is healthy        |
-| `npx qa-doctor rules` / `rules --md`                    | Rule catalog with trust metadata (JSON or markdown)            |
+| Command                                                 | What it does                                                        |
+| ------------------------------------------------------- | ------------------------------------------------------------------- |
+| `npx qa-doctor@latest --scope changed`                  | Only findings introduced by **your** changes — perfect for PRs      |
+| `npx qa-doctor@latest --json`                           | Machine-readable output                                             |
+| `npx qa-doctor@latest --format sarif > qa-doctor.sarif` | GitHub Code Scanning integration                                    |
+| `npx qa-doctor doctor:playwright`                       | Playwright-only deep scan + Selector Health Score                   |
+| `npx qa-doctor forensics ./test-results/`               | Runtime evidence — retries, true flakes, `FLAKY.md` artifact        |
+| `npx qa-doctor triage ./test-results/`                  | The flaky-triage meeting, in 10 minutes instead of 45               |
+| `npx qa-doctor fix --dry-run` / `fix`                   | Safe auto-fixes with proof (dry-run first)                          |
+| `npx qa-doctor debt`                                    | Test debt register — presentable to management                      |
+| `npx qa-doctor handover`                                | New-QA-onboarding map of the suite                                  |
+| `npx qa-doctor pw-report ./test-results/`               | Playwright run summary — retries / flakes / slowest                 |
+| `npx qa-doctor badge`                                   | Evidentiary badge (shields.io endpoint JSON)                        |
+| `npx qa-doctor doctor`                                  | Self-audit — prove QA Doctor's own rule base is healthy             |
+| `npx qa-doctor rules` / `rules --md`                    | Rule catalog with trust metadata (JSON or markdown)                 |
+| `npx qa-doctor explain <RULE-ID>`                       | What/why/fix for one rule, with a real example from its own fixture |
 
 ## 📋 The Rules
 
