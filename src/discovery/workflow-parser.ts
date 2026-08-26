@@ -36,9 +36,19 @@ export interface WorkflowDoc {
 export class YamlParseError extends Error {}
 
 export function parseWorkflow(text: string): WorkflowDoc {
+  // Alias-bomb guard BEFORE parse: the yaml package expands aliases during
+  // parsing, so a billion-laughs document would already have exploded by the
+  // time we could count aliases in the parsed doc. Count textually first.
+  const aliasMatches = text.match(/(?:^|[\s[{,])\*[^\s,\]}]+/g) ?? [];
+  if (aliasMatches.length > LIMITS.maxAliases) {
+    throw new YamlParseError(
+      `YAML alias count ${aliasMatches.length} exceeds limit ${LIMITS.maxAliases}`,
+    );
+  }
+
   let doc: unknown;
   try {
-    doc = yamlParse(text);
+    doc = yamlParse(text, { maxAliasCount: LIMITS.maxAliases });
   } catch (err) {
     throw new YamlParseError(
       `Invalid workflow YAML: ${err instanceof Error ? err.message : String(err)}`,
@@ -48,15 +58,6 @@ export function parseWorkflow(text: string): WorkflowDoc {
   if (doc === null || doc === undefined) return {};
   if (typeof doc !== "object")
     throw new YamlParseError("Workflow root must be a mapping");
-
-  // Alias-bomb guard: count anchors/aliases textually — the yaml package
-  // expands aliases during parse, so we bound the input instead.
-  const aliasMatches = text.match(/(?:^|\s)\*(\w+)/g) ?? [];
-  if (aliasMatches.length > LIMITS.maxAliases) {
-    throw new YamlParseError(
-      `YAML alias count ${aliasMatches.length} exceeds limit ${LIMITS.maxAliases}`,
-    );
-  }
 
   const root = doc as Record<string, unknown>;
   const jobsRaw = root["jobs"];

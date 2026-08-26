@@ -5,6 +5,7 @@
  */
 
 import { defineRule } from "../rule.js";
+import { getCodeOnlyText } from "../../engine/ts-ast.js";
 import type { Finding } from "../../types.js";
 
 export const tautologicalAssertion = defineRule({
@@ -21,18 +22,21 @@ export const tautologicalAssertion = defineRule({
   frameworks: ["jest", "vitest", "playwright"],
   falsePositiveRisk: "low",
   autofix: false,
-  detectionStrategy: "regex pattern",
+  detectionStrategy: "AST-stripped text pattern",
   introduced: "0.1.0",
 
   run(ctx) {
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
     // expect(<literal>).<matcher>(<same-or-any-literal>)
+    // Runs on the comment/string-free view: a tautology inside a prose
+    // comment or a doc-example string is documentation, not a defect.
+    const text = getCodeOnlyText(ctx);
     const re =
       /expect\s*\(\s*(true|false|null|undefined|\d+|['"`][^'"`]*['"`])\s*\)\s*\.\s*toBe(?:True|False)?\s*\(\s*(true|false|null|undefined|\d+|['"`][^'"`]*['"`])?\s*\)/g;
 
     let m: RegExpExecArray | null;
-    while ((m = re.exec(ctx.text)) !== null) {
+    while ((m = re.exec(text)) !== null) {
       findings.push({
         severity: "error",
         confidence: "high",

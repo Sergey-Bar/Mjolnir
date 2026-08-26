@@ -188,8 +188,10 @@ describe("runScan option paths", () => {
     expect(result.scopeDegraded).toBe("not-a-git-repo");
   });
 
-  it("caps findings at 50 unless --verbose", () => {
-    // A repo with many focused-test violations.
+  it("carries ALL findings in JSON/SARIF (no silent truncation)", () => {
+    // A repo with many focused-test violations. The contract change:
+    // JSON/SARIF always carry the full finding set — only terminal
+    // display is capped (with an honest "+N more" count).
     const lines = Array.from(
       { length: 60 },
       (_, i) => `it.only('t${i}', () => {});\n`,
@@ -198,11 +200,7 @@ describe("runScan option paths", () => {
     const plainArgs = parseArgs([dir]);
     if (!plainArgs) throw new Error("parseArgs failed");
     const plain = runScan({ ...plainArgs, target: dir });
-    expect(plain.findings.length).toBeLessThanOrEqual(50);
-    const verboseArgs = parseArgs([dir, "--verbose"]);
-    if (!verboseArgs) throw new Error("parseArgs failed");
-    const verbose = runScan({ ...verboseArgs, target: dir });
-    expect(verbose.findings.length).toBeGreaterThan(50);
+    expect(plain.findings.length).toBeGreaterThan(50);
   });
 
   it("falls back to target-as-workspace without package.json", () => {

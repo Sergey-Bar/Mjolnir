@@ -27,7 +27,7 @@ export interface DoctorCheck {
   details: string[];
 }
 
-const VALID_ID = /^QA-(TEST|TQUAL|PW|CI|PY|ENV)-\d{3}$/;
+const VALID_ID = /^QA-(TEST|TQUAL|PW|CI|PY|ENV|JV|CS)-\d{3}$/;
 
 function nonHiddenFiles(dir: string): string[] {
   if (!existsSync(dir)) return [];

@@ -183,7 +183,7 @@ describe("renderTerminal", () => {
       makeResult({
         frameworks: [],
         frameworkDetectionUnknown: true,
-        findings: Array.from({ length: 7 }, (_, i) =>
+        findings: Array.from({ length: 60 }, (_, i) =>
           makeFinding({ ruleId: `R${i}`, line: i + 1 }),
         ),
       }),
@@ -191,7 +191,7 @@ describe("renderTerminal", () => {
     );
     expect(out).toContain("FRAMEWORK");
     expect(out).toContain("unknown — scanning all test-looking files");
-    expect(out).toContain("+2 more");
+    expect(out).toContain("+10 more");
   });
 
   it("shows PARTIAL analysis status", () => {

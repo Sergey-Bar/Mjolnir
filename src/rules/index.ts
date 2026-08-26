@@ -60,6 +60,28 @@ import { networkIdleWait } from "./playwright/qa-pw-118-network-idle.js";
 import { legacyElementHandles } from "./playwright/qa-pw-114-legacy-handles.js";
 import { hardcodedBaseUrl } from "./playwright/qa-pw-123-hardcoded-url.js";
 import { envCoupling } from "./quality/qa-env-001-env-coupling.js";
+import { pwRetryMaskingNoForensics } from "./playwright/qa-pw-141-retry-no-triage.js";
+import { pwBlanketRouteMock } from "./playwright/qa-pw-142-blanket-route.js";
+import { pwNoFailureArtifacts } from "./playwright/qa-pw-143-no-artifacts.js";
+import { pwSingleBrowserMatrix } from "./playwright/qa-pw-144-single-browser.js";
+import { pwNoA11yAssertions } from "./playwright/qa-pw-145-no-a11y.js";
+import { pyPwSyncAsyncMix } from "./python/qa-py-101-sync-async-mix.js";
+import { pyPwHardSleep } from "./python/qa-py-102-pw-hard-sleep.js";
+import { pyPwWaitForTimeout } from "./python/qa-py-103-wait-for-timeout.js";
+import { pyPwBrittleSelectors } from "./python/qa-py-104-brittle-selectors.js";
+import { pyPwNoAssertions } from "./python/qa-py-105-pw-no-assertions.js";
+import { pyPwSharedPage } from "./python/qa-py-106-shared-page.js";
+import { pyPwNetworkIdle } from "./python/qa-py-107-network-idle.js";
+import { pyPwHardcodedUrl } from "./python/qa-py-108-hardcoded-url.js";
+import { jvDisabledTest } from "./java/qa-jv-101-disabled-test.js";
+import { jvHardSleep } from "./java/qa-jv-102-hard-sleep.js";
+import { jvNoAssertions } from "./java/qa-jv-103-no-assertions.js";
+import { jvSharedPage } from "./java/qa-jv-104-shared-page.js";
+import { jvWaitForTimeout } from "./java/qa-jv-105-wait-for-timeout.js";
+import { csSkippedTest } from "./csharp/qa-cs-101-skipped-test.js";
+import { csHardSleep } from "./csharp/qa-cs-102-hard-sleep.js";
+import { csNoAssertions } from "./csharp/qa-cs-103-no-assertions.js";
+import { csSharedPage } from "./csharp/qa-cs-104-shared-page.js";
 
 export const RULES: readonly QADoctorRule[] = [
   focusedTestCommitted,
@@ -118,6 +140,28 @@ export const RULES: readonly QADoctorRule[] = [
   legacyElementHandles,
   hardcodedBaseUrl,
   envCoupling,
+  pwRetryMaskingNoForensics,
+  pwBlanketRouteMock,
+  pwNoFailureArtifacts,
+  pwSingleBrowserMatrix,
+  pwNoA11yAssertions,
+  pyPwSyncAsyncMix,
+  pyPwHardSleep,
+  pyPwWaitForTimeout,
+  pyPwBrittleSelectors,
+  pyPwNoAssertions,
+  pyPwSharedPage,
+  pyPwNetworkIdle,
+  pyPwHardcodedUrl,
+  jvDisabledTest,
+  jvHardSleep,
+  jvNoAssertions,
+  jvSharedPage,
+  jvWaitForTimeout,
+  csSkippedTest,
+  csHardSleep,
+  csNoAssertions,
+  csSharedPage,
 ];
 
 export function getRule(id: string): QADoctorRule | undefined {

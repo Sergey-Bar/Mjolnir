@@ -6,7 +6,7 @@
 
 import type { ScanResult } from "../types.js";
 import { DEDUCTIONS, deriveEvidenceLevel } from "../types.js";
-import { computeDimensions } from "../scorer/scorer.js";
+import { computeDimensions, deductionFor } from "../scorer/scorer.js";
 import {
   palette,
   shouldColorize,
@@ -17,9 +17,12 @@ import {
 } from "./theme.js";
 import { LOGO, TROPHY, DIVIDER } from "./art.js";
 
+/** Terminal display cap — the JSON/SARIF contract always carries ALL findings. */
+const MAX_DISPLAYED = 50;
+
 export function renderTerminal(
   result: ScanResult,
-  opts: { isTTY: boolean },
+  opts: { isTTY: boolean; verbose?: boolean },
 ): string {
   const p = palette(shouldColorize(opts.isTTY));
   const lines: string[] = [];
@@ -36,8 +39,8 @@ export function renderTerminal(
   appendScoreSection(lines, result, p);
   appendFrameworks(lines, result, p);
   appendDimensions(lines, result, p);
-  appendDeductions(lines, counts, p);
-  appendTopIssues(lines, result, counts, p);
+  appendDeductions(lines, result, counts, p);
+  appendTopIssues(lines, result, counts, opts.verbose === true, p);
   if (counts.total === 0 && result.score === 100) {
     lines.push(
       p.ok(TROPHY),
@@ -115,20 +118,39 @@ function appendDimensions(
 
 function appendDeductions(
   lines: string[],
+  result: ScanResult,
   counts: { error: number; warning: number; info: number; total: number },
   p: ReturnType<typeof palette>,
 ): void {
   if (counts.total === 0) return;
   lines.push(`  ${p.accent("▚ WHERE POINTS WERE LOST")}`);
+  // Honesty Core: the table must reconcile with the score. Deductions are
+  // computed per finding via deductionFor — E0 costs 0, E1 costs half —
+  // so count × base would silently lie whenever evidence levels apply.
   const rows: string[] = [];
-  if (counts.error > 0)
-    rows.push(`${counts.error} × error   −${counts.error * DEDUCTIONS.error}`);
-  if (counts.warning > 0)
+  const bySeverity = {
+    error: { n: 0, ded: 0 },
+    warning: { n: 0, ded: 0 },
+    info: { n: 0, ded: 0 },
+  } as Record<"error" | "warning" | "info", { n: number; ded: number }>;
+  for (const f of result.findings) {
+    if (
+      f.severity === "error" ||
+      f.severity === "warning" ||
+      f.severity === "info"
+    ) {
+      bySeverity[f.severity].n++;
+      bySeverity[f.severity].ded += deductionFor(f);
+    }
+  }
+  for (const sev of ["error", "warning", "info"] as const) {
+    const s = bySeverity[sev];
+    if (s.n === 0) continue;
+    const discounted = s.ded < s.n * DEDUCTIONS[sev];
     rows.push(
-      `${counts.warning} × warning −${counts.warning * DEDUCTIONS.warning}`,
+      `${s.n} × ${sev.padEnd(7)} −${String(s.ded).padStart(3)}${discounted ? p.dim(" (evidence-discounted)") : ""}`,
     );
-  if (counts.info > 0)
-    rows.push(`${counts.info} × info    −${counts.info * DEDUCTIONS.info}`);
+  }
   for (const row of box(rows)) lines.push(`  ${row}`);
   lines.push("");
 }
@@ -137,9 +159,12 @@ function appendTopIssues(
   lines: string[],
   result: ScanResult,
   counts: { total: number },
+  verbose: boolean,
   p: ReturnType<typeof palette>,
 ): void {
-  const top = result.findings.slice(0, 5);
+  const top = verbose
+    ? result.findings
+    : result.findings.slice(0, MAX_DISPLAYED);
   if (top.length === 0) return;
   lines.push(`  ${p.accent("▚ TOP ISSUES")}`);
   lines.push("");

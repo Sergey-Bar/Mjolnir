@@ -99,6 +99,7 @@ function walkPy(
     const full = join(dir, entry.name);
     const rel = full.slice(root.length + 1).replaceAll("\\", "/");
     if (isDefaultIgnored(rel)) continue;
+    if (entry.isSymbolicLink()) continue; // never follow links out of the repo
     if (entry.isDirectory()) {
       // Skip common virtualenv/dependency dirs.
       if (

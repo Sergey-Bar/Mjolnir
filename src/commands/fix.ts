@@ -22,7 +22,7 @@ import {
   writeFileSync,
   renameSync,
 } from "node:fs";
-import { join } from "node:path";
+import { resolve as resolvePath, sep } from "node:path";
 
 import type { Finding, ScanResult } from "../types.js";
 
@@ -44,6 +44,18 @@ export interface FixResult {
 }
 
 const MAX_FILE_BYTES = 512 * 1024;
+
+/**
+ * Path-containment guard (adversarial-audit wave): a finding's `file` may
+ * come from a plugin-supplied rule — `join(rootDir, "../../etc/passwd")`
+ * must never escape the scan root. Returns null when the resolved path
+ * is outside rootDir.
+ */
+function containedPath(rootDir: string, file: string): string | null {
+  const abs = resolvePath(rootDir, file);
+  const root = resolvePath(rootDir) + sep;
+  return abs.startsWith(root) ? abs : null;
+}
 
 /** Build the safe-fix edit for a finding, or null when not auto-fixable. */
 export function planFix(finding: Finding): FixEdit | null {
@@ -131,7 +143,23 @@ export function planAndApplyFixes(
 
     let text: string;
     try {
-      const abs = join(rootDir, file);
+      const abs = containedPath(rootDir, file);
+      if (abs === null) {
+        // Traversal attempt (e.g. plugin-supplied path) — refuse loudly.
+        results.push(
+          ...findings
+            .map(planFix)
+            .filter((e): e is FixEdit => e !== null)
+            .map((e) => ({
+              file,
+              ruleId: e.ruleId,
+              line: e.line,
+              status: "failed" as const,
+              description: `${e.description} — path escapes scan root, refused`,
+            })),
+        );
+        continue;
+      }
       text = readFileSync(abs, "utf8");
       if (text.length > MAX_FILE_BYTES) continue;
     } catch {
@@ -210,7 +238,8 @@ export function planAndApplyFixes(
     }
 
     try {
-      const abs = join(rootDir, file);
+      const abs = containedPath(rootDir, file);
+      if (abs === null) throw new Error("path escapes scan root");
       // Writability pre-check: on POSIX, a read-only FILE is still
       // replaceable via rename (dir permissions govern), so the atomic
       // write below would silently succeed where the user cannot edit.

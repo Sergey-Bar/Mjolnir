@@ -35,7 +35,7 @@ export function runRulesForFile(
 
 /** Legacy appliesTo → adapter id mapping. */
 export function legacyAppliesTo(value: string): string[] {
-  if (value === "test-files") return ["typescript", "python"];
+  if (value === "test-files") return ["typescript", "python", "java", "csharp"];
   if (value === "ci-workflows") return ["github-actions"];
   return [value];
 }

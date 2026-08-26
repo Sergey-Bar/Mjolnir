@@ -1,0 +1,80 @@
+/**
+ * QA-PW-144 — Single-browser project matrix (no cross-browser coverage).
+ * Severity: info · Confidence: high · deterministic-defect
+ * Upgrade-Plan-v3 Phase 1 layer 4 (cross-browser/device matrix gaps).
+ * A projects list defining only chromium means WebKit/Firefox-only
+ * breakage ships undetected.
+ */
+
+import { defineRule } from "../rule.js";
+import type { Finding } from "../../types.js";
+
+export const pwSingleBrowserMatrix = defineRule({
+  id: "QA-PW-144",
+  category: "QA-PW",
+  title: "Single-browser project matrix",
+  severity: "info",
+  confidence: "high",
+  findingType: "deterministic-defect",
+  qaImpact: "HYGIENE",
+  appliesTo: "test-files",
+  // Trust Metadata
+  languages: ["typescript", "javascript"],
+  frameworks: ["playwright"],
+  falsePositiveRisk: "low",
+  autofix: false,
+  detectionStrategy: "regex heuristic",
+  introduced: "0.3.8",
+
+  run(ctx) {
+    const findings: Omit<Finding, "ruleId" | "category">[] = [];
+    const base = ctx.path.split("/").pop() ?? "";
+    if (!/^playwright\.config\.(ts|js|mjs|cts)$/.test(base)) return findings;
+
+    if (!/projects\s*:\s*\[/.test(ctx.text)) return findings;
+
+    const names = [...ctx.text.matchAll(/name\s*:\s*['"]([^'"]+)['"]/g)].map(
+      (m) => (m[1] ?? "").toLowerCase(),
+    );
+    if (names.length === 0) return findings;
+
+    const engines = new Set<string>();
+    for (const n of names) {
+      if (/(chrom|chrome|edge|msedge)/.test(n)) engines.add("chromium");
+      else if (/webkit|safari/.test(n)) engines.add("webkit");
+      else if (/firefox/.test(n)) engines.add("firefox");
+      else if (/(mobile|iphone|ipad|android)/.test(n))
+        engines.add("mobile-device");
+    }
+    // Spread spread-spread: also count devices via use: { browserName } /
+    // ...devices[...] entries, which name engines without project names.
+    if (/browserName\s*:\s*['"]firefox['"]/.test(ctx.text))
+      engines.add("firefox");
+    if (/browserName\s*:\s*['"]webkit['"]/.test(ctx.text))
+      engines.add("webkit");
+
+    if (engines.size <= 1) {
+      findings.push({
+        severity: "info",
+        confidence: "high",
+        findingType: "deterministic-defect",
+        qaImpact: "HYGIENE",
+        file: ctx.path,
+        line: lineAt(ctx.text, /projects\s*:/.exec(ctx.text)?.index ?? 0),
+        column: 1,
+        message: `Projects cover only ${
+          [...engines][0] ?? "a single"
+        } engine — no cross-browser matrix.`,
+        why: "Engine-specific breakage (CSS features, date inputs, download behavior) only shows up outside chromium; a single-engine matrix ships it to users undetected.",
+        fix: "Add at least one webkit/firefox project (or `...devices['Desktop Safari']`) to the projects array.",
+      });
+    }
+    return findings;
+  },
+});
+
+function lineAt(text: string, index: number): number {
+  let line = 1;
+  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
+  return line;
+}

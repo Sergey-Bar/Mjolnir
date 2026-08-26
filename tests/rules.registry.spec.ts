@@ -14,8 +14,9 @@ describe("RULES registry", () => {
   it("every rule has required metadata and a run function", () => {
     for (const rule of RULES) {
       // QA-PY-* ships with the Python adapter (Upgrade-Plan-v2 §1.3);
-      // QA-ENV-* is the Tier-5 environment-coupling family.
-      expect(rule.id).toMatch(/^QA-(TEST|TQUAL|PW|CI|PY|ENV)-\d{3}$/);
+      // QA-ENV-* is the Tier-5 environment-coupling family;
+      // QA-JV-*/QA-CS-* ship with the Java/.NET adapters (v3 Phases 4-5).
+      expect(rule.id).toMatch(/^QA-(TEST|TQUAL|PW|CI|PY|ENV|JV|CS)-\d{3}$/);
       expect(rule.title.length).toBeGreaterThan(0);
       expect(["error", "warning", "info"]).toContain(rule.severity);
       expect(typeof rule.run).toBe("function");

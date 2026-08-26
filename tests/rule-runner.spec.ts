@@ -14,7 +14,12 @@ const finding = () => ({
 
 describe("legacyAppliesTo", () => {
   it("maps legacy scopes to adapter ids", () => {
-    expect(legacyAppliesTo("test-files")).toEqual(["typescript", "python"]);
+    expect(legacyAppliesTo("test-files")).toEqual([
+      "typescript",
+      "python",
+      "java",
+      "csharp",
+    ]);
     expect(legacyAppliesTo("ci-workflows")).toEqual(["github-actions"]);
     expect(legacyAppliesTo("typescript")).toEqual(["typescript"]);
   });
@@ -30,7 +35,12 @@ describe("asUniversal", () => {
     });
     expect(wrapped.legacy).toBe(true);
     expect(wrapped.id).toBe("QA-X-001");
-    expect(wrapped.appliesTo).toEqual(["typescript", "python"]);
+    expect(wrapped.appliesTo).toEqual([
+      "typescript",
+      "python",
+      "java",
+      "csharp",
+    ]);
     expect(wrapped.run({ path: "a.test.ts", text: "" })).toHaveLength(1);
   });
 });

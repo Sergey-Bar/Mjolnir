@@ -41,7 +41,12 @@ export const noAssertions = defineRule({
       const hasAssertion =
         /\bexpect\s*\(/.test(body) ||
         /\b(?:assert|should)\b/.test(body) ||
-        /\.\to(?:Throw|Reject|Resolves)\b/.test(body) ||
+        /\.\s*(?:to|rejects\.to|resolves\.to)(?:Throw|Reject|Resolves)\b/.test(
+          body,
+        ) ||
+        /\.\s*(?:rejects|resolves)\s*\.\s*(?:toThrow|toMatchObject|toEqual|toBe)\b/.test(
+          body,
+        ) ||
         /\b(?:toBe|toEqual|toBeTruthy|toBeFalsy|toContain|toMatch|toBeDefined|toBeNull|toBeUndefined|toBeGreaterThan|toBeLessThan|toHaveBeenCalled)\s*\(/.test(
           body,
         );

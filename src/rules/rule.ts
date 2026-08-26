@@ -70,7 +70,8 @@ export type RuleFn = (
   ctx: SourceFileContext,
 ) => Omit<Finding, "ruleId" | "category">[];
 
-export type AppliesTo = "test-files" | "ci-workflows" | "python" | "all";
+export type AppliesTo =
+  "test-files" | "ci-workflows" | "python" | "java" | "csharp" | "all";
 
 export interface QADoctorRule extends RuleMeta {
   /** Which file kinds this rule applies to. */

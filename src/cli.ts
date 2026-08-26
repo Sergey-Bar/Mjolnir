@@ -31,6 +31,8 @@ import { isAdvisoryFinding } from "./types.js";
 import { typescriptAdapter } from "./adapters/typescript.js";
 import { githubActionsAdapter } from "./adapters/github-actions.js";
 import { pythonAdapter } from "./adapters/python.js";
+import { javaAdapter } from "./adapters/java.js";
+import { csharpAdapter } from "./adapters/csharp.js";
 import { ciInstall, type GateLevel } from "./integrations/ci-install.js";
 import { runForensics } from "./forensics/run.js";
 import { renderTriage, renderTriageMd } from "./forensics/triage.js";
@@ -48,6 +50,7 @@ import { renderDoctorReport, runDoctorSelfAudit } from "./commands/doctor.js";
 import { buildCatalog, renderCatalogMd } from "./commands/rules-catalog.js";
 import { loadSuppressions, renderSuppressions } from "./config/suppressions.js";
 import { loadConfig, applySeverityOverrides } from "./config/config.js";
+import { loadPlugins } from "./plugins/load.js";
 import {
   computeSelectorHealth,
   renderSelectorHealth,
@@ -56,9 +59,19 @@ import {
 const ADAPTERS = [
   typescriptAdapter,
   pythonAdapter,
+  javaAdapter,
+  csharpAdapter,
   githubActionsAdapter,
 ] as const;
 const UNIVERSAL_RULES = RULES.map(asUniversal);
+
+// Plugin API (Phase 6): third-party rules are appended after core rules;
+// core findings always win dedup by running first.
+function buildUniversalRules(root: string) {
+  const { plugins, errors } = loadPlugins(root);
+  const pluginRules = plugins.flatMap((p) => p.rules.map(asUniversal));
+  return { rules: [...UNIVERSAL_RULES, ...pluginRules], pluginErrors: errors };
+}
 
 /** Rule-declared evidence-level overrides (Honesty Core). */
 const EVIDENCE_OVERRIDES: ReadonlyMap<string, string> = new Map(
@@ -150,6 +163,26 @@ export function runScan(args: CliArgs): ScanResult {
   if (workspace) {
     // R1: dispatch through language adapters. Rules stay unchanged; the
     // adapters own discovery, parsing, and rule application.
+    const { rules: activeRules, pluginErrors } = buildUniversalRules(
+      workspace.root,
+    );
+    for (const err of pluginErrors) {
+      findings.push({
+        ruleId: "QA-PLUGIN-000",
+        category: "QA-PW",
+        severity: "warning",
+        confidence: "high",
+        findingType: "deterministic-defect",
+        qaImpact: "HYGIENE",
+        evidenceLevel: "E2",
+        file: "qa-doctor.config.json",
+        line: 1,
+        column: 1,
+        message: `Plugin problem: ${err}`,
+        why: "A configured plugin could not be loaded or declared invalid rules — its checks are silently missing from this scan.",
+        fix: "Fix or remove the plugin entry in qa-doctor.config.json.",
+      } as Finding);
+    }
     const ctx = {
       workspace,
       testFiles: [] as string[],
@@ -164,10 +197,17 @@ export function runScan(args: CliArgs): ScanResult {
     for (const path of ctx.testFiles) {
       const isWorkflow = githubActionsAdapter.isTestFile(path);
       const isPython = pythonAdapter.isTestFile(path);
+      const isJava = javaAdapter.isTestFile(path);
+      const isCs = csharpAdapter.isTestFile(path);
       if (!isWorkflow) testFileCount++;
       let text: string;
       try {
-        text = readFileSync(path, "utf8");
+        // Normalize once at read time: strip BOM (breaks ^-anchored regexes)
+        // and unify CRLF → LF ($-anchored regexes miss every line on Windows
+        // checkouts otherwise). Rules can rely on LF-only text.
+        text = readFileSync(path, "utf8")
+          .replace(/^\uFEFF/, "")
+          .replace(/\r\n?/g, "\n");
       } catch {
         skippedFiles++;
         continue;
@@ -177,10 +217,14 @@ export function runScan(args: CliArgs): ScanResult {
         ? githubActionsAdapter
         : isPython
           ? pythonAdapter
-          : typescriptAdapter;
+          : isJava
+            ? javaAdapter
+            : isCs
+              ? csharpAdapter
+              : typescriptAdapter;
       try {
         adapter.runRules(
-          UNIVERSAL_RULES,
+          activeRules,
           { path: relPath, text },
           (f, ruleId, category) => {
             findings.push({ ...f, ruleId, category } as Finding);
@@ -267,7 +311,11 @@ export function runScan(args: CliArgs): ScanResult {
         }
       : {}),
     dimensions,
-    findings: args.verbose ? findings : findings.slice(0, 50),
+    // Honesty: the JSON/SARIF contract carries ALL findings — silent
+    // truncation would make machine consumers (Code Scanning, CI gates)
+    // act on incomplete evidence. The terminal reporter limits its own
+    // display (top 5 + "--verbose for all"); no data is dropped here.
+    findings,
     analysisStatus: {
       discovery: Date.now() > deadline ? "partial" : "complete",
       rules: "complete",
@@ -374,13 +422,13 @@ export function runDoctorPlaywright(
   const targetArg = argv[1] && !argv[1].startsWith("-") ? argv[1] : ".";
   const target = resolve(targetArg);
   const args = parseArgs([target]);
-  if (!args) return 2;
+  if (!args) return 10;
   const result = runScan({ ...args, target });
   const pwFindings = result.findings.filter((f) => f.category === "QA-PW");
   io.out(
     renderTerminal(
       { ...result, findings: pwFindings },
-      { isTTY: process.stdout.isTTY ?? false },
+      { isTTY: process.stdout.isTTY ?? false, verbose: args.verbose },
     ),
   );
 
@@ -449,7 +497,12 @@ export function runScanCommand(
     } else if (args.json) {
       io.out(JSON.stringify(result, null, 2));
     } else {
-      io.out(renderTerminal(result, { isTTY: process.stdout.isTTY ?? false }));
+      io.out(
+        renderTerminal(result, {
+          isTTY: process.stdout.isTTY ?? false,
+          verbose: args.verbose,
+        }),
+      );
     }
     // Exit-code × gate semantics (S13): partial scans NEVER block.
     // Honesty Core Phase 2: advisory (E0) findings never gate CI —

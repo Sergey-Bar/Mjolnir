@@ -10,9 +10,11 @@ import { join } from "node:path";
 import { isDefaultIgnored, LIMITS } from "../discovery/ignores.js";
 import { detectFrameworks as detectFrameworksLegacy } from "../discovery/frameworks.js";
 import type { Workspace } from "../discovery/workspace.js";
+import { parseTsFile } from "../engine/ts-ast.js";
 import type {
   FrameworkInfo,
   LanguageAdapter,
+  ParsedFile,
   ScanContext,
 } from "../engine/adapter.js";
 
@@ -43,10 +45,13 @@ export const typescriptAdapter: LanguageAdapter = {
   },
 
   runRules(rules, file, emit) {
+    // Phase 3: populate the AST seam once per file; rules that opt in use
+    // it via getTsSourceFile, everything else stays on the regex path.
+    const withAst: ParsedFile = { ...file, ast: parseTsFile(file) };
     for (const rule of rules) {
       if (!rule.appliesTo.includes(this.id)) continue;
       try {
-        for (const f of rule.run(file)) {
+        for (const f of rule.run(withAst)) {
           emit(f, rule.id, rule.category);
         }
       } catch {
@@ -95,6 +100,9 @@ function walk(
     const full = join(dir, entry.name);
     const rel = full.slice(root.length + 1).replaceAll("\\", "/");
     if (isDefaultIgnored(rel)) continue;
+    // Symlinks are never followed: a link can point outside the repo
+    // (scanning files we have no business reading) or create cycles.
+    if (entry.isSymbolicLink()) continue;
     if (entry.isDirectory()) {
       if (rel.split("/").length <= LIMITS.maxDepth)
         walk(full, root, out, deadline, onSkipped);

@@ -7,4 +7,12 @@ describe("user service", () => {
   it("throws on invalid input", () => {
     expect(() => saveUserSync({})).toThrow();
   });
+
+  it("rejects on network failure", async () => {
+    await expect(fetchProfile(-1)).rejects.toThrow("not found");
+  });
+
+  it("resolves with mapped data", async () => {
+    await expect(loadUser(1)).resolves.toBeDefined();
+  });
 });

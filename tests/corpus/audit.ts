@@ -60,6 +60,16 @@ const CORPUS: CorpusRepo[] = [
     url: "https://github.com/microsoft/playwright-mcp.git",
     note: "real Playwright + GitHub Actions — TS/PW/CI adapter FP surface",
   },
+  {
+    name: "pytest-dev-pytest",
+    url: "https://github.com/pytest-dev/pytest.git",
+    note: "large real pytest suite — Python adapter FP surface (QA-PY-001..012)",
+  },
+  {
+    name: "psf-requests",
+    url: "https://github.com/psf/requests.git",
+    note: "small real pytest suite — Python adapter FP surface",
+  },
 ];
 
 interface BaselineEntry {
