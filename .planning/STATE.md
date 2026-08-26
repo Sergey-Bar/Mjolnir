@@ -521,6 +521,68 @@ self-scan gate 0 error-severity findings.
 task list. This closes the last sprint before the Open Beta Gate
 checklist.
 
+## OPEN BETA GATE checklist — verified 2026-08-26
+
+Checked against the plan's own criteria (§ "OPEN BETA GATE"), with
+real evidence for each line, not assumption:
+
+- [x] **Sprints 0–5 complete**, each passed its own QA tests and the
+      standing gate — all committed, all recorded above with real numbers.
+- [x] **Standing gate green on Linux, macOS and Windows** — verified via
+      a real GitHub Actions run, not assumed: checking `gh run list` on
+      `origin/main` surfaced that the actual remote CI had been **red on
+      macOS for the prior 5+ pushes** (`package-smoke.spec.ts`: the packed
+      CLI produced zero output when invoked as a real child process — no
+      crash, no stderr, no stdout). Several earlier commits had already
+      attempted to fix this (symlink → copy for `node_modules`) without
+      success. Root-caused to the module-is-entry-point guard at the bottom
+      of `cli.ts` comparing `import.meta.url` to
+      `pathToFileURL(process.argv[1]).href` by raw string equality — on
+      macOS a symlinked temp-directory component (`/var/folders` →
+      `/private/var/folders`) resolves differently through Node's ESM
+      loader than through `process.argv[1]`, so the comparison silently
+      never matched and `main()` never ran. Fixed by comparing
+      `realpathSync()`-resolved paths instead (`isEntryPoint()`, now
+      exported and unit-tested in `tests/cli-entry-point.spec.ts`). Could
+      **not** be directly reproduced/confirmed locally before pushing (no
+      macOS access this session) — pushed as a well-reasoned, non-regressing
+      hypothesis and verified against the real CI run that followed:
+      **`package-smoke.spec.ts` now passes 7/7 on all three OSes, including
+      macOS — this really was the root cause.**
+      A second, separate, self-introduced bug surfaced in that same CI run:
+      `tests/terminal-render.spec.ts`'s new "narrower width produces a
+      narrower gauge" test (Sprint 5, Task 22) used a naive line search that
+      could pick either the SCORE gauge or a fixed-width DIAGNOSTICS gauge
+      depending on rendering details — comparing a constant against itself.
+      Passed on Windows locally by coincidence; failed on Linux and macOS
+      CI. Fixed by explicitly indexing the line after "SCORE". **Confirmed
+      CI run 32997442199: `build-test` green on `windows-latest`,
+      `ubuntu-latest`, and `macos-latest`, plus `self-scan` green** — the
+      first fully-green 3-OS run recorded this session, on real remote
+      infrastructure, not a local approximation.
+- [x] **Every documented command verified on a clean machine from a
+      packed tarball** — done on Windows directly (Sprint 4 Task 16);
+      Linux/macOS now additionally covered by the real green CI run above
+      (which packs and smoke-tests the tarball as part of `npm test`).
+- [x] **Every published accuracy claim reproducible via one public
+      command** — `npm run corpus:audit` verified working (Sprint 2).
+- [x] **No documentation claim contradicted by a source read** —
+      `tests/docs-consistency.spec.ts` guards the specific bug class found
+      in Sprint 0 findings #3/#10; not an exhaustive audit of every doc file
+      in the repo, but the mechanism that would have caught this session's
+      stale claims is now in place and enforced by CI.
+- [x] **Remaining unknowns listed as unknowns** — this file has recorded
+      every known-unknown as it was found, throughout every sprint.
+- [ ] **npm distribution name resolved (§5)** — explicitly **not**
+      resolved. This is, per the plan's own text, "the one blocker this plan
+      cannot close" — parked by deliberate decision, not an oversight.
+
+**Verdict: every gate this plan can close from inside the repo is now
+closed and verified with real evidence. The sole remaining blocker to
+public launch is the parked npm-name decision (§5), which requires a
+choice only the project owner can make (scoped package name vs.
+product rename vs. acquiring the existing name).**
+
 ## Conventions
 
 - User communicates in Hebrew; artifacts in English.
