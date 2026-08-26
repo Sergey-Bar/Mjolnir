@@ -84,6 +84,26 @@ describe("rules catalog", () => {
     expect(md).toContain("| low | yes | 9.9.9 |");
   });
 
+  it("escapes a pipe character in a rule title so it can't break the markdown table (real bug: QA-CI-002's title is literally 'Ignored exit code (|| true)')", () => {
+    const ci002 = RULES.find((r) => r.id === "QA-CI-002");
+    expect(
+      ci002?.title.includes("|"),
+      "this test assumes QA-CI-002's title contains a literal pipe " +
+        "character — if that ever changes, replace this fixture with " +
+        "another rule/title that still does",
+    ).toBe(true);
+
+    const md = renderCatalogMd(buildCatalog());
+    const lines = md.split("\n").filter((l) => l.startsWith("| QA-CI-002"));
+    expect(lines).toHaveLength(1);
+    // A correctly-escaped row has exactly 9 unescaped `|` table delimiters
+    // (8 columns + leading/trailing border = 9 pipe characters total when
+    // the title's own pipes are escaped as \|).
+    const line = lines[0] ?? "";
+    const unescapedPipeCount = (line.match(/(?<!\\)\|/g) ?? []).length;
+    expect(unescapedPipeCount).toBe(9);
+  });
+
   it("CLI handler exits 0 and emits JSON by default", () => {
     let out = "";
     const code = runRulesCommand([], { out: (s) => (out += s), err: () => {} });

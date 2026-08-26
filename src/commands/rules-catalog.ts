@@ -63,8 +63,13 @@ export function renderCatalogMd(entries: RuleCatalogEntry[]): string {
   ];
   for (const e of entries) {
     lines.push(
-      `| ${e.id} | ${e.title} | ${e.severity} | ${e.confidence} | ${e.evidenceLevel} | ${e.falsePositiveRisk ?? "—"} | ${e.autofix ? "yes" : "no"} | ${e.introduced ?? "—"} |`,
+      `| ${e.id} | ${escapeMdCell(e.title)} | ${e.severity} | ${e.confidence} | ${e.evidenceLevel} | ${e.falsePositiveRisk ?? "—"} | ${e.autofix ? "yes" : "no"} | ${e.introduced ?? "—"} |`,
     );
   }
   return lines.join("\n");
+}
+
+/** Escapes characters that would break a Markdown table cell. */
+function escapeMdCell(text: string): string {
+  return text.replaceAll("|", "\\|");
 }

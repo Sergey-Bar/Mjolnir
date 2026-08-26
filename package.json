@@ -31,6 +31,8 @@
     "corpus:audit": "tsx tests/corpus/audit.ts",
     "corpus:audit:update": "tsx tests/corpus/audit.ts --update",
     "fp-audit:generate": "node scripts/generate-fp-audit-table.mjs",
+    "docs:rules": "tsx scripts/generate-rule-docs.ts",
+    "docs:hero": "tsx scripts/generate-readme-hero.ts",
     "self-scan": "node dist/cli.mjs .",
     "prepare": "husky",
     "prepublishOnly": "npm run build && npm test"

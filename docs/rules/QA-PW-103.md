@@ -1,0 +1,48 @@
+# QA-PW-103 — Navigation wait without explicit timeout budget
+
+_Generated from the live rule registry and this rule's own committed fixtures by `qa-doctor`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+
+| Field               | Value                       |
+| ------------------- | --------------------------- |
+| Severity            | info                        |
+| Confidence          | low                         |
+| Evidence level      | E1                          |
+| QA impact           | Test hygiene debt (HYGIENE) |
+| False-positive risk | high                        |
+| Autofix available   | no                          |
+| Languages           | typescript, javascript      |
+| Frameworks          | playwright                  |
+| Detection strategy  | regex pattern               |
+| Introduced in       | v0.3.0                      |
+
+## Why this fails in production
+
+Magic-default timeouts make failures opaque (was it slow, or broken?) and never encode the product's actual performance budget.
+
+## What gets flagged (real detector output)
+
+```
+`goto("/pricing")` without an explicit timeout.
+```
+
+Example from this rule's own must-fire fixture: `tests/fixtures/QA-PW-103/must-fire/no-budget.spec.ts`
+
+## The fix
+
+Pass `{ timeout: <budget-ms> }` matching your performance SLO, or set actionTimeout/navigationTimeout deliberately in config.
+
+## Confirmed NOT to fire on the corresponding clean pattern
+
+Verified against `tests/fixtures/QA-PW-103/must-not-fire/with-budget.spec.ts` — a legitimate, similar-looking pattern this rule correctly leaves alone.
+
+## Corpus-measured false-positive risk
+
+Real occurrence counts from `npm run corpus:audit` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
+
+| Repo                     | Occurrences |
+| ------------------------ | ----------- |
+| microsoft-playwright-mcp | 2           |
+
+---
+
+Full catalog: `qa-doctor rules --md` · Live explanation: `qa-doctor explain QA-PW-103`

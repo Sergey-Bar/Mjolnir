@@ -108,4 +108,63 @@ describe("no doc claims a gap that source contradicts", () => {
       ).toContain(os);
     }
   });
+
+  it("docs/SARIF-INTEGRATION.md does not claim GitHub Code Scanning upload is already wired into ci.yml when it isn't (a real fabricated claim caught while writing this doc)", () => {
+    const sarifDoc = readFileSync(
+      join(ROOT, "docs", "SARIF-INTEGRATION.md"),
+      "utf8",
+    );
+    const ci = readFileSync(
+      join(ROOT, ".github", "workflows", "ci.yml"),
+      "utf8",
+    );
+    const claimsAlreadyWired =
+      /already (covered|wired|running)/i.test(sarifDoc) &&
+      /upload-sarif/i.test(sarifDoc);
+    const actuallyWired = /upload-sarif/i.test(ci);
+    if (claimsAlreadyWired) {
+      expect(
+        actuallyWired,
+        "docs/SARIF-INTEGRATION.md claims Code Scanning upload is " +
+          "already running in ci.yml, but ci.yml contains no " +
+          "upload-sarif step.",
+      ).toBe(true);
+    }
+  });
+
+  it("every CLI flag documented in docs/SARIF-INTEGRATION.md's own examples is a real, recognized flag", () => {
+    const sarifDoc = readFileSync(
+      join(ROOT, "docs", "SARIF-INTEGRATION.md"),
+      "utf8",
+    );
+    // Extract `--flag` tokens that appear directly after `qa-doctor` in a
+    // fenced command example — a lightweight, deliberately conservative
+    // check (it will under-match rather than false-flag prose), aimed at
+    // catching exactly the class of bug found while writing this doc: an
+    // invented flag (--output) that doesn't exist in parseArgs.
+    const flags = new Set(
+      [...sarifDoc.matchAll(/qa-doctor[^\n`]*?(--[a-z-]+)/g)].map((m) => m[1]),
+    );
+    const knownFlags = new Set([
+      "--json",
+      "--format",
+      "--verbose",
+      "--scope",
+      "--max-duration",
+      "--width",
+      "--ascii",
+      "--no-ascii",
+      "--since",
+    ]);
+    for (const flag of flags) {
+      expect(
+        knownFlags.has(flag as string),
+        `docs/SARIF-INTEGRATION.md references "${flag}" as a qa-doctor ` +
+          `flag, but it is not in this test's known-flags list (kept in ` +
+          `sync with parseArgs in src/cli.ts) — either it's a real flag ` +
+          `this list needs to learn about, or it's an invented flag the ` +
+          `same way --output was.`,
+      ).toBe(true);
+    }
+  });
 });

@@ -30,11 +30,11 @@ npx qa-doctor@latest
 
 <img src="assets/readme/terminal-hero.svg" alt="qa-doctor scan report — SCORE 80/100 HEALTHY, error on QA-CI-001 continue-on-error, warning on QA-TEST-004 hard sleep" width="720">
 
-<sub>Real output from <code>node dist/cli.mjs examples/demo-repo</code> — not a mockup. Reproduce it yourself:</sub>
+<sub>Generated directly from a real scan of <code>examples/demo-repo</code> — not a mockup, not hand-edited. Reproduce it yourself:</sub>
 
 ```bash
-git clone https://github.com/Sergey-Bar/QA-Doctor && cd QA-Doctor/qa-doctor/examples/demo-repo
-npx qa-doctor@latest .
+git clone https://github.com/Sergey-Bar/QA-Doctor && cd QA-Doctor/qa-doctor
+npm run docs:hero
 ```
 
 </div>
