@@ -4,10 +4,10 @@
  * 10 usage error · 20 internal error.
  */
 
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { join, relative, resolve, sep } from "node:path";
 import process from "node:process";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import {
   compareFindings,
@@ -882,13 +882,28 @@ Exit codes: 0 clean · 1 errors found · 2 partial · 10 usage · 20 crash`);
 }
 
 // Run only when this module is the entry point (not when tests import it).
-// Comparing against import.meta.url instead of matching filename suffixes
-// keeps this correct across cli.ts (dev/tsx) and any built output name
-// (dist/cli.js, dist/cli.mjs, ...) without needing to be updated in lockstep
-// with the build config.
-if (
-  process.argv[1] &&
-  import.meta.url === pathToFileURL(process.argv[1]).href
-) {
+// Comparing resolved real paths (not raw string equality on
+// import.meta.url vs pathToFileURL(process.argv[1]).href) because on
+// macOS, os.tmpdir() commonly returns a path under /var/folders/... that
+// is itself a symlink to /private/var/folders/...: Node's ESM loader
+// resolves import.meta.url through that symlink, but process.argv[1]
+// stays unresolved, so a literal string comparison silently never
+// matches when a packed tarball is extracted into a macOS temp dir —
+// main() never runs, the process exits 0 with zero output, and it looks
+// exactly like the CLI itself is broken. realpathSync on both sides
+// makes the comparison symlink-agnostic on every platform. Falls back
+// to the original string comparison if realpathSync throws (e.g. the
+// path genuinely doesn't exist) so this can't newly crash anything.
+export function isEntryPoint(): boolean {
+  const argv1 = process.argv[1];
+  if (!argv1) return false;
+  try {
+    return realpathSync(fileURLToPath(import.meta.url)) === realpathSync(argv1);
+  } catch {
+    return import.meta.url === pathToFileURL(argv1).href;
+  }
+}
+
+if (isEntryPoint()) {
   process.exitCode = main();
 }
