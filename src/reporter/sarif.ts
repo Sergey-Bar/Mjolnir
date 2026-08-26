@@ -37,7 +37,7 @@ export function renderSarif(result: ScanResult, repoRootUri?: string): string {
     tool: {
       driver: {
         name: "QA Doctor",
-        informationUri: "https://github.com/Sergey-Bar/QA-Dodctor",
+        informationUri: "https://github.com/Sergey-Bar/QA-Doctor",
         // Tool version — MUST match package.json (enforced by
         // tests/version-consistency.spec.ts). Bump on release.
         version: "0.3.7",

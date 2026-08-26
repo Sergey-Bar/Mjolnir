@@ -62,12 +62,31 @@ beforeAll(() => {
   // and CI filesystems (junctions are Windows-only; macOS temp dirs may
   // reject dir symlinks), and a silently-broken link makes the CLI crash
   // with empty stdout — exactly the failure this test exists to catch.
+  // Transitive deps are resolved recursively from the ROOT node_modules
+  // (npm hoists them flat): ts-morph needs @ts-morph/*, which needs
+  // minimatch, etc. A real install would do this; we replicate it.
   mkdirSync(join(pkgDir, "node_modules"), { recursive: true });
-  for (const dep of Object.keys(pkgJson.dependencies ?? {})) {
+  const copied = new Set<string>();
+  const copyDep = (dep: string): void => {
+    if (copied.has(dep)) return;
+    copied.add(dep);
     const src = join(ROOT, "node_modules", dep);
     const dest = join(pkgDir, "node_modules", dep);
-    if (!existsSync(src)) continue;
+    if (!existsSync(src)) return;
     cpSync(src, dest, { recursive: true, dereference: true });
+    let deps: Record<string, unknown>;
+    try {
+      const pkg = JSON.parse(
+        readFileSync(join(src, "package.json"), "utf8"),
+      ) as { dependencies?: Record<string, unknown> };
+      deps = pkg.dependencies ?? {};
+    } catch {
+      return;
+    }
+    for (const sub of Object.keys(deps)) copyDep(sub);
+  };
+  for (const dep of Object.keys(pkgJson.dependencies ?? {})) {
+    copyDep(dep);
   }
 }, 60_000);
 
@@ -93,6 +112,15 @@ describe("published tarball contents", () => {
       existsSync(binPath),
       `package.json "bin" points to "${pkgJson.bin["qa-doctor"]}", which ` +
         `is not present in the packed tarball.`,
+    ).toBe(true);
+  });
+
+  it("includes CHANGELOG.md (Sprint 0 Task 2)", () => {
+    expect(
+      existsSync(join(pkgDir, "CHANGELOG.md")),
+      "CHANGELOG.md must ship in the published tarball so upgraders can " +
+        "see what changed between versions — it was previously " +
+        "git-ignored and would have been silently absent.",
     ).toBe(true);
   });
 });

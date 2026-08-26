@@ -12,7 +12,8 @@
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "build": "tsdown src/cli.ts --format esm --dts --out-dir dist",
@@ -46,13 +47,16 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/qa-doctor/qa-doctor.git"
+    "url": "git+https://github.com/Sergey-Bar/QA-Doctor.git",
+    "directory": "qa-doctor"
   },
   "bugs": {
-    "url": "https://github.com/qa-doctor/qa-doctor/issues"
+    "url": "https://github.com/Sergey-Bar/QA-Doctor/issues"
   },
-  "homepage": "https://github.com/qa-doctor/qa-doctor#readme",
+  "homepage": "https://github.com/Sergey-Bar/QA-Doctor#readme",
   "dependencies": {
+    "tree-sitter-wasms": "^0.1.13",
+    "ts-morph": "^28.0.0",
     "web-tree-sitter": "^0.26.13",
     "yaml": "^2.5.0"
   },

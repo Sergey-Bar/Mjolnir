@@ -1,0 +1,120 @@
+# QA DOCTOR v2 — MASTER IMPLEMENTATION PLAN
+### Executing Upgrade-Plan-v2 + Legendary-Roadmap quick wins
+> Based on a real code audit dated 2026-08-24.
+> STATUS PASS 2026-08-25: verified against src/ + tests/. See `.planning/STATE.md`.
+
+---
+
+## PHASE 0 — DEBT CLEARING & QUICK WINS (Week 1)  ✅ DONE
+
+| # | Task | Effort | Status |
+|---|------|--------|--------|
+| 0.1 | Register 2 orphan rules `retryAbuse` / `retryMasking` in `rules/index.ts` | 10 min | ✅ DONE — both in `src/rules/index.ts` |
+| 0.2 | Wire `detectFrameworks()` into `cli.ts` scan pipeline | 0.5d | ✅ DONE — `cli.ts:186`, `commands/init.ts:41` |
+| 0.3 | Replace `parseMinimalWorkflow` with real safe-YAML parsing using the already-installed `yaml` dep, with alias-count limits | 1d | ✅ DONE — `src/discovery/workflow-parser.ts`, alias/depth guards |
+| 0.4 | QA-speak severity labels — add `qaImpact` field to `Finding`, render BLOCKS-RELEASE / FLAKY-RISK / FALSE-GREEN / HYGIENE | 0.5d | ✅ DONE — `src/types.ts:30-40,53` |
+| 0.5 | SARIF reporter via `--format sarif`, SARIF 2.1 transform | 1d | ✅ DONE — `src/reporter/sarif.ts` |
+| 0.6 | Remove dead code, keep `ts-morph` dep | 0.5d | ⬜ NOT DONE — `ts-morph` still installed and still unused (only a doc-comment + a TODO reference it) |
+
+**Gate:** tests green + golden regenerated + self-scan clean.
+**Deliverable:** v0.2
+
+---
+
+## PHASE R1 — LANGUAGE ADAPTER REFACTOR (Weeks 2–3)  ✅ DONE
+
+New structure:
+- `src/engine/` — `adapter.ts`, `parsed-file.ts`, `rule-runner.ts`
+- `src/adapters/` — `typescript.ts`, `github-actions.ts`
+
+**Design decisions:**
+1. Keep regex inside the TS adapter for R1; tree-sitter deferred to R2 where actually required — ship the seam, defer parser migration.
+2. `appliesTo` becomes `string[]` of adapter ids.
+3. Rule registry becomes auto-discovery.
+4. Add `"language"` field to `Finding` as compatible schemaVersion 1.1.
+
+**Migration order (each step keeps tests green):**
+1. Wrap existing logic verbatim behind adapter interfaces — ✅ done, `src/engine/adapter.ts`
+2. `RuleRunner` replaces cli scan loops — ✅ done
+3. Framework detection moves into adapters — ✅ done, each adapter implements `detectFrameworks`
+4. `GitHubActionsAdapter` absorbs YAML parsing — ✅ done, `src/adapters/github-actions.ts`
+5. Delete legacy paths — ✅ done, `parseMinimalWorkflow` no longer exists
+
+**Deliverable:** v0.3 — ✅ SHIPPED (package.json currently at 0.3.0)
+
+---
+
+## PHASE R2 — PYTHON/pytest ADAPTER (Weeks 4–6)  🟡 PARTIAL (~50%)
+
+- Use **web-tree-sitter (WASM)** over native bindings (no node-gyp on Windows). — ✅ DONE, `src/adapters/python.ts` uses `web-tree-sitter`
+- `PythonAdapter` with `test_*.py` / `*_test.py` discovery. — ✅ DONE
+- Framework detection via `pytest.ini` / `pyproject.toml` / `conftest.py`. — ✅ DONE
+- QA-PY-001..012 rules plus universal rules reimplemented over Python AST via a shared semantic layer (`isTestCall` / `getAssertions` / `isSkipModifier` concepts). — 🟡 PARTIAL: 6/12 shipped (QA-PY-002, 003, 005, 006, 010, 012 registered in `src/rules/index.ts`). Missing: QA-PY-001, 004, 007, 008, 009, 011.
+- Corpus validation against 10 real OSS pytest repos with FP audit <5% before GA. — ⬜ NOT DONE, no audit artifact found in the repo
+
+**Deliverable:** v0.4 — ⬜ NOT SHIPPED (package.json still at 0.3.0)
+
+---
+
+## PHASE R3 — PLAYWRIGHT DEEP MODE (Weeks 7–10)  🟡 PARTIAL (7/25 rules)
+
+Four weekly waves:
+1. Waits family + legacy API rules — 🟡 PARTIAL: `networkIdleWait` (QA-PW-118), `legacyElementHandles` (QA-PW-114) shipped; QA-PW-101,102,103,104,105 not built
+2. **Selector Health Score engine** (headline feature) — per-spec locator classification role/text/testid vs CSS/XPath, rendered with a bar chart — ✅ DONE, `src/playwright/selector-health.ts`
+3. Isolation/hygiene + config hygiene rules — 🟡 PARTIAL: `hardcodedBaseUrl` (QA-PW-123) only; QA-PW-115,116,117,119,120,121,122,124,125 not built
+4. Assertion completeness — ⬜ NOT DONE: QA-PW-106..110 not built; `unawaitedLocatorAssertion` (QA-PW-002) predates this plan and is already registered
+
+Extras:
+- Dedicated subcommand: `qa-doctor doctor:playwright` with screenshot-able output. — ✅ DONE, `src/cli.ts:591`
+- New npm package `@qa-doctor/playwright-reporter`, usable as `reporter: [['@qa-doctor/playwright-reporter']]`, consuming real run results (retries, durations). — ⬜ NOT DONE, only `src/commands/pw-report.ts` exists (consumes existing JSON reports, not a live reporter plugin, not published to npm)
+
+**Deliverable:** v0.5 — ⬜ NOT SHIPPED
+
+---
+
+## PHASE R4 — RUNTIME EVIDENCE / FORENSICS (Weeks 11–14)  🟡 PARTIAL — started early, lighter evidence tier than planned
+
+- `qa-doctor forensics ./test-results/` parsing Playwright `trace.zip` (retry attempts, network failures, console errors). — 🟡 PARTIAL: `forensics` command exists (`src/forensics/`) but parses Playwright **JSON reporter output**, not raw `trace.zip`. No trace-parsing code found.
+- JUnit XML ingestion for other runners. — ✅ DONE, `src/forensics/parse-junit.ts`
+- Flakiness Leaderboard. — ✅ DONE (as part of `analyze.ts`/`triage.ts`)
+- `FLAKY.md` committed artifact. — ✅ DONE
+- Retry forensics ("passed only on attempt >=2"). — ✅ DONE, from JSON reporter retry data (not from traces)
+- Foundation for future triage command. — ✅ DONE, `triage` subcommand shipped ahead of schedule
+
+**Deliverable:** v0.6 — ⬜ NOT SHIPPED (trace.zip parsing gap remains)
+
+---
+
+## PARALLEL TRACKS
+
+| Track | Work |
+|-------|------|
+| Community | Plugin API design doc; `create-rule` scaffold during R1 slack |
+| Content | Anti-pattern catalog posts from R3 onward |
+| Launch prep | Hero GIF day; playground repo; good-first-issues before v0.5 |
+| Badge | shields.io endpoint JSON with v0.4 |
+
+---
+
+## RISK REGISTER
+
+| Risk | Mitigation |
+|------|------------|
+| WASM perf risk | Benchmark gate day 1; native fallback |
+| Regex-to-AST position drift | Golden lock catches regressions |
+| Python FP-rate higher than JS | Corpus audit before GA; demote uncertain rules |
+| Scope creep | Anti-creep law |
+| Solo-dev burnout | Weekly demo ritual |
+
+---
+
+## DEFINITION OF DONE FOR v2
+
+- [x] Phase 0 shipped — NOTE: shipped as part of v0.3, not tagged v0.2 separately; ts-morph cleanup (0.6) still outstanding
+- [x] R1: all tests green through the abstraction — 347 tests passing at audit time
+- [ ] R2: pytest FP <5% audited + launch post published — rules 6/12, no FP audit, no launch post
+- [ ] R3: Selector Health live + PW reporter on npm — Selector Health ✅ live; PW reporter npm package ⬜ not built
+- [ ] R4: forensics parses real traces + FLAKY.md generated — FLAKY.md ✅ generated; real trace.zip parsing ⬜ not built
+- [ ] Fuzz gate covers Python inputs — ⬜ NOT DONE, `tests/fuzz.spec.ts` has no Python-related fixtures
+- [ ] Docs auto-generated for all rules — ⬜ NOT DONE, no doc-generation script found
+- [ ] README with hero GIF — ⬜ NOT DONE, no GIF reference in `qa-doctor/README.md`

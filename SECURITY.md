@@ -11,7 +11,7 @@
 **Do NOT open a public issue for security vulnerabilities.**
 
 Use GitHub's private vulnerability reporting:
-https://github.com/qa-doctor/qa-doctor/security/advisories/new
+https://github.com/Sergey-Bar/QA-Doctor/security/advisories/new
 
 We commit to:
 

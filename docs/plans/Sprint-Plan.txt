@@ -1,0 +1,347 @@
+> STATUS 2026-08-25: SUPERSEDED. This 13-week schedule predates the
+> multi-language + Playwright-deep-mode work, which shipped outside this
+> plan's scope entirely (v0.3.0 is already past what this plan covers).
+> Week numbering no longer maps to reality — do not use for tracking.
+> Use `docs/plans/Implementation-Master-Plan.txt` instead (has per-task
+> done/not-done status as of this same date).
+
+# QA DOCTOR — SPRINT PLAN
+## 13 Weeks · Solo Senior Developer (AI-Assisted) · Option A Scope
+
+> Derived from: `Product-MVP.txt` §29–35.
+> Model: **Option A** — single senior dev, AI-assisted, launch set trimmed
+> to fit reality (~64 dev-days ≈ 13 weeks).
+> Anti-creep law applies: **every addition requires an equal-size removal
+> from the launch set. No exceptions.**
+
+---
+
+# 0. PLAN CONSTANTS
+
+## Team & Cadence
+```text
+Team:        1 senior developer + AI pair (Claude/Copilot)
+Sprint:      1 week (Mon–Fri), demo every Friday to a non-author reviewer
+Capacity:    5 days/sprint × ~6 focused hours = ~30h effective
+Buffer:      Week 13 is hardening/buffer ONLY — no new features
+Ceremonies:  Mon: pick tickets → Fri: demo + retro (30 min max)
+```
+
+## Definition of Ready (ticket level)
+A ticket enters a sprint only if it has:
+- [ ] Acceptance criteria written as testable statements
+- [ ] Fixture files specified (for rules: must-fire AND must-not-fire)
+- [ ] Dependencies on prior tickets resolved or stubbed
+
+## Definition of Done (every ticket)
+- [ ] Code merged via PR (even solo — self-review catches real bugs)
+- [ ] Unit tests green; fixtures pass both directions (rules)
+- [ ] Cross-platform note checked (no path separators, no shell-outs)
+- [ ] Conventional Commit; changeset if user-visible
+- [ ] No new findings from QA Doctor's own self-scan gate
+
+## Standing CI Gates (from §30.2, activated progressively)
+```text
+From W1:  build, lint, unit tests, Windows+Linux matrix
+From W2:  fixture harness, golden-repo mechanism
+From W4:  fuzz corpus, perf benchmark
+From W7:  no-network gate, self-scan gate
+Always:   macOS added to matrix from W8
+```
+
+## Ticket ID Convention
+`W{week}-{seq}` e.g. `W3-04`. Rules carry their rule IDs (`QA-*`).
+
+---
+
+# SPRINT 1 (Week 1) — FOUNDATION
+**Goal:** `qa-doctor` runs on any JS repo and prints "0 rules, 0 findings" honestly.
+
+| ID | Task | Est | Notes |
+|---|---|---|---|
+| W1-01 | GitHub org + repo scaffold (org decision R12/S5): tsconfig, tsup/tsdown build, ESLint+Prettier, Vitest for self-tests, changesets, Renovate, Dependabot, CodeQL, SECURITY.md skeleton | 1d | Decide ESM/CJS now (S2). Node ≥20 LTS policy in engines |
+| W1-02 | CLI skeleton: commander/clack-free arg parsing, `--json`, `--verbose`, exit codes 0/1/10/20 (§24.1), NO_COLOR/non-TTY handling (R11) | 1d | |
+| W1-03 | Discovery engine v1: find project root, package.json parse, workspace detection (npm/yarn/pnpm workspaces only per §29.1 cut) | 1d | |
+| W1-04 | Default ignore list (R1) + ignore resolution order (defaults→config→flags) + symlink loop guard + 1MB file cap (R3 partial) | 0.5d | Fixture: dummy node_modules must be skipped |
+| W1-05 | JSON contract v1 WITH confidence field (GAP-E) + schemaVersion freeze prep; deterministic finding ordering (S3) | 0.5d | Sort: file→line→col→ruleId |
+| W1-06 | Terminal reporter v0: score banner placeholder, empty state "0 rules", analysis status line | 0.5d | |
+| W1-07 | npm name check + reserve `qa-doctor` (+ fallbacks) (S12); CI pipeline for tool itself (build/test/matrix Win+Linux) | 0.5d | |
+
+**Gate (Friday):** run `node dist/cli.js` inside 3 sample repos → exits 0,
+prints valid JSON with `schemaVersion`, skips node_modules, <2s.
+**Demo:** scan a real repo live.
+
+---
+
+# SPRINT 2 (Week 2) — RULE ENGINE + FIRST RULES
+**Goal:** Rule infrastructure proven end-to-end with 5 test-hygiene rules.
+
+| ID | Task | Est | Notes |
+|---|---|---|---|
+| W2-01 | Rule interface + registry: metadata (id, severity, confidence, findingType, overlapWith, docs link), pure-function contract | 0.5d | §64 heritage, GAP-E fields |
+| W2-02 | ts-morph parser wrapper: cached SourceFiles, worker-thread pool skeleton (S9), crash isolation try/catch + soft timeout (§25) | 1d | |
+| W2-03 | Fixture harness: `must-fire/` + `must-not-fire/` runner wired into CI (§18.1); golden-repo mechanism with per-rule expectations (S4) | 1d | THE critical infra ticket |
+| W2-04 | Scorer: constants module (error −8/warn −3/info −1), dimension rollup, score-context line (R9: "· N files · M rules") | 0.5d | |
+| W2-05 | Rules QA-TEST-001 (.only/focused), QA-TEST-002 (.skip), QA-TEST-010 (empty body) | 1d | Fixtures-first TDD |
+| W2-06 | Rules QA-TEST-003 (no assertions), QA-TEST-004 (hard sleep incl. waitForTimeout) | 1d | |
+| W2-07 | Encoding fixtures: BOM/CRLF/UTF-16/Hebrew-comments files into harness (R7); suppression marker support (`// qa-doctor-ignore-next-line`) | 0.5d | |
+| W2-08 | Score-gaming counter: suppressed count always rendered (S11) | 0.25d | |
+
+**Gate:** 5 rules × 2 fixture sets green in CI; golden repo #1 locked;
+scan of own repo finds its own seeded smells.
+**Demo:** seed 8 smells in a scratch repo → all found, correct lines.
+
+---
+
+# SPRINT 3 (Week 3) — TEST RULES COMPLETE + FRAMEWORK DETECTION
+**Goal:** Full LAUNCH test-rule family + correct Jest/Vitest/Playwright scoping.
+
+| ID | Task | Est | Notes |
+|---|---|---|---|
+| W3-01 | Framework detector via config resolution (R8): jest.config extends chains, vitest.config, playwright.config testDir; graceful unknown-state output | 1.5d | |
+| W3-02 | Test-discovery glob spec implemented + documented (S8) | 0.5d | |
+| W3-03 | Vacuous-pass rules batch 1 (GAP-A): QA-TQUAL-009 (unawaited promise assertion), QA-TQUAL-002 (tautological), QA-TQUAL-003 (assertion-free async) | 1.5d | Hardest AST work — AI drafts, human validates edge cases |
+| W3-04 | Vacuous-pass batch 2: QA-TQUAL-001 (mock-only verification), QA-TQUAL-011 (commented-out tests) | 1d | |
+| W3-05 | Playwright family start (GAP-B): QA-PW-002 (missing await on locator assert), QA-PW-003 (page.pause/test.only committed) | 0.5d | |
+
+**Gate:** 11 rules green; framework detection correct on 5 real OSS repos
+(Jest repo, Vitest repo, Playwright repo, mixed monorepo, none-of-these).
+**Demo:** same smell expressed in Jest vs Vitest vs Playwright → correctly scoped findings.
+
+---
+
+# SPRINT 4 (Week 4) — PLAYWRIGHT FAMILY + YAML ENGINE START
+**Goal:** Differentiation wedge shipped; CI YAML model designed and parsing.
+
+| ID | Task | Est | Notes |
+|---|---|---|---|
+| W4-01 | Playwright rules: QA-PW-001 (waitForTimeout w/ fix hint), QA-PW-004 (brittle selectors), QA-PW-005 (page.evaluate business logic) | 1.5d | |
+| W4-02 | Collect real-world workflow corpus: 30+ GitHub workflows (continue-on-error uses, || true, reusable workflows, matrices) → frozen fixtures dir | 0.5d | Becomes living regression asset (S14) |
+| W4-03 | YAML parser layer: safe loader with alias limits (YAML-bomb guard R3), workflow object model (jobs/steps/triggers/matrix/permissions/concurrency) | 1.5d | |
+| W4-04 | Workflow discovery: .github/workflows/**, called workflows, composite actions (action.yml) resolution | 0.5d | |
+| W4-05 | First CI rule: QA-CI-001 continue-on-error (incl. job-level inheritance semantics) | 0.5d | Flagship rule — extra polish |
+| W4-06 | Fuzz corpus v1: 100 malformed TS/YAML files; scan never exits 20 (§30.2 gate #3) | 0.5d | Grows each sprint |
+
+**Gate:** 14 rules total; QA-CI-001 fires on ≥5 corpus workflows, silent on clean ones.
+**Demo:** scan a repo with masked-failure CI → flagship finding renders perfectly.
+
+---
+
+# SPRINT 5 (Week 5) — CI INTEGRITY ENGINE COMPLETE
+**Goal:** All LAUNCH CI rules + semantic checks + dedup.
+
+| ID | Task | Est | Notes |
+|---|---|---|---|
+| W5-01 | QA-CI-002 (`|| true`), QA-CI-003 (ignored exit codes / `set +e`) | 1d | Shell-aware step scanning (actionlint pattern) |
+| W5-02 | QA-CI-005 (report consumed but never generated), QA-CI-008 (always-success final step) | 1d | Cross-step analysis within job |
+| W5-03 | Semantic checks bundle (GAP-D): needs-cycle detection, cron validation, branch-glob validation, runner-label check | 1d | These are observations/warnings, not errors |
+| W5-04 | QA-CI-007 (retry masking) + retry-abuse cross-link QA-TEST-006 | 0.5d | |
+| W5-05 | Finding dedup pass + overlap groups (R6): primary finding + "related" list | 1d | |
+| W5-06 | Perf benchmark harness v1: time + peak RSS on 500-file and 5k-file synthetic repos (S9); wire into CI as advisory metric | 0.5d | |
+
+**Gate:** 18 LAUNCH rules complete (11 test + 5 PW + wait—recount below);
+corpus regression suite green; benchmark within targets on Linux.
+**Rule recount at this point:** TEST(6) + TQUAL(5) + PW(5) + CI(5) = 21.
+Update README counts accordingly — plan tracks reality, not vanity.
+
+**Demo:** full scan of a deliberately broken demo repo (S12 asset starts here).
+
+---
+
+# SPRINT 6 (Week 6) — CHANGED SCOPE
+**Goal:** Clean signal on PRs over dirty legacy codebases.
+
+| ID | Task | Est | Notes |
+|---|---|---|---|
+| W6-01 | Git plumbing: merge-base resolution, changed-file enumeration, rename detection, binary/new/deleted file handling | 1.5d | |
+| W6-02 | Line-level mapping: parse diff hunks → changed line ranges per file; findings filtered by intersection | 1.5d | |
+| W6-03 | Edge cases: detached HEAD, shallow clones (CI default!), merge commits, worktrees | 1d | Shallow clone WILL happen in CI — handle gracefully |
+| W6-04 | Import-graph builder (shared with future GAP-I): exports + importers map per project | 1d | Reused post-launch for Behavior Coverage |
+| W6-05 | `qa-doctor compare` against history.json? **NO — deferred (anti-creep).** Instead: verify --scope changed determinism across 3 runs (S3) | 0.5d | Discipline example |
+
+**Gate:** on a synthetic dirty-legacy repo, `--scope changed` reports ONLY
+new-branch findings; identical output across repeated runs.
+**Demo:** open a real PR with 1 new violation over a smelly base → exactly 1 annotation.
+
+---
+
+# SPRINT 7 (Week 7) — CI INTEGRATION + REPORTERS + CONFIG
+**Goal:** The GitHub story works end-to-end; teams can tune safely.
+
+| ID | Task | Est | Notes |
+|---|---|---|---|
+| W7-01 | `ci install`: generates `.github/workflows/qa-doctor.yml` from internal templates only (no user-input interpolation — R3); advisory default | 1d | |
+| W7-02 | GitHub reporter: check-run summary + inline annotations; sticky-comment opt-in via marker search (S10); SARIF reporter (GAP-H/R16 promoted) | 1.5d | |
+| W7-03 | Config file (§27 + GAP-F): gate per category glob, severityOverrides, ignore w/ reason+expiry (default 90d), known-issue list (GAP-J static part only) | 1.5d | Schema validated, friendly errors |
+| W7-04 | `suppressions` command + governance view (§12); exit-code × gate semantics incl. partial-never-blocks (S13) | 0.5d | |
+| W7-05 | Release process (R4): canary tag → 48h promote flow documented; publish script with OIDC trusted publishing setup (S5); no-network gate added to CI (§26.1) | 0.5d | |
+| W7-06 | Composite Action repo `qa-doctor/action@v1`? **Deferred to post-launch week 15** (anti-creep removal for GAP-J static part kept) | — | Logged in deferred ledger |
+
+**Gate:** end-to-end: fork test repo → install → PR → annotations appear,
+advisory only; config tuning changes gating without touching code.
+**Demo:** live PR annotation flow on screen.
+
+---
+
+# SPRINT 8 (Week 8) — HARDENING & PERFORMANCE
+**Goal:** Fast, safe, uncrashable on all three OSes.
+
+| ID | Task | Est | Notes |
+|---|---|---|---|
+| W8-01 | Malicious-repo hardening full pass (R3): traversal filenames, prototype-polluting keys, depth caps, billion-laughs verified blocked | 1.5d | Adversarial fixture repo committed |
+| W8-02 | Worker-pool completion + memory ceiling 512MB + sequential degradation (S9); perf targets met: <5s/500f, <20s/5kf on all OSes | 1.5d | Benchmark gate now blocking (>20% regression fails) |
+| W8-03 | Debuggability (S7): `--debug` → `.qa-doctor/logs/` (gitignored), `qa-doctor doctor` env/config/ignore dump | 1d | |
+| W8-04 | macOS matrix leg added; full 3-OS green; fuzz corpus grown to 500 entries | 0.5d | |
+| W8-05 | Partial-analysis honesty polish (§18.3): budget expiry (--max-duration), `partial:true` in JSON, "PARTIAL ANALYSIS" banner | 0.5d | |
+| W8-06 | Self-scan gate enforced: zero errors on own repo (§30.2 #7) | 0.25d | Dogfooding begins permanently |
+| W8-07 | Buffer / spillover from W4–W7 (there WILL be spillover) | 0.25d | |
+
+**Gate:** all §30.2 gates green × 3 OSes; adversarial repo produces clean
+degraded scan, never a crash.
+**Demo:** throw garbage repos at it live (symlink bomb, 1GB file, YAML bomb).
+
+---
+
+# SPRINT 9 (Week 9) — DOCS + ALPHA
+**Goal:** A stranger succeeds without us; alpha feedback starts.
+
+| ID | Task | Est | Notes |
+|---|---|---|---|
+| W9-01 | Docs site scaffold (VitePress/Docusaurus) on GitHub Pages under the org | 0.5d | |
+| W9-02 | Auto-generated rule pages FROM FIXTURES (GAP-K): input file + real executed output per rule | 1d | Zero-drift docs |
+| W9-03 | Quickstart page mirroring react.doctor's 3 steps; CLI reference generated from arg definitions; config reference | 1d | |
+| W9-04 | README-as-landing-page (S12): GIF of real scan, comparison table (§21), quickstart copy | 0.5d | |
+| W9-05 | License decision executed (R5): MIT + LICENSE + CONTRIBUTING.md + DCO; legal pages drafted (S6: privacy/telemetry disclosure) | 0.5d | Founder sign-off required |
+| W9-06 | Coding-agent installer `qa-doctor install` (§11): writes agent instructions file (Copilot/Cursor/Claude generic format) | 0.5d | |
+| W9-07 | Alpha: run on own repo + 5 friendly repos; fix top FP offenders immediately | 1d | Stranger-test scheduled: 3 external devs do quickstart |
+
+**Gate:** stranger-completes-quickstart passes (record hesitations);
+alpha repos scanned; FP rate trending <10% pre-beta.
+**Demo:** hand laptop to a colleague, watch them succeed silently.
+
+---
+
+# SPRINT 10 (Week 10) — PRIVATE BETA OPENS
+**Goal:** 10+ external users; instrumentation proves honesty claims.
+
+| ID | Task | Est | Notes |
+|---|---|---|---|
+| W10-01 | Opt-in anonymous counters (§26.2): rule-fired counts, duration, version, exit codes; QA_DOCTOR_NO_TELEMETRY override; privacy page published | 1d | |
+| W10-02 | `report-issue` command: sanitized finding context → pre-filled GitHub issue, user approves before send (§28.3) | 0.5d | |
+| W10-03 | Beta recruitment: post to r/QualityAssurance, r/devops, X/Twitter QA community, 2 Discord servers; landing page live | 1d | Target: 20 installs day one |
+| W10-04 | Beta triage ritual established: FP reports triaged ≤48h; rule-health sheet (fires/scan, suppression rate, FP reports per rule) | 0.5d | |
+| W10-05 | Fast-follow rule #1 ships (weekly-drop cadence proof): QA-TQUAL-012 (async assertions n) | 0.5d | |
+| W10-06 | Fix beta-reported bugs (standing allocation every beta sprint) | 1.5d | |
+
+**Gate:** ≥10 distinct external repos scanned (counters prove it);
+FP dispute rate measured; first weekly drop shipped on schedule.
+**Demo:** metrics dashboard screenshot + real user quote.
+
+---
+
+# SPRINT 11 (Week 11) — BETA HARDENING
+**Goal:** FP rate <5%; performance complaints zero; retention signal visible.
+
+| ID | Task | Est | Notes |
+|---|---|---|---|
+| W11-01 | FP-driven rule fixes (top 3 disputed rules demoted/fixed) | 1.5d | North-star protection |
+| W11-02 | Monorepo edge fixes from beta (workspace variants users actually hit) | 1d | |
+| W11-03 | Fast-follow drop #2: QA-TQUAL-013 (Assertion Roulette) + QA-TQUAL-014 (Mystery Guest) | 1d | Smell vocabulary titles live (GAP-L) |
+| W11-04 | Perf tuning from beta data (largest real repo scanned so far) | 0.5d | |
+| W11-05 | Bug-fix standing allocation | 1d | |
+| W11-06 | Launch-post draft: Show HN + r/QA + dev.to (write early, iterate) | 0.5d | |
+
+**Gate:** repeat-user rate >25% (early north-star read); no P1 bugs open;
+FP rate <5% trailing week.
+**Demo:** before/after of a rule that beta users taught us to fix.
+
+---
+
+# SPRINT 12 (Week 12) — LAUNCH PREP
+**Goal:** Everything green; launch assets done; go/no-go checklist run.
+
+| ID | Task | Est | Notes |
+|---|---|---|---|
+| W12-01 | Full DoD checklist execution (§23 + §31): item-by-item sign-off doc | 0.5d | |
+| W12-02 | Demo playground repo published (S12): intentionally smelly public repo, "fork and try in 60 seconds" linked from README | 0.5d | |
+| W12-03 | Badge endpoint design (static SVG via shields.io pointing to docs — no server) + badge docs | 0.5d | Honest badge: links to evidence/report |
+| W12-04 | Support infrastructure: issue templates (bug/FP/rule-request), Discussions enabled, stale bot, SLA statement ("48h triage") (R14) | 0.5d | |
+| W12-05 | Canary release → 48h smoke window opens (R4 process exercised for real) | 0.25d | |
+| W12-06 | KPI dashboard finalized (R10): installs, repeat-rate, FP-rate, repos scanned | 0.25d | |
+| W12-07 | Bug-fix standing allocation + docs gaps from beta questions | 1.5d | |
+| W12-08 | Launch-day runbook: exact posts, times, who answers where, rollback plan | 0.5d | |
+
+**Gate:** Go/No-Go review against §31 checklist — ALL Tier-1 items signed.
+**Demo:** dry-run of launch day itself.
+
+---
+
+# SPRINT 13 (Week 13) — LAUNCH 🚀
+**Goal:** Public GA with controlled, supported blast radius.
+
+| Day | Activity |
+|---|---|
+| Mon | Promote canary → latest after smoke; final self-scan + 3-OS matrix green |
+| Tue | **Launch:** Show HN (Tue 7–9am PT optimal), r/QA, dev.to, X thread; author online all day |
+| Wed | Community triage marathon; hotfix release if needed (canary-first always) |
+| Thu | Metrics review vs R10 targets; thank-you/fix roundup post |
+| Fri | Retro + fast-follow backlog grooming (CI-security family GAP-C, --fix GAP-G, history.json GAP-J, Action wrapper S1, Behavior Coverage GAP-I) |
+
+**Launch-day success floor:** 500 installs week one, FP disputes <5%,
+zero crashes (exit 20) reported, at least one "this found a real problem"
+testimonial.
+
+---
+
+# POST-LAUNCH CADENCE (Weeks 14+)
+
+```text
+Weekly:     1 rule drop OR 1 feature from deferred ledger + bug fixes
+Quarterly:  corpus refresh re-run (S14) + dependency drift audit
+Month 2:    GAP-I Behavior Coverage (graph already built W6)
+Month 2–3:  GAP-C CI security family, S1 Action wrapper, GAP-J history.json
+Month 3+:   Evidence Engine design doc (§19.1) → P3 phase begins
+```
+
+# DEFERRED LEDGER (explicit anti-creep accounting)
+
+| Item | Source | Deferred because |
+|---|---|---|
+| Composite GitHub Action | S1 | Marketplace presence matters post-traction |
+| Behavior Coverage metric | GAP-I | Killer feature, not blocker; graph lands W6 anyway |
+| CI security family | GAP-C | zizmor owns this niche today |
+| `--fix` auto-fixes | GAP-G | Risk surface; needs maturity |
+| history.json + compare | GAP-J | Requires stable schema adoption first |
+| HTML report | R17 | Terminal+JSON+SARIF cover launch needs |
+| Nx/Turborepo attribution | §18.6 cut | Workspaces-only at launch |
+| Watch mode, completions, man page | R15/R18 | Polish |
+
+# TOP RISKS & TRIGGERS
+
+| Risk | Trigger | Response |
+|---|---|---|
+| W4–5 CI engine overrun | End of W5: <4 CI rules green | Cut semantic checks (W5-03) to post-launch — masking rules are the core |
+| Solo burnout | Two consecutive missed Friday demos | Reduce scope to 3 rules/week; protect weekends; beta earlier |
+| FP rate stuck >10% mid-beta | W11 gate miss | Delay launch 2 weeks — never launch with noisy rules |
+| npm name unavailable | W1-07 fails | Switch to `qadoctor` package name everywhere BEFORE W2 |
+| Zero beta traction | <5 external users by end W10 | Recruit directly: offer free scan of respondents' repos on X |
+
+# EFFORT LEDGER (final, honest)
+
+```text
+Sprints 1–3  foundation + test rules      ~18 days
+Sprints 4–5  PW family + CI engine        ~10 days
+Sprint  6    changed scope                 ~5.5 days
+Sprint  7    CI integration + reporters    ~5.5 days
+Sprint  8    hardening                     ~5.5 days
+Sprint  9    docs + alpha                  ~5 days
+Sprints 10–12 beta + launch prep           ~14 days
+Sprint 13    launch week                   ~2 days net
+────────────────────────────────────────────────
+Total                                      ~66 days ≈ 13 weeks ✓
+```
+
+Every number above traces to a ticket. Every ticket traces to a plan
+section. If a new idea appears mid-build, it goes to the deferred ledger
+with an equal-size swap — or it waits for Week 14.
+ 

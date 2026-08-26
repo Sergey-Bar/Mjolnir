@@ -1,0 +1,587 @@
+> STATUS 2026-08-25: this file is duplicated verbatim by the six files in
+> `docs/tiers/`, and the per-item done/not-done markers were added there,
+> not here (avoids maintaining status in two places). Go to `docs/tiers/`
+> for the annotated version. Summary: Tier 1 items #2,3,5 done, #1,4 not;
+> Tier 2 item #10 done, rest not; Tier 3 item #13 done, rest not; Tier 4
+> nothing done; Tier 5 items #21,24,27,28 done, #22 partial, rest not;
+> Tier 6 is non-code (marketing), only #34's scaffold is done.
+
+# QA DOCTOR — PATH TO "THE MOST BADASS OPEN-SOURCE QA TOOL ALIVE"
+## What separates a good tool from a legendary one
+
+> Analysis based on: what made ESLint, knip, actionlint, zizmor, Biome,
+> and Playwright themselves legendary — past patterns, present gaps,
+> future bets.
+
+---
+
+# THE HONEST TRUTH FIRST
+
+Rules and languages don't make a tool legendary. **Every linter has rules.**
+What makes a tool cult-status legendary is when it does things nobody else
+CAN or DARES to do, plus community gravity. Here's the full map:
+
+---
+
+# TIER 1 — GAME-CHANGERS (the stuff nobody else has)
+
+## 1. The Hall of Shame / Proof-of-Value Engine 🔥🔥🔥
+The #1 reason people install linters once and never again: they don't SEE
+the value. Fix:
+```text
+qa-doctor impact
+```
+Parses the repo's git history + CI logs (local) and answers:
+```text
+IMPACT REPORT — last 90 days
+
+Tests that failed in CI but were skipped in code:     14
+continue-on-error jobs that actually failed:           3  ← would have been caught
+Hard sleeps removed after QA Doctor flagged them:      9
+Estimated CI minutes saved by flagged waits:        2,340 min
+Flaky tests that blocked merges this quarter:          7
+```
+**"Here's what QA Doctor caught that would have burned you."**
+No competitor has this. It converts skepticism into loyalty.
+
+## 2. Flakiness Forensics from Real Execution Data 🔥🔥🔥
+Static flakiness detection is guessing. Playwright already produces
+`trace.zip` + `test-results/`. Also: JUnit XML from any runner.
+```text
+qa-doctor forensics ./test-results/
+```
+- Parses retry data: which tests pass only on attempt ≥2
+- Correlates failures with network events in traces
+- **Flakiness Leaderboard**: ranked by "merge-blocking cost"
+- Output: `FLAKY.md` committed to repo, updated per run
+This alone makes QA Doctor mandatory for every serious Playwright shop.
+(Already planned as Layer 3 — PROMOTE IT. It's the killer feature.)
+
+## 3. `qa-doctor fix` — Safe Auto-Fix with Proof 🔥🔥
+Not just suggestions. Apply fixes AND prove they're safe:
+```text
+qa-doctor fix --dry-run       # show diffs
+qa-doctor fix                 # apply safe subset
+```
+Safe set: remove `.only`/`.skip`, add missing `await`, replace
+`waitForTimeout` with condition wait, pin actions to SHA.
+**Each fix runs the fixture harness against the result** — autofix backed
+by evidence, matching the brand promise.
+
+## 4. The Anti-Pattern Catalog as Living Docs 🔥🔥
+zizmor won hearts with per-audit docs. Go further: every rule page =
+real executed example (already planned) PLUS:
+- "Why this fails in production" war-story section
+- Severity debate: link to GitHub discussions where users argue severity
+- Video/GIF for top 20 rules
+Docs as content marketing engine → each rule page ranks on Google →
+organic adoption loop.
+
+## 5. Badges That Actually Mean Something 🔥🔥
+Current badges are vanity. Make ours evidentiary:
+```markdown
+[![QA Doctor](https://img.shields.io/endpoint?url=...)](...)
+```
+- Badge shows score AND date AND commit — click through to full report
+- `qa-doctor badge` generates static JSON for shields.io (no server!)
+- Optional: "0 errors · verified at commit 8f4c91a" — falsifiable claims
+
+---
+
+# TIER 2 — COMMUNITY GRAVITY (how open-source legends are made)
+
+## 6. Plugin API from Day One of v2 🔥🔥
+knip's ecosystem (182 plugins) is why it wins. Design now:
+```ts
+// qa-doctor.plugin.ts — userland rules in 20 lines
+export default defineRule({
+  id: 'ACME-001',
+  appliesTo: ['typescript'],
+  run(ctx) { /* ... */ },
+});
+```
+- Rules loadable from local file, npm package, or org monorepo
+- Namespaced: community rules get `QA-COMM-*`, orgs get their prefix
+- **Rule marketplace page** in docs (even a static list drives contributions)
+
+## 7. Radical Transparency Repo Setup 🔥
+- Public roadmap (GitHub Projects) with voting
+- Every rule has an RFC issue before implementation
+- "False positive bounty": credited contributors for reproducible FP reports
+- Public FP-rate dashboard (from opt-in telemetry) — *we publish our own
+  accuracy metrics*. Nobody does this. It's the ultimate trust move for a
+  tool whose brand is honesty.
+
+## 8. The QA Doctor Challenge 🎯
+Launch stunt: "Run it on your repo. If it finds nothing real, we donate
+$50 to OSS in your name." Screenshot culture does the marketing.
+Cheaper than ads, generates proof-of-value artifacts publicly.
+
+## 9. Integrations Where QAs Already Live
+| Integration | Effort | Impact |
+|---|---|---|
+| **VS Code extension** (inline findings via JSON contract) | 2 wk | Massive |
+| **JetBrains plugin** | 3 wk | Enterprise QA |
+| **Playwright test reporter** (`reporter: [['qa-doctor']]`) | 1 wk | Genius wedge — rides inside PW itself |
+| Allure/ReportPortal export | 1 wk | Test-management shops |
+| Slack/Teams PR digest bot | 1 wk | Lead visibility |
+
+The Playwright reporter integration deserves emphasis: it puts QA Doctor
+INSIDE every Playwright run without changing any workflow.
+
+## 10. `qa-doctor init --interactive` Onboarding Wizard
+Walks through: framework detection results → confirm critical paths →
+choose gate levels → generates config + CI + agent instructions + badge.
+First-run experience decides word-of-mouth; make it delightful.
+
+---
+
+# TIER 3 — TECHNICAL DEPTH (moats that compound)
+
+## 11. Cross-File & Cross-Language Analysis
+Current rules are single-file. Add:
+- **Test↔source coupling graph**: which source modules have zero importing
+  tests (Behavior Coverage from Upgrade-Plan — promote)
+- **Duplicate test detection across files** (AST similarity, not text)
+- **Orphan fixtures/utilities**: helpers no test imports (knip-style)
+- **Coverage gap correlation**: combine Istanbul/V8 output with test graph
+  → "these 12 exported functions have zero behavioral assertions anywhere"
+
+## 12. Performance as a Feature
+Biome won on speed. Targets:
+- Native-speed parsing via tree-sitter (already planned)
+- `--cache`: incremental scans keyed by file hash (target: <1s warm scan)
+- Benchmark suite published per release — speed regressions block merges
+- "Scans 100k files in under 30s" as a headline claim
+
+## 13. SARIF + Code Scanning Integration
+Promote from deferred ledger NOW. One transform over existing JSON:
+- Findings appear natively in GitHub's Security tab
+- Free distribution inside every org's existing workflow
+- Enterprise buyers see findings where their governance already lives
+
+## 14. Deterministic Replay & Attestations (from Product.txt vision)
+Lightweight version now, full Evidence Graph later:
+```text
+qa-doctor attest   # signed, commit-bound report artifact
+```
+Commit-bound, tool-version-bound, timestamped. Foundation for the
+future "release confidence" story — and enterprises LOVE audit trails.
+
+## 15. AI Copilot Layer — With the Brand's Honesty Rules
+The tool whose identity is "no false claims" can win AI-assisted QA:
+```text
+qa-doctor suggest tests        # P0 test plan from evidence gaps (planned)
+qa-doctor explain              # natural-language finding explanations
+qa-doctor generate --spec x    # draft tests marked GENERATED-NOT-EVIDENCE
+```
+Iron rule from Product.txt §49 stays: AI output is never evidence until
+executed. This positioning is unique — every other AI-QA tool oversells.
+
+---
+
+# TIER 4 — DELIGHT (small costs, outsized love)
+
+16. **`--roast` mode** — humorous severity commentary (opt-in). Community
+    tools with personality get shared. (React Doctor's roast bot was
+    publicly praised by CTOs.)
+17. **ASCII art milestones** — first clean scan: a small trophy. Silly,
+    screenshot-able, free virality.
+18. **`qa-doctor stats`** — personal/global fun counters: "you've removed
+    47 hard sleeps all-time".
+19. **Terminal UX polish** — interactive finding navigation (j/k), inline
+    diff preview on hover-style reveal.
+20. **Mermaid output** — `--format mermaid` renders test-architecture
+    diagram of the repo (test types, layers, gaps). Shareable in docs.
+
+---
+
+# WHAT NOT TO DO (anti-scope, learned from the dead)
+
+❌ **Don't build a dashboard server** — cloud features post-GA only; the
+moment you need a server you lose the local-first trust and the OSS momentum.
+❌ **Don't chase rule count** — 50 sharp rules beat 500 noisy ones;
+FP-rate is the brand.
+❌ **Don't support every CI provider early** — GitHub Actions deep +
+SARIF covers 80% of the market; GitLab etc. via community plugins.
+❌ **Don't add AI everywhere** — one honest AI layer beats ten gimmicks.
+❌ **Don't fork effort into a GUI app** — terminal + editor integrations
+cover the workflow; GUIs are maintenance sinks.
+
+---
+
+# TIER 5 — INSIGHTS FROM INSIDE THE QA WAR ROOM 🧪
+## What a QA engineer actually lives through (and what the tool must feel)
+
+> Written from the seat of a working QA engineer: sprint pressure,
+> flaky triage meetings, "works on my machine", release-day panic.
+> These insights come from real QA pain, not from linter architecture.
+
+## 21. Speak QA's Language, Not Dev's 🔥🔥🔥
+Developers lint code. **QAs defend releases.** The entire output vocabulary
+must map to QA reality:
+
+```text
+❌ DEV-SPEAK (current):          ✅ QA-SPEAK (upgrade):
+"Missing negative assertion"  →  "This test can't catch the bug
+                                  you're paid to catch"
+"Score dropped 84 → 79"       →  "Release risk went UP this PR"
+"3 heuristic risks found"     →  "3 things that will wake you
+                                  up at 2 AM before a release"
+```
+
+Concretely:
+- Every finding gets a **"QA impact" line**: does this affect release
+  confidence, test reliability, or coverage honesty?
+- Severity labels in QA terms: `BLOCKS-RELEASE` / `FLAKY-RISK` /
+  `FALSE-GREEN` / `HYGIENE` — not error/warning/info alone.
+- The score banner gains one line: **"Can I sign off on this release?"**
+  with YES / CONDITIONAL / NO based on gate rules.
+
+This is the single cheapest, highest-impact change on this list.
+
+## 22. The Triage Meeting Killer 🔥🔥🔥
+Every QA team has a weekly "flaky test meeting". It's miserable and it's
+where QA engineers burn out. Build the artifact that ends it:
+
+```text
+qa-doctor triage
+```
+Generates `TRIAGE.md` for the meeting:
+```text
+THIS WEEK'S FLAKY TRIAGE — auto-generated, do not edit
+
+| Test | Fail rate | Last fail | Attempt # passed | Owner | Suggested action |
+|---|---|---|---|---|---|
+| checkout.spec:88 | 34% | 2d ago | always #2 | @dana | quarantine + ticket |
+| login.spec:12 | 12% | 1h ago | #3 | @omri | fix selector drift |
+
+Auto-quarantine proposal: 2 tests (fail-rate > 30%, > 5 occurrences)
+Run `qa-doctor quarantine --apply` to move them to quarantine suite.
+```
+- Quarantine isn't deletion — quarantined tests run nightly, not per-PR
+- Every quarantine auto-creates a tracked issue with the trace attached
+- Meeting time drops from 45 min to 10 min of "approve these actions"
+
+**This is the feature that makes QA teams evangelize the tool internally.**
+
+## 23. Release-Day Confidence Report 🔥🔥
+The moment of maximum QA pain: the release go/no-go call. Give QAs the
+artifact they must present to management:
+
+```text
+qa-doctor release-report --since v2.3.0
+```
+```text
+RELEASE READINESS — v2.4.0
+
+Test hygiene since last release:    12 issues fixed, 3 introduced
+New tests added:                    41 (18 without assertions ⚠)
+Skipped during the cycle:           9  ← what are we NOT verifying?
+Flaky at release time:              2  (was 7 last release ✓)
+CI integrity:                       1 continue-on-error still active
+
+VERDICT: CONDITIONAL GO
+Blocking: none · Watch: 9 skipped tests include 3 payment-path tests
+```
+One command, screenshot into the release channel. Managers understand it.
+No competitor produces this artifact.
+
+## 24. "Works On My Machine" Detector 🔥
+The oldest QA wound. Static + config analysis finds environment coupling:
+- Tests depending on localhost URLs, fixed ports, specific OS paths
+- Timezone/locale-sensitive assertions (`toLocaleDateString` without locale)
+- Hardcoded credentials/test users in spec files (also a security smell!)
+- Filesystem assumptions (`/tmp`, `C:\`)
+- Order-dependent shared state across spec files
+
+```text
+⚠ ENV-COUPLING: 6 tests assume port 3000 is free
+⚠ TIMEZONE: date assertion will fail for any UTC+X ≠ dev's timezone
+```
+
+## 25. Coverage Honesty for the QA Dashboard 🔥
+QAs get asked "what's your coverage?" by managers constantly. Raw %
+is a lie they're forced to tell. Replace it:
+
+```text
+qa-doctor coverage-honesty
+```
+```text
+COVERAGE HONESTY REPORT
+
+Reported coverage (Istanbul):        87%
+Tests with no meaningful assertion: −4%   (tests that can't fail)
+Mock-only verification:             −9%   (wiring, not behavior)
+Skipped-but-counted:                −3%
+─────────────────────────────────────────
+HONEST COVERAGE:                     71%
+
+You are reporting 16 points of coverage you cannot defend.
+```
+Same philosophy as Effective Coverage from Product.txt §26 — shipped as
+a standalone command that plugs into existing coverage reports.
+
+## 26. Migration & Upgrade Copilot 🔥
+QA engineers' hidden nightmare: framework upgrades break hundreds of tests.
+Be the tool that carries them across:
+- `qa-doctor migrate jest→vitest` — mechanical transforms + report of
+  manual work remaining (Jest globals, mock semantics differences)
+- Playwright major-version upgrade advisor: deprecated APIs in use,
+  breaking-change checklist against their config
+- Protractor→Playwright migration path (thousands of teams still stuck!)
+
+Each migration becomes a marketing event: *"We migrated 400 tests in an
+afternoon"* writes itself.
+
+## 27. Test Debt Register (make debt visible & negotiable) 🔥
+QA knows the debt; nobody above them sees it. Make it a first-class,
+exportable artifact:
+
+```text
+qa-doctor debt
+```
+```text
+TEST DEBT REGISTER — generated 2026-08-24
+
+DEBT CLASS           COUNT   TREND   EST. COST/QUARTER
+Hard sleeps            47     ↑        ~19h wasted CI + flaky risk
+Skipped tests          34     ↑        unknown unverified behavior
+Duplicate suites       12     →        double maintenance
+No-assertion tests     28     ↓        false confidence
+──────────────────────────────────────
+TOTAL ESTIMATED DRAG:  ~2.5 engineer-weeks per quarter
+```
+Exportable to CSV/Markdown for planning meetings. Turns "we should really
+fix testing" into a line item with numbers.
+
+## 28. The New-QA-Onboarding Artifact 👋
+Every QA joining a team spends week one discovering where the bodies are
+buried. One command generates the map:
+
+```text
+qa-doctor handover
+```
+```text
+WELCOME TO THE TEST SUITE — WHAT YOU NEED TO KNOW
+
+⚠ Do-not-touch (order-dependent):    billing/e2e-flow.spec.ts
+🔴 Known flaky (quarantined):         4 tests → see FLAKY.md
+🟡 Fake-green suspects:               11 tests, no real assertions
+🟢 Solid foundation:                  auth/, payments/ specs
+📖 Untested critical flows:           password reset, refunds
+```
+Massive goodwill generator — every new QA hire receives it on day one.
+
+## 29. CI Minutes Economy 💰
+Management speaks money. Flaky tests and hard sleeps burn CI minutes:
+- Estimate cost per finding: `~340 CI min/month wasted on retries of X`
+- Optional: connect GitHub API (opt-in!) for real billing data
+- ROI framing in the Impact Report: "QA Doctor pays for its attention"
+
+## 30. Emotional Design: Respect the QA, Don't Shame Them 🔥
+Tone audit of every message. QA engineers are blamed enough.
+- Never: "Your tests are terrible."
+- Always: "Found 3 traps waiting for the next release — here's how we
+  disarm them."
+- Progress framing over deficit framing: "You've fixed 14 of 22 this
+  quarter" beats "8 remain".
+- The roast mode stays opt-in comedy; default tone = professional ally.
+
+---
+
+# TIER 5 SEQUENCING (insertion into roadmap)
+
+```text
+QUICK WINS (< 1 week each, huge resonance):
+  ├─ QA-speak severity labels (#21)      ← rename + reframe only
+  ├─ ENV-coupling detector core (#24)    ← static patterns first
+  └─ Tone audit pass (#30)               ← copywriting day
+
+NEXT QUARTER:
+  ├─ qa-doctor triage + TRIGAGE.md       ← needs forensics data (R4)
+  ├─ coverage-honesty command            ← consumes existing reports
+  └─ debt register export                ← trivial over current findings
+
+STRATEGIC:
+  ├─ release-report                      ← after gates + baselines mature
+  ├─ migrate copilots                    ← one framework pair at a time
+  └─ handover artifact                   ← cheap once everything above exists
+```
+
+# THE SIXTH NORTH STAR SENTENCE
+
+Add to the north-star list:
+5. *"The triage meeting went from 45 minutes to 10."*
+6. *"I finally had something to show management besides a coverage %."*
+
+A tool that gives QA engineers **artifacts they can present upward**
+(release-report, debt register) and **time back** (triage automation)
+stops being a linter and becomes career infrastructure. That's the
+moat no competitor crosses.
+
+---
+
+# TIER 6 — THE GITHUB STARS PLAYBOOK ⭐⭐⭐
+## How repos actually get 10k+ stars (deconstructed from trending history)
+
+> Hard truth: stars are NOT a reward for quality. They're a reward for
+> **a moment of discovery + instant gratification + shareability**.
+> Repos with mediocre code hit 20k stars; brilliant tools die at 200.
+> The difference is distribution engineering. Here's the full playbook.
+
+## 31. The Landing Moment — README Is the Product 🔥🔥🔥
+80% of visitors decide in 8 seconds. The README must be a landing page:
+
+```markdown
+# QA Doctor
+### Your tests are lying to you. We prove it.
+
+[ASCII/GIF demo — the scan output IS the hero image]
+
+✓ Finds fake-green CI setups      ✓ Kills flaky-test meetings
+✓ Speaks Jest/Vitest/Playwright   ✓ Zero config, local-first
+
+npx qa-doctor@latest
+```
+
+Requirements:
+- **Hero GIF** (≤10s) showing a real scan catching a real bug — this is
+  THE conversion asset. Invest a full day in it.
+- One-line value prop, not feature list. "Your tests are lying" > 
+  "static analysis for test quality".
+- Social proof section (even 3 early quotes) once available.
+- Comparison table vs alternatives (§21 of MVP plan).
+- Stars badge + contributors + Discord link above the fold.
+
+## 32. Launch Choreography (stars come in bursts) 🔥🔥🔥
+Stars arrive in spikes from single events. Sequence them:
+
+```text
+WAVE 1 — Foundations (before any launch):
+  ├─ Show HN: Tuesday–Thursday, 7–9am PT (peak traffic)
+  ├─ Same day: r/programming, r/QualityAssurance, r/devops
+  └─ Hacker News title formula: "Show HN: [shocking claim] ([language])"
+      → "Show HN: Your CI can go green while your tests fail"
+
+WAVE 2 — Echo chamber (48h after HN):
+  ├─ dev.to / Medium deep-dive with different content angle
+  ├─ X/Twitter thread: the top-5 findings screenshots as story
+  └─ LinkedIn (enterprise QAs live there)
+
+WAVE 3 — Community embeds (weeks 2–6):
+  ├─ Answer Playwright/Jest/Vitest GitHub issues WITH our tool
+  ├─ PR docs links into awesome-testing, awesome-playwright lists
+  ├─ Podcast tour: Testing Peers, AB Testing (Brent Jensen), Quality Sense
+  └─ Conference CFP: "We removed 400 flaky tests" case study
+```
+
+Each wave needs a DIFFERENT content angle — same announcement everywhere
+reads as spam and kills momentum.
+
+## 33. Trending Mechanics (game the algorithm honestly) 🔥🔥
+GitHub Trending formula ≈ stars/day velocity + unique stargazers:
+- **Never buy stars** — detectable, community-destroying
+- DO concentrate launches into 24–48h windows (velocity matters)
+- DO add "Star this repo if..." CTA in CLI output (one line, tasteful):
+  `★ Found this useful? github.com/qa-doctor/qa-doctor`
+- DO create star-worthy MOMENTS: the 10k-star celebration commit,
+  contributor wall, milestone changelogs
+- Weekly release cadence = weekly reason to reappear in feeds/releases
+
+## 34. Contribution Surface Engineering 🔥🔥
+Stars follow contributors; contributors follow easy entry:
+- `good-first-issue` labels ALWAYS stocked (rule ideas = perfect first PRs)
+- `qa-doctor create-rule` scaffold → adding a rule is a 30-min PR
+- CONTRIBUTING.md with a 5-minute quickstart for the dev environment
+- Publicly credit every contributor (all-contributors spec)
+- Monthly "Rule of the Month" — community votes, we implement together
+
+Every contributor is 5–10 stars through their own network.
+
+## 35. The Demo Playground Repo 🔥🔥
+Separate public repo: intentionally terrible test suite + CI config.
+- README: "This repo fails QA Doctor spectacularly. Fork and scan."
+- One-click Codespaces setup — scan without installing anything
+- Every marketing post links here instead of the main repo (keeps main
+  repo's issues clean, gives skeptics a sandbox)
+
+## 36. Comparison Pages (SEO + positioning) 🔥
+Static pages: "QA Doctor vs SonarQube", "vs ESLint plugins", "vs Codecov",
+"Best Playwright testing tools 2026". These rank on Google forever and
+convert people actively searching for alternatives. Content moat compounds.
+
+## 37. The Number That Sells Itself 🔥
+Public counters in README (from opt-in telemetry):
+```text
+⚡ 1.2M scans run · 🐛 84,000 fake-green setups detected · ⭐ join 8,300 devs
+```
+Social proof loop: usage → displayed → more usage. Update via Actions
+weekly, fully automated.
+
+## 38. Multilingual Docs = Underserved SEO Goldmine 🔥
+Chinese, Japanese, Korean, Spanish, Portuguese, Hebrew README translations
+(community-contributed, `docs/i18n/`). CN dev communities (Juejin, V2EX)
+drive massive star volume and almost nobody localizes for them early.
+
+## 39. Free for Open Source, Forever 🔥
+Explicit policy page: OSS repos get everything free, always. Companies
+paying for cloud features subsidize it. This policy gets quoted in
+every "support OSS" thread = recurring organic exposure.
+
+## 40. Star-Gating Ethics Line ⚠️
+What we will NOT do (protects the brand that makes stars sustainable):
+- No star-gating features ("star to unlock") — breeds resentment
+- No fake activity/bots — one detection ends the project's credibility
+- No engagement-bait controversies — QA community is small, memory is long
+
+---
+
+# THE STAR MATH (reality check)
+
+```text
+Typical trajectory for legendary dev tools:
+  Launch wave (HN front page):     +800–3,000 stars in 48h
+  Echo waves + content:            +100–300/week sustained
+  Each major release event:        +200–500 spike
+  Trending page appearances:       +500–1,000 per appearance
+  Year 1 realistic target:         8–15k stars with disciplined execution
+
+Prerequisites before ANY launch wave:
+  ✓ Hero GIF + landing-grade README
+  ✓ <60s from npx to first wow-moment
+  ✓ Demo playground repo live
+  ✓ Issue templates + good-first-issues stocked
+  ✓ Docs site with 10+ rule pages
+  ✗ Never launch before FP-rate is proven low — one HN comment thread
+    about false positives kills the entire wave
+```
+
+---
+
+# INSERTION INTO ROADMAP
+
+```text
+BEFORE LAUNCH (Weeks 9–12 of Sprint Plan):
+  ├─ Hero GIF production day              (#31)
+  ├─ Demo playground repo                 (#35)
+  ├─ Launch choreography doc              (#32 waves pre-written)
+  ├─ good-first-issue backlog ×10         (#34)
+  └─ Comparison pages draft               (#36)
+
+LAUNCH WEEK:
+  └─ Full wave sequence executed          (#32)
+
+POST-LAUNCH ONGOING:
+  ├─ Weekly releases + milestone moments  (#33)
+  ├─ Multilingual READMEs                 (#38)
+  ├─ Usage counters automation            (#37)
+  └─ OSS-free policy page                 (#39)
+```
+
+# SEVENTH NORTH STAR SENTENCE
+
+7. *"I saw the GIF, ran one command, and it found a real problem in my
+   repo in under a minute."*
+
+That sentence — repeated thousands of times — is what stars actually are.

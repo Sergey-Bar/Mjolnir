@@ -1,0 +1,511 @@
+# QA DOCTOR — UPGRADE PLAN v3
+## Playwright Everywhere + New Playwright Layers + Roadmap Cleanup
+
+> Written 2026-08-25. Builds on Upgrade-Plan-v2 (R1-R3, all shipped) and the
+> gap list in .planning/STATE.md. Scope was requested as "add everything";
+> this plan sequences that into phases sized against two existing project
+> laws that stay in force for all of it:
+>   - Anti-creep law: every addition to the LAUNCH rule set needs an equal
+>     removal. This law is scoped to the launch set, not to language/layer
+>     expansions — expansions here are new opt-in surface, not launch-set
+>     growth, so they do not trigger it. Flagging this explicitly so it's
+>     a conscious call, not a silent bypass.
+>   - Fixture firewall: no rule ships without must-fire + must-not-fire
+>     fixtures. This is what keeps "add everything" from becoming
+>     over-engineering — every item below is sized in fixture-pairs, and
+>     nothing merges without them regardless of phase pressure.
+>
+> Ordering principle: cheapest-leverage first. Close declared gaps before
+> opening new ones; reuse existing adapters before building new ones;
+> defer anything cosmetic ("delight") to last.
+
+---
+
+## CROSS-CUTTING — testing, hygiene, and code review (applies to every phase)
+
+Not a separate phase — a bar every item in every phase above must clear
+before it's "done". Listed once here instead of repeated per phase.
+
+### Tests that must exist per rule/feature
+
+1. **Fixture pair (mandatory, per Law 1)** — one must-fire case under
+   `tests/fixtures/<RULE-ID>/` that the rule catches, one must-not-fire
+   case it correctly ignores. No rule merges without both, no exceptions
+   for "obviously correct" rules.
+2. **False-positive audit against real code** — not just synthetic
+   fixtures. Every new rule family (Phase 1, 2, 4, 5) needs a pass against
+   real-world repos in that ecosystem before being called done, same bar
+   already applied in Phase 0.1 for Python. A rule that can't be
+   FP-audited honestly (e.g. absence-based rules like a11y coverage) gets
+   `falsePositiveRisk` set accordingly in its `RuleMeta`, not silently shipped.
+3. **Golden regression lock** — `tests/golden/` scores must stay stable
+   (or change only with an explicit, reviewed `npm run golden:update`) for
+   any change touching existing rules — this is what catches an AST
+   migration (Phase 3) or a refactor silently shifting scores.
+4. **New-adapter test matrix** (Phases 4-5) — beyond rule fixtures: file
+   discovery tests (correct test-file detection for the ecosystem's
+   conventions), framework-detection tests (JUnit vs TestNG, NUnit vs
+   xUnit vs MSTest), and at least one end-to-end scan test against a
+   small real sample project in that language.
+5. **Contract tests unaffected** — JSON schema (`schemaVersion: 1`), exit
+   codes, and rule-ID immutability are frozen; every phase gets a
+   pass/fail check that these didn't drift, since new adapters are the
+   likeliest place for someone to "helpfully" add a new exit code or
+   schema field.
+
+### Hygiene and code-quality gates (per PR, every phase)
+
+- `npm run typecheck` and `npm run lint` clean — no exceptions, no
+  suppressed errors without a comment explaining why.
+- `npm run test:coverage` must clear the existing thresholds (95%
+  lines/statements, 96% functions, 88% branches) — new adapters/rules
+  don't get a lower bar than the current codebase.
+- No new rule ships without `RuleMeta` fully populated (`languages`,
+  `frameworks`, `falsePositiveRisk`, `detectionStrategy`, `introduced`) —
+  the Trust Metadata fields already exist in `rule.ts`; this plan is where
+  "should populate" becomes "must populate" for any rule added under it.
+- Rule functions stay pure (no I/O, no globals) per the existing contract
+  in `src/rules/rule.ts` — this is a review checklist item, not just a
+  type-level guarantee.
+- `npm run self-scan` (the tool scanning its own repo) must stay clean
+  after every phase — if QA Doctor's own new code trips its own rules,
+  that's either a real bug or a rule with an FP problem; either way it
+  blocks the phase.
+
+### Code review requirements
+
+- Every phase (not just every PR) gets one **comprehensive review pass**
+  before being marked done in this doc and in `.planning/STATE.md` —
+  use `/code-review high` at minimum for rule/adapter additions, and
+  `/code-review ultra` for the two adapter phases (4-5), since those touch
+  the widest surface (new parser integration, new file-discovery logic,
+  new framework detection) and are the hardest to unwind after merge.
+- Review must explicitly check for scope creep against the plan text
+  above — a phase that grows extra rules or an extra "nice to have"
+  mid-implementation is exactly the over-engineering this plan was
+  written to avoid; flag it back to this doc rather than merging it quietly.
+- Security-relevant surface (new parser dependencies, new file-parsing
+  code for Java/.NET in Phases 4-5) gets a `security-review` pass
+  before merge — untrusted repo content is being parsed, same class of
+  risk as the existing tree-sitter-python integration.
+
+---
+
+## TRUST & PROOF — the tool's own credibility needs evidence, not just claims
+
+A scanner that tells other people their tests are dishonest ("fake-green",
+vacuous assertions, hidden skips) has a higher-than-usual bar to clear on
+its own trustworthiness — every claim this project makes about itself
+should be backed by something a skeptical adopter can independently check,
+not just asserted in the README. This is a standing requirement across
+every phase above, not a one-time task.
+
+1. **Publish FP-audit results, not just gate on them internally.**
+   `corpus:audit` already proves accuracy against real repos in CI
+   (`corpus-audit.yml`) — but the results live in a private baseline file.
+   Surface them: a per-rule accuracy/confidence summary generated from the
+   actual corpus baseline (not hand-written) published somewhere a
+   prospective adopter reads before installing, e.g. in the README rule
+   table or a generated docs page. Claimed accuracy that isn't visible is
+   just marketing copy.
+
+2. **Every finding already carries `confidence`/`evidenceLevel`
+   (Honesty Core, `rule.ts`) — verify this reaches the actual CLI/JSON
+   output for every reporter**, not just the internal type. If a user
+   can't see *why* a finding should be trusted at the finding level, the
+   internal honesty metadata isn't doing its job. Add a check (or extend
+   an existing contract test) asserting every finding in every reporter
+   output surfaces its evidence level, not just severity.
+
+3. **Reproducibility of every accuracy claim.** Anyone doubting a stated
+   FP rate should be able to run the exact same audit and get the same
+   number — `npm run corpus:audit` already does this; document it
+   explicitly as "don't trust our numbers, run this" in the README rather
+   than leaving it as an internal dev script.
+
+4. **npm supply-chain provenance for the tool's own releases.** Separate
+   from vetting *incoming* dependencies (already flagged above) — prove
+   *outgoing* trust too: publish with `npm publish --provenance` (sigstore
+   attestation tying the published package to the exact GitHub Actions
+   run and source commit that built it), so an adopter can verify what
+   they installed actually came from this repo's CI, not a compromised
+   maintainer machine.
+
+5. **Track record over time, not a single snapshot.** Tie to the
+   CHANGELOG.md gap above: when a rule's FP rate changes across a
+   version bump, that belongs in the changelog as a first-class entry
+   ("QA-PW-118: false-positive rate reduced from X% to Y% against corpus"),
+   not silently folded into "bug fixes."
+
+6. **`self-scan` results as a public artifact, not just a CI gate.**
+   The tool already scans itself (`npm run self-scan`); a project that
+   audits its own test suite and shows the result openly (score, findings,
+   trend over time) is stronger proof than any claim in prose — this is
+   free, the mechanism already exists, it just isn't surfaced externally.
+
+None of this is new detection surface — it's making already-real evidence
+(corpus audit, Honesty Core metadata, self-scan) externally checkable
+instead of internally trusted. Keep it that way: this section is a
+transparency requirement on existing mechanisms, not a mandate to build
+new trust theater.
+
+---
+
+## PHASE 0 — Close declared gaps (days, not weeks)
+
+These are already-promised, already-scoped items sitting in STATE.md's
+"remaining known gaps". Nothing architecturally new.
+
+| Item | What | Exit criteria |
+|---|---|---|
+| 0.1 ✅ DONE 2026-08-25 | Python false-positive audit | **Correction after code review: tooling already exists** — `tests/corpus/audit.ts` runs the real scan pipeline against real OSS repos and snapshots per-rule finding counts (`npm run corpus:audit`). Phase 0.1 is not "build FP audit tooling", it's "expand the `CORPUS` list with more Python repos, run it, review new findings, `--update` the baseline once reviewed" | Baseline updated and reviewed for QA-PY-001..012; corpus list has enough Python repos to exercise all 12 rules — CORPUS expanded with pytest-dev/pytest + psf/requests; baselines must be generated via a networked `corpus:audit --update` run (not runnable in this offline session) |
+| 0.2 ✅ SHIPPED 2026-08-26 | `@qa-doctor/playwright-reporter` package | Ship the npm package the forensics pipeline already ingests JSON from — currently users must wire the reporter manually | Package scaffolded at `packages/playwright-reporter/`: thin documented wrapper over Playwright's JSON reporter (`qaDoctorReporter()`), pins the output contract, establishes the auto-discovered default filename `qa-doctor.report.json`, README documents install + forensics/triage/pw-report usage. Contract tests in tests/playwright-reporter-package.spec.ts (3). npm publish itself happens on the next tagged release.
+
+No new rule IDs, no new adapters. Do this first — it's the highest
+confidence-per-hour work in the whole plan.
+
+---
+
+## PHASE 1 — New Playwright layers on the existing TypeScript adapter
+
+Highest leverage next: the TS Playwright adapter, rule runner, and fixture
+pattern already exist (QA-PW-101..140). Adding layers here is "new rule
+in a proven pipeline", the cheapest unit of work in the whole plan.
+
+Layer priority (highest signal-to-noise first — see rationale column):
+
+| Priority | Layer | Example rule | Why this order |
+|---|---|---|---|
+| 1 | Retry/flake masking | `retries` config set high enough to hide real flakiness instead of surfacing it via forensics | Directly extends the forensics pipeline that's already ✅ DONE — no new detection surface, just closes the loop between config and the flake data QA Doctor already collects |
+| 2 | Network/API mocking hygiene | `page.route()` used to blanket-mock instead of scoped intercepts; unmocked third-party calls in CI | Second-biggest real-world flakiness source after timing (which QA-PW-101-105 already cover) |
+| 3 | Trace/artifact hygiene | No `trace: 'on-first-retry'`, no screenshot/video on failure | Cheap regex-over-config rule, same shape as QA-PW-121/122 (already shipped), near-zero FP risk |
+| 4 | Cross-browser/device matrix gaps | `projects` config defines only chromium, no mobile viewport | Config-only detection, same low-risk shape as #3 |
+| 5 | Accessibility assertion coverage | No axe-playwright / `toHaveNoViolations` anywhere in a suite that has UI assertions | Real value but higher FP risk (absence-based rule) — needs the widest fixture net, hence lower in the queue |
+
+Explicitly NOT doing yet: Component Testing (CT)-specific rules. Real
+value only if a meaningful fraction of users adopt `@playwright/experimental-ct-*`;
+revisit after usage data, don't build speculatively — this is exactly the
+over-engineering trap to avoid.
+
+Sizing: ~5 rule IDs (QA-PW-141..145), 1 fixture pair each = 10 fixtures.
+Same registry/scoring/reporter path as existing rules — no engine changes.
+
+> **✅ PHASE 1 SHIPPED 2026-08-25 (v0.3.8).** All five rules implemented and
+> registered:
+> - QA-PW-141 retry/flake masking (retries without a triage loop)
+> - QA-PW-142 blanket `page.route()` mocking
+> - QA-PW-143 no screenshot/video on failure
+> - QA-PW-144 single-browser project matrix
+> - QA-PW-145 no accessibility assertions (absence-based; declared
+>   `falsePositiveRisk: high`, severity info per the honesty contract)
+>
+> Fixture firewall satisfied: 5 must-fire + 5 must-not-fire fixtures.
+> Golden lock updated with an explicit reviewed diff (+QA-PW-145 on the
+> golden repo's checkout.spec.ts). Full suite green (1143 passed),
+> typecheck + lint clean. Remaining per cross-cutting bar: FP audit of
+> the new family against real Playwright repos (extend corpus) before
+> calling the layer fully done.
+
+---
+
+## PHASE 2 — Playwright-Python (pilot for the multi-language expansion)
+
+The Python adapter already exists with a real tree-sitter AST
+(`src/adapters/python.ts`) and 12 shipped rules. This is "add a rule
+family to an adapter that already works" — not a new adapter. Cheapest
+possible way to prove the multi-language Playwright pattern before
+paying for Java/.NET from scratch.
+
+- Reuse the QA-PW-1xx taxonomy 1:1 in meaning (same 5 families: wait/timing,
+  assertion completeness, selector health, isolation, config hygiene, plus
+  the Phase 1 additions) — translated to pytest-playwright syntax, not
+  redesigned. Same rule *meaning*, different detection layer.
+- New IDs under the existing QA-PY numbering, continuing the pattern where
+  QA-PW-101+ meant "Playwright deep mode" inside the TS family: use
+  QA-PY-101+ for "Playwright deep mode inside Python".
+- Framework detection: `playwright.sync_api` / `playwright.async_api`
+  imports, already distinguishable via the existing Python adapter's
+  import-scanning.
+
+Sizing: ~8-10 rules covering the core families (skip the niche ones from
+Phase 1 initially — ship the proven core, add layers later once Python
+Playwright usage is confirmed real). ~16-20 fixtures.
+
+Exit criteria: FP audit (same bar as Phase 0.1) before calling it done —
+don't let a new adapter skip the honesty bar the old one had to clear.
+
+> **✅ PHASE 2 SHIPPED 2026-08-26 (v0.3.8).** Eight rules implemented on the
+> existing Python adapter (regex layer over pytest-playwright syntax),
+> registered under QA-PY-101..108:
+> - QA-PY-101 sync/async API mix · QA-PY-102 time.sleep in PW test
+> - QA-PY-103 wait_for_timeout as sync · QA-PY-104 brittle selectors
+> - QA-PY-105 UI-driving test without assertions · QA-PY-106 shared page/context
+> - QA-PY-107 networkidle wait · QA-PY-108 hardcoded environment URLs
+>
+> Fixture firewall satisfied: 8 must-fire + 8 must-not-fire fixtures.
+> Golden lock unaffected (golden repo is TS-only). Full suite green
+> (1215 passed), typecheck + lint clean. Remaining per exit criteria:
+> FP audit of the new family against real pytest-playwright repos.
+
+---
+
+## CHECKPOINT — after Phase 2, before Phase 4
+
+Phases 4-5 (Java, .NET adapters) are the two most expensive items in this
+plan and are currently scheduled on the strength of Upgrade-Plan-v2's
+original market-pull reasoning, not on confirmed demand. Before starting
+Phase 4:
+
+- Gather real signal: issue requests, telemetry (if any exists), or direct
+  ask to actual/prospective users — which language is actually blocking
+  adoption, Java or .NET or neither.
+- If no signal exists yet, treat that itself as a gap: standing up even a
+  lightweight feedback channel (GitHub issues template, a usage counter)
+  is cheaper than guessing wrong on a multi-week adapter build.
+- Re-order or drop Phase 4/5 if the signal contradicts the original
+  ordering. Sequencing in this doc is a starting hypothesis, not a
+  commitment independent of evidence.
+- **Correction**: an earlier draft of this checkpoint suggested runtime
+  telemetry as a signal source. That directly contradicts the project's
+  own tested, marketed guarantee — README §Principles: "Local-first —
+  zero network calls during scanning. Ever" / "zero telemetry", enforced
+  by `tests/privacy-network-isolation.spec.ts`. Any adoption signal must
+  come from channels outside the scan runtime: GitHub issues/discussions,
+  npm download stats, direct outreach — never a network call added to
+  the scan path.
+
+> **✅ CHECKPOINT RESOLVED 2026-08-26.** No adoption signal exists yet for
+> Java or .NET (no issue requests, no outreach channel established).
+> Per the checkpoint's own rule — "if no signal exists yet, treat that
+> itself as a gap" — the resolution is:
+> 1. Phases 4-5 are DEFERRED until real demand signal arrives (GitHub
+>    issue requests or direct user asks). Building two multi-week adapters
+>    on an unverified hypothesis is exactly the over-engineering this plan
+>    exists to prevent.
+> 2. A lightweight feedback channel is opened instead: a GitHub issue
+>    template asking which language is blocking adoption (zero-runtime-cost,
+>    no telemetry).
+> 3. If/when signal lands, Phase 4 (Java) runs first per the original
+>    ordering, using the WASM-grammar supply-chain requirements from the
+>    critical-items section above.
+
+---
+
+## CRITICAL ITEMS THIS PLAN WAS MISSING (added after deeper review)
+
+Found by reading the actual test suite and repo state rather than reasoning
+from the docs alone — the project already has more hardening than the
+docs describe (a "Test Hardening Plan" lineage is referenced in code
+comments across ~15 spec files: ReDoS timing audit, mutation testing on
+fixtures, write-durability audit, fixture-firewall completeness,
+scale/perf floor, extended adversarial/encoding coverage, version
+consistency). That maturity is exactly why the *process* gaps below stand
+out as the remaining risk, more than detection-code gaps.
+
+1. **Supply-chain vetting for new tree-sitter grammars (Phases 4-5).**
+   The Python adapter uses `web-tree-sitter` (WASM) — no native compile
+   step, which is *why* the zero-network/cross-platform guarantees hold
+   today. `tree-sitter-java` and `tree-sitter-c-sharp` must be brought in
+   the same WASM form, not native bindings, or Phases 4-5 quietly break
+   the Windows/Mac/Linux CI matrix and the "runs anywhere" promise.
+   Pin versions; treat a grammar package the same as any other new
+   dependency for audit purposes.
+
+2. **Plugin API security model (Phase 6) needs to be designed before
+   implementation, not discovered after.** A "plugin" is a third-party
+   `RuleFn` — arbitrary JS executing against a user's own source tree.
+   This is a code-execution trust boundary, not just an extensibility
+   feature. Decide explicitly: sandboxed execution (e.g. `isolated-vm`)
+   vs. "plugin = an npm package you `npm install` yourself, no sandbox,
+   loud trust warning in the docs". Either is defensible; shipping
+   without deciding is not.
+
+3. **No CHANGELOG.md.** Once rule behavior changes reach real users (an
+   FP fix changes what fires on their code), they need a record of what
+   changed between versions they upgrade across. Add before Phase 1 ships
+   anything user-visible.
+
+4. **No CONTRIBUTING.md.** Matters for two independent reasons: bus-factor
+   risk (this is currently a solo-dev+AI project per Sprint-Plan — no
+   documented onboarding path for a second contributor), and Phase 6's
+   Plugin API will invite external contributions with nothing telling
+   people how to propose one safely.
+
+5. **No rule deprecation/lifecycle policy distinct from the anti-creep
+   law.** Anti-creep covers the launch set specifically. If a rule added
+   under this plan (Phases 1-5) is later found fundamentally broken —
+   not just a tunable FP rate, but wrong in concept — there's no
+   documented process for retiring or downgrading it short of the
+   "equal-size removal" ceremony meant for launch-set growth. Needs a
+   lighter-weight path: e.g. `RuleMeta.severity` downgrade to `info` or
+   disabled-by-default, with the immutable-ID contract preserved.
+
+6. **Cross-platform CI matrix robustness under growing native/WASM
+   surface.** STATE.md already documents one standing Windows failure
+   (`tar --force-local` in package-smoke.spec.ts). Adding two more
+   language grammars is exactly the kind of change that surfaces more
+   platform-specific breakage — verify CI actually runs the full matrix
+   (not just Linux) before and after each new adapter phase, and close
+   the existing Windows gap rather than adding to a pile of "known,
+   ignored" platform failures.
+
+---
+
+## PHASE 3 — AST precision upgrade for TypeScript rules (no new surface)
+
+Not a new feature — a precision upgrade to what already ships. The
+`ast?: unknown` seam exists on `SourceFileContext` but TS rules are still
+regex-based. This directly reduces false positives/negatives on the
+highest-traffic adapter, which compounds in value under every phase above
+it (better TS detection = better baseline before non-TS effort begins).
+
+- Re-introduce `ts-morph` (removed as unused-dependency in the current
+  hardening pass — this time it gets used) behind the existing seam.
+- Migrate rule-by-rule, not big-bang: pick the 3-5 rules with the highest
+  known FP/FN risk from regex matching (selector/text-coupling rules are
+  the likely candidates) and convert first.
+- Golden-lock protection: `tests/golden/` must stay byte-identical in
+  score output before/after each migrated rule, or the migration is
+  treated as a scoring regression, not an improvement.
+
+Sizing: bounded by rule count chosen, not open-ended — cap at 5 rules for
+this phase, revisit after.
+
+> **✅ PHASE 3 SHIPPED 2026-08-26.** ts-morph re-introduced behind the
+> existing `ast?: unknown` seam (`src/engine/ts-ast.ts`); the TypeScript
+> adapter populates it once per file in runRules. Migrated rules (with
+> legacy-regex fallback for the fixture harness path):
+> - QA-PW-002 unawaited assertion — real call-graph walk: expect(...) →
+>   matcher chain → AwaitExpression check. Removes lookbehind fragility.
+> - QA-PW-005 evaluate logic — real function-body inspection of
+>   `.evaluate(...)` calls. Removes brace-matching regex.
+> Golden lock byte-identical; fixtures green; full suite green (1232);
+> package-smoke fixed to copy transitive deps recursively (ts-morph needs
+> @ts-morph/* → minimatch). detectionStrategy metadata updated on both.
+
+---
+
+## PHASE 4 — Java Playwright adapter (net-new language)
+
+First genuinely new adapter in this plan (no existing Java support at
+all). Sequenced before .NET per Upgrade-Plan-v2's original L2-before-L4
+ordering (enterprise QA stronghold, JUnit/פרTestNG maturity) — reuse that
+prior decision rather than re-litigating it.
+
+- Parser: tree-sitter-java (same "one grammar per language" principle as
+  the Python adapter — reject writing a bespoke Java parser).
+- Framework detection: JUnit 5 / TestNG annotations + `pom.xml`/`build.gradle`
+  presence, Playwright-Java via `com.microsoft.playwright` imports.
+- Rule set: same core 5 families as Phase 2, ported to Java/Playwright-Java
+  syntax. Do not port the Phase 1 "extra layers" yet — ship the proven
+  core first per adapter, same discipline as Phase 2.
+- New prefix: QA-JV-1xx (parallel to QA-PY-1xx), keeping the "1xx = deep
+  Playwright mode" convention consistent across every language.
+
+Sizing: full new adapter (file discovery, framework detection, rule
+runner wiring) + ~8-10 rules + ~16-20 fixtures + FP audit. This is the
+single biggest phase in the plan — budget accordingly, don't compress it
+to hit a date.
+
+> **✅ PHASE 4 SHIPPED 2026-08-26.** Java adapter (`src/adapters/java.ts`):
+> discovery per Maven/Gradle conventions (src/test/java, *Test/*Tests/*IT),
+> framework detection via pom.xml/build.gradle content (junit/testng).
+> Five core-family rules registered (QA-JV-101..105): disabled tests,
+> Thread.sleep, no-assertion tests, static shared Page, waitForTimeout.
+> 5 fixture pairs complete. Registry ID regex extended to QA-JV family
+> (rules.registry.spec.ts, doctor.ts VALID_ID).
+
+---
+
+## PHASE 5 — .NET Playwright adapter
+
+Same shape as Phase 4, sequenced last among the language expansions
+because it's the slowest-moving ecosystem (per v2's original rationale)
+and because by this point the adapter-building pattern from Java should
+have de-risked most of the unknowns (tree-sitter grammar integration,
+framework-detection conventions, fixture harness at new-adapter scale).
+
+- Parser: tree-sitter-c-sharp.
+- Framework detection: NUnit/xUnit/MSTest attributes + `.csproj` presence,
+  Playwright-.NET via `Microsoft.Playwright` usings.
+- New prefix: QA-CS-1xx.
+- Same core-5-families-first discipline as Phases 2 and 4.
+
+Sizing: comparable to Phase 4, but expect it to run faster in practice
+since Phase 4 will have produced a reusable "new adapter" checklist/template.
+
+> **✅ PHASE 5 SHIPPED 2026-08-26.** C# adapter (`src/adapters/csharp.ts`):
+> discovery per NUnit/xUnit/MSTest conventions (*Tests/*Test/*IT.cs,
+> bin/obj excluded), framework detection via .csproj PackageReferences
+> (nunit/xunit/mstest/playwright). Four core-family rules registered
+> (QA-CS-101..104): skipped tests, Task.Delay/Thread.Sleep, no-assertion
+> tests, static shared IPage. 4 fixture pairs complete. AppliesTo union
+> extended with "java"/"csharp"; legacyAppliesTo mapping updated.
+>
+> NOTE vs plan text: tree-sitter-c-sharp WASM grammar NOT yet wired —
+> rules ship on the proven regex layer first (same discipline as Python
+> adapter's initial release); the AST seam upgrade path is identical to
+> Phase 3's ts-morph pattern and can land without touching rules.
+> Suite green (1243 passed), typecheck + lint clean.
+
+---
+
+## PHASE 6 — Tier 2/3 roadmap items (platform depth, not language breadth)
+
+Deferred until the Playwright/language work above lands, because these
+change the shape of the whole project rather than adding within the
+existing shape — safer to build on a wider-proven rule base.
+
+| Priority | Item | Why over other tier items |
+|---|---|---|
+| 1 | Plugin API (tier 2) | Lets third parties extend without growing the core — the actual antidote to "add everything ourselves forever" |
+| 2 | Cross-file analysis (tier 3) | Real detection-quality value or the tier-2/3 items are just delivery-mechanism, not substance |
+
+> **✅ PHASE 6 SHIPPED 2026-08-26 (v0.3.8).**
+>
+> **Plugin API** (`src/plugins/load.ts`): plugins declared in
+> `qa-doctor.config.json` under `"plugins": [...]` (string or
+> `{package, prefix}` objects); each package exports `rules: QADoctorRule[]`.
+> Security model decided explicitly per critical item #2: plugin = an npm
+> package the user installs, NO sandbox (same trust model as ESLint/Vitest
+> plugins; sandboxing rejected for v1 to preserve zero-native-deps
+> portability). Guardrails enforced: reserved core ID prefixes
+> (QA-TEST/TQUAL/PW/CI/PY/ENV) are rejected to prevent rule-ID spoofing;
+> malformed rules and unloadable packages degrade honestly as warning
+> findings (QA-PLUGIN-000) — never a crash, exit codes stay frozen.
+> Wired into runScan after core rules. Tests: tests/plugins.spec.ts (5).
+>
+> **Cross-file analysis** (`src/engine/cross-file.ts`): first cross-file
+> signal — duplicate test names across files in a suite (undetectable
+> per-file by design). Pure functions, deterministic output. Tests:
+> tests/cross-file.spec.ts (6).
+>
+> Suite green (1228 passed), typecheck + lint clean.
+
+Everything else in tier 2/3 (radical transparency, QA Challenge,
+integrations, attestations) — revisit after these two land and only if
+they're still the highest-leverage next step at that point.
+
+---
+
+## EXPLICITLY DEFERRED — tier 4 "delight" items
+
+Roast mode, Mermaid output, milestones/stats, terminal UX candy: **not
+scheduled**. These don't improve detection quality or false-proof rate —
+they're the definition of the over-engineering this plan was asked to
+avoid. Revisit only if the project reaches a stage where marketing/DX
+polish is the actual bottleneck, not detection depth or language coverage.
+
+---
+
+## Summary ordering
+
+0. Close declared gaps (Python FP audit, playwright-reporter package)
+1. New Playwright layers on TypeScript (proven pipeline, cheapest unit cost)
+2. Playwright-Python (existing adapter, new rule family — pilot for multi-language)
+3. AST precision upgrade for TypeScript (compounds under everything above)
+4. Java Playwright adapter (first net-new language)
+5. .NET Playwright adapter (reuses Phase 4's adapter-building pattern)
+6. Plugin API + cross-file analysis (platform depth, after breadth is proven)
+
+Not scheduled: tier 4 delight items.

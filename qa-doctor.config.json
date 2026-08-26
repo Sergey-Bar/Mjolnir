@@ -84,6 +84,51 @@
       "ruleId": "QA-PW-119",
       "files": ["tests/fixtures/**"],
       "reason": "Fixture firewall: shared-state samples are intentional fixture payloads."
+    },
+    {
+      "ruleId": "QA-CS-103",
+      "files": ["tests/fixtures/**"],
+      "reason": "Fixture firewall: C# assertion-less samples are intentional fixture payloads (must-fire and must-not-fire pairs for other QA-CS rules legitimately lack assertions)."
+    },
+    {
+      "ruleId": "QA-JV-103",
+      "files": ["tests/fixtures/**"],
+      "reason": "Fixture firewall: Java assertion-less samples are intentional fixture payloads (must-fire and must-not-fire pairs for other QA-JV rules legitimately lack assertions)."
+    },
+    {
+      "ruleId": "QA-PY-003",
+      "files": ["tests/fixtures/**"],
+      "reason": "Fixture firewall: Python assertion-less samples are intentional fixture payloads (must-not-fire pairs for QA-PY-105 legitimately lack assertions)."
+    },
+    {
+      "ruleId": "QA-PY-105",
+      "files": ["tests/fixtures/**"],
+      "reason": "Fixture firewall: Playwright-Python assertion-less samples are intentional fixture payloads for QA-PY-105 itself."
+    },
+    {
+      "ruleId": "QA-TEST-002",
+      "files": [
+        "tests/fixtures/**",
+        "tests/golden/**",
+        "tests/registry-install.spec.ts",
+        "tests/skip-justification.spec.ts"
+      ],
+      "reason": "Fixture firewall / dogfooding: unjustified-skip samples are intentional fixture payloads for QA-TEST-002 itself, and the golden/registry/skip-justification specs embed sample skip literals as test data, not real skipped tests."
+    },
+    {
+      "ruleId": "QA-PW-101",
+      "files": ["examples/demo-repo/**"],
+      "reason": "examples/demo-repo is a deliberately imperfect sample repo used to demonstrate scan output (README hero asset, Task 29) — it is not part of the shipped tool and must keep its anti-patterns to be a useful demo."
+    },
+    {
+      "ruleId": "QA-PW-103",
+      "files": ["examples/demo-repo/**"],
+      "reason": "examples/demo-repo is a deliberately imperfect sample repo used to demonstrate scan output — see QA-PW-101 entry above for the same rationale."
+    },
+    {
+      "ruleId": "QA-PW-145",
+      "files": ["examples/demo-repo/**"],
+      "reason": "examples/demo-repo is a deliberately imperfect sample repo used to demonstrate scan output — see QA-PW-101 entry above for the same rationale."
     }
   ]
 }

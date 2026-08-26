@@ -33,7 +33,7 @@ npx qa-doctor@latest
 <sub>Real output from <code>node dist/cli.mjs examples/demo-repo</code> — not a mockup. Reproduce it yourself:</sub>
 
 ```bash
-git clone https://github.com/Sergey-Bar/QA-Dodctor && cd QA-Dodctor/qa-doctor/examples/demo-repo
+git clone https://github.com/Sergey-Bar/QA-Doctor && cd QA-Doctor/qa-doctor/examples/demo-repo
 npx qa-doctor@latest .
 ```
 
@@ -260,11 +260,37 @@ Or wire it into GitHub Code Scanning natively via SARIF:
 - **No false proof** — we'd rather say "unknown" than "verified". An empty
   repo gets `score: null`, never a fake 100.
 - **Transparent scoring** — public deduction constants: error −8, warning −3,
-  info −1. No black box.
+  info −1. No black box. Verdict thresholds: **≥80 HEALTHY**, **50–79 NEEDS
+  WORK**, **<50 CRITICAL**.
+- **Evidence-weighted deductions** — every finding carries an evidence level:
+  **E2** (deterministic defect, full deduction), **E1** (heuristic pattern,
+  half deduction), **E0** (observation — reported but costs nothing and never
+  gates CI). The terminal deduction table shows the same discounted numbers
+  the score uses.
 - **Partial honesty** — if analysis was cut short, the output says so.
   Never "complete" when it isn't.
 - **QA-native language** — findings speak your vocabulary:
   `FALSE-GREEN`, `FLAKY-RISK`, `BLOCKS-RELEASE`, `HYGIENE`.
+- **FP firewall** — detection runs on a comment/string-free view of the code
+  (TypeScript rules use the compiler AST): a pattern inside a prose comment
+  or a doc-example string is documentation, not a finding.
+
+## 🔌 Plugin Trust Model (read before installing plugins)
+
+Plugins are npm packages you declare in `qa-doctor.config.json`. There is **no
+sandbox**: plugin code executes with full Node privileges against the scanned
+tree — the same trust model as ESLint or Vitest plugins. Only install plugins
+you'd trust as devDependencies. Core rule-ID prefixes (`QA-TEST`, `QA-TQUAL`,
+`QA-PW`, `QA-CI`, `QA-PY`, `QA-ENV`, `QA-JV`, `QA-CS`) are reserved and
+rejected from plugins to prevent spoofing.
+
+## 🔍 Changed-Scope Coverage
+
+`--scope changed` attributes findings to lines added in your branch vs the
+merge-base with `main`. It covers test files (`*.spec.*`, `*.test.*`) plus
+GitHub workflow files and Playwright configs changed in the diff. On shallow
+clones or non-git targets it degrades honestly: findings fall back to
+full-file attribution and the report says so.
 
 ## 🏗️ Architecture
 

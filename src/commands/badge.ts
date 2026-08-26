@@ -56,7 +56,7 @@ export function buildBadge(result: ScanResult): BadgeJson {
  */
 export function renderBadgeSnippet(
   result: ScanResult,
-  repoUrl = "https://github.com/qa-doctor/qa-doctor",
+  repoUrl = "https://github.com/Sergey-Bar/QA-Doctor",
 ): string {
   let commit = "unknown";
   try {
