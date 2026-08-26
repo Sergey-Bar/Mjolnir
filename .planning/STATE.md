@@ -79,11 +79,116 @@ supersedes the earlier 2026-08-25 snapshot.
   - Remaining open: FP audits (networked),
     tier-4 delight items (explicitly unscheduled).
 
-Remaining known gaps: `@qa-doctor/playwright-reporter` package, Python FP
-audit, Legendary tiers 2/4 items (plugin API, roast mode, Mermaid output).
+Remaining known gaps: Python FP audit (networked, not yet run), Legendary
+tiers 2/4 items (roast mode, Mermaid output — plugin API is now shipped,
+see Master-Stabilization-Plan Sprint 0 note below).
 
 Full audit trail: see status markers added throughout
 `docs/plans/Implementation-Master-Plan.txt` and `docs/plans/Upgrade-Plan-v2.txt`.
+
+## Master-Stabilization-Plan.md — Sprint 0 (2026-08-26): ✅ COMPLETE
+
+Executed against a real shell (previous plan revisions were written with
+no shell access — see that document's §1 "Explicitly NOT verified").
+Verified, dated baseline replacing every conflicting count in prior docs:
+
+- `npm run typecheck`: **exit 0**, clean.
+- `npm run lint`: **exit 0**, clean (eslint + prettier --check).
+- `npm test`: **69 files passed, 1 skipped (70); 1656 tests passed, 3
+  skipped (1659).** Windows `tar --force-local` package-smoke bug is
+  confirmed already fixed — no failure observed.
+- `npm run build`: succeeds, `dist/cli.mjs` 279.20 kB / gzip 65.93 kB.
+- `npm run test:coverage`: **known flake, not fixed in Sprint 0** —
+  `tests/scale-benchmark.spec.ts`'s two tests intermittently hit Vitest's
+  default 5000ms per-test timeout under coverage instrumentation before
+  the test's own 20000ms budget gets evaluated. Passes reliably under
+  plain `npm test`. Logged as a known-unknown; a fix (raising Vitest's
+  `testTimeout` for this file, or excluding it from coverage runs) is
+  unscheduled — first candidate for a Sprint 1 follow-up.
+- `npm run self-scan`: **was actually red** — 20 error-severity findings
+  on a clean run, meaning CI's real self-scan gate
+  (`.github/workflows/ci.yml`, fails on any `severity==='error'`
+  finding) would have failed on the next push. Root cause:
+  `qa-doctor.config.json`'s fixture-noise suppression list was missing
+  entries for QA-CS-103, QA-JV-103, QA-PY-003/105, QA-TEST-002, and did
+  not cover `examples/demo-repo/**` at all. Fixed; verified 0
+  error-severity findings on a fresh build. Score itself is still
+  0/100 self-scanning this repo — expected and **not fixed**, since the
+  test corpus (`tests/fixtures/**`) is intentionally full of the exact
+  anti-patterns the tool detects; the CI gate only checks for new
+  error-severity findings, not overall score, so this is not a release
+  blocker. A structural fix (excluding fixtures from score calculation
+  entirely for self-scan purposes) is unscheduled.
+- Golden lock (`tests/golden/golden.spec.ts`): **byte-identical**, 3/3
+  passing — none of the Sprint 0 changes affected scoring.
+- `npm run corpus:audit`: **not run** (requires network; unchanged from
+  prior sessions' "still open" status).
+
+**Repository structure finding (not anticipated by the plan as written):**
+there are two git repos nested at different levels — `c:\Work\QA-Doctor\
+.git.bak-outer` (the original flat-layout clone of this project, renamed/
+disabled, missing 2 local-only release commits that never reached
+`origin/main`) and `c:\Work\QA-Doctor\qa-doctor\.git` (the active repo,
+fully in sync with `origin/main`, continuing the same history from the
+point the repo was restructured under a `qa-doctor/` subdirectory). The
+outer folder's `docs/plans/**` and `.planning/STATE.md` existed only in
+that untracked outer folder — the active repo had **none** of its own
+"source of truth" planning docs tracked at all, a strictly worse version
+of finding #4 than the plan anticipated (it assumed one repo with a
+`.gitignore` problem, not two repos where the real one was missing the
+files entirely). Fixed by copying the whole `docs/` tree and `.planning/`
+into the active repo. `.git.bak-outer` is inert and left in place —
+its two extra commits (`2a5db8d` v0.2.2, `f1aec4e`) were confirmed to be
+pre-restructure, flat-layout releases fully superseded by the current
+nested layout, not at-risk work.
+
+**Task 1** (verified baseline): done, numbers above.
+**Task 2** (`.gitignore`/CHANGELOG.md): done. `CHANGELOG.md` was
+git-ignored (along with `.gitignore` self-referencing itself twice) and
+therefore untracked despite existing on disk. Fixed; added to
+package.json `files`; now ships in the packed tarball (verified via
+`tests/package-smoke.spec.ts`).
+**Task 3** (recover source plans): done, via the repo-structure fix above
+— broader than the plan's original framing but resolves the same root
+problem (a fresh clone previously received none of these files).
+**Task 4** (identity/URLs/version): done. Confirmed via `gh repo view`
+that GitHub already redirects/resolves the repo as `Sergey-Bar/QA-Doctor`
+(old `QA-Dodctor` path was stale, not current — the rename step the plan
+called for had already happened upstream of this session). Updated
+`package.json` repository/bugs/homepage, the local git remote, the
+reporter package's `repository` field, `SECURITY.md`,
+`src/reporter/sarif.ts`'s `informationUri`, `src/commands/badge.ts`'s
+default `repoUrl`, and the README clone command. Reporter README now
+states plainly it is unpublished and gives a from-source install
+path instead of a 404ing `npm install` command. `docs/PUBLISHING.md`
+release checklist: **not written** — deferred, not blocking Sprint 0's
+exit criteria, candidate for Sprint 3 (governance/docs).
+Npm package name itself: **untouched, per the plan's explicit parking
+(§5)**.
+
+**QA tests added** (fail before fix, pass after — verified both states):
+`tests/repo-hygiene.spec.ts`, `tests/link-integrity.spec.ts`,
+`tests/package-smoke.spec.ts` (extended). `tests/version-consistency.spec.ts`
+was reviewed and left as-is — its single hardcoded-version-surface check
+(`sarif.ts`) was already correct and sufficient for Sprint 0's scope;
+widening it to cover every surface is Sprint 1 territory per the plan's
+own sprint map.
+
+**Not done in Sprint 0** (explicit known-unknowns, not rounded to green):
+
+- `test:coverage` scale-benchmark timeout flake (see above).
+- `npm run corpus:audit` (networked).
+- `docs/PUBLISHING.md`.
+- Standing gate has only been run on Windows this session — Linux/macOS
+  verification not performed locally (CI matrix already covers both;
+  not independently re-verified here).
+
+Two commits landed this session: one consolidating pre-existing
+uncommitted feature work (Java/C# adapters, Playwright-Python rules,
+plugin API, cross-file analysis, ts-ast seam, playwright-reporter
+package — all previously sitting only in the working tree, undocumented
+as a git-level risk until this session), one for Sprint 0's fixes
+proper.
 
 ## Conventions
 
