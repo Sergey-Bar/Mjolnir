@@ -30,6 +30,7 @@
     "golden:update": "tsx tests/golden/gen.ts",
     "corpus:audit": "tsx tests/corpus/audit.ts",
     "corpus:audit:update": "tsx tests/corpus/audit.ts --update",
+    "fp-audit:generate": "node scripts/generate-fp-audit-table.mjs",
     "self-scan": "node dist/cli.mjs .",
     "prepare": "husky",
     "prepublishOnly": "npm run build && npm test"

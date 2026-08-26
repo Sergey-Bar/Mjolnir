@@ -36,9 +36,9 @@ import { runScan } from "../../src/cli.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CACHE_DIR = join(HERE, ".cache");
-const BASELINE_DIR = join(HERE, "baseline");
+export const BASELINE_DIR = join(HERE, "baseline");
 
-interface CorpusRepo {
+export interface CorpusRepo {
   /** Baseline filename stem — keep stable, renaming loses history. */
   name: string;
   url: string;
@@ -49,7 +49,7 @@ interface CorpusRepo {
 // Small, real, actively-maintained repos chosen for size (fast shallow
 // clone) and genuine coverage of an adapter's rule families. Add more
 // here as adapters grow — one entry, one `--update` run.
-const CORPUS: CorpusRepo[] = [
+export const CORPUS: CorpusRepo[] = [
   {
     name: "pallets-click",
     url: "https://github.com/pallets/click.git",
@@ -198,4 +198,9 @@ function main(): number {
   return 0;
 }
 
-process.exitCode = main();
+// Guard so this module's exports (CORPUS, BASELINE_DIR) can be imported
+// by other scripts (e.g. the FP-table generator) without triggering a
+// full networked audit as a side effect of the import.
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  process.exitCode = main();
+}

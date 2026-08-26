@@ -1,4 +1,8 @@
 {
-  "countsByRule": {},
-  "totalFindings": 0
+  "countsByRule": {
+    "QA-PW-120": 1,
+    "QA-PW-145": 2,
+    "QA-PW-103": 2
+  },
+  "totalFindings": 5
 }

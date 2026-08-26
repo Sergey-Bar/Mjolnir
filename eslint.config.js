@@ -40,4 +40,16 @@ export default tseslint.config(
       "@typescript-eslint/no-require-imports": "off",
     },
   },
+  {
+    // scripts/**/*.mjs — ESM Node scripts (e.g. doc generators). Same
+    // Node runtime as the .cjs scripts above, just the module scope
+    // differs (no require/__dirname; import.meta.url instead).
+    files: ["scripts/**/*.mjs"],
+    languageOptions: {
+      globals: {
+        console: "readonly",
+        process: "readonly",
+      },
+    },
+  },
 );

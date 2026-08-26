@@ -44,3 +44,15 @@ jobs:
       - run: node dist/cli.mjs . --json > self-scan.json
       - name: Fail on new errors in own repo
         run: node -e "const r=require('./self-scan.json');const errs=r.findings.filter(f=>f.severity==='error');if(errs.length){console.error('Self-scan errors:',errs);process.exit(1)}"
+      - name: Generate badge artifact (Master-Stabilization-Plan Sprint 2 Task 11)
+        continue-on-error: true
+        run: node dist/cli.mjs badge .
+      - name: Upload self-scan result as a build artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: self-scan-result
+          path: |
+            self-scan.json
+            qa-doctor-badge.json
+          retention-days: 90
