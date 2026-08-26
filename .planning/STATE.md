@@ -771,6 +771,136 @@ findings.
 **Not done in Sprint 7:** nothing outstanding from this sprint's own
 task list (Tasks 27–30 and their full QA table are complete).
 
+## Sprint 8 — Java/.NET Playwright parity — done 2026-08-26
+
+Tasks 31–37 of `docs/plans/Master-Stabilization-Plan.md`. The largest
+sprint by scope this session — 11 new rules, a real dependency bug
+found and fixed, a genuinely new architecture layer built and tested,
+and two real corpus-audit false positives found and fixed against real
+OSS code.
+
+**Task 31** (idiom-mapping spike, `docs/JAVA-CSHARP-IDIOM-MAPPING.md`):
+done first, per the plan's own instruction — every rule's exact
+Java/.NET syntax verified against the official Playwright API
+references before a single regex was written. Two real, non-obvious
+findings from that verification alone: **Java navigation is
+`page.navigate(url)`, not `page.goto(url)`** like every other
+Playwright language binding (JS, Python, C#) — a hardcoded-URL rule
+copy-pasted from the JS/Python regex would have silently never fired on
+a single real Java file. And both `tree-sitter-java.wasm` and
+`tree-sitter-c_sharp.wasm` grammars were already present in the
+existing `tree-sitter-wasms` dependency — Task 36 needed zero new
+grammar dependencies, just a compatible runtime version (see Task 36).
+
+**Task 32/33** (Java + C# core-family rules): QA-JV-106/107/108,
+QA-CS-105/106/107/108 — brittle selectors, networkidle wait
+(`LoadState.NETWORKIDLE`/`LoadState.NetworkIdle` enum constants,
+verified against official docs, not Python's string-literal idiom),
+hardcoded URL. C# also gets QA-CS-105 (`WaitForTimeoutAsync`),
+completing the plan's own explicitly-named "same three plus
+WaitForTimeoutAsync" set for C#.
+
+**Task 34** (retry/flake masking, QA-JV-109/QA-CS-109):
+framework-specific per the idiom spike's own finding — one regex
+cannot honestly cover TestNG/JUnit or NUnit/xUnit. TestNG's first-class
+`retryAnalyzer` and NUnit's first-class `[Retry(n)]` get
+high-confidence/`deterministic-defect` detection; JUnit's
+rerun-extension convention and xUnit's fragmented third-party-package
+convention get medium-confidence/`heuristic-risk` detection instead of
+claiming false parity with the stronger two.
+
+**Task 35** (remaining layers, QA-JV-110/111/QA-CS-110/111): blanket
+route mocking and absence-based a11y coverage, ported to the REAL,
+verified Playwright a11y integrations —
+`com.deque.html.axe-core:playwright`'s `new AxeBuilder(page).analyze()`
+for Java, `Deque.AxeCore.Playwright`'s `page.RunAxe()` for .NET (both
+confirmed against their official READMEs during this sprint's
+research, not assumed from the JS package name). **Single-browser
+matrix and failure-artifact config were assessed and deliberately NOT
+ported**: Java/C# Playwright has no equivalent to a single
+`playwright.config.ts` file — both languages are automation libraries
+invoked directly from JUnit/TestNG/NUnit/xUnit, not TS-style
+test-runner configs. Forcing a port onto a genuinely different
+architecture would have produced a rule that's either always-false or
+based on an invented convention — the same honesty-first call already
+made for the sync/async-mix rule drop.
+
+**Task 36** (tree-sitter WASM AST, `src/engine/tree-sitter-ast.ts`):
+**corrects two real, previously-undetected false claims** found while
+implementing this task — `src/adapters/python.ts`'s own header comment
+says "First tree-sitter consumer. Uses web-tree-sitter (WASM)" and
+`src/engine/adapter.ts`'s header says "Tree-sitter arrives in R2 with
+Python, where it's actually required." **Neither is true** — grep
+confirmed zero tree-sitter usage anywhere in `python.ts` or any Python
+rule; every Python rule is pure regex over raw text, architecturally
+identical to the Java/C# rules this sprint ported. This module is the
+first real tree-sitter consumer in this codebase for any language, not
+a port of an existing pattern; both stale comments are corrected.
+**Found and fixed a second real, previously-undetected bug** while
+building this: the already-installed `web-tree-sitter@^0.26.13`
+(caret-ranged) cannot load `tree-sitter-wasms`'s prebuilt grammar files
+at all — `Language.load()` throws inside `getDylinkMetadata` for every
+grammar, reproduced directly. Verified `web-tree-sitter@0.25.6` loads
+and parses both grammars correctly via an isolated scratch install
+_before_ committing to the fix — not guessed. Pinned to that exact
+verified-working version (no caret), with a dedicated regression test
+guarding the pin itself so a future `npm install` can't silently
+reintroduce the breakage. **Architectural scope decision, stated
+honestly rather than worked around:** `web-tree-sitter`'s
+`Parser.init()`/`Language.load()` are async, but this repo's entire
+scan pipeline (`main()` → `runScan()` → every adapter's `runRules()` →
+every rule's `run()`) is synchronous end-to-end with zero prior async
+precedent anywhere. The new `parseJavaAst`/`parseCSharpAst` functions
+are complete, real, and independently tested (parse real valid source,
+tolerate malformed source via tree-sitter's own error-node recovery,
+never throw) — but deliberately **not yet wired into the synchronous
+rule engine**. That wiring requires converting the entire call chain to
+async, a real, invasive change touching every existing rule and,
+transitively, the golden lock across every language — it deserves its
+own reviewed, standalone piece of work, not something to rush inside an
+already-large sprint. The seam this module plugs into
+(`ParsedFile.ast?: unknown`) already exists, unchanged, ready for that
+follow-up.
+
+**Task 37** (corpus audit, `microsoft/playwright-java` +
+`microsoft/playwright-dotnet` — exactly the plan's own starting
+proposal, library-suite caveat documented in each entry's note field):
+ran the real, networked audit and **manually reviewed every finding
+before committing baselines**, per the plan's own instruction — not
+just recording numbers. This surfaced two more real, previously-
+undetected false-positive bugs: **QA-JV-103** matched only a fixed
+suffix list (`assertThat/True/False/Equals/NotNull/Throws`), missing
+real JUnit/custom assertions (`assertArrayEquals`, `assertNotEquals`,
+`assertNull`, `assertSame`, `assertJsonEquals`) — verified against real
+`playwright-java` source, fixed with a generic `assert[A-Z]\w*\(`
+pattern, real-world false positives eliminated 132 → 101. **QA-CS-103**
+had no boundary after the `Test` alternative in its attribute regex,
+so `[TestInitialize]`/`[TestCleanup]` (MSTest's setup/teardown
+attributes, NOT test methods) matched as `[Test]` with extra
+constructor arguments — verified against real `playwright-dotnet`
+source (`BrowserSetup`/`BrowserTearDown` wrongly flagged as "tests with
+no assertions"), fixed by requiring the attribute name to end exactly
+at `Test`/`Fact`/`TestMethod`, real-world false positives eliminated
+9 → 2 (the 2 remaining manually verified as reasonable edge cases, not
+chased further). Both fixes pinned with regression tests reproducing
+the exact real-world patterns found.
+
+**Standing gate, verified green:** typecheck (both configs) exit 0;
+lint clean; **95 files / 2731 tests passed**, 1 skipped, 3 tests
+skipped; coverage 96.01% lines / 88.19% branches / 97.62% functions /
+96.53% statements (all above the 95/88/96/95 thresholds); build
+succeeds; golden lock byte-identical (unaffected — Java/C# rules never
+touch the TS/JS golden fixtures); self-scan gate 0 error-severity
+findings; **CI run `33008944946` confirmed fully green on all 3 OSes
+plus self-scan.**
+
+**Not done in Sprint 8:** single-browser-matrix and failure-artifact-config
+rules for Java/C# — deliberately dropped per the architectural-mismatch
+reasoning in Task 35 above, not an oversight. Tree-sitter AST parsing
+is built and tested but not wired into the synchronous rule engine —
+deliberately deferred per Task 36's reasoning above, a real follow-up
+item, not a gap in this sprint's own stated scope.
+
 ## Conventions
 
 - User communicates in Hebrew; artifacts in English.
