@@ -110,6 +110,6 @@ describe("runRulesForFile", () => {
       path: "a.ts",
       text: "",
     }) as Array<Omit<Finding, "ruleId" | "category">>;
-    expect(out[0].line).toBe(3);
+    expect(out[0]?.line).toBe(3);
   });
 });

@@ -230,6 +230,7 @@ describe("renderFixReport", () => {
         {
           file: "a.ts",
           ruleId: "QA-TEST-001",
+          line: 1,
           status: "failed",
           description: "Remove `.only` (dry-run: not applied)",
         },

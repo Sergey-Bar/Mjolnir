@@ -3,14 +3,26 @@ import type { Finding, ScanResult } from "../src/types.js";
 import { renderSarif } from "../src/reporter/sarif.js";
 import { renderTerminal } from "../src/reporter/terminal.js";
 
+/**
+ * Narrows `T | undefined` to `T`, throwing if absent. Used instead of a
+ * non-null assertion (banned by eslint's no-non-null-assertion) when
+ * indexing into an array this test constructs and knows is non-empty —
+ * fails loudly instead of silently comparing against `undefined` if that
+ * assumption is ever wrong.
+ */
+function defined<T>(value: T | undefined, what: string): T {
+  if (value === undefined) throw new Error(`expected ${what} to be defined`);
+  return value;
+}
+
 function makeFinding(over: Partial<Finding> = {}): Finding {
   return {
     ruleId: "QA-TEST-001",
     category: "QA-TEST",
     severity: "error",
     confidence: "high",
-    findingType: "static",
-    qaImpact: "Flaky tests reach main",
+    findingType: "deterministic-defect",
+    qaImpact: "FLAKY-RISK",
     file: "a.test.ts",
     line: 3,
     column: 1,
@@ -51,8 +63,9 @@ describe("renderSarif", () => {
     };
     expect(sarif.version).toBe("2.1.0");
     expect(sarif.runs).toHaveLength(1);
-    expect(sarif.runs[0].tool.driver.rules).toEqual([]);
-    expect(sarif.runs[0].results).toEqual([]);
+    const skeletonRun = defined(sarif.runs[0], "sarif.runs[0]");
+    expect(skeletonRun.tool.driver.rules).toEqual([]);
+    expect(skeletonRun.results).toEqual([]);
   });
 
   it("maps severities to SARIF levels and dedupes rules", () => {
@@ -79,7 +92,7 @@ describe("renderSarif", () => {
         }>;
       }>;
     };
-    const run = sarif.runs[0];
+    const run = defined(sarif.runs[0], "sarif.runs[0]");
     expect(run.tool.driver.rules.map((r) => r.id)).toEqual(["R1", "R2", "R3"]);
     expect(run.results.map((r) => r.level)).toEqual([
       "error",
@@ -87,10 +100,13 @@ describe("renderSarif", () => {
       "note",
       "note",
     ]);
-    expect(run.results[0].properties.severity).toBe("error");
-    expect(run.results[0].locations[0].physicalLocation.region.startLine).toBe(
-      3,
+    const firstResult = defined(run.results[0], "run.results[0]");
+    expect(firstResult.properties.severity).toBe("error");
+    const firstLocation = defined(
+      firstResult.locations[0],
+      "run.results[0].locations[0]",
     );
+    expect(firstLocation.physicalLocation.region.startLine).toBe(3);
   });
 
   it("clamps line/column to >= 1", () => {
@@ -108,8 +124,10 @@ describe("renderSarif", () => {
         }>;
       }>;
     };
-    const region =
-      sarif.runs[0].results[0].locations[0].physicalLocation.region;
+    const run = defined(sarif.runs[0], "sarif.runs[0]");
+    const sarifResult = defined(run.results[0], "run.results[0]");
+    const location = defined(sarifResult.locations[0], "result.locations[0]");
+    const region = location.physicalLocation.region;
     expect(region.startLine).toBe(1);
     expect(region.startColumn).toBe(1);
   });
@@ -131,12 +149,21 @@ describe("renderSarif", () => {
         }>;
       }>;
     };
-    const run = sarif.runs[0];
-    expect(run.originalUriBaseIds.SRCROOT.uri).toBe("file:///repo");
-    expect(run.tool.driver.rules[0].helpUri).toBe("https://docs/r1");
-    expect(
-      run.results[0].locations[0].physicalLocation.artifactLocation.uriBaseId,
-    ).toBe("SRCROOT");
+    const run = defined(sarif.runs[0], "sarif.runs[0]");
+    expect(run.originalUriBaseIds.SRCROOT?.uri).toBe("file:///repo");
+    const firstRule = defined(
+      run.tool.driver.rules[0],
+      "run.tool.driver.rules[0]",
+    );
+    expect(firstRule.helpUri).toBe("https://docs/r1");
+    const firstResult = defined(run.results[0], "run.results[0]");
+    const firstLocation = defined(
+      firstResult.locations[0],
+      "run.results[0].locations[0]",
+    );
+    expect(firstLocation.physicalLocation.artifactLocation.uriBaseId).toBe(
+      "SRCROOT",
+    );
   });
 
   it("marks partiallySuccessful when scan is partial", () => {
@@ -145,9 +172,9 @@ describe("renderSarif", () => {
         invocations: Array<{ partiallySuccessfulReason?: string }>;
       }>;
     };
-    expect(
-      sarif.runs[0].invocations[0].partiallySuccessfulReason,
-    ).toBeDefined();
+    const run = defined(sarif.runs[0], "sarif.runs[0]");
+    const invocation = defined(run.invocations[0], "run.invocations[0]");
+    expect(invocation.partiallySuccessfulReason).toBeDefined();
   });
 });
 

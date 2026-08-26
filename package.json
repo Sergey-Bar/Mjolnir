@@ -9,6 +9,9 @@
   "bin": {
     "qa-doctor": "./dist/cli.mjs"
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "files": [
     "dist",
     "README.md",
@@ -16,14 +19,14 @@
     "CHANGELOG.md"
   ],
   "scripts": {
-    "build": "tsdown src/cli.ts --format esm --dts --out-dir dist",
+    "build": "tsdown src/cli.ts --format esm --dts --out-dir dist && npm run build --workspaces --if-present",
     "dev": "tsx src/cli.ts",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json",
     "golden:update": "tsx tests/golden/gen.ts",
     "corpus:audit": "tsx tests/corpus/audit.ts",
     "corpus:audit:update": "tsx tests/corpus/audit.ts --update",
@@ -62,6 +65,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.50.0",
     "@types/node": "^24.13.3",
     "@vitest/coverage-v8": "^4.1.11",
     "eslint": "^10.9.1",

@@ -109,8 +109,8 @@ describe("applySeverityOverrides", () => {
     applySeverityOverrides(findings, {
       severityOverrides: { A: "warning" },
     });
-    expect(findings[0].severity).toBe("warning");
-    expect(findings[1].severity).toBe("error");
+    expect(findings[0]?.severity).toBe("warning");
+    expect(findings[1]?.severity).toBe("error");
   });
 });
 

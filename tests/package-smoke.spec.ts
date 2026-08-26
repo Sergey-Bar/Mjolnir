@@ -30,6 +30,7 @@ let pkgDir: string;
 let pkgJson: {
   bin: Record<string, string | undefined>;
   dependencies?: Record<string, string>;
+  files?: string[];
 };
 let binPath: string;
 
@@ -43,7 +44,9 @@ beforeAll(() => {
   const packOut = execSync(`npm pack --pack-destination "${workDir}" --json`, {
     cwd: ROOT,
   }).toString();
-  const [{ filename }] = JSON.parse(packOut) as Array<{ filename: string }>;
+  const packResult = (JSON.parse(packOut) as Array<{ filename: string }>)[0];
+  if (!packResult) throw new Error("npm pack produced no output entry");
+  const { filename } = packResult;
 
   // `tar` ships on every CI runner (Linux, macOS, Windows 10+) — avoids
   // pulling in an npm-package unzip dependency just for this test.
@@ -54,7 +57,9 @@ beforeAll(() => {
   pkgDir = join(workDir, "package");
 
   pkgJson = JSON.parse(readFileSync(join(pkgDir, "package.json"), "utf8"));
-  binPath = join(pkgDir, pkgJson.bin.qa_doctor ?? pkgJson.bin["qa-doctor"]);
+  const binEntry = pkgJson.bin.qa_doctor ?? pkgJson.bin["qa-doctor"];
+  if (!binEntry) throw new Error("package.json has no qa-doctor bin entry");
+  binPath = join(pkgDir, binEntry);
 
   // Give the packed CLI its runtime dependencies without a network install
   // (a real `npm install qa-doctor` would fetch these from `dependencies`).
@@ -122,6 +127,40 @@ describe("published tarball contents", () => {
         "see what changed between versions — it was previously " +
         "git-ignored and would have been silently absent.",
     ).toBe(true);
+  });
+
+  it("excludes dev artifacts not declared in 'files' (Sprint 1 Task 8)", () => {
+    // Checked against a fresh `npm pack --dry-run` listing rather than
+    // the shared pkgDir fixture above: that fixture's beforeAll copies
+    // node_modules into pkgDir *after* extraction (to run the CLI
+    // without a network install), which would make a node_modules
+    // check here a false positive unrelated to what npm actually packs.
+    const dryRunOut = execSync("npm pack --dry-run --json", {
+      cwd: ROOT,
+    }).toString();
+    const [dryRunResult] = JSON.parse(dryRunOut) as Array<{
+      files: Array<{ path: string }>;
+    }>;
+    const packedPaths = (dryRunResult?.files ?? []).map((f) => f.path);
+
+    const forbiddenPrefixes = [
+      "scratch/",
+      "coverage/",
+      "node_modules/",
+      "tests/",
+      ".git/",
+      "docs/",
+      ".planning/",
+    ];
+    for (const prefix of forbiddenPrefixes) {
+      const leaked = packedPaths.filter((p) => p.startsWith(prefix));
+      expect(
+        leaked,
+        `published tarball would contain path(s) under "${prefix}", ` +
+          `which is not in package.json's "files" whitelist — dev/debug ` +
+          `artifacts must not ship to every install: ${leaked.join(", ")}`,
+      ).toEqual([]);
+    }
   });
 });
 

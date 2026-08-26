@@ -14,6 +14,26 @@ import type {
   ScanContext,
   UniversalRule,
 } from "../src/engine/adapter.js";
+import type { Finding } from "../src/types.js";
+
+/** Minimal-but-complete mock finding for adapter unit tests. */
+function mockFinding(
+  overrides: Partial<Omit<Finding, "ruleId" | "category">> = {},
+): Omit<Finding, "ruleId" | "category"> {
+  return {
+    severity: "error",
+    confidence: "high",
+    findingType: "deterministic-defect",
+    qaImpact: "HYGIENE",
+    file: "x.test.ts",
+    line: 1,
+    column: 1,
+    message: "m",
+    why: "test",
+    fix: "test",
+    ...overrides,
+  };
+}
 
 let dir: string;
 
@@ -114,7 +134,7 @@ describe("typescriptAdapter", () => {
       id: "GOOD",
       category: "quality",
       appliesTo: ["typescript"],
-      run: () => [{ line: 1, severity: "error" as const, message: "m" }],
+      run: () => [mockFinding()],
     };
     const emitted = await expectRunRules.call(null, typescriptAdapter, {
       path: "x.test.ts",
@@ -141,7 +161,7 @@ describe("typescriptAdapter", () => {
       id: "PY",
       category: "test",
       appliesTo: ["python"],
-      run: () => [{ line: 1, severity: "error" as const, message: "m" }],
+      run: () => [mockFinding()],
     };
     const out: unknown[] = [];
     typescriptAdapter.runRules([pyOnly], { path: "x", text: "" }, (f) =>
@@ -205,7 +225,7 @@ describe("pythonAdapter", () => {
       id: "G",
       category: "test",
       appliesTo: ["python"],
-      run: () => [{ line: 2, severity: "warning" as const, message: "y" }],
+      run: () => [mockFinding({ line: 2, severity: "warning", message: "y" })],
     };
     const ids: string[] = [];
     pythonAdapter.runRules([boom, good], { path: "t.py", text: "" }, (_f, id) =>
@@ -227,7 +247,7 @@ describe("githubActionsAdapter", () => {
   });
 
   it("reports no frameworks", () => {
-    expect(githubActionsAdapter.detectFrameworks()).toEqual({
+    expect(githubActionsAdapter.detectFrameworks(dir)).toEqual({
       frameworks: [],
       unknown: false,
     });

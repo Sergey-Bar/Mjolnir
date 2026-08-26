@@ -9,6 +9,7 @@ function f(partial: Partial<Finding>): Finding {
     severity: "error",
     confidence: "high",
     findingType: "deterministic-defect",
+    qaImpact: "HYGIENE",
     file: "a.spec.ts",
     line: 1,
     column: 1,

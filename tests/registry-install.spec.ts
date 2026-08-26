@@ -53,7 +53,9 @@ beforeAll(() => {
   const packOut = execSync(`npm pack --pack-destination "${workDir}" --json`, {
     cwd: ROOT,
   }).toString();
-  const [{ filename }] = JSON.parse(packOut) as Array<{ filename: string }>;
+  const packResult = (JSON.parse(packOut) as Array<{ filename: string }>)[0];
+  if (!packResult) throw new Error("npm pack produced no output entry");
+  const { filename } = packResult;
   const tarball = join(workDir, filename);
 
   installDir = mkdtempSync(join(tmpdir(), "qa-doctor-registry-install-"));

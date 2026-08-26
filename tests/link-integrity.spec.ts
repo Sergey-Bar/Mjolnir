@@ -8,10 +8,10 @@
  * `QA-Doctor`. This test greps tracked source/config/doc files for both
  * dead patterns so the drift can't silently return.
  *
- * Deliberately excludes docs/plans/** planning prose: those files
- * document the finding itself (by name) and describe possible future
- * CTA strings referencing the parked npm-scope decision — they are not
- * live links a user could click.
+ * Deliberately excludes docs/plans/**, docs/tiers/**, and
+ * .planning/STATE.md: these files document the finding itself (by name)
+ * or describe possible future CTA strings referencing the parked
+ * npm-scope decision — they are not live links a user could click.
  */
 
 import { execFileSync } from "node:child_process";
@@ -35,8 +35,11 @@ function trackedFiles(): string[] {
     .split("\n")
     .filter(Boolean)
     .filter((f) => !f.startsWith("docs/plans/")) // planning prose, not live links
+    .filter((f) => !f.startsWith("docs/tiers/")) // roadmap prose, not live links
+    .filter((f) => f !== ".planning/STATE.md") // status prose documents the finding by name
     .filter((f) => !f.startsWith("node_modules/"))
-    .filter((f) => !f.endsWith("package-lock.json")); // dependency metadata, not our links
+    .filter((f) => !f.endsWith("package-lock.json")) // dependency metadata, not our links
+    .filter((f) => f !== "tests/link-integrity.spec.ts"); // this file documents the dead patterns by name
 }
 
 const DEAD_PATTERNS: RegExp[] = [
