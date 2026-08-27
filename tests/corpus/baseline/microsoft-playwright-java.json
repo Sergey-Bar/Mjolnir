@@ -1,11 +1,9 @@
 {
   "countsByRule": {
-    "QA-JV-110": 110,
-    "QA-JV-103": 101,
-    "QA-TEST-004": 44,
+    "QA-JV-103": 97,
+    "QA-TEST-004": 40,
     "QA-JV-105": 40,
     "QA-PW-101": 40,
-    "QA-PW-103": 10,
     "QA-JV-101": 8,
     "QA-JV-102": 1,
     "QA-JV-108": 31,
@@ -17,5 +15,5 @@
     "QA-PW-112": 16,
     "QA-JV-104": 2
   },
-  "totalFindings": 537
+  "totalFindings": 409
 }

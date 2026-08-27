@@ -1,0 +1,55 @@
+{"ruleId":"QA-PY-004","file":"tests/test_arguments.py","line":195,"verdict":"TP","note":"isinstance used as truthiness check instead of assertEqual on exception type"}
+{"ruleId":"QA-PY-004","file":"tests/test_arguments.py","line":682,"verdict":"TP","note":"isinstance used as truthiness assert — should use assertIsInstance or equality check"}
+{"ruleId":"QA-PY-004","file":"tests/test_arguments.py","line":683,"verdict":"TP","note":"isinstance used as truthiness assert — should use assertIsInstance or equality check"}
+{"ruleId":"QA-PY-004","file":"tests/test_basic.py","line":465,"verdict":"TP","note":"bare truthiness assert on exception object — doesn't verify exception type or message"}
+{"ruleId":"QA-PY-004","file":"tests/test_basic.py","line":574,"verdict":"FP","note":"isinstance check inside CLI callback verifying type conversion worked — functional assertion"}
+{"ruleId":"QA-PY-004","file":"tests/test_basic.py","line":605,"verdict":"FP","note":"isinstance check inside CLI callback verifying type conversion worked — functional assertion"}
+{"ruleId":"QA-PY-004","file":"tests/test_basic.py","line":641,"verdict":"TP","note":"bare truthiness assert on exception object — doesn't check type or message"}
+{"ruleId":"QA-PY-004","file":"tests/test_basic.py","line":648,"verdict":"FP","note":"startswith is a meaningful string content check, not bare truthiness"}
+{"ruleId":"QA-PY-004","file":"tests/test_commands.py","line":346,"verdict":"FP","note":"startswith is a meaningful string content check, not bare truthiness"}
+{"ruleId":"QA-PY-004","file":"tests/test_commands.py","line":667,"verdict":"TP","note":"isinstance on exception cause — should verify type directly"}
+{"ruleId":"QA-PY-004","file":"tests/test_commands.py","line":673,"verdict":"TP","note":"bare truthiness assert on exception object — doesn't check type or message"}
+{"ruleId":"QA-PY-004","file":"tests/test_context.py","line":103,"verdict":"TP","note":"isinstance on exception — should use assertIsInstance or compare type directly"}
+{"ruleId":"QA-PY-004","file":"tests/test_context.py","line":519,"verdict":"FP","note":"startswith is a meaningful string content check, not bare truthiness"}
+{"ruleId":"QA-PY-004","file":"tests/test_custom_classes.py","line":17,"verdict":"TP","note":"isinstance as sole assertion — should use assertIsInstance for better failure message"}
+{"ruleId":"QA-PY-004","file":"tests/test_custom_classes.py","line":35,"verdict":"FP","note":"isinstance inside invoked sub-command callback — runtime guard, not a test assertion per se"}
+{"ruleId":"QA-PY-004","file":"tests/test_custom_classes.py","line":41,"verdict":"FP","note":"isinstance inside invoked command callback — runtime guard, not a test assertion per se"}
+{"ruleId":"QA-PY-004","file":"tests/test_defaults.py","line":31,"verdict":"FP","note":"isinstance inside CLI callback verifying type coercion — functional guard"}
+{"ruleId":"QA-PY-004","file":"tests/test_defaults.py","line":55,"verdict":"FP","note":"isinstance inside CLI callback verifying float coercion — functional guard"}
+{"ruleId":"QA-PY-004","file":"tests/test_options.py","line":139,"verdict":"TP","note":"bare truthiness assert on exception — doesn't check exception type or message directly"}
+{"ruleId":"QA-PY-004","file":"tests/test_options.py","line":157,"verdict":"TP","note":"bare truthiness assert on exception — doesn't check exception type or message directly"}
+{"ruleId":"QA-PY-007","file":"tests/test_arguments.py","line":275,"verdict":"FP","note":"raises MissingParameter then asserts str(excinfo.value) matches expected message on next line"}
+{"ruleId":"QA-PY-007","file":"tests/test_arguments.py","line":612,"verdict":"TP","note":"pytest.raises(TypeError) with no match= and no subsequent assertion on the error"}
+{"ruleId":"QA-PY-007","file":"tests/test_chain.py","line":193,"verdict":"TP","note":"pytest.raises(RuntimeError) with no match= and no further assertion on error message"}
+{"ruleId":"QA-PY-007","file":"tests/test_chain.py","line":200,"verdict":"TP","note":"pytest.raises(RuntimeError) with no match= and no further assertion on error message"}
+{"ruleId":"QA-PY-007","file":"tests/test_context.py","line":584,"verdict":"FP","note":"raises custom TestException — only one possible exception, match= would add no value"}
+{"ruleId":"QA-PY-007","file":"tests/test_context.py","line":655,"verdict":"FP","note":"raises custom TestException — only one possible exception, match= would add no value"}
+{"ruleId":"QA-PY-007","file":"tests/test_options.py","line":882,"verdict":"FP","note":"raises MissingParameter then asserts str(excinfo.value) matches expected message on next line"}
+{"ruleId":"QA-PY-007","file":"tests/test_options.py","line":1762,"verdict":"FP","note":"raises TypeError then asserts message in str(e.value) on next line"}
+{"ruleId":"QA-PY-007","file":"tests/test_termui.py","line":420,"verdict":"TP","note":"pytest.raises(exc) with parametrized broad exception and no message check"}
+{"ruleId":"QA-PY-007","file":"tests/test_testing.py","line":182,"verdict":"FP","note":"raises CustomError defined just above — single specific exception type, match= not needed"}
+{"ruleId":"QA-PY-007","file":"tests/test_testing.py","line":209,"verdict":"FP","note":"raises CustomError defined just above — single specific exception type, match= not needed"}
+{"ruleId":"QA-PY-007","file":"tests/test_testing.py","line":748,"verdict":"FP","note":"raises io.UnsupportedOperation — only one possible error from fileno(), match= not needed"}
+{"ruleId":"QA-PY-007","file":"tests/test_testing.py","line":750,"verdict":"FP","note":"raises io.UnsupportedOperation — only one possible error from fileno(), match= not needed"}
+{"ruleId":"QA-PY-007","file":"tests/test_types.py","line":51,"verdict":"FP","note":"raises BadParameter then asserts expect in exc_info.value.message on next line"}
+{"ruleId":"QA-PY-007","file":"tests/test_types.py","line":70,"verdict":"FP","note":"raises BadParameter then asserts expected in exc_info.value.message on next line"}
+{"ruleId":"QA-PY-007","file":"tests/test_types.py","line":77,"verdict":"TP","note":"pytest.raises(TypeError) with no match= and no further assertion on the error"}
+{"ruleId":"QA-PY-007","file":"tests/test_types.py","line":83,"verdict":"TP","note":"pytest.raises(RuntimeError) with no match= and no further assertion on the error"}
+{"ruleId":"QA-PY-007","file":"tests/test_types.py","line":301,"verdict":"FP","note":"raises BadParameter then asserts 'my\\ndir' in exc_info.value.message on next line"}
+{"ruleId":"QA-PY-007","file":"tests/test_utils/test_echo_via_pager.py","line":165,"verdict":"FP","note":"conditional raise driven by expected_error param — error type is the assertion"}
+{"ruleId":"QA-PY-007","file":"tests/test_utils/test_echo_via_pager.py","line":253,"verdict":"TP","note":"pytest.raises(RuntimeError) with no match= and no further message assertion"}
+{"ruleId":"QA-PY-002","file":"tests/test_chain.py","line":221,"verdict":"TP","note":"bare @pytest.mark.xfail with no reason — permanently ignored test"}
+{"ruleId":"QA-ENV-001","file":"tests/test_defaults.py","line":287,"verdict":"FP","note":"'/tmp/file' is test fixture data for a default option value, not OS coupling"}
+{"ruleId":"QA-ENV-001","file":"tests/test_defaults.py","line":295,"verdict":"FP","note":"asserting output contains the same '/tmp/file' string set as default — test data, not coupling"}
+{"ruleId":"QA-ENV-001","file":"tests/test_defaults.py","line":298,"verdict":"FP","note":"same assertion on output containing '/tmp/file' test fixture value"}
+{"ruleId":"QA-ENV-001","file":"tests/test_termui.py","line":481,"verdict":"FP","note":"Windows path is test input for editor path parsing — testing path handling logic"}
+{"ruleId":"QA-ENV-001","file":"tests/test_termui.py","line":483,"verdict":"FP","note":"expected parsed result of the Windows path — test data for path parsing"}
+{"ruleId":"QA-ENV-001","file":"tests/test_termui.py","line":579,"verdict":"FP","note":"Windows editor path as test input for normalization logic"}
+{"ruleId":"QA-ENV-001","file":"tests/test_termui.py","line":580,"verdict":"FP","note":"expected parsed output of Windows editor path — test data"}
+{"ruleId":"QA-ENV-001","file":"tests/test_termui.py","line":635,"verdict":"FP","note":"Windows path as test input for pager command parsing logic"}
+{"ruleId":"QA-ENV-001","file":"tests/test_termui.py","line":636,"verdict":"FP","note":"expected parsed result of Windows pager path — test data"}
+{"ruleId":"QA-ENV-001","file":"tests/test_termui.py","line":640,"verdict":"FP","note":"Windows path with flag as test input for pager command parsing"}
+{"ruleId":"QA-ENV-001","file":"tests/test_termui.py","line":641,"verdict":"FP","note":"expected parsed result of Windows path with flag — test data"}
+{"ruleId":"QA-ENV-001","file":"tests/test_termui.py","line":660,"verdict":"FP","note":"unquoted Windows path as test input demonstrating POSIX mode behavior"}
+{"ruleId":"QA-ENV-001","file":"tests/test_termui.py","line":1179,"verdict":"FP","note":"'C:\\Program Files' mentioned in docstring explaining POSIX shlex behavior — not code"}
+{"ruleId":"QA-PY-010","file":"tests/test_termui.py","line":28,"verdict":"","note":""}

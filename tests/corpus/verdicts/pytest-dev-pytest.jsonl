@@ -1,0 +1,57 @@
+{"ruleId":"QA-PY-002","file":"testing/_py/test_local.py","line":809,"verdict":"TP","note":"non-strict xfail with run=False, test is permanently skipped"}
+{"ruleId":"QA-PY-002","file":"testing/_py/test_local.py","line":867,"verdict":"TP","note":"non-strict xfail that may pass or fail — test rot indicator"}
+{"ruleId":"QA-PY-002","file":"testing/_py/test_local.py","line":1543,"verdict":"TP","note":"non-strict xfail permanently deferring a known issue"}
+{"ruleId":"QA-PY-002","file":"testing/acceptance_test.py","line":886,"verdict":"TP","note":"non-strict xfail deferring a design decision indefinitely"}
+{"ruleId":"QA-PY-002","file":"testing/acceptance_test.py","line":1520,"verdict":"TP","note":"unconditional @pytest.mark.skip — test is dead code"}
+{"ruleId":"QA-PY-002","file":"testing/test_capture.py","line":182,"verdict":"TP","note":"non-strict xfail for unimplemented feature — test never exercises code"}
+{"ruleId":"QA-PY-002","file":"testing/test_collection.py","line":325,"verdict":"TP","note":"non-strict xfail permanently deferred"}
+{"ruleId":"QA-PY-002","file":"testing/test_config.py","line":377,"verdict":"TP","note":"non-strict xfail with reason 'probably not needed' — dead test"}
+{"ruleId":"QA-PY-002","file":"testing/test_debugging.py","line":402,"verdict":"TP","note":"non-strict xfail for known flaky issue #10042"}
+{"ruleId":"QA-PY-002","file":"testing/test_debugging.py","line":571,"verdict":"TP","note":"non-strict xfail for known flaky issue #10042"}
+{"ruleId":"QA-PY-002","file":"testing/test_debugging.py","line":607,"verdict":"TP","note":"non-strict xfail for known flaky issue #10042"}
+{"ruleId":"QA-PY-002","file":"testing/test_debugging.py","line":1123,"verdict":"TP","note":"non-strict xfail for known flaky issue #10042"}
+{"ruleId":"QA-PY-002","file":"testing/test_debugging.py","line":1283,"verdict":"TP","note":"non-strict xfail for known flaky issue #10042"}
+{"ruleId":"QA-PY-002","file":"testing/test_debugging.py","line":1382,"verdict":"TP","note":"conditional xfail for Python 3.14+ behavior change — legitimate platform skip"}
+{"ruleId":"QA-PY-002","file":"testing/test_mark.py","line":1035,"verdict":"TP","note":"bare @pytest.mark.xfail with no reason — permanently ignored test"}
+{"ruleId":"QA-PY-002","file":"testing/test_runner.py","line":600,"verdict":"TP","note":"bare @pytest.mark.xfail with no reason — permanently ignored test"}
+{"ruleId":"QA-PY-002","file":"testing/test_terminal.py","line":1762,"verdict":"FP","note":"conditional xfail only fires when os.dup is missing — platform-specific skip is legitimate"}
+{"ruleId":"QA-PY-002","file":"testing/test_warnings.py","line":153,"verdict":"TP","note":"unconditional @pytest.mark.skip — test is dead code"}
+{"ruleId":"QA-PY-002","file":"testing/test_warnings.py","line":566,"verdict":"TP","note":"unconditional @pytest.mark.skip deferring to next major release — dead code"}
+{"ruleId":"QA-ENV-001","file":"testing/test_assertrewrite.py","line":2359,"verdict":"FP","note":"path string is test data for cache dir computation, not environment coupling"}
+{"ruleId":"QA-ENV-001","file":"testing/test_assertrewrite.py","line":2359,"verdict":"FP","note":"path string is test data for cache dir computation, not environment coupling"}
+{"ruleId":"QA-ENV-001","file":"testing/test_nodes.py","line":122,"verdict":"FP","note":"testing norm_sep function with Windows path input — the path IS the test data"}
+{"ruleId":"QA-ENV-001","file":"testing/test_terminal.py","line":3419,"verdict":"FP","note":"path strings are parametrize test inputs testing path-in-test-id handling"}
+{"ruleId":"QA-PY-010","file":"testing/_py/test_local.py","line":742,"verdict":"","note":""}
+{"ruleId":"QA-PY-010","file":"testing/_py/test_local.py","line":1405,"verdict":"","note":""}
+{"ruleId":"QA-PY-010","file":"testing/_py/test_local.py","line":1413,"verdict":"","note":""}
+{"ruleId":"QA-CI-005","file":".github/workflows/test.yml","line":310,"verdict":"","note":""}
+{"ruleId":"QA-CI-005","file":".github/workflows/test.yml","line":310,"verdict":"","note":""}
+{"ruleId":"QA-PY-006","file":"doc/en/example/assertion/global_testmodule_config/test_hello_world.py","line":7,"verdict":"FP","note":"example script used by pytester to test collection, not a real test"}
+{"ruleId":"QA-PY-006","file":"doc/en/example/customdirectory/tests/test_first.py","line":5,"verdict":"FP","note":"doc example showing custom directory collection, not a real test"}
+{"ruleId":"QA-PY-006","file":"doc/en/example/customdirectory/tests/test_second.py","line":5,"verdict":"FP","note":"doc example showing custom directory collection, not a real test"}
+{"ruleId":"QA-PY-006","file":"doc/en/example/customdirectory/tests/test_third.py","line":5,"verdict":"FP","note":"doc example showing custom directory collection, not a real test"}
+{"ruleId":"QA-PY-006","file":"testing/code/test_source.py","line":43,"verdict":"FP","note":"inner class used as input to Source() — testing source introspection, not a real test method"}
+{"ruleId":"QA-PY-006","file":"testing/example_scripts/collect/collect_init_tests/tests/test_foo.py","line":5,"verdict":"FP","note":"fixture script run by pytester to test collection behavior"}
+{"ruleId":"QA-PY-006","file":"testing/example_scripts/collect/package_init_given_as_arg/pkg/test_foo.py","line":5,"verdict":"FP","note":"fixture script run by pytester to test collection behavior"}
+{"ruleId":"QA-PY-006","file":"testing/example_scripts/config/collect_pytest_prefix/test_foo.py","line":5,"verdict":"FP","note":"fixture script run by pytester to test config collection"}
+{"ruleId":"QA-PY-006","file":"testing/example_scripts/customdirectory/tests/test_first.py","line":6,"verdict":"FP","note":"fixture script for custom directory test, not a real test"}
+{"ruleId":"QA-PY-006","file":"testing/example_scripts/customdirectory/tests/test_second.py","line":6,"verdict":"FP","note":"fixture script for custom directory test, not a real test"}
+{"ruleId":"QA-PY-006","file":"testing/example_scripts/customdirectory/tests/test_third.py","line":6,"verdict":"FP","note":"fixture script for custom directory test, not a real test"}
+{"ruleId":"QA-PY-006","file":"testing/example_scripts/fixtures/fill_fixtures/test_conftest_funcargs_only_available_in_subdir/sub1/test_in_sub1.py","line":5,"verdict":"FP","note":"fixture script testing fixture availability, assertion is in the parent test"}
+{"ruleId":"QA-PY-006","file":"testing/example_scripts/fixtures/fill_fixtures/test_conftest_funcargs_only_available_in_subdir/sub2/test_in_sub2.py","line":5,"verdict":"FP","note":"fixture script testing fixture availability, assertion is in the parent test"}
+{"ruleId":"QA-PY-006","file":"testing/example_scripts/fixtures/fill_fixtures/test_funcarg_basic.py","line":17,"verdict":"FP","note":"fixture script testing fixture injection works, assertion is in parent test via pytester"}
+{"ruleId":"QA-PY-006","file":"testing/example_scripts/fixtures/fill_fixtures/test_funcarg_lookupfails.py","line":12,"verdict":"FP","note":"fixture script expected to fail on lookup, assertion is in the parent test"}
+{"ruleId":"QA-PY-006","file":"testing/example_scripts/issue88_initial_file_multinodes/test_hello.py","line":5,"verdict":"FP","note":"fixture script for issue reproduction, run via pytester"}
+{"ruleId":"QA-PY-006","file":"testing/example_scripts/marks/marks_considered_keywords/test_marks_as_keywords.py","line":8,"verdict":"FP","note":"fixture script testing mark-as-keyword selection via pytester"}
+{"ruleId":"QA-PY-006","file":"testing/example_scripts/perf_examples/collect_stats/template_test.py","line":5,"verdict":"FP","note":"template for performance stats collection, not a real test"}
+{"ruleId":"QA-PY-006","file":"testing/example_scripts/unittest/test_parametrized_fixture_error_message.py","line":16,"verdict":"FP","note":"fixture script testing error message for parametrized fixtures via pytester"}
+{"ruleId":"QA-PY-011","file":"doc/en/example/fixtures/test_fixtures_order_scope.py","line":6,"verdict":"","note":""}
+{"ruleId":"QA-PY-012","file":"testing/_py/test_local.py","line":37,"verdict":"","note":""}
+{"ruleId":"QA-PY-012","file":"testing/code/test_code.py","line":20,"verdict":"","note":""}
+{"ruleId":"QA-PY-012","file":"testing/test_assertrewrite.py","line":679,"verdict":"","note":""}
+{"ruleId":"QA-PY-012","file":"testing/test_capture.py","line":987,"verdict":"","note":""}
+{"ruleId":"QA-PY-009","file":"testing/_py/test_local.py","line":80,"verdict":"","note":""}
+{"ruleId":"QA-PY-009","file":"testing/_py/test_local.py","line":140,"verdict":"","note":""}
+{"ruleId":"QA-PY-009","file":"testing/_py/test_local.py","line":998,"verdict":"","note":""}
+{"ruleId":"QA-TEST-004","file":"testing/example_scripts/unittest/test_unittest_asynctest.py","line":19,"verdict":"FP","note":"asyncio.sleep(0) is an async yield point, not a timing wait"}
+{"ruleId":"QA-TEST-004","file":"testing/example_scripts/unittest/test_unittest_asynctest.py","line":23,"verdict":"FP","note":"asyncio.sleep(0) is an async yield point, not a timing wait"}
