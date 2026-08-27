@@ -122,6 +122,16 @@ export const SMOOTHING_C = 1;
  */
 export const SUITE_INVALIDATED_CEILING = 49;
 
+/**
+ * Error-severity floor.
+ *
+ * If any error-level finding with a non-zero deduction exists, the score is
+ * capped at this value regardless of how large the denominator grows. Errors
+ * are categorical defects — a 10,000-test repo with a committed `.only` is
+ * not 99% worthy; it is fundamentally compromised on that axis.
+ */
+export const ERROR_SEVERITY_CEILING = 95;
+
 export interface ExposureMetrics {
   /** Test declarations found across scanned files (it/test/def test_/@Test). */
   testDeclarations: number;
@@ -160,6 +170,15 @@ export function computeTotal(
   } else {
     score = clampWithFindings(100 - totalDeduction, totalDeduction);
   }
+
+  // Error-severity floor: if any error-level finding exists, cap at 95.
+  // Errors are categorical defects — a 10,000-test repo with a committed
+  // .only is not 99% worthy, it's fundamentally compromised on that axis.
+  const hasErrors = findings.some(
+    (f) => f.severity === "error" && deductionFor(f) > 0,
+  );
+  if (hasErrors && score > ERROR_SEVERITY_CEILING)
+    score = ERROR_SEVERITY_CEILING;
 
   // Categorical override: a suite that did not fully run cannot be WORTHY, and
   // a large denominator must not be able to average that fact away.

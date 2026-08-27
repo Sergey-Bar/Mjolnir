@@ -16,17 +16,21 @@ rate  = totalDeductions / (testDeclarations + SMOOTHING_C)
 score = 100 − min(100, rate × NORMALIZATION_K)
 ```
 
-Then two overrides, in order:
+Then three overrides, in order:
 
 1. **Honesty guard** — if any deduction was charged, the score is capped at 99.
    100 is reserved for zero deductions.
-2. **Categorical override** — if any finding is suite-invalidating, the score is
+2. **Error-severity floor** — if any error-level finding with a non-zero
+   deduction exists, the score is capped at 95. Errors are categorical defects;
+   a 10,000-declaration repo cannot outgrow them through sheer size.
+3. **Categorical override** — if any finding is suite-invalidating, the score is
    capped at `SUITE_INVALIDATED_CEILING` (49), placing it in UNWORTHY.
 
 | Constant                    | Value | Fitted?                     |
 | --------------------------- | ----- | --------------------------- |
 | `NORMALIZATION_K`           | 5     | No                          |
 | `SMOOTHING_C`               | 1     | Laplace default, not fitted |
+| `ERROR_SEVERITY_CEILING`    | 95    | Derived from design intent  |
 | `SUITE_INVALIDATED_CEILING` | 49    | Derived from the 50 floor   |
 
 ## Per-Finding Deductions
@@ -100,6 +104,21 @@ finding charged points, the score is capped at 99 — normalization could
 otherwise round a real finding up to a perfect score, which reads as "nothing
 found" when something was. E0/advisory findings cost nothing and correctly
 leave a clean repo at 100.
+
+## Error-severity floor
+
+If any error-level finding with a non-zero deduction exists, the score is
+capped at 95 (`ERROR_SEVERITY_CEILING`). This prevents error-severity findings
+from becoming invisible at scale.
+
+The problem: 10 errors (80 deduction points) in a 10,000-declaration repo
+scores `100 - (80 / 10001) * 5 ≈ 99.96`, which rounds to 100 and gets capped
+at 99 by the honesty guard. A score of 99 reads as "one minor issue" when
+there are actually 10 categorical defects.
+
+The floor ensures errors always have visible impact on the score. You cannot
+outgrow them by adding more declarations — the only way to get above 95 is to
+fix the errors.
 
 ## Current measured behavior
 

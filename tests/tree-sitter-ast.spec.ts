@@ -114,8 +114,8 @@ describe("web-tree-sitter dependency pin — guards a real, found incompatibilit
     const { join } = await import("node:path");
     const pkg = JSON.parse(
       readFileSync(join(import.meta.dirname, "..", "package.json"), "utf8"),
-    ) as { dependencies: Record<string, string> };
-    const pinned = pkg.dependencies["web-tree-sitter"];
+    ) as { devDependencies: Record<string, string> };
+    const pinned = pkg.devDependencies["web-tree-sitter"];
     expect(
       pinned,
       "web-tree-sitter@0.26.x fails to load tree-sitter-wasms's " +
