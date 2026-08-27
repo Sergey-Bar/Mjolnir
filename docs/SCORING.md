@@ -1,10 +1,13 @@
 # Scoring — How WORTHINESS Is Computed
 
-> **Status: `NORMALIZATION_K` is not calibrated.** A corpus fit against the six
-> real repos plus the golden repo is outstanding work. `SMOOTHING_C` is the
-> standard Laplace constant (1), not a tuned value. This page states what the
-> formula is and what is known to be unfitted; it does not claim a calibration
-> that has not been performed.
+> **Status (post-Sprint 8):** `NORMALIZATION_K = 5` produces correct verdicts
+> on all three known data points (see table below) and the self-scan scores 100
+> with 5 suppressions (down from 19 after the `isInsideEmbeddedCode`
+> architectural fix). The constant is **not fitted** against the 6-repo corpus
+> because the corpus baselines record `totalFindings` but not
+> `testDeclarationCount` — a full calibration requires the `corpus:audit`
+> script to also persist declaration counts per repo (TODO added).
+> `SMOOTHING_C` is the standard Laplace constant (1), not a tuned value.
 
 ## Formula
 
@@ -100,16 +103,23 @@ leave a clean repo at 100.
 
 ## Current measured behavior
 
-Measured after the FP fixes, with the constants above:
+Measured after the FP fixes and the `isInsideEmbeddedCode` architectural fix,
+with the constants above:
 
 | Repo                 | Declarations | Raw pts | Score | Verdict    | Driver                  |
 | -------------------- | ------------ | ------- | ----- | ---------- | ----------------------- |
-| this repo            | 1119         | 0       | 100   | WORTHY     | zero deductions         |
+| this repo            | 1126         | 0       | 100   | WORTHY     | zero deductions         |
 | `tests/golden/repo`  | 4            | 40      | 49    | UNWORTHY   | `it.only` (categorical) |
 | `examples/demo-repo` | 2            | 20      | 67    | NEEDS WORK | density                 |
 
 All three verdict bands are reachable, and each is reached for a different and
 stated reason rather than by an arithmetic accident.
+
+Suppression count: **5** (down from 19). The 14 eliminated suppressions were
+masking-gap false positives on test-data strings — now handled architecturally
+by `isInsideEmbeddedCode` in QA-TEST-003 and QA-TEST-010. The 5 remaining
+suppressions address real edge cases (assert-by-throwing-helper, intentional
+skip, shared mutable state by design, CI best-effort fallback).
 
 ### Correction
 

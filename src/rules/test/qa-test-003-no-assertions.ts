@@ -7,6 +7,7 @@
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
 import { lineAt, colAt } from "../shared/positions.js";
+import { isInsideEmbeddedCode } from "../shared/masking.js";
 
 export const noAssertions = defineRule({
   id: "QA-TEST-003",
@@ -36,6 +37,9 @@ export const noAssertions = defineRule({
       /\b(?:it|test)\s*\(\s*['"`][^'"`]*['"`]\s*,\s*(?:async\s*)?\([^)]*\)\s*=>\s*\{/g;
     let m: RegExpExecArray | null;
     while ((m = testRe.exec(text)) !== null) {
+      // Skip matches inside string literals containing embedded code (test data)
+      if (isInsideEmbeddedCode(ctx, m.index)) continue;
+
       const bodyStart = m.index + m[0].length - 1; // position of '{'
       const bodyEnd = matchBrace(text, bodyStart);
       if (bodyEnd === -1) continue;

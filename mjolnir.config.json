@@ -9,30 +9,10 @@
     {
       "ruleId": "QA-TEST-003",
       "files": [
-        "tests/adapter-deep-branch-coverage.spec.ts",
         "tests/contract-schema.spec.ts",
-        "tests/cross-file.spec.ts",
-        "tests/fix.spec.ts",
-        "tests/fuzz.spec.ts",
-        "tests/impact.spec.ts",
-        "tests/mermaid-format.spec.ts",
-        "tests/rule-branch-coverage-misc.spec.ts",
-        "tests/rule-metadata-lint.spec.ts",
-        "tests/sprint6-cli-commands.spec.ts"
+        "tests/mermaid-format.spec.ts"
       ],
-      "reason": "Self-scan dogfooding: these files embed test-like patterns (it/test with empty bodies) inside string literals as fixture data for the scanner — not real assertion-less tests."
-    },
-    {
-      "ruleId": "QA-TEST-010",
-      "files": [
-        "tests/adapter-deep-branch-coverage.spec.ts",
-        "tests/cross-file.spec.ts",
-        "tests/fix.spec.ts",
-        "tests/impact.spec.ts",
-        "tests/rule-metadata-lint.spec.ts",
-        "tests/sprint6-cli-commands.spec.ts"
-      ],
-      "reason": "Self-scan dogfooding: these files embed test-like patterns (it/test with empty arrow bodies) inside string literals as fixture data — not real empty tests."
+      "reason": "These tests assert via helper functions that throw on failure (assertScanResultShape, validateFlowchartStructure) — a valid pattern that the regex heuristic cannot recognize."
     },
     {
       "ruleId": "QA-TQUAL-002",

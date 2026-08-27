@@ -118,6 +118,9 @@ function scanRepo(dir: string): BaselineEntry {
   for (const f of result.findings) {
     countsByRule[f.ruleId] = (countsByRule[f.ruleId] ?? 0) + 1;
   }
+  // TODO: Record testDeclarationCount in the baseline so that
+  // NORMALIZATION_K can be calibrated against real corpus data.
+  // Currently runScan returns this value but we don't persist it.
   return { countsByRule, totalFindings: result.findings.length };
 }
 

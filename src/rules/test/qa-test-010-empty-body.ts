@@ -6,6 +6,7 @@
 
 import { defineRule } from "../rule.js";
 import { lineAt, colAt } from "../shared/positions.js";
+import { isInsideEmbeddedCode } from "../shared/masking.js";
 
 export const emptyTestBody = defineRule({
   id: "QA-TEST-010",
@@ -38,6 +39,9 @@ export const emptyTestBody = defineRule({
 
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {
+      // Skip matches inside string literals containing embedded code (test data)
+      if (isInsideEmbeddedCode(ctx, m.index)) continue;
+
       findings.push({
         severity: "error",
         confidence: "high",
