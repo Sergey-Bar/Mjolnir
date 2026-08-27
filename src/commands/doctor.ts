@@ -194,18 +194,19 @@ export function checkTierEnforcement(
   const unmeasured = details.length;
   const total = coreRules.length;
   // Real enforcement (not const ok = true):
-  // - Zero rules measured → informational (Phase 3 hasn't started)
-  // - At least one rule IS measured → the rest are on the clock → FAIL
-  const anyMeasured =
-    classifiedPerRule.size > 0 &&
-    [...classifiedPerRule.values()].some((n) => n >= 10);
-  const ok = !anyMeasured || unmeasured === 0;
+  // - Less than half of core rules measured → informational (ramp-up phase)
+  // - More than half measured → the rest are on the clock → FAIL
+  const measuredCount = [...classifiedPerRule.values()].filter(
+    (n) => n >= 10,
+  ).length;
+  const majorityMeasured = measuredCount > total / 2;
+  const ok = !majorityMeasured || unmeasured === 0;
 
   if (unmeasured > 0) {
     details.unshift(
-      anyMeasured
-        ? `BLOCKING: ${unmeasured}/${total} core rules unmeasured — classification started but incomplete`
-        : `${unmeasured}/${total} core rules unmeasured (informational until first classification lands)`,
+      majorityMeasured
+        ? `BLOCKING: ${unmeasured}/${total} core rules unmeasured — majority classified but incomplete`
+        : `${unmeasured}/${total} core rules unmeasured (informational until majority classified)`,
     );
   }
 

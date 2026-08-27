@@ -24,7 +24,7 @@ in this order — later ones assume earlier ones already passed:
 npm run typecheck        # tsc, twice: src/ (strict, ships in dist/),
                           # then tests/+packages/ (tsconfig.test.json)
 npm run lint              # eslint . && prettier --check .
-npm test                  # vitest run — full suite, ~1650+ tests
+npm test                  # vitest run — full suite, ~2800 tests
 npm run test:coverage     # vitest run --coverage — floors enforced
 npm run build              # tsdown src/cli.ts, then any workspace package
 npm run self-scan          # the tool scans its own repo — must add

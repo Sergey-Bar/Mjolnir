@@ -56,9 +56,11 @@ Mjölnir tells you whether your verification can be trusted.
 
 |                                               | Playwright retry reporter | Allure / ReportPortal | **Mjölnir forensics** |
 | --------------------------------------------- | :-----------------------: | :-------------------: | :-------------------: |
-| Reads real run data for `TRUE-FLAKE` verdicts |            ❌             |     partial (tag)     |          ✅           |
+| Reads real run data for `TRUE-FLAKE` verdicts |         partial\*         |     partial (tag)     |          ✅           |
 | Flaky-triage report from execution history    |            ❌             |          ✅           |          ✅           |
 | Integrates with static worthiness score       |            ❌             |          ❌           |          ✅           |
+
+\*Playwright tracks retries internally but does not produce a standalone flakiness report with verdict labels.
 
 ---
 
@@ -150,11 +152,11 @@ numbers the score uses — no black box.
 
 Every finding carries an evidence level that determines its weight in the score:
 
-| Level | Meaning              | Score impact     | Example                                            |
-| ----- | -------------------- | ---------------- | -------------------------------------------------- |
-| E2    | Deterministic defect | Full deduction   | `.only` committed — structurally provable          |
-| E1    | Heuristic pattern    | Half deduction   | Regex-matched `sleep()` — strong signal, not proof |
-| E0    | Observation          | Zero (info only) | Reported but never gates CI or deducts             |
+| Level | Meaning              | Score impact     | Example                                                                            |
+| ----- | -------------------- | ---------------- | ---------------------------------------------------------------------------------- |
+| E2    | Deterministic defect | Full deduction   | `.only` committed — structurally provable; downgraded to E1 when confidence is low |
+| E1    | Heuristic pattern    | Half deduction   | Regex-matched `sleep()` — strong signal, not proof                                 |
+| E0    | Observation          | Zero (info only) | Reported but never gates CI or deducts                                             |
 
 Most rules are **E1** (heuristic). The tagline "we prove it" refers to this
 evidence-level system — deterministic findings (E2) are structural proof;

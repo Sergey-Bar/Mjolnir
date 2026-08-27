@@ -1116,6 +1116,7 @@ Options:
                         anywhere, e.g. an unrecognized CI log renderer)
   --no-ascii            force Unicode box-drawing even where auto-detection
                         would have chosen ASCII
+  --strict              include quarantine-tier rules (higher FP risk) in scan
   -h, --help            show this help
 
 Subcommands:

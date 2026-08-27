@@ -1,8 +1,9 @@
 /**
  * Python/pytest adapter (Upgrade-Plan-v2 R2).
  *
- * First tree-sitter consumer. Uses web-tree-sitter (WASM) for
- * portability — no node-gyp, works on all platforms.
+ * Pure regex adapter — no AST enrichment. The header comment previously
+ * claimed tree-sitter usage; that was never true for this adapter.
+ * tree-sitter-ast.ts exists for Java/C# but is async and not wired here.
  *
  * Test discovery: test_*.py / *_test.py (pytest convention).
  * Frameworks: pytest (config files), unittest (detected via imports).
