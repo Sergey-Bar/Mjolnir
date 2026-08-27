@@ -7,6 +7,7 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const pyPwHardSleep = defineRule({
   id: "QA-PY-102",
@@ -26,21 +27,22 @@ export const pyPwHardSleep = defineRule({
   introduced: "0.3.8",
 
   run(ctx) {
+    const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     if (!ctx.path.endsWith(".py")) return findings;
-    if (!/playwright/i.test(ctx.text)) return findings;
+    if (!/playwright/i.test(text)) return findings;
 
     const re = /\btime\.sleep\s*\(/g;
     let m: RegExpExecArray | null;
-    while ((m = re.exec(ctx.text)) !== null) {
+    while ((m = re.exec(text)) !== null) {
       findings.push({
         severity: "warning",
         confidence: "high",
         findingType: "deterministic-defect",
         qaImpact: "FLAKY-RISK",
         file: ctx.path,
-        line: lineAt(ctx.text, m.index),
-        column: colAt(ctx.text, m.index),
+        line: lineAt(text, m.index),
+        column: colAt(text, m.index),
         message: "`time.sleep()` used to wait for UI state.",
         why: "Fixed sleeps guess at timing: too short → flaky failures under load, too long → slow suite. Playwright locators already auto-wait for the element to be actionable.",
         fix: "Replace with `expect(page.get_by_text(...)).to_be_visible()` or `page.wait_for_selector`.",
@@ -49,14 +51,3 @@ export const pyPwHardSleep = defineRule({
     return findings;
   },
 });
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
-}

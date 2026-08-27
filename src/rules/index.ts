@@ -68,33 +68,21 @@ import { pwNoA11yAssertions } from "./playwright/qa-pw-145-no-a11y.js";
 import { pyPwSyncAsyncMix } from "./python/qa-py-101-sync-async-mix.js";
 import { pyPwHardSleep } from "./python/qa-py-102-pw-hard-sleep.js";
 import { pyPwWaitForTimeout } from "./python/qa-py-103-wait-for-timeout.js";
-import { pyPwBrittleSelectors } from "./python/qa-py-104-brittle-selectors.js";
 import { pyPwNoAssertions } from "./python/qa-py-105-pw-no-assertions.js";
-import { pyPwSharedPage } from "./python/qa-py-106-shared-page.js";
-import { pyPwNetworkIdle } from "./python/qa-py-107-network-idle.js";
-import { pyPwHardcodedUrl } from "./python/qa-py-108-hardcoded-url.js";
 import { jvDisabledTest } from "./java/qa-jv-101-disabled-test.js";
-import { jvHardSleep } from "./java/qa-jv-102-hard-sleep.js";
 import { jvNoAssertions } from "./java/qa-jv-103-no-assertions.js";
-import { jvSharedPage } from "./java/qa-jv-104-shared-page.js";
 import { jvWaitForTimeout } from "./java/qa-jv-105-wait-for-timeout.js";
-import { jvBrittleSelectors } from "./java/qa-jv-106-brittle-selectors.js";
-import { jvNetworkIdle } from "./java/qa-jv-107-network-idle.js";
-import { jvHardcodedUrl } from "./java/qa-jv-108-hardcoded-url.js";
-import { jvRetryMasking } from "./java/qa-jv-109-retry-masking.js";
-import { jvNoA11yAssertions } from "./java/qa-jv-110-no-a11y.js";
-import { jvBlanketRouteMock } from "./java/qa-jv-111-blanket-route.js";
 import { csSkippedTest } from "./csharp/qa-cs-101-skipped-test.js";
-import { csHardSleep } from "./csharp/qa-cs-102-hard-sleep.js";
 import { csNoAssertions } from "./csharp/qa-cs-103-no-assertions.js";
-import { csSharedPage } from "./csharp/qa-cs-104-shared-page.js";
 import { csWaitForTimeout } from "./csharp/qa-cs-105-wait-for-timeout.js";
-import { csBrittleSelectors } from "./csharp/qa-cs-106-brittle-selectors.js";
-import { csNetworkIdle } from "./csharp/qa-cs-107-network-idle.js";
-import { csHardcodedUrl } from "./csharp/qa-cs-108-hardcoded-url.js";
-import { csRetryMasking } from "./csharp/qa-cs-109-retry-masking.js";
-import { csNoA11yAssertions } from "./csharp/qa-cs-110-no-a11y.js";
-import { csBlanketRouteMock } from "./csharp/qa-cs-111-blanket-route.js";
+import { hardSleepFamily } from "./families/hard-sleep.js";
+import { networkIdleFamily } from "./families/network-idle.js";
+import { hardcodedUrlFamily } from "./families/hardcoded-url.js";
+import { blanketRouteFamily } from "./families/blanket-route.js";
+import { sharedPageFamily } from "./families/shared-page.js";
+import { noA11yFamily } from "./families/no-a11y.js";
+import { brittleSelectorsFamily } from "./families/brittle-selectors.js";
+import { retryMaskingFamily } from "./families/retry-masking.js";
 
 export const RULES: readonly QADoctorRule[] = [
   focusedTestCommitted,
@@ -161,33 +149,21 @@ export const RULES: readonly QADoctorRule[] = [
   pyPwSyncAsyncMix,
   pyPwHardSleep,
   pyPwWaitForTimeout,
-  pyPwBrittleSelectors,
   pyPwNoAssertions,
-  pyPwSharedPage,
-  pyPwNetworkIdle,
-  pyPwHardcodedUrl,
+  ...sharedPageFamily,
+  ...networkIdleFamily,
+  ...hardcodedUrlFamily,
   jvDisabledTest,
-  jvHardSleep,
+  ...hardSleepFamily,
   jvNoAssertions,
-  jvSharedPage,
   jvWaitForTimeout,
-  jvBrittleSelectors,
-  jvNetworkIdle,
-  jvHardcodedUrl,
-  jvRetryMasking,
-  jvNoA11yAssertions,
-  jvBlanketRouteMock,
+  ...brittleSelectorsFamily,
+  ...retryMaskingFamily,
+  ...noA11yFamily,
+  ...blanketRouteFamily,
   csSkippedTest,
-  csHardSleep,
   csNoAssertions,
-  csSharedPage,
   csWaitForTimeout,
-  csBrittleSelectors,
-  csNetworkIdle,
-  csHardcodedUrl,
-  csRetryMasking,
-  csNoA11yAssertions,
-  csBlanketRouteMock,
 ];
 
 export function getRule(id: string): QADoctorRule | undefined {

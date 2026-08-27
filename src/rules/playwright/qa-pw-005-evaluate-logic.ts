@@ -14,6 +14,7 @@ import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
 import { getTsSourceFile } from "../../engine/ts-ast.js";
 import * as ts from "ts-morph";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const evaluateBusinessLogic = defineRule({
   id: "QA-PW-005",
@@ -34,8 +35,9 @@ export const evaluateBusinessLogic = defineRule({
   introduced: "0.1.0",
 
   run(ctx) {
+    const text = ctx.codeText ?? ctx.text;
     const sourceFile = getTsSourceFile(ctx.ast);
-    if (!sourceFile) return runRegexFallback(ctx.text, ctx.path);
+    if (!sourceFile) return runRegexFallback(text, ctx.path);
 
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
@@ -126,15 +128,4 @@ function matchBrace(text: string, open: number): number {
     }
   }
   return -1;
-}
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
 }

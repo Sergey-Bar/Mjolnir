@@ -34,8 +34,14 @@ function trackedFiles(): string[] {
   return execFileSync("git", ["ls-files"], { cwd: ROOT, encoding: "utf8" })
     .split("\n")
     .filter(Boolean)
-    .filter((f) => !f.startsWith("docs/plans/")) // planning prose, not live links
-    .filter((f) => !f.startsWith("docs/tiers/")) // roadmap prose, not live links
+    .filter(
+      (f) =>
+        !f.startsWith("docs/plans/") && !f.startsWith("docs/archive/plans/"),
+    ) // planning prose, not live links
+    .filter(
+      (f) =>
+        !f.startsWith("docs/tiers/") && !f.startsWith("docs/archive/tiers/"),
+    ) // roadmap prose, not live links
     .filter((f) => f !== ".planning/STATE.md") // status prose documents the finding by name
     .filter((f) => !f.startsWith("node_modules/"))
     .filter((f) => !f.endsWith("package-lock.json")) // dependency metadata, not our links

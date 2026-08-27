@@ -109,7 +109,15 @@ function appendScoreSection(
   // Gauge width tracks the terminal so it never wraps awkwardly on a
   // narrow window; floors at 10 blocks so the gauge stays legible.
   const gaugeWidth = Math.max(10, Math.min(30, width - 4));
-  lines.push(`  ${scoreGauge(result.score, p, gaugeWidth, ascii)}`, "");
+  lines.push(`  ${scoreGauge(result.score, p, gaugeWidth, ascii)}`);
+  // Phase 5 transparency: show raw deductions and the actual denominator so
+  // the normalization is never opaque.
+  if (result.rawDeductions !== undefined && result.testDeclarationCount) {
+    lines.push(
+      `  ${p.dim(`(${result.rawDeductions} raw pts / ${result.testDeclarationCount} test declarations — normalized)`)}`,
+    );
+  }
+  lines.push("");
 }
 
 function colorizeVerdict(

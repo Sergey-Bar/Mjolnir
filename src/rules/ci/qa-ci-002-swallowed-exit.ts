@@ -5,6 +5,7 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const swallowedExitCode = defineRule({
   id: "QA-CI-002",
@@ -48,14 +49,3 @@ export const swallowedExitCode = defineRule({
     return findings;
   },
 });
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
-}

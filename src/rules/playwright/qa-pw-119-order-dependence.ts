@@ -7,6 +7,7 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const pwOrderDependence = defineRule({
   id: "QA-PW-119",
@@ -26,6 +27,7 @@ export const pwOrderDependence = defineRule({
   introduced: "0.3.0",
 
   run(ctx) {
+    const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     if (!/\.(spec|test)\.[tj]sx?$/.test(ctx.path)) return findings;
 
@@ -34,7 +36,7 @@ export const pwOrderDependence = defineRule({
     const declRe = /^let\s+([\w{}[\], :]+?)(?:\s*=\s*[^;]+)?;?\s*$/gm;
     const shared = new Set<string>();
     let d: RegExpExecArray | null;
-    while ((d = declRe.exec(ctx.text)) !== null) {
+    while ((d = declRe.exec(text)) !== null) {
       for (const name of (d[1] ?? "").split(/[,]/)) {
         const n = name.trim().split(/[:\s]/)[0];
         if (n) shared.add(n);
@@ -48,14 +50,14 @@ export const pwOrderDependence = defineRule({
     const hookRe =
       /\b(?:beforeEach|beforeAll|afterEach|afterAll)\s*\(\s*(?:async\s*)?\(/g;
     let h: RegExpExecArray | null;
-    while ((h = hookRe.exec(ctx.text)) !== null) {
-      const open = ctx.text.indexOf("{", h.index + h[0].length - 1);
+    while ((h = hookRe.exec(text)) !== null) {
+      const open = text.indexOf("{", h.index + h[0].length - 1);
       if (open === -1) continue;
       let depth = 0;
       let end = open;
-      for (let i = open; i < ctx.text.length; i++) {
-        if (ctx.text[i] === "{") depth++;
-        else if (ctx.text[i] === "}") {
+      for (let i = open; i < text.length; i++) {
+        if (text[i] === "{") depth++;
+        else if (text[i] === "}") {
           depth--;
           if (depth === 0) {
             end = i;
@@ -74,7 +76,7 @@ export const pwOrderDependence = defineRule({
         "g",
       );
       let a: RegExpExecArray | null;
-      while ((a = assignRe.exec(ctx.text)) !== null) {
+      while ((a = assignRe.exec(text)) !== null) {
         if (inHook(a.index)) continue; // setup hooks are fine
         findings.push({
           severity: "error",
@@ -82,8 +84,8 @@ export const pwOrderDependence = defineRule({
           findingType: "heuristic-risk",
           qaImpact: "FALSE-GREEN",
           file: ctx.path,
-          line: lineAt(ctx.text, a.index),
-          column: colAt(ctx.text, a.index),
+          line: lineAt(text, a.index),
+          column: colAt(text, a.index),
           message: `\`${name}\` is module-level mutable state assigned in a test.`,
           why: "Tests reading state that another test wrote pass only in one execution order — shuffle the order (or parallelize) and they fail mysteriously.",
           fix: "Create the state inside each test that needs it, or use beforeAll explicitly with cleanup in afterAll.",
@@ -94,14 +96,3 @@ export const pwOrderDependence = defineRule({
     return findings;
   },
 });
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
-}

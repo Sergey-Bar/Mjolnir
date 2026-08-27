@@ -5,6 +5,7 @@
  */
 
 import { defineRule } from "../rule.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const emptyTestBody = defineRule({
   id: "QA-TEST-010",
@@ -24,6 +25,7 @@ export const emptyTestBody = defineRule({
   introduced: "0.1.0",
 
   run(ctx) {
+    const text = ctx.text;
     const findings: Omit<
       import("../../types.js").Finding,
       "ruleId" | "category"
@@ -35,14 +37,14 @@ export const emptyTestBody = defineRule({
       /\b(?:it|test)\s*\(\s*['"`][^'"`]*['"`]\s*,\s*(?:async\s*)?\([^)]*\)\s*=>\s*\{\s*(?:\/\*[\s\S]*?\*\/|\/\/[^\n]*)?\s*\}\s*\)/g;
 
     let m: RegExpExecArray | null;
-    while ((m = re.exec(ctx.text)) !== null) {
+    while ((m = re.exec(text)) !== null) {
       findings.push({
         severity: "error",
         confidence: "high",
         findingType: "deterministic-defect",
         file: ctx.path,
-        line: lineAt(ctx.text, m.index),
-        column: colAt(ctx.text, m.index),
+        line: lineAt(text, m.index),
+        column: colAt(text, m.index),
         message: "Test has an empty body — it can never fail.",
         why: "An empty test inflates pass counts and proves nothing about behavior.",
         fix: "Implement the test or remove it.",
@@ -52,14 +54,3 @@ export const emptyTestBody = defineRule({
     return findings;
   },
 });
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
-}

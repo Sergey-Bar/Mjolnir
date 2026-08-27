@@ -10,6 +10,7 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const mockOnlyVerification = defineRule({
   id: "QA-TQUAL-001",
@@ -29,17 +30,18 @@ export const mockOnlyVerification = defineRule({
   introduced: "0.1.0",
 
   run(ctx) {
+    const text = ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
     // A test whose ONLY assertions are mock-call checks.
     const testRe =
       /\b(?:it|test)\s*\(\s*['"`][^'"`]*['"`]\s*,\s*(?:async\s*)?\([^)]*\)\s*=>\s*\{/g;
     let m: RegExpExecArray | null;
-    while ((m = testRe.exec(ctx.text)) !== null) {
+    while ((m = testRe.exec(text)) !== null) {
       const openBrace = m.index + m[0].length - 1;
-      const closeBrace = matchBrace(ctx.text, openBrace);
+      const closeBrace = matchBrace(text, openBrace);
       if (closeBrace === -1) continue;
-      const body = ctx.text.slice(openBrace, closeBrace + 1);
+      const body = text.slice(openBrace, closeBrace + 1);
 
       const hasExpect = /expect\s*\(/.test(body);
       if (!hasExpect) continue;
@@ -58,8 +60,8 @@ export const mockOnlyVerification = defineRule({
           findingType: "heuristic-risk",
           qaImpact: "HYGIENE",
           file: ctx.path,
-          line: lineAt(ctx.text, m.index),
-          column: colAt(ctx.text, m.index),
+          line: lineAt(text, m.index),
+          column: colAt(text, m.index),
           message: "All assertions in this test verify mock calls only.",
           why: "Asserting that a mock was called proves wiring, not behavior. The real logic behind the mock can be broken and this test stays green.",
           fix: "Add at least one assertion on actual output or state, not just on how collaborators were invoked.",
@@ -88,15 +90,4 @@ function matchBrace(text: string, open: number): number {
     }
   }
   return -1;
-}
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
 }

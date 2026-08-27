@@ -25,15 +25,17 @@ export const pwNoEnvGuard = defineRule({
   autofix: false,
   detectionStrategy: "regex heuristic",
   introduced: "0.3.0",
+  tier: "quarantine",
 
   run(ctx) {
+    const text = ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     if (!/\.(spec|test)\.[tj]sx?$/.test(ctx.path)) return findings;
 
     // Engine/platform-specific APIs used anywhere in the file.
     const usesEngineSpecific =
       /(?:webgl|getContext\s*\(\s*['"]webgl|video|codecs|webkit|firefox)/i.test(
-        ctx.text,
+        text,
       );
     if (!usesEngineSpecific) return findings;
 
@@ -41,7 +43,7 @@ export const pwNoEnvGuard = defineRule({
     // browserName conditional.
     const hasGuard =
       /test\.skip\(|\.fixme\(|skip\s*\(\s*\{\s*browsers|browserName|browser:\s*['"]/i.test(
-        ctx.text,
+        text,
       );
     if (!hasGuard) {
       findings.push({

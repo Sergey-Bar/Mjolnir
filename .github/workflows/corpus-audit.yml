@@ -1,4 +1,4 @@
-name: FP Corpus Audit
+name: Corpus Regression Guard
 
 # Runs against small real OSS repos to catch false-positive regressions
 # (Test Hardening Plan, P0 #1). Deliberately NOT on `pull_request` — it
@@ -10,7 +10,7 @@ on:
   workflow_dispatch: {}
 
 jobs:
-  corpus-audit:
+  corpus-regression:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,4 +19,4 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run corpus:audit
+      - run: npm run corpus:regression

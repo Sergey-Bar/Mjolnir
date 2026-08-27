@@ -155,6 +155,12 @@ export interface ScanResult {
   frameworkDetectionUnknown: boolean;
   dimensions: DimensionScore[];
   findings: Finding[];
+  /** Number of test files scanned (Phase 5 — reporting only). */
+  testFileCount?: number;
+  /** Test declarations found — the normalization denominator (Phase 5). */
+  testDeclarationCount?: number;
+  /** Raw deduction total before normalization (Phase 5 — transparency). */
+  rawDeductions?: number;
   analysisStatus: {
     discovery: AnalysisStatus;
     rules: AnalysisStatus;

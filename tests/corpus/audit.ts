@@ -1,5 +1,5 @@
 /**
- * False-positive corpus audit (Test Hardening Plan, P0 #1).
+ * Corpus regression guard (formerly "FP corpus audit").
  *
  * Fixtures prove a rule fires on ONE hand-written example. They say
  * nothing about real code. This script runs the real scan pipeline
@@ -16,6 +16,10 @@
  * A rule firing less is fine (it got quieter). New repos or new rules
  * with no baseline entry are reported but don't fail the run — add them
  * via --update once you've manually reviewed the findings as legitimate.
+ *
+ * This is a COUNT LOCK, not an audit. It detects regressions in finding
+ * counts but never classifies whether findings are TP or FP. That
+ * classification lives in tests/corpus/verdicts/ (Phase 3).
  *
  * Not part of `npm test` — this clones real repos over the network and
  * is meant to run as its own (nightly) CI job, not on every PR.

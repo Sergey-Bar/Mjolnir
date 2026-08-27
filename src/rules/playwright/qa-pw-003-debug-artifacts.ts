@@ -5,6 +5,7 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const committedDebugArtifacts = defineRule({
   id: "QA-PW-003",
@@ -24,6 +25,7 @@ export const committedDebugArtifacts = defineRule({
   introduced: "0.1.0",
 
   run(ctx) {
+    const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
     const patterns = [
@@ -33,15 +35,15 @@ export const committedDebugArtifacts = defineRule({
 
     for (const { re, label } of patterns) {
       let m: RegExpExecArray | null;
-      while ((m = re.exec(ctx.text)) !== null) {
+      while ((m = re.exec(text)) !== null) {
         findings.push({
           severity: "error",
           confidence: "high",
           findingType: "deterministic-defect",
           qaImpact: "FALSE-GREEN",
           file: ctx.path,
-          line: lineAt(ctx.text, m.index),
-          column: colAt(ctx.text, m.index),
+          line: lineAt(text, m.index),
+          column: colAt(text, m.index),
           message: `\`${label}\` committed in an e2e spec.`,
           why:
             label === "page.pause()"
@@ -57,14 +59,3 @@ export const committedDebugArtifacts = defineRule({
     return findings;
   },
 });
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
-}

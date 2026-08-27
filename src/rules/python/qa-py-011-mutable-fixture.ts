@@ -7,6 +7,7 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const pyMutableFixture = defineRule({
   id: "QA-PY-011",
@@ -26,6 +27,7 @@ export const pyMutableFixture = defineRule({
   introduced: "0.3.0",
 
   run(ctx) {
+    const text = ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     if (!ctx.path.endsWith(".py")) return findings;
 
@@ -35,7 +37,7 @@ export const pyMutableFixture = defineRule({
       /@pytest\.fixture\s*\([^)]*scope\s*=\s*["'](session|module|package)["'][^)]*\)\s*\ndef\s+(\w+)\s*\([^)]*\)\s*:\s*\n([\s\S]*?)(?=\n\S|\n*$)/g;
 
     let m: RegExpExecArray | null;
-    while ((m = re.exec(ctx.text)) !== null) {
+    while ((m = re.exec(text)) !== null) {
       const body = m[3] ?? "";
       if (/return\s+(\[\s*\]|\{\s*\}|\{\s*[^}:]+:|set\()/.test(body)) {
         findings.push({
@@ -44,8 +46,8 @@ export const pyMutableFixture = defineRule({
           findingType: "heuristic-risk",
           qaImpact: "FLAKY-RISK",
           file: ctx.path,
-          line: lineAt(ctx.text, m.index),
-          column: colAt(ctx.text, m.index),
+          line: lineAt(text, m.index),
+          column: colAt(text, m.index),
           message: `Fixture \`${m[2]}\` is ${m[1] ?? "shared"}-scoped and returns a mutable collection.`,
           why: "Tests that mutate a shared module/session fixture create hidden execution-order dependency — the suite passes in one order and fails in another.",
           fix: "Use function scope (default), or return an immutable copy / factory so each test gets fresh state.",
@@ -55,14 +57,3 @@ export const pyMutableFixture = defineRule({
     return findings;
   },
 });
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
-}

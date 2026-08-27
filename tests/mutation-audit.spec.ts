@@ -22,6 +22,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { RULES } from "../src/rules/index.js";
+import { computeCodeText } from "../src/engine/code-text.js";
 
 const FIXTURES_ROOT = join(import.meta.dirname, "fixtures");
 
@@ -35,6 +36,23 @@ function listFiles(dir: string): string[] {
 
 function isPython(file: string): boolean {
   return file.endsWith(".py");
+}
+
+/** Detect language from file extension for codeText computation. */
+function detectLanguage(
+  file: string,
+): "typescript" | "python" | "java" | "csharp" {
+  if (file.endsWith(".py")) return "python";
+  if (file.endsWith(".java")) return "java";
+  if (file.endsWith(".cs")) return "csharp";
+  return "typescript";
+}
+
+/** Build a rule context with codeText populated. */
+function buildCtx(file: string, text: string) {
+  const parsed = { path: file, text };
+  const codeText = computeCodeText(parsed, detectLanguage(file));
+  return { ...parsed, codeText };
 }
 
 // Doubles blank-line gaps and converts LF -> CRLF. Safe for both
@@ -75,10 +93,7 @@ for (const rule of RULES) {
       const original = readFileSync(join(mustFire, file), "utf8");
 
       it(`still fires after whitespace mutation: ${file}`, () => {
-        const findings = rule.run({
-          path: file,
-          text: mutateWhitespace(original),
-        });
+        const findings = rule.run(buildCtx(file, mutateWhitespace(original)));
         expect(
           findings.length,
           `${rule.id} stopped firing on "${file}" after only whitespace ` +
@@ -88,10 +103,7 @@ for (const rule of RULES) {
       });
 
       it(`still fires with unrelated code around it: ${file}`, () => {
-        const findings = rule.run({
-          path: file,
-          text: padded(original, file),
-        });
+        const findings = rule.run(buildCtx(file, padded(original, file)));
         expect(
           findings.length,
           `${rule.id} stopped firing on "${file}" once surrounded by ` +
@@ -104,10 +116,7 @@ for (const rule of RULES) {
       const original = readFileSync(join(mustNotFire, file), "utf8");
 
       it(`still stays silent after whitespace mutation: ${file}`, () => {
-        const findings = rule.run({
-          path: file,
-          text: mutateWhitespace(original),
-        });
+        const findings = rule.run(buildCtx(file, mutateWhitespace(original)));
         expect(
           findings,
           `${rule.id} started firing on "${file}" once whitespace changed ` +
@@ -118,10 +127,7 @@ for (const rule of RULES) {
       });
 
       it(`still stays silent with unrelated code around it: ${file}`, () => {
-        const findings = rule.run({
-          path: file,
-          text: padded(original, file),
-        });
+        const findings = rule.run(buildCtx(file, padded(original, file)));
         expect(
           findings,
           `${rule.id} started firing on "${file}" once surrounded by ` +

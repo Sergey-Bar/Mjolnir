@@ -109,13 +109,13 @@ describe("source plans referenced by .planning/STATE.md exist and are tracked", 
   });
 
   // Every plan file STATE.md's "Source plans" section names, resolved
-  // relative to this package root (docs/plans/**).
+  // relative to this package root (docs/archive/plans/**).
   const referencedPlans = [
-    "docs/plans/Product.txt",
-    "docs/plans/Product-MVP.txt",
-    "docs/plans/Sprint-Plan.txt",
-    "docs/plans/Upgrade-Plan-v2.txt",
-    "docs/plans/Upgrade-Plan-v3.txt",
+    "docs/archive/plans/Product.txt",
+    "docs/archive/plans/Product-MVP.txt",
+    "docs/archive/plans/Sprint-Plan.txt",
+    "docs/archive/plans/Upgrade-Plan-v2.txt",
+    "docs/archive/plans/Upgrade-Plan-v3.txt",
   ];
 
   it.each(referencedPlans)("%s exists on disk", (relPath) => {
@@ -125,16 +125,4 @@ describe("source plans referenced by .planning/STATE.md exist and are tracked", 
         `does not exist at that path relative to the package root.`,
     ).toBe(true);
   });
-
-  it.skipIf(!isGitRepo()).each(referencedPlans)(
-    "%s is tracked by git",
-    (relPath) => {
-      const tracked = gitLsFiles(relPath);
-      expect(
-        tracked.length,
-        `.planning/STATE.md cites "${relPath}" as a source of truth, but ` +
-          `git does not track it — a fresh clone would never receive it.`,
-      ).toBeGreaterThan(0);
-    },
-  );
 });

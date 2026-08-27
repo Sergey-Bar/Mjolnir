@@ -120,9 +120,37 @@ export function getCodeOnlyText(file: ParsedFile): string {
       const s = d.getStart();
       ranges.push({ start: s, end: s + d.getWidth() });
     }
+    // Template literals without substitutions (e.g. `hello world`).
+    for (const d of sf.getDescendantsOfKind(
+      ts.SyntaxKind.NoSubstitutionTemplateLiteral,
+    )) {
+      const s = d.getStart();
+      ranges.push({ start: s, end: s + d.getWidth() });
+    }
+    // Template literal parts (head/middle/tail) — blank the static parts
+    // but NOT the interpolated expressions (those are live code).
+    for (const d of sf.getDescendantsOfKind(ts.SyntaxKind.TemplateHead)) {
+      const s = d.getStart();
+      ranges.push({ start: s, end: s + d.getWidth() });
+    }
+    for (const d of sf.getDescendantsOfKind(ts.SyntaxKind.TemplateMiddle)) {
+      const s = d.getStart();
+      ranges.push({ start: s, end: s + d.getWidth() });
+    }
+    for (const d of sf.getDescendantsOfKind(ts.SyntaxKind.TemplateTail)) {
+      const s = d.getStart();
+      ranges.push({ start: s, end: s + d.getWidth() });
+    }
     // Comments via the scanner (ts-morph has no whole-file comment API).
+    // Reject any scanner-emitted range that OVERLAPS an already-collected
+    // AST range. The scanner runs flat (no parser context) so it emits
+    // phantom StringLiteral tokens when it sees a quote inside a template
+    // expression — those phantoms start inside the template but extend
+    // past it, blanking real code. Overlap rejection is safe: comments
+    // never overlap string/template ranges in valid TypeScript.
     for (const r of commentAndStringRanges({ ...file, ast: sf })) {
-      if (!ranges.some((x) => r.start >= x.start && r.end <= x.end)) {
+      const overlaps = ranges.some((x) => r.start < x.end && r.end > x.start);
+      if (!overlaps) {
         ranges.push(r);
       }
     }

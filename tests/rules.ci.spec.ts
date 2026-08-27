@@ -31,7 +31,7 @@ describe("QA-CI-001 continue-on-error", () => {
     expect(findings[0]?.message).toContain("`tests`");
   });
 
-  it("flags step-level continue-on-error as warning", () => {
+  it("flags step-level continue-on-error on a verification gate as error", () => {
     const findings = continueOnError.run(
       ctx(`jobs:
   tests:
@@ -41,7 +41,25 @@ describe("QA-CI-001 continue-on-error", () => {
 `),
     );
     expect(findings).toHaveLength(1);
-    expect(findings[0]?.severity).toBe("warning");
+    // Severity is error, not warning: the self-scan gate filters on
+    // severity === "error", so a warning here could never fail CI — which
+    // is how continue-on-error stayed live in this repo's own workflows
+    // while the tool reported zero errors.
+    expect(findings[0]?.severity).toBe("error");
+  });
+
+  it("stays silent for continue-on-error on a reporting step", () => {
+    const findings = continueOnError.run(
+      ctx(`jobs:
+  tests:
+    steps:
+      - run: npm test
+      - name: Upload artifact
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+`),
+    );
+    expect(findings).toHaveLength(0);
   });
 
   it("stays silent without continue-on-error", () => {

@@ -26,21 +26,21 @@ export const pwNoA11yAssertions = defineRule({
   autofix: false,
   detectionStrategy: "absence heuristic over suite directory",
   introduced: "0.3.8",
+  tier: "quarantine",
 
   run(ctx) {
+    const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     if (!/\.(spec|test)\.[tj]sx?$/.test(ctx.path)) return findings;
 
     // Only meaningful for suites doing real UI interaction.
-    const doesUiInteraction = /(?:page\.goto|page\.click|\.fill\()/i.test(
-      ctx.text,
-    );
+    const doesUiInteraction = /(?:page\.goto|page\.click|\.fill\()/i.test(text);
     if (!doesUiInteraction) return findings;
 
     // Any a11y signal anywhere in the file counts as covered.
     const hasA11y =
       /toHaveNoViolations|@axe-core\/playwright|axe\s*\(|ariaSnapshot|toMatchAriaSnapshot/i.test(
-        ctx.text,
+        text,
       );
     if (!hasA11y) {
       findings.push({

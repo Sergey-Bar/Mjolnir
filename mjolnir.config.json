@@ -1,14 +1,15 @@
 {
+  "exclude": ["tests/fixtures/**", "tests/golden/**", "examples/**"],
   "ignore": [
     {
       "ruleId": "QA-PW-101",
       "files": ["tests/**"],
-      "reason": "Self-scan dogfooding: this repo's own test suite embeds sample Playwright code inside template-literal strings (the regex engine cannot distinguish string content from live code). The waitForTimeout occurrences are fixture payloads for testing the scanner itself, not real hard sleeps."
+      "reason": "Self-scan dogfooding: this repo's own test suite embeds sample Playwright code inside template-literal strings. The waitForTimeout occurrences are fixture payloads for testing the scanner itself, not real hard sleeps."
     },
     {
       "ruleId": "QA-PW-140",
       "files": ["tests/**"],
-      "reason": "Self-scan dogfooding: screenshot-name literals inside string-embedded test snippets trigger the diff-tolerance rule. Same string-content limitation as QA-PW-101 above."
+      "reason": "Self-scan dogfooding: screenshot-name literals inside string-embedded test snippets trigger the diff-tolerance rule."
     },
     {
       "ruleId": "QA-TQUAL-002",
@@ -46,94 +47,19 @@
       "reason": "Self-scan dogfooding: promise-assertion samples embedded in test strings."
     },
     {
-      "ruleId": "QA-TQUAL-002",
-      "files": ["tests/fixtures/**"],
-      "reason": "Fixture firewall: must-fire fixtures intentionally contain the anti-pattern; cross-rule noise here is expected."
-    },
-    {
-      "ruleId": "QA-TEST-003",
-      "files": ["tests/fixtures/**"],
-      "reason": "Fixture firewall: must-fire fixtures for other rules may legitimately lack assertions."
-    },
-    {
-      "ruleId": "QA-TEST-001",
-      "files": ["tests/fixtures/**"],
-      "reason": "Fixture firewall: focused-test samples are intentional fixture payloads."
-    },
-    {
-      "ruleId": "QA-PW-101",
-      "files": ["tests/fixtures/**"],
-      "reason": "Fixture firewall: hard-sleep samples are intentional fixture payloads."
-    },
-    {
-      "ruleId": "QA-PW-002",
-      "files": ["tests/fixtures/**"],
-      "reason": "Fixture firewall: unawaited-assertion samples are intentional fixture payloads."
-    },
-    {
-      "ruleId": "QA-PW-003",
-      "files": ["tests/fixtures/**"],
-      "reason": "Fixture firewall: evaluate samples are intentional fixture payloads."
-    },
-    {
-      "ruleId": "QA-TEST-010",
-      "files": ["tests/fixtures/**"],
-      "reason": "Fixture firewall: empty-body samples are intentional fixture payloads."
+      "ruleId": "QA-TEST-002",
+      "files": ["tests/**"],
+      "reason": "Self-scan dogfooding: unjustified-skip samples are test data, not real skipped tests."
     },
     {
       "ruleId": "QA-PW-119",
-      "files": ["tests/fixtures/**"],
-      "reason": "Fixture firewall: shared-state samples are intentional fixture payloads."
-    },
-    {
-      "ruleId": "QA-CS-103",
-      "files": ["tests/fixtures/**"],
-      "reason": "Fixture firewall: C# assertion-less samples are intentional fixture payloads (must-fire and must-not-fire pairs for other QA-CS rules legitimately lack assertions)."
-    },
-    {
-      "ruleId": "QA-JV-103",
-      "files": ["tests/fixtures/**"],
-      "reason": "Fixture firewall: Java assertion-less samples are intentional fixture payloads (must-fire and must-not-fire pairs for other QA-JV rules legitimately lack assertions)."
-    },
-    {
-      "ruleId": "QA-PY-003",
-      "files": ["tests/fixtures/**"],
-      "reason": "Fixture firewall: Python assertion-less samples are intentional fixture payloads (must-not-fire pairs for QA-PY-105 legitimately lack assertions)."
-    },
-    {
-      "ruleId": "QA-PY-105",
-      "files": ["tests/fixtures/**"],
-      "reason": "Fixture firewall: Playwright-Python assertion-less samples are intentional fixture payloads for QA-PY-105 itself."
-    },
-    {
-      "ruleId": "QA-TEST-002",
-      "files": [
-        "tests/fixtures/**",
-        "tests/golden/**",
-        "tests/registry-install.spec.ts",
-        "tests/skip-justification.spec.ts"
-      ],
-      "reason": "Fixture firewall / dogfooding: unjustified-skip samples are intentional fixture payloads for QA-TEST-002 itself, and the golden/registry/skip-justification specs embed sample skip literals as test data, not real skipped tests."
-    },
-    {
-      "ruleId": "QA-PW-101",
-      "files": ["examples/demo-repo/**"],
-      "reason": "examples/demo-repo is a deliberately imperfect sample repo used to demonstrate scan output (README hero asset, Task 29) — it is not part of the shipped tool and must keep its anti-patterns to be a useful demo."
-    },
-    {
-      "ruleId": "QA-PW-103",
-      "files": ["examples/demo-repo/**"],
-      "reason": "examples/demo-repo is a deliberately imperfect sample repo used to demonstrate scan output — see QA-PW-101 entry above for the same rationale."
-    },
-    {
-      "ruleId": "QA-PW-145",
-      "files": ["examples/demo-repo/**"],
-      "reason": "examples/demo-repo is a deliberately imperfect sample repo used to demonstrate scan output — see QA-PW-101 entry above for the same rationale."
+      "files": ["tests/registry-install.spec.ts"],
+      "reason": "The registry-install smoke test uses beforeAll/afterAll with shared mutable state (workDir, installDir) by design — it creates and destroys a real npm install directory, which is inherently stateful."
     },
     {
       "ruleId": "QA-CI-002",
       "files": [".github/workflows/qa-doctor.yml"],
-      "reason": "The 'Restore baseline from base branch' step's `git checkout ... || echo \"...\"` is a genuine best-effort fallback for an OPTIONAL file (.qa-doctor/baseline.json may legitimately not exist on the base branch yet) — not a test/build command whose failure is being hidden. The echo branch is purely informative; nothing about this PR's actual pass/fail signal is swallowed. This is a deliberate, reviewed exception, not an oversight — QA-CI-002's own falsePositiveRisk is documented as low precisely because most `|| true`/`|| echo` uses ARE real problems, and this is the rare legitimate one."
+      "reason": "The 'Restore baseline from base branch' step's `git checkout ... || echo` is a genuine best-effort fallback for an OPTIONAL file — not a test command whose failure is being hidden."
     }
   ]
 }

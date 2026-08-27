@@ -107,17 +107,27 @@ describe("typescriptAdapter", () => {
     expect(ctx.testFiles[0]).toMatch(/a\.test\.ts$/);
   });
 
-  it("counts skipped files on stat failure", () => {
+  it("discovers matching test files and reports no skips for a readable tree", () => {
     const onSkipped = vi.fn();
     const ctx = makeCtx({ onSkippedFile: onSkipped });
-    // A file that passes the test regex but vanishes before stat.
-    ctx.testFiles = [];
-    const origReaddir = join(dir, "gone.test.ts");
-    writeFileSync(origReaddir, "");
-    // Simulate race: monkey-patch via a directory that disappears is hard;
-    // instead verify walk tolerates unreadable dirs without throwing.
+    const discoverable = join(dir, "gone.test.ts");
+    writeFileSync(discoverable, "");
+    // An extra directory in the tree — discovery must walk past it without
+    // treating it as a file or reporting a skip.
     mkdirSync(join(dir, "locked"), { recursive: true });
+
     typescriptAdapter.discoverTestFiles(ctx);
+
+    // The real output of discoverTestFiles is testFiles. Asserting on it is
+    // what makes this a behavior test; the previous version only checked the
+    // skip callback, so it could not have detected discovery returning
+    // nothing at all — and its name claimed to cover a stat failure it never
+    // simulated. The genuine stat-failure branch is covered against the
+    // GitHub Actions adapter in adapter-deep-branch-coverage.spec.ts, which
+    // also documents why this adapter rarely reaches it (entry.isFile()
+    // filters before statSync).
+    expect(ctx.testFiles).toHaveLength(1);
+    expect(ctx.testFiles[0]).toMatch(/gone\.test\.ts$/);
     expect(onSkipped).not.toHaveBeenCalled();
   });
 

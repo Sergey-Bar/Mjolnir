@@ -7,6 +7,7 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const pyPwNoAssertions = defineRule({
   id: "QA-PY-105",
@@ -26,14 +27,15 @@ export const pyPwNoAssertions = defineRule({
   introduced: "0.3.8",
 
   run(ctx) {
+    const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     if (!ctx.path.endsWith(".py")) return findings;
-    if (!/playwright/i.test(ctx.text)) return findings;
+    if (!/playwright/i.test(text)) return findings;
 
     const fnRe = /^(\s*)def\s+(test_\w+)\s*\([^)]*\)\s*:/gm;
     let m: RegExpExecArray | null;
-    while ((m = fnRe.exec(ctx.text)) !== null) {
-      const body = extractBlock(ctx.text, m.index + m[0].length);
+    while ((m = fnRe.exec(text)) !== null) {
+      const body = extractBlock(text, m.index + m[0].length);
       if (body === null) continue;
 
       const hasCheck =
@@ -42,7 +44,7 @@ export const pyPwNoAssertions = defineRule({
         /assert_/.test(body);
       const doesUiAction =
         /page\.(?:goto|click|fill|get_by_|locator)/.test(body) ||
-        /page\s*:\s*Page/.test(ctx.text);
+        /page\s*:\s*Page/.test(text);
       if (doesUiAction && !hasCheck) {
         findings.push({
           severity: "error",
@@ -50,8 +52,8 @@ export const pyPwNoAssertions = defineRule({
           findingType: "deterministic-defect",
           qaImpact: "FALSE-GREEN",
           file: ctx.path,
-          line: lineAt(ctx.text, m.index),
-          column: colAt(ctx.text, m.index),
+          line: lineAt(text, m.index),
+          column: colAt(text, m.index),
           message: `Playwright test \`${m[2]}\` drives the UI but asserts nothing.`,
           why: "Clicking through pages without asserting outcomes proves navigation didn't crash — not that the feature works. Any regression short of a JS exception stays green.",
           fix: "Add outcome assertions: `expect(page).to_have_url(...)`, `expect(page.get_by_role('heading')).to_be_visible()`.",
@@ -88,15 +90,4 @@ function extractBlock(text: string, afterColon: number): string | null {
   }
   const lineEnd = rest.indexOf("\n", firstContent.index);
   return rest.slice(0, lineEnd === -1 ? undefined : lineEnd);
-}
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
 }

@@ -7,6 +7,7 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const focusedTestCommitted = defineRule({
   id: "QA-TEST-001",
@@ -24,8 +25,13 @@ export const focusedTestCommitted = defineRule({
   autofix: true,
   detectionStrategy: "regex pattern",
   introduced: "0.1.0",
+  // `.only` makes the runner execute this test and skip every other one, so a
+  // green run is not evidence about the rest of the suite. Categorical, not a
+  // matter of degree — see RuleMeta.suiteInvalidating.
+  suiteInvalidating: true,
 
   run(ctx) {
+    const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
     // Fast textual pre-pass for `.only(` / `fit(`/`fdescribe(` call targets.
@@ -33,21 +39,21 @@ export const focusedTestCommitted = defineRule({
     const dotOnly = /\.only\s*\(/g;
 
     let m: RegExpExecArray | null;
-    while ((m = onlyCall.exec(ctx.text)) !== null) {
+    while ((m = onlyCall.exec(text)) !== null) {
       findings.push({
         severity: "error",
         confidence: "high",
         findingType: "deterministic-defect",
         file: ctx.path,
-        line: lineAt(ctx.text, m.index),
-        column: colAt(ctx.text, m.index),
+        line: lineAt(text, m.index),
+        column: colAt(text, m.index),
         message: `Focused test committed: \`${m[0].trim()}\` restricts the run to a subset of tests.`,
         why: "CI will show green while the vast majority of the suite never executed.",
         fix: "Remove the focus modifier and commit the full suite.",
         qaImpact: "FALSE-GREEN",
       });
     }
-    while ((m = dotOnly.exec(ctx.text)) !== null) {
+    while ((m = dotOnly.exec(text)) !== null) {
       // Avoid double-reporting fit().only patterns; textual heuristic is
       // refined by AST pass in the rule runner (W2 fixture harness locks it).
       findings.push({
@@ -55,8 +61,8 @@ export const focusedTestCommitted = defineRule({
         confidence: "high",
         findingType: "deterministic-defect",
         file: ctx.path,
-        line: lineAt(ctx.text, m.index),
-        column: colAt(ctx.text, m.index),
+        line: lineAt(text, m.index),
+        column: colAt(text, m.index),
         message: "`.only` focus modifier committed.",
         why: "Only the focused subset executes; the rest of the suite is silently skipped in CI.",
         fix: "Remove `.only` before committing.",
@@ -66,14 +72,3 @@ export const focusedTestCommitted = defineRule({
     return findings;
   },
 });
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
-}

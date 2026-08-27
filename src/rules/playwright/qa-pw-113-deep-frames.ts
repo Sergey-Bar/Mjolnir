@@ -7,6 +7,7 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const pwDeepFrameLocator = defineRule({
   id: "QA-PW-113",
@@ -26,20 +27,21 @@ export const pwDeepFrameLocator = defineRule({
   introduced: "0.3.0",
 
   run(ctx) {
+    const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
     // Count consecutive .frameLocator( occurrences in one expression.
     const re = /(?:\.frameLocator\s*\([^)]*\)\s*){3,}/g;
     let m: RegExpExecArray | null;
-    while ((m = re.exec(ctx.text)) !== null) {
+    while ((m = re.exec(text)) !== null) {
       findings.push({
         severity: "warning",
         confidence: "high",
         findingType: "heuristic-risk",
         qaImpact: "HYGIENE",
         file: ctx.path,
-        line: lineAt(ctx.text, m.index),
-        column: colAt(ctx.text, m.index),
+        line: lineAt(text, m.index),
+        column: colAt(text, m.index),
         message: `frameLocator chained ${count(m[0])} levels deep.`,
         why: "Each nested iframe multiplies timing and attachment flake; tests this coupled to embedding structure break on every layout change.",
         fix: "Expose a stable handle to the innermost content (postMessage bridge, test hook, or flatten the frames).",
@@ -51,15 +53,4 @@ export const pwDeepFrameLocator = defineRule({
 
 function count(fragment: string): number {
   return (fragment.match(/frameLocator\s*\(/g) ?? []).length;
-}
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
 }

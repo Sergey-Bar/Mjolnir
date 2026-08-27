@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /**
  * Branch coverage for the Java and C# rule families (Master-Stabilization-
  * Plan Sprint 3, real gap found while running `npm run test:coverage` for
@@ -20,15 +21,12 @@
 
 import { describe, expect, it } from "vitest";
 import { jvDisabledTest } from "../src/rules/java/qa-jv-101-disabled-test.js";
-import { jvHardSleep } from "../src/rules/java/qa-jv-102-hard-sleep.js";
+import { hardSleepFamily } from "../src/rules/families/hard-sleep.js";
 import { jvNoAssertions } from "../src/rules/java/qa-jv-103-no-assertions.js";
-import { jvSharedPage } from "../src/rules/java/qa-jv-104-shared-page.js";
+import { sharedPageFamily } from "../src/rules/families/shared-page.js";
 import { jvWaitForTimeout } from "../src/rules/java/qa-jv-105-wait-for-timeout.js";
 import { csSkippedTest } from "../src/rules/csharp/qa-cs-101-skipped-test.js";
-import { csHardSleep } from "../src/rules/csharp/qa-cs-102-hard-sleep.js";
 import { csNoAssertions } from "../src/rules/csharp/qa-cs-103-no-assertions.js";
-import { csSharedPage } from "../src/rules/csharp/qa-cs-104-shared-page.js";
-
 describe("QA-JV-101 disabled test", () => {
   it("ignores non-.java files", () => {
     expect(jvDisabledTest.run({ path: "Test.cs", text: "@Disabled" })).toEqual(
@@ -72,30 +70,38 @@ describe("QA-JV-101 disabled test", () => {
 describe("QA-JV-102 Thread.sleep", () => {
   it("ignores non-.java files", () => {
     expect(
-      jvHardSleep.run({ path: "T.cs", text: "Thread.sleep(1000);" }),
+      hardSleepFamily
+        .find((r) => r.id === "QA-JV-102")!
+        .run({ path: "T.cs", text: "Thread.sleep(1000);" }),
     ).toEqual([]);
   });
 
   it("fires on Thread.sleep(...)", () => {
-    const findings = jvHardSleep.run({
-      path: "T.java",
-      text: "Thread.sleep(3000);\n",
-    });
+    const findings = hardSleepFamily
+      .find((r) => r.id === "QA-JV-102")!
+      .run({
+        path: "T.java",
+        text: "Thread.sleep(3000);\n",
+      });
     expect(findings).toHaveLength(1);
     expect(findings[0]?.message).toContain("Thread.sleep()");
   });
 
   it("reports the correct line number when the match is past line 1", () => {
-    const findings = jvHardSleep.run({
-      path: "T.java",
-      text: "class T {\n  void t() {\n    Thread.sleep(3000);\n  }\n}\n",
-    });
+    const findings = hardSleepFamily
+      .find((r) => r.id === "QA-JV-102")!
+      .run({
+        path: "T.java",
+        text: "class T {\n  void t() {\n    Thread.sleep(3000);\n  }\n}\n",
+      });
     expect(findings[0]?.line).toBe(3);
   });
 
   it("stays silent without Thread.sleep", () => {
     expect(
-      jvHardSleep.run({ path: "T.java", text: 'page.click("#btn");\n' }),
+      hardSleepFamily
+        .find((r) => r.id === "QA-JV-102")!
+        .run({ path: "T.java", text: 'page.click("#btn");\n' }),
     ).toEqual([]);
   });
 });
@@ -193,41 +199,51 @@ describe("QA-JV-103 no assertions", () => {
 describe("QA-JV-104 static shared page", () => {
   it("ignores non-.java files", () => {
     expect(
-      jvSharedPage.run({ path: "T.cs", text: "static Page page;" }),
+      sharedPageFamily
+        .find((r) => r.id === "QA-JV-104")!
+        .run({ path: "T.cs", text: "static Page page;" }),
     ).toEqual([]);
   });
 
   it.each(["Page", "Browser", "BrowserContext", "Playwright"])(
     "fires on static %s field",
     (type) => {
-      const findings = jvSharedPage.run({
-        path: "T.java",
-        text: `private static ${type} instance;\n`,
-      });
+      const findings = sharedPageFamily
+        .find((r) => r.id === "QA-JV-104")!
+        .run({
+          path: "T.java",
+          text: `private static ${type} instance;\n`,
+        });
       expect(findings).toHaveLength(1);
       expect(findings[0]?.message).toContain(type);
     },
   );
 
   it("fires on static final variant", () => {
-    const findings = jvSharedPage.run({
-      path: "T.java",
-      text: "public static final Page SHARED = null;\n",
-    });
+    const findings = sharedPageFamily
+      .find((r) => r.id === "QA-JV-104")!
+      .run({
+        path: "T.java",
+        text: "public static final Page SHARED = null;\n",
+      });
     expect(findings).toHaveLength(1);
   });
 
   it("stays silent on an instance (non-static) field", () => {
     expect(
-      jvSharedPage.run({ path: "T.java", text: "private Page page;\n" }),
+      sharedPageFamily
+        .find((r) => r.id === "QA-JV-104")!
+        .run({ path: "T.java", text: "private Page page;\n" }),
     ).toEqual([]);
   });
 
   it("reports the correct line number when the match is past line 1", () => {
-    const findings = jvSharedPage.run({
-      path: "T.java",
-      text: "class T {\n  private static Page page;\n}\n",
-    });
+    const findings = sharedPageFamily
+      .find((r) => r.id === "QA-JV-104")!
+      .run({
+        path: "T.java",
+        text: "class T {\n  private static Page page;\n}\n",
+      });
     expect(findings[0]?.line).toBe(2);
   });
 });
@@ -320,39 +336,49 @@ describe("QA-CS-101 skipped test", () => {
 describe("QA-CS-102 hard sleep", () => {
   it("ignores non-.cs files", () => {
     expect(
-      csHardSleep.run({ path: "T.java", text: "Thread.Sleep(1000);" }),
+      hardSleepFamily
+        .find((r) => r.id === "QA-CS-102")!
+        .run({ path: "T.java", text: "Thread.Sleep(1000);" }),
     ).toEqual([]);
   });
 
   it("fires on Thread.Sleep(", () => {
-    const findings = csHardSleep.run({
-      path: "T.cs",
-      text: "Thread.Sleep(1000);\n",
-    });
+    const findings = hardSleepFamily
+      .find((r) => r.id === "QA-CS-102")!
+      .run({
+        path: "T.cs",
+        text: "Thread.Sleep(1000);\n",
+      });
     expect(findings).toHaveLength(1);
     expect(findings[0]?.message).toContain("Thread.Sleep");
   });
 
   it("fires on Task.Delay(", () => {
-    const findings = csHardSleep.run({
-      path: "T.cs",
-      text: "await Task.Delay(500);\n",
-    });
+    const findings = hardSleepFamily
+      .find((r) => r.id === "QA-CS-102")!
+      .run({
+        path: "T.cs",
+        text: "await Task.Delay(500);\n",
+      });
     expect(findings).toHaveLength(1);
     expect(findings[0]?.message).toContain("Task.Delay");
   });
 
   it("stays silent without a sleep/delay call", () => {
     expect(
-      csHardSleep.run({ path: "T.cs", text: 'await page.ClickAsync("#x");\n' }),
+      hardSleepFamily
+        .find((r) => r.id === "QA-CS-102")!
+        .run({ path: "T.cs", text: 'await page.ClickAsync("#x");\n' }),
     ).toEqual([]);
   });
 
   it("reports the correct line number when the match is past line 1", () => {
-    const findings = csHardSleep.run({
-      path: "T.cs",
-      text: "class T {\n  void M() {\n    Thread.Sleep(1000);\n  }\n}\n",
-    });
+    const findings = hardSleepFamily
+      .find((r) => r.id === "QA-CS-102")!
+      .run({
+        path: "T.cs",
+        text: "class T {\n  void M() {\n    Thread.Sleep(1000);\n  }\n}\n",
+      });
     expect(findings[0]?.line).toBe(3);
   });
 });
@@ -462,38 +488,48 @@ describe("QA-CS-103 no assertions", () => {
 describe("QA-CS-104 static shared page", () => {
   it("ignores non-.cs files", () => {
     expect(
-      csSharedPage.run({ path: "T.java", text: "static IPage page;" }),
+      sharedPageFamily
+        .find((r) => r.id === "QA-CS-104")!
+        .run({ path: "T.java", text: "static IPage page;" }),
     ).toEqual([]);
   });
 
   it("fires on static IPage field", () => {
-    const findings = csSharedPage.run({
-      path: "T.cs",
-      text: "private static IPage Page;\n",
-    });
+    const findings = sharedPageFamily
+      .find((r) => r.id === "QA-CS-104")!
+      .run({
+        path: "T.cs",
+        text: "private static IPage Page;\n",
+      });
     expect(findings).toHaveLength(1);
     expect(findings[0]?.message).toContain("static IPage");
   });
 
   it("fires on static readonly IPage field", () => {
-    const findings = csSharedPage.run({
-      path: "T.cs",
-      text: "public static readonly IPage Shared;\n",
-    });
+    const findings = sharedPageFamily
+      .find((r) => r.id === "QA-CS-104")!
+      .run({
+        path: "T.cs",
+        text: "public static readonly IPage Shared;\n",
+      });
     expect(findings).toHaveLength(1);
   });
 
   it("fires on internal static IPage field", () => {
-    const findings = csSharedPage.run({
-      path: "T.cs",
-      text: "internal static IPage Shared;\n",
-    });
+    const findings = sharedPageFamily
+      .find((r) => r.id === "QA-CS-104")!
+      .run({
+        path: "T.cs",
+        text: "internal static IPage Shared;\n",
+      });
     expect(findings).toHaveLength(1);
   });
 
   it("stays silent on an instance (non-static) IPage field", () => {
     expect(
-      csSharedPage.run({ path: "T.cs", text: "private IPage page;\n" }),
+      sharedPageFamily
+        .find((r) => r.id === "QA-CS-104")!
+        .run({ path: "T.cs", text: "private IPage page;\n" }),
     ).toEqual([]);
   });
 });

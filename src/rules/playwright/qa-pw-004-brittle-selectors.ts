@@ -12,6 +12,8 @@ import {
   commentAndStringRanges,
 } from "../../engine/ts-ast.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
+import { isMasked } from "../shared/masking.js";
 
 export const brittleSelectors = defineRule({
   id: "QA-PW-004",
@@ -27,17 +29,24 @@ export const brittleSelectors = defineRule({
   frameworks: ["playwright"],
   falsePositiveRisk: "medium",
   autofix: false,
-  detectionStrategy: "regex pattern",
+  detectionStrategy: "regex pattern + inside-string oracle",
   introduced: "0.1.0",
 
   run(ctx) {
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
-    // Selector literals ARE strings — so unlike other rules we cannot
-    // blank string contents wholesale. Instead we strip COMMENTS only:
-    // `// never do locator('.a.b.c')` in prose must not fire, while real
-    // locator('...') calls keep their evidence.
-    const text = stripComments(ctx);
+    // This rule matches against RAW text on purpose: the selector it judges
+    // lives inside the string argument, so masking string contents would
+    // blind it (see the deliberate exclusion from the Phase 1 migration).
+    //
+    // The cost of reading raw text is that a locator call written as test
+    // DATA also matches — `classifyLocator("page.locator('xpath=//div')")`
+    // is a call to classifyLocator, not to locator. `isMaskedAt` below is
+    // the discriminator: if codeText blanked the position where the match
+    // begins, the entire expression is inside a string literal (or a
+    // comment), so it is data or prose, not a live locator call.
+    const text = ctx.codeText ? ctx.text : stripComments(ctx);
+
     // page.locator('.a.b.c') — multi-class chains
     // page.locator('div > span > a') — deep structural chains
     // page.$x(...) / xpath= — raw XPath
@@ -57,15 +66,19 @@ export const brittleSelectors = defineRule({
     ];
 
     for (const { re, label } of patterns) {
+      re.lastIndex = 0;
       let m: RegExpExecArray | null;
       while ((m = re.exec(text)) !== null) {
+        // The locator identifier itself is live code in a real call, so it
+        // is never masked. Masked here means the whole call is quoted.
+        if (isMasked(ctx, m.index)) continue;
         findings.push({
           severity: "warning",
           confidence: "medium",
           findingType: "heuristic-risk",
           file: ctx.path,
-          line: lineAt(ctx.text, m.index),
-          column: colAt(ctx.text, m.index),
+          line: lineAt(text, m.index),
+          column: colAt(text, m.index),
           message: `Brittle ${label}: \`${m[0].slice(0, 60)}\`.`,
           why: "Structural selectors break on any DOM refactor and fail without telling you which behavior regressed.",
           fix: "Prefer role-based locators: getByRole(), getByText(), getByLabel().",
@@ -79,7 +92,8 @@ export const brittleSelectors = defineRule({
 
 /** Comment ranges via ts-morph scanner; falls back to a conservative
  * line-comment scan when no AST is available. Positions are preserved so
- * line/column math stays valid against the original text. */
+ * line/column math stays valid against the original text. Only used when
+ * codeText is unavailable — codeText already blanks comments. */
 function stripComments(ctx: {
   path: string;
   text: string;
@@ -107,15 +121,4 @@ function stripComments(ctx: {
   // AST are rare in test files and under-blanking is safer than over-
   // stripping real code.
   return ctx.text.replace(/\/\/[^\n]*/g, (cm) => " ".repeat(cm.length));
-}
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
 }

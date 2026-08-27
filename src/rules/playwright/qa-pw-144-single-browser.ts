@@ -8,6 +8,7 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt } from "../shared/positions.js";
 
 export const pwSingleBrowserMatrix = defineRule({
   id: "QA-PW-144",
@@ -27,14 +28,15 @@ export const pwSingleBrowserMatrix = defineRule({
   introduced: "0.3.8",
 
   run(ctx) {
+    const text = ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     const base = ctx.path.split("/").pop() ?? "";
     if (!/^playwright\.config\.(ts|js|mjs|cts)$/.test(base)) return findings;
 
-    if (!/projects\s*:\s*\[/.test(ctx.text)) return findings;
+    if (!/projects\s*:\s*\[/.test(text)) return findings;
 
-    const names = [...ctx.text.matchAll(/name\s*:\s*['"]([^'"]+)['"]/g)].map(
-      (m) => (m[1] ?? "").toLowerCase(),
+    const names = [...text.matchAll(/name\s*:\s*['"]([^'"]+)['"]/g)].map((m) =>
+      (m[1] ?? "").toLowerCase(),
     );
     if (names.length === 0) return findings;
 
@@ -48,10 +50,8 @@ export const pwSingleBrowserMatrix = defineRule({
     }
     // Spread spread-spread: also count devices via use: { browserName } /
     // ...devices[...] entries, which name engines without project names.
-    if (/browserName\s*:\s*['"]firefox['"]/.test(ctx.text))
-      engines.add("firefox");
-    if (/browserName\s*:\s*['"]webkit['"]/.test(ctx.text))
-      engines.add("webkit");
+    if (/browserName\s*:\s*['"]firefox['"]/.test(text)) engines.add("firefox");
+    if (/browserName\s*:\s*['"]webkit['"]/.test(text)) engines.add("webkit");
 
     if (engines.size <= 1) {
       findings.push({
@@ -60,7 +60,7 @@ export const pwSingleBrowserMatrix = defineRule({
         findingType: "deterministic-defect",
         qaImpact: "HYGIENE",
         file: ctx.path,
-        line: lineAt(ctx.text, /projects\s*:/.exec(ctx.text)?.index ?? 0),
+        line: lineAt(text, /projects\s*:/.exec(text)?.index ?? 0),
         column: 1,
         message: `Projects cover only ${
           [...engines][0] ?? "a single"
@@ -72,9 +72,3 @@ export const pwSingleBrowserMatrix = defineRule({
     return findings;
   },
 });
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}

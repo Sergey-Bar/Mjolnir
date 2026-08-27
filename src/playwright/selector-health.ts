@@ -10,7 +10,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { isDefaultIgnored } from "../discovery/ignores.js";
+import { isDefaultIgnored, isLintFixtureDir } from "../discovery/ignores.js";
 import type { LocatorClass, SelectorRisk } from "./selector-health-types.js";
 
 export type { LocatorClass, SelectorRisk } from "./selector-health-types.js";
@@ -148,7 +148,7 @@ export function computeSelectorHealth(root: string): SpecSelectorHealth[] {
       const rel = full.slice(root.length + 1).replaceAll("\\", "/");
       if (isDefaultIgnored(rel)) continue;
       if (entry.isDirectory()) {
-        walk(full);
+        if (!isLintFixtureDir(full)) walk(full);
       } else if (entry.isFile() && /\.spec\.ts$/.test(entry.name)) {
         try {
           const text = readFileSync(full, "utf8");

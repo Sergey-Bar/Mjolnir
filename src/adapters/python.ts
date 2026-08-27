@@ -11,7 +11,12 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 
-import { isDefaultIgnored, LIMITS } from "../discovery/ignores.js";
+import {
+  isDefaultIgnored,
+  isLintFixtureDir,
+  LIMITS,
+} from "../discovery/ignores.js";
+import { computeCodeText } from "../engine/code-text.js";
 import type {
   FrameworkInfo,
   LanguageAdapter,
@@ -68,10 +73,22 @@ export const pythonAdapter: LanguageAdapter = {
   },
 
   runRules(rules, file, emit) {
+    // Phase 1 (Tempering): lazy codeText — computed on first access.
+    let cachedCodeText: string | undefined;
+    const enriched = Object.defineProperty({ ...file }, "codeText", {
+      get() {
+        if (cachedCodeText === undefined) {
+          cachedCodeText = computeCodeText(file, "python");
+        }
+        return cachedCodeText;
+      },
+      enumerable: true,
+      configurable: true,
+    });
     for (const rule of rules) {
       if (!rule.appliesTo.includes(this.id)) continue;
       try {
-        for (const f of rule.run(file)) {
+        for (const f of rule.run(enriched)) {
           emit(f, rule.id, rule.category);
         }
       } catch {
@@ -109,7 +126,8 @@ function walkPy(
       )
         continue;
       if (rel.split("/").length <= LIMITS.maxDepth)
-        walkPy(full, root, out, deadline, onSkipped);
+        if (!isLintFixtureDir(full))
+          walkPy(full, root, out, deadline, onSkipped);
     } else if (entry.isFile() && PYTHON_TEST_RE.test(entry.name)) {
       try {
         if (statSync(full).size <= LIMITS.maxFileBytes) out.push(full);

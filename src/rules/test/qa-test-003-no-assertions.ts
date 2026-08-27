@@ -6,6 +6,7 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const noAssertions = defineRule({
   id: "QA-TEST-003",
@@ -25,6 +26,7 @@ export const noAssertions = defineRule({
   introduced: "0.1.0",
 
   run(ctx) {
+    const text = ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
     // Find each it/test(...) callback body and check for expect/assert inside.
@@ -33,11 +35,11 @@ export const noAssertions = defineRule({
     const testRe =
       /\b(?:it|test)\s*\(\s*['"`][^'"`]*['"`]\s*,\s*(?:async\s*)?\([^)]*\)\s*=>\s*\{/g;
     let m: RegExpExecArray | null;
-    while ((m = testRe.exec(ctx.text)) !== null) {
+    while ((m = testRe.exec(text)) !== null) {
       const bodyStart = m.index + m[0].length - 1; // position of '{'
-      const bodyEnd = matchBrace(ctx.text, bodyStart);
+      const bodyEnd = matchBrace(text, bodyStart);
       if (bodyEnd === -1) continue;
-      const body = ctx.text.slice(bodyStart, bodyEnd + 1);
+      const body = text.slice(bodyStart, bodyEnd + 1);
       const hasAssertion =
         /\bexpect\s*\(/.test(body) ||
         /\b(?:assert|should)\b/.test(body) ||
@@ -57,8 +59,8 @@ export const noAssertions = defineRule({
           findingType: "deterministic-defect",
           qaImpact: "FALSE-GREEN",
           file: ctx.path,
-          line: lineAt(ctx.text, m.index),
-          column: colAt(ctx.text, m.index),
+          line: lineAt(text, m.index),
+          column: colAt(text, m.index),
           message: "Test contains no assertions.",
           why: "Without an assertion the test can only fail by crashing — it cannot detect behavioral regressions.",
           fix: "Add an assertion on the expected outcome, or remove the test.",
@@ -89,15 +91,4 @@ function matchBrace(text: string, open: number): number {
     }
   }
   return -1;
-}
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
 }

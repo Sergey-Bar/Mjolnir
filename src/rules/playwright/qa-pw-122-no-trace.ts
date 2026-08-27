@@ -25,14 +25,13 @@ export const pwNoTraceOnRetry = defineRule({
   introduced: "0.3.0",
 
   run(ctx) {
+    const text = ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     const base = ctx.path.split("/").pop() ?? "";
     if (!/^playwright\.config\.(ts|js|mjs|cts)$/.test(base)) return findings;
 
     if (
-      !/trace\s*:\s*['"](?:on-first-retry|retain-on-failure|on)['"]/.test(
-        ctx.text,
-      )
+      !/trace\s*:\s*['"](?:on-first-retry|retain-on-failure|on)['"]/.test(text)
     ) {
       findings.push({
         severity: "warning",

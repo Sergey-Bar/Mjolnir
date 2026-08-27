@@ -22,6 +22,8 @@ import { RULES } from "./rules/index.js";
 import {
   computeDimensions,
   computeTotal,
+  countTestDeclarations,
+  deductionFor,
   stampEvidenceLevels,
 } from "./scorer/scorer.js";
 import { renderTerminal } from "./reporter/terminal.js";
@@ -73,6 +75,7 @@ import { explainRule, renderExplain } from "./commands/explain.js";
 import { loadSuppressions, renderSuppressions } from "./config/suppressions.js";
 import { loadConfig, applySeverityOverrides } from "./config/config.js";
 import { loadPlugins } from "./plugins/load.js";
+import { initIgnores } from "./discovery/ignores.js";
 import {
   computeSelectorHealth,
   renderSelectorHealth,
@@ -89,10 +92,18 @@ const UNIVERSAL_RULES = RULES.map(asUniversal);
 
 // Plugin API (Phase 6): third-party rules are appended after core rules;
 // core findings always win dedup by running first.
-function buildUniversalRules(root: string) {
+function buildUniversalRules(root: string, strict?: boolean) {
   const { plugins, errors } = loadPlugins(root);
   const pluginRules = plugins.flatMap((p) => p.rules.map(asUniversal));
-  return { rules: [...UNIVERSAL_RULES, ...pluginRules], pluginErrors: errors };
+  let rules = [...UNIVERSAL_RULES, ...pluginRules];
+  // Phase 4 (Tempering): exclude quarantine-tier rules unless --strict
+  if (!strict) {
+    rules = rules.filter((r) => {
+      const original = RULES.find((orig) => orig.id === r.id);
+      return original?.tier !== "quarantine";
+    });
+  }
+  return { rules, pluginErrors: errors };
 }
 
 /** Rule-declared evidence-level overrides (Honesty Core). */
@@ -101,6 +112,14 @@ const EVIDENCE_OVERRIDES: ReadonlyMap<string, string> = new Map(
     r.id,
     r.evidenceLevel as string,
   ]),
+);
+
+/**
+ * Rules whose findings void the suite's pass claim (RuleMeta.suiteInvalidating).
+ * Built from the registry so the scorer never has to import it.
+ */
+const SUITE_INVALIDATING_RULE_IDS: ReadonlySet<string> = new Set(
+  RULES.filter((r) => r.suiteInvalidating === true).map((r) => r.id),
 );
 
 interface CliArgs {
@@ -116,6 +135,8 @@ interface CliArgs {
   ascii?: boolean;
   /** --tone blunt: opt-in blunter messages (Sprint 9 Task 40). */
   tone?: "blunt";
+  /** --strict: include quarantine-tier rules in the scan (Phase 4). */
+  strict?: boolean;
 }
 
 export function parseArgs(argv: string[]): CliArgs | null {
@@ -161,6 +182,8 @@ export function parseArgs(argv: string[]): CliArgs | null {
       const tone = argv[++i];
       if (tone === "blunt") args.tone = "blunt";
       else return null; // unknown tone = usage error
+    } else if (a === "--strict") {
+      args.strict = true;
     } else if (a === "--help" || a === "-h") {
       return null;
     } else if (!a.startsWith("-")) {
@@ -200,12 +223,14 @@ export function runScan(args: CliArgs): ScanResult {
   const findings: Finding[] = [];
   let skippedFiles = 0;
   let testFileCount = 0;
+  let testDeclarationCount = 0;
 
   if (workspace) {
     // R1: dispatch through language adapters. Rules stay unchanged; the
     // adapters own discovery, parsing, and rule application.
     const { rules: activeRules, pluginErrors } = buildUniversalRules(
       workspace.root,
+      args.strict,
     );
     for (const err of pluginErrors) {
       findings.push({
@@ -231,6 +256,10 @@ export function runScan(args: CliArgs): ScanResult {
       onSkippedFile: () => skippedFiles++,
     };
 
+    // Phase 2 (Tempering): initialize ignore patterns from .mjolnirignore
+    // and config exclude before discovering test files.
+    initIgnores(workspace.root);
+
     for (const adapter of ADAPTERS) {
       adapter.discoverTestFiles(ctx);
     }
@@ -253,6 +282,9 @@ export function runScan(args: CliArgs): ScanResult {
         skippedFiles++;
         continue;
       }
+      // Exposure metric (Phase 5): count declarations, not files. Workflows
+      // declare no tests, so they are excluded from the denominator.
+      if (!isWorkflow) testDeclarationCount += countTestDeclarations(text);
       const relPath = relative(workspace.root, path).replaceAll("\\", "/");
       const adapter = isWorkflow
         ? githubActionsAdapter
@@ -331,7 +363,12 @@ export function runScan(args: CliArgs): ScanResult {
   // (rule override wins; otherwise derived from findingType+confidence).
   stampEvidenceLevels(findings, EVIDENCE_OVERRIDES);
   const dimensions = computeDimensions(findings);
-  const total = computeTotal(dimensions, findings);
+  const rawDeductions = findings.reduce((sum, f) => sum + deductionFor(f), 0);
+  const total = computeTotal(dimensions, findings, {
+    testDeclarations: testDeclarationCount,
+    testFileCount,
+    suiteInvalidatingRuleIds: SUITE_INVALIDATING_RULE_IDS,
+  });
   const elapsed = Date.now() - started;
 
   // R2 empty-state: score is null when no test files exist at all.
@@ -357,6 +394,9 @@ export function runScan(args: CliArgs): ScanResult {
     // act on incomplete evidence. The terminal reporter limits its own
     // display (top 5 + "--verbose for all"); no data is dropped here.
     findings,
+    testFileCount,
+    testDeclarationCount,
+    rawDeductions,
     analysisStatus: {
       discovery: Date.now() > deadline ? "partial" : "complete",
       rules: "complete",

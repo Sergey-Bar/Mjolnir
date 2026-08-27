@@ -11,6 +11,7 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const unawaitedPromiseAssertion = defineRule({
   id: "QA-TQUAL-009",
@@ -30,24 +31,25 @@ export const unawaitedPromiseAssertion = defineRule({
   introduced: "0.2.0",
 
   run(ctx) {
+    const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
     // Find `.then(...)` callbacks containing expect(...) where the chain
     // head is not awaited/returned.
     const thenRe = /\.then\s*\(/g;
     let m: RegExpExecArray | null;
-    while ((m = thenRe.exec(ctx.text)) !== null) {
+    while ((m = thenRe.exec(text)) !== null) {
       // Walk backwards over chained lines (`.method(...)` continuations)
       // to find the statement head, then check for await/return.
       let stmtStart = m.index;
       while (stmtStart > 0) {
-        const lineStart = ctx.text.lastIndexOf("\n", stmtStart - 1) + 1;
-        const prevLine = ctx.text.slice(lineStart, stmtStart).trimEnd();
+        const lineStart = text.lastIndexOf("\n", stmtStart - 1) + 1;
+        const prevLine = text.slice(lineStart, stmtStart).trimEnd();
         // Previous line ends with an operator or opening — chain continues upward.
         if (
           /(?:\.|\(|\[|,|:|=)$/.test(prevLine) ||
           /^\s*\.\w/.test(
-            ctx.text.slice(stmtStart - (stmtStart - lineStart), stmtStart),
+            text.slice(stmtStart - (stmtStart - lineStart), stmtStart),
           )
         ) {
           stmtStart = lineStart;
@@ -58,18 +60,18 @@ export const unawaitedPromiseAssertion = defineRule({
         stmtStart = lineStart;
         break;
       }
-      const head = ctx.text.slice(stmtStart, m.index);
+      const head = text.slice(stmtStart, m.index);
       const awaited =
         /(?:^|[^\w.])(?:await|return)\s/.test(head) ||
         /^\s*(?:await|return)\b/.test(head);
 
       // Find the callback body braces.
-      const openBrace = ctx.text.indexOf("{", m.index);
+      const openBrace = text.indexOf("{", m.index);
       if (openBrace === -1) continue;
-      const closeBrace = matchBrace(ctx.text, openBrace);
+      const closeBrace = matchBrace(text, openBrace);
       if (closeBrace === -1) continue;
 
-      const body = ctx.text.slice(openBrace, closeBrace + 1);
+      const body = text.slice(openBrace, closeBrace + 1);
       if (/expect\s*\(/.test(body) && !awaited) {
         findings.push({
           severity: "error",
@@ -77,8 +79,8 @@ export const unawaitedPromiseAssertion = defineRule({
           findingType: "deterministic-defect",
           qaImpact: "FALSE-GREEN",
           file: ctx.path,
-          line: lineAt(ctx.text, m.index),
-          column: colAt(ctx.text, m.index),
+          line: lineAt(text, m.index),
+          column: colAt(text, m.index),
           message:
             "Assertion inside a `.then()` whose promise is never awaited or returned.",
           why: "The assertion executes but its result — including failures — is discarded. The test passes even when the check would fail.",
@@ -110,15 +112,4 @@ function matchBrace(text: string, open: number): number {
     }
   }
   return -1;
-}
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
 }

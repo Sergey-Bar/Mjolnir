@@ -19,6 +19,7 @@ import type { QADoctorRule } from "../rules/rule.js";
 import { deriveEvidenceLevel, QA_IMPACT_LABELS } from "../types.js";
 import type { Finding } from "../types.js";
 import { parseWorkflow } from "../discovery/workflow-parser.js";
+import { computeCodeText } from "../engine/code-text.js";
 
 export interface ExplainResult {
   ok: boolean;
@@ -91,7 +92,20 @@ export function explainRule(
 
   let findings: Array<Omit<Finding, "ruleId" | "category">>;
   try {
-    findings = rule.run({ path: normalizedPath, text, ast });
+    // Supply codeText for parity with the scan pipeline — rules that use it
+    // as a mask oracle abstain without it (see rule-docs.ts).
+    const parsed = { path: normalizedPath, text, ast };
+    const codeText = computeCodeText(
+      parsed,
+      normalizedPath.endsWith(".py")
+        ? "python"
+        : normalizedPath.endsWith(".java")
+          ? "java"
+          : normalizedPath.endsWith(".cs")
+            ? "csharp"
+            : "typescript",
+    );
+    findings = rule.run({ ...parsed, codeText });
   } catch {
     return { ok: true, rule };
   }

@@ -9,6 +9,7 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const qaPw140 = defineRule({
   id: "QA-PW-140",
@@ -28,16 +29,17 @@ export const qaPw140 = defineRule({
   introduced: "0.3.0",
 
   run(ctx) {
+    const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
     const re = /toHaveScreenshot\s*\(/g;
     let m: RegExpExecArray | null;
-    while ((m = re.exec(ctx.text)) !== null) {
+    while ((m = re.exec(text)) !== null) {
       const openParen = m.index + m[0].length - 1;
-      const closeParen = matchParen(ctx.text, openParen);
+      const closeParen = matchParen(text, openParen);
       // Unbalanced parens: bail rather than guess the argument list.
       if (closeParen === -1) continue;
-      const args = ctx.text.slice(openParen + 1, closeParen);
+      const args = text.slice(openParen + 1, closeParen);
 
       if (
         !/maxDiffPixelRatio\s*:/.test(args) &&
@@ -49,8 +51,8 @@ export const qaPw140 = defineRule({
           findingType: "heuristic-risk",
           qaImpact: "HYGIENE",
           file: ctx.path,
-          line: lineAt(ctx.text, m.index),
-          column: colAt(ctx.text, m.index),
+          line: lineAt(text, m.index),
+          column: colAt(text, m.index),
           message:
             "`toHaveScreenshot` without a diff tolerance (maxDiffPixelRatio/maxDiffPixels).",
           why: "Pixel-exact snapshots flake on font rasterization and GPU differences between machines, training the team to ignore red builds.",
@@ -80,15 +82,4 @@ function matchParen(text: string, open: number): number {
     }
   }
   return -1;
-}
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
 }

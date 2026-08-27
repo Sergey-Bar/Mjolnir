@@ -3,11 +3,11 @@
 <pre>
  ╔═══════════╗
  ║           ║
- ╠═══════════╣    M J Ö L N I R
+                  ╠═══════════╣    M J Ö L N I R
  ║     ║     ║
- ╚═════╩═════╝    VERIFICATION TRUST ENGINE
-       ║
-       ║
+                              ╚═════╩═════╝    VERIFICATION TRUST ENGINE
+ ║
+ ║
 </pre>
 
 ### Your tests are lying to you. We prove it.

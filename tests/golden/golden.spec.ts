@@ -14,6 +14,7 @@ import { readdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { RULES } from "../../src/rules/index.js";
+import { computeCodeText } from "../../src/engine/code-text.js";
 
 const HERE = import.meta.dirname;
 const GOLDEN_ROOT = join(HERE, "repo");
@@ -30,11 +31,13 @@ function scanGolden(): ExpectedEntry {
   const files = listTestFiles(GOLDEN_ROOT);
   for (const rel of files) {
     const text = readFileSync(join(GOLDEN_ROOT, rel), "utf8");
+    const parsed = { path: rel, text };
+    const codeText = computeCodeText(parsed, "typescript");
     const counts: Record<string, number> = {};
     for (const rule of RULES) {
       if (rule.appliesTo !== "test-files") continue;
       try {
-        const found = rule.run({ path: rel, text });
+        const found = rule.run({ ...parsed, codeText });
         if (found.length > 0) counts[rule.id] = found.length;
       } catch {
         // crash isolation — a throwing rule counts as a failure below
@@ -82,9 +85,11 @@ describe("golden repo score lock", () => {
   it("no rule crashes on the golden corpus", () => {
     for (const rel of listTestFiles(GOLDEN_ROOT)) {
       const text = readFileSync(join(GOLDEN_ROOT, rel), "utf8");
+      const parsed = { path: rel, text };
+      const codeText = computeCodeText(parsed, "typescript");
       for (const rule of RULES) {
         expect(
-          () => rule.run({ path: rel, text }),
+          () => rule.run({ ...parsed, codeText }),
           `${rule.id} on ${rel}`,
         ).not.toThrow();
       }

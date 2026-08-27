@@ -7,6 +7,7 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const pyFocusedTest = defineRule({
   id: "QA-PY-001",
@@ -24,8 +25,12 @@ export const pyFocusedTest = defineRule({
   autofix: false,
   detectionStrategy: "regex pattern",
   introduced: "0.3.0",
+  // A committed -k filter or ::node selection runs a subset; everything else
+  // is unverified while CI stays green. See RuleMeta.suiteInvalidating.
+  suiteInvalidating: true,
 
   run(ctx) {
+    const text = ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     if (!ctx.path.endsWith(".py")) return findings;
 
@@ -40,15 +45,15 @@ export const pyFocusedTest = defineRule({
 
     for (const re of patterns) {
       let m: RegExpExecArray | null;
-      while ((m = re.exec(ctx.text)) !== null) {
+      while ((m = re.exec(text)) !== null) {
         findings.push({
           severity: "error",
           confidence: "high",
           findingType: "deterministic-defect",
           qaImpact: "FALSE-GREEN",
           file: ctx.path,
-          line: lineAt(ctx.text, m.index),
-          column: colAt(ctx.text, m.index),
+          line: lineAt(text, m.index),
+          column: colAt(text, m.index),
           message: `Focused-test selection committed: \`${m[0].trim()}\`.`,
           why: "A hardcoded -k filter or ::node selection runs only a subset of the suite — everything else is unverified while CI stays green.",
           fix: "Remove the -k/:: selection from committed code; pass it on the command line locally instead.",
@@ -58,14 +63,3 @@ export const pyFocusedTest = defineRule({
     return findings;
   },
 });
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
-}

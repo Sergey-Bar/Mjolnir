@@ -8,6 +8,7 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const pwVisibleNotInViewport = defineRule({
   id: "QA-PW-107",
@@ -25,8 +26,10 @@ export const pwVisibleNotInViewport = defineRule({
   autofix: false,
   detectionStrategy: "regex pattern",
   introduced: "0.3.0",
+  tier: "quarantine",
 
   run(ctx) {
+    const text = ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
     // Heuristic: visibility asserted on toast/banner/modal/tooltip nodes,
@@ -34,7 +37,7 @@ export const pwVisibleNotInViewport = defineRule({
     // Args matched loosely (no nested parens needed for locator chains).
     const re = /expect\(([^()]*(?:\([^()]*\)[^()]*)*)\)\.toBeVisible\(\)/g;
     let m: RegExpExecArray | null;
-    while ((m = re.exec(ctx.text)) !== null) {
+    while ((m = re.exec(text)) !== null) {
       const args = m[1] ?? "";
       if (
         /(?:toast|banner|modal|tooltip|snackbar|notification|alert)/i.test(args)
@@ -45,8 +48,8 @@ export const pwVisibleNotInViewport = defineRule({
           findingType: "heuristic-risk",
           qaImpact: "HYGIENE",
           file: ctx.path,
-          line: lineAt(ctx.text, m.index),
-          column: colAt(ctx.text, m.index),
+          line: lineAt(text, m.index),
+          column: colAt(text, m.index),
           message:
             "`toBeVisible()` on a transient overlay node — consider `toBeInViewport()`.",
           why: "Toasts and banners can be 'visible' in the DOM while rendered off-screen; the user sees nothing but the test passes.",
@@ -57,14 +60,3 @@ export const pwVisibleNotInViewport = defineRule({
     return findings;
   },
 });
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
-}

@@ -52,6 +52,28 @@ export interface RuleMeta {
   detectionStrategy?: string;
   /** First released version (semver). Immutable once set. */
   introduced?: string;
+  /**
+   * Tier assignment (Phase 4 — Tempering Plan). Additive, optional.
+   * - "core": ships in the default report (≤10% measured FP rate)
+   * - "extended": included by default, lower confidence (≤30% FP)
+   * - "quarantine": opt-in only via --strict (>30% FP or unmeasured)
+   * Defaults to "core" when omitted — existing rules stay in the
+   * default report unless explicitly demoted.
+   */
+  tier?: "core" | "extended" | "quarantine";
+  /**
+   * This finding proves the reported pass does not cover what it claims.
+   *
+   * `.only` makes the runner skip every other test; a masked CI gate means a
+   * failure was ignored. Either way the suite's green is not evidence, and no
+   * amount of density normalization should be able to average that away — a
+   * two-test repo with `.only` is as compromised as a two-thousand-test one.
+   *
+   * Findings marked here cap the score into the UNWORTHY band regardless of
+   * exposure. Reserved for mechanisms where the bypass is unambiguous, not for
+   * findings that merely weaken a single test.
+   */
+  suiteInvalidating?: boolean;
 }
 
 export interface SourceFileContext {
@@ -64,6 +86,14 @@ export interface SourceFileContext {
    * the TS rule runner narrows it.
    */
   ast?: unknown;
+  /**
+   * Code-only text view: string literals and comments blanked to spaces,
+   * newlines preserved so line/column indices stay exact (Phase 1 FP
+   * firewall). Rules that must never fire on prose inside strings or
+   * comments use this instead of `text`. Falls back to `text` when
+   * unavailable.
+   */
+  codeText?: string;
 }
 
 export type RuleFn = (

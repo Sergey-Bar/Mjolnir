@@ -9,6 +9,89 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — 0.5.0
+
+### Fixed — false positives confirmed by reading source, each locked by a fixture
+
+Every entry below was verified by opening the cited file and reading the
+surrounding code, not inferred from the rule's description. Each is now locked
+by a `must-not-fire` fixture so the class cannot return silently.
+
+- **QA-TQUAL-011** matched a test identifier anywhere inside a comment block,
+  so any JSDoc header containing the sequence `test (` fired. Confirmed on
+  `tests/package-smoke.spec.ts:2` — `* Package publish integrity smoke test
+(Test Hardening Plan, P0 #2).` Now requires the identifier to be the first
+  token on the commented line. Locks:
+  `tests/fixtures/QA-TQUAL-011/must-not-fire/prose-mentioning-test.spec.ts`.
+- **QA-PW-004** fired on selectors passed as arguments to the function under
+  test. Confirmed on `tests/selector-health.spec.ts:33` —
+  `expect(classifyLocator("page.locator('xpath=//div')")).toBe("xpath")`. The
+  rule must read raw text to see selector content, so masking cannot fix it;
+  it now consults `codeText` as an oracle about the match position instead.
+  Locks: `tests/fixtures/QA-PW-004/must-not-fire/selector-as-argument.spec.ts`.
+- **QA-ENV-001**, **QA-PW-123**, **QA-PW-142** fired on code samples embedded
+  in strings as test data. Confirmed on
+  `tests/rule-sprint8-java-csharp.spec.ts` lines 147, 157, 603 — e.g.
+  `text: 'page.navigate("http://localhost:3000/checkout")'`. Now skipped when
+  the enclosing string literal holds both a nested quote and call syntax.
+  Locks: `tests/fixtures/QA-ENV-001/must-not-fire/code-as-test-data.spec.ts`.
+- **QA-CI-001** fired on `continue-on-error` regardless of what the step did.
+  Confirmed on this repo's own workflows: `ci.yml:48` (badge artifact
+  generation) and `mjolnir.yml:35` (advisory diff, which carries a comment
+  explaining that exit 1 is expected there). Now gated on an allowlist of
+  verification commands. Locks:
+  `tests/fixtures/QA-CI-001/must-not-fire/reporting-steps.yml`.
+
+### Fixed — true positive acted on
+
+- **QA-TQUAL-001** on `tests/adapters.spec.ts:110` was correct. The test was
+  named "counts skipped files on stat failure", its own comment admitted it
+  could not simulate a stat failure, it asserted the skip callback was _not_
+  called, and it never asserted on `ctx.testFiles` — the actual output of
+  `discoverTestFiles`. The test was rewritten to assert on real output and
+  renamed to match what it verifies. The rule was left unchanged.
+
+### Changed — BREAKING: scoring
+
+- **Normalization denominator is now test declarations, not test files.**
+  File count was gameable: adding empty spec files raised the score without
+  adding verification.
+- **`SMOOTHING_C` is 1 (Laplace), was 5.** At 5 it tripled the denominator of a
+  two-declaration repo, diluting real density away.
+- **Findings may declare `suiteInvalidating: true`**, capping the score at 49
+  (UNWORTHY) regardless of exposure. Density can express how much of a suite is
+  questionable; it cannot express whether the suite ran at all. Applied to
+  QA-TEST-001 and QA-PY-001. Deliberately not applied to QA-PW-003, which
+  detects both `test.only()` and `page.pause()` — the flag is per-rule.
+- **A score of 100 now requires zero deductions.** Normalization could
+  previously round a real finding up to a perfect score.
+- `NORMALIZATION_K` remains **unfitted**. See `docs/SCORING.md`.
+
+### Changed — QA-CI-001 severity
+
+- Step-level `continue-on-error` findings are now `error`, previously `warning`.
+  The self-scan gate filters on `severity === "error"`, so a warning could never
+  fail CI — which is how `continue-on-error` stayed live in this repo's own
+  workflows while the tool reported zero errors.
+- Title broadened to "continue-on-error masks a failing verification gate",
+  accurate to the allowlist now used.
+
+### Removed
+
+- **All 49 corpus verdicts.** They had been produced by reasoning about what
+  each rule's description implied rather than by reading the source at the cited
+  file and line — fabricated evidence with a real-looking provenance, inside the
+  mechanism built to prevent exactly that. `docs/FP-AUDIT.md` now reports
+  `0/84 rules measured`. An empty measurement is honest; a populated one built
+  on inference is not.
+
+### Known gaps
+
+- **No rule carries a measured FP rate.** Closing this requires a corpus run
+  followed by hand classification against real source. The FP fixes above are
+  confirmed defects, not a substitute for that measurement.
+- `NORMALIZATION_K` is unfitted.
+
 ## [0.4.0] — 2026-08-27
 
 ### Changed

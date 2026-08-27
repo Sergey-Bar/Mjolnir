@@ -7,6 +7,7 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const pyMockOnly = defineRule({
   id: "QA-PY-008",
@@ -26,13 +27,14 @@ export const pyMockOnly = defineRule({
   introduced: "0.3.0",
 
   run(ctx) {
+    const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     if (!ctx.path.endsWith(".py")) return findings;
 
     const fnRe = /^(\s*)def\s+(test_\w+)\s*\([^)]*\)\s*:/gm;
     let m: RegExpExecArray | null;
-    while ((m = fnRe.exec(ctx.text)) !== null) {
-      const body = extractBlock(ctx.text, m.index + m[0].length);
+    while ((m = fnRe.exec(text)) !== null) {
+      const body = extractBlock(text, m.index + m[0].length);
       if (body === null) continue;
 
       // Count real assert statements line-by-line (a statement starts the
@@ -58,8 +60,8 @@ export const pyMockOnly = defineRule({
           findingType: "heuristic-risk",
           qaImpact: "HYGIENE",
           file: ctx.path,
-          line: lineAt(ctx.text, m.index),
-          column: colAt(ctx.text, m.index),
+          line: lineAt(text, m.index),
+          column: colAt(text, m.index),
           message: `Test \`${m[2]}\` asserts only on mock call bookkeeping.`,
           why: "Mock.assert_called_* proves collaborators were invoked, not that the system produced the right result — the real logic can be broken while the test stays green.",
           fix: "Add at least one assertion on the actual return value or observable state.",
@@ -96,15 +98,4 @@ function extractBlock(text: string, afterColon: number): string | null {
   }
   const lineEnd = rest.indexOf("\n", firstContent.index);
   return rest.slice(0, lineEnd === -1 ? undefined : lineEnd);
-}
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
 }

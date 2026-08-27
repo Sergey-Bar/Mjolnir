@@ -1,0 +1,65 @@
+/**
+ * Mask-derived helpers for rules that must read raw text (Phase 1 follow-up).
+ *
+ * Rules whose evidence lives inside a string literal — selectors, URLs, OS
+ * paths — cannot run against `codeText`, because masking would blank the very
+ * thing they judge. That leaves them exposed to a specific false-positive
+ * class: a code expression written as test DATA looks identical to a live
+ * call when you only read raw text.
+ *
+ * `codeText` is offset-preserving, so it can still be used as an ORACLE about
+ * a position rather than as the match surface. These helpers expose that.
+ */
+
+interface MaskCtx {
+  text: string;
+  codeText?: string;
+}
+
+/** True when the offset was blanked in codeText (inside a string or comment). */
+export function isMasked(ctx: MaskCtx, index: number): boolean {
+  const mask = ctx.codeText;
+  if (!mask || mask.length !== ctx.text.length) return false;
+  return mask[index] === " " && ctx.text[index] !== " ";
+}
+
+/**
+ * The raw text of the masked run (string literal or comment) containing the
+ * offset, or null when the offset is live code or no mask is available.
+ *
+ * Newlines are preserved by the masker, so a multi-line literal yields only
+ * the line containing the offset — sufficient for the shape checks below.
+ */
+export function enclosingMaskedRun(ctx: MaskCtx, index: number): string | null {
+  const mask = ctx.codeText;
+  if (!mask || mask.length !== ctx.text.length) return null;
+  if (!isMasked(ctx, index)) return null;
+
+  let start = index;
+  let end = index;
+  while (start > 0 && isMasked(ctx, start - 1)) start--;
+  while (end < ctx.text.length - 1 && isMasked(ctx, end + 1)) end++;
+  return ctx.text.slice(start, end + 1);
+}
+
+/**
+ * True when the offset sits inside a string literal whose contents are
+ * themselves source code rather than a plain value.
+ *
+ * A real value is `'http://localhost:3000'` — no quotes, no call syntax.
+ * Test data is `'page.navigate("http://localhost:3000/checkout")'` — it holds
+ * both a nested quote and a call, because it IS code being passed to the
+ * function under test.
+ *
+ * Requiring BOTH signals keeps ordinary values with an apostrophe or a
+ * parenthesis in prose from being discarded.
+ */
+export function isInsideEmbeddedCode(ctx: MaskCtx, index: number): boolean {
+  const run = enclosingMaskedRun(ctx, index);
+  if (!run) return false;
+  // Strip the literal's own delimiters before looking for nested ones.
+  const inner = run.replace(/^['"`]/, "").replace(/['"`]$/, "");
+  const hasNestedQuote = /['"`]/.test(inner);
+  const hasCallSyntax = /\w\s*\(/.test(inner);
+  return hasNestedQuote && hasCallSyntax;
+}

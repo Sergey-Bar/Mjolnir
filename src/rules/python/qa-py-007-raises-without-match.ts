@@ -8,6 +8,7 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const pyRaisesWithoutMatch = defineRule({
   id: "QA-PY-007",
@@ -27,16 +28,17 @@ export const pyRaisesWithoutMatch = defineRule({
   introduced: "0.3.0",
 
   run(ctx) {
+    const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     if (!ctx.path.endsWith(".py")) return findings;
 
     const re = /pytest\.raises\s*\(/g;
     let m: RegExpExecArray | null;
-    while ((m = re.exec(ctx.text)) !== null) {
+    while ((m = re.exec(text)) !== null) {
       const openParen = m.index + m[0].length - 1;
-      const closeParen = matchParen(ctx.text, openParen);
+      const closeParen = matchParen(text, openParen);
       if (closeParen === -1) continue;
-      const args = ctx.text.slice(openParen + 1, closeParen);
+      const args = text.slice(openParen + 1, closeParen);
 
       if (!/\bmatch\s*=/.test(args)) {
         findings.push({
@@ -45,8 +47,8 @@ export const pyRaisesWithoutMatch = defineRule({
           findingType: "heuristic-risk",
           qaImpact: "FALSE-GREEN",
           file: ctx.path,
-          line: lineAt(ctx.text, m.index),
-          column: colAt(ctx.text, m.index),
+          line: lineAt(text, m.index),
+          column: colAt(text, m.index),
           message: "`pytest.raises` without a `match=` pattern.",
           why: "Without match=, any exception of that type anywhere in the block passes — including one raised by an unrelated bug before the code under test even runs.",
           fix: 'Add `match="expected message fragment"` to pin the failure to the intended cause.',
@@ -75,15 +77,4 @@ function matchParen(text: string, open: number): number {
     }
   }
   return -1;
-}
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
 }

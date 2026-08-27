@@ -40,15 +40,15 @@ scoring:
   with an explanation. An **unreviewed** score shift is a regression,
   not an improvement — never run `golden:update` and commit it without
   reading what changed.
-- **Corpus audit** — `npm run corpus:audit` (networked; clones a small
+- **Corpus regression** — `npm run corpus:regression` (networked; clones a small
   set of real OSS repos) must stay green for any PR that adds or
   modifies a rule's detection logic. It fails if a rule fires _more_ on
   real code than the last reviewed baseline — that's a false-positive
   regression signal, not a crash. If the new findings are legitimate,
-  manually read each one, then `npm run corpus:audit:update` and include
+  manually read each one, then `npm run corpus:regression:update` and include
   what you reviewed in the PR description.
-- **FP-audit docs** — after a reviewed `corpus:audit:update`, regenerate
-  `docs/FP-AUDIT.md` with `npm run fp-audit:generate` so the committed
+- **Count-lock docs** — after a reviewed `corpus:regression:update`, regenerate
+  `docs/COUNT-LOCK.md` with `npm run fp-audit:generate` so the committed
   docs page doesn't drift from the baseline that produced it.
 
 ## The two laws
@@ -94,7 +94,7 @@ your change is close to either line.
 5. Register the rule in `src/rules/index.ts` (the scaffold prints the
    exact import + array line to add).
 6. Run the standing gate. If your rule detects a pattern likely to
-   appear in real code, run `npm run corpus:audit` and review any new
+   appear in real code, run `npm run corpus:regression` and review any new
    findings before merging.
 
 ## Proposing a plugin

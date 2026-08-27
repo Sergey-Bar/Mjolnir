@@ -27,15 +27,14 @@ export const pwNoFailureArtifacts = defineRule({
   introduced: "0.3.8",
 
   run(ctx) {
+    const text = ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     const base = ctx.path.split("/").pop() ?? "";
     if (!/^playwright\.config\.(ts|js|mjs|cts)$/.test(base)) return findings;
 
     const hasScreenshot =
-      /screenshot\s*:\s*['"](?:on|only-on-failure)['"]/.test(ctx.text);
-    const hasVideo = /video\s*:\s*['"](?:on|retain-on-failure)['"]/.test(
-      ctx.text,
-    );
+      /screenshot\s*:\s*['"](?:on|only-on-failure)['"]/.test(text);
+    const hasVideo = /video\s*:\s*['"](?:on|retain-on-failure)['"]/.test(text);
     if (!hasScreenshot && !hasVideo) {
       findings.push({
         severity: "info",

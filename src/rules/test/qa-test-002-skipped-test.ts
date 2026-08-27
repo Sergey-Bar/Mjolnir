@@ -4,6 +4,7 @@
  */
 
 import { defineRule } from "../rule.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const skippedTest = defineRule({
   id: "QA-TEST-002",
@@ -22,6 +23,7 @@ export const skippedTest = defineRule({
   detectionStrategy: "regex pattern",
   introduced: "0.1.0",
   run(ctx) {
+    const text = ctx.codeText ?? ctx.text;
     const findings: Omit<
       import("../../types.js").Finding,
       "ruleId" | "category"
@@ -37,16 +39,16 @@ export const skippedTest = defineRule({
     const skipPatterns = patterns.slice(0, 2);
     for (const re of skipPatterns) {
       let m: RegExpExecArray | null;
-      while ((m = re.exec(ctx.text)) !== null) {
+      while ((m = re.exec(text)) !== null) {
         // Justification context: an issue reference (#123 / JIRA-42) or a
         // reason comment on the same line or the line above makes the skip
         // deliberate — downgrade stays a warning. A bare skip escalates.
-        const lineStart = ctx.text.lastIndexOf("\n", m.index) + 1;
-        const prevLineStart = ctx.text.lastIndexOf("\n", lineStart - 2) + 1;
+        const lineStart = text.lastIndexOf("\n", m.index) + 1;
+        const prevLineStart = text.lastIndexOf("\n", lineStart - 2) + 1;
         const context =
-          ctx.text.slice(lineStart, m.index + 120) +
+          text.slice(lineStart, m.index + 120) +
           "\n" +
-          ctx.text.slice(prevLineStart, lineStart);
+          text.slice(prevLineStart, lineStart);
         const justified =
           /#\d+|issues\/\d+|[A-Z][A-Z0-9]+-\d+|(?:\/\/|#)\s*(?:reason|because|until|blocked|flaky)|\/\*\s*(?:reason|because)/i.test(
             context,
@@ -57,8 +59,8 @@ export const skippedTest = defineRule({
           findingType: "deterministic-defect",
           qaImpact: "FALSE-GREEN",
           file: ctx.path,
-          line: lineAt(ctx.text, m.index),
-          column: colAt(ctx.text, m.index),
+          line: lineAt(text, m.index),
+          column: colAt(text, m.index),
           message: justified
             ? `Skipped test detected: \`${m[0].trim()}\`.`
             : `Skipped test without justification: \`${m[0].trim()}\`.`,
@@ -72,14 +74,3 @@ export const skippedTest = defineRule({
     return findings;
   },
 });
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
-}

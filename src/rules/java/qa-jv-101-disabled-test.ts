@@ -6,6 +6,7 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const jvDisabledTest = defineRule({
   id: "QA-JV-101",
@@ -23,8 +24,10 @@ export const jvDisabledTest = defineRule({
   autofix: false,
   detectionStrategy: "regex pattern",
   introduced: "0.3.8",
+  tier: "extended",
 
   run(ctx) {
+    const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     if (!ctx.path.endsWith(".java")) return findings;
 
@@ -34,15 +37,15 @@ export const jvDisabledTest = defineRule({
     ];
     for (const { re, label } of patterns) {
       let m: RegExpExecArray | null;
-      while ((m = re.exec(ctx.text)) !== null) {
+      while ((m = re.exec(text)) !== null) {
         findings.push({
           severity: "warning",
           confidence: "high",
           findingType: "deterministic-defect",
           qaImpact: "FALSE-GREEN",
           file: ctx.path,
-          line: lineAt(ctx.text, m.index),
-          column: colAt(ctx.text, m.index),
+          line: lineAt(text, m.index),
+          column: colAt(text, m.index),
           message: `Disabled test detected: \`${label}\`.`,
           why: "Disabled tests hide broken or unimplemented behavior behind a green build.",
           fix: "Fix and re-enable the test, or delete it with a tracked issue reference.",
@@ -52,14 +55,3 @@ export const jvDisabledTest = defineRule({
     return findings;
   },
 });
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
-}

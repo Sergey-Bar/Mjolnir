@@ -18,6 +18,13 @@ export interface ParsedFile {
   text: string;
   /** Adapter-specific AST; typed loosely until tree-sitter unifies it. */
   ast?: unknown;
+  /**
+   * Code-only text view: string literals and comments blanked to spaces,
+   * newlines preserved so line/column indices stay exact. Regex rules
+   * that must never fire on prose inside strings or comments use this
+   * instead of `text`. Computed lazily per adapter.
+   */
+  codeText?: string;
 }
 
 export interface FrameworkInfo {

@@ -7,6 +7,7 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const pwSharedPage = defineRule({
   id: "QA-PW-115",
@@ -26,6 +27,7 @@ export const pwSharedPage = defineRule({
   introduced: "0.3.0",
 
   run(ctx) {
+    const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     if (!/\.(spec|test)\.[tj]sx?$/.test(ctx.path)) return findings;
 
@@ -35,15 +37,15 @@ export const pwSharedPage = defineRule({
     const re =
       /^(?:export\s+)?(?:let|var|const)\s+(?:page|browser|context|browserContext)\b/gm;
     let m: RegExpExecArray | null;
-    while ((m = re.exec(ctx.text)) !== null) {
+    while ((m = re.exec(text)) !== null) {
       findings.push({
         severity: "warning",
         confidence: "medium",
         findingType: "heuristic-risk",
         qaImpact: "FLAKY-RISK",
         file: ctx.path,
-        line: lineAt(ctx.text, m.index),
-        column: colAt(ctx.text, m.index),
+        line: lineAt(text, m.index),
+        column: colAt(text, m.index),
         message: `Module-level \`${m[0].trim()}\` — browser state shared across tests.`,
         why: "Parallel workers share module scope: one test navigating or closing the page corrupts every other test's session, producing order-dependent flakes.",
         fix: "Take `page` as a test function parameter (Playwright creates an isolated one per test), or use fixtures.",
@@ -52,14 +54,3 @@ export const pwSharedPage = defineRule({
     return findings;
   },
 });
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
-}

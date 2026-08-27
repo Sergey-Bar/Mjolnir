@@ -7,10 +7,15 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
-import { isDefaultIgnored, LIMITS } from "../discovery/ignores.js";
+import {
+  isDefaultIgnored,
+  isLintFixtureDir,
+  LIMITS,
+} from "../discovery/ignores.js";
 import { detectFrameworks as detectFrameworksLegacy } from "../discovery/frameworks.js";
 import type { Workspace } from "../discovery/workspace.js";
 import { parseTsFile } from "../engine/ts-ast.js";
+import { computeCodeText } from "../engine/code-text.js";
 import type {
   FrameworkInfo,
   LanguageAdapter,
@@ -48,10 +53,26 @@ export const typescriptAdapter: LanguageAdapter = {
     // Phase 3: populate the AST seam once per file; rules that opt in use
     // it via getTsSourceFile, everything else stays on the regex path.
     const withAst: ParsedFile = { ...file, ast: parseTsFile(file) };
+    // Phase 1 (Tempering): lazy codeText — computed on first access.
+    let cachedCodeText: string | undefined;
+    const enriched: ParsedFile = Object.defineProperty(
+      { ...withAst },
+      "codeText",
+      {
+        get() {
+          if (cachedCodeText === undefined) {
+            cachedCodeText = computeCodeText(withAst, "typescript");
+          }
+          return cachedCodeText;
+        },
+        enumerable: true,
+        configurable: true,
+      },
+    );
     for (const rule of rules) {
       if (!rule.appliesTo.includes(this.id)) continue;
       try {
-        for (const f of rule.run(withAst)) {
+        for (const f of rule.run(enriched)) {
           emit(f, rule.id, rule.category);
         }
       } catch {
@@ -105,7 +126,8 @@ function walk(
     if (entry.isSymbolicLink()) continue;
     if (entry.isDirectory()) {
       if (rel.split("/").length <= LIMITS.maxDepth)
-        walk(full, root, out, deadline, onSkipped);
+        // Phase 2: skip lint-fixture dirs (must-fire + must-not-fire siblings)
+        if (!isLintFixtureDir(full)) walk(full, root, out, deadline, onSkipped);
     } else if (entry.isFile() && TEST_FILE_RE.test(entry.name)) {
       try {
         if (statSync(full).size <= LIMITS.maxFileBytes) out.push(full);

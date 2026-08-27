@@ -1,0 +1,6 @@
+# Mjölnir ignore file — paths excluded from scanning at discovery time.
+# Same glob syntax as .gitignore (**, *, ?).
+#
+# This repo's fixtures, golden corpus, and demo repo are excluded via
+# the "exclude" field in mjolnir.config.json. This file demonstrates
+# the .mjolnirignore mechanism for repos that prefer file-based config.

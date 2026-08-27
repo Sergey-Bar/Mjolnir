@@ -6,6 +6,7 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const pyNoAssertions = defineRule({
   id: "QA-PY-003",
@@ -25,14 +26,15 @@ export const pyNoAssertions = defineRule({
   introduced: "0.3.0",
 
   run(ctx) {
+    const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     if (!ctx.path.endsWith(".py")) return findings;
 
     // Find `def test_*():` bodies and check for assert/pytest.raises.
     const fnRe = /^(\s*)def\s+(test_\w+)\s*\([^)]*\)\s*:/gm;
     let m: RegExpExecArray | null;
-    while ((m = fnRe.exec(ctx.text)) !== null) {
-      const body = extractBlock(ctx.text, m.index + m[0].length);
+    while ((m = fnRe.exec(text)) !== null) {
+      const body = extractBlock(text, m.index + m[0].length);
       if (body === null) continue;
       const hasCheck =
         // [ \t] not \s — \s crosses lines, matching asserts outside this block.
@@ -47,8 +49,8 @@ export const pyNoAssertions = defineRule({
           findingType: "deterministic-defect",
           qaImpact: "FALSE-GREEN",
           file: ctx.path,
-          line: lineAt(ctx.text, m.index),
-          column: colAt(ctx.text, m.index),
+          line: lineAt(text, m.index),
+          column: colAt(text, m.index),
           message: `Test \`${m[2]}\` contains no assertions.`,
           why: "Without an assertion the test can only fail by crashing — it cannot detect behavioral regressions.",
           fix: "Add an `assert` on the expected outcome, or remove the test.",
@@ -89,15 +91,4 @@ function extractBlock(text: string, afterColon: number): string | null {
   // True inline body: def test_x(): do_thing()
   const lineEnd = rest.indexOf("\n", firstIdx);
   return rest.slice(0, lineEnd === -1 ? undefined : lineEnd);
-}
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
 }

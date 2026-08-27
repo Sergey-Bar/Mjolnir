@@ -7,6 +7,7 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const pwSerialNoJustification = defineRule({
   id: "QA-PW-117",
@@ -26,12 +27,14 @@ export const pwSerialNoJustification = defineRule({
   introduced: "0.3.0",
 
   run(ctx) {
+    const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
     const re = /test\.describe\.serial\s*\(/g;
     let m: RegExpExecArray | null;
-    while ((m = re.exec(ctx.text)) !== null) {
+    while ((m = re.exec(text)) !== null) {
       // Look at the comment on the same line or the one above.
+      // Use raw text for justification check — comments ARE the signal.
       const lineStart = ctx.text.lastIndexOf("\n", m.index) + 1;
       const prevLineStart = ctx.text.lastIndexOf("\n", lineStart - 2) + 1 || 0;
       const contextWindow = ctx.text.slice(
@@ -49,8 +52,8 @@ export const pwSerialNoJustification = defineRule({
           findingType: "deterministic-defect",
           qaImpact: "HYGIENE",
           file: ctx.path,
-          line: lineAt(ctx.text, m.index),
-          column: colAt(ctx.text, m.index),
+          line: lineAt(text, m.index),
+          column: colAt(text, m.index),
           message: "`test.describe.serial` without a justification comment.",
           why: "Serial mode turns any single failure into a cascade for everything after it — it should be an explicit, documented trade-off.",
           fix: "Add a comment explaining why order matters, or refactor tests to be independent.",
@@ -60,14 +63,3 @@ export const pwSerialNoJustification = defineRule({
     return findings;
   },
 });
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
-}

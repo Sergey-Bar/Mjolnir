@@ -7,6 +7,7 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const pwGlobalSetupSharedState = defineRule({
   id: "QA-PW-125",
@@ -26,25 +27,26 @@ export const pwGlobalSetupSharedState = defineRule({
   introduced: "0.3.0",
 
   run(ctx) {
+    const text = ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
     // In a global-setup-like file (or config referencing one), flag writes
     // to shared resources: DB migrations/seeds against non-local hosts.
     const isSetupLike =
-      /(?:globalSetup|global-setup|globalTeardown)/.test(ctx.text) ||
+      /(?:globalSetup|global-setup|globalTeardown)/.test(text) ||
       /(?:global[-.]?setup|seed|migrate)[\w.-]*\.[tj]s$/.test(ctx.path);
     if (!isSetupLike) return findings;
 
     const re =
       /(?:execSync|exec|spawn|query|request)\s*\(\s*[`'"][^`'"]*(?:migrate|migration|seed|TRUNCATE|DROP\s+(?:TABLE|DATABASE)|DELETE\s+FROM)[^`'"]*[`'"]/gi;
     let m: RegExpExecArray | null;
-    while ((m = re.exec(ctx.text)) !== null) {
+    while ((m = re.exec(text)) !== null) {
       // Ephemeral/local targets are fine — check the surrounding statement
       // AND the preceding comment line (where intent is usually documented).
-      const lineStart = ctx.text.lastIndexOf("\n", m.index) + 1;
-      const lineEnd = ctx.text.indexOf("\n", m.index);
-      const prevLineStart = ctx.text.lastIndexOf("\n", lineStart - 2) + 1;
-      const contextWindow = ctx.text.slice(
+      const lineStart = text.lastIndexOf("\n", m.index) + 1;
+      const lineEnd = text.indexOf("\n", m.index);
+      const prevLineStart = text.lastIndexOf("\n", lineStart - 2) + 1;
+      const contextWindow = text.slice(
         Math.max(prevLineStart - 200, 0),
         lineEnd === -1 ? undefined : lineEnd,
       );
@@ -61,8 +63,8 @@ export const pwGlobalSetupSharedState = defineRule({
         findingType: "heuristic-risk",
         qaImpact: "HYGIENE",
         file: ctx.path,
-        line: lineAt(ctx.text, m.index),
-        column: colAt(ctx.text, m.index),
+        line: lineAt(text, m.index),
+        column: colAt(text, m.index),
         message: `Global setup mutates shared state: \`${m[0].slice(0, 60)}…\`.`,
         why: "Migrations/seeds/deletes against a shared environment break every other pipeline and developer pointing at it — and the damage happens before any test runs.",
         fix: "Target an ephemeral per-run environment (testcontainers, branch DB) instead of shared infrastructure.",
@@ -71,14 +73,3 @@ export const pwGlobalSetupSharedState = defineRule({
     return findings;
   },
 });
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
-}

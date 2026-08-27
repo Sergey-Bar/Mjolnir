@@ -1,10 +1,10 @@
 /**
- * FP-audit table generator (Master-Stabilization-Plan Sprint 2, Task 10).
+ * Count-lock table generator (Master-Stabilization-Plan Sprint 2, Task 10).
  *
  * The generator (`scripts/generate-fp-audit-table.mjs`) turns the
  * committed `tests/corpus/baseline/*.json` files into a markdown page —
  * it must never be hand-edited, since the whole point is that it cannot
- * drift from what `npm run corpus:audit` actually measured. This test
+ * drift from what `npm run corpus:regression` actually measured. This test
  * proves the render function produces valid, deterministic markdown
  * from a fixture baseline, independent of whatever the real baseline
  * currently contains.
@@ -42,12 +42,12 @@ describe("renderFpAuditMd", () => {
       ],
       FIXED_DATE,
     );
-    expect(md).toContain("# False-Positive Corpus Audit");
+    expect(md).toContain("# Corpus Count Lock");
     expect(md).toContain("## example-repo");
     expect(md).toContain("| QA-PW-004 | 1 |");
     expect(md).toContain("| QA-TEST-001 | 2 |");
     expect(md).toContain("Total findings: **3**");
-    expect(md).toContain("npm run corpus:audit");
+    expect(md).toContain("npm run corpus:regression");
   });
 
   it("is deterministic for identical input", () => {
@@ -84,16 +84,16 @@ describe("renderFpAuditMd", () => {
   });
 });
 
-describe("generated docs/FP-AUDIT.md", () => {
+describe("generated docs/COUNT-LOCK.md", () => {
   it("exists and is non-empty (generated at least once)", () => {
-    const outPath = join(ROOT, "docs", "FP-AUDIT.md");
+    const outPath = join(ROOT, "docs", "COUNT-LOCK.md");
     const content = readFileSync(outPath, "utf8");
     expect(content.length).toBeGreaterThan(0);
-    expect(content).toContain("# False-Positive Corpus Audit");
+    expect(content).toContain("# Corpus Count Lock");
   });
 
   it("covers every committed baseline file", () => {
-    const outPath = join(ROOT, "docs", "FP-AUDIT.md");
+    const outPath = join(ROOT, "docs", "COUNT-LOCK.md");
     const content = readFileSync(outPath, "utf8");
     const baselineNames = readdirSync(BASELINE_DIR)
       .filter((f) => f.endsWith(".json"))
@@ -102,7 +102,7 @@ describe("generated docs/FP-AUDIT.md", () => {
     for (const name of baselineNames) {
       expect(
         content,
-        `docs/FP-AUDIT.md is missing a section for baseline "${name}" — ` +
+        `docs/COUNT-LOCK.md is missing a section for baseline "${name}" — ` +
           `regenerate with node scripts/generate-fp-audit-table.mjs`,
       ).toContain(`## ${name}`);
     }
@@ -111,10 +111,6 @@ describe("generated docs/FP-AUDIT.md", () => {
 
 describe("CORPUS_NOTES stays in sync with tests/corpus/audit.ts", () => {
   it("every repo name in audit.ts's CORPUS list has a CORPUS_NOTES entry", () => {
-    // audit.ts's CORPUS array entries have `name: "...",` — extract them
-    // without importing the module (importing it would require guarding
-    // against its own networked main(), which it already does, but this
-    // avoids depending on that guard holding for a plain string check).
     const nameMatches = [...AUDIT_SOURCE.matchAll(/name:\s*"([^"]+)"/g)].map(
       (m) => m[1],
     );

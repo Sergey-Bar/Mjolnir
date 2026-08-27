@@ -6,6 +6,7 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const pwWaitForTimeout = defineRule({
   id: "QA-PW-101",
@@ -24,19 +25,20 @@ export const pwWaitForTimeout = defineRule({
   detectionStrategy: "regex pattern",
   introduced: "0.3.0",
   run(ctx) {
+    const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
     const re = /waitForTimeout\s*\(/g;
     let m: RegExpExecArray | null;
-    while ((m = re.exec(ctx.text)) !== null) {
+    while ((m = re.exec(text)) !== null) {
       findings.push({
         severity: "error",
         confidence: "high",
         findingType: "deterministic-defect",
         qaImpact: "FLAKY-RISK",
         file: ctx.path,
-        line: lineAt(ctx.text, m.index),
-        column: colAt(ctx.text, m.index),
+        line: lineAt(text, m.index),
+        column: colAt(text, m.index),
         message: "`waitForTimeout()` hard sleep.",
         why: "Fixed waits either wait too long (slow suite) or too little (flaky on slow machines). They encode hope, not synchronization.",
         fix: "Replace with a web-first assertion (`await expect(locator).toBeVisible()`) or `locator.waitFor()`.",
@@ -45,14 +47,3 @@ export const pwWaitForTimeout = defineRule({
     return findings;
   },
 });
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
-}

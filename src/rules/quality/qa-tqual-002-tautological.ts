@@ -7,6 +7,7 @@
 import { defineRule } from "../rule.js";
 import { getCodeOnlyText } from "../../engine/ts-ast.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const tautologicalAssertion = defineRule({
   id: "QA-TQUAL-002",
@@ -31,7 +32,7 @@ export const tautologicalAssertion = defineRule({
     // expect(<literal>).<matcher>(<same-or-any-literal>)
     // Runs on the comment/string-free view: a tautology inside a prose
     // comment or a doc-example string is documentation, not a defect.
-    const text = getCodeOnlyText(ctx);
+    const text = ctx.codeText ?? getCodeOnlyText(ctx);
     const re =
       /expect\s*\(\s*(true|false|null|undefined|\d+|['"`][^'"`]*['"`])\s*\)\s*\.\s*toBe(?:True|False)?\s*\(\s*(true|false|null|undefined|\d+|['"`][^'"`]*['"`])?\s*\)/g;
 
@@ -53,14 +54,3 @@ export const tautologicalAssertion = defineRule({
     return findings;
   },
 });
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
-}

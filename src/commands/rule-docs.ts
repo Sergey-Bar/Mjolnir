@@ -19,6 +19,7 @@ import type { QADoctorRule } from "../rules/rule.js";
 import { deriveEvidenceLevel, QA_IMPACT_LABELS } from "../types.js";
 import type { Finding } from "../types.js";
 import { parseWorkflow } from "../discovery/workflow-parser.js";
+import { computeCodeText } from "../engine/code-text.js";
 import { getAntiPatternContent } from "./anti-pattern-catalog.js";
 
 export interface RuleDocExample {
@@ -61,10 +62,25 @@ function runRuleAgainstFixture(
     }
   }
   try {
-    return rule.run({ path: normalizedPath, text, ast });
+    // codeText must be supplied here for the same reason the fixture, mutation
+    // and golden harnesses supply it: rules that use it as a mask oracle
+    // (QA-PW-004, QA-ENV-001) abstain without it and report their pre-fix
+    // behavior, which would make a passing fixture look like a firewall
+    // violation on this page only.
+    const parsed = { path: normalizedPath, text, ast };
+    const codeText = computeCodeText(parsed, languageOf(normalizedPath));
+    return rule.run({ ...parsed, codeText });
   } catch {
     return null;
   }
+}
+
+/** Fixture language from its extension, for codeText masking. */
+function languageOf(path: string): "typescript" | "python" | "java" | "csharp" {
+  if (path.endsWith(".py")) return "python";
+  if (path.endsWith(".java")) return "java";
+  if (path.endsWith(".cs")) return "csharp";
+  return "typescript";
 }
 
 export interface CorpusBaseline {

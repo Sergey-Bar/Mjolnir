@@ -6,6 +6,7 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const pwPollNoTimeout = defineRule({
   id: "QA-PW-105",
@@ -25,17 +26,18 @@ export const pwPollNoTimeout = defineRule({
   introduced: "0.3.0",
 
   run(ctx) {
+    const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
     // Whitespace-tolerant: `await expect\n  .poll(...)` is idiomatic
     // formatting and must be caught too.
     const re = /expect\s*\.\s*poll\s*\(/g;
     let m: RegExpExecArray | null;
-    while ((m = re.exec(ctx.text)) !== null) {
+    while ((m = re.exec(text)) !== null) {
       const openParen = m.index + m[0].length - 1;
-      const closeParen = matchParen(ctx.text, openParen);
+      const closeParen = matchParen(text, openParen);
       if (closeParen === -1) continue;
-      const args = ctx.text.slice(openParen + 1, closeParen);
+      const args = text.slice(openParen + 1, closeParen);
       if (!/timeout\s*:/.test(args)) {
         findings.push({
           severity: "warning",
@@ -43,8 +45,8 @@ export const pwPollNoTimeout = defineRule({
           findingType: "heuristic-risk",
           qaImpact: "HYGIENE",
           file: ctx.path,
-          line: lineAt(ctx.text, m.index),
-          column: colAt(ctx.text, m.index),
+          line: lineAt(text, m.index),
+          column: colAt(text, m.index),
           message: "`expect.poll` without an explicit `timeout`.",
           why: "The default poll timeout masks how long the condition actually takes to converge — a regression to minutes-long polling stays invisible.",
           fix: "Pass `{ timeout: 10_000 }` (or your budget) and `{ intervals: [...] }` if pacing matters.",
@@ -73,15 +75,4 @@ function matchParen(text: string, open: number): number {
     }
   }
   return -1;
-}
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
 }

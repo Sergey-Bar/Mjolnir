@@ -6,6 +6,7 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt } from "../shared/positions.js";
 
 export const pwNoProjectSplit = defineRule({
   id: "QA-PW-124",
@@ -25,15 +26,16 @@ export const pwNoProjectSplit = defineRule({
   introduced: "0.3.0",
 
   run(ctx) {
+    const text = ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     const base = ctx.path.split("/").pop() ?? "";
     if (!/^playwright\.config\.(ts|js|mjs|cts)$/.test(base)) return findings;
 
-    const hasProjects = /projects\s*:\s*\[/.test(ctx.text);
+    const hasProjects = /projects\s*:\s*\[/.test(text);
     if (!hasProjects) return findings;
 
-    const names = [...ctx.text.matchAll(/name\s*:\s*['"]([^'"]+)['"]/g)].map(
-      (m) => (m[1] ?? "").toLowerCase(),
+    const names = [...text.matchAll(/name\s*:\s*['"]([^'"]+)['"]/g)].map((m) =>
+      (m[1] ?? "").toLowerCase(),
     );
     const hasSmoke = names.some(
       (n) => n.includes("smoke") || n.includes("critical"),
@@ -49,7 +51,7 @@ export const pwNoProjectSplit = defineRule({
         findingType: "heuristic-risk",
         qaImpact: "HYGIENE",
         file: ctx.path,
-        line: lineAt(ctx.text, /projects\s*:/.exec(ctx.text)?.index ?? 0),
+        line: lineAt(text, /projects\s*:/.exec(text)?.index ?? 0),
         column: 1,
         message: "Projects defined without a smoke/regression split.",
         why: "Without a fast smoke project, every commit runs the whole suite — PR feedback slows down and people start skipping CI.",
@@ -59,9 +61,3 @@ export const pwNoProjectSplit = defineRule({
     return findings;
   },
 });
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}

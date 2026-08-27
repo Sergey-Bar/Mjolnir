@@ -5,6 +5,8 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
+import { isInsideEmbeddedCode } from "../shared/masking.js";
 
 export const hardcodedBaseUrl = defineRule({
   id: "QA-PW-123",
@@ -24,20 +26,25 @@ export const hardcodedBaseUrl = defineRule({
   introduced: "0.3.0",
 
   run(ctx) {
+    const text = ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
     const re =
       /(?:goto|request)\s*\(\s*['"`]https?:\/\/(?!localhost)[^'"`]+['"`]/g;
     let m: RegExpExecArray | null;
-    while ((m = re.exec(ctx.text)) !== null) {
+    while ((m = re.exec(text)) !== null) {
+      // Reads raw text because the URL is string content. Skip when the whole
+      // expression is itself inside a string literal — that is a code sample
+      // passed to the function under test, not a live navigation.
+      if (isInsideEmbeddedCode(ctx, m.index)) continue;
       findings.push({
         severity: "warning",
         confidence: "high",
         findingType: "deterministic-defect",
         qaImpact: "HYGIENE",
         file: ctx.path,
-        line: lineAt(ctx.text, m.index),
-        column: colAt(ctx.text, m.index),
+        line: lineAt(text, m.index),
+        column: colAt(text, m.index),
         message: `Hardcoded URL: \`${m[0].slice(0, 60)}\`.`,
         why: "Specs pointing at absolute URLs break when environments change and can hit production by accident.",
         fix: "Use relative paths with baseURL from playwright.config, or an env variable.",
@@ -46,14 +53,3 @@ export const hardcodedBaseUrl = defineRule({
     return findings;
   },
 });
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
-}

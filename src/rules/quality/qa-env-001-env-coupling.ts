@@ -6,6 +6,8 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
+import { isInsideEmbeddedCode } from "../shared/masking.js";
 
 export const envCoupling = defineRule({
   id: "QA-ENV-001",
@@ -25,6 +27,7 @@ export const envCoupling = defineRule({
   introduced: "0.2.0",
 
   run(ctx) {
+    const text = ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
     const patterns: Array<{
@@ -64,16 +67,24 @@ export const envCoupling = defineRule({
     ];
 
     for (const { re, kind, why, fix } of patterns) {
+      re.lastIndex = 0;
       let m: RegExpExecArray | null;
-      while ((m = re.exec(ctx.text)) !== null) {
+      while ((m = re.exec(text)) !== null) {
+        // This rule reads raw text because the evidence (port, path, locale
+        // call) lives inside a string literal. That exposes it to code
+        // written as test DATA: a string holding `page.navigate("http://
+        // localhost:3000/…")` is an argument to the function under test, not
+        // a real navigation. A string that contains both a nested quote and
+        // call syntax is source code, not a value.
+        if (isInsideEmbeddedCode(ctx, m.index)) continue;
         findings.push({
           severity: "warning",
           confidence: "medium",
           findingType: "heuristic-risk",
           qaImpact: "FLAKY-RISK",
           file: ctx.path,
-          line: lineAt(ctx.text, m.index),
-          column: colAt(ctx.text, m.index),
+          line: lineAt(text, m.index),
+          column: colAt(text, m.index),
           message: `Environment coupling (${kind}): \`${m[0].slice(0, 50)}\`.`,
           why,
           fix,
@@ -83,14 +94,3 @@ export const envCoupling = defineRule({
     return findings;
   },
 });
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
-}

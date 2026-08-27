@@ -9,6 +9,7 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const pwRetryMaskingNoForensics = defineRule({
   id: "QA-PW-141",
@@ -28,19 +29,22 @@ export const pwRetryMaskingNoForensics = defineRule({
   introduced: "0.3.8",
 
   run(ctx) {
+    const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     const base = ctx.path.split("/").pop() ?? "";
     if (!/^playwright\.config\.(ts|js|mjs|cts)$/.test(base)) return findings;
 
     const retriesRe = /retries\s*:\s*(\d+)/g;
     let m: RegExpExecArray | null;
-    while ((m = retriesRe.exec(ctx.text)) !== null) {
+    while ((m = retriesRe.exec(text)) !== null) {
       if (Number(m[1]) < 1) continue; // retries disabled — nothing to mask
       // A triage loop exists if the repo wires retry evidence somewhere:
       // a reporter that emits machine-readable results, or an explicit
       // reference to flake handling in config comments/setup.
+      // Check code-structure signals in codeText, but check comment-based
+      // signals in raw text (comments ARE the evidence here).
       const hasTriageLoop =
-        /reporter\s*:/.test(ctx.text) ||
+        /reporter\s*:/.test(text) ||
         /(?:forensics|triage|flaky)/i.test(ctx.text);
       if (!hasTriageLoop) {
         findings.push({
@@ -49,8 +53,8 @@ export const pwRetryMaskingNoForensics = defineRule({
           findingType: "heuristic-risk",
           qaImpact: "FALSE-GREEN",
           file: ctx.path,
-          line: lineAt(ctx.text, m.index),
-          column: colAt(ctx.text, m.index),
+          line: lineAt(text, m.index),
+          column: colAt(text, m.index),
           message: `retries: ${m[1]} with no visible flake-triage loop.`,
           why: "Retries convert intermittent failures into silent passes. Without a forensics/triage step consuming retry data, flaky tests pass forever and real regressions hide behind lucky reruns.",
           fix: "Keep retries <= 2 and feed retry outcomes into `mjolnir forensics`/`triage`, or add a reporter so flaky passes are reviewed.",
@@ -60,14 +64,3 @@ export const pwRetryMaskingNoForensics = defineRule({
     return findings;
   },
 });
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
-}

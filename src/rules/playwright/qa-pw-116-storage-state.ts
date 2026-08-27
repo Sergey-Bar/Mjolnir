@@ -7,6 +7,7 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const pwStorageStateNoExpiry = defineRule({
   id: "QA-PW-116",
@@ -26,16 +27,17 @@ export const pwStorageStateNoExpiry = defineRule({
   introduced: "0.3.0",
 
   run(ctx) {
+    const text = ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
     // storageState configured in a config file or setup spec.
     const re = /storageState\s*:\s*['"][^'"]+['"]/g;
     let m: RegExpExecArray | null;
-    while ((m = re.exec(ctx.text)) !== null) {
+    while ((m = re.exec(text)) !== null) {
       // Look for a nearby freshness mechanism in the whole file:
       // a setup project regenerating it, or an expiry check.
       const hasRefresh =
-        /(?:refresh|renew|regenerate|expiresAt|maxAge|ttl)/i.test(ctx.text);
+        /(?:refresh|renew|regenerate|expiresAt|maxAge|ttl)/i.test(text);
       if (!hasRefresh) {
         findings.push({
           severity: "warning",
@@ -43,8 +45,8 @@ export const pwStorageStateNoExpiry = defineRule({
           findingType: "heuristic-risk",
           qaImpact: "FLAKY-RISK",
           file: ctx.path,
-          line: lineAt(ctx.text, m.index),
-          column: colAt(ctx.text, m.index),
+          line: lineAt(text, m.index),
+          column: colAt(text, m.index),
           message:
             "`storageState` used without a visible expiry/refresh strategy.",
           why: "Auth cookies/tokens expire; when they do, every test using the stale state fails identically and the suite looks catastrophically broken.",
@@ -55,14 +57,3 @@ export const pwStorageStateNoExpiry = defineRule({
     return findings;
   },
 });
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
-}

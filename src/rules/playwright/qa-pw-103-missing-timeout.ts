@@ -7,6 +7,7 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const pwMissingTimeout = defineRule({
   id: "QA-PW-103",
@@ -24,8 +25,10 @@ export const pwMissingTimeout = defineRule({
   autofix: false,
   detectionStrategy: "regex pattern",
   introduced: "0.3.0",
+  tier: "quarantine",
 
   run(ctx) {
+    const text = ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
     // goto/waitForURL/waitForSelector called with a single string arg and
@@ -33,15 +36,15 @@ export const pwMissingTimeout = defineRule({
     const re =
       /(?:goto|waitForURL|waitForSelector)\s*\(\s*['"`][^'"`]+['"`]\s*\)/g;
     let m: RegExpExecArray | null;
-    while ((m = re.exec(ctx.text)) !== null) {
+    while ((m = re.exec(text)) !== null) {
       findings.push({
         severity: "info",
         confidence: "low",
         findingType: "heuristic-risk",
         qaImpact: "HYGIENE",
         file: ctx.path,
-        line: lineAt(ctx.text, m.index),
-        column: colAt(ctx.text, m.index),
+        line: lineAt(text, m.index),
+        column: colAt(text, m.index),
         message: `\`${m[0].slice(0, 50)}\` without an explicit timeout.`,
         why: "Magic-default timeouts make failures opaque (was it slow, or broken?) and never encode the product's actual performance budget.",
         fix: "Pass `{ timeout: <budget-ms> }` matching your performance SLO, or set actionTimeout/navigationTimeout deliberately in config.",
@@ -50,14 +53,3 @@ export const pwMissingTimeout = defineRule({
     return findings;
   },
 });
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
-}

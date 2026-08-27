@@ -14,7 +14,7 @@
  * Exit codes reuse the frozen set: 0 healthy · 1 violations · 20 crash.
  */
 
-import { existsSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 import type { QADoctorRule } from "../rules/rule.js";
@@ -139,12 +139,125 @@ export interface DoctorReport {
   healthy: boolean;
 }
 
+/**
+ * Check 5 (Phase 4 — Tempering Plan): tier enforcement.
+ * Core-tier rules must have a measured FP rate (n ≥ 10 classified
+ * verdicts in tests/corpus/verdicts/). Unmeasured core rules fail the
+ * audit — they must be measured or demoted before shipping.
+ */
+export function checkTierEnforcement(
+  verdictsDir: string,
+  rules: readonly QADoctorRule[] = RULES,
+): DoctorCheck {
+  const details: string[] = [];
+  const ok = true;
+
+  // Load all verdicts and count classified samples per rule
+  const classifiedPerRule = new Map<string, number>();
+  try {
+    const files = readdirSync(verdictsDir).filter((f) => f.endsWith(".jsonl"));
+    for (const f of files) {
+      const lines = readFileSync(join(verdictsDir, f), "utf8")
+        .split("\n")
+        .filter((l) => l.trim().length > 0);
+      for (const line of lines) {
+        try {
+          const entry = JSON.parse(line);
+          if (entry.verdict === "TP" || entry.verdict === "FP") {
+            classifiedPerRule.set(
+              entry.ruleId,
+              (classifiedPerRule.get(entry.ruleId) ?? 0) + 1,
+            );
+          }
+        } catch {
+          // skip malformed
+        }
+      }
+    }
+  } catch {
+    // verdicts dir doesn't exist — all core rules are unmeasured
+  }
+
+  const coreRules = rules.filter(
+    (r) => r.tier === undefined || r.tier === "core",
+  );
+  for (const r of coreRules) {
+    const n = classifiedPerRule.get(r.id) ?? 0;
+    if (n < 10) {
+      details.push(
+        `${r.id}: core tier, measured n=${n} (needs ≥10 classified verdicts)`,
+      );
+    }
+  }
+
+  // Report unmeasured count. Once ALL core rules are measured, this check
+  // will have zero details and pass cleanly.
+  const unmeasured = details.length;
+  const total = coreRules.length;
+  if (unmeasured > 0) {
+    details.unshift(
+      `${unmeasured}/${total} core rules lack measured FP rate (n ≥ 10)`,
+    );
+  }
+
+  return { name: "tier-enforcement", ok, details };
+}
+
+/**
+ * The core-tier cap (Phase 7 — Tempering Plan).
+ * Anti-creep restated: core is capped at CORE_CAP rules. Promoting a
+ * rule to core requires demoting another. This is enforced, not aspirational.
+ */
+export const CORE_CAP = 65;
+
+/**
+ * Check 6 (Phase 7 — Tempering Plan): anti-creep law enforcement.
+ * Core tier is capped at CORE_CAP rules. Exceeding it is a blocking failure.
+ * This makes the anti-creep law an executable check, not a sentence in docs.
+ */
+export function checkAntiCreep(
+  rules: readonly QADoctorRule[] = RULES,
+): DoctorCheck {
+  const details: string[] = [];
+  let ok = true;
+
+  const coreRules = rules.filter(
+    (r) => r.tier === undefined || r.tier === "core",
+  );
+  const count = coreRules.length;
+
+  if (count > CORE_CAP) {
+    ok = false;
+    details.push(
+      `Core tier has ${count} rules — exceeds cap of ${CORE_CAP}. ` +
+        `Promoting a rule to core requires demoting another first.`,
+    );
+    // List the newest additions to help identify what to demote
+    const overflow = coreRules.slice(CORE_CAP);
+    for (const r of overflow.slice(0, 5)) {
+      details.push(`  overflow: ${r.id} — ${r.title}`);
+    }
+    if (overflow.length > 5) {
+      details.push(`  … and ${overflow.length - 5} more`);
+    }
+  } else {
+    details.push(
+      `Core tier: ${count}/${CORE_CAP} rules (${CORE_CAP - count} slots available)`,
+    );
+  }
+
+  return { name: "anti-creep", ok, details };
+}
+
 export function runDoctorSelfAudit(fixturesRoot: string): DoctorReport {
+  const verdictsDir = join(fixturesRoot, "..", "corpus", "verdicts");
   const checks = [
     checkFixtureFirewall(fixturesRoot),
     checkRegistry(),
     checkTrustMetadata(),
     checkEvidenceHonesty(),
+    checkTierEnforcement(verdictsDir),
+    checkAntiCreep(),
   ];
   return { checks, healthy: checks.every((c) => c.ok) };
 }

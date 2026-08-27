@@ -35,7 +35,8 @@ jobs:
 `;
     const findings = continueOnError.run(ctxFor(yaml));
     expect(findings.length).toBeGreaterThan(0);
-    expect(findings[0]?.severity).toBe("warning");
+    // error, not warning — see rules.ci.spec.ts for why this changed.
+    expect(findings[0]?.severity).toBe("error");
   });
 });
 

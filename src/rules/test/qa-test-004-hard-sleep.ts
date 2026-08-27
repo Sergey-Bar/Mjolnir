@@ -4,6 +4,7 @@
  */
 
 import { defineRule } from "../rule.js";
+import { lineAt, colAt } from "../shared/positions.js";
 
 export const hardSleep = defineRule({
   id: "QA-TEST-004",
@@ -27,6 +28,10 @@ export const hardSleep = defineRule({
       "ruleId" | "category"
     >[] = [];
 
+    // Phase 1 (Tempering): match against the code-only view to avoid
+    // firing on patterns inside string literals or comments.
+    const text = ctx.codeText ?? ctx.text;
+
     const patterns = [
       /\bpage\.waitForTimeout\s*\(/g, // Playwright — fix hint: expect(locator).toBeVisible()
       /\bsleep\s*\(\s*\d+\s*\)/g,
@@ -42,15 +47,15 @@ export const hardSleep = defineRule({
 
     for (const re of patterns) {
       let m: RegExpExecArray | null;
-      while ((m = re.exec(ctx.text)) !== null) {
+      while ((m = re.exec(text)) !== null) {
         const isPlaywright = m[0].startsWith("page.waitForTimeout");
         findings.push({
           severity: "warning",
           confidence: "high",
           findingType: "deterministic-defect",
           file: ctx.path,
-          line: lineAt(ctx.text, m.index),
-          column: colAt(ctx.text, m.index),
+          line: lineAt(text, m.index),
+          column: colAt(text, m.index),
           message: `Hard sleep: \`${m[0]}\`.`,
           why: "Fixed sleeps make tests both slow and flaky — they guess at timing instead of waiting for state.",
           fix: isPlaywright
@@ -63,14 +68,3 @@ export const hardSleep = defineRule({
     return findings;
   },
 });
-
-function lineAt(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
-}
-
-function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
-  return index - lastBreak;
-}
