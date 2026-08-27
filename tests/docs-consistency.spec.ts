@@ -143,7 +143,7 @@ describe("no doc claims a gap that source contradicts", () => {
     // catching exactly the class of bug found while writing this doc: an
     // invented flag (--output) that doesn't exist in parseArgs.
     const flags = new Set(
-      [...sarifDoc.matchAll(/qa-doctor[^\n`]*?(--[a-z-]+)/g)].map((m) => m[1]),
+      [...sarifDoc.matchAll(/mjolnir[^\n`]*?(--[a-z-]+)/g)].map((m) => m[1]),
     );
     const knownFlags = new Set([
       "--json",
@@ -160,7 +160,7 @@ describe("no doc claims a gap that source contradicts", () => {
     for (const flag of flags) {
       expect(
         knownFlags.has(flag as string),
-        `docs/SARIF-INTEGRATION.md references "${flag}" as a qa-doctor ` +
+        `docs/SARIF-INTEGRATION.md references "${flag}" as a mjolnir ` +
           `flag, but it is not in this test's known-flags list (kept in ` +
           `sync with parseArgs in src/cli.ts) — either it's a real flag ` +
           `this list needs to learn about, or it's an invented flag the ` +

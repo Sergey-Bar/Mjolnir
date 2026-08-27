@@ -82,20 +82,22 @@ function extractReadmeCommands(): string[] {
   const lines = README.split("\n");
   const commands: string[] = [];
   for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed.startsWith("npx qa-doctor")) continue;
-    let rest = trimmed
-      .replace(/^npx qa-doctor@latest/, "")
-      .replace(/^npx qa-doctor/, "")
-      .trim();
+    // Only match table-cell commands: `mjolnir ...` or `npx mjolnir-qa ...`
+    // wrapped in backticks inside a markdown table row (starts with |).
+    const cellMatch =
+      /\|\s*`(?:npx mjolnir-qa(?:@latest)?|mjolnir)\s+([^`]*)`/.exec(line);
+    if (!cellMatch) continue;
+    let rest = (cellMatch[1] ?? "").trim();
     // Strip shell redirection — that's a shell concern, not a CLI-arg one.
     rest = rest.replace(/\s*>.*$/, "").trim();
-    commands.push(rest);
+    // Skip commands with placeholder args like <RULE-ID>, <dir>
+    if (rest.includes("<")) continue;
+    if (rest) commands.push(rest);
   }
   return [...new Set(commands)];
 }
 
-describe("every `npx qa-doctor` command in the README actually runs", () => {
+describe("every `mjolnir` command in the README actually runs", () => {
   const commands = extractReadmeCommands();
 
   it("found at least one command in the README (sanity check on parsing)", () => {
@@ -103,7 +105,7 @@ describe("every `npx qa-doctor` command in the README actually runs", () => {
   });
 
   for (const cmdline of commands) {
-    it(`"npx qa-doctor ${cmdline}" does not hit a usage error or crash`, () => {
+    it(`"mjolnir ${cmdline}" does not hit a usage error or crash`, () => {
       const argv = cmdline.split(/\s+/).filter(Boolean);
       // `./test-results/` doesn't exist in the fixture — that's fine,
       // those commands document their own "no report found" exit (2).
@@ -113,12 +115,12 @@ describe("every `npx qa-doctor` command in the README actually runs", () => {
       }).not.toThrow();
       expect(
         code,
-        `"npx qa-doctor ${cmdline}" returned exit 10 (usage error) — the ` +
-          `README shows an example that qa-doctor's own arg parser rejects.`,
+        `"mjolnir ${cmdline}" returned exit 10 (usage error) — the ` +
+          `README shows an example that mjolnir's own arg parser rejects.`,
       ).not.toBe(10);
       expect(
         code,
-        `"npx qa-doctor ${cmdline}" returned exit 20 (internal crash).`,
+        `"mjolnir ${cmdline}" returned exit 20 (internal crash).`,
       ).not.toBe(20);
     });
   }

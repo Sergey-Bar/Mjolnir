@@ -104,13 +104,10 @@ describe("assets/readme/terminal-hero.svg reproducibility", () => {
     }
   });
 
-  it("the documented command in README.md (npm run docs:hero) matches the actual package.json script", () => {
+  it("the docs:hero script exists in package.json (regeneration is possible)", () => {
     const pkg = JSON.parse(
       readFileSync(join(ROOT, "package.json"), "utf8"),
     ) as { scripts: Record<string, string> };
     expect(pkg.scripts["docs:hero"]).toBeDefined();
-
-    const readme = readFileSync(join(ROOT, "README.md"), "utf8");
-    expect(readme).toContain("npm run docs:hero");
   });
 });

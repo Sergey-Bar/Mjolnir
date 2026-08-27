@@ -18,10 +18,10 @@ const README = readFileSync(join(ROOT, "README.md"), "utf8");
 const CLI_SOURCE = readFileSync(join(ROOT, "src", "cli.ts"), "utf8");
 
 /** Extracts the subcommand token (or none, for the bare scan path) from
- * each `npx qa-doctor...`/`npx qa-doctor@latest ...` invocation in the
+ * each `npx mjolnir-qa...`/`mjolnir ...` invocation in the
  * README's command table. */
 function extractReadmeCommands(markdown: string): string[] {
-  const re = /`npx qa-doctor(?:@latest)?\s*([^`]*)`/g;
+  const re = /`(?:npx mjolnir-qa(?:@latest)?|mjolnir)\s*([^`]*)`/g;
   const commands: string[] = [];
   for (const m of markdown.matchAll(re)) {
     const rest = (m[1] ?? "").trim();
@@ -71,21 +71,18 @@ describe("README command table", () => {
     expect(KNOWN_SUBCOMMANDS.length).toBeGreaterThan(5);
   });
 
-  it.each(commands)(
-    "`npx qa-doctor %s` is a real, dispatchable command",
-    (rest) => {
-      const sub = firstSubcommandToken(rest);
-      if (sub === null) {
-        // No subcommand token (e.g. bare `--json`, or a target path) —
-        // this is the default scan path, which always exists.
-        return;
-      }
-      expect(
-        KNOWN_SUBCOMMANDS.includes(sub),
-        `README documents "npx qa-doctor ${rest}", but "${sub}" is not ` +
-          `a subcommand src/cli.ts's main() dispatches on — the README ` +
-          `is promising a command that does not exist.`,
-      ).toBe(true);
-    },
-  );
+  it.each(commands)("`mjolnir %s` is a real, dispatchable command", (rest) => {
+    const sub = firstSubcommandToken(rest);
+    if (sub === null) {
+      // No subcommand token (e.g. bare `--json`, or a target path) —
+      // this is the default scan path, which always exists.
+      return;
+    }
+    expect(
+      KNOWN_SUBCOMMANDS.includes(sub),
+      `README documents "mjolnir ${rest}", but "${sub}" is not ` +
+        `a subcommand src/cli.ts's main() dispatches on — the README ` +
+        `is promising a command that does not exist.`,
+    ).toBe(true);
+  });
 });

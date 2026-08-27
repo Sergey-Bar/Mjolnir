@@ -1,50 +1,41 @@
 <div align="center">
 
 ```
-  ██████╗  █████╗      ██████╗  ██████╗  ██████╗████████╗ ██████╗ ██████╗
- ██╔═══██╗██╔══██╗    ██╔═══██╗██╔═══██╗██╔════╝╚══██╔══╝██╔═══██╗██╔══██╗
- ██║   ██║███████║    ██║   ██║██║   ██║██║        ██║   ██║   ██║██████╔╝
- ██║▄▄ ██║██╔══██║    ██║▄▄▄██║██║   ██║██║        ██║   ██║   ██║██╔══██╗
- ╚██████╔╝██║  ██║    ╚██████╔╝╚██████╔╝╚██████╗   ██║   ╚██████╔╝██║  ██║
-  ╚══▀▀═╝ ╚═╝  ╚═╝     ╚══▀▀═╝  ╚══▀▀═╝  ╚═════╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝
+ ╔═══════════╗
+ ║           ║
+ ╠═══════════╣    M J Ö L N I R
+ ║     ║     ║
+ ╚═════╩═════╝    VERIFICATION TRUST ENGINE
+       ║
+       ║
 ```
 
 ### Your tests are lying to you. We prove it.
 
-**The quality scanner for QA engineers.** Audits test suites and CI pipelines,
-reports a health score, and shows exactly where the trust breaks.
+**Verification Trust Engine for QA.** Audits test suites and CI pipelines,
+reports a worthiness score, and shows exactly where trust breaks.
 
-[![npm](https://img.shields.io/badge/npm-unpublished-lightgrey.svg?style=flat-square&labelColor=0D0D0D)](https://github.com/Sergey-Bar/QA-Doctor/releases)
 [![license](https://img.shields.io/badge/license-MIT-B45309.svg?style=flat-square&labelColor=0D0D0D)](LICENSE)
 [![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-146A8C.svg?style=flat-square&labelColor=0D0D0D)](https://nodejs.org)
 [![status](https://img.shields.io/badge/status-●_ONLINE-15803D.svg?style=flat-square&labelColor=0D0D0D)](#-quickstart)
 
 ```bash
-npx @sergey-bar/qa-doctor@latest
+npx mjolnir-qa@latest
 ```
+
+**Are your tests worthy of trust?**
 
 [Quickstart](#-quickstart) · [Rules](#-the-rules) · [Selector Health](#-selector-health-score) · [Runtime Evidence](#-runtime-evidence) · [CI Integration](#-ci-integration) · [Contributing](#-contributing)
-
-<br>
-
-<img src="assets/readme/terminal-hero.svg" alt="qa-doctor scan report — SCORE 80/100 HEALTHY, error on QA-CI-001 continue-on-error, warning on QA-TEST-004 hard sleep" width="720">
-
-<sub>Generated directly from a real scan of <code>examples/demo-repo</code> — not a mockup, not hand-edited. Reproduce it yourself:</sub>
-
-```bash
-git clone https://github.com/Sergey-Bar/QA-Doctor && cd QA-Doctor/qa-doctor
-npm run docs:hero
-```
 
 </div>
 
 ---
 
-## ▓▓▓ At a glance
+## 🔨 What is Mjölnir?
 
 |     |                                                                                                                |
 | --- | -------------------------------------------------------------------------------------------------------------- |
-| 🩺  | **Health score** — one number, transparent deduction table, no black box                                       |
+| ⚖️  | **Worthiness Score** — one number, transparent deduction table, no black box                                   |
 | 🎭  | **Selector Health Score** — grades your Playwright locators, not just your pass rate                           |
 | 🔬  | **Runtime forensics** — reads real Playwright/JUnit run data to catch `TRUE-FLAKE`, not just static guesses    |
 | 🚨  | **CI-integrity rules** — catches `continue-on-error`, `\|\| true`, and other false-green tricks                |
@@ -53,60 +44,80 @@ npm run docs:hero
 
 ---
 
-## » Not another linter
+## ⚡ Mjölnir is not another linter
 
-ESLint checks your code's _syntax_. Coverage checks whether a line _executed_.
-Neither one checks whether the test that ran actually _proved_ anything.
-QA Doctor is the layer underneath both:
+Linters tell you whether code follows rules.
+Mjölnir tells you whether your verification can be trusted.
 
-|                                                            | ESLint / SonarQube | Coverage tools | Manual review | **QA Doctor** |
-| ---------------------------------------------------------- | :----------------: | :------------: | :-----------: | :-----------: |
-| Catches syntax & style bugs                                |         ✅         |       ❌       |   ✅ (slow)   |       —       |
-| Flags tests with no real assertions                        |         ❌         |       ❌       |   sometimes   |      ✅       |
-| Catches CI false-greens (`\|\| true`, `continue-on-error`) |         ❌         |       ❌       |    rarely     |      ✅       |
-| Reads **real** run data for `TRUE-FLAKE` verdicts          |         ❌         |       ❌       |      ❌       |      ✅       |
-| Grades Playwright locator resilience                       |         ❌         |       ❌       |    rarely     |      ✅       |
-| Runs in seconds, zero network calls                        |         ✅         |       ✅       |       —       |      ✅       |
+|                                                            | ESLint / SonarQube | Coverage tools | Manual review | **Mjölnir** |
+| ---------------------------------------------------------- | :----------------: | :------------: | :-----------: | :---------: |
+| Catches syntax & style bugs                                |         ✅         |       ❌       |   ✅ (slow)   |      —      |
+| Flags tests with no real assertions                        |         ❌         |       ❌       |   sometimes   |     ✅      |
+| Catches CI false-greens (`\|\| true`, `continue-on-error`) |         ❌         |       ❌       |    rarely     |     ✅      |
+| Reads **real** run data for `TRUE-FLAKE` verdicts          |         ❌         |       ❌       |      ❌       |     ✅      |
+| Grades Playwright locator resilience                       |         ❌         |       ❌       |    rarely     |     ✅      |
+| Runs in seconds, zero network calls                        |         ✅         |       ✅       |       —       |     ✅      |
 
-## Why
-
-Green checkmarks lie.
-
-Tests get skipped, focused, emptied of assertions. CI pipelines learn to
-swallow failures with `|| true` and `continue-on-error`. Coverage numbers go
-up while real verification goes down.
-
-And nobody notices — until production. QA Doctor reads your test files and
-workflow definitions and tells you exactly where the trust breaks.
-
-No config. No server. No telemetry. Runs locally in seconds.
+---
 
 ## ⚡ Quickstart
 
 ```bash
-npx @sergey-bar/qa-doctor@latest
+npx mjolnir-qa@latest
 ```
 
-That's it. Zero configuration — QA Doctor detects your frameworks, finds your
+That's it. Zero configuration — Mjölnir detects your frameworks, finds your
 tests, and reports.
 
-| Command                                                             | What it does                                                        |
-| ------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| `npx @sergey-bar/qa-doctor@latest --scope changed`                  | Only findings introduced by **your** changes — perfect for PRs      |
-| `npx @sergey-bar/qa-doctor@latest --json`                           | Machine-readable output                                             |
-| `npx @sergey-bar/qa-doctor@latest --format sarif > qa-doctor.sarif` | GitHub Code Scanning integration                                    |
-| `npx @sergey-bar/qa-doctor@latest --format mermaid`                 | Test-architecture diagram — paste into a GitHub comment or a slide  |
-| `npx qa-doctor doctor:playwright`                                   | Playwright-only deep scan + Selector Health Score                   |
-| `npx qa-doctor forensics ./test-results/`                           | Runtime evidence — retries, true flakes, `FLAKY.md` artifact        |
-| `npx qa-doctor triage ./test-results/`                              | The flaky-triage meeting, in 10 minutes instead of 45               |
-| `npx qa-doctor fix --dry-run` / `fix`                               | Safe auto-fixes with proof (dry-run first)                          |
-| `npx qa-doctor debt`                                                | Test debt register — presentable to management                      |
-| `npx qa-doctor handover`                                            | New-QA-onboarding map of the suite                                  |
-| `npx qa-doctor pw-report ./test-results/`                           | Playwright run summary — retries / flakes / slowest                 |
-| `npx qa-doctor badge`                                               | Evidentiary badge (shields.io endpoint JSON)                        |
-| `npx qa-doctor doctor`                                              | Self-audit — prove QA Doctor's own rule base is healthy             |
-| `npx qa-doctor rules` / `rules --md`                                | Rule catalog with trust metadata (JSON or markdown)                 |
-| `npx qa-doctor explain <RULE-ID>`                                   | What/why/fix for one rule, with a real example from its own fixture |
+| Command                                                | What it does                                                        |
+| ------------------------------------------------------ | ------------------------------------------------------------------- |
+| `npx mjolnir-qa@latest --scope changed`                | Only findings introduced by **your** changes — perfect for PRs      |
+| `npx mjolnir-qa@latest --json`                         | Machine-readable output                                             |
+| `npx mjolnir-qa@latest --format sarif > mjolnir.sarif` | GitHub Code Scanning integration                                    |
+| `npx mjolnir-qa@latest --format mermaid`               | Test-architecture diagram — paste into a GitHub comment or a slide  |
+| `mjolnir doctor:playwright`                            | Playwright-only deep scan + Selector Health Score                   |
+| `mjolnir forensics ./test-results/`                    | Runtime evidence — retries, true flakes, `FLAKY.md` artifact        |
+| `mjolnir triage ./test-results/`                       | The flaky-triage meeting, in 10 minutes instead of 45               |
+| `mjolnir fix --dry-run` / `fix`                        | Safe auto-fixes with proof (dry-run first)                          |
+| `mjolnir debt`                                         | Test debt register — presentable to management                      |
+| `mjolnir handover`                                     | New-QA-onboarding map of the suite                                  |
+| `mjolnir pw-report ./test-results/`                    | Playwright run summary — retries / flakes / slowest                 |
+| `mjolnir badge`                                        | Evidentiary badge (shields.io endpoint JSON)                        |
+| `mjolnir doctor`                                       | Self-audit — prove Mjölnir's own rule base is worthy                |
+| `mjolnir rules` / `rules --md`                         | Rule catalog with trust metadata (JSON or markdown)                 |
+| `mjolnir explain <RULE-ID>`                            | What/why/fix for one rule, with a real example from its own fixture |
+| `mjolnir impact [--since <ref>]`                       | What changed since a prior commit — fixes and new debt              |
+
+---
+
+## ⚖️ Worthiness Score
+
+```text
+🔨 MJÖLNIR
+
+WORTHINESS 80/100 — WORTHY
+████████████████████████░░░░░░
+
+DETECTED [playwright]
+
+▚ FIX THIS FIRST
++8 pts  QA-CI-001 · .github/workflows/ci.yml:48
++3 pts  QA-TEST-004 · e2e/checkout.spec.ts:6
+```
+
+The score is transparent: error −8, warning −3, info −1. Evidence-weighted
+deductions mean weak signals cost less. The terminal shows the same discounted
+numbers the score uses — no black box.
+
+**Verdicts:**
+
+| Score   | Verdict          |
+| ------- | ---------------- |
+| ≥ 80    | ✓ **WORTHY**     |
+| 50 – 79 | ⚠ **NEEDS WORK** |
+| < 50    | ✖ **UNWORTHY**   |
+
+---
 
 ## 📋 The Rules
 
@@ -189,8 +200,10 @@ firewall.
 > and autofix availability — is generated from the registry:
 >
 > ```bash
-> npx qa-doctor rules --md
+> mjolnir rules --md
 > ```
+
+---
 
 ## 🎭 Selector Health Score
 
@@ -203,19 +216,19 @@ The headline metric for Playwright suites — how resilient your locators are:
   role/text: 2 · testid: 1 · css-chains: 1 ⚠ · xpath: 0
 ```
 
-<sub>Real output — <code>npx qa-doctor doctor:playwright examples/demo-repo</code>.</sub>
-
 Role-based locators score full credit. CSS class chains and XPath tank the
 score — they break on any DOM refactor without telling you which behavior
 regressed.
 
-## 🔍 Runtime Evidence
+---
 
-Static flakiness detection is guessing. QA Doctor reads **real execution
+## 🔬 Runtime Evidence
+
+Static flakiness detection is guessing. Mjölnir reads **real execution
 data** — Playwright JSON reports and JUnit XML from any runner:
 
 ```bash
-npx qa-doctor forensics ./test-results/
+mjolnir forensics ./test-results/
 ```
 
 ```text
@@ -229,45 +242,42 @@ FAILING    declines an expired card (e2e/checkout.spec.ts)
            ████░░░░░░░░░░░░░░░░ 1.1s · 1 attempt
 ```
 
-<sub>Real output — <code>npx qa-doctor forensics examples/demo-repo/test-results</code>.</sub>
-
 A test that passes only on attempt ≥ 2 is not a passing test — it's a lucky
 test. It gets flagged `TRUE-FLAKE` regardless of the final green checkmark.
 
-`triage` turns the same data into `TRIAGE.md` — the artifact that ends the
-weekly flaky-test meeting. Quarantine proposals are deterministic:
-retried ≥ 2 and failed at least once.
+---
 
 ## 🤖 CI Integration
 
 One command generates a PR workflow — advisory by default, never blocking:
 
 ```bash
-npx qa-doctor ci install
+mjolnir ci install
 ```
 
 Or wire it into GitHub Code Scanning natively via SARIF:
 
 ```yaml
-- run: npx @sergey-bar/qa-doctor@latest --format sarif > qa-doctor.sarif
+- run: npx mjolnir-qa@latest --format sarif > mjolnir.sarif
 - uses: github/codeql-action/upload-sarif@v3
   with:
-    sarif_file: qa-doctor.sarif
+    sarif_file: mjolnir.sarif
 ```
 
-## 🧠 Principles
+---
+
+## 🛡️ Trust Model
 
 - **Local-first** — zero network calls during scanning. Ever.
 - **No false proof** — we'd rather say "unknown" than "verified". An empty
   repo gets `score: null`, never a fake 100.
 - **Transparent scoring** — public deduction constants: error −8, warning −3,
-  info −1. No black box. Verdict thresholds: **≥80 HEALTHY**, **50–79 NEEDS
-  WORK**, **<50 CRITICAL**.
+  info −1. No black box. Verdict thresholds: **≥80 WORTHY**, **50–79 NEEDS
+  WORK**, **<50 UNWORTHY**.
 - **Evidence-weighted deductions** — every finding carries an evidence level:
   **E2** (deterministic defect, full deduction), **E1** (heuristic pattern,
   half deduction), **E0** (observation — reported but costs nothing and never
-  gates CI). The terminal deduction table shows the same discounted numbers
-  the score uses.
+  gates CI).
 - **Partial honesty** — if analysis was cut short, the output says so.
   Never "complete" when it isn't.
 - **QA-native language** — findings speak your vocabulary:
@@ -276,14 +286,18 @@ Or wire it into GitHub Code Scanning natively via SARIF:
   (TypeScript rules use the compiler AST): a pattern inside a prose comment
   or a doc-example string is documentation, not a finding.
 
-## 🔌 Plugin Trust Model (read before installing plugins)
+---
 
-Plugins are npm packages you declare in `qa-doctor.config.json`. There is **no
+## 🔌 Plugin Trust Model
+
+Plugins are npm packages you declare in `mjolnir.config.json`. There is **no
 sandbox**: plugin code executes with full Node privileges against the scanned
 tree — the same trust model as ESLint or Vitest plugins. Only install plugins
 you'd trust as devDependencies. Core rule-ID prefixes (`QA-TEST`, `QA-TQUAL`,
 `QA-PW`, `QA-CI`, `QA-PY`, `QA-ENV`, `QA-JV`, `QA-CS`) are reserved and
 rejected from plugins to prevent spoofing.
+
+---
 
 ## 🔍 Changed-Scope Coverage
 
@@ -293,24 +307,26 @@ GitHub workflow files and Playwright configs changed in the diff. On shallow
 clones or non-git targets it degrades honestly: findings fall back to
 full-file attribution and the report says so.
 
+---
+
 ## 🏗️ Architecture
 
 <details>
 <summary>Expand tree</summary>
 
 ```
-qa-doctor/
+mjolnir/
 ├── src/
 │   ├── engine/          # LanguageAdapter interface + rule runner
-│   ├── adapters/        # typescript · python · github-actions
-│   ├── rules/           # 28 deterministic rules across 5 families
+│   ├── adapters/        # typescript · python · java · csharp · github-actions
+│   ├── rules/           # deterministic rules across 8 families
 │   ├── playwright/      # Selector Health Score engine
 │   ├── discovery/       # workspace, frameworks, safe-YAML parser
 │   ├── scope/           # git merge-base changed-scope engine
 │   ├── scorer/          # transparent deduction table
-│   ├── reporter/        # terminal · JSON · SARIF 2.1
+│   ├── reporter/        # terminal · JSON · SARIF 2.1 · Mermaid
 │   ├── forensics/       # run-data ingestion · flake verdicts · triage
-│   ├── commands/        # fix · badge · debt · handover · init · create-rule · doctor · rules-catalog
+│   ├── commands/        # fix · badge · debt · handover · init · create-rule · doctor · rules-catalog · explain · impact · baseline · diff · pr-comment · stats
 │   └── integrations/    # CI workflow generator
 └── tests/
     ├── fixtures/        # must-fire / must-not-fire per rule
@@ -320,23 +336,25 @@ qa-doctor/
 </details>
 
 Multi-language by design: adding a language = one adapter + its rules.
-TypeScript/Playwright and Python (with a real tree-sitter AST) are the
-most mature; Java and C#/.NET adapters ship a regex-based core rule
-family (disabled/skipped tests, hard sleeps, missing assertions, shared
-browser state) with tree-sitter WASM AST precision as the next step
-behind the same seam. Go is not yet started.
+TypeScript/Playwright and Python are the most mature; Java and C#/.NET
+adapters ship a regex-based core rule family with tree-sitter WASM AST
+precision as the next step.
+
+---
 
 ## 📦 Install
 
 ```bash
 # Run directly (recommended):
-npx @sergey-bar/qa-doctor@latest
+npx mjolnir-qa@latest
 
 # Or install globally:
-npm i -g @sergey-bar/qa-doctor
+npm i -g mjolnir-qa
 ```
 
 Requires Node.js ≥ 22.18. Works on Windows, macOS, and Linux.
+
+---
 
 ## 🤝 Contributing
 
@@ -344,7 +362,7 @@ New rules are the easiest first contribution — one command scaffolds
 everything (anti-creep law enforced by the fixture harness):
 
 ```bash
-npx tsx src/cli.ts create-rule QA-PW-140 --title "Screenshot without diff bound"
+mjolnir create-rule QA-PW-140 --title "Screenshot without diff bound"
 ```
 
 That generates the rule file plus must-fire AND must-not-fire fixture
@@ -360,18 +378,18 @@ Manual path:
 
 See [SECURITY.md](SECURITY.md) for vulnerability reporting.
 
-## ⭐ About
-
-Built for QA engineers who are tired of defending releases with numbers
-they can't trust.
-
-If this saved you from a fake-green release, consider starring the repo —
-it helps other QAs find it.
+---
 
 <div align="center">
 
+**Are your tests worthy of trust?**
+
+```bash
+npx mjolnir-qa@latest
+```
+
 **Star ⭐ · Watch 👀 · Contribute 🤝**
 
-Baked with ❤️ by [Sergey Bar](https://www.linkedin.com/in/sergeybar/)
+Built by [Sergey Bar](https://www.linkedin.com/in/sergeybar/)
 
 </div>
