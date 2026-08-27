@@ -156,7 +156,7 @@ describe("runInit", () => {
     expect(res.nextCommands).toContain("mjolnir badge");
     const wf = res.steps.find((s) => s.name === "ci-workflow");
     expect(wf?.status).toBe("created");
-    expect(renderInit(res)).toContain("QA DOCTOR INIT");
+    expect(renderInit(res)).toContain("MJÖLNIR INIT");
     expect(renderInit(res)).toContain("[-] framework-detection");
   });
 

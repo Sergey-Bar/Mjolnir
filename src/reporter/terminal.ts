@@ -294,7 +294,7 @@ function renderNoTests(p: ReturnType<typeof palette>, ascii: boolean): string {
       { ascii },
     ).map((l) => `  ${l}`),
     "",
-    "  If your tests live elsewhere: qa-doctor --tests-dir <path>",
+    "  If your tests live elsewhere: mjolnir --tests-dir <path>",
     "",
   ];
   return lines.join("\n");

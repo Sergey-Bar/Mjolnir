@@ -54,7 +54,7 @@ export function explainRule(
   if (!rule) {
     return {
       ok: false,
-      error: `Unknown rule ID "${ruleId}". Run \`qa-doctor rules\` for the full catalog.`,
+      error: `Unknown rule ID "${ruleId}". Run \`mjolnir rules\` for the full catalog.`,
     };
   }
 
@@ -149,7 +149,7 @@ export function renderExplain(result: ExplainResult): string {
     );
   } else {
     lines.push(
-      "No example available — run this command from a qa-doctor checkout " +
+      "No example available — run this command from a mjolnir checkout " +
         "(or pass --fixtures-root) so the fixture that proves this rule " +
         "works can be shown as a real example.",
     );
@@ -157,8 +157,8 @@ export function renderExplain(result: ExplainResult): string {
   lines.push("");
   lines.push("HOW TO VERIFY THE FIX");
   lines.push(
-    "  Re-run `qa-doctor` on the changed file(s) — this finding should " +
-      "no longer appear. `qa-doctor --scope changed` scopes the check " +
+    "  Re-run `mjolnir` on the changed file(s) — this finding should " +
+      "no longer appear. `mjolnir --scope changed` scopes the check " +
       "to just what you touched.",
   );
   lines.push("");

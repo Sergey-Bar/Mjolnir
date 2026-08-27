@@ -54,9 +54,9 @@ export function buildCatalog(
 
 export function renderCatalogMd(entries: RuleCatalogEntry[]): string {
   const lines: string[] = [
-    "# QA Doctor — Rule Catalog",
+    "# Mjölnir — Rule Catalog",
     "",
-    "Generated from the rule registry by `qa-doctor rules --md`. Do not edit by hand.",
+    "Generated from the rule registry by `mjolnir rules --md`. Do not edit by hand.",
     "",
     "| ID | Title | Severity | Confidence | Evidence | FP Risk | Autofix | Since |",
     "|---|---|---|---|---|---|---|---|",

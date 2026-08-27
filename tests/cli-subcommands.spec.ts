@@ -138,7 +138,7 @@ describe("runInitCommand", () => {
     process.chdir(dir);
     const cap = capture();
     expect(runInitCommand([], cap.io)).toBe(0);
-    expect(cap.text()).toContain("QA DOCTOR INIT");
+    expect(cap.text()).toContain("MJÖLNIR INIT");
   });
 });
 
@@ -146,7 +146,7 @@ describe("runPwReportCommand", () => {
   it("returns usage error without target", () => {
     const cap = capture();
     expect(runPwReportCommand([], cap.io)).toBe(10);
-    expect(cap.errText()).toContain("Usage: qa-doctor pw-report");
+    expect(cap.errText()).toContain("Usage: mjolnir pw-report");
   });
 
   it("summarizes a Playwright report and exits 0 for clean runs", () => {

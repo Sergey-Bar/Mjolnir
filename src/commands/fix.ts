@@ -247,7 +247,7 @@ export function planAndApplyFixes(
       accessSync(abs, constants.W_OK);
       // Atomic write: temp file + rename, so a killed process can never
       // leave the user's test file truncated mid-write.
-      const tmp = `${abs}.qa-doctor-tmp`;
+      const tmp = `${abs}.mjolnir-tmp`;
       writeFileSync(tmp, text);
       renameSync(tmp, abs);
       for (const p of pending) {

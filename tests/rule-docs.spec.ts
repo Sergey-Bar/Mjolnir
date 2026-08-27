@@ -223,8 +223,8 @@ describe("renderRuleDocMd — content contract", () => {
     if (!rule) throw new Error("expected at least one registered rule");
     const data = collectRuleDocData(rule, FIXTURES_ROOT);
     const md = renderRuleDocMd(data);
-    expect(md).toContain(`qa-doctor explain ${rule.id}`);
-    expect(md).toContain("qa-doctor rules --md");
+    expect(md).toContain(`mjolnir explain ${rule.id}`);
+    expect(md).toContain("mjolnir rules --md");
   });
 });
 

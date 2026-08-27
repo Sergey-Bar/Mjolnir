@@ -215,25 +215,25 @@ describe("verdict labels", () => {
 });
 
 describe("shouldUseAscii()", () => {
-  it("QA_DOCTOR_ASCII=1 forces ASCII regardless of other env vars", () => {
-    const prev = process.env["QA_DOCTOR_ASCII"];
-    process.env["QA_DOCTOR_ASCII"] = "1";
+  it("MJOLNIR_ASCII=1 forces ASCII regardless of other env vars", () => {
+    const prev = process.env["MJOLNIR_ASCII"];
+    process.env["MJOLNIR_ASCII"] = "1";
     try {
       expect(shouldUseAscii()).toBe(true);
     } finally {
-      if (prev === undefined) delete process.env["QA_DOCTOR_ASCII"];
-      else process.env["QA_DOCTOR_ASCII"] = prev;
+      if (prev === undefined) delete process.env["MJOLNIR_ASCII"];
+      else process.env["MJOLNIR_ASCII"] = prev;
     }
   });
 
-  it("QA_DOCTOR_ASCII=0 forces Unicode regardless of other env vars", () => {
-    const prev = process.env["QA_DOCTOR_ASCII"];
-    process.env["QA_DOCTOR_ASCII"] = "0";
+  it("MJOLNIR_ASCII=0 forces Unicode regardless of other env vars", () => {
+    const prev = process.env["MJOLNIR_ASCII"];
+    process.env["MJOLNIR_ASCII"] = "0";
     try {
       expect(shouldUseAscii()).toBe(false);
     } finally {
-      if (prev === undefined) delete process.env["QA_DOCTOR_ASCII"];
-      else process.env["QA_DOCTOR_ASCII"] = prev;
+      if (prev === undefined) delete process.env["MJOLNIR_ASCII"];
+      else process.env["MJOLNIR_ASCII"] = prev;
     }
   });
 });

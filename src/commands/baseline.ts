@@ -155,7 +155,7 @@ export function renderBaselineSaved(path: string, count: number): string {
     "▚▞ BASELINE SAVED",
     "",
     `Captured ${count} finding${count === 1 ? "" : "s"} to ${path}.`,
-    'Run "qa-doctor diff" after future changes to see only what\'s new.',
+    'Run "mjolnir diff" after future changes to see only what\'s new.',
   ].join("\n");
 }
 
@@ -166,7 +166,7 @@ export function renderBaselineDiff(diff: BaselineDiff): string {
 
   if (!diff.hasBaseline) {
     lines.push("UNKNOWN — no baseline found.");
-    lines.push('Run "qa-doctor baseline" first to capture a comparison point.');
+    lines.push('Run "mjolnir baseline" first to capture a comparison point.');
     return lines.join("\n");
   }
 

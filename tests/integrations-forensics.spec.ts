@@ -27,7 +27,7 @@ describe("ciInstall", () => {
     expect(res.existed).toBe(false);
     expect(existsSync(res.written)).toBe(true);
     const text = readFileSync(res.written, "utf8");
-    expect(text).toContain("name: QA Doctor");
+    expect(text).toContain("name: Mjölnir");
     expect(text).toContain(
       "Advisory mode — findings reported, never blocking.",
     );

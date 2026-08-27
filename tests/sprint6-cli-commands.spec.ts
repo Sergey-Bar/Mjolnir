@@ -187,7 +187,7 @@ describe("runPrCommentCommand", () => {
     const cap = capture();
     const code = runPrCommentCommand([dir], cap.io);
     expect(code).toBe(0);
-    expect(cap.text()).toContain("QA Doctor scan");
+    expect(cap.text()).toContain("Mjölnir scan");
   });
 
   it("scopes the comment to the baseline diff when one exists", () => {

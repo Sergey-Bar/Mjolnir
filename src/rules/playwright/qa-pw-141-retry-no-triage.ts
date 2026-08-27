@@ -53,7 +53,7 @@ export const pwRetryMaskingNoForensics = defineRule({
           column: colAt(ctx.text, m.index),
           message: `retries: ${m[1]} with no visible flake-triage loop.`,
           why: "Retries convert intermittent failures into silent passes. Without a forensics/triage step consuming retry data, flaky tests pass forever and real regressions hide behind lucky reruns.",
-          fix: "Keep retries <= 2 and feed retry outcomes into `qa-doctor forensics`/`triage`, or add a reporter so flaky passes are reviewed.",
+          fix: "Keep retries <= 2 and feed retry outcomes into `mjolnir forensics`/`triage`, or add a reporter so flaky passes are reviewed.",
         });
       }
     }

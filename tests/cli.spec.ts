@@ -215,7 +215,7 @@ describe("runScanCommand / main dispatch", () => {
   it("prints usage and exits 10 on bad args", () => {
     const cap = capture();
     expect(runScanCommand(["--bogus"], cap.io)).toBe(10);
-    expect(cap.text()).toContain("Usage: qa-doctor");
+    expect(cap.text()).toContain("Usage: mjolnir");
   });
 
   it("emits JSON output with schemaVersion", () => {

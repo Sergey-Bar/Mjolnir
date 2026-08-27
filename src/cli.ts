@@ -1,5 +1,5 @@
 /**
- * QA Doctor CLI entry point (W1-02).
+ * Mjölnir CLI entry point (W1-02).
  * Exit codes (§24.1, frozen): 0 clean · 1 findings ≥ gate · 2 partial ·
  * 10 usage error · 20 internal error.
  */
@@ -300,7 +300,7 @@ export function runScan(args: CliArgs): ScanResult {
     : { frameworks: [], unknown: true };
 
   // Suppression enforcement: active `ignore` entries in
-  // qa-doctor.config.json remove findings from output, scoring, and exit
+  // mjolnir.config.json remove findings from output, scoring, and exit
   // codes. Expired entries suppress nothing (stale config hides nothing).
   // An entry with `files` globs only suppresses findings under those paths.
   if (workspace) {
@@ -409,7 +409,7 @@ export function runCiInstall(
   );
   io.out(`${existed ? "Updated" : "Created"} ${written}`);
   io.out("Default mode: advisory — findings reported, never blocking.");
-  io.out("Change with: qa-doctor ci install --gate error|warning|advisory");
+  io.out("Change with: mjolnir ci install --gate error|warning|advisory");
   return 0;
 }
 
@@ -428,7 +428,7 @@ export function runForensicsCommand(
   const targetArg = argv.find((a) => !a.startsWith("-"));
   if (!targetArg) {
     io.err(
-      "Usage: qa-doctor forensics <test-results-dir-or-report-file> [--no-flaky-md]",
+      "Usage: mjolnir forensics <test-results-dir-or-report-file> [--no-flaky-md]",
     );
     return 10;
   }
@@ -448,7 +448,7 @@ export function runForensicsCommand(
     return report.flakyTests > 0 || report.failed > 0 ? 1 : 0;
   } catch (err) {
     io.err(
-      "qa-doctor internal error:",
+      "mjolnir internal error:",
       err instanceof Error ? err.message : String(err),
     );
     return 20;
@@ -479,7 +479,7 @@ export function runDoctorPlaywright(
   return 0;
 }
 
-/** Testable `doctor` handler — self-audit of QA Doctor's own rule base. */
+/** Testable `doctor` handler — self-audit of Mjölnir's own rule base. */
 export function runDoctorCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
@@ -490,7 +490,7 @@ export function runDoctorCommand(
     const fixturesRoot = resolve(join(targetArg, "tests", "fixtures"));
     if (!existsSync(fixturesRoot)) {
       io.err(
-        `No fixtures directory at ${fixturesRoot}. Run from the qa-doctor repo root.`,
+        `No fixtures directory at ${fixturesRoot}. Run from the mjolnir repo root.`,
       );
       return 2;
     }
@@ -499,7 +499,7 @@ export function runDoctorCommand(
     return report.healthy ? 0 : 1;
   } catch (err) {
     io.err(
-      "qa-doctor internal error:",
+      "mjolnir internal error:",
       err instanceof Error ? err.message : String(err),
     );
     return 20;
@@ -535,7 +535,7 @@ export function runExplainCommand(
 ): number {
   const ruleId = argv.find((a) => !a.startsWith("-"));
   if (!ruleId) {
-    io.err("Usage: qa-doctor explain <RULE-ID>");
+    io.err("Usage: mjolnir explain <RULE-ID>");
     return 10;
   }
   const fixturesRootIdx = argv.indexOf("--fixtures-root");
@@ -551,7 +551,7 @@ export function runExplainCommand(
     return 0;
   } catch (err) {
     io.err(
-      "qa-doctor internal error:",
+      "mjolnir internal error:",
       err instanceof Error ? err.message : String(err),
     );
     return 20;
@@ -614,7 +614,7 @@ export function runScanCommand(
       : 0;
   } catch (err) {
     io.err(
-      "qa-doctor internal error:",
+      "mjolnir internal error:",
       err instanceof Error ? err.message : String(err),
     );
     return 20;
@@ -628,9 +628,7 @@ export function runTriageCommand(
 ): number {
   const targetArg = argv.find((a) => !a.startsWith("-"));
   if (!targetArg) {
-    io.err(
-      "Usage: qa-doctor triage <test-results-dir-or-report-file> [--no-md]",
-    );
+    io.err("Usage: mjolnir triage <test-results-dir-or-report-file> [--no-md]");
     return 10;
   }
   try {
@@ -655,7 +653,7 @@ export function runTriageCommand(
     return 0;
   } catch (err) {
     io.err(
-      "qa-doctor internal error:",
+      "mjolnir internal error:",
       err instanceof Error ? err.message : String(err),
     );
     return 20;
@@ -681,7 +679,7 @@ export function runBadgeCommand(
     return 0;
   } catch (err) {
     io.err(
-      "qa-doctor internal error:",
+      "mjolnir internal error:",
       err instanceof Error ? err.message : String(err),
     );
     return 20;
@@ -704,7 +702,7 @@ export function runDebtCommand(
     return 0;
   } catch (err) {
     io.err(
-      "qa-doctor internal error:",
+      "mjolnir internal error:",
       err instanceof Error ? err.message : String(err),
     );
     return 20;
@@ -731,7 +729,7 @@ export function runFixCommand(
     return fixes.some((f) => f.status === "failed") ? 1 : 0;
   } catch (err) {
     io.err(
-      "qa-doctor internal error:",
+      "mjolnir internal error:",
       err instanceof Error ? err.message : String(err),
     );
     return 20;
@@ -747,7 +745,7 @@ export function runCreateRuleCommand(
   const titleIdx = argv.indexOf("--title");
   const title = titleIdx !== -1 ? argv[titleIdx + 1] : undefined;
   if (!id || !title) {
-    io.err('Usage: qa-doctor create-rule <QA-XXX-nnn> --title "Rule title"');
+    io.err('Usage: mjolnir create-rule <QA-XXX-nnn> --title "Rule title"');
     io.err("Families: QA-TEST · QA-TQUAL · QA-PW · QA-CI · QA-PY");
     return 10;
   }
@@ -757,7 +755,7 @@ export function runCreateRuleCommand(
     return result.ok ? 0 : 1;
   } catch (err) {
     io.err(
-      "qa-doctor internal error:",
+      "mjolnir internal error:",
       err instanceof Error ? err.message : String(err),
     );
     return 20;
@@ -801,7 +799,7 @@ export function runImpactCommand(
     return report.hasComparison ? 0 : 2;
   } catch (err) {
     io.err(
-      "qa-doctor internal error:",
+      "mjolnir internal error:",
       err instanceof Error ? err.message : String(err),
     );
     return 20;
@@ -827,7 +825,7 @@ export function runBaselineCommand(
     return 0;
   } catch (err) {
     io.err(
-      "qa-doctor internal error:",
+      "mjolnir internal error:",
       err instanceof Error ? err.message : String(err),
     );
     return 20;
@@ -875,7 +873,7 @@ export function runDiffCommand(
     return diff.newFindings.some((f) => f.severity === "error") ? 1 : 0;
   } catch (err) {
     io.err(
-      "qa-doctor internal error:",
+      "mjolnir internal error:",
       err instanceof Error ? err.message : String(err),
     );
     return 20;
@@ -901,7 +899,7 @@ export function runPrCommentCommand(
     return 0;
   } catch (err) {
     io.err(
-      "qa-doctor internal error:",
+      "mjolnir internal error:",
       err instanceof Error ? err.message : String(err),
     );
     return 20;
@@ -921,7 +919,7 @@ export function runStatsCommand(
     return 0;
   } catch (err) {
     io.err(
-      "qa-doctor internal error:",
+      "mjolnir internal error:",
       err instanceof Error ? err.message : String(err),
     );
     return 20;
@@ -957,7 +955,7 @@ export function runHandoverCommand(
     return 0;
   } catch (err) {
     io.err(
-      "qa-doctor internal error:",
+      "mjolnir internal error:",
       err instanceof Error ? err.message : String(err),
     );
     return 20;
@@ -987,7 +985,7 @@ export function runInitCommand(
     return 0;
   } catch (err) {
     io.err(
-      "qa-doctor internal error:",
+      "mjolnir internal error:",
       err instanceof Error ? err.message : String(err),
     );
     return 20;
@@ -1002,7 +1000,7 @@ export function runPwReportCommand(
   const targetArg = argv.find((a) => !a.startsWith("-"));
   if (!targetArg) {
     io.err(
-      "Usage: qa-doctor pw-report <playwright-report.json | test-results-dir>",
+      "Usage: mjolnir pw-report <playwright-report.json | test-results-dir>",
     );
     return 10;
   }
@@ -1020,7 +1018,7 @@ export function runPwReportCommand(
     return report.failed > 0 || report.flakyTests > 0 ? 1 : 0;
   } catch (err) {
     io.err(
-      "qa-doctor internal error:",
+      "mjolnir internal error:",
       err instanceof Error ? err.message : String(err),
     );
     return 20;
@@ -1054,9 +1052,9 @@ export function main(argv: string[] = process.argv.slice(2)): number {
 }
 
 function printUsage(print: (s: string) => void): void {
-  print(`▚▞ qa-doctor — quality scanner for test suites and CI pipelines
+  print(`🔨 mjölnir — verification trust engine for test suites and CI pipelines
 
-Usage: qa-doctor [path] [options]
+Usage: mjolnir [path] [options]
 
 Options:
   --json                machine-readable output (schemaVersion ${SCHEMA_VERSION})

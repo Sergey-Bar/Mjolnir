@@ -200,7 +200,7 @@ describe("qa-doctor doctor self-audit", () => {
       healthy: true,
     });
     expect(text).toContain("✓ registry-sanity");
-    expect(text).toContain("HEALTHY");
+    expect(text).toContain("WORTHY");
   });
 
   it("renderDoctorReport renders violations, truncating past 20 details", () => {

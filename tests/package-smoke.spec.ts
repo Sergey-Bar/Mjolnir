@@ -191,10 +191,10 @@ describe("published CLI as a real child process", () => {
     expect(
       out.length,
       "the packed CLI produced no output at all when invoked as a binary " +
-        "— this is what a first-time `npx qa-doctor@latest` user would see: " +
+        "— this is what a first-time `npx mjolnir-qa@latest` user would see: " +
         "nothing.",
     ).toBeGreaterThan(0);
-    expect(out).toContain("qa-doctor");
+    expect(out).toContain("mjolnir");
     expect(out).toContain("Usage:");
   });
 

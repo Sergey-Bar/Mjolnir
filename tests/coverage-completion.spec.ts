@@ -75,7 +75,7 @@ describe("runTriageCommand", () => {
   it("returns usage error without target", () => {
     const cap = capture();
     expect(runTriageCommand([], cap.io)).toBe(10);
-    expect(cap.errText()).toContain("Usage: qa-doctor triage");
+    expect(cap.errText()).toContain("Usage: mjolnir triage");
   });
 
   it("writes TRIAGE.md and prints proposal", () => {

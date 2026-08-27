@@ -125,7 +125,7 @@ export function renderRuleDocMd(data: RuleDocData): string {
   lines.push("");
   lines.push(
     "_Generated from the live rule registry and this rule's own committed " +
-      "fixtures by `qa-doctor`'s doc generator — do not edit by hand. " +
+      "fixtures by `mjolnir`'s doc generator — do not edit by hand. " +
       "Regenerate with `npm run docs:rules`._",
   );
   lines.push("");
@@ -158,7 +158,7 @@ export function renderRuleDocMd(data: RuleDocData): string {
   } else {
     lines.push(
       "_No example available — this rule's must-fire fixture is missing " +
-        "or produced no findings (a fixture-firewall violation `qa-doctor " +
+        "or produced no findings (a fixture-firewall violation `mjolnir " +
         "doctor` would also catch)._",
     );
   }
@@ -191,7 +191,7 @@ export function renderRuleDocMd(data: RuleDocData): string {
       data.mustNotFire.fired
         ? `⚠️ This rule's must-not-fire fixture (\`${relOrAbs(data.mustNotFire.fixturePath)}\`) ` +
             "currently DOES fire — that is a real fixture-firewall violation, " +
-            "not a doc bug. Run `qa-doctor doctor` for the full self-audit."
+            "not a doc bug. Run `mjolnir doctor` for the full self-audit."
         : `Verified against \`${relOrAbs(data.mustNotFire.fixturePath)}\` — a legitimate, ` +
             "similar-looking pattern this rule correctly leaves alone.",
     );
@@ -230,7 +230,7 @@ export function renderRuleDocMd(data: RuleDocData): string {
   lines.push("---");
   lines.push("");
   lines.push(
-    `Full catalog: \`qa-doctor rules --md\` · Live explanation: \`qa-doctor explain ${r.id}\``,
+    `Full catalog: \`mjolnir rules --md\` · Live explanation: \`mjolnir explain ${r.id}\``,
   );
   return lines.join("\n");
 }
@@ -260,7 +260,7 @@ export function renderRuleDocsIndexMd(
   rules: readonly QADoctorRule[] = RULES,
 ): string {
   const lines: string[] = [
-    "# QA Doctor — Rule Reference",
+    "# Mjölnir — Rule Reference",
     "",
     "_Generated from the live rule registry — do not edit by hand. " +
       "Regenerate with `npm run docs:rules`._",

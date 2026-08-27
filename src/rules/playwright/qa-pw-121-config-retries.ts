@@ -44,7 +44,7 @@ export const pwConfigRetryAbuse = defineRule({
           column: colAt(ctx.text, m.index),
           message: `retries: ${m[1]} — a flaky test gets ${m[1]} chances to pass by luck.`,
           why: "High retry counts convert real bugs into intermittent passes and inflate CI minutes; the suite reports green while hiding instability.",
-          fix: "Keep retries <= 2 and route repeat offenders into forensics (`qa-doctor triage`).",
+          fix: "Keep retries <= 2 and route repeat offenders into forensics (`mjolnir triage`).",
         });
       }
     }

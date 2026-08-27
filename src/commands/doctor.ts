@@ -150,7 +150,7 @@ export function runDoctorSelfAudit(fixturesRoot: string): DoctorReport {
 }
 
 export function renderDoctorReport(report: DoctorReport): string {
-  const lines: string[] = ["", "▚▞ QA DOCTOR — SELF-AUDIT", ""];
+  const lines: string[] = ["", "🔨 MJÖLNIR — SELF-AUDIT", ""];
   for (const c of report.checks) {
     const mark = c.ok ? "✓" : "✗";
     lines.push(`${mark} ${c.name}`);
@@ -161,8 +161,8 @@ export function renderDoctorReport(report: DoctorReport): string {
   lines.push("");
   lines.push(
     report.healthy
-      ? "QA Doctor self-audit: HEALTHY"
-      : "QA Doctor self-audit: VIOLATIONS FOUND",
+      ? "Mjölnir self-audit: WORTHY"
+      : "Mjölnir self-audit: VIOLATIONS FOUND",
   );
   return lines.join("\n");
 }

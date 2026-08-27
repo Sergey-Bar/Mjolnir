@@ -1,5 +1,5 @@
 /**
- * CI integration (Sprint-Plan W7): generates .github/workflows/qa-doctor.yml
+ * CI integration (Sprint-Plan W7): generates .github/workflows/mjolnir.yml
  * from internal templates ONLY — no user-input interpolation (R3 supply-chain).
  * Default gate: advisory (report, never block).
  */
@@ -9,13 +9,13 @@ import { join } from "node:path";
 
 export type GateLevel = "advisory" | "error" | "warning";
 
-const TEMPLATE = (gate: GateLevel): string => `name: QA Doctor
+const TEMPLATE = (gate: GateLevel): string => `name: Mjölnir
 
 on:
   pull_request:
 
 concurrency:
-  group: qa-doctor-\${{ github.ref }}
+  group: mjolnir-\${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -32,13 +32,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npx --yes @sergey-bar/qa-doctor@latest . --scope changed --json > qa-doctor.json
+      - run: npx --yes mjolnir-qa@latest . --scope changed --json > mjolnir.json
       - name: Annotate PR
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
-            const r = JSON.parse(fs.readFileSync('qa-doctor.json', 'utf8'));
+            const r = JSON.parse(fs.readFileSync('mjolnir.json', 'utf8'));
             for (const f of r.findings) {
               const level = f.severity === 'error' ? 'failure' : 'warning';
               await core.summary.addRaw(\`**\${f.ruleId}** (\${f.severity}) \${f.file}:\${f.line} — \${f.message}\\n\\n\${f.fix}\`).addRaw('\\n\\n');
@@ -54,7 +54,7 @@ jobs:
           : `- name: Gate (${gate})
         run: |
           node -e "
-            const r = require('./qa-doctor.json');
+            const r = require('./mjolnir.json');
             const sev = r.findings.map(f => f.severity);
             const bad = sev.includes('${gate === "error" ? "error" : "warning"}') || sev.includes('error');
             process.exit(bad ? 1 : 0);

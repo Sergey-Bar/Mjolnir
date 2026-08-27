@@ -145,7 +145,7 @@ export function computeImpact(
   let tmpDir: string | undefined;
   let baseResult: ScanResult;
   try {
-    tmpDir = mkdtempSync(join(tmpdir(), "qa-doctor-impact-"));
+    tmpDir = mkdtempSync(join(tmpdir(), "mjolnir-impact-"));
     const treeListing = git(root, [
       "ls-tree",
       "-r",
@@ -236,7 +236,7 @@ export function renderImpact(report: ImpactReport): string {
       `UNKNOWN — no comparison could be made (${report.unknownReason ?? "unknown reason"}).`,
     );
     lines.push(
-      "This is reported as UNKNOWN rather than a fabricated zero: qa-doctor",
+      "This is reported as UNKNOWN rather than a fabricated zero: mjolnir",
     );
     lines.push("never invents a number it cannot prove.");
     lines.push("");

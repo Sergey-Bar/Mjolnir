@@ -62,7 +62,7 @@ export const MILESTONE_MESSAGES: Record<MilestoneId, string> = {
   "first-clean-scan":
     "MILESTONE: first flawless scan recorded for this repo (score 100, zero findings).",
   "first-debt-reduction":
-    "MILESTONE: first debt reduction recorded — qa-doctor diff witnessed a real fix.",
+    "MILESTONE: first debt reduction recorded — mjolnir diff witnessed a real fix.",
 };
 
 /**

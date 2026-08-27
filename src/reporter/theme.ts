@@ -74,8 +74,8 @@ export function palette(enabled: boolean): Palette {
  * flat CI logs where Unicode support is unverified.
  */
 export function shouldUseAscii(): boolean {
-  if (process.env["QA_DOCTOR_ASCII"] === "1") return true;
-  if (process.env["QA_DOCTOR_ASCII"] === "0") return false;
+  if (process.env["MJOLNIR_ASCII"] === "1") return true;
+  if (process.env["MJOLNIR_ASCII"] === "0") return false;
   // ConEmuANSI/WT_SESSION/TERM_PROGRAM all indicate a modern terminal
   // host that renders Unicode box-drawing correctly even on Windows.
   const modernHost =
