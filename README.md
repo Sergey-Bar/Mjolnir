@@ -96,6 +96,7 @@ tests, and reports.
 | `npx qa-doctor@latest --scope changed`                  | Only findings introduced by **your** changes — perfect for PRs      |
 | `npx qa-doctor@latest --json`                           | Machine-readable output                                             |
 | `npx qa-doctor@latest --format sarif > qa-doctor.sarif` | GitHub Code Scanning integration                                    |
+| `npx qa-doctor@latest --format mermaid`                 | Test-architecture diagram — paste into a GitHub comment or a slide  |
 | `npx qa-doctor doctor:playwright`                       | Playwright-only deep scan + Selector Health Score                   |
 | `npx qa-doctor forensics ./test-results/`               | Runtime evidence — retries, true flakes, `FLAKY.md` artifact        |
 | `npx qa-doctor triage ./test-results/`                  | The flaky-triage meeting, in 10 minutes instead of 45               |

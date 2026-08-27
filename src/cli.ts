@@ -26,6 +26,7 @@ import {
 } from "./scorer/scorer.js";
 import { renderTerminal } from "./reporter/terminal.js";
 import { renderSarif } from "./reporter/sarif.js";
+import { renderMermaid } from "./reporter/mermaid.js";
 import { computeChangedScope, filterToChanged } from "./scope/changed.js";
 import { asUniversal } from "./engine/rule-runner.js";
 import { isAdvisoryFinding } from "./types.js";
@@ -106,7 +107,7 @@ interface CliArgs {
   verbose: boolean;
   maxDurationMs: number;
   scopeChanged: boolean;
-  format: "terminal" | "json" | "sarif";
+  format: "terminal" | "json" | "sarif" | "mermaid";
   /** --width override for terminal box/gauge wrapping (Sprint 5 Task 22). */
   width?: number;
   /** --ascii / --no-ascii override for shouldUseAscii()'s heuristic. */
@@ -130,6 +131,7 @@ export function parseArgs(argv: string[]): CliArgs | null {
     } else if (a === "--format") {
       const fmt = argv[++i];
       if (fmt === "sarif") args.format = "sarif";
+      else if (fmt === "mermaid") args.format = "mermaid";
       else if (fmt === "json") {
         args.format = "json";
         args.json = true;
@@ -562,6 +564,8 @@ export function runScanCommand(
     const result = runScan({ ...args, target: resolve(args.target) });
     if (args.format === "sarif") {
       io.out(renderSarif(result));
+    } else if (args.format === "mermaid") {
+      io.out(renderMermaid(result));
     } else if (args.json) {
       io.out(JSON.stringify(result, null, 2));
     } else {
@@ -1021,6 +1025,9 @@ Usage: qa-doctor [path] [options]
 Options:
   --json                machine-readable output (schemaVersion ${SCHEMA_VERSION})
   --format sarif        SARIF 2.1 output for GitHub Code Scanning
+  --format mermaid      test-architecture diagram (frameworks → rule
+                        categories → severity), pastes directly into a
+                        GitHub/GitLab markdown comment or a slide
   --verbose             show all findings
   --scope changed       only findings on new/changed lines vs merge-base
   --max-duration <sec>  stop analysis after N seconds (partial results flagged)
