@@ -34,13 +34,13 @@ interface Workflow {
 
 function loadPrWorkflow(): Workflow {
   const text = readFileSync(
-    join(ROOT, ".github", "workflows", "qa-doctor.yml"),
+    join(ROOT, ".github", "workflows", "mjolnir.yml"),
     "utf8",
   );
   return parse(text) as Workflow;
 }
 
-describe("qa-doctor.yml (the PR feedback loop workflow)", () => {
+describe("mjolnir.yml (the PR feedback loop workflow)", () => {
   it("parses as valid YAML", () => {
     expect(() => loadPrWorkflow()).not.toThrow();
   });
@@ -72,21 +72,21 @@ describe("qa-doctor.yml (the PR feedback loop workflow)", () => {
     }
   });
 
-  it("runs qa-doctor diff so only new/worsened debt is what gets surfaced (Task 24 integration)", () => {
+  it("runs mjolnir diff so only new/worsened debt is what gets surfaced (Task 24 integration)", () => {
     const wf = loadPrWorkflow();
     const steps = wf.jobs.scan?.steps ?? [];
     expect(
-      steps.some((s) => /qa-doctor@latest\s+diff\b/.test(s.run ?? "")),
+      steps.some((s) => /mjolnir-qa@latest\s+diff\b/.test(s.run ?? "")),
     ).toBe(true);
   });
 
-  it("runs qa-doctor pr-comment and actually posts/updates a PR comment via the GitHub API", () => {
+  it("runs mjolnir pr-comment and actually posts/updates a PR comment via the GitHub API", () => {
     const wf = loadPrWorkflow();
     const steps = wf.jobs.scan?.steps ?? [];
     expect(steps.some((s) => s.run?.includes("pr-comment"))).toBe(true);
     const commentStep = steps.find((s) =>
       (s.with as { script?: string } | undefined)?.script?.includes(
-        "qa-doctor-pr-comment",
+        "mjolnir-pr-comment",
       ),
     );
     expect(
@@ -112,7 +112,7 @@ describe("qa-doctor.yml (the PR feedback loop workflow)", () => {
     const wf = loadPrWorkflow();
     const steps = wf.jobs.scan?.steps ?? [];
     const diffStep = steps.find((s) =>
-      /qa-doctor@latest\s+diff\b/.test(s.run ?? ""),
+      /mjolnir-qa@latest\s+diff\b/.test(s.run ?? ""),
     );
     // diff's exit code can be 1 on new errors — must be tolerated via
     // continue-on-error on this specific step, never a blanket `|| true`
@@ -121,14 +121,5 @@ describe("qa-doctor.yml (the PR feedback loop workflow)", () => {
     // exists to catch in other repos).
     expect(diffStep?.["continue-on-error"]).toBe(true);
     expect(diffStep?.run).not.toMatch(/\|\|\s*true/);
-  });
-
-  it("documents, rather than hides, the parked npm package name issue for the npx invocation", () => {
-    const text = readFileSync(
-      join(ROOT, ".github", "workflows", "qa-doctor.yml"),
-      "utf8",
-    );
-    expect(text).toContain("qa-doctor@latest");
-    expect(text.toLowerCase()).toContain("parked");
   });
 });

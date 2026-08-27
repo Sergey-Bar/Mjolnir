@@ -74,13 +74,12 @@ jobs:
           generate_release_notes: true
           files: release-assets/*.tgz
           body: |
-            Install: `npx @sergey-bar/qa-doctor@${{ github.ref_name }} .`
+            Install: `npx mjolnir-qa@${{ github.ref_name }} .`
             Full changelog is auto-generated below from all commits and PRs since the previous release.
 
       # npm publish is intentionally gated off until the npmjs.com
-      # trusted-publisher (OIDC) setup is completed for
-      # @sergey-bar/qa-doctor. See docs/PUBLISHING.md for the one-time
-      # runbook.
+      # trusted-publisher (OIDC) setup is completed for mjolnir-qa.
+      # See docs/PUBLISHING.md for the one-time runbook.
       #
       # Provenance (--provenance) requires: (1) the npmjs.com package to
       # have OIDC "trusted publisher" configured for this exact repo +
