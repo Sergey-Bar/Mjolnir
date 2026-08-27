@@ -1,5 +1,5 @@
 /**
- * @qa-doctor/playwright-reporter
+ * @sergey-bar/qa-doctor-playwright-reporter
  *
  * Thin wrapper around Playwright's built-in JSON reporter that documents
  * and pins the exact output contract QA Doctor's forensics pipeline
@@ -7,7 +7,7 @@
  *
  * Usage in playwright.config.ts:
  *
- *   import { qaDoctorReporter } from "@qa-doctor/playwright-reporter";
+ *   import { qaDoctorReporter } from "@sergey-bar/qa-doctor-playwright-reporter";
  *
  *   export default defineConfig({
  *     reporter: [qaDoctorReporter({ outputFile: "report.json" })],

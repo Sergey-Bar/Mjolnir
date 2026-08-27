@@ -1,5 +1,5 @@
 {
-  "name": "@qa-doctor/playwright-reporter",
+  "name": "@sergey-bar/qa-doctor-playwright-reporter",
   "version": "0.1.0",
   "description": "Official Playwright JSON reporter for QA Doctor — emits the machine-readable report that `qa-doctor forensics`, `triage`, and `pw-report` ingest.",
   "type": "module",
@@ -40,6 +40,6 @@
     "build": "tsdown src/index.ts --format esm --dts --out-dir dist"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.18"
   }
 }

@@ -32,7 +32,7 @@ jobs:
         run: |
           git fetch origin ${{ github.event.pull_request.base.ref }} --depth=1
           git checkout origin/${{ github.event.pull_request.base.ref }} -- .qa-doctor/baseline.json 2>/dev/null || echo "No committed baseline on base branch — diff will report UNKNOWN, not a fabricated zero."
-      - run: npx --yes qa-doctor@latest . --scope changed --json > qa-doctor.json
+      - run: npx --yes @sergey-bar/qa-doctor@latest . --scope changed --json > qa-doctor.json
       # Advisory mode by design (§ Product-MVP): this workflow reports
       # findings, it never blocks a PR. `diff` legitimately exits 1 when it
       # finds new/worsened debt — continue-on-error on THIS step only (not
@@ -42,8 +42,8 @@ jobs:
       - name: Diff against baseline (advisory — may exit 1 on new debt)
         id: diff
         continue-on-error: true
-        run: npx --yes qa-doctor@latest diff . > qa-doctor-diff.txt
-      - run: npx --yes qa-doctor@latest pr-comment . > qa-doctor-comment.md
+        run: npx --yes @sergey-bar/qa-doctor@latest diff . > qa-doctor-diff.txt
+      - run: npx --yes @sergey-bar/qa-doctor@latest pr-comment . > qa-doctor-comment.md
       - name: Post or update PR comment
         uses: actions/github-script@v7
         with:

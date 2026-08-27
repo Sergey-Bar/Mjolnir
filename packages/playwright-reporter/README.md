@@ -1,4 +1,4 @@
-# @qa-doctor/playwright-reporter
+# @sergey-bar/qa-doctor-playwright-reporter
 
 Official Playwright reporter for [QA Doctor](https://github.com/Sergey-Bar/QA-Doctor) —
 emits the JSON report that `qa-doctor forensics`, `triage`, and `pw-report`
@@ -23,7 +23,7 @@ ingest for flake detection, retry analysis, and runtime evidence.
 ```ts
 // playwright.config.ts
 import { defineConfig } from "@playwright/test";
-import { qaDoctorReporter } from "@qa-doctor/playwright-reporter";
+import { qaDoctorReporter } from "@sergey-bar/qa-doctor-playwright-reporter";
 
 export default defineConfig({
   reporter: [qaDoctorReporter()],

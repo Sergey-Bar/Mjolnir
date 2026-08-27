@@ -1,5 +1,5 @@
 {
-  "name": "qa-doctor",
+  "name": "@sergey-bar/qa-doctor",
   "version": "0.3.7",
   "description": "The linter-grade quality scanner for QA engineers. Audits test suites and CI pipelines, reports a health score and prioritized findings.",
   "type": "module",

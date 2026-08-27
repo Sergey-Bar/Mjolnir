@@ -74,15 +74,13 @@ jobs:
           generate_release_notes: true
           files: release-assets/*.tgz
           body: |
-            Install: `npx qa-doctor@${{ github.ref_name }} .`
+            Install: `npx @sergey-bar/qa-doctor@${{ github.ref_name }} .`
             Full changelog is auto-generated below from all commits and PRs since the previous release.
 
-      # npm publish is intentionally gated off — see docs/PUBLISHING.md
-      # and Master-Stabilization-Plan.md §5 (parked decision). The npm
-      # name "qa-doctor" belongs to an unrelated project; `npm publish`
-      # would fail 403 today. This step becomes live once that decision
-      # resolves (most likely: publish under a scoped name, e.g.
-      # @<scope>/qa-doctor, keeping the "qa-doctor" bin command name).
+      # npm publish is intentionally gated off until the npmjs.com
+      # trusted-publisher (OIDC) setup is completed for
+      # @sergey-bar/qa-doctor. See docs/PUBLISHING.md for the one-time
+      # runbook.
       #
       # Provenance (--provenance) requires: (1) the npmjs.com package to
       # have OIDC "trusted publisher" configured for this exact repo +
@@ -90,5 +88,5 @@ jobs:
       # maintainer — cannot be automated from inside this repo, see the
       # runbook in docs/PUBLISHING.md), and (2) id-token: write below.
       - name: Publish to npm with provenance
-        if: false # flip once the npm name decision (§5) resolves
+        if: false # flip once OIDC trusted-publisher is configured on npmjs.com
         run: npm publish --provenance --access public

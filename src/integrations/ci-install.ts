@@ -32,7 +32,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npx --yes qa-doctor@latest . --scope changed --json > qa-doctor.json
+      - run: npx --yes @sergey-bar/qa-doctor@latest . --scope changed --json > qa-doctor.json
       - name: Annotate PR
         uses: actions/github-script@v7
         with:

@@ -1,5 +1,5 @@
 /**
- * @qa-doctor/playwright-reporter package contract tests (Phase 0.2,
+ * @sergey-bar/qa-doctor-playwright-reporter package contract tests (Phase 0.2,
  * upgraded in Master-Stabilization-Plan Sprint 1 Task 7).
  * The package source is imported directly (workspace-relative) so the
  * main vitest config's tests/** include applies.
