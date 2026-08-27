@@ -18,6 +18,7 @@ import {
   padTo,
 } from "./theme.js";
 import { LOGO, LOGO_ASCII, TROPHY, DIVIDER } from "./art.js";
+import { bluntMessage } from "./tone-blunt.js";
 
 /** Terminal display cap — the JSON/SARIF contract always carries ALL findings. */
 const MAX_DISPLAYED = 50;
@@ -35,6 +36,8 @@ export interface RenderTerminalOpts {
   /** Force ASCII glyphs/box-drawing. Defaults to shouldUseAscii()'s
    * cmd.exe/legacy-console heuristic when omitted. */
   ascii?: boolean;
+  /** --tone blunt: blunter, pattern-mocking messages (Sprint 9 Task 40). */
+  tone?: "blunt";
 }
 
 export function renderTerminal(
@@ -64,7 +67,15 @@ export function renderTerminal(
   appendDimensions(lines, result, p, ascii);
   appendDeductions(lines, result, counts, p, width, ascii);
   appendFixThisFirst(lines, result, p);
-  appendTopIssues(lines, result, counts, opts.verbose === true, p, ascii);
+  appendTopIssues(
+    lines,
+    result,
+    counts,
+    opts.verbose === true,
+    p,
+    ascii,
+    opts.tone,
+  );
   if (counts.total === 0 && result.score === 100) {
     lines.push(
       p.ok(ascii ? "*** FLAWLESS VICTORY ***" : TROPHY),
@@ -214,6 +225,7 @@ function appendTopIssues(
   verbose: boolean,
   p: ReturnType<typeof palette>,
   ascii: boolean,
+  tone?: "blunt",
 ): void {
   const top = verbose
     ? result.findings
@@ -226,8 +238,9 @@ function appendTopIssues(
     // Honesty Core: every finding shows how strong its evidence is.
     const level =
       f.evidenceLevel ?? deriveEvidenceLevel(f.findingType, f.confidence);
+    const msg = tone === "blunt" ? bluntMessage(f) : f.message;
     lines.push(
-      `  ${severityTag(f.severity, p, ascii)} ${p.bold(f.message)} ${p.dim(`[${level}]`)}`,
+      `  ${severityTag(f.severity, p, ascii)} ${p.bold(msg)} ${p.dim(`[${level}]`)}`,
     );
     lines.push(`         ${p.dim(loc)}`);
   }

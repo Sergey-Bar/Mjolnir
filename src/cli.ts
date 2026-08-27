@@ -57,9 +57,11 @@ import {
 import {
   DEFAULT_STATS_PATH,
   loadStats,
+  recordMilestones,
   recordResolved,
   renderStats,
   saveStats,
+  MILESTONE_MESSAGES,
 } from "./commands/stats.js";
 import { renderPrComment } from "./commands/pr-comment.js";
 import { runInit, renderInit, tryReadPackageJson } from "./commands/init.js";
@@ -112,6 +114,8 @@ interface CliArgs {
   width?: number;
   /** --ascii / --no-ascii override for shouldUseAscii()'s heuristic. */
   ascii?: boolean;
+  /** --tone blunt: opt-in blunter messages (Sprint 9 Task 40). */
+  tone?: "blunt";
 }
 
 export function parseArgs(argv: string[]): CliArgs | null {
@@ -153,6 +157,10 @@ export function parseArgs(argv: string[]): CliArgs | null {
       args.ascii = true;
     } else if (a === "--no-ascii") {
       args.ascii = false;
+    } else if (a === "--tone") {
+      const tone = argv[++i];
+      if (tone === "blunt") args.tone = "blunt";
+      else return null; // unknown tone = usage error
     } else if (a === "--help" || a === "-h") {
       return null;
     } else if (!a.startsWith("-")) {
@@ -575,8 +583,25 @@ export function runScanCommand(
           verbose: args.verbose,
           ...(args.width !== undefined ? { width: args.width } : {}),
           ...(args.ascii !== undefined ? { ascii: args.ascii } : {}),
+          ...(args.tone !== undefined ? { tone: args.tone } : {}),
         }),
       );
+      // Milestones (Sprint 9 Task 39) — terminal-only, display-only.
+      // Never printed for --json/--format sarif/mermaid: those are
+      // machine contracts and must stay byte-for-byte what the schema
+      // promises, nothing extra appended.
+      if (result.score === 100 && result.findings.length === 0) {
+        const target = resolve(args.target);
+        const statsPath = join(target, DEFAULT_STATS_PATH);
+        const { newlyAnnounced, stats } = recordMilestones(
+          loadStats(statsPath),
+          ["first-clean-scan"],
+        );
+        if (newlyAnnounced.length > 0) {
+          saveStats(stats, statsPath);
+          for (const id of newlyAnnounced) io.out(MILESTONE_MESSAGES[id]);
+        }
+      }
     }
     // Exit-code × gate semantics (S13): partial scans NEVER block.
     // Honesty Core Phase 2: advisory (E0) findings never gate CI —
@@ -833,6 +858,17 @@ export function runDiffCommand(
       const statsPath = join(target, DEFAULT_STATS_PATH);
       const stats = recordResolved(loadStats(statsPath), diff);
       saveStats(stats, statsPath);
+
+      // Milestones (Sprint 9 Task 39) — real event this command just
+      // witnessed (diff.resolvedFindings is non-empty), never a guess.
+      if (diff.resolvedFindings.length > 0) {
+        const milestone = recordMilestones(stats, ["first-debt-reduction"]);
+        if (milestone.newlyAnnounced.length > 0) {
+          saveStats(milestone.stats, statsPath);
+          for (const id of milestone.newlyAnnounced)
+            io.out(MILESTONE_MESSAGES[id]);
+        }
+      }
     }
 
     if (!diff.hasBaseline) return 2;
@@ -1028,6 +1064,7 @@ Options:
   --format mermaid      test-architecture diagram (frameworks → rule
                         categories → severity), pastes directly into a
                         GitHub/GitLab markdown comment or a slide
+  --tone blunt          blunter, pattern-mocking messages (opt-in)
   --verbose             show all findings
   --scope changed       only findings on new/changed lines vs merge-base
   --max-duration <sec>  stop analysis after N seconds (partial results flagged)

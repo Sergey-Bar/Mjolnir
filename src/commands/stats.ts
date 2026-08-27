@@ -17,6 +17,12 @@
  * was deleted", and conflating those would be exactly the kind of
  * invented-precision this product refuses to do elsewhere). A repo with
  * no recorded history yet reports honest zeros, not fabricated totals.
+ *
+ * Also hosts Milestones (Sprint 9 Task 39, Master-Stabilization-Plan.md):
+ * a modest, opt-in-by-nature extension of this same file — a milestone is
+ * just a real event this command already witnesses (a flawless scan, a
+ * fix recorded by `diff`), announced once and never repeated. Display-only:
+ * it does not change scores, exit codes or the JSON schema.
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -36,6 +42,51 @@ export interface StatsFile {
   resolvedByRule: Record<string, number>;
   /** Number of times `qa-doctor diff` has recorded a fix. */
   recordedFixEvents: number;
+  /**
+   * IDs of milestones already announced (Sprint 9 Task 39). A milestone
+   * fires exactly once, ever, per repo+machine — recorded here so a
+   * second identical scan never re-announces "first clean scan" as if it
+   * were new. Absent/undefined on stats files written before this field
+   * existed; treated as an empty list, never as "not yet tracked".
+   */
+  milestonesAnnounced?: string[];
+}
+
+/** Milestone IDs (Sprint 9 Task 39). Extending the existing, already
+ * evidence-gated `diff`/`stats` machinery rather than inventing a new
+ * tracking mechanism — every milestone here corresponds to a real event
+ * `runScanCommand`/`runDiffCommand` directly witnessed, never a guess. */
+export type MilestoneId = "first-clean-scan" | "first-debt-reduction";
+
+export const MILESTONE_MESSAGES: Record<MilestoneId, string> = {
+  "first-clean-scan":
+    "MILESTONE: first flawless scan recorded for this repo (score 100, zero findings).",
+  "first-debt-reduction":
+    "MILESTONE: first debt reduction recorded — qa-doctor diff witnessed a real fix.",
+};
+
+/**
+ * Given the current stats and a set of newly-witnessed milestone IDs,
+ * return the ones that have never been announced before (empty if none
+ * are new) plus the updated stats file to persist. Pure function — callers
+ * decide whether/how to print the returned IDs.
+ */
+export function recordMilestones(
+  existing: StatsFile | null,
+  witnessed: readonly MilestoneId[],
+  now: string = new Date().toISOString(),
+): { newlyAnnounced: MilestoneId[]; stats: StatsFile } {
+  const stats = existing ?? emptyStats(now);
+  const already = new Set(stats.milestonesAnnounced ?? []);
+  const newlyAnnounced = witnessed.filter((id) => !already.has(id));
+  if (newlyAnnounced.length === 0) {
+    return { newlyAnnounced, stats };
+  }
+  const merged = [...already, ...newlyAnnounced];
+  return {
+    newlyAnnounced,
+    stats: { ...stats, lastUpdatedAt: now, milestonesAnnounced: merged },
+  };
 }
 
 export function loadStats(path: string): StatsFile | null {

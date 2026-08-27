@@ -16,6 +16,7 @@ import {
 } from "../src/commands/baseline.js";
 import {
   loadStats,
+  recordMilestones,
   recordResolved,
   renderStats,
   saveStats,
@@ -155,5 +156,61 @@ describe("stats — recording real fixes witnessed via diff", () => {
     expect(rendered).toContain("1 finding resolved all-time");
     expect(rendered).toContain("QA-PW-101");
     expect(rendered).toContain("UNKNOWN");
+  });
+});
+
+describe("recordMilestones — Sprint 9 Task 39 (announced exactly once)", () => {
+  it("announces a milestone the first time it is witnessed", () => {
+    const { newlyAnnounced, stats } = recordMilestones(
+      null,
+      ["first-clean-scan"],
+      "2026-01-01T00:00:00.000Z",
+    );
+    expect(newlyAnnounced).toEqual(["first-clean-scan"]);
+    expect(stats.milestonesAnnounced).toEqual(["first-clean-scan"]);
+    expect(stats.lastUpdatedAt).toBe("2026-01-01T00:00:00.000Z");
+  });
+
+  it("never re-announces a milestone already recorded", () => {
+    const first = recordMilestones(null, ["first-clean-scan"]);
+    const second = recordMilestones(first.stats, ["first-clean-scan"]);
+    expect(second.newlyAnnounced).toEqual([]);
+    // Stats object is returned unchanged (no spurious lastUpdatedAt bump).
+    expect(second.stats).toEqual(first.stats);
+  });
+
+  it("tracks multiple distinct milestones independently", () => {
+    const first = recordMilestones(null, ["first-clean-scan"]);
+    const second = recordMilestones(first.stats, [
+      "first-clean-scan",
+      "first-debt-reduction",
+    ]);
+    expect(second.newlyAnnounced).toEqual(["first-debt-reduction"]);
+    expect(second.stats.milestonesAnnounced).toEqual([
+      "first-clean-scan",
+      "first-debt-reduction",
+    ]);
+  });
+
+  it("treats a stats file predating this field as having zero milestones announced", () => {
+    const legacyStats = recordResolved(
+      null,
+      { hasBaseline: true, newFindings: [], resolvedFindings: [] } as never,
+      "2026-01-01T00:00:00.000Z",
+    );
+    // legacyStats has no milestonesAnnounced key at all.
+    expect(legacyStats.milestonesAnnounced).toBeUndefined();
+    const { newlyAnnounced } = recordMilestones(legacyStats, [
+      "first-clean-scan",
+    ]);
+    expect(newlyAnnounced).toEqual(["first-clean-scan"]);
+  });
+
+  it("round-trips milestonesAnnounced through disk exactly", () => {
+    const dir = tmpDir();
+    const { stats } = recordMilestones(null, ["first-clean-scan"]);
+    const path = saveStats(stats, join(dir, "stats.json"));
+    const loaded = loadStats(path);
+    expect(loaded?.milestonesAnnounced).toEqual(["first-clean-scan"]);
   });
 });
