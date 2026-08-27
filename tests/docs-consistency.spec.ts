@@ -155,6 +155,7 @@ describe("no doc claims a gap that source contradicts", () => {
       "--ascii",
       "--no-ascii",
       "--since",
+      "--tone",
     ]);
     for (const flag of flags) {
       expect(
@@ -166,5 +167,37 @@ describe("no doc claims a gap that source contradicts", () => {
           `same way --output was.`,
       ).toBe(true);
     }
+  });
+});
+
+describe("README Node version matches package.json engines", () => {
+  const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8"));
+  const enginesNode = pkg.engines?.node as string | undefined;
+
+  it("package.json declares a node engines field", () => {
+    expect(enginesNode).toBeDefined();
+  });
+
+  it("README states the correct minimum Node version (not a stale ≥ 20 claim)", () => {
+    // The README must mention the actual floor from package.json, not a
+    // lower version that would lead users to install and fail.
+    expect(README).not.toMatch(/Node\.js\s*[≥>]=?\s*20\b/);
+    // It should mention 22 (the real floor).
+    expect(README).toMatch(/Node\.js\s*[≥>]=?\s*22/);
+  });
+
+  it("CONTRIBUTING.md states the correct Node requirement", () => {
+    const contributing = readFileSync(join(ROOT, "CONTRIBUTING.md"), "utf8");
+    expect(contributing).toMatch(/Node.*22/);
+  });
+});
+
+describe("README does not reference the unrelated npm package 'qa-doctor' (unscoped)", () => {
+  it("no npmjs.com/package/qa-doctor link (that's someone else's software)", () => {
+    expect(README).not.toMatch(/npmjs\.com\/package\/qa-doctor(?!\/)/);
+  });
+
+  it("no shields.io badge querying the unscoped 'qa-doctor' npm package", () => {
+    expect(README).not.toMatch(/img\.shields\.io\/npm\/[vd]\/qa-doctor\b/);
   });
 });

@@ -14,14 +14,13 @@
 **The quality scanner for QA engineers.** Audits test suites and CI pipelines,
 reports a health score, and shows exactly where the trust breaks.
 
-[![npm](https://img.shields.io/npm/v/qa-doctor.svg?style=flat-square&color=15803D&label=npm&labelColor=0D0D0D)](https://www.npmjs.com/package/qa-doctor)
-[![downloads](https://img.shields.io/npm/dm/qa-doctor.svg?style=flat-square&color=146A8C&label=downloads&labelColor=0D0D0D)](https://www.npmjs.com/package/qa-doctor)
+[![npm](https://img.shields.io/badge/npm-unpublished-lightgrey.svg?style=flat-square&labelColor=0D0D0D)](https://github.com/Sergey-Bar/QA-Doctor/releases)
 [![license](https://img.shields.io/badge/license-MIT-B45309.svg?style=flat-square&labelColor=0D0D0D)](LICENSE)
-[![node](https://img.shields.io/node/v/qa-doctor.svg?style=flat-square&color=146A8C&labelColor=0D0D0D)](https://nodejs.org)
+[![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-146A8C.svg?style=flat-square&labelColor=0D0D0D)](https://nodejs.org)
 [![status](https://img.shields.io/badge/status-●_ONLINE-15803D.svg?style=flat-square&labelColor=0D0D0D)](#-quickstart)
 
 ```bash
-npx qa-doctor@latest
+npx @sergey-bar/qa-doctor@latest
 ```
 
 [Quickstart](#-quickstart) · [Rules](#-the-rules) · [Selector Health](#-selector-health-score) · [Runtime Evidence](#-runtime-evidence) · [CI Integration](#-ci-integration) · [Contributing](#-contributing)
@@ -85,29 +84,29 @@ No config. No server. No telemetry. Runs locally in seconds.
 ## ⚡ Quickstart
 
 ```bash
-npx qa-doctor@latest
+npx @sergey-bar/qa-doctor@latest
 ```
 
 That's it. Zero configuration — QA Doctor detects your frameworks, finds your
 tests, and reports.
 
-| Command                                                 | What it does                                                        |
-| ------------------------------------------------------- | ------------------------------------------------------------------- |
-| `npx qa-doctor@latest --scope changed`                  | Only findings introduced by **your** changes — perfect for PRs      |
-| `npx qa-doctor@latest --json`                           | Machine-readable output                                             |
-| `npx qa-doctor@latest --format sarif > qa-doctor.sarif` | GitHub Code Scanning integration                                    |
-| `npx qa-doctor@latest --format mermaid`                 | Test-architecture diagram — paste into a GitHub comment or a slide  |
-| `npx qa-doctor doctor:playwright`                       | Playwright-only deep scan + Selector Health Score                   |
-| `npx qa-doctor forensics ./test-results/`               | Runtime evidence — retries, true flakes, `FLAKY.md` artifact        |
-| `npx qa-doctor triage ./test-results/`                  | The flaky-triage meeting, in 10 minutes instead of 45               |
-| `npx qa-doctor fix --dry-run` / `fix`                   | Safe auto-fixes with proof (dry-run first)                          |
-| `npx qa-doctor debt`                                    | Test debt register — presentable to management                      |
-| `npx qa-doctor handover`                                | New-QA-onboarding map of the suite                                  |
-| `npx qa-doctor pw-report ./test-results/`               | Playwright run summary — retries / flakes / slowest                 |
-| `npx qa-doctor badge`                                   | Evidentiary badge (shields.io endpoint JSON)                        |
-| `npx qa-doctor doctor`                                  | Self-audit — prove QA Doctor's own rule base is healthy             |
-| `npx qa-doctor rules` / `rules --md`                    | Rule catalog with trust metadata (JSON or markdown)                 |
-| `npx qa-doctor explain <RULE-ID>`                       | What/why/fix for one rule, with a real example from its own fixture |
+| Command                                                             | What it does                                                        |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `npx @sergey-bar/qa-doctor@latest --scope changed`                  | Only findings introduced by **your** changes — perfect for PRs      |
+| `npx @sergey-bar/qa-doctor@latest --json`                           | Machine-readable output                                             |
+| `npx @sergey-bar/qa-doctor@latest --format sarif > qa-doctor.sarif` | GitHub Code Scanning integration                                    |
+| `npx @sergey-bar/qa-doctor@latest --format mermaid`                 | Test-architecture diagram — paste into a GitHub comment or a slide  |
+| `npx qa-doctor doctor:playwright`                                   | Playwright-only deep scan + Selector Health Score                   |
+| `npx qa-doctor forensics ./test-results/`                           | Runtime evidence — retries, true flakes, `FLAKY.md` artifact        |
+| `npx qa-doctor triage ./test-results/`                              | The flaky-triage meeting, in 10 minutes instead of 45               |
+| `npx qa-doctor fix --dry-run` / `fix`                               | Safe auto-fixes with proof (dry-run first)                          |
+| `npx qa-doctor debt`                                                | Test debt register — presentable to management                      |
+| `npx qa-doctor handover`                                            | New-QA-onboarding map of the suite                                  |
+| `npx qa-doctor pw-report ./test-results/`                           | Playwright run summary — retries / flakes / slowest                 |
+| `npx qa-doctor badge`                                               | Evidentiary badge (shields.io endpoint JSON)                        |
+| `npx qa-doctor doctor`                                              | Self-audit — prove QA Doctor's own rule base is healthy             |
+| `npx qa-doctor rules` / `rules --md`                                | Rule catalog with trust metadata (JSON or markdown)                 |
+| `npx qa-doctor explain <RULE-ID>`                                   | What/why/fix for one rule, with a real example from its own fixture |
 
 ## 📋 The Rules
 
@@ -250,7 +249,7 @@ npx qa-doctor ci install
 Or wire it into GitHub Code Scanning natively via SARIF:
 
 ```yaml
-- run: npx qa-doctor@latest --format sarif > qa-doctor.sarif
+- run: npx @sergey-bar/qa-doctor@latest --format sarif > qa-doctor.sarif
 - uses: github/codeql-action/upload-sarif@v3
   with:
     sarif_file: qa-doctor.sarif
@@ -331,13 +330,13 @@ behind the same seam. Go is not yet started.
 
 ```bash
 # Run directly (recommended):
-npx qa-doctor@latest
+npx @sergey-bar/qa-doctor@latest
 
 # Or install globally:
-npm i -g qa-doctor
+npm i -g @sergey-bar/qa-doctor
 ```
 
-Requires Node.js ≥ 20. Works on Windows, macOS, and Linux.
+Requires Node.js ≥ 22.18. Works on Windows, macOS, and Linux.
 
 ## 🤝 Contributing
 

@@ -2,7 +2,7 @@
 
 ## Project
 
-QA Doctor: linter-grade QA scanner. TypeScript, ESM, Node >= 20, Vitest, tsdown.
+QA Doctor: linter-grade QA scanner. TypeScript, ESM, Node >= 22.18, Vitest, tsdown.
 
 ## Source plans
 

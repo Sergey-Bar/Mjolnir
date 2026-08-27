@@ -2,7 +2,7 @@
 
 ## Project
 
-`qa-doctor/` is a linter-grade QA scanner (TypeScript, ESM, Node >= 20). `npx qa-doctor` → score + findings → `--scope changed` → `ci install`. React Doctor clone model.
+`qa-doctor/` is a linter-grade QA scanner (TypeScript, ESM, Node >= 22.18). `npx qa-doctor` → score + findings → `--scope changed` → `ci install`. React Doctor clone model.
 
 ## Frozen contracts — NEVER change without explicit user approval
 
