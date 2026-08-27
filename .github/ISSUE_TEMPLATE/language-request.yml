@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        QA Doctor is multi-language by design: adding a language means
+        Mjölnir is multi-language by design: adding a language means
         adding one `LanguageAdapter` (`src/engine/adapter.ts`) plus its
         rules — everything else (scoring, JSON contract, exit codes,
         `--scope changed`, reporters, suppressions) is shared. Currently

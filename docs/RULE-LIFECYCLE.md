@@ -24,7 +24,7 @@ something different tomorrow than it did yesterday.
 
 1. **Severity downgrade, not deletion, as the default move.** Set
    `RuleMeta.severity` to `"info"` and, if the rule should stop running
-   by default, disable it (`qa-doctor.config.json`'s `ignore` list can
+   by default, disable it (`mjolnir.config.json`'s `ignore` list can
    suppress a rule globally with a `reason` explaining the deprecation —
    see `src/config/config.ts`'s `IgnoreEntry`). The rule's code and
    fixtures stay in the repo; its ID stays valid; a user who has
@@ -65,7 +65,7 @@ the rule's entire premise is wrong, not just its regex.
    - Sets `severity: "info"` and adds `falsePositiveRisk: "high"` on
      `QA-PW-999`'s `RuleMeta`, with a code comment explaining why
      (linking the audit finding).
-   - Adds a `qa-doctor.config.json`-style suppression example to the
+   - Adds a `mjolnir.config.json`-style suppression example to the
      rule's own doc comment (not the repo's own config — that's for
      _this_ repo's self-scan, not a template for consumers) showing how
      a user can fully silence it.
@@ -80,7 +80,7 @@ the rule's entire premise is wrong, not just its regex.
        real code (see FP audit run on <date>, <N> false positives out
        of <M> real-repo findings). If you had this rule's findings
        gating CI, they no longer do at `info` severity by default; add
-       an explicit `severityOverrides` entry in `qa-doctor.config.json`
+       an explicit `severityOverrides` entry in `mjolnir.config.json`
        if you want the old blocking behavior. The ID is retired — no
        successor rule.
      ```

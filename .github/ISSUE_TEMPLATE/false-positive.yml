@@ -39,8 +39,8 @@ body:
   - type: input
     id: version
     attributes:
-      label: qa-doctor version
-      description: Output of `npx qa-doctor@latest --version` or your package.json's pinned version.
+      label: Mjölnir version
+      description: Output of `npx mjolnir-qa@latest --version` or your package.json's pinned version.
     validations:
       required: true
   - type: dropdown

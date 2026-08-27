@@ -137,7 +137,7 @@ function renderSvg(lines: string[]): string {
     <circle cx="24" cy="21" r="6.5" fill="#ff5f56"/>
     <circle cx="46" cy="21" r="6.5" fill="#ffbd2e"/>
     <circle cx="68" cy="21" r="6.5" fill="#27c93f"/>
-    <text x="${width / 2}" y="25.5" fill="#5C7A68" font-size="12.5" text-anchor="middle" letter-spacing="0.5">user@ci: ~/demo-repo &#8212; qa-doctor scan</text>
+    <text x="${width / 2}" y="25.5" fill="#5C7A68" font-size="12.5" text-anchor="middle" letter-spacing="0.5">user@ci: ~/demo-repo &#8212; mjolnir scan</text>
 
     <g filter="url(#glow)">
 ${textLines}
@@ -173,7 +173,7 @@ function main(): void {
   const lines = rendered.split("\n").map((l) => `$ ${l}`.replace("$ ", ""));
   // Prepend the invocation line shown in the original hero asset.
   const allLines = [
-    "\x1b[92m$ \x1b[0m\x1b[1mnpx qa-doctor@latest\x1b[0m",
+    "\x1b[92m$ \x1b[0m\x1b[1mnpx mjolnir-qa@latest\x1b[0m",
     ...lines,
   ].map((line) =>
     // The wall-clock duration on the "Analysis: complete · Nms" line is

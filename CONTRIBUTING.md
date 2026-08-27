@@ -1,4 +1,4 @@
-# Contributing to QA Doctor
+# Contributing to Mjölnir
 
 Thanks for considering a contribution. This document covers dev setup,
 every quality gate command, the two laws that govern rule changes, how
@@ -7,8 +7,8 @@ to propose a rule or plugin, and what a PR needs before review.
 ## Dev setup
 
 ```bash
-git clone https://github.com/Sergey-Bar/QA-Doctor
-cd QA-Doctor/qa-doctor
+git clone https://github.com/Sergey-Bar/Mjolnir
+cd Mjolnir
 npm ci
 ```
 
@@ -74,7 +74,7 @@ your change is close to either line.
 
 ## Proposing a new rule
 
-1. Run `qa-doctor create-rule <ID> --title "..."` (e.g.
+1. Run `mjolnir create-rule <ID> --title "..."` (e.g.
    `QA-PW-150`). This scaffolds the rule file and both fixture
    directories.
 2. **The generated rule is deliberately broken.** It returns zero
@@ -100,7 +100,7 @@ your change is close to either line.
 ## Proposing a plugin
 
 Third-party rule packages are declared in a consuming project's
-`qa-doctor.config.json` (`"plugins": [...]`) and loaded via
+`mjolnir.config.json` (`"plugins": [...]`) and loaded via
 `src/plugins/load.ts`. Security model: **no sandbox** — a plugin runs
 with the same trust level as an ESLint or Vitest plugin in your own
 project. Core rule-ID prefixes (`QA-TEST`, `QA-TQUAL`, `QA-PW`, `QA-CI`,

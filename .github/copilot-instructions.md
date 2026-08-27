@@ -1,8 +1,8 @@
-# QA Doctor — Copilot Instructions
+# Mjölnir — Copilot Instructions
 
 ## Project
 
-`qa-doctor/` is a linter-grade QA scanner (TypeScript, ESM, Node >= 22.18). `npx qa-doctor` → score + findings → `--scope changed` → `ci install`. React Doctor clone model.
+Mjölnir is a verification trust engine (TypeScript, ESM, Node >= 22.18). `npx mjolnir-qa` → worthiness score + findings → `--scope changed` → `ci install`.
 
 ## Frozen contracts — NEVER change without explicit user approval
 
@@ -20,7 +20,7 @@
 
 - Rules live in `src/rules/<family>/qa-<fam>-NNN-name.ts`; every new rule MUST be registered in `src/rules/index.ts`.
 - Engine is regex/text-based; the `ast?: unknown` seam exists in adapters but is unpopulated for test files (Upgrade-Plan-v2 R1 will refactor this).
-- Tests: Vitest. Run `npm test` in `qa-doctor/`. Golden lock via `tests/golden/` — update only with `npm run golden:update` and explicit intent.
+- Tests: Vitest. Run `npm test`. Golden lock via `tests/golden/` — update only with `npm run golden:update` and explicit intent.
 - Build: `npm run build` (tsdown). Typecheck: `npm run typecheck`.
 - Do NOT touch files under `node_modules/`, `dist/`, or root-level `scan-*.{json,txt,sarif}` scratch outputs.
 

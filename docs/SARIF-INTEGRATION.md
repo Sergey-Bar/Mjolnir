@@ -1,6 +1,6 @@
 # Editor integration via SARIF
 
-QA Doctor can emit [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html)
+Mjölnir can emit [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html)
 (`--format sarif`), the format GitHub Code Scanning, VS Code, and every
 major JetBrains IDE already know how to render as inline problems at the
 exact file and line — no dashboard server, no GUI app, no new UI QA
@@ -8,11 +8,11 @@ Doctor has to build or maintain (see the anti-scope rules in
 `docs/tiers/tier-4-delight.md`).
 
 This is a documentation-only integration: nothing here changes what
-`qa-doctor` does. It only wires the existing `--format sarif` output
+`mjolnir` does. It only wires the existing `--format sarif` output
 into tools engineers already have installed.
 
 ```bash
-qa-doctor . --format sarif > qa-doctor.sarif
+mjolnir . --format sarif > mjolnir.sarif
 ```
 
 Every result carries `ruleId`, `level` (`error`/`warning`/`note`),
@@ -38,9 +38,9 @@ Minimal `.vscode/tasks.json` entry:
 
 ```json
 {
-  "label": "QA Doctor scan",
+  "label": "Mjölnir scan",
   "type": "shell",
-  "command": "npx qa-doctor . --format sarif > qa-doctor.sarif",
+  "command": "npx mjolnir-qa . --format sarif > mjolnir.sarif",
   "problemMatcher": []
 }
 ```
@@ -58,13 +58,13 @@ External Tools**) that runs:
 
 ```
 Program: npx
-Arguments: qa-doctor . --format sarif
+Arguments: mjolnir-qa . --format sarif
 Working directory: $ProjectFileDir$
 ```
 
 Redirect its output to a file (JetBrains External Tools support output
 redirection via the tool's "Output filters"/shell wrapper, or simply
-wrap it: `Arguments: -c "qa-doctor . --format sarif > qa-doctor.sarif"`
+wrap it: `Arguments: -c "mjolnir-qa . --format sarif > mjolnir.sarif"`
 with `Program: sh`/`bash` on macOS/Linux, or a `.cmd` wrapper on
 Windows), then open the resulting file via the SARIF viewer described
 above.
@@ -76,16 +76,16 @@ claim otherwise. To enable it in any repo with `code-scanning` write
 access, add a step like this after generating the SARIF file:
 
 ```yaml
-- run: npx qa-doctor . --format sarif > qa-doctor.sarif
+- run: npx mjolnir-qa . --format sarif > mjolnir.sarif
 - uses: github/codeql-action/upload-sarif@v3
   with:
-    sarif_file: qa-doctor.sarif
+    sarif_file: mjolnir.sarif
 ```
 
 Findings then appear as annotations directly on the relevant lines in a
 PR diff via GitHub's native Code Scanning UI, with no extra
 configuration beyond those two steps. This repository's own
-`.github/workflows/qa-doctor.yml` currently posts a scoped PR comment
+`.github/workflows/mjolnir.yml` currently posts a scoped PR comment
 instead (see Sprint 6, Task 25) — Code Scanning upload is documented
 here as an available alternative/addition, not something already
 running.

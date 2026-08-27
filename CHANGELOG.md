@@ -9,6 +9,28 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [0.4.0] — 2026-08-27
+
+### Changed
+
+- **BREAKING: Rebranded from QA Doctor to Mjölnir.** Package name is now
+  `mjolnir-qa` (bin: `mjolnir`). Config file: `mjolnir.config.json`.
+  Data directory: `.mjolnir/`. Badge: `mjolnir-badge.json`.
+- Score label: "SCORE" → "WORTHINESS".
+- Verdicts: "HEALTHY" → "WORTHY", "CRITICAL" → "UNWORTHY".
+- Environment variable: `QA_DOCTOR_ASCII` → `MJOLNIR_ASCII`.
+- SARIF tool.driver.name: "Mjölnir".
+- Repository: `github.com/Sergey-Bar/Mjolnir`.
+- CLI: all help text, error messages, usage strings reference `mjolnir`.
+- Generated workflows: `mjolnir.yml`, `npx mjolnir-qa@latest`.
+
+### Added
+
+- `--format mermaid` — test-architecture diagram (Sprint 9).
+- `--tone blunt` — opt-in blunter messages (Sprint 9).
+- Milestones — first flawless scan / first debt reduction announced once.
+- New MJÖLNIR ASCII art logo (minimal Nordic hammer).
+
 ## [Unreleased]
 
 ### Fixed (adversarial-audit hardening wave)

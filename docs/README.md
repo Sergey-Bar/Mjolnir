@@ -1,4 +1,4 @@
-# QA Doctor — Documentation
+# Mjölnir — Documentation
 
 ## Status
 
@@ -41,7 +41,7 @@ historical snapshots, not live counts; `.planning/STATE.md` is current.
 ## Other folders (repo-relative, from this repo's own root)
 
 - `.planning/` — current sprint state (`STATE.md`)
-- `packages/` — workspace member packages (`@sergey-bar/qa-doctor-playwright-reporter`)
+- `packages/` — workspace member packages (`mjolnir-qa-playwright-reporter`)
 - `examples/` — the deliberately-imperfect demo repo used in the README hero
 - `scratch/` — scan artifacts (gitignored)
 - `src/`, `tests/` — the product source code and its test suite

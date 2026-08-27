@@ -41,17 +41,14 @@ npm run test:coverage && npm run build && npm run self-scan`. All
 
 `release.yml` intentionally does **not** publish to npm today. It packs
 a tarball and attaches it to a GitHub Release only. This is deliberate,
-not an oversight: the npm package name `qa-doctor` is owned by an
-unrelated project (see `docs/plans/Master-Stabilization-Plan.md` §5,
-"PARKED by decision"). Running `npm publish` as written would fail with
-a 403.
+not an oversight: the npmjs.com OIDC trusted-publisher setup has not
+been completed yet. Running `npm publish` as written would fail without
+the trusted-publisher configuration.
 
 A `Publish to npm with provenance` step exists in `release.yml`,
-disabled via `if: false`, ready to flip on once the name decision
-resolves (most likely outcome: publish under a scoped name like
-`@<scope>/qa-doctor`, keeping `bin: { "qa-doctor": ... }` so the CLI
-command name a user types stays `qa-doctor` regardless of the package
-name they installed).
+disabled via `if: false`, ready to flip on once the OIDC setup is done.
+The package name is `mjolnir-qa` with `bin: { "mjolnir": ... }` so the
+CLI command name a user types is `mjolnir`.
 
 ## One-time setup required before that step can run (account-level, manual)
 
@@ -64,7 +61,7 @@ a maintainer takes once on npmjs.com after the name decision is made.
    reserves the name and org scope.
 2. On the package's npmjs.com settings page, under **Publishing
    access**, configure a **Trusted Publisher** (OIDC): select GitHub
-   Actions, the repository (`Sergey-Bar/QA-Doctor`), the exact workflow
+   Actions, the repository (`Sergey-Bar/Mjolnir`), the exact workflow
    file path (`.github/workflows/release.yml`), and leave the
    environment field blank unless this workflow later adds a GitHub
    Environment gate.

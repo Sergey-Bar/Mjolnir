@@ -11,7 +11,7 @@
 **Do NOT open a public issue for security vulnerabilities.**
 
 Use GitHub's private vulnerability reporting:
-https://github.com/Sergey-Bar/QA-Doctor/security/advisories/new
+https://github.com/Sergey-Bar/Mjolnir/security/advisories/new
 
 We commit to:
 
@@ -21,7 +21,7 @@ We commit to:
 
 ## Scope
 
-QA Doctor parses untrusted repository content. Areas of special interest:
+Mjölnir parses untrusted repository content. Areas of special interest:
 
 - Path traversal via crafted filenames or symlinks
 - YAML bombs / alias expansion in workflow parsing

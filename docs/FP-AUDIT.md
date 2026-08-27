@@ -14,7 +14,7 @@ This clones the real repos below over the network, runs the same
 `runScan` the CLI uses, and fails if any rule fires _more_ on real
 code than the committed baseline recorded (a false-positive
 regression signal). Fixtures prove a rule fires on one hand-written
-example; this proves it behaves on code nobody wrote for QA Doctor.
+example; this proves it behaves on code nobody wrote for Mjölnir.
 
 Last generated: 2026-08-27.
 
