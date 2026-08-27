@@ -7,54 +7,42 @@
   ],
   "ignore": [
     {
-      "ruleId": "QA-PW-101",
-      "files": ["tests/**"],
-      "reason": "Self-scan dogfooding: this repo's own test suite embeds sample Playwright code inside template-literal strings. The waitForTimeout occurrences are fixture payloads for testing the scanner itself, not real hard sleeps."
-    },
-    {
-      "ruleId": "QA-PW-140",
-      "files": ["tests/**"],
-      "reason": "Self-scan dogfooding: screenshot-name literals inside string-embedded test snippets trigger the diff-tolerance rule."
-    },
-    {
-      "ruleId": "QA-TQUAL-002",
-      "files": ["tests/**"],
-      "reason": "Self-scan dogfooding: string-embedded sample code (expect(1).toBe(1) payloads written to temp fixture files by the tests themselves)."
-    },
-    {
-      "ruleId": "QA-TEST-001",
-      "files": ["tests/**"],
-      "reason": "Self-scan dogfooding: it.only/test.only literals embedded in test strings to exercise the focused-test rule."
-    },
-    {
       "ruleId": "QA-TEST-003",
-      "files": ["tests/**"],
-      "reason": "Self-scan dogfooding: assertion-less sample bodies embedded in test strings."
-    },
-    {
-      "ruleId": "QA-PW-003",
-      "files": ["tests/**"],
-      "reason": "Self-scan dogfooding: page.evaluate samples embedded in test strings."
+      "files": [
+        "tests/adapter-deep-branch-coverage.spec.ts",
+        "tests/contract-schema.spec.ts",
+        "tests/cross-file.spec.ts",
+        "tests/fix.spec.ts",
+        "tests/fuzz.spec.ts",
+        "tests/impact.spec.ts",
+        "tests/mermaid-format.spec.ts",
+        "tests/rule-branch-coverage-misc.spec.ts",
+        "tests/rule-metadata-lint.spec.ts",
+        "tests/sprint6-cli-commands.spec.ts"
+      ],
+      "reason": "Self-scan dogfooding: these files embed test-like patterns (it/test with empty bodies) inside string literals as fixture data for the scanner — not real assertion-less tests."
     },
     {
       "ruleId": "QA-TEST-010",
-      "files": ["tests/**"],
-      "reason": "Self-scan dogfooding: empty-body samples embedded in test strings."
+      "files": [
+        "tests/adapter-deep-branch-coverage.spec.ts",
+        "tests/cross-file.spec.ts",
+        "tests/fix.spec.ts",
+        "tests/impact.spec.ts",
+        "tests/rule-metadata-lint.spec.ts",
+        "tests/sprint6-cli-commands.spec.ts"
+      ],
+      "reason": "Self-scan dogfooding: these files embed test-like patterns (it/test with empty arrow bodies) inside string literals as fixture data — not real empty tests."
     },
     {
-      "ruleId": "QA-PW-002",
-      "files": ["tests/**"],
-      "reason": "Self-scan dogfooding: unawaited-assertion samples embedded in test strings."
-    },
-    {
-      "ruleId": "QA-TQUAL-009",
-      "files": ["tests/**"],
-      "reason": "Self-scan dogfooding: promise-assertion samples embedded in test strings."
+      "ruleId": "QA-TQUAL-002",
+      "files": ["tests/reporters.spec.ts"],
+      "reason": "Intentional placeholder guard: the selector-health describe block uses expect(true).toBe(true) to keep vitest from warning about an empty suite."
     },
     {
       "ruleId": "QA-TEST-002",
-      "files": ["tests/**"],
-      "reason": "Self-scan dogfooding: unjustified-skip samples are test data, not real skipped tests."
+      "files": ["tests/registry-install.spec.ts"],
+      "reason": "Intentionally skipped: the registry-install smoke test is gated behind RUN_REGISTRY_INSTALL_TEST=1 because it requires network and is slow."
     },
     {
       "ruleId": "QA-PW-119",
