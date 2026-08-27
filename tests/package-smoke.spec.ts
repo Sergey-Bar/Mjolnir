@@ -17,6 +17,7 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readdirSync,
   rmSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -39,9 +40,9 @@ beforeAll(() => {
   // class of bug this test exists to catch.
   execSync("npm run build", { cwd: ROOT, stdio: "pipe" });
 
-  workDir = mkdtempSync(join(tmpdir(), "qa-doctor-pack-"));
+  workDir = mkdtempSync(join(tmpdir(), "mjolnir-pack-"));
 
-  const packOut = execSync(`npm pack --pack-destination "${workDir}" --json`, {
+  const packOut = execSync(`npm pack --json`, {
     cwd: ROOT,
   }).toString();
   // npm may prepend lifecycle-script output (e.g. "prepare > husky")
@@ -52,11 +53,24 @@ beforeAll(() => {
   if (!packResult) throw new Error("npm pack produced no output entry");
   const { filename } = packResult;
 
-  // `tar` ships on every CI runner (Linux, macOS, Windows 10+) — avoids
-  // pulling in an npm-package unzip dependency just for this test.
-  // Run tar with cwd=workDir and a RELATIVE archive name: GNU tar needs
-  // --force-local for absolute "C:\..." paths, but Windows' bundled bsdtar
-  // doesn't support that flag at all. A relative path sidesteps both.
+  // npm pack writes the tarball into cwd (ROOT). Move it to our isolated
+  // workDir so the extraction doesn't pollute the repo.
+  const srcTgz = join(ROOT, filename);
+  const destTgz = join(workDir, filename);
+  if (!existsSync(srcTgz)) {
+    throw new Error(
+      `npm pack claimed to produce "${filename}" but it doesn't exist at "${srcTgz}". ` +
+        `Root contents matching *.tgz: ${
+          readdirSync(ROOT)
+            .filter((f) => f.endsWith(".tgz"))
+            .join(", ") || "(none)"
+        }`,
+    );
+  }
+  cpSync(srcTgz, destTgz);
+  rmSync(srcTgz); // clean up from ROOT
+
+  // Extract using a relative path (sidesteps GNU tar vs bsdtar absolute-path issues on Windows).
   execFileSync("tar", ["-xzf", filename, "-C", "."], { cwd: workDir });
   pkgDir = join(workDir, "package");
 
