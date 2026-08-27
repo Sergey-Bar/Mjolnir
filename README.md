@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="src/Logo.png" alt="Mjölnir — Verification Trust Engine" width="800" />
+<img src="assets/readme/logo.png" alt="Mjölnir — Verification Trust Engine" width="800" />
 
 ### Your tests are lying to you. We prove it.
 
