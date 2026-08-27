@@ -901,6 +901,98 @@ is built and tested but not wired into the synchronous rule engine —
 deliberately deferred per Task 36's reasoning above, a real follow-up
 item, not a gap in this sprint's own stated scope.
 
+## Sprint 9 — Delight and virality (opt-in, brand-safe) — done 2026-08-27
+
+Tasks 38–41 of `docs/plans/Master-Stabilization-Plan.md`. The final
+sprint in the plan — every item here is opt-in and score-neutral per
+the plan's own definition of done: no alteration to scores, exit codes
+or the JSON schema.
+
+**Task 38** (`--format mermaid`): done. `src/reporter/mermaid.ts` —
+a flowchart of detected frameworks → rule categories → severity
+buckets, expressed in Mermaid syntax that pastes directly into a
+GitHub/GitLab markdown comment or a slide. Fully deterministic (same
+ScanResult → byte-identical Mermaid source), score-neutral (pure
+alternate rendering, verified by test), handles empty states (no tests,
+flawless scan, unknown frameworks) honestly. Wired into `--format
+mermaid` in the CLI, documented in README. `tests/mermaid-format.spec.ts`
+validates well-formedness against Mermaid's own flowchart grammar
+rules without adding a rendering dependency.
+
+**Task 39** (Milestones): done. Extended the existing `StatsFile`
+(`.qa-doctor/stats.json`) with a `milestonesAnnounced` field — each
+milestone fires exactly once per repo+machine, is never re-announced,
+and is only triggered by a real event the tool itself directly
+witnessed: `first-clean-scan` (score 100, zero findings, seen by
+`runScanCommand`) and `first-debt-reduction` (resolved findings > 0,
+seen by `runDiffCommand`). Terminal-only: never appears in `--json`,
+`--format sarif`, or `--format mermaid` — verified by test. Does not
+change exit codes or scores. Backward-compatible: stats files written
+before this field existed are treated as having zero milestones
+announced (never crashes, never re-announces everything).
+
+**Task 40** (`--tone blunt`): done. Opt-in via `--tone blunt` (per the
+plan's own recommendation of `--tone=blunt` over `--roast`). Provides
+blunter, pattern-mocking commentary for 31 specific rule IDs plus a
+generic fallback for any rule without a bespoke message. **Hard
+constraint verified by test:** no message targets a person, author name,
+or file path — only the anti-pattern itself. Score-neutral: exit code,
+JSON output, and SARIF output are structurally identical with or without
+the flag (verified by dedicated tests comparing both outputs minus
+wall-clock durationMs). Off by default (test confirms standard scan
+contains no blunt language without the flag). Usage error on unknown
+tone values (returns exit 10, consistent with all other bad-flag
+paths).
+
+**Task 41** (interactive finding navigation, `j/k`): **deliberately
+deferred** per the plan's own explicit recommendation: "honest
+engineering caveat: an interactive TTY surface is hard to test
+deterministically and sits in direct tension with the determinism law
+and golden-lock discipline. Build only on demonstrated demand." No
+demand demonstrated; not built.
+
+**Standing gate, verified green:** typecheck (both configs) exit 0;
+lint clean; **98 files / 2774 tests passed**, 1 skipped, 3 tests
+skipped; coverage 96.04% lines / 88.26% branches / 97.65% functions /
+96.58% statements (all above the 95/88/96/95 thresholds); build
+succeeds; golden lock byte-identical (all delight features are
+display-only, never altering scores); self-scan gate 0 error-severity
+findings.
+
+**Sprint 9 QA table verification:**
+
+- `tests/mermaid-format.spec.ts`: valid, deterministic Mermaid output ✓
+- Score-neutrality test (milestones + tone): every delight flag leaves
+  score, exit code, and JSON schema identical ✓ (verified across 3
+  test files)
+- `tests/roast.spec.ts`: off by default, opt-in only, no output targets
+  a person or author name ✓
+- Golden lock: unaffected by all delight features ✓
+
+**Not done in Sprint 9:** Task 41 (interactive navigation) — deferred
+per the plan's own recommendation, not an oversight.
+
+## Plan completion status
+
+**All 9 sprints of the Master-Stabilization-Plan.md are now complete.**
+
+Sprints 0–5 (beta-gating): ✅ all verified with real evidence, each
+passing the standing gate.
+Sprint 6 (proof of value): ✅ impact/baseline/diff/pr-comment/stats.
+Sprint 7 (living docs): ✅ rule docs generator/SARIF integration/hero
+asset/anti-pattern catalog.
+Sprint 8 (Java/.NET parity): ✅ 11 new rules, tree-sitter WASM AST,
+corpus audit.
+Sprint 9 (delight & virality): ✅ mermaid format, milestones, --tone
+blunt; interactive navigation explicitly deferred per plan's own
+recommendation.
+
+**Sole remaining open item across the entire plan:** the parked
+npm distribution name decision (§5) — "the one blocker this plan
+cannot close," requiring a choice only the project owner can make
+(scoped package name vs. product rename vs. acquiring the existing
+name). Everything else is shipped, tested, and verified.
+
 ## Conventions
 
 - User communicates in Hebrew; artifacts in English.
