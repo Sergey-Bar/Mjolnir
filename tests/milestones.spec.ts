@@ -4,7 +4,7 @@
  * A milestone is a real event `runScanCommand`/`runDiffCommand` already
  * witnesses (a flawless scan, a fix recorded by `diff`) — never a guess,
  * never fabricated. Announced exactly once per repo+machine via the same
- * `.qa-doctor/stats.json` file Sprint 6 introduced. Display-only: must
+ * `.mjolnir/stats.json` file Sprint 6 introduced. Display-only: must
  * never appear in `--json`/`--format sarif`/`--format mermaid` (machine
  * contracts) and must never change score or exit code.
  */
@@ -106,7 +106,7 @@ function makeGitRepoWithRealFix(): string {
 
 function readStats(dir: string): StatsFile {
   return JSON.parse(
-    readFileSync(join(dir, ".qa-doctor", "stats.json"), "utf8"),
+    readFileSync(join(dir, ".mjolnir", "stats.json"), "utf8"),
   ) as StatsFile;
 }
 
@@ -117,7 +117,7 @@ describe("first-clean-scan milestone", () => {
     const code = runScanCommand([dir], cap.io);
     expect(code).toBe(0);
     expect(cap.text()).toContain("MILESTONE: first flawless scan");
-    expect(existsSync(join(dir, ".qa-doctor", "stats.json"))).toBe(true);
+    expect(existsSync(join(dir, ".mjolnir", "stats.json"))).toBe(true);
     expect(readStats(dir).milestonesAnnounced).toEqual(["first-clean-scan"]);
   });
 

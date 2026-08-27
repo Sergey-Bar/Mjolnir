@@ -1,13 +1,13 @@
 {
-  "name": "@sergey-bar/qa-doctor",
-  "version": "0.3.7",
-  "description": "The linter-grade quality scanner for QA engineers. Audits test suites and CI pipelines, reports a health score and prioritized findings.",
+  "name": "mjolnir-qa",
+  "version": "0.4.0",
+  "description": "Mjölnir — the Verification Trust Engine for QA. Audits test suites and CI pipelines, reports a worthiness score and prioritized findings.",
   "type": "module",
   "engines": {
     "node": ">=22.18"
   },
   "bin": {
-    "qa-doctor": "./dist/cli.mjs"
+    "mjolnir": "./dist/cli.mjs"
   },
   "workspaces": [
     "packages/*"
@@ -49,17 +49,16 @@
     "linter",
     "static-analysis"
   ],
-  "author": "QA Doctor Team",
+  "author": "Mjölnir Team",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Sergey-Bar/QA-Doctor.git",
-    "directory": "qa-doctor"
+    "url": "git+https://github.com/Sergey-Bar/Mjolnir.git"
   },
   "bugs": {
-    "url": "https://github.com/Sergey-Bar/QA-Doctor/issues"
+    "url": "https://github.com/Sergey-Bar/Mjolnir/issues"
   },
-  "homepage": "https://github.com/Sergey-Bar/QA-Doctor#readme",
+  "homepage": "https://github.com/Sergey-Bar/Mjolnir#readme",
   "dependencies": {
     "tree-sitter-wasms": "^0.1.13",
     "ts-morph": "^28.0.0",

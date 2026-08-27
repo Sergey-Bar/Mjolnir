@@ -29,7 +29,7 @@ import type { ForensicsReport, TestVerdict } from "../src/forensics/types.js";
 
 let dir: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "qa-doctor-new-"));
+  dir = mkdtempSync(join(tmpdir(), "mjolnir-new-"));
 });
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
@@ -152,8 +152,8 @@ describe("runInit", () => {
   it("reports created steps and next commands on a bare repo", () => {
     const res = runInit(dir, null);
     expect(res.detectionUnknown).toBe(true);
-    expect(res.nextCommands).toContain("qa-doctor ci install");
-    expect(res.nextCommands).toContain("qa-doctor badge");
+    expect(res.nextCommands).toContain("mjolnir ci install");
+    expect(res.nextCommands).toContain("mjolnir badge");
     const wf = res.steps.find((s) => s.name === "ci-workflow");
     expect(wf?.status).toBe("created");
     expect(renderInit(res)).toContain("QA DOCTOR INIT");
@@ -162,12 +162,9 @@ describe("runInit", () => {
 
   it("reports existing files without overwriting", () => {
     mkdirSync(join(dir, ".github", "workflows"), { recursive: true });
-    writeFileSync(
-      join(dir, ".github", "workflows", "qa-doctor.yml"),
-      "on: push",
-    );
-    writeFileSync(join(dir, "qa-doctor-badge.json"), "{}");
-    writeFileSync(join(dir, "qa-doctor.config.json"), "{}");
+    writeFileSync(join(dir, ".github", "workflows", "mjolnir.yml"), "on: push");
+    writeFileSync(join(dir, "mjolnir-badge.json"), "{}");
+    writeFileSync(join(dir, "mjolnir.config.json"), "{}");
     const res = runInit(dir, null);
     expect(res.steps.find((s) => s.name === "ci-workflow")?.status).toBe(
       "exists",
@@ -175,7 +172,7 @@ describe("runInit", () => {
     expect(res.steps.find((s) => s.name === "badge")?.status).toBe("exists");
     expect(res.steps.find((s) => s.name === "config")?.status).toBe("exists");
     expect(res.nextCommands).toHaveLength(0);
-    expect(existsSync(join(dir, ".github", "workflows", "qa-doctor.yml"))).toBe(
+    expect(existsSync(join(dir, ".github", "workflows", "mjolnir.yml"))).toBe(
       true,
     );
   });

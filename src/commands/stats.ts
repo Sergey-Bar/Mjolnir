@@ -30,7 +30,7 @@ import { dirname, join } from "node:path";
 
 import type { BaselineDiff } from "./baseline.js";
 
-export const DEFAULT_STATS_PATH = join(".qa-doctor", "stats.json");
+export const DEFAULT_STATS_PATH = join(".mjolnir", "stats.json");
 
 export interface StatsFile {
   schemaVersion: 1;

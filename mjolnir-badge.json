@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "label": "QA Doctor",
+  "label": "MJÖLNIR",
   "message": "65/100 · 4 errors",
   "color": "yellow",
   "namedLogo": "vitest"

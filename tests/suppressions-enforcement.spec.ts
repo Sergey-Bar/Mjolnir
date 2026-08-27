@@ -24,7 +24,7 @@ import { runScan } from "../src/cli.js";
 let dir: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "qa-doctor-suppress-"));
+  dir = mkdtempSync(join(tmpdir(), "mjolnir-suppress-"));
   mkdirSync(join(dir, "e2e"), { recursive: true });
   writeFileSync(
     join(dir, "e2e", "checkout.spec.ts"),
@@ -47,7 +47,7 @@ function scan() {
   });
 }
 
-describe("qa-doctor.config.json `ignore` entries", () => {
+describe("mjolnir.config.json `ignore` entries", () => {
   it("baseline: QA-TEST-001 fires without any suppression config", () => {
     const result = scan();
     expect(result.findings.map((f) => f.ruleId)).toContain("QA-TEST-001");
@@ -55,7 +55,7 @@ describe("qa-doctor.config.json `ignore` entries", () => {
 
   it("a configured, active suppression removes the finding from scan output", () => {
     writeFileSync(
-      join(dir, "qa-doctor.config.json"),
+      join(dir, "mjolnir.config.json"),
       JSON.stringify({
         ignore: [
           {
@@ -79,7 +79,7 @@ describe("qa-doctor.config.json `ignore` entries", () => {
 
   it("an expired suppression does NOT suppress (stale config doesn't hide new debt)", () => {
     writeFileSync(
-      join(dir, "qa-doctor.config.json"),
+      join(dir, "mjolnir.config.json"),
       JSON.stringify({
         ignore: [
           {

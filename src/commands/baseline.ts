@@ -24,7 +24,7 @@ import { dirname, join } from "node:path";
 
 import type { Finding, ScanResult } from "../types.js";
 
-export const DEFAULT_BASELINE_PATH = join(".qa-doctor", "baseline.json");
+export const DEFAULT_BASELINE_PATH = join(".mjolnir", "baseline.json");
 
 export interface BaselineFile {
   schemaVersion: 1;

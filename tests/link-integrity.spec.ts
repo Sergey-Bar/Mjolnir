@@ -79,14 +79,14 @@ describe("package.json identity fields", () => {
   const pkg = JSON.parse(readFileSync(resolve(ROOT, "package.json"), "utf8"));
 
   it("repository.url points at the real remote", () => {
-    expect(pkg.repository?.url).toMatch(/github\.com\/Sergey-Bar\/QA-Doctor/);
+    expect(pkg.repository?.url).toMatch(/github\.com\/Sergey-Bar\/Mjolnir/);
   });
 
   it("bugs.url points at the real remote", () => {
-    expect(pkg.bugs?.url).toMatch(/github\.com\/Sergey-Bar\/QA-Doctor/);
+    expect(pkg.bugs?.url).toMatch(/github\.com\/Sergey-Bar\/Mjolnir/);
   });
 
   it("homepage points at the real remote", () => {
-    expect(pkg.homepage).toMatch(/github\.com\/Sergey-Bar\/QA-Doctor/);
+    expect(pkg.homepage).toMatch(/github\.com\/Sergey-Bar\/Mjolnir/);
   });
 });

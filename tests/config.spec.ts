@@ -15,7 +15,7 @@ import {
 let dir: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "qa-doctor-cfg-"));
+  dir = mkdtempSync(join(tmpdir(), "mjolnir-cfg-"));
 });
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
@@ -26,32 +26,32 @@ describe("loadConfig", () => {
     expect(loadConfig(dir)).toEqual({ config: {}, path: null });
   });
 
-  it("loads qa-doctor.config.json", () => {
+  it("loads mjolnir.config.json", () => {
     writeFileSync(
-      join(dir, "qa-doctor.config.json"),
+      join(dir, "mjolnir.config.json"),
       JSON.stringify({ gate: "error" }),
     );
     const res = loadConfig(dir);
     expect(res.config.gate).toBe("error");
-    expect(res.path).toContain("qa-doctor.config.json");
+    expect(res.path).toContain("mjolnir.config.json");
   });
 
-  it("falls back to .qa-doctor.json", () => {
+  it("falls back to .mjolnir.json", () => {
     writeFileSync(
-      join(dir, ".qa-doctor.json"),
+      join(dir, ".mjolnir.json"),
       JSON.stringify({ gate: "advisory" }),
     );
     expect(loadConfig(dir).config.gate).toBe("advisory");
   });
 
   it("throws on invalid JSON", () => {
-    writeFileSync(join(dir, "qa-doctor.config.json"), "{ nope");
-    expect(() => loadConfig(dir)).toThrow(/Invalid qa-doctor config/);
+    writeFileSync(join(dir, "mjolnir.config.json"), "{ nope");
+    expect(() => loadConfig(dir)).toThrow(/Invalid mjolnir config/);
   });
 
   it("throws on invalid gate", () => {
     writeFileSync(
-      join(dir, "qa-doctor.config.json"),
+      join(dir, "mjolnir.config.json"),
       JSON.stringify({ gate: "yolo" }),
     );
     expect(() => loadConfig(dir)).toThrow(/gate must be/);
@@ -59,7 +59,7 @@ describe("loadConfig", () => {
 
   it("throws when ignore entry lacks ruleId", () => {
     writeFileSync(
-      join(dir, "qa-doctor.config.json"),
+      join(dir, "mjolnir.config.json"),
       JSON.stringify({ ignore: [{ reason: "x" }] }),
     );
     expect(() => loadConfig(dir)).toThrow(/ruleId/);
@@ -67,7 +67,7 @@ describe("loadConfig", () => {
 
   it("throws when ignore entry lacks reason", () => {
     writeFileSync(
-      join(dir, "qa-doctor.config.json"),
+      join(dir, "mjolnir.config.json"),
       JSON.stringify({ ignore: [{ ruleId: "QA-TEST-001" }] }),
     );
     expect(() => loadConfig(dir)).toThrow(/reason/);
@@ -126,7 +126,7 @@ describe("suppressions report", () => {
 
   it("classifies active vs expired entries", () => {
     writeFileSync(
-      join(dir, "qa-doctor.config.json"),
+      join(dir, "mjolnir.config.json"),
       JSON.stringify({
         ignore: [
           { ruleId: "QA-A", reason: "tracked elsewhere" },
@@ -141,7 +141,7 @@ describe("suppressions report", () => {
   });
 
   it("returns empty on unreadable config", () => {
-    writeFileSync(join(dir, "qa-doctor.config.json"), "{ broken");
+    writeFileSync(join(dir, "mjolnir.config.json"), "{ broken");
     expect(loadSuppressions(dir).total).toBe(0);
   });
 });

@@ -67,7 +67,7 @@ export function ciInstall(
   gate: GateLevel = "advisory",
 ): { written: string; existed: boolean } {
   const wfDir = join(root, ".github", "workflows");
-  const target = join(wfDir, "qa-doctor.yml");
+  const target = join(wfDir, "mjolnir.yml");
   if (!existsSync(wfDir)) mkdirSync(wfDir, { recursive: true });
   const existed = existsSync(target);
   writeFileSync(target, TEMPLATE(gate));

@@ -1,5 +1,5 @@
 /**
- * `qa-doctor badge` — evidentiary shields.io endpoint JSON (Tier 1 #5).
+ * `mjolnir badge` — evidentiary shields.io endpoint JSON (Tier 1 #5).
  *
  * Static JSON, no server. The badge makes falsifiable claims:
  * score + date + commit. Anyone can click through and verify.
@@ -12,7 +12,7 @@ import { join } from "node:path";
 import type { ScanResult } from "../types.js";
 
 export interface BadgeOptions {
-  /** Where to write qa-doctor-badge.json. */
+  /** Where to write mjolnir-badge.json. */
   outDir: string;
 }
 
@@ -43,7 +43,7 @@ export function buildBadge(result: ScanResult): BadgeJson {
       : `${score}/100 · ${errors} error${errors === 1 ? "" : "s"}`;
   return {
     schemaVersion: 1,
-    label: "QA Doctor",
+    label: "MJÖLNIR",
     message,
     color: colorFor(score),
     namedLogo: "vitest",
@@ -56,7 +56,7 @@ export function buildBadge(result: ScanResult): BadgeJson {
  */
 export function renderBadgeSnippet(
   result: ScanResult,
-  repoUrl = "https://github.com/Sergey-Bar/QA-Doctor",
+  repoUrl = "https://github.com/Sergey-Bar/Mjolnir",
 ): string {
   let commit = "unknown";
   try {
@@ -71,10 +71,10 @@ export function renderBadgeSnippet(
   const errors = result.findings.filter((f) => f.severity === "error").length;
   const lines = [
     "```markdown",
-    "[![QA Doctor](https://img.shields.io/endpoint?url=<your-badge-json-url>)](" +
+    "[![MJÖLNIR](https://img.shields.io/endpoint?url=<your-badge-json-url>)](" +
       repoUrl +
       ")",
-    "<!-- QA Doctor verified at commit " +
+    "<!-- Mjölnir verified at commit " +
       commit +
       " on " +
       date +
@@ -89,7 +89,7 @@ export function renderBadgeSnippet(
 }
 
 export function writeBadge(result: ScanResult, options: BadgeOptions): string {
-  const path = join(options.outDir, "qa-doctor-badge.json");
+  const path = join(options.outDir, "mjolnir-badge.json");
   writeFileSync(path, JSON.stringify(buildBadge(result), null, 2));
   return path;
 }

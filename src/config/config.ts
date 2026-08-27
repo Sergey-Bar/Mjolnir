@@ -22,7 +22,7 @@ export interface QADoctorConfig {
   ignore?: IgnoreEntry[];
 }
 
-const CONFIG_NAMES = ["qa-doctor.config.json", ".qa-doctor.json"] as const;
+const CONFIG_NAMES = ["mjolnir.config.json", ".mjolnir.json"] as const;
 
 export function loadConfig(root: string): {
   config: QADoctorConfig;
@@ -37,7 +37,7 @@ export function loadConfig(root: string): {
       return { config: parsed, path: p };
     } catch (err) {
       throw new Error(
-        `Invalid qa-doctor config at ${p}: ${err instanceof Error ? err.message : String(err)}`,
+        `Invalid mjolnir config at ${p}: ${err instanceof Error ? err.message : String(err)}`,
         { cause: err },
       );
     }

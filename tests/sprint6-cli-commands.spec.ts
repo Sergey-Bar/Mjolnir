@@ -131,7 +131,7 @@ describe("runBaselineCommand + runDiffCommand — round trip via CLI", () => {
     const dir = makeGitRepoWithHistory();
     const saveCode = runBaselineCommand([dir], capture().io);
     expect(saveCode).toBe(0);
-    expect(existsSync(join(dir, ".qa-doctor", "baseline.json"))).toBe(true);
+    expect(existsSync(join(dir, ".mjolnir", "baseline.json"))).toBe(true);
 
     const cap = capture();
     const diffCode = runDiffCommand([dir], cap.io);
@@ -172,7 +172,7 @@ describe("runBaselineCommand + runDiffCommand — round trip via CLI", () => {
     git(dir, ["checkout", "-q", "main"]);
 
     runDiffCommand([dir], capture().io);
-    expect(existsSync(join(dir, ".qa-doctor", "stats.json"))).toBe(true);
+    expect(existsSync(join(dir, ".mjolnir", "stats.json"))).toBe(true);
   });
 });
 

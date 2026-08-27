@@ -2,7 +2,7 @@
 node_modules/
 dist/
 coverage/
-.qa-doctor/logs/
+.mjolnir/logs/
 
 # FP corpus audit — cloned real-world repos, never committed
 tests/corpus/.cache/

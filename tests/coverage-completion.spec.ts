@@ -119,7 +119,7 @@ describe("runBadgeCommand", () => {
     const cap = capture();
     const code = runBadgeCommand([dir], cap.io);
     expect(code).toBe(0);
-    expect(existsSync(join(dir, "qa-doctor-badge.json"))).toBe(true);
+    expect(existsSync(join(dir, "mjolnir-badge.json"))).toBe(true);
     expect(cap.text()).toContain("Wrote");
     expect(cap.text()).toContain("img.shields.io");
   });
@@ -127,12 +127,12 @@ describe("runBadgeCommand", () => {
   it("returns 20 when badge write fails (cwd unwritable)", () => {
     const cap = capture();
     // writeBadge writes into process.cwd(); chdir into a path that cannot
-    // hold qa-doctor-badge.json (a FILE) to force the catch path.
+    // hold mjolnir-badge.json (a FILE) to force the catch path.
     const blockerDir = join(dir, "blocker-dir");
     mkdirSync(blockerDir, { recursive: true });
     // A DIRECTORY named like the badge target makes writeFileSync throw
     // EISDIR — deterministic on every OS.
-    mkdirSync(join(blockerDir, "qa-doctor-badge.json"), { recursive: true });
+    mkdirSync(join(blockerDir, "mjolnir-badge.json"), { recursive: true });
     process.chdir(blockerDir);
     try {
       expect(runBadgeCommand([dir], cap.io)).toBe(20);

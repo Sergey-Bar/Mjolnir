@@ -103,7 +103,7 @@ describe("runCiInstall", () => {
     const code = runCiInstall([], cap.io);
     expect(code).toBe(0);
     expect(cap.text()).toContain("Created");
-    expect(existsSync(join(dir, ".github", "workflows", "qa-doctor.yml"))).toBe(
+    expect(existsSync(join(dir, ".github", "workflows", "mjolnir.yml"))).toBe(
       true,
     );
   });

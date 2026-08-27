@@ -57,8 +57,8 @@ beforeAll(() => {
   pkgDir = join(workDir, "package");
 
   pkgJson = JSON.parse(readFileSync(join(pkgDir, "package.json"), "utf8"));
-  const binEntry = pkgJson.bin.qa_doctor ?? pkgJson.bin["qa-doctor"];
-  if (!binEntry) throw new Error("package.json has no qa-doctor bin entry");
+  const binEntry = pkgJson.bin.mjolnir;
+  if (!binEntry) throw new Error("package.json has no mjolnir bin entry");
   binPath = join(pkgDir, binEntry);
 
   // Give the packed CLI its runtime dependencies without a network install

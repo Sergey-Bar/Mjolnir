@@ -216,12 +216,12 @@ export function runScan(args: CliArgs): ScanResult {
         findingType: "deterministic-defect",
         qaImpact: "HYGIENE",
         evidenceLevel: "E2",
-        file: "qa-doctor.config.json",
+        file: "mjolnir.config.json",
         line: 1,
         column: 1,
         message: `Plugin problem: ${err}`,
         why: "A configured plugin could not be loaded or declared invalid rules — its checks are silently missing from this scan.",
-        fix: "Fix or remove the plugin entry in qa-doctor.config.json.",
+        fix: "Fix or remove the plugin entry in mjolnir.config.json.",
       } as Finding);
     }
     const ctx = {

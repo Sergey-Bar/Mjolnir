@@ -1,5 +1,5 @@
 /**
- * `qa-doctor init` — onboarding wizard (Tier 2 #10).
+ * `mjolnir init` — onboarding wizard (Tier 2 #10).
  *
  * Non-interactive by default (CI-safe): detects frameworks, generates
  * config + CI workflow + badge + agent instructions, and prints the
@@ -49,39 +49,39 @@ export function runInit(
   });
 
   // 2. CI workflow (delegates to the same generator as ci install).
-  const wfPath = join(".github", "workflows", "qa-doctor.yml");
+  const wfPath = join(".github", "workflows", "mjolnir.yml");
   const wfExists = existsSync(join(rootDir, wfPath));
   steps.push({
     name: "ci-workflow",
     status: wfExists ? "exists" : "created",
     detail: wfExists
       ? `${wfPath} already present — not overwritten.`
-      : `Run \`qa-doctor ci install\` to generate ${wfPath}.`,
+      : `Run \`mjolnir ci install\` to generate ${wfPath}.`,
   });
-  if (!wfExists) nextCommands.push("qa-doctor ci install");
+  if (!wfExists) nextCommands.push("mjolnir ci install");
 
   // 3. Suppressions file check.
-  const supPath = join("qa-doctor.config.json");
+  const supPath = join("mjolnir.config.json");
   const supExists = existsSync(join(rootDir, supPath));
   steps.push({
     name: "config",
     status: supExists ? "exists" : "skipped",
     detail: supExists
-      ? "qa-doctor.config.json present."
+      ? "mjolnir.config.json present."
       : "No config needed — defaults are advisory-only.",
   });
 
   // 4. Badge.
-  const badgePath = join("qa-doctor-badge.json");
+  const badgePath = join("mjolnir-badge.json");
   const badgeExists = existsSync(join(rootDir, badgePath));
   steps.push({
     name: "badge",
     status: badgeExists ? "exists" : "skipped",
     detail: badgeExists
-      ? "qa-doctor-badge.json present."
-      : "Run `qa-doctor badge` after your first scan.",
+      ? "mjolnir-badge.json present."
+      : "Run `mjolnir badge` after your first scan.",
   });
-  if (!badgeExists) nextCommands.push("qa-doctor badge");
+  if (!badgeExists) nextCommands.push("mjolnir badge");
 
   // 5. Interactive note (honest about degradation).
   if (options.interactive && !(process.stdout.isTTY ?? false)) {

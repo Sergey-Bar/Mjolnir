@@ -1,5 +1,5 @@
 {
-  "name": "@sergey-bar/qa-doctor-playwright-reporter",
+  "name": "mjolnir-qa-playwright-reporter",
   "version": "0.1.0",
   "description": "Official Playwright JSON reporter for QA Doctor — emits the machine-readable report that `qa-doctor forensics`, `triage`, and `pw-report` ingest.",
   "type": "module",
@@ -25,8 +25,8 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Sergey-Bar/QA-Doctor.git",
-    "directory": "qa-doctor/packages/playwright-reporter"
+    "url": "git+https://github.com/Sergey-Bar/Mjolnir.git",
+    "directory": "packages/playwright-reporter"
   },
   "peerDependencies": {
     "@playwright/test": ">=1.30.0"

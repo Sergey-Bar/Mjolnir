@@ -14,10 +14,7 @@ import { loadPlugins } from "../src/plugins/load.js";
 const ROOT = join(tmpdir(), `qa-doctor-plugin-test-${process.pid}`);
 
 function writeConfig(plugins: unknown): void {
-  writeFileSync(
-    join(ROOT, "qa-doctor.config.json"),
-    JSON.stringify({ plugins }),
-  );
+  writeFileSync(join(ROOT, "mjolnir.config.json"), JSON.stringify({ plugins }));
 }
 
 afterEach(() => {
@@ -34,7 +31,7 @@ describe("loadPlugins", () => {
   it("returns empty when config has no plugins key", () => {
     mkdirSync(ROOT, { recursive: true });
     writeFileSync(
-      join(ROOT, "qa-doctor.config.json"),
+      join(ROOT, "mjolnir.config.json"),
       JSON.stringify({ gate: "advisory" }),
     );
     const result = loadPlugins(ROOT);
@@ -102,7 +99,7 @@ describe("loadPlugins", () => {
 
   it("degrades to no-op instead of throwing on malformed config JSON", () => {
     mkdirSync(ROOT, { recursive: true });
-    writeFileSync(join(ROOT, "qa-doctor.config.json"), "{ this is not json");
+    writeFileSync(join(ROOT, "mjolnir.config.json"), "{ this is not json");
     expect(() => loadPlugins(ROOT)).not.toThrow();
     const result = loadPlugins(ROOT);
     expect(result.plugins).toHaveLength(0);

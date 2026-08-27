@@ -10,8 +10,8 @@
  * rejected for v1: it breaks the zero-native-deps portability guarantee.
  *
  * Contract:
- * - Plugins are declared in qa-doctor.config.json under "plugins":
- *   ["qa-doctor-plugin-acme", ...] or [{ "package": "...", "prefix": "ACME" }]
+ * - Plugins are declared in mjolnir.config.json under "plugins":
+ *   ["mjolnir-plugin-acme", ...] or [{ "package": "...", "prefix": "ACME" }]
  * - Each package must export `rules: QADoctorRule[]` (same shape as core).
  * - Rule IDs MUST use a plugin-specific prefix (e.g. QA-ACME-001) — core
  *   prefixes (QA-TEST/TQUAL/PW/CI/PY/ENV) are rejected to prevent spoofing.
@@ -83,7 +83,7 @@ function parseDecls(raw: unknown): PluginDecl[] {
 
 export function loadPlugins(root: string): PluginLoadResult {
   const result: PluginLoadResult = { plugins: [], errors: [] };
-  const cfgPath = join(root, "qa-doctor.config.json");
+  const cfgPath = join(root, "mjolnir.config.json");
   if (!existsSync(cfgPath)) return result;
 
   let raw: Record<string, unknown>;
@@ -116,7 +116,7 @@ export function loadPlugins(root: string): PluginLoadResult {
     const rules = (mod as { rules?: unknown })?.rules;
     if (!Array.isArray(rules)) {
       result.errors.push(
-        `plugin "${decl.package}" exports no \`rules\` array — not a qa-doctor plugin.`,
+        `plugin "${decl.package}" exports no \`rules\` array — not a mjolnir plugin.`,
       );
       continue;
     }

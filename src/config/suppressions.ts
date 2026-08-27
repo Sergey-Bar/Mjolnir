@@ -15,7 +15,7 @@ export interface SuppressionReport {
 }
 
 export function loadSuppressions(root: string): SuppressionReport {
-  const configPath = join(root, "qa-doctor.config.json");
+  const configPath = join(root, "mjolnir.config.json");
   if (!existsSync(configPath)) {
     return { total: 0, active: 0, expired: 0, entries: [] };
   }

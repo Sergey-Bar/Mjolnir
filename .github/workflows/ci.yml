@@ -54,5 +54,5 @@ jobs:
           name: self-scan-result
           path: |
             self-scan.json
-            qa-doctor-badge.json
+            mjolnir-badge.json
           retention-days: 90
