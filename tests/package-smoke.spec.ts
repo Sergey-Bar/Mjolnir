@@ -44,7 +44,11 @@ beforeAll(() => {
   const packOut = execSync(`npm pack --pack-destination "${workDir}" --json`, {
     cwd: ROOT,
   }).toString();
-  const packResult = (JSON.parse(packOut) as Array<{ filename: string }>)[0];
+  // npm may prepend lifecycle-script output (e.g. "prepare > husky")
+  // before the JSON array — strip everything before the first '['.
+  const jsonStart = packOut.indexOf("[");
+  const packJson = jsonStart >= 0 ? packOut.slice(jsonStart) : packOut;
+  const packResult = (JSON.parse(packJson) as Array<{ filename: string }>)[0];
   if (!packResult) throw new Error("npm pack produced no output entry");
   const { filename } = packResult;
 
