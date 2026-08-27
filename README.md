@@ -1,14 +1,6 @@
 <div align="center">
 
-<pre>
- ╔═══════════╗
- ║           ║
-                  ╠═══════════╣    M J Ö L N I R
- ║     ║     ║
-                              ╚═════╩═════╝    VERIFICATION TRUST ENGINE
- ║
- ║
-</pre>
+<img src="src/Logo.png" alt="Mjölnir — Verification Trust Engine" width="800" />
 
 ### Your tests are lying to you. We prove it.
 
@@ -49,14 +41,24 @@ npx mjolnir-qa@latest
 Linters tell you whether code follows rules.
 Mjölnir tells you whether your verification can be trusted.
 
-|                                                            | ESLint / SonarQube | Coverage tools | Manual review | **Mjölnir** |
-| ---------------------------------------------------------- | :----------------: | :------------: | :-----------: | :---------: |
-| Catches syntax & style bugs                                |         ✅         |       ❌       |   ✅ (slow)   |      —      |
-| Flags tests with no real assertions                        |         ❌         |       ❌       |   sometimes   |     ✅      |
-| Catches CI false-greens (`\|\| true`, `continue-on-error`) |         ❌         |       ❌       |    rarely     |     ✅      |
-| Reads **real** run data for `TRUE-FLAKE` verdicts          |         ❌         |       ❌       |      ❌       |     ✅      |
-| Grades Playwright locator resilience                       |         ❌         |       ❌       |    rarely     |     ✅      |
-| Runs in seconds, zero network calls                        |         ✅         |       ✅       |       —       |     ✅      |
+|                                                          | ESLint / SonarQube | Coverage tools | Manual review | **Mjölnir** |
+| -------------------------------------------------------- | :----------------: | :------------: | :-----------: | :---------: |
+| CI workflow integrity (`continue-on-error`, `\|\| true`) |         ❌         |       ❌       |    rarely     |     ✅      |
+| Cross-language (TS, Python, Java, C#) from one tool      |         ❌         |       ❌       |      ❌       |     ✅      |
+| Grades Playwright locator resilience (Selector Health)   |         ❌         |       ❌       |    rarely     |     ✅      |
+| Flags tests with no real assertions                      |   ✅ (plugin)\*    |       ❌       |   sometimes   |     ✅      |
+| Catches hard sleeps (`waitForTimeout`, `time.sleep`)     |   ✅ (plugin)\*    |       ❌       |   sometimes   |     ✅      |
+| Runs in seconds, zero network calls while scanning       |         ✅         |       ✅       |       —       |     ✅      |
+
+\*`eslint-plugin-jest` (`expect-expect`) and `eslint-plugin-playwright` (`expect-expect`, `no-wait-for-timeout`) cover these for their respective frameworks.
+
+**Runtime Analysis** — a separate category from static linting:
+
+|                                               | Playwright retry reporter | Allure / ReportPortal | **Mjölnir forensics** |
+| --------------------------------------------- | :-----------------------: | :-------------------: | :-------------------: |
+| Reads real run data for `TRUE-FLAKE` verdicts |            ❌             |     partial (tag)     |          ✅           |
+| Flaky-triage report from execution history    |            ❌             |          ✅           |          ✅           |
+| Integrates with static worthiness score       |            ❌             |          ❌           |          ✅           |
 
 ---
 
@@ -87,6 +89,7 @@ tests, and reports.
 | `mjolnir rules` / `rules --md`                         | Rule catalog with trust metadata (JSON or markdown)                 |
 | `mjolnir explain <RULE-ID>`                            | What/why/fix for one rule, with a real example from its own fixture |
 | `mjolnir impact [--since <ref>]`                       | What changed since a prior commit — fixes and new debt              |
+| `npx mjolnir-qa@latest --strict`                       | Include quarantine-tier rules (higher FP risk) in the scan          |
 
 ---
 
@@ -116,6 +119,20 @@ numbers the score uses — no black box.
 | ≥ 80    | ✓ **WORTHY**     |
 | 50 – 79 | ⚠ **NEEDS WORK** |
 | < 50    | ✖ **UNWORTHY**   |
+
+**Evidence Levels:**
+
+Every finding carries an evidence level that determines its weight in the score:
+
+| Level | Meaning              | Score impact     | Example                                            |
+| ----- | -------------------- | ---------------- | -------------------------------------------------- |
+| E2    | Deterministic defect | Full deduction   | `.only` committed — structurally provable          |
+| E1    | Heuristic pattern    | Half deduction   | Regex-matched `sleep()` — strong signal, not proof |
+| E0    | Observation          | Zero (info only) | Reported but never gates CI or deducts             |
+
+Most rules are **E1** (heuristic). The tagline "we prove it" refers to this
+evidence-level system — deterministic findings (E2) are structural proof;
+heuristic findings (E1) are correctly-positioned warnings, not formal proofs.
 
 ---
 
@@ -285,6 +302,7 @@ Or wire it into GitHub Code Scanning natively via SARIF:
 - **FP firewall** — detection runs on a comment/string-free view of the code
   (TypeScript rules use the compiler AST): a pattern inside a prose comment
   or a doc-example string is documentation, not a finding.
+  See [docs/FP-AUDIT.md](docs/FP-AUDIT.md) for measured false-positive rates per rule.
 
 ---
 
@@ -352,7 +370,7 @@ npx mjolnir-qa@latest
 npm i -g mjolnir-qa
 ```
 
-Requires Node.js ≥ 22.18. Works on Windows, macOS, and Linux.
+Requires Node.js ≥ 22.18 (required by the tsdown bundler for native ESM support). Works on Windows, macOS, and Linux.
 
 ---
 

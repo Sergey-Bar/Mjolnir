@@ -117,6 +117,11 @@ function appendScoreSection(
       `  ${p.dim(`(${result.rawDeductions} raw pts / ${result.testDeclarationCount} test declarations — normalized)`)}`,
     );
   }
+  if (result.suppressionCount && result.suppressionCount > 0) {
+    lines.push(
+      `  ${p.dim(`(${result.suppressionCount} finding(s) suppressed by config)`)}`,
+    );
+  }
   lines.push("");
 }
 

@@ -120,6 +120,8 @@ afterAll(() => {
 describe("published tarball contents", () => {
   it("packs every path declared in package.json's files list", () => {
     for (const declared of pkgJson.files as string[]) {
+      // Skip negation patterns (exclusion globs like "!dist/**/*.wasm")
+      if (declared.startsWith("!")) continue;
       const packedPath = join(pkgDir, declared);
       expect(
         existsSync(packedPath),

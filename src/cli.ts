@@ -335,11 +335,13 @@ export function runScan(args: CliArgs): ScanResult {
   // mjolnir.config.json remove findings from output, scoring, and exit
   // codes. Expired entries suppress nothing (stale config hides nothing).
   // An entry with `files` globs only suppresses findings under those paths.
+  let suppressionCount = 0;
   if (workspace) {
     const { config } = loadConfig(workspace.root);
     applySeverityOverrides(findings, config);
     const suppressions = loadSuppressions(workspace.root);
     const active = suppressions.entries.filter((e) => e.status === "active");
+    suppressionCount = active.length;
     if (active.length > 0) {
       const ruleOnly = new Set(
         active.filter((e) => !e.files?.length).map((e) => e.ruleId),
@@ -397,6 +399,7 @@ export function runScan(args: CliArgs): ScanResult {
     testFileCount,
     testDeclarationCount,
     rawDeductions,
+    suppressionCount,
     analysisStatus: {
       discovery: Date.now() > deadline ? "partial" : "complete",
       rules: "complete",

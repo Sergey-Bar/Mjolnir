@@ -161,6 +161,8 @@ export interface ScanResult {
   testDeclarationCount?: number;
   /** Raw deduction total before normalization (Phase 5 — transparency). */
   rawDeductions?: number;
+  /** Number of findings suppressed by active config entries (suppression transparency). */
+  suppressionCount?: number;
   analysisStatus: {
     discovery: AnalysisStatus;
     rules: AnalysisStatus;
