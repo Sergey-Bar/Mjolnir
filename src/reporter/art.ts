@@ -1,27 +1,30 @@
 /**
- * ASCII art assets for the retro CRT/arcade terminal experience.
- * All art must be plain ASCII/box-drawing so it renders identically
- * with and without colors (NO_COLOR safety).
+ * ASCII art assets for the Mjölnir terminal experience.
+ * Minimal Nordic / engineering aesthetic — professional, not fantasy.
+ * All art must render identically with and without colors (NO_COLOR safety).
  */
 
-/** Big figlet-style logo. Keep ≤ 62 cols wide. */
+/** Block-character logo. Keep ≤ 62 cols wide. */
 export const LOGO = `
-  ██████╗  █████╗      ██████╗  ██████╗  ██████╗████████╗ ██████╗ ██████╗
- ██╔═══██╗██╔══██╗    ██╔═══██╗██╔═══██╗██╔════╝╚══██╔══╝██╔═══██╗██╔══██╗
- ██║   ██║███████║    ██║   ██║██║   ██║██║        ██║   ██║   ██║██████╔╝
- ██║▄▄ ██║██╔══██║    ██║▄▄▄██║██║   ██║██║        ██║   ██║   ██║██╔══██╗
- ╚██████╔╝██║  ██║    ╚██████╔╝╚██████╔╝╚██████╗   ██║   ╚██████╔╝██║  ██║
-  ╚══▀▀═╝ ╚═╝  ╚═╝     ╚══▀▀═╝  ╚══▀▀═╝  ╚═════╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝
+ ╔═══════════╗
+ ║           ║
+ ╠═══════════╣    M J Ö L N I R
+ ║     ║     ║
+ ╚═════╩═════╝    VERIFICATION TRUST ENGINE
+       ║
+       ║
 `;
 
 /** Plain-ASCII fallback logo for cmd.exe/legacy consoles where the
  * block-drawing LOGO above renders as mangled "?" glyphs. */
 export const LOGO_ASCII = `
-  ___    _        ____   ___   ____ _____ ___  ____
- / _ \\  / \\      |  _ \\ / _ \\ / ___|_   _/ _ \\|  _ \\
-| | | |/ _ \\     | | | | | | | |     | || | | | |_) |
-| |_| / ___ \\    | |_| | |_| | |___  | || |_| |  _ <
- \\__\\/_/   \\_\\   |____/ \\___/ \\____| |_| \\___/|_| \\_\\
+ +-----------+
+ |           |
+ +-----------+    M J O L N I R
+ |     |     |
+ +-----+-----+    VERIFICATION TRUST ENGINE
+       |
+       |
 `;
 
 export const TROPHY = String.raw`
@@ -51,8 +54,9 @@ export const SKULL =
    \          /
     ` + "`--------`";
 
-/** Small CRT-style divider. */
-export const DIVIDER = "─".repeat(58);
+/** Small divider. */
+export const DIVIDER = "\u2500".repeat(58);
 
 /** Retro scanline strip used under the header. */
-export const SCANLINES = "▁▂▃▄▅▆▇█▇▆▅▄▃▂▁";
+export const SCANLINES =
+  "\u2581\u2582\u2583\u2584\u2585\u2586\u2587\u2588\u2587\u2586\u2585\u2584\u2583\u2582\u2581";
