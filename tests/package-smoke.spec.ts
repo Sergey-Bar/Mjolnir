@@ -221,7 +221,7 @@ describe("published CLI as a real child process", () => {
         result = String((err as { stdout?: unknown }).stdout ?? "");
       }
 
-      expect(result).toMatch(/SCORE|score/);
+      expect(result).toMatch(/WORTHINESS|score/);
     } finally {
       rmSync(fixtureDir, { recursive: true, force: true });
     }

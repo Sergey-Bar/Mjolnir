@@ -87,9 +87,9 @@ export function renderTerminal(
   return lines.join("\n");
 }
 
-function verdictFor(score: number): "HEALTHY" | "NEEDS WORK" | "CRITICAL" {
-  if (score >= 80) return "HEALTHY";
-  return score >= 50 ? "NEEDS WORK" : "CRITICAL";
+function verdictFor(score: number): "WORTHY" | "NEEDS WORK" | "UNWORTHY" {
+  if (score >= 80) return "WORTHY";
+  return score >= 50 ? "NEEDS WORK" : "UNWORTHY";
 }
 
 function appendScoreSection(
@@ -104,7 +104,7 @@ function appendScoreSection(
   const verdictColored = colorizeVerdict(verdict, p);
   const scoreText = String(result.score).padStart(3);
   lines.push(
-    `  ${p.bold("SCORE")} ${p.bold(scoreText)}${p.dim("/100")}  ${verdictColored}`,
+    `  ${p.bold("WORTHINESS")} ${p.bold(scoreText)}${p.dim("/100")}  ${verdictColored}`,
   );
   // Gauge width tracks the terminal so it never wraps awkwardly on a
   // narrow window; floors at 10 blocks so the gauge stays legible.
@@ -116,7 +116,7 @@ function colorizeVerdict(
   verdict: string,
   p: ReturnType<typeof palette>,
 ): string {
-  if (verdict === "HEALTHY") return p.ok(verdict);
+  if (verdict === "WORTHY") return p.ok(verdict);
   return verdict === "NEEDS WORK" ? p.warning(verdict) : p.error(verdict);
 }
 

@@ -198,7 +198,7 @@ describe("renderTerminal", () => {
       }),
       { isTTY: false },
     );
-    expect(out).toContain("SCORE");
+    expect(out).toContain("WORTHINESS");
     expect(out).toContain("72/100");
     expect(out).toContain("DETECTED [vitest]");
     expect(out).toContain("TOP ISSUES");

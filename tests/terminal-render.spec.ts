@@ -64,7 +64,7 @@ describe.each([40, 80, 120])("renders legibly at %d columns", (width) => {
     // The score gauge and deduction box specifically respect width —
     // free-text lines (messages, file paths) are allowed to overflow,
     // same as any real terminal wraps or truncates those naturally.
-    const gaugeLine = out.split("\n").find((l) => l.includes("SCORE"));
+    const gaugeLine = out.split("\n").find((l) => l.includes("WORTHINESS"));
     expect(gaugeLine).toBeDefined();
   });
 
@@ -79,14 +79,14 @@ describe("--width override", () => {
   it("a narrower width produces a narrower score gauge than a wider one", () => {
     // Formula: max(10, min(30, width - 4)) — differs across 20 vs 40,
     // both clamp differently below the 30-wide cap. Must select the
-    // SCORE gauge line specifically (immediately after the "SCORE" line)
+    // WORTHINESS gauge line specifically (immediately after the "WORTHINESS" line)
     // — the per-category DIAGNOSTICS gauges below it render at a fixed
     // width regardless of the overall terminal width and also match
     // /[█#]/, so a naive "first gauge-looking line" search can silently
     // pick the wrong line and compare a constant against itself.
     const scoreGaugeLine = (s: string): string => {
       const lines = s.split("\n");
-      const scoreIdx = lines.findIndex((l) => l.includes("SCORE"));
+      const scoreIdx = lines.findIndex((l) => l.includes("WORTHINESS"));
       return lines[scoreIdx + 1] ?? "";
     };
     const narrow = renderTerminal(result(), { isTTY: false, width: 20 });
@@ -123,7 +123,7 @@ describe("non-TTY (CI logs)", () => {
     const out = renderTerminal(result(), { isTTY: false });
     // eslint-disable-next-line no-control-regex
     expect(/\x1b\[[0-9;]*m/.test(out)).toBe(false);
-    expect(out).toContain("SCORE");
+    expect(out).toContain("WORTHINESS");
     expect(out).toContain("QA-TEST-001");
   });
 });
@@ -194,7 +194,7 @@ describe("verdict labels", () => {
     expect(renderTerminal(mid, { isTTY: false })).toContain("NEEDS WORK");
   });
 
-  it("shows CRITICAL for a low score", () => {
+  it("shows UNWORTHY for a low score", () => {
     const low: ScanResult = {
       schemaVersion: 1,
       partial: false,
@@ -210,7 +210,7 @@ describe("verdict labels", () => {
         durationMs: 1,
       },
     };
-    expect(renderTerminal(low, { isTTY: false })).toContain("CRITICAL");
+    expect(renderTerminal(low, { isTTY: false })).toContain("UNWORTHY");
   });
 });
 

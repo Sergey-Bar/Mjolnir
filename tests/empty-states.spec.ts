@@ -80,7 +80,7 @@ describe("dead end: no tests found", () => {
 
   it("score stays null, never a fake 0 (frozen contract: score is honest)", () => {
     const out = renderTerminal(scanResult(), { isTTY: false });
-    expect(out).not.toMatch(/SCORE\s+0\/100/);
+    expect(out).not.toMatch(/WORTHINESS\s+0\/100/);
   });
 });
 
