@@ -150,7 +150,6 @@ export function checkTierEnforcement(
   rules: readonly QADoctorRule[] = RULES,
 ): DoctorCheck {
   const details: string[] = [];
-  const ok = true;
 
   // Load all verdicts and count classified samples per rule
   const classifiedPerRule = new Map<string, number>();
@@ -194,9 +193,19 @@ export function checkTierEnforcement(
   // will have zero details and pass cleanly.
   const unmeasured = details.length;
   const total = coreRules.length;
+  // Real enforcement (not const ok = true):
+  // - Zero rules measured → informational (Phase 3 hasn't started)
+  // - At least one rule IS measured → the rest are on the clock → FAIL
+  const anyMeasured =
+    classifiedPerRule.size > 0 &&
+    [...classifiedPerRule.values()].some((n) => n >= 10);
+  const ok = !anyMeasured || unmeasured === 0;
+
   if (unmeasured > 0) {
     details.unshift(
-      `${unmeasured}/${total} core rules lack measured FP rate (n ≥ 10)`,
+      anyMeasured
+        ? `BLOCKING: ${unmeasured}/${total} core rules unmeasured — classification started but incomplete`
+        : `${unmeasured}/${total} core rules unmeasured (informational until first classification lands)`,
     );
   }
 
