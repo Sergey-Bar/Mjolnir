@@ -16,7 +16,7 @@ code than the committed baseline recorded (a false-positive
 regression signal). Fixtures prove a rule fires on one hand-written
 example; this proves it behaves on code nobody wrote for QA Doctor.
 
-Last generated: 2026-08-26.
+Last generated: 2026-08-27.
 
 ## microsoft-playwright-dotnet
 
