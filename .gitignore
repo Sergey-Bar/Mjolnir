@@ -18,3 +18,8 @@ examples/demo-repo/test-results/TRIAGE.md
 # Generated build/scan artifacts
 mjolnir-badge.json
 self-scan.json
+
+
+# Scratch/probe files (debug artifacts, never committed)
+scratch/
+package/

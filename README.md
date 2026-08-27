@@ -69,15 +69,15 @@ Mjölnir is cheap, continuous, and structural. They complement each other, but
 only one of them catches the `continue-on-error` that's been silently hiding
 failures since the repo was created.
 
-|                                        | AI code review (Copilot, etc.) | **Mjölnir**                  |
-| -------------------------------------- | :----------------------------: | :--------------------------: |
-| Cost per scan                          | Tokens (scales with diff size) | **Zero** (local, installed)  |
-| Sees the whole suite + all CI configs  | Only the PR diff you show it   | **Everything, every time**   |
-| Deterministic (same input → same out)  | ❌ (non-deterministic)          | **✅**                        |
-| Catches patterns dormant for months    | Only if it's in the context    | **✅** (scans all files)      |
-| Remembers findings between runs        | ❌ (no memory across sessions)  | **✅** (baseline + diff)      |
-| Runs without human triggering          | Needs a PR or prompt           | **✅** (CI hook, 3 seconds)   |
-| Attention budget                       | Limited by context window      | **Unlimited** (every file)   |
+|                                       | AI code review (Copilot, etc.) |         **Mjölnir**         |
+| ------------------------------------- | :----------------------------: | :-------------------------: |
+| Cost per scan                         | Tokens (scales with diff size) | **Zero** (local, installed) |
+| Sees the whole suite + all CI configs |  Only the PR diff you show it  | **Everything, every time**  |
+| Deterministic (same input → same out) |     ❌ (non-deterministic)     |           **✅**            |
+| Catches patterns dormant for months   |  Only if it's in the context   |  **✅** (scans all files)   |
+| Remembers findings between runs       | ❌ (no memory across sessions) |  **✅** (baseline + diff)   |
+| Runs without human triggering         |      Needs a PR or prompt      | **✅** (CI hook, 3 seconds) |
+| Attention budget                      |   Limited by context window    | **Unlimited** (every file)  |
 
 **The honest answer:** Use both. AI catches nuance, intent, and design flaws
 that no regex can find. Mjölnir catches the structural patterns that AI

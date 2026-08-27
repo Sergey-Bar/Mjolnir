@@ -1,5 +1,10 @@
 {
-  "exclude": ["tests/fixtures/**", "tests/golden/**", "examples/**"],
+  "exclude": [
+    "tests/fixtures/**",
+    "tests/golden/**",
+    "examples/**",
+    "scratch/**"
+  ],
   "ignore": [
     {
       "ruleId": "QA-PW-101",
