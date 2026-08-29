@@ -1,11 +1,12 @@
 # QA-PW-107 — toBeVisible where toBeInViewport fits better
 
-_Generated from the live rule registry and this rule's own committed fixtures by `qa-doctor`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
 | Field               | Value                       |
 | ------------------- | --------------------------- |
 | Severity            | info                        |
 | Confidence          | low                         |
+| Tier                | quarantine                  |
 | Evidence level      | E1                          |
 | QA impact           | Test hygiene debt (HYGIENE) |
 | False-positive risk | high                        |
@@ -41,4 +42,4 @@ UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked b
 
 ---
 
-Full catalog: `qa-doctor rules --md` · Live explanation: `qa-doctor explain QA-PW-107`
+Full catalog: `mjolnir rules --md` · Live explanation: `mjolnir explain QA-PW-107`

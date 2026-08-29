@@ -87,7 +87,7 @@ describe("mjolnir.config.json `ignore` missing required `reason`", () => {
 describe("the empty-state message references a flag that doesn't exist", () => {
   it("`--tests-dir` is not a recognized flag (parseArgs rejects it)", () => {
     // src/reporter/terminal.ts's own no-tests-found message says:
-    // "If your tests live elsewhere: qa-doctor --tests-dir <path>"
+    // "If your tests live elsewhere: mjolnir --tests-dir <path>"
     // — but parseArgs has no case for it, so this exact command a user
     // is told to run fails with a usage error before it does anything.
     expect(

@@ -1,6 +1,6 @@
 /**
  * Suppression governance (Sprint-Plan W7, Product-MVP §12).
- * `qa-doctor suppressions` — every suppression stays visible.
+ * `mjolnir suppressions` — every suppression stays visible.
  */
 
 import { existsSync, readFileSync } from "node:fs";

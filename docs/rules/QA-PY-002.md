@@ -1,11 +1,12 @@
 # QA-PY-002 — Skipped test
 
-_Generated from the live rule registry and this rule's own committed fixtures by `qa-doctor`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
 | Field               | Value                          |
 | ------------------- | ------------------------------ |
 | Severity            | warning                        |
 | Confidence          | high                           |
+| Tier                | core                           |
 | Evidence level      | E2                             |
 | QA impact           | False-green risk (FALSE-GREEN) |
 | False-positive risk | low                            |
@@ -43,8 +44,8 @@ Real occurrence counts from `npm run corpus:audit` against actively-maintained O
 | ----------------- | ----------- |
 | pallets-click     | 1           |
 | psf-requests      | 2           |
-| pytest-dev-pytest | 103         |
+| pytest-dev-pytest | 19          |
 
 ---
 
-Full catalog: `qa-doctor rules --md` · Live explanation: `qa-doctor explain QA-PY-002`
+Full catalog: `mjolnir rules --md` · Live explanation: `mjolnir explain QA-PY-002`

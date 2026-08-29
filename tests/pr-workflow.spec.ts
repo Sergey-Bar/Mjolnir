@@ -1,11 +1,11 @@
 /**
- * qa-doctor.yml review (Master-Stabilization-Plan Sprint 6, Task 25).
+ * mjolnir.yml review (Master-Stabilization-Plan Sprint 6, Task 25).
  *
  * Task 25 requires auditing the existing PR workflow before building on
  * it. The audit found real dead code: an annotate step that referenced
  * `github.rest.checks` without ever calling it (a no-op), and no
  * connection at all to baseline/diff (Task 24) or a real posted PR
- * comment — findings only ever landed in qa-doctor.json, a file nobody
+ * comment — findings only ever landed in mjolnir.json, a file nobody
  * on a PR ever opens. This locks in the fix so a future edit can't
  * silently reintroduce dead code or drop the comment step.
  */

@@ -1,11 +1,12 @@
 # QA-PW-122 — No trace capture on retry
 
-_Generated from the live rule registry and this rule's own committed fixtures by `qa-doctor`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
 | Field               | Value                          |
 | ------------------- | ------------------------------ |
 | Severity            | warning                        |
 | Confidence          | high                           |
+| Tier                | core                           |
 | Evidence level      | E2                             |
 | QA impact           | False-green risk (FALSE-GREEN) |
 | False-positive risk | low                            |
@@ -41,4 +42,4 @@ UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked b
 
 ---
 
-Full catalog: `qa-doctor rules --md` · Live explanation: `qa-doctor explain QA-PW-122`
+Full catalog: `mjolnir rules --md` · Live explanation: `mjolnir explain QA-PW-122`

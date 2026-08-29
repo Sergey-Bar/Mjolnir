@@ -3,12 +3,12 @@
  * not just infra hardening).
  *
  * `src/config/suppressions.ts`'s own header comment calls this
- * "Suppression governance" and `qa-doctor suppressions` reports what's
+ * "Suppression governance" and `mjolnir suppressions` reports what's
  * configured — but nothing in `runScan` / `src/cli.ts` ever calls
  * `loadSuppressions` or `isSuppressionActive` to actually filter the
  * findings a scan produces. A user who configures
  * `{ "ignore": [{ "ruleId": "QA-TEST-001", "reason": "..." }] }` in
- * `qa-doctor.config.json` still gets that finding in every output
+ * `mjolnir.config.json` still gets that finding in every output
  * format, still gets scored down for it, and still gets exit code 1.
  * The suppression command shows the config; it just never gets wired
  * into the thing that config exists to control.
@@ -69,9 +69,9 @@ describe("mjolnir.config.json `ignore` entries", () => {
     const result = scan();
     expect(
       result.findings.map((f) => f.ruleId),
-      "QA-TEST-001 is configured as suppressed in qa-doctor.config.json " +
+      "QA-TEST-001 is configured as suppressed in mjolnir.config.json " +
         "but still appears in scan output — suppressions are reported " +
-        "by `qa-doctor suppressions` but never actually enforced during " +
+        "by `mjolnir suppressions` but never actually enforced during " +
         "a scan. A user who suppresses a finding still gets flagged for " +
         "it, still gets scored down for it, and CI still exits 1 for it.",
     ).not.toContain("QA-TEST-001");

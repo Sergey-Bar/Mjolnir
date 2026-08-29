@@ -37,7 +37,7 @@ let dir: string;
 let originalArgv: string[];
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "qa-doctor-entrypoint-"));
+  dir = mkdtempSync(join(tmpdir(), "mjolnir-entrypoint-"));
   originalArgv = [...process.argv];
 });
 

@@ -1,11 +1,12 @@
-# QA-PY-104 — Brittle selector in Playwright test
+# QA-PY-104 — Brittle selector instead of role-based locator
 
-_Generated from the live rule registry and this rule's own committed fixtures by `qa-doctor`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
 | Field               | Value                         |
 | ------------------- | ----------------------------- |
 | Severity            | warning                       |
 | Confidence          | medium                        |
+| Tier                | core                          |
 | Evidence level      | E1                            |
 | QA impact           | Test hygiene debt (HYGIENE)   |
 | False-positive risk | medium                        |
@@ -13,7 +14,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Languages           | python                        |
 | Frameworks          | pytest-playwright, playwright |
 | Detection strategy  | regex pattern                 |
-| Introduced in       | v0.3.8                        |
+| Introduced in       | v0.4.0                        |
 
 ## Why this fails in production
 
@@ -29,7 +30,7 @@ Example from this rule's own must-fire fixture: `tests/fixtures/QA-PY-104/must-f
 
 ## The fix
 
-Prefer role-based locators (`get_by_role`) or data-testid attributes.
+Prefer role-based locators (`get_by_role(...)`) or data-testid attributes.
 
 ## Confirmed NOT to fire on the corresponding clean pattern
 
@@ -41,4 +42,4 @@ UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked b
 
 ---
 
-Full catalog: `qa-doctor rules --md` · Live explanation: `qa-doctor explain QA-PY-104`
+Full catalog: `mjolnir rules --md` · Live explanation: `mjolnir explain QA-PY-104`

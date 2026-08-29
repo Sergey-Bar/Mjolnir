@@ -1,11 +1,12 @@
 # QA-PW-120 — Engine-specific test without environment guard
 
-_Generated from the live rule registry and this rule's own committed fixtures by `qa-doctor`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
 | Field               | Value                        |
 | ------------------- | ---------------------------- |
 | Severity            | info                         |
 | Confidence          | low                          |
+| Tier                | quarantine                   |
 | Evidence level      | E1                           |
 | QA impact           | Flaky-test risk (FLAKY-RISK) |
 | False-positive risk | high                         |
@@ -37,12 +38,8 @@ Verified against `tests/fixtures/QA-PW-120/must-not-fire/guarded.spec.ts` — a 
 
 ## Corpus-measured false-positive risk
 
-Real occurrence counts from `npm run corpus:audit` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
-
-| Repo                     | Occurrences |
-| ------------------------ | ----------- |
-| microsoft-playwright-mcp | 1           |
+UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked by `npm run corpus:audit` (see `docs/FP-AUDIT.md`). That is not the same as "never fires incorrectly" — it just means no occurrence, correct or not, has been observed there yet.
 
 ---
 
-Full catalog: `qa-doctor rules --md` · Live explanation: `qa-doctor explain QA-PW-120`
+Full catalog: `mjolnir rules --md` · Live explanation: `mjolnir explain QA-PW-120`

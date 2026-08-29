@@ -26,7 +26,7 @@ let dir: string;
 let origCwd: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "qa-doctor-cli2-"));
+  dir = mkdtempSync(join(tmpdir(), "mjolnir-cli2-"));
   origCwd = process.cwd();
 });
 afterEach(() => {

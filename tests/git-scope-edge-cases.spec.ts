@@ -31,7 +31,7 @@ function gitOut(cwd: string, args: string[]): string {
 }
 
 beforeEach(() => {
-  sourceDir = mkdtempSync(join(tmpdir(), "qa-doctor-scope-src-"));
+  sourceDir = mkdtempSync(join(tmpdir(), "mjolnir-scope-src-"));
   workDirs = [];
   git(sourceDir, ["init", "-b", "main"]);
   git(sourceDir, ["config", "user.email", "t@t"]);
@@ -60,7 +60,7 @@ afterEach(() => {
 });
 
 function cloneShallow(): string {
-  const dest = mkdtempSync(join(tmpdir(), "qa-doctor-scope-shallow-"));
+  const dest = mkdtempSync(join(tmpdir(), "mjolnir-scope-shallow-"));
   workDirs.push(dest);
   execFileSync(
     "git",
@@ -91,7 +91,7 @@ describe("shallow clone (--depth 1)", () => {
 
 describe("detached HEAD", () => {
   it("does not throw when HEAD is detached at a commit with no branch", () => {
-    const dest = mkdtempSync(join(tmpdir(), "qa-doctor-scope-detached-"));
+    const dest = mkdtempSync(join(tmpdir(), "mjolnir-scope-detached-"));
     workDirs.push(dest);
     execFileSync("git", ["clone", sourceDir, dest], { stdio: "ignore" });
     const headCommit = gitOut(dest, ["rev-parse", "HEAD"]);
@@ -105,7 +105,7 @@ describe("detached HEAD", () => {
 
 describe("repo with no commits yet", () => {
   it("does not throw on a freshly `git init`'d repo", () => {
-    const dest = mkdtempSync(join(tmpdir(), "qa-doctor-scope-empty-"));
+    const dest = mkdtempSync(join(tmpdir(), "mjolnir-scope-empty-"));
     workDirs.push(dest);
     git(dest, ["init", "-b", "main"]);
 
@@ -117,7 +117,7 @@ describe("repo with no commits yet", () => {
 
 describe("default branch name mismatch (repo uses a non-'main' default)", () => {
   it("degrades gracefully instead of throwing when baseBranch doesn't exist", () => {
-    const dest = mkdtempSync(join(tmpdir(), "qa-doctor-scope-nobranch-"));
+    const dest = mkdtempSync(join(tmpdir(), "mjolnir-scope-nobranch-"));
     workDirs.push(dest);
     git(dest, ["init", "-b", "trunk"]);
     git(dest, ["config", "user.email", "t@t"]);

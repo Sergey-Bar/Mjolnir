@@ -1,19 +1,20 @@
-# QA-PY-108 — Hardcoded environment URL in spec
+# QA-PY-108 — Hardcoded URL in test
 
-_Generated from the live rule registry and this rule's own committed fixtures by `qa-doctor`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
-| Field               | Value                         |
-| ------------------- | ----------------------------- |
-| Severity            | warning                       |
-| Confidence          | high                          |
-| Evidence level      | E2                            |
-| QA impact           | Test hygiene debt (HYGIENE)   |
-| False-positive risk | low                           |
-| Autofix available   | no                            |
-| Languages           | python                        |
-| Frameworks          | pytest-playwright, playwright |
-| Detection strategy  | regex pattern                 |
-| Introduced in       | v0.3.8                        |
+| Field               | Value                       |
+| ------------------- | --------------------------- |
+| Severity            | warning                     |
+| Confidence          | high                        |
+| Tier                | core                        |
+| Evidence level      | E2                          |
+| QA impact           | Test hygiene debt (HYGIENE) |
+| False-positive risk | low                         |
+| Autofix available   | no                          |
+| Languages           | python                      |
+| Frameworks          | pytest                      |
+| Detection strategy  | regex pattern               |
+| Introduced in       | v0.4.0                      |
 
 ## Why this fails in production
 
@@ -29,7 +30,7 @@ Example from this rule's own must-fire fixture: `tests/fixtures/QA-PY-108/must-f
 
 ## The fix
 
-Use relative paths against baseURL (set via --base-url / base_url fixture), or read the host from an env variable.
+Use `--base-url` / `base_url` fixture, or `os.environ[...]`.
 
 ## Confirmed NOT to fire on the corresponding clean pattern
 
@@ -41,4 +42,4 @@ UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked b
 
 ---
 
-Full catalog: `qa-doctor rules --md` · Live explanation: `qa-doctor explain QA-PY-108`
+Full catalog: `mjolnir rules --md` · Live explanation: `mjolnir explain QA-PY-108`

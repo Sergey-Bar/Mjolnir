@@ -25,7 +25,7 @@ afterEach(() => {
 });
 
 function makeFixtureWithFindings(): string {
-  const d = mkdtempSync(join(tmpdir(), "qa-doctor-roast-"));
+  const d = mkdtempSync(join(tmpdir(), "mjolnir-roast-"));
   dirs.push(d);
   mkdirSync(join(d, "e2e"), { recursive: true });
   writeFileSync(

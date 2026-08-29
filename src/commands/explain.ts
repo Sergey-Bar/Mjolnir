@@ -1,5 +1,5 @@
 /**
- * `qa-doctor explain <RULE-ID>` — implements Plan.md Sprint 1.3
+ * `mjolnir explain <RULE-ID>` — implements Plan.md Sprint 1.3
  * (Master-Stabilization-Plan Sprint 5, Task 19).
  *
  * For any registered rule, renders what is wrong, why it matters, the
@@ -44,7 +44,7 @@ function firstFixtureFile(dir: string): string | null {
  * Runs the rule against its own must-fire fixture to get one real,
  * concrete example finding. `fixturesRoot` defaults to this repo's own
  * `tests/fixtures` — explain only has real examples to show when run
- * from (or pointed at) a qa-doctor checkout; degrades honestly
+ * from (or pointed at) a Mjolnir checkout; degrades honestly
  * (exampleFinding left undefined) otherwise, same as `doctor`.
  */
 export function explainRule(
@@ -176,7 +176,7 @@ export function renderExplain(result: ExplainResult): string {
       "to just what you touched.",
   );
   lines.push("");
-  lines.push(`Docs: qa-doctor rules --md   (full catalog, this rule included)`);
+  lines.push(`Docs: mjolnir rules --md   (full catalog, this rule included)`);
   return lines.join("\n");
 }
 

@@ -3,7 +3,7 @@
  *
  * Every other test in this suite runs against source via tsx/vitest — none
  * of them exercise the actual thing a stranger receives when they run
- * `npx qa-doctor@latest`: the built `dist/` output, packed exactly as npm
+ * `npx mjolnir-qa@latest`: the built `dist/` output, packed exactly as npm
  * would pack it, executed as a real child process with no source tree or
  * test harness underneath it. Bugs in `files`, `bin`, or the built
  * entry-point's own self-invocation guard are invisible to unit tests and
@@ -85,7 +85,7 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
       binPath = join(pkgDir, binEntry);
 
       // Give the packed CLI its runtime dependencies without a network install
-      // (a real `npm install qa-doctor` would fetch these from `dependencies`).
+      // (a real `npm install mjolnir-qa` would fetch these from `dependencies`).
       // We COPY rather than symlink: symlink behavior differs across platforms
       // and CI filesystems (junctions are Windows-only; macOS temp dirs may
       // reject dir symlinks), and a silently-broken link makes the CLI crash
@@ -140,7 +140,7 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
       it("the declared bin entry exists in the tarball", () => {
         expect(
           existsSync(binPath),
-          `package.json "bin" points to "${pkgJson.bin["qa-doctor"]}", which ` +
+          `package.json "bin" points to "${pkgJson.bin.mjolnir}", which ` +
             `is not present in the packed tarball.`,
         ).toBe(true);
       });
@@ -225,7 +225,7 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
 
       it("scanning a real fixture repo produces the documented score banner", () => {
         const fixtureDir = mkdtempSync(
-          join(tmpdir(), "qa-doctor-smoke-fixture-"),
+          join(tmpdir(), "mjolnir-smoke-fixture-"),
         );
         try {
           mkdirSync(join(fixtureDir, "e2e"), { recursive: true });

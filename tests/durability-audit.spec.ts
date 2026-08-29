@@ -8,8 +8,8 @@
  *  1. Crash-safety of file writes. `writeFileSync(path, content)` is NOT
  *     atomic — if the process dies mid-write (OOM kill, Ctrl-C, power
  *     loss), the target is left truncated/corrupted. For most of
- *     qa-doctor's outputs (FLAKY.md, badge JSON) that's merely annoying
- *     to regenerate. For `qa-doctor fix`, the target is the USER'S OWN
+ *     mjolnir's outputs (FLAKY.md, badge JSON) that's merely annoying
+ *     to regenerate. For `mjolnir fix`, the target is the USER'S OWN
  *     TEST FILE — a truncated write there is data loss in code the user
  *     did not ask to have touched destructively. This is checked
  *     structurally (does the write path go through a temp-file + rename,
@@ -113,7 +113,7 @@ describe("crash-safety of destructive file writes", () => {
     "utf8",
   );
 
-  it("`qa-doctor fix` writes through a temp-file + rename, not a direct in-place write", () => {
+  it("`mjolnir fix` writes through a temp-file + rename, not a direct in-place write", () => {
     // The safe pattern: write to a sibling temp path, then renameSync
     // over the original — rename is atomic on the same filesystem, so a
     // mid-write crash leaves either the old file or the new one intact,
@@ -125,7 +125,7 @@ describe("crash-safety of destructive file writes", () => {
     expect(
       usesRenamePattern,
       "src/commands/fix.ts writes directly to the target file with " +
-        "writeFileSync and no temp-file+rename step. `qa-doctor fix` " +
+        "writeFileSync and no temp-file+rename step. `mjolnir fix` " +
         "rewrites the USER'S OWN test file — if the process is killed " +
         "mid-write (Ctrl-C, OOM, power loss), that file is left " +
         "truncated. This is real, uncommitted user data, not a " +

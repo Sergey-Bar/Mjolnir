@@ -149,6 +149,7 @@ export function renderRuleDocMd(data: RuleDocData): string {
   lines.push("|---|---|");
   lines.push(`| Severity | ${r.severity} |`);
   lines.push(`| Confidence | ${r.confidence} |`);
+  lines.push(`| Tier | ${r.tier ?? "core"} |`);
   lines.push(`| Evidence level | ${evidenceLevel} |`);
   lines.push(`| QA impact | ${QA_IMPACT_LABELS[r.qaImpact]} (${r.qaImpact}) |`);
   lines.push(

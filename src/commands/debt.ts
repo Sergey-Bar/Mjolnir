@@ -1,5 +1,5 @@
 /**
- * `qa-doctor debt` — Test Debt Register (Tier 5 #27).
+ * `mjolnir debt` — Test Debt Register (Tier 5 #27).
  *
  * Aggregates scan findings into a debt table with estimated cost, so QA
  * can present testing debt to management as a line item with numbers.

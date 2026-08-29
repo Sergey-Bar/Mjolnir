@@ -1,28 +1,29 @@
-# QA-PY-106 — Shared page/context across tests
+# QA-PY-106 — Browser state shared across tests
 
-_Generated from the live rule registry and this rule's own committed fixtures by `qa-doctor`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
-| Field               | Value                         |
-| ------------------- | ----------------------------- |
-| Severity            | warning                       |
-| Confidence          | medium                        |
-| Evidence level      | E1                            |
-| QA impact           | Flaky-test risk (FLAKY-RISK)  |
-| False-positive risk | medium                        |
-| Autofix available   | no                            |
-| Languages           | python                        |
-| Frameworks          | pytest-playwright, playwright |
-| Detection strategy  | regex pattern                 |
-| Introduced in       | v0.3.8                        |
+| Field               | Value                        |
+| ------------------- | ---------------------------- |
+| Severity            | warning                      |
+| Confidence          | medium                       |
+| Tier                | core                         |
+| Evidence level      | E1                           |
+| QA impact           | Flaky-test risk (FLAKY-RISK) |
+| False-positive risk | medium                       |
+| Autofix available   | no                           |
+| Languages           | python                       |
+| Frameworks          | pytest                       |
+| Detection strategy  | regex pattern                |
+| Introduced in       | v0.4.0                       |
 
 ## Why this fails in production
 
-pytest-playwright creates an isolated page per test; a module-level one is shared mutable state, so tests leak cookies/storage/navigation into each other and become order-dependent.
+A shared Page/Browser leaks cookies, localStorage, and navigation state between tests — failures become order-dependent and impossible to reproduce in isolation.
 
 ## What gets flagged (real detector output)
 
 ```
-Module-level `page` — browser state shared across tests.
+Module-level `page = ` — browser state shared across tests.
 ```
 
 Example from this rule's own must-fire fixture: `tests/fixtures/QA-PY-106/must-fire/test_home.py`
@@ -41,4 +42,4 @@ UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked b
 
 ---
 
-Full catalog: `qa-doctor rules --md` · Live explanation: `qa-doctor explain QA-PY-106`
+Full catalog: `mjolnir rules --md` · Live explanation: `mjolnir explain QA-PY-106`

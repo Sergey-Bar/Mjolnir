@@ -50,7 +50,7 @@ function capture() {
 }
 
 function makeCleanRepo(): string {
-  const d = mkdtempSync(join(tmpdir(), "qa-doctor-milestones-clean-"));
+  const d = mkdtempSync(join(tmpdir(), "mjolnir-milestones-clean-"));
   createdDirs.push(d);
   mkdirSync(join(d, "test"), { recursive: true });
   // A genuinely clean unit test: no UI interaction (so accessibility/
@@ -74,7 +74,7 @@ function git(cwd: string, args: string[]): void {
 }
 
 function makeGitRepoWithRealFix(): string {
-  const d = mkdtempSync(join(tmpdir(), "qa-doctor-milestones-fix-"));
+  const d = mkdtempSync(join(tmpdir(), "mjolnir-milestones-fix-"));
   createdDirs.push(d);
   git(d, ["init", "-q", "-b", "main"]);
   git(d, ["config", "user.email", "test@example.com"]);

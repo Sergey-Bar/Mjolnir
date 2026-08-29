@@ -1,12 +1,12 @@
 /**
- * `qa-doctor stats` — Sprint 6 Task 26 (Master-Stabilization-Plan.md).
+ * `mjolnir stats` — Sprint 6 Task 26 (Master-Stabilization-Plan.md).
  *
  * Local-only cumulative counters ("47 hard sleeps removed all-time"). No
  * telemetry, no network (verified by
  * tests/privacy-network-isolation.spec.ts, which scans this file too).
  *
  * HONESTY CONSTRAINT: this command can only count what it has personally
- * witnessed. It accumulates from this repo's own "qa-doctor diff" runs —
+ * witnessed. It accumulates from this repo's own "mjolnir diff" runs —
  * every time `diff` finds a finding that existed in the baseline and no
  * longer exists, that is real, evidenced proof of a fix, and this file's
  * per-rule counters increment by exactly that amount. It does NOT try to
@@ -40,7 +40,7 @@ export interface StatsFile {
   lastUpdatedAt: string;
   /** Cumulative count of resolved findings per rule, all-time. */
   resolvedByRule: Record<string, number>;
-  /** Number of times `qa-doctor diff` has recorded a fix. */
+  /** Number of times `mjolnir diff` has recorded a fix. */
   recordedFixEvents: number;
   /**
    * IDs of milestones already announced (Sprint 9 Task 39). A milestone
@@ -118,7 +118,7 @@ function emptyStats(now: string): StatsFile {
 
 /**
  * Fold a baseline diff's resolved findings into the stats file. Called
- * automatically by `qa-doctor diff` (never by `baseline`, which only
+ * automatically by `mjolnir diff` (never by `baseline`, which only
  * establishes a comparison point and has nothing to record yet).
  */
 export function recordResolved(
@@ -156,14 +156,14 @@ export function renderStats(stats: StatsFile | null): string {
   if (!stats || stats.recordedFixEvents === 0) {
     lines.push("No fixes recorded yet.");
     lines.push(
-      'Run "qa-doctor baseline" then "qa-doctor diff" after making fixes —',
+      'Run "mjolnir baseline" then "mjolnir diff" after making fixes —',
     );
     lines.push("every real fix diff observes gets counted here, honestly.");
     lines.push("");
     lines.push(
       "UNKNOWN: totals before tracking started. This command only counts",
     );
-    lines.push("what it has personally witnessed via qa-doctor diff.");
+    lines.push("what it has personally witnessed via mjolnir diff.");
     return lines.join("\n");
   }
 

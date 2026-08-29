@@ -1,11 +1,12 @@
 # QA-PY-010 — Random/time dependence in test
 
-_Generated from the live rule registry and this rule's own committed fixtures by `qa-doctor`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
 | Field               | Value                        |
 | ------------------- | ---------------------------- |
 | Severity            | warning                      |
 | Confidence          | medium                       |
+| Tier                | core                         |
 | Evidence level      | E1                           |
 | QA impact           | Flaky-test risk (FLAKY-RISK) |
 | False-positive risk | medium                       |
@@ -46,4 +47,4 @@ Real occurrence counts from `npm run corpus:audit` against actively-maintained O
 
 ---
 
-Full catalog: `qa-doctor rules --md` · Live explanation: `qa-doctor explain QA-PY-010`
+Full catalog: `mjolnir rules --md` · Live explanation: `mjolnir explain QA-PY-010`

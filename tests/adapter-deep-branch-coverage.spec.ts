@@ -28,7 +28,7 @@ import type { Workspace } from "../src/discovery/workspace.js";
 let dir: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "qa-doctor-adapter-deep-"));
+  dir = mkdtempSync(join(tmpdir(), "mjolnir-adapter-deep-"));
 });
 
 afterEach(() => {

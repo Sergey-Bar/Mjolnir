@@ -22,7 +22,7 @@ import type { ScanContext, UniversalRule } from "../src/engine/adapter.js";
 let dir: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "qa-doctor-jvcs-adapter-"));
+  dir = mkdtempSync(join(tmpdir(), "mjolnir-jvcs-adapter-"));
 });
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
@@ -170,7 +170,7 @@ describe("javaAdapter.discoverTestFiles", () => {
   });
 
   it("never follows a symlinked directory out of the repo", () => {
-    const outside = mkdtempSync(join(tmpdir(), "qa-doctor-jv-outside-"));
+    const outside = mkdtempSync(join(tmpdir(), "mjolnir-jv-outside-"));
     try {
       writeFileSync(join(outside, "EscapedTest.java"), "class EscapedTest {}");
       const linkPath = join(dir, "linked");
@@ -347,7 +347,7 @@ describe("csharpAdapter.discoverTestFiles", () => {
   });
 
   it("never follows a symlinked directory out of the repo", () => {
-    const outside = mkdtempSync(join(tmpdir(), "qa-doctor-cs-outside-"));
+    const outside = mkdtempSync(join(tmpdir(), "mjolnir-cs-outside-"));
     try {
       writeFileSync(join(outside, "EscapedTests.cs"), "class EscapedTests {}");
       const linkPath = join(dir, "linked");

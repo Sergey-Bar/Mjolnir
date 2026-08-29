@@ -4,7 +4,7 @@
  *
  * The README's command table is a set of promises: each row implies the
  * command exists and does roughly what its description says. This test
- * extracts every `npx qa-doctor...` invocation from the table and
+ * extracts every `npx mjolnir-qa...` invocation from the table and
  * asserts the subcommand portion is one `main()` actually dispatches —
  * docs cannot promise a command that does not exist.
  */

@@ -1,11 +1,12 @@
 # QA-PW-121 — Config retry/worker abuse
 
-_Generated from the live rule registry and this rule's own committed fixtures by `qa-doctor`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
 | Field               | Value                          |
 | ------------------- | ------------------------------ |
 | Severity            | warning                        |
 | Confidence          | high                           |
+| Tier                | core                           |
 | Evidence level      | E2                             |
 | QA impact           | False-green risk (FALSE-GREEN) |
 | False-positive risk | low                            |
@@ -29,7 +30,7 @@ Example from this rule's own must-fire fixture: `tests/fixtures/QA-PW-121/must-f
 
 ## The fix
 
-Keep retries <= 2 and route repeat offenders into forensics (`qa-doctor triage`).
+Keep retries <= 2 and route repeat offenders into forensics (`mjolnir triage`).
 
 ## Confirmed NOT to fire on the corresponding clean pattern
 
@@ -41,4 +42,4 @@ UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked b
 
 ---
 
-Full catalog: `qa-doctor rules --md` · Live explanation: `qa-doctor explain QA-PW-121`
+Full catalog: `mjolnir rules --md` · Live explanation: `mjolnir explain QA-PW-121`

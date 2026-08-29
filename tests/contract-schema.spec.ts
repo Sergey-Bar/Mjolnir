@@ -102,7 +102,7 @@ describe("JSON report contract", () => {
   });
 
   it("a fresh scan's JSON output matches the types.ts contract", () => {
-    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-contract-"));
+    const dir = mkdtempSync(join(tmpdir(), "mjolnir-contract-"));
     try {
       mkdirSync(join(dir, "e2e"), { recursive: true });
       writeFileSync(
@@ -139,7 +139,7 @@ describe("JSON report contract", () => {
 
 describe("SARIF 2.1.0 report contract", () => {
   function scanOneFinding(): ScanResult {
-    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-sarif-contract-"));
+    const dir = mkdtempSync(join(tmpdir(), "mjolnir-sarif-contract-"));
     try {
       mkdirSync(join(dir, "e2e"), { recursive: true });
       writeFileSync(

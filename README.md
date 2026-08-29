@@ -126,19 +126,24 @@ tests, and reports.
 ```text
 🔨 MJÖLNIR
 
-WORTHINESS 80/100 — WORTHY
-████████████████████████░░░░░░
+WORTHINESS 67/100 — NEEDS WORK
+███████████████████▓░░░░░░░░░░
+(20 raw pts / 2 test declarations — normalized)
 
 DETECTED [playwright]
 
 ▚ FIX THIS FIRST
-+8 pts  QA-CI-001 · .github/workflows/ci.yml:48
++8 pts  QA-CI-001 · .github/workflows/ci.yml:11
++8 pts  QA-PW-101 · e2e/checkout.spec.ts:6
 +3 pts  QA-TEST-004 · e2e/checkout.spec.ts:6
 ```
 
-The score is transparent: error −8, warning −3, info −1. Evidence-weighted
-deductions mean weak signals cost less. The terminal shows the same discounted
-numbers the score uses — no black box.
+_(live output from `npx mjolnir-qa ./examples/demo-repo` in this repo)_
+
+The score is transparent: error −8, warning −3, info −1, then normalized by
+suite exposure (deductions per test declaration). Evidence-weighted deductions
+mean weak signals cost less. The terminal shows the same discounted numbers the
+score uses — no black box.
 
 **Verdicts:**
 
@@ -239,9 +244,49 @@ firewall.
 | QA-PY-010 | Random/time dependence without freeze     | warning  |
 | QA-PY-012 | Tautological assertion                    | error    |
 
+20 Python rules total (QA-PY-001…012 pytest hygiene + QA-PY-101…108 Playwright-Python).
+
 </details>
 
-> The full live catalog — every rule with confidence, false-positive risk,
+<details>
+<summary><strong>Java / JUnit · TestNG ☕</strong></summary>
+
+| ID        | Rule                                     | Severity |
+| --------- | ---------------------------------------- | -------- |
+| QA-JV-101 | Disabled test (`@Disabled`)              | warning  |
+| QA-JV-102 | Hard sleep (`Thread.sleep()`)            | warning  |
+| QA-JV-103 | Test method with no assertions           | error    |
+| QA-JV-105 | Playwright `waitForTimeout()` hard sleep | warning  |
+| QA-JV-106 | Brittle selector instead of role locator | warning  |
+| QA-JV-108 | Hardcoded environment URL in test        | warning  |
+| QA-JV-111 | Blanket `page.route("**")` mock          | warning  |
+
+</details>
+
+<details>
+<summary><strong>C# / .NET — NUnit · xUnit · MSTest 🟣</strong></summary>
+
+| ID        | Rule                                       | Severity |
+| --------- | ------------------------------------------ | -------- |
+| QA-CS-101 | Skipped test (`[Ignore]`, `[Fact(Skip=)]`) | warning  |
+| QA-CS-102 | Hard sleep (`Thread.Sleep` / `Task.Delay`) | warning  |
+| QA-CS-103 | Test method with no assertions             | error    |
+| QA-CS-105 | `WaitForTimeoutAsync()` hard sleep         | warning  |
+| QA-CS-106 | Brittle selector instead of role locator   | warning  |
+| QA-CS-108 | Hardcoded environment URL in test          | warning  |
+| QA-CS-111 | Blanket `page.RouteAsync("**")` mock       | warning  |
+
+</details>
+
+**Rule tiers.** Every rule is `core`, `extended`, or `quarantine`, assigned from
+its **measured** false-positive rate ([docs/FP-AUDIT.md](docs/FP-AUDIT.md)):
+`core` ≤ 10 % FP, `extended` ≤ 30 %, `quarantine` above that or not yet measured.
+The default scan runs core + extended; `--strict` adds quarantine. The Java and
+C# families are newer and mostly `extended`/`quarantine` today — they ship,
+they're documented, and they stay out of the headline number until a real
+consumer suite (not a binding-library's own tests) has been audited.
+
+> The full live catalog — every rule with tier, confidence, false-positive risk,
 > and autofix availability — is generated from the registry:
 >
 > ```bash
@@ -382,9 +427,12 @@ mjolnir/
 </details>
 
 Multi-language by design: adding a language = one adapter + its rules.
-TypeScript/Playwright and Python are the most mature; Java and C#/.NET
-adapters ship a regex-based core rule family with tree-sitter WASM AST
-precision as the next step.
+TypeScript/Playwright uses the compiler AST (ts-morph); Python, Java, and
+C#/.NET run on a shared comment/string-masked regex layer. A tree-sitter
+WASM AST layer for Java and C# exists (`src/engine/tree-sitter-ast.ts`) and
+is the next precision step — it is not yet wired into the synchronous scan
+pipeline. TypeScript/Playwright and Python are the most battle-tested by
+measured false-positive rate; Java and C# are newer (see **Rule tiers** above).
 
 ---
 

@@ -1,11 +1,12 @@
 # QA-ENV-001 — Environment coupling in test
 
-_Generated from the live rule registry and this rule's own committed fixtures by `qa-doctor`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
 | Field               | Value                        |
 | ------------------- | ---------------------------- |
 | Severity            | warning                      |
 | Confidence          | medium                       |
+| Tier                | quarantine                   |
 | Evidence level      | E1                           |
 | QA impact           | Flaky-test risk (FLAKY-RISK) |
 | False-positive risk | medium                       |
@@ -33,18 +34,20 @@ Use the server's resolved base URL from config/test fixtures instead of a hardco
 
 ## Confirmed NOT to fire on the corresponding clean pattern
 
-Verified against `tests/fixtures/QA-ENV-001/must-not-fire/decoupled.spec.ts` — a legitimate, similar-looking pattern this rule correctly leaves alone.
+Verified against `tests/fixtures/QA-ENV-001/must-not-fire/code-as-test-data.spec.ts` — a legitimate, similar-looking pattern this rule correctly leaves alone.
 
 ## Corpus-measured false-positive risk
 
 Real occurrence counts from `npm run corpus:audit` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo              | Occurrences |
-| ----------------- | ----------- |
-| pallets-click     | 13          |
-| psf-requests      | 4           |
-| pytest-dev-pytest | 4           |
+| Repo                        | Occurrences |
+| --------------------------- | ----------- |
+| microsoft-playwright-dotnet | 55          |
+| microsoft-playwright-java   | 27          |
+| pallets-click               | 13          |
+| psf-requests                | 4           |
+| pytest-dev-pytest           | 4           |
 
 ---
 
-Full catalog: `qa-doctor rules --md` · Live explanation: `qa-doctor explain QA-ENV-001`
+Full catalog: `mjolnir rules --md` · Live explanation: `mjolnir explain QA-ENV-001`

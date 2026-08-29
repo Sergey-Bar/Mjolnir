@@ -1,5 +1,5 @@
 /**
- * `qa-doctor fix` — Safe Auto-Fix with Proof (Tier 1 #3).
+ * `mjolnir fix` — Safe Auto-Fix with Proof (Tier 1 #3).
  *
  * Applies a deliberately tiny safe set of mechanical transforms and
  * proves each one: after rewriting, the file is re-scanned with the

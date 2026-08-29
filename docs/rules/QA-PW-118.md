@@ -1,11 +1,12 @@
 # QA-PW-118 — Network idle wait (flaky by design)
 
-_Generated from the live rule registry and this rule's own committed fixtures by `qa-doctor`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
 | Field               | Value                        |
 | ------------------- | ---------------------------- |
 | Severity            | warning                      |
 | Confidence          | high                         |
+| Tier                | core                         |
 | Evidence level      | E2                           |
 | QA impact           | Flaky-test risk (FLAKY-RISK) |
 | False-positive risk | low                          |
@@ -41,4 +42,4 @@ UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked b
 
 ---
 
-Full catalog: `qa-doctor rules --md` · Live explanation: `qa-doctor explain QA-PW-118`
+Full catalog: `mjolnir rules --md` · Live explanation: `mjolnir explain QA-PW-118`

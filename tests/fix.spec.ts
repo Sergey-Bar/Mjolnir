@@ -1,5 +1,5 @@
 /**
- * Tests for `qa-doctor fix` — safe auto-fix with proof (Tier 1 #3).
+ * Tests for `mjolnir fix` — safe auto-fix with proof (Tier 1 #3).
  */
 
 import {

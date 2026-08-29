@@ -10,7 +10,7 @@
  *  1. every `QA-*` rule ID mentioned in the README's rule tables is
  *     actually registered — catches exactly the kind of drift the plan-
  *     file audit found in the planning docs, but for user-facing docs.
- *  2. every `npx qa-doctor ...` command shown in the README actually
+ *  2. every `npx mjolnir-qa ...` command shown in the README actually
  *     runs against a small fixture repo without hitting a usage error
  *     (exit 10) or crashing (exit 20) — a lightweight doctest, not full
  *     output matching.
@@ -59,7 +59,7 @@ let dir: string;
 let origCwd: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "qa-doctor-readme-doctest-"));
+  dir = mkdtempSync(join(tmpdir(), "mjolnir-readme-doctest-"));
   mkdirSync(join(dir, "e2e"), { recursive: true });
   writeFileSync(
     join(dir, "e2e", "checkout.spec.ts"),

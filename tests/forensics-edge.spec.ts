@@ -19,7 +19,7 @@ import { runForensics } from "../src/forensics/run.js";
 
 let dir: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "qa-doctor-fx-"));
+  dir = mkdtempSync(join(tmpdir(), "mjolnir-fx-"));
 });
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });

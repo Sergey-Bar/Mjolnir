@@ -1,11 +1,12 @@
-# QA-CS-104 — Static/shared Playwright page across tests
+# QA-CS-104 — Browser state shared across tests
 
-_Generated from the live rule registry and this rule's own committed fixtures by `qa-doctor`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
 | Field               | Value                            |
 | ------------------- | -------------------------------- |
 | Severity            | warning                          |
 | Confidence          | medium                           |
+| Tier                | extended                         |
 | Evidence level      | E1                               |
 | QA impact           | Flaky-test risk (FLAKY-RISK)     |
 | False-positive risk | medium                           |
@@ -13,11 +14,11 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Languages           | csharp                           |
 | Frameworks          | nunit, xunit, mstest, playwright |
 | Detection strategy  | regex pattern                    |
-| Introduced in       | v0.3.8                           |
+| Introduced in       | v0.4.0                           |
 
 ## Why this fails in production
 
-Parallel test execution shares statics: one test navigating or closing the page corrupts every other test's session.
+A shared Page/Browser leaks cookies, localStorage, and navigation state between tests — failures become order-dependent and impossible to reproduce in isolation.
 
 ## What gets flagged (real detector output)
 
@@ -41,4 +42,4 @@ UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked b
 
 ---
 
-Full catalog: `qa-doctor rules --md` · Live explanation: `qa-doctor explain QA-CS-104`
+Full catalog: `mjolnir rules --md` · Live explanation: `mjolnir explain QA-CS-104`

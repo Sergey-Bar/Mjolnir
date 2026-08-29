@@ -1,8 +1,8 @@
 /**
- * `qa-doctor doctor` — self-audit of QA Doctor's own rule base.
+ * `mjolnir doctor` — self-audit of Mjolnir's own rule base.
  *
  * The product must be able to fail because of a bug in the product.
- * This command checks, against the repo it runs in (the qa-doctor source
+ * This command checks, against the repo it runs in (the Mjolnir source
  * tree when dogfooding):
  *   1. Fixture firewall — every registered rule has must-fire AND
  *      must-not-fire fixtures (the project's own law).

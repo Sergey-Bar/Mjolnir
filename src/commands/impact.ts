@@ -1,5 +1,5 @@
 /**
- * `qa-doctor impact` — Sprint 6 Task 23 (Master-Stabilization-Plan.md).
+ * `mjolnir impact` — Sprint 6 Task 23 (Master-Stabilization-Plan.md).
  *
  * Answers "what would have burned you": compares the current scan against
  * an earlier point in this repo's own git history and reports anti-patterns

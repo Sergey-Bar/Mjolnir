@@ -1,5 +1,5 @@
 /**
- * `qa-doctor fix` safety guarantees (Test Hardening Plan).
+ * `mjolnir fix` safety guarantees (Test Hardening Plan).
  *
  * fix.ts already has real care built in (a verification pass per edit,
  * crash isolation on unreadable/unwritable files) — this file locks
@@ -32,7 +32,7 @@ const ORIGINAL_SOURCE =
   "});\n";
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "qa-doctor-fix-safety-"));
+  dir = mkdtempSync(join(tmpdir(), "mjolnir-fix-safety-"));
   mkdirSync(join(dir, "e2e"), { recursive: true });
   writeFileSync(join(dir, SPEC_REL), ORIGINAL_SOURCE);
 });

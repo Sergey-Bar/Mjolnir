@@ -29,7 +29,7 @@ let errSpy: string[];
 let restoreConsole: () => void;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "qa-doctor-flag-matrix-"));
+  dir = mkdtempSync(join(tmpdir(), "mjolnir-flag-matrix-"));
   mkdirSync(join(dir, "e2e"), { recursive: true });
   writeFileSync(
     join(dir, "e2e", "checkout.spec.ts"),

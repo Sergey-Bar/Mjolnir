@@ -1,11 +1,12 @@
 # QA-PY-005 — time.sleep() in test
 
-_Generated from the live rule registry and this rule's own committed fixtures by `qa-doctor`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
 | Field               | Value                        |
 | ------------------- | ---------------------------- |
 | Severity            | warning                      |
 | Confidence          | high                         |
+| Tier                | core                         |
 | Evidence level      | E2                           |
 | QA impact           | Flaky-test risk (FLAKY-RISK) |
 | False-positive risk | low                          |
@@ -39,11 +40,10 @@ Verified against `tests/fixtures/QA-PY-005/must-not-fire/clean.py` — a legitim
 
 Real occurrence counts from `npm run corpus:audit` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo              | Occurrences |
-| ----------------- | ----------- |
-| psf-requests      | 3           |
-| pytest-dev-pytest | 6           |
+| Repo         | Occurrences |
+| ------------ | ----------- |
+| psf-requests | 3           |
 
 ---
 
-Full catalog: `qa-doctor rules --md` · Live explanation: `qa-doctor explain QA-PY-005`
+Full catalog: `mjolnir rules --md` · Live explanation: `mjolnir explain QA-PY-005`

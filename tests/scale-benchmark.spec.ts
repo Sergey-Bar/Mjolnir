@@ -28,7 +28,7 @@ const TIME_BUDGET_MS = 20_000;
 let dir: string;
 
 beforeAll(() => {
-  dir = mkdtempSync(join(tmpdir(), "qa-doctor-scale-"));
+  dir = mkdtempSync(join(tmpdir(), "mjolnir-scale-"));
   mkdirSync(join(dir, "e2e"), { recursive: true });
   for (let i = 0; i < FILE_COUNT; i++) {
     // Every 10th file carries a real finding — proves the scan isn't
@@ -94,7 +94,7 @@ describe(`scanning a synthetic ${FILE_COUNT}-file repo`, () => {
       // (e.g. re-listing the whole tree per file) shows up as the full
       // set taking dramatically more than 10x the slice's time; linear
       // behavior keeps the ratio close to the size ratio.
-      const smallDir = mkdtempSync(join(tmpdir(), "qa-doctor-scale-small-"));
+      const smallDir = mkdtempSync(join(tmpdir(), "mjolnir-scale-small-"));
       try {
         mkdirSync(join(smallDir, "e2e"), { recursive: true });
         const smallCount = Math.floor(FILE_COUNT / 10);

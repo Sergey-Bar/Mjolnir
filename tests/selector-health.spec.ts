@@ -106,7 +106,7 @@ describe("renderSelectorHealth", () => {
 describe("computeSelectorHealth", () => {
   let dir: string;
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), "qa-doctor-sh-"));
+    dir = mkdtempSync(join(tmpdir(), "mjolnir-sh-"));
   });
   afterEach(() => {
     rmSync(dir, { recursive: true, force: true });

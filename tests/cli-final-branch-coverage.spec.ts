@@ -12,7 +12,7 @@ import { runScanCommand } from "../src/cli.js";
 let dir: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "qa-doctor-cli-final-"));
+  dir = mkdtempSync(join(tmpdir(), "mjolnir-cli-final-"));
   mkdirSync(join(dir, "e2e"), { recursive: true });
   writeFileSync(
     join(dir, "e2e", "checkout.spec.ts"),
