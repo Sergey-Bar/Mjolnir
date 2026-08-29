@@ -30,25 +30,20 @@ export const pyTautological = defineRule({
     if (!ctx.path.endsWith(".py")) return findings;
 
     const patterns = [
-      // [ \t] not \s — \s crosses lines causing duplicate/looping matches.
-      /^[ \t]*assert[ \t]+True(?![A-Za-z0-9_])/m,
-      /^[ \t]*assert[ \t]+([A-Za-z_][A-Za-z0-9_]*)[ \t]*==[ \t]*\1(?![A-Za-z0-9_])/m,
+      // [ \t] not \s — \s would cross lines. `g` so exec() advances past
+      // each match; every match here consumes `assert …` so it is never
+      // zero-width and the loop always terminates.
+      /^[ \t]*assert[ \t]+True(?![A-Za-z0-9_])/gm,
+      /^[ \t]*assert[ \t]+([A-Za-z_][A-Za-z0-9_]*)[ \t]*==[ \t]*\1(?![A-Za-z0-9_])/gm,
     ];
 
     const seenLines = new Set<number>();
     for (const re of patterns) {
       re.lastIndex = 0;
       let m: RegExpExecArray | null;
-      let guard = 0;
       while ((m = re.exec(text)) !== null) {
-        if (++guard > 1000) break; // safety net against pathological input
         const line = lineAt(text, m.index);
-        if (seenLines.has(line)) {
-          // Zero-width progress at same position — advance manually.
-          re.lastIndex = text.indexOf("\n", m.index) + 1;
-          if (re.lastIndex === 0) break;
-          continue;
-        }
+        if (seenLines.has(line)) continue;
         seenLines.add(line);
         findings.push({
           severity: "error",

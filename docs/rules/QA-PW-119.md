@@ -35,7 +35,7 @@ Create the state inside each test that needs it, or use beforeAll explicitly wit
 
 ## Confirmed NOT to fire on the corresponding clean pattern
 
-Verified against `tests/fixtures/QA-PW-119/must-not-fire/independent.spec.ts` — a legitimate, similar-looking pattern this rule correctly leaves alone.
+Verified against `tests/fixtures/QA-PW-119/must-not-fire/destructured-and-hooked.spec.ts` — a legitimate, similar-looking pattern this rule correctly leaves alone.
 
 ## Corpus-measured false-positive risk
 
@@ -43,10 +43,11 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo                 | Occurrences |
 | -------------------- | ----------- |
-| nextauthjs-next-auth | 6           |
-| sveltejs-kit         | 4           |
-| vitejs-vite          | 3           |
-| withastro-astro      | 45          |
+| nextauthjs-next-auth | 9           |
+| sveltejs-kit         | 8           |
+| tanstack-query       | 5           |
+| vitejs-vite          | 6           |
+| withastro-astro      | 11          |
 
 ---
 

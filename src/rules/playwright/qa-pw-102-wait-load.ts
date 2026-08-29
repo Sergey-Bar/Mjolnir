@@ -26,6 +26,9 @@ export const pwWaitForLoadEvent = defineRule({
   introduced: "0.3.0",
 
   run(ctx) {
+    // Raw text on purpose: the signal is the string argument `'load'`, which
+    // `codeText` would blank to spaces. (Same reason the network-idle family
+    // sets `useCodeText: false`.)
     const text = ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 

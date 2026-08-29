@@ -73,6 +73,45 @@ once shipped, so this file is the record of what changed between versions.
   longer reaches into an unrelated block; the await/return check also sees
   an `await` sitting one line above the `.then(`.
 
+### Fixed (rule-bug-hunt wave 2 — CI + Python + order-dependence)
+
+- **QA-CI-002** (`|| true` swallows exit code): only fires now when the
+  swallowed command is a verification gate. `docker compose down || true`,
+  `pkill … || true`, `rm -rf … || true` are ordinary teardown — flagging
+  them as FALSE-GREEN was wrong. Gate detection is now shared with QA-CI-001
+  (`src/rules/ci/verification-gate.ts`).
+- **QA-CI-009** (exit code not propagated): `playwright` alone was treated as
+  a test command, so `npx playwright install --with-deps; npx playwright
+test` (install first, test last) was flagged even though the test's exit
+  code IS the step's. Now requires `playwright test`, and skips any
+  `setup; <test>` sequence where the test command runs last.
+- **QA-CI-010** (tests skipped where they must block): the condition matcher
+  used `[!=]=`, which also matched `==` — so `if: github.event_name ==
+'pull_request'` (run **only** on PRs) was flagged as _skipping_ tests on
+  PRs. Now `!=` only, plus positive matches on `== 'push'` / `'schedule'` /
+  `'workflow_dispatch'`.
+- **QA-PY-012** (tautological assertion): the patterns lacked the `g` flag,
+  so `regex.exec()` never advanced — only the **first** `assert True` and the
+  first `assert x == x` in a file were reported; every later one was missed
+  (and the loop spun to its 1000-iteration guard each time). Fixed; corpus
+  count rose 4 → 5 as the previously-missed assertions surfaced.
+- **QA-PY-009** (commented-out test): `# main()` in a comment ("call main()
+  here") was flagged as a disabled test. The `main(` pattern now requires
+  the `pytest.main` namespace.
+- **QA-PW-119** (order dependence): three bugs. (1) `let [a, b] = …` /
+  `let { page } = …` destructuring was split on `,` into junk names like
+  `[a` that were interpolated into `new RegExp(…)` — a crash risk; it is now
+  skipped. (2) typed module-level `let x: Foo<T> = …` was invisible to the
+  declaration regex (the `<>` broke it) and is now detected. (3) a `before*`
+  hook with a destructured param — `beforeEach(async ({ page }) => {` — had
+  its body located at the _param_ brace, so assignments in the hook body
+  were treated as in-test and flagged; corpus count dropped 45 → 11 on the
+  worst-affected repo.
+- **QA-PW-116** (storageState without expiry): the canonical Playwright auth
+  pattern — a `setup` project / `*.setup.ts` / `globalSetup` regenerating
+  the state each run — is now recognised as a freshness mechanism, not
+  flagged.
+
 ### Fixed (adversarial-audit hardening wave)
 
 - **QA-TEST-003**: the assertion-detection regex contained a literal tab

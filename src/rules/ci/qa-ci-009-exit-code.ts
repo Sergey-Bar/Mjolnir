@@ -26,8 +26,11 @@ interface WorkflowDoc {
   jobs?: Record<string, JobNode>;
 }
 
+// `playwright` alone is NOT a test command — `playwright install`,
+// `playwright show-report`, `playwright merge-reports` are common setup /
+// reporting steps. Require `playwright test` explicitly.
 const TEST_CMD =
-  /\b(?:npm|yarn|pnpm)\s+(?:run\s+)?test\b|\b(?:jest|vitest|pytest|playwright|mocha)\b/;
+  /\b(?:npm|yarn|pnpm)\s+(?:run\s+)?test\b|\b(?:jest|vitest|pytest|mocha)\b|\bplaywright\s+test\b/;
 
 export const exitCodeNotPropagated = defineRule({
   id: "QA-CI-009",
@@ -92,7 +95,7 @@ export const exitCodeNotPropagated = defineRule({
         // NOTE: TEST_CMD.source contains top-level alternation — it MUST be
         // wrapped in a group or the tail binds to only one branch.
         const seqRe = new RegExp(
-          `(?:${TEST_CMD.source})[^\\n;]*;\\s*\\S+`,
+          `(?:${TEST_CMD.source})[^\\n;]*;\\s*[^\\n]+`,
           "g",
         );
         let sm: RegExpExecArray | null;
@@ -100,6 +103,10 @@ export const exitCodeNotPropagated = defineRule({
           // Skip when the sequence is guarded by && or || (status matters).
           const seg = sm[0];
           if (/&&|\|\|/.test(seg)) continue;
+          // Skip `setup; <test>` where the TEST command runs LAST — its exit
+          // code IS the step's. e.g. `playwright install; playwright test`.
+          const afterSemi = seg.slice(seg.indexOf(";") + 1);
+          if (TEST_CMD.test(afterSemi)) continue;
           findings.push({
             severity: "error",
             confidence: "medium",

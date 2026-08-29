@@ -68,4 +68,21 @@ describe("QA-PY-012: dedup-loop early exit at end-of-file with no trailing newli
     const findings = pyTautological.run({ path: "test_x.py", text });
     expect(findings).toHaveLength(1);
   });
+
+  it("reports EVERY tautological assert in the file, not just the first per pattern", () => {
+    const text = [
+      "def test_a():",
+      "    assert True",
+      "def test_b():",
+      "    assert True",
+      "def test_c():",
+      "    assert x == x",
+      "def test_d():",
+      "    assert yy == yy",
+    ].join("\n");
+    const findings = pyTautological.run({ path: "test_x.py", text });
+    expect(findings.map((f) => f.line).sort((a, b) => a - b)).toEqual([
+      2, 4, 6, 8,
+    ]);
+  });
 });

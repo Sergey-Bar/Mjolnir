@@ -1192,6 +1192,30 @@ Verified rules against the expanded 13-repo corpus and fixed six defects:
 - **vitest.config.ts**: exclude `tests/corpus/.cache/**` so a stale audit
   clone's own specs never run as our tests.
 
+### Wave 2 (CI rules + Python + order-dependence)
+
+- New shared `src/rules/ci/verification-gate.ts` — the "is this shell
+  command a gate?" allowlist, extracted from QA-CI-001 and reused by
+  QA-CI-002.
+- **QA-CI-002**: `|| true` only flagged on a verification gate now (teardown
+  commands are fine).
+- **QA-CI-009**: `playwright` alone ≠ test command; `setup; <test>`
+  sequences where the test runs last are not flagged.
+- **QA-CI-010**: `[!=]=` matched `==` too — `if: github.event_name ==
+'pull_request'` was flagged as skip-on-PR. Now `!=` only.
+- **QA-PY-012**: missing `g` flag → only the first tautology per pattern per
+  file was found. Fixed (corpus 4→5).
+- **QA-PY-009**: `# main()` prose no longer flagged (requires `pytest.main`).
+- **QA-PW-119**: destructuring-into-`new RegExp` crash risk removed; typed
+  `let` now detected; `before*` hooks with destructured params no longer
+  mis-scoped (corpus 45→11 on the worst repo).
+- **QA-PW-116**: `setup` project / `*.setup.ts` / `globalSetup` recognised
+  as a storageState freshness mechanism.
+- Regression tests added to `tests/rules.ci.spec.ts`,
+  `tests/ci-exit-code.spec.ts`, `tests/ci-non-blocking.spec.ts`,
+  `tests/rule-branch-coverage-python.spec.ts`, plus new must-not-fire
+  fixtures for QA-CI-002/009/010, QA-PW-116, QA-PW-119.
+
 ## Conventions
 
 - User communicates in Hebrew; artifacts in English.

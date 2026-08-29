@@ -34,10 +34,15 @@ export const pwStorageStateNoExpiry = defineRule({
     const re = /storageState\s*:\s*['"][^'"]+['"]/g;
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {
-      // Look for a nearby freshness mechanism in the whole file:
-      // a setup project regenerating it, or an expiry check.
+      // Look for a nearby freshness mechanism in the whole file: an explicit
+      // expiry check, OR the canonical Playwright auth pattern — a `setup`
+      // project / `*.setup.ts` / `globalSetup` that regenerates the state
+      // every run (project dependencies make it run first).
       const hasRefresh =
-        /(?:refresh|renew|regenerate|expiresAt|maxAge|ttl)/i.test(text);
+        /(?:refresh|renew|regenerate|expiresAt|maxAge|ttl)/i.test(text) ||
+        /\.setup\.[jt]sx?\b|name\s*:\s*['"]setup['"]|\bdependencies\s*:|\bglobalSetup\b/i.test(
+          text,
+        );
       if (!hasRefresh) {
         findings.push({
           severity: "warning",

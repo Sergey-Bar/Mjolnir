@@ -43,7 +43,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo              | Occurrences |
 | ----------------- | ----------- |
-| pytest-dev-pytest | 4           |
+| pytest-dev-pytest | 5           |
 
 ---
 

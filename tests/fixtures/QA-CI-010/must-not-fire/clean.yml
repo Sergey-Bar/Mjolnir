@@ -9,6 +9,12 @@ jobs:
       - uses: actions/checkout@v4
       - run: npm test
 
+  pr-only:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - run: npm test
+
   deploy:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest

@@ -67,4 +67,28 @@ describe("QA-CI-010 non-blocking test job", () => {
       [],
     );
   });
+
+  it("does NOT flag a job that runs ONLY on pull_request", () => {
+    const findings = nonBlockingTestJob.run(
+      ctx(`jobs:
+  test:
+    if: github.event_name == 'pull_request'
+    steps:
+      - run: npm test
+`),
+    );
+    expect(findings).toHaveLength(0);
+  });
+
+  it("still flags a test job that is skipped on pull_request", () => {
+    const findings = nonBlockingTestJob.run(
+      ctx(`jobs:
+  test:
+    if: github.event_name != 'pull_request'
+    steps:
+      - run: npm test
+`),
+    );
+    expect(findings.length).toBeGreaterThanOrEqual(1);
+  });
 });

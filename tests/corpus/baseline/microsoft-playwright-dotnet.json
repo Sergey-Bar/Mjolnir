@@ -1,6 +1,5 @@
 {
   "countsByRule": {
-    "QA-CI-002": 1,
     "QA-ENV-001": 10,
     "QA-CS-110": 135,
     "QA-CS-105": 16,
@@ -12,5 +11,5 @@
     "QA-CS-103": 2,
     "QA-CS-107": 1
   },
-  "totalFindings": 487
+  "totalFindings": 486
 }

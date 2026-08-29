@@ -114,6 +114,37 @@ describe("QA-CI-009 exit code propagation", () => {
     expect(findings[0]?.line).toBe(1);
   });
 
+  it("does not flag `setup; test` where the test command runs last", () => {
+    for (const run of [
+      "npx playwright install --with-deps; npx playwright test",
+      "npm ci; npm test",
+      "pip install -e .; pytest -q",
+    ]) {
+      const findings = exitCodeNotPropagated.run(
+        ctx(`jobs:\n  e:\n    steps:\n      - run: ${run}\n`),
+      );
+      expect(findings, run).toHaveLength(0);
+    }
+  });
+
+  it("still flags `test; something-else` where a non-test command runs last", () => {
+    const findings = exitCodeNotPropagated.run(
+      ctx(
+        `jobs:\n  e:\n    steps:\n      - run: npx playwright test; npm run lint\n`,
+      ),
+    );
+    expect(findings.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("does not treat `playwright install` alone as a test command", () => {
+    const findings = exitCodeNotPropagated.run(
+      ctx(
+        `jobs:\n  e:\n    steps:\n      - run: npx playwright install | tee setup.log\n`,
+      ),
+    );
+    expect(findings).toHaveLength(0);
+  });
+
   it("flags multiple test-piping lines inside a single multi-line run block", () => {
     const findings = exitCodeNotPropagated.run(
       ctx(`jobs:

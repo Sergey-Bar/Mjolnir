@@ -32,9 +32,13 @@ interface WorkflowDoc {
 const TEST_CMD =
   /\b(?:npm|yarn|pnpm)\s+(?:run\s+)?test\b|\b(?:jest|vitest|pytest|playwright|mocha)\b/;
 
-/** `if:` conditions that skip the job on pull requests. */
+/**
+ * `if:` conditions that skip the job on pull requests.
+ * NOTE: `!=` only — `github.event_name == 'pull_request'` is the OPPOSITE
+ * (run ONLY on PRs) and must never match here.
+ */
 const SKIP_ON_PR =
-  /github\.event_name\s*[!=]=\s*['"]?pull_request|!\s*github\.event_name|github\.ref\s*==\s*['"]?refs\/heads\/main/;
+  /github\.event_name\s*!=\s*['"]?pull_request|github\.event_name\s*==\s*['"]?(?:push|schedule|workflow_dispatch)\b|!\s*github\.event\b|github\.ref\s*==\s*['"]?refs\/heads\/(?:main|master)\b/;
 
 export const nonBlockingTestJob = defineRule({
   id: "QA-CI-010",

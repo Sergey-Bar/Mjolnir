@@ -12,3 +12,4 @@ jobs:
           set -o pipefail
           npm test | tee test-output.log
       - run: npm run build && npm run lint
+      - run: npx playwright install --with-deps; npx playwright test

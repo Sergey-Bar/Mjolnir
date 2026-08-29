@@ -33,12 +33,18 @@ export const pwOrderDependence = defineRule({
 
     // Module-level `let x` assigned inside one test — a smell that another
     // test reads it. (const at module level is fine.)
-    const declRe = /^let\s+([\w{}[\], :]+?)(?:\s*=\s*[^;]+)?;?\s*$/gm;
+    //
+    // Simple identifiers only (optionally a comma list, optionally a type
+    // annotation). Destructuring — `let [a, b] = …`, `let { page } = …` —
+    // is deliberately skipped: splitting `[a, b]` on `,` used to yield
+    // junk "names" like `[a` that were then interpolated into a RegExp.
+    const declRe =
+      /^let\s+([A-Za-z_$][\w$]*(?:\s*,\s*[A-Za-z_$][\w$]*)*)(?:\s*:[^=;\n]+)?\s*(?:=|;|$)/gm;
     const shared = new Set<string>();
     let d: RegExpExecArray | null;
     while ((d = declRe.exec(text)) !== null) {
-      for (const name of (d[1] ?? "").split(/[,]/)) {
-        const n = name.trim().split(/[:\s]/)[0];
+      for (const name of (d[1] ?? "").split(",")) {
+        const n = name.trim();
         if (n) shared.add(n);
       }
     }
@@ -48,10 +54,28 @@ export const pwOrderDependence = defineRule({
     // pattern (fresh state per test) and must not be flagged.
     const hookRanges: Array<[number, number]> = [];
     const hookRe =
-      /\b(?:beforeEach|beforeAll|afterEach|afterAll)\s*\(\s*(?:async\s*)?\(/g;
+      /\b(?:beforeEach|beforeAll|afterEach|afterAll)\s*\(\s*(?:async\s*)?/g;
     let h: RegExpExecArray | null;
     while ((h = hookRe.exec(text)) !== null) {
-      const open = text.indexOf("{", h.index + h[0].length - 1);
+      // Locate the callback BODY brace, not a destructured-param brace:
+      // `beforeEach(async ({ page }) => { … })`. Walk from the match end,
+      // skip a balanced param list `(...)`, then take the first `{` (an
+      // arrow body); tolerate `function (…) {` too.
+      let cursor = h.index + h[0].length;
+      if (text[cursor] === "(") {
+        let d = 0;
+        for (; cursor < text.length; cursor++) {
+          if (text[cursor] === "(") d++;
+          else if (text[cursor] === ")") {
+            d--;
+            if (d === 0) {
+              cursor++;
+              break;
+            }
+          }
+        }
+      }
+      const open = text.indexOf("{", cursor);
       if (open === -1) continue;
       let depth = 0;
       let end = open;

@@ -30,7 +30,9 @@ export const pyCommentedOutTest = defineRule({
     if (!ctx.path.endsWith(".py")) return findings;
 
     // Commented test definitions or commented pytest invocations.
-    const re = /#\s*(?:def\s+test_\w+|(?:pytest\.)?(?:main|test_\w+)\s*\()/g;
+    // `pytest.main(` must keep its namespace — a bare `# main()` is ordinary
+    // prose ("call main() here"), not a disabled test.
+    const re = /#\s*(?:def\s+test_\w+|pytest\.main\s*\(|test_\w+\s*\()/g;
 
     let m: RegExpExecArray | null;
     while ((m = re.exec(ctx.text)) !== null) {

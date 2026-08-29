@@ -8,11 +8,11 @@
     "QA-TEST-004": 4,
     "QA-PW-101": 4,
     "QA-ENV-001": 29,
-    "QA-PW-119": 6,
+    "QA-PW-119": 9,
     "QA-TEST-003": 3,
     "QA-TQUAL-002": 2,
     "QA-TQUAL-001": 1,
     "QA-TEST-002": 1
   },
-  "totalFindings": 63
+  "totalFindings": 66
 }

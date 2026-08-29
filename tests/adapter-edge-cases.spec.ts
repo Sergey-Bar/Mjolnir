@@ -165,7 +165,7 @@ describe("malformed GitHub Actions workflow YAML degrades the scan honestly", ()
     // every workflow file.
     writeFileSync(
       join(dir, ".github", "workflows", "ci.yml"),
-      "on:\n  push:\njobs:\n  build:\n    steps:\n      - run: exit 1 || true\n",
+      "on:\n  push:\njobs:\n  build:\n    steps:\n      - run: npm test || true\n",
     );
 
     expect(() => scan()).not.toThrow();

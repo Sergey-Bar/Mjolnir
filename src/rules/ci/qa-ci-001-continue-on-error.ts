@@ -5,6 +5,7 @@
  */
 
 import { defineRule } from "../rule.js";
+import { VERIFICATION_GATE_RE } from "./verification-gate.js";
 
 interface WorkflowDoc {
   jobs?: Record<string, JobNode>;
@@ -21,46 +22,8 @@ interface StepNode {
   "continue-on-error"?: boolean | string;
 }
 
-/**
- * Commands that constitute a VERIFICATION GATE. `continue-on-error` on one of
- * these is the false-green this rule exists to catch: the gate can fail and
- * the workflow still reports success.
- *
- * The inverse — reporting and artifact steps (upload-artifact, badge
- * generation, PR comments, advisory diffs) — legitimately use
- * continue-on-error: their failure loses information, it does not hide a
- * failed check. Flagging those was a false positive found by self-scan.
- *
- * This is an allowlist on purpose. A missed detection is a quiet gap; a false
- * positive on the flagship rule is a credibility loss on the one claim the
- * product is built to make.
- */
-const VERIFICATION_RE = new RegExp(
-  [
-    // ── Test runners ────────────────────────────────────────────────
-    String.raw`\b(?:npm|yarn|pnpm|bun)\s+(?:run\s+)?(?:test|t)\b`,
-    String.raw`\bnpx\s+(?:vitest|jest|mocha|ava|playwright\s+test)\b`,
-    String.raw`\b(?:vitest|jest|mocha|ava|tap)\b`,
-    String.raw`\bplaywright\s+test\b`,
-    String.raw`\b(?:pytest|tox|nox)\b`,
-    String.raw`\bpython\s+-m\s+(?:pytest|unittest)\b`,
-    String.raw`\bmvn\b[^\n]*\b(?:test|verify)\b`,
-    String.raw`\b(?:\./)?gradlew?\b[^\n]*\btest\b`,
-    String.raw`\bdotnet\s+test\b`,
-    String.raw`\bgo\s+test\b`,
-    String.raw`\bcargo\s+test\b`,
-    String.raw`\b(?:rspec|phpunit)\b`,
-    String.raw`\brake\s+test\b`,
-    // ── Other gates whose failure must not be hidden ────────────────
-    String.raw`\b(?:npm|yarn|pnpm)\s+audit\b`,
-    String.raw`\b(?:npm|yarn|pnpm)\s+run\s+(?:lint|typecheck|build)\b`,
-    String.raw`\b(?:eslint|prettier\s+--check|tsc\b[^\n]*--noEmit)\b`,
-    String.raw`\b(?:ruff|flake8|mypy|black\s+--check)\b`,
-  ].join("|"),
-);
-
 function stepIsVerificationGate(step: StepNode): boolean {
-  if (step.run && VERIFICATION_RE.test(step.run)) return true;
+  if (step.run && VERIFICATION_GATE_RE.test(step.run)) return true;
   // Composite actions that run a suite themselves. Anything that uploads,
   // reports, or comments is excluded — those are outputs, not gates.
   if (step.uses) {

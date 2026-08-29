@@ -6,6 +6,7 @@
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
 import { lineAt, colAt } from "../shared/positions.js";
+import { looksLikeVerificationGate } from "./verification-gate.js";
 
 export const swallowedExitCode = defineRule({
   id: "QA-CI-002",
@@ -33,6 +34,16 @@ export const swallowedExitCode = defineRule({
 
     let m: RegExpExecArray | null;
     while ((m = re.exec(ctx.text)) !== null) {
+      // Only a false-green when the swallowed command is a verification gate.
+      // `docker compose down || true`, `pkill -f server || true`, `rm x || true`
+      // are ordinary teardown — their failure hides nothing. Check the whole
+      // logical line the swallow sits on.
+      const lineStart = ctx.text.lastIndexOf("\n", m.index) + 1;
+      let lineEnd = ctx.text.indexOf("\n", m.index);
+      if (lineEnd === -1) lineEnd = ctx.text.length;
+      const swallowLine = ctx.text.slice(lineStart, lineEnd);
+      if (!looksLikeVerificationGate(swallowLine)) continue;
+
       findings.push({
         severity: "error",
         confidence: "high",

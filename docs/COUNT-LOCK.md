@@ -27,11 +27,10 @@ real Playwright .NET test suite — C# adapter FP surface (same library-suite ca
 
 Source: [`https://github.com/microsoft/playwright-dotnet`](https://github.com/microsoft/playwright-dotnet)
 
-Total findings: **487**
+Total findings: **486**
 
 | Rule ID    | Findings |
 | ---------- | -------- |
-| QA-CI-002  | 1        |
 | QA-CS-101  | 139      |
 | QA-CS-102  | 52       |
 | QA-CS-103  | 2        |
@@ -94,7 +93,7 @@ real TS app with Playwright e2e + substantial GitHub Actions — first non-trivi
 
 Source: [`https://github.com/nextauthjs/next-auth`](https://github.com/nextauthjs/next-auth)
 
-Total findings: **63**
+Total findings: **66**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
@@ -103,7 +102,7 @@ Total findings: **63**
 | QA-ENV-001   | 29       |
 | QA-PW-101    | 4        |
 | QA-PW-103    | 4        |
-| QA-PW-119    | 6        |
+| QA-PW-119    | 9        |
 | QA-PW-123    | 2        |
 | QA-PW-145    | 3        |
 | QA-TEST-002  | 1        |
@@ -171,7 +170,7 @@ large real pytest suite — Python adapter FP surface (QA-PY-001..012)
 
 Source: [`https://github.com/pytest-dev/pytest`](https://github.com/pytest-dev/pytest)
 
-Total findings: **812**
+Total findings: **813**
 
 | Rule ID   | Findings |
 | --------- | -------- |
@@ -184,7 +183,7 @@ Total findings: **812**
 | QA-PY-009 | 3        |
 | QA-PY-010 | 3        |
 | QA-PY-011 | 1        |
-| QA-PY-012 | 4        |
+| QA-PY-012 | 5        |
 
 ## sveltejs-kit
 
@@ -192,7 +191,7 @@ large real Playwright suite — QA-PW isolation/timing rules at scale
 
 Source: [`https://github.com/sveltejs/kit`](https://github.com/sveltejs/kit)
 
-Total findings: **1251**
+Total findings: **1255**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
@@ -207,7 +206,7 @@ Total findings: **1251**
 | QA-PW-114    | 5        |
 | QA-PW-117    | 1        |
 | QA-PW-118    | 20       |
-| QA-PW-119    | 4        |
+| QA-PW-119    | 8        |
 | QA-PW-145    | 11       |
 | QA-TEST-002  | 38       |
 | QA-TEST-003  | 61       |
@@ -221,11 +220,12 @@ real TS monorepo — QA-PW-112 sample growth; QA-TEST-004 fires >1600× here (cl
 
 Source: [`https://github.com/TanStack/query`](https://github.com/TanStack/query)
 
-Total findings: **397**
+Total findings: **402**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
 | QA-PW-112    | 125      |
+| QA-PW-119    | 5        |
 | QA-PW-145    | 3        |
 | QA-TEST-003  | 11       |
 | QA-TEST-004  | 157      |
@@ -239,7 +239,7 @@ large real Playwright/Vitest suite — broad QA-PW + QA-TQUAL surface
 
 Source: [`https://github.com/vitejs/vite`](https://github.com/vitejs/vite)
 
-Total findings: **736**
+Total findings: **739**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
@@ -249,7 +249,7 @@ Total findings: **736**
 | QA-PW-103    | 39       |
 | QA-PW-105    | 477      |
 | QA-PW-114    | 62       |
-| QA-PW-119    | 3        |
+| QA-PW-119    | 6        |
 | QA-PW-120    | 7        |
 | QA-PW-145    | 38       |
 | QA-TEST-002  | 5        |
@@ -263,7 +263,7 @@ large real Playwright suite — QA-PW text-coupling / viewport / empty-body
 
 Source: [`https://github.com/withastro/astro`](https://github.com/withastro/astro)
 
-Total findings: **780**
+Total findings: **746**
 
 | Rule ID     | Findings |
 | ----------- | -------- |
@@ -276,7 +276,7 @@ Total findings: **780**
 | QA-PW-114   | 2        |
 | QA-PW-115   | 3        |
 | QA-PW-118   | 6        |
-| QA-PW-119   | 45       |
+| QA-PW-119   | 11       |
 | QA-PW-120   | 4        |
 | QA-PW-145   | 48       |
 | QA-TEST-002 | 32       |

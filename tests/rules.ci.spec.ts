@@ -108,6 +108,39 @@ describe("QA-CI-002 swallowed exit code", () => {
       swallowedExitCode.run({ path: "ci.yml", text: "- run: npm test\n" }),
     ).toHaveLength(0);
   });
+
+  it("does not flag `|| true` on teardown / non-gate commands", () => {
+    for (const cmd of [
+      "docker compose down || true",
+      "pkill -f dev-server || true",
+      "rm -rf .cache || true",
+      "kill $PID || true",
+    ]) {
+      expect(
+        swallowedExitCode.run({
+          path: "ci.yml",
+          text: `      - run: ${cmd}\n`,
+        }),
+        cmd,
+      ).toHaveLength(0);
+    }
+  });
+
+  it("still flags `|| true` on a verification gate", () => {
+    for (const cmd of [
+      "npm test || true",
+      "pytest -q || true",
+      "npm run lint || echo skipped",
+    ]) {
+      expect(
+        swallowedExitCode.run({
+          path: "ci.yml",
+          text: `      - run: ${cmd}\n`,
+        }),
+        cmd,
+      ).not.toHaveLength(0);
+    }
+  });
 });
 
 describe("QA-CI-005 report never generated", () => {
