@@ -28,17 +28,34 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 const ROOT = resolve(import.meta.dirname, "..");
 
 /**
- * `npm pack --json` prints a JSON array, but npm also writes lifecycle-script
- * output (`prepare > husky`) before it and, on npm 11+, an update/notice line
- * *after* it. Slice to the outermost `[ … ]` so both are ignored.
+ * `npm pack --json` writes a JSON array to stdout, but npm mixes other text
+ * in with it: lifecycle-script output (`prepare > husky`, tsdown) before it,
+ * and — on npm 11+ — `npm warn`/`npm notice` lines interleaved and after it.
+ * `lastIndexOf("]")` is not safe (a trailing notice can contain `]`), so scan
+ * from the first `[` tracking bracket depth (string-aware) and stop at the
+ * matching close.
  */
 function parseNpmJsonArray(out: string): unknown[] {
   const start = out.indexOf("[");
-  const end = out.lastIndexOf("]");
-  if (start === -1 || end <= start) {
+  if (start === -1) {
     throw new Error(`npm --json output contained no JSON array:\n${out}`);
   }
-  return JSON.parse(out.slice(start, end + 1)) as unknown[];
+  let depth = 0;
+  let inStr = false;
+  for (let i = start; i < out.length; i++) {
+    const ch = out[i];
+    if (inStr) {
+      if (ch === "\\") i++;
+      else if (ch === '"') inStr = false;
+      continue;
+    }
+    if (ch === '"') inStr = true;
+    else if (ch === "[") depth++;
+    else if (ch === "]" && --depth === 0) {
+      return JSON.parse(out.slice(start, i + 1)) as unknown[];
+    }
+  }
+  throw new Error(`npm --json output had an unterminated JSON array:\n${out}`);
 }
 
 describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
