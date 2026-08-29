@@ -9,7 +9,7 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
-## [Unreleased] — 0.5.0
+## [0.5.0] — 2026-08-29
 
 ### Fixed (adversarial-audit hardening wave)
 

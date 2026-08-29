@@ -36,4 +36,20 @@ describe("version string consistency", () => {
         `on every release until this literal is updated by hand.`,
     ).toBe(packageJson.version);
   });
+
+  it("cli.ts CLI_VERSION matches package.json version", () => {
+    const cliSource = readFileSync(join(ROOT, "src", "cli.ts"), "utf8");
+    const match = cliSource.match(/export const CLI_VERSION = "([^"]+)";/);
+    expect(
+      match,
+      "could not find CLI_VERSION in cli.ts to check",
+    ).not.toBeNull();
+    expect(
+      match?.[1],
+      `cli.ts hardcodes CLI_VERSION "${match?.[1]}" but package.json is at ` +
+        `"${packageJson.version}" — \`mjolnir --version\` would report a ` +
+        `stale version to every user until this literal is updated. ` +
+        `Run \`node scripts/sync-sarif-version.cjs\`.`,
+    ).toBe(packageJson.version);
+  });
 });

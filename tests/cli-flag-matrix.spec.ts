@@ -97,6 +97,10 @@ describe("base scan command — documented flag matrix", () => {
     },
     { name: "-h", argv: () => ["-h"], expectExit: [10] },
     { name: "--help", argv: () => ["--help"], expectExit: [10] },
+    // --version answers a question, so it succeeds (0) rather than
+    // falling through to the scan parser's usage error like --help does.
+    { name: "--version", argv: () => ["--version"], expectExit: [0] },
+    { name: "-v", argv: () => ["-v"], expectExit: [0] },
     { name: "unknown flag", argv: () => ["--nope"], expectExit: [10] },
     {
       name: "--scope with invalid mode",
