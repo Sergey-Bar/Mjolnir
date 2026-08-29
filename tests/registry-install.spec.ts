@@ -111,7 +111,13 @@ describe.runIf(RUN)(
           // here, not a crash.
           out = String((err as { stdout?: unknown }).stdout ?? "");
         }
-        expect(out).toMatch(/SCORE|score/);
+        // The gauge label is WORTHINESS — this asserted /SCORE/ from
+        // before the rebrand renamed it, so the check could only ever
+        // have passed against a pre-0.4.0 build. Assert on the real
+        // label plus a verdict word, so it fails loudly if either the
+        // reporter or the install stops producing a scan.
+        expect(out).toMatch(/WORTHINESS/);
+        expect(out).toMatch(/WORTHY|NEEDS WORK|UNWORTHY/);
       } finally {
         rmSync(fixtureDir, { recursive: true, force: true });
       }
