@@ -25,6 +25,15 @@ const DEMO_REPO = join(ROOT, "examples", "demo-repo");
 const SVG_PATH = join(ROOT, "assets", "readme", "terminal-hero.svg");
 
 describe("assets/readme/terminal-hero.svg reproducibility", () => {
+  it("the README actually references the hero asset (it was generated, tested, and orphaned once before)", () => {
+    // The whole point of a generated, drift-locked hero asset is that
+    // the README shows it. Between the rebrand and now it was kept
+    // current by this very test while no page displayed it — a
+    // maintained file nobody could see. This keeps them tied together.
+    const readme = readFileSync(join(ROOT, "README.md"), "utf8");
+    expect(readme).toContain("assets/readme/terminal-hero.svg");
+  });
+
   it("the demo repo scan referenced by the hero asset actually produces findings (sanity check — a stale/empty demo repo would make this whole test meaningless)", () => {
     const result = runScan({
       target: DEMO_REPO,
