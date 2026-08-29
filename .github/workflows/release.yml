@@ -1,37 +1,64 @@
 name: Release
 
-# Automatic release: push a version tag (v*) → CI runs → GitHub Release
-# is created with auto-generated notes from all merged PRs/commits since
-# the previous tag, plus the built CLI attached as a tarball.
+# Automatic release: push a version tag (v*) → the full gate runs → the
+# package is published to npm → a GitHub Release is created with
+# auto-generated notes and the built CLI attached.
 #
 # Usage:
 #   npm version patch|minor|major   # bumps package.json + creates the tag
 #   git push --follow-tags
+#
+# ORDER MATTERS. npm publish runs BEFORE the GitHub Release is created,
+# and the release job refuses to create a Release until the version is
+# actually resolvable on the registry. The reverse order shipped a
+# public "v0.5.0 · Latest" Release for a version that npm never
+# received, because the publish step failed after the Release step had
+# already succeeded. A GitHub Release is a promise that `npm i` works;
+# it must not be made before that is true.
 
 on:
   push:
     tags:
       - "v*"
+  # Re-run a release for a tag that already exists. Needed whenever a
+  # release fails for a reason outside the repo — registry auth, a flaky
+  # runner — where the fix is a settings change and the code is fine.
+  # Without this the only retry path is deleting and force-pushing the
+  # tag, which rewrites history anyone who already fetched it has.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to release (e.g. v0.5.0)"
+        required: true
+        type: string
 
+# Least privilege at the top level; the release job escalates what it
+# actually needs. Job-level `permissions` replaces this block, so the
+# job below still gets contents:write.
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ inputs.tag || github.ref }}
   cancel-in-progress: false
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     # id-token: write is required for `npm publish --provenance` (OIDC).
-    # Harmless to declare ahead of time even while the publish step below
-    # stays gated off — this permission has no effect unless something
-    # in the job actually requests an OIDC token.
     permissions:
       contents: write
       id-token: write
+    env:
+      # One name for "the tag being released", whichever trigger fired.
+      # Read through env rather than interpolated into `run:` bodies so a
+      # tag name can never be parsed as shell.
+      RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
 
       - uses: actions/setup-node@v4
         with:
@@ -43,11 +70,13 @@ jobs:
 
       - name: Verify tag matches package.json version
         run: |
-          PKG_VERSION="v$(node -p "require('./package.json').version")"
-          if [ "$PKG_VERSION" != "${{ github.ref_name }}" ]; then
-            echo "::error::Tag ${{ github.ref_name }} does not match package.json ($PKG_VERSION)"
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          if [ "v$PKG_VERSION" != "$RELEASE_TAG" ]; then
+            echo "::error::Tag $RELEASE_TAG does not match package.json (v$PKG_VERSION)"
             exit 1
           fi
+          echo "VERSION=$PKG_VERSION" >> "$GITHUB_ENV"
+          echo "Releasing $RELEASE_TAG (package version $PKG_VERSION)"
 
       - run: npm ci
 
@@ -72,36 +101,40 @@ jobs:
           mkdir -p release-assets
           npm pack --pack-destination ./release-assets
 
-      - name: Create GitHub Release with generated notes
-        uses: softprops/action-gh-release@v2
-        with:
-          generate_release_notes: true
-          files: release-assets/*.tgz
-          body: |
-            Install: `npx mjolnir-qa@${{ github.ref_name }} .`
-            Full changelog is auto-generated below from all commits and PRs since the previous release.
+      # Idempotency. A version already on the registry must not be a hard
+      # failure: re-running a release for an existing tag (workflow_dispatch
+      # above), or backfilling a tag for a version published earlier, is a
+      # legitimate thing to do and npm rejects a duplicate publish with
+      # E403. Skip the publish, keep the verification.
+      - name: Check whether this version is already on npm
+        id: registry
+        run: |
+          if npm view "mjolnir-qa@${VERSION}" version >/dev/null 2>&1; then
+            echo "Already on npm — publish will be skipped."
+            echo "published=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Not on npm yet — publish will run."
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
 
       # npm publish runs only once the repo variable NPM_PUBLISH is set to
       # "true" (Settings → Secrets and variables → Actions → Variables, or
       # `gh variable set NPM_PUBLISH --body true`). That gate exists so a
       # tag push cannot attempt to publish before the one-time npmjs.com
-      # OIDC trusted-publisher setup is done — which would fail the job.
+      # OIDC trusted-publisher setup is done.
       #
       # Trusted publishing (no NODE_AUTH_TOKEN) requires the npmjs.com
-      # package to have "trusted publisher" configured for this exact repo
-      # + workflow file. That is account-level and cannot be automated
-      # from inside this repo. Full runbook: docs/PUBLISHING.md.
+      # package to have a trusted publisher configured for this exact repo
+      # + workflow file. That is account-level and cannot be automated from
+      # inside this repo. Full runbook: docs/PUBLISHING.md.
       #
-      # Once both are done, every `git push --follow-tags` publishes
-      # automatically with a verifiable provenance attestation — no
-      # further change to this file.
       # Node 22 ships npm 10, which does NOT support OIDC trusted publishing —
       # it falls back to token auth (empty NODE_AUTH_TOKEN placeholder) and the
       # publish PUT fails with a misleading "404 Not Found". OIDC needs npm
       # >= 11.5.1. Done here, after the test gate, so the rest of the job keeps
       # running on the toolchain-pinned npm.
       - name: Upgrade npm for OIDC trusted publishing
-        if: vars.NPM_PUBLISH == 'true'
+        if: vars.NPM_PUBLISH == 'true' && steps.registry.outputs.published != 'true'
         run: npm install -g npm@latest
 
       # setup-node writes an .npmrc containing `always-auth=true` and
@@ -112,7 +145,7 @@ jobs:
       # Replace it with a bare registry line so npm 11's OIDC trusted
       # publishing (id-token: write) takes over.
       - name: Neutralize token auth so OIDC is used
-        if: vars.NPM_PUBLISH == 'true'
+        if: vars.NPM_PUBLISH == 'true' && steps.registry.outputs.published != 'true'
         run: |
           echo "registry=https://registry.npmjs.org/" > "${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}"
           echo "npm $(npm --version)"
@@ -122,9 +155,43 @@ jobs:
       # Bare `npm publish`: npm >= 11.5.1 auto-detects the CI OIDC context and,
       # if a matching trusted publisher is configured on npmjs.com, exchanges
       # the id-token for a short-lived publish token and attaches provenance
-      # automatically. `ENEEDAUTH` here means the trusted-publisher config does
-      # NOT match this run's OIDC claims — check repo (Sergey-Bar/Mjolnir),
-      # workflow (release.yml), and that the Environment field is EMPTY.
+      # automatically.
+      #
+      # `ENEEDAUTH` / "OIDC token exchange error - package not found" here
+      # means the trusted-publisher config does NOT match this run's OIDC
+      # claims. Check on npmjs.com → mjolnir-qa → Settings → Publishing
+      # access: repository must be Sergey-Bar/Mjolnir, workflow must be
+      # release.yml, and the Environment field must be EMPTY.
       - name: Publish to npm (OIDC trusted publishing)
-        if: vars.NPM_PUBLISH == 'true'
+        if: vars.NPM_PUBLISH == 'true' && steps.registry.outputs.published != 'true'
         run: npm publish --provenance --access public --loglevel verbose
+
+      # The gate that makes the GitHub Release below honest. Registry reads
+      # can lag a publish by a few seconds, so this polls rather than
+      # asserting once. If the package is not resolvable, the job fails
+      # here and no Release is created.
+      - name: Verify the published version is live on npm
+        if: vars.NPM_PUBLISH == 'true'
+        run: |
+          for attempt in 1 2 3 4 5 6; do
+            FOUND="$(npm view "mjolnir-qa@${VERSION}" version 2>/dev/null || true)"
+            if [ "$FOUND" = "$VERSION" ]; then
+              echo "mjolnir-qa@${VERSION} is live on the registry."
+              exit 0
+            fi
+            echo "Not resolvable yet (attempt ${attempt}/6) — waiting 10s."
+            sleep 10
+          done
+          echo "::error::mjolnir-qa@${VERSION} is not resolvable on the registry. Refusing to create a GitHub Release for a version nobody can install."
+          exit 1
+
+      # Last, and only now: everything above proved the package is real.
+      - name: Create GitHub Release with generated notes
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          generate_release_notes: true
+          files: release-assets/*.tgz
+          body: |
+            Install: `npx mjolnir-qa@${{ env.VERSION }} .`
+            Full changelog is auto-generated below from all commits and PRs since the previous release.

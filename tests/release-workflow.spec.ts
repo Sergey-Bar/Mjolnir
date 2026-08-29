@@ -103,8 +103,87 @@ describe("release.yml", () => {
     const steps = wf.jobs.release?.steps ?? [];
     expect(
       steps.some(
-        (s) => s.run?.includes("package.json") && s.run?.includes("ref_name"),
+        (s) =>
+          s.run?.includes("package.json") && s.run?.includes("RELEASE_TAG"),
       ),
+    ).toBe(true);
+  });
+
+  // ── Ordering: publish before Release ────────────────────────────────
+  //
+  // v0.5.0 shipped a public "Latest" GitHub Release for a version npm
+  // never received: the gh-release step ran first and succeeded, then the
+  // publish step failed. A GitHub Release is a promise that `npm i` works,
+  // so it must not be created until that is true. These three tests lock
+  // the ordering, the verification gate, and the retry trigger.
+
+  function stepIndex(
+    steps: WorkflowStep[],
+    predicate: (s: WorkflowStep) => boolean,
+  ): number {
+    return steps.findIndex(predicate);
+  }
+
+  it("publishes to npm BEFORE creating the GitHub Release", () => {
+    const steps = loadReleaseWorkflow().jobs.release?.steps ?? [];
+    const publishAt = stepIndex(steps, (s) => !!s.run?.includes("npm publish"));
+    const releaseAt = stepIndex(
+      steps,
+      (s) => !!s.uses?.startsWith("softprops/action-gh-release"),
+    );
+    expect(publishAt, "no npm publish step found").toBeGreaterThanOrEqual(0);
+    expect(releaseAt, "no gh-release step found").toBeGreaterThanOrEqual(0);
+    expect(
+      publishAt,
+      "npm publish must run before the GitHub Release is created — " +
+        "otherwise a failed publish still leaves a public Release " +
+        "advertising a version nobody can install (v0.5.0 did exactly this)",
+    ).toBeLessThan(releaseAt);
+  });
+
+  it("verifies the version is live on the registry before creating the Release", () => {
+    const steps = loadReleaseWorkflow().jobs.release?.steps ?? [];
+    const verifyAt = stepIndex(
+      steps,
+      (s) => !!s.run?.includes("npm view") && !!s.run?.includes("::error::"),
+    );
+    const releaseAt = stepIndex(
+      steps,
+      (s) => !!s.uses?.startsWith("softprops/action-gh-release"),
+    );
+    expect(
+      verifyAt,
+      "expected a step that resolves the published version via `npm view` " +
+        "and fails the job when it is not there",
+    ).toBeGreaterThanOrEqual(0);
+    expect(verifyAt).toBeLessThan(releaseAt);
+  });
+
+  it("can be re-run for an existing tag without force-pushing it", () => {
+    const text = readFileSync(
+      join(ROOT, ".github", "workflows", "release.yml"),
+      "utf8",
+    );
+    const wf = parse(text) as { on?: Record<string, unknown> };
+    expect(
+      wf.on?.["workflow_dispatch"],
+      "release.yml needs a workflow_dispatch trigger: when a release fails " +
+        "for a reason outside the repo (registry auth), the only other " +
+        "retry path is deleting and force-pushing the tag",
+    ).toBeDefined();
+  });
+
+  it("skips the publish when the version is already on npm, instead of failing", () => {
+    const steps = loadReleaseWorkflow().jobs.release?.steps ?? [];
+    const publishStep = steps.find((s) => s.run?.includes("npm publish"));
+    expect(
+      typeof publishStep?.if === "string" &&
+        /steps\.registry\.outputs\.published\s*!=\s*'true'/.test(
+          publishStep.if,
+        ),
+      "re-running a release for an already-published version must skip the " +
+        "publish (npm rejects duplicates with E403), not fail the job. " +
+        `Found: ${JSON.stringify(publishStep?.if)}`,
     ).toBe(true);
   });
 });
