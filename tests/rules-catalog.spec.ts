@@ -1,5 +1,5 @@
 /**
- * `qa-doctor rules` catalog — registry-derived docs can never drift.
+ * `mjolnir rules` catalog — registry-derived docs can never drift.
  */
 
 import { describe, expect, it } from "vitest";
@@ -55,7 +55,8 @@ describe("rules catalog", () => {
     expect(entry.introduced).toBeUndefined();
 
     const md = renderCatalogMd(entries);
-    expect(md).toContain("| QA-MIN-001 | Minimal rule | info | low |");
+    // Tier falls back to "core" when a rule doesn't declare one.
+    expect(md).toContain("| QA-MIN-001 | Minimal rule | info | core | low |");
     // FP Risk column falls back to an em-dash, Autofix to "no", Since to em-dash.
     expect(md).toContain("| — | no | — |");
   });
@@ -96,12 +97,12 @@ describe("rules catalog", () => {
     const md = renderCatalogMd(buildCatalog());
     const lines = md.split("\n").filter((l) => l.startsWith("| QA-CI-002"));
     expect(lines).toHaveLength(1);
-    // A correctly-escaped row has exactly 9 unescaped `|` table delimiters
-    // (8 columns + leading/trailing border = 9 pipe characters total when
+    // A correctly-escaped row has exactly 10 unescaped `|` table delimiters
+    // (9 columns + leading/trailing border = 10 pipe characters total when
     // the title's own pipes are escaped as \|).
     const line = lines[0] ?? "";
     const unescapedPipeCount = (line.match(/(?<!\\)\|/g) ?? []).length;
-    expect(unescapedPipeCount).toBe(9);
+    expect(unescapedPipeCount).toBe(10);
   });
 
   it("CLI handler exits 0 and emits JSON by default", () => {

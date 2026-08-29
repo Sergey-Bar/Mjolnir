@@ -1,5 +1,5 @@
 /**
- * `qa-doctor explain` (Master-Stabilization-Plan Sprint 5, Task 19).
+ * `mjolnir explain` (Master-Stabilization-Plan Sprint 5, Task 19).
  *
  * The plan's own bar: "explain returns real content for 100% of
  * registered rule IDs — no rule can ship unexplainable." This is
@@ -10,7 +10,11 @@
 
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { explainRule, renderExplain } from "../src/commands/explain.js";
+import {
+  allRuleIds,
+  explainRule,
+  renderExplain,
+} from "../src/commands/explain.js";
 import { RULES } from "../src/rules/index.js";
 import { runExplainCommand } from "../src/cli.js";
 
@@ -124,9 +128,35 @@ describe("runExplainCommand (CLI handler)", () => {
     expect(code).toBe(10);
   });
 
+  it("degrades honestly when the fixtures root has no fixture for the rule", () => {
+    const result = explainRule(
+      "QA-TEST-001",
+      join(FIXTURES_ROOT, "..", "..", "src"),
+    );
+    expect(result.ok).toBe(true);
+    expect(result.rule?.id).toBe("QA-TEST-001");
+    expect(result.exampleFinding).toBeUndefined();
+    const text = renderExplain(result);
+    expect(text).toContain("No example available");
+    expect(text).toContain("HOW TO VERIFY THE FIX");
+  });
+
+  it("renderExplain reports the failure when given a not-ok result", () => {
+    expect(renderExplain({ ok: false, error: "boom" })).toContain(
+      "explain failed: boom",
+    );
+    expect(renderExplain({ ok: false })).toContain("unknown error");
+  });
+
+  it("allRuleIds returns every registered rule ID", () => {
+    const ids = allRuleIds();
+    expect(ids).toHaveLength(RULES.length);
+    expect(new Set(ids)).toEqual(new Set(RULES.map((r) => r.id)));
+  });
+
   it("defaults to <cwd>/tests/fixtures when --fixtures-root is omitted", () => {
     // Run from this repo's own root implicitly via process.cwd() — the
-    // test runner's cwd during `npm test` is the qa-doctor repo root.
+    // test runner's cwd during `npm test` is the mjolnir repo root.
     let out = "";
     const code = runExplainCommand(["QA-TEST-004"], {
       out: (s) => (out += s),
