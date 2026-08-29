@@ -26,14 +26,14 @@ npx mjolnir-qa@latest
 
 ## 🔨 What is Mjölnir?
 
-|     |                                                                                                                |
-| --- | -------------------------------------------------------------------------------------------------------------- |
-| ⚖️  | **Worthiness Score** — one number, transparent deduction table, no black box                                   |
-| 🎭  | **Selector Health Score** — grades your Playwright locators, not just your pass rate                           |
-| 🔬  | **Runtime forensics** — reads real Playwright/JUnit run data to catch `TRUE-FLAKE`, not just static guesses    |
-| 🚨  | **CI-integrity rules** — catches `continue-on-error`, `\|\| true`, and other false-green tricks                |
-| 🐍  | **Multi-language** — TypeScript/Playwright, Python/pytest, Java, and C#/.NET today, one adapter away from more |
-| 🔒  | **Local-first** — zero network calls while scanning, zero telemetry, runs in seconds                           |
+|     |                                                                                                                   |
+| --- | ----------------------------------------------------------------------------------------------------------------- |
+| ⚖️  | **Worthiness Score** — one number, transparent deduction table, no black box                                      |
+| 🎭  | **Selector Health Score** — grades your Playwright locators, not just your pass rate                              |
+| 🔬  | **Runtime forensics** — reads real Playwright/JUnit run data to catch `TRUE-FLAKE`, not just static guesses       |
+| 🚨  | **CI-integrity rules** — catches `continue-on-error`, `\|\| true`, and other false-green tricks                   |
+| 🐍  | **All four Playwright bindings** — TypeScript, Python, Java, C#/.NET — plus pytest, JUnit/TestNG and CI workflows |
+| 🔒  | **Local-first** — zero network calls while scanning, zero telemetry, runs in seconds                              |
 
 ---
 
@@ -427,7 +427,10 @@ mjolnir/
 
 </details>
 
-Multi-language by design: adding a language = one adapter + its rules.
+Multi-language by design: adding an ecosystem (Ruby/RSpec, Go, PHPUnit…) =
+one adapter + its rules. Playwright itself has exactly four official
+language bindings — TypeScript, Python, Java, .NET — and all four have an
+adapter here.
 TypeScript/Playwright uses the compiler AST (ts-morph); Python, Java, and
 C#/.NET run on a shared comment/string-masked regex layer. A tree-sitter
 WASM AST layer for Java and C# exists (`src/engine/tree-sitter-ast.ts`) and
