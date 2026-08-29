@@ -1,0 +1,16 @@
+{"ruleId":"QA-PW-119","file":"packages/astro/e2e/actions-blog.test.ts","line":10,"verdict":"","note":""}
+{"ruleId":"QA-PW-119","file":"packages/astro/e2e/actions-react-19.test.ts","line":10,"verdict":"","note":""}
+{"ruleId":"QA-PW-119","file":"packages/astro/e2e/astro-component.test.ts","line":9,"verdict":"","note":""}
+{"ruleId":"QA-PW-119","file":"packages/astro/e2e/astro-envs.test.ts","line":22,"verdict":"","note":""}
+{"ruleId":"QA-PW-119","file":"packages/astro/e2e/client-idle-timeout.test.ts","line":9,"verdict":"","note":""}
+{"ruleId":"QA-PW-119","file":"packages/astro/e2e/client-only.test.ts","line":9,"verdict":"","note":""}
+{"ruleId":"QA-PW-119","file":"packages/astro/e2e/cloudflare-node-prerender-hmr.test.ts","line":14,"verdict":"","note":""}
+{"ruleId":"QA-PW-005","file":"packages/astro/e2e/prefetch.test.ts","line":358,"verdict":"","note":""}
+{"ruleId":"QA-PW-005","file":"packages/astro/e2e/view-transitions.test.ts","line":49,"verdict":"","note":""}
+{"ruleId":"QA-PW-005","file":"packages/astro/e2e/view-transitions.test.ts","line":735,"verdict":"","note":""}
+{"ruleId":"QA-PW-115","file":"packages/astro/test/units/app/encoded-backslash-bypass.test.ts","line":32,"verdict":"","note":""}
+{"ruleId":"QA-PW-115","file":"packages/astro/test/units/app/malformed-uri.test.ts","line":28,"verdict":"","note":""}
+{"ruleId":"QA-PW-115","file":"packages/astro/test/units/hono/index.test.ts","line":10,"verdict":"","note":""}
+{"ruleId":"QA-TEST-010","file":"packages/astro/test/units/routing/routing-app.test.ts","line":213,"verdict":"","note":""}
+{"ruleId":"QA-TEST-010","file":"packages/astro/test/units/routing/routing-app.test.ts","line":255,"verdict":"","note":""}
+{"ruleId":"QA-TEST-010","file":"packages/integrations/node/test/static-headers.test.ts","line":51,"verdict":"","note":""}

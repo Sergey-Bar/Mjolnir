@@ -2,9 +2,10 @@
   "countsByRule": {
     "QA-PY-004": 45,
     "QA-PY-007": 20,
+    "QA-PY-003": 14,
     "QA-PY-002": 1,
     "QA-ENV-001": 13,
     "QA-PY-010": 1
   },
-  "totalFindings": 80
+  "totalFindings": 94
 }

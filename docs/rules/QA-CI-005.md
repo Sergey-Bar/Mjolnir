@@ -41,9 +41,10 @@ Verified against `tests/fixtures/QA-CI-005/must-not-fire/with-coverage.yml` — 
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo              | Occurrences |
-| ----------------- | ----------- |
-| pytest-dev-pytest | 2           |
+| Repo                 | Occurrences |
+| -------------------- | ----------- |
+| nextauthjs-next-auth | 2           |
+| pytest-dev-pytest    | 2           |
 
 ---
 

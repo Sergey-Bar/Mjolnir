@@ -39,7 +39,13 @@ Verified against `tests/fixtures/QA-PW-118/must-not-fire/clean.spec.ts` — a le
 
 ## Corpus-measured false-positive risk
 
-UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked by `npm run corpus:regression` (see `docs/FP-AUDIT.md`). That is not the same as "never fires incorrectly" — it just means no occurrence, correct or not, has been observed there yet.
+Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
+
+| Repo                                          | Occurrences |
+| --------------------------------------------- | ----------- |
+| playwright-community-eslint-plugin-playwright | 3           |
+| sveltejs-kit                                  | 20          |
+| withastro-astro                               | 6           |
 
 ---
 

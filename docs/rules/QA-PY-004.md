@@ -41,11 +41,12 @@ Verified against `tests/fixtures/QA-PY-004/must-not-fire/specific-asserts.py` â€
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos â€” reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo              | Occurrences |
-| ----------------- | ----------- |
-| pallets-click     | 45          |
-| psf-requests      | 35          |
-| pytest-dev-pytest | 393         |
+| Repo                        | Occurrences |
+| --------------------------- | ----------- |
+| microsoft-playwright-pytest | 9           |
+| pallets-click               | 45          |
+| psf-requests                | 35          |
+| pytest-dev-pytest           | 393         |
 
 ---
 

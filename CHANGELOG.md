@@ -27,6 +27,14 @@ once shipped, so this file is the record of what changed between versions.
   `npm run fp-audit:generate`, drift-locked by a test, and now the single
   source `mjolnir doctor` reads.
 - Scoring is unchanged — this is visibility only.
+- **Corpus expanded 6 → 13 repos** so the previously-silent rule families
+  (QA-TEST, QA-TQUAL, most QA-PW, QA-CI-001) fire on real consumer code:
+  added `next-auth`, `vite`, `sveltekit`, `astro`, `TanStack/query`,
+  `eslint-plugin-playwright`, `playwright-pytest`. `corpus:sample` and
+  `corpus:regression` now scan with `--strict` (quarantine rules were
+  invisible to both before). `docs/FP-AUDIT.md` is still 19/91 — the ~250
+  new corpus findings are queued for classification in
+  `tests/corpus/verdicts/`, not counted until read.
 
 ### Changed — help and README lead with the one command
 

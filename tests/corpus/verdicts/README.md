@@ -1,41 +1,47 @@
 # Corpus Verdicts (Phase 3 — Tempering Plan)
 
-> **Status: empty. Zero rules currently carry a measured FP rate.**
+> **Status (2026-08-29): 381 classified · 19 of 91 rules measured at n ≥ 10.**
 >
-> This directory previously held 49 entries across `pallets-click.jsonl` and
-> `pytest-dev-pytest.jsonl`. They were deleted deliberately: they had been
-> produced by reasoning about what each rule's description implied, not by
-> reading the source at the cited file and line. That is fabricated evidence
-> with a real-looking provenance — precisely the failure this phase exists to
-> eliminate, reproduced inside the mechanism built to eliminate it.
+> An earlier revision of this directory held 49 entries produced by _reasoning
+> about what a rule's description implied_ rather than by reading the source at
+> the cited file:line — fabricated evidence with a real-looking provenance. All
+> 49 were deleted. The 381 entries here now were each classified by opening the
+> file and reading the code.
 >
-> `docs/FP-AUDIT.md` therefore reports 0 classified verdicts. An empty
-> measurement is honest; a populated one built on inference is not.
+> The corpus was expanded from 6 to 13 repos on 2026-08-29 to make the
+> previously-silent rule families (QA-TEST, QA-TQUAL, most QA-PW, QA-CI-001)
+> fire on real consumer code. That added review sheets for ~60 rules and ~250
+> new findings across 7 repos, **all currently unclassified** — see the
+> per-file counts below. `docs/FP-AUDIT.md` will not move until they are read
+> and judged.
 
-## Why the confirmed false positives are not recorded here
+## The unclassified backlog
 
-Several false positives were confirmed during the 0.5.0 fix pass by opening the
-cited file and reading the code — genuine provenance, unlike the deleted
-entries. They are still not stored as verdicts, for a specific reason.
+`tests/corpus/verdicts/*.jsonl` files for the 2026-08-29 repos
+(`nextauthjs-next-auth`, `vitejs-vite`, `sveltejs-kit`, `withastro-astro`,
+`tanstack-query`, `playwright-community-eslint-plugin-playwright`,
+`microsoft-playwright-pytest`) contain entries with `verdict: ""`. Each is one
+real finding waiting for a human to read
+`tests/corpus/review/<RULE-ID>.md` and call it TP / FP / UNSURE. Classifying
+this backlog is the single highest-leverage task on the project: it takes the
+measured-rule count from 19 toward ~50.
 
-Those findings were observed **before** the rules were fixed, and they no longer
-fire. Recording them here would make the generator compute a 100% FP rate for a
-rule that has since been corrected — corrupting the metric in the opposite
-direction from the original fabrication, but corrupting it just the same.
+**One deliberate landmine to check first:** `QA-TEST-004` fires >1600 times on
+`tanstack-query`. Read those samples carefully — it is either a real hard-sleep
+habit in that codebase or a masking gap in the rule.
 
-They live in two places instead:
+## Why the 0.5.0-era confirmed false positives are not recorded here
 
-- **`tests/fixtures/<RULE-ID>/must-not-fire/`** — an executable lock. If the
-  class returns, a test fails.
-- **`CHANGELOG.md`** under 0.5.0 — the audit trail, with the file and line that
-  was read for each one.
+Several FPs were confirmed during the 0.5.0 fix pass by reading the cited code —
+genuine provenance. They are still not stored as verdicts: those findings were
+observed **before** the rules were fixed and no longer fire, so recording them
+would make the generator compute a 100% FP rate for a rule that has since been
+corrected. They live in `tests/fixtures/<RULE-ID>/must-not-fire/` (an
+executable lock) and in `CHANGELOG.md` under 0.5.0 (the audit trail).
 
-FP-rate coverage requires classifying findings produced by the **current**
-engine. That means a fresh `corpus:regression:update` followed by
-`corpus:sample`, then classification against real source.
+## Format
 
-Human-classified verdicts for corpus findings. Each `.jsonl` file
-corresponds to one corpus repo and contains one JSON object per line:
+Each `.jsonl` file corresponds to one corpus repo, one JSON object per line:
 
 ```json
 {"ruleId":"QA-PY-003","file":"tests/test_basic.py","line":42,"verdict":"TP","note":"genuinely assertion-less test"}

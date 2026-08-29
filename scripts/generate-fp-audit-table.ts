@@ -55,6 +55,34 @@ const CORPUS_NOTES: Record<string, { url: string; note: string }> = {
     url: "https://github.com/microsoft/playwright-dotnet.git",
     note: "real Playwright .NET test suite — C# adapter FP surface (same library-suite caveat)",
   },
+  "nextauthjs-next-auth": {
+    url: "https://github.com/nextauthjs/next-auth.git",
+    note: "real TS app with Playwright e2e + substantial GitHub Actions — first non-trivial QA-CI-001 surface",
+  },
+  "vitejs-vite": {
+    url: "https://github.com/vitejs/vite.git",
+    note: "large real Playwright/Vitest suite — broad QA-PW + QA-TQUAL surface",
+  },
+  "sveltejs-kit": {
+    url: "https://github.com/sveltejs/kit.git",
+    note: "large real Playwright suite — QA-PW isolation/timing rules at scale",
+  },
+  "withastro-astro": {
+    url: "https://github.com/withastro/astro.git",
+    note: "large real Playwright suite — QA-PW text-coupling / viewport / empty-body",
+  },
+  "tanstack-query": {
+    url: "https://github.com/TanStack/query.git",
+    note: "real TS monorepo — QA-PW-112 sample growth; QA-TEST-004 fires >1600× here (classify carefully)",
+  },
+  "playwright-community-eslint-plugin-playwright": {
+    url: "https://github.com/playwright-community/eslint-plugin-playwright.git",
+    note: "small real Playwright-rules repo — compact QA-PW / QA-TQUAL surface, fast clone",
+  },
+  "microsoft-playwright-pytest": {
+    url: "https://github.com/microsoft/playwright-pytest.git",
+    note: "tiny real pytest-playwright repo — QA-PY-104 and QA-PW-103 on the Python adapter",
+  },
 };
 
 export interface FpAuditBaseline {

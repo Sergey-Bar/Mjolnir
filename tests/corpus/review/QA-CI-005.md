@@ -1,6 +1,6 @@
 # QA-CI-005 — Sample Findings for Classification
 
-Total sampled: 2 (max 20 per rule)
+Total sampled: 4 (max 20 per rule)
 
 Classify each finding as:
 
@@ -48,6 +48,50 @@ Classify each finding as:
      313|       with:
      314|         fail_ci_if_error: false
      315|         files: ./coverage.xml
+```
+
+**verdict:**
+
+---
+
+## 3. nextauthjs-next-auth — .github/workflows/release.yml:129
+
+**Message:** Job `test` consumes a coverage artifact that no step generates.
+
+```
+     124|         name: Upload Playwright artifacts
+     125|         with:
+     126|           name: playwright-traces
+     127|           path: "**/packages/next-auth/test-results/*/trace.zip"
+     128|           retention-days: 7
+>>>  129|       - uses: codecov/codecov-action@v4
+     130|         if: always()
+     131|         name: Coverage
+     132|         with:
+     133|           token: ${{ secrets.CODECOV_TOKEN }}
+     134|
+```
+
+**verdict:**
+
+---
+
+## 4. nextauthjs-next-auth — .github/workflows/release.yml:129
+
+**Message:** Job `test` consumes a coverage upload that no step generates.
+
+```
+     124|         name: Upload Playwright artifacts
+     125|         with:
+     126|           name: playwright-traces
+     127|           path: "**/packages/next-auth/test-results/*/trace.zip"
+     128|           retention-days: 7
+>>>  129|       - uses: codecov/codecov-action@v4
+     130|         if: always()
+     131|         name: Coverage
+     132|         with:
+     133|           token: ${{ secrets.CODECOV_TOKEN }}
+     134|
 ```
 
 **verdict:**

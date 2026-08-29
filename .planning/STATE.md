@@ -1135,6 +1135,34 @@ subcommands into Everyday / When-something's-flaky / Occasional instead of
 one flat list of equals. First-run hint on a bare full-repo scan with no
 config. No command removed or renamed.
 
+## Corpus expansion — 6 → 13 repos (2026-08-29)
+
+The measurement gap (19/91 rules measured) was gated on two things: too few
+corpus repos (only 34 of 91 rules fired anywhere) and manual classification
+hours. This addresses the first.
+
+- **Added** to `tests/corpus/audit.ts` `CORPUS`: `nextauthjs/next-auth`,
+  `vitejs/vite`, `sveltejs/kit`, `withastro/astro`, `TanStack/query`,
+  `playwright-community/eslint-plugin-playwright`, `microsoft/playwright-pytest`.
+  (`storybookjs/storybook` was tried and dropped — Windows `Filename too
+long` on checkout.)
+- `corpus-sample.ts` and `audit.ts` now scan with `strict: true` — without
+  it the ~12 quarantine-tier rules were invisible to both the review sheets
+  and the count-lock, so a re-run silently deleted their review sheets.
+- `corpus-sample.ts` stopped redefining its own copy of `CORPUS` (imports
+  from `audit.ts` now) and runs prettier on the review sheets.
+- **Committed:** 13 count-lock baselines, review sheets for ~60 rules, and
+  empty-verdict `.jsonl` stubs for the 7 new repos (~250 findings). The 6
+  existing baselines grew only by quarantine-rule counts the strict flag
+  now surfaces — no FP regression.
+
+**`docs/FP-AUDIT.md` is unchanged — still 19/91.** No new verdict is
+classified yet. Next step is human classification of the ~250-finding
+backlog in `tests/corpus/verdicts/*.jsonl`: read
+`tests/corpus/review/<RULE-ID>.md`, fill `verdict`, run
+`npm run fp-audit:generate`. Start with `QA-TEST-004` on `tanstack-query`
+(fires >1600× there — real habit or masking gap?).
+
 ## Conventions
 
 - User communicates in Hebrew; artifacts in English.

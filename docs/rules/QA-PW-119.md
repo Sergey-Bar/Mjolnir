@@ -39,7 +39,14 @@ Verified against `tests/fixtures/QA-PW-119/must-not-fire/independent.spec.ts` �
 
 ## Corpus-measured false-positive risk
 
-UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked by `npm run corpus:regression` (see `docs/FP-AUDIT.md`). That is not the same as "never fires incorrectly" — it just means no occurrence, correct or not, has been observed there yet.
+Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
+
+| Repo                 | Occurrences |
+| -------------------- | ----------- |
+| nextauthjs-next-auth | 6           |
+| sveltejs-kit         | 4           |
+| vitejs-vite          | 3           |
+| withastro-astro      | 45          |
 
 ---
 

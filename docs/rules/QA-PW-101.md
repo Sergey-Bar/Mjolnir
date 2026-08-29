@@ -44,6 +44,9 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | Repo                      | Occurrences |
 | ------------------------- | ----------- |
 | microsoft-playwright-java | 40          |
+| nextauthjs-next-auth      | 4           |
+| sveltejs-kit              | 62          |
+| withastro-astro           | 4           |
 
 ---
 

@@ -63,8 +63,8 @@ Classify each finding as:
      675|         getmsg(f11, must_pass=True)
      676|
      677|     def test_short_circuit_evaluation(self) -> None:
-     678|         def f1() -> None:
->>>  679|             assert True or explode  # type: ignore[name-defined,unreachable] # noqa: F821
+     678|         def f1() -> None:  # pragma: no cover
+>>>  679|             assert True or explode  # type: ignore[name-defined,unreachable] # noqa: F821,SIM222
      680|
      681|         getmsg(f1, must_pass=True)
      682|

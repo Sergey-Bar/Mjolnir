@@ -1,6 +1,6 @@
 # QA-PW-112 — Sample Findings for Classification
 
-Total sampled: 16 (max 20 per rule)
+Total sampled: 20 (max 20 per rule)
 
 Classify each finding as:
 
@@ -353,6 +353,94 @@ Classify each finding as:
       60|   }
       61| }
       62|
+```
+
+**verdict:**
+
+---
+
+## 17. tanstack-query — packages/preact-query/src/**tests**/useQueries.test.tsx:1184
+
+**Message:** test id `fetchStatus1` violates kebab-case convention.
+
+```
+    1179|
+    1180|     await vi.advanceTimersByTimeAsync(0)
+    1181|
+    1182|     expect(rendered.getByTestId('status1')).toHaveTextContent('pending')
+    1183|     expect(rendered.getByTestId('status2')).toHaveTextContent('pending')
+>>> 1184|     expect(rendered.getByTestId('fetchStatus1')).toHaveTextContent('idle')
+    1185|     expect(rendered.getByTestId('fetchStatus2')).toHaveTextContent('idle')
+    1186|     expect(rendered.getByTestId('data1')).toHaveTextContent('undefined')
+    1187|     expect(rendered.getByTestId('data2')).toHaveTextContent('undefined')
+    1188|     expect(queryFn1).toHaveBeenCalledTimes(0)
+    1189|     expect(queryFn2).toHaveBeenCalledTimes(0)
+```
+
+**verdict:**
+
+---
+
+## 18. tanstack-query — packages/preact-query/src/**tests**/useQueries.test.tsx:1185
+
+**Message:** test id `fetchStatus2` violates kebab-case convention.
+
+```
+    1180|     await vi.advanceTimersByTimeAsync(0)
+    1181|
+    1182|     expect(rendered.getByTestId('status1')).toHaveTextContent('pending')
+    1183|     expect(rendered.getByTestId('status2')).toHaveTextContent('pending')
+    1184|     expect(rendered.getByTestId('fetchStatus1')).toHaveTextContent('idle')
+>>> 1185|     expect(rendered.getByTestId('fetchStatus2')).toHaveTextContent('idle')
+    1186|     expect(rendered.getByTestId('data1')).toHaveTextContent('undefined')
+    1187|     expect(rendered.getByTestId('data2')).toHaveTextContent('undefined')
+    1188|     expect(queryFn1).toHaveBeenCalledTimes(0)
+    1189|     expect(queryFn2).toHaveBeenCalledTimes(0)
+    1190|
+```
+
+**verdict:**
+
+---
+
+## 19. tanstack-query — packages/preact-query/src/**tests**/useQueries.test.tsx:1195
+
+**Message:** test id `fetchStatus1` violates kebab-case convention.
+
+```
+    1190|
+    1191|     await vi.advanceTimersByTimeAsync(11)
+    1192|
+    1193|     expect(rendered.getByTestId('status1')).toHaveTextContent('pending')
+    1194|     expect(rendered.getByTestId('status2')).toHaveTextContent('pending')
+>>> 1195|     expect(rendered.getByTestId('fetchStatus1')).toHaveTextContent('idle')
+    1196|     expect(rendered.getByTestId('fetchStatus2')).toHaveTextContent('idle')
+    1197|     expect(rendered.getByTestId('data1')).toHaveTextContent('undefined')
+    1198|     expect(rendered.getByTestId('data2')).toHaveTextContent('undefined')
+    1199|     expect(queryFn1).toHaveBeenCalledTimes(0)
+    1200|     expect(queryFn2).toHaveBeenCalledTimes(0)
+```
+
+**verdict:**
+
+---
+
+## 20. tanstack-query — packages/preact-query/src/**tests**/useQueries.test.tsx:1196
+
+**Message:** test id `fetchStatus2` violates kebab-case convention.
+
+```
+    1191|     await vi.advanceTimersByTimeAsync(11)
+    1192|
+    1193|     expect(rendered.getByTestId('status1')).toHaveTextContent('pending')
+    1194|     expect(rendered.getByTestId('status2')).toHaveTextContent('pending')
+    1195|     expect(rendered.getByTestId('fetchStatus1')).toHaveTextContent('idle')
+>>> 1196|     expect(rendered.getByTestId('fetchStatus2')).toHaveTextContent('idle')
+    1197|     expect(rendered.getByTestId('data1')).toHaveTextContent('undefined')
+    1198|     expect(rendered.getByTestId('data2')).toHaveTextContent('undefined')
+    1199|     expect(queryFn1).toHaveBeenCalledTimes(0)
+    1200|     expect(queryFn2).toHaveBeenCalledTimes(0)
+    1201|   })
 ```
 
 **verdict:**

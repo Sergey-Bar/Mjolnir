@@ -12,6 +12,9 @@ on:
 jobs:
   corpus-regression:
     runs-on: ubuntu-latest
+    # 13 shallow clones + a full scan each; a hung clone must not sit for
+    # the default 6 hours.
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

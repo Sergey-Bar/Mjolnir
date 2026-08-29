@@ -84,6 +84,45 @@ export const CORPUS: CorpusRepo[] = [
     url: "https://github.com/microsoft/playwright-dotnet.git",
     note: "real Playwright .NET test suite — C# adapter FP surface (QA-CS-101..111). Same library-suite caveat as microsoft-playwright-java above.",
   },
+
+  // ── 2026-08-29 expansion — chosen so the previously-silent rule
+  //    families (QA-TEST, QA-TQUAL, most QA-PW, QA-CI-001) fire on real
+  //    consumer code, not just on Microsoft's own binding suites.
+  {
+    name: "nextauthjs-next-auth",
+    url: "https://github.com/nextauthjs/next-auth.git",
+    note: "real TS monorepo with Playwright e2e + substantial GitHub Actions — first non-trivial QA-CI-001 surface (masked verification gate), plus QA-PW-101/103/123 and QA-ENV-001.",
+  },
+  {
+    name: "vitejs-vite",
+    url: "https://github.com/vitejs/vite.git",
+    note: "large real Playwright/Vitest suite — broad QA-PW surface (QA-PW-004/102/105/114/120/145) and QA-TQUAL-009 (unawaited promise assertion).",
+  },
+  {
+    name: "sveltejs-kit",
+    url: "https://github.com/sveltejs/kit.git",
+    note: "large real Playwright suite — QA-PW-002/005/101/102/108/117/118 plus QA-TEST-004 at scale (a good stress test for the hard-sleep masking).",
+  },
+  {
+    name: "withastro-astro",
+    url: "https://github.com/withastro/astro.git",
+    note: "large real Playwright suite — QA-PW-107/108/115/118/120 and QA-TEST-010 (empty test body).",
+  },
+  {
+    name: "tanstack-query",
+    url: "https://github.com/TanStack/query.git",
+    note: "real TS monorepo — QA-PW-112 sample growth (a measured 0%-FP rule) and a deliberate red flag: QA-TEST-004 fires >1600 times here. Classify that rule against this repo carefully — it is either a real hard-sleep habit or a masking gap.",
+  },
+  {
+    name: "playwright-community-eslint-plugin-playwright",
+    url: "https://github.com/playwright-community/eslint-plugin-playwright.git",
+    note: "small real Playwright-rules repo — compact QA-PW-102/103/107/112/118/120 and QA-TQUAL-001/011 surface; fast clone.",
+  },
+  {
+    name: "microsoft-playwright-pytest",
+    url: "https://github.com/microsoft/playwright-pytest.git",
+    note: "tiny real pytest-playwright repo — QA-PY-104 (brittle selectors) and QA-PW-103 on the Python adapter; the only Playwright-Python corpus source so far.",
+  },
 ];
 
 interface BaselineEntry {
@@ -113,6 +152,10 @@ function scanRepo(dir: string): BaselineEntry {
     maxDurationMs: 60_000,
     scopeChanged: false,
     format: "json",
+    // Include quarantine-tier rules — they are exactly the ones whose
+    // real-world FP rate matters most, and the count-lock should notice
+    // if one starts firing even harder.
+    strict: true,
   });
   const countsByRule: Record<string, number> = {};
   for (const f of result.findings) {
@@ -197,7 +240,13 @@ function main(): number {
     if (update) writeBaseline(repo.name, current);
   }
 
-  rmSync(CACHE_DIR, { recursive: true, force: true });
+  // Best-effort — .cache is gitignored, and on Windows a just-cloned pack
+  // file can stay locked for a moment after git exits.
+  try {
+    rmSync(CACHE_DIR, { recursive: true, force: true });
+  } catch {
+    /* stale .cache is harmless */
+  }
 
   if (update) {
     console.log("\nBaseline updated.");

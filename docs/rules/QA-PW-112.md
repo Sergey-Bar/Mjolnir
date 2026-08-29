@@ -41,9 +41,11 @@ Verified against `tests/fixtures/QA-PW-112/must-not-fire/clean.spec.ts` — a le
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo                      | Occurrences |
-| ------------------------- | ----------- |
-| microsoft-playwright-java | 16          |
+| Repo                                          | Occurrences |
+| --------------------------------------------- | ----------- |
+| microsoft-playwright-java                     | 16          |
+| playwright-community-eslint-plugin-playwright | 1           |
+| tanstack-query                                | 125         |
 
 ---
 

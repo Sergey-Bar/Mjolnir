@@ -1,6 +1,6 @@
 # QA-PW-004 — Sample Findings for Classification
 
-Total sampled: 8 (max 20 per rule)
+Total sampled: 9 (max 20 per rule)
 
 Classify each finding as:
 
@@ -179,6 +179,28 @@ Classify each finding as:
      190|     assertEquals("<div><span>world</span></div>", removeHighlight((String) page.locator("div", new Page.LocatorOptions().setHas(
      191|       page.locator("span", new Page.LocatorOptions().setHasText("wor")))).evaluate("e => e.outerHTML")));
      192|     assertThat(page.locator("div", new Page.LocatorOptions()
+```
+
+**verdict:**
+
+---
+
+## 9. vitejs-vite — playground/backend-integration/**tests**/backend-integration.spec.ts:29
+
+**Message:** Brittle multi-class CSS selector: `locator('.asset-reference.outside-root .asset-preview')`.
+
+```
+      24| describe('asset imports from js', () => {
+      25|   test('file outside root', async () => {
+      26|     // assert valid image src https://github.com/microsoft/playwright/issues/6046#issuecomment-1799585719
+      27|     await vi.waitUntil(() =>
+      28|       page
+>>>   29|         .locator('.asset-reference.outside-root .asset-preview')
+      30|         .evaluate((el: HTMLImageElement) => el.naturalWidth > 0),
+      31|     )
+      32|
+      33|     const text = await page.textContent(
+      34|       '.asset-reference.outside-root .asset-url',
 ```
 
 **verdict:**

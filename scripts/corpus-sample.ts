@@ -19,7 +19,7 @@
  * generator reads the verdicts, not the review sheets.
  */
 
-import { execFileSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 import {
   existsSync,
   mkdirSync,
@@ -32,6 +32,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { runScan } from "../src/cli.js";
+// Single source of truth for the corpus — do NOT redefine it here.
+import { CORPUS, type CorpusRepo } from "../tests/corpus/audit.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..");
@@ -41,46 +43,6 @@ const VERDICTS_DIR = join(ROOT, "tests", "corpus", "verdicts");
 
 const MAX_SAMPLES_PER_RULE = 20;
 const CONTEXT_LINES = 5; // lines above and below the finding
-
-interface CorpusRepo {
-  name: string;
-  url: string;
-  note: string;
-}
-
-// Import the CORPUS list from the audit module
-const CORPUS: CorpusRepo[] = [
-  {
-    name: "pallets-click",
-    url: "https://github.com/pallets/click.git",
-    note: "real pytest suite — Python adapter FP surface",
-  },
-  {
-    name: "microsoft-playwright-mcp",
-    url: "https://github.com/microsoft/playwright-mcp.git",
-    note: "real Playwright + GitHub Actions — TS/PW/CI adapter FP surface",
-  },
-  {
-    name: "pytest-dev-pytest",
-    url: "https://github.com/pytest-dev/pytest.git",
-    note: "large real pytest suite — Python adapter FP surface",
-  },
-  {
-    name: "psf-requests",
-    url: "https://github.com/psf/requests.git",
-    note: "small real pytest suite — Python adapter FP surface",
-  },
-  {
-    name: "microsoft-playwright-java",
-    url: "https://github.com/microsoft/playwright-java.git",
-    note: "real Playwright Java test suite — Java adapter FP surface",
-  },
-  {
-    name: "microsoft-playwright-dotnet",
-    url: "https://github.com/microsoft/playwright-dotnet.git",
-    note: "real Playwright .NET test suite — C# adapter FP surface",
-  },
-];
 
 interface SampledFinding {
   repo: string;
@@ -141,6 +103,10 @@ function scanAndSample(): Map<string, SampledFinding[]> {
       maxDurationMs: 60_000,
       scopeChanged: false,
       format: "json",
+      // --strict: sample quarantine-tier rules too. Without this, every
+      // re-run silently deletes the review sheets for the ~12 quarantined
+      // rules — the ones we most need to keep watching.
+      strict: true,
     });
 
     for (const finding of result.findings) {
@@ -247,7 +213,9 @@ function initVerdictFiles(byRule: Map<string, SampledFinding[]>): void {
 
 function main(): void {
   console.log("Corpus sample generator — Phase 3 (Tempering Plan)");
-  console.log("Drawing up to 20 findings per rule from 6 corpus repos...\n");
+  console.log(
+    `Drawing up to ${MAX_SAMPLES_PER_RULE} findings per rule from ${CORPUS.length} corpus repos...\n`,
+  );
 
   const byRule = scanAndSample();
 
@@ -257,8 +225,25 @@ function main(): void {
   console.log(`\n=== Initializing verdict files ===`);
   initVerdictFiles(byRule);
 
-  // Cleanup cache
-  rmSync(CACHE_DIR, { recursive: true, force: true });
+  // Keep the generated review sheets prettier-clean so `npm run lint`
+  // (prettier --check) passes — same discipline as the other generators.
+  try {
+    execSync(`npx prettier --write "${REVIEW_DIR}"`, {
+      cwd: ROOT,
+      stdio: "ignore",
+    });
+  } catch {
+    console.warn("prettier formatting of review sheets skipped");
+  }
+
+  // Cleanup cache — best-effort. On Windows a git pack file can stay
+  // locked briefly after the clone process exits; the dir is gitignored,
+  // so a stale .cache is harmless, not worth crashing a completed run.
+  try {
+    rmSync(CACHE_DIR, { recursive: true, force: true });
+  } catch {
+    console.warn(`(could not remove ${CACHE_DIR} — safe to delete manually)`);
+  }
 
   const totalRules = byRule.size;
   const totalSamples = [...byRule.values()].reduce(

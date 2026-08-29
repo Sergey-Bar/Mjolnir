@@ -45,9 +45,14 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | --------------------------- | ----------- |
 | microsoft-playwright-dotnet | 55          |
 | microsoft-playwright-java   | 27          |
+| microsoft-playwright-pytest | 2           |
+| nextauthjs-next-auth        | 29          |
 | pallets-click               | 13          |
 | psf-requests                | 4           |
 | pytest-dev-pytest           | 4           |
+| sveltejs-kit                | 28          |
+| vitejs-vite                 | 32          |
+| withastro-astro             | 151         |
 
 ---
 

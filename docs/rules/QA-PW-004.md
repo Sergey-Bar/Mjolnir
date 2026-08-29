@@ -44,6 +44,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | Repo                      | Occurrences |
 | ------------------------- | ----------- |
 | microsoft-playwright-java | 8           |
+| vitejs-vite               | 1           |
 
 ---
 
