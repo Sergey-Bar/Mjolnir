@@ -1,7 +1,6 @@
 {
   "countsByRule": {
-    "QA-PW-120": 1,
-    "QA-PW-103": 2
+    "QA-PW-120": 1
   },
-  "totalFindings": 3
+  "totalFindings": 1
 }

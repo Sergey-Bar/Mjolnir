@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | warning                      |
 | Confidence                            | medium                       |
 | Tier                                  | quarantine                   |
-| Measured FP rate                      | 100% (n=20)                  |
+| Measured FP rate                      | not yet measured             |
 | Evidence level                        | E1                           |
 | QA impact                             | Flaky-test risk (FLAKY-RISK) |
 | False-positive risk (author estimate) | medium                       |
@@ -43,13 +43,8 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo                        | Occurrences |
 | --------------------------- | ----------- |
-| microsoft-playwright-dotnet | 55          |
-| microsoft-playwright-java   | 27          |
-| microsoft-playwright-pytest | 2           |
+| microsoft-playwright-dotnet | 10          |
 | nextauthjs-next-auth        | 29          |
-| pallets-click               | 13          |
-| psf-requests                | 4           |
-| pytest-dev-pytest           | 4           |
 | sveltejs-kit                | 28          |
 | vitejs-vite                 | 32          |
 | withastro-astro             | 151         |

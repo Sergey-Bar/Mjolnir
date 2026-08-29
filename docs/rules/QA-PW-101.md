@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | error                        |
 | Confidence                            | high                         |
 | Tier                                  | core                         |
-| Measured FP rate                      | 10% (n=20)                   |
+| Measured FP rate                      | not yet measured             |
 | Evidence level                        | E2                           |
 | QA impact                             | Flaky-test risk (FLAKY-RISK) |
 | False-positive risk (author estimate) | low                          |
@@ -41,12 +41,11 @@ Verified against `tests/fixtures/QA-PW-101/must-not-fire/clean.spec.ts` — a le
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo                      | Occurrences |
-| ------------------------- | ----------- |
-| microsoft-playwright-java | 40          |
-| nextauthjs-next-auth      | 4           |
-| sveltejs-kit              | 62          |
-| withastro-astro           | 4           |
+| Repo                 | Occurrences |
+| -------------------- | ----------- |
+| nextauthjs-next-auth | 4           |
+| sveltejs-kit         | 62          |
+| withastro-astro      | 4           |
 
 ---
 

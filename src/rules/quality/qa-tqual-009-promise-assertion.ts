@@ -39,40 +39,59 @@ export const unawaitedPromiseAssertion = defineRule({
     const thenRe = /\.then\s*\(/g;
     let m: RegExpExecArray | null;
     while ((m = thenRe.exec(text)) !== null) {
+      // The `.then(` argument list — bound every check to it so an arrow
+      // with an expression body (`.then(r => expect(r).toBe(1))`) or a
+      // sibling `.then(res => res.text())` never reaches into an
+      // unrelated `{ … }` further down the file.
+      const argsOpen = m.index + m[0].length - 1; // index of the '('
+      const argsClose = matchParen(text, argsOpen);
+      if (argsClose === -1) continue;
+      const callbackText = text.slice(argsOpen + 1, argsClose);
+
+      // An assertion has to be a real `expect(...)` / `assert...` call in
+      // THIS callback — `res.text()` and `.map(...)` no longer count.
+      if (!/\bexpect\s*\(|\bassert(?:\.\w+)?\s*\(/.test(callbackText)) continue;
+
       // Walk backwards over chained lines (`.method(...)` continuations)
       // to find the statement head, then check for await/return.
       let stmtStart = m.index;
       while (stmtStart > 0) {
         const lineStart = text.lastIndexOf("\n", stmtStart - 1) + 1;
-        const prevLine = text.slice(lineStart, stmtStart).trimEnd();
-        // Previous line ends with an operator or opening — chain continues upward.
-        if (
-          /(?:\.|\(|\[|,|:|=)$/.test(prevLine) ||
-          /^\s*\.\w/.test(
-            text.slice(stmtStart - (stmtStart - lineStart), stmtStart),
-          )
-        ) {
+        // Text on the current line up to where we are — for the first
+        // iteration this is everything before `.then`, e.g. `  await foo()`
+        // or, when the `.then` is on its own line, just indentation.
+        const curLineHead = text.slice(lineStart, stmtStart).trimEnd();
+        if (lineStart === 0) {
           stmtStart = lineStart;
-          // If that line itself starts with await/return, stop early.
-          if (/^\s*(?:await|return)\b/.test(prevLine)) break;
+          break;
+        }
+        const prevLineStart = text.lastIndexOf("\n", lineStart - 2) + 1;
+        const prevLine = text.slice(prevLineStart, lineStart - 1).trimEnd();
+        // Chain continues upward when either: this line's head is empty /
+        // starts with a `.` continuation, or the previous line ends with an
+        // operator / opening token.
+        if (
+          curLineHead === "" ||
+          /^\.\w/.test(curLineHead) ||
+          /(?:\.|\(|\[|,|:|=|&&|\|\|)$/.test(prevLine)
+        ) {
+          // Pull the previous line into the head so an `await` / `return`
+          // that sits one line above the `.then(` is still seen.
+          stmtStart = /^\s*(?:await|return)\b/.test(prevLine)
+            ? prevLineStart
+            : lineStart;
+          if (stmtStart === prevLineStart) break;
           continue;
         }
         stmtStart = lineStart;
         break;
       }
       const head = text.slice(stmtStart, m.index);
-      const awaited =
-        /(?:^|[^\w.])(?:await|return)\s/.test(head) ||
-        /^\s*(?:await|return)\b/.test(head);
+      // `await` / `return` anywhere in the chain head, including
+      // `await Promise.all(` / `const x = await foo()` wrapping the chain.
+      const awaited = /(?:^|[^\w.])(?:await|return)\s/.test(head);
 
-      // Find the callback body braces.
-      const openBrace = text.indexOf("{", m.index);
-      if (openBrace === -1) continue;
-      const closeBrace = matchBrace(text, openBrace);
-      if (closeBrace === -1) continue;
-
-      const body = text.slice(openBrace, closeBrace + 1);
-      if (/expect\s*\(/.test(body) && !awaited) {
+      if (!awaited) {
         findings.push({
           severity: "error",
           confidence: "high",
@@ -94,7 +113,8 @@ export const unawaitedPromiseAssertion = defineRule({
   },
 });
 
-function matchBrace(text: string, open: number): number {
+/** Index of the `)` matching the `(` at `open`, or -1. Skips strings. */
+function matchParen(text: string, open: number): number {
   let depth = 0;
   let inStr: string | null = null;
   for (let i = open; i < text.length; i++) {
@@ -105,8 +125,8 @@ function matchBrace(text: string, open: number): number {
       continue;
     }
     if (ch === '"' || ch === "'" || ch === "`") inStr = ch;
-    else if (ch === "{") depth++;
-    else if (ch === "}") {
+    else if (ch === "(") depth++;
+    else if (ch === ")") {
       depth--;
       if (depth === 0) return i;
     }

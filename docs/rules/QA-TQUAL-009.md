@@ -43,8 +43,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo           | Occurrences |
 | -------------- | ----------- |
-| tanstack-query | 29          |
-| vitejs-vite    | 2           |
+| tanstack-query | 1           |
 
 ---
 

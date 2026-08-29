@@ -1,12 +1,14 @@
 # Corpus Verdicts (Phase 3 — Tempering Plan)
 
-> **Status (2026-08-29): 381 classified · 19 of 91 rules measured at n ≥ 10.**
+> **Status (2026-08-29): 305 classified · 15 of 91 rules measured at n ≥ 10.**
 >
 > An earlier revision of this directory held 49 entries produced by _reasoning
 > about what a rule's description implied_ rather than by reading the source at
 > the cited file:line — fabricated evidence with a real-looking provenance. All
-> 49 were deleted. The 381 entries here now were each classified by opening the
-> file and reading the code.
+> 49 were deleted. The 305 entries here now were each classified by opening the
+> file and reading the code. (A further 90 were removed on 2026-08-29 when a
+> cross-language dispatch fix meant the rules they described no longer fire on
+> those repos — see rule 7 below.)
 >
 > The corpus was expanded from 6 to 13 repos on 2026-08-29 to make the
 > previously-silent rule families (QA-TEST, QA-TQUAL, most QA-PW, QA-CI-001)
@@ -24,11 +26,12 @@
 real finding waiting for a human to read
 `tests/corpus/review/<RULE-ID>.md` and call it TP / FP / UNSURE. Classifying
 this backlog is the single highest-leverage task on the project: it takes the
-measured-rule count from 19 toward ~50.
+measured-rule count from 15 toward ~50.
 
-**One deliberate landmine to check first:** `QA-TEST-004` fires >1600 times on
-`tanstack-query`. Read those samples carefully — it is either a real hard-sleep
-habit in that codebase or a masking gap in the rule.
+**One deliberate landmine to check first:** `QA-TEST-004` fires ~157 times on
+`tanstack-query` (was >1600 before the 2026-08-29 mock-latency fix). Read those
+samples carefully — it is either a real hard-sleep habit in that codebase or a
+remaining masking gap in the rule.
 
 ## Why the 0.5.0-era confirmed false positives are not recorded here
 
@@ -76,3 +79,8 @@ Each `.jsonl` file corresponds to one corpus repo, one JSON object per line:
 - Verdicts are immutable once committed — if a rule changes, re-sample and re-classify
 - Re-sample after any rule fix. Verdicts recorded against pre-fix behavior
   describe a rule that no longer exists.
+- **A verdict for a rule not in that repo's current
+  `tests/corpus/baseline/<repo>.json` is orphaned and must be removed** — the
+  rule fires zero times there, so the verdict measures nothing. This is how the
+  2026-08-29 dispatch fix retired 90 lines (QA-PW-101/112, QA-TEST-004,
+  QA-ENV-001, QA-PW-003/004 on Java/Python repos).

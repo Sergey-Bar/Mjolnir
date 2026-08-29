@@ -87,5 +87,3 @@
 {"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":907,"verdict":"","note":""}
 {"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":919,"verdict":"","note":""}
 {"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":990,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-009","file":"playground/ssr-html/__tests__/ssr-html.spec.ts","line":37,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-009","file":"playground/ssr-pug/__tests__/ssr-pug.spec.ts","line":32,"verdict":"","note":""}

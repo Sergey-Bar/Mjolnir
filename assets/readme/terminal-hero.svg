@@ -80,7 +80,7 @@
 
     <text x="30" y="943.5" xml:space="preserve"><tspan fill="#5C7A68">──────────────────────────────────────────────────────────</tspan></text>
     <text x="30" y="964.0" xml:space="preserve"><tspan fill="#EAFFF1">  Analysis: </tspan><tspan fill="#3CFF57">complete</tspan><tspan fill="#EAFFF1"> · a few ms</tspan></text>
-    <text x="30" y="984.5" xml:space="preserve"><tspan fill="#5C7A68">  Rule coverage: 2/4 rules that fired here have a measured false-positive rate; the rest are heuristics. `mjolnir rules --unmeasured` lists them.</tspan></text>
+    <text x="30" y="984.5" xml:space="preserve"><tspan fill="#5C7A68">  Rule coverage: 0/4 rules that fired here have a measured false-positive rate; the rest are heuristics. `mjolnir rules --unmeasured` lists them.</tspan></text>
 
     </g>
 

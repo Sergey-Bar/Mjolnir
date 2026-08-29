@@ -10,6 +10,10 @@ export default defineConfig({
       "**/dist/**",
       "tests/fixtures/**",
       "tests/golden/repo/**",
+      // Cloned OSS repos for the corpus audit — their own *.spec.ts are
+      // test DATA, never ours to run. Normally absent during `npm test`;
+      // this guards against a stale clone left by a killed audit run.
+      "tests/corpus/.cache/**",
     ],
     coverage: {
       provider: "v8",

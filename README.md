@@ -9,7 +9,7 @@ reports a worthiness score, and shows exactly where trust breaks.
 
 <sub>"We prove it" is literal for the deterministic findings — a committed `.only`,
 a `continue-on-error` on a test job. The pattern-based rules are labelled
-heuristic, and **19 of 91 carry a false-positive rate measured against real
+heuristic, and **15 of 91 carry a false-positive rate measured against real
 OSS code**; `mjolnir rules --unmeasured` names the rest. See
 [docs/FP-AUDIT.md](docs/FP-AUDIT.md).</sub>
 
@@ -193,13 +193,13 @@ Most rules are **E1** (heuristic). The tagline "we prove it" refers to this
 evidence-level system — deterministic findings (E2) are structural proof;
 heuristic findings (E1) are correctly-positioned warnings, not formal proofs.
 
-**How much of this is measured.** 19 of 91 rules carry a false-positive rate
+**How much of this is measured.** 15 of 91 rules carry a false-positive rate
 measured against real OSS code (≥ 10 hand-classified findings each; see
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). The other 72 ship on the author's
+[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). The other 76 ship on the author's
 estimate. Every scan footer tells you how many of the rules that _fired_ are
 measured; `mjolnir rules --unmeasured` lists the ones that aren't; every rule's
 `mjolnir explain` page states its status. We publish the rate even when it's
-ugly — QA-JV-103 audits at 50% and is quarantined for it. Growing that 19
+ugly — QA-JV-103 audits at 50% and is quarantined for it. Growing that 15
 is the project's main open work.
 
 ---
@@ -410,7 +410,7 @@ Or wire it into GitHub Code Scanning natively via SARIF:
 - **FP firewall** — detection runs on a comment/string-free view of the code
   (TypeScript rules use the compiler AST): a pattern inside a prose comment
   or a doc-example string is documentation, not a finding.
-- **Measured, not asserted** — 19 of 91 rules carry a false-positive rate from
+- **Measured, not asserted** — 15 of 91 rules carry a false-positive rate from
   real OSS code; the scan footer, `mjolnir rules --unmeasured`, and every
   `mjolnir explain` page tell you which rules are which.
   [docs/FP-AUDIT.md](docs/FP-AUDIT.md) has the numbers, ugly ones included.

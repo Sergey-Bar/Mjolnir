@@ -33,9 +33,22 @@ export function runRulesForFile(
   return out;
 }
 
-/** Legacy appliesTo → adapter id mapping. */
+/**
+ * Legacy appliesTo → adapter id mapping.
+ *
+ * `"test-files"` maps to the TypeScript adapter only. Every rule that
+ * declares `appliesTo: "test-files"` also declares
+ * `languages: ["typescript", "javascript"]` and its detection is JS/TS
+ * syntax (`it.only`, `page.locator`, `expect(...).toHaveText`, …). The
+ * previous mapping also included python/java/csharp, which made a handful
+ * of these rules fire on `.py`/`.java`/`.cs` files — e.g. QA-TEST-004
+ * matching `asyncio.sleep(0)` and `page.waitForTimeout()` in
+ * playwright-java, both of which have dedicated per-language rules
+ * (QA-PY-005, QA-JV-105). Cross-language coverage lives in the QA-PY /
+ * QA-JV / QA-CS families, not here.
+ */
 export function legacyAppliesTo(value: string): string[] {
-  if (value === "test-files") return ["typescript", "python", "java", "csharp"];
+  if (value === "test-files") return ["typescript"];
   if (value === "ci-workflows") return ["github-actions"];
   return [value];
 }

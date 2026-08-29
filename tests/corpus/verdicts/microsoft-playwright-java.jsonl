@@ -1,21 +1,3 @@
-{"ruleId":"QA-TEST-004","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserContextAddCookies.java","line":349,"verdict":"TP","note":"waitForTimeout(2000) hard sleep waiting for cookie propagation"}
-{"ruleId":"QA-TEST-004","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserContextFetch.java","line":465,"verdict":"FP","note":"Thread.sleep(100) inside server route handler simulating slow server — not a test sleep"}
-{"ruleId":"QA-TEST-004","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserContextRoute.java","line":160,"verdict":"TP","note":"waitForTimeout(100) in polling loop — should use waitForFunction or event"}
-{"ruleId":"QA-TEST-004","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserContextRoute.java","line":291,"verdict":"TP","note":"waitForTimeout(50) to simulate async ordering — hard timing dependency"}
-{"ruleId":"QA-TEST-004","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserContextRoute.java","line":296,"verdict":"TP","note":"waitForTimeout(100) to simulate async ordering — hard timing dependency"}
-{"ruleId":"QA-TEST-004","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserContextRoute.java","line":301,"verdict":"TP","note":"waitForTimeout(150) to simulate async ordering — hard timing dependency"}
-{"ruleId":"QA-TEST-004","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserTypeConnect.java","line":235,"verdict":"TP","note":"waitForTimeout(10) in polling loop waiting for disconnect event"}
-{"ruleId":"QA-TEST-004","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserTypeConnect.java","line":256,"verdict":"TP","note":"waitForTimeout(10) in polling loop waiting for disconnect event"}
-{"ruleId":"QA-TEST-004","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserTypeConnect.java","line":296,"verdict":"TP","note":"waitForTimeout(10) in polling loop waiting for context close event"}
-{"ruleId":"QA-TEST-004","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserTypeConnect.java","line":353,"verdict":"TP","note":"waitForTimeout(10) in polling loop waiting for browser disconnect"}
-{"ruleId":"QA-TEST-004","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserTypeConnect.java","line":367,"verdict":"TP","note":"waitForTimeout(1000) hard sleep to allow video recording to capture frames"}
-{"ruleId":"QA-TEST-004","file":"playwright/src/test/java/com/microsoft/playwright/TestDialog.java","line":109,"verdict":"TP","note":"waitForTimeout(100) in polling loop waiting for dialog event"}
-{"ruleId":"QA-TEST-004","file":"playwright/src/test/java/com/microsoft/playwright/TestDownload.java","line":291,"verdict":"TP","note":"waitForTimeout(100) in polling loop waiting for download event"}
-{"ruleId":"QA-TEST-004","file":"playwright/src/test/java/com/microsoft/playwright/TestDownload.java","line":311,"verdict":"TP","note":"waitForTimeout(100) in polling loop waiting for download event"}
-{"ruleId":"QA-TEST-004","file":"playwright/src/test/java/com/microsoft/playwright/TestPageBasic.java","line":83,"verdict":"TP","note":"waitForTimeout(100) in polling loop waiting for dialog to appear"}
-{"ruleId":"QA-TEST-004","file":"playwright/src/test/java/com/microsoft/playwright/TestPageClock.java","line":289,"verdict":"TP","note":"waitForTimeout(2000) hard sleep to let real time pass for clock test"}
-{"ruleId":"QA-TEST-004","file":"playwright/src/test/java/com/microsoft/playwright/TestPageClock.java","line":310,"verdict":"TP","note":"waitForTimeout(2000) hard sleep to let real time pass for clock test"}
-{"ruleId":"QA-TEST-004","file":"playwright/src/test/java/com/microsoft/playwright/TestPageClock.java","line":357,"verdict":"FP","note":"waitForTimeout(1000) is intentionally testing that clock progresses — the wait IS the test"}
 {"ruleId":"QA-JV-103","file":"playwright/src/test/java/com/microsoft/playwright/TestBeforeunload.java","line":26,"verdict":"TP","note":"test navigates away from beforeunload page but has no assertion — just verifies no crash"}
 {"ruleId":"QA-JV-103","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserContextBasic.java","line":105,"verdict":"FP","note":"calls verifyViewport() helper which contains assertions internally"}
 {"ruleId":"QA-JV-103","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserContextBasic.java","line":142,"verdict":"TP","note":"test just creates and closes context — no assertion, only verifies no exception"}
@@ -56,26 +38,6 @@
 {"ruleId":"QA-JV-105","file":"playwright/src/test/java/com/microsoft/playwright/TestPageClock.java","line":357,"verdict":"FP","note":"waitForTimeout(1000) is intentionally testing that clock progresses — the wait IS the test"}
 {"ruleId":"QA-JV-105","file":"playwright/src/test/java/com/microsoft/playwright/TestPageClock.java","line":395,"verdict":"FP","note":"waitForTimeout(1111) is intentionally testing that clock stays paused — the wait IS the test"}
 {"ruleId":"QA-JV-105","file":"playwright/src/test/java/com/microsoft/playwright/TestPageDialog.java","line":82,"verdict":"TP","note":"waitForTimeout(100) in polling loop for dialog event"}
-{"ruleId":"QA-PW-101","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserContextAddCookies.java","line":349,"verdict":"TP","note":"waitForTimeout(2000) hard sleep waiting for cookie propagation"}
-{"ruleId":"QA-PW-101","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserContextHar.java","line":501,"verdict":"TP","note":"waitForTimeout(1000) hard sleep to verify fetch is blocked by HAR"}
-{"ruleId":"QA-PW-101","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserContextRoute.java","line":160,"verdict":"TP","note":"waitForTimeout(100) in polling loop — should use event-based wait"}
-{"ruleId":"QA-PW-101","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserContextRoute.java","line":291,"verdict":"TP","note":"waitForTimeout(50) to simulate async ordering — hard timing dependency"}
-{"ruleId":"QA-PW-101","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserContextRoute.java","line":296,"verdict":"TP","note":"waitForTimeout(100) to simulate async ordering — hard timing dependency"}
-{"ruleId":"QA-PW-101","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserContextRoute.java","line":301,"verdict":"TP","note":"waitForTimeout(150) to simulate async ordering — hard timing dependency"}
-{"ruleId":"QA-PW-101","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserTypeConnect.java","line":235,"verdict":"TP","note":"waitForTimeout(10) in polling loop waiting for disconnect"}
-{"ruleId":"QA-PW-101","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserTypeConnect.java","line":256,"verdict":"TP","note":"waitForTimeout(10) in polling loop waiting for disconnect"}
-{"ruleId":"QA-PW-101","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserTypeConnect.java","line":296,"verdict":"TP","note":"waitForTimeout(10) in polling loop waiting for context close"}
-{"ruleId":"QA-PW-101","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserTypeConnect.java","line":353,"verdict":"TP","note":"waitForTimeout(10) in polling loop waiting for browser disconnect"}
-{"ruleId":"QA-PW-101","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserTypeConnect.java","line":367,"verdict":"TP","note":"waitForTimeout(1000) hard sleep for video recording"}
-{"ruleId":"QA-PW-101","file":"playwright/src/test/java/com/microsoft/playwright/TestDialog.java","line":109,"verdict":"TP","note":"waitForTimeout(100) in polling loop for dialog event"}
-{"ruleId":"QA-PW-101","file":"playwright/src/test/java/com/microsoft/playwright/TestDownload.java","line":291,"verdict":"TP","note":"waitForTimeout(100) in polling loop for download event"}
-{"ruleId":"QA-PW-101","file":"playwright/src/test/java/com/microsoft/playwright/TestDownload.java","line":311,"verdict":"TP","note":"waitForTimeout(100) in polling loop for download event"}
-{"ruleId":"QA-PW-101","file":"playwright/src/test/java/com/microsoft/playwright/TestPageBasic.java","line":83,"verdict":"TP","note":"waitForTimeout(100) in polling loop for dialog event"}
-{"ruleId":"QA-PW-101","file":"playwright/src/test/java/com/microsoft/playwright/TestPageClock.java","line":289,"verdict":"TP","note":"waitForTimeout(2000) hard sleep for clock progression test"}
-{"ruleId":"QA-PW-101","file":"playwright/src/test/java/com/microsoft/playwright/TestPageClock.java","line":310,"verdict":"TP","note":"waitForTimeout(2000) hard sleep for clock progression test"}
-{"ruleId":"QA-PW-101","file":"playwright/src/test/java/com/microsoft/playwright/TestPageClock.java","line":357,"verdict":"FP","note":"waitForTimeout(1000) is intentionally testing clock progression — the wait IS the test"}
-{"ruleId":"QA-PW-101","file":"playwright/src/test/java/com/microsoft/playwright/TestPageClock.java","line":395,"verdict":"FP","note":"waitForTimeout(1111) is intentionally testing clock stays paused — the wait IS the test"}
-{"ruleId":"QA-PW-101","file":"playwright/src/test/java/com/microsoft/playwright/TestPageDialog.java","line":82,"verdict":"TP","note":"waitForTimeout(100) in polling loop for dialog event"}
 {"ruleId":"QA-JV-101","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserContextFetch.java","line":167,"verdict":"TP","note":"@Disabled test for socket hang up issue — permanently skipped"}
 {"ruleId":"QA-JV-101","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserContextFetch.java","line":230,"verdict":"TP","note":"@Disabled test for Java HTTP server limitation — permanently skipped"}
 {"ruleId":"QA-JV-101","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserContextRoute.java","line":177,"verdict":"TP","note":"@Disabled test conflicting with a PR — permanently skipped"}
@@ -125,8 +87,6 @@
 {"ruleId":"QA-JV-111","file":"playwright/src/test/java/com/microsoft/playwright/TestPageRequestFallback.java","line":36,"verdict":"FP","note":"blanket route testing basic fallback — testing the fallback API"}
 {"ruleId":"QA-JV-111","file":"playwright/src/test/java/com/microsoft/playwright/TestPageRequestFallback.java","line":152,"verdict":"FP","note":"blanket route testing header modification via fallback — testing the API"}
 {"ruleId":"QA-JV-111","file":"playwright/src/test/java/com/microsoft/playwright/TestPageRequestFallback.java","line":209,"verdict":"FP","note":"blanket route testing method amendment via fallback — testing the API"}
-{"ruleId":"QA-PW-003","file":"playwright/src/test/java/com/microsoft/playwright/TestDebugger.java","line":98,"verdict":"","note":""}
-{"ruleId":"QA-PW-003","file":"playwright/src/test/java/com/microsoft/playwright/TestPageBasic.java","line":364,"verdict":"","note":""}
 {"ruleId":"QA-JV-106","file":"playwright/src/test/java/com/microsoft/playwright/TestDispatchEvent.java","line":129,"verdict":"FP","note":"querySelector('#source') used to get handle for dispatchEvent test — testing the dispatch API"}
 {"ruleId":"QA-JV-106","file":"playwright/src/test/java/com/microsoft/playwright/TestDispatchEvent.java","line":130,"verdict":"FP","note":"querySelector('#target') used to get handle for dispatchEvent test — testing the dispatch API"}
 {"ruleId":"QA-JV-106","file":"playwright/src/test/java/com/microsoft/playwright/TestDispatchEvent.java","line":140,"verdict":"FP","note":"querySelector('#source') used to test dispatchEvent on handle — testing ElementHandle API"}
@@ -147,29 +107,5 @@
 {"ruleId":"QA-JV-106","file":"playwright/src/test/java/com/microsoft/playwright/TestElementHandleConvenience.java","line":251,"verdict":"FP","note":"querySelector('#input2') testing isEditable API — testing the convenience method"}
 {"ruleId":"QA-JV-106","file":"playwright/src/test/java/com/microsoft/playwright/TestElementHandleMisc.java","line":29,"verdict":"FP","note":"querySelector('#button-6') testing hover API on scrollable page — testing the API"}
 {"ruleId":"QA-JV-106","file":"playwright/src/test/java/com/microsoft/playwright/TestElementHandleMisc.java","line":38,"verdict":"FP","note":"querySelector('#button-6') testing hover after Node removed — testing the API"}
-{"ruleId":"QA-PW-004","file":"playwright/src/test/java/com/microsoft/playwright/TestLocatorElementHandle.java","line":64,"verdict":"","note":""}
-{"ruleId":"QA-PW-004","file":"playwright/src/test/java/com/microsoft/playwright/TestLocatorElementHandle.java","line":65,"verdict":"","note":""}
-{"ruleId":"QA-PW-004","file":"playwright/src/test/java/com/microsoft/playwright/TestLocatorElementHandle.java","line":74,"verdict":"","note":""}
-{"ruleId":"QA-PW-004","file":"playwright/src/test/java/com/microsoft/playwright/TestLocatorList.java","line":32,"verdict":"","note":""}
-{"ruleId":"QA-PW-004","file":"playwright/src/test/java/com/microsoft/playwright/TestPageLocatorQuery.java","line":35,"verdict":"","note":""}
-{"ruleId":"QA-PW-004","file":"playwright/src/test/java/com/microsoft/playwright/TestPageLocatorQuery.java","line":48,"verdict":"","note":""}
-{"ruleId":"QA-PW-004","file":"playwright/src/test/java/com/microsoft/playwright/TestPageLocatorQuery.java","line":57,"verdict":"","note":""}
-{"ruleId":"QA-PW-004","file":"playwright/src/test/java/com/microsoft/playwright/TestPageLocatorQuery.java","line":187,"verdict":"","note":""}
-{"ruleId":"QA-PW-112","file":"playwright/src/test/java/com/microsoft/playwright/TestLocatorFrame.java","line":252,"verdict":"TP","note":"test id 'buttonId' uses camelCase instead of kebab-case convention"}
-{"ruleId":"QA-PW-112","file":"playwright/src/test/java/com/microsoft/playwright/TestSelectorsGetBy.java","line":40,"verdict":"TP","note":"test id 'Hello' uses PascalCase instead of kebab-case convention"}
-{"ruleId":"QA-PW-112","file":"playwright/src/test/java/com/microsoft/playwright/TestSelectorsGetBy.java","line":41,"verdict":"TP","note":"test id 'Hello' uses PascalCase instead of kebab-case convention"}
-{"ruleId":"QA-PW-112","file":"playwright/src/test/java/com/microsoft/playwright/TestSelectorsGetBy.java","line":42,"verdict":"TP","note":"test id 'Hello' uses PascalCase instead of kebab-case convention"}
-{"ruleId":"QA-PW-112","file":"playwright/src/test/java/com/microsoft/playwright/TestSelectorsGetBy.java","line":49,"verdict":"TP","note":"test id 'Hello' uses PascalCase instead of kebab-case convention"}
-{"ruleId":"QA-PW-112","file":"playwright/src/test/java/com/microsoft/playwright/TestSelectorsGetBy.java","line":50,"verdict":"TP","note":"test id 'Hello' uses PascalCase instead of kebab-case convention"}
-{"ruleId":"QA-PW-112","file":"playwright/src/test/java/com/microsoft/playwright/TestSelectorsGetBy.java","line":51,"verdict":"TP","note":"test id 'Hello' uses PascalCase instead of kebab-case convention"}
-{"ruleId":"QA-PW-112","file":"playwright/src/test/java/com/microsoft/playwright/TestSelectorsGetBy.java","line":62,"verdict":"TP","note":"test id 'Hello' uses PascalCase instead of kebab-case convention"}
-{"ruleId":"QA-PW-112","file":"playwright/src/test/java/com/microsoft/playwright/TestSelectorsGetBy.java","line":63,"verdict":"TP","note":"test id 'Hello' uses PascalCase instead of kebab-case convention"}
-{"ruleId":"QA-PW-112","file":"playwright/src/test/java/com/microsoft/playwright/TestSelectorsGetBy.java","line":64,"verdict":"TP","note":"test id 'Hello' uses PascalCase instead of kebab-case convention"}
-{"ruleId":"QA-PW-112","file":"playwright/src/test/java/com/microsoft/playwright/TestSelectorsGetBy.java","line":65,"verdict":"TP","note":"test id 'Hello' uses PascalCase instead of kebab-case convention"}
-{"ruleId":"QA-PW-112","file":"playwright/src/test/java/com/microsoft/playwright/TestSelectorsGetBy.java","line":104,"verdict":"TP","note":"test id 'Hello' uses PascalCase instead of kebab-case convention"}
-{"ruleId":"QA-PW-112","file":"playwright/src/test/java/com/microsoft/playwright/TestSelectorsGetBy.java","line":105,"verdict":"TP","note":"test id 'Hello' uses PascalCase instead of kebab-case convention"}
-{"ruleId":"QA-PW-112","file":"playwright/src/test/java/com/microsoft/playwright/junit/TestFixtureOptions.java","line":57,"verdict":"TP","note":"test id 'Hello' uses PascalCase instead of kebab-case convention"}
-{"ruleId":"QA-PW-112","file":"playwright/src/test/java/com/microsoft/playwright/junit/TestFixtureOptions.java","line":58,"verdict":"TP","note":"test id 'Hello' uses PascalCase instead of kebab-case convention"}
-{"ruleId":"QA-PW-112","file":"playwright/src/test/java/com/microsoft/playwright/junit/TestFixtureOptions.java","line":59,"verdict":"TP","note":"test id 'Hello' uses PascalCase instead of kebab-case convention"}
 {"ruleId":"QA-JV-104","file":"playwright/src/test/java/com/microsoft/playwright/junit/TestFixtures.java","line":28,"verdict":"","note":""}
 {"ruleId":"QA-JV-104","file":"playwright/src/test/java/com/microsoft/playwright/junit/TestFixtures.java","line":29,"verdict":"","note":""}

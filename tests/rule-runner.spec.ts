@@ -14,14 +14,21 @@ const finding = () => ({
 
 describe("legacyAppliesTo", () => {
   it("maps legacy scopes to adapter ids", () => {
-    expect(legacyAppliesTo("test-files")).toEqual([
-      "typescript",
-      "python",
-      "java",
-      "csharp",
-    ]);
+    // "test-files" is TS/JS only — every such rule declares
+    // languages: ["typescript", "javascript"] and detects JS syntax.
+    // Cross-language coverage is the QA-PY / QA-JV / QA-CS families'.
+    expect(legacyAppliesTo("test-files")).toEqual(["typescript"]);
     expect(legacyAppliesTo("ci-workflows")).toEqual(["github-actions"]);
     expect(legacyAppliesTo("typescript")).toEqual(["typescript"]);
+  });
+
+  it("keeps 'test-files' rules off non-JS test files (regression: QA-TEST-004 on .py/.java)", () => {
+    // The typescript adapter id is the only one a 'test-files' rule maps
+    // to, so python/java/csharp adapters skip it in their
+    // `if (!rule.appliesTo.includes(this.id)) continue` guard.
+    for (const id of ["python", "java", "csharp", "github-actions"]) {
+      expect(legacyAppliesTo("test-files")).not.toContain(id);
+    }
   });
 });
 
@@ -35,12 +42,7 @@ describe("asUniversal", () => {
     });
     expect(wrapped.legacy).toBe(true);
     expect(wrapped.id).toBe("QA-X-001");
-    expect(wrapped.appliesTo).toEqual([
-      "typescript",
-      "python",
-      "java",
-      "csharp",
-    ]);
+    expect(wrapped.appliesTo).toEqual(["typescript"]);
     expect(wrapped.run({ path: "a.test.ts", text: "" })).toHaveLength(1);
   });
 });

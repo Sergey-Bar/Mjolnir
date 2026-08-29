@@ -43,7 +43,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo         | Occurrences |
 | ------------ | ----------- |
-| sveltejs-kit | 28          |
+| sveltejs-kit | 17          |
 
 ---
 

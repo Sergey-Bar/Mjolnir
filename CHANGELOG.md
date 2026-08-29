@@ -13,7 +13,7 @@ once shipped, so this file is the record of what changed between versions.
 
 ### Added — measurement is now visible at the point of use
 
-- Only 19 of 91 rules carry a false-positive rate measured against real OSS
+- Only 15 of 91 rules carry a false-positive rate measured against real OSS
   code; that fact previously lived only in `docs/FP-AUDIT.md` and
   `mjolnir doctor`. Now surfaced everywhere a user looks:
   - The scan footer reports how many of the rules that _fired_ are measured.
@@ -32,8 +32,10 @@ once shipped, so this file is the record of what changed between versions.
   added `next-auth`, `vite`, `sveltekit`, `astro`, `TanStack/query`,
   `eslint-plugin-playwright`, `playwright-pytest`. `corpus:sample` and
   `corpus:regression` now scan with `--strict` (quarantine rules were
-  invisible to both before). `docs/FP-AUDIT.md` is still 19/91 — the ~250
-  new corpus findings are queued for classification in
+  invisible to both before). `docs/FP-AUDIT.md` is 15/91 (down from 19 —
+  see the dispatch fix below, which retired the leaked cross-language
+  verdicts for QA-PW-101/112 and QA-TEST-004/QA-ENV-001 on Java/Python
+  repos); the ~250 new corpus findings are queued for classification in
   `tests/corpus/verdicts/`, not counted until read.
 
 ### Changed — help and README lead with the one command
@@ -43,6 +45,33 @@ once shipped, so this file is the record of what changed between versions.
   into Everyday / When-something's-flaky / Occasional instead of a flat list
   of 16 equals. A one-line first-run hint appears after a bare full-repo scan
   with no config. No subcommand removed or renamed.
+
+### Fixed (rule-bug-hunt wave)
+
+- **Cross-language dispatch leak**: `appliesTo: "test-files"` mapped to all
+  four language adapters, so the 42 TypeScript/Playwright-only rules that
+  use it (QA-PW-\*, QA-TEST-\*, QA-TQUAL-\*) ran against `.py`, `.java` and
+  `.cs` files too. On the corpus this produced ~140 false positives on
+  `microsoft/playwright` Java bindings alone (QA-PW-101, QA-PW-112,
+  QA-TEST-004, QA-ENV-001) and inflated several baselines. `legacyAppliesTo`
+  now maps `"test-files"` to `["typescript"]` only; cross-language coverage
+  is the QA-PY/QA-JV/QA-CS families' job. Regression test added.
+- **QA-PW-103** (missing timeout): no longer fires on assertion strings that
+  contain Playwright code as _test data_ (`code: "await page.goto('/x')"` in
+  playwright-mcp) — guarded by `isInsideEmbeddedCode`.
+- **QA-TEST-004** (hard sleep): dropped the bare `sleep(N)` pattern and now
+  requires `await` and a non-zero argument. `sleep(10).then(...)` and
+  `queryFn: () => sleep(10)` are mock-latency, not test-body pauses — this
+  cut TanStack Query's count from 1648 to 157.
+- **QA-PW-002** (unawaited assertion): matches only Playwright's 31
+  web-first async matchers instead of any `to*` name, so
+  `expect(res.status()).toBe(200)` on a variable named `page` is no longer
+  flagged.
+- **QA-TQUAL-009** (assertion in unawaited promise chain): the `.then()`
+  callback body is now paren-matched instead of grabbing the next `{`, so a
+  sibling `.then(res => res.text())` inside an awaited `Promise.all` no
+  longer reaches into an unrelated block; the await/return check also sees
+  an `await` sitting one line above the `.then(`.
 
 ### Fixed (adversarial-audit hardening wave)
 

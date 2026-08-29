@@ -1109,7 +1109,7 @@ Until 0.5.0 is published, `npx mjolnir-qa@latest` still serves the broken
 
 Two positioning fixes from the repo critique, no detection logic touched:
 
-**Measurement is now visible at the point of use.** Only 19 of 91 rules
+**Measurement is now visible at the point of use.** Only 15 of 91 rules
 carry a corpus-measured FP rate; that fact lived only in `docs/FP-AUDIT.md`
 and `mjolnir doctor`. Now:
 
@@ -1137,7 +1137,7 @@ config. No command removed or renamed.
 
 ## Corpus expansion — 6 → 13 repos (2026-08-29)
 
-The measurement gap (19/91 rules measured) was gated on two things: too few
+The measurement gap (15/91 rules measured) was gated on two things: too few
 corpus repos (only 34 of 91 rules fired anywhere) and manual classification
 hours. This addresses the first.
 
@@ -1156,12 +1156,41 @@ long` on checkout.)
   existing baselines grew only by quarantine-rule counts the strict flag
   now surfaces — no FP regression.
 
-**`docs/FP-AUDIT.md` is unchanged — still 19/91.** No new verdict is
+**`docs/FP-AUDIT.md` dropped to 15/91** (from 19) once the dispatch bug
+below retired the leaked cross-language verdicts. No _new_ verdict is
 classified yet. Next step is human classification of the ~250-finding
 backlog in `tests/corpus/verdicts/*.jsonl`: read
 `tests/corpus/review/<RULE-ID>.md`, fill `verdict`, run
 `npm run fp-audit:generate`. Start with `QA-TEST-004` on `tanstack-query`
-(fires >1600× there — real habit or masking gap?).
+(now 157 findings after the fix below — real habit or masking gap?).
+
+## Rule-bug-hunt pass (2026-08-29)
+
+Verified rules against the expanded 13-repo corpus and fixed six defects:
+
+- **Cross-language dispatch leak** (`src/engine/rule-runner.ts`):
+  `legacyAppliesTo("test-files")` returned all four adapters, so 42
+  TS/Playwright-only rules ran on `.py`/`.java`/`.cs`. ~140 FPs on
+  `microsoft/playwright` Java bindings alone. Now `["typescript"]`;
+  regression test in `tests/rule-runner.spec.ts`. Baselines regenerated
+  (java 529→386, tanstack 1916→397, etc.); 90 orphaned verdict lines for
+  rules that no longer fire on those repos removed from
+  `tests/corpus/verdicts/`, dropping MEASURED_FP 19→15 (QA-PW-101,
+  QA-PW-112, QA-TEST-004, QA-ENV-001 lost their measured status — those
+  were measured entirely off the leak).
+- **QA-PW-103**: skip Playwright code embedded as assertion test-data
+  (`isInsideEmbeddedCode`).
+- **QA-TEST-004**: require `await` + non-zero arg; drop bare `sleep(N)`.
+  Mock-latency (`sleep(10).then(...)`, `queryFn: () => sleep(10)`) no
+  longer flagged. New must-not-fire fixture.
+- **QA-PW-002**: match only the 31 Playwright web-first async matchers, not
+  any `to*` — `expect(res.status()).toBe(200)` on a `page` var is clean.
+  New must-not-fire fixture.
+- **QA-TQUAL-009**: paren-match the `.then()` callback instead of grabbing
+  the next `{`; see an `await` one line above the `.then(`. New
+  must-not-fire fixture.
+- **vitest.config.ts**: exclude `tests/corpus/.cache/**` so a stale audit
+  clone's own specs never run as our tests.
 
 ## Conventions
 

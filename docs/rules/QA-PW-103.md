@@ -41,16 +41,12 @@ Verified against `tests/fixtures/QA-PW-103/must-not-fire/with-budget.spec.ts` â€
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos â€” reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo                                          | Occurrences |
-| --------------------------------------------- | ----------- |
-| microsoft-playwright-java                     | 10          |
-| microsoft-playwright-mcp                      | 2           |
-| microsoft-playwright-pytest                   | 26          |
-| nextauthjs-next-auth                          | 4           |
-| playwright-community-eslint-plugin-playwright | 36          |
-| sveltejs-kit                                  | 438         |
-| vitejs-vite                                   | 39          |
-| withastro-astro                               | 6           |
+| Repo                 | Occurrences |
+| -------------------- | ----------- |
+| nextauthjs-next-auth | 4           |
+| sveltejs-kit         | 438         |
+| vitejs-vite          | 39          |
+| withastro-astro      | 6           |
 
 ---
 

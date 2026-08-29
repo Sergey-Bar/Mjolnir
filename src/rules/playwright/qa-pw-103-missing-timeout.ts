@@ -8,6 +8,7 @@
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
 import { lineAt, colAt } from "../shared/positions.js";
+import { isInsideEmbeddedCode } from "../shared/masking.js";
 
 export const pwMissingTimeout = defineRule({
   id: "QA-PW-103",
@@ -28,6 +29,12 @@ export const pwMissingTimeout = defineRule({
   tier: "quarantine",
 
   run(ctx) {
+    // Raw text on purpose — the rule matches on the string-literal
+    // argument, so codeText would blank the quotes it keys off. That
+    // exposes it to code written as test DATA: playwright-mcp's own
+    // tests assert on strings like `code: "await page.goto('/x');"`.
+    // `isInsideEmbeddedCode` is the discriminator (same pattern as
+    // QA-PW-004 / QA-PW-123 / QA-ENV-001).
     const text = ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
@@ -37,6 +44,7 @@ export const pwMissingTimeout = defineRule({
       /(?:goto|waitForURL|waitForSelector)\s*\(\s*['"`][^'"`]+['"`]\s*\)/g;
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {
+      if (isInsideEmbeddedCode(ctx, m.index)) continue;
       findings.push({
         severity: "info",
         confidence: "low",

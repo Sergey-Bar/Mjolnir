@@ -41,10 +41,9 @@ Verified against `tests/fixtures/QA-PW-004/must-not-fire/clean.spec.ts` — a le
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo                      | Occurrences |
-| ------------------------- | ----------- |
-| microsoft-playwright-java | 8           |
-| vitejs-vite               | 1           |
+| Repo        | Occurrences |
+| ----------- | ----------- |
+| vitejs-vite | 1           |
 
 ---
 

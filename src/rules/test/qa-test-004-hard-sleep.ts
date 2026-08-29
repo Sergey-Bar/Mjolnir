@@ -35,11 +35,16 @@ export const hardSleep = defineRule({
 
     const patterns = [
       /\bpage\.waitForTimeout\s*\(/g, // Playwright — fix hint: expect(locator).toBeVisible()
-      /\bsleep\s*\(\s*\d+\s*\)/g,
       /\bawait\s+new\s+Promise\s*\(\s*\w+\s*=>\s*setTimeout\s*\(\s*\w+\s*,\s*\d+\s*\)\s*\)/g,
-      // Behavioral shapes (not just API names): any promise-returning call
-      // to a delay/sleep/wait-style helper with a numeric literal argument.
-      /\bawait\s+(?:delay|sleep|wait|pause|timeout)\s*\(\s*\d+\s*\)/g,
+      // Behavioral shapes (not just API names): an AWAITED call to a
+      // delay/sleep/wait-style helper with a positive numeric literal.
+      //
+      // `await` is required on purpose. `sleep(10).then(...)` and
+      // `queryFn: () => sleep(10)` are how real suites (TanStack Query,
+      // MSW handlers) simulate mock latency — the sleep produces a value,
+      // it does not pause the test body. `sleep(0)` is a microtask yield,
+      // not a wall-clock wait, so it is also excluded.
+      /\bawait\s+(?:delay|sleep|wait|pause|timeout)\s*\(\s*[1-9]\d*\s*\)/g,
       // setTimeout wrapped in a Promise (with or without await / type args).
       /\b(?:await\s+)?new\s+Promise\s*(?:<[^>]*>)?\s*\(\s*\(?\s*\w+\s*\)?\s*=>\s*setTimeout\s*\(\s*\w+\s*,\s*\d+\s*\)\s*\)/g,
       // setTimeout-as-promise stored in a helper then awaited.

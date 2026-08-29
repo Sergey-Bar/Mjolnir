@@ -1,6 +1,3 @@
-{"ruleId":"QA-ENV-001","file":"tests/test_adapters.py","line":7,"verdict":"FP","note":"fixed port 10000 in URL is test data for request_url parsing, not a real server dependency"}
-{"ruleId":"QA-ENV-001","file":"tests/test_requests.py","line":103,"verdict":"FP","note":"localhost:3128 is test input for InvalidSchema validation — testing URL parsing, not connecting"}
-{"ruleId":"QA-ENV-001","file":"tests/test_requests.py","line":674,"verdict":"FP","note":"localhost:8080 proxy URL is test fixture for proxy header logic — never connects"}
 {"ruleId":"QA-PY-008","file":"tests/test_requests.py","line":2208,"verdict":"","note":""}
 {"ruleId":"QA-PY-008","file":"tests/test_utils.py","line":787,"verdict":"","note":""}
 {"ruleId":"QA-PY-005","file":"tests/test_testserver.py","line":74,"verdict":"","note":""}

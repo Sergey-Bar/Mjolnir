@@ -17,8 +17,47 @@ import { getTsSourceFile } from "../../engine/ts-ast.js";
 import * as ts from "ts-morph";
 import { lineAt, colAt } from "../shared/positions.js";
 
-/** Assertion matchers that return an unfulfilled promise unless awaited. */
-const ASSERTION_MATCHER_RE = /^to(?:Be|Have|Contain|Pass|Match)/;
+/**
+ * Playwright's web-first assertion matchers — the ones that return a
+ * promise and auto-retry until the condition holds or times out. Only
+ * these need `await`. Jest/Vitest's synchronous matchers (`toBe`,
+ * `toEqual`, `toHaveLength`, `toContain`, `toMatchObject`, …) must NOT
+ * be awaited — flagging `expect(res.status()).toBe(200)` because the
+ * variable is called `page` is a false positive.
+ * Source: https://playwright.dev/docs/test-assertions
+ */
+const ASYNC_PW_MATCHERS = new Set([
+  "toBeAttached",
+  "toBeChecked",
+  "toBeDisabled",
+  "toBeEditable",
+  "toBeEmpty",
+  "toBeEnabled",
+  "toBeFocused",
+  "toBeHidden",
+  "toBeInViewport",
+  "toBeVisible",
+  "toContainClass",
+  "toContainText",
+  "toHaveAccessibleDescription",
+  "toHaveAccessibleErrorMessage",
+  "toHaveAccessibleName",
+  "toHaveAttribute",
+  "toHaveClass",
+  "toHaveCount",
+  "toHaveCSS",
+  "toHaveId",
+  "toHaveJSProperty",
+  "toHaveRole",
+  "toHaveScreenshot",
+  "toHaveText",
+  "toHaveTitle",
+  "toHaveURL",
+  "toHaveValue",
+  "toHaveValues",
+  "toMatchAriaSnapshot",
+  "toPass",
+]);
 
 export const unawaitedLocatorAssertion = defineRule({
   id: "QA-PW-002",
@@ -71,7 +110,7 @@ export const unawaitedLocatorAssertion = defineRule({
           const name = (
             node as import("ts-morph").PropertyAccessExpression
           ).getName();
-          if (ASSERTION_MATCHER_RE.test(name)) isAssertionChain = true;
+          if (ASYNC_PW_MATCHERS.has(name)) isAssertionChain = true;
           node = node.getParent();
           continue;
         }
@@ -107,7 +146,15 @@ function runRegexFallback(
   path: string,
 ): Array<Omit<Finding, "ruleId" | "category">> {
   const findings: Array<Omit<Finding, "ruleId" | "category">> = [];
-  const re = /(?<!await\s{0,10})expect\s*\(\s*(?:page|locator|this\.page)[.(]/g;
+  // `expect(<locator-ish>)` NOT preceded by await, chained to one of
+  // Playwright's async web-first matchers. The matcher check is what
+  // keeps `expect(response.status()).toBe(200)` from being flagged just
+  // because a variable is named `page`.
+  const matchers = [...ASYNC_PW_MATCHERS].join("|");
+  const re = new RegExp(
+    `(?<!await\\s{0,10})expect\\s*\\(\\s*(?:page|locator|this\\.page)[^;]{0,300}?\\)\\s*\\.\\s*(?:${matchers})\\b`,
+    "g",
+  );
   let m: RegExpExecArray | null;
   while ((m = re.exec(text)) !== null) {
     findings.push({

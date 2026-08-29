@@ -39,17 +39,4 @@
 {"ruleId":"QA-PY-007","file":"tests/test_utils/test_echo_via_pager.py","line":165,"verdict":"FP","note":"conditional raise driven by expected_error param — error type is the assertion"}
 {"ruleId":"QA-PY-007","file":"tests/test_utils/test_echo_via_pager.py","line":253,"verdict":"TP","note":"pytest.raises(RuntimeError) with no match= and no further message assertion"}
 {"ruleId":"QA-PY-002","file":"tests/test_chain.py","line":221,"verdict":"TP","note":"bare @pytest.mark.xfail with no reason — permanently ignored test"}
-{"ruleId":"QA-ENV-001","file":"tests/test_defaults.py","line":287,"verdict":"FP","note":"'/tmp/file' is test fixture data for a default option value, not OS coupling"}
-{"ruleId":"QA-ENV-001","file":"tests/test_defaults.py","line":295,"verdict":"FP","note":"asserting output contains the same '/tmp/file' string set as default — test data, not coupling"}
-{"ruleId":"QA-ENV-001","file":"tests/test_defaults.py","line":298,"verdict":"FP","note":"same assertion on output containing '/tmp/file' test fixture value"}
-{"ruleId":"QA-ENV-001","file":"tests/test_termui.py","line":481,"verdict":"FP","note":"Windows path is test input for editor path parsing — testing path handling logic"}
-{"ruleId":"QA-ENV-001","file":"tests/test_termui.py","line":483,"verdict":"FP","note":"expected parsed result of the Windows path — test data for path parsing"}
-{"ruleId":"QA-ENV-001","file":"tests/test_termui.py","line":579,"verdict":"FP","note":"Windows editor path as test input for normalization logic"}
-{"ruleId":"QA-ENV-001","file":"tests/test_termui.py","line":580,"verdict":"FP","note":"expected parsed output of Windows editor path — test data"}
-{"ruleId":"QA-ENV-001","file":"tests/test_termui.py","line":635,"verdict":"FP","note":"Windows path as test input for pager command parsing logic"}
-{"ruleId":"QA-ENV-001","file":"tests/test_termui.py","line":636,"verdict":"FP","note":"expected parsed result of Windows pager path — test data"}
-{"ruleId":"QA-ENV-001","file":"tests/test_termui.py","line":640,"verdict":"FP","note":"Windows path with flag as test input for pager command parsing"}
-{"ruleId":"QA-ENV-001","file":"tests/test_termui.py","line":641,"verdict":"FP","note":"expected parsed result of Windows path with flag — test data"}
-{"ruleId":"QA-ENV-001","file":"tests/test_termui.py","line":660,"verdict":"FP","note":"unquoted Windows path as test input demonstrating POSIX mode behavior"}
-{"ruleId":"QA-ENV-001","file":"tests/test_termui.py","line":1179,"verdict":"FP","note":"'C:\\Program Files' mentioned in docstring explaining POSIX shlex behavior — not code"}
 {"ruleId":"QA-PY-010","file":"tests/test_termui.py","line":28,"verdict":"","note":""}
