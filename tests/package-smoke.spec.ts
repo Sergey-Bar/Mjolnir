@@ -12,6 +12,7 @@
 
 import { execFileSync, execSync } from "node:child_process";
 import {
+  chmodSync,
   cpSync,
   existsSync,
   mkdirSync,
@@ -144,6 +145,40 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
             `is not present in the packed tarball.`,
         ).toBe(true);
       });
+
+      it("the packed bin entry starts with a node shebang", () => {
+        // A real, shipped bug this locks. 0.4.0 was published with no
+        // shebang on dist/cli.mjs. On POSIX, npm's bin shim executes the
+        // target file directly and the kernel falls back to /bin/sh,
+        // which parses JavaScript as shell — `npx mjolnir-qa@latest` died
+        // with "import: not found" on every Linux and macOS machine.
+        //
+        // It survived local testing because npm generates a .cmd wrapper
+        // on Windows that invokes node explicitly, and it survived this
+        // very file because every other test here runs `node <binPath>`,
+        // which supplies the interpreter the shebang would have named.
+        // Only executing it the way a real install does catches this.
+        const firstLine = readFileSync(binPath, "utf8").split("\n")[0] ?? "";
+        expect(
+          firstLine,
+          "dist/cli.mjs must begin with `#!/usr/bin/env node`. Without it " +
+            "the npm-installed `mjolnir` command is executed as a shell " +
+            "script on POSIX and fails immediately for every user.",
+        ).toBe("#!/usr/bin/env node");
+      });
+
+      it.skipIf(process.platform === "win32")(
+        "the packed bin runs when executed directly, as npm's POSIX shim does",
+        () => {
+          chmodSync(binPath, 0o755);
+          // No `node` prefix on purpose — this is the exact invocation
+          // path that was broken in 0.4.0.
+          const out = execFileSync(binPath, ["--version"], {
+            encoding: "utf8",
+          });
+          expect(out).toContain("mjolnir-qa");
+        },
+      );
 
       it("includes CHANGELOG.md (Sprint 0 Task 2)", () => {
         expect(

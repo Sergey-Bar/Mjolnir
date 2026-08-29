@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /**
  * Mjölnir CLI entry point (W1-02).
  * Exit codes (§24.1, frozen): 0 clean · 1 findings ≥ gate · 2 partial ·

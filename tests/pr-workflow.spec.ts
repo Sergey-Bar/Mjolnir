@@ -76,7 +76,9 @@ describe("mjolnir.yml (the PR feedback loop workflow)", () => {
     const wf = loadPrWorkflow();
     const steps = wf.jobs.scan?.steps ?? [];
     expect(
-      steps.some((s) => /mjolnir-qa@latest\s+diff\b/.test(s.run ?? "")),
+      steps.some((s) =>
+        /(?:mjolnir-qa@latest|dist\/cli\.mjs)\s+diff\b/.test(s.run ?? ""),
+      ),
     ).toBe(true);
   });
 
@@ -112,7 +114,7 @@ describe("mjolnir.yml (the PR feedback loop workflow)", () => {
     const wf = loadPrWorkflow();
     const steps = wf.jobs.scan?.steps ?? [];
     const diffStep = steps.find((s) =>
-      /mjolnir-qa@latest\s+diff\b/.test(s.run ?? ""),
+      /(?:mjolnir-qa@latest|dist\/cli\.mjs)\s+diff\b/.test(s.run ?? ""),
     );
     // diff's exit code can be 1 on new errors — must be tolerated via
     // continue-on-error on this specific step, never a blanket `|| true`
