@@ -77,13 +77,21 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
 
       workDir = mkdtempSync(join(tmpdir(), "mjolnir-pack-"));
 
-      const packOut = execSync(`npm pack --json`, {
+      // `--ignore-scripts`: dist/ is already built above, so the `prepare`
+      // (husky) script is not needed — and skipping it keeps npm's lifecycle
+      // chatter (which npm 11 writes to stdout) out of the JSON we parse.
+      const packOut = execSync(`npm pack --json --ignore-scripts`, {
         cwd: ROOT,
       }).toString();
-      const packResult = (
-        parseNpmJsonArray(packOut) as Array<{ filename: string }>
-      )[0];
-      if (!packResult) throw new Error("npm pack produced no output entry");
+      const packResult = parseNpmJsonArray(packOut).find(
+        (e): e is { filename: string } =>
+          typeof (e as { filename?: unknown })?.filename === "string",
+      );
+      if (!packResult) {
+        throw new Error(
+          `npm pack --json produced no entry with a filename. Raw output:\n${packOut}`,
+        );
+      }
       const { filename } = packResult;
 
       // npm pack writes the tarball into cwd (ROOT). Move it to our isolated
@@ -222,12 +230,14 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
         // node_modules into pkgDir *after* extraction (to run the CLI
         // without a network install), which would make a node_modules
         // check here a false positive unrelated to what npm actually packs.
-        const dryRunOut = execSync("npm pack --dry-run --json", {
-          cwd: ROOT,
-        }).toString();
-        const [dryRunResult] = parseNpmJsonArray(dryRunOut) as Array<{
-          files: Array<{ path: string }>;
-        }>;
+        const dryRunOut = execSync(
+          "npm pack --dry-run --json --ignore-scripts",
+          { cwd: ROOT },
+        ).toString();
+        const dryRunResult = parseNpmJsonArray(dryRunOut).find(
+          (e): e is { files: Array<{ path: string }> } =>
+            Array.isArray((e as { files?: unknown })?.files),
+        );
         const packedPaths = (dryRunResult?.files ?? []).map((f) => f.path);
 
         const forbiddenPrefixes = [
