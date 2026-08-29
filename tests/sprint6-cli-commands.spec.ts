@@ -16,7 +16,14 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+// Every test here builds a real git repo (several `git` subprocesses) and
+// runs the scan engine at least once — `impact` runs it twice plus
+// materializes a prior commit's tree file-by-file via `git show`. On
+// Windows CI that legitimately exceeds Vitest's 5s default; this is real
+// work, not a hang. Same remedy as tests/scale-benchmark.spec.ts.
+vi.setConfig({ testTimeout: 30_000 });
 
 import {
   main,
