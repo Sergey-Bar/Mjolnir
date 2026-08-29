@@ -21,7 +21,7 @@
 80% of visitors decide in 8 seconds. The README must be a landing page:
 
 ```markdown
-# QA Doctor
+# Mjölnir
 
 ### Your tests are lying to you. We prove it.
 
@@ -30,7 +30,7 @@
 ✓ Finds fake-green CI setups ✓ Kills flaky-test meetings
 ✓ Speaks Jest/Vitest/Playwright ✓ Zero config, local-first
 
-npx qa-doctor@latest
+npx mjolnir@latest
 ```
 
 Requirements:
@@ -76,7 +76,7 @@ GitHub Trending formula ≈ stars/day velocity + unique stargazers:
 - **Never buy stars** — detectable, community-destroying
 - DO concentrate launches into 24–48h windows (velocity matters)
 - DO add "Star this repo if..." CTA in CLI output (one line, tasteful):
-  `★ Found this useful? github.com/qa-doctor/qa-doctor`
+  `★ Found this useful? github.com/mjolnir/mjolnir`
 - DO create star-worthy MOMENTS: the 10k-star celebration commit,
   contributor wall, milestone changelogs
 - Weekly release cadence = weekly reason to reappear in feeds/releases
@@ -86,7 +86,7 @@ GitHub Trending formula ≈ stars/day velocity + unique stargazers:
 Stars follow contributors; contributors follow easy entry:
 
 - `good-first-issue` labels ALWAYS stocked (rule ideas = perfect first PRs)
-- `qa-doctor create-rule` scaffold → adding a rule is a 30-min PR
+- `mjolnir create-rule` scaffold → adding a rule is a 30-min PR
 - CONTRIBUTING.md with a 5-minute quickstart for the dev environment
 - Publicly credit every contributor (all-contributors spec)
 - Monthly "Rule of the Month" — community votes, we implement together
@@ -97,14 +97,14 @@ Every contributor is 5–10 stars through their own network.
 
 Separate public repo: intentionally terrible test suite + CI config.
 
-- README: "This repo fails QA Doctor spectacularly. Fork and scan."
+- README: "This repo fails Mjölnir spectacularly. Fork and scan."
 - One-click Codespaces setup — scan without installing anything
 - Every marketing post links here instead of the main repo (keeps main
   repo's issues clean, gives skeptics a sandbox)
 
 ## 36. Comparison Pages (SEO + positioning) 🔥
 
-Static pages: "QA Doctor vs SonarQube", "vs ESLint plugins", "vs Codecov",
+Static pages: "Mjölnir vs SonarQube", "vs ESLint plugins", "vs Codecov",
 "Best Playwright testing tools 2026". These rank on Google forever and
 convert people actively searching for alternatives. Content moat compounds.
 

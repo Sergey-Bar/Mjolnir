@@ -5,7 +5,7 @@
  * package-smoke.spec.ts packs the tarball and symlinks this repo's own
  * node_modules into place to avoid a network dependency in the default
  * suite. That's fast and fine for every-PR coverage, but it is NOT the
- * same thing as `npm install qa-doctor` — it can't catch a genuinely
+ * same thing as `npm install mjolnir-qa` — it can't catch a genuinely
  * broken transitive dependency resolution, a dependency that's
  * unpublishable, or a registry-specific packaging issue, because the
  * symlinked node_modules is this dev environment's already-working
@@ -49,7 +49,7 @@ beforeAll(() => {
   if (!RUN) return;
   execSync("npm run build", { cwd: ROOT, stdio: "pipe" });
 
-  workDir = mkdtempSync(join(tmpdir(), "qa-doctor-registry-pack-"));
+  workDir = mkdtempSync(join(tmpdir(), "mjolnir-registry-pack-"));
   const packOut = execSync(`npm pack --pack-destination "${workDir}" --json`, {
     cwd: ROOT,
   }).toString();
@@ -58,21 +58,21 @@ beforeAll(() => {
   const { filename } = packResult;
   const tarball = join(workDir, filename);
 
-  installDir = mkdtempSync(join(tmpdir(), "qa-doctor-registry-install-"));
+  installDir = mkdtempSync(join(tmpdir(), "mjolnir-registry-install-"));
   mkdirSync(join(installDir, "node_modules"), { recursive: true });
 
   // The real thing: let npm resolve `dependencies` from the registry
   // into a directory that never had this repo's node_modules in it.
   execSync(`npm install "${tarball}"`, { cwd: installDir, stdio: "pipe" });
 
-  const installedPkgDir = join(installDir, "node_modules", "qa-doctor");
+  const installedPkgDir = join(installDir, "node_modules", "mjolnir-qa");
   const installedPkgJson = JSON.parse(
     readFileSync(join(installedPkgDir, "package.json"), "utf8"),
   );
   const binRel =
     typeof installedPkgJson.bin === "string"
       ? installedPkgJson.bin
-      : (installedPkgJson.bin["qa-doctor"] ?? installedPkgJson.bin.qa_doctor);
+      : (installedPkgJson.bin["mjolnir"] ?? installedPkgJson.bin.mjolnir);
   entryPath = join(installedPkgDir, binRel);
 }, 120_000);
 
@@ -91,7 +91,7 @@ describe.runIf(RUN)(
 
     it("the installed binary runs against a real fixture repo", () => {
       const fixtureDir = mkdtempSync(
-        join(tmpdir(), "qa-doctor-registry-fixture-"),
+        join(tmpdir(), "mjolnir-registry-fixture-"),
       );
       try {
         mkdirSync(join(fixtureDir, "e2e"), { recursive: true });

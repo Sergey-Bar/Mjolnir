@@ -1,11 +1,12 @@
 # QA-CI-005 — Report consumed but never generated
 
-_Generated from the live rule registry and this rule's own committed fixtures by `qa-doctor`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
 | Field               | Value                                      |
 | ------------------- | ------------------------------------------ |
 | Severity            | error                                      |
 | Confidence          | high                                       |
+| Tier                | core                                       |
 | Evidence level      | E2                                         |
 | QA impact           | Blocks release confidence (BLOCKS-RELEASE) |
 | False-positive risk | low                                        |
@@ -37,7 +38,7 @@ Verified against `tests/fixtures/QA-CI-005/must-not-fire/with-coverage.yml` — 
 
 ## Corpus-measured false-positive risk
 
-Real occurrence counts from `npm run corpus:audit` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
+Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
 | Repo              | Occurrences |
 | ----------------- | ----------- |
@@ -45,4 +46,4 @@ Real occurrence counts from `npm run corpus:audit` against actively-maintained O
 
 ---
 
-Full catalog: `qa-doctor rules --md` · Live explanation: `qa-doctor explain QA-CI-005`
+Full catalog: `mjolnir rules --md` · Live explanation: `mjolnir explain QA-CI-005`

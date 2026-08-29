@@ -28,7 +28,7 @@ import type { ForensicsReport } from "../src/forensics/types.js";
 
 let dir: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "qa-doctor-empty-states-"));
+  dir = mkdtempSync(join(tmpdir(), "mjolnir-empty-states-"));
 });
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });

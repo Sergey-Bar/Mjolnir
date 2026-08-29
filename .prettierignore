@@ -3,3 +3,6 @@ coverage/
 node_modules/
 package-lock.json
 scratch/
+
+# Saved HTML artifact exports (planning reference material, not source)
+.planning/**/*.html

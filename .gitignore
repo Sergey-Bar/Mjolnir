@@ -23,3 +23,7 @@ self-scan.json
 # Scratch/probe files (debug artifacts, never committed)
 scratch/
 package/
+
+# Saved HTML artifact exports dropped into .planning for reference
+.planning/*.html
+.planning/*_files/

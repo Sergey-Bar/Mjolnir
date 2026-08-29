@@ -1,5 +1,5 @@
 /**
- * `qa-doctor create-rule <ID> --title "..."` — rule scaffold generator
+ * `mjolnir create-rule <ID> --title "..."` — rule scaffold generator
  * (Tier 6 #34, Contribution Surface Engineering).
  *
  * Generates the four files every rule MUST ship with (anti-creep law):

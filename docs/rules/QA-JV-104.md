@@ -1,28 +1,31 @@
-# QA-JV-104 — Static/shared Playwright page across tests
+# QA-JV-104 — Browser state shared across tests
 
-_Generated from the live rule registry and this rule's own committed fixtures by `qa-doctor`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
 | Field               | Value                        |
 | ------------------- | ---------------------------- |
 | Severity            | warning                      |
 | Confidence          | medium                       |
+| Tier                | extended                     |
 | Evidence level      | E1                           |
 | QA impact           | Flaky-test risk (FLAKY-RISK) |
 | False-positive risk | medium                       |
 | Autofix available   | no                           |
 | Languages           | java                         |
-| Frameworks          | junit, testng, playwright    |
+| Frameworks          | junit, testng                |
 | Detection strategy  | regex pattern                |
-| Introduced in       | v0.3.8                       |
+| Introduced in       | v0.4.0                       |
 
 ## Why this fails in production
 
-Parallel test execution shares the JVM's statics: one test navigating or closing the page corrupts every other test's session.
+A shared Page/Browser leaks cookies, localStorage, and navigation state between tests — failures become order-dependent and impossible to reproduce in isolation.
 
 ## What gets flagged (real detector output)
 
 ```
-`static Page` — browser state shared across tests.
+Static `
+
+    private static Page` — browser state shared across tests.
 ```
 
 Example from this rule's own must-fire fixture: `tests/fixtures/QA-JV-104/must-fire/SearchTest.java`
@@ -37,8 +40,12 @@ Verified against `tests/fixtures/QA-JV-104/must-not-fire/SearchTest.java` — a 
 
 ## Corpus-measured false-positive risk
 
-UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked by `npm run corpus:audit` (see `docs/FP-AUDIT.md`). That is not the same as "never fires incorrectly" — it just means no occurrence, correct or not, has been observed there yet.
+Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
+
+| Repo                      | Occurrences |
+| ------------------------- | ----------- |
+| microsoft-playwright-java | 2           |
 
 ---
 
-Full catalog: `qa-doctor rules --md` · Live explanation: `qa-doctor explain QA-JV-104`
+Full catalog: `mjolnir rules --md` · Live explanation: `mjolnir explain QA-JV-104`

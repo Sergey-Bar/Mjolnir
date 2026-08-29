@@ -1,5 +1,5 @@
 /**
- * `qa-doctor triage` crash on a missing target directory — precise root
+ * `mjolnir triage` crash on a missing target directory — precise root
  * cause (Test Hardening Plan, follow-up to readme-doctest.spec.ts's
  * broader finding).
  *
@@ -14,7 +14,7 @@
  * only actually helps the `--no-md` path (which skips that write
  * entirely and reaches the graceful check). Without `--no-md`, the write
  * into a directory that doesn't exist still throws ENOENT before the
- * check is ever reached — so plain `qa-doctor triage ./test-results/`
+ * check is ever reached — so plain `mjolnir triage ./test-results/`
  * on a fresh repo still crashes (exit 20) exactly as before.
  */
 
@@ -29,7 +29,7 @@ let dir: string;
 let origCwd: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "qa-doctor-triage-missing-"));
+  dir = mkdtempSync(join(tmpdir(), "mjolnir-triage-missing-"));
   origCwd = process.cwd();
   process.chdir(dir);
 });

@@ -1,5 +1,5 @@
 /**
- * `qa-doctor rules` — machine-readable rule catalog with Trust Metadata.
+ * `mjolnir rules` — machine-readable rule catalog with Trust Metadata.
  *
  * Renders every registered rule as a docs table (markdown) or JSON.
  * This is the "Trust Metadata as product infrastructure" piece: the
@@ -17,6 +17,8 @@ export interface RuleCatalogEntry {
   category: string;
   severity: string;
   confidence: string;
+  /** Which report the rule ships in: core + extended by default, quarantine only with --strict. */
+  tier: "core" | "extended" | "quarantine";
   /** Honesty Core: effective evidence level (declared or derived). */
   evidenceLevel: EvidenceLevel;
   qaImpact: string;
@@ -38,6 +40,7 @@ export function buildCatalog(
     category: r.category,
     severity: r.severity,
     confidence: r.confidence,
+    tier: r.tier ?? "core",
     // Declared override wins; otherwise the honest derivation.
     evidenceLevel:
       r.evidenceLevel ?? deriveEvidenceLevel(r.findingType, r.confidence),
@@ -58,12 +61,12 @@ export function renderCatalogMd(entries: RuleCatalogEntry[]): string {
     "",
     "Generated from the rule registry by `mjolnir rules --md`. Do not edit by hand.",
     "",
-    "| ID | Title | Severity | Confidence | Evidence | FP Risk | Autofix | Since |",
-    "|---|---|---|---|---|---|---|---|",
+    "| ID | Title | Severity | Tier | Confidence | Evidence | FP Risk | Autofix | Since |",
+    "|---|---|---|---|---|---|---|---|---|",
   ];
   for (const e of entries) {
     lines.push(
-      `| ${e.id} | ${escapeMdCell(e.title)} | ${e.severity} | ${e.confidence} | ${e.evidenceLevel} | ${e.falsePositiveRisk ?? "—"} | ${e.autofix ? "yes" : "no"} | ${e.introduced ?? "—"} |`,
+      `| ${e.id} | ${escapeMdCell(e.title)} | ${e.severity} | ${e.tier} | ${e.confidence} | ${e.evidenceLevel} | ${e.falsePositiveRisk ?? "—"} | ${e.autofix ? "yes" : "no"} | ${e.introduced ?? "—"} |`,
     );
   }
   return lines.join("\n");

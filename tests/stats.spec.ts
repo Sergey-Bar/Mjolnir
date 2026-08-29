@@ -1,5 +1,5 @@
 /**
- * `qa-doctor stats` (Master-Stabilization-Plan Sprint 6, Task 26).
+ * `mjolnir stats` (Master-Stabilization-Plan Sprint 6, Task 26).
  *
  * Local-only cumulative counters. Must report honest zeros for a repo
  * with no recorded history — never a fabricated all-time total.
@@ -29,7 +29,7 @@ afterEach(() => {
   dirs = [];
 });
 function tmpDir(): string {
-  const d = mkdtempSync(join(tmpdir(), "qa-doctor-stats-"));
+  const d = mkdtempSync(join(tmpdir(), "mjolnir-stats-"));
   dirs.push(d);
   return d;
 }

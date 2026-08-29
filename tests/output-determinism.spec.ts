@@ -26,7 +26,7 @@ import { compareFindings } from "../src/types.js";
 let dir: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "qa-doctor-determinism-"));
+  dir = mkdtempSync(join(tmpdir(), "mjolnir-determinism-"));
   mkdirSync(join(dir, "e2e", "nested"), { recursive: true });
   // Multiple files/findings, deliberately created in an order that
   // differs from sorted order, so a passing test proves real sorting

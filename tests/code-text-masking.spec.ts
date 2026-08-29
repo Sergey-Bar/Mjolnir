@@ -168,3 +168,137 @@ describe("computeCodeText (C#)", () => {
     expect(result).not.toContain("hi");
   });
 });
+
+// ─── Branch-coverage completion for the hand-written maskers ──────────
+//
+// The blocks above cover the common paths; these exercise the prefix
+// handling, unterminated-literal recovery, and language-specific literal
+// forms (Java text blocks, C# raw/verbatim/interpolated combinations)
+// that were previously only reached indirectly through rule fixtures.
+
+describe("computeCodeText — language dispatch and fallback", () => {
+  it("returns raw text unchanged for an unknown language", () => {
+    const code = 'x = "kept as-is"';
+    expect(
+      computeCodeText({ path: "f.txt", text: code }, "ruby" as never),
+    ).toBe(code);
+  });
+
+  it("never throws on malformed input — degrades to raw text or a masked view", () => {
+    for (const lang of ["python", "java", "csharp"] as const) {
+      expect(() =>
+        computeCodeText({ path: `f.${lang}`, text: '"\\' }, lang),
+      ).not.toThrow();
+    }
+  });
+
+  it("preserves total length (masking only substitutes, never deletes)", () => {
+    const code = 'a = "one" # two\nb = 3';
+    const out = computeCodeText({ path: "t_x.py", text: code }, "python");
+    expect(out).toHaveLength(code.length);
+  });
+});
+
+describe("computeCodeText (Python) — prefixes and edge cases", () => {
+  const mask = (c: string) =>
+    computeCodeText({ path: "test_x.py", text: c }, "python");
+
+  it("blanks f-string / r-string / b-string bodies but keeps the code around them", () => {
+    const out = mask('v = f"value {x}"\nw = r"raw\\path"\nq = b"bytes"\nz = 9');
+    expect(out).not.toContain("value");
+    expect(out).not.toContain("raw");
+    expect(out).not.toContain("bytes");
+    expect(out).toContain("z = 9");
+  });
+
+  it("does not treat a bare identifier starting with f/r/b as a string prefix", () => {
+    const out = mask("format = 1\nregister(from_thing)\nb = 2");
+    expect(out).toContain("format = 1");
+    expect(out).toContain("register(from_thing)");
+    expect(out).toContain("b = 2");
+  });
+
+  it("handles an unterminated single-quoted string without hanging", () => {
+    const out = mask('x = "no end\ny = 1');
+    expect(out.split("\n")).toHaveLength(2);
+    expect(out).toContain("y = 1");
+  });
+
+  it("handles an unterminated triple-quoted string (blanks to EOF)", () => {
+    const out = mask('x = """still open\nmore\n');
+    expect(out).not.toContain("still open");
+    expect(out).not.toContain("more");
+  });
+
+  it("keeps escaped quotes inside a string from ending it early", () => {
+    const out = mask('x = "a \\" b"\ny = 1');
+    expect(out).toContain("y = 1");
+    expect(out).not.toContain("a ");
+  });
+});
+
+describe("computeCodeText (Java) — text blocks, char literals, unclosed comments", () => {
+  const mask = (c: string) =>
+    computeCodeText({ path: "FooTest.java", text: c }, "java");
+
+  it("blanks a Java text block but preserves its newlines and trailing code", () => {
+    const code = 'String s = """\nline one\nline two\n""";\nint z = 1;';
+    const out = mask(code);
+    expect(out).not.toContain("line one");
+    expect(out).toContain("int z = 1;");
+    expect(out.split("\n")).toHaveLength(code.split("\n").length);
+  });
+
+  it("blanks char literals, including escaped ones", () => {
+    const out = mask("char a = 'x'; char b = '\\n'; int z = 1;");
+    expect(out).toContain("char a =");
+    expect(out).toContain("int z = 1;");
+  });
+
+  it("blanks an unclosed block comment to end of file", () => {
+    const out = mask("int x = 1; /* never closed\nstill comment");
+    expect(out).toContain("int x = 1;");
+    expect(out).not.toContain("still comment");
+  });
+
+  it("keeps escaped quote inside a string literal from ending it early", () => {
+    const out = mask('String s = "a \\" b"; int z = 1;');
+    expect(out).toContain("int z = 1;");
+  });
+});
+
+describe("computeCodeText (C#) — verbatim, interpolated, raw, combined prefixes", () => {
+  const mask = (c: string) =>
+    computeCodeText({ path: "FooTests.cs", text: c }, "csharp");
+
+  it("blanks $@ and @$ interpolated-verbatim strings", () => {
+    const out = mask(
+      'var a = $@"c:\\{x}\\path";\nvar b = @$"{y}\\z";\nint z = 1;',
+    );
+    expect(out).not.toContain("path");
+    expect(out).toContain("int z = 1;");
+  });
+
+  it("blanks a verbatim string containing a doubled-quote escape", () => {
+    const out = mask('var s = @"he said ""hi""";\nint z = 1;');
+    expect(out).not.toContain("he said");
+    expect(out).toContain("int z = 1;");
+  });
+
+  it("blanks a C# 11 raw string literal", () => {
+    const out = mask('var s = """\nraw {notInterpolated}\n""";\nint z = 1;');
+    expect(out).not.toContain("raw {");
+    expect(out).toContain("int z = 1;");
+  });
+
+  it("does not treat a lone @ or $ without a following quote as a string", () => {
+    const out = mask("var @class = 1;\nvar total = a $ b;\nint z = 1;");
+    expect(out).toContain("var @class = 1;");
+    expect(out).toContain("int z = 1;");
+  });
+
+  it("blanks char literals and unclosed block comments", () => {
+    expect(mask("char c = 'x'; int z = 1;")).toContain("int z = 1;");
+    expect(mask("int x = 1; /* unclosed")).toContain("int x = 1;");
+  });
+});

@@ -9,7 +9,7 @@
     publicly praised by CTOs.)
 17. **ASCII art milestones** — first clean scan: a small trophy. Silly,
     screenshot-able, free virality.
-18. **`qa-doctor stats`** — personal/global fun counters: "you've removed
+18. **`mjolnir stats`** — personal/global fun counters: "you've removed
     47 hard sleeps all-time".
 19. **Terminal UX polish** — interactive finding navigation (j/k), inline
     diff preview on hover-style reveal.

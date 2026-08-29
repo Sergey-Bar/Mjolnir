@@ -1,11 +1,12 @@
 # QA-PY-007 — pytest.raises without match
 
-_Generated from the live rule registry and this rule's own committed fixtures by `qa-doctor`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
 | Field               | Value                          |
 | ------------------- | ------------------------------ |
 | Severity            | warning                        |
 | Confidence          | medium                         |
+| Tier                | quarantine                     |
 | Evidence level      | E1                             |
 | QA impact           | False-green risk (FALSE-GREEN) |
 | False-positive risk | medium                         |
@@ -37,14 +38,14 @@ Verified against `tests/fixtures/QA-PY-007/must-not-fire/with-match.py` — a le
 
 ## Corpus-measured false-positive risk
 
-Real occurrence counts from `npm run corpus:audit` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
+Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
 | Repo              | Occurrences |
 | ----------------- | ----------- |
 | pallets-click     | 20          |
 | psf-requests      | 56          |
-| pytest-dev-pytest | 279         |
+| pytest-dev-pytest | 268         |
 
 ---
 
-Full catalog: `qa-doctor rules --md` · Live explanation: `qa-doctor explain QA-PY-007`
+Full catalog: `mjolnir rules --md` · Live explanation: `mjolnir explain QA-PY-007`

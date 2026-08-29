@@ -22,6 +22,7 @@ export const hardSleep = defineRule({
   autofix: false,
   detectionStrategy: "regex pattern + behavioral wait-shape matching",
   introduced: "0.1.0",
+  tier: "extended",
   run(ctx) {
     const findings: Omit<
       import("../../types.js").Finding,

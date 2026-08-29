@@ -23,16 +23,6 @@
       "ruleId": "QA-TEST-002",
       "files": ["tests/registry-install.spec.ts"],
       "reason": "Intentionally skipped: the registry-install smoke test is gated behind RUN_REGISTRY_INSTALL_TEST=1 because it requires network and is slow."
-    },
-    {
-      "ruleId": "QA-PW-119",
-      "files": ["tests/registry-install.spec.ts"],
-      "reason": "The registry-install smoke test uses beforeAll/afterAll with shared mutable state (workDir, installDir) by design — it creates and destroys a real npm install directory, which is inherently stateful."
-    },
-    {
-      "ruleId": "QA-CI-002",
-      "files": [".github/workflows/qa-doctor.yml"],
-      "reason": "The 'Restore baseline from base branch' step's `git checkout ... || echo` is a genuine best-effort fallback for an OPTIONAL file — not a test command whose failure is being hidden."
     }
   ]
 }

@@ -1,5 +1,5 @@
 /**
- * `qa-doctor triage` — the Triage Meeting Killer (Tier 5 #22).
+ * `mjolnir triage` — the Triage Meeting Killer (Tier 5 #22).
  *
  * Consumes a forensics report and generates TRIAGE.md: the artifact that
  * turns a 45-minute flaky-test meeting into 10 minutes of approvals.

@@ -24,7 +24,7 @@ import { runScan } from "../src/cli.js";
 
 let dir: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "qa-doctor-adversarial-"));
+  dir = mkdtempSync(join(tmpdir(), "mjolnir-adversarial-"));
 });
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });

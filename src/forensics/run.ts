@@ -1,5 +1,5 @@
 /**
- * `qa-doctor forensics <dir-or-file>` — runtime evidence entry point (R4).
+ * `mjolnir forensics <dir-or-file>` — runtime evidence entry point (R4).
  *
  * Accepts either a single report file or a directory. In a directory it
  * looks for, in priority order:

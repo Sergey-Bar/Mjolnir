@@ -1,11 +1,12 @@
 # QA-TQUAL-009 — Assertion in promise chain that is never awaited
 
-_Generated from the live rule registry and this rule's own committed fixtures by `qa-doctor`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
 | Field               | Value                          |
 | ------------------- | ------------------------------ |
 | Severity            | error                          |
 | Confidence          | high                           |
+| Tier                | core                           |
 | Evidence level      | E2                             |
 | QA impact           | False-green risk (FALSE-GREEN) |
 | False-positive risk | low                            |
@@ -37,8 +38,8 @@ Verified against `tests/fixtures/QA-TQUAL-009/must-not-fire/clean.spec.ts` — a
 
 ## Corpus-measured false-positive risk
 
-UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked by `npm run corpus:audit` (see `docs/FP-AUDIT.md`). That is not the same as "never fires incorrectly" — it just means no occurrence, correct or not, has been observed there yet.
+UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked by `npm run corpus:regression` (see `docs/FP-AUDIT.md`). That is not the same as "never fires incorrectly" — it just means no occurrence, correct or not, has been observed there yet.
 
 ---
 
-Full catalog: `qa-doctor rules --md` · Live explanation: `qa-doctor explain QA-TQUAL-009`
+Full catalog: `mjolnir rules --md` · Live explanation: `mjolnir explain QA-TQUAL-009`

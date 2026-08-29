@@ -8,7 +8,7 @@
  * (deterministic-defect) finding would silently defeat the whole
  * Honesty Core mechanism. This test audits every *finding* reporter
  * that actually ships (terminal, JSON, SARIF — there is no
- * `--format markdown` for scan findings; `qa-doctor rules --md` is a
+ * `--format markdown` for scan findings; `mjolnir rules --md` is a
  * rule-catalog reporter, audited separately below) and asserts the
  * evidence level for a specific finding is recoverable from each one.
  */
@@ -126,7 +126,7 @@ describe("evidence level reaches every finding reporter that ships", () => {
   });
 });
 
-describe("rule-catalog markdown reporter (qa-doctor rules --md)", () => {
+describe("rule-catalog markdown reporter (mjolnir rules --md)", () => {
   // There is no --format markdown for scan findings (only terminal/
   // json/sarif exist) — the rule catalog is this repo's one markdown
   // reporter, and it carries evidence level per rule.

@@ -1,5 +1,5 @@
 /**
- * `qa-doctor baseline` / `qa-doctor diff` (Master-Stabilization-Plan
+ * `mjolnir baseline` / `mjolnir diff` (Master-Stabilization-Plan
  * Sprint 6, Task 24) — Plan.md Phase 10 / §24: existing debt should not
  * block every PR, only NEW or WORSENED debt should.
  */
@@ -25,7 +25,7 @@ afterEach(() => {
 });
 
 function tmpDir(): string {
-  const d = mkdtempSync(join(tmpdir(), "qa-doctor-baseline-"));
+  const d = mkdtempSync(join(tmpdir(), "mjolnir-baseline-"));
   dirs.push(d);
   return d;
 }

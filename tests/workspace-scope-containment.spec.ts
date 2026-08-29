@@ -10,9 +10,9 @@
  * the MONOREPO ROOT's package.json. If that root declares
  * `workspaces: ["packages/*"]`, the scan then covers every sibling
  * package too — not just the directory the user actually pointed
- * qa-doctor at.
+ * mjolnir at.
  *
- * Concretely: `qa-doctor packages/pkg-a` returns findings from
+ * Concretely: `mjolnir packages/pkg-a` returns findings from
  * `packages/pkg-b` as well. In CI, a job scoped to one package's PR
  * would see findings — and gate failures — attributed to a completely
  * unrelated sibling package the PR never touched.
@@ -28,7 +28,7 @@ import { runScan } from "../src/cli.js";
 let dir: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "qa-doctor-workspace-scope-"));
+  dir = mkdtempSync(join(tmpdir(), "mjolnir-workspace-scope-"));
   writeFileSync(
     join(dir, "package.json"),
     JSON.stringify({ name: "root", workspaces: ["packages/*"] }),

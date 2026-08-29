@@ -59,7 +59,7 @@ function git(cwd: string, args: string[]): void {
 }
 
 function makeGitRepoWithHistory(): string {
-  const d = mkdtempSync(join(tmpdir(), "qa-doctor-sprint6-cli-"));
+  const d = mkdtempSync(join(tmpdir(), "mjolnir-sprint6-cli-"));
   createdDirs.push(d);
   git(d, ["init", "-q", "-b", "main"]);
   git(d, ["config", "user.email", "test@example.com"]);
@@ -93,7 +93,7 @@ describe("runImpactCommand", () => {
   });
 
   it("returns 2 (no comparison possible) for a non-git target, never crashing", () => {
-    const dir = makeEmptyDir("qa-doctor-sprint6-nogit-");
+    const dir = makeEmptyDir("mjolnir-sprint6-nogit-");
     mkdirSync(join(dir, "e2e"), { recursive: true });
     writeFileSync(join(dir, "e2e", "a.spec.ts"), "test('x', () => {});\n");
     const cap = capture();
@@ -202,7 +202,7 @@ describe("runPrCommentCommand", () => {
 
 describe("runStatsCommand", () => {
   it("never throws and returns 0 even with no history recorded", () => {
-    const dir = makeEmptyDir("qa-doctor-sprint6-stats-");
+    const dir = makeEmptyDir("mjolnir-sprint6-stats-");
     const cap = capture();
     let code: number | undefined;
     expect(() => {

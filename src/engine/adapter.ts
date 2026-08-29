@@ -1,7 +1,7 @@
 /**
  * LanguageAdapter interface (Upgrade-Plan-v2 R1).
  *
- * The seam that makes QA Doctor multi-language. Each adapter owns:
+ * The seam that makes Mjolnir multi-language. Each adapter owns:
  * file discovery, framework detection, and (later) AST parsing for its
  * language. Rules declare which adapters they apply to.
  *

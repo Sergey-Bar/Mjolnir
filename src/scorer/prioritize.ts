@@ -14,7 +14,7 @@
  * possibly-inconsistent number).
  *
  * Effort: the only effort signal this project has that isn't invented —
- * `RuleMeta.autofix`. A finding `qa-doctor fix` can resolve mechanically
+ * `RuleMeta.autofix`. A finding `mjolnir fix` can resolve mechanically
  * is genuinely lower effort than one requiring a human to read code and
  * decide what "correct" looks like. This is a coarse two-tier signal
  * (autofixable / not), not a fabricated effort-hours estimate — inventing

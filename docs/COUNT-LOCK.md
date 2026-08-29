@@ -1,7 +1,7 @@
 # Corpus Count Lock (Regression Guard)
 
 **Generated from `tests/corpus/baseline/*.json` — do not edit by hand.**
-Regenerate with `node scripts/generate-fp-audit-table.mjs` after a reviewed
+Regenerate with `npm run fp-audit:generate` after a reviewed
 `npm run corpus:regression:update` run.
 
 This is a **count lock**, not a false-positive audit. It records how many
@@ -19,7 +19,7 @@ This clones the real repos below over the network, runs the same
 code than the committed baseline recorded (a false-positive
 regression signal).
 
-Last generated: 2026-08-27.
+Last generated: 2026-08-29.
 
 ## microsoft-playwright-dotnet
 

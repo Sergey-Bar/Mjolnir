@@ -1,11 +1,12 @@
 # QA-PY-009 — Commented-out test
 
-_Generated from the live rule registry and this rule's own committed fixtures by `qa-doctor`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
 | Field               | Value                       |
 | ------------------- | --------------------------- |
 | Severity            | warning                     |
 | Confidence          | high                        |
+| Tier                | core                        |
 | Evidence level      | E2                          |
 | QA impact           | Test hygiene debt (HYGIENE) |
 | False-positive risk | medium                      |
@@ -37,7 +38,7 @@ Verified against `tests/fixtures/QA-PY-009/must-not-fire/clean.py` — a legitim
 
 ## Corpus-measured false-positive risk
 
-Real occurrence counts from `npm run corpus:audit` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
+Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
 | Repo              | Occurrences |
 | ----------------- | ----------- |
@@ -45,4 +46,4 @@ Real occurrence counts from `npm run corpus:audit` against actively-maintained O
 
 ---
 
-Full catalog: `qa-doctor rules --md` · Live explanation: `qa-doctor explain QA-PY-009`
+Full catalog: `mjolnir rules --md` · Live explanation: `mjolnir explain QA-PY-009`

@@ -12,6 +12,7 @@
  * the class of bug in Master-Stabilization-Plan findings #3 and #10).
  */
 
+import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -199,5 +200,80 @@ describe("README does not reference the unrelated npm package 'qa-doctor' (unsco
 
   it("no shields.io badge querying the unscoped 'qa-doctor' npm package", () => {
     expect(README).not.toMatch(/img\.shields\.io\/npm\/[vd]\/qa-doctor\b/);
+  });
+});
+
+describe("every documented `npm run` command actually exists", () => {
+  // A real, shipped defect this locks: all 91 generated rule pages told
+  // the reader to reproduce corpus counts with a script whose name had
+  // been changed to "corpus:regression" without updating the generator
+  // string, so the one command a skeptical reader would actually
+  // copy-paste failed with "Missing script". For a tool whose whole
+  // claim is "we prove it", that is the worst possible first impression
+  // — and exactly the class a grep catches for free.
+  //
+  // (This comment deliberately does not spell the dead name out as a
+  // literal `npm run …`, or this test would flag its own source.)
+  const scripts = new Set(
+    Object.keys(
+      (
+        JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")) as {
+          scripts: Record<string, string>;
+        }
+      ).scripts,
+    ),
+  );
+
+  // Fixtures, the golden repo and archived plans deliberately contain
+  // invented script names as test data or historical record — they are
+  // not instructions to a reader.
+  const EXCLUDED = [
+    "tests/fixtures/",
+    "tests/golden/",
+    "docs/archive/",
+    "node_modules/",
+    "dist/",
+    "coverage/",
+    ".planning/Tempering",
+  ];
+
+  function trackedFiles(): string[] {
+    return execFileSync("git", ["ls-files", "*.md", "*.ts", "*.mjs"], {
+      cwd: ROOT,
+      encoding: "utf8",
+      maxBuffer: 20 * 1024 * 1024,
+    })
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean)
+      .filter((f) => !EXCLUDED.some((prefix) => f.startsWith(prefix)));
+  }
+
+  it("finds tracked files to check (sanity)", () => {
+    expect(trackedFiles().length).toBeGreaterThan(20);
+  });
+
+  it("no tracked doc or source references a script package.json does not define", () => {
+    const offenders: string[] = [];
+    for (const file of trackedFiles()) {
+      let text: string;
+      try {
+        text = readFileSync(join(ROOT, file), "utf8");
+      } catch {
+        continue; // listed but unreadable — not this test's concern
+      }
+      for (const m of text.matchAll(/npm run ([a-z][a-z0-9:-]*)/g)) {
+        const script = m[1];
+        if (script && !scripts.has(script)) {
+          offenders.push(`${file}: npm run ${script}`);
+        }
+      }
+    }
+    expect(
+      [...new Set(offenders)],
+      "these files tell a reader to run an npm script that does not exist " +
+        "in package.json — either the script was renamed and the doc was " +
+        "not, or the command was never real",
+    ).toEqual([]);
   });
 });

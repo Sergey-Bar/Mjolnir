@@ -41,7 +41,7 @@ Every QA team has a weekly "flaky test meeting". It's miserable and it's
 where QA engineers burn out. Build the artifact that ends it:
 
 ```text
-qa-doctor triage
+mjolnir triage
 ```
 
 Generates `TRIAGE.md` for the meeting:
@@ -55,7 +55,7 @@ THIS WEEK'S FLAKY TRIAGE — auto-generated, do not edit
 | login.spec:12 | 12% | 1h ago | #3 | @omri | fix selector drift |
 
 Auto-quarantine proposal: 2 tests (fail-rate > 30%, > 5 occurrences)
-Run `qa-doctor quarantine --apply` to move them to quarantine suite.
+Run `mjolnir quarantine --apply` to move them to quarantine suite.
 ```
 
 - Quarantine isn't deletion — quarantined tests run nightly, not per-PR
@@ -70,7 +70,7 @@ The moment of maximum QA pain: the release go/no-go call. Give QAs the
 artifact they must present to management:
 
 ```text
-qa-doctor release-report --since v2.3.0
+mjolnir release-report --since v2.3.0
 ```
 
 ```text
@@ -110,7 +110,7 @@ QAs get asked "what's your coverage?" by managers constantly. Raw %
 is a lie they're forced to tell. Replace it:
 
 ```text
-qa-doctor coverage-honesty
+mjolnir coverage-honesty
 ```
 
 ```text
@@ -134,7 +134,7 @@ a standalone command that plugs into existing coverage reports.
 QA engineers' hidden nightmare: framework upgrades break hundreds of tests.
 Be the tool that carries them across:
 
-- `qa-doctor migrate jest→vitest` — mechanical transforms + report of
+- `mjolnir migrate jest→vitest` — mechanical transforms + report of
   manual work remaining (Jest globals, mock semantics differences)
 - Playwright major-version upgrade advisor: deprecated APIs in use,
   breaking-change checklist against their config
@@ -149,7 +149,7 @@ QA knows the debt; nobody above them sees it. Make it a first-class,
 exportable artifact:
 
 ```text
-qa-doctor debt
+mjolnir debt
 ```
 
 ```text
@@ -173,7 +173,7 @@ Every QA joining a team spends week one discovering where the bodies are
 buried. One command generates the map:
 
 ```text
-qa-doctor handover
+mjolnir handover
 ```
 
 ```text
@@ -194,7 +194,7 @@ Management speaks money. Flaky tests and hard sleeps burn CI minutes:
 
 - Estimate cost per finding: `~340 CI min/month wasted on retries of X`
 - Optional: connect GitHub API (opt-in!) for real billing data
-- ROI framing in the Impact Report: "QA Doctor pays for its attention"
+- ROI framing in the Impact Report: "Mjölnir pays for its attention"
 
 ## 30. Emotional Design: Respect the QA, Don't Shame Them 🔥 ⬜ UNVERIFIABLE FROM CODE — copy/tone audit, no roast mode exists to check against (see Tier 4 #16)
 
@@ -218,7 +218,7 @@ QUICK WINS (< 1 week each, huge resonance):
   └─ Tone audit pass (#30)               ← copywriting day
 
 NEXT QUARTER:
-  ├─ qa-doctor triage + TRIGAGE.md       ← needs forensics data (R4)
+  ├─ mjolnir triage + TRIGAGE.md       ← needs forensics data (R4)
   ├─ coverage-honesty command            ← consumes existing reports
   └─ debt register export                ← trivial over current findings
 

@@ -1,19 +1,20 @@
 # QA-PW-004 — Brittle selector instead of role-based locator
 
-_Generated from the live rule registry and this rule's own committed fixtures by `qa-doctor`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
-| Field               | Value                       |
-| ------------------- | --------------------------- |
-| Severity            | warning                     |
-| Confidence          | medium                      |
-| Evidence level      | E1                          |
-| QA impact           | Test hygiene debt (HYGIENE) |
-| False-positive risk | medium                      |
-| Autofix available   | no                          |
-| Languages           | typescript, javascript      |
-| Frameworks          | playwright                  |
-| Detection strategy  | regex pattern               |
-| Introduced in       | v0.1.0                      |
+| Field               | Value                                |
+| ------------------- | ------------------------------------ |
+| Severity            | warning                              |
+| Confidence          | medium                               |
+| Tier                | core                                 |
+| Evidence level      | E1                                   |
+| QA impact           | Test hygiene debt (HYGIENE)          |
+| False-positive risk | medium                               |
+| Autofix available   | no                                   |
+| Languages           | typescript, javascript               |
+| Frameworks          | playwright                           |
+| Detection strategy  | regex pattern + inside-string oracle |
+| Introduced in       | v0.1.0                               |
 
 ## Why this fails in production
 
@@ -37,8 +38,12 @@ Verified against `tests/fixtures/QA-PW-004/must-not-fire/clean.spec.ts` — a le
 
 ## Corpus-measured false-positive risk
 
-UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked by `npm run corpus:audit` (see `docs/FP-AUDIT.md`). That is not the same as "never fires incorrectly" — it just means no occurrence, correct or not, has been observed there yet.
+Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
+
+| Repo                      | Occurrences |
+| ------------------------- | ----------- |
+| microsoft-playwright-java | 8           |
 
 ---
 
-Full catalog: `qa-doctor rules --md` · Live explanation: `qa-doctor explain QA-PW-004`
+Full catalog: `mjolnir rules --md` · Live explanation: `mjolnir explain QA-PW-004`

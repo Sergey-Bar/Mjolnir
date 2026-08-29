@@ -9,7 +9,7 @@
 knip's ecosystem (182 plugins) is why it wins. Design now:
 
 ```ts
-// qa-doctor.plugin.ts — userland rules in 20 lines
+// mjolnir.plugin.ts — userland rules in 20 lines
 export default defineRule({
   id: "ACME-001",
   appliesTo: ["typescript"],
@@ -32,7 +32,7 @@ export default defineRule({
   accuracy metrics_. Nobody does this. It's the ultimate trust move for a
   tool whose brand is honesty.
 
-## 8. The QA Doctor Challenge 🎯 ⬜ NOT BUILT — marketing stunt, no code involved, not launched
+## 8. The Mjölnir Challenge 🎯 ⬜ NOT BUILT — marketing stunt, no code involved, not launched
 
 Launch stunt: "Run it on your repo. If it finds nothing real, we donate
 $50 to OSS in your name." Screenshot culture does the marketing.
@@ -40,18 +40,18 @@ Cheaper than ads, generates proof-of-value artifacts publicly.
 
 ## 9. Integrations Where QAs Already Live ⬜ NOT BUILT — `src/integrations/` has only `ci-install.ts`; no VS Code/JetBrains/PW-reporter/Allure/Slack integration
 
-| Integration                                                | Effort | Impact                                |
-| ---------------------------------------------------------- | ------ | ------------------------------------- |
-| **VS Code extension** (inline findings via JSON contract)  | 2 wk   | Massive                               |
-| **JetBrains plugin**                                       | 3 wk   | Enterprise QA                         |
-| **Playwright test reporter** (`reporter: [['qa-doctor']]`) | 1 wk   | Genius wedge — rides inside PW itself |
-| Allure/ReportPortal export                                 | 1 wk   | Test-management shops                 |
-| Slack/Teams PR digest bot                                  | 1 wk   | Lead visibility                       |
+| Integration                                               | Effort | Impact                                |
+| --------------------------------------------------------- | ------ | ------------------------------------- |
+| **VS Code extension** (inline findings via JSON contract) | 2 wk   | Massive                               |
+| **JetBrains plugin**                                      | 3 wk   | Enterprise QA                         |
+| **Playwright test reporter** (`reporter: [['mjolnir']]`)  | 1 wk   | Genius wedge — rides inside PW itself |
+| Allure/ReportPortal export                                | 1 wk   | Test-management shops                 |
+| Slack/Teams PR digest bot                                 | 1 wk   | Lead visibility                       |
 
-The Playwright reporter integration deserves emphasis: it puts QA Doctor
+The Playwright reporter integration deserves emphasis: it puts Mjölnir
 INSIDE every Playwright run without changing any workflow.
 
-## 10. `qa-doctor init --interactive` Onboarding Wizard ✅ DONE — `src/commands/init.ts`
+## 10. `mjolnir init --interactive` Onboarding Wizard ✅ DONE — `src/commands/init.ts`
 
 Walks through: framework detection results → confirm critical paths →
 choose gate levels → generates config + CI + agent instructions + badge.

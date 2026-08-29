@@ -1,6 +1,6 @@
 /**
  * Trust upgrade wave — behavior-based sleep detection, selector risk
- * scoring, and the `qa-doctor doctor` self-audit command.
+ * scoring, and the `mjolnir doctor` self-audit command.
  */
 
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
@@ -15,13 +15,17 @@ import {
   classifyLocator,
 } from "../src/playwright/selector-health.js";
 import {
+  checkAntiCreep,
   checkEvidenceHonesty,
   checkRegistry,
+  checkTierEnforcement,
   checkTrustMetadata,
+  CORE_CAP,
   renderDoctorReport,
   runDoctorSelfAudit,
 } from "../src/commands/doctor.js";
 import { RULES } from "../src/rules/index.js";
+import type { QADoctorRule } from "../src/rules/rule.js";
 import { runDoctorCommand } from "../src/cli.js";
 
 function scan(src: string) {
@@ -81,7 +85,7 @@ describe("selector risk scoring", () => {
   });
 });
 
-describe("qa-doctor doctor self-audit", () => {
+describe("mjolnir doctor self-audit", () => {
   it("registry sanity passes on the real registry", () => {
     const check = checkRegistry();
     expect(check.ok).toBe(true);
@@ -215,5 +219,48 @@ describe("qa-doctor doctor self-audit", () => {
     expect(text).not.toContain("problem #20");
     expect(text).toContain("… and 5 more");
     expect(text).toContain("VIOLATIONS FOUND");
+  });
+});
+
+describe("mjolnir doctor — anti-creep and tier-enforcement checks", () => {
+  const fakeRule = (id: string, tier?: "core" | "extended"): QADoctorRule =>
+    ({
+      id,
+      title: id,
+      category: "QA-TEST",
+      severity: "warning",
+      confidence: "medium",
+      findingType: "heuristic-risk",
+      qaImpact: "HYGIENE",
+      appliesTo: "test-files",
+      autofix: false,
+      ...(tier ? { tier } : {}),
+      run: () => [],
+    }) as unknown as QADoctorRule;
+
+  it("checkAntiCreep passes when core rule count is within CORE_CAP", () => {
+    const rules = Array.from({ length: CORE_CAP }, (_, i) =>
+      fakeRule(`QA-TEST-${100 + i}`),
+    );
+    const check = checkAntiCreep(rules);
+    expect(check.ok).toBe(true);
+    expect(check.details.join(" ")).toContain(`${CORE_CAP}/${CORE_CAP}`);
+  });
+
+  it("checkAntiCreep fails and lists overflow when core exceeds the cap", () => {
+    const rules = Array.from({ length: CORE_CAP + 8 }, (_, i) =>
+      fakeRule(`QA-TEST-${100 + i}`),
+    );
+    const check = checkAntiCreep(rules);
+    expect(check.ok).toBe(false);
+    expect(check.details.join(" ")).toContain("exceeds cap");
+    expect(check.details.some((d) => d.includes("overflow:"))).toBe(true);
+    expect(check.details.some((d) => d.includes("and 3 more"))).toBe(true);
+  });
+
+  it("checkTierEnforcement is informational when a non-existent verdicts dir means nothing is measured", () => {
+    const check = checkTierEnforcement("/definitely/not/a/real/dir");
+    expect(check.ok).toBe(true);
+    expect(check.details.join(" ")).toMatch(/unmeasured/);
   });
 });

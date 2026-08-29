@@ -29,7 +29,7 @@ let dir: string;
 let origCwd: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "qa-doctor-cov-"));
+  dir = mkdtempSync(join(tmpdir(), "mjolnir-cov-"));
   origCwd = process.cwd();
 });
 afterEach(() => {

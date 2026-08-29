@@ -129,7 +129,7 @@ release checklist and the npm-provenance publishing runbook.
   refactor belong in separate PRs.
 - Include the standing-gate output (or note which gate you couldn't run
   and why) in the PR description.
-- If your change touches `qa-doctor.config.json`'s suppressions, explain
+- If your change touches `mjolnir.config.json`'s suppressions, explain
   what would otherwise have false-positived and why the suppression is
   scoped correctly (see the existing entries for the expected level of
   justification).

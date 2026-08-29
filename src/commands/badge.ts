@@ -63,6 +63,9 @@ export function renderBadgeSnippet(
     commit = execSync("git rev-parse --short HEAD", {
       cwd: process.cwd(),
       encoding: "utf8",
+      // Silence git's own "fatal: not a git repository" on stderr — the
+      // catch below is the honest fallback, no need to leak the noise.
+      stdio: ["ignore", "pipe", "ignore"],
     }).trim();
   } catch {
     /* not a git repo or git missing — honest fallback */

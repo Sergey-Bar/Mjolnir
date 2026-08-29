@@ -38,7 +38,7 @@ function mockFinding(
 let dir: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "qa-doctor-adapter-"));
+  dir = mkdtempSync(join(tmpdir(), "mjolnir-adapter-"));
 });
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });

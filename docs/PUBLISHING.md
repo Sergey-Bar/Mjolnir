@@ -20,7 +20,7 @@ account-level setup required before `npm publish` can go live.
 3. **FP-audit docs sync** — if any rule's detection logic changed, run
    the reviewed corpus-audit update and regenerate the docs page:
    ```bash
-   npm run corpus:audit:update   # review every new finding manually first
+   npm run corpus:regression:update   # review every new finding manually first
    npm run fp-audit:generate
    ```
 4. **Golden lock** — if the change legitimately shifts scores, run
@@ -34,31 +34,33 @@ npm run test:coverage && npm run build && npm run self-scan`. All
    `package.json`'s version, re-runs typecheck/lint/test, builds, packs
    a tarball, and creates a GitHub Release with auto-generated notes and
    the tarball attached.
-7. **npm publish** — currently a **manual, out-of-band step** (see
-   "Current state" below) until the parked npm-name decision resolves.
+7. **npm publish** — automatic once the OIDC trusted publisher is
+   configured (see "Current state" below). Until then it is a manual,
+   out-of-band step.
 
-## Current state — npm publish is not automated
+## Current state — npm publish is not yet automated
 
-`release.yml` intentionally does **not** publish to npm today. It packs
-a tarball and attaches it to a GitHub Release only. This is deliberate,
-not an oversight: the npmjs.com OIDC trusted-publisher setup has not
-been completed yet. Running `npm publish` as written would fail without
-the trusted-publisher configuration.
+The package name is **resolved and live**: `mjolnir-qa` on npmjs.com,
+with `bin: { "mjolnir": ... }`, so the CLI command a user types is
+`mjolnir`. Version 0.4.0 was published manually.
+
+`release.yml` does **not** publish to npm yet. It packs a tarball and
+attaches it to a GitHub Release only. This is deliberate, not an
+oversight: the npmjs.com OIDC trusted-publisher setup has not been
+completed. Running `npm publish --provenance` as written would fail
+without that configuration.
 
 A `Publish to npm with provenance` step exists in `release.yml`,
-disabled via `if: false`, ready to flip on once the OIDC setup is done.
-The package name is `mjolnir-qa` with `bin: { "mjolnir": ... }` so the
-CLI command name a user types is `mjolnir`.
+disabled via `if: false`, ready to flip on once the OIDC setup below is
+done.
 
 ## One-time setup required before that step can run (account-level, manual)
 
 This cannot be automated from inside this repository — it is an action
-a maintainer takes once on npmjs.com after the name decision is made.
+a maintainer takes once on npmjs.com.
 
-1. Create (or claim) the target npm package name on npmjs.com — for a
-   scoped name, this just means publishing the first version manually
-   from a local machine once (`npm publish --access public`), which
-   reserves the name and org scope.
+1. ~~Claim the package name~~ — **done**: `mjolnir-qa` is published and
+   owned. Nothing to do here for this package.
 2. On the package's npmjs.com settings page, under **Publishing
    access**, configure a **Trusted Publisher** (OIDC): select GitHub
    Actions, the repository (`Sergey-Bar/Mjolnir`), the exact workflow

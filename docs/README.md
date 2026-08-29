@@ -2,18 +2,24 @@
 
 ## Status
 
-Current state: `.planning/STATE.md` — updated after every completed
-sprint, the one-page summary of what's actually shipped versus what's
-still open. `docs/plans/Master-Stabilization-Plan.md` is the active
-plan (stabilization/trust gates for the open beta); everything below it
-in this table predates it and is either superseded or kept for
-historical/audit-trail reference only.
+Current state: `.planning/STATE.md` — the single living document,
+updated after every completed sprint. It is the one-page summary of
+what's actually shipped versus what's still open, and it outranks every
+plan file listed below.
 
-## Plans (`docs/plans/`)
+**Every plan in the table below is complete or superseded.** They live
+in `docs/archive/plans/` and are kept for their per-task audit trail,
+not as instructions. `Master-Stabilization-Plan.md`'s sprints 0–9 are
+all done; the "Tempering Mjölnir" plan that followed it (phases 1–8:
+string masking, fixture exclusion, the measured FP audit, the tier
+system, score normalization, rule families, executable laws, docs truth
+pass) is also complete — see `.planning/STATE.md` for both records.
+
+## Plans (`docs/archive/plans/`) — historical
 
 | File                             | Purpose                                                                                                                                 | Status                                                                                                                          |
 | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `Master-Stabilization-Plan.md`   | Stabilization & trust plan gating the open beta — sprints 0-9                                                                           | **Primary — current work**                                                                                                      |
+| `Master-Stabilization-Plan.md`   | Stabilization & trust plan gating the open beta — sprints 0-9                                                                           | **Complete** — all 9 sprints shipped; superseded by the Tempering plan, then by `.planning/STATE.md`                            |
 | `Implementation-Master-Plan.txt` | Master implementation plan, phase-by-phase                                                                                              | **Superseded** by Master-Stabilization-Plan.md; kept for its per-task audit trail                                               |
 | `Upgrade-Plan-v2.txt`            | R1 LanguageAdapter → R2 Python → R3 Playwright Deep Mode, with rule-ID tables                                                           | Fully annotated, historical — shipped                                                                                           |
 | `Upgrade-Plan-v3.txt`            | New Playwright layers → Playwright-Python → TS AST precision upgrade → Java/.NET Playwright adapters → Plugin API + cross-file analysis | Shipped (see `.planning/STATE.md`); Sprint 8 of Master-Stabilization-Plan continues the Java/.NET parity work this plan started |

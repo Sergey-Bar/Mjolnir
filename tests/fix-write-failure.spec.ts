@@ -1,5 +1,5 @@
 /**
- * `qa-doctor fix` write-failure path (Test Hardening Plan — coverage
+ * `mjolnir fix` write-failure path (Test Hardening Plan — coverage
  * gap closure).
  *
  * planAndApplyFixes has a real safety net for this: if writeFileSync
@@ -29,7 +29,7 @@ let dir: string;
 const SPEC_REL = "e2e/checkout.spec.ts";
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "qa-doctor-fix-write-fail-"));
+  dir = mkdtempSync(join(tmpdir(), "mjolnir-fix-write-fail-"));
   mkdirSync(join(dir, "e2e"), { recursive: true });
   writeFileSync(
     join(dir, SPEC_REL),

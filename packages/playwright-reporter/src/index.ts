@@ -1,21 +1,21 @@
 /**
- * @sergey-bar/qa-doctor-playwright-reporter
+ * mjolnir-qa-playwright-reporter
  *
  * Thin wrapper around Playwright's built-in JSON reporter that documents
- * and pins the exact output contract QA Doctor's forensics pipeline
- * ingests (`qa-doctor forensics`, `triage`, `pw-report`).
+ * and pins the exact output contract Mjölnir's forensics pipeline
+ * ingests (`mjolnir forensics`, `triage`, `pw-report`).
  *
  * Usage in playwright.config.ts:
  *
- *   import { qaDoctorReporter } from "@sergey-bar/qa-doctor-playwright-reporter";
+ *   import { mjolnirReporter } from "mjolnir-qa-playwright-reporter";
  *
  *   export default defineConfig({
- *     reporter: [qaDoctorReporter({ outputFile: "report.json" })],
+ *     reporter: [mjolnirReporter({ outputFile: "report.json" })],
  *   });
  *
  * Why a wrapper instead of raw [['json', ...]]?
  * - One stable place documenting the contract (suites/specs/tests/results).
- * - A named output file convention (`qa-doctor.report.json`) so the CLI's
+ * - A named output file convention (`mjolnir.report.json`) so the CLI's
  *   auto-discovery finds it without extra flags.
  * - Future-proofing: if Playwright changes its JSON shape, this package
  *   can adapt/transpile without every user config changing.
@@ -23,18 +23,18 @@
 
 import type { ReporterDescription } from "@playwright/test";
 
-export interface QaDoctorReporterOptions {
-  /** Where to write the JSON report. Default: "qa-doctor.report.json". */
+export interface MjolnirReporterOptions {
+  /** Where to write the JSON report. Default: "mjolnir.report.json". */
   outputFile?: string;
 }
 
-/** The output file name QA Doctor's CLI auto-discovers by default. */
-export const QA_DOCTOR_REPORT_FILE = "qa-doctor.report.json";
+/** The output file name Mjölnir's CLI auto-discovers by default. */
+export const MJOLNIR_REPORT_FILE = "mjolnir.report.json";
 
-export function qaDoctorReporter(
-  options: QaDoctorReporterOptions = {},
+export function mjolnirReporter(
+  options: MjolnirReporterOptions = {},
 ): ReporterDescription {
-  return ["json", { outputFile: options.outputFile ?? QA_DOCTOR_REPORT_FILE }];
+  return ["json", { outputFile: options.outputFile ?? MJOLNIR_REPORT_FILE }];
 }
 
-export default qaDoctorReporter;
+export default mjolnirReporter;

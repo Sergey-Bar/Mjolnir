@@ -249,6 +249,29 @@ describe("summarizePwRun / renderPwRunSummary", () => {
     const text = renderPwRunSummary(summarizePwRun(report([verdict()])));
     expect(text).not.toContain("retried");
   });
+
+  it("shows the retry line and singular TRUE-FLAKE wording via the retried count", () => {
+    const s = summarizePwRun(
+      report([
+        verdict({
+          title: "lucky",
+          attempts: 2,
+          passedOnRetry: true,
+          everFailed: true,
+        }),
+      ]),
+    );
+    const text = renderPwRunSummary({ ...s, retried: 1, trueFlakes: 1 });
+    expect(text).toContain("1 retried");
+    expect(text).toContain("1 TRUE-FLAKE (passed only");
+  });
+
+  it("omits the Slowest block when every duration is zero", () => {
+    const text = renderPwRunSummary(
+      summarizePwRun(report([verdict({ totalDurationMs: 0 })])),
+    );
+    expect(text).not.toContain("Slowest:");
+  });
 });
 
 describe("QA-PW-140 placeholder rule", () => {

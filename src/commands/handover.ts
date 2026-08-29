@@ -1,5 +1,5 @@
 /**
- * `qa-doctor handover` — the New-QA-Onboarding Artifact (Tier 5 #28).
+ * `mjolnir handover` — the New-QA-Onboarding Artifact (Tier 5 #28).
  *
  * One command generates the map every new QA hire needs on day one:
  * what's solid, what's fake-green, what's flaky, where the bodies are.

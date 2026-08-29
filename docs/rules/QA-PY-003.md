@@ -1,11 +1,12 @@
 # QA-PY-003 — Test function with no assertions
 
-_Generated from the live rule registry and this rule's own committed fixtures by `qa-doctor`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
 | Field               | Value                          |
 | ------------------- | ------------------------------ |
 | Severity            | error                          |
 | Confidence          | high                           |
+| Tier                | quarantine                     |
 | Evidence level      | E2                             |
 | QA impact           | False-green risk (FALSE-GREEN) |
 | False-positive risk | low                            |
@@ -37,14 +38,8 @@ Verified against `tests/fixtures/QA-PY-003/must-not-fire/clean.py` — a legitim
 
 ## Corpus-measured false-positive risk
 
-Real occurrence counts from `npm run corpus:audit` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
-
-| Repo              | Occurrences |
-| ----------------- | ----------- |
-| pallets-click     | 14          |
-| psf-requests      | 14          |
-| pytest-dev-pytest | 781         |
+UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked by `npm run corpus:regression` (see `docs/FP-AUDIT.md`). That is not the same as "never fires incorrectly" — it just means no occurrence, correct or not, has been observed there yet.
 
 ---
 
-Full catalog: `qa-doctor rules --md` · Live explanation: `qa-doctor explain QA-PY-003`
+Full catalog: `mjolnir rules --md` · Live explanation: `mjolnir explain QA-PY-003`

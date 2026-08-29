@@ -78,7 +78,7 @@ describe("command handlers report a crash (exit 20) instead of throwing, when th
   let origCwd: string;
 
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), "qa-doctor-crash-path-"));
+    dir = mkdtempSync(join(tmpdir(), "mjolnir-crash-path-"));
     mkdirSync(join(dir, "e2e"), { recursive: true });
     writeFileSync(
       join(dir, "e2e", "checkout.spec.ts"),
@@ -139,7 +139,7 @@ describe("command handlers report a crash (exit 20) instead of throwing, when th
     expect(code).toBe(20);
   });
 
-  it("`baseline` reports exit 20 instead of throwing when .qa-doctor/ can't be written", () => {
+  it("`baseline` reports exit 20 instead of throwing when .mjolnir/ can't be written", () => {
     if (!locked()) return;
     const errs: string[] = [];
     let code: number | undefined;
@@ -159,7 +159,7 @@ describe("`forensics` reports exit 20 instead of throwing when the target FILE (
   let target: string;
 
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), "qa-doctor-forensics-crash-"));
+    dir = mkdtempSync(join(tmpdir(), "mjolnir-forensics-crash-"));
     target = join(dir, "report.json");
     writeFileSync(target, "{}");
   });
@@ -197,7 +197,7 @@ describe("`debt` and `handover` still return a documented exit code against an e
   let dir: string;
 
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), "qa-doctor-debt-handover-"));
+    dir = mkdtempSync(join(tmpdir(), "mjolnir-debt-handover-"));
   });
 
   afterEach(() => {

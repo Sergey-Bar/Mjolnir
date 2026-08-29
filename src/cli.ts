@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /**
  * Mjölnir CLI entry point (W1-02).
  * Exit codes (§24.1, frozen): 0 clean · 1 findings ≥ gate · 2 partial ·
@@ -80,6 +81,18 @@ import {
   computeSelectorHealth,
   renderSelectorHealth,
 } from "./playwright/selector-health.js";
+
+/**
+ * Tool version for `mjolnir --version`.
+ *
+ * A literal, not a package.json read: the shipped artifact is a single
+ * bundled `dist/cli.mjs`, so resolving package.json at runtime depends on
+ * where the file happens to sit after install. This follows the same
+ * discipline as SARIF's `driver.version` — kept in sync by
+ * `scripts/sync-sarif-version.cjs` on release and guarded by
+ * `tests/version-consistency.spec.ts` locally.
+ */
+export const CLI_VERSION = "0.5.0";
 
 const ADAPTERS = [
   typescriptAdapter,
@@ -1069,6 +1082,14 @@ export function runPwReportCommand(
 }
 
 export function main(argv: string[] = process.argv.slice(2)): number {
+  // `--version` is the first thing most people type against an unfamiliar
+  // CLI. Without this it fell through to the scan arg parser, which does
+  // not know the flag, and printed the full help — technically not a
+  // crash, but it answers a different question than the one asked.
+  if (argv[0] === "--version" || argv[0] === "-v") {
+    out(`mjolnir-qa ${CLI_VERSION}\n`);
+    return 0;
+  }
   // Subcommands (§69): ci install · suppressions · forensics · doctor:playwright
   if (argv[0] === "ci" && argv[1] === "install")
     return runCiInstall(argv.slice(2));
@@ -1117,6 +1138,7 @@ Options:
   --no-ascii            force Unicode box-drawing even where auto-detection
                         would have chosen ASCII
   --strict              include quarantine-tier rules (higher FP risk) in scan
+  -v, --version         print the installed version and exit
   -h, --help            show this help
 
 Subcommands:

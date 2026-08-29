@@ -1,5 +1,5 @@
 /**
- * QA Doctor — canonical types (JSON contract v1, schemaVersion 1).
+ * Mjolnir — canonical types (JSON contract v1, schemaVersion 1).
  *
  * STABILITY: This file is public API. Per Product-MVP.txt §24.2:
  * additive changes only within schemaVersion 1; removing or renaming

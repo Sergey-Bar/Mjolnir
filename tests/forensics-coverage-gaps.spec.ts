@@ -134,7 +134,7 @@ describe("results-directory walker respects MAX_FILES", () => {
   let dir: string;
 
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), "qa-doctor-forensics-maxfiles-"));
+    dir = mkdtempSync(join(tmpdir(), "mjolnir-forensics-maxfiles-"));
   });
 
   afterEach(() => {

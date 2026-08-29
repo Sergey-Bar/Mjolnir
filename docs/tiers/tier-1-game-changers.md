@@ -10,7 +10,7 @@ The #1 reason people install linters once and never again: they don't SEE
 the value. Fix:
 
 ```text
-qa-doctor impact
+mjolnir impact
 ```
 
 Parses the repo's git history + CI logs (local) and answers:
@@ -20,12 +20,12 @@ IMPACT REPORT — last 90 days
 
 Tests that failed in CI but were skipped in code:     14
 continue-on-error jobs that actually failed:           3  ← would have been caught
-Hard sleeps removed after QA Doctor flagged them:      9
+Hard sleeps removed after Mjölnir flagged them:      9
 Estimated CI minutes saved by flagged waits:        2,340 min
 Flaky tests that blocked merges this quarter:          7
 ```
 
-**"Here's what QA Doctor caught that would have burned you."**
+**"Here's what Mjölnir caught that would have burned you."**
 No competitor has this. It converts skepticism into loyalty.
 
 ## 2. Flakiness Forensics from Real Execution Data 🔥🔥🔥 🟡 PARTIAL — `forensics`/`triage`/FLAKY.md shipped (`src/forensics/`), but parses JUnit/Playwright-JSON, not `trace.zip`; no network-event correlation
@@ -34,23 +34,23 @@ Static flakiness detection is guessing. Playwright already produces
 `trace.zip` + `test-results/`. Also: JUnit XML from any runner.
 
 ```text
-qa-doctor forensics ./test-results/
+mjolnir forensics ./test-results/
 ```
 
 - Parses retry data: which tests pass only on attempt ≥2
 - Correlates failures with network events in traces
 - **Flakiness Leaderboard**: ranked by "merge-blocking cost"
 - Output: `FLAKY.md` committed to repo, updated per run
-  This alone makes QA Doctor mandatory for every serious Playwright shop.
+  This alone makes Mjölnir mandatory for every serious Playwright shop.
   (Already planned as Layer 3 — PROMOTE IT. It's the killer feature.)
 
-## 3. `qa-doctor fix` — Safe Auto-Fix with Proof 🔥🔥 ✅ DONE — `src/commands/fix.ts`, `--dry-run` + fixture-locked verification
+## 3. `mjolnir fix` — Safe Auto-Fix with Proof 🔥🔥 ✅ DONE — `src/commands/fix.ts`, `--dry-run` + fixture-locked verification
 
 Not just suggestions. Apply fixes AND prove they're safe:
 
 ```text
-qa-doctor fix --dry-run       # show diffs
-qa-doctor fix                 # apply safe subset
+mjolnir fix --dry-run       # show diffs
+mjolnir fix                 # apply safe subset
 ```
 
 Safe set: remove `.only`/`.skip`, add missing `await`, replace
@@ -74,11 +74,11 @@ real executed example (already planned) PLUS:
 Current badges are vanity. Make ours evidentiary:
 
 ```markdown
-[![QA Doctor](https://img.shields.io/endpoint?url=...)](...)
+[![Mjölnir](https://img.shields.io/endpoint?url=...)](...)
 ```
 
 - Badge shows score AND date AND commit — click through to full report
-- `qa-doctor badge` generates static JSON for shields.io (no server!)
+- `mjolnir badge` generates static JSON for shields.io (no server!)
 - Optional: "0 errors · verified at commit 8f4c91a" — falsifiable claims
 
 ---

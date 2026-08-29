@@ -3,7 +3,7 @@
  *
  * Every other test in this suite runs against source via tsx/vitest — none
  * of them exercise the actual thing a stranger receives when they run
- * `npx qa-doctor@latest`: the built `dist/` output, packed exactly as npm
+ * `npx mjolnir-qa@latest`: the built `dist/` output, packed exactly as npm
  * would pack it, executed as a real child process with no source tree or
  * test harness underneath it. Bugs in `files`, `bin`, or the built
  * entry-point's own self-invocation guard are invisible to unit tests and
@@ -12,6 +12,7 @@
 
 import { execFileSync, execSync } from "node:child_process";
 import {
+  chmodSync,
   cpSync,
   existsSync,
   mkdirSync,
@@ -85,7 +86,7 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
       binPath = join(pkgDir, binEntry);
 
       // Give the packed CLI its runtime dependencies without a network install
-      // (a real `npm install qa-doctor` would fetch these from `dependencies`).
+      // (a real `npm install mjolnir-qa` would fetch these from `dependencies`).
       // We COPY rather than symlink: symlink behavior differs across platforms
       // and CI filesystems (junctions are Windows-only; macOS temp dirs may
       // reject dir symlinks), and a silently-broken link makes the CLI crash
@@ -140,10 +141,44 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
       it("the declared bin entry exists in the tarball", () => {
         expect(
           existsSync(binPath),
-          `package.json "bin" points to "${pkgJson.bin["qa-doctor"]}", which ` +
+          `package.json "bin" points to "${pkgJson.bin.mjolnir}", which ` +
             `is not present in the packed tarball.`,
         ).toBe(true);
       });
+
+      it("the packed bin entry starts with a node shebang", () => {
+        // A real, shipped bug this locks. 0.4.0 was published with no
+        // shebang on dist/cli.mjs. On POSIX, npm's bin shim executes the
+        // target file directly and the kernel falls back to /bin/sh,
+        // which parses JavaScript as shell — `npx mjolnir-qa@latest` died
+        // with "import: not found" on every Linux and macOS machine.
+        //
+        // It survived local testing because npm generates a .cmd wrapper
+        // on Windows that invokes node explicitly, and it survived this
+        // very file because every other test here runs `node <binPath>`,
+        // which supplies the interpreter the shebang would have named.
+        // Only executing it the way a real install does catches this.
+        const firstLine = readFileSync(binPath, "utf8").split("\n")[0] ?? "";
+        expect(
+          firstLine,
+          "dist/cli.mjs must begin with `#!/usr/bin/env node`. Without it " +
+            "the npm-installed `mjolnir` command is executed as a shell " +
+            "script on POSIX and fails immediately for every user.",
+        ).toBe("#!/usr/bin/env node");
+      });
+
+      it.skipIf(process.platform === "win32")(
+        "the packed bin runs when executed directly, as npm's POSIX shim does",
+        () => {
+          chmodSync(binPath, 0o755);
+          // No `node` prefix on purpose — this is the exact invocation
+          // path that was broken in 0.4.0.
+          const out = execFileSync(binPath, ["--version"], {
+            encoding: "utf8",
+          });
+          expect(out).toContain("mjolnir-qa");
+        },
+      );
 
       it("includes CHANGELOG.md (Sprint 0 Task 2)", () => {
         expect(
@@ -225,7 +260,7 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
 
       it("scanning a real fixture repo produces the documented score banner", () => {
         const fixtureDir = mkdtempSync(
-          join(tmpdir(), "qa-doctor-smoke-fixture-"),
+          join(tmpdir(), "mjolnir-smoke-fixture-"),
         );
         try {
           mkdirSync(join(fixtureDir, "e2e"), { recursive: true });

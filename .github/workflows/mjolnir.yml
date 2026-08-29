@@ -25,7 +25,14 @@ jobs:
         run: |
           git fetch origin ${{ github.event.pull_request.base.ref }} --depth=1
           git checkout origin/${{ github.event.pull_request.base.ref }} -- .mjolnir/baseline.json 2>/dev/null || echo "No committed baseline on base branch — diff will report UNKNOWN, not a fabricated zero."
-      - run: npx --yes mjolnir-qa@latest . --scope changed --json > mjolnir.json
+      # Build and run the CLI *from this PR's source*, not `npx
+      # mjolnir-qa@latest`. Scanning a PR with the last published release
+      # means the tool never reviews the change under review: a rule fixed
+      # in the PR still fires, a rule added in the PR never runs, and the
+      # workflow cannot function at all while a published build is broken.
+      # Dogfooding requires running the code being proposed.
+      - run: npm ci && npm run build
+      - run: node dist/cli.mjs . --scope changed --json > mjolnir.json
       # Advisory mode by design: this workflow reports findings, it never
       # blocks a PR. `diff` legitimately exits 1 when it finds new/worsened
       # debt — continue-on-error on THIS step only keeps that exit code
@@ -33,8 +40,8 @@ jobs:
       - name: Diff against baseline (advisory — may exit 1 on new debt)
         id: diff
         continue-on-error: true
-        run: npx --yes mjolnir-qa@latest diff . > mjolnir-diff.txt
-      - run: npx --yes mjolnir-qa@latest pr-comment . > mjolnir-comment.md
+        run: node dist/cli.mjs diff . > mjolnir-diff.txt
+      - run: node dist/cli.mjs pr-comment . > mjolnir-comment.md
       - name: Post or update PR comment
         uses: actions/github-script@v7
         with:

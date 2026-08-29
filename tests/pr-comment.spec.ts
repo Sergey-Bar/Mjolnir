@@ -1,5 +1,5 @@
 /**
- * `qa-doctor pr-comment` (Master-Stabilization-Plan Sprint 6, Task 25).
+ * `mjolnir pr-comment` (Master-Stabilization-Plan Sprint 6, Task 25).
  *
  * Findings must arrive where the work happens, not just a terminal
  * nobody re-runs — this renders the actual comment body against fixture

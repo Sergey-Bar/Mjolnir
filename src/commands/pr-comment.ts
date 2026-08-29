@@ -1,5 +1,5 @@
 /**
- * `qa-doctor pr-comment` — Sprint 6 Task 25 (Master-Stabilization-Plan.md).
+ * `mjolnir pr-comment` — Sprint 6 Task 25 (Master-Stabilization-Plan.md).
  *
  * Renders a Markdown PR comment body from a scan result, scoped to only
  * what a baseline diff says is new (built on Task 24), or to the
@@ -9,7 +9,7 @@
  *
  * Pure function over ScanResult (+ optional BaselineDiff) — no I/O, no
  * GitHub API calls. The actual posting is the CI workflow's job
- * (.github/workflows/qa-doctor.yml), which pipes this render into
+ * (.github/workflows/mjolnir.yml), which pipes this render into
  * `actions/github-script`'s issue-comment API — keeping this command
  * testable without a real PR and honoring the zero-network constraint
  * for the CLI itself.

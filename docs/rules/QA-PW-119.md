@@ -1,11 +1,12 @@
 # QA-PW-119 — Test depends on execution order
 
-_Generated from the live rule registry and this rule's own committed fixtures by `qa-doctor`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
 | Field               | Value                          |
 | ------------------- | ------------------------------ |
 | Severity            | error                          |
 | Confidence          | medium                         |
+| Tier                | core                           |
 | Evidence level      | E1                             |
 | QA impact           | False-green risk (FALSE-GREEN) |
 | False-positive risk | medium                         |
@@ -37,8 +38,8 @@ Verified against `tests/fixtures/QA-PW-119/must-not-fire/independent.spec.ts` �
 
 ## Corpus-measured false-positive risk
 
-UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked by `npm run corpus:audit` (see `docs/FP-AUDIT.md`). That is not the same as "never fires incorrectly" — it just means no occurrence, correct or not, has been observed there yet.
+UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked by `npm run corpus:regression` (see `docs/FP-AUDIT.md`). That is not the same as "never fires incorrectly" — it just means no occurrence, correct or not, has been observed there yet.
 
 ---
 
-Full catalog: `qa-doctor rules --md` · Live explanation: `qa-doctor explain QA-PW-119`
+Full catalog: `mjolnir rules --md` · Live explanation: `mjolnir explain QA-PW-119`

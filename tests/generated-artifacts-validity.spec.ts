@@ -1,12 +1,12 @@
 /**
  * Generated-artifact validity (Test Hardening Plan — product-quality
- * gap: qa-doctor writes files into a user's repo that other systems
+ * gap: mjolnir writes files into a user's repo that other systems
  * then consume; nothing verified those files are actually well-formed).
  *
- *  - `qa-doctor ci install` writes a GitHub Actions workflow — if it's
+ *  - `mjolnir ci install` writes a GitHub Actions workflow — if it's
  *    not valid YAML, the user's CI silently never runs (or GitHub shows
  *    a cryptic parse error the user didn't cause).
- *  - `qa-doctor badge` writes a shields.io endpoint JSON — if it doesn't
+ *  - `mjolnir badge` writes a shields.io endpoint JSON — if it doesn't
  *    match shields.io's schema, the badge silently renders as an error
  *    icon on the user's README forever.
  */
@@ -26,7 +26,7 @@ describe("`ci install` output is valid, parseable YAML", () => {
 
   for (const gate of gates) {
     it(`gate="${gate}" produces a workflow that parses as YAML`, () => {
-      const dir = mkdtempSync(join(tmpdir(), "qa-doctor-ci-yaml-"));
+      const dir = mkdtempSync(join(tmpdir(), "mjolnir-ci-yaml-"));
       try {
         const { written } = ciInstall(dir, gate);
         const text = readFileSync(written, "utf8");
@@ -52,7 +52,7 @@ describe("`ci install` output is valid, parseable YAML", () => {
   }
 
   it("the embedded JS gate-check snippet has balanced braces/quotes (sanity check on template interpolation)", () => {
-    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-ci-yaml-balance-"));
+    const dir = mkdtempSync(join(tmpdir(), "mjolnir-ci-yaml-balance-"));
     try {
       const { written } = ciInstall(dir, "error");
       const text = readFileSync(written, "utf8");

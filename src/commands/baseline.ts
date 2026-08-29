@@ -1,5 +1,5 @@
 /**
- * `qa-doctor baseline` / `qa-doctor diff` — Sprint 6 Task 24
+ * `mjolnir baseline` / `mjolnir diff` — Sprint 6 Task 24
  * (Master-Stabilization-Plan.md).
  *
  * Implements Plan.md Phase 10 / §24's key insight: existing debt should
@@ -13,8 +13,8 @@
  * "new" debt and miss genuinely new findings that happen to land on a
  * previously-flagged line.
  *
- * Storage: .qa-doctor/baseline.json (local, gitignored by convention —
- * see .qa-doctor/logs/ precedent in .gitignore). A team CAN commit this
+ * Storage: .mjolnir/baseline.json (local; not gitignored — only
+ * .mjolnir/logs/ is, see .gitignore). A team CAN commit this
  * file if they want a shared baseline; that's a deliberate choice this
  * command does not make for them.
  */

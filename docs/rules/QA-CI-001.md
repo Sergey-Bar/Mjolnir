@@ -1,19 +1,20 @@
-# QA-CI-001 — continue-on-error masks a failing required test
+# QA-CI-001 — continue-on-error masks a failing verification gate
 
-_Generated from the live rule registry and this rule's own committed fixtures by `qa-doctor`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
-| Field               | Value                          |
-| ------------------- | ------------------------------ |
-| Severity            | error                          |
-| Confidence          | high                           |
-| Evidence level      | E2                             |
-| QA impact           | False-green risk (FALSE-GREEN) |
-| False-positive risk | low                            |
-| Autofix available   | no                             |
-| Languages           | yaml                           |
-| Frameworks          | github-actions                 |
-| Detection strategy  | regex pattern                  |
-| Introduced in       | v0.1.0                         |
+| Field               | Value                           |
+| ------------------- | ------------------------------- |
+| Severity            | error                           |
+| Confidence          | high                            |
+| Tier                | core                            |
+| Evidence level      | E2                              |
+| QA impact           | False-green risk (FALSE-GREEN)  |
+| False-positive risk | low                             |
+| Autofix available   | no                              |
+| Languages           | yaml                            |
+| Frameworks          | github-actions                  |
+| Detection strategy  | parsed YAML + test-command gate |
+| Introduced in       | v0.1.0                          |
 
 ## Why this fails in production
 
@@ -22,7 +23,7 @@ A GitHub Actions job with `continue-on-error: true` reports its conclusion as `s
 ## What gets flagged (real detector output)
 
 ```
-Job `security-scan` has `continue-on-error: true`.
+Job `security-scan` runs a verification gate under `continue-on-error: true`.
 ```
 
 Example from this rule's own must-fire fixture: `tests/fixtures/QA-CI-001/must-fire/masked.yml`
@@ -37,8 +38,8 @@ Verified against `tests/fixtures/QA-CI-001/must-not-fire/clean.yml` — a legiti
 
 ## Corpus-measured false-positive risk
 
-UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked by `npm run corpus:audit` (see `docs/FP-AUDIT.md`). That is not the same as "never fires incorrectly" — it just means no occurrence, correct or not, has been observed there yet.
+UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked by `npm run corpus:regression` (see `docs/FP-AUDIT.md`). That is not the same as "never fires incorrectly" — it just means no occurrence, correct or not, has been observed there yet.
 
 ---
 
-Full catalog: `qa-doctor rules --md` · Live explanation: `qa-doctor explain QA-CI-001`
+Full catalog: `mjolnir rules --md` · Live explanation: `mjolnir explain QA-CI-001`
