@@ -23,6 +23,11 @@
       "ruleId": "QA-TEST-002",
       "files": ["tests/registry-install.spec.ts"],
       "reason": "Intentionally skipped: the registry-install smoke test is gated behind RUN_REGISTRY_INSTALL_TEST=1 because it requires network and is slow."
+    },
+    {
+      "ruleId": "QA-CI-001",
+      "files": [".github/workflows/eslint.yml"],
+      "reason": "GitHub's ESLint SARIF template: `continue-on-error: true` on the lint step is intentional so `upload-sarif` still runs when findings exist. This job is advisory (Security tab reporting) — the blocking lint gate is `npm run lint` in ci.yml."
     }
   ]
 }
