@@ -11,6 +11,9 @@ on:
     - cron: "30 4 * * *"
   workflow_dispatch: {}
 
+permissions:
+  contents: read
+
 jobs:
   registry-install:
     strategy:

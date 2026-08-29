@@ -9,6 +9,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Least privilege: every job here only reads the checkout. Declared at the
+# top level so a new job cannot silently inherit the repository default.
+permissions:
+  contents: read
+
 jobs:
   build-test:
     strategy:
