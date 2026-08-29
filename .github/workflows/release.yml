@@ -115,8 +115,16 @@ jobs:
         if: vars.NPM_PUBLISH == 'true'
         run: |
           echo "registry=https://registry.npmjs.org/" > "${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}"
+          echo "npm $(npm --version)"
+          echo "id-token endpoint present: ${ACTIONS_ID_TOKEN_REQUEST_URL:+yes}"
           npm config get registry
 
-      - name: Publish to npm with provenance
+      # Bare `npm publish`: npm >= 11.5.1 auto-detects the CI OIDC context and,
+      # if a matching trusted publisher is configured on npmjs.com, exchanges
+      # the id-token for a short-lived publish token and attaches provenance
+      # automatically. `ENEEDAUTH` here means the trusted-publisher config does
+      # NOT match this run's OIDC claims — check repo (Sergey-Bar/Mjolnir),
+      # workflow (release.yml), and that the Environment field is EMPTY.
+      - name: Publish to npm (OIDC trusted publishing)
         if: vars.NPM_PUBLISH == 'true'
-        run: npm publish --provenance --access public
+        run: npm publish --access public --loglevel verbose
