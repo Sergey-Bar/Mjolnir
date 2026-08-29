@@ -2,19 +2,20 @@
 
 _Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
-| Field               | Value                        |
-| ------------------- | ---------------------------- |
-| Severity            | warning                      |
-| Confidence          | high                         |
-| Tier                | core                         |
-| Evidence level      | E2                           |
-| QA impact           | Flaky-test risk (FLAKY-RISK) |
-| False-positive risk | low                          |
-| Autofix available   | no                           |
-| Languages           | java                         |
-| Frameworks          | junit, testng, playwright    |
-| Detection strategy  | regex pattern                |
-| Introduced in       | v0.3.8                       |
+| Field                                 | Value                        |
+| ------------------------------------- | ---------------------------- |
+| Severity                              | warning                      |
+| Confidence                            | high                         |
+| Tier                                  | core                         |
+| Measured FP rate                      | 10% (n=20)                   |
+| Evidence level                        | E2                           |
+| QA impact                             | Flaky-test risk (FLAKY-RISK) |
+| False-positive risk (author estimate) | low                          |
+| Autofix available                     | no                           |
+| Languages                             | java                         |
+| Frameworks                            | junit, testng, playwright    |
+| Detection strategy                    | regex pattern                |
+| Introduced in                         | v0.3.8                       |
 
 ## Why this fails in production
 

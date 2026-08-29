@@ -2,19 +2,20 @@
 
 _Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
-| Field               | Value                          |
-| ------------------- | ------------------------------ |
-| Severity            | warning                        |
-| Confidence          | high                           |
-| Tier                | core                           |
-| Evidence level      | E1                             |
-| QA impact           | False-green risk (FALSE-GREEN) |
-| False-positive risk | low                            |
-| Autofix available   | no                             |
-| Languages           | typescript, javascript         |
-| Frameworks          | playwright                     |
-| Detection strategy  | regex heuristic                |
-| Introduced in       | v0.3.8                         |
+| Field                                 | Value                          |
+| ------------------------------------- | ------------------------------ |
+| Severity                              | warning                        |
+| Confidence                            | high                           |
+| Tier                                  | core                           |
+| Measured FP rate                      | not yet measured               |
+| Evidence level                        | E1                             |
+| QA impact                             | False-green risk (FALSE-GREEN) |
+| False-positive risk (author estimate) | low                            |
+| Autofix available                     | no                             |
+| Languages                             | typescript, javascript         |
+| Frameworks                            | playwright                     |
+| Detection strategy                    | regex heuristic                |
+| Introduced in                         | v0.3.8                         |
 
 ## Why this fails in production
 

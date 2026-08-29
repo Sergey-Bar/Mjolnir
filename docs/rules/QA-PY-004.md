@@ -2,19 +2,20 @@
 
 _Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
-| Field               | Value                          |
-| ------------------- | ------------------------------ |
-| Severity            | warning                        |
-| Confidence          | medium                         |
-| Tier                | quarantine                     |
-| Evidence level      | E1                             |
-| QA impact           | False-green risk (FALSE-GREEN) |
-| False-positive risk | medium                         |
-| Autofix available   | no                             |
-| Languages           | python                         |
-| Frameworks          | pytest                         |
-| Detection strategy  | regex pattern                  |
-| Introduced in       | v0.3.0                         |
+| Field                                 | Value                          |
+| ------------------------------------- | ------------------------------ |
+| Severity                              | warning                        |
+| Confidence                            | medium                         |
+| Tier                                  | quarantine                     |
+| Measured FP rate                      | 45% (n=20)                     |
+| Evidence level                        | E1                             |
+| QA impact                             | False-green risk (FALSE-GREEN) |
+| False-positive risk (author estimate) | medium                         |
+| Autofix available                     | no                             |
+| Languages                             | python                         |
+| Frameworks                            | pytest                         |
+| Detection strategy                    | regex pattern                  |
+| Introduced in                         | v0.3.0                         |
 
 ## Why this fails in production
 

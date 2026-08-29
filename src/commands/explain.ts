@@ -16,6 +16,7 @@ import { join } from "node:path";
 
 import { getRule, RULES } from "../rules/index.js";
 import type { QADoctorRule } from "../rules/rule.js";
+import { MEASURED_FP } from "../rules/measured-fp.generated.js";
 import { deriveEvidenceLevel, QA_IMPACT_LABELS } from "../types.js";
 import type { Finding } from "../types.js";
 import { parseWorkflow } from "../discovery/workflow-parser.js";
@@ -134,10 +135,17 @@ export function renderExplain(result: ExplainResult): string {
   lines.push("");
   lines.push(`Severity:    ${r.severity}`);
   lines.push(`Confidence:  ${r.confidence}`);
+  lines.push(`Tier:        ${r.tier ?? "core"}`);
   lines.push(`Evidence:    ${evidenceLevel}`);
   lines.push(`QA impact:   ${QA_IMPACT_LABELS[r.qaImpact]} (${r.qaImpact})`);
+  const measured = MEASURED_FP[r.id];
+  lines.push(
+    measured
+      ? `Measured FP: ${Math.round(measured.fpRate * 100)}% (${measured.n} hand-classified corpus verdicts)`
+      : `Measured FP: not yet measured — this rule ships on assumption (see docs/FP-AUDIT.md)`,
+  );
   if (r.falsePositiveRisk) {
-    lines.push(`FP risk:     ${r.falsePositiveRisk}`);
+    lines.push(`FP risk:     ${r.falsePositiveRisk} (author estimate)`);
   }
   if (r.languages?.length) {
     lines.push(`Languages:   ${r.languages.join(", ")}`);

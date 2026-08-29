@@ -2,19 +2,20 @@
 
 _Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
-| Field               | Value                                   |
-| ------------------- | --------------------------------------- |
-| Severity            | warning                                 |
-| Confidence          | medium                                  |
-| Tier                | core                                    |
-| Evidence level      | E1                                      |
-| QA impact           | Test hygiene debt (HYGIENE)             |
-| False-positive risk | medium                                  |
-| Autofix available   | no                                      |
-| Languages           | typescript, javascript                  |
-| Frameworks          | playwright                              |
-| Detection strategy  | AST (ts-morph) function-body inspection |
-| Introduced in       | v0.1.0                                  |
+| Field                                 | Value                                   |
+| ------------------------------------- | --------------------------------------- |
+| Severity                              | warning                                 |
+| Confidence                            | medium                                  |
+| Tier                                  | core                                    |
+| Measured FP rate                      | not yet measured                        |
+| Evidence level                        | E1                                      |
+| QA impact                             | Test hygiene debt (HYGIENE)             |
+| False-positive risk (author estimate) | medium                                  |
+| Autofix available                     | no                                      |
+| Languages                             | typescript, javascript                  |
+| Frameworks                            | playwright                              |
+| Detection strategy                    | AST (ts-morph) function-body inspection |
+| Introduced in                         | v0.1.0                                  |
 
 ## Why this fails in production
 

@@ -2,19 +2,20 @@
 
 _Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
-| Field               | Value                       |
-| ------------------- | --------------------------- |
-| Severity            | warning                     |
-| Confidence          | high                        |
-| Tier                | quarantine                  |
-| Evidence level      | E2                          |
-| QA impact           | Test hygiene debt (HYGIENE) |
-| False-positive risk | low                         |
-| Autofix available   | no                          |
-| Languages           | java                        |
-| Frameworks          | junit, testng               |
-| Detection strategy  | regex pattern               |
-| Introduced in       | v0.4.0                      |
+| Field                                 | Value                       |
+| ------------------------------------- | --------------------------- |
+| Severity                              | warning                     |
+| Confidence                            | high                        |
+| Tier                                  | quarantine                  |
+| Measured FP rate                      | 100% (n=20)                 |
+| Evidence level                        | E2                          |
+| QA impact                             | Test hygiene debt (HYGIENE) |
+| False-positive risk (author estimate) | low                         |
+| Autofix available                     | no                          |
+| Languages                             | java                        |
+| Frameworks                            | junit, testng               |
+| Detection strategy                    | regex pattern               |
+| Introduced in                         | v0.4.0                      |
 
 ## Why this fails in production
 

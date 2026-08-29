@@ -53,10 +53,15 @@ describe("rules catalog", () => {
     expect(entry.autofix).toBeUndefined();
     expect(entry.detectionStrategy).toBeUndefined();
     expect(entry.introduced).toBeUndefined();
+    // QA-MIN-001 has no corpus verdicts, so no measured FP rate.
+    expect(entry.measuredFpRate).toBeUndefined();
+    expect(entry.measuredFpN).toBeUndefined();
 
     const md = renderCatalogMd(entries);
-    // Tier falls back to "core" when a rule doesn't declare one.
-    expect(md).toContain("| QA-MIN-001 | Minimal rule | info | core | low |");
+    // Tier falls back to "core"; measured-FP column falls back to an em-dash.
+    expect(md).toContain(
+      "| QA-MIN-001 | Minimal rule | info | core | — | low |",
+    );
     // FP Risk column falls back to an em-dash, Autofix to "no", Since to em-dash.
     expect(md).toContain("| — | no | — |");
   });
@@ -97,12 +102,12 @@ describe("rules catalog", () => {
     const md = renderCatalogMd(buildCatalog());
     const lines = md.split("\n").filter((l) => l.startsWith("| QA-CI-002"));
     expect(lines).toHaveLength(1);
-    // A correctly-escaped row has exactly 10 unescaped `|` table delimiters
-    // (9 columns + leading/trailing border = 10 pipe characters total when
+    // A correctly-escaped row has exactly 11 unescaped `|` table delimiters
+    // (10 columns + leading/trailing border = 11 pipe characters total when
     // the title's own pipes are escaped as \|).
     const line = lines[0] ?? "";
     const unescapedPipeCount = (line.match(/(?<!\\)\|/g) ?? []).length;
-    expect(unescapedPipeCount).toBe(10);
+    expect(unescapedPipeCount).toBe(11);
   });
 
   it("CLI handler exits 0 and emits JSON by default", () => {

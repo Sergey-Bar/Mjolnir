@@ -20,6 +20,7 @@ import {
 import { discoverWorkspace } from "./discovery/workspace.js";
 import { detectFrameworks } from "./discovery/frameworks.js";
 import { RULES } from "./rules/index.js";
+import { MEASURED_FP } from "./rules/measured-fp.generated.js";
 import {
   computeDimensions,
   computeTotal,
@@ -377,6 +378,15 @@ export function runScan(args: CliArgs): ScanResult {
   // Honesty Core Phase 1: every finding carries its honest evidence level
   // (rule override wins; otherwise derived from findingType+confidence).
   stampEvidenceLevels(findings, EVIDENCE_OVERRIDES);
+  // Honesty Core: tag each finding with its rule's measured FP rate when
+  // one exists, so JSON consumers get the same signal the footer shows.
+  for (const f of findings) {
+    const m = MEASURED_FP[f.ruleId];
+    if (m) {
+      f.measuredFpRate = m.fpRate;
+      f.measuredFpN = m.n;
+    }
+  }
   const dimensions = computeDimensions(findings);
   const rawDeductions = findings.reduce((sum, f) => sum + deductionFor(f), 0);
   const total = computeTotal(dimensions, findings, {
@@ -567,7 +577,15 @@ export function runRulesCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
 ): number {
-  const catalog = buildCatalog();
+  let catalog = buildCatalog();
+  // `--unmeasured`: the rules shipping on assumption — no measured
+  // false-positive rate (n < 10 classified corpus verdicts). This is
+  // what the scan footer's "rule coverage" line points at.
+  if (argv.includes("--unmeasured")) {
+    catalog = catalog.filter((e) => e.measuredFpRate === undefined);
+  } else if (argv.includes("--measured")) {
+    catalog = catalog.filter((e) => e.measuredFpRate !== undefined);
+  }
   if (argv.includes("--md")) {
     io.out(renderCatalogMd(catalog));
   } else {
@@ -642,6 +660,23 @@ export function runScanCommand(
           ...(args.tone !== undefined ? { tone: args.tone } : {}),
         }),
       );
+      // First-run hint — terminal only, and only for the bare, full-repo
+      // scan with no config on disk (i.e. someone trying the tool for the
+      // first time). Points at the two things they'd want next; silent
+      // once they've adopted it or in any CI/machine context.
+      const bareFirstRun =
+        !args.scopeChanged &&
+        !args.verbose &&
+        args.target === "." &&
+        !existsSync(join(resolve(args.target), "mjolnir.config.json")) &&
+        result.findings.length > 0;
+      if (bareFirstRun) {
+        io.out(
+          "  New here? `mjolnir ci install` adds this as a PR check. " +
+            "`mjolnir explain <RULE-ID>` explains any finding above.\n",
+        );
+      }
+
       // Milestones (Sprint 9 Task 39) — terminal-only, display-only.
       // Never printed for --json/--format sarif/mermaid: those are
       // machine contracts and must stay byte-for-byte what the schema
@@ -1118,7 +1153,19 @@ export function main(argv: string[] = process.argv.slice(2)): number {
 function printUsage(print: (s: string) => void): void {
   print(`🔨 mjölnir — verification trust engine for test suites and CI pipelines
 
-Usage: mjolnir [path] [options]
+Usage: mjolnir [path] [options] · mjolnir <subcommand> [args]
+
+The product is one command in CI:
+
+  mjolnir --scope changed        scan only what the branch touched; exit 1 on
+                                 new findings. \`mjolnir ci install\` writes the
+                                 workflow for you.
+
+Everything else is optional.
+
+  mjolnir [path]                 full-repo scan + WORTHINESS score
+  mjolnir explain <RULE-ID>      what/why/fix + measured FP rate for one rule
+  mjolnir rules --unmeasured     the rules running on assumption, not measurement
 
 Options:
   --json                machine-readable output (schemaVersion ${SCHEMA_VERSION})
@@ -1141,32 +1188,30 @@ Options:
   -v, --version         print the installed version and exit
   -h, --help            show this help
 
-Subcommands:
-  ci install [--gate advisory|error|warning]   generate PR workflow
+Subcommands — everyday:
+  ci install [--gate advisory|error|warning]   generate the PR workflow
+  explain <RULE-ID> [--fixtures-root <dir>]     what/why/fix + measured FP rate
+  rules [--md] [--unmeasured|--measured]        rule catalog with trust metadata
   suppressions                                  list suppressed findings
-  forensics <dir|file> [--no-flaky-md]          runtime evidence: retries,
-                                                flakes, FLAKY.md artifact
+
+Subcommands — when something's flaky:
+  forensics <dir|file> [--no-flaky-md]          runtime evidence: retries, flakes
   triage <dir|file> [--no-md]                   flaky-triage proposal + TRIAGE.md
-  badge                                         shields.io endpoint JSON + snippet
-  debt                                          test debt register with cost model
-  impact [--since <ref>]                        what changed since a prior commit —
-                                                fixes and new debt, or UNKNOWN
-  baseline                                       snapshot current findings for later diff
-  diff                                           new/worsened debt only, vs the baseline
-  pr-comment                                     render a scoped PR comment (Markdown)
-  stats                                          all-time local counters of fixes seen
+  pw-report <dir|file>                          Playwright run summary
+  doctor:playwright                             Playwright deep scan + Selector Health
+
+Subcommands — occasional / reporting:
   fix [--dry-run]                               apply safe auto-fixes with proof
-  create-rule <ID> --title "..."                scaffold a new rule + fixtures
+  baseline / diff                               snapshot findings, then new/worsened only
+  impact [--since <ref>]                        what changed since a prior commit
+  debt                                          test-debt register with a cost model
   handover                                      new-QA onboarding map of the suite
+  stats                                         all-time local counters of fixes seen
+  badge                                         shields.io endpoint JSON + snippet
+  pr-comment                                    render a scoped PR comment (Markdown)
   init [--interactive]                          detect frameworks + setup checklist
-  pw-report <dir|file>                          Playwright run summary (retries/flakes)
-  doctor                                        self-audit: fixture firewall,
-                                                registry sanity, trust metadata
-  rules [--md]                                  rule catalog with trust metadata
-                                                (JSON or markdown)
-  explain <RULE-ID> [--fixtures-root <dir>]     what/why/fix for one rule,
-                                                with a real example from its
-                                                own must-fire fixture
+  create-rule <ID> --title "..."                scaffold a new rule + fixtures
+  doctor                                        self-audit of the rule base
 
 Exit codes: 0 clean · 1 errors found · 2 partial · 10 usage · 20 crash`);
 }

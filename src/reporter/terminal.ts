@@ -19,6 +19,7 @@ import {
 } from "./theme.js";
 import { LOGO, LOGO_ASCII, TROPHY, DIVIDER } from "./art.js";
 import { bluntMessage } from "./tone-blunt.js";
+import { MEASURED_FP } from "../rules/measured-fp.generated.js";
 
 /** Terminal display cap — the JSON/SARIF contract always carries ALL findings. */
 const MAX_DISPLAYED = 50;
@@ -286,6 +287,23 @@ function appendFooter(
     lines.push(
       p.dim(
         `  ${advisory} advisory finding${advisory === 1 ? "" : "s"} (E0 — observation only, no score impact)`,
+      ),
+    );
+  }
+
+  // Honesty Core: how much of what fired here is backed by a measured
+  // false-positive rate, vs. shipping on assumption. Only meaningful when
+  // there are findings — a clean repo needs no caveat.
+  if (result.findings.length > 0) {
+    const firedRuleIds = new Set(result.findings.map((f) => f.ruleId));
+    const measuredHere = [...firedRuleIds].filter(
+      (id) => MEASURED_FP[id] !== undefined,
+    ).length;
+    lines.push(
+      p.dim(
+        `  Rule coverage: ${measuredHere}/${firedRuleIds.size} rules that fired here have a measured` +
+          ` false-positive rate; the rest are heuristics.` +
+          ` \`mjolnir rules --unmeasured\` lists them.`,
       ),
     );
   }

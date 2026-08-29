@@ -2,19 +2,20 @@
 
 _Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
-| Field               | Value                                |
-| ------------------- | ------------------------------------ |
-| Severity            | error                                |
-| Confidence          | high                                 |
-| Tier                | core                                 |
-| Evidence level      | E2                                   |
-| QA impact           | False-green risk (FALSE-GREEN)       |
-| False-positive risk | low                                  |
-| Autofix available   | no                                   |
-| Languages           | yaml                                 |
-| Frameworks          | github-actions                       |
-| Detection strategy  | regex pattern on parsed workflow AST |
-| Introduced in       | v0.4.0                               |
+| Field                                 | Value                                |
+| ------------------------------------- | ------------------------------------ |
+| Severity                              | error                                |
+| Confidence                            | high                                 |
+| Tier                                  | core                                 |
+| Measured FP rate                      | not yet measured                     |
+| Evidence level                        | E2                                   |
+| QA impact                             | False-green risk (FALSE-GREEN)       |
+| False-positive risk (author estimate) | low                                  |
+| Autofix available                     | no                                   |
+| Languages                             | yaml                                 |
+| Frameworks                            | github-actions                       |
+| Detection strategy                    | regex pattern on parsed workflow AST |
+| Introduced in                         | v0.4.0                               |
 
 ## Why this fails in production
 

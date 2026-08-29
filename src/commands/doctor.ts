@@ -19,6 +19,7 @@ import { join } from "node:path";
 
 import type { QADoctorRule } from "../rules/rule.js";
 import { RULES } from "../rules/index.js";
+import { MEASURED_FP } from "../rules/measured-fp.generated.js";
 import { deriveEvidenceLevel } from "../types.js";
 
 export interface DoctorCheck {
@@ -151,9 +152,17 @@ export function checkTierEnforcement(
 ): DoctorCheck {
   const details: string[] = [];
 
-  // Load all verdicts and count classified samples per rule
+  // Classified-verdict count per rule. The shipped src/rules/
+  // measured-fp.generated.ts is the source of truth (baked in because
+  // tests/corpus/verdicts/ is not packed). When running from a checkout
+  // whose verdicts have grown since the last `fp-audit:generate`, prefer
+  // the live directory so `doctor` reflects the newer classification.
   const classifiedPerRule = new Map<string, number>();
+  for (const [id, m] of Object.entries(MEASURED_FP)) {
+    classifiedPerRule.set(id, m.n);
+  }
   try {
+    const live = new Map<string, number>();
     const files = readdirSync(verdictsDir).filter((f) => f.endsWith(".jsonl"));
     for (const f of files) {
       const lines = readFileSync(join(verdictsDir, f), "utf8")
@@ -163,18 +172,18 @@ export function checkTierEnforcement(
         try {
           const entry = JSON.parse(line);
           if (entry.verdict === "TP" || entry.verdict === "FP") {
-            classifiedPerRule.set(
-              entry.ruleId,
-              (classifiedPerRule.get(entry.ruleId) ?? 0) + 1,
-            );
+            live.set(entry.ruleId, (live.get(entry.ruleId) ?? 0) + 1);
           }
         } catch {
           // skip malformed
         }
       }
     }
+    if (live.size > 0) {
+      for (const [id, n] of live) classifiedPerRule.set(id, n);
+    }
   } catch {
-    // verdicts dir doesn't exist — all core rules are unmeasured
+    // verdicts dir absent (installed package) — fall back to MEASURED_FP.
   }
 
   const coreRules = rules.filter(

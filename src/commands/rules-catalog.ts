@@ -9,6 +9,7 @@
 
 import { RULES } from "../rules/index.js";
 import type { QADoctorRule } from "../rules/rule.js";
+import { MEASURED_FP } from "../rules/measured-fp.generated.js";
 import { deriveEvidenceLevel, type EvidenceLevel } from "../types.js";
 
 export interface RuleCatalogEntry {
@@ -19,6 +20,10 @@ export interface RuleCatalogEntry {
   confidence: string;
   /** Which report the rule ships in: core + extended by default, quarantine only with --strict. */
   tier: "core" | "extended" | "quarantine";
+  /** Measured false-positive rate (0..1) from corpus verdicts, when n >= 10. */
+  measuredFpRate?: number;
+  /** Classified (TP+FP) verdicts behind measuredFpRate. */
+  measuredFpN?: number;
   /** Honesty Core: effective evidence level (declared or derived). */
   evidenceLevel: EvidenceLevel;
   qaImpact: string;
@@ -34,25 +39,35 @@ export interface RuleCatalogEntry {
 export function buildCatalog(
   rules: readonly QADoctorRule[] = RULES,
 ): RuleCatalogEntry[] {
-  return rules.map((r) => ({
-    id: r.id,
-    title: r.title,
-    category: r.category,
-    severity: r.severity,
-    confidence: r.confidence,
-    tier: r.tier ?? "core",
-    // Declared override wins; otherwise the honest derivation.
-    evidenceLevel:
-      r.evidenceLevel ?? deriveEvidenceLevel(r.findingType, r.confidence),
-    qaImpact: r.qaImpact,
-    appliesTo: r.appliesTo,
-    ...(r.languages ? { languages: [...r.languages] } : {}),
-    ...(r.frameworks ? { frameworks: [...r.frameworks] } : {}),
-    ...(r.falsePositiveRisk ? { falsePositiveRisk: r.falsePositiveRisk } : {}),
-    ...(r.autofix !== undefined ? { autofix: r.autofix } : {}),
-    ...(r.detectionStrategy ? { detectionStrategy: r.detectionStrategy } : {}),
-    ...(r.introduced ? { introduced: r.introduced } : {}),
-  }));
+  return rules.map((r) => {
+    const measured = MEASURED_FP[r.id];
+    return {
+      id: r.id,
+      title: r.title,
+      category: r.category,
+      severity: r.severity,
+      confidence: r.confidence,
+      tier: r.tier ?? "core",
+      ...(measured
+        ? { measuredFpRate: measured.fpRate, measuredFpN: measured.n }
+        : {}),
+      // Declared override wins; otherwise the honest derivation.
+      evidenceLevel:
+        r.evidenceLevel ?? deriveEvidenceLevel(r.findingType, r.confidence),
+      qaImpact: r.qaImpact,
+      appliesTo: r.appliesTo,
+      ...(r.languages ? { languages: [...r.languages] } : {}),
+      ...(r.frameworks ? { frameworks: [...r.frameworks] } : {}),
+      ...(r.falsePositiveRisk
+        ? { falsePositiveRisk: r.falsePositiveRisk }
+        : {}),
+      ...(r.autofix !== undefined ? { autofix: r.autofix } : {}),
+      ...(r.detectionStrategy
+        ? { detectionStrategy: r.detectionStrategy }
+        : {}),
+      ...(r.introduced ? { introduced: r.introduced } : {}),
+    };
+  });
 }
 
 export function renderCatalogMd(entries: RuleCatalogEntry[]): string {
@@ -61,12 +76,16 @@ export function renderCatalogMd(entries: RuleCatalogEntry[]): string {
     "",
     "Generated from the rule registry by `mjolnir rules --md`. Do not edit by hand.",
     "",
-    "| ID | Title | Severity | Tier | Confidence | Evidence | FP Risk | Autofix | Since |",
-    "|---|---|---|---|---|---|---|---|---|",
+    "| ID | Title | Severity | Tier | FP (measured) | Confidence | Evidence | FP Risk | Autofix | Since |",
+    "|---|---|---|---|---|---|---|---|---|---|",
   ];
   for (const e of entries) {
+    const measured =
+      e.measuredFpRate !== undefined
+        ? `${Math.round(e.measuredFpRate * 100)}% (n=${e.measuredFpN})`
+        : "—";
     lines.push(
-      `| ${e.id} | ${escapeMdCell(e.title)} | ${e.severity} | ${e.tier} | ${e.confidence} | ${e.evidenceLevel} | ${e.falsePositiveRisk ?? "—"} | ${e.autofix ? "yes" : "no"} | ${e.introduced ?? "—"} |`,
+      `| ${e.id} | ${escapeMdCell(e.title)} | ${e.severity} | ${e.tier} | ${measured} | ${e.confidence} | ${e.evidenceLevel} | ${e.falsePositiveRisk ?? "—"} | ${e.autofix ? "yes" : "no"} | ${e.introduced ?? "—"} |`,
     );
   }
   return lines.join("\n");

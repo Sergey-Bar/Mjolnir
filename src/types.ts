@@ -68,6 +68,15 @@ export interface Finding {
    * Optional in the JSON contract (additive within schemaVersion 1).
    */
   evidenceLevel?: EvidenceLevel;
+  /**
+   * Measured false-positive rate (0..1) for the rule that produced this
+   * finding, from hand-classified corpus verdicts — present only when the
+   * rule has ≥ 10 classified verdicts. Absent means the rule ships on
+   * assumption. Additive within schemaVersion 1.
+   */
+  measuredFpRate?: number;
+  /** Classified (TP+FP) verdicts behind `measuredFpRate`. */
+  measuredFpN?: number;
   /** Repo-relative path with forward slashes, regardless of OS. */
   file: string;
   /** 1-based. */

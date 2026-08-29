@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="900" height="1045" viewBox="0 0 900 1045" xmlns="http://www.w3.org/2000/svg" font-family="'SF Mono', 'Cascadia Code', Consolas, Menlo, 'DejaVu Sans Mono', monospace" font-size="14.5">
+<svg width="900" height="1066" viewBox="0 0 900 1066" xmlns="http://www.w3.org/2000/svg" font-family="'SF Mono', 'Cascadia Code', Consolas, Menlo, 'DejaVu Sans Mono', monospace" font-size="14.5">
   <defs>
     <clipPath id="winClip">
-      <rect x="0" y="0" width="900" height="1045" rx="14" ry="14"/>
+      <rect x="0" y="0" width="900" height="1066" rx="14" ry="14"/>
     </clipPath>
     <linearGradient id="titlebarGrad" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#141d18"/>
@@ -26,7 +26,7 @@
   </defs>
 
   <g clip-path="url(#winClip)">
-    <rect x="0" y="0" width="900" height="1045" fill="#070b09"/>
+    <rect x="0" y="0" width="900" height="1066" fill="#070b09"/>
 
     <rect x="0" y="0" width="900" height="42" fill="url(#titlebarGrad)"/>
     <line x1="0" y1="42" x2="900" y2="42" stroke="#39FF14" stroke-opacity="0.14"/>
@@ -80,12 +80,13 @@
 
     <text x="30" y="943.5" xml:space="preserve"><tspan fill="#5C7A68">──────────────────────────────────────────────────────────</tspan></text>
     <text x="30" y="964.0" xml:space="preserve"><tspan fill="#EAFFF1">  Analysis: </tspan><tspan fill="#3CFF57">complete</tspan><tspan fill="#EAFFF1"> · a few ms</tspan></text>
+    <text x="30" y="984.5" xml:space="preserve"><tspan fill="#5C7A68">  Rule coverage: 2/4 rules that fired here have a measured false-positive rate; the rest are heuristics. `mjolnir rules --unmeasured` lists them.</tspan></text>
 
     </g>
 
-    <rect x="0" y="42" width="900" height="1003" fill="url(#scanlines)"/>
-    <rect x="0" y="0" width="900" height="1045" fill="url(#vignette)"/>
+    <rect x="0" y="42" width="900" height="1024" fill="url(#scanlines)"/>
+    <rect x="0" y="0" width="900" height="1066" fill="url(#vignette)"/>
   </g>
 
-  <rect x="0.6" y="0.6" width="898.8" height="1043.8" rx="13.5" ry="13.5" fill="none" stroke="#39FF14" stroke-opacity="0.28" stroke-width="1.2"/>
+  <rect x="0.6" y="0.6" width="898.8" height="1064.8" rx="13.5" ry="13.5" fill="none" stroke="#39FF14" stroke-opacity="0.28" stroke-width="1.2"/>
 </svg>

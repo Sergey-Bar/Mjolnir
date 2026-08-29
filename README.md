@@ -7,6 +7,12 @@
 **Verification Trust Engine for QA.** Audits test suites and CI pipelines,
 reports a worthiness score, and shows exactly where trust breaks.
 
+<sub>"We prove it" is literal for the deterministic findings — a committed `.only`,
+a `continue-on-error` on a test job. The pattern-based rules are labelled
+heuristic, and **19 of 91 carry a false-positive rate measured against real
+OSS code**; `mjolnir rules --unmeasured` names the rest. See
+[docs/FP-AUDIT.md](docs/FP-AUDIT.md).</sub>
+
 [![npm](https://img.shields.io/npm/v/mjolnir-qa.svg?style=flat-square&color=B45309&labelColor=0D0D0D)](https://www.npmjs.com/package/mjolnir-qa)
 [![ci](https://img.shields.io/github/actions/workflow/status/Sergey-Bar/Mjolnir/ci.yml?branch=main&style=flat-square&label=ci&labelColor=0D0D0D)](https://github.com/Sergey-Bar/Mjolnir/actions/workflows/ci.yml)
 [![license](https://img.shields.io/badge/license-MIT-B45309.svg?style=flat-square&labelColor=0D0D0D)](LICENSE)
@@ -93,32 +99,62 @@ deterministic tool does better, faster, and for free.
 
 ## ⚡ Quickstart
 
+**The product is one command in CI:**
+
+```bash
+npx mjolnir-qa@latest --scope changed
+```
+
+It scans the test files, Playwright configs and CI workflows touched in the
+branch, and exits non-zero when it finds new problems. Drop that in a PR check
+(`mjolnir ci install` writes the workflow) and you're done. Everything below is
+optional.
+
+Run it with no flags for a full-repo report and a WORTHINESS score:
+
 ```bash
 npx mjolnir-qa@latest
 ```
 
-That's it. Zero configuration — Mjölnir detects your frameworks, finds your
-tests, and reports.
+### Everyday
 
-| Command                                                | What it does                                                        |
-| ------------------------------------------------------ | ------------------------------------------------------------------- |
-| `npx mjolnir-qa@latest --scope changed`                | Only findings introduced by **your** changes — perfect for PRs      |
-| `npx mjolnir-qa@latest --json`                         | Machine-readable output                                             |
-| `npx mjolnir-qa@latest --format sarif > mjolnir.sarif` | GitHub Code Scanning integration                                    |
-| `npx mjolnir-qa@latest --format mermaid`               | Test-architecture diagram — paste into a GitHub comment or a slide  |
-| `mjolnir doctor:playwright`                            | Playwright-only deep scan + Selector Health Score                   |
-| `mjolnir forensics ./test-results/`                    | Runtime evidence — retries, true flakes, `FLAKY.md` artifact        |
-| `mjolnir triage ./test-results/`                       | The flaky-triage meeting, in 10 minutes instead of 45               |
-| `mjolnir fix --dry-run` / `fix`                        | Safe auto-fixes with proof (dry-run first)                          |
-| `mjolnir debt`                                         | Test debt register — presentable to management                      |
-| `mjolnir handover`                                     | New-QA-onboarding map of the suite                                  |
-| `mjolnir pw-report ./test-results/`                    | Playwright run summary — retries / flakes / slowest                 |
-| `mjolnir badge`                                        | Evidentiary badge (shields.io endpoint JSON)                        |
-| `mjolnir doctor`                                       | Self-audit — prove Mjölnir's own rule base is worthy                |
-| `mjolnir rules` / `rules --md`                         | Rule catalog with trust metadata (JSON or markdown)                 |
-| `mjolnir explain <RULE-ID>`                            | What/why/fix for one rule, with a real example from its own fixture |
-| `mjolnir impact [--since <ref>]`                       | What changed since a prior commit — fixes and new debt              |
-| `npx mjolnir-qa@latest --strict`                       | Include quarantine-tier rules (higher FP risk) in the scan          |
+| Command                             | What it does                                     |
+| ----------------------------------- | ------------------------------------------------ |
+| `mjolnir --scope changed`           | Only what your branch introduced — the CI form   |
+| `mjolnir`                           | Full-repo scan + WORTHINESS score                |
+| `mjolnir --json` / `--format sarif` | Machine-readable / GitHub Code Scanning          |
+| `mjolnir ci install`                | Generate the advisory PR workflow                |
+| `mjolnir explain <RULE-ID>`         | What/why/fix + measured FP rate for one rule     |
+| `mjolnir rules --unmeasured`        | The rules running on assumption, not measurement |
+| `mjolnir --strict`                  | Also run quarantine-tier rules (higher FP risk)  |
+
+### When something's flaky
+
+| Command                             | What it does                                        |
+| ----------------------------------- | --------------------------------------------------- |
+| `mjolnir forensics ./test-results/` | Real run data → `TRUE-FLAKE` verdicts, `FLAKY.md`   |
+| `mjolnir triage ./test-results/`    | Quarantine proposal from execution history          |
+| `mjolnir pw-report ./test-results/` | Playwright run summary — retries / flakes / slowest |
+| `mjolnir doctor:playwright`         | Playwright-only deep scan + Selector Health Score   |
+
+<details>
+<summary><strong>Occasional / reporting</strong></summary>
+
+| Command                          | What it does                                     |
+| -------------------------------- | ------------------------------------------------ |
+| `mjolnir fix --dry-run` / `fix`  | Safe auto-fixes with proof                       |
+| `mjolnir baseline` / `diff`      | Snapshot findings, then report only new/worsened |
+| `mjolnir impact [--since <ref>]` | What changed since a prior commit                |
+| `mjolnir debt`                   | Test-debt register with a cost model             |
+| `mjolnir handover`               | New-QA onboarding map of the suite               |
+| `mjolnir stats`                  | Local all-time counters of fixes seen            |
+| `mjolnir badge`                  | shields.io endpoint JSON + snippet               |
+| `mjolnir rules` / `rules --md`   | Full rule catalog (JSON or Markdown)             |
+| `mjolnir doctor`                 | Self-audit of Mjölnir's own rule base            |
+| `mjolnir create-rule <ID>`       | Scaffold a new rule + fixtures                   |
+| `mjolnir --format mermaid`       | Test-architecture diagram for a PR comment       |
+
+</details>
 
 ---
 
@@ -156,6 +192,15 @@ Every finding carries an evidence level that determines its weight in the score:
 Most rules are **E1** (heuristic). The tagline "we prove it" refers to this
 evidence-level system — deterministic findings (E2) are structural proof;
 heuristic findings (E1) are correctly-positioned warnings, not formal proofs.
+
+**How much of this is measured.** 19 of 91 rules carry a false-positive rate
+measured against real OSS code (≥ 10 hand-classified findings each; see
+[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). The other 72 ship on the author's
+estimate. Every scan footer tells you how many of the rules that _fired_ are
+measured; `mjolnir rules --unmeasured` lists the ones that aren't; every rule's
+`mjolnir explain` page states its status. We publish the rate even when it's
+ugly — QA-JV-103 audits at 50% and is quarantined for it. Growing that 19
+is the project's main open work.
 
 ---
 
@@ -365,7 +410,10 @@ Or wire it into GitHub Code Scanning natively via SARIF:
 - **FP firewall** — detection runs on a comment/string-free view of the code
   (TypeScript rules use the compiler AST): a pattern inside a prose comment
   or a doc-example string is documentation, not a finding.
-  See [docs/FP-AUDIT.md](docs/FP-AUDIT.md) for measured false-positive rates per rule.
+- **Measured, not asserted** — 19 of 91 rules carry a false-positive rate from
+  real OSS code; the scan footer, `mjolnir rules --unmeasured`, and every
+  `mjolnir explain` page tell you which rules are which.
+  [docs/FP-AUDIT.md](docs/FP-AUDIT.md) has the numbers, ugly ones included.
 
 ---
 

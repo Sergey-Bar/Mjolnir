@@ -16,6 +16,7 @@ import { join } from "node:path";
 
 import { RULES } from "../rules/index.js";
 import type { QADoctorRule } from "../rules/rule.js";
+import { MEASURED_FP } from "../rules/measured-fp.generated.js";
 import { deriveEvidenceLevel, QA_IMPACT_LABELS } from "../types.js";
 import type { Finding } from "../types.js";
 import { parseWorkflow } from "../discovery/workflow-parser.js";
@@ -150,10 +151,18 @@ export function renderRuleDocMd(data: RuleDocData): string {
   lines.push(`| Severity | ${r.severity} |`);
   lines.push(`| Confidence | ${r.confidence} |`);
   lines.push(`| Tier | ${r.tier ?? "core"} |`);
+  const measured = MEASURED_FP[r.id];
+  lines.push(
+    `| Measured FP rate | ${
+      measured
+        ? `${Math.round(measured.fpRate * 100)}% (n=${measured.n})`
+        : "not yet measured"
+    } |`,
+  );
   lines.push(`| Evidence level | ${evidenceLevel} |`);
   lines.push(`| QA impact | ${QA_IMPACT_LABELS[r.qaImpact]} (${r.qaImpact}) |`);
   lines.push(
-    `| False-positive risk | ${r.falsePositiveRisk ?? "not declared"} |`,
+    `| False-positive risk (author estimate) | ${r.falsePositiveRisk ?? "not declared"} |`,
   );
   lines.push(`| Autofix available | ${r.autofix ? "yes" : "no"} |`);
   if (r.languages?.length)
