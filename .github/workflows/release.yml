@@ -41,6 +41,12 @@ jobs:
           # to target the public registry with the right auth setup.
           registry-url: "https://registry.npmjs.org"
 
+      # Node 22 ships npm 10, which does NOT support OIDC trusted
+      # publishing — it silently falls back to token auth and the publish
+      # PUT fails with a misleading "404 Not Found". OIDC needs npm >= 11.5.1.
+      - name: Upgrade npm for OIDC trusted publishing
+        run: npm install -g npm@latest
+
       - name: Verify tag matches package.json version
         run: |
           PKG_VERSION="v$(node -p "require('./package.json').version")"
