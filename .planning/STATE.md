@@ -1037,6 +1037,66 @@ floor just below measured, not a relaxation of the real bar) with a
 comment; lines/functions kept at 95/96. Ratchet back up as the
 command-file branch coverage improves.
 
+## Launch readiness — 0.5.0 (2026-08-29): merged to main, awaiting npm publish
+
+Merged as PR #2, green on ubuntu/macOS/windows. What it closed:
+
+**A shipped, user-facing bug in the published 0.4.0.** `dist/cli.mjs` had
+no shebang. npm's POSIX bin shim executes the target file directly, so
+`/bin/sh` parsed JavaScript as shell and `npx mjolnir-qa@latest` died with
+`import: not found` on **every Linux and macOS machine** — the README's
+headline command. Windows was fine because npm generates a `.cmd` wrapper
+that calls node explicitly, and `package-smoke.spec.ts` was fine because
+it ran `node <binPath>`, supplying the interpreter the shebang would have
+named; its comment claimed that was "what the shim itself does under the
+hood", which is exactly wrong on POSIX. Found only by the PR workflow
+actually running `npx`. Fixed, and locked by two new assertions (first
+line is the shebang; on POSIX the packed bin executes with no `node`
+prefix).
+
+**Documentation claims a grep disproved** — the project's own Phase 8
+acceptance bar:
+
+- All 91 generated rule pages printed `npm run corpus:audit` as the way to
+  reproduce corpus counts. Renamed to `corpus:regression` in Tempering
+  phase 3; the generator string was never updated. Same dead name in
+  `docs/PUBLISHING.md`.
+- `docs/FP-AUDIT.md` reported the rule base as **84** when it is **91**.
+  The denominator grepped source for `id: "QA-…"`, missing the seven rules
+  the phase-6 families declare as positional factory arguments —
+  QA-CS-106/110/111, QA-JV-106/110/111, QA-PY-104, all Java/C#/Python. The
+  honesty document was quietly shrinking the newest adapters' coverage.
+  The generator is now TypeScript and imports `RULES` directly.
+- `Release Smoke` had been red since 2026-08-28 for **two** stacked
+  reasons: the shebang, and — hidden behind it — an assertion on the
+  gauge label `SCORE`, renamed to `WORTHINESS` at the rebrand.
+
+**Guards added, because every one of the above rotted silently:**
+
+- `ci.yml` now runs `npm run test:coverage` (ubuntu only). Its absence is
+  why coverage fell ~96% → 92.6% between releases unnoticed.
+- `docs-consistency.spec.ts` asserts every `npm run <script>` in tracked
+  docs and source exists in `package.json`.
+- `fp-audit-table.spec.ts` locks the coverage denominator to `RULES.length`
+  and names the seven family-declared rules explicitly.
+- `version-consistency.spec.ts` now covers `cli.ts`'s `CLI_VERSION` too;
+  `sync-sarif-version.cjs` syncs every version literal in `src/`.
+- `mjolnir.yml` builds and runs the **PR's own** CLI instead of
+  `npx mjolnir-qa@latest`, so the tool actually reviews the change under
+  review.
+
+**Also:** `mjolnir --version` added (previously printed the whole help at
+exit 0); README gained live npm + CI badges and lost the static,
+self-asserted "● ONLINE" badge.
+
+**Remaining before announcing — one manual step, owner-only:** configure
+the npmjs.com **Trusted Publisher (OIDC)** for `mjolnir-qa`
+(GitHub Actions · `Sergey-Bar/Mjolnir` · `.github/workflows/release.yml` ·
+environment blank), then flip `if: false` on release.yml's publish step
+and push tag `v0.5.0`. Runbook: `docs/PUBLISHING.md`. Until 0.5.0 is
+published, `npx mjolnir-qa@latest` still serves the broken 0.4.0 —
+**do not announce before that.**
+
 ## Conventions
 
 - User communicates in Hebrew; artifacts in English.
