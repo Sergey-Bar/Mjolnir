@@ -38,7 +38,7 @@ Verified against `tests/fixtures/QA-ENV-001/must-not-fire/code-as-test-data.spec
 
 ## Corpus-measured false-positive risk
 
-Real occurrence counts from `npm run corpus:audit` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
+Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
 | Repo                        | Occurrences |
 | --------------------------- | ----------- |

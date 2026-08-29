@@ -28,6 +28,12 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test
+      # Coverage thresholds are enforced in CI, not just locally. Their
+      # absence here is why coverage silently fell from ~96% to 92.6%
+      # between releases. Run on one OS only — the thresholds are
+      # platform-independent and this keeps the 3-OS matrix fast.
+      - run: npm run test:coverage
+        if: matrix.os == 'ubuntu-latest'
       - run: npm audit --audit-level=high
 
   # Self-scan gate (§30.2 #7) — activates once rules exist.

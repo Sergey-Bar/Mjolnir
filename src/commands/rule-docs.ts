@@ -223,13 +223,13 @@ export function renderRuleDocMd(data: RuleDocData): string {
   if (occurrences.length === 0) {
     lines.push(
       "UNKNOWN — this rule has not (yet) fired in any of the real OSS " +
-        "repos tracked by `npm run corpus:audit` (see `docs/FP-AUDIT.md`). " +
+        "repos tracked by `npm run corpus:regression` (see `docs/FP-AUDIT.md`). " +
         'That is not the same as "never fires incorrectly" — it just means ' +
         "no occurrence, correct or not, has been observed there yet.",
     );
   } else {
     lines.push(
-      "Real occurrence counts from `npm run corpus:audit` against " +
+      "Real occurrence counts from `npm run corpus:regression` against " +
         "actively-maintained OSS repos — reproduce yourself, don't just " +
         "trust this table (see `docs/FP-AUDIT.md`):",
     );

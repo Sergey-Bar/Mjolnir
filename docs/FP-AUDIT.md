@@ -10,7 +10,7 @@ A rule with fewer than 10 classified verdicts is **unmeasured**. Coverage
 below is stated against the full rule registry, not against the rules that
 happen to have been sampled.
 
-Last generated: 2026-08-27.
+Last generated: 2026-08-29.
 
 ## Summary
 
@@ -47,7 +47,7 @@ Last generated: 2026-08-27.
 | 🔴 quarantine | > 30%   | Opt-in only (`--strict`)              |
 | ❓ unmeasured | n < 10  | Cannot ship in core until measured    |
 
-## Coverage: 19/84 rules measured (23%) at n ≥ 10
+## Coverage: 19/91 rules measured (21%) at n ≥ 10
 
-**65 rules carry no measured FP rate.** Any of them in the
+**72 rules carry no measured FP rate.** Any of them in the
 core tier is shipping on an unverified assumption.

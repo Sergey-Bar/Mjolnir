@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env tsx
 /**
  * Generates two documents:
  *
@@ -9,13 +9,15 @@
  *    human-classified verdicts in tests/corpus/verdicts/*.jsonl
  *    (Phase 3 — Tempering Plan)
  *
- * Usage: node scripts/generate-fp-audit-table.mjs
+ * Usage: npm run fp-audit:generate
  */
 
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execSync } from "node:child_process";
+
+import { RULES } from "../src/rules/index.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..");
@@ -24,11 +26,10 @@ const VERDICTS_DIR = join(ROOT, "tests", "corpus", "verdicts");
 const COUNT_LOCK_PATH = join(ROOT, "docs", "COUNT-LOCK.md");
 const FP_AUDIT_PATH = join(ROOT, "docs", "FP-AUDIT.md");
 
-// Kept in sync by hand with tests/corpus/audit.ts's CORPUS list (that
-// file can't be imported here without pulling in the whole audit
-// runner as an .mjs-from-.ts boundary; the repo name is the join key
-// and is asserted to exist by tests/fp-audit-table.spec.ts).
-const CORPUS_NOTES = {
+// Kept in sync by hand with tests/corpus/audit.ts's CORPUS list (the repo
+// name is the join key and is asserted to exist by
+// tests/fp-audit-table.spec.ts).
+const CORPUS_NOTES: Record<string, { url: string; note: string }> = {
   "pallets-click": {
     url: "https://github.com/pallets/click.git",
     note: "real pytest suite — Python adapter FP surface",
@@ -55,25 +56,44 @@ const CORPUS_NOTES = {
   },
 };
 
+export interface FpAuditBaseline {
+  name: string;
+  countsByRule: Record<string, number>;
+  totalFindings: number;
+}
+
+export interface Verdict {
+  ruleId: string;
+  verdict: "TP" | "FP" | "UNSURE" | "";
+  file?: string;
+  line?: number;
+  note?: string;
+}
+
 // ─── Count-Lock (regression guard) ──────────────────────────────────
 
-function loadBaselines() {
+function loadBaselines(): FpAuditBaseline[] {
   const files = readdirSync(BASELINE_DIR).filter((f) => f.endsWith(".json"));
   return files
     .map((f) => {
       const name = f.replace(/\.json$/, "");
-      const entry = JSON.parse(readFileSync(join(BASELINE_DIR, f), "utf8"));
+      const entry = JSON.parse(
+        readFileSync(join(BASELINE_DIR, f), "utf8"),
+      ) as Omit<FpAuditBaseline, "name">;
       return { name, ...entry };
     })
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
-export function renderFpAuditMd(baselines, generatedAt = new Date()) {
+export function renderFpAuditMd(
+  baselines: FpAuditBaseline[],
+  generatedAt: Date = new Date(),
+): string {
   const lines = [
     "# Corpus Count Lock (Regression Guard)",
     "",
     "**Generated from `tests/corpus/baseline/*.json` — do not edit by hand.**",
-    `Regenerate with \`node scripts/generate-fp-audit-table.mjs\` after a reviewed`,
+    "Regenerate with `npm run fp-audit:generate` after a reviewed",
     "`npm run corpus:regression:update` run.",
     "",
     "This is a **count lock**, not a false-positive audit. It records how many",
@@ -129,51 +149,35 @@ export function renderFpAuditMd(baselines, generatedAt = new Date()) {
 // ─── FP Audit (measured rates from verdicts) ─────────────────────────
 
 /**
- * Rule IDs declared across the registry, read from source.
+ * Every rule ID in the shipped registry.
  *
- * This is an .mjs script and the registry is TypeScript, so the IDs are
- * extracted textually rather than imported — the same join-by-name approach
- * CORPUS_NOTES uses, and asserted by tests/fp-audit-table.spec.ts.
+ * Read from `RULES` itself, never by grepping source for `id: "QA-…"`.
+ * That textual approach was silently wrong: the Phase 6 rule families
+ * (`brittle-selectors`, `no-a11y`, `blanket-route`) declare their IDs as
+ * positional factory arguments, so seven real rules — QA-CS-106/110/111,
+ * QA-JV-106/110/111 and QA-PY-104, every one of them Java/C#/Python —
+ * were invisible to the coverage denominator, understating the rule base
+ * as 84 when it is 91 and quietly shrinking the newest adapters' share.
  *
- * The count matters: coverage must be reported against the whole rule base,
- * not against the rules that happen to have verdicts.
+ * The count matters: coverage must be reported against the whole rule
+ * base, not against the rules that happen to have verdicts. Importing the
+ * registry makes that structurally true instead of regex-dependent.
  */
-function registryRuleIds() {
-  const ids = new Set();
-  const walk = (dir) => {
-    for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      const full = join(dir, entry.name);
-      if (entry.isDirectory()) {
-        walk(full);
-      } else if (entry.name.endsWith(".ts")) {
-        const src = readFileSync(full, "utf8");
-        for (const m of src.matchAll(
-          /\bid:\s*"(QA-(?:TEST|TQUAL|PW|CI|PY|ENV|JV|CS)-\d{3})"/g,
-        )) {
-          ids.add(m[1]);
-        }
-      }
-    }
-  };
-  try {
-    walk(join(ROOT, "src", "rules"));
-  } catch {
-    /* registry unreadable — coverage denominator falls back to unknown */
-  }
-  return [...ids].sort();
+export function registryRuleIds(): string[] {
+  return RULES.map((r) => r.id).sort();
 }
 
-function loadVerdicts() {
+function loadVerdicts(): Verdict[] {
   if (!existsSync(VERDICTS_DIR)) return [];
   const files = readdirSync(VERDICTS_DIR).filter((f) => f.endsWith(".jsonl"));
-  const all = [];
+  const all: Verdict[] = [];
   for (const f of files) {
     const lines = readFileSync(join(VERDICTS_DIR, f), "utf8")
       .split("\n")
       .filter((l) => l.trim().length > 0);
     for (const line of lines) {
       try {
-        const entry = JSON.parse(line);
+        const entry = JSON.parse(line) as Verdict;
         if (entry.verdict) all.push(entry);
       } catch {
         // skip malformed lines
@@ -183,20 +187,30 @@ function loadVerdicts() {
   return all;
 }
 
+interface RuleStats {
+  ruleId: string;
+  tp: number;
+  fp: number;
+  unsure: number;
+  classified: number;
+  fpRate: number | null;
+  total: number;
+}
+
 export function renderMeasuredFpAudit(
-  verdicts,
-  generatedAt = new Date(),
-  registryRuleIds = [],
-) {
+  verdicts: Verdict[],
+  generatedAt: Date = new Date(),
+  registryIds: string[] = [],
+): string {
   // Group by ruleId
-  const byRule = new Map();
+  const byRule = new Map<string, Verdict[]>();
   for (const v of verdicts) {
     const arr = byRule.get(v.ruleId) ?? [];
     arr.push(v);
     byRule.set(v.ruleId, arr);
   }
 
-  const stats = [];
+  const stats: RuleStats[] = [];
   for (const [ruleId, entries] of [...byRule.entries()].sort((a, b) =>
     a[0].localeCompare(b[0]),
   )) {
@@ -246,9 +260,9 @@ export function renderMeasuredFpAudit(
     const rate = s.fpRate !== null ? `${(s.fpRate * 100).toFixed(0)}%` : "—";
     const status =
       s.classified >= 10
-        ? s.fpRate <= 0.1
+        ? s.fpRate !== null && s.fpRate <= 0.1
           ? "✅ core"
-          : s.fpRate <= 0.3
+          : s.fpRate !== null && s.fpRate <= 0.3
             ? "⚠️ extended"
             : "🔴 quarantine"
         : "❓ unmeasured";
@@ -281,10 +295,10 @@ export function renderMeasuredFpAudit(
   const measured = stats.filter((s) => s.classified >= 10).length;
   // The denominator is the REGISTRY, not the set of rules that happen to have
   // verdicts. Reporting "3/6 measured" when 6 was the sampled count while the
-  // registry holds ~87 rules overstated coverage by more than an order of
+  // registry holds 91 rules overstated coverage by more than an order of
   // magnitude — it made a 3-rule sample look like half the rule base.
-  if (registryRuleIds.length > 0) {
-    const total = registryRuleIds.length;
+  if (registryIds.length > 0) {
+    const total = registryIds.length;
     const pct = ((measured / total) * 100).toFixed(0);
     lines.push(
       `## Coverage: ${measured}/${total} rules measured (${pct}%) at n ≥ 10`,
@@ -310,7 +324,7 @@ export function renderMeasuredFpAudit(
 
 // ─── Main ────────────────────────────────────────────────────────────
 
-function main() {
+function main(): void {
   // Generate COUNT-LOCK.md (regression guard)
   const baselines = loadBaselines();
   const countLockMd = renderFpAuditMd(baselines);

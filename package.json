@@ -32,7 +32,7 @@
     "corpus:regression": "tsx tests/corpus/audit.ts",
     "corpus:regression:update": "tsx tests/corpus/audit.ts --update",
     "corpus:sample": "tsx scripts/corpus-sample.ts",
-    "fp-audit:generate": "node scripts/generate-fp-audit-table.mjs",
+    "fp-audit:generate": "tsx scripts/generate-fp-audit-table.ts",
     "docs:rules": "tsx scripts/generate-rule-docs.ts",
     "docs:hero": "tsx scripts/generate-readme-hero.ts",
     "self-scan": "node dist/cli.mjs .",

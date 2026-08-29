@@ -6,11 +6,11 @@ Mjölnir: linter-grade QA scanner. TypeScript, ESM, Node >= 22.18, Vitest, tsdow
 
 ## Source plans
 
-- `docs/plans/Product.txt` — long-term vision (Evidence Graph, E0–E4)
-- `docs/plans/Product-MVP.txt` — MVP §1–35 (rules, scoring, guardrails, risks)
-- `docs/plans/Sprint-Plan.txt` — 13-week plan, Option A (solo dev + AI), ~66 dev-days
-- `docs/plans/Upgrade-Plan-v2.txt` — R1 LanguageAdapter refactor → R2 Python adapter → R3 Playwright Deep Mode
-- `docs/plans/Upgrade-Plan-v3.txt` — next up: new Playwright layers, Playwright-Python, TS AST precision, Java/.NET Playwright adapters, Plugin API + cross-file analysis (tier-4 "delight" items explicitly deferred)
+- `docs/archive/plans/Product.txt` — long-term vision (Evidence Graph, E0–E4)
+- `docs/archive/plans/Product-MVP.txt` — MVP §1–35 (rules, scoring, guardrails, risks)
+- `docs/archive/plans/Sprint-Plan.txt` — 13-week plan, Option A (solo dev + AI), ~66 dev-days
+- `docs/archive/plans/Upgrade-Plan-v2.txt` — R1 LanguageAdapter refactor → R2 Python adapter → R3 Playwright Deep Mode
+- `docs/archive/plans/Upgrade-Plan-v3.txt` — next up: new Playwright layers, Playwright-Python, TS AST precision, Java/.NET Playwright adapters, Plugin API + cross-file analysis (tier-4 "delight" items explicitly deferred)
 - `docs/tiers/` — Legendary-Roadmap split by tier (T1 game-changers … T6 stars playbook)
 
 ## Frozen contracts
@@ -51,7 +51,7 @@ supersedes the earlier 2026-08-25 snapshot.
 - **Upgrade-Plan-v3 progress (2026-08-25):**
   - Phase 0.1 Python FP corpus: ✅ corpus expanded (pytest-dev/pytest,
     psf/requests); baseline regeneration needs one networked
-    `npm run corpus:audit --update` run.
+    `npm run corpus:regression:update` run (then named `corpus:audit --update`).
   - CHANGELOG.md added (critical item #3).
   - Phase 1 (QA-PW-141..145): ✅ shipped — 5 new Playwright layers,
     fixture pairs complete, golden lock updated with reviewed diff,
@@ -84,7 +84,7 @@ tiers 2/4 items (roast mode, Mermaid output — plugin API is now shipped,
 see Master-Stabilization-Plan Sprint 0 note below).
 
 Full audit trail: see status markers added throughout
-`docs/plans/Implementation-Master-Plan.txt` and `docs/plans/Upgrade-Plan-v2.txt`.
+`docs/archive/plans/Implementation-Master-Plan.txt` and `docs/archive/plans/Upgrade-Plan-v2.txt`.
 
 ## Master-Stabilization-Plan.md — Sprint 0 (2026-08-26): ✅ COMPLETE
 
@@ -121,7 +121,7 @@ Verified, dated baseline replacing every conflicting count in prior docs:
   entirely for self-scan purposes) is unscheduled.
 - Golden lock (`tests/golden/golden.spec.ts`): **byte-identical**, 3/3
   passing — none of the Sprint 0 changes affected scoring.
-- `npm run corpus:audit`: **not run** (requires network; unchanged from
+- corpus audit (now `npm run corpus:regression`): **not run** (requires network; unchanged from
   prior sessions' "still open" status).
 
 **Repository structure finding (not anticipated by the plan as written):**
@@ -131,7 +131,7 @@ disabled, missing 2 local-only release commits that never reached
 `origin/main`) and `c:\Work\QA-Doctor\qa-doctor\.git` (the active repo,
 fully in sync with `origin/main`, continuing the same history from the
 point the repo was restructured under a `qa-doctor/` subdirectory). The
-outer folder's `docs/plans/**` and `.planning/STATE.md` existed only in
+outer folder's `docs/archive/plans/**` and `.planning/STATE.md` existed only in
 that untracked outer folder — the active repo had **none** of its own
 "source of truth" planning docs tracked at all, a strictly worse version
 of finding #4 than the plan anticipated (it assumed one repo with a
@@ -177,7 +177,7 @@ own sprint map.
 **Not done in Sprint 0** (explicit known-unknowns, not rounded to green):
 
 - `test:coverage` scale-benchmark timeout flake (see above).
-- `npm run corpus:audit` (networked).
+- corpus audit, now `npm run corpus:regression` (networked).
 - `docs/PUBLISHING.md`.
 - Standing gate has only been run on Windows this session — Linux/macOS
   verification not performed locally (CI matrix already covers both;
@@ -565,7 +565,7 @@ real evidence for each line, not assumption:
       Linux/macOS now additionally covered by the real green CI run above
       (which packs and smoke-tests the tarball as part of `npm test`).
 - [x] **Every published accuracy claim reproducible via one public
-      command** — `npm run corpus:audit` verified working (Sprint 2).
+      command** — the corpus audit (now `npm run corpus:regression`) verified working (Sprint 2).
 - [x] **No documentation claim contradicted by a source read** —
       `tests/docs-consistency.spec.ts` guards the specific bug class found
       in Sprint 0 findings #3/#10; not an exhaustive audit of every doc file
@@ -584,7 +584,7 @@ Mjölnir rebrand.
 
 ## Sprint 6 — Proof of value (post-beta-gate) — done 2026-08-26
 
-Tasks 23–26 of `docs/plans/Master-Stabilization-Plan.md`. Explicitly
+Tasks 23–26 of `docs/archive/plans/Master-Stabilization-Plan.md`. Explicitly
 post-beta per the plan (highest-leverage but not blocking beta).
 
 **Task 23** (`mjolnir impact [--since <ref>]`): compares the current
@@ -693,7 +693,7 @@ task list (Tasks 23–26 and their full QA table are complete).
 
 ## Sprint 7 — Living docs and workflow integration — done 2026-08-26
 
-Tasks 27–30 of `docs/plans/Master-Stabilization-Plan.md`.
+Tasks 27–30 of `docs/archive/plans/Master-Stabilization-Plan.md`.
 
 **Task 27** (rule documentation generator, `npm run docs:rules`):
 generates `docs/rules/<RULE-ID>.md` for all 78 registered rules plus an
@@ -772,7 +772,7 @@ task list (Tasks 27–30 and their full QA table are complete).
 
 ## Sprint 8 — Java/.NET Playwright parity — done 2026-08-26
 
-Tasks 31–37 of `docs/plans/Master-Stabilization-Plan.md`. The largest
+Tasks 31–37 of `docs/archive/plans/Master-Stabilization-Plan.md`. The largest
 sprint by scope this session — 11 new rules, a real dependency bug
 found and fixed, a genuinely new architecture layer built and tested,
 and two real corpus-audit false positives found and fixed against real
@@ -902,7 +902,7 @@ item, not a gap in this sprint's own stated scope.
 
 ## Sprint 9 — Delight and virality (opt-in, brand-safe) — done 2026-08-27
 
-Tasks 38–41 of `docs/plans/Master-Stabilization-Plan.md`. The final
+Tasks 38–41 of `docs/archive/plans/Master-Stabilization-Plan.md`. The final
 sprint in the plan — every item here is opt-in and score-neutral per
 the plan's own definition of done: no alteration to scores, exit codes
 or the JSON schema.

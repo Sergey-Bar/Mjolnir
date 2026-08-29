@@ -1,7 +1,7 @@
 /**
  * Count-lock table generator (Master-Stabilization-Plan Sprint 2, Task 10).
  *
- * The generator (`scripts/generate-fp-audit-table.mjs`) turns the
+ * The generator (`scripts/generate-fp-audit-table.ts`) turns the
  * committed `tests/corpus/baseline/*.json` files into a markdown page —
  * it must never be hand-edited, since the whole point is that it cannot
  * drift from what `npm run corpus:regression` actually measured. This test
@@ -14,8 +14,12 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-// .mjs generator script, imported directly — vitest handles plain ESM.
-import { renderFpAuditMd } from "../scripts/generate-fp-audit-table.mjs";
+import {
+  registryRuleIds,
+  renderFpAuditMd,
+  renderMeasuredFpAudit,
+} from "../scripts/generate-fp-audit-table.js";
+import { RULES } from "../src/rules/index.js";
 
 const ROOT = join(import.meta.dirname, "..");
 const BASELINE_DIR = join(ROOT, "tests", "corpus", "baseline");
@@ -24,7 +28,7 @@ const AUDIT_SOURCE = readFileSync(
   "utf8",
 );
 const GENERATOR_SOURCE = readFileSync(
-  join(ROOT, "scripts", "generate-fp-audit-table.mjs"),
+  join(ROOT, "scripts", "generate-fp-audit-table.ts"),
   "utf8",
 );
 
@@ -103,9 +107,52 @@ describe("generated docs/COUNT-LOCK.md", () => {
       expect(
         content,
         `docs/COUNT-LOCK.md is missing a section for baseline "${name}" — ` +
-          `regenerate with node scripts/generate-fp-audit-table.mjs`,
+          `regenerate with npm run fp-audit:generate`,
       ).toContain(`## ${name}`);
     }
+  });
+});
+
+describe("coverage denominator is the whole registry", () => {
+  // Regression lock for a real, shipped defect: registryRuleIds() used to
+  // grep source for `id: "QA-…"`, which misses every rule declared as a
+  // positional factory argument by the Phase 6 families. Seven real rules
+  // (QA-CS-106/110/111, QA-JV-106/110/111, QA-PY-104 — all Java/C#/Python)
+  // were invisible, so the honesty document reported the rule base as 84
+  // when it was 91, understating exactly the newest adapters' coverage.
+  it("registryRuleIds() returns every registered rule, not a regex subset", () => {
+    const ids = registryRuleIds();
+    expect(ids).toHaveLength(RULES.length);
+    expect(new Set(ids)).toEqual(new Set(RULES.map((r) => r.id)));
+  });
+
+  it("includes the family-declared rules a source grep would miss", () => {
+    const ids = new Set(registryRuleIds());
+    for (const id of [
+      "QA-CS-106",
+      "QA-CS-110",
+      "QA-CS-111",
+      "QA-JV-106",
+      "QA-JV-110",
+      "QA-JV-111",
+      "QA-PY-104",
+    ]) {
+      expect(ids.has(id), `${id} missing from the coverage denominator`).toBe(
+        true,
+      );
+    }
+  });
+
+  it("renders the coverage line against the registry size", () => {
+    const md = renderMeasuredFpAudit(
+      [
+        { ruleId: "QA-TEST-001", verdict: "TP" },
+        { ruleId: "QA-TEST-001", verdict: "FP" },
+      ],
+      new Date("2026-01-01"),
+      registryRuleIds(),
+    );
+    expect(md).toContain(`/${RULES.length} rules measured`);
   });
 });
 
@@ -119,7 +166,7 @@ describe("CORPUS_NOTES stays in sync with tests/corpus/audit.ts", () => {
       expect(
         GENERATOR_SOURCE,
         `tests/corpus/audit.ts's CORPUS list has "${name}" but ` +
-          `scripts/generate-fp-audit-table.mjs's CORPUS_NOTES does not — ` +
+          `scripts/generate-fp-audit-table.ts's CORPUS_NOTES does not — ` +
           `the generated page would show that repo with no source link.`,
       ).toContain(`"${name}"`);
     }

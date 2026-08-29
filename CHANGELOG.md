@@ -32,7 +32,7 @@ once shipped, so this file is the record of what changed between versions.
 - **JSON/SARIF truncation removed**: results were silently capped at 50
   findings, including machine consumers. The full finding set is now in
   JSON/SARIF; only terminal display is capped (with an honest count).
-- **`qa-doctor fix` path containment**: plugin-supplied finding paths can
+- **`mjolnir fix` path containment**: plugin-supplied finding paths can
   no longer write outside the scan root (`../` traversal refused).
 - **Symlinks are no longer followed** during test-file discovery in any
   adapter — prevents scanning outside the repo and link cycles.
@@ -131,7 +131,7 @@ by a `must-not-fire` fixture so the class cannot return silently.
 - Upgrade-Plan-v3 Phase 0.1: expanded the false-positive corpus with two
   additional Python repos (`pytest-dev/pytest`, `psf/requests`) so all
   QA-PY-001..012 rules are exercised against real code via
-  `npm run corpus:audit`.
+  `npm run corpus:regression`.
 - Added `CHANGELOG.md` (this file) per Upgrade-Plan-v3 critical item #3:
   user-visible rule behavior changes get a first-class entry from now on.
 - Upgrade-Plan-v3 Phase 1: five new TypeScript/Playwright rules —
@@ -146,15 +146,15 @@ by a `must-not-fire` fixture so the class cannot return silently.
   assertions), QA-PY-106 (shared page/context across tests), QA-PY-107
   (`networkidle` wait), QA-PY-108 (hardcoded environment URLs).
 - Upgrade-Plan-v3 Phase 6: Plugin API — declare third-party rule packages
-  in `qa-doctor.config.json` (`"plugins": [...]`). Security model: no
+  in `mjolnir.config.json` (`"plugins": [...]`). Security model: no
   sandbox (same trust as ESLint/Vitest plugins); reserved core rule-ID
   prefixes rejected; load failures degrade honestly as QA-PLUGIN-000
   warnings without affecting exit codes. Plus cross-file duplicate-test-name
   detection (`src/engine/cross-file.ts`).
-- Upgrade-Plan-v3 Phase 0.2: new `@qa-doctor/playwright-reporter` package
+- Upgrade-Plan-v3 Phase 0.2: new `mjolnir-qa-playwright-reporter` package
   (`packages/playwright-reporter/`) — official Playwright JSON reporter
-  wrapper for QA Doctor's forensics pipeline; default output
-  `qa-doctor.report.json` is the CLI's auto-discovery convention.
+  wrapper for Mjölnir's forensics pipeline; default output
+  `mjolnir.report.json` is the CLI's auto-discovery convention.
 - Upgrade-Plan-v3 Phase 3: ts-morph AST precision layer behind the `ast`
   seam (`src/engine/ts-ast.ts`). QA-PW-002 and QA-PW-005 migrated from
   regex to syntax-tree detection (legacy regex kept as fallback). No
@@ -166,12 +166,65 @@ by a `must-not-fire` fixture so the class cannot return silently.
   shared browser state, wait-timeout misuse. Rule-ID registry now accepts
   QA-JV/QA-CS families.
 
+### Changed — rule tiers assigned from measured FP rates
+
+- Every rule with a measured rate in `docs/FP-AUDIT.md` now carries the tier
+  its rate warrants (`core` ≤ 10% FP · `extended` ≤ 30% · `quarantine` above
+  that or unmeasured). Demoted to quarantine: QA-CS-102, QA-CS-106, QA-CS-108,
+  QA-CS-111, QA-ENV-001, QA-JV-103, QA-JV-106, QA-JV-108, QA-JV-111,
+  QA-PY-004, QA-PY-006, QA-PY-007. Set to extended: QA-CS-105, QA-TEST-004.
+  Promoted to core: QA-CS-101 (0% FP, n=20), QA-JV-105 (10% FP, n=20).
+  Quarantined rules still ship and are still documented — they are opt-in via
+  `--strict` rather than shaping the default report.
+- `mjolnir rules` (`--json` and `--md`) now exposes each rule's `tier`, and
+  every generated page under `docs/rules/` shows it in the metadata table.
+
+### Fixed — documentation claims a `grep` disproved
+
+- Every generated rule page told the reader to reproduce corpus counts with
+  a `corpus:audit` script. That script had been renamed to `corpus:regression` in
+  the Tempering plan and the generator string was never updated — the command
+  printed on 91 published pages did not exist. Same dead name in
+  `docs/PUBLISHING.md`
+  (`corpus:audit:update` → `corpus:regression:update`).
+- **`docs/FP-AUDIT.md` under-reported the rule base as 84 rules when the
+  registry holds 91.** The coverage denominator was built by grepping source
+  for `id: "QA-…"`, which silently missed the seven rules that the Phase 6
+  families declare as positional factory arguments — QA-CS-106/110/111,
+  QA-JV-106/110/111 and QA-PY-104, every one of them Java/C#/Python. The
+  honesty document was quietly shrinking the newest adapters' coverage. The
+  generator now imports the registry directly (and is TypeScript, so the
+  `.d.mts` shim is gone); a regression test locks the denominator to
+  `RULES.length`.
+- `docs/README.md` described a `docs/plans/` directory that no longer exists
+  and called a completed plan "current work".
+- Residual `qa-doctor` naming removed from user-facing CLI output
+  (`mjolnir explain`, `mjolnir stats`), from comments that contradicted the
+  code they described (`baseline.ts` cited `.qa-doctor/` while writing
+  `.mjolnir/`), and from this changelog's own unreleased section.
+- The Playwright reporter package is renamed throughout:
+  `mjolnirReporter` / `MJOLNIR_REPORT_FILE` / `mjolnir.report.json`. The
+  package is unpublished, so no consumer breaks.
+
+### Added — guards
+
+- CI now runs `npm run test:coverage`. Its absence is why coverage fell from
+  ~96% to 92.6% between releases without anyone noticing.
+- `tests/docs-consistency.spec.ts` now asserts that every `npm run <script>`
+  referenced in tracked docs and source actually exists in `package.json` —
+  the general fix for the dead-command class above, not a one-off patch.
+- ~130 unit tests recovering branch coverage on the code-text maskers, the
+  shared position helpers, ignore-pattern resolution, and the per-arm
+  behavior of ten Playwright rules plus QA-PY-010.
+
 ### Known gaps
 
-- **No rule carries a measured FP rate.** Closing this requires a corpus run
-  followed by hand classification against real source. The FP fixes above are
-  confirmed defects, not a substitute for that measurement.
+- **19 of 91 rules carry a measured FP rate** (n ≥ 10, from 381 hand-classified
+  corpus verdicts). The other 72 ship on an unverified assumption; `mjolnir
+doctor` reports this and will fail once a majority is classified.
 - `NORMALIZATION_K` is unfitted.
+- Statements/branches coverage sits at 94.8%/87.7% against a 95/88 aspiration;
+  the enforced floor is 94/87 with the gap documented in `.planning/STATE.md`.
 
 ## [0.4.0] — 2026-08-27
 
