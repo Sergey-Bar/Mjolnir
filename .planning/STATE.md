@@ -1057,10 +1057,10 @@ prefix).
 **Documentation claims a grep disproved** — the project's own Phase 8
 acceptance bar:
 
-- All 91 generated rule pages printed `npm run corpus:audit` as the way to
-  reproduce corpus counts. Renamed to `corpus:regression` in Tempering
-  phase 3; the generator string was never updated. Same dead name in
-  `docs/PUBLISHING.md`.
+- All 91 generated rule pages printed a `corpus:audit` script as the way
+  to reproduce corpus counts. It had been renamed to `corpus:regression`
+  in Tempering phase 3; the generator string was never updated. Same dead
+  name in `docs/PUBLISHING.md`.
 - `docs/FP-AUDIT.md` reported the rule base as **84** when it is **91**.
   The denominator grepped source for `id: "QA-…"`, missing the seven rules
   the phase-6 families declare as positional factory arguments —
