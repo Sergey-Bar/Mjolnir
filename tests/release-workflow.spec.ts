@@ -57,22 +57,33 @@ describe("release.yml", () => {
     ).toBe(true);
   });
 
-  it("the npm publish step exists but is intentionally gated off (if: false)", () => {
+  it("the npm publish step exists and is gated behind an explicit opt-in variable, never unconditional", () => {
     const wf = loadReleaseWorkflow();
     const steps = wf.jobs.release?.steps ?? [];
     const publishStep = steps.find((s) => s.run?.includes("npm publish"));
     expect(
       publishStep,
-      "expected a documented (even if disabled) npm publish step — " +
-        "Task 18 requires writing it, not omitting it entirely",
+      "expected a documented npm publish step — Task 18 requires writing " +
+        "it, not omitting it entirely",
     ).toBeDefined();
+    // The gate must be present and must reference a repo variable — never
+    // absent (which would publish on every tag), and never a bare boolean
+    // literal that a copy-paste could flip to `true` with OIDC not set up,
+    // failing the release job.
     expect(
-      publishStep?.if,
-      "npm publish must be intentionally disabled (if: false) until the " +
-        "parked npm-name decision resolves — a live publish step would " +
-        "either 403 against the wrong owner or, worse, succeed against " +
-        "the wrong package",
-    ).toBe(false);
+      typeof publishStep?.if === "string" &&
+        /vars\.NPM_PUBLISH\s*==\s*'true'/.test(publishStep.if as string),
+      `npm publish must be gated on \`vars.NPM_PUBLISH == 'true'\` so it ` +
+        `only runs once the npmjs.com OIDC trusted-publisher setup is ` +
+        `done (see docs/PUBLISHING.md). Found: ${JSON.stringify(publishStep?.if)}`,
+    ).toBe(true);
+  });
+
+  it("publishes with --provenance (verifiable attestation), not a bare publish", () => {
+    const wf = loadReleaseWorkflow();
+    const steps = wf.jobs.release?.steps ?? [];
+    const publishStep = steps.find((s) => s.run?.includes("npm publish"));
+    expect(publishStep?.run).toContain("--provenance");
   });
 
   it("declares id-token: write for future OIDC provenance publishing", () => {

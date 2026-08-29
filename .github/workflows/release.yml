@@ -37,6 +37,9 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          # Required for `npm publish` (including OIDC trusted publishing)
+          # to target the public registry with the right auth setup.
+          registry-url: "https://registry.npmjs.org"
 
       - name: Verify tag matches package.json version
         run: |
@@ -55,11 +58,12 @@ jobs:
       - name: Sync SARIF driver version to package.json
         run: node scripts/sync-sarif-version.cjs
 
-      - name: Typecheck, lint, test
+      - name: Typecheck, lint, test, coverage
         run: |
           npm run typecheck
           npm run lint
           npm test
+          npm run test:coverage
 
       - run: npm run build
 
@@ -77,15 +81,20 @@ jobs:
             Install: `npx mjolnir-qa@${{ github.ref_name }} .`
             Full changelog is auto-generated below from all commits and PRs since the previous release.
 
-      # npm publish is intentionally gated off until the npmjs.com
-      # trusted-publisher (OIDC) setup is completed for mjolnir-qa.
-      # See docs/PUBLISHING.md for the one-time runbook.
+      # npm publish runs only once the repo variable NPM_PUBLISH is set to
+      # "true" (Settings → Secrets and variables → Actions → Variables, or
+      # `gh variable set NPM_PUBLISH --body true`). That gate exists so a
+      # tag push cannot attempt to publish before the one-time npmjs.com
+      # OIDC trusted-publisher setup is done — which would fail the job.
       #
-      # Provenance (--provenance) requires: (1) the npmjs.com package to
-      # have OIDC "trusted publisher" configured for this exact repo +
-      # workflow file (one-time, account-level, done on npmjs.com by a
-      # maintainer — cannot be automated from inside this repo, see the
-      # runbook in docs/PUBLISHING.md), and (2) id-token: write below.
+      # Trusted publishing (no NODE_AUTH_TOKEN) requires the npmjs.com
+      # package to have "trusted publisher" configured for this exact repo
+      # + workflow file. That is account-level and cannot be automated
+      # from inside this repo. Full runbook: docs/PUBLISHING.md.
+      #
+      # Once both are done, every `git push --follow-tags` publishes
+      # automatically with a verifiable provenance attestation — no
+      # further change to this file.
       - name: Publish to npm with provenance
-        if: false # flip once OIDC trusted-publisher is configured on npmjs.com
+        if: vars.NPM_PUBLISH == 'true'
         run: npm publish --provenance --access public

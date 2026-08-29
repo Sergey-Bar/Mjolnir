@@ -31,12 +31,13 @@ npm run test:coverage && npm run build && npm run self-scan`. All
    must pass before tagging.
 6. **Tag and push** — `git push --follow-tags`. This triggers
    `.github/workflows/release.yml`: it re-verifies the tag matches
-   `package.json`'s version, re-runs typecheck/lint/test, builds, packs
-   a tarball, and creates a GitHub Release with auto-generated notes and
-   the tarball attached.
-7. **npm publish** — automatic once the OIDC trusted publisher is
-   configured (see "Current state" below). Until then it is a manual,
-   out-of-band step.
+   `package.json`'s version, re-runs typecheck / lint / test /
+   test:coverage, builds, packs a tarball, creates a GitHub Release with
+   auto-generated notes and the tarball attached, and — once the two
+   one-time steps below are done — publishes to npm with provenance.
+7. **npm publish** — automatic when `vars.NPM_PUBLISH == 'true'` and the
+   npmjs.com trusted publisher is configured (both below). Until then the
+   step is skipped and publishing is a manual, out-of-band step.
 
 ## Current state — npm publish is not yet automated
 
@@ -50,37 +51,53 @@ oversight: the npmjs.com OIDC trusted-publisher setup has not been
 completed. Running `npm publish --provenance` as written would fail
 without that configuration.
 
-A `Publish to npm with provenance` step exists in `release.yml`,
-disabled via `if: false`, ready to flip on once the OIDC setup below is
-done.
+A `Publish to npm with provenance` step exists in `release.yml`, gated on
+`if: vars.NPM_PUBLISH == 'true'` — it stays inert until the repo variable
+`NPM_PUBLISH` is set. No code change is needed to activate it, only the
+two one-time steps below.
 
-## One-time setup required before that step can run (account-level, manual)
+## One-time setup before publishing is automatic (both required)
 
-This cannot be automated from inside this repository — it is an action
-a maintainer takes once on npmjs.com.
+Neither can be automated from inside this repository.
 
-1. ~~Claim the package name~~ — **done**: `mjolnir-qa` is published and
-   owned. Nothing to do here for this package.
-2. On the package's npmjs.com settings page, under **Publishing
-   access**, configure a **Trusted Publisher** (OIDC): select GitHub
-   Actions, the repository (`Sergey-Bar/Mjolnir`), the exact workflow
-   file path (`.github/workflows/release.yml`), and leave the
-   environment field blank unless this workflow later adds a GitHub
-   Environment gate.
-3. Once configured, `npm publish --provenance` from that exact workflow
-   file needs **no npm token secret at all** — npm verifies the OIDC
-   token GitHub Actions presents (via `id-token: write`, already
-   declared on the `release` job) matches the trusted-publisher config.
-   This is why the workflow has no `NODE_AUTH_TOKEN` step: OIDC trusted
-   publishing is meant to replace long-lived tokens, not sit alongside
-   one.
-4. Flip `if: false` to a real condition (or delete the line) on the
-   `Publish to npm with provenance` step in `release.yml`.
-5. Do a dry run first: `npm publish --provenance --dry-run` locally (or
-   temporarily point the workflow step at `--dry-run`) against the
-   chosen name before the first real publish, to confirm the tarball
-   contents are exactly what's expected (cross-check against
-   `tests/package-smoke.spec.ts`'s assertions).
+**1. Configure the npmjs.com Trusted Publisher (account-level, on npmjs.com).**
+On `mjolnir-qa`'s package page → **Settings** → **Publishing access** →
+add a **Trusted Publisher**:
+
+| Field         | Value                           |
+| ------------- | ------------------------------- |
+| Publisher     | GitHub Actions                  |
+| Organization  | `Sergey-Bar`                    |
+| Repository    | `Mjolnir`                       |
+| Workflow file | `.github/workflows/release.yml` |
+| Environment   | _(leave blank)_                 |
+
+Once configured, `npm publish --provenance` from that exact workflow
+needs **no `NODE_AUTH_TOKEN`** — npm verifies the OIDC token GitHub
+Actions presents (via `id-token: write`, already on the `release` job).
+That is why there is no token secret anywhere: OIDC trusted publishing
+replaces long-lived tokens.
+
+**2. Turn the publish step on (one command, or the GitHub UI).**
+
+```bash
+gh variable set NPM_PUBLISH --body true
+```
+
+(or Settings → Secrets and variables → Actions → Variables → New variable
+`NPM_PUBLISH` = `true`.)
+
+**3. First publish — dry-run first.** Before the first real tag, confirm
+the tarball contents locally:
+
+```bash
+npm publish --provenance --dry-run
+```
+
+Cross-check the file list against `tests/package-smoke.spec.ts`. Then
+`git push --follow-tags` — the tag triggers `release.yml`, which runs the
+full gate, creates the GitHub Release, and publishes to npm with
+provenance. Every subsequent release is fully automatic.
 
 ## Verifying provenance after a real publish
 

@@ -1089,13 +1089,21 @@ acceptance bar:
 exit 0); README gained live npm + CI badges and lost the static,
 self-asserted "● ONLINE" badge.
 
-**Remaining before announcing — one manual step, owner-only:** configure
-the npmjs.com **Trusted Publisher (OIDC)** for `mjolnir-qa`
-(GitHub Actions · `Sergey-Bar/Mjolnir` · `.github/workflows/release.yml` ·
-environment blank), then flip `if: false` on release.yml's publish step
-and push tag `v0.5.0`. Runbook: `docs/PUBLISHING.md`. Until 0.5.0 is
-published, `npx mjolnir-qa@latest` still serves the broken 0.4.0 —
-**do not announce before that.**
+**Remaining before announcing — two one-time steps, owner-only** (no code
+change; the repo side is done):
+
+1. On npmjs.com, `mjolnir-qa` → Settings → Publishing access → add a
+   **Trusted Publisher (OIDC)**: GitHub Actions · org `Sergey-Bar` · repo
+   `Mjolnir` · workflow `.github/workflows/release.yml` · environment blank.
+2. `gh variable set NPM_PUBLISH --body true` (the publish step in
+   release.yml is gated on `vars.NPM_PUBLISH == 'true'`, not a code
+   literal any more).
+
+Then `npm publish --provenance --dry-run` once to eyeball the tarball, and
+`git push --follow-tags` on `v0.5.0`. Full runbook: `docs/PUBLISHING.md`.
+
+Until 0.5.0 is published, `npx mjolnir-qa@latest` still serves the broken
+0.4.0 — **do not announce before that.**
 
 ## Conventions
 
