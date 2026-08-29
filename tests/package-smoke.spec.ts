@@ -27,6 +27,20 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 const ROOT = resolve(import.meta.dirname, "..");
 
+/**
+ * `npm pack --json` prints a JSON array, but npm also writes lifecycle-script
+ * output (`prepare > husky`) before it and, on npm 11+, an update/notice line
+ * *after* it. Slice to the outermost `[ … ]` so both are ignored.
+ */
+function parseNpmJsonArray(out: string): unknown[] {
+  const start = out.indexOf("[");
+  const end = out.lastIndexOf("]");
+  if (start === -1 || end <= start) {
+    throw new Error(`npm --json output contained no JSON array:\n${out}`);
+  }
+  return JSON.parse(out.slice(start, end + 1)) as unknown[];
+}
+
 describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
   "package publish integrity",
   () => {
@@ -49,12 +63,8 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
       const packOut = execSync(`npm pack --json`, {
         cwd: ROOT,
       }).toString();
-      // npm may prepend lifecycle-script output (e.g. "prepare > husky")
-      // before the JSON array — strip everything before the first '['.
-      const jsonStart = packOut.indexOf("[");
-      const packJson = jsonStart >= 0 ? packOut.slice(jsonStart) : packOut;
       const packResult = (
-        JSON.parse(packJson) as Array<{ filename: string }>
+        parseNpmJsonArray(packOut) as Array<{ filename: string }>
       )[0];
       if (!packResult) throw new Error("npm pack produced no output entry");
       const { filename } = packResult;
@@ -198,7 +208,7 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
         const dryRunOut = execSync("npm pack --dry-run --json", {
           cwd: ROOT,
         }).toString();
-        const [dryRunResult] = JSON.parse(dryRunOut) as Array<{
+        const [dryRunResult] = parseNpmJsonArray(dryRunOut) as Array<{
           files: Array<{ path: string }>;
         }>;
         const packedPaths = (dryRunResult?.files ?? []).map((f) => f.path);

@@ -41,12 +41,6 @@ jobs:
           # to target the public registry with the right auth setup.
           registry-url: "https://registry.npmjs.org"
 
-      # Node 22 ships npm 10, which does NOT support OIDC trusted
-      # publishing — it silently falls back to token auth and the publish
-      # PUT fails with a misleading "404 Not Found". OIDC needs npm >= 11.5.1.
-      - name: Upgrade npm for OIDC trusted publishing
-        run: npm install -g npm@latest
-
       - name: Verify tag matches package.json version
         run: |
           PKG_VERSION="v$(node -p "require('./package.json').version")"
@@ -101,6 +95,15 @@ jobs:
       # Once both are done, every `git push --follow-tags` publishes
       # automatically with a verifiable provenance attestation — no
       # further change to this file.
+      # Node 22 ships npm 10, which does NOT support OIDC trusted publishing —
+      # it falls back to token auth (empty NODE_AUTH_TOKEN placeholder) and the
+      # publish PUT fails with a misleading "404 Not Found". OIDC needs npm
+      # >= 11.5.1. Done here, after the test gate, so the rest of the job keeps
+      # running on the toolchain-pinned npm.
+      - name: Upgrade npm for OIDC trusted publishing
+        if: vars.NPM_PUBLISH == 'true'
+        run: npm install -g npm@latest
+
       - name: Publish to npm with provenance
         if: vars.NPM_PUBLISH == 'true'
         run: npm publish --provenance --access public
