@@ -104,6 +104,19 @@ jobs:
         if: vars.NPM_PUBLISH == 'true'
         run: npm install -g npm@latest
 
+      # setup-node writes an .npmrc containing `always-auth=true` and
+      # `//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}`. With
+      # NODE_AUTH_TOKEN unset, `always-auth` still forces npm to send an
+      # (empty) token on the publish PUT instead of falling back to OIDC —
+      # the registry then answers `404 … or you do not have permission`.
+      # Replace it with a bare registry line so npm 11's OIDC trusted
+      # publishing (id-token: write) takes over.
+      - name: Neutralize token auth so OIDC is used
+        if: vars.NPM_PUBLISH == 'true'
+        run: |
+          echo "registry=https://registry.npmjs.org/" > "${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}"
+          npm config get registry
+
       - name: Publish to npm with provenance
         if: vars.NPM_PUBLISH == 'true'
         run: npm publish --provenance --access public
