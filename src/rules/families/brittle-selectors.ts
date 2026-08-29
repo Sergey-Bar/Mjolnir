@@ -83,7 +83,7 @@ export const brittleSelectorsFamily: QADoctorRule[] = [
       { re: /\.querySelector\s*\(\s*"#/g, label: "id via querySelector" },
     ],
     "Prefer role-based locators (`page.getByRole(...)`) or data-testid attributes.",
-    "extended",
+    "quarantine",
   ),
   makeBrittleSelectors(
     "QA-CS-106",
@@ -104,7 +104,7 @@ export const brittleSelectorsFamily: QADoctorRule[] = [
       },
     ],
     "Prefer role-based locators (`page.GetByRole(...)`) or data-testid attributes.",
-    "extended",
+    "quarantine",
   ),
   makeBrittleSelectors(
     "QA-PY-104",

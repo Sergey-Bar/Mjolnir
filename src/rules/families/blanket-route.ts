@@ -32,7 +32,7 @@ function makeBlanketRoute(
     autofix: false,
     detectionStrategy: "regex pattern",
     introduced: "0.4.0",
-    tier: "extended",
+    tier: "quarantine",
     run(ctx) {
       const text = ctx.text;
       const findings: Omit<Finding, "ruleId" | "category">[] = [];

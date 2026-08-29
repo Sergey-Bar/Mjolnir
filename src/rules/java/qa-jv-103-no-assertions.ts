@@ -24,7 +24,7 @@ export const jvNoAssertions = defineRule({
   autofix: false,
   detectionStrategy: "regex heuristic",
   introduced: "0.3.8",
-  tier: "extended",
+  tier: "quarantine",
 
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;

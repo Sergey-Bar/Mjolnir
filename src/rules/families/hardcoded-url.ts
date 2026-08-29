@@ -24,7 +24,7 @@ export const hardcodedUrlFamily = definePatternFamily({
       ext: ".java",
       languages: ["java"],
       frameworks: ["junit", "testng"],
-      tier: "extended",
+      tier: "quarantine",
       patterns: [
         /\.navigate\s*\(\s*"https?:\/\/(?!localhost|127\.0\.0\.1)[^"]+"/g,
       ],
@@ -37,7 +37,7 @@ export const hardcodedUrlFamily = definePatternFamily({
       ext: ".cs",
       languages: ["csharp"],
       frameworks: ["nunit", "xunit", "mstest", "playwright"],
-      tier: "extended",
+      tier: "quarantine",
       patterns: [
         /\.(?:GotoAsync|GetAsync|PostAsync)\s*\(\s*"https?:\/\/(?!localhost|127\.0\.0\.1)[^"]+"/g,
       ],

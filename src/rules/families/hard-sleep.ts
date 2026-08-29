@@ -35,6 +35,7 @@ export const hardSleepFamily = definePatternFamily({
       ext: ".cs",
       languages: ["csharp"],
       frameworks: ["nunit", "xunit", "mstest", "playwright"],
+      tier: "quarantine",
       patterns: [/\b(?:Thread\.Sleep|Task\.Delay)\s*\(/g],
       message: "`$0` used to wait for state.",
       fix: "Use `await Assertions.Expect(locator).ToBeVisibleAsync()` or locator.WaitForAsync().",

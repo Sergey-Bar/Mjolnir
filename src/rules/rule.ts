@@ -46,7 +46,7 @@ export interface RuleMeta {
    * should not be enforced.
    */
   falsePositiveRisk?: "low" | "medium" | "high";
-  /** Whether `qa-doctor fix` (or a future autofix) can safely repair it. */
+  /** Whether `mjolnir fix` (or a future autofix) can safely repair it. */
   autofix?: boolean;
   /** How detection works, e.g. "regex pattern" | "AST heuristic". */
   detectionStrategy?: string;

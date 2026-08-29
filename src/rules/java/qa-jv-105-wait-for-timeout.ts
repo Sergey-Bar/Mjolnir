@@ -24,7 +24,6 @@ export const jvWaitForTimeout = defineRule({
   autofix: false,
   detectionStrategy: "regex pattern",
   introduced: "0.3.8",
-  tier: "extended",
 
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;

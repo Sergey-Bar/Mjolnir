@@ -25,6 +25,7 @@ export const envCoupling = defineRule({
   autofix: false,
   detectionStrategy: "regex heuristic",
   introduced: "0.2.0",
+  tier: "quarantine",
 
   run(ctx) {
     const text = ctx.text;

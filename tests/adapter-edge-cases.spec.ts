@@ -24,7 +24,7 @@ import { runScan } from "../src/cli.js";
 let dir: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "qa-doctor-adapter-edge-"));
+  dir = mkdtempSync(join(tmpdir(), "mjolnir-adapter-edge-"));
 });
 
 afterEach(() => {
@@ -137,9 +137,11 @@ describe("virtualenv/dependency directories are skipped by the Python adapter", 
         "def test_x():\n    pass\n",
       );
       mkdirSync(join(dir, "tests"), { recursive: true });
+      // Use a pattern a default-tier rule still fires on (QA-PY-002),
+      // so "the real test dir was scanned" stays observable via findings.
       writeFileSync(
         join(dir, "tests", "test_real.py"),
-        "def test_y():\n    pass\n",
+        "import pytest\n\n@pytest.mark.skip\ndef test_y():\n    pass\n",
       );
 
       const result = scan();
