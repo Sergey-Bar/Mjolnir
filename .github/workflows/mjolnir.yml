@@ -14,17 +14,24 @@ permissions:
 jobs:
   scan:
     runs-on: ubuntu-latest
+    # Audit S-7: a hung scan must not sit for the 6-hour default.
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0 # needed for --scope changed merge-base and impact/diff history
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
+      # Audit S-5: event data reaches the shell through env, never by
+      # interpolation into the `run:` body — the pattern this repo's own
+      # QA-CI rules enforce in other people's workflows.
       - name: Restore baseline from base branch (best-effort)
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
-          git fetch origin ${{ github.event.pull_request.base.ref }} --depth=1
-          git checkout origin/${{ github.event.pull_request.base.ref }} -- .mjolnir/baseline.json 2>/dev/null || echo "No committed baseline on base branch — diff will report UNKNOWN, not a fabricated zero."
+          git fetch origin "$BASE_REF" --depth=1
+          git checkout "origin/$BASE_REF" -- .mjolnir/baseline.json 2>/dev/null || echo "No committed baseline on base branch — diff will report UNKNOWN, not a fabricated zero."
       # Build and run the CLI *from this PR's source*, not `npx
       # mjolnir-qa@latest`. Scanning a PR with the last published release
       # means the tool never reviews the change under review: a rule fixed
@@ -42,8 +49,17 @@ jobs:
         continue-on-error: true
         run: node dist/cli.mjs diff . > mjolnir-diff.txt
       - run: node dist/cli.mjs pr-comment . > mjolnir-comment.md
+      # Audit S-6: on a pull_request event from a fork the GITHUB_TOKEN is
+      # read-only and the comment step will 403 for every external
+      # contributor. The comment is best-effort; the Job Summary below is
+      # the fallback that always renders. (pull_request_target would fix
+      # the token but is a code-execution risk — deliberately NOT used.)
+      - name: Append findings to the Job Summary (works on fork PRs)
+        if: always()
+        run: cat mjolnir-comment.md >> "$GITHUB_STEP_SUMMARY"
       - name: Post or update PR comment
-        uses: actions/github-script@v7
+        continue-on-error: true
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             const fs = require('fs');

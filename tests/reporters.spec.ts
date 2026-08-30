@@ -185,7 +185,7 @@ describe("renderTerminal", () => {
       { isTTY: false },
     );
     expect(out).toContain("NO TESTS DETECTED");
-    expect(out).toContain("--tests-dir");
+    expect(out).toContain("mjolnir <path-to-your-tests>");
   });
 
   it("renders score bar and severity counts", () => {

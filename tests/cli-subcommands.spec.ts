@@ -92,7 +92,9 @@ describe("runFixCommand", () => {
     writeFileSync(join(dir, "f.test.ts"), "it.only('x', () => {});\n");
     const cap = capture();
     const code = runFixCommand([dir, "--dry-run"], cap.io);
-    expect(code).toBe(1); // dry-run reports as failed (not applied)
+    // Audit R-6: a successful dry run is a plan, not a failure — exit 0.
+    expect(code).toBe(0);
+    expect(cap.text()).toContain("planned");
     expect(readFileSync(join(dir, "f.test.ts"), "utf8")).toContain(".only");
   });
 });

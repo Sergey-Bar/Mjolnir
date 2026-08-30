@@ -18,6 +18,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { javaAdapter } from "../src/adapters/java.js";
 import { csharpAdapter } from "../src/adapters/csharp.js";
 import type { ScanContext, UniversalRule } from "../src/engine/adapter.js";
+import { createIgnoreMatcher, LIMITS } from "../src/discovery/ignores.js";
 
 let dir: string;
 
@@ -33,7 +34,10 @@ function makeCtx(overrides: Partial<ScanContext> = {}): ScanContext {
     workspace: { root: dir, name: "t", packageJson: {}, workspaceGlobs: [] },
     testFiles: [],
     deadline: Date.now() + 10_000,
+    maxFiles: LIMITS.maxFilesPerAdapter,
+    ignoreMatcher: createIgnoreMatcher(dir),
     onSkippedFile: () => {},
+    onDiscoveryTruncated: () => {},
     ...overrides,
   };
 }

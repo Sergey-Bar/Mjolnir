@@ -111,21 +111,30 @@ function readStats(dir: string): StatsFile {
 }
 
 describe("first-clean-scan milestone", () => {
-  it("announces the milestone on a genuinely flawless terminal scan", () => {
+  it("does NOT write stats on an ordinary scan — read-only scans stay read-only (audit R-1)", () => {
     const dir = makeCleanRepo();
     const cap = capture();
     const code = runScanCommand([dir], cap.io);
+    expect(code).toBe(0);
+    expect(cap.text()).not.toContain("MILESTONE");
+    expect(existsSync(join(dir, ".mjolnir", "stats.json"))).toBe(false);
+  });
+
+  it("announces the milestone on a genuinely flawless scan with --record-milestones", () => {
+    const dir = makeCleanRepo();
+    const cap = capture();
+    const code = runScanCommand([dir, "--record-milestones"], cap.io);
     expect(code).toBe(0);
     expect(cap.text()).toContain("MILESTONE: first flawless scan");
     expect(existsSync(join(dir, ".mjolnir", "stats.json"))).toBe(true);
     expect(readStats(dir).milestonesAnnounced).toEqual(["first-clean-scan"]);
   });
 
-  it("never re-announces the same milestone on a second flawless scan", () => {
+  it("never re-announces the same milestone on a second recording scan", () => {
     const dir = makeCleanRepo();
-    runScanCommand([dir], capture().io);
+    runScanCommand([dir, "--record-milestones"], capture().io);
     const cap = capture();
-    runScanCommand([dir], cap.io);
+    runScanCommand([dir, "--record-milestones"], cap.io);
     expect(cap.text()).not.toContain("MILESTONE");
   });
 

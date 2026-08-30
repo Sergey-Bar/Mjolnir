@@ -10,7 +10,9 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { isDefaultIgnored, isLintFixtureDir } from "../discovery/ignores.js";
+import { isLintFixtureDir } from "../discovery/ignores.js";
+import type { IgnoreMatcher } from "../discovery/ignores.js";
+import { DEFAULT_IGNORE_MATCHER } from "../discovery/ignores.js";
 import type { LocatorClass, SelectorRisk } from "./selector-health-types.js";
 
 export type { LocatorClass, SelectorRisk } from "./selector-health-types.js";
@@ -133,7 +135,10 @@ export function renderSelectorHealth(specs: SpecSelectorHealth[]): string {
 }
 
 /** Walk a repo and compute Selector Health for every Playwright spec. */
-export function computeSelectorHealth(root: string): SpecSelectorHealth[] {
+export function computeSelectorHealth(
+  root: string,
+  ignoreMatcher: IgnoreMatcher = DEFAULT_IGNORE_MATCHER,
+): SpecSelectorHealth[] {
   const specs: SpecSelectorHealth[] = [];
 
   const walk = (dir: string): void => {
@@ -146,7 +151,7 @@ export function computeSelectorHealth(root: string): SpecSelectorHealth[] {
     for (const entry of entries) {
       const full = join(dir, entry.name);
       const rel = full.slice(root.length + 1).replaceAll("\\", "/");
-      if (isDefaultIgnored(rel)) continue;
+      if (ignoreMatcher.isIgnored(rel)) continue;
       if (entry.isDirectory()) {
         if (!isLintFixtureDir(full)) walk(full);
       } else if (entry.isFile() && /\.spec\.ts$/.test(entry.name)) {

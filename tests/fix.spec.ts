@@ -6,7 +6,9 @@ import {
   mkdtempSync,
   mkdirSync,
   readFileSync,
+  readdirSync,
   rmSync,
+  symlinkSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -115,7 +117,7 @@ describe("planAndApplyFixes", () => {
     expect(after).not.toMatch(/\bfit\s*\(/);
   });
 
-  it("dry-run leaves the file untouched", () => {
+  it("dry-run reports the fix as planned, not failed, and leaves the file untouched", () => {
     const file = "dry.spec.ts";
     const before = "test.only('x', () => {});\n";
     writeFileSync(join(dir, file), before);
@@ -125,7 +127,99 @@ describe("planAndApplyFixes", () => {
       { dryRun: true },
     );
     expect(readFileSync(join(dir, file), "utf8")).toBe(before);
-    expect(results[0]?.description).toContain("dry-run");
+    // Audit R-6: a successful dry run is a plan, not a failure.
+    expect(results[0]?.status).toBe("planned");
+  });
+
+  it("never rewrites .only inside strings or comments (audit R-4)", () => {
+    const file = "masked.spec.ts";
+    writeFileSync(
+      join(dir, file),
+      [
+        "test.only('real', () => {});",
+        `const src = "test.only('in string', () => {})";`,
+        "// test.only('in comment', () => {});",
+        "",
+      ].join("\n") + "\n",
+    );
+    const results = planAndApplyFixes(
+      scan([finding("QA-TEST-001", file, "`.only` focus modifier committed.")]),
+      dir,
+    );
+    expect(results[0]?.status).toBe("applied");
+    const after = readFileSync(join(dir, file), "utf8");
+    expect(after).toContain("test('real'");
+    expect(after).toContain(`test.only('in string'`);
+    expect(after).toContain("// test.only('in comment'");
+  });
+
+  it("reports a string-only .only as not-fixable instead of editing test data", () => {
+    const file = "string-only.spec.ts";
+    writeFileSync(
+      join(dir, file),
+      `const src = "test.only('in string', () => {})";\n`,
+    );
+    const results = planAndApplyFixes(
+      scan([finding("QA-TEST-001", file, "`.only` focus modifier committed.")]),
+      dir,
+    );
+    expect(results[0]?.status).toBe("failed");
+    expect(results[0]?.description).toContain("strings and comments");
+    expect(readFileSync(join(dir, file), "utf8")).toBe(
+      `const src = "test.only('in string', () => {})";\n`,
+    );
+  });
+
+  it("leaves no temp file behind after an applied fix (audit R-5)", () => {
+    const file = "tmp.spec.ts";
+    writeFileSync(join(dir, file), "test.only('x', () => {});\n");
+    const results = planAndApplyFixes(
+      scan([finding("QA-TEST-001", file, "`.only` focus modifier committed.")]),
+      dir,
+    );
+    expect(results[0]?.status).toBe("applied");
+    const leftovers = readdirSync(dir).filter((f) =>
+      f.endsWith(".mjolnir-tmp"),
+    );
+    expect(leftovers).toEqual([]);
+  });
+
+  it("refuses to write through a link that escapes the scan root (audit R-7)", () => {
+    const outside = mkdtempSync(join(tmpdir(), "qa-fix-outside-"));
+    try {
+      mkdirSync(join(outside, "sub"), { recursive: true });
+      const victim = join(outside, "sub", "victim.spec.ts");
+      writeFileSync(victim, "test.only('x', () => {});\n");
+      // A junction (Windows, no privilege needed) or dir symlink (POSIX)
+      // inside the scan root pointing OUTSIDE it must not smuggle a
+      // write past the path-containment guard.
+      const link = join(dir, "innocent");
+      try {
+        symlinkSync(join(outside, "sub"), link, "junction");
+      } catch {
+        try {
+          symlinkSync(join(outside, "sub"), link, "dir");
+        } catch {
+          return; // link privileges unavailable in this environment — skip
+        }
+      }
+      const results = planAndApplyFixes(
+        scan([
+          finding(
+            "QA-TEST-001",
+            "innocent/victim.spec.ts",
+            "`.only` focus modifier committed.",
+          ),
+        ]),
+        dir,
+      );
+      expect(results[0]?.status).toBe("failed");
+      expect(results[0]?.description).toContain("escapes scan root");
+      // The file behind the link is untouched.
+      expect(readFileSync(victim, "utf8")).toContain(".only");
+    } finally {
+      rmSync(outside, { recursive: true, force: true });
+    }
   });
 
   it("leaves files untouched when verification fails", () => {
@@ -224,19 +318,22 @@ describe("renderFixReport", () => {
     expect(text).toContain("No safe auto-fixes available");
   });
 
-  it("marks dry-run output", () => {
+  it("marks dry-run output and renders planned fixes with their own status", () => {
     const text = renderFixReport(
       [
         {
           file: "a.ts",
           ruleId: "QA-TEST-001",
           line: 1,
-          status: "failed",
-          description: "Remove `.only` (dry-run: not applied)",
+          status: "planned",
+          description: "Remove `.only` focus modifier",
         },
       ],
       true,
     );
     expect(text).toContain("FIX PLAN (dry-run)");
+    expect(text).toContain("▸");
+    expect(text).toContain("1 planned");
+    expect(text).not.toContain("not applied");
   });
 });

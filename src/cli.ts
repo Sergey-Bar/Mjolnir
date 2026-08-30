@@ -5,7 +5,13 @@
  * 10 usage error · 20 internal error.
  */
 
-import { existsSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  readFileSync,
+  realpathSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { execFileSync } from "node:child_process";
 import { join, relative, resolve, sep } from "node:path";
 import process from "node:process";
@@ -16,9 +22,15 @@ import {
   SCHEMA_VERSION,
   type Finding,
   type ScanResult,
+  type Severity,
 } from "./types.js";
 import { discoverWorkspace } from "./discovery/workspace.js";
 import { detectFrameworks } from "./discovery/frameworks.js";
+import {
+  SCAN_ADAPTERS as ADAPTERS,
+  discoverAllTestFiles,
+} from "./discovery/scan-adapters.js";
+import { createIgnoreMatcher, LIMITS } from "./discovery/ignores.js";
 import { RULES } from "./rules/index.js";
 import { MEASURED_FP } from "./rules/measured-fp.generated.js";
 import {
@@ -33,6 +45,7 @@ import { renderSarif } from "./reporter/sarif.js";
 import { renderMermaid } from "./reporter/mermaid.js";
 import { computeChangedScope, filterToChanged } from "./scope/changed.js";
 import { asUniversal } from "./engine/rule-runner.js";
+import { enforceTierPolicy, type Tier } from "./engine/tier-policy.js";
 import { isAdvisoryFinding } from "./types.js";
 import { typescriptAdapter } from "./adapters/typescript.js";
 import { githubActionsAdapter } from "./adapters/github-actions.js";
@@ -77,7 +90,6 @@ import { explainRule, renderExplain } from "./commands/explain.js";
 import { loadSuppressions, renderSuppressions } from "./config/suppressions.js";
 import { loadConfig, applySeverityOverrides } from "./config/config.js";
 import { loadPlugins } from "./plugins/load.js";
-import { initIgnores } from "./discovery/ignores.js";
 import {
   computeSelectorHealth,
   renderSelectorHealth,
@@ -95,13 +107,6 @@ import {
  */
 export const CLI_VERSION = "0.5.0";
 
-const ADAPTERS = [
-  typescriptAdapter,
-  pythonAdapter,
-  javaAdapter,
-  csharpAdapter,
-  githubActionsAdapter,
-] as const;
 const UNIVERSAL_RULES = RULES.map(asUniversal);
 
 // Plugin API (Phase 6): third-party rules are appended after core rules;
@@ -117,7 +122,20 @@ function buildUniversalRules(root: string, strict?: boolean) {
       return original?.tier !== "quarantine";
     });
   }
-  return { rules, pluginErrors: errors };
+  const tierByRuleId = new Map<string, Tier>();
+  for (const r of RULES) {
+    if (r.tier) tierByRuleId.set(r.id, r.tier);
+  }
+  for (const p of plugins) {
+    for (const r of p.rules) {
+      if (r.tier) tierByRuleId.set(r.id, r.tier);
+    }
+  }
+  const pluginMeta = plugins.map((p) => ({
+    name: p.name,
+    rules: p.rules.length,
+  }));
+  return { rules, pluginErrors: errors, tierByRuleId, pluginMeta };
 }
 
 /** Rule-declared evidence-level overrides (Honesty Core). */
@@ -151,6 +169,12 @@ interface CliArgs {
   tone?: "blunt";
   /** --strict: include quarantine-tier rules in the scan (Phase 4). */
   strict?: boolean;
+  /** --base <ref>: base ref for --scope changed (audit H-10). */
+  base?: string;
+  /** --debug: print errors swallowed by crash isolation (audit R-9). */
+  debug?: boolean;
+  /** --record-milestones: let a scan write .mjolnir/stats.json (audit R-1). */
+  recordMilestones?: boolean;
 }
 
 export function parseArgs(argv: string[]): CliArgs | null {
@@ -180,6 +204,10 @@ export function parseArgs(argv: string[]): CliArgs | null {
       const mode = argv[++i];
       if (mode === "changed") args.scopeChanged = true;
       else return null; // unknown scope = usage error
+    } else if (a === "--base") {
+      const ref = argv[++i];
+      if (!ref || ref.startsWith("-")) return null;
+      args.base = ref;
     } else if (a === "--max-duration") {
       const v = Number(argv[++i]);
       if (!Number.isFinite(v) || v <= 0) return null;
@@ -198,6 +226,10 @@ export function parseArgs(argv: string[]): CliArgs | null {
       else return null; // unknown tone = usage error
     } else if (a === "--strict") {
       args.strict = true;
+    } else if (a === "--debug") {
+      args.debug = true;
+    } else if (a === "--record-milestones") {
+      args.recordMilestones = true;
     } else if (a === "--help" || a === "-h") {
       return null;
     } else if (!a.startsWith("-")) {
@@ -209,10 +241,17 @@ export function parseArgs(argv: string[]): CliArgs | null {
   return args;
 }
 
-const TEST_FILE_RE = /(?:\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs))$/;
-void TEST_FILE_RE; // retained for legacy walk parity; adapters own discovery now
+export interface ScanHooks {
+  /** Invoked when a rule throws on a file (audit R-9). */
+  onRuleCrash?: (ruleId: string, file: string, error: unknown) => void;
+}
 
-export function runScan(args: CliArgs): ScanResult {
+/**
+ * Testable default scan path core. `hooks` lets callers observe
+ * normally-invisible events (swallowed rule crashes) without changing
+ * the ScanResult contract beyond the rulesCrashed counter.
+ */
+export function runScan(args: CliArgs, hooks: ScanHooks = {}): ScanResult {
   const started = Date.now();
   const deadline = started + args.maxDurationMs;
   // package.json workspace OR non-JS repo (Python etc.) — fall back to the
@@ -238,14 +277,26 @@ export function runScan(args: CliArgs): ScanResult {
   let skippedFiles = 0;
   let testFileCount = 0;
   let testDeclarationCount = 0;
+  let rulesCrashed = 0;
+  // Audits H-3/H-8: honest analysis status. Each phase reports what
+  // actually happened; truncation carries named reasons.
+  const truncationReasons = new Set<string>();
+  let discoveryTruncated = false;
+  let rulesPartial = false;
 
+  let tierByRuleId = new Map<string, Tier>();
+  let pluginsLoaded: Array<{ name: string; rules: number }> = [];
   if (workspace) {
     // R1: dispatch through language adapters. Rules stay unchanged; the
     // adapters own discovery, parsing, and rule application.
-    const { rules: activeRules, pluginErrors } = buildUniversalRules(
-      workspace.root,
-      args.strict,
-    );
+    const {
+      rules: activeRules,
+      pluginErrors,
+      tierByRuleId: tiers,
+      pluginMeta,
+    } = buildUniversalRules(workspace.root, args.strict);
+    tierByRuleId = tiers;
+    pluginsLoaded = pluginMeta;
     for (const err of pluginErrors) {
       findings.push({
         ruleId: "QA-PLUGIN-000",
@@ -267,18 +318,56 @@ export function runScan(args: CliArgs): ScanResult {
       workspace,
       testFiles: [] as string[],
       deadline,
-      onSkippedFile: () => skippedFiles++,
+      maxFiles: LIMITS.maxFilesPerAdapter,
+      ignoreMatcher: createIgnoreMatcher(workspace.root),
+      onSkippedFile: (reason?: string) => {
+        skippedFiles++;
+        if (reason) truncationReasons.add(reason);
+      },
+      onDiscoveryTruncated: (reason: string) => {
+        discoveryTruncated = true;
+        if (!truncationReasons.has(reason)) {
+          truncationReasons.add(reason);
+          skippedFiles++;
+        }
+      },
+      onRuleCrash: (ruleId: string, file: string, error: unknown) => {
+        rulesCrashed++;
+        hooks.onRuleCrash?.(ruleId, file, error);
+      },
     };
 
-    // Phase 2 (Tempering): initialize ignore patterns from .mjolnirignore
-    // and config exclude before discovering test files.
-    initIgnores(workspace.root);
+    // Phase 2 (Tempering): resolve ignore patterns from .mjolnirignore
+    // and config exclude into the scan's own matcher (audit R-8) before
+    // discovering test files.
 
-    for (const adapter of ADAPTERS) {
-      adapter.discoverTestFiles(ctx);
+    // Audit H-8/P-2: each adapter discovers into its own capped bucket,
+    // via ONE shared tree walk — the pipeline no longer readdirSyncs
+    // every directory once per language.
+    const languageAdapters = ADAPTERS.filter((a) => a.id !== "github-actions");
+    const buckets = new Map<string, string[]>(
+      languageAdapters.map((a) => [a.id, [] as string[]]),
+    );
+    const fixtureDirMemo = new Map<string, boolean>();
+    discoverAllTestFiles(ctx, languageAdapters, buckets, fixtureDirMemo);
+    for (const a of languageAdapters) {
+      ctx.testFiles.push(...(buckets.get(a.id) ?? []));
     }
+    const wfBucket: string[] = [];
+    githubActionsAdapter.discoverTestFiles({ ...ctx, testFiles: wfBucket });
+    ctx.testFiles.push(...wfBucket);
 
+    // Audit H-3: the deadline is checked per file here too — discovery
+    // alone no longer owns the budget.
+    let scanned = 0;
     for (const path of ctx.testFiles) {
+      if (Date.now() > deadline) {
+        rulesPartial = true;
+        skippedFiles += ctx.testFiles.length - scanned;
+        truncationReasons.add("rule-loop-deadline");
+        break;
+      }
+      scanned++;
       const isWorkflow = githubActionsAdapter.isTestFile(path);
       const isPython = pythonAdapter.isTestFile(path);
       const isJava = javaAdapter.isTestFile(path);
@@ -316,6 +405,21 @@ export function runScan(args: CliArgs): ScanResult {
           (f, ruleId, category) => {
             findings.push({ ...f, ruleId, category } as Finding);
           },
+          // Audit R-9: rule crashes stay isolated but are counted and
+          // surfaced via hooks (--debug prints them).
+          (ruleId, error) => {
+            ctx.onRuleCrash?.(ruleId, relPath, error);
+          },
+          // Audit P-1: per-file analysis budget — one oversized file can
+          // no longer own the scan; the skip is counted and reported.
+          {
+            deadline: Math.min(deadline, Date.now() + LIMITS.maxFileAnalysisMs),
+            onExceeded: () => {
+              rulesPartial = true;
+              skippedFiles++;
+              truncationReasons.add("file-budget");
+            },
+          },
         );
       } catch {
         // WorkflowParseSkipped and friends — counted, never fatal.
@@ -330,7 +434,7 @@ export function runScan(args: CliArgs): ScanResult {
     scope: "all",
   };
   if (args.scopeChanged && workspace) {
-    const diff = computeChangedScope(workspace.root);
+    const diff = computeChangedScope(workspace.root, args.base);
     const filtered = filterToChanged(findings, diff);
     findings.length = 0;
     findings.push(...filtered);
@@ -387,6 +491,10 @@ export function runScan(args: CliArgs): ScanResult {
       f.measuredFpN = m.n;
     }
   }
+  // Audit H-1: the tier is authoritative — a quarantine finding is
+  // advisory by construction (info + E0) no matter what its rule
+  // declares, so an unproven rule can never gate CI or deduct score.
+  enforceTierPolicy(findings, tierByRuleId);
   const dimensions = computeDimensions(findings);
   const rawDeductions = findings.reduce((sum, f) => sum + deductionFor(f), 0);
   const total = computeTotal(dimensions, findings, {
@@ -402,7 +510,7 @@ export function runScan(args: CliArgs): ScanResult {
 
   return {
     schemaVersion: SCHEMA_VERSION,
-    partial: Date.now() > deadline || skippedFiles > 0,
+    partial: discoveryTruncated || rulesPartial || skippedFiles > 0,
     score: hasTests ? total : null,
     ...(hasTests ? {} : { reason: "no-tests-found" as const }),
     frameworks: frameworks.frameworks,
@@ -423,11 +531,18 @@ export function runScan(args: CliArgs): ScanResult {
     testDeclarationCount,
     rawDeductions,
     suppressionCount,
+    ...(pluginsLoaded.length > 0 ? { plugins: pluginsLoaded } : {}),
     analysisStatus: {
-      discovery: Date.now() > deadline ? "partial" : "complete",
-      rules: "complete",
+      // Audits H-3/H-8: both fields derive from what actually happened.
+      discovery: discoveryTruncated ? "partial" : "complete",
+      rules: rulesPartial ? "partial" : "complete",
       skippedFiles,
       durationMs: elapsed,
+      // Audit R-9: crashes swallowed by per-rule isolation, visible.
+      rulesCrashed,
+      ...(truncationReasons.size > 0
+        ? { truncationReasons: [...truncationReasons].sort() }
+        : {}),
     },
   };
 }
@@ -524,10 +639,12 @@ export function runForensicsCommand(
 /** Testable `doctor:playwright` handler. */
 export function runDoctorPlaywright(
   argv: string[],
-  io: { out: Output } = { out },
+  io: { out: Output; err?: Output } = { out },
 ): number {
   const targetArg = argv[1] && !argv[1].startsWith("-") ? argv[1] : ".";
   const target = resolve(targetArg);
+  const invalid = validateScanTarget(target, io.err ?? err);
+  if (invalid !== null) return invalid;
   const args = parseArgs([target]);
   if (!args) return 10;
   const result = runScan({ ...args, target });
@@ -539,8 +656,8 @@ export function runDoctorPlaywright(
     ),
   );
 
-  // Selector Health per spec.
-  const specs = computeSelectorHealth(target);
+  // Selector Health per spec — same ignore state as the scan (audit R-8).
+  const specs = computeSelectorHealth(target, createIgnoreMatcher(target));
   io.out(renderSelectorHealth(specs));
   return 0;
 }
@@ -633,6 +750,24 @@ export function runExplainCommand(
 }
 
 /** Testable default scan path. */
+/**
+ * Audit H-4 (extended to every scanning subcommand): a nonexistent or
+ * non-directory target is a usage error — a typo'd CI path must be a
+ * loud red, never a silent green. Returns the exit code (10) or null
+ * when the target is valid.
+ */
+function validateScanTarget(target: string, err: Output): number | null {
+  if (!existsSync(target)) {
+    err(`mjolnir: scan target does not exist: ${target}`);
+    return 10;
+  }
+  if (!statSync(target).isDirectory()) {
+    err(`mjolnir: scan target is not a directory: ${target}`);
+    return 10;
+  }
+  return null;
+}
+
 export function runScanCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
@@ -642,8 +777,31 @@ export function runScanCommand(
     printUsage(io.out);
     return 10;
   }
+  const target = resolve(args.target);
+  const invalid = validateScanTarget(target, io.err);
+  if (invalid !== null) return invalid;
   try {
-    const result = runScan({ ...args, target: resolve(args.target) });
+    // Audit R-9: collect swallowed rule crashes; --debug prints them.
+    const crashLog: string[] = [];
+    const result = runScan(
+      { ...args, target },
+      args.debug
+        ? {
+            onRuleCrash: (ruleId, file, error) => {
+              crashLog.push(
+                `${ruleId} crashed on ${file}: ${error instanceof Error ? error.message : String(error)}`,
+              );
+            },
+          }
+        : {},
+    );
+    if (args.debug && crashLog.length > 0) {
+      io.err(
+        `debug: ${crashLog.length} rule crash(es) were swallowed by crash isolation:`,
+      );
+      for (const line of crashLog.slice(0, 50)) io.err(`  ${line}`);
+      if (crashLog.length > 50) io.err(`  … and ${crashLog.length - 50} more`);
+    }
     if (args.format === "sarif") {
       io.out(renderSarif(result));
     } else if (args.format === "mermaid") {
@@ -668,7 +826,7 @@ export function runScanCommand(
         !args.scopeChanged &&
         !args.verbose &&
         args.target === "." &&
-        !existsSync(join(resolve(args.target), "mjolnir.config.json")) &&
+        !existsSync(join(target, "mjolnir.config.json")) &&
         result.findings.length > 0;
       if (bareFirstRun) {
         io.out(
@@ -677,20 +835,28 @@ export function runScanCommand(
         );
       }
 
-      // Milestones (Sprint 9 Task 39) — terminal-only, display-only.
-      // Never printed for --json/--format sarif/mermaid: those are
-      // machine contracts and must stay byte-for-byte what the schema
-      // promises, nothing extra appended.
-      if (result.score === 100 && result.findings.length === 0) {
-        const target = resolve(args.target);
+      // Milestones (Sprint 9 Task 39) — terminal-only, display-only, and
+      // WRITE-ONLY under explicit opt-in (audit R-1): a read-only scan
+      // must never dirty the scanned repo's working tree. Never printed
+      // for --json/--format sarif/mermaid: those are machine contracts.
+      if (
+        args.recordMilestones &&
+        result.score === 100 &&
+        result.findings.length === 0
+      ) {
         const statsPath = join(target, DEFAULT_STATS_PATH);
         const { newlyAnnounced, stats } = recordMilestones(
           loadStats(statsPath),
           ["first-clean-scan"],
         );
         if (newlyAnnounced.length > 0) {
-          saveStats(stats, statsPath);
-          for (const id of newlyAnnounced) io.out(MILESTONE_MESSAGES[id]);
+          if (!saveStats(stats, statsPath)) {
+            io.err(
+              "  (warning: stats could not be written — read-only filesystem? milestone not recorded)",
+            );
+          } else {
+            for (const id of newlyAnnounced) io.out(MILESTONE_MESSAGES[id]);
+          }
         }
       }
     }
@@ -698,11 +864,10 @@ export function runScanCommand(
     // Honesty Core Phase 2: advisory (E0) findings never gate CI —
     // observations are reported but carry no enforcement weight.
     if (result.partial) return 2;
-    return result.findings.some(
-      (f) => f.severity === "error" && !isAdvisoryFinding(f),
-    )
-      ? 1
-      : 0;
+    // Audit H-7: config.gate is live. "advisory" never blocks,
+    // "warning" also blocks on warnings, "error" (default) on errors.
+    const { config } = loadConfig(target);
+    return exitForFindings(result.findings, config.gate ?? "error");
   } catch (err) {
     io.err(
       "mjolnir internal error:",
@@ -710,6 +875,25 @@ export function runScanCommand(
     );
     return 20;
   }
+}
+
+/**
+ * Exit-code decision for a finished scan under the given gate level
+ * (audit H-7): the previously-dead config.gate field now selects which
+ * severities block. Advisory (E0) findings never gate at any level.
+ */
+export function exitForFindings(
+  findings: readonly Finding[],
+  gate: "advisory" | "error" | "warning",
+): number {
+  if (gate === "advisory") return 0;
+  const gateSeverities: readonly Severity[] =
+    gate === "warning" ? ["error", "warning"] : ["error"];
+  return findings.some(
+    (f) => gateSeverities.includes(f.severity) && !isAdvisoryFinding(f),
+  )
+    ? 1
+    : 0;
 }
 
 /** Testable `triage` handler (Tier 5 #22). */
@@ -762,7 +946,10 @@ export function runBadgeCommand(
     return 10;
   }
   try {
-    const result = runScan({ ...args, target: resolve(args.target) });
+    const target = resolve(args.target);
+    const invalid = validateScanTarget(target, io.err);
+    if (invalid !== null) return invalid;
+    const result = runScan({ ...args, target });
     const outPath = writeBadge(result, { outDir: process.cwd() });
     io.out(`Wrote ${outPath}`);
     io.out("");
@@ -788,7 +975,10 @@ export function runDebtCommand(
     return 10;
   }
   try {
-    const result = runScan({ ...args, target: resolve(args.target) });
+    const target = resolve(args.target);
+    const invalid = validateScanTarget(target, io.err);
+    if (invalid !== null) return invalid;
+    const result = runScan({ ...args, target });
     io.out(renderDebt(result));
     return 0;
   } catch (err) {
@@ -813,6 +1003,8 @@ export function runFixCommand(
   }
   try {
     const target = resolve(args.target);
+    const invalid = validateScanTarget(target, io.err);
+    if (invalid !== null) return invalid;
     const result = runScan({ ...args, target });
     const fixes = planAndApplyFixes(result, target, { dryRun });
     io.out(renderFixReport(fixes, dryRun));
@@ -882,6 +1074,8 @@ export function runImpactCommand(
   }
   try {
     const target = resolve(args.target);
+    const invalid = validateScanTarget(target, io.err);
+    if (invalid !== null) return invalid;
     const report = computeImpact(target, {
       ...(since ? { since } : {}),
       runScan: (dir) => runScan({ ...args, target: dir }),
@@ -909,6 +1103,8 @@ export function runBaselineCommand(
   }
   try {
     const target = resolve(args.target);
+    const invalid = validateScanTarget(target, io.err);
+    if (invalid !== null) return invalid;
     const result = runScan({ ...args, target });
     const outPath = join(target, DEFAULT_BASELINE_PATH);
     saveBaseline(result, currentCommit(target), outPath);
@@ -935,6 +1131,8 @@ export function runDiffCommand(
   }
   try {
     const target = resolve(args.target);
+    const invalid = validateScanTarget(target, io.err);
+    if (invalid !== null) return invalid;
     const result = runScan({ ...args, target });
     const baselinePath = join(target, DEFAULT_BASELINE_PATH);
     const baseline = loadBaseline(baselinePath);
@@ -943,19 +1141,30 @@ export function runDiffCommand(
 
     // Fold resolved findings into all-time stats (Task 26) — only when a
     // real comparison happened; establishing a baseline records nothing.
+    // Audit R-2: the write is best-effort — a read-only mount degrades to
+    // a warning instead of turning a successful diff into exit 20.
     if (diff.hasBaseline) {
       const statsPath = join(target, DEFAULT_STATS_PATH);
       const stats = recordResolved(loadStats(statsPath), diff);
-      saveStats(stats, statsPath);
+      if (!saveStats(stats, statsPath)) {
+        io.err(
+          "  (warning: stats could not be written — read-only filesystem? counters not recorded)",
+        );
+      }
 
       // Milestones (Sprint 9 Task 39) — real event this command just
       // witnessed (diff.resolvedFindings is non-empty), never a guess.
       if (diff.resolvedFindings.length > 0) {
         const milestone = recordMilestones(stats, ["first-debt-reduction"]);
         if (milestone.newlyAnnounced.length > 0) {
-          saveStats(milestone.stats, statsPath);
-          for (const id of milestone.newlyAnnounced)
-            io.out(MILESTONE_MESSAGES[id]);
+          if (saveStats(milestone.stats, statsPath)) {
+            for (const id of milestone.newlyAnnounced)
+              io.out(MILESTONE_MESSAGES[id]);
+          } else {
+            io.err(
+              "  (warning: stats could not be written — read-only filesystem? milestone not recorded)",
+            );
+          }
         }
       }
     }
@@ -983,6 +1192,8 @@ export function runPrCommentCommand(
   }
   try {
     const target = resolve(args.target);
+    const invalid = validateScanTarget(target, io.err);
+    if (invalid !== null) return invalid;
     const result = runScan({ ...args, target });
     const baseline = loadBaseline(join(target, DEFAULT_BASELINE_PATH));
     const diff = baseline ? diffAgainstBaseline(result, baseline) : undefined;
@@ -1029,6 +1240,8 @@ export function runHandoverCommand(
   }
   try {
     const target = resolve(args.target);
+    const invalid = validateScanTarget(target, io.err);
+    if (invalid !== null) return invalid;
     const result = runScan({ ...args, target });
     // Optional forensics enrichment when a results dir sits next to target.
     let forensics: ReturnType<typeof buildHandover> extends never
@@ -1176,6 +1389,9 @@ Options:
   --tone blunt          blunter, pattern-mocking messages (opt-in)
   --verbose             show all findings
   --scope changed       only findings on new/changed lines vs merge-base
+  --base <ref>          base ref for --scope changed (default: main, then
+                        master, then origin/HEAD); uncommitted local
+                        changes are always included
   --max-duration <sec>  stop analysis after N seconds (partial results flagged)
   --width <cols>        override terminal width for box/gauge wrapping
                         (defaults to the detected terminal width, or 80)
@@ -1185,6 +1401,10 @@ Options:
   --no-ascii            force Unicode box-drawing even where auto-detection
                         would have chosen ASCII
   --strict              include quarantine-tier rules (higher FP risk) in scan
+  --debug               print errors swallowed by rule crash isolation
+                        (display-only; exit codes unchanged)
+  --record-milestones   allow this scan to write .mjolnir/stats.json for
+                        milestone tracking (default: scans never write)
   -v, --version         print the installed version and exit
   -h, --help            show this help
 

@@ -13,6 +13,8 @@ import { parseWorkflow } from "../discovery/workflow-parser.js";
 export const githubActionsAdapter: LanguageAdapter = {
   id: "github-actions",
   extensions: [".yml", ".yaml"],
+  testFileGlobs: [".github/workflows/*.yml", ".github/workflows/*.yaml"],
+  dirSkips: [],
 
   isTestFile(path: string): boolean {
     return /(?:^|[\\/])\.github[\\/]workflows[\\/].+\.ya?ml$/.test(path);
@@ -43,7 +45,7 @@ export const githubActionsAdapter: LanguageAdapter = {
     }
   },
 
-  runRules(rules, file, emit) {
+  runRules(rules, file, emit, onCrash, budget) {
     // Parse once per workflow, share across all CI rules.
     let doc: unknown;
     try {
@@ -54,6 +56,11 @@ export const githubActionsAdapter: LanguageAdapter = {
     }
     for (const rule of rules) {
       if (!rule.appliesTo.includes(this.id)) continue;
+      // Audit P-1: a single oversized workflow must not own the budget.
+      if (budget && Date.now() > budget.deadline) {
+        budget.onExceeded();
+        return;
+      }
       try {
         for (const f of rule.run({
           path: file.path,
@@ -62,8 +69,9 @@ export const githubActionsAdapter: LanguageAdapter = {
         })) {
           emit(f, rule.id, rule.category);
         }
-      } catch {
-        // Crash isolation (§25)
+      } catch (error) {
+        // Crash isolation (§25) — counted and debuggable (R-9).
+        onCrash?.(rule.id, error);
       }
     }
   },

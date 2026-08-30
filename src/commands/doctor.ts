@@ -21,6 +21,7 @@ import type { QADoctorRule } from "../rules/rule.js";
 import { RULES } from "../rules/index.js";
 import { MEASURED_FP } from "../rules/measured-fp.generated.js";
 import { deriveEvidenceLevel } from "../types.js";
+import { capForTier } from "../engine/tier-policy.js";
 
 export interface DoctorCheck {
   name: string;
@@ -141,10 +142,20 @@ export interface DoctorReport {
 }
 
 /**
- * Check 5 (Phase 4 — Tempering Plan): tier enforcement.
- * Core-tier rules must have a measured FP rate (n ≥ 10 classified
- * verdicts in tests/corpus/verdicts/). Unmeasured core rules fail the
- * audit — they must be measured or demoted before shipping.
+ * Law #3 ratchet (audit H-2): "Rules without a measured FP rate
+ * (n ≥ 10) cannot ship in the core tier" — restated as an executable
+ * cap instead of a decorative sentence. LOWER THIS VALUE each release
+ * as more core rules are corpus-measured; `doctor` fails the moment
+ * the shipped registry exceeds it, so the count can rise but never.
+ */
+export const MAX_UNMEASURED_CORE = 57;
+
+/**
+ * Check 5 (Phase 4 — Tempering Plan, ratcheted per audit H-2):
+ * tier enforcement. Core-tier rules must have a measured FP rate
+ * (n ≥ 10 classified verdicts in tests/corpus/verdicts/). The number of
+ * unmeasured core rules must stay at or under MAX_UNMEASURED_CORE —
+ * exceeding the ratchet is a blocking failure.
  */
 export function checkTierEnforcement(
   verdictsDir: string,
@@ -198,26 +209,18 @@ export function checkTierEnforcement(
     }
   }
 
-  // Report unmeasured count. Once ALL core rules are measured, this check
-  // will have zero details and pass cleanly.
+  // Ratchet (audit H-2): the law is now an executable cap. Exceeding
+  // MAX_UNMEASURED_CORE fails the audit; lowering the constant each
+  // release walks the registry toward a fully measured core tier.
   const unmeasured = details.length;
   const total = coreRules.length;
-  // Real enforcement (not const ok = true):
-  // - Less than half of core rules measured → informational (ramp-up phase)
-  // - More than half measured → the rest are on the clock → FAIL
-  const measuredCount = [...classifiedPerRule.values()].filter(
-    (n) => n >= 10,
-  ).length;
-  const majorityMeasured = measuredCount > total / 2;
-  const ok = !majorityMeasured || unmeasured === 0;
+  const ok = unmeasured <= MAX_UNMEASURED_CORE;
 
-  if (unmeasured > 0) {
-    details.unshift(
-      majorityMeasured
-        ? `BLOCKING: ${unmeasured}/${total} core rules unmeasured — majority classified but incomplete`
-        : `${unmeasured}/${total} core rules unmeasured (informational until majority classified)`,
-    );
-  }
+  details.unshift(
+    ok
+      ? `Ratchet (Law #3): ${unmeasured}/${total} core rules lack a measured FP rate — cap is ${MAX_UNMEASURED_CORE}, lowered each release`
+      : `BLOCKING: ${unmeasured}/${total} core rules unmeasured — exceeds the Law #3 ratchet cap of ${MAX_UNMEASURED_CORE}`,
+  );
 
   return { name: "tier-enforcement", ok, details };
 }
@@ -268,6 +271,33 @@ export function checkAntiCreep(
   return { name: "anti-creep", ok, details };
 }
 
+/**
+ * Check 7 (audit H-1): quarantine enforcement. The tier policy must cap
+ * every quarantine rule to severity=info, evidence=E0 — the only way a
+ * quarantine rule could ever gate CI is a broken or bypassed policy, so
+ * the audit asserts the cap per rule and fails loudly if it moved.
+ */
+export function checkQuarantineEnforcement(
+  rules: readonly QADoctorRule[] = RULES,
+): DoctorCheck {
+  const details: string[] = [];
+  let ok = true;
+  const quarantine = rules.filter((r) => r.tier === "quarantine");
+  for (const r of quarantine) {
+    const cap = capForTier(r.tier);
+    if (!cap || cap.severity !== "info" || cap.evidenceLevel !== "E0") {
+      ok = false;
+      details.push(
+        `${r.id}: quarantine cap is not severity=info/evidence=E0 — an unproven rule could gate CI`,
+      );
+    }
+  }
+  details.unshift(
+    `${quarantine.length} quarantine rules capped to severity=info, evidence=E0 — no quarantine rule may emit error`,
+  );
+  return { name: "quarantine-enforcement", ok, details };
+}
+
 export function runDoctorSelfAudit(fixturesRoot: string): DoctorReport {
   const verdictsDir = join(fixturesRoot, "..", "corpus", "verdicts");
   const checks = [
@@ -277,6 +307,7 @@ export function runDoctorSelfAudit(fixturesRoot: string): DoctorReport {
     checkEvidenceHonesty(),
     checkTierEnforcement(verdictsDir),
     checkAntiCreep(),
+    checkQuarantineEnforcement(),
   ];
   return { checks, healthy: checks.every((c) => c.ok) };
 }

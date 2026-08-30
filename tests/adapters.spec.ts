@@ -15,6 +15,7 @@ import type {
   UniversalRule,
 } from "../src/engine/adapter.js";
 import type { Finding } from "../src/types.js";
+import { createIgnoreMatcher, LIMITS } from "../src/discovery/ignores.js";
 
 /** Minimal-but-complete mock finding for adapter unit tests. */
 function mockFinding(
@@ -49,7 +50,10 @@ function makeCtx(overrides: Partial<ScanContext> = {}): ScanContext {
     workspace: { root: dir, name: "t", packageJson: {}, workspaceGlobs: [] },
     testFiles: [],
     deadline: Date.now() + 10_000,
+    maxFiles: LIMITS.maxFilesPerAdapter,
+    ignoreMatcher: createIgnoreMatcher(dir),
     onSkippedFile: () => {},
+    onDiscoveryTruncated: () => {},
     ...overrides,
   };
 }

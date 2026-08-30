@@ -142,10 +142,19 @@ export function recordResolved(
   };
 }
 
-export function saveStats(stats: StatsFile, outPath: string): string {
-  mkdirSync(dirname(outPath), { recursive: true });
-  writeFileSync(outPath, JSON.stringify(stats, null, 2) + "\n");
-  return outPath;
+/**
+ * Best-effort persistence (audit R-2): a read-only filesystem must not
+ * crash a command that already finished its real work — callers degrade
+ * to a warning when this returns false.
+ */
+export function saveStats(stats: StatsFile, outPath: string): boolean {
+  try {
+    mkdirSync(dirname(outPath), { recursive: true });
+    writeFileSync(outPath, JSON.stringify(stats, null, 2) + "\n");
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function renderStats(stats: StatsFile | null): string {

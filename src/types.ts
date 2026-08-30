@@ -172,10 +172,29 @@ export interface ScanResult {
   rawDeductions?: number;
   /** Number of findings suppressed by active config entries (suppression transparency). */
   suppressionCount?: number;
+  /**
+   * Third-party plugin code that executed during this scan (audit S-8).
+   * Plugins run with full Node privileges by documented design — anyone
+   * reading a report must be able to tell whether they ran. Absent
+   * when no plugins are configured.
+   */
+  plugins?: Array<{ name: string; rules: number }>;
   analysisStatus: {
     discovery: AnalysisStatus;
     rules: AnalysisStatus;
     skippedFiles: number;
     durationMs: number;
+    /**
+     * Named reasons the scan stopped early (audit H-8): "deadline",
+     * "file-cap:<adapter>", "rule-loop-deadline". Present only when
+     * truncation actually happened — absence means the scan is whole.
+     */
+    truncationReasons?: string[];
+    /**
+     * Rule executions that threw and were swallowed by crash isolation
+     * (audit R-9). 0 means no rule silently failed; absence means the
+     * producer predates the counter.
+     */
+    rulesCrashed?: number;
   };
 }

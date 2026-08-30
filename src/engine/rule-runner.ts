@@ -1,37 +1,12 @@
 /**
- * RuleRunner (R1): dispatches files through adapters and applicable rules.
- * Replaces the inline loops in cli.ts. Crash isolation per rule (§25).
+ * Rule-runner plumbing: the legacy appliesTo → adapter mapping and the
+ * QADoctorRule → UniversalRule adapter used by the registry. (The
+ * per-file dispatch loop itself lives in each adapter's runRules — the
+ * unused parallel copy, runRulesForFile, was deleted per audit M-7.)
  */
 
 import type { Finding } from "../types.js";
-import type { LanguageAdapter, UniversalRule } from "./adapter.js";
-
-export interface RunnerResult {
-  findings: Finding[];
-  skippedFiles: number;
-}
-
-export function runRulesForFile(
-  adapter: LanguageAdapter,
-  rules: readonly UniversalRule[],
-  file: { path: string; text: string },
-):
-  | (Array<Omit<Finding, "ruleId" | "category">> & { ruleRefs?: never })
-  | Array<Omit<Finding, "ruleId" | "category">> {
-  const out: Array<Omit<Finding, "ruleId" | "category">> = [];
-  const parsed = { path: file.path, text: file.text };
-  for (const rule of rules) {
-    if (!rule.appliesTo.includes(adapter.id)) continue;
-    try {
-      for (const f of rule.run(parsed)) {
-        out.push(f);
-      }
-    } catch {
-      // Crash isolation (§25): one bad rule never kills the scan.
-    }
-  }
-  return out;
-}
+import type { UniversalRule } from "./adapter.js";
 
 /**
  * Legacy appliesTo → adapter id mapping.

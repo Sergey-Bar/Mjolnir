@@ -5,11 +5,20 @@
  * findings on NEW/CHANGED lines. Handles: new files, modified files,
  * renames (treated as modified), shallow clones (graceful fallback to
  * full-file attribution), and detached HEAD.
+ *
+ * Audits H-9/H-10: the changed-file predicate is derived from the real
+ * adapter registry (isKnownTestFile) so Python, Java, C#, and workflow
+ * changes are not silently dropped; the default base falls back
+ * main → master → origin/HEAD, an explicit --base is honored, and the
+ * WORKING TREE (uncommitted + untracked files) is included so running
+ * locally before committing still sees the change.
  */
 
 import { execFileSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { LIMITS } from "../discovery/ignores.js";
+import { isKnownTestFile } from "../discovery/scan-adapters.js";
 import type { Finding } from "../types.js";
 
 export interface ChangedLines {
@@ -36,27 +45,53 @@ function git(root: string, args: string[]): string | null {
   }
 }
 
+/** Candidates for the default base branch, in fallback order (H-10). */
+const DEFAULT_BASE_CANDIDATES = [
+  "main",
+  "master",
+  "origin/main",
+  "origin/master",
+  "origin/HEAD",
+] as const;
+
+function resolveMergeBase(root: string, baseBranch?: string): string | null {
+  const candidates = baseBranch
+    ? [baseBranch, `origin/${baseBranch}`]
+    : DEFAULT_BASE_CANDIDATES;
+  for (const candidate of candidates) {
+    const mergeBase = git(root, ["merge-base", "HEAD", candidate])?.trim();
+    if (mergeBase) return mergeBase;
+  }
+  return null;
+}
+
+/** Parse `git diff --name-status -z` output → changed file paths. */
+function collectNameStatus(output: string): string[] {
+  const entries = output.split("\0").filter(Boolean);
+  const files: string[] = [];
+  for (let i = 0; i < entries.length; i++) {
+    const status = entries[i];
+    if (status === "R" || status === "C") i++; // old-path element
+    const file = entries[i + 1];
+    if (file && isKnownTestFile(file)) files.push(file);
+  }
+  return files;
+}
+
 export function computeChangedScope(
   root: string,
-  baseBranch = "main",
+  baseBranch?: string,
 ): DiffResult {
   if (!existsSync(join(root, ".git"))) {
     return { changed: {}, degraded: true, reason: "not-a-git-repo" };
   }
 
-  // Resolve merge-base; on shallow clones or detached HEAD this can fail.
-  let mergeBase = git(root, ["merge-base", "HEAD", baseBranch])?.trim();
-  if (!mergeBase) {
-    // Fallback: try origin/baseBranch, then just the branch itself.
-    mergeBase =
-      git(root, ["merge-base", "HEAD", `origin/${baseBranch}`])?.trim() ??
-      git(root, ["rev-parse", baseBranch])?.trim();
-  }
+  const mergeBase = resolveMergeBase(root, baseBranch);
   if (!mergeBase) {
     return { changed: {}, degraded: true, reason: "no-merge-base" };
   }
 
-  const nameStatus = git(root, [
+  const committed = git(root, [
     "diff",
     "--name-status",
     "-z",
@@ -64,24 +99,48 @@ export function computeChangedScope(
     mergeBase,
     "HEAD",
   ]);
-  if (nameStatus === null) {
+  if (committed === null) {
     return { changed: {}, degraded: true, reason: "diff-failed" };
   }
 
-  const entries = nameStatus.split("\0").filter(Boolean);
-  const changedFiles: string[] = [];
-  for (let i = 0; i < entries.length; i++) {
-    const status = entries[i];
-    if (status === "R") i++; // skip the old-path element of renames
-    const file = entries[i + 1];
-    if (file && /\.(spec|test)\.(ts|js|tsx|jsx|mjs|cjs)$/.test(file)) {
-      changedFiles.push(file);
-    }
+  // Working tree: staged + unstaged changes vs HEAD, plus untracked
+  // files — a local run before `git add`/`git commit` must not report
+  // nothing (H-10).
+  const workingTree = git(root, [
+    "diff",
+    "--name-status",
+    "-z",
+    "--diff-filter=AMR",
+    "HEAD",
+  ]);
+  if (workingTree === null) {
+    return { changed: {}, degraded: true, reason: "diff-failed" };
   }
+  const untracked = git(root, [
+    "ls-files",
+    "-z",
+    "--others",
+    "--exclude-standard",
+  ]);
+  if (untracked === null) {
+    return { changed: {}, degraded: true, reason: "diff-failed" };
+  }
+
+  const untrackedSet = new Set(
+    untracked.split("\0").filter((f) => f && isKnownTestFile(f)),
+  );
+
+  const changedFiles = [
+    ...new Set([
+      ...collectNameStatus(committed),
+      ...collectNameStatus(workingTree),
+      ...untrackedSet,
+    ]),
+  ].sort();
 
   const changed: ChangedLines = {};
   for (const file of changedFiles) {
-    const unified = git(root, [
+    const committedDiff = git(root, [
       "diff",
       "--unified=0",
       mergeBase,
@@ -89,10 +148,37 @@ export function computeChangedScope(
       "--",
       file,
     ]);
-    changed[file] = parseChangedLines(unified ?? "");
+    const workingDiff = git(root, ["diff", "--unified=0", "HEAD", "--", file]);
+    const lines = parseChangedLines(
+      `${committedDiff ?? ""}\n${workingDiff ?? ""}`,
+    );
+    if (untrackedSet.has(file)) {
+      const all = allLinesOf(root, file);
+      if (all === null) {
+        return {
+          changed: {},
+          degraded: true,
+          reason: "untracked-file-unreadable",
+        };
+      }
+      for (const l of all) lines.add(l);
+    }
+    changed[file] = lines;
   }
 
   return { changed, degraded: false };
+}
+
+/** Every 1-based line number of an untracked file (it is all new). */
+function allLinesOf(root: string, file: string): number[] | null {
+  const full = join(root, file);
+  try {
+    if (statSync(full).size > LIMITS.maxFileBytes) return null;
+    const lineCount = readFileSync(full, "utf8").split("\n").length;
+    return Array.from({ length: lineCount }, (_, i) => i + 1);
+  } catch {
+    return null;
+  }
 }
 
 /** Parse unified diff → line numbers ADDED in the new version. */

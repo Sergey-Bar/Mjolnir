@@ -4,14 +4,10 @@
  * interface. Tree-sitter migration happens later without touching rules.
  */
 
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import {
-  isDefaultIgnored,
-  isLintFixtureDir,
-  LIMITS,
-} from "../discovery/ignores.js";
+import { sharedWalk } from "../discovery/shared-walk.js";
 import { detectFrameworks as detectFrameworksLegacy } from "../discovery/frameworks.js";
 import type { Workspace } from "../discovery/workspace.js";
 import { parseTsFile } from "../engine/ts-ast.js";
@@ -28,6 +24,11 @@ const TEST_FILE_RE = /(?:\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs))$/;
 export const typescriptAdapter: LanguageAdapter = {
   id: "typescript",
   extensions: [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"],
+  testFileGlobs: [
+    "*.test.{js,jsx,ts,tsx,mjs,cjs}",
+    "*.spec.{js,jsx,ts,tsx,mjs,cjs}",
+  ],
+  dirSkips: [],
 
   isTestFile(path: string): boolean {
     return TEST_FILE_RE.test(path);
@@ -40,16 +41,24 @@ export const typescriptAdapter: LanguageAdapter = {
   },
 
   discoverTestFiles(ctx: ScanContext): void {
-    walk(
-      ctx.workspace.root,
-      ctx.workspace.root,
-      ctx.testFiles,
-      ctx.deadline,
-      ctx.onSkippedFile,
-    );
+    sharedWalk({
+      root: ctx.workspace.root,
+      deadline: ctx.deadline,
+      ignoreMatcher: ctx.ignoreMatcher,
+      onSkipped: ctx.onSkippedFile,
+      onTruncated: (reason) =>
+        ctx.onDiscoveryTruncated(
+          reason === "file-cap" ? "file-cap:typescript" : reason,
+        ),
+      skipDirs: [],
+      isTestFile: (name) => TEST_FILE_RE.test(name),
+      onTestFile: (f) => ctx.testFiles.push(f),
+      isFull: () => ctx.testFiles.length >= ctx.maxFiles,
+      fixtureDirMemo: new Map(),
+    });
   },
 
-  runRules(rules, file, emit) {
+  runRules(rules, file, emit, onCrash, budget) {
     // Phase 3: populate the AST seam once per file; rules that opt in use
     // it via getTsSourceFile, everything else stays on the regex path.
     const withAst: ParsedFile = { ...file, ast: parseTsFile(file) };
@@ -71,12 +80,18 @@ export const typescriptAdapter: LanguageAdapter = {
     );
     for (const rule of rules) {
       if (!rule.appliesTo.includes(this.id)) continue;
+      // Audit P-1: a single oversized file must not own the whole budget.
+      if (budget && Date.now() > budget.deadline) {
+        budget.onExceeded();
+        return;
+      }
       try {
         for (const f of rule.run(enriched)) {
           emit(f, rule.id, rule.category);
         }
-      } catch {
-        // Crash isolation (§25)
+      } catch (error) {
+        // Crash isolation (§25) — counted and debuggable (R-9).
+        onCrash?.(rule.id, error);
       }
     }
   },
@@ -100,40 +115,5 @@ function loadWorkspaceShim(root: string): Workspace | null {
     };
   } catch {
     return null;
-  }
-}
-
-function walk(
-  dir: string,
-  root: string,
-  out: string[],
-  deadline: number,
-  onSkipped: () => void,
-): void {
-  if (Date.now() > deadline || out.length > 10_000) return;
-  let entries;
-  try {
-    entries = readdirSync(dir, { withFileTypes: true });
-  } catch {
-    return;
-  }
-  for (const entry of entries) {
-    const full = join(dir, entry.name);
-    const rel = full.slice(root.length + 1).replaceAll("\\", "/");
-    if (isDefaultIgnored(rel)) continue;
-    // Symlinks are never followed: a link can point outside the repo
-    // (scanning files we have no business reading) or create cycles.
-    if (entry.isSymbolicLink()) continue;
-    if (entry.isDirectory()) {
-      if (rel.split("/").length <= LIMITS.maxDepth)
-        // Phase 2: skip lint-fixture dirs (must-fire + must-not-fire siblings)
-        if (!isLintFixtureDir(full)) walk(full, root, out, deadline, onSkipped);
-    } else if (entry.isFile() && TEST_FILE_RE.test(entry.name)) {
-      try {
-        if (statSync(full).size <= LIMITS.maxFileBytes) out.push(full);
-      } catch {
-        onSkipped();
-      }
-    }
   }
 }

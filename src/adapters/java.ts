@@ -14,14 +14,10 @@
  * precision upgrades without touching the rule contract.
  */
 
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import {
-  isDefaultIgnored,
-  isLintFixtureDir,
-  LIMITS,
-} from "../discovery/ignores.js";
+import { sharedWalk } from "../discovery/shared-walk.js";
 import { computeCodeText } from "../engine/code-text.js";
 import type {
   FrameworkInfo,
@@ -34,6 +30,8 @@ const JAVA_TEST_RE = /(?:^|[\\/])(?:Test[A-Z]\w*|\w+Tests?|\w+IT)\.java$/;
 export const javaAdapter: LanguageAdapter = {
   id: "java",
   extensions: [".java"],
+  testFileGlobs: ["Test*.java", "*Test.java", "*Tests.java", "*IT.java"],
+  dirSkips: ["target", "build", ".gradle"],
 
   isTestFile(path: string): boolean {
     return JAVA_TEST_RE.test(path);
@@ -68,16 +66,24 @@ export const javaAdapter: LanguageAdapter = {
   },
 
   discoverTestFiles(ctx: ScanContext): void {
-    walkJava(
-      ctx.workspace.root,
-      ctx.workspace.root,
-      ctx.testFiles,
-      ctx.deadline,
-      ctx.onSkippedFile,
-    );
+    sharedWalk({
+      root: ctx.workspace.root,
+      deadline: ctx.deadline,
+      ignoreMatcher: ctx.ignoreMatcher,
+      onSkipped: ctx.onSkippedFile,
+      onTruncated: (reason) =>
+        ctx.onDiscoveryTruncated(
+          reason === "file-cap" ? "file-cap:java" : reason,
+        ),
+      skipDirs: ["target", "build", ".gradle"],
+      isTestFile: (name) => JAVA_TEST_RE.test(name),
+      onTestFile: (f) => ctx.testFiles.push(f),
+      isFull: () => ctx.testFiles.length >= ctx.maxFiles,
+      fixtureDirMemo: new Map(),
+    });
   },
 
-  runRules(rules, file, emit) {
+  runRules(rules, file, emit, onCrash, budget) {
     // Phase 1 (Tempering): lazy codeText — computed on first access.
     let cachedCodeText: string | undefined;
     const enriched = Object.defineProperty({ ...file }, "codeText", {
@@ -92,12 +98,18 @@ export const javaAdapter: LanguageAdapter = {
     });
     for (const rule of rules) {
       if (!rule.appliesTo.includes(this.id)) continue;
+      // Audit P-1: a single oversized file must not own the whole budget.
+      if (budget && Date.now() > budget.deadline) {
+        budget.onExceeded();
+        return;
+      }
       try {
         for (const f of rule.run(enriched)) {
           emit(f, rule.id, rule.category);
         }
-      } catch {
-        // Crash isolation (§25)
+      } catch (error) {
+        // Crash isolation (§25) — counted and debuggable (R-9).
+        onCrash?.(rule.id, error);
       }
     }
   },
@@ -105,38 +117,4 @@ export const javaAdapter: LanguageAdapter = {
 
 function readText(path: string): string {
   return readFileSync(path, "utf8");
-}
-
-function walkJava(
-  dir: string,
-  root: string,
-  out: string[],
-  deadline: number,
-  onSkipped: () => void,
-): void {
-  if (Date.now() > deadline || out.length > 10_000) return;
-  let entries;
-  try {
-    entries = readdirSync(dir, { withFileTypes: true });
-  } catch {
-    return;
-  }
-  for (const entry of entries) {
-    const full = join(dir, entry.name);
-    const rel = full.slice(root.length + 1).replaceAll("\\", "/");
-    if (isDefaultIgnored(rel)) continue;
-    if (entry.isSymbolicLink()) continue; // never follow links out of the repo
-    if (entry.isDirectory()) {
-      if (["target", "build", ".gradle"].includes(entry.name)) continue;
-      if (rel.split("/").length <= LIMITS.maxDepth)
-        if (!isLintFixtureDir(full))
-          walkJava(full, root, out, deadline, onSkipped);
-    } else if (entry.isFile() && JAVA_TEST_RE.test(entry.name)) {
-      try {
-        if (statSync(full).size <= LIMITS.maxFileBytes) out.push(full);
-      } catch {
-        onSkipped();
-      }
-    }
-  }
 }

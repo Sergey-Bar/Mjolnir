@@ -21,6 +21,7 @@ import {
   renderStats,
   saveStats,
 } from "../src/commands/stats.js";
+import type { StatsFile } from "../src/commands/stats.js";
 import type { Finding, ScanResult } from "../src/types.js";
 
 let dirs: string[] = [];
@@ -140,9 +141,25 @@ describe("stats — recording real fixes witnessed via diff", () => {
     const diff = diffAgainstBaseline(after, baseline);
     const stats = recordResolved(null, diff, "2026-01-01T00:00:00.000Z");
 
-    const path = saveStats(stats, join(dir, "stats.json"));
+    const path = join(dir, "stats.json");
+    expect(saveStats(stats, path)).toBe(true);
     const loaded = loadStats(path);
     expect(loaded).toEqual(stats);
+  });
+
+  it("saveStats degrades to false instead of throwing on an unwritable path (audit R-2)", () => {
+    // A path whose "directory" component is a FILE — mkdirSync throws.
+    const dir = tmpDir();
+    const blocker = join(dir, "not-a-dir");
+    writeFileSync(blocker, "x");
+    const stats: StatsFile = {
+      schemaVersion: 1,
+      trackingSince: "2026-01-01T00:00:00.000Z",
+      lastUpdatedAt: "2026-01-01T00:00:00.000Z",
+      resolvedByRule: {},
+      recordedFixEvents: 0,
+    };
+    expect(saveStats(stats, join(blocker, "stats.json"))).toBe(false);
   });
 
   it("renderStats shows the accumulated total and an explicit UNKNOWN caveat about pre-tracking history", () => {
@@ -209,7 +226,8 @@ describe("recordMilestones — Sprint 9 Task 39 (announced exactly once)", () =>
   it("round-trips milestonesAnnounced through disk exactly", () => {
     const dir = tmpDir();
     const { stats } = recordMilestones(null, ["first-clean-scan"]);
-    const path = saveStats(stats, join(dir, "stats.json"));
+    const path = join(dir, "stats.json");
+    expect(saveStats(stats, path)).toBe(true);
     const loaded = loadStats(path);
     expect(loaded?.milestonesAnnounced).toEqual(["first-clean-scan"]);
   });

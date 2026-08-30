@@ -13,7 +13,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { runScan, parseArgs, main } from "../src/cli.js";
+import { runScan, runScanCommand, parseArgs } from "../src/cli.js";
 
 let dir: string;
 
@@ -84,22 +84,44 @@ describe("mjolnir.config.json `ignore` missing required `reason`", () => {
   });
 });
 
-describe("the empty-state message references a flag that doesn't exist", () => {
-  it("`--tests-dir` is not a recognized flag (parseArgs rejects it)", () => {
-    // src/reporter/terminal.ts's own no-tests-found message says:
-    // "If your tests live elsewhere: mjolnir --tests-dir <path>"
-    // — but parseArgs has no case for it, so this exact command a user
-    // is told to run fails with a usage error before it does anything.
-    expect(
-      parseArgs(["--tests-dir", "somewhere"]),
-      "terminal.ts tells users to run `--tests-dir <path>` when no " +
-        "tests are found, but parseArgs doesn't recognize that flag at " +
-        "all — following the tool's own suggestion produces exit 10.",
-    ).toBeNull();
+describe("the empty-state message suggests only real invocations (H-5)", () => {
+  it("the empty-state hint references no flag that parseArgs rejects", () => {
+    // Regression guard for the audit finding: terminal.ts used to tell
+    // users to run `mjolnir --tests-dir <path>`, a flag parseArgs never
+    // recognized — following the tool's own suggestion produced exit 10.
+    // The hint is now `mjolnir <path-to-your-tests>`; the phantom flag
+    // must stay rejected so the docs-consistency net catches any
+    // re-appearance of an invented suggestion.
+    expect(parseArgs(["--tests-dir", "somewhere"])).toBeNull();
   });
 
-  it("running the suggested command actually exits 10 (usage error), not more help", () => {
-    const code = main(["--tests-dir", "somewhere"]);
+  it("running a scan on a nonexistent path exits 10 naming the path (H-4)", () => {
+    const missing = join(dir, "does-not-exist");
+    let errText = "";
+    const code = runScanCommand([missing], {
+      out: () => {},
+      err: (...parts) => (errText += parts.join(" ")),
+    });
     expect(code).toBe(10);
+    expect(errText).toContain(missing);
+  });
+
+  it("running a scan on a file (not a directory) exits 10 (H-4)", () => {
+    const file = join(dir, "plain.txt");
+    writeFileSync(file, "not a test\n");
+    let errText = "";
+    const code = runScanCommand([file], {
+      out: () => {},
+      err: (...parts) => (errText += parts.join(" ")),
+    });
+    expect(code).toBe(10);
+    expect(errText).toContain("not a directory");
+  });
+
+  it("a real directory with no tests keeps exit 0 (H-4 keeps the honest empty state)", () => {
+    const empty = join(dir, "empty-dir");
+    mkdirSync(empty, { recursive: true });
+    const code = runScanCommand([empty], { out: () => {}, err: () => {} });
+    expect(code).toBe(0);
   });
 });

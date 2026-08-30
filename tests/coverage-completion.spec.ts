@@ -24,6 +24,7 @@ import {
 import { githubActionsAdapter } from "../src/adapters/github-actions.js";
 import { pythonAdapter } from "../src/adapters/python.js";
 import type { ScanContext, UniversalRule } from "../src/engine/adapter.js";
+import { createIgnoreMatcher, LIMITS } from "../src/discovery/ignores.js";
 
 let dir: string;
 let origCwd: string;
@@ -219,7 +220,10 @@ describe("adapter branch corners", () => {
       workspace: { root, name: "t", packageJson: {}, workspaceGlobs: [] },
       testFiles: [],
       deadline: Date.now() + 10_000,
+      maxFiles: LIMITS.maxFilesPerAdapter,
+      ignoreMatcher: createIgnoreMatcher(root),
       onSkippedFile: () => {},
+      onDiscoveryTruncated: () => {},
     };
   }
 

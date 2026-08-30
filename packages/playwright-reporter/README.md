@@ -6,8 +6,11 @@ ingest for flake detection, retry analysis, and runtime evidence.
 
 ## Install
 
-> **Not yet published to npm.** This package is not on the npm registry
-> yet. Install from source until a release ships:
+> **This package is source-only.** It is _not_ published to npm —
+> `npm install mjolnir-qa-playwright-reporter` and
+> `npm view mjolnir-qa-playwright-reporter` both fail by design. It ships
+> as a workspace member of the Mjölnir repo, and this repo is its only
+> distribution channel. To use it, build from source:
 >
 > ```bash
 > git clone https://github.com/Sergey-Bar/Mjolnir
@@ -15,7 +18,10 @@ ingest for flake detection, retry analysis, and runtime evidence.
 > npm install && npm run build
 > ```
 >
-> Then reference it from your project via a local path or `npm link`.
+> Then reference it from your project via a local file path
+> (`"mjolnir-qa-playwright-reporter": "file:../Mjolnir/packages/playwright-reporter"`)
+> or `npm link`. The `mjolnir-qa-playwright-reporter` import in the
+> snippet below resolves through that path or link, not through npm.
 
 ## Use
 

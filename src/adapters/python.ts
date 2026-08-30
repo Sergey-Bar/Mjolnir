@@ -9,14 +9,10 @@
  * Frameworks: pytest (config files), unittest (detected via imports).
  */
 
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import {
-  isDefaultIgnored,
-  isLintFixtureDir,
-  LIMITS,
-} from "../discovery/ignores.js";
+import { sharedWalk } from "../discovery/shared-walk.js";
 import { computeCodeText } from "../engine/code-text.js";
 import type {
   FrameworkInfo,
@@ -29,6 +25,8 @@ const PYTHON_TEST_RE = /(?:^|[\\/])(?:test_[^\\/]*|[^\\/]*_test)\.py$/;
 export const pythonAdapter: LanguageAdapter = {
   id: "python",
   extensions: [".py"],
+  testFileGlobs: ["test_*.py", "*_test.py"],
+  dirSkips: ["venv", ".venv", "env", "__pycache__", "site-packages"],
 
   isTestFile(path: string): boolean {
     return PYTHON_TEST_RE.test(path);
@@ -64,16 +62,24 @@ export const pythonAdapter: LanguageAdapter = {
   },
 
   discoverTestFiles(ctx: ScanContext): void {
-    walkPy(
-      ctx.workspace.root,
-      ctx.workspace.root,
-      ctx.testFiles,
-      ctx.deadline,
-      ctx.onSkippedFile,
-    );
+    sharedWalk({
+      root: ctx.workspace.root,
+      deadline: ctx.deadline,
+      ignoreMatcher: ctx.ignoreMatcher,
+      onSkipped: ctx.onSkippedFile,
+      onTruncated: (reason) =>
+        ctx.onDiscoveryTruncated(
+          reason === "file-cap" ? "file-cap:python" : reason,
+        ),
+      skipDirs: ["venv", ".venv", "env", "__pycache__", "site-packages"],
+      isTestFile: (name) => PYTHON_TEST_RE.test(name),
+      onTestFile: (f) => ctx.testFiles.push(f),
+      isFull: () => ctx.testFiles.length >= ctx.maxFiles,
+      fixtureDirMemo: new Map(),
+    });
   },
 
-  runRules(rules, file, emit) {
+  runRules(rules, file, emit, onCrash, budget) {
     // Phase 1 (Tempering): lazy codeText — computed on first access.
     let cachedCodeText: string | undefined;
     const enriched = Object.defineProperty({ ...file }, "codeText", {
@@ -88,56 +94,22 @@ export const pythonAdapter: LanguageAdapter = {
     });
     for (const rule of rules) {
       if (!rule.appliesTo.includes(this.id)) continue;
+      // Audit P-1: a single oversized file must not own the whole budget.
+      if (budget && Date.now() > budget.deadline) {
+        budget.onExceeded();
+        return;
+      }
       try {
         for (const f of rule.run(enriched)) {
           emit(f, rule.id, rule.category);
         }
-      } catch {
-        // Crash isolation (§25)
+      } catch (error) {
+        // Crash isolation (§25) — counted and debuggable (R-9).
+        onCrash?.(rule.id, error);
       }
     }
   },
 };
-
-function walkPy(
-  dir: string,
-  root: string,
-  out: string[],
-  deadline: number,
-  onSkipped: () => void,
-): void {
-  if (Date.now() > deadline || out.length > 10_000) return;
-  let entries;
-  try {
-    entries = readdirSync(dir, { withFileTypes: true });
-  } catch {
-    return;
-  }
-  for (const entry of entries) {
-    const full = join(dir, entry.name);
-    const rel = full.slice(root.length + 1).replaceAll("\\", "/");
-    if (isDefaultIgnored(rel)) continue;
-    if (entry.isSymbolicLink()) continue; // never follow links out of the repo
-    if (entry.isDirectory()) {
-      // Skip common virtualenv/dependency dirs.
-      if (
-        ["venv", ".venv", "env", "__pycache__", "site-packages"].includes(
-          entry.name,
-        )
-      )
-        continue;
-      if (rel.split("/").length <= LIMITS.maxDepth)
-        if (!isLintFixtureDir(full))
-          walkPy(full, root, out, deadline, onSkipped);
-    } else if (entry.isFile() && PYTHON_TEST_RE.test(entry.name)) {
-      try {
-        if (statSync(full).size <= LIMITS.maxFileBytes) out.push(full);
-      } catch {
-        onSkipped();
-      }
-    }
-  }
-}
 
 function readText(p: string): string {
   return readFileSync(p, "utf8");

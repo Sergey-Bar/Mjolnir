@@ -17,10 +17,12 @@ import {
 import {
   checkAntiCreep,
   checkEvidenceHonesty,
+  checkQuarantineEnforcement,
   checkRegistry,
   checkTierEnforcement,
   checkTrustMetadata,
   CORE_CAP,
+  MAX_UNMEASURED_CORE,
   renderDoctorReport,
   runDoctorSelfAudit,
 } from "../src/commands/doctor.js";
@@ -258,9 +260,37 @@ describe("mjolnir doctor — anti-creep and tier-enforcement checks", () => {
     expect(check.details.some((d) => d.includes("and 3 more"))).toBe(true);
   });
 
-  it("checkTierEnforcement is informational when a non-existent verdicts dir means nothing is measured", () => {
+  it("checkTierEnforcement passes while the unmeasured core count stays within the Law #3 ratchet", () => {
     const check = checkTierEnforcement("/definitely/not/a/real/dir");
     expect(check.ok).toBe(true);
-    expect(check.details.join(" ")).toMatch(/unmeasured/);
+    expect(check.details.join(" ")).toMatch(/Ratchet \(Law #3\)/);
+  });
+
+  it("checkQuarantineEnforcement caps every shipped quarantine rule to info/E0", () => {
+    const check = checkQuarantineEnforcement();
+    expect(check.ok).toBe(true);
+    expect(check.details.join(" ")).toMatch(
+      /no quarantine rule may emit error/,
+    );
+  });
+
+  it("checkQuarantineEnforcement reports the cap for a quarantine-only registry", () => {
+    const quarantine: QADoctorRule = {
+      ...firstRule(),
+      id: "QA-TEST-997",
+      tier: "quarantine",
+    };
+    const check = checkQuarantineEnforcement([quarantine]);
+    expect(check.ok).toBe(true);
+    expect(check.details[0]).toContain("1 quarantine rules capped");
+  });
+
+  it("checkTierEnforcement fails when more core rules are unmeasured than the ratchet allows", () => {
+    const rules = Array.from({ length: MAX_UNMEASURED_CORE + 1 }, (_, i) =>
+      fakeRule(`QA-TEST-${700 + i}`),
+    );
+    const check = checkTierEnforcement("/definitely/not/a/real/dir", rules);
+    expect(check.ok).toBe(false);
+    expect(check.details.join(" ")).toMatch(/exceeds the Law #3 ratchet cap/);
   });
 });

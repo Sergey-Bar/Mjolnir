@@ -24,6 +24,7 @@ import { typescriptAdapter } from "../src/adapters/typescript.js";
 import { githubActionsAdapter } from "../src/adapters/github-actions.js";
 import type { ScanContext } from "../src/engine/adapter.js";
 import type { Workspace } from "../src/discovery/workspace.js";
+import { createIgnoreMatcher, LIMITS } from "../src/discovery/ignores.js";
 
 let dir: string;
 
@@ -47,7 +48,10 @@ function ctxFor(
     workspace: workspaceFor(root),
     testFiles: [],
     deadline: Date.now() + 60_000,
+    maxFiles: LIMITS.maxFilesPerAdapter,
+    ignoreMatcher: createIgnoreMatcher(dir),
     onSkippedFile: () => {},
+    onDiscoveryTruncated: () => {},
     ...overrides,
   };
 }

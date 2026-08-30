@@ -73,9 +73,22 @@ describe("dead end: no tests found", () => {
   it("explains what happened and what to do next (terminal)", () => {
     const out = renderTerminal(scanResult(), { isTTY: false });
     expect(out).toContain("NO TESTS DETECTED");
-    expect(out).toContain("No Jest/Vitest/Playwright test files were found");
-    // "what to do next", not just a diagnosis:
-    expect(out).toContain("--tests-dir");
+    expect(out).toContain("No test files found for any supported framework");
+    // H-6: every shipped adapter's search patterns are listed, not just
+    // the three JavaScript frameworks.
+    for (const label of [
+      "TypeScript/JavaScript",
+      "Python (pytest)",
+      "Java (JUnit/TestNG)",
+      "C# (NUnit/xUnit/MSTest)",
+      "GitHub Actions workflows",
+    ]) {
+      expect(out).toContain(label);
+    }
+    // "what to do next" — and the suggestion is a real invocation, not a
+    // phantom flag (H-5): no `--flag` token appears in the empty state.
+    expect(out).toContain("mjolnir <path-to-your-tests>");
+    expect(out).not.toMatch(/mjolnir --[a-z-]+/);
   });
 
   it("score stays null, never a fake 0 (frozen contract: score is honest)", () => {

@@ -1,5 +1,8 @@
 # Mjölnir ignore file — paths excluded from scanning at discovery time.
-# Same glob syntax as .gitignore (**, *, ?).
+# Supported syntax (a gitignore subset): **, *, ? wildcards; a pattern
+# containing "/" is anchored to the repo root; a bare name (no "/")
+# matches at any depth, like gitignore; "!pattern" negates, and the last
+# matching pattern wins. (Trailing-"/" directory markers are not supported.)
 #
 # This repo's fixtures, golden corpus, and demo repo are excluded via
 # the "exclude" field in mjolnir.config.json. This file demonstrates

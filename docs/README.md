@@ -59,7 +59,8 @@ historical snapshots, not live counts; `.planning/STATE.md` is current.
 ## Other folders (repo-relative, from this repo's own root)
 
 - `.planning/` — current sprint state (`STATE.md`)
-- `packages/` — workspace member packages (`mjolnir-qa-playwright-reporter`)
+- `packages/` — workspace member packages (`mjolnir-qa-playwright-reporter`,
+  source-only: not published to npm, see its README)
 - `examples/` — the deliberately-imperfect demo repo used in the README hero
 - `scratch/` — scan artifacts (gitignored)
 - `src/`, `tests/` — the product source code and its test suite

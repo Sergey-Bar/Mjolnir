@@ -20,6 +20,7 @@ import {
 import { LOGO, LOGO_ASCII, TROPHY, DIVIDER } from "./art.js";
 import { bluntMessage } from "./tone-blunt.js";
 import { MEASURED_FP } from "../rules/measured-fp.generated.js";
+import { SEARCHED_FOR } from "../discovery/scan-adapters.js";
 
 /** Terminal display cap — the JSON/SARIF contract always carries ALL findings. */
 const MAX_DISPLAYED = 50;
@@ -307,25 +308,45 @@ function appendFooter(
       ),
     );
   }
+
+  // Audit S-8: third-party plugin code executed during this scan must be
+  // visible to anyone reading the report — plugin rules run with full
+  // Node privileges by documented design.
+  if (result.plugins && result.plugins.length > 0) {
+    const summary = result.plugins
+      .map((p2) => `${p2.name} (${p2.rules} rule${p2.rules === 1 ? "" : "s"})`)
+      .join(", ");
+    lines.push(
+      p.warning(
+        `  Plugins: ${summary} — third-party code executed with full privileges.`,
+      ),
+    );
+  }
   lines.push("");
 }
 
 function renderNoTests(p: ReturnType<typeof palette>, ascii: boolean): string {
   const warnGlyph = ascii ? "!" : "⚠";
+  // Audit H-6: say what was actually searched for, per adapter — the
+  // tool ships five adapters, not three JavaScript frameworks.
+  const searched = SEARCHED_FOR.map((e) => `${e.label}: ${e.globs.join("  ")}`);
   const lines = [
     "",
     p.warning(`  ${warnGlyph} NO TESTS DETECTED`),
     "",
     ...box(
       [
-        "No Jest/Vitest/Playwright test files were found.",
+        "No test files found for any supported framework.",
+        "Searched for:",
+        ...searched,
+        "",
         "A score cannot be calculated honestly.",
       ],
       1,
-      { ascii },
+      { ascii, maxWidth: 78 },
     ).map((l) => `  ${l}`),
     "",
-    "  If your tests live elsewhere: mjolnir --tests-dir <path>",
+    "  If your tests live elsewhere: mjolnir <path-to-your-tests>",
     "",
   ];
   return lines.join("\n");
