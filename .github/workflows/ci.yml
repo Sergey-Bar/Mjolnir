@@ -10,7 +10,8 @@ concurrency:
   cancel-in-progress: true
 
 # Least privilege at the top level (audit S-3/S-10): no job in this
-# workflow needs write access to anything.
+# workflow needs write access to anything. Declared here so a new job
+# cannot silently inherit the repository default.
 permissions:
   contents: read
 
