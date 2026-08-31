@@ -3,7 +3,13 @@
  * guards, and run.ts dispatch corners not hit by the happy-path specs.
  */
 
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdtempSync,
+  mkdirSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -235,9 +241,9 @@ describe("runForensics dispatch corners", () => {
     expect(report.source).toBe("playwright-json");
   });
 
-  it("returns undefined flakyMdPath when write fails on a file target", () => {
-    // Single-file target: FLAKY.md path would be the FILE itself + /FLAKY.md
-    // → write fails → undefined. Uses writeFlakyMd default (true).
+  it("writes FLAKY.md next to a file target (bug-audit M2 — the old `<file>/FLAKY.md` join could never succeed)", () => {
+    // Single-file target: FLAKY.md now lands in the file's directory.
+    // Uses writeFlakyMd default (true).
     const f = join(dir, "report.json");
     writeFileSync(
       f,
@@ -255,6 +261,7 @@ describe("runForensics dispatch corners", () => {
       }),
     );
     const { flakyMdPath } = runForensics(f);
-    expect(flakyMdPath).toBeUndefined();
+    expect(flakyMdPath).toBe(join(dir, "FLAKY.md"));
+    expect(existsSync(flakyMdPath ?? "")).toBe(true);
   });
 });

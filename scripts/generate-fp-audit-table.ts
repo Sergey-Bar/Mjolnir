@@ -15,7 +15,7 @@
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { execSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 
 import { RULES } from "../src/rules/index.js";
 
@@ -26,6 +26,11 @@ const VERDICTS_DIR = join(ROOT, "tests", "corpus", "verdicts");
 const COUNT_LOCK_PATH = join(ROOT, "docs", "COUNT-LOCK.md");
 const FP_AUDIT_PATH = join(ROOT, "docs", "FP-AUDIT.md");
 const MEASURED_FP_PATH = join(ROOT, "src", "rules", "measured-fp.generated.ts");
+/** Committed ceiling for unclassified verdict rows (bug-audit B4.29/L13). */
+export const UNCLASSIFIED_CEILING_PATH = join(
+  VERDICTS_DIR,
+  "unclassified-ceiling.json",
+);
 
 // Kept in sync by hand with tests/corpus/audit.ts's CORPUS list (the repo
 // name is the join key and is asserted to exist by
@@ -216,6 +221,133 @@ function loadVerdicts(): Verdict[] {
   return all;
 }
 
+// ─── Unclassified-verdict completeness (bug-audit B4.29, L13) ────────
+
+export interface UnclassifiedReport {
+  total: number;
+  byFile: Record<string, number>;
+}
+
+/**
+ * Counts the verdict rows whose `"verdict"` is blank. Blank rows are
+ * silently DROPPED from the measured-FP rates (see loadVerdicts), so a
+ * growing unclassified backlog makes the shipped rates quietly
+ * under-report — exactly the L13 failure mode.
+ */
+export function collectUnclassified(): UnclassifiedReport {
+  const report: UnclassifiedReport = { total: 0, byFile: {} };
+  if (!existsSync(VERDICTS_DIR)) return report;
+  for (const f of readdirSync(VERDICTS_DIR)) {
+    if (!f.endsWith(".jsonl")) continue;
+    for (const line of readFileSync(join(VERDICTS_DIR, f), "utf8").split(
+      "\n",
+    )) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      try {
+        const entry = JSON.parse(trimmed) as Verdict;
+        if (!entry.verdict) {
+          report.total++;
+          report.byFile[f] = (report.byFile[f] ?? 0) + 1;
+        }
+      } catch {
+        report.total++;
+        report.byFile[f] = (report.byFile[f] ?? 0) + 1;
+      }
+    }
+  }
+  return report;
+}
+
+export interface UnclassifiedCeiling {
+  total: number;
+  byFile: Record<string, number>;
+  recordedAt: string;
+  note: string;
+}
+
+/**
+ * Reads the committed ceiling (absence = 0 — a repo with no committed
+ * ceiling must have no unclassified rows at all).
+ */
+export function loadUnclassifiedCeiling(): UnclassifiedCeiling {
+  if (!existsSync(UNCLASSIFIED_CEILING_PATH)) {
+    return {
+      total: 0,
+      byFile: {},
+      recordedAt: "",
+      note: "no committed ceiling — any unclassified row fails",
+    };
+  }
+  return JSON.parse(
+    readFileSync(UNCLASSIFIED_CEILING_PATH, "utf8"),
+  ) as UnclassifiedCeiling;
+}
+
+/**
+ * The completeness gate. A hard "zero unclassified" rule is the goal,
+ * but the classification backlog is human work that cannot be faked —
+ * so the gate is a RATCHET: the committed ceiling records today's
+ * backlog; ANY growth beyond it (a new unclassified row in any file)
+ * fails the generator immediately. The ceiling only moves DOWN via
+ * classification work, and upward movement requires an explicit
+ * `--update` whose diff names every file that grew. Nothing is silent.
+ */
+export function checkUnclassifiedCompleteness(
+  report: UnclassifiedReport,
+  update: boolean,
+): void {
+  // --update is the explicit "re-record after review" path: it never
+  // fails on the backlog itself, it records the reviewed ceiling (the
+  // diff then shows exactly which files grew).
+  if (update) {
+    const next: UnclassifiedCeiling = {
+      total: report.total,
+      byFile: report.byFile,
+      recordedAt: new Date().toISOString(),
+      note: "Committed ratchet ceiling (bug-audit B4.29/L13): the generator fails when unclassified verdict rows exceed these counts. Classification work lowers them; --update re-records.",
+    };
+    writeFileSync(
+      UNCLASSIFIED_CEILING_PATH,
+      JSON.stringify(next, null, 2) + "\n",
+    );
+    console.log(
+      `Unclassified-verdict ceiling recorded: ${next.total} row(s) across ${Object.keys(next.byFile).length} file(s).`,
+    );
+    return;
+  }
+
+  const ceiling = loadUnclassifiedCeiling();
+  const regressions: string[] = [];
+  for (const [file, count] of Object.entries(report.byFile)) {
+    const allowed = ceiling.byFile[file] ?? 0;
+    if (count > allowed) {
+      regressions.push(
+        `  ${file}: ${count} unclassified (ceiling ${allowed}, +${count - allowed})`,
+      );
+    }
+  }
+  if (report.total > ceiling.total || regressions.length > 0) {
+    console.error(
+      `\nFAIL: ${report.total} unclassified verdict row(s) exceed the committed ` +
+        `ceiling of ${ceiling.total} (tests/corpus/verdicts/unclassified-ceiling.json). ` +
+        `Blank "verdict" rows silently under-report the measured FP rates — ` +
+        `classify the new findings (TP/FP) before regenerating, or, if the ` +
+        `growth is deliberate corpus expansion awaiting review, re-record the ` +
+        `ceiling with \`npm run fp-audit:generate -- --update\` after review.`,
+    );
+    for (const r of regressions) console.error(r);
+    throw new Error(
+      `unclassified-verdict completeness gate failed (${report.total} > ${ceiling.total})`,
+    );
+  }
+  if (report.total < ceiling.total) {
+    console.log(
+      `Unclassified verdict rows: ${report.total} (below the committed ceiling of ${ceiling.total} — re-record with --update to lower it).`,
+    );
+  }
+}
+
 export interface RuleStats {
   ruleId: string;
   tp: number;
@@ -404,10 +536,42 @@ export function renderMeasuredFpAudit(
 
 // ─── Main ────────────────────────────────────────────────────────────
 
+/**
+ * Deterministic "Last generated" stamp: the date of the latest commit
+ * that touched the verdict data. A runtime `new Date()` here made the
+ * generated page differ on EVERY later day — which would permanently
+ * fail the generated-docs drift gate (bug-audit B4.31) and, worse, the
+ * stamp claimed a freshness the committed verdict data does not have.
+ * The data's own vintage is the honest stamp.
+ */
+function dataVintage(): Date {
+  try {
+    const iso = execFileSync(
+      "git",
+      ["log", "-1", "--format=%cI", "--", "tests/corpus/verdicts"],
+      {
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "ignore"],
+      },
+    ).trim();
+    if (iso) return new Date(iso);
+  } catch {
+    /* not a git checkout — fall through to epoch-neutral today */
+  }
+  return new Date();
+}
+
 function main(): void {
+  const update = process.argv.includes("--update");
+
+  // Bug-audit B4.29/L13: fail BEFORE writing any artifact when the
+  // unclassified-verdict backlog grew beyond its committed ceiling —
+  // an audit page built on a shrinking classified base is fiction.
+  checkUnclassifiedCompleteness(collectUnclassified(), update);
+
   // Generate COUNT-LOCK.md (regression guard)
   const baselines = loadBaselines();
-  const countLockMd = renderFpAuditMd(baselines);
+  const countLockMd = renderFpAuditMd(baselines, dataVintage());
   writeFileSync(COUNT_LOCK_PATH, countLockMd);
   console.log(`Wrote ${COUNT_LOCK_PATH} from ${baselines.length} baseline(s).`);
 
@@ -415,7 +579,7 @@ function main(): void {
   const verdicts = loadVerdicts();
   const fpAuditMd = renderMeasuredFpAudit(
     verdicts,
-    new Date(),
+    dataVintage(),
     registryRuleIds(),
   );
   writeFileSync(FP_AUDIT_PATH, fpAuditMd);

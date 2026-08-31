@@ -38,12 +38,13 @@ const CONSUMERS: Array<{
     // a coverage path (the path lives in `with`, not in run text).
     re: /codecov|coveralls/i,
     stepRe: /upload-artifact/i,
-    producer: /\b(?:npx\s+)?(?:vitest|jest|nyc)\b[^]*--coverage|--coverage\b/i,
+    producer:
+      /\b(?:npx\s+)?(?:vitest|jest|nyc)\b[\s\S]*--coverage|--coverage\b/i,
     label: "coverage artifact",
   },
   {
     re: /codecov|coveralls/i,
-    producer: /--coverage\b|(?:vitest|jest|nyc)\b[^]*coverage/i,
+    producer: /--coverage\b|(?:vitest|jest|nyc)\b[\s\S]*coverage/i,
     label: "coverage upload",
   },
 ];
@@ -71,7 +72,18 @@ export const reportNeverGenerated = defineRule({
     const doc = ctx.ast as WorkflowDoc | undefined;
     if (!doc?.jobs) return findings;
 
-    for (const [jobName, job] of Object.entries(doc.jobs)) {
+    const jobEntries = Object.entries(doc.jobs);
+    // Bug-audit M0 #5: coverage artifacts are shared across jobs — the
+    // canonical split-job layout (job A runs tests with `--coverage`,
+    // job B uploads to codecov) was flagged as "consumes a report that
+    // no step generates" because production/consumption were evaluated
+    // per JOB. Production is workflow-level; only consumption stays
+    // per-job (so the finding still names the offending job).
+    const workflowRunText = jobEntries
+      .map(([, j]) => (j?.steps ?? []).map((s) => s?.run ?? "").join("\n"))
+      .join("\n");
+
+    for (const [jobName, job] of jobEntries) {
       const steps = job?.steps ?? [];
       const allRunText = steps.map((s) => s?.run ?? "").join("\n");
 
@@ -80,7 +92,7 @@ export const reportNeverGenerated = defineRule({
         // on an upload step (the path lives in `with`, not in run text).
         const consumes =
           steps.some((s) => {
-            if (!s) return false;
+            // parseWorkflow normalizes every step entry to an object.
             if (s.uses && consumer.re.test(s.uses)) return true;
             if (
               consumer.stepRe &&
@@ -93,7 +105,9 @@ export const reportNeverGenerated = defineRule({
             return false;
           }) || consumer.re.test(allRunText);
         if (!consumes) continue;
-        const produces = consumer.producer.test(allRunText);
+        const produces =
+          consumer.producer.test(allRunText) ||
+          consumer.producer.test(workflowRunText);
         if (!produces) {
           findings.push({
             severity: "error",

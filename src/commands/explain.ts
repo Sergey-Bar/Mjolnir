@@ -11,7 +11,7 @@
  * hand-written prose that can drift from what the rule actually does.
  */
 
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { getRule, RULES } from "../rules/index.js";
@@ -21,6 +21,7 @@ import { deriveEvidenceLevel, QA_IMPACT_LABELS } from "../types.js";
 import type { Finding } from "../types.js";
 import { parseWorkflow } from "../discovery/workflow-parser.js";
 import { computeCodeText } from "../engine/code-text.js";
+import { firstFixtureFile } from "./fixture-example.js";
 
 export interface ExplainResult {
   ok: boolean;
@@ -33,12 +34,6 @@ export interface ExplainResult {
    * command already catches separately). */
   exampleFinding?: Omit<Finding, "ruleId" | "category">;
   exampleFixturePath?: string;
-}
-
-function firstFixtureFile(dir: string): string | null {
-  if (!existsSync(dir)) return null;
-  const entries = readdirSync(dir).filter((f) => !f.startsWith("."));
-  return entries.length > 0 ? join(dir, entries[0] as string) : null;
 }
 
 /**

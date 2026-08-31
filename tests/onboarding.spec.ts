@@ -124,7 +124,9 @@ describe("init", () => {
     // runInit only reports; it must not create CI workflow itself.
     const result = runInit("/nonexistent-root", null, {});
     const wfStep = result.steps.find((s) => s.name === "ci-workflow");
-    expect(wfStep?.status).toBe("created");
+    // Bug-audit L10: runInit writes nothing — an absent workflow is
+    // reported as advice ("run ci install"), never as "created".
+    expect(wfStep?.status).toBe("advice");
     expect(wfStep?.detail).toContain("ci install");
     // And it must not have written anything to the (nonexistent) root.
     expect(result.nextCommands).toContain("mjolnir ci install");

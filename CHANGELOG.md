@@ -9,6 +9,128 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — QA-2026-08-30 audit wave
+
+### Fixed — security & detection-regression audit (`.planning/AUDIT-2026-08-30-QA.md`)
+
+- **QA-1 (P0, detection regression):** QA-TEST-003's M0-#4 header rewrite
+  required a space after `async` — `async()=>{` bodies silently stopped
+  matching. `\s*` restores them without reopening the bare-`return` exemption.
+- **QA-2 (P0, detection regression):** single-walk discovery applied the
+  UNION of every adapter's `dirSkips`, so Python's `env` (= virtualenv)
+  and Java's `build` (= Gradle output) hid directories from every other
+  language — real TS test dirs (e.g. withastro/astro's `test/units/env/`)
+  silently vanished from scans. `dirSkips` are now applied per owning
+  language at file level.
+- **QA-3 (P1):** `isInsideEmbeddedCode` truncated the masked run at the
+  first space inside a literal, so embedded test-data
+  (`'test(" foo", function () {})'`) was classified as live code and
+  fired 6 FP findings on eslint-plugin-playwright's ruleTester tables.
+- **QA-4 (P1):** config `exclude` was never validated —
+  `exclude: [1, {}, null]` crashed the scan (exit 20). Non-string entries
+  are now a fixable usage error (exit 10), with a defense-in-depth filter
+  in pattern compilation.
+- **QA-5 (P1):** an unparseable suppression `expires` value silently
+  degraded to "expired" via NaN comparisons; it is now a fixable
+  validation error at load time.
+- **QA-6 (P1, documented-behavior fix):** the README's 90-day suppression
+  policy was only applied at write time by the `ignore` command —
+  hand-written entries without `expires` stayed active forever. The
+  default is now enforced at enforcement time, anchored at the config
+  file's mtime; `mjolnir suppressions` labels the default explicitly.
+- **QA-7 (P1):** plugin reserved-prefix spoof rejection was
+  case-sensitive — `"qa-test-001"` walked straight past it. Matching is
+  now case-insensitive.
+- **QA-8 (P2):** suppression `files` globs written with Windows
+  backslashes could never match the normalized finding paths; both sides
+  are normalized before matching.
+- **QA-9 (P2, defense in depth):** option-shaped `--base` values are
+  refused at the git layer even when a programmatic caller bypasses
+  `parseArgs` (option-injection → `--upload-pack=` command execution).
+- **QA-10 (P2):** finding metadata (hostile filenames, plugin messages)
+  reached the terminal and markdown PR comments unsanitized — ANSI
+  escapes and control characters are now stripped, and the PR comment
+  escapes markdown-significant characters.
+- **QA-11 (P2):** the JUnit XML scan was quadratic on unclosed
+  `<testcase` floods (minutes of CPU for a 20 MB hostile report); the
+  scanner is now linear with a bounded-time regression test.
+- **QA-12 (P2):** `loadBaseline`/`loadStats` are now total over arbitrary
+  JSON — `null` finding entries used to crash `diff`, and hostile stats
+  shapes leaked string junk into totals.
+- **QA-13 (P3, defense in depth):** SARIF artifact URIs normalize
+  backslashes — `encodeURI` leaves `\` literal, which is not a valid
+  RFC 3986 uri-reference character.
+- **QA-15 (P1):** the code-text mask iterated code points instead of
+  UTF-16 code units — one emoji made the mask shorter than the text and
+  silently disabled masking for the whole file.
+- **QA-16 (P2):** files larger than the 1 MiB discovery cap were dropped
+  silently; the skip is now counted and flagged (`file-size`), keeping
+  the scan honest about what it did not read.
+
+### Changed — corpus baseline
+
+- Regenerated after review: M0-#2's QA-TEST-004 duplicate-count fix
+  (−5 on withastro-astro — every removed finding was a same-position
+  duplicate), M0-#4's function-body/return-narrowing detections (net
+  +1/+1/+8/+6 across vite/svelte-kit/tanstack-query/eslint-plugin-playwright,
+  spot-reviewed on real code), QA-3/QA-6 masking suppressions
+  (embedded-code test data no longer fires), and QA-15's mask-alignment
+  fix (QA-PW-105/108 match against `codeText`, whose offsets were
+  misaligned after any astral character — +27/+22/+1 restored matches on
+  vite/astro/tanstack-query).
+
+### Added — Open-Beta E2E test plan (Tier 1–5, ~1,700 new test assertions)
+
+- **Coverage ratchet:** statements/branches/functions/lines at literal
+  100% per file (`perFile: true`). Every branch arm, catch path, and
+  fallback in `src/**` is exercised or provably dead — ~30 dead guards
+  (unreachable `?? ""` fallbacks, unreachable-`if` arms behind
+  `noUncheckedIndexedAccess`, a dead proof-abort block in `fix`) were
+  removed or exported as testable pure helpers with the golden lock,
+  self-scan and determinism tripwires green throughout.
+- **E2E journeys** (`tests/e2e/`): nine spec files run the built
+  `dist/cli.mjs` as a real child process — tarball first-run (the path
+  that historically caught macOS-only CLI breakage), CI PR flow with
+  changed-scope attribution against real git fixtures, the baseline →
+  diff → stats loop, the fix flow, the forensics flow, explain/rules,
+  create-rule onboarding, the config journey (gate/severityOverrides/
+  ignore/expiry honored end-to-end), and a full exit-code contract sweep
+  across every documented command.
+- **Precision & accuracy:** every scorer number verified against the
+  documented benchmark (deductions 8/3/1, E2/E1/E0, honesty cap 99,
+  error ceiling 95, suite-invalidating ceiling 49, smoothing) with
+  fast-check property invariants (≥1,000 iterations: score bounds,
+  monotonicity, order-symmetry), Selector Health exact score vectors,
+  hand-computed forensics math, terminal-footer/JSON deduction
+  consistency, Mermaid well-formedness, and a three-verdict-band proof
+  (WORTHY / NEEDS WORK / UNWORTHY each reached for its stated reason).
+- **Regression & integration:** adapter→reporter matrix (one finding
+  asserted on terminal, JSON, SARIF, and Mermaid), plugin flow
+  integration (valid plugin + reserved-prefix rejection), cross-file
+  analysis, monorepo containment (a workspace scan never reports
+  siblings), a mutation guard (each sampled rule's finding drops to zero
+  when the offending line is removed), and baseline forward-compat.
+- **Nightly stress workflow** (`.github/workflows/stress.yml`, never
+  PR-blocking): 10k-file mixed-language synthetic repo under a 120 s
+  budget with no partial degradation, pathological trees (200-deep
+  nesting, 10k-char lines, unicode filenames, LF/CRLF/BOM mixes,
+  junctions, malformed specs), a 20-run byte-identical + flat-RSS soak,
+  the networked registry-install smoke (previously skipped locally), and
+  4 concurrent scans of one read-only target. Fixture generators live in
+  `tests/stress/`.
+- **Stability:** the 1 MB masking budget now takes the median of 3 runs
+  with a 15 s ceiling (coverage instrumentation slows string-heavy loops
+  ~3x and there is no in-worker marker to detect it; the ratio-based
+  linearity test remains the true non-quadratic guard), and the
+  scale-benchmark's 3k-file budget moved 20 s → 25 s with the same
+  rationale. The vitest global-setup builds `dist/` once before any
+  worker starts — parallel-file builds used to wipe dist mid-suite
+  (tsdown cleans `outDir`) and fail unrelated E2E spawns with
+  module-not-found.
+- **Known gaps (observed, unfixed — flagged by the new E2E sweep):**
+  `doctor --bogus` ignores the unknown flag and scans the CWD instead of
+  exiting 10 like every other subcommand.
+
 ## [0.5.0] — 2026-08-29
 
 ### Added — measurement is now visible at the point of use
@@ -317,6 +439,20 @@ by a `must-not-fire` fixture so the class cannot return silently.
 - ~130 unit tests recovering branch coverage on the code-text maskers, the
   shared position helpers, ignore-pattern resolution, and the per-arm
   behavior of ten Playwright rules plus QA-PY-010.
+
+### Infrastructure — automated npm publishing is live
+
+- `0.5.0` is the first version published to npm by CI. `release.yml` now
+  publishes via **OIDC trusted publishing** (no `NODE_AUTH_TOKEN`
+  anywhere) with `--provenance`; the published tarball carries a SLSA
+  provenance attestation (`npm audit signatures`). Every subsequent
+  release is `git push --follow-tags` and nothing else.
+- The blocker was a mismatch in the npmjs.com Trusted Publisher config
+  (`Sergey-bar` vs the real `Sergey-Bar` — npm matches the OIDC
+  `repository` claim case-sensitively), which surfaced as
+  `OIDC token exchange error - package not found` / `ENEEDAUTH`. Fixed on
+  npmjs.com; re-run against the existing `v0.5.0` tag via
+  `workflow_dispatch`.
 
 ### Known gaps
 

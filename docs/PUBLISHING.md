@@ -79,14 +79,20 @@ still verifies and completes.
 
 ## Current state
 
-The package name is **resolved and live**: `mjolnir-qa` on npmjs.com,
-with `bin: { "mjolnir": ... }`, so the CLI command a user types is
-`mjolnir`. Version 0.4.0 was published **manually**, which is why no
-`v0.4.0` git tag exists — npm records its `gitHead` as `7b7a61a`.
+**Automated publishing is live.** `mjolnir-qa` on npmjs.com, with
+`bin: { "mjolnir": ... }`, so the CLI command a user types is `mjolnir`.
+`latest` is **0.5.0**, published by CI on 2026-08-30 via OIDC trusted
+publishing with a SLSA provenance attestation (`npm audit signatures`).
 
-**`npm publish` is switched on and currently failing.** `NPM_PUBLISH` was
-set to `true` on 2026-08-29, so the publish step runs on every tag — and
-fails, because setup step 1 below has not been done:
+- Version 0.4.0 was published **manually** (no `v0.4.0` git tag; npm
+  records its `gitHead` as `7b7a61a`). It shipped a POSIX-broken bin —
+  superseded by 0.5.0.
+- Every release from here is `git push --follow-tags` and nothing else.
+  No `NODE_AUTH_TOKEN` exists anywhere — OIDC replaces it.
+
+### What was wrong before 0.5.0
+
+The publish step failed on every tag with:
 
 ```
 npm http fetch POST 404 .../oidc/token/exchange/package/mjolnir-qa
@@ -95,26 +101,33 @@ npm error code ENEEDAUTH
 ```
 
 That message does **not** mean the package is missing. It means npm found
-no trusted-publisher entry matching this workflow's OIDC claims. Until
-step 1 is done, every tag push fails at publish and `latest` on npm stays
-at the broken 0.4.0.
+no trusted-publisher entry matching the workflow's OIDC claims. Root
+cause: the npmjs.com Trusted Publisher had the owner as `Sergey-bar`
+while GitHub's `repository` claim is `Sergey-Bar/Mjolnir` — npm matches
+it **case-sensitively**. Corrected on npmjs.com, then re-run against the
+existing `v0.5.0` tag with `gh workflow run release.yml -f tag=v0.5.0`.
 
-## One-time setup before publishing is automatic
+## One-time setup (already done — recorded for a rebuild)
 
 Neither can be automated from inside this repository.
 
 **1. Configure the npmjs.com Trusted Publisher (account-level, on npmjs.com).**
-⚠️ **STILL OPEN — this is the only thing blocking releases.**
+✅ **DONE — 2026-08-30.**
 On `mjolnir-qa`'s package page → **Settings** → **Publishing access** →
 add a **Trusted Publisher**:
 
-| Field         | Value                           |
-| ------------- | ------------------------------- |
-| Publisher     | GitHub Actions                  |
-| Organization  | `Sergey-Bar`                    |
-| Repository    | `Mjolnir`                       |
-| Workflow file | `.github/workflows/release.yml` |
-| Environment   | _(leave blank)_                 |
+| Field         | Value                     |
+| ------------- | ------------------------- |
+| Publisher     | GitHub Actions            |
+| Organization  | `Sergey-Bar` (exact case) |
+| Repository    | `Mjolnir`                 |
+| Workflow file | `release.yml`             |
+| Environment   | _(leave blank)_           |
+
+The **Organization** value must match GitHub's login casing exactly
+(`Sergey-Bar`, not `Sergey-bar`) — npm matches the OIDC `repository`
+claim case-sensitively, and a mismatch surfaces as the `ENEEDAUTH` /
+`package not found` above with everything else looking correct.
 
 Once configured, `npm publish --provenance` from that exact workflow
 needs **no `NODE_AUTH_TOKEN`** — npm verifies the OIDC token GitHub
@@ -138,29 +151,20 @@ gh variable set NPM_PUBLISH --body true
 (or Settings → Secrets and variables → Actions → Variables → New variable
 `NPM_PUBLISH` = `true`.)
 
-**3. Verify, then release.** Confirm the tarball contents locally:
-
-```bash
-npm publish --provenance --dry-run
-```
-
-Cross-check the file list against `tests/package-smoke.spec.ts`. Then,
-because the `v0.5.0` tag already exists, retry it rather than re-tagging:
-
-```bash
-gh workflow run release.yml -f tag=v0.5.0
-gh run watch
-```
+**3. Release.** `git push --follow-tags` after `npm version …`. To retry a
+tag that already exists (a failure outside the repo), use
+`gh workflow run release.yml -f tag=vX.Y.Z` instead of re-tagging.
 
 Confirm the outcome from outside CI — the job's own green tick is not the
 proof, the registry is:
 
 ```bash
-npm view mjolnir-qa version      # must print 0.5.0
+npm view mjolnir-qa version      # must print the version just tagged
 npm audit signatures             # provenance attestation present
 ```
 
-Every subsequent release is `git push --follow-tags` and nothing else.
+To eyeball a tarball before tagging: `npm publish --provenance --dry-run`,
+cross-checked against `tests/package-smoke.spec.ts`.
 
 ## Verifying provenance after a real publish
 

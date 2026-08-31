@@ -37,7 +37,7 @@ export const pyBareTruthinessAssert = defineRule({
 
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {
-      const target = m[1] ?? "";
+      const target = m[1] as string;
       // Skip obviously-boolean names (is_/has_/can_ conventions).
       if (/^(?:is|has|can|should|was|were)_/.test(target)) continue;
       findings.push({

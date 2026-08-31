@@ -143,3 +143,32 @@ describe("default branch name mismatch (repo uses a non-'main' default)", () => 
     ).toBe(true);
   });
 });
+
+describe("committed rename (bug-audit B5.38 / L1)", () => {
+  it("reports the NEW path — never the stale old path — in changed", () => {
+    git(sourceDir, ["checkout", "-b", "feature"]);
+    git(sourceDir, [
+      "mv",
+      join("e2e", "a.spec.ts"),
+      join("e2e", "renamed.spec.ts"),
+    ]);
+    git(sourceDir, ["commit", "-m", "rename spec"]);
+
+    const result = computeChangedScope(sourceDir, "main");
+    expect(result.degraded).toBe(false);
+    // The new path must be present with changed lines attributed.
+    expect(Object.keys(result.changed)).toContain(
+      join("e2e", "renamed.spec.ts").replaceAll("\\", "/"),
+    );
+    expect(
+      result.changed[join("e2e", "renamed.spec.ts").replaceAll("\\", "/")]
+        ?.size,
+    ).toBeGreaterThan(0);
+    // The old path must NOT leak in — with git -z the rename status is
+    // `R100`, which the old `status === "R"` equality check missed, so
+    // the old-path element was consumed as the file name.
+    expect(Object.keys(result.changed)).not.toContain(
+      join("e2e", "a.spec.ts").replaceAll("\\", "/"),
+    );
+  });
+});

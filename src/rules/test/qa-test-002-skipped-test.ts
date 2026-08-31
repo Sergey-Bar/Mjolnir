@@ -29,14 +29,14 @@ export const skippedTest = defineRule({
       "ruleId" | "category"
     >[] = [];
 
-    const patterns = [
+    // Bug-audit M0 #13: the pattern list used to carry a third entry
+    // (`it.todo(`) that was never executed — `patterns.slice(0, 2)` and a
+    // comment promising "separate info-level handling" that never shipped.
+    // Dead code removed; `it.todo` remains intentionally unreported.
+    const skipPatterns = [
       /(?:^|[^\w$.])(?:xit|xdescribe)\s*\(/g,
       /\b(?:it|test|describe|bench)\.skip\s*\(/g,
-      /\b(?:it|test)\.todo\s*\(/g, // todo is intentional — reported as info? No:
     ];
-
-    // it.todo is an intentional placeholder; treat separately at info level.
-    const skipPatterns = patterns.slice(0, 2);
     for (const re of skipPatterns) {
       let m: RegExpExecArray | null;
       while ((m = re.exec(text)) !== null) {
@@ -44,7 +44,8 @@ export const skippedTest = defineRule({
         // reason comment on the same line or the line above makes the skip
         // deliberate — downgrade stays a warning. A bare skip escalates.
         const lineStart = text.lastIndexOf("\n", m.index) + 1;
-        const prevLineStart = text.lastIndexOf("\n", lineStart - 2) + 1;
+        const prevLineStart =
+          lineStart <= 1 ? 0 : text.lastIndexOf("\n", lineStart - 2) + 1;
         const context =
           text.slice(lineStart, m.index + 120) +
           "\n" +

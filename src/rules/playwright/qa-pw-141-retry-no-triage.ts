@@ -31,7 +31,7 @@ export const pwRetryMaskingNoForensics = defineRule({
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
-    const base = ctx.path.split("/").pop() ?? "";
+    const base = ctx.path.split("/").pop() as string;
     if (!/^playwright\.config\.(ts|js|mjs|cts)$/.test(base)) return findings;
 
     const retriesRe = /retries\s*:\s*(\d+)/g;
@@ -44,8 +44,7 @@ export const pwRetryMaskingNoForensics = defineRule({
       // Check code-structure signals in codeText, but check comment-based
       // signals in raw text (comments ARE the evidence here).
       const hasTriageLoop =
-        /reporter\s*:/.test(text) ||
-        /(?:forensics|triage|flaky)/i.test(ctx.text);
+        /reporter\s*:/.test(text) || /forensics|triage|flaky/i.test(ctx.text);
       if (!hasTriageLoop) {
         findings.push({
           severity: "warning",

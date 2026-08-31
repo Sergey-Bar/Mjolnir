@@ -74,8 +74,8 @@ describe("baseline round-trip", () => {
       finding({}),
       finding({ ruleId: "QA-TEST-001", file: "e2e/b.spec.ts" }),
     ]);
-    const outPath = saveBaseline(result, "abc1234", join(dir, "baseline.json"));
-    const loaded = loadBaseline(outPath);
+    const saved = saveBaseline(result, "abc1234", join(dir, "baseline.json"));
+    const loaded = loadBaseline(saved.path);
 
     expect(loaded).not.toBeNull();
     expect(loaded?.commit).toBe("abc1234");
@@ -84,6 +84,34 @@ describe("baseline round-trip", () => {
       "QA-PW-101",
       "QA-TEST-001",
     ]);
+  });
+
+  it("replacing an existing baseline backs it up and says so (bug-audit L7, decision D3)", () => {
+    const dir = tmpDir();
+    const outPath = join(dir, "baseline.json");
+    saveBaseline(scanResult([finding({})]), "abc1234", outPath);
+
+    const second = saveBaseline(
+      scanResult([finding({ ruleId: "QA-TEST-003", file: "b.ts" })]),
+      "def5678",
+      outPath,
+    );
+    expect(second.replaced).toBe(true);
+    expect(second.backupPath).toBe(`${outPath}.bak`);
+    const backup = loadBaseline(second.backupPath ?? "");
+    expect(backup?.commit).toBe("abc1234");
+    // The new baseline is live at the original path.
+    expect(loadBaseline(outPath)?.commit).toBe("def5678");
+
+    // A first save (no existing file) is not a replacement.
+    const freshDir = tmpDir();
+    const first = saveBaseline(
+      scanResult([]),
+      "aaa0000",
+      join(freshDir, "baseline.json"),
+    );
+    expect(first.replaced).toBe(false);
+    expect(first.backupPath).toBeUndefined();
   });
 
   it("loadBaseline returns null for a missing file, honestly, not a crash", () => {

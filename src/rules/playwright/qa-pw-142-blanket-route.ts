@@ -37,7 +37,7 @@ export const pwBlanketRouteMock = defineRule({
     const re = /\.route\s*\(\s*['"](\*\*(?:\/\*)?|\*\*\/[^'"]*)['"]/g;
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {
-      const pattern = m[1] ?? "";
+      const pattern = m[1] as string;
       // Reads raw text because the route glob is string content. Skip when the
       // whole expression is itself quoted — a code sample, not a live route.
       if (isInsideEmbeddedCode(ctx, m.index)) continue;

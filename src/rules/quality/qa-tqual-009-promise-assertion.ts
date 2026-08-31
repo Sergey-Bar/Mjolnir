@@ -54,6 +54,11 @@ export const unawaitedPromiseAssertion = defineRule({
 
       // Walk backwards over chained lines (`.method(...)` continuations)
       // to find the statement head, then check for await/return.
+      // Bug-audit M0 #1 (HIGH): the old walk could assign `stmtStart =
+      // lineStart` when `.then(` was already the first token on its line —
+      // zero backward progress, so the loop re-entered the identical
+      // branch forever and the whole scan hung (the per-file budget only
+      // checks BETWEEN rules). The walk now always moves strictly back.
       let stmtStart = m.index;
       while (stmtStart > 0) {
         const lineStart = text.lastIndexOf("\n", stmtStart - 1) + 1;
@@ -65,22 +70,29 @@ export const unawaitedPromiseAssertion = defineRule({
           stmtStart = lineStart;
           break;
         }
-        const prevLineStart = text.lastIndexOf("\n", lineStart - 2) + 1;
-        const prevLine = text.slice(prevLineStart, lineStart - 1).trimEnd();
+        // Start of the line BEFORE lineStart. `lastIndexOf("\n",
+        // lineStart - 2)` with a negative fromIndex searches from the END
+        // of the string (the M0 #12 class of bug) — special-case it.
+        const prevLineStart =
+          lineStart === 1 ? 0 : text.lastIndexOf("\n", lineStart - 2) + 1;
+        const prevLine = text.slice(prevLineStart, lineStart).trimEnd();
+        // Progress invariant: prevLineStart < lineStart <= stmtStart, so
+        // every absorption strictly decreases stmtStart — the walk always
+        // terminates without an explicit guard.
         // Chain continues upward when either: this line's head is empty /
         // starts with a `.` continuation, or the previous line ends with an
         // operator / opening token.
         if (
           curLineHead === "" ||
           /^\.\w/.test(curLineHead) ||
-          /(?:\.|\(|\[|,|:|=|&&|\|\|)$/.test(prevLine)
+          /(?:[.([,:=]|&&|\|\|)$/.test(prevLine)
         ) {
-          // Pull the previous line into the head so an `await` / `return`
-          // that sits one line above the `.then(` is still seen.
-          stmtStart = /^\s*(?:await|return)\b/.test(prevLine)
-            ? prevLineStart
-            : lineStart;
-          if (stmtStart === prevLineStart) break;
+          if (/^\s*(?:await|return)\b/.test(prevLine)) {
+            stmtStart = prevLineStart;
+            break;
+          }
+          // Absorb the previous line and keep walking — always progress.
+          stmtStart = prevLineStart;
           continue;
         }
         stmtStart = lineStart;

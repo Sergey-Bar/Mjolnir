@@ -57,18 +57,33 @@ export function parsePlaywrightJson(json: unknown): TestRecord[] {
 
   const walk = (suite: PwSuite, depth: number): void => {
     if (depth > MAX_DEPTH) return;
-    for (const child of suite.suites ?? []) walk(child, depth + 1);
-    for (const spec of suite.specs ?? []) {
+    if (!suite || typeof suite !== "object") return;
+    // Bug-audit M3: a corrupt report can hold a non-array where an array
+    // belongs (a number is not nullish, so `?? []` does not protect) —
+    // iteration then throws a TypeError and the caller crashed with
+    // exit 20 instead of the honest exit 2. Array.isArray guards make
+    // the parser total over arbitrary JSON.
+    const suites = Array.isArray(suite.suites) ? suite.suites : [];
+    for (const child of suites) walk(child, depth + 1);
+    const specs = Array.isArray(suite.specs) ? suite.specs : [];
+    for (const spec of specs) {
+      // Array ELEMENTS from a corrupt report can be null/primitives too
+      // (caught by the arbitrary-JSON property test, B4.24).
+      if (!spec || typeof spec !== "object") continue;
       const file = spec.file ?? "unknown";
-      for (const test of spec.tests ?? []) {
+      const tests = Array.isArray(spec.tests) ? spec.tests : [];
+      for (const test of tests) {
+        if (!test || typeof test !== "object") continue;
         const attempts: Attempt[] = [];
         let i = 0;
-        for (const r of test.results ?? []) {
+        const results = Array.isArray(test.results) ? test.results : [];
+        for (const r of results) {
+          if (!r || typeof r !== "object") continue;
           attempts.push({
             index: ++i,
             status: toStatus(r.status),
             durationMs: Number.isFinite(r.duration)
-              ? Math.max(0, r.duration ?? 0)
+              ? Math.max(0, r.duration as number)
               : 0,
           });
         }

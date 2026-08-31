@@ -49,8 +49,11 @@ export const retryAbuse = defineRule({
       });
     }
 
-    // Playwright retries: N with N >= 2 in test files (config-level is W4 scope)
-    const pwRetries = /\bretries\s*:\s*([2-9]\d*)/g;
+    // Playwright retries: N with N >= 2 in test files (config-level is W4 scope).
+    // Bug-audit M0 #8: the old `([2-9]\d*)` encoded "first digit ≥ 2",
+    // so `retries: 10`–`retries: 19` (and 100+) — worse than `retries: 2`
+    // — silently passed. `(?:1\d+|[2-9]\d*)` is the real "N ≥ 2".
+    const pwRetries = /\bretries\s*:\s*(1\d+|[2-9]\d*)/g;
     while ((m = pwRetries.exec(text)) !== null) {
       findings.push({
         severity: "warning",

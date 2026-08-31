@@ -9,3 +9,6 @@ site/rules/
 
 # Saved HTML artifact exports (planning reference material, not source)
 .planning/**/*.html
+
+# Agent-session state (plans, scratch notes) — not repo content
+.kilo/

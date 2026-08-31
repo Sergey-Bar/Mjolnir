@@ -38,9 +38,9 @@ export const pwVisibleNotInViewport = defineRule({
     const re = /expect\(([^()]*(?:\([^()]*\)[^()]*)*)\)\.toBeVisible\(\)/g;
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {
-      const args = m[1] ?? "";
+      const args = m[1] as string;
       if (
-        /(?:toast|banner|modal|tooltip|snackbar|notification|alert)/i.test(args)
+        /toast|banner|modal|tooltip|snackbar|notification|alert/i.test(args)
       ) {
         findings.push({
           severity: "info",

@@ -33,7 +33,7 @@ export const pwGlobalSetupSharedState = defineRule({
     // In a global-setup-like file (or config referencing one), flag writes
     // to shared resources: DB migrations/seeds against non-local hosts.
     const isSetupLike =
-      /(?:globalSetup|global-setup|globalTeardown)/.test(text) ||
+      /globalSetup|global-setup|globalTeardown/.test(text) ||
       /(?:global[-.]?setup|seed|migrate)[\w.-]*\.[tj]s$/.test(ctx.path);
     if (!isSetupLike) return findings;
 

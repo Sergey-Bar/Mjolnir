@@ -71,10 +71,7 @@ function parseDecls(raw: unknown): PluginDecl[] {
       const obj = entry as Record<string, unknown>;
       decls.push({
         package: obj["package"] as string,
-        prefix:
-          typeof obj["prefix"] === "string"
-            ? (obj["prefix"] as string)
-            : undefined,
+        prefix: typeof obj["prefix"] === "string" ? obj["prefix"] : undefined,
       });
     }
   }
@@ -130,11 +127,32 @@ export function loadPlugins(root: string): PluginLoadResult {
         );
         continue;
       }
-      if (RESERVED_PREFIXES.some((p) => r.id?.startsWith(p))) {
+      const ruleId: string = r.id;
+      // Bug-audit QA-2026-08-30 QA-7: the comparison was case-sensitive,
+      // so a plugin rule id like "qa-test-001" walked straight past the
+      // reserved-prefix spoof rejection. IDs are matched
+      // case-insensitively against the reserved list.
+      if (RESERVED_PREFIXES.some((p) => ruleId.toUpperCase().startsWith(p))) {
         result.errors.push(
-          `plugin "${decl.package}" rule ${r.id} uses a reserved core prefix — rejected. Use your own family (e.g. QA-<PLUGIN>-001).`,
+          `plugin "${decl.package}" rule ${ruleId} uses a reserved core prefix — rejected. Use your own family (e.g. QA-<PLUGIN>-001).`,
         );
         continue;
+      }
+      // Bug-audit L12: a user-DECLARED prefix was never validated against
+      // the rule IDs the plugin actually exports — the declaration was
+      // dead metadata. Enforce it: every rule ID must start with the
+      // declared family (with or without the QA- stem) so the declared
+      // prefix is the real one.
+      if (decl.prefix !== undefined) {
+        const family = decl.prefix.startsWith("QA-")
+          ? `${decl.prefix}-`
+          : `QA-${decl.prefix}-`;
+        if (!r.id.startsWith(family)) {
+          result.errors.push(
+            `plugin "${decl.package}" rule ${r.id} does not use the declared prefix "${family}" — rejected. Fix the rule ID or the plugin's declared prefix.`,
+          );
+          continue;
+        }
       }
       accepted.push(rule as QADoctorRule);
     }

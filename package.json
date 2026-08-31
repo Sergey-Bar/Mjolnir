@@ -35,6 +35,7 @@
     "fp-audit:generate": "tsx scripts/generate-fp-audit-table.ts",
     "docs:rules": "tsx scripts/generate-rule-docs.ts",
     "docs:hero": "tsx scripts/generate-readme-hero.ts",
+    "docs:demo": "tsx scripts/generate-readme-demo.ts",
     "self-scan": "node dist/cli.mjs .",
     "prepare": "husky",
     "prepublishOnly": "npm run build"
@@ -71,6 +72,8 @@
     "@types/node": "^24.13.3",
     "@vitest/coverage-v8": "^4.1.11",
     "eslint": "^10.9.1",
+    "eslint-plugin-regexp": "^3.2.0",
+    "eslint-plugin-security": "^4.0.1",
     "fast-check": "^3.22.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.3.0",

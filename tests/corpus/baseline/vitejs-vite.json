@@ -5,14 +5,14 @@
     "QA-ENV-001": 32,
     "QA-PW-119": 6,
     "QA-TEST-004": 7,
-    "QA-TEST-003": 38,
+    "QA-TEST-003": 39,
     "QA-TEST-002": 5,
-    "QA-PW-105": 477,
+    "QA-PW-105": 504,
     "QA-PW-114": 62,
     "QA-PW-102": 24,
     "QA-PW-004": 1,
     "QA-PW-145": 38,
     "QA-PW-103": 39
   },
-  "totalFindings": 739
+  "totalFindings": 767
 }

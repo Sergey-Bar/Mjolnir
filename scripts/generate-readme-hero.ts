@@ -22,132 +22,62 @@ import { fileURLToPath } from "node:url";
 
 import { runScan } from "../src/cli.js";
 import { renderTerminal } from "../src/reporter/terminal.js";
+import {
+  ansiLineToSpans,
+  BG,
+  CHAR_W,
+  FONT_SIZE,
+  LINE_HEIGHT,
+  PAD_BOTTOM,
+  PAD_TOP,
+  PAD_X,
+  stripAnsi,
+  TITLE_BAR,
+  TITLE_BAR_BG,
+} from "./readme-svg.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..");
 const DEMO_REPO = join(ROOT, "examples", "demo-repo");
 const OUT_PATH = join(ROOT, "assets", "readme", "terminal-hero.svg");
 
-/** ANSI 256/16-color SGR code → hex, matching theme.ts's neon() palette. */
-const ANSI_COLOR: Record<string, string> = {
-  "91": "#FF6B6B", // error (bright red)
-  "92": "#3CFF57", // ok (bright green)
-  "93": "#FFC94D", // warning (bright yellow)
-  "95": "#E37CFF", // accent (bright magenta)
-  "96": "#5DD6E8", // info (bright cyan)
-  "1": "#EAFFF1", // bold — near-white, matches the hand-crafted original
-  "2": "#5C7A68", // dim
-};
-
-interface Span {
-  text: string;
-  color: string;
-}
-
-/** Splits one line of ANSI-coded text into colored spans for SVG <tspan>s. */
-function ansiLineToSpans(line: string): Span[] {
-  const spans: Span[] = [];
-  let currentColor = "#EAFFF1"; // default foreground, matches the original SVG
-  // eslint-disable-next-line no-control-regex
-  const re = /\x1b\[([0-9;]*)m/g;
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-  const pushText = (text: string): void => {
-    if (text.length === 0) return;
-    spans.push({ text: escapeXml(text), color: currentColor });
-  };
-  while ((match = re.exec(line)) !== null) {
-    pushText(line.slice(lastIndex, match.index));
-    lastIndex = match.index + match[0].length;
-    const codes = (match[1] ?? "0").split(";").filter(Boolean);
-    for (const code of codes) {
-      if (code === "0") currentColor = "#EAFFF1";
-      else if (ANSI_COLOR[code]) currentColor = ANSI_COLOR[code] as string;
-    }
-  }
-  pushText(line.slice(lastIndex));
-  return spans;
-}
-
-function escapeXml(s: string): string {
-  return s
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;");
-}
-
-/** Strips ANSI codes to measure the visible width of a line. */
-function stripAnsi(s: string): string {
-  // eslint-disable-next-line no-control-regex
-  return s.replace(/\x1b\[[0-9;]*m/g, "");
-}
-
 function renderSvg(lines: string[]): string {
-  const LINE_HEIGHT = 20.5;
-  const TOP_PAD = 82.5;
-  const LEFT_PAD = 30;
-  const width = 900;
-  const contentHeight = lines.length * LINE_HEIGHT;
-  const height = Math.round(TOP_PAD + contentHeight + 40);
+  const longest = Math.max(...lines.map((l) => stripAnsi(l).length));
+  const width = Math.ceil(PAD_X * 2 + longest * CHAR_W);
+  const height = Math.ceil(PAD_TOP + lines.length * LINE_HEIGHT + PAD_BOTTOM);
 
   const textLines = lines
     .map((line, i) => {
-      const y = TOP_PAD + i * LINE_HEIGHT;
+      const y = PAD_TOP + i * LINE_HEIGHT;
       const spans = ansiLineToSpans(line);
       if (spans.length === 0) return "";
       const tspans = spans
         .map((s) => `<tspan fill="${s.color}">${s.text}</tspan>`)
         .join("");
-      return `    <text x="${LEFT_PAD}" y="${y.toFixed(1)}" xml:space="preserve">${tspans}</text>`;
+      return `    <text x="${PAD_X}" y="${y.toFixed(1)}" xml:space="preserve">${tspans}</text>`;
     })
     .join("\n");
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" font-family="'SF Mono', 'Cascadia Code', Consolas, Menlo, 'DejaVu Sans Mono', monospace" font-size="14.5">
+<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', Menlo, monospace" font-size="${FONT_SIZE}">
   <defs>
     <clipPath id="winClip">
-      <rect x="0" y="0" width="${width}" height="${height}" rx="14" ry="14"/>
+      <rect x="0" y="0" width="${width}" height="${height}" rx="8" ry="8"/>
     </clipPath>
-    <linearGradient id="titlebarGrad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#141d18"/>
-      <stop offset="1" stop-color="#0e1512"/>
-    </linearGradient>
-    <radialGradient id="vignette" cx="50%" cy="38%" r="75%">
-      <stop offset="0%" stop-color="#000000" stop-opacity="0"/>
-      <stop offset="78%" stop-color="#000000" stop-opacity="0"/>
-      <stop offset="100%" stop-color="#000000" stop-opacity="0.55"/>
-    </radialGradient>
-    <pattern id="scanlines" width="3" height="3" patternUnits="userSpaceOnUse">
-      <rect width="3" height="1.4" fill="#000000" fill-opacity="0.22"/>
-    </pattern>
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="1.1" result="blur"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
   </defs>
 
   <g clip-path="url(#winClip)">
-    <rect x="0" y="0" width="${width}" height="${height}" fill="#070b09"/>
+    <rect x="0" y="0" width="${width}" height="${height}" fill="${BG}"/>
+    <rect x="0" y="0" width="${width}" height="${TITLE_BAR}" fill="${TITLE_BAR_BG}"/>
+    <circle cx="20" cy="${TITLE_BAR / 2}" r="6" fill="#ff5f56"/>
+    <circle cx="40" cy="${TITLE_BAR / 2}" r="6" fill="#ffbd2e"/>
+    <circle cx="60" cy="${TITLE_BAR / 2}" r="6" fill="#27c93f"/>
+    <text x="${width / 2}" y="${TITLE_BAR / 2 + 4}" fill="#a0a0a0" font-size="12" text-anchor="middle">demo-repo &#8212; mjolnir</text>
 
-    <rect x="0" y="0" width="${width}" height="42" fill="url(#titlebarGrad)"/>
-    <line x1="0" y1="42" x2="${width}" y2="42" stroke="#39FF14" stroke-opacity="0.14"/>
-    <circle cx="24" cy="21" r="6.5" fill="#ff5f56"/>
-    <circle cx="46" cy="21" r="6.5" fill="#ffbd2e"/>
-    <circle cx="68" cy="21" r="6.5" fill="#27c93f"/>
-    <text x="${width / 2}" y="25.5" fill="#5C7A68" font-size="12.5" text-anchor="middle" letter-spacing="0.5">user@ci: ~/demo-repo &#8212; mjolnir scan</text>
-
-    <g filter="url(#glow)">
 ${textLines}
-    </g>
-
-    <rect x="0" y="42" width="${width}" height="${height - 42}" fill="url(#scanlines)"/>
-    <rect x="0" y="0" width="${width}" height="${height}" fill="url(#vignette)"/>
   </g>
 
-  <rect x="0.6" y="0.6" width="${width - 1.2}" height="${height - 1.2}" rx="13.5" ry="13.5" fill="none" stroke="#39FF14" stroke-opacity="0.28" stroke-width="1.2"/>
+  <rect x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" rx="7.5" ry="7.5" fill="none" stroke="#000000" stroke-opacity="0.5"/>
 </svg>
 `;
 }

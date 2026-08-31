@@ -33,7 +33,7 @@ export const pwTestIdConvention = defineRule({
     const re = /getByTestId\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {
-      const id = m[1] ?? "";
+      const id = m[1] as string;
       if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) {
         findings.push({
           severity: "info",
@@ -45,7 +45,7 @@ export const pwTestIdConvention = defineRule({
           column: colAt(text, m.index),
           message: `test id \`${id}\` violates kebab-case convention.`,
           why: "Mixed naming conventions in test ids make selector review and grep-based audits unreliable.",
-          fix: `Rename to kebab-case (e.g. \`${id.replace(/[^a-zA-Z0-9]+/g, "-").toLowerCase()}\`) and update the component.`,
+          fix: `Rename to kebab-case (e.g. \`${id.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}\`) and update the component.`,
         });
       }
     }

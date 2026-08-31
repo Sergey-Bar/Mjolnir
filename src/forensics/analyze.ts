@@ -87,7 +87,7 @@ export function leaderboard(report: ForensicsReport): TestVerdict[] {
 }
 
 function bar(ms: number, maxMs: number, width = 20): string {
-  if (maxMs <= 0) return "";
+  // renderLeaderboard floors maxMs at 1, so the divisor is never zero.
   const filled = Math.round((ms / maxMs) * width);
   return (
     "█".repeat(Math.min(width, filled)) +
@@ -112,11 +112,9 @@ export function renderLeaderboard(report: ForensicsReport): string {
 
   const maxMs = Math.max(...top.map((v) => v.totalDurationMs), 1);
   for (const v of top) {
-    const flag = v.passedOnRetry
-      ? "TRUE-FLAKE"
-      : v.finalStatus === "passed"
-        ? "retried"
-        : "FAILING";
+    // `top` keeps only verdicts with a failure or a true flake, so every
+    // row here is one of exactly two things: a lucky pass or a failure.
+    const flag = v.passedOnRetry ? "TRUE-FLAKE" : "FAILING";
     lines.push(
       `${flag.padEnd(10)} ${v.title} (${v.file})`,
       `           ${bar(v.totalDurationMs, maxMs)} ${(v.totalDurationMs / 1000).toFixed(1)}s · ${v.attempts} attempt${v.attempts === 1 ? "" : "s"}`,
@@ -151,11 +149,8 @@ export function renderFlakyMd(report: ForensicsReport): string {
   lines.push("| Status | Test | File | Attempts | Duration |");
   lines.push("|--------|------|------|----------|----------|");
   for (const v of top) {
-    const status = v.passedOnRetry
-      ? "🔥 TRUE-FLAKE"
-      : v.finalStatus === "passed"
-        ? "↻ retried"
-        : "❌ failing";
+    // Same two-row invariant as renderLeaderboard: a failure or a flake.
+    const status = v.passedOnRetry ? "🔥 TRUE-FLAKE" : "❌ failing";
     lines.push(
       `| ${status} | \`${v.title}\` | \`${v.file}\` | ${v.attempts} | ${(v.totalDurationMs / 1000).toFixed(1)}s |`,
     );

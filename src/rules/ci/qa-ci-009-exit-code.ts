@@ -69,10 +69,9 @@ export const exitCodeNotPropagated = defineRule({
         const lines = run.split("\n");
         for (const line of lines) {
           if (!TEST_CMD.test(line)) continue;
-          const afterCmd = line.slice(
-            (TEST_CMD.exec(line)?.index ?? 0) +
-              (TEST_CMD.exec(line)?.[0].length ?? 0),
-          );
+          // The guard above guarantees exec() matches here.
+          const m = TEST_CMD.exec(line) as RegExpExecArray;
+          const afterCmd = line.slice(m.index + m[0].length);
           const piped = /^\s*\|(?!\|)/.exec(afterCmd);
           if (piped && !/\|\|\s|&&\s/.test(afterCmd)) {
             findings.push({
@@ -94,6 +93,13 @@ export const exitCodeNotPropagated = defineRule({
         // command's success decides the step. e.g. `npm test; npm run lint`.
         // NOTE: TEST_CMD.source contains top-level alternation — it MUST be
         // wrapped in a group or the tail binds to only one branch.
+        // Bug-audit M0 #6: `set -e` / `errexit` fails the step AT the test
+        // command, so `;`-sequencing no longer masks the result — the same
+        // short-circuit `pipefail` already honored. (Case 1 above is NOT
+        // covered by errexit: a pipeline's status is still the last
+        // command's without pipefail, so it stays active there.)
+        if (/set\s+(?:-[A-Za-df-z]*e[A-Za-z]*|-o\s+errexit)\b/.test(run))
+          continue;
         const seqRe = new RegExp(
           `(?:${TEST_CMD.source})[^\\n;]*;\\s*[^\\n]+`,
           "g",
@@ -112,7 +118,7 @@ export const exitCodeNotPropagated = defineRule({
             confidence: "medium",
             findingType: "deterministic-defect",
             file: ctx.path,
-            line: findLine(ctx.text, seg.split(";")[0]?.trim() ?? seg),
+            line: findLine(ctx.text, seg.slice(0, seg.indexOf(";")).trim()),
             column: 1,
             message: `Job \`${jobName}\` sequences commands with \`; \` after the test command — the test result does not fail the step.`,
             why: "With `;` sequencing the step's exit status comes from the last command only, so failed tests still yield a green checkmark.",

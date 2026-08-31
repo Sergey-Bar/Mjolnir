@@ -34,7 +34,7 @@ export const pwNoA11yAssertions = defineRule({
     if (!/\.(spec|test)\.[tj]sx?$/.test(ctx.path)) return findings;
 
     // Only meaningful for suites doing real UI interaction.
-    const doesUiInteraction = /(?:page\.goto|page\.click|\.fill\()/i.test(text);
+    const doesUiInteraction = /page\.goto|page\.click|\.fill\(/i.test(text);
     if (!doesUiInteraction) return findings;
 
     // Any a11y signal anywhere in the file counts as covered.

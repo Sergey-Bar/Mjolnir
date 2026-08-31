@@ -135,6 +135,67 @@ describe("loadPlugins", () => {
     expect(result.plugins[0]?.rules[0]?.id).toBe("QA-OBJ-001");
   });
 
+  it("rejects rules that ignore the user-declared prefix (bug-audit L12)", () => {
+    // The declared prefix used to be dead metadata: a plugin declaring
+    // prefix "ACME" while exporting QA-OTHER-001 rules was accepted.
+    mkdirSync(ROOT, { recursive: true });
+    const pluginDir = join(ROOT, "mismatched-prefix-plugin");
+    mkdirSync(pluginDir, { recursive: true });
+    writeFileSync(
+      join(pluginDir, "package.json"),
+      JSON.stringify({ name: "mismatched-prefix-plugin", main: "index.js" }),
+    );
+    writeFileSync(
+      join(pluginDir, "index.js"),
+      `exports.rules = [{
+        id: "QA-OTHER-001",
+        category: "QA-OTHER",
+        title: "Mismatched check",
+        severity: "info",
+        confidence: "medium",
+        findingType: "observation",
+        qaImpact: "HYGIENE",
+        appliesTo: "test-files",
+        run: () => [],
+      }];`,
+    );
+    writeConfig([{ package: "./mismatched-prefix-plugin", prefix: "ACME" }]);
+    const result = loadPlugins(ROOT);
+    // The plugin object is still listed (convention: degrade honestly),
+    // but the offending rule is rejected with a named error.
+    expect(result.plugins[0]?.rules).toHaveLength(0);
+    expect(result.errors.join("\n")).toContain("declared prefix");
+    expect(result.errors.join("\n")).toContain("QA-ACME-");
+  });
+
+  it("accepts rules that honor the declared prefix (bug-audit L12 — positive control)", () => {
+    mkdirSync(ROOT, { recursive: true });
+    const pluginDir = join(ROOT, "matching-prefix-plugin");
+    mkdirSync(pluginDir, { recursive: true });
+    writeFileSync(
+      join(pluginDir, "package.json"),
+      JSON.stringify({ name: "matching-prefix-plugin", main: "index.js" }),
+    );
+    writeFileSync(
+      join(pluginDir, "index.js"),
+      `exports.rules = [{
+        id: "QA-ACME-001",
+        category: "QA-ACME",
+        title: "Matched check",
+        severity: "info",
+        confidence: "medium",
+        findingType: "observation",
+        qaImpact: "HYGIENE",
+        appliesTo: "test-files",
+        run: () => [],
+      }];`,
+    );
+    writeConfig([{ package: "./matching-prefix-plugin", prefix: "ACME" }]);
+    const result = loadPlugins(ROOT);
+    expect(result.errors).toHaveLength(0);
+    expect(result.plugins).toHaveLength(1);
+  });
+
   it("ignores array entries that are neither strings nor {package} objects", () => {
     mkdirSync(ROOT, { recursive: true });
     writeConfig([42, null, { notPackage: "x" }, true]);

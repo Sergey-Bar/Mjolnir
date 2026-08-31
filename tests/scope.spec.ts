@@ -126,7 +126,11 @@ describe("computeChangedScope", () => {
     git(["commit", "-m", "rename"]);
     const diff = computeChangedScope(dir, "main");
     expect(diff.degraded).toBe(false);
-    expect(Object.keys(diff.changed)).toContain("after.test.ts");
+    // Bug-audit L1 (B5.37): assert the EXACT key set — the old
+    // `status === "R"` equality check missed git's `R100` form and let
+    // the stale OLD path leak into `changed` alongside the new one.
+    expect(Object.keys(diff.changed).sort()).toEqual(["after.test.ts"]);
+    expect(diff.changed).not.toHaveProperty("before.test.ts");
   });
 });
 
@@ -207,5 +211,39 @@ describe("parseChangedLines", () => {
   it("handles hunk without count", () => {
     const out = parseChangedLines("@@ -1 +1 @@\n+only\n");
     expect([...out]).toEqual([1]);
+  });
+
+  it("never advances on `\\ No newline at end of file` markers (bug-audit L2)", () => {
+    const diff = [
+      "@@ -1,2 +1,2 @@",
+      " context",
+      "+added",
+      "\\ No newline at end of file",
+    ].join("\n");
+    // The marker must not count as a context line that advances newLine.
+    expect([...parseChangedLines(diff)]).toEqual([2]);
+  });
+
+  it("a second file's diff header adds no bogus line numbers (bug-audit L2)", () => {
+    const diff = [
+      "diff --git a/f.ts b/f.ts",
+      "index 111..222 100644",
+      "--- a/f.ts",
+      "+++ b/f.ts",
+      "@@ -1,2 +1,2 @@",
+      "-old",
+      "+new",
+      "diff --git a/g.ts b/g.ts",
+      "index 333..444 100644",
+      "--- a/g.ts",
+      "+++ b/g.ts",
+      "@@ -1 +1 @@",
+      "+second",
+    ].join("\n");
+    // `+++ b/g.ts` starts with `+` — the old parser recorded a bogus
+    // line from the FIRST hunk's numbering for it. (The first hunk here
+    // declares 2 new-side lines but supplies 1 — the surplus is consumed
+    // as context, adding nothing.)
+    expect([...parseChangedLines(diff)].sort((a, b) => a - b)).toEqual([1]);
   });
 });

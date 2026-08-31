@@ -13,7 +13,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { execFileSync } from "node:child_process";
-import { join, relative, resolve, sep } from "node:path";
+import { join, dirname, relative, resolve, sep } from "node:path";
 import process from "node:process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -24,7 +24,7 @@ import {
   type ScanResult,
   type Severity,
 } from "./types.js";
-import { discoverWorkspace } from "./discovery/workspace.js";
+import { discoverWorkspace, type Workspace } from "./discovery/workspace.js";
 import { detectFrameworks } from "./discovery/frameworks.js";
 import {
   SCAN_ADAPTERS as ADAPTERS,
@@ -88,7 +88,11 @@ import { renderDoctorReport, runDoctorSelfAudit } from "./commands/doctor.js";
 import { buildCatalog, renderCatalogMd } from "./commands/rules-catalog.js";
 import { explainRule, renderExplain } from "./commands/explain.js";
 import { loadSuppressions, renderSuppressions } from "./config/suppressions.js";
-import { loadConfig, applySeverityOverrides } from "./config/config.js";
+import {
+  loadConfig,
+  ConfigValidationError,
+  applySeverityOverrides,
+} from "./config/config.js";
 import { loadPlugins } from "./plugins/load.js";
 import {
   computeSelectorHealth,
@@ -108,6 +112,9 @@ import {
 export const CLI_VERSION = "0.5.0";
 
 const UNIVERSAL_RULES = RULES.map(asUniversal);
+
+/** Registered rule IDs — used to warn on unknown severityOverrides keys (M4). */
+const KNOWN_RULE_IDS: ReadonlySet<string> = new Set(RULES.map((r) => r.id));
 
 // Plugin API (Phase 6): third-party rules are appended after core rules;
 // core findings always win dedup by running first.
@@ -138,8 +145,10 @@ function buildUniversalRules(root: string, strict?: boolean) {
   return { rules, pluginErrors: errors, tierByRuleId, pluginMeta };
 }
 
-/** Rule-declared evidence-level overrides (Honesty Core). */
-const EVIDENCE_OVERRIDES: ReadonlyMap<string, string> = new Map(
+/** Rule-declared evidence-level overrides (Honesty Core). */ const EVIDENCE_OVERRIDES: ReadonlyMap<
+  string,
+  string
+> = new Map(
   RULES.filter((r) => r.evidenceLevel !== undefined).map((r) => [
     r.id,
     r.evidenceLevel as string,
@@ -244,6 +253,23 @@ export function parseArgs(argv: string[]): CliArgs | null {
 export interface ScanHooks {
   /** Invoked when a rule throws on a file (audit R-9). */
   onRuleCrash?: (ruleId: string, file: string, error: unknown) => void;
+  /** Invoked for non-fatal config warnings (bug-audit M4). */
+  onConfigWarning?: (message: string) => void;
+}
+
+/**
+ * Workspace fallback for targets with no discoverable project root
+ * (package.json-less repos, Python/Java/C# trees). Exported pure so the
+ * root-path degenerate case (`C:\` → basename "") is testable without
+ * scanning a filesystem root.
+ */
+export function fallbackWorkspace(targetAbs: string): Workspace {
+  return {
+    root: targetAbs,
+    name: targetAbs.split(/[\\/]/).pop() || "repo",
+    packageJson: {},
+    workspaceGlobs: [],
+  };
 }
 
 /**
@@ -266,17 +292,15 @@ export function runScan(args: CliArgs, hooks: ScanHooks = {}): ScanResult {
     discovered.root !== targetAbs &&
     targetAbs.startsWith(discovered.root + sep)
       ? { ...discovered, root: targetAbs }
-      : (discovered ?? {
-          root: targetAbs,
-          name: targetAbs.split(/[\\/]/).pop() ?? "repo",
-          packageJson: {},
-          workspaceGlobs: [],
-        });
+      : (discovered ?? fallbackWorkspace(targetAbs));
   const workspace = scanRoot;
   const findings: Finding[] = [];
   let skippedFiles = 0;
   let testFileCount = 0;
   let testDeclarationCount = 0;
+  // Bug-audit L3: per-file declaration counts, so a changed-scope scan can
+  // score against the files it actually judged instead of the whole repo.
+  const declarationsByFile = new Map<string, number>();
   let rulesCrashed = 0;
   // Audits H-3/H-8: honest analysis status. Each phase reports what
   // actually happened; truncation carries named reasons.
@@ -284,147 +308,154 @@ export function runScan(args: CliArgs, hooks: ScanHooks = {}): ScanResult {
   let discoveryTruncated = false;
   let rulesPartial = false;
 
-  let tierByRuleId = new Map<string, Tier>();
-  let pluginsLoaded: Array<{ name: string; rules: number }> = [];
-  if (workspace) {
-    // R1: dispatch through language adapters. Rules stay unchanged; the
-    // adapters own discovery, parsing, and rule application.
-    const {
-      rules: activeRules,
-      pluginErrors,
-      tierByRuleId: tiers,
-      pluginMeta,
-    } = buildUniversalRules(workspace.root, args.strict);
-    tierByRuleId = tiers;
-    pluginsLoaded = pluginMeta;
-    for (const err of pluginErrors) {
-      findings.push({
-        ruleId: "QA-PLUGIN-000",
-        category: "QA-PW",
-        severity: "warning",
-        confidence: "high",
-        findingType: "deterministic-defect",
-        qaImpact: "HYGIENE",
-        evidenceLevel: "E2",
-        file: "mjolnir.config.json",
-        line: 1,
-        column: 1,
-        message: `Plugin problem: ${err}`,
-        why: "A configured plugin could not be loaded or declared invalid rules — its checks are silently missing from this scan.",
-        fix: "Fix or remove the plugin entry in mjolnir.config.json.",
-      } as Finding);
+  let tierByRuleId: Map<string, Tier>;
+  let pluginsLoaded: Array<{ name: string; rules: number }>;
+  // R1: dispatch through language adapters. Rules stay unchanged; the
+  // adapters own discovery, parsing, and rule application.
+  const {
+    rules: activeRules,
+    pluginErrors,
+    tierByRuleId: tiers,
+    pluginMeta,
+  } = buildUniversalRules(workspace.root, args.strict);
+  tierByRuleId = tiers;
+  pluginsLoaded = pluginMeta;
+  for (const err of pluginErrors) {
+    findings.push({
+      ruleId: "QA-PLUGIN-000",
+      category: "QA-PW",
+      severity: "warning",
+      confidence: "high",
+      findingType: "deterministic-defect",
+      qaImpact: "HYGIENE",
+      evidenceLevel: "E2",
+      file: "mjolnir.config.json",
+      line: 1,
+      column: 1,
+      message: `Plugin problem: ${err}`,
+      why: "A configured plugin could not be loaded or declared invalid rules — its checks are silently missing from this scan.",
+      fix: "Fix or remove the plugin entry in mjolnir.config.json.",
+    });
+  }
+  const ctx = {
+    workspace,
+    testFiles: [] as string[],
+    deadline,
+    maxFiles: LIMITS.maxFilesPerAdapter,
+    ignoreMatcher: createIgnoreMatcher(workspace.root),
+    onSkippedFile: (reason?: string) => {
+      skippedFiles++;
+      if (reason) truncationReasons.add(reason);
+    },
+    onDiscoveryTruncated: (reason: string) => {
+      discoveryTruncated = true;
+      if (!truncationReasons.has(reason)) {
+        truncationReasons.add(reason);
+        skippedFiles++;
+      }
+    },
+    onRuleCrash: (ruleId: string, file: string, error: unknown) => {
+      rulesCrashed++;
+      hooks.onRuleCrash?.(ruleId, file, error);
+    },
+  };
+
+  // Phase 2 (Tempering): resolve ignore patterns from .mjolnirignore
+  // and config exclude into the scan's own matcher (audit R-8) before
+  // discovering test files.
+
+  // Audit H-8/P-2: each adapter discovers into its own capped bucket,
+  // via ONE shared tree walk — the pipeline no longer readdirSyncs
+  // every directory once per language.
+  const languageAdapters = ADAPTERS.filter((a) => a.id !== "github-actions");
+  const buckets = new Map<string, string[]>(
+    languageAdapters.map((a) => [a.id, [] as string[]]),
+  );
+  const fixtureDirMemo = new Map<string, boolean>();
+  discoverAllTestFiles(ctx, languageAdapters, buckets, fixtureDirMemo);
+  // Map preserves insertion order (= languageAdapters order), so the
+  // concat order is identical to the per-adapter lookup it replaces.
+  for (const bucket of buckets.values()) {
+    ctx.testFiles.push(...bucket);
+  }
+  const wfBucket: string[] = [];
+  githubActionsAdapter.discoverTestFiles({ ...ctx, testFiles: wfBucket });
+  ctx.testFiles.push(...wfBucket);
+
+  // Audit H-3: the deadline is checked per file here too — discovery
+  // alone no longer owns the budget.
+  let scanned = 0;
+  for (const path of ctx.testFiles) {
+    if (Date.now() > deadline) {
+      rulesPartial = true;
+      skippedFiles += ctx.testFiles.length - scanned;
+      truncationReasons.add("rule-loop-deadline");
+      break;
     }
-    const ctx = {
-      workspace,
-      testFiles: [] as string[],
-      deadline,
-      maxFiles: LIMITS.maxFilesPerAdapter,
-      ignoreMatcher: createIgnoreMatcher(workspace.root),
-      onSkippedFile: (reason?: string) => {
-        skippedFiles++;
-        if (reason) truncationReasons.add(reason);
-      },
-      onDiscoveryTruncated: (reason: string) => {
-        discoveryTruncated = true;
-        if (!truncationReasons.has(reason)) {
-          truncationReasons.add(reason);
-          skippedFiles++;
-        }
-      },
-      onRuleCrash: (ruleId: string, file: string, error: unknown) => {
-        rulesCrashed++;
-        hooks.onRuleCrash?.(ruleId, file, error);
-      },
-    };
-
-    // Phase 2 (Tempering): resolve ignore patterns from .mjolnirignore
-    // and config exclude into the scan's own matcher (audit R-8) before
-    // discovering test files.
-
-    // Audit H-8/P-2: each adapter discovers into its own capped bucket,
-    // via ONE shared tree walk — the pipeline no longer readdirSyncs
-    // every directory once per language.
-    const languageAdapters = ADAPTERS.filter((a) => a.id !== "github-actions");
-    const buckets = new Map<string, string[]>(
-      languageAdapters.map((a) => [a.id, [] as string[]]),
-    );
-    const fixtureDirMemo = new Map<string, boolean>();
-    discoverAllTestFiles(ctx, languageAdapters, buckets, fixtureDirMemo);
-    for (const a of languageAdapters) {
-      ctx.testFiles.push(...(buckets.get(a.id) ?? []));
+    scanned++;
+    const isWorkflow = githubActionsAdapter.isTestFile(path);
+    const isPython = pythonAdapter.isTestFile(path);
+    const isJava = javaAdapter.isTestFile(path);
+    const isCs = csharpAdapter.isTestFile(path);
+    if (!isWorkflow) testFileCount++;
+    let text: string;
+    try {
+      // Normalize once at read time: strip BOM (breaks ^-anchored regexes)
+      // and unify CRLF → LF ($-anchored regexes miss every line on Windows
+      // checkouts otherwise). Rules can rely on LF-only text.
+      text = readFileSync(path, "utf8")
+        .replace(/^\uFEFF/, "")
+        .replace(/\r\n?/g, "\n");
+    } catch {
+      skippedFiles++;
+      continue;
     }
-    const wfBucket: string[] = [];
-    githubActionsAdapter.discoverTestFiles({ ...ctx, testFiles: wfBucket });
-    ctx.testFiles.push(...wfBucket);
-
-    // Audit H-3: the deadline is checked per file here too — discovery
-    // alone no longer owns the budget.
-    let scanned = 0;
-    for (const path of ctx.testFiles) {
-      if (Date.now() > deadline) {
-        rulesPartial = true;
-        skippedFiles += ctx.testFiles.length - scanned;
-        truncationReasons.add("rule-loop-deadline");
-        break;
-      }
-      scanned++;
-      const isWorkflow = githubActionsAdapter.isTestFile(path);
-      const isPython = pythonAdapter.isTestFile(path);
-      const isJava = javaAdapter.isTestFile(path);
-      const isCs = csharpAdapter.isTestFile(path);
-      if (!isWorkflow) testFileCount++;
-      let text: string;
-      try {
-        // Normalize once at read time: strip BOM (breaks ^-anchored regexes)
-        // and unify CRLF → LF ($-anchored regexes miss every line on Windows
-        // checkouts otherwise). Rules can rely on LF-only text.
-        text = readFileSync(path, "utf8")
-          .replace(/^\uFEFF/, "")
-          .replace(/\r\n?/g, "\n");
-      } catch {
-        skippedFiles++;
-        continue;
-      }
-      // Exposure metric (Phase 5): count declarations, not files. Workflows
-      // declare no tests, so they are excluded from the denominator.
-      if (!isWorkflow) testDeclarationCount += countTestDeclarations(text);
-      const relPath = relative(workspace.root, path).replaceAll("\\", "/");
-      const adapter = isWorkflow
-        ? githubActionsAdapter
-        : isPython
-          ? pythonAdapter
-          : isJava
-            ? javaAdapter
-            : isCs
-              ? csharpAdapter
-              : typescriptAdapter;
-      try {
-        adapter.runRules(
-          activeRules,
-          { path: relPath, text },
-          (f, ruleId, category) => {
-            findings.push({ ...f, ruleId, category } as Finding);
+    // Exposure metric (Phase 5): count declarations, not files. Workflows
+    // declare no tests, so they are excluded from the denominator.
+    const relPath = relative(workspace.root, path).replaceAll("\\", "/");
+    if (!isWorkflow) {
+      const decls = countTestDeclarations(text);
+      testDeclarationCount += decls;
+      // Per-file accounting (bug-audit L3): in changed-scope mode the
+      // score must use a denominator from the files actually judged,
+      // not the whole repo.
+      declarationsByFile.set(relPath, decls);
+    }
+    const adapter = isWorkflow
+      ? githubActionsAdapter
+      : isPython
+        ? pythonAdapter
+        : isJava
+          ? javaAdapter
+          : isCs
+            ? csharpAdapter
+            : typescriptAdapter;
+    try {
+      adapter.runRules(
+        activeRules,
+        { path: relPath, text },
+        (f, ruleId, category) => {
+          findings.push({ ...f, ruleId, category } as Finding);
+        },
+        // Audit R-9: rule crashes stay isolated but are counted and
+        // surfaced via hooks (--debug prints them).
+        (ruleId, error) => {
+          ctx.onRuleCrash?.(ruleId, relPath, error);
+        },
+        // Audit P-1: per-file analysis budget — one oversized file can
+        // no longer own the scan; the skip is counted and reported.
+        {
+          deadline: Math.min(deadline, Date.now() + LIMITS.maxFileAnalysisMs),
+          onExceeded: () => {
+            rulesPartial = true;
+            skippedFiles++;
+            truncationReasons.add("file-budget");
           },
-          // Audit R-9: rule crashes stay isolated but are counted and
-          // surfaced via hooks (--debug prints them).
-          (ruleId, error) => {
-            ctx.onRuleCrash?.(ruleId, relPath, error);
-          },
-          // Audit P-1: per-file analysis budget — one oversized file can
-          // no longer own the scan; the skip is counted and reported.
-          {
-            deadline: Math.min(deadline, Date.now() + LIMITS.maxFileAnalysisMs),
-            onExceeded: () => {
-              rulesPartial = true;
-              skippedFiles++;
-              truncationReasons.add("file-budget");
-            },
-          },
-        );
-      } catch {
-        // WorkflowParseSkipped and friends — counted, never fatal.
-        skippedFiles++;
-      }
+        },
+      );
+    } catch {
+      // WorkflowParseSkipped and friends — counted, never fatal.
+      skippedFiles++;
     }
   }
 
@@ -433,7 +464,7 @@ export function runScan(args: CliArgs, hooks: ScanHooks = {}): ScanResult {
   let scopeInfo: { scope: "all" | "changed"; degraded?: string | undefined } = {
     scope: "all",
   };
-  if (args.scopeChanged && workspace) {
+  if (args.scopeChanged) {
     const diff = computeChangedScope(workspace.root, args.base);
     const filtered = filterToChanged(findings, diff);
     findings.length = 0;
@@ -441,41 +472,49 @@ export function runScan(args: CliArgs, hooks: ScanHooks = {}): ScanResult {
     scopeInfo = diff.degraded
       ? { scope: "changed", degraded: diff.reason }
       : { scope: "changed" };
+    // Bug-audit L3: restrict the scoring denominator to the changed files
+    // — repo-wide declarations + changed-lines-only deductions inflated
+    // the score and made it incomparable to a full-scan score.
+    if (!diff.degraded) {
+      testDeclarationCount = [...Object.keys(diff.changed)].reduce(
+        (sum, file) => sum + (declarationsByFile.get(file) ?? 0),
+        0,
+      );
+    }
   }
 
   // Framework detection (0.2): wire the previously-dead detector into the
   // pipeline so output and rules can be framework-aware.
-  const frameworks = workspace
-    ? detectFrameworks(workspace)
-    : { frameworks: [], unknown: true };
+  const frameworks = detectFrameworks(workspace);
 
   // Suppression enforcement: active `ignore` entries in
   // mjolnir.config.json remove findings from output, scoring, and exit
   // codes. Expired entries suppress nothing (stale config hides nothing).
   // An entry with `files` globs only suppresses findings under those paths.
-  let suppressionCount = 0;
-  if (workspace) {
-    const { config } = loadConfig(workspace.root);
-    applySeverityOverrides(findings, config);
-    const suppressions = loadSuppressions(workspace.root);
-    const active = suppressions.entries.filter((e) => e.status === "active");
-    suppressionCount = active.length;
-    if (active.length > 0) {
-      const ruleOnly = new Set(
-        active.filter((e) => !e.files?.length).map((e) => e.ruleId),
+  let suppressionCount: number;
+  const { config, warnings } = loadConfig(workspace.root, {
+    knownRuleIds: KNOWN_RULE_IDS,
+  });
+  for (const w of warnings) hooks.onConfigWarning?.(w);
+  applySeverityOverrides(findings, config);
+  const suppressions = loadSuppressions(workspace.root);
+  const active = suppressions.entries.filter((e) => e.status === "active");
+  suppressionCount = active.length;
+  if (active.length > 0) {
+    const ruleOnly = new Set(
+      active.filter((e) => !e.files?.length).map((e) => e.ruleId),
+    );
+    const kept = findings.filter((f) => {
+      if (ruleOnly.has(f.ruleId)) return false;
+      return !active.some(
+        (e) =>
+          e.files?.length &&
+          e.ruleId === f.ruleId &&
+          e.files.some((g) => pathMatchesGlob(f.file, g)),
       );
-      const kept = findings.filter((f) => {
-        if (ruleOnly.has(f.ruleId)) return false;
-        return !active.some(
-          (e) =>
-            e.files?.length &&
-            e.ruleId === f.ruleId &&
-            e.files.some((g) => pathMatchesGlob(f.file, g)),
-        );
-      });
-      findings.length = 0;
-      findings.push(...kept);
-    }
+    });
+    findings.length = 0;
+    findings.push(...kept);
   }
 
   findings.sort(compareFindings);
@@ -552,24 +591,48 @@ export type Output = (...parts: unknown[]) => void;
 const out: Output = (line) => console.log(line);
 const err: Output = (line) => console.error(line);
 
-/**
- * Minimal glob match for suppression `files` patterns. Supports:
- *   "tests/**"  — everything under tests/
- *   "**‍/*.spec.ts" — any depth ending pattern
- *   "tests/foo.spec.ts" — exact path
- * Forward slashes only (findings always use normalized paths).
- */
+// Minimal glob match for suppression `files` patterns, with gitignore
+// `**` semantics (bug-audit M5). Supports:
+//   "tests/**"             — everything inside tests/
+//   "tests" + "/**/*.spec.ts" — any depth UNDER tests/ (including none) ending in .spec.ts
+//   "**" + "/*.spec.ts"    — any depth including root-level files
+//   "tests/foo.spec.ts"    — exact path
+//   "*" within a segment never crosses "/".
+//
+// Forward slashes only (findings always use normalized paths). `?`,
+// character classes and `!` negation are not metacharacters here — same
+// as before this rewrite.
 export function pathMatchesGlob(path: string, glob: string): boolean {
-  // Single-pass tokenizer: split on "**" first, escape the literal
-  // segments, then rejoin with the right wildcards. Avoids the
-  // replaceAll ordering bugs of multi-pass approaches.
-  const parts = glob.split("**");
-  const pattern = parts
-    .map((p) =>
-      p.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replaceAll("*", "[^/]*"),
-    )
-    .join(".*");
-  return new RegExp(`^${pattern}$`).test(path);
+  // Bug-audit QA-2026-08-30 QA-8: normalize BOTH sides to forward
+  // slashes. Finding paths are already normalized by the walker, but a
+  // suppression `files` pattern written on Windows ("e2e\\x.spec.ts")
+  // compiled to a literal-backslash regex that could never match any
+  // finding — the suppression silently never applied.
+  const p = path.replaceAll("\\", "/");
+  const segments = glob.replaceAll("\\", "/").split("/");
+  let re = "^";
+  for (const [i, segment] of segments.entries()) {
+    const last = i === segments.length - 1;
+    if (segment === "**") {
+      // A `**` segment matches ZERO or more whole path segments. The old
+      // split+join compiled it to `.*`, which (a) demanded ≥1 segment in
+      // `a/**/b`-shaped patterns and (b) made `tests/**/*.spec.ts` skip
+      // single-level paths — suppressions silently never matched.
+      if (last) {
+        // Trailing `**`: everything inside the prefix, never the prefix
+        // directory itself (gitignore semantics).
+        re += "(?:[^/]+/)*[^/]+";
+      } else {
+        re += "(?:[^/]+/)*";
+      }
+      continue;
+    }
+    re += segment
+      .replace(/[.+?^${}()|[\]\\]/g, "\\$&")
+      .replaceAll("*", "[^/]*");
+    if (!last) re += "/";
+  }
+  return new RegExp(`${re}$`).test(p);
 }
 
 /** Testable `ci install` handler. Returns the process exit code. */
@@ -577,27 +640,73 @@ export function runCiInstall(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
 ): number {
-  const gateArg = argv.includes("--gate")
-    ? argv[argv.indexOf("--gate") + 1]
-    : undefined;
+  let gateArg: string | undefined;
+  let gateSeen = false;
+  let force = false;
+  const unknown: string[] = [];
+  for (const arg of argv) {
+    if (arg === "--gate") {
+      gateSeen = true;
+    } else if (arg === "--force") {
+      force = true;
+    } else if (gateSeen && gateArg === undefined && !arg.startsWith("--")) {
+      gateArg = arg;
+    } else {
+      unknown.push(arg);
+    }
+  }
+  // Bug-audit L11: `--gate` as the final argument used to silently
+  // degrade to advisory — a typo'd invocation got the opposite gate the
+  // user asked for. A dangling `--gate` is a usage error instead.
+  if (gateSeen && gateArg === undefined) {
+    io.err("--gate requires a value. Use: advisory | error | warning");
+    return 10;
+  }
+  if (unknown.length > 0) {
+    io.err(`Unknown argument(s): ${unknown.join(" ")}`);
+    return 10;
+  }
   if (gateArg && !["advisory", "error", "warning"].includes(gateArg)) {
     io.err("Unknown gate level. Use: advisory | error | warning");
     return 10;
   }
-  const { written, existed } = ciInstall(
-    resolve("."),
-    (gateArg as GateLevel) ?? "advisory",
-  );
-  io.out(`${existed ? "Updated" : "Created"} ${written}`);
+  const result = ciInstall(resolve("."), (gateArg as GateLevel) ?? "advisory", {
+    force,
+  });
+  if (result.refused) {
+    // H2(e): the existing workflow differs from anything Mjölnir generates
+    // — it is hand-customized. Never silently overwrite it (the old code
+    // did, contradicting init's "existing files are never overwritten").
+    io.err(
+      `Refusing to overwrite the customized workflow at ${result.written}.`,
+    );
+    io.err("The file differs from the template Mjölnir would write:");
+    for (const line of result.diffSummary) io.err(line);
+    io.err("Re-run with --force to replace it with the generated template.");
+    return 10;
+  }
+  io.out(`${result.existed ? "Updated" : "Created"} ${result.written}`);
   io.out("Default mode: advisory — findings reported, never blocking.");
   io.out("Change with: mjolnir ci install --gate error|warning|advisory");
   return 0;
 }
 
 /** Testable `suppressions` handler. */
-export function runSuppressions(io: { out: Output } = { out }): number {
-  io.out(renderSuppressions(loadSuppressions(resolve("."))));
-  return 0;
+export function runSuppressions(
+  io: { out: Output; err?: Output } = { out },
+): number {
+  try {
+    io.out(renderSuppressions(loadSuppressions(resolve("."))));
+    return 0;
+  } catch (e) {
+    // Bug-audit M6: a corrupted config must not render as an empty (and
+    // silently unenforcing) report — surface it on the usage-error path.
+    if (e instanceof ConfigValidationError) {
+      (io.err ?? err)(e.message);
+      return 10;
+    }
+    throw e;
+  }
 }
 
 /** Testable `forensics` handler. */
@@ -645,8 +754,17 @@ export function runDoctorPlaywright(
   const target = resolve(targetArg);
   const invalid = validateScanTarget(target, io.err ?? err);
   if (invalid !== null) return invalid;
-  const args = parseArgs([target]);
-  if (!args) return 10;
+  // A resolved absolute path is never flag-like, so parseArgs([target])
+  // is exactly the defaults with target set — constructed directly, since
+  // a null-check here would be a dead branch v8 can never cover.
+  const args: CliArgs = {
+    target,
+    json: false,
+    verbose: false,
+    maxDurationMs: Number.POSITIVE_INFINITY,
+    scopeChanged: false,
+    format: "terminal",
+  };
   const result = runScan({ ...args, target });
   const pwFindings = result.findings.filter((f) => f.category === "QA-PW");
   io.out(
@@ -783,17 +901,21 @@ export function runScanCommand(
   try {
     // Audit R-9: collect swallowed rule crashes; --debug prints them.
     const crashLog: string[] = [];
+    // Bug-audit M4: non-fatal config warnings reach stderr in every mode.
     const result = runScan(
       { ...args, target },
-      args.debug
-        ? {
-            onRuleCrash: (ruleId, file, error) => {
-              crashLog.push(
-                `${ruleId} crashed on ${file}: ${error instanceof Error ? error.message : String(error)}`,
-              );
-            },
-          }
-        : {},
+      {
+        onConfigWarning: (message) => io.err(message),
+        ...(args.debug
+          ? {
+              onRuleCrash: (ruleId: string, file: string, error: unknown) => {
+                crashLog.push(
+                  `${ruleId} crashed on ${file}: ${error instanceof Error ? error.message : String(error)}`,
+                );
+              },
+            }
+          : {}),
+      },
     );
     if (args.debug && crashLog.length > 0) {
       io.err(
@@ -866,9 +988,18 @@ export function runScanCommand(
     if (result.partial) return 2;
     // Audit H-7: config.gate is live. "advisory" never blocks,
     // "warning" also blocks on warnings, "error" (default) on errors.
-    const { config } = loadConfig(target);
+    const { config, warnings } = loadConfig(target, {
+      knownRuleIds: KNOWN_RULE_IDS,
+    });
+    for (const w of warnings) io.err(w);
     return exitForFindings(result.findings, config.gate ?? "error");
   } catch (err) {
+    // Bug-audit M4: a config typo is a user error with an actionable
+    // message — usage exit 10, not "internal error" exit 20.
+    if (err instanceof ConfigValidationError) {
+      io.err(err.message);
+      return 10;
+    }
     io.err(
       "mjolnir internal error:",
       err instanceof Error ? err.message : String(err),
@@ -914,7 +1045,14 @@ export function runTriageCommand(
     // Only write TRIAGE.md when there's something to triage AND the
     // target dir exists — a missing dir must degrade honestly, not crash.
     if (!argv.includes("--no-md") && report.totalTests > 0) {
-      const mdPath = resolve(join(targetArg, "TRIAGE.md"));
+      // Bug-audit M1: the documented `mjolnir triage <report-file>` joined
+      // the FILE path with "TRIAGE.md" → `<file>/TRIAGE.md` is not a
+      // directory → writeFileSync threw → "internal error" exit 20 after
+      // a successful parse. Write next to the file target instead.
+      const absTarget = resolve(targetArg);
+      const mdPath = statSync(absTarget).isDirectory()
+        ? join(absTarget, "TRIAGE.md")
+        : join(dirname(absTarget), "TRIAGE.md");
       writeFileSync(mdPath, renderTriageMd(report));
       io.out(`\nWrote ${mdPath}`);
     }
@@ -1107,8 +1245,14 @@ export function runBaselineCommand(
     if (invalid !== null) return invalid;
     const result = runScan({ ...args, target });
     const outPath = join(target, DEFAULT_BASELINE_PATH);
-    saveBaseline(result, currentCommit(target), outPath);
-    io.out(renderBaselineSaved(DEFAULT_BASELINE_PATH, result.findings.length));
+    const saved = saveBaseline(result, currentCommit(target), outPath);
+    io.out(
+      renderBaselineSaved(DEFAULT_BASELINE_PATH, result.findings.length, {
+        ...(saved.backupPath !== undefined
+          ? { backupPath: saved.backupPath }
+          : {}),
+      }),
+    );
     return 0;
   } catch (err) {
     io.err(
@@ -1278,7 +1422,7 @@ export function runInitCommand(
       ? {
           root: rootDir,
           name: String(pkg["name"] ?? "repo"),
-          packageJson: pkg as Record<string, unknown>,
+          packageJson: pkg,
           workspaceGlobs: [],
         }
       : null;
@@ -1409,7 +1553,9 @@ Options:
   -h, --help            show this help
 
 Subcommands — everyday:
-  ci install [--gate advisory|error|warning]   generate the PR workflow
+  ci install [--gate advisory|error|warning] [--force]
+                                   generate the PR workflow; --force overwrites
+                                   a hand-customized one (default: refuse)
   explain <RULE-ID> [--fixtures-root <dir>]     what/why/fix + measured FP rate
   rules [--md] [--unmeasured|--measured]        rule catalog with trust metadata
   suppressions                                  list suppressed findings

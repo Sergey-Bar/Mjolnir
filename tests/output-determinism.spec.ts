@@ -74,7 +74,7 @@ describe("Finding.file path normalization", () => {
     const result = scan();
     for (const f of result.findings) {
       expect(f.file.startsWith("/")).toBe(false);
-      expect(/^[A-Za-z]:/.test(f.file)).toBe(false);
+      expect(/^[A-Z]:/i.test(f.file)).toBe(false);
     }
   });
 });

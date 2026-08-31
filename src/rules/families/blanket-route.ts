@@ -41,7 +41,7 @@ function makeBlanketRoute(
       const re = new RegExp(pattern.source, pattern.flags);
       let m: RegExpExecArray | null;
       while ((m = re.exec(text)) !== null) {
-        const routePattern = m[1] ?? "";
+        const routePattern = m[1] as string;
         if (/^\*\*(?:\/\*)?$/.test(routePattern) || routePattern === "**/*") {
           findings.push({
             severity: "warning",

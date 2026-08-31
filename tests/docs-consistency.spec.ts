@@ -119,16 +119,23 @@ describe("no doc claims a gap that source contradicts", () => {
       join(ROOT, ".github", "workflows", "ci.yml"),
       "utf8",
     );
+    // "Wired in" now includes the dedicated weekly SARIF workflow —
+    // upload-sarif runs there, not in the PR-blocking ci.yml.
+    const sarifWorkflow = readFileSync(
+      join(ROOT, ".github", "workflows", "sarif-code-scanning.yml"),
+      "utf8",
+    );
     const claimsAlreadyWired =
       /already (covered|wired|running)/i.test(sarifDoc) &&
       /upload-sarif/i.test(sarifDoc);
-    const actuallyWired = /upload-sarif/i.test(ci);
+    const actuallyWired =
+      /upload-sarif/i.test(ci) || /upload-sarif/i.test(sarifWorkflow);
     if (claimsAlreadyWired) {
       expect(
         actuallyWired,
         "docs/SARIF-INTEGRATION.md claims Code Scanning upload is " +
-          "already running in ci.yml, but ci.yml contains no " +
-          "upload-sarif step.",
+          "already running, but neither ci.yml nor " +
+          "sarif-code-scanning.yml contains an upload-sarif step.",
       ).toBe(true);
     }
   });
@@ -226,7 +233,8 @@ describe("every documented `npm run` command actually exists", () => {
 
   // Fixtures, the golden repo and archived plans deliberately contain
   // invented script names as test data or historical record — they are
-  // not instructions to a reader.
+  // not instructions to a reader. site/ has its own package.json whose
+  // scripts (prebuild/predev/gen) are checked by its own toolchain.
   const EXCLUDED = [
     "tests/fixtures/",
     "tests/golden/",
@@ -234,6 +242,7 @@ describe("every documented `npm run` command actually exists", () => {
     "node_modules/",
     "dist/",
     "coverage/",
+    "site/",
     ".planning/Tempering",
   ];
 
@@ -275,5 +284,56 @@ describe("every documented `npm run` command actually exists", () => {
         "in package.json — either the script was renamed and the doc was " +
         "not, or the command was never real",
     ).toEqual([]);
+  });
+});
+
+describe("the north-star law is committed, not just cited", () => {
+  // Strategic-review finding F0: the governing law was quoted by
+  // doctor.ts, FP-AUDIT.md, copilot-instructions.md and the planning
+  // docs while living in no committed file — an unversioned conscience
+  // for a product whose entire thesis is provenance. The law file must
+  // exist, carry the exact quoted sentence, and stay in sync with the
+  // code that enforces it.
+  const LAW =
+    "Rules without a measured FP rate (n ≥ 10) cannot ship in the core tier";
+  // Collapse whitespace AND strip `*` decoration, so a citation of the
+  // sentence inside a block comment (doctor.ts's Law #3 note wraps it
+  // across lines) still matches after normalization.
+  const normalize = (s: string) => s.replace(/\*/g, " ").replace(/\s+/g, " ");
+
+  let claude: string;
+  try {
+    claude = readFileSync(join(ROOT, "CLAUDE.md"), "utf8");
+  } catch {
+    throw new Error(
+      "CLAUDE.md is missing — the north-star law must be committed, " +
+        "not just cited (strategic-review finding F0).",
+    );
+  }
+
+  it("CLAUDE.md exists and states the north-star law verbatim", () => {
+    expect(normalize(claude)).toContain(LAW);
+  });
+
+  it("CLAUDE.md states the north-star metric the law serves", () => {
+    expect(claude).toContain("false-proof rate ≈ 0");
+  });
+
+  it("doctor.ts's Law #3 citation still quotes the same sentence", () => {
+    const doctor = readFileSync(
+      join(ROOT, "src", "commands", "doctor.ts"),
+      "utf8",
+    );
+    expect(normalize(doctor)).toContain(LAW);
+  });
+
+  it("copilot-instructions.md still carries the same laws (canonical-copy sync)", () => {
+    const copilot = readFileSync(
+      join(ROOT, ".github", "copilot-instructions.md"),
+      "utf8",
+    );
+    expect(copilot).toContain("false-proof rate ≈ 0");
+    expect(copilot).toContain("equal-size removal");
+    expect(copilot).toContain("must-fire AND must-not-fire");
   });
 });

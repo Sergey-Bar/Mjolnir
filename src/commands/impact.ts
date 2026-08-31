@@ -43,6 +43,13 @@ export interface ImpactReport {
   unknownReason?: string;
   baseRef?: string;
   headRef?: string;
+  /**
+   * Present only when the base tree listing exceeded the file cap
+   * (bug-audit M9): paths beyond the cap were NEVER scanned at base, so
+   * findings that exist only there are misreported as new debt. Named
+   * in the report instead of silently truncating.
+   */
+  baseTreeTruncated?: { scanned: number; total: number };
   /** Anti-patterns present at baseRef, gone now — real, evidence-backed fixes. */
   resolved: ImpactFinding[];
   /** Anti-patterns present now, absent at baseRef — new debt since baseRef. */
@@ -60,6 +67,21 @@ function git(root: string, args: string[]): string | null {
   try {
     return execFileSync("git", ["-C", root, ...args], {
       encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+      timeout: 30_000,
+    });
+  } catch {
+    return null;
+  }
+}
+
+/** Like git(), but returns the raw bytes — no utf8 decode round-trip. */
+function gitBuffer(root: string, args: string[]): Buffer | null {
+  try {
+    return execFileSync("git", ["-C", root, ...args], {
+      // "buffer" makes stdout a Buffer: base blobs are written byte-exact,
+      // so non-UTF8 files compare honestly (bug-audit M9).
+      encoding: "buffer",
       stdio: ["ignore", "pipe", "ignore"],
       timeout: 30_000,
     });
@@ -142,10 +164,23 @@ export function computeImpact(
   // Then scan it with the exact same rule engine used for the current
   // scan: the only way to get an honest historical finding set without
   // reimplementing the engine against raw blobs.
-  let tmpDir: string | undefined;
-  let baseResult: ScanResult;
+  let tmpDir: string;
   try {
     tmpDir = mkdtempSync(join(tmpdir(), "mjolnir-impact-"));
+  } catch {
+    return {
+      hasComparison: false,
+      unknownReason: "tree-materialize-failed",
+      baseRef,
+      headRef,
+      resolved: [],
+      introduced: [],
+      unknownFacts,
+    };
+  }
+  let baseResult: ScanResult;
+  let baseTreeTruncated: { scanned: number; total: number } | undefined;
+  try {
     const treeListing = git(root, [
       "ls-tree",
       "-r",
@@ -166,14 +201,29 @@ export function computeImpact(
     }
     const paths = treeListing.split("\0").filter(Boolean);
     // Bound the amount of work for very large repos — this is a supporting
-    // diagnostic command, not the primary scan path.
+    // diagnostic command, not the primary scan path. Bug-audit M9: the
+    // truncation used to be SILENT — files beyond the cap were never
+    // scanned at base, so every current finding there was misreported as
+    // "NEW DEBT". The truncation is now named in the report.
     const MAX_FILES = 20_000;
+    const truncated = paths.length > MAX_FILES;
     for (const relPath of paths.slice(0, MAX_FILES)) {
-      const blob = git(root, ["show", `${baseRef}:${relPath}`]);
-      if (blob === null) continue; // binary/undecodable — skip, not fatal
+      const blob = gitBuffer(root, ["show", `${baseRef}:${relPath}`]);
+      if (blob === null) continue; // git failed (rare) — skip, not fatal
       const dest = join(tmpDir, relPath);
       mkdirSync(dirname(dest), { recursive: true });
       writeFileSync(dest, blob);
+    }
+    if (truncated) {
+      baseTreeTruncated = {
+        scanned: Math.min(paths.length, MAX_FILES),
+        total: paths.length,
+      };
+      unknownFacts.push(
+        `Base tree materialization truncated at ${MAX_FILES} of ${paths.length} paths — ` +
+          "files beyond the cap were never scanned at base, so findings that exist " +
+          "only there are misreported here as new debt.",
+      );
     }
     baseResult = options.runScan(tmpDir);
   } catch {
@@ -187,12 +237,10 @@ export function computeImpact(
       unknownFacts,
     };
   } finally {
-    if (tmpDir) {
-      try {
-        rmSync(tmpDir, { recursive: true, force: true });
-      } catch {
-        /* best-effort cleanup */
-      }
+    try {
+      rmSync(tmpDir, { recursive: true, force: true });
+    } catch {
+      /* best-effort cleanup */
     }
   }
 
@@ -220,6 +268,7 @@ export function computeImpact(
     hasComparison: true,
     baseRef,
     headRef,
+    ...(baseTreeTruncated ? { baseTreeTruncated } : {}),
     resolved: resolved.sort((a, b) => a.file.localeCompare(b.file)),
     introduced: introduced.sort((a, b) => a.file.localeCompare(b.file)),
     unknownFacts,
@@ -248,6 +297,17 @@ export function renderImpact(report: ImpactReport): string {
     `Comparing ${report.baseRef?.slice(0, 12)} → ${report.headRef?.slice(0, 12)}`,
   );
   lines.push("");
+
+  // Bug-audit M9: truncation is named, never silent.
+  if (report.baseTreeTruncated) {
+    lines.push(
+      `UNKNOWN: base tree truncated — scanned ${report.baseTreeTruncated.scanned} of ${report.baseTreeTruncated.total} paths.`,
+    );
+    lines.push(
+      "Files beyond the cap were never scanned at base; their findings are misreported as new debt.",
+    );
+    lines.push("");
+  }
 
   if (report.resolved.length === 0) {
     lines.push("FIXED SINCE BASE: none found.");

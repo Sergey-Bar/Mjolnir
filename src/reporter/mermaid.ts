@@ -20,7 +20,7 @@ import type { DimensionScore, ScanResult, Severity } from "../types.js";
 function sanitizeId(raw: string): string {
   // Mermaid node IDs can't contain most punctuation — collapse anything
   // non-alphanumeric to underscores, deterministically.
-  return raw.replace(/[^a-zA-Z0-9]/g, "_");
+  return raw.replace(/[^a-z0-9]/gi, "_");
 }
 
 /** Escape characters that would break a Mermaid node label. */

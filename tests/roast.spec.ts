@@ -15,7 +15,8 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { runScanCommand } from "../src/cli.js";
-import { bluntMessage } from "../src/reporter/tone-blunt.js";
+import { bluntMessage, BLUNT_RULE_IDS } from "../src/reporter/tone-blunt.js";
+import { RULES } from "../src/rules/index.js";
 import type { Finding } from "../src/types.js";
 
 const dirs: string[] = [];
@@ -173,5 +174,72 @@ describe("bluntMessage — unit coverage", () => {
       finding({ ruleId: "QA-CI-002", file: "alice-workflow.yml" }),
     );
     expect(msg).not.toContain("alice");
+  });
+});
+
+describe("blunt map is aligned with the rule registry (bug-audit M8)", () => {
+  const REGISTERED = new Set(RULES.map((r) => r.id));
+
+  function finding(overrides: Partial<Finding>): Finding {
+    return {
+      ruleId: "QA-PW-101",
+      category: "QA-PW",
+      severity: "warning",
+      confidence: "high",
+      findingType: "deterministic-defect",
+      qaImpact: "FLAKY-RISK",
+      evidenceLevel: "E2",
+      file: "e2e/a.spec.ts",
+      line: 4,
+      column: 3,
+      message: "Hard sleep detected",
+      why: "why",
+      fix: "fix",
+      ...overrides,
+    };
+  }
+
+  function bluntTextFor(ruleId: string): string | undefined {
+    // bluntMessage falls back for unmapped rules; detect a mapped entry
+    // by checking the fallback suffix is absent.
+    const msg = bluntMessage(finding({ ruleId, message: "SENTINEL" }));
+    return msg.includes("SENTINEL — fix it or suppress it") ? undefined : msg;
+  }
+
+  const RULE_TITLES = new Map(RULES.map((r) => [r.id, r.title]));
+
+  // The previously-stale entries: the blunt text must now describe the
+  // defect the RULE actually detects (keyword from the rule's own title).
+  const FAMILY_SPOT_CHECKS: Array<[string, RegExp]> = [
+    ["QA-PW-104", /trial/i], // old text mocked test.only
+    ["QA-PW-105", /poll/i], // old text described hardcoded URLs
+    ["QA-PW-112", /testid/i], // old text described CSS class selectors
+    ["QA-PW-119", /order|conga|runs first/i], // old text described shared page
+    ["QA-TEST-006", /retr/i], // old text described empty bodies
+    ["QA-TQUAL-001", /mock/i], // old text described no-assertions
+    ["QA-TQUAL-002", /proven|true/i], // old text described mock-only
+    ["QA-PW-140", /screenshot|pixel/i], // old text described no-assertions
+    ["QA-PW-115", /shared/i], // the shared-page text lives here now
+    ["QA-PW-118", /network idle|race/i],
+  ];
+
+  for (const [ruleId, pattern] of FAMILY_SPOT_CHECKS) {
+    it(`${ruleId}'s blunt text describes its actual defect (title: "${RULE_TITLES.get(ruleId) ?? "UNREGISTERED"}")`, () => {
+      const text = bluntTextFor(ruleId);
+      expect(text, `${ruleId} has no blunt entry`).toBeDefined();
+      expect(text).toMatch(pattern);
+    });
+  }
+
+  it("every blunt map key is a registered rule ID — no dead keys (M8)", () => {
+    // Dead keys (QA-TQUAL-003, QA-TEST-005 historically) mock defects for
+    // rules that never existed and silently fall through to the default.
+    expect(BLUNT_RULE_IDS.length).toBeGreaterThan(30);
+    for (const key of BLUNT_RULE_IDS) {
+      expect(
+        REGISTERED.has(key),
+        `blunt map key "${key}" matches no registered rule`,
+      ).toBe(true);
+    }
   });
 });

@@ -26,13 +26,14 @@ export function collectTestNames(path: string, text: string): string[] {
   if (path.endsWith(".py")) {
     let m: RegExpExecArray | null;
     const re = new RegExp(PY_TEST_NAME_RE.source, "gm");
-    while ((m = re.exec(text)) !== null) names.push(m[1] ?? "");
+    while ((m = re.exec(text)) !== null) names.push(m[1] as string);
     return names;
   }
   if (/\.(?:spec|test)\.[tj]sx?$/.test(path)) {
     let m: RegExpExecArray | null;
     const re = new RegExp(JS_TEST_NAME_RE.source, "g");
-    while ((m = re.exec(text)) !== null) names.push(m[1] ?? "");
+    // The capture group uses a + quantifier, so every match carries it.
+    while ((m = re.exec(text)) !== null) names.push(m[1] as string);
   }
   return names;
 }

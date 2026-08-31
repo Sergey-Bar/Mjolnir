@@ -98,7 +98,34 @@ export function loadStats(path: string): StatsFile | null {
       parsed !== null &&
       "resolvedByRule" in parsed
     ) {
-      return parsed as StatsFile;
+      const file = parsed as StatsFile;
+      // Bug-audit QA-2026-08-30 QA-12 (totality, M3-style): the file is
+      // arbitrary local JSON — hostile shapes must not leak junk into
+      // counts (string values once concatenated "010"-style in
+      // renderStats) or NaN the totals. Coerce defensively; the stored
+      // file is rewritten from the sanitized shape on next save.
+      file.resolvedByRule = Object.fromEntries(
+        Object.entries(
+          typeof file.resolvedByRule === "object" &&
+            file.resolvedByRule !== null
+            ? file.resolvedByRule
+            : {},
+        ).filter(
+          (entry): entry is [string, number] =>
+            typeof entry[1] === "number" && Number.isFinite(entry[1]),
+        ),
+      );
+      if (
+        typeof file.recordedFixEvents !== "number" ||
+        !Number.isFinite(file.recordedFixEvents) ||
+        file.recordedFixEvents < 0
+      ) {
+        file.recordedFixEvents = 0;
+      }
+      if (typeof file.trackingSince !== "string") {
+        file.trackingSince = "unknown";
+      }
+      return file;
     }
     return null;
   } catch {

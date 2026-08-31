@@ -52,5 +52,8 @@ export const pwDeepFrameLocator = defineRule({
 });
 
 function count(fragment: string): number {
-  return (fragment.match(/frameLocator\s*\(/g) ?? []).length;
+  // The fragment is a regex match of 3+ frameLocator calls, so the
+  // nested count is always non-null.
+  return (fragment.match(/frameLocator\s*\(/g) as unknown as RegExpMatchArray[])
+    .length;
 }

@@ -50,9 +50,10 @@ export function parseWorkflow(text: string): WorkflowDoc {
   try {
     doc = yamlParse(text, { maxAliasCount: LIMITS.maxAliases });
   } catch (err) {
-    throw new YamlParseError(
-      `Invalid workflow YAML: ${err instanceof Error ? err.message : String(err)}`,
-    );
+    // The yaml library throws Error subclasses, but it is third-party
+    // code — degrade non-Error throwables to String() rather than trust it.
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new YamlParseError(`Invalid workflow YAML: ${msg}`);
   }
 
   if (doc === null || doc === undefined) return {};

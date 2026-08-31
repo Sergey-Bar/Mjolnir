@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
+  ConfigValidationError,
   applySeverityOverrides,
   isSuppressionActive,
   loadConfig,
@@ -23,7 +24,7 @@ afterEach(() => {
 
 describe("loadConfig", () => {
   it("returns empty config when no file present", () => {
-    expect(loadConfig(dir)).toEqual({ config: {}, path: null });
+    expect(loadConfig(dir)).toEqual({ config: {}, path: null, warnings: [] });
   });
 
   it("loads mjolnir.config.json", () => {
@@ -72,6 +73,47 @@ describe("loadConfig", () => {
     );
     expect(() => loadConfig(dir)).toThrow(/reason/);
   });
+
+  it("throws an actionable ConfigValidationError on a typo'd severityOverrides value (bug-audit M4)", () => {
+    // "eror" used to flow through to DEDUCTIONS[bad] = undefined → NaN
+    // score, and exitForFindings never matched the bogus severity, so the
+    // rule was silently un-gated.
+    writeFileSync(
+      join(dir, "mjolnir.config.json"),
+      JSON.stringify({ severityOverrides: { "QA-TEST-001": "eror" } }),
+    );
+    let thrown: unknown;
+    try {
+      loadConfig(dir);
+    } catch (e) {
+      thrown = e;
+    }
+    expect(thrown).toBeInstanceOf(ConfigValidationError);
+    expect((thrown as Error).message).toContain("severityOverrides");
+    expect((thrown as Error).message).toContain("eror");
+    expect((thrown as Error).message).toContain("error|warning|info");
+  });
+
+  it("keeps unknown rule IDs in severityOverrides but warns when knownRuleIds is provided (M4)", () => {
+    writeFileSync(
+      join(dir, "mjolnir.config.json"),
+      JSON.stringify({ severityOverrides: { "QA-NOPE-999": "warning" } }),
+    );
+    const res = loadConfig(dir, {
+      knownRuleIds: new Set(["QA-TEST-001"]),
+    });
+    expect(res.config.severityOverrides?.["QA-NOPE-999"]).toBe("warning");
+    expect(res.warnings.join("\n")).toContain("QA-NOPE-999");
+    expect(res.warnings.join("\n")).toContain("no registered rule");
+  });
+
+  it("does not warn about unknown rule IDs when knownRuleIds is not provided", () => {
+    writeFileSync(
+      join(dir, "mjolnir.config.json"),
+      JSON.stringify({ severityOverrides: { "QA-PLUGIN-RULE": "info" } }),
+    );
+    expect(loadConfig(dir).warnings).toEqual([]);
+  });
 });
 
 describe("isSuppressionActive", () => {
@@ -112,6 +154,16 @@ describe("applySeverityOverrides", () => {
     expect(findings[0]?.severity).toBe("warning");
     expect(findings[1]?.severity).toBe("error");
   });
+
+  it("never applies an invalid severity from a programmatically-built config (M4 defense in depth)", () => {
+    const findings = [{ ruleId: "A", severity: "error" as const }];
+    applySeverityOverrides(findings, {
+      severityOverrides: { A: "eror" } as unknown as Record<string, "error">,
+    });
+    // An invalid override must be ignored, not applied — applying it used
+    // to NaN the score and un-gate the rule.
+    expect(findings[0]?.severity).toBe("error");
+  });
 });
 
 describe("suppressions report", () => {
@@ -140,9 +192,26 @@ describe("suppressions report", () => {
     expect(rep.expired).toBe(1);
   });
 
-  it("returns empty on unreadable config", () => {
+  it("enforces suppressions in the alternate .mjolnir.json config name too (bug-audit M6)", () => {
+    // loadSuppressions used to read only mjolnir.config.json — entries in
+    // the alternate name were silently unenforced.
+    writeFileSync(
+      join(dir, ".mjolnir.json"),
+      JSON.stringify({
+        ignore: [{ ruleId: "QA-C", reason: "tracked in the other name" }],
+      }),
+    );
+    const rep = loadSuppressions(dir);
+    expect(rep.total).toBe(1);
+    expect(rep.active).toBe(1);
+  });
+
+  it("propagates a corrupted config instead of lying with an empty report (bug-audit M6)", () => {
+    // The old swallow turned `{ broken` into total: 0 — so
+    // `mjolnir suppressions` printed "Full transparency maintained."
+    // while the scan path failed loudly on the same file.
     writeFileSync(join(dir, "mjolnir.config.json"), "{ broken");
-    expect(loadSuppressions(dir).total).toBe(0);
+    expect(() => loadSuppressions(dir)).toThrow(ConfigValidationError);
   });
 });
 

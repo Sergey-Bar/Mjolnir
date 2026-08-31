@@ -33,7 +33,7 @@ export const pwWaitForLoadEvent = defineRule({
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
     const re =
-      /(?:waitForEvent\s*\(\s*['"]load['"]|waitForLoadState\s*\(\s*['"]load['"])/g;
+      /waitForEvent\s*\(\s*['"]load['"]|waitForLoadState\s*\(\s*['"]load['"]/g;
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {
       findings.push({

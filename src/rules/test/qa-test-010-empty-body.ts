@@ -35,7 +35,7 @@ export const emptyTestBody = defineRule({
     // Matches it/test/describe-with-it whose callback is empty or comment-only:
     // `it('x', () => {})` / `it('x', () => { /* nothing */ })`
     const re =
-      /\b(?:it|test)\s*\(\s*['"`][^'"`]*['"`]\s*,\s*(?:async\s*)?\([^)]*\)\s*=>\s*\{\s*(?:\/\*[\s\S]*?\*\/|\/\/[^\n]*)?\s*\}\s*\)/g;
+      /\b(?:it|test)\s*\(\s*['"`][^'"`]*['"`]\s*,\s*(?:async\s*)?\([^)]*\)\s*=>\s*\{\s*(?:(?:\/\*[\s\S]*?\*\/|\/\/[^\n]*)\s*)?\}\s*\)/g;
 
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {

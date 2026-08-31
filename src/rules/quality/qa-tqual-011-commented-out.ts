@@ -89,8 +89,8 @@ function stripCommentMarkers(line: string): {
   matched: boolean;
 } {
   // <leading ws><marker><ws>  where marker is // , /**, /*, or a * gutter.
-  const m = /^(\s*)(\/\/+|\/\*\*?|\*)?(\s*)/.exec(line);
-  if (!m) return { text: line, consumed: 0, matched: false };
+  // Every part is optional/zero-width, so exec always matches.
+  const m = /^(\s*)(\/{2,}|\/\*\*?|\*)?(\s*)/.exec(line) as RegExpExecArray;
   const consumed = m[0].length;
   return {
     text: line.slice(consumed),

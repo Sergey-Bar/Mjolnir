@@ -59,7 +59,8 @@ export function renderPwRunSummary(s: PwRunSummary): string {
   }
   const secs = (s.wallTimeMs / 1000).toFixed(1);
   lines.push(`⏱ total test time: ${secs}s`);
-  if (s.slowest.length > 0 && (s.slowest[0]?.ms ?? 0) > 0) {
+  // slowest.length > 0 above guarantees the first element exists.
+  if (s.slowest.length > 0 && (s.slowest[0] as { ms: number }).ms > 0) {
     lines.push("");
     lines.push("Slowest:");
     for (const t of s.slowest.slice(0, 3)) {

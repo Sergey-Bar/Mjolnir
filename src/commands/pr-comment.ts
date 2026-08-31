@@ -17,13 +17,25 @@
 
 import type { Finding, ScanResult } from "../types.js";
 import type { BaselineDiff } from "./baseline.js";
+import { sanitizeData } from "../reporter/theme.js";
 
 const MARKER = "<!-- mjolnir-pr-comment -->";
+
+/**
+ * Bug-audit QA-2026-08-30 QA-10: finding metadata rendered into the PR
+ * comment body is untrusted (hostile filenames, plugin messages). A raw
+ * `|` breaks the markdown layout, a raw backtick escapes the code span,
+ * and `</script>`/link syntax could inject content into the PR page.
+ * Escape markdown-significant characters and strip control/ANSI escapes.
+ */
+function escapeMarkdown(s: string): string {
+  return sanitizeData(s).replace(/([\\`*_{}[\]()#+!|<>])/g, "\\$1");
+}
 
 function findingLine(f: Finding): string {
   const icon =
     f.severity === "error" ? "🔴" : f.severity === "warning" ? "🟡" : "🔵";
-  return `${icon} **${f.ruleId}** \`${f.file}:${f.line}\` — ${f.message}\n  _${f.fix}_`;
+  return `${icon} **${escapeMarkdown(f.ruleId)}** \`${escapeMarkdown(f.file)}:${f.line}\` — ${escapeMarkdown(f.message)}\n  _${escapeMarkdown(f.fix)}_`;
 }
 
 export interface PrCommentOptions {

@@ -22,13 +22,21 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         # tsdown requires ^22.18.0 || >=24.11.0 — Node 20 cannot build.
-        node: [22]
+        # Bug-audit G7: node 24 is the current LTS and inside the engines
+        # claim — one ubuntu canary keeps the >=22.18 promise honest
+        # without tripling the matrix.
+        node: [22, 24]
+        exclude:
+          - os: windows-latest
+            node: 24
+          - os: macos-latest
+            node: 24
     runs-on: ${{ matrix.os }}
     # Audit S-7: a hung npm ci or scan must not sit for the 6-hour default.
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ matrix.node }}
           cache: npm
@@ -36,13 +44,36 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test
-      # Coverage thresholds are enforced in CI, not just locally. Their
-      # absence here is why coverage silently fell from ~96% to 92.6%
-      # between releases. Run on one OS only — the thresholds are
-      # platform-independent and this keeps the 3-OS matrix fast.
-      - run: npm run test:coverage
+      # Bug-audit G11: moderate advisories are ignored at `high` — a
+      # steady drip of moderate-severity vulns is how a real supply-chain
+      # issue goes unnoticed between high ones.
+      - run: npm audit --audit-level=moderate
+      # Bug-audit G6: headroom must be measurable — the four percentages
+      # go into the job summary (and coverage/ is uploaded below) so the
+      # ratchet floors can be re-raised against measured numbers. Runs
+      # vitest with --coverage directly so the coverage run is visible
+      # as such (QA-CI-005 verifies this pairing on every self-scan).
+      - name: Run coverage (ubuntu only)
         if: matrix.os == 'ubuntu-latest'
-      - run: npm audit --audit-level=high
+        run: npx vitest run --coverage
+      - name: Report coverage floors in the job summary
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          node -e '
+          const fs = require("fs");
+          const s = JSON.parse(fs.readFileSync("coverage/coverage-summary.json", "utf8"));
+          const t = s.total;
+          const line = "Statements " + t.statements.pct + "% · Branches " + t.branches.pct + "% · Functions " + t.functions.pct + "% · Lines " + t.lines.pct + "%";
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, "## Coverage floors\n" + line + "\n");
+          console.log(line);
+          '
+      - name: Upload coverage report as a build artifact
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 14
 
   # Self-scan gate (§30.2 #7) — activates once rules exist.
   self-scan:
@@ -50,24 +81,70 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
           cache: npm
       - run: npm ci && npm run build
       - run: node dist/cli.mjs . --json > self-scan.json
-      - name: Fail on new errors in own repo
-        run: node -e "const r=require('./self-scan.json');const errs=r.findings.filter(f=>f.severity==='error');if(errs.length){console.error('Self-scan errors:',errs);process.exit(1)}"
+      # Bug-audit G8 (self-scan honesty gate): the old gate blocked only on
+      # error-severity findings — a TRUNCATED self-scan (partial: true) or
+      # one where rules crashed silently passed. A truncated self-scan of
+      # this tool's own repo is a pipeline bug, not a green run.
+      - name: Self-scan honesty gate
+        run: |
+          node -e "const r=require('./self-scan.json');if(r.partial===true){console.error('Self-scan was PARTIAL — a truncated scan must not pass the gate.');process.exit(1)}if((r.analysisStatus&&r.analysisStatus.rulesCrashed||0)>0){console.error('Self-scan had',r.analysisStatus.rulesCrashed,'rule crash(es) — crash isolation must never hide from the dogfood gate.');process.exit(1)}const errs=r.findings.filter(f=>f.severity==='error');if(errs.length){console.error('Self-scan errors:',errs);process.exit(1)}const warns=r.findings.filter(f=>f.severity==='warning');if(warns.length){console.log(warns.length+' warning(s) — non-blocking, see the uploaded artifact.')}"
+      - name: Add warning count to the job summary (non-blocking)
+        if: always()
+        run: |
+          node -e "const fs=require('fs');try{const r=JSON.parse(fs.readFileSync('self-scan.json','utf8'));const n=r.findings.filter(f=>f.severity==='warning').length;fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'Self-scan warnings (non-blocking) - '+n+'\n')}catch(e){}"
       - name: Generate badge artifact (Master-Stabilization-Plan Sprint 2 Task 11)
         continue-on-error: true
         run: node dist/cli.mjs badge .
       - name: Upload self-scan result as a build artifact
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: self-scan-result
           path: |
             self-scan.json
             mjolnir-badge.json
           retention-days: 90
+
+  # Bug-audit B4.31 (generated-docs drift gate): docs/rules pages, the
+  # COUNT-LOCK FP-audit table and the golden lock are GENERATED artifacts.
+  # If a rule change lands without re-running its generator, the committed
+  # docs silently drift from what the code actually does. This job
+  # regenerates everything and fails on any diff (same pattern as the
+  # hero-asset reproducibility test).
+  generated-docs-drift:
+    needs: build-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Regenerate docs, COUNT-LOCK table and golden lock
+        run: |
+          npm run docs:rules
+          npm run fp-audit:generate
+          npm run golden:update
+          npm run docs:hero
+          npm run docs:demo
+      - name: Fail when committed artifacts differ from regenerated ones
+        run: |
+          git diff --exit-code
+          # `git diff` cannot see UNTRACKED generated files (e.g. the
+          # docs/rules page of a newly added rule) — those would ship
+          # silently. Fail on any unexpected generated output too.
+          untracked="$(git ls-files --others --exclude-standard docs/rules docs/COUNT-LOCK.md docs/FP-AUDIT.md tests/golden assets/readme)"
+          if [ -n "$untracked" ]; then
+            echo "Untracked generated artifacts — commit them:"
+            echo "$untracked"
+            exit 1
+          fi

@@ -43,9 +43,9 @@ export const pwOrderDependence = defineRule({
     const shared = new Set<string>();
     let d: RegExpExecArray | null;
     while ((d = declRe.exec(text)) !== null) {
-      for (const name of (d[1] ?? "").split(",")) {
-        const n = name.trim();
-        if (n) shared.add(n);
+      for (const name of (d[1] as string).split(",")) {
+        // declRe requires [A-Za-z_$] before every comma-separated entry.
+        shared.add(name.trim());
       }
     }
 

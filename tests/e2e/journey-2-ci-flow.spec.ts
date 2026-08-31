@@ -1,0 +1,136 @@
+/**
+ * E2E journey 2 — CI PR flow: workflow install, changed-scope attribution
+ * against a real git fixture, degraded attribution, --base override.
+ */
+
+import {
+  mkdirSync,
+  mkdtempSync,
+  existsSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { execFileSync } from "node:child_process";
+
+import { runCli } from "./helpers.js";
+
+let dir: string;
+beforeEach(() => {
+  dir = mkdtempSync(join(tmpdir(), "mjolnir-e2e-ci-"));
+});
+afterEach(() => {
+  rmSync(dir, { recursive: true, force: true });
+});
+
+function git(args: string[]): void {
+  execFileSync("git", ["-C", dir, ...args], { stdio: "ignore" });
+}
+
+function commitAll(message: string): void {
+  git(["add", "."]);
+  git(["commit", "-m", message]);
+}
+
+function writeSpec(name: string, body: string): void {
+  mkdirSync(join(dir, "e2e"), { recursive: true });
+  writeFileSync(join(dir, "e2e", name), body);
+}
+
+const CLEAN = "it('a', () => { expect(1 + 1).toBe(2); });\n";
+const DEBT = "it.skip('a', () => {});\n";
+
+describe("E2E journey 2: CI PR flow", () => {
+  it("ci install writes a valid workflow file", () => {
+    const { stdout, status } = runCli(["ci", "install"], dir);
+    expect(status).toBe(0);
+    expect(stdout).toContain("ci");
+    const wf = join(dir, ".github", "workflows", "mjolnir.yml");
+    expect(existsSync(wf)).toBe(true);
+    const text = readFileSync(wf, "utf8");
+    expect(text).toContain("jobs:");
+    expect(text).toContain("on:");
+  });
+
+  it("--scope changed attributes findings only to changed lines on a branch", () => {
+    git(["init", "-b", "main"]);
+    git(["config", "user.email", "t@t"]);
+    git(["config", "user.name", "t"]);
+    writeSpec("clean.spec.ts", CLEAN);
+    writeFileSync(join(dir, "README.md"), "docs\n");
+    commitAll("clean base");
+    git(["checkout", "-b", "feat"]);
+    writeSpec("new-debt.spec.ts", DEBT);
+    commitAll("add debt");
+
+    const full = runCli([dir, "--json"]);
+    const changed = runCli([dir, "--json", "--scope", "changed"]);
+    expect(full.status).toBe(1);
+    expect(changed.status).toBe(1);
+    const fullResult = JSON.parse(full.stdout) as {
+      testDeclarationCount: number;
+      scope?: string;
+    };
+    const changedResult = JSON.parse(changed.stdout) as {
+      testDeclarationCount: number;
+      scope?: string;
+      scopeDegraded?: string;
+      findings: Array<{ file: string }>;
+    };
+    expect(fullResult.scope).toBeUndefined(); // full scan: no scope field
+    expect(changedResult.scope).toBe("changed");
+    expect(changedResult.scopeDegraded).toBeUndefined();
+    // The changed set contains only the new spec (README has no tests).
+    expect(changedResult.testDeclarationCount).toBeLessThan(
+      fullResult.testDeclarationCount,
+    );
+    for (const f of changedResult.findings) {
+      expect(f.file.startsWith("e2e/new-debt")).toBe(true);
+    }
+  });
+
+  it("degrades to full-file attribution when merge-base is unresolvable (detached HEAD)", () => {
+    git(["init", "-b", "main"]);
+    git(["config", "user.email", "t@t"]);
+    git(["config", "user.name", "t"]);
+    writeSpec("clean.spec.ts", CLEAN);
+    commitAll("base");
+    git(["checkout", "--detach", "HEAD"]);
+    // Leave no default branch behind: the merge-base becomes unresolvable.
+    git(["branch", "-D", "main"]);
+    const changed = runCli([dir, "--json", "--scope", "changed"]);
+    const result = JSON.parse(changed.stdout) as { scopeDegraded?: string };
+    expect(result.scopeDegraded).toBe("no-merge-base");
+  });
+
+  it("reports not-a-git-repo degradation for a plain directory", () => {
+    writeSpec("clean.spec.ts", CLEAN);
+    const changed = runCli([dir, "--json", "--scope", "changed"]);
+    const result = JSON.parse(changed.stdout) as { scopeDegraded?: string };
+    expect(result.scopeDegraded).toBe("not-a-git-repo");
+  });
+
+  it("--base overrides the default base branch", () => {
+    git(["init", "-b", "develop"]);
+    git(["config", "user.email", "t@t"]);
+    git(["config", "user.name", "t"]);
+    writeSpec("clean.spec.ts", CLEAN);
+    commitAll("develop base");
+    git(["checkout", "-b", "feat"]);
+    writeSpec("new-debt.spec.ts", DEBT);
+    commitAll("debt on feat");
+    const changed = runCli([
+      dir,
+      "--json",
+      "--scope",
+      "changed",
+      "--base",
+      "develop",
+    ]);
+    const result = JSON.parse(changed.stdout) as { scopeDegraded?: string };
+    expect(result.scopeDegraded).toBeUndefined();
+  });
+});

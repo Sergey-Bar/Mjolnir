@@ -42,6 +42,18 @@ const NETWORK_APIS = [
   /from\s+["'](node:)?(http|https|net|dgram|dns)["']/,
 ];
 
+// Bug-audit B4.26 (supply-chain ratchet): `eval`/`new Function` would let
+// a future dependency substitution (R3) turn any finding text, config
+// value or plugin export into executed code — and neither the eslint
+// security plugin nor type-checking can see through them. Same grep
+// mechanism, same granularity a reviewer uses.
+const DYNAMIC_CODE_APIS = [
+  /\beval\s*\(/,
+  /\bnew\s+Function\s*\(/,
+  /\bvm\.runIn(?:This)?Context\s*\(/,
+  /\bFunction\s*\(\s*["']/, // indirect new Function without `new`
+];
+
 function listSourceFiles(dir: string): string[] {
   const out: string[] = [];
   for (const entry of readdirSync(dir)) {
@@ -80,6 +92,20 @@ describe("local-first claim: no network-capable API anywhere in src/", () => {
             `future opt-in telemetry feature), it needs to be gated ` +
             `behind explicit user consent and this test needs a ` +
             `documented exception, not a silent pass.`,
+        ).toBe(false);
+      }
+    });
+
+    it(`src/${rel} contains no dynamic code evaluation`, () => {
+      const code = stripComments(readFileSync(file, "utf8"));
+      for (const pattern of DYNAMIC_CODE_APIS) {
+        expect(
+          pattern.test(code),
+          `src/${rel} matches ${pattern} — dynamic code evaluation (` +
+            `eval/new Function/vm) is banned in src/: it is invisible to ` +
+            `type-checking and linting, and under the plugin trust model ` +
+            `(no sandbox) it would turn any finding text, config value or ` +
+            `plugin export into executed code.`,
         ).toBe(false);
       }
     });

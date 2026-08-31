@@ -37,6 +37,10 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { runScan } from "../../src/cli.js";
+import {
+  checkUnclassifiedCompleteness,
+  collectUnclassified,
+} from "../../scripts/generate-fp-audit-table.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CACHE_DIR = join(HERE, ".cache");
@@ -185,6 +189,15 @@ function main(): number {
   const update = process.argv.includes("--update");
   let regressed = false;
 
+  // Bug-audit G1: a failed clone used to SKIP the repo with `continue`;
+  // if ALL repos failed (network outage), the run printed
+  // "OK: no FP-count regressions" and exited 0 — a meaningless green for
+  // days on a nightly-only job. Clone failures now count against a
+  // completeness threshold instead of silently shrinking the audit.
+  const failedClones: string[] = [];
+  const scanned: string[] = [];
+  const MIN_SCANNED = Math.ceil(CORPUS.length * 0.9);
+
   for (const repo of CORPUS) {
     console.log(`\n=== ${repo.name} — ${repo.note} ===`);
     let dir: string;
@@ -196,8 +209,10 @@ function main(): number {
           err instanceof Error ? err.message : String(err)
         })`,
       );
+      failedClones.push(repo.name);
       continue;
     }
+    scanned.push(repo.name);
 
     const current = scanRepo(dir);
     const baseline = loadBaseline(repo.name);
@@ -231,7 +246,24 @@ function main(): number {
         );
         repoRegressed = true;
       } else if (after < before) {
-        console.log(`  ${ruleId}: ${before} → ${after} (quieter, fine)`);
+        // Bug-audit G2: the lock used to be one-directional — a rule
+        // going SILENT on real code passed as "quieter, fine". A rule
+        // that stops firing on code it used to flag is a detection
+        // regression (masked rule, broken regex, dead pattern); it gets
+        // the same treatment as an FP regression unless --update was
+        // passed after a deliberate review.
+        if (update) {
+          console.log(
+            `  ${ruleId}: ${before} → ${after} (quieter — accepted via --update)`,
+          );
+        } else {
+          console.error(
+            `  ⚠ ${ruleId}: ${before} → ${after} (-${before - after}) — a rule went ` +
+              `silent on real code. If this is a deliberate detection change, ` +
+              `review and re-run with --update; otherwise investigate.`,
+          );
+          repoRegressed = true;
+        }
       }
     }
     if (!repoRegressed) console.log("  no FP-count regressions");
@@ -252,11 +284,41 @@ function main(): number {
     console.log("\nBaseline updated.");
     return 0;
   }
+
+  // Bug-audit L13 / B4.29: verdict files with blank `"verdict": ""` rows
+  // made the measured-FP rates silently under-report (unclassified
+  // findings were dropped by the fp-table generator). The committed
+  // ceiling ratchet (see scripts/generate-fp-audit-table.ts) fails when
+  // the backlog grows — shared here so the nightly cannot bless a
+  // shrinking classified base either.
+  try {
+    checkUnclassifiedCompleteness(collectUnclassified(), false);
+  } catch {
+    return 1;
+  }
+
+  // Bug-audit G1: a corpus that mostly failed to clone proves nothing —
+  // the audit fails loudly instead of blessing a hollow run.
+  if (failedClones.length > 0) {
+    console.error(
+      `\n${failedClones.length}/${CORPUS.length} repos failed to clone: ` +
+        `${failedClones.join(", ")}`,
+    );
+  }
+  if (scanned.length < MIN_SCANNED) {
+    console.error(
+      `\nFAIL: only ${scanned.length}/${CORPUS.length} repos could be scanned ` +
+        `(minimum ${MIN_SCANNED}). A corpus this hollow cannot support an ` +
+        `"OK" verdict — check network/registry access and re-run.`,
+    );
+    return 1;
+  }
   if (regressed) {
     console.error(
-      "\nFAIL: one or more rules fire more often on real code than the " +
-        "recorded baseline. Not a crash — a signal to go read the actual " +
-        "findings before this ships.",
+      "\nFAIL: finding-count regressions against the corpus baseline (both " +
+        "directions count — more findings suggest new FPs; a rule going silent " +
+        "suggests a detection regression). Not a crash — a signal to go read " +
+        "the actual findings before this ships.",
     );
     return 1;
   }

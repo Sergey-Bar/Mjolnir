@@ -12,7 +12,11 @@ export function lineAt(text: string, index: number): number {
 
 /** 1-based column number for a character offset in text. */
 export function colAt(text: string, index: number): number {
-  const lastBreak = text.lastIndexOf("\n", index - 1);
+  // Bug-audit M0 #12: with index 0, `lastIndexOf("\n", -1)` searched from
+  // the END of the string (negative fromIndex semantics), so a file
+  // ending in a newline produced a hugely negative column for a match at
+  // offset 0. No preceding newline exists before offset ≤ 0 — use -1.
+  const lastBreak = index <= 0 ? -1 : text.lastIndexOf("\n", index - 1);
   return index - lastBreak;
 }
 

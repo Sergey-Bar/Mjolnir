@@ -11,7 +11,7 @@
  * disk-writing entrypoint lives in scripts/generate-rule-docs.ts.
  */
 
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { RULES } from "../rules/index.js";
@@ -22,6 +22,7 @@ import type { Finding } from "../types.js";
 import { parseWorkflow } from "../discovery/workflow-parser.js";
 import { computeCodeText } from "../engine/code-text.js";
 import { getAntiPatternContent } from "./anti-pattern-catalog.js";
+import { firstFixtureFile } from "./fixture-example.js";
 
 export interface RuleDocExample {
   finding?: Omit<Finding, "ruleId" | "category">;
@@ -34,12 +35,6 @@ export interface RuleDocData {
   mustNotFire: { fixturePath?: string; fired: boolean };
   /** Real corpus occurrence counts by repo name, when a baseline exists. */
   corpusOccurrences: Record<string, number>;
-}
-
-function firstFixtureFile(dir: string): string | null {
-  if (!existsSync(dir)) return null;
-  const entries = readdirSync(dir).filter((f) => !f.startsWith("."));
-  return entries.length > 0 ? join(dir, entries[0] as string) : null;
 }
 
 /** Mirrors explainRule's ast/path normalization exactly — see explain.ts. */

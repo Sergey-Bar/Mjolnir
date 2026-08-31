@@ -50,7 +50,7 @@ describe("Bug Condition: Suppression Transparency Missing", () => {
       fc.property(fc.integer({ min: 1, max: 100 }), (suppressionCount) => {
         const result = makeResult({
           suppressionCount,
-        } as Partial<ScanResult>);
+        });
 
         const output = renderTerminal(result, { isTTY: false });
 
@@ -71,7 +71,7 @@ describe("Bug Condition: Suppression Transparency Missing", () => {
   it("concrete: renderTerminal with suppressionCount=5 shows suppression line", () => {
     const result = makeResult({
       suppressionCount: 5,
-    } as Partial<ScanResult>);
+    });
 
     const output = renderTerminal(result, { isTTY: false });
 
@@ -84,7 +84,7 @@ describe("Bug Condition: Suppression Transparency Missing", () => {
   it("concrete: renderTerminal with suppressionCount=1 shows suppression line", () => {
     const result = makeResult({
       suppressionCount: 1,
-    } as Partial<ScanResult>);
+    });
 
     const output = renderTerminal(result, { isTTY: false });
 

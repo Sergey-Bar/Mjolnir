@@ -100,3 +100,44 @@ describe("fix never touches a file it has no planned edit for", () => {
     expect(readFileSync(join(dir, cleanRel), "utf8")).toBe(cleanSource);
   });
 });
+
+describe("page.pause removal is surgical (bug-audit H1)", () => {
+  const PAUSE_SOURCE =
+    "import { test, expect } from '@playwright/test';\n" +
+    "\n" +
+    "test('pauses', async () => {\n" +
+    "  init(); page.pause();\n" +
+    "  await page.pause();\n" +
+    "  // page.pause(); inside a comment — never a fix target\n" +
+    "  expect(true).toBe(true);\n" +
+    "});\n";
+
+  function pauseScan() {
+    writeFileSync(join(dir, SPEC_REL), PAUSE_SOURCE);
+    return scan();
+  }
+
+  it("a pause sharing its line with another statement is never auto-deleted — the statement survives and the fix reports a manual hint", () => {
+    // The old implementation matched /^\s*.*\bpage\.pause…/ — the leading
+    // .* made `init(); page.pause();` look like a removable "pause line"
+    // and silently destroyed init(). This test fails on that behavior.
+    const results = planAndApplyFixes(pauseScan(), dir, {});
+    const after = readFileSync(join(dir, SPEC_REL), "utf8");
+
+    expect(after).toContain("init(); page.pause();");
+    const sharedLine = results.find((r) => r.line === 4);
+    expect(sharedLine?.status).toBe("failed");
+    expect(sharedLine?.description).toContain("manually");
+  });
+
+  it("only the whole-statement pause line is removed; neighboring lines — including pause mentions in comments — survive", () => {
+    const results = planAndApplyFixes(pauseScan(), dir, {});
+    const after = readFileSync(join(dir, SPEC_REL), "utf8");
+
+    expect(after).not.toContain("await page.pause();");
+    expect(after).toContain("init(); page.pause();");
+    expect(after).toContain("// page.pause(); inside a comment");
+    expect(after).toContain("expect(true).toBe(true);");
+    expect(results.some((r) => r.status === "applied")).toBe(true);
+  });
+});

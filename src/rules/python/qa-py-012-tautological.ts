@@ -33,8 +33,8 @@ export const pyTautological = defineRule({
       // [ \t] not \s — \s would cross lines. `g` so exec() advances past
       // each match; every match here consumes `assert …` so it is never
       // zero-width and the loop always terminates.
-      /^[ \t]*assert[ \t]+True(?![A-Za-z0-9_])/gm,
-      /^[ \t]*assert[ \t]+([A-Za-z_][A-Za-z0-9_]*)[ \t]*==[ \t]*\1(?![A-Za-z0-9_])/gm,
+      /^[ \t]*assert[ \t]+True\b/gm,
+      /^[ \t]*assert[ \t]+([A-Za-z_]\w*)[ \t]*==[ \t]*\1\b/gm,
     ];
 
     const seenLines = new Set<number>();

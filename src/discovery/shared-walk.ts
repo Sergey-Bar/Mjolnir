@@ -10,7 +10,7 @@
  */
 
 import { readdirSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { join, relative } from "node:path";
 
 import { isLintFixtureDir, LIMITS, type IgnoreMatcher } from "./ignores.js";
 
@@ -18,7 +18,8 @@ export interface SharedWalkOptions {
   root: string;
   deadline: number;
   ignoreMatcher: IgnoreMatcher;
-  onSkipped: () => void;
+  /** Called for each counted skip (unreadable, oversized, …). */
+  onSkipped: (reason?: string) => void;
   onTruncated: (reason: string) => void;
   /** Directory names never entered (dependency/output dirs per adapter). */
   skipDirs: readonly string[];
@@ -51,7 +52,10 @@ export function sharedWalk(options: SharedWalkOptions): void {
     }
     for (const entry of entries) {
       const full = join(dir, entry.name);
-      const rel = full.slice(options.root.length + 1).replaceAll("\\", "/");
+      // Bug-audit L4: a hard `slice(root.length + 1)` breaks when the
+      // scan root is a drive root ("C:\") or carries a trailing
+      // separator — the relative path came out empty or mis-sliced.
+      const rel = relative(options.root, full).replaceAll("\\", "/");
       if (options.ignoreMatcher.isIgnored(rel)) continue;
       // Symlinks are never followed: a link can point outside the repo
       // (scanning files we have no business reading) or create cycles.
@@ -68,8 +72,15 @@ export function sharedWalk(options: SharedWalkOptions): void {
         walk(full);
       } else if (entry.isFile() && options.isTestFile(entry.name)) {
         try {
-          if (statSync(full).size <= LIMITS.maxFileBytes)
+          if (statSync(full).size <= LIMITS.maxFileBytes) {
             options.onTestFile(full);
+          } else {
+            // Bug-audit QA-2026-08-30 QA-16: an oversized file used to be
+            // dropped SILENTLY — never scanned, never counted, so a scan
+            // could claim "complete" while ignoring megabytes of test
+            // code. Count the skip honestly (R3's own guard contract).
+            options.onSkipped("file-size");
+          }
         } catch {
           options.onSkipped();
         }

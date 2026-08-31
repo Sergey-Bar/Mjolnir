@@ -3,9 +3,14 @@
  * `mjolnir suppressions` — every suppression stays visible.
  */
 
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
-import { isSuppressionActive, type IgnoreEntry } from "../config/config.js";
+import { statSync } from "node:fs";
+
+import {
+  SUPPRESSION_DEFAULT_DAYS,
+  isSuppressionActive,
+  loadConfig,
+  type IgnoreEntry,
+} from "../config/config.js";
 
 export interface SuppressionReport {
   total: number;
@@ -15,29 +20,32 @@ export interface SuppressionReport {
 }
 
 export function loadSuppressions(root: string): SuppressionReport {
-  const configPath = join(root, "mjolnir.config.json");
-  if (!existsSync(configPath)) {
-    return { total: 0, active: 0, expired: 0, entries: [] };
-  }
-  try {
-    const cfg = JSON.parse(readFileSync(configPath, "utf8")) as {
-      ignore?: IgnoreEntry[];
-    };
-    const entries = (cfg.ignore ?? []).map((ign) => ({
-      ...ign,
-      status: isSuppressionActive(ign)
-        ? ("active" as const)
-        : ("expired" as const),
-    }));
-    return {
-      total: entries.length,
-      active: entries.filter((e) => e.status === "active").length,
-      expired: entries.filter((e) => e.status === "expired").length,
-      entries,
-    };
-  } catch {
-    return { total: 0, active: 0, expired: 0, entries: [] };
-  }
+  // Bug-audit M6: resolve the config through loadConfig — the single
+  // source for BOTH config names. Suppressions written to `.mjolnir.json`
+  // used to be silently unenforced here (only mjolnir.config.json was
+  // read), and a corrupted config was swallowed into an empty report so
+  // `mjolnir suppressions` printed "Full transparency maintained." while
+  // the scan path failed loudly. Parse/validation errors now propagate
+  // (ConfigValidationError → usage-error path in the CLI).
+  const { config, path } = loadConfig(root);
+  // Bug-audit QA-2026-08-30 QA-6: the 90-day default is anchored at the
+  // config file's mtime for hand-written entries without `expires` —
+  // otherwise such entries stayed active forever (README §Configuration
+  // promises a 90-day window). The `ignore` command writes explicit
+  // dates, so documented write-time behavior is unchanged.
+  const anchor = path ? statSync(path).mtime : undefined;
+  const entries = (config.ignore ?? []).map((ign) => ({
+    ...ign,
+    status: isSuppressionActive(ign, new Date(), anchor)
+      ? ("active" as const)
+      : ("expired" as const),
+  }));
+  return {
+    total: entries.length,
+    active: entries.filter((e) => e.status === "active").length,
+    expired: entries.filter((e) => e.status === "expired").length,
+    entries,
+  };
 }
 
 export function renderSuppressions(report: SuppressionReport): string {
@@ -54,8 +62,15 @@ export function renderSuppressions(report: SuppressionReport): string {
     "",
   ];
   for (const e of report.entries) {
+    // QA-6: no-expiry entries are mtime-anchored at enforcement time —
+    // say so, instead of implying an indefinite suppression.
+    const expiry = e.expires
+      ? ` (expires ${e.expires})`
+      : e.status === "active"
+        ? ` (no expiry set — ${SUPPRESSION_DEFAULT_DAYS}-day default from config mtime)`
+        : ` (no expiry set — ${SUPPRESSION_DEFAULT_DAYS}-day default elapsed)`;
     lines.push(
-      `${e.status === "active" ? "●" : "○"} ${e.ruleId} — ${e.reason}${e.expires ? ` (expires ${e.expires})` : ""}`,
+      `${e.status === "active" ? "●" : "○"} ${e.ruleId} — ${e.reason}${expiry}`,
     );
   }
   lines.push("");

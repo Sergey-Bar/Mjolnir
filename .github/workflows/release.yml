@@ -56,11 +56,11 @@ jobs:
       # tag name can never be parsed as shell.
       RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.tag || github.ref }}
 
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
           cache: npm
@@ -162,6 +162,19 @@ jobs:
       # claims. Check on npmjs.com → mjolnir-qa → Settings → Publishing
       # access: repository must be Sergey-Bar/Mjolnir, workflow must be
       # release.yml, and the Environment field must be EMPTY.
+      # Bug-audit G5 (pre-publish install gate): the real-registry install
+      # proof used to run only in the NIGHTLY release-smoke workflow, so a
+      # tag pushed between nightlies published without a fresh-install
+      # gate. This packs the exact tarball about to be published and
+      # installs it into a clean directory (real registry dependency
+      # resolution) — the same proof release-smoke runs, now unskippable
+      # on the publish path.
+      - name: Fresh-install gate (pack → clean install → run bin)
+        if: vars.NPM_PUBLISH == 'true' && steps.registry.outputs.published != 'true'
+        env:
+          RUN_REGISTRY_INSTALL_TEST: "1"
+        run: npx vitest run tests/registry-install.spec.ts
+
       - name: Publish to npm (OIDC trusted publishing)
         if: vars.NPM_PUBLISH == 'true' && steps.registry.outputs.published != 'true'
         run: npm publish --provenance --access public --loglevel verbose
@@ -187,7 +200,7 @@ jobs:
 
       # Last, and only now: everything above proved the package is real.
       - name: Create GitHub Release with generated notes
-        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
           tag_name: ${{ env.RELEASE_TAG }}
           generate_release_notes: true

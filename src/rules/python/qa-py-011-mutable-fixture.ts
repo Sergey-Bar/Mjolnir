@@ -38,8 +38,17 @@ export const pyMutableFixture = defineRule({
 
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {
-      const body = m[3] ?? "";
-      if (/return\s+(\[\s*\]|\{\s*\}|\{\s*[^}:]+:|set\()/.test(body)) {
+      const body = m[3] as string;
+      // Bug-audit M0 #11: the old shape list only flagged EMPTY or
+      // colon-shaped returns — `return [1, 2]` (the most common mutable
+      // return), `return dict(...)`, and `defaultdict(...)` all passed
+      // silently. Any collection literal or collection constructor is
+      // shared mutable state.
+      if (
+        /return\s+(?:\[[^\]]*\]|\{[^}]*\}|(?:dict|defaultdict|set)\s*\()/.test(
+          body,
+        )
+      ) {
         findings.push({
           severity: "warning",
           confidence: "medium",
@@ -48,7 +57,7 @@ export const pyMutableFixture = defineRule({
           file: ctx.path,
           line: lineAt(text, m.index),
           column: colAt(text, m.index),
-          message: `Fixture \`${m[2]}\` is ${m[1] ?? "shared"}-scoped and returns a mutable collection.`,
+          message: `Fixture \`${m[2]}\` is ${m[1] as string}-scoped and returns a mutable collection.`,
           why: "Tests that mutate a shared module/session fixture create hidden execution-order dependency — the suite passes in one order and fails in another.",
           fix: "Use function scope (default), or return an immutable copy / factory so each test gets fresh state.",
         });

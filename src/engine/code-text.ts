@@ -26,22 +26,17 @@ export function computeCodeText(
   file: ParsedFile,
   language: "typescript" | "python" | "java" | "csharp",
 ): string {
-  try {
-    switch (language) {
-      case "typescript":
-        return getCodeOnlyText(file);
-      case "python":
-        return maskPython(file.text);
-      case "java":
-        return maskJava(file.text);
-      case "csharp":
-        return maskCSharp(file.text);
-      default:
-        return file.text;
-    }
-  } catch {
-    // Degraded, never fatal — same discipline as ts-ast.ts.
-    return file.text;
+  // Every branch below is total (getCodeOnlyText and the language maskers
+  // catch their own failures), so no outer degradation net is needed.
+  switch (language) {
+    case "typescript":
+      return getCodeOnlyText(file);
+    case "python":
+      return maskPython(file.text);
+    case "java":
+      return maskJava(file.text);
+    case "csharp":
+      return maskCSharp(file.text);
   }
 }
 
@@ -77,7 +72,8 @@ function maskPython(text: string): string {
       ((chars[i] === '"' && chars[i + 1] === '"' && chars[i + 2] === '"') ||
         (chars[i] === "'" && chars[i + 1] === "'" && chars[i + 2] === "'"))
     ) {
-      const quote = chars[i] ?? '"';
+      // i < len - 2 above guarantees chars[i] is defined here.
+      const quote = chars[i];
       // Blank from prefix start through the closing triple-quote
       const start = prefixStart;
       i += 3; // skip opening triple-quote
@@ -104,7 +100,8 @@ function maskPython(text: string): string {
 
     // Single/double quoted strings
     if (i < len && (chars[i] === '"' || chars[i] === "'")) {
-      const quote = chars[i] ?? '"';
+      // The guard above guarantees chars[i] is defined here.
+      const quote = chars[i];
       const start = prefixStart;
       i++; // skip opening quote
       while (i < len && chars[i] !== quote && chars[i] !== "\n") {
@@ -298,36 +295,29 @@ function maskCSharp(text: string): string {
     if ((chars[i] === "@" || chars[i] === "$") && i + 1 < len) {
       const prefixStart = i;
       let isVerbatim = false;
-      let isInterpolated = false;
 
       if (chars[i] === "$") {
-        isInterpolated = true;
         i++;
         if (i < len && chars[i] === "@") {
           isVerbatim = true;
           i++;
         }
-      } else if (chars[i] === "@") {
+      } else {
+        // The outer guard established "@" or "$"; "$" was handled above.
         isVerbatim = true;
         i++;
         if (i < len && chars[i] === "$") {
-          isInterpolated = true;
+          // Interpolated-verbatim prefix (@$"…") — consumed; the same
+          // verbatim scan applies as for @"…".
           i++;
         }
       }
 
       if (i < len && chars[i] === '"') {
-        // Raw string literal check (C# 11): """ ... """
-        if (
-          isVerbatim === false &&
-          isInterpolated === false &&
-          i + 2 < len &&
-          chars[i + 1] === '"' &&
-          chars[i + 2] === '"'
-        ) {
-          // Not a prefix string — fall through to raw string handling below
-          i = prefixStart;
-        } else if (isVerbatim) {
+        // The prefix branch above always set one of the flags (the "@"
+        // and "$" cases each set exactly one), so a plain raw-string
+        // check is unreachable here; dispatch on verbatim vs interpolated.
+        if (isVerbatim) {
           // Verbatim string: @"..." or $@"..." / @$"..."
           // Escape is "" (doubled quote), no backslash escaping
           i++; // skip opening "
@@ -344,25 +334,23 @@ function maskCSharp(text: string): string {
           }
           blankRange(chars, prefixStart, i);
           continue;
-        } else {
-          // Interpolated non-verbatim: $"..."
-          i++; // skip opening "
-          while (i < len && chars[i] !== '"' && chars[i] !== "\n") {
-            if (chars[i] === "\\" && i + 1 < len) {
-              i += 2;
-              continue;
-            }
-            i++;
-          }
-          if (i < len && chars[i] === '"') i++;
-          blankRange(chars, prefixStart, i);
-          continue;
         }
-      } else {
-        // Not followed by a quote — not a string prefix, reset
-        i = prefixStart + 1;
+        // Interpolated non-verbatim: $"..."
+        i++; // skip opening "
+        while (i < len && chars[i] !== '"' && chars[i] !== "\n") {
+          if (chars[i] === "\\" && i + 1 < len) {
+            i += 2;
+            continue;
+          }
+          i++;
+        }
+        if (i < len && chars[i] === '"') i++;
+        blankRange(chars, prefixStart, i);
         continue;
       }
+      // Not followed by a quote — not a string prefix, reset
+      i = prefixStart + 1;
+      continue;
     }
 
     // Raw string literal (C# 11): """..."""

@@ -149,15 +149,17 @@ describe("buildHandover", () => {
 });
 
 describe("runInit", () => {
-  it("reports created steps and next commands on a bare repo", () => {
+  it("reports advice steps and next commands on a bare repo (L10: init writes nothing)", () => {
     const res = runInit(dir, null);
     expect(res.detectionUnknown).toBe(true);
     expect(res.nextCommands).toContain("mjolnir ci install");
     expect(res.nextCommands).toContain("mjolnir badge");
     const wf = res.steps.find((s) => s.name === "ci-workflow");
-    expect(wf?.status).toBe("created");
+    expect(wf?.status).toBe("advice");
     expect(renderInit(res)).toContain("MJÖLNIR INIT");
     expect(renderInit(res)).toContain("[-] framework-detection");
+    // The advice glyph, not the "+" that claims a file was created.
+    expect(renderInit(res)).toContain("[·] ci-workflow");
   });
 
   it("reports existing files without overwriting", () => {

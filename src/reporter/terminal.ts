@@ -16,6 +16,7 @@ import {
   severityTag,
   box,
   padTo,
+  sanitizeData,
 } from "./theme.js";
 import { LOGO, LOGO_ASCII, TROPHY, DIVIDER } from "./art.js";
 import { bluntMessage } from "./tone-blunt.js";
@@ -64,7 +65,15 @@ export function renderTerminal(
 
   const counts = countBySeverity(result);
 
-  appendScoreSection(lines, result, p, width, ascii);
+  // The null branch returned renderNoTests above; the score section only
+  // ever sees a numeric score from here on.
+  appendScoreSection(
+    lines,
+    { ...result, score: result.score },
+    p,
+    width,
+    ascii,
+  );
   appendFrameworks(lines, result, p);
   appendDimensions(lines, result, p, ascii);
   appendDeductions(lines, result, counts, p, width, ascii);
@@ -89,19 +98,20 @@ export function renderTerminal(
   return lines.join("\n");
 }
 
-function verdictFor(score: number): "WORTHY" | "NEEDS WORK" | "UNWORTHY" {
+export function verdictFor(
+  score: number,
+): "WORTHY" | "NEEDS WORK" | "UNWORTHY" {
   if (score >= 80) return "WORTHY";
   return score >= 50 ? "NEEDS WORK" : "UNWORTHY";
 }
 
 function appendScoreSection(
   lines: string[],
-  result: ScanResult,
+  result: ScanResult & { score: number },
   p: ReturnType<typeof palette>,
   width: number,
   ascii: boolean,
 ): void {
-  if (result.score === null) return;
   const verdict = verdictFor(result.score);
   const verdictColored = colorizeVerdict(verdict, p);
   const scoreText = String(result.score).padStart(3);
@@ -193,14 +203,10 @@ function appendDeductions(
     info: { n: 0, ded: 0 },
   } as Record<"error" | "warning" | "info", { n: number; ded: number }>;
   for (const f of result.findings) {
-    if (
-      f.severity === "error" ||
-      f.severity === "warning" ||
-      f.severity === "info"
-    ) {
-      bySeverity[f.severity].n++;
-      bySeverity[f.severity].ded += deductionFor(f);
-    }
+    // Severity is a closed three-value union — every finding lands in the
+    // table, so there is no filtered-out case.
+    bySeverity[f.severity].n++;
+    bySeverity[f.severity].ded += deductionFor(f);
   }
   for (const sev of ["error", "warning", "info"] as const) {
     const s = bySeverity[sev];
@@ -226,9 +232,10 @@ function appendFixThisFirst(
   for (const { finding: f, scoreGain, autofixable } of fixes) {
     const gainText = `+${scoreGain} pt${scoreGain === 1 ? "" : "s"}`;
     const autofixTag = autofixable ? p.ok(" [autofix available]") : "";
-    lines.push(
-      `  ${p.bold(gainText)}  ${f.ruleId} · ${f.file}:${f.line}${autofixTag}`,
-    );
+    // QA-2026-08-30 QA-10: ruleId/file are data (plugin rule ids, hostile
+    // filenames) — sanitize before raw interpolation outside the palette.
+    const loc = `${sanitizeData(f.ruleId)} · ${sanitizeData(f.file)}:${f.line}`;
+    lines.push(`  ${p.bold(gainText)}  ${loc}${autofixTag}`);
   }
   lines.push("");
 }
@@ -249,7 +256,7 @@ function appendTopIssues(
   lines.push(`  ${p.accent("▚ TOP ISSUES")}`);
   lines.push("");
   for (const f of top) {
-    const loc = `${f.ruleId} · ${f.file}:${f.line}`;
+    const loc = `${sanitizeData(f.ruleId)} · ${sanitizeData(f.file)}:${f.line}`;
     // Honesty Core: every finding shows how strong its evidence is.
     const level =
       f.evidenceLevel ?? deriveEvidenceLevel(f.findingType, f.confidence);

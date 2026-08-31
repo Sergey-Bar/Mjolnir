@@ -59,6 +59,12 @@ function resolveMergeBase(root: string, baseBranch?: string): string | null {
     ? [baseBranch, `origin/${baseBranch}`]
     : DEFAULT_BASE_CANDIDATES;
   for (const candidate of candidates) {
+    // Bug-audit QA-2026-08-30 QA-9 (defense in depth): parseArgs rejects
+    // `--base` values that look like git options, but a programmatic
+    // caller could bypass it — a candidate like "--upload-pack=x" would
+    // make git itself run an attacker-chosen command. Skip anything that
+    // could parse as an option.
+    if (candidate.startsWith("-")) continue;
     const mergeBase = git(root, ["merge-base", "HEAD", candidate])?.trim();
     if (mergeBase) return mergeBase;
   }
@@ -70,8 +76,12 @@ function collectNameStatus(output: string): string[] {
   const entries = output.split("\0").filter(Boolean);
   const files: string[] = [];
   for (let i = 0; i < entries.length; i++) {
-    const status = entries[i];
-    if (status === "R" || status === "C") i++; // old-path element
+    const status = entries[i] as string;
+    // Bug-audit L1: with -z, git emits the status WITH its confidence
+    // score for renames/copies (`R100`, `C75`) — an equality check
+    // missed them, so the old-path element was consumed as the file and
+    // stale old paths leaked into `changed`. Match the family.
+    if (status.startsWith("R") || status.startsWith("C")) i++; // old-path element
     const file = entries[i + 1];
     if (file && isKnownTestFile(file)) files.push(file);
   }
@@ -185,20 +195,46 @@ function allLinesOf(root: string, file: string): number[] | null {
 export function parseChangedLines(diff: string): Set<number> {
   const lines = new Set<number>();
   let newLine = 0;
+  // Bug-audit L2: track hunk membership explicitly. Header lines of a
+  // FOLLOWING file diff (`diff --git`, `+++ b/…`) and `\ No newline at
+  // end of file` markers used to hit the context branch: `+++ b/…` even
+  // ADDED a bogus line number, and markers advanced newLine — harmless
+  // only by accident of the next @@ resetting it.
+  let inHunk = false;
+  let newCount = 0;
   for (const raw of diff.split("\n")) {
     const hunk = /^@@\s*-\d+(?:,\d+)?\s*\+(\d+)(?:,(\d+))?\s*@/.exec(raw);
     if (hunk) {
       newLine = Number(hunk[1]);
+      newCount = hunk[2] === undefined ? 1 : Number(hunk[2]);
+      inHunk = true;
       continue;
     }
-    if (newLine === 0) continue; // still in file header
+    // A following file's diff header always resets hunk state — `+++ b/…`
+    // starts with `+` and must never be read as an added line even when
+    // the previous hunk's declared count had a surplus left.
+    if (
+      /^(?:diff --git |index |--- |\+\+\+ |old mode |new mode |rename |copy |similarity |dissimilarity )/.test(
+        raw,
+      )
+    ) {
+      inHunk = false;
+      continue;
+    }
+    // Outside a hunk (or its new-side lines exhausted): everything is
+    // file-header material — never advances, never adds.
+    if (!inHunk || newCount <= 0) continue;
+    if (raw.startsWith("\\")) continue; // "\ No newline at end of file"
     if (raw.startsWith("+")) {
       lines.add(newLine);
       newLine++;
+      newCount--;
     } else if (raw.startsWith("-")) {
       // removed line — does not advance newLine
     } else {
-      newLine++; // context line
+      // context line (git emits " "; hand-built diffs may use "")
+      newLine++;
+      newCount--;
     }
   }
   return lines;

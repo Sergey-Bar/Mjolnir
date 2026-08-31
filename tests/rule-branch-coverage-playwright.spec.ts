@@ -23,8 +23,11 @@ import { pwSingleBrowserMatrix } from "../src/rules/playwright/qa-pw-144-single-
 import { pyRandomTimeDependence } from "../src/rules/python/qa-py-010-random-time.js";
 
 type Ctx = Parameters<typeof pwWaitForTimeout.run>[0];
-const ctx = (path: string, text: string, extra: Partial<Ctx> = {}): Ctx =>
-  ({ path, text, ...extra }) as Ctx;
+const ctx = (path: string, text: string, extra: Partial<Ctx> = {}): Ctx => ({
+  path,
+  text,
+  ...extra,
+});
 
 describe("QA-PW-004 brittle selectors — every pattern arm + masked skip", () => {
   it("flags a multi-class chain, a deep structural chain, and an xpath call", () => {

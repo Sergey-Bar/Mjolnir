@@ -3,7 +3,8 @@
     "tests/fixtures/**",
     "tests/golden/**",
     "examples/**",
-    "scratch/**"
+    "scratch/**",
+    ".kilo/**"
   ],
   "ignore": [
     {

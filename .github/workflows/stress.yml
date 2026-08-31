@@ -1,0 +1,133 @@
+name: stress
+
+# Nightly stress & load jobs (Open-Beta E2E plan Phase 5, Tier 2).
+# Never PR-blocking: PR CI runs everything offline in the functional
+# matrix; networked corpus audits live in corpus-audit.yml.
+
+on:
+  schedule:
+    - cron: "0 3 * * *" # 03:00 UTC daily
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  stress-10k:
+    name: "Tier 2 / 10k-file synthetic repo (ubuntu, Node 22)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Generate 10k-file mixed-language repo
+        run: node tests/stress/generate-repo.mjs 10000 "$RUNNER_TEMP/stress-repo"
+      - name: Scan under 120 s with no partial degradation
+        id: scan
+        run: |
+          start=$(date +%s)
+          node dist/cli.mjs "$RUNNER_TEMP/stress-repo" --json > "$RUNNER_TEMP/stress-result.json"
+          end=$(date +%s)
+          echo "scan-seconds=$((end - start))" >> "$GITHUB_OUTPUT"
+          node -e '
+            const r = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+            if (r.partial !== false) { console.error("FAIL: partial scan"); process.exit(1); }
+            if (!Array.isArray(r.findings)) { console.error("FAIL: no findings array"); process.exit(1); }
+            if (r.analysisStatus.discovery !== "complete" || r.analysisStatus.rules !== "complete") {
+              console.error("FAIL: incomplete analysis"); process.exit(1);
+            }
+            console.log("findings:", r.findings.length, "declarations:", r.testDeclarationCount);
+          ' "$RUNNER_TEMP/stress-result.json"
+      - name: Enforce the 120 s budget
+        run: |
+          seconds=${{ steps.scan.outputs.scan-seconds }}
+          echo "scan took ${seconds}s"
+          if [ "$seconds" -gt 120 ]; then
+            echo "FAIL: scan exceeded the 120 s budget"
+            exit 1
+          fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: failure()
+        with:
+          name: stress-10k-result
+          path: ${{ runner.temp }}/stress-result.json
+
+  pathological-trees:
+    name: "Tier 2 / pathological trees (ubuntu, Node 22)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Build pathological fixture trees
+        run: node tests/stress/generate-pathological.mjs "$RUNNER_TEMP/patho"
+      - name: Scan without crashing; honest output
+        run: |
+          node dist/cli.mjs "$RUNNER_TEMP/patho" --json > "$RUNNER_TEMP/patho-result.json" || true
+          node -e '
+            const r = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+            if (typeof r.score !== "number" && r.score !== null) {
+              console.error("FAIL: no score"); process.exit(1);
+            }
+            console.log("partial:", r.partial, "findings:", (r.findings || []).length);
+          ' "$RUNNER_TEMP/patho-result.json"
+
+  soak-stability:
+    name: "Tier 2 / 20-run soak: byte-identical + flat RSS (ubuntu, Node 22)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Soak 20 scans of fresh temp copies; assert byte-identical JSON + flat RSS
+        run: node tests/stress/soak.mjs
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: failure()
+        with:
+          name: soak-drift
+          path: soak-drift/
+
+  registry-install:
+    name: "Tier 2 / real npm registry install smoke (ubuntu, Node 22)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      RUN_REGISTRY_INSTALL_TEST: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx vitest run tests/registry-install.spec.ts
+
+  concurrent:
+    name: "Tier 2 / 4 concurrent scans of one read-only target (ubuntu, Node 22)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Four simultaneous scans, identical exit + JSON
+        run: node tests/stress/concurrent.mjs

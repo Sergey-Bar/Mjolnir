@@ -19,7 +19,7 @@ import type {
   ScanContext,
 } from "../engine/adapter.js";
 
-const TEST_FILE_RE = /(?:\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs))$/;
+const TEST_FILE_RE = /\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs)$/;
 
 export const typescriptAdapter: LanguageAdapter = {
   id: "typescript",

@@ -90,8 +90,8 @@ export const nonBlockingTestJob = defineRule({
 });
 
 function findLine(text: string, re: RegExp): number {
-  const m = re.exec(text);
-  if (!m) return 1;
+  // The caller builds `re` from escapeRe(cond) — it always matches.
+  const m = re.exec(text) as RegExpExecArray;
   let line = 1;
   for (let i = 0; i < m.index; i++) if (text[i] === "\n") line++;
   return line;

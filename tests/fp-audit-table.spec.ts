@@ -10,11 +10,14 @@
  * currently contains.
  */
 
-import { readdirSync, readFileSync } from "node:fs";
+import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import {
+  checkUnclassifiedCompleteness,
+  collectUnclassified,
+  loadUnclassifiedCeiling,
   registryRuleIds,
   renderFpAuditMd,
   renderMeasuredFpAudit,
@@ -169,6 +172,61 @@ describe("CORPUS_NOTES stays in sync with tests/corpus/audit.ts", () => {
           `scripts/generate-fp-audit-table.ts's CORPUS_NOTES does not — ` +
           `the generated page would show that repo with no source link.`,
       ).toContain(`"${name}"`);
+    }
+  });
+});
+
+describe("unclassified-verdict completeness ratchet (bug-audit B4.29, L13)", () => {
+  it("collectUnclassified() counts blank verdict rows per file", () => {
+    const report = collectUnclassified();
+    expect(report.total).toBe(
+      Object.values(report.byFile).reduce((a, b) => a + b, 0),
+    );
+  });
+
+  it("the committed ceiling is an upper bound — a growing backlog fails the generator", () => {
+    const report = collectUnclassified();
+    const ceiling = loadUnclassifiedCeiling();
+    // The generator itself must pass right now (the docs-drift CI job
+    // runs it); this is the same check main() performs before writing.
+    expect(() => checkUnclassifiedCompleteness(report, false)).not.toThrow();
+    // And the committed ceiling must actually bound the current state —
+    // otherwise the ratchet is decoration.
+    for (const [file, count] of Object.entries(report.byFile)) {
+      expect(
+        count,
+        `${file} has more unclassified rows than its committed ceiling allows`,
+      ).toBeLessThanOrEqual(ceiling.byFile[file] ?? 0);
+    }
+  });
+
+  it("any growth beyond the committed ceiling throws with the offending file named", () => {
+    const ceiling = loadUnclassifiedCeiling();
+    // The --update branch below rewrites the COMMITTED ceiling file —
+    // snapshot and restore it so the test leaves the ratchet untouched.
+    const committed = readFileSync(
+      join(ROOT, "tests", "corpus", "verdicts", "unclassified-ceiling.json"),
+      "utf8",
+    );
+    try {
+      const grown = {
+        total: ceiling.total + 3,
+        byFile: { ...ceiling.byFile, "new-repo.jsonl": 3 },
+      };
+      let message = "";
+      try {
+        checkUnclassifiedCompleteness(grown, false);
+      } catch (e) {
+        message = e instanceof Error ? e.message : String(e);
+      }
+      expect(message).toContain("completeness gate failed");
+      // --update records instead of failing (the review escape hatch).
+      expect(() => checkUnclassifiedCompleteness(grown, true)).not.toThrow();
+    } finally {
+      writeFileSync(
+        join(ROOT, "tests", "corpus", "verdicts", "unclassified-ceiling.json"),
+        committed,
+      );
     }
   });
 });

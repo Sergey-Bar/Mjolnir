@@ -34,10 +34,58 @@ export const tautologicalAssertion = defineRule({
     // comment or a doc-example string is documentation, not a defect.
     const text = ctx.codeText ?? getCodeOnlyText(ctx);
     const re =
-      /expect\s*\(\s*(true|false|null|undefined|\d+|['"`][^'"`]*['"`])\s*\)\s*\.\s*toBe(?:True|False)?\s*\(\s*(true|false|null|undefined|\d+|['"`][^'"`]*['"`])?\s*\)/g;
+      /expect\s*\(\s*(true|false|null|undefined|\d+)\s*\)\s*\.\s*toBe(?:True|False)?\s*\(\s*(?:(true|false|null|undefined|\d+)\s*)?\)/g;
 
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {
+      findings.push({
+        severity: "error",
+        confidence: "high",
+        findingType: "deterministic-defect",
+        file: ctx.path,
+        line: lineAt(ctx.text, m.index),
+        column: colAt(ctx.text, m.index),
+        message: `Tautological assertion: \`${m[0].slice(0, 60)}\`.`,
+        why: "Asserting a literal against a literal can never fail — it verifies no system behavior.",
+        fix: "Assert on actual output of the code under test.",
+        qaImpact: "FALSE-GREEN",
+      });
+    }
+
+    // Bug-audit M0 #3: string-literal tautologies (`expect('a').toBe('a')`)
+    // could never match the view above — getCodeOnlyText blanks string
+    // literals INCLUDING their quotes, so the old quoted alternation was
+    // dead code and the whole false-negative class invisible. The quoted
+    // form is detected on the raw text instead, but only when the
+    // `expect(` head itself is real code: it must survive masking
+    // unchanged (inside a comment or a string, masking blanks it).
+    const rawRe =
+      /expect\s*\(\s*(['"`])([^'"`]*)\1\s*\)\s*\.\s*toBe(?:True|False)?\s*\(\s*(?:(['"`])([^'"`]*)\3\s*)?\)/g;
+    const codeText = ctx.codeText ?? getCodeOnlyText(ctx);
+    while ((m = rawRe.exec(ctx.text)) !== null) {
+      let headIsCode = true;
+      for (let i = m.index; i < m.index + "expect".length; i++) {
+        if (ctx.text[i] !== codeText[i]) {
+          headIsCode = false;
+          break;
+        }
+      }
+      if (!headIsCode) continue;
+      // Tautology requires the compared literal to equal the expect
+      // argument (toBe('x') where 'x' === the argument), or a bare
+      // truthiness matcher (toBeTrue) on a non-empty literal.
+      // Group 2 always participates (the quantifier allows empty), so the
+      // expect-argument string is always captured.
+      const arg = m[2] as string;
+      const compared = m[4];
+      const matcher = /toBe(True|False)?\s*\(/.exec(m[0])?.[1];
+      const isTautology =
+        compared !== undefined
+          ? compared === arg
+          : matcher === "True"
+            ? arg.length > 0
+            : false;
+      if (!isTautology) continue;
       findings.push({
         severity: "error",
         confidence: "high",

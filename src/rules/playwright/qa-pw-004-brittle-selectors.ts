@@ -52,11 +52,11 @@ export const brittleSelectors = defineRule({
     // page.$x(...) / xpath= — raw XPath
     const patterns = [
       {
-        re: /locator\s*\(\s*['"`][^'"`]*\.[\w-]+\.[\w-]+[^'"`]*['"`]\s*\)/g,
+        re: /locator\s*\(\s*['"`][^'"`]*\.[\w-]+\.[\w-][^'"`]*['"`]\s*\)/g,
         label: "multi-class CSS selector",
       },
       {
-        re: /locator\s*\(\s*['"`][^'"`]*>[^'"`]*>[^'"`]*['"`]\s*\)/g,
+        re: /locator\s*\(\s*['"`][^"'>`]*>[^"'>`]*>[^"'`]*['"`]\s*\)/g,
         label: "deep structural CSS selector",
       },
       {

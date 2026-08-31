@@ -1,92 +1,78 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="900" height="1066" viewBox="0 0 900 1066" xmlns="http://www.w3.org/2000/svg" font-family="'SF Mono', 'Cascadia Code', Consolas, Menlo, 'DejaVu Sans Mono', monospace" font-size="14.5">
+<svg width="1178" height="1174" viewBox="0 0 1178 1174" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', Menlo, monospace" font-size="13">
   <defs>
     <clipPath id="winClip">
-      <rect x="0" y="0" width="900" height="1066" rx="14" ry="14"/>
+      <rect x="0" y="0" width="1178" height="1174" rx="8" ry="8"/>
     </clipPath>
-    <linearGradient id="titlebarGrad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#141d18"/>
-      <stop offset="1" stop-color="#0e1512"/>
-    </linearGradient>
-    <radialGradient id="vignette" cx="50%" cy="38%" r="75%">
-      <stop offset="0%" stop-color="#000000" stop-opacity="0"/>
-      <stop offset="78%" stop-color="#000000" stop-opacity="0"/>
-      <stop offset="100%" stop-color="#000000" stop-opacity="0.55"/>
-    </radialGradient>
-    <pattern id="scanlines" width="3" height="3" patternUnits="userSpaceOnUse">
-      <rect width="3" height="1.4" fill="#000000" fill-opacity="0.22"/>
-    </pattern>
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="1.1" result="blur"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
   </defs>
 
   <g clip-path="url(#winClip)">
-    <rect x="0" y="0" width="900" height="1066" fill="#070b09"/>
+    <rect x="0" y="0" width="1178" height="1174" fill="#14171c"/>
+    <rect x="0" y="0" width="1178" height="36" fill="#20242b"/>
+    <circle cx="20" cy="18" r="6" fill="#ff5f56"/>
+    <circle cx="40" cy="18" r="6" fill="#ffbd2e"/>
+    <circle cx="60" cy="18" r="6" fill="#27c93f"/>
+    <text x="589" y="22" fill="#a0a0a0" font-size="12" text-anchor="middle">demo-repo &#8212; mjolnir</text>
 
-    <rect x="0" y="0" width="900" height="42" fill="url(#titlebarGrad)"/>
-    <line x1="0" y1="42" x2="900" y2="42" stroke="#39FF14" stroke-opacity="0.14"/>
-    <circle cx="24" cy="21" r="6.5" fill="#ff5f56"/>
-    <circle cx="46" cy="21" r="6.5" fill="#ffbd2e"/>
-    <circle cx="68" cy="21" r="6.5" fill="#27c93f"/>
-    <text x="450" y="25.5" fill="#5C7A68" font-size="12.5" text-anchor="middle" letter-spacing="0.5">user@ci: ~/demo-repo &#8212; mjolnir scan</text>
+    <text x="22" y="54.0" xml:space="preserve"><tspan fill="#d7d3c8">$ </tspan><tspan fill="#ede6d6">npx mjolnir-qa@latest</tspan></text>
+    <text x="22" y="73.0" xml:space="preserve"><tspan fill="rgb(138,180,216)"> ╔═══════════╗</tspan></text>
+    <text x="22" y="92.0" xml:space="preserve"><tspan fill="rgb(138,180,216)"> ║           ║</tspan></text>
+    <text x="22" y="111.0" xml:space="preserve"><tspan fill="rgb(138,180,216)"> ╠═══════════╣    M J Ö L N I R</tspan></text>
+    <text x="22" y="130.0" xml:space="preserve"><tspan fill="rgb(138,180,216)"> ║     ║     ║</tspan></text>
+    <text x="22" y="149.0" xml:space="preserve"><tspan fill="rgb(138,180,216)"> ╚═════╩═════╝    VERIFICATION TRUST ENGINE</tspan></text>
+    <text x="22" y="168.0" xml:space="preserve"><tspan fill="rgb(138,180,216)">       ║</tspan></text>
+    <text x="22" y="187.0" xml:space="preserve"><tspan fill="rgb(138,180,216)">       ║</tspan></text>
 
-    <g filter="url(#glow)">
-    <text x="30" y="82.5" xml:space="preserve"><tspan fill="#3CFF57">$ </tspan><tspan fill="#EAFFF1">npx mjolnir-qa@latest</tspan></text>
-    <text x="30" y="103.0" xml:space="preserve"><tspan fill="#E37CFF"> ╔═══════════╗</tspan></text>
-    <text x="30" y="123.5" xml:space="preserve"><tspan fill="#E37CFF"> ║           ║</tspan></text>
-    <text x="30" y="144.0" xml:space="preserve"><tspan fill="#E37CFF"> ╠═══════════╣    M J Ö L N I R</tspan></text>
-    <text x="30" y="164.5" xml:space="preserve"><tspan fill="#E37CFF"> ║     ║     ║</tspan></text>
-    <text x="30" y="185.0" xml:space="preserve"><tspan fill="#E37CFF"> ╚═════╩═════╝    VERIFICATION TRUST ENGINE</tspan></text>
-    <text x="30" y="205.5" xml:space="preserve"><tspan fill="#E37CFF">       ║</tspan></text>
-    <text x="30" y="226.0" xml:space="preserve"><tspan fill="#E37CFF">       ║</tspan></text>
+    <text x="22" y="225.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">WORTHINESS</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)"> 70</tspan><tspan fill="rgb(124,133,144)">/100</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">NEEDS WORK</tspan></text>
+    <text x="22" y="244.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">████████████████████</tspan><tspan fill="rgb(224,165,38)">▓</tspan><tspan fill="#d7d3c8">░░░░░░░░░</tspan></text>
+    <text x="22" y="263.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">(48 raw pts / 7 test declarations — normalized)</tspan></text>
 
-    <text x="30" y="267.0" xml:space="preserve"><tspan fill="#EAFFF1">  </tspan><tspan fill="#EAFFF1">WORTHINESS</tspan><tspan fill="#EAFFF1"> </tspan><tspan fill="#EAFFF1"> 67</tspan><tspan fill="#5C7A68">/100</tspan><tspan fill="#EAFFF1">  </tspan><tspan fill="#FFC94D">NEEDS WORK</tspan></text>
-    <text x="30" y="287.5" xml:space="preserve"><tspan fill="#EAFFF1">  </tspan><tspan fill="#FFC94D">███████████████████</tspan><tspan fill="#FFC94D">▓</tspan><tspan fill="#EAFFF1">░░░░░░░░░░</tspan></text>
-    <text x="30" y="308.0" xml:space="preserve"><tspan fill="#EAFFF1">  </tspan><tspan fill="#5C7A68">(20 raw pts / 2 test declarations — normalized)</tspan></text>
+    <text x="22" y="301.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">DETECTED</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">[playwright]</tspan></text>
 
-    <text x="30" y="349.0" xml:space="preserve"><tspan fill="#EAFFF1">  </tspan><tspan fill="#5C7A68">DETECTED</tspan><tspan fill="#EAFFF1"> </tspan><tspan fill="#5DD6E8">[playwright]</tspan></text>
+    <text x="22" y="339.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(138,180,216)">▚ DIAGNOSTICS BY CATEGORY</tspan></text>
+    <text x="22" y="358.0" xml:space="preserve"><tspan fill="#d7d3c8">  QA-CI    </tspan><tspan fill="rgb(79,180,119)">████████████</tspan><tspan fill="rgb(79,180,119)">▓</tspan><tspan fill="#d7d3c8">░░░  84</tspan></text>
+    <text x="22" y="377.0" xml:space="preserve"><tspan fill="#d7d3c8">  QA-PW    </tspan><tspan fill="rgb(79,180,119)">████████████</tspan><tspan fill="rgb(79,180,119)">▓</tspan><tspan fill="#d7d3c8">░░░  82</tspan></text>
+    <text x="22" y="396.0" xml:space="preserve"><tspan fill="#d7d3c8">  QA-TEST  </tspan><tspan fill="rgb(79,180,119)">█████████████</tspan><tspan fill="rgb(79,180,119)">▓</tspan><tspan fill="#d7d3c8">░░  86</tspan></text>
 
-    <text x="30" y="390.0" xml:space="preserve"><tspan fill="#EAFFF1">  </tspan><tspan fill="#E37CFF">▚ DIAGNOSTICS BY CATEGORY</tspan></text>
-    <text x="30" y="410.5" xml:space="preserve"><tspan fill="#EAFFF1">  QA-CI    </tspan><tspan fill="#3CFF57">██████████████</tspan><tspan fill="#3CFF57">▓</tspan><tspan fill="#EAFFF1">░  92</tspan></text>
-    <text x="30" y="431.0" xml:space="preserve"><tspan fill="#EAFFF1">  QA-PW    </tspan><tspan fill="#3CFF57">██████████████</tspan><tspan fill="#3CFF57">▓</tspan><tspan fill="#EAFFF1">░  91</tspan></text>
-    <text x="30" y="451.5" xml:space="preserve"><tspan fill="#EAFFF1">  QA-TEST  </tspan><tspan fill="#3CFF57">████████████████</tspan><tspan fill="#EAFFF1">  97</tspan></text>
+    <text x="22" y="434.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(138,180,216)">▚ WHERE POINTS WERE LOST</tspan></text>
+    <text x="22" y="453.0" xml:space="preserve"><tspan fill="#d7d3c8">  ╭────────────────────────────────────────╮</tspan></text>
+    <text x="22" y="472.0" xml:space="preserve"><tspan fill="#d7d3c8">  │ 4 × error   − 32                       │</tspan></text>
+    <text x="22" y="491.0" xml:space="preserve"><tspan fill="#d7d3c8">  │ 6 × warning − 16</tspan><tspan fill="rgb(124,133,144)"> (evidence-discounted)</tspan><tspan fill="#d7d3c8"> │</tspan></text>
+    <text x="22" y="510.0" xml:space="preserve"><tspan fill="#d7d3c8">  ╰────────────────────────────────────────╯</tspan></text>
 
-    <text x="30" y="492.5" xml:space="preserve"><tspan fill="#EAFFF1">  </tspan><tspan fill="#E37CFF">▚ WHERE POINTS WERE LOST</tspan></text>
-    <text x="30" y="513.0" xml:space="preserve"><tspan fill="#EAFFF1">  ╭────────────────────────────────────────╮</tspan></text>
-    <text x="30" y="533.5" xml:space="preserve"><tspan fill="#EAFFF1">  │ 2 × error   − 16                       │</tspan></text>
-    <text x="30" y="554.0" xml:space="preserve"><tspan fill="#EAFFF1">  │ 2 × warning −  4</tspan><tspan fill="#5C7A68"> (evidence-discounted)</tspan><tspan fill="#EAFFF1"> │</tspan></text>
-    <text x="30" y="574.5" xml:space="preserve"><tspan fill="#EAFFF1">  ╰────────────────────────────────────────╯</tspan></text>
+    <text x="22" y="548.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(138,180,216)">▚ FIX THIS FIRST</tspan></text>
+    <text x="22" y="567.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">+8 pts</tspan><tspan fill="#d7d3c8">  QA-CI-002 · .github/workflows/ci.yml:16</tspan></text>
+    <text x="22" y="586.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">+8 pts</tspan><tspan fill="#d7d3c8">  QA-CI-001 · .github/workflows/ci.yml:17</tspan></text>
+    <text x="22" y="605.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">+8 pts</tspan><tspan fill="#d7d3c8">  QA-PW-101 · e2e/checkout.spec.ts:6</tspan></text>
 
-    <text x="30" y="615.5" xml:space="preserve"><tspan fill="#EAFFF1">  </tspan><tspan fill="#E37CFF">▚ FIX THIS FIRST</tspan></text>
-    <text x="30" y="636.0" xml:space="preserve"><tspan fill="#EAFFF1">  </tspan><tspan fill="#EAFFF1">+8 pts</tspan><tspan fill="#EAFFF1">  QA-CI-001 · .github/workflows/ci.yml:11</tspan></text>
-    <text x="30" y="656.5" xml:space="preserve"><tspan fill="#EAFFF1">  </tspan><tspan fill="#EAFFF1">+8 pts</tspan><tspan fill="#EAFFF1">  QA-PW-101 · e2e/checkout.spec.ts:6</tspan></text>
-    <text x="30" y="677.0" xml:space="preserve"><tspan fill="#EAFFF1">  </tspan><tspan fill="#EAFFF1">+3 pts</tspan><tspan fill="#EAFFF1">  QA-TEST-004 · e2e/checkout.spec.ts:6</tspan></text>
+    <text x="22" y="643.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(138,180,216)">▚ TOP ISSUES</tspan></text>
 
-    <text x="30" y="718.0" xml:space="preserve"><tspan fill="#EAFFF1">  </tspan><tspan fill="#E37CFF">▚ TOP ISSUES</tspan></text>
+    <text x="22" y="681.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(208,69,59)">✗</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(208,69,59)">ERROR  </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">Command exit code is swallowed with `|| true`.</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(124,133,144)">[E2]</tspan></text>
+    <text x="22" y="700.0" xml:space="preserve"><tspan fill="#d7d3c8">         </tspan><tspan fill="rgb(124,133,144)">QA-CI-002 · .github/workflows/ci.yml:16</tspan></text>
+    <text x="22" y="719.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(208,69,59)">✗</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(208,69,59)">ERROR  </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">Job `security-scan` runs a verification gate under `continue-on-error: true`.</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(124,133,144)">[E2]</tspan></text>
+    <text x="22" y="738.0" xml:space="preserve"><tspan fill="#d7d3c8">         </tspan><tspan fill="rgb(124,133,144)">QA-CI-001 · .github/workflows/ci.yml:17</tspan></text>
+    <text x="22" y="757.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">⚠</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(224,165,38)">WARN   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">Brittle multi-class CSS selector: `locator(".btn.btn-primary &gt; div:nth-child(2)")`.</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(124,133,144)">[E1]</tspan></text>
+    <text x="22" y="776.0" xml:space="preserve"><tspan fill="#d7d3c8">         </tspan><tspan fill="rgb(124,133,144)">QA-PW-004 · e2e/checkout.spec.ts:5</tspan></text>
+    <text x="22" y="795.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">⚠</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(224,165,38)">WARN   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">Hard sleep: `page.waitForTimeout(`.</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(124,133,144)">[E2]</tspan></text>
+    <text x="22" y="814.0" xml:space="preserve"><tspan fill="#d7d3c8">         </tspan><tspan fill="rgb(124,133,144)">QA-TEST-004 · e2e/checkout.spec.ts:6</tspan></text>
+    <text x="22" y="833.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(208,69,59)">✗</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(208,69,59)">ERROR  </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">`waitForTimeout()` hard sleep.</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(124,133,144)">[E2]</tspan></text>
+    <text x="22" y="852.0" xml:space="preserve"><tspan fill="#d7d3c8">         </tspan><tspan fill="rgb(124,133,144)">QA-PW-101 · e2e/checkout.spec.ts:6</tspan></text>
+    <text x="22" y="871.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(208,69,59)">✗</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(208,69,59)">ERROR  </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">Skipped test without justification: `test.skip(`.</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(124,133,144)">[E2]</tspan></text>
+    <text x="22" y="890.0" xml:space="preserve"><tspan fill="#d7d3c8">         </tspan><tspan fill="rgb(124,133,144)">QA-TEST-002 · e2e/checkout.spec.ts:16</tspan></text>
+    <text x="22" y="909.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">⚠</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(224,165,38)">WARN   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">Hardcoded URL: `goto("https://staging.example.com/login"`.</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(124,133,144)">[E2]</tspan></text>
+    <text x="22" y="928.0" xml:space="preserve"><tspan fill="#d7d3c8">         </tspan><tspan fill="rgb(124,133,144)">QA-PW-123 · e2e/login.spec.ts:4</tspan></text>
+    <text x="22" y="947.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">⚠</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(224,165,38)">WARN   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">`waitForLoadState('networkidle')` used.</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(124,133,144)">[E2]</tspan></text>
+    <text x="22" y="966.0" xml:space="preserve"><tspan fill="#d7d3c8">         </tspan><tspan fill="rgb(124,133,144)">QA-PW-118 · e2e/login.spec.ts:5</tspan></text>
+    <text x="22" y="985.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">⚠</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(224,165,38)">WARN   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">Hardcoded URL: `goto("https://staging.example.com/"`.</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(124,133,144)">[E2]</tspan></text>
+    <text x="22" y="1004.0" xml:space="preserve"><tspan fill="#d7d3c8">         </tspan><tspan fill="rgb(124,133,144)">QA-PW-123 · e2e/login.spec.ts:11</tspan></text>
+    <text x="22" y="1023.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">⚠</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(224,165,38)">WARN   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">Hard sleep: `time.sleep(2…`.</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(124,133,144)">[E2]</tspan></text>
+    <text x="22" y="1042.0" xml:space="preserve"><tspan fill="#d7d3c8">         </tspan><tspan fill="rgb(124,133,144)">QA-PY-005 · tests/test_checkout_api.py:7</tspan></text>
 
-    <text x="30" y="759.0" xml:space="preserve"><tspan fill="#EAFFF1">  </tspan><tspan fill="#FF6B6B">✗</tspan><tspan fill="#EAFFF1"> </tspan><tspan fill="#FF6B6B">ERROR  </tspan><tspan fill="#EAFFF1"> </tspan><tspan fill="#EAFFF1">Job `security-scan` runs a verification gate under `continue-on-error: true`.</tspan><tspan fill="#EAFFF1"> </tspan><tspan fill="#5C7A68">[E2]</tspan></text>
-    <text x="30" y="779.5" xml:space="preserve"><tspan fill="#EAFFF1">         </tspan><tspan fill="#5C7A68">QA-CI-001 · .github/workflows/ci.yml:11</tspan></text>
-    <text x="30" y="800.0" xml:space="preserve"><tspan fill="#EAFFF1">  </tspan><tspan fill="#FFC94D">⚠</tspan><tspan fill="#EAFFF1"> </tspan><tspan fill="#FFC94D">WARN   </tspan><tspan fill="#EAFFF1"> </tspan><tspan fill="#EAFFF1">Brittle multi-class CSS selector: `locator(".btn.btn-primary &gt; div:nth-child(2)")`.</tspan><tspan fill="#EAFFF1"> </tspan><tspan fill="#5C7A68">[E1]</tspan></text>
-    <text x="30" y="820.5" xml:space="preserve"><tspan fill="#EAFFF1">         </tspan><tspan fill="#5C7A68">QA-PW-004 · e2e/checkout.spec.ts:5</tspan></text>
-    <text x="30" y="841.0" xml:space="preserve"><tspan fill="#EAFFF1">  </tspan><tspan fill="#FFC94D">⚠</tspan><tspan fill="#EAFFF1"> </tspan><tspan fill="#FFC94D">WARN   </tspan><tspan fill="#EAFFF1"> </tspan><tspan fill="#EAFFF1">Hard sleep: `page.waitForTimeout(`.</tspan><tspan fill="#EAFFF1"> </tspan><tspan fill="#5C7A68">[E2]</tspan></text>
-    <text x="30" y="861.5" xml:space="preserve"><tspan fill="#EAFFF1">         </tspan><tspan fill="#5C7A68">QA-TEST-004 · e2e/checkout.spec.ts:6</tspan></text>
-    <text x="30" y="882.0" xml:space="preserve"><tspan fill="#EAFFF1">  </tspan><tspan fill="#FF6B6B">✗</tspan><tspan fill="#EAFFF1"> </tspan><tspan fill="#FF6B6B">ERROR  </tspan><tspan fill="#EAFFF1"> </tspan><tspan fill="#EAFFF1">`waitForTimeout()` hard sleep.</tspan><tspan fill="#EAFFF1"> </tspan><tspan fill="#5C7A68">[E2]</tspan></text>
-    <text x="30" y="902.5" xml:space="preserve"><tspan fill="#EAFFF1">         </tspan><tspan fill="#5C7A68">QA-PW-101 · e2e/checkout.spec.ts:6</tspan></text>
+    <text x="22" y="1080.0" xml:space="preserve"><tspan fill="rgb(124,133,144)">──────────────────────────────────────────────────────────</tspan></text>
+    <text x="22" y="1099.0" xml:space="preserve"><tspan fill="#d7d3c8">  Analysis: </tspan><tspan fill="rgb(79,180,119)">complete</tspan><tspan fill="#d7d3c8"> · a few ms</tspan></text>
+    <text x="22" y="1118.0" xml:space="preserve"><tspan fill="rgb(124,133,144)">  Rule coverage: 0/9 rules that fired here have a measured false-positive rate; the rest are heuristics. `mjolnir rules --unmeasured` lists them.</tspan></text>
 
-    <text x="30" y="943.5" xml:space="preserve"><tspan fill="#5C7A68">──────────────────────────────────────────────────────────</tspan></text>
-    <text x="30" y="964.0" xml:space="preserve"><tspan fill="#EAFFF1">  Analysis: </tspan><tspan fill="#3CFF57">complete</tspan><tspan fill="#EAFFF1"> · a few ms</tspan></text>
-    <text x="30" y="984.5" xml:space="preserve"><tspan fill="#5C7A68">  Rule coverage: 0/4 rules that fired here have a measured false-positive rate; the rest are heuristics. `mjolnir rules --unmeasured` lists them.</tspan></text>
-
-    </g>
-
-    <rect x="0" y="42" width="900" height="1024" fill="url(#scanlines)"/>
-    <rect x="0" y="0" width="900" height="1066" fill="url(#vignette)"/>
   </g>
 
-  <rect x="0.6" y="0.6" width="898.8" height="1064.8" rx="13.5" ry="13.5" fill="none" stroke="#39FF14" stroke-opacity="0.28" stroke-width="1.2"/>
+  <rect x="0.5" y="0.5" width="1177" height="1173" rx="7.5" ry="7.5" fill="none" stroke="#000000" stroke-opacity="0.5"/>
 </svg>

@@ -30,7 +30,7 @@ export const swallowedExitCode = defineRule({
 
     // run: blocks containing `|| true` / `|| echo ...` failure swallowing.
     const re =
-      /(?:\|\|\s*true\b)|(?::\s*(?:npm|yarn|pnpm|make|pytest|go)\b[^`\n]*\|\|\s*echo)/g;
+      /\|\|\s*true\b|:\s*(?:npm|yarn|pnpm|make|pytest|go)\b[^`\n]*\|\|\s*echo/g;
 
     let m: RegExpExecArray | null;
     while ((m = re.exec(ctx.text)) !== null) {

@@ -80,10 +80,14 @@ function extractBlock(text: string, afterColon: number): string | null {
   const before = rest.slice(0, firstContent.index);
   if (before.includes("\n")) {
     const lines = rest.split("\n").slice(1);
-    const indentMatch = /^[ \t]*/.exec(
-      lines.find((l) => l.trim() !== "") ?? "",
-    );
-    const indent = indentMatch ? indentMatch[0] : "";
+    // firstContent guarantees at least one non-blank line exists.
+    // firstContent guarantees at least one non-blank line exists, and the
+    // zero-width pattern always matches.
+    const indent = (
+      /^[ \t]*/.exec(
+        lines.find((l) => l.trim() !== "") as string,
+      ) as RegExpExecArray
+    )[0];
     if (!indent) return null;
     const collected: string[] = [];
     for (const line of lines) {
@@ -97,5 +101,5 @@ function extractBlock(text: string, afterColon: number): string | null {
     return collected.join("\n");
   }
   const lineEnd = rest.indexOf("\n", firstContent.index);
-  return rest.slice(0, lineEnd === -1 ? undefined : lineEnd);
+  return lineEnd === -1 ? rest : rest.slice(0, lineEnd);
 }

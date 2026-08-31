@@ -50,7 +50,7 @@ describe("Preservation: Terminal Output Unchanged for Non-Suppression Cases", ()
           const overrides: Partial<ScanResult> =
             suppressionCount === undefined
               ? { score }
-              : ({ score, suppressionCount } as Partial<ScanResult>);
+              : { score, suppressionCount };
 
           const result = makeResult(overrides);
           const output = renderTerminal(result, { isTTY: false });
@@ -110,7 +110,7 @@ describe("Preservation: Terminal Output Unchanged for Non-Suppression Cases", ()
       score: 100,
       findings: [],
       suppressionCount: 0,
-    } as Partial<ScanResult>);
+    });
     const outputZero = renderTerminal(resultZero, { isTTY: false });
     expect(outputZero).toContain("FLAWLESS VICTORY");
   });
@@ -131,7 +131,7 @@ describe("Preservation: Terminal Output Unchanged for Non-Suppression Cases", ()
           const overrides: Partial<ScanResult> =
             suppressionCount === undefined
               ? { score }
-              : ({ score, suppressionCount } as Partial<ScanResult>);
+              : { score, suppressionCount };
 
           const result = makeResult(overrides);
           const output = renderTerminal(result, { isTTY: false });

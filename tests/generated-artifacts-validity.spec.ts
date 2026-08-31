@@ -11,13 +11,20 @@
  *    icon on the user's README forever.
  */
 
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { parse as parseYaml } from "yaml";
 import { describe, expect, it } from "vitest";
 
-import { ciInstall, type GateLevel } from "../src/integrations/ci-install.js";
+import {
+  ciInstall,
+  gateScript,
+  TEMPLATE,
+  type EnforcingGate,
+  type GateLevel,
+} from "../src/integrations/ci-install.js";
 import { buildBadge } from "../src/commands/badge.js";
 import type { ScanResult } from "../src/types.js";
 
@@ -59,6 +66,161 @@ describe("`ci install` output is valid, parseable YAML", () => {
       const openBraces = (text.match(/\{/g) ?? []).length;
       const closeBraces = (text.match(/\}/g) ?? []).length;
       expect(openBraces).toBe(closeBraces);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("`ci install` gate script semantics (bug-audit H2b/H2c — executed, not just parsed)", () => {
+  /**
+   * The old template's gate was unreachable: with `--gate error` the scan
+   * step's own exit 1 failed the job before the gate ever ran. The new gate
+   * is a standalone `node -e` script; here it is executed for real against
+   * fixture scan results, asserting the exact contract:
+   *   clean → 0 · errors → 1 · warnings-only → 1 iff gate=warning ·
+   *   partial → always 0 (a truncated scan must never block) ·
+   *   missing mjolnir.json → 1 (a crashed scan must never pass).
+   */
+  const GATE_CASES: Array<{
+    name: string;
+    result: Record<string, unknown>;
+    expected: Record<EnforcingGate, number>;
+  }> = [
+    {
+      name: "clean scan passes both gates",
+      result: { partial: false, findings: [] },
+      expected: { error: 0, warning: 0 },
+    },
+    {
+      name: "error-severity findings fail both gates",
+      result: {
+        partial: false,
+        findings: [
+          { severity: "error", ruleId: "QA-PW-101", file: "a.ts", line: 1 },
+        ],
+      },
+      expected: { error: 1, warning: 1 },
+    },
+    {
+      name: "warning-only findings fail the warning gate but not the error gate",
+      result: {
+        partial: false,
+        findings: [
+          { severity: "warning", ruleId: "QA-TEST-004", file: "a.ts", line: 2 },
+        ],
+      },
+      expected: { error: 0, warning: 1 },
+    },
+    {
+      name: "a partial scan never blocks either gate",
+      result: {
+        partial: true,
+        findings: [
+          { severity: "error", ruleId: "QA-PW-101", file: "a.ts", line: 1 },
+        ],
+      },
+      expected: { error: 0, warning: 0 },
+    },
+    {
+      name: "findings missing severity are ignored, not crashed on",
+      result: { partial: false, findings: [{ ruleId: "QA-XXX-000" }, null] },
+      expected: { error: 0, warning: 0 },
+    },
+  ];
+
+  for (const tc of GATE_CASES) {
+    for (const gate of ["error", "warning"] as EnforcingGate[]) {
+      it(`${tc.name} — gate=${gate} exits ${tc.expected[gate]}`, () => {
+        const dir = mkdtempSync(join(tmpdir(), "mjolnir-gate-fixture-"));
+        try {
+          writeFileSync(join(dir, "mjolnir.json"), JSON.stringify(tc.result));
+          let status: number | null = 0;
+          let stdout = "";
+          try {
+            stdout = execFileSync(process.execPath, ["-e", gateScript(gate)], {
+              cwd: dir,
+              encoding: "utf8",
+            });
+          } catch (e) {
+            status = (e as { status: number | null }).status;
+          }
+          expect(status).toBe(tc.expected[gate]);
+          if (status === 0 && stdout.length > 0) {
+            // partial scans explain why they did not block
+            if (tc.result.partial === true) expect(stdout).toContain("PARTIAL");
+          }
+        } finally {
+          rmSync(dir, { recursive: true, force: true });
+        }
+      });
+    }
+  }
+
+  it("a missing/corrupt mjolnir.json fails the gate (a crashed scan must not pass silently)", () => {
+    const dir = mkdtempSync(join(tmpdir(), "mjolnir-gate-missing-"));
+    try {
+      let status: number | null = 0;
+      try {
+        execFileSync(process.execPath, ["-e", gateScript("error")], {
+          cwd: dir,
+          encoding: "utf8",
+          stdio: ["ignore", "pipe", "pipe"],
+        });
+      } catch (e) {
+        status = (e as { status: number | null }).status;
+      }
+      expect(status).toBe(1);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("`ci install` never silently overwrites a customized workflow (bug-audit H2e)", () => {
+  it("refuses when the file is hand-customized and preserves it verbatim", () => {
+    const dir = mkdtempSync(join(tmpdir(), "mjolnir-ci-refuse-"));
+    try {
+      const first = ciInstall(dir, "advisory");
+      const customized =
+        readFileSync(first.written, "utf8") + "\n# hand tweak\n";
+      writeFileSync(first.written, customized);
+
+      const second = ciInstall(dir, "error");
+      expect(second.existed).toBe(true);
+      expect(second.refused).toBe(true);
+      expect(second.diffSummary.length).toBeGreaterThan(0);
+      expect(readFileSync(first.written, "utf8")).toBe(customized);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("--force replaces the customized file with the template", () => {
+    const dir = mkdtempSync(join(tmpdir(), "mjolnir-ci-force-"));
+    try {
+      const first = ciInstall(dir, "advisory");
+      writeFileSync(first.written, "name: mine\n");
+      const forced = ciInstall(dir, "advisory", { force: true });
+      expect(forced.refused).toBe(false);
+      expect(readFileSync(first.written, "utf8")).toBe(TEMPLATE("advisory"));
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("re-running the same template (idempotent) and switching gates both stay allowed", () => {
+    const dir = mkdtempSync(join(tmpdir(), "mjolnir-ci-idempotent-"));
+    try {
+      expect(ciInstall(dir, "advisory").refused).toBe(false);
+      // identical content → not customized
+      expect(ciInstall(dir, "advisory").refused).toBe(false);
+      // a different gate is still a Mjölnir-generated shape → allowed
+      const switched = ciInstall(dir, "warning");
+      expect(switched.refused).toBe(false);
+      expect(readFileSync(switched.written, "utf8")).toContain(
+        "Gate (warning)",
+      );
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

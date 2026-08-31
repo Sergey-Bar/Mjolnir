@@ -8,7 +8,7 @@
  */
 
 import { readdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, relative } from "node:path";
 
 import { isLintFixtureDir } from "../discovery/ignores.js";
 import type { IgnoreMatcher } from "../discovery/ignores.js";
@@ -56,16 +56,20 @@ export function scoreLocatorRisk(line: string): SelectorRisk {
   }
   // Deep structural chains: 3+ combinators inside the selector literal.
   const sel = line.match(/['"`]([^'"`]+)['"`]/);
-  if (sel?.[1] && (sel[1].match(/[>+~]\s*\w/g)?.length ?? 0) >= 2) {
+  const sel1 = sel?.[1];
+  if (sel1 !== undefined && (sel1.match(/[>+~]\s*\w/g)?.length ?? 0) >= 2) {
     score += 15;
     reasons.push("deep combinator chain +15");
   }
   // Generated-looking classes (hash suffixes, e.g. .Button-sc-1x2yz-0).
-  if (sel?.[1] && /\.\w+-sc-|__[\w-]{6,}|-[0-9a-f]{6,}\b/.test(sel[1])) {
+  if (
+    sel1 !== undefined &&
+    /\.\w+-sc-|__[\w-]{6,}|-[0-9a-f]{6,}\b/.test(sel1)
+  ) {
     score += 20;
     reasons.push("generated class name +20");
   }
-  if (cls === "xpath" && (sel?.[1]?.split("/").length ?? 0) > 4) {
+  if (cls === "xpath" && sel1 !== undefined && sel1.split("/").length > 4) {
     score += 10;
     reasons.push("deep XPath +10");
   }
@@ -86,16 +90,19 @@ export function computeSpecHealth(
     xpath: 0,
   };
   let weakestLine: number | undefined;
+  // Bug-audit L8: the old code recorded the FIRST line at-or-above the
+  // css-chain threshold — a low-risk css-chain on line 5 pinned it even
+  // when a risk-90 xpath appeared later. Track the MAXIMUM-risk line
+  // instead (ties keep the first).
+  let weakestRisk = -1;
 
   lines.forEach((line, i) => {
     const cls = classifyLocator(line);
     if (cls) {
       counts[cls]++;
       const risk = scoreLocatorRisk(line);
-      if (
-        risk.score >= LOCATOR_RISK["css-chain"] &&
-        weakestLine === undefined
-      ) {
+      if (risk.score >= LOCATOR_RISK["css-chain"] && risk.score > weakestRisk) {
+        weakestRisk = risk.score;
         weakestLine = i + 1;
       }
     }
@@ -150,7 +157,9 @@ export function computeSelectorHealth(
     }
     for (const entry of entries) {
       const full = join(dir, entry.name);
-      const rel = full.slice(root.length + 1).replaceAll("\\", "/");
+      // Bug-audit L4 family: path.relative, not a hard slice — a drive
+      // root or trailing separator produced empty/mangled relative paths.
+      const rel = relative(root, full).replaceAll("\\", "/");
       if (ignoreMatcher.isIgnored(rel)) continue;
       if (entry.isDirectory()) {
         if (!isLintFixtureDir(full)) walk(full);
@@ -166,5 +175,9 @@ export function computeSelectorHealth(
   };
 
   walk(root);
-  return specs.sort((a, b) => a.score - b.score); // weakest first
+  // Bug-audit L9: score ties kept filesystem order — output differed
+  // byte-wise per machine. Deterministic tiebreaker: path.
+  return specs.sort(
+    (a, b) => a.score - b.score || a.file.localeCompare(b.file),
+  ); // weakest first
 }

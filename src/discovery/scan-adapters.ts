@@ -17,6 +17,7 @@ import { githubActionsAdapter } from "../adapters/github-actions.js";
 import type { LanguageAdapter } from "../engine/adapter.js";
 
 import { sharedWalk } from "./shared-walk.js";
+import { relative } from "node:path";
 import type { ScanContext } from "../engine/adapter.js";
 
 export const SCAN_ADAPTERS: readonly LanguageAdapter[] = [
@@ -39,18 +40,33 @@ export function discoverAllTestFiles(
   buckets: Map<string, string[]>,
   fixtureDirMemo: Map<string, boolean>,
 ): void {
-  const unionSkips = [...new Set(languageAdapters.flatMap((a) => a.dirSkips))];
+  // Bug-audit QA-2026-08-30 QA-2: this used to walk with the UNION of
+  // every adapter's dirSkips, so a Python convention ("env" = virtualenv)
+  // or a Java one ("build" = Gradle output) silently hid directories from
+  // every other language — withastro/astro's packages/astro/test/units/env/
+  // (real TS tests) and …/units/build/ disappeared from scans, and the
+  // corpus count-lock caught the rules going silent. dirSkips are
+  // per-language naming conventions that legitimately collide across
+  // languages, so the shared walk descends into every non-ignored
+  // directory and the OWNING adapter's dirSkips are applied per file
+  // below — preserving each language's pre-single-walk discovery exactly.
+  const walkSkips = languageAdapters.reduce<readonly string[]>(
+    (common, a) => common.filter((name) => a.dirSkips.includes(name)),
+    languageAdapters[0]?.dirSkips ?? [],
+  );
   sharedWalk({
     root: ctx.workspace.root,
     deadline: ctx.deadline,
     ignoreMatcher: ctx.ignoreMatcher,
     onSkipped: ctx.onSkippedFile,
     onTruncated: ctx.onDiscoveryTruncated,
-    skipDirs: unionSkips,
+    skipDirs: walkSkips,
     isTestFile: (name) => languageAdapters.some((a) => a.isTestFile(name)),
     onTestFile: (abs) => {
       for (const a of languageAdapters) {
         if (!a.isTestFile(abs)) continue;
+        // The claiming adapter's own dirSkips decide here, per language.
+        if (isInsideSkippedDir(ctx.workspace.root, abs, a.dirSkips)) continue;
         const bucket = buckets.get(a.id) ?? [];
         // The per-adapter budget (audit H-8) is enforced HERE, not only
         // by isFull() below: isFull is an every() checked once per
@@ -76,6 +92,20 @@ export function discoverAllTestFiles(
 /** Whether ANY shipped adapter would discover this path as a test file. */
 export function isKnownTestFile(path: string): boolean {
   return SCAN_ADAPTERS.some((a) => a.isTestFile(path));
+}
+
+/** True when any path segment (relative to the scan root) is a skip name. */
+function isInsideSkippedDir(
+  root: string,
+  absPath: string,
+  skipNames: readonly string[],
+): boolean {
+  if (skipNames.length === 0) return false;
+  const rel = relative(root, absPath).replaceAll("\\", "/");
+  return rel
+    .split("/")
+    .slice(0, -1)
+    .some((seg) => skipNames.includes(seg));
 }
 
 export interface SearchedForEntry {

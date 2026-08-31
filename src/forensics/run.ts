@@ -16,7 +16,7 @@ import {
   statSync,
   writeFileSync,
 } from "node:fs";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 
 import { analyze, renderFlakyMd, renderLeaderboard } from "./analyze.js";
 import { parseJunitXml } from "./parse-junit.js";
@@ -54,10 +54,18 @@ export function runForensics(
 
   const stat = statSync(target);
   if (stat.isFile()) {
-    const text = readFileSync(target, "utf8");
-    const parsed = parseFile(target, text);
-    records.push(...parsed.records);
-    source = parsed.source;
+    // Bug-audit M3: directory mode wraps parseFile in a try/catch and
+    // skips unreadable/corrupt files; the single-file path did not — a
+    // corrupt report crashed with exit 20 instead of the honest exit 2.
+    // Same containment here: corrupt → zero records.
+    try {
+      const text = readFileSync(target, "utf8");
+      const parsed = parseFile(target, text);
+      records.push(...parsed.records);
+      source = parsed.source;
+    } catch {
+      /* unreadable or corrupt — zero records → honest exit 2 upstream */
+    }
   } else {
     let count = 0;
     for (const full of listFiles(target)) {
@@ -76,13 +84,15 @@ export function runForensics(
   }
 
   const report = analyze(records, source);
-  const output = [renderLeaderboard(report), "", renderFlakyMdHint()].join(
-    "\n",
-  );
 
   let flakyMdPath: string | undefined;
   if ((options.writeFlakyMd ?? true) && report.totalTests > 0) {
-    flakyMdPath = join(target, "FLAKY.md");
+    // Bug-audit M2: for a single report FILE the old code joined the file
+    // path with "FLAKY.md" → `<file>/FLAKY.md` is not writable — yet the
+    // output still claimed "Full details in FLAKY.md". Write next to the
+    // file target, and only claim the artifact when it exists.
+    const base = stat.isFile() ? dirname(target) : target;
+    flakyMdPath = join(base, "FLAKY.md");
     try {
       writeFileSync(flakyMdPath, renderFlakyMd(report));
     } catch {
@@ -90,11 +100,27 @@ export function runForensics(
     }
   }
 
+  const output = [
+    renderLeaderboard(report),
+    "",
+    flakyMdPath !== undefined
+      ? renderFlakyMdHint()
+      : renderFlakyMdNotWritten(options),
+  ].join("\n");
+
   return { report, output, flakyMdPath };
 }
 
 function renderFlakyMdHint(): string {
   return "Full details in FLAKY.md (committed artifact).";
+}
+
+/** Honest fallback for every case where FLAKY.md was NOT written (M2). */
+function renderFlakyMdNotWritten(options: ForensicsOptions): string {
+  if (options.writeFlakyMd === false) {
+    return "FLAKY.md not written (--no-flaky-md).";
+  }
+  return "FLAKY.md was not written — nothing recognized to report (or the target directory is not writable).";
 }
 
 function parseFile(
@@ -116,7 +142,8 @@ function parseFile(
 }
 
 function listFiles(dir: string): string[] {
-  if (!existsSync(dir)) return [];
+  // A missing directory is handled by the readdirSync catch below — the
+  // walk degrades to an empty listing instead of crashing.
   const out: string[] = [];
   const walk = (d: string, depth: number): void => {
     if (depth > 4 || out.length > MAX_FILES) return;

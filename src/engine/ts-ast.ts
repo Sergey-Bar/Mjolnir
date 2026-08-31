@@ -77,7 +77,8 @@ export function commentAndStringRanges(ctx: {
       ts.ScriptTarget.Latest,
       false,
       ts.LanguageVariant.Standard,
-      compiler.text ?? compiler.getFullText(),
+      // SourceFile.text is always populated for parsed files.
+      compiler.text,
     );
     const ranges: Array<{ start: number; end: number }> = [];
     let tok = scanner.scan();
@@ -156,9 +157,13 @@ export function getCodeOnlyText(file: ParsedFile): string {
     }
     if (ranges.length === 0) return text;
     ranges.sort((a, b) => a.start - b.start);
-    const chars = [...text];
-    // Char-array indexing is UTF-16-safe here because offsets from
-    // ts-morph are UTF-16 code-unit offsets, matching String indexing.
+    // Bug-audit QA-2026-08-30 QA-15: this used to be `[...text]`, which
+    // iterates CODE POINTS — an astral char (emoji, surrogate pair)
+    // collapsed to one element, so the mask array was shorter than the
+    // text and every ts-morph offset after it was misaligned. isMasked's
+    // length guard then silently disabled masking for the entire file.
+    // split("") indexes UTF-16 code units, matching String offsets.
+    const chars = text.split("");
     for (const r of ranges) {
       for (let i = r.start; i < r.end && i < chars.length; i++) {
         if (chars[i] !== "\n" && chars[i] !== "\r") chars[i] = " ";

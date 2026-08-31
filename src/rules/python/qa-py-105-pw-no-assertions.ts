@@ -42,9 +42,13 @@ export const pyPwNoAssertions = defineRule({
         /^\s*assert\b/m.test(body) ||
         /expect\s*\(/.test(body) ||
         /assert_/.test(body);
+      // Bug-audit M0 #10: the `page: Page` annotation was tested against
+      // the WHOLE FILE — one annotated UI test branded every other test
+      // in the file (pure unit tests included) as "drives the UI". The
+      // annotation is per-function: check this test's own signature.
       const doesUiAction =
         /page\.(?:goto|click|fill|get_by_|locator)/.test(body) ||
-        /page\s*:\s*Page/.test(text);
+        /page\s*:\s*Page/.test(m[0]);
       if (doesUiAction && !hasCheck) {
         findings.push({
           severity: "error",
@@ -72,10 +76,14 @@ function extractBlock(text: string, afterColon: number): string | null {
   const before = rest.slice(0, firstContent.index);
   if (before.includes("\n")) {
     const lines = rest.split("\n").slice(1);
-    const indentMatch = /^[ \t]*/.exec(
-      lines.find((l) => l.trim() !== "") ?? "",
-    );
-    const indent = indentMatch ? indentMatch[0] : "";
+    // firstContent guarantees at least one non-blank line exists.
+    // firstContent guarantees at least one non-blank line exists, and the
+    // zero-width pattern always matches.
+    const indent = (
+      /^[ \t]*/.exec(
+        lines.find((l) => l.trim() !== "") as string,
+      ) as RegExpExecArray
+    )[0];
     if (!indent) return null;
     const collected: string[] = [];
     for (const line of lines) {
@@ -89,5 +97,5 @@ function extractBlock(text: string, afterColon: number): string | null {
     return collected.join("\n");
   }
   const lineEnd = rest.indexOf("\n", firstContent.index);
-  return rest.slice(0, lineEnd === -1 ? undefined : lineEnd);
+  return lineEnd === -1 ? rest : rest.slice(0, lineEnd);
 }

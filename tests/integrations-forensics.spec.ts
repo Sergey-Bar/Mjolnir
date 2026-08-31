@@ -38,9 +38,12 @@ describe("ciInstall", () => {
     ciInstall(dir, "advisory");
     const res = ciInstall(dir, "error");
     expect(res.existed).toBe(true);
+    expect(res.refused).toBe(false);
     const text = readFileSync(res.written, "utf8");
     expect(text).toContain("Gate (error)");
-    expect(text).toContain("process.exit(bad ? 1 : 0)");
+    // the enforcing gate reads the scan result and exits non-zero on errors
+    expect(text).toContain('readFileSync("mjolnir.json"');
+    expect(text).toContain("process.exit(1)");
   });
 
   it("renders warning gate", () => {

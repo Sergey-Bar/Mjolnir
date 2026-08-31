@@ -79,7 +79,7 @@ export const retryMasking = defineRule({
         // Inline shell retry loops around test commands.
         if (
           step?.run &&
-          /\bfor\b[^]*retry|max_attempts|until.*succeed/i.test(step.run) &&
+          /\bfor\b[\s\S]*retry|max_attempts|until.*succeed/i.test(step.run) &&
           /test/i.test(step.run)
         ) {
           findings.push({

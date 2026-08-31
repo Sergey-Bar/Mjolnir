@@ -26,7 +26,7 @@ export const sharedPageFamily = definePatternFamily({
       frameworks: ["junit", "testng"],
       tier: "extended",
       patterns: [
-        /^\s*(?:private|public|protected)?\s*static\s+(?:final\s+)?(?:Page|Browser|BrowserContext|Playwright)\b/gm,
+        /^\s*(?:(?:private|public|protected)\s*)?static\s+(?:final\s+)?(?:Page|Browser|BrowserContext|Playwright)\b/gm,
       ],
       message: "Static `$0` — browser state shared across tests.",
       fix: "Create the Page per test (@BeforeEach) or use Playwright's JUnit extension `@InjectPage`.",
@@ -39,7 +39,7 @@ export const sharedPageFamily = definePatternFamily({
       frameworks: ["nunit", "xunit", "mstest", "playwright"],
       tier: "extended",
       patterns: [
-        /^\s*(?:public|private|protected|internal)?\s*static\s+(?:readonly\s+)?IPage\b/gm,
+        /^\s*(?:(?:public|private|protected|internal)\s*)?static\s+(?:readonly\s+)?IPage\b/gm,
       ],
       message: "`static IPage` — browser state shared across tests.",
       fix: "Create the page per test in setup, or use Playwright.NET's per-test fixtures.",

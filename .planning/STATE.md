@@ -19,8 +19,16 @@ Mjölnir: linter-grade QA scanner. TypeScript, ESM, Node >= 22.18, Vitest, tsdow
 
 ## Laws
 
+Canonical home: `CLAUDE.md` (committed 2026-08-30, locked by
+`tests/docs-consistency.spec.ts`).
+
 - Anti-creep: every addition requires equal-size removal from launch set.
-- Fixture firewall: every rule needs must-fire AND must-not-fire fixtures.
+  Executable as `CORE_CAP = 65` (`src/commands/doctor.ts`).
+- Fixture firewall: every rule needs must-fire AND must-not-fire
+  fixtures. Never weaken a must-not-fire fixture to make tests pass.
+- North-star law: false-proof rate ≈ 0 — rules without a measured FP
+  rate (n ≥ 10) cannot ship in the core tier. Executable as the
+  `MAX_UNMEASURED_CORE` ratchet (`src/commands/doctor.ts`).
 
 ## Current phase
 
@@ -987,8 +995,9 @@ blunt; interactive navigation explicitly deferred per plan's own
 recommendation.
 
 **npm distribution name — RESOLVED.** The package now publishes as
-`mjolnir-qa` (binary `mjolnir`), live on npm at 0.4.0. The old parked
-`qa-doctor` name is no longer relevant.
+`mjolnir-qa` (binary `mjolnir`), live on npm (`latest` is 0.5.0 as of
+2026-08-30, published by CI). The old parked `qa-doctor` name is no
+longer relevant.
 
 ## Tempering Mjölnir plan (`.planning/Tempering Mjölnir.html`) — 2026-08-29
 
@@ -1089,21 +1098,40 @@ acceptance bar:
 exit 0); README gained live npm + CI badges and lost the static,
 self-asserted "● ONLINE" badge.
 
-**Remaining before announcing — two one-time steps, owner-only** (no code
-change; the repo side is done):
+**Both one-time steps are now done (2026-08-29 / 2026-08-30):**
 
-1. On npmjs.com, `mjolnir-qa` → Settings → Publishing access → add a
-   **Trusted Publisher (OIDC)**: GitHub Actions · org `Sergey-Bar` · repo
-   `Mjolnir` · workflow `.github/workflows/release.yml` · environment blank.
-2. `gh variable set NPM_PUBLISH --body true` (the publish step in
-   release.yml is gated on `vars.NPM_PUBLISH == 'true'`, not a code
-   literal any more).
+1. `NPM_PUBLISH` repo variable set to `true` (2026-08-29).
+2. npmjs.com Trusted Publisher (OIDC) configured (2026-08-30) — see the
+   next section for the bug that held it up.
 
-Then `npm publish --provenance --dry-run` once to eyeball the tarball, and
-`git push --follow-tags` on `v0.5.0`. Full runbook: `docs/PUBLISHING.md`.
+## npm publishing is live — 0.5.0 on the registry (2026-08-30)
 
-Until 0.5.0 is published, `npx mjolnir-qa@latest` still serves the broken
-0.4.0 — **do not announce before that.**
+`mjolnir-qa@0.5.0` is published to npm by CI, `latest`, with a SLSA
+provenance attestation. `npx mjolnir-qa@latest` now serves the fixed
+0.5.0, not the POSIX-broken 0.4.0. Announcing is unblocked.
+
+**What held it up:** the npmjs.com Trusted Publisher had the org as
+`Sergey-bar`; GitHub's OIDC `repository` claim is `Sergey-Bar/Mjolnir`
+and npm matches it **case-sensitively**. Every tag push failed at the
+publish step with `OIDC token exchange error - package not found` /
+`ENEEDAUTH` while the workflow, `id-token: write`, npm-12 upgrade, and
+`.npmrc` token-neutralisation were all already correct. Fixed by
+correcting the casing on npmjs.com and re-running `release.yml` against
+the existing `v0.5.0` tag via `workflow_dispatch`. No code change.
+
+Every release from here is `git push --follow-tags`. Docs updated:
+`docs/PUBLISHING.md`, `CHANGELOG.md` (0.5.0 entry).
+
+**Loose end — RESOLVED 2026-08-30 (roadmap task M3.1).** All pinned
+action SHAs bumped off Node 20 across every workflow:
+`actions/checkout` → v7.0.1, `actions/setup-node` → v7.0.0,
+`actions/upload-artifact` → v7.0.1, `actions/github-script` → v9.0.0,
+`softprops/action-gh-release` → v3.0.3. Every SHA verified against the
+upstream repo via `gh api`. Workflow specs green (release-workflow,
+pr-workflow, ci-self-scan-workflow, docs-consistency — 128 tests). Only
+basic, version-stable inputs are used (`node-version`, `cache`,
+`name`/`path`/`retention-days`, `script`, `tag_name`/`files`), so the
+major bumps carry no config changes.
 
 ## Honesty-gap + core-loop pass (2026-08-29)
 
@@ -1215,6 +1243,41 @@ Verified rules against the expanded 13-repo corpus and fixed six defects:
   `tests/ci-exit-code.spec.ts`, `tests/ci-non-blocking.spec.ts`,
   `tests/rule-branch-coverage-python.spec.ts`, plus new must-not-fire
   fixtures for QA-CI-002/009/010, QA-PW-116, QA-PW-119.
+
+## Strategic-review remediation (2026-08-30)
+
+Implemented the strategic review of `CRITIQUE-REMEDIATION-PLAN.md`
+(finding F0 + the full amendment list):
+
+- **F0:** the north-star law was cited by `doctor.ts`,
+  `copilot-instructions.md`, `AUDIT-2026-08-29.md`, and `FP-AUDIT.md`
+  but lived in no committed file. Reconstructed `CLAUDE.md` verbatim
+  from those citations (provenance note included);
+  `tests/docs-consistency.spec.ts` now locks the law text against
+  `CLAUDE.md`, `doctor.ts`, and `copilot-instructions.md`.
+- **Amendments to `CRITIQUE-REMEDIATION-PLAN.md`:** W1.1 gains
+  provenance fields (`classifiedAt`/`classifiedBy`/`protocolVersion`),
+  shuffled presentation, anchor-set injection, blind re-review,
+  timeboxing, and the adjudication rubric; the QA-TEST-004 ruling is now
+  a pre-Phase-1 gate with its own DoD, before stub generation
+  (`tanstack-query.jsonl` has no QA-TEST-004 stub lines at all); the
+  Phase-1 exit becomes a weekly `"verdict":""` burndown with a
+  post-W1.1 quota re-baseline and a 10% second-rater audit; W1.5 gains
+  95% CIs, n ≥ 20 + CI-upper-bound core promotion, holdout validation,
+  and a core-size floor; W3.1 gains a sha256 manifest, archive
+  checksums, auditable denominators, a frozen "measured" definition,
+  license (CC-BY-4.0/CC0) + rights + privacy statements, and a Phase-2
+  release-attach dry-run; W3.2 gains a dual-classified subset with
+  Cohen's κ; W2.3 gains a written loss function, full residual table,
+  band-sensitivity note, and the language-coverage gate; W2.4 decides
+  option (b) with the constant-taxonomy table; W4.3 moves to the Phase
+  0–1 parallel lane; M2 slip contingency added; "six rules" corrected
+  to "seven rules" (QA-PY-006); standing gate gains the
+  regenerated-docs CI gate; new W5.4 generalized claims-lint; whole-plan
+  DoD gains items 8–10 (statistical, measurement, provenance
+  credibility).
+- **`M1-M2-TASKS.md`** M1.2: QA-TEST-004 ordering note pointing at the
+  pre-ruling gate.
 
 ## Conventions
 

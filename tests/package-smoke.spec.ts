@@ -71,9 +71,13 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
     let binPath: string;
 
     beforeAll(() => {
-      // Build fresh — a stale dist/ from a previous run would hide exactly the
-      // class of bug this test exists to catch.
-      execSync("npm run build", { cwd: ROOT, stdio: "pipe" });
+      // Build fresh — a stale dist/ from a previous run would hide exactly
+      // the class of bug this test exists to catch. The vitest
+      // global-setup has already built at suite start; skip here to avoid
+      // racing other workers' spawns with tsdown's clean phase.
+      if (!existsSync(join(ROOT, "dist", "cli.mjs"))) {
+        execSync("npm run build", { cwd: ROOT, stdio: "pipe" });
+      }
 
       workDir = mkdtempSync(join(tmpdir(), "mjolnir-pack-"));
 

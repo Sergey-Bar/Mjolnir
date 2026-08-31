@@ -33,8 +33,14 @@ export const noAssertions = defineRule({
     // Find each it/test(...) callback body and check for expect/assert inside.
     // Textual heuristic (AST refinement lands with the ts-morph runner):
     // capture `it('...', ...)` up to its matching closing of the arrow body.
+    // Bug-audit M0 #4: the old pattern required an arrow, so
+    // `it("x", function () { … })` bodies were never scanned at all.
+    // Bug-audit QA-2026-08-30 QA-1: the M0 rewrite tightened
+    // `(?:async\s*)?` to `(?:async\s+)?`, so `async()=>{` (no space) —
+    // common in real code — silently stopped matching. `\s*` restores
+    // spaceless arrows without reopening the bare-`return` exemption.
     const testRe =
-      /\b(?:it|test)\s*\(\s*['"`][^'"`]*['"`]\s*,\s*(?:async\s*)?\([^)]*\)\s*=>\s*\{/g;
+      /\b(?:it|test)\s*\(\s*['"`][^'"`]*['"`]\s*,\s*(?:(?:async\s*)?\([^)]*\)\s*=>\s*\{|\bfunction\b[^{]*\{)/g;
     let m: RegExpExecArray | null;
     while ((m = testRe.exec(text)) !== null) {
       // Skip matches inside string literals containing embedded code (test data)
@@ -56,7 +62,12 @@ export const noAssertions = defineRule({
         /\b(?:toBe|toEqual|toBeTruthy|toBeFalsy|toContain|toMatch|toBeDefined|toBeNull|toBeUndefined|toBeGreaterThan|toBeLessThan|toHaveBeenCalled)\s*\(/.test(
           body,
         );
-      if (!hasAssertion && !/\breturn\b/.test(body)) {
+      // Bug-audit M0 #4: the exemption used to fire on ANY `return` — a
+      // bare `return;` let an assertion-free test pass as "verified". The
+      // exemption exists for chai-as-promised style `return expect(…)`
+      // (already covered by the expect branch, but also spelled
+      // `return assert…`); keep it that narrow.
+      if (!hasAssertion && !/\breturn\s+(?:expect|assert)\b/.test(body)) {
         findings.push({
           severity: "error",
           confidence: "high",

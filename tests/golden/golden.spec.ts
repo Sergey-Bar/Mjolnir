@@ -6,98 +6,68 @@
  * adding a new rule doesn't break the gate — the expectations are
  * regenerated in the same PR that adds the rule, with an explicit diff.
  *
+ * Bug-audit H4/G3: generation and verification share ONE scan code
+ * path (harness.ts) — the committed lock can no longer be measured on
+ * a different path than the one checking it — and a crashing rule is a
+ * hard failure on both sides.
+ *
  * Regenerate:  npm run golden:update   (writes golden-expected.json)
  * Verify:      npm test (this file)
  */
 
-import { readdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { RULES } from "../../src/rules/index.js";
-import { computeCodeText } from "../../src/engine/code-text.js";
+
+import { scanGolden } from "./harness.js";
 
 const HERE = import.meta.dirname;
 const GOLDEN_ROOT = join(HERE, "repo");
 const EXPECTED_PATH = join(HERE, "golden-expected.json");
-const UPDATE = process.env["GOLDEN_UPDATE"] === "1";
 
 interface ExpectedEntry {
   /** ruleId → count of findings in this file. */
   [file: string]: Record<string, number>;
 }
 
-function scanGolden(): ExpectedEntry {
-  const result: ExpectedEntry = {};
-  const files = listTestFiles(GOLDEN_ROOT);
-  for (const rel of files) {
-    const text = readFileSync(join(GOLDEN_ROOT, rel), "utf8");
-    const parsed = { path: rel, text };
-    const codeText = computeCodeText(parsed, "typescript");
-    const counts: Record<string, number> = {};
-    for (const rule of RULES) {
-      if (rule.appliesTo !== "test-files") continue;
-      try {
-        const found = rule.run({ ...parsed, codeText });
-        if (found.length > 0) counts[rule.id] = found.length;
-      } catch {
-        // crash isolation — a throwing rule counts as a failure below
-      }
-    }
-    if (Object.keys(counts).length > 0) result[rel] = counts;
-  }
-  return result;
-}
-
-function listTestFiles(dir: string, prefix = ""): string[] {
-  const out: string[] = [];
-  let entries;
-  try {
-    entries = readdirSync(dir, { withFileTypes: true });
-  } catch {
-    return out;
-  }
-  for (const e of entries) {
-    const rel = prefix ? `${prefix}/${e.name}` : e.name;
-    if (e.isDirectory()) out.push(...listTestFiles(join(dir, e.name), rel));
-    else if (/\.(spec|test)\.(ts|js)$/.test(e.name)) out.push(rel);
-  }
-  return out;
-}
-
 describe("golden repo score lock", () => {
   it("expectations file exists (run GOLDEN_UPDATE=1 to create)", () => {
-    expect(
-      existsSync(EXPECTED_PATH),
-      "Run `GOLDEN_UPDATE=1 npx vitest run tests/golden` once",
-    ).toBe(true);
+    expect(EXPECTED_PATH, "Run `npm run golden:update` once").toBeDefined();
+    expect(scanGolden(GOLDEN_ROOT).expectations).toBeTruthy();
   });
 
-  if (existsSync(EXPECTED_PATH)) {
-    it("findings match locked expectations exactly", () => {
-      const expected: ExpectedEntry = JSON.parse(
-        readFileSync(EXPECTED_PATH, "utf8"),
-      );
-      const actual = scanGolden();
-      expect(actual).toEqual(expected);
-    });
-  }
+  it("findings match locked expectations exactly", () => {
+    const expected: ExpectedEntry = JSON.parse(
+      readFileSync(EXPECTED_PATH, "utf8"),
+    );
+    const { expectations, crashed } = scanGolden(GOLDEN_ROOT);
+    // Bug-audit G3: a crashing rule used to be swallowed on BOTH sides —
+    // mutually consistent, therefore invisible. A crash is now a failure.
+    expect(
+      crashed,
+      "no rule may crash while measuring the golden lock",
+    ).toEqual([]);
+    expect(expectations).toEqual(expected);
+  });
 
   it("no rule crashes on the golden corpus", () => {
-    for (const rel of listTestFiles(GOLDEN_ROOT)) {
-      const text = readFileSync(join(GOLDEN_ROOT, rel), "utf8");
-      const parsed = { path: rel, text };
-      const codeText = computeCodeText(parsed, "typescript");
-      for (const rule of RULES) {
-        expect(
-          () => rule.run({ ...parsed, codeText }),
-          `${rule.id} on ${rel}`,
-        ).not.toThrow();
-      }
+    const { crashed } = scanGolden(GOLDEN_ROOT);
+    expect(crashed).toEqual([]);
+  });
+
+  it("the generator reproduces the committed expectations byte-for-byte (gen↔verify parity, H4)", async () => {
+    // Both sides run through the same scanGolden() harness; this test
+    // proves the whole generate pipeline (gen.ts main) still writes
+    // exactly what the committed lock contains.
+    const { main } = await import("./gen.js");
+    const tmpPath = join(HERE, "parity-check.tmp.json");
+    try {
+      main(tmpPath);
+      const regenerated = readFileSync(tmpPath, "utf8");
+      const committed = readFileSync(EXPECTED_PATH, "utf8");
+      expect(regenerated).toBe(committed);
+    } finally {
+      rmSync(tmpPath, { force: true });
     }
   });
 });
-
-// Regeneration mode: node --experimental-vm-modules not needed; run via env flag.
-if (UPDATE) {
-  writeFileSync(EXPECTED_PATH, JSON.stringify(scanGolden(), null, 2) + "\n");
-}

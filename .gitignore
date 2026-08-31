@@ -30,12 +30,22 @@ examples/demo-repo/test-results/TRIAGE.md
 # Generated build/scan artifacts
 mjolnir-badge.json
 self-scan.json
+# Soak drift evidence (tests/stress/soak.mjs, uploaded by stress.yml on failure)
+soak-drift/
 
 
 # Scratch/probe files (debug artifacts, never committed)
 scratch/
+
+# Agent-session state (plans, worktrees, scratch notes) — not repo content,
+# matching .prettierignore / mjolnir.config.json / eslint ignores.
+.kilo/
 package/
 
 # Saved HTML artifact exports dropped into .planning for reference
 .planning/*.html
 .planning/*_files/
+.planning/CRITIQUE-REMEDIATION-PLAN.md
+CLAUDE.md
+.planning/M1-M2-TASKS.md
+.planning/ROADMAP-2026.md

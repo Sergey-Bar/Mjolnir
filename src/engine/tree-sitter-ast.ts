@@ -83,12 +83,12 @@ function grammarPath(fileName: string): string {
       fileName,
     ),
     join(here, "..", "node_modules", "tree-sitter-wasms", "out", fileName),
-  ];
+  ] as const;
   const found = candidates.find((p) => existsSync(p));
-  if (found) return found;
-  const fallback = candidates[0];
-  if (!fallback) throw new Error("no grammar path candidates configured");
-  return fallback;
+  // The tuple always has a first element: when neither candidate exists
+  // on disk, hand it to Language.load anyway so the failure surfaces as
+  // an honest grammar-load error, not a config crash.
+  return found ?? candidates[0];
 }
 
 async function ensureParserInitialized(): Promise<void> {

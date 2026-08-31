@@ -1,13 +1,13 @@
 {
   "countsByRule": {
+    "QA-TEST-003": 19,
     "QA-TEST-004": 157,
     "QA-TQUAL-009": 1,
     "QA-TQUAL-001": 98,
     "QA-PW-119": 5,
-    "QA-TEST-003": 11,
     "QA-PW-145": 3,
     "QA-PW-112": 125,
     "QA-TEST-010": 2
   },
-  "totalFindings": 402
+  "totalFindings": 410
 }

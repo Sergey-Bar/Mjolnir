@@ -18,6 +18,26 @@ function sarifLevel(
   return "note";
 }
 
+/**
+ * Percent-encode a relative artifact path into an RFC 3986 uri-reference
+ * (bug-audit M7). `encodeURI` alone leaves `#` and `?` untouched because
+ * they are URI delimiters — but in a FILE PATH they are literals, so they
+ * must be encoded too or the URI truncates at the fragment/query.
+ */
+function encodeArtifactUri(path: string): string {
+  // encodeURI escapes every literal `%` (→ %25), including malformed
+  // sequences like `%2` — but it deliberately preserves `#` and `?` as
+  // URI delimiters, while in a FILE PATH they are literals, so they
+  // must be encoded too or the URI truncates at a fragment/query.
+  // Bug-audit QA-2026-08-30 QA-13 (defense in depth): `encodeURI` also
+  // leaves `\` literal — an invalid RFC 3986 character in a
+  // uri-reference. Finding paths are walker-normalized to `/`, but the
+  // reporter must not emit an invalid URI even for a raw path.
+  return encodeURI(path.replaceAll("\\", "/"))
+    .replaceAll("#", "%23")
+    .replaceAll("?", "%3F");
+}
+
 export function renderSarif(result: ScanResult, repoRootUri?: string): string {
   const rules = new Map<
     string,
@@ -32,6 +52,8 @@ export function renderSarif(result: ScanResult, repoRootUri?: string): string {
       });
     }
   }
+
+  const rulesCrashed = result.analysisStatus.rulesCrashed ?? 0;
 
   const run = {
     tool: {
@@ -55,13 +77,39 @@ export function renderSarif(result: ScanResult, repoRootUri?: string): string {
         }),
       },
     },
+    // Bug-audit M7: `partiallySuccessfulReason` is NOT a legal SARIF
+    // 2.1.0 `invocation` member (the schema sets additionalProperties:
+    // false) — strict consumers rejected every partial scan's report.
+    // Partial success belongs in `toolExecutionNotifications`, and
+    // `executionSuccessful` must be honest: a truncated scan or a rule
+    // crash is not a successful run.
     invocations: [
       {
-        executionSuccessful: true,
-        ...(result.partial
+        executionSuccessful: !result.partial && rulesCrashed === 0,
+        ...(result.partial || rulesCrashed > 0
           ? {
-              partiallySuccessfulReason:
-                "Analysis budget expired or files skipped",
+              toolExecutionNotifications: [
+                ...(result.partial
+                  ? [
+                      {
+                        level: "warning" as const,
+                        message: {
+                          text: "Analysis was PARTIAL: the budget expired or files were skipped. Results may be incomplete.",
+                        },
+                      },
+                    ]
+                  : []),
+                ...(rulesCrashed > 0
+                  ? [
+                      {
+                        level: "warning" as const,
+                        message: {
+                          text: `${rulesCrashed} rule execution(s) crashed and were skipped by crash isolation.`,
+                        },
+                      },
+                    ]
+                  : []),
+              ],
             }
           : {}),
       },
@@ -74,7 +122,10 @@ export function renderSarif(result: ScanResult, repoRootUri?: string): string {
         {
           physicalLocation: {
             artifactLocation: {
-              uri: f.file,
+              // Bug-audit M7: uri must be a valid RFC 3986 uri-reference —
+              // spaces, `#`, `?` and non-ASCII filenames made the JSON
+              // pass but the URI invalid (or truncated at a fragment).
+              uri: encodeArtifactUri(f.file),
               ...(repoRootUri ? { uriBaseId: "SRCROOT" } : {}),
             },
             region: {

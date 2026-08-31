@@ -1,0 +1,20 @@
+{
+  "total": 271,
+  "byFile": {
+    "microsoft-playwright-dotnet.jsonl": 2,
+    "microsoft-playwright-java.jsonl": 3,
+    "microsoft-playwright-mcp.jsonl": 1,
+    "microsoft-playwright-pytest.jsonl": 12,
+    "nextauthjs-next-auth.jsonl": 19,
+    "pallets-click.jsonl": 1,
+    "playwright-community-eslint-plugin-playwright.jsonl": 3,
+    "psf-requests.jsonl": 5,
+    "pytest-dev-pytest.jsonl": 13,
+    "sveltejs-kit.jsonl": 83,
+    "tanstack-query.jsonl": 24,
+    "vitejs-vite.jsonl": 89,
+    "withastro-astro.jsonl": 16
+  },
+  "recordedAt": "2026-08-30T07:00:00.993Z",
+  "note": "Committed ratchet ceiling (bug-audit B4.29/L13): the generator fails when unclassified verdict rows exceed these counts. Classification work lowers them; --update re-records."
+}

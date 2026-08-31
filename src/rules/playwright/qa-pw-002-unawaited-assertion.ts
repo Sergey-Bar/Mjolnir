@@ -86,14 +86,14 @@ export const unawaitedLocatorAssertion = defineRule({
 
     for (const call of sourceFile.getDescendantsOfKind(
       ts.SyntaxKind.CallExpression,
-    ) as import("ts-morph").CallExpression[]) {
+    )) {
       const expr = call.getExpression();
       if (expr.getKindName() !== "Identifier") continue;
       if (expr.getText() !== "expect") continue;
 
       const args = call.getArguments();
       if (args.length === 0) continue;
-      const argText = args[0]?.getText() ?? "";
+      const argText = args[0]?.getText() as string;
       if (!/^(?:page|locator|this\.page)\b/.test(argText)) continue;
 
       let isAwaited = false;
@@ -103,6 +103,14 @@ export const unawaitedLocatorAssertion = defineRule({
       while (node) {
         const kind = node.getKindName();
         if (kind === "AwaitExpression") {
+          isAwaited = true;
+          break;
+        }
+        // Bug-audit M0 #7: `return expect(locator).toBeVisible()` is a
+        // legitimate, runner-awaited pattern (the same family's
+        // QA-TQUAL-009 documents "awaited or returned") — it used to be
+        // reported as unawaited because only AwaitExpression counted.
+        if (kind === "ReturnStatement") {
           isAwaited = true;
           break;
         }
@@ -151,8 +159,9 @@ function runRegexFallback(
   // keeps `expect(response.status()).toBe(200)` from being flagged just
   // because a variable is named `page`.
   const matchers = [...ASYNC_PW_MATCHERS].join("|");
+  // Bug-audit M0 #7: `return expect(...)` is runner-awaited — excluded.
   const re = new RegExp(
-    `(?<!await\\s{0,10})expect\\s*\\(\\s*(?:page|locator|this\\.page)[^;]{0,300}?\\)\\s*\\.\\s*(?:${matchers})\\b`,
+    `(?<!await\\s{0,10})(?<!return\\s{0,10})expect\\s*\\(\\s*(?:page|locator|this\\.page)[^;]{0,300}?\\)\\s*\\.\\s*(?:${matchers})\\b`,
     "g",
   );
   let m: RegExpExecArray | null;

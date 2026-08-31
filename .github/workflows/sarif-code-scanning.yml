@@ -1,0 +1,35 @@
+name: SARIF Code Scanning
+
+# Bug-audit B4.28: Mjölnir's own self-scan, published as SARIF into
+# GitHub Code Scanning. Findings become visible in the Security tab with
+# PR annotations instead of living only in a job log nobody opens.
+# Weekly + on demand: the PR self-scan gate (ci.yml) stays the fast
+# blocking control; this is the durable, queryable surface.
+
+on:
+  schedule:
+    # Monday 05:17 UTC — off the top-of-hour cron rush.
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  security-events: write
+  contents: read
+
+jobs:
+  self-scan-sarif:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci && npm run build
+      - name: Scan this repo (SARIF)
+        run: node dist/cli.mjs . --format sarif > mjolnir.sarif
+      - name: Upload SARIF to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4
+        with:
+          sarif_file: mjolnir.sarif

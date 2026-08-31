@@ -39,7 +39,7 @@ export const pwStorageStateNoExpiry = defineRule({
       // project / `*.setup.ts` / `globalSetup` that regenerates the state
       // every run (project dependencies make it run first).
       const hasRefresh =
-        /(?:refresh|renew|regenerate|expiresAt|maxAge|ttl)/i.test(text) ||
+        /refresh|renew|regenerate|expiresAt|maxAge|ttl/i.test(text) ||
         /\.setup\.[jt]sx?\b|name\s*:\s*['"]setup['"]|\bdependencies\s*:|\bglobalSetup\b/i.test(
           text,
         );

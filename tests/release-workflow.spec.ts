@@ -72,7 +72,7 @@ describe("release.yml", () => {
     // failing the release job.
     expect(
       typeof publishStep?.if === "string" &&
-        /vars\.NPM_PUBLISH\s*==\s*'true'/.test(publishStep.if as string),
+        /vars\.NPM_PUBLISH\s*==\s*'true'/.test(publishStep.if),
       `npm publish must be gated on \`vars.NPM_PUBLISH == 'true'\` so it ` +
         `only runs once the npmjs.com OIDC trusted-publisher setup is ` +
         `done (see docs/PUBLISHING.md). Found: ${JSON.stringify(publishStep?.if)}`,

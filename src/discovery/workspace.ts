@@ -59,10 +59,7 @@ export function discoverWorkspace(rootDir: string): Workspace | null {
 
   return {
     root,
-    name:
-      typeof pkg["name"] === "string"
-        ? (pkg["name"] as string)
-        : basename(root),
+    name: typeof pkg["name"] === "string" ? pkg["name"] : basename(root),
     packageJson: pkg,
     workspaceGlobs: globs,
   };
@@ -70,5 +67,6 @@ export function discoverWorkspace(rootDir: string): Workspace | null {
 
 function basename(p: string): string {
   const parts = p.split(/[\\/]/);
-  return parts[parts.length - 1] ?? p;
+  // split() of any string yields at least one element.
+  return parts[parts.length - 1] as string;
 }

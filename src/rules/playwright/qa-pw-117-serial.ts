@@ -36,11 +36,20 @@ export const pwSerialNoJustification = defineRule({
       // Look at the comment on the same line or the one above.
       // Use raw text for justification check — comments ARE the signal.
       const lineStart = ctx.text.lastIndexOf("\n", m.index) + 1;
-      const prevLineStart = ctx.text.lastIndexOf("\n", lineStart - 2) + 1 || 0;
-      const contextWindow = ctx.text.slice(
-        Math.max(prevLineStart - 200, 0),
+      // Bug-audit M0 #9: the window used to END at lineStart, so a
+      // justification on the SAME line — the most common placement — was
+      // never seen and the rule always fired. Extend to the end of the
+      // matched line. Also guard the negative-fromIndex `lastIndexOf`
+      // idiom (lineStart 0/1 searched from the end of the text).
+      const lineEnd = ctx.text.indexOf("\n", m.index);
+      const sameLine = ctx.text.slice(
         lineStart,
+        lineEnd === -1 ? undefined : lineEnd,
       );
+      const prevLineStart =
+        lineStart <= 1 ? 0 : ctx.text.lastIndexOf("\n", lineStart - 2) + 1;
+      const contextWindow =
+        ctx.text.slice(Math.max(prevLineStart - 200, 0), lineStart) + sameLine;
       const justified =
         /(?:\/\/|\/\*|#)\s*(?:justified|serial|order\s*matters|stateful)/i.test(
           contextWindow,

@@ -35,10 +35,21 @@ export function enclosingMaskedRun(ctx: MaskCtx, index: number): string | null {
   if (!mask || mask.length !== ctx.text.length) return null;
   if (!isMasked(ctx, index)) return null;
 
+  // Bug-audit QA-2026-08-30 QA-3: the expansion used to stop at
+  // `isMasked(...) === false` — but isMasked cannot distinguish a masked
+  // whitespace char from live code whitespace (both read " "), so a run
+  // was silently truncated at the first space inside a literal.
+  // `'test(" foo", function () {})'` yielded the run `'test("'`; the
+  // trailing nested `"` was then stripped as if it were the delimiter,
+  // no nested quote remained, and embedded test-data was classified as a
+  // live call (QA-TEST-003 fired 6 FP times on eslint-plugin-playwright's
+  // ruleTester tables). Expand while the MASK reads " " — masked chars of
+  // any kind and masked/live whitespace — and stop only at live
+  // non-whitespace, which always ends a literal.
   let start = index;
   let end = index;
-  while (start > 0 && isMasked(ctx, start - 1)) start--;
-  while (end < ctx.text.length - 1 && isMasked(ctx, end + 1)) end++;
+  while (start > 0 && mask[start - 1] === " ") start--;
+  while (end < ctx.text.length - 1 && mask[end + 1] === " ") end++;
   return ctx.text.slice(start, end + 1);
 }
 

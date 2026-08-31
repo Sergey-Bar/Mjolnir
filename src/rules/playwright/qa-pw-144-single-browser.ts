@@ -30,13 +30,15 @@ export const pwSingleBrowserMatrix = defineRule({
   run(ctx) {
     const text = ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
-    const base = ctx.path.split("/").pop() ?? "";
+    // pop() of a split() result is always defined.
+    const base = ctx.path.split("/").pop() as string;
     if (!/^playwright\.config\.(ts|js|mjs|cts)$/.test(base)) return findings;
 
-    if (!/projects\s*:\s*\[/.test(text)) return findings;
+    const projectsMatch = /projects\s*:\s*\[/.exec(text);
+    if (!projectsMatch) return findings;
 
     const names = [...text.matchAll(/name\s*:\s*['"]([^'"]+)['"]/g)].map((m) =>
-      (m[1] ?? "").toLowerCase(),
+      (m[1] as string).toLowerCase(),
     );
     if (names.length === 0) return findings;
 
@@ -60,7 +62,7 @@ export const pwSingleBrowserMatrix = defineRule({
         findingType: "deterministic-defect",
         qaImpact: "HYGIENE",
         file: ctx.path,
-        line: lineAt(text, /projects\s*:/.exec(text)?.index ?? 0),
+        line: lineAt(text, projectsMatch.index),
         column: 1,
         message: `Projects cover only ${
           [...engines][0] ?? "a single"

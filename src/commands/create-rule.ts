@@ -57,8 +57,8 @@ function parseId(
     CI: "ci",
     PY: "python",
   };
-  const family = map[m[1]];
-  if (!family) return null;
+  // The map covers every alternation of the ID regex above.
+  const family = map[m[1]] as Family;
   return { family, num: m[2], lower: id.toLowerCase() };
 }
 

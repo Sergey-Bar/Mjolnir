@@ -51,7 +51,10 @@ export const mockOnlyVerification = defineRule({
           /expect\s*\(\s*[\w.$]+\s*\)\s*\.\s*(?:not\.)?to[Hh]aveBeenCalled(?:With)?\s*\(/g,
         ) ?? []
       ).length;
-      const totalAssertions = (body.match(/expect\s*\(/g) ?? []).length;
+      // hasExpect guarantees at least one expect( in the body.
+      const totalAssertions = (
+        body.match(/expect\s*\(/g) as unknown as RegExpMatchArray[]
+      ).length;
 
       if (totalAssertions > 0 && mockAssertions === totalAssertions) {
         findings.push({

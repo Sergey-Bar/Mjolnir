@@ -17,7 +17,12 @@ import type { Workspace } from "../discovery/workspace.js";
 
 export interface InitStep {
   name: string;
-  status: "created" | "exists" | "skipped";
+  /**
+   * `advice` (bug-audit L10) — runInit is a read-only wizard: it writes
+   * NOTHING. The old "created" status told users files were created when
+   * only advice was printed; it no longer exists.
+   */
+  status: "exists" | "skipped" | "advice";
   detail: string;
 }
 
@@ -42,7 +47,7 @@ export function runInit(
     : { frameworks: [], unknown: true };
   steps.push({
     name: "framework-detection",
-    status: fw.unknown ? "skipped" : "created",
+    status: fw.unknown ? "skipped" : "advice",
     detail: fw.unknown
       ? "No known test framework config found — rules still apply."
       : `Detected: ${fw.frameworks.join(", ")}`,
@@ -53,7 +58,7 @@ export function runInit(
   const wfExists = existsSync(join(rootDir, wfPath));
   steps.push({
     name: "ci-workflow",
-    status: wfExists ? "exists" : "created",
+    status: wfExists ? "exists" : "advice",
     detail: wfExists
       ? `${wfPath} already present — not overwritten.`
       : `Run \`mjolnir ci install\` to generate ${wfPath}.`,
@@ -106,7 +111,7 @@ export function renderInit(result: InitResult): string {
   lines.push("");
   for (const s of result.steps) {
     const icon =
-      s.status === "created" ? "+" : s.status === "exists" ? "=" : "-";
+      s.status === "advice" ? "·" : s.status === "exists" ? "=" : "-";
     lines.push(`[${icon}] ${s.name}: ${s.detail}`);
   }
   if (result.nextCommands.length > 0) {

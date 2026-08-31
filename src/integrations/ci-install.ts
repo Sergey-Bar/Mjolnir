@@ -2,14 +2,93 @@
  * CI integration (Sprint-Plan W7): generates .github/workflows/mjolnir.yml
  * from internal templates ONLY — no user-input interpolation (R3 supply-chain).
  * Default gate: advisory (report, never block).
+ *
+ * Bug-audit hardening (H2): the previous template shipped the same
+ * `github.rest.checks` no-op this repo's own audit removed from mjolnir.yml,
+ * failed the job before the annotate/summary steps could run whenever the
+ * scan step exited non-zero, recommended floating `mjolnir-qa@latest`, and
+ * `ciInstall` silently overwrote hand-customized workflows. The template now
+ * mirrors the dogfooded `.github/workflows/mjolnir.yml` (pinned action SHAs,
+ * `if: always()` on reporting steps, a real gate step that reads
+ * `mjolnir.json`, partial scans never block) and `ciInstall` refuses to
+ * replace a customized workflow without an explicit `--force`.
  */
 
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-export type GateLevel = "advisory" | "error" | "warning";
+import { CLI_VERSION } from "../cli.js";
 
-const TEMPLATE = (gate: GateLevel): string => `name: Mjölnir
+export type GateLevel = "advisory" | "error" | "warning";
+export type EnforcingGate = Exclude<GateLevel, "advisory">;
+
+/**
+ * The gate-check script embedded in generated workflows (and executed
+ * directly by tests against fixture JSONs). Semantics, kept in sync with
+ * the tool's own exit-code contract:
+ *  - missing/unreadable `mjolnir.json` → fail (the scan step crashed; a
+ *    silent pass here would turn a broken pipeline into a green one);
+ *  - `partial: true` → never block (truncated results can neither prove
+ *    nor disprove the gate — the "PARTIAL" banner in the summary is the
+ *    honest signal);
+ *  - `error` gate → block on any error-severity finding;
+ *  - `warning` gate → block on warnings and errors.
+ */
+export function gateScript(gate: EnforcingGate): string {
+  const condition =
+    gate === "error" ? "errors > 0" : "errors > 0 || warnings > 0";
+  return [
+    'const fs = require("fs");',
+    "let r;",
+    "try {",
+    '  r = JSON.parse(fs.readFileSync("mjolnir.json", "utf8"));',
+    "} catch (e) {",
+    '  process.stderr.write("mjolnir.json is missing or unreadable - the scan step crashed before the gate could run. Failing instead of passing silently.\\n");',
+    "  process.exit(1);",
+    "}",
+    "if (r.partial === true) {",
+    '  process.stdout.write("Scan was PARTIAL - some files were not analyzed; gate not enforced.\\n");',
+    "  process.exit(0);",
+    "}",
+    "const findings = Array.isArray(r.findings) ? r.findings : [];",
+    'const errors = findings.filter(function (f) { return f && f.severity === "error"; }).length;',
+    'const warnings = findings.filter(function (f) { return f && f.severity === "warning"; }).length;',
+    'process.stdout.write("Mjolnir gate: " + errors + " error(s), " + warnings + " warning(s).\\n");',
+    `if (${condition}) { process.exit(1); }`,
+    "process.exit(0);",
+  ].join("\n");
+}
+
+/** Renders findings into `$GITHUB_STEP_SUMMARY`; tolerates a missing scan result. */
+const SUMMARY_SCRIPT = [
+  'const fs = require("fs");',
+  "let r = {};",
+  'try { r = JSON.parse(fs.readFileSync("mjolnir.json", "utf8")); } catch (e) {}',
+  "const findings = Array.isArray(r.findings) ? r.findings : [];",
+  "const lines = findings.map(function (f) {",
+  '  return "- **" + f.ruleId + "** (" + f.severity + ") " + f.file + ":" + f.line + " - " + f.message;',
+  "});",
+  "const head = r.partial === true",
+  '  ? "Mjolnir scan was PARTIAL - some files may not have been analyzed."',
+  '  : "Mjolnir scan finished.";',
+  'const body = ["## Mjolnir findings", head, ""].concat(lines).join("\\n");',
+  "if (process.env.GITHUB_STEP_SUMMARY && lines.length > 0) {",
+  '  fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, body + "\\n");',
+  "}",
+  'process.stdout.write(lines.length + " finding(s)\\n");',
+].join("\n");
+
+/** Indents an embedded script so it sits inside a YAML `run: |` block scalar. */
+export function indentBlock(text: string, spaces: number): string {
+  const pad = " ".repeat(spaces);
+  return text
+    .split("\n")
+    .map((l) => (l.length > 0 ? pad + l : l))
+    .join("\n");
+}
+
+/** The generated workflow for one gate level. Exported for template tests. */
+export const TEMPLATE = (gate: GateLevel): string => `name: Mjölnir
 
 on:
   pull_request:
@@ -25,51 +104,152 @@ permissions:
 jobs:
   scan:
     runs-on: ubuntu-latest
+    # A hung scan must not sit for the 6-hour default.
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0   # needed for --scope changed merge-base
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
-      - run: npx --yes mjolnir-qa@latest . --scope changed --json > mjolnir.json
-      - name: Annotate PR
-        uses: actions/github-script@v7
+      # Scan with the PINNED version that generated this workflow — never
+      # a floating tag: a new release must not change your gate semantics
+      # with no commit of yours. To review PRs with the exact tool your
+      # repo develops against, add mjolnir-qa to devDependencies and drop
+      # the @version suffix so npx resolves the local install.
+      - name: Scan changed code (exit 1/2 is data — the gate step decides)
+        continue-on-error: true
+        run: npx --yes mjolnir-qa@${CLI_VERSION} . --scope changed --json > mjolnir.json
+      - name: Render PR comment
+        if: always()
+        continue-on-error: true
+        run: npx --yes mjolnir-qa@${CLI_VERSION} pr-comment . > mjolnir-comment.md
+      - name: Append findings to the Job Summary
+        if: always()
+        run: |
+          node -e '
+${indentBlock(SUMMARY_SCRIPT, 10)}
+          '
+      # Best-effort: on a pull_request event from a fork the GITHUB_TOKEN is
+      # read-only and this step will 403 for every external contributor. The
+      # Job Summary above is the fallback that always renders.
+      # (pull_request_target would fix the token but is a code-execution
+      # risk — deliberately NOT used.)
+      - name: Post or update PR comment
+        if: always()
+        continue-on-error: true
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const fs = require('fs');
-            const r = JSON.parse(fs.readFileSync('mjolnir.json', 'utf8'));
-            for (const f of r.findings) {
-              const level = f.severity === 'error' ? 'failure' : 'warning';
-              await core.summary.addRaw(\`**\${f.ruleId}** (\${f.severity}) \${f.file}:\${f.line} — \${f.message}\\n\\n\${f.fix}\`).addRaw('\\n\\n');
-              if (f.file && f.line) {
-                github.rest.checks // annotations land via the job summary
-              }
+            let body = '';
+            try { body = fs.readFileSync('mjolnir-comment.md', 'utf8'); } catch (e) {}
+            if (!body.trim()) {
+              console.log('mjolnir-comment.md is empty or missing — nothing to post.');
+              return;
             }
-            await core.summary.write();
-      # Gate enforcement: advisory never blocks; error/warning fail the job.
-      ${
-        gate === "advisory"
-          ? `- name: Gate (advisory)\n        run: echo "Advisory mode — findings reported, never blocking."`
-          : `- name: Gate (${gate})
+            const marker = '<!-- mjolnir-pr-comment -->';
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find((c) => c.body?.startsWith(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+${
+  gate === "advisory"
+    ? `      # Advisory mode: findings are reported in the Job Summary and the
+      # PR comment, never blocking. The scan step's exit code is visible
+      # as the step outcome, but continue-on-error keeps the job green.
+      - name: Gate (advisory)
+        if: always()
+        run: echo "Advisory mode — findings reported, never blocking."`
+    : `      # Gate enforcement: the scan step's own exit code is deliberately
+      # neutralized (continue-on-error) so reporting steps always run; THIS
+      # step is what fails the job. A partial scan never blocks.
+      - name: Gate (${gate})
+        if: always()
         run: |
-          node -e "
-            const r = require('./mjolnir.json');
-            const sev = r.findings.map(f => f.severity);
-            const bad = sev.includes('${gate === "error" ? "error" : "warning"}') || sev.includes('error');
-            process.exit(bad ? 1 : 0);
-          "`
-      }
+          node -e '
+${indentBlock(gateScript(gate), 10)}
+          '`
+}
 `;
+
+/** Every gate variant, used to tell "our template" from "hand-customized". */
+const GATES: readonly GateLevel[] = ["advisory", "error", "warning"];
+
+export interface CiInstallResult {
+  written: string;
+  existed: boolean;
+  /**
+   * True when an existing, hand-customized workflow was left untouched.
+   * Re-run with `--force` to replace it.
+   */
+  refused: boolean;
+  /** Human-readable line-level summary of what a forced overwrite would change. */
+  diffSummary: string[];
+}
+
+/** Multiset line diff — counts only, for the refusal message. */
+function summarizeContentDiff(existing: string, incoming: string): string[] {
+  const remaining = new Map<string, number>();
+  for (const line of existing.split(/\r?\n/)) {
+    remaining.set(line, (remaining.get(line) ?? 0) + 1);
+  }
+  let added = 0;
+  for (const line of incoming.split(/\r?\n/)) {
+    const count = remaining.get(line) ?? 0;
+    if (count > 0) remaining.set(line, count - 1);
+    else added += 1;
+  }
+  let removed = 0;
+  for (const count of remaining.values()) removed += count;
+  return [
+    `  - ${removed} line(s) of your file are not in the template and would be removed`,
+    `  - ${added} template line(s) are not in your file and would be added`,
+  ];
+}
 
 export function ciInstall(
   root: string,
   gate: GateLevel = "advisory",
-): { written: string; existed: boolean } {
+  options: { force?: boolean } = {},
+): CiInstallResult {
   const wfDir = join(root, ".github", "workflows");
   const target = join(wfDir, "mjolnir.yml");
   if (!existsSync(wfDir)) mkdirSync(wfDir, { recursive: true });
   const existed = existsSync(target);
+  if (existed) {
+    const current = readFileSync(target, "utf8");
+    // Content identical to any gate variant = a file Mjölnir itself wrote
+    // (re-running or switching gates must stay frictionless). Anything
+    // else is hand-customized and is never silently overwritten.
+    const matchesAnyTemplate = GATES.some((g) => current === TEMPLATE(g));
+    if (!matchesAnyTemplate && !(options.force ?? false)) {
+      return {
+        written: target,
+        existed,
+        refused: true,
+        diffSummary: summarizeContentDiff(current, TEMPLATE(gate)),
+      };
+    }
+  }
   writeFileSync(target, TEMPLATE(gate));
-  return { written: target, existed };
+  return { written: target, existed, refused: false, diffSummary: [] };
 }

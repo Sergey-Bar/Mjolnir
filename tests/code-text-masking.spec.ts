@@ -177,11 +177,15 @@ describe("computeCodeText (C#)", () => {
 // that were previously only reached indirectly through rule fixtures.
 
 describe("computeCodeText — language dispatch and fallback", () => {
-  it("returns raw text unchanged for an unknown language", () => {
-    const code = 'x = "kept as-is"';
-    expect(
-      computeCodeText({ path: "f.txt", text: code }, "ruby" as never),
-    ).toBe(code);
+  it("handles a non-code file for every declared language", () => {
+    // The language parameter is a closed union: there is no unknown-language
+    // runtime path. Each declared language must accept non-code input and
+    // degrade to a same-length view.
+    const text = "just prose, no code\n";
+    for (const lang of ["typescript", "python", "java", "csharp"] as const) {
+      const out = computeCodeText({ path: "f.txt", text }, lang);
+      expect(out).toHaveLength(text.length);
+    }
   });
 
   it("never throws on malformed input — degrades to raw text or a masked view", () => {

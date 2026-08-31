@@ -43,7 +43,7 @@ export const evaluateBusinessLogic = defineRule({
 
     for (const call of sourceFile.getDescendantsOfKind(
       ts.SyntaxKind.CallExpression,
-    ) as ts.CallExpression[]) {
+    )) {
       const expr = call.getExpression();
       const isEvaluateCall =
         expr.asKind(ts.SyntaxKind.PropertyAccessExpression)?.getName() ===
@@ -57,7 +57,8 @@ export const evaluateBusinessLogic = defineRule({
         firstArg.asKind(ts.SyntaxKind.ArrowFunction) ??
         firstArg.asKind(ts.SyntaxKind.FunctionExpression);
       if (!fnNode) continue;
-      const bodyText = fnNode.getBody()?.getText() ?? "";
+      // A function node's body is never absent.
+      const bodyText = fnNode.getBody()?.getText();
 
       if (/\b(if|for|while|switch)\b/.test(bodyText)) {
         findings.push({

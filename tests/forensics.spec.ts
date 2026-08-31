@@ -39,6 +39,26 @@ describe("parseJunitXml", () => {
     expect(recs[0]?.title).toBe("a & b <x>");
   });
 
+  it("keeps title and classname distinct on classname-first (pytest) fixtures (bug-audit H3)", () => {
+    // The repo's own fixture above is classname-first, but it only ever
+    // asserted statuses/durations — with the unanchored `name` regex,
+    // `classname="tests/test_a.py" name="test_ok"` matched the tail of
+    // classname, so every title silently became the classname.
+    const xml = `<testsuite tests="1">
+  <testcase classname="tests/test_a.py" name="test_ok" time="0.100"/>
+</testsuite>`;
+    const recs = parseJunitXml(xml);
+    expect(recs[0]?.title).toBe("test_ok");
+    expect(recs[0]?.file).toBe("tests/test_a.py");
+  });
+
+  it("does not treat data-name-style lookalike attributes as name (H3 hardening)", () => {
+    const recs = parseJunitXml(
+      `<testsuite><testcase data-name="decoy" name="real" classname="c"/></testsuite>`,
+    );
+    expect(recs[0]?.title).toBe("real");
+  });
+
   it("returns empty on garbage", () => {
     expect(parseJunitXml("not xml at all")).toHaveLength(0);
   });

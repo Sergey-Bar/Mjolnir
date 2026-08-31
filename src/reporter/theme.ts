@@ -1,7 +1,13 @@
 /**
- * Retro CRT/arcade theme system. Pure string-in → string-out helpers.
+ * Norse-forge theme system. Pure string-in → string-out helpers.
  * Respects NO_COLOR and non-TTY via `palette(isTTY)` — every renderer
  * receives a palette and never touches process.env directly.
+ *
+ * Palette: a cold northern set — frost-steel, aurora teal, Yggdrasil
+ * green — with amber for warnings (Mjölnir's lightning) and a
+ * rune-red for errors. No magenta/pink. Emitted as 24-bit truecolor
+ * SGR (`38;2;r;g;b`), which every modern terminal renders and which
+ * `shouldColorize` already gates behind TTY + !NO_COLOR.
  *
  * Symbols always accompany color (color-blind safe, R11).
  *
@@ -13,45 +19,73 @@
  */
 
 export interface Palette {
-  /** Neon green — healthy / primary accent. */
+  /** Yggdrasil green — healthy / passing. */
   ok: (s: string) => string;
-  /** Cyan — info / secondary accent. */
+  /** Aurora teal — info / detected frameworks. */
   info: (s: string) => string;
-  /** Magenta — flair, headers. */
+  /** Frost-steel blue — the hammer, section headers. */
   accent: (s: string) => string;
-  /** Yellow — warnings. */
+  /** Amber — warnings (Mjölnir's lightning). */
   warning: (s: string) => string;
-  /** Red — errors. */
+  /** Rune-red — errors. */
   error: (s: string) => string;
   bold: (s: string) => string;
   dim: (s: string) => string;
 }
 
+/** Norse-forge palette, 24-bit truecolor. */
+export const NORSE = {
+  ok: [0x4f, 0xb4, 0x77], // Yggdrasil green
+  info: [0x3f, 0xb0, 0xa0], // aurora teal
+  accent: [0x8a, 0xb4, 0xd8], // frost-steel blue
+  warning: [0xe0, 0xa5, 0x26], // amber / lightning
+  error: [0xd0, 0x45, 0x3b], // rune-red
+  bold: [0xed, 0xe6, 0xd6], // bone white
+  dim: [0x7c, 0x85, 0x90], // weathered stone
+} as const;
+
 const on = {
-  ok: neon(92),
-  info: neon(96),
-  accent: neon(95),
-  warning: neon(93),
-  error: neon(91),
-  bold: neon(1),
-  dim: neon(2),
+  ok: rgb(NORSE.ok),
+  info: rgb(NORSE.info),
+  accent: rgb(NORSE.accent),
+  warning: rgb(NORSE.warning),
+  error: rgb(NORSE.error),
+  // bold keeps the SGR bold-intensity attribute as well as the tint.
+  bold: (s: string) => `\x1b[1m${rgb(NORSE.bold)(s)}`,
+  dim: rgb(NORSE.dim),
 };
+
+/**
+ * Bug-audit QA-2026-08-30 QA-10: finding metadata (file paths, plugin
+ * rule messages) is untrusted data that ends up on a terminal or in a
+ * markdown PR comment. ANSI escapes embedded in a hostile filename could
+ * clear/redraw the screen or forge output; control characters could
+ * corrupt the layout. Strip escapes and C0 controls (keeping tab/LF for
+ * legitimate multi-line messages) before any data reaches a renderer.
+ */
+export function sanitizeData(s: string): string {
+  return s
+    .replace(/\x1b\[[0-9;:?]*[ -/]*[@-~]/g, "") // CSI … final byte
+    .replace(/\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)?/g, "") // OSC … BEL/ST
+    .replace(/\x1b[@-Z\\-_]/g, "") // two-byte C1 feeders
+    .replace(/\x1b/g, "") // any residual escape
+    .replace(/[\x00-\x08\x0b-\x1f\x7f]/g, ""); // other C0 + DEL
+}
+
+const inertId = (s: string) => sanitizeData(s);
 
 const off = {
-  ok: id,
-  info: id,
-  accent: id,
-  warning: id,
-  error: id,
-  bold: id,
-  dim: id,
+  ok: inertId,
+  info: inertId,
+  accent: inertId,
+  warning: inertId,
+  error: inertId,
+  bold: inertId,
+  dim: inertId,
 };
 
-function neon(code: number) {
-  return (s: string) => `\x1b[${code}m${s}\x1b[0m`;
-}
-function id(s: string) {
-  return s;
+function rgb([r, g, b]: readonly [number, number, number]) {
+  return (s: string) => `\x1b[38;2;${r};${g};${b}m${sanitizeData(s)}\x1b[0m`;
 }
 
 /** True when colors should be emitted for this render call. */

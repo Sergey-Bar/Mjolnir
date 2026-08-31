@@ -2,6 +2,7 @@ import {
   mkdtempSync,
   mkdirSync,
   existsSync,
+  readFileSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -121,6 +122,36 @@ describe("runCiInstall", () => {
     expect(runCiInstall(["--gate", "yolo"], cap.io)).toBe(10);
     expect(cap.errText()).toContain("Unknown gate level");
   });
+
+  it("rejects a dangling --gate with exit 10 instead of silently degrading to advisory (bug-audit L11)", () => {
+    const cap = capture();
+    expect(runCiInstall(["--gate"], cap.io)).toBe(10);
+    expect(cap.errText()).toContain("--gate requires a value");
+  });
+
+  it("rejects unknown arguments with exit 10", () => {
+    const cap = capture();
+    expect(runCiInstall(["--nope"], cap.io)).toBe(10);
+    expect(cap.errText()).toContain("Unknown argument(s): --nope");
+  });
+
+  it("refuses to overwrite a hand-customized workflow with exit 10 and preserves it, then --force replaces it", () => {
+    process.chdir(dir);
+    expect(runCiInstall([], capture().io)).toBe(0);
+    const wfPath = join(dir, ".github", "workflows", "mjolnir.yml");
+    const customized = readFileSync(wfPath, "utf8") + "\n# my tweak\n";
+    writeFileSync(wfPath, customized);
+
+    const cap = capture();
+    expect(runCiInstall(["--gate", "error"], cap.io)).toBe(10);
+    expect(cap.errText()).toContain("Refusing to overwrite");
+    expect(cap.errText()).toContain("--force");
+    expect(readFileSync(wfPath, "utf8")).toBe(customized);
+
+    const cap2 = capture();
+    expect(runCiInstall(["--gate", "error", "--force"], cap2.io)).toBe(0);
+    expect(readFileSync(wfPath, "utf8")).not.toBe(customized);
+  });
 });
 
 describe("runSuppressions", () => {
@@ -129,6 +160,27 @@ describe("runSuppressions", () => {
     const cap = capture();
     expect(runSuppressions({ out: cap.out })).toBe(0);
     expect(cap.text()).toContain("No suppressed findings");
+  });
+
+  it("surfaces a corrupted config on the usage-error path instead of an empty report (bug-audit M6)", () => {
+    process.chdir(dir);
+    writeFileSync(join(dir, "mjolnir.config.json"), "{ broken");
+    const cap = capture();
+    expect(runSuppressions({ out: cap.out, err: cap.err })).toBe(10);
+    expect(cap.errText()).toContain("Invalid mjolnir config");
+  });
+
+  it("reads suppressions from the alternate .mjolnir.json config name (bug-audit M6)", () => {
+    process.chdir(dir);
+    writeFileSync(
+      join(dir, ".mjolnir.json"),
+      JSON.stringify({
+        ignore: [{ ruleId: "QA-X", reason: "tracked" }],
+      }),
+    );
+    const cap = capture();
+    expect(runSuppressions({ out: cap.out, err: cap.err })).toBe(0);
+    expect(cap.text()).toContain("QA-X");
   });
 });
 

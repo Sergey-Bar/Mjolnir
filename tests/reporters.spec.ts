@@ -166,15 +166,199 @@ describe("renderSarif", () => {
     );
   });
 
-  it("marks partiallySuccessful when scan is partial", () => {
-    const sarif = JSON.parse(renderSarif(makeResult({ partial: true }))) as {
+  // ── Bug-audit M7: SARIF 2.1.0 schema honesty ─────────────────────────
+
+  it("reports partial success via toolExecutionNotifications, never the illegal partiallySuccessfulReason member (M7a)", () => {
+    const sarif = JSON.parse(
+      renderSarif(makeResult({ partial: true })),
+    ) as unknown as Record<string, unknown>;
+    const run = defined(
+      (sarif.runs as Array<Record<string, unknown>>)[0],
+      "sarif.runs[0]",
+    );
+    const invocation = defined(
+      (run.invocations as Array<Record<string, unknown>>)[0],
+      "run.invocations[0]",
+    );
+    // additionalProperties: false — this member made the whole report
+    // schema-invalid for strict consumers (Code Scanning ingestion…).
+    expect(invocation).not.toHaveProperty("partiallySuccessfulReason");
+    const notifications = invocation.toolExecutionNotifications as Array<{
+      level: string;
+      message: { text: string };
+    }>;
+    expect(notifications).toHaveLength(1);
+    expect(notifications[0]?.level).toBe("warning");
+    expect(notifications[0]?.message.text).toContain("PARTIAL");
+    // And executionSuccessful is honest: a truncated scan is not success.
+    expect(invocation.executionSuccessful).toBe(false);
+  });
+
+  it("executionSuccessful is false when any rule crashed, with a named notification (M7c)", () => {
+    const sarif = JSON.parse(
+      renderSarif(
+        makeResult({
+          analysisStatus: {
+            discovery: "complete",
+            rules: "partial",
+            skippedFiles: 0,
+            durationMs: 5,
+            rulesCrashed: 2,
+          },
+        }),
+      ),
+    ) as unknown as Record<string, unknown>;
+    const run = defined(
+      (sarif.runs as Array<Record<string, unknown>>)[0],
+      "sarif.runs[0]",
+    );
+    const invocation = defined(
+      (run.invocations as Array<Record<string, unknown>>)[0],
+      "run.invocations[0]",
+    );
+    expect(invocation.executionSuccessful).toBe(false);
+    const notifications = invocation.toolExecutionNotifications as Array<{
+      message: { text: string };
+    }>;
+    expect(notifications.some((n) => n.message.text.includes("2 rule"))).toBe(
+      true,
+    );
+  });
+
+  it("executionSuccessful is true and no notifications for a clean complete scan", () => {
+    const sarif = JSON.parse(renderSarif(makeResult())) as unknown as Record<
+      string,
+      unknown
+    >;
+    const run = defined(
+      (sarif.runs as Array<Record<string, unknown>>)[0],
+      "sarif.runs[0]",
+    );
+    const invocation = defined(
+      (run.invocations as Array<Record<string, unknown>>)[0],
+      "run.invocations[0]",
+    );
+    expect(invocation.executionSuccessful).toBe(true);
+    expect(invocation.toolExecutionNotifications).toBeUndefined();
+  });
+
+  it("percent-encodes artifact URIs (M7b): spaces, ?, % and non-ASCII become valid uri-references", () => {
+    const result = makeResult({
+      findings: [
+        makeFinding({ file: "my tests/a#b —ö.spec.ts" }),
+        makeFinding({ file: "100% coverage.spec.ts" }),
+        makeFinding({ file: "plain.spec.ts" }),
+      ],
+    });
+    const sarif = JSON.parse(renderSarif(result)) as {
       runs: Array<{
-        invocations: Array<{ partiallySuccessfulReason?: string }>;
+        results: Array<{
+          locations: Array<{
+            physicalLocation: { artifactLocation: { uri: string } };
+          }>;
+        }>;
       }>;
     };
     const run = defined(sarif.runs[0], "sarif.runs[0]");
-    const invocation = defined(run.invocations[0], "run.invocations[0]");
-    expect(invocation.partiallySuccessfulReason).toBeDefined();
+    const first = defined(run.results[0], "results[0]");
+    const uri = defined(
+      first.locations[0]?.physicalLocation.artifactLocation.uri,
+      "uri",
+    );
+    expect(uri).not.toContain(" ");
+    expect(uri).not.toContain("#");
+    expect(uri).not.toContain("—");
+    expect(uri).toContain("%20");
+    // A literal % must become %25 — encodeURI handles it, but this
+    // case was never locked before (regression guard for M7b).
+    const percent = defined(run.results[1], "results[1]");
+    const percentUri = defined(
+      percent.locations[0]?.physicalLocation.artifactLocation.uri,
+      "uri",
+    );
+    expect(percentUri).toBe("100%25%20coverage.spec.ts");
+    const second = defined(run.results[2], "results[2]");
+    expect(
+      defined(
+        second.locations[0]?.physicalLocation.artifactLocation.uri,
+        "uri",
+      ),
+    ).toBe("plain.spec.ts");
+  });
+
+  it("passes a minimal fetch-free structural check of the SARIF 2.1.0 envelope", () => {
+    const result = makeResult({
+      findings: [makeFinding({ ruleId: "R1", docsUrl: "https://docs/r1" })],
+      partial: true,
+      analysisStatus: {
+        discovery: "partial",
+        rules: "partial",
+        skippedFiles: 1,
+        durationMs: 5,
+        rulesCrashed: 1,
+      },
+    });
+    const sarif = JSON.parse(renderSarif(result)) as Record<string, unknown>;
+    expect(sarif.$schema).toBe("https://json.schemastore.org/sarif-2.1.0.json");
+    expect(sarif.version).toBe("2.1.0");
+    expect(Array.isArray(sarif.runs)).toBe(true);
+    const run = defined(
+      (sarif.runs as Array<Record<string, unknown>>)[0],
+      "sarif.runs[0]",
+    );
+    // Only SARIF-known members on a run (spot-check of
+    // additionalProperties: false at the run level).
+    for (const key of Object.keys(run)) {
+      expect([
+        "tool",
+        "invocations",
+        "results",
+        "originalUriBaseIds",
+        "columnKind",
+      ]).toContain(key);
+    }
+    const driver = (run.tool as Record<string, unknown>).driver as Record<
+      string,
+      unknown
+    >;
+    expect(typeof driver.name).toBe("string");
+    expect(typeof driver.version).toBe("string");
+    expect(Array.isArray(driver.rules)).toBe(true);
+    for (const rule of driver.rules as Array<Record<string, unknown>>) {
+      expect(typeof rule.id).toBe("string");
+      expect(typeof (rule.shortDescription as { text: string }).text).toBe(
+        "string",
+      );
+      for (const key of Object.keys(rule)) {
+        expect(["id", "shortDescription", "helpUri", "properties"]).toContain(
+          key,
+        );
+      }
+    }
+    const invocation = defined(
+      (run.invocations as Array<Record<string, unknown>>)[0],
+      "run.invocations[0]",
+    );
+    // invocation allows ONLY these members (schema: additionalProperties
+    // false) — this is where partiallySuccessfulReason used to sneak in.
+    for (const key of Object.keys(invocation)) {
+      expect(["executionSuccessful", "toolExecutionNotifications"]).toContain(
+        key,
+      );
+    }
+    for (const res of run.results as Array<Record<string, unknown>>) {
+      for (const key of Object.keys(res)) {
+        expect([
+          "ruleId",
+          "level",
+          "message",
+          "locations",
+          "properties",
+        ]).toContain(key);
+      }
+      expect(["error", "warning", "note", "none"]).toContain(res.level);
+      expect(typeof (res.message as { text: string }).text).toBe("string");
+    }
   });
 });
 
@@ -243,7 +427,7 @@ describe("renderTerminal", () => {
       const out = renderTerminal(makeResult({ findings: [makeFinding()] }), {
         isTTY: true,
       });
-      expect(out).toContain("\x1b[9"); // any neon color code (91–97)
+      expect(out).toContain("\x1b[38;2;"); // 24-bit truecolor SGR (Norse palette)
     } finally {
       if (prev !== undefined) process.env["NO_COLOR"] = prev;
     }

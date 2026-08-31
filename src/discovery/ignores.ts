@@ -96,7 +96,9 @@ export function createIgnoreMatcher(root: string): IgnoreMatcher {
   return createMatcherFromPatterns(loadExtraPatterns(root));
 }
 
-function createMatcherFromPatterns(extra: readonly string[]): IgnoreMatcher {
+export function createMatcherFromPatterns(
+  extra: readonly string[],
+): IgnoreMatcher {
   const compiled: CompiledPattern[] = [];
   for (const raw of [...DEFAULT_IGNORES, ...extra]) {
     const entry = compilePattern(raw);
@@ -141,7 +143,13 @@ function loadExtraPatterns(root: string): string[] {
         exclude?: string[];
       };
       if (Array.isArray(cfg.exclude)) {
-        extra.push(...cfg.exclude);
+        // Bug-audit QA-2026-08-30 QA-4 (defense in depth): validate()
+        // rejects non-string exclude entries with a fixable exit-10
+        // error; this filter keeps a programmatically-built matcher from
+        // crashing on them anyway.
+        extra.push(
+          ...cfg.exclude.filter((p): p is string => typeof p === "string"),
+        );
       }
     } catch {
       // Malformed config — ignore silently
@@ -152,8 +160,12 @@ function loadExtraPatterns(root: string): string[] {
 }
 
 function compilePattern(raw: string): CompiledPattern | null {
+  // Bug-audit QA-2026-08-30 QA-4 (defense in depth): non-string patterns
+  // (hostile/malformed config) must not reach string methods.
+  if (typeof raw !== "string") return null;
   let pattern = raw;
   let negated = false;
+  if (pattern.trim() === "") return null;
   if (pattern.startsWith("!")) {
     negated = true;
     pattern = pattern.slice(1);
@@ -172,7 +184,8 @@ function compilePattern(raw: string): CompiledPattern | null {
 function globBody(glob: string): string {
   let re = "";
   for (let i = 0; i < glob.length; i++) {
-    const c: string = glob[i] ?? "";
+    // i < glob.length guarantees the element exists.
+    const c: string = glob[i] as string;
     if (c === "*") {
       if (glob[i + 1] === "*") {
         // `**/` matches zero or more path segments; `**` matches anything.

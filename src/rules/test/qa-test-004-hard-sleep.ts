@@ -46,14 +46,20 @@ export const hardSleep = defineRule({
       // not a wall-clock wait, so it is also excluded.
       /\bawait\s+(?:delay|sleep|wait|pause|timeout)\s*\(\s*[1-9]\d*\s*\)/g,
       // setTimeout wrapped in a Promise (with or without await / type args).
-      /\b(?:await\s+)?new\s+Promise\s*(?:<[^>]*>)?\s*\(\s*\(?\s*\w+\s*\)?\s*=>\s*setTimeout\s*\(\s*\w+\s*,\s*\d+\s*\)\s*\)/g,
+      /\b(?:await\s+)?new\s+Promise\s*(?:<[^>]*>\s*)?\(\s*(?:\(\s*)?\w+\s*(?:\)\s*)?=>\s*setTimeout\s*\(\s*\w+\s*,\s*\d+\s*\)\s*\)/g,
       // setTimeout-as-promise stored in a helper then awaited.
       /\bawait\s+\w*[Dd]elay\w*\s*\(\s*\d+\s*\)/g,
     ];
 
+    // Bug-audit M0 #2: patterns 2 and 4 are strict subsets of pattern 5,
+    // and 3 overlaps 6 — the same call produced TWO identical findings,
+    // inflating the report and the score. Deduplicate by match position.
+    const seen = new Set<number>();
     for (const re of patterns) {
       let m: RegExpExecArray | null;
       while ((m = re.exec(text)) !== null) {
+        if (seen.has(m.index)) continue;
+        seen.add(m.index);
         const isPlaywright = m[0].startsWith("page.waitForTimeout");
         findings.push({
           severity: "warning",

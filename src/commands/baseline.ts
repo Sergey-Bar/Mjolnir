@@ -19,7 +19,13 @@
  * command does not make for them.
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, join } from "node:path";
 
 import type { Finding, ScanResult } from "../types.js";
@@ -56,17 +62,42 @@ export function buildBaseline(
   };
 }
 
+export interface SaveBaselineResult {
+  path: string;
+  /** True when an existing baseline was replaced (D3: notice + backup). */
+  replaced: boolean;
+  /** Path of the previous baseline's backup, when it was replaced. */
+  backupPath?: string;
+}
+
+/**
+ * Bug-audit L7 / decision D3: overwriting an existing baseline used to
+ * happen silently — a stale re-capture on a dirty tree made `diff`
+ * report all old debt as new with no way to see what was lost. The
+ * previous baseline is now backed up to `<path>.bak` and the caller
+ * prints the notice.
+ */
 export function saveBaseline(
   result: ScanResult,
   commit: string,
   outPath: string,
-): string {
+): SaveBaselineResult {
   mkdirSync(dirname(outPath), { recursive: true });
+  const existed = existsSync(outPath);
+  let backupPath: string | undefined;
+  if (existed) {
+    backupPath = `${outPath}.bak`;
+    copyFileSync(outPath, backupPath);
+  }
   writeFileSync(
     outPath,
     JSON.stringify(buildBaseline(result, commit), null, 2) + "\n",
   );
-  return outPath;
+  return {
+    path: outPath,
+    replaced: existed,
+    ...(backupPath !== undefined ? { backupPath } : {}),
+  };
 }
 
 export function loadBaseline(path: string): BaselineFile | null {
@@ -77,9 +108,23 @@ export function loadBaseline(path: string): BaselineFile | null {
       typeof parsed === "object" &&
       parsed !== null &&
       "findings" in parsed &&
-      Array.isArray((parsed as { findings: unknown }).findings)
+      Array.isArray(parsed.findings)
     ) {
-      return parsed as BaselineFile;
+      const file = parsed as BaselineFile;
+      // Bug-audit QA-2026-08-30 QA-12 (totality, M3-style): the file is
+      // arbitrary local JSON — a hostile or hand-edited baseline must not
+      // be able to crash `diff` (a `null` element used to explode in
+      // fingerprint()) or leak junk into the report. Invalid entries are
+      // dropped; the file loads with whatever is usable.
+      file.findings = file.findings.filter(
+        (f): f is BaselineFile["findings"][number] =>
+          typeof f === "object" &&
+          f !== null &&
+          typeof (f).ruleId === "string" &&
+          typeof (f).file === "string" &&
+          typeof (f).message === "string",
+      );
+      return file;
     }
     return null;
   } catch {
@@ -150,13 +195,27 @@ export function diffAgainstBaseline(
   };
 }
 
-export function renderBaselineSaved(path: string, count: number): string {
-  return [
+export function renderBaselineSaved(
+  path: string,
+  count: number,
+  replaced?: { backupPath?: string },
+): string {
+  const lines = [
     "▚▞ BASELINE SAVED",
     "",
     `Captured ${count} finding${count === 1 ? "" : "s"} to ${path}.`,
+  ];
+  // Bug-audit L7: replacing a baseline is a consequential event — say so,
+  // and point at the backup of the previous one.
+  if (replaced?.backupPath !== undefined) {
+    lines.push(
+      `Replaced an existing baseline — the previous one was saved to ${replaced.backupPath}.`,
+    );
+  }
+  lines.push(
     'Run "mjolnir diff" after future changes to see only what\'s new.',
-  ].join("\n");
+  );
+  return lines.join("\n");
 }
 
 export function renderBaselineDiff(diff: BaselineDiff): string {

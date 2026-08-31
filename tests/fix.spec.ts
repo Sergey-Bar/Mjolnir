@@ -271,7 +271,7 @@ describe("planAndApplyFixes", () => {
     expect(after).toContain("page.click");
   });
 
-  it("skips files over the size cap without touching them", () => {
+  it("skips files over the size cap without touching them — and says so (bug-audit L6)", () => {
     const file = "huge.spec.ts";
     // > 512 KB — the MAX_FILE_BYTES guard.
     writeFileSync(join(dir, file), "// " + "x".repeat(600 * 1024));
@@ -279,7 +279,15 @@ describe("planAndApplyFixes", () => {
       scan([finding("QA-TEST-001", file, "`.only` focus modifier committed.")]),
       dir,
     );
-    expect(results).toHaveLength(0);
+    // The old code skipped the file with NO result entry — `mjolnir fix`
+    // exited 0 while silently doing nothing. It now reports the skip.
+    expect(results).toHaveLength(1);
+    expect(results[0]?.status).toBe("failed");
+    expect(results[0]?.description).toContain("over the");
+    expect(results[0]?.description).toContain("fix limit");
+    expect(readFileSync(join(dir, file), "utf8")).toContain(
+      "x".repeat(600 * 1024),
+    );
   });
 
   it("reports failed when write target is unwritable", () => {

@@ -131,21 +131,22 @@ function describeStep(step: StepNode, index: number): string {
  * which reported every step-level finding on the same line.
  */
 function locateStepContinueOnError(text: string, step: StepNode): number {
-  const anchor = step.name ?? step.uses ?? step.run?.split("\n")[0];
+  // Called only for gate steps (run or uses — see stepIsVerificationGate),
+  // so the anchor is always defined.
+  const anchor = (step.name ?? step.uses ?? step.run?.split("\n")[0]) as string;
   let searchFrom = 0;
-  if (anchor) {
-    const at = text.indexOf(anchor.trim());
-    if (at !== -1) {
-      // `continue-on-error` may sit either just before or just after the
-      // anchor key within the same step block; search backwards a little.
-      const blockStart = text.lastIndexOf("\n- ", at);
-      searchFrom = blockStart === -1 ? Math.max(0, at - 200) : blockStart;
-    }
+  const at = text.indexOf(anchor.trim());
+  if (at !== -1) {
+    // Step list markers are always indented in workflow YAML, so a raw
+    // "\n- " boundary never exists; a bounded backwards window from the
+    // anchor is the practical step-block start.
+    searchFrom = Math.max(0, at - 200);
   }
   const re = /continue-on-error:\s*true/g;
   re.lastIndex = searchFrom;
-  const m = re.exec(text);
-  if (!m) return findLine(text, /continue-on-error:/m);
+  // A parsed `true` (YAML 1.2 core schema only accepts lowercase `true`)
+  // always carries a raw `continue-on-error: true` match.
+  const m = re.exec(text) as RegExpExecArray;
   return lineOf(text, m.index);
 }
 

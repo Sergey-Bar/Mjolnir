@@ -34,7 +34,7 @@ export const pwNoEnvGuard = defineRule({
 
     // Engine/platform-specific APIs used anywhere in the file.
     const usesEngineSpecific =
-      /(?:webgl|getContext\s*\(\s*['"]webgl|video|codecs|webkit|firefox)/i.test(
+      /webgl|getContext\s*\(\s*['"]webgl|video|codecs|webkit|firefox/i.test(
         text,
       );
     if (!usesEngineSpecific) return findings;

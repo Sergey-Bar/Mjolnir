@@ -12,3 +12,8 @@ test("shows saved shipping address", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Shipping" })).toBeVisible();
   await expect(page.locator('[data-testid="address-card"]')).toBeVisible();
 });
+
+test.skip("applies a promo code", async ({ page }) => {
+  await page.goto("/checkout");
+  await page.getByLabel("Promo code").fill("SAVE10");
+});
