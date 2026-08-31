@@ -82,6 +82,7 @@ const score = ref(0);
 const dash = ref(339.292); // 2πr, r = 54 — full offset = empty ring
 let io: IntersectionObserver | undefined;
 let raf = 0;
+let revealTimer = 0;
 
 function runGauge() {
   const target = 70;
@@ -108,8 +109,22 @@ async function copyCmd() {
   }
 }
 
+function revealAll() {
+  document
+    .querySelectorAll("[data-reveal]")
+    .forEach((el) => el.classList.add("is-in"));
+  score.value = 70;
+  dash.value = 339.292 * 0.3;
+}
+
 onMounted(() => {
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // No IntersectionObserver (or reduced motion): just show everything.
+  if (!("IntersectionObserver" in window)) {
+    revealAll();
+    return;
+  }
 
   io = new IntersectionObserver(
     (entries) => {
@@ -124,15 +139,19 @@ onMounted(() => {
         io?.unobserve(en.target);
       }
     },
-    { threshold: 0.35 },
+    { threshold: 0.3 },
   );
 
   document.querySelectorAll("[data-reveal]").forEach((el) => io?.observe(el));
+
+  // Safety net: never leave content stuck invisible.
+  revealTimer = window.setTimeout(revealAll, 4000);
 });
 
 onBeforeUnmount(() => {
   io?.disconnect();
   cancelAnimationFrame(raf);
+  clearTimeout(revealTimer);
 });
 </script>
 
@@ -216,7 +235,13 @@ onBeforeUnmount(() => {
           </a>
         </div>
 
-        <button class="cmd" :class="{ copied }" @click="copyCmd">
+        <button
+          class="cmd"
+          :class="{ copied }"
+          type="button"
+          aria-label="Copy: npx mjolnir-qa@latest"
+          @click="copyCmd"
+        >
           <span class="prompt">$</span>
           <code>npx mjolnir-qa@latest</code>
           <span class="copy">{{ copied ? "copied ✓" : "copy" }}</span>
@@ -305,7 +330,7 @@ onBeforeUnmount(() => {
       <h2 class="sect-title">Not another linter</h2>
       <div class="cmp-grid">
         <div class="cmp cmp-them">
-          <h4>Linters &amp; coverage tools</h4>
+          <h3>Linters &amp; coverage tools</h3>
           <p>tell you whether the code follows rules.</p>
           <ul>
             <li>Blind to CI workflow integrity</li>
@@ -315,7 +340,7 @@ onBeforeUnmount(() => {
         </div>
         <div class="cmp cmp-us">
           <span class="cmp-mark" aria-hidden="true">ᛏ</span>
-          <h4>Mjölnir</h4>
+          <h3>Mjölnir</h3>
           <p>tells you whether your verification can be trusted.</p>
           <ul>
             <li>Catches false-green CI tricks structurally</li>
@@ -334,7 +359,13 @@ onBeforeUnmount(() => {
         <span class="shock" />
       </div>
       <h2>Stop shipping tests you can't trust.</h2>
-      <button class="cmd big" :class="{ copied }" @click="copyCmd">
+      <button
+        class="cmd big"
+        :class="{ copied }"
+        type="button"
+        aria-label="Copy: npx mjolnir-qa@latest"
+        @click="copyCmd"
+      >
         <span class="prompt">$</span>
         <code>npx mjolnir-qa@latest</code>
         <span class="copy">{{ copied ? "copied ✓" : "copy" }}</span>
@@ -357,12 +388,15 @@ onBeforeUnmount(() => {
   --edge: clamp(1.2rem, 5vw, 4rem);
   overflow-x: clip;
 }
-.mj h2 {
+.mj :where(h2, h3, h4) {
   font-family: var(--mj-display);
   font-weight: 600;
-  letter-spacing: 0.01em;
+  line-height: 1.2;
   border: 0;
   padding: 0;
+}
+.mj h2 {
+  letter-spacing: 0.01em;
 }
 
 /* ---------------- HERO ---------------- */
@@ -829,16 +863,18 @@ onBeforeUnmount(() => {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.2rem;
+  align-items: start;
 }
 .cmp {
   padding: 1.7rem 1.6rem;
   border-radius: 14px;
   border: 1px solid var(--vp-c-border);
 }
-.cmp h4 {
+.cmp h3 {
   margin: 0 0 0.2rem;
   font-family: var(--mj-display);
   font-size: 1.1rem;
+  font-weight: 600;
 }
 .cmp > p {
   margin: 0 0 1rem;
@@ -901,11 +937,12 @@ onBeforeUnmount(() => {
 }
 .final h2 {
   font-size: clamp(1.7rem, 5vw, 2.8rem);
-  margin: 1.4rem 0 1.8rem;
+  margin: 2.6rem 0 2rem;
 }
 .strike {
   position: relative;
-  display: inline-block;
+  display: block;
+  margin-bottom: 0.4rem;
 }
 .strike img {
   filter: drop-shadow(0 10px 24px rgba(245, 158, 11, 0.4));

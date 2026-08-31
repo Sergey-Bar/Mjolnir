@@ -1,17 +1,68 @@
 import { defineConfig } from "vitepress";
 
 // Project site served from https://sergey-bar.github.io/Mjolnir/
+const BASE = "/Mjolnir/";
+const REPO_BLOB = "https://github.com/Sergey-Bar/Mjolnir/blob/main/";
+
+// Docs that are @include'd from ../../docs and ../../CONTRIBUTING.md carry
+// links written relative to the repo, not the site. Map the ones that have
+// a page here to that page; send the rest to GitHub so nothing dead-ends.
+const DOC_ROUTES: Record<string, string> = {
+  "RULE-LIFECYCLE": "reference/rule-lifecycle",
+  SCORING: "guide/scoring",
+  "FP-AUDIT": "reference/fp-audit",
+  "SARIF-INTEGRATION": "reference/sarif",
+  CONTRIBUTING: "reference/contributing",
+};
+
 export default defineConfig({
   title: "Mjölnir",
   description:
     "Verification Trust Engine for QA — audits test suites and CI pipelines, reports a worthiness score and prioritized findings.",
-  base: "/Mjolnir/",
+  base: BASE,
   lang: "en-US",
   cleanUrls: true,
   lastUpdated: true,
   appearance: "dark",
-  // Included docs (docs/*.md) carry links relative to the repo, not the site.
+  // Included docs (docs/*.md) carry links relative to the repo, not the
+  // site; markdown.config below rewrites them, this silences the checker.
   ignoreDeadLinks: true,
+  markdown: {
+    config(md) {
+      const orig = md.renderer.rules.link_open;
+      md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
+        const tok = tokens[idx];
+        const attrs = tok.attrs;
+        const ai = tok.attrIndex("href");
+        if (attrs && ai >= 0) {
+          const href = attrs[ai][1];
+          if (!/^(https?:|\/|#|mailto:)/.test(href)) {
+            const [rawPath, hash] = href.replace(/^\.\//, "").split("#");
+            const suffix = hash ? "#" + hash : "";
+            const key = rawPath
+              .replace(/^docs\//, "")
+              .replace(/\.md$/i, "")
+              .toUpperCase();
+            const route = DOC_ROUTES[key];
+            if (route) {
+              // root-relative — VitePress prepends the base itself
+              attrs[ai][1] = "/" + route + suffix;
+            } else {
+              const repoPath = rawPath.startsWith("docs/")
+                ? rawPath
+                : "docs/" + rawPath;
+              attrs[ai][1] = REPO_BLOB + repoPath + suffix;
+              tok.attrPush(["target", "_blank"]);
+              tok.attrPush(["rel", "noreferrer"]);
+            }
+          }
+        }
+        return orig
+          ? orig(tokens, idx, options, env, self)
+          : self.renderToken(tokens, idx, options);
+      };
+    },
+  },
   head: [
     ["meta", { name: "theme-color", content: "#B45309" }],
     ["link", { rel: "preconnect", href: "https://fonts.googleapis.com" }],
