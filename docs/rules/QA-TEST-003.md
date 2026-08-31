@@ -6,11 +6,11 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | ------------------------------------- | ------------------------------- |
 | Severity                              | error                           |
 | Confidence                            | high                            |
-| Tier                                  | core                            |
-| Measured FP rate                      | not yet measured                |
+| Tier                                  | quarantine                      |
+| Measured FP rate                      | 85% (n=20)                      |
 | Evidence level                        | E2                              |
 | QA impact                             | False-green risk (FALSE-GREEN)  |
-| False-positive risk (author estimate) | low                             |
+| False-positive risk (author estimate) | medium                          |
 | Autofix available                     | no                              |
 | Languages                             | typescript, javascript          |
 | Frameworks                            | jest, vitest, playwright, mocha |

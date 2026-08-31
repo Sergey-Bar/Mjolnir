@@ -1,24 +1,4 @@
-{"ruleId":"QA-PW-112","file":"packages/preact-query/src/__tests__/useQueries.test.tsx","line":1184,"verdict":"","note":""}
-{"ruleId":"QA-PW-112","file":"packages/preact-query/src/__tests__/useQueries.test.tsx","line":1185,"verdict":"","note":""}
-{"ruleId":"QA-PW-112","file":"packages/preact-query/src/__tests__/useQueries.test.tsx","line":1195,"verdict":"","note":""}
-{"ruleId":"QA-PW-112","file":"packages/preact-query/src/__tests__/useQueries.test.tsx","line":1196,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-009","file":"packages/angular-query-experimental/src/__tests__/inject-infinite-query.test.ts","line":43,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-009","file":"packages/angular-query-experimental/src/__tests__/inject-is-fetching.test.ts","line":45,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-009","file":"packages/angular-query-experimental/src/__tests__/inject-mutation.test.ts","line":65,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-009","file":"packages/angular-query-experimental/src/__tests__/inject-queries.test.ts","line":166,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-009","file":"packages/angular-query-experimental/src/__tests__/inject-query.test.ts","line":187,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-009","file":"packages/angular-query-experimental/src/__tests__/mutation-options.test.ts","line":37,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-009","file":"packages/angular-query-experimental/src/__tests__/pending-tasks.test.ts","line":296,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-009","file":"packages/preact-query/src/__tests__/mutationOptions.test.tsx","line":24,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-009","file":"packages/query-core/src/__tests__/hydration.test.tsx","line":943,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-009","file":"packages/query-core/src/__tests__/mutation.test.tsx","line":717,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-009","file":"packages/query-core/src/__tests__/mutationCache.test.tsx","line":364,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-009","file":"packages/query-core/src/__tests__/mutationObserver.test.tsx","line":21,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-009","file":"packages/query-core/src/__tests__/queriesObserver.test.tsx","line":301,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-009","file":"packages/query-core/src/__tests__/query.test.tsx","line":587,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-009","file":"packages/query-core/src/__tests__/queryCache.test.tsx","line":146,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-009","file":"packages/query-core/src/__tests__/queryClient.test.tsx","line":412,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-009","file":"packages/query-core/src/__tests__/queryObserver.test.tsx","line":962,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-009","file":"packages/react-query/src/__tests__/mutationOptions.test.tsx","line":23,"verdict":"","note":""}
-{"ruleId":"QA-TEST-010","file":"packages/query-devtools/src/__tests__/utils.test.ts","line":184,"verdict":"","note":""}
-{"ruleId":"QA-TEST-010","file":"packages/query-devtools/src/__tests__/utils.test.ts","line":575,"verdict":"","note":""}
+{"ruleId":"QA-PW-112","file":"packages/preact-query/src/__tests__/useQueries.test.tsx","line":1184,"verdict":"FP","note":"repo-consistent camelCase test-id convention (status1/fetchStatus2) - style enforcement, not a defect; ids resolve and assertions pass"}
+{"ruleId":"QA-PW-112","file":"packages/preact-query/src/__tests__/useQueries.test.tsx","line":1185,"verdict":"FP","note":"repo-consistent camelCase test-id convention (status1/fetchStatus2) - style enforcement, not a defect"}
+{"ruleId":"QA-PW-112","file":"packages/preact-query/src/__tests__/useQueries.test.tsx","line":1195,"verdict":"FP","note":"repo-consistent camelCase test-id convention (status1/fetchStatus2) - style enforcement, not a defect"}
+{"ruleId":"QA-PW-112","file":"packages/preact-query/src/__tests__/useQueries.test.tsx","line":1196,"verdict":"FP","note":"repo-consistent camelCase test-id convention (status1/fetchStatus2) - style enforcement, not a defect"}

@@ -1,83 +1,76 @@
-{"ruleId":"QA-PW-119","file":"packages/adapter-bun/test/env.spec.ts","line":6,"verdict":"","note":""}
-{"ruleId":"QA-PW-119","file":"packages/adapter-bun/test/handler.spec.ts","line":6,"verdict":"","note":""}
-{"ruleId":"QA-PW-119","file":"packages/adapter-bun/test/routes.spec.ts","line":9,"verdict":"","note":""}
-{"ruleId":"QA-PW-119","file":"packages/adapter-bun/test/start.spec.ts","line":8,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-001","file":"packages/adapter-bun/test/adapter.spec.ts","line":406,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-001","file":"packages/adapter-bun/test/adapter.spec.ts","line":417,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-001","file":"packages/adapter-bun/test/start.spec.ts","line":19,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-001","file":"packages/adapter-bun/test/start.spec.ts","line":34,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-001","file":"packages/adapter-bun/test/start.spec.ts","line":90,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-001","file":"packages/adapter-bun/test/start.spec.ts","line":167,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-001","file":"packages/kit/src/core/sync/utils.spec.js","line":23,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-001","file":"packages/kit/src/exports/node/index.spec.js","line":210,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-001","file":"packages/kit/src/runtime/client/remote-functions/shared.transport.spec.js","line":103,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-001","file":"packages/kit/src/runtime/client/remote-functions/shared.transport.spec.js","line":125,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-001","file":"packages/kit/src/runtime/client/remote-functions/shared.transport.spec.js","line":143,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-001","file":"packages/kit/src/runtime/client/remote-functions/shared.transport.spec.js","line":164,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-001","file":"packages/kit/src/runtime/server/validate-headers.spec.js","line":12,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-001","file":"packages/kit/src/runtime/server/validate-headers.spec.js","line":17,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-001","file":"packages/kit/src/runtime/server/validate-headers.spec.js","line":24,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-001","file":"packages/kit/src/runtime/server/validate-headers.spec.js","line":36,"verdict":"","note":""}
-{"ruleId":"QA-TEST-002","file":"packages/kit/src/runtime/server/page/csp.spec.js","line":46,"verdict":"","note":""}
-{"ruleId":"QA-TEST-002","file":"packages/kit/test/apps/async/test/client.test.js","line":5,"verdict":"","note":""}
-{"ruleId":"QA-TEST-002","file":"packages/kit/test/apps/async/test/client.test.js","line":12,"verdict":"","note":""}
-{"ruleId":"QA-TEST-002","file":"packages/kit/test/apps/async/test/server.test.js","line":8,"verdict":"","note":""}
-{"ruleId":"QA-TEST-002","file":"packages/kit/test/apps/async/test/server.test.js","line":14,"verdict":"","note":""}
-{"ruleId":"QA-TEST-002","file":"packages/kit/test/apps/async/test/server.test.js","line":19,"verdict":"","note":""}
-{"ruleId":"QA-TEST-002","file":"packages/kit/test/apps/async/test/server.test.js","line":27,"verdict":"","note":""}
-{"ruleId":"QA-TEST-002","file":"packages/kit/test/apps/async/test/server.test.js","line":50,"verdict":"","note":""}
-{"ruleId":"QA-TEST-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":7,"verdict":"","note":""}
-{"ruleId":"QA-TEST-002","file":"packages/kit/test/apps/basics/test/cross-platform/client.test.js","line":7,"verdict":"","note":""}
-{"ruleId":"QA-TEST-002","file":"packages/kit/test/apps/basics/test/cross-platform/server.test.js","line":6,"verdict":"","note":""}
-{"ruleId":"QA-TEST-002","file":"packages/kit/test/apps/basics/test/server.test.js","line":11,"verdict":"","note":""}
-{"ruleId":"QA-TEST-002","file":"packages/kit/test/apps/basics/test/server.test.js","line":1156,"verdict":"","note":""}
-{"ruleId":"QA-TEST-002","file":"packages/kit/test/apps/basics/test/server.test.js","line":1166,"verdict":"","note":""}
-{"ruleId":"QA-PW-002","file":"packages/adapter-bun/test/apps/basic/test/server.test.js","line":77,"verdict":"","note":""}
-{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/async/test/client.test.js","line":674,"verdict":"","note":""}
-{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/async/test/client.test.js","line":1008,"verdict":"","note":""}
-{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1480,"verdict":"","note":""}
-{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1481,"verdict":"","note":""}
-{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1485,"verdict":"","note":""}
-{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1486,"verdict":"","note":""}
-{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1494,"verdict":"","note":""}
-{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1495,"verdict":"","note":""}
-{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1501,"verdict":"","note":""}
-{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1502,"verdict":"","note":""}
-{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1510,"verdict":"","note":""}
-{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1540,"verdict":"","note":""}
-{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1541,"verdict":"","note":""}
-{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1545,"verdict":"","note":""}
-{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1546,"verdict":"","note":""}
-{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1560,"verdict":"","note":""}
-{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1561,"verdict":"","note":""}
-{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1565,"verdict":"","note":""}
-{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1566,"verdict":"","note":""}
-{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/async/test/client.test.js","line":17,"verdict":"","note":""}
-{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":951,"verdict":"","note":""}
-{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":961,"verdict":"","note":""}
-{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":971,"verdict":"","note":""}
-{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1004,"verdict":"","note":""}
-{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1016,"verdict":"","note":""}
-{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1027,"verdict":"","note":""}
-{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1038,"verdict":"","note":""}
-{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1049,"verdict":"","note":""}
-{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1057,"verdict":"","note":""}
-{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1066,"verdict":"","note":""}
-{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1083,"verdict":"","note":""}
-{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1106,"verdict":"","note":""}
-{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1113,"verdict":"","note":""}
-{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1131,"verdict":"","note":""}
-{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1145,"verdict":"","note":""}
-{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1183,"verdict":"","note":""}
-{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1198,"verdict":"","note":""}
-{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1236,"verdict":"","note":""}
-{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1243,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-011","file":"packages/kit/test/apps/async/test/server.test.js","line":49,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-011","file":"packages/kit/test/apps/async/test/server.test.js","line":50,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-011","file":"packages/kit/test/apps/async/test/server.test.js","line":63,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-011","file":"packages/kit/test/apps/async/test/server.test.js","line":75,"verdict":"","note":""}
-{"ruleId":"QA-PW-005","file":"packages/kit/test/apps/basics/test/client.test.js","line":1741,"verdict":"","note":""}
-{"ruleId":"QA-PW-005","file":"packages/kit/test/apps/basics/test/client.test.js","line":2652,"verdict":"","note":""}
-{"ruleId":"QA-PW-005","file":"packages/kit/test/apps/basics/test/cross-platform/client.test.js","line":72,"verdict":"","note":""}
-{"ruleId":"QA-PW-005","file":"packages/kit/test/apps/basics/test/cross-platform/client.test.js","line":91,"verdict":"","note":""}
-{"ruleId":"QA-PW-117","file":"packages/kit/test/apps/basics/test/cross-platform/client.test.js","line":751,"verdict":"","note":""}
+{"ruleId":"QA-PW-119","file":"packages/adapter-bun/test/env.spec.ts","line":6,"verdict":"FP","note":"instance is a module-level counter for cache-busting module specifiers (?instance=${++instance}) - not state one test writes for another to read"}
+{"ruleId":"QA-PW-119","file":"packages/adapter-bun/test/handler.spec.ts","line":6,"verdict":"FP","note":"instance is a module-level counter for cache-busting module specifiers (?instance=${++instance}) - not state one test writes for another to read"}
+{"ruleId":"QA-PW-119","file":"packages/adapter-bun/test/routes.spec.ts","line":9,"verdict":"FP","note":"instance is a module-level counter for cache-busting module specifiers (?instance=${++instance}) - not state one test writes for another to read"}
+{"ruleId":"QA-PW-119","file":"packages/adapter-bun/test/start.spec.ts","line":8,"verdict":"FP","note":"instance is a module-level counter for cache-busting module specifiers (?instance=${++instance}) - not state one test writes for another to read"}
+{"ruleId":"QA-TQUAL-001","file":"packages/adapter-bun/test/adapter.spec.ts","line":406,"verdict":"FP","note":"log.warn spy observes the real adapter under test emitting the warning - the mock call IS the observable contract"}
+{"ruleId":"QA-TQUAL-001","file":"packages/adapter-bun/test/adapter.spec.ts","line":417,"verdict":"FP","note":"asserts compress was NOT called - a negative behavioral contract over the real adapter, not mock-only verification"}
+{"ruleId":"QA-TQUAL-001","file":"packages/adapter-bun/test/start.spec.ts","line":19,"verdict":"FP","note":"serve spy records how the real start module configured Bun - the call shape is the behavior under test"}
+{"ruleId":"QA-TQUAL-001","file":"packages/adapter-bun/test/start.spec.ts","line":34,"verdict":"FP","note":"asserts env vars override the real TCP defaults passed to serve - spy observes real logic output"}
+{"ruleId":"QA-TQUAL-001","file":"packages/adapter-bun/test/start.spec.ts","line":90,"verdict":"FP","note":"fs spies observe the real stale-socket removal side effect - the call is the contract"}
+{"ruleId":"QA-TQUAL-001","file":"packages/adapter-bun/test/start.spec.ts","line":167,"verdict":"FP","note":"second-signal exit test observes the real shutdown handler forcing exit - spy is the observable outcome"}
+{"ruleId":"QA-TQUAL-001","file":"packages/kit/src/core/sync/utils.spec.js","line":23,"verdict":"FP","note":"asserts no warning is emitted for a missing file - negative warning contract over the real sync util"}
+{"ruleId":"QA-TQUAL-001","file":"packages/kit/src/exports/node/index.spec.js","line":210,"verdict":"FP","note":"vi.fn() listener verifies real drain logic preserves unrelated listeners - spy is the observer, not a stand-in"}
+{"ruleId":"QA-TQUAL-001","file":"packages/kit/src/runtime/client/remote-functions/shared.transport.spec.js","line":103,"verdict":"FP","note":"stubbed fetch is the input; fail/set spies observe the real transport reconciliation logic"}
+{"ruleId":"QA-TQUAL-001","file":"packages/kit/src/runtime/client/remote-functions/shared.transport.spec.js","line":125,"verdict":"FP","note":"asserts real transport does not fail missing updates before commit - spies observe real logic"}
+{"ruleId":"QA-TQUAL-001","file":"packages/kit/src/runtime/client/remote-functions/shared.transport.spec.js","line":143,"verdict":"FP","note":"asserts real transport does not fail returned updates - spies observe real logic"}
+{"ruleId":"QA-TQUAL-001","file":"packages/kit/src/runtime/client/remote-functions/shared.transport.spec.js","line":164,"verdict":"FP","note":"asserts real transport does not fail explicitly ignored updates - spies observe real logic"}
+{"ruleId":"QA-TQUAL-001","file":"packages/kit/src/runtime/server/validate-headers.spec.js","line":12,"verdict":"FP","note":"warn-spy asserts the real validator accepts valid directives silently - the warning emission is the contract"}
+{"ruleId":"QA-TQUAL-001","file":"packages/kit/src/runtime/server/validate-headers.spec.js","line":17,"verdict":"FP","note":"warn-spy asserts the real validator rejects invalid directives with a message - warning text is the contract"}
+{"ruleId":"QA-TQUAL-001","file":"packages/kit/src/runtime/server/validate-headers.spec.js","line":24,"verdict":"FP","note":"warn-spy asserts the real validator flags empty directives - warning emission is the contract"}
+{"ruleId":"QA-TQUAL-001","file":"packages/kit/src/runtime/server/validate-headers.spec.js","line":36,"verdict":"FP","note":"warn-spy asserts multiple cache-control values are accepted silently - negative warning contract"}
+{"ruleId":"QA-TEST-002","file":"packages/kit/src/runtime/server/page/csp.spec.js","line":46,"verdict":"TP","note":"declaration-style test.skip with TODO justification (strict-dynamic in dev) - test never runs, tracked"}
+{"ruleId":"QA-TEST-002","file":"packages/kit/test/apps/async/test/client.test.js","line":5,"verdict":"FP","note":"file-level conditional capability skip (runs whenever JS is enabled) - legitimate scoping, not hidden broken behavior"}
+{"ruleId":"QA-TEST-002","file":"packages/kit/test/apps/async/test/client.test.js","line":12,"verdict":"FP","note":"conditional skip with reason, runs in dev mode - legitimate environment scoping"}
+{"ruleId":"QA-TEST-002","file":"packages/kit/test/apps/async/test/server.test.js","line":8,"verdict":"FP","note":"file-level conditional capability skip (runs when JS is disabled) - legitimate scoping"}
+{"ruleId":"QA-TEST-002","file":"packages/kit/test/apps/async/test/server.test.js","line":14,"verdict":"FP","note":"conditional skip with reason, runs after build - legitimate environment scoping"}
+{"ruleId":"QA-TEST-002","file":"packages/kit/test/apps/async/test/server.test.js","line":19,"verdict":"FP","note":"conditional skip with reason, runs after build - legitimate environment scoping"}
+{"ruleId":"QA-TEST-002","file":"packages/kit/test/apps/async/test/server.test.js","line":27,"verdict":"FP","note":"conditional skip with reason, runs after build - legitimate environment scoping"}
+{"ruleId":"QA-TEST-002","file":"packages/kit/test/apps/async/test/server.test.js","line":50,"verdict":"FP","note":"conditional skip with reason, runs after build - legitimate environment scoping"}
+{"ruleId":"QA-TEST-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":7,"verdict":"FP","note":"file-level conditional capability skip (runs whenever JS is enabled) - legitimate scoping"}
+{"ruleId":"QA-TEST-002","file":"packages/kit/test/apps/basics/test/cross-platform/client.test.js","line":7,"verdict":"FP","note":"file-level conditional capability skip (runs whenever JS is enabled) - legitimate scoping"}
+{"ruleId":"QA-TEST-002","file":"packages/kit/test/apps/basics/test/cross-platform/server.test.js","line":6,"verdict":"FP","note":"file-level conditional capability skip (runs when JS is disabled) - legitimate scoping"}
+{"ruleId":"QA-TEST-002","file":"packages/kit/test/apps/basics/test/server.test.js","line":11,"verdict":"FP","note":"file-level conditional capability skip (runs when JS is disabled) - legitimate scoping"}
+{"ruleId":"QA-TEST-002","file":"packages/kit/test/apps/basics/test/server.test.js","line":1156,"verdict":"FP","note":"conditional skip with reason, runs after build - legitimate environment scoping"}
+{"ruleId":"QA-TEST-002","file":"packages/kit/test/apps/basics/test/server.test.js","line":1166,"verdict":"FP","note":"conditional skip with reason, runs after build - legitimate environment scoping"}
+{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1480,"verdict":"TP","note":"expect(locator).toBeVisible() without await - floating assertion never gates the test"}
+{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1481,"verdict":"TP","note":"expect(locator).toBeVisible() without await - floating assertion never gates the test"}
+{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1485,"verdict":"TP","note":"expect(locator).toBeHidden() without await - floating assertion never gates the test"}
+{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1486,"verdict":"TP","note":"expect(locator).toBeHidden() without await - floating assertion never gates the test"}
+{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1494,"verdict":"TP","note":"expect(locator).toBeVisible() without await - floating assertion never gates the test"}
+{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1495,"verdict":"TP","note":"expect(locator).toBeVisible() without await - floating assertion never gates the test"}
+{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1501,"verdict":"TP","note":"expect(locator).toBeHidden() without await - floating assertion never gates the test"}
+{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1502,"verdict":"TP","note":"expect(locator).toBeHidden() without await - floating assertion never gates the test"}
+{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1510,"verdict":"TP","note":"expect(locator).toBeVisible() without await - floating assertion never gates the test"}
+{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1540,"verdict":"TP","note":"expect(locator).toBeVisible() without await - floating assertion never gates the test"}
+{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1541,"verdict":"TP","note":"expect(locator).toBeVisible() without await - floating assertion never gates the test"}
+{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1545,"verdict":"TP","note":"expect(locator).toBeHidden() without await - floating assertion never gates the test"}
+{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1546,"verdict":"TP","note":"expect(locator).toBeHidden() without await - floating assertion never gates the test"}
+{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1560,"verdict":"TP","note":"expect(locator).toBeVisible() without await - floating assertion never gates the test"}
+{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1561,"verdict":"TP","note":"expect(locator).toBeVisible() without await - floating assertion never gates the test"}
+{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1565,"verdict":"TP","note":"expect(locator).toBeHidden() without await - floating assertion never gates the test"}
+{"ruleId":"QA-PW-002","file":"packages/kit/test/apps/basics/test/client.test.js","line":1566,"verdict":"TP","note":"expect(locator).toBeHidden() without await - floating assertion never gates the test"}
+{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/async/test/client.test.js","line":17,"verdict":"FP","note":"deliberate networkidle wait for preload completion in a controlled fixture app (comment says so) - no analytics/websocket background traffic, request-count assertion follows"}
+{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":951,"verdict":"FP","note":"deliberate networkidle wait for preload completion in a controlled fixture app - cited flake source absent, request-count assertion follows"}
+{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":961,"verdict":"FP","note":"deliberate networkidle wait for preload completion in a controlled fixture app - cited flake source absent, request-count assertion follows"}
+{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":971,"verdict":"FP","note":"deliberate networkidle wait for preload completion in a controlled fixture app - cited flake source absent, request-count assertion follows"}
+{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1004,"verdict":"FP","note":"deliberate networkidle wait for preload completion in a controlled fixture app - cited flake source absent, request-count assertion follows"}
+{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1016,"verdict":"FP","note":"deliberate networkidle wait for preload completion in a controlled fixture app - cited flake source absent, request-count assertion follows"}
+{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1027,"verdict":"FP","note":"deliberate networkidle wait asserting NO preload fires - the idle state itself is the behavior under test"}
+{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1038,"verdict":"FP","note":"deliberate networkidle wait for preload completion in a controlled fixture app - cited flake source absent, request-count assertion follows"}
+{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1049,"verdict":"FP","note":"deliberate networkidle wait for preload completion in a controlled fixture app - cited flake source absent, request-count assertion follows"}
+{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1057,"verdict":"FP","note":"deliberate networkidle wait for preload completion in a controlled fixture app - cited flake source absent, request-count assertion follows"}
+{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1066,"verdict":"FP","note":"deliberate networkidle wait for preload completion in a controlled fixture app - cited flake source absent, request-count assertion follows"}
+{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1083,"verdict":"FP","note":"networkidle wait in an offline-mode test - controlled fixture, no background traffic to flake on"}
+{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1106,"verdict":"FP","note":"networkidle wait in an offline-mode test - controlled fixture, URL assertion follows"}
+{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1113,"verdict":"FP","note":"networkidle wait for offline navigation to settle - controlled fixture, no background traffic"}
+{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1131,"verdict":"FP","note":"networkidle wait in an offline slow-navigation test - controlled fixture, URL assertion follows"}
+{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1145,"verdict":"FP","note":"networkidle wait in an offline slow-navigation test - controlled fixture, visibility assertion follows"}
+{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1183,"verdict":"FP","note":"deliberate networkidle wait for preload completion in a controlled fixture app - cited flake source absent, request-count assertion follows"}
+{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1198,"verdict":"FP","note":"deliberate networkidle wait for preload completion in a controlled fixture app - cited flake source absent, request-count assertion follows"}
+{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1236,"verdict":"FP","note":"deliberate networkidle wait for preload completion in a controlled fixture app - cited flake source absent, request-count assertion follows"}
+{"ruleId":"QA-PW-118","file":"packages/kit/test/apps/basics/test/client.test.js","line":1243,"verdict":"FP","note":"deliberate networkidle wait for preload completion in a controlled fixture app - cited flake source absent, request-count assertion follows"}
+{"ruleId":"QA-PW-005","file":"packages/kit/test/apps/basics/test/client.test.js","line":1741,"verdict":"FP","note":"browser-side test instrumentation (stylesheet audit in the page) - instrumentation must run in the page, not app business logic"}
+{"ruleId":"QA-PW-005","file":"packages/kit/test/apps/basics/test/client.test.js","line":2652,"verdict":"FP","note":"INP measurement harness inside evaluate - performance instrumentation must run in the browser, not app business logic"}
+{"ruleId":"QA-PW-005","file":"packages/kit/test/apps/basics/test/cross-platform/client.test.js","line":72,"verdict":"FP","note":"selection reset via evaluate - browser API state is only reachable in the page, legitimate test instrumentation"}
+{"ruleId":"QA-PW-005","file":"packages/kit/test/apps/basics/test/cross-platform/client.test.js","line":91,"verdict":"FP","note":"selection polling via evaluate inside expect.poll - browser state instrumentation, not app business logic"}
+{"ruleId":"QA-PW-117","file":"packages/kit/test/apps/basics/test/cross-platform/client.test.js","line":751,"verdict":"TP","note":"test.describe.serial with no justification comment - exactly the undocumented-serial case the rule targets"}

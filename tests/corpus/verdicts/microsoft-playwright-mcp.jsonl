@@ -1,1 +1,1 @@
-{"ruleId":"QA-PW-120","file":"tests/click.spec.ts","line":1,"verdict":"","note":""}
+{"ruleId":"QA-PW-120","file":"tests/click.spec.ts","line":1,"verdict":"FP","note":"generic click test valid on all engines - no engine guard needed; file-level heuristic overreaches"}

@@ -39,4 +39,4 @@
 {"ruleId":"QA-PY-007","file":"tests/test_utils/test_echo_via_pager.py","line":165,"verdict":"FP","note":"conditional raise driven by expected_error param — error type is the assertion"}
 {"ruleId":"QA-PY-007","file":"tests/test_utils/test_echo_via_pager.py","line":253,"verdict":"TP","note":"pytest.raises(RuntimeError) with no match= and no further message assertion"}
 {"ruleId":"QA-PY-002","file":"tests/test_chain.py","line":221,"verdict":"TP","note":"bare @pytest.mark.xfail with no reason — permanently ignored test"}
-{"ruleId":"QA-PY-010","file":"tests/test_termui.py","line":28,"verdict":"","note":""}
+{"ruleId":"QA-PY-010","file":"tests/test_termui.py","line":28,"verdict":"FP","note":"FakeClock helper seeds from time.time() then advances manually - this IS the deterministic freeze pattern, not an unfrozen use"}

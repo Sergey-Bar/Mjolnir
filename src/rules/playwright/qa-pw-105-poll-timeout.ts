@@ -24,6 +24,10 @@ export const pwPollNoTimeout = defineRule({
   autofix: false,
   detectionStrategy: "regex pattern",
   introduced: "0.3.0",
+  // Measured FP 100% (n=20, docs/FP-AUDIT.md 2026-08-31): the bounded
+  // default poll timeout fails visibly, so the claimed masking harm never
+  // materializes on real consumer code. North-star law.
+  tier: "quarantine",
 
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;

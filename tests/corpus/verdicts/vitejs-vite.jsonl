@@ -1,89 +1,89 @@
-{"ruleId":"QA-PW-004","file":"playground/backend-integration/__tests__/backend-integration.spec.ts","line":29,"verdict":"","note":""}
-{"ruleId":"QA-PW-119","file":"playground/client-reload/__tests__/client-reload.spec.ts","line":14,"verdict":"","note":""}
-{"ruleId":"QA-PW-119","file":"playground/hmr-ssr/__tests__/hmr-ssr.spec.ts","line":1157,"verdict":"","note":""}
-{"ruleId":"QA-PW-119","file":"playground/hmr-ssr/__tests__/hmr-ssr.spec.ts","line":1196,"verdict":"","note":""}
-{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/__tests__/plugins/terser.spec.ts","line":41,"verdict":"","note":""}
-{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/__tests__/utils.spec.ts","line":375,"verdict":"","note":""}
-{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/__tests__/utils.spec.ts","line":382,"verdict":"","note":""}
-{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/__tests__/utils.spec.ts","line":388,"verdict":"","note":""}
-{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/__tests__/utils.spec.ts","line":392,"verdict":"","note":""}
-{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/__tests__/utils.spec.ts","line":401,"verdict":"","note":""}
-{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/__tests__/utils.spec.ts","line":412,"verdict":"","note":""}
-{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/__tests__/utils.spec.ts","line":416,"verdict":"","note":""}
-{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/__tests__/utils.spec.ts","line":420,"verdict":"","note":""}
-{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/__tests__/utils.spec.ts","line":431,"verdict":"","note":""}
-{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/__tests__/utils.spec.ts","line":442,"verdict":"","note":""}
-{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/__tests__/utils.spec.ts","line":453,"verdict":"","note":""}
-{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/__tests__/utils.spec.ts","line":464,"verdict":"","note":""}
-{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/__tests__/utils.spec.ts","line":475,"verdict":"","note":""}
-{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/server/__tests__/hmr.spec.ts","line":42,"verdict":"","note":""}
-{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/server/__tests__/pluginContainer.spec.ts","line":149,"verdict":"","note":""}
-{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/server/__tests__/pluginContainer.spec.ts","line":268,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-001","file":"packages/vite/src/node/__tests__/build.spec.ts","line":415,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-001","file":"packages/vite/src/shared/__tests__/forwardConsole.spec.ts","line":93,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-001","file":"packages/vite/src/shared/__tests__/forwardConsole.spec.ts","line":115,"verdict":"","note":""}
-{"ruleId":"QA-TEST-002","file":"packages/vite/src/node/ssr/__tests__/ssrLoadModule.spec.ts","line":188,"verdict":"","note":""}
-{"ruleId":"QA-TEST-002","file":"playground/css-codesplit-cjs/__tests__/css-codesplit-cjs.spec.ts","line":4,"verdict":"","note":""}
-{"ruleId":"QA-TEST-002","file":"playground/hmr-full-bundle-mode/__tests__/hmr-full-bundle-mode.spec.ts","line":459,"verdict":"","note":""}
-{"ruleId":"QA-TEST-002","file":"playground/ssr-deps/__tests__/ssr-deps.spec.ts","line":134,"verdict":"","note":""}
-{"ruleId":"QA-TEST-002","file":"playground/worker/__tests__/relative-base/worker-relative-base.spec.ts","line":30,"verdict":"","note":""}
-{"ruleId":"QA-PW-105","file":"playground/alias/__tests__/alias.spec.ts","line":34,"verdict":"","note":""}
-{"ruleId":"QA-PW-105","file":"playground/assets/__tests__/assets.spec.ts","line":370,"verdict":"","note":""}
-{"ruleId":"QA-PW-105","file":"playground/assets/__tests__/assets.spec.ts","line":393,"verdict":"","note":""}
-{"ruleId":"QA-PW-105","file":"playground/assets/__tests__/assets.spec.ts","line":402,"verdict":"","note":""}
-{"ruleId":"QA-PW-105","file":"playground/assets/__tests__/assets.spec.ts","line":534,"verdict":"","note":""}
-{"ruleId":"QA-PW-105","file":"playground/assets/__tests__/assets.spec.ts","line":648,"verdict":"","note":""}
-{"ruleId":"QA-PW-105","file":"playground/assets/__tests__/assets.spec.ts","line":655,"verdict":"","note":""}
-{"ruleId":"QA-PW-105","file":"playground/assets/__tests__/assets.spec.ts","line":783,"verdict":"","note":""}
-{"ruleId":"QA-PW-105","file":"playground/assets/__tests__/assets.spec.ts","line":794,"verdict":"","note":""}
-{"ruleId":"QA-PW-105","file":"playground/assets/__tests__/assets.spec.ts","line":828,"verdict":"","note":""}
-{"ruleId":"QA-PW-105","file":"playground/assets/__tests__/assets.spec.ts","line":832,"verdict":"","note":""}
-{"ruleId":"QA-PW-105","file":"playground/backend-integration/__tests__/backend-integration.spec.ts","line":113,"verdict":"","note":""}
-{"ruleId":"QA-PW-105","file":"playground/backend-integration/__tests__/backend-integration.spec.ts","line":117,"verdict":"","note":""}
-{"ruleId":"QA-PW-105","file":"playground/backend-integration/__tests__/backend-integration.spec.ts","line":147,"verdict":"","note":""}
-{"ruleId":"QA-PW-105","file":"playground/base-conflict/__tests__/base-conflict.spec.ts","line":5,"verdict":"","note":""}
-{"ruleId":"QA-PW-105","file":"playground/build-old/__tests__/build-old.spec.ts","line":6,"verdict":"","note":""}
-{"ruleId":"QA-PW-105","file":"playground/build-old/__tests__/build-old.spec.ts","line":9,"verdict":"","note":""}
-{"ruleId":"QA-PW-105","file":"playground/build-old/__tests__/build-old.spec.ts","line":15,"verdict":"","note":""}
-{"ruleId":"QA-PW-105","file":"playground/chunk-importmap/__tests__/chunk-importmap.spec.ts","line":13,"verdict":"","note":""}
-{"ruleId":"QA-PW-105","file":"playground/chunk-importmap/__tests__/chunk-importmap.spec.ts","line":17,"verdict":"","note":""}
-{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/assets.spec.ts","line":99,"verdict":"","note":""}
-{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/assets.spec.ts","line":110,"verdict":"","note":""}
-{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/assets.spec.ts","line":318,"verdict":"","note":""}
-{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/assets.spec.ts","line":324,"verdict":"","note":""}
-{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/assets.spec.ts","line":408,"verdict":"","note":""}
-{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/assets.spec.ts","line":418,"verdict":"","note":""}
-{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/assets.spec.ts","line":428,"verdict":"","note":""}
-{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/assets.spec.ts","line":440,"verdict":"","note":""}
-{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/assets.spec.ts","line":448,"verdict":"","note":""}
-{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/assets.spec.ts","line":461,"verdict":"","note":""}
-{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/assets.spec.ts","line":475,"verdict":"","note":""}
-{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/assets.spec.ts","line":485,"verdict":"","note":""}
-{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/assets.spec.ts","line":628,"verdict":"","note":""}
-{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/assets.spec.ts","line":672,"verdict":"","note":""}
-{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/encoded-base/assets-encoded-base.spec.ts","line":157,"verdict":"","note":""}
-{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/encoded-base/assets-encoded-base.spec.ts","line":175,"verdict":"","note":""}
-{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/encoded-base/assets-encoded-base.spec.ts","line":185,"verdict":"","note":""}
-{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/relative-base/assets-relative-base.spec.ts","line":170,"verdict":"","note":""}
-{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/relative-base/assets-relative-base.spec.ts","line":188,"verdict":"","note":""}
-{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/relative-base/assets-relative-base.spec.ts","line":198,"verdict":"","note":""}
-{"ruleId":"QA-PW-102","file":"playground/assets/__tests__/assets.spec.ts","line":640,"verdict":"","note":""}
-{"ruleId":"QA-PW-102","file":"playground/assets/__tests__/assets.spec.ts","line":652,"verdict":"","note":""}
-{"ruleId":"QA-PW-102","file":"playground/assets/__tests__/assets.spec.ts","line":829,"verdict":"","note":""}
-{"ruleId":"QA-PW-102","file":"playground/css/postcss-caching/css.spec.ts","line":47,"verdict":"","note":""}
-{"ruleId":"QA-PW-102","file":"playground/hmr-full-bundle-mode/__tests__/hmr-full-bundle-mode.spec.ts","line":25,"verdict":"","note":""}
-{"ruleId":"QA-PW-102","file":"playground/hmr-root/__tests__/hmr-root.spec.ts","line":8,"verdict":"","note":""}
-{"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":326,"verdict":"","note":""}
-{"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":366,"verdict":"","note":""}
-{"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":413,"verdict":"","note":""}
-{"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":463,"verdict":"","note":""}
-{"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":477,"verdict":"","note":""}
-{"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":645,"verdict":"","note":""}
-{"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":688,"verdict":"","note":""}
-{"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":702,"verdict":"","note":""}
-{"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":718,"verdict":"","note":""}
-{"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":809,"verdict":"","note":""}
-{"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":880,"verdict":"","note":""}
-{"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":907,"verdict":"","note":""}
-{"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":919,"verdict":"","note":""}
-{"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":990,"verdict":"","note":""}
+{"ruleId":"QA-PW-004","file":"playground/backend-integration/__tests__/backend-integration.spec.ts","line":29,"verdict":"FP","note":"class chain over the suite's own co-located fixture markup - fixture and test refactor together, the external-DOM-breakage harm does not apply"}
+{"ruleId":"QA-PW-119","file":"playground/client-reload/__tests__/client-reload.spec.ts","line":14,"verdict":"FP","note":"module-level server handle assigned inside a per-test helper with afterEach teardown - fresh per-test state, not order dependence"}
+{"ruleId":"QA-PW-119","file":"playground/hmr-ssr/__tests__/hmr-ssr.spec.ts","line":1157,"verdict":"FP","note":"server handle rebuilt inside the per-test setup flow with teardown - fresh state, not cross-test order dependence"}
+{"ruleId":"QA-PW-119","file":"playground/hmr-ssr/__tests__/hmr-ssr.spec.ts","line":1196,"verdict":"FP","note":"runner derived from the per-test server in the same setup flow - not state written for later tests"}
+{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/__tests__/plugins/terser.spec.ts","line":41,"verdict":"TP","note":"smoke test - await run({}) build only, verifies no crash, no assertion"}
+{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/__tests__/utils.spec.ts","line":375,"verdict":"FP","note":"calls expectSnapshot() helper which wraps expect(...).toMatchSnapshot() internally"}
+{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/__tests__/utils.spec.ts","line":382,"verdict":"FP","note":"calls expectSnapshot() helper which wraps expect(...).toMatchSnapshot() internally"}
+{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/__tests__/utils.spec.ts","line":388,"verdict":"FP","note":"calls expectSnapshot() helper which wraps expect(...).toMatchSnapshot() internally"}
+{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/__tests__/utils.spec.ts","line":392,"verdict":"FP","note":"calls expectSnapshot() helper which wraps expect(...).toMatchSnapshot() internally"}
+{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/__tests__/utils.spec.ts","line":401,"verdict":"FP","note":"calls expectSnapshot() helper which wraps expect(...).toMatchSnapshot() internally"}
+{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/__tests__/utils.spec.ts","line":412,"verdict":"FP","note":"calls expectSnapshot() helper which wraps expect(...).toMatchSnapshot() internally"}
+{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/__tests__/utils.spec.ts","line":416,"verdict":"FP","note":"calls expectSnapshot() helper which wraps expect(...).toMatchSnapshot() internally"}
+{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/__tests__/utils.spec.ts","line":420,"verdict":"FP","note":"calls expectSnapshot() helper which wraps expect(...).toMatchSnapshot() internally"}
+{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/__tests__/utils.spec.ts","line":431,"verdict":"FP","note":"calls expectSnapshot() helper which wraps expect(...).toMatchSnapshot() internally"}
+{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/__tests__/utils.spec.ts","line":442,"verdict":"FP","note":"calls expectSnapshot() helper which wraps expect(...).toMatchSnapshot() internally"}
+{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/__tests__/utils.spec.ts","line":453,"verdict":"FP","note":"calls expectSnapshot() helper which wraps expect(...).toMatchSnapshot() internally"}
+{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/__tests__/utils.spec.ts","line":464,"verdict":"FP","note":"calls expectSnapshot() helper which wraps expect(...).toMatchSnapshot() internally"}
+{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/__tests__/utils.spec.ts","line":475,"verdict":"FP","note":"calls expectSnapshot() helper which wraps expect(...).toMatchSnapshot() internally"}
+{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/server/__tests__/hmr.spec.ts","line":42,"verdict":"FP","note":"delegates to testRestartDuringHotUpdate() helper which asserts .resolves.toBeUndefined() internally"}
+{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/server/__tests__/pluginContainer.spec.ts","line":149,"verdict":"TP","note":"verifies this.debug does not throw - the no-throw IS the assertion, smoke test by design"}
+{"ruleId":"QA-TEST-003","file":"packages/vite/src/node/server/__tests__/pluginContainer.spec.ts","line":268,"verdict":"TP","note":"verifies this.debug does not throw - the no-throw IS the assertion, smoke test by design"}
+{"ruleId":"QA-TQUAL-001","file":"packages/vite/src/node/__tests__/build.spec.ts","line":415,"verdict":"FP","note":"logger.warn spy verifies the actual behavior under test (warning emission) - observer over real code, not mock-only"}
+{"ruleId":"QA-TQUAL-001","file":"packages/vite/src/shared/__tests__/forwardConsole.spec.ts","line":93,"verdict":"FP","note":"mock console.error is the observable output of the forwarder unit under test - mocks are fixtures/observers, not stand-ins for behavior"}
+{"ruleId":"QA-TQUAL-001","file":"packages/vite/src/shared/__tests__/forwardConsole.spec.ts","line":115,"verdict":"FP","note":"asserts the forwarder logs transport errors to the mock console - real unit exercised, spy is the output channel"}
+{"ruleId":"QA-TEST-002","file":"packages/vite/src/node/ssr/__tests__/ssrLoadModule.spec.ts","line":188,"verdict":"TP","note":"skipped with comment + issue link (oxc#7261) - tracked deliberate skip, correctly reported"}
+{"ruleId":"QA-TEST-002","file":"playground/css-codesplit-cjs/__tests__/css-codesplit-cjs.spec.ts","line":4,"verdict":"TP","note":"bare test.skip with no justification - hidden broken behavior behind green run"}
+{"ruleId":"QA-TEST-002","file":"playground/hmr-full-bundle-mode/__tests__/hmr-full-bundle-mode.spec.ts","line":459,"verdict":"TP","note":"skipped with blocking issue link (rolldown#10340) - tracked skip, correctly reported"}
+{"ruleId":"QA-TEST-002","file":"playground/ssr-deps/__tests__/ssr-deps.spec.ts","line":134,"verdict":"TP","note":"skipped with TODO explaining open design question - unimplemented behavior"}
+{"ruleId":"QA-TEST-002","file":"playground/worker/__tests__/relative-base/worker-relative-base.spec.ts","line":30,"verdict":"TP","note":"skipped with TODO comment (inline worker assets) - unimplemented behavior"}
+{"ruleId":"QA-PW-105","file":"playground/alias/__tests__/alias.spec.ts","line":34,"verdict":"FP","note":"idiomatic poll waiting for HMR to apply a CSS edit - bounded default timeout fails visibly on regression, nothing masked"}
+{"ruleId":"QA-PW-105","file":"playground/assets/__tests__/assets.spec.ts","line":370,"verdict":"FP","note":"idiomatic poll waiting for SVG HMR in serve mode - bounded default timeout fails visibly, no masked regression"}
+{"ruleId":"QA-PW-105","file":"playground/assets/__tests__/assets.spec.ts","line":393,"verdict":"FP","note":"idiomatic poll waiting for SVG HMR in serve mode - bounded default timeout fails visibly, no masked regression"}
+{"ruleId":"QA-PW-105","file":"playground/assets/__tests__/assets.spec.ts","line":402,"verdict":"FP","note":"poll asserting the HMR update changed the bg - correct event-style wait, the default bound is real"}
+{"ruleId":"QA-PW-105","file":"playground/assets/__tests__/assets.spec.ts","line":534,"verdict":"FP","note":"idiomatic poll waiting for HTML HMR - bounded default fails visibly, not the masked case the rule warns about"}
+{"ruleId":"QA-PW-105","file":"playground/assets/__tests__/assets.spec.ts","line":648,"verdict":"FP","note":"poll after image HMR + load event - correct async wait, default bound is real"}
+{"ruleId":"QA-PW-105","file":"playground/assets/__tests__/assets.spec.ts","line":655,"verdict":"FP","note":"same poll idiom after second reload - correct async wait for HMR"}
+{"ruleId":"QA-PW-105","file":"playground/assets/__tests__/assets.spec.ts","line":783,"verdict":"FP","note":"poll for initial render after load - fast op, bounded default, no masking"}
+{"ruleId":"QA-PW-105","file":"playground/assets/__tests__/assets.spec.ts","line":794,"verdict":"FP","note":"poll after edit + rebuild + reload - correct async wait for HMR, default bound is real"}
+{"ruleId":"QA-PW-105","file":"playground/assets/__tests__/assets.spec.ts","line":828,"verdict":"FP","note":"sanity poll before the HMR edit - fast, bounded default, no masking"}
+{"ruleId":"QA-PW-105","file":"playground/assets/__tests__/assets.spec.ts","line":832,"verdict":"FP","note":"poll after CSS HMR edit - correct async wait, default bound is real"}
+{"ruleId":"QA-PW-105","file":"playground/backend-integration/__tests__/backend-integration.spec.ts","line":113,"verdict":"FP","note":"sanity poll before the CSS HMR edit - fast, bounded default, no masking"}
+{"ruleId":"QA-PW-105","file":"playground/backend-integration/__tests__/backend-integration.spec.ts","line":117,"verdict":"FP","note":"poll after CSS HMR edit - correct async wait, default bound is real"}
+{"ruleId":"QA-PW-105","file":"playground/backend-integration/__tests__/backend-integration.spec.ts","line":147,"verdict":"FP","note":"poll after main.ts HMR edit - correct async wait for style update"}
+{"ruleId":"QA-PW-105","file":"playground/base-conflict/__tests__/base-conflict.spec.ts","line":5,"verdict":"FP","note":"poll for initial page content - fast op, bounded default timeout"}
+{"ruleId":"QA-PW-105","file":"playground/build-old/__tests__/build-old.spec.ts","line":6,"verdict":"FP","note":"poll for initial content after preview load - fast, bounded default"}
+{"ruleId":"QA-PW-105","file":"playground/build-old/__tests__/build-old.spec.ts","line":9,"verdict":"FP","note":"poll for initial content after preview load - fast, bounded default"}
+{"ruleId":"QA-PW-105","file":"playground/build-old/__tests__/build-old.spec.ts","line":15,"verdict":"FP","note":"poll for initial content after preview load - fast, bounded default"}
+{"ruleId":"QA-PW-105","file":"playground/chunk-importmap/__tests__/chunk-importmap.spec.ts","line":13,"verdict":"FP","note":"poll for initial content after load - fast, bounded default"}
+{"ruleId":"QA-PW-105","file":"playground/chunk-importmap/__tests__/chunk-importmap.spec.ts","line":17,"verdict":"FP","note":"poll for initial importmap content - fast, bounded default"}
+{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/assets.spec.ts","line":99,"verdict":"FP","note":"page.$ used deliberately as an existence check - null vs element IS the assertion, no waiting wanted"}
+{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/assets.spec.ts","line":110,"verdict":"FP","note":"page.$ used deliberately as an existence check - null vs element IS the assertion, no waiting wanted"}
+{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/assets.spec.ts","line":318,"verdict":"FP","note":"handle fetched then read immediately on static loaded-page content - no race window for the no-auto-wait harm"}
+{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/assets.spec.ts","line":324,"verdict":"FP","note":"handle fetched then read immediately on static loaded-page content - no race window for the no-auto-wait harm"}
+{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/assets.spec.ts","line":408,"verdict":"FP","note":"handle fetched then read immediately on static loaded-page content - no race window for the no-auto-wait harm"}
+{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/assets.spec.ts","line":418,"verdict":"FP","note":"handle fetched then read immediately on static loaded-page content - no race window for the no-auto-wait harm"}
+{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/assets.spec.ts","line":428,"verdict":"FP","note":"handle fetched then read immediately on static loaded-page content - no race window for the no-auto-wait harm"}
+{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/assets.spec.ts","line":440,"verdict":"FP","note":"handle fetched then read immediately on static loaded-page content - no race window for the no-auto-wait harm"}
+{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/assets.spec.ts","line":448,"verdict":"FP","note":"handle fetched then read immediately on static loaded-page content - no race window for the no-auto-wait harm"}
+{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/assets.spec.ts","line":461,"verdict":"FP","note":"handle fetched then read immediately on static loaded-page content - no race window for the no-auto-wait harm"}
+{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/assets.spec.ts","line":475,"verdict":"FP","note":"handle fetched then read immediately on static loaded-page content - no race window for the no-auto-wait harm"}
+{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/assets.spec.ts","line":485,"verdict":"FP","note":"handle fetched then read immediately on static loaded-page content - no race window for the no-auto-wait harm"}
+{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/assets.spec.ts","line":628,"verdict":"FP","note":"build-mode static page read - no race window for the no-auto-wait harm"}
+{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/assets.spec.ts","line":672,"verdict":"FP","note":"handle fetched then read immediately on static loaded-page content - no race window for the no-auto-wait harm"}
+{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/encoded-base/assets-encoded-base.spec.ts","line":157,"verdict":"FP","note":"handle fetched then read immediately on static loaded-page content - no race window for the no-auto-wait harm"}
+{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/encoded-base/assets-encoded-base.spec.ts","line":175,"verdict":"FP","note":"handle fetched then read immediately on static loaded-page content - no race window for the no-auto-wait harm"}
+{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/encoded-base/assets-encoded-base.spec.ts","line":185,"verdict":"FP","note":"handle fetched then read immediately on static loaded-page content - no race window for the no-auto-wait harm"}
+{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/relative-base/assets-relative-base.spec.ts","line":170,"verdict":"FP","note":"handle fetched then read immediately on static loaded-page content - no race window for the no-auto-wait harm"}
+{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/relative-base/assets-relative-base.spec.ts","line":188,"verdict":"FP","note":"handle fetched then read immediately on static loaded-page content - no race window for the no-auto-wait harm"}
+{"ruleId":"QA-PW-114","file":"playground/assets/__tests__/relative-base/assets-relative-base.spec.ts","line":198,"verdict":"FP","note":"handle fetched then read immediately on static loaded-page content - no race window for the no-auto-wait harm"}
+{"ruleId":"QA-PW-102","file":"playground/assets/__tests__/assets.spec.ts","line":640,"verdict":"FP","note":"load wait registered BEFORE the edit, element poll assertion follows - correct reload synchronization, not instead-of-assertion"}
+{"ruleId":"QA-PW-102","file":"playground/assets/__tests__/assets.spec.ts","line":652,"verdict":"FP","note":"second pre-registered load wait around the revert edit, poll assertion follows - correct sync"}
+{"ruleId":"QA-PW-102","file":"playground/assets/__tests__/assets.spec.ts","line":829,"verdict":"FP","note":"pre-registered load wait for the HMR-triggered reload, color poll follows - correct sync"}
+{"ruleId":"QA-PW-102","file":"playground/css/postcss-caching/css.spec.ts","line":47,"verdict":"FP","note":"load wait for the auto-reload after server restart; element assertions follow - correct sync"}
+{"ruleId":"QA-PW-102","file":"playground/hmr-full-bundle-mode/__tests__/hmr-full-bundle-mode.spec.ts","line":25,"verdict":"FP","note":"reload wait around the bundling transition, poll assertions on h1 follow - correct sync"}
+{"ruleId":"QA-PW-102","file":"playground/hmr-root/__tests__/hmr-root.spec.ts","line":8,"verdict":"FP","note":"edit triggers full reload; load wait then poll assertion - correct ordering, not instead-of-assertion"}
+{"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":326,"verdict":"FP","note":"edit triggers full reload; load wait then poll on the updated text - correct sync"}
+{"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":366,"verdict":"FP","note":"edit triggers full reload; load wait then poll - correct sync"}
+{"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":413,"verdict":"FP","note":"edit triggers full reload; load wait then poll on locator text - correct sync"}
+{"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":463,"verdict":"FP","note":"pre-registered load promise before edit, poll on counter state follows - correct sync"}
+{"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":477,"verdict":"FP","note":"waitForEvent('load', {timeout: 1000}) awaited to REJECT - absence of reload IS the assertion, rule misfires"}
+{"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":645,"verdict":"FP","note":"load wait synchronizes reload before browser-log assertions - assertion present, not instead-of"}
+{"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":688,"verdict":"FP","note":"load wait synchronizes reload before browser-log assertions - assertion present, not instead-of"}
+{"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":702,"verdict":"FP","note":"load wait synchronizes reload before browser-log assertions - assertion present, not instead-of"}
+{"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":718,"verdict":"FP","note":"load wait synchronizes reload before browser-log assertions - assertion present, not instead-of"}
+{"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":809,"verdict":"FP","note":"load wait synchronizes reload before browser-log assertions - assertion present, not instead-of"}
+{"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":880,"verdict":"FP","note":"pre-registered load promise before edit, browser-log assertions follow - correct sync"}
+{"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":907,"verdict":"FP","note":"pre-registered load promise, bg poll assertion follows - correct sync"}
+{"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":919,"verdict":"FP","note":"pre-registered load promise around HTML edit, button poll follows - correct sync"}
+{"ruleId":"QA-PW-102","file":"playground/hmr/__tests__/hmr.spec.ts","line":990,"verdict":"FP","note":"pre-registered load promise before edit, browser-log assertions follow - correct sync"}

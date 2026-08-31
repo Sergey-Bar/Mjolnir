@@ -1,3 +1,2 @@
-{"ruleId":"QA-TQUAL-011","file":"src/rules/no-duplicate-slow.test.ts","line":157,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-011","file":"src/rules/no-duplicate-slow.test.ts","line":225,"verdict":"","note":""}
-{"ruleId":"QA-TEST-010","file":"src/rules/valid-title.test.ts","line":1151,"verdict":"","note":""}
+{"ruleId":"QA-TQUAL-011","file":"src/rules/no-duplicate-slow.test.ts","line":157,"verdict":"FP","note":"prose comment explaining rule semantics (test.slow() in different tests is valid) - documentation, not a disabled test"}
+{"ruleId":"QA-TQUAL-011","file":"src/rules/no-duplicate-slow.test.ts","line":225,"verdict":"FP","note":"prose comment explaining rule semantics (test.slow() in sibling describes) - documentation, not a disabled test"}

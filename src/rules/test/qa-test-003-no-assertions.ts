@@ -21,10 +21,15 @@ export const noAssertions = defineRule({
   // Trust Metadata
   languages: ["typescript", "javascript"],
   frameworks: ["jest", "vitest", "playwright", "mocha"],
-  falsePositiveRisk: "low",
+  falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "regex pattern",
   introduced: "0.1.0",
+  // Measured FP 82% (n=17, docs/FP-AUDIT.md 2026-08-31): hidden-assertion
+  // helpers (expectSnapshot, verify helpers) and deliberate no-throw smoke
+  // tests dominate real-world fire sites. North-star law: >30% FP cannot
+  // ship in the default scan.
+  tier: "quarantine",
 
   run(ctx) {
     const text = ctx.text;

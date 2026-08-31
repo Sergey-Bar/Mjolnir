@@ -159,10 +159,13 @@ describe("hostile repo: malformed ingestion inputs", () => {
     expect(
       r.findings.some((f) => f.file.includes("ünïcodé-#hash.test.ts")),
     ).toBe(false); // clean file: no findings, but it must have been scanned
-    // proof it was scanned: an assertion-free twin does produce a finding
+    // proof it was scanned: a focused twin does produce a finding
+    // (QA-TEST-002 was measured 65% FP and demoted to quarantine
+    // 2026-08-31; the proof file uses QA-TEST-001, which still fires
+    // by default)
     writeFileSync(
       join(dir, "t", "ünïcodé-#hash-2.test.ts"),
-      "it('y', () => { page.goto('/x'); });\n",
+      "it.only('y', () => { page.goto('/x'); });\n",
     );
     const r2 = runScan({
       target: dir,

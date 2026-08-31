@@ -20,10 +20,14 @@ export const legacyElementHandles = defineRule({
   // Trust Metadata
   languages: ["typescript", "javascript"],
   frameworks: ["playwright"],
-  falsePositiveRisk: "low",
+  falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "regex pattern",
   introduced: "0.3.0",
+  // Measured FP 100% (n=20, docs/FP-AUDIT.md 2026-08-31): page.$ on
+  // loaded static pages and existence checks has no race window; the
+  // stale-prone-handle harm did not materialize. North-star law.
+  tier: "quarantine",
 
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;

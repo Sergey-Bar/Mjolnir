@@ -1,12 +1,12 @@
-{"ruleId":"QA-PY-104","file":"tests/test_asyncio.py","line":97,"verdict":"","note":""}
-{"ruleId":"QA-PY-104","file":"tests/test_asyncio.py","line":170,"verdict":"","note":""}
-{"ruleId":"QA-PY-104","file":"tests/test_asyncio.py","line":408,"verdict":"","note":""}
-{"ruleId":"QA-PY-104","file":"tests/test_asyncio.py","line":414,"verdict":"","note":""}
-{"ruleId":"QA-PY-104","file":"tests/test_asyncio.py","line":420,"verdict":"","note":""}
-{"ruleId":"QA-PY-104","file":"tests/test_asyncio.py","line":426,"verdict":"","note":""}
-{"ruleId":"QA-PY-104","file":"tests/test_sync.py","line":93,"verdict":"","note":""}
-{"ruleId":"QA-PY-104","file":"tests/test_sync.py","line":204,"verdict":"","note":""}
-{"ruleId":"QA-PY-104","file":"tests/test_sync.py","line":422,"verdict":"","note":""}
-{"ruleId":"QA-PY-104","file":"tests/test_sync.py","line":427,"verdict":"","note":""}
-{"ruleId":"QA-PY-104","file":"tests/test_sync.py","line":432,"verdict":"","note":""}
-{"ruleId":"QA-PY-104","file":"tests/test_sync.py","line":437,"verdict":"","note":""}
+{"ruleId":"QA-PY-104","file":"tests/test_asyncio.py","line":97,"verdict":"FP","note":"query_selector(#foo) on markup the same test just created via set_content - self-owned DOM, no refactor coupling; call sites are inside makepyfile string templates (test data)"}
+{"ruleId":"QA-PY-104","file":"tests/test_asyncio.py","line":170,"verdict":"FP","note":"query_selector(#foo) on markup the same test just created via set_content - self-owned DOM, no refactor coupling; call sites are inside makepyfile string templates (test data)"}
+{"ruleId":"QA-PY-104","file":"tests/test_asyncio.py","line":408,"verdict":"FP","note":"query_selector(#foo) on markup the same test just created via set_content - self-owned DOM, no refactor coupling; call sites are inside makepyfile string templates (test data)"}
+{"ruleId":"QA-PY-104","file":"tests/test_asyncio.py","line":414,"verdict":"FP","note":"query_selector(#foo) on markup the same test just created via set_content - self-owned DOM, no refactor coupling; call sites are inside makepyfile string templates (test data)"}
+{"ruleId":"QA-PY-104","file":"tests/test_asyncio.py","line":420,"verdict":"FP","note":"query_selector(#foo) on markup the same test just created via set_content - self-owned DOM, no refactor coupling; call sites are inside makepyfile string templates (test data)"}
+{"ruleId":"QA-PY-104","file":"tests/test_asyncio.py","line":426,"verdict":"FP","note":"query_selector(#foo) on markup the same test just created via set_content - self-owned DOM, no refactor coupling; call sites are inside makepyfile string templates (test data)"}
+{"ruleId":"QA-PY-104","file":"tests/test_sync.py","line":93,"verdict":"FP","note":"query_selector(#foo) on markup the same test just created via set_content - self-owned DOM, no refactor coupling; call sites are inside makepyfile string templates (test data)"}
+{"ruleId":"QA-PY-104","file":"tests/test_sync.py","line":204,"verdict":"FP","note":"query_selector(#foo) on markup the same test just created via set_content - self-owned DOM, no refactor coupling; call sites are inside makepyfile string templates (test data)"}
+{"ruleId":"QA-PY-104","file":"tests/test_sync.py","line":422,"verdict":"FP","note":"query_selector(#foo) on markup the same test just created via set_content - self-owned DOM, no refactor coupling; call sites are inside makepyfile string templates (test data)"}
+{"ruleId":"QA-PY-104","file":"tests/test_sync.py","line":427,"verdict":"FP","note":"query_selector(#foo) on markup the same test just created via set_content - self-owned DOM, no refactor coupling; call sites are inside makepyfile string templates (test data)"}
+{"ruleId":"QA-PY-104","file":"tests/test_sync.py","line":432,"verdict":"FP","note":"query_selector(#foo) on markup the same test just created via set_content - self-owned DOM, no refactor coupling; call sites are inside makepyfile string templates (test data)"}
+{"ruleId":"QA-PY-104","file":"tests/test_sync.py","line":437,"verdict":"FP","note":"query_selector(#foo) on markup the same test just created via set_content - self-owned DOM, no refactor coupling; call sites are inside makepyfile string templates (test data)"}

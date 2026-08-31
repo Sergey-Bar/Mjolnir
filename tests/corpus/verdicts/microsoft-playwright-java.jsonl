@@ -46,7 +46,7 @@
 {"ruleId":"QA-JV-101","file":"playwright/src/test/java/com/microsoft/playwright/TestGlobalFetch.java","line":248,"verdict":"TP","note":"@Disabled test for socket hang up issue — permanently skipped"}
 {"ruleId":"QA-JV-101","file":"playwright/src/test/java/com/microsoft/playwright/TestLocatorHighlight.java","line":28,"verdict":"TP","note":"@Disabled waiting for upstream feature — permanently skipped"}
 {"ruleId":"QA-JV-101","file":"playwright/src/test/java/com/microsoft/playwright/TestRequestContinue.java","line":77,"verdict":"TP","note":"@Disabled because API changed to async — permanently skipped"}
-{"ruleId":"QA-JV-102","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserContextFetch.java","line":465,"verdict":"","note":""}
+{"ruleId":"QA-JV-102","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserContextFetch.java","line":465,"verdict":"FP","note":"Thread.sleep inside the server route handler simulating a slow response - not a test-thread state wait"}
 {"ruleId":"QA-JV-108","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserContextHar.java","line":51,"verdict":"FP","note":"http://no.playwright/ is a fake URL served by HAR replay — intentional test fixture"}
 {"ruleId":"QA-JV-108","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserContextHar.java","line":63,"verdict":"FP","note":"http://no.playwright/ is a fake URL served by HAR replay — intentional test fixture"}
 {"ruleId":"QA-JV-108","file":"playwright/src/test/java/com/microsoft/playwright/TestBrowserContextHar.java","line":111,"verdict":"FP","note":"http://no.playwright/ is a fake URL served by HAR replay — intentional test fixture"}
@@ -107,5 +107,5 @@
 {"ruleId":"QA-JV-106","file":"playwright/src/test/java/com/microsoft/playwright/TestElementHandleConvenience.java","line":251,"verdict":"FP","note":"querySelector('#input2') testing isEditable API — testing the convenience method"}
 {"ruleId":"QA-JV-106","file":"playwright/src/test/java/com/microsoft/playwright/TestElementHandleMisc.java","line":29,"verdict":"FP","note":"querySelector('#button-6') testing hover API on scrollable page — testing the API"}
 {"ruleId":"QA-JV-106","file":"playwright/src/test/java/com/microsoft/playwright/TestElementHandleMisc.java","line":38,"verdict":"FP","note":"querySelector('#button-6') testing hover after Node removed — testing the API"}
-{"ruleId":"QA-JV-104","file":"playwright/src/test/java/com/microsoft/playwright/junit/TestFixtures.java","line":28,"verdict":"","note":""}
-{"ruleId":"QA-JV-104","file":"playwright/src/test/java/com/microsoft/playwright/junit/TestFixtures.java","line":29,"verdict":"","note":""}
+{"ruleId":"QA-JV-104","file":"playwright/src/test/java/com/microsoft/playwright/junit/TestFixtures.java","line":28,"verdict":"FP","note":"fields explicitly named *FromBeforeAll in the @UsePlaywright fixture-lifecycle test class - the static-beforeAll contract IS the subject"}
+{"ruleId":"QA-JV-104","file":"playwright/src/test/java/com/microsoft/playwright/junit/TestFixtures.java","line":29,"verdict":"FP","note":"fields explicitly named *FromBeforeAll in the @UsePlaywright fixture-lifecycle test class - the static-beforeAll contract IS the subject"}

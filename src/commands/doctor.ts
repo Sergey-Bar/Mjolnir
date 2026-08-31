@@ -148,7 +148,7 @@ export interface DoctorReport {
  * as more core rules are corpus-measured; `doctor` fails the moment
  * the shipped registry exceeds it, so the count can rise but never.
  */
-export const MAX_UNMEASURED_CORE = 57;
+export const MAX_UNMEASURED_CORE = 47;
 
 /**
  * Check 5 (Phase 4 — Tempering Plan, ratcheted per audit H-2):

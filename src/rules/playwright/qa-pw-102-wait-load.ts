@@ -20,10 +20,14 @@ export const pwWaitForLoadEvent = defineRule({
   // Trust Metadata
   languages: ["typescript", "javascript"],
   frameworks: ["playwright"],
-  falsePositiveRisk: "low",
+  falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "regex pattern",
   introduced: "0.3.0",
+  // Measured FP 100% (n=20, docs/FP-AUDIT.md 2026-08-31): real-world uses
+  // pre-register the load promise around an edit as reload synchronization,
+  // with assertions after. North-star law: >30% FP cannot ship by default.
+  tier: "quarantine",
 
   run(ctx) {
     // Raw text on purpose: the signal is the string argument `'load'`, which

@@ -1,6 +1,16 @@
 # Corpus Verdicts (Phase 3 — Tempering Plan)
 
-> **Status (2026-08-29): 305 classified · 15 of 91 rules measured at n ≥ 10.**
+> **Status (2026-08-31): backlog cleared — 536 classified · 0 unclassified · 25 of 91 rules measured at n ≥ 10.**
+>
+> Wave 1: all 89 vitejs-vite rows classified. QA-PW-102/105/114 measured
+> 100% FP and QA-TEST-003 82% FP — demoted to quarantine per the north-star
+> law. Wave 2: sveltejs-kit (76 classified + 7 orphans dropped), tanstack
+> (4 + 20 orphans), astro (9 + 7 orphans) — a QA-TEST-010 detection bug
+> (comment content satisfying the body terminator) was found and fixed.
+> Wave 3: all remaining repos classified (orphan rows dropped per rule 7,
+> including stale pre-fix QA-TQUAL-009/QA-PW-002/QA-PW-119 samples).
+> Newly measured: QA-PW-002 0% (stays core); QA-PW-118/119, QA-TEST-002,
+> QA-TQUAL-001, QA-PY-104 at 65-100% FP — demoted to quarantine.
 >
 > An earlier revision of this directory held 49 entries produced by _reasoning
 > about what a rule's description implied_ rather than by reading the source at
