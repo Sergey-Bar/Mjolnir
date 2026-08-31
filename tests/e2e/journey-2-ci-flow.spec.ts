@@ -41,7 +41,9 @@ function writeSpec(name: string, body: string): void {
 }
 
 const CLEAN = "it('a', () => { expect(1 + 1).toBe(2); });\n";
-const DEBT = "it.skip('a', () => {});\n";
+// QA-TEST-002 (it.skip) was measured 65% FP and demoted to quarantine
+// (docs/FP-AUDIT.md 2026-08-31); the journey uses a core-tier debt probe.
+const DEBT = "it.only('a', () => {});\n";
 
 describe("E2E journey 2: CI PR flow", () => {
   it("ci install writes a valid workflow file", () => {
