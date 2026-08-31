@@ -91,11 +91,12 @@ describe("E2E journey 9: exit-code contract sweep", () => {
     expect(runCli(["baseline", cleanDir]).status).toBe(0);
   });
 
-  it("doctor: missing target 2, bad flag is a no-op scan, empty dir 2", () => {
+  it("doctor: missing target 2, bad flag 10, empty dir 2", () => {
     expect(runCli(["doctor", join(dir, "nope")]).status).toBe(2);
-    // `doctor --bogus` ignores the unknown flag and scans the CWD —
-    // clean self-scan territory → exit 0.
-    expect([0, 1, 2]).toContain(runCli(["doctor", "--bogus"]).status);
+    // Flag-parity fix: a flag-shaped arg is a usage error, exactly like
+    // every other subcommand (it used to be silently ignored and the
+    // CWD got scanned as a surprise full run).
+    expect(runCli(["doctor", "--bogus"]).status).toBe(10);
     // An empty dir has no fixtures → the firewall check fails → 2.
     expect(runCli(["doctor", dir]).status).toBe(2);
   });

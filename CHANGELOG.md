@@ -127,9 +127,13 @@ once shipped, so this file is the record of what changed between versions.
   worker starts — parallel-file builds used to wipe dist mid-suite
   (tsdown cleans `outDir`) and fail unrelated E2E spawns with
   module-not-found.
-- **Known gaps (observed, unfixed — flagged by the new E2E sweep):**
-  `doctor --bogus` ignores the unknown flag and scans the CWD instead of
-  exiting 10 like every other subcommand.
+- **Fixed (flagged by the new E2E sweep):** `doctor --bogus` ignored the
+  unknown flag and scanned the CWD as a surprise full run; it now prints
+  usage and exits 10, matching the flag-error parity of every other
+  subcommand (unit + E2E regression tests added).
+- **Soak drift artifacts** moved from `coverage/` (a CI-generated dir the
+  tool's own QA-CI-005 rule correctly flags as "consumed but never
+  generated" in stress.yml) to a dedicated `soak-drift/` dir.
 
 ## [0.5.0] — 2026-08-29
 

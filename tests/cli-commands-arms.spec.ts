@@ -177,6 +177,14 @@ describe("runDoctorCommand", () => {
     expect(cap.errText()).toContain("No fixtures directory");
   });
 
+  it("rejects a flag-shaped argument with usage exit 10 (flag parity)", () => {
+    // Regression guard for the gap the E2E sweep found: `doctor --bogus`
+    // used to ignore the flag and scan the CWD as a surprise full run.
+    const cap = capture();
+    expect(runDoctorCommand(["--bogus"], cap.io)).toBe(10);
+    expect(cap.errText()).toContain("Usage: mjolnir doctor");
+  });
+
   it("exits 1 when the fixture firewall fails (empty fixtures dir)", () => {
     mkdirSync(join(dir, "tests", "fixtures"), { recursive: true });
     const cap = capture();

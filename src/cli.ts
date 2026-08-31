@@ -785,7 +785,15 @@ export function runDoctorCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
 ): number {
-  const targetArg = argv.find((a) => !a.startsWith("-")) ?? process.cwd();
+  // Flag-parity with every other subcommand (flagged by the Open-Beta
+  // E2E exit-code sweep): `doctor` accepts only an optional repo-root
+  // positional, so a flag-shaped arg is a typo — silently ignoring it
+  // used to turn `doctor --bogus` into a surprise full scan of the CWD.
+  if (argv.some((a) => a.startsWith("-"))) {
+    io.err("Usage: mjolnir doctor [repo-root]");
+    return 10;
+  }
+  const targetArg = argv[0] ?? process.cwd();
   try {
     // Fixtures live under <repo>/tests/fixtures relative to the target.
     const fixturesRoot = resolve(join(targetArg, "tests", "fixtures"));
