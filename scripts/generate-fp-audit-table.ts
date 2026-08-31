@@ -88,6 +88,37 @@ const CORPUS_NOTES: Record<string, { url: string; note: string }> = {
     url: "https://github.com/microsoft/playwright-pytest.git",
     note: "tiny real pytest-playwright repo — QA-PY-104 and QA-PW-103 on the Python adapter",
   },
+
+  // ── 2026-08-31 expansion (corpus wave 4) — see tests/corpus/audit.ts
+  //    for the fuller notes; kept in sync via fp-audit-table.spec.ts.
+  "n8n-io-n8n": {
+    url: "https://github.com/n8n-io/n8n.git",
+    note: "large TS monorepo with Playwright e2e + heavy Actions — QA-PW-141..145/CI surface (consistently fails to clone in the CI environment; kept for local runs)",
+  },
+  "grafana-grafana": {
+    url: "https://github.com/grafana/grafana.git",
+    note: "large real TS monorepo with Playwright e2e + many Actions workflows — QA-PW-141..145, QA-CI-001..010, broad QA-PW/QA-TEST/QA-TQUAL consumer surface",
+  },
+  "calcom-cal": {
+    url: "https://github.com/calcom/cal.com.git",
+    note: "large real next.js app with Playwright e2e — QA-PW-141..145 and a broad consumer surface",
+  },
+  "dubinc-dub": {
+    url: "https://github.com/dubinc/dub.git",
+    note: "mid-size real next.js app with a plain Playwright e2e config — QA-PW-141..144 consumer surface",
+  },
+  "shadcn-ui-taxonomy": {
+    url: "https://github.com/shadcn-ui/taxonomy.git",
+    note: "tiny real next.js app with a minimal Playwright config — the sharpest QA-PW-143/144 surface",
+  },
+  "reflex-dev-reflex": {
+    url: "https://github.com/reflex-dev/reflex.git",
+    note: "mid-size real Python framework with pytest-playwright e2e — QA-PY-101..108 consumer surface",
+  },
+  "puppeteer-puppeteer": {
+    url: "https://github.com/puppeteer/puppeteer.git",
+    note: "real TS monorepo with mocha tests and multi-job Actions — QA-CI surface plus QA-PW/QA-TEST growth",
+  },
 };
 
 export interface FpAuditBaseline {

@@ -58,16 +58,24 @@ describe("P-1 re-check: masking scales linearly, 1 MB within budget", () => {
   it("doubling the size does not more than double the time (linear, not quadratic)", () => {
     const small = generatedSource(256 * 1024);
     const big = generatedSource(512 * 1024);
-    const time = (t: string) => {
+    // Median-of-3 per side (same discipline as the budget test above):
+    // a single timed run spikes under GC/scheduler load and trips the
+    // 3.5x ratio on a machine that is merely busy, not quadratic.
+    const median = (t: string) => {
       const file = { path: "x.ts", text: t, ast: undefined };
-      const t0 = Date.now();
-      computeCodeText(file, "typescript");
-      return Date.now() - t0;
+      const samples: number[] = [];
+      for (let i = 0; i < 3; i++) {
+        const t0 = Date.now();
+        computeCodeText(file, "typescript");
+        samples.push(Date.now() - t0);
+      }
+      samples.sort((a, b) => a - b);
+      return samples[1] as number;
     };
     // Warm-up parse (ts-morph project reuse), then measure.
-    time(small);
-    const tSmall = time(small);
-    const tBig = time(big);
+    median(small);
+    const tSmall = median(small);
+    const tBig = median(big);
     // Allow generous scheduler slack: linear ⇒ ~2x; quadratic ⇒ ~4x.
     // Fail only on a clear quadratic signature.
     expect(tBig).toBeLessThan(Math.max(tSmall * 3.5, 60) + 60);

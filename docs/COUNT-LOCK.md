@@ -23,6 +23,10 @@ Last generated: 2026-08-31.
 
 ## calcom-cal
 
+large real next.js app with Playwright e2e — QA-PW-141..145 and a broad consumer surface
+
+Source: [`https://github.com/calcom/cal.com`](https://github.com/calcom/cal.com)
+
 Total findings: **649**
 
 | Rule ID      | Findings |
@@ -44,6 +48,10 @@ Total findings: **649**
 
 ## dubinc-dub
 
+mid-size real next.js app with a plain Playwright e2e config — QA-PW-141..144 consumer surface
+
+Source: [`https://github.com/dubinc/dub`](https://github.com/dubinc/dub)
+
 Total findings: **88**
 
 | Rule ID      | Findings |
@@ -64,6 +72,10 @@ Total findings: **88**
 | QA-TQUAL-001 | 14       |
 
 ## grafana-grafana
+
+large real TS monorepo with Playwright e2e + many Actions workflows — QA-PW-141..145, QA-CI-001..010, broad QA-PW/QA-TEST/QA-TQUAL consumer surface
+
+Source: [`https://github.com/grafana/grafana`](https://github.com/grafana/grafana)
 
 Total findings: **3405**
 
@@ -253,6 +265,10 @@ Total findings: **112**
 
 ## puppeteer-puppeteer
 
+real TS monorepo with mocha tests and multi-job Actions — QA-CI surface plus QA-PW/QA-TEST growth
+
+Source: [`https://github.com/puppeteer/puppeteer`](https://github.com/puppeteer/puppeteer)
+
 Total findings: **593**
 
 | Rule ID     | Findings |
@@ -291,6 +307,10 @@ Total findings: **812**
 
 ## reflex-dev-reflex
 
+mid-size real Python framework with pytest-playwright e2e — QA-PY-101..108 consumer surface
+
+Source: [`https://github.com/reflex-dev/reflex`](https://github.com/reflex-dev/reflex)
+
 Total findings: **1326**
 
 | Rule ID   | Findings |
@@ -310,6 +330,10 @@ Total findings: **1326**
 | QA-PY-103 | 2        |
 
 ## shadcn-ui-taxonomy
+
+tiny real next.js app with a minimal Playwright config — the sharpest QA-PW-143/144 surface
+
+Source: [`https://github.com/shadcn-ui/taxonomy`](https://github.com/shadcn-ui/taxonomy)
 
 Total findings: **0**
 

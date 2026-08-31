@@ -235,9 +235,16 @@ describe("every documented `npm run` command actually exists", () => {
   // invented script names as test data or historical record — they are
   // not instructions to a reader. site/ has its own package.json whose
   // scripts (prebuild/predev/gen) are checked by its own toolchain.
+  // Corpus review sheets embed real-world source verbatim (bug-audit
+  // 2026-08-31): a scanned repo's own build+preview script line lands in
+  // the sheet as quoted evidence — data, never an instruction to a
+  // mjolnir reader. (This comment deliberately does not spell the
+  // preview command out as a literal `npm run …`, or this test would
+  // flag its own source — same trap as the sibling comment above.)
   const EXCLUDED = [
     "tests/fixtures/",
     "tests/golden/",
+    "tests/corpus/review/",
     "docs/archive/",
     "node_modules/",
     "dist/",
