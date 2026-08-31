@@ -54,7 +54,7 @@ scoring:
 ## The two laws
 
 Full context lives in
-[`docs/plans/Master-Stabilization-Plan.md`](docs/plans/Master-Stabilization-Plan.md#2-laws-in-force-unchanged-and-how-this-plan-respects-them) —
+[`docs/archive/plans/Master-Stabilization-Plan.md`](docs/archive/plans/Master-Stabilization-Plan.md#2-laws-in-force-unchanged-and-how-this-plan-respects-them) —
 this section is a summary, not the source of truth; read that doc if
 your change is close to either line.
 

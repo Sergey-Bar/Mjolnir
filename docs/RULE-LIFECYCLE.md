@@ -1,7 +1,7 @@
 # Rule Lifecycle & Deprecation Policy
 
 This is distinct from the **anti-creep law**
-([`docs/plans/Master-Stabilization-Plan.md` §2](plans/Master-Stabilization-Plan.md#2-laws-in-force-unchanged-and-how-this-plan-respects-them)),
+([`docs/archive/plans/Master-Stabilization-Plan.md` §2](archive/plans/Master-Stabilization-Plan.md#2-laws-in-force-unchanged-and-how-this-plan-respects-them)),
 which governs _adding_ to the launch rule set. This document governs
 _removing or weakening_ a rule that has already shipped and is found to
 be conceptually wrong — not just noisy, but wrong: it flags a pattern
@@ -39,8 +39,7 @@ something different tomorrow than it did yesterday.
    noisy" — the actual conceptual flaw), what a user with it enabled
    should do, and whether a successor rule exists.
 4. **One minor version of visible deprecation before removal is
-   considered**, per `docs/plans/Product-MVP.txt`'s existing
-   `deprecated` status draft. In practice, given `RuleMeta.severity`
+   considered.** In practice, given `RuleMeta.severity`
    downgrade already makes it non-blocking, most deprecated rules can
    simply stay at `info`/disabled indefinitely — full removal from the
    registry is reserved for rules that are actively misleading if left

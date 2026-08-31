@@ -11,16 +11,18 @@ looks for and how to read it.
 
 ## The eight families
 
-| Family                           | Prefix      | What it catches                                                                                    |
-| -------------------------------- | ----------- | -------------------------------------------------------------------------------------------------- |
-| [CI integrity](/rules/)          | `QA-CI-`    | `continue-on-error`, `\|\| true`, swallowed exit codes — the tricks that turn a red pipeline green |
-| [Test hygiene](/rules/)          | `QA-TEST-`  | Committed `.only`, unjustified skips, empty bodies, tests with no assertions                       |
-| [Test quality](/rules/)          | `QA-TQUAL-` | Tautological assertions, mock-only verification, unawaited promises                                |
-| [Playwright](/rules/)            | `QA-PW-`    | Brittle selectors, `networkidle` waits, hardcoded environment URLs, debug artifacts                |
-| [Python / pytest](/rules/)       | `QA-PY-`    | `time.sleep()`, non-strict `xfail`, random/time dependence without a freeze                        |
-| [Java / JUnit · TestNG](/rules/) | `QA-JV-`    | `@Disabled`, `Thread.sleep()`, blanket route mocks                                                 |
-| [C# / .NET](/rules/)             | `QA-CS-`    | `[Ignore]`, `Task.Delay`, `WaitForTimeoutAsync()`                                                  |
-| [Environment](/rules/)           | `QA-ENV-`   | Environment coupling that makes a test pass only on one machine                                    |
+Each family name links into the [rule catalog](/rules/), pre-filtered.
+
+| Family                                     | Prefix      | What it catches                                                                                    |
+| ------------------------------------------ | ----------- | -------------------------------------------------------------------------------------------------- |
+| [CI integrity](/rules/?family=CI)          | `QA-CI-`    | `continue-on-error`, `\|\| true`, swallowed exit codes — the tricks that turn a red pipeline green |
+| [Test hygiene](/rules/?family=TEST)        | `QA-TEST-`  | Committed `.only`, unjustified skips, empty bodies, tests with no assertions                       |
+| [Test quality](/rules/?family=TQUAL)       | `QA-TQUAL-` | Tautological assertions, mock-only verification, unawaited promises                                |
+| [Playwright](/rules/?family=PW)            | `QA-PW-`    | Brittle selectors, `networkidle` waits, hardcoded environment URLs, debug artifacts                |
+| [Python / pytest](/rules/?family=PY)       | `QA-PY-`    | `time.sleep()`, non-strict `xfail`, random/time dependence without a freeze                        |
+| [Java / JUnit · TestNG](/rules/?family=JV) | `QA-JV-`    | `@Disabled`, `Thread.sleep()`, blanket route mocks                                                 |
+| [C# / .NET](/rules/?family=CS)             | `QA-CS-`    | `[Ignore]`, `Task.Delay`, `WaitForTimeoutAsync()`                                                  |
+| [Environment](/rules/?family=ENV)          | `QA-ENV-`   | Environment coupling that makes a test pass only on one machine                                    |
 
 ## The false-positive firewall
 

@@ -1,7 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch, onMounted, onBeforeUnmount } from "vue";
 import { withBase } from "vitepress";
 import rules from "../../rules/rules.data.json";
+import {
+  filterRules,
+  stateFromQuery,
+  queryFromState,
+} from "./catalog-filter.mjs";
 
 interface Rule {
   id: string;
@@ -27,31 +32,59 @@ const measuredOnly = ref(false);
 
 const families = [...new Set(all.map((r) => r.familyLabel))].sort();
 
-const shown = computed(() => {
-  const needle = q.value.trim().toLowerCase();
-  return all.filter((r) => {
-    if (severity.value !== "all" && r.severity !== severity.value) return false;
-    if (tier.value !== "all" && r.tier !== tier.value) return false;
-    if (family.value !== "all" && r.familyLabel !== family.value) return false;
-    if (measuredOnly.value && !r.measured) return false;
-    if (!needle) return true;
-    return (
-      r.id.toLowerCase().includes(needle) ||
-      r.title.toLowerCase().includes(needle) ||
-      (r.languages ?? "").toLowerCase().includes(needle)
-    );
-  });
-});
+const shown = computed(() =>
+  filterRules(all, {
+    q: q.value,
+    severity: severity.value,
+    tier: tier.value,
+    family: family.value,
+    measuredOnly: measuredOnly.value,
+  }),
+);
 
 const measuredCount = computed(() => all.filter((r) => r.measured).length);
 
-function reset() {
-  q.value = "";
-  severity.value = "all";
-  tier.value = "all";
-  family.value = "all";
-  measuredOnly.value = false;
+function apply(s: ReturnType<typeof stateFromQuery>) {
+  q.value = s.q;
+  severity.value = s.severity;
+  tier.value = s.tier;
+  family.value = s.family;
+  measuredOnly.value = s.measuredOnly;
 }
+
+function reset() {
+  apply(stateFromQuery("", all));
+}
+
+/* ---- shareable filter state: mirror it in the URL query ------------- */
+
+function readUrl() {
+  if (typeof window !== "undefined")
+    apply(stateFromQuery(window.location.search, all));
+}
+
+function writeUrl() {
+  if (typeof window === "undefined") return;
+  const qs = queryFromState({
+    q: q.value,
+    severity: severity.value,
+    tier: tier.value,
+    family: family.value,
+    measuredOnly: measuredOnly.value,
+  });
+  const url = window.location.pathname + (qs ? "?" + qs : "");
+  window.history.replaceState(window.history.state, "", url);
+}
+
+onMounted(() => {
+  readUrl();
+  watch([q, severity, tier, family, measuredOnly], writeUrl);
+  window.addEventListener("popstate", readUrl);
+});
+onBeforeUnmount(() => {
+  if (typeof window !== "undefined")
+    window.removeEventListener("popstate", readUrl);
+});
 </script>
 
 <template>

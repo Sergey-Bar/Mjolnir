@@ -3,9 +3,8 @@
 Mjölnir can emit [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html)
 (`--format sarif`), the format GitHub Code Scanning, VS Code, and every
 major JetBrains IDE already know how to render as inline problems at the
-exact file and line — no dashboard server, no GUI app, no new UI QA
-Doctor has to build or maintain (see the anti-scope rules in
-`docs/tiers/tier-4-delight.md`).
+exact file and line — no dashboard server, no GUI app, no new UI to
+build or maintain.
 
 This is a documentation-only integration: nothing here changes what
 `mjolnir` does. It only wires the existing `--format sarif` output
@@ -86,9 +85,8 @@ Findings then appear as annotations directly on the relevant lines in a
 PR diff via GitHub's native Code Scanning UI, with no extra
 configuration beyond those two steps. This repository's own
 `.github/workflows/mjolnir.yml` currently posts a scoped PR comment
-instead (see Sprint 6, Task 25) — Code Scanning upload is documented
-here as an available alternative/addition, not something already
-running.
+instead — Code Scanning upload is documented here as an option you can
+add, not a step this repo's own CI runs today.
 
 ## Verifying the output yourself
 

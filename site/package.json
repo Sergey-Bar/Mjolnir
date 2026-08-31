@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "gen": "node scripts/gen-rules.mjs",
+    "test": "node --test \"scripts/*.test.mjs\"",
     "predev": "npm run gen",
     "dev": "vitepress dev",
     "prebuild": "npm run gen",
