@@ -236,6 +236,48 @@ describe("shouldUseAscii()", () => {
       else process.env["MJOLNIR_ASCII"] = prev;
     }
   });
+
+  // The bare-cmd.exe heuristic is `process.platform === "win32" && !TERM`.
+  // On a non-win32 CI host the left side short-circuits, so the right
+  // side of the `&&` is never exercised there — stub the platform so
+  // both arms run regardless of where the suite executes.
+  it("detects bare legacy conhost (win32, no TERM, no modern-host marker)", () => {
+    const saved = {
+      platform: Object.getOwnPropertyDescriptor(process, "platform"),
+      TERM: process.env["TERM"],
+      WT: process.env["WT_SESSION"],
+      TP: process.env["TERM_PROGRAM"],
+      CE: process.env["ConEmuANSI"],
+      ASCII: process.env["MJOLNIR_ASCII"],
+    };
+    Object.defineProperty(process, "platform", {
+      value: "win32",
+      configurable: true,
+    });
+    delete process.env["TERM"];
+    delete process.env["WT_SESSION"];
+    delete process.env["TERM_PROGRAM"];
+    delete process.env["ConEmuANSI"];
+    delete process.env["MJOLNIR_ASCII"];
+    try {
+      expect(shouldUseAscii()).toBe(true);
+      process.env["TERM"] = "xterm-256color";
+      expect(shouldUseAscii()).toBe(false);
+    } finally {
+      if (saved.platform)
+        Object.defineProperty(process, "platform", saved.platform);
+      for (const [k, v] of [
+        ["TERM", saved.TERM],
+        ["WT_SESSION", saved.WT],
+        ["TERM_PROGRAM", saved.TP],
+        ["ConEmuANSI", saved.CE],
+        ["MJOLNIR_ASCII", saved.ASCII],
+      ] as const) {
+        if (v === undefined) delete process.env[k];
+        else process.env[k] = v;
+      }
+    }
+  });
 });
 
 describe("wrapText", () => {
