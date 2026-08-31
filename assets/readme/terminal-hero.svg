@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="1178" height="1098" viewBox="0 0 1178 1098" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', Menlo, monospace" font-size="13">
+<svg width="1186" height="1231" viewBox="0 0 1186 1231" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', Menlo, monospace" font-size="13">
   <defs>
     <clipPath id="winClip">
-      <rect x="0" y="0" width="1178" height="1098" rx="8" ry="8"/>
+      <rect x="0" y="0" width="1186" height="1231" rx="8" ry="8"/>
     </clipPath>
   </defs>
 
   <g clip-path="url(#winClip)">
-    <rect x="0" y="0" width="1178" height="1098" fill="#14171c"/>
-    <rect x="0" y="0" width="1178" height="36" fill="#20242b"/>
+    <rect x="0" y="0" width="1186" height="1231" fill="#14171c"/>
+    <rect x="0" y="0" width="1186" height="36" fill="#20242b"/>
     <circle cx="20" cy="18" r="6" fill="#ff5f56"/>
     <circle cx="40" cy="18" r="6" fill="#ffbd2e"/>
     <circle cx="60" cy="18" r="6" fill="#27c93f"/>
-    <text x="589" y="22" fill="#a0a0a0" font-size="12" text-anchor="middle">demo-repo &#8212; mjolnir</text>
+    <text x="593" y="22" fill="#a0a0a0" font-size="12" text-anchor="middle">demo-repo &#8212; mjolnir</text>
 
     <text x="22" y="54.0" xml:space="preserve"><tspan fill="#d7d3c8">$ </tspan><tspan fill="#ede6d6">npx mjolnir-qa@latest</tspan></text>
     <text x="22" y="73.0" xml:space="preserve"><tspan fill="rgb(138,180,216)"> ╔═══════════╗</tspan></text>
@@ -23,52 +23,59 @@
     <text x="22" y="168.0" xml:space="preserve"><tspan fill="rgb(138,180,216)">       ║</tspan></text>
     <text x="22" y="187.0" xml:space="preserve"><tspan fill="rgb(138,180,216)">       ║</tspan></text>
 
-    <text x="22" y="225.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">WORTHINESS</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)"> 77</tspan><tspan fill="rgb(124,133,144)">/100</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">NEEDS WORK</tspan></text>
-    <text x="22" y="244.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">██████████████████████</tspan><tspan fill="rgb(224,165,38)">▓</tspan><tspan fill="#d7d3c8">░░░░░░░</tspan></text>
-    <text x="22" y="263.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">(37 raw pts / 7 test declarations — normalized)</tspan></text>
+    <text x="22" y="225.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">WORTHINESS</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)"> 74</tspan><tspan fill="rgb(124,133,144)">/100</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">NEEDS WORK</tspan></text>
+    <text x="22" y="244.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">█████████████████████</tspan><tspan fill="rgb(224,165,38)">▓</tspan><tspan fill="#d7d3c8">░░░░░░░░</tspan></text>
+    <text x="22" y="263.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">(42 raw pts / 7 test declarations — normalized)</tspan></text>
 
     <text x="22" y="301.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">DETECTED</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">[playwright]</tspan></text>
 
     <text x="22" y="339.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(138,180,216)">▚ DIAGNOSTICS BY CATEGORY</tspan></text>
     <text x="22" y="358.0" xml:space="preserve"><tspan fill="#d7d3c8">  QA-CI    </tspan><tspan fill="rgb(79,180,119)">████████████</tspan><tspan fill="rgb(79,180,119)">▓</tspan><tspan fill="#d7d3c8">░░░  84</tspan></text>
-    <text x="22" y="377.0" xml:space="preserve"><tspan fill="#d7d3c8">  QA-PW    </tspan><tspan fill="rgb(79,180,119)">█████████████</tspan><tspan fill="rgb(79,180,119)">▓</tspan><tspan fill="#d7d3c8">░░  85</tspan></text>
+    <text x="22" y="377.0" xml:space="preserve"><tspan fill="#d7d3c8">  QA-PW    </tspan><tspan fill="rgb(79,180,119)">████████████</tspan><tspan fill="rgb(79,180,119)">▓</tspan><tspan fill="#d7d3c8">░░░  80</tspan></text>
     <text x="22" y="396.0" xml:space="preserve"><tspan fill="#d7d3c8">  QA-TEST  </tspan><tspan fill="rgb(79,180,119)">██████████████</tspan><tspan fill="rgb(79,180,119)">▓</tspan><tspan fill="#d7d3c8">░  94</tspan></text>
 
     <text x="22" y="434.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(138,180,216)">▚ WHERE POINTS WERE LOST</tspan></text>
     <text x="22" y="453.0" xml:space="preserve"><tspan fill="#d7d3c8">  ╭────────────────────────────────────────╮</tspan></text>
     <text x="22" y="472.0" xml:space="preserve"><tspan fill="#d7d3c8">  │ 3 × error   − 24                       │</tspan></text>
-    <text x="22" y="491.0" xml:space="preserve"><tspan fill="#d7d3c8">  │ 5 × warning − 13</tspan><tspan fill="rgb(124,133,144)"> (evidence-discounted)</tspan><tspan fill="#d7d3c8"> │</tspan></text>
-    <text x="22" y="510.0" xml:space="preserve"><tspan fill="#d7d3c8">  ╰────────────────────────────────────────╯</tspan></text>
+    <text x="22" y="491.0" xml:space="preserve"><tspan fill="#d7d3c8">  │ 7 × warning − 17</tspan><tspan fill="rgb(124,133,144)"> (evidence-discounted)</tspan><tspan fill="#d7d3c8"> │</tspan></text>
+    <text x="22" y="510.0" xml:space="preserve"><tspan fill="#d7d3c8">  │ 1 × info    −  1                       │</tspan></text>
+    <text x="22" y="529.0" xml:space="preserve"><tspan fill="#d7d3c8">  ╰────────────────────────────────────────╯</tspan></text>
 
-    <text x="22" y="548.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(138,180,216)">▚ FIX THIS FIRST</tspan></text>
-    <text x="22" y="567.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">+8 pts</tspan><tspan fill="#d7d3c8">  QA-CI-002 · .github/workflows/ci.yml:16</tspan></text>
-    <text x="22" y="586.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">+8 pts</tspan><tspan fill="#d7d3c8">  QA-CI-001 · .github/workflows/ci.yml:17</tspan></text>
-    <text x="22" y="605.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">+8 pts</tspan><tspan fill="#d7d3c8">  QA-PW-101 · e2e/checkout.spec.ts:6</tspan></text>
+    <text x="22" y="567.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(138,180,216)">▚ FIX THIS FIRST</tspan></text>
+    <text x="22" y="586.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">+8 pts</tspan><tspan fill="#d7d3c8">  QA-CI-002 · .github/workflows/ci.yml:16</tspan></text>
+    <text x="22" y="605.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">+8 pts</tspan><tspan fill="#d7d3c8">  QA-CI-001 · .github/workflows/ci.yml:17</tspan></text>
+    <text x="22" y="624.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">+8 pts</tspan><tspan fill="#d7d3c8">  QA-PW-101 · e2e/checkout.spec.ts:6</tspan></text>
 
-    <text x="22" y="643.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(138,180,216)">▚ TOP ISSUES</tspan></text>
+    <text x="22" y="662.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(138,180,216)">▚ TOP ISSUES</tspan></text>
 
-    <text x="22" y="681.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(208,69,59)">✗</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(208,69,59)">ERROR  </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">Command exit code is swallowed with `|| true`.</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(124,133,144)">[E2]</tspan></text>
-    <text x="22" y="700.0" xml:space="preserve"><tspan fill="#d7d3c8">         </tspan><tspan fill="rgb(124,133,144)">QA-CI-002 · .github/workflows/ci.yml:16</tspan></text>
-    <text x="22" y="719.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(208,69,59)">✗</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(208,69,59)">ERROR  </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">Job `security-scan` runs a verification gate under `continue-on-error: true`.</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(124,133,144)">[E2]</tspan></text>
-    <text x="22" y="738.0" xml:space="preserve"><tspan fill="#d7d3c8">         </tspan><tspan fill="rgb(124,133,144)">QA-CI-001 · .github/workflows/ci.yml:17</tspan></text>
-    <text x="22" y="757.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">⚠</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(224,165,38)">WARN   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">Brittle multi-class CSS selector: `locator(".btn.btn-primary &gt; div:nth-child(2)")`.</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(124,133,144)">[E1]</tspan></text>
-    <text x="22" y="776.0" xml:space="preserve"><tspan fill="#d7d3c8">         </tspan><tspan fill="rgb(124,133,144)">QA-PW-004 · e2e/checkout.spec.ts:5</tspan></text>
-    <text x="22" y="795.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">⚠</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(224,165,38)">WARN   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">Hard sleep: `page.waitForTimeout(`.</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(124,133,144)">[E2]</tspan></text>
-    <text x="22" y="814.0" xml:space="preserve"><tspan fill="#d7d3c8">         </tspan><tspan fill="rgb(124,133,144)">QA-TEST-004 · e2e/checkout.spec.ts:6</tspan></text>
-    <text x="22" y="833.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(208,69,59)">✗</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(208,69,59)">ERROR  </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">`waitForTimeout()` hard sleep.</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(124,133,144)">[E2]</tspan></text>
-    <text x="22" y="852.0" xml:space="preserve"><tspan fill="#d7d3c8">         </tspan><tspan fill="rgb(124,133,144)">QA-PW-101 · e2e/checkout.spec.ts:6</tspan></text>
-    <text x="22" y="871.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">⚠</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(224,165,38)">WARN   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">Hardcoded URL: `goto("https://staging.example.com/login"`.</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(124,133,144)">[E2]</tspan></text>
-    <text x="22" y="890.0" xml:space="preserve"><tspan fill="#d7d3c8">         </tspan><tspan fill="rgb(124,133,144)">QA-PW-123 · e2e/login.spec.ts:4</tspan></text>
-    <text x="22" y="909.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">⚠</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(224,165,38)">WARN   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">Hardcoded URL: `goto("https://staging.example.com/"`.</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(124,133,144)">[E2]</tspan></text>
-    <text x="22" y="928.0" xml:space="preserve"><tspan fill="#d7d3c8">         </tspan><tspan fill="rgb(124,133,144)">QA-PW-123 · e2e/login.spec.ts:11</tspan></text>
-    <text x="22" y="947.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">⚠</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(224,165,38)">WARN   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">Hard sleep: `time.sleep(2…`.</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(124,133,144)">[E2]</tspan></text>
-    <text x="22" y="966.0" xml:space="preserve"><tspan fill="#d7d3c8">         </tspan><tspan fill="rgb(124,133,144)">QA-PY-005 · tests/test_checkout_api.py:7</tspan></text>
+    <text x="22" y="700.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(208,69,59)">✗</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(208,69,59)">ERROR  </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">Command exit code is swallowed with `|| true`.</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(124,133,144)">[E2]</tspan></text>
+    <text x="22" y="719.0" xml:space="preserve"><tspan fill="#d7d3c8">         </tspan><tspan fill="rgb(124,133,144)">QA-CI-002 · .github/workflows/ci.yml:16</tspan></text>
+    <text x="22" y="738.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(208,69,59)">✗</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(208,69,59)">ERROR  </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">Job `security-scan` runs a verification gate under `continue-on-error: true`.</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(124,133,144)">[E2]</tspan></text>
+    <text x="22" y="757.0" xml:space="preserve"><tspan fill="#d7d3c8">         </tspan><tspan fill="rgb(124,133,144)">QA-CI-001 · .github/workflows/ci.yml:17</tspan></text>
+    <text x="22" y="776.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">⚠</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(224,165,38)">WARN   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">Brittle multi-class CSS selector: `locator(".btn.btn-primary &gt; div:nth-child(2)")`.</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(124,133,144)">[E1]</tspan></text>
+    <text x="22" y="795.0" xml:space="preserve"><tspan fill="#d7d3c8">         </tspan><tspan fill="rgb(124,133,144)">QA-PW-004 · e2e/checkout.spec.ts:5</tspan></text>
+    <text x="22" y="814.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">⚠</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(224,165,38)">WARN   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">Hard sleep: `page.waitForTimeout(`.</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(124,133,144)">[E2]</tspan></text>
+    <text x="22" y="833.0" xml:space="preserve"><tspan fill="#d7d3c8">         </tspan><tspan fill="rgb(124,133,144)">QA-TEST-004 · e2e/checkout.spec.ts:6</tspan></text>
+    <text x="22" y="852.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(208,69,59)">✗</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(208,69,59)">ERROR  </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">`waitForTimeout()` hard sleep.</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(124,133,144)">[E2]</tspan></text>
+    <text x="22" y="871.0" xml:space="preserve"><tspan fill="#d7d3c8">         </tspan><tspan fill="rgb(124,133,144)">QA-PW-101 · e2e/checkout.spec.ts:6</tspan></text>
+    <text x="22" y="890.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">⚠</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(224,165,38)">WARN   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">Hardcoded URL: `goto("https://staging.example.com/login"`.</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(124,133,144)">[E2]</tspan></text>
+    <text x="22" y="909.0" xml:space="preserve"><tspan fill="#d7d3c8">         </tspan><tspan fill="rgb(124,133,144)">QA-PW-123 · e2e/login.spec.ts:4</tspan></text>
+    <text x="22" y="928.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">⚠</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(224,165,38)">WARN   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">Hardcoded URL: `goto("https://staging.example.com/"`.</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(124,133,144)">[E2]</tspan></text>
+    <text x="22" y="947.0" xml:space="preserve"><tspan fill="#d7d3c8">         </tspan><tspan fill="rgb(124,133,144)">QA-PW-123 · e2e/login.spec.ts:11</tspan></text>
+    <text x="22" y="966.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">⚠</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(224,165,38)">WARN   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">playwright.config has no `trace` capture setting.</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(124,133,144)">[E2]</tspan></text>
+    <text x="22" y="985.0" xml:space="preserve"><tspan fill="#d7d3c8">         </tspan><tspan fill="rgb(124,133,144)">QA-PW-122 · playwright.config.ts:1</tspan></text>
+    <text x="22" y="1004.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">playwright.config captures neither screenshots nor video on failure.</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(124,133,144)">[E2]</tspan></text>
+    <text x="22" y="1023.0" xml:space="preserve"><tspan fill="#d7d3c8">         </tspan><tspan fill="rgb(124,133,144)">QA-PW-143 · playwright.config.ts:1</tspan></text>
+    <text x="22" y="1042.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">⚠</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(224,165,38)">WARN   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">retries: undefined with no visible flake-triage loop.</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(124,133,144)">[E1]</tspan></text>
+    <text x="22" y="1061.0" xml:space="preserve"><tspan fill="#d7d3c8">         </tspan><tspan fill="rgb(124,133,144)">QA-PW-141 · playwright.config.ts:5</tspan></text>
+    <text x="22" y="1080.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">⚠</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(224,165,38)">WARN   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">Hard sleep: `time.sleep(2…`.</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(124,133,144)">[E2]</tspan></text>
+    <text x="22" y="1099.0" xml:space="preserve"><tspan fill="#d7d3c8">         </tspan><tspan fill="rgb(124,133,144)">QA-PY-005 · tests/test_checkout_api.py:7</tspan></text>
 
-    <text x="22" y="1004.0" xml:space="preserve"><tspan fill="rgb(124,133,144)">──────────────────────────────────────────────────────────</tspan></text>
-    <text x="22" y="1023.0" xml:space="preserve"><tspan fill="#d7d3c8">  Analysis: </tspan><tspan fill="rgb(79,180,119)">complete</tspan><tspan fill="#d7d3c8"> · a few ms</tspan></text>
-    <text x="22" y="1042.0" xml:space="preserve"><tspan fill="rgb(124,133,144)">  Rule coverage: 0/7 rules that fired here have a measured false-positive rate; the rest are heuristics. `mjolnir rules --unmeasured` lists them.</tspan></text>
+    <text x="22" y="1137.0" xml:space="preserve"><tspan fill="rgb(124,133,144)">──────────────────────────────────────────────────────────</tspan></text>
+    <text x="22" y="1156.0" xml:space="preserve"><tspan fill="#d7d3c8">  Analysis: </tspan><tspan fill="rgb(79,180,119)">complete</tspan><tspan fill="#d7d3c8"> · a few ms</tspan></text>
+    <text x="22" y="1175.0" xml:space="preserve"><tspan fill="rgb(124,133,144)">  Rule coverage: 4/10 rules that fired here have a measured false-positive rate; the rest are heuristics. `mjolnir rules --unmeasured` lists them.</tspan></text>
 
   </g>
 
-  <rect x="0.5" y="0.5" width="1177" height="1097" rx="7.5" ry="7.5" fill="none" stroke="#000000" stroke-opacity="0.5"/>
+  <rect x="0.5" y="0.5" width="1185" height="1230" rx="7.5" ry="7.5" fill="none" stroke="#000000" stroke-opacity="0.5"/>
 </svg>
