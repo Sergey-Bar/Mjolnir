@@ -189,7 +189,8 @@ export default defineConfig({
     },
     footer: {
       message: "Released under the MIT License.",
-      copyright: "Built by Sergey Bar",
+      copyright:
+        'Built by <a href="https://www.linkedin.com/in/sergeybar/" target="_blank" rel="noreferrer">Sergey Bar</a>',
     },
   },
 });

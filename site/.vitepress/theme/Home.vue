@@ -422,15 +422,6 @@ onBeforeUnmount(() => {
 
     <!-- ===================== FINAL CTA ===================== -->
     <section class="final" data-reveal>
-      <div class="strike" aria-hidden="true">
-        <img
-          :src="withBase('/apple-touch-icon.png')"
-          alt=""
-          width="72"
-          height="72"
-        />
-        <span class="shock" />
-      </div>
       <h2>Stop shipping tests you can't trust.</h2>
       <button
         class="cmd big"
@@ -443,15 +434,7 @@ onBeforeUnmount(() => {
         <code>npx mjolnir-qa@latest</code>
         <span class="copy">{{ copied ? "copied ✓" : "copy" }}</span>
       </button>
-      <p class="built">
-        Local-first · zero telemetry · MIT · v0.5.x open beta · built by
-        <a
-          href="https://www.linkedin.com/in/sergeybar/"
-          target="_blank"
-          rel="noreferrer"
-          >Sergey Bar</a
-        >
-      </p>
+      <p class="built">Local-first · zero telemetry · MIT · v0.5.x open beta</p>
     </section>
   </main>
 </template>
@@ -1098,31 +1081,7 @@ onBeforeUnmount(() => {
 }
 .final h2 {
   font-size: clamp(1.7rem, 5vw, 2.8rem);
-  margin: 2.6rem 0 2rem;
-}
-.strike {
-  position: relative;
-  display: block;
-  margin-bottom: 0.4rem;
-}
-.strike img {
-  filter: drop-shadow(0 10px 24px rgba(224, 180, 67, 0.4));
-}
-.final.is-in .strike img {
-  animation: hammer 0.9s cubic-bezier(0.3, 1.4, 0.5, 1) both;
-}
-.strike .shock {
-  position: absolute;
-  left: 50%;
-  bottom: -6px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  transform: translateX(-50%);
-  border: 2px solid rgba(224, 180, 67, 0.6);
-}
-.final.is-in .strike .shock {
-  animation: shock 0.9s ease-out 0.42s both;
+  margin: 0 0 2rem;
 }
 .cmd.big {
   font-size: 1rem;
@@ -1210,31 +1169,6 @@ onBeforeUnmount(() => {
 @keyframes sweep {
   to {
     background-position: -300% 0;
-  }
-}
-@keyframes hammer {
-  0% {
-    transform: translateY(-40px) rotate(-32deg);
-    opacity: 0;
-  }
-  55% {
-    transform: translateY(4px) rotate(6deg);
-    opacity: 1;
-  }
-  100% {
-    transform: none;
-  }
-}
-@keyframes shock {
-  0% {
-    width: 8px;
-    height: 8px;
-    opacity: 0.9;
-  }
-  100% {
-    width: 220px;
-    height: 220px;
-    opacity: 0;
   }
 }
 
