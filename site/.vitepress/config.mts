@@ -46,8 +46,7 @@ export default defineConfig({
     ],
     search: { provider: "local" },
     editLink: {
-      pattern:
-        "https://github.com/Sergey-Bar/Mjolnir/edit/main/site/:path",
+      pattern: "https://github.com/Sergey-Bar/Mjolnir/edit/main/site/:path",
     },
     footer: {
       message: "Released under the MIT License.",

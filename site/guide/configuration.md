@@ -4,13 +4,13 @@ Mjölnir is zero-config. An optional `mjolnir.config.json` (or
 `.mjolnir.json`) at the repo root tunes severity, gating and scope — it
 never changes detection semantics.
 
-| Key | Type | Effect |
-| --- | --- | --- |
-| `exclude` | `string[]` | Extra ignore globs (gitignore subset), on top of the built-in defaults |
-| `gate` | `"advisory" \| "error" \| "warning"` | Which severities exit non-zero (default `error`; `advisory` never blocks) |
-| `severityOverrides` | `{ "<RULE-ID>": severity }` | Re-rank a rule's findings for your repo |
-| `ignore` | `IgnoreEntry[]` | Suppress findings — `reason` is required; entries expire after 90 days |
-| `plugins` | `string[]` | Third-party rule packages |
+| Key                 | Type                                 | Effect                                                                    |
+| ------------------- | ------------------------------------ | ------------------------------------------------------------------------- |
+| `exclude`           | `string[]`                           | Extra ignore globs (gitignore subset), on top of the built-in defaults    |
+| `gate`              | `"advisory" \| "error" \| "warning"` | Which severities exit non-zero (default `error`; `advisory` never blocks) |
+| `severityOverrides` | `{ "<RULE-ID>": severity }`          | Re-rank a rule's findings for your repo                                   |
+| `ignore`            | `IgnoreEntry[]`                      | Suppress findings — `reason` is required; entries expire after 90 days    |
+| `plugins`           | `string[]`                           | Third-party rule packages                                                 |
 
 ```json
 {

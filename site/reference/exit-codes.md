@@ -2,13 +2,13 @@
 
 Frozen — safe to build CI logic on:
 
-| Exit code | Meaning |
-| --- | --- |
-| `0` | Clean — no findings at or above the gate |
-| `1` | Findings at or above the gate |
-| `2` | Partial scan (time budget hit, unreadable files) — never blocks |
-| `10` | Usage error (bad flag, missing target) |
-| `20` | Internal error |
+| Exit code | Meaning                                                         |
+| --------- | --------------------------------------------------------------- |
+| `0`       | Clean — no findings at or above the gate                        |
+| `1`       | Findings at or above the gate                                   |
+| `2`       | Partial scan (time budget hit, unreadable files) — never blocks |
+| `10`      | Usage error (bad flag, missing target)                          |
+| `20`      | Internal error                                                  |
 
 The JSON/SARIF report is `schemaVersion: 1`. Rule IDs (`QA-<FAMILY>-NNN`)
 are immutable once shipped and never reused.

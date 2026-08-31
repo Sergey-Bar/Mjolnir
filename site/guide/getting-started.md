@@ -22,24 +22,24 @@ Requires Node.js ≥ 22.18. Works on Windows, macOS, and Linux.
 
 ## Core commands
 
-| Command | What it does |
-| --- | --- |
-| `mjolnir` | Full-repo scan + worthiness score |
-| `mjolnir --scope changed` | Only what your branch introduced — the CI form |
-| `mjolnir ci install` | Generate the advisory PR workflow |
-| `mjolnir explain QA-CI-001` | What / why / fix + measured FP rate for one rule |
-| `mjolnir rules --unmeasured` | The rules running on assumption, not measurement |
-| `mjolnir --json` / `--format sarif` | Machine-readable / GitHub Code Scanning |
-| `mjolnir --strict` | Also run quarantine-tier rules (higher FP risk) |
+| Command                             | What it does                                     |
+| ----------------------------------- | ------------------------------------------------ |
+| `mjolnir`                           | Full-repo scan + worthiness score                |
+| `mjolnir --scope changed`           | Only what your branch introduced — the CI form   |
+| `mjolnir ci install`                | Generate the advisory PR workflow                |
+| `mjolnir explain QA-CI-001`         | What / why / fix + measured FP rate for one rule |
+| `mjolnir rules --unmeasured`        | The rules running on assumption, not measurement |
+| `mjolnir --json` / `--format sarif` | Machine-readable / GitHub Code Scanning          |
+| `mjolnir --strict`                  | Also run quarantine-tier rules (higher FP risk)  |
 
 ### When something's flaky
 
-| Command | What it does |
-| --- | --- |
-| `mjolnir forensics ./test-results/` | Real run data → `TRUE-FLAKE` verdicts, `FLAKY.md` |
-| `mjolnir triage ./test-results/` | Quarantine proposal from execution history |
+| Command                             | What it does                                        |
+| ----------------------------------- | --------------------------------------------------- |
+| `mjolnir forensics ./test-results/` | Real run data → `TRUE-FLAKE` verdicts, `FLAKY.md`   |
+| `mjolnir triage ./test-results/`    | Quarantine proposal from execution history          |
 | `mjolnir pw-report ./test-results/` | Playwright run summary — retries / flakes / slowest |
-| `mjolnir doctor:playwright` | Playwright-only deep scan + Selector Health Score |
+| `mjolnir doctor:playwright`         | Playwright-only deep scan + Selector Health Score   |
 
 ## One finding, up close
 
