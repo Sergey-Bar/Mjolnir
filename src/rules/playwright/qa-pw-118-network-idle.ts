@@ -19,10 +19,15 @@ export const networkIdleWait = defineRule({
   // Trust Metadata
   languages: ["typescript", "javascript"],
   frameworks: ["playwright"],
-  falsePositiveRisk: "low",
+  falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "regex pattern",
   introduced: "0.3.0",
+  // Measured FP 100% (n=20, docs/FP-AUDIT.md 2026-08-31): real-world
+  // networkidle waits are deliberate preload/settle synchronization in
+  // controlled fixture apps with no background traffic - the cited flake
+  // source (analytics/websockets) never materializes. North-star law.
+  tier: "quarantine",
 
   run(ctx) {
     const text = ctx.text;

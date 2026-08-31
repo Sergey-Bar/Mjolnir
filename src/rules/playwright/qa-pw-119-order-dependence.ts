@@ -25,6 +25,11 @@ export const pwOrderDependence = defineRule({
   autofix: false,
   detectionStrategy: "regex pattern",
   introduced: "0.3.0",
+  // Measured FP 100% (n=13, docs/FP-AUDIT.md 2026-08-31): real-world
+  // module-level state is setup infrastructure (per-test helpers with
+  // teardown, counters, vi.hoisted fixtures), not cross-test write-then-read.
+  // North-star law: >30% FP cannot ship by default.
+  tier: "quarantine",
 
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;

@@ -1,19 +1,17 @@
-{"ruleId":"QA-CI-005","file":".github/workflows/release.yml","line":129,"verdict":"","note":""}
-{"ruleId":"QA-CI-005","file":".github/workflows/release.yml","line":129,"verdict":"","note":""}
-{"ruleId":"QA-CI-001","file":".github/workflows/release.yml","line":105,"verdict":"","note":""}
-{"ruleId":"QA-CI-001","file":".github/workflows/release.yml","line":105,"verdict":"","note":""}
-{"ruleId":"QA-PW-123","file":"apps/dev/nextjs/tests/signin.spec.ts","line":5,"verdict":"","note":""}
-{"ruleId":"QA-PW-123","file":"apps/dev/nextjs/tests/signin.spec.ts","line":33,"verdict":"","note":""}
-{"ruleId":"QA-PW-119","file":"packages/adapter-d1/test/index.test.ts","line":20,"verdict":"","note":""}
-{"ruleId":"QA-PW-119","file":"packages/adapter-mikro-orm/test/entities.test.ts","line":89,"verdict":"","note":""}
-{"ruleId":"QA-PW-119","file":"packages/adapter-mongodb/test/serverless.test.ts","line":13,"verdict":"","note":""}
-{"ruleId":"QA-PW-119","file":"packages/adapter-pouchdb/test/index.test.ts","line":25,"verdict":"","note":""}
-{"ruleId":"QA-PW-119","file":"packages/next-auth/test/actions.test.ts","line":7,"verdict":"","note":""}
-{"ruleId":"QA-PW-119","file":"packages/next-auth/test/middleware-fail-closed.test.ts","line":19,"verdict":"","note":""}
-{"ruleId":"QA-TEST-003","file":"packages/frameworks-express/test/http-api-adapters/request.test.ts","line":38,"verdict":"","note":""}
-{"ruleId":"QA-TEST-003","file":"packages/frameworks-express/test/http-api-adapters/request.test.ts","line":61,"verdict":"","note":""}
-{"ruleId":"QA-TEST-003","file":"packages/frameworks-express/test/http-api-adapters/request.test.ts","line":85,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-002","file":"packages/frameworks-solid-start/test/index.test.ts","line":5,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-002","file":"packages/frameworks-sveltekit/test/index.test.ts","line":5,"verdict":"","note":""}
-{"ruleId":"QA-TQUAL-001","file":"packages/next-auth/test/actions.test.ts","line":77,"verdict":"","note":""}
-{"ruleId":"QA-TEST-002","file":"packages/next-auth/test/e2e/tests/providers/keycloak.spec.ts","line":35,"verdict":"","note":""}
+{"ruleId":"QA-CI-005","file":".github/workflows/release.yml","line":129,"verdict":"TP","note":"codecov-action consumes coverage that no step generates (pnpm test runs bare) - the upload is a silent no-op"}
+{"ruleId":"QA-CI-001","file":".github/workflows/release.yml","line":105,"verdict":"TP","note":"verification step (E2E Nextjs-Docker) has continue-on-error and additionally if:false - the E2E gate cannot fail the workflow, masked verification"}
+{"ruleId":"QA-PW-123","file":"apps/dev/nextjs/tests/signin.spec.ts","line":5,"verdict":"FP","note":"deployed example app is the system under test for this manual dev script - the absolute URL is the target, not a drift hazard"}
+{"ruleId":"QA-PW-123","file":"apps/dev/nextjs/tests/signin.spec.ts","line":33,"verdict":"FP","note":"same deployed example target - the session endpoint URL is the point of the manual dev check"}
+{"ruleId":"QA-PW-119","file":"packages/adapter-d1/test/index.test.ts","line":20,"verdict":"FP","note":"module-level initializer of a per-file shared in-memory database, exercised via beforeAll hooks - setup infrastructure, not cross-test write-then-read"}
+{"ruleId":"QA-PW-119","file":"packages/adapter-mikro-orm/test/entities.test.ts","line":89,"verdict":"FP","note":"lazy memoized ORM initialization inside a helper - shared infrastructure by design, no test writes state another reads"}
+{"ruleId":"QA-PW-119","file":"packages/adapter-mongodb/test/serverless.test.ts","line":13,"verdict":"FP","note":"module-level counter observing client cleanup via onClose - observation state, not cross-test behavioral coupling"}
+{"ruleId":"QA-PW-119","file":"packages/adapter-pouchdb/test/index.test.ts","line":25,"verdict":"FP","note":"assignments inside module-level lifecycle event handlers tracking PouchDB state - observation flags, not cross-test coupling"}
+{"ruleId":"QA-PW-119","file":"packages/next-auth/test/actions.test.ts","line":7,"verdict":"FP","note":"vi.hoisted mock fixture initialization - test infrastructure, not behavioral state"}
+{"ruleId":"QA-PW-119","file":"packages/next-auth/test/middleware-fail-closed.test.ts","line":19,"verdict":"FP","note":"vi.hoisted mock fixture initialization - test infrastructure, not behavioral state"}
+{"ruleId":"QA-TEST-003","file":"packages/frameworks-express/test/http-api-adapters/request.test.ts","line":38,"verdict":"FP","note":"assertions captured in the expectations closure (helpers wrap expect) and awaited via await expectations() - the checks gate the test"}
+{"ruleId":"QA-TEST-003","file":"packages/frameworks-express/test/http-api-adapters/request.test.ts","line":61,"verdict":"FP","note":"assertions captured in the expectations closure and awaited via await expectations() - the checks gate the test"}
+{"ruleId":"QA-TEST-003","file":"packages/frameworks-express/test/http-api-adapters/request.test.ts","line":85,"verdict":"FP","note":"assertions captured in the expectations closure and awaited via await expectations() - the checks gate the test"}
+{"ruleId":"QA-TQUAL-002","file":"packages/frameworks-solid-start/test/index.test.ts","line":5,"verdict":"TP","note":"expect(true).toBe(true) placeholder - proves nothing, pure false green"}
+{"ruleId":"QA-TQUAL-002","file":"packages/frameworks-sveltekit/test/index.test.ts","line":5,"verdict":"TP","note":"expect(true).toBe(true) placeholder - proves nothing, pure false green"}
+{"ruleId":"QA-TQUAL-001","file":"packages/next-auth/test/actions.test.ts","line":77,"verdict":"FP","note":"mockRedirect captures the redirect the real signIn flow performs - the redirect target IS the behavior under test"}
+{"ruleId":"QA-TEST-002","file":"packages/next-auth/test/e2e/tests/providers/keycloak.spec.ts","line":35,"verdict":"TP","note":"skip(true) with reason + TODO - always-skipped test with documented known bug, tracked"}

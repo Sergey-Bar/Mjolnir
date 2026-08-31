@@ -283,12 +283,12 @@ describe("mutation guard: line-attrmbuted detectmon, not file-level nomse", () =
     },
     {
       file: "console.spec.ts",
-      name: "QA-TEST-002 fires on it.skip, drops when removed",
-      // QA-TEST-003 (no assertions) measured 82% FP and was demoted to
-      // quarantine (docs/FP-AUDIT.md 2026-08-31) — the mutation guard now
-      // uses QA-TEST-002, a core-tier rule, for the default-scan contract.
-      bad: "it.skip('a', () => { console.log('side effect'); });\n",
-      good: "it('a', () => { expect(1 + 1).toBe(2); });\n",
+      name: "QA-TEST-001 fires on test.only, drops when removed",
+      // QA-TEST-002 was measured 65% FP and demoted to quarantine
+      // (docs/FP-AUDIT.md 2026-08-31) — the mutation guard now uses
+      // QA-TEST-001, a core-tier rule, for the default-scan contract.
+      bad: "test.only('a', () => { console.log('side effect'); });\n",
+      good: "test('a', () => { expect(1 + 1).toBe(2); });\n",
     },
   ];
 

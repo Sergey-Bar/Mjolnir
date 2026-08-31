@@ -1,4 +1,4 @@
-{"ruleId":"QA-CI-002","file":".github/workflows/test_docker.yml","line":45,"verdict":"","note":""}
+{"ruleId":"QA-CI-002","file":".github/workflows/test_docker.yml","line":45,"verdict":"FP","note":"best-effort cleanup step (dotnet clean before docker run) - || true is the correct idiom for non-verification housekeeping"}
 {"ruleId":"QA-CS-105","file":"src/Playwright.Tests/Assertions/LocatorAssertionsTests.cs","line":215,"verdict":"TP","note":"WaitForTimeoutAsync(1000) hard sleep to verify assertion hasn't resolved yet"}
 {"ruleId":"QA-CS-105","file":"src/Playwright.Tests/Assertions/LocatorAssertionsTests.cs","line":228,"verdict":"TP","note":"WaitForTimeoutAsync(1000) hard sleep to verify assertion hasn't resolved yet"}
 {"ruleId":"QA-CS-105","file":"src/Playwright.Tests/BrowserContextAddCookiesTests.cs","line":507,"verdict":"TP","note":"WaitForTimeoutAsync(2000) hard sleep waiting for cookie propagation"}
@@ -117,4 +117,4 @@
 {"ruleId":"QA-CS-111","file":"src/Playwright.Tests/PageRequestFallbackTests.cs","line":228,"verdict":"FP","note":"blanket route testing method amendment via fallback — testing the API"}
 {"ruleId":"QA-CS-103","file":"src/Playwright.Tests/ConventionTests.cs","line":12,"verdict":"FP","note":"test uses LINQ assertions internally via collection checks — assertion is in the method body"}
 {"ruleId":"QA-CS-103","file":"src/Playwright.Tests/PauseTests.cs","line":29,"verdict":"TP","note":"test only calls PauseAsync — no assertion, only verifies no exception"}
-{"ruleId":"QA-CS-107","file":"src/Playwright.Tests/PageNetworkIdleTests.cs","line":133,"verdict":"","note":""}
+{"ruleId":"QA-CS-107","file":"src/Playwright.Tests/PageNetworkIdleTests.cs","line":133,"verdict":"FP","note":"the suite tests the networkidle API itself (PageNetworkIdleTests) - the load-state call is the subject, same class as the PageClock wait-is-the-test FPs"}

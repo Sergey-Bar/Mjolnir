@@ -125,5 +125,9 @@ export const brittleSelectorsFamily: QADoctorRule[] = [
       { re: /query_selector\s*\(\s*['"]#/g, label: "id via query_selector" },
     ],
     "Prefer role-based locators (`get_by_role(...)`) or data-testid attributes.",
+    // Measured FP 100% (n=12, docs/FP-AUDIT.md 2026-08-31): sampled
+    // call sites are query_selector on markup the same test just created
+    // via set_content, inside makepyfile string templates. North-star law.
+    "quarantine",
   ),
 ];

@@ -18,10 +18,15 @@ export const skippedTest = defineRule({
   // Trust Metadata
   languages: ["typescript", "javascript"],
   frameworks: ["jest", "vitest", "mocha"],
-  falsePositiveRisk: "low",
+  falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "regex pattern",
   introduced: "0.1.0",
+  // Measured FP 65% (n=20, docs/FP-AUDIT.md 2026-08-31): conditional
+  // capability/environment skips (test.skip(fn), skip(!!process.env.DEV))
+  // dominate real-world fire sites - legitimate scoping, not hidden
+  // broken tests. North-star law: >30% FP cannot ship by default.
+  tier: "quarantine",
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;
     const findings: Omit<
