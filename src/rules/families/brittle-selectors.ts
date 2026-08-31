@@ -20,7 +20,6 @@ function makeBrittleSelectors(
   frameworks: string[],
   patterns: SelectorPattern[],
   fix: string,
-  tier?: "core" | "extended" | "quarantine",
 ): QADoctorRule {
   return defineRule({
     id,
@@ -37,7 +36,11 @@ function makeBrittleSelectors(
     autofix: false,
     detectionStrategy: "regex pattern",
     introduced: "0.4.0",
-    ...(tier ? { tier } : {}),
+    // All three measured variants are quarantine-tier: JV/CS at 100% FP
+    // since tempering, PY measured 100% (n=12, docs/FP-AUDIT.md
+    // 2026-08-31 — set_content self-owned DOM inside makepyfile strings).
+    // North-star law: >30% FP cannot ship by default.
+    tier: "quarantine",
     run(ctx) {
       const text = ctx.text; // needs string content (selectors are inside quotes)
       const findings: Omit<Finding, "ruleId" | "category">[] = [];
@@ -83,7 +86,6 @@ export const brittleSelectorsFamily: QADoctorRule[] = [
       { re: /\.querySelector\s*\(\s*"#/g, label: "id via querySelector" },
     ],
     "Prefer role-based locators (`page.getByRole(...)`) or data-testid attributes.",
-    "quarantine",
   ),
   makeBrittleSelectors(
     "QA-CS-106",
@@ -104,7 +106,6 @@ export const brittleSelectorsFamily: QADoctorRule[] = [
       },
     ],
     "Prefer role-based locators (`page.GetByRole(...)`) or data-testid attributes.",
-    "quarantine",
   ),
   makeBrittleSelectors(
     "QA-PY-104",
@@ -125,9 +126,5 @@ export const brittleSelectorsFamily: QADoctorRule[] = [
       { re: /query_selector\s*\(\s*['"]#/g, label: "id via query_selector" },
     ],
     "Prefer role-based locators (`get_by_role(...)`) or data-testid attributes.",
-    // Measured FP 100% (n=12, docs/FP-AUDIT.md 2026-08-31): sampled
-    // call sites are query_selector on markup the same test just created
-    // via set_content, inside makepyfile string templates. North-star law.
-    "quarantine",
   ),
 ];
