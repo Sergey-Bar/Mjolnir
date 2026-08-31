@@ -36,7 +36,7 @@ withDefaults(defineProps<{ rune?: string }>(), { rune: "ᛏ" });
   font-family: var(--mj-display);
   font-size: 1.15rem;
   color: var(--mj-ember-bright);
-  text-shadow: 0 0 14px rgba(245, 158, 11, 0.4);
+  text-shadow: 0 0 14px rgba(224, 180, 67, 0.4);
   letter-spacing: 0.1em;
 }
 </style>

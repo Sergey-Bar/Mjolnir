@@ -191,18 +191,23 @@ onBeforeUnmount(() => {
           />
           <defs>
             <linearGradient id="boltgrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#22d3ee" />
-              <stop offset="1" stop-color="#f59e0b" />
+              <stop offset="0" stop-color="#37d4c6" />
+              <stop offset="1" stop-color="#e0b443" />
             </linearGradient>
           </defs>
         </svg>
       </div>
 
       <div class="hero-inner">
-        <p class="eyebrow">
-          <span class="tick">ᛏ</span> Verification Trust Engine
-        </p>
-        <h1 class="wordmark">MJÖLNIR</h1>
+        <h1 class="hero-logo">
+          <img
+            :src="withBase('/logo.webp')"
+            alt="Mjölnir — Verification Trust Engine"
+            width="960"
+            height="480"
+            fetchpriority="high"
+          />
+        </h1>
         <p class="lede">
           Your tests are lying to you.
           <span class="shimmer">We prove it.</span>
@@ -418,7 +423,12 @@ onBeforeUnmount(() => {
     <!-- ===================== FINAL CTA ===================== -->
     <section class="final" data-reveal>
       <div class="strike" aria-hidden="true">
-        <img :src="withBase('/hammer.svg')" alt="" width="72" height="72" />
+        <img
+          :src="withBase('/apple-touch-icon.png')"
+          alt=""
+          width="72"
+          height="72"
+        />
         <span class="shock" />
       </div>
       <h2>Stop shipping tests you can't trust.</h2>
@@ -488,9 +498,9 @@ onBeforeUnmount(() => {
   background: conic-gradient(
     from 180deg at 50% 50%,
     transparent 0deg,
-    rgba(217, 119, 6, 0.22) 60deg,
+    rgba(201, 162, 39, 0.22) 60deg,
     transparent 130deg,
-    rgba(34, 211, 238, 0.16) 220deg,
+    rgba(55, 212, 198, 0.16) 220deg,
     transparent 300deg
   );
   filter: blur(60px);
@@ -505,8 +515,8 @@ onBeforeUnmount(() => {
   transform: translateX(-50%);
   background: radial-gradient(
     circle,
-    rgba(245, 158, 11, 0.28),
-    rgba(217, 119, 6, 0.08) 40%,
+    rgba(224, 180, 67, 0.28),
+    rgba(201, 162, 39, 0.08) 40%,
     transparent 70%
   );
   animation: breathe 7s ease-in-out infinite;
@@ -518,8 +528,8 @@ onBeforeUnmount(() => {
 .drift-rune {
   position: absolute;
   font-family: var(--mj-display);
-  color: rgba(245, 200, 130, 0.14);
-  text-shadow: 0 0 24px rgba(245, 158, 11, 0.12);
+  color: rgba(198, 204, 214, 0.14);
+  text-shadow: 0 0 24px rgba(224, 180, 67, 0.12);
   animation: floaty 12s ease-in-out infinite;
   user-select: none;
 }
@@ -530,7 +540,7 @@ onBeforeUnmount(() => {
   height: 100%;
   width: 180px;
   opacity: 0.42;
-  filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.5));
+  filter: drop-shadow(0 0 10px rgba(55, 212, 198, 0.5));
   animation: flicker 6s steps(1) infinite;
 }
 @media (max-width: 860px) {
@@ -544,34 +554,19 @@ onBeforeUnmount(() => {
   max-width: 820px;
   animation: rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
-.eyebrow {
-  font-family: var(--mj-display);
-  font-size: 0.82rem;
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-  color: var(--mj-ember-hot);
-  margin: 0 0 1.4rem;
+.hero-logo {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  line-height: 0;
 }
-.eyebrow .tick {
-  margin-right: 0.55em;
-  text-shadow: 0 0 16px rgba(245, 158, 11, 0.7);
-}
-.wordmark {
-  font-family: var(--mj-display);
-  font-weight: 700;
-  font-size: clamp(3.2rem, 12vw, 8rem);
-  /* line-height must clear the diaeresis on Ö — with background-clip:text
-     a glyph that ascends past the line-box loses its gradient fill and
-     the umlaut dots vanish. Pad the top, pull it back with margin. */
-  line-height: 1.1;
-  padding-top: 0.14em;
-  margin: -0.14em 0 0;
-  letter-spacing: 0.06em;
-  background: linear-gradient(180deg, #fff7e8 10%, #f6b64a 55%, #b45309 105%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  filter: drop-shadow(0 6px 40px rgba(245, 158, 11, 0.35));
+.hero-logo img {
+  display: block;
+  width: min(560px, 86vw);
+  height: auto;
+  margin: 0 auto;
+  filter: drop-shadow(0 10px 44px rgba(8, 11, 18, 0.6))
+    drop-shadow(0 0 36px rgba(55, 212, 198, 0.14));
 }
 .lede {
   font-family: var(--mj-display);
@@ -633,16 +628,16 @@ onBeforeUnmount(() => {
     background 0.16s ease;
 }
 .btn-primary {
-  color: #1a1206;
+  color: #0b0f17;
   background: linear-gradient(180deg, var(--mj-ember-hot), var(--mj-ember));
   box-shadow:
-    0 10px 30px -8px rgba(245, 158, 11, 0.6),
+    0 10px 30px -8px rgba(224, 180, 67, 0.6),
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow:
-    0 16px 40px -8px rgba(245, 158, 11, 0.7),
+    0 16px 40px -8px rgba(224, 180, 67, 0.7),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 .btn-ghost {
@@ -652,7 +647,7 @@ onBeforeUnmount(() => {
 }
 .btn-ghost:hover {
   transform: translateY(-2px);
-  border-color: rgba(245, 200, 130, 0.4);
+  border-color: rgba(198, 204, 214, 0.4);
   background: rgba(255, 255, 255, 0.06);
 }
 
@@ -664,7 +659,7 @@ onBeforeUnmount(() => {
   padding: 0.65rem 0.7rem 0.65rem 1rem;
   border-radius: 10px;
   border: 1px solid var(--mj-hero-line);
-  background: rgba(10, 9, 8, 0.6);
+  background: rgba(8, 11, 18, 0.6);
   font-family: var(--vp-font-family-mono);
   font-size: 0.9rem;
   color: var(--mj-hero-text);
@@ -672,7 +667,7 @@ onBeforeUnmount(() => {
   transition: border-color 0.16s ease;
 }
 .cmd:hover {
-  border-color: rgba(245, 200, 130, 0.35);
+  border-color: rgba(198, 204, 214, 0.35);
 }
 .cmd .prompt {
   color: var(--mj-ember-hot);
@@ -693,7 +688,7 @@ onBeforeUnmount(() => {
 }
 .cmd.copied .copy {
   color: var(--mj-ember-hot);
-  border-color: rgba(245, 158, 11, 0.5);
+  border-color: rgba(224, 180, 67, 0.5);
 }
 
 /* ---------------- SHOWCASE ---------------- */
@@ -759,7 +754,7 @@ onBeforeUnmount(() => {
   stroke-width: 10;
   stroke-linecap: round;
   stroke: var(--mj-ember-bright);
-  filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.5));
+  filter: drop-shadow(0 0 8px rgba(224, 180, 67, 0.5));
   transition: stroke-dashoffset 0.1s linear;
 }
 .gauge-num {
@@ -793,7 +788,7 @@ onBeforeUnmount(() => {
   margin: 2.6rem 0 0;
   border-radius: 14px;
   overflow: hidden;
-  border: 1px solid rgba(245, 200, 130, 0.14);
+  border: 1px solid rgba(198, 204, 214, 0.14);
   background: var(--mj-forge-950);
   box-shadow: 0 40px 80px -40px rgba(0, 0, 0, 0.7);
 }
@@ -807,13 +802,13 @@ onBeforeUnmount(() => {
   gap: 0.5rem;
   padding: 0.7rem 1rem;
   background: rgba(255, 255, 255, 0.03);
-  border-bottom: 1px solid rgba(245, 200, 130, 0.1);
+  border-bottom: 1px solid rgba(198, 204, 214, 0.1);
 }
 .scan-bar span {
   width: 11px;
   height: 11px;
   border-radius: 50%;
-  background: rgba(245, 200, 130, 0.25);
+  background: rgba(198, 204, 214, 0.25);
 }
 .scan-bar code {
   margin-left: 0.6rem;
@@ -891,10 +886,10 @@ onBeforeUnmount(() => {
   margin: 0 auto;
   padding: 2.4rem 2rem;
   border-radius: 16px;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  border: 1px solid rgba(224, 180, 67, 0.3);
   background: linear-gradient(
     180deg,
-    rgba(245, 158, 11, 0.09),
+    rgba(224, 180, 67, 0.09),
     transparent 65%
   );
   text-align: center;
@@ -986,7 +981,7 @@ onBeforeUnmount(() => {
   inset: 0;
   background: radial-gradient(
     240px circle at var(--mx, 50%) var(--my, 0%),
-    rgba(245, 158, 11, 0.14),
+    rgba(224, 180, 67, 0.14),
     transparent 60%
   );
   opacity: 0;
@@ -994,8 +989,8 @@ onBeforeUnmount(() => {
 }
 .feat:hover {
   transform: translateY(-4px);
-  border-color: rgba(245, 158, 11, 0.4);
-  box-shadow: 0 24px 50px -28px rgba(245, 158, 11, 0.4);
+  border-color: rgba(224, 180, 67, 0.4);
+  box-shadow: 0 24px 50px -28px rgba(224, 180, 67, 0.4);
 }
 .feat:hover::before {
   opacity: 1;
@@ -1004,7 +999,7 @@ onBeforeUnmount(() => {
   font-family: var(--mj-display);
   font-size: 1.7rem;
   color: var(--mj-ember-bright);
-  text-shadow: 0 0 20px rgba(245, 158, 11, 0.35);
+  text-shadow: 0 0 20px rgba(224, 180, 67, 0.35);
 }
 .feat h3 {
   margin: 0.7rem 0 0.4rem;
@@ -1075,10 +1070,10 @@ onBeforeUnmount(() => {
   position: relative;
   background: linear-gradient(
     180deg,
-    rgba(245, 158, 11, 0.08),
+    rgba(224, 180, 67, 0.08),
     transparent 70%
   );
-  border-color: rgba(245, 158, 11, 0.35);
+  border-color: rgba(224, 180, 67, 0.35);
 }
 .cmp-us li::before {
   content: "ᛏ";
@@ -1091,7 +1086,7 @@ onBeforeUnmount(() => {
   right: 1.2rem;
   font-family: var(--mj-display);
   font-size: 1.6rem;
-  color: rgba(245, 158, 11, 0.5);
+  color: rgba(224, 180, 67, 0.5);
 }
 
 /* ---------------- FINAL ---------------- */
@@ -1111,7 +1106,7 @@ onBeforeUnmount(() => {
   margin-bottom: 0.4rem;
 }
 .strike img {
-  filter: drop-shadow(0 10px 24px rgba(245, 158, 11, 0.4));
+  filter: drop-shadow(0 10px 24px rgba(224, 180, 67, 0.4));
 }
 .final.is-in .strike img {
   animation: hammer 0.9s cubic-bezier(0.3, 1.4, 0.5, 1) both;
@@ -1124,7 +1119,7 @@ onBeforeUnmount(() => {
   height: 8px;
   border-radius: 50%;
   transform: translateX(-50%);
-  border: 2px solid rgba(245, 158, 11, 0.6);
+  border: 2px solid rgba(224, 180, 67, 0.6);
 }
 .final.is-in .strike .shock {
   animation: shock 0.9s ease-out 0.42s both;

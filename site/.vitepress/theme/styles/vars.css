@@ -1,85 +1,114 @@
 /**
- * Mjölnir palette — a forge at night: molten ember on blackened iron,
- * with a cold arc of lightning for the accent. Light mode is hammered
- * parchment. Norse, themed, not a stock template.
+ * Mjölnir palette — storm-forged. Brushed steel and forge gold under an
+ * aurora, over midnight iron. Derived from the logo; see
+ * assets/brand/README.md. Light mode is the same system on a cold white.
  */
 
 :root {
-  /* brand */
-  --vp-c-brand-1: #b45309;
-  --vp-c-brand-2: #92400e;
-  --vp-c-brand-3: #7c2d12;
-  --vp-c-brand-soft: rgba(217, 119, 6, 0.14);
+  /* ---- brand accent: forge gold ---- */
+  --vp-c-brand-1: #a5811c;
+  --vp-c-brand-2: #8a6d1e;
+  --vp-c-brand-3: #6f5717;
+  --vp-c-brand-soft: rgba(201, 162, 39, 0.13);
 
-  /* light surface — parchment / hammered vellum */
-  --vp-c-bg: #f7f2e8;
-  --vp-c-bg-alt: #efe7d6;
-  --vp-c-bg-soft: #ece2ce;
-  --vp-c-bg-elv: #fffdf7;
-  --vp-c-text-1: #241d15;
-  --vp-c-text-2: #5f5443;
-  --vp-c-text-3: #8a7c66;
-  --vp-c-divider: rgba(124, 92, 46, 0.18);
-  --vp-c-border: rgba(124, 92, 46, 0.22);
-  --vp-c-gutter: rgba(124, 92, 46, 0.12);
+  /* ---- light surface: cold white ---- */
+  --vp-c-bg: #f7f8fa;
+  --vp-c-bg-alt: #eef1f5;
+  --vp-c-bg-soft: #e7ebf1;
+  --vp-c-bg-elv: #ffffff;
+  --vp-c-text-1: #0f1420;
+  --vp-c-text-2: #48515f;
+  --vp-c-text-3: #6e7a8c;
+  --vp-c-divider: rgba(20, 27, 43, 0.1);
+  --vp-c-border: rgba(20, 27, 43, 0.14);
+  --vp-c-gutter: rgba(20, 27, 43, 0.07);
 
-  /* type */
+  /* ---- type ---- */
   --vp-font-family-base:
     "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --vp-font-family-mono:
     "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+  --mj-display: "Cinzel", "Trajan Pro", "Iowan Old Style", Georgia, serif;
 
-  /* Mjölnir tokens */
-  --mj-display:
-    "Cinzel", "Iowan Old Style", "Palatino Linotype", Palatino, serif;
-  --mj-ember: #d97706;
-  --mj-ember-bright: #f59e0b;
-  --mj-ember-hot: #fbbf24;
-  --mj-spark: #0ea5b7;
-  --mj-spark-bright: #22d3ee;
-  --mj-forge-950: #0b0a09;
-  --mj-forge-900: #121010;
-  --mj-forge-850: #17130f;
-  --mj-forge-800: #211b13;
-  --mj-parchment: #ede3d0;
-  --mj-iron: #a8a096;
+  /* ---- Mjölnir tokens: midnight iron ---- */
+  --mj-ink-950: #080b12;
+  --mj-ink-900: #0b0f17;
+  --mj-ink-850: #0f1420;
+  --mj-ink-800: #141b2b;
 
-  --mj-hero-ink: #0b0a09;
-  --mj-hero-text: #f3ead9;
-  --mj-hero-muted: #b7ab98;
-  --mj-hero-line: rgba(245, 200, 130, 0.14);
+  /* brushed steel */
+  --mj-steel: #c6ccd6;
+  --mj-steel-dim: #8a93a0;
+
+  /* forge gold — primary */
+  --mj-gold: #c9a227;
+  --mj-gold-bright: #e0b443;
+  --mj-gold-hot: #f2d488;
+
+  /* aurora — secondary / verification energy */
+  --mj-aurora: #2fb8a6;
+  --mj-aurora-bright: #37d4c6;
+  --mj-aurora-cyan: #56c7e8;
+
+  /* semantic — verdict & status */
+  --mj-worthy: #2f9e73;
+  --mj-needswork: #a5811c;
+  --mj-unworthy: #c13b37;
+  --mj-info: #2b7fa8;
+
+  /* ---- legacy aliases (kept so existing rules keep resolving) ---- */
+  --mj-ember: var(--mj-gold);
+  --mj-ember-bright: var(--mj-gold-bright);
+  --mj-ember-hot: var(--mj-gold-hot);
+  --mj-spark: var(--mj-aurora);
+  --mj-spark-bright: var(--mj-aurora-bright);
+  --mj-forge-950: var(--mj-ink-950);
+  --mj-forge-900: var(--mj-ink-900);
+  --mj-forge-850: var(--mj-ink-850);
+  --mj-forge-800: var(--mj-ink-800);
+  --mj-parchment: #e7ebf1;
+  --mj-iron: var(--mj-steel-dim);
+
+  --mj-hero-ink: #080b12;
+  --mj-hero-text: #eaeef5;
+  --mj-hero-muted: #9aa6b6;
+  --mj-hero-line: rgba(198, 204, 214, 0.14);
 
   --vp-home-hero-name-color: transparent;
   --vp-home-hero-name-background: linear-gradient(
-    108deg,
-    var(--mj-ember-hot),
-    #f97316 42%,
-    var(--mj-spark-bright)
+    180deg,
+    #dfe4ec 6%,
+    var(--mj-steel) 40%,
+    var(--mj-gold-bright) 92%
   );
+
+  --vp-c-brand-lighter: var(--mj-gold-hot);
+  --vp-c-brand-light: var(--mj-gold-bright);
+  --vp-c-brand-dark: var(--vp-c-brand-2);
+  --vp-c-brand-darker: var(--vp-c-brand-3);
 }
 
 .dark {
-  --vp-c-bg: #0d0b0a;
-  --vp-c-bg-alt: #131110;
-  --vp-c-bg-soft: #1a1611;
-  --vp-c-bg-elv: #171310;
-  --vp-c-text-1: #f2e9db;
-  --vp-c-text-2: #b6ab9b;
-  --vp-c-text-3: #877c6b;
-  --vp-c-divider: rgba(245, 200, 130, 0.1);
-  --vp-c-border: rgba(245, 200, 130, 0.14);
-  --vp-c-gutter: rgba(245, 200, 130, 0.06);
+  --vp-c-bg: #0a0e17;
+  --vp-c-bg-alt: #0f1420;
+  --vp-c-bg-soft: #151c2b;
+  --vp-c-bg-elv: #121826;
+  --vp-c-text-1: #eaeef5;
+  --vp-c-text-2: #a9b4c4;
+  --vp-c-text-3: #6e7a8c;
+  --vp-c-divider: rgba(198, 204, 214, 0.1);
+  --vp-c-border: rgba(198, 204, 214, 0.14);
+  --vp-c-gutter: rgba(198, 204, 214, 0.06);
 
-  --vp-c-brand-1: #f5b942;
-  --vp-c-brand-2: #f59e0b;
-  --vp-c-brand-3: #d97706;
-  --vp-c-brand-soft: rgba(245, 158, 11, 0.16);
-}
+  --vp-c-brand-1: #e0b443;
+  --vp-c-brand-2: #c9a227;
+  --vp-c-brand-3: #a5811c;
+  --vp-c-brand-soft: rgba(224, 180, 67, 0.15);
 
-/* the toggle/brand accent should read as ember, not the default blue */
-:root {
-  --vp-c-brand-lighter: var(--mj-ember-hot);
-  --vp-c-brand-light: var(--mj-ember-bright);
-  --vp-c-brand-dark: var(--vp-c-brand-2);
-  --vp-c-brand-darker: var(--vp-c-brand-3);
+  --mj-needswork: #e0b443;
+  --mj-worthy: #5ad1a6;
+  --mj-unworthy: #e5544e;
+  --mj-info: #56c7e8;
+
+  --mj-parchment: #c6ccd6;
 }

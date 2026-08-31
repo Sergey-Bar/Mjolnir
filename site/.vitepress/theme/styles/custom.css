@@ -33,18 +33,18 @@ body {
   font-family: var(--mj-display);
   font-weight: 600;
   letter-spacing: 0.08em;
-  background: linear-gradient(120deg, var(--mj-ember-hot), #f97316);
+  background: linear-gradient(120deg, var(--mj-steel), var(--mj-gold-bright));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 .VPNavBar .VPImage.logo {
-  filter: drop-shadow(0 2px 8px rgba(245, 158, 11, 0.35));
+  filter: drop-shadow(0 2px 8px rgba(224, 180, 67, 0.35));
 }
 
 /* ---- selection + focus ------------------------------------- */
 ::selection {
-  background: rgba(245, 158, 11, 0.28);
+  background: rgba(224, 180, 67, 0.28);
 }
 :root {
   --vp-c-brand-1: var(--vp-c-brand-1);
@@ -68,7 +68,7 @@ body {
   margin-right: 0.55rem;
   font-size: 0.8em;
   opacity: 0.75;
-  text-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+  text-shadow: 0 0 12px rgba(224, 180, 67, 0.4);
 }
 .vp-doc h3 {
   font-family: var(--mj-display);
@@ -83,7 +83,7 @@ body {
 
 .vp-doc a {
   text-underline-offset: 3px;
-  text-decoration-color: rgba(245, 158, 11, 0.4);
+  text-decoration-color: rgba(224, 180, 67, 0.4);
 }
 
 .vp-doc :not(pre) > code {
@@ -101,26 +101,26 @@ body {
 
 /* ---- landing navbar sits over the dark forge hero --------- */
 .mj-landing .VPNavBar {
-  background-color: rgba(11, 10, 9, 0.55) !important;
+  background-color: rgba(8, 11, 18, 0.55) !important;
   backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(245, 200, 130, 0.08);
+  border-bottom: 1px solid rgba(198, 204, 214, 0.08);
 }
 .mj-landing .VPNavBar.top {
-  background-color: rgba(11, 10, 9, 0.2) !important;
+  background-color: rgba(8, 11, 18, 0.2) !important;
 }
 .mj-landing .VPNavBar .VPNavBarMenuLink,
 .mj-landing .VPNavBar .VPNavBarExtraMenu .VPFlyout button,
 .mj-landing .VPNavBar .DocSearch-Button,
 .mj-landing .VPNavBar .VPSocialLink,
 .mj-landing .VPNavBar .VPSwitchAppearance {
-  color: #e9ddc9 !important;
+  color: #e7eaf0 !important;
 }
 .mj-landing .VPNavBar .DocSearch-Button {
   background: rgba(255, 255, 255, 0.06);
 }
 .mj-landing .VPNavBar .DocSearch-Button-Keys,
 .mj-landing .VPNavBar .DocSearch-Button-Placeholder {
-  color: #b7ab98 !important;
+  color: #9aa6b6 !important;
 }
 .mj-landing .VPNavBar .VPNavBarMenuLink:hover {
   color: var(--mj-ember-hot) !important;
@@ -129,7 +129,7 @@ body {
 /* ---- links & buttons keep the ember accent ---------------- */
 .VPButton.brand {
   background-color: var(--vp-c-brand-1);
-  color: #1a1206;
+  color: #0b0f17;
 }
 
 /* ---- footer ---------------------------------------------- */
