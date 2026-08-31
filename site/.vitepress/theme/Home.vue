@@ -560,9 +560,13 @@ onBeforeUnmount(() => {
   font-family: var(--mj-display);
   font-weight: 700;
   font-size: clamp(3.2rem, 12vw, 8rem);
-  line-height: 0.95;
+  /* line-height must clear the diaeresis on Ö — with background-clip:text
+     a glyph that ascends past the line-box loses its gradient fill and
+     the umlaut dots vanish. Pad the top, pull it back with margin. */
+  line-height: 1.1;
+  padding-top: 0.14em;
+  margin: -0.14em 0 0;
   letter-spacing: 0.06em;
-  margin: 0;
   background: linear-gradient(180deg, #fff7e8 10%, #f6b64a 55%, #b45309 105%);
   -webkit-background-clip: text;
   background-clip: text;
