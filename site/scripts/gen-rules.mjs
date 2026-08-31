@@ -6,7 +6,8 @@
  * gitignored). Nothing here is hand-maintained, so the catalog cannot
  * drift from the registry the way a copied table would.
  *
- * Run by `npm run prebuild` / `predev` in site/package.json.
+ * Invoked automatically by the site's own "prebuild" and "predev"
+ * hooks (see site/package.json) — it is not a repo-root script.
  */
 
 import {
