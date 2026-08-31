@@ -124,7 +124,14 @@ function main(): void {
   });
 
   // verbose: true → the reporter prints every finding, not the top 5.
-  const rendered = renderTerminal(result, { isTTY: true, verbose: true });
+  // ascii: false pins Unicode glyphs (matching generate-readme-hero.ts) so
+  // the committed SVG does not depend on whoever ran the generator last —
+  // shouldUseAscii() is host/env-dependent and made this asset drift in CI.
+  const rendered = renderTerminal(result, {
+    isTTY: true,
+    verbose: true,
+    ascii: false,
+  });
   const lines = [
     "\x1b[92m$\x1b[0m \x1b[1mnpx mjolnir-qa@latest --verbose\x1b[0m",
     ...rendered.split("\n"),
