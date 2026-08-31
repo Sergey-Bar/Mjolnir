@@ -10,356 +10,7 @@ Classify each finding as:
 
 ---
 
-## 1. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestLocatorFrame.java:252
-
-**Message:** test id `buttonId` violates kebab-case convention.
-
-```
-     247|   void getByCoverage() {
-     248|     routeIframe(page);
-     249|     page.navigate(server.EMPTY_PAGE);
-     250|     Locator button1 = page.frameLocator("iframe").getByRole(AriaRole.BUTTON);
-     251|     Locator button2 = page.frameLocator("iframe").getByText("Hello");
->>>  252|     Locator button3 = page.frameLocator("iframe").getByTestId("buttonId");
-     253|     assertThat(button1).hasText("Hello iframe");
-     254|     assertThat(button2).hasText("Hello iframe");
-     255|     assertThat(button3).hasText("Hello iframe");
-     256|     Locator input1 = page.frameLocator("iframe").getByLabel("Name");
-     257|     assertThat(input1).hasValue("");
-```
-
-**verdict:**
-
----
-
-## 2. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestSelectorsGetBy.java:40
-
-**Message:** test id `Hello` violates kebab-case convention.
-
-```
-      35|     playwright.selectors().setTestIdAttribute("data-testid");
-      36|   }
-      37|   @Test
-      38|   void getByTestIdShouldWork() {
-      39|     page.setContent("<div><div data-testid='Hello'>Hello world</div></div>");
->>>   40|     assertThat(page.getByTestId("Hello")).hasText("Hello world");
-      41|     assertThat(page.mainFrame().getByTestId("Hello")).hasText("Hello world");
-      42|     assertThat(page.locator("div").getByTestId("Hello")).hasText("Hello world");
-      43|   }
-      44|
-      45|   @Test
-```
-
-**verdict:**
-
----
-
-## 3. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestSelectorsGetBy.java:41
-
-**Message:** test id `Hello` violates kebab-case convention.
-
-```
-      36|   }
-      37|   @Test
-      38|   void getByTestIdShouldWork() {
-      39|     page.setContent("<div><div data-testid='Hello'>Hello world</div></div>");
-      40|     assertThat(page.getByTestId("Hello")).hasText("Hello world");
->>>   41|     assertThat(page.mainFrame().getByTestId("Hello")).hasText("Hello world");
-      42|     assertThat(page.locator("div").getByTestId("Hello")).hasText("Hello world");
-      43|   }
-      44|
-      45|   @Test
-      46|   void getByTestIdWithCustomTestIdShouldWork() {
-```
-
-**verdict:**
-
----
-
-## 4. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestSelectorsGetBy.java:42
-
-**Message:** test id `Hello` violates kebab-case convention.
-
-```
-      37|   @Test
-      38|   void getByTestIdShouldWork() {
-      39|     page.setContent("<div><div data-testid='Hello'>Hello world</div></div>");
-      40|     assertThat(page.getByTestId("Hello")).hasText("Hello world");
-      41|     assertThat(page.mainFrame().getByTestId("Hello")).hasText("Hello world");
->>>   42|     assertThat(page.locator("div").getByTestId("Hello")).hasText("Hello world");
-      43|   }
-      44|
-      45|   @Test
-      46|   void getByTestIdWithCustomTestIdShouldWork() {
-      47|     page.setContent("<div><div data-my-custom-testid='Hello'>Hello world</div></div>");
-```
-
-**verdict:**
-
----
-
-## 5. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestSelectorsGetBy.java:49
-
-**Message:** test id `Hello` violates kebab-case convention.
-
-```
-      44|
-      45|   @Test
-      46|   void getByTestIdWithCustomTestIdShouldWork() {
-      47|     page.setContent("<div><div data-my-custom-testid='Hello'>Hello world</div></div>");
-      48|     playwright.selectors().setTestIdAttribute("data-my-custom-testid");
->>>   49|     assertThat(page.getByTestId("Hello")).hasText("Hello world");
-      50|     assertThat(page.mainFrame().getByTestId("Hello")).hasText("Hello world");
-      51|     assertThat(page.locator("div").getByTestId("Hello")).hasText("Hello world");
-      52|   }
-      53|
-      54|   @Test
-```
-
-**verdict:**
-
----
-
-## 6. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestSelectorsGetBy.java:50
-
-**Message:** test id `Hello` violates kebab-case convention.
-
-```
-      45|   @Test
-      46|   void getByTestIdWithCustomTestIdShouldWork() {
-      47|     page.setContent("<div><div data-my-custom-testid='Hello'>Hello world</div></div>");
-      48|     playwright.selectors().setTestIdAttribute("data-my-custom-testid");
-      49|     assertThat(page.getByTestId("Hello")).hasText("Hello world");
->>>   50|     assertThat(page.mainFrame().getByTestId("Hello")).hasText("Hello world");
-      51|     assertThat(page.locator("div").getByTestId("Hello")).hasText("Hello world");
-      52|   }
-      53|
-      54|   @Test
-      55|   void getByTestIdWithCommaSeparatedTestIdAttributesShouldMatchAny() {
-```
-
-**verdict:**
-
----
-
-## 7. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestSelectorsGetBy.java:51
-
-**Message:** test id `Hello` violates kebab-case convention.
-
-```
-      46|   void getByTestIdWithCustomTestIdShouldWork() {
-      47|     page.setContent("<div><div data-my-custom-testid='Hello'>Hello world</div></div>");
-      48|     playwright.selectors().setTestIdAttribute("data-my-custom-testid");
-      49|     assertThat(page.getByTestId("Hello")).hasText("Hello world");
-      50|     assertThat(page.mainFrame().getByTestId("Hello")).hasText("Hello world");
->>>   51|     assertThat(page.locator("div").getByTestId("Hello")).hasText("Hello world");
-      52|   }
-      53|
-      54|   @Test
-      55|   void getByTestIdWithCommaSeparatedTestIdAttributesShouldMatchAny() {
-      56|     page.setContent("<section>\n" +
-```
-
-**verdict:**
-
----
-
-## 8. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestSelectorsGetBy.java:62
-
-**Message:** test id `Hello` violates kebab-case convention.
-
-```
-      57|       "  <div data-pw='Hello'>first</div>\n" +
-      58|       "  <div data-ti='Hello'>second</div>\n" +
-      59|       "  <div data-testid='Hello'>third</div>\n" +
-      60|       "</section>");
-      61|     playwright.selectors().setTestIdAttribute("data-pw,data-ti");
->>>   62|     assertThat(page.getByTestId("Hello")).hasCount(2);
-      63|     assertThat(page.getByTestId("Hello")).hasText(new String[]{"first", "second"});
-      64|     assertThat(page.mainFrame().getByTestId("Hello")).hasCount(2);
-      65|     assertThat(page.locator("section").getByTestId("Hello")).hasCount(2);
-      66|   }
-      67|
-```
-
-**verdict:**
-
----
-
-## 9. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestSelectorsGetBy.java:63
-
-**Message:** test id `Hello` violates kebab-case convention.
-
-```
-      58|       "  <div data-ti='Hello'>second</div>\n" +
-      59|       "  <div data-testid='Hello'>third</div>\n" +
-      60|       "</section>");
-      61|     playwright.selectors().setTestIdAttribute("data-pw,data-ti");
-      62|     assertThat(page.getByTestId("Hello")).hasCount(2);
->>>   63|     assertThat(page.getByTestId("Hello")).hasText(new String[]{"first", "second"});
-      64|     assertThat(page.mainFrame().getByTestId("Hello")).hasCount(2);
-      65|     assertThat(page.locator("section").getByTestId("Hello")).hasCount(2);
-      66|   }
-      67|
-      68|   @Test
-```
-
-**verdict:**
-
----
-
-## 10. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestSelectorsGetBy.java:64
-
-**Message:** test id `Hello` violates kebab-case convention.
-
-```
-      59|       "  <div data-testid='Hello'>third</div>\n" +
-      60|       "</section>");
-      61|     playwright.selectors().setTestIdAttribute("data-pw,data-ti");
-      62|     assertThat(page.getByTestId("Hello")).hasCount(2);
-      63|     assertThat(page.getByTestId("Hello")).hasText(new String[]{"first", "second"});
->>>   64|     assertThat(page.mainFrame().getByTestId("Hello")).hasCount(2);
-      65|     assertThat(page.locator("section").getByTestId("Hello")).hasCount(2);
-      66|   }
-      67|
-      68|   @Test
-      69|   void shouldUseDataTestidInStrictErrors() {
-```
-
-**verdict:**
-
----
-
-## 11. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestSelectorsGetBy.java:65
-
-**Message:** test id `Hello` violates kebab-case convention.
-
-```
-      60|       "</section>");
-      61|     playwright.selectors().setTestIdAttribute("data-pw,data-ti");
-      62|     assertThat(page.getByTestId("Hello")).hasCount(2);
-      63|     assertThat(page.getByTestId("Hello")).hasText(new String[]{"first", "second"});
-      64|     assertThat(page.mainFrame().getByTestId("Hello")).hasCount(2);
->>>   65|     assertThat(page.locator("section").getByTestId("Hello")).hasCount(2);
-      66|   }
-      67|
-      68|   @Test
-      69|   void shouldUseDataTestidInStrictErrors() {
-      70|     playwright.selectors().setTestIdAttribute("data-custom-id");
-```
-
-**verdict:**
-
----
-
-## 12. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestSelectorsGetBy.java:104
-
-**Message:** test id `Hello` violates kebab-case convention.
-
-```
-      99|
-     100|   @Test
-     101|   void getByTestIdShouldWorkForRegex() {
-     102|     page.setContent("<div><div data-testid='Hello'>Hello world</div></div>");
-     103|     assertThat(page.getByTestId(Pattern.compile("He[l]*o"))).hasText("Hello world");
->>>  104|     assertThat(page.mainFrame().getByTestId("Hello")).hasText("Hello world");
-     105|     assertThat(page.locator("div").getByTestId("Hello")).hasText("Hello world");
-     106|   }
-     107|
-     108|   @Test
-     109|   void getByTextShouldWork() {
-```
-
-**verdict:**
-
----
-
-## 13. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestSelectorsGetBy.java:105
-
-**Message:** test id `Hello` violates kebab-case convention.
-
-```
-     100|   @Test
-     101|   void getByTestIdShouldWorkForRegex() {
-     102|     page.setContent("<div><div data-testid='Hello'>Hello world</div></div>");
-     103|     assertThat(page.getByTestId(Pattern.compile("He[l]*o"))).hasText("Hello world");
-     104|     assertThat(page.mainFrame().getByTestId("Hello")).hasText("Hello world");
->>>  105|     assertThat(page.locator("div").getByTestId("Hello")).hasText("Hello world");
-     106|   }
-     107|
-     108|   @Test
-     109|   void getByTextShouldWork() {
-     110|     page.setContent("<div>yo</div><div>ya</div><div>\nye  </div>");
-```
-
-**verdict:**
-
----
-
-## 14. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/junit/TestFixtureOptions.java:57
-
-**Message:** test id `Hello` violates kebab-case convention.
-
-```
-      52|   }
-      53|
-      54|   @Test
-      55|   void testCustomTestId(Page page) {
-      56|     page.setContent("<div><div data-my-custom-testid='Hello'>Hello world</div></div>");
->>>   57|     assertThat(page.getByTestId("Hello")).hasText("Hello world");
-      58|     assertThat(page.mainFrame().getByTestId("Hello")).hasText("Hello world");
-      59|     assertThat(page.locator("div").getByTestId("Hello")).hasText("Hello world");
-      60|   }
-      61| }
-      62|
-```
-
-**verdict:**
-
----
-
-## 15. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/junit/TestFixtureOptions.java:58
-
-**Message:** test id `Hello` violates kebab-case convention.
-
-```
-      53|
-      54|   @Test
-      55|   void testCustomTestId(Page page) {
-      56|     page.setContent("<div><div data-my-custom-testid='Hello'>Hello world</div></div>");
-      57|     assertThat(page.getByTestId("Hello")).hasText("Hello world");
->>>   58|     assertThat(page.mainFrame().getByTestId("Hello")).hasText("Hello world");
-      59|     assertThat(page.locator("div").getByTestId("Hello")).hasText("Hello world");
-      60|   }
-      61| }
-      62|
-```
-
-**verdict:**
-
----
-
-## 16. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/junit/TestFixtureOptions.java:59
-
-**Message:** test id `Hello` violates kebab-case convention.
-
-```
-      54|   @Test
-      55|   void testCustomTestId(Page page) {
-      56|     page.setContent("<div><div data-my-custom-testid='Hello'>Hello world</div></div>");
-      57|     assertThat(page.getByTestId("Hello")).hasText("Hello world");
-      58|     assertThat(page.mainFrame().getByTestId("Hello")).hasText("Hello world");
->>>   59|     assertThat(page.locator("div").getByTestId("Hello")).hasText("Hello world");
-      60|   }
-      61| }
-      62|
-```
-
-**verdict:**
-
----
-
-## 17. tanstack-query — packages/preact-query/src/**tests**/useQueries.test.tsx:1184
+## 1. tanstack-query — packages/preact-query/src/**tests**/useQueries.test.tsx:1184
 
 **Message:** test id `fetchStatus1` violates kebab-case convention.
 
@@ -381,7 +32,7 @@ Classify each finding as:
 
 ---
 
-## 18. tanstack-query — packages/preact-query/src/**tests**/useQueries.test.tsx:1185
+## 2. tanstack-query — packages/preact-query/src/**tests**/useQueries.test.tsx:1185
 
 **Message:** test id `fetchStatus2` violates kebab-case convention.
 
@@ -403,7 +54,7 @@ Classify each finding as:
 
 ---
 
-## 19. tanstack-query — packages/preact-query/src/**tests**/useQueries.test.tsx:1195
+## 3. tanstack-query — packages/preact-query/src/**tests**/useQueries.test.tsx:1195
 
 **Message:** test id `fetchStatus1` violates kebab-case convention.
 
@@ -425,7 +76,7 @@ Classify each finding as:
 
 ---
 
-## 20. tanstack-query — packages/preact-query/src/**tests**/useQueries.test.tsx:1196
+## 4. tanstack-query — packages/preact-query/src/**tests**/useQueries.test.tsx:1196
 
 **Message:** test id `fetchStatus2` violates kebab-case convention.
 
@@ -441,6 +92,358 @@ Classify each finding as:
     1199|     expect(queryFn1).toHaveBeenCalledTimes(0)
     1200|     expect(queryFn2).toHaveBeenCalledTimes(0)
     1201|   })
+```
+
+**verdict:**
+
+---
+
+## 5. tanstack-query — packages/preact-query/src/**tests**/useQueries.test.tsx:1240
+
+**Message:** test id `fetchStatus1` violates kebab-case convention.
+
+```
+    1235|
+    1236|     await vi.advanceTimersByTimeAsync(0)
+    1237|
+    1238|     expect(rendered.getByTestId('status1')).toHaveTextContent('pending')
+    1239|     expect(rendered.getByTestId('status2')).toHaveTextContent('pending')
+>>> 1240|     expect(rendered.getByTestId('fetchStatus1')).toHaveTextContent('idle')
+    1241|     expect(rendered.getByTestId('fetchStatus2')).toHaveTextContent('idle')
+    1242|     expect(rendered.getByTestId('data1')).toHaveTextContent('undefined')
+    1243|     expect(rendered.getByTestId('data2')).toHaveTextContent('undefined')
+    1244|     expect(queryFn1).toHaveBeenCalledTimes(0)
+    1245|     expect(queryFn2).toHaveBeenCalledTimes(0)
+```
+
+**verdict:**
+
+---
+
+## 6. tanstack-query — packages/preact-query/src/**tests**/useQueries.test.tsx:1241
+
+**Message:** test id `fetchStatus2` violates kebab-case convention.
+
+```
+    1236|     await vi.advanceTimersByTimeAsync(0)
+    1237|
+    1238|     expect(rendered.getByTestId('status1')).toHaveTextContent('pending')
+    1239|     expect(rendered.getByTestId('status2')).toHaveTextContent('pending')
+    1240|     expect(rendered.getByTestId('fetchStatus1')).toHaveTextContent('idle')
+>>> 1241|     expect(rendered.getByTestId('fetchStatus2')).toHaveTextContent('idle')
+    1242|     expect(rendered.getByTestId('data1')).toHaveTextContent('undefined')
+    1243|     expect(rendered.getByTestId('data2')).toHaveTextContent('undefined')
+    1244|     expect(queryFn1).toHaveBeenCalledTimes(0)
+    1245|     expect(queryFn2).toHaveBeenCalledTimes(0)
+    1246|
+```
+
+**verdict:**
+
+---
+
+## 7. tanstack-query — packages/preact-query/src/**tests**/useQueries.test.tsx:1251
+
+**Message:** test id `fetchStatus1` violates kebab-case convention.
+
+```
+    1246|
+    1247|     await vi.advanceTimersByTimeAsync(11)
+    1248|
+    1249|     expect(rendered.getByTestId('status1')).toHaveTextContent('pending')
+    1250|     expect(rendered.getByTestId('status2')).toHaveTextContent('pending')
+>>> 1251|     expect(rendered.getByTestId('fetchStatus1')).toHaveTextContent('idle')
+    1252|     expect(rendered.getByTestId('fetchStatus2')).toHaveTextContent('idle')
+    1253|     expect(rendered.getByTestId('data1')).toHaveTextContent('undefined')
+    1254|     expect(rendered.getByTestId('data2')).toHaveTextContent('undefined')
+    1255|     expect(queryFn1).toHaveBeenCalledTimes(0)
+    1256|     expect(queryFn2).toHaveBeenCalledTimes(0)
+```
+
+**verdict:**
+
+---
+
+## 8. tanstack-query — packages/preact-query/src/**tests**/useQueries.test.tsx:1252
+
+**Message:** test id `fetchStatus2` violates kebab-case convention.
+
+```
+    1247|     await vi.advanceTimersByTimeAsync(11)
+    1248|
+    1249|     expect(rendered.getByTestId('status1')).toHaveTextContent('pending')
+    1250|     expect(rendered.getByTestId('status2')).toHaveTextContent('pending')
+    1251|     expect(rendered.getByTestId('fetchStatus1')).toHaveTextContent('idle')
+>>> 1252|     expect(rendered.getByTestId('fetchStatus2')).toHaveTextContent('idle')
+    1253|     expect(rendered.getByTestId('data1')).toHaveTextContent('undefined')
+    1254|     expect(rendered.getByTestId('data2')).toHaveTextContent('undefined')
+    1255|     expect(queryFn1).toHaveBeenCalledTimes(0)
+    1256|     expect(queryFn2).toHaveBeenCalledTimes(0)
+    1257|
+```
+
+**verdict:**
+
+---
+
+## 9. tanstack-query — packages/preact-query/src/**tests**/useQueries.test.tsx:1262
+
+**Message:** test id `fetchStatus1` violates kebab-case convention.
+
+```
+    1257|
+    1258|     await vi.advanceTimersByTimeAsync(10)
+    1259|
+    1260|     expect(rendered.getByTestId('status1')).toHaveTextContent('pending')
+    1261|     expect(rendered.getByTestId('status2')).toHaveTextContent('pending')
+>>> 1262|     expect(rendered.getByTestId('fetchStatus1')).toHaveTextContent('idle')
+    1263|     expect(rendered.getByTestId('fetchStatus2')).toHaveTextContent('idle')
+    1264|     expect(rendered.getByTestId('data1')).toHaveTextContent('undefined')
+    1265|     expect(rendered.getByTestId('data2')).toHaveTextContent('undefined')
+    1266|     expect(queryFn1).toHaveBeenCalledTimes(0)
+    1267|     expect(queryFn2).toHaveBeenCalledTimes(0)
+```
+
+**verdict:**
+
+---
+
+## 10. tanstack-query — packages/preact-query/src/**tests**/useQueries.test.tsx:1263
+
+**Message:** test id `fetchStatus2` violates kebab-case convention.
+
+```
+    1258|     await vi.advanceTimersByTimeAsync(10)
+    1259|
+    1260|     expect(rendered.getByTestId('status1')).toHaveTextContent('pending')
+    1261|     expect(rendered.getByTestId('status2')).toHaveTextContent('pending')
+    1262|     expect(rendered.getByTestId('fetchStatus1')).toHaveTextContent('idle')
+>>> 1263|     expect(rendered.getByTestId('fetchStatus2')).toHaveTextContent('idle')
+    1264|     expect(rendered.getByTestId('data1')).toHaveTextContent('undefined')
+    1265|     expect(rendered.getByTestId('data2')).toHaveTextContent('undefined')
+    1266|     expect(queryFn1).toHaveBeenCalledTimes(0)
+    1267|     expect(queryFn2).toHaveBeenCalledTimes(0)
+    1268|   })
+```
+
+**verdict:**
+
+---
+
+## 11. tanstack-query — packages/preact-query/src/**tests**/useQuery.test.tsx:6776
+
+**Message:** test id `fetchStatus` violates kebab-case convention.
+
+```
+    6771|     )
+    6772|
+    6773|     await vi.advanceTimersByTimeAsync(0)
+    6774|
+    6775|     expect(rendered.getByTestId('status')).toHaveTextContent('pending')
+>>> 6776|     expect(rendered.getByTestId('fetchStatus')).toHaveTextContent('idle')
+    6777|     expect(rendered.getByTestId('data')).toHaveTextContent('undefined')
+    6778|     expect(queryFn).toHaveBeenCalledTimes(0)
+    6779|
+    6780|     await vi.advanceTimersByTimeAsync(11)
+    6781|
+```
+
+**verdict:**
+
+---
+
+## 12. tanstack-query — packages/preact-query/src/**tests**/useQuery.test.tsx:6783
+
+**Message:** test id `fetchStatus` violates kebab-case convention.
+
+```
+    6778|     expect(queryFn).toHaveBeenCalledTimes(0)
+    6779|
+    6780|     await vi.advanceTimersByTimeAsync(11)
+    6781|
+    6782|     expect(rendered.getByTestId('status')).toHaveTextContent('pending')
+>>> 6783|     expect(rendered.getByTestId('fetchStatus')).toHaveTextContent('idle')
+    6784|     expect(rendered.getByTestId('data')).toHaveTextContent('undefined')
+    6785|     expect(queryFn).toHaveBeenCalledTimes(0)
+    6786|   })
+    6787|   it('should retry on mount when throwOnError returns false', async () => {
+    6788|     const key = queryKey()
+```
+
+**verdict:**
+
+---
+
+## 13. tanstack-query — packages/react-query/src/**tests**/useQueries.test.tsx:1232
+
+**Message:** test id `fetchStatus1` violates kebab-case convention.
+
+```
+    1227|
+    1228|     await vi.advanceTimersByTimeAsync(0)
+    1229|
+    1230|     expect(rendered.getByTestId('status1')).toHaveTextContent('pending')
+    1231|     expect(rendered.getByTestId('status2')).toHaveTextContent('pending')
+>>> 1232|     expect(rendered.getByTestId('fetchStatus1')).toHaveTextContent('idle')
+    1233|     expect(rendered.getByTestId('fetchStatus2')).toHaveTextContent('idle')
+    1234|     expect(rendered.getByTestId('data1')).toHaveTextContent('undefined')
+    1235|     expect(rendered.getByTestId('data2')).toHaveTextContent('undefined')
+    1236|     expect(queryFn1).toHaveBeenCalledTimes(0)
+    1237|     expect(queryFn2).toHaveBeenCalledTimes(0)
+```
+
+**verdict:**
+
+---
+
+## 14. tanstack-query — packages/react-query/src/**tests**/useQueries.test.tsx:1233
+
+**Message:** test id `fetchStatus2` violates kebab-case convention.
+
+```
+    1228|     await vi.advanceTimersByTimeAsync(0)
+    1229|
+    1230|     expect(rendered.getByTestId('status1')).toHaveTextContent('pending')
+    1231|     expect(rendered.getByTestId('status2')).toHaveTextContent('pending')
+    1232|     expect(rendered.getByTestId('fetchStatus1')).toHaveTextContent('idle')
+>>> 1233|     expect(rendered.getByTestId('fetchStatus2')).toHaveTextContent('idle')
+    1234|     expect(rendered.getByTestId('data1')).toHaveTextContent('undefined')
+    1235|     expect(rendered.getByTestId('data2')).toHaveTextContent('undefined')
+    1236|     expect(queryFn1).toHaveBeenCalledTimes(0)
+    1237|     expect(queryFn2).toHaveBeenCalledTimes(0)
+    1238|
+```
+
+**verdict:**
+
+---
+
+## 15. tanstack-query — packages/react-query/src/**tests**/useQueries.test.tsx:1243
+
+**Message:** test id `fetchStatus1` violates kebab-case convention.
+
+```
+    1238|
+    1239|     await vi.advanceTimersByTimeAsync(11)
+    1240|
+    1241|     expect(rendered.getByTestId('status1')).toHaveTextContent('pending')
+    1242|     expect(rendered.getByTestId('status2')).toHaveTextContent('pending')
+>>> 1243|     expect(rendered.getByTestId('fetchStatus1')).toHaveTextContent('idle')
+    1244|     expect(rendered.getByTestId('fetchStatus2')).toHaveTextContent('idle')
+    1245|     expect(rendered.getByTestId('data1')).toHaveTextContent('undefined')
+    1246|     expect(rendered.getByTestId('data2')).toHaveTextContent('undefined')
+    1247|     expect(queryFn1).toHaveBeenCalledTimes(0)
+    1248|     expect(queryFn2).toHaveBeenCalledTimes(0)
+```
+
+**verdict:**
+
+---
+
+## 16. tanstack-query — packages/react-query/src/**tests**/useQueries.test.tsx:1244
+
+**Message:** test id `fetchStatus2` violates kebab-case convention.
+
+```
+    1239|     await vi.advanceTimersByTimeAsync(11)
+    1240|
+    1241|     expect(rendered.getByTestId('status1')).toHaveTextContent('pending')
+    1242|     expect(rendered.getByTestId('status2')).toHaveTextContent('pending')
+    1243|     expect(rendered.getByTestId('fetchStatus1')).toHaveTextContent('idle')
+>>> 1244|     expect(rendered.getByTestId('fetchStatus2')).toHaveTextContent('idle')
+    1245|     expect(rendered.getByTestId('data1')).toHaveTextContent('undefined')
+    1246|     expect(rendered.getByTestId('data2')).toHaveTextContent('undefined')
+    1247|     expect(queryFn1).toHaveBeenCalledTimes(0)
+    1248|     expect(queryFn2).toHaveBeenCalledTimes(0)
+    1249|   })
+```
+
+**verdict:**
+
+---
+
+## 17. tanstack-query — packages/react-query/src/**tests**/useQueries.test.tsx:1288
+
+**Message:** test id `fetchStatus1` violates kebab-case convention.
+
+```
+    1283|
+    1284|     await vi.advanceTimersByTimeAsync(0)
+    1285|
+    1286|     expect(rendered.getByTestId('status1')).toHaveTextContent('pending')
+    1287|     expect(rendered.getByTestId('status2')).toHaveTextContent('pending')
+>>> 1288|     expect(rendered.getByTestId('fetchStatus1')).toHaveTextContent('idle')
+    1289|     expect(rendered.getByTestId('fetchStatus2')).toHaveTextContent('idle')
+    1290|     expect(rendered.getByTestId('data1')).toHaveTextContent('undefined')
+    1291|     expect(rendered.getByTestId('data2')).toHaveTextContent('undefined')
+    1292|     expect(queryFn1).toHaveBeenCalledTimes(0)
+    1293|     expect(queryFn2).toHaveBeenCalledTimes(0)
+```
+
+**verdict:**
+
+---
+
+## 18. tanstack-query — packages/react-query/src/**tests**/useQueries.test.tsx:1289
+
+**Message:** test id `fetchStatus2` violates kebab-case convention.
+
+```
+    1284|     await vi.advanceTimersByTimeAsync(0)
+    1285|
+    1286|     expect(rendered.getByTestId('status1')).toHaveTextContent('pending')
+    1287|     expect(rendered.getByTestId('status2')).toHaveTextContent('pending')
+    1288|     expect(rendered.getByTestId('fetchStatus1')).toHaveTextContent('idle')
+>>> 1289|     expect(rendered.getByTestId('fetchStatus2')).toHaveTextContent('idle')
+    1290|     expect(rendered.getByTestId('data1')).toHaveTextContent('undefined')
+    1291|     expect(rendered.getByTestId('data2')).toHaveTextContent('undefined')
+    1292|     expect(queryFn1).toHaveBeenCalledTimes(0)
+    1293|     expect(queryFn2).toHaveBeenCalledTimes(0)
+    1294|
+```
+
+**verdict:**
+
+---
+
+## 19. tanstack-query — packages/react-query/src/**tests**/useQueries.test.tsx:1299
+
+**Message:** test id `fetchStatus1` violates kebab-case convention.
+
+```
+    1294|
+    1295|     await vi.advanceTimersByTimeAsync(11)
+    1296|
+    1297|     expect(rendered.getByTestId('status1')).toHaveTextContent('pending')
+    1298|     expect(rendered.getByTestId('status2')).toHaveTextContent('pending')
+>>> 1299|     expect(rendered.getByTestId('fetchStatus1')).toHaveTextContent('idle')
+    1300|     expect(rendered.getByTestId('fetchStatus2')).toHaveTextContent('idle')
+    1301|     expect(rendered.getByTestId('data1')).toHaveTextContent('undefined')
+    1302|     expect(rendered.getByTestId('data2')).toHaveTextContent('undefined')
+    1303|     expect(queryFn1).toHaveBeenCalledTimes(0)
+    1304|     expect(queryFn2).toHaveBeenCalledTimes(0)
+```
+
+**verdict:**
+
+---
+
+## 20. tanstack-query — packages/react-query/src/**tests**/useQueries.test.tsx:1300
+
+**Message:** test id `fetchStatus2` violates kebab-case convention.
+
+```
+    1295|     await vi.advanceTimersByTimeAsync(11)
+    1296|
+    1297|     expect(rendered.getByTestId('status1')).toHaveTextContent('pending')
+    1298|     expect(rendered.getByTestId('status2')).toHaveTextContent('pending')
+    1299|     expect(rendered.getByTestId('fetchStatus1')).toHaveTextContent('idle')
+>>> 1300|     expect(rendered.getByTestId('fetchStatus2')).toHaveTextContent('idle')
+    1301|     expect(rendered.getByTestId('data1')).toHaveTextContent('undefined')
+    1302|     expect(rendered.getByTestId('data2')).toHaveTextContent('undefined')
+    1303|     expect(queryFn1).toHaveBeenCalledTimes(0)
+    1304|     expect(queryFn2).toHaveBeenCalledTimes(0)
+    1305|
 ```
 
 **verdict:**

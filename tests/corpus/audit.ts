@@ -127,6 +127,37 @@ export const CORPUS: CorpusRepo[] = [
     url: "https://github.com/microsoft/playwright-pytest.git",
     note: "tiny real pytest-playwright repo — QA-PY-104 (brittle selectors) and QA-PW-103 on the Python adapter; the only Playwright-Python corpus source so far.",
   },
+
+  // ── 2026-08-31 expansion — chosen so the still-silent rule families
+  //    fire: QA-CI-002/007/008/009/010 (job-level CI hygiene), QA-PW-141
+  //    ..145 (playwright.config.ts hygiene), QA-PY-101..108 (Python+
+  //    Playwright consumers), QA-TEST-001 (focused test committed),
+  //    QA-TEST-004/010 at scale, QA-ENV-001, QA-TQUAL-002/009/011.
+  {
+    name: "grafana-grafana",
+    url: "https://github.com/grafana/grafana.git",
+    note: "large real TS monorepo with Playwright e2e and many GitHub Actions workflows — QA-PW-141..145 (retries/trace config) plus a broad QA-PW/QA-TEST/QA-TQUAL consumer surface.",
+  },
+  {
+    name: "shadcn-ui-taxonomy",
+    url: "https://github.com/shadcn-ui/taxonomy.git",
+    note: "tiny real next.js app with a minimal single-project Playwright config and a bare CI e2e workflow — the sharpest QA-PW-143/144 surface (no artifacts, no matrix).",
+  },
+  {
+    name: "reflex-dev-reflex",
+    url: "https://github.com/reflex-dev/reflex.git",
+    note: "mid-size real Python framework with pytest-playwright e2e tests — QA-PY-101..108 (Python Playwright adapter) consumer surface.",
+  },
+  {
+    name: "calcom-cal",
+    url: "https://github.com/calcom/cal.com.git",
+    note: "large real next.js app with Playwright e2e (retries, trace, CI artifact upload) — QA-PW-141..145 plus a broad QA-PW/QA-TEST/QA-TQUAL consumer surface.",
+  },
+  {
+    name: "puppeteer-puppeteer",
+    url: "https://github.com/puppeteer/puppeteer.git",
+    note: "real TS monorepo with mocha tests and multi-job GitHub Actions — QA-CI-002/005/007/008/009/010 surface plus QA-TEST/TQUAL growth; sibling to Playwright for engine balance.",
+  },
 ];
 
 interface BaselineEntry {

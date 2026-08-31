@@ -11,8 +11,12 @@
     "QA-PW-119": 9,
     "QA-TEST-003": 3,
     "QA-TQUAL-002": 2,
+    "QA-PW-122": 2,
+    "QA-PW-143": 2,
+    "QA-PW-141": 1,
+    "QA-PW-144": 1,
     "QA-TQUAL-001": 1,
     "QA-TEST-002": 1
   },
-  "totalFindings": 66
+  "totalFindings": 72
 }

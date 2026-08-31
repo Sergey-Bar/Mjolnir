@@ -24,6 +24,10 @@ export const pwTestIdConvention = defineRule({
   detectionStrategy: "regex pattern",
   introduced: "0.3.0",
 
+  // Measured FP 100% (n=20): repos ship consistent camelCase/registry test-id conventions; style enforcement is not a defect.
+
+  tier: "quarantine",
+
   run(ctx) {
     const text = ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];

@@ -43,6 +43,8 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo                 | Occurrences |
 | -------------------- | ----------- |
+| calcom-cal           | 1           |
+| grafana-grafana      | 3           |
 | nextauthjs-next-auth | 2           |
 
 ---

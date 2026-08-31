@@ -5,3 +5,19 @@
 {"ruleId":"QA-PW-115","file":"packages/astro/test/units/app/malformed-uri.test.ts","line":28,"verdict":"FP","note":"page is an Astro component fixture for server rendering (createComponent), not a Playwright Page - no browser state shared"}
 {"ruleId":"QA-PW-115","file":"packages/astro/test/units/hono/index.test.ts","line":10,"verdict":"FP","note":"page is an Astro component fixture for server rendering (createComponent), not a Playwright Page - no browser state shared"}
 {"ruleId":"QA-TEST-010","file":"packages/integrations/node/test/static-headers.test.ts","line":51,"verdict":"TP","note":"it('CSP headers are added to the request', async () => {}) - literally empty body, can never fail"}
+{"ruleId":"QA-PW-144","file":"packages/astro/playwright.config.js","line":18,"verdict":"TP","note":"single-engine projects - factually no cross-browser matrix (info hygiene)"}
+{"ruleId":"QA-PW-144","file":"packages/integrations/alpinejs/playwright.config.js","line":18,"verdict":"TP","note":"single-engine projects - factually no cross-browser matrix (info hygiene)"}
+{"ruleId":"QA-PW-120","file":"packages/astro/e2e/tailwindcss.test.ts","line":1,"verdict":"FP","note":"engine-agnostic unit/mocha tests - the file-level engine heuristic overreaches"}
+{"ruleId":"QA-PW-120","file":"packages/astro/test/units/build/plugin-incremental.test.ts","line":1,"verdict":"FP","note":"engine-agnostic unit/mocha tests - the file-level engine heuristic overreaches"}
+{"ruleId":"QA-PW-120","file":"packages/integrations/markdoc/test/render-html.test.ts","line":1,"verdict":"FP","note":"engine-agnostic unit/mocha tests - the file-level engine heuristic overreaches"}
+{"ruleId":"QA-PW-120","file":"packages/integrations/sitemap/test/namespaces.test.ts","line":1,"verdict":"FP","note":"engine-agnostic unit/mocha tests - the file-level engine heuristic overreaches"}
+{"ruleId":"QA-PW-119","file":"packages/astro/test/0-css.test.ts","line":16,"verdict":"FP","note":"module-level test-harness state rebuilt per test with teardown - setup infrastructure, not order dependence"}
+{"ruleId":"QA-PW-141","file":"packages/astro/playwright.config.js","line":16,"verdict":"TP","note":"retries configured without a machine-readable triage reporter - the rule's exact contract"}
+{"ruleId":"QA-PW-141","file":"packages/integrations/alpinejs/playwright.config.js","line":16,"verdict":"TP","note":"retries configured without a machine-readable triage reporter - the rule's exact contract"}
+{"ruleId":"QA-PW-107","file":"packages/astro/e2e/dev-toolbar-audits.test.ts","line":40,"verdict":"FP","note":"presence assertion on UI element - auto-retry toBeVisible is the correct idiom"}
+{"ruleId":"QA-PW-107","file":"packages/astro/e2e/dev-toolbar.test.ts","line":34,"verdict":"FP","note":"presence assertion on UI element - auto-retry toBeVisible is the correct idiom"}
+{"ruleId":"QA-PW-107","file":"packages/astro/e2e/dev-toolbar.test.ts","line":95,"verdict":"FP","note":"presence assertion on UI element - auto-retry toBeVisible is the correct idiom"}
+{"ruleId":"QA-PW-107","file":"packages/astro/e2e/dev-toolbar.test.ts","line":151,"verdict":"FP","note":"presence assertion on UI element - auto-retry toBeVisible is the correct idiom"}
+{"ruleId":"QA-PW-107","file":"packages/astro/e2e/dev-toolbar.test.ts","line":193,"verdict":"FP","note":"presence assertion on UI element - auto-retry toBeVisible is the correct idiom"}
+{"ruleId":"QA-PW-107","file":"packages/astro/e2e/dev-toolbar.test.ts","line":249,"verdict":"FP","note":"presence assertion on UI element - auto-retry toBeVisible is the correct idiom"}
+{"ruleId":"QA-PW-107","file":"packages/astro/e2e/dev-toolbar.test.ts","line":382,"verdict":"FP","note":"presence assertion on UI element - auto-retry toBeVisible is the correct idiom"}

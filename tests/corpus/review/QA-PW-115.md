@@ -1,6 +1,6 @@
 # QA-PW-115 — Sample Findings for Classification
 
-Total sampled: 3 (max 20 per rule)
+Total sampled: 4 (max 20 per rule)
 
 Classify each finding as:
 
@@ -70,6 +70,28 @@ Classify each finding as:
       13| });
       14|
       15| type HonoEnv = {
+```
+
+**verdict:**
+
+---
+
+## 4. grafana-grafana — packages/grafana-ui/src/components/DateTimePickers/TimeRangeContext.test.tsx:9
+
+**Message:** Module-level `let context` — browser state shared across tests.
+
+```
+       4| import { makeTimeRange } from '@grafana/data';
+       5|
+       6| import { type TimeRangeContextHookValue, TimeRangeProvider, useTimeRangeContext } from './TimeRangeContext';
+       7|
+       8| // Should be fine to have this globally as single file should not be parallelized
+>>>    9| let context: TimeRangeContextHookValue | undefined = undefined;
+      10| function onContextChange(val?: TimeRangeContextHookValue) {
+      11|   context = val;
+      12| }
+      13|
+      14| describe('TimeRangeProvider', () => {
 ```
 
 **verdict:**

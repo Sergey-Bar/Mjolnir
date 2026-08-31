@@ -43,6 +43,8 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo                                          | Occurrences |
 | --------------------------------------------- | ----------- |
+| dubinc-dub                                    | 2           |
+| grafana-grafana                               | 28          |
 | playwright-community-eslint-plugin-playwright | 3           |
 | sveltejs-kit                                  | 20          |
 | withastro-astro                               | 6           |

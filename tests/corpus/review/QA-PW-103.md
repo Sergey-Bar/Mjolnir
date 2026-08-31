@@ -10,268 +10,7 @@ Classify each finding as:
 
 ---
 
-## 1. microsoft-playwright-mcp — tests/click.spec.ts:35
-
-**Message:** `goto('${server.PREFIX}')` without an explicit timeout.
-
-```
-      30|
-      31|   expect(await client.callTool({
-      32|     name: 'browser_navigate',
-      33|     arguments: { url: server.PREFIX },
-      34|   })).toHaveResponse({
->>>   35|     code: `await page.goto('${server.PREFIX}');`,
-      36|     snapshot: expect.stringContaining(`- button \"Submit\" [ref=e2]`),
-      37|   });
-      38|
-      39|   expect(await client.callTool({
-      40|     name: 'browser_click',
-```
-
-**verdict:**
-
----
-
-## 2. microsoft-playwright-mcp — tests/core.spec.ts:24
-
-**Message:** `goto('${server.HELLO_WORLD}')` without an explicit timeout.
-
-```
-      19| test('browser_navigate', async ({ client, server }) => {
-      20|   expect(await client.callTool({
-      21|     name: 'browser_navigate',
-      22|     arguments: { url: server.HELLO_WORLD },
-      23|   })).toHaveResponse({
->>>   24|     code: `await page.goto('${server.HELLO_WORLD}');`,
-      25|     snapshot: expect.stringContaining(`generic [active] [ref=e1]: Hello, world!`),
-      26|   });
-      27| });
-      28|
-```
-
-**verdict:**
-
----
-
-## 3. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestBrowserContextBaseUrl.java:82
-
-**Message:** `waitForURL("/kek/index.html")` without an explicit timeout.
-
-```
-      77|
-      78|   @Test
-      79|   void shouldBeAbleToMatchAURLRelativeToItsGivenURLWithUrlMatcher(Browser browser, Server server) {
-      80|     try (Page page = browser.newPage(new Browser.NewPageOptions().setBaseURL(server.PREFIX + "/foobar/"))) {
-      81|       page.navigate("/kek/index.html");
->>>   82|       page.waitForURL("/kek/index.html");
-      83|       assertEquals(server.PREFIX + "/kek/index.html", page.url());
-      84|
-      85|       page.route("./kek/index.html", route -> route.fulfill(new Route.FulfillOptions().setBody("base-url-matched-route")));
-      86|       Request[] request = {null};
-      87|       Response response = page.waitForResponse("./kek/index.html", () -> {
-```
-
-**verdict:**
-
----
-
-## 4. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestBrowserContextEvents.java:267
-
-**Message:** `waitForSelector("iframe")` without an explicit timeout.
-
-```
-     262|       "  const iframe = document.createElement('iframe');\n" +
-     263|       "  iframe.id = 'x';\n" +
-     264|       "  iframe.src = 'about:blank';\n" +
-     265|       "  document.body.appendChild(iframe);\n" +
-     266|       "}");
->>>  267|     page.waitForSelector("iframe");
-     268|     Frame[] detached = { null };
-     269|     context.onFrameDetached(f -> detached[0] = f);
-     270|     page.evaluate("() => document.getElementById('x').remove()");
-     271|     waitForCondition(() -> detached[0] != null);
-     272|     assertEquals(page.mainFrame(), detached[0].parentFrame());
-```
-
-**verdict:**
-
----
-
-## 5. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestBrowserContextHar.java:183
-
-**Message:** `waitForURL("https://www.theverge.com/")` without an explicit timeout.
-
-```
-     178|     Path path = Paths.get("src/test/resources/har-redirect.har");
-     179|     context.routeFromHAR(path);
-     180|     Page page = context.newPage();
-     181|     Response response = page.waitForNavigation(() -> {
-     182|       page.navigate("https://theverge.com/");
->>>  183|       page.waitForURL("https://www.theverge.com/");
-     184|     });
-     185|     assertThat(page).hasURL("https://www.theverge.com/");
-     186|     assertEquals("https://www.theverge.com/", response.request().url());
-     187|     assertEquals("https://www.theverge.com/", page.evaluate("location.href"));
-     188|   }
-```
-
-**verdict:**
-
----
-
-## 6. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestPageWaitForUrl.java:34
-
-**Message:** `waitForURL("**/grid.html")` without an explicit timeout.
-
-```
-      29| public class TestPageWaitForUrl extends TestBase {
-      30|   @Test
-      31|   void shouldWork() {
-      32|     page.navigate(server.EMPTY_PAGE);
-      33|     page.evaluate("url => window.location.href = url", server.PREFIX + "/grid.html");
->>>   34|     page.waitForURL("**/grid.html");
-      35|   }
-      36|
-      37|   @Test
-      38|   void shouldRespectTimeout() {
-      39|     page.navigate(server.EMPTY_PAGE);
-```
-
-**verdict:**
-
----
-
-## 7. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestPageWaitForUrl.java:81
-
-**Message:** `waitForURL("**/*#foobar")` without an explicit timeout.
-
-```
-      76|   @Test
-      77|   void shouldWorkWithClickingOnAnchorLinks() {
-      78|     page.navigate(server.EMPTY_PAGE);
-      79|     page.setContent("<a href='#foobar'>foobar</a>");
-      80|     page.click("a");
->>>   81|     page.waitForURL("**/*#foobar");
-      82|   }
-      83|
-      84|   @Test
-      85|   void shouldWorkWithHistoryPushState() {
-      86|     page.navigate(server.EMPTY_PAGE);
-```
-
-**verdict:**
-
----
-
-## 8. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestPageWaitForUrl.java:92
-
-**Message:** `waitForURL("**/wow.html")` without an explicit timeout.
-
-```
-      87|     page.setContent("<a onclick='javascript:pushState()'>SPA</a>\n" +
-      88|       "<script>\n" +
-      89|       "  function pushState() { history.pushState({}, '', 'wow.html') }\n" +
-      90|       "</script>");
-      91|     page.click("a");
->>>   92|     page.waitForURL("**/wow.html");
-      93|     assertEquals(server.PREFIX + "/wow.html", page.url());
-      94|   }
-      95|
-      96|   @Test
-      97|   void shouldWorkWithHistoryReplaceState() {
-```
-
-**verdict:**
-
----
-
-## 9. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestPageWaitForUrl.java:104
-
-**Message:** `waitForURL("**/replaced.html")` without an explicit timeout.
-
-```
-      99|     page.setContent(" <a onclick='javascript:replaceState()'>SPA</a>\n" +
-     100|       "<script>\n" +
-     101|       "  function replaceState() { history.replaceState({}, '', '/replaced.html') }\n" +
-     102|       "</script>");
-     103|     page.click("a");
->>>  104|     page.waitForURL("**/replaced.html");
-     105|     assertEquals(server.PREFIX + "/replaced.html", page.url());
-     106|   }
-     107|
-     108|   @Test
-     109|   void shouldWorkWithDOMHistoryBackHistoryForward() {
-```
-
-**verdict:**
-
----
-
-## 10. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestPageWaitForUrl.java:122
-
-**Message:** `waitForURL("**/first.html")` without an explicit timeout.
-
-```
-     117|       "  history.pushState({}, '', '/second.html');\n" +
-     118|       "</script>");
-     119|     assertEquals(server.PREFIX + "/second.html", page.url());
-     120|
-     121|     page.click("a#back");
->>>  122|     page.waitForURL("**/first.html");
-     123|     assertEquals(server.PREFIX + "/first.html", page.url());
-     124|
-     125|     page.click("a#forward");
-     126|     page.waitForURL("**/second.html");
-     127|     assertEquals(server.PREFIX + "/second.html", page.url());
-```
-
-**verdict:**
-
----
-
-## 11. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestPageWaitForUrl.java:126
-
-**Message:** `waitForURL("**/second.html")` without an explicit timeout.
-
-```
-     121|     page.click("a#back");
-     122|     page.waitForURL("**/first.html");
-     123|     assertEquals(server.PREFIX + "/first.html", page.url());
-     124|
-     125|     page.click("a#forward");
->>>  126|     page.waitForURL("**/second.html");
-     127|     assertEquals(server.PREFIX + "/second.html", page.url());
-     128|   }
-     129|
-     130|   @Test
-     131|   void shouldWorkOnFrame() {
-```
-
-**verdict:**
-
----
-
-## 12. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestPageWaitForUrl.java:135
-
-**Message:** `waitForURL("**/grid.html")` without an explicit timeout.
-
-```
-     130|   @Test
-     131|   void shouldWorkOnFrame() {
-     132|     page.navigate(server.PREFIX + "/frames/one-frame.html");
-     133|     Frame frame = page.frames().get(1);
-     134|     frame.evaluate("url => window.location.href = url", server.PREFIX + "/grid.html");
->>>  135|     frame.waitForURL("**/grid.html");
-     136|   }
-     137| }
-     138|
-```
-
-**verdict:**
-
----
-
-## 13. nextauthjs-next-auth — apps/dev/nextjs/tests/signin.spec.ts:5
+## 1. nextauthjs-next-auth — apps/dev/nextjs/tests/signin.spec.ts:5
 
 **Message:** `goto("https://next-auth-example.vercel.app")` without an explicit timeout.
 
@@ -292,7 +31,7 @@ Classify each finding as:
 
 ---
 
-## 14. nextauthjs-next-auth — apps/dev/nextjs/tests/signin.spec.ts:33
+## 2. nextauthjs-next-auth — apps/dev/nextjs/tests/signin.spec.ts:33
 
 **Message:** `goto(
     "https://next-auth-example.vercel.app/ap` without an explicit timeout.
@@ -315,7 +54,7 @@ Classify each finding as:
 
 ---
 
-## 15. nextauthjs-next-auth — packages/next-auth/test/e2e/tests/providers/credentials.spec.ts:6
+## 3. nextauthjs-next-auth — packages/next-auth/test/e2e/tests/providers/credentials.spec.ts:6
 
 **Message:** `goto("http://localhost:3000/auth/signin")` without an explicit timeout.
 
@@ -337,7 +76,7 @@ Classify each finding as:
 
 ---
 
-## 16. nextauthjs-next-auth — packages/next-auth/test/e2e/tests/providers/keycloak.spec.ts:12
+## 4. nextauthjs-next-auth — packages/next-auth/test/e2e/tests/providers/keycloak.spec.ts:12
 
 **Message:** `goto("http://localhost:3000/auth/signin")` without an explicit timeout.
 
@@ -359,7 +98,7 @@ Classify each finding as:
 
 ---
 
-## 17. vitejs-vite — playground/cli-module/**tests**/cli-module.spec.ts:14
+## 5. vitejs-vite — playground/cli-module/**tests**/cli-module.spec.ts:14
 
 **Message:** `goto(`http://localhost:${port}/`)` without an explicit timeout.
 
@@ -381,7 +120,7 @@ Classify each finding as:
 
 ---
 
-## 18. vitejs-vite — playground/cli/**tests**/cli.spec.ts:14
+## 6. vitejs-vite — playground/cli/**tests**/cli.spec.ts:14
 
 **Message:** `goto(`http://localhost:${port}/`)` without an explicit timeout.
 
@@ -403,7 +142,7 @@ Classify each finding as:
 
 ---
 
-## 19. vitejs-vite — playground/css-dynamic-import/**tests**/css-dynamic-import.spec.ts:42
+## 7. vitejs-vite — playground/css-dynamic-import/**tests**/css-dynamic-import.spec.ts:42
 
 **Message:** `goto('about:blank')` without an explicit timeout.
 
@@ -425,7 +164,7 @@ Classify each finding as:
 
 ---
 
-## 20. vitejs-vite — playground/css/**tests**/css.spec.ts:9
+## 8. vitejs-vite — playground/css/**tests**/css.spec.ts:9
 
 **Message:** `waitForSelector('.inject-url-once-exit')` without an explicit timeout.
 
@@ -441,6 +180,270 @@ Classify each finding as:
       12|     isBundled ? /base64/ : '/injected-source/injected-bg.png',
       13|   )
       14| })
+```
+
+**verdict:**
+
+---
+
+## 9. vitejs-vite — playground/css/**tests**/postcss-plugins-different-dir/css-postcss-plugins-different-dir.spec.ts:23
+
+**Message:** `goto(`http://localhost:${port}`)` without an explicit timeout.
+
+```
+      18|       target: 'esnext',
+      19|     },
+      20|   })
+      21|   await server.listen()
+      22|   try {
+>>>   23|     await page.goto(`http://localhost:${port}`)
+      24|     const tailwindStyle = page.locator('#tailwind-style')
+      25|     expect(await getBgColor(tailwindStyle)).toBe('oklch(0.936 0.032 17.717)')
+      26|     expect(await getColor(tailwindStyle)).toBe('rgb(136, 136, 136)')
+      27|   } finally {
+      28|     await server.close()
+```
+
+**verdict:**
+
+---
+
+## 10. vitejs-vite — playground/hmr/**tests**/hmr.spec.ts:535
+
+**Message:** `goto(`${viteTestUrl}/${testDir}/`)` without an explicit timeout.
+
+```
+     530|
+     531|       let dep = 'dep0'
+     532|
+     533|       beforeAll(async () => {
+     534|         await untilBrowserLogAfter(
+>>>  535|           () => page.goto(`${viteTestUrl}/${testDir}/`),
+     536|           [CONNECTED, />>>>>>/],
+     537|           (logs) => {
+     538|             expect(logs).toContain(`<<<<<< A0 B0 D0 ; ${dep}`)
+     539|             expect(logs).toContain('>>>>>> A0 D0')
+     540|           },
+```
+
+**verdict:**
+
+---
+
+## 11. vitejs-vite — playground/hmr/**tests**/hmr.spec.ts:671
+
+**Message:** `goto(`${viteTestUrl}/${testDir}/`)` without an explicit timeout.
+
+```
+     666|       const a = 'A0'
+     667|       let dep = 'dep0'
+     668|
+     669|       beforeAll(async () => {
+     670|         await untilBrowserLogAfter(
+>>>  671|           () => page.goto(`${viteTestUrl}/${testDir}/`),
+     672|           [CONNECTED, />>>>>>/],
+     673|           (logs) => {
+     674|             expect(logs).toContain(`<<< named: ${a} ; ${dep}`)
+     675|             expect(logs).toContain(`<<< default: def0`)
+     676|             expect(logs).toContain(`>>>>>> ${a} def0`)
+```
+
+**verdict:**
+
+---
+
+## 12. vitejs-vite — playground/hmr/**tests**/hmr.spec.ts:734
+
+**Message:** `goto(`${viteTestUrl}/${testDir}/`)` without an explicit timeout.
+
+```
+     729|     test('accepts itself when imported for side effects only (no bindings imported)', async () => {
+     730|       const testDir = baseDir + '/side-effects'
+     731|       const file = 'side-effects.ts'
+     732|
+     733|       await untilBrowserLogAfter(
+>>>  734|         () => page.goto(`${viteTestUrl}/${testDir}/`),
+     735|         [CONNECTED, />>>/],
+     736|         (logs) => {
+     737|           expect(logs).toContain('>>> side FX')
+     738|         },
+     739|       )
+```
+
+**verdict:**
+
+---
+
+## 13. vitejs-vite — playground/hmr/**tests**/hmr.spec.ts:766
+
+**Message:** `goto(`${viteTestUrl}/${testDir}/`)` without an explicit timeout.
+
+```
+     761|         const fileName = 'unused.ts'
+     762|         const file = `${testDir}/${fileName}`
+     763|         const url = '/' + file
+     764|
+     765|         await untilBrowserLogAfter(
+>>>  766|           () => page.goto(`${viteTestUrl}/${testDir}/`),
+     767|           [CONNECTED, '-- unused --'],
+     768|           (logs) => {
+     769|             expect(logs).toContain('-- unused --')
+     770|           },
+     771|         )
+```
+
+**verdict:**
+
+---
+
+## 14. vitejs-vite — playground/hmr/**tests**/hmr.spec.ts:792
+
+**Message:** `goto(`${viteTestUrl}/${testDir}/`)` without an explicit timeout.
+
+```
+     787|       test("doesn't accept itself if any of its exports is imported", async () => {
+     788|         const fileName = 'used.ts'
+     789|         const file = `${testDir}/${fileName}`
+     790|
+     791|         await untilBrowserLogAfter(
+>>>  792|           () => page.goto(`${viteTestUrl}/${testDir}/`),
+     793|           [CONNECTED, '-- used --'],
+     794|           (logs) => {
+     795|             expect(logs).toContain('-- used --')
+     796|             expect(logs).toContain('used:foo0')
+     797|           },
+```
+
+**verdict:**
+
+---
+
+## 15. vitejs-vite — playground/hmr/**tests**/hmr.spec.ts:830
+
+**Message:** `goto(`${viteTestUrl}/${testDir}/`)` without an explicit timeout.
+
+```
+     825|           const fileName = 'deps-all-accepted.ts'
+     826|           const file = `${testDir}/${fileName}`
+     827|           const url = '/' + file
+     828|
+     829|           await untilBrowserLogAfter(
+>>>  830|             () => page.goto(`${viteTestUrl}/${testDir}/`),
+     831|             [CONNECTED, '>>> ready <<<'],
+     832|             (logs) => {
+     833|               expect(logs).toContain('loaded:all:a0b0c0default0')
+     834|               expect(logs).toContain('all >>>>>> a0, b0, c0')
+     835|             },
+```
+
+**verdict:**
+
+---
+
+## 16. vitejs-vite — playground/hmr/**tests**/hmr.spec.ts:870
+
+**Message:** `goto(`${viteTestUrl}/${testDir}/`)` without an explicit timeout.
+
+```
+     865|         it("doesn't accept itself if one export is not accepted", async () => {
+     866|           const fileName = 'deps-some-accepted.ts'
+     867|           const file = `${testDir}/${fileName}`
+     868|
+     869|           await untilBrowserLogAfter(
+>>>  870|             () => page.goto(`${viteTestUrl}/${testDir}/`),
+     871|             [CONNECTED, '>>> ready <<<'],
+     872|             (logs) => {
+     873|               expect(logs).toContain('loaded:some:a0b0c0default0')
+     874|               expect(logs).toContain('some >>>>>> a0, b0, c0')
+     875|             },
+```
+
+**verdict:**
+
+---
+
+## 17. vitejs-vite — playground/html/**tests**/html.spec.ts:292
+
+**Message:** `waitForSelector('vite-error-overlay')` without an explicit timeout.
+
+```
+     287| describe.runIf(!isBundled)('invalid', () => {
+     288|   test('should be 500 with overlay', async () => {
+     289|     const response = await page.goto(viteTestUrl + '/invalid.html')
+     290|     expect(response.status()).toBe(500)
+     291|
+>>>  292|     const errorOverlay = await page.waitForSelector('vite-error-overlay')
+     293|     expect(errorOverlay).toBeTruthy()
+     294|
+     295|     const message = await errorOverlay.$$eval('.message-body', (m) => {
+     296|       return m[0].innerHTML
+     297|     })
+```
+
+**verdict:**
+
+---
+
+## 18. vitejs-vite — playground/html/**tests**/html.spec.ts:303
+
+**Message:** `waitForSelector('vite-error-overlay')` without an explicit timeout.
+
+```
+     298|     expect(message).toContain('Unable to parse HTML')
+     299|   })
+     300|
+     301|   test('should close overlay when clicked away', async () => {
+     302|     await page.goto(viteTestUrl + '/invalidClick.html')
+>>>  303|     const errorOverlay = await page.waitForSelector('vite-error-overlay')
+     304|     expect(errorOverlay).toBeTruthy()
+     305|
+     306|     await page.click('html')
+     307|     const isVisibleOverlay = await errorOverlay.isVisible()
+     308|     expect(isVisibleOverlay).toBeFalsy()
+```
+
+**verdict:**
+
+---
+
+## 19. vitejs-vite — playground/html/**tests**/html.spec.ts:313
+
+**Message:** `waitForSelector('vite-error-overlay')` without an explicit timeout.
+
+```
+     308|     expect(isVisibleOverlay).toBeFalsy()
+     309|   })
+     310|
+     311|   test('should close overlay when escape key is pressed', async () => {
+     312|     await page.goto(viteTestUrl + '/invalidEscape.html')
+>>>  313|     const errorOverlay = await page.waitForSelector('vite-error-overlay')
+     314|     expect(errorOverlay).toBeTruthy()
+     315|
+     316|     await page.keyboard.press('Escape')
+     317|     const isVisibleOverlay = await errorOverlay.isVisible()
+     318|     expect(isVisibleOverlay).toBeFalsy()
+```
+
+**verdict:**
+
+---
+
+## 20. vitejs-vite — playground/html/**tests**/html.spec.ts:324
+
+**Message:** `waitForSelector('vite-error-overlay')` without an explicit timeout.
+
+```
+     319|   })
+     320|
+     321|   test('stack is updated', async () => {
+     322|     await page.goto(viteTestUrl + '/invalid.html')
+     323|
+>>>  324|     const errorOverlay = await page.waitForSelector('vite-error-overlay')
+     325|     const hiddenPromise = errorOverlay.waitForElementState('hidden')
+     326|     await page.keyboard.press('Escape')
+     327|     await hiddenPromise
+     328|
+     329|     viteServer.environments.client.hot.send({
 ```
 
 **verdict:**

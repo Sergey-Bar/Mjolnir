@@ -10,69 +10,7 @@ Classify each finding as:
 
 ---
 
-## 1. sveltejs-kit — packages/adapter-bun/test/apps/basic/test/browser.test.js:6
-
-**Message:** `toHaveText` couples the test to exact markup text.
-
-```
-       1| import { expect, test } from '@playwright/test';
-       2|
-       3| test('renders on the server and hydrates in the browser', async ({ page }) => {
-       4| 	await page.goto('/');
-       5|
->>>    6| 	await expect(page.locator('h1')).toHaveText('Hello from Bun!');
-       7| 	await expect(page.getByRole('button')).toHaveText('Toggle: false');
-       8| 	await page.getByRole('button').click();
-       9| 	await expect(page.getByRole('button')).toHaveText('Toggle: true');
-      10| });
-      11|
-```
-
-**verdict:**
-
----
-
-## 2. sveltejs-kit — packages/adapter-bun/test/apps/basic/test/browser.test.js:7
-
-**Message:** `toHaveText` couples the test to exact markup text.
-
-```
-       2|
-       3| test('renders on the server and hydrates in the browser', async ({ page }) => {
-       4| 	await page.goto('/');
-       5|
-       6| 	await expect(page.locator('h1')).toHaveText('Hello from Bun!');
->>>    7| 	await expect(page.getByRole('button')).toHaveText('Toggle: false');
-       8| 	await page.getByRole('button').click();
-       9| 	await expect(page.getByRole('button')).toHaveText('Toggle: true');
-      10| });
-      11|
-```
-
-**verdict:**
-
----
-
-## 3. sveltejs-kit — packages/adapter-bun/test/apps/basic/test/browser.test.js:9
-
-**Message:** `toHaveText` couples the test to exact markup text.
-
-```
-       4| 	await page.goto('/');
-       5|
-       6| 	await expect(page.locator('h1')).toHaveText('Hello from Bun!');
-       7| 	await expect(page.getByRole('button')).toHaveText('Toggle: false');
-       8| 	await page.getByRole('button').click();
->>>    9| 	await expect(page.getByRole('button')).toHaveText('Toggle: true');
-      10| });
-      11|
-```
-
-**verdict:**
-
----
-
-## 4. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:20
+## 1. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:20
 
 **Message:** `toHaveText` couples the test to exact markup text.
 
@@ -94,7 +32,7 @@ Classify each finding as:
 
 ---
 
-## 5. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:22
+## 2. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:22
 
 **Message:** `toHaveText` couples the test to exact markup text.
 
@@ -116,7 +54,7 @@ Classify each finding as:
 
 ---
 
-## 6. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:40
+## 3. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:40
 
 **Message:** `toHaveText` couples the test to exact markup text.
 
@@ -138,7 +76,7 @@ Classify each finding as:
 
 ---
 
-## 7. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:43
+## 4. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:43
 
 **Message:** `toHaveText` couples the test to exact markup text.
 
@@ -160,7 +98,7 @@ Classify each finding as:
 
 ---
 
-## 8. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:46
+## 5. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:46
 
 **Message:** `toHaveText` couples the test to exact markup text.
 
@@ -182,7 +120,7 @@ Classify each finding as:
 
 ---
 
-## 9. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:51
+## 6. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:51
 
 **Message:** `toHaveText` couples the test to exact markup text.
 
@@ -204,7 +142,7 @@ Classify each finding as:
 
 ---
 
-## 10. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:53
+## 7. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:53
 
 **Message:** `toHaveText` couples the test to exact markup text.
 
@@ -226,7 +164,7 @@ Classify each finding as:
 
 ---
 
-## 11. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:58
+## 8. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:58
 
 **Message:** `toHaveText` couples the test to exact markup text.
 
@@ -248,7 +186,7 @@ Classify each finding as:
 
 ---
 
-## 12. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:64
+## 9. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:64
 
 **Message:** `toHaveText` couples the test to exact markup text.
 
@@ -270,7 +208,7 @@ Classify each finding as:
 
 ---
 
-## 13. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:68
+## 10. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:68
 
 **Message:** `toHaveText` couples the test to exact markup text.
 
@@ -292,7 +230,7 @@ Classify each finding as:
 
 ---
 
-## 14. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:82
+## 11. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:82
 
 **Message:** `toHaveText` couples the test to exact markup text.
 
@@ -314,7 +252,7 @@ Classify each finding as:
 
 ---
 
-## 15. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:92
+## 12. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:92
 
 **Message:** `toHaveText` couples the test to exact markup text.
 
@@ -336,7 +274,7 @@ Classify each finding as:
 
 ---
 
-## 16. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:102
+## 13. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:102
 
 **Message:** `toHaveText` couples the test to exact markup text.
 
@@ -358,7 +296,7 @@ Classify each finding as:
 
 ---
 
-## 17. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:112
+## 14. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:112
 
 **Message:** `toHaveText` couples the test to exact markup text.
 
@@ -380,7 +318,7 @@ Classify each finding as:
 
 ---
 
-## 18. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:122
+## 15. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:122
 
 **Message:** `toHaveText` couples the test to exact markup text.
 
@@ -402,7 +340,7 @@ Classify each finding as:
 
 ---
 
-## 19. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:123
+## 16. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:123
 
 **Message:** `toHaveText` couples the test to exact markup text.
 
@@ -424,7 +362,7 @@ Classify each finding as:
 
 ---
 
-## 20. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:124
+## 17. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:124
 
 **Message:** `toHaveText` couples the test to exact markup text.
 
@@ -440,6 +378,72 @@ Classify each finding as:
      127|
      128| 	test('query.set from within a query during SSR inlines the set values', async ({ page }) => {
      129| 		await page.goto('/remote/query-set-inline');
+```
+
+**verdict:**
+
+---
+
+## 18. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:137
+
+**Message:** `toHaveText` couples the test to exact markup text.
+
+```
+     132| 		// creating the `get_thing(id)` resources — they should reuse the inlined values
+     133| 		let request_count = 0;
+     134| 		page.on('request', (r) => (request_count += r.url().includes('/_app/remote') ? 1 : 0));
+     135|
+     136| 		await page.click('#show');
+>>>  137| 		await expect(page.locator('#thing-1')).toHaveText('one');
+     138| 		await expect(page.locator('#thing-2')).toHaveText('two');
+     139| 		await expect(page.locator('#thing-3')).toHaveText('three');
+     140| 		await page.waitForTimeout(100); // allow all requests to finish (there shouldn't be any)
+     141| 		expect(request_count).toBe(0);
+     142| 	});
+```
+
+**verdict:**
+
+---
+
+## 19. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:138
+
+**Message:** `toHaveText` couples the test to exact markup text.
+
+```
+     133| 		let request_count = 0;
+     134| 		page.on('request', (r) => (request_count += r.url().includes('/_app/remote') ? 1 : 0));
+     135|
+     136| 		await page.click('#show');
+     137| 		await expect(page.locator('#thing-1')).toHaveText('one');
+>>>  138| 		await expect(page.locator('#thing-2')).toHaveText('two');
+     139| 		await expect(page.locator('#thing-3')).toHaveText('three');
+     140| 		await page.waitForTimeout(100); // allow all requests to finish (there shouldn't be any)
+     141| 		expect(request_count).toBe(0);
+     142| 	});
+     143|
+```
+
+**verdict:**
+
+---
+
+## 20. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:139
+
+**Message:** `toHaveText` couples the test to exact markup text.
+
+```
+     134| 		page.on('request', (r) => (request_count += r.url().includes('/_app/remote') ? 1 : 0));
+     135|
+     136| 		await page.click('#show');
+     137| 		await expect(page.locator('#thing-1')).toHaveText('one');
+     138| 		await expect(page.locator('#thing-2')).toHaveText('two');
+>>>  139| 		await expect(page.locator('#thing-3')).toHaveText('three');
+     140| 		await page.waitForTimeout(100); // allow all requests to finish (there shouldn't be any)
+     141| 		expect(request_count).toBe(0);
+     142| 	});
+     143|
+     144| 	test('query.refresh from within a query during SSR inlines the refreshed values', async ({
 ```
 
 **verdict:**

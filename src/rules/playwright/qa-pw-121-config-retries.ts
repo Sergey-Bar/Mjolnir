@@ -18,6 +18,7 @@ export const pwConfigRetryAbuse = defineRule({
   findingType: "deterministic-defect",
   qaImpact: "FALSE-GREEN",
   appliesTo: "test-files",
+  configRule: true,
   // Trust Metadata
   languages: ["typescript", "javascript"],
   frameworks: ["playwright"],

@@ -26,6 +26,10 @@ export const pyMockOnly = defineRule({
   detectionStrategy: "regex heuristic",
   introduced: "0.3.0",
 
+  // Measured FP 100% (n=20): mocks stand in for the external service boundary; the CLI/module calls against them are the observable behavior.
+
+  tier: "quarantine",
+
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];

@@ -98,139 +98,7 @@ Classify each finding as:
 
 ---
 
-## 5. sveltejs-kit — packages/adapter-bun/test/adapter.spec.ts:406
-
-**Message:** All assertions in this test verify mock calls only.
-
-```
-     401| 		expect(source).toContain(
-     402| 			'...client_asset("app.js", undefined, {"hash":"abc","mtime":0,"br":true,"gz":true})'
-     403| 		);
-     404| 	});
-     405|
->>>  406| 	test('warns when precompress is combined with compile', async () => {
-     407| 		const builder = create_builder();
-     408|
-     409| 		await adapter({ precompress: true, buildOptions: { compile: true } }).adapt(builder);
-     410|
-     411| 		expect(builder.log.warn).toHaveBeenCalledWith(
-```
-
-**verdict:**
-
----
-
-## 6. sveltejs-kit — packages/adapter-bun/test/adapter.spec.ts:417
-
-**Message:** All assertions in this test verify mock calls only.
-
-```
-     412| 			expect.stringContaining('precompress is ignored')
-     413| 		);
-     414| 		expect(builder.compress).not.toHaveBeenCalled();
-     415| 	});
-     416|
->>>  417| 	test('does not compress by default', async () => {
-     418| 		const builder = create_builder({ client_files: ['app.js'] });
-     419|
-     420| 		await adapter().adapt(builder);
-     421|
-     422| 		expect(builder.compress).not.toHaveBeenCalled();
-```
-
-**verdict:**
-
----
-
-## 7. sveltejs-kit — packages/adapter-bun/test/start.spec.ts:19
-
-**Message:** All assertions in this test verify mock calls only.
-
-```
-      14|
-      15| afterAll(() => {
-      16| 	mock.module('node:process', () => ({ default: real_process }));
-      17| });
-      18|
->>>   19| test('starts Bun with production defaults and generated request routes', async () => {
-      20| 	const loaded = await load_start();
-      21|
-      22| 	expect(loaded.serve).toHaveBeenCalledWith(
-      23| 		expect.objectContaining({
-      24| 			development: false,
-```
-
-**verdict:**
-
----
-
-## 8. sveltejs-kit — packages/adapter-bun/test/start.spec.ts:34
-
-**Message:** All assertions in this test verify mock calls only.
-
-```
-      29| 		})
-      30| 	);
-      31| 	expect(loaded.log).toHaveBeenCalledWith('Listening on http://localhost:3000/');
-      32| });
-      33|
->>>   34| test('environment variables override TCP server defaults', async () => {
-      35| 	const loaded = await load_start({
-      36| 		serverOptions: {
-      37| 			hostname: 'default-host',
-      38| 			port: 3000,
-      39| 			reusePort: false,
-```
-
-**verdict:**
-
----
-
-## 9. sveltejs-kit — packages/adapter-bun/test/start.spec.ts:90
-
-**Message:** All assertions in this test verify mock calls only.
-
-```
-      85| 	expect(options).not.toHaveProperty('reusePort');
-      86| 	expect(options).not.toHaveProperty('ipv6Only');
-      87| 	expect(loaded.log).toHaveBeenCalledWith('Listening on /tmp/application.sock');
-      88| });
-      89|
->>>   90| test('removes a stale socket file before listening', async () => {
-      91| 	spyOn(fs, 'statSync').mockReturnValue({ size: 0 } as ReturnType<typeof fs.statSync>);
-      92| 	const rm = spyOn(fs, 'rmSync').mockImplementation(() => {});
-      93|
-      94| 	await load_start({ env: { SOCKET_PATH: '/tmp/application.sock' } });
-      95|
-```
-
-**verdict:**
-
----
-
-## 10. sveltejs-kit — packages/adapter-bun/test/start.spec.ts:167
-
-**Message:** All assertions in this test verify mock calls only.
-
-```
-     162| 	} finally {
-     163| 		jest.useRealTimers();
-     164| 	}
-     165| });
-     166|
->>>  167| test('a second shutdown signal forces the process to exit', async () => {
-     168| 	let finish_stop: (() => void) | undefined;
-     169| 	const loaded = await load_start({
-     170| 		stop: () => new Promise<void>((resolve) => (finish_stop = resolve))
-     171| 	});
-     172|
-```
-
-**verdict:**
-
----
-
-## 11. sveltejs-kit — packages/kit/src/core/sync/utils.spec.js:23
+## 5. sveltejs-kit — packages/kit/src/core/sync/utils.spec.js:23
 
 **Message:** All assertions in this test verify mock calls only.
 
@@ -252,7 +120,7 @@ Classify each finding as:
 
 ---
 
-## 12. sveltejs-kit — packages/kit/src/exports/node/index.spec.js:210
+## 6. sveltejs-kit — packages/kit/src/exports/node/index.spec.js:210
 
 **Message:** All assertions in this test verify mock calls only.
 
@@ -274,7 +142,7 @@ Classify each finding as:
 
 ---
 
-## 13. sveltejs-kit — packages/kit/src/runtime/client/remote-functions/shared.transport.spec.js:103
+## 7. sveltejs-kit — packages/kit/src/runtime/client/remote-functions/shared.transport.spec.js:103
 
 **Message:** All assertions in this test verify mock calls only.
 
@@ -296,7 +164,7 @@ Classify each finding as:
 
 ---
 
-## 14. sveltejs-kit — packages/kit/src/runtime/client/remote-functions/shared.transport.spec.js:125
+## 8. sveltejs-kit — packages/kit/src/runtime/client/remote-functions/shared.transport.spec.js:125
 
 **Message:** All assertions in this test verify mock calls only.
 
@@ -318,7 +186,7 @@ Classify each finding as:
 
 ---
 
-## 15. sveltejs-kit — packages/kit/src/runtime/client/remote-functions/shared.transport.spec.js:143
+## 9. sveltejs-kit — packages/kit/src/runtime/client/remote-functions/shared.transport.spec.js:143
 
 **Message:** All assertions in this test verify mock calls only.
 
@@ -340,7 +208,7 @@ Classify each finding as:
 
 ---
 
-## 16. sveltejs-kit — packages/kit/src/runtime/client/remote-functions/shared.transport.spec.js:164
+## 10. sveltejs-kit — packages/kit/src/runtime/client/remote-functions/shared.transport.spec.js:164
 
 **Message:** All assertions in this test verify mock calls only.
 
@@ -362,7 +230,7 @@ Classify each finding as:
 
 ---
 
-## 17. sveltejs-kit — packages/kit/src/runtime/server/validate-headers.spec.js:12
+## 11. sveltejs-kit — packages/kit/src/runtime/server/validate-headers.spec.js:12
 
 **Message:** All assertions in this test verify mock calls only.
 
@@ -384,7 +252,7 @@ Classify each finding as:
 
 ---
 
-## 18. sveltejs-kit — packages/kit/src/runtime/server/validate-headers.spec.js:17
+## 12. sveltejs-kit — packages/kit/src/runtime/server/validate-headers.spec.js:17
 
 **Message:** All assertions in this test verify mock calls only.
 
@@ -406,7 +274,7 @@ Classify each finding as:
 
 ---
 
-## 19. sveltejs-kit — packages/kit/src/runtime/server/validate-headers.spec.js:24
+## 13. sveltejs-kit — packages/kit/src/runtime/server/validate-headers.spec.js:24
 
 **Message:** All assertions in this test verify mock calls only.
 
@@ -428,7 +296,7 @@ Classify each finding as:
 
 ---
 
-## 20. sveltejs-kit — packages/kit/src/runtime/server/validate-headers.spec.js:36
+## 14. sveltejs-kit — packages/kit/src/runtime/server/validate-headers.spec.js:36
 
 **Message:** All assertions in this test verify mock calls only.
 
@@ -444,6 +312,138 @@ Classify each finding as:
       39| 		});
       40| 	});
       41|
+```
+
+**verdict:**
+
+---
+
+## 15. sveltejs-kit — packages/kit/src/runtime/server/validate-headers.spec.js:43
+
+**Message:** All assertions in this test verify mock calls only.
+
+```
+      38| 			expect(console_warn_spy).not.toHaveBeenCalled();
+      39| 		});
+      40| 	});
+      41|
+      42| 	describe('content-type header', () => {
+>>>   43| 		test('accepts standard content types', () => {
+      44| 			validateHeaders({ 'content-type': 'application/json' });
+      45| 			expect(console_warn_spy).not.toHaveBeenCalled();
+      46| 		});
+      47|
+      48| 		test('accepts content types with parameters', () => {
+```
+
+**verdict:**
+
+---
+
+## 16. sveltejs-kit — packages/kit/src/runtime/server/validate-headers.spec.js:48
+
+**Message:** All assertions in this test verify mock calls only.
+
+```
+      43| 		test('accepts standard content types', () => {
+      44| 			validateHeaders({ 'content-type': 'application/json' });
+      45| 			expect(console_warn_spy).not.toHaveBeenCalled();
+      46| 		});
+      47|
+>>>   48| 		test('accepts content types with parameters', () => {
+      49| 			validateHeaders({ 'content-type': 'text/html; charset=utf-8' });
+      50| 			expect(console_warn_spy).not.toHaveBeenCalled();
+      51|
+      52| 			validateHeaders({ 'content-type': 'application/javascript; charset=utf-8' });
+      53| 			expect(console_warn_spy).not.toHaveBeenCalled();
+```
+
+**verdict:**
+
+---
+
+## 17. sveltejs-kit — packages/kit/src/runtime/server/validate-headers.spec.js:56
+
+**Message:** All assertions in this test verify mock calls only.
+
+```
+      51|
+      52| 			validateHeaders({ 'content-type': 'application/javascript; charset=utf-8' });
+      53| 			expect(console_warn_spy).not.toHaveBeenCalled();
+      54| 		});
+      55|
+>>>   56| 		test('accepts vendor-specific content types', () => {
+      57| 			validateHeaders({ 'content-type': 'x-custom/whatever' });
+      58| 			expect(console_warn_spy).not.toHaveBeenCalled();
+      59| 		});
+      60|
+      61| 		test('rejects malformed content types', () => {
+```
+
+**verdict:**
+
+---
+
+## 18. sveltejs-kit — packages/kit/src/runtime/server/validate-headers.spec.js:61
+
+**Message:** All assertions in this test verify mock calls only.
+
+```
+      56| 		test('accepts vendor-specific content types', () => {
+      57| 			validateHeaders({ 'content-type': 'x-custom/whatever' });
+      58| 			expect(console_warn_spy).not.toHaveBeenCalled();
+      59| 		});
+      60|
+>>>   61| 		test('rejects malformed content types', () => {
+      62| 			validateHeaders({ 'content-type': 'invalid-content-type' });
+      63| 			expect(console_warn_spy).toHaveBeenCalledWith(
+      64| 				expect.stringContaining('Invalid content-type value "invalid-content-type"')
+      65| 			);
+      66| 		});
+```
+
+**verdict:**
+
+---
+
+## 19. sveltejs-kit — packages/kit/src/runtime/server/validate-headers.spec.js:68
+
+**Message:** All assertions in this test verify mock calls only.
+
+```
+      63| 			expect(console_warn_spy).toHaveBeenCalledWith(
+      64| 				expect.stringContaining('Invalid content-type value "invalid-content-type"')
+      65| 			);
+      66| 		});
+      67|
+>>>   68| 		test('rejects invalid content type categories', () => {
+      69| 			validateHeaders({ 'content-type': 'invalid/type; invalid=param' });
+      70| 			expect(console_warn_spy).toHaveBeenCalledWith(
+      71| 				expect.stringContaining('Invalid content-type value "invalid/type"')
+      72| 			);
+      73|
+```
+
+**verdict:**
+
+---
+
+## 20. sveltejs-kit — packages/kit/src/runtime/server/validate-headers.spec.js:80
+
+**Message:** All assertions in this test verify mock calls only.
+
+```
+      75| 			expect(console_warn_spy).toHaveBeenCalledWith(
+      76| 				expect.stringContaining('Invalid content-type value "bad/type"')
+      77| 			);
+      78| 		});
+      79|
+>>>   80| 		test('handles case-insensitive content-types', () => {
+      81| 			validateHeaders({ 'content-type': 'TEXT/HTML; charset=utf-8' });
+      82| 			expect(console_warn_spy).not.toHaveBeenCalled();
+      83| 		});
+      84| 	});
+      85|
 ```
 
 **verdict:**

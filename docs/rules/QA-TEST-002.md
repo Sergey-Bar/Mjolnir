@@ -43,6 +43,9 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo                 | Occurrences |
 | -------------------- | ----------- |
+| calcom-cal           | 18          |
+| dubinc-dub           | 2           |
+| grafana-grafana      | 45          |
 | nextauthjs-next-auth | 1           |
 | sveltejs-kit         | 38          |
 | vitejs-vite          | 5           |

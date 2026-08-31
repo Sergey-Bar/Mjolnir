@@ -10,437 +10,436 @@ Classify each finding as:
 
 ---
 
-## 1. pallets-click — tests/test_defaults.py:287
+## 1. microsoft-playwright-dotnet — src/Playwright.TestingHarnessTest/tests/mstest.spec.ts:561
 
-**Message:** Environment coupling (OS path): `"/tmp/file"`.
-
-```
-     282|                 "value": value,
-     283|                 "source": ctx.get_parameter_source(param.name),
-     284|             }
-     285|
-     286|     @click.command()
->>>  287|     @click.option("--default", type=Source(), default="/tmp/file")
-     288|     @click.option("--nodefault", type=Source())
-     289|     def cli(default, nodefault):
-     290|         click.echo(f"default: {default}")
-     291|         click.echo(f"nodefault: {nodefault}")
-     292|
-```
-
-**verdict:**
-
----
-
-## 2. pallets-click — tests/test_defaults.py:295
-
-**Message:** Environment coupling (OS path): `'/tmp/file'`.
+**Message:** Environment coupling (fixed port): `127.0.0.1:1234`.
 
 ```
-     290|         click.echo(f"default: {default}")
-     291|         click.echo(f"nodefault: {nodefault}")
-     292|
-     293|     result = runner.invoke(cli, [])
-     294|     assert not result.exception
->>>  295|     assert "default: {'value': '/tmp/file', 'source': " in result.output
-     296|     assert "'source': None}" not in result.output.split("default:")[1].split("\n")[0]
-     297|     assert (
-     298|         result.output == "default: {'value': '/tmp/file', 'source': "
-     299|         f"{ParameterSource.DEFAULT!r}}}\nnodefault: None\n"
-     300|     )
+     556|       'ExampleTests.cs': ExampleTestWithConnectOptions,
+     557|     }, 'dotnet test');
+     558|     expect(result.passed).toBe(0);
+     559|     expect(result.failed).toBe(1);
+     560|     expect(result.total).toBe(1);
+>>>  561|     expect(result.rawStdout).toContain('connect ECONNREFUSED 127.0.0.1:1234')
+     562|   });
+     563|
+     564|   test('should pass when the server is reachable', async ({ runTest, launchServer }) => {
+     565|     await launchServer({ port: 1234 });
+     566|     const result = await runTest({
 ```
 
 **verdict:**
 
 ---
 
-## 3. pallets-click — tests/test_defaults.py:298
+## 2. microsoft-playwright-dotnet — src/Playwright.TestingHarnessTest/tests/mstest.v4.spec.ts:561
 
-**Message:** Environment coupling (OS path): `'/tmp/file'`.
-
-```
-     293|     result = runner.invoke(cli, [])
-     294|     assert not result.exception
-     295|     assert "default: {'value': '/tmp/file', 'source': " in result.output
-     296|     assert "'source': None}" not in result.output.split("default:")[1].split("\n")[0]
-     297|     assert (
->>>  298|         result.output == "default: {'value': '/tmp/file', 'source': "
-     299|         f"{ParameterSource.DEFAULT!r}}}\nnodefault: None\n"
-     300|     )
-     301|
-     302|     result = runner.invoke(cli, ["--default", "cli", "--nodefault", "also"])
-     303|     assert not result.exception
-```
-
-**verdict:**
-
----
-
-## 4. pallets-click — tests/test_termui.py:481
-
-**Message:** Environment coupling (OS path): `"C:\\Program Files\\Sublime Text 3\\sublime_text.e`.
+**Message:** Environment coupling (fixed port): `127.0.0.1:1234`.
 
 ```
-     476|             ["vi", 'file"; rm -rf / ; echo "'],
-     477|             id="shell metacharacters in filename",
-     478|         ),
-     479|         # Issue #1026: editor path with spaces must be quoted.
-     480|         pytest.param(
->>>  481|             '"C:\\Program Files\\Sublime Text 3\\sublime_text.exe"',
-     482|             ["f.txt"],
-     483|             ["C:\\Program Files\\Sublime Text 3\\sublime_text.exe", "f.txt"],
-     484|             id="quoted windows path with spaces",
-     485|         ),
-     486|         # PR #1477: pager/editor command with flags, like ``less -FRSX``.
+     556|       'ExampleTests.cs': ExampleTestWithConnectOptions,
+     557|     }, 'dotnet test');
+     558|     expect(result.passed).toBe(0);
+     559|     expect(result.failed).toBe(1);
+     560|     expect(result.total).toBe(1);
+>>>  561|     expect(result.rawStdout).toContain('connect ECONNREFUSED 127.0.0.1:1234')
+     562|   });
+     563|
+     564|   test('should pass when the server is reachable', async ({ runTest, launchServer }) => {
+     565|     await launchServer({ port: 1234 });
+     566|     const result = await runTest({
 ```
 
 **verdict:**
 
 ---
 
-## 5. pallets-click — tests/test_termui.py:483
+## 3. microsoft-playwright-dotnet — src/Playwright.TestingHarnessTest/tests/nunit.spec.ts:557
 
-**Message:** Environment coupling (OS path): `"C:\\Program Files\\Sublime Text 3\\sublime_text.e`.
-
-```
-     478|         ),
-     479|         # Issue #1026: editor path with spaces must be quoted.
-     480|         pytest.param(
-     481|             '"C:\\Program Files\\Sublime Text 3\\sublime_text.exe"',
-     482|             ["f.txt"],
->>>  483|             ["C:\\Program Files\\Sublime Text 3\\sublime_text.exe", "f.txt"],
-     484|             id="quoted windows path with spaces",
-     485|         ),
-     486|         # PR #1477: pager/editor command with flags, like ``less -FRSX``.
-     487|         pytest.param(
-     488|             "less -FRSX",
-```
-
-**verdict:**
-
----
-
-## 6. pallets-click — tests/test_termui.py:579
-
-**Message:** Environment coupling (OS path): `"C:\\Program Files\\Sublime Text 3\\sublime_text.e`.
+**Message:** Environment coupling (fixed port): `127.0.0.1:1234`.
 
 ```
-     574|             "notepad",
-     575|             ["notepad"],
-     576|             id="plain notepad",
-     577|         ),
-     578|         pytest.param(
->>>  579|             '"C:\\Program Files\\Sublime Text 3\\sublime_text.exe" --wait',
-     580|             ["C:\\Program Files\\Sublime Text 3\\sublime_text.exe", "--wait"],
-     581|             id="quoted path with flag",
-     582|         ),
-     583|     ],
-     584| )
+     552|       'ExampleTests.cs': ExampleTestWithConnectOptions,
+     553|     }, 'dotnet test');
+     554|     expect(result.passed).toBe(0);
+     555|     expect(result.failed).toBe(1);
+     556|     expect(result.total).toBe(1);
+>>>  557|     expect(result.rawStdout).toContain('connect ECONNREFUSED 127.0.0.1:1234')
+     558|   });
+     559|
+     560|   test('should pass when the server is reachable', async ({ runTest, launchServer }) => {
+     561|     await launchServer({ port: 1234 });
+     562|     const result = await runTest({
 ```
 
 **verdict:**
 
 ---
 
-## 7. pallets-click — tests/test_termui.py:580
+## 4. microsoft-playwright-dotnet — src/Playwright.TestingHarnessTest/tests/xunit.spec.ts:603
 
-**Message:** Environment coupling (OS path): `"C:\\Program Files\\Sublime Text 3\\sublime_text.e`.
-
-```
-     575|             ["notepad"],
-     576|             id="plain notepad",
-     577|         ),
-     578|         pytest.param(
-     579|             '"C:\\Program Files\\Sublime Text 3\\sublime_text.exe" --wait',
->>>  580|             ["C:\\Program Files\\Sublime Text 3\\sublime_text.exe", "--wait"],
-     581|             id="quoted path with flag",
-     582|         ),
-     583|     ],
-     584| )
-     585| def test_editor_windows_path_normalization(editor_cmd, expected_cmd):
-```
-
-**verdict:**
-
----
-
-## 8. pallets-click — tests/test_termui.py:635
-
-**Message:** Environment coupling (OS path): `"C:\\Program Files\\Git\\usr\\bin\\less.exe"`.
+**Message:** Environment coupling (fixed port): `127.0.0.1:1234`.
 
 ```
-     630|         pytest.param("  less  ", ["less"], id="leading and trailing spaces"),
-     631|         pytest.param("less\t-R", ["less", "-R"], id="tab as separator"),
-     632|         # Quoted Windows paths: quotes are stripped in POSIX mode (the
-     633|         # default), preserving backslashes inside quoted tokens (issue #1026).
-     634|         pytest.param(
->>>  635|             '"C:\\Program Files\\Git\\usr\\bin\\less.exe"',
-     636|             ["C:\\Program Files\\Git\\usr\\bin\\less.exe"],
-     637|             id="quoted windows path with spaces",
-     638|         ),
-     639|         pytest.param(
-     640|             '"C:\\Program Files\\Git\\usr\\bin\\less.exe" -R',
+     598|       'ExampleTests.cs': ExampleTestWithConnectOptions,
+     599|     }, 'dotnet test');
+     600|     expect(result.passed).toBe(0);
+     601|     expect(result.failed).toBe(1);
+     602|     expect(result.total).toBe(1);
+>>>  603|     expect(result.rawStdout).toContain('connect ECONNREFUSED 127.0.0.1:1234')
+     604|   });
+     605|
+     606|   test('should pass when the server is reachable', async ({ runTest, launchServer }) => {
+     607|     await launchServer({ port: 1234 });
+     608|     const result = await runTest({
 ```
 
 **verdict:**
 
 ---
 
-## 9. pallets-click — tests/test_termui.py:636
+## 5. microsoft-playwright-dotnet — src/Playwright.TestingHarnessTest/tests/xunit.v3.spec.ts:597
 
-**Message:** Environment coupling (OS path): `"C:\\Program Files\\Git\\usr\\bin\\less.exe"`.
-
-```
-     631|         pytest.param("less\t-R", ["less", "-R"], id="tab as separator"),
-     632|         # Quoted Windows paths: quotes are stripped in POSIX mode (the
-     633|         # default), preserving backslashes inside quoted tokens (issue #1026).
-     634|         pytest.param(
-     635|             '"C:\\Program Files\\Git\\usr\\bin\\less.exe"',
->>>  636|             ["C:\\Program Files\\Git\\usr\\bin\\less.exe"],
-     637|             id="quoted windows path with spaces",
-     638|         ),
-     639|         pytest.param(
-     640|             '"C:\\Program Files\\Git\\usr\\bin\\less.exe" -R',
-     641|             ["C:\\Program Files\\Git\\usr\\bin\\less.exe", "-R"],
-```
-
-**verdict:**
-
----
-
-## 10. pallets-click — tests/test_termui.py:640
-
-**Message:** Environment coupling (OS path): `"C:\\Program Files\\Git\\usr\\bin\\less.exe"`.
+**Message:** Environment coupling (fixed port): `127.0.0.1:1234`.
 
 ```
-     635|             '"C:\\Program Files\\Git\\usr\\bin\\less.exe"',
-     636|             ["C:\\Program Files\\Git\\usr\\bin\\less.exe"],
-     637|             id="quoted windows path with spaces",
-     638|         ),
-     639|         pytest.param(
->>>  640|             '"C:\\Program Files\\Git\\usr\\bin\\less.exe" -R',
-     641|             ["C:\\Program Files\\Git\\usr\\bin\\less.exe", "-R"],
-     642|             id="quoted windows path with flag",
-     643|         ),
-     644|         # Single-quoted path.
-     645|         pytest.param(
+     592|       'ExampleTests.cs': ExampleTestWithConnectOptions,
+     593|     }, 'dotnet test');
+     594|     expect(result.passed).toBe(0);
+     595|     expect(result.failed).toBe(1);
+     596|     expect(result.total).toBe(1);
+>>>  597|     expect(result.rawStdout).toContain('connect ECONNREFUSED 127.0.0.1:1234')
+     598|   });
+     599|
+     600|   test('should pass when the server is reachable', async ({ runTest, launchServer }) => {
+     601|     await launchServer({ port: 1234 });
+     602|     const result = await runTest({
 ```
 
 **verdict:**
 
 ---
 
-## 11. pallets-click — tests/test_termui.py:641
+## 6. nextauthjs-next-auth — packages/adapter-azure-tables/test/index.test.ts:14
 
-**Message:** Environment coupling (OS path): `"C:\\Program Files\\Git\\usr\\bin\\less.exe"`.
-
-```
-     636|             ["C:\\Program Files\\Git\\usr\\bin\\less.exe"],
-     637|             id="quoted windows path with spaces",
-     638|         ),
-     639|         pytest.param(
-     640|             '"C:\\Program Files\\Git\\usr\\bin\\less.exe" -R',
->>>  641|             ["C:\\Program Files\\Git\\usr\\bin\\less.exe", "-R"],
-     642|             id="quoted windows path with flag",
-     643|         ),
-     644|         # Single-quoted path.
-     645|         pytest.param(
-     646|             "'/usr/local/bin/my pager'",
-```
-
-**verdict:**
-
----
-
-## 12. pallets-click — tests/test_termui.py:660
-
-**Message:** Environment coupling (OS path): `"C:\\path\\to\\exe /test other\\path"`.
+**Message:** Environment coupling (fixed port): `127.0.0.1:10002`.
 
 ```
-     655|             id="escaped space in unix path",
-     656|         ),
-     657|         # PR #1477: POSIX mode (the default) eats unquoted backslashes.
-     658|         # On Windows, users must quote paths that contain backslashes.
-     659|         pytest.param(
->>>  660|             "C:\\path\\to\\exe /test other\\path",
-     661|             ["C:pathtoexe", "/test", "otherpath"],
-     662|             id="unquoted backslashes eaten in POSIX mode",
-     663|         ),
-     664|     ],
-     665| )
-```
-
-**verdict:**
-
----
-
-## 13. pallets-click — tests/test_termui.py:1179
-
-**Message:** Environment coupling (OS path): `C:\\Program Files`.
-
-```
-    1174|     probes are faked to exercise it from any runner.
-    1175|
-    1176|     ``PAGER`` is set to the bare command name, not to the path
-    1177|     :func:`shutil.which` resolves it to. ``pager()`` splits ``PAGER`` with
-    1178|     :func:`shlex.split` in POSIX mode, where a Windows path loses its
->>> 1179|     backslashes and splits on the space in ``C:\\Program Files``, leaving a
-    1180|     command that resolves to nothing. Click resolves the bare name itself.
-    1181|     """
-    1182|     cmd = shlex.split(pager_cmd)[0]
-    1183|     assert shutil.which(cmd) is not None, f"{cmd} not available"
-    1184|     monkeypatch.setattr(click._termui_impl, "isatty", lambda _: True)
-```
-
-**verdict:**
-
----
-
-## 14. pytest-dev-pytest — testing/test_assertrewrite.py:2359
-
-**Message:** Environment coupling (OS path): `"/tmp/pycs"`.
-
-```
-    2354|     @pytest.mark.parametrize(
-    2355|         "prefix, source, expected",
-    2356|         [
-    2357|             ("c:/tmp/pycs", "d:/projects/src/foo.py", "c:/tmp/pycs/projects/src"),
-    2358|             (None, "d:/projects/src/foo.py", "d:/projects/src/__pycache__"),
->>> 2359|             ("/tmp/pycs", "/home/projects/src/foo.py", "/tmp/pycs/home/projects/src"),
-    2360|             (None, "/home/projects/src/foo.py", "/home/projects/src/__pycache__"),
-    2361|         ],
-    2362|     )
-    2363|     def test_get_cache_dir(self, monkeypatch, prefix, source, expected) -> None:
-    2364|         monkeypatch.delenv("PYTHONPYCACHEPREFIX", raising=False)
-```
-
-**verdict:**
-
----
-
-## 15. pytest-dev-pytest — testing/test_assertrewrite.py:2359
-
-**Message:** Environment coupling (OS path): `"/tmp/pycs/home/projects/src"`.
-
-```
-    2354|     @pytest.mark.parametrize(
-    2355|         "prefix, source, expected",
-    2356|         [
-    2357|             ("c:/tmp/pycs", "d:/projects/src/foo.py", "c:/tmp/pycs/projects/src"),
-    2358|             (None, "d:/projects/src/foo.py", "d:/projects/src/__pycache__"),
->>> 2359|             ("/tmp/pycs", "/home/projects/src/foo.py", "/tmp/pycs/home/projects/src"),
-    2360|             (None, "/home/projects/src/foo.py", "/home/projects/src/__pycache__"),
-    2361|         ],
-    2362|     )
-    2363|     def test_get_cache_dir(self, monkeypatch, prefix, source, expected) -> None:
-    2364|         monkeypatch.delenv("PYTHONPYCACHEPREFIX", raising=False)
-```
-
-**verdict:**
-
----
-
-## 16. pytest-dev-pytest — testing/test_nodes.py:122
-
-**Message:** Environment coupling (OS path): `"C:\\Users\\test\\project"`.
-
-```
-     117|         """Empty string returns empty string."""
-     118|         assert nodes.norm_sep("") == ""
-     119|
-     120|     def test_windows_absolute_path(self) -> None:
-     121|         """Windows absolute paths have backslashes converted."""
->>>  122|         assert nodes.norm_sep("C:\\Users\\test\\project") == "C:/Users/test/project"
-     123|
-     124|
-     125| def test__check_initialpaths_for_relpath() -> None:
-     126|     """Ensure that it handles dirs, and does not always use dirname."""
-     127|     cwd = Path.cwd()
-```
-
-**verdict:**
-
----
-
-## 17. pytest-dev-pytest — testing/test_terminal.py:3419
-
-**Message:** Environment coupling (OS path): `"C:\\\\path"`.
-
-```
-    3414|         test_path.write_text(
-    3415|             textwrap.dedent(
-    3416|                 """
-    3417|                 import pytest
-    3418|
->>> 3419|                 @pytest.mark.parametrize("a", ["x/y", "C:/path", "\\\\", "C:\\\\path", "a::b/"])
-    3420|                 def test_x(a):
-    3421|                     assert False
-    3422|                 """
-    3423|             ),
-    3424|             encoding="utf-8",
-```
-
-**verdict:**
-
----
-
-## 18. psf-requests — tests/test_adapters.py:7
-
-**Message:** Environment coupling (fixed port): `127.0.0.1:10000`.
-
-```
-       2|
-       3|
-       4| def test_request_url_handles_leading_path_separators():
-       5|     """See also https://github.com/psf/requests/issues/6643."""
-       6|     a = requests.adapters.HTTPAdapter()
->>>    7|     p = requests.Request(method="GET", url="http://127.0.0.1:10000//v:h").prepare()
-       8|     assert "//v:h" == a.request_url(p, {})
        9|
+      10| const testAccount = {
+      11|   // default constants used by a dev instance of azurite
+      12|   name: "devstoreaccount1",
+      13|   key: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==",
+>>>   14|   tableEndpoint: "http://127.0.0.1:10002/devstoreaccount1",
+      15| }
+      16|
+      17| const authTableName = "authTest"
+      18|
+      19| const credential = new AzureNamedKeyCredential(
 ```
 
 **verdict:**
 
 ---
 
-## 19. psf-requests — tests/test_requests.py:103
-
-**Message:** Environment coupling (fixed port): `localhost:3128`.
-
-```
-      98|
-      99|     @pytest.mark.parametrize(
-     100|         "exception, url",
-     101|         (
-     102|             (MissingSchema, "hiwpefhipowhefopw"),
->>>  103|             (InvalidSchema, "localhost:3128"),
-     104|             (InvalidSchema, "localhost.localdomain:3128/"),
-     105|             (InvalidSchema, "10.122.1.1:3128/"),
-     106|             (InvalidURL, "http://"),
-     107|             (InvalidURL, "http://*example.com"),
-     108|             (InvalidURL, "http://.example.com"),
-```
-
-**verdict:**
-
----
-
-## 20. psf-requests — tests/test_requests.py:674
+## 7. nextauthjs-next-auth — packages/adapter-dgraph/test/index.test.ts:11
 
 **Message:** Environment coupling (fixed port): `localhost:8080`.
 
 ```
-     669|     def test_proxy_authorization_not_appended_to_https_request(
-     670|         self, url, has_proxy_auth
-     671|     ):
-     672|         session = requests.Session()
-     673|         proxies = {
->>>  674|             "http": "http://test:pass@localhost:8080",
-     675|             "https": "http://test:pass@localhost:8090",
-     676|         }
-     677|         req = requests.Request("GET", url)
-     678|         prep = req.prepare()
-     679|         session.rebuild_proxies(prep, proxies)
+       6| import path from "path"
+       7|
+       8| import type { DgraphClientParams } from "../src"
+       9|
+      10| const params: DgraphClientParams = {
+>>>   11|   endpoint: "http://localhost:8080/graphql",
+      12|   authToken: "test",
+      13|   jwtAlgorithm: "RS256",
+      14|   jwtSecret: fs.readFileSync(path.join(process.cwd(), "/test/private.key"), {
+      15|     encoding: "utf8",
+      16|   }),
+```
+
+**verdict:**
+
+---
+
+## 8. nextauthjs-next-auth — packages/adapter-dynamodb/test/index.test.ts:7
+
+**Message:** Environment coupling (fixed port): `127.0.0.1:8000`.
+
+```
+       2| import { DynamoDBDocument } from "@aws-sdk/lib-dynamodb"
+       3| import { DynamoDBAdapter, format } from "../src"
+       4| import { runBasicTests } from "utils/adapter"
+       5|
+       6| const config = {
+>>>    7|   endpoint: "http://127.0.0.1:8000",
+       8|   region: "eu-central-1",
+       9|   tls: false,
+      10|   credentials: {
+      11|     accessKeyId: "foo",
+      12|     secretAccessKey: "bar",
+```
+
+**verdict:**
+
+---
+
+## 9. nextauthjs-next-auth — packages/adapter-fauna/test/index.test.ts:14
+
+**Message:** Environment coupling (fixed port): `localhost:8443`.
+
+```
+       9|   FaunaVerificationToken,
+      10| } from "../src"
+      11|
+      12| const client = new Client({
+      13|   secret: "secret",
+>>>   14|   endpoint: new URL("http://localhost:8443"),
+      15| })
+      16|
+      17| runBasicTests({
+      18|   adapter: FaunaAdapter(client),
+      19|   db: {
+```
+
+**verdict:**
+
+---
+
+## 10. nextauthjs-next-auth — packages/adapter-hasura/test/index.test.ts:18
+
+**Message:** Environment coupling (fixed port): `localhost:8080`.
+
+```
+      13|   VerificationTokenFragmentDoc,
+      14| } from "../src/lib/generated/graphql"
+      15| import { client as hasuraClient } from "../src/lib/client"
+      16|
+      17| const client = hasuraClient({
+>>>   18|   endpoint: "http://localhost:8080/v1/graphql",
+      19|   adminSecret: "myadminsecretkey",
+      20| })
+      21|
+      22| runBasicTests({
+      23|   adapter: HasuraAdapter({
+```
+
+**verdict:**
+
+---
+
+## 11. nextauthjs-next-auth — packages/adapter-hasura/test/index.test.ts:25
+
+**Message:** Environment coupling (fixed port): `localhost:8080`.
+
+```
+      20| })
+      21|
+      22| runBasicTests({
+      23|   adapter: HasuraAdapter({
+      24|     adminSecret: "myadminsecretkey",
+>>>   25|     endpoint: "http://localhost:8080/v1/graphql",
+      26|   }),
+      27|   db: {
+      28|     async connect() {
+      29|       await client.run(DeleteAllDocument)
+      30|     },
+```
+
+**verdict:**
+
+---
+
+## 12. nextauthjs-next-auth — packages/adapter-mongodb/test/custom.test.ts:5
+
+**Message:** Environment coupling (fixed port): `localhost:27017`.
+
+```
+       1| import { runBasicTests } from "utils/adapter"
+       2| import { defaultCollections, format, MongoDBAdapter, _id } from "../src"
+       3| import { MongoClient } from "mongodb"
+       4| const name = "custom-test"
+>>>    5| const client = new MongoClient(`mongodb://localhost:27017/${name}`)
+       6|
+       7| const collections = { ...defaultCollections, Users: "some_userz" }
+       8|
+       9| runBasicTests({
+      10|   adapter: MongoDBAdapter(client, {
+```
+
+**verdict:**
+
+---
+
+## 13. nextauthjs-next-auth — packages/adapter-mongodb/test/index.test.ts:6
+
+**Message:** Environment coupling (fixed port): `localhost:27017`.
+
+```
+       1| import { runBasicTests } from "utils/adapter"
+       2| import { defaultCollections, format, MongoDBAdapter, _id } from "../src"
+       3| import { MongoClient } from "mongodb"
+       4|
+       5| const name = "test"
+>>>    6| const client = new MongoClient(`mongodb://localhost:27017/${name}`)
+       7|
+       8| runBasicTests({
+       9|   adapter: MongoDBAdapter(client),
+      10|   db: {
+      11|     async disconnect() {
+```
+
+**verdict:**
+
+---
+
+## 14. nextauthjs-next-auth — packages/adapter-mongodb/test/serverless.test.ts:7
+
+**Message:** Environment coupling (fixed port): `localhost:27017`.
+
+```
+       2| import { defaultCollections, format, MongoDBAdapter, _id } from "../src"
+       3| import { MongoClient } from "mongodb"
+       4| import { expect, test, vi } from "vitest"
+       5|
+       6| const name = "serverless-test"
+>>>    7| const client = new MongoClient(`mongodb://localhost:27017/${name}`)
+       8|
+       9| const onClose = vi.fn(async (client: MongoClient) => {
+      10|   await client.close()
+      11| })
+      12|
+```
+
+**verdict:**
+
+---
+
+## 15. nextauthjs-next-auth — packages/adapter-mongodb/test/serverless.test.ts:19
+
+**Message:** Environment coupling (fixed port): `localhost:27017`.
+
+```
+      14|
+      15| runBasicTests({
+      16|   adapter: MongoDBAdapter(
+      17|     async () => {
+      18|       const client = await new MongoClient(
+>>>   19|         `mongodb://localhost:27017/${name}`
+      20|       ).connect()
+      21|       mongoClientCount++
+      22|       return client
+      23|     },
+      24|     {
+```
+
+**verdict:**
+
+---
+
+## 16. nextauthjs-next-auth — packages/adapter-supabase/test/index.test.ts:11
+
+**Message:** Environment coupling (fixed port): `127.0.0.1:54321`.
+
+```
+       6|   AdapterUser,
+       7|   VerificationToken,
+       8| } from "@auth/core/adapters"
+       9| import type { Account } from "@auth/core/types"
+      10|
+>>>   11| const url = process.env.SUPABASE_URL ?? "http://127.0.0.1:54321"
+      12| const secret =
+      13|   process.env.SUPABASE_SERVICE_ROLE_KEY ||
+      14|   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSJ9.vI9obAHOGyVVKa3pD--kJlyxp-Z2zV9UUMAhKpNLAcU"
+      15|
+      16| const supabase = createClient(url, secret, {
+```
+
+**verdict:**
+
+---
+
+## 17. nextauthjs-next-auth — packages/adapter-typeorm/test/index.test.ts:3
+
+**Message:** Environment coupling (fixed port): `localhost:3306`.
+
+```
+       1| import { parseDataSourceConfig } from "../src/utils"
+       2|
+>>>    3| const connectionString = "mysql://root:password@localhost:3306/next-auth"
+       4|
+       5| test("could parse connection string", () => {
+       6|   expect(parseDataSourceConfig(connectionString)).toEqual(
+       7|     expect.objectContaining({
+       8|       type: "mysql",
+```
+
+**verdict:**
+
+---
+
+## 18. nextauthjs-next-auth — packages/adapter-typeorm/test/postgresql/index.custom.test.ts:7
+
+**Message:** Environment coupling (fixed port): `localhost:5432`.
+
+```
+       2| import { TypeORMAdapter } from "../../src"
+       3| import * as entities from "../custom-entities"
+       4| import { db } from "../helpers"
+       5|
+       6| const postgresConfig =
+>>>    7|   "postgres://nextauth:password@localhost:5432/nextauth?synchronize=true"
+       8|
+       9| runBasicTests({
+      10|   adapter: TypeORMAdapter(postgresConfig, {
+      11|     entities,
+      12|   }),
+```
+
+**verdict:**
+
+---
+
+## 19. nextauthjs-next-auth — packages/adapter-typeorm/test/postgresql/index.test.ts:6
+
+**Message:** Environment coupling (fixed port): `localhost:5432`.
+
+```
+       1| import { runBasicTests } from "utils/adapter"
+       2| import { TypeORMAdapter } from "../../src"
+       3| import { db } from "../helpers"
+       4|
+       5| const postgresConfig =
+>>>    6|   "postgres://nextauth:password@localhost:5432/nextauth?synchronize=true"
+       7|
+       8| runBasicTests({
+       9|   adapter: TypeORMAdapter(postgresConfig),
+      10|   db: db(postgresConfig),
+      11| })
+```
+
+**verdict:**
+
+---
+
+## 20. nextauthjs-next-auth — packages/adapter-upstash-redis/test/index.test.ts:7
+
+**Message:** Environment coupling (fixed port): `localhost:8079`.
+
+```
+       2| import { runBasicTests } from "utils/adapter"
+       3| import { hydrateDates, UpstashRedisAdapter } from "../src"
+       4| import "dotenv/config"
+       5|
+       6| const client = new Redis({
+>>>    7|   url: "http://localhost:8079",
+       8|   token: "uwndz1YIfm9k78mx+mjW8qe7CX33VxRYnscDpZVkt4Y=",
+       9| })
+      10|
+      11| runBasicTests({
+      12|   adapter: UpstashRedisAdapter(client, { baseKeyPrefix: "testApp:" }),
 ```
 
 **verdict:**

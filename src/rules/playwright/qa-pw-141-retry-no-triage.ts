@@ -20,6 +20,7 @@ export const pwRetryMaskingNoForensics = defineRule({
   findingType: "heuristic-risk",
   qaImpact: "FALSE-GREEN",
   appliesTo: "test-files",
+  configRule: true,
   // Trust Metadata
   languages: ["typescript", "javascript"],
   frameworks: ["playwright"],
@@ -34,17 +35,22 @@ export const pwRetryMaskingNoForensics = defineRule({
     const base = ctx.path.split("/").pop() as string;
     if (!/^playwright\.config\.(ts|js|mjs|cts)$/.test(base)) return findings;
 
-    const retriesRe = /retries\s*:\s*(\d+)/g;
+    const retriesRe =
+      /retries\s*:\s*(?:process\.env\.[A-Za-z_]+\s*\?\s*(\d+)\s*:\s*\d+|(\d+))/g;
     let m: RegExpExecArray | null;
     while ((m = retriesRe.exec(text)) !== null) {
-      if (Number(m[1]) < 1) continue; // retries disabled — nothing to mask
+      const retries = Number(m[1] ?? m[2]);
+      if (retries < 1) continue; // retries disabled — nothing to mask
       // A triage loop exists if the repo wires retry evidence somewhere:
-      // a reporter that emits machine-readable results, or an explicit
-      // reference to flake handling in config comments/setup.
+      // a MACHINE-READABLE reporter (json/junit/blob/markdown feed flake
+      // dashboards — an html-only reporter produces no triage data), or
+      // an explicit reference to flake handling in config comments/setup.
       // Check code-structure signals in codeText, but check comment-based
       // signals in raw text (comments ARE the evidence here).
       const hasTriageLoop =
-        /reporter\s*:/.test(text) || /forensics|triage|flaky/i.test(ctx.text);
+        /reporter\s*:[^\n]*(?:['"]json['"]|['"]junit['"]|['"]blob['"]|['"]markdown['"])/.test(
+          text,
+        ) || /forensics|triage|flaky/i.test(ctx.text);
       if (!hasTriageLoop) {
         findings.push({
           severity: "warning",

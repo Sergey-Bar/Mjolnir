@@ -13,10 +13,14 @@
     "QA-PW-120": 4,
     "QA-PW-105": 1,
     "QA-PW-114": 2,
+    "QA-PW-122": 2,
+    "QA-PW-143": 2,
+    "QA-PW-141": 2,
+    "QA-PW-144": 2,
     "QA-PW-119": 11,
     "QA-ENV-001": 148,
     "QA-PW-115": 3,
-    "QA-TEST-010": 3
+    "QA-TEST-010": 1
   },
-  "totalFindings": 761
+  "totalFindings": 767
 }

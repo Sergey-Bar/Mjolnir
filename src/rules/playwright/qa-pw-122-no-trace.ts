@@ -16,6 +16,7 @@ export const pwNoTraceOnRetry = defineRule({
   findingType: "deterministic-defect",
   qaImpact: "FALSE-GREEN",
   appliesTo: "test-files",
+  configRule: true,
   // Trust Metadata
   languages: ["typescript", "javascript"],
   frameworks: ["playwright"],
@@ -23,6 +24,10 @@ export const pwNoTraceOnRetry = defineRule({
   autofix: false,
   detectionStrategy: "regex heuristic",
   introduced: "0.3.0",
+
+  // Measured FP 25% (n=20): genuine missing-trace configs dominate, but re-export configs blind the rule (25% <= 30% = extended).
+
+  tier: "extended",
 
   run(ctx) {
     const text = ctx.text;

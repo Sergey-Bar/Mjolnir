@@ -24,6 +24,10 @@ export const pyRandomTimeDependence = defineRule({
   detectionStrategy: "regex pattern",
   introduced: "0.3.0",
 
+  // Measured FP 100% (n=10): wall-clock reads ARE the subject of e2e timing/throttle tests.
+
+  tier: "quarantine",
+
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];

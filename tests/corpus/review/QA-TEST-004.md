@@ -10,439 +10,440 @@ Classify each finding as:
 
 ---
 
-## 1. pytest-dev-pytest — testing/example_scripts/unittest/test_unittest_asynctest.py:19
+## 1. nextauthjs-next-auth — apps/dev/nextjs/tests/signin.spec.ts:24
 
-**Message:** Hard sleep: `sleep(0)`.
+**Message:** Hard sleep: `page.waitForTimeout(`.
 
 ```
-      14| class Test(asynctest.TestCase):
-      15|     async def tearDown(self):
-      16|         teardowns.append(None)
-      17|
-      18|     async def test_error(self):
->>>   19|         await asyncio.sleep(0)
-      20|         self.fail("failing on purpose")
-      21|
-      22|     async def test_ok(self):
-      23|         await asyncio.sleep(0)
-      24|
+      19|
+      20|   // Press submit on Auth0 form
+      21|   await page.click('body > div > main > section > div button[type="submit"]')
+      22|
+      23|   // Wait for next-auth example page login status header to appear
+>>>   24|   await page.waitForTimeout(2000)
+      25|
+      26|   // Snap a screenshot
+      27|   // await page.screenshot({
+      28|   //   path: "2-next-auth-redirect-result.png",
+      29|   //   fullPage: false,
 ```
 
 **verdict:**
 
 ---
 
-## 2. pytest-dev-pytest — testing/example_scripts/unittest/test_unittest_asynctest.py:23
+## 2. nextauthjs-next-auth — packages/next-auth/test/e2e/tests/providers/credentials.spec.ts:29
 
-**Message:** Hard sleep: `sleep(0)`.
+**Message:** Hard sleep: `page.waitForTimeout(`.
 
 ```
-      18|     async def test_error(self):
-      19|         await asyncio.sleep(0)
-      20|         self.fail("failing on purpose")
-      21|
-      22|     async def test_ok(self):
->>>   23|         await asyncio.sleep(0)
-      24|
-      25|     def test_teardowns(self):
-      26|         assert len(teardowns) == 2
+      24|         .getByRole("banner")
+      25|         .getByRole("button", { name: "Sign out" })
+      26|         .click()
       27|
+      28|       // Wait on server-side signout req
+>>>   29|       await page.waitForTimeout(1000)
+      30|
+      31|       const session = await page.locator("pre").textContent()
+      32|       expect(JSON.parse(session ?? "{}")).toBeNull()
+      33|     })
+      34|   })
 ```
 
 **verdict:**
 
 ---
 
-## 3. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestBrowserContextAddCookies.java:349
+## 3. nextauthjs-next-auth — packages/next-auth/test/e2e/tests/providers/keycloak.spec.ts:22
 
 **Message:** Hard sleep: `page.waitForTimeout(`.
 
 ```
-     344|       "  iframe.onload = fulfill;\n" +
-     345|       "  iframe.src = src;\n" +
-     346|       "  return promise;\n" +
-     347|       "}", server.CROSS_PROCESS_PREFIX + "/grid.html");
-     348|     page.frames().get(1).evaluate("document.cookie = 'username=John Doe'");
->>>  349|     page.waitForTimeout(2000);
-     350|     boolean allowsThirdParty = isFirefox();
-     351|     List<Cookie> cookies = context.cookies(server.CROSS_PROCESS_PREFIX + "/grid.html");
-     352|     if (allowsThirdParty) {
-     353|       assertJsonEquals("[{\n" +
-     354|         "  'domain': '127.0.0.1',\n" +
+      17|         .fill(process.env.TEST_KEYCLOAK_USERNAME!)
+      18|       await page.locator("#password").fill(process.env.TEST_KEYCLOAK_PASSWORD!)
+      19|       await page.getByRole("button", { name: "Sign In" }).click()
+      20|
+      21|       // Should return to dev app
+>>>   22|       await page.waitForTimeout(1000)
+      23|       const session = await page.locator("pre").textContent()
+      24|
+      25|       expect(JSON.parse(session ?? "{}")).toEqual({
+      26|         user: {
+      27|           name: "bob",
 ```
 
 **verdict:**
 
 ---
 
-## 4. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestBrowserContextFetch.java:465
-
-**Message:** Hard sleep: `sleep(100)`.
-
-```
-     460|   void shouldSupportATimeoutOf0() {
-     461|     server.setRoute("/slow", exchange -> {
-     462|       exchange.getResponseHeaders().add("content-type", "text/html");
-     463|       exchange.sendResponseHeaders(200, 4);
-     464|       try {
->>>  465|         Thread.sleep(100);
-     466|       } catch (InterruptedException e) {
-     467|         e.printStackTrace();
-     468|       }
-     469|       try (OutputStreamWriter writer = new OutputStreamWriter(exchange.getResponseBody())) {
-     470|         writer.write("done");
-```
-
-**verdict:**
-
----
-
-## 5. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestBrowserContextRoute.java:160
+## 4. nextauthjs-next-auth — packages/next-auth/test/e2e/tests/providers/keycloak.spec.ts:45
 
 **Message:** Hard sleep: `page.waitForTimeout(`.
 
 ```
-     155|       "              body: 'original',\n" +
-     156|       "            });\n" +
-     157|       "        })()\n" +
-     158|       "      </script>");
-     159|     while (!routeHandled[0]) {
->>>  160|       page.waitForTimeout(100);
-     161|     }
-     162|     byte[] body = req.get().postBody;
-     163|     assertEquals(0, body.length);
-     164|   }
-     165|
+      40|         .getByRole("banner")
+      41|         .getByRole("button", { name: "Sign out" })
+      42|         .click()
+      43|
+      44|       // Wait on server-side signout req
+>>>   45|       await page.waitForTimeout(1000)
+      46|
+      47|       const session = await page.locator("pre").textContent()
+      48|       expect(JSON.parse(session ?? "{}")).toBeNull()
+      49|     })
+      50|   })
 ```
 
 **verdict:**
 
 ---
 
-## 6. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestBrowserContextRoute.java:291
+## 5. vitejs-vite — packages/vite/src/node/**tests**/plugins/hooks.spec.ts:490
 
-**Message:** Hard sleep: `page.waitForTimeout(`.
-
-```
-     286|   @Test
-     287|   void shouldFallBackAsync() {
-     288|     List<Integer> intercepted = new ArrayList<>();
-     289|     context.route("**/empty.html", route -> {
-     290|       intercepted.add(1);
->>>  291|       page.waitForTimeout(50);
-     292|       route.fallback();
-     293|     });
-     294|     context.route("**/empty.html", route -> {
-     295|       intercepted.add(2);
-     296|       page.waitForTimeout(100);
-```
-
-**verdict:**
-
----
-
-## 7. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestBrowserContextRoute.java:296
-
-**Message:** Hard sleep: `page.waitForTimeout(`.
+**Message:** Hard sleep: `await new Promise((r) => setTimeout(r, 10))`.
 
 ```
-     291|       page.waitForTimeout(50);
-     292|       route.fallback();
-     293|     });
-     294|     context.route("**/empty.html", route -> {
-     295|       intercepted.add(2);
->>>  296|       page.waitForTimeout(100);
-     297|       route.fallback();
-     298|     });
-     299|     context.route("**/empty.html", route -> {
-     300|       intercepted.add(3);
-     301|       page.waitForTimeout(150);
+     485|   test('is awaited before server.close() resolves', async () => {
+     486|     let hookDone = false
+     487|     const server = await createServerWithPlugin({
+     488|       name: 'test',
+     489|       async closeServer() {
+>>>  490|         await new Promise((r) => setTimeout(r, 10))
+     491|         hookDone = true
+     492|       },
+     493|     })
+     494|
+     495|     await server.close()
 ```
 
 **verdict:**
 
 ---
 
-## 8. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestBrowserContextRoute.java:301
+## 6. vitejs-vite — packages/vite/src/node/**tests**/plugins/hooks.spec.ts:533
 
-**Message:** Hard sleep: `page.waitForTimeout(`.
-
-```
-     296|       page.waitForTimeout(100);
-     297|       route.fallback();
-     298|     });
-     299|     context.route("**/empty.html", route -> {
-     300|       intercepted.add(3);
->>>  301|       page.waitForTimeout(150);
-     302|       route.fallback();
-     303|     });
-     304|     page.navigate(server.EMPTY_PAGE);
-     305|     assertEquals(asList(3, 2, 1), intercepted);
-     306|   }
-```
-
-**verdict:**
-
----
-
-## 9. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestBrowserTypeConnect.java:235
-
-**Message:** Hard sleep: `page.waitForTimeout(`.
+**Message:** Hard sleep: `await new Promise((r) => setTimeout(r, 20))`.
 
 ```
-     230|     boolean[] disconnected = {false};
-     231|     remote.onDisconnected(b -> disconnected[0] = true);
-     232|     server.kill();
-     233|     while (!disconnected[0]) {
-     234|       try {
->>>  235|         page.waitForTimeout(10);
-     236|       } catch (PlaywrightException e) {
-     237|       }
-     238|     }
-     239|     assertFalse(remote.isConnected());
-     240|     PlaywrightException e = assertThrows(PlaywrightException.class, () -> page.evaluate("1 + 1"));
+     528|       plugins: [
+     529|         {
+     530|           name: 'a',
+     531|           async closeServer() {
+     532|             events.push('a:start')
+>>>  533|             await new Promise((r) => setTimeout(r, 20))
+     534|             events.push('a:end')
+     535|           },
+     536|         },
+     537|         {
+     538|           name: 'b',
 ```
 
 **verdict:**
 
 ---
 
-## 10. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestBrowserTypeConnect.java:256
+## 7. vitejs-vite — packages/vite/src/node/**tests**/plugins/hooks.spec.ts:541
 
-**Message:** Hard sleep: `page.waitForTimeout(`.
-
-```
-     251|     boolean[] disconnected = {false};
-     252|     browser.onDisconnected(browser1 -> disconnected[0] = true);
-     253|     server.kill();
-     254|     while (!disconnected[0]) {
-     255|       try {
->>>  256|         page.waitForTimeout(10);
-     257|       } catch (PlaywrightException e) {
-     258|       }
-     259|     }
-     260|     assertFalse(browser.isConnected());
-     261|     PlaywrightException e = assertThrows(PlaywrightException.class, () -> page.waitForNavigation(() -> {}));
-```
-
-**verdict:**
-
----
-
-## 11. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestBrowserTypeConnect.java:296
-
-**Message:** Hard sleep: `page.waitForTimeout(`.
+**Message:** Hard sleep: `await new Promise((r) => setTimeout(r, 20))`.
 
 ```
-     291|     context.onClose(c -> events.add("context"));
-     292|     server.kill();
-     293|
-     294|     while (!events.contains("context")) {
-     295|       try {
->>>  296|         page.waitForTimeout(10);
-     297|       } catch (PlaywrightException e) {
-     298|       }
-     299|     }
-     300|     assertEquals(Arrays.asList("page", "context"), events);
-     301|   }
+     536|         },
+     537|         {
+     538|           name: 'b',
+     539|           async closeServer() {
+     540|             events.push('b:start')
+>>>  541|             await new Promise((r) => setTimeout(r, 20))
+     542|             events.push('b:end')
+     543|           },
+     544|         },
+     545|         resolveEntryPlugin,
+     546|       ],
 ```
 
 **verdict:**
 
 ---
 
-## 12. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestBrowserTypeConnect.java:353
+## 8. vitejs-vite — packages/vite/src/node/**tests**/plugins/hooks.spec.ts:604
 
-**Message:** Hard sleep: `page.waitForTimeout(`.
-
-```
-     348|     Page page = browser.newPage();
-     349|
-     350|     remoteServer.kill();
-     351|     while (browser.isConnected()) {
-     352|       try {
->>>  353|         page.waitForTimeout(10);
-     354|       } catch (PlaywrightException e) {
-     355|       }
-     356|     }
-     357|     browser.close();
-     358|   }
-```
-
-**verdict:**
-
----
-
-## 13. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestBrowserTypeConnect.java:367
-
-**Message:** Hard sleep: `page.waitForTimeout(`.
+**Message:** Hard sleep: `await new Promise((r) => setTimeout(r, 10))`.
 
 ```
-     362|     Path videosPath = tempDir.resolve("videosPath");
-     363|     BrowserContext context = browser.newContext(new Browser.NewContextOptions()
-     364|       .setRecordVideoDir(videosPath).setRecordVideoSize(320,  240));
-     365|     Page page = context.newPage();
-     366|     page.evaluate("() => document.body.style.backgroundColor = 'red'");
->>>  367|     page.waitForTimeout(1000);
-     368|     context.close();
-     369|     Path savedAsPath = tempDir.resolve("my-video.webm");
-     370|     page.video().saveAs(savedAsPath);
-     371|     assertTrue(Files.exists(savedAsPath));
-     372|     PlaywrightException e = assertThrows(PlaywrightException.class, () -> page.video().path());
+     599|   test('is awaited before server.close() resolves', async () => {
+     600|     let hookDone = false
+     601|     const server = await createPreviewServerWithPlugin({
+     602|       name: 'test',
+     603|       async closePreviewServer() {
+>>>  604|         await new Promise((r) => setTimeout(r, 10))
+     605|         hookDone = true
+     606|       },
+     607|     })
+     608|
+     609|     await server.close()
 ```
 
 **verdict:**
 
 ---
 
-## 14. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestDialog.java:109
+## 9. vitejs-vite — packages/vite/src/node/ssr/**tests**/ssrLoadModule.spec.ts:360
 
-**Message:** Hard sleep: `page.waitForTimeout(`.
-
-```
-     104|     page.evaluate("() => {\n" +
-     105|       "    setTimeout(() => alert('hello'), 0);\n" +
-     106|       "}");
-     107|     Instant start = Instant.now();
-     108|     while (!didShowDialog[0]) {
->>>  109|       page.waitForTimeout(100);
-     110|       assertTrue(Duration.between(start, Instant.now()).getSeconds() < 30, "Timed out");
-     111|     }
-     112|     context.close();
-     113|   }
-     114| }
-```
-
-**verdict:**
-
----
-
-## 15. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestDownload.java:291
-
-**Message:** Hard sleep: `page.waitForTimeout(`.
+**Message:** Hard sleep: `await new Promise((r) => setTimeout(r, 200))`.
 
 ```
-     286|     Download[] download = {null};
-     287|     page.onDownload(d -> download[0] = d);
-     288|     page.click("a");
-     289|     Instant start = Instant.now();
-     290|     while (download[0] == null) {
->>>  291|       page.waitForTimeout(100);
-     292|       assertTrue(Duration.between(start, Instant.now()).getSeconds() < 30, "Timed out");
-     293|     }
-     294|     Path path = download[0].path();
-     295|     assertTrue(Files.exists(path));
-     296|     byte[] bytes = readAllBytes(path);
+     355|     plugins: [
+     356|       {
+     357|         name: 'test-plugin',
+     358|         async buildStart() {
+     359|           fn('buildStart:in')
+>>>  360|           await new Promise((r) => setTimeout(r, 200))
+     361|           fn('buildStart:out')
+     362|         },
+     363|         resolveId(source) {
+     364|           if (source === 'virtual:test') {
+     365|             fn('resolveId')
 ```
 
 **verdict:**
 
 ---
 
-## 16. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestDownload.java:311
+## 10. vitejs-vite — playground/hmr-ssr/**tests**/hmr-ssr.spec.ts:602
 
-**Message:** Hard sleep: `page.waitForTimeout(`.
-
-```
-     306|     page.onDownload(d -> download[0] = d);
-     307|     page.navigate(server.PREFIX + "/download-blob.html");
-     308|     page.click("a");
-     309|     Instant start = Instant.now();
-     310|     while (download[0] == null) {
->>>  311|       page.waitForTimeout(100);
-     312|       assertTrue(Duration.between(start, Instant.now()).getSeconds() < 1, "Timed out");
-     313|     }
-     314|     Path path = download[0].path();
-     315|     assertTrue(Files.exists(path));
-     316|     byte[] bytes = readAllBytes(path);
-```
-
-**verdict:**
-
----
-
-## 17. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestPageBasic.java:83
-
-**Message:** Hard sleep: `page.waitForTimeout(`.
+**Message:** Hard sleep: `await new Promise((r) => setTimeout(r, 100))`.
 
 ```
-      78|     newPage.close(new Page.CloseOptions().setRunBeforeUnload(true));
-      79|     for (int i = 0; i < 300; i++) {
-      80|       if (didShowDialog[0]) {
-      81|         break;
-      82|       }
->>>   83|       page.waitForTimeout(100);
-      84|     }
-      85|     assertTrue(didShowDialog[0]);
-      86|   }
-      87|
-      88|   @Test
+     597|                 log.includes('non-tested/index.js'),
+     598|             )
+     599|           ) {
+     600|             throw new Error('File was reloaded')
+     601|           }
+>>>  602|           await new Promise((r) => setTimeout(r, 100))
+     603|         }
+     604|       }, 5_000)
+     605|
+     606|       test('does not update', async () => {
+     607|         editFile('non-tested/dep.js', (code) => code + '//comment')
 ```
 
 **verdict:**
 
 ---
 
-## 18. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestPageClock.java:289
+## 11. vitejs-vite — playground/hmr-ssr/**tests**/hmr-ssr.spec.ts:619
 
-**Message:** Hard sleep: `page.waitForTimeout(`.
-
-```
-     284|       try (Writer writer = new OutputStreamWriter(exchange.getResponseBody())) {
-     285|         writer.write("<script>window.time = Date.now()</script>");
-     286|       }
-     287|     });
-     288|     page.navigate(server.EMPTY_PAGE);
->>>  289|     page.waitForTimeout(2000);
-     290|     Page popup = page.waitForPopup(() -> {
-     291|       page.evaluate("url => window.open(url)", server.PREFIX + "/popup.html");
-     292|     });
-     293|     popup.waitForURL(server.PREFIX + "/popup.html");
-     294|     Double popupTime = (Double) popup.evaluate("time");
-```
-
-**verdict:**
-
----
-
-## 19. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestPageClock.java:310
-
-**Message:** Hard sleep: `page.waitForTimeout(`.
+**Message:** Hard sleep: `await new Promise((r) => setTimeout(r, 100))`.
 
 ```
-     305|       }
-     306|     });
-     307|     page.clock().install(new Clock.InstallOptions().setTime(0));
-     308|     page.clock().pauseAt(1000);
-     309|     page.navigate(server.EMPTY_PAGE);
->>>  310|     page.waitForTimeout(2000);
-     311|     Page popup = page.waitForPopup(() -> {
-     312|       page.evaluate("url => window.open(url)", server.PREFIX + "/popup.html");
-     313|     });
-     314|     popup.waitForURL(server.PREFIX + "/popup.html");
-     315|     Object popupTime = popup.evaluate("time");
+     614|                 log.match(PROGRAM_RELOAD) || log.includes('non-tested/dep.js'),
+     615|             )
+     616|           ) {
+     617|             throw new Error('File was updated')
+     618|           }
+>>>  619|           await new Promise((r) => setTimeout(r, 100))
+     620|         }
+     621|       }, 5_000)
+     622|     })
+     623|   })
+     624|
 ```
 
 **verdict:**
 
 ---
 
-## 20. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestPageClock.java:357
+## 12. sveltejs-kit — packages/kit/src/core/postbuild/queue.spec.js:21
+
+**Message:** Hard sleep: `await sleep(1)`.
+
+```
+      16| test('q.add rejects if task rejects', async () => {
+      17| 	const q = queue(1);
+      18|
+      19| 	try {
+      20| 		await q.add(async () => {
+>>>   21| 			await sleep(1);
+      22| 			throw new Error('nope');
+      23| 		});
+      24|
+      25| 		assert.ok(false);
+      26| 	} catch (e) {
+```
+
+**verdict:**
+
+---
+
+## 13. sveltejs-kit — packages/kit/src/core/postbuild/queue.spec.js:99
+
+**Message:** Hard sleep: `await sleep(1)`.
+
+```
+      94|
+      95| test('q.done() rejects if task rejects', async () => {
+      96| 	const q = queue(1);
+      97|
+      98| 	q.add(async () => {
+>>>   99| 		await sleep(1);
+     100| 		throw new Error('nope');
+     101| 	}).catch((e) => {
+     102| 		assert.equal(e.message, 'nope');
+     103| 	});
+     104|
+```
+
+**verdict:**
+
+---
+
+## 14. sveltejs-kit — packages/kit/src/runtime/client/remote-functions/cache.svelte.spec.js:16
+
+**Message:** Hard sleep: `await new Promise((resolve) => setTimeout(resolve, 0))`.
+
+```
+      11| async function run_gc() {
+      12| 	for (let i = 0; i < 4; i++) {
+      13| 		/** @type {() => void} */ (/** @type {any} */ (globalThis).gc)();
+      14| 		// FinalizationRegistry callbacks run on a separate task queue; yield twice to
+      15| 		// pick up both microtasks and the next macrotask.
+>>>   16| 		await new Promise((resolve) => setTimeout(resolve, 0));
+      17| 		await tick();
+      18| 	}
+      19| 	// Flush the deferred eviction (`tick().then(...)`) inside `deref`.
+      20| 	await tick();
+      21| 	await tick();
+```
+
+**verdict:**
+
+---
+
+## 15. sveltejs-kit — packages/kit/src/runtime/client/remote-functions/instance.unhandled.svelte.spec.js:48
+
+**Message:** Hard sleep: `await new Promise((resolve) => setTimeout(resolve, 0))`.
+
+```
+      43| 	};
+      44| }
+      45|
+      46| async function flush() {
+      47| 	await tick();
+>>>   48| 	await new Promise((resolve) => setTimeout(resolve, 0));
+      49| 	await tick();
+      50| 	await new Promise((resolve) => setTimeout(resolve, 0));
+      51| }
+      52|
+      53| describe('reactive consumption never produces unhandled rejections', () => {
+```
+
+**verdict:**
+
+---
+
+## 16. sveltejs-kit — packages/kit/src/runtime/client/remote-functions/instance.unhandled.svelte.spec.js:50
+
+**Message:** Hard sleep: `await new Promise((resolve) => setTimeout(resolve, 0))`.
+
+```
+      45|
+      46| async function flush() {
+      47| 	await tick();
+      48| 	await new Promise((resolve) => setTimeout(resolve, 0));
+      49| 	await tick();
+>>>   50| 	await new Promise((resolve) => setTimeout(resolve, 0));
+      51| }
+      52|
+      53| describe('reactive consumption never produces unhandled rejections', () => {
+      54| 	test('Query whose fn rejects', async () => {
+      55| 		const tracker = track_unhandled();
+```
+
+**verdict:**
+
+---
+
+## 17. sveltejs-kit — packages/kit/src/runtime/client/remote-functions/query-live/proxy.svelte.spec.js:47
+
+**Message:** Hard sleep: `await new Promise((resolve) => setTimeout(resolve, 0))`.
+
+```
+      42| const { live_query_map } = await import('../../client.js');
+      43|
+      44| async function run_gc() {
+      45| 	for (let i = 0; i < 4; i++) {
+      46| 		/** @type {() => void} */ (/** @type {any} */ (globalThis).gc)();
+>>>   47| 		await new Promise((resolve) => setTimeout(resolve, 0));
+      48| 		await Promise.resolve();
+      49| 	}
+      50| 	await tick();
+      51| 	await tick();
+      52| }
+```
+
+**verdict:**
+
+---
+
+## 18. sveltejs-kit — packages/kit/src/runtime/client/remote-functions/query/proxy.svelte.spec.js:25
+
+**Message:** Hard sleep: `await new Promise((resolve) => setTimeout(resolve, 0))`.
+
+```
+      20|  * callback gets a chance to fire and the deferred eviction (`tick().then(...)`) flushes.
+      21|  */
+      22| async function run_gc() {
+      23| 	for (let i = 0; i < 4; i++) {
+      24| 		/** @type {() => void} */ (/** @type {any} */ (globalThis).gc)();
+>>>   25| 		await new Promise((resolve) => setTimeout(resolve, 0));
+      26| 		await Promise.resolve();
+      27| 	}
+      28| 	await tick();
+      29| 	await tick();
+      30| }
+```
+
+**verdict:**
+
+---
+
+## 19. sveltejs-kit — packages/kit/src/runtime/server/remote-functions.spec.js:69
+
+**Message:** Hard sleep: `await new Promise((resolve) => setTimeout(resolve, 0))`.
+
+```
+      64|
+      65| 	await expect(reader.cancel()).resolves.toBeUndefined();
+      66| 	await expect(pending).resolves.toEqual({ value: undefined, done: true });
+      67|
+      68| 	resume();
+>>>   69| 	await new Promise((resolve) => setTimeout(resolve, 0));
+      70|
+      71| 	// enqueueing the late value would throw and route through handleError
+      72| 	expect(handle_error).not.toHaveBeenCalled();
+      73| });
+      74|
+```
+
+**verdict:**
+
+---
+
+## 20. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:16
 
 **Message:** Hard sleep: `page.waitForTimeout(`.
 
 ```
-     352|
-     353|   @Test
-     354|   void whileRunningShouldProgressTime(Page page) {
-     355|     page.clock().install(new Clock.InstallOptions().setTime(0));
-     356|     page.navigate("data:text/html,");
->>>  357|     page.waitForTimeout(1000);
-     358|     int now = (int) page.evaluate("() => Date.now()");
-     359|     assertTrue(now >= 1000 && now <= 2000);
-     360|   }
-     361|
-     362|   @Test
+      11| 	}) => {
+      12| 		test.skip(!process.env.DEV, 'remote functions are only analysed in dev mode');
+      13| 		await page.goto('/remote/dev');
+      14| 		await page.locator('a[href="/remote/dev/preload"]').hover();
+      15| 		await Promise.all([
+>>>   16| 			page.waitForTimeout(100), // wait for preloading to start
+      17| 			page.waitForLoadState('networkidle') // wait for preloading to finish
+      18| 		]);
+      19| 		await clicknav('a[href="/remote/dev/preload"]', { waitForURL: '/remote/dev/preload' });
+      20| 		await expect(page.locator('p')).toHaveText('foobar');
+      21| 		await page.getByRole('button', { name: 'Refresh' }).click();
 ```
 
 **verdict:**

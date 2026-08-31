@@ -19,6 +19,7 @@ export const pwSingleBrowserMatrix = defineRule({
   findingType: "deterministic-defect",
   qaImpact: "HYGIENE",
   appliesTo: "test-files",
+  configRule: true,
   // Trust Metadata
   languages: ["typescript", "javascript"],
   frameworks: ["playwright"],

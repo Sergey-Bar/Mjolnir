@@ -34,6 +34,10 @@ export const evaluateBusinessLogic = defineRule({
   detectionStrategy: "AST (ts-morph) function-body inspection",
   introduced: "0.1.0",
 
+  // Measured FP 100% (n=17): page.evaluate branching is browser-only test instrumentation in every real consumer suite.
+
+  tier: "quarantine",
+
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;
     const sourceFile = getTsSourceFile(ctx.ast);

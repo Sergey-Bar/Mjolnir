@@ -1,6 +1,6 @@
 # QA-CI-002 — Sample Findings for Classification
 
-Total sampled: 1 (max 20 per rule)
+Total sampled: 4 (max 20 per rule)
 
 Classify each finding as:
 
@@ -10,22 +10,86 @@ Classify each finding as:
 
 ---
 
-## 1. microsoft-playwright-dotnet — .github/workflows/test_docker.yml:45
+## 1. grafana-grafana — .github/workflows/alerting-update-module.yml:120
 
 **Message:** Command exit code is swallowed with `|| true`.
 
 ```
-      40|     - name: Build Docker image
-      41|       run: |
-      42|         ARCH="${{ matrix.runs-on == 'ubuntu-24.04-arm' && 'arm64' || 'amd64' }}"
-      43|         bash utils/docker/build.sh --$ARCH ${{ matrix.flavor }} playwright-dotnet:localbuild-${{ matrix.flavor }}
-      44|     - name: Cleanup
->>>   45|       run: dotnet clean src/ || true
-      46|     - name: Test
-      47|       # The docker image no longer set DOTNET_ROLL_FORWARD=Major, so net8.0 test binaries cannot run.
-      48|       # See https://github.com/dotnet/dotnet-docker/issues/7255 and https://github.com/dotnet/dotnet-docker/pull/7256.
-      49|       run: |
-      50|         CONTAINER_ID="$(docker run --rm -e CI --ipc=host -v $(pwd):/root/playwright --name playwright-docker-test --workdir /root/playwright/ -e CI -d -t playwright-dotnet:localbuild-${{ matrix.flavor }} /bin/bash)"
+     115|           make update-workspace
+     116|
+     117|       - name: Update snapshots
+     118|         if: steps.compare-commits.outputs.needs_update == 'true'
+     119|         run: |
+>>>  120|           go test -v -count=1 -timeout 5m -run TestIntegrationAvailableChannels ./pkg/tests/api/alerting/... || true
+     121|           go test -v -count=1 -timeout 5m -run TestIntegrationTypeSchemaList ./pkg/tests/apis/alerting/notifications/integrationtypeschema/... || true
+     122|
+     123|       - name: Get GitHub App token
+     124|         if: steps.compare-commits.outputs.needs_update == 'true'
+     125|         id: get-github-app-token
+```
+
+**verdict:**
+
+---
+
+## 2. grafana-grafana — .github/workflows/alerting-update-module.yml:121
+
+**Message:** Command exit code is swallowed with `|| true`.
+
+```
+     116|
+     117|       - name: Update snapshots
+     118|         if: steps.compare-commits.outputs.needs_update == 'true'
+     119|         run: |
+     120|           go test -v -count=1 -timeout 5m -run TestIntegrationAvailableChannels ./pkg/tests/api/alerting/... || true
+>>>  121|           go test -v -count=1 -timeout 5m -run TestIntegrationTypeSchemaList ./pkg/tests/apis/alerting/notifications/integrationtypeschema/... || true
+     122|
+     123|       - name: Get GitHub App token
+     124|         if: steps.compare-commits.outputs.needs_update == 'true'
+     125|         id: get-github-app-token
+     126|         uses: grafana/shared-workflows/actions/create-github-app-token@46f48da11e78ebdba7a8747ae456b11062fac83e # create-github-app-token/v0.3.1
+```
+
+**verdict:**
+
+---
+
+## 3. reflex-dev-reflex — .github/workflows/check_outdated_dependencies.yml:33
+
+**Message:** Command exit code is swallowed with `|| true`.
+
+```
+      28|         run: |
+      29|           outdated=$(uv pip list --outdated)
+      30|           echo "Outdated:"
+      31|           echo "$outdated"
+      32|
+>>>   33|           filtered_outdated=$(echo "$outdated" | grep -vE 'pyright|ruff' || true)
+      34|
+      35|           if [ ! -z "$filtered_outdated" ]; then
+      36|             echo "Outdated dependencies found:"
+      37|             echo "$filtered_outdated"
+      38|             exit 1
+```
+
+**verdict:**
+
+---
+
+## 4. calcom-cal — .github/workflows/security-audit.yml:17
+
+**Message:** Command exit code is swallowed with `|| true`.
+
+```
+      12|         with:
+      13|           sparse-checkout: .github
+      14|       - uses: ./.github/actions/cache-checkout
+      15|       - uses: ./.github/actions/yarn-install
+      16|       - name: Report all vulnerabilities
+>>>   17|         run: yarn npm audit --all --recursive || true
+      18|       - name: Fail on critical vulnerabilities
+      19|         run: yarn npm audit --all --recursive --severity critical
+      20|
 ```
 
 **verdict:**

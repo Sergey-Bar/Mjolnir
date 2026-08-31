@@ -1,6 +1,6 @@
 # QA-PY-012 — Sample Findings for Classification
 
-Total sampled: 4 (max 20 per rule)
+Total sampled: 6 (max 20 per rule)
 
 Classify each finding as:
 
@@ -32,7 +32,29 @@ Classify each finding as:
 
 ---
 
-## 2. pytest-dev-pytest — testing/code/test_code.py:20
+## 2. pytest-dev-pytest — testing/_py/test_local.py:1260
+
+**Message:** Tautological assertion: `assert t1 == t1`.
+
+```
+    1255|             assert path1.stat().mode == mode
+    1256|
+    1257|     def test_path_comparison_lowercase_mixed(self, path1):
+    1258|         t1 = path1.join("a_path")
+    1259|         t2 = path1.join("A_path")
+>>> 1260|         assert t1 == t1
+    1261|         assert t1 == t2
+    1262|
+    1263|     def test_relto_with_mixed_case(self, path1):
+    1264|         t1 = path1.join("a_path", "fiLe")
+    1265|         t2 = path1.join("A_path")
+```
+
+**verdict:**
+
+---
+
+## 3. pytest-dev-pytest — testing/code/test_code.py:20
 
 **Message:** Tautological assertion: `assert code1 == code1`.
 
@@ -54,7 +76,7 @@ Classify each finding as:
 
 ---
 
-## 3. pytest-dev-pytest — testing/test_assertrewrite.py:679
+## 4. pytest-dev-pytest — testing/test_assertrewrite.py:679
 
 **Message:** Tautological assertion: `assert True`.
 
@@ -76,7 +98,7 @@ Classify each finding as:
 
 ---
 
-## 4. pytest-dev-pytest — testing/test_capture.py:987
+## 5. pytest-dev-pytest — testing/test_capture.py:987
 
 **Message:** Tautological assertion: `assert cr == cr`.
 
@@ -92,6 +114,28 @@ Classify each finding as:
      990|     assert cr == ("out", "err")
      991|     assert cr != ("out", "wrong")
      992|     assert hash(cr) == hash(CaptureResult("out", "err"))
+```
+
+**verdict:**
+
+---
+
+## 6. reflex-dev-reflex — tests/units/utils/test_telemetry_context.py:77
+
+**Message:** Tautological assertion: `assert a == a`.
+
+```
+      72|     """
+      73|     a = TelemetryContext()
+      74|     b = TelemetryContext()
+      75|     assert a != b
+      76|     assert hash(a) != hash(b)
+>>>   77|     assert a == a
+      78|
+      79|
+      80| def test_nested_contexts_can_be_entered():
+      81|     """Nested ``with`` blocks attach and detach without colliding."""
+      82|     outer = TelemetryContext()
 ```
 
 **verdict:**

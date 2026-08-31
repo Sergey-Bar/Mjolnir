@@ -1,0 +1,19 @@
+{
+  "countsByRule": {
+    "QA-CI-002": 1,
+    "QA-PW-145": 5,
+    "QA-PW-103": 1,
+    "QA-TQUAL-001": 426,
+    "QA-PW-120": 53,
+    "QA-ENV-001": 15,
+    "QA-PW-119": 3,
+    "QA-TEST-003": 119,
+    "QA-TEST-002": 18,
+    "QA-TQUAL-002": 1,
+    "QA-TQUAL-011": 2,
+    "QA-PW-143": 2,
+    "QA-PW-141": 2,
+    "QA-PW-144": 1
+  },
+  "totalFindings": 649
+}

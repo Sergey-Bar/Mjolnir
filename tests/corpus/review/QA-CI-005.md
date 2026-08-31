@@ -1,6 +1,6 @@
 # QA-CI-005 — Sample Findings for Classification
 
-Total sampled: 4 (max 20 per rule)
+Total sampled: 5 (max 20 per rule)
 
 Classify each finding as:
 
@@ -92,6 +92,23 @@ Classify each finding as:
      132|         with:
      133|           token: ${{ secrets.CODECOV_TOKEN }}
      134|
+```
+
+**verdict:**
+
+---
+
+## 5. grafana-grafana — .github/workflows/check-frontend-test-coverage.yml:1
+
+**Message:** Job `coverage` consumes a coverage artifact that no step generates.
+
+```
+>>>    1| name: Check Frontend Test Coverage
+       2|
+       3| on:
+       4|   pull_request:
+       5|     branches: [main]
+       6|     types: [opened, synchronize, reopened, labeled, unlabeled]
 ```
 
 **verdict:**

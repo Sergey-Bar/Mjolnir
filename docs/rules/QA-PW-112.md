@@ -6,8 +6,8 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | ------------------------------------- | --------------------------- |
 | Severity                              | info                        |
 | Confidence                            | high                        |
-| Tier                                  | core                        |
-| Measured FP rate                      | not yet measured            |
+| Tier                                  | quarantine                  |
+| Measured FP rate                      | 100% (n=20)                 |
 | Evidence level                        | E2                          |
 | QA impact                             | Test hygiene debt (HYGIENE) |
 | False-positive risk (author estimate) | low                         |
@@ -43,6 +43,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo                                          | Occurrences |
 | --------------------------------------------- | ----------- |
+| grafana-grafana                               | 230         |
 | playwright-community-eslint-plugin-playwright | 1           |
 | tanstack-query                                | 125         |
 

@@ -43,8 +43,9 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo            | Occurrences |
 | --------------- | ----------- |
+| grafana-grafana | 2           |
 | tanstack-query  | 2           |
-| withastro-astro | 3           |
+| withastro-astro | 1           |
 
 ---
 

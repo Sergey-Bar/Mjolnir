@@ -1,2 +1,5 @@
 {"ruleId":"QA-TQUAL-011","file":"src/rules/no-duplicate-slow.test.ts","line":157,"verdict":"FP","note":"prose comment explaining rule semantics (test.slow() in different tests is valid) - documentation, not a disabled test"}
 {"ruleId":"QA-TQUAL-011","file":"src/rules/no-duplicate-slow.test.ts","line":225,"verdict":"FP","note":"prose comment explaining rule semantics (test.slow() in sibling describes) - documentation, not a disabled test"}
+{"ruleId":"QA-PW-120","file":"src/rules/no-useless-await.test.ts","line":1,"verdict":"FP","note":"engine-agnostic unit/mocha tests - the file-level engine heuristic overreaches"}
+{"ruleId":"QA-PW-107","file":"src/rules/prefer-native-locators.test.ts","line":86,"verdict":"FP","note":"toBeVisible inside lint-rule fixture STRINGS - test data, not browser assertions"}
+{"ruleId":"QA-PW-107","file":"src/rules/prefer-native-locators.test.ts","line":88,"verdict":"FP","note":"toBeVisible inside lint-rule fixture STRINGS - test data, not browser assertions"}

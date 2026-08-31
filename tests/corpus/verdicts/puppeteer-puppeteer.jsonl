@@ -1,0 +1,12 @@
+{"ruleId":"QA-PW-123","file":"test/src/console.test.ts","line":232,"verdict":"FP","note":"http://domain1.test is a deliberate fake origin served by the puppeteer test server harness - cross-origin navigation IS the subject"}
+{"ruleId":"QA-PW-123","file":"test/src/oopif.test.ts","line":280,"verdict":"FP","note":"fake domain harness for OOPIF testing - the alternative origin is the point of the test"}
+{"ruleId":"QA-PW-005","file":"test/src/autofill.test.ts","line":28,"verdict":"FP","note":"page.evaluate drives the browser-only autofill API under test - the logic must run in the page"}
+{"ruleId":"QA-PW-005","file":"test/src/autofill.test.ts","line":53,"verdict":"FP","note":"page.evaluate drives the browser-only autofill API under test"}
+{"ruleId":"QA-PW-005","file":"test/src/input.test.ts","line":78,"verdict":"FP","note":"puppeteer tests its own input API - branching inside evaluate tests event semantics that only exist in the page"}
+{"ruleId":"QA-PW-005","file":"test/src/keyboard.test.ts","line":428,"verdict":"FP","note":"canceled-event propagation is browser-internal state - evaluate is the only way to observe it"}
+{"ruleId":"QA-PW-005","file":"test/src/locator.test.ts","line":695,"verdict":"FP","note":"locator fills a role=switch then evaluates the DOM state - browser state is the subject"}
+{"ruleId":"QA-PW-005","file":"test/src/locator.test.ts","line":707,"verdict":"FP","note":"same switch-state verification via evaluate after the second fill"}
+{"ruleId":"QA-PW-005","file":"test/src/mouse.test.ts","line":304,"verdict":"FP","note":"click-path browser state observed via evaluate - the page is where the state lives"}
+{"ruleId":"QA-PW-005","file":"test/src/oopif.test.ts","line":451,"verdict":"FP","note":"OOPIF traversal logic runs in the page - test instrumentation of browser internals"}
+{"ruleId":"QA-PW-005","file":"test/src/waittask.test.ts","line":396,"verdict":"FP","note":"wait-task semantics verified inside the page - the API under test is browser-side"}
+{"ruleId":"QA-PW-005","file":"test/src/webgl.test.ts","line":21,"verdict":"FP","note":"WebGL context checks must run in the page - test instrumentation"}

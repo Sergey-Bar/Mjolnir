@@ -181,7 +181,13 @@ function writeReviewSheets(byRule: Map<string, SampledFinding[]>): void {
 function initVerdictFiles(byRule: Map<string, SampledFinding[]>): void {
   mkdirSync(VERDICTS_DIR, { recursive: true });
 
-  // For each repo, create a .jsonl file with empty verdicts
+  // For each repo, create (or extend) a .jsonl file with empty verdicts.
+  // Appending (bug-audit 2026-08-31): a repo file is created once and the
+  // sampler used to refuse every later run — rules whose samples were not
+  // drawn in the FIRST pass (new rules, raised caps, expanded corpus) then
+  // never produced verdict rows anywhere, no matter how many times they
+  // fired. New findings are appended; rows already present are skipped so
+  // classified verdicts are never duplicated or overwritten.
   const byRepo = new Map<string, SampledFinding[]>();
   for (const samples of byRule.values()) {
     for (const s of samples) {
@@ -193,11 +199,32 @@ function initVerdictFiles(byRule: Map<string, SampledFinding[]>): void {
 
   for (const [repo, samples] of byRepo.entries()) {
     const verdictPath = join(VERDICTS_DIR, `${repo}.jsonl`);
+    const existing = new Set<string>();
     if (existsSync(verdictPath)) {
-      console.log(`  ${repo}.jsonl already exists — not overwriting`);
+      for (const line of readFileSync(verdictPath, "utf8").split("\n")) {
+        if (!line.trim()) continue;
+        try {
+          const o = JSON.parse(line) as {
+            ruleId: string;
+            file: string;
+            line: number;
+          };
+          existing.add(`${o.ruleId}|${o.file}|${o.line}`);
+        } catch {
+          /* preserve malformed rows as-is — never overwrite verdicts */
+        }
+      }
+    } else {
+      mkdirSync(VERDICTS_DIR, { recursive: true });
+    }
+    const fresh = samples.filter(
+      (s) => !existing.has(`${s.ruleId}|${s.file}|${s.line}`),
+    );
+    if (fresh.length === 0) {
+      console.log(`  ${repo}.jsonl already complete — no new findings to add`);
       continue;
     }
-    const lines = samples.map((s) =>
+    const lines = fresh.map((s) =>
       JSON.stringify({
         ruleId: s.ruleId,
         file: s.file,
@@ -206,8 +233,16 @@ function initVerdictFiles(byRule: Map<string, SampledFinding[]>): void {
         note: "",
       }),
     );
-    writeFileSync(verdictPath, lines.join("\n") + "\n");
-    console.log(`  Wrote ${repo}.jsonl (${samples.length} entries)`);
+    if (existsSync(verdictPath)) {
+      const prev = readFileSync(verdictPath, "utf8");
+      writeFileSync(
+        verdictPath,
+        prev.replace(/\n*$/, "\n") + lines.join("\n") + "\n",
+      );
+    } else {
+      writeFileSync(verdictPath, lines.join("\n") + "\n");
+    }
+    console.log(`  Appended ${fresh.length} new entries to ${repo}.jsonl`);
   }
 }
 

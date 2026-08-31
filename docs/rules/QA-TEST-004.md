@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | warning                                        |
 | Confidence                            | high                                           |
 | Tier                                  | extended                                       |
-| Measured FP rate                      | not yet measured                               |
+| Measured FP rate                      | 30% (n=20)                                     |
 | Evidence level                        | E2                                             |
 | QA impact                             | Flaky-test risk (FLAKY-RISK)                   |
 | False-positive risk (author estimate) | low                                            |
@@ -43,7 +43,10 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo                 | Occurrences |
 | -------------------- | ----------- |
+| dubinc-dub           | 7           |
+| grafana-grafana      | 181         |
 | nextauthjs-next-auth | 4           |
+| puppeteer-puppeteer  | 3           |
 | sveltejs-kit         | 72          |
 | tanstack-query       | 157         |
 | vitejs-vite          | 7           |

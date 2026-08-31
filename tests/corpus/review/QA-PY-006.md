@@ -1,6 +1,6 @@
 # QA-PY-006 — Sample Findings for Classification
 
-Total sampled: 19 (max 20 per rule)
+Total sampled: 20 (max 20 per rule)
 
 Classify each finding as:
 
@@ -358,6 +358,28 @@ Classify each finding as:
 >>>   16|     def test_two(self):
       17|         pass
       18|
+```
+
+**verdict:**
+
+---
+
+## 20. reflex-dev-reflex — tests/units/test_event.py:63
+
+**Message:** Test `test_fn` has an empty body (pass only).
+
+```
+      58|
+      59|
+      60| def test_call_event_handler():
+      61|     """Test that calling an event handler creates an event spec."""
+      62|
+>>>   63|     def test_fn():
+      64|         pass
+      65|
+      66|     test_fn.__qualname__ = "test_fn"
+      67|
+      68|     def fn_with_args(arg1, arg2):
 ```
 
 **verdict:**

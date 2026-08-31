@@ -6,8 +6,8 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | ------------------------------------- | --------------------------- |
 | Severity                              | warning                     |
 | Confidence                            | medium                      |
-| Tier                                  | core                        |
-| Measured FP rate                      | not yet measured            |
+| Tier                                  | quarantine                  |
+| Measured FP rate                      | 100% (n=20)                 |
 | Evidence level                        | E1                          |
 | QA impact                             | Test hygiene debt (HYGIENE) |
 | False-positive risk (author estimate) | medium                      |
@@ -41,9 +41,10 @@ Verified against `tests/fixtures/QA-PY-008/must-not-fire/clean.py` — a legitim
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo         | Occurrences |
-| ------------ | ----------- |
-| psf-requests | 2           |
+| Repo              | Occurrences |
+| ----------------- | ----------- |
+| psf-requests      | 2           |
+| reflex-dev-reflex | 43          |
 
 ---
 

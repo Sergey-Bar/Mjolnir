@@ -24,7 +24,7 @@ Retries convert intermittent failures into silent passes. Without a forensics/tr
 ## What gets flagged (real detector output)
 
 ```
-retries: 2 with no visible flake-triage loop.
+retries: undefined with no visible flake-triage loop.
 ```
 
 Example from this rule's own must-fire fixture: `tests/fixtures/QA-PW-141/must-fire/playwright.config.ts`
@@ -39,7 +39,15 @@ Verified against `tests/fixtures/QA-PW-141/must-not-fire/playwright.config.ts` �
 
 ## Corpus-measured false-positive risk
 
-UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked by `npm run corpus:regression` (see `docs/FP-AUDIT.md`). That is not the same as "never fires incorrectly" — it just means no occurrence, correct or not, has been observed there yet.
+Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
+
+| Repo                 | Occurrences |
+| -------------------- | ----------- |
+| calcom-cal           | 2           |
+| dubinc-dub           | 1           |
+| grafana-grafana      | 1           |
+| nextauthjs-next-auth | 1           |
+| withastro-astro      | 2           |
 
 ---
 

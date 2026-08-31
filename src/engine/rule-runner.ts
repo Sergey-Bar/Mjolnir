@@ -33,6 +33,7 @@ export function asUniversal(rule: {
   id: string;
   category: string;
   appliesTo: string;
+  configRule?: boolean;
   run: (file: {
     path: string;
     text: string;
@@ -43,6 +44,7 @@ export function asUniversal(rule: {
     id: rule.id,
     category: rule.category,
     appliesTo: legacyAppliesTo(rule.appliesTo),
+    configOnly: rule.configRule === true,
     legacy: true,
     run(file) {
       return rule.run(file) as Array<Omit<Finding, "ruleId" | "category">>;

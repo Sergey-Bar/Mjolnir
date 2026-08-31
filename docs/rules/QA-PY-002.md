@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | warning                        |
 | Confidence                            | high                           |
 | Tier                                  | core                           |
-| Measured FP rate                      | 5% (n=20)                      |
+| Measured FP rate                      | 4% (n=23)                      |
 | Evidence level                        | E2                             |
 | QA impact                             | False-green risk (FALSE-GREEN) |
 | False-positive risk (author estimate) | low                            |
@@ -46,6 +46,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | pallets-click     | 1           |
 | psf-requests      | 2           |
 | pytest-dev-pytest | 19          |
+| reflex-dev-reflex | 3           |
 
 ---
 

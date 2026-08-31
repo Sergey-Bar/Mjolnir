@@ -1,6 +1,6 @@
 # QA-PW-120 — Sample Findings for Classification
 
-Total sampled: 13 (max 20 per rule)
+Total sampled: 20 (max 20 per rule)
 
 Classify each finding as:
 
@@ -225,6 +225,125 @@ Classify each finding as:
        4| const messageId = 'noUselessAwait'
        5|
        6| runRuleTester('no-useless-await', rule, {
+```
+
+**verdict:**
+
+---
+
+## 14. grafana-grafana — packages/grafana-data/src/datetime/easytz_lookup.test.ts:1
+
+**Message:** Engine/platform-specific test with no test.skip / browser guard.
+
+```
+>>>    1| import { canonicalZoneName, findTimeZoneAt, getTimeZonesAt } from './easytz_lookup';
+       2|
+       3| // Fixed timestamps so DST-dependent results are deterministic.
+       4| const JAN = Date.UTC(2026, 0, 15); // northern winter / southern summer
+       5| const JUL = Date.UTC(2026, 6, 15); // northern summer / southern winter
+       6|
+```
+
+**verdict:**
+
+---
+
+## 15. grafana-grafana — packages/grafana-ui/src/components/Table/TableNG/TableNG.test.tsx:1
+
+**Message:** Engine/platform-specific test with no test.skip / browser guard.
+
+```
+>>>    1| import { render, screen } from '@testing-library/react';
+       2| import userEvent from '@testing-library/user-event';
+       3| import { Point } from 'ol/geom';
+       4| import { fromLonLat } from 'ol/proj';
+       5| import * as uwrap from 'uwrap';
+       6|
+```
+
+**verdict:**
+
+---
+
+## 16. grafana-grafana — public/app/core/services/echo/backends/grafana-javascript-agent/beforeSendHandler.test.ts:1
+
+**Message:** Engine/platform-specific test with no test.skip / browser guard.
+
+```
+>>>    1| import { type TransportItem, TransportItemType } from '@grafana/faro-core';
+       2|
+       3| import { beforeSendHandler } from './beforeSendHandler';
+       4|
+       5| const getTransportationItem = (userAgent: string | undefined): TransportItem => ({
+       6|   meta: { browser: { userAgent } },
+```
+
+**verdict:**
+
+---
+
+## 17. grafana-grafana — public/app/core/utils/browser.test.ts:1
+
+**Message:** Engine/platform-specific test with no test.skip / browser guard.
+
+```
+>>>    1| import { checkBrowserCompatibility } from './browser';
+       2|
+       3| const setUserAgentString = (userAgentString: string) => {
+       4|   Object.defineProperty(window.navigator, 'userAgent', {
+       5|     value: userAgentString,
+       6|     configurable: true,
+```
+
+**verdict:**
+
+---
+
+## 18. grafana-grafana — public/app/features/dashboard-scene/settings/variables/editors/QueryVariableEditor/VariableOptionsSpreadsheet/clipboard.test.ts:1
+
+**Message:** Engine/platform-specific test with no test.skip / browser guard.
+
+```
+>>>    1| import { act, renderHook, waitFor } from '@testing-library/react';
+       2|
+       3| import { parseClipboardText, useClipboardPaste } from './clipboard';
+       4|
+       5| describe('parseClipboardText', () => {
+       6|   describe('unrecognized format', () => {
+```
+
+**verdict:**
+
+---
+
+## 19. grafana-grafana — public/app/features/explore/SignalExplorer/SignalCard.test.tsx:1
+
+**Message:** Engine/platform-specific test with no test.skip / browser guard.
+
+```
+>>>    1| import { fireEvent, render, screen } from '@testing-library/react';
+       2| import userEvent from '@testing-library/user-event';
+       3|
+       4| import { SignalCard } from './SignalCard';
+       5|
+       6| const onJumpToQuery = jest.fn();
+```
+
+**verdict:**
+
+---
+
+## 20. grafana-grafana — public/app/features/logs/components/panel/processing.test.ts:1
+
+**Message:** Engine/platform-specific test with no test.skip / browser guard.
+
+```
+>>>    1| import {
+       2|   createTheme,
+       3|   type Field,
+       4|   FieldType,
+       5|   LogLevel,
+       6|   type LogRowModel,
 ```
 
 **verdict:**

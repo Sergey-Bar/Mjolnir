@@ -1,6 +1,6 @@
 # QA-TEST-010 — Sample Findings for Classification
 
-Total sampled: 6 (max 20 per rule)
+Total sampled: 5 (max 20 per rule)
 
 Classify each finding as:
 
@@ -10,51 +10,7 @@ Classify each finding as:
 
 ---
 
-## 1. withastro-astro — packages/astro/test/units/routing/routing-app.test.ts:213
-
-**Message:** Test has an empty body — it can never fail.
-
-```
-     208| 		assert.equal(res.status, 404);
-     209| 		const $ = cheerio.load(await res.text());
-     210| 		assert.equal($('h1').text(), 'Custom 404');
-     211| 	});
-     212|
->>>  213| 	it('does not loop when 404 page returns null-body 404 Response', async () => {
-     214| 		// Case 2: 404.astro returns new Response(null, { status: 404 })
-     215| 		// PagesHandler stamps REROUTE_DIRECTIVE_HEADER = 'no' on /404 routes
-     216| 		const custom404NullBody = createComponent(() => {
-     217| 			return new Response(null, { status: 404 });
-     218| 		});
-```
-
-**verdict:**
-
----
-
-## 2. withastro-astro — packages/astro/test/units/routing/routing-app.test.ts:255
-
-**Message:** Test has an empty body — it can never fail.
-
-```
-     250|
-     251| 		const res404 = await app.render(new Request('http://example.com/nonexistent'));
-     252| 		assert.equal(res404.status, 404);
-     253| 	});
-     254|
->>>  255| 	it('does not loop when middleware returns null-body 404 for non-root paths', async () => {
-     256| 		// Case 4: Middleware returns new Response(null, { status: 404 }) for non-/ paths
-     257| 		const middleware404Null = async (ctx: APIContext, next: MiddlewareNext) => {
-     258| 			if (ctx.url.pathname !== '/') {
-     259| 				return new Response(null, { status: 404 });
-     260| 			}
-```
-
-**verdict:**
-
----
-
-## 3. withastro-astro — packages/integrations/node/test/static-headers.test.ts:51
+## 1. withastro-astro — packages/integrations/node/test/static-headers.test.ts:51
 
 **Message:** Test has an empty body — it can never fail.
 
@@ -76,7 +32,7 @@ Classify each finding as:
 
 ---
 
-## 4. tanstack-query — packages/query-devtools/src/**tests**/utils.test.ts:184
+## 2. tanstack-query — packages/query-devtools/src/**tests**/utils.test.ts:184
 
 **Message:** Test has an empty body — it can never fail.
 
@@ -98,7 +54,7 @@ Classify each finding as:
 
 ---
 
-## 5. tanstack-query — packages/query-devtools/src/**tests**/utils.test.ts:575
+## 3. tanstack-query — packages/query-devtools/src/**tests**/utils.test.ts:575
 
 **Message:** Test has an empty body — it can never fail.
 
@@ -120,22 +76,44 @@ Classify each finding as:
 
 ---
 
-## 6. playwright-community-eslint-plugin-playwright — src/rules/valid-title.test.ts:1151
+## 4. grafana-grafana — packages/grafana-data/src/themes/colorManipulator.test.ts:186
 
 **Message:** Test has an empty body — it can never fail.
 
 ```
-    1146|       `,
-    1147|     },
-    1148|     {
-    1149|       code: dedent`
-    1150|         test.describe('foo', () => {
->>> 1151|           test(' bar', () => {})
-    1152|         })
-    1153|       `,
-    1154|       errors: [{ column: 8, line: 2, messageId: 'accidentalSpace' }],
-    1155|       output: dedent`
-    1156|         test.describe('foo', () => {
+     181|
+     182|     it('Can also take into account opacity for background', () => {
+     183|       expect(getContrastRatio('#FFF', 'rgba(255,255,255,0.1)', '#000')).toEqual(17.5);
+     184|     });
+     185|
+>>>  186|     it('returns a ratio for dark-grey : light-grey', () => {
+     187|       //expect(getContrastRatio('#707070', '#E5E5E5'))to.be.approximately(3.93, 0.01);
+     188|     });
+     189|
+     190|     it('returns a ratio for black : light-grey', () => {
+     191|       //expect(getContrastRatio('#000', '#888')).to.be.approximately(5.92, 0.01);
+```
+
+**verdict:**
+
+---
+
+## 5. grafana-grafana — packages/grafana-data/src/themes/colorManipulator.test.ts:190
+
+**Message:** Test has an empty body — it can never fail.
+
+```
+     185|
+     186|     it('returns a ratio for dark-grey : light-grey', () => {
+     187|       //expect(getContrastRatio('#707070', '#E5E5E5'))to.be.approximately(3.93, 0.01);
+     188|     });
+     189|
+>>>  190|     it('returns a ratio for black : light-grey', () => {
+     191|       //expect(getContrastRatio('#000', '#888')).to.be.approximately(5.92, 0.01);
+     192|     });
+     193|   });
+     194|
+     195|   describe('getLuminance', () => {
 ```
 
 **verdict:**

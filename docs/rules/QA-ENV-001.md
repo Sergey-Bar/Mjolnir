@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | warning                      |
 | Confidence                            | medium                       |
 | Tier                                  | quarantine                   |
-| Measured FP rate                      | not yet measured             |
+| Measured FP rate                      | 100% (n=20)                  |
 | Evidence level                        | E1                           |
 | QA impact                             | Flaky-test risk (FLAKY-RISK) |
 | False-positive risk (author estimate) | medium                       |
@@ -43,8 +43,12 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo                        | Occurrences |
 | --------------------------- | ----------- |
+| calcom-cal                  | 15          |
+| dubinc-dub                  | 5           |
+| grafana-grafana             | 96          |
 | microsoft-playwright-dotnet | 5           |
 | nextauthjs-next-auth        | 29          |
+| puppeteer-puppeteer         | 94          |
 | sveltejs-kit                | 28          |
 | vitejs-vite                 | 32          |
 | withastro-astro             | 148         |

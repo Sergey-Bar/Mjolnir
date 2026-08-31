@@ -6,8 +6,8 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | ------------------------------------- | --------------------------- |
 | Severity                              | info                        |
 | Confidence                            | high                        |
-| Tier                                  | core                        |
-| Measured FP rate                      | not yet measured            |
+| Tier                                  | extended                    |
+| Measured FP rate                      | 25% (n=20)                  |
 | Evidence level                        | E2                          |
 | QA impact                             | Test hygiene debt (HYGIENE) |
 | False-positive risk (author estimate) | low                         |
@@ -39,7 +39,16 @@ Verified against `tests/fixtures/QA-PW-143/must-not-fire/playwright.config.ts` �
 
 ## Corpus-measured false-positive risk
 
-UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked by `npm run corpus:regression` (see `docs/FP-AUDIT.md`). That is not the same as "never fires incorrectly" — it just means no occurrence, correct or not, has been observed there yet.
+Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
+
+| Repo                        | Occurrences |
+| --------------------------- | ----------- |
+| calcom-cal                  | 2           |
+| microsoft-playwright-dotnet | 1           |
+| microsoft-playwright-mcp    | 1           |
+| nextauthjs-next-auth        | 2           |
+| sveltejs-kit                | 25          |
+| withastro-astro             | 2           |
 
 ---
 

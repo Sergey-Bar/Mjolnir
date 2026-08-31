@@ -1,0 +1,47 @@
+{"ruleId":"QA-PY-010","file":"tests/integration/test_event_actions.py","line":323,"verdict":"FP","note":"wall-clock measurement of a 200ms throttle window IS the subject of the e2e timing test"}
+{"ruleId":"QA-PY-010","file":"tests/integration/test_event_actions.py","line":324,"verdict":"FP","note":"poll loop bounded by time.time deadline - the real clock is the subject of the e2e timing assertion"}
+{"ruleId":"QA-PY-010","file":"tests/integration/test_large_state.py","line":73,"verdict":"FP","note":"wall-clock timeout guard for an e2e wait loop - the real clock is the mechanism being asserted against"}
+{"ruleId":"QA-PY-010","file":"tests/integration/test_large_state.py","line":76,"verdict":"FP","note":"wall-clock timeout guard for an e2e wait loop - the real clock is the mechanism being asserted against"}
+{"ruleId":"QA-PY-010","file":"tests/integration/test_large_state.py","line":83,"verdict":"FP","note":"wall-clock timeout guard raising TimeoutError - genuine e2e timing semantics"}
+{"ruleId":"QA-PY-010","file":"tests/integration/test_large_state.py","line":90,"verdict":"FP","note":"wall-clock timeout guard raising TimeoutError - genuine e2e timing semantics"}
+{"ruleId":"QA-PY-006","file":"tests/units/test_event.py","line":63,"verdict":"FP","note":"inner helper named test_fn inside a real test - pytester-style test data, not an empty test"}
+{"ruleId":"QA-PY-012","file":"tests/units/utils/test_telemetry_context.py","line":77,"verdict":"FP","note":"custom __eq__ reflexivity for TelemetryContext - the operator implementation is under test, x==x can genuinely fail"}
+{"ruleId":"QA-PY-009","file":"tests/integration/test_lifespan.py","line":320,"verdict":"FP","note":"prose comment mentioning a test name - documentation about test ordering, not a commented-out test"}
+{"ruleId":"QA-PY-008","file":"tests/units/components/test_memo.py","line":323,"verdict":"FP","note":"asserts over the real memo component instance - the rule anchored on the blank line before the flagged test"}
+{"ruleId":"QA-PY-008","file":"tests/units/components/test_memo.py","line":367,"verdict":"FP","note":"asserts real rendered props/key reconciliation - not mock-only"}
+{"ruleId":"QA-PY-008","file":"tests/units/components/test_memo.py","line":892,"verdict":"FP","note":"asserts real MemoParamKind structure - not mock-only"}
+{"ruleId":"QA-PY-008","file":"tests/units/reflex_base/utils/test_log.py","line":320,"verdict":"FP","note":"asserts forwarded output captured from the real console shim - the spy is the output channel"}
+{"ruleId":"QA-PY-008","file":"tests/units/reflex_base/utils/test_log.py","line":335,"verdict":"FP","note":"rich_console.log spy records the real shim forwarding with exact kwargs - the call is the behavior"}
+{"ruleId":"QA-PY-008","file":"tests/units/reflex_base/utils/test_log.py","line":346,"verdict":"FP","note":"spy records real shim forwarding - observer over the unit under test"}
+{"ruleId":"QA-PY-008","file":"tests/units/reflex_base/utils/test_log.py","line":365,"verdict":"FP","note":"asserts both rich print and file log via spies over the real shim - the calls are the contract"}
+{"ruleId":"QA-PY-008","file":"tests/units/reflex_cli/v2/test_cli.py","line":29,"verdict":"FP","note":"mocked external hosting service boundary - the CLI's calls against it are the observable orchestration behavior"}
+{"ruleId":"QA-PY-008","file":"tests/units/reflex_cli/v2/test_cli.py","line":42,"verdict":"FP","note":"assert_not_called on the external auth boundary IS the orchestration contract under test"}
+{"ruleId":"QA-PY-008","file":"tests/units/reflex_cli/v2/test_cli.py","line":56,"verdict":"FP","note":"mocked external service boundary; the CLI call ordering is the behavior under test"}
+{"ruleId":"QA-PY-008","file":"tests/units/reflex_cli/v2/test_cli.py","line":128,"verdict":"FP","note":"mocked external API - the CLI orchestration calls are the observable behavior"}
+{"ruleId":"QA-PY-008","file":"tests/units/reflex_cli/v2/test_cli.py","line":186,"verdict":"FP","note":"mocked external service; create/watch call assertions verify real CLI orchestration"}
+{"ruleId":"QA-PY-008","file":"tests/units/reflex_cli/v2/test_cli.py","line":229,"verdict":"FP","note":"pytest.raises Exit plus called/not-called assertions on the external boundary - real orchestration contract"}
+{"ruleId":"QA-PY-008","file":"tests/units/reflex_cli/v2/test_cli.py","line":355,"verdict":"FP","note":"asserts caplog error messages from the real CLI - real output, not mock-only"}
+{"ruleId":"QA-PY-008","file":"tests/units/reflex_cli/v2/test_cli.py","line":467,"verdict":"FP","note":"mocked external service boundary - CLI orchestration calls are the contract"}
+{"ruleId":"QA-PY-008","file":"tests/units/reflex_cli/v2/test_cli.py","line":665,"verdict":"FP","note":"mocked external service boundary - CLI orchestration calls are the contract"}
+{"ruleId":"QA-PY-008","file":"tests/units/reflex_cli/v2/test_cli.py","line":1148,"verdict":"FP","note":"mocked external service boundary - CLI orchestration calls are the contract"}
+{"ruleId":"QA-PY-008","file":"tests/units/reflex_cli/v2/test_cli.py","line":1161,"verdict":"FP","note":"mocked external service boundary - CLI orchestration calls are the contract"}
+{"ruleId":"QA-PY-005","file":"tests/integration/test_event_chain.py","line":149,"verdict":"TP","note":"hard sleep inside an event handler test flow - sync wait instead of polling the UI"}
+{"ruleId":"QA-PY-005","file":"tests/integration/test_exception_handlers.py","line":136,"verdict":"TP","note":"time.sleep(2) to wait for the error to be logged - hard wait instead of polling"}
+{"ruleId":"QA-PY-005","file":"tests/integration/test_exception_handlers.py","line":163,"verdict":"TP","note":"time.sleep(2) to wait for the error to be logged - hard wait instead of polling"}
+{"ruleId":"QA-PY-005","file":"tests/integration/test_exception_handlers.py","line":191,"verdict":"TP","note":"hard sleep after reset_button.click - timing-dependent e2e flow"}
+{"ruleId":"QA-PY-005","file":"tests/integration/test_large_state.py","line":75,"verdict":"TP","note":"time.sleep(0.1) inside an e2e poll loop - fixed-interval polling with a wall-clock guard"}
+{"ruleId":"QA-PY-005","file":"tests/integration/test_large_state.py","line":89,"verdict":"TP","note":"time.sleep(0.1) inside an e2e poll loop - fixed-interval polling"}
+{"ruleId":"QA-PY-005","file":"tests/integration/test_memory_state_manager_expiration.py","line":141,"verdict":"TP","note":"hard sleep in expiration timing test flow"}
+{"ruleId":"QA-PY-005","file":"tests/integration/test_memory_state_manager_expiration.py","line":146,"verdict":"TP","note":"hard sleep in expiration timing test flow"}
+{"ruleId":"QA-PY-005","file":"tests/integration/test_memory_state_manager_expiration.py","line":151,"verdict":"TP","note":"hard sleep in expiration timing test flow"}
+{"ruleId":"QA-PY-005","file":"tests/integration/test_server_side_event.py","line":162,"verdict":"TP","note":"time.sleep after click to let background events land - hard wait"}
+{"ruleId":"QA-PY-005","file":"tests/integration/test_server_side_event.py","line":188,"verdict":"TP","note":"time.sleep after click to let background events land - hard wait"}
+{"ruleId":"QA-PY-005","file":"tests/integration/test_upload.py","line":759,"verdict":"TP","note":"hard sleep in upload flow"}
+{"ruleId":"QA-PY-005","file":"tests/units/reflex_base/event/processor/test_timeout.py","line":20,"verdict":"TP","note":"hard sleep to let a background processor thread run"}
+{"ruleId":"QA-PY-005","file":"tests/units/test_config.py","line":871,"verdict":"TP","note":"hard sleep in config reload timing"}
+{"ruleId":"QA-PY-005","file":"tests/units/utils/test_processes.py","line":243,"verdict":"TP","note":"hard sleep waiting on subprocess state"}
+{"ruleId":"QA-PY-005","file":"tests/units/utils/test_processes.py","line":282,"verdict":"TP","note":"hard sleep waiting on subprocess state"}
+{"ruleId":"QA-CI-002","file":".github/workflows/check_outdated_dependencies.yml","line":33,"verdict":"FP","note":"grep with expected empty output - || true handles the no-match exit code, not a swallowed verification"}
+{"ruleId":"QA-CI-010","file":".github/workflows/unit_tests.yml","line":87,"verdict":"TP","note":"macOS unit matrix gated to main-pushes only - PRs merge without that verification; the rule's exact PR-skip case"}
+{"ruleId":"QA-PY-103","file":"tests/integration/tests_playwright/test_client_error.py","line":162,"verdict":"TP","note":"wait_for_timeout(500) for synchronization before an assertion - fixed wait instead of polling"}
+{"ruleId":"QA-PY-103","file":"tests/integration/tests_playwright/test_hmr.py","line":91,"verdict":"TP","note":"wait_for_timeout(100) inside a polling loop over captured frames - fixed-interval wait"}

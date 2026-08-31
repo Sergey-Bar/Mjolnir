@@ -64,6 +64,21 @@ export function getTsSourceFile(ast: unknown): SourceFile | undefined {
  * scanner (skipTrivia=false so trivia tokens are emitted). Falls back to
  * a conservative line-comment scan when no AST is available.
  */
+/**
+ * Comment + string-literal ranges of a source file, via the TypeScript
+ * scanner (skipTrivia=false so trivia tokens are emitted). Falls back to
+ * a conservative line-comment scan when no AST is available.
+ *
+ * Bug-audit 2026-08-31 (grafana corpus): the flat scanner has no parser
+ * context, so a `/*` sequence inside a template literal (e.g. a route
+ * pattern `` `${ROUTES.Base}/*` ``) opened a phantom multi-line comment
+ * that ran to end-of-file — every live `test(` after it was classified as
+ * comment content. Ranges overlapping REAL string/template AST nodes are
+ * now rejected: in valid TypeScript a true comment can never overlap a
+ * string/template range, and the phantom ranges always do (the template
+ * AST node spans the `/*` inside it). Same overlap-rejection principle
+ * getCodeOnlyText already applies for the inverse direction.
+ */
 export function commentAndStringRanges(ctx: {
   path: string;
   text: string;
@@ -73,6 +88,24 @@ export function commentAndStringRanges(ctx: {
   if (!sf) return [];
   try {
     const compiler = sf.compilerNode;
+    // AST-truth ranges: template literals (head/middle/tail) and string
+    // literals — collected from the PARSED tree, so parser context is
+    // correct and a `/*` inside a template never escapes it.
+    const astRanges: Array<{ start: number; end: number }> = [];
+    const collect = (node: ts.Node): void => {
+      if (
+        node.kind === ts.SyntaxKind.StringLiteral ||
+        node.kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral ||
+        node.kind === ts.SyntaxKind.TemplateHead ||
+        node.kind === ts.SyntaxKind.TemplateMiddle ||
+        node.kind === ts.SyntaxKind.TemplateTail
+      ) {
+        astRanges.push({ start: node.getStart(compiler), end: node.getEnd() });
+      }
+      ts.forEachChild(node, collect);
+    };
+    ts.forEachChild(compiler, collect);
+
     const scanner = ts.createScanner(
       ts.ScriptTarget.Latest,
       false,
@@ -84,15 +117,15 @@ export function commentAndStringRanges(ctx: {
     let tok = scanner.scan();
     let guard = 0;
     while (tok !== ts.SyntaxKind.EndOfFileToken && guard++ < 200_000) {
+      const r = { start: scanner.getTokenPos(), end: scanner.getTextPos() };
       if (
-        tok === ts.SyntaxKind.MultiLineCommentTrivia ||
-        tok === ts.SyntaxKind.SingleLineCommentTrivia ||
-        tok === ts.SyntaxKind.StringLiteral
+        (tok === ts.SyntaxKind.MultiLineCommentTrivia ||
+          tok === ts.SyntaxKind.SingleLineCommentTrivia ||
+          tok === ts.SyntaxKind.StringLiteral) &&
+        // Reject scanner phantoms that pierce a real template/string node.
+        !astRanges.some((x) => r.start < x.end && r.end > x.start)
       ) {
-        ranges.push({
-          start: scanner.getTokenPos(),
-          end: scanner.getTextPos(),
-        });
+        ranges.push(r);
       }
       tok = scanner.scan();
     }

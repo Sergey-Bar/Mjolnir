@@ -21,13 +21,92 @@ regression signal).
 
 Last generated: 2026-08-31.
 
+## calcom-cal
+
+Total findings: **649**
+
+| Rule ID      | Findings |
+| ------------ | -------- |
+| QA-CI-002    | 1        |
+| QA-ENV-001   | 15       |
+| QA-PW-103    | 1        |
+| QA-PW-119    | 3        |
+| QA-PW-120    | 53       |
+| QA-PW-141    | 2        |
+| QA-PW-143    | 2        |
+| QA-PW-144    | 1        |
+| QA-PW-145    | 5        |
+| QA-TEST-002  | 18       |
+| QA-TEST-003  | 119      |
+| QA-TQUAL-001 | 426      |
+| QA-TQUAL-002 | 1        |
+| QA-TQUAL-011 | 2        |
+
+## dubinc-dub
+
+Total findings: **88**
+
+| Rule ID      | Findings |
+| ------------ | -------- |
+| QA-ENV-001   | 5        |
+| QA-PW-002    | 12       |
+| QA-PW-004    | 2        |
+| QA-PW-103    | 17       |
+| QA-PW-105    | 1        |
+| QA-PW-107    | 2        |
+| QA-PW-118    | 2        |
+| QA-PW-141    | 1        |
+| QA-PW-144    | 1        |
+| QA-PW-145    | 5        |
+| QA-TEST-002  | 2        |
+| QA-TEST-003  | 17       |
+| QA-TEST-004  | 7        |
+| QA-TQUAL-001 | 14       |
+
+## grafana-grafana
+
+Total findings: **3405**
+
+| Rule ID      | Findings |
+| ------------ | -------- |
+| QA-CI-001    | 2        |
+| QA-CI-002    | 2        |
+| QA-CI-005    | 1        |
+| QA-CI-008    | 3        |
+| QA-CI-010    | 2        |
+| QA-ENV-001   | 96       |
+| QA-PW-002    | 6        |
+| QA-PW-004    | 5        |
+| QA-PW-101    | 17       |
+| QA-PW-103    | 82       |
+| QA-PW-105    | 25       |
+| QA-PW-107    | 141      |
+| QA-PW-108    | 78       |
+| QA-PW-112    | 230      |
+| QA-PW-115    | 1        |
+| QA-PW-118    | 28       |
+| QA-PW-119    | 105      |
+| QA-PW-120    | 12       |
+| QA-PW-141    | 1        |
+| QA-PW-144    | 1        |
+| QA-PW-145    | 107      |
+| QA-TEST-002  | 45       |
+| QA-TEST-003  | 418      |
+| QA-TEST-004  | 181      |
+| QA-TEST-006  | 2        |
+| QA-TEST-010  | 2        |
+| QA-TQUAL-001 | 1653     |
+| QA-TQUAL-002 | 3        |
+| QA-TQUAL-009 | 1        |
+| QA-TQUAL-011 | 155      |
+
 ## microsoft-playwright-dotnet
 
 real Playwright .NET test suite — C# adapter FP surface (same library-suite caveat)
 
 Source: [`https://github.com/microsoft/playwright-dotnet`](https://github.com/microsoft/playwright-dotnet)
 
-Total findings: **481**
+Total findings: **483**
 
 | Rule ID    | Findings |
 | ---------- | -------- |
@@ -41,6 +120,8 @@ Total findings: **481**
 | QA-CS-110  | 135      |
 | QA-CS-111  | 74       |
 | QA-ENV-001 | 5        |
+| QA-PW-122  | 1        |
+| QA-PW-143  | 1        |
 
 ## microsoft-playwright-java
 
@@ -68,11 +149,14 @@ real Playwright + GitHub Actions — TS/PW/CI adapter FP surface
 
 Source: [`https://github.com/microsoft/playwright-mcp`](https://github.com/microsoft/playwright-mcp)
 
-Total findings: **1**
+Total findings: **4**
 
 | Rule ID   | Findings |
 | --------- | -------- |
 | QA-PW-120 | 1        |
+| QA-PW-122 | 1        |
+| QA-PW-143 | 1        |
+| QA-PW-144 | 1        |
 
 ## microsoft-playwright-pytest
 
@@ -93,7 +177,7 @@ real TS app with Playwright e2e + substantial GitHub Actions — first non-trivi
 
 Source: [`https://github.com/nextauthjs/next-auth`](https://github.com/nextauthjs/next-auth)
 
-Total findings: **66**
+Total findings: **72**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
@@ -103,7 +187,11 @@ Total findings: **66**
 | QA-PW-101    | 4        |
 | QA-PW-103    | 4        |
 | QA-PW-119    | 9        |
+| QA-PW-122    | 2        |
 | QA-PW-123    | 2        |
+| QA-PW-141    | 1        |
+| QA-PW-143    | 2        |
+| QA-PW-144    | 1        |
 | QA-PW-145    | 3        |
 | QA-TEST-002  | 1        |
 | QA-TEST-003  | 3        |
@@ -163,13 +251,30 @@ Total findings: **112**
 | QA-PY-007 | 56       |
 | QA-PY-008 | 2        |
 
+## puppeteer-puppeteer
+
+Total findings: **593**
+
+| Rule ID     | Findings |
+| ----------- | -------- |
+| QA-ENV-001  | 94       |
+| QA-PW-005   | 10       |
+| QA-PW-103   | 97       |
+| QA-PW-114   | 210      |
+| QA-PW-119   | 1        |
+| QA-PW-120   | 29       |
+| QA-PW-123   | 2        |
+| QA-PW-145   | 58       |
+| QA-TEST-003 | 89       |
+| QA-TEST-004 | 3        |
+
 ## pytest-dev-pytest
 
 large real pytest suite — Python adapter FP surface (QA-PY-001..012)
 
 Source: [`https://github.com/pytest-dev/pytest`](https://github.com/pytest-dev/pytest)
 
-Total findings: **813**
+Total findings: **812**
 
 | Rule ID   | Findings |
 | --------- | -------- |
@@ -178,11 +283,37 @@ Total findings: **813**
 | QA-PY-003 | 100      |
 | QA-PY-004 | 393      |
 | QA-PY-006 | 19       |
-| QA-PY-007 | 268      |
+| QA-PY-007 | 267      |
 | QA-PY-009 | 3        |
 | QA-PY-010 | 3        |
 | QA-PY-011 | 1        |
 | QA-PY-012 | 5        |
+
+## reflex-dev-reflex
+
+Total findings: **1326**
+
+| Rule ID   | Findings |
+| --------- | -------- |
+| QA-CI-002 | 1        |
+| QA-CI-010 | 1        |
+| QA-PY-002 | 3        |
+| QA-PY-003 | 101      |
+| QA-PY-004 | 884      |
+| QA-PY-005 | 16       |
+| QA-PY-006 | 2        |
+| QA-PY-007 | 265      |
+| QA-PY-008 | 43       |
+| QA-PY-009 | 1        |
+| QA-PY-010 | 6        |
+| QA-PY-012 | 1        |
+| QA-PY-103 | 2        |
+
+## shadcn-ui-taxonomy
+
+Total findings: **0**
+
+_No findings recorded for this repo._
 
 ## sveltejs-kit
 
@@ -190,7 +321,7 @@ large real Playwright suite — QA-PW isolation/timing rules at scale
 
 Source: [`https://github.com/sveltejs/kit`](https://github.com/sveltejs/kit)
 
-Total findings: **1256**
+Total findings: **1306**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
@@ -206,6 +337,8 @@ Total findings: **1256**
 | QA-PW-117    | 1        |
 | QA-PW-118    | 20       |
 | QA-PW-119    | 8        |
+| QA-PW-122    | 25       |
+| QA-PW-143    | 25       |
 | QA-PW-145    | 11       |
 | QA-TEST-002  | 38       |
 | QA-TEST-003  | 62       |
@@ -262,7 +395,7 @@ large real Playwright suite — QA-PW text-coupling / viewport / empty-body
 
 Source: [`https://github.com/withastro/astro`](https://github.com/withastro/astro)
 
-Total findings: **761**
+Total findings: **767**
 
 | Rule ID     | Findings |
 | ----------- | -------- |
@@ -278,8 +411,12 @@ Total findings: **761**
 | QA-PW-118   | 6        |
 | QA-PW-119   | 11       |
 | QA-PW-120   | 4        |
+| QA-PW-122   | 2        |
+| QA-PW-141   | 2        |
+| QA-PW-143   | 2        |
+| QA-PW-144   | 2        |
 | QA-PW-145   | 48       |
 | QA-TEST-002 | 32       |
 | QA-TEST-003 | 100      |
 | QA-TEST-004 | 33       |
-| QA-TEST-010 | 3        |
+| QA-TEST-010 | 1        |

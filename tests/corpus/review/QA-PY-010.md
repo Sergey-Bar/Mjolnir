@@ -1,6 +1,6 @@
 # QA-PY-010 — Sample Findings for Classification
 
-Total sampled: 4 (max 20 per rule)
+Total sampled: 10 (max 20 per rule)
 
 Classify each finding as:
 
@@ -92,6 +92,138 @@ Classify each finding as:
     1416|     def test_commondir(self, path1):
     1417|         # XXX This is here in local until we find a way to implement this
     1418|         #     using the subversion command line api.
+```
+
+**verdict:**
+
+---
+
+## 5. reflex-dev-reflex — tests/integration/test_event_actions.py:323
+
+**Message:** Nondeterministic value from `time.time()` used without freezing.
+
+```
+     318|     btn_debounce = driver.find_element(By.ID, "btn-debounce")
+     319|     assert btn_debounce
+     320|
+     321|     exp_events = 10
+     322|     throttle_duration = exp_events * 0.2  # 200ms throttle
+>>>  323|     throttle_start = time.time()
+     324|     while time.time() - throttle_start < throttle_duration:
+     325|         btn_throttle.click()
+     326|         btn_debounce.click()
+     327|
+     328|     # Wait until the debounce event shows up
+```
+
+**verdict:**
+
+---
+
+## 6. reflex-dev-reflex — tests/integration/test_event_actions.py:324
+
+**Message:** Nondeterministic value from `time.time()` used without freezing.
+
+```
+     319|     assert btn_debounce
+     320|
+     321|     exp_events = 10
+     322|     throttle_duration = exp_events * 0.2  # 200ms throttle
+     323|     throttle_start = time.time()
+>>>  324|     while time.time() - throttle_start < throttle_duration:
+     325|         btn_throttle.click()
+     326|         btn_debounce.click()
+     327|
+     328|     # Wait until the debounce event shows up
+     329|     def _debounce_received():
+```
+
+**verdict:**
+
+---
+
+## 7. reflex-dev-reflex — tests/integration/test_large_state.py:73
+
+**Message:** Nondeterministic value from `time.time()` used without freezing.
+
+```
+      68|             assert large_state.app_instance is not None
+      69|             button = AppHarness.poll_for_or_raise_timeout(
+      70|                 lambda: driver.find_element(By.ID, "button")
+      71|             )
+      72|
+>>>   73|             t = time.time()
+      74|             while button.text != "0":
+      75|                 time.sleep(0.1)
+      76|                 if time.time() - t > 30.0:
+      77|                     msg = "Timeout waiting for initial state"
+      78|                     raise TimeoutError(msg)
+```
+
+**verdict:**
+
+---
+
+## 8. reflex-dev-reflex — tests/integration/test_large_state.py:76
+
+**Message:** Nondeterministic value from `time.time()` used without freezing.
+
+```
+      71|             )
+      72|
+      73|             t = time.time()
+      74|             while button.text != "0":
+      75|                 time.sleep(0.1)
+>>>   76|                 if time.time() - t > 30.0:
+      77|                     msg = "Timeout waiting for initial state"
+      78|                     raise TimeoutError(msg)
+      79|
+      80|             times_clicked = 0
+      81|
+```
+
+**verdict:**
+
+---
+
+## 9. reflex-dev-reflex — tests/integration/test_large_state.py:83
+
+**Message:** Nondeterministic value from `time.time()` used without freezing.
+
+```
+      78|                     raise TimeoutError(msg)
+      79|
+      80|             times_clicked = 0
+      81|
+      82|             def round_trip(clicks: int, timeout: float):
+>>>   83|                 t = time.time()
+      84|                 for _ in range(clicks):
+      85|                     button.click()
+      86|                 nonlocal times_clicked
+      87|                 times_clicked += clicks
+      88|                 while button.text != str(times_clicked):
+```
+
+**verdict:**
+
+---
+
+## 10. reflex-dev-reflex — tests/integration/test_large_state.py:90
+
+**Message:** Nondeterministic value from `time.time()` used without freezing.
+
+```
+      85|                     button.click()
+      86|                 nonlocal times_clicked
+      87|                 times_clicked += clicks
+      88|                 while button.text != str(times_clicked):
+      89|                     time.sleep(0.005)
+>>>   90|                     if time.time() - t > timeout:
+      91|                         msg = "Timeout waiting for state update"
+      92|                         raise TimeoutError(msg)
+      93|
+      94|             benchmark(round_trip, clicks=10, timeout=30.0)
+      95|         finally:
 ```
 
 **verdict:**

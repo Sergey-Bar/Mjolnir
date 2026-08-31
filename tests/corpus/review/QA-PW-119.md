@@ -32,7 +32,29 @@ Classify each finding as:
 
 ---
 
-## 2. nextauthjs-next-auth — packages/adapter-mikro-orm/test/entities.test.ts:89
+## 2. nextauthjs-next-auth — packages/adapter-d1/test/index.test.ts:21
+
+**Message:** `adapter` is module-level mutable state assigned in a test.
+
+```
+      16| import { runBasicTests } from "utils/adapter"
+      17| import Database from "better-sqlite3"
+      18|
+      19| const sqliteDB = new Database(":memory:")
+      20| let db = new D1Database(new D1DatabaseAPI(sqliteDB as any))
+>>>   21| let adapter = D1Adapter(db)
+      22|
+      23| beforeAll(async () => await up(db))
+      24| runBasicTests({
+      25|   adapter,
+      26|   db: {
+```
+
+**verdict:**
+
+---
+
+## 3. nextauthjs-next-auth — packages/adapter-mikro-orm/test/entities.test.ts:89
 
 **Message:** `_init` is module-level mutable state assigned in a test.
 
@@ -54,7 +76,7 @@ Classify each finding as:
 
 ---
 
-## 3. nextauthjs-next-auth — packages/adapter-mongodb/test/serverless.test.ts:13
+## 4. nextauthjs-next-auth — packages/adapter-mongodb/test/serverless.test.ts:13
 
 **Message:** `mongoClientCount` is module-level mutable state assigned in a test.
 
@@ -76,7 +98,7 @@ Classify each finding as:
 
 ---
 
-## 4. nextauthjs-next-auth — packages/adapter-pouchdb/test/index.test.ts:25
+## 5. nextauthjs-next-auth — packages/adapter-pouchdb/test/index.test.ts:25
 
 **Message:** `pouchdbIsDestroyed` is module-level mutable state assigned in a test.
 
@@ -98,7 +120,29 @@ Classify each finding as:
 
 ---
 
-## 5. nextauthjs-next-auth — packages/next-auth/test/actions.test.ts:7
+## 6. nextauthjs-next-auth — packages/adapter-pouchdb/test/index.test.ts:32
+
+**Message:** `pouchdb` is module-level mutable state assigned in a test.
+
+```
+      27| PouchDB.on("destroyed", function () {
+      28|   pouchdbIsDestroyed = true
+      29| })
+      30| const disconnect = async () => {
+      31|   if (!pouchdbIsDestroyed) await pouchdb.destroy()
+>>>   32| }
+      33| pouchdb = new PouchDB(crypto.randomUUID(), { adapter: "memory" })
+      34|
+      35| // Basic tests
+      36| runBasicTests({
+      37|   adapter: PouchDBAdapter({ pouchdb }),
+```
+
+**verdict:**
+
+---
+
+## 7. nextauthjs-next-auth — packages/next-auth/test/actions.test.ts:7
 
 **Message:** `mockedHeaders` is module-level mutable state assigned in a test.
 
@@ -120,7 +164,29 @@ Classify each finding as:
 
 ---
 
-## 6. nextauthjs-next-auth — packages/next-auth/test/middleware-fail-closed.test.ts:19
+## 8. nextauthjs-next-auth — packages/next-auth/test/actions.test.ts:85
+
+**Message:** `nextAuth` is module-level mutable state assigned in a test.
+
+```
+      80|         "http://localhost/api/auth/verify-request?provider=nodemailer&type=email"
+      81|       )
+      82|     })
+      83|
+      84|     it("redirects to /error page when sendVerificationRequest throws", async () => {
+>>>   85|       nextAuth = NextAuth({
+      86|         ...config,
+      87|         providers: [
+      88|           Nodemailer({
+      89|             sendVerificationRequest() {
+      90|               throw new Error()
+```
+
+**verdict:**
+
+---
+
+## 9. nextauthjs-next-auth — packages/next-auth/test/middleware-fail-closed.test.ts:19
 
 **Message:** `mockedHeaders` is module-level mutable state assigned in a test.
 
@@ -142,7 +208,51 @@ Classify each finding as:
 
 ---
 
-## 7. vitejs-vite — playground/client-reload/**tests**/client-reload.spec.ts:14
+## 10. vitejs-vite — packages/vite/src/node/**tests**/optimizer/customExtensionBundleClose.spec.ts:19
+
+**Message:** `root` is module-level mutable state assigned in a test.
+
+```
+      14|   if (root) fs.rmSync(root, { recursive: true, force: true })
+      15|   root = undefined
+      16| })
+      17|
+      18| test('closes temporary Rolldown bundles used to analyze custom optimizeDeps extensions', async () => {
+>>>   19|   root = fs.mkdtempSync(
+      20|     path.join(fs.realpathSync(os.tmpdir()), 'vite-optimizer-extension-close-'),
+      21|   )
+      22|   const cacheDir = path.join(root, '.vite')
+      23|   const depDir = path.join(root, 'node_modules', 'custom-extension-dep')
+      24|   fs.mkdirSync(depDir, { recursive: true })
+```
+
+**verdict:**
+
+---
+
+## 11. vitejs-vite — packages/vite/src/node/**tests**/optimizer/discoverBeforeListen.spec.ts:31
+
+**Message:** `server` is module-level mutable state assigned in a test.
+
+```
+      26|     errors.push(typeof msg === 'string' ? msg : String(msg))
+      27|   }
+      28|
+      29|   const bundleStarted = promiseWithResolvers<void>()
+      30|
+>>>   31|   server = await createServer({
+      32|     configFile: false,
+      33|     customLogger: logger,
+      34|     root: path.join(
+      35|       import.meta.dirname,
+      36|       '../fixtures/optimizer-discover-before-listen',
+```
+
+**verdict:**
+
+---
+
+## 12. vitejs-vite — playground/client-reload/**tests**/client-reload.spec.ts:14
 
 **Message:** `server` is module-level mutable state assigned in a test.
 
@@ -164,7 +274,29 @@ Classify each finding as:
 
 ---
 
-## 8. vitejs-vite — playground/hmr-ssr/**tests**/hmr-ssr.spec.ts:1157
+## 13. vitejs-vite — playground/hmr-full-bundle-mode/**tests**/build-hooks.spec.ts:31
+
+**Message:** `server` is module-level mutable state assigned in a test.
+
+```
+      26|       buildEnd() {
+      27|         buildEndCount++
+      28|       },
+      29|     }
+      30|
+>>>   31|     server = await createServer({
+      32|       root: path.resolve(import.meta.dirname, '..'),
+      33|       configFile: false,
+      34|       logLevel: 'silent',
+      35|       experimental: { bundledDev: true },
+      36|       plugins: [countPlugin],
+```
+
+**verdict:**
+
+---
+
+## 14. vitejs-vite — playground/hmr-ssr/**tests**/hmr-ssr.spec.ts:1157
 
 **Message:** `server` is module-level mutable state assigned in a test.
 
@@ -186,7 +318,7 @@ Classify each finding as:
 
 ---
 
-## 9. vitejs-vite — playground/hmr-ssr/**tests**/hmr-ssr.spec.ts:1196
+## 15. vitejs-vite — playground/hmr-ssr/**tests**/hmr-ssr.spec.ts:1196
 
 **Message:** `runner` is module-level mutable state assigned in a test.
 
@@ -208,242 +340,107 @@ Classify each finding as:
 
 ---
 
-## 10. sveltejs-kit — packages/adapter-bun/test/env.spec.ts:6
+## 16. sveltejs-kit — packages/kit/test/types/actions.test.ts:13
 
-**Message:** `instance` is module-level mutable state assigned in a test.
-
-```
-       1| import process from 'node:process';
-       2| import { afterEach, describe, expect, test } from 'bun:test';
-       3| import { mock_manifest } from './mocks.js';
-       4|
-       5| const changed = new Set<string>();
->>>    6| let instance = 0;
-       7|
-       8| afterEach(() => {
-       9| 	for (const name of changed) delete process.env[name];
-      10| 	changed.clear();
-      11| });
-```
-
-**verdict:**
-
----
-
-## 11. sveltejs-kit — packages/adapter-bun/test/handler.spec.ts:6
-
-**Message:** `instance` is module-level mutable state assigned in a test.
+**Message:** `form` is module-level mutable state assigned in a test.
 
 ```
-       1| import process from 'node:process';
-       2| import { afterEach, expect, mock, spyOn, test } from 'bun:test';
-       3| import { mock_manifest, mock_routes } from './mocks.js';
-       4|
-       5| const environment = new Set<string>();
->>>    6| let instance = 0;
-       7|
-       8| afterEach(() => {
-       9| 	for (const name of environment) delete process.env[name];
-      10| 	environment.clear();
-      11| 	mock.restore();
-```
-
-**verdict:**
-
----
-
-## 12. sveltejs-kit — packages/adapter-bun/test/routes.spec.ts:9
-
-**Message:** `instance` is module-level mutable state assigned in a test.
-
-```
-       4| import { mock_manifest } from './mocks.js';
-       5|
-       6| const meta = { hash: 'abc', mtime: 0 };
-       7| // the module resolves assets from its own directory, which is src/ under bun test
-       8| const dir = path.dirname(fileURLToPath(new URL('../src/routes-util.js', import.meta.url)));
->>>    9| let instance = 0;
-      10|
-      11| afterEach(() => {
-      12| 	mock.restore();
-      13| });
-      14|
-```
-
-**verdict:**
-
----
-
-## 13. sveltejs-kit — packages/adapter-bun/test/start.spec.ts:8
-
-**Message:** `instance` is module-level mutable state assigned in a test.
-
-```
-       3| import { afterAll, afterEach, expect, jest, mock, spyOn, test } from 'bun:test';
-       4| import { mock_manifest, mock_routes } from './mocks.js';
-       5|
-       6| // the const captures the real module object before any test swaps the live binding
-       7| const real_process = process;
->>>    8| let instance = 0;
+       8| };
        9|
-      10| afterEach(() => {
-      11| 	jest.useRealTimers();
-      12| 	mock.restore();
-      13| });
+      10| let form: Kit.AwaitedActions<Actions> = null as any;
+      11| form.message = '';
+      12| form.success = true;
+>>>   13| // @ts-expect-error - cannot both be present at the same time
+      14| form = { message: '', success: true };
+      15|
+      16| // Test: Actions with different return types are transformed into a union that has all types accessible
+      17| type Actions2 = {
+      18| 	foo: () => Promise<{ message: string }>;
 ```
 
 **verdict:**
 
 ---
 
-## 14. withastro-astro — packages/astro/e2e/actions-blog.test.ts:10
+## 17. sveltejs-kit — packages/kit/test/types/actions.test.ts:25
 
-**Message:** `devServer` is module-level mutable state assigned in a test.
-
-```
-       5| const test = testFactory(import.meta.url, { root: './fixtures/actions-blog/' });
-       6|
-       7| let devServer: DevServer;
-       8|
-       9| test.beforeAll(async ({ astro }) => {
->>>   10| 	devServer = await astro.startDevServer();
-      11| });
-      12|
-      13| test.afterAll(async () => {
-      14| 	await devServer.stop();
-      15| });
-```
-
-**verdict:**
-
----
-
-## 15. withastro-astro — packages/astro/e2e/actions-react-19.test.ts:10
-
-**Message:** `devServer` is module-level mutable state assigned in a test.
+**Message:** `form2` is module-level mutable state assigned in a test.
 
 ```
-       5| const test = testFactory(import.meta.url, { root: './fixtures/actions-react-19/' });
-       6|
-       7| let devServer: DevServer;
-       8|
-       9| test.beforeAll(async ({ astro }) => {
->>>   10| 	devServer = await astro.startDevServer();
-      11| });
-      12|
-      13| test.afterEach(({ astro }) => {
-      14| 	// Reset the store between tests by deleting its data file
-      15| 	rmSync(new URL('src/db/temp', astro.config.root), { recursive: true, force: true });
+      20| };
+      21|
+      22| let form2: Kit.AwaitedActions<Actions2> = null as any;
+      23| form2.message = '';
+      24| form2.success = true;
+>>>   25| // @ts-expect-error - cannot both be present at the same time
+      26| form2 = { message: '', success: true };
+      27|
+      28| // Test: ActionFailure is correctly infered to be different from the normal return type even if they have the same shape
+      29| type Actions3 = {
+      30| 	bar: () => Kit.ActionFailure<{ foo: string }> | { status: number; data: { bar: string } };
 ```
 
 **verdict:**
 
 ---
 
-## 16. withastro-astro — packages/astro/e2e/astro-component.test.ts:9
+## 18. sveltejs-kit — packages/kit/test/types/actions.test.ts:35
 
-**Message:** `devServer` is module-level mutable state assigned in a test.
+**Message:** `form3` is module-level mutable state assigned in a test.
 
 ```
-       4| const test = testFactory(import.meta.url, { root: './fixtures/astro-component/' });
-       5|
-       6| let devServer: DevServer;
+      30| 	bar: () => Kit.ActionFailure<{ foo: string }> | { status: number; data: { bar: string } };
+      31| };
+      32| let form3: Kit.AwaitedActions<Actions3> = null as any;
+      33| form3.foo = '';
+      34| form3.status = 200;
+>>>   35| // @ts-expect-error - cannot both be present at the same time
+      36| form3 = { foo: '', status: 200 };
+      37|
+      38| const foo: any = null;
+      39| // @ts-expect-error ActionFailure is not a class and so you can't do instanceof
+      40| foo instanceof Kit.ActionFailure;
+```
+
+**verdict:**
+
+---
+
+## 19. sveltejs-kit — packages/kit/test/types/load.test.ts:11
+
+**Message:** `result1` is module-level mutable state assigned in a test.
+
+```
+       6| 	| { success?: undefined; message: string };
        7|
-       8| test.beforeAll(async ({ astro }) => {
->>>    9| 	devServer = await astro.startDevServer();
-      10| });
-      11|
-      12| test.afterAll(async () => {
-      13| 	await devServer.stop();
-      14| });
+       8| let result1: Kit.LoadProperties<LoadReturn1> = null as any;
+       9| result1.message = '';
+      10| result1.success = true;
+>>>   11| // @ts-expect-error - cannot both be present at the same time
+      12| result1 = { message: '', success: true };
+      13|
 ```
 
 **verdict:**
 
 ---
 
-## 17. withastro-astro — packages/astro/e2e/astro-envs.test.ts:22
+## 20. withastro-astro — packages/astro/test/0-css.test.ts:16
 
-**Message:** `devServer` is module-level mutable state assigned in a test.
+**Message:** `fixture` is module-level mutable state assigned in a test.
 
 ```
-      17| });
+      11|
+      12| let fixture: Fixture;
+      13|
+      14| describe('CSS', function () {
+      15| 	before(async () => {
+>>>   16| 		fixture = await loadFixture({ root: './fixtures/0-css/', outDir: './dist/0-css/' });
+      17| 	});
       18|
-      19| let devServer: DevServer;
-      20|
-      21| test.beforeAll(async ({ astro }) => {
->>>   22| 	devServer = await astro.startDevServer();
-      23| });
-      24|
-      25| test.afterAll(async () => {
-      26| 	await devServer.stop();
-      27| });
-```
-
-**verdict:**
-
----
-
-## 18. withastro-astro — packages/astro/e2e/client-idle-timeout.test.ts:9
-
-**Message:** `devServer` is module-level mutable state assigned in a test.
-
-```
-       4| const test = testFactory(import.meta.url, { root: './fixtures/client-idle-timeout/' });
-       5|
-       6| let devServer: DevServer;
-       7|
-       8| test.beforeAll(async ({ astro }) => {
->>>    9| 	devServer = await astro.startDevServer();
-      10| });
-      11|
-      12| test.afterAll(async () => {
-      13| 	await devServer.stop();
-      14| });
-```
-
-**verdict:**
-
----
-
-## 19. withastro-astro — packages/astro/e2e/client-only.test.ts:9
-
-**Message:** `devServer` is module-level mutable state assigned in a test.
-
-```
-       4| const test = testFactory(import.meta.url, { root: './fixtures/client-only/' });
-       5|
-       6| let devServer: DevServer;
-       7|
-       8| test.beforeAll(async ({ astro }) => {
->>>    9| 	devServer = await astro.startDevServer();
-      10| });
-      11|
-      12| test.afterAll(async () => {
-      13| 	await devServer.stop();
-      14| });
-```
-
-**verdict:**
-
----
-
-## 20. withastro-astro — packages/astro/e2e/cloudflare-node-prerender-hmr.test.ts:14
-
-**Message:** `devServer` is module-level mutable state assigned in a test.
-
-```
-       9| });
-      10|
-      11| let devServer: DevServer;
-      12|
-      13| test.beforeAll(async ({ astro }) => {
->>>   14| 	devServer = await astro.startDevServer();
-      15| });
-      16|
-      17| test.afterAll(async () => {
-      18| 	await devServer.stop();
-      19| });
+      19| 	// test HTML and CSS contents for accuracy
+      20| 	describe('build', () => {
+      21| 		let $: cheerio.CheerioAPI;
 ```
 
 **verdict:**

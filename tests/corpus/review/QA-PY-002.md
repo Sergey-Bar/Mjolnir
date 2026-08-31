@@ -98,44 +98,44 @@ Classify each finding as:
 
 ---
 
-## 5. pytest-dev-pytest — testing/acceptance_test.py:886
+## 5. pytest-dev-pytest — testing/acceptance_test.py:888
 
 **Message:** Skipped test detected: `non-strict xfail`.
 
 ```
-     881|     def test_cmdline_python_package_not_exists(self, pytester: Pytester) -> None:
-     882|         result = pytester.runpytest("--pyargs", "tpkgwhatv")
-     883|         assert result.ret
-     884|         result.stderr.fnmatch_lines(["ERROR*module*or*package*not*found*"])
-     885|
->>>  886|     @pytest.mark.xfail(reason="decide: feature or bug")
-     887|     def test_noclass_discovery_if_not_testcase(self, pytester: Pytester) -> None:
-     888|         testpath = pytester.makepyfile(
-     889|             """
-     890|             import unittest
-     891|             class TestHello(object):
+     883|     def test_cmdline_python_package_not_exists(self, pytester: Pytester) -> None:
+     884|         result = pytester.runpytest("--pyargs", "tpkgwhatv")
+     885|         assert result.ret
+     886|         result.stderr.fnmatch_lines(["ERROR*module*or*package*not*found*"])
+     887|
+>>>  888|     @pytest.mark.xfail(reason="decide: feature or bug")
+     889|     def test_noclass_discovery_if_not_testcase(self, pytester: Pytester) -> None:
+     890|         testpath = pytester.makepyfile(
+     891|             """
+     892|             import unittest
+     893|             class TestHello(object):
 ```
 
 **verdict:**
 
 ---
 
-## 6. pytest-dev-pytest — testing/acceptance_test.py:1520
+## 6. pytest-dev-pytest — testing/acceptance_test.py:1654
 
 **Message:** Skipped test detected: `@pytest.mark.skip`.
 
 ```
-    1515|     )
-    1516|     result = pytester.runpytest_subprocess()
-    1517|     result.stdout.fnmatch_lines("*1 passed*")
-    1518|
-    1519|
->>> 1520| @pytest.mark.skip(reason="Test is not isolated")
-    1521| def test_issue_9765(pytester: Pytester) -> None:
-    1522|     """Reproducer for issue #9765 on Windows
-    1523|
-    1524|     https://github.com/pytest-dev/pytest/issues/9765
-    1525|     """
+    1649|     )
+    1650|     result = pytester.runpytest_subprocess()
+    1651|     result.stdout.fnmatch_lines("*1 passed*")
+    1652|
+    1653|
+>>> 1654| @pytest.mark.skip(reason="Test is not isolated")
+    1655| def test_issue_9765(pytester: Pytester) -> None:
+    1656|     """Reproducer for issue #9765 on Windows
+    1657|
+    1658|     https://github.com/pytest-dev/pytest/issues/9765
+    1659|     """
 ```
 
 **verdict:**
@@ -186,22 +186,22 @@ Classify each finding as:
 
 ---
 
-## 9. pytest-dev-pytest — testing/test_config.py:377
+## 9. pytest-dev-pytest — testing/test_config.py:378
 
 **Message:** Skipped test detected: `non-strict xfail`.
 
 ```
-     372|         sub = pytester.mkdir("sub")
-     373|         os.chdir(sub)
-     374|         config = pytester.parseconfigure()
-     375|         assert config.pluginmanager._confcutdir == pytester.path
-     376|
->>>  377|     @pytest.mark.xfail(reason="probably not needed")
-     378|     def test_confcutdir(self, pytester: Pytester) -> None:
-     379|         sub = pytester.mkdir("sub")
-     380|         os.chdir(sub)
-     381|         pytester.makeini(
-     382|             """
+     373|         sub = pytester.mkdir("sub")
+     374|         os.chdir(sub)
+     375|         config = pytester.parseconfigure()
+     376|         assert config.pluginmanager._confcutdir == pytester.path
+     377|
+>>>  378|     @pytest.mark.xfail(reason="probably not needed")
+     379|     def test_confcutdir(self, pytester: Pytester) -> None:
+     380|         sub = pytester.mkdir("sub")
+     381|         os.chdir(sub)
+     382|         pytester.makeini(
+     383|             """
 ```
 
 **verdict:**

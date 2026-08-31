@@ -41,11 +41,12 @@ Verified against `tests/fixtures/QA-PW-114/must-not-fire/clean.spec.ts` — a le
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo            | Occurrences |
-| --------------- | ----------- |
-| sveltejs-kit    | 5           |
-| vitejs-vite     | 62          |
-| withastro-astro | 2           |
+| Repo                | Occurrences |
+| ------------------- | ----------- |
+| puppeteer-puppeteer | 210         |
+| sveltejs-kit        | 5           |
+| vitejs-vite         | 62          |
+| withastro-astro     | 2           |
 
 ---
 

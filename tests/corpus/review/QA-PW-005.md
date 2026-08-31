@@ -1,6 +1,6 @@
 # QA-PW-005 — Sample Findings for Classification
 
-Total sampled: 7 (max 20 per rule)
+Total sampled: 17 (max 20 per rule)
 
 Classify each finding as:
 
@@ -158,6 +158,226 @@ Classify each finding as:
      738| 				(event) => {
      739| 					const incomingStyle = event.newDocument.querySelector<HTMLStyleElement>(
      740| 						'style[data-vite-dev-id*="client-router-hmr.css"]',
+```
+
+**verdict:**
+
+---
+
+## 8. puppeteer-puppeteer — test/src/autofill.test.ts:28
+
+**Message:** Branching logic inside page.evaluate().
+
+```
+      23|           expiryYear: '2030',
+      24|           cvc: '123',
+      25|         },
+      26|       });
+      27|       expect(
+>>>   28|         await page.evaluate(() => {
+      29|           const result = [];
+      30|           for (const el of document.querySelectorAll('input')) {
+      31|             result.push(el.value);
+      32|           }
+      33|           return result.join(',');
+```
+
+**verdict:**
+
+---
+
+## 9. puppeteer-puppeteer — test/src/autofill.test.ts:53
+
+**Message:** Branching logic inside page.evaluate().
+
+```
+      48|             {name: 'ADDRESS_HOME_ZIP', value: '12345'},
+      49|           ],
+      50|         },
+      51|       });
+      52|       expect(
+>>>   53|         await page.evaluate(() => {
+      54|           const result = [];
+      55|           for (const el of document.querySelectorAll('input')) {
+      56|             result.push(el.value);
+      57|           }
+      58|           return result.join(',');
+```
+
+**verdict:**
+
+---
+
+## 10. puppeteer-puppeteer — test/src/input.test.ts:78
+
+**Message:** Branching logic inside page.evaluate().
+
+```
+      73|
+      74|       const file = path.relative(process.cwd(), FILE_TO_UPLOAD);
+      75|       await input.uploadFile(file);
+      76|
+      77|       expect(
+>>>   78|         await input.evaluate(e => {
+      79|           const file = e.files?.[0];
+      80|           if (!file) {
+      81|             throw new Error('No file found');
+      82|           }
+      83|
+```
+
+**verdict:**
+
+---
+
+## 11. puppeteer-puppeteer — test/src/keyboard.test.ts:428
+
+**Message:** Branching logic inside page.evaluate().
+
+```
+     423|   it('should not type canceled events', async () => {
+     424|     const {page, server} = await getTestState();
+     425|
+     426|     await page.goto(server.PREFIX + '/input/textarea.html');
+     427|     await page.focus('textarea');
+>>>  428|     await page.evaluate(() => {
+     429|       window.addEventListener(
+     430|         'keydown',
+     431|         event => {
+     432|           event.stopPropagation();
+     433|           event.stopImmediatePropagation();
+```
+
+**verdict:**
+
+---
+
+## 12. puppeteer-puppeteer — test/src/locator.test.ts:695
+
+**Message:** Branching logic inside page.evaluate().
+
+```
+     690|         ></div>`,
+     691|       );
+     692|
+     693|       await page.locator('[role="switch"]').fill(true);
+     694|       expect(
+>>>  695|         await page.evaluate(() => {
+     696|           // Verify the ARIA attribute was updated by the fill command
+     697|           return (
+     698|             document
+     699|               .querySelector('[role="switch"]')
+     700|               ?.getAttribute('aria-checked') === 'true'
+```
+
+**verdict:**
+
+---
+
+## 13. puppeteer-puppeteer — test/src/locator.test.ts:707
+
+**Message:** Branching logic inside page.evaluate().
+
+```
+     702|         }),
+     703|       ).toBe(true);
+     704|
+     705|       await page.locator('[role="switch"]').fill(false);
+     706|       expect(
+>>>  707|         await page.evaluate(() => {
+     708|           return (
+     709|             document
+     710|               .querySelector('[role="switch"]')
+     711|               ?.getAttribute('aria-checked') === 'false'
+     712|           );
+```
+
+**verdict:**
+
+---
+
+## 14. puppeteer-puppeteer — test/src/mouse.test.ts:304
+
+**Message:** Branching logic inside page.evaluate().
+
+```
+     299|
+     300|   const addMouseDataListeners = (
+     301|     page: Page,
+     302|     options: AddMouseDataListenersOptions = {},
+     303|   ) => {
+>>>  304|     return page.evaluate(({includeMove}) => {
+     305|       const clicks: ClickData[] = [];
+     306|       const mouseEventListener = (event: MouseEvent) => {
+     307|         clicks.push({
+     308|           type: event.type,
+     309|           detail: event.detail,
+```
+
+**verdict:**
+
+---
+
+## 15. puppeteer-puppeteer — test/src/oopif.test.ts:451
+
+**Message:** Branching logic inside page.evaluate().
+
+```
+     446|       );
+     447|     }
+     448|     expect(page.frames()).toHaveLength(frameCount + 1);
+     449|
+     450|     // Start the teardown first so it lands while the per-frame calls run.
+>>>  451|     const detached = page.evaluate(() => {
+     452|       for (const frame of document.querySelectorAll('iframe')) {
+     453|         frame.remove();
+     454|       }
+     455|     });
+     456|     const exposed = page.exposeFunction('doubleIt', (value: number) => {
+```
+
+**verdict:**
+
+---
+
+## 16. puppeteer-puppeteer — test/src/waittask.test.ts:396
+
+**Message:** Branching logic inside page.evaluate().
+
+```
+     391|     });
+     392|
+     393|     it('should work with removed MutationObserver', async () => {
+     394|       const {page} = await getTestState();
+     395|
+>>>  396|       await page.evaluate(() => {
+     397|         // @ts-expect-error We want to remove it for the test.
+     398|         delete window.MutationObserver;
+     399|       });
+     400|       const [handle] = await Promise.all([
+     401|         page.waitForSelector('.zombo'),
+```
+
+**verdict:**
+
+---
+
+## 17. puppeteer-puppeteer — test/src/webgl.test.ts:21
+
+**Message:** Branching logic inside page.evaluate().
+
+```
+      16|     ],
+      17|   });
+      18|
+      19|   describe('Create webgl context', function () {
+      20|     it('should work', async () => {
+>>>   21|       await state.page.evaluate(() => {
+      22|         const canvas = document.createElement('canvas');
+      23|         const gl = canvas.getContext('webgl');
+      24|         if (!gl) {
+      25|           throw new Error('WebGL context not created');
+      26|         }
 ```
 
 **verdict:**

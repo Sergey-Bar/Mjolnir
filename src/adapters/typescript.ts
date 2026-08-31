@@ -5,7 +5,7 @@
  */
 
 import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, basename } from "node:path";
 
 import { sharedWalk } from "../discovery/shared-walk.js";
 import { detectFrameworks as detectFrameworksLegacy } from "../discovery/frameworks.js";
@@ -20,6 +20,7 @@ import type {
 } from "../engine/adapter.js";
 
 const TEST_FILE_RE = /\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs)$/;
+const PW_CONFIG_RE = /^playwright\.config\.(?:ts|js|mjs|cts)$/;
 
 export const typescriptAdapter: LanguageAdapter = {
   id: "typescript",
@@ -27,11 +28,15 @@ export const typescriptAdapter: LanguageAdapter = {
   testFileGlobs: [
     "*.test.{js,jsx,ts,tsx,mjs,cjs}",
     "*.spec.{js,jsx,ts,tsx,mjs,cjs}",
+    "playwright.config.{ts,js,mjs,cts}",
   ],
   dirSkips: [],
 
   isTestFile(path: string): boolean {
-    return TEST_FILE_RE.test(path);
+    // Windows callers pass raw backslash paths — normalize before the
+    // basename check, or the ^-anchored config regex never matches
+    // (same class of bug explain.ts documents for filename-gated rules).
+    return TEST_FILE_RE.test(path) || PW_CONFIG_RE.test(basename(path));
   },
 
   detectFrameworks(root: string): FrameworkInfo {
@@ -51,7 +56,7 @@ export const typescriptAdapter: LanguageAdapter = {
           reason === "file-cap" ? "file-cap:typescript" : reason,
         ),
       skipDirs: [],
-      isTestFile: (name) => TEST_FILE_RE.test(name),
+      isTestFile: (name) => TEST_FILE_RE.test(name) || PW_CONFIG_RE.test(name),
       onTestFile: (f) => ctx.testFiles.push(f),
       isFull: () => ctx.testFiles.length >= ctx.maxFiles,
       fixtureDirMemo: new Map(),
@@ -78,8 +83,13 @@ export const typescriptAdapter: LanguageAdapter = {
         configurable: true,
       },
     );
+    const isConfig = PW_CONFIG_RE.test(basename(file.path));
     for (const rule of rules) {
       if (!rule.appliesTo.includes(this.id)) continue;
+      // Config rules run only on playwright.config.* and vice versa —
+      // generic test rules would fire nonsense on a config file
+      // (e.g. QA-TEST-003 "no assertions" on every config).
+      if (isConfig !== (rule.configOnly === true)) continue;
       // Audit P-1: a single oversized file must not own the whole budget.
       if (budget && Date.now() > budget.deadline) {
         budget.onExceeded();

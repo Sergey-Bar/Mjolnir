@@ -18,6 +18,7 @@ export const pwNoFailureArtifacts = defineRule({
   findingType: "deterministic-defect",
   qaImpact: "HYGIENE",
   appliesTo: "test-files",
+  configRule: true,
   // Trust Metadata
   languages: ["typescript", "javascript"],
   frameworks: ["playwright"],
@@ -25,6 +26,10 @@ export const pwNoFailureArtifacts = defineRule({
   autofix: false,
   detectionStrategy: "regex heuristic",
   introduced: "0.3.8",
+
+  // Measured FP 25% (n=20): genuine missing-artifact configs dominate, but re-export configs blind the rule (25% <= 30% = extended).
+
+  tier: "extended",
 
   run(ctx) {
     const text = ctx.text;

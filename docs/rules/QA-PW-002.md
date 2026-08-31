@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | error                           |
 | Confidence                            | high                            |
 | Tier                                  | core                            |
-| Measured FP rate                      | 0% (n=17)                       |
+| Measured FP rate                      | 0% (n=20)                       |
 | Evidence level                        | E2                              |
 | QA impact                             | False-green risk (FALSE-GREEN)  |
 | False-positive risk (author estimate) | low                             |
@@ -41,9 +41,11 @@ Verified against `tests/fixtures/QA-PW-002/must-not-fire/clean.spec.ts` — a le
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo         | Occurrences |
-| ------------ | ----------- |
-| sveltejs-kit | 17          |
+| Repo            | Occurrences |
+| --------------- | ----------- |
+| dubinc-dub      | 12          |
+| grafana-grafana | 6           |
+| sveltejs-kit    | 17          |
 
 ---
 

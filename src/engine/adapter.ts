@@ -98,5 +98,12 @@ export interface UniversalRule {
   id: string;
   category: string;
   appliesTo: readonly string[];
+  /**
+   * Config-hygiene rule (see QADoctorRule.configRule): the adapter runs
+   * these ONLY on playwright.config.* files, and runs every other rule
+   * only on test files. Keeps config rules measurable in real scans
+   * without letting generic test rules fire nonsense on configs.
+   */
+  configOnly?: boolean;
   run(file: ParsedFile): Array<Omit<Finding, "ruleId" | "category">>;
 }

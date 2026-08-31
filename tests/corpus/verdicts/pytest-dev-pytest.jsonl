@@ -48,3 +48,13 @@
 {"ruleId":"QA-PY-009","file":"testing/_py/test_local.py","line":80,"verdict":"TP","note":"commented-out test function (test_parents_nonexisting_file) - disabled check rotting in place"}
 {"ruleId":"QA-PY-009","file":"testing/_py/test_local.py","line":140,"verdict":"TP","note":"commented-out test function (test_fnmatch_dir) - disabled check rotting in place"}
 {"ruleId":"QA-PY-009","file":"testing/_py/test_local.py","line":998,"verdict":"TP","note":"commented-out test function (test_parentdirmatch) - disabled check rotting in place"}
+{"ruleId":"QA-PY-003","file":"doc/en/example/assertion/global_testmodule_config/test_hello_world.py","line":5,"verdict":"FP","note":"doc example / collection-fixture script run via pytester, or anchor-adjacent asserts - not assertion-free production tests"}
+{"ruleId":"QA-PY-003","file":"doc/en/example/customdirectory/tests/test_first.py","line":3,"verdict":"FP","note":"doc example / collection-fixture script run via pytester, or anchor-adjacent asserts - not assertion-free production tests"}
+{"ruleId":"QA-PY-003","file":"doc/en/example/customdirectory/tests/test_second.py","line":3,"verdict":"FP","note":"doc example / collection-fixture script run via pytester, or anchor-adjacent asserts - not assertion-free production tests"}
+{"ruleId":"QA-PY-003","file":"doc/en/example/customdirectory/tests/test_third.py","line":3,"verdict":"FP","note":"doc example / collection-fixture script run via pytester, or anchor-adjacent asserts - not assertion-free production tests"}
+{"ruleId":"QA-PY-003","file":"testing/_py/test_local.py","line":461,"verdict":"FP","note":"doc example / collection-fixture script run via pytester, or anchor-adjacent asserts - not assertion-free production tests"}
+{"ruleId":"QA-PY-003","file":"testing/_py/test_local.py","line":1030,"verdict":"FP","note":"doc example / collection-fixture script run via pytester, or anchor-adjacent asserts - not assertion-free production tests"}
+{"ruleId":"QA-PY-002","file":"testing/acceptance_test.py","line":888,"verdict":"TP","note":"non-strict xfail/skip in the pytest suite - dead or deferred test, consistent with the 17 prior verdicts"}
+{"ruleId":"QA-PY-002","file":"testing/acceptance_test.py","line":1654,"verdict":"TP","note":"non-strict xfail/skip in the pytest suite - dead or deferred test, consistent with the 17 prior verdicts"}
+{"ruleId":"QA-PY-002","file":"testing/test_config.py","line":378,"verdict":"TP","note":"non-strict xfail/skip in the pytest suite - dead or deferred test, consistent with the 17 prior verdicts"}
+{"ruleId":"QA-PY-012","file":"testing/_py/test_local.py","line":1260,"verdict":"FP","note":"asserts real state values via custom equality - not a tautology"}

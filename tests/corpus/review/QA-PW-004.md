@@ -1,6 +1,6 @@
 # QA-PW-004 — Sample Findings for Classification
 
-Total sampled: 9 (max 20 per rule)
+Total sampled: 6 (max 20 per rule)
 
 Classify each finding as:
 
@@ -10,182 +10,7 @@ Classify each finding as:
 
 ---
 
-## 1. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestLocatorElementHandle.java:64
-
-**Message:** Brittle XPath selector: `locator("xpath=`.
-
-```
-      59|   @Test
-      60|   void xpathShouldQueryExistingElement() {
-      61|     page.navigate(server.PREFIX + "/playground.html");
-      62|     page.setContent("<html><body><div class='second'><div class='inner'>A</div></div></body></html>");
-      63|     Locator html = page.locator("html");
->>>   64|     Locator second = html.locator("xpath=./body/div[contains(@class, 'second')]");
-      65|     Locator inner = second.locator("xpath=./div[contains(@class, 'inner')]");
-      66|     Object content = page.evaluate("e => e.textContent", inner.elementHandle());
-      67|     assertEquals("A", content);
-      68|   }
-      69|
-```
-
-**verdict:**
-
----
-
-## 2. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestLocatorElementHandle.java:65
-
-**Message:** Brittle XPath selector: `locator("xpath=`.
-
-```
-      60|   void xpathShouldQueryExistingElement() {
-      61|     page.navigate(server.PREFIX + "/playground.html");
-      62|     page.setContent("<html><body><div class='second'><div class='inner'>A</div></div></body></html>");
-      63|     Locator html = page.locator("html");
-      64|     Locator second = html.locator("xpath=./body/div[contains(@class, 'second')]");
->>>   65|     Locator inner = second.locator("xpath=./div[contains(@class, 'inner')]");
-      66|     Object content = page.evaluate("e => e.textContent", inner.elementHandle());
-      67|     assertEquals("A", content);
-      68|   }
-      69|
-      70|   @Test
-```
-
-**verdict:**
-
----
-
-## 3. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestLocatorElementHandle.java:74
-
-**Message:** Brittle XPath selector: `locator("xpath=`.
-
-```
-      69|
-      70|   @Test
-      71|   void xpathShouldReturnNullForNonExistingElement() {
-      72|     page.setContent("<html><body><div class='second'><div class='inner'>B</div></div></body></html>");
-      73|     Locator html = page.locator("html");
->>>   74|     List<ElementHandle> second = html.locator("xpath=/div[contains(@class, 'third')]").elementHandles();
-      75|     assertEquals(asList(), second);
-      76|   }
-      77| }
-      78|
-```
-
-**verdict:**
-
----
-
-## 4. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestLocatorList.java:32
-
-**Message:** Brittle deep structural CSS selector: `locator("div >> p")`.
-
-```
-      27| public class TestLocatorList extends TestBase {
-      28|   @Test
-      29|   void locatorAllShouldWork() {
-      30|     page.setContent("<div><p>A</p><p>B</p><p>C</p></div>");
-      31|     List<String> texts = new ArrayList<>();
->>>   32|     for (Locator p : page.locator("div >> p").all()) {
-      33|       texts.add(p.textContent());
-      34|     }
-      35|     assertEquals(asList("A", "B", "C"), texts);
-      36|   }
-      37|
-```
-
-**verdict:**
-
----
-
-## 5. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestPageLocatorQuery.java:35
-
-**Message:** Brittle deep structural CSS selector: `locator("div >> p")`.
-
-```
-      30|     page.setContent("<section>\n" +
-      31|       "    <div><p>A</p></div>\n" +
-      32|       "    <div><p>A</p><p>A</p></div>\n" +
-      33|       "    <div><p>A</p><p>A</p><p>A</p></div>\n" +
-      34|       "  </section>");
->>>   35|     assertEquals(6, page.locator("div >> p").count());
-      36|     assertEquals(6, page.locator("div").locator("p").count());
-      37|     assertEquals(1, page.locator("div").first().locator("p").count());
-      38|     assertEquals(3, page.locator("div").last().locator("p").count());
-      39|   }
-      40|
-```
-
-**verdict:**
-
----
-
-## 6. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestPageLocatorQuery.java:48
-
-**Message:** Brittle deep structural CSS selector: `locator("div >> p")`.
-
-```
-      43|     page.setContent("<section>\n" +
-      44|       "    <div><p>A</p></div>\n" +
-      45|       "    <div><p>A</p><p>A</p></div>\n" +
-      46|       "    <div><p>A</p><p>A</p><p>A</p></div>\n" +
-      47|       "  </section>");
->>>   48|     assertEquals(1, page.locator("div >> p").nth(0).count());
-      49|     assertEquals(2, page.locator("div").nth(1).locator("p").count());
-      50|     assertEquals(3, page.locator("div").nth(2).locator("p").count());
-      51|   }
-      52|
-      53|   @Test
-```
-
-**verdict:**
-
----
-
-## 7. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestPageLocatorQuery.java:57
-
-**Message:** Brittle deep structural CSS selector: `locator("*css=div >> p")`.
-
-```
-      52|
-      53|   @Test
-      54|   void shouldThrowOnCaptureWNth() {
-      55|     page.setContent("<section><div><p>A</p></div></section>");
-      56|     PlaywrightException e = assertThrows(PlaywrightException.class, () -> {
->>>   57|       page.locator("*css=div >> p").nth(1).click();
-      58|     });
-      59|     assertTrue(e.getMessage().contains("Can't query n-th element"), e.getMessage());
-      60|   }
-      61|
-      62|   @Test
-```
-
-**verdict:**
-
----
-
-## 8. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestPageLocatorQuery.java:187
-
-**Message:** Brittle XPath selector: `locator("xpath=`.
-
-```
-     182|     page.setContent("<div><span>hello</span></div><div><span>world</span></div>");
-     183|     assertThat(page.locator("div", new Page.LocatorOptions().setHas(page.locator("text=world")))).hasCount(1);
-     184|     assertEquals("<div><span>world</span></div>", removeHighlight((String) page.locator("div", new Page.LocatorOptions().setHas(page.locator("text=world"))).evaluate("e => e.outerHTML")));
-     185|     assertThat(page.locator("div", new Page.LocatorOptions().setHas(page.locator("text='hello'")))).hasCount(1);
-     186|     assertEquals("<div><span>hello</span></div>", removeHighlight((String) page.locator("div", new Page.LocatorOptions().setHas(page.locator("text='hello'"))).evaluate("e => e.outerHTML")));
->>>  187|     assertThat(page.locator("div", new Page.LocatorOptions().setHas(page.locator("xpath=./span")))).hasCount(2);
-     188|     assertThat(page.locator("div", new Page.LocatorOptions().setHas(page.locator("span")))).hasCount(2);
-     189|     assertThat(page.locator("div", new Page.LocatorOptions().setHas(page.locator("span", new Page.LocatorOptions().setHasText("wor"))))).hasCount(1);
-     190|     assertEquals("<div><span>world</span></div>", removeHighlight((String) page.locator("div", new Page.LocatorOptions().setHas(
-     191|       page.locator("span", new Page.LocatorOptions().setHasText("wor")))).evaluate("e => e.outerHTML")));
-     192|     assertThat(page.locator("div", new Page.LocatorOptions()
-```
-
-**verdict:**
-
----
-
-## 9. vitejs-vite — playground/backend-integration/**tests**/backend-integration.spec.ts:29
+## 1. vitejs-vite — playground/backend-integration/**tests**/backend-integration.spec.ts:29
 
 **Message:** Brittle multi-class CSS selector: `locator('.asset-reference.outside-root .asset-preview')`.
 
@@ -201,6 +26,120 @@ Classify each finding as:
       32|
       33|     const text = await page.textContent(
       34|       '.asset-reference.outside-root .asset-url',
+```
+
+**verdict:**
+
+---
+
+## 2. grafana-grafana — e2e-playwright/various-suite/prometheus-config.spec.ts:30
+
+**Message:** Brittle multi-class CSS selector: `locator(`#${selectors.components.DataSource.Prometheus.confi`.
+
+```
+      25|         selectors.components.DataSource.Prometheus.configPage.connectionSettings
+      26|       );
+      27|       await expect(connectionSettings).toBeVisible();
+      28|
+      29|       // managed alerts
+>>>   30|       const manageAlerts = page.locator(`#${selectors.components.DataSource.Prometheus.configPage.manageAlerts}`);
+      31|       await expect(manageAlerts).toBeVisible();
+      32|
+      33|       // scrape interval
+      34|       const scrapeInterval = configPage.getByGrafanaSelector(
+      35|         selectors.components.DataSource.Prometheus.configPage.scrapeInterval
+```
+
+**verdict:**
+
+---
+
+## 3. grafana-grafana — e2e-playwright/various-suite/prometheus-config.spec.ts:52
+
+**Message:** Brittle multi-class CSS selector: `locator(
+        `#${selectors.components.DataSource.Prometh`.
+
+```
+      47|         selectors.components.DataSource.Prometheus.configPage.defaultEditor
+      48|       );
+      49|       await expect(defaultEditor).toBeVisible();
+      50|
+      51|       // disable metric lookup
+>>>   52|       const disableMetricLookup = page.locator(
+      53|         `#${selectors.components.DataSource.Prometheus.configPage.disableMetricLookup}`
+      54|       );
+      55|       await expect(disableMetricLookup).toBeVisible();
+      56|
+      57|       // prometheus type
+```
+
+**verdict:**
+
+---
+
+## 4. grafana-grafana — e2e-playwright/various-suite/prometheus-config.spec.ts:70
+
+**Message:** Brittle multi-class CSS selector: `locator(
+        `#${selectors.components.DataSource.Prometh`.
+
+```
+      65|         selectors.components.DataSource.Prometheus.configPage.cacheLevel
+      66|       );
+      67|       await expect(cacheLevel).toBeVisible();
+      68|
+      69|       // incremental querying
+>>>   70|       const incrementalQuerying = page.locator(
+      71|         `#${selectors.components.DataSource.Prometheus.configPage.incrementalQuerying}`
+      72|       );
+      73|       await expect(incrementalQuerying).toBeVisible();
+      74|
+      75|       // disable recording rules
+```
+
+**verdict:**
+
+---
+
+## 5. grafana-grafana — e2e-playwright/various-suite/prometheus-config.spec.ts:76
+
+**Message:** Brittle multi-class CSS selector: `locator(
+        `#${selectors.components.DataSource.Prometh`.
+
+```
+      71|         `#${selectors.components.DataSource.Prometheus.configPage.incrementalQuerying}`
+      72|       );
+      73|       await expect(incrementalQuerying).toBeVisible();
+      74|
+      75|       // disable recording rules
+>>>   76|       const disableRecordingRules = page.locator(
+      77|         `#${selectors.components.DataSource.Prometheus.configPage.disableRecordingRules}`
+      78|       );
+      79|       await expect(disableRecordingRules).toBeVisible();
+      80|
+      81|       // custom query parameters
+```
+
+**verdict:**
+
+---
+
+## 6. grafana-grafana — e2e-playwright/various-suite/prometheus-config.spec.ts:199
+
+**Message:** Brittle multi-class CSS selector: `locator(
+        `#${selectors.components.DataSource.Prometh`.
+
+```
+     194|         type: 'prometheus',
+     195|         name: DATASOURCE_NAME,
+     196|       });
+     197|
+     198|       // Check the incremental querying checkbox
+>>>  199|       const incrementalQuerying = page.locator(
+     200|         `#${selectors.components.DataSource.Prometheus.configPage.incrementalQuerying}`
+     201|       );
+     202|       await expect(incrementalQuerying).toBeVisible();
+     203|       await incrementalQuerying.check({ force: true });
+     204|
 ```
 
 **verdict:**

@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | error                          |
 | Confidence                            | medium                         |
 | Tier                                  | quarantine                     |
-| Measured FP rate                      | 100% (n=13)                    |
+| Measured FP rate                      | 100% (n=24)                    |
 | Evidence level                        | E1                             |
 | QA impact                             | False-green risk (FALSE-GREEN) |
 | False-positive risk (author estimate) | medium                         |
@@ -43,7 +43,10 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo                 | Occurrences |
 | -------------------- | ----------- |
+| calcom-cal           | 3           |
+| grafana-grafana      | 105         |
 | nextauthjs-next-auth | 9           |
+| puppeteer-puppeteer  | 1           |
 | sveltejs-kit         | 8           |
 | tanstack-query       | 5           |
 | vitejs-vite          | 6           |

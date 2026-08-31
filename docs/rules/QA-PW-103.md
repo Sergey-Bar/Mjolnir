@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | info                        |
 | Confidence                            | low                         |
 | Tier                                  | quarantine                  |
-| Measured FP rate                      | not yet measured            |
+| Measured FP rate                      | 100% (n=20)                 |
 | Evidence level                        | E1                          |
 | QA impact                             | Test hygiene debt (HYGIENE) |
 | False-positive risk (author estimate) | high                        |
@@ -43,7 +43,11 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo                 | Occurrences |
 | -------------------- | ----------- |
+| calcom-cal           | 1           |
+| dubinc-dub           | 17          |
+| grafana-grafana      | 82          |
 | nextauthjs-next-auth | 4           |
+| puppeteer-puppeteer  | 97          |
 | sveltejs-kit         | 438         |
 | vitejs-vite          | 39          |
 | withastro-astro      | 6           |

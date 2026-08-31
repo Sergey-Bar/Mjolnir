@@ -24,6 +24,10 @@ export const pyHardSleep = defineRule({
   detectionStrategy: "regex pattern",
   introduced: "0.3.0",
 
+  // Measured FP 16% (n=19): genuine e2e hard sleeps, but browser-side instrumentation and wall-clock timing subjects are legitimate (16% <= 30% = extended).
+
+  tier: "extended",
+
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];

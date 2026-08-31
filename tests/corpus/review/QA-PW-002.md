@@ -10,73 +10,7 @@ Classify each finding as:
 
 ---
 
-## 1. sveltejs-kit — packages/adapter-bun/test/apps/basic/test/server.test.js:77
-
-**Message:** Playwright locator assertion is not awaited.
-
-```
-      72| 	}
-      73| });
-      74|
-      75| test('serves prerendered pages, endpoints, and canonical redirects', async ({ request }) => {
-      76| 	const page = await request.get('/prerendered/');
->>>   77| 	expect(page.status()).toBe(200);
-      78| 	expect(await page.text()).toContain('Prerendered');
-      79|
-      80| 	const icon = await request.get('/prerendered.ico');
-      81| 	expect(icon.status()).toBe(200);
-      82| 	expect(icon.headers()['content-type']).toBe('image/x-icon');
-```
-
-**verdict:**
-
----
-
-## 2. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:674
-
-**Message:** Playwright locator assertion is not awaited.
-
-```
-     669|
-     670| 		await page.click('#trigger');
-     671|
-     672| 		// the redirect must both navigate and settle the awaited query
-     673| 		await expect(page.locator('#status')).toHaveText('resolved');
->>>  674| 		expect(page.url()).toContain('#redirected');
-     675| 	});
-     676|
-     677| 	test('non-exported remote functions are never serialized into responses', async ({ page }) => {
-     678| 		await page.goto('/remote/private-query');
-     679|
-```
-
-**verdict:**
-
----
-
-## 3. sveltejs-kit — packages/kit/test/apps/async/test/client.test.js:1008
-
-**Message:** Playwright locator assertion is not awaited.
-
-```
-    1003| 		await expect(page.locator('#connected')).toHaveText('true');
-    1004|
-    1005| 		await page.click('#trigger-redirect');
-    1006|
-    1007| 		await expect(page.locator('#redirect-target')).toBeVisible();
->>> 1008| 		expect(page.url()).toMatch(/\/remote\/live-terminal\/target$/);
-    1009| 	});
-    1010|
-    1011| 	test('refreshAll works with schema transforms (number to string)', async ({ page }) => {
-    1012| 		await page.goto('/remote/form/transform');
-    1013|
-```
-
-**verdict:**
-
----
-
-## 4. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1480
+## 1. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1480
 
 **Message:** Playwright locator assertion is not awaited.
 
@@ -98,7 +32,7 @@ Classify each finding as:
 
 ---
 
-## 5. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1481
+## 2. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1481
 
 **Message:** Playwright locator assertion is not awaited.
 
@@ -120,7 +54,7 @@ Classify each finding as:
 
 ---
 
-## 6. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1485
+## 3. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1485
 
 **Message:** Playwright locator assertion is not awaited.
 
@@ -142,7 +76,7 @@ Classify each finding as:
 
 ---
 
-## 7. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1486
+## 4. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1486
 
 **Message:** Playwright locator assertion is not awaited.
 
@@ -164,7 +98,7 @@ Classify each finding as:
 
 ---
 
-## 8. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1494
+## 5. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1494
 
 **Message:** Playwright locator assertion is not awaited.
 
@@ -186,7 +120,7 @@ Classify each finding as:
 
 ---
 
-## 9. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1495
+## 6. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1495
 
 **Message:** Playwright locator assertion is not awaited.
 
@@ -208,7 +142,7 @@ Classify each finding as:
 
 ---
 
-## 10. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1501
+## 7. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1501
 
 **Message:** Playwright locator assertion is not awaited.
 
@@ -230,7 +164,7 @@ Classify each finding as:
 
 ---
 
-## 11. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1502
+## 8. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1502
 
 **Message:** Playwright locator assertion is not awaited.
 
@@ -252,7 +186,7 @@ Classify each finding as:
 
 ---
 
-## 12. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1510
+## 9. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1510
 
 **Message:** Playwright locator assertion is not awaited.
 
@@ -274,7 +208,7 @@ Classify each finding as:
 
 ---
 
-## 13. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1540
+## 10. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1540
 
 **Message:** Playwright locator assertion is not awaited.
 
@@ -296,7 +230,7 @@ Classify each finding as:
 
 ---
 
-## 14. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1541
+## 11. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1541
 
 **Message:** Playwright locator assertion is not awaited.
 
@@ -318,7 +252,7 @@ Classify each finding as:
 
 ---
 
-## 15. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1545
+## 12. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1545
 
 **Message:** Playwright locator assertion is not awaited.
 
@@ -340,7 +274,7 @@ Classify each finding as:
 
 ---
 
-## 16. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1546
+## 13. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1546
 
 **Message:** Playwright locator assertion is not awaited.
 
@@ -362,7 +296,7 @@ Classify each finding as:
 
 ---
 
-## 17. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1560
+## 14. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1560
 
 **Message:** Playwright locator assertion is not awaited.
 
@@ -384,7 +318,7 @@ Classify each finding as:
 
 ---
 
-## 18. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1561
+## 15. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1561
 
 **Message:** Playwright locator assertion is not awaited.
 
@@ -406,7 +340,7 @@ Classify each finding as:
 
 ---
 
-## 19. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1565
+## 16. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1565
 
 **Message:** Playwright locator assertion is not awaited.
 
@@ -428,7 +362,7 @@ Classify each finding as:
 
 ---
 
-## 20. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1566
+## 17. sveltejs-kit — packages/kit/test/apps/basics/test/client.test.js:1566
 
 **Message:** Playwright locator assertion is not awaited.
 
@@ -444,6 +378,72 @@ Classify each finding as:
     1569| 		test('Works with a fast and a slow server load functions which (direct hit)', async ({
     1570| 			page
     1571| 		}) => {
+```
+
+**verdict:**
+
+---
+
+## 18. grafana-grafana — e2e-playwright/panels-suite/table-kitchenSink.spec.ts:124
+
+**Message:** Playwright locator assertion is not awaited.
+
+```
+     119|     const stateOverride = dashboardPage.getByGrafanaSelector(
+     120|       selectors.components.OptionsGroup.group('panel-options-override-11')
+     121|     );
+     122|
+     123|     // confirm that "State" column is hidden by default.
+>>>  124|     expect(page.getByRole('row').nth(0)).not.toContainText('State');
+     125|     // toggle the "State" column visibility via the override we set up in the kitchen sink panel.
+     126|     const hideStateColumnSwitch = stateOverride.locator('label').last();
+     127|     await hideStateColumnSwitch.click();
+     128|     expect(page.getByRole('row').nth(0)).toContainText('State');
+     129|
+```
+
+**verdict:**
+
+---
+
+## 19. grafana-grafana — e2e-playwright/panels-suite/table-kitchenSink.spec.ts:128
+
+**Message:** Playwright locator assertion is not awaited.
+
+```
+     123|     // confirm that "State" column is hidden by default.
+     124|     expect(page.getByRole('row').nth(0)).not.toContainText('State');
+     125|     // toggle the "State" column visibility via the override we set up in the kitchen sink panel.
+     126|     const hideStateColumnSwitch = stateOverride.locator('label').last();
+     127|     await hideStateColumnSwitch.click();
+>>>  128|     expect(page.getByRole('row').nth(0)).toContainText('State');
+     129|
+     130|     // now change the display name of the "State" column.
+     131|     const displayNameInput = stateOverride.locator('input[value="State"]').last();
+     132|     await displayNameInput.fill('State (renamed)');
+     133|     await displayNameInput.press('Enter');
+```
+
+**verdict:**
+
+---
+
+## 20. grafana-grafana — e2e-playwright/panels-suite/table-kitchenSink.spec.ts:134
+
+**Message:** Playwright locator assertion is not awaited.
+
+```
+     129|
+     130|     // now change the display name of the "State" column.
+     131|     const displayNameInput = stateOverride.locator('input[value="State"]').last();
+     132|     await displayNameInput.fill('State (renamed)');
+     133|     await displayNameInput.press('Enter');
+>>>  134|     expect(page.getByRole('row').nth(0)).toContainText('State (renamed)');
+     135|
+     136|     // toggle the "State" column visibility again to hide it again. this confirms that we avoid bugs related to
+     137|     // array lengths between the fields array and the column widths array.
+     138|     await hideStateColumnSwitch.click();
+     139|     expect(page.getByRole('row').nth(0)).not.toContainText('State');
 ```
 
 **verdict:**

@@ -106,6 +106,15 @@ export type AppliesTo =
 export interface QADoctorRule extends RuleMeta {
   /** Which file kinds this rule applies to. */
   appliesTo: AppliesTo;
+  /**
+   * Config-hygiene rules: the engine only feeds these rules
+   * playwright.config.* files (and never feeds them test files), and
+   * never feeds test-file rules a config. Set on rules whose detection
+   * gates on a config filename (QA-PW-121/122/141/143/144). Without
+   * this flag the generic test rules would fire nonsense on configs
+   * (e.g. QA-TEST-003 "no assertions" on every playwright.config.ts).
+   */
+  configRule?: boolean;
   run: RuleFn;
 }
 

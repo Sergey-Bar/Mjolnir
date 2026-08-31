@@ -6,8 +6,8 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | ------------------------------------- | ---------------------------- |
 | Severity                              | warning                      |
 | Confidence                            | high                         |
-| Tier                                  | core                         |
-| Measured FP rate                      | not yet measured             |
+| Tier                                  | extended                     |
+| Measured FP rate                      | 16% (n=19)                   |
 | Evidence level                        | E2                           |
 | QA impact                             | Flaky-test risk (FLAKY-RISK) |
 | False-positive risk (author estimate) | low                          |
@@ -41,9 +41,10 @@ Verified against `tests/fixtures/QA-PY-005/must-not-fire/clean.py` — a legitim
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo         | Occurrences |
-| ------------ | ----------- |
-| psf-requests | 3           |
+| Repo              | Occurrences |
+| ----------------- | ----------- |
+| psf-requests      | 3           |
+| reflex-dev-reflex | 16          |
 
 ---
 

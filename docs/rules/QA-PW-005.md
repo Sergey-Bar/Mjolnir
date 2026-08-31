@@ -6,8 +6,8 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | ------------------------------------- | --------------------------------------- |
 | Severity                              | warning                                 |
 | Confidence                            | medium                                  |
-| Tier                                  | core                                    |
-| Measured FP rate                      | not yet measured                        |
+| Tier                                  | quarantine                              |
+| Measured FP rate                      | 100% (n=17)                             |
 | Evidence level                        | E1                                      |
 | QA impact                             | Test hygiene debt (HYGIENE)             |
 | False-positive risk (author estimate) | medium                                  |
@@ -41,10 +41,11 @@ Verified against `tests/fixtures/QA-PW-005/must-not-fire/clean.spec.ts` — a le
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo            | Occurrences |
-| --------------- | ----------- |
-| sveltejs-kit    | 4           |
-| withastro-astro | 3           |
+| Repo                | Occurrences |
+| ------------------- | ----------- |
+| puppeteer-puppeteer | 10          |
+| sveltejs-kit        | 4           |
+| withastro-astro     | 3           |
 
 ---
 

@@ -41,9 +41,10 @@ Verified against `tests/fixtures/QA-TQUAL-009/must-not-fire/clean.spec.ts` — a
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo           | Occurrences |
-| -------------- | ----------- |
-| tanstack-query | 1           |
+| Repo            | Occurrences |
+| --------------- | ----------- |
+| grafana-grafana | 1           |
+| tanstack-query  | 1           |
 
 ---
 

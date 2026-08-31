@@ -1,6 +1,6 @@
 # QA-PY-009 — Sample Findings for Classification
 
-Total sampled: 3 (max 20 per rule)
+Total sampled: 4 (max 20 per rule)
 
 Classify each finding as:
 
@@ -70,6 +70,25 @@ Classify each finding as:
     1001|
     1002|
     1003| class TestImport:
+```
+
+**verdict:**
+
+---
+
+## 4. reflex-dev-reflex — tests/integration/test_lifespan.py:320
+
+**Message:** Commented-out test detected.
+
+```
+     315|     assert lifespan_app.app_module.lifespan_context_global == 4
+     316|     assert lifespan_app.app_module.raw_asyncio_task_global == 0
+     317|
+     318|
+     319| # --- Do NOT add new test cases below this line. ---
+>>>  320| # test_lifespan (above) kills the backend; any test defined after it will
+     321| # find the harness in a stopped state and fail.
+     322|
 ```
 
 **verdict:**
