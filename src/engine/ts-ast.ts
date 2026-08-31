@@ -176,17 +176,11 @@ export function getCodeOnlyText(file: ParsedFile): string {
       ranges.push({ start: s, end: s + d.getWidth() });
     }
     // Comments via the scanner (ts-morph has no whole-file comment API).
-    // Reject any scanner-emitted range that OVERLAPS an already-collected
-    // AST range. The scanner runs flat (no parser context) so it emits
-    // phantom StringLiteral tokens when it sees a quote inside a template
-    // expression — those phantoms start inside the template but extend
-    // past it, blanking real code. Overlap rejection is safe: comments
-    // never overlap string/template ranges in valid TypeScript.
+    // Scanner phantoms (a `/*` inside a template literal scanned as a
+    // comment running to EOF) are rejected inside commentAndStringRanges
+    // against the template/string AST nodes collected above.
     for (const r of commentAndStringRanges({ ...file, ast: sf })) {
-      const overlaps = ranges.some((x) => r.start < x.end && r.end > x.start);
-      if (!overlaps) {
-        ranges.push(r);
-      }
+      ranges.push(r);
     }
     if (ranges.length === 0) return text;
     ranges.sort((a, b) => a.start - b.start);
