@@ -7,10 +7,10 @@
 **Verification Trust Engine for QA.** Mjölnir audits test suites and CI
 pipelines, reports a worthiness score, and shows exactly where trust breaks.
 
-[![npm](https://img.shields.io/npm/v/mjolnir-qa.svg?style=flat-square&color=B45309&labelColor=0D0D0D)](https://www.npmjs.com/package/mjolnir-qa)
-[![ci](https://img.shields.io/github/actions/workflow/status/Sergey-Bar/Mjolnir/ci.yml?branch=main&style=flat-square&label=ci&labelColor=0D0D0D)](https://github.com/Sergey-Bar/Mjolnir/actions/workflows/ci.yml)
-[![license](https://img.shields.io/badge/license-MIT-B45309.svg?style=flat-square&labelColor=0D0D0D)](LICENSE)
-[![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-146A8C.svg?style=flat-square&labelColor=0D0D0D)](https://nodejs.org)
+[![npm](https://img.shields.io/npm/v/mjolnir-qa.svg?style=flat-square&color=C9A227&labelColor=0B0F17)](https://www.npmjs.com/package/mjolnir-qa)
+[![ci](https://img.shields.io/github/actions/workflow/status/Sergey-Bar/Mjolnir/ci.yml?branch=main&style=flat-square&label=ci&labelColor=0B0F17)](https://github.com/Sergey-Bar/Mjolnir/actions/workflows/ci.yml)
+[![license](https://img.shields.io/badge/license-MIT-C9A227.svg?style=flat-square&labelColor=0B0F17)](LICENSE)
+[![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-2E8C7F.svg?style=flat-square&labelColor=0B0F17)](https://nodejs.org)
 
 ```bash
 npx mjolnir-qa@latest

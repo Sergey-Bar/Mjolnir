@@ -221,7 +221,7 @@ onBeforeUnmount(() => {
   font-family: var(--mj-display);
   font-size: 1.9rem;
   line-height: 1.1;
-  color: var(--mj-ember-bright);
+  color: var(--vp-c-brand-1);
 }
 .stat span {
   font-size: 0.78rem;
@@ -248,7 +248,7 @@ onBeforeUnmount(() => {
 }
 .search:focus {
   outline: none;
-  border-color: var(--mj-ember-bright);
+  border-color: var(--vp-c-brand-1);
   box-shadow: 0 0 0 3px var(--vp-c-brand-soft);
 }
 .selects {
@@ -276,7 +276,7 @@ onBeforeUnmount(() => {
   cursor: pointer;
 }
 .selects .check input {
-  accent-color: var(--mj-ember);
+  accent-color: var(--vp-c-brand-1);
 }
 
 .count {
@@ -293,12 +293,12 @@ onBeforeUnmount(() => {
   border-radius: 6px;
   border: 1px solid var(--vp-c-border);
   background: none;
-  color: var(--mj-ember);
+  color: var(--vp-c-brand-1);
   font-size: 0.78rem;
   cursor: pointer;
 }
 .reset:hover {
-  border-color: var(--mj-ember);
+  border-color: var(--vp-c-brand-1);
 }
 
 /* ---- table ---- */
@@ -370,28 +370,19 @@ tbody tr:hover {
   border: 1px solid transparent;
 }
 .sev-error {
-  color: #dc2626;
-  background: rgba(220, 38, 38, 0.12);
-  border-color: rgba(220, 38, 38, 0.3);
+  color: var(--mj-unworthy);
+  background: rgba(193, 59, 55, 0.12);
+  border-color: rgba(193, 59, 55, 0.32);
 }
 .sev-warning {
-  color: #b45309;
-  background: rgba(217, 119, 6, 0.14);
-  border-color: rgba(217, 119, 6, 0.3);
+  color: var(--mj-needswork);
+  background: rgba(201, 162, 39, 0.14);
+  border-color: rgba(201, 162, 39, 0.32);
 }
 .sev-info {
-  color: #0e7490;
-  background: rgba(14, 116, 144, 0.12);
-  border-color: rgba(14, 116, 144, 0.3);
-}
-.dark .sev-error {
-  color: #f87171;
-}
-.dark .sev-warning {
-  color: #fbbf24;
-}
-.dark .sev-info {
-  color: #22d3ee;
+  color: var(--mj-info);
+  background: rgba(43, 127, 168, 0.12);
+  border-color: rgba(43, 127, 168, 0.32);
 }
 
 .tier-core {
@@ -405,27 +396,21 @@ tbody tr:hover {
   border-color: var(--vp-c-border);
 }
 .tier-quarantine {
-  color: #b45309;
+  color: var(--mj-needswork);
   background: repeating-linear-gradient(
     45deg,
-    rgba(217, 119, 6, 0.1),
-    rgba(217, 119, 6, 0.1) 5px,
+    rgba(201, 162, 39, 0.1),
+    rgba(201, 162, 39, 0.1) 5px,
     transparent 5px,
     transparent 10px
   );
-  border-color: rgba(217, 119, 6, 0.35);
-}
-.dark .tier-quarantine {
-  color: #fbbf24;
+  border-color: rgba(201, 162, 39, 0.35);
 }
 .measured {
-  color: #15803d;
-  background: rgba(21, 128, 61, 0.12);
-  border-color: rgba(21, 128, 61, 0.3);
+  color: var(--mj-worthy);
+  background: rgba(47, 158, 115, 0.12);
+  border-color: rgba(47, 158, 115, 0.3);
   font-family: var(--vp-font-family-mono);
-}
-.dark .measured {
-  color: #4ade80;
 }
 
 .empty {
@@ -437,7 +422,7 @@ tbody tr:hover {
   display: block;
   font-family: var(--mj-display);
   font-size: 1.8rem;
-  color: var(--mj-ember-bright);
+  color: var(--vp-c-brand-1);
   opacity: 0.6;
   margin-bottom: 0.5rem;
 }

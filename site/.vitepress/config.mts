@@ -97,8 +97,26 @@ export default defineConfig({
     },
   },
   head: [
-    ["meta", { name: "theme-color", content: "#B45309" }],
-    ["link", { rel: "icon", href: BASE + "hammer.svg", type: "image/svg+xml" }],
+    ["meta", { name: "theme-color", content: "#0b0f17" }],
+    [
+      "link",
+      {
+        rel: "icon",
+        type: "image/png",
+        sizes: "32x32",
+        href: BASE + "favicon-32.png",
+      },
+    ],
+    [
+      "link",
+      {
+        rel: "icon",
+        type: "image/png",
+        sizes: "16x16",
+        href: BASE + "favicon-16.png",
+      },
+    ],
+    ["link", { rel: "apple-touch-icon", href: BASE + "apple-touch-icon.png" }],
     ["link", { rel: "preconnect", href: "https://fonts.googleapis.com" }],
     [
       "link",
@@ -131,7 +149,7 @@ export default defineConfig({
     ["meta", { name: "twitter:image", content: SITE_URL + "social-card.png" }],
   ],
   themeConfig: {
-    logo: "/hammer.svg",
+    logo: "/apple-touch-icon.png",
     nav: [
       { text: "Guide", link: "/guide/getting-started" },
       { text: "Rules", link: "/rules/", activeMatch: "^/rules/" },
@@ -171,7 +189,8 @@ export default defineConfig({
     },
     footer: {
       message: "Released under the MIT License.",
-      copyright: "Built by Sergey Bar",
+      copyright:
+        'Built by <a href="https://www.linkedin.com/in/sergeybar/" target="_blank" rel="noreferrer">Sergey Bar</a>',
     },
   },
 });
