@@ -35,7 +35,7 @@
   "devDependencies": {
     "@playwright/test": "^1.50.0",
     "tsdown": "^0.22.14",
-    "typescript": "^6.0.3"
+    "typescript": "^7.0.2"
   },
   "scripts": {
     "build": "tsdown src/index.ts --format esm --dts --out-dir dist"
