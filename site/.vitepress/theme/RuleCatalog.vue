@@ -221,7 +221,7 @@ onBeforeUnmount(() => {
   font-family: var(--mj-display);
   font-size: 1.9rem;
   line-height: 1.1;
-  color: var(--mj-ember-bright);
+  color: var(--vp-c-brand-1);
 }
 .stat span {
   font-size: 0.78rem;
@@ -248,7 +248,7 @@ onBeforeUnmount(() => {
 }
 .search:focus {
   outline: none;
-  border-color: var(--mj-ember-bright);
+  border-color: var(--vp-c-brand-1);
   box-shadow: 0 0 0 3px var(--vp-c-brand-soft);
 }
 .selects {
@@ -276,7 +276,7 @@ onBeforeUnmount(() => {
   cursor: pointer;
 }
 .selects .check input {
-  accent-color: var(--mj-ember);
+  accent-color: var(--vp-c-brand-1);
 }
 
 .count {
@@ -293,12 +293,12 @@ onBeforeUnmount(() => {
   border-radius: 6px;
   border: 1px solid var(--vp-c-border);
   background: none;
-  color: var(--mj-ember);
+  color: var(--vp-c-brand-1);
   font-size: 0.78rem;
   cursor: pointer;
 }
 .reset:hover {
-  border-color: var(--mj-ember);
+  border-color: var(--vp-c-brand-1);
 }
 
 /* ---- table ---- */
@@ -422,7 +422,7 @@ tbody tr:hover {
   display: block;
   font-family: var(--mj-display);
   font-size: 1.8rem;
-  color: var(--mj-ember-bright);
+  color: var(--vp-c-brand-1);
   opacity: 0.6;
   margin-bottom: 0.5rem;
 }

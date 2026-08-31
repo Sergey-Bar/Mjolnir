@@ -191,8 +191,8 @@ onBeforeUnmount(() => {
           />
           <defs>
             <linearGradient id="boltgrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#37d4c6" />
-              <stop offset="1" stop-color="#e0b443" />
+              <stop offset="0" stop-color="#45d4c4" />
+              <stop offset="1" stop-color="#e6bd57" />
             </linearGradient>
           </defs>
         </svg>
@@ -481,10 +481,11 @@ onBeforeUnmount(() => {
   background: conic-gradient(
     from 180deg at 50% 50%,
     transparent 0deg,
-    rgba(201, 162, 39, 0.22) 60deg,
-    transparent 130deg,
-    rgba(55, 212, 198, 0.16) 220deg,
-    transparent 300deg
+    rgba(201, 162, 57, 0.12) 40deg,
+    transparent 110deg,
+    rgba(69, 212, 196, 0.18) 200deg,
+    rgba(92, 196, 224, 0.13) 260deg,
+    transparent 320deg
   );
   filter: blur(60px);
   animation: spin 26s linear infinite;
@@ -498,9 +499,9 @@ onBeforeUnmount(() => {
   transform: translateX(-50%);
   background: radial-gradient(
     circle,
-    rgba(224, 180, 67, 0.28),
-    rgba(201, 162, 39, 0.08) 40%,
-    transparent 70%
+    rgba(230, 189, 87, 0.14),
+    rgba(55, 189, 169, 0.06) 45%,
+    transparent 72%
   );
   animation: breathe 7s ease-in-out infinite;
 }
@@ -542,14 +543,20 @@ onBeforeUnmount(() => {
   padding: 0;
   border: 0;
   line-height: 0;
+  /* bridge the logo art's own navy scene into the hero ground */
+  background: radial-gradient(
+    ellipse 68% 58% at 50% 46%,
+    rgba(20, 33, 46, 0.6),
+    transparent 72%
+  );
 }
 .hero-logo img {
   display: block;
   width: min(560px, 86vw);
   height: auto;
   margin: 0 auto;
-  filter: drop-shadow(0 10px 44px rgba(8, 11, 18, 0.6))
-    drop-shadow(0 0 36px rgba(55, 212, 198, 0.14));
+  filter: drop-shadow(0 12px 46px rgba(7, 12, 20, 0.55))
+    drop-shadow(0 0 40px rgba(69, 212, 196, 0.12));
 }
 .lede {
   font-family: var(--mj-display);
@@ -713,7 +720,7 @@ onBeforeUnmount(() => {
   font-size: 0.86rem;
 }
 .mini-cmd .prompt {
-  color: var(--mj-ember);
+  color: var(--vp-c-brand-1);
 }
 
 .gauge-wrap {
@@ -736,8 +743,8 @@ onBeforeUnmount(() => {
   fill: none;
   stroke-width: 10;
   stroke-linecap: round;
-  stroke: var(--mj-ember-bright);
-  filter: drop-shadow(0 0 8px rgba(224, 180, 67, 0.5));
+  stroke: var(--mj-needswork);
+  filter: drop-shadow(0 0 8px rgba(224, 180, 67, 0.45));
   transition: stroke-dashoffset 0.1s linear;
 }
 .gauge-num {
@@ -763,7 +770,7 @@ onBeforeUnmount(() => {
   font-style: normal;
   font-size: 0.7rem;
   letter-spacing: 0.18em;
-  color: var(--mj-ember);
+  color: var(--vp-c-brand-1);
 }
 
 /* ---------------- SCAN CAPTURE ---------------- */
@@ -882,7 +889,7 @@ onBeforeUnmount(() => {
   letter-spacing: 0.22em;
   text-transform: uppercase;
   font-size: 0.75rem;
-  color: var(--mj-ember);
+  color: var(--vp-c-brand-1);
   margin: 0;
 }
 .meas-big {
@@ -892,7 +899,7 @@ onBeforeUnmount(() => {
   color: var(--vp-c-text-1);
 }
 .meas-big strong {
-  color: var(--mj-ember-bright);
+  color: var(--vp-c-brand-1);
 }
 .meas-body {
   max-width: 58ch;
@@ -905,7 +912,7 @@ onBeforeUnmount(() => {
 }
 .meas-link {
   font-weight: 600;
-  color: var(--mj-ember);
+  color: var(--vp-c-brand-1);
 }
 
 /* ---------------- FEATURES ---------------- */
@@ -942,7 +949,7 @@ onBeforeUnmount(() => {
   position: absolute;
   right: 1.5rem;
   bottom: 1.2rem;
-  color: var(--mj-ember-bright);
+  color: var(--vp-c-brand-1);
   opacity: 0;
   transform: translateX(-6px);
   transition:
@@ -981,7 +988,7 @@ onBeforeUnmount(() => {
 .feat-rune {
   font-family: var(--mj-display);
   font-size: 1.7rem;
-  color: var(--mj-ember-bright);
+  color: var(--vp-c-brand-1);
   text-shadow: 0 0 20px rgba(224, 180, 67, 0.35);
 }
 .feat h3 {
@@ -1061,7 +1068,7 @@ onBeforeUnmount(() => {
 .cmp-us li::before {
   content: "ᛏ";
   font-family: var(--mj-display);
-  color: var(--mj-ember-bright);
+  color: var(--vp-c-brand-1);
 }
 .cmp-mark {
   position: absolute;
@@ -1094,7 +1101,7 @@ onBeforeUnmount(() => {
   color: var(--vp-c-text-2);
 }
 .built a {
-  color: var(--mj-ember);
+  color: var(--vp-c-brand-1);
   font-weight: 600;
 }
 

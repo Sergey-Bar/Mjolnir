@@ -46,9 +46,6 @@ body {
 ::selection {
   background: rgba(224, 180, 67, 0.28);
 }
-:root {
-  --vp-c-brand-1: var(--vp-c-brand-1);
-}
 
 /* ---- doc pages: a runic top rule + warmer prose ------------ */
 .vp-doc h1 {
@@ -64,11 +61,11 @@ body {
 .vp-doc h2::before {
   content: "ᛏ";
   font-family: var(--mj-display);
-  color: var(--mj-ember-bright);
+  color: var(--vp-c-brand-1);
   margin-right: 0.55rem;
   font-size: 0.8em;
-  opacity: 0.75;
-  text-shadow: 0 0 12px rgba(224, 180, 67, 0.4);
+  opacity: 0.8;
+  text-shadow: 0 0 12px rgba(224, 180, 67, 0.3);
 }
 .vp-doc h3 {
   font-family: var(--mj-display);

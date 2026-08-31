@@ -35,7 +35,7 @@ withDefaults(defineProps<{ rune?: string }>(), { rune: "ᛏ" });
 .glyph {
   font-family: var(--mj-display);
   font-size: 1.15rem;
-  color: var(--mj-ember-bright);
+  color: var(--vp-c-brand-1);
   text-shadow: 0 0 14px rgba(224, 180, 67, 0.4);
   letter-spacing: 0.1em;
 }
