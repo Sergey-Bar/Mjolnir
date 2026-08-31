@@ -4,5 +4,8 @@ node_modules/
 package-lock.json
 scratch/
 
+# Rule catalog pages generated from docs/rules/ by site/scripts/gen-rules.mjs
+site/rules/
+
 # Saved HTML artifact exports (planning reference material, not source)
 .planning/**/*.html

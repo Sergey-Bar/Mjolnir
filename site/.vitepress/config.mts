@@ -2,7 +2,39 @@ import { defineConfig } from "vitepress";
 
 // Project site served from https://sergey-bar.github.io/Mjolnir/
 const BASE = "/Mjolnir/";
+const ORIGIN = "https://sergey-bar.github.io";
+const SITE_URL = ORIGIN + BASE;
 const REPO_BLOB = "https://github.com/Sergey-Bar/Mjolnir/blob/main/";
+const TAGLINE =
+  "Verification Trust Engine for QA — audits test suites and CI pipelines, reports a worthiness score and prioritized findings.";
+
+const SIDEBAR = [
+  {
+    text: "Guide",
+    items: [
+      { text: "Getting started", link: "/guide/getting-started" },
+      { text: "What Mjölnir checks", link: "/guide/what-it-checks" },
+      { text: "How the score works", link: "/guide/scoring" },
+      { text: "Runtime forensics", link: "/guide/forensics" },
+      { text: "CI integration", link: "/guide/ci" },
+      { text: "Configuration", link: "/guide/configuration" },
+    ],
+  },
+  {
+    text: "Rules",
+    items: [{ text: "Rule catalog", link: "/rules/" }],
+  },
+  {
+    text: "Reference",
+    items: [
+      { text: "Exit codes & contracts", link: "/reference/exit-codes" },
+      { text: "False-positive audit", link: "/reference/fp-audit" },
+      { text: "Rule lifecycle", link: "/reference/rule-lifecycle" },
+      { text: "SARIF integration", link: "/reference/sarif" },
+      { text: "Contributing", link: "/reference/contributing" },
+    ],
+  },
+];
 
 // Docs that are @include'd from ../../docs and ../../CONTRIBUTING.md carry
 // links written relative to the repo, not the site. Map the ones that have
@@ -17,13 +49,14 @@ const DOC_ROUTES: Record<string, string> = {
 
 export default defineConfig({
   title: "Mjölnir",
-  description:
-    "Verification Trust Engine for QA — audits test suites and CI pipelines, reports a worthiness score and prioritized findings.",
+  titleTemplate: ":title · Mjölnir",
+  description: TAGLINE,
   base: BASE,
   lang: "en-US",
   cleanUrls: true,
   lastUpdated: true,
   appearance: "dark",
+  sitemap: { hostname: SITE_URL },
   // Included docs (docs/*.md) carry links relative to the repo, not the
   // site; markdown.config below rewrites them, this silences the checker.
   ignoreDeadLinks: true,
@@ -65,6 +98,7 @@ export default defineConfig({
   },
   head: [
     ["meta", { name: "theme-color", content: "#B45309" }],
+    ["link", { rel: "icon", href: BASE + "hammer.svg", type: "image/svg+xml" }],
     ["link", { rel: "preconnect", href: "https://fonts.googleapis.com" }],
     [
       "link",
@@ -77,67 +111,66 @@ export default defineConfig({
         href: "https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;450;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap",
       },
     ],
+    // Link previews (Slack, X, LinkedIn, Discord) — without these a
+    // shared link renders as a bare URL.
+    ["meta", { property: "og:type", content: "website" }],
+    ["meta", { property: "og:site_name", content: "Mjölnir" }],
+    [
+      "meta",
+      { property: "og:title", content: "Mjölnir — Verification Trust Engine" },
+    ],
+    ["meta", { property: "og:description", content: TAGLINE }],
+    ["meta", { property: "og:url", content: SITE_URL }],
+    ["meta", { property: "og:image", content: SITE_URL + "social-card.png" }],
+    ["meta", { name: "twitter:card", content: "summary_large_image" }],
+    [
+      "meta",
+      { name: "twitter:title", content: "Mjölnir — Verification Trust Engine" },
+    ],
+    ["meta", { name: "twitter:description", content: TAGLINE }],
+    ["meta", { name: "twitter:image", content: SITE_URL + "social-card.png" }],
   ],
   themeConfig: {
     logo: "/hammer.svg",
     nav: [
       { text: "Guide", link: "/guide/getting-started" },
-      { text: "Rules", link: "/guide/what-it-checks" },
+      { text: "Rules", link: "/rules/", activeMatch: "^/rules/" },
       { text: "Reference", link: "/reference/exit-codes" },
       { text: "npm", link: "https://www.npmjs.com/package/mjolnir-qa" },
     ],
+    // One sidebar for every docs section (the landing page opts out via
+    // `sidebar: false` in its frontmatter).
     sidebar: {
-      "/guide/": [
-        {
-          text: "Guide",
-          items: [
-            { text: "Getting started", link: "/guide/getting-started" },
-            { text: "What Mjölnir checks", link: "/guide/what-it-checks" },
-            { text: "How the score works", link: "/guide/scoring" },
-            { text: "CI integration", link: "/guide/ci" },
-            { text: "Configuration", link: "/guide/configuration" },
-          ],
-        },
-        {
-          text: "Reference",
-          items: [
-            { text: "Exit codes & contracts", link: "/reference/exit-codes" },
-            { text: "False-positive audit", link: "/reference/fp-audit" },
-            { text: "Rule lifecycle", link: "/reference/rule-lifecycle" },
-            { text: "SARIF integration", link: "/reference/sarif" },
-            { text: "Contributing", link: "/reference/contributing" },
-          ],
-        },
-      ],
-      "/reference/": [
-        {
-          text: "Guide",
-          items: [
-            { text: "Getting started", link: "/guide/getting-started" },
-            { text: "What Mjölnir checks", link: "/guide/what-it-checks" },
-            { text: "How the score works", link: "/guide/scoring" },
-            { text: "CI integration", link: "/guide/ci" },
-            { text: "Configuration", link: "/guide/configuration" },
-          ],
-        },
-        {
-          text: "Reference",
-          items: [
-            { text: "Exit codes & contracts", link: "/reference/exit-codes" },
-            { text: "False-positive audit", link: "/reference/fp-audit" },
-            { text: "Rule lifecycle", link: "/reference/rule-lifecycle" },
-            { text: "SARIF integration", link: "/reference/sarif" },
-            { text: "Contributing", link: "/reference/contributing" },
-          ],
-        },
-      ],
+      "/guide/": SIDEBAR,
+      "/reference/": SIDEBAR,
+      "/rules/": SIDEBAR,
     },
     socialLinks: [
       { icon: "github", link: "https://github.com/Sergey-Bar/Mjolnir" },
+      { icon: "npm", link: "https://www.npmjs.com/package/mjolnir-qa" },
     ],
     search: { provider: "local" },
+    // Most doc pages are one-line `@include` stubs and the rule pages are
+    // generated — send "edit" to the file a contributor should actually
+    // change, and hide it where there is nothing to edit.
+    //
+    // NOTE: VitePress serializes this function and re-evaluates it in the
+    // client bundle, so it cannot close over module scope — everything it
+    // needs is declared inside the body on purpose.
     editLink: {
-      pattern: "https://github.com/Sergey-Bar/Mjolnir/edit/main/site/:path",
+      pattern: ({ filePath }: { filePath: string }) => {
+        if (filePath.startsWith("rules/")) return "";
+        const edit = "https://github.com/Sergey-Bar/Mjolnir/edit/main/";
+        const included: Record<string, string> = {
+          "guide/scoring.md": "docs/SCORING.md",
+          "reference/fp-audit.md": "docs/FP-AUDIT.md",
+          "reference/rule-lifecycle.md": "docs/RULE-LIFECYCLE.md",
+          "reference/sarif.md": "docs/SARIF-INTEGRATION.md",
+          "reference/contributing.md": "CONTRIBUTING.md",
+        };
+        return edit + (included[filePath] ?? `site/${filePath}`);
+      },
+      text: "Edit this page on GitHub",
     },
     footer: {
       message: "Released under the MIT License.",
