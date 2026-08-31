@@ -43,11 +43,11 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo                        | Occurrences |
 | --------------------------- | ----------- |
-| microsoft-playwright-dotnet | 10          |
+| microsoft-playwright-dotnet | 5           |
 | nextauthjs-next-auth        | 29          |
 | sveltejs-kit                | 28          |
 | vitejs-vite                 | 32          |
-| withastro-astro             | 151         |
+| withastro-astro             | 148         |
 
 ---
 

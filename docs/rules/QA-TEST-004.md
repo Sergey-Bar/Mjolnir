@@ -47,7 +47,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | sveltejs-kit         | 72          |
 | tanstack-query       | 157         |
 | vitejs-vite          | 7           |
-| withastro-astro      | 38          |
+| withastro-astro      | 33          |
 
 ---
 

@@ -19,7 +19,7 @@ This clones the real repos below over the network, runs the same
 code than the committed baseline recorded (a false-positive
 regression signal).
 
-Last generated: 2026-08-29.
+Last generated: 2026-08-31.
 
 ## microsoft-playwright-dotnet
 
@@ -27,7 +27,7 @@ real Playwright .NET test suite — C# adapter FP surface (same library-suite ca
 
 Source: [`https://github.com/microsoft/playwright-dotnet`](https://github.com/microsoft/playwright-dotnet)
 
-Total findings: **486**
+Total findings: **481**
 
 | Rule ID    | Findings |
 | ---------- | -------- |
@@ -40,7 +40,7 @@ Total findings: **486**
 | QA-CS-108  | 26       |
 | QA-CS-110  | 135      |
 | QA-CS-111  | 74       |
-| QA-ENV-001 | 10       |
+| QA-ENV-001 | 5        |
 
 ## microsoft-playwright-java
 
@@ -133,7 +133,7 @@ small real Playwright-rules repo — compact QA-PW / QA-TQUAL surface, fast clon
 
 Source: [`https://github.com/playwright-community/eslint-plugin-playwright`](https://github.com/playwright-community/eslint-plugin-playwright)
 
-Total findings: **33**
+Total findings: **32**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
@@ -143,7 +143,6 @@ Total findings: **33**
 | QA-PW-118    | 3        |
 | QA-PW-120    | 1        |
 | QA-TEST-003  | 1        |
-| QA-TEST-010  | 1        |
 | QA-TQUAL-001 | 20       |
 | QA-TQUAL-011 | 2        |
 
@@ -191,7 +190,7 @@ large real Playwright suite — QA-PW isolation/timing rules at scale
 
 Source: [`https://github.com/sveltejs/kit`](https://github.com/sveltejs/kit)
 
-Total findings: **1255**
+Total findings: **1256**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
@@ -209,7 +208,7 @@ Total findings: **1255**
 | QA-PW-119    | 8        |
 | QA-PW-145    | 11       |
 | QA-TEST-002  | 38       |
-| QA-TEST-003  | 61       |
+| QA-TEST-003  | 62       |
 | QA-TEST-004  | 72       |
 | QA-TQUAL-001 | 24       |
 | QA-TQUAL-011 | 4        |
@@ -220,14 +219,14 @@ real TS monorepo — QA-PW-112 sample growth; QA-TEST-004 fires >1600× here (cl
 
 Source: [`https://github.com/TanStack/query`](https://github.com/TanStack/query)
 
-Total findings: **402**
+Total findings: **410**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
 | QA-PW-112    | 125      |
 | QA-PW-119    | 5        |
 | QA-PW-145    | 3        |
-| QA-TEST-003  | 11       |
+| QA-TEST-003  | 19       |
 | QA-TEST-004  | 157      |
 | QA-TEST-010  | 2        |
 | QA-TQUAL-001 | 98       |
@@ -239,7 +238,7 @@ large real Playwright/Vitest suite — broad QA-PW + QA-TQUAL surface
 
 Source: [`https://github.com/vitejs/vite`](https://github.com/vitejs/vite)
 
-Total findings: **739**
+Total findings: **767**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
@@ -247,13 +246,13 @@ Total findings: **739**
 | QA-PW-004    | 1        |
 | QA-PW-102    | 24       |
 | QA-PW-103    | 39       |
-| QA-PW-105    | 477      |
+| QA-PW-105    | 504      |
 | QA-PW-114    | 62       |
 | QA-PW-119    | 6        |
 | QA-PW-120    | 7        |
 | QA-PW-145    | 38       |
 | QA-TEST-002  | 5        |
-| QA-TEST-003  | 38       |
+| QA-TEST-003  | 39       |
 | QA-TEST-004  | 7        |
 | QA-TQUAL-001 | 3        |
 
@@ -263,16 +262,17 @@ large real Playwright suite — QA-PW text-coupling / viewport / empty-body
 
 Source: [`https://github.com/withastro/astro`](https://github.com/withastro/astro)
 
-Total findings: **746**
+Total findings: **761**
 
 | Rule ID     | Findings |
 | ----------- | -------- |
-| QA-ENV-001  | 151      |
+| QA-ENV-001  | 148      |
 | QA-PW-005   | 3        |
 | QA-PW-101   | 4        |
 | QA-PW-103   | 6        |
+| QA-PW-105   | 1        |
 | QA-PW-107   | 7        |
-| QA-PW-108   | 328      |
+| QA-PW-108   | 350      |
 | QA-PW-114   | 2        |
 | QA-PW-115   | 3        |
 | QA-PW-118   | 6        |
@@ -281,5 +281,5 @@ Total findings: **746**
 | QA-PW-145   | 48       |
 | QA-TEST-002 | 32       |
 | QA-TEST-003 | 100      |
-| QA-TEST-004 | 38       |
+| QA-TEST-004 | 33       |
 | QA-TEST-010 | 3        |

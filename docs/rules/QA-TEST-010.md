@@ -41,11 +41,10 @@ Verified against `tests/fixtures/QA-TEST-010/must-not-fire/clean.spec.ts` — a 
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo                                          | Occurrences |
-| --------------------------------------------- | ----------- |
-| playwright-community-eslint-plugin-playwright | 1           |
-| tanstack-query                                | 2           |
-| withastro-astro                               | 3           |
+| Repo            | Occurrences |
+| --------------- | ----------- |
+| tanstack-query  | 2           |
+| withastro-astro | 3           |
 
 ---
 

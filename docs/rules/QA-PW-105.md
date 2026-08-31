@@ -41,10 +41,11 @@ Verified against `tests/fixtures/QA-PW-105/must-not-fire/with-timeout.spec.ts` â
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos â€” reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo         | Occurrences |
-| ------------ | ----------- |
-| sveltejs-kit | 33          |
-| vitejs-vite  | 477         |
+| Repo            | Occurrences |
+| --------------- | ----------- |
+| sveltejs-kit    | 33          |
+| vitejs-vite     | 504         |
+| withastro-astro | 1           |
 
 ---
 

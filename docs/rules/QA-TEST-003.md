@@ -45,9 +45,9 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | --------------------------------------------- | ----------- |
 | nextauthjs-next-auth                          | 3           |
 | playwright-community-eslint-plugin-playwright | 1           |
-| sveltejs-kit                                  | 61          |
-| tanstack-query                                | 11          |
-| vitejs-vite                                   | 38          |
+| sveltejs-kit                                  | 62          |
+| tanstack-query                                | 19          |
+| vitejs-vite                                   | 39          |
 | withastro-astro                               | 100         |
 
 ---

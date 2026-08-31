@@ -10,7 +10,7 @@ A rule with fewer than 10 classified verdicts is **unmeasured**. Coverage
 below is stated against the full rule registry, not against the rules that
 happen to have been sampled.
 
-Last generated: 2026-08-29.
+Last generated: 2026-08-31.
 
 ## Summary
 

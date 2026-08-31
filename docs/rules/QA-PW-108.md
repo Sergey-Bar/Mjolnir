@@ -44,7 +44,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | Repo            | Occurrences |
 | --------------- | ----------- |
 | sveltejs-kit    | 428         |
-| withastro-astro | 328         |
+| withastro-astro | 350         |
 
 ---
 
