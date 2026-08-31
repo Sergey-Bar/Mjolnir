@@ -150,25 +150,22 @@ export default defineConfig({
       { icon: "npm", link: "https://www.npmjs.com/package/mjolnir-qa" },
     ],
     search: { provider: "local" },
-    // Most doc pages are one-line `@include` stubs and the rule pages are
-    // generated — send "edit" to the file a contributor should actually
-    // change, and hide it where there is nothing to edit.
+    // A few Reference pages are mostly `@include`d from ../../docs — send
+    // "edit" to the real source there. Pages that opt out entirely
+    // (generated rule pages, the FP-audit table) set `editLink: false`.
     //
     // NOTE: VitePress serializes this function and re-evaluates it in the
-    // client bundle, so it cannot close over module scope — everything it
-    // needs is declared inside the body on purpose.
+    // client bundle, so it cannot close over module scope — the map is
+    // declared inside the body on purpose.
     editLink: {
       pattern: ({ filePath }: { filePath: string }) => {
-        if (filePath.startsWith("rules/")) return "";
         const edit = "https://github.com/Sergey-Bar/Mjolnir/edit/main/";
-        const included: Record<string, string> = {
-          "guide/scoring.md": "docs/SCORING.md",
-          "reference/fp-audit.md": "docs/FP-AUDIT.md",
+        const includedFrom: Record<string, string> = {
           "reference/rule-lifecycle.md": "docs/RULE-LIFECYCLE.md",
           "reference/sarif.md": "docs/SARIF-INTEGRATION.md",
           "reference/contributing.md": "CONTRIBUTING.md",
         };
-        return edit + (included[filePath] ?? `site/${filePath}`);
+        return edit + (includedFrom[filePath] ?? `site/${filePath}`);
       },
       text: "Edit this page on GitHub",
     },
