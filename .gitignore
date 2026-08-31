@@ -46,6 +46,5 @@ package/
 .planning/*.html
 .planning/*_files/
 .planning/CRITIQUE-REMEDIATION-PLAN.md
-CLAUDE.md
 .planning/M1-M2-TASKS.md
 .planning/ROADMAP-2026.md
