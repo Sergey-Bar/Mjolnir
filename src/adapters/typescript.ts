@@ -112,7 +112,8 @@ export const typescriptAdapter: LanguageAdapter = {
 /** Separator-agnostic basename — a backslash path on POSIX must still
  * yield its last segment (path.basename is platform-dependent). */
 function baseName(p: string): string {
-  return p.split(/[\\/]/).pop() ?? "";
+  const norm = p.replace(/\\/g, "/");
+  return norm.slice(norm.lastIndexOf("/") + 1);
 }
 
 function loadWorkspaceShim(root: string): Workspace | null {
