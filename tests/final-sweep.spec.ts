@@ -60,7 +60,7 @@ vi.mock("yaml", async (importOriginal) => {
   };
   return {
     ...actual,
-     
+
     parse,
     __state: state,
   };

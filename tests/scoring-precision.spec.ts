@@ -289,9 +289,7 @@ describe("scoring property invariants (fast-check, >=1000 iterations)", () => {
     .map(({ severity, level, ruleId, declarations, voids }) => ({
       finding: finding({ severity, evidenceLevel: level, ruleId }),
       declarations,
-      invalidating: (voids
-        ? new Set([ruleId])
-        : new Set<string>()),
+      invalidating: voids ? new Set([ruleId]) : new Set<string>(),
     }));
 
   it("score is within [0,100] for arbitrary findings", () => {

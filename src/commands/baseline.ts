@@ -120,9 +120,9 @@ export function loadBaseline(path: string): BaselineFile | null {
         (f): f is BaselineFile["findings"][number] =>
           typeof f === "object" &&
           f !== null &&
-          typeof (f).ruleId === "string" &&
-          typeof (f).file === "string" &&
-          typeof (f).message === "string",
+          typeof f.ruleId === "string" &&
+          typeof f.file === "string" &&
+          typeof f.message === "string",
       );
       return file;
     }
