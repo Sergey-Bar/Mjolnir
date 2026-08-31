@@ -1,0 +1,42 @@
+<script setup lang="ts">
+withDefaults(defineProps<{ rune?: string }>(), { rune: "ᛏ" });
+</script>
+
+<template>
+  <div class="rune-divider" aria-hidden="true">
+    <span class="line" />
+    <span class="glyph">{{ rune }}</span>
+    <span class="line" />
+  </div>
+</template>
+
+<style scoped>
+.rune-divider {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  width: min(680px, 82%);
+  margin: 3.5rem auto;
+  color: var(--vp-c-text-3);
+}
+.line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(
+    to var(--dir, right),
+    transparent,
+    var(--vp-c-divider) 30%,
+    var(--vp-c-divider)
+  );
+}
+.line:last-child {
+  --dir: left;
+}
+.glyph {
+  font-family: var(--mj-display);
+  font-size: 1.15rem;
+  color: var(--mj-ember-bright);
+  text-shadow: 0 0 14px rgba(245, 158, 11, 0.4);
+  letter-spacing: 0.1em;
+}
+</style>

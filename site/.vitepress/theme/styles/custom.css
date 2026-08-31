@@ -1,0 +1,139 @@
+/* ============================================================
+   Mjölnir — global theme polish on top of VitePress defaults
+   ============================================================ */
+
+body {
+  margin: 0;
+}
+
+/* ---- landing page: let <Home> go full-bleed ---------------- */
+.mj-landing .VPContent {
+  padding: 0 !important;
+}
+.mj-landing .VPPage {
+  margin: 0;
+  max-width: none;
+  padding: 0;
+}
+.mj-landing .VPPage > div,
+.mj-landing .VPPage .vp-doc {
+  max-width: none;
+  padding: 0;
+  margin: 0;
+}
+.mj-landing .VPFooter {
+  margin-top: 0;
+}
+.mj {
+  width: 100%;
+}
+
+/* ---- brand wordmark in the navbar -------------------------- */
+.VPNavBarTitle .text {
+  font-family: var(--mj-display);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  background: linear-gradient(120deg, var(--mj-ember-hot), #f97316);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.VPNavBar .VPImage.logo {
+  filter: drop-shadow(0 2px 8px rgba(245, 158, 11, 0.35));
+}
+
+/* ---- selection + focus ------------------------------------- */
+::selection {
+  background: rgba(245, 158, 11, 0.28);
+}
+:root {
+  --vp-c-brand-1: var(--vp-c-brand-1);
+}
+
+/* ---- doc pages: a runic top rule + warmer prose ------------ */
+.vp-doc h1 {
+  font-family: var(--mj-display);
+  letter-spacing: 0.015em;
+}
+.vp-doc h2 {
+  font-family: var(--mj-display);
+  font-weight: 600;
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--vp-c-divider);
+}
+.vp-doc h2::before {
+  content: "ᛏ";
+  font-family: var(--mj-display);
+  color: var(--mj-ember-bright);
+  margin-right: 0.55rem;
+  font-size: 0.8em;
+  opacity: 0.75;
+  text-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+}
+.vp-doc h3 {
+  font-family: var(--mj-display);
+  font-weight: 600;
+}
+
+.vp-doc blockquote {
+  border-left: 2px solid var(--mj-ember);
+  background: linear-gradient(90deg, var(--vp-c-brand-soft), transparent 60%);
+  border-radius: 0 8px 8px 0;
+}
+
+.vp-doc a {
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(245, 158, 11, 0.4);
+}
+
+.vp-doc :not(pre) > code {
+  background: var(--vp-c-brand-soft);
+  color: var(--vp-c-brand-1);
+}
+
+.vp-doc div[class*="language-"] {
+  border: 1px solid var(--vp-c-border);
+  border-radius: 10px;
+}
+.dark .vp-doc div[class*="language-"] {
+  background: var(--mj-forge-950);
+}
+
+/* ---- landing navbar sits over the dark forge hero --------- */
+.mj-landing .VPNavBar {
+  background-color: rgba(11, 10, 9, 0.55) !important;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(245, 200, 130, 0.08);
+}
+.mj-landing .VPNavBar.top {
+  background-color: rgba(11, 10, 9, 0.2) !important;
+}
+.mj-landing .VPNavBar .VPNavBarMenuLink,
+.mj-landing .VPNavBar .VPNavBarExtraMenu .VPFlyout button,
+.mj-landing .VPNavBar .DocSearch-Button,
+.mj-landing .VPNavBar .VPSocialLink,
+.mj-landing .VPNavBar .VPSwitchAppearance {
+  color: #e9ddc9 !important;
+}
+.mj-landing .VPNavBar .DocSearch-Button {
+  background: rgba(255, 255, 255, 0.06);
+}
+.mj-landing .VPNavBar .DocSearch-Button-Keys,
+.mj-landing .VPNavBar .DocSearch-Button-Placeholder {
+  color: #b7ab98 !important;
+}
+.mj-landing .VPNavBar .VPNavBarMenuLink:hover {
+  color: var(--mj-ember-hot) !important;
+}
+
+/* ---- links & buttons keep the ember accent ---------------- */
+.VPButton.brand {
+  background-color: var(--vp-c-brand-1);
+  color: #1a1206;
+}
+
+/* ---- footer ---------------------------------------------- */
+.VPFooter {
+  border-top: 1px solid var(--vp-c-divider);
+  background: var(--vp-c-bg-alt);
+}
