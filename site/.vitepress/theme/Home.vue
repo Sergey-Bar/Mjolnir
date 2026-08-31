@@ -22,31 +22,37 @@ const features = [
     r: "ᛏ",
     title: "Worthiness Score",
     body: "One number, a transparent deduction table, no black box. Gate a pull request on it.",
+    to: "/guide/scoring",
   },
   {
     r: "ᛗ",
     title: "Selector Health",
     body: "Grades your Playwright locators for resilience — not just whether the run went green.",
+    to: "/guide/forensics#selector-health-score",
   },
   {
     r: "ᚦ",
     title: "Runtime Forensics",
     body: "Reads real Playwright & JUnit run data to catch TRUE-FLAKE, not a static guess.",
+    to: "/guide/forensics",
   },
   {
     r: "ᚨ",
     title: "CI-Integrity Rules",
     body: "Catches continue-on-error, “|| true”, and every other trick that turns red pipelines green.",
+    to: "/guide/ci",
   },
   {
     r: "ᛟ",
     title: "Four Languages, One Pass",
     body: "TypeScript, Python, Java and C#/.NET — plus pytest, JUnit / TestNG and CI workflows.",
+    to: "/rules/",
   },
   {
     r: "ᛉ",
     title: "Local-First",
     body: "Zero network calls while scanning. Zero telemetry. The whole audit runs in seconds.",
+    to: "/reference/exit-codes#trust-model",
   },
 ];
 
@@ -309,17 +315,19 @@ onBeforeUnmount(() => {
     <section class="features">
       <h2 class="sect-title" data-reveal>Forged for verification</h2>
       <div class="feat-grid">
-        <article
+        <a
           v-for="(f, i) in features"
           :key="f.title"
           class="feat"
+          :href="withBase(f.to)"
           data-reveal
           :style="{ '--i': i }"
         >
           <span class="feat-rune" aria-hidden="true">{{ f.r }}</span>
           <h3>{{ f.title }}</h3>
           <p>{{ f.body }}</p>
-        </article>
+          <span class="feat-go" aria-hidden="true">→</span>
+        </a>
       </div>
     </section>
 
@@ -804,15 +812,37 @@ onBeforeUnmount(() => {
 }
 .feat {
   position: relative;
-  padding: 1.6rem 1.5rem;
+  display: block;
+  padding: 1.6rem 1.5rem 2.4rem;
   border-radius: 14px;
   background: var(--vp-c-bg-alt);
   border: 1px solid var(--vp-c-border);
   overflow: hidden;
+  color: inherit;
   transition:
     transform 0.2s ease,
     border-color 0.2s ease,
     box-shadow 0.2s ease;
+}
+.feat-go {
+  position: absolute;
+  right: 1.5rem;
+  bottom: 1.2rem;
+  color: var(--mj-ember-bright);
+  opacity: 0;
+  transform: translateX(-6px);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+.feat:hover .feat-go,
+.feat:focus-visible .feat-go {
+  opacity: 1;
+  transform: none;
+}
+.feat:focus-visible {
+  outline: 2px solid var(--mj-ember-bright);
+  outline-offset: 2px;
 }
 .feat::before {
   content: "";

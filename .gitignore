@@ -12,6 +12,13 @@ coverage/
 # FP corpus audit — cloned real-world repos, never committed
 tests/corpus/.cache/
 
+# VitePress documentation site
+site/.vitepress/dist/
+site/.vitepress/cache/
+# Rule catalog pages — generated from docs/rules/ at build time by
+# site/scripts/gen-rules.mjs; docs/rules/ is the committed source.
+site/rules/
+
 # Environment
 .env
 .env.*
