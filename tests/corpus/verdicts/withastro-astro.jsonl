@@ -1,16 +1,7 @@
-{"ruleId":"QA-PW-119","file":"packages/astro/e2e/actions-blog.test.ts","line":10,"verdict":"","note":""}
-{"ruleId":"QA-PW-119","file":"packages/astro/e2e/actions-react-19.test.ts","line":10,"verdict":"","note":""}
-{"ruleId":"QA-PW-119","file":"packages/astro/e2e/astro-component.test.ts","line":9,"verdict":"","note":""}
-{"ruleId":"QA-PW-119","file":"packages/astro/e2e/astro-envs.test.ts","line":22,"verdict":"","note":""}
-{"ruleId":"QA-PW-119","file":"packages/astro/e2e/client-idle-timeout.test.ts","line":9,"verdict":"","note":""}
-{"ruleId":"QA-PW-119","file":"packages/astro/e2e/client-only.test.ts","line":9,"verdict":"","note":""}
-{"ruleId":"QA-PW-119","file":"packages/astro/e2e/cloudflare-node-prerender-hmr.test.ts","line":14,"verdict":"","note":""}
-{"ruleId":"QA-PW-005","file":"packages/astro/e2e/prefetch.test.ts","line":358,"verdict":"","note":""}
-{"ruleId":"QA-PW-005","file":"packages/astro/e2e/view-transitions.test.ts","line":49,"verdict":"","note":""}
-{"ruleId":"QA-PW-005","file":"packages/astro/e2e/view-transitions.test.ts","line":735,"verdict":"","note":""}
-{"ruleId":"QA-PW-115","file":"packages/astro/test/units/app/encoded-backslash-bypass.test.ts","line":32,"verdict":"","note":""}
-{"ruleId":"QA-PW-115","file":"packages/astro/test/units/app/malformed-uri.test.ts","line":28,"verdict":"","note":""}
-{"ruleId":"QA-PW-115","file":"packages/astro/test/units/hono/index.test.ts","line":10,"verdict":"","note":""}
-{"ruleId":"QA-TEST-010","file":"packages/astro/test/units/routing/routing-app.test.ts","line":213,"verdict":"","note":""}
-{"ruleId":"QA-TEST-010","file":"packages/astro/test/units/routing/routing-app.test.ts","line":255,"verdict":"","note":""}
-{"ruleId":"QA-TEST-010","file":"packages/integrations/node/test/static-headers.test.ts","line":51,"verdict":"","note":""}
+{"ruleId":"QA-PW-005","file":"packages/astro/e2e/prefetch.test.ts","line":358,"verdict":"FP","note":"browser-side test instrumentation counting speculationrules scripts in head - measurement must run in the page, not app business logic"}
+{"ruleId":"QA-PW-005","file":"packages/astro/e2e/view-transitions.test.ts","line":49,"verdict":"FP","note":"MutationObserver preload collector installed via evaluate - test instrumentation observing page behavior, must run in the browser"}
+{"ruleId":"QA-PW-005","file":"packages/astro/e2e/view-transitions.test.ts","line":735,"verdict":"FP","note":"event listener installed via evaluate to observe HMR style swaps - instrumentation, not app business logic"}
+{"ruleId":"QA-PW-115","file":"packages/astro/test/units/app/encoded-backslash-bypass.test.ts","line":32,"verdict":"FP","note":"page is an Astro component fixture for server rendering (createComponent), not a Playwright Page - no browser state shared"}
+{"ruleId":"QA-PW-115","file":"packages/astro/test/units/app/malformed-uri.test.ts","line":28,"verdict":"FP","note":"page is an Astro component fixture for server rendering (createComponent), not a Playwright Page - no browser state shared"}
+{"ruleId":"QA-PW-115","file":"packages/astro/test/units/hono/index.test.ts","line":10,"verdict":"FP","note":"page is an Astro component fixture for server rendering (createComponent), not a Playwright Page - no browser state shared"}
+{"ruleId":"QA-TEST-010","file":"packages/integrations/node/test/static-headers.test.ts","line":51,"verdict":"TP","note":"it('CSP headers are added to the request', async () => {}) - literally empty body, can never fail"}

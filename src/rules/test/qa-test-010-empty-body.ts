@@ -34,8 +34,16 @@ export const emptyTestBody = defineRule({
 
     // Matches it/test/describe-with-it whose callback is empty or comment-only:
     // `it('x', () => {})` / `it('x', () => { /* nothing */ })`
+    //
+    // Bug-audit 2026-08-31 (astro corpus): a body-leading `//` comment whose
+    // TEXT ends with `})` used to satisfy the trailing `\}\s*\)` — the
+    // comment's content was consumed as code structure, flagging bodies full
+    // of real code (`// ...new Response(null, { status: 404 })`). A line
+    // comment now must run to end-of-line, so the closing `}` can only match
+    // on a later line. Block comments are unaffected (`*/` is a real
+    // terminator, so `it('x', () => { /* c */ })` still matches).
     const re =
-      /\b(?:it|test)\s*\(\s*['"`][^'"`]*['"`]\s*,\s*(?:async\s*)?\([^)]*\)\s*=>\s*\{\s*(?:(?:\/\*[\s\S]*?\*\/|\/\/[^\n]*)\s*)?\}\s*\)/g;
+      /\b(?:it|test)\s*\(\s*['"`][^'"`]*['"`]\s*,\s*(?:async\s*)?\([^)]*\)\s*=>\s*\{\s*(?:(?:\/\*[\s\S]*?\*\/|\/\/[^\n\r]*\r?\n)\s*)?\}\s*\)/g;
 
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {
