@@ -23,8 +23,12 @@ export const MEASURED_FP: Readonly<Record<string, MeasuredFp>> = {
   "QA-JV-106": { fpRate: 1, n: 20 },
   "QA-JV-108": { fpRate: 1, n: 20 },
   "QA-JV-111": { fpRate: 1, n: 20 },
+  "QA-PW-102": { fpRate: 1, n: 20 },
+  "QA-PW-105": { fpRate: 1, n: 20 },
+  "QA-PW-114": { fpRate: 1, n: 20 },
   "QA-PY-002": { fpRate: 0.05, n: 20 },
   "QA-PY-004": { fpRate: 0.45, n: 20 },
   "QA-PY-006": { fpRate: 1, n: 19 },
   "QA-PY-007": { fpRate: 0.65, n: 20 },
+  "QA-TEST-003": { fpRate: 0.824, n: 17 },
 };

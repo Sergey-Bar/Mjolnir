@@ -1,6 +1,10 @@
 # Corpus Verdicts (Phase 3 — Tempering Plan)
 
-> **Status (2026-08-29): 305 classified · 15 of 91 rules measured at n ≥ 10.**
+> **Status (2026-08-31): 394 classified · 19 of 91 rules measured at n ≥ 10.**
+>
+> Wave 2026-08-31: all 89 vitejs-vite backlog rows classified (QA-PW-102/105/114/119,
+> QA-TEST-002/003, QA-TQUAL-001, QA-PW-004). QA-PW-102/105/114 measured 100% FP and
+> QA-TEST-003 82% FP — all four demoted to quarantine per the north-star law.
 >
 > An earlier revision of this directory held 49 entries produced by _reasoning
 > about what a rule's description implied_ rather than by reading the source at

@@ -140,10 +140,12 @@ describe("mermaid severity classes", () => {
 describe("baseline rendering fallbacks", () => {
   it("labels a single captured finding singular", () => {
     mkdirSync(join(dir, "e2e"), { recursive: true });
-    // Exactly one rule (QA-TEST-003, no assertions) fires on this file.
+    // Exactly one rule (QA-TEST-002, skipped test) fires on this file by
+    // default. QA-TEST-003 was measured 82% FP and demoted to quarantine
+    // (docs/FP-AUDIT.md 2026-08-31), so it no longer fires by default.
     writeFileSync(
       join(dir, "e2e", "quiet.spec.ts"),
-      "it('a', () => { console.log('x'); });\n",
+      "it.skip('a', () => { console.log('x'); });\n",
     );
     const out: string[] = [];
     const code = runBaselineCommand([dir], {
