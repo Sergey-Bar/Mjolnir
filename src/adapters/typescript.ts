@@ -5,7 +5,7 @@
  */
 
 import { existsSync, readFileSync } from "node:fs";
-import { join, basename } from "node:path";
+import { join } from "node:path";
 
 import { sharedWalk } from "../discovery/shared-walk.js";
 import { detectFrameworks as detectFrameworksLegacy } from "../discovery/frameworks.js";
@@ -33,10 +33,12 @@ export const typescriptAdapter: LanguageAdapter = {
   dirSkips: [],
 
   isTestFile(path: string): boolean {
-    // Windows callers pass raw backslash paths — normalize before the
-    // basename check, or the ^-anchored config regex never matches
-    // (same class of bug explain.ts documents for filename-gated rules).
-    return TEST_FILE_RE.test(path) || PW_CONFIG_RE.test(basename(path));
+    // Separator-agnostic basename: Windows callers pass raw backslash
+    // paths — the ^-anchored config regex never matches a full path, and
+    // path.basename is platform-dependent (a backslash path on POSIX
+    // comes back whole). Same class of bug explain.ts documents for
+    // filename-gated rules.
+    return TEST_FILE_RE.test(path) || PW_CONFIG_RE.test(baseName(path));
   },
 
   detectFrameworks(root: string): FrameworkInfo {
@@ -83,7 +85,7 @@ export const typescriptAdapter: LanguageAdapter = {
         configurable: true,
       },
     );
-    const isConfig = PW_CONFIG_RE.test(basename(file.path));
+    const isConfig = PW_CONFIG_RE.test(baseName(file.path));
     for (const rule of rules) {
       if (!rule.appliesTo.includes(this.id)) continue;
       // Config rules run only on playwright.config.* and vice versa —
@@ -106,6 +108,12 @@ export const typescriptAdapter: LanguageAdapter = {
     }
   },
 };
+
+/** Separator-agnostic basename — a backslash path on POSIX must still
+ * yield its last segment (path.basename is platform-dependent). */
+function baseName(p: string): string {
+  return p.split(/[\\/]/).pop() ?? "";
+}
 
 function loadWorkspaceShim(root: string): Workspace | null {
   // Minimal re-parse to satisfy the legacy detector signature without a
