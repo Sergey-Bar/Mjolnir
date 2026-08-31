@@ -44,7 +44,10 @@ function runRuleAgainstFixture(
 ): Array<Omit<Finding, "ruleId" | "category">> | null {
   let text: string;
   try {
-    text = readFileSync(fixturePath, "utf8");
+    // Normalize line endings: a CRLF checkout (git core.autocrlf on
+    // Windows) would otherwise render an extra blank line into the
+    // committed docs/rules/*.md snippet and drift from a clean CI regen.
+    text = readFileSync(fixturePath, "utf8").replace(/\r\n/g, "\n");
   } catch {
     return null;
   }

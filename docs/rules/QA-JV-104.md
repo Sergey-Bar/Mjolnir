@@ -25,7 +25,6 @@ A shared Page/Browser leaks cookies, localStorage, and navigation state between 
 
 ```
 Static `
-
     private static Page` — browser state shared across tests.
 ```
 

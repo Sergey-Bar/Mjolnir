@@ -62,7 +62,9 @@ export function explainRule(
 
   let text: string;
   try {
-    text = readFileSync(fixturePath, "utf8");
+    // Normalize CRLF so `mjolnir explain` output matches the committed
+    // docs/rules page regardless of the checkout's line-ending config.
+    text = readFileSync(fixturePath, "utf8").replace(/\r\n/g, "\n");
   } catch {
     return { ok: true, rule };
   }
