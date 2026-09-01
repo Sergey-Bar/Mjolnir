@@ -89,7 +89,7 @@ describe("evidence level reaches every finding reporter that ships", () => {
     ).toBe("E0");
   });
 
-  it("terminal: the [E<n>] tag is visible per finding, distinct per level", () => {
+  it("terminal: the [E<n> …] tag is visible per finding, distinct per level", () => {
     const e0 = renderTerminal(
       makeResult([makeFinding({ evidenceLevel: "E0", message: "PROBE-E0" })]),
       { isTTY: false },
@@ -98,9 +98,10 @@ describe("evidence level reaches every finding reporter that ships", () => {
       makeResult([makeFinding({ evidenceLevel: "E2", message: "PROBE-E2" })]),
       { isTTY: false },
     );
-    expect(e0).toContain("[E0]");
-    expect(e2).toContain("[E2]");
-    expect(e0).not.toContain("[E2]");
+    // Card evidence tags name the level AND its epistemic kind.
+    expect(e0).toContain("[E0 · observation]");
+    expect(e2).toContain("[E2 · deterministic]");
+    expect(e0).not.toContain("[E2");
   });
 
   it("terminal: advisory (E0) findings are called out honestly in the footer", () => {
@@ -122,7 +123,9 @@ describe("evidence level reaches every finding reporter that ships", () => {
     });
     delete (unstamped as { evidenceLevel?: string }).evidenceLevel;
     const out = renderTerminal(makeResult([unstamped]), { isTTY: false });
-    expect(out).toContain(`[${deriveEvidenceLevel("observation", "low")}]`);
+    expect(out).toContain(
+      `[${deriveEvidenceLevel("observation", "low")} · observation]`,
+    );
   });
 });
 

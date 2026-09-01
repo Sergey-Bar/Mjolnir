@@ -55,8 +55,16 @@ describe("badge", () => {
       }),
     );
     expect(badge.message).toBe("82/100 · 1 error");
-    expect(badge.color).toBe("green");
+    // ScoreState bands: 82 is the trusted band → shields `important`
+    // (threshold drift fix — was 90/75/50 with `green` at 82).
+    expect(badge.color).toBe("important");
     expect(badge.schemaVersion).toBe(1);
+  });
+
+  it("the forged state reads 100/100 · forged", () => {
+    const badge = buildBadge(fakeScan({ score: 100 }));
+    expect(badge.message).toBe("100/100 · forged");
+    expect(badge.color).toBe("success");
   });
 
   it("honest empty state when no tests found", () => {

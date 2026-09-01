@@ -64,11 +64,13 @@ formal proofs.
 
 | Score   | Verdict          |
 | ------- | ---------------- |
+| 100     | ⚡ **FORGED**    |
 | ≥ 80    | ✓ **WORTHY**     |
 | 50 – 79 | ⚠ **NEEDS WORK** |
 | < 50    | ✖ **UNWORTHY**   |
 
-An empty repo scores `null`, never a fake 100.
+An empty repo scores `null`, never a fake 100. `FORGED` is the premium
+100-state — zero deductions, zero findings, the suite is clean.
 
 ## Transparency
 

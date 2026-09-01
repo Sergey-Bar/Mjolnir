@@ -92,6 +92,50 @@ describe("renderPrComment — rendering against fixture scan results", () => {
     expect(body).not.toContain("**Score:**");
   });
 
+  it("shows the plain score when no baseline score exists (older baselines)", () => {
+    const body = renderPrComment(scanResult([finding({})]));
+    expect(body).toContain("**Score:** 88/100");
+    expect(body).not.toContain("since baseline");
+  });
+
+  it("shows the score delta when the baseline carries the additive score field", () => {
+    const before = { ...scanResult([finding({})]), score: 83 };
+    const baseline = buildBaseline(before, "abc12345");
+    expect(baseline.score).toBe(83); // additive field written
+    const after = { ...scanResult([finding({})]), score: 88 };
+    const diff = diffAgainstBaseline(after, baseline);
+    const body = renderPrComment(after, { diff });
+    expect(body).toContain("**Score:** 88/100 (+5 since baseline `abc1234`)");
+  });
+
+  it("renders a negative delta without a plus sign", () => {
+    const before = { ...scanResult([finding({})]), score: 90 };
+    const baseline = buildBaseline(before, "abc1234");
+    const after = { ...scanResult([finding({})]), score: 72 };
+    const diff = diffAgainstBaseline(after, baseline);
+    const body = renderPrComment(after, { diff });
+    expect(body).toContain("**Score:** 72/100 (-18 since baseline `abc1234`)");
+  });
+
+  it("evidence tags appear on finding lines, with measured FP when present", () => {
+    const body = renderPrComment(
+      scanResult([
+        finding({}),
+        finding({
+          ruleId: "QA-PW-102",
+          file: "e2e/b.spec.ts",
+          evidenceLevel: "E1",
+          findingType: "heuristic-risk",
+          measuredFpRate: 1,
+          measuredFpN: 38,
+        }),
+      ]),
+    );
+    // Brackets are markdown-escaped by the QA-10 escaping contract.
+    expect(body).toContain("\\[E2 · deterministic\\]");
+    expect(body).toContain("\\[E1 · heuristic · measured FP 100% · n=38\\]");
+  });
+
   it("uses plural grammar for multiple resolved findings", () => {
     const before = scanResult([
       finding({}),

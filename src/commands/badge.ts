@@ -10,6 +10,7 @@ import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import type { ScanResult } from "../types.js";
+import { deriveScoreState } from "../reporter/score-state.js";
 
 export interface BadgeOptions {
   /** Where to write mjolnir-badge.json. */
@@ -25,12 +26,23 @@ export interface BadgeJson {
   style?: string;
 }
 
+/**
+ * Badge colors follow the SAME ScoreState bands as the terminal
+ * (≥80 trusted / ≥50 warning / <50 critical / 100 forged) — this
+ * retarget fixes the historical threshold drift (the badge used
+ * ≥90/≥75/≥50 with four bands while the reporter used ≥80/≥50).
+ *
+ * Shields.io has no cyan or white-gold, so the mapping is documented
+ * here: trusted → `important` (blue-family, closest to aurora-cyan),
+ * forged → `success` (the strongest positive signal shields offers).
+ * The badge is a peripheral surface; ScoreState remains the truth.
+ */
 function colorFor(score: number | null): string {
-  if (score === null) return "lightgrey";
-  if (score >= 90) return "brightgreen";
-  if (score >= 75) return "green";
-  if (score >= 50) return "yellow";
-  return "red";
+  const band = deriveScoreState(score).band;
+  if (band === "unmeasured") return "lightgrey";
+  if (band === "forged") return "success";
+  if (band === "trusted") return "important";
+  return band === "warning" ? "yellow" : "red";
 }
 
 /** Build the shields.io endpoint payload from a scan result. */
@@ -40,7 +52,9 @@ export function buildBadge(result: ScanResult): BadgeJson {
   const message =
     score === null
       ? "no tests found"
-      : `${score}/100 · ${errors} error${errors === 1 ? "" : "s"}`;
+      : score === 100 && errors === 0
+        ? "100/100 · forged"
+        : `${score}/100 · ${errors} error${errors === 1 ? "" : "s"}`;
   return {
     schemaVersion: 1,
     label: "MJÖLNIR",

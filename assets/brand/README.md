@@ -51,15 +51,28 @@ Tokens live in [`site/.vitepress/theme/styles/vars.css`](../../site/.vitepress/t
 
 ### Semantic — status & verdict
 
-| Verdict                | Token            | Light     | Dark      |
-| ---------------------- | ---------------- | --------- | --------- |
-| `WORTHY` / success     | `--mj-worthy`    | `#2F9E73` | `#5AD1A6` |
-| `NEEDS WORK` / warning | `--mj-needswork` | `#A5811C` | `#E0B443` |
-| `UNWORTHY` / error     | `--mj-unworthy`  | `#C13B37` | `#E5544E` |
-| informational          | `--mj-info`      | `#2B7FA8` | `#56C7E8` |
+Score colors follow the ScoreState model (`src/reporter/score-state.ts`) —
+one mapping, every surface. Bands: critical 0–49, warning 50–79,
+trusted 80–99, forged 100.
 
-The same verdict colours drive the website gauge, the README badges and the
-rule-catalog severity chips.
+| Verdict                | Token                             | Light                        | Dark                         |
+| ---------------------- | --------------------------------- | ---------------------------- | ---------------------------- |
+| `UNWORTHY` / critical  | `--mj-unworthy` / `--mj-critical` | `#C13B37`                    | `#E5544E`                    |
+| `NEEDS WORK` / warning | `--mj-needswork` / `--mj-warning` | `#A5811C`                    | `#E6BD57`                    |
+| `WORTHY` / trusted     | `--mj-trusted`                    | `#2596A8`                    | `#5CC4E0`                    |
+| `FORGED` (score 100)   | `--mj-forged`                     | gradient `#8A6D1E → #A5811C` | gradient `#F4DC9C → #E6BD57` |
+| informational          | `--mj-info`                       | `#2B7FA8`                    | `#5CC4E8`                    |
+
+The terminal NORSE palette mirrors the same bands: `trusted: #5CC4E0`,
+`forged: #F4DC9C`.
+
+**Green is no longer a score color.** `WORTHY` scores render in
+aurora-cyan (trusted); Yggdrasil green (`ok`) survives only for non-score
+success contexts (e.g. "autofix applied", "analysis complete"). The same
+verdict colours drive the website gauge, the README badges and the
+rule-catalog severity chips. The shields.io badge maps the bands to the
+closest named colors (`red` / `yellow` / `important` / `success`) — the
+badge is peripheral, ScoreState remains the truth.
 
 ## Typography
 
@@ -71,6 +84,15 @@ rule-catalog severity chips.
 
 Display type is title-case or all-caps with `letter-spacing: 0.04–0.32em`;
 body stays at `line-height: 1.7`. Never set body copy in the display face.
+
+**Score typography rules:**
+
+- Scores are **always JetBrains Mono** — the digits never appear in the
+  display face.
+- Verdict labels (`UNWORTHY / NEEDS WORK / WORTHY / FORGED`) are
+  display-face caps with `letter-spacing ≥ 0.18em`, colored by band.
+- Restraint: the score digits carry no color; color lands on the verdict
+  word and the instrument (gauge/hammer) only.
 
 ## Usage rules
 

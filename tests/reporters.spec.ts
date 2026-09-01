@@ -385,11 +385,11 @@ describe("renderTerminal", () => {
     expect(out).toContain("WORTHINESS");
     expect(out).toContain("72/100");
     expect(out).toContain("DETECTED [vitest]");
-    expect(out).toContain("TOP ISSUES");
+    expect(out).toContain("FINDINGS");
     expect(out).toContain("a.test.ts:3");
   });
 
-  it("shows unknown-framework note and truncates top issues", () => {
+  it("shows unknown-framework note and caps findings cards", () => {
     const out = renderTerminal(
       makeResult({
         frameworks: [],
@@ -402,7 +402,8 @@ describe("renderTerminal", () => {
     );
     expect(out).toContain("FRAMEWORK");
     expect(out).toContain("unknown — scanning all test-looking files");
-    expect(out).toContain("+10 more");
+    // 10 non-verbose cards, overflow counted across the remaining rules.
+    expect(out).toContain("+50 more across 50 rules");
   });
 
   it("shows PARTIAL analysis status", () => {

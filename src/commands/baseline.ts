@@ -38,6 +38,12 @@ export interface BaselineFile {
   capturedAt: string;
   /** Best-effort — "unknown" when not a git repo or git is unavailable. */
   commit: string;
+  /**
+   * Score at capture time — additive within schemaVersion 1. Absent in
+   * baselines written by older versions; consumers must tolerate that
+   * (the PR comment's score-delta line degrades to no delta).
+   */
+  score?: number;
   findings: Array<Pick<Finding, "ruleId" | "file" | "message" | "severity">>;
 }
 
@@ -53,6 +59,10 @@ export function buildBaseline(
     schemaVersion: 1,
     capturedAt: new Date().toISOString(),
     commit,
+    // Additive field (schemaVersion 1): PR comments compare this against
+    // the current score for the drift line. null (no tests) writes no
+    // field rather than a lying 0.
+    ...(result.score !== null ? { score: result.score } : {}),
     findings: result.findings.map((f) => ({
       ruleId: f.ruleId,
       file: f.file,
@@ -115,7 +125,14 @@ export function loadBaseline(path: string): BaselineFile | null {
       // arbitrary local JSON — a hostile or hand-edited baseline must not
       // be able to crash `diff` (a `null` element used to explode in
       // fingerprint()) or leak junk into the report. Invalid entries are
-      // dropped; the file loads with whatever is usable.
+      // dropped; the file loads with whatever is usable. The additive
+      // `score` field gets the same tolerance: a non-numeric score is
+      // dropped instead of leaking into the PR delta line.
+      const rawScore = (parsed as { score?: unknown }).score;
+      const score =
+        typeof rawScore === "number" && Number.isFinite(rawScore)
+          ? rawScore
+          : undefined;
       file.findings = file.findings.filter(
         (f): f is BaselineFile["findings"][number] =>
           typeof f === "object" &&
@@ -124,7 +141,7 @@ export function loadBaseline(path: string): BaselineFile | null {
           typeof f.file === "string" &&
           typeof f.message === "string",
       );
-      return file;
+      return score === undefined ? file : { ...file, score };
     }
     return null;
   } catch {
@@ -136,6 +153,11 @@ export interface BaselineDiff {
   hasBaseline: boolean;
   baselineCapturedAt?: string;
   baselineCommit?: string;
+  /**
+   * Score recorded in the baseline, when the baseline carries the
+   * additive field (absent in older baselines — no delta line then).
+   */
+  baselineScore?: number;
   /** Findings in the current scan not present in the baseline. */
   newFindings: Finding[];
   /** Findings in the baseline no longer present — real, evidenced fixes. */
@@ -189,6 +211,7 @@ export function diffAgainstBaseline(
     hasBaseline: true,
     baselineCapturedAt: baseline.capturedAt,
     baselineCommit: baseline.commit,
+    ...(baseline.score !== undefined ? { baselineScore: baseline.score } : {}),
     newFindings,
     resolvedFindings,
     unchangedCount,

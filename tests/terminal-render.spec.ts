@@ -214,6 +214,147 @@ describe("verdict labels", () => {
   });
 });
 
+describe("score instrument layout", () => {
+  const scan = (over: Partial<ScanResult> = {}): ScanResult => ({
+    schemaVersion: 1,
+    partial: false,
+    score: 72,
+    frameworks: [],
+    frameworkDetectionUnknown: false,
+    dimensions: [],
+    findings: [],
+    analysisStatus: {
+      discovery: "complete",
+      rules: "complete",
+      skippedFiles: 0,
+      durationMs: 1,
+    },
+    ...over,
+  });
+
+  it("renders the hammer between the logo and the WORTHINESS line, with the headline beneath the gauge", () => {
+    const out = renderTerminal(scan(), { isTTY: false, ascii: true });
+    const lines = out.split("\n");
+    const hammerCaption = lines.findIndex((l) => l.includes("[STRAINED]"));
+    const logoLine = lines.findIndex((l) => l.includes("M J O L N I R"));
+    const worthiness = lines.findIndex((l) => l.includes("WORTHINESS"));
+    const headline = lines.findIndex((l) =>
+      l.includes("findings weigh it down"),
+    );
+    expect(logoLine).toBeGreaterThanOrEqual(0);
+    expect(hammerCaption).toBeGreaterThan(logoLine);
+    expect(hammerCaption).toBeLessThan(worthiness);
+    expect(headline).toBeGreaterThan(worthiness);
+  });
+
+  it("the hammer caption carries the band state without color in ASCII mode", () => {
+    expect(
+      renderTerminal(scan({ score: 20 }), { isTTY: false, ascii: true }),
+    ).toContain("[CRACKED]");
+    expect(
+      renderTerminal(scan({ score: 90 }), { isTTY: false, ascii: true }),
+    ).toContain("[CHARGED]");
+    expect(
+      renderTerminal(scan({ score: 100 }), { isTTY: false, ascii: true }),
+    ).toContain("[FORGED]");
+  });
+
+  it("the 100-state FORGED block keeps the ASCII contract string and shows the trophy in unicode", () => {
+    const ascii = renderTerminal(scan({ score: 100 }), {
+      isTTY: false,
+      ascii: true,
+    });
+    expect(ascii).toContain("*** FLAWLESS VICTORY ***");
+    expect(ascii).toContain("zero findings");
+    const unicode = renderTerminal(scan({ score: 100 }), {
+      isTTY: false,
+      ascii: false,
+    });
+    expect(unicode).toContain("F O R G E D");
+    expect(unicode).toContain("'._==_==_=_.'");
+    expect(unicode).toContain("zero findings");
+    expect(unicode).not.toContain("*** FLAWLESS VICTORY ***");
+  });
+
+  it("the forged headline is the deterministic zero-findings template", () => {
+    const out = renderTerminal(scan({ score: 100 }), { isTTY: false });
+    expect(out).toContain("Forged complete. Zero findings.");
+  });
+});
+
+describe("findings cards", () => {
+  const finding = (over: Partial<Finding> = {}): Finding => ({
+    ruleId: "QA-TEST-004",
+    category: "QA-TEST",
+    severity: "warning",
+    confidence: "high",
+    findingType: "heuristic-risk",
+    qaImpact: "FLAKY-RISK",
+    evidenceLevel: "E1",
+    file: "e2e/a.spec.ts",
+    line: 1,
+    column: 1,
+    message: "Hard sleep.",
+    why: "Guesses at timing.",
+    fix: "await expect(locator).toBeVisible()",
+    ...over,
+  });
+  const scan = (findings: Finding[]): ScanResult => ({
+    schemaVersion: 1,
+    partial: false,
+    score: 72,
+    frameworks: [],
+    frameworkDetectionUnknown: false,
+    dimensions: [],
+    findings,
+    analysisStatus: {
+      discovery: "complete",
+      rules: "complete",
+      skippedFiles: 0,
+      durationMs: 1,
+    },
+  });
+
+  it("renders Problem/Impact/Fix/Verify fields with the evidence tag", () => {
+    const out = renderTerminal(scan([finding()]), { isTTY: false, width: 100 });
+    expect(out).toContain("Problem");
+    expect(out).toContain("Impact");
+    expect(out).toContain("Fix");
+    expect(out).toContain("Verify");
+    expect(out).toContain("[E1 · heuristic]");
+    expect(out).toContain("FLAKY-RISK");
+  });
+
+  it("shows the measured FP rate on the card when the rule has one", () => {
+    const out = renderTerminal(
+      scan([finding({ measuredFpRate: 0.14, measuredFpN: 38 })]),
+      { isTTY: false },
+    );
+    expect(out).toContain("measured FP 14% · n=38");
+  });
+
+  it("collapses >3 findings sharing a rule under one same-fix-applies header", () => {
+    const out = renderTerminal(
+      scan([
+        finding({ line: 1 }),
+        finding({ line: 2 }),
+        finding({ line: 3 }),
+        finding({ line: 4 }),
+      ]),
+      { isTTY: false },
+    );
+    expect(out).toContain("QA-TEST-004 × 4 — same fix applies");
+  });
+
+  it("keeps ≤3 same-rule findings as individual cards", () => {
+    const out = renderTerminal(
+      scan([finding({ line: 1 }), finding({ line: 2 })]),
+      { isTTY: false },
+    );
+    expect(out).not.toContain("same fix applies");
+  });
+});
+
 describe("shouldUseAscii()", () => {
   it("MJOLNIR_ASCII=1 forces ASCII regardless of other env vars", () => {
     const prev = process.env["MJOLNIR_ASCII"];

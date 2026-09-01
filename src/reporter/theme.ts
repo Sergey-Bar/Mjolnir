@@ -11,6 +11,9 @@
  *
  * Symbols always accompany color (color-blind safe, R11).
  *
+ * Score-state colors come from ScoreState (score-state.ts) — the single
+ * source of truth shared with the badge and (P2) the web.
+ *
  * Terminal robustness (Master-Stabilization-Plan Sprint 5 Task 22):
  * box-drawing/gauge helpers accept an explicit width so callers can
  * reflow for narrow terminals or a `--width` override, and an `ascii`
@@ -18,8 +21,10 @@
  * consoles that mangle box-drawing glyphs and emoji.
  */
 
+import { deriveScoreState, type ScoreBand } from "./score-state.js";
+
 export interface Palette {
-  /** Yggdrasil green — healthy / passing. */
+  /** Yggdrasil green — healthy / passing (non-score success contexts, e.g. "autofix applied"). */
   ok: (s: string) => string;
   /** Aurora teal — info / detected frameworks. */
   info: (s: string) => string;
@@ -29,6 +34,10 @@ export interface Palette {
   warning: (s: string) => string;
   /** Rune-red — errors. */
   error: (s: string) => string;
+  /** Aurora-cyan — the trusted score band (80–99). Score contexts only. */
+  trusted: (s: string) => string;
+  /** Forged white-gold — the forged score state (100). */
+  forged: (s: string) => string;
   bold: (s: string) => string;
   dim: (s: string) => string;
 }
@@ -40,6 +49,8 @@ export const NORSE = {
   accent: [0x8a, 0xb4, 0xd8], // frost-steel blue
   warning: [0xe0, 0xa5, 0x26], // amber / lightning
   error: [0xd0, 0x45, 0x3b], // rune-red
+  trusted: [0x5c, 0xc4, 0xe0], // aurora-cyan — trusted score band
+  forged: [0xf4, 0xdc, 0x9c], // forged white-gold — score 100
   bold: [0xed, 0xe6, 0xd6], // bone white
   dim: [0x7c, 0x85, 0x90], // weathered stone
 } as const;
@@ -50,6 +61,8 @@ const on = {
   accent: rgb(NORSE.accent),
   warning: rgb(NORSE.warning),
   error: rgb(NORSE.error),
+  trusted: rgb(NORSE.trusted),
+  forged: rgb(NORSE.forged),
   // bold keeps the SGR bold-intensity attribute as well as the tint.
   bold: (s: string) => `\x1b[1m${rgb(NORSE.bold)(s)}`,
   dim: rgb(NORSE.dim),
@@ -80,6 +93,8 @@ const off = {
   accent: inertId,
   warning: inertId,
   error: inertId,
+  trusted: inertId,
+  forged: inertId,
   bold: inertId,
   dim: inertId,
 };
@@ -189,7 +204,8 @@ export function padTo(s: string, width: number): string {
 
 /**
  * Score gauge: colored block bar with gradient segments.
- * Color by range: red <50, yellow <80, green ≥80.
+ * Color by ScoreState band: red <50, amber 50–79, aurora-cyan 80–99,
+ * forged white-gold 100 — one mapping shared with verdict/badge.
  * Falls back to `#`/`.` blocks when `ascii` is set (block-drawing
  * characters `█`/`▓`/`░` render as "?" on some legacy Windows consoles).
  */
@@ -223,8 +239,23 @@ export function meter(
 }
 
 function gaugeColor(score: number, p: Palette): (s: string) => string {
-  if (score >= 80) return p.ok;
-  return score >= 50 ? p.warning : p.error;
+  return gaugeColorForBand(deriveScoreState(score).band, p);
+}
+
+/**
+ * The single band → palette-key mapping, delegated from ScoreState so
+ * gauge, verdict and badge colors can never disagree again.
+ * trusted (80–99) is aurora-cyan — green survives only for non-score
+ * success contexts (see Palette.ok).
+ */
+export function gaugeColorForBand(
+  band: ScoreBand | "unmeasured",
+  p: Palette,
+): (s: string) => string {
+  if (band === "forged") return p.forged;
+  if (band === "trusted") return p.trusted;
+  if (band === "unmeasured") return p.dim;
+  return band === "warning" ? p.warning : p.error;
 }
 
 /** Severity glyph + label, themed. Falls back to plain ASCII glyphs

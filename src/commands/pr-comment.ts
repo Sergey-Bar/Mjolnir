@@ -16,6 +16,7 @@
  */
 
 import type { Finding, ScanResult } from "../types.js";
+import { deriveEvidenceLevel } from "../types.js";
 import type { BaselineDiff } from "./baseline.js";
 import { sanitizeData } from "../reporter/theme.js";
 
@@ -32,10 +33,37 @@ function escapeMarkdown(s: string): string {
   return sanitizeData(s).replace(/([\\`*_{}[\]()#+!|<>])/g, "\\$1");
 }
 
+/** True when a fix recommendation reads as code rather than prose —
+ * those render as a code span, the rest stay italic. */
+function looksLikeCode(s: string): boolean {
+  return /[(;={]|await |expect\(/.test(s);
+}
+
+/** Evidence tag per finding — Evidence > Assumption in the fabric: a
+ * measured false-positive rate is shown right on the line when present. */
+function evidenceTag(f: Finding): string {
+  const level =
+    f.evidenceLevel ?? deriveEvidenceLevel(f.findingType, f.confidence);
+  const kind =
+    level === "E2"
+      ? "deterministic"
+      : level === "E1"
+        ? "heuristic"
+        : "observation";
+  let tag = `${level} · ${kind}`;
+  if (f.measuredFpRate !== undefined) {
+    tag += ` · measured FP ${Math.round(f.measuredFpRate * 100)}%`;
+    if (f.measuredFpN !== undefined) tag += ` · n=${f.measuredFpN}`;
+  }
+  return tag;
+}
+
 function findingLine(f: Finding): string {
   const icon =
     f.severity === "error" ? "🔴" : f.severity === "warning" ? "🟡" : "🔵";
-  return `${icon} **${escapeMarkdown(f.ruleId)}** \`${escapeMarkdown(f.file)}:${f.line}\` — ${escapeMarkdown(f.message)}\n  _${escapeMarkdown(f.fix)}_`;
+  const fix = escapeMarkdown(f.fix);
+  const fixBody = looksLikeCode(f.fix) ? `\`${fix}\`` : `_${fix}_`;
+  return `${icon} **${escapeMarkdown(f.ruleId)}** \`${escapeMarkdown(f.file)}:${f.line}\` — ${escapeMarkdown(f.message)} ${escapeMarkdown(`[${evidenceTag(f)}]`)}\n  ${fixBody}`;
 }
 
 export interface PrCommentOptions {
@@ -75,7 +103,20 @@ export function renderPrComment(
   lines.push("");
 
   if (result.score !== null) {
-    lines.push(`**Score:** ${result.score}/100`);
+    // Score drift (§5.4): when the baseline carries the additive score
+    // field, the delta is shown against it. Older baselines (and no
+    // baseline) degrade to the plain current score — never a fake delta.
+    const baseScore = diff?.baselineScore;
+    if (baseScore !== undefined) {
+      const delta = result.score - baseScore;
+      const sign = delta > 0 ? "+" : "";
+      const commit = diff?.baselineCommit?.slice(0, 7) || "unknown";
+      lines.push(
+        `**Score:** ${result.score}/100 (${sign}${delta} since baseline \`${commit}\`)`,
+      );
+    } else {
+      lines.push(`**Score:** ${result.score}/100`);
+    }
     lines.push("");
   }
 

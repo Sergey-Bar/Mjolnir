@@ -407,9 +407,11 @@ tbody tr:hover {
   border-color: rgba(201, 162, 39, 0.35);
 }
 .measured {
-  color: var(--mj-worthy);
-  background: rgba(47, 158, 115, 0.12);
-  border-color: rgba(47, 158, 115, 0.3);
+  /* retargeted with the score-token rework: this is a trust chip, not a
+   * score — aurora-cyan (the trusted family), no longer green. */
+  color: var(--mj-trusted);
+  background: rgba(92, 196, 224, 0.12);
+  border-color: rgba(92, 196, 224, 0.3);
   font-family: var(--vp-font-family-mono);
 }
 

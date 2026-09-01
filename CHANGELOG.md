@@ -11,6 +11,36 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased] — QA-2026-08-30 audit wave
 
+### Added — score instrument redesign (hammer states)
+
+- **ScoreState model** (`src/reporter/score-state.ts`): one pure source of
+  truth for band / verdict / color / headline per score — critical 0–49,
+  warning 50–79, trusted 80–99, forged 100. `verdictFor`, the terminal
+  gauge and the badge all delegate to it.
+- **The hammer is now the score instrument** (terminal): a state-colored
+  hammer block renders above the WORTHINESS line — cracked (0–49),
+  strained with partial runes (50–79), charged with energy arcs (80–99),
+  halo + lightning at 100. A plain-text caption (`[CRACKED]` /
+  `[STRAINED]` / `[CHARGED]` / `[FORGED]`) carries the state without
+  color; ASCII fallback included.
+- **Trusted is aurora-cyan, forged is white-gold** on every surface
+  (terminal palette, web tokens, brand README). Green is no longer a
+  score color — it survives for non-score success contexts only.
+- **Findings render as cards** (terminal): Problem → Impact → Fix →
+  Verify with the evidence tag and measured FP rate beside the title;
+  rules with >3 findings collapse under one "same fix applies" header;
+  non-verbose shows 10 cards with an overflow line, `--verbose` shows
+  everything.
+- **FORGED block at 100** replaces the bare FLAWLESS VICTORY line in
+  unicode mode (trophy retained inside; the `*** FLAWLESS VICTORY ***`
+  ASCII contract string is preserved).
+- **PR comments show score drift** (`Score: 72/100 (+5 since baseline
+<sha>)`) using the new additive `score` field in the baseline JSON, and
+  carry per-finding evidence tags.
+- **Badge thresholds aligned** with the reporter: ≥80 / ≥50 / 100
+  (was ≥90 / ≥75 / ≥50), colors `red` / `yellow` / `important` /
+  `success`; the message at 100 reads `100/100 · forged`.
+
 ### Fixed — security & detection-regression audit (`.planning/AUDIT-2026-08-30-QA.md`)
 
 - **QA-1 (P0, detection regression):** QA-TEST-003's M0-#4 header rewrite

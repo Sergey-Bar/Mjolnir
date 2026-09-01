@@ -2,9 +2,13 @@
  * Terminal reporter (W1-06). Retro CRT/arcade redesign.
  * Respects NO_COLOR and non-TTY (R11): plain text, no ANSI codes.
  * Symbols accompany color for color-blind users.
+ *
+ * Information architecture: SUMMARY (hammer instrument) → SIGNAL
+ * (dimensions + deductions) → EVIDENCE (finding cards) → DETAILS
+ * (verbose + honesty footer) → ACTION (fix-first + verify hints).
  */
 
-import type { ScanResult } from "../types.js";
+import type { Finding, ScanResult } from "../types.js";
 import { DEDUCTIONS, deriveEvidenceLevel } from "../types.js";
 import { computeDimensions, deductionFor } from "../scorer/scorer.js";
 import { topFixes } from "../scorer/prioritize.js";
@@ -18,13 +22,27 @@ import {
   padTo,
   sanitizeData,
 } from "./theme.js";
-import { LOGO, LOGO_ASCII, TROPHY, DIVIDER } from "./art.js";
+import { deriveScoreState, headlineFor } from "./score-state.js";
+import {
+  LOGO,
+  LOGO_ASCII,
+  TROPHY,
+  DIVIDER,
+  FORGED_WORDMARK,
+  renderHammer,
+} from "./art.js";
 import { bluntMessage } from "./tone-blunt.js";
 import { MEASURED_FP } from "../rules/measured-fp.generated.js";
 import { SEARCHED_FOR } from "../discovery/scan-adapters.js";
 
-/** Terminal display cap — the JSON/SARIF contract always carries ALL findings. */
-const MAX_DISPLAYED = 50;
+/** Non-verbose finding cards shown before the overflow line. The
+ * JSON/SARIF contract always carries ALL findings — this cap is a
+ * terminal display concern only. */
+const MAX_CARDS = 10;
+
+/** Group findings under a single rule header when more than this many
+ * share the same ruleId ("same fix applies" collapse). */
+const GROUP_THRESHOLD = 3;
 
 /** Reflow floor: below this, box wrapping targets a minimum readable
  * width rather than shrinking further (an 8-column box is useless). */
@@ -78,31 +96,34 @@ export function renderTerminal(
   appendDimensions(lines, result, p, ascii);
   appendDeductions(lines, result, counts, p, width, ascii);
   appendFixThisFirst(lines, result, p);
-  appendTopIssues(
+  appendFindings(
     lines,
     result,
     counts,
     opts.verbose === true,
     p,
     ascii,
+    width,
     opts.tone,
   );
   if (counts.total === 0 && result.score === 100) {
-    lines.push(
-      p.ok(ascii ? "*** FLAWLESS VICTORY ***" : TROPHY),
-      p.ok("  FLAWLESS VICTORY — zero findings. The suite is clean."),
-      "",
-    );
+    appendForgedBlock(lines, p, ascii);
   }
   appendFooter(lines, result, p);
   return lines.join("\n");
 }
 
+/**
+ * Contract-stable three-band verdict (property-locked in
+ * tests/scoring-precision.spec.ts). Delegates to the ScoreState model —
+ * 100 keeps returning WORTHY here; the FORGED premium treatment lives
+ * in the dedicated block, not in this public mapping.
+ */
 export function verdictFor(
   score: number,
 ): "WORTHY" | "NEEDS WORK" | "UNWORTHY" {
-  if (score >= 80) return "WORTHY";
-  return score >= 50 ? "NEEDS WORK" : "UNWORTHY";
+  const verdict = deriveScoreState(score).verdict;
+  return verdict === "FORGED" ? "WORTHY" : verdict;
 }
 
 function appendScoreSection(
@@ -112,9 +133,16 @@ function appendScoreSection(
   width: number,
   ascii: boolean,
 ): void {
+  const state = deriveScoreState(result.score);
   const verdict = verdictFor(result.score);
-  const verdictColored = colorizeVerdict(verdict, p);
+  const verdictColored = colorizeVerdict(verdict, state.band, p);
   const scoreText = String(result.score).padStart(3);
+
+  // The hammer is the instrument: the first thing the eye lands on,
+  // state-resolved, before any word is read.
+  lines.push("");
+  for (const l of renderHammer(state, p, ascii)) lines.push(`  ${l}`);
+  lines.push("");
   lines.push(
     `  ${p.bold("WORTHINESS")} ${p.bold(scoreText)}${p.dim("/100")}  ${verdictColored}`,
   );
@@ -122,6 +150,7 @@ function appendScoreSection(
   // narrow window; floors at 10 blocks so the gauge stays legible.
   const gaugeWidth = Math.max(10, Math.min(30, width - 4));
   lines.push(`  ${scoreGauge(result.score, p, gaugeWidth, ascii)}`);
+  lines.push(`  ${p.dim(headlineFor(state, result.findings.length))}`);
   // Phase 5 transparency: show raw deductions and the actual denominator so
   // the normalization is never opaque.
   if (result.rawDeductions !== undefined && result.testDeclarationCount) {
@@ -139,10 +168,13 @@ function appendScoreSection(
 
 function colorizeVerdict(
   verdict: string,
+  band: ReturnType<typeof deriveScoreState>["band"],
   p: ReturnType<typeof palette>,
 ): string {
-  if (verdict === "WORTHY") return p.ok(verdict);
-  return verdict === "NEEDS WORK" ? p.warning(verdict) : p.error(verdict);
+  if (band === "forged") return p.forged(verdict);
+  if (band === "trusted") return p.trusted(verdict);
+  if (band === "warning") return p.warning(verdict);
+  return p.error(verdict);
 }
 
 function appendFrameworks(
@@ -240,37 +272,256 @@ function appendFixThisFirst(
   lines.push("");
 }
 
-function appendTopIssues(
+interface FindingCard {
+  severity: Finding["severity"];
+  /** One-line location summary shown under the card title. */
+  loc: string;
+  /** Problem = the (tone-adjusted) message. */
+  problem: string;
+  /** Evidence tag: [E2 · deterministic] / [E1 · heuristic · measured FP 14% · n=38]. */
+  evidence: string;
+  /** Impact = qaImpact label + the rule's why. */
+  impact: string;
+  /** Fix = the concrete recommendation. */
+  fix: string;
+  /** Verify = deterministic re-run expectation. */
+  verify: string;
+}
+
+function evidenceTag(f: Finding): string {
+  const level =
+    f.evidenceLevel ?? deriveEvidenceLevel(f.findingType, f.confidence);
+  const kind =
+    level === "E2"
+      ? "deterministic"
+      : level === "E1"
+        ? "heuristic"
+        : "observation";
+  let tag = `${level} · ${kind}`;
+  if (f.measuredFpRate !== undefined) {
+    tag += ` · measured FP ${Math.round(f.measuredFpRate * 100)}%`;
+    if (f.measuredFpN !== undefined) tag += ` · n=${f.measuredFpN}`;
+  }
+  return `[${tag}]`;
+}
+
+/** Deterministic per-severity verification hint: what re-running should
+ * show after the fix lands. Deduction is the honest, evidence-discounted
+ * number this finding costs right now. */
+function verifyHint(f: Finding): string {
+  const pts = deductionFor(f);
+  if (f.severity === "error") {
+    return pts > 0
+      ? `Re-run mjolnir after the change — the gate should stop failing and the score should recover by ${pts}.`
+      : "Re-run mjolnir after the change — the finding should no longer appear.";
+  }
+  if (f.severity === "warning") {
+    return pts > 0
+      ? `Re-run mjolnir after the change — deduction should drop by ${pts}.`
+      : "Re-run mjolnir after the change — the finding should no longer appear.";
+  }
+  return "Re-run mjolnir after the change — the finding should no longer appear.";
+}
+
+function toCard(f: Finding, tone?: "blunt"): FindingCard {
+  const problem = tone === "blunt" ? bluntMessage(f) : f.message;
+  return {
+    severity: f.severity,
+    loc: `${sanitizeData(f.ruleId)} · ${sanitizeData(f.file)}:${f.line}`,
+    problem: sanitizeData(problem),
+    evidence: evidenceTag(f),
+    impact: `${f.qaImpact} — ${sanitizeData(f.why)}`,
+    fix: sanitizeData(f.fix),
+    verify: verifyHint(f),
+  };
+}
+
+/** Wrap plain text (no ANSI in body) into lines of at most `width`. */
+function wrapLines(text: string, width: number): string[] {
+  if (text.length === 0) return ["—"];
+  const words = text.split(/\s+/).filter(Boolean);
+  const out: string[] = [];
+  let current = "";
+  for (const word of words) {
+    const candidate = current ? `${current} ${word}` : word;
+    if (candidate.length <= width || current === "") current = candidate;
+    else {
+      out.push(current);
+      current = word;
+    }
+  }
+  if (current) out.push(current);
+  return out;
+}
+
+const CARD_LABEL_PAD = 8;
+const CARD_GUTTER = "    ";
+
+function pushCard(
+  lines: string[],
+  card: FindingCard,
+  p: ReturnType<typeof palette>,
+  width: number,
+  ascii: boolean,
+): void {
+  const contentWidth = Math.max(
+    20,
+    width - 2 - CARD_GUTTER.length - CARD_LABEL_PAD,
+  );
+  lines.push(
+    `  ${severityTag(card.severity, p, ascii)} ${p.bold(card.loc)}  ${p.dim(card.evidence)}`,
+  );
+  const fields: Array<{ label: string; text: string; dim: boolean }> = [
+    { label: "Problem", text: card.problem, dim: false },
+    { label: "Impact", text: card.impact, dim: false },
+    { label: "Fix", text: card.fix, dim: false },
+    { label: "Verify", text: card.verify, dim: true },
+  ];
+  for (const field of fields) {
+    const body = wrapLines(field.text, contentWidth);
+    const label = field.dim
+      ? p.dim(field.label.padEnd(CARD_LABEL_PAD))
+      : p.accent(field.label.padEnd(CARD_LABEL_PAD));
+    body.forEach((seg, i) => {
+      lines.push(
+        `${CARD_GUTTER}${i === 0 ? label : " ".repeat(CARD_LABEL_PAD)}${seg}`,
+      );
+    });
+  }
+  lines.push("");
+}
+
+/**
+ * The findings experience — EVIDENCE layer. Cards carry
+ * severity → Problem → Impact → Fix → Verify; the evidence tag sits
+ * beside the title. >3 findings sharing a rule collapse under one
+ * "same fix applies" header. Non-verbose shows MAX_CARDS cards plus an
+ * overflow line; --verbose shows everything.
+ */
+function appendFindings(
   lines: string[],
   result: ScanResult,
   counts: { total: number },
   verbose: boolean,
   p: ReturnType<typeof palette>,
   ascii: boolean,
+  width: number,
   tone?: "blunt",
 ): void {
-  const top = verbose
-    ? result.findings
-    : result.findings.slice(0, MAX_DISPLAYED);
-  if (top.length === 0) return;
-  lines.push(`  ${p.accent("▚ TOP ISSUES")}`);
+  if (counts.total === 0) return;
+
+  // Group by ruleId when >3 findings share a rule — one header, count,
+  // "same fix applies", then one-liners. Groups keep first-appearance
+  // order relative to their rule's first finding; grouped summaries
+  // surface after the singles so scan order stays recognizable.
+  const byRule = new Map<string, Finding[]>();
+  for (const f of result.findings) {
+    const list = byRule.get(f.ruleId) ?? [];
+    list.push(f);
+    byRule.set(f.ruleId, list);
+  }
+
+  type RenderUnit =
+    | { kind: "card"; finding: Finding }
+    | { kind: "group"; ruleId: string; findings: Finding[] };
+
+  const units: RenderUnit[] = [];
+  const groupedRuleIds = new Set<string>();
+  for (const [ruleId, list] of byRule) {
+    if (list.length > GROUP_THRESHOLD) groupedRuleIds.add(ruleId);
+  }
+  const groupQueues = new Map<string, Finding[]>();
+  for (const f of result.findings) {
+    if (groupedRuleIds.has(f.ruleId)) {
+      const q = groupQueues.get(f.ruleId) ?? [];
+      q.push(f);
+      groupQueues.set(f.ruleId, q);
+      continue;
+    }
+    units.push({ kind: "card", finding: f });
+  }
+  for (const ruleId of groupedRuleIds) {
+    const q = groupQueues.get(ruleId);
+    if (q && q.length > 0) units.push({ kind: "group", ruleId, findings: q });
+  }
+
+  const cardBudget = verbose ? Number.POSITIVE_INFINITY : MAX_CARDS;
+  let shown = 0;
+  let hidden = 0;
+  const hiddenRules = new Set<string>();
+
+  lines.push(`  ${p.accent("▚ FINDINGS")}`);
   lines.push("");
-  for (const f of top) {
-    const loc = `${sanitizeData(f.ruleId)} · ${sanitizeData(f.file)}:${f.line}`;
-    // Honesty Core: every finding shows how strong its evidence is.
-    const level =
-      f.evidenceLevel ?? deriveEvidenceLevel(f.findingType, f.confidence);
-    const msg = tone === "blunt" ? bluntMessage(f) : f.message;
+  for (const unit of units) {
+    if (unit.kind === "group") {
+      const n = unit.findings.length;
+      const first = unit.findings[0];
+      if (!first) continue;
+      if (shown >= cardBudget) {
+        hidden += n;
+        hiddenRules.add(unit.ruleId);
+        continue;
+      }
+      lines.push(
+        `  ${severityTag(maxSeverity(unit.findings), p, ascii)} ${p.bold(sanitizeData(unit.ruleId))} ${p.dim(`× ${n} — same fix applies`)} ${p.dim(evidenceTag(first))}`,
+      );
+      lines.push(
+        `${CARD_GUTTER}${p.accent("Fix".padEnd(CARD_LABEL_PAD))}${p.dim(sanitizeData(first.fix))}`,
+      );
+      for (const f of unit.findings) {
+        lines.push(
+          `${CARD_GUTTER}${" ".repeat(CARD_LABEL_PAD)}${p.dim(`· ${sanitizeData(f.file)}:${f.line} — ${sanitizeData(f.message)}`)}`,
+        );
+      }
+      lines.push("");
+      shown++;
+      continue;
+    }
+    if (shown >= cardBudget) {
+      hidden++;
+      hiddenRules.add(unit.finding.ruleId);
+      continue;
+    }
+    pushCard(lines, toCard(unit.finding, tone), p, width, ascii);
+    shown++;
+  }
+
+  if (hidden > 0) {
     lines.push(
-      `  ${severityTag(f.severity, p, ascii)} ${p.bold(msg)} ${p.dim(`[${level}]`)}`,
+      `  ${p.dim(`… +${hidden} more across ${hiddenRules.size} rule${hiddenRules.size === 1 ? "" : "s"}. Run with --verbose for all findings.`)}`,
     );
-    lines.push(`         ${p.dim(loc)}`);
   }
-  const rest = counts.total - top.length;
-  if (rest > 0) {
-    const more = `… +${rest} more. Run with --verbose for all findings.`;
-    lines.push(`  ${p.dim(more)}`);
+  lines.push("");
+}
+
+function maxSeverity(findings: Finding[]): Finding["severity"] {
+  if (findings.some((f) => f.severity === "error")) return "error";
+  if (findings.some((f) => f.severity === "warning")) return "warning";
+  return "info";
+}
+
+/**
+ * FORGED — the 100-state premium block. Replaces the bare FLAWLESS
+ * VICTORY line: wordmark + the trophy retained inside, all in the
+ * forged gold-white pair. The halo hammer itself is the score
+ * instrument above — one mark, calmly (brand usage rule); ASCII mode
+ * keeps the `*** FLAWLESS VICTORY ***` contract string (test-locked in
+ * empty-states/long-tail-arms).
+ */
+function appendForgedBlock(
+  lines: string[],
+  p: ReturnType<typeof palette>,
+  ascii: boolean,
+): void {
+  lines.push("");
+  if (ascii) {
+    lines.push(p.forged("*** FLAWLESS VICTORY ***"));
+  } else {
+    lines.push(`  ${p.forged(FORGED_WORDMARK)}`);
   }
+  lines.push(p.forged("  FORGED — zero findings. The suite is clean."));
+  lines.push("");
+  lines.push(p.forged(TROPHY));
   lines.push("");
 }
 
