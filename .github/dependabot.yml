@@ -14,6 +14,24 @@ updates:
         update-types:
           - "minor"
           - "patch"
+    # Two upgrade gates, each verified against the ecosystem on 2026-09-01 —
+    # dependabot must not reopen these until the upstream blockers move.
+    ignore:
+      # web-tree-sitter 0.25.6 -> 0.26.x: the 0.26 runtime cannot load the
+      # tree-sitter-wasms grammar WASMs at all (Language.load() throws in
+      # getDylinkMetadata; verified by reproduction — see the DEPENDENCY PIN
+      # header in src/engine/tree-sitter-ast.ts). tree-sitter-wasms' latest
+      # release (0.1.13) predates the 0.26 ABI and ships no compatible
+      # grammars. Re-enable when tree-sitter-wasms ships 0.26-built grammars.
+      - dependency-name: "web-tree-sitter"
+      # typescript 6 -> 7: typescript@7 is the native (Go) compiler with NO
+      # JS API (no `main`, no `types` in the package) — ts-morph, which
+      # powers the entire AST precision layer, cannot bind to it; and
+      # typescript-eslint@8.69.0 (latest) still peers <6.1.0. Re-enable when
+      # BOTH typescript-eslint peers >=7 and ts-morph ships a 7-compatible
+      # API adapter.
+      - dependency-name: "typescript"
+        versions: [">=7"]
 
   - package-ecosystem: "github-actions"
     directory: "/"
