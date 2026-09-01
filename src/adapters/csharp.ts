@@ -1,9 +1,13 @@
 /**
  * C#/.NET adapter (Upgrade-Plan-v3 Phase 5).
  *
- * Third language adapter. Same regex-layer discipline as the Java
- * adapter; the tree-sitter-c-sharp WASM grammar can be added behind the
- * same seam later without touching rules.
+ * Regex-layer adapter: rules run over the file text (and the masked
+ * code-text view), same discipline as the Java adapter. The
+ * tree-sitter-c_sharp WASM grammar ships in the dependency set and
+ * `src/engine/tree-sitter-ast.ts` exposes an async `parseCSharpAst`
+ * seam, but it is not yet wired into the synchronous scan pipeline
+ * (Verification Trust Evolution Plan defect D1, Phase 0.5 wires the
+ * parse stage).
  *
  * Test discovery: *Tests.cs / *Test.cs / *IT.cs under typical NUnit/
  * xUnit/MSTest conventions.

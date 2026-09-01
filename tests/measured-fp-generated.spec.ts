@@ -18,6 +18,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   computeRuleStats,
+  loadDetectorRevisions,
   MEASURED_THRESHOLD,
   renderMeasuredFpModule,
   type Verdict,
@@ -97,5 +98,55 @@ describe("measured-fp.generated.ts", () => {
       readme,
       `README should state "${n} of ${RULES.length}" rules measured`,
     ).toContain(`${n} of ${RULES.length}`);
+  });
+});
+
+describe("detector-revisions.json sidecar (Verification Trust Evolution Plan §07/§11.3)", () => {
+  const revisions = loadDetectorRevisions();
+
+  it("covers exactly the measured set — no missing entries, no strays", () => {
+    // A rule measured but missing from the sidecar means a measurement
+    // shipping without an implementation revision (the D8 hole); a stray
+    // sidecar entry names a rule that no longer carries a measurement.
+    expect(Object.keys(revisions).sort()).toEqual(
+      Object.keys(MEASURED_FP).sort(),
+    );
+  });
+
+  it("every MEASURED_FP entry carries a positive integer revision", () => {
+    for (const [id, m] of Object.entries(MEASURED_FP)) {
+      expect(
+        Number.isInteger(m.detectorRevision),
+        `${id}: detectorRevision must be an integer`,
+      ).toBe(true);
+      expect(m.detectorRevision, id).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it("the generated map's revisions match the sidecar exactly", () => {
+    for (const [id, m] of Object.entries(MEASURED_FP)) {
+      expect(m.detectorRevision, id).toBe(revisions[id]);
+    }
+  });
+
+  it("every sidecar entry is a valid registry rule ID", () => {
+    const registry = new Set(RULES.map((r) => r.id));
+    for (const id of Object.keys(revisions)) {
+      expect(registry.has(id), `${id} is not in the registry`).toBe(true);
+    }
+  });
+
+  it("a newly measured rule without a sidecar entry defaults to revision 1", () => {
+    // The generator stamps loadDetectorRevisions() output; a rule absent
+    // from the sidecar must default to 1 (documented first-generation
+    // default), never undefined — the map is the shipped contract.
+    const verdicts: Verdict[] = (
+      Array.from({ length: 10 }, () => ({
+        ruleId: "QA-CS-101",
+        verdict: "TP" as const,
+      })) as Verdict[]
+    ).concat([{ ruleId: "QA-CS-101", verdict: "FP" }]);
+    const rendered = renderMeasuredFpModule(verdicts);
+    expect(rendered).toContain("{ fpRate: 0.091, n: 11, detectorRevision: 1 }");
   });
 });

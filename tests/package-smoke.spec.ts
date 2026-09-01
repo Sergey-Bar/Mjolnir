@@ -228,6 +228,55 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
         ).toBe(true);
       });
 
+      it("declares the tree-sitter runtime as real dependencies (D2 packaging fix)", () => {
+        // Verification Trust Evolution Plan D2: the published CLI must be
+        // able to load grammars offline. tree-sitter-wasms carries the
+        // prebuilt .wasm grammars; web-tree-sitter is the runtime loader
+        // (pinned EXACTLY — 0.26.x cannot load these grammar files, see
+        // src/engine/tree-sitter-ast.ts's header). Both must ship as
+        // `dependencies`, not devDependencies, or a consumer's
+        // `npm install mjolnir-qa` produces a CLI whose parse stage
+        // cannot load a grammar at all.
+        const deps = pkgJson.dependencies ?? {};
+        expect(
+          deps["tree-sitter-wasms"],
+          "tree-sitter-wasms must be a runtime dependency — the .wasm " +
+            "grammars are loaded from node_modules at scan time",
+        ).toBeDefined();
+        expect(
+          deps["web-tree-sitter"],
+          "web-tree-sitter must be a runtime dependency",
+        ).toBeDefined();
+        expect(
+          deps["web-tree-sitter"],
+          "web-tree-sitter must keep the exact 0.25.6 pin (0.26.x cannot " +
+            "load tree-sitter-wasms' prebuilt grammars — verified breakage)",
+        ).toBe("0.25.6");
+      });
+
+      it("the packed dependency set contains the java and c_sharp grammars (D2)", () => {
+        // The beforeAll dependency-copy loop mirrors a real npm install of
+        // `dependencies`; after it, the grammars the parse stage probes
+        // (src/engine/tree-sitter-ast.ts grammarPath) must be resolvable
+        // inside the installed tree — the offline-load guarantee.
+        for (const grammar of [
+          "tree-sitter-java.wasm",
+          "tree-sitter-c_sharp.wasm",
+        ]) {
+          expect(
+            existsSync(
+              join(pkgDir, "node_modules", "tree-sitter-wasms", "out", grammar),
+            ),
+            `${grammar} must be present in the installed dependency tree — ` +
+              `without it the published CLI cannot parse Java/C# sources offline`,
+          ).toBe(true);
+        }
+        expect(
+          existsSync(join(pkgDir, "node_modules", "web-tree-sitter")),
+          "web-tree-sitter must be present in the installed dependency tree",
+        ).toBe(true);
+      });
+
       it("excludes dev artifacts not declared in 'files' (Sprint 1 Task 8)", () => {
         // Checked against a fresh `npm pack --dry-run` listing rather than
         // the shared pkgDir fixture above: that fixture's beforeAll copies

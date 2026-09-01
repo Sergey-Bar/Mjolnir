@@ -9,6 +9,62 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — Verification Trust Evolution, Phase 0 + Phase 1 prep
+
+### Added — Rule Capability Matrix (Phase 0)
+
+- **Capability Matrix v0** (`docs/RULE-CAPABILITY-MATRIX.md` +
+  `docs/RULE-CAPABILITY-MATRIX.json`): generated per-rule inventory of all
+  91 rules from the registry + `MEASURED_FP` + the verdict corpus —
+  category, languages, frameworks, declared detection strategy with a
+  provisional enum mapping (Phase 0 contract proposal), semantic depth,
+  measured flag, FP rate with sample size, corpus size and diversity.
+  Unknown fields render as `UNCLASSIFIED` — visible gaps are the
+  deliverable. Regenerated with `npm run docs:capability`; drift-locked by
+  `tests/capability-matrix.spec.ts` and the generated-docs-drift CI job.
+- **Declared-vs-measured cross-check report** (ledger class D9): the
+  matrix names every measured rule whose declared tier violates the FP
+  ceilings (core > 10%, extended > 30%) and produces the D3 demotion list
+  (38 unmeasured rules currently in effective core — Phase 1 input).
+  Current run: **0 D9 mismatches** (all measured > 30% FP rules already
+  declare `quarantine`).
+- **Defect ledger recorded** into the matrix metadata (plan §02, D1–D8
+  with owning phase per defect).
+
+### Added — detectorRevision scaffold (Phase 1 prep)
+
+- **`tests/corpus/detector-revisions.json` sidecar**: hand-maintained,
+  one entry per measured rule (all at revision 1 today), diffable.
+  `MEASURED_FP` entries now carry `detectorRevision` stamped from the
+  sidecar by `fp-audit:generate`; `docs/FP-AUDIT.md` gains a
+  `detectorRev` column. Measurement inheritance law (§07): a measurement
+  belongs to a specific detector implementation, not merely to a rule
+  ID. Drift lock extended in `tests/measured-fp-generated.spec.ts`
+  (sidecar covers exactly the measured set; revisions are positive
+  integers matching the sidecar).
+
+### Fixed — packaging: offline grammar loading (Phase 0.5 spike, D2)
+
+- **`tree-sitter-wasms` and `web-tree-sitter` moved to `dependencies`**
+  (web-tree-sitter keeps its exact `0.25.6` pin — 0.26.x cannot load the
+  prebuilt grammar files). The published CLI's dependency tree now
+  carries the tree-sitter Java/C# grammars, so `npm install mjolnir-qa`
+  can load them offline once the Phase 0.5 parse-stage wiring consumes
+  them. Removed the misleading `!dist/**/*.wasm` files exclusion (the
+  grammars ship via the dependency, not the bundle).
+- **Pack-smoke regression test**: `tests/package-smoke.spec.ts` asserts
+  the packed package declares both as runtime dependencies and that the
+  java/c_sharp grammars resolve inside the installed dependency tree.
+
+### Fixed — adapter header claims (D4)
+
+- `src/adapters/java.ts` no longer claims to be a "Second tree-sitter
+  consumer" — it is a regex-layer adapter; the tree-sitter-java grammar
+  and the async `parseJavaAst` seam exist but are not wired into the
+  synchronous scan (D1). Same honest correction for
+  `src/adapters/csharp.ts` and `src/engine/adapter.ts` (whose header
+  still claimed tree-sitter "arrives in R2 with Python").
+
 ## [Unreleased] — QA-2026-08-30 audit wave
 
 ### Added — score instrument redesign (hammer states)

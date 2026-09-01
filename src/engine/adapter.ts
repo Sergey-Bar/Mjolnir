@@ -5,8 +5,13 @@
  * file discovery, framework detection, and (later) AST parsing for its
  * language. Rules declare which adapters they apply to.
  *
- * R1 note: TypeScriptAdapter keeps the proven regex engine internally.
- * Tree-sitter arrives in R2 with Python, where it's actually required.
+ * Parse-stage status (honest, corrected — an earlier note here claimed
+ * tree-sitter arrived with Python, which never happened): the TypeScript
+ * adapter parses via ts-morph behind the `SourceFileContext.ast` seam
+ * (`src/engine/ts-ast.ts`); Java/C# tree-sitter parsing exists in
+ * `src/engine/tree-sitter-ast.ts` but is async and NOT yet wired into the
+ * synchronous scan pipeline (Verification Trust Evolution Plan defect
+ * D1). Every other adapter is regex-over-text today.
  */
 
 import type { Finding } from "../types.js";

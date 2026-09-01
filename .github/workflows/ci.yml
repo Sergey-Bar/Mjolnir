@@ -133,6 +133,7 @@ jobs:
         run: |
           npm run docs:rules
           npm run fp-audit:generate
+          npm run docs:capability
           npm run golden:update
           npm run docs:hero
           npm run docs:demo
@@ -142,7 +143,7 @@ jobs:
           # `git diff` cannot see UNTRACKED generated files (e.g. the
           # docs/rules page of a newly added rule) — those would ship
           # silently. Fail on any unexpected generated output too.
-          untracked="$(git ls-files --others --exclude-standard docs/rules docs/COUNT-LOCK.md docs/FP-AUDIT.md tests/golden assets/readme)"
+          untracked="$(git ls-files --others --exclude-standard docs/rules docs/COUNT-LOCK.md docs/FP-AUDIT.md docs/RULE-CAPABILITY-MATRIX.md docs/RULE-CAPABILITY-MATRIX.json tests/golden assets/readme)"
           if [ -n "$untracked" ]; then
             echo "Untracked generated artifacts — commit them:"
             echo "$untracked"

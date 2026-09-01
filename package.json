@@ -14,7 +14,6 @@
   ],
   "files": [
     "dist",
-    "!dist/**/*.wasm",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"
@@ -34,6 +33,7 @@
     "corpus:sample": "tsx scripts/corpus-sample.ts",
     "fp-audit:generate": "tsx scripts/generate-fp-audit-table.ts",
     "docs:rules": "tsx scripts/generate-rule-docs.ts",
+    "docs:capability": "tsx scripts/generate-capability-matrix.ts",
     "docs:hero": "tsx scripts/generate-readme-hero.ts",
     "docs:demo": "tsx scripts/generate-readme-demo.ts",
     "self-scan": "node dist/cli.mjs .",
@@ -63,7 +63,9 @@
   },
   "homepage": "https://github.com/Sergey-Bar/Mjolnir#readme",
   "dependencies": {
+    "tree-sitter-wasms": "^0.1.13",
     "ts-morph": "^28.0.0",
+    "web-tree-sitter": "0.25.6",
     "yaml": "^2.5.0"
   },
   "devDependencies": {
@@ -78,13 +80,11 @@
     "husky": "^9.1.7",
     "lint-staged": "^17.3.0",
     "prettier": "^3.3.0",
-    "tree-sitter-wasms": "^0.1.13",
     "tsdown": "^0.22.14",
     "tsx": "^4.16.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.68.0",
-    "vitest": "^4.1.11",
-    "web-tree-sitter": "0.25.6"
+    "vitest": "^4.1.11"
   },
   "lint-staged": {
     "*.{ts,js,mjs}": [

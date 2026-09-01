@@ -114,8 +114,21 @@ describe("web-tree-sitter dependency pin — guards a real, found incompatibilit
     const { join } = await import("node:path");
     const pkg = JSON.parse(
       readFileSync(join(import.meta.dirname, "..", "package.json"), "utf8"),
-    ) as { devDependencies: Record<string, string> };
-    const pinned = pkg.devDependencies["web-tree-sitter"];
+    ) as {
+      dependencies?: Record<string, string>;
+      devDependencies?: Record<string, string>;
+    };
+    // D2 moved web-tree-sitter to runtime dependencies; the exact-pin
+    // guarantee must hold wherever it lives (it must always be a runtime
+    // dependency now — checked by tests/package-smoke.spec.ts).
+    const pinned =
+      pkg.dependencies?.["web-tree-sitter"] ??
+      pkg.devDependencies?.["web-tree-sitter"];
+    expect(
+      pkg.dependencies?.["web-tree-sitter"],
+      "web-tree-sitter must be a runtime dependency (D2): the published " +
+        "CLI loads grammars from it at scan time",
+    ).toBeDefined();
     expect(
       pinned,
       "web-tree-sitter@0.26.x fails to load tree-sitter-wasms's " +
@@ -125,5 +138,6 @@ describe("web-tree-sitter dependency pin — guards a real, found incompatibilit
         "npm install. See src/engine/tree-sitter-ast.ts's header.",
     ).toBeDefined();
     expect(/^\^|~/.test(pinned ?? "")).toBe(false);
+    expect(pinned).toBe("0.25.6");
   });
 });

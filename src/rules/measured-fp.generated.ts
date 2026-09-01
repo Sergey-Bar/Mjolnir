@@ -3,55 +3,63 @@
 //
 // `fpRate` = FP / (TP + FP); `n` = classified (TP + FP) verdicts. A rule
 // absent from this map has zero classified verdicts — it ships on assumption.
+// `detectorRevision` = detector implementation revision the measurement was
+// taken against (sidecar: tests/corpus/detector-revisions.json, plan §07).
 
 export interface MeasuredFp {
   /** FP / (TP + FP), 0..1. */
   fpRate: number;
   /** Number of hand-classified TP/FP verdicts behind the rate. */
   n: number;
+  /**
+   * Detector implementation revision the measurement was taken against.
+   * Bumped on any detection-logic change (pattern, scoping, AST adoption);
+   * a mismatch vs the sidecar marks the measurement stale → provisional.
+   */
+  detectorRevision: number;
 }
 
 export const MEASURED_FP: Readonly<Record<string, MeasuredFp>> = {
-  "QA-CS-101": { fpRate: 0, n: 20 },
-  "QA-CS-102": { fpRate: 0.65, n: 20 },
-  "QA-CS-105": { fpRate: 0.25, n: 16 },
-  "QA-CS-106": { fpRate: 1, n: 20 },
-  "QA-CS-108": { fpRate: 1, n: 20 },
-  "QA-CS-110": { fpRate: 1, n: 20 },
-  "QA-CS-111": { fpRate: 1, n: 20 },
-  "QA-ENV-001": { fpRate: 1, n: 20 },
-  "QA-JV-103": { fpRate: 0.5, n: 20 },
-  "QA-JV-105": { fpRate: 0.1, n: 20 },
-  "QA-JV-106": { fpRate: 1, n: 20 },
-  "QA-JV-108": { fpRate: 1, n: 20 },
-  "QA-JV-110": { fpRate: 1, n: 20 },
-  "QA-JV-111": { fpRate: 1, n: 20 },
-  "QA-PW-002": { fpRate: 0, n: 20 },
-  "QA-PW-005": { fpRate: 1, n: 17 },
-  "QA-PW-102": { fpRate: 1, n: 20 },
-  "QA-PW-103": { fpRate: 1, n: 20 },
-  "QA-PW-105": { fpRate: 1, n: 20 },
-  "QA-PW-107": { fpRate: 1, n: 20 },
-  "QA-PW-108": { fpRate: 1, n: 20 },
-  "QA-PW-112": { fpRate: 1, n: 20 },
-  "QA-PW-114": { fpRate: 1, n: 20 },
-  "QA-PW-118": { fpRate: 1, n: 20 },
-  "QA-PW-119": { fpRate: 1, n: 24 },
-  "QA-PW-120": { fpRate: 1, n: 20 },
-  "QA-PW-122": { fpRate: 0.25, n: 20 },
-  "QA-PW-143": { fpRate: 0.25, n: 20 },
-  "QA-PW-145": { fpRate: 1, n: 20 },
-  "QA-PY-002": { fpRate: 0.043, n: 23 },
-  "QA-PY-003": { fpRate: 1, n: 20 },
-  "QA-PY-004": { fpRate: 0.45, n: 20 },
-  "QA-PY-005": { fpRate: 0.158, n: 19 },
-  "QA-PY-006": { fpRate: 1, n: 20 },
-  "QA-PY-007": { fpRate: 0.65, n: 20 },
-  "QA-PY-008": { fpRate: 1, n: 20 },
-  "QA-PY-010": { fpRate: 1, n: 10 },
-  "QA-PY-104": { fpRate: 1, n: 12 },
-  "QA-TEST-002": { fpRate: 0.65, n: 20 },
-  "QA-TEST-003": { fpRate: 0.85, n: 20 },
-  "QA-TEST-004": { fpRate: 0.3, n: 20 },
-  "QA-TQUAL-001": { fpRate: 1, n: 26 },
+  "QA-CS-101": { fpRate: 0, n: 20, detectorRevision: 1 },
+  "QA-CS-102": { fpRate: 0.65, n: 20, detectorRevision: 1 },
+  "QA-CS-105": { fpRate: 0.25, n: 16, detectorRevision: 1 },
+  "QA-CS-106": { fpRate: 1, n: 20, detectorRevision: 1 },
+  "QA-CS-108": { fpRate: 1, n: 20, detectorRevision: 1 },
+  "QA-CS-110": { fpRate: 1, n: 20, detectorRevision: 1 },
+  "QA-CS-111": { fpRate: 1, n: 20, detectorRevision: 1 },
+  "QA-ENV-001": { fpRate: 1, n: 20, detectorRevision: 1 },
+  "QA-JV-103": { fpRate: 0.5, n: 20, detectorRevision: 1 },
+  "QA-JV-105": { fpRate: 0.1, n: 20, detectorRevision: 1 },
+  "QA-JV-106": { fpRate: 1, n: 20, detectorRevision: 1 },
+  "QA-JV-108": { fpRate: 1, n: 20, detectorRevision: 1 },
+  "QA-JV-110": { fpRate: 1, n: 20, detectorRevision: 1 },
+  "QA-JV-111": { fpRate: 1, n: 20, detectorRevision: 1 },
+  "QA-PW-002": { fpRate: 0, n: 20, detectorRevision: 1 },
+  "QA-PW-005": { fpRate: 1, n: 17, detectorRevision: 1 },
+  "QA-PW-102": { fpRate: 1, n: 20, detectorRevision: 1 },
+  "QA-PW-103": { fpRate: 1, n: 20, detectorRevision: 1 },
+  "QA-PW-105": { fpRate: 1, n: 20, detectorRevision: 1 },
+  "QA-PW-107": { fpRate: 1, n: 20, detectorRevision: 1 },
+  "QA-PW-108": { fpRate: 1, n: 20, detectorRevision: 1 },
+  "QA-PW-112": { fpRate: 1, n: 20, detectorRevision: 1 },
+  "QA-PW-114": { fpRate: 1, n: 20, detectorRevision: 1 },
+  "QA-PW-118": { fpRate: 1, n: 20, detectorRevision: 1 },
+  "QA-PW-119": { fpRate: 1, n: 24, detectorRevision: 1 },
+  "QA-PW-120": { fpRate: 1, n: 20, detectorRevision: 1 },
+  "QA-PW-122": { fpRate: 0.25, n: 20, detectorRevision: 1 },
+  "QA-PW-143": { fpRate: 0.25, n: 20, detectorRevision: 1 },
+  "QA-PW-145": { fpRate: 1, n: 20, detectorRevision: 1 },
+  "QA-PY-002": { fpRate: 0.043, n: 23, detectorRevision: 1 },
+  "QA-PY-003": { fpRate: 1, n: 20, detectorRevision: 1 },
+  "QA-PY-004": { fpRate: 0.45, n: 20, detectorRevision: 1 },
+  "QA-PY-005": { fpRate: 0.158, n: 19, detectorRevision: 1 },
+  "QA-PY-006": { fpRate: 1, n: 20, detectorRevision: 1 },
+  "QA-PY-007": { fpRate: 0.65, n: 20, detectorRevision: 1 },
+  "QA-PY-008": { fpRate: 1, n: 20, detectorRevision: 1 },
+  "QA-PY-010": { fpRate: 1, n: 10, detectorRevision: 1 },
+  "QA-PY-104": { fpRate: 1, n: 12, detectorRevision: 1 },
+  "QA-TEST-002": { fpRate: 0.65, n: 20, detectorRevision: 1 },
+  "QA-TEST-003": { fpRate: 0.85, n: 20, detectorRevision: 1 },
+  "QA-TEST-004": { fpRate: 0.3, n: 20, detectorRevision: 1 },
+  "QA-TQUAL-001": { fpRate: 1, n: 26, detectorRevision: 1 },
 };

@@ -1,17 +1,20 @@
 /**
  * Java/JUnit adapter (Upgrade-Plan-v3 Phase 4).
  *
- * Second tree-sitter consumer. Uses web-tree-sitter with the prebuilt
- * tree-sitter-java WASM grammar (tree-sitter-wasms package) — no native
- * compile, preserving the zero-network/cross-platform guarantees.
+ * Regex-layer adapter: rules run over the file text (and the masked
+ * code-text view), same discipline as the Python adapter. An earlier
+ * header here claimed tree-sitter usage — that was never true for this
+ * adapter. The tree-sitter-java WASM grammar ships in the dependency set
+ * and `src/engine/tree-sitter-ast.ts` exposes an async `parseJavaAst`
+ * seam, but it is not yet wired into the synchronous scan pipeline
+ * (Verification Trust Evolution Plan defect D1, Phase 0.5 wires the
+ * parse stage).
  *
  * Test discovery: src/test/java/**\/*Test.java, *Tests.java, *IT.java
  * (Maven/Gradle conventions).
- * Frameworks: JUnit/TestNG via build files + annotation scanning.
- *
- * Rules run over the file text (regex layer), same discipline as the
- * Python adapter's rule family — the AST seam is available for future
- * precision upgrades without touching the rule contract.
+ * Frameworks: detected from build-file content (pom.xml / build.gradle*).
+ * Rules match test annotations (`@Disabled`, `@Test`, …) via regex over
+ * the file text — there is no separate annotation-scanning pass.
  */
 
 import { existsSync, readFileSync } from "node:fs";

@@ -27,6 +27,21 @@ const VERDICTS_DIR = join(ROOT, "tests", "corpus", "verdicts");
 const COUNT_LOCK_PATH = join(ROOT, "docs", "COUNT-LOCK.md");
 const FP_AUDIT_PATH = join(ROOT, "docs", "FP-AUDIT.md");
 const MEASURED_FP_PATH = join(ROOT, "src", "rules", "measured-fp.generated.ts");
+/**
+ * Hand-maintained detectorRevision sidecar (plan §07/§11.3): one entry
+ * per measured rule, bumped on any detection-logic change so a
+ * measurement can never silently cross an implementation change.
+ * Consumed here to stamp revisions into measured-fp.generated.ts and
+ * FP-AUDIT.md; the drift lock in tests/measured-fp-generated.spec.ts is
+ * extended (never bypassed) to keep the sidecar and the generated map
+ * covering exactly the same measured set.
+ */
+export const DETECTOR_REVISIONS_PATH = join(
+  ROOT,
+  "tests",
+  "corpus",
+  "detector-revisions.json",
+);
 /** Committed ceiling for unclassified verdict rows (bug-audit B4.29/L13). */
 export const UNCLASSIFIED_CEILING_PATH = join(
   VERDICTS_DIR,
@@ -376,6 +391,25 @@ export function checkUnclassifiedCompleteness(
   }
 }
 
+/**
+ * Reads the hand-maintained detector-revision sidecar. Absence of the
+ * file (or of a rule's entry) yields revision 1 — the documented default
+ * for the current, first-generation detectors.
+ */
+export function loadDetectorRevisions(): Record<string, number> {
+  if (!existsSync(DETECTOR_REVISIONS_PATH)) return {};
+  const parsed = JSON.parse(
+    readFileSync(DETECTOR_REVISIONS_PATH, "utf8"),
+  ) as Record<string, unknown>;
+  const revisions: Record<string, number> = {};
+  for (const [id, v] of Object.entries(parsed)) {
+    if (typeof v === "number" && Number.isInteger(v) && v >= 1) {
+      revisions[id] = v;
+    }
+  }
+  return revisions;
+}
+
 export interface RuleStats {
   ruleId: string;
   tp: number;
@@ -433,13 +467,19 @@ export function computeRuleStats(verdicts: Verdict[]): RuleStats[] {
 export const MEASURED_THRESHOLD = 10;
 
 export function renderMeasuredFpModule(verdicts: Verdict[]): string {
+  const revisions = loadDetectorRevisions();
   const entries = computeRuleStats(verdicts)
     .filter((s) => s.classified >= MEASURED_THRESHOLD && s.fpRate !== null)
     .map((s) => {
       // 3 dp is plenty for a rate over ≤20 samples; Number() drops
       // trailing zeros so the literal matches what prettier would keep.
       const rate = Number((s.fpRate as number).toFixed(3));
-      return `  "${s.ruleId}": { fpRate: ${rate}, n: ${s.classified} },`;
+      // detectorRevision (plan §07): the implementation revision the
+      // measurement was taken against, from the hand-maintained sidecar.
+      // Default 1 = the current first-generation detector. The Phase 1
+      // ratchet treats a mismatch as stale → provisional → re-measure.
+      const rev = revisions[s.ruleId] ?? 1;
+      return `  "${s.ruleId}": { fpRate: ${rate}, n: ${s.classified}, detectorRevision: ${rev} },`;
     });
 
   return [
@@ -448,12 +488,20 @@ export function renderMeasuredFpModule(verdicts: Verdict[]): string {
     "//",
     "// `fpRate` = FP / (TP + FP); `n` = classified (TP + FP) verdicts. A rule",
     "// absent from this map has zero classified verdicts — it ships on assumption.",
+    "// `detectorRevision` = detector implementation revision the measurement was",
+    "// taken against (sidecar: tests/corpus/detector-revisions.json, plan §07).",
     "",
     "export interface MeasuredFp {",
     "  /** FP / (TP + FP), 0..1. */",
     "  fpRate: number;",
     "  /** Number of hand-classified TP/FP verdicts behind the rate. */",
     "  n: number;",
+    "  /**",
+    "   * Detector implementation revision the measurement was taken against.",
+    "   * Bumped on any detection-logic change (pattern, scoping, AST adoption);",
+    "   * a mismatch vs the sidecar marks the measurement stale → provisional.",
+    "   */",
+    "  detectorRevision: number;",
     "}",
     "",
     "export const MEASURED_FP: Readonly<Record<string, MeasuredFp>> = {",
@@ -468,6 +516,7 @@ export function renderMeasuredFpAudit(
   registryIds: string[] = [],
 ): string {
   const stats = computeRuleStats(verdicts);
+  const revisions = loadDetectorRevisions();
 
   const lines = [
     "# False-Positive Audit — Measured Rates",
@@ -477,6 +526,11 @@ export function renderMeasuredFpAudit(
     "Each finding below was hand-classified by reading its source context.",
     "The FP rate is `FP / (TP + FP)` — UNSURE verdicts are excluded from the",
     "denominator (they add sample size but not confidence in either direction).",
+    "",
+    "`detectorRev` is the detector implementation revision the measurement was",
+    "taken against (sidecar: `tests/corpus/detector-revisions.json`). A rule",
+    "whose detection logic changes without a revision bump has its measurement",
+    "treated as stale → provisional (Verification Trust Evolution Plan §07).",
     "",
     "A rule with fewer than 10 classified verdicts is **unmeasured**. Coverage",
     "below is stated against the full rule registry, not against the rules that",
@@ -489,13 +543,14 @@ export function renderMeasuredFpAudit(
 
   if (stats.length > 0) {
     lines.push(
-      "| Rule ID | FP Rate | Sample (n) | TP | FP | UNSURE | Status |",
-      "|---|---|---|---|---|---|---|",
+      "| Rule ID | FP Rate | Sample (n) | TP | FP | UNSURE | detectorRev | Status |",
+      "|---|---|---|---|---|---|---|---|",
     );
   }
 
   for (const s of stats) {
     const rate = s.fpRate !== null ? `${(s.fpRate * 100).toFixed(0)}%` : "—";
+    const rev = s.classified >= 10 ? String(revisions[s.ruleId] ?? 1) : "—";
     const status =
       s.classified >= 10
         ? s.fpRate !== null && s.fpRate <= 0.1
@@ -505,7 +560,7 @@ export function renderMeasuredFpAudit(
             : "🔴 quarantine"
         : "❓ unmeasured";
     lines.push(
-      `| ${s.ruleId} | ${rate} | ${s.classified} | ${s.tp} | ${s.fp} | ${s.unsure} | ${status} |`,
+      `| ${s.ruleId} | ${rate} | ${s.classified} | ${s.tp} | ${s.fp} | ${s.unsure} | ${rev} | ${status} |`,
     );
   }
 

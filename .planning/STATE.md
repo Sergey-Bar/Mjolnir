@@ -1279,6 +1279,55 @@ Implemented the strategic review of `CRITIQUE-REMEDIATION-PLAN.md`
 - **`M1-M2-TASKS.md`** M1.2: QA-TEST-004 ordering note pointing at the
   pre-ruling gate.
 
+## Verification Trust Evolution — Phase 0 + Phase 1 prep (2026-09-01)
+
+Executed "First Actions After Plan Approval" (§254) of
+`.kilo/plans/1788242693557-verification-trust-evolution-plan.md`:
+
+- **Phase 0 task 1+3 — Capability Matrix v0:** new
+  `scripts/generate-capability-matrix.ts` (`npm run docs:capability`)
+  generates `docs/RULE-CAPABILITY-MATRIX.md` + `.json` from the registry
+  - `MEASURED_FP` + verdicts (registry output enumerated, family
+    variants included). Unknown fields render `UNCLASSIFIED` (§04);
+    detectionStrategy enum is a provisional mapping (LEXICAL/AST mapped,
+    rest UNCLASSIFIED until Phase 2). Drift-locked by
+    `tests/capability-matrix.spec.ts` (15 tests) and wired into the
+    generated-docs-drift CI job. Numbers: **91 rules, 42 measured (46%),
+    49 explicit tier declarations, 0 D9 mismatches, 38 unmeasured
+    effective-core rules** (the D3 demotion list, Phase 1 input; includes
+    QA-PW-101 and QA-TEST-001 as predicted).
+- **Phase 0 task 2 — baseline lock + defect ledger:** the matrix carries
+  the plan §02 defect ledger (D1–D8 with owning phases) and the baseline
+  summary; declared-vs-measured cross-check runs in the generator (report
+  now, enforcement = Phase 1 registry ratchet).
+- **Phase 1 prep — `detectorRevision` scaffold:** new hand-maintained
+  sidecar `tests/corpus/detector-revisions.json` (all 42 measured rules
+  at revision 1); `fp-audit:generate` stamps `detectorRevision` into
+  `measured-fp.generated.ts` and a `detectorRev` column into
+  `docs/FP-AUDIT.md`; `tests/measured-fp-generated.spec.ts` drift lock
+  extended (sidecar covers exactly the measured set; integer ≥ 1;
+  defaults to 1 when absent).
+- **Phase 0.5 spike — D2 packaging fix:** `tree-sitter-wasms` +
+  `web-tree-sitter` (exact 0.25.6 pin preserved) moved to
+  `dependencies`; `!dist/**/*.wasm` files-exclusion removed (grammars
+  ship via the dependency). Pack-smoke extended: packed package declares
+  both as runtime deps and the java/c_sharp grammars resolve in the
+  installed tree. The parse stage itself is still unwired (D1 — Phase
+  0.5 proper).
+- **D4 header fixes:** `java.ts` no longer claims "Second tree-sitter
+  consumer"; `csharp.ts` and `engine/adapter.ts` stale tree-sitter
+  claims corrected.
+- **CHANGELOG.md:** Phase 0 + Phase 1 prep + D2 + D4 entries under
+  `[Unreleased]`.
+- **Standing gate:** typecheck clean; lint 0 errors; `npm test` 4300
+  passed / 4 skipped; build succeeds; golden lock byte-identical;
+  self-scan 0 errors (score 99); CI workflow spec green; prettier
+  clean. Known pre-existing flake re-confirmed by A/B (stash → run →
+  pop): `scale-benchmark.spec.ts` under full-suite `--coverage`
+  instrumentation misses its 20s budget on clean main too (parallel
+  load); passes isolated and under plain `npm test`. Not caused by this
+  work; unchanged behavior.
+
 ## Conventions
 
 - User communicates in Hebrew; artifacts in English.
