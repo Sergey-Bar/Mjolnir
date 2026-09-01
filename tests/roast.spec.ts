@@ -53,10 +53,10 @@ function capture() {
 }
 
 describe("--tone blunt is off by default", () => {
-  it("default output uses the standard finding message, not blunt tone", () => {
+  it("default output uses the standard finding message, not blunt tone", async () => {
     const dir = makeFixtureWithFindings();
     const cap = capture();
-    runScanCommand([dir], cap.io);
+    await runScanCommand([dir], cap.io);
     // Standard messages use technical names, not blunt commentary.
     expect(cap.text()).not.toContain("prayer");
     expect(cap.text()).not.toContain("congratulations");
@@ -64,18 +64,18 @@ describe("--tone blunt is off by default", () => {
 });
 
 describe("--tone blunt opt-in changes terminal messages", () => {
-  it("produces different, blunter messages when explicitly opted in", () => {
+  it("produces different, blunter messages when explicitly opted in", async () => {
     const dir = makeFixtureWithFindings();
     const cap = capture();
-    runScanCommand([dir, "--tone", "blunt"], cap.io);
+    await runScanCommand([dir, "--tone", "blunt"], cap.io);
     // At least one blunt message should appear — e.g. the sleep rule.
     expect(cap.text()).toMatch(/prayer|congratulations|lie|fix it or suppress/);
   });
 
-  it("never targets a person or author name", () => {
+  it("never targets a person or author name", async () => {
     const dir = makeFixtureWithFindings();
     const cap = capture();
-    runScanCommand([dir, "--tone", "blunt"], cap.io);
+    await runScanCommand([dir, "--tone", "blunt"], cap.io);
     const text = cap.text();
     // Should not contain "you" addressing an author, "your" possessive
     // about the developer personally, or generic offensive words.
@@ -89,19 +89,19 @@ describe("--tone blunt opt-in changes terminal messages", () => {
 });
 
 describe("score-neutrality (--tone blunt)", () => {
-  it("exit code is identical with and without --tone blunt", () => {
+  it("exit code is identical with and without --tone blunt", async () => {
     const dir = makeFixtureWithFindings();
-    const code1 = runScanCommand([dir], capture().io);
-    const code2 = runScanCommand([dir, "--tone", "blunt"], capture().io);
+    const code1 = await runScanCommand([dir], capture().io);
+    const code2 = await runScanCommand([dir, "--tone", "blunt"], capture().io);
     expect(code1).toBe(code2);
   });
 
-  it("--json output is completely unaffected by --tone blunt", () => {
+  it("--json output is completely unaffected by --tone blunt", async () => {
     const dir = makeFixtureWithFindings();
     const cap1 = capture();
-    runScanCommand([dir, "--json"], cap1.io);
+    await runScanCommand([dir, "--json"], cap1.io);
     const cap2 = capture();
-    runScanCommand([dir, "--json", "--tone", "blunt"], cap2.io);
+    await runScanCommand([dir, "--json", "--tone", "blunt"], cap2.io);
     // JSON output must be structurally identical — tone only applies to
     // terminal. durationMs is wall-clock non-deterministic between runs,
     // so compare everything except that single field.
@@ -120,12 +120,15 @@ describe("score-neutrality (--tone blunt)", () => {
     expect(strip(obj1)).toEqual(strip(obj2));
   });
 
-  it("--format sarif output is completely unaffected by --tone blunt", () => {
+  it("--format sarif output is completely unaffected by --tone blunt", async () => {
     const dir = makeFixtureWithFindings();
     const cap1 = capture();
-    runScanCommand([dir, "--format", "sarif"], cap1.io);
+    await runScanCommand([dir, "--format", "sarif"], cap1.io);
     const cap2 = capture();
-    runScanCommand([dir, "--format", "sarif", "--tone", "blunt"], cap2.io);
+    await runScanCommand(
+      [dir, "--format", "sarif", "--tone", "blunt"],
+      cap2.io,
+    );
     // Same structural comparison, ignoring wall-clock durationMs.
     const obj1 = JSON.parse(cap1.text()) as Record<string, unknown>;
     const obj2 = JSON.parse(cap2.text()) as Record<string, unknown>;

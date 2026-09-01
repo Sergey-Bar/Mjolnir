@@ -57,8 +57,10 @@ afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
 });
 
-function run(argv: string[]): { code: number; stdout: string; stderr: string } {
-  const code = main(argv);
+async function run(
+  argv: string[],
+): Promise<{ code: number; stdout: string; stderr: string }> {
+  const code = await main(argv);
   return { code, stdout: logSpy.join("\n"), stderr: errSpy.join("\n") };
 }
 
@@ -120,8 +122,8 @@ describe("base scan command — documented flag matrix", () => {
   ];
 
   for (const c of cases) {
-    it(`${c.name} → exit ${c.expectExit.join("|")}`, () => {
-      const { code, stdout, stderr } = run(c.argv(dir));
+    it(`${c.name} → exit ${c.expectExit.join("|")}`, async () => {
+      const { code, stdout, stderr } = await run(c.argv(dir));
       expect(
         DOCUMENTED_EXIT_CODES,
         `exit code ${code} is not one of the documented codes`,
@@ -137,14 +139,14 @@ describe("base scan command — documented flag matrix", () => {
     });
   }
 
-  it("findings never appear on stderr, only stdout", () => {
-    const { stdout, stderr } = run([dir, "--json"]);
+  it("findings never appear on stderr, only stdout", async () => {
+    const { stdout, stderr } = await run([dir, "--json"]);
     expect(stdout).toContain("findings");
     expect(stderr).toBe("");
   });
 
-  it("a usage error never writes findings-shaped JSON to stdout", () => {
-    const { stdout } = run(["--nope"]);
+  it("a usage error never writes findings-shaped JSON to stdout", async () => {
+    const { stdout } = await run(["--nope"]);
     expect(() => JSON.parse(stdout)).toThrow();
   });
 });
@@ -163,11 +165,11 @@ describe("subcommands — return a documented exit code without crashing unexpec
   ];
 
   for (const c of subcommands) {
-    it(`${c.name} → documented exit code, no throw`, () => {
-      let code: number | undefined;
-      expect(() => {
-        code = main(c.argv(dir));
-      }).not.toThrow();
+    it(`${c.name} → documented exit code, no throw`, async () => {
+      // main() dispatches to async handlers since the Phase 0.5 parse
+      // stage; a crash now surfaces as a rejected promise, which the
+      // await propagates — "no throw" means this resolves.
+      const code = await main(c.argv(dir));
       expect(
         DOCUMENTED_EXIT_CODES,
         `"${c.name}" returned undocumented exit code ${code}`,

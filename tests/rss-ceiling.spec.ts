@@ -10,11 +10,11 @@ import { runScan } from "../src/cli.js";
 const RSS_CEILING = 1.5 * 1024 * 1024 * 1024; // 1.5 GB
 
 describe("Tier 1 RSS ceiling (bug-audit buffer hygiene)", () => {
-  it("a full scan stays under the 1.5 GB RSS ceiling", () => {
+  it("a full scan stays under the 1.5 GB RSS ceiling", async () => {
     // In-process scan: execFileSync would lose the child's RSS, so the
     // scan runs here and the delta is sampled around it.
     const before = process.memoryUsage().rss;
-    const result = runScan({
+    const result = await runScan({
       target: join(process.cwd(), "examples", "demo-repo"),
       json: true,
       verbose: false,

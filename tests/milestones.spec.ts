@@ -111,77 +111,77 @@ function readStats(dir: string): StatsFile {
 }
 
 describe("first-clean-scan milestone", () => {
-  it("does NOT write stats on an ordinary scan — read-only scans stay read-only (audit R-1)", () => {
+  it("does NOT write stats on an ordinary scan — read-only scans stay read-only (audit R-1)", async () => {
     const dir = makeCleanRepo();
     const cap = capture();
-    const code = runScanCommand([dir], cap.io);
+    const code = await runScanCommand([dir], cap.io);
     expect(code).toBe(0);
     expect(cap.text()).not.toContain("MILESTONE");
     expect(existsSync(join(dir, ".mjolnir", "stats.json"))).toBe(false);
   });
 
-  it("announces the milestone on a genuinely flawless scan with --record-milestones", () => {
+  it("announces the milestone on a genuinely flawless scan with --record-milestones", async () => {
     const dir = makeCleanRepo();
     const cap = capture();
-    const code = runScanCommand([dir, "--record-milestones"], cap.io);
+    const code = await runScanCommand([dir, "--record-milestones"], cap.io);
     expect(code).toBe(0);
     expect(cap.text()).toContain("MILESTONE: first flawless scan");
     expect(existsSync(join(dir, ".mjolnir", "stats.json"))).toBe(true);
     expect(readStats(dir).milestonesAnnounced).toEqual(["first-clean-scan"]);
   });
 
-  it("never re-announces the same milestone on a second recording scan", () => {
+  it("never re-announces the same milestone on a second recording scan", async () => {
     const dir = makeCleanRepo();
-    runScanCommand([dir, "--record-milestones"], capture().io);
+    await runScanCommand([dir, "--record-milestones"], capture().io);
     const cap = capture();
-    runScanCommand([dir, "--record-milestones"], cap.io);
+    await runScanCommand([dir, "--record-milestones"], cap.io);
     expect(cap.text()).not.toContain("MILESTONE");
   });
 
-  it("never appears in --json output — machine contract stays exactly the schema", () => {
+  it("never appears in --json output — machine contract stays exactly the schema", async () => {
     const dir = makeCleanRepo();
     const cap = capture();
-    runScanCommand([dir, "--json"], cap.io);
+    await runScanCommand([dir, "--json"], cap.io);
     expect(() => JSON.parse(cap.text())).not.toThrow();
     expect(cap.text()).not.toContain("MILESTONE");
   });
 
-  it("never appears in --format sarif output", () => {
+  it("never appears in --format sarif output", async () => {
     const dir = makeCleanRepo();
     const cap = capture();
-    runScanCommand([dir, "--format", "sarif"], cap.io);
+    await runScanCommand([dir, "--format", "sarif"], cap.io);
     expect(JSON.parse(cap.text())).toHaveProperty("version", "2.1.0");
     expect(cap.text()).not.toContain("MILESTONE");
   });
 
-  it("never appears in --format mermaid output", () => {
+  it("never appears in --format mermaid output", async () => {
     const dir = makeCleanRepo();
     const cap = capture();
-    runScanCommand([dir, "--format", "mermaid"], cap.io);
+    await runScanCommand([dir, "--format", "mermaid"], cap.io);
     expect(cap.text()).toMatch(/^flowchart TD/);
     expect(cap.text()).not.toContain("MILESTONE");
   });
 
-  it("does not change the exit code for an otherwise-clean scan", () => {
+  it("does not change the exit code for an otherwise-clean scan", async () => {
     const dir = makeCleanRepo();
-    const code = runScanCommand([dir], capture().io);
+    const code = await runScanCommand([dir], capture().io);
     expect(code).toBe(0);
   });
 });
 
 describe("first-debt-reduction milestone", () => {
-  it("announces the milestone the first time diff witnesses a real fix", () => {
+  it("announces the milestone the first time diff witnesses a real fix", async () => {
     const dir = makeGitRepoWithRealFix();
     const commit1 = execFileSync("git", ["rev-parse", "HEAD~1"], {
       cwd: dir,
       encoding: "utf8",
     }).trim();
     git(dir, ["checkout", "-q", commit1]);
-    runBaselineCommand([dir], capture().io);
+    await runBaselineCommand([dir], capture().io);
     git(dir, ["checkout", "-q", "main"]);
 
     const cap = capture();
-    const code = runDiffCommand([dir], cap.io);
+    const code = await runDiffCommand([dir], cap.io);
     expect(code).toBe(0);
     expect(cap.text()).toContain("MILESTONE: first debt reduction");
     expect(readStats(dir).milestonesAnnounced).toEqual([
@@ -189,35 +189,35 @@ describe("first-debt-reduction milestone", () => {
     ]);
   });
 
-  it("never announces the milestone when diff has a baseline but nothing was resolved", () => {
+  it("never announces the milestone when diff has a baseline but nothing was resolved", async () => {
     const dir = makeGitRepoWithRealFix();
-    runBaselineCommand([dir], capture().io); // baseline against current (already-fixed) tree
+    await runBaselineCommand([dir], capture().io); // baseline against current (already-fixed) tree
     const cap = capture();
-    runDiffCommand([dir], cap.io);
+    await runDiffCommand([dir], cap.io);
     expect(cap.text()).not.toContain("MILESTONE");
   });
 
-  it("does not change diff's exit code", () => {
+  it("does not change diff's exit code", async () => {
     const dir = makeGitRepoWithRealFix();
     const commit1 = execFileSync("git", ["rev-parse", "HEAD~1"], {
       cwd: dir,
       encoding: "utf8",
     }).trim();
     git(dir, ["checkout", "-q", commit1]);
-    runBaselineCommand([dir], capture().io);
+    await runBaselineCommand([dir], capture().io);
     git(dir, ["checkout", "-q", "main"]);
-    const code = runDiffCommand([dir], capture().io);
+    const code = await runDiffCommand([dir], capture().io);
     expect(code).toBe(0);
   });
 });
 
 describe("milestones reachable through main() dispatch", () => {
-  it("a scan through main() for a flawless repo still exits clean", () => {
+  it("a scan through main() for a flawless repo still exits clean", async () => {
     const dir = makeCleanRepo();
     const origCwd = process.cwd();
     process.chdir(dir);
     try {
-      expect(main([])).toBe(0);
+      expect(await main([])).toBe(0);
     } finally {
       process.chdir(origCwd);
     }

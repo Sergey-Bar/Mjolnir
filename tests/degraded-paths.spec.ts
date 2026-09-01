@@ -87,8 +87,8 @@ describe("impact degraded paths", () => {
   it("reports tree-materialize-failed when the base scan throws", async () => {
     const { execFileSync } = await import("node:child_process");
     const dir = realGitRepo(execFileSync);
-    const report = computeImpact(dir, {
-      runScan: () => {
+    const report = await computeImpact(dir, {
+      runScan: async () => {
         throw new Error("scan exploded (simulated)");
       },
     });
@@ -104,7 +104,9 @@ describe("impact degraded paths", () => {
     // Point the OS temp dir at a nonexistent root so mkdtempSync fails.
     (os as { tmpdir: () => string }).tmpdir = () => join(dir, "does-not-exist");
     try {
-      const report = computeImpact(dir, { runScan: () => emptyScan });
+      const report = await computeImpact(dir, {
+        runScan: async () => emptyScan,
+      });
       expect(report.hasComparison).toBe(false);
       expect(report.unknownReason).toBe("tree-materialize-failed");
     } finally {

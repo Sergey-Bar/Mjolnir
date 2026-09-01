@@ -82,12 +82,12 @@ ${textLines}
 `;
 }
 
-function main(): void {
+async function main(): Promise<void> {
   if (!existsSync(DEMO_REPO)) {
     console.error(`examples/demo-repo not found at ${DEMO_REPO}`);
     process.exit(1);
   }
-  const result = runScan({
+  const result = await runScan({
     target: DEMO_REPO,
     json: false,
     verbose: false,
@@ -123,4 +123,4 @@ function main(): void {
   );
 }
 
-main();
+await main();

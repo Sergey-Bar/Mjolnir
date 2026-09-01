@@ -99,47 +99,47 @@ function writeCleanSpec(name = "e2e/clean.spec.ts"): void {
 }
 
 describe("scan-target validation across subcommands (audit H-4)", () => {
-  it("doctor:playwright rejects a nonexistent target with exit 10", () => {
+  it("doctor:playwright rejects a nonexistent target with exit 10", async () => {
     const cap = capture();
     expect(
-      runDoctorPlaywright(["doctor:playwright", "no-such-dir"], cap.io),
+      await runDoctorPlaywright(["doctor:playwright", "no-such-dir"], cap.io),
     ).toBe(10);
     expect(cap.errText()).toContain("does not exist");
   });
 
-  it("debt rejects a nonexistent target with exit 10", () => {
+  it("debt rejects a nonexistent target with exit 10", async () => {
     const cap = capture();
-    expect(runDebtCommand(["no-such-dir"], cap.io)).toBe(10);
+    expect(await runDebtCommand(["no-such-dir"], cap.io)).toBe(10);
     expect(cap.errText()).toContain("does not exist");
   });
 
-  it("fix rejects a nonexistent target with exit 10", () => {
+  it("fix rejects a nonexistent target with exit 10", async () => {
     const cap = capture();
-    expect(runFixCommand(["no-such-dir"], cap.io)).toBe(10);
+    expect(await runFixCommand(["no-such-dir"], cap.io)).toBe(10);
     expect(cap.errText()).toContain("does not exist");
   });
 
-  it("impact rejects a nonexistent target with exit 10", () => {
+  it("impact rejects a nonexistent target with exit 10", async () => {
     const cap = capture();
-    expect(runImpactCommand(["no-such-dir"], cap.io)).toBe(10);
+    expect(await runImpactCommand(["no-such-dir"], cap.io)).toBe(10);
     expect(cap.errText()).toContain("does not exist");
   });
 
-  it("pr-comment rejects a nonexistent target with exit 10", () => {
+  it("pr-comment rejects a nonexistent target with exit 10", async () => {
     const cap = capture();
-    expect(runPrCommentCommand(["no-such-dir"], cap.io)).toBe(10);
+    expect(await runPrCommentCommand(["no-such-dir"], cap.io)).toBe(10);
     expect(cap.errText()).toContain("does not exist");
   });
 
-  it("handover rejects a nonexistent target with exit 10", () => {
+  it("handover rejects a nonexistent target with exit 10", async () => {
     const cap = capture();
-    expect(runHandoverCommand(["no-such-dir"], cap.io)).toBe(10);
+    expect(await runHandoverCommand(["no-such-dir"], cap.io)).toBe(10);
     expect(cap.errText()).toContain("does not exist");
   });
 
-  it("diff prints usage and exits 10 on an unknown flag", () => {
+  it("diff prints usage and exits 10 on an unknown flag", async () => {
     const cap = capture();
-    expect(runDiffCommand(["--bogus"], cap.io)).toBe(10);
+    expect(await runDiffCommand(["--bogus"], cap.io)).toBe(10);
     expect(cap.text()).toContain("Usage: mjolnir");
   });
 });
@@ -256,10 +256,10 @@ describe("runImpactCommand", () => {
     git(dir, ["commit", "-m", "introduce debt"]);
   }
 
-  it("compares against HEAD~1 by default and exits 0", () => {
+  it("compares against HEAD~1 by default and exits 0", async () => {
     makeGitRepo();
     const cap = capture();
-    expect(runImpactCommand([dir], cap.io)).toBe(0);
+    expect(await runImpactCommand([dir], cap.io)).toBe(0);
     expect(cap.text()).toContain("IMPACT REPORT");
     // The PW-family hard-sleep rule fires on the waitForTimeout line and
     // is new debt since the clean base commit. Its generic twin
@@ -269,30 +269,30 @@ describe("runImpactCommand", () => {
     expect(cap.text()).toContain("NEW DEBT SINCE BASE (1)");
   });
 
-  it("reports an honest no-comparison when --since equals HEAD (exit 2)", () => {
+  it("reports an honest no-comparison when --since equals HEAD (exit 2)", async () => {
     makeGitRepo();
     const cap = capture();
-    expect(runImpactCommand([dir, "--since", "HEAD"], cap.io)).toBe(2);
+    expect(await runImpactCommand([dir, "--since", "HEAD"], cap.io)).toBe(2);
     expect(cap.text()).toContain("no comparison could be made");
   });
 
-  it("reports no comparison for a non-git target with exit 2", () => {
+  it("reports no comparison for a non-git target with exit 2", async () => {
     writeCleanSpec();
     const cap = capture();
-    expect(runImpactCommand([dir], cap.io)).toBe(2);
+    expect(await runImpactCommand([dir], cap.io)).toBe(2);
     expect(cap.text()).toContain("not-a-git-repo");
   });
 });
 
 describe("runBaselineCommand", () => {
-  it("backs up the previous baseline on re-run", () => {
+  it("backs up the previous baseline on re-run", async () => {
     writeFindingSpec();
     const cap = capture();
-    expect(runBaselineCommand([dir], cap.io)).toBe(0);
+    expect(await runBaselineCommand([dir], cap.io)).toBe(0);
     expect(cap.text()).not.toContain("Replaced an existing baseline");
 
     const cap2 = capture();
-    expect(runBaselineCommand([dir], cap2.io)).toBe(0);
+    expect(await runBaselineCommand([dir], cap2.io)).toBe(0);
     expect(cap2.text()).toContain("Replaced an existing baseline");
     expect(
       readFileSync(join(dir, ".mjolnir", "baseline.json"), "utf8"),
@@ -361,7 +361,7 @@ describe("forensics exit-code mapping", () => {
 });
 
 describe("fix exit codes", () => {
-  it("exits 1 when a planned fix is refused (page.pause shares its line)", () => {
+  it("exits 1 when a planned fix is refused (page.pause shares its line)", async () => {
     mkdirSync(join(dir, "e2e"), { recursive: true });
     writeFileSync(
       join(dir, "e2e", "pause.spec.ts"),
@@ -375,7 +375,7 @@ describe("fix exit codes", () => {
       ].join("\n"),
     );
     const cap = capture();
-    expect(runFixCommand([dir], cap.io)).toBe(1);
+    expect(await runFixCommand([dir], cap.io)).toBe(1);
     expect(cap.text()).toContain("shares its line with other statements");
     // The file must be untouched.
     expect(readFileSync(join(dir, "e2e", "pause.spec.ts"), "utf8")).toContain(
@@ -385,40 +385,40 @@ describe("fix exit codes", () => {
 });
 
 describe("runScanCommand output options", () => {
-  it("honors --width and --no-ascii in terminal mode", () => {
+  it("honors --width and --no-ascii in terminal mode", async () => {
     writeFindingSpec();
     const cap = capture();
-    expect(runScanCommand([dir, "--width", "60", "--no-ascii"], cap.io)).toBe(
-      1,
-    );
+    expect(
+      await runScanCommand([dir, "--width", "60", "--no-ascii"], cap.io),
+    ).toBe(1);
     expect(cap.text()).toContain("QA-PW-101");
   });
 
-  it("maps a corrupted config to usage exit 10", () => {
+  it("maps a corrupted config to usage exit 10", async () => {
     writeCleanSpec();
     writeFileSync(join(dir, "mjolnir.config.json"), "{ broken");
     const cap = capture();
-    expect(runScanCommand([dir, "--json"], cap.io)).toBe(10);
+    expect(await runScanCommand([dir, "--json"], cap.io)).toBe(10);
     expect(cap.errText()).toContain("Invalid mjolnir config");
   });
 
-  it("warns on stderr when severityOverrides names an unknown rule", () => {
+  it("warns on stderr when severityOverrides names an unknown rule", async () => {
     writeCleanSpec();
     writeFileSync(
       join(dir, "mjolnir.config.json"),
       JSON.stringify({ severityOverrides: { "QA-NOPE-001": "warning" } }),
     );
     const cap = capture();
-    expect(runScanCommand([dir, "--json"], cap.io)).toBe(0);
+    expect(await runScanCommand([dir, "--json"], cap.io)).toBe(0);
     expect(cap.errText()).toContain("names no registered rule");
   });
 
-  it("degrades milestone recording to a warning when stats.json is unwritable", () => {
+  it("degrades milestone recording to a warning when stats.json is unwritable", async () => {
     writeCleanSpec();
     // A directory where the stats FILE belongs: every write fails (EISDIR).
     mkdirSync(join(dir, ".mjolnir", "stats.json"), { recursive: true });
     const cap = capture();
-    expect(runScanCommand([dir, "--record-milestones"], cap.io)).toBe(0);
+    expect(await runScanCommand([dir, "--record-milestones"], cap.io)).toBe(0);
     expect(cap.errText()).toContain("stats could not be written");
   });
 });
@@ -464,12 +464,12 @@ describe("changed-scope against a real git fixture", () => {
     git(dir, ["commit", "-m", "branch debt"]);
   }
 
-  it("reports scope changed without degradation and restricts the denominator", () => {
+  it("reports scope changed without degradation and restricts the denominator", async () => {
     makeBranchRepo();
     const cap = capture();
-    expect(runScanCommand([dir, "--scope", "changed", "--json"], cap.io)).toBe(
-      1,
-    );
+    expect(
+      await runScanCommand([dir, "--scope", "changed", "--json"], cap.io),
+    ).toBe(1);
     const result = JSON.parse(cap.text()) as {
       scope?: string;
       scopeDegraded?: string;
@@ -484,7 +484,7 @@ describe("changed-scope against a real git fixture", () => {
 });
 
 describe("multi-language adapter dispatch", () => {
-  it("routes Java and C# test files to their adapters", () => {
+  it("routes Java and C# test files to their adapters", async () => {
     mkdirSync(join(dir, "src"), { recursive: true });
     writeFileSync(
       join(dir, "src", "UserTest.java"),
@@ -509,14 +509,14 @@ describe("multi-language adapter dispatch", () => {
       ].join("\n"),
     );
     const cap = capture();
-    expect(runScanCommand([dir, "--json"], cap.io)).toBe(0);
+    expect(await runScanCommand([dir, "--json"], cap.io)).toBe(0);
     const result = JSON.parse(cap.text()) as { testFileCount: number };
     expect(result.testFileCount).toBe(2);
   });
 });
 
 describe("handover forensics enrichment", () => {
-  it("folds in a Playwright report when test-results/ exists", () => {
+  it("folds in a Playwright report when test-results/ exists", async () => {
     writeCleanSpec();
     const resultsDir = join(dir, "test-results");
     mkdirSync(resultsDir, { recursive: true });
@@ -548,7 +548,7 @@ describe("handover forensics enrichment", () => {
       }),
     );
     const cap = capture();
-    expect(runHandoverCommand([dir], cap.io)).toBe(0);
+    expect(await runHandoverCommand([dir], cap.io)).toBe(0);
     expect(cap.text()).toContain("TRUE-FLAKE");
   });
 });
@@ -579,33 +579,33 @@ describe("diff stats recording", () => {
     ].join("\n");
   }
 
-  it("warns when resolved findings cannot be recorded (stats unwritable)", () => {
+  it("warns when resolved findings cannot be recorded (stats unwritable)", async () => {
     makeDebtRepo();
     const capBase = capture();
-    expect(runBaselineCommand([dir], capBase.io)).toBe(0);
+    expect(await runBaselineCommand([dir], capBase.io)).toBe(0);
     writeFileSync(join(dir, "e2e", "one.spec.ts"), fixedContent());
     // stats.json as a directory: both the resolved-counter write and the
     // milestone write must fail into warnings, not crash the diff.
     mkdirSync(join(dir, ".mjolnir", "stats.json"), { recursive: true });
     const cap = capture();
-    expect(runDiffCommand([dir], cap.io)).toBe(0);
+    expect(await runDiffCommand([dir], cap.io)).toBe(0);
     expect(cap.errText()).toContain("counters not recorded");
     expect(cap.errText()).toContain("milestone not recorded");
   });
 
-  it("announces the first-debt-reduction milestone exactly once", () => {
+  it("announces the first-debt-reduction milestone exactly once", async () => {
     makeDebtRepo();
     const capBase = capture();
-    expect(runBaselineCommand([dir], capBase.io)).toBe(0);
+    expect(await runBaselineCommand([dir], capBase.io)).toBe(0);
 
     writeFileSync(join(dir, "e2e", "one.spec.ts"), fixedContent());
     const cap1 = capture();
-    expect(runDiffCommand([dir], cap1.io)).toBe(0);
+    expect(await runDiffCommand([dir], cap1.io)).toBe(0);
     expect(cap1.text()).toContain("MILESTONE: first debt reduction recorded");
 
     // Second diff witnesses another resolution but must NOT re-announce.
     const cap2 = capture();
-    expect(runDiffCommand([dir], cap2.io)).toBe(0);
+    expect(await runDiffCommand([dir], cap2.io)).toBe(0);
     expect(cap2.text()).not.toContain("MILESTONE:");
   });
 });

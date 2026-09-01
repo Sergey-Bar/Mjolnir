@@ -65,7 +65,43 @@ once shipped, so this file is the record of what changed between versions.
   `src/adapters/csharp.ts` and `src/engine/adapter.ts` (whose header
   still claimed tree-sitter "arrives in R2 with Python").
 
-## [Unreleased] — QA-2026-08-30 audit wave
+## [Unreleased] — Verification Trust Evolution, Phase 0.5 — async parse stage (D1)
+
+### Changed — parse stage wired into the scan pipeline (D1 closed, BEHAVIOR-NEUTRAL)
+
+- **Async parse stage between discovery and rule execution** (plan §10.1):
+  `runScan`'s per-file loop now awaits an optional `LanguageAdapter.parseAst`
+  hook before running rules. `runRules` and every rule stay synchronous and
+  consume the tree via `ParsedFile.ast` — the engine is NOT async end-to-end,
+  only the one inherently-async seam (WASM grammar load) is. `main()` and the
+  script entry points await the returned promise.
+- **Java and C# adapters implement `parseAst`** backed by the previously-dead
+  `parseJavaAst`/`parseCSharpAst` (defect D1: tree-sitter AST was built and
+  tested in Sprint 8 but never consumed). Parse failure or a missing grammar
+  resolves `undefined` and rules fall back to the regex path — never fatal.
+  No rule consumes the AST yet (Phase 3 wires specific JV/CS rules), so scan
+  findings are byte-identical: golden lock, corpus baselines, and generated
+  assets all unchanged (BEHAVIOR-NEUTRAL mode, plan §06).
+- **Parser lifecycle management** (plan §10.3): one memoized `Parser` per
+  grammar, bounded by a fixed-size parse-slot semaphore
+  (`MAX_CONCURRENT_PARSES`); every per-file tree is released via
+  `ParsedAst.dispose()` (`tree.delete()`) in a `finally`-equivalent position
+  that runs on normal completion, rule crash, per-file budget expiry, and
+  adapter throw; `releaseTreeSitterResources()` tears down the memoized
+  parsers after each scan (library-consumer hygiene). No leak path depends
+  on rules completing successfully.
+- **Call-graph consequences**: `computeImpact` (and therefore
+  `runImpactCommand`) is async; `scripts/corpus-sample.ts`,
+  `scripts/generate-readme-demo.ts`, and `scripts/generate-readme-hero.ts`
+  await `runScan`; the full test suite (~40 call sites across 25 spec files)
+  awaits the now-async commands. No behavior change anywhere.
+- **Verification evidence** (exit gate §10): golden lock byte-identical
+  (3/3), corpus count-lock unaffected (no JV/CS rule reads the AST),
+  capability-matrix + FP-AUDIT generated docs byte-identical, pack smoke
+  re-proven manually: `npm pack` → clean `npm install` → offline grammar
+  load + parse of real Java and C# source → offline `mjolnir` scan of a
+  Java fixture detecting QA-JV-102. `web-tree-sitter` stays pinned to
+  exactly `0.25.6` (§10.5, documented 0.26.x breakage).
 
 ### Added — score instrument redesign (hammer states)
 

@@ -23,7 +23,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { runScan } from "../src/cli.js";
-import { planAndApplyFixes, type FixResult } from "../src/commands/fix.js";
+import { planAndApplyFixes } from "../src/commands/fix.js";
 
 let dir: string;
 const SPEC_REL = "e2e/checkout.spec.ts";
@@ -46,7 +46,7 @@ afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
 });
 
-function scan() {
+async function scan() {
   return runScan({
     target: dir,
     json: true,
@@ -58,8 +58,8 @@ function scan() {
 }
 
 describe("write failure during apply is reported, not thrown", () => {
-  it("a read-only target file produces a 'failed' result instead of crashing planAndApplyFixes", () => {
-    const scanResult = scan();
+  it("a read-only target file produces a 'failed' result instead of crashing planAndApplyFixes", async () => {
+    const scanResult = await scan();
     let madeReadOnly = false;
     try {
       chmodSync(join(dir, SPEC_REL), 0o444);
@@ -69,10 +69,10 @@ describe("write failure during apply is reported, not thrown", () => {
     }
     if (!madeReadOnly) return;
 
-    let results: FixResult[] | undefined;
-    expect(() => {
-      results = planAndApplyFixes(scanResult, dir, {});
-    }).not.toThrow();
+    // planAndApplyFixes itself stays synchronous; the async boundary is
+    // only the scan. A write failure is reported as a 'failed' result,
+    // never thrown.
+    const results = planAndApplyFixes(scanResult, dir, {});
 
     expect(
       results?.some((r) => r.status === "failed"),

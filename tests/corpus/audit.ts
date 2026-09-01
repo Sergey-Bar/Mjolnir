@@ -189,8 +189,8 @@ function cloneRepo(repo: CorpusRepo): string {
   return dest;
 }
 
-function scanRepo(dir: string): BaselineEntry {
-  const result = runScan({
+async function scanRepo(dir: string): Promise<BaselineEntry> {
+  const result = await runScan({
     target: dir,
     json: true,
     verbose: true,
@@ -237,7 +237,7 @@ function writeBaseline(name: string, entry: BaselineEntry): void {
   );
 }
 
-function main(): number {
+async function main(): Promise<number> {
   const update = process.argv.includes("--update");
   let regressed = false;
 
@@ -266,7 +266,7 @@ function main(): number {
     }
     scanned.push(repo.name);
 
-    const current = scanRepo(dir);
+    const current = await scanRepo(dir);
     const baseline = loadBaseline(repo.name);
 
     // Review fix (baseline refresh, 2026-09-01): a deadline-truncated
@@ -402,5 +402,5 @@ function main(): number {
 // by other scripts (e.g. the FP-table generator) without triggering a
 // full networked audit as a side effect of the import.
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
-  process.exitCode = main();
+  process.exitCode = await main();
 }

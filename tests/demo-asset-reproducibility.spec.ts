@@ -19,7 +19,7 @@ const ROOT = join(import.meta.dirname, "..");
 const DEMO_REPO = join(ROOT, "examples", "demo-repo");
 const SVG_PATH = join(ROOT, "assets", "readme", "demo.svg");
 
-function scan() {
+async function scan() {
   return runScan({
     target: DEMO_REPO,
     json: false,
@@ -36,14 +36,17 @@ describe("assets/readme/demo.svg reproducibility", () => {
     expect(readme).toContain("assets/readme/demo.svg");
   });
 
-  it("the demo repo scan still produces findings (a stale/empty demo repo makes this test meaningless)", () => {
-    const result = scan();
+  it("the demo repo scan still produces findings (a stale/empty demo repo makes this test meaningless)", async () => {
+    const result = await scan();
     expect(result.score).not.toBeNull();
     expect(result.findings.length).toBeGreaterThan(3);
   });
 
-  it("the committed SVG contains every section header the current terminal reporter produces", () => {
-    const rendered = renderTerminal(scan(), { isTTY: false, ascii: true });
+  it("the committed SVG contains every section header the current terminal reporter produces", async () => {
+    const rendered = renderTerminal(await scan(), {
+      isTTY: false,
+      ascii: true,
+    });
     const svg = readFileSync(SVG_PATH, "utf8");
     const sectionHeaders = rendered
       .split("\n")
@@ -60,8 +63,8 @@ describe("assets/readme/demo.svg reproducibility", () => {
     }
   });
 
-  it("every rule ID in the committed SVG actually fired in the current real scan", () => {
-    const result = scan();
+  it("every rule ID in the committed SVG actually fired in the current real scan", async () => {
+    const result = await scan();
     const svg = readFileSync(SVG_PATH, "utf8");
     const realRuleIds = new Set(result.findings.map((f) => f.ruleId));
     const svgRuleIds = new Set(

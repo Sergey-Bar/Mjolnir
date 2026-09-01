@@ -50,8 +50,8 @@ afterEach(() => {
 });
 
 describe("targeting one workspace package directly", () => {
-  it("does not include findings from a sibling package the user never pointed at", () => {
-    const result = runScan({
+  it("does not include findings from a sibling package the user never pointed at", async () => {
+    const result = await runScan({
       target: join(dir, "packages", "pkg-a"),
       json: true,
       verbose: true,
@@ -73,11 +73,11 @@ describe("targeting one workspace package directly", () => {
     ).toBe(false);
   });
 
-  it("baseline sanity: scanning the whole monorepo root DOES find both packages", () => {
+  it("baseline sanity: scanning the whole monorepo root DOES find both packages", async () => {
     // Confirms the workspace-glob discovery mechanism itself works and
     // this isn't a fixture-setup mistake — it's specifically that a
     // sub-target should be a boundary, and today it isn't one.
-    const result = runScan({
+    const result = await runScan({
       target: dir,
       json: true,
       verbose: true,

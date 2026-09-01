@@ -99,26 +99,26 @@ function makeEmptyDir(prefix: string): string {
 }
 
 describe("runImpactCommand", () => {
-  it("returns usage error (10) on bad args", () => {
+  it("returns usage error (10) on bad args", async () => {
     const cap = capture();
-    expect(runImpactCommand(["--bogus"], cap.io)).toBe(10);
+    expect(await runImpactCommand(["--bogus"], cap.io)).toBe(10);
   });
 
-  it("returns 2 (no comparison possible) for a non-git target, never crashing", () => {
+  it("returns 2 (no comparison possible) for a non-git target, never crashing", async () => {
     const dir = makeEmptyDir("mjolnir-sprint6-nogit-");
     mkdirSync(join(dir, "e2e"), { recursive: true });
     writeFileSync(join(dir, "e2e", "a.spec.ts"), "test('x', () => {});\n");
     const cap = capture();
-    const code = runImpactCommand([dir], cap.io);
+    const code = await runImpactCommand([dir], cap.io);
     expect(FROZEN_EXIT_CODES.has(code)).toBe(true);
     expect(code).toBe(2);
     expect(cap.text()).toContain("UNKNOWN");
   });
 
-  it("returns 0 and reports a real comparison for a repo with history", () => {
+  it("returns 0 and reports a real comparison for a repo with history", async () => {
     const dir = makeGitRepoWithHistory();
     const cap = capture();
-    const code = runImpactCommand([dir], cap.io);
+    const code = await runImpactCommand([dir], cap.io);
     expect(FROZEN_EXIT_CODES.has(code)).toBe(true);
     expect(code).toBe(0);
     expect(cap.text()).toContain("IMPACT REPORT");
@@ -126,35 +126,35 @@ describe("runImpactCommand", () => {
 });
 
 describe("runBaselineCommand + runDiffCommand — round trip via CLI", () => {
-  it("baseline usage error (10) on bad args", () => {
+  it("baseline usage error (10) on bad args", async () => {
     const cap = capture();
-    expect(runBaselineCommand(["--bogus"], cap.io)).toBe(10);
+    expect(await runBaselineCommand(["--bogus"], cap.io)).toBe(10);
   });
 
-  it("diff returns 2 (no baseline) before one has ever been saved", () => {
+  it("diff returns 2 (no baseline) before one has ever been saved", async () => {
     const dir = makeGitRepoWithHistory();
     const cap = capture();
-    const code = runDiffCommand([dir], cap.io);
+    const code = await runDiffCommand([dir], cap.io);
     expect(FROZEN_EXIT_CODES.has(code)).toBe(true);
     expect(code).toBe(2);
   });
 
-  it("baseline then diff reports zero new findings against itself", () => {
+  it("baseline then diff reports zero new findings against itself", async () => {
     const dir = makeGitRepoWithHistory();
-    const saveCode = runBaselineCommand([dir], capture().io);
+    const saveCode = await runBaselineCommand([dir], capture().io);
     expect(saveCode).toBe(0);
     expect(existsSync(join(dir, ".mjolnir", "baseline.json"))).toBe(true);
 
     const cap = capture();
-    const diffCode = runDiffCommand([dir], cap.io);
+    const diffCode = await runDiffCommand([dir], cap.io);
     expect(FROZEN_EXIT_CODES.has(diffCode)).toBe(true);
     expect(diffCode).toBe(0);
     expect(cap.text()).toContain("NEW OR WORSENED DEBT: none");
   });
 
-  it("diff returns 1 when a new error-severity finding was introduced after the baseline", () => {
+  it("diff returns 1 when a new error-severity finding was introduced after the baseline", async () => {
     const dir = makeGitRepoWithHistory();
-    runBaselineCommand([dir], capture().io);
+    await runBaselineCommand([dir], capture().io);
     // Introduce a new error-severity finding: assert on whatever severity
     // the actual new finding carries, proving the gating logic reads it
     // rather than hardcoding a specific rule.
@@ -166,12 +166,12 @@ describe("runBaselineCommand + runDiffCommand — round trip via CLI", () => {
     git(dir, ["commit", "-q", "-m", "commit 3: adds a new finding"]);
 
     const cap = capture();
-    const code = runDiffCommand([dir], cap.io);
+    const code = await runDiffCommand([dir], cap.io);
     expect(FROZEN_EXIT_CODES.has(code)).toBe(true);
     expect(cap.text()).toContain("NEW OR WORSENED DEBT");
   });
 
-  it("diff writes updated all-time stats after observing a real fix", () => {
+  it("diff writes updated all-time stats after observing a real fix", async () => {
     const dir = makeGitRepoWithHistory();
     // Baseline BEFORE the fixing commit exists in history, so save it
     // against the pre-fix tree by checking out commit 1 temporarily.
@@ -180,33 +180,33 @@ describe("runBaselineCommand + runDiffCommand — round trip via CLI", () => {
       encoding: "utf8",
     }).trim();
     git(dir, ["checkout", "-q", commit1]);
-    runBaselineCommand([dir], capture().io);
+    await runBaselineCommand([dir], capture().io);
     git(dir, ["checkout", "-q", "main"]);
 
-    runDiffCommand([dir], capture().io);
+    await runDiffCommand([dir], capture().io);
     expect(existsSync(join(dir, ".mjolnir", "stats.json"))).toBe(true);
   });
 });
 
 describe("runPrCommentCommand", () => {
-  it("returns usage error (10) on bad args", () => {
+  it("returns usage error (10) on bad args", async () => {
     const cap = capture();
-    expect(runPrCommentCommand(["--bogus"], cap.io)).toBe(10);
+    expect(await runPrCommentCommand(["--bogus"], cap.io)).toBe(10);
   });
 
-  it("renders a full Markdown comment for a target with no baseline", () => {
+  it("renders a full Markdown comment for a target with no baseline", async () => {
     const dir = makeGitRepoWithHistory();
     const cap = capture();
-    const code = runPrCommentCommand([dir], cap.io);
+    const code = await runPrCommentCommand([dir], cap.io);
     expect(code).toBe(0);
     expect(cap.text()).toContain("Mjölnir scan");
   });
 
-  it("scopes the comment to the baseline diff when one exists", () => {
+  it("scopes the comment to the baseline diff when one exists", async () => {
     const dir = makeGitRepoWithHistory();
-    runBaselineCommand([dir], capture().io);
+    await runBaselineCommand([dir], capture().io);
     const cap = capture();
-    const code = runPrCommentCommand([dir], cap.io);
+    const code = await runPrCommentCommand([dir], cap.io);
     expect(code).toBe(0);
     expect(cap.text()).toContain("baseline");
   });
@@ -234,12 +234,12 @@ describe("main() dispatch — Sprint 6 subcommands are reachable", () => {
     process.argv = origArgv0;
   });
 
-  it("routes impact/baseline/diff/pr-comment/stats through main()", () => {
+  it("routes impact/baseline/diff/pr-comment/stats through main()", async () => {
     const dir = makeGitRepoWithHistory();
-    expect(FROZEN_EXIT_CODES.has(main(["impact", dir]))).toBe(true);
-    expect(FROZEN_EXIT_CODES.has(main(["baseline", dir]))).toBe(true);
-    expect(FROZEN_EXIT_CODES.has(main(["diff", dir]))).toBe(true);
-    expect(FROZEN_EXIT_CODES.has(main(["pr-comment", dir]))).toBe(true);
-    expect(FROZEN_EXIT_CODES.has(main(["stats", dir]))).toBe(true);
+    expect(FROZEN_EXIT_CODES.has(await main(["impact", dir]))).toBe(true);
+    expect(FROZEN_EXIT_CODES.has(await main(["baseline", dir]))).toBe(true);
+    expect(FROZEN_EXIT_CODES.has(await main(["diff", dir]))).toBe(true);
+    expect(FROZEN_EXIT_CODES.has(await main(["pr-comment", dir]))).toBe(true);
+    expect(FROZEN_EXIT_CODES.has(await main(["stats", dir]))).toBe(true);
   });
 });

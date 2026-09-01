@@ -37,7 +37,7 @@ afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
 });
 
-function scan() {
+async function scan() {
   return runScan({
     target: dir,
     json: true,
@@ -49,12 +49,12 @@ function scan() {
 }
 
 describe("mjolnir.config.json `ignore` entries", () => {
-  it("baseline: QA-TEST-001 fires without any suppression config", () => {
-    const result = scan();
+  it("baseline: QA-TEST-001 fires without any suppression config", async () => {
+    const result = await scan();
     expect(result.findings.map((f) => f.ruleId)).toContain("QA-TEST-001");
   });
 
-  it("a configured, active suppression removes the finding from scan output", () => {
+  it("a configured, active suppression removes the finding from scan output", async () => {
     writeFileSync(
       join(dir, "mjolnir.config.json"),
       JSON.stringify({
@@ -67,7 +67,7 @@ describe("mjolnir.config.json `ignore` entries", () => {
       }),
     );
 
-    const result = scan();
+    const result = await scan();
     expect(
       result.findings.map((f) => f.ruleId),
       "QA-TEST-001 is configured as suppressed in mjolnir.config.json " +
@@ -78,7 +78,7 @@ describe("mjolnir.config.json `ignore` entries", () => {
     ).not.toContain("QA-TEST-001");
   });
 
-  it("an expired suppression does NOT suppress (stale config doesn't hide new debt)", () => {
+  it("an expired suppression does NOT suppress (stale config doesn't hide new debt)", async () => {
     writeFileSync(
       join(dir, "mjolnir.config.json"),
       JSON.stringify({
@@ -92,7 +92,7 @@ describe("mjolnir.config.json `ignore` entries", () => {
       }),
     );
 
-    const result = scan();
+    const result = await scan();
     // This one currently "passes" only because suppression isn't wired
     // in at all — once it is, this is the case that actually needs the
     // expiry check to matter.
@@ -101,15 +101,15 @@ describe("mjolnir.config.json `ignore` entries", () => {
 });
 
 describe("scan behavior with a broken config (bug-audit M4)", () => {
-  it("a typo'd severityOverrides value fails the scan loudly — never a NaN score or silent un-gating", () => {
+  it("a typo'd severityOverrides value fails the scan loudly — never a NaN score or silent un-gating", async () => {
     writeFileSync(
       join(dir, "mjolnir.config.json"),
       JSON.stringify({ severityOverrides: { "QA-TEST-001": "eror" } }),
     );
     // runScan propagates the config validation error; the CLI layer maps
     // it to the usage-error path (exit 10) with the actionable message.
-    expect(() => scan()).toThrow(ConfigValidationError);
-    expect(() => scan()).toThrow(/eror/);
+    await expect(scan()).rejects.toThrow(ConfigValidationError);
+    await expect(scan()).rejects.toThrow(/eror/);
   });
 });
 

@@ -55,17 +55,17 @@ const ACME_TIERED_RULE = `exports.rules = [{
   }],
 }];`;
 
-function scanJson(
+async function scanJson(
   target = dir,
   extraArgs: string[] = [],
-): {
+): Promise<{
   code: number;
   result: ScanResult & { analysisStatus: Record<string, unknown> };
   err: string[];
-} {
+}> {
   const out: string[] = [];
   const err: string[] = [];
-  const code = runScanCommand([target, "--json", ...extraArgs], {
+  const code = await runScanCommand([target, "--json", ...extraArgs], {
     out: (...p: unknown[]) => out.push(p.map(String).join(" ")),
     err: (...p: unknown[]) => err.push(p.map(String).join(" ")),
   });
@@ -79,7 +79,7 @@ function scanJson(
 }
 
 describe("plugin tier enforcement", () => {
-  it("caps quarantine-tier plugin findings to info/E0 even at severity error", () => {
+  it("caps quarantine-tier plugin findings to info/E0 even at severity error", async () => {
     writePlugin("good-plugin", ACME_TIERED_RULE);
     writeFileSync(
       join(dir, "mjolnir.config.json"),
@@ -90,7 +90,7 @@ describe("plugin tier enforcement", () => {
       join(dir, "e2e", "acme.spec.ts"),
       "it('a', () => { expect(1 + 1).toBe(2); });\n",
     );
-    const { code, result } = scanJson();
+    const { code, result } = await scanJson();
     const acme = result.findings.find((f) => f.ruleId === "QA-ACME-001");
     expect(acme).toBeDefined();
     // Tier policy: quarantine findings can never gate CI.
@@ -100,7 +100,7 @@ describe("plugin tier enforcement", () => {
     expect(result.plugins).toEqual([{ name: "./good-plugin", rules: 1 }]);
   });
 
-  it("surfaces unloadable plugins as QA-PLUGIN-000 findings", () => {
+  it("surfaces unloadable plugins as QA-PLUGIN-000 findings", async () => {
     writeFileSync(
       join(dir, "mjolnir.config.json"),
       JSON.stringify({ plugins: ["./missing-plugin"] }),
@@ -110,7 +110,7 @@ describe("plugin tier enforcement", () => {
       join(dir, "e2e", "a.spec.ts"),
       "it('a', () => { expect(1 + 1).toBe(2); });\n",
     );
-    const { result } = scanJson();
+    const { result } = await scanJson();
     const pluginFinding = result.findings.find(
       (f) => f.ruleId === "QA-PLUGIN-000",
     );
@@ -120,7 +120,7 @@ describe("plugin tier enforcement", () => {
 });
 
 describe("files-scoped suppressions", () => {
-  it("suppresses only rule+glob matches and keeps other findings", () => {
+  it("suppresses only rule+glob matches and keeps other findings", async () => {
     writeFileSync(
       join(dir, "mjolnir.config.json"),
       JSON.stringify({
@@ -153,7 +153,7 @@ describe("files-scoped suppressions", () => {
         "",
       ].join("\n"),
     );
-    const { result } = scanJson();
+    const { result } = await scanJson();
     const ruleIds = result.findings.map((f) => f.ruleId);
     // QA-PW-101 under e2e/** is suppressed by rule+glob. Dedup runs
     // AFTER suppression (review fix), so with the declarer gone its
@@ -169,7 +169,7 @@ describe("files-scoped suppressions", () => {
 });
 
 describe("runScan config-warning hook", () => {
-  it("delivers non-fatal config warnings to the hook", () => {
+  it("delivers non-fatal config warnings to the hook", async () => {
     writeFileSync(
       join(dir, "mjolnir.config.json"),
       JSON.stringify({ severityOverrides: { "QA-NOPE-001": "warning" } }),
@@ -181,7 +181,7 @@ describe("runScan config-warning hook", () => {
     );
     const warnings: string[] = [];
     const hooks: ScanHooks = { onConfigWarning: (m) => warnings.push(m) };
-    runScan(
+    await runScan(
       {
         target: dir,
         json: false,

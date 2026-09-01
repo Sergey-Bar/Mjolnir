@@ -42,12 +42,12 @@ function scan() {
 }
 
 describe("mjolnir.config.json `severityOverrides` (documented in config.ts)", () => {
-  it("downgrading QA-TEST-001 to info in config has no effect on scan output", () => {
+  it("downgrading QA-TEST-001 to info in config has no effect on scan output", async () => {
     writeFileSync(
       join(dir, "mjolnir.config.json"),
       JSON.stringify({ severityOverrides: { "QA-TEST-001": "info" } }),
     );
-    const result = scan();
+    const result = await scan();
     const finding = result.findings.find((f) => f.ruleId === "QA-TEST-001");
     expect(
       finding?.severity,
@@ -59,7 +59,7 @@ describe("mjolnir.config.json `severityOverrides` (documented in config.ts)", ()
 });
 
 describe("mjolnir.config.json `gate` (documented in config.ts)", () => {
-  it("a malformed gate value fails fast with a clear config error", () => {
+  it("a malformed gate value fails fast with a clear config error", async () => {
     // Now that the scan path actually reads the config, an invalid value
     // surfaces loudly instead of being silently ignored — a typo'd gate
     // level must never quietly change gating behavior.
@@ -67,12 +67,16 @@ describe("mjolnir.config.json `gate` (documented in config.ts)", () => {
       join(dir, "mjolnir.config.json"),
       JSON.stringify({ gate: "not-a-real-gate-level" }),
     );
-    expect(() => scan()).toThrow(/gate must be advisory\|error\|warning/);
+    // An async scan rejects on a fatal config error; that rejection IS
+    // the throw the contract pins.
+    await expect(scan()).rejects.toThrow(
+      /gate must be advisory\|error\|warning/,
+    );
   });
 });
 
 describe("mjolnir.config.json `ignore` missing required `reason`", () => {
-  it("an ignore entry without a reason fails fast with a clear config error", () => {
+  it("an ignore entry without a reason fails fast with a clear config error", async () => {
     // §27 requires every suppression to carry a reason; now that the
     // scan path validates the config, the requirement is actually
     // enforced instead of silently skipped.
@@ -80,7 +84,9 @@ describe("mjolnir.config.json `ignore` missing required `reason`", () => {
       join(dir, "mjolnir.config.json"),
       JSON.stringify({ ignore: [{ ruleId: "QA-TEST-001" }] }),
     );
-    expect(() => scan()).toThrow(/requires a "reason"/);
+    // An async scan rejects on a fatal config error; that rejection IS
+    // the throw the contract pins.
+    await expect(scan()).rejects.toThrow(/requires a "reason"/);
   });
 });
 
@@ -95,10 +101,10 @@ describe("the empty-state message suggests only real invocations (H-5)", () => {
     expect(parseArgs(["--tests-dir", "somewhere"])).toBeNull();
   });
 
-  it("running a scan on a nonexistent path exits 10 naming the path (H-4)", () => {
+  it("running a scan on a nonexistent path exits 10 naming the path (H-4)", async () => {
     const missing = join(dir, "does-not-exist");
     let errText = "";
-    const code = runScanCommand([missing], {
+    const code = await runScanCommand([missing], {
       out: () => {},
       err: (...parts) => (errText += parts.join(" ")),
     });
@@ -106,11 +112,11 @@ describe("the empty-state message suggests only real invocations (H-5)", () => {
     expect(errText).toContain(missing);
   });
 
-  it("running a scan on a file (not a directory) exits 10 (H-4)", () => {
+  it("running a scan on a file (not a directory) exits 10 (H-4)", async () => {
     const file = join(dir, "plain.txt");
     writeFileSync(file, "not a test\n");
     let errText = "";
-    const code = runScanCommand([file], {
+    const code = await runScanCommand([file], {
       out: () => {},
       err: (...parts) => (errText += parts.join(" ")),
     });
@@ -118,10 +124,13 @@ describe("the empty-state message suggests only real invocations (H-5)", () => {
     expect(errText).toContain("not a directory");
   });
 
-  it("a real directory with no tests keeps exit 0 (H-4 keeps the honest empty state)", () => {
+  it("a real directory with no tests keeps exit 0 (H-4 keeps the honest empty state)", async () => {
     const empty = join(dir, "empty-dir");
     mkdirSync(empty, { recursive: true });
-    const code = runScanCommand([empty], { out: () => {}, err: () => {} });
+    const code = await runScanCommand([empty], {
+      out: () => {},
+      err: () => {},
+    });
     expect(code).toBe(0);
   });
 });

@@ -47,7 +47,7 @@ afterEach(() => {
 });
 
 describe("skip accounting under I/O failure", () => {
-  it("counts stat-failed and read-failed files as skipped and exits 2 (partial)", () => {
+  it("counts stat-failed and read-failed files as skipped and exits 2 (partial)", async () => {
     mkdirSync(join(dir, "e2e"), { recursive: true });
     writeFileSync(
       join(dir, "e2e", "ghost.spec.ts"),
@@ -63,7 +63,7 @@ describe("skip accounting under I/O failure", () => {
     );
     const out: string[] = [];
     const err: string[] = [];
-    const code = runScanCommand([dir, "--json"], {
+    const code = await runScanCommand([dir, "--json"], {
       out: (...p: unknown[]) => out.push(p.map(String).join(" ")),
       err: (...p: unknown[]) => err.push(p.map(String).join(" ")),
     });

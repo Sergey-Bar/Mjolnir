@@ -87,22 +87,22 @@ const emptyScan: ScanResult = {
 };
 
 describe("degenerate repos", () => {
-  it("reports no-prior-commit for a repo with no commits", () => {
+  it("reports no-prior-commit for a repo with no commits", async () => {
     git(["init", "-b", "main"]);
     git(["config", "user.email", "t@t"]);
     git(["config", "user.name", "t"]);
-    const report = computeImpact(dir, { runScan: () => emptyScan });
+    const report = await computeImpact(dir, { runScan: async () => emptyScan });
     expect(report.hasComparison).toBe(false);
     expect(report.unknownReason).toBe("no-prior-commit");
   });
 
-  it("reports tree-listing-failed when --since names an unresolvable ref", () => {
+  it("reports tree-listing-failed when --since names an unresolvable ref", async () => {
     git(["init", "-b", "main"]);
     git(["config", "user.email", "t@t"]);
     git(["config", "user.name", "t"]);
-    const report = computeImpact(dir, {
+    const report = await computeImpact(dir, {
       since: "HEAD~1",
-      runScan: () => emptyScan,
+      runScan: async () => emptyScan,
     });
     // No commits: rev-parse HEAD~1 fails, HEAD is unresolvable, and the
     // tree listing cannot succeed — reported honestly, exit-code neutral.
@@ -112,7 +112,7 @@ describe("degenerate repos", () => {
 });
 
 describe("base-tree truncation (bug-audit M9)", () => {
-  it("names the truncation in the report instead of misreporting new debt", () => {
+  it("names the truncation in the report instead of misreporting new debt", async () => {
     git(["init", "-b", "main"]);
     git(["config", "user.email", "t@t"]);
     git(["config", "user.name", "t"]);
@@ -128,7 +128,7 @@ describe("base-tree truncation (bug-audit M9)", () => {
     git(["commit", "-m", "second"]);
 
     state.simulateBaseTree = true;
-    const report = computeImpact(dir, { runScan: () => emptyScan });
+    const report = await computeImpact(dir, { runScan: async () => emptyScan });
     expect(report.hasComparison).toBe(true);
     expect(report.baseTreeTruncated).toEqual({
       scanned: 20_000,

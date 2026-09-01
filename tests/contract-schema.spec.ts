@@ -101,7 +101,7 @@ describe("JSON report contract", () => {
     expect(SCHEMA_VERSION).toBe(1);
   });
 
-  it("a fresh scan's JSON output matches the types.ts contract", () => {
+  it("a fresh scan's JSON output matches the types.ts contract", async () => {
     const dir = mkdtempSync(join(tmpdir(), "mjolnir-contract-"));
     try {
       mkdirSync(join(dir, "e2e"), { recursive: true });
@@ -113,7 +113,7 @@ describe("JSON report contract", () => {
           `  expect(true).toBe(true);\n` +
           `});\n`,
       );
-      const result = runScan({
+      const result = await runScan({
         target: dir,
         json: true,
         verbose: true,
@@ -138,7 +138,7 @@ describe("JSON report contract", () => {
 });
 
 describe("SARIF 2.1.0 report contract", () => {
-  function scanOneFinding(): ScanResult {
+  async function scanOneFinding(): Promise<ScanResult> {
     const dir = mkdtempSync(join(tmpdir(), "mjolnir-sarif-contract-"));
     try {
       mkdirSync(join(dir, "e2e"), { recursive: true });
@@ -149,7 +149,7 @@ describe("SARIF 2.1.0 report contract", () => {
           `  expect(true).toBe(true);\n` +
           `});\n`,
       );
-      return runScan({
+      return await runScan({
         target: dir,
         json: true,
         verbose: true,
@@ -162,8 +162,8 @@ describe("SARIF 2.1.0 report contract", () => {
     }
   }
 
-  it("output is valid JSON with the required top-level SARIF shape", () => {
-    const result = scanOneFinding();
+  it("output is valid JSON with the required top-level SARIF shape", async () => {
+    const result = await scanOneFinding();
     const sarif = JSON.parse(renderSarif(result));
 
     expect(sarif.version).toBe("2.1.0");
@@ -193,11 +193,11 @@ describe("SARIF 2.1.0 report contract", () => {
     }
   });
 
-  it("every SARIF result's ruleId is declared in tool.driver.rules", () => {
+  it("every SARIF result's ruleId is declared in tool.driver.rules", async () => {
     // GitHub Code Scanning silently drops results whose ruleId has no
     // matching driver.rules entry — this would fail invisibly in CI, not
     // loudly, which is exactly the class of bug worth pinning here.
-    const result = scanOneFinding();
+    const result = await scanOneFinding();
     const sarif = JSON.parse(renderSarif(result));
     const run = sarif.runs[0];
     const declaredIds = new Set(

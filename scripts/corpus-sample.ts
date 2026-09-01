@@ -83,7 +83,7 @@ function getContext(filePath: string, line: number): string[] {
   }
 }
 
-function scanAndSample(): Map<string, SampledFinding[]> {
+async function scanAndSample(): Promise<Map<string, SampledFinding[]>> {
   const byRule = new Map<string, SampledFinding[]>();
 
   for (const repo of CORPUS) {
@@ -98,7 +98,7 @@ function scanAndSample(): Map<string, SampledFinding[]> {
       continue;
     }
 
-    const result = runScan({
+    const result = await runScan({
       target: dir,
       json: true,
       verbose: true,
@@ -254,7 +254,7 @@ async function main(): Promise<void> {
     `Drawing up to ${MAX_SAMPLES_PER_RULE} findings per rule from ${CORPUS.length} corpus repos...\n`,
   );
 
-  const byRule = scanAndSample();
+  const byRule = await scanAndSample();
 
   console.log(`\n=== Writing review sheets ===`);
   writeReviewSheets(byRule);
@@ -290,4 +290,4 @@ async function main(): Promise<void> {
   console.log("run `npm run fp-audit:generate` to compute FP rates.");
 }
 
-main();
+await main();

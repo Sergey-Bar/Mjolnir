@@ -163,7 +163,9 @@ describe("forensics math, hand-computed", () => {
 });
 
 describe("terminal footer agrees with the JSON deduction fields", () => {
-  const scan: ScanResult = runScan({
+  // One shared scan for all tests in this suite: started here, awaited
+  // per test (an async describe body is not reliable test registration).
+  const scanPromise: Promise<ScanResult> = runScan({
     target: join(REPO_ROOT, "examples", "demo-repo"),
     json: false,
     verbose: false,
@@ -172,14 +174,16 @@ describe("terminal footer agrees with the JSON deduction fields", () => {
     format: "terminal",
   });
 
-  it("the terminal WHERE-POINTS-WERE-LOST table names every deducted severity", () => {
+  it("the terminal WHERE-POINTS-WERE-LOST table names every deducted severity", async () => {
+    const scan = await scanPromise;
     const out = renderTerminal(scan, { width: 100, ascii: true, isTTY: false });
     const severities = new Set(scan.findings.map((f) => f.severity));
     expect(out).toContain("WHERE POINTS WERE LOST");
     expect(severities.has("error")).toBe(out.includes("error"));
   });
 
-  it("rawDeductions in the JSON contract is the sum of per-finding deductions", () => {
+  it("rawDeductions in the JSON contract is the sum of per-finding deductions", async () => {
+    const scan = await scanPromise;
     const sum = scan.findings.reduce((acc, f) => {
       const level = f.evidenceLevel ?? "E2";
       const base =
@@ -250,8 +254,8 @@ describe("mermaid output is structurally well-formed", () => {
 });
 
 describe("three verdict bands are reachable for their documented reasons", () => {
-  it("self-scan is WORTHY (>= 80)", { timeout: 120_000 }, () => {
-    const scan = runScan({
+  it("self-scan is WORTHY (>= 80)", { timeout: 120_000 }, async () => {
+    const scan = await runScan({
       target: REPO_ROOT,
       json: false,
       verbose: false,
@@ -264,8 +268,8 @@ describe("three verdict bands are reachable for their documented reasons", () =>
     expect(verdictFor(scan.score as number)).toBe("WORTHY");
   });
 
-  it("demo repo is NEEDS WORK (50-79)", { timeout: 60_000 }, () => {
-    const scan = runScan({
+  it("demo repo is NEEDS WORK (50-79)", { timeout: 60_000 }, async () => {
+    const scan = await runScan({
       target: join(REPO_ROOT, "examples", "demo-repo"),
       json: false,
       verbose: false,
@@ -283,8 +287,8 @@ describe("three verdict bands are reachable for their documented reasons", () =>
   it(
     "golden repo is UNWORTHY by the categorical suite-invalidating fact",
     { timeout: 60_000 },
-    () => {
-      const scan = runScan({
+    async () => {
+      const scan = await runScan({
         target: join(REPO_ROOT, "tests", "golden", "repo"),
         json: false,
         verbose: false,

@@ -34,8 +34,8 @@ describe("assets/readme/terminal-hero.svg reproducibility", () => {
     expect(readme).toContain("assets/readme/terminal-hero.svg");
   });
 
-  it("the demo repo scan referenced by the hero asset actually produces findings (sanity check — a stale/empty demo repo would make this whole test meaningless)", () => {
-    const result = runScan({
+  it("the demo repo scan referenced by the hero asset actually produces findings (sanity check — a stale/empty demo repo would make this whole test meaningless)", async () => {
+    const result = await runScan({
       target: DEMO_REPO,
       json: false,
       verbose: false,
@@ -47,8 +47,8 @@ describe("assets/readme/terminal-hero.svg reproducibility", () => {
     expect(result.findings.length).toBeGreaterThan(3);
   });
 
-  it("the committed SVG contains every section the current terminal reporter produces — not a stale snapshot from before a reporter change", () => {
-    const result = runScan({
+  it("the committed SVG contains every section the current terminal reporter produces — not a stale snapshot from before a reporter change", async () => {
+    const result = await runScan({
       target: DEMO_REPO,
       json: false,
       verbose: false,
@@ -82,8 +82,8 @@ describe("assets/readme/terminal-hero.svg reproducibility", () => {
     }
   });
 
-  it("the committed SVG's every finding message and rule ID actually appears in the current real scan (not stale example findings)", () => {
-    const result = runScan({
+  it("the committed SVG's every finding message and rule ID actually appears in the current real scan (not stale example findings)", async () => {
+    const result = await runScan({
       target: DEMO_REPO,
       json: false,
       verbose: false,

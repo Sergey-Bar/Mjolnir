@@ -31,7 +31,7 @@ afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
 });
 
-function scan(target = dir) {
+async function scan(target = dir) {
   return runScan({
     target,
     json: true,
@@ -43,7 +43,7 @@ function scan(target = dir) {
 }
 
 describe("unreadable discovery directories degrade instead of crashing", () => {
-  it("an e2e/ directory with permissions revoked does not crash the scan (TS adapter)", () => {
+  it("an e2e/ directory with permissions revoked does not crash the scan (TS adapter)", async () => {
     const locked = join(dir, "e2e");
     mkdirSync(locked, { recursive: true });
     writeFileSync(
@@ -58,7 +58,9 @@ describe("unreadable discovery directories degrade instead of crashing", () => {
       /* platform doesn't support this — nothing to assert */
     }
     try {
-      expect(() => scan()).not.toThrow();
+      // An async scan "not crashing" means it resolves, not that a sync
+      // call throws — awaiting is the honest form of the assertion.
+      await scan();
     } finally {
       if (revoked) chmodSync(locked, 0o755);
     }
@@ -66,7 +68,7 @@ describe("unreadable discovery directories degrade instead of crashing", () => {
 });
 
 describe("oversized files are skipped, not scanned", () => {
-  it("a .spec.ts file over the 1MB cap is excluded from discovery", () => {
+  it("a .spec.ts file over the 1MB cap is excluded from discovery", async () => {
     mkdirSync(join(dir, "e2e"), { recursive: true });
     // Genuinely over LIMITS.maxFileBytes (1MB) with a real trigger
     // pattern inside it, so if it WERE scanned it would produce a
@@ -75,7 +77,7 @@ describe("oversized files are skipped, not scanned", () => {
       "it.only('huge', () => {\n" + "// ".repeat(400_000) + "\n});\n";
     writeFileSync(join(dir, "e2e", "huge.spec.ts"), huge);
 
-    const result = scan();
+    const result = await scan();
     // The size cap silently excludes the file from discovery (it's
     // never pushed to testFiles at all) rather than routing through
     // onSkippedFile() — so skippedFiles staying at 0 here is the
@@ -85,7 +87,7 @@ describe("oversized files are skipped, not scanned", () => {
     expect(result.findings.some((f) => f.file.includes("huge"))).toBe(false);
   });
 
-  it("a Python file over the size cap is excluded from discovery", () => {
+  it("a Python file over the size cap is excluded from discovery", async () => {
     mkdirSync(join(dir, "tests"), { recursive: true });
     const huge =
       "def test_huge():\n" +
@@ -93,13 +95,13 @@ describe("oversized files are skipped, not scanned", () => {
       "    assert True\n";
     writeFileSync(join(dir, "tests", "test_huge.py"), huge);
 
-    const result = scan();
+    const result = await scan();
     expect(result.findings.some((f) => f.file.includes("huge"))).toBe(false);
   });
 });
 
 describe("directory nesting beyond the depth cap is not descended into", () => {
-  it("a test file nested past the max depth is not discovered", () => {
+  it("a test file nested past the max depth is not discovered", async () => {
     let deep = join(dir, "e2e");
     for (let i = 0; i < 40; i++) deep = join(deep, `d${i}`); // > LIMITS.maxDepth (32)
     mkdirSync(deep, { recursive: true });
@@ -114,7 +116,7 @@ describe("directory nesting beyond the depth cap is not descended into", () => {
       "it.only('y', () => { expect(1).toBe(1); });\n",
     );
 
-    const result = scan();
+    const result = await scan();
     expect(result.findings.some((f) => f.file.includes("too-deep"))).toBe(
       false,
     );
@@ -130,7 +132,7 @@ describe("virtualenv/dependency directories are skipped by the Python adapter", 
     "__pycache__",
     "site-packages",
   ]) {
-    it(`does not descend into "${skipDir}"`, () => {
+    it(`does not descend into "${skipDir}"`, async () => {
       mkdirSync(join(dir, skipDir), { recursive: true });
       writeFileSync(
         join(dir, skipDir, "test_vendored.py"),
@@ -144,7 +146,7 @@ describe("virtualenv/dependency directories are skipped by the Python adapter", 
         "import pytest\n\n@pytest.mark.skip\ndef test_y():\n    pass\n",
       );
 
-      const result = scan();
+      const result = await scan();
       expect(result.findings.some((f) => f.file.includes(skipDir))).toBe(false);
       expect(result.findings.some((f) => f.file.includes("test_real"))).toBe(
         true,
@@ -154,7 +156,7 @@ describe("virtualenv/dependency directories are skipped by the Python adapter", 
 });
 
 describe("malformed GitHub Actions workflow YAML degrades the scan honestly", () => {
-  it("a workflow file with unparseable YAML does not crash the whole scan", () => {
+  it("a workflow file with unparseable YAML does not crash the whole scan", async () => {
     mkdirSync(join(dir, ".github", "workflows"), { recursive: true });
     writeFileSync(
       join(dir, ".github", "workflows", "broken.yml"),
@@ -168,15 +170,17 @@ describe("malformed GitHub Actions workflow YAML degrades the scan honestly", ()
       "on:\n  push:\njobs:\n  build:\n    steps:\n      - run: npm test || true\n",
     );
 
-    expect(() => scan()).not.toThrow();
-    const result = scan();
+    // An async scan "not crashing" means it resolves, not that a sync
+    // call throws — awaiting is the honest form of the assertion.
+    await scan();
+    const result = await scan();
     expect(result.analysisStatus.skippedFiles).toBeGreaterThan(0);
     // The valid sibling workflow was still scanned and its real finding
     // (|| true swallowing exit code) surfaced.
     expect(result.findings.some((f) => f.file.includes("ci.yml"))).toBe(true);
   });
 
-  it("a workflow YAML bomb (excess aliases) does not hang or crash the scan", () => {
+  it("a workflow YAML bomb (excess aliases) does not hang or crash the scan", async () => {
     mkdirSync(join(dir, ".github", "workflows"), { recursive: true });
     const aliasBomb =
       "on:\n  push:\njobs:\n  a: &a [" +
@@ -185,7 +189,7 @@ describe("malformed GitHub Actions workflow YAML degrades the scan honestly", ()
     writeFileSync(join(dir, ".github", "workflows", "bomb.yml"), aliasBomb);
 
     const start = performance.now();
-    expect(() => scan()).not.toThrow();
+    await scan();
     expect(performance.now() - start).toBeLessThan(10_000);
   });
 });

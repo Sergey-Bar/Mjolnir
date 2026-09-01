@@ -138,7 +138,7 @@ describe("mermaid severity classes", () => {
 });
 
 describe("baseline rendering fallbacks", () => {
-  it("labels a single captured finding singular", () => {
+  it("labels a single captured finding singular", async () => {
     mkdirSync(join(dir, "e2e"), { recursive: true });
     // Exactly one rule (QA-TEST-001, focused test) fires on this file by
     // default. QA-TEST-003 (82% FP) and QA-TEST-002 (65% FP) were demoted
@@ -148,7 +148,7 @@ describe("baseline rendering fallbacks", () => {
       "it.only('a', () => { console.log('x'); });\n",
     );
     const out: string[] = [];
-    const code = runBaselineCommand([dir], {
+    const code = await runBaselineCommand([dir], {
       out: (...p: unknown[]) => out.push(p.map(String).join(" ")),
       err: () => {},
     });

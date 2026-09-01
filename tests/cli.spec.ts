@@ -254,46 +254,48 @@ describe("runForensicsCommand", () => {
 });
 
 describe("runDoctorPlaywright", () => {
-  it("renders PW findings + selector health and exits 0", () => {
+  it("renders PW findings + selector health and exits 0", async () => {
     mkdirSync(join(dir, ".github"), { recursive: true });
     writeFileSync(join(dir, "sample.spec.ts"), "page.getByRole('button');\n");
     const cap = capture();
-    expect(runDoctorPlaywright(["doctor:playwright", dir], cap.io)).toBe(0);
+    expect(await runDoctorPlaywright(["doctor:playwright", dir], cap.io)).toBe(
+      0,
+    );
     expect(cap.text()).toContain("SELECTOR HEALTH");
   });
 });
 
 describe("runScanCommand / main dispatch", () => {
-  it("prints usage and exits 10 on bad args", () => {
+  it("prints usage and exits 10 on bad args", async () => {
     const cap = capture();
-    expect(runScanCommand(["--bogus"], cap.io)).toBe(10);
+    expect(await runScanCommand(["--bogus"], cap.io)).toBe(10);
     expect(cap.text()).toContain("Usage: mjolnir");
   });
 
-  it("emits JSON output with schemaVersion", () => {
+  it("emits JSON output with schemaVersion", async () => {
     const cap = capture();
-    const code = runScanCommand([dir, "--json"], cap.io);
+    const code = await runScanCommand([dir, "--json"], cap.io);
     expect([0, 1, 2]).toContain(code);
     const parsed = JSON.parse(cap.text()) as { schemaVersion: number };
     expect(parsed.schemaVersion).toBe(1);
   });
 
-  it("emits SARIF output", () => {
+  it("emits SARIF output", async () => {
     const cap = capture();
-    runScanCommand([dir, "--format", "sarif"], cap.io);
+    await runScanCommand([dir, "--format", "sarif"], cap.io);
     expect(JSON.parse(cap.text())).toHaveProperty("version", "2.1.0");
   });
 
-  it("main dispatches subcommands", () => {
+  it("main dispatches subcommands", async () => {
     process.chdir(dir);
-    expect(main(["ci", "install"])).toBe(0);
-    expect(main(["suppressions"])).toBe(0);
-    expect(main(["forensics"])).toBe(10);
+    expect(await main(["ci", "install"])).toBe(0);
+    expect(await main(["suppressions"])).toBe(0);
+    expect(await main(["forensics"])).toBe(10);
   });
 
-  it("main falls through to scan for plain args", () => {
+  it("main falls through to scan for plain args", async () => {
     const cap = capture();
-    const code = main([dir, "--json"]);
+    const code = await main([dir, "--json"]);
     void cap;
     expect([0, 1, 2]).toContain(code);
   });

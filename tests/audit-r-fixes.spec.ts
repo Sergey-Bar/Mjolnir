@@ -83,7 +83,7 @@ describe("R-9: swallowed rule crashes become visible", () => {
     expect((crashes[0]?.error as Error).message).toBe("boom");
   });
 
-  it("a crashing plugin rule increments analysisStatus.rulesCrashed without changing the exit path", () => {
+  it("a crashing plugin rule increments analysisStatus.rulesCrashed without changing the exit path", async () => {
     // Minimal real plugin: a package in the scanned repo's node_modules
     // whose only rule throws on every file.
     const pluginDir = join(dir, "node_modules", "crashing-plugin");
@@ -111,7 +111,7 @@ describe("R-9: swallowed rule crashes become visible", () => {
     mkdirSync(join(dir, "e2e"), { recursive: true });
     writeFileSync(join(dir, "e2e", "a.spec.ts"), "it('a', () => {});\n");
 
-    const result = runScan(
+    const result = await runScan(
       parseArgs([dir]) ?? {
         target: dir,
         json: false,
@@ -130,7 +130,7 @@ describe("R-9: swallowed rule crashes become visible", () => {
     ).toHaveLength(0);
   });
 
-  it("--debug prints swallowed crashes to stderr; default stays silent", () => {
+  it("--debug prints swallowed crashes to stderr; default stays silent", async () => {
     const pluginDir = join(dir, "node_modules", "crashing-plugin");
     mkdirSync(pluginDir, { recursive: true });
     writeFileSync(
@@ -156,7 +156,7 @@ describe("R-9: swallowed rule crashes become visible", () => {
     writeFileSync(join(dir, "a.spec.ts"), "it('a', () => {});\n");
 
     const loud: string[] = [];
-    runScanCommand([dir, "--debug", "--json"], {
+    await runScanCommand([dir, "--debug", "--json"], {
       out: () => {},
       err: (...parts) => loud.push(parts.map(String).join(" ")),
     });
@@ -164,16 +164,16 @@ describe("R-9: swallowed rule crashes become visible", () => {
     expect(loud.join("\n")).toContain("plugin boom");
 
     const silent: string[] = [];
-    runScanCommand([dir, "--json"], {
+    await runScanCommand([dir, "--json"], {
       out: () => {},
       err: (...parts) => silent.push(parts.map(String).join(" ")),
     });
     expect(silent.join("\n")).not.toContain("rule crash");
   });
 
-  it("a clean scan reports rulesCrashed 0", () => {
+  it("a clean scan reports rulesCrashed 0", async () => {
     writeFileSync(join(dir, "a.spec.ts"), "it('a', () => {});\n");
-    const result = runScan(
+    const result = await runScan(
       parseArgs([dir]) ?? {
         target: dir,
         json: false,
@@ -215,7 +215,7 @@ describe("R-1: --record-milestones is an explicit opt-in", () => {
 // ─── H-4 gap: every scanning subcommand refuses a bogus target ────────
 
 describe("H-4 (extended): target validation in all scanning commands", () => {
-  const cases: Array<[string, (argv: string[]) => number]> = [
+  const cases: Array<[string, (argv: string[]) => Promise<number>]> = [
     ["badge", (a) => runBadgeCommand(a, { out: () => {}, err: () => {} })],
     [
       "baseline",
@@ -224,9 +224,9 @@ describe("H-4 (extended): target validation in all scanning commands", () => {
     ["diff", (a) => runDiffCommand(a, { out: () => {}, err: () => {} })],
   ];
   for (const [name, run] of cases) {
-    it(`mjolnir ${name} on a nonexistent target exits 10`, () => {
+    it(`mjolnir ${name} on a nonexistent target exits 10`, async () => {
       const missing = join(dir, "does-not-exist");
-      expect(run([missing])).toBe(10);
+      expect(await run([missing])).toBe(10);
     });
   }
 });
@@ -240,7 +240,7 @@ function scanArgs(target: string, over: Record<string, unknown> = {}) {
 }
 
 describe("P-1: a single expensive file can no longer own the scan", () => {
-  it("a file exceeding its budget is skipped mid-way and reported", () => {
+  it("a file exceeding its budget is skipped mid-way and reported", async () => {
     for (const n of ["a", "b", "c"]) {
       writeFileSync(join(dir, `${n}.spec.ts`), "it('x', () => {});\n");
     }
@@ -253,7 +253,7 @@ describe("P-1: a single expensive file can no longer own the scan", () => {
       calls++;
       return calls <= 5 ? realNow : realNow + 6000 + (calls - 6) * 6000;
     });
-    const result = runScan(scanArgs(dir, { maxDurationMs: 60_000 }));
+    const result = await runScan(scanArgs(dir, { maxDurationMs: 60_000 }));
     expect(result.analysisStatus.rules).toBe("partial");
     expect(result.partial).toBe(true);
     expect(result.analysisStatus.truncationReasons).toContain("file-budget");

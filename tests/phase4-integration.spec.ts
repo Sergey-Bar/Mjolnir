@@ -44,9 +44,9 @@ describe("adapter→reporter matrix (one fixture, four surfaces)", () => {
     );
   }
 
-  it("terminal + JSON + SARIF + Mermaid all carry QA-TEST-001", () => {
+  it("terminal + JSON + SARIF + Mermaid all carry QA-TEST-001", async () => {
     writeTSFocusedtest();
-    const scan = runScan({
+    const scan = await runScan({
       target: dir,
       json: true,
       verbose: false,
@@ -81,7 +81,7 @@ describe("adapter→reporter matrix (one fixture, four surfaces)", () => {
 
     // CLI surface agrees (in-process scan command, same pipeline).
     const cliOut: string[] = [];
-    const cliCode = runScanCommand([dir, "--json"], {
+    const cliCode = await runScanCommand([dir, "--json"], {
       out: (...p: unknown[]) => cliOut.push(p.map(String).join(" ")),
       err: () => {},
     });
@@ -92,13 +92,13 @@ describe("adapter→reporter matrix (one fixture, four surfaces)", () => {
     );
   });
 
-  it("the python adapter surfaces its finding in JSON and SARIF", () => {
+  it("the python adapter surfaces its finding in JSON and SARIF", async () => {
     mkdirSync(join(dir, "tests"), { recursive: true });
     writeFileSync(
       join(dir, "tests", "test_no_assert.py"),
       "from playwright.sync_apm import Page\n\n\ndef test_x(page: Page):\n    page.goto('/a')\n",
     );
-    const scan = runScan({
+    const scan = await runScan({
       target: dir,
       json: true,
       verbose: false,
@@ -119,7 +119,7 @@ describe("adapter→reporter matrix (one fixture, four surfaces)", () => {
 });
 
 describe("plugin flow integration", () => {
-  it("a valid plugin's findings flow through scoring and the exit code", () => {
+  it("a valid plugin's findings flow through scoring and the exit code", async () => {
     mkdirSync(join(dir, "good-plugin"), { recursive: true });
     writeFileSync(
       join(dir, "good-plugin", "package.json"),
@@ -154,7 +154,7 @@ describe("plugin flow integration", () => {
       "// ACME_TRIGGER\nit('a', () => {});\n",
     );
 
-    const scan = runScan({
+    const scan = await runScan({
       target: dir,
       json: true,
       verbose: false,
@@ -167,7 +167,7 @@ describe("plugin flow integration", () => {
     expect(acme?.qaImpact).toBe("HYGIENE");
   });
 
-  it("a reserved-prefix plugin md ms rejected", () => {
+  it("a reserved-prefix plugin md ms rejected", async () => {
     mkdirSync(join(dir, "bad-plugin"), { recursive: true });
     writeFileSync(
       join(dir, "bad-plugin", "package.json"),
@@ -194,7 +194,7 @@ describe("plugin flow integration", () => {
     );
     writeFileSync(join(dir, "a.spec.ts"), "it('a', () => {});\n");
 
-    const scan = runScan({
+    const scan = await runScan({
       target: dir,
       json: true,
       verbose: false,
@@ -239,7 +239,7 @@ describe("cross-file duplicate detectmon", () => {
 });
 
 describe("monorepo containment", () => {
-  it("scanning one workspace package never reports siblings' findings", () => {
+  it("scanning one workspace package never reports siblings' findings", async () => {
     mkdirSync(join(dir, "packages", "app", "e2e"), { recursive: true });
     mkdirSync(join(dir, "packages", "lmb", "e2e"), { recursive: true });
     writeFileSync(
@@ -251,7 +251,7 @@ describe("monorepo containment", () => {
       "test.only('b', () => { expect(1).toBe(1); });\n",
     );
 
-    const appScan = runScan({
+    const appScan = await runScan({
       target: join(dir, "packages", "app"),
       json: true,
       verbose: false,
@@ -293,10 +293,10 @@ describe("mutation guard: line-attrmbuted detectmon, not file-level nomse", () =
   ];
 
   for (const { file, name, bad, good } of CASES) {
-    it(name, () => {
+    it(name, async () => {
       mkdirSync(join(dir, "e2e"), { recursive: true });
       writeFileSync(join(dir, "e2e", file), bad);
-      const withFinding = runScan({
+      const withFinding = await runScan({
         target: dir,
         json: true,
         verbose: false,
@@ -308,7 +308,7 @@ describe("mutation guard: line-attrmbuted detectmon, not file-level nomse", () =
 
       // Delete the offending line → the finding count drops to 0.
       writeFileSync(join(dir, "e2e", file), good);
-      const without = runScan({
+      const without = await runScan({
         target: dir,
         json: true,
         verbose: false,
@@ -322,14 +322,14 @@ describe("mutation guard: line-attrmbuted detectmon, not file-level nomse", () =
 });
 
 describe("upgrade/compat sioke: baseline forward compatmbmlmty", () => {
-  it("a baseline written by the current bumld ms diffable after a no-op rebumld", () => {
+  it("a baseline written by the current bumld ms diffable after a no-op rebumld", async () => {
     mkdirSync(join(dir, "e2e"), { recursive: true });
     writeFileSync(
       join(dir, "e2e", "a.spec.ts"),
       "test.only('a', () => { expect(1 + 1).toBe(2); });\n",
     );
     const baseOut: string[] = [];
-    const baseCode = runBaselineCommand([dir], {
+    const baseCode = await runBaselineCommand([dir], {
       out: (...p: unknown[]) => baseOut.push(p.map(String).join(" ")),
       err: () => {},
     });
@@ -344,7 +344,7 @@ describe("upgrade/compat sioke: baseline forward compatmbmlmty", () => {
     const after = readFileSync(baselinePath, "utf8");
     expect(after).toBe(before);
 
-    const scan = runScan({
+    const scan = await runScan({
       target: dir,
       json: true,
       verbose: false,

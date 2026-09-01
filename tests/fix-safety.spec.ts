@@ -41,7 +41,7 @@ afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
 });
 
-function scan() {
+async function scan() {
   return runScan({
     target: dir,
     json: true,
@@ -53,9 +53,9 @@ function scan() {
 }
 
 describe("--dry-run never writes to disk", () => {
-  it("the source file is byte-identical after a dry-run fix", () => {
+  it("the source file is byte-identical after a dry-run fix", async () => {
     const before = readFileSync(join(dir, SPEC_REL), "utf8");
-    const results = planAndApplyFixes(scan(), dir, { dryRun: true });
+    const results = planAndApplyFixes(await scan(), dir, { dryRun: true });
     const after = readFileSync(join(dir, SPEC_REL), "utf8");
 
     expect(after).toBe(before);
@@ -65,23 +65,23 @@ describe("--dry-run never writes to disk", () => {
 });
 
 describe("fix idempotency", () => {
-  it("running fix twice does not corrupt the file or double-apply", () => {
-    const firstRun = planAndApplyFixes(scan(), dir, {});
+  it("running fix twice does not corrupt the file or double-apply", async () => {
+    const firstRun = planAndApplyFixes(await scan(), dir, {});
     expect(firstRun.some((r) => r.status === "applied")).toBe(true);
 
     const afterFirst = readFileSync(join(dir, SPEC_REL), "utf8");
     expect(afterFirst).not.toContain(".only");
 
     // Second run: nothing left to fix, and the file must not change.
-    const secondRun = planAndApplyFixes(scan(), dir, {});
+    const secondRun = planAndApplyFixes(await scan(), dir, {});
     const afterSecond = readFileSync(join(dir, SPEC_REL), "utf8");
 
     expect(afterSecond).toBe(afterFirst);
     expect(secondRun.some((r) => r.status === "applied")).toBe(false);
   });
 
-  it("the fixed file still contains the untouched, unrelated test", () => {
-    planAndApplyFixes(scan(), dir, {});
+  it("the fixed file still contains the untouched, unrelated test", async () => {
+    planAndApplyFixes(await scan(), dir, {});
     const after = readFileSync(join(dir, SPEC_REL), "utf8");
     expect(after).toContain("refunds");
     expect(after).toContain("expect(true).toBe(true)");
@@ -89,13 +89,13 @@ describe("fix idempotency", () => {
 });
 
 describe("fix never touches a file it has no planned edit for", () => {
-  it("a second, unrelated spec file with no fixable findings is left byte-identical", () => {
+  it("a second, unrelated spec file with no fixable findings is left byte-identical", async () => {
     const cleanRel = "e2e/clean.spec.ts";
     const cleanSource =
       "it('already fine', () => { expect(1 + 1).toBe(2); });\n";
     writeFileSync(join(dir, cleanRel), cleanSource);
 
-    planAndApplyFixes(scan(), dir, {});
+    planAndApplyFixes(await scan(), dir, {});
 
     expect(readFileSync(join(dir, cleanRel), "utf8")).toBe(cleanSource);
   });
@@ -112,16 +112,16 @@ describe("page.pause removal is surgical (bug-audit H1)", () => {
     "  expect(true).toBe(true);\n" +
     "});\n";
 
-  function pauseScan() {
+  async function pauseScan() {
     writeFileSync(join(dir, SPEC_REL), PAUSE_SOURCE);
     return scan();
   }
 
-  it("a pause sharing its line with another statement is never auto-deleted — the statement survives and the fix reports a manual hint", () => {
+  it("a pause sharing its line with another statement is never auto-deleted — the statement survives and the fix reports a manual hint", async () => {
     // The old implementation matched /^\s*.*\bpage\.pause…/ — the leading
     // .* made `init(); page.pause();` look like a removable "pause line"
     // and silently destroyed init(). This test fails on that behavior.
-    const results = planAndApplyFixes(pauseScan(), dir, {});
+    const results = planAndApplyFixes(await pauseScan(), dir, {});
     const after = readFileSync(join(dir, SPEC_REL), "utf8");
 
     expect(after).toContain("init(); page.pause();");
@@ -130,8 +130,8 @@ describe("page.pause removal is surgical (bug-audit H1)", () => {
     expect(sharedLine?.description).toContain("manually");
   });
 
-  it("only the whole-statement pause line is removed; neighboring lines — including pause mentions in comments — survive", () => {
-    const results = planAndApplyFixes(pauseScan(), dir, {});
+  it("only the whole-statement pause line is removed; neighboring lines — including pause mentions in comments — survive", async () => {
+    const results = planAndApplyFixes(await pauseScan(), dir, {});
     const after = readFileSync(join(dir, SPEC_REL), "utf8");
 
     expect(after).not.toContain("await page.pause();");

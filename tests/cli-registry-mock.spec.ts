@@ -127,14 +127,14 @@ afterEach(() => {
 
 const CLEAN = "it('a', () => { expect(1 + 1).toBe(2); });\n";
 
-function scanJson(extraArgs: string[] = []): {
+async function scanJson(extraArgs: string[] = []): Promise<{
   code: number;
   result: Record<string, unknown>;
   err: string[];
-} {
+}> {
   const out: string[] = [];
   const err: string[] = [];
-  const code = runScanCommand([dir, "--json", ...extraArgs], {
+  const code = await runScanCommand([dir, "--json", ...extraArgs], {
     out: (...p: unknown[]) => out.push(p.map(String).join(" ")),
     err: (...p: unknown[]) => err.push(p.map(String).join(" ")),
   });
@@ -146,9 +146,9 @@ function scanJson(extraArgs: string[] = []): {
 }
 
 describe("rule-crash isolation and --debug surfacing", () => {
-  it("prints swallowed crashes for both payload shapes with --debug", () => {
+  it("prints swallowed crashes for both payload shapes with --debug", async () => {
     writeFileSync(join(dir, "a.spec.ts"), CLEAN);
-    const { code, err } = scanJson(["--debug"]);
+    const { code, err } = await scanJson(["--debug"]);
     expect(err.join("\n")).toContain("2 rule crash(es) were swallowed");
     expect(err.join("\n")).toContain(
       "QA-TEST-950 crashed on a.spec.ts: boom-err",
@@ -159,20 +159,20 @@ describe("rule-crash isolation and --debug surfacing", () => {
     expect(code).toBe(0);
   });
 
-  it("truncates the crash list past 50 with an honest remainder line", () => {
+  it("truncates the crash list past 50 with an honest remainder line", async () => {
     for (let i = 0; i < 60; i++) {
       writeFileSync(join(dir, `f${String(i).padStart(2, "0")}.spec.ts`), CLEAN);
     }
-    const { err } = scanJson(["--debug"]);
+    const { err } = await scanJson(["--debug"]);
     const text = err.join("\n");
     expect(text).toContain("120 rule crash(es) were swallowed");
     expect(text).toContain("… and 70 more");
   });
 
-  it("counts crashes in analysisStatus and delivers them to runScan hooks", () => {
+  it("counts crashes in analysisStatus and delivers them to runScan hooks", async () => {
     writeFileSync(join(dir, "a.spec.ts"), CLEAN);
     const crashes: string[] = [];
-    const result = runScan(
+    const result = await runScan(
       {
         target: dir,
         json: true,
@@ -205,9 +205,9 @@ describe("explain degradation on rule crash", () => {
 });
 
 describe("evidence-level override", () => {
-  it("lets a rule honestly downgrade its evidence level", () => {
+  it("lets a rule honestly downgrade its evidence level", async () => {
     writeFileSync(join(dir, "a.spec.ts"), CLEAN);
-    const { result } = scanJson();
+    const { result } = await scanJson();
     const probe = (
       result as {
         findings: Array<{ ruleId: string; evidenceLevel: string }>;
@@ -219,17 +219,17 @@ describe("evidence-level override", () => {
 });
 
 describe("quarantine tier under --strict", () => {
-  it("excludes the quarantine rule by default", () => {
+  it("excludes the quarantine rule by default", async () => {
     writeFileSync(join(dir, "a.spec.ts"), CLEAN);
-    const { result } = scanJson();
+    const { result } = await scanJson();
     const findings = (result as { findings: Array<{ ruleId: string }> })
       .findings;
     expect(findings.map((f) => f.ruleId)).not.toContain("QA-TEST-953");
   });
 
-  it("includes it with --strict but the finding still cannot gate CI", () => {
+  it("includes it with --strict but the finding still cannot gate CI", async () => {
     writeFileSync(join(dir, "a.spec.ts"), CLEAN);
-    const { code, result } = scanJson(["--strict"]);
+    const { code, result } = await scanJson(["--strict"]);
     const probe = (
       result as {
         findings: Array<{

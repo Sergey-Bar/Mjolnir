@@ -113,17 +113,15 @@ describe("command handlers report a crash (exit 20) instead of throwing, when th
     }
   }
 
-  it("`badge` reports exit 20 instead of throwing when its output dir is unwritable", () => {
+  it("`badge` reports exit 20 instead of throwing when its output dir is unwritable", async () => {
     if (!locked()) return;
     const errs: string[] = [];
-    let code: number | undefined;
-    expect(() => {
-      code = runBadgeCommand([dir], {
+    await expect(
+      runBadgeCommand([dir], {
         out: () => {},
         err: (...a) => errs.push(a.map(String).join(" ")),
-      });
-    }).not.toThrow();
-    expect(code).toBe(20);
+      }),
+    ).resolves.toBe(20);
     expect(errs.join(" ")).toMatch(/internal error/i);
   });
 
@@ -139,16 +137,14 @@ describe("command handlers report a crash (exit 20) instead of throwing, when th
     expect(code).toBe(20);
   });
 
-  it("`baseline` reports exit 20 instead of throwing when .mjolnir/ can't be written", () => {
+  it("`baseline` reports exit 20 instead of throwing when .mjolnir/ can't be written", async () => {
     if (!locked()) return;
     const errs: string[] = [];
     let code: number | undefined;
-    expect(() => {
-      code = runBaselineCommand([dir], {
-        out: () => {},
-        err: (...a) => errs.push(a.map(String).join(" ")),
-      });
-    }).not.toThrow();
+    code = await runBaselineCommand([dir], {
+      out: () => {},
+      err: (...a) => errs.push(a.map(String).join(" ")),
+    });
     expect(code).toBe(20);
     expect(errs.join(" ")).toMatch(/internal error/i);
   });
@@ -204,19 +200,15 @@ describe("`debt` and `handover` still return a documented exit code against an e
     rmSync(dir, { recursive: true, force: true });
   });
 
-  it("`debt` on a directory with no tests at all does not throw", () => {
-    let code: number | undefined;
-    expect(() => {
-      code = runDebtCommand([dir], { out: () => {}, err: () => {} });
-    }).not.toThrow();
-    expect(code).toBe(0);
+  it("`debt` on a directory with no tests at all does not throw", async () => {
+    await expect(
+      runDebtCommand([dir], { out: () => {}, err: () => {} }),
+    ).resolves.toBe(0);
   });
 
-  it("`handover` on a directory with no tests at all does not throw", () => {
-    let code: number | undefined;
-    expect(() => {
-      code = runHandoverCommand([dir], { out: () => {}, err: () => {} });
-    }).not.toThrow();
-    expect(code).toBe(0);
+  it("`handover` on a directory with no tests at all does not throw", async () => {
+    await expect(
+      runHandoverCommand([dir], { out: () => {}, err: () => {} }),
+    ).resolves.toBe(0);
   });
 });

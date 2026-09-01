@@ -46,6 +46,8 @@ import { renderMermaid } from "./reporter/mermaid.js";
 import { computeChangedScope, filterToChanged } from "./scope/changed.js";
 import { asUniversal } from "./engine/rule-runner.js";
 import { enforceTierPolicy, type Tier } from "./engine/tier-policy.js";
+import type { ParsedAst, ParsedFile } from "./engine/adapter.js";
+import { releaseTreeSitterResources } from "./engine/tree-sitter-ast.js";
 import { applyOverlapDedup, type OverlapMeta } from "./engine/overlap-dedup.js";
 import { isAdvisoryFinding } from "./types.js";
 import { typescriptAdapter } from "./adapters/typescript.js";
@@ -293,8 +295,16 @@ export function fallbackWorkspace(targetAbs: string): Workspace {
  * Testable default scan path core. `hooks` lets callers observe
  * normally-invisible events (swallowed rule crashes) without changing
  * the ScanResult contract beyond the rulesCrashed counter.
+ *
+ * Async since the Verification Trust Evolution Plan Phase 0.5 (§10): the
+ * per-file loop awaits the adapter parse stage (WASM grammar load is
+ * inherently async); `runRules` and every rule stay synchronous and
+ * consume `ParsedFile.ast`. Callers await the returned promise.
  */
-export function runScan(args: CliArgs, hooks: ScanHooks = {}): ScanResult {
+export async function runScan(
+  args: CliArgs,
+  hooks: ScanHooks = {},
+): Promise<ScanResult> {
   const started = Date.now();
   const deadline = started + args.maxDurationMs;
   // package.json workspace OR non-JS repo (Python etc.) — fall back to the
@@ -447,10 +457,25 @@ export function runScan(args: CliArgs, hooks: ScanHooks = {}): ScanResult {
           : isCs
             ? csharpAdapter
             : typescriptAdapter;
+    // Phase 0.5 parse stage (§10): discovery and rule execution stay
+    // where they were; the awaited parse sits between them. `runRules`
+    // and rules remain synchronous and consume `file.ast`. Every
+    // dispose path below runs in a finally-equivalent position — tree
+    // release must never depend on rules completing successfully
+    // (§10.3): normal completion, rule crash, per-file budget expiry,
+    // and adapter throw all pass through `finally`.
+    const parsedFile: ParsedFile = { path: relPath, text };
+    let parsed: ParsedAst | undefined;
     try {
+      if (adapter.parseAst && Date.now() <= deadline) {
+        parsed = await adapter.parseAst(parsedFile);
+      }
+      const fileForRules: ParsedFile = parsed
+        ? { ...parsedFile, ast: parsed.ast }
+        : parsedFile;
       adapter.runRules(
         activeRules,
-        { path: relPath, text },
+        fileForRules,
         (f, ruleId, category) => {
           findings.push({ ...f, ruleId, category } as Finding);
         },
@@ -471,8 +496,13 @@ export function runScan(args: CliArgs, hooks: ScanHooks = {}): ScanResult {
         },
       );
     } catch {
-      // WorkflowParseSkipped and friends — counted, never fatal.
+      // WorkflowParseSkipped and friends — counted, never fatal. A
+      // parse-stage throw (contract: never happens) lands here too: the
+      // file produced no analysis, so counting it as skipped is honest.
       skippedFiles++;
+    } finally {
+      // §10.3: release the AST on every exit path, success or not.
+      parsed?.dispose();
     }
   }
 
@@ -577,7 +607,7 @@ export function runScan(args: CliArgs, hooks: ScanHooks = {}): ScanResult {
   // A "100/100" on a repo with zero tests would be a false proof.
   const hasTests = testFileCount > 0;
 
-  return {
+  const result: ScanResult = {
     schemaVersion: SCHEMA_VERSION,
     partial: discoveryTruncated || rulesPartial || skippedFiles > 0,
     score: hasTests ? total : null,
@@ -614,6 +644,13 @@ export function runScan(args: CliArgs, hooks: ScanHooks = {}): ScanResult {
         : {}),
     },
   };
+  // §10.3: every per-file tree was already disposed in the loop's
+  // finally; tearing the memoized parsers down here releases the
+  // grammar-level WASM state so a long-lived process (library consumer,
+  // test runner) doesn't pin it between scans. The next scan
+  // transparently re-creates them.
+  await releaseTreeSitterResources();
+  return result;
 }
 
 export type Output = (...parts: unknown[]) => void;
@@ -776,10 +813,10 @@ export function runForensicsCommand(
 }
 
 /** Testable `doctor:playwright` handler. */
-export function runDoctorPlaywright(
+export async function runDoctorPlaywright(
   argv: string[],
   io: { out: Output; err?: Output } = { out },
-): number {
+): Promise<number> {
   const targetArg = argv[1] && !argv[1].startsWith("-") ? argv[1] : ".";
   const target = resolve(targetArg);
   const invalid = validateScanTarget(target, io.err ?? err);
@@ -795,7 +832,7 @@ export function runDoctorPlaywright(
     scopeChanged: false,
     format: "terminal",
   };
-  const result = runScan({ ...args, target });
+  const result = await runScan({ ...args, target });
   const pwFindings = result.findings.filter((f) => f.category === "QA-PW");
   io.out(
     renderTerminal(
@@ -924,10 +961,10 @@ function validateScanTarget(target: string, err: Output): number | null {
   return null;
 }
 
-export function runScanCommand(
+export async function runScanCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
-): number {
+): Promise<number> {
   const args = parseArgs(argv);
   if (!args) {
     printUsage(io.out);
@@ -940,7 +977,7 @@ export function runScanCommand(
     // Audit R-9: collect swallowed rule crashes; --debug prints them.
     const crashLog: string[] = [];
     // Bug-audit M4: non-fatal config warnings reach stderr in every mode.
-    const result = runScan(
+    const result = await runScan(
       { ...args, target },
       {
         onConfigWarning: (message) => io.err(message),
@@ -1112,10 +1149,10 @@ export function runTriageCommand(
 }
 
 /** Testable `badge` handler (Tier 1 #5). */
-export function runBadgeCommand(
+export async function runBadgeCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
-): number {
+): Promise<number> {
   const args = parseArgs(argv);
   if (!args) {
     printUsage(io.out);
@@ -1125,7 +1162,7 @@ export function runBadgeCommand(
     const target = resolve(args.target);
     const invalid = validateScanTarget(target, io.err);
     if (invalid !== null) return invalid;
-    const result = runScan({ ...args, target });
+    const result = await runScan({ ...args, target });
     const outPath = writeBadge(result, { outDir: process.cwd() });
     io.out(`Wrote ${outPath}`);
     io.out("");
@@ -1141,10 +1178,10 @@ export function runBadgeCommand(
 }
 
 /** Testable `debt` handler (Tier 5 #27). */
-export function runDebtCommand(
+export async function runDebtCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
-): number {
+): Promise<number> {
   const args = parseArgs(argv);
   if (!args) {
     printUsage(io.out);
@@ -1154,7 +1191,7 @@ export function runDebtCommand(
     const target = resolve(args.target);
     const invalid = validateScanTarget(target, io.err);
     if (invalid !== null) return invalid;
-    const result = runScan({ ...args, target });
+    const result = await runScan({ ...args, target });
     io.out(renderDebt(result));
     return 0;
   } catch (err) {
@@ -1167,10 +1204,10 @@ export function runDebtCommand(
 }
 
 /** Testable `fix` handler (Tier 1 #3) — safe auto-fix with proof. */
-export function runFixCommand(
+export async function runFixCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
-): number {
+): Promise<number> {
   const dryRun = argv.includes("--dry-run");
   const args = parseArgs(argv.filter((a) => a !== "--dry-run"));
   if (!args) {
@@ -1181,7 +1218,7 @@ export function runFixCommand(
     const target = resolve(args.target);
     const invalid = validateScanTarget(target, io.err);
     if (invalid !== null) return invalid;
-    const result = runScan({ ...args, target });
+    const result = await runScan({ ...args, target });
     const fixes = planAndApplyFixes(result, target, { dryRun });
     io.out(renderFixReport(fixes, dryRun));
     // Exit 1 when anything failed verification; applied/dry-run is fine.
@@ -1233,10 +1270,10 @@ function currentCommit(root: string): string {
 }
 
 /** Testable `impact` handler (Sprint 6 Task 23). */
-export function runImpactCommand(
+export async function runImpactCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
-): number {
+): Promise<number> {
   const sinceIdx = argv.indexOf("--since");
   const since = sinceIdx !== -1 ? argv[sinceIdx + 1] : undefined;
   const args = parseArgs(
@@ -1252,7 +1289,7 @@ export function runImpactCommand(
     const target = resolve(args.target);
     const invalid = validateScanTarget(target, io.err);
     if (invalid !== null) return invalid;
-    const report = computeImpact(target, {
+    const report = await computeImpact(target, {
       ...(since ? { since } : {}),
       runScan: (dir) => runScan({ ...args, target: dir }),
     });
@@ -1268,10 +1305,10 @@ export function runImpactCommand(
 }
 
 /** Testable `baseline` handler (Sprint 6 Task 24). */
-export function runBaselineCommand(
+export async function runBaselineCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
-): number {
+): Promise<number> {
   const args = parseArgs(argv);
   if (!args) {
     printUsage(io.out);
@@ -1281,7 +1318,7 @@ export function runBaselineCommand(
     const target = resolve(args.target);
     const invalid = validateScanTarget(target, io.err);
     if (invalid !== null) return invalid;
-    const result = runScan({ ...args, target });
+    const result = await runScan({ ...args, target });
     const outPath = join(target, DEFAULT_BASELINE_PATH);
     const saved = saveBaseline(result, currentCommit(target), outPath);
     io.out(
@@ -1302,10 +1339,10 @@ export function runBaselineCommand(
 }
 
 /** Testable `diff` handler (Sprint 6 Task 24) — new/worsened debt only. */
-export function runDiffCommand(
+export async function runDiffCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
-): number {
+): Promise<number> {
   const args = parseArgs(argv);
   if (!args) {
     printUsage(io.out);
@@ -1315,7 +1352,7 @@ export function runDiffCommand(
     const target = resolve(args.target);
     const invalid = validateScanTarget(target, io.err);
     if (invalid !== null) return invalid;
-    const result = runScan({ ...args, target });
+    const result = await runScan({ ...args, target });
     const baselinePath = join(target, DEFAULT_BASELINE_PATH);
     const baseline = loadBaseline(baselinePath);
     const diff = diffAgainstBaseline(result, baseline);
@@ -1363,10 +1400,10 @@ export function runDiffCommand(
 }
 
 /** Testable `pr-comment` handler (Sprint 6 Task 25). */
-export function runPrCommentCommand(
+export async function runPrCommentCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
-): number {
+): Promise<number> {
   const args = parseArgs(argv);
   if (!args) {
     printUsage(io.out);
@@ -1376,7 +1413,7 @@ export function runPrCommentCommand(
     const target = resolve(args.target);
     const invalid = validateScanTarget(target, io.err);
     if (invalid !== null) return invalid;
-    const result = runScan({ ...args, target });
+    const result = await runScan({ ...args, target });
     const baseline = loadBaseline(join(target, DEFAULT_BASELINE_PATH));
     const diff = baseline ? diffAgainstBaseline(result, baseline) : undefined;
     io.out(renderPrComment(result, diff ? { diff } : {}));
@@ -1411,10 +1448,10 @@ export function runStatsCommand(
 }
 
 /** Testable `handover` handler (Tier 5 #28). */
-export function runHandoverCommand(
+export async function runHandoverCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
-): number {
+): Promise<number> {
   const args = parseArgs(argv);
   if (!args) {
     printUsage(io.out);
@@ -1424,7 +1461,7 @@ export function runHandoverCommand(
     const target = resolve(args.target);
     const invalid = validateScanTarget(target, io.err);
     if (invalid !== null) return invalid;
-    const result = runScan({ ...args, target });
+    const result = await runScan({ ...args, target });
     // Optional forensics enrichment when a results dir sits next to target.
     let forensics: ReturnType<typeof buildHandover> extends never
       ? never
@@ -1511,7 +1548,9 @@ export function runPwReportCommand(
   }
 }
 
-export function main(argv: string[] = process.argv.slice(2)): number {
+export async function main(
+  argv: string[] = process.argv.slice(2),
+): Promise<number> {
   // `--version` is the first thing most people type against an unfamiliar
   // CLI. Without this it fell through to the scan arg parser, which does
   // not know the flag, and printed the full help — technically not a
@@ -1521,6 +1560,8 @@ export function main(argv: string[] = process.argv.slice(2)): number {
     return 0;
   }
   // Subcommands (§69): ci install · suppressions · forensics · doctor:playwright
+  // Scan-backed handlers are async since the Phase 0.5 parse stage (§10) —
+  // returning their promise from this async dispatcher awaits it.
   if (argv[0] === "ci" && argv[1] === "install")
     return runCiInstall(argv.slice(2));
   if (argv[0] === "suppressions") return runSuppressions();
@@ -1644,5 +1685,6 @@ export function isEntryPoint(): boolean {
 }
 
 if (isEntryPoint()) {
-  process.exitCode = main();
+  // Top-level await: main() is async since the Phase 0.5 parse stage.
+  process.exitCode = await main();
 }

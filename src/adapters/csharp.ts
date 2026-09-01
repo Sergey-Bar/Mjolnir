@@ -2,12 +2,12 @@
  * C#/.NET adapter (Upgrade-Plan-v3 Phase 5).
  *
  * Regex-layer adapter: rules run over the file text (and the masked
- * code-text view), same discipline as the Java adapter. The
- * tree-sitter-c_sharp WASM grammar ships in the dependency set and
- * `src/engine/tree-sitter-ast.ts` exposes an async `parseCSharpAst`
- * seam, but it is not yet wired into the synchronous scan pipeline
- * (Verification Trust Evolution Plan defect D1, Phase 0.5 wires the
- * parse stage).
+ * code-text view). Since Verification Trust Evolution Phase 0.5 (§10)
+ * the adapter also implements the async `parseAst` hook — the file loop
+ * awaits `parseCSharpAst` (tree-sitter WASM) and hands the tree to rules
+ * via `ParsedFile.ast`; rules stay synchronous. Parse failure or a
+ * missing grammar resolves `undefined` and rules fall back to the regex
+ * path — never fatal.
  *
  * Test discovery: *Tests.cs / *Test.cs / *IT.cs under typical NUnit/
  * xUnit/MSTest conventions.
@@ -19,9 +19,12 @@ import { join } from "node:path";
 
 import { sharedWalk } from "../discovery/shared-walk.js";
 import { computeCodeText } from "../engine/code-text.js";
+import { parseCSharpAst } from "../engine/tree-sitter-ast.js";
 import type {
   FrameworkInfo,
   LanguageAdapter,
+  ParsedAst,
+  ParsedFile,
   ScanContext,
 } from "../engine/adapter.js";
 
@@ -82,6 +85,12 @@ export const csharpAdapter: LanguageAdapter = {
       isFull: () => ctx.testFiles.length >= ctx.maxFiles,
       fixtureDirMemo: new Map(),
     });
+  },
+
+  async parseAst(file: ParsedFile): Promise<ParsedAst | undefined> {
+    const tree = await parseCSharpAst(file.text);
+    if (!tree) return undefined;
+    return { ast: tree, dispose: () => tree.delete() };
   },
 
   runRules(rules, file, emit, onCrash, budget) {

@@ -99,14 +99,15 @@ export interface ComputeImpactOptions {
   /** Defaults to HEAD~1, falling back to the merge-base with baseBranch. */
   since?: string;
   baseBranch?: string;
-  /** Injectable for tests — defaults to the real runScan from cli.ts. */
-  runScan: (target: string) => ScanResult;
+  /** Injectable for tests — defaults to the real runScan from cli.ts.
+   * Async since the Phase 0.5 parse stage (runScan returns a promise). */
+  runScan: (target: string) => Promise<ScanResult>;
 }
 
-export function computeImpact(
+export async function computeImpact(
   root: string,
   options: ComputeImpactOptions,
-): ImpactReport {
+): Promise<ImpactReport> {
   const unknownFacts: string[] = [
     "CI minutes or engineer-hours saved: not computed — this repo does not " +
       "store historical CI run duration locally, and this command never " +
@@ -225,7 +226,7 @@ export function computeImpact(
           "only there are misreported here as new debt.",
       );
     }
-    baseResult = options.runScan(tmpDir);
+    baseResult = await options.runScan(tmpDir);
   } catch {
     return {
       hasComparison: false,
@@ -244,7 +245,7 @@ export function computeImpact(
     }
   }
 
-  const headResult = options.runScan(root);
+  const headResult = await options.runScan(root);
 
   const baseSet = new Map<string, Finding>();
   for (const f of baseResult.findings) baseSet.set(fingerprint(f), f);

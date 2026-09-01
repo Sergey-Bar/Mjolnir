@@ -35,7 +35,7 @@ const CLEAN = "it('a', () => { expect(1 + 1).toBe(2); });\n";
 const CLEAN_PY = "def test_one():\n    assert 1 + 1 == 2\n";
 
 describe("discovery file-cap truncation", () => {
-  it("names the capped adapter and the walk-level cap, exits 2 (partial)", () => {
+  it("names the capped adapter and the walk-level cap, exits 2 (partial)", async () => {
     // Every language bucket must reach the cap (1) before the walk-level
     // `isFull` check can fire in the subdirectories.
     writeFileSync(join(dir, "a.spec.ts"), CLEAN);
@@ -51,7 +51,7 @@ describe("discovery file-cap truncation", () => {
 
     const out: string[] = [];
     const err: string[] = [];
-    const code = runScanCommand([dir, "--json"], {
+    const code = await runScanCommand([dir, "--json"], {
       out: (...p: unknown[]) => out.push(p.map(String).join(" ")),
       err: (...p: unknown[]) => err.push(p.map(String).join(" ")),
     });

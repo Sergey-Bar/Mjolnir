@@ -32,10 +32,10 @@ afterEach(() => {
 });
 
 /** runScan + the documented exit-code contract (0/1/2 in-scan, 10 usage). */
-function expectScanInContract(target = dir): number {
+async function expectScanInContract(target = dir): Promise<number> {
   let exit: number;
   try {
-    const r = runScan({
+    const r = await runScan({
       target,
       json: true,
       verbose: true,
@@ -58,22 +58,22 @@ function expectScanInContract(target = dir): number {
 }
 
 describe("hostile repo: malformed ingestion inputs", () => {
-  it("a workflow YAML that is not YAML at all degrades without crashing the scan", () => {
+  it("a workflow YAML that is not YAML at all degrades without crashing the scan", async () => {
     mkdirSync(join(dir, ".github", "workflows"), { recursive: true });
     writeFileSync(
       join(dir, ".github", "workflows", "ci.yml"),
       "{{{{ not yaml: [:::\n\t\tbroken ]]]\n  - - - - : : :",
     );
-    expect([0, 1, 2, 10]).toContain(expectScanInContract());
+    expect([0, 1, 2, 10]).toContain(await expectScanInContract());
   });
 
-  it("a workflow YAML that is valid YAML but not a workflow is ignored honestly", () => {
+  it("a workflow YAML that is valid YAML but not a workflow is ignored honestly", async () => {
     mkdirSync(join(dir, ".github", "workflows"), { recursive: true });
     writeFileSync(
       join(dir, ".github", "workflows", "notes.yml"),
       "just: text\n",
     );
-    expect([0, 1, 2, 10]).toContain(expectScanInContract());
+    expect([0, 1, 2, 10]).toContain(await expectScanInContract());
   });
 
   it("malformed JUnit XML shapes all return records or empty — never throw", () => {
@@ -110,13 +110,13 @@ describe("hostile repo: malformed ingestion inputs", () => {
     }
   });
 
-  it("a 2 MB test file is skipped honestly — counted, not scanned, not fatal", () => {
+  it("a 2 MB test file is skipped honestly — counted, not scanned, not fatal", async () => {
     mkdirSync(join(dir, "e2e"), { recursive: true });
     writeFileSync(
       join(dir, "e2e", "huge.spec.ts"),
       `// ${"x".repeat(2 * 1024 * 1024)}\n`,
     );
-    const r = runScan({
+    const r = await runScan({
       target: dir,
       json: true,
       verbose: true,
@@ -131,7 +131,7 @@ describe("hostile repo: malformed ingestion inputs", () => {
     expect(r.findings.some((f) => f.file.includes("huge.spec.ts"))).toBe(false);
   });
 
-  it("40 levels of nesting exceed the depth cap without hanging or crashing", () => {
+  it("40 levels of nesting exceed the depth cap without hanging or crashing", async () => {
     let d = dir;
     for (let i = 0; i < 40; i++) d = join(d, `n${i}`);
     mkdirSync(d, { recursive: true });
@@ -139,16 +139,16 @@ describe("hostile repo: malformed ingestion inputs", () => {
       join(d, "deep.spec.ts"),
       `it("x", () => { expect(1).toBe(1); });\n`,
     );
-    expect([0, 1, 2, 10]).toContain(expectScanInContract());
+    expect([0, 1, 2, 10]).toContain(await expectScanInContract());
   });
 
-  it("unicode and # filenames survive the whole pipeline", () => {
+  it("unicode and # filenames survive the whole pipeline", async () => {
     mkdirSync(join(dir, "t"), { recursive: true });
     writeFileSync(
       join(dir, "t", "ünïcodé-#hash.test.ts"),
       "const expected = 1;\nit('x', () => { expect(expected).toBe(1); });\n",
     );
-    const r = runScan({
+    const r = await runScan({
       target: dir,
       json: true,
       verbose: true,
@@ -167,7 +167,7 @@ describe("hostile repo: malformed ingestion inputs", () => {
       join(dir, "t", "ünïcodé-#hash-2.test.ts"),
       "it.only('y', () => { page.goto('/x'); });\n",
     );
-    const r2 = runScan({
+    const r2 = await runScan({
       target: dir,
       json: true,
       verbose: true,
@@ -180,7 +180,7 @@ describe("hostile repo: malformed ingestion inputs", () => {
     ).toBe(true);
   });
 
-  it("a rejected-severity config plus hostile repo still exits in the documented set", () => {
+  it("a rejected-severity config plus hostile repo still exits in the documented set", async () => {
     mkdirSync(join(dir, ".github", "workflows"), { recursive: true });
     writeFileSync(
       join(dir, ".github", "workflows", "ci.yml"),
@@ -190,10 +190,12 @@ describe("hostile repo: malformed ingestion inputs", () => {
       join(dir, "mjolnir.config.json"),
       JSON.stringify({ exclude: [1, null, {}] }),
     );
-    // loadConfig throws ConfigValidationError → usage error path (10)
+    // loadConfig throws ConfigValidationError → usage error path (10).
+    // Since the Phase 0.5 async parse stage, that throw surfaces as a
+    // rejected promise from runScan.
     let exit: number;
     try {
-      runScan({
+      await runScan({
         target: dir,
         json: true,
         verbose: true,

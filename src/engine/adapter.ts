@@ -5,13 +5,13 @@
  * file discovery, framework detection, and (later) AST parsing for its
  * language. Rules declare which adapters they apply to.
  *
- * Parse-stage status (honest, corrected — an earlier note here claimed
- * tree-sitter arrived with Python, which never happened): the TypeScript
- * adapter parses via ts-morph behind the `SourceFileContext.ast` seam
- * (`src/engine/ts-ast.ts`); Java/C# tree-sitter parsing exists in
- * `src/engine/tree-sitter-ast.ts` but is async and NOT yet wired into the
- * synchronous scan pipeline (Verification Trust Evolution Plan defect
- * D1). Every other adapter is regex-over-text today.
+ * Parse-stage status (Verification Trust Evolution Plan Phase 0.5, §10):
+ * an async parse stage now sits between discovery and rule execution.
+ * The TypeScript adapter parses via ts-morph behind the
+ * `ParsedFile.ast` seam (`src/engine/ts-ast.ts`); Java/C# parse via the
+ * awaited `parseAst` hook backed by `src/engine/tree-sitter-ast.ts`
+ * (defect D1 closed — previously dead code). Python and GitHub Actions
+ * remain regex/YAML-over-text and declare no `parseAst`.
  */
 
 import type { Finding } from "../types.js";
@@ -36,6 +36,20 @@ export interface ParsedFile {
 export interface FrameworkInfo {
   frameworks: string[];
   unknown: boolean;
+}
+
+/**
+ * The result of the async parse stage (Verification Trust Evolution Plan
+ * Phase 0.5, §10): an AST plus its explicit disposal path. The scan
+ * pipeline calls `dispose()` exactly once per file, in a
+ * finally-equivalent position that runs whether or not rules completed —
+ * normal completion, rule crash, per-file budget expiry, or scan abort.
+ */
+export interface ParsedAst {
+  /** Consumed synchronously by rules via `ParsedFile.ast`. */
+  ast: unknown;
+  /** Release WASM/AST resources (`tree.delete()` for tree-sitter). */
+  dispose(): void;
 }
 
 export interface ScanContext {
@@ -74,6 +88,18 @@ export interface LanguageAdapter {
   isTestFile(path: string): boolean;
   detectFrameworks(root: string): FrameworkInfo;
   discoverTestFiles(ctx: ScanContext): void;
+  /**
+   * Async parse stage (Verification Trust Evolution Plan Phase 0.5, §10):
+   * awaited by the scan pipeline between discovery and rule execution.
+   * `runRules` and every rule stay synchronous and consume the produced
+   * tree via `ParsedFile.ast` — the engine is NOT async end-to-end, only
+   * this one seam is (WASM grammar load is inherently async).
+   *
+   * Contract: resolve to a ParsedAst on success, `undefined` when this
+   * adapter has no AST layer (or parsing failed — rules fall back to the
+   * regex path either way). Never throws.
+   */
+  parseAst?(file: ParsedFile): Promise<ParsedAst | undefined>;
   /**
    * Run all rules this adapter hosts against one file. `onCrash` is
    * invoked when a rule throws (audit R-9) — the crash is still

@@ -25,8 +25,8 @@ afterEach(() => {
 });
 
 describe("runScanCommand: partial-scan exit code (2)", () => {
-  it("an already-expired --max-duration reports the scan as partial", () => {
-    const code = runScanCommand([dir, "--max-duration", "0.001"], {
+  it("an already-expired --max-duration reports the scan as partial", async () => {
+    const code = await runScanCommand([dir, "--max-duration", "0.001"], {
       out: () => {},
       err: () => {},
     });
@@ -45,14 +45,12 @@ describe("runScanCommand: catch block around SARIF rendering", () => {
     const { runScanCommand: mockedRunScanCommand } =
       await import("../src/cli.js");
     const errs: string[] = [];
-    let code: number | undefined;
-    expect(() => {
-      code = mockedRunScanCommand([dir, "--format", "sarif"], {
+    await expect(
+      mockedRunScanCommand([dir, "--format", "sarif"], {
         out: () => {},
         err: (...a) => errs.push(a.map(String).join(" ")),
-      });
-    }).not.toThrow();
-    expect(code).toBe(20);
+      }),
+    ).resolves.toBe(20);
     expect(errs.join(" ")).toMatch(/internal error/i);
     vi.doUnmock("../src/reporter/sarif.js");
     vi.resetModules();

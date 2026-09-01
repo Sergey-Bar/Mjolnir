@@ -50,7 +50,7 @@ afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
 });
 
-function scan() {
+async function scan() {
   return runScan({
     target: dir,
     json: true,
@@ -62,16 +62,16 @@ function scan() {
 }
 
 describe("Finding.file path normalization", () => {
-  it("never contains a backslash, even on Windows", () => {
-    const result = scan();
+  it("never contains a backslash, even on Windows", async () => {
+    const result = await scan();
     expect(result.findings.length).toBeGreaterThan(0);
     for (const f of result.findings) {
       expect(f.file, `${f.file} contains a backslash`).not.toMatch(/\\/);
     }
   });
 
-  it("is repo-relative, not an absolute path", () => {
-    const result = scan();
+  it("is repo-relative, not an absolute path", async () => {
+    const result = await scan();
     for (const f of result.findings) {
       expect(f.file.startsWith("/")).toBe(false);
       expect(/^[A-Z]:/i.test(f.file)).toBe(false);
@@ -80,8 +80,8 @@ describe("Finding.file path normalization", () => {
 });
 
 describe("finding order is deterministically sorted, not incidental", () => {
-  it("real scan output is already sorted per compareFindings", () => {
-    const result = scan();
+  it("real scan output is already sorted per compareFindings", async () => {
+    const result = await scan();
     const sorted = [...result.findings].sort(compareFindings);
     expect(
       result.findings.map((f) => `${f.file}:${f.line}:${f.column}:${f.ruleId}`),
@@ -93,9 +93,9 @@ describe("finding order is deterministically sorted, not incidental", () => {
 });
 
 describe("scan determinism", () => {
-  it("scanning the same input twice produces byte-identical JSON (minus timing)", () => {
-    const a = scan();
-    const b = scan();
+  it("scanning the same input twice produces byte-identical JSON (minus timing)", async () => {
+    const a = await scan();
+    const b = await scan();
     // durationMs is legitimately non-deterministic wall-clock; strip it
     // before comparing everything else byte-for-byte.
     const strip = (r: typeof a) => ({

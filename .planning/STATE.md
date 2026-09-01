@@ -1328,6 +1328,66 @@ Executed "First Actions After Plan Approval" (§254) of
   load); passes isolated and under plain `npm test`. Not caused by this
   work; unchanged behavior.
 
+## Verification Trust Evolution — Phase 0.5 — async parse stage (2026-09-01)
+
+Executed plan §10 (`.kilo/plans/1788242693557-verification-trust-evolution-plan.md`)
+in BEHAVIOR-NEUTRAL mode (§06). Landed on top of commit `bc784c5` (Phase 0 +
+Phase 1 prep + D2 packaging + D4 headers).
+
+- **§10.1 — async parse stage, the one seam:** `runScan`'s per-file loop
+  awaits an optional `LanguageAdapter.parseAst` hook between discovery and
+  rule execution. `runRules` and every rule stay synchronous; trees reach
+  rules via `ParsedFile.ast`. `main()` awaits; the engine is NOT async
+  end-to-end. The per-file deadline is respected (`parseAst` is skipped once
+  `Date.now() > deadline`).
+- **§10.2 — parsers:** TS continues via ts-morph `parseTsFile` (unchanged);
+  Java/C# via `parseJavaAst`/`parseCSharpAst` (D1 closed — the Sprint 8
+  "dead code" is now the wired parse stage), one memoized `Parser` per
+  grammar, reused across files. Python and GitHub Actions declare no
+  `parseAst` (regex/YAML adapters).
+- **§10.3 — lifecycle:** per-file `ParsedAst.dispose()` (`tree.delete()`)
+  in the loop's `finally` — runs on normal completion, rule crash,
+  budget expiry, and adapter throw; fixed-size parse-slot semaphore
+  (`MAX_CONCURRENT_PARSES = 2`) bounds concurrent WASM parses;
+  `releaseTreeSitterResources()` tears down memoized parsers after each
+  scan. `disposeTree` is null-safe and never throws.
+- **§10.4 — D2 packaging:** landed in `bc784c5` (tree-sitter-wasms +
+  web-tree-sitter as runtime `dependencies`, pack-smoke extended). Re-proven
+  manually this session: `npm pack` → clean-install in a temp dir →
+  grammars + runtime resolvable in the installed tree → offline
+  `Language.load` + real parse of Java and C# source → offline
+  `npx mjolnir <java-fixture>` scan detecting QA-JV-102.
+- **§10.5 — pin:** `web-tree-sitter` stays at exactly `0.25.6`
+  (regression-locked by `tests/package-smoke.spec.ts`).
+- **§10.6 — D4:** header drift fixes landed in `bc784c5`; Phase 0.5 headers
+  restate the now-wired status honestly.
+- **Behavior-neutrality evidence:** no JV/CS rule reads `ctx.ast` yet
+  (Phase 3 wires targeted rules), so findings are provably unchanged;
+  golden lock 3/3 byte-identical; corpus count-lock unaffected (networked
+  job, no consumer of the AST); `docs/RULE-CAPABILITY-MATRIX.{md,json}` and
+  FP-AUDIT.md byte-identical to `bc784c5` (regenerated and diffed — empty);
+  demo/hero assets reproducibility specs green.
+- **Standing gate:** typecheck clean (both configs); lint + prettier clean;
+  `npm test` 4305 passed / 4 skipped (153 files, 0 failed); build succeeds;
+  scale/perf budget specs green. The suite's now-async `runScan`/
+  `runScanCommand`/`main`/impact/badge/debt/fix/baseline/diff/pr-comment/
+  handover call sites (~40, across 25 spec files) were awaited as part of
+  the change; the sync `expect(() => scan()).toThrow` config-validation
+  test became `await expect(scan()).rejects.toThrow` (same contract, async
+  throw). One-off codemod scripts used for the sweep were deleted, not
+  committed.
+- **Follow-up found (not fixed here, pre-existing):**
+  `scripts/generate-capability-matrix.ts` calls `main()` unconditionally at
+  module top level, so importing it from `tests/capability-matrix.spec.ts`
+  rewrites the generated docs during every test run (currently byte-identical
+  output, therefore harmless — but an `import.meta.url` main-module guard,
+  like `tests/corpus/audit.ts`'s, would make it honest).
+- **Exit gate (§10):** byte-identical locks ✓; published-package offline
+  grammar load ✓ (manual pack-install-scan evidence + pack-smoke spec);
+  perf within budget ✓ (scale-benchmark 2/2 green; parse skipped after
+  deadline). Phase 0.5 complete; next: Phase 1 measurement infrastructure
+  (D3 two-step tier fix, detectorRevision enforcement, ratchets).
+
 ## Conventions
 
 - User communicates in Hebrew; artifacts in English.

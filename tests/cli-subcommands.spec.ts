@@ -69,18 +69,18 @@ const PW_JSON = JSON.stringify({
 });
 
 describe("runFixCommand", () => {
-  it("returns usage error on bad args", () => {
+  it("returns usage error on bad args", async () => {
     const cap = capture();
-    expect(runFixCommand(["--nope"], cap.io)).toBe(10);
+    expect(await runFixCommand(["--nope"], cap.io)).toBe(10);
   });
 
-  it("applies a safe fix and exits 0", () => {
+  it("applies a safe fix and exits 0", async () => {
     writeFileSync(
       join(dir, "focused.test.ts"),
       "it.only('x', () => { expect(1).toBe(1); });\n",
     );
     const cap = capture();
-    const code = runFixCommand([dir], cap.io);
+    const code = await runFixCommand([dir], cap.io);
     expect(code).toBe(0);
     expect(cap.text()).toContain("Remove `.only`");
     expect(readFileSync(join(dir, "focused.test.ts"), "utf8")).not.toContain(
@@ -88,10 +88,10 @@ describe("runFixCommand", () => {
     );
   });
 
-  it("dry-run reports without writing", () => {
+  it("dry-run reports without writing", async () => {
     writeFileSync(join(dir, "f.test.ts"), "it.only('x', () => {});\n");
     const cap = capture();
-    const code = runFixCommand([dir, "--dry-run"], cap.io);
+    const code = await runFixCommand([dir, "--dry-run"], cap.io);
     // Audit R-6: a successful dry run is a plan, not a failure — exit 0.
     expect(code).toBe(0);
     expect(cap.text()).toContain("planned");
@@ -119,18 +119,18 @@ describe("runCreateRuleCommand", () => {
 });
 
 describe("runHandoverCommand", () => {
-  it("returns usage error on bad args", () => {
+  it("returns usage error on bad args", async () => {
     const cap = capture();
-    expect(runHandoverCommand(["--bogus"], cap.io)).toBe(10);
+    expect(await runHandoverCommand(["--bogus"], cap.io)).toBe(10);
   });
 
-  it("renders the handover map", () => {
+  it("renders the handover map", async () => {
     writeFileSync(
       join(dir, "a.test.ts"),
       "it('x', () => { expect(1).toBe(1); });\n",
     );
     const cap = capture();
-    expect(runHandoverCommand([dir], cap.io)).toBe(0);
+    expect(await runHandoverCommand([dir], cap.io)).toBe(0);
     expect(cap.text()).toContain("WELCOME TO THE TEST SUITE");
   });
 });
@@ -151,7 +151,7 @@ describe("runPwReportCommand", () => {
     expect(cap.errText()).toContain("Usage: mjolnir pw-report");
   });
 
-  it("summarizes a Playwright report and exits 0 for clean runs", () => {
+  it("summarizes a Playwright report and exits 0 for clean runs", async () => {
     writeFileSync(join(dir, "report.json"), PW_JSON);
     const cap = capture();
     // The single test is a TRUE-FLAKE → exit 1.
@@ -160,7 +160,7 @@ describe("runPwReportCommand", () => {
     expect(cap.text()).toContain("TRUE-FLAKE");
   });
 
-  it("returns 2 when no results recognized", () => {
+  it("returns 2 when no results recognized", async () => {
     const cap = capture();
     expect(runPwReportCommand([dir], cap.io)).toBe(2);
     expect(cap.errText()).toContain("No Playwright JSON report");
@@ -168,12 +168,12 @@ describe("runPwReportCommand", () => {
 });
 
 describe("main dispatch of new subcommands", () => {
-  it("routes fix / create-rule / handover / init / pw-report", () => {
+  it("routes fix / create-rule / handover / init / pw-report", async () => {
     process.chdir(dir);
-    expect(main(["fix", "--nope"])).toBe(10);
-    expect(main(["create-rule"])).toBe(10);
-    expect(main(["handover", "--bogus"])).toBe(10);
-    expect(main(["init"])).toBe(0);
-    expect(main(["pw-report"])).toBe(10);
+    expect(await main(["fix", "--nope"])).toBe(10);
+    expect(await main(["create-rule"])).toBe(10);
+    expect(await main(["handover", "--bogus"])).toBe(10);
+    expect(await main(["init"])).toBe(0);
+    expect(await main(["pw-report"])).toBe(10);
   });
 });

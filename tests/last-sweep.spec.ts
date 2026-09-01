@@ -207,7 +207,7 @@ describe("forensics listing edge", () => {
     expect(matcher.isIgnored("src/a.ts")).toBe(false);
   });
 
-  it("ignores a non-string plugin prefix without crashing", () => {
+  it("ignores a non-string plugin prefix without crashing", async () => {
     mkdirSync(join(dir, "prefix-plugin"), { recursive: true });
     writeFileSync(
       join(dir, "prefix-plugin", "package.json"),
@@ -224,7 +224,7 @@ describe("forensics listing edge", () => {
       }),
     );
     const out: string[] = [];
-    runScanCommand([dir, "--json"], {
+    await runScanCommand([dir, "--json"], {
       out: (...p: unknown[]) => out.push(p.map(String).join(" ")),
       err: () => {},
     });
@@ -234,7 +234,7 @@ describe("forensics listing edge", () => {
     expect(result.plugins).toEqual([{ name: "./prefix-plugin", rules: 0 }]);
   });
 
-  it("surfaces a plugin that throws a non-Error at import", () => {
+  it("surfaces a plugin that throws a non-Error at import", async () => {
     mkdirSync(join(dir, "boom-plugin"), { recursive: true });
     writeFileSync(
       join(dir, "boom-plugin", "package.json"),
@@ -251,7 +251,7 @@ describe("forensics listing edge", () => {
       "it('a', () => { expect(1 + 1).toBe(2); });\n",
     );
     const out: string[] = [];
-    runScanCommand([dir, "--json"], {
+    await runScanCommand([dir, "--json"], {
       out: (...p: unknown[]) => out.push(p.map(String).join(" ")),
       err: () => {},
     });

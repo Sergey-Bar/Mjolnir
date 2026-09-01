@@ -106,26 +106,26 @@ describe("runTriageCommand", () => {
 });
 
 describe("runBadgeCommand", () => {
-  it("returns usage error on bad args", () => {
+  it("returns usage error on bad args", async () => {
     const cap = capture();
-    expect(runBadgeCommand(["--bogus"], cap.io)).toBe(10);
+    expect(await runBadgeCommand(["--bogus"], cap.io)).toBe(10);
   });
 
-  it("writes badge json and prints snippet", () => {
+  it("writes badge json and prints snippet", async () => {
     process.chdir(dir);
     writeFileSync(
       join(dir, "sample.test.ts"),
       "it('x', () => { expect(1).toBe(1); });\n",
     );
     const cap = capture();
-    const code = runBadgeCommand([dir], cap.io);
+    const code = await runBadgeCommand([dir], cap.io);
     expect(code).toBe(0);
     expect(existsSync(join(dir, "mjolnir-badge.json"))).toBe(true);
     expect(cap.text()).toContain("Wrote");
     expect(cap.text()).toContain("img.shields.io");
   });
 
-  it("returns 20 when badge write fails (cwd unwritable)", () => {
+  it("returns 20 when badge write fails (cwd unwritable)", async () => {
     const cap = capture();
     // writeBadge writes into process.cwd(); chdir into a path that cannot
     // hold mjolnir-badge.json (a FILE) to force the catch path.
@@ -136,7 +136,7 @@ describe("runBadgeCommand", () => {
     mkdirSync(join(blockerDir, "mjolnir-badge.json"), { recursive: true });
     process.chdir(blockerDir);
     try {
-      expect(runBadgeCommand([dir], cap.io)).toBe(20);
+      expect(await runBadgeCommand([dir], cap.io)).toBe(20);
       expect(cap.errText()).toContain("internal error");
     } finally {
       process.chdir(origCwd);
@@ -145,51 +145,51 @@ describe("runBadgeCommand", () => {
 });
 
 describe("runDebtCommand", () => {
-  it("returns usage error on bad args", () => {
+  it("returns usage error on bad args", async () => {
     const cap = capture();
-    expect(runDebtCommand(["--nope"], cap.io)).toBe(10);
+    expect(await runDebtCommand(["--nope"], cap.io)).toBe(10);
   });
 
-  it("renders the debt register", () => {
+  it("renders the debt register", async () => {
     writeFileSync(
       join(dir, "a.test.ts"),
       "it('x', () => { expect(1).toBe(1); });\n",
     );
     const cap = capture();
-    expect(runDebtCommand([dir], cap.io)).toBe(0);
+    expect(await runDebtCommand([dir], cap.io)).toBe(0);
     expect(cap.text()).toContain("TEST DEBT REGISTER");
   });
 });
 
 describe("main dispatch of new subcommands", () => {
-  it("routes triage / badge / debt", () => {
+  it("routes triage / badge / debt", async () => {
     process.chdir(dir);
-    expect(main(["triage"])).toBe(10); // no target
-    expect(main(["badge", "--bogus"])).toBe(10);
-    expect(main(["debt", "--nope"])).toBe(10);
+    expect(await main(["triage"])).toBe(10); // no target
+    expect(await main(["badge", "--bogus"])).toBe(10);
+    expect(await main(["debt", "--nope"])).toBe(10);
   });
 });
 
 describe("runScan option paths", () => {
-  it("marks partial and counts skipped files when a test file vanishes", () => {
+  it("marks partial and counts skipped files when a test file vanishes", async () => {
     writeFileSync(join(dir, "keep.test.ts"), "");
     const args = parseArgs([dir]);
     if (!args) throw new Error("parseArgs failed");
-    const result = runScan({ ...args, target: dir });
+    const result = await runScan({ ...args, target: dir });
     expect(result.partial).toBe(false);
     void result;
   });
 
-  it("reports scope info with --scope changed (degraded outside git)", () => {
+  it("reports scope info with --scope changed (degraded outside git)", async () => {
     writeFileSync(join(dir, "a.test.ts"), "it('x');\n");
     const args = parseArgs([dir, "--scope", "changed"]);
     if (!args) throw new Error("parseArgs failed");
-    const result = runScan({ ...args, target: dir });
+    const result = await runScan({ ...args, target: dir });
     expect(result.scope).toBe("changed");
     expect(result.scopeDegraded).toBe("not-a-git-repo");
   });
 
-  it("carries ALL findings in JSON/SARIF (no silent truncation)", () => {
+  it("carries ALL findings in JSON/SARIF (no silent truncation)", async () => {
     // A repo with many focused-test violations. The contract change:
     // JSON/SARIF always carry the full finding set — only terminal
     // display is capped (with an honest "+N more" count).
@@ -200,16 +200,16 @@ describe("runScan option paths", () => {
     writeFileSync(join(dir, "many.test.ts"), lines.join(""));
     const plainArgs = parseArgs([dir]);
     if (!plainArgs) throw new Error("parseArgs failed");
-    const plain = runScan({ ...plainArgs, target: dir });
+    const plain = await runScan({ ...plainArgs, target: dir });
     expect(plain.findings.length).toBeGreaterThan(50);
   });
 
-  it("falls back to target-as-workspace without package.json", () => {
+  it("falls back to target-as-workspace without package.json", async () => {
     mkdirSync(join(dir, "py"), { recursive: true });
     writeFileSync(join(dir, "py", "test_x.py"), "def test_x():\n    pass\n");
     const pyArgs = parseArgs([dir]);
     if (!pyArgs) throw new Error("parseArgs failed");
-    const result = runScan({ ...pyArgs, target: dir });
+    const result = await runScan({ ...pyArgs, target: dir });
     expect(result.frameworkDetectionUnknown).toBe(true);
   });
 });

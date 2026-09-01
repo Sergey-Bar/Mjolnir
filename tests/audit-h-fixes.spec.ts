@@ -87,8 +87,8 @@ describe("H-1: quarantine findings are capped to info/E0 and never gate", () => 
     );
   });
 
-  it("strict scan caps quarantine findings to severity=info, evidence=E0", () => {
-    const result = runScan(scanArgs(dir, { strict: true }));
+  it("strict scan caps quarantine findings to severity=info, evidence=E0", async () => {
+    const result = await runScan(scanArgs(dir, { strict: true }));
     const quarantine = result.findings.filter((f) =>
       ["QA-PY-003", "QA-PY-006"].includes(f.ruleId),
     );
@@ -100,16 +100,16 @@ describe("H-1: quarantine findings are capped to info/E0 and never gate", () => 
     }
   });
 
-  it("the audit's repro now exits 0 instead of gating on a 100%-FP rule", () => {
-    const code = runScanCommand([dir, "--strict", "--json"], {
+  it("the audit's repro now exits 0 instead of gating on a 100%-FP rule", async () => {
+    const code = await runScanCommand([dir, "--strict", "--json"], {
       out: () => {},
       err: () => {},
     });
     expect(code).toBe(0);
   });
 
-  it("quarantine rules stay excluded from a default (non-strict) scan", () => {
-    const result = runScan(scanArgs(dir));
+  it("quarantine rules stay excluded from a default (non-strict) scan", async () => {
+    const result = await runScan(scanArgs(dir));
     expect(
       result.findings.filter((f) =>
         ["QA-PY-003", "QA-PY-006"].includes(f.ruleId),
@@ -121,7 +121,7 @@ describe("H-1: quarantine findings are capped to info/E0 and never gate", () => 
 // ─── H-3: the deadline bounds the rule loop; status is honest ─────────
 
 describe("H-3: --max-duration honours the budget in the rule loop", () => {
-  it("the rule loop checks the deadline per file and counts unscanned files", () => {
+  it("the rule loop checks the deadline per file and counts unscanned files", async () => {
     for (let i = 0; i < 150; i++) {
       writeFileSync(join(dir, `a${i}.spec.ts`), "it('a', () => {});\n");
     }
@@ -135,7 +135,7 @@ describe("H-3: --max-duration honours the budget in the rule loop", () => {
       calls++;
       return calls <= 5 ? realNow : realNow + 60_000;
     });
-    const result = runScan(scanArgs(dir, { maxDurationMs: 1000 }));
+    const result = await runScan(scanArgs(dir, { maxDurationMs: 1000 }));
     expect(result.analysisStatus.rules).toBe("partial");
     expect(result.analysisStatus.discovery).toBe("complete");
     expect(result.partial).toBe(true);
@@ -145,9 +145,9 @@ describe("H-3: --max-duration honours the budget in the rule loop", () => {
     );
   });
 
-  it("a finished scan reports complete/complete with no truncation reasons", () => {
+  it("a finished scan reports complete/complete with no truncation reasons", async () => {
     writeFileSync(join(dir, "a.spec.ts"), "it('a', () => {});\n");
-    const result = runScan(scanArgs(dir));
+    const result = await runScan(scanArgs(dir));
     expect(result.analysisStatus.discovery).toBe("complete");
     expect(result.analysisStatus.rules).toBe("complete");
     expect(result.analysisStatus.truncationReasons).toBeUndefined();
@@ -169,24 +169,24 @@ describe("H-7: config.gate drives the exit code", () => {
   const writeConfig = (cfg: Record<string, unknown>) =>
     writeFileSync(join(dir, "mjolnir.config.json"), JSON.stringify(cfg));
 
-  const scan = () =>
+  const scan = async () =>
     runScanCommand([dir, "--json"], { out: () => {}, err: () => {} });
 
-  it("no config → default gate error → an error finding exits 1", () => {
-    expect(scan()).toBe(1);
+  it("no config → default gate error → an error finding exits 1", async () => {
+    expect(await scan()).toBe(1);
   });
 
-  it("gate advisory → findings reported, exit 0", () => {
+  it("gate advisory → findings reported, exit 0", async () => {
     writeConfig({ gate: "advisory" });
-    expect(scan()).toBe(0);
+    expect(await scan()).toBe(0);
   });
 
-  it("gate error → an error finding exits 1", () => {
+  it("gate error → an error finding exits 1", async () => {
     writeConfig({ gate: "error" });
-    expect(scan()).toBe(1);
+    expect(await scan()).toBe(1);
   });
 
-  it("gate warning → downgraded-to-warning findings gate", () => {
+  it("gate warning → downgraded-to-warning findings gate", async () => {
     writeConfig({
       gate: "warning",
       severityOverrides: {
@@ -194,10 +194,10 @@ describe("H-7: config.gate drives the exit code", () => {
         "QA-TQUAL-002": "warning",
       },
     });
-    expect(scan()).toBe(1);
+    expect(await scan()).toBe(1);
   });
 
-  it("gate error → warning-severity findings do not gate", () => {
+  it("gate error → warning-severity findings do not gate", async () => {
     writeConfig({
       gate: "error",
       severityOverrides: {
@@ -205,7 +205,7 @@ describe("H-7: config.gate drives the exit code", () => {
         "QA-TQUAL-002": "warning",
       },
     });
-    expect(scan()).toBe(0);
+    expect(await scan()).toBe(0);
   });
 
   it("exitForFindings: E0/advisory findings never gate at any level", () => {

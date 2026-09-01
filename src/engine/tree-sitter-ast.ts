@@ -28,32 +28,28 @@
  * the first real tree-sitter consumer in this codebase for any
  * language, not a port of an existing pattern.
  *
- * Grammars (tree-sitter-java.wasm, tree-sitter-c_sharp.wasm) are
- * already present in the existing tree-sitter-wasms dependency —
- * verified present on disk during Sprint 8's idiom-mapping spike
- * (docs/JAVA-CSHARP-IDIOM-MAPPING.md), no new dependency needed.
+ * GRAMMAR-LIFECYCLE CONTRACT (Verification Trust Evolution Plan Phase 0.5,
+ * §10.2–10.3): as of the Phase 0.5 parse stage this module IS wired into
+ * the scan pipeline — the file loop awaits `parseJavaAst`/`parseCSharpAst`
+ * and rules receive the tree via `ParsedFile.ast` (defect D1 closed). The
+ * contract that made the earlier "unwired" caveat honest still binds:
  *
- * ARCHITECTURAL CONSTRAINT, stated honestly rather than worked around:
- * `web-tree-sitter`'s `Parser.init()` and `Language.load()` are BOTH
- * async (WASM instantiation), but this repo's entire scan pipeline
- * (`main()` → `runScan()` → every `LanguageAdapter.runRules()` → every
- * rule's `run()`) is synchronous end-to-end, with zero prior async
- * precedent anywhere in the codebase — contrary to what the two stale
- * comments above implied. This module exposes a fully-tested,
- * standalone, ASYNC parse-or-fallback API (`parseJavaAst`,
- * `parseCSharpAst`) that mirrors ts-ast.ts's fallback discipline
- * (returns `undefined` on any failure — malformed source, WASM load
- * failure, anything — never throws, so a caller can always fall back
- * to the regex path). Wiring this into the synchronous CLI pipeline
- * would require converting `main()`/`runScan()`/every adapter's
- * `runRules()` to async — a real, invasive architecture change touching
- * every existing rule and, transitively, the golden lock across every
- * language. That conversion is deliberately NOT done in this sprint:
- * it is a correctness-neutral, high-blast-radius change that deserves
- * its own reviewed, standalone piece of work, not something to rush
- * inside an already-large sprint. This module is complete, tested, and
- * ready for that follow-up to consume — the seam
- * (`ParsedFile.ast?: unknown`) it plugs into already exists.
+ * 1. Parse-or-fallback: `parseJavaAst`/`parseCSharpAst` return `undefined`
+ *    on ANY failure (missing grammar file, WASM load failure, parser
+ *    rejecting the input) — never throw — so the pipeline can always fall
+ *    back to the regex path, exactly like ts-ast.ts's `parseTsFile`
+ *    contract.
+ * 2. One parser per language: a `Parser` is memoized per grammar and
+ *    reused across files (§10.2); per-file trees are independent objects.
+ * 3. Bounded concurrency: parses are serialized through a fixed-size slot
+ *    semaphore (`MAX_CONCURRENT_PARSES`, §10.3) so a future parallel
+ *    driver cannot fan out unbounded WASM parse memory.
+ * 4. Explicit disposal: every parsed tree MUST be released via
+ *    `disposeTree` (a `tree.delete()` call) in a finally-equivalent path
+ *    that does not depend on rules completing successfully — the scan
+ *    pipeline owns that path; this module only supplies the helper.
+ *    `releaseTreeSitterResources` tears down the memoized parsers
+ *    (process teardown / post-scan cleanup).
  */
 
 import { existsSync } from "node:fs";
@@ -62,8 +58,33 @@ import { fileURLToPath } from "node:url";
 import { Parser, Language, type Tree } from "web-tree-sitter";
 
 let parserInitPromise: Promise<void> | null = null;
-let javaLanguagePromise: Promise<Language> | null = null;
-let csharpLanguagePromise: Promise<Language> | null = null;
+let javaParserPromise: Promise<Parser> | null = null;
+let csharpParserPromise: Promise<Parser> | null = null;
+
+/**
+ * §10.3 concurrency cap. The current pipeline parses files sequentially
+ * (one parse in flight), so this only binds when a future driver —
+ * parallel pre-parsing, plugin scan, library consumer — fans out; the
+ * cap exists so that path cannot allocate unbounded WASM parse memory.
+ */
+export const MAX_CONCURRENT_PARSES = 2;
+
+let activeParses = 0;
+const parseWaiters: Array<() => void> = [];
+
+async function withParseSlot<T>(fn: () => Promise<T>): Promise<T> {
+  if (activeParses >= MAX_CONCURRENT_PARSES) {
+    await new Promise<void>((resolve) => parseWaiters.push(resolve));
+  }
+  activeParses++;
+  try {
+    return await fn();
+  } finally {
+    activeParses--;
+    const next = parseWaiters.shift();
+    if (next) next();
+  }
+}
 
 function grammarPath(fileName: string): string {
   // Resolve relative to this module's own location so it works whether
@@ -96,18 +117,28 @@ async function ensureParserInitialized(): Promise<void> {
   await parserInitPromise;
 }
 
-async function loadJavaLanguage(): Promise<Language> {
+async function getJavaParser(): Promise<Parser> {
   await ensureParserInitialized();
-  javaLanguagePromise ??= Language.load(grammarPath("tree-sitter-java.wasm"));
-  return javaLanguagePromise;
+  javaParserPromise ??= (async () => {
+    const language = await Language.load(grammarPath("tree-sitter-java.wasm"));
+    const parser = new Parser();
+    parser.setLanguage(language);
+    return parser;
+  })();
+  return javaParserPromise;
 }
 
-async function loadCSharpLanguage(): Promise<Language> {
+async function getCSharpParser(): Promise<Parser> {
   await ensureParserInitialized();
-  csharpLanguagePromise ??= Language.load(
-    grammarPath("tree-sitter-c_sharp.wasm"),
-  );
-  return csharpLanguagePromise;
+  csharpParserPromise ??= (async () => {
+    const language = await Language.load(
+      grammarPath("tree-sitter-c_sharp.wasm"),
+    );
+    const parser = new Parser();
+    parser.setLanguage(language);
+    return parser;
+  })();
+  return csharpParserPromise;
 }
 
 /**
@@ -118,11 +149,10 @@ async function loadCSharpLanguage(): Promise<Language> {
  */
 export async function parseJavaAst(text: string): Promise<Tree | undefined> {
   try {
-    const language = await loadJavaLanguage();
-    const parser = new Parser();
-    parser.setLanguage(language);
-    const tree = parser.parse(text);
-    return tree ?? undefined;
+    return await withParseSlot(async () => {
+      const parser = await getJavaParser();
+      return parser.parse(text) ?? undefined;
+    });
   } catch {
     return undefined;
   }
@@ -134,13 +164,49 @@ export async function parseJavaAst(text: string): Promise<Tree | undefined> {
  */
 export async function parseCSharpAst(text: string): Promise<Tree | undefined> {
   try {
-    const language = await loadCSharpLanguage();
-    const parser = new Parser();
-    parser.setLanguage(language);
-    const tree = parser.parse(text);
-    return tree ?? undefined;
+    return await withParseSlot(async () => {
+      const parser = await getCSharpParser();
+      return parser.parse(text) ?? undefined;
+    });
   } catch {
     return undefined;
+  }
+}
+
+/**
+ * Releases a parsed tree's WASM memory (`tree.delete()`, §10.3). Safe to
+ * call on anything — non-trees, already-deleted trees, null — so the
+ * pipeline's finally-path can never turn a cleanup into a crash.
+ */
+export function disposeTree(tree: unknown): void {
+  const t = tree as { delete?: unknown } | null | undefined;
+  if (t && typeof t.delete === "function") {
+    try {
+      t.delete.call(t);
+    } catch {
+      /* already freed — cleanup must never throw */
+    }
+  }
+}
+
+/**
+ * Tears down the memoized per-language parsers (§10.3 "parser disposal …
+ * process teardown"). Idempotent; safe on partially-initialized state
+ * (a failed WASM load resolves to nothing and is skipped). The next
+ * parse after this re-creates the parser from scratch.
+ */
+export async function releaseTreeSitterResources(): Promise<void> {
+  const parsers = [javaParserPromise, csharpParserPromise];
+  javaParserPromise = null;
+  csharpParserPromise = null;
+  for (const p of parsers) {
+    if (!p) continue;
+    try {
+      const parser = await p;
+      parser.delete();
+    } catch {
+      /* grammar never loaded — nothing to free */
+    }
   }
 }
 
@@ -151,6 +217,6 @@ export async function parseCSharpAst(text: string): Promise<Tree | undefined> {
  */
 export function _resetForTests(): void {
   parserInitPromise = null;
-  javaLanguagePromise = null;
-  csharpLanguagePromise = null;
+  javaParserPromise = null;
+  csharpParserPromise = null;
 }

@@ -105,14 +105,14 @@ describe("every `mjolnir` command in the README actually runs", () => {
   });
 
   for (const cmdline of commands) {
-    it(`"mjolnir ${cmdline}" does not hit a usage error or crash`, () => {
+    it(`"mjolnir ${cmdline}" does not hit a usage error or crash`, async () => {
       const argv = cmdline.split(/\s+/).filter(Boolean);
       // `./test-results/` doesn't exist in the fixture — that's fine,
       // those commands document their own "no report found" exit (2).
-      let code: number | undefined;
-      expect(() => {
-        code = main(argv);
-      }).not.toThrow();
+      // Since the Phase 0.5 async parse stage main() dispatches to async
+      // handlers; a crash surfaces as a rejected promise, which the
+      // await propagates.
+      const code = await main(argv);
       expect(
         code,
         `"mjolnir ${cmdline}" returned exit 10 (usage error) — the ` +

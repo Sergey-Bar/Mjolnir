@@ -2,13 +2,12 @@
  * Java/JUnit adapter (Upgrade-Plan-v3 Phase 4).
  *
  * Regex-layer adapter: rules run over the file text (and the masked
- * code-text view), same discipline as the Python adapter. An earlier
- * header here claimed tree-sitter usage — that was never true for this
- * adapter. The tree-sitter-java WASM grammar ships in the dependency set
- * and `src/engine/tree-sitter-ast.ts` exposes an async `parseJavaAst`
- * seam, but it is not yet wired into the synchronous scan pipeline
- * (Verification Trust Evolution Plan defect D1, Phase 0.5 wires the
- * parse stage).
+ * code-text view). Since Verification Trust Evolution Phase 0.5 (§10)
+ * the adapter also implements the async `parseAst` hook — the file loop
+ * awaits `parseJavaAst` (tree-sitter WASM) and hands the tree to rules
+ * via `ParsedFile.ast`; rules stay synchronous. Parse failure or a
+ * missing grammar resolves `undefined` and rules fall back to the regex
+ * path — never fatal.
  *
  * Test discovery: src/test/java/**\/*Test.java, *Tests.java, *IT.java
  * (Maven/Gradle conventions).
@@ -22,9 +21,12 @@ import { join } from "node:path";
 
 import { sharedWalk } from "../discovery/shared-walk.js";
 import { computeCodeText } from "../engine/code-text.js";
+import { parseJavaAst } from "../engine/tree-sitter-ast.js";
 import type {
   FrameworkInfo,
   LanguageAdapter,
+  ParsedAst,
+  ParsedFile,
   ScanContext,
 } from "../engine/adapter.js";
 
@@ -84,6 +86,12 @@ export const javaAdapter: LanguageAdapter = {
       isFull: () => ctx.testFiles.length >= ctx.maxFiles,
       fixtureDirMemo: new Map(),
     });
+  },
+
+  async parseAst(file: ParsedFile): Promise<ParsedAst | undefined> {
+    const tree = await parseJavaAst(file.text);
+    if (!tree) return undefined;
+    return { ast: tree, dispose: () => tree.delete() };
   },
 
   runRules(rules, file, emit, onCrash, budget) {

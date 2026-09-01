@@ -48,9 +48,9 @@ afterAll(() => {
 describe(`scanning a synthetic ${FILE_COUNT}-file repo`, () => {
   it(
     `completes within the time budget (${TIME_BUDGET_MS}ms)`,
-    () => {
+    async () => {
       const start = performance.now();
-      const result = runScan({
+      const result = await runScan({
         target: dir,
         json: true,
         verbose: true,
@@ -89,7 +89,7 @@ describe(`scanning a synthetic ${FILE_COUNT}-file repo`, () => {
 
   it(
     "wall-clock time scales roughly linearly, not quadratically, with file count",
-    () => {
+    async () => {
       // Compare a 10% slice against the full set. Quadratic behavior
       // (e.g. re-listing the whole tree per file) shows up as the full
       // set taking dramatically more than 10x the slice's time; linear
@@ -106,7 +106,7 @@ describe(`scanning a synthetic ${FILE_COUNT}-file repo`, () => {
         }
 
         const t0 = performance.now();
-        runScan({
+        await runScan({
           target: smallDir,
           json: true,
           verbose: false,
@@ -117,7 +117,7 @@ describe(`scanning a synthetic ${FILE_COUNT}-file repo`, () => {
         const smallElapsed = performance.now() - t0;
 
         const t1 = performance.now();
-        runScan({
+        await runScan({
           target: dir,
           json: true,
           verbose: false,

@@ -202,24 +202,24 @@ describe("exit-20 mapping: Error payload carries the message", () => {
     expect(cap.errText()).toContain("boom-err");
   });
 
-  it("badge", () => {
+  it("badge", async () => {
     throwOnce(writeBadge, ERR);
     const cap = capture();
-    expect(runBadgeCommand([dir], cap.io)).toBe(20);
+    expect(await runBadgeCommand([dir], cap.io)).toBe(20);
     expect(cap.errText()).toContain("boom-err");
   });
 
-  it("debt", () => {
+  it("debt", async () => {
     throwOnce(renderDebt, ERR);
     const cap = capture();
-    expect(runDebtCommand([dir], cap.io)).toBe(20);
+    expect(await runDebtCommand([dir], cap.io)).toBe(20);
     expect(cap.errText()).toContain("boom-err");
   });
 
-  it("fix", () => {
+  it("fix", async () => {
     throwOnce(planAndApplyFixes, ERR);
     const cap = capture();
-    expect(runFixCommand([dir], cap.io)).toBe(20);
+    expect(await runFixCommand([dir], cap.io)).toBe(20);
     expect(cap.errText()).toContain("boom-err");
   });
 
@@ -232,31 +232,31 @@ describe("exit-20 mapping: Error payload carries the message", () => {
     expect(cap.errText()).toContain("boom-err");
   });
 
-  it("impact", () => {
+  it("impact", async () => {
     throwOnce(computeImpact, ERR);
     const cap = capture();
-    expect(runImpactCommand([dir], cap.io)).toBe(20);
+    expect(await runImpactCommand([dir], cap.io)).toBe(20);
     expect(cap.errText()).toContain("boom-err");
   });
 
-  it("baseline", () => {
+  it("baseline", async () => {
     throwOnce(saveBaseline, ERR);
     const cap = capture();
-    expect(runBaselineCommand([dir], cap.io)).toBe(20);
+    expect(await runBaselineCommand([dir], cap.io)).toBe(20);
     expect(cap.errText()).toContain("boom-err");
   });
 
-  it("diff", () => {
+  it("diff", async () => {
     throwOnce(renderBaselineDiff, ERR);
     const cap = capture();
-    expect(runDiffCommand([dir], cap.io)).toBe(20);
+    expect(await runDiffCommand([dir], cap.io)).toBe(20);
     expect(cap.errText()).toContain("boom-err");
   });
 
-  it("pr-comment", () => {
+  it("pr-comment", async () => {
     throwOnce(renderPrComment, ERR);
     const cap = capture();
-    expect(runPrCommentCommand([dir], cap.io)).toBe(20);
+    expect(await runPrCommentCommand([dir], cap.io)).toBe(20);
     expect(cap.errText()).toContain("boom-err");
   });
 
@@ -267,10 +267,10 @@ describe("exit-20 mapping: Error payload carries the message", () => {
     expect(cap.errText()).toContain("boom-err");
   });
 
-  it("handover", () => {
+  it("handover", async () => {
     throwOnce(renderHandover, ERR);
     const cap = capture();
-    expect(runHandoverCommand([dir], cap.io)).toBe(20);
+    expect(await runHandoverCommand([dir], cap.io)).toBe(20);
     expect(cap.errText()).toContain("boom-err");
   });
 
@@ -318,24 +318,24 @@ describe("exit-20 mapping: non-Error throwables render via String()", () => {
     expect(cap.errText()).toContain("boom-str");
   });
 
-  it("badge", () => {
+  it("badge", async () => {
     throwOnce(writeBadge, STR);
     const cap = capture();
-    expect(runBadgeCommand([dir], cap.io)).toBe(20);
+    expect(await runBadgeCommand([dir], cap.io)).toBe(20);
     expect(cap.errText()).toContain("boom-str");
   });
 
-  it("debt", () => {
+  it("debt", async () => {
     throwOnce(renderDebt, STR);
     const cap = capture();
-    expect(runDebtCommand([dir], cap.io)).toBe(20);
+    expect(await runDebtCommand([dir], cap.io)).toBe(20);
     expect(cap.errText()).toContain("boom-str");
   });
 
-  it("fix", () => {
+  it("fix", async () => {
     throwOnce(planAndApplyFixes, STR);
     const cap = capture();
-    expect(runFixCommand([dir], cap.io)).toBe(20);
+    expect(await runFixCommand([dir], cap.io)).toBe(20);
     expect(cap.errText()).toContain("boom-str");
   });
 
@@ -348,31 +348,31 @@ describe("exit-20 mapping: non-Error throwables render via String()", () => {
     expect(cap.errText()).toContain("boom-str");
   });
 
-  it("impact", () => {
+  it("impact", async () => {
     throwOnce(computeImpact, STR);
     const cap = capture();
-    expect(runImpactCommand([dir], cap.io)).toBe(20);
+    expect(await runImpactCommand([dir], cap.io)).toBe(20);
     expect(cap.errText()).toContain("boom-str");
   });
 
-  it("baseline", () => {
+  it("baseline", async () => {
     throwOnce(saveBaseline, STR);
     const cap = capture();
-    expect(runBaselineCommand([dir], cap.io)).toBe(20);
+    expect(await runBaselineCommand([dir], cap.io)).toBe(20);
     expect(cap.errText()).toContain("boom-str");
   });
 
-  it("diff", () => {
+  it("diff", async () => {
     throwOnce(renderBaselineDiff, STR);
     const cap = capture();
-    expect(runDiffCommand([dir], cap.io)).toBe(20);
+    expect(await runDiffCommand([dir], cap.io)).toBe(20);
     expect(cap.errText()).toContain("boom-str");
   });
 
-  it("pr-comment", () => {
+  it("pr-comment", async () => {
     throwOnce(renderPrComment, STR);
     const cap = capture();
-    expect(runPrCommentCommand([dir], cap.io)).toBe(20);
+    expect(await runPrCommentCommand([dir], cap.io)).toBe(20);
     expect(cap.errText()).toContain("boom-str");
   });
 
@@ -383,10 +383,10 @@ describe("exit-20 mapping: non-Error throwables render via String()", () => {
     expect(cap.errText()).toContain("boom-str");
   });
 
-  it("handover", () => {
+  it("handover", async () => {
     throwOnce(renderHandover, STR);
     const cap = capture();
-    expect(runHandoverCommand([dir], cap.io)).toBe(20);
+    expect(await runHandoverCommand([dir], cap.io)).toBe(20);
     expect(cap.errText()).toContain("boom-str");
   });
 
@@ -405,10 +405,10 @@ describe("unknown config errors propagate (exit-20 path stays honest)", () => {
     expect(() => runSuppressions({ out: () => {} })).toThrow("boom-err");
   });
 
-  it("scan maps a generic non-Error config failure to exit 20", () => {
+  it("scan maps a generic non-Error config failure to exit 20", async () => {
     throwOnce(loadConfig, STR);
     const cap = capture();
-    expect(runScanCommand([dir, "--json"], cap.io)).toBe(20);
+    expect(await runScanCommand([dir, "--json"], cap.io)).toBe(20);
     expect(cap.errText()).toContain("boom-str");
   });
 });

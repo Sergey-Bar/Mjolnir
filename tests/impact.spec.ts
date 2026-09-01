@@ -93,12 +93,12 @@ function makeFixtureRepo(): string {
 }
 
 describe("computeImpact — reports UNKNOWN when data is absent (the most important test)", () => {
-  it("reports hasComparison:false with an honest reason when the target is not a git repo", () => {
+  it("reports hasComparison:false with an honest reason when the target is not a git repo", async () => {
     const dir = mkdtempSync(join(tmpdir(), "mjolnir-impact-nogit-"));
     repoDirs.push(dir);
     writeSpec(dir, "a.spec.ts", "test('x', () => {});\n");
 
-    const report = computeImpact(dir, {
+    const report = await computeImpact(dir, {
       runScan: (target) => runScan({ target } as never),
     });
 
@@ -112,7 +112,7 @@ describe("computeImpact — reports UNKNOWN when data is absent (the most import
     expect(report.unknownFacts.length).toBeGreaterThan(0);
   });
 
-  it("reports hasComparison:false with an honest reason for a repo with a single commit (no prior history)", () => {
+  it("reports hasComparison:false with an honest reason for a repo with a single commit (no prior history)", async () => {
     const dir = mkdtempSync(join(tmpdir(), "mjolnir-impact-onecommit-"));
     repoDirs.push(dir);
     git(dir, ["init", "-q", "-b", "main"]);
@@ -122,7 +122,7 @@ describe("computeImpact — reports UNKNOWN when data is absent (the most import
     git(dir, ["add", "-A"]);
     git(dir, ["commit", "-q", "-m", "only commit"]);
 
-    const report = computeImpact(dir, {
+    const report = await computeImpact(dir, {
       runScan: (target) => runScan({ target } as never),
     });
 
@@ -130,9 +130,9 @@ describe("computeImpact — reports UNKNOWN when data is absent (the most import
     expect(report.unknownReason).toBe("no-prior-commit");
   });
 
-  it("never invents an hours/CI-minutes-saved number, in any scenario", () => {
+  it("never invents an hours/CI-minutes-saved number, in any scenario", async () => {
     const dir = makeFixtureRepo();
-    const report = computeImpact(dir, {
+    const report = await computeImpact(dir, {
       runScan: (target) => runScan({ target } as never),
     });
     const joined = report.unknownFacts.join(" ").toLowerCase();
@@ -140,9 +140,9 @@ describe("computeImpact — reports UNKNOWN when data is absent (the most import
     expect(joined).not.toMatch(/\d+\s*(hours?|minutes?)\s*saved/);
   });
 
-  it("renderImpact always prefixes unknown facts with UNKNOWN: literally, in every scenario", () => {
+  it("renderImpact always prefixes unknown facts with UNKNOWN: literally, in every scenario", async () => {
     const dir = makeFixtureRepo();
-    const report = computeImpact(dir, {
+    const report = await computeImpact(dir, {
       runScan: (target) => runScan({ target } as never),
     });
     const rendered = renderImpact(report);
@@ -151,9 +151,9 @@ describe("computeImpact — reports UNKNOWN when data is absent (the most import
 });
 
 describe("computeImpact — real comparison against a fixture git history", () => {
-  it("finds the resolved hard-sleep finding and the newly introduced focused-test finding", () => {
+  it("finds the resolved hard-sleep finding and the newly introduced focused-test finding", async () => {
     const dir = makeFixtureRepo();
-    const report = computeImpact(dir, {
+    const report = await computeImpact(dir, {
       runScan: (target) => runScan({ target } as never),
     });
 
@@ -168,19 +168,19 @@ describe("computeImpact — real comparison against a fixture git history", () =
     expect(introducedIds).toContain("QA-TEST-001"); // focused test, added
   });
 
-  it("is deterministic across repeated runs against the same history", () => {
+  it("is deterministic across repeated runs against the same history", async () => {
     const dir = makeFixtureRepo();
     const runOnce = () =>
       computeImpact(dir, {
         runScan: (target) => runScan({ target } as never),
       });
-    const first = runOnce();
-    const second = runOnce();
+    const first = await runOnce();
+    const second = await runOnce();
     expect(first.resolved).toEqual(second.resolved);
     expect(first.introduced).toEqual(second.introduced);
   });
 
-  it("honors an explicit --since ref pointing further back", () => {
+  it("honors an explicit --since ref pointing further back", async () => {
     const dir = makeFixtureRepo();
     const firstCommit = execFileSync(
       "git",
@@ -191,7 +191,7 @@ describe("computeImpact — real comparison against a fixture git history", () =
       .split("\n")[0];
     if (!firstCommit) throw new Error("expected at least one commit");
 
-    const report = computeImpact(dir, {
+    const report = await computeImpact(dir, {
       since: firstCommit,
       runScan: (target) => runScan({ target } as never),
     });
@@ -199,14 +199,14 @@ describe("computeImpact — real comparison against a fixture git history", () =
     expect(report.baseRef).toBe(firstCommit);
   });
 
-  it("reports base-equals-head honestly when --since points at HEAD itself", () => {
+  it("reports base-equals-head honestly when --since points at HEAD itself", async () => {
     const dir = makeFixtureRepo();
     const head = execFileSync("git", ["rev-parse", "HEAD"], {
       cwd: dir,
       encoding: "utf8",
     }).trim();
 
-    const report = computeImpact(dir, {
+    const report = await computeImpact(dir, {
       since: head,
       runScan: (target) => runScan({ target } as never),
     });
@@ -214,9 +214,9 @@ describe("computeImpact — real comparison against a fixture git history", () =
     expect(report.unknownReason).toBe("base-equals-head");
   });
 
-  it("reports tree-listing-failed honestly for a --since ref that does not exist", () => {
+  it("reports tree-listing-failed honestly for a --since ref that does not exist", async () => {
     const dir = makeFixtureRepo();
-    const report = computeImpact(dir, {
+    const report = await computeImpact(dir, {
       since: "not-a-real-ref-xyz",
       runScan: (target) => runScan({ target } as never),
     });
@@ -228,7 +228,7 @@ describe("computeImpact — real comparison against a fixture git history", () =
     );
   });
 
-  it("renders 'none found' honestly, distinctly from UNKNOWN, when a real comparison found zero resolved fixes", () => {
+  it("renders 'none found' honestly, distinctly from UNKNOWN, when a real comparison found zero resolved fixes", async () => {
     const dir = makeFixtureRepo();
     // Compare HEAD against itself's own tree via an intermediate commit
     // with genuinely nothing fixed: add a third commit that changes
@@ -241,7 +241,7 @@ describe("computeImpact — real comparison against a fixture git history", () =
     git(dir, ["add", "-A"]);
     git(dir, ["commit", "-q", "-m", "commit 3: unrelated clean addition"]);
 
-    const report = computeImpact(dir, {
+    const report = await computeImpact(dir, {
       runScan: (target) => runScan({ target } as never),
     });
     expect(report.hasComparison).toBe(true);
