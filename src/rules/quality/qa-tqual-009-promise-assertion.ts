@@ -15,6 +15,7 @@ import { lineAt, colAt } from "../shared/positions.js";
 
 export const unawaitedPromiseAssertion = defineRule({
   id: "QA-TQUAL-009",
+  tier: "core",
   category: "QA-TQUAL",
   title: "Assertion in promise chain that is never awaited",
   severity: "error",

@@ -11,6 +11,7 @@ import { lineAt, colAt } from "../shared/positions.js";
 
 export const pwGlobalSetupSharedState = defineRule({
   id: "QA-PW-125",
+  tier: "core",
   category: "QA-PW",
   title: "Global setup mutating shared state",
   severity: "warning",

@@ -13,6 +13,7 @@ import {
 } from "../../engine/ts-ast.js";
 export const commentedOutTest = defineRule({
   id: "QA-TQUAL-011",
+  tier: "core",
   category: "QA-TQUAL",
   title: "Commented-out test",
   severity: "warning",

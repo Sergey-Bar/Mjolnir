@@ -11,6 +11,7 @@ import { lineAt, colAt } from "../shared/positions.js";
 
 export const pwSharedPage = defineRule({
   id: "QA-PW-115",
+  tier: "core",
   category: "QA-PW",
   title: "Shared page object across tests",
   severity: "warning",

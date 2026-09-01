@@ -12,6 +12,7 @@ import { lineAt, colAt } from "../shared/positions.js";
 
 export const retryAbuse = defineRule({
   id: "QA-TEST-006",
+  tier: "core",
   category: "QA-TEST",
   title: "Retry abuse hiding flakiness",
   severity: "warning",

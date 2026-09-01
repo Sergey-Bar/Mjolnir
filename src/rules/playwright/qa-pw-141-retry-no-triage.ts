@@ -13,6 +13,7 @@ import { lineAt, colAt } from "../shared/positions.js";
 
 export const pwRetryMaskingNoForensics = defineRule({
   id: "QA-PW-141",
+  tier: "core",
   category: "QA-PW",
   title: "Retries configured without a flake-triage loop",
   severity: "warning",

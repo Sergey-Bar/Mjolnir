@@ -11,6 +11,7 @@ import { lineAt, colAt } from "../shared/positions.js";
 
 export const pwConfigRetryAbuse = defineRule({
   id: "QA-PW-121",
+  tier: "core",
   category: "QA-PW",
   title: "Config retry/worker abuse",
   severity: "warning",

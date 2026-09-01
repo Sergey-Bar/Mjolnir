@@ -10,6 +10,7 @@ import { lineAt, colAt } from "../shared/positions.js";
 
 export const pwWaitForTimeout = defineRule({
   id: "QA-PW-101",
+  tier: "core",
   category: "QA-PW",
   title: "Hard sleep via waitForTimeout",
   severity: "error",

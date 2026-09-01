@@ -11,6 +11,7 @@ import { lineAt, colAt } from "../shared/positions.js";
 
 export const focusedTestCommitted = defineRule({
   id: "QA-TEST-001",
+  tier: "core",
   category: "QA-TEST",
   title: "Focused test committed",
   severity: "error",

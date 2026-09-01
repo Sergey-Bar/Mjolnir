@@ -26,6 +26,7 @@ interface WorkflowDoc {
 
 export const alwaysSuccessStep = defineRule({
   id: "QA-CI-008",
+  tier: "core",
   category: "QA-CI",
   title: "Always-success step masks failures",
   severity: "error",

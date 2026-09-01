@@ -22,6 +22,22 @@ describe("RULES registry", () => {
       expect(typeof rule.run).toBe("function");
     }
   });
+
+  it("every rule declares its tier explicitly (Phase 1 D3 Step 1)", () => {
+    // Verification Trust Evolution Plan §11.2 Step 1: explicit `tier`
+    // declarations generated for all rules from their then-effective tier
+    // (implicit core stayed core). This locks in today's reality before
+    // Step 2 changes the omitted-tier default; it also means the tier
+    // column of every generated artifact is fed by declarations, never
+    // by a silent fallback.
+    const undeclared = RULES.filter((r) => r.tier === undefined).map(
+      (r) => r.id,
+    );
+    expect(undeclared, "rules with omitted tier").toEqual([]);
+    for (const rule of RULES) {
+      expect(["core", "extended", "quarantine"]).toContain(rule.tier);
+    }
+  });
 });
 
 describe("RETIRED_RULE_IDS (docs/RULE-LIFECYCLE.md)", () => {

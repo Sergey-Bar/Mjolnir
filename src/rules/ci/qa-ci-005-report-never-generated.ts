@@ -51,6 +51,7 @@ const CONSUMERS: Array<{
 
 export const reportNeverGenerated = defineRule({
   id: "QA-CI-005",
+  tier: "core",
   category: "QA-CI",
   title: "Report consumed but never generated",
   severity: "error",

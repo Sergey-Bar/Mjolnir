@@ -10,6 +10,7 @@ import { lineAt, colAt } from "../shared/positions.js";
 
 export const pwTrialMisuse = defineRule({
   id: "QA-PW-104",
+  tier: "core",
   category: "QA-PW",
   title: "trial:true click without follow-up assertion",
   severity: "warning",

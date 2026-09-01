@@ -11,6 +11,7 @@ import { lineAt, colAt } from "../shared/positions.js";
 
 export const pyPwSyncAsyncMix = defineRule({
   id: "QA-PY-101",
+  tier: "core",
   category: "QA-PW",
   title: "Sync/async Playwright API mix",
   severity: "warning",

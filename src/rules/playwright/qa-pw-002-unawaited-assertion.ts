@@ -61,6 +61,7 @@ const ASYNC_PW_MATCHERS = new Set([
 
 export const unawaitedLocatorAssertion = defineRule({
   id: "QA-PW-002",
+  tier: "core",
   category: "QA-PW",
   title: "Unawaited Playwright assertion",
   severity: "error",

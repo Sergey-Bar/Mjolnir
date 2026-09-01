@@ -11,6 +11,7 @@ import { lineAt, colAt } from "../shared/positions.js";
 
 export const pwStorageStateNoExpiry = defineRule({
   id: "QA-PW-116",
+  tier: "core",
   category: "QA-PW",
   title: "storageState without expiry strategy",
   severity: "warning",

@@ -29,6 +29,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { prettify } from "./lib/prettify.js";
+import { isMainModule } from "./lib/is-main-module.js";
 
 import { RETIRED_RULE_IDS, RULES } from "../src/rules/index.js";
 import { MEASURED_FP } from "../src/rules/measured-fp.generated.js";
@@ -564,4 +565,10 @@ async function main(): Promise<void> {
   );
 }
 
-main();
+// Write path runs only when this module IS the process entry point (the
+// npm script). Spec imports stay pure — importing this module used to
+// rewrite the generated docs as a side effect of running tests, which
+// could leave unformatted bytes on disk mid-run. Phase 0.5 follow-up.
+if (isMainModule(import.meta.url)) {
+  await main();
+}

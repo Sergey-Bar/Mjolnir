@@ -9,6 +9,7 @@ import { lineAt, colAt } from "../shared/positions.js";
 
 export const csSkippedTest = defineRule({
   id: "QA-CS-101",
+  tier: "core",
   category: "QA-PW",
   title: "Skipped test",
   severity: "warning",

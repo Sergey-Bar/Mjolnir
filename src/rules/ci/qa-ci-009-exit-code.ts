@@ -34,6 +34,7 @@ const TEST_CMD =
 
 export const exitCodeNotPropagated = defineRule({
   id: "QA-CI-009",
+  tier: "core",
   category: "QA-CI",
   title: "Test command does not propagate exit code",
   severity: "error",

@@ -11,6 +11,7 @@ import { lineAt, colAt } from "../shared/positions.js";
 
 export const pyPwNoAssertions = defineRule({
   id: "QA-PY-105",
+  tier: "core",
   category: "QA-PW",
   title: "Playwright test without assertions",
   severity: "error",

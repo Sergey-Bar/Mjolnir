@@ -11,6 +11,7 @@ import { lineAt, colAt } from "../shared/positions.js";
 
 export const pyMutableFixture = defineRule({
   id: "QA-PY-011",
+  tier: "core",
   category: "QA-TQUAL",
   title: "Mutable fixture shared across tests",
   severity: "warning",

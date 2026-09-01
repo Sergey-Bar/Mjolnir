@@ -17,6 +17,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { prettify } from "./lib/prettify.js";
+import { isMainModule } from "./lib/is-main-module.js";
 
 import { RULES } from "../src/rules/index.js";
 
@@ -621,45 +622,46 @@ export function renderMeasuredFpAudit(
 // generated" stamp machinery (dataVintage/stampDate) was removed after
 // the git-log date proved non-deterministic on CI shallow clones (git
 // log -- <path> reports HEAD on a depth-1 clone even when HEAD never
-// touched the path, so the stamp rolled over at every midnight). The
+// touched the path), so the stamp rolled over at every midnight. The
 // data's vintage lives in git history (git blame), not in the artifact.
 
-const update = process.argv.includes("--update");
+async function main(update: boolean): Promise<void> {
+  // Bug-audit B4.29/L13: fail BEFORE writing any artifact when the
+  // unclassified-verdict backlog grew beyond its committed ceiling —
+  // an audit page built on a shrinking classified base is fiction.
+  checkUnclassifiedCompleteness(collectUnclassified(), update);
 
-// Bug-audit B4.29/L13: fail BEFORE writing any artifact when the
-// unclassified-verdict backlog grew beyond its committed ceiling —
-// an audit page built on a shrinking classified base is fiction.
-checkUnclassifiedCompleteness(collectUnclassified(), update);
+  // Generate COUNT-LOCK.md (regression guard)
+  const baselines = loadBaselines();
+  const countLockMd = renderFpAuditMd(baselines);
+  writeFileSync(COUNT_LOCK_PATH, countLockMd);
+  console.log(`Wrote ${COUNT_LOCK_PATH} from ${baselines.length} baseline(s).`);
 
-// Generate COUNT-LOCK.md (regression guard)
-const baselines = loadBaselines();
-const countLockMd = renderFpAuditMd(baselines);
-writeFileSync(COUNT_LOCK_PATH, countLockMd);
-console.log(`Wrote ${COUNT_LOCK_PATH} from ${baselines.length} baseline(s).`);
+  // Generate FP-AUDIT.md (measured rates)
+  const verdicts = loadVerdicts();
+  const fpAuditMd = renderMeasuredFpAudit(verdicts, registryRuleIds());
+  writeFileSync(FP_AUDIT_PATH, fpAuditMd);
+  console.log(
+    `Wrote ${FP_AUDIT_PATH} from ${verdicts.length} classified verdict(s).`,
+  );
 
-// Generate FP-AUDIT.md (measured rates)
-const verdicts = loadVerdicts();
-const fpAuditMd = renderMeasuredFpAudit(verdicts, registryRuleIds());
-writeFileSync(FP_AUDIT_PATH, fpAuditMd);
-console.log(
-  `Wrote ${FP_AUDIT_PATH} from ${verdicts.length} classified verdict(s).`,
-);
+  // Bake the measured FP rates into shipped code (verdicts/ is not packed).
+  writeFileSync(MEASURED_FP_PATH, renderMeasuredFpModule(verdicts));
+  console.log(`Wrote ${MEASURED_FP_PATH}.`);
 
-// Bake the measured FP rates into shipped code (verdicts/ is not packed).
-writeFileSync(MEASURED_FP_PATH, renderMeasuredFpModule(verdicts));
-console.log(`Wrote ${MEASURED_FP_PATH}.`);
+  // Format all three (Bug Map M-07) via the shared Prettier Node API
+  // helper (scripts/lib/prettify.ts) — no try/catch: a formatting failure
+  // propagates and the process exits non-zero.
+  await prettify(COUNT_LOCK_PATH);
+  await prettify(FP_AUDIT_PATH);
+  await prettify(MEASURED_FP_PATH);
+}
 
-// Format all three (Bug Map M-07) via the shared Prettier Node API
-// helper (scripts/lib/prettify.ts) — no try/catch: a formatting failure
-// propagates and the process exits non-zero.
-await prettify(COUNT_LOCK_PATH);
-await prettify(FP_AUDIT_PATH);
-await prettify(MEASURED_FP_PATH);
-
-// The generator body runs at module scope — the npm script is a straight
-// tsx invocation. Bug-audit 2026-09-01: the former main() wrapper and the
-// non-deterministic "Last generated" stamp machinery (dataVintage/stampDate)
-// were removed — the git-log date proved non-deterministic on CI shallow
-// clones (git log -- <path> reports HEAD there even when HEAD never touched
-// the path), so the drift gate failed at every midnight rollover. The data
-// vintage lives in git history (git blame), not in the artifact.
+// The npm script is a straight tsx invocation, so the write path runs
+// only when this module IS the process entry point; spec imports
+// (measured-fp-generated.spec.ts, fp-audit-table.spec.ts) stay pure —
+// importing this module used to rewrite the artifacts as a side effect
+// of running tests. Same guard discipline as generate-capability-matrix.
+if (isMainModule(import.meta.url)) {
+  await main(process.argv.includes("--update"));
+}

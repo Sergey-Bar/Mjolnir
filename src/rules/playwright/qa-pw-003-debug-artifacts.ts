@@ -9,6 +9,7 @@ import { lineAt, colAt } from "../shared/positions.js";
 
 export const committedDebugArtifacts = defineRule({
   id: "QA-PW-003",
+  tier: "core",
   category: "QA-PW",
   title: "Debug artifact committed to e2e spec",
   severity: "error",

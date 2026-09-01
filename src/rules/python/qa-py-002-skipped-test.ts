@@ -9,6 +9,7 @@ import { lineAt, colAt } from "../shared/positions.js";
 
 export const pySkippedTest = defineRule({
   id: "QA-PY-002",
+  tier: "core",
   category: "QA-TEST",
   title: "Skipped test",
   severity: "warning",

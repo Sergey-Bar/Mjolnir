@@ -10,6 +10,7 @@ import { lineAt, colAt } from "../shared/positions.js";
 
 export const jvWaitForTimeout = defineRule({
   id: "QA-JV-105",
+  tier: "core",
   category: "QA-PW",
   title: "waitForTimeout hard sleep",
   severity: "warning",

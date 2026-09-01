@@ -56,7 +56,12 @@ describe("capability matrix generation", () => {
     const expected = renderMatrixMd(data) + "\n";
     // Prettier reformats the generated file (tables re-aligned); compare
     // cell content, not bytes: strip leading/trailing pipes and collapse
-    // padding, per row, ignoring blank-line count.
+    // padding, per row, ignoring blank-line count. Separator rows get
+    // their dash runs collapsed too — prettier pads `---` to the column
+    // width, the raw render doesn't, and both mean the same columns.
+    // (This comparison only became real once the generator stopped
+    // rewriting the file as an import side effect — see the
+    // isMainModule guard in scripts/generate-capability-matrix.ts.)
     const normalize = (s: string): string[] =>
       s
         .split("\n")
@@ -64,7 +69,7 @@ describe("capability matrix generation", () => {
         .map((l) =>
           l
             .split("|")
-            .map((c) => c.trim())
+            .map((c) => c.trim().replace(/^-+$/, "-"))
             .join("|"),
         );
     const actual = readFileSync(MD_PATH, "utf8");

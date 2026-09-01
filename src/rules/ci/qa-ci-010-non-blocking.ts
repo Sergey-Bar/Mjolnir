@@ -42,6 +42,7 @@ const SKIP_ON_PR =
 
 export const nonBlockingTestJob = defineRule({
   id: "QA-CI-010",
+  tier: "core",
   category: "QA-CI",
   title: "Tests skipped where they must block",
   severity: "error",

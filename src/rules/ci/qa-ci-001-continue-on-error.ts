@@ -40,6 +40,7 @@ function stepIsVerificationGate(step: StepNode): boolean {
 
 export const continueOnError = defineRule({
   id: "QA-CI-001",
+  tier: "core",
   category: "QA-CI",
   title: "continue-on-error masks a failing verification gate",
   severity: "error",

@@ -10,6 +10,7 @@ import { looksLikeVerificationGate } from "./verification-gate.js";
 
 export const swallowedExitCode = defineRule({
   id: "QA-CI-002",
+  tier: "core",
   category: "QA-CI",
   title: "Ignored exit code (|| true)",
   severity: "error",
