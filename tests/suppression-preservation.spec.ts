@@ -96,14 +96,21 @@ describe("Preservation: Terminal Output Unchanged for Non-Suppression Cases", ()
   /**
    * **Validates: Requirements 3.2**
    *
-   * Property: When score=100, findings=[], and no suppressions, FLAWLESS VICTORY
-   * message appears in the output.
+   * Property: When score=100, findings=[], and no suppressions, the victory
+   * state appears in the output. The render mode is pinned because the
+   * victory message is mode-specific (the ASCII contract string survives in
+   * ASCII mode; unicode mode renders the FORGED wordmark block — both
+   * test-locked in terminal-render.spec.ts). Relying on shouldUseAscii()
+   * made this platform-dependent: win32 defaults to ASCII, Linux CI does not.
    */
   it("property: FLAWLESS VICTORY appears for score=100 with zero findings and no suppressions", () => {
     // Test with undefined suppressionCount
     const resultUndefined = makeResult({ score: 100, findings: [] });
-    const outputUndefined = renderTerminal(resultUndefined, { isTTY: false });
-    expect(outputUndefined).toContain("FLAWLESS VICTORY");
+    const outputUndefined = renderTerminal(resultUndefined, {
+      isTTY: false,
+      ascii: true,
+    });
+    expect(outputUndefined).toContain("*** FLAWLESS VICTORY ***");
 
     // Test with suppressionCount = 0
     const resultZero = makeResult({
@@ -111,8 +118,20 @@ describe("Preservation: Terminal Output Unchanged for Non-Suppression Cases", ()
       findings: [],
       suppressionCount: 0,
     });
-    const outputZero = renderTerminal(resultZero, { isTTY: false });
-    expect(outputZero).toContain("FLAWLESS VICTORY");
+    const outputZero = renderTerminal(resultZero, {
+      isTTY: false,
+      ascii: true,
+    });
+    expect(outputZero).toContain("*** FLAWLESS VICTORY ***");
+
+    // Unicode mode: the FORGED wordmark block replaces the bare line —
+    // the victory state must appear in BOTH modes.
+    const outputUnicode = renderTerminal(resultUndefined, {
+      isTTY: false,
+      ascii: false,
+    });
+    expect(outputUnicode).toContain("F O R G E D");
+    expect(outputUnicode).toContain("FORGED — zero findings");
   });
 
   /**
