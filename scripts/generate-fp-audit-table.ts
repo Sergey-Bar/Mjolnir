@@ -15,7 +15,8 @@
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { execSync } from "node:child_process";
+
+import { prettify } from "./lib/prettify.js";
 
 import { RULES } from "../src/rules/index.js";
 
@@ -593,15 +594,12 @@ console.log(
 writeFileSync(MEASURED_FP_PATH, renderMeasuredFpModule(verdicts));
 console.log(`Wrote ${MEASURED_FP_PATH}.`);
 
-// Format all three
-try {
-  execSync(
-    `npx prettier --write "${COUNT_LOCK_PATH}" "${FP_AUDIT_PATH}" "${MEASURED_FP_PATH}"`,
-    { cwd: ROOT, stdio: "ignore" },
-  );
-} catch {
-  console.warn("prettier formatting skipped");
-}
+// Format all three (Bug Map M-07) via the shared Prettier Node API
+// helper (scripts/lib/prettify.ts) — no try/catch: a formatting failure
+// propagates and the process exits non-zero.
+await prettify(COUNT_LOCK_PATH);
+await prettify(FP_AUDIT_PATH);
+await prettify(MEASURED_FP_PATH);
 
 // The generator body runs at module scope — the npm script is a straight
 // tsx invocation. Bug-audit 2026-09-01: the former main() wrapper and the

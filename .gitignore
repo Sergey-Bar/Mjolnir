@@ -10,7 +10,8 @@ coverage/
 .mjolnir/stats.json
 
 # FP corpus audit — cloned real-world repos, never committed
-tests/corpus/.cache/
+# (Bug Map M-04: also cover any rogue clone dir like .cache-kit)
+tests/corpus/.cache*/
 
 # VitePress documentation site
 site/.vitepress/dist/

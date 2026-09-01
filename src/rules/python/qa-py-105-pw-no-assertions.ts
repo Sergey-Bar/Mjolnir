@@ -26,6 +26,13 @@ export const pyPwNoAssertions = defineRule({
   detectionStrategy: "regex heuristic",
   introduced: "0.3.8",
 
+  // R6 (Bug Map M-02): QA-PY-003 is the generic no-assertions rule —
+  // same root cause on a Playwright-Python test (co-fire proven on one
+  // line in tests/fixtures/QA-PY-105/must-fire/test_checkout.py:2).
+  // The measured Playwright-specific diagnosis survives; the generic
+  // duplicate (quarantine) is deduped in --strict scans.
+  overlapWith: ["QA-PY-003"],
+
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];

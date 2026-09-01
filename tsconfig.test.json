@@ -20,7 +20,7 @@
     "**/node_modules/**",
     "tests/fixtures/**",
     "tests/golden/repo/**",
-    "tests/corpus/.cache/**",
+    "tests/corpus/.cache*/**",
     "packages/*/example.config.ts"
   ]
 }

@@ -24,6 +24,14 @@ export const pwWaitForTimeout = defineRule({
   autofix: false,
   detectionStrategy: "regex pattern",
   introduced: "0.3.0",
+  // R6 (Bug Map M-02): QA-TEST-004 (extended, warning) matches
+  // `await page.waitForTimeout(` via its own patterns — co-fire proven
+  // on one line in examples/demo-repo/e2e/checkout.spec.ts:6 and in the
+  // QA-PW-101/QA-TEST-004 must-fire fixtures. The measured, error-tier
+  // Playwright-specific diagnosis survives; the generic one is deduped.
+  // Verified negative: QA-PW-102/QA-PW-118 do NOT co-fire (disjoint
+  // 'load'/'networkidle' args) — see engine/overlap-dedup.ts.
+  overlapWith: ["QA-TEST-004"],
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];

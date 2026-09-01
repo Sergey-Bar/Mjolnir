@@ -72,9 +72,14 @@ function makeGitRepoWithHistory(): string {
   git(d, ["config", "user.email", "test@example.com"]);
   git(d, ["config", "user.name", "Test"]);
   mkdirSync(join(d, "e2e"), { recursive: true });
+  // Two INDEPENDENT hard sleeps in the base commit (a waitForTimeout,
+  // which co-fires QA-PW-101+QA-TEST-004 pre-dedup — R6 keeps only the
+  // PW one — and an awaited sleep helper, which only QA-TEST-004
+  // matches), both removed in the follow-up commit: resolved needs >1
+  // entries so its sort comparator is exercised (perFile coverage law).
   writeFileSync(
     join(d, "e2e", "a.spec.ts"),
-    "import { test, expect } from '@playwright/test';\ntest('a', async ({ page }) => {\n  await page.goto('/');\n  await page.waitForTimeout(3000);\n  await expect(page).toHaveTitle('x');\n});\n",
+    "import { test, expect } from '@playwright/test';\ntest('a', async ({ page }) => {\n  await page.goto('/');\n  await page.waitForTimeout(3000);\n  await sleep(250);\n  await expect(page).toHaveTitle('x');\n});\n",
   );
   git(d, ["add", "-A"]);
   git(d, ["commit", "-q", "-m", "commit 1"]);

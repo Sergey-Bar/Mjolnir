@@ -83,7 +83,13 @@ export const brittleSelectorsFamily: QADoctorRule[] = [
         label: "nth-child CSS chain",
       },
       { re: /\.locator\s*\(\s*"\/\/(?:html|div)\//g, label: "absolute XPath" },
-      { re: /\.querySelector\s*\(\s*"#/g, label: "id via querySelector" },
+      // Bug Map M-06 (narrowing): the `id via querySelector` pattern
+      // (`\.querySelector\s*\(\s*"#`) was REMOVED — every measured FP for
+      // QA-JV-106 (playwright-java, 100% FP n=20, zero TPs) was
+      // ElementHandle-API self-tests calling querySelector('#source') on
+      // their own fixtures; there are zero TPs for the family. xpath=,
+      // nth-child and absolute-path patterns stay (no per-pattern
+      // evidence either way); the family remains quarantine-tier.
     ],
     "Prefer role-based locators (`page.getByRole(...)`) or data-testid attributes.",
   ),
@@ -100,10 +106,9 @@ export const brittleSelectorsFamily: QADoctorRule[] = [
         label: "nth-child CSS chain",
       },
       { re: /\.Locator\s*\(\s*"\/\/(?:html|div)\//g, label: "absolute XPath" },
-      {
-        re: /\.QuerySelectorAsync\s*\(\s*"#/g,
-        label: "id via QuerySelectorAsync",
-      },
+      // Bug Map M-06 (narrowing): the `id via QuerySelectorAsync` pattern
+      // was REMOVED — same evidence class as QA-JV-106 (100% FP, zero
+      // TPs, querySelector-style id lookups on self-owned DOM).
     ],
     "Prefer role-based locators (`page.GetByRole(...)`) or data-testid attributes.",
   ),
@@ -123,7 +128,10 @@ export const brittleSelectorsFamily: QADoctorRule[] = [
         re: /locator\s*\(\s*['"]\/(?:html|div)\//g,
         label: "absolute DOM path",
       },
-      { re: /query_selector\s*\(\s*['"]#/g, label: "id via query_selector" },
+      // Bug Map M-06 (narrowing): the `id via query_selector` pattern
+      // was REMOVED — every cited QA-PY-104 FP (100% FP n=12) was
+      // `query_selector('#foo')` on `set_content` self-owned DOM inside
+      // makepyfile strings; zero TPs for the family.
     ],
     "Prefer role-based locators (`get_by_role(...)`) or data-testid attributes.",
   ),

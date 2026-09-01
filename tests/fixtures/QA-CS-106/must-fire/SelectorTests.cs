@@ -8,6 +8,5 @@ public class SelectorTests : PageTest
     {
         await Page.Locator("xpath=//button[@type='submit']").ClickAsync();
         await Page.Locator("//div/section/form").ClickAsync();
-        await Page.QuerySelectorAsync("#submit-button");
     }
 }

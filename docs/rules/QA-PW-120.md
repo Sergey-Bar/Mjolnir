@@ -49,7 +49,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | playwright-community-eslint-plugin-playwright | 1           |
 | puppeteer-puppeteer                           | 29          |
 | vitejs-vite                                   | 7           |
-| withastro-astro                               | 4           |
+| withastro-astro                               | 3           |
 
 ---
 

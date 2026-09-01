@@ -8,7 +8,10 @@
  *   - a pattern containing `/` is anchored to the scanned root
  *   - a BARE NAME (no `/`) matches at any depth, like gitignore —
  *     "node_modules" ignores every node_modules directory, not just a
- *     root-level one
+ *     root-level one. DEFAULT_IGNORES deliberately uses bare names for
+ *     build/dependency directories: any directory named e.g. `out/` or
+ *     `build/` at any depth is ignored (gitignore-standard semantics,
+ *     the M-01 fix — anchored forms missed monorepo-nested dirs).
  *   - `!pattern` negates; the LAST matching pattern wins, like gitignore
  * Not supported (and not claimed): trailing-`/` directory-only markers.
  *
@@ -24,19 +27,25 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 export const DEFAULT_IGNORES: readonly string[] = [
-  "node_modules/**",
-  ".git/**",
-  "dist/**",
-  "build/**",
-  "out/**",
-  "coverage/**",
-  ".nyc_output/**",
-  ".turbo/**",
-  ".next/**",
-  ".nuxt/**",
-  ".cache/**",
-  "__snapshots__/**",
-  "vendor/**",
+  // Bare names (no `/`) — gitignore semantics: the matcher compiles them
+  // to `(?:^|/)name(?:/|$)`, so they match at ANY depth. Bug Map M-01:
+  // the previous anchored `X/**` forms only matched at the scan root, so
+  // `packages/*/node_modules`, nested `dist/`/`build/` etc. in monorepos
+  // were discovered and scanned. Deliberate acceptance (gitignore-standard):
+  // ANY directory named e.g. `out/` or `build/` at any depth is ignored.
+  "node_modules",
+  ".git",
+  "dist",
+  "build",
+  "out",
+  "coverage",
+  ".nyc_output",
+  ".turbo",
+  ".next",
+  ".nuxt",
+  ".cache",
+  "__snapshots__",
+  "vendor",
   "**/*.min.js",
   "package-lock.json",
   "pnpm-lock.yaml",
@@ -44,9 +53,17 @@ export const DEFAULT_IGNORES: readonly string[] = [
   // Phase 2 (Tempering Plan): unambiguous fixture/testdata conventions.
   // These directories hold test data by universal convention — scanning
   // them produces findings on files whose entire purpose is to contain
-  // the anti-pattern being reported.
-  "**/__fixtures__/**",
-  "**/testdata/**",
+  // the anti-pattern being reported. M-01: bare names now, so nested
+  // `packages/app/__fixtures__/` is covered too.
+  "__fixtures__",
+  "testdata",
+  // Dogfood-corpus guard (Bug Map M-04, defense in depth for self-scan):
+  // the FP corpus audit clones real-world repos under tests/corpus/.cache*
+  // — never committed, and their contents are test DATA. Anchored glob
+  // form (`**` → `(?:.*/)?`, `[^/]*` covers the `-kit` suffix); do NOT
+  // use the trailing-`/` directory marker the matcher doesn't support.
+  // Matches only this path shape, never anything in a consumer repo.
+  "tests/corpus/.cache*/**",
 ];
 
 /** Hard caps — malicious-repo guards (R3, Week-1 partial hardening). */

@@ -138,7 +138,7 @@ const BLUNT_MESSAGES: Readonly<Record<string, string>> = {
   "QA-JV-106":
     "Brittle selector: one frontend refactor and this test stops finding anything.",
   "QA-CS-106":
-    "Brittle CSS selector in .NET test. QuerySelectorAsync is one redesign away from null.",
+    "XPath/absolute locator in a .NET test — one frontend refactor away from finding nothing.",
 
   // networkidle / load waits
   "QA-PW-102":

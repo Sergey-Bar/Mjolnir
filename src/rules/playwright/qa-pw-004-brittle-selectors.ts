@@ -50,17 +50,51 @@ export const brittleSelectors = defineRule({
     // page.locator('.a.b.c') — multi-class chains
     // page.locator('div > span > a') — deep structural chains
     // page.$x(...) / xpath= — raw XPath
+    //
+    // Bug Map M-06 (tempered exclusion): a selector that identifies its
+    // element by a data-testid / data-test / aria-* attribute is the
+    // locator idiom Playwright itself recommends — grafana verdicts cite
+    // exactly these as false positives. The lookahead after each opening
+    // quote skips any selector string carrying such an attribute; the
+    // negated classes cannot cross the closing quote, so the guard only
+    // sees the selector's own content. Tempered by design: a structural
+    // chain that ALSO carries a test id is no longer reported. The bare
+    // `$x(` alternative stays unguarded — it takes an XPath EXPRESSION
+    // argument, not a quoted selector string.
+    //
+    // Review fix (ReDoS): both scan distances are BOUNDED. An unbounded
+    // `[^'"`]*(?:data-test|aria-)[\w-]*` pair is quadratic on untrusted
+    // content — in a run like `aria-aria-aria-…` with no `=`, the
+    // alternation matches at every backtrack position and `[\w-]*` then
+    // re-scans the whole remainder each time (measured O(m²): >1s at
+    // 100KB, hours at multi-MB, and the per-file budget only checks
+    // between rules, not inside one exec call). 200 chars covers any
+    // real selector; the attribute-name cap is 50 (longest real aria
+    // attribute is far shorter).
+    const TEST_ID_GUARD_CSS =
+      "(?![^'\"`\\n]{0,200}(?:data-test|aria-)[\\w-]{0,50}\\s*=)";
+    const TEST_ID_GUARD_STRUCT =
+      "(?![^\"'`>\\n]{0,200}(?:data-test|aria-)[\\w-]{0,50}\\s*=)";
     const patterns = [
       {
-        re: /locator\s*\(\s*['"`][^'"`]*\.[\w-]+\.[\w-][^'"`]*['"`]\s*\)/g,
+        re: new RegExp(
+          `locator\\s*\\(\\s*['"\`]${TEST_ID_GUARD_CSS}[^'"\`]*\\.[\\w-]+\\.[\\w-][^'"\`]*['"\`]\\s*\\)`,
+          "g",
+        ),
         label: "multi-class CSS selector",
       },
       {
-        re: /locator\s*\(\s*['"`][^"'>`]*>[^"'>`]*>[^"'`]*['"`]\s*\)/g,
+        re: new RegExp(
+          `locator\\s*\\(\\s*['"\`]${TEST_ID_GUARD_STRUCT}[^"'\`>]*>[^"'\`>]*>[^"'\`]*['"\`]\\s*\\)`,
+          "g",
+        ),
         label: "deep structural CSS selector",
       },
       {
-        re: /\$x\s*\(|locator\s*\(\s*['"`]xpath=/g,
+        re: new RegExp(
+          `\\$x\\s*\\(|locator\\s*\\(\\s*['"\`]${TEST_ID_GUARD_CSS}xpath=`,
+          "g",
+        ),
         label: "XPath selector",
       },
     ];

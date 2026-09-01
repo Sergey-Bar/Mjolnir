@@ -33,7 +33,7 @@ export default tseslint.config(
       "site/**",
       "tests/fixtures/**",
       "tests/golden/repo/**",
-      "tests/corpus/.cache/**",
+      "tests/corpus/.cache*/**",
       // Workspace build output and the deliberate out-of-project example
       // config (excluded from every tsconfig on purpose).
       "packages/*/dist/**",

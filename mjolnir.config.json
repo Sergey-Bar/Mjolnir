@@ -4,7 +4,8 @@
     "tests/golden/**",
     "examples/**",
     "scratch/**",
-    ".kilo/**"
+    ".kilo/**",
+    "tests/corpus/.cache*/**"
   ],
   "ignore": [
     {

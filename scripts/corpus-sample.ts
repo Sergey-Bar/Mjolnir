@@ -19,7 +19,7 @@
  * generator reads the verdicts, not the review sheets.
  */
 
-import { execFileSync, execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import {
   existsSync,
   mkdirSync,
@@ -30,6 +30,8 @@ import {
 } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+
+import { prettify } from "./lib/prettify.js";
 
 import { runScan } from "../src/cli.js";
 // Single source of truth for the corpus — do NOT redefine it here.
@@ -246,7 +248,7 @@ function initVerdictFiles(byRule: Map<string, SampledFinding[]>): void {
   }
 }
 
-function main(): void {
+async function main(): Promise<void> {
   console.log("Corpus sample generator — Phase 3 (Tempering Plan)");
   console.log(
     `Drawing up to ${MAX_SAMPLES_PER_RULE} findings per rule from ${CORPUS.length} corpus repos...\n`,
@@ -262,13 +264,11 @@ function main(): void {
 
   // Keep the generated review sheets prettier-clean so `npm run lint`
   // (prettier --check) passes — same discipline as the other generators.
-  try {
-    execSync(`npx prettier --write "${REVIEW_DIR}"`, {
-      cwd: ROOT,
-      stdio: "ignore",
-    });
-  } catch {
-    console.warn("prettier formatting of review sheets skipped");
+  // Bug Map M-07, shared helper (scripts/lib/prettify.ts): Prettier Node
+  // API, per output file, no silent skip — a formatting failure
+  // propagates and the process exits non-zero.
+  for (const entry of readdirSync(REVIEW_DIR)) {
+    await prettify(join(REVIEW_DIR, entry));
   }
 
   // Cleanup cache — best-effort. On Windows a git pack file can stay

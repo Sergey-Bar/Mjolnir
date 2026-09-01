@@ -60,15 +60,18 @@ describe("QA-JV-106 brittle selectors", () => {
     expect(findings).toHaveLength(1);
   });
 
-  it("fires on id via querySelector", () => {
+  it("no longer fires on id via querySelector (M-06 narrowing)", () => {
+    // Bug Map M-06: the `id via querySelector` pattern was REMOVED —
+    // every measured FP for QA-JV-106 (playwright-java, 100% FP n=20,
+    // zero TPs) was ElementHandle-API self-tests calling
+    // querySelector('#source') on their own fixtures.
     const findings = brittleSelectorsFamily
       .find((r) => r.id === "QA-JV-106")!
       .run({
         path: "T.java",
         text: 'page.querySelector("#submit");',
       });
-    expect(findings).toHaveLength(1);
-    expect(findings[0]?.message).toContain("querySelector");
+    expect(findings).toHaveLength(0);
   });
 
   it("does not fire on role-based/testId locators", () => {
@@ -229,14 +232,16 @@ describe("QA-CS-106 brittle selectors", () => {
     expect(findings).toHaveLength(1);
   });
 
-  it("fires on id via QuerySelectorAsync", () => {
+  it("no longer fires on id via QuerySelectorAsync (M-06 narrowing)", () => {
+    // Bug Map M-06: same evidence class as QA-JV-106 — the
+    // QuerySelectorAsync id-lookup pattern was removed.
     const findings = brittleSelectorsFamily
       .find((r) => r.id === "QA-CS-106")!
       .run({
         path: "T.cs",
         text: 'Page.QuerySelectorAsync("#submit");',
       });
-    expect(findings).toHaveLength(1);
+    expect(findings).toHaveLength(0);
   });
 
   it("does not fire on role-based/testId locators", () => {

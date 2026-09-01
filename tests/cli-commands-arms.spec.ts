@@ -261,9 +261,12 @@ describe("runImpactCommand", () => {
     const cap = capture();
     expect(runImpactCommand([dir], cap.io)).toBe(0);
     expect(cap.text()).toContain("IMPACT REPORT");
-    // Both the TEST-family and PW-family hard-sleep rules fire on the
-    // waitForTimeout line; both are new debt since the clean base commit.
-    expect(cap.text()).toContain("NEW DEBT SINCE BASE (2)");
+    // The PW-family hard-sleep rule fires on the waitForTimeout line and
+    // is new debt since the clean base commit. Its generic twin
+    // QA-TEST-004 used to co-fire here too (count was 2), but R6
+    // overlap-dedup (Bug Map M-02) removes the declared duplicate — the
+    // honest new-debt count is 1.
+    expect(cap.text()).toContain("NEW DEBT SINCE BASE (1)");
   });
 
   it("reports an honest no-comparison when --since equals HEAD (exit 2)", () => {

@@ -114,8 +114,32 @@ describe("QA-2: per-language dirSkips never hide other languages' test files", (
     ).toBe(true);
   });
 
-  it("discovers TS test files inside a directory named like Gradle output", () => {
-    mkdirSync(join(dir, "pkg", "test", "units", "build"), { recursive: true });
+  it("discovers TS test files inside a directory named like Maven output", () => {
+    // `target/` (Maven) is a Gradle/Maven-style build dir that is NOT a
+    // DEFAULT_IGNORES bare name — per-language dirSkips and the ignore
+    // chain must not hide another language's tests in it.
+    mkdirSync(join(dir, "pkg", "test", "units", "target"), {
+      recursive: true,
+    });
+    writeFileSync(
+      join(dir, "pkg", "test", "units", "target", "plugin.test.ts"),
+      `it("x", () => {\n  expect(1).toBe(1);\n});\n`,
+    );
+    const files = discover(dir);
+    expect(
+      files.some((f) => f.endsWith("pkg/test/units/target/plugin.test.ts")),
+    ).toBe(true);
+  });
+
+  it("a nested build/ dir is now ignored for every language (M-01 bare-name, accepted)", () => {
+    // Bug Map M-01 made build/ a bare-name default: ANY depth, gitignore-
+    // standard — the old Gradle-output expectation (discover TS tests
+    // inside pkg/test/units/build/) was retired with it. The plan
+    // §1.3 pins services/api/build/x.py as ignored; this is the same
+    // semantics at the discovery layer.
+    mkdirSync(join(dir, "pkg", "test", "units", "build"), {
+      recursive: true,
+    });
     writeFileSync(
       join(dir, "pkg", "test", "units", "build", "plugin.test.ts"),
       `it("x", () => {\n  expect(1).toBe(1);\n});\n`,
@@ -123,7 +147,7 @@ describe("QA-2: per-language dirSkips never hide other languages' test files", (
     const files = discover(dir);
     expect(
       files.some((f) => f.endsWith("pkg/test/units/build/plugin.test.ts")),
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it("must-not-discover: an adapter still skips its own convention dirs", () => {

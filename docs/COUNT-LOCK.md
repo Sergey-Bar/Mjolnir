@@ -75,7 +75,7 @@ large real TS monorepo with Playwright e2e + many Actions workflows — QA-PW-14
 
 Source: [`https://github.com/grafana/grafana`](https://github.com/grafana/grafana)
 
-Total findings: **3405**
+Total findings: **3235**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
@@ -102,13 +102,13 @@ Total findings: **3405**
 | QA-PW-145    | 107      |
 | QA-TEST-002  | 45       |
 | QA-TEST-003  | 418      |
-| QA-TEST-004  | 181      |
+| QA-TEST-004  | 164      |
 | QA-TEST-006  | 2        |
 | QA-TEST-010  | 2        |
 | QA-TQUAL-001 | 1653     |
 | QA-TQUAL-002 | 3        |
 | QA-TQUAL-009 | 1        |
-| QA-TQUAL-011 | 155      |
+| QA-TQUAL-011 | 2        |
 
 ## microsoft-playwright-dotnet
 
@@ -116,7 +116,7 @@ real Playwright .NET test suite — C# adapter FP surface (same library-suite ca
 
 Source: [`https://github.com/microsoft/playwright-dotnet`](https://github.com/microsoft/playwright-dotnet)
 
-Total findings: **483**
+Total findings: **456**
 
 | Rule ID    | Findings |
 | ---------- | -------- |
@@ -124,7 +124,7 @@ Total findings: **483**
 | QA-CS-102  | 52       |
 | QA-CS-103  | 2        |
 | QA-CS-105  | 16       |
-| QA-CS-106  | 31       |
+| QA-CS-106  | 4        |
 | QA-CS-107  | 1        |
 | QA-CS-108  | 26       |
 | QA-CS-110  | 135      |
@@ -139,7 +139,7 @@ real Playwright Java test suite — Java adapter FP surface (library-suite cavea
 
 Source: [`https://github.com/microsoft/playwright-java`](https://github.com/microsoft/playwright-java)
 
-Total findings: **386**
+Total findings: **363**
 
 | Rule ID   | Findings |
 | --------- | -------- |
@@ -148,7 +148,7 @@ Total findings: **386**
 | QA-JV-103 | 97       |
 | QA-JV-104 | 2        |
 | QA-JV-105 | 40       |
-| QA-JV-106 | 27       |
+| QA-JV-106 | 4        |
 | QA-JV-108 | 31       |
 | QA-JV-110 | 110      |
 | QA-JV-111 | 70       |
@@ -174,12 +174,11 @@ tiny real pytest-playwright repo — QA-PY-104 and QA-PW-103 on the Python adapt
 
 Source: [`https://github.com/microsoft/playwright-pytest`](https://github.com/microsoft/playwright-pytest)
 
-Total findings: **21**
+Total findings: **9**
 
 | Rule ID   | Findings |
 | --------- | -------- |
 | QA-PY-004 | 9        |
-| QA-PY-104 | 12       |
 
 ## nextauthjs-next-auth
 
@@ -187,7 +186,7 @@ real TS app with Playwright e2e + substantial GitHub Actions — first non-trivi
 
 Source: [`https://github.com/nextauthjs/next-auth`](https://github.com/nextauthjs/next-auth)
 
-Total findings: **72**
+Total findings: **68**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
@@ -205,7 +204,6 @@ Total findings: **72**
 | QA-PW-145    | 3        |
 | QA-TEST-002  | 1        |
 | QA-TEST-003  | 3        |
-| QA-TEST-004  | 4        |
 | QA-TQUAL-001 | 1        |
 | QA-TQUAL-002 | 2        |
 
@@ -343,7 +341,7 @@ large real Playwright suite — QA-PW isolation/timing rules at scale
 
 Source: [`https://github.com/sveltejs/kit`](https://github.com/sveltejs/kit)
 
-Total findings: **1306**
+Total findings: **1240**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
@@ -364,9 +362,8 @@ Total findings: **1306**
 | QA-PW-145    | 11       |
 | QA-TEST-002  | 38       |
 | QA-TEST-003  | 62       |
-| QA-TEST-004  | 72       |
+| QA-TEST-004  | 10       |
 | QA-TQUAL-001 | 24       |
-| QA-TQUAL-011 | 4        |
 
 ## tanstack-query
 
@@ -417,7 +414,7 @@ large real Playwright suite — QA-PW text-coupling / viewport / empty-body
 
 Source: [`https://github.com/withastro/astro`](https://github.com/withastro/astro)
 
-Total findings: **767**
+Total findings: **765**
 
 | Rule ID     | Findings |
 | ----------- | -------- |
@@ -432,13 +429,13 @@ Total findings: **767**
 | QA-PW-115   | 3        |
 | QA-PW-118   | 6        |
 | QA-PW-119   | 11       |
-| QA-PW-120   | 4        |
+| QA-PW-120   | 3        |
 | QA-PW-122   | 2        |
 | QA-PW-141   | 2        |
 | QA-PW-143   | 2        |
 | QA-PW-144   | 2        |
 | QA-PW-145   | 48       |
 | QA-TEST-002 | 32       |
-| QA-TEST-003 | 100      |
-| QA-TEST-004 | 33       |
+| QA-TEST-003 | 101      |
+| QA-TEST-004 | 31       |
 | QA-TEST-010 | 1        |

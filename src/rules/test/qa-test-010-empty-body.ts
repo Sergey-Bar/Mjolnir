@@ -25,6 +25,13 @@ export const emptyTestBody = defineRule({
   detectionStrategy: "regex pattern",
   introduced: "0.1.0",
 
+  // R6 (Bug Map M-02): an empty (or comment-only) body trivially has no
+  // assertions — QA-TEST-003 (generic, quarantine) co-fires on the same
+  // root cause (proven on one line in the QA-TEST-010 must-fire
+  // fixture). The more specific diagnosis survives; the generic one is
+  // deduped in --strict scans.
+  overlapWith: ["QA-TEST-003"],
+
   run(ctx) {
     const text = ctx.text;
     const findings: Omit<

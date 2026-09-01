@@ -10,5 +10,13 @@ site/rules/
 # Saved HTML artifact exports (planning reference material, not source)
 .planning/**/*.html
 
+# Generated build/scan artifacts — mirrors .gitignore so `prettier --check .`
+# is order-independent (M-05): these exist only after a local scan/build and
+# match the lint-staged contract.
+mjolnir-badge.json
+self-scan.json
+# Soak drift evidence (tests/stress/soak.mjs, uploaded by stress.yml on failure)
+soak-drift/
+
 # Agent-session state (plans, scratch notes) — not repo content
 .kilo/

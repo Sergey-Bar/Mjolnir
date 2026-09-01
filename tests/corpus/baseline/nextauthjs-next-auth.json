@@ -2,21 +2,21 @@
   "countsByRule": {
     "QA-CI-001": 2,
     "QA-CI-005": 2,
-    "QA-PW-145": 3,
-    "QA-PW-103": 4,
-    "QA-PW-123": 2,
-    "QA-TEST-004": 4,
-    "QA-PW-101": 4,
     "QA-ENV-001": 29,
+    "QA-PW-101": 4,
+    "QA-PW-103": 4,
     "QA-PW-119": 9,
-    "QA-TEST-003": 3,
-    "QA-TQUAL-002": 2,
     "QA-PW-122": 2,
-    "QA-PW-143": 2,
+    "QA-PW-123": 2,
     "QA-PW-141": 1,
+    "QA-PW-143": 2,
     "QA-PW-144": 1,
+    "QA-PW-145": 3,
+    "QA-TEST-002": 1,
+    "QA-TEST-003": 3,
     "QA-TQUAL-001": 1,
-    "QA-TEST-002": 1
+    "QA-TQUAL-002": 2
   },
-  "totalFindings": 72
+  "totalFindings": 68,
+  "partial": false
 }

@@ -25,6 +25,10 @@ export const pyPwHardSleep = defineRule({
   autofix: false,
   detectionStrategy: "regex pattern",
   introduced: "0.3.8",
+  // Bug Map M-06: unmeasured (n < 10 classified verdicts) yet shipping in
+  // core by default — a north-star law #3 violation. Also the weaker,
+  // now-deduped duplicate of measured QA-PY-005 (R6, overlapWith).
+  tier: "quarantine",
 
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;

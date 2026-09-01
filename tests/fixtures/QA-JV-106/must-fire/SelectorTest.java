@@ -6,6 +6,5 @@ class SelectorTest {
     void shouldSubmitForm() {
         page.locator("xpath=//button[@type='submit']").click();
         page.locator("//div/section/form").click();
-        page.querySelector("#submit-button");
     }
 }

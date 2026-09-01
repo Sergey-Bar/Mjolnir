@@ -43,7 +43,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo                        | Occurrences |
 | --------------------------- | ----------- |
-| microsoft-playwright-dotnet | 31          |
+| microsoft-playwright-dotnet | 4           |
 
 ---
 

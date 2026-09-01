@@ -147,6 +147,7 @@ describe("files-scoped suppressions", () => {
         "import { test, expect } from '@playwright/test';",
         "test('one', async ({ page }) => {",
         "  await page.waitForTimeout(500);",
+        "  await sleep(500);",
         "  await expect(page).toHaveURL('/a');",
         "});",
         "",
@@ -154,8 +155,13 @@ describe("files-scoped suppressions", () => {
     );
     const { result } = scanJson();
     const ruleIds = result.findings.map((f) => f.ruleId);
-    // QA-PW-101 under e2e/** is suppressed by rule+glob; QA-TEST-004 is
-    // not (its files glob points at src/**), and it still surfaces.
+    // QA-PW-101 under e2e/** is suppressed by rule+glob. Dedup runs
+    // AFTER suppression (review fix), so with the declarer gone its
+    // co-firing QA-TEST-004 twin on the waitForTimeout line SURVIVES —
+    // exactly the twin-erasure scenario the reordering eliminates.
+    // The QA-TEST-004 finding on the `await sleep(500)` line (an
+    // independent defect, no declarer) survives as well, its src/**
+    // glob matching nothing here.
     expect(ruleIds).not.toContain("QA-PW-101");
     expect(ruleIds).toContain("QA-TEST-004");
     expect(result.suppressionCount).toBe(2);

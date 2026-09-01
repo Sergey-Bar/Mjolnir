@@ -17,7 +17,8 @@ import {
 } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { execSync } from "node:child_process";
+
+import { prettify } from "./lib/prettify.js";
 
 import { RULES } from "../src/rules/index.js";
 import {
@@ -47,7 +48,12 @@ function loadCorpusBaselines(): CorpusBaseline[] {
     });
 }
 
-function main(): void {
+/**
+ * Format one output file in place — shared helper (scripts/lib/prettify.ts),
+ * Prettier Node API (Bug Map M-07): no try/catch, a formatting failure
+ * propagates and the process exits non-zero.
+ */
+async function main(): Promise<void> {
   mkdirSync(OUT_DIR, { recursive: true });
   const baselines = loadCorpusBaselines();
   const pages = generateAllRuleDocs(FIXTURES_ROOT, baselines, RULES);
@@ -60,14 +66,10 @@ function main(): void {
     renderRuleDocsIndexMd(RULES) + "\n",
   );
 
-  try {
-    execSync(`npx prettier --write "${OUT_DIR}"`, {
-      cwd: ROOT,
-      stdio: "ignore",
-    });
-  } catch {
-    console.warn("prettier formatting skipped (npx prettier unavailable)");
+  for (const [ruleId] of pages) {
+    await prettify(join(OUT_DIR, `${ruleId}.md`));
   }
+  await prettify(join(OUT_DIR, "README.md"));
 
   console.log(`Wrote ${pages.size} rule page(s) + index to ${OUT_DIR}`);
 }

@@ -43,6 +43,15 @@ const PATHOLOGICAL_SHAPES: Array<[string, string]> = [
     `it("${"x".repeat(40_000)}", () => { expect(1).toBe(1) })`,
   ],
   ["long-quoted-string-run", `const s = "${"\\\\".repeat(30_000)}";`],
+  [
+    // QA-PW-004's data-testid/aria lookahead: an unterminated selector
+    // string whose content is a run of alternation-matching prefixes —
+    // the alternation matches at every backtrack position, so an
+    // UNBOUNDED guard rescans the whole remainder each time (quadratic).
+    // The bounded guard must stay linear-ish on this shape.
+    "locator-alternation-bait",
+    `page.locator("aria-${"aria-".repeat(12_500)}")`,
+  ],
 ];
 
 // Generous but exponential-catching: linear regex work over this much

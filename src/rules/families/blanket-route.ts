@@ -1,6 +1,12 @@
 /**
  * Blanket-route family (Phase 6 — Tempering Plan).
  * Detects route("**") / RouteAsync("**") blanket interception.
+ *
+ * Bug Map M-06 narrowing decision: NO narrowing. The measured FPs
+ * (JV-108/CS-108 cohorts, 100% FP n=20 each, zero TPs) are contextual
+ * route-API self-tests and fixture setup, not a mechanically
+ * discriminable pattern — no exclusion is provable from the verdict
+ * evidence. Stays quarantine-tier.
  */
 
 import { defineRule, type QADoctorRule } from "../rule.js";

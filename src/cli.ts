@@ -46,6 +46,7 @@ import { renderMermaid } from "./reporter/mermaid.js";
 import { computeChangedScope, filterToChanged } from "./scope/changed.js";
 import { asUniversal } from "./engine/rule-runner.js";
 import { enforceTierPolicy, type Tier } from "./engine/tier-policy.js";
+import { applyOverlapDedup, type OverlapMeta } from "./engine/overlap-dedup.js";
 import { isAdvisoryFinding } from "./types.js";
 import { typescriptAdapter } from "./adapters/typescript.js";
 import { githubActionsAdapter } from "./adapters/github-actions.js";
@@ -115,6 +116,22 @@ const UNIVERSAL_RULES = RULES.map(asUniversal);
 
 /** Registered rule IDs — used to warn on unknown severityOverrides keys (M4). */
 const KNOWN_RULE_IDS: ReadonlySet<string> = new Set(RULES.map((r) => r.id));
+
+/**
+ * R6 (Bug Map M-02): per-rule overlap metadata, built from RULES the
+ * same way tierByRuleId is — `asUniversal` drops `overlapWith`, so the
+ * dedup map must come from the registry directly.
+ */
+const OVERLAP_META_BY_RULE_ID: ReadonlyMap<string, OverlapMeta> = new Map(
+  RULES.map((r, order) => {
+    const meta: OverlapMeta = {
+      ...(r.overlapWith ? { overlapWith: r.overlapWith } : {}),
+      ...(r.tier ? { tier: r.tier } : {}),
+      order,
+    };
+    return [r.id, meta] as const;
+  }),
+);
 
 // Plugin API (Phase 6): third-party rules are appended after core rules;
 // core findings always win dedup by running first.
@@ -468,7 +485,7 @@ export function runScan(args: CliArgs, hooks: ScanHooks = {}): ScanResult {
     const diff = computeChangedScope(workspace.root, args.base);
     const filtered = filterToChanged(findings, diff);
     findings.length = 0;
-    findings.push(...filtered);
+    for (const f of filtered) findings.push(f);
     scopeInfo = diff.degraded
       ? { scope: "changed", degraded: diff.reason }
       : { scope: "changed" };
@@ -514,8 +531,21 @@ export function runScan(args: CliArgs, hooks: ScanHooks = {}): ScanResult {
       );
     });
     findings.length = 0;
-    findings.push(...kept);
+    for (const f of kept) findings.push(f);
   }
+
+  // R6 (Bug Map M-02): cross-rule overlap dedup. Runs AFTER changed-scope
+  // filtering and suppression (review fix): a user's ignore entry that
+  // suppresses a pair's survivor must leave the twin present, so the twin
+  // is then deduped only if its declarer actually survives suppression —
+  // pre-dedup placement silently erased the twin with no trace. Still
+  // before scoring/reporting, so the deduped set is what everyone sees.
+  const deduped = applyOverlapDedup(findings, OVERLAP_META_BY_RULE_ID);
+  findings.length = 0;
+  // Loop, not spread: `push(...arr)` throws RangeError above ~124k
+  // arguments (V8 call-stack limit) and the scan pipeline has no
+  // findings-count cap — large monorepos can exceed it.
+  for (const f of deduped) findings.push(f);
 
   findings.sort(compareFindings);
   // Honesty Core Phase 1: every finding carries its honest evidence level

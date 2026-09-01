@@ -849,4 +849,77 @@ describe("remaining rule arms", () => {
     });
     expect(findings).toHaveLength(1);
   });
+
+  it("definePatternFamily passes overlapWith through (family default, variant override)", () => {
+    // Bug Map M-02 §1.4.5: the family generator plumbs overlapWith
+    // uniformly — a family-level default applies to every variant, and a
+    // variant-level entry overrides it. Families without pairs carry no
+    // key at all.
+    const rules = definePatternFamily({
+      id: "QA-TEST-999",
+      category: "QA-TEST",
+      title: "Family overlap probe",
+      severity: "warning",
+      confidence: "high",
+      findingType: "deterministic-defect",
+      qaImpact: "HYGIENE",
+      falsePositiveRisk: "low",
+      overlapWith: ["QA-FAMILY-DEFAULT"],
+      variants: [
+        {
+          id: "QA-TEST-997",
+          ext: ".ts",
+          appliesTo: "test-files",
+          languages: ["typescript"],
+          frameworks: ["vitest"],
+          patterns: [/hard-coded-probe/g],
+          message: "probe finding: $0",
+          fix: "remove the probe",
+          overlapWith: ["QA-VARIANT-SPECIFIC"],
+        },
+        {
+          id: "QA-TEST-998",
+          ext: ".ts",
+          appliesTo: "test-files",
+          languages: ["typescript"],
+          frameworks: ["vitest"],
+          patterns: [/hard-coded-probe/g],
+          message: "probe finding: $0",
+          fix: "remove the probe",
+        },
+      ],
+    } as never);
+    // Variant-level entry wins over the family default.
+    expect(rules[0]?.id).toBe("QA-TEST-997");
+    expect(rules[0]?.overlapWith).toEqual(["QA-VARIANT-SPECIFIC"]);
+    // Variant without an entry inherits the family-level default.
+    expect(rules[1]?.id).toBe("QA-TEST-998");
+    expect(rules[1]?.overlapWith).toEqual(["QA-FAMILY-DEFAULT"]);
+
+    // No pair declared anywhere → no overlapWith key (only families
+    // with valid pairs carry entries).
+    const bare = definePatternFamily({
+      id: "QA-TEST-996",
+      category: "QA-TEST",
+      title: "Family bare probe",
+      severity: "warning",
+      confidence: "high",
+      findingType: "deterministic-defect",
+      qaImpact: "HYGIENE",
+      falsePositiveRisk: "low",
+      variants: [
+        {
+          id: "QA-TEST-996",
+          ext: ".ts",
+          appliesTo: "test-files",
+          languages: ["typescript"],
+          frameworks: ["vitest"],
+          patterns: [/hard-coded-probe/g],
+          message: "probe finding: $0",
+          fix: "remove the probe",
+        },
+      ],
+    } as never);
+    expect(bare[0]?.overlapWith).toBeUndefined();
+  });
 });

@@ -41,16 +41,15 @@ Verified against `tests/fixtures/QA-TEST-004/must-not-fire/clean.spec.ts` — a 
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo                 | Occurrences |
-| -------------------- | ----------- |
-| dubinc-dub           | 7           |
-| grafana-grafana      | 181         |
-| nextauthjs-next-auth | 4           |
-| puppeteer-puppeteer  | 3           |
-| sveltejs-kit         | 72          |
-| tanstack-query       | 157         |
-| vitejs-vite          | 7           |
-| withastro-astro      | 33          |
+| Repo                | Occurrences |
+| ------------------- | ----------- |
+| dubinc-dub          | 7           |
+| grafana-grafana     | 164         |
+| puppeteer-puppeteer | 3           |
+| sveltejs-kit        | 10          |
+| tanstack-query      | 157         |
+| vitejs-vite         | 7           |
+| withastro-astro     | 31          |
 
 ---
 

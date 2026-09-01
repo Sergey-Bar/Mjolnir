@@ -33,6 +33,11 @@ export interface LanguageVariant {
   message: string;
   /** Fix suggestion specific to this language. */
   fix: string;
+  /**
+   * Rule IDs that can fire on the same root cause (R6 dedup).
+   * Variant-level entry overrides the family-level one.
+   */
+  overlapWith?: string[];
   /** Tier override (defaults to family-level tier). */
   tier?: "core" | "extended" | "quarantine";
 }
@@ -62,6 +67,12 @@ export interface PatternFamilyOptions {
   introduced?: string;
   /** Default tier for all variants (can be overridden per variant). */
   tier?: "core" | "extended" | "quarantine";
+  /**
+   * Default overlapWith for all variants (R6 dedup, Bug Map M-02).
+   * Only families with a fixture-proven same-root-cause pair carry
+   * entries; variants override.
+   */
+  overlapWith?: string[];
   /**
    * Whether to use codeText (true, default) or raw text (false).
    * Rules that need to read string content (selectors, URLs) set false.
@@ -96,6 +107,9 @@ export function definePatternFamily(
       detectionStrategy: opts.detectionStrategy ?? "regex pattern",
       ...(opts.introduced ? { introduced: opts.introduced } : {}),
       ...((v.tier ?? opts.tier) ? { tier: v.tier ?? opts.tier } : {}),
+      ...((v.overlapWith ?? opts.overlapWith)
+        ? { overlapWith: v.overlapWith ?? opts.overlapWith }
+        : {}),
       run(ctx) {
         const text =
           opts.useCodeText !== false ? (ctx.codeText ?? ctx.text) : ctx.text;

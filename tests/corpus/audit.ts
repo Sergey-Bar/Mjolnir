@@ -11,11 +11,15 @@
  *   npx tsx tests/corpus/audit.ts            # check against committed baseline
  *   npx tsx tests/corpus/audit.ts --update    # regenerate the baseline
  *
- * "Check" mode fails (exit 1) if a rule fires MORE on real code than the
- * committed baseline recorded — that's a false-positive regression signal.
- * A rule firing less is fine (it got quieter). New repos or new rules
- * with no baseline entry are reported but don't fail the run — add them
- * via --update once you've manually reviewed the findings as legitimate.
+ * "Check" mode fails (exit 1) if a rule's finding count moves in EITHER
+ * direction vs the committed baseline: MORE fires is a false-positive
+ * regression signal; FEWER fires is a detection regression (masked rule,
+ * broken regex, dead pattern) — Bug-audit G2 made the lock bidirectional.
+ * Either way: review the delta, and if it's a deliberate change re-run
+ * with --update and commit the refreshed baseline in the same change.
+ * New repos or new rules with no baseline entry are reported but don't
+ * fail the run — add them via --update once you've manually reviewed
+ * the findings as legitimate.
  *
  * This is a COUNT LOCK, not an audit. It detects regressions in finding
  * counts but never classifies whether findings are TP or FP. That
@@ -163,6 +167,12 @@ export const CORPUS: CorpusRepo[] = [
 interface BaselineEntry {
   countsByRule: Record<string, number>;
   totalFindings: number;
+  /**
+   * Set by scanRepo from runScan's result — NOT persisted to the
+   * baseline JSON (a partial scan never gets recorded; see the
+   * FAIL branch in main). Present on the in-memory current entry only.
+   */
+  partial: boolean;
 }
 
 function cloneRepo(repo: CorpusRepo): string {
@@ -196,10 +206,21 @@ function scanRepo(dir: string): BaselineEntry {
   for (const f of result.findings) {
     countsByRule[f.ruleId] = (countsByRule[f.ruleId] ?? 0) + 1;
   }
+  // Canonical key order: insertion order follows finding iteration, so
+  // an unsorted record re-orders every baseline file whenever rule or
+  // discovery order shifts — pure diff noise for the git history. Sort
+  // so a baseline diff only ever shows REAL count changes.
+  const sortedCounts = Object.fromEntries(
+    Object.entries(countsByRule).sort(([a], [b]) => a.localeCompare(b)),
+  );
   // TODO: Record testDeclarationCount in the baseline so that
   // NORMALIZATION_K can be calibrated against real corpus data.
   // Currently runScan returns this value but we don't persist it.
-  return { countsByRule, totalFindings: result.findings.length };
+  return {
+    countsByRule: sortedCounts,
+    totalFindings: result.findings.length,
+    partial: result.partial,
+  };
 }
 
 function loadBaseline(name: string): BaselineEntry | undefined {
@@ -247,6 +268,26 @@ function main(): number {
 
     const current = scanRepo(dir);
     const baseline = loadBaseline(repo.name);
+
+    // Review fix (baseline refresh, 2026-09-01): a deadline-truncated
+    // scan used to be written to the baseline as if it were ground
+    // truth — grafana/grafana scans run ~50s against the 60s budget, so
+    // ANY CPU contention during the nightly job truncated discovery
+    // mid-way and recorded machine-speed-contaminated counts (QA-CI-*
+    // vanished, TEST-003 dropped 418 → 177 in one run). `runScan`
+    // reports truncation via `result.partial`; refusing to trust a
+    // partial scan turns that silent poisoning into a loud failure.
+    // Re-run on a quiet machine; if truncation is chronic for a repo,
+    // raise the budget rather than record a partial baseline.
+    if (current.partial) {
+      console.error(
+        `  FAIL: scan of ${repo.name} was PARTIAL (deadline/budget ` +
+          `truncation) — the counts would be garbage. Re-run on a quiet ` +
+          `machine; do NOT --update from a partial scan.`,
+      );
+      regressed = true;
+      continue;
+    }
 
     if (!baseline) {
       console.log(

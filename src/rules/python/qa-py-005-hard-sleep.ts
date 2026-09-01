@@ -28,6 +28,13 @@ export const pyHardSleep = defineRule({
 
   tier: "extended",
 
+  // R6 (Bug Map M-02): QA-PY-102 is the weaker, unmeasured duplicate —
+  // same `time.sleep(` root cause (co-fire proven on one line in
+  // tests/fixtures/QA-PY-102/must-fire/test_dash.py:8). The measured
+  // rule survives; the unmeasured one is deduped (and demoted to
+  // quarantine per Bug Map M-06, which makes the tier order agree).
+  overlapWith: ["QA-PY-102"],
+
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];

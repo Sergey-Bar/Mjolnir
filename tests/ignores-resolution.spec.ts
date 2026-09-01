@@ -195,7 +195,76 @@ describe("gitignore behaviors (audit R-10)", () => {
       expect(typeof pat).toBe("string");
     }
     expect(matcher.isIgnored("coverage/lcov.info")).toBe(true);
-    expect(matcher.isIgnored("**/__fixtures__/nested/a.ts")).toBe(true);
+    expect(matcher.isIgnored("__fixtures__/nested/a.ts")).toBe(true);
+  });
+
+  // Bug Map M-01: DEFAULT_IGNORES uses bare names, so the classic
+  // build/dependency directory names are ignored at ANY depth — not just
+  // at the scan root (the old anchored `X/**` forms missed
+  // `packages/app/node_modules` etc. in monorepos).
+  describe("M-01 bare-name defaults — nested depth", () => {
+    it("ignores monorepo-nested node_modules/dist/build at any depth", () => {
+      const matcher = createIgnoreMatcher("/definitely/not/a/root");
+      expect(matcher.isIgnored("packages/app/node_modules/x.spec.ts")).toBe(
+        true,
+      );
+      expect(matcher.isIgnored("packages/app/dist/a.js")).toBe(true);
+      expect(matcher.isIgnored("services/api/build/x.py")).toBe(true);
+      expect(matcher.isIgnored("packages/app/__fixtures__/a.ts")).toBe(true);
+      expect(matcher.isIgnored("packages/app/testdata/data.json")).toBe(true);
+    });
+
+    it("ignores the bare directory itself, at any depth", () => {
+      const matcher = createIgnoreMatcher("/definitely/not/a/root");
+      expect(matcher.isIgnored("packages/app/node_modules")).toBe(true);
+      expect(matcher.isIgnored("packages/app/dist")).toBe(true);
+    });
+
+    it("a `.cache`-prefixed SIBLING name is not the bare name (boundary)", () => {
+      const matcher = createIgnoreMatcher("/definitely/not/a/root");
+      // `*` wildcards cannot appear in a bare name; `.cache` matches only
+      // the exact segment, so `.cachex` is a different name.
+      expect(matcher.isIgnored("a/.cachex/x.ts")).toBe(false);
+    });
+  });
+
+  // The bare-name matcher compiles to `(?:^|/)name(?:/|$)` — segment-
+  // anchored, so a FILENAME lookalike (`src/out.ts`) must never match the
+  // `out` directory pattern. Pin it: the matcher is hand-rolled.
+  describe("M-01 bare-name defaults — segment-vs-filename boundary", () => {
+    it("does not ignore files whose basename equals a bare name", () => {
+      const matcher = createIgnoreMatcher("/definitely/not/a/root");
+      expect(matcher.isIgnored("src/out.ts")).toBe(false);
+      expect(matcher.isIgnored("src/build.ts")).toBe(false);
+      expect(matcher.isIgnored("src/coverage.ts")).toBe(false);
+      expect(matcher.isIgnored("foo/node_modules.ts")).toBe(false);
+      expect(matcher.isIgnored("vendor.ts")).toBe(false);
+    });
+  });
+
+  // Bug Map M-04: the dogfood-corpus guard in DEFAULT_IGNORES.
+  describe("M-04 corpus cache guard in DEFAULT_IGNORES", () => {
+    it("ignores every tests/corpus/.cache* clone dir shape", () => {
+      const matcher = createIgnoreMatcher("/definitely/not/a/root");
+      // `-kit` suffix: `[^/]*` covers it, and `**` matches the file path.
+      expect(matcher.isIgnored("tests/corpus/.cache-kit/x.spec.ts")).toBe(true);
+      // `*` matches zero+ chars within one segment: `.cachex` too.
+      expect(matcher.isIgnored("tests/corpus/.cachex/x.ts")).toBe(true);
+      expect(matcher.isIgnored("tests/corpus/.cache/repo/file.js")).toBe(true);
+    });
+
+    it("the `[^/]*` in `.cache*` cannot cross a path-segment boundary", () => {
+      const matcher = createIgnoreMatcher("/definitely/not/a/root");
+      // A deeper segment starting with `.cache` is NOT covered — the
+      // wildcard stops at the `/` it sits next to.
+      expect(matcher.isIgnored("tests/corpus/sub/.cache-kit/x.ts")).toBe(false);
+    });
+
+    it("does not ignore same-shaped paths without the leading dot", () => {
+      const matcher = createIgnoreMatcher("/definitely/not/a/root");
+      expect(matcher.isIgnored("tests/corpus/cache-kit/x.ts")).toBe(false);
+      expect(matcher.isIgnored("src/app.ts")).toBe(false);
+    });
   });
 });
 
