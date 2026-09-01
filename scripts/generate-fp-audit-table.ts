@@ -176,7 +176,7 @@ export function renderFpAuditMd(
     "code than the committed baseline recorded (a false-positive",
     "regression signal).",
     "",
-    `Last generated: ${generatedAt.toISOString().slice(0, 10)}.`,
+    `Last generated: ${stampDate(generatedAt)}.`,
     "",
   ];
 
@@ -486,7 +486,7 @@ export function renderMeasuredFpAudit(
     "below is stated against the full rule registry, not against the rules that",
     "happen to have been sampled.",
     "",
-    `Last generated: ${generatedAt.toISOString().slice(0, 10)}.`,
+    `Last generated: ${stampDate(generatedAt)}.`,
     "",
     "## Summary",
     "",
@@ -574,6 +574,13 @@ export function renderMeasuredFpAudit(
  * fail the generated-docs drift gate (bug-audit B4.31) and, worse, the
  * stamp claimed a freshness the committed verdict data does not have.
  * The data's own vintage is the honest stamp.
+ *
+ * Bug-audit 2026-09-01: the git-log fallback `return new Date()` still
+ * produced a today-stamp when the log query came back empty — exactly
+ * what happens on CI's shallow clone when the verdicts' last commit is
+ * older than the fetch depth — and the drift gate failed at midnight
+ * UTC (2026-08-31 -> 09-01). With no data vintage there is nothing to
+ * stamp: emit a fixed sentinel instead of wall-clock time.
  */
 function dataVintage(): Date {
   try {
@@ -587,9 +594,16 @@ function dataVintage(): Date {
     ).trim();
     if (iso) return new Date(iso);
   } catch {
-    /* not a git checkout — fall through to epoch-neutral today */
+    /* not a git checkout — fall through to the fixed sentinel */
   }
-  return new Date();
+  return new Date(0);
+}
+
+/** Formats the vintage stamp; a missing vintage (epoch) means "no data
+ * vintage to claim" — the stamp says so instead of printing 1970. */
+function stampDate(d: Date): string {
+  if (d.getTime() === 0) return "not stamped in this environment";
+  return d.toISOString().slice(0, 10);
 }
 
 function main(): void {
