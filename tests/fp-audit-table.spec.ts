@@ -35,20 +35,15 @@ const GENERATOR_SOURCE = readFileSync(
   "utf8",
 );
 
-const FIXED_DATE = new Date("2026-01-01T00:00:00.000Z");
-
 describe("renderFpAuditMd", () => {
   it("produces valid markdown from a fixture baseline", () => {
-    const md = renderFpAuditMd(
-      [
-        {
-          name: "example-repo",
-          countsByRule: { "QA-TEST-001": 2, "QA-PW-004": 1 },
-          totalFindings: 3,
-        },
-      ],
-      FIXED_DATE,
-    );
+    const md = renderFpAuditMd([
+      {
+        name: "example-repo",
+        countsByRule: { "QA-TEST-001": 2, "QA-PW-004": 1 },
+        totalFindings: 3,
+      },
+    ]);
     expect(md).toContain("# Corpus Count Lock");
     expect(md).toContain("## example-repo");
     expect(md).toContain("| QA-PW-004 | 1 |");
@@ -65,16 +60,13 @@ describe("renderFpAuditMd", () => {
         totalFindings: 1,
       },
     ];
-    expect(renderFpAuditMd(baselines, FIXED_DATE)).toBe(
-      renderFpAuditMd(baselines, FIXED_DATE),
-    );
+    expect(renderFpAuditMd(baselines)).toBe(renderFpAuditMd(baselines));
   });
 
   it("handles a repo with zero findings honestly, not by omission", () => {
-    const md = renderFpAuditMd(
-      [{ name: "clean-repo", countsByRule: {}, totalFindings: 0 }],
-      FIXED_DATE,
-    );
+    const md = renderFpAuditMd([
+      { name: "clean-repo", countsByRule: {}, totalFindings: 0 },
+    ]);
     expect(md).toContain("## clean-repo");
     expect(md).toContain("No findings recorded");
   });
@@ -82,10 +74,9 @@ describe("renderFpAuditMd", () => {
   it("does not silently ignore an unrecognized repo name", () => {
     // Repos without a CORPUS_NOTES entry still render — no note/link,
     // but never a crash or a dropped section.
-    const md = renderFpAuditMd(
-      [{ name: "unknown-repo", countsByRule: { X: 1 }, totalFindings: 1 }],
-      FIXED_DATE,
-    );
+    const md = renderFpAuditMd([
+      { name: "unknown-repo", countsByRule: { X: 1 }, totalFindings: 1 },
+    ]);
     expect(md).toContain("## unknown-repo");
     expect(md).toContain("| X | 1 |");
   });
@@ -152,7 +143,6 @@ describe("coverage denominator is the whole registry", () => {
         { ruleId: "QA-TEST-001", verdict: "TP" },
         { ruleId: "QA-TEST-001", verdict: "FP" },
       ],
-      new Date("2026-01-01"),
       registryRuleIds(),
     );
     expect(md).toContain(`/${RULES.length} rules measured`);

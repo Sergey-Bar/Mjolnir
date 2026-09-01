@@ -19,8 +19,6 @@ This clones the real repos below over the network, runs the same
 code than the committed baseline recorded (a false-positive
 regression signal).
 
-Last generated: 2026-08-31.
-
 ## calcom-cal
 
 large real next.js app with Playwright e2e — QA-PW-141..145 and a broad consumer surface

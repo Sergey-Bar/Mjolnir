@@ -15,7 +15,7 @@
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { execFileSync, execSync } from "node:child_process";
+import { execSync } from "node:child_process";
 
 import { RULES } from "../src/rules/index.js";
 
@@ -150,10 +150,7 @@ function loadBaselines(): FpAuditBaseline[] {
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
-export function renderFpAuditMd(
-  baselines: FpAuditBaseline[],
-  generatedAt: Date = new Date(),
-): string {
+export function renderFpAuditMd(baselines: FpAuditBaseline[]): string {
   const lines = [
     "# Corpus Count Lock (Regression Guard)",
     "",
@@ -176,7 +173,6 @@ export function renderFpAuditMd(
     "code than the committed baseline recorded (a false-positive",
     "regression signal).",
     "",
-    `Last generated: ${stampDate(generatedAt)}.`,
     "",
   ];
 
@@ -468,7 +464,6 @@ export function renderMeasuredFpModule(verdicts: Verdict[]): string {
 
 export function renderMeasuredFpAudit(
   verdicts: Verdict[],
-  generatedAt: Date = new Date(),
   registryIds: string[] = [],
 ): string {
   const stats = computeRuleStats(verdicts);
@@ -486,7 +481,6 @@ export function renderMeasuredFpAudit(
     "below is stated against the full rule registry, not against the rules that",
     "happen to have been sampled.",
     "",
-    `Last generated: ${stampDate(generatedAt)}.`,
     "",
     "## Summary",
     "",
@@ -567,86 +561,52 @@ export function renderMeasuredFpAudit(
 
 // ─── Main ────────────────────────────────────────────────────────────
 
-/**
- * Deterministic "Last generated" stamp: the date of the latest commit
- * that touched the verdict data. A runtime `new Date()` here made the
- * generated page differ on EVERY later day — which would permanently
- * fail the generated-docs drift gate (bug-audit B4.31) and, worse, the
- * stamp claimed a freshness the committed verdict data does not have.
- * The data's own vintage is the honest stamp.
- *
- * Bug-audit 2026-09-01: the git-log fallback `return new Date()` still
- * produced a today-stamp when the log query came back empty — exactly
- * what happens on CI's shallow clone when the verdicts' last commit is
- * older than the fetch depth — and the drift gate failed at midnight
- * UTC (2026-08-31 -> 09-01). With no data vintage there is nothing to
- * stamp: emit a fixed sentinel instead of wall-clock time.
- */
-function dataVintage(): Date {
-  try {
-    const iso = execFileSync(
-      "git",
-      ["log", "-1", "--format=%cI", "--", "tests/corpus/verdicts"],
-      {
-        encoding: "utf8",
-        stdio: ["ignore", "pipe", "ignore"],
-      },
-    ).trim();
-    if (iso) return new Date(iso);
-  } catch {
-    /* not a git checkout — fall through to the fixed sentinel */
-  }
-  return new Date(0);
-}
+// Bug-audit 2026-09-01: main() lost its wrapper — the whole "Last
+// generated" stamp machinery (dataVintage/stampDate) was removed after
+// the git-log date proved non-deterministic on CI shallow clones (git
+// log -- <path> reports HEAD on a depth-1 clone even when HEAD never
+// touched the path, so the stamp rolled over at every midnight). The
+// data's vintage lives in git history (git blame), not in the artifact.
 
-/** Formats the vintage stamp; a missing vintage (epoch) means "no data
- * vintage to claim" — the stamp says so instead of printing 1970. */
-function stampDate(d: Date): string {
-  if (d.getTime() === 0) return "not stamped in this environment";
-  return d.toISOString().slice(0, 10);
-}
+const update = process.argv.includes("--update");
 
-function main(): void {
-  const update = process.argv.includes("--update");
+// Bug-audit B4.29/L13: fail BEFORE writing any artifact when the
+// unclassified-verdict backlog grew beyond its committed ceiling —
+// an audit page built on a shrinking classified base is fiction.
+checkUnclassifiedCompleteness(collectUnclassified(), update);
 
-  // Bug-audit B4.29/L13: fail BEFORE writing any artifact when the
-  // unclassified-verdict backlog grew beyond its committed ceiling —
-  // an audit page built on a shrinking classified base is fiction.
-  checkUnclassifiedCompleteness(collectUnclassified(), update);
+// Generate COUNT-LOCK.md (regression guard)
+const baselines = loadBaselines();
+const countLockMd = renderFpAuditMd(baselines);
+writeFileSync(COUNT_LOCK_PATH, countLockMd);
+console.log(`Wrote ${COUNT_LOCK_PATH} from ${baselines.length} baseline(s).`);
 
-  // Generate COUNT-LOCK.md (regression guard)
-  const baselines = loadBaselines();
-  const countLockMd = renderFpAuditMd(baselines, dataVintage());
-  writeFileSync(COUNT_LOCK_PATH, countLockMd);
-  console.log(`Wrote ${COUNT_LOCK_PATH} from ${baselines.length} baseline(s).`);
+// Generate FP-AUDIT.md (measured rates)
+const verdicts = loadVerdicts();
+const fpAuditMd = renderMeasuredFpAudit(verdicts, registryRuleIds());
+writeFileSync(FP_AUDIT_PATH, fpAuditMd);
+console.log(
+  `Wrote ${FP_AUDIT_PATH} from ${verdicts.length} classified verdict(s).`,
+);
 
-  // Generate FP-AUDIT.md (measured rates)
-  const verdicts = loadVerdicts();
-  const fpAuditMd = renderMeasuredFpAudit(
-    verdicts,
-    dataVintage(),
-    registryRuleIds(),
+// Bake the measured FP rates into shipped code (verdicts/ is not packed).
+writeFileSync(MEASURED_FP_PATH, renderMeasuredFpModule(verdicts));
+console.log(`Wrote ${MEASURED_FP_PATH}.`);
+
+// Format all three
+try {
+  execSync(
+    `npx prettier --write "${COUNT_LOCK_PATH}" "${FP_AUDIT_PATH}" "${MEASURED_FP_PATH}"`,
+    { cwd: ROOT, stdio: "ignore" },
   );
-  writeFileSync(FP_AUDIT_PATH, fpAuditMd);
-  console.log(
-    `Wrote ${FP_AUDIT_PATH} from ${verdicts.length} classified verdict(s).`,
-  );
-
-  // Bake the measured FP rates into shipped code (verdicts/ is not packed).
-  writeFileSync(MEASURED_FP_PATH, renderMeasuredFpModule(verdicts));
-  console.log(`Wrote ${MEASURED_FP_PATH}.`);
-
-  // Format all three
-  try {
-    execSync(
-      `npx prettier --write "${COUNT_LOCK_PATH}" "${FP_AUDIT_PATH}" "${MEASURED_FP_PATH}"`,
-      { cwd: ROOT, stdio: "ignore" },
-    );
-  } catch {
-    console.warn("prettier formatting skipped");
-  }
+} catch {
+  console.warn("prettier formatting skipped");
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
-  main();
-}
+// The generator body runs at module scope — the npm script is a straight
+// tsx invocation. Bug-audit 2026-09-01: the former main() wrapper and the
+// non-deterministic "Last generated" stamp machinery (dataVintage/stampDate)
+// were removed — the git-log date proved non-deterministic on CI shallow
+// clones (git log -- <path> reports HEAD there even when HEAD never touched
+// the path), so the drift gate failed at every midnight rollover. The data
+// vintage lives in git history (git blame), not in the artifact.
