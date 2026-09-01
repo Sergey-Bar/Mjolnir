@@ -23,6 +23,7 @@ import {
   renderMeasuredFpModule,
   type Verdict,
 } from "../scripts/generate-fp-audit-table.js";
+import { compareFpMeasurements } from "../scripts/lib/wilson.js";
 import { MEASURED_FP } from "../src/rules/measured-fp.generated.js";
 import { RULES } from "../src/rules/index.js";
 
@@ -57,13 +58,21 @@ describe("measured-fp.generated.ts", () => {
       join(ROOT, "src", "rules", "measured-fp.generated.ts"),
       "utf8",
     );
-    // Prettier reformats the generated file; compare the data, not bytes.
-    const dataLines = (s: string) =>
-      s
-        .split("\n")
-        .filter((l) => /^\s*"QA-/.test(l))
-        .map((l) => l.trim().replace(/,\s*$/, ""))
-        .sort();
+    // Prettier reformats the generated file (long entries wrap onto
+    // multiple lines); compare the DATA, not bytes: pull each rule's
+    // entry block, normalize its field list, sort.
+    const dataLines = (s: string) => {
+      const out: string[] = [];
+      for (const m of s.matchAll(/"(QA-[A-Z]+-\d+)":\s*\{([^}]*)\}/g)) {
+        const fields = (m[2] ?? "")
+          .split(",")
+          .map((f) => f.trim())
+          .filter(Boolean)
+          .sort();
+        out.push(`${m[1]}: ${fields.join(", ")}`);
+      }
+      return out.sort();
+    };
     expect(dataLines(actual)).toEqual(dataLines(expected));
   });
 
@@ -139,7 +148,8 @@ describe("detector-revisions.json sidecar (Verification Trust Evolution Plan §0
   it("a newly measured rule without a sidecar entry defaults to revision 1", () => {
     // The generator stamps loadDetectorRevisions() output; a rule absent
     // from the sidecar must default to 1 (documented first-generation
-    // default), never undefined — the map is the shipped contract.
+    // default), never undefined — the map is the shipped contract. The
+    // entry also carries its §20.2 Wilson interval.
     const verdicts: Verdict[] = (
       Array.from({ length: 10 }, () => ({
         ruleId: "QA-CS-101",
@@ -147,6 +157,77 @@ describe("detector-revisions.json sidecar (Verification Trust Evolution Plan §0
       })) as Verdict[]
     ).concat([{ ruleId: "QA-CS-101", verdict: "FP" }]);
     const rendered = renderMeasuredFpModule(verdicts);
-    expect(rendered).toContain("{ fpRate: 0.091, n: 11, detectorRevision: 1 }");
+    expect(rendered).toMatch(
+      /"QA-CS-101":\s*\{\s*fpRate:\s*0\.091,\s*n:\s*11,\s*detectorRevision:\s*1,\s*ciLow:\s*[\d.]+,\s*ciHigh:\s*[\d.]+,?\s*\}/,
+    );
+  });
+});
+
+describe("§20.2 Wilson intervals in the generated artifact", () => {
+  it("every measurement carries a 95% Wilson interval bracketing its point estimate", () => {
+    for (const [id, m] of Object.entries(MEASURED_FP)) {
+      expect(m.ciLow, id).toBeGreaterThanOrEqual(0);
+      expect(m.ciHigh, id).toBeLessThanOrEqual(1);
+      expect(
+        m.ciLow,
+        `${id}: ciLow ${m.ciLow} must not exceed the point estimate ${m.fpRate} (±4dp rounding)`,
+      ).toBeLessThanOrEqual(m.fpRate + 0.0005);
+      expect(
+        m.ciHigh,
+        `${id}: ciHigh ${m.ciHigh} must not fall below the point estimate ${m.fpRate} (±4dp rounding)`,
+      ).toBeGreaterThanOrEqual(m.fpRate - 0.0005);
+      expect(m.ciLow, id).toBeLessThanOrEqual(m.ciHigh);
+    }
+  });
+});
+
+describe("§20.2 regression governance: compareFpMeasurements", () => {
+  it("flags a regression only on disjoint-bad-direction intervals AND a worse point estimate", () => {
+    // 4/20 → 16/20: point estimate 20% → 80%, intervals
+    // [0.0573, 0.4366] vs [0.5438, 0.9307] — disjoint in the bad direction.
+    const regressed = compareFpMeasurements(
+      { fpRate: 0.2, n: 20 },
+      { fpRate: 0.8, n: 20 },
+    );
+    expect(regressed.regressed).toBe(true);
+    expect(regressed.comparable).toBe(true);
+
+    // 10/20 → 11/20: point estimate worsened, intervals still overlap
+    // heavily — noise within tolerance must NOT fail CI.
+    const noise = compareFpMeasurements(
+      { fpRate: 0.5, n: 20 },
+      { fpRate: 0.55, n: 20 },
+    );
+    expect(noise.regressed).toBe(false);
+  });
+
+  it("an improved rate is never a regression even when intervals are disjoint", () => {
+    const improved = compareFpMeasurements(
+      { fpRate: 0.8, n: 20 },
+      { fpRate: 0.45, n: 20 },
+    );
+    expect(improved.regressed).toBe(false);
+  });
+
+  it("n < 10 on either side is informational only (§20.2)", () => {
+    const smallOld = compareFpMeasurements(
+      { fpRate: 0.1, n: 9 },
+      { fpRate: 0.9, n: 20 },
+    );
+    expect(smallOld.comparable).toBe(false);
+    expect(smallOld.regressed).toBe(false);
+
+    const smallNew = compareFpMeasurements(
+      { fpRate: 0.1, n: 20 },
+      { fpRate: 0.9, n: 9 },
+    );
+    expect(smallNew.comparable).toBe(false);
+    expect(smallNew.regressed).toBe(false);
+  });
+
+  it("a missing prior measurement is informational, never a failure", () => {
+    const fresh = compareFpMeasurements(undefined, { fpRate: 1, n: 20 });
+    expect(fresh.regressed).toBe(false);
+    expect(fresh.comparable).toBe(false);
   });
 });

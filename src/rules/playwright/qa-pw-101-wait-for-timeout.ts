@@ -10,6 +10,10 @@ import { lineAt, colAt } from "../shared/positions.js";
 
 export const pwWaitForTimeout = defineRule({
   id: "QA-PW-101",
+  // Measured core (Verification Trust corpus, 2026-09-01): 20/20
+  // adjudicated TP across next-auth and sveltejs/kit — every sampled
+  // call is a load-bearing, false-pass-prone hard sleep (plan §11.5
+  // UNSURE adjudication; was the D5 "parked on 20 UNSURE" defect).
   tier: "core",
   category: "QA-PW",
   title: "Hard sleep via waitForTimeout",

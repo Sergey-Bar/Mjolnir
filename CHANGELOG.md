@@ -9,6 +9,82 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — Verification Trust Evolution, Phase 1 — measurement infrastructure
+
+### Added — UNSURE adjudication gate + QA-PW-101 measured (plan §11.5)
+
+- **UNSURE ceiling ratchet:** `npm run fp-audit:generate` now fails when the
+  UNSURE backlog grows beyond the committed
+  `tests/corpus/verdicts/unsure-ceiling.json` (the §11.5 mechanism: UNSURE
+  never counts into `n` but always triggers review). The ceiling only moves
+  DOWN via documented adjudication; upward movement requires an explicit
+  `--update` whose diff names every rule that grew. Criteria live in
+  `tests/corpus/verdicts/README.md`.
+- **QA-PW-101 is measured (the D5 "parked on 20 UNSURE" defect resolved):**
+  all 20 UNSURE verdicts were adjudicated by reading the cited sources at
+  repo HEAD — **20 TP, 0 FP, n=20** (next-auth's session-sync sleeps before
+  reading session state; sveltejs/kit's 100 ms request-observation windows
+  that false-pass when a stray refresh starts after the window). The rule
+  now declares `tier: "core"` (0% FP ≤ 10%, n ≥ 10, revision 1, recall
+  floor satisfied: fires in 4 corpus baselines) — the measurement-dependent
+  default would resolve it to core anyway, but measured rules declare
+  their tier explicitly (the D3 Step 2 invariant).
+- **QA-TQUAL-009 UNSURE row resolved → FP** (tanstack-query angular
+  inject-query:529 — a deliberate `void` fire-and-forget whose assertions
+  still fail the run via vitest's unhandled-rejection handling; the
+  FALSE-GREEN diagnosis does not hold). n=2 — below the measurement bar,
+  still unmeasured/PROVISIONAL.
+- **Coverage:** 42/91 → **43/91** measured rules; UNSURE backlog 21 → **0**.
+
+### Changed — D3 two-step tier fix (plan §11.2; scan-behavior-neutral)
+
+- **Step 1 (explicit tiers):** every rule now declares its `tier`
+  explicitly — the 42 formerly implicit-core rules received an explicit
+  `tier: "core"` matching their effective tier. Byte-identical scan
+  behavior (the declared value equaled the omitted-tier default);
+  generated docs updated with an explained diff (the matrix's
+  "explicit tier declarations" line moved 49/91 → 91/91).
+- **Step 2 (measurement-dependent default):** the omitted-tier default is
+  no longer unconditionally core. A rule that omits `tier` resolves via
+  `effectiveTier` (new `src/rules/measurement.ts`): **core** only with a
+  valid corpus measurement (n ≥ 10 at a matching `detectorRevision`),
+  otherwise **extended**, displayed with the new **PROVISIONAL** status.
+  PROVISIONAL is a display status (`tier extended/unmeasured`), not a
+  tier value — no schema churn. Scan findings are byte-identical: the
+  pipeline enforces only `quarantine` (severity/info + E0 caps, --strict
+  filter), and every quarantine rule declares its tier explicitly;
+  overlap-dedup consumes declared tiers only, and no demoted rule
+  participates in an `overlapWith` tier comparison that could change a
+  survivor set (all overlap groups are single-declarer/single-target).
+- **The D3 demotion (38 rules drop from effective core to
+  extended/PROVISIONAL):** QA-TEST-001, QA-TEST-006, QA-TEST-010,
+  QA-TQUAL-002, QA-TQUAL-009, QA-TQUAL-011, QA-PW-003, QA-PW-004,
+  QA-PW-101, QA-PW-104, QA-PW-113, QA-PW-115, QA-PW-116, QA-PW-117,
+  QA-PW-121, QA-PW-123, QA-PW-124, QA-PW-125, QA-PW-140, QA-PW-141,
+  QA-PW-142, QA-PW-144, QA-CI-001, QA-CI-002, QA-CI-005, QA-CI-007,
+  QA-CI-008, QA-CI-009, QA-CI-010, QA-PY-001, QA-PY-009, QA-PY-011,
+  QA-PY-012, QA-PY-101, QA-PY-103, QA-PY-105, QA-PY-106, QA-PY-107.
+  The 4 measured implicit-core rules (QA-PW-002, QA-PY-002, QA-JV-105,
+  QA-CS-101) keep core. Unmeasured-effective-core count: 38 → **0**.
+  **Suite-invalidating callout (plan §11.2):** QA-TEST-001 (focused test
+  committed, `suiteInvalidating: true`) is among the demoted rules — its
+  findings still void the suite's pass claim and still gate CI at
+  severity=error; only its tier/statistics status changed. QA-PY-001 is
+  the suite-invalidating Python sibling (same class).
+- **Registry ratchet (plan §20.3, enforced in code):** new
+  `tests/registry-ratchet.spec.ts` fails CI on ANY unmeasured rule in
+  effective core (`tier core ⇒ valid MEASURED_FP with matching
+detectorRevision, FP ≤ 10%, n ≥ 10`), on any detectorRevision mismatch
+  (§20.5: stale ⇒ provisional), and — recall floor (§20.6) — on a core
+  rule that fires nowhere in the corpus baselines. §20.1 evidence-state
+  monotonicity: the measured ratio may only improve without a
+  machine-detectable `MEASUREMENT-EXCEPTION` marker in this CHANGELOG.
+- **`mjolnir doctor`**: `MAX_UNMEASURED_CORE` lowered 40 → **0** (Phase 1
+  exit gate: 0 unmeasured in effective core, now enforced); tier checks
+  consume `effectiveTier` + stale-measurement logic. Display surfaces
+  (`mjolnir explain`, `mjolnir rules`, generated rule docs, capability
+  matrix) render the PROVISIONAL status honestly.
+
 ## [Unreleased] — Verification Trust Evolution, Phase 0 + Phase 1 prep
 
 ### Added — Rule Capability Matrix (Phase 0)

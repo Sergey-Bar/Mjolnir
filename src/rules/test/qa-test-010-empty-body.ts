@@ -10,7 +10,6 @@ import { isInsideEmbeddedCode } from "../shared/masking.js";
 
 export const emptyTestBody = defineRule({
   id: "QA-TEST-010",
-  tier: "core",
   category: "QA-TEST",
   title: "Empty test body",
   severity: "error",

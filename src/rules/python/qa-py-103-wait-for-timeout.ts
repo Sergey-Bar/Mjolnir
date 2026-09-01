@@ -10,7 +10,6 @@ import { lineAt, colAt } from "../shared/positions.js";
 
 export const pyPwWaitForTimeout = defineRule({
   id: "QA-PY-103",
-  tier: "core",
   category: "QA-PW",
   title: "wait_for_timeout() as sync",
   severity: "warning",

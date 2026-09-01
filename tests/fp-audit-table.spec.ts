@@ -16,8 +16,11 @@ import { describe, expect, it } from "vitest";
 
 import {
   checkUnclassifiedCompleteness,
+  checkUnsureAdjudication,
   collectUnclassified,
+  collectUnsure,
   loadUnclassifiedCeiling,
+  loadUnsureCeiling,
   registryRuleIds,
   renderFpAuditMd,
   renderMeasuredFpAudit,
@@ -218,5 +221,63 @@ describe("unclassified-verdict completeness ratchet (bug-audit B4.29, L13)", () 
         committed,
       );
     }
+  });
+});
+
+describe("UNSURE adjudication ratchet (plan §11.5)", () => {
+  it("collectUnsure() counts UNSURE rows per rule and the total is their sum", () => {
+    const report = collectUnsure();
+    expect(report.total).toBe(
+      Object.values(report.byRule).reduce((a, b) => a + b, 0),
+    );
+  });
+
+  it("the committed ceiling is an upper bound — a growing UNSURE backlog fails the generator", () => {
+    const report = collectUnsure();
+    const ceiling = loadUnsureCeiling();
+    // The generator itself must pass right now (the docs-drift CI job
+    // runs it); this is the same check main() performs before writing.
+    expect(() => checkUnsureAdjudication(report, false)).not.toThrow();
+    // And the committed ceiling must actually bound the current state —
+    // otherwise the ratchet is decoration.
+    for (const [ruleId, count] of Object.entries(report.byRule)) {
+      expect(
+        count,
+        `${ruleId} has more UNSURE rows than its committed ceiling allows`,
+      ).toBeLessThanOrEqual(ceiling.byRule[ruleId] ?? 0);
+    }
+  });
+
+  it("any growth beyond the committed ceiling throws with the offending rule named; --update records instead", () => {
+    const ceiling = loadUnsureCeiling();
+    const committed = readFileSync(
+      join(ROOT, "tests", "corpus", "verdicts", "unsure-ceiling.json"),
+      "utf8",
+    );
+    try {
+      const grown = {
+        total: ceiling.total + 2,
+        byRule: { ...ceiling.byRule, "QA-NOPE-999": 2 },
+      };
+      let message = "";
+      try {
+        checkUnsureAdjudication(grown, false);
+      } catch (e) {
+        message = e instanceof Error ? e.message : String(e);
+      }
+      expect(message).toContain("UNSURE adjudication gate failed");
+      // --update records instead of failing (the review escape hatch).
+      expect(() => checkUnsureAdjudication(grown, true)).not.toThrow();
+    } finally {
+      writeFileSync(
+        join(ROOT, "tests", "corpus", "verdicts", "unsure-ceiling.json"),
+        committed,
+      );
+    }
+  });
+
+  it("a shrinking backlog never fails — adjudication lowers the ceiling", () => {
+    const report = collectUnsure();
+    expect(() => checkUnsureAdjudication(report, false)).not.toThrow();
   });
 });

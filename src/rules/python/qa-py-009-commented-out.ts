@@ -10,7 +10,6 @@ import { lineAt, colAt } from "../shared/positions.js";
 
 export const pyCommentedOutTest = defineRule({
   id: "QA-PY-009",
-  tier: "core",
   category: "QA-TQUAL",
   title: "Commented-out test",
   severity: "warning",

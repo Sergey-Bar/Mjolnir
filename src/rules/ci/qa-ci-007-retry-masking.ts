@@ -27,7 +27,6 @@ interface WorkflowDoc {
 
 export const retryMasking = defineRule({
   id: "QA-CI-007",
-  tier: "core",
   category: "QA-CI",
   title: "Retry masks test failures",
   severity: "warning",

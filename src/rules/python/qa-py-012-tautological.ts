@@ -9,7 +9,6 @@ import { lineAt, colAt } from "../shared/positions.js";
 
 export const pyTautological = defineRule({
   id: "QA-PY-012",
-  tier: "core",
   category: "QA-TQUAL",
   title: "Tautological assertion",
   severity: "error",

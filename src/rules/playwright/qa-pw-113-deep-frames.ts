@@ -11,7 +11,6 @@ import { lineAt, colAt } from "../shared/positions.js";
 
 export const pwDeepFrameLocator = defineRule({
   id: "QA-PW-113",
-  tier: "core",
   category: "QA-PW",
   title: "frameLocator chain deeper than 2",
   severity: "warning",

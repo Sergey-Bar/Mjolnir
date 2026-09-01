@@ -10,6 +10,7 @@
 import { RULES } from "../rules/index.js";
 import type { QADoctorRule } from "../rules/rule.js";
 import { MEASURED_FP } from "../rules/measured-fp.generated.js";
+import { effectiveTier, isProvisional } from "../rules/measurement.js";
 import { deriveEvidenceLevel, type EvidenceLevel } from "../types.js";
 
 export interface RuleCatalogEntry {
@@ -18,8 +19,15 @@ export interface RuleCatalogEntry {
   category: string;
   severity: string;
   confidence: string;
-  /** Which report the rule ships in: core + extended by default, quarantine only with --strict. */
+  /**
+   * Which report the rule ships in: core + extended by default,
+   * quarantine only with --strict. Resolved measurement-dependently
+   * (plan §11.2 Step 2): an omitted tier resolves to core only with a
+   * valid measurement, otherwise extended.
+   */
   tier: "core" | "extended" | "quarantine";
+  /** Display status: unmeasured extended rules render as PROVISIONAL. */
+  status?: "PROVISIONAL";
   /** Measured false-positive rate (0..1) from corpus verdicts, when n >= 10. */
   measuredFpRate?: number;
   /** Classified (TP+FP) verdicts behind measuredFpRate. */
@@ -47,7 +55,8 @@ export function buildCatalog(
       category: r.category,
       severity: r.severity,
       confidence: r.confidence,
-      tier: r.tier ?? "core",
+      tier: effectiveTier(r),
+      ...(isProvisional(r) ? { status: "PROVISIONAL" as const } : {}),
       ...(measured
         ? { measuredFpRate: measured.fpRate, measuredFpN: measured.n }
         : {}),
@@ -84,8 +93,10 @@ export function renderCatalogMd(entries: RuleCatalogEntry[]): string {
       e.measuredFpRate !== undefined
         ? `${Math.round(e.measuredFpRate * 100)}% (n=${e.measuredFpN})`
         : "—";
+    const tierCell =
+      e.status === "PROVISIONAL" ? `${e.tier} (PROVISIONAL)` : e.tier;
     lines.push(
-      `| ${e.id} | ${escapeMdCell(e.title)} | ${e.severity} | ${e.tier} | ${measured} | ${e.confidence} | ${e.evidenceLevel} | ${e.falsePositiveRisk ?? "—"} | ${e.autofix ? "yes" : "no"} | ${e.introduced ?? "—"} |`,
+      `| ${e.id} | ${escapeMdCell(e.title)} | ${e.severity} | ${tierCell} | ${measured} | ${e.confidence} | ${e.evidenceLevel} | ${e.falsePositiveRisk ?? "—"} | ${e.autofix ? "yes" : "no"} | ${e.introduced ?? "—"} |`,
     );
   }
   return lines.join("\n");

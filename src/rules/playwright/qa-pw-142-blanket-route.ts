@@ -14,7 +14,6 @@ import { isInsideEmbeddedCode } from "../shared/masking.js";
 
 export const pwBlanketRouteMock = defineRule({
   id: "QA-PW-142",
-  tier: "core",
   category: "QA-PW",
   title: "Blanket route mock",
   severity: "warning",

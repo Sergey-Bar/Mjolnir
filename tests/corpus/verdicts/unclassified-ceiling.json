@@ -1,6 +1,6 @@
 {
   "total": 0,
   "byFile": {},
-  "recordedAt": "2026-09-01T12:15:29.479Z",
+  "recordedAt": "2026-09-01T18:33:57.661Z",
   "note": "Committed ratchet ceiling (bug-audit B4.29/L13): the generator fails when unclassified verdict rows exceed these counts. Classification work lowers them; --update re-records."
 }

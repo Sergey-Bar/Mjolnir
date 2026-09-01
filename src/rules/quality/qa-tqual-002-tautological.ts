@@ -11,7 +11,6 @@ import { lineAt, colAt } from "../shared/positions.js";
 
 export const tautologicalAssertion = defineRule({
   id: "QA-TQUAL-002",
-  tier: "core",
   category: "QA-TQUAL",
   title: "Tautological assertion",
   severity: "error",

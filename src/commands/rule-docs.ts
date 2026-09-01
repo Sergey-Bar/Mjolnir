@@ -17,6 +17,7 @@ import { join } from "node:path";
 import { RULES } from "../rules/index.js";
 import type { QADoctorRule } from "../rules/rule.js";
 import { MEASURED_FP } from "../rules/measured-fp.generated.js";
+import { effectiveTier, isProvisional } from "../rules/measurement.js";
 import { deriveEvidenceLevel, QA_IMPACT_LABELS } from "../types.js";
 import type { Finding } from "../types.js";
 import { parseWorkflow } from "../discovery/workflow-parser.js";
@@ -148,7 +149,9 @@ export function renderRuleDocMd(data: RuleDocData): string {
   lines.push("|---|---|");
   lines.push(`| Severity | ${r.severity} |`);
   lines.push(`| Confidence | ${r.confidence} |`);
-  lines.push(`| Tier | ${r.tier ?? "core"} |`);
+  lines.push(
+    `| Tier | ${effectiveTier(r)}${isProvisional(r) ? " (PROVISIONAL)" : ""} |`,
+  );
   const measured = MEASURED_FP[r.id];
   lines.push(
     `| Measured FP rate | ${

@@ -6,7 +6,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | ------------------------------------- | ------------------------------- |
 | Severity                              | error                           |
 | Confidence                            | high                            |
-| Tier                                  | core                            |
+| Tier                                  | extended (PROVISIONAL)          |
 | Measured FP rate                      | not yet measured                |
 | Evidence level                        | E2                              |
 | QA impact                             | False-green risk (FALSE-GREEN)  |

@@ -11,7 +11,6 @@ import { lineAt, colAt } from "../shared/positions.js";
 
 export const pwSerialNoJustification = defineRule({
   id: "QA-PW-117",
-  tier: "core",
   category: "QA-PW",
   title: "describe.serial without justification",
   severity: "warning",

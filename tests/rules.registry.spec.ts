@@ -4,6 +4,10 @@
 
 import { describe, expect, it } from "vitest";
 import { RULES, getRule, RETIRED_RULE_IDS } from "../src/rules/index.js";
+import {
+  effectiveTier,
+  hasValidMeasurement,
+} from "../src/rules/measurement.js";
 
 describe("RULES registry", () => {
   it("contains no duplicate rule IDs", () => {
@@ -23,19 +27,23 @@ describe("RULES registry", () => {
     }
   });
 
-  it("every rule declares its tier explicitly (Phase 1 D3 Step 1)", () => {
-    // Verification Trust Evolution Plan §11.2 Step 1: explicit `tier`
-    // declarations generated for all rules from their then-effective tier
-    // (implicit core stayed core). This locks in today's reality before
-    // Step 2 changes the omitted-tier default; it also means the tier
-    // column of every generated artifact is fed by declarations, never
-    // by a silent fallback.
-    const undeclared = RULES.filter((r) => r.tier === undefined).map(
-      (r) => r.id,
-    );
-    expect(undeclared, "rules with omitted tier").toEqual([]);
+  it("omitted tiers resolve measurement-dependently, never to unmeasured core (Phase 1 D3 Steps 1+2)", () => {
+    // Step 1 generated explicit `tier` declarations for all rules from
+    // their then-effective tier; Step 2 made the omitted-tier default
+    // measurement-dependent (plan §11.2). Both hold at once: a rule may
+    // omit tier ONLY when Step 2's default resolves it to extended
+    // (displayed PROVISIONAL); every validly-measured implicit-core rule
+    // keeps its explicit core declaration.
     for (const rule of RULES) {
-      expect(["core", "extended", "quarantine"]).toContain(rule.tier);
+      if (rule.tier === undefined) {
+        expect(
+          hasValidMeasurement(rule),
+          `${rule.id}: omitted tier with no valid measurement must resolve to extended, never core`,
+        ).toBe(false);
+        expect(effectiveTier(rule), rule.id).toBe("extended");
+      } else {
+        expect(["core", "extended", "quarantine"]).toContain(rule.tier);
+      }
     }
   });
 });

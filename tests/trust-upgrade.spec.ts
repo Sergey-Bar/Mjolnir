@@ -22,7 +22,6 @@ import {
   checkTierEnforcement,
   checkTrustMetadata,
   CORE_CAP,
-  MAX_UNMEASURED_CORE,
   renderDoctorReport,
   runDoctorSelfAudit,
 } from "../src/commands/doctor.js";
@@ -242,7 +241,9 @@ describe("mjolnir doctor — anti-creep and tier-enforcement checks", () => {
 
   it("checkAntiCreep passes when core rule count is within CORE_CAP", () => {
     const rules = Array.from({ length: CORE_CAP }, (_, i) =>
-      fakeRule(`QA-TEST-${100 + i}`),
+      // Explicit core: omitted tiers resolve measurement-dependently
+      // (plan §11.2 Step 2) and these synthetic rules carry no measurement.
+      fakeRule(`QA-TEST-${100 + i}`, "core"),
     );
     const check = checkAntiCreep(rules);
     expect(check.ok).toBe(true);
@@ -251,7 +252,7 @@ describe("mjolnir doctor — anti-creep and tier-enforcement checks", () => {
 
   it("checkAntiCreep fails and lists overflow when core exceeds the cap", () => {
     const rules = Array.from({ length: CORE_CAP + 8 }, (_, i) =>
-      fakeRule(`QA-TEST-${100 + i}`),
+      fakeRule(`QA-TEST-${100 + i}`, "core"),
     );
     const check = checkAntiCreep(rules);
     expect(check.ok).toBe(false);
@@ -285,12 +286,23 @@ describe("mjolnir doctor — anti-creep and tier-enforcement checks", () => {
     expect(check.details[0]).toContain("1 quarantine rules capped");
   });
 
-  it("checkTierEnforcement fails when more core rules are unmeasured than the ratchet allows", () => {
-    const rules = Array.from({ length: MAX_UNMEASURED_CORE + 1 }, (_, i) =>
-      fakeRule(`QA-TEST-${700 + i}`),
-    );
+  it("checkTierEnforcement fails when any effective-core rule is unmeasured (Phase 1 ratchet: cap is 0)", () => {
+    // The Phase 1 ratchet lowered MAX_UNMEASURED_CORE to 0 — one
+    // unmeasured effective-core rule is already a blocking failure.
+    // The rule must declare core explicitly: an omitted tier would
+    // resolve to extended (unmeasured) and never count as core.
+    const rules = [fakeRule("QA-TEST-700", "core")];
     const check = checkTierEnforcement("/definitely/not/a/real/dir", rules);
     expect(check.ok).toBe(false);
     expect(check.details.join(" ")).toMatch(/exceeds the Law #3 ratchet cap/);
+  });
+
+  it("checkTierEnforcement ignores unmeasured rules that omit their tier (they are provisional-extended, not core)", () => {
+    // Plan §11.2 Step 2: the measurement-dependent default means an
+    // unmeasured rule without a declared tier is extended (PROVISIONAL),
+    // so it never trips the core ratchet.
+    const rules = [fakeRule("QA-TEST-701")];
+    const check = checkTierEnforcement("/definitely/not/a/real/dir", rules);
+    expect(check.ok).toBe(true);
   });
 });

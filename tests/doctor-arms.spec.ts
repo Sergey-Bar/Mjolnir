@@ -86,7 +86,12 @@ describe("checkAntiCreep", () => {
     const rules: QADoctorRule[] = [];
     for (let i = 0; i < 66; i++) {
       rules.push(
-        minimalRule({ id: `QA-TEST-${String(800 + i).padStart(3, "0")}` }),
+        // Explicit core: an omitted tier resolves measurement-dependently
+        // (plan §11.2 Step 2) and these probe rules carry no measurement.
+        minimalRule({
+          id: `QA-TEST-${String(800 + i).padStart(3, "0")}`,
+          tier: "core",
+        }),
       );
     }
     const result = checkAntiCreep(rules);

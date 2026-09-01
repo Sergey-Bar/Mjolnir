@@ -10,7 +10,6 @@ import { isInsideEmbeddedCode } from "../shared/masking.js";
 
 export const hardcodedBaseUrl = defineRule({
   id: "QA-PW-123",
-  tier: "core",
   category: "QA-PW",
   title: "Hardcoded environment URL in spec",
   severity: "warning",

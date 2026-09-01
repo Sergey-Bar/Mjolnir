@@ -58,9 +58,11 @@ describe("rules catalog", () => {
     expect(entry.measuredFpN).toBeUndefined();
 
     const md = renderCatalogMd(entries);
-    // Tier falls back to "core"; measured-FP column falls back to an em-dash.
+    // Tier resolves measurement-dependently (plan §11.2 Step 2): the
+    // synthetic rule has no measurement and no declared tier, so it is
+    // extended and displayed PROVISIONAL — never an assumed core.
     expect(md).toContain(
-      "| QA-MIN-001 | Minimal rule | info | core | — | low |",
+      "| QA-MIN-001 | Minimal rule | info | extended (PROVISIONAL) | — | low |",
     );
     // FP Risk column falls back to an em-dash, Autofix to "no", Since to em-dash.
     expect(md).toContain("| — | no | — |");

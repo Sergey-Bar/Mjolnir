@@ -17,7 +17,6 @@ import { isMasked } from "../shared/masking.js";
 
 export const brittleSelectors = defineRule({
   id: "QA-PW-004",
-  tier: "core",
   category: "QA-PW",
   title: "Brittle selector instead of role-based locator",
   severity: "warning",

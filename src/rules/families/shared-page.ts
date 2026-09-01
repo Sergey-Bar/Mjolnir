@@ -46,7 +46,6 @@ export const sharedPageFamily = definePatternFamily({
     },
     {
       id: "QA-PY-106",
-      tier: "core",
       appliesTo: "python",
       ext: ".py",
       languages: ["python"],

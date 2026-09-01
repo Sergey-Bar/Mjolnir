@@ -30,9 +30,24 @@ import { fileURLToPath } from "node:url";
 
 import { prettify } from "./lib/prettify.js";
 import { isMainModule } from "./lib/is-main-module.js";
+import { wilsonInterval } from "./lib/wilson.js";
+
+// Re-exported for compatibility — tests/capability-matrix.spec.ts (and
+// any library consumer) imports the interval math from this module, but
+// the single implementation lives in scripts/lib/wilson.ts so the FP
+// regression-governance comparison (§20.2) uses the identical math.
+export { wilsonInterval };
 
 import { RETIRED_RULE_IDS, RULES } from "../src/rules/index.js";
-import { MEASURED_FP } from "../src/rules/measured-fp.generated.js";
+import {
+  MEASURED_FP,
+  type MeasuredFp,
+} from "../src/rules/measured-fp.generated.js";
+import {
+  declaredDetectorRevision,
+  effectiveTier,
+  ruleStatus,
+} from "../src/rules/measurement.js";
 import type { QADoctorRule } from "../src/rules/rule.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -77,7 +92,7 @@ export const DEFECT_LEDGER: readonly DefectLedgerEntry[] = [
   {
     id: "D5",
     defect:
-      "Corpus bias: JV/CS measured on the Playwright libraries themselves; CI rules starved at n=3–5; QA-PW-101 parked on 20 UNSURE verdicts",
+      "Corpus bias: JV/CS measured on the Playwright libraries themselves; CI rules starved at n=3–5; QA-PW-101 parked on 20 UNSURE verdicts [resolved sub-item, 2026-09-01: the QA-PW-101 park was adjudicated from source per plan §11.5 — 20 TP, rule now measured core]",
     targetPhase: "1",
   },
   {
@@ -205,62 +220,47 @@ export interface CapabilityRow {
   mutationCoverage: "UNCLASSIFIED";
   /** Effective tier: declared tier, or the omitted-tier default. */
   tier: "core" | "extended" | "quarantine";
-  /** false = tier omitted in the registry → implicit core (D3 hole). */
+  /** false = tier omitted in the registry → measurement-dependent default (§11.2 Step 2). */
   tierDeclared: boolean;
-  status:
-    | "MEASURED-CORE"
-    | "MEASURED-EXTENDED"
-    | "MEASURED-QUARANTINE"
-    | "UNMEASURED";
+  status: RowStatus;
   suiteInvalidating: boolean;
   knownLimitations: "UNCLASSIFIED";
   evidenceRequirements: "UNCLASSIFIED";
 }
 
-const Z95 = 1.959963984540054;
+/** The row's status vocabulary, shared with src/rules/measurement.ts. */
+type RowStatus = ReturnType<typeof ruleStatus>;
 
-/** 95% Wilson score interval on a proportion fp/n, rounded to 4 dp. */
-export function wilsonInterval(
-  fp: number,
-  n: number,
-): { ciLow: number; ciHigh: number } {
-  if (n <= 0) return { ciLow: 0, ciHigh: 1 };
-  const p = fp / n;
-  const z2 = Z95 * Z95;
-  const denom = 1 + z2 / n;
-  const center = (p + z2 / (2 * n)) / denom;
-  const half = (Z95 / denom) * Math.sqrt((p * (1 - p)) / n + z2 / (4 * n * n));
-  const round4 = (x: number): number => Math.round(x * 10000) / 10000;
-  return {
-    ciLow: round4(Math.max(0, center - half)),
-    ciHigh: round4(Math.min(1, center + half)),
-  };
-}
-
-function statusFor(
-  measured: boolean,
-  fpRate: number | undefined,
-): CapabilityRow["status"] {
-  if (!measured || fpRate === undefined) return "UNMEASURED";
-  if (fpRate <= 0.1) return "MEASURED-CORE";
-  if (fpRate <= 0.3) return "MEASURED-EXTENDED";
-  return "MEASURED-QUARANTINE";
+function statusFor(rule: QADoctorRule): RowStatus {
+  // Single source: src/rules/measurement.ts's ruleStatus. PROVISIONAL is
+  // a display status (§11.2 Step 2) covering both not-measured paths —
+  // an extended/omitted-tier rule without a valid measurement and a core
+  // rule whose measurement went stale (§07 detectorRevision mismatch).
+  return ruleStatus(rule);
 }
 
 export function buildRows(
   rules: readonly QADoctorRule[] = RULES,
-  measured: Readonly<
-    Record<string, { fpRate: number; n: number }>
-  > = MEASURED_FP,
+  measured: Readonly<Record<string, MeasuredFp>> = MEASURED_FP,
 ): CapabilityRow[] {
   const verdicts = loadVerdictStats();
   return [...rules]
     .map((rule): CapabilityRow => {
       const m = measured[rule.id];
-      const measuredFlag = m !== undefined;
+      // "Measured" means a VALID measurement: present AND taken against
+      // the detector revision the rule declares (plan §07 — a stale
+      // measurement counts as unmeasured → provisional).
+      const measuredFlag =
+        m !== undefined &&
+        m.detectorRevision === declaredDetectorRevision(rule);
+      const validM = measuredFlag ? m : undefined;
       const strategy = deriveDetectionStrategyEnum(rule.detectionStrategy);
       const verdictStats = verdicts.get(rule.id);
-      const ci = measuredFlag && m ? wilsonInterval(m.fpRate * m.n, m.n) : null;
+      const ci =
+        measuredFlag && validM
+          ? wilsonInterval(validM.fpRate * validM.n, validM.n)
+          : null;
+      const tier = effectiveTier(rule);
       return {
         id: rule.id,
         name: rule.title,
@@ -274,17 +274,17 @@ export function buildRows(
         detectionStrategyEnum: strategy,
         semanticDepth: deriveSemanticDepth(strategy),
         measured: measuredFlag,
-        fpRate: measuredFlag && m ? m.fpRate : "UNCLASSIFIED",
-        n: measuredFlag && m ? m.n : "UNCLASSIFIED",
+        fpRate: measuredFlag && validM ? validM.fpRate : "UNCLASSIFIED",
+        n: measuredFlag && validM ? validM.n : "UNCLASSIFIED",
         ciLow: ci ? ci.ciLow : "UNCLASSIFIED",
         ciHigh: ci ? ci.ciHigh : "UNCLASSIFIED",
         recall: "UNCLASSIFIED",
         corpusSize: verdictStats?.classified ?? 0,
         corpusDiversity: verdictStats?.repos.size ?? 0,
         mutationCoverage: "UNCLASSIFIED",
-        tier: rule.tier ?? "core",
+        tier,
         tierDeclared: rule.tier !== undefined,
-        status: statusFor(measuredFlag, m?.fpRate),
+        status: statusFor(rule),
         suiteInvalidating: rule.suiteInvalidating === true,
         knownLimitations: "UNCLASSIFIED",
         evidenceRequirements: "UNCLASSIFIED",
@@ -314,38 +314,38 @@ export interface TierMismatch {
  */
 export function crossCheckDeclaredVsMeasured(
   rules: readonly QADoctorRule[] = RULES,
-  measured: Readonly<
-    Record<string, { fpRate: number; n: number }>
-  > = MEASURED_FP,
+  measured: Readonly<Record<string, MeasuredFp>> = MEASURED_FP,
 ): { d9Suspects: TierMismatch[]; unmeasuredInCore: string[] } {
   const d9Suspects: TierMismatch[] = [];
   const unmeasuredInCore: string[] = [];
   for (const rule of rules) {
-    const effectiveTier = rule.tier ?? "core";
+    const effectiveTierValue = effectiveTier(rule);
     const m = measured[rule.id];
-    if (m === undefined) {
-      if (effectiveTier === "core") unmeasuredInCore.push(rule.id);
+    const measuredValid =
+      m !== undefined && m.detectorRevision === declaredDetectorRevision(rule);
+    if (!measuredValid) {
+      if (effectiveTierValue === "core") unmeasuredInCore.push(rule.id);
       continue;
     }
-    if (effectiveTier === "core" && m.fpRate > 0.1) {
+    if (effectiveTierValue === "core" && m.fpRate > 0.1) {
       d9Suspects.push({
         ruleId: rule.id,
-        declaredTier: effectiveTier,
+        declaredTier: effectiveTierValue,
         measuredStatus: `fpRate ${m.fpRate} at n=${m.n}`,
         problem: "core-status rule with measured FP > 10%",
       });
-    } else if (effectiveTier === "extended" && m.fpRate > 0.3) {
+    } else if (effectiveTierValue === "extended" && m.fpRate > 0.3) {
       d9Suspects.push({
         ruleId: rule.id,
-        declaredTier: effectiveTier,
+        declaredTier: effectiveTierValue,
         measuredStatus: `fpRate ${m.fpRate} at n=${m.n}`,
         problem:
           "extended-tier rule with measured FP > 30% (must declare quarantine)",
       });
-    } else if (effectiveTier !== "quarantine" && m.fpRate > 0.3) {
+    } else if (effectiveTierValue !== "quarantine" && m.fpRate > 0.3) {
       d9Suspects.push({
         ruleId: rule.id,
-        declaredTier: effectiveTier,
+        declaredTier: effectiveTierValue,
         measuredStatus: `fpRate ${m.fpRate} at n=${m.n}`,
         problem: "measured FP > 30% without a quarantine declaration",
       });
@@ -393,8 +393,8 @@ export function renderMatrixMd(data: MatrixData): string {
     "## Summary",
     "",
     `- Registry size: **${rows.length} rules**`,
-    `- Measured (n ≥ 10 classified verdicts): **${measuredCount}/${rows.length} (${((measuredCount / rows.length) * 100).toFixed(0)}%)**`,
-    `- Explicit tier declarations: **${declaredCount}/${rows.length}** — ${rows.length - declaredCount} rules are implicit-core via the omitted-tier default (defect D3)`,
+    `- Measured (n ≥ 10 classified verdicts at a matching detectorRevision): **${measuredCount}/${rows.length} (${((measuredCount / rows.length) * 100).toFixed(0)}%)**`,
+    `- Explicit tier declarations: **${declaredCount}/${rows.length}** — ${rows.length - declaredCount} rules resolve via the measurement-dependent omitted-tier default (plan §11.2 Step 2: omitted ⇒ extended/PROVISIONAL unless validly measured)`,
     `- Unmeasured rules in effective core: **${unmeasuredInCore.length}** (Phase 1 exit gate: 0)`,
     `- Declared-vs-measured cross-check: **${d9Suspects.length} mismatch(es)** (ledger class D9)`,
     "",
@@ -422,7 +422,7 @@ export function renderMatrixMd(data: MatrixData): string {
   }
   lines.push("");
   lines.push(
-    `Unmeasured rules currently sitting in effective core (the D3 demotion list, Phase 1 input): ${unmeasuredInCore.length === 0 ? "(none)" : unmeasuredInCore.join(", ")}`,
+    `Unmeasured rules currently sitting in effective core (D3 — closed in Phase 1: the registry ratchet enforces 0): ${unmeasuredInCore.length === 0 ? "(none)" : unmeasuredInCore.join(", ")}`,
   );
   lines.push("");
 
@@ -461,7 +461,7 @@ export function renderMatrixMd(data: MatrixData): string {
         r.corpusDiversity,
         r.mutationCoverage,
         r.confidence,
-        r.tierDeclared ? r.tier : `${r.tier} (implicit default)`,
+        r.tierDeclared ? r.tier : `${r.tier} (measurement default)`,
         r.status,
         r.knownLimitations,
         r.evidenceRequirements,

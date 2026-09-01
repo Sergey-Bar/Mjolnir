@@ -1,0 +1,6 @@
+{
+  "total": 0,
+  "byRule": {},
+  "recordedAt": "2026-09-01T18:33:57.664Z",
+  "note": "Committed ratchet ceiling (plan §11.5): the generator fails when UNSURE verdict rows exceed these counts. Documented adjudication (tests/corpus/verdicts/README.md) lowers them; --update re-records after review."
+}

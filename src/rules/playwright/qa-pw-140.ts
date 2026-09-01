@@ -13,7 +13,6 @@ import { lineAt, colAt } from "../shared/positions.js";
 
 export const qaPw140 = defineRule({
   id: "QA-PW-140",
-  tier: "core",
   category: "QA-PW",
   title: "Screenshot without maxDiffPixelRatio",
   severity: "warning",

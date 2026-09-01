@@ -11,7 +11,6 @@ import { lineAt, colAt } from "../shared/positions.js";
 
 export const pyFocusedTest = defineRule({
   id: "QA-PY-001",
-  tier: "core",
   category: "QA-TEST",
   title: "Focused test committed",
   severity: "error",

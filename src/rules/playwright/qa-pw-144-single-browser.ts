@@ -12,7 +12,6 @@ import { lineAt } from "../shared/positions.js";
 
 export const pwSingleBrowserMatrix = defineRule({
   id: "QA-PW-144",
-  tier: "core",
   category: "QA-PW",
   title: "Single-browser project matrix",
   severity: "info",

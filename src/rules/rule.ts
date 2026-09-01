@@ -53,14 +53,27 @@ export interface RuleMeta {
   /** First released version (semver). Immutable once set. */
   introduced?: string;
   /**
-   * Tier assignment (Phase 4 — Tempering Plan). Additive, optional.
+   * Tier assignment (Phase 4 — Tempering Plan; measurement-dependent
+   * default per Verification Trust Evolution Plan §11.2 Step 2).
    * - "core": ships in the default report (≤10% measured FP rate)
    * - "extended": included by default, lower confidence (≤30% FP)
    * - "quarantine": opt-in only via --strict (>30% FP or unmeasured)
-   * Defaults to "core" when omitted — existing rules stay in the
-   * default report unless explicitly demoted.
+   * When omitted, the tier resolves measurement-dependently via
+   * `effectiveTier` (src/rules/measurement.ts): core for rules with a
+   * valid corpus measurement, extended (displayed PROVISIONAL)
+   * otherwise — an unmeasured rule can never default into core.
    */
   tier?: "core" | "extended" | "quarantine";
+  /**
+   * Detector implementation revision (Verification Trust Evolution Plan
+   * §07). Increment on ANY detection-logic change — pattern, scoping,
+   * AST adoption, rung change. A `MEASURED_FP` entry recorded against a
+   * different revision is stale: the measurement is invalidated,
+   * displayed as PROVISIONAL, and the rule cannot sit in effective core
+   * until re-measured (registry ratchet, §20.3). Default when omitted: 1
+   * (the current first-generation detectors).
+   */
+  detectorRevision?: number;
   /**
    * This finding proves the reported pass does not cover what it claims.
    *

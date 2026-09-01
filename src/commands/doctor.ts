@@ -20,6 +20,10 @@ import { join } from "node:path";
 import type { QADoctorRule } from "../rules/rule.js";
 import { RULES } from "../rules/index.js";
 import { MEASURED_FP } from "../rules/measured-fp.generated.js";
+import {
+  declaredDetectorRevision,
+  effectiveTier,
+} from "../rules/measurement.js";
 import { deriveEvidenceLevel } from "../types.js";
 import { capForTier } from "../engine/tier-policy.js";
 
@@ -144,18 +148,25 @@ export interface DoctorReport {
 /**
  * Law #3 ratchet (audit H-2): "Rules without a measured FP rate
  * (n ≥ 10) cannot ship in the core tier" — restated as an executable
- * cap instead of a decorative sentence. LOWER THIS VALUE each release
- * as more core rules are corpus-measured; `doctor` fails the moment
- * the shipped registry exceeds it, so the count can rise but never.
+ * cap instead of a decorative sentence. Verification Trust Evolution
+ * Phase 1 (§11.2 Step 2/§11 exit gate) closed the hole in code: the
+ * omitted-tier default is measurement-dependent and the registry
+ * ratchet (tests/registry-ratchet.spec.ts) fails on ANY unmeasured
+ * effective-core rule, so the only value this cap can take is 0.
+ * Kept as an explicit constant so the law stays visible in the doctor
+ * report rather than dissolving into a test file.
  */
-export const MAX_UNMEASURED_CORE = 40;
+export const MAX_UNMEASURED_CORE = 0;
 
 /**
  * Check 5 (Phase 4 — Tempering Plan, ratcheted per audit H-2):
  * tier enforcement. Core-tier rules must have a measured FP rate
- * (n ≥ 10 classified verdicts in tests/corpus/verdicts/). The number of
- * unmeasured core rules must stay at or under MAX_UNMEASURED_CORE —
- * exceeding the ratchet is a blocking failure.
+ * (n ≥ 10 classified verdicts in tests/corpus/verdicts/) at a matching
+ * detectorRevision (plan §07 — a stale measurement counts as
+ * unmeasured). The number of unmeasured effective-core rules must stay
+ * at or under MAX_UNMEASURED_CORE — exceeding the ratchet is a blocking
+ * failure. Effective tier resolves measurement-dependently (plan §11.2
+ * Step 2): an omitted tier counts as core only with a valid measurement.
  */
 export function checkTierEnforcement(
   verdictsDir: string,
@@ -169,8 +180,14 @@ export function checkTierEnforcement(
   // whose verdicts have grown since the last `fp-audit:generate`, prefer
   // the live directory so `doctor` reflects the newer classification.
   const classifiedPerRule = new Map<string, number>();
+  const byId = new Map(rules.map((r) => [r.id, r] as const));
   for (const [id, m] of Object.entries(MEASURED_FP)) {
-    classifiedPerRule.set(id, m.n);
+    const rule = byId.get(id);
+    // A stale measurement (revision mismatch, plan §07) does not count:
+    // stale → provisional → re-measure.
+    if (rule && m.detectorRevision === declaredDetectorRevision(rule)) {
+      classifiedPerRule.set(id, m.n);
+    }
   }
   try {
     const live = new Map<string, number>();
@@ -197,9 +214,7 @@ export function checkTierEnforcement(
     // verdicts dir absent (installed package) — fall back to MEASURED_FP.
   }
 
-  const coreRules = rules.filter(
-    (r) => r.tier === undefined || r.tier === "core",
-  );
+  const coreRules = rules.filter((r) => effectiveTier(r) === "core");
   for (const r of coreRules) {
     const n = classifiedPerRule.get(r.id) ?? 0;
     if (n < 10) {
@@ -218,7 +233,7 @@ export function checkTierEnforcement(
 
   details.unshift(
     ok
-      ? `Ratchet (Law #3): ${unmeasured}/${total} core rules lack a measured FP rate — cap is ${MAX_UNMEASURED_CORE}, lowered each release`
+      ? `Ratchet (Law #3): ${unmeasured}/${total} core rules lack a measured FP rate — cap is ${MAX_UNMEASURED_CORE} (Phase 1 closed the unmeasured-core hole)`
       : `BLOCKING: ${unmeasured}/${total} core rules unmeasured — exceeds the Law #3 ratchet cap of ${MAX_UNMEASURED_CORE}`,
   );
 
@@ -243,9 +258,7 @@ export function checkAntiCreep(
   const details: string[] = [];
   let ok = true;
 
-  const coreRules = rules.filter(
-    (r) => r.tier === undefined || r.tier === "core",
-  );
+  const coreRules = rules.filter((r) => effectiveTier(r) === "core");
   const count = coreRules.length;
 
   if (count > CORE_CAP) {

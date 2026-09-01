@@ -108,7 +108,16 @@ describe("capability matrix generation", () => {
       if (!row.measured) {
         expect(row.fpRate, row.id).toBe("UNCLASSIFIED");
         expect(row.n, row.id).toBe("UNCLASSIFIED");
-        expect(row.status, row.id).toBe("UNMEASURED");
+        // PROVISIONAL (plan §11.2 Step 2) = extended-or-omitted tier
+        // without a valid measurement; UNMEASURED = quarantine without
+        // one. Both are unclaimed statuses — never a measured band.
+        expect(["PROVISIONAL", "UNMEASURED"]).toContain(row.status);
+        if (row.tier === "extended") {
+          expect(row.status, row.id).toBe("PROVISIONAL");
+        }
+        if (row.tier === "quarantine") {
+          expect(row.status, row.id).toBe("UNMEASURED");
+        }
       }
     }
   });
@@ -177,10 +186,20 @@ describe("capability matrix generation", () => {
     ]);
   });
 
-  it("all ledger D5/QA-PW-101 UNSURE context is preserved: QA-PW-101 stays unmeasured", () => {
-    // QA-PW-101's 20 verdicts are all UNSURE — UNSURE never counts into n
-    // (plan §08) — so it must not appear in MEASURED_FP.
-    expect(MEASURED_FP["QA-PW-101"]).toBeUndefined();
+  it("ledger D5/QA-PW-101 is resolved: the UNSURE park was adjudicated (§11.5), the rule is measured", () => {
+    // QA-PW-101's 20 verdicts were parked UNSURE (the D5 corpus-bias
+    // defect: "QA-PW-101 parked on 20 UNSURE verdicts"). The 2026-09-01
+    // adjudication pass (plan §11.5) resolved every row from source:
+    // 20 TP — next-auth's session-sync sleeps and sveltejs/kit's 100 ms
+    // request-observation windows are load-bearing, false-pass-prone hard
+    // sleeps. UNSURE never counted into n (plan §08); adjudicated rows
+    // do. The rule is now measured at 0% FP, n=20, and sits in effective
+    // core via the measurement-dependent default.
+    const m = MEASURED_FP["QA-PW-101"];
+    expect(m).toBeDefined();
+    expect(m?.n).toBe(20);
+    expect(m?.fpRate).toBe(0);
+    expect(m?.detectorRevision).toBe(1);
   });
 
   it("detection-strategy enum mapping is conservative", () => {

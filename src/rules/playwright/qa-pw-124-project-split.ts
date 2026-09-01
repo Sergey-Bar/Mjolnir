@@ -10,7 +10,6 @@ import { lineAt } from "../shared/positions.js";
 
 export const pwNoProjectSplit = defineRule({
   id: "QA-PW-124",
-  tier: "core",
   category: "QA-PW",
   title: "No smoke/regression project split",
   severity: "info",

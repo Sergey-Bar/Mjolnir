@@ -18,6 +18,7 @@ import { fileURLToPath } from "node:url";
 
 import { prettify } from "./lib/prettify.js";
 import { isMainModule } from "./lib/is-main-module.js";
+import { compareFpMeasurements, wilsonInterval } from "./lib/wilson.js";
 
 import { RULES } from "../src/rules/index.js";
 
@@ -48,6 +49,14 @@ export const UNCLASSIFIED_CEILING_PATH = join(
   VERDICTS_DIR,
   "unclassified-ceiling.json",
 );
+/**
+ * Committed ceiling for UNSURE verdict rows (plan §11.5 — the UNSURE
+ * adjudication workflow). An UNSURE row is an open question, not a
+ * settled one: it never counts into `n` (§08) but it always triggers
+ * review. This ceiling records today's open questions; adjudication
+ * lowers it, growth beyond it fails the generator.
+ */
+export const UNSURE_CEILING_PATH = join(VERDICTS_DIR, "unsure-ceiling.json");
 
 // Kept in sync by hand with tests/corpus/audit.ts's CORPUS list (the repo
 // name is the join key and is asserted to exist by
@@ -392,6 +401,126 @@ export function checkUnclassifiedCompleteness(
   }
 }
 
+// ─── UNSURE adjudication (Verification Trust Evolution Plan §11.5) ───
+
+export interface UnsureReport {
+  /** UNSURE row count per rule — the review unit (§08: "always triggers review"). */
+  byRule: Record<string, number>;
+  total: number;
+}
+
+/**
+ * Counts the verdict rows whose `"verdict"` is `"UNSURE"`. UNSURE rows
+ * are excluded from every measured rate (they never count into `n`,
+ * plan §05/§08) — which means an UNSURE row that is never revisited is
+ * an evidence gap that no number ever surfaces. This report makes the
+ * gap machine-visible so the ceiling below can pin it.
+ */
+export function collectUnsure(): UnsureReport {
+  const report: UnsureReport = { byRule: {}, total: 0 };
+  if (!existsSync(VERDICTS_DIR)) return report;
+  for (const f of readdirSync(VERDICTS_DIR)) {
+    if (!f.endsWith(".jsonl")) continue;
+    for (const line of readFileSync(join(VERDICTS_DIR, f), "utf8").split(
+      "\n",
+    )) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      try {
+        const entry = JSON.parse(trimmed) as Verdict;
+        if (entry.verdict === "UNSURE" && entry.ruleId) {
+          report.byRule[entry.ruleId] = (report.byRule[entry.ruleId] ?? 0) + 1;
+          report.total++;
+        }
+      } catch {
+        // malformed rows are the unclassified gate's problem, not ours
+      }
+    }
+  }
+  return report;
+}
+
+export interface UnsureCeiling {
+  total: number;
+  byRule: Record<string, number>;
+  recordedAt: string;
+  note: string;
+}
+
+/** Reads the committed UNSURE ceiling (absence = 0 — fail on any UNSURE row). */
+export function loadUnsureCeiling(): UnsureCeiling {
+  if (!existsSync(UNSURE_CEILING_PATH)) {
+    return {
+      total: 0,
+      byRule: {},
+      recordedAt: "",
+      note: "no committed ceiling — any UNSURE row fails",
+    };
+  }
+  return JSON.parse(readFileSync(UNSURE_CEILING_PATH, "utf8")) as UnsureCeiling;
+}
+
+/**
+ * The UNSURE adjudication gate (plan §11.5): UNSURE never counts into
+ * `n` but always triggers review. Mechanically: the committed ceiling
+ * pins today's open UNSURE questions; any growth fails the generator,
+ * and the ceiling only moves DOWN via documented adjudication (a
+ * re-read of the cited source that resolves the row to TP/FP — the
+ * criteria live in tests/corpus/verdicts/README.md). A rule parked on
+ * ≥ 10 UNSURE rows (the QA-PW-101 failure the plan names) is exactly
+ * what this gate exists to prevent from recurring silently.
+ */
+export function checkUnsureAdjudication(
+  report: UnsureReport,
+  update: boolean,
+): void {
+  if (update) {
+    const next: UnsureCeiling = {
+      total: report.total,
+      byRule: report.byRule,
+      recordedAt: new Date().toISOString(),
+      note: "Committed ratchet ceiling (plan §11.5): the generator fails when UNSURE verdict rows exceed these counts. Documented adjudication (tests/corpus/verdicts/README.md) lowers them; --update re-records after review.",
+    };
+    writeFileSync(UNSURE_CEILING_PATH, JSON.stringify(next, null, 2) + "\n");
+    console.log(
+      `UNSURE ceiling recorded: ${next.total} row(s) across ${Object.keys(next.byRule).length} rule(s).`,
+    );
+    return;
+  }
+
+  const ceiling = loadUnsureCeiling();
+  const regressions: string[] = [];
+  for (const [ruleId, count] of Object.entries(report.byRule)) {
+    const allowed = ceiling.byRule[ruleId] ?? 0;
+    if (count > allowed) {
+      regressions.push(
+        `  ${ruleId}: ${count} UNSURE (ceiling ${allowed}, +${count - allowed})`,
+      );
+    }
+  }
+  if (report.total > ceiling.total || regressions.length > 0) {
+    console.error(
+      `\nFAIL: ${report.total} UNSURE verdict row(s) exceed the committed ` +
+        `ceiling of ${ceiling.total} (tests/corpus/verdicts/unsure-ceiling.json). ` +
+        `UNSURE rows never count into n (plan §08) — an UNSURE row that is ` +
+        `never revisited is an unmeasured rule wearing a measurement's name. ` +
+        `Adjudicate per tests/corpus/verdicts/README.md (re-read the cited ` +
+        `source, resolve to TP/FP, or keep UNSURE with a sharper note), or, ` +
+        `if the growth is deliberate corpus expansion awaiting review, ` +
+        `re-record the ceiling with \`npm run fp-audit:generate -- --update\`.`,
+    );
+    for (const r of regressions) console.error(r);
+    throw new Error(
+      `UNSURE adjudication gate failed (${report.total} > ${ceiling.total})`,
+    );
+  }
+  if (report.total < ceiling.total) {
+    console.log(
+      `UNSURE verdict rows: ${report.total} (below the committed ceiling of ${ceiling.total} — re-record with --update to lower it).`,
+    );
+  }
+}
+
 /**
  * Reads the hand-maintained detector-revision sidecar. Absence of the
  * file (or of a rule's entry) yields revision 1 — the documented default
@@ -480,7 +609,13 @@ export function renderMeasuredFpModule(verdicts: Verdict[]): string {
       // Default 1 = the current first-generation detector. The Phase 1
       // ratchet treats a mismatch as stale → provisional → re-measure.
       const rev = revisions[s.ruleId] ?? 1;
-      return `  "${s.ruleId}": { fpRate: ${rate}, n: ${s.classified}, detectorRevision: ${rev} },`;
+      // §20.2: the 95% Wilson interval ships with every measurement so
+      // regression governance compares intervals, not raw point estimates.
+      const ci = wilsonInterval(
+        (s.fpRate as number) * s.classified,
+        s.classified,
+      );
+      return `  "${s.ruleId}": { fpRate: ${rate}, n: ${s.classified}, detectorRevision: ${rev}, ciLow: ${ci.ciLow}, ciHigh: ${ci.ciHigh} },`;
     });
 
   return [
@@ -503,6 +638,10 @@ export function renderMeasuredFpModule(verdicts: Verdict[]): string {
     "   * a mismatch vs the sidecar marks the measurement stale → provisional.",
     "   */",
     "  detectorRevision: number;",
+    "  /** 95% Wilson interval lower bound on the FP rate (plan §20.2). */",
+    "  ciLow: number;",
+    "  /** 95% Wilson interval upper bound on the FP rate (plan §20.2). */",
+    "  ciHigh: number;",
     "}",
     "",
     "export const MEASURED_FP: Readonly<Record<string, MeasuredFp>> = {",
@@ -533,6 +672,12 @@ export function renderMeasuredFpAudit(
     "whose detection logic changes without a revision bump has its measurement",
     "treated as stale → provisional (Verification Trust Evolution Plan §07).",
     "",
+    "The 95% Wilson CI column is the interval regression governance compares",
+    "(plan §20.2): an FP-rate regression is flagged only when the intervals",
+    "are disjoint in the bad direction with a worse point estimate, at",
+    "n ≥ 10 on both sides. Noise within the interval overlap is never a",
+    "CI failure — comparisons below n = 10 are informational only.",
+    "",
     "A rule with fewer than 10 classified verdicts is **unmeasured**. Coverage",
     "below is stated against the full rule registry, not against the rules that",
     "happen to have been sampled.",
@@ -544,14 +689,23 @@ export function renderMeasuredFpAudit(
 
   if (stats.length > 0) {
     lines.push(
-      "| Rule ID | FP Rate | Sample (n) | TP | FP | UNSURE | detectorRev | Status |",
-      "|---|---|---|---|---|---|---|---|",
+      "| Rule ID | FP Rate | 95% Wilson CI | Sample (n) | TP | FP | UNSURE | detectorRev | Status |",
+      "|---|---|---|---|---|---|---|---|---|",
     );
   }
 
   for (const s of stats) {
     const rate = s.fpRate !== null ? `${(s.fpRate * 100).toFixed(0)}%` : "—";
     const rev = s.classified >= 10 ? String(revisions[s.ruleId] ?? 1) : "—";
+    // §20.2: intervals ship with the rates so regressions compare
+    // distributions, not raw point estimates.
+    const ci =
+      s.classified >= 10 && s.fpRate !== null
+        ? (() => {
+            const w = wilsonInterval(s.fpRate * s.classified, s.classified);
+            return `[${w.ciLow}, ${w.ciHigh}]`;
+          })()
+        : "—";
     const status =
       s.classified >= 10
         ? s.fpRate !== null && s.fpRate <= 0.1
@@ -561,7 +715,7 @@ export function renderMeasuredFpAudit(
             : "🔴 quarantine"
         : "❓ unmeasured";
     lines.push(
-      `| ${s.ruleId} | ${rate} | ${s.classified} | ${s.tp} | ${s.fp} | ${s.unsure} | ${rev} | ${status} |`,
+      `| ${s.ruleId} | ${rate} | ${ci} | ${s.classified} | ${s.tp} | ${s.fp} | ${s.unsure} | ${rev} | ${status} |`,
     );
   }
 
@@ -625,11 +779,74 @@ export function renderMeasuredFpAudit(
 // touched the path), so the stamp rolled over at every midnight. The
 // data's vintage lives in git history (git blame), not in the artifact.
 
+/**
+ * §20.2 regression governance: compare the freshly computed measurements
+ * against the COMMITTED measured-fp module. A regression is flagged only
+ * when both sides have n ≥ 10, the 95% Wilson intervals are disjoint in
+ * the bad direction (new ciLow > old ciHigh), and the point estimate is
+ * worse — noise within tolerance must not fail the generator. A flagged
+ * regression stops the write: the PR must discuss it explicitly (or
+ * invalidate the measurement per §07 with a detectorRevision bump).
+ */
+export function checkFpRegression(
+  committedPath: string,
+  verdicts: Verdict[],
+): void {
+  if (!existsSync(committedPath)) return;
+  const committed = readFileSync(committedPath, "utf8");
+  const prior: Record<string, { fpRate: number; n: number }> = {};
+  for (const match of committed.matchAll(
+    /"(QA-[A-Z]+-\d+)":\s*\{\s*fpRate:\s*([\d.]+),\s*n:\s*(\d+)/g,
+  )) {
+    prior[match[1] ?? ""] = {
+      fpRate: Number(match[2]),
+      n: Number(match[3]),
+    };
+  }
+  const regressions: string[] = [];
+  for (const s of computeRuleStats(verdicts)) {
+    if (s.classified < MEASURED_THRESHOLD || s.fpRate === null) continue;
+    const r = compareFpMeasurements(prior[s.ruleId], {
+      fpRate: s.fpRate,
+      n: s.classified,
+    });
+    if (r.regressed) {
+      regressions.push(`  ${s.ruleId}: ${r.detail}`);
+    }
+  }
+  if (regressions.length > 0) {
+    console.error(
+      `\nFAIL: statistically significant FP regression(s) vs the committed ` +
+        `measurements (plan §20.2 — 95% Wilson intervals disjoint in the bad ` +
+        `direction with a worse point estimate, n ≥ 10 both sides):\n` +
+        regressions.join("\n") +
+        `\nDiscuss the regression explicitly in the PR, or, if the detector ` +
+        `implementation changed, bump the rule's detectorRevision in ` +
+        `tests/corpus/detector-revisions.json so the old measurement is ` +
+        `invalidated (stale → provisional, plan §07) instead of compared.`,
+    );
+    throw new Error(
+      `FP regression governance failed (${regressions.length} rule(s))`,
+    );
+  }
+}
+
 async function main(update: boolean): Promise<void> {
   // Bug-audit B4.29/L13: fail BEFORE writing any artifact when the
   // unclassified-verdict backlog grew beyond its committed ceiling —
   // an audit page built on a shrinking classified base is fiction.
   checkUnclassifiedCompleteness(collectUnclassified(), update);
+
+  // Plan §11.5: fail BEFORE writing when the UNSURE backlog grew beyond
+  // its committed ceiling — UNSURE never counts into n, so unresolved
+  // rows are invisible evidence gaps unless a gate pins them.
+  checkUnsureAdjudication(collectUnsure(), update);
+
+  const verdicts = loadVerdicts();
+
+  // §20.2: fail BEFORE writing when a measurement regressed beyond its
+  // statistical tolerance against the committed artifact.
+  checkFpRegression(MEASURED_FP_PATH, verdicts);
 
   // Generate COUNT-LOCK.md (regression guard)
   const baselines = loadBaselines();
@@ -638,7 +855,6 @@ async function main(update: boolean): Promise<void> {
   console.log(`Wrote ${COUNT_LOCK_PATH} from ${baselines.length} baseline(s).`);
 
   // Generate FP-AUDIT.md (measured rates)
-  const verdicts = loadVerdicts();
   const fpAuditMd = renderMeasuredFpAudit(verdicts, registryRuleIds());
   writeFileSync(FP_AUDIT_PATH, fpAuditMd);
   console.log(

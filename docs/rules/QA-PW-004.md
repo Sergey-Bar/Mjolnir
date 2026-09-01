@@ -6,7 +6,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | ------------------------------------- | ------------------------------------ |
 | Severity                              | warning                              |
 | Confidence                            | medium                               |
-| Tier                                  | core                                 |
+| Tier                                  | extended (PROVISIONAL)               |
 | Measured FP rate                      | not yet measured                     |
 | Evidence level                        | E1                                   |
 | QA impact                             | Test hygiene debt (HYGIENE)          |

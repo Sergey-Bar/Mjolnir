@@ -1,6 +1,16 @@
 # Corpus Verdicts (Phase 3 — Tempering Plan)
 
-> **Status (2026-08-31, after corpus expansion to 19 repos): 937 classified · 21 UNSURE · 0 unclassified · 42 of 91 rules measured at n ≥ 10.**
+> **Status (2026-09-01, UNSURE adjudication pass): 937 classified · 0 UNSURE · 0 unclassified · 43 of 91 rules measured at n ≥ 10.**
+>
+> 2026-08-31 status: 937 classified · 21 UNSURE · 42/91 measured. The 2026-09-01
+> adjudication pass (plan §11.5) resolved all 21 UNSURE rows — they were
+> previously parked UNCLASSIFIED-in-spirit (excluded from every rate) — by
+> reading the cited sources at repo HEAD: QA-PW-101's 20 parked rows (the D5
+> defect) became 20 TP (next-auth's session-sync sleeps and sveltejs/kit's
+> 100 ms request-observation windows are load-bearing, false-pass-prone hard
+> sleeps) — the rule is now measured (100% TP, n=20) — and QA-TQUAL-009's row
+> became 1 FP (a deliberate `void` fire-and-forget whose assertions still fail
+> the run via vitest's unhandled-rejection handling).
 >
 > Waves 1–3 (6→13→17 repos): every backlog row classified; QA-PW-102/105/114,
 > QA-TEST-003, QA-PW-118/119, QA-TEST-002, QA-TQUAL-001, QA-PY-104 demoted to
@@ -93,6 +103,50 @@ Each `.jsonl` file corresponds to one corpus repo, one JSON object per line:
 | `FP`     | False Positive — the finding is wrong  |
 | `UNSURE` | Cannot determine without more context  |
 | `""`     | Not yet classified                     |
+
+## UNSURE adjudication (Verification Trust Evolution Plan §11.5)
+
+UNSURE never counts into `n` (it is excluded from every measured rate), but it
+**always triggers review** — an UNSURE row that is never revisited is an
+unmeasured rule wearing a measurement's name. The adjudication loop:
+
+1. The committed `unsure-ceiling.json` ratchet fails `npm run fp-audit:generate`
+   whenever the UNSURE backlog grows; it only moves DOWN via adjudication
+   (upward movement needs an explicit `--update` whose diff names every rule
+   that grew — nothing is silent).
+2. Adjudicate one row at a time: clone/checkout the cited repo, open the cited
+   `file:line` **at a HEAD whose baseline still produces the finding**, and read
+   enough surrounding code to answer the rule's actual question (for QA-PW-101:
+   is this sleep load-bearing synchronization, or decoration?).
+3. Resolve the row to `TP` / `FP` and replace the note with the evidence: what
+   the code does, why the rule's diagnosis does or does not hold, and the
+   deterministic alternative where relevant. Prefix the note with
+   `adjudicated <date> from source …` so provenance stays auditable.
+4. Re-run `npm run fp-audit:generate` and commit the verdicts — they are the
+   evidence.
+
+**Adjudication criteria (documented so two classifiers agree):**
+
+- **A rule's diagnosis is the thing being judged, not the code's quality.**
+  QA-PW-101 says "fixed waits encode hope": a sleep that genuinely substitutes
+  for synchronization (flaky-fast on a slow machine, or a false-pass
+  observation window) is TP even when the surrounding test is otherwise sane;
+  a sleep that cannot affect the test's correctness (e.g. pacing two
+  independent actions) is FP.
+- **"The check still fails the run" refutes FALSE-GREEN.** QA-TQUAL-009
+  claims checks silently vanish; if the async context (awaited timer flush,
+  unhandled-rejection handler, framework fail-on-async) makes assertion
+  failures fatal, the diagnosis does not hold — FP.
+- **Fire-and-forget intent does not refute FALSE-GREEN by itself.** `void p`
+  is not an excuse: judge whether a rejection/assertion failure inside `p`
+  actually surfaces. Deliberate ≠ harmless.
+- **Load-bearing-ness is judged at the cited line's role, not its comment.**
+  A comment saying "allow requests to finish" describes intent; adjudicate
+  whether the wait actually carries synchronization weight (an absence
+  assertion downstream = load-bearing; a screenshot delay = decoration).
+- When the cited line no longer exists at HEAD, or the finding's premise
+  (the call pattern) has changed shape, the row is **orphaned** — remove it
+  per the orphan rule below rather than guessing.
 
 ## Workflow
 

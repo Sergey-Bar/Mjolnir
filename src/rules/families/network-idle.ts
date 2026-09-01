@@ -42,7 +42,6 @@ export const networkIdleFamily = definePatternFamily({
     },
     {
       id: "QA-PY-107",
-      tier: "core",
       appliesTo: "python",
       ext: ".py",
       languages: ["python"],
