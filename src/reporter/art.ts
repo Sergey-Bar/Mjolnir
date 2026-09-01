@@ -252,7 +252,7 @@ export function renderHammer(
     const face = art.headFace.trimStart();
     let mixed = "";
     for (let i = 0; i < face.length; i++) {
-      mixed += (i % 2 === 0 ? color : gold)(face[i] ?? "");
+      mixed += (i % 2 === 0 ? color : gold)(face.charAt(i));
     }
     lines.push(
       art.headFace.slice(0, art.headFace.length - face.length) + mixed,

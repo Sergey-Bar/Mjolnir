@@ -333,6 +333,14 @@ describe("findings cards", () => {
     expect(out).toContain("measured FP 14% · n=38");
   });
 
+  it("shows the measured FP rate without a sample size when measuredFpN is absent", () => {
+    const out = renderTerminal(scan([finding({ measuredFpRate: 0.14 })]), {
+      isTTY: false,
+    });
+    expect(out).toContain("measured FP 14%]");
+    expect(out).not.toContain("n=");
+  });
+
   it("collapses >3 findings sharing a rule under one same-fix-applies header", () => {
     const out = renderTerminal(
       scan([
@@ -352,6 +360,74 @@ describe("findings cards", () => {
       { isTTY: false },
     );
     expect(out).not.toContain("same fix applies");
+  });
+
+  it("groups by the highest severity present, error included", () => {
+    const out = renderTerminal(
+      scan([
+        finding({ severity: "error", line: 1 }),
+        finding({ severity: "error", line: 2 }),
+        finding({ severity: "error", line: 3 }),
+        finding({ severity: "error", line: 4 }),
+      ]),
+      { isTTY: false },
+    );
+    expect(out).toContain("ERROR");
+    expect(out).toContain("QA-TEST-004 × 4 — same fix applies");
+  });
+
+  it("groups all-info findings under an INFO header", () => {
+    const out = renderTerminal(
+      scan([
+        finding({ severity: "info", line: 1 }),
+        finding({ severity: "info", line: 2 }),
+        finding({ severity: "info", line: 3 }),
+        finding({ severity: "info", line: 4 }),
+      ]),
+      { isTTY: false },
+    );
+    expect(out).toContain("QA-TEST-004 × 4 — same fix applies");
+    expect(out).toMatch(/\bINFO\b/);
+  });
+
+  it("hides groups that fall beyond the card budget behind the overflow line", () => {
+    const singles = Array.from({ length: 10 }, (_, i) =>
+      finding({ ruleId: `QA-SINGLE-${i}`, line: i + 1 }),
+    );
+    const out = renderTerminal(
+      scan([
+        ...singles,
+        finding({ line: 11 }),
+        finding({ line: 12 }),
+        finding({ line: 13 }),
+        finding({ line: 14 }),
+      ]),
+      { isTTY: false, width: 120 },
+    );
+    // The 10 single cards fill the budget; the grouped rule lands beyond
+    // it and collapses into the overflow line instead of rendering.
+    expect(out).not.toContain("same fix applies");
+    expect(out).toContain("… +4 more across 1 rule");
+  });
+
+  it("advisory (E0) findings render with a zero-cost verify hint", () => {
+    const out = renderTerminal(
+      scan([finding({ severity: "error", evidenceLevel: "E0" })]),
+      { isTTY: false },
+    );
+    // E0 costs zero points, so the hint promises a clean re-run, not a
+    // score recovery. (The hint wraps across card-width lines — match
+    // with whitespace-flexible fragments.)
+    expect(out).toMatch(/the\s+finding\s+should\s+no\s+longer\s+appear\./);
+    expect(out).not.toContain("recover by");
+  });
+
+  it("renders the — placeholder for empty card fields instead of a blank line", () => {
+    const out = renderTerminal(scan([finding({ message: "" })]), {
+      isTTY: false,
+    });
+    const problemLine = out.split("\n").find((l) => l.includes("Problem"));
+    expect(problemLine).toContain("—");
   });
 });
 

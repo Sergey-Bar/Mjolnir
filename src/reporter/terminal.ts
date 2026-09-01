@@ -338,7 +338,7 @@ function toCard(f: Finding, tone?: "blunt"): FindingCard {
 
 /** Wrap plain text (no ANSI in body) into lines of at most `width`. */
 function wrapLines(text: string, width: number): string[] {
-  if (text.length === 0) return ["—"];
+  if (text.trim().length === 0) return ["—"];
   const words = text.split(/\s+/).filter(Boolean);
   const out: string[] = [];
   let current = "";
@@ -350,7 +350,9 @@ function wrapLines(text: string, width: number): string[] {
       current = word;
     }
   }
-  if (current) out.push(current);
+  // The trim guard above guarantees at least one word, so `current`
+  // always holds the tail accumulator here.
+  out.push(current);
   return out;
 }
 
@@ -423,7 +425,7 @@ function appendFindings(
 
   type RenderUnit =
     | { kind: "card"; finding: Finding }
-    | { kind: "group"; ruleId: string; findings: Finding[] };
+    | { kind: "group"; ruleId: string; findings: [Finding, ...Finding[]] };
 
   const units: RenderUnit[] = [];
   const groupedRuleIds = new Set<string>();
@@ -440,9 +442,14 @@ function appendFindings(
     }
     units.push({ kind: "card", finding: f });
   }
-  for (const ruleId of groupedRuleIds) {
-    const q = groupQueues.get(ruleId);
-    if (q && q.length > 0) units.push({ kind: "group", ruleId, findings: q });
+  for (const [ruleId, q] of groupQueues) {
+    // Queue invariant: an entry only exists after at least one finding
+    // was pushed into it, so the tuple head is always present.
+    units.push({
+      kind: "group",
+      ruleId,
+      findings: q as [Finding, ...Finding[]],
+    });
   }
 
   const cardBudget = verbose ? Number.POSITIVE_INFINITY : MAX_CARDS;
@@ -456,7 +463,6 @@ function appendFindings(
     if (unit.kind === "group") {
       const n = unit.findings.length;
       const first = unit.findings[0];
-      if (!first) continue;
       if (shown >= cardBudget) {
         hidden += n;
         hiddenRules.add(unit.ruleId);

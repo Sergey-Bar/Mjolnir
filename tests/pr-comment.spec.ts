@@ -136,6 +136,57 @@ describe("renderPrComment — rendering against fixture scan results", () => {
     expect(body).toContain("\\[E1 · heuristic · measured FP 100% · n=38\\]");
   });
 
+  it("renders a measured FP rate without a sample size when measuredFpN is absent", () => {
+    const body = renderPrComment(
+      scanResult([finding({ measuredFpRate: 0.5 })]),
+    );
+    expect(body).toContain("measured FP 50%\\]");
+    expect(body).not.toContain("n=");
+  });
+
+  it("renders E0 advisory findings with the observation evidence tag", () => {
+    const body = renderPrComment(
+      scanResult([finding({ severity: "info", evidenceLevel: "E0" })]),
+    );
+    expect(body).toContain("\\[E0 · observation\\]");
+  });
+
+  it("renders code-looking fixes as code spans and prose fixes as italics", () => {
+    const body = renderPrComment(
+      scanResult([
+        finding({ fix: "await expect(locator).toBeVisible()" }),
+        finding({
+          ruleId: "QA-PW-103",
+          file: "e2e/c.spec.ts",
+          message: "Prose fix",
+          fix: "Just delete the unused variable.",
+        }),
+      ]),
+    );
+    // A fix with code punctuation reads as code — code span.
+    expect(body).toMatch(/`await expect\\\(locator\\\)/);
+    // A prose fix has no code punctuation — italic, not a code span.
+    expect(body).toContain("_Just delete the unused variable._");
+  });
+
+  it("degrades the drift line to 'unknown' when the diff carries no commit", () => {
+    const diff = {
+      hasBaseline: true,
+      baselineScore: 70,
+      newFindings: [],
+      resolvedFindings: [],
+      unchangedCount: 0,
+    };
+    const body = renderPrComment(scanResult([]), { diff });
+    expect(body).toContain("since baseline `unknown`");
+    expect(body).toContain("**Score:** 88/100 (+18 since baseline `unknown`)");
+  });
+
+  it("buildBaseline omits the score field when the scan found no tests", () => {
+    const baseline = buildBaseline({ ...scanResult([]), score: null }, "abc");
+    expect("score" in baseline).toBe(false);
+  });
+
   it("uses plural grammar for multiple resolved findings", () => {
     const before = scanResult([
       finding({}),
