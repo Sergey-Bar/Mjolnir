@@ -11,6 +11,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+// Each test spawns git plus the built CLI several times; Windows CI
+// runners exceed vitest's 5s default under load (reproduced 2026-09-01).
+vi.setConfig({ testTimeout: 30_000 });
+
 vi.mock("node:child_process", async (importOriginal) => {
   const actual = await importOriginal<typeof import("node:child_process")>();
   const execFileSync = ((

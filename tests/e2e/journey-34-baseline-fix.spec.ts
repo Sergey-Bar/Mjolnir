@@ -13,7 +13,12 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+// Each journey step spawns the built CLI (baseline/diff/stats); Windows
+// CI runners exceed vitest's 5s default under load (reproduced
+// 2026-09-01).
+vi.setConfig({ testTimeout: 30_000 });
 
 import { runCli } from "./helpers.js";
 import { execFileSync } from "node:child_process";
