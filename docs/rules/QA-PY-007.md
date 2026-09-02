@@ -49,6 +49,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | psf-requests        | 42          |
 | pytest-dev-pytest   | 164         |
 | reflex-dev-reflex   | 232         |
+| SeleniumHQ-selenium | 2           |
 | streamlit-streamlit | 488         |
 
 ---

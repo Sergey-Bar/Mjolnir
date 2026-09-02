@@ -49,6 +49,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | grafana-grafana     | 7           |
 | hashicorp-vault     | 1           |
 | puppeteer-puppeteer | 29          |
+| SeleniumHQ-selenium | 1           |
 | sveltejs-kit        | 8           |
 | vercel-next-js      | 6           |
 | vitejs-vite         | 6           |

@@ -699,9 +699,7 @@ type TsNodeMorph = import("ts-morph").Node;
 function extractTsModel(file: ParsedFile, sf: SourceFile): QaSemanticModel {
   const text = file.text;
   const nodes: QaNode[] = [];
-  for (const call of sf.getDescendantsOfKind(
-    SyntaxKind.CallExpression,
-  )) {
+  for (const call of sf.getDescendantsOfKind(SyntaxKind.CallExpression)) {
     const expr = call.getExpression();
     const chain = calleeChainText(expr);
     const base = chain.split(".").pop() ?? chain;

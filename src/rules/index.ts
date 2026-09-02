@@ -75,6 +75,14 @@ import { jvWaitForTimeout } from "./java/qa-jv-105-wait-for-timeout.js";
 import { csSkippedTest } from "./csharp/qa-cs-101-skipped-test.js";
 import { csNoAssertions } from "./csharp/qa-cs-103-no-assertions.js";
 import { csWaitForTimeout } from "./csharp/qa-cs-105-wait-for-timeout.js";
+import { cypCyWait } from "./cypress/qa-cyp-001-cy-wait.js";
+import { cypFocusedTest } from "./cypress/qa-cyp-002-focused-test.js";
+import { cypConfigSecurity } from "./cypress/qa-cyp-003-config-security.js";
+import {
+  seJavaSleepLookup,
+  seCSharpSleepLookup,
+  sePythonSleepLookup,
+} from "./selenium/qa-se-sleep-lookup.js";
 import { hardSleepFamily } from "./families/hard-sleep.js";
 import { networkIdleFamily } from "./families/network-idle.js";
 import { hardcodedUrlFamily } from "./families/hardcoded-url.js";
@@ -164,6 +172,15 @@ export const RULES: readonly QADoctorRule[] = [
   csSkippedTest,
   csNoAssertions,
   csWaitForTimeout,
+  // Phase 5 — Framework Expansion (plan §15): Cypress first, Selenium
+  // cross-language via the JV/CS/Py adapters. Every rule BORN QUARANTINE
+  // (§15.5) until measured.
+  cypCyWait,
+  cypFocusedTest,
+  cypConfigSecurity,
+  seJavaSleepLookup,
+  seCSharpSleepLookup,
+  sePythonSleepLookup,
 ];
 
 export function getRule(id: string): QADoctorRule | undefined {

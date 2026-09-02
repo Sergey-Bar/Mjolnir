@@ -43,6 +43,7 @@ happen to have been sampled.
 | QA-CS-109    | 0%      | —                | 4          | 4   | 0   | 0      | —           | ❓ unmeasured |
 | QA-CS-110    | 100%    | [0.8389, 1]      | 20         | 0   | 20  | 0      | 1           | 🔴 quarantine |
 | QA-CS-111    | 100%    | [0.8389, 1]      | 20         | 0   | 20  | 0      | 1           | 🔴 quarantine |
+| QA-CYP-001   | 20%     | [0.0705, 0.4519] | 15         | 12  | 3   | 0      | 1           | ⚠️ extended   |
 | QA-ENV-001   | 100%    | —                | 6          | 0   | 6   | 0      | —           | ❓ unmeasured |
 | QA-JV-101    | 0%      | [0, 0.1611]      | 20         | 20  | 0   | 0      | 1           | ✅ core       |
 | QA-JV-102    | 30%     | [0.1455, 0.519]  | 20         | 14  | 6   | 0      | 1           | ⚠️ extended   |
@@ -99,6 +100,7 @@ happen to have been sampled.
 | QA-PY-106    | 0%      | —                | 4          | 4   | 0   | 0      | —           | ❓ unmeasured |
 | QA-PY-107    | 0%      | —                | 3          | 3   | 0   | 0      | —           | ❓ unmeasured |
 | QA-PY-108    | 0%      | —                | 4          | 4   | 0   | 0      | —           | ❓ unmeasured |
+| QA-SE-002    | 25%     | —                | 4          | 3   | 1   | 0      | —           | ❓ unmeasured |
 | QA-TEST-001  | 63%     | [0.4104, 0.8085] | 19         | 7   | 12  | 0      | 1           | 🔴 quarantine |
 | QA-TEST-002  | 65%     | [0.4329, 0.8188] | 20         | 7   | 13  | 0      | 1           | 🔴 quarantine |
 | QA-TEST-003  | 85%     | [0.6396, 0.9476] | 20         | 3   | 17  | 0      | 1           | 🔴 quarantine |
@@ -119,7 +121,7 @@ happen to have been sampled.
 | 🔴 quarantine | > 30%   | Opt-in only (`--strict`)              |
 | ❓ unmeasured | n < 10  | Cannot ship in core until measured    |
 
-## Coverage: 72/91 rules measured (79%) at n ≥ 10
+## Coverage: 73/97 rules measured (75%) at n ≥ 10
 
-**19 rules carry no measured FP rate.** Any of them in the
+**24 rules carry no measured FP rate.** Any of them in the
 core tier is shipping on an unverified assumption.

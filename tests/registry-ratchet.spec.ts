@@ -147,14 +147,38 @@ describe("registry ratchet: evidence-state monotonicity (§20.1)", () => {
     void PREEXISTING_SET_MARKER;
   });
 
-  it("(a) the unmeasured count never grows beyond the Phase 1 exit gate", () => {
+  it("(a) the PRE-EXISTING set's unmeasured count never grows beyond the Phase 1 exit gate", () => {
     // (a) an existing unmeasured rule may never become more unmeasured —
     // unmeasured is binary, so the tracked quantity is the registry's
-    // unmeasured count. Phase 1's exit gate (§11): unmeasured ≤ 20;
-    // the 2026-09-02 corpus wave measured 69/91 (22 unmeasured) and the
-    // ratchet was lowered to the gate so the count can only go DOWN.
-    const unmeasured = RULES.filter((r) => !hasValidMeasurement(r)).length;
+    // unmeasured count over the PRE-EXISTING set (plan §20.1: the gate
+    // is the count freeze on rules that existed when the gate was set;
+    // NEW-rule waves are onboarded under (b) + the per-framework exit
+    // gate, NOT under this count — §15.5 lets a new wave enter born
+    // unmeasured-quarantine). The pre-existing set is identified
+    // mechanically via `introduced`: every rule shipped at or before
+    // 0.5.0 (the version whose baseline the (c) ratchet compares
+    // against). Phase 1's exit gate (§11): unmeasured ≤ 20.
+    const PREEXISTING_MAX_INTRODUCED = "0.5.0";
+    const preexisting = RULES.filter(
+      (r) =>
+        r.introduced === undefined ||
+        r.introduced <= PREEXISTING_MAX_INTRODUCED,
+    );
+    const unmeasured = preexisting.filter(
+      (r) => !hasValidMeasurement(r),
+    ).length;
     expect(unmeasured).toBeLessThanOrEqual(20);
+    // (b) still binds the new wave: no new rule may enter core unmeasured
+    // (enforced by the §20.3 test above; asserted here so the (a)/(b)
+    // split is explicit for the Phase 5 wave).
+    for (const rule of RULES.filter(
+      (r) =>
+        r.introduced !== undefined && r.introduced > PREEXISTING_MAX_INTRODUCED,
+    )) {
+      if (effectiveTier(rule) === "core") {
+        expect(hasValidMeasurement(rule), rule.id).toBe(true);
+      }
+    }
   });
 });
 

@@ -103,6 +103,28 @@ Total findings: **634**
 | QA-TQUAL-002 | 1        |
 | QA-TQUAL-011 | 2        |
 
+## cypress-io-cypress-realworld-app
+
+Total findings: **17**
+
+| Rule ID      | Findings |
+| ------------ | -------- |
+| QA-TEST-002  | 3        |
+| QA-TEST-003  | 4        |
+| QA-TQUAL-009 | 10       |
+
+## cypress-io-kitchensink
+
+Total findings: **37**
+
+| Rule ID      | Findings |
+| ------------ | -------- |
+| QA-CYP-001   | 15       |
+| QA-PW-123    | 6        |
+| QA-TEST-003  | 9        |
+| QA-TEST-010  | 1        |
+| QA-TQUAL-009 | 6        |
+
 ## cypress-realworld-app
 
 real TS consumer app with heavy e2e — QA-TQUAL-009 at scale on application code
@@ -647,6 +669,28 @@ Total findings: **517**
 | QA-PY-010 | 6        |
 | QA-PY-012 | 1        |
 | QA-PY-103 | 2        |
+
+## SeleniumHQ-selenium
+
+Total findings: **832**
+
+| Rule ID      | Findings |
+| ------------ | -------- |
+| QA-CS-101    | 26       |
+| QA-CS-102    | 3        |
+| QA-CS-103    | 102      |
+| QA-ENV-001   | 1        |
+| QA-JV-101    | 316      |
+| QA-JV-102    | 28       |
+| QA-JV-103    | 249      |
+| QA-JV-108    | 1        |
+| QA-JV-110    | 72       |
+| QA-PW-112    | 22       |
+| QA-PY-007    | 2        |
+| QA-SE-002    | 4        |
+| QA-TEST-003  | 1        |
+| QA-TEST-004  | 2        |
+| QA-TQUAL-001 | 3        |
 
 ## shadcn-ui-taxonomy
 

@@ -46,6 +46,8 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | apache-airflow                                | 52          |
 | appsmithorg-appsmith                          | 36          |
 | calcom-cal                                    | 119         |
+| cypress-io-cypress-realworld-app              | 4           |
+| cypress-io-kitchensink                        | 9           |
 | cypress-realworld-app                         | 3           |
 | dubinc-dub                                    | 17          |
 | getsentry-sentry                              | 199         |
@@ -57,6 +59,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | playwright-community-eslint-plugin-playwright | 1           |
 | positive-fixtures                             | 58          |
 | puppeteer-puppeteer                           | 90          |
+| SeleniumHQ-selenium                           | 1           |
 | streamlit-streamlit                           | 8           |
 | sveltejs-kit                                  | 62          |
 | tanstack-query                                | 19          |

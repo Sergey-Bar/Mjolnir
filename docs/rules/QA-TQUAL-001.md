@@ -52,6 +52,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | grafana-grafana                               | 1653        |
 | nextauthjs-next-auth                          | 1           |
 | playwright-community-eslint-plugin-playwright | 20          |
+| SeleniumHQ-selenium                           | 3           |
 | streamlit-streamlit                           | 568         |
 | sveltejs-kit                                  | 24          |
 | tanstack-query                                | 98          |

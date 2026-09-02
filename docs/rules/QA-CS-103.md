@@ -46,6 +46,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | Humanizr-Humanizer          | 2           |
 | microsoft-playwright-dotnet | 1           |
 | positive-fixtures           | 8           |
+| SeleniumHQ-selenium         | 102         |
 
 ---
 

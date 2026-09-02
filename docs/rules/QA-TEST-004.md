@@ -49,6 +49,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | github-docs          | 4           |
 | grafana-grafana      | 164         |
 | puppeteer-puppeteer  | 3           |
+| SeleniumHQ-selenium  | 2           |
 | streamlit-streamlit  | 13          |
 | sveltejs-kit         | 10          |
 | tanstack-query       | 157         |

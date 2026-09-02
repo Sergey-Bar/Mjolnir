@@ -103,8 +103,8 @@ export const DEFECT_LEDGER: readonly DefectLedgerEntry[] = [
   {
     id: "D7",
     defect:
-      "`frameworks` metadata declared but unenforced; framework detection is shallow (regex over build files, first `.csproj` only)",
-    targetPhase: "2 / 5",
+      "`frameworks` metadata declared but unenforced; framework detection is shallow (regex over build files, first `.csproj` only) [CLOSED 2026-09-02, plan §15.1: dependency parsing per build system (package.json JSON, Maven <dependency> blocks, Gradle coordinates, every .csproj PackageReference), per-file framework tags from the file's own imports/usings, rule.frameworks ∩ file.frameworkTags filtering with open-when-unknown, configFiles declaration replacing the hard-coded playwright.config regex]",
+    targetPhase: "5 (closed)",
   },
   {
     id: "D8",

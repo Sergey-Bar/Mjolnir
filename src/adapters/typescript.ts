@@ -2,6 +2,13 @@
  * TypeScript/JavaScript adapter (R1).
  * Wraps the proven regex-based engine behind the LanguageAdapter
  * interface. Tree-sitter migration happens later without touching rules.
+ *
+ * Framework dimension (Verification Trust Evolution Plan §15.1, D7):
+ * per-file tags come from the file's own import lines (the ts-morph
+ * parse in runRules, or a cheap import scan for discovery) — a file
+ * importing `@playwright/test` is tagged "playwright", `cypress` →
+ * "cypress", `@jest/globals` → "jest", `vitest` → "vitest". Config
+ * gating is rule-declared (`configFiles`), not hard-coded here.
  */
 
 import { existsSync, readFileSync } from "node:fs";
@@ -12,15 +19,58 @@ import { detectFrameworks as detectFrameworksLegacy } from "../discovery/framewo
 import type { Workspace } from "../discovery/workspace.js";
 import { parseTsFile } from "../engine/ts-ast.js";
 import { computeCodeText } from "../engine/code-text.js";
-import type {
-  FrameworkInfo,
-  LanguageAdapter,
-  ParsedFile,
-  ScanContext,
+import {
+  frameworkFilterApplies,
+  type FrameworkInfo,
+  type LanguageAdapter,
+  type ParsedFile,
+  type ScanContext,
+  type UniversalRule,
 } from "../engine/adapter.js";
 
-const TEST_FILE_RE = /\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs)$/;
+const TEST_FILE_RE =
+  /\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs)$|\.cy\.(?:js|jsx|ts|tsx)$/;
 const PW_CONFIG_RE = /^playwright\.config\.(?:ts|js|mjs|cts)$/;
+
+/**
+ * Fallback config list for `configOnly` rules that do not declare
+ * `configFiles` (the legacy playwright.config.* gating, preserved
+ * byte-identically for the existing five config rules).
+ */
+const ADAPTER_CONFIG_FILES = [PW_CONFIG_RE.source];
+
+/** Import-path → framework tag (plan §15.1 vocabulary). */
+const IMPORT_TAG_RULES: Array<{ re: RegExp; tag: string }> = [
+  { re: /(?:^|\/)@playwright\/test(?:$|\/)/, tag: "playwright" },
+  { re: /(?:^|\/)playwright(?:\/|$)/, tag: "playwright" },
+  { re: /(?:^|\/)cypress(?:\/|$)/, tag: "cypress" },
+  { re: /(?:^|\/)vitest(?:$|\/)/, tag: "vitest" },
+  { re: /(?:^|\/)@jest\/globals(?:$|\/)/, tag: "jest" },
+  { re: /(?:^|\/)@vue\/test-utils(?:$|\/)/, tag: "vitest" },
+  { re: /(?:^|\/)selenium-webdriver(?:\/|$)/, tag: "selenium" },
+  { re: /(?:^|\/)webdriverio(?:\/|$)/, tag: "webdriverio" },
+  { re: /(?:^|\/)puppeteer(?:\/|$)/, tag: "puppeteer" },
+];
+
+/**
+ * Per-file framework tags from import lines — a cheap single-pass scan
+ * that needs no AST (works for discovery-time and for files ts-morph
+ * declines to parse). The AST path (tagFromTsImports) yields the same
+ * vocabulary with higher precision.
+ */
+export function frameworkTagsFromImports(text: string): string[] {
+  const tags = new Set<string>();
+  const importRe = /(?:import|require)\s*(?:\(\s*)?["']([^"']+)["']/g;
+  let m: RegExpExecArray | null;
+  while ((m = importRe.exec(text)) !== null) {
+    const specifier = m[1];
+    if (specifier === undefined) continue;
+    for (const { re, tag } of IMPORT_TAG_RULES) {
+      if (re.test(specifier)) tags.add(tag);
+    }
+  }
+  return [...tags];
+}
 
 export const typescriptAdapter: LanguageAdapter = {
   id: "typescript",
@@ -28,7 +78,9 @@ export const typescriptAdapter: LanguageAdapter = {
   testFileGlobs: [
     "*.test.{js,jsx,ts,tsx,mjs,cjs}",
     "*.spec.{js,jsx,ts,tsx,mjs,cjs}",
+    "*.cy.{js,jsx,ts,tsx}",
     "playwright.config.{ts,js,mjs,cts}",
+    "cypress.config.{js,ts,mjs}",
   ],
   dirSkips: [],
 
@@ -38,7 +90,8 @@ export const typescriptAdapter: LanguageAdapter = {
     // path.basename is platform-dependent (a backslash path on POSIX
     // comes back whole). Same class of bug explain.ts documents for
     // filename-gated rules.
-    return TEST_FILE_RE.test(path) || PW_CONFIG_RE.test(baseName(path));
+    const base = baseName(path);
+    return TEST_FILE_RE.test(path) || ADAPTER_CONFIG_RE.test(base);
   },
 
   detectFrameworks(root: string): FrameworkInfo {
@@ -58,7 +111,8 @@ export const typescriptAdapter: LanguageAdapter = {
           reason === "file-cap" ? "file-cap:typescript" : reason,
         ),
       skipDirs: [],
-      isTestFile: (name) => TEST_FILE_RE.test(name) || PW_CONFIG_RE.test(name),
+      isTestFile: (name) =>
+        TEST_FILE_RE.test(name) || ADAPTER_CONFIG_RE.test(name),
       onTestFile: (f) => ctx.testFiles.push(f),
       isFull: () => ctx.testFiles.length >= ctx.maxFiles,
       fixtureDirMemo: new Map(),
@@ -69,15 +123,22 @@ export const typescriptAdapter: LanguageAdapter = {
     // Phase 3: populate the AST seam once per file; rules that opt in use
     // it via getTsSourceFile, everything else stays on the regex path.
     const withAst: ParsedFile = { ...file, ast: parseTsFile(file) };
+    // Phase 5 (§15.1): per-file framework tags from the file's own
+    // import lines. Empty when the file imports nothing framework-y —
+    // filtering is then OPEN for every rule (unknown ≠ skip).
+    const withTags: ParsedFile = {
+      ...withAst,
+      frameworkTags: frameworkTagsFromImports(withAst.text),
+    };
     // Phase 1 (Tempering): lazy codeText — computed on first access.
     let cachedCodeText: string | undefined;
     const enriched: ParsedFile = Object.defineProperty(
-      { ...withAst },
+      { ...withTags },
       "codeText",
       {
         get() {
           if (cachedCodeText === undefined) {
-            cachedCodeText = computeCodeText(withAst, "typescript");
+            cachedCodeText = computeCodeText(withTags, "typescript");
           }
           return cachedCodeText;
         },
@@ -85,13 +146,18 @@ export const typescriptAdapter: LanguageAdapter = {
         configurable: true,
       },
     );
-    const isConfig = PW_CONFIG_RE.test(baseName(file.path));
+    const base = baseName(file.path);
+    const isConfig = ADAPTER_CONFIG_RE.test(base);
     for (const rule of rules) {
       if (!rule.appliesTo.includes(this.id)) continue;
-      // Config rules run only on playwright.config.* and vice versa —
-      // generic test rules would fire nonsense on a config file
-      // (e.g. QA-TEST-003 "no assertions" on every config).
+      // §15.2: config rules run only on the config files THEY declare
+      // (configFiles), and never on test files; test rules never run on
+      // configs. Rules without configFiles that are configOnly keep the
+      // legacy playwright.config.* gating (ADAPTER_CONFIG_FILES).
       if (isConfig !== (rule.configOnly === true)) continue;
+      if (isConfig && !configGateMatches(rule, base)) continue;
+      // §15.1: framework opt-in filtering (open-when-unknown).
+      if (!frameworkFilterApplies(rule, enriched)) continue;
       // Audit P-1: a single oversized file must not own the whole budget.
       if (budget && Date.now() > budget.deadline) {
         budget.onExceeded();
@@ -108,6 +174,21 @@ export const typescriptAdapter: LanguageAdapter = {
     }
   },
 };
+
+const ADAPTER_CONFIG_RE = new RegExp(
+  `^(?:${ADAPTER_CONFIG_FILES.map((re) => `(?:${re})`).join("|")})$`,
+);
+
+/** §15.2: does this config rule's declared configFiles match the file? */
+function configGateMatches(
+  rule: Pick<UniversalRule, "configOnly" | "configFiles">,
+  base: string,
+): boolean {
+  if (rule.configFiles === undefined || rule.configFiles.length === 0) {
+    return ADAPTER_CONFIG_FILES.some((re) => new RegExp(re).test(base));
+  }
+  return rule.configFiles.some((re) => new RegExp(re).test(base));
+}
 
 /** Separator-agnostic basename — a backslash path on POSIX must still
  * yield its last segment (path.basename is platform-dependent). */

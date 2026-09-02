@@ -41,12 +41,13 @@ Verified against `tests/fixtures/QA-PW-123/must-not-fire/clean.spec.ts` — a le
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo                 | Occurrences |
-| -------------------- | ----------- |
-| nextauthjs-next-auth | 2           |
-| positive-fixtures    | 6           |
-| puppeteer-puppeteer  | 2           |
-| vitest-dev-vitest    | 1           |
+| Repo                   | Occurrences |
+| ---------------------- | ----------- |
+| cypress-io-kitchensink | 6           |
+| nextauthjs-next-auth   | 2           |
+| positive-fixtures      | 6           |
+| puppeteer-puppeteer    | 2           |
+| vitest-dev-vitest      | 1           |
 
 ---
 

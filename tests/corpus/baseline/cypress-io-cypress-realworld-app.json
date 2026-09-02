@@ -1,0 +1,9 @@
+{
+  "countsByRule": {
+    "QA-TEST-002": 3,
+    "QA-TEST-003": 4,
+    "QA-TQUAL-009": 10
+  },
+  "totalFindings": 17,
+  "partial": false
+}

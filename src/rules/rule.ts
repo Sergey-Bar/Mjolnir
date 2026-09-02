@@ -181,14 +181,32 @@ export interface QADoctorRule extends RuleMeta {
   /** Which file kinds this rule applies to. */
   appliesTo: AppliesTo;
   /**
-   * Config-hygiene rules: the engine only feeds these rules
-   * playwright.config.* files (and never feeds them test files), and
-   * never feeds test-file rules a config. Set on rules whose detection
-   * gates on a config filename (QA-PW-121/122/141/143/144). Without
-   * this flag the generic test rules would fire nonsense on configs
-   * (e.g. QA-TEST-003 "no assertions" on every playwright.config.ts).
+   * Config-hygiene rules: the engine only feeds these rules config
+   * files (and never feeds them test files), and never feeds test-file
+   * rules a config. Set on rules whose detection gates on a config
+   * filename (QA-PW-121/122/141/143/144). Without this flag the
+   * generic test rules would fire nonsense on configs (e.g. QA-TEST-003
+   * "no assertions" on every playwright.config.ts).
    */
   configRule?: boolean;
+  /**
+   * Config filename patterns (regex SOURCE strings) this config rule
+   * gates on (plan §15.2): the adapter matches these against the file's
+   * basename, replacing the hard-coded playwright.config.* regex that
+   * used to live in the adapter AND duplicated inside each config rule.
+   * The internal regex gate in `run` stays as belt-and-suspenders for
+   * direct harness invocation.
+   */
+  configFiles?: string[];
+  /**
+   * Framework opt-in (plan §15.1, defect D7): when declared, the rule
+   * runs on a file only if the file's own framework tags (its
+   * imports/usings) intersect it. Files without tags are always
+   * analyzed (open-when-unknown) — the dimension narrows, it never
+   * silently drops evidence. Mirror of UniversalRule.frameworks,
+   * threaded through asUniversal.
+   */
+  frameworksOverride?: string[];
   /**
    * L2 structural-analysis path (§13.2): runs when the engine supplies
    * a parsed AST for the file. MUST be paired with a regex fallback in

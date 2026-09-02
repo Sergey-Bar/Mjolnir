@@ -15,7 +15,8 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-type Family = "test" | "quality" | "playwright" | "ci" | "python";
+type Family =
+  "test" | "quality" | "playwright" | "ci" | "python" | "cypress" | "selenium";
 
 /** Map rule family prefix → source directory + default category. */
 const FAMILY_META: Record<
@@ -30,6 +31,18 @@ const FAMILY_META: Record<
     dir: "python",
     category: "QA-TEST",
     appliesTo: "python",
+  },
+  // Phase 5 namespaces (plan §15.4): new frozen families scaffold into
+  // their own directories, born quarantine.
+  cypress: {
+    dir: "cypress",
+    category: "QA-PW",
+    appliesTo: "test-files",
+  },
+  selenium: {
+    dir: "selenium",
+    category: "QA-PW",
+    appliesTo: "test-files",
   },
 };
 
@@ -48,7 +61,7 @@ export interface ScaffoldResult {
 function parseId(
   id: string,
 ): { family: Family; num: string; lower: string } | null {
-  const m = /^QA-(TEST|TQUAL|PW|CI|PY)-(\d{3})$/.exec(id);
+  const m = /^QA-(TEST|TQUAL|PW|CI|PY|CYP|SE)-(\d{3})$/.exec(id);
   if (!m?.[1] || !m[2]) return null;
   const map: Record<string, Family> = {
     TEST: "test",
@@ -56,6 +69,8 @@ function parseId(
     PW: "playwright",
     CI: "ci",
     PY: "python",
+    CYP: "cypress",
+    SE: "selenium",
   };
   // The map covers every alternation of the ID regex above.
   const family = map[m[1]] as Family;

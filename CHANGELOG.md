@@ -9,6 +9,91 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — Verification Trust Evolution, Phase 5 — Framework Expansion (plan §15, D7 closed)
+
+### Added — FrameworkDimension enforced (plan §15.1, defect D7 closed)
+
+- **Real dependency parsing per build system:** `package.json` (JSON),
+  `pom.xml` (Maven `<dependency>` blocks), `build.gradle(.kts)`
+  (dependency-statement coordinates), and EVERY `.csproj` at the root
+  (`<PackageReference Include="…">` attributes — the old "first
+  `.csproj` only" defect is closed), plus requirements*.txt for Python.
+- **Per-file framework tags** (`ParsedFile.frameworkTags`): derived from
+  the file's OWN imports/usings/import-lines — `@playwright/test` →
+  "playwright", `cypress` → "cypress", `org.junit.*` → "junit",
+  `NUnit` → "nunit", `import selenium` → "selenium", etc. AST-truth for
+  Java/C#/TS; import-line scan for Python (no AST seam by design).
+- **`rule.frameworks ∩ file.frameworkTags` filtering** with
+  open-when-unknown: a rule that declares `frameworks` runs on a file
+  only when the file's tags intersect it; files without tags and rules
+  without `frameworks` are always analyzed — the dimension narrows, it
+  never silently drops evidence. Shared in
+  `src/engine/adapter.ts` (`frameworkFilterApplies`), enforced in the
+  TS/Java/C#/Python adapters' `runRules`.
+- **Generalized config-gating (§15.2):** `configRule: true` +
+  `configFiles: string[]` (regex sources) replaces the hard-coded
+  `playwright.config.*` regex that lived in the TS adapter and
+  duplicated inside all five config rules (QA-PW-121/122/141/143/144
+  migrated). Discovery knows the config filename conventions
+  (`cypress.config.*` added alongside `playwright.config.*`).
+
+### Added — Cypress integration (first framework per the §15 order)
+
+Three rules in the new frozen `QA-CYP-*` namespace, BORN QUARANTINE
+(§15.5) with fixtures both directions (`tests/fixtures/QA-CYP-*/`):
+
+- **QA-CYP-001 — fixed `cy.wait(n)`** (warning): numeric-literal
+  `cy.wait(3000)` — the Cypress hard-sleep idiom. Alias waits
+  (`cy.wait('@route')`) are the legitimate form and never fire.
+  File gate: framework tag, `.cy.*` extension, or `cy.*` API usage in
+  the file (real Cypress suites rarely import cypress — surfaced by the
+  first measurement against cypress-example-kitchensink). MEASURED on
+  the kitchensink corpus: 12 TP (viewport-switch fixed waits) / 3 FP
+  (doc-example artifacts, the suite intentionally demonstrates the API
+  — QA-PY-003 precedent) → 20% FP at n=15, 95% Wilson
+  [7.1%, 45.2%]; tier extended (band-consistent), corpus
+  cypress-io-kitchensink added with baselines.
+  cypress-realworld-app scanned as precision evidence: 0 fires (the
+  suite uses alias waits exclusively), baseline recorded.
+- **QA-CYP-002 — focused test (`.only`)** (error): committed
+  `it.only`/`describe.only`/`context.only` de-schedules the rest of the
+  suite. Quarantine, unmeasured (fixtures only) pending a measured
+  Cypress corpus with the pattern.
+- **QA-CYP-003 — `chromeWebSecurity: false`** (error): deterministic
+  config defect via the generalized `configFiles` gate. Quarantine,
+  unmeasured pending corpus.
+
+### Added — Selenium cross-language reach (plan §15.3, JV/CS/Py reuse)
+
+Three rules in the new frozen `QA-SE-*` namespace sharing one sequence
+detector (hard sleep followed by an element lookup within 3 lines —
+the sleep standing in for an explicit `WebDriverWait`), all BORN
+QUARANTINE:
+
+- **QA-SE-001** (Java): `Thread.sleep` → `findElement`/`click`/
+  `sendKeys` within 3 lines.
+- **QA-SE-002** (C#): `Thread.Sleep`/`Task.Delay` →
+  `FindElement`/`Click`/`SendKeys` within 3 lines. MEASURED on the
+  SeleniumHQ/selenium .NET webdriver suite: 3 TP + 1 FP (a
+  sleep-inside-polling-loop cadence — loop-body containment is the
+  documented residue) → 25% FP at n=4; below the n≥10 measurement bar,
+  stays quarantine/unmeasured with verdicts recorded
+  (tests/corpus/verdicts/SeleniumHQ-selenium.jsonl, baseline added).
+- **QA-SE-003** (Python): `time.sleep` → `find_element`/`click`/
+  `send_keys` within 3 lines.
+
+### Registry
+
+- 97 rules (was 91); registry/doctor/scaffolder ID validators widened
+  for the new frozen namespaces (QA-CYP-_, QA-SE-_, QA-WDIO-_,
+  QA-PPTR-_, QA-APM-* reserved). Measured coverage 73/97 (75%); the
+  §20.1(a) unmeasured-count ratchet now tracks the PRE-EXISTING set
+  mechanically (`introduced` ≤ 0.5.0) — new waves onboard under §20.1(b)
+  - the per-framework exit gate, not the global count freeze.
+- Defect ledger: **D7 closed** (target phase 5). Capability matrix
+  regenerated (97 rules); docs pages regenerated; corpus baselines
+  added for the three Phase 5 measurement repos.
+
 ## [Unreleased] — Verification Trust Evolution, Phase 4 — Common QA Semantic Model (plan §14, behavior-neutral)
 
 ### Added — `src/engine/qa-model.ts`: the normalized QA concept IR (extract-only, no scan wiring)

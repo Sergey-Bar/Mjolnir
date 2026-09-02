@@ -49,6 +49,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | grafana-grafana                               | 230         |
 | keycloak-keycloak                             | 193         |
 | playwright-community-eslint-plugin-playwright | 1           |
+| SeleniumHQ-selenium                           | 22          |
 | streamlit-streamlit                           | 1591        |
 | tanstack-query                                | 125         |
 
