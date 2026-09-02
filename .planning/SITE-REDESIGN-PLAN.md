@@ -605,7 +605,7 @@ both of which had made the site look far worse than it is:
 
 A measurement harness is as capable of lying as the thing it measures.
 
-### 15.3 CLS — NOT MET on one page
+### 15.3 CLS — NOT MET on one page _(superseded by §16)_
 
 | page                     | desktop CLS | gate      |
 | ------------------------ | ----------- | --------- |
@@ -631,11 +631,75 @@ unanswered**, now with evidence attached. Not guessed at here: wrong
 `size-adjust` numbers would make the shift worse, and this document does
 not ship values nobody measured.
 
-### 15.4 Where that leaves it
+### 15.4 Where that left it
 
-Green: axe (0 violations, a11y 100), keyboard (0 stops without a ring, no
-traps), desktop performance (97–100), best-practices 100, SEO 100,
-landing-page CLS 0.001.
+Green: axe, keyboard, desktop performance, best-practices, SEO,
+landing-page CLS. Not green: `/rules/` desktop CLS 0.088. Closed in §16.
 
-Not green: `/rules/` desktop CLS 0.088, and mobile performance on two
-pages (88 / 93) — which was never a stated gate but is the honest number.
+## 16. CLS closed — measured fallbacks, not guessed ones
+
+§15.3 left `/rules/` at CLS 0.088 against a 0.05 gate and named the fix
+as "a metrics-matched fallback or self-hosting", explicitly declining to
+guess `size-adjust` values. They were measured instead.
+
+### 16.1 Isolating the cause
+
+Two hypotheses were wrong before the right one. JetBrains Mono was
+blamed first (moved to `display=optional` — it helped mobile and nothing
+else). Inter was blamed second, matched, and moved the number 0.088 →
+0.088. Only a controlled experiment settled it:
+
+| /rules/, 4x CPU throttle            | CLS    |
+| ----------------------------------- | ------ |
+| Google Fonts allowed                | 0.0723 |
+| Google Fonts blocked at the network | 0.0139 |
+
+Fonts, definitively — and with Inter matched and mono optional, the
+remaining swapper was **Cinzel**, which sets every heading on the site.
+
+### 16.2 The numbers, and where they come from
+
+Both fallbacks were derived by loading the real woff2 through the
+`FontFace` API and comparing against the fallback on a canvas at 100px —
+never copied from a blog post. Re-derivable with the same method:
+
+| face   | measured (w / asc / desc) | fallback | size-adjust | ascent  | descent |
+| ------ | ------------------------- | -------- | ----------- | ------- | ------- |
+| Inter  | 2092.04 / 97 / 24         | Arial    | 92.69%      | 104.65% | 25.89%  |
+| Cinzel | 1810.22 / 98 / 37         | Georgia  | 86.83%      | 112.87% | 42.61%  |
+
+Matched fallbacks alone took `/rules/` from 0.088 to 0.075 — better, and
+still failing. Metric matching narrows a swap; it cannot abolish it.
+
+### 16.3 What actually closed it
+
+`display=optional` on all three families, on top of the matched
+fallbacks. `optional` gives the browser a ~100 ms block period and _no_
+swap period: the font is either ready in time or it is not used for that
+visit, so nothing can reflow under a reader.
+
+That is normally a real cost — first-time visitors lose the brand face.
+Here it is cheap, and measurably so: the fallbacks are metric-matched, so
+the layout is identical either way, and on a normal load the real fonts
+still arrive in time. Verified rather than hoped — after a cold load the
+page reports `Inter, Cinzel, JetBrains Mono` as applied.
+
+| page                     | CLS before | CLS after    | desktop perf |
+| ------------------------ | ---------- | ------------ | ------------ |
+| `/`                      | 0.001      | **0.000**    | 99           |
+| `/guide/getting-started` | 0.025      | **0.014**    | 99           |
+| `/rules/`                | 0.088 ❌   | **0.014** ✅ | 100          |
+
+Mobile CLS is **0.000 on all three pages**, and mobile performance rose
+to 88 / 97 / 90.
+
+### 16.4 Every stated gate now measured and met
+
+axe 0 violations · Lighthouse a11y 100 · keyboard 133 stops, 0 without a
+focus ring, no traps · desktop performance 99 / 99 / 100 against a 95
+gate · best-practices 100 · SEO 100 · CLS 0.000–0.014 against a 0.05
+gate.
+
+Still true, and still not a claim of perfection: this is a local
+measurement of eight doctor checks and three audited pages. Mobile
+performance (88 / 97 / 90) was never a gate and is reported as-is.

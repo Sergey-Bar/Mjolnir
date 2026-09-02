@@ -2,6 +2,42 @@
    Mjölnir — global theme polish on top of VitePress defaults
    ============================================================ */
 
+/* ---- metrics-matched fallback for Inter --------------------------- */
+/* Inter arriving at ~1.2s lifted a long document by 4px and was the whole
+   of the rule catalog's CLS (0.088 against a 0.05 gate), traced to a text
+   node moving y:114->110 with a layout-shift observer.
+   
+   These numbers are MEASURED, not copied: the real Inter woff2 was loaded
+   through the FontFace API and compared with Arial on a canvas at 100px —
+   Inter w2092.04/asc97/desc24 vs Arial w2256.93/asc91/desc21. Hence
+   size-adjust 2092.04/2256.93 = 92.69%, and the overrides expressed
+   against that adjusted em: 97/0.9269 = 104.65%, 24/0.9269 = 25.89%.
+   Helvetica Neue and Liberation Sans are metric-compatible with Arial.
+   
+   Re-derive with: the measurement block in .planning/SITE-REDESIGN-PLAN.md §16. */
+/* Same treatment for the display face. Cinzel sets every heading, so its
+   swap moved headings and everything under them. Measured the same way:
+   Cinzel w1810.22/asc98/desc37 vs Georgia w2084.86/asc92/desc22 at 100px
+   — size-adjust 1810.22/2084.86 = 86.83%, overrides against that adjusted
+   em: 98/0.8683 = 112.87%, 37/0.8683 = 42.61%. */
+@font-face {
+  font-family: "Cinzel Fallback";
+  src: local("Georgia"), local("Times New Roman");
+  size-adjust: 86.83%;
+  ascent-override: 112.87%;
+  descent-override: 42.61%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Inter Fallback";
+  src: local("Arial"), local("Helvetica Neue"), local("Liberation Sans");
+  size-adjust: 92.69%;
+  ascent-override: 104.65%;
+  descent-override: 25.89%;
+  line-gap-override: 0%;
+}
+
 body {
   margin: 0;
 }
