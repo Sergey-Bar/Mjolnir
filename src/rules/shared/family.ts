@@ -43,6 +43,10 @@ export interface LanguageVariant {
    * Variant-level entry overrides the family-level one.
    */
   overlapWith?: string[];
+  /** Severity override (defaults to family-level severity). */
+  severity?: Severity;
+  /** False-positive-risk override (defaults to family-level value). */
+  falsePositiveRisk?: "low" | "medium" | "high";
   /** Tier override (defaults to family-level tier). */
   tier?: "core" | "extended" | "quarantine";
 }
@@ -102,14 +106,14 @@ export function definePatternFamily(
       id: v.id,
       category: opts.category as QADoctorRule["category"],
       title: opts.title,
-      severity: opts.severity,
+      severity: (v.severity ?? opts.severity),
       confidence: opts.confidence,
       findingType: opts.findingType,
       qaImpact: opts.qaImpact,
       appliesTo: v.appliesTo,
       languages: v.languages,
       frameworks: v.frameworks,
-      falsePositiveRisk: opts.falsePositiveRisk,
+      falsePositiveRisk: v.falsePositiveRisk ?? opts.falsePositiveRisk,
       autofix: opts.autofix ?? false,
       detectionStrategy: opts.detectionStrategy ?? "LEXICAL",
       ...(opts.detectionNotes ? { detectionNotes: opts.detectionNotes } : {}),
@@ -119,6 +123,7 @@ export function definePatternFamily(
         ? { overlapWith: v.overlapWith ?? opts.overlapWith }
         : {}),
       run(ctx) {
+        const severity = v.severity ?? opts.severity;
         const text =
           opts.useCodeText !== false ? (ctx.codeText ?? ctx.text) : ctx.text;
         const findings: Omit<Finding, "ruleId" | "category">[] = [];
@@ -130,7 +135,7 @@ export function definePatternFamily(
           let m: RegExpExecArray | null;
           while ((m = re.exec(text)) !== null) {
             findings.push({
-              severity: opts.severity,
+              severity,
               confidence: opts.confidence,
               findingType: opts.findingType,
               qaImpact: opts.qaImpact,

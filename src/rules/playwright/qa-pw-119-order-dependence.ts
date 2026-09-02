@@ -1,8 +1,18 @@
 /**
  * QA-PW-119 — Test writes state read by later tests (order dependence).
- * Severity: error · Confidence: medium · heuristic-risk
+ * Severity: info (retired, was error) · Confidence: medium · heuristic-risk
  * A test that mutates module-level/shared state for others to read is
  * the classic hidden-order-dependency bug.
+ *
+ * RETIRED (docs/RULE-LIFECYCLE.md — Phase 2 quarantine-cluster triage):
+ * measured 100% FP (n=24, docs/FP-AUDIT.md) with zero TPs. The FP causes
+ * scatter across ≥5 legitimate infrastructure idioms (per-test harness
+ * handles rebuilt with afterEach teardown, vi.hoisted fixtures, module
+ * counters, type-level harness state, memoized shared infra) — not one
+ * fixable root cause. A cross-test write→read dataflow check would be
+ * different logic and must ship under a NEW rule ID (lifecycle §2).
+ * An error-severity rule at 0 TP / 24 is actively misleading; the
+ * downgrade to info is the highest-priority move in the batch.
  */
 
 import { defineRule } from "../rule.js";
@@ -13,7 +23,7 @@ export const pwOrderDependence = defineRule({
   id: "QA-PW-119",
   category: "QA-PW",
   title: "Test depends on execution order",
-  severity: "error",
+  severity: "info",
   confidence: "medium",
   findingType: "heuristic-risk",
   qaImpact: "FALSE-GREEN",
@@ -21,15 +31,17 @@ export const pwOrderDependence = defineRule({
   // Trust Metadata
   languages: ["typescript", "javascript"],
   frameworks: ["playwright"],
-  falsePositiveRisk: "medium",
+  falsePositiveRisk: "high",
   autofix: false,
   detectionStrategy: "LEXICAL",
   introduced: "0.3.0",
-  // Measured FP 100% (n=13, docs/FP-AUDIT.md 2026-08-31): real-world
+  // Measured FP 100% (n=24, docs/FP-AUDIT.md): real-world
   // module-level state is setup infrastructure (per-test helpers with
   // teardown, counters, vi.hoisted fixtures), not cross-test write-then-read.
   // North-star law: >30% FP cannot ship by default.
   tier: "quarantine",
+  // RETIRED (docs/RULE-LIFECYCLE.md — Phase 2 quarantine-cluster triage):
+  // severity error → info; see the header for the evidence.
 
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;
@@ -108,7 +120,7 @@ export const pwOrderDependence = defineRule({
       while ((a = assignRe.exec(text)) !== null) {
         if (inHook(a.index)) continue; // setup hooks are fine
         findings.push({
-          severity: "error",
+          severity: "info",
           confidence: "medium",
           findingType: "heuristic-risk",
           qaImpact: "FALSE-GREEN",

@@ -28,6 +28,14 @@ export const pwWaitForLoadEvent = defineRule({
   // pre-register the load promise around an edit as reload synchronization,
   // with assertions after. North-star law: >30% FP cannot ship by default.
   tier: "quarantine",
+  // Phase 2 retune (EVIDENCE-BACKED, detectorRevision 2 — §07): every
+  // measured FP shares ONE root cause — the wait is load synchronization
+  // before real assertions, or the awaited promise is consumed by
+  // expect(...).rejects (absence of reload IS the assertion). Fire only
+  // when the load wait is the terminal wait in its test body (no
+  // expect/assert/expect.poll after it) or is followed only by more
+  // waits — the "instead of an assertion" premise, now actually checked.
+  detectorRevision: 2,
 
   run(ctx) {
     // Raw text on purpose: the signal is the string argument `'load'`, which
@@ -38,8 +46,30 @@ export const pwWaitForLoadEvent = defineRule({
 
     const re =
       /waitForEvent\s*\(\s*['"]load['"]|waitForLoadState\s*\(\s*['"]load['"]/g;
+    // Verification markers: any assertion-style consumption AFTER the wait
+    // means the wait is synchronization, not a substitute for asserting.
+    const verifyRe =
+      /\b(?:await\s+)?expect\s*\(|\bassert\b|\bexpect\.poll\b|\btoHave[A-Z]|\btoBe[A-Z]/;
+    // Promise-consumption marker: `expect(<wait chain>).rejects` — the
+    // awaited wait's REJECTION is the assertion (no-reload check).
+    const rejectsRe = /expect\s*\([^;{}]*\)\s*\.\s*rejects/;
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {
+      const rest = text.slice(m.index + m[0].length);
+      // Fire only when nothing verification-shaped follows the wait in the
+      // rest of the file (i.e., the wait is the terminal wait). A wait
+      // followed by assertions is reload synchronization — the dominant
+      // measured-legitimate shape (20/20 FPs, docs/FP-AUDIT.md).
+      if (verifyRe.test(rest)) continue;
+      // `await expect(page.waitForLoadState('load')).rejects` asserts the
+      // ABSENCE of a reload — the wait is the assertion itself.
+      if (
+        rejectsRe.test(
+          text.slice(Math.max(0, m.index - 120), m.index + m[0].length + 200),
+        )
+      ) {
+        continue;
+      }
       findings.push({
         severity: "warning",
         confidence: "high",

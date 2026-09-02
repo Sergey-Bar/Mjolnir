@@ -27,6 +27,17 @@ export const envCoupling = defineRule({
   detectionNotes: "regex heuristic",
   introduced: "0.2.0",
   tier: "quarantine",
+  // Phase 2 retune (EVIDENCE-BACKED, detectorRevision 2 — §07): all 20
+  // measured FPs (n=20, docs/FP-AUDIT.md) share ONE root cause — the
+  // fixed-port sub-pattern matched the suite's OWN local test containers
+  // (Azurite / DynamoDB Local / Mongo on localhost:port), which are
+  // deliberate self-contained fixtures, not ambient machine state. The
+  // loopback variant is dropped: a hardcoded NON-loopback host:port is
+  // the coupling signal (it reaches beyond the suite's own fixtures);
+  // loopback endpoints are the suite's own sandbox. The OS-path, locale,
+  // and local-time-getter sub-patterns are unchanged (the corpus never
+  // contradicted them).
+  detectorRevision: 2,
 
   run(ctx) {
     const text = ctx.text;
@@ -39,11 +50,19 @@ export const envCoupling = defineRule({
       fix: string;
     }> = [
       {
-        // Fixed localhost ports — assumes the port is free & app is there
-        re: /(?:localhost|127\.0\.0\.1):\d{2,5}/g,
+        // Fixed NON-loopback host:port — reaches a specific remote host,
+        // not the suite's own local fixture container. Matched shapes:
+        // dotted hostnames (`api.example.com:8443`) and IPv4 literals
+        // (loopback 127/8 excluded). Loopback (localhost/127.x) endpoints
+        // are deliberately excluded: they are the suite's own
+        // self-contained test fixtures (Azurite, DynamoDB Local,
+        // Mongo-on-localhost), the entire measured FP cohort (Phase 2
+        // triage, docs/FP-AUDIT.md n=20). Single-label names
+        // (`postgres:15` docker refs) have no dot — never matched.
+        re: /\b(?:[a-z][\w-]*(?:\.[\w-]+)+|(?!127\.)\d{1,3}(?:\.\d{1,3}){3}):\d{2,5}\b/g,
         kind: "fixed port",
-        why: "The test assumes a specific local port is serving the app — it breaks on parallel runs, containers, or port conflicts.",
-        fix: "Use the server's resolved base URL from config/test fixtures instead of a hardcoded host:port.",
+        why: "The test assumes a specific host:port is reachable — it breaks on parallel runs, containers, network isolation, or when that host moves.",
+        fix: "Use the server's resolved base URL from config/test fixtures, or a local fixture container, instead of a hardcoded host:port.",
       },
       {
         // OS-specific absolute paths

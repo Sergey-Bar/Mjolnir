@@ -12,7 +12,7 @@ export const pwPollNoTimeout = defineRule({
   id: "QA-PW-105",
   category: "QA-PW",
   title: "expect.poll without timeout bound",
-  severity: "warning",
+  severity: "info",
   confidence: "medium",
   findingType: "heuristic-risk",
   qaImpact: "HYGIENE",
@@ -20,13 +20,18 @@ export const pwPollNoTimeout = defineRule({
   // Trust Metadata
   languages: ["typescript", "javascript"],
   frameworks: ["playwright"],
-  falsePositiveRisk: "medium",
+  falsePositiveRisk: "high",
   autofix: false,
   detectionStrategy: "LEXICAL",
   introduced: "0.3.0",
   // Measured FP 100% (n=20, docs/FP-AUDIT.md 2026-08-31): the bounded
   // default poll timeout fails visibly, so the claimed masking harm never
   // materializes on real consumer code. North-star law.
+  // RETIRED (docs/RULE-LIFECYCLE.md — Phase 2 quarantine-cluster triage):
+  // measured 100% FP (n=20, docs/FP-AUDIT.md) with zero TPs — the rule's
+  // premise is wrong on real code, not its tuning. Severity downgraded to
+  // info (non-blocking everywhere); code + fixtures stay, the frozen ID
+  // is never reused. Successor ideas ship under NEW rule IDs (lifecycle §2).
   tier: "quarantine",
 
   run(ctx) {
@@ -44,7 +49,7 @@ export const pwPollNoTimeout = defineRule({
       const args = text.slice(openParen + 1, closeParen);
       if (!/timeout\s*:/.test(args)) {
         findings.push({
-          severity: "warning",
+          severity: "info",
           confidence: "medium",
           findingType: "heuristic-risk",
           qaImpact: "HYGIENE",

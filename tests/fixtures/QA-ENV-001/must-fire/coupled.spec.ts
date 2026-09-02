@@ -1,7 +1,7 @@
 import { test, expect } from "vitest";
 
-test("fetches from fixed port", async () => {
-  const res = await fetch("http://localhost:3000/api/users");
+test("fetches from fixed remote host:port", async () => {
+  const res = await fetch("https://staging.example.com:8443/api/users");
   expect(res.ok).toBe(true);
 });
 

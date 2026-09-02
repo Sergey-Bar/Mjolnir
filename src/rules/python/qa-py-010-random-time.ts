@@ -11,7 +11,7 @@ export const pyRandomTimeDependence = defineRule({
   id: "QA-PY-010",
   category: "QA-TQUAL",
   title: "Random/time dependence in test",
-  severity: "warning",
+  severity: "info",
   confidence: "medium",
   findingType: "heuristic-risk",
   qaImpact: "FLAKY-RISK",
@@ -19,13 +19,18 @@ export const pyRandomTimeDependence = defineRule({
   // Trust Metadata
   languages: ["python"],
   frameworks: ["pytest"],
-  falsePositiveRisk: "medium",
+  falsePositiveRisk: "high",
   autofix: false,
   detectionStrategy: "LEXICAL",
   introduced: "0.3.0",
 
   // Measured FP 100% (n=10): wall-clock reads ARE the subject of e2e timing/throttle tests.
 
+  // RETIRED (docs/RULE-LIFECYCLE.md — Phase 2 quarantine-cluster triage):
+  // measured 100% FP (n=10, docs/FP-AUDIT.md) with zero TPs — the rule's
+  // premise is wrong on real code, not its tuning. Severity downgraded to
+  // info (non-blocking everywhere); code + fixtures stay, the frozen ID
+  // is never reused. Successor ideas ship under NEW rule IDs (lifecycle §2).
   tier: "quarantine",
 
   run(ctx) {
@@ -53,7 +58,7 @@ export const pyRandomTimeDependence = defineRule({
         const line = text.slice(lineStart, text.indexOf("\n", m.index));
         if (/freeze_time|frozen|mock|patch/i.test(line)) continue;
         findings.push({
-          severity: "warning",
+          severity: "info",
           confidence: "medium",
           findingType: "heuristic-risk",
           qaImpact: "FLAKY-RISK",

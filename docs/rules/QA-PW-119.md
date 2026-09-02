@@ -4,13 +4,13 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 
 | Field                                 | Value                          |
 | ------------------------------------- | ------------------------------ |
-| Severity                              | error                          |
+| Severity                              | info                           |
 | Confidence                            | medium                         |
 | Tier                                  | quarantine                     |
 | Measured FP rate                      | 100% (n=24)                    |
 | Evidence level                        | E1                             |
 | QA impact                             | False-green risk (FALSE-GREEN) |
-| False-positive risk (author estimate) | medium                         |
+| False-positive risk (author estimate) | high                           |
 | Autofix available                     | no                             |
 | Languages                             | typescript, javascript         |
 | Frameworks                            | playwright                     |

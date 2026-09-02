@@ -35,7 +35,7 @@ Assert the specific expected value or property: `assert result.id == expected`, 
 
 ## Confirmed NOT to fire on the corresponding clean pattern
 
-Verified against `tests/fixtures/QA-PY-004/must-not-fire/specific-asserts.py` — a legitimate, similar-looking pattern this rule correctly leaves alone.
+Verified against `tests/fixtures/QA-PY-004/must-not-fire/predicate-calls.py` — a legitimate, similar-looking pattern this rule correctly leaves alone.
 
 ## Corpus-measured false-positive risk
 

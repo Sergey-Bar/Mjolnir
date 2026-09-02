@@ -13,7 +13,7 @@ export const pyMockOnly = defineRule({
   id: "QA-PY-008",
   category: "QA-TQUAL",
   title: "Mock-only verification",
-  severity: "warning",
+  severity: "info",
   confidence: "medium",
   findingType: "heuristic-risk",
   qaImpact: "HYGIENE",
@@ -21,7 +21,7 @@ export const pyMockOnly = defineRule({
   // Trust Metadata
   languages: ["python"],
   frameworks: ["pytest"],
-  falsePositiveRisk: "medium",
+  falsePositiveRisk: "high",
   autofix: false,
   detectionStrategy: "LEXICAL",
   detectionNotes: "regex heuristic",
@@ -29,6 +29,11 @@ export const pyMockOnly = defineRule({
 
   // Measured FP 100% (n=20): mocks stand in for the external service boundary; the CLI/module calls against them are the observable behavior.
 
+  // RETIRED (docs/RULE-LIFECYCLE.md — Phase 2 quarantine-cluster triage):
+  // measured 100% FP (n=20, docs/FP-AUDIT.md) with zero TPs — the rule's
+  // premise is wrong on real code, not its tuning. Severity downgraded to
+  // info (non-blocking everywhere); code + fixtures stay, the frozen ID
+  // is never reused. Successor ideas ship under NEW rule IDs (lifecycle §2).
   tier: "quarantine",
 
   run(ctx) {
@@ -60,7 +65,7 @@ export const pyMockOnly = defineRule({
 
       if (mockAssertions > 0) {
         findings.push({
-          severity: "warning",
+          severity: "info",
           confidence: "medium",
           findingType: "heuristic-risk",
           qaImpact: "HYGIENE",

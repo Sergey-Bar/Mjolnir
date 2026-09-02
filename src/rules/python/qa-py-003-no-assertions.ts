@@ -25,6 +25,15 @@ export const pyNoAssertions = defineRule({
   detectionStrategy: "LEXICAL",
   introduced: "0.3.0",
   tier: "quarantine",
+  // Phase 2 retune (EVIDENCE-BACKED, detectorRevision 2 — §07): two
+  // measured FP clusters (docs/FP-AUDIT.md, n=20): (a) the check
+  // vocabulary missed pytest's other assertion entrances —
+  // pytest.warns/pytest.deprecated_call/pytest.fail — now added; (b)
+  // test_* functions invoked as DATA by other code in the same file
+  // (pytester-style runner scripts) — a `test_*` def that is referenced
+  // by name elsewhere in the file is a fixture/helper, not a collected
+  // test, and is skipped.
+  detectorRevision: 2,
 
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;
@@ -41,9 +50,26 @@ export const pyNoAssertions = defineRule({
         // [ \t] not \s — \s crosses lines, matching asserts outside this block.
         /^[ \t]*assert\b/m.test(body) ||
         /pytest\.raises/.test(body) ||
+        // Phase 2 vocabulary: pytest's other verification entrances.
+        /pytest\.(?:warns|deprecated_call|fail|fail\s*\()/.test(body) ||
         /self\.assert/.test(body) ||
         /\bexpect\b/.test(body);
       if (!hasCheck) {
+        // Phase 2 data-shape skip: a `test_*` function whose NAME is
+        // referenced elsewhere in the file (passed to a runner, stored in
+        // a list, awaited as a coroutine) is test DATA — e.g. pytester
+        // scripts whose collected assertion lives in the parent test.
+        const name = m[2] as string;
+        const refRe = new RegExp(`\\b${name}\\b`, "g");
+        let refs = 0;
+        while (refRe.exec(text) !== null) {
+          refs++;
+          // Two or more occurrences of the name (the def plus any other
+          // mention — runner invocation, list membership, forward ref)
+          // mark the function as referenced test data.
+          if (refs > 1) break;
+        }
+        if (refs > 1) continue;
         findings.push({
           severity: "error",
           confidence: "high",

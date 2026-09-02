@@ -1,6 +1,17 @@
 /**
  * No-a11y family (Phase 6 — Tempering Plan).
  * File-level absence heuristic: UI-interacting test has no a11y assertions.
+ *
+ * Phase 2 quarantine-cluster triage: BOTH variants are RETIRED
+ * (docs/RULE-LIFECYCLE.md) — measured 100% FP (n=20 each,
+ * docs/FP-AUDIT.md) where every verdict row carries the same root
+ * cause: a11y assertions are optional coverage, so a file-level absence
+ * heuristic fires on essentially every UI test file by construction.
+ * Absence of optional coverage is not a defect finding — the premise,
+ * not the tuning, is wrong. Severity was already info (non-blocking);
+ * code + fixtures stay, the frozen IDs are never reused. A successor
+ * idea (a11y-coverage reporting rather than per-file flagging) ships
+ * under NEW rule IDs (lifecycle §2).
  */
 
 import { defineRule, type QADoctorRule } from "../rule.js";
@@ -33,6 +44,8 @@ function makeNoA11y(
     detectionNotes: "absence heuristic",
     introduced: "0.4.0",
     tier: "quarantine",
+    // RETIRED (docs/RULE-LIFECYCLE.md — Phase 2 quarantine-cluster
+    // triage): measured 100% FP (n=20) with zero TPs; see the header.
     run(ctx) {
       const text = ctx.codeText ?? ctx.text;
       const findings: Omit<Finding, "ruleId" | "category">[] = [];

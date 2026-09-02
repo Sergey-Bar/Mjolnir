@@ -27,6 +27,15 @@ export const pyRaisesWithoutMatch = defineRule({
   detectionStrategy: "LEXICAL",
   introduced: "0.3.0",
   tier: "quarantine",
+  // Phase 2 retune (EVIDENCE-BACKED, detectorRevision 2 — §07): the
+  // dominant measured FP cluster (8 of 13 FPs, docs/FP-AUDIT.md 65%
+  // n=20) is `with pytest.raises(X) as exc_info:` followed by an
+  // assert/expect on `exc_info.value` / `str(exc_info.value)` — the
+  // message IS verified, just without match=. Those are skipped. The
+  // genuinely vague raises blocks (no match=, no excinfo assertion)
+  // still fire. Remaining FP residue: single-possible-exception blocks
+  // ("match= would add no value") are not statically decidable.
+  detectorRevision: 2,
 
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;
@@ -42,6 +51,19 @@ export const pyRaisesWithoutMatch = defineRule({
       const args = text.slice(openParen + 1, closeParen);
 
       if (!/\bmatch\s*=/.test(args)) {
+        // excinfo-assertion skip: `as exc_info` + a following assert/expect
+        // on `exc_info.value` (or str(exc_info.value)) pins the failure to
+        // the intended cause — the match= diagnosis does not hold.
+        const after = text.slice(closeParen, closeParen + 120);
+        const asMatch = /as\s+([A-Za-z_]\w*)/.exec(after);
+        if (asMatch) {
+          const name = asMatch[1] as string;
+          const tail = text.slice(closeParen, m.index + 1600);
+          const excinfoAssert = new RegExp(
+            `(?:assert|expect)[^\\n]{0,120}(?:\\b${name}\\.value|\\bstr\\(${name}\\.value\\))`,
+          ).test(tail);
+          if (excinfoAssert) continue;
+        }
         findings.push({
           severity: "warning",
           confidence: "medium",

@@ -11,7 +11,7 @@ export const pyEmptyBody = defineRule({
   id: "QA-PY-006",
   category: "QA-TEST",
   title: "Empty test body (pass)",
-  severity: "error",
+  severity: "info",
   confidence: "high",
   findingType: "deterministic-defect",
   qaImpact: "FALSE-GREEN",
@@ -19,10 +19,15 @@ export const pyEmptyBody = defineRule({
   // Trust Metadata
   languages: ["python"],
   frameworks: ["pytest"],
-  falsePositiveRisk: "low",
+  falsePositiveRisk: "high",
   autofix: false,
   detectionStrategy: "LEXICAL",
   introduced: "0.3.0",
+  // RETIRED (docs/RULE-LIFECYCLE.md — Phase 2 quarantine-cluster triage):
+  // measured 100% FP (n=20, docs/FP-AUDIT.md) with zero TPs — the rule's
+  // premise is wrong on real code, not its tuning. Severity downgraded to
+  // info (non-blocking everywhere); code + fixtures stay, the frozen ID
+  // is never reused. Successor ideas ship under NEW rule IDs (lifecycle §2).
   tier: "quarantine",
 
   run(ctx) {
@@ -35,7 +40,7 @@ export const pyEmptyBody = defineRule({
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {
       findings.push({
-        severity: "error",
+        severity: "info",
         confidence: "high",
         findingType: "deterministic-defect",
         qaImpact: "FALSE-GREEN",

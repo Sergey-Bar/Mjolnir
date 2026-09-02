@@ -20,7 +20,7 @@ export const evaluateBusinessLogic = defineRule({
   id: "QA-PW-005",
   category: "QA-PW",
   title: "Logic inside page.evaluate()",
-  severity: "warning",
+  severity: "info",
   confidence: "medium",
   findingType: "heuristic-risk",
   qaImpact: "HYGIENE",
@@ -28,7 +28,7 @@ export const evaluateBusinessLogic = defineRule({
   // Trust Metadata
   languages: ["typescript", "javascript"],
   frameworks: ["playwright"],
-  falsePositiveRisk: "medium",
+  falsePositiveRisk: "high",
   autofix: false,
   // Upgraded from regex to AST per Upgrade-Plan-v3 Phase 3.
   detectionStrategy: "AST",
@@ -37,6 +37,11 @@ export const evaluateBusinessLogic = defineRule({
 
   // Measured FP 100% (n=17): page.evaluate branching is browser-only test instrumentation in every real consumer suite.
 
+  // RETIRED (docs/RULE-LIFECYCLE.md — Phase 2 quarantine-cluster triage):
+  // measured 100% FP (n=17, docs/FP-AUDIT.md) with zero TPs — the rule's
+  // premise is wrong on real code, not its tuning. Severity downgraded to
+  // info (non-blocking everywhere); code + fixtures stay, the frozen ID
+  // is never reused. Successor ideas ship under NEW rule IDs (lifecycle §2).
   tier: "quarantine",
 
   run(ctx) {
@@ -67,7 +72,7 @@ export const evaluateBusinessLogic = defineRule({
 
       if (/\b(if|for|while|switch)\b/.test(bodyText)) {
         findings.push({
-          severity: "warning",
+          severity: "info",
           confidence: "medium",
           findingType: "heuristic-risk",
           qaImpact: "HYGIENE",
@@ -100,7 +105,7 @@ function runRegexFallback(
     const body = text.slice(openBrace + 1, closeBrace);
     if (/\b(if|for|while|switch)\b/.test(body)) {
       findings.push({
-        severity: "warning",
+        severity: "info",
         confidence: "medium",
         findingType: "heuristic-risk",
         qaImpact: "HYGIENE",

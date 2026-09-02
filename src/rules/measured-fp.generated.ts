@@ -97,7 +97,7 @@ export const MEASURED_FP: Readonly<Record<string, MeasuredFp>> = {
   "QA-CS-106": {
     fpRate: 1,
     n: 20,
-    detectorRevision: 1,
+    detectorRevision: 2,
     ciLow: 0.8389,
     ciHigh: 1,
   },
@@ -125,7 +125,7 @@ export const MEASURED_FP: Readonly<Record<string, MeasuredFp>> = {
   "QA-ENV-001": {
     fpRate: 1,
     n: 20,
-    detectorRevision: 1,
+    detectorRevision: 2,
     ciLow: 0.8389,
     ciHigh: 1,
   },
@@ -167,7 +167,7 @@ export const MEASURED_FP: Readonly<Record<string, MeasuredFp>> = {
   "QA-JV-106": {
     fpRate: 1,
     n: 20,
-    detectorRevision: 1,
+    detectorRevision: 2,
     ciLow: 0.8389,
     ciHigh: 1,
   },
@@ -237,7 +237,7 @@ export const MEASURED_FP: Readonly<Record<string, MeasuredFp>> = {
   "QA-PW-102": {
     fpRate: 1,
     n: 20,
-    detectorRevision: 1,
+    detectorRevision: 2,
     ciLow: 0.8389,
     ciHigh: 1,
   },
@@ -412,14 +412,14 @@ export const MEASURED_FP: Readonly<Record<string, MeasuredFp>> = {
   "QA-PY-003": {
     fpRate: 1,
     n: 20,
-    detectorRevision: 1,
+    detectorRevision: 2,
     ciLow: 0.8389,
     ciHigh: 1,
   },
   "QA-PY-004": {
     fpRate: 0.45,
     n: 20,
-    detectorRevision: 1,
+    detectorRevision: 2,
     ciLow: 0.2582,
     ciHigh: 0.6579,
   },
@@ -440,7 +440,7 @@ export const MEASURED_FP: Readonly<Record<string, MeasuredFp>> = {
   "QA-PY-007": {
     fpRate: 0.65,
     n: 20,
-    detectorRevision: 1,
+    detectorRevision: 2,
     ciLow: 0.4329,
     ciHigh: 0.8188,
   },
@@ -489,14 +489,14 @@ export const MEASURED_FP: Readonly<Record<string, MeasuredFp>> = {
   "QA-PY-104": {
     fpRate: 1,
     n: 12,
-    detectorRevision: 1,
+    detectorRevision: 2,
     ciLow: 0.7575,
     ciHigh: 1,
   },
   "QA-PY-105": {
     fpRate: 1,
     n: 20,
-    detectorRevision: 1,
+    detectorRevision: 2,
     ciLow: 0.8389,
     ciHigh: 1,
   },

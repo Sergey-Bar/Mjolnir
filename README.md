@@ -187,7 +187,7 @@ firewall.
 
 | ID           | Rule                        | Severity |
 | ------------ | --------------------------- | -------- |
-| QA-TQUAL-001 | Mock-only verification      | warning  |
+| QA-TQUAL-001 | Mock-only verification      | info     |
 | QA-TQUAL-002 | Tautological assertion      | error    |
 | QA-TQUAL-009 | Unawaited promise assertion | error    |
 | QA-TQUAL-011 | Commented-out tests         | warning  |
@@ -202,9 +202,9 @@ firewall.
 | QA-PW-002 | Unawaited locator assertion              | error    |
 | QA-PW-003 | `page.pause()` / `test.only()` committed | error    |
 | QA-PW-004 | Brittle CSS/XPath selectors              | warning  |
-| QA-PW-005 | Business logic inside `page.evaluate()`  | warning  |
-| QA-PW-114 | Legacy element handles (`page.$`)        | warning  |
-| QA-PW-118 | `networkidle` waits (flaky by design)    | warning  |
+| QA-PW-005 | Business logic inside `page.evaluate()`  | info     |
+| QA-PW-114 | Legacy element handles (`page.$`)        | info     |
+| QA-PW-118 | `networkidle` waits (flaky by design)    | info     |
 | QA-PW-123 | Hardcoded environment URLs               | warning  |
 
 </details>
@@ -232,8 +232,8 @@ firewall.
 | QA-PY-002 | Skipped test (`skip`, non-strict `xfail`) | warning  |
 | QA-PY-003 | Test function with no assertions          | error    |
 | QA-PY-005 | `time.sleep()` in tests                   | warning  |
-| QA-PY-006 | Empty test body (`pass`)                  | error    |
-| QA-PY-010 | Random/time dependence without freeze     | warning  |
+| QA-PY-006 | Empty test body (`pass`)                  | info     |
+| QA-PY-010 | Random/time dependence without freeze     | info     |
 | QA-PY-012 | Tautological assertion                    | error    |
 
 20 Python rules total (QA-PY-001…012 pytest hygiene + QA-PY-101…108 Playwright-Python).
@@ -250,8 +250,8 @@ firewall.
 | QA-JV-103 | Test method with no assertions           | error    |
 | QA-JV-105 | Playwright `waitForTimeout()` hard sleep | warning  |
 | QA-JV-106 | Brittle selector instead of role locator | warning  |
-| QA-JV-108 | Hardcoded environment URL in test        | warning  |
-| QA-JV-111 | Blanket `page.route("**")` mock          | warning  |
+| QA-JV-108 | Hardcoded environment URL in test        | info     |
+| QA-JV-111 | Blanket `page.route("**")` mock          | info     |
 
 </details>
 
@@ -265,8 +265,8 @@ firewall.
 | QA-CS-103 | Test method with no assertions             | error    |
 | QA-CS-105 | `WaitForTimeoutAsync()` hard sleep         | warning  |
 | QA-CS-106 | Brittle selector instead of role locator   | warning  |
-| QA-CS-108 | Hardcoded environment URL in test          | warning  |
-| QA-CS-111 | Blanket `page.RouteAsync("**")` mock       | warning  |
+| QA-CS-108 | Hardcoded environment URL in test          | info     |
+| QA-CS-111 | Blanket `page.RouteAsync("**")` mock       | info     |
 
 </details>
 

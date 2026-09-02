@@ -9,6 +9,125 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — Verification Trust Evolution, Phase 2 — quarantine-cluster triage (plan §12.2)
+
+### Deprecated — 21 rules retired per docs/RULE-LIFECYCLE.md (measured 100% FP, premise wrong)
+
+Every rule below measured 100% FP (zero TPs at n ≥ 10, `docs/FP-AUDIT.md`)
+on real-world code. Per the lifecycle policy the severity is downgraded to
+`info` (non-blocking everywhere) and `falsePositiveRisk` is set to `high`;
+the code and fixtures stay in the repo, the frozen ID is never reused, and
+any salvageable detection idea ships under a NEW rule ID. If you gated CI
+on these findings, they no longer block at `info` severity; add an explicit
+`severityOverrides` entry in `mjolnir.config.json` to restore blocking.
+
+- **QA-PW-005** (business logic in `page.evaluate()`): in test files,
+  branching inside evaluate is the only way to reach browser state — every
+  measured use was browser-only test instrumentation or the API under test,
+  never leaked app logic. No successor.
+- **QA-PW-103** (missing timeout on navigation): bare `goto()` to the app
+  under test is the universal navigation idiom; per-call budgets are
+  config territory. No successor.
+- **QA-PW-105** (`expect.poll` without timeout): the default poll timeout
+  is a hard bound that raises — the claimed masking harm cannot occur.
+  No successor.
+- **QA-PW-107** (`toBeVisible` on toast/banner/modal): presence +
+  auto-retry semantics is what suites assert; viewport visibility is a
+  different question the suites are not asking. No successor.
+- **QA-PW-108** (`toHaveText` coupling): asserting self-owned markup's
+  exact text is a legitimate strong assertion; "whose markup is this" is
+  not statically decidable. No successor.
+- **QA-PW-112** (testid naming convention): hardcoding kebab-case as _the_
+  convention is the defect — conventions are repo-local. Successor idea
+  (mixed-conventions-within-one-repo check) requires a NEW ID.
+- **QA-PW-114** (legacy element handles): the auto-wait harm needs a
+  timing window; every measured use was immediate reads or deliberate
+  existence checks. No successor.
+- **QA-PW-118** (`networkidle` waits): the flake source is environmental
+  background traffic, absent by construction where the rule fired; harm is
+  not code-detectable. No successor.
+- **QA-PW-119** (module-level state order dependence, was `error`): FPs
+  scatter across ≥5 legitimate infrastructure idioms (per-test teardown
+  harnesses, counters, vi.hoisted fixtures, memoized shared infra) — an
+  error-severity rule at 0 TP / 24 is actively misleading. Successor idea
+  (cross-test write→read dataflow analysis) requires a NEW ID.
+- **QA-PW-120** (missing environment guard): file-level keyword
+  co-occurrence does not imply engine dependence; even the corpus's e2e
+  specs are engine-agnostic. No successor.
+- **QA-PW-145** (no a11y assertions): absence of optional coverage is not
+  a defect finding; the heuristic fires on every UI spec by construction.
+  Successor idea (a11y-coverage reporting) requires a NEW ID.
+- **QA-TQUAL-001** (mock-only verification, 0 TP / 26): spies observe the
+  real unit's output — the mock call IS the observable contract;
+  stand-in vs observer is not statically decidable. No successor.
+- **QA-PY-006** (empty test body `pass`): 18/20 FPs were pytester
+  test-data scripts; genuinely collected empty tests don't occur in real
+  code. No successor.
+- **QA-PY-008** (mock-only verification): boundary mocking and real-output
+  spies are contract testing, not mock theater. No successor.
+- **QA-PY-010** (random/time without freeze): wall-clock reads are the
+  measured subject in timing/throttle tests; freezing would defeat them.
+  No successor.
+- **QA-JV-108 / QA-CS-108** (hardcoded environment URL): FPs split across
+  HAR-replay fixtures, route-mocked origins, and proxy-failure tests — no
+  mechanically discriminable shape (the M-06 header concedes a fake-TLD
+  lookahead fixes zero measured FPs). No successor.
+- **QA-JV-110 / QA-CS-110** (no a11y assertions): same absence-heuristic
+  premise failure as QA-PW-145. Successor idea requires a NEW ID.
+- **QA-JV-111 / QA-CS-111** (blanket route mock): route-API self-tests and
+  fixture setup; no provable exclusion, and framework gating cannot help.
+  Revival on an application-repo corpus would need a NEW ID.
+
+### Changed — Phase 2 retunes (EVIDENCE-BACKED, detectorRevision 2 per plan §07)
+
+Each retune targets the single fixable root cause its measured FP cohort
+shares (full evidence table: docs/RULE-LIFECYCLE.md "Phase 2
+quarantine-cluster triage"). Detection-logic changes bump the rules'
+`detectorRevision` to 2, invalidating the revision-1 measurements (stale →
+provisional → re-measure, plan §07); must-not-fire fixtures now encode the
+measured FP shapes so the retunes are regression-locked in both directions.
+Tier stays quarantine until re-measurement says otherwise.
+
+- **QA-PW-102** (load-wait instead of assertion): the wait now fires only
+  when it is the TERMINAL wait (no `expect`/assert/`expect.poll` follows)
+  and is skipped when consumed by `expect(...).rejects` — the "instead of
+  an assertion" premise, now actually checked. Clears all 20 measured FPs
+  (vite HMR synchronization waits); keeps the must-fire no-assertion shape.
+- **QA-ENV-001** (environment coupling): the fixed-port sub-pattern no
+  longer matches loopback endpoints (`localhost`/`127.x`) — they are the
+  suite's own fixture containers (Azurite / DynamoDB Local / Mongo), the
+  entire measured FP cohort. Dotted hostnames and non-loopback IPv4
+  literals with ports still fire; OS-path, locale, and local-time-getter
+  sub-patterns are unchanged.
+- **QA-PY-003** (no-assertion test): the verification vocabulary gains
+  `pytest.warns` / `pytest.deprecated_call` / `pytest.fail`, and a
+  `test_*` function referenced by name elsewhere in its file (pytester-
+  style test data) is skipped — the collected assertion lives in the
+  parent test.
+- **QA-PY-004** (bare truthiness assert): boolean-predicate calls are
+  skipped — `assert isinstance(x, T)` type guards and
+  `assert s.startswith(...)`-style content predicates are real checks
+  (the measured FP clusters). Bare identifier/attribute asserts still
+  fire. This rule was measured at 45% FP (n=20), not 100%; with the
+  clusters removed the re-measurement is expected to approach the
+  extended band (≤30%), pending delta classification.
+- **QA-PY-007** (raises without match): `pytest.raises(X) as exc_info`
+  followed by an assert/expect on `exc_info.value` is skipped — the
+  message IS verified without `match=` (8 of 13 measured FPs). The
+  genuinely vague raises blocks still fire; remaining FP residue
+  (single-possible-exception blocks) is not statically decidable.
+- **QA-PY-105** (Playwright-Python test without assertions): a called
+  helper whose name asserts (`assert_*`/`expect_*`/`verify_*`/`check_*`)
+  or waits (`wait_for_*`) counts as verification — assertions delegated
+  to imported helpers, the entire measured FP cohort (streamlit e2e).
+- **QA-JV-106 / QA-CS-106 / QA-PY-104** (brittle selectors): no pattern
+  change — the measured 100% FP rows predate Bug Map M-06's removal of
+  the querySelector/QuerySelectorAsync/query_selector patterns, so the
+  measurement described a detector that no longer ships. The §07 fix is
+  the detectorRevision bump to 2 (stale → provisional → re-measure);
+  the surviving xpath=/nth-child/absolute-path patterns stay
+  quarantine-tier until re-measured.
+
 ## [Unreleased] — Verification Trust Evolution, Phase 2 — detectionStrategy enum (D6 closed, scan-behavior-neutral)
 
 ### Changed — D6 enum migration (plan §12.1; metadata-only)

@@ -7,7 +7,16 @@
  * (`non-existent.com`), and real deployed-app URLs — none are
  * fake-TLD/`example.com` shapes, so a `.test`/`example.com` lookahead
  * would fix zero measured FPs and encode an unproven claim in
- * must-not-fire fixtures. Stays quarantine-tier (JV/CS variants).
+ * must-not-fire fixtures.
+ *
+ * Phase 2 quarantine-cluster triage: the JV/CS variants (QA-JV-108,
+ * QA-CS-108) are RETIRED (docs/RULE-LIFECYCLE.md) — measured 100% FP
+ * (n=20 each, docs/FP-AUDIT.md), zero TPs, FP causes scattered across
+ * HAR replay, route mocks, and proxy-failure tests with no mechanically
+ * discriminable shape. They downgrade to info/falsePositiveRisk high;
+ * code + fixtures stay, the frozen IDs are never reused. The Python
+ * variant (QA-PY-108) is unmeasured (n=4) and keeps the family's
+ * warning severity until it gets its own triage evidence.
  */
 
 import { definePatternFamily } from "../shared/family.js";
@@ -32,6 +41,10 @@ export const hardcodedUrlFamily = definePatternFamily({
       languages: ["java"],
       frameworks: ["junit", "testng"],
       tier: "quarantine",
+      // RETIRED (docs/RULE-LIFECYCLE.md — Phase 2 quarantine-cluster
+      // triage): measured 100% FP (n=20) with zero TPs; see the header.
+      severity: "info",
+      falsePositiveRisk: "high",
       patterns: [
         /\.navigate\s*\(\s*"https?:\/\/(?!localhost|127\.0\.0\.1)[^"]+"/g,
       ],
@@ -45,6 +58,10 @@ export const hardcodedUrlFamily = definePatternFamily({
       languages: ["csharp"],
       frameworks: ["nunit", "xunit", "mstest", "playwright"],
       tier: "quarantine",
+      // RETIRED (docs/RULE-LIFECYCLE.md — Phase 2 quarantine-cluster
+      // triage): measured 100% FP (n=20) with zero TPs; see the header.
+      severity: "info",
+      falsePositiveRisk: "high",
       patterns: [
         /\.(?:GotoAsync|GetAsync|PostAsync)\s*\(\s*"https?:\/\/(?!localhost|127\.0\.0\.1)[^"]+"/g,
       ],

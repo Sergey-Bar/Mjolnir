@@ -1,6 +1,18 @@
 /**
  * Brittle-selectors family (Phase 6 — Tempering Plan).
  * Detects XPath/structural CSS selectors across Java, C#, Python.
+ *
+ * Phase 2 quarantine-cluster triage: the measured 100% FP rows
+ * (QA-JV-106/QA-CS-106 n=20, QA-PY-104 n=12) all predate Bug Map M-06's
+ * pattern removal — every cited FP was the since-removed
+ * querySelector/QuerySelectorAsync/query_selector id-lookup pattern, so
+ * the measurements describe a detector that no longer ships. Per plan
+ * §07 the detector revision is bumped to 2, which invalidates the stale
+ * measurement (stale → provisional → re-measure) rather than trusting a
+ * 100% FP recorded against retired detection logic. The surviving
+ * xpath=/nth-child/absolute-path patterns are genuine anti-pattern
+ * shapes (must-fire fixtures) and stay, quarantine-tier, until
+ * re-measured on the surviving patterns.
  */
 
 import { defineRule, type QADoctorRule } from "../rule.js";
@@ -36,11 +48,12 @@ function makeBrittleSelectors(
     autofix: false,
     detectionStrategy: "LEXICAL",
     introduced: "0.4.0",
-    // All three measured variants are quarantine-tier: JV/CS at 100% FP
-    // since tempering, PY measured 100% (n=12, docs/FP-AUDIT.md
-    // 2026-08-31 — set_content self-owned DOM inside makepyfile strings).
-    // North-star law: >30% FP cannot ship by default.
+    // Quarantine-tier since tempering; the Phase 2 triage keeps tier
+    // quarantine and bumps detectorRevision to 2 (the M-06 pattern
+    // removal is a detection-logic change, plan §07) so the 100% FP
+    // measurements taken against revision 1 go stale → provisional.
     tier: "quarantine",
+    detectorRevision: 2,
     run(ctx) {
       const text = ctx.text; // needs string content (selectors are inside quotes)
       const findings: Omit<Finding, "ruleId" | "category">[] = [];

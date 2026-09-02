@@ -19,19 +19,19 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 
 ## Why this fails in production
 
-The test assumes a specific local port is serving the app — it breaks on parallel runs, containers, or port conflicts.
+The test assumes a specific host:port is reachable — it breaks on parallel runs, containers, network isolation, or when that host moves.
 
 ## What gets flagged (real detector output)
 
 ```
-Environment coupling (fixed port): `localhost:3000`.
+Environment coupling (fixed port): `staging.example.com:8443`.
 ```
 
 Example from this rule's own must-fire fixture: `tests/fixtures/QA-ENV-001/must-fire/coupled.spec.ts`
 
 ## The fix
 
-Use the server's resolved base URL from config/test fixtures instead of a hardcoded host:port.
+Use the server's resolved base URL from config/test fixtures, or a local fixture container, instead of a hardcoded host:port.
 
 ## Confirmed NOT to fire on the corresponding clean pattern
 

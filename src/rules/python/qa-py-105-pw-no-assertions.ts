@@ -29,6 +29,15 @@ export const pyPwNoAssertions = defineRule({
 
   // Measured 2026-09-02 (corpus wave 5): tier set from the measured envelope (plan §11.2).
   tier: "quarantine",
+  // Phase 2 retune (EVIDENCE-BACKED, detectorRevision 2 — §07): all 20
+  // measured FPs (docs/FP-AUDIT.md n=20, streamlit e2e suite) share ONE
+  // root cause — assertions live in imported helper functions
+  // (`expect_prefixed_markdown(...)`, `assert_snapshot(...)`,
+  // `verify_no_sidebar_flicker(...)`, `wait_for_app_loaded(...)`). A
+  // called identifier whose name asserts (assert_/expect_/verify_/check_)
+  // or await-waits (wait_for_) now counts as verification. Genuinely
+  // navigation-only tests still fire (must-fire fixture).
+  detectorRevision: 2,
   // R6 (Bug Map M-02): QA-PY-003 is the generic no-assertions rule —
   // same root cause on a Playwright-Python test (co-fire proven on one
   // line in tests/fixtures/QA-PY-105/must-fire/test_checkout.py:2).
@@ -51,7 +60,12 @@ export const pyPwNoAssertions = defineRule({
       const hasCheck =
         /^\s*assert\b/m.test(body) ||
         /expect\s*\(/.test(body) ||
-        /assert_/.test(body);
+        /assert_/.test(body) ||
+        // Phase 2 helper-idiom skip: a called helper whose NAME asserts
+        // (assert_*/expect_*/verify_*/check_*) or awaits a wait_for_* —
+        // verification delegated to an imported helper.
+        /\b(?:assert|expect|verify|check)[_A-Z]\w*\s*\(/.test(body) ||
+        /\bwait_for_\w+\s*\(/.test(body);
       // Bug-audit M0 #10: the `page: Page` annotation was tested against
       // the WHOLE FILE — one annotated UI test branded every other test
       // in the file (pure unit tests included) as "drives the UI". The

@@ -35,7 +35,7 @@ Add outcome assertions: `expect(page).to_have_url(...)`, `expect(page.get_by_rol
 
 ## Confirmed NOT to fire on the corresponding clean pattern
 
-Verified against `tests/fixtures/QA-PY-105/must-not-fire/test_checkout.py` — a legitimate, similar-looking pattern this rule correctly leaves alone.
+Verified against `tests/fixtures/QA-PY-105/must-not-fire/helper-verification.py` — a legitimate, similar-looking pattern this rule correctly leaves alone.
 
 ## Corpus-measured false-positive risk
 

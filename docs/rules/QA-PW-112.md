@@ -10,7 +10,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Measured FP rate                      | 100% (n=20)                 |
 | Evidence level                        | E2                          |
 | QA impact                             | Test hygiene debt (HYGIENE) |
-| False-positive risk (author estimate) | low                         |
+| False-positive risk (author estimate) | high                        |
 | Autofix available                     | no                          |
 | Languages                             | typescript, javascript      |
 | Frameworks                            | playwright                  |

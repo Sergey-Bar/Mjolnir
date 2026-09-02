@@ -16,7 +16,7 @@ export const mockOnlyVerification = defineRule({
   id: "QA-TQUAL-001",
   category: "QA-TQUAL",
   title: "Mock-only verification",
-  severity: "warning",
+  severity: "info",
   confidence: "medium",
   findingType: "heuristic-risk",
   qaImpact: "HYGIENE",
@@ -24,7 +24,7 @@ export const mockOnlyVerification = defineRule({
   // Trust Metadata
   languages: ["typescript", "javascript"],
   frameworks: ["jest", "vitest", "playwright"],
-  falsePositiveRisk: "medium",
+  falsePositiveRisk: "high",
   autofix: false,
   detectionStrategy: "LEXICAL",
   detectionNotes: "regex heuristic",
@@ -33,6 +33,11 @@ export const mockOnlyVerification = defineRule({
   // spy assertions observe the real unit under test (warning emission,
   // adapter contracts, transport reconciliation) - the mock call IS the
   // observable contract. North-star law: >30% FP cannot ship by default.
+  // RETIRED (docs/RULE-LIFECYCLE.md — Phase 2 quarantine-cluster triage):
+  // measured 100% FP (n=26, docs/FP-AUDIT.md) with zero TPs — the rule's
+  // premise is wrong on real code, not its tuning. Severity downgraded to
+  // info (non-blocking everywhere); code + fixtures stay, the frozen ID
+  // is never reused. Successor ideas ship under NEW rule IDs (lifecycle §2).
   tier: "quarantine",
 
   run(ctx) {
@@ -64,7 +69,7 @@ export const mockOnlyVerification = defineRule({
 
       if (totalAssertions > 0 && mockAssertions === totalAssertions) {
         findings.push({
-          severity: "warning",
+          severity: "info",
           confidence: "medium",
           findingType: "heuristic-risk",
           qaImpact: "HYGIENE",

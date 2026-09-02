@@ -20,10 +20,10 @@ One page per rule, each showing a real detected example, the fix, confirmation o
 | [QA-CS-105](./QA-CS-105.md)       | WaitForTimeoutAsync hard sleep                      | warning  |
 | [QA-CS-106](./QA-CS-106.md)       | Brittle selector instead of role-based locator      | warning  |
 | [QA-CS-107](./QA-CS-107.md)       | waitForLoadState(networkidle) used                  | warning  |
-| [QA-CS-108](./QA-CS-108.md)       | Hardcoded URL in test                               | warning  |
+| [QA-CS-108](./QA-CS-108.md)       | Hardcoded URL in test                               | info     |
 | [QA-CS-109](./QA-CS-109.md)       | Retry masks test failures                           | warning  |
 | [QA-CS-110](./QA-CS-110.md)       | No accessibility assertions in UI test              | info     |
-| [QA-CS-111](./QA-CS-111.md)       | Blanket route mock intercepts all requests          | warning  |
+| [QA-CS-111](./QA-CS-111.md)       | Blanket route mock intercepts all requests          | info     |
 | [QA-ENV-001](./QA-ENV-001.md)     | Environment coupling in test                        | warning  |
 | [QA-JV-101](./QA-JV-101.md)       | Disabled test                                       | warning  |
 | [QA-JV-102](./QA-JV-102.md)       | Hard sleep in test                                  | warning  |
@@ -32,29 +32,29 @@ One page per rule, each showing a real detected example, the fix, confirmation o
 | [QA-JV-105](./QA-JV-105.md)       | waitForTimeout hard sleep                           | warning  |
 | [QA-JV-106](./QA-JV-106.md)       | Brittle selector instead of role-based locator      | warning  |
 | [QA-JV-107](./QA-JV-107.md)       | waitForLoadState(networkidle) used                  | warning  |
-| [QA-JV-108](./QA-JV-108.md)       | Hardcoded URL in test                               | warning  |
+| [QA-JV-108](./QA-JV-108.md)       | Hardcoded URL in test                               | info     |
 | [QA-JV-109](./QA-JV-109.md)       | Retry masks test failures                           | warning  |
 | [QA-JV-110](./QA-JV-110.md)       | No accessibility assertions in UI test              | info     |
-| [QA-JV-111](./QA-JV-111.md)       | Blanket route mock intercepts all requests          | warning  |
+| [QA-JV-111](./QA-JV-111.md)       | Blanket route mock intercepts all requests          | info     |
 | [QA-PW-002](./QA-PW-002.md)       | Unawaited Playwright assertion                      | error    |
 | [QA-PW-003](./QA-PW-003.md)       | Debug artifact committed to e2e spec                | error    |
 | [QA-PW-004](./QA-PW-004.md)       | Brittle selector instead of role-based locator      | warning  |
-| [QA-PW-005](./QA-PW-005.md)       | Logic inside page.evaluate()                        | warning  |
+| [QA-PW-005](./QA-PW-005.md)       | Logic inside page.evaluate()                        | info     |
 | [QA-PW-101](./QA-PW-101.md)       | Hard sleep via waitForTimeout                       | error    |
 | [QA-PW-102](./QA-PW-102.md)       | Load-event wait instead of web-first assertion      | warning  |
 | [QA-PW-103](./QA-PW-103.md)       | Navigation wait without explicit timeout budget     | info     |
 | [QA-PW-104](./QA-PW-104.md)       | trial:true click without follow-up assertion        | warning  |
-| [QA-PW-105](./QA-PW-105.md)       | expect.poll without timeout bound                   | warning  |
+| [QA-PW-105](./QA-PW-105.md)       | expect.poll without timeout bound                   | info     |
 | [QA-PW-107](./QA-PW-107.md)       | toBeVisible where toBeInViewport fits better        | info     |
 | [QA-PW-108](./QA-PW-108.md)       | textContent assertion instead of accessible name    | info     |
 | [QA-PW-112](./QA-PW-112.md)       | data-testid naming convention violation             | info     |
 | [QA-PW-113](./QA-PW-113.md)       | frameLocator chain deeper than 2                    | warning  |
-| [QA-PW-114](./QA-PW-114.md)       | Legacy element handle API (page.$)                  | warning  |
+| [QA-PW-114](./QA-PW-114.md)       | Legacy element handle API (page.$)                  | info     |
 | [QA-PW-115](./QA-PW-115.md)       | Shared page object across tests                     | warning  |
 | [QA-PW-116](./QA-PW-116.md)       | storageState without expiry strategy                | warning  |
 | [QA-PW-117](./QA-PW-117.md)       | describe.serial without justification               | warning  |
-| [QA-PW-118](./QA-PW-118.md)       | Network idle wait (flaky by design)                 | warning  |
-| [QA-PW-119](./QA-PW-119.md)       | Test depends on execution order                     | error    |
+| [QA-PW-118](./QA-PW-118.md)       | Network idle wait (flaky by design)                 | info     |
+| [QA-PW-119](./QA-PW-119.md)       | Test depends on execution order                     | info     |
 | [QA-PW-120](./QA-PW-120.md)       | Engine-specific test without environment guard      | info     |
 | [QA-PW-121](./QA-PW-121.md)       | Config retry/worker abuse                           | warning  |
 | [QA-PW-122](./QA-PW-122.md)       | No trace capture on retry                           | warning  |
@@ -72,11 +72,11 @@ One page per rule, each showing a real detected example, the fix, confirmation o
 | [QA-PY-003](./QA-PY-003.md)       | Test function with no assertions                    | error    |
 | [QA-PY-004](./QA-PY-004.md)       | Bare truthiness assert on complex object            | warning  |
 | [QA-PY-005](./QA-PY-005.md)       | time.sleep() in test                                | warning  |
-| [QA-PY-006](./QA-PY-006.md)       | Empty test body (pass)                              | error    |
+| [QA-PY-006](./QA-PY-006.md)       | Empty test body (pass)                              | info     |
 | [QA-PY-007](./QA-PY-007.md)       | pytest.raises without match                         | warning  |
-| [QA-PY-008](./QA-PY-008.md)       | Mock-only verification                              | warning  |
+| [QA-PY-008](./QA-PY-008.md)       | Mock-only verification                              | info     |
 | [QA-PY-009](./QA-PY-009.md)       | Commented-out test                                  | warning  |
-| [QA-PY-010](./QA-PY-010.md)       | Random/time dependence in test                      | warning  |
+| [QA-PY-010](./QA-PY-010.md)       | Random/time dependence in test                      | info     |
 | [QA-PY-011](./QA-PY-011.md)       | Mutable fixture shared across tests                 | warning  |
 | [QA-PY-012](./QA-PY-012.md)       | Tautological assertion                              | error    |
 | [QA-PY-101](./QA-PY-101.md)       | Sync/async Playwright API mix                       | warning  |
@@ -93,7 +93,7 @@ One page per rule, each showing a real detected example, the fix, confirmation o
 | [QA-TEST-004](./QA-TEST-004.md)   | Hard sleep in test                                  | warning  |
 | [QA-TEST-006](./QA-TEST-006.md)   | Retry abuse hiding flakiness                        | warning  |
 | [QA-TEST-010](./QA-TEST-010.md)   | Empty test body                                     | error    |
-| [QA-TQUAL-001](./QA-TQUAL-001.md) | Mock-only verification                              | warning  |
+| [QA-TQUAL-001](./QA-TQUAL-001.md) | Mock-only verification                              | info     |
 | [QA-TQUAL-002](./QA-TQUAL-002.md) | Tautological assertion                              | error    |
 | [QA-TQUAL-009](./QA-TQUAL-009.md) | Assertion in promise chain that is never awaited    | error    |
 | [QA-TQUAL-011](./QA-TQUAL-011.md) | Commented-out test                                  | warning  |

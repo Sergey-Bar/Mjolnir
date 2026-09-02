@@ -27,6 +27,11 @@ export const pwNoA11yAssertions = defineRule({
   detectionStrategy: "LEXICAL",
   detectionNotes: "absence heuristic over suite directory",
   introduced: "0.3.8",
+  // RETIRED (docs/RULE-LIFECYCLE.md — Phase 2 quarantine-cluster triage):
+  // measured 100% FP (n=20, docs/FP-AUDIT.md) with zero TPs — the rule's
+  // premise is wrong on real code, not its tuning. Severity downgraded to
+  // info (non-blocking everywhere); code + fixtures stay, the frozen ID
+  // is never reused. Successor ideas ship under NEW rule IDs (lifecycle §2).
   tier: "quarantine",
 
   run(ctx) {

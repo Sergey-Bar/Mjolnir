@@ -7,6 +7,14 @@
  * route-API self-tests and fixture setup, not a mechanically
  * discriminable pattern — no exclusion is provable from the verdict
  * evidence. Stays quarantine-tier.
+ *
+ * Phase 2 quarantine-cluster triage: BOTH JV/CS variants are RETIRED
+ * (docs/RULE-LIFECYCLE.md) — measured 100% FP (n=20 each,
+ * docs/FP-AUDIT.md), zero TPs, and the file's own M-06 header concedes
+ * no mechanical exclusion is provable. Severity downgraded to info
+ * (non-blocking everywhere); code + fixtures stay, the frozen IDs are
+ * never reused. A revival on an application-repo corpus would be a NEW
+ * rule ID (lifecycle §2).
  */
 
 import { defineRule, type QADoctorRule } from "../rule.js";
@@ -27,14 +35,14 @@ function makeBlanketRoute(
     id,
     category: "QA-PW",
     title: "Blanket route mock intercepts all requests",
-    severity: "warning",
+    severity: "info",
     confidence: "medium",
     findingType: "heuristic-risk",
     qaImpact: "FLAKY-RISK",
     appliesTo,
     languages,
     frameworks,
-    falsePositiveRisk: "medium",
+    falsePositiveRisk: "high",
     autofix: false,
     detectionStrategy: "LEXICAL",
     introduced: "0.4.0",
@@ -50,7 +58,7 @@ function makeBlanketRoute(
         const routePattern = m[1] as string;
         if (/^\*\*(?:\/\*)?$/.test(routePattern) || routePattern === "**/*") {
           findings.push({
-            severity: "warning",
+            severity: "info",
             confidence: "medium",
             findingType: "heuristic-risk",
             qaImpact: "FLAKY-RISK",

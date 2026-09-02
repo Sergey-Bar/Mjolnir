@@ -35,7 +35,7 @@ Add `match="expected message fragment"` to pin the failure to the intended cause
 
 ## Confirmed NOT to fire on the corresponding clean pattern
 
-Verified against `tests/fixtures/QA-PY-007/must-not-fire/with-match.py` — a legitimate, similar-looking pattern this rule correctly leaves alone.
+Verified against `tests/fixtures/QA-PY-007/must-not-fire/excinfo-assertion.py` — a legitimate, similar-looking pattern this rule correctly leaves alone.
 
 ## Corpus-measured false-positive risk
 

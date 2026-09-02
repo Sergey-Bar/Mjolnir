@@ -4,13 +4,13 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 
 | Field                                 | Value                            |
 | ------------------------------------- | -------------------------------- |
-| Severity                              | warning                          |
+| Severity                              | info                             |
 | Confidence                            | medium                           |
 | Tier                                  | quarantine                       |
 | Measured FP rate                      | 100% (n=20)                      |
 | Evidence level                        | E1                               |
 | QA impact                             | Flaky-test risk (FLAKY-RISK)     |
-| False-positive risk (author estimate) | medium                           |
+| False-positive risk (author estimate) | high                             |
 | Autofix available                     | no                               |
 | Languages                             | csharp                           |
 | Frameworks                            | nunit, xunit, mstest, playwright |
