@@ -157,9 +157,9 @@ describe("runSuppressions", () => {
 });
 
 describe("runRulesCommand", () => {
-  it("filters the catalog to measured rules with --measured", () => {
+  it("filters the catalog to measured rules with --measured", async () => {
     const cap = capture();
-    expect(runRulesCommand(["--measured"], cap.io)).toBe(0);
+    expect(await runRulesCommand(["--measured"], cap.io)).toBe(0);
     const catalog = JSON.parse(cap.text()) as Array<{
       measuredFpRate?: number;
     }>;
@@ -167,6 +167,12 @@ describe("runRulesCommand", () => {
     for (const entry of catalog) {
       expect(entry.measuredFpRate).toBeDefined();
     }
+  });
+
+  it("omits the provenance column when no external flag is passed (--md parity)", async () => {
+    const cap = capture();
+    expect(await runRulesCommand(["--md"], cap.io)).toBe(0);
+    expect(cap.text()).not.toContain("Provenance");
   });
 });
 

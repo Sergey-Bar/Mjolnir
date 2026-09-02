@@ -9,6 +9,45 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — Verification Trust Evolution, Phase 8 — Local Extensibility (plan §18)
+
+### Added — folder-based external rules, zero network
+
+- **`mjolnir-rules/` contract** (`src/plugins/local-rules.ts`): a
+  workspace directory loaded from the scan target root alongside npm
+  plugins. Two file kinds: **JSON rule manifests** (declarative regex
+  patterns — NO code executed; id/title/severity/category/appliesTo/
+  patterns/message/why/fix/languages/frameworks) and **JS modules**
+  (`rules: QADoctorRule[]`, full-Node trust, same posture as npm
+  plugins). Missing directory → no-op.
+- **Same trust contract as core/npm plugins:** reserved core prefixes
+  rejected (case-insensitive spoofing guard); bad metadata/regexes
+  degrade to warning entries (QA-PLUGIN-000), never a crash; external
+  rules carry the full trust metadata shape and are born
+  quarantine/unmeasured. **Core-tier clamp**: an external rule
+  declaring `tier: "core"` is clamped to `extended` with a load
+  warning — core requires a measured FP rate from the committed corpus
+  sidecar, which external rules cannot have.
+- **Tier caps obeyed, filter unified:** the quarantine exclusion filter
+  in `buildUniversalRules` now consults the tier map that includes
+  plugin/external tiers — plugin-declared quarantine rules were
+  previously excluded only when the core registry knew the ID; the
+  unified filter excludes them from non-strict scans exactly like core
+  (post-scan cap still observable under `--strict`; the cli-scan-arms
+  test updated to cover both sides).
+- **Drift-checked:** `mjolnir rules --md --external` renders the
+  catalog from the LOADED external rules with a provenance column
+  (`core`/`external`) — an on-disk edit changes the next render; the
+  catalog can never drift from what actually ships.
+  `scripts/generate-capability-matrix.ts --external <root>` writes a
+  workspace-local `MJOLNIR-RULES-MATRIX.md` with provenance "external"
+  (unmeasured by definition — outside the corpus sidecar). The
+  committed matrix stays core-registry-only and byte-stable.
+- **S-8 disclosure:** external rule surfaces appear in the scan's
+  plugin disclosure block.
+
+Registry/marketplace explicitly deferred (plan §18).
+
 ## [Unreleased] — Verification Trust Evolution, Phase 7 — Agentic QA Trust (plan §17)
 
 ### Added — Agentic Trust Profile (plan §17.2, §17.4)

@@ -77,7 +77,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CI-002",
@@ -105,7 +106,8 @@
       "status": "MEASURED-EXTENDED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CI-005",
@@ -133,7 +135,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CI-007",
@@ -161,7 +164,8 @@
       "status": "MEASURED-EXTENDED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CI-008",
@@ -189,7 +193,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CI-009",
@@ -217,7 +222,8 @@
       "status": "PROVISIONAL",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CI-010",
@@ -245,7 +251,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CS-101",
@@ -273,7 +280,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CS-102",
@@ -301,7 +309,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CS-103",
@@ -329,7 +338,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CS-104",
@@ -357,7 +367,8 @@
       "status": "PROVISIONAL",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CS-105",
@@ -385,7 +396,8 @@
       "status": "MEASURED-EXTENDED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CS-106",
@@ -413,7 +425,8 @@
       "status": "UNMEASURED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CS-107",
@@ -441,7 +454,8 @@
       "status": "PROVISIONAL",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CS-108",
@@ -469,7 +483,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CS-109",
@@ -497,7 +512,8 @@
       "status": "PROVISIONAL",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CS-110",
@@ -525,7 +541,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CS-111",
@@ -553,7 +570,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CYP-001",
@@ -581,7 +599,8 @@
       "status": "MEASURED-EXTENDED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CYP-002",
@@ -609,7 +628,8 @@
       "status": "UNMEASURED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CYP-003",
@@ -637,7 +657,8 @@
       "status": "UNMEASURED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-ENV-001",
@@ -665,7 +686,8 @@
       "status": "UNMEASURED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-JV-101",
@@ -693,7 +715,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-JV-102",
@@ -721,7 +744,8 @@
       "status": "MEASURED-EXTENDED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-JV-103",
@@ -749,7 +773,8 @@
       "status": "MEASURED-EXTENDED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-JV-104",
@@ -777,7 +802,8 @@
       "status": "MEASURED-EXTENDED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-JV-105",
@@ -805,7 +831,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-JV-106",
@@ -833,7 +860,8 @@
       "status": "UNMEASURED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-JV-107",
@@ -861,7 +889,8 @@
       "status": "PROVISIONAL",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-JV-108",
@@ -889,7 +918,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-JV-109",
@@ -917,7 +947,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-JV-110",
@@ -945,7 +976,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-JV-111",
@@ -973,7 +1005,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-002",
@@ -1001,7 +1034,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-003",
@@ -1029,7 +1063,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-004",
@@ -1057,7 +1092,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-005",
@@ -1085,7 +1121,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-101",
@@ -1113,7 +1150,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-102",
@@ -1141,7 +1179,8 @@
       "status": "UNMEASURED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-103",
@@ -1169,7 +1208,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-104",
@@ -1197,7 +1237,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-105",
@@ -1225,7 +1266,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-107",
@@ -1253,7 +1295,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-108",
@@ -1281,7 +1324,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-112",
@@ -1309,7 +1353,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-113",
@@ -1337,7 +1382,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-114",
@@ -1365,7 +1411,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-115",
@@ -1393,7 +1440,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-116",
@@ -1421,7 +1469,8 @@
       "status": "PROVISIONAL",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-117",
@@ -1449,7 +1498,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-118",
@@ -1477,7 +1527,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-119",
@@ -1505,7 +1556,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-120",
@@ -1533,7 +1585,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-121",
@@ -1561,7 +1614,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-122",
@@ -1589,7 +1643,8 @@
       "status": "MEASURED-EXTENDED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-123",
@@ -1617,7 +1672,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-124",
@@ -1645,7 +1701,8 @@
       "status": "PROVISIONAL",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-125",
@@ -1673,7 +1730,8 @@
       "status": "PROVISIONAL",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-140",
@@ -1701,7 +1759,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-141",
@@ -1729,7 +1788,8 @@
       "status": "MEASURED-EXTENDED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-142",
@@ -1757,7 +1817,8 @@
       "status": "MEASURED-EXTENDED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-143",
@@ -1785,7 +1846,8 @@
       "status": "MEASURED-EXTENDED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-144",
@@ -1813,7 +1875,8 @@
       "status": "MEASURED-EXTENDED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-145",
@@ -1841,7 +1904,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-146",
@@ -1869,7 +1933,8 @@
       "status": "UNMEASURED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-147",
@@ -1897,7 +1962,8 @@
       "status": "UNMEASURED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-001",
@@ -1925,7 +1991,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": true,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-002",
@@ -1953,7 +2020,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-003",
@@ -1981,7 +2049,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-004",
@@ -2009,7 +2078,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-005",
@@ -2037,7 +2107,8 @@
       "status": "MEASURED-EXTENDED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-006",
@@ -2065,7 +2136,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-007",
@@ -2093,7 +2165,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-008",
@@ -2121,7 +2194,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-009",
@@ -2149,7 +2223,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-010",
@@ -2177,7 +2252,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-011",
@@ -2205,7 +2281,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-012",
@@ -2233,7 +2310,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-101",
@@ -2261,7 +2339,8 @@
       "status": "PROVISIONAL",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-102",
@@ -2289,7 +2368,8 @@
       "status": "UNMEASURED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-103",
@@ -2317,7 +2397,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-104",
@@ -2345,7 +2426,8 @@
       "status": "UNMEASURED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-105",
@@ -2373,7 +2455,8 @@
       "status": "UNMEASURED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-106",
@@ -2401,7 +2484,8 @@
       "status": "PROVISIONAL",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-107",
@@ -2429,7 +2513,8 @@
       "status": "PROVISIONAL",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-108",
@@ -2457,7 +2542,8 @@
       "status": "UNMEASURED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-SE-001",
@@ -2485,7 +2571,8 @@
       "status": "UNMEASURED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-SE-002",
@@ -2513,7 +2600,8 @@
       "status": "UNMEASURED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-SE-003",
@@ -2541,7 +2629,8 @@
       "status": "UNMEASURED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-TEST-001",
@@ -2569,7 +2658,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": true,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-TEST-002",
@@ -2597,7 +2687,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-TEST-003",
@@ -2625,7 +2716,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-TEST-004",
@@ -2653,7 +2745,8 @@
       "status": "MEASURED-EXTENDED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-TEST-006",
@@ -2681,7 +2774,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-TEST-010",
@@ -2709,7 +2803,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-TQUAL-001",
@@ -2737,7 +2832,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-TQUAL-002",
@@ -2765,7 +2861,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-TQUAL-009",
@@ -2793,7 +2890,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-TQUAL-011",
@@ -2821,7 +2919,8 @@
       "status": "MEASURED-EXTENDED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     }
   ]
 }

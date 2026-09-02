@@ -43,11 +43,21 @@ export interface RuleCatalogEntry {
   detectionStrategy?: DetectionStrategy;
   detectionNotes?: string;
   introduced?: string;
+  /**
+   * Rule provenance (plan §18): "core" for the built-in registry,
+   * "external" for workspace-local `mjolnir-rules/` rules. External
+   * rules carry the same trust metadata; they can never ship in core
+   * (no corpus measurement) and are drift-checked by catalog
+   * regeneration.
+   */
+  provenance: "core" | "external";
 }
 
 export function buildCatalog(
   rules: readonly QADoctorRule[] = RULES,
+  options: { provenance?: "core" | "external" } = {},
 ): RuleCatalogEntry[] {
+  const provenance = options.provenance ?? "core";
   return rules.map((r) => {
     const measured = MEASURED_FP[r.id];
     return {
@@ -77,18 +87,22 @@ export function buildCatalog(
         : {}),
       ...(r.detectionNotes ? { detectionNotes: r.detectionNotes } : {}),
       ...(r.introduced ? { introduced: r.introduced } : {}),
+      provenance,
     };
   });
 }
 
 export function renderCatalogMd(entries: RuleCatalogEntry[]): string {
+  const hasExternal = entries.some((e) => e.provenance === "external");
+  const provenanceCol = hasExternal ? " | Provenance" : "";
+  const provenanceSep = hasExternal ? "|---" : "";
   const lines: string[] = [
     "# Mjölnir — Rule Catalog",
     "",
     "Generated from the rule registry by `mjolnir rules --md`. Do not edit by hand.",
     "",
-    "| ID | Title | Severity | Tier | FP (measured) | Confidence | Evidence | FP Risk | Autofix | Since |",
-    "|---|---|---|---|---|---|---|---|---|---|",
+    `| ID | Title | Severity | Tier | FP (measured) | Confidence | Evidence | FP Risk | Autofix | Since${provenanceCol} |`,
+    `|---|---|---|---|---|---|---|---|---|---${provenanceSep}|`,
   ];
   for (const e of entries) {
     const measured =
@@ -97,8 +111,9 @@ export function renderCatalogMd(entries: RuleCatalogEntry[]): string {
         : "—";
     const tierCell =
       e.status === "PROVISIONAL" ? `${e.tier} (PROVISIONAL)` : e.tier;
+    const provenanceCell = hasExternal ? ` | ${e.provenance}` : "";
     lines.push(
-      `| ${e.id} | ${escapeMdCell(e.title)} | ${e.severity} | ${tierCell} | ${measured} | ${e.confidence} | ${e.evidenceLevel} | ${e.falsePositiveRisk ?? "—"} | ${e.autofix ? "yes" : "no"} | ${e.introduced ?? "—"} |`,
+      `| ${e.id} | ${escapeMdCell(e.title)} | ${e.severity} | ${tierCell} | ${measured} | ${e.confidence} | ${e.evidenceLevel} | ${e.falsePositiveRisk ?? "—"} | ${e.autofix ? "yes" : "no"} | ${e.introduced ?? "—"}${provenanceCell} |`,
     );
   }
   return lines.join("\n");

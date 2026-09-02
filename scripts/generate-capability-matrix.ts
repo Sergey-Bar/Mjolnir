@@ -237,6 +237,8 @@ export interface CapabilityRow {
   suiteInvalidating: boolean;
   knownLimitations: "UNCLASSIFIED";
   evidenceRequirements: "UNCLASSIFIED";
+  /** Rule provenance (plan §18): core registry vs workspace-external. */
+  provenance: "core" | "external";
 }
 
 /** The row's status vocabulary, shared with src/rules/measurement.ts. */
@@ -253,7 +255,9 @@ function statusFor(rule: QADoctorRule): RowStatus {
 export function buildRows(
   rules: readonly QADoctorRule[] = RULES,
   measured: Readonly<Record<string, MeasuredFp>> = MEASURED_FP,
+  options: { provenance?: "core" | "external" } = {},
 ): CapabilityRow[] {
+  const provenance = options.provenance ?? "core";
   const verdicts = loadVerdictStats();
   return [...rules]
     .map((rule): CapabilityRow => {
@@ -299,6 +303,7 @@ export function buildRows(
         suiteInvalidating: rule.suiteInvalidating === true,
         knownLimitations: "UNCLASSIFIED",
         evidenceRequirements: "UNCLASSIFIED",
+        provenance,
       };
     })
     .sort((a, b) => a.id.localeCompare(b.id));
@@ -449,10 +454,10 @@ export function renderMatrixMd(data: MatrixData): string {
   lines.push("## Capability matrix");
   lines.push("");
   lines.push(
-    "| Rule ID | Name | Category | Languages | Frameworks | Detection strategy (enum) | Semantic depth | Measured | FP rate | n | Corpus size | Corpus diversity | Mutation coverage | Confidence | Tier | Status | Known limitations | Evidence requirements |",
+    "| Rule ID | Name | Category | Languages | Frameworks | Detection strategy (enum) | Semantic depth | Measured | FP rate | n | Corpus size | Corpus diversity | Mutation coverage | Confidence | Tier | Status | Known limitations | Evidence requirements | Provenance |",
   );
   lines.push(
-    "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
+    "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
   );
   for (const r of rows) {
     lines.push(
@@ -475,6 +480,7 @@ export function renderMatrixMd(data: MatrixData): string {
         r.status,
         r.knownLimitations,
         r.evidenceRequirements,
+        r.provenance,
       ]
         .map(cell)
         .join(" | ")} |`,
@@ -555,6 +561,32 @@ export function buildMatrixJson(data: MatrixData): MatrixJson {
 // ─── Entrypoint ──────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
+  // Plan §18: `--external <workspace-root>` renders the Capability
+  // Matrix for a workspace's LOCAL external rules (mjolnir-rules/)
+  // instead of the core registry — the drift-check artifact for a
+  // consumer repo. The default (no flag) stays byte-stable core-only.
+  const extIdx = process.argv.indexOf("--external");
+  if (extIdx !== -1) {
+    const extRoot = process.argv[extIdx + 1];
+    if (!extRoot) {
+      console.error("--external requires a workspace root argument");
+      process.exit(10);
+    }
+    const { loadLocalRules } = await import("../src/plugins/local-rules.js");
+    const local = await loadLocalRules(extRoot);
+    const data: MatrixData = {
+      rows: buildRows(local.rules, MEASURED_FP, { provenance: "external" }),
+      ...crossCheckDeclaredVsMeasured(),
+    };
+    const mdPath = join(extRoot, "MJOLNIR-RULES-MATRIX.md");
+    writeFileSync(mdPath, renderMatrixMd(data) + "\n");
+    await prettify(mdPath);
+    console.log(
+      `Wrote ${mdPath}: ${data.rows.length} external rules (provenance "external"; unmeasured by definition — outside the corpus sidecar).`,
+    );
+    return;
+  }
+
   const data: MatrixData = {
     rows: buildRows(),
     ...crossCheckDeclaredVsMeasured(),

@@ -559,6 +559,16 @@ are immutable once shipped and never reused.
   There is **no sandbox**: plugin code runs with full Node privileges, the
   same trust model as ESLint or Vitest plugins. Core rule-ID prefixes are
   reserved and rejected from plugins to prevent spoofing.
+- **Workspace-local external rules** (folder-based, zero network) — a
+  `mjolnir-rules/` directory next to the scan target loads custom rules:
+  JSON files declare regex patterns (no code executed), `.mjs`/`.js`
+  modules export `rules` (full-Node trust, same as plugins). External
+  rules carry the same trust metadata as core; they can never ship in
+  the core tier (core requires a measured FP rate from the corpus
+  sidecar — a declared `tier: "core"` is clamped to `extended`), obey
+  tier caps, and are drift-checked: `mjolnir rules --md --external`
+  renders the catalog from the loaded files (provenance `external`),
+  and the matrix generator accepts `--external <root>`.
 
 ---
 

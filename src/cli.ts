@@ -46,6 +46,8 @@ import { renderMermaid } from "./reporter/mermaid.js";
 import { computeChangedScope, filterToChanged } from "./scope/changed.js";
 import { asUniversal } from "./engine/rule-runner.js";
 import { enforceTierPolicy, type Tier } from "./engine/tier-policy.js";
+import type { QADoctorRule } from "./rules/rule.js";
+import type { UniversalRule } from "./engine/adapter.js";
 import { stampRuntimeCorroboration } from "./engine/runtime-corroboration.js";
 import {
   classifyProvenance,
@@ -102,6 +104,7 @@ import {
   applySeverityOverrides,
 } from "./config/config.js";
 import { loadPlugins } from "./plugins/load.js";
+import { loadLocalRules, LOCAL_RULES_DIR } from "./plugins/local-rules.js";
 import {
   computeSelectorHealth,
   renderSelectorHealth,
@@ -142,17 +145,25 @@ const OVERLAP_META_BY_RULE_ID: ReadonlyMap<string, OverlapMeta> = new Map(
 
 // Plugin API (Phase 6): third-party rules are appended after core rules;
 // core findings always win dedup by running first.
-function buildUniversalRules(root: string, strict?: boolean) {
+// Plan §18 (Local Extensibility): workspace-local `mjolnir-rules/` files
+// load alongside npm plugins — folder-based, zero network.
+export async function buildUniversalRules(
+  root: string,
+  strict?: boolean,
+): Promise<{
+  rules: UniversalRule[];
+  pluginErrors: string[];
+  tierByRuleId: Map<string, Tier>;
+  pluginMeta: Array<{ name: string; rules: number }>;
+  externalRules: QADoctorRule[];
+}> {
   const { plugins, errors } = loadPlugins(root);
-  const pluginRules = plugins.flatMap((p) => p.rules.map(asUniversal));
-  let rules = [...UNIVERSAL_RULES, ...pluginRules];
-  // Phase 4 (Tempering): exclude quarantine-tier rules unless --strict
-  if (!strict) {
-    rules = rules.filter((r) => {
-      const original = RULES.find((orig) => orig.id === r.id);
-      return original?.tier !== "quarantine";
-    });
-  }
+  const local = await loadLocalRules(root);
+  const allErrors = [...errors, ...local.errors];
+  const externalRules = [
+    ...plugins.map((p) => ({ name: p.name, rules: p.rules })),
+    { name: LOCAL_RULES_DIR, rules: local.rules },
+  ].flatMap((p) => p.rules.map(asUniversal));
   const tierByRuleId = new Map<string, Tier>();
   for (const r of RULES) {
     if (r.tier) tierByRuleId.set(r.id, r.tier);
@@ -162,11 +173,37 @@ function buildUniversalRules(root: string, strict?: boolean) {
       if (r.tier) tierByRuleId.set(r.id, r.tier);
     }
   }
-  const pluginMeta = plugins.map((p) => ({
-    name: p.name,
-    rules: p.rules.length,
-  }));
-  return { rules, pluginErrors: errors, tierByRuleId, pluginMeta };
+  for (const r of local.rules) {
+    if (r.tier) tierByRuleId.set(r.id, r.tier);
+  }
+  let rules = [...UNIVERSAL_RULES, ...externalRules];
+  // Phase 4 (Tempering): exclude quarantine-tier rules unless --strict.
+  // §18: the tier map covers EXTERNAL rules too — a workspace-local
+  // quarantine rule is excluded exactly like a core one.
+  if (!strict) {
+    rules = rules.filter((r) => tierByRuleId.get(r.id) !== "quarantine");
+  }
+  const pluginMeta = [
+    ...plugins.map((p) => ({
+      name: p.name,
+      rules: p.rules.length,
+    })),
+    ...(local.rules.length > 0
+      ? [
+          {
+            name: `${LOCAL_RULES_DIR}/ (workspace-local external rules)`,
+            rules: local.rules.length,
+          },
+        ]
+      : []),
+  ];
+  return {
+    rules,
+    pluginErrors: allErrors,
+    tierByRuleId,
+    pluginMeta,
+    externalRules: local.rules,
+  };
 }
 
 /** Rule-declared evidence-level overrides (Honesty Core). */ const EVIDENCE_OVERRIDES: ReadonlyMap<
@@ -354,7 +391,7 @@ export async function runScan(
     pluginErrors,
     tierByRuleId: tiers,
     pluginMeta,
-  } = buildUniversalRules(workspace.root, args.strict);
+  } = await buildUniversalRules(workspace.root, args.strict);
   tierByRuleId = tiers;
   pluginsLoaded = pluginMeta;
   for (const err of pluginErrors) {
@@ -918,11 +955,23 @@ export function runDoctorCommand(
 }
 
 /** Testable `rules` handler — rule catalog with Trust Metadata. */
-export function runRulesCommand(
+export async function runRulesCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
-): number {
-  let catalog = buildCatalog();
+): Promise<number> {
+  // Plan §18: `--external` includes workspace-local mjolnir-rules/
+  // rules in the catalog (provenance "external") — the drift-check
+  // surface: an edit to a local rule file changes the next render.
+  const withExternal = argv.includes("--external");
+  const root = process.cwd();
+  const external = withExternal ? await loadLocalRules(root) : undefined;
+  let catalog = [
+    ...buildCatalog(),
+    ...(external
+      ? buildCatalog(external.rules, { provenance: "external" })
+      : []),
+  ];
+  for (const w of external?.errors ?? []) io.err(`mjolnir: ${w}`);
   // `--unmeasured`: the rules shipping on assumption — no measured
   // false-positive rate (n < 10 classified corpus verdicts). This is
   // what the scan footer's "rule coverage" line points at.
@@ -1693,7 +1742,7 @@ Subcommands — everyday:
                                    generate the PR workflow; --force overwrites
                                    a hand-customized one (default: refuse)
   explain <RULE-ID> [--fixtures-root <dir>]     what/why/fix + measured FP rate
-  rules [--md] [--unmeasured|--measured]        rule catalog with trust metadata
+  rules [--md] [--unmeasured|--measured] [--external]   rule catalog with trust metadata
   suppressions                                  list suppressed findings
 
 Subcommands — when something's flaky:

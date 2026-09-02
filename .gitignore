@@ -44,7 +44,7 @@ scratch/
 package/
 
 # Saved HTML artifact exports dropped into .planning for reference
-.planning/*.html
+.planning/
 .planning/*_files/
 .planning/CRITIQUE-REMEDIATION-PLAN.md
 .planning/M1-M2-TASKS.md
