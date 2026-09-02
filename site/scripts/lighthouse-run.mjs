@@ -27,8 +27,8 @@
 
 import { createServer } from "node:http";
 import { gzipSync } from "node:zlib";
-import { readFileSync, existsSync, statSync } from "node:fs";
-import { join, dirname, extname, resolve, sep } from "node:path";
+import { readFileSync, existsSync, statSync, readdirSync } from "node:fs";
+import { join, dirname, extname, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -50,6 +50,17 @@ const MIME = {
   ".woff2": "font/woff2",
 };
 
+/** Every file under dist/, keyed by its posix-relative path. */
+function manifest(dir, root = dir, out = new Map()) {
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    const abs = join(dir, e.name);
+    if (e.isDirectory()) manifest(abs, root, out);
+    else out.set(relative(root, abs).split(sep).join("/"), abs);
+  }
+  return out;
+}
+const FILES = existsSync(DIST) ? manifest(DIST) : new Map();
+
 function serve(port) {
   const server = createServer((req, res) => {
     let p = decodeURIComponent(req.url.split("?")[0]);
@@ -59,14 +70,15 @@ function serve(port) {
       p === "" || p.endsWith("/")
         ? [p + "index.html"]
         : [p, p + ".html", p + "/index.html"];
-    const root = resolve(DIST);
     for (const t of tries) {
-      // Confine the resolved path to dist/. The request path is attacker
-      // controlled in principle (`GET /Mjolnir/../../../etc/passwd`), and
-      // "it only ever runs locally" is not a reason to write the bug.
-      const f = resolve(DIST, t);
-      if (f !== root && !f.startsWith(root + sep)) continue;
-      if (existsSync(f) && statSync(f).isFile()) {
+      // Look the request up in a manifest enumerated from dist/ at startup,
+      // rather than building a filesystem path out of it. The request is
+      // attacker-controlled in principle (`GET /Mjolnir/../../etc/passwd`),
+      // and "it only runs locally" is the excuse that keeps this bug alive.
+      // Nothing outside dist/ is reachable because nothing outside dist/ is
+      // in the map.
+      const f = FILES.get(t);
+      if (f && existsSync(f) && statSync(f).isFile()) {
         const type = MIME[extname(f)] ?? "application/octet-stream";
         const body = readFileSync(f);
         const compressible =
