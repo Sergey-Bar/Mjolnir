@@ -120,44 +120,48 @@ const AA_NORMAL = 4.5;
 
 function checkContrast() {
   const css = readFileSync(join(THEME, "styles", "vars.css"), "utf8");
-  const themes = [
-    ["light", parseTokens(css, ":root")],
-    ["dark", { ...parseTokens(css, ":root"), ...parseTokens(css, ".dark") }],
-  ];
-
+  const config = readFileSync(join(SITE, ".vitepress", "config.mts"), "utf8");
   const failures = [];
-  for (const [theme, tokens] of themes) {
-    for (const [fg, context] of CONTRAST_PAIRS) {
-      const fgc = resolve(tokens, fg);
-      if (!fgc) {
-        failures.push({
-          theme,
-          fg,
-          bg: "—",
-          ratio: null,
-          context,
-          why: "unresolved",
-        });
-        continue;
-      }
-      for (const bg of SURFACES) {
-        const bgc = resolve(tokens, bg);
-        if (!bgc) continue;
-        const ratio = contrast(fgc, bgc);
-        if (ratio < AA_NORMAL) {
-          failures.push({ theme, fg, bg, ratio, context });
-        }
+
+  // The site ships ONE palette. If a light ramp comes back, it comes back
+  // untested — that is where the unreadable navbar wordmark came from —
+  // so re-enabling the toggle has to be a deliberate, visible act.
+  const forcedDark = /appearance:\s*["']force-dark["']/.test(config);
+  if (!forcedDark) {
+    failures.push(
+      'config.mts no longer sets appearance: "force-dark" — a second theme is ' +
+        "reachable again, and this check only measures the palette on :root",
+    );
+  }
+  if (/^\s*\.dark\s*\{/m.test(css)) {
+    failures.push(
+      "vars.css declares a .dark block — with force-dark there is one palette; " +
+        "two copies of it can drift apart",
+    );
+  }
+
+  const tokens = parseTokens(css, ":root");
+  for (const [fg, context] of CONTRAST_PAIRS) {
+    const fgc = resolve(tokens, fg);
+    if (!fgc) {
+      failures.push(`${fg} — unresolved in :root — ${context}`);
+      continue;
+    }
+    for (const bg of SURFACES) {
+      const bgc = resolve(tokens, bg);
+      if (!bgc) continue;
+      const ratio = contrast(fgc, bgc);
+      if (ratio < AA_NORMAL) {
+        failures.push(`${fg} on ${bg} = ${ratio.toFixed(2)}:1 — ${context}`);
       }
     }
   }
+
   return {
     n: 1,
     name: "Contrast",
-    detail: `${CONTRAST_PAIRS.length} tokens × ${SURFACES.length} surfaces × 2 themes, WCAG AA ${AA_NORMAL}:1`,
-    failures: failures.map(
-      (f) =>
-        `${f.theme}: ${f.fg} on ${f.bg} = ${f.ratio === null ? f.why : f.ratio.toFixed(2) + ":1"} — ${f.context}`,
-    ),
+    detail: `${CONTRAST_PAIRS.length} tokens × ${SURFACES.length} surfaces, one dark palette, WCAG AA ${AA_NORMAL}:1`,
+    failures,
   };
 }
 

@@ -55,7 +55,11 @@ export default defineConfig({
   lang: "en-US",
   cleanUrls: true,
   lastUpdated: true,
-  appearance: "dark",
+  // Dark-only. "dark" merely defaulted to dark and still shipped a light
+  // ramp behind a toggle — a second theme nobody designed against, which
+  // is where the unreadable light-mode navbar wordmark came from (D12).
+  // "force-dark" also removes the appearance switch from the navbar.
+  appearance: "force-dark",
   sitemap: { hostname: SITE_URL },
   // Included docs (docs/*.md) carry links relative to the repo, not the
   // site; markdown.config below rewrites them, this silences the checker.

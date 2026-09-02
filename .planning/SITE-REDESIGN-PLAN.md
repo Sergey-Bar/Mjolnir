@@ -433,8 +433,8 @@ open gap rather than silently left uncovered.
 - A full axe-core audit and a manual keyboard pass.
 - Lighthouse performance and CLS are unmeasured.
 - Check 1 cannot see gradient-clip / dead-selector text defects (D12).
-- Three of the four decisions in §8 remain unanswered. The rune-field
-  one is now settled — see §13.3.
+- Two of the four decisions in §8 remain unanswered. The rune-field one
+  is settled (§13.3) and the dark-default one is settled (§14).
 
 ## 13. Palette vs the logo — measured
 
@@ -502,3 +502,48 @@ Table regenerated from `vars.css`, and **Check 8** now diffs the two on
 every build. Proven to fail before being trusted, per D11: a wrong gold
 injected into the table yields `--mj-gold — README says #deadbe,
 vars.css ships #c19a34`, and returns to PASS on restore.
+
+## 14. Dark-only
+
+§8 decision 4 asked whether dark-default stays. Answered: the site is now
+**dark-only** — `appearance: "force-dark"` in `config.mts`, which also
+removes the appearance switch from the navbar.
+
+The reason is D12. `appearance: "dark"` did not mean "dark site"; it meant
+"defaults to dark, and still ships a full light ramp behind a toggle".
+That light ramp was a second theme nobody designed against or looked at,
+and it is where the unreadable navbar wordmark lived — reachable in one
+click, from a bug that had been latent since PR #20. A theme that is not
+designed against should not be reachable.
+
+### 14.1 Not just a config flag
+
+VitePress applies `force-dark` by injecting
+`document.documentElement.classList.add('dark')` as an inline script.
+That is JavaScript — and a reader with scripting off never runs it, which
+would have dropped them onto the `:root` palette. If `:root` had stayed
+light, dark-only would have been a promise that broke in exactly the
+situation D4 was about.
+
+So the palette was collapsed rather than toggled: the dark values now
+live on `:root` itself, and the `.dark` block is deleted rather than left
+as a second copy to drift. The page is dark with or without JS, and
+`#f7f8fa` no longer appears anywhere in the built CSS.
+
+### 14.2 Check 1 now guards the decision
+
+Contrast is measured against one palette instead of two, and the check
+fails if the decision is quietly reversed — either by `config.mts`
+dropping `force-dark`, or by a `.dark` block reappearing in `vars.css`.
+Both guards were proven to fire before being trusted (D11):
+
+    config.mts no longer sets appearance: "force-dark" — a second theme is
+    reachable again, and this check only measures the palette on :root
+
+    vars.css declares a .dark block — with force-dark there is one palette;
+    two copies of it can drift apart
+
+Consequence worth stating plainly: the light-mode contrast work in §2.1 is
+now dead weight — those tokens are unreachable. They were not reverted,
+because the measurements there are the record of why the values are what
+they are; the dark ramp they justified is the one that ships.
