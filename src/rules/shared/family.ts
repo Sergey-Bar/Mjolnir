@@ -6,7 +6,12 @@
  * single declaration each. Rule IDs stay byte-identical.
  */
 
-import { defineRule, type QADoctorRule, type AppliesTo } from "../rule.js";
+import {
+  defineRule,
+  type QADoctorRule,
+  type AppliesTo,
+  type DetectionStrategy,
+} from "../rule.js";
 import type {
   Finding,
   Confidence,
@@ -59,8 +64,10 @@ export interface PatternFamilyOptions {
   why: string;
   /** Shared false-positive risk. */
   falsePositiveRisk: "low" | "medium" | "high";
-  /** Shared detection strategy description. */
-  detectionStrategy?: string;
+  /** Shared detection strategy enum value (defaults to LEXICAL). */
+  detectionStrategy?: DetectionStrategy;
+  /** Shared legacy free-text detection notes, if any. */
+  detectionNotes?: string;
   /** Shared autofix flag. */
   autofix?: boolean;
   /** Shared introduced version. */
@@ -104,7 +111,8 @@ export function definePatternFamily(
       frameworks: v.frameworks,
       falsePositiveRisk: opts.falsePositiveRisk,
       autofix: opts.autofix ?? false,
-      detectionStrategy: opts.detectionStrategy ?? "regex pattern",
+      detectionStrategy: opts.detectionStrategy ?? "LEXICAL",
+      ...(opts.detectionNotes ? { detectionNotes: opts.detectionNotes } : {}),
       ...(opts.introduced ? { introduced: opts.introduced } : {}),
       ...((v.tier ?? opts.tier) ? { tier: v.tier ?? opts.tier } : {}),
       ...((v.overlapWith ?? opts.overlapWith)

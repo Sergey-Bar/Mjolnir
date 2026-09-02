@@ -22,7 +22,7 @@ export const pwPollNoTimeout = defineRule({
   frameworks: ["playwright"],
   falsePositiveRisk: "medium",
   autofix: false,
-  detectionStrategy: "regex pattern",
+  detectionStrategy: "LEXICAL",
   introduced: "0.3.0",
   // Measured FP 100% (n=20, docs/FP-AUDIT.md 2026-08-31): the bounded
   // default poll timeout fails visibly, so the claimed masking harm never

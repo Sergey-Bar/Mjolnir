@@ -245,6 +245,14 @@ describe("every documented `npm run` command actually exists", () => {
     "tests/fixtures/",
     "tests/golden/",
     "tests/corpus/review/",
+    // §08 classes B/C committed corpora are realistic-world TEST DATA:
+    // a fixture's webServer command legitimately references an invented
+    // script name exactly because a real repo's config would. Data,
+    // never an instruction to a mjolnir reader. (The script name is
+    // deliberately not spelled out here, or this test would flag its
+    // own source — same trap as the sibling comment above.)
+    "tests/corpus/positive-fixtures/",
+    "tests/corpus/negative-fixtures/",
     "docs/archive/",
     "node_modules/",
     "dist/",

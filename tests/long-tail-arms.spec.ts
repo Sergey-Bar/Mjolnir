@@ -840,7 +840,7 @@ describe("remaining rule arms", () => {
         },
       ],
     } as never);
-    expect(rules[0]?.detectionStrategy).toBe("regex pattern");
+    expect(rules[0]?.detectionStrategy).toBe("LEXICAL");
     expect(rules[0]?.introduced).toBeUndefined();
     const findings = rules[0]?.run({
       path: "a.spec.ts",

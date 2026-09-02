@@ -14,7 +14,7 @@ export const networkIdleFamily = definePatternFamily({
   title: "waitForLoadState(networkidle) used",
   why: "Analytics, websockets, and polling make network idle never fire or fire randomly — a documented source of Playwright flakes.",
   falsePositiveRisk: "low",
-  detectionStrategy: "regex pattern",
+  detectionStrategy: "LEXICAL",
   introduced: "0.4.0",
   useCodeText: false,
   variants: [

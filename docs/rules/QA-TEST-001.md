@@ -14,7 +14,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Autofix available                     | yes                             |
 | Languages                             | typescript, javascript          |
 | Frameworks                            | jest, vitest, playwright, mocha |
-| Detection strategy                    | regex pattern                   |
+| Detection strategy                    | LEXICAL                         |
 | Introduced in                         | v0.1.0                          |
 
 ## Why this fails in production

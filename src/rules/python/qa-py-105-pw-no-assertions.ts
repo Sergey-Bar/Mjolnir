@@ -23,7 +23,8 @@ export const pyPwNoAssertions = defineRule({
   frameworks: ["pytest-playwright", "playwright"],
   falsePositiveRisk: "low",
   autofix: false,
-  detectionStrategy: "regex heuristic",
+  detectionStrategy: "LEXICAL",
+  detectionNotes: "regex heuristic",
   introduced: "0.3.8",
 
   // Measured 2026-09-02 (corpus wave 5): tier set from the measured envelope (plan §11.2).

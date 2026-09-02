@@ -22,7 +22,7 @@ export const csSkippedTest = defineRule({
   frameworks: ["nunit", "xunit", "mstest"],
   falsePositiveRisk: "low",
   autofix: false,
-  detectionStrategy: "regex pattern",
+  detectionStrategy: "LEXICAL",
   introduced: "0.3.8",
 
   run(ctx) {

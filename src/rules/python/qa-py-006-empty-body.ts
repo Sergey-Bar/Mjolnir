@@ -21,7 +21,7 @@ export const pyEmptyBody = defineRule({
   frameworks: ["pytest"],
   falsePositiveRisk: "low",
   autofix: false,
-  detectionStrategy: "regex pattern",
+  detectionStrategy: "LEXICAL",
   introduced: "0.3.0",
   tier: "quarantine",
 

@@ -20,7 +20,8 @@ export const hardSleep = defineRule({
   frameworks: ["jest", "vitest", "playwright", "mocha"],
   falsePositiveRisk: "low",
   autofix: false,
-  detectionStrategy: "regex pattern + behavioral wait-shape matching",
+  detectionStrategy: "LEXICAL",
+  detectionNotes: "regex pattern + behavioral wait-shape matching",
   introduced: "0.1.0",
   tier: "extended",
   run(ctx) {

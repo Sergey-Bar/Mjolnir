@@ -22,7 +22,7 @@ export const hardcodedBaseUrl = defineRule({
   frameworks: ["playwright"],
   falsePositiveRisk: "low",
   autofix: false,
-  detectionStrategy: "regex pattern",
+  detectionStrategy: "LEXICAL",
   introduced: "0.3.0",
 
   // Measured 2026-09-02 (corpus wave 5): tier set from the measured envelope (plan §11.2).

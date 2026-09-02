@@ -2,20 +2,20 @@
 
 _Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
-| Field                                 | Value                                |
-| ------------------------------------- | ------------------------------------ |
-| Severity                              | warning                              |
-| Confidence                            | medium                               |
-| Tier                                  | quarantine                           |
-| Measured FP rate                      | 38% (n=16)                           |
-| Evidence level                        | E1                                   |
-| QA impact                             | Test hygiene debt (HYGIENE)          |
-| False-positive risk (author estimate) | medium                               |
-| Autofix available                     | no                                   |
-| Languages                             | typescript, javascript               |
-| Frameworks                            | playwright                           |
-| Detection strategy                    | regex pattern + inside-string oracle |
-| Introduced in                         | v0.1.0                               |
+| Field                                 | Value                                          |
+| ------------------------------------- | ---------------------------------------------- |
+| Severity                              | warning                                        |
+| Confidence                            | medium                                         |
+| Tier                                  | quarantine                                     |
+| Measured FP rate                      | 38% (n=16)                                     |
+| Evidence level                        | E1                                             |
+| QA impact                             | Test hygiene debt (HYGIENE)                    |
+| False-positive risk (author estimate) | medium                                         |
+| Autofix available                     | no                                             |
+| Languages                             | typescript, javascript                         |
+| Frameworks                            | playwright                                     |
+| Detection strategy                    | LEXICAL (regex pattern + inside-string oracle) |
+| Introduced in                         | v0.1.0                                         |
 
 ## Why this fails in production
 

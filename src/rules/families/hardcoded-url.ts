@@ -21,7 +21,7 @@ export const hardcodedUrlFamily = definePatternFamily({
   title: "Hardcoded URL in test",
   why: "Absolute URLs break when environments change and can hit production by accident from a CI runner.",
   falsePositiveRisk: "low",
-  detectionStrategy: "regex pattern",
+  detectionStrategy: "LEXICAL",
   introduced: "0.4.0",
   useCodeText: false,
   variants: [

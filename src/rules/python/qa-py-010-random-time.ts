@@ -21,7 +21,7 @@ export const pyRandomTimeDependence = defineRule({
   frameworks: ["pytest"],
   falsePositiveRisk: "medium",
   autofix: false,
-  detectionStrategy: "regex pattern",
+  detectionStrategy: "LEXICAL",
   introduced: "0.3.0",
 
   // Measured FP 100% (n=10): wall-clock reads ARE the subject of e2e timing/throttle tests.

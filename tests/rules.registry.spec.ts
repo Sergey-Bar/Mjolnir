@@ -27,6 +27,26 @@ describe("RULES registry", () => {
     }
   });
 
+  it("declares an enforced-enum detection strategy on every rule (Verification Trust Evolution Plan §12.1, D6 closed)", () => {
+    // D6: `detectionStrategy` used to be free text. Phase 2 migrated
+    // every registry entry to the §09.6 enum and this ratchet keeps it
+    // that way — a new rule without a valid enum value fails CI, so the
+    // "free text" drift class cannot reintroduce itself.
+    const VALID: readonly string[] = [
+      "LEXICAL",
+      "AST",
+      "SEMANTIC",
+      "FRAMEWORK",
+      "RUNTIME",
+    ];
+    for (const rule of RULES) {
+      expect(
+        VALID,
+        `${rule.id}: detectionStrategy must be one of the §09.6 enum values`,
+      ).toContain(rule.detectionStrategy);
+    }
+  });
+
   it("omitted tiers resolve measurement-dependently, never to unmeasured core (Phase 1 D3 Steps 1+2)", () => {
     // Step 1 generated explicit `tier` declarations for all rules from
     // their then-effective tier; Step 2 made the omitted-tier default

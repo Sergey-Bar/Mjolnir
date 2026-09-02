@@ -23,7 +23,7 @@ export const noAssertions = defineRule({
   frameworks: ["jest", "vitest", "playwright", "mocha"],
   falsePositiveRisk: "medium",
   autofix: false,
-  detectionStrategy: "regex pattern",
+  detectionStrategy: "LEXICAL",
   introduced: "0.1.0",
   // Measured FP 82% (n=17, docs/FP-AUDIT.md 2026-08-31): hidden-assertion
   // helpers (expectSnapshot, verify helpers) and deliberate no-throw smoke

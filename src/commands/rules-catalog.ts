@@ -8,7 +8,7 @@
  */
 
 import { RULES } from "../rules/index.js";
-import type { QADoctorRule } from "../rules/rule.js";
+import type { DetectionStrategy, QADoctorRule } from "../rules/rule.js";
 import { MEASURED_FP } from "../rules/measured-fp.generated.js";
 import { effectiveTier, isProvisional } from "../rules/measurement.js";
 import { deriveEvidenceLevel, type EvidenceLevel } from "../types.js";
@@ -40,7 +40,8 @@ export interface RuleCatalogEntry {
   frameworks?: string[];
   falsePositiveRisk?: string;
   autofix?: boolean;
-  detectionStrategy?: string;
+  detectionStrategy?: DetectionStrategy;
+  detectionNotes?: string;
   introduced?: string;
 }
 
@@ -74,6 +75,7 @@ export function buildCatalog(
       ...(r.detectionStrategy
         ? { detectionStrategy: r.detectionStrategy }
         : {}),
+      ...(r.detectionNotes ? { detectionNotes: r.detectionNotes } : {}),
       ...(r.introduced ? { introduced: r.introduced } : {}),
     };
   });

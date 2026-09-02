@@ -14,7 +14,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Autofix available                     | no                             |
 | Languages                             | typescript, javascript         |
 | Frameworks                            | playwright                     |
-| Detection strategy                    | regex heuristic                |
+| Detection strategy                    | LEXICAL (regex heuristic)      |
 | Introduced in                         | v0.3.8                         |
 
 ## Why this fails in production

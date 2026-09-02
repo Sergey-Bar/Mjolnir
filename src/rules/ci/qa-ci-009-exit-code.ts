@@ -46,7 +46,8 @@ export const exitCodeNotPropagated = defineRule({
   frameworks: ["github-actions"],
   falsePositiveRisk: "low",
   autofix: false,
-  detectionStrategy: "regex pattern on parsed workflow AST",
+  detectionStrategy: "FRAMEWORK",
+  detectionNotes: "regex pattern on parsed workflow AST",
   introduced: "0.4.0",
 
   run(ctx) {

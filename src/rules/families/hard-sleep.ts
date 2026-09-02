@@ -14,7 +14,7 @@ export const hardSleepFamily = definePatternFamily({
   title: "Hard sleep in test",
   why: "Fixed sleeps are flaky under load and slow everywhere; Playwright locators auto-wait for actionability.",
   falsePositiveRisk: "low",
-  detectionStrategy: "regex pattern",
+  detectionStrategy: "LEXICAL",
   introduced: "0.3.8",
   tier: "extended",
   useCodeText: true,

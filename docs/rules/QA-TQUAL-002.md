@@ -2,20 +2,20 @@
 
 _Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
-| Field                                 | Value                          |
-| ------------------------------------- | ------------------------------ |
-| Severity                              | error                          |
-| Confidence                            | high                           |
-| Tier                                  | quarantine                     |
-| Measured FP rate                      | 85% (n=20)                     |
-| Evidence level                        | E2                             |
-| QA impact                             | False-green risk (FALSE-GREEN) |
-| False-positive risk (author estimate) | low                            |
-| Autofix available                     | no                             |
-| Languages                             | typescript, javascript         |
-| Frameworks                            | jest, vitest, playwright       |
-| Detection strategy                    | AST-stripped text pattern      |
-| Introduced in                         | v0.1.0                         |
+| Field                                 | Value                               |
+| ------------------------------------- | ----------------------------------- |
+| Severity                              | error                               |
+| Confidence                            | high                                |
+| Tier                                  | quarantine                          |
+| Measured FP rate                      | 85% (n=20)                          |
+| Evidence level                        | E2                                  |
+| QA impact                             | False-green risk (FALSE-GREEN)      |
+| False-positive risk (author estimate) | low                                 |
+| Autofix available                     | no                                  |
+| Languages                             | typescript, javascript              |
+| Frameworks                            | jest, vitest, playwright            |
+| Detection strategy                    | LEXICAL (AST-stripped text pattern) |
+| Introduced in                         | v0.1.0                              |
 
 ## Why this fails in production
 

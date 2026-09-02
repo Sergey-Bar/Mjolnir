@@ -9,6 +9,36 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — Verification Trust Evolution, Phase 2 — detectionStrategy enum (D6 closed, scan-behavior-neutral)
+
+### Changed — D6 enum migration (plan §12.1; metadata-only)
+
+- **`detectionStrategy` is now the enforced §09.6 enum** (`LEXICAL | AST |
+SEMANTIC | FRAMEWORK | RUNTIME`) instead of free text: `src/rules/rule.ts`
+  types `RuleMeta.detectionStrategy` as the union, and a registry ratchet
+  (tests/rules.registry.spec.ts) fails CI when any rule omits it or carries
+  a non-enum value — the "free text" drift class cannot reintroduce itself.
+  All 91 registry rules were migrated in place. This is a metadata migration,
+  not a detection change: no `run()` body, pattern, or scoping was touched,
+  so scan findings, golden fixtures, and corpus baselines are byte-identical
+  (the Phase 0 classification of this work as BEHAVIOR-NEUTRAL for scan
+  findings, plan §06). Per §11.3 the enum conversion is metadata naming only
+  and does NOT bump any `detectorRevision` — every measurement stays valid.
+- **Legacy nuance preserved, not deleted:** the richer free-text
+  declarations ("regex pattern + inside-string oracle", "parsed YAML +
+  test-command gate", …) moved verbatim into a new optional
+  `detectionNotes` field rendered alongside the enum in the rule docs
+  pages. The capability matrix now renders the declared enum directly in a
+  single "Detection strategy (enum)" column (the provisional
+  "Enum (proposed)" guess column is gone — the declared value IS the
+  enum); `UNCLASSIFIED` renders only for an undeclared value.
+- Mapping applied: regex-over-text/absence-sweep detectors → `LEXICAL`
+  (incl. QA-TQUAL-002's AST-stripped text pattern, which is a text pass
+  over code-only text); ts-morph node-walk detectors (QA-PW-002,
+  QA-PW-005) → `AST`; GitHub-Actions workflow-structure detectors
+  (QA-CI-001/009/010) → `FRAMEWORK`. `SEMANTIC` and `RUNTIME` remain
+  reserved (no rule ships either yet).
+
 ## [Unreleased] — Verification Trust Evolution, Phase 1 exit — dedicated corpora + wave-5 measurement (plan §11.5/§08)
 
 ### Added — dedicated corpora (§11.5) and the wave-5 measurement

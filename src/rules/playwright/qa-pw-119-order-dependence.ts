@@ -23,7 +23,7 @@ export const pwOrderDependence = defineRule({
   frameworks: ["playwright"],
   falsePositiveRisk: "medium",
   autofix: false,
-  detectionStrategy: "regex pattern",
+  detectionStrategy: "LEXICAL",
   introduced: "0.3.0",
   // Measured FP 100% (n=13, docs/FP-AUDIT.md 2026-08-31): real-world
   // module-level state is setup infrastructure (per-test helpers with

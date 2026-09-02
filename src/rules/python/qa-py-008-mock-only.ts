@@ -23,7 +23,8 @@ export const pyMockOnly = defineRule({
   frameworks: ["pytest"],
   falsePositiveRisk: "medium",
   autofix: false,
-  detectionStrategy: "regex heuristic",
+  detectionStrategy: "LEXICAL",
+  detectionNotes: "regex heuristic",
   introduced: "0.3.0",
 
   // Measured FP 100% (n=20): mocks stand in for the external service boundary; the CLI/module calls against them are the observable behavior.

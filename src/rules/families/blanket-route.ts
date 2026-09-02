@@ -36,7 +36,7 @@ function makeBlanketRoute(
     frameworks,
     falsePositiveRisk: "medium",
     autofix: false,
-    detectionStrategy: "regex pattern",
+    detectionStrategy: "LEXICAL",
     introduced: "0.4.0",
     tier: "quarantine",
     run(ctx) {

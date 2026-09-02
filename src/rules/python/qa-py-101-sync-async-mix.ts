@@ -23,7 +23,8 @@ export const pyPwSyncAsyncMix = defineRule({
   frameworks: ["pytest-playwright", "playwright"],
   falsePositiveRisk: "low",
   autofix: false,
-  detectionStrategy: "regex heuristic",
+  detectionStrategy: "LEXICAL",
+  detectionNotes: "regex heuristic",
   introduced: "0.3.8",
 
   run(ctx) {

@@ -34,7 +34,7 @@ function makeBrittleSelectors(
     frameworks,
     falsePositiveRisk: "medium",
     autofix: false,
-    detectionStrategy: "regex pattern",
+    detectionStrategy: "LEXICAL",
     introduced: "0.4.0",
     // All three measured variants are quarantine-tier: JV/CS at 100% FP
     // since tempering, PY measured 100% (n=12, docs/FP-AUDIT.md

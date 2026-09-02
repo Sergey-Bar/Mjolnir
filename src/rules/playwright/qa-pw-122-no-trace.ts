@@ -22,7 +22,8 @@ export const pwNoTraceOnRetry = defineRule({
   frameworks: ["playwright"],
   falsePositiveRisk: "low",
   autofix: false,
-  detectionStrategy: "regex heuristic",
+  detectionStrategy: "LEXICAL",
+  detectionNotes: "regex heuristic",
   introduced: "0.3.0",
 
   // Measured FP 25% (n=20): genuine missing-trace configs dominate, but re-export configs blind the rule (25% <= 30% = extended).

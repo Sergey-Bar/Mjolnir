@@ -24,7 +24,8 @@ export const pwConfigRetryAbuse = defineRule({
   frameworks: ["playwright"],
   falsePositiveRisk: "low",
   autofix: false,
-  detectionStrategy: "regex heuristic",
+  detectionStrategy: "LEXICAL",
+  detectionNotes: "regex heuristic",
   introduced: "0.3.0",
 
   // Measured 2026-09-02 (corpus wave 5): FP ≤ 10% but n < 20 — measured-extended until the core DoD n ≥ 20 is met (plan §23).

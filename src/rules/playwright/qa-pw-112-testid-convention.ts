@@ -21,7 +21,7 @@ export const pwTestIdConvention = defineRule({
   frameworks: ["playwright"],
   falsePositiveRisk: "low",
   autofix: false,
-  detectionStrategy: "regex pattern",
+  detectionStrategy: "LEXICAL",
   introduced: "0.3.0",
 
   // Measured FP 100% (n=20): repos ship consistent camelCase/registry test-id conventions; style enforcement is not a defect.

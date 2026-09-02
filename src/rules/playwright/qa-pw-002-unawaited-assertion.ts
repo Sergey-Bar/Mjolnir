@@ -75,7 +75,8 @@ export const unawaitedLocatorAssertion = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   // Upgraded from regex to AST per Upgrade-Plan-v3 Phase 3.
-  detectionStrategy: "AST (ts-morph) call-graph check",
+  detectionStrategy: "AST",
+  detectionNotes: "ts-morph call-graph check",
   introduced: "0.1.0",
 
   run(ctx) {

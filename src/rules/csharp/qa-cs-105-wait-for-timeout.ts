@@ -25,7 +25,7 @@ export const csWaitForTimeout = defineRule({
   frameworks: ["nunit", "xunit", "mstest", "playwright"],
   falsePositiveRisk: "low",
   autofix: false,
-  detectionStrategy: "regex pattern",
+  detectionStrategy: "LEXICAL",
   introduced: "0.4.0",
   tier: "extended",
 

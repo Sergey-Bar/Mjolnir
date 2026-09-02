@@ -22,7 +22,7 @@ export const pySkippedTest = defineRule({
   frameworks: ["pytest"],
   falsePositiveRisk: "low",
   autofix: false,
-  detectionStrategy: "regex pattern",
+  detectionStrategy: "LEXICAL",
   introduced: "0.3.0",
 
   run(ctx) {

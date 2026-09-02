@@ -14,7 +14,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Autofix available                     | no                              |
 | Languages                             | typescript, javascript          |
 | Frameworks                            | playwright                      |
-| Detection strategy                    | AST (ts-morph) call-graph check |
+| Detection strategy                    | AST (ts-morph call-graph check) |
 | Introduced in                         | v0.1.0                          |
 
 ## Why this fails in production

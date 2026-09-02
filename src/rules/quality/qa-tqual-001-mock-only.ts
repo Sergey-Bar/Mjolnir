@@ -26,7 +26,8 @@ export const mockOnlyVerification = defineRule({
   frameworks: ["jest", "vitest", "playwright"],
   falsePositiveRisk: "medium",
   autofix: false,
-  detectionStrategy: "regex heuristic",
+  detectionStrategy: "LEXICAL",
+  detectionNotes: "regex heuristic",
   introduced: "0.1.0",
   // Measured FP 100% (n=20, docs/FP-AUDIT.md 2026-08-31): real-world
   // spy assertions observe the real unit under test (warning emission,

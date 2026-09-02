@@ -24,7 +24,8 @@ export const pwNoA11yAssertions = defineRule({
   frameworks: ["playwright"],
   falsePositiveRisk: "high",
   autofix: false,
-  detectionStrategy: "absence heuristic over suite directory",
+  detectionStrategy: "LEXICAL",
+  detectionNotes: "absence heuristic over suite directory",
   introduced: "0.3.8",
   tier: "quarantine",
 

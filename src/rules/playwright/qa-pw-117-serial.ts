@@ -23,7 +23,7 @@ export const pwSerialNoJustification = defineRule({
   frameworks: ["playwright"],
   falsePositiveRisk: "low",
   autofix: false,
-  detectionStrategy: "regex pattern",
+  detectionStrategy: "LEXICAL",
   introduced: "0.3.0",
   tier: "core", // measured 2026-09-02: 0% FP at n=20
 

@@ -23,7 +23,7 @@ export const jvWaitForTimeout = defineRule({
   frameworks: ["junit", "testng", "playwright"],
   falsePositiveRisk: "low",
   autofix: false,
-  detectionStrategy: "regex pattern",
+  detectionStrategy: "LEXICAL",
   introduced: "0.3.8",
 
   run(ctx) {

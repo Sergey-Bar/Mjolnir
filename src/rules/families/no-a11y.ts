@@ -29,7 +29,8 @@ function makeNoA11y(
     frameworks,
     falsePositiveRisk: "high",
     autofix: false,
-    detectionStrategy: "absence heuristic",
+    detectionStrategy: "LEXICAL",
+    detectionNotes: "absence heuristic",
     introduced: "0.4.0",
     tier: "quarantine",
     run(ctx) {

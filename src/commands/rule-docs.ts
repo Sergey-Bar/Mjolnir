@@ -171,7 +171,11 @@ export function renderRuleDocMd(data: RuleDocData): string {
   if (r.frameworks?.length)
     lines.push(`| Frameworks | ${r.frameworks.join(", ")} |`);
   if (r.detectionStrategy)
-    lines.push(`| Detection strategy | ${r.detectionStrategy} |`);
+    lines.push(
+      `| Detection strategy | ${r.detectionStrategy}${
+        r.detectionNotes ? ` (${r.detectionNotes})` : ""
+      } |`,
+    );
   if (r.introduced) lines.push(`| Introduced in | v${r.introduced} |`);
   lines.push("");
 

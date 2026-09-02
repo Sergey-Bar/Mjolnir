@@ -27,7 +27,7 @@ export const pwWaitForTimeout = defineRule({
   frameworks: ["playwright"],
   falsePositiveRisk: "low",
   autofix: false,
-  detectionStrategy: "regex pattern",
+  detectionStrategy: "LEXICAL",
   introduced: "0.3.0",
   // R6 (Bug Map M-02): QA-TEST-004 (extended, warning) matches
   // `await page.waitForTimeout(` via its own patterns — co-fire proven

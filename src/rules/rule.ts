@@ -14,6 +14,23 @@ import type {
   Severity,
 } from "../types.js";
 
+/**
+ * How the rule's primary detection decision is made (Verification Trust
+ * Evolution Plan §09.6/§12.1 — the enforced D6 enum, replacing free text):
+ * - "LEXICAL": pattern matching over source text (regex over `codeText`,
+ *   masked text, YAML/manifest text, suite-wide absence sweeps).
+ * - "AST": structural analysis of a parsed syntax tree (ts-morph node
+ *   walks, tree-sitter queries) is the core decision.
+ * - "SEMANTIC": name/type/symbol or call-graph reasoning beyond
+ *   single-file syntax (reserved — no rule ships this yet).
+ * - "FRAMEWORK": framework configuration/manifest semantics drive the
+ *   decision (CI workflow job/step structure, test-command gating).
+ * - "RUNTIME": execution evidence drives the decision (reserved —
+ *   Phase 6).
+ */
+export type DetectionStrategy =
+  "LEXICAL" | "AST" | "SEMANTIC" | "FRAMEWORK" | "RUNTIME";
+
 export interface RuleMeta {
   /** Frozen public API — never reused (§18.4). */
   id: string;
@@ -48,8 +65,20 @@ export interface RuleMeta {
   falsePositiveRisk?: "low" | "medium" | "high";
   /** Whether `mjolnir fix` (or a future autofix) can safely repair it. */
   autofix?: boolean;
-  /** How detection works, e.g. "regex pattern" | "AST heuristic". */
-  detectionStrategy?: string;
+  /**
+   * How detection works, as an enforced enum (plan §09.6/§12.1 — D6
+   * closed). Free-text declarations were migrated to the enum in
+   * Phase 2; the registry ratchet (tests/rules.registry.spec.ts) makes
+   * omission or a bad value a CI failure, so new rules must declare it.
+   */
+  detectionStrategy?: DetectionStrategy;
+  /**
+   * Verbatim legacy detection-strategy description preserved from the
+   * pre-enum free-text era (D6 migration). Optional; carries the nuance
+   * the enum alone cannot ("regex pattern + inside-string oracle", …).
+   * Rendered by the rule docs pages alongside the enum.
+   */
+  detectionNotes?: string;
   /** First released version (semver). Immutable once set. */
   introduced?: string;
   /**

@@ -13,10 +13,10 @@
  * generator already documented).
  *
  * Unknown fields render as `UNCLASSIFIED` — visible gaps are the
- * deliverable, not failures (plan §04; No False Proof). The only
- * provisional derivation is the detectionStrategy enum (§09.6 contract
- * proposal): unambiguous declared texts map to the proposed enum,
- * everything else stays UNCLASSIFIED until the Phase 2 classification.
+ * deliverable, not failures (plan §04; No False Proof). The
+ * detectionStrategy column renders the enforced §09.6 enum declared on
+ * each rule (the Phase 2 D6 migration); undeclared values render
+ * UNCLASSIFIED.
  *
  * Drift-locked by tests/capability-matrix.spec.ts and the
  * generated-docs-drift CI job (which runs this script and fails on any
@@ -114,23 +114,33 @@ export const DEFECT_LEDGER: readonly DefectLedgerEntry[] = [
   },
 ];
 
-// ─── Detection-strategy enum (§09.6 contract proposal, provisional) ──
+// ─── Detection-strategy enum (§09.6/§12.1 — enforced contract) ──────
 
 export type DetectionStrategyEnum =
   "LEXICAL" | "AST" | "SEMANTIC" | "FRAMEWORK" | "RUNTIME" | "UNCLASSIFIED";
 
 /**
- * Provisional Phase 0 mapping from the declared free text to the proposed
- * enum. Only unambiguous declarations are mapped; everything else stays
- * UNCLASSIFIED until the Phase 2 classification (D6 migration) lands.
- * The mapping is a REPORT aid for the matrix, not an enforced contract.
+ * The declared `detectionStrategy` IS the §09.6 enum since the Phase 2
+ * D6 migration (src/rules/rule.ts types it, tests/rules.registry.spec.ts
+ * ratchets it). This function now exists for the contract surface and for
+ * defensive rendering: an undeclared strategy (or an out-of-contract
+ * value smuggled in via a synthetic rule object) renders UNCLASSIFIED
+ * instead of a fabricated claim. Every registry rule maps to its declared
+ * enum value.
  */
 export function deriveDetectionStrategyEnum(
   declared: string | undefined,
 ): DetectionStrategyEnum {
   if (declared === undefined) return "UNCLASSIFIED";
-  if (declared.startsWith("AST (ts-morph)")) return "AST";
-  if (declared.startsWith("regex")) return "LEXICAL";
+  if (
+    declared === "LEXICAL" ||
+    declared === "AST" ||
+    declared === "SEMANTIC" ||
+    declared === "FRAMEWORK" ||
+    declared === "RUNTIME"
+  ) {
+    return declared;
+  }
   return "UNCLASSIFIED";
 }
 
@@ -202,8 +212,9 @@ export interface CapabilityRow {
   appliesTo: string;
   languages: string[] | "UNCLASSIFIED";
   frameworks: string[] | "UNCLASSIFIED";
-  /** Declared free text (enum enforcement is the Phase 2 migration). */
+  /** Declared §09.6 enum (D6: enforced contract, never free text). */
   detectionStrategy: string | "UNCLASSIFIED";
+  /** Same value as `detectionStrategy` when declared; UNCLASSIFIED otherwise. */
   detectionStrategyEnum: DetectionStrategyEnum;
   semanticDepth: "Low" | "Medium" | "High" | "UNCLASSIFIED";
   measured: boolean;
@@ -438,10 +449,10 @@ export function renderMatrixMd(data: MatrixData): string {
   lines.push("## Capability matrix");
   lines.push("");
   lines.push(
-    "| Rule ID | Name | Category | Languages | Frameworks | Detection strategy (declared) | Enum (proposed) | Semantic depth | Measured | FP rate | n | Corpus size | Corpus diversity | Mutation coverage | Confidence | Tier | Status | Known limitations | Evidence requirements |",
+    "| Rule ID | Name | Category | Languages | Frameworks | Detection strategy (enum) | Semantic depth | Measured | FP rate | n | Corpus size | Corpus diversity | Mutation coverage | Confidence | Tier | Status | Known limitations | Evidence requirements |",
   );
   lines.push(
-    "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
+    "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
   );
   for (const r of rows) {
     lines.push(
@@ -452,7 +463,6 @@ export function renderMatrixMd(data: MatrixData): string {
         Array.isArray(r.languages) ? r.languages.join(", ") : r.languages,
         Array.isArray(r.frameworks) ? r.frameworks.join(", ") : r.frameworks,
         r.detectionStrategy,
-        r.detectionStrategyEnum,
         r.semanticDepth,
         r.measured ? "yes" : "no",
         pctLabel(r),
@@ -475,8 +485,8 @@ export function renderMatrixMd(data: MatrixData): string {
   lines.push("## Field glossary");
   lines.push("");
   lines.push(
-    "- **Enum (proposed)**: provisional Phase 0 mapping of the declared free text to the §09.6 enum (`LEXICAL | AST | SEMANTIC | FRAMEWORK | RUNTIME`); only unambiguous declarations are mapped, everything else is `UNCLASSIFIED` until the Phase 2 classification.",
-    "- **Semantic depth**: derived only from the provisional enum (LEXICAL → Low, AST → Medium, SEMANTIC → High).",
+    "- **Detection strategy**: the enforced §09.6 enum (`LEXICAL | AST | SEMANTIC | FRAMEWORK | RUNTIME`) declared on the rule (D6 closed in Phase 2 — the registry ratchet makes omission or a bad value a CI failure). `UNCLASSIFIED` renders only for an undeclared value.",
+    "- **Semantic depth**: derived only from the enum (LEXICAL → Low, AST → Medium, SEMANTIC → High; FRAMEWORK/RUNTIME are decision-source labels, not depth grades).",
     "- **Measured**: a `MEASURED_FP` entry exists — n ≥ 10 hand-classified TP/FP verdicts (`tests/corpus/verdicts/*.jsonl`).",
     "- **Corpus size / diversity**: classified verdict rows / distinct repos behind them, from the verdict corpus.",
     "- **Tier**: effective tier — the declared tier, or the `rule.ts` omitted-tier default (`core`, the D3 policy hole).",

@@ -23,7 +23,7 @@ export const pwTextContentCoupling = defineRule({
   frameworks: ["playwright"],
   falsePositiveRisk: "high",
   autofix: false,
-  detectionStrategy: "regex pattern",
+  detectionStrategy: "LEXICAL",
   introduced: "0.3.0",
   tier: "quarantine",
 

@@ -23,7 +23,8 @@ export const tautologicalAssertion = defineRule({
   frameworks: ["jest", "vitest", "playwright"],
   falsePositiveRisk: "low",
   autofix: false,
-  detectionStrategy: "AST-stripped text pattern",
+  detectionStrategy: "LEXICAL",
+  detectionNotes: "AST-stripped text pattern",
   introduced: "0.1.0",
 
   // Measured 2026-09-02 (corpus wave 5): tier set from the measured envelope (plan §11.2).

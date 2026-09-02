@@ -31,7 +31,8 @@ export const evaluateBusinessLogic = defineRule({
   falsePositiveRisk: "medium",
   autofix: false,
   // Upgraded from regex to AST per Upgrade-Plan-v3 Phase 3.
-  detectionStrategy: "AST (ts-morph) function-body inspection",
+  detectionStrategy: "AST",
+  detectionNotes: "ts-morph function-body inspection",
   introduced: "0.1.0",
 
   // Measured FP 100% (n=17): page.evaluate branching is browser-only test instrumentation in every real consumer suite.

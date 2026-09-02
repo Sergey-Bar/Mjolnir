@@ -2,20 +2,20 @@
 
 _Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
-| Field                                 | Value                                          |
-| ------------------------------------- | ---------------------------------------------- |
-| Severity                              | warning                                        |
-| Confidence                            | high                                           |
-| Tier                                  | extended                                       |
-| Measured FP rate                      | 30% (n=20)                                     |
-| Evidence level                        | E2                                             |
-| QA impact                             | Flaky-test risk (FLAKY-RISK)                   |
-| False-positive risk (author estimate) | low                                            |
-| Autofix available                     | no                                             |
-| Languages                             | typescript, javascript                         |
-| Frameworks                            | jest, vitest, playwright, mocha                |
-| Detection strategy                    | regex pattern + behavioral wait-shape matching |
-| Introduced in                         | v0.1.0                                         |
+| Field                                 | Value                                                    |
+| ------------------------------------- | -------------------------------------------------------- |
+| Severity                              | warning                                                  |
+| Confidence                            | high                                                     |
+| Tier                                  | extended                                                 |
+| Measured FP rate                      | 30% (n=20)                                               |
+| Evidence level                        | E2                                                       |
+| QA impact                             | Flaky-test risk (FLAKY-RISK)                             |
+| False-positive risk (author estimate) | low                                                      |
+| Autofix available                     | no                                                       |
+| Languages                             | typescript, javascript                                   |
+| Frameworks                            | jest, vitest, playwright, mocha                          |
+| Detection strategy                    | LEXICAL (regex pattern + behavioral wait-shape matching) |
+| Introduced in                         | v0.1.0                                                   |
 
 ## Why this fails in production
 

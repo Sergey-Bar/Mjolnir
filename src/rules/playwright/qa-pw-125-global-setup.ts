@@ -23,7 +23,8 @@ export const pwGlobalSetupSharedState = defineRule({
   frameworks: ["playwright"],
   falsePositiveRisk: "medium",
   autofix: false,
-  detectionStrategy: "regex heuristic",
+  detectionStrategy: "LEXICAL",
+  detectionNotes: "regex heuristic",
   introduced: "0.3.0",
 
   run(ctx) {

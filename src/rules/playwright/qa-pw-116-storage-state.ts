@@ -23,7 +23,7 @@ export const pwStorageStateNoExpiry = defineRule({
   frameworks: ["playwright"],
   falsePositiveRisk: "medium",
   autofix: false,
-  detectionStrategy: "regex pattern",
+  detectionStrategy: "LEXICAL",
   introduced: "0.3.0",
 
   run(ctx) {

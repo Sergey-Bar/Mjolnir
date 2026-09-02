@@ -23,7 +23,8 @@ export const pwNoEnvGuard = defineRule({
   frameworks: ["playwright"],
   falsePositiveRisk: "high",
   autofix: false,
-  detectionStrategy: "regex heuristic",
+  detectionStrategy: "LEXICAL",
+  detectionNotes: "regex heuristic",
   introduced: "0.3.0",
   tier: "quarantine",
 

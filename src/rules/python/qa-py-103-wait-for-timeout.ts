@@ -22,7 +22,7 @@ export const pyPwWaitForTimeout = defineRule({
   frameworks: ["pytest-playwright", "playwright"],
   falsePositiveRisk: "low",
   autofix: false,
-  detectionStrategy: "regex pattern",
+  detectionStrategy: "LEXICAL",
   introduced: "0.3.8",
   tier: "core", // measured 2026-09-02: 10% FP at n=20 (band edge, ≤ 10%)
 

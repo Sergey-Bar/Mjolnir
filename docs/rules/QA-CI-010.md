@@ -2,20 +2,20 @@
 
 _Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
-| Field                                 | Value                                  |
-| ------------------------------------- | -------------------------------------- |
-| Severity                              | error                                  |
-| Confidence                            | medium                                 |
-| Tier                                  | quarantine                             |
-| Measured FP rate                      | 40% (n=10)                             |
-| Evidence level                        | E2                                     |
-| QA impact                             | False-green risk (FALSE-GREEN)         |
-| False-positive risk (author estimate) | medium                                 |
-| Autofix available                     | no                                     |
-| Languages                             | yaml                                   |
-| Frameworks                            | github-actions                         |
-| Detection strategy                    | regex heuristic on parsed workflow AST |
-| Introduced in                         | v0.4.0                                 |
+| Field                                 | Value                                              |
+| ------------------------------------- | -------------------------------------------------- |
+| Severity                              | error                                              |
+| Confidence                            | medium                                             |
+| Tier                                  | quarantine                                         |
+| Measured FP rate                      | 40% (n=10)                                         |
+| Evidence level                        | E2                                                 |
+| QA impact                             | False-green risk (FALSE-GREEN)                     |
+| False-positive risk (author estimate) | medium                                             |
+| Autofix available                     | no                                                 |
+| Languages                             | yaml                                               |
+| Frameworks                            | github-actions                                     |
+| Detection strategy                    | FRAMEWORK (regex heuristic on parsed workflow AST) |
+| Introduced in                         | v0.4.0                                             |
 
 ## Why this fails in production
 

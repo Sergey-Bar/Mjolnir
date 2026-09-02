@@ -14,7 +14,7 @@ export const sharedPageFamily = definePatternFamily({
   title: "Browser state shared across tests",
   why: "A shared Page/Browser leaks cookies, localStorage, and navigation state between tests — failures become order-dependent and impossible to reproduce in isolation.",
   falsePositiveRisk: "medium",
-  detectionStrategy: "regex pattern",
+  detectionStrategy: "LEXICAL",
   introduced: "0.4.0",
   useCodeText: true,
   variants: [

@@ -83,7 +83,7 @@ describe("rules catalog", () => {
       frameworks: ["vitest"],
       falsePositiveRisk: "low" as const,
       autofix: true,
-      detectionStrategy: "regex pattern",
+      detectionStrategy: "LEXICAL" as const,
       introduced: "9.9.9",
     };
     const entries = buildCatalog([full]);

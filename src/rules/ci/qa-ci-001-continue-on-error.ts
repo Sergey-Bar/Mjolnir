@@ -52,7 +52,8 @@ export const continueOnError = defineRule({
   frameworks: ["github-actions"],
   falsePositiveRisk: "low",
   autofix: false,
-  detectionStrategy: "parsed YAML + test-command gate",
+  detectionStrategy: "FRAMEWORK",
+  detectionNotes: "parsed YAML + test-command gate",
   introduced: "0.1.0",
 
   // Measured 2026-09-02 (corpus wave 5): tier set from the measured envelope (plan §11.2).

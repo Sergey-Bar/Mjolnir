@@ -23,7 +23,8 @@ export const envCoupling = defineRule({
   frameworks: ["jest", "vitest", "playwright"],
   falsePositiveRisk: "medium",
   autofix: false,
-  detectionStrategy: "regex heuristic",
+  detectionStrategy: "LEXICAL",
+  detectionNotes: "regex heuristic",
   introduced: "0.2.0",
   tier: "quarantine",
 

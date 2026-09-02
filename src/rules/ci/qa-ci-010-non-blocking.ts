@@ -54,7 +54,8 @@ export const nonBlockingTestJob = defineRule({
   frameworks: ["github-actions"],
   falsePositiveRisk: "medium",
   autofix: false,
-  detectionStrategy: "regex heuristic on parsed workflow AST",
+  detectionStrategy: "FRAMEWORK",
+  detectionNotes: "regex heuristic on parsed workflow AST",
   introduced: "0.4.0",
 
   // Measured 2026-09-02 (corpus wave 5): tier set from the measured envelope (plan §11.2).

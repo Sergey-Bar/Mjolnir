@@ -14,7 +14,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Autofix available                     | no                                         |
 | Languages                             | yaml                                       |
 | Frameworks                            | github-actions                             |
-| Detection strategy                    | regex pattern                              |
+| Detection strategy                    | LEXICAL                                    |
 | Introduced in                         | v0.1.0                                     |
 
 ## Why this fails in production

@@ -21,7 +21,8 @@ export const csNoAssertions = defineRule({
   frameworks: ["nunit", "xunit", "mstest"],
   falsePositiveRisk: "medium",
   autofix: false,
-  detectionStrategy: "regex heuristic",
+  detectionStrategy: "LEXICAL",
+  detectionNotes: "regex heuristic",
   introduced: "0.3.8",
   tier: "quarantine",
 

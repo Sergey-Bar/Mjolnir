@@ -202,24 +202,28 @@ describe("capability matrix generation", () => {
     expect(m?.detectorRevision).toBe(1);
   });
 
-  it("detection-strategy enum mapping is conservative", () => {
-    // Only unambiguous declared texts map; free text stays UNCLASSIFIED.
-    expect(deriveDetectionStrategyEnum("regex pattern")).toBe("LEXICAL");
-    expect(deriveDetectionStrategyEnum("regex heuristic")).toBe("LEXICAL");
-    expect(deriveDetectionStrategyEnum("AST (ts-morph) call-graph check")).toBe(
-      "AST",
-    );
-    expect(deriveDetectionStrategyEnum("parsed YAML + test-command gate")).toBe(
-      "UNCLASSIFIED",
-    );
-    expect(deriveDetectionStrategyEnum("absence heuristic")).toBe(
-      "UNCLASSIFIED",
-    );
+  it("detection-strategy enum is enforced from the registry (D6 closed in Phase 2)", () => {
+    // Since the Phase 2 migration, `detectionStrategy` IS the §09.6
+    // enum — the declared value passes through; only an undeclared or
+    // out-of-contract value renders UNCLASSIFIED (no fabricated claims).
+    expect(deriveDetectionStrategyEnum("LEXICAL")).toBe("LEXICAL");
+    expect(deriveDetectionStrategyEnum("AST")).toBe("AST");
+    expect(deriveDetectionStrategyEnum("SEMANTIC")).toBe("SEMANTIC");
+    expect(deriveDetectionStrategyEnum("FRAMEWORK")).toBe("FRAMEWORK");
+    expect(deriveDetectionStrategyEnum("RUNTIME")).toBe("RUNTIME");
+    expect(deriveDetectionStrategyEnum("regex pattern")).toBe("UNCLASSIFIED");
     expect(deriveDetectionStrategyEnum(undefined)).toBe("UNCLASSIFIED");
+
+    // Every registry rule declares the enum — no UNCLASSIFIED rows.
+    for (const row of data.rows) {
+      expect(row.detectionStrategy, row.id).not.toBe("UNCLASSIFIED");
+      expect(row.detectionStrategyEnum, row.id).toBe(row.detectionStrategy);
+    }
 
     expect(deriveSemanticDepth("LEXICAL")).toBe("Low");
     expect(deriveSemanticDepth("AST")).toBe("Medium");
     expect(deriveSemanticDepth("SEMANTIC")).toBe("High");
+    expect(deriveSemanticDepth("FRAMEWORK")).toBe("UNCLASSIFIED");
     expect(deriveSemanticDepth("UNCLASSIFIED")).toBe("UNCLASSIFIED");
   });
 

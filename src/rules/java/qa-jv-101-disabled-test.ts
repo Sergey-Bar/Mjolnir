@@ -22,7 +22,7 @@ export const jvDisabledTest = defineRule({
   frameworks: ["junit", "testng"],
   falsePositiveRisk: "low",
   autofix: false,
-  detectionStrategy: "regex pattern",
+  detectionStrategy: "LEXICAL",
   introduced: "0.3.8",
   tier: "core", // measured 2026-09-02: 0% FP at n=20 — promoted extended→core per the fp band
 

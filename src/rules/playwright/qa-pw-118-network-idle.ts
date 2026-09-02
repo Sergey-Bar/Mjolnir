@@ -21,7 +21,7 @@ export const networkIdleWait = defineRule({
   frameworks: ["playwright"],
   falsePositiveRisk: "medium",
   autofix: false,
-  detectionStrategy: "regex pattern",
+  detectionStrategy: "LEXICAL",
   introduced: "0.3.0",
   // Measured FP 100% (n=20, docs/FP-AUDIT.md 2026-08-31): real-world
   // networkidle waits are deliberate preload/settle synchronization in

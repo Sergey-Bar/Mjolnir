@@ -21,7 +21,7 @@ export const retryMaskingFamily: QADoctorRule[] = [
     frameworks: ["junit", "testng"],
     falsePositiveRisk: "medium",
     autofix: false,
-    detectionStrategy: "regex pattern",
+    detectionStrategy: "LEXICAL",
     introduced: "0.4.0",
     tier: "core",
     run(ctx) {
@@ -78,7 +78,7 @@ export const retryMaskingFamily: QADoctorRule[] = [
     frameworks: ["nunit", "xunit", "mstest"],
     falsePositiveRisk: "medium",
     autofix: false,
-    detectionStrategy: "regex pattern",
+    detectionStrategy: "LEXICAL",
     introduced: "0.4.0",
     tier: "extended",
     run(ctx) {
