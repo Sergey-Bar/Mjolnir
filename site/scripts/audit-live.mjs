@@ -1,5 +1,6 @@
 /**
- * `npm run audit` (in site/) — the checks the static doctor cannot make.
+ * `npm run site:audit` (from the repo root) — the checks the static
+ * doctor cannot make.
  *
  * site-doctor.mjs runs on plain Node with zero dependencies, which is why
  * it reasons about the built HTML as text. Three things genuinely need a
@@ -12,7 +13,7 @@
  *   - layout stability and paint timing (CLS / LCP), measured from the
  *     browser's own Performance APIs rather than inferred
  *
- * Kept OUT of `npm run doctor` and out of the pages.yml gate on purpose:
+ * Kept OUT of `npm run site:doctor` and the pages.yml gate on purpose:
  * it needs axe-core and a Playwright browser, and site/ deliberately has
  * neither. Run it from the repo root, where those already exist:
  *

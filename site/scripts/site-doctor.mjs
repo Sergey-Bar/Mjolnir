@@ -1,5 +1,5 @@
 /**
- * `npm run doctor` (in site/) — the site's own quality gate.
+ * `npm run site:doctor` (from the repo root) — the site's own gate.
  *
  * The product is governed by executable laws (`mjolnir doctor`,
  * CLAUDE.md). The site was not: `pages.yml` ran the catalog generator's

@@ -21,7 +21,7 @@
  * Still a local floor, not a promise about production: no CDN, no real
  * latency, and Google Fonts is fetched over the real network.
  *
- * Lives outside `npm run doctor` and the pages.yml gate — it needs
+ * Lives outside `npm run site:doctor` and the pages.yml gate — it needs
  * Lighthouse and a Chrome, and site/ runs on plain Node with no deps.
  */
 

@@ -552,7 +552,7 @@ they are; the dark ramp they justified is the one that ships.
 
 Phases 1, 4 and 6 each shipped with a gate recorded as unmet rather than
 assumed. All three were run. Two new harnesses exist for it, both outside
-`npm run doctor` because they need a browser and site/ has no
+`npm run site:doctor` because they need a browser and site/ has no
 dependencies:
 
 - `npm run site:audit` — axe-core, keyboard traversal, CLS/LCP
