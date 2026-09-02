@@ -29,7 +29,16 @@ body {
 }
 
 /* ---- brand wordmark in the navbar -------------------------- */
-.VPNavBarTitle .text {
+/* The gradient-clip trick below only reads correctly over a DARK navbar —
+   --mj-steel and --mj-gold-bright are both light colours, so on a plain
+   light-mode doc page (light navbar) this would be a second invisible-text
+   bug of the same shape as the one it replaces. Scoped to the two contexts
+   where the navbar is actually dark: dark theme everywhere, and the
+   landing page's navbar, which .mj-landing forces dark in every theme
+   (see the "landing navbar" block below). Elsewhere the wordmark falls
+   through to the theme's own --vp-c-text-1 — correct on a light navbar. */
+.dark .VPNavBarTitle .title span,
+.mj-landing .VPNavBarTitle .title span {
   font-family: var(--mj-display);
   font-weight: 600;
   letter-spacing: 0.08em;

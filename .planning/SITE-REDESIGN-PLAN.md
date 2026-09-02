@@ -392,10 +392,47 @@ missing one), and a control whose `title` is bound in a client-only
 effect — VitePress's appearance switch fills it in `watchPostEffect`,
 which never runs during SSR — cannot be judged from static HTML at all.
 
+### D12 — the "Mjölnir" wordmark was invisible in light mode
+
+Not one of the original nine defects, and not introduced by this plan:
+reported by Sergey against the built preview, from a screenshot of the
+navbar in light mode. Confirmed via computed style before touching
+anything — `getComputedStyle` on the navbar's title `<span>` returned
+`color: rgb(15, 20, 32)` (near-black `--vp-c-text-1`) sitting on the
+landing page's forced-dark navbar overlay.
+
+Root cause: `custom.css` styled the wordmark with a steel-to-gold
+gradient-clip effect (`.VPNavBarTitle .text { background: linear-gradient(...);
+background-clip: text; color: transparent; }`), targeting a `.text` class
+that does not exist in the installed VitePress version's markup — the
+real element is a bare `<span>` (confirmed by reading
+`VPNavBarTitle.vue` in `node_modules`). The rule was dead code in both
+themes. It "worked" by accident in dark mode only because the fallback
+default (`--vp-c-text-1`) happens to be light-coloured there; light mode
+has no such luck; and it fell through to `--vp-c-text-1`'s near-black
+light-mode value in on a navbar the landing page forces dark.
+
+Fixed by retargeting the selector to the real element (`.title span`)
+and scoping the gradient to the two contexts where the navbar is
+actually dark — `.dark` (any page) and `.mj-landing` (the landing page's
+navbar, forced dark in every theme) — so a light-mode doc page (light
+navbar) correctly falls through to plain `--vp-c-text-1` instead of
+painting a light gradient on a light background, which would have been
+the same bug in a different shape. Verified via computed style and
+screenshot in all four combinations: light/dark × landing/doc-page.
+
+**Doctor coverage gap.** `site:doctor` reported 0 findings before and
+after this fix — Check 1's contrast model checks solid token pairs, and
+a `background-clip: text` gradient with a dead selector isn't
+representable as one. Not retrofitted into a permanent check here
+(a one-off dead-selector class of bug, not a recurring one); noted as an
+open gap rather than silently left uncovered.
+
 ### Still open
 
 - A full axe-core audit and a manual keyboard pass.
 - Lighthouse performance and CLS are unmeasured.
+- Check 1 cannot see gradient-clip / dead-selector text defects (D12).
 - The four decisions in §8 are still unanswered; §4's recommendations
   were followed for the rune field (dropped) and the demo repo (kept at
   75/100). Fonts remain on Google Fonts, trimmed from ten files to six.
