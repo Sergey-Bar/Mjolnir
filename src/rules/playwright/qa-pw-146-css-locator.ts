@@ -32,7 +32,7 @@ import { lineAt, colAt } from "../shared/positions.js";
  * Excludes text= (a legitimate text engine) and URL-ish strings.
  */
 const STRING_SELECTOR_RE =
-  /\.(?:locator|waitForSelector)\s*\(\s*['"](?!text=|https?:)(?:css=|xpath=|\/{2}|#|\.[-\w]|\[-?[\w-]+=|[^'"]*:nth-child)[^'"]*['"]/g;
+  /\.(?:locator|waitForSelector)\s*\(\s*['"](?!text=|https?:)(?:css=|xpath=|\/{2}|#|\.[-\w]|\[[\w-]+=|[^'"]*:nth-child)[^'"]*['"]/g;
 /** page.$ / page.$$ (raw engine handles, not normalized locators). */
 const RAW_HANDLE_RE = /\bpage\s*\.\s*\$\$?\s*\(\s*['"][^'"]+['"]/g;
 
