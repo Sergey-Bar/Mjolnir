@@ -26,14 +26,14 @@ export const pyBareTruthinessAssert = defineRule({
   detectionStrategy: "LEXICAL",
   introduced: "0.3.0",
   tier: "quarantine",
-  // Phase 2 retune (EVIDENCE-BACKED, detectorRevision 2 — §07): the
-  // measured FP cohort (docs/FP-AUDIT.md, 45% FP n=20) splits into two
-  // clusters, both predicate calls the bare-truthiness diagnosis never
-  // applied to: `assert isinstance(x, T)` type checks (the bool IS the
-  // assertion) and `assert s.startswith(...)`-style string/content
-  // predicates. Both are now skipped. The bare-identifier/attribute
-  // shapes the TPs cite (exception objects, results) still fire.
-  detectorRevision: 2,
+  // Phase 2 retune wave 2 (EVIDENCE-BACKED, detectorRevision 3 — §07):
+  // the rev-2 delta sample extends the predicate vocabulary with the
+  // newly-measured FP shapes: membership/aggregate predicates
+  // (any()/all() over comprehension checks), pytest's path predicates
+  // (p.exists()/p.isdir()/p.check() — the check IS the assertion), mock
+  // bookkeeping (.called), and truthiness followed by a precise assert
+  // in the same test (an existence guard, not the only check).
+  detectorRevision: 3,
 
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;
@@ -45,16 +45,58 @@ export const pyBareTruthinessAssert = defineRule({
 
     // Calls whose return value is a meaningful boolean predicate — the
     // truthiness IS the check, so flagging them as "bare" is wrong.
+    // Wave 2 additions per the rev-2 delta sample: any()/all() aggregates,
+    // pytest path predicates (exists/isdir/check), re.match/search,
+    // isinstance, and string-content predicates.
     const predicateRe =
-      /^(?:isinstance\s*\(|[\w.]*\.(?:startswith|endswith|isdigit|isalpha|isalnum|isnumeric|isdecimal|isspace|islower|isupper|istitle|isidentifier|isprintable|isascii)\s*\()/;
+      /^(?:(?:any|all|isinstance)\s*\(|[\w.]*\.(?:startswith|endswith|exists|isdir|isfile|islink|ismount|check|isdigit|isalpha|isalnum|isnumeric|isdecimal|isspace|islower|isupper|istitle|isidentifier|isprintable|isascii)\s*\(|re\.(?:match|search|fullmatch)\s*\()/;
+
+    // A truthiness assert that is a GUARD followed by real use of the
+    // same value within the SAME test is not the suite's only evidence:
+    // `assert result.exception` + `assert "..." in result.stderr` pins
+    // the failure; `assert copied_text` + `re.match(..., copied_text)`
+    // pins the content. Scoped to the enclosing test body (until the
+    // next `def` or 15 lines) — the measured cluster always pins within
+    // 1-2 lines, and a whole-file scan would let an unrelated later test
+    // suppress a genuine finding.
+    const isGuardFollowedByRealUse = (
+      text: string,
+      matchIndex: number,
+      target: string,
+    ): boolean => {
+      const root = target.split(".")[0] ?? "";
+      if (!/^[A-Z_]\w*$/i.test(root)) return false;
+      // Search strictly AFTER this assert's own line — the line itself
+      // always contains the root and would self-match.
+      const lineEnd = text.indexOf("\n", matchIndex);
+      if (lineEnd === -1) return false;
+      const after = text.slice(lineEnd + 1);
+      // Body window: up to the next def (any indent) or 15 lines.
+      const lines = after.split("\n");
+      const window: string[] = [];
+      for (let i = 0; i < lines.length && window.length < 15; i++) {
+        const l = lines[i] ?? "";
+        if (/^\s*def\s/.test(l) && window.length > 0) break;
+        window.push(l);
+      }
+      const usesRoot = new RegExp(`\\b${root}\\b`);
+      return window.some((l) => usesRoot.test(l));
+    };
 
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {
       const target = m[1] as string;
       // Skip obviously-boolean names (is_/has_/can_ conventions).
       if (/^(?:is|has|can|should|was|were)_/.test(target)) continue;
-      // Skip boolean-predicate calls (Phase 2: the measured FP clusters).
+      // Skip boolean-predicate calls (the measured FP clusters).
       if (predicateRe.test(target)) continue;
+      // Skip mock bookkeeping (`assert mock.called`) — the call record IS
+      // the observable contract.
+      if (/\.called$/.test(target)) continue;
+      // Skip existence guards followed by real use of the same value in
+      // the same test (wave-2 cluster: `assert stdout` then
+      // `stdout.readline()`; `assert copied_text` then re.match).
+      if (isGuardFollowedByRealUse(text, m.index, target)) continue;
       findings.push({
         severity: "warning",
         confidence: "medium",

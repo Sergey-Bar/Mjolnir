@@ -25,15 +25,15 @@ export const pyNoAssertions = defineRule({
   detectionStrategy: "LEXICAL",
   introduced: "0.3.0",
   tier: "quarantine",
-  // Phase 2 retune (EVIDENCE-BACKED, detectorRevision 2 — §07): two
-  // measured FP clusters (docs/FP-AUDIT.md, n=20): (a) the check
-  // vocabulary missed pytest's other assertion entrances —
-  // pytest.warns/pytest.deprecated_call/pytest.fail — now added; (b)
-  // test_* functions invoked as DATA by other code in the same file
-  // (pytester-style runner scripts) — a `test_*` def that is referenced
-  // by name elsewhere in the file is a fixture/helper, not a collected
-  // test, and is skipped.
-  detectorRevision: 2,
+  // Phase 2 retune wave 2 (EVIDENCE-BACKED, detectorRevision 3 — §07):
+  // the rev-2 delta sample (12 FP / 7 TP / 1 UNSURE) splits the FPs:
+  // 7 are helper-name verification (`expect_*`, `wait_for_*` — the
+  // PY-105 cohort), 1 is a nested def (pytest only collects
+  // module-level functions and Test* methods), 3 are pytest doc-example
+  // artifacts (accepted residue), 1 is a callback named test_* (covered
+  // by the nesting skip). Helper-idiom recognition added and collection
+  // scoping narrowed to module-level defs.
+  detectorRevision: 3,
 
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;
@@ -41,9 +41,17 @@ export const pyNoAssertions = defineRule({
     if (!ctx.path.endsWith(".py")) return findings;
 
     // Find `def test_*():` bodies and check for assert/pytest.raises.
-    const fnRe = /^(\s*)def\s+(test_\w+)\s*\([^)]*\)\s*:/gm;
+    // Indent is line-local ([ \t]* — \s would swallow preceding blank
+    // lines and mis-anchor the match); the capture is the nesting check.
+    const fnRe = /^([ \t]*)def\s+(test_\w+)\s*\([^)]*\)\s*:/gm;
     let m: RegExpExecArray | null;
     while ((m = fnRe.exec(text)) !== null) {
+      // Pytest collects module-level functions (and Test* class methods,
+      // which carry self.assert* and are recognized by the vocabulary
+      // below). Nested defs are callbacks/data, never collected tests —
+      // wave-2 delta evidence (a `test_callback` inside call_on_close).
+      const indent = m[1] ?? "";
+      if (indent.length > 0) continue;
       const body = extractBlock(text, m.index + m[0].length);
       if (body === null) continue;
       const hasCheck =
@@ -51,9 +59,14 @@ export const pyNoAssertions = defineRule({
         /^[ \t]*assert\b/m.test(body) ||
         /pytest\.raises/.test(body) ||
         // Phase 2 vocabulary: pytest's other verification entrances.
-        /pytest\.(?:warns|deprecated_call|fail|fail\s*\()/.test(body) ||
+        /pytest\.(?:warns|deprecated_call|fail\s*\()/.test(body) ||
         /self\.assert/.test(body) ||
-        /\bexpect\b/.test(body);
+        /\bexpect\b/.test(body) ||
+        // Wave 2: verification delegated to helpers whose names assert
+        // or wait (the PY-105 cohort — `expect_markdown(app, ...)`,
+        // `wait_for_app_run(app)`, `_expect_no_exception(app)`).
+        /\b_?(?:assert|expect|verify|check)[_A-Z]\w*\s*\(/.test(body) ||
+        /\b_?wait_for_\w+\s*\(/.test(body);
       if (!hasCheck) {
         // Phase 2 data-shape skip: a `test_*` function whose NAME is
         // referenced elsewhere in the file (passed to a runner, stored in

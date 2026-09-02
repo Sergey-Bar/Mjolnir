@@ -858,19 +858,29 @@ export function checkFpRegression(
 ): void {
   if (!existsSync(committedPath)) return;
   const committed = readFileSync(committedPath, "utf8");
-  const prior: Record<string, { fpRate: number; n: number }> = {};
+  const prior: Record<string, { fpRate: number; n: number; rev: number }> = {};
   for (const match of committed.matchAll(
-    /"(QA-[A-Z]+-\d+)":\s*\{\s*fpRate:\s*([\d.]+),\s*n:\s*(\d+)/g,
+    /"(QA-[A-Z]+-\d+)":\s*\{\s*fpRate:\s*([\d.]+),\s*n:\s*(\d+)(?:,\s*detectorRevision:\s*(\d+))?/g,
   )) {
     prior[match[1] ?? ""] = {
       fpRate: Number(match[2]),
       n: Number(match[3]),
+      rev: Number(match[4] ?? 1),
     };
   }
+  // §07 comparability: measurements taken against different detector
+  // revisions are not comparable — a revision mismatch means the
+  // detector changed, which is exactly when the old rate stops
+  // describing the current behavior. Comparing across revisions would
+  // flag (or bless) rates for detectors that no longer exist.
+  const revisions = loadDetectorRevisions();
   const regressions: string[] = [];
   for (const s of computeRuleStats(verdicts)) {
     if (s.classified < MEASURED_THRESHOLD || s.fpRate === null) continue;
-    const r = compareFpMeasurements(prior[s.ruleId], {
+    const p = prior[s.ruleId];
+    if (p === undefined) continue;
+    if (p.rev !== (revisions[s.ruleId] ?? 1)) continue;
+    const r = compareFpMeasurements(p, {
       fpRate: s.fpRate,
       n: s.classified,
     });

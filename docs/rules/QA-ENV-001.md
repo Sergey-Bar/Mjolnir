@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | warning                      |
 | Confidence                            | medium                       |
 | Tier                                  | quarantine                   |
-| Measured FP rate                      | 100% (n=20)                  |
+| Measured FP rate                      | not yet measured             |
 | Evidence level                        | E1                           |
 | QA impact                             | Flaky-test risk (FLAKY-RISK) |
 | False-positive risk (author estimate) | medium                       |
@@ -19,19 +19,19 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 
 ## Why this fails in production
 
-The test assumes a specific host:port is reachable — it breaks on parallel runs, containers, network isolation, or when that host moves.
+Absolute OS paths make the test machine-dependent — it fails on any developer or CI runner with a different filesystem.
 
 ## What gets flagged (real detector output)
 
 ```
-Environment coupling (fixed port): `staging.example.com:8443`.
+Environment coupling (OS path): `"/tmp/cache/session.json"`.
 ```
 
 Example from this rule's own must-fire fixture: `tests/fixtures/QA-ENV-001/must-fire/coupled.spec.ts`
 
 ## The fix
 
-Use the server's resolved base URL from config/test fixtures, or a local fixture container, instead of a hardcoded host:port.
+Use os.tmpdir() / path.join with relative paths inside the test workspace.
 
 ## Confirmed NOT to fire on the corresponding clean pattern
 

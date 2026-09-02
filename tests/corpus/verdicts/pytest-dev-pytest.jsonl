@@ -48,13 +48,58 @@
 {"ruleId":"QA-PY-009","file":"testing/_py/test_local.py","line":80,"verdict":"TP","note":"commented-out test function (test_parents_nonexisting_file) - disabled check rotting in place"}
 {"ruleId":"QA-PY-009","file":"testing/_py/test_local.py","line":140,"verdict":"TP","note":"commented-out test function (test_fnmatch_dir) - disabled check rotting in place"}
 {"ruleId":"QA-PY-009","file":"testing/_py/test_local.py","line":998,"verdict":"TP","note":"commented-out test function (test_parentdirmatch) - disabled check rotting in place"}
-{"ruleId":"QA-PY-003","file":"doc/en/example/assertion/global_testmodule_config/test_hello_world.py","line":5,"verdict":"FP","note":"doc example / collection-fixture script run via pytester, or anchor-adjacent asserts - not assertion-free production tests"}
-{"ruleId":"QA-PY-003","file":"doc/en/example/customdirectory/tests/test_first.py","line":3,"verdict":"FP","note":"doc example / collection-fixture script run via pytester, or anchor-adjacent asserts - not assertion-free production tests"}
-{"ruleId":"QA-PY-003","file":"doc/en/example/customdirectory/tests/test_second.py","line":3,"verdict":"FP","note":"doc example / collection-fixture script run via pytester, or anchor-adjacent asserts - not assertion-free production tests"}
-{"ruleId":"QA-PY-003","file":"doc/en/example/customdirectory/tests/test_third.py","line":3,"verdict":"FP","note":"doc example / collection-fixture script run via pytester, or anchor-adjacent asserts - not assertion-free production tests"}
-{"ruleId":"QA-PY-003","file":"testing/_py/test_local.py","line":461,"verdict":"FP","note":"doc example / collection-fixture script run via pytester, or anchor-adjacent asserts - not assertion-free production tests"}
-{"ruleId":"QA-PY-003","file":"testing/_py/test_local.py","line":1030,"verdict":"FP","note":"doc example / collection-fixture script run via pytester, or anchor-adjacent asserts - not assertion-free production tests"}
 {"ruleId":"QA-PY-002","file":"testing/acceptance_test.py","line":888,"verdict":"TP","note":"non-strict xfail/skip in the pytest suite - dead or deferred test, consistent with the 17 prior verdicts"}
 {"ruleId":"QA-PY-002","file":"testing/acceptance_test.py","line":1654,"verdict":"TP","note":"non-strict xfail/skip in the pytest suite - dead or deferred test, consistent with the 17 prior verdicts"}
 {"ruleId":"QA-PY-002","file":"testing/test_config.py","line":378,"verdict":"TP","note":"non-strict xfail/skip in the pytest suite - dead or deferred test, consistent with the 17 prior verdicts"}
 {"ruleId":"QA-PY-012","file":"testing/_py/test_local.py","line":1260,"verdict":"FP","note":"asserts real state values via custom equality - not a tautology"}
+{"ruleId":"QA-PY-003","file":"doc/en/example/assertion/global_testmodule_config/test_hello_world.py","line":7,"verdict":"FP","note":"pytest documentation example — the pass-only test IS the documented artifact [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-003","file":"doc/en/example/customdirectory/tests/test_first.py","line":5,"verdict":"FP","note":"pytest documentation example [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-003","file":"doc/en/example/customdirectory/tests/test_second.py","line":5,"verdict":"FP","note":"pytest documentation example [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-003","file":"doc/en/example/customdirectory/tests/test_third.py","line":5,"verdict":"FP","note":"pytest documentation example [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-003","file":"testing/code/test_excinfo.py","line":385,"verdict":"FP","note":"asserts via excinfo built from ExceptionInfo.from_current() in the except block — verification exists, vocabulary is not a bare assert token [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-003","file":"testing/example_scripts/collect/collect_init_tests/tests/test_foo.py","line":5,"verdict":"FP","note":"collection fixture script — the parent test asserts the collected outcomes [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-003","file":"testing/example_scripts/collect/package_init_given_as_arg/pkg/test_foo.py","line":5,"verdict":"FP","note":"collection fixture script [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-003","file":"testing/example_scripts/config/collect_pytest_prefix/test_foo.py","line":5,"verdict":"FP","note":"collection fixture script [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-003","file":"testing/example_scripts/customdirectory/tests/test_first.py","line":6,"verdict":"FP","note":"collection fixture script [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-003","file":"testing/example_scripts/customdirectory/tests/test_second.py","line":6,"verdict":"FP","note":"collection fixture script [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-003","file":"testing/example_scripts/customdirectory/tests/test_third.py","line":6,"verdict":"FP","note":"collection fixture script [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-003","file":"testing/example_scripts/fixtures/fill_fixtures/test_conftest_funcargs_only_available_in_subdir/sub1/test_in_sub1.py","line":5,"verdict":"FP","note":"collection fixture script [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-003","file":"testing/example_scripts/fixtures/fill_fixtures/test_conftest_funcargs_only_available_in_subdir/sub2/test_in_sub2.py","line":5,"verdict":"FP","note":"collection fixture script [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-003","file":"testing/example_scripts/fixtures/fill_fixtures/test_funcarg_basic.py","line":17,"verdict":"FP","note":"collection fixture script [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-004","file":"testing/_py/test_local.py","line":182,"verdict":"FP","note":"len() aggregate predicate — verifies non-emptiness (the check IS the assertion) [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-004","file":"testing/_py/test_local.py","line":847,"verdict":"FP","note":"fnmatch content predicate — the truthiness IS the check [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-004","file":"testing/_py/test_local.py","line":878,"verdict":"FP","note":"same fnmatch predicate shape [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-004","file":"testing/_py/test_local.py","line":1102,"verdict":"FP","note":"issubclass type predicate [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-004","file":"testing/_py/test_local.py","line":1178,"verdict":"FP","note":"isimportable membership predicate — the truthiness IS the check [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-004","file":"testing/_py/test_local.py","line":1179,"verdict":"FP","note":"same isimportable predicate shape [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-004","file":"testing/_py/test_local.py","line":1180,"verdict":"FP","note":"same isimportable predicate shape [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-004","file":"testing/_py/test_local.py","line":1181,"verdict":"FP","note":"same isimportable predicate shape [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-004","file":"testing/_py/test_local.py","line":1182,"verdict":"FP","note":"same isimportable predicate shape [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-004","file":"testing/_py/test_local.py","line":1209,"verdict":"FP","note":"samefile path predicate — the truthiness IS the check [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-004","file":"testing/_py/test_local.py","line":1223,"verdict":"TP","note":"bare path-variable truthiness after symlink setup — sole evidence for the object in its test [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-004","file":"testing/_py/test_local.py","line":1291,"verdict":"FP","note":"same fnmatch predicate shape [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-004","file":"testing/acceptance_test.py","line":940,"verdict":"FP","note":"hasplugin() membership predicate — the truthiness IS the check [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-004","file":"testing/code/test_code.py","line":82,"verdict":"TP","note":"co.path bare attribute truthiness — sole evidence for that attribute in its test [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-004","file":"testing/code/test_code.py","line":165,"verdict":"FP","note":"assert False inside try/except — deliberate fail-marker raising AssertionError for excinfo introspection (DATA) [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-004","file":"testing/code/test_code.py","line":168,"verdict":"TP","note":"getrepr() existence check — sole verification that the repr is non-empty; failure-by-crash otherwise [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-004","file":"testing/code/test_code.py","line":181,"verdict":"FP","note":"assert False fail-marker DATA (same introspection fixture shape) [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/_py/test_local.py","line":177,"verdict":"FP","note":"ENOTDIR — the only possible OS error for listdir on a file [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/_py/test_local.py","line":317,"verdict":"FP","note":"TypeError from wrong relto arg type — type IS the assertion [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/_py/test_local.py","line":419,"verdict":"FP","note":"EEXIST — the only possible error for mkdir of an existing dir [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/_py/test_local.py","line":583,"verdict":"FP","note":"ValueError from bad hash algo — single possible error [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/_py/test_local.py","line":623,"verdict":"FP","note":"ENOENT — the only possible error after chdir-removed [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/_py/test_local.py","line":628,"verdict":"FP","note":"ENOENT same shape [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/_py/test_local.py","line":652,"verdict":"FP","note":"ValueError re-raise — propagation IS the assertion [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/_py/test_local.py","line":933,"verdict":"FP","note":"ExecutionFailed/RuntimeError from sysfind of a known command — single possible error [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/_py/test_local.py","line":993,"verdict":"FP","note":"ImportMismatchError — the only possible error for the renamed-dir pyimport scenario [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/_py/test_local.py","line":995,"verdict":"FP","note":"same ImportMismatchError shape [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/_py/test_local.py","line":1019,"verdict":"FP","note":"ImportMismatchError after dir rename — single possible error [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/_py/test_local.py","line":1028,"verdict":"FP","note":"same pyimport mismatch shape [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/_py/test_local.py","line":1134,"verdict":"FP","note":"ImportError from pyimport of a dir — the only possible error [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/_py/test_local.py","line":1144,"verdict":"FP","note":"same pyimport error-contract shape [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/code/test_code.py","line":38,"verdict":"FP","note":"TypeError from Code.from_function(class) — type IS the assertion [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/code/test_excinfo.py","line":483,"verdict":"FP","note":"ValueError rejection contract — type IS the assertion [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/code/test_excinfo.py","line":484,"verdict":"FP","note":"same rejection-contract shape [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/code/test_source.py","line":215,"verdict":"FP","note":"SyntaxError — the only possible error for the malformed-source scenario [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/code/test_source.py","line":416,"verdict":"FP","note":"same malformed-source shape [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/code/test_source.py","line":430,"verdict":"FP","note":"same malformed-source shape [rev-3 delta adjudication 2026-09-02]"}

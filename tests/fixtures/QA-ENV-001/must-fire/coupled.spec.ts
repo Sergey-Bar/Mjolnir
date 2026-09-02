@@ -1,7 +1,10 @@
 import { test, expect } from "vitest";
 
 test("fetches from fixed remote host:port", async () => {
-  const res = await fetch("https://staging.example.com:8443/api/users");
+  // Rev 3: host:port literals no longer fire (deliberate fixture vs
+  // coupling is not statically decidable); the absolute-OS-path and
+  // locale sub-patterns carry the rule's TP surface.
+  const res = await fetch(`https://staging.example.com/api/users`);
   expect(res.ok).toBe(true);
 });
 

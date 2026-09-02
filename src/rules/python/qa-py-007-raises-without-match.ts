@@ -27,15 +27,14 @@ export const pyRaisesWithoutMatch = defineRule({
   detectionStrategy: "LEXICAL",
   introduced: "0.3.0",
   tier: "quarantine",
-  // Phase 2 retune (EVIDENCE-BACKED, detectorRevision 2 — §07): the
-  // dominant measured FP cluster (8 of 13 FPs, docs/FP-AUDIT.md 65%
-  // n=20) is `with pytest.raises(X) as exc_info:` followed by an
-  // assert/expect on `exc_info.value` / `str(exc_info.value)` — the
-  // message IS verified, just without match=. Those are skipped. The
-  // genuinely vague raises blocks (no match=, no excinfo assertion)
-  // still fire. Remaining FP residue: single-possible-exception blocks
-  // ("match= would add no value") are not statically decidable.
-  detectorRevision: 2,
+  // Phase 2 retune wave 2 (EVIDENCE-BACKED, detectorRevision 3 — §07):
+  // the rev-2 delta sample (20/20 FP) shows the excinfo assertion is
+  // not always within a 1600-char window nor on an assert/expect line:
+  // multi-line assert chains and `msg = str(exc_info.value)` followed by
+  // asserts on `msg` also pin the failure. The excinfo skip now scans a
+  // window scaled to the enclosing test body for ANY use of the excinfo
+  // name (assert, expect, or assignment-then-assert).
+  detectorRevision: 3,
 
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;
@@ -51,18 +50,19 @@ export const pyRaisesWithoutMatch = defineRule({
       const args = text.slice(openParen + 1, closeParen);
 
       if (!/\bmatch\s*=/.test(args)) {
-        // excinfo-assertion skip: `as exc_info` + a following assert/expect
-        // on `exc_info.value` (or str(exc_info.value)) pins the failure to
+        // excinfo-assertion skip: `as exc_info` + any downstream USE of
+        // the excinfo name (assert/expect on .value, `msg =
+        // str(exc_info.value)` then assert on msg) pins the failure to
         // the intended cause — the match= diagnosis does not hold.
         const after = text.slice(closeParen, closeParen + 120);
         const asMatch = /as\s+([A-Za-z_]\w*)/.exec(after);
         if (asMatch) {
           const name = asMatch[1] as string;
-          const tail = text.slice(closeParen, m.index + 1600);
-          const excinfoAssert = new RegExp(
-            `(?:assert|expect)[^\\n]{0,120}(?:\\b${name}\\.value|\\bstr\\(${name}\\.value\\))`,
-          ).test(tail);
-          if (excinfoAssert) continue;
+          // Window scaled to a plausible test body; multi-line assert
+          // chains and assignment-then-assert both land inside it.
+          const tail = text.slice(closeParen, m.index + 2400);
+          const uses = new RegExp(`\\b${name}\\b`).test(tail);
+          if (uses) continue;
         }
         findings.push({
           severity: "warning",

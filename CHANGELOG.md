@@ -128,6 +128,49 @@ Tier stays quarantine until re-measurement says otherwise.
   the surviving xpath=/nth-child/absolute-path patterns stay
   quarantine-tier until re-measured.
 
+### Changed — §07 loop closed: rev-3 delta re-measurement (corpus rescans + verdict reconciliation)
+
+The revision-2/3 detectors were re-run over the corpus repos that
+produced the retuned rules' original verdicts, and the committed verdict
+corpus was reconciled to the current detectors (the §07 loop the
+capability matrix calls "re-measure"):
+
+- **Delta method:** every committed row whose finding no longer fires
+  was removed (superseded — it described a pre-retune detector); every
+  NEW finding was adjudicated from source context per
+  `tests/corpus/verdicts/README.md` criteria, with a quota sample of 20
+  per rule on the largest surfaces (QA-PY-004/007) and full coverage on
+  the small ones. Net: 157 rows retired, 71 adjudicated rows appended,
+  1423 → 1337 classified verdicts, measured coverage 78 → **72/91**
+  (the six rules whose remaining classified counts fell below n=10 —
+  QA-PW-102, QA-PY-104, QA-PY-105, QA-ENV-001, QA-JV-106, QA-CS-106 —
+  are now unmeasured at their current revisions; their sidecar entries
+  were removed accordingly and they stay quarantine/extended-tier
+  pending re-measurement).
+- **Re-measured envelopes (rev 3):** QA-PY-003 82% FP (n=17; remaining
+  FPs are pytest doc examples and pytester collection fixtures —
+  accepted residue), QA-PY-004 76% (n=21; remaining FPs are
+  pytest's own predicate-call idiom families: fnmatch/samefile/
+  isimportable membership checks and deliberate `assert False`
+  fail-marker DATA), QA-PY-007 79% (n=34; remaining FPs are
+  single-possible-exception API-error contracts where the raised type
+  IS the assertion — not statically decidable). All three stay
+  quarantine-tier with their detectorRevision 3 stamped in the sidecar
+  and FP-AUDIT; their accepted-residue FP causes are documented in
+  docs/RULE-LIFECYCLE.md's triage table.
+- **QA-PW-102 / QA-PY-105: fully cleared** — 0 findings on the
+  previously-20/20-FP corpus slices at revision 2.
+- **QA-ENV-001 (rev 3):** the wave-2 delta (20/20 FP on the rev-2
+  detector) showed no host shape is statically decidable — the
+  fixed-port sub-pattern is dropped entirely; OS-path, locale, and
+  local-time-getter sub-patterns stay (their remaining 6 findings on
+  vite are path-literal test DATA, adjudicated FP and recorded).
+- **§07 comparability guard:** the FP regression governor
+  (`checkFpRegression`) no longer compares measurements across
+  detectorRevision boundaries — a revision mismatch means the old rate
+  does not describe the current detector, so it is neither flagged nor
+  blessed.
+
 ## [Unreleased] — Verification Trust Evolution, Phase 2 — detectionStrategy enum (D6 closed, scan-behavior-neutral)
 
 ### Changed — D6 enum migration (plan §12.1; metadata-only)
