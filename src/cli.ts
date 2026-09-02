@@ -47,6 +47,10 @@ import { computeChangedScope, filterToChanged } from "./scope/changed.js";
 import { asUniversal } from "./engine/rule-runner.js";
 import { enforceTierPolicy, type Tier } from "./engine/tier-policy.js";
 import { stampRuntimeCorroboration } from "./engine/runtime-corroboration.js";
+import {
+  classifyProvenance,
+  computeAgenticProfile,
+} from "./engine/provenance.js";
 import type { ParsedAst, ParsedFile } from "./engine/adapter.js";
 import { releaseTreeSitterResources } from "./engine/tree-sitter-ast.js";
 import { applyOverlapDedup, type OverlapMeta } from "./engine/overlap-dedup.js";
@@ -338,6 +342,11 @@ export async function runScan(
 
   let tierByRuleId: Map<string, Tier>;
   let pluginsLoaded: Array<{ name: string; rules: number }>;
+  // Plan §17.1: per-file provenance for the Agentic Trust Profile.
+  const fileProvenance: Array<{
+    path: string;
+    provenance: ReturnType<typeof classifyProvenance>;
+  }> = [];
   // R1: dispatch through language adapters. Rules stay unchanged; the
   // adapters own discovery, parsing, and rule application.
   const {
@@ -448,6 +457,12 @@ export async function runScan(
       // score must use a denominator from the files actually judged,
       // not the whole repo.
       declarationsByFile.set(relPath, decls);
+      // Plan §17.1: per-file provenance for the Agentic Trust Profile.
+      // Metadata only (§17.4) — it never affects rules or scoring.
+      fileProvenance.push({
+        path: relPath,
+        provenance: classifyProvenance({ text }),
+      });
     }
     const adapter = isWorkflow
       ? githubActionsAdapter
@@ -649,6 +664,8 @@ export async function runScan(
     rawDeductions,
     suppressionCount,
     ...(pluginsLoaded.length > 0 ? { plugins: pluginsLoaded } : {}),
+    // Plan §17.2: Agentic Trust Profile — provenance metadata only.
+    agenticProfile: computeAgenticProfile(fileProvenance, findings),
     analysisStatus: {
       // Audits H-3/H-8: both fields derive from what actually happened.
       discovery: discoveryTruncated ? "partial" : "complete",

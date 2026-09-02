@@ -240,6 +240,24 @@ export interface ScanResult {
    * when no plugins are configured.
    */
   plugins?: Array<{ name: string; rules: number }>;
+  /**
+   * Agentic Trust Profile (plan §17): per-scan provenance metadata —
+   * share of test files carrying detected generative markers and the
+   * findings split across those surfaces. PROVENANCE IS NOT TRUST: the
+   * profile never changes scoring, evidence levels, or tier behavior
+   * (§17.4 — the same evidence standard applies regardless of author).
+   * Additive within schemaVersion 1; present on every completed scan.
+   */
+  agenticProfile?: {
+    testFiles: number;
+    generatedMarkedFiles: number;
+    codegenLikeFiles: number;
+    /** generatedMarkedFiles / testFiles (0..1). */
+    shareMarkedGenerated: number;
+    findingsInGeneratedFiles: number;
+    findingsInUnmarkedFiles: number;
+    note: string;
+  };
   analysisStatus: {
     discovery: AnalysisStatus;
     rules: AnalysisStatus;

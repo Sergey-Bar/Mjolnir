@@ -11,9 +11,9 @@ tier promotion, never statistical proof: a rule that meets its bar is
 
 ## Summary
 
-- Registry size: **97 rules**
-- Measured (n ≥ 10 classified verdicts at a matching detectorRevision): **73/97 (75%)**
-- Explicit tier declarations: **90/97** — 7 rules resolve via the measurement-dependent omitted-tier default (plan §11.2 Step 2: omitted ⇒ extended/PROVISIONAL unless validly measured)
+- Registry size: **99 rules**
+- Measured (n ≥ 10 classified verdicts at a matching detectorRevision): **73/99 (74%)**
+- Explicit tier declarations: **92/99** — 7 rules resolve via the measurement-dependent omitted-tier default (plan §11.2 Step 2: omitted ⇒ extended/PROVISIONAL unless validly measured)
 - Unmeasured rules in effective core: **0** (Phase 1 exit gate: 0)
 - Declared-vs-measured cross-check: **0 mismatch(es)** (ledger class D9)
 
@@ -105,6 +105,8 @@ Unmeasured rules currently sitting in effective core (D3 — closed in Phase 1: 
 | QA-PW-143    | No screenshot/video capture on failure                           | QA-PW    | typescript, javascript | playwright                       | LEXICAL                   | Low            | yes      | 25%          | 20           | 20          | 4                | UNCLASSIFIED      | high       | extended                       | MEASURED-EXTENDED   | UNCLASSIFIED      | UNCLASSIFIED          |
 | QA-PW-144    | Single-browser project matrix                                    | QA-PW    | typescript, javascript | playwright                       | LEXICAL                   | Low            | yes      | 15%          | 20           | 20          | 9                | UNCLASSIFIED      | high       | extended                       | MEASURED-EXTENDED   | UNCLASSIFIED      | UNCLASSIFIED          |
 | QA-PW-145    | UI suite without accessibility assertions                        | QA-PW    | typescript, javascript | playwright                       | LEXICAL                   | Low            | yes      | 100%         | 20           | 20          | 2                | UNCLASSIFIED      | low        | quarantine                     | MEASURED-QUARANTINE | UNCLASSIFIED      | UNCLASSIFIED          |
+| QA-PW-146    | CSS/XPath string selector instead of a normalized locator        | QA-PW    | typescript, javascript | playwright                       | LEXICAL                   | Low            | no       | UNCLASSIFIED | UNCLASSIFIED | 0           | 0                | UNCLASSIFIED      | medium     | quarantine                     | UNMEASURED          | UNCLASSIFIED      | UNCLASSIFIED          |
+| QA-PW-147    | Playwright codegen default test title (recording artifact)       | QA-PW    | typescript, javascript | playwright                       | LEXICAL                   | Low            | no       | UNCLASSIFIED | UNCLASSIFIED | 0           | 0                | UNCLASSIFIED      | medium     | quarantine                     | UNMEASURED          | UNCLASSIFIED      | UNCLASSIFIED          |
 | QA-PY-001    | Focused test committed                                           | QA-TEST  | python                 | pytest                           | LEXICAL                   | Low            | yes      | 0%           | 12           | 12          | 1                | UNCLASSIFIED      | high       | core                           | MEASURED-CORE       | UNCLASSIFIED      | UNCLASSIFIED          |
 | QA-PY-002    | Skipped test                                                     | QA-TEST  | python                 | pytest                           | LEXICAL                   | Low            | yes      | 4%           | 23           | 23          | 2                | UNCLASSIFIED      | high       | core                           | MEASURED-CORE       | UNCLASSIFIED      | UNCLASSIFIED          |
 | QA-PY-003    | Test function with no assertions                                 | QA-TEST  | python                 | pytest                           | LEXICAL                   | Low            | yes      | 82%          | 17           | 17          | 2                | UNCLASSIFIED      | high       | quarantine                     | MEASURED-QUARANTINE | UNCLASSIFIED      | UNCLASSIFIED          |
@@ -154,8 +156,8 @@ Unmeasured rules currently sitting in effective core (D3 — closed in Phase 1: 
 
 The reference state every ratchet measures against:
 
-- Registry: 97 rules, 0 retired ID(s) reserved (docs/RULE-LIFECYCLE.md).
-- Measured coverage: 73/97 (per-rule detail above; authoritative rates in `docs/FP-AUDIT.md`).
+- Registry: 99 rules, 0 retired ID(s) reserved (docs/RULE-LIFECYCLE.md).
+- Measured coverage: 73/99 (per-rule detail above; authoritative rates in `docs/FP-AUDIT.md`).
 - Declared-vs-measured mismatches: 0.
 - Locked reference artifacts: `tests/golden/golden-expected.json` (golden lock), `docs/COUNT-LOCK.md` (corpus count lock), `docs/FP-AUDIT.md` (measured rates), `assets/readme/*` (demo/docs reproducibility).
 

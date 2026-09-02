@@ -598,6 +598,32 @@ function appendFooter(
     }
   }
 
+  // Plan §17.2: Agentic Trust Profile — provenance metadata, surfaced
+  // honestly (static markers only; never a trust verdict). Only when
+  // something was actually detected — silence over noise.
+  const profile = result.agenticProfile;
+  if (
+    profile &&
+    (profile.generatedMarkedFiles > 0 || profile.codegenLikeFiles > 0)
+  ) {
+    const parts: string[] = [];
+    if (profile.generatedMarkedFiles > 0) {
+      parts.push(
+        `${profile.generatedMarkedFiles} generated-marked file${profile.generatedMarkedFiles === 1 ? "" : "s"}`,
+      );
+    }
+    if (profile.codegenLikeFiles > 0) {
+      parts.push(
+        `${profile.codegenLikeFiles} codegen-like file${profile.codegenLikeFiles === 1 ? "" : "s"}`,
+      );
+    }
+    lines.push(
+      p.dim(
+        `  Agentic provenance: ${parts.join(", ")} of ${profile.testFiles} test files (static markers only — provenance is metadata, not trust).`,
+      ),
+    );
+  }
+
   // Audit S-8: third-party plugin code executed during this scan must be
   // visible to anyone reading the report — plugin rules run with full
   // Node privileges by documented design.

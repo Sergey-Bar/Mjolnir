@@ -65,6 +65,8 @@ import { pwBlanketRouteMock } from "./playwright/qa-pw-142-blanket-route.js";
 import { pwNoFailureArtifacts } from "./playwright/qa-pw-143-no-artifacts.js";
 import { pwSingleBrowserMatrix } from "./playwright/qa-pw-144-single-browser.js";
 import { pwNoA11yAssertions } from "./playwright/qa-pw-145-no-a11y.js";
+import { pwLocatorNormalize } from "./playwright/qa-pw-146-css-locator.js";
+import { pwCodegenArtifact } from "./playwright/qa-pw-147-codegen-artifact.js";
 import { pyPwSyncAsyncMix } from "./python/qa-py-101-sync-async-mix.js";
 import { pyPwHardSleep } from "./python/qa-py-102-pw-hard-sleep.js";
 import { pyPwWaitForTimeout } from "./python/qa-py-103-wait-for-timeout.js";
@@ -154,6 +156,11 @@ export const RULES: readonly QADoctorRule[] = [
   pwNoFailureArtifacts,
   pwSingleBrowserMatrix,
   pwNoA11yAssertions,
+  // Phase 7 — Agentic QA Trust (plan §17.3): framework-standards rules
+  // aligned with Playwright's locator.normalize() standard + provenance
+  // detection. BORN QUARANTINE until measured.
+  pwLocatorNormalize,
+  pwCodegenArtifact,
   pyPwSyncAsyncMix,
   pyPwHardSleep,
   pyPwWaitForTimeout,

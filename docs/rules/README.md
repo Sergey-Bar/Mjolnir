@@ -70,6 +70,8 @@ One page per rule, each showing a real detected example, the fix, confirmation o
 | [QA-PW-143](./QA-PW-143.md)       | No screenshot/video capture on failure                           | info     |
 | [QA-PW-144](./QA-PW-144.md)       | Single-browser project matrix                                    | info     |
 | [QA-PW-145](./QA-PW-145.md)       | UI suite without accessibility assertions                        | info     |
+| [QA-PW-146](./QA-PW-146.md)       | CSS/XPath string selector instead of a normalized locator        | warning  |
+| [QA-PW-147](./QA-PW-147.md)       | Playwright codegen default test title (recording artifact)       | info     |
 | [QA-PY-001](./QA-PY-001.md)       | Focused test committed                                           | error    |
 | [QA-PY-002](./QA-PY-002.md)       | Skipped test                                                     | warning  |
 | [QA-PY-003](./QA-PY-003.md)       | Test function with no assertions                                 | error    |
