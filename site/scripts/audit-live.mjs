@@ -25,7 +25,7 @@
 import { createServer } from "node:http";
 import { gzipSync } from "node:zlib";
 import { readFileSync, existsSync, statSync } from "node:fs";
-import { join, dirname, extname } from "node:path";
+import { join, dirname, extname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -58,8 +58,13 @@ function serve(port) {
       p === "" || p.endsWith("/")
         ? [p + "index.html"]
         : [p, p + ".html", p + "/index.html"];
+    const root = resolve(DIST);
     for (const t of tries) {
-      const f = join(DIST, t);
+      // Confine the resolved path to dist/. The request path is attacker
+      // controlled in principle (`GET /Mjolnir/../../../etc/passwd`), and
+      // "it only ever runs locally" is not a reason to write the bug.
+      const f = resolve(DIST, t);
+      if (f !== root && !f.startsWith(root + sep)) continue;
       if (existsSync(f) && statSync(f).isFile()) {
         const type = MIME[extname(f)] ?? "application/octet-stream";
         const body = readFileSync(f);

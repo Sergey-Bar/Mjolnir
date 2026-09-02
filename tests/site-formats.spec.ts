@@ -19,10 +19,20 @@ const SVG_PATH = join(ASSETS, "terminal-hero.svg");
 const JSON_PATH = join(ASSETS, "demo-report.json");
 const SARIF_PATH = join(ASSETS, "demo-report.sarif");
 
+/** Strips markup to a fixpoint; one pass can leave a tag on nested input. */
+function stripTags(s: string): string {
+  let prev: string;
+  do {
+    prev = s;
+    s = s.replace(/<[^>]*>/g, "");
+  } while (s !== prev);
+  return s;
+}
+
 /** The score the terminal capture actually shows a reader. */
 function scoreFromSvg(svg: string): number {
   const text = [...svg.matchAll(/<text\b[^>]*>([\s\S]*?)<\/text>/g)]
-    .map((m) => (m[1] ?? "").replace(/<[^>]+>/g, ""))
+    .map((m) => stripTags(m[1] ?? ""))
     .join("\n");
   const m = /WORTHINESS\s+(\d+)\/100/.exec(text);
   if (!m?.[1]) throw new Error("no WORTHINESS line in terminal-hero.svg");

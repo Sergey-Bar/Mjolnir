@@ -43,6 +43,20 @@ const BLOB = "https://github.com/Sergey-Bar/Mjolnir/blob/main/assets/readme/";
 const OUT_DIR = join(SITE, ".vitepress", "theme", "generated");
 const OUT = join(OUT_DIR, "report.json");
 
+/**
+ * Strips markup repeatedly until the result stops changing. A single
+ * pass of /<[^>]+>/ can leave a tag behind on crafted or nested input
+ * ("<<a>script>"), which is why CodeQL flags the one-pass form.
+ */
+export function stripTags(s) {
+  let prev;
+  do {
+    prev = s;
+    s = s.replace(/<[^>]*>/g, "");
+  } while (s !== prev);
+  return s;
+}
+
 /** Reverses the escaping applied by `scripts/readme-svg.ts`'s escapeXml. */
 export function decodeXml(s) {
   return s
@@ -99,7 +113,7 @@ export function svgToLines(svg) {
         /<tspan\b[^>]*\bfill="([^"]*)"[^>]*>([\s\S]*?)<\/tspan>/g,
       ),
     ].map((s) => ({ t: decodeXml(s[2]), c: normalizeColor(s[1]) }));
-    const plain = decodeXml(m[2].replace(/<[^>]+>/g, ""));
+    const plain = decodeXml(stripTags(m[2]));
 
     if (!Number.isFinite(y) || y < PAD_TOP) {
       if (!title) title = plain.trim();
