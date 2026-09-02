@@ -3,8 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "gen": "node scripts/gen-rules.mjs",
+    "gen": "node scripts/gen-rules.mjs && node scripts/gen-report.mjs",
     "test": "node --test \"scripts/*.test.mjs\"",
+    "doctor": "node scripts/site-doctor.mjs",
     "predev": "npm run gen",
     "dev": "vitepress dev",
     "prebuild": "npm run gen",

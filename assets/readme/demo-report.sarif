@@ -1,0 +1,783 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Mjölnir",
+          "informationUri": "https://github.com/Sergey-Bar/Mjolnir",
+          "version": "0.5.0",
+          "rules": [
+            {
+              "id": "QA-CI-009",
+              "shortDescription": {
+                "text": "Job `test` pipes the test command into another tool without `set -o pipefail`."
+              },
+              "properties": {
+                "falsePositiveRisk": "low"
+              }
+            },
+            {
+              "id": "QA-CI-010",
+              "shortDescription": {
+                "text": "Job `deploy-smoke` runs tests but its `if:` condition skips it on pull requests."
+              },
+              "properties": {
+                "falsePositiveRisk": "medium"
+              }
+            },
+            {
+              "id": "QA-CI-001",
+              "shortDescription": {
+                "text": "Job `security-scan` runs a verification gate under `continue-on-error: true`."
+              },
+              "properties": {
+                "falsePositiveRisk": "low"
+              }
+            },
+            {
+              "id": "QA-PW-145",
+              "shortDescription": {
+                "text": "UI-interacting spec file contains no accessibility assertions."
+              },
+              "properties": {
+                "falsePositiveRisk": "high"
+              }
+            },
+            {
+              "id": "QA-PW-103",
+              "shortDescription": {
+                "text": "`goto(\"/checkout\")` without an explicit timeout."
+              },
+              "properties": {
+                "falsePositiveRisk": "high"
+              }
+            },
+            {
+              "id": "QA-PW-004",
+              "shortDescription": {
+                "text": "Brittle multi-class CSS selector: `locator(\".btn.btn-primary > div:nth-child(2)\""
+              },
+              "properties": {
+                "falsePositiveRisk": "medium"
+              }
+            },
+            {
+              "id": "QA-PW-101",
+              "shortDescription": {
+                "text": "`waitForTimeout()` hard sleep."
+              },
+              "properties": {
+                "falsePositiveRisk": "low"
+              }
+            },
+            {
+              "id": "QA-TEST-002",
+              "shortDescription": {
+                "text": "Skipped test without justification: `test.skip(`."
+              },
+              "properties": {
+                "falsePositiveRisk": "medium"
+              }
+            },
+            {
+              "id": "QA-PW-123",
+              "shortDescription": {
+                "text": "Hardcoded URL: `goto(\"https://staging.example.com/login\"`."
+              },
+              "properties": {
+                "falsePositiveRisk": "low"
+              }
+            },
+            {
+              "id": "QA-PW-118",
+              "shortDescription": {
+                "text": "`waitForLoadState('networkidle')` used."
+              },
+              "properties": {
+                "falsePositiveRisk": "high"
+              }
+            },
+            {
+              "id": "QA-PW-122",
+              "shortDescription": {
+                "text": "playwright.config has no `trace` capture setting."
+              },
+              "properties": {
+                "falsePositiveRisk": "low"
+              }
+            },
+            {
+              "id": "QA-PW-143",
+              "shortDescription": {
+                "text": "playwright.config captures neither screenshots nor video on failure."
+              },
+              "properties": {
+                "falsePositiveRisk": "low"
+              }
+            },
+            {
+              "id": "QA-PW-141",
+              "shortDescription": {
+                "text": "retries: undefined with no visible flake-triage loop."
+              },
+              "properties": {
+                "falsePositiveRisk": "low"
+              }
+            },
+            {
+              "id": "QA-PY-003",
+              "shortDescription": {
+                "text": "Test `test_checkout_endpoint_responds` contains no assertions."
+              },
+              "properties": {
+                "falsePositiveRisk": "low"
+              }
+            },
+            {
+              "id": "QA-PY-005",
+              "shortDescription": {
+                "text": "Hard sleep: `time.sleep(2…`."
+              },
+              "properties": {
+                "falsePositiveRisk": "low"
+              }
+            }
+          ]
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "results": [
+        {
+          "ruleId": "QA-CI-009",
+          "level": "error",
+          "message": {
+            "text": "Job `test` pipes the test command into another tool without `set -o pipefail`. — In a shell pipeline only the last command's exit code counts — a failing test run is masked by the downstream tool succeeding. Fix: Add `shell: bash` with `set -o pipefail`, or split into two steps so the test command's exit code is preserved."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".github/workflows/ci.yml"
+                },
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "error",
+            "confidence": "high",
+            "qaImpact": "FALSE-GREEN",
+            "evidenceLevel": "E2"
+          }
+        },
+        {
+          "ruleId": "QA-CI-009",
+          "level": "error",
+          "message": {
+            "text": "Job `deploy-smoke` sequences commands with `; ` after the test command — the test result does not fail the step. — With `;` sequencing the step's exit status comes from the last command only, so failed tests still yield a green checkmark. Fix: Chain with `&&` instead of `;` so a test failure fails the step."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".github/workflows/ci.yml"
+                },
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "error",
+            "confidence": "medium",
+            "qaImpact": "FALSE-GREEN",
+            "evidenceLevel": "E2"
+          }
+        },
+        {
+          "ruleId": "QA-CI-010",
+          "level": "note",
+          "message": {
+            "text": "Job `deploy-smoke` runs tests but its `if:` condition skips it on pull requests. — If this job is a required check, PRs can satisfy it while zero tests executed — the green checkmark verifies nothing. Fix: Remove the skip-on-PR condition, or split into a dedicated PR test job and require THAT one in branch protection."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".github/workflows/ci.yml"
+                },
+                "region": {
+                  "startLine": 21,
+                  "startColumn": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "medium",
+            "qaImpact": "FALSE-GREEN",
+            "evidenceLevel": "E0"
+          }
+        },
+        {
+          "ruleId": "QA-CI-009",
+          "level": "error",
+          "message": {
+            "text": "Job `deploy-smoke` pipes the test command into another tool without `set -o pipefail`. — In a shell pipeline only the last command's exit code counts — a failing test run is masked by the downstream tool succeeding. Fix: Add `shell: bash` with `set -o pipefail`, or split into two steps so the test command's exit code is preserved."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".github/workflows/ci.yml"
+                },
+                "region": {
+                  "startLine": 26,
+                  "startColumn": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "error",
+            "confidence": "high",
+            "qaImpact": "FALSE-GREEN",
+            "evidenceLevel": "E2"
+          }
+        },
+        {
+          "ruleId": "QA-CI-001",
+          "level": "note",
+          "message": {
+            "text": "Job `security-scan` runs a verification gate under `continue-on-error: true`. — This job can fail every day and CI will still show green. The checkmark on this workflow cannot be trusted. Fix: Remove continue-on-error, or scope it to individual non-blocking steps only."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".github/workflows/ci.yml"
+                },
+                "region": {
+                  "startLine": 27,
+                  "startColumn": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "high",
+            "qaImpact": "FALSE-GREEN",
+            "evidenceLevel": "E0"
+          }
+        },
+        {
+          "ruleId": "QA-PW-145",
+          "level": "note",
+          "message": {
+            "text": "UI-interacting spec file contains no accessibility assertions. — Suites that drive the UI but never assert accessibility let WCAG regressions through every PR; catching them at the point of interaction is far cheaper than a retrofit audit. Fix: Add `@axe-core/playwright` with `expect(await new AxeBuilder({ page }).analyze()).toHaveNoViolations()` on key pages, or snapshot aria snapshots."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "e2e/checkout.spec.ts"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "low",
+            "qaImpact": "HYGIENE",
+            "evidenceLevel": "E0"
+          }
+        },
+        {
+          "ruleId": "QA-PW-103",
+          "level": "note",
+          "message": {
+            "text": "`goto(\"/checkout\")` without an explicit timeout. — Magic-default timeouts make failures opaque (was it slow, or broken?) and never encode the product's actual performance budget. Fix: Pass `{ timeout: <budget-ms> }` matching your performance SLO, or set actionTimeout/navigationTimeout deliberately in config."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "e2e/checkout.spec.ts"
+                },
+                "region": {
+                  "startLine": 4,
+                  "startColumn": 14
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "low",
+            "qaImpact": "HYGIENE",
+            "evidenceLevel": "E0"
+          }
+        },
+        {
+          "ruleId": "QA-PW-004",
+          "level": "note",
+          "message": {
+            "text": "Brittle multi-class CSS selector: `locator(\".btn.btn-primary > div:nth-child(2)\")`. — Structural selectors break on any DOM refactor and fail without telling you which behavior regressed. Fix: Prefer role-based locators: getByRole(), getByText(), getByLabel()."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "e2e/checkout.spec.ts"
+                },
+                "region": {
+                  "startLine": 5,
+                  "startColumn": 14
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "medium",
+            "qaImpact": "HYGIENE",
+            "evidenceLevel": "E0"
+          }
+        },
+        {
+          "ruleId": "QA-PW-101",
+          "level": "error",
+          "message": {
+            "text": "`waitForTimeout()` hard sleep. — Fixed waits either wait too long (slow suite) or too little (flaky on slow machines). They encode hope, not synchronization. Fix: Replace with a web-first assertion (`await expect(locator).toBeVisible()`) or `locator.waitFor()`."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "e2e/checkout.spec.ts"
+                },
+                "region": {
+                  "startLine": 6,
+                  "startColumn": 14
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "error",
+            "confidence": "high",
+            "qaImpact": "FLAKY-RISK",
+            "evidenceLevel": "E2"
+          }
+        },
+        {
+          "ruleId": "QA-PW-103",
+          "level": "note",
+          "message": {
+            "text": "`goto(\"/checkout\")` without an explicit timeout. — Magic-default timeouts make failures opaque (was it slow, or broken?) and never encode the product's actual performance budget. Fix: Pass `{ timeout: <budget-ms> }` matching your performance SLO, or set actionTimeout/navigationTimeout deliberately in config."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "e2e/checkout.spec.ts"
+                },
+                "region": {
+                  "startLine": 11,
+                  "startColumn": 14
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "low",
+            "qaImpact": "HYGIENE",
+            "evidenceLevel": "E0"
+          }
+        },
+        {
+          "ruleId": "QA-TEST-002",
+          "level": "note",
+          "message": {
+            "text": "Skipped test without justification: `test.skip(`. — Skipped tests hide broken or unimplemented behavior behind a green checkmark. Fix: Fix and re-enable the test, or delete it with a tracked issue reference."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "e2e/checkout.spec.ts"
+                },
+                "region": {
+                  "startLine": 16,
+                  "startColumn": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "high",
+            "qaImpact": "FALSE-GREEN",
+            "evidenceLevel": "E0"
+          }
+        },
+        {
+          "ruleId": "QA-PW-103",
+          "level": "note",
+          "message": {
+            "text": "`goto(\"/checkout\")` without an explicit timeout. — Magic-default timeouts make failures opaque (was it slow, or broken?) and never encode the product's actual performance budget. Fix: Pass `{ timeout: <budget-ms> }` matching your performance SLO, or set actionTimeout/navigationTimeout deliberately in config."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "e2e/checkout.spec.ts"
+                },
+                "region": {
+                  "startLine": 17,
+                  "startColumn": 14
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "low",
+            "qaImpact": "HYGIENE",
+            "evidenceLevel": "E0"
+          }
+        },
+        {
+          "ruleId": "QA-PW-145",
+          "level": "note",
+          "message": {
+            "text": "UI-interacting spec file contains no accessibility assertions. — Suites that drive the UI but never assert accessibility let WCAG regressions through every PR; catching them at the point of interaction is far cheaper than a retrofit audit. Fix: Add `@axe-core/playwright` with `expect(await new AxeBuilder({ page }).analyze()).toHaveNoViolations()` on key pages, or snapshot aria snapshots."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "e2e/login.spec.ts"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "low",
+            "qaImpact": "HYGIENE",
+            "evidenceLevel": "E0"
+          }
+        },
+        {
+          "ruleId": "QA-PW-103",
+          "level": "note",
+          "message": {
+            "text": "`goto(\"https://staging.example.com/login\")` without an explicit timeout. — Magic-default timeouts make failures opaque (was it slow, or broken?) and never encode the product's actual performance budget. Fix: Pass `{ timeout: <budget-ms> }` matching your performance SLO, or set actionTimeout/navigationTimeout deliberately in config."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "e2e/login.spec.ts"
+                },
+                "region": {
+                  "startLine": 4,
+                  "startColumn": 14
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "low",
+            "qaImpact": "HYGIENE",
+            "evidenceLevel": "E0"
+          }
+        },
+        {
+          "ruleId": "QA-PW-123",
+          "level": "note",
+          "message": {
+            "text": "Hardcoded URL: `goto(\"https://staging.example.com/login\"`. — Specs pointing at absolute URLs break when environments change and can hit production by accident. Fix: Use relative paths with baseURL from playwright.config, or an env variable."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "e2e/login.spec.ts"
+                },
+                "region": {
+                  "startLine": 4,
+                  "startColumn": 14
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "high",
+            "qaImpact": "HYGIENE",
+            "evidenceLevel": "E0"
+          }
+        },
+        {
+          "ruleId": "QA-PW-118",
+          "level": "note",
+          "message": {
+            "text": "`waitForLoadState('networkidle')` used. — Network idle is unreliable — background requests, analytics, and websockets make it never fire or fire randomly. Fix: Wait for a specific element or response: `page.waitForResponse()` or `expect(locator).toBeVisible()`."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "e2e/login.spec.ts"
+                },
+                "region": {
+                  "startLine": 5,
+                  "startColumn": 14
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "high",
+            "qaImpact": "FLAKY-RISK",
+            "evidenceLevel": "E0"
+          }
+        },
+        {
+          "ruleId": "QA-PW-103",
+          "level": "note",
+          "message": {
+            "text": "`goto(\"https://staging.example.com/\")` without an explicit timeout. — Magic-default timeouts make failures opaque (was it slow, or broken?) and never encode the product's actual performance budget. Fix: Pass `{ timeout: <budget-ms> }` matching your performance SLO, or set actionTimeout/navigationTimeout deliberately in config."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "e2e/login.spec.ts"
+                },
+                "region": {
+                  "startLine": 11,
+                  "startColumn": 14
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "low",
+            "qaImpact": "HYGIENE",
+            "evidenceLevel": "E0"
+          }
+        },
+        {
+          "ruleId": "QA-PW-123",
+          "level": "note",
+          "message": {
+            "text": "Hardcoded URL: `goto(\"https://staging.example.com/\"`. — Specs pointing at absolute URLs break when environments change and can hit production by accident. Fix: Use relative paths with baseURL from playwright.config, or an env variable."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "e2e/login.spec.ts"
+                },
+                "region": {
+                  "startLine": 11,
+                  "startColumn": 14
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "high",
+            "qaImpact": "HYGIENE",
+            "evidenceLevel": "E0"
+          }
+        },
+        {
+          "ruleId": "QA-PW-122",
+          "level": "warning",
+          "message": {
+            "text": "playwright.config has no `trace` capture setting. — A test that fails once and passes on retry is exactly the case you'll need evidence for later — with no trace, the flake is uninvestigable. Fix: Add `use: { trace: 'on-first-retry' }` to the config."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "playwright.config.ts"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "warning",
+            "confidence": "high",
+            "qaImpact": "FALSE-GREEN",
+            "evidenceLevel": "E2"
+          }
+        },
+        {
+          "ruleId": "QA-PW-143",
+          "level": "note",
+          "message": {
+            "text": "playwright.config captures neither screenshots nor video on failure. — Once the CI runner is gone, a failed UI test is just a stack trace. Screenshots/video on failure turn 'cannot reproduce' into a five-second diagnosis. Fix: Add `use: { screenshot: 'only-on-failure', video: 'retain-on-failure' }` to the config."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "playwright.config.ts"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "high",
+            "qaImpact": "HYGIENE",
+            "evidenceLevel": "E2"
+          }
+        },
+        {
+          "ruleId": "QA-PW-141",
+          "level": "warning",
+          "message": {
+            "text": "retries: undefined with no visible flake-triage loop. — Retries convert intermittent failures into silent passes. Without a forensics/triage step consuming retry data, flaky tests pass forever and real regressions hide behind lucky reruns. Fix: Keep retries <= 2 and feed retry outcomes into `mjolnir forensics`/`triage`, or add a reporter so flaky passes are reviewed."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "playwright.config.ts"
+                },
+                "region": {
+                  "startLine": 5,
+                  "startColumn": 3
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "warning",
+            "confidence": "high",
+            "qaImpact": "FALSE-GREEN",
+            "evidenceLevel": "E1"
+          }
+        },
+        {
+          "ruleId": "QA-PY-003",
+          "level": "note",
+          "message": {
+            "text": "Test `test_checkout_endpoint_responds` contains no assertions. — Without an assertion the test can only fail by crashing — it cannot detect behavioral regressions. Fix: Add an `assert` on the expected outcome, or remove the test."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "tests/test_checkout_api.py"
+                },
+                "region": {
+                  "startLine": 6,
+                  "startColumn": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "high",
+            "qaImpact": "FALSE-GREEN",
+            "evidenceLevel": "E0"
+          }
+        },
+        {
+          "ruleId": "QA-PY-005",
+          "level": "warning",
+          "message": {
+            "text": "Hard sleep: `time.sleep(2…`. — Fixed sleeps make tests slow and flaky — they guess at timing instead of waiting for state. Fix: Wait for an explicit condition (polling helper, pytest-timeout wait_until, or event)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "tests/test_checkout_api.py"
+                },
+                "region": {
+                  "startLine": 7,
+                  "startColumn": 5
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "warning",
+            "confidence": "high",
+            "qaImpact": "FLAKY-RISK",
+            "evidenceLevel": "E2"
+          }
+        },
+        {
+          "ruleId": "QA-PY-003",
+          "level": "note",
+          "message": {
+            "text": "Test `test_refund_endpoint_accepts_request` contains no assertions. — Without an assertion the test can only fail by crashing — it cannot detect behavioral regressions. Fix: Add an `assert` on the expected outcome, or remove the test."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "tests/test_checkout_api.py"
+                },
+                "region": {
+                  "startLine": 12,
+                  "startColumn": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "high",
+            "qaImpact": "FALSE-GREEN",
+            "evidenceLevel": "E0"
+          }
+        }
+      ]
+    }
+  ]
+}

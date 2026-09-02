@@ -106,7 +106,7 @@ export function definePatternFamily(
       id: v.id,
       category: opts.category as QADoctorRule["category"],
       title: opts.title,
-      severity: (v.severity ?? opts.severity),
+      severity: v.severity ?? opts.severity,
       confidence: opts.confidence,
       findingType: opts.findingType,
       qaImpact: opts.qaImpact,
