@@ -35,6 +35,8 @@
     "docs:rules": "tsx scripts/generate-rule-docs.ts",
     "docs:capability": "tsx scripts/generate-capability-matrix.ts",
     "docs:hero": "tsx scripts/generate-readme-hero.ts",
+    "docs:formats": "tsx scripts/generate-site-formats.ts",
+    "site:doctor": "npm --prefix site run doctor",
     "docs:demo": "tsx scripts/generate-readme-demo.ts",
     "self-scan": "node dist/cli.mjs .",
     "prepare": "husky",

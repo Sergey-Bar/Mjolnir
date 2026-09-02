@@ -44,6 +44,14 @@ jobs:
       - name: Build site
         working-directory: site
         run: npm run build
+      # The site's own quality gate (site/scripts/site-doctor.mjs), and it
+      # blocks: any new contrast, asset-budget, motion, typed-claim, no-JS,
+      # accessibility or dead-link regression fails the job instead of
+      # shipping. It runs AFTER the build because Checks 6 and 7 read the
+      # built HTML — without dist/ they report a gap rather than a pass.
+      - name: Site doctor
+        working-directory: site
+        run: npm run doctor
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:

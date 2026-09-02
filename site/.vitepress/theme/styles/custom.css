@@ -59,7 +59,12 @@ body {
   border-top: 1px solid var(--vp-c-divider);
 }
 .vp-doc h2::before {
-  content: "ᛏ";
+  /* The empty alt text after the slash keeps the rune decorative: CSS
+     generated content is announced by several screen readers, so without
+     it every heading on every docs page was read as "Tiwaz <heading>"
+     (plan §2, D8). Supported in current Chrome, Safari and Firefox;
+     older engines ignore the alt and fall back to today's behaviour. */
+  content: "ᛏ" / "";
   font-family: var(--mj-display);
   color: var(--vp-c-brand-1);
   margin-right: 0.55rem;
@@ -133,4 +138,18 @@ body {
 .VPFooter {
   border-top: 1px solid var(--vp-c-divider);
   background: var(--vp-c-bg-alt);
+}
+
+/* ---- focus: one visible state, everywhere ------------------------ */
+/* The default theme leaves several controls with only the UA outline,
+   which disappears entirely against the dark hero. Keyboard users get
+   the same affordance on every surface (plan §4, Phase 6). */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--mj-aurora, #37bda9);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+.mj-landing .VPNavBar :focus-visible,
+.hero :focus-visible {
+  outline-color: var(--mj-gold-bright, #e6bd57);
 }

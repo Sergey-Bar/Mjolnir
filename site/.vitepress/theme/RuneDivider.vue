@@ -16,7 +16,7 @@ withDefaults(defineProps<{ rune?: string }>(), { rune: "ᛏ" });
   align-items: center;
   gap: 1.1rem;
   width: min(680px, 82%);
-  margin: 3.5rem auto;
+  margin: 2.4rem auto;
   color: var(--vp-c-text-3);
 }
 .line {

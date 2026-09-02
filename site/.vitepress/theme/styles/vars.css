@@ -6,9 +6,9 @@
 
 :root {
   /* ---- brand accent: forge gold ---- */
-  --vp-c-brand-1: #a5811c;
-  --vp-c-brand-2: #8a6d1e;
-  --vp-c-brand-3: #6f5717;
+  --vp-c-brand-1: #7a5f19;
+  --vp-c-brand-2: #6f5717;
+  --vp-c-brand-3: #5c4813;
   --vp-c-brand-soft: rgba(201, 162, 39, 0.13);
 
   /* ---- light surface: cold white ---- */
@@ -18,7 +18,7 @@
   --vp-c-bg-elv: #ffffff;
   --vp-c-text-1: #0f1420;
   --vp-c-text-2: #48515f;
-  --vp-c-text-3: #6e7a8c;
+  --vp-c-text-3: #5c6675;
   --vp-c-divider: rgba(20, 27, 43, 0.1);
   --vp-c-border: rgba(20, 27, 43, 0.14);
   --vp-c-gutter: rgba(20, 27, 43, 0.07);
@@ -58,14 +58,14 @@
    * score contexts. */
   --mj-critical: var(--mj-unworthy);
   --mj-warning: var(--mj-needswork);
-  --mj-trusted: #2596a8;
+  --mj-trusted: #1b6e7a;
   --mj-trusted-bright: #5cc4e0;
-  --mj-forged: linear-gradient(90deg, #8a6d1e, #a5811c);
-  --mj-forged-hot: #8a6d1e;
+  --mj-forged: linear-gradient(90deg, #5c4813, #7a5f19);
+  --mj-forged-hot: #7a5f19;
   --mj-worthy: var(--mj-trusted);
-  --mj-needswork: #a5811c;
-  --mj-unworthy: #c13b37;
-  --mj-info: #2b7fa8;
+  --mj-needswork: #7a5f19;
+  --mj-unworthy: #b8332f;
+  --mj-info: #26708f;
 
   /* ---- legacy aliases (kept so existing rules keep resolving) ---- */
   --mj-ember: var(--mj-gold);
@@ -106,7 +106,7 @@
   --vp-c-bg-elv: #141f33;
   --vp-c-text-1: #eaeef5;
   --vp-c-text-2: #abb6c6;
-  --vp-c-text-3: #71808f;
+  --vp-c-text-3: #8b939d;
   --vp-c-divider: rgba(198, 204, 214, 0.1);
   --vp-c-border: rgba(198, 204, 214, 0.14);
   --vp-c-gutter: rgba(198, 204, 214, 0.06);
@@ -116,7 +116,7 @@
   --vp-c-brand-3: #a5811c;
   --vp-c-brand-soft: rgba(230, 189, 87, 0.15);
 
-  --mj-critical: #e5544e;
+  --mj-critical: #ec6b66;
   --mj-warning: #e6bd57;
   --mj-trusted: #5cc4e0;
   --mj-trusted-bright: #7fd4ea;
@@ -124,7 +124,7 @@
   --mj-forged-hot: #f4dc9c;
   --mj-needswork: #e6bd57;
   --mj-worthy: var(--mj-trusted);
-  --mj-unworthy: #e5544e;
+  --mj-unworthy: #ec6b66;
   --mj-info: #5cc4e0;
 
   --mj-parchment: #c8cbcf;

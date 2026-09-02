@@ -97,6 +97,14 @@ export default defineConfig({
     },
   },
   head: [
+    // Marks the document as "scripting is live", before the body paints.
+    // The landing page's reveal-on-scroll animation starts its elements at
+    // opacity 0, and only JS ever brought them back — so with scripting off
+    // every section below the hero was invisible (plan §2, D4). Gating that
+    // starting state on this class makes the animation an enhancement: no
+    // script, no class, nothing hidden. Inline and in <head> so there is no
+    // flash of the hidden state on the way in.
+    ["script", {}, `document.documentElement.classList.add("mj-anim")`],
     ["meta", { name: "theme-color", content: "#0b0f17" }],
     [
       "link",
@@ -126,7 +134,7 @@ export default defineConfig({
       "link",
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;450;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap",
       },
     ],
     // Link previews (Slack, X, LinkedIn, Discord) — without these a
@@ -139,17 +147,18 @@ export default defineConfig({
     ],
     ["meta", { property: "og:description", content: TAGLINE }],
     ["meta", { property: "og:url", content: SITE_URL }],
-    ["meta", { property: "og:image", content: SITE_URL + "social-card.png" }],
+    ["meta", { property: "og:image", content: SITE_URL + "social-card.jpg" }],
     ["meta", { name: "twitter:card", content: "summary_large_image" }],
     [
       "meta",
       { name: "twitter:title", content: "Mjölnir — Verification Trust Engine" },
     ],
     ["meta", { name: "twitter:description", content: TAGLINE }],
-    ["meta", { name: "twitter:image", content: SITE_URL + "social-card.png" }],
+    ["meta", { name: "twitter:image", content: SITE_URL + "social-card.jpg" }],
   ],
   themeConfig: {
-    logo: "/apple-touch-icon.png",
+    // A 64px mark, not the 180x180 touch icon scaled down to ~24px.
+    logo: "/mark-64.png",
     nav: [
       { text: "Guide", link: "/guide/getting-started" },
       { text: "Rules", link: "/rules/", activeMatch: "^/rules/" },
