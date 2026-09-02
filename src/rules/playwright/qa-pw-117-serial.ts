@@ -25,6 +25,7 @@ export const pwSerialNoJustification = defineRule({
   autofix: false,
   detectionStrategy: "regex pattern",
   introduced: "0.3.0",
+  tier: "core", // measured 2026-09-02: 0% FP at n=20
 
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;

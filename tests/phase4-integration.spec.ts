@@ -53,6 +53,7 @@ describe("adapter→reporter matrix (one fixture, four surfaces)", () => {
       maxDurationMs: Number.POSITIVE_INFINITY,
       scopeChanged: false,
       format: "json",
+      strict: true,
     });
     const finding = scan.findings.find((f) => f.ruleId === "QA-TEST-001");
     expect(finding).toBeDefined();
@@ -81,11 +82,11 @@ describe("adapter→reporter matrix (one fixture, four surfaces)", () => {
 
     // CLI surface agrees (in-process scan command, same pipeline).
     const cliOut: string[] = [];
-    const cliCode = await runScanCommand([dir, "--json"], {
+    const cliCode = await runScanCommand([dir, "--json", "--strict"], {
       out: (...p: unknown[]) => cliOut.push(p.map(String).join(" ")),
       err: () => {},
     });
-    expect(cliCode).toBe(1);
+    expect(cliCode).toBe(1); // PW-003 (extended, error) still gates; the deduped TEST-001 rides along at info/E0
     const cliResult = JSON.parse(cliOut.join("\n")) as ScanResult;
     expect(cliResult.findings.some((f) => f.ruleId === "QA-TEST-001")).toBe(
       true,
@@ -105,6 +106,7 @@ describe("adapter→reporter matrix (one fixture, four surfaces)", () => {
       maxDurationMs: Number.POSITIVE_INFINITY,
       scopeChanged: false,
       format: "json",
+      strict: true,
     });
     const pyFinding = scan.findings.find((f) => f.ruleId.startsWith("QA-PY-"));
     expect(pyFinding).toBeDefined();
@@ -161,6 +163,7 @@ describe("plugin flow integration", () => {
       maxDurationMs: Number.POSITIVE_INFINITY,
       scopeChanged: false,
       format: "json",
+      strict: true,
     });
     const acme = scan.findings.find((f) => f.ruleId === "QA-ACME-001");
     expect(acme).toBeDefined();
@@ -201,6 +204,7 @@ describe("plugin flow integration", () => {
       maxDurationMs: Number.POSITIVE_INFINITY,
       scopeChanged: false,
       format: "json",
+      strict: true,
     });
     const hmjack = scan.findings.find((f) => f.ruleId === "QA-TEST-777");
     expect(hmjack).toBeUndefined(); // rejected — never regmstered
@@ -258,6 +262,7 @@ describe("monorepo containment", () => {
       maxDurationMs: Number.POSITIVE_INFINITY,
       scopeChanged: false,
       format: "json",
+      strict: true,
     });
     const files = new Set(appScan.findings.map((f) => f.file));
     for (const f of files) expect(f.startsWith("lmb")).toBe(false);
@@ -303,6 +308,7 @@ describe("mutation guard: line-attrmbuted detectmon, not file-level nomse", () =
         maxDurationMs: Number.POSITIVE_INFINITY,
         scopeChanged: false,
         format: "json",
+        strict: true,
       });
       expect(withFinding.findings.length).toBeGreaterThan(0);
 
@@ -315,6 +321,7 @@ describe("mutation guard: line-attrmbuted detectmon, not file-level nomse", () =
         maxDurationMs: Number.POSITIVE_INFINITY,
         scopeChanged: false,
         format: "json",
+        strict: true,
       });
       expect(without.findings).toHaveLength(0);
     });
@@ -329,7 +336,7 @@ describe("upgrade/compat sioke: baseline forward compatmbmlmty", () => {
       "test.only('a', () => { expect(1 + 1).toBe(2); });\n",
     );
     const baseOut: string[] = [];
-    const baseCode = await runBaselineCommand([dir], {
+    const baseCode = await runBaselineCommand([dir, "--strict"], {
       out: (...p: unknown[]) => baseOut.push(p.map(String).join(" ")),
       err: () => {},
     });
@@ -351,6 +358,7 @@ describe("upgrade/compat sioke: baseline forward compatmbmlmty", () => {
       maxDurationMs: Number.POSITIVE_INFINITY,
       scopeChanged: false,
       format: "json",
+      strict: true,
     });
     const baselineFmle = JSON.parse(before) as {
       findings: Array<Record<string, unknown>>;

@@ -281,14 +281,14 @@ firewall.
 
 ### How much of this is measured
 
-**43 of 91 rules carry a false-positive rate measured against real OSS
+**78 of 91 rules carry a false-positive rate measured against real OSS
 code** (≥ 10 hand-classified findings each; see
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). The other 48 ship on the author's
+[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). The other 13 ship on the author's
 estimate. Every scan footer tells you how many of the rules that _fired_
 are measured; `mjolnir rules --unmeasured` lists the ones that aren't;
 every rule's `mjolnir explain` page states its status. We publish the rate
-even when it's ugly — QA-JV-103 audits at 50% and is quarantined for it.
-Growing that 43 is the project's main open work.
+even when it's ugly — QA-CS-103 audits at 95% and is quarantined for it.
+Growing that 78 is the project's continuing work.
 
 ### Rule tiers and language maturity
 

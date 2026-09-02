@@ -1,0 +1,23 @@
+name: CI
+
+on: [push]
+
+jobs:
+  test-and-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npx vitest run --coverage
+      - uses: codecov/codecov-action@v4
+        with:
+          files: coverage/lcov.info
+
+  jest-artifact:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npx jest --coverage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage

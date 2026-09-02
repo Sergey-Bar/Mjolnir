@@ -6,8 +6,8 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | ------------------------------------- | ------------------------------ |
 | Severity                              | error                          |
 | Confidence                            | high                           |
-| Tier                                  | extended (PROVISIONAL)         |
-| Measured FP rate                      | not yet measured               |
+| Tier                                  | quarantine                     |
+| Measured FP rate                      | 95% (n=20)                     |
 | Evidence level                        | E2                             |
 | QA impact                             | False-green risk (FALSE-GREEN) |
 | False-positive risk (author estimate) | medium                         |
@@ -41,9 +41,13 @@ Verified against `tests/fixtures/QA-CS-103/must-not-fire/CheckoutTests.cs` — a
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo                        | Occurrences |
-| --------------------------- | ----------- |
-| microsoft-playwright-dotnet | 2           |
+| Repo                           | Occurrences |
+| ------------------------------ | ----------- |
+| Humanizr-Humanizer             | 34          |
+| microsoft-playwright-dotnet    | 2           |
+| negative-fixtures              | 4           |
+| positive-fixtures              | 8           |
+| spectreconsole-spectre-console | 310         |
 
 ---
 

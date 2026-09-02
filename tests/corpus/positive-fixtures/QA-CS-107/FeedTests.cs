@@ -1,0 +1,31 @@
+using Microsoft.Playwright;
+using Microsoft.Playwright.MSTest;
+
+[TestClass]
+public class FeedTests
+{
+    [TestMethod]
+    public async Task LoadsFeed()
+    {
+        await Page.GotoAsync("https://example.com/feed");
+        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+    }
+
+    [TestMethod]
+    public async Task LoadsTimeline()
+    {
+        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+    }
+
+    [TestMethod]
+    public async Task LoadsInbox()
+    {
+        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+    }
+
+    [TestMethod]
+    public async Task LoadsArchive()
+    {
+        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+    }
+}

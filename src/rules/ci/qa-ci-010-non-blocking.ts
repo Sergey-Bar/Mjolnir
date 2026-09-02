@@ -57,6 +57,8 @@ export const nonBlockingTestJob = defineRule({
   detectionStrategy: "regex heuristic on parsed workflow AST",
   introduced: "0.4.0",
 
+  // Measured 2026-09-02 (corpus wave 5): tier set from the measured envelope (plan §11.2).
+  tier: "quarantine",
   run(ctx) {
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 

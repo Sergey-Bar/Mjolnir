@@ -1,0 +1,1 @@
+{"ruleId":"QA-CI-007","file":".github/workflows/docs.yml","line":1,"verdict":"FP","note":"adjudicated 2026-09-02 from source docs.yml:1613-1621: `curl --retry 4 --retry-all-errors` polls a deployment.json endpoint for deploy status — HTTP probe retry on infrastructure, no test gate is wrapped"}

@@ -6,8 +6,8 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | ------------------------------------- | ------------------------------------------ |
 | Severity                              | error                                      |
 | Confidence                            | high                                       |
-| Tier                                  | extended (PROVISIONAL)                     |
-| Measured FP rate                      | not yet measured                           |
+| Tier                                  | quarantine                                 |
+| Measured FP rate                      | 82% (n=17)                                 |
 | Evidence level                        | E2                                         |
 | QA impact                             | Blocks release confidence (BLOCKS-RELEASE) |
 | False-positive risk (author estimate) | low                                        |
@@ -41,11 +41,14 @@ Verified against `tests/fixtures/QA-CI-005/must-not-fire/with-coverage.yml` — 
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo                 | Occurrences |
-| -------------------- | ----------- |
-| grafana-grafana      | 1           |
-| nextauthjs-next-auth | 2           |
-| pytest-dev-pytest    | 2           |
+| Repo                          | Occurrences |
+| ----------------------------- | ----------- |
+| grafana-grafana               | 1           |
+| iluwatar-java-design-patterns | 4           |
+| nextauthjs-next-auth          | 2           |
+| positive-fixtures             | 2           |
+| pytest-dev-pytest             | 2           |
+| streamlit-streamlit           | 8           |
 
 ---
 

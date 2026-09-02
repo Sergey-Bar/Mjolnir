@@ -6,8 +6,8 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | ------------------------------------- | ------------------------------- |
 | Severity                              | warning                         |
 | Confidence                            | high                            |
-| Tier                                  | extended (PROVISIONAL)          |
-| Measured FP rate                      | not yet measured                |
+| Tier                                  | quarantine                      |
+| Measured FP rate                      | 36% (n=11)                      |
 | Evidence level                        | E2                              |
 | QA impact                             | Flaky-test risk (FLAKY-RISK)    |
 | False-positive risk (author estimate) | low                             |
@@ -41,9 +41,11 @@ Verified against `tests/fixtures/QA-TEST-006/must-not-fire/clean.spec.ts` — a 
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo            | Occurrences |
-| --------------- | ----------- |
-| grafana-grafana | 2           |
+| Repo              | Occurrences |
+| ----------------- | ----------- |
+| apache-airflow    | 3           |
+| grafana-grafana   | 2           |
+| positive-fixtures | 5           |
 
 ---
 

@@ -99,7 +99,7 @@ describe("computeImpact — reports UNKNOWN when data is absent (the most import
     writeSpec(dir, "a.spec.ts", "test('x', () => {});\n");
 
     const report = await computeImpact(dir, {
-      runScan: (target) => runScan({ target } as never),
+      runScan: (target) => runScan({ target, strict: true } as never),
     });
 
     expect(report.hasComparison).toBe(false);
@@ -123,7 +123,7 @@ describe("computeImpact — reports UNKNOWN when data is absent (the most import
     git(dir, ["commit", "-q", "-m", "only commit"]);
 
     const report = await computeImpact(dir, {
-      runScan: (target) => runScan({ target } as never),
+      runScan: (target) => runScan({ target, strict: true } as never),
     });
 
     expect(report.hasComparison).toBe(false);
@@ -133,7 +133,7 @@ describe("computeImpact — reports UNKNOWN when data is absent (the most import
   it("never invents an hours/CI-minutes-saved number, in any scenario", async () => {
     const dir = makeFixtureRepo();
     const report = await computeImpact(dir, {
-      runScan: (target) => runScan({ target } as never),
+      runScan: (target) => runScan({ target, strict: true } as never),
     });
     const joined = report.unknownFacts.join(" ").toLowerCase();
     expect(joined).toContain("not computed");
@@ -143,7 +143,7 @@ describe("computeImpact — reports UNKNOWN when data is absent (the most import
   it("renderImpact always prefixes unknown facts with UNKNOWN: literally, in every scenario", async () => {
     const dir = makeFixtureRepo();
     const report = await computeImpact(dir, {
-      runScan: (target) => runScan({ target } as never),
+      runScan: (target) => runScan({ target, strict: true } as never),
     });
     const rendered = renderImpact(report);
     expect(rendered).toContain("UNKNOWN:");
@@ -154,7 +154,7 @@ describe("computeImpact — real comparison against a fixture git history", () =
   it("finds the resolved hard-sleep finding and the newly introduced focused-test finding", async () => {
     const dir = makeFixtureRepo();
     const report = await computeImpact(dir, {
-      runScan: (target) => runScan({ target } as never),
+      runScan: (target) => runScan({ target, strict: true } as never),
     });
 
     expect(report.hasComparison).toBe(true);
@@ -172,7 +172,7 @@ describe("computeImpact — real comparison against a fixture git history", () =
     const dir = makeFixtureRepo();
     const runOnce = () =>
       computeImpact(dir, {
-        runScan: (target) => runScan({ target } as never),
+        runScan: (target) => runScan({ target, strict: true } as never),
       });
     const first = await runOnce();
     const second = await runOnce();
@@ -193,7 +193,7 @@ describe("computeImpact — real comparison against a fixture git history", () =
 
     const report = await computeImpact(dir, {
       since: firstCommit,
-      runScan: (target) => runScan({ target } as never),
+      runScan: (target) => runScan({ target, strict: true } as never),
     });
     expect(report.hasComparison).toBe(true);
     expect(report.baseRef).toBe(firstCommit);
@@ -208,7 +208,7 @@ describe("computeImpact — real comparison against a fixture git history", () =
 
     const report = await computeImpact(dir, {
       since: head,
-      runScan: (target) => runScan({ target } as never),
+      runScan: (target) => runScan({ target, strict: true } as never),
     });
     expect(report.hasComparison).toBe(false);
     expect(report.unknownReason).toBe("base-equals-head");
@@ -218,7 +218,7 @@ describe("computeImpact — real comparison against a fixture git history", () =
     const dir = makeFixtureRepo();
     const report = await computeImpact(dir, {
       since: "not-a-real-ref-xyz",
-      runScan: (target) => runScan({ target } as never),
+      runScan: (target) => runScan({ target, strict: true } as never),
     });
     expect(report.hasComparison).toBe(false);
     // git rev-parse on an unresolvable ref returns null, so the raw
@@ -242,7 +242,7 @@ describe("computeImpact — real comparison against a fixture git history", () =
     git(dir, ["commit", "-q", "-m", "commit 3: unrelated clean addition"]);
 
     const report = await computeImpact(dir, {
-      runScan: (target) => runScan({ target } as never),
+      runScan: (target) => runScan({ target, strict: true } as never),
     });
     expect(report.hasComparison).toBe(true);
     expect(report.resolved).toEqual([]);

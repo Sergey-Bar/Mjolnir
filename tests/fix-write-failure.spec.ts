@@ -54,6 +54,7 @@ async function scan() {
     maxDurationMs: 10_000,
     scopeChanged: false,
     format: "json",
+    strict: true,
   });
 }
 

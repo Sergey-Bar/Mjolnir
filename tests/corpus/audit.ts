@@ -31,6 +31,7 @@
 
 import { execFileSync } from "node:child_process";
 import {
+  cpSync,
   existsSync,
   mkdirSync,
   readFileSync,
@@ -53,6 +54,12 @@ export const BASELINE_DIR = join(HERE, "baseline");
 export interface CorpusRepo {
   /** Baseline filename stem — keep stable, renaming loses history. */
   name: string;
+  /**
+   * Git clone URL, or a `local:` URL relative to the repo root for
+   * committed corpora (plan §08 classes B/C positive/negative fixtures —
+   * they are versioned alongside the verdicts that classify them, so a
+   * remote clone can never drift from the classification criteria).
+   */
   url: string;
   /** What this repo is meant to exercise. */
   note: string;
@@ -162,6 +169,105 @@ export const CORPUS: CorpusRepo[] = [
     url: "https://github.com/puppeteer/puppeteer.git",
     note: "real TS monorepo with mocha tests and multi-job GitHub Actions — QA-CI-002/005/007/008/009/010 surface plus QA-TEST/TQUAL growth; sibling to Playwright for engine balance.",
   },
+
+  // ── 2026-09-01 expansion — Verification Trust Evolution Plan §11.5:
+  //    the dedicated corpora that close the D5 starvation. The CI rules
+  //    (QA-CI-*) were starved at n=3–5 and the JV/CS rules were measured
+  //    on the Playwright bindings themselves; these additions add
+  //    application corpora on both axes plus CI-workflow density. Chosen
+  //    by evaluating each candidate's unmeasured-rule fire count at HEAD
+  //    before committing (scripts/lib/eval-repo.ts); repos whose scan
+  //    truncated against the 60s budget (n8n, posthog, vscode) were
+  //    rejected — a partial scan can never be count-locked.
+  {
+    name: "vitest-dev-vitest",
+    url: "https://github.com/vitest-dev/vitest.git",
+    note: "real TS monorepo with a large vitest suite of its own — QA-TEST-001 (focused) / QA-TEST-010 (empty body) / QA-TQUAL-002 (tautological) at scale, plus CI and QA-PW config surfaces.",
+  },
+  {
+    name: "streamlit-streamlit",
+    url: "https://github.com/streamlit/streamlit.git",
+    note: "real Python app with pytest-playwright e2e and many GitHub Actions — QA-PY-103/105 (Python Playwright consumers) plus QA-CI-005 and QA-PY-012.",
+  },
+  {
+    name: "apache-airflow",
+    url: "https://github.com/apache/airflow.git",
+    note: "huge real pytest suite — QA-PY-011 (mutable session fixtures) and QA-PY-012 at scale plus QA-TEST-006.",
+  },
+  {
+    name: "iluwatar-java-design-patterns",
+    url: "https://github.com/iluwatar/java-design-patterns.git",
+    note: "real Java application repo with extensive JUnit tests — QA-JV-102 (Thread.sleep) and QA-JV-101 (disabled tests) on consumer code, plus QA-CI-005; first non-binding Java corpus entry (D5).",
+  },
+  {
+    name: "spectreconsole-spectre-console",
+    url: "https://github.com/spectreconsole/spectre.console.git",
+    note: "real C# application repo with a large NUnit suite — QA-CS-103 (tests without assertions) at consumer scale (D5).",
+  },
+  {
+    name: "Humanizr-Humanizer",
+    url: "https://github.com/Humanizr/Humanizer.git",
+    note: "real C# library repo with xUnit tests and a retry-wrapped CI step — QA-CS-103 and QA-CI-007 surface.",
+  },
+  {
+    name: "cypress-realworld-app",
+    url: "https://github.com/cypress-io/cypress-realworld-app.git",
+    note: "real TS consumer app with heavy e2e — QA-TQUAL-009 (unawaited promise assertion) at scale on application code.",
+  },
+  {
+    name: "keycloak-keycloak",
+    url: "https://github.com/keycloak/keycloak.git",
+    note: "large real Java monorepo whose UI suite is Playwright TypeScript — QA-PW-117 (describe.serial) at scale plus QA-JV-101/102 on JUnit code and QA-CI-007.",
+  },
+  {
+    name: "appsmithorg-appsmith",
+    url: "https://github.com/appsmithorg/appsmith.git",
+    note: "real Java+TS monorepo with JUnit tests and CI workflows — QA-JV-101/102 on consumer code plus QA-CI-008 and QA-TQUAL-011.",
+  },
+  {
+    name: "getsentry-sentry",
+    url: "https://github.com/getsentry/sentry.git",
+    note: "huge real Python monorepo — QA-PY-009 (commented-out tests) and QA-PY-012 at scale plus QA-TQUAL-002.",
+  },
+  {
+    name: "github-docs",
+    url: "https://github.com/github/docs.git",
+    note: "workflow-dense docs repo (small code footprint) — QA-CI-001 (continue-on-error gates) and QA-CI-007 surface on real Actions files.",
+  },
+  {
+    name: "vercel-next-js",
+    url: "https://github.com/vercel/next.js.git",
+    note: "large real TS monorepo with its own e2e suite — QA-TEST-010 and QA-TQUAL-002 at scale plus QA-PW-141/144 and QA-CI-008.",
+  },
+  {
+    name: "hashicorp-vault",
+    url: "https://github.com/hashicorp/vault.git",
+    note: "real monorepo with UI tests and mature CI — QA-PW-004 (brittle selectors), QA-CI-001/008 and QA-PW-141 surface.",
+  },
+  {
+    name: "nocodb-nocodb",
+    url: "https://github.com/nocodb/nocodb.git",
+    note: "real TS app with e2e and CI — QA-CI-010 (PR-skipped test jobs) and QA-PW-115 surface.",
+  },
+
+  // ── §08 classes B/C — committed positive/negative fixture corpora.
+  //    Class A (real OSS repos) is the preferred FP surface, but rules
+  //    whose patterns are rare in the wild (deep frameLocator chains,
+  //    trial clicks, TestNG retry analyzers) can never reach the n ≥ 10
+  //    quota from real repos alone. The fixture corpora give every rule
+  //    a measurement-grade verdict surface: positives classify TP
+  //    (recall evidence), negatives classify FP when they fire (real
+  //    precision evidence). Local URLs — versioned with the verdicts.
+  {
+    name: "positive-fixtures",
+    url: "local:tests/corpus/positive-fixtures",
+    note: "committed class-B positive corpus — realistic anti-pattern variants per rule that MUST fire; every fire classifies TP.",
+  },
+  {
+    name: "negative-fixtures",
+    url: "local:tests/corpus/negative-fixtures",
+    note: "committed class-C negative corpus — realistic legitimate code per rule that must NOT fire; any fire classifies FP (real precision evidence).",
+  },
 ];
 
 interface BaselineEntry {
@@ -179,9 +285,27 @@ function cloneRepo(repo: CorpusRepo): string {
   const dest = join(CACHE_DIR, repo.name);
   rmSync(dest, { recursive: true, force: true });
   mkdirSync(CACHE_DIR, { recursive: true });
-  execFileSync("git", ["clone", "--depth", "1", repo.url, dest], {
-    stdio: "pipe",
-  });
+  // `local:` URLs point at corpora committed inside this repo (§08
+  // classes B/C) — copy instead of clone; the copy still drops .git so
+  // scan scoping treats it as a foreign tree exactly like a clone.
+  if (repo.url.startsWith("local:")) {
+    const src = join(HERE, "..", "..", repo.url.slice("local:".length));
+    if (!existsSync(src)) {
+      throw new Error(`local corpus missing: ${src}`);
+    }
+    cpSync(src, dest, { recursive: true });
+    return dest;
+  }
+  execFileSync(
+    "git",
+    // core.longpaths: several corpus repos (keycloak, streamlit, sentry)
+    // contain checkout paths past the classic Windows MAX_PATH limit —
+    // scoped to this clone only, never a global config change.
+    ["-c", "core.longpaths=true", "clone", "--depth", "1", repo.url, dest],
+    {
+      stdio: "pipe",
+    },
+  );
   // The corpus is someone else's live git history — never let our own
   // git-aware code (--scope changed, discovery) treat it as part of
   // mjolnir's own repo.
@@ -194,7 +318,7 @@ async function scanRepo(dir: string): Promise<BaselineEntry> {
     target: dir,
     json: true,
     verbose: true,
-    maxDurationMs: 60_000,
+    maxDurationMs: 120_000,
     scopeChanged: false,
     format: "json",
     // Include quarantine-tier rules — they are exactly the ones whose
@@ -239,6 +363,14 @@ function writeBaseline(name: string, entry: BaselineEntry): void {
 
 async function main(): Promise<number> {
   const update = process.argv.includes("--update");
+  // --only <name>[,<name>]: re-check or re-record a subset (used to
+  // re-verify a repo after a transient truncation without re-scanning
+  // the whole corpus). Never narrows the failure threshold: a filtered
+  // run that scans every requested repo is complete for THOSE repos.
+  const onlyFlag = process.argv.find((a) => a.startsWith("--only="));
+  const only = onlyFlag
+    ? new Set(onlyFlag.slice("--only=".length).split(","))
+    : null;
   let regressed = false;
 
   // Bug-audit G1: a failed clone used to SKIP the repo with `continue`;
@@ -248,9 +380,11 @@ async function main(): Promise<number> {
   // completeness threshold instead of silently shrinking the audit.
   const failedClones: string[] = [];
   const scanned: string[] = [];
-  const MIN_SCANNED = Math.ceil(CORPUS.length * 0.9);
+  const requested = only ? CORPUS.filter((r) => only.has(r.name)) : CORPUS;
+  const MIN_SCANNED = Math.ceil(requested.length * 0.9);
 
   for (const repo of CORPUS) {
+    if (only && !only.has(repo.name)) continue;
     console.log(`\n=== ${repo.name} — ${repo.note} ===`);
     let dir: string;
     try {
@@ -379,7 +513,7 @@ async function main(): Promise<number> {
   }
   if (scanned.length < MIN_SCANNED) {
     console.error(
-      `\nFAIL: only ${scanned.length}/${CORPUS.length} repos could be scanned ` +
+      `\nFAIL: only ${scanned.length}/${requested.length} repos could be scanned ` +
         `(minimum ${MIN_SCANNED}). A corpus this hollow cannot support an ` +
         `"OK" verdict — check network/registry access and re-run.`,
     );

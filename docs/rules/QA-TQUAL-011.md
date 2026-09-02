@@ -6,8 +6,8 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | ------------------------------------- | --------------------------- |
 | Severity                              | warning                     |
 | Confidence                            | high                        |
-| Tier                                  | extended (PROVISIONAL)      |
-| Measured FP rate                      | not yet measured            |
+| Tier                                  | extended                    |
+| Measured FP rate                      | 30% (n=20)                  |
 | Evidence level                        | E2                          |
 | QA impact                             | Test hygiene debt (HYGIENE) |
 | False-positive risk (author estimate) | medium                      |
@@ -43,9 +43,14 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo                                          | Occurrences |
 | --------------------------------------------- | ----------- |
+| appsmithorg-appsmith                          | 6           |
 | calcom-cal                                    | 2           |
+| getsentry-sentry                              | 1           |
 | grafana-grafana                               | 2           |
+| nocodb-nocodb                                 | 1           |
 | playwright-community-eslint-plugin-playwright | 2           |
+| positive-fixtures                             | 6           |
+| vitest-dev-vitest                             | 4           |
 
 ---
 

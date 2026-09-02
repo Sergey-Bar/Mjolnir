@@ -15,9 +15,11 @@ permissions:
 jobs:
   corpus-regression:
     runs-on: ubuntu-latest
-    # 13 shallow clones + a full scan each; a hung clone must not sit for
-    # the default 6 hours.
-    timeout-minutes: 25
+    # 34 corpus repos (incl. the two committed §08 B/C fixture corpora)
+    # shallow-cloned (or copied) and fully scanned each; large repos like
+    # airflow and sentry scan close to the per-repo 60s budget. A hung
+    # clone must not sit for the default 6 hours either way.
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -25,4 +27,9 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+        env:
+          # The full corpus in one audit process parses very large TS
+          # programs (sentry alone carries repo-scale bundles) — the
+          # default ~4GB heap OOMs partway through the 34-repo run.
+          NODE_OPTIONS: --max-old-space-size=8192
       - run: npm run corpus:regression

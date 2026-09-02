@@ -1,0 +1,11 @@
+{
+  "countsByRule": {
+    "QA-CI-005": 4,
+    "QA-JV-101": 2,
+    "QA-JV-102": 18,
+    "QA-JV-103": 41,
+    "QA-JV-110": 2
+  },
+  "totalFindings": 67,
+  "partial": false
+}

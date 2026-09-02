@@ -6,8 +6,8 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | ------------------------------------- | --------------------------- |
 | Severity                              | warning                     |
 | Confidence                            | high                        |
-| Tier                                  | extended (PROVISIONAL)      |
-| Measured FP rate                      | not yet measured            |
+| Tier                                  | core                        |
+| Measured FP rate                      | 6% (n=18)                   |
 | Evidence level                        | E2                          |
 | QA impact                             | Test hygiene debt (HYGIENE) |
 | False-positive risk (author estimate) | medium                      |
@@ -43,6 +43,8 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo              | Occurrences |
 | ----------------- | ----------- |
+| getsentry-sentry  | 4           |
+| positive-fixtures | 10          |
 | pytest-dev-pytest | 3           |
 | reflex-dev-reflex | 1           |
 

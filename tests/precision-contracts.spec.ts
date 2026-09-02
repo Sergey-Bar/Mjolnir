@@ -172,6 +172,7 @@ describe("terminal footer agrees with the JSON deduction fields", () => {
     maxDurationMs: Number.POSITIVE_INFINITY,
     scopeChanged: false,
     format: "terminal",
+    strict: true,
   });
 
   it("the terminal WHERE-POINTS-WERE-LOST table names every deducted severity", async () => {
@@ -262,6 +263,7 @@ describe("three verdict bands are reachable for their documented reasons", () =>
       maxDurationMs: Number.POSITIVE_INFINITY,
       scopeChanged: false,
       format: "terminal",
+      strict: true,
     });
     expect(scan.score).not.toBeNull();
     expect(scan.score as number).toBeGreaterThanOrEqual(80);
@@ -276,6 +278,7 @@ describe("three verdict bands are reachable for their documented reasons", () =>
       maxDurationMs: Number.POSITIVE_INFINITY,
       scopeChanged: false,
       format: "terminal",
+      strict: true,
     });
     expect(scan.score).not.toBeNull();
     const score = scan.score as number;
@@ -295,6 +298,7 @@ describe("three verdict bands are reachable for their documented reasons", () =>
         maxDurationMs: Number.POSITIVE_INFINITY,
         scopeChanged: false,
         format: "terminal",
+        strict: true,
       });
       expect(scan.score).not.toBeNull();
       const score = scan.score as number;

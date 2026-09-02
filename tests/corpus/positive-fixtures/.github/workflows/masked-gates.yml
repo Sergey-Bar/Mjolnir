@@ -1,0 +1,27 @@
+name: CI
+
+on: [push]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - run: npx playwright test
+
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm test
+        continue-on-error: true
+      - run: npx playwright test
+        continue-on-error: true
+
+  e2e:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cypress-io/github-action@v6

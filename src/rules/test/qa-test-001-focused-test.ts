@@ -25,6 +25,8 @@ export const focusedTestCommitted = defineRule({
   autofix: true,
   detectionStrategy: "regex pattern",
   introduced: "0.1.0",
+  // Measured 2026-09-02 (corpus wave 5): tier set from the measured envelope (plan §11.2).
+  tier: "quarantine",
   // `.only` makes the runner execute this test and skip every other one, so a
   // green run is not evidence about the rest of the suite. Categorical, not a
   // matter of degree — see RuleMeta.suiteInvalidating.

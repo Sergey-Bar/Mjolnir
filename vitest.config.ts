@@ -20,6 +20,10 @@ export default defineConfig({
       // this guards against a stale clone left by a killed audit run.
       // M-04: widened to any .cache* clone dir (e.g. a rogue .cache-kit).
       "tests/corpus/.cache*/**",
+      // Committed §08 class-B/C fixture corpora are DATA too — their
+      // .spec.ts files deliberately contain anti-patterns.
+      "tests/corpus/positive-fixtures/**",
+      "tests/corpus/negative-fixtures/**",
     ],
     coverage: {
       provider: "v8",

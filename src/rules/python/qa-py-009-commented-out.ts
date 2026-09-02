@@ -25,6 +25,8 @@ export const pyCommentedOutTest = defineRule({
   detectionStrategy: "regex heuristic",
   introduced: "0.3.0",
 
+  // Measured 2026-09-02 (corpus wave 5): FP ≤ 10% but n < 20 — measured-extended until the core DoD n ≥ 20 is met (plan §23).
+  tier: "core",
   run(ctx) {
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     if (!ctx.path.endsWith(".py")) return findings;

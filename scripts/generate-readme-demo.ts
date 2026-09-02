@@ -121,6 +121,11 @@ async function main(): Promise<void> {
     maxDurationMs: Number.POSITIVE_INFINITY,
     scopeChanged: false,
     format: "terminal",
+    // The committed demo asset must reflect the same scan the
+    // precision-contract spec asserts (which runs --strict): quarantine
+    // rules like the measured-into-quarantine QA-TEST-001 stay visible
+    // at severity=info/E0 so the demo score band is reproducible.
+    strict: true,
   });
 
   // verbose: true → the reporter prints every finding, not the top 5.

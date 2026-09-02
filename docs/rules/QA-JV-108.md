@@ -44,6 +44,8 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | Repo                      | Occurrences |
 | ------------------------- | ----------- |
 | microsoft-playwright-java | 31          |
+| negative-fixtures         | 2           |
+| positive-fixtures         | 3           |
 
 ---
 

@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="1178" height="2789" viewBox="0 0 1178 2789" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', Menlo, monospace" font-size="13">
+<svg width="1194" height="3036" viewBox="0 0 1194 3036" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', Menlo, monospace" font-size="13">
   <defs>
     <clipPath id="winClip">
-      <rect x="0" y="0" width="1178" height="2789" rx="8" ry="8"/>
+      <rect x="0" y="0" width="1194" height="3036" rx="8" ry="8"/>
     </clipPath>
   </defs>
 
   <g clip-path="url(#winClip)">
-    <rect x="0" y="0" width="1178" height="2789" fill="#14171c"/>
-    <rect x="0" y="0" width="1178" height="36" fill="#20242b"/>
+    <rect x="0" y="0" width="1194" height="3036" fill="#14171c"/>
+    <rect x="0" y="0" width="1194" height="36" fill="#20242b"/>
     <circle cx="20" cy="18" r="6" fill="#ff5f56"/>
     <circle cx="40" cy="18" r="6" fill="#ffbd2e"/>
     <circle cx="60" cy="18" r="6" fill="#27c93f"/>
-    <text x="589" y="22" fill="#a0a0a0" font-size="12" text-anchor="middle">demo-repo &#8212; mjolnir</text>
+    <text x="597" y="22" fill="#a0a0a0" font-size="12" text-anchor="middle">demo-repo &#8212; mjolnir</text>
 
     <text x="22" y="54.0" xml:space="preserve"><tspan fill="#d7d3c8">$ </tspan><tspan fill="#ede6d6">npx mjolnir-qa@latest</tspan></text>
     <text x="22" y="73.0" xml:space="preserve"><tspan fill="rgb(138,180,216)"> ╔═══════════╗</tspan></text>
@@ -34,130 +34,143 @@
     <text x="22" y="377.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">       ▄██</tspan></text>
     <text x="22" y="396.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">ᚦ [STRAINED]</tspan></text>
 
-    <text x="22" y="434.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">WORTHINESS</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)"> 76</tspan><tspan fill="rgb(124,133,144)">/100</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">NEEDS WORK</tspan></text>
+    <text x="22" y="434.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">WORTHINESS</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)"> 75</tspan><tspan fill="rgb(124,133,144)">/100</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">NEEDS WORK</tspan></text>
     <text x="22" y="453.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">██████████████████████</tspan><tspan fill="rgb(224,165,38)">▓</tspan><tspan fill="#d7d3c8">░░░░░░░</tspan></text>
-    <text x="22" y="472.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">The hammer holds — but 10 findings weigh it down.</tspan></text>
-    <text x="22" y="491.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">(39 raw pts / 7 test declarations — normalized)</tspan></text>
+    <text x="22" y="472.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">The hammer holds — but 24 findings weigh it down.</tspan></text>
+    <text x="22" y="491.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">(40 raw pts / 7 test declarations — normalized)</tspan></text>
 
     <text x="22" y="529.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">DETECTED</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">[playwright]</tspan></text>
 
     <text x="22" y="567.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(138,180,216)">▚ DIAGNOSTICS BY CATEGORY</tspan></text>
-    <text x="22" y="586.0" xml:space="preserve"><tspan fill="#d7d3c8">  QA-CI    </tspan><tspan fill="rgb(92,196,224)">████████████</tspan><tspan fill="rgb(92,196,224)">▓</tspan><tspan fill="#d7d3c8">░░░  84</tspan></text>
-    <text x="22" y="605.0" xml:space="preserve"><tspan fill="#d7d3c8">  QA-PW    </tspan><tspan fill="rgb(92,196,224)">████████████</tspan><tspan fill="rgb(92,196,224)">▓</tspan><tspan fill="#d7d3c8">░░░  80</tspan></text>
+    <text x="22" y="586.0" xml:space="preserve"><tspan fill="#d7d3c8">  QA-CI    </tspan><tspan fill="rgb(224,165,38)">███████████</tspan><tspan fill="rgb(224,165,38)">▓</tspan><tspan fill="#d7d3c8">░░░░  76</tspan></text>
+    <text x="22" y="605.0" xml:space="preserve"><tspan fill="#d7d3c8">  QA-PW    </tspan><tspan fill="rgb(92,196,224)">█████████████</tspan><tspan fill="rgb(92,196,224)">▓</tspan><tspan fill="#d7d3c8">░░  87</tspan></text>
     <text x="22" y="624.0" xml:space="preserve"><tspan fill="#d7d3c8">  QA-TEST  </tspan><tspan fill="rgb(92,196,224)">████████████████</tspan><tspan fill="#d7d3c8">  97</tspan></text>
 
     <text x="22" y="662.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(138,180,216)">▚ WHERE POINTS WERE LOST</tspan></text>
-    <text x="22" y="681.0" xml:space="preserve"><tspan fill="#d7d3c8">  ╭────────────────────────────────────────╮</tspan></text>
-    <text x="22" y="700.0" xml:space="preserve"><tspan fill="#d7d3c8">  │ 3 × error   − 24                       │</tspan></text>
-    <text x="22" y="719.0" xml:space="preserve"><tspan fill="#d7d3c8">  │ 6 × warning − 14</tspan><tspan fill="rgb(124,133,144)"> (evidence-discounted)</tspan><tspan fill="#d7d3c8"> │</tspan></text>
-    <text x="22" y="738.0" xml:space="preserve"><tspan fill="#d7d3c8">  │ 1 × info    −  1                       │</tspan></text>
-    <text x="22" y="757.0" xml:space="preserve"><tspan fill="#d7d3c8">  ╰────────────────────────────────────────╯</tspan></text>
+    <text x="22" y="681.0" xml:space="preserve"><tspan fill="#d7d3c8">  ╭─────────────────────────────────────────╮</tspan></text>
+    <text x="22" y="700.0" xml:space="preserve"><tspan fill="#d7d3c8">  │ 4 × error   − 32                        │</tspan></text>
+    <text x="22" y="719.0" xml:space="preserve"><tspan fill="#d7d3c8">  │ 3 × warning −  7</tspan><tspan fill="rgb(124,133,144)"> (evidence-discounted)</tspan><tspan fill="#d7d3c8">  │</tspan></text>
+    <text x="22" y="738.0" xml:space="preserve"><tspan fill="#d7d3c8">  │ 17 × info    −  1</tspan><tspan fill="rgb(124,133,144)"> (evidence-discounted)</tspan><tspan fill="#d7d3c8"> │</tspan></text>
+    <text x="22" y="757.0" xml:space="preserve"><tspan fill="#d7d3c8">  ╰─────────────────────────────────────────╯</tspan></text>
 
     <text x="22" y="795.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(138,180,216)">▚ FIX THIS FIRST</tspan></text>
-    <text x="22" y="814.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">+8 pts</tspan><tspan fill="#d7d3c8">  QA-CI-002 · .github/workflows/ci.yml:16</tspan></text>
-    <text x="22" y="833.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">+8 pts</tspan><tspan fill="#d7d3c8">  QA-CI-001 · .github/workflows/ci.yml:17</tspan></text>
-    <text x="22" y="852.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">+8 pts</tspan><tspan fill="#d7d3c8">  QA-PW-101 · e2e/checkout.spec.ts:6</tspan></text>
+    <text x="22" y="814.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">+8 pts</tspan><tspan fill="#d7d3c8">  QA-CI-009 · .github/workflows/ci.yml:10</tspan></text>
+    <text x="22" y="833.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">+8 pts</tspan><tspan fill="#d7d3c8">  QA-CI-009 · .github/workflows/ci.yml:10</tspan></text>
+    <text x="22" y="852.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">+8 pts</tspan><tspan fill="#d7d3c8">  QA-CI-009 · .github/workflows/ci.yml:26</tspan></text>
 
     <text x="22" y="890.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(138,180,216)">▚ FINDINGS</tspan></text>
 
-    <text x="22" y="928.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(208,69,59)">✗</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(208,69,59)">ERROR  </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-CI-002 · .github/workflows/ci.yml:16</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E2 · deterministic]</tspan></text>
-    <text x="22" y="947.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">Command exit code is swallowed with `|| true`.</tspan></text>
-    <text x="22" y="966.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">FALSE-GREEN — A failing step becomes a passing one — the workflow</tspan></text>
-    <text x="22" y="985.0" xml:space="preserve"><tspan fill="#d7d3c8">            checkmark no longer reflects reality.</tspan></text>
-    <text x="22" y="1004.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Fix     </tspan><tspan fill="#d7d3c8">Remove `|| true`. If the step is genuinely optional, mark it</tspan></text>
-    <text x="22" y="1023.0" xml:space="preserve"><tspan fill="#d7d3c8">            clearly and use `continue-on-error` on that step only.</tspan></text>
-    <text x="22" y="1042.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the gate should stop failing and</tspan></text>
-    <text x="22" y="1061.0" xml:space="preserve"><tspan fill="#d7d3c8">            the score should recover by 8.</tspan></text>
+    <text x="22" y="928.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(208,69,59)">✗</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(208,69,59)">ERROR  </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-CI-009 · .github/workflows/ci.yml:10</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E2 · deterministic]</tspan></text>
+    <text x="22" y="947.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">Job `test` pipes the test command into another tool without `set</tspan></text>
+    <text x="22" y="966.0" xml:space="preserve"><tspan fill="#d7d3c8">            -o pipefail`.</tspan></text>
+    <text x="22" y="985.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">FALSE-GREEN — In a shell pipeline only the last command's exit</tspan></text>
+    <text x="22" y="1004.0" xml:space="preserve"><tspan fill="#d7d3c8">            code counts — a failing test run is masked by the downstream tool</tspan></text>
+    <text x="22" y="1023.0" xml:space="preserve"><tspan fill="#d7d3c8">            succeeding.</tspan></text>
+    <text x="22" y="1042.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Fix     </tspan><tspan fill="#d7d3c8">Add `shell: bash` with `set -o pipefail`, or split into two steps</tspan></text>
+    <text x="22" y="1061.0" xml:space="preserve"><tspan fill="#d7d3c8">            so the test command's exit code is preserved.</tspan></text>
+    <text x="22" y="1080.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the gate should stop failing and</tspan></text>
+    <text x="22" y="1099.0" xml:space="preserve"><tspan fill="#d7d3c8">            the score should recover by 8.</tspan></text>
 
-    <text x="22" y="1099.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(208,69,59)">✗</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(208,69,59)">ERROR  </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-CI-001 · .github/workflows/ci.yml:17</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E2 · deterministic]</tspan></text>
-    <text x="22" y="1118.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">Job `security-scan` runs a verification gate under</tspan></text>
-    <text x="22" y="1137.0" xml:space="preserve"><tspan fill="#d7d3c8">            `continue-on-error: true`.</tspan></text>
-    <text x="22" y="1156.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">FALSE-GREEN — This job can fail every day and CI will still show</tspan></text>
-    <text x="22" y="1175.0" xml:space="preserve"><tspan fill="#d7d3c8">            green. The checkmark on this workflow cannot be trusted.</tspan></text>
-    <text x="22" y="1194.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Fix     </tspan><tspan fill="#d7d3c8">Remove continue-on-error, or scope it to individual non-blocking</tspan></text>
-    <text x="22" y="1213.0" xml:space="preserve"><tspan fill="#d7d3c8">            steps only.</tspan></text>
-    <text x="22" y="1232.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the gate should stop failing and</tspan></text>
-    <text x="22" y="1251.0" xml:space="preserve"><tspan fill="#d7d3c8">            the score should recover by 8.</tspan></text>
+    <text x="22" y="1137.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(208,69,59)">✗</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(208,69,59)">ERROR  </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-CI-009 · .github/workflows/ci.yml:10</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E2 · deterministic]</tspan></text>
+    <text x="22" y="1156.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">Job `deploy-smoke` sequences commands with `; ` after the test</tspan></text>
+    <text x="22" y="1175.0" xml:space="preserve"><tspan fill="#d7d3c8">            command — the test result does not fail the step.</tspan></text>
+    <text x="22" y="1194.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">FALSE-GREEN — With `;` sequencing the step's exit status comes</tspan></text>
+    <text x="22" y="1213.0" xml:space="preserve"><tspan fill="#d7d3c8">            from the last command only, so failed tests still yield a green</tspan></text>
+    <text x="22" y="1232.0" xml:space="preserve"><tspan fill="#d7d3c8">            checkmark.</tspan></text>
+    <text x="22" y="1251.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Fix     </tspan><tspan fill="#d7d3c8">Chain with `&amp;&amp;` instead of `;` so a test failure fails the step.</tspan></text>
+    <text x="22" y="1270.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the gate should stop failing and</tspan></text>
+    <text x="22" y="1289.0" xml:space="preserve"><tspan fill="#d7d3c8">            the score should recover by 8.</tspan></text>
 
-    <text x="22" y="1289.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">⚠</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(224,165,38)">WARN   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-004 · e2e/checkout.spec.ts:5</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E1 · heuristic]</tspan></text>
-    <text x="22" y="1308.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">Brittle multi-class CSS selector: `locator(".btn.btn-primary &gt;</tspan></text>
-    <text x="22" y="1327.0" xml:space="preserve"><tspan fill="#d7d3c8">            div:nth-child(2)")`.</tspan></text>
-    <text x="22" y="1346.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">HYGIENE — Structural selectors break on any DOM refactor and fail</tspan></text>
-    <text x="22" y="1365.0" xml:space="preserve"><tspan fill="#d7d3c8">            without telling you which behavior regressed.</tspan></text>
-    <text x="22" y="1384.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Fix     </tspan><tspan fill="#d7d3c8">Prefer role-based locators: getByRole(), getByText(),</tspan></text>
-    <text x="22" y="1403.0" xml:space="preserve"><tspan fill="#d7d3c8">            getByLabel().</tspan></text>
-    <text x="22" y="1422.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — deduction should drop by 1.</tspan></text>
+    <text x="22" y="1327.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-CI-010 · .github/workflows/ci.yml:21</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · measured FP 40% · n=10]</tspan></text>
+    <text x="22" y="1346.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">Job `deploy-smoke` runs tests but its `if:` condition skips it on</tspan></text>
+    <text x="22" y="1365.0" xml:space="preserve"><tspan fill="#d7d3c8">            pull requests.</tspan></text>
+    <text x="22" y="1384.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">FALSE-GREEN — If this job is a required check, PRs can satisfy it</tspan></text>
+    <text x="22" y="1403.0" xml:space="preserve"><tspan fill="#d7d3c8">            while zero tests executed — the green checkmark verifies nothing.</tspan></text>
+    <text x="22" y="1422.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Fix     </tspan><tspan fill="#d7d3c8">Remove the skip-on-PR condition, or split into a dedicated PR test</tspan></text>
+    <text x="22" y="1441.0" xml:space="preserve"><tspan fill="#d7d3c8">            job and require THAT one in branch protection.</tspan></text>
+    <text x="22" y="1460.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the finding should no longer</tspan></text>
+    <text x="22" y="1479.0" xml:space="preserve"><tspan fill="#d7d3c8">            appear.</tspan></text>
 
-    <text x="22" y="1460.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(208,69,59)">✗</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(208,69,59)">ERROR  </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-101 · e2e/checkout.spec.ts:6</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E2 · deterministic]</tspan></text>
-    <text x="22" y="1479.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">`waitForTimeout()` hard sleep.</tspan></text>
-    <text x="22" y="1498.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">FLAKY-RISK — Fixed waits either wait too long (slow suite) or too</tspan></text>
-    <text x="22" y="1517.0" xml:space="preserve"><tspan fill="#d7d3c8">            little (flaky on slow machines). They encode hope, not</tspan></text>
-    <text x="22" y="1536.0" xml:space="preserve"><tspan fill="#d7d3c8">            synchronization.</tspan></text>
-    <text x="22" y="1555.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Fix     </tspan><tspan fill="#d7d3c8">Replace with a web-first assertion (`await</tspan></text>
-    <text x="22" y="1574.0" xml:space="preserve"><tspan fill="#d7d3c8">            expect(locator).toBeVisible()`) or `locator.waitFor()`.</tspan></text>
-    <text x="22" y="1593.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the gate should stop failing and</tspan></text>
-    <text x="22" y="1612.0" xml:space="preserve"><tspan fill="#d7d3c8">            the score should recover by 8.</tspan></text>
+    <text x="22" y="1517.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(208,69,59)">✗</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(208,69,59)">ERROR  </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-CI-009 · .github/workflows/ci.yml:26</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E2 · deterministic]</tspan></text>
+    <text x="22" y="1536.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">Job `deploy-smoke` pipes the test command into another tool</tspan></text>
+    <text x="22" y="1555.0" xml:space="preserve"><tspan fill="#d7d3c8">            without `set -o pipefail`.</tspan></text>
+    <text x="22" y="1574.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">FALSE-GREEN — In a shell pipeline only the last command's exit</tspan></text>
+    <text x="22" y="1593.0" xml:space="preserve"><tspan fill="#d7d3c8">            code counts — a failing test run is masked by the downstream tool</tspan></text>
+    <text x="22" y="1612.0" xml:space="preserve"><tspan fill="#d7d3c8">            succeeding.</tspan></text>
+    <text x="22" y="1631.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Fix     </tspan><tspan fill="#d7d3c8">Add `shell: bash` with `set -o pipefail`, or split into two steps</tspan></text>
+    <text x="22" y="1650.0" xml:space="preserve"><tspan fill="#d7d3c8">            so the test command's exit code is preserved.</tspan></text>
+    <text x="22" y="1669.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the gate should stop failing and</tspan></text>
+    <text x="22" y="1688.0" xml:space="preserve"><tspan fill="#d7d3c8">            the score should recover by 8.</tspan></text>
 
-    <text x="22" y="1650.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">⚠</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(224,165,38)">WARN   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-123 · e2e/login.spec.ts:4</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E2 · deterministic]</tspan></text>
-    <text x="22" y="1669.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">Hardcoded URL: `goto("https://staging.example.com/login"`.</tspan></text>
-    <text x="22" y="1688.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">HYGIENE — Specs pointing at absolute URLs break when environments</tspan></text>
-    <text x="22" y="1707.0" xml:space="preserve"><tspan fill="#d7d3c8">            change and can hit production by accident.</tspan></text>
-    <text x="22" y="1726.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Fix     </tspan><tspan fill="#d7d3c8">Use relative paths with baseURL from playwright.config, or an env</tspan></text>
-    <text x="22" y="1745.0" xml:space="preserve"><tspan fill="#d7d3c8">            variable.</tspan></text>
-    <text x="22" y="1764.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — deduction should drop by 3.</tspan></text>
+    <text x="22" y="1726.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-CI-001 · .github/workflows/ci.yml:27</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · measured FP 32% · n=19]</tspan></text>
+    <text x="22" y="1745.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">Job `security-scan` runs a verification gate under</tspan></text>
+    <text x="22" y="1764.0" xml:space="preserve"><tspan fill="#d7d3c8">            `continue-on-error: true`.</tspan></text>
+    <text x="22" y="1783.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">FALSE-GREEN — This job can fail every day and CI will still show</tspan></text>
+    <text x="22" y="1802.0" xml:space="preserve"><tspan fill="#d7d3c8">            green. The checkmark on this workflow cannot be trusted.</tspan></text>
+    <text x="22" y="1821.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Fix     </tspan><tspan fill="#d7d3c8">Remove continue-on-error, or scope it to individual non-blocking</tspan></text>
+    <text x="22" y="1840.0" xml:space="preserve"><tspan fill="#d7d3c8">            steps only.</tspan></text>
+    <text x="22" y="1859.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the finding should no longer</tspan></text>
+    <text x="22" y="1878.0" xml:space="preserve"><tspan fill="#d7d3c8">            appear.</tspan></text>
 
-    <text x="22" y="1802.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">⚠</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(224,165,38)">WARN   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-123 · e2e/login.spec.ts:11</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E2 · deterministic]</tspan></text>
-    <text x="22" y="1821.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">Hardcoded URL: `goto("https://staging.example.com/"`.</tspan></text>
-    <text x="22" y="1840.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">HYGIENE — Specs pointing at absolute URLs break when environments</tspan></text>
-    <text x="22" y="1859.0" xml:space="preserve"><tspan fill="#d7d3c8">            change and can hit production by accident.</tspan></text>
-    <text x="22" y="1878.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Fix     </tspan><tspan fill="#d7d3c8">Use relative paths with baseURL from playwright.config, or an env</tspan></text>
-    <text x="22" y="1897.0" xml:space="preserve"><tspan fill="#d7d3c8">            variable.</tspan></text>
-    <text x="22" y="1916.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — deduction should drop by 3.</tspan></text>
+    <text x="22" y="1916.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-145 · e2e/checkout.spec.ts:1</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · measured FP 100% · n=20]</tspan></text>
+    <text x="22" y="1935.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">UI-interacting spec file contains no accessibility assertions.</tspan></text>
+    <text x="22" y="1954.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">HYGIENE — Suites that drive the UI but never assert accessibility</tspan></text>
+    <text x="22" y="1973.0" xml:space="preserve"><tspan fill="#d7d3c8">            let WCAG regressions through every PR; catching them at the point</tspan></text>
+    <text x="22" y="1992.0" xml:space="preserve"><tspan fill="#d7d3c8">            of interaction is far cheaper than a retrofit audit.</tspan></text>
+    <text x="22" y="2011.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Fix     </tspan><tspan fill="#d7d3c8">Add `@axe-core/playwright` with `expect(await new AxeBuilder({</tspan></text>
+    <text x="22" y="2030.0" xml:space="preserve"><tspan fill="#d7d3c8">            page }).analyze()).toHaveNoViolations()` on key pages, or snapshot</tspan></text>
+    <text x="22" y="2049.0" xml:space="preserve"><tspan fill="#d7d3c8">            aria snapshots.</tspan></text>
+    <text x="22" y="2068.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the finding should no longer</tspan></text>
+    <text x="22" y="2087.0" xml:space="preserve"><tspan fill="#d7d3c8">            appear.</tspan></text>
 
-    <text x="22" y="1954.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">⚠</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(224,165,38)">WARN   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-122 · playwright.config.ts:1</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E2 · deterministic · measured FP 25% · n=20]</tspan></text>
-    <text x="22" y="1973.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">playwright.config has no `trace` capture setting.</tspan></text>
-    <text x="22" y="1992.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">FALSE-GREEN — A test that fails once and passes on retry is</tspan></text>
-    <text x="22" y="2011.0" xml:space="preserve"><tspan fill="#d7d3c8">            exactly the case you'll need evidence for later — with no trace,</tspan></text>
-    <text x="22" y="2030.0" xml:space="preserve"><tspan fill="#d7d3c8">            the flake is uninvestigable.</tspan></text>
-    <text x="22" y="2049.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Fix     </tspan><tspan fill="#d7d3c8">Add `use: { trace: 'on-first-retry' }` to the config.</tspan></text>
-    <text x="22" y="2068.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — deduction should drop by 3.</tspan></text>
-
-    <text x="22" y="2106.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-143 · playwright.config.ts:1</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E2 · deterministic · measured FP 25% · n=20]</tspan></text>
-    <text x="22" y="2125.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">playwright.config captures neither screenshots nor video on</tspan></text>
-    <text x="22" y="2144.0" xml:space="preserve"><tspan fill="#d7d3c8">            failure.</tspan></text>
-    <text x="22" y="2163.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">HYGIENE — Once the CI runner is gone, a failed UI test is just a</tspan></text>
-    <text x="22" y="2182.0" xml:space="preserve"><tspan fill="#d7d3c8">            stack trace. Screenshots/video on failure turn 'cannot reproduce'</tspan></text>
-    <text x="22" y="2201.0" xml:space="preserve"><tspan fill="#d7d3c8">            into a five-second diagnosis.</tspan></text>
-    <text x="22" y="2220.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Fix     </tspan><tspan fill="#d7d3c8">Add `use: { screenshot: 'only-on-failure', video:</tspan></text>
-    <text x="22" y="2239.0" xml:space="preserve"><tspan fill="#d7d3c8">            'retain-on-failure' }` to the config.</tspan></text>
+    <text x="22" y="2125.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-004 · e2e/checkout.spec.ts:5</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · measured FP 38% · n=16]</tspan></text>
+    <text x="22" y="2144.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">Brittle multi-class CSS selector: `locator(".btn.btn-primary &gt;</tspan></text>
+    <text x="22" y="2163.0" xml:space="preserve"><tspan fill="#d7d3c8">            div:nth-child(2)")`.</tspan></text>
+    <text x="22" y="2182.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">HYGIENE — Structural selectors break on any DOM refactor and fail</tspan></text>
+    <text x="22" y="2201.0" xml:space="preserve"><tspan fill="#d7d3c8">            without telling you which behavior regressed.</tspan></text>
+    <text x="22" y="2220.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Fix     </tspan><tspan fill="#d7d3c8">Prefer role-based locators: getByRole(), getByText(),</tspan></text>
+    <text x="22" y="2239.0" xml:space="preserve"><tspan fill="#d7d3c8">            getByLabel().</tspan></text>
     <text x="22" y="2258.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the finding should no longer</tspan></text>
     <text x="22" y="2277.0" xml:space="preserve"><tspan fill="#d7d3c8">            appear.</tspan></text>
 
-    <text x="22" y="2315.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">⚠</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(224,165,38)">WARN   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-141 · playwright.config.ts:5</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E1 · heuristic]</tspan></text>
-    <text x="22" y="2334.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">retries: undefined with no visible flake-triage loop.</tspan></text>
-    <text x="22" y="2353.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">FALSE-GREEN — Retries convert intermittent failures into silent</tspan></text>
-    <text x="22" y="2372.0" xml:space="preserve"><tspan fill="#d7d3c8">            passes. Without a forensics/triage step consuming retry data,</tspan></text>
-    <text x="22" y="2391.0" xml:space="preserve"><tspan fill="#d7d3c8">            flaky tests pass forever and real regressions hide behind lucky</tspan></text>
-    <text x="22" y="2410.0" xml:space="preserve"><tspan fill="#d7d3c8">            reruns.</tspan></text>
-    <text x="22" y="2429.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Fix     </tspan><tspan fill="#d7d3c8">Keep retries &lt;= 2 and feed retry outcomes into `mjolnir</tspan></text>
-    <text x="22" y="2448.0" xml:space="preserve"><tspan fill="#d7d3c8">            forensics`/`triage`, or add a reporter so flaky passes are</tspan></text>
-    <text x="22" y="2467.0" xml:space="preserve"><tspan fill="#d7d3c8">            reviewed.</tspan></text>
-    <text x="22" y="2486.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — deduction should drop by 1.</tspan></text>
+    <text x="22" y="2315.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(208,69,59)">✗</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(208,69,59)">ERROR  </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-101 · e2e/checkout.spec.ts:6</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E2 · deterministic · measured FP 0% · n=20]</tspan></text>
+    <text x="22" y="2334.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">`waitForTimeout()` hard sleep.</tspan></text>
+    <text x="22" y="2353.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">FLAKY-RISK — Fixed waits either wait too long (slow suite) or too</tspan></text>
+    <text x="22" y="2372.0" xml:space="preserve"><tspan fill="#d7d3c8">            little (flaky on slow machines). They encode hope, not</tspan></text>
+    <text x="22" y="2391.0" xml:space="preserve"><tspan fill="#d7d3c8">            synchronization.</tspan></text>
+    <text x="22" y="2410.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Fix     </tspan><tspan fill="#d7d3c8">Replace with a web-first assertion (`await</tspan></text>
+    <text x="22" y="2429.0" xml:space="preserve"><tspan fill="#d7d3c8">            expect(locator).toBeVisible()`) or `locator.waitFor()`.</tspan></text>
+    <text x="22" y="2448.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the gate should stop failing and</tspan></text>
+    <text x="22" y="2467.0" xml:space="preserve"><tspan fill="#d7d3c8">            the score should recover by 8.</tspan></text>
 
-    <text x="22" y="2524.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">⚠</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(224,165,38)">WARN   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PY-005 · tests/test_checkout_api.py:7</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E2 · deterministic · measured FP 16% · n=19]</tspan></text>
-    <text x="22" y="2543.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">Hard sleep: `time.sleep(2…`.</tspan></text>
-    <text x="22" y="2562.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">FLAKY-RISK — Fixed sleeps make tests slow and flaky — they guess</tspan></text>
-    <text x="22" y="2581.0" xml:space="preserve"><tspan fill="#d7d3c8">            at timing instead of waiting for state.</tspan></text>
-    <text x="22" y="2600.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Fix     </tspan><tspan fill="#d7d3c8">Wait for an explicit condition (polling helper, pytest-timeout</tspan></text>
-    <text x="22" y="2619.0" xml:space="preserve"><tspan fill="#d7d3c8">            wait_until, or event).</tspan></text>
-    <text x="22" y="2638.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — deduction should drop by 3.</tspan></text>
+    <text x="22" y="2505.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-TEST-002 · e2e/checkout.spec.ts:16</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · measured FP 65% · n=20]</tspan></text>
+    <text x="22" y="2524.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">Skipped test without justification: `test.skip(`.</tspan></text>
+    <text x="22" y="2543.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">FALSE-GREEN — Skipped tests hide broken or unimplemented behavior</tspan></text>
+    <text x="22" y="2562.0" xml:space="preserve"><tspan fill="#d7d3c8">            behind a green checkmark.</tspan></text>
+    <text x="22" y="2581.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Fix     </tspan><tspan fill="#d7d3c8">Fix and re-enable the test, or delete it with a tracked issue</tspan></text>
+    <text x="22" y="2600.0" xml:space="preserve"><tspan fill="#d7d3c8">            reference.</tspan></text>
+    <text x="22" y="2619.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the finding should no longer</tspan></text>
+    <text x="22" y="2638.0" xml:space="preserve"><tspan fill="#d7d3c8">            appear.</tspan></text>
 
+    <text x="22" y="2676.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-145 · e2e/login.spec.ts:1</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · measured FP 100% · n=20]</tspan></text>
+    <text x="22" y="2695.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">UI-interacting spec file contains no accessibility assertions.</tspan></text>
+    <text x="22" y="2714.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">HYGIENE — Suites that drive the UI but never assert accessibility</tspan></text>
+    <text x="22" y="2733.0" xml:space="preserve"><tspan fill="#d7d3c8">            let WCAG regressions through every PR; catching them at the point</tspan></text>
+    <text x="22" y="2752.0" xml:space="preserve"><tspan fill="#d7d3c8">            of interaction is far cheaper than a retrofit audit.</tspan></text>
+    <text x="22" y="2771.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Fix     </tspan><tspan fill="#d7d3c8">Add `@axe-core/playwright` with `expect(await new AxeBuilder({</tspan></text>
+    <text x="22" y="2790.0" xml:space="preserve"><tspan fill="#d7d3c8">            page }).analyze()).toHaveNoViolations()` on key pages, or snapshot</tspan></text>
+    <text x="22" y="2809.0" xml:space="preserve"><tspan fill="#d7d3c8">            aria snapshots.</tspan></text>
+    <text x="22" y="2828.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the finding should no longer</tspan></text>
+    <text x="22" y="2847.0" xml:space="preserve"><tspan fill="#d7d3c8">            appear.</tspan></text>
 
-    <text x="22" y="2695.0" xml:space="preserve"><tspan fill="rgb(124,133,144)">──────────────────────────────────────────────────────────</tspan></text>
-    <text x="22" y="2714.0" xml:space="preserve"><tspan fill="#d7d3c8">  Analysis: </tspan><tspan fill="rgb(79,180,119)">complete</tspan><tspan fill="#d7d3c8"> · a few ms</tspan></text>
-    <text x="22" y="2733.0" xml:space="preserve"><tspan fill="rgb(124,133,144)">  Rule coverage: 3/9 rules that fired here have a measured false-positive rate; the rest are heuristics. `mjolnir rules --unmeasured` lists them.</tspan></text>
+    <text x="22" y="2885.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">… +14 more across 8 rules. Run with --verbose for all findings.</tspan></text>
+
+    <text x="22" y="2923.0" xml:space="preserve"><tspan fill="rgb(124,133,144)">──────────────────────────────────────────────────────────</tspan></text>
+    <text x="22" y="2942.0" xml:space="preserve"><tspan fill="#d7d3c8">  Analysis: </tspan><tspan fill="rgb(79,180,119)">complete</tspan><tspan fill="#d7d3c8"> · a few ms</tspan></text>
+    <text x="22" y="2961.0" xml:space="preserve"><tspan fill="rgb(124,133,144)">  16 advisory findings (E0 — observation only, no score impact)</tspan></text>
+    <text x="22" y="2980.0" xml:space="preserve"><tspan fill="rgb(124,133,144)">  Rule coverage: 14/15 rules that fired here have a measured false-positive rate; the rest are heuristics. `mjolnir rules --unmeasured` lists them.</tspan></text>
 
   </g>
 
-  <rect x="0.5" y="0.5" width="1177" height="2788" rx="7.5" ry="7.5" fill="none" stroke="#000000" stroke-opacity="0.5"/>
+  <rect x="0.5" y="0.5" width="1193" height="3035" rx="7.5" ry="7.5" fill="none" stroke="#000000" stroke-opacity="0.5"/>
 </svg>

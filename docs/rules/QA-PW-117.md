@@ -6,8 +6,8 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | ------------------------------------- | --------------------------- |
 | Severity                              | warning                     |
 | Confidence                            | high                        |
-| Tier                                  | extended (PROVISIONAL)      |
-| Measured FP rate                      | not yet measured            |
+| Tier                                  | core                        |
+| Measured FP rate                      | 0% (n=20)                   |
 | Evidence level                        | E2                          |
 | QA impact                             | Test hygiene debt (HYGIENE) |
 | False-positive risk (author estimate) | low                         |
@@ -41,9 +41,11 @@ Verified against `tests/fixtures/QA-PW-117/must-not-fire/justified.spec.ts` — 
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo         | Occurrences |
-| ------------ | ----------- |
-| sveltejs-kit | 1           |
+| Repo              | Occurrences |
+| ----------------- | ----------- |
+| keycloak-keycloak | 98          |
+| positive-fixtures | 4           |
+| sveltejs-kit      | 1           |
 
 ---
 

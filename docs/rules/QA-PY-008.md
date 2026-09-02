@@ -41,10 +41,13 @@ Verified against `tests/fixtures/QA-PY-008/must-not-fire/clean.py` — a legitim
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo              | Occurrences |
-| ----------------- | ----------- |
-| psf-requests      | 2           |
-| reflex-dev-reflex | 43          |
+| Repo                | Occurrences |
+| ------------------- | ----------- |
+| apache-airflow      | 3357        |
+| getsentry-sentry    | 265         |
+| psf-requests        | 2           |
+| reflex-dev-reflex   | 43          |
+| streamlit-streamlit | 196         |
 
 ---
 

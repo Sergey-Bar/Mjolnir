@@ -6,8 +6,8 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | ------------------------------------- | ------------------------------ |
 | Severity                              | warning                        |
 | Confidence                            | medium                         |
-| Tier                                  | extended (PROVISIONAL)         |
-| Measured FP rate                      | not yet measured               |
+| Tier                                  | core                           |
+| Measured FP rate                      | 0% (n=10)                      |
 | Evidence level                        | E1                             |
 | QA impact                             | False-green risk (FALSE-GREEN) |
 | False-positive risk (author estimate) | medium                         |
@@ -39,7 +39,11 @@ Verified against `tests/fixtures/QA-PW-104/must-not-fire/real-click.spec.ts` —
 
 ## Corpus-measured false-positive risk
 
-UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked by `npm run corpus:regression` (see `docs/FP-AUDIT.md`). That is not the same as "never fires incorrectly" — it just means no occurrence, correct or not, has been observed there yet.
+Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
+
+| Repo              | Occurrences |
+| ----------------- | ----------- |
+| positive-fixtures | 10          |
 
 ---
 

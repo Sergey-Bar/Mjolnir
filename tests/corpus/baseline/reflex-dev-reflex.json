@@ -4,16 +4,16 @@
     "QA-CI-010": 1,
     "QA-PY-002": 3,
     "QA-PY-003": 101,
-    "QA-PY-004": 884,
+    "QA-PY-004": 892,
     "QA-PY-005": 16,
     "QA-PY-006": 2,
-    "QA-PY-007": 265,
+    "QA-PY-007": 267,
     "QA-PY-008": 43,
     "QA-PY-009": 1,
     "QA-PY-010": 6,
     "QA-PY-012": 1,
     "QA-PY-103": 2
   },
-  "totalFindings": 1326,
+  "totalFindings": 1336,
   "partial": false
 }

@@ -9,6 +9,82 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — Verification Trust Evolution, Phase 1 exit — dedicated corpora + wave-5 measurement (plan §11.5/§08)
+
+### Added — dedicated corpora (§11.5) and the wave-5 measurement
+
+- **CORPUS 19 → 34 repos** (`tests/corpus/audit.ts`): 14 new real-world
+  repos chosen by evaluating each candidate's unmeasured-rule fire count
+  at HEAD before committing (`vitest-dev-vitest`, `streamlit-streamlit`,
+  `apache-airflow`, `iluwatar-java-design-patterns`,
+  `spectreconsole-spectre-console`, `Humanizr-Humanizer`,
+  `cypress-realworld-app`, `keycloak-keycloak`, `appsmithorg-appsmith`,
+  `getsentry-sentry`, `github-docs`, `vercel-next-js`, `hashicorp-vault`,
+  `nocodb-nocodb`). This is the plan's dedicated-Corpora requirement for
+  §11.5: CI-workflow density for the starved QA-CI-* rules and JV/CS
+  application repos so the QA-JV/QA-CS rules measure on consumer code,
+  not just the Playwright bindings themselves (D5). Candidates whose scan
+  truncated against the budget (`n8n`, `posthog`, `vscode`) were rejected —
+  a partial scan can never be count-locked.
+- **Committed class-B/C fixture corpora (§08):**
+  `tests/corpus/positive-fixtures/` (realistic anti-pattern exhibits that
+  MUST fire — class-B recall evidence, every fire classifies TP) and
+  `tests/corpus/negative-fixtures/` (realistic legitimate code that must
+  NOT fire — class-C precision evidence, any fire is a recorded FP).
+  These give rules whose patterns are rare in the wild a measurement-grade
+  verdict surface, versioned with the verdicts that classify them via
+  `local:` corpus URLs. Excluded from self-scan, vitest, eslint, prettier
+  and the test tsconfig — they are DATA.
+- **`corpus-sample.ts --unmeasured-only`:** the verdict-harvesting loop
+  can sample only rules without a valid measurement, so classification
+  effort goes to the exit gate instead of re-sampling measured rules.
+- **`audit.ts --only=<name>,<name>`:** re-check or re-record a corpus
+  subset (used to re-verify a repo after a transient truncation without
+  rescanning everything); the completeness threshold now applies to the
+  filtered set. Clones use `git -c core.longpaths=true` (scoped, not a
+  global config change) and the per-repo scan budget is 60s → 120s; the
+  audit job gets `NODE_OPTIONS=--max-old-space-size=8192` (sentry's
+  repo-scale parse OOMs the default heap) and a 60-minute timeout.
+- **Measured coverage 43 → 78 of 91** (1423 classified verdicts, 0 blank,
+  0 UNSURE): 35 rules newly measured at n ≥ 10 — QA-TEST-001, QA-TEST-006,
+  QA-TEST-010, QA-TQUAL-002, QA-TQUAL-009, QA-TQUAL-011, QA-CI-001,
+  QA-CI-002, QA-CI-005, QA-CI-008, QA-PW-003, QA-PW-004, QA-PW-104,
+  QA-PW-113, QA-PW-115, QA-PW-117, QA-PW-121, QA-PW-123, QA-PW-140,
+  QA-PW-141, QA-PW-142, QA-PW-144, QA-PY-001, QA-PY-009, QA-PY-011,
+  QA-PY-012, QA-PY-103, QA-PY-105, QA-JV-101, QA-JV-102, QA-JV-109,
+  QA-CS-103, QA-CS-107 (plus the four previously counted). **Phase 1
+  exit gate MET: unmeasured 48 → 13 (≤ 20).**
+- **Explicit tier declarations for all 35 newly measured rules, set from
+  the measured FP band (§11.2: ≤10% core, ≤30% extended, >30%
+  quarantine):** core — QA-PW-003, QA-PW-104, QA-PW-113, QA-PW-117,
+  QA-PW-121, QA-PW-140, QA-PY-001, QA-PY-009, QA-PY-011, QA-PY-103,
+  QA-JV-101, QA-JV-109; extended — QA-TQUAL-011, QA-CI-002, QA-CI-007,
+  QA-PW-141, QA-PW-142, QA-PW-144; quarantine — QA-TEST-001, QA-TEST-006,
+  QA-TEST-010, QA-TQUAL-002, QA-TQUAL-009, QA-PW-004, QA-PW-115,
+  QA-PW-123, QA-PY-012, QA-PY-105, QA-CI-001, QA-CI-005, QA-CI-008,
+  QA-CI-010, QA-CS-103. Every measured entry carries `detectorRevision`
+  in the sidecar. **Evidence-backed, not silent:** the quarantine
+  demotions remove error-severity deductions from default scans, which is
+  the tier policy working as designed — the failing specs were updated
+  with their reasoning inline (gate tests re-anchored on QA-CI-009, the
+  demo repo's CI grew real CI-009 exhibits, the demo/hero assets and
+  `fix` command scan with `--strict`).
+- **Recall-floor + corpus baselines:** 34 count-locked baselines recorded
+  (non-partial scans only); the §20.6 recall floor extends to the
+  expanded registry.
+
+### Changed — scan-behavior fallout of the measured demotions (explained)
+
+- `mjolnir fix` now scans with `--strict`: an auto-fixable rule that is
+  measured into quarantine (QA-TEST-001's `.only` fix) must still be
+  fixable — hiding it would make `fix` a no-op on its own target debt.
+- The demo repo's CI workflow gained genuine CI-009 exhibits (piped and
+  `;`-sequenced test commands) so the demo keeps demonstrating the
+  NEEDS-WORK band now that its QA-TEST-001/QA-CI-001/PW-004 debt is
+  quarantine-capped to info (non-deducting); `docs:demo`/`docs:hero` scan
+  with `--strict` so the committed assets and their drift locks stay in
+  sync with the precision-contract spec.
+
 ## [Unreleased] — Verification Trust Evolution, Phase 1 — measurement infrastructure
 
 ### Added — UNSURE adjudication gate + QA-PW-101 measured (plan §11.5)

@@ -41,11 +41,17 @@ Verified against `tests/fixtures/QA-PW-108/must-not-fire/role-name.spec.ts` — 
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo            | Occurrences |
-| --------------- | ----------- |
-| grafana-grafana | 78          |
-| sveltejs-kit    | 428         |
-| withastro-astro | 350         |
+| Repo               | Occurrences |
+| ------------------ | ----------- |
+| apache-airflow     | 3           |
+| github-docs        | 3           |
+| grafana-grafana    | 78          |
+| hashicorp-vault    | 3           |
+| Humanizr-Humanizer | 3           |
+| keycloak-keycloak  | 20          |
+| sveltejs-kit       | 428         |
+| vitest-dev-vitest  | 19          |
+| withastro-astro    | 350         |
 
 ---
 

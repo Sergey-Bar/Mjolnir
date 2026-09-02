@@ -94,6 +94,9 @@ async function main(): Promise<void> {
     maxDurationMs: Number.POSITIVE_INFINITY,
     scopeChanged: false,
     format: "terminal",
+    // Same rationale as generate-readme-demo.ts: the committed asset and
+    // its drift-lock spec must reproduce the identical strict scan.
+    strict: true,
   });
 
   // isTTY: true forces real ANSI color codes even though this script's

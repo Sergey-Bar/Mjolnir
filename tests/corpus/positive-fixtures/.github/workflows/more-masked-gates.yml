@@ -1,0 +1,25 @@
+name: Docs coverage
+
+on: [push]
+
+jobs:
+  docs-coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npx playwright test
+        continue-on-error: true
+
+  cypress-gate:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cypress-io/github-action@v6
+
+  vitest-gate:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - run: vitest run

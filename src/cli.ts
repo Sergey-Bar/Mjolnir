@@ -1218,7 +1218,11 @@ export async function runFixCommand(
     const target = resolve(args.target);
     const invalid = validateScanTarget(target, io.err);
     if (invalid !== null) return invalid;
-    const result = await runScan({ ...args, target });
+    // Fix must see quarantine-tier findings too: an auto-fixable rule
+    // that is measured into quarantine (e.g. QA-TEST-001) still has a
+    // mechanical fix, and hiding its findings from fix would make the
+    // command a silent no-op on the exact debt it exists to remove.
+    const result = await runScan({ ...args, target, strict: true });
     const fixes = planAndApplyFixes(result, target, { dryRun });
     io.out(renderFixReport(fixes, dryRun));
     // Exit 1 when anything failed verification; applied/dry-run is fine.

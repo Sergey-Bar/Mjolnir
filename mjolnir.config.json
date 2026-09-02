@@ -5,7 +5,9 @@
     "examples/**",
     "scratch/**",
     ".kilo/**",
-    "tests/corpus/.cache*/**"
+    "tests/corpus/.cache*/**",
+    "tests/corpus/positive-fixtures/**",
+    "tests/corpus/negative-fixtures/**"
   ],
   "ignore": [
     {

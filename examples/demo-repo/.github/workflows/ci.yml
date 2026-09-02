@@ -7,13 +7,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: npm test
+      - run: npm test | tee test-results.log
+      - run: yarn test --coverage | tee coverage.log
 
   lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: npm run lint || true
+      - run: npm run lint; npm run typecheck
+
+  deploy-smoke:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm test; npm run smoke
+      - run: vitest run --coverage | tee vitest-results.log
+      - run: pnpm test | tee pnpm-results.log
 
   security-scan:
     continue-on-error: true

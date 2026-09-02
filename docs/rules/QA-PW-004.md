@@ -6,8 +6,8 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | ------------------------------------- | ------------------------------------ |
 | Severity                              | warning                              |
 | Confidence                            | medium                               |
-| Tier                                  | extended (PROVISIONAL)               |
-| Measured FP rate                      | not yet measured                     |
+| Tier                                  | quarantine                           |
+| Measured FP rate                      | 38% (n=16)                           |
 | Evidence level                        | E1                                   |
 | QA impact                             | Test hygiene debt (HYGIENE)          |
 | False-positive risk (author estimate) | medium                               |
@@ -41,11 +41,13 @@ Verified against `tests/fixtures/QA-PW-004/must-not-fire/clean.spec.ts` — a le
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo            | Occurrences |
-| --------------- | ----------- |
-| dubinc-dub      | 2           |
-| grafana-grafana | 5           |
-| vitejs-vite     | 1           |
+| Repo              | Occurrences |
+| ----------------- | ----------- |
+| dubinc-dub        | 2           |
+| grafana-grafana   | 5           |
+| hashicorp-vault   | 2           |
+| positive-fixtures | 8           |
+| vitejs-vite       | 1           |
 
 ---
 

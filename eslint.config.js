@@ -34,6 +34,10 @@ export default tseslint.config(
       "tests/fixtures/**",
       "tests/golden/repo/**",
       "tests/corpus/.cache*/**",
+      // Committed §08 class-B/C fixture corpora — same DATA status as
+      // tests/fixtures: deliberately contain anti-patterns.
+      "tests/corpus/positive-fixtures/**",
+      "tests/corpus/negative-fixtures/**",
       // Workspace build output and the deliberate out-of-project example
       // config (excluded from every tsconfig on purpose).
       "packages/*/dist/**",

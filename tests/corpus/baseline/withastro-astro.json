@@ -19,9 +19,9 @@
     "QA-PW-145": 48,
     "QA-TEST-002": 32,
     "QA-TEST-003": 101,
-    "QA-TEST-004": 31,
+    "QA-TEST-004": 32,
     "QA-TEST-010": 1
   },
-  "totalFindings": 765,
+  "totalFindings": 766,
   "partial": false
 }

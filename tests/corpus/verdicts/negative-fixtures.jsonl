@@ -1,0 +1,1 @@
+{"ruleId":"QA-PW-115","file":"QA-PW-115/fixture-page.spec.ts","line":13,"verdict":"FP","note":"module-level `let browser` here is a STRING placeholder (docs link bag), not Playwright browser state; the regex heuristic cannot type-check, so the shared-browser-state diagnosis does not hold"}

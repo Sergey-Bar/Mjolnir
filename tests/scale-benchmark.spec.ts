@@ -51,6 +51,7 @@ describe(`scanning a synthetic ${FILE_COUNT}-file repo`, () => {
     async () => {
       const start = performance.now();
       const result = await runScan({
+        strict: true,
         target: dir,
         json: true,
         verbose: true,
@@ -107,6 +108,7 @@ describe(`scanning a synthetic ${FILE_COUNT}-file repo`, () => {
 
         const t0 = performance.now();
         await runScan({
+          strict: true,
           target: smallDir,
           json: true,
           verbose: false,
@@ -118,6 +120,7 @@ describe(`scanning a synthetic ${FILE_COUNT}-file repo`, () => {
 
         const t1 = performance.now();
         await runScan({
+          strict: true,
           target: dir,
           json: true,
           verbose: false,

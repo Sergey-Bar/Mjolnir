@@ -1,0 +1,13 @@
+name: Deploy
+
+on: [push]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose down || true
+      - run: pkill -f dev-server || true
+      - run: rm -rf .cache || true
+      - run: npm test

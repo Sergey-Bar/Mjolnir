@@ -123,6 +123,7 @@ describe("hostile repo: malformed ingestion inputs", () => {
       maxDurationMs: 30_000,
       scopeChanged: false,
       format: "json",
+      strict: true,
     });
     // QA-16: the skip is counted and the scan flags itself partial.
     expect(r.analysisStatus.skippedFiles).toBeGreaterThanOrEqual(1);
@@ -155,6 +156,7 @@ describe("hostile repo: malformed ingestion inputs", () => {
       maxDurationMs: 30_000,
       scopeChanged: false,
       format: "json",
+      strict: true,
     });
     expect(
       r.findings.some((f) => f.file.includes("ünïcodé-#hash.test.ts")),
@@ -174,6 +176,7 @@ describe("hostile repo: malformed ingestion inputs", () => {
       maxDurationMs: 30_000,
       scopeChanged: false,
       format: "json",
+      strict: true,
     });
     expect(
       r2.findings.some((f) => f.file.includes("ünïcodé-#hash-2.test.ts")),

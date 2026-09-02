@@ -145,6 +145,70 @@ const CORPUS_NOTES: Record<string, { url: string; note: string }> = {
     url: "https://github.com/puppeteer/puppeteer.git",
     note: "real TS monorepo with mocha tests and multi-job Actions — QA-CI surface plus QA-PW/QA-TEST growth",
   },
+  "vitest-dev-vitest": {
+    url: "https://github.com/vitest-dev/vitest.git",
+    note: "real TS monorepo with a large vitest suite of its own — QA-TEST-001/010, QA-TQUAL-002 at scale, plus CI and QA-PW config surfaces",
+  },
+  "streamlit-streamlit": {
+    url: "https://github.com/streamlit/streamlit.git",
+    note: "real Python app with pytest-playwright e2e and many GitHub Actions — QA-PY-103/105 plus QA-CI-005 and QA-PY-012",
+  },
+  "apache-airflow": {
+    url: "https://github.com/apache/airflow.git",
+    note: "huge real pytest suite — QA-PY-011/012 at scale plus QA-TEST-006",
+  },
+  "iluwatar-java-design-patterns": {
+    url: "https://github.com/iluwatar/java-design-patterns.git",
+    note: "real Java application repo with extensive JUnit tests — QA-JV-102/101 on consumer code, plus QA-CI-005 (D5)",
+  },
+  "spectreconsole-spectre-console": {
+    url: "https://github.com/spectreconsole/spectre.console.git",
+    note: "real C# application repo with a large NUnit suite — QA-CS-103 at consumer scale (D5)",
+  },
+  "Humanizr-Humanizer": {
+    url: "https://github.com/Humanizr/Humanizer.git",
+    note: "real C# library repo with xUnit tests and a retry-wrapped CI step — QA-CS-103 and QA-CI-007 surface",
+  },
+  "cypress-realworld-app": {
+    url: "https://github.com/cypress-io/cypress-realworld-app.git",
+    note: "real TS consumer app with heavy e2e — QA-TQUAL-009 at scale on application code",
+  },
+  "keycloak-keycloak": {
+    url: "https://github.com/keycloak/keycloak.git",
+    note: "large real Java monorepo whose UI suite is Playwright TypeScript — QA-PW-117 at scale plus QA-JV-101/102 and QA-CI-007",
+  },
+  "appsmithorg-appsmith": {
+    url: "https://github.com/appsmithorg/appsmith.git",
+    note: "real Java+TS monorepo with JUnit tests and CI workflows — QA-JV-101/102 plus QA-CI-008 and QA-TQUAL-011",
+  },
+  "getsentry-sentry": {
+    url: "https://github.com/getsentry/sentry.git",
+    note: "huge real Python monorepo — QA-PY-009/012 at scale plus QA-TQUAL-002",
+  },
+  "github-docs": {
+    url: "https://github.com/github/docs.git",
+    note: "workflow-dense docs repo (small code footprint) — QA-CI-001 and QA-CI-007 surface on real Actions files",
+  },
+  "vercel-next-js": {
+    url: "https://github.com/vercel/next.js.git",
+    note: "large real TS monorepo with its own e2e suite — QA-TEST-010, QA-TQUAL-002 at scale, plus QA-PW-141/144 and QA-CI-008",
+  },
+  "hashicorp-vault": {
+    url: "https://github.com/hashicorp/vault.git",
+    note: "real monorepo with UI tests and mature CI — QA-PW-004, QA-CI-001/008 and QA-PW-141 surface",
+  },
+  "nocodb-nocodb": {
+    url: "https://github.com/nocodb/nocodb.git",
+    note: "real TS app with e2e and CI — QA-CI-010 and QA-PW-115 surface",
+  },
+  "positive-fixtures": {
+    url: "local:tests/corpus/positive-fixtures",
+    note: "committed §08 class-B positive corpus — realistic anti-pattern variants per rule that MUST fire; every fire classifies TP",
+  },
+  "negative-fixtures": {
+    url: "local:tests/corpus/negative-fixtures",
+    note: "committed §08 class-C negative corpus — realistic legitimate code per rule that must NOT fire; any fire classifies FP",
+  },
 };
 
 export interface FpAuditBaseline {

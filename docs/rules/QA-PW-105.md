@@ -41,13 +41,18 @@ Verified against `tests/fixtures/QA-PW-105/must-not-fire/with-timeout.spec.ts` â
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos â€” reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo            | Occurrences |
-| --------------- | ----------- |
-| dubinc-dub      | 1           |
-| grafana-grafana | 25          |
-| sveltejs-kit    | 33          |
-| vitejs-vite     | 504         |
-| withastro-astro | 1           |
+| Repo               | Occurrences |
+| ------------------ | ----------- |
+| apache-airflow     | 3           |
+| dubinc-dub         | 1           |
+| github-docs        | 7           |
+| grafana-grafana    | 25          |
+| Humanizr-Humanizer | 9           |
+| keycloak-keycloak  | 1           |
+| sveltejs-kit       | 33          |
+| vitejs-vite        | 504         |
+| vitest-dev-vitest  | 69          |
+| withastro-astro    | 1           |
 
 ---
 

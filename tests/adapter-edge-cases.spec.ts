@@ -39,6 +39,7 @@ async function scan(target = dir) {
     maxDurationMs: 15_000,
     scopeChanged: false,
     format: "json",
+    strict: true,
   });
 }
 

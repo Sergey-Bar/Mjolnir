@@ -148,7 +148,7 @@ describe("baseline rendering fallbacks", () => {
       "it.only('a', () => { console.log('x'); });\n",
     );
     const out: string[] = [];
-    const code = await runBaselineCommand([dir], {
+    const code = await runBaselineCommand([dir, "--strict"], {
       out: (...p: unknown[]) => out.push(p.map(String).join(" ")),
       err: () => {},
     });

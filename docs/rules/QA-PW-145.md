@@ -43,14 +43,26 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo                 | Occurrences |
 | -------------------- | ----------- |
+| apache-airflow       | 9           |
+| appsmithorg-appsmith | 8           |
 | calcom-cal           | 5           |
 | dubinc-dub           | 5           |
+| getsentry-sentry     | 7           |
+| github-docs          | 3           |
 | grafana-grafana      | 107         |
+| hashicorp-vault      | 29          |
+| Humanizr-Humanizer   | 3           |
+| keycloak-keycloak    | 25          |
+| negative-fixtures    | 7           |
 | nextauthjs-next-auth | 3           |
+| nocodb-nocodb        | 1           |
+| positive-fixtures    | 20          |
 | puppeteer-puppeteer  | 58          |
+| streamlit-streamlit  | 4           |
 | sveltejs-kit         | 11          |
 | tanstack-query       | 3           |
 | vitejs-vite          | 38          |
+| vitest-dev-vitest    | 18          |
 | withastro-astro      | 48          |
 
 ---

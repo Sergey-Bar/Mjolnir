@@ -29,6 +29,8 @@ export const pwRetryMaskingNoForensics = defineRule({
   detectionStrategy: "regex heuristic",
   introduced: "0.3.8",
 
+  // Measured 2026-09-02 (corpus wave 5): tier set from the measured envelope (plan §11.2).
+  tier: "extended",
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];

@@ -24,6 +24,7 @@ export const pyPwWaitForTimeout = defineRule({
   autofix: false,
   detectionStrategy: "regex pattern",
   introduced: "0.3.8",
+  tier: "core", // measured 2026-09-02: 10% FP at n=20 (band edge, ≤ 10%)
 
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;

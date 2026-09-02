@@ -6,8 +6,8 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | ------------------------------------- | ------------------------------ |
 | Severity                              | error                          |
 | Confidence                            | high                           |
-| Tier                                  | extended (PROVISIONAL)         |
-| Measured FP rate                      | not yet measured               |
+| Tier                                  | quarantine                     |
+| Measured FP rate                      | 100% (n=20)                    |
 | Evidence level                        | E2                             |
 | QA impact                             | False-green risk (FALSE-GREEN) |
 | False-positive risk (author estimate) | low                            |
@@ -39,7 +39,13 @@ Verified against `tests/fixtures/QA-PY-105/must-not-fire/test_checkout.py` — a
 
 ## Corpus-measured false-positive risk
 
-UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked by `npm run corpus:regression` (see `docs/FP-AUDIT.md`). That is not the same as "never fires incorrectly" — it just means no occurrence, correct or not, has been observed there yet.
+Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
+
+| Repo                | Occurrences |
+| ------------------- | ----------- |
+| negative-fixtures   | 5           |
+| positive-fixtures   | 18          |
+| streamlit-streamlit | 25          |
 
 ---
 

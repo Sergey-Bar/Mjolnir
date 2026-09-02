@@ -21,6 +21,7 @@
 
 import { execFileSync } from "node:child_process";
 import {
+  cpSync,
   existsSync,
   mkdirSync,
   readFileSync,
@@ -36,6 +37,7 @@ import { prettify } from "./lib/prettify.js";
 import { runScan } from "../src/cli.js";
 // Single source of truth for the corpus — do NOT redefine it here.
 import { CORPUS, type CorpusRepo } from "../tests/corpus/audit.js";
+import { MEASURED_FP } from "../src/rules/measured-fp.generated.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..");
@@ -45,6 +47,18 @@ const VERDICTS_DIR = join(ROOT, "tests", "corpus", "verdicts");
 
 const MAX_SAMPLES_PER_RULE = 20;
 const CONTEXT_LINES = 5; // lines above and below the finding
+
+/**
+ * `--unmeasured-only` (plan §11.1 verdict-harvesting loop): sample ONLY
+ * rules without a valid measurement so classification effort goes to the
+ * Phase 1 exit gate (unmeasured ≤ 20) instead of re-sampling rules that
+ * are already measured at their quota.
+ */
+const UNMEASURED_ONLY = process.argv.includes("--unmeasured-only");
+
+function ruleIsUnmeasured(ruleId: string): boolean {
+  return MEASURED_FP[ruleId] === undefined;
+}
 
 interface SampledFinding {
   repo: string;
@@ -59,9 +73,24 @@ function cloneRepo(repo: CorpusRepo): string {
   const dest = join(CACHE_DIR, repo.name);
   if (existsSync(dest)) return dest; // reuse cached clone
   mkdirSync(CACHE_DIR, { recursive: true });
-  execFileSync("git", ["clone", "--depth", "1", repo.url, dest], {
-    stdio: "pipe",
-  });
+  // `local:` URLs (§08 classes B/C) — copy the committed corpus instead
+  // of cloning; .git never exists for in-repo fixtures.
+  if (repo.url.startsWith("local:")) {
+    const src = join(HERE, "..", repo.url.slice("local:".length));
+    if (!existsSync(src)) {
+      throw new Error(`local corpus missing: ${src}`);
+    }
+    cpSync(src, dest, { recursive: true });
+    return dest;
+  }
+  execFileSync(
+    "git",
+    // core.longpaths: same Windows MAX_PATH rationale as the audit clone.
+    ["-c", "core.longpaths=true", "clone", "--depth", "1", repo.url, dest],
+    {
+      stdio: "pipe",
+    },
+  );
   rmSync(join(dest, ".git"), { recursive: true, force: true });
   return dest;
 }
@@ -102,7 +131,7 @@ async function scanAndSample(): Promise<Map<string, SampledFinding[]>> {
       target: dir,
       json: true,
       verbose: true,
-      maxDurationMs: 60_000,
+      maxDurationMs: 120_000,
       scopeChanged: false,
       format: "json",
       // --strict: sample quarantine-tier rules too. Without this, every
@@ -112,6 +141,7 @@ async function scanAndSample(): Promise<Map<string, SampledFinding[]>> {
     });
 
     for (const finding of result.findings) {
+      if (UNMEASURED_ONLY && !ruleIsUnmeasured(finding.ruleId)) continue;
       const samples = byRule.get(finding.ruleId) ?? [];
       if (samples.length >= MAX_SAMPLES_PER_RULE) continue;
 
@@ -250,6 +280,9 @@ function initVerdictFiles(byRule: Map<string, SampledFinding[]>): void {
 
 async function main(): Promise<void> {
   console.log("Corpus sample generator — Phase 3 (Tempering Plan)");
+  if (UNMEASURED_ONLY) {
+    console.log("Mode: --unmeasured-only — sampling unmeasured rules only.");
+  }
   console.log(
     `Drawing up to ${MAX_SAMPLES_PER_RULE} findings per rule from ${CORPUS.length} corpus repos...\n`,
   );

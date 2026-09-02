@@ -23,7 +23,7 @@ export const retryMaskingFamily: QADoctorRule[] = [
     autofix: false,
     detectionStrategy: "regex pattern",
     introduced: "0.4.0",
-    tier: "extended",
+    tier: "core",
     run(ctx) {
       const text = ctx.codeText ?? ctx.text;
       const findings: Omit<Finding, "ruleId" | "category">[] = [];

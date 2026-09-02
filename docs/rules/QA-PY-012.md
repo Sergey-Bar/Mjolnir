@@ -6,8 +6,8 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | ------------------------------------- | ------------------------------ |
 | Severity                              | error                          |
 | Confidence                            | high                           |
-| Tier                                  | extended (PROVISIONAL)         |
-| Measured FP rate                      | not yet measured               |
+| Tier                                  | quarantine                     |
+| Measured FP rate                      | 60% (n=20)                     |
 | Evidence level                        | E2                             |
 | QA impact                             | False-green risk (FALSE-GREEN) |
 | False-positive risk (author estimate) | low                            |
@@ -41,10 +41,15 @@ Verified against `tests/fixtures/QA-PY-012/must-not-fire/clean.py` — a legitim
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo              | Occurrences |
-| ----------------- | ----------- |
-| pytest-dev-pytest | 5           |
-| reflex-dev-reflex | 1           |
+| Repo                | Occurrences |
+| ------------------- | ----------- |
+| apache-airflow      | 6           |
+| getsentry-sentry    | 1           |
+| negative-fixtures   | 2           |
+| positive-fixtures   | 15          |
+| pytest-dev-pytest   | 5           |
+| reflex-dev-reflex   | 1           |
+| streamlit-streamlit | 2           |
 
 ---
 

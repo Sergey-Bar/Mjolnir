@@ -1,0 +1,6 @@
+page = browser.new_page()
+context = browser.new_context()
+browser = playwright.chromium.launch()
+browser_context = context.new_page()
+browser2 = playwright.webkit.launch()
+context2 = browser.new_context()

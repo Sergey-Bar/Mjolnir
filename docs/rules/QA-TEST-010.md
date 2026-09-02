@@ -6,8 +6,8 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | ------------------------------------- | ------------------------------- |
 | Severity                              | error                           |
 | Confidence                            | high                            |
-| Tier                                  | extended (PROVISIONAL)          |
-| Measured FP rate                      | not yet measured                |
+| Tier                                  | quarantine                      |
+| Measured FP rate                      | 90% (n=20)                      |
 | Evidence level                        | E2                              |
 | QA impact                             | False-green risk (FALSE-GREEN)  |
 | False-positive risk (author estimate) | low                             |
@@ -41,11 +41,15 @@ Verified against `tests/fixtures/QA-TEST-010/must-not-fire/clean.spec.ts` — a 
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo            | Occurrences |
-| --------------- | ----------- |
-| grafana-grafana | 2           |
-| tanstack-query  | 2           |
-| withastro-astro | 1           |
+| Repo              | Occurrences |
+| ----------------- | ----------- |
+| getsentry-sentry  | 1           |
+| grafana-grafana   | 2           |
+| negative-fixtures | 3           |
+| positive-fixtures | 11          |
+| tanstack-query    | 2           |
+| vitest-dev-vitest | 82          |
+| withastro-astro   | 1           |
 
 ---
 

@@ -1,6 +1,6 @@
 # QA-CI-010 — Sample Findings for Classification
 
-Total sampled: 3 (max 20 per rule)
+Total sampled: 10 (max 20 per rule)
 
 Classify each finding as:
 
@@ -70,6 +70,159 @@ Classify each finding as:
       90|       matrix:
       91|         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
       92|     runs-on: macos-latest
+```
+
+**verdict:**
+
+---
+
+## 4. streamlit-streamlit — .github/workflows/publish-component-v2-lib.yml:26
+
+**Message:** Job `publish-component-v2-lib` runs tests but its `if:` condition skips it on pull requests.
+
+```
+      21|   contents: read
+      22|   id-token: write
+      23|
+      24| jobs:
+      25|   publish-component-v2-lib:
+>>>   26|     if: ${{ github.repository == 'streamlit/streamlit' && github.event_name == 'workflow_dispatch' }}
+      27|     runs-on: ubuntu-latest
+      28|     environment: release
+      29|
+      30|     steps:
+      31|       - name: Checkout repository
+```
+
+**verdict:**
+
+---
+
+## 5. nocodb-nocodb — .github/workflows/jest-unit-test.yml:21
+
+**Message:** Job `jest-unit-test` runs tests but its `if:` condition skips it on pull requests.
+
+```
+      16|   workflow_dispatch:
+      17| jobs:
+      18|   jest-unit-test:
+      19|     runs-on: ubicloud-standard-2
+      20|     timeout-minutes: 20
+>>>   21|     if: ${{ github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'trigger-CI') || !github.event.pull_request.draft || inputs.force == true }}
+      22|     steps:
+      23|       - name: Checkout
+      24|         uses: actions/checkout@v4
+      25|         with:
+      26|           fetch-depth: 0
+```
+
+**verdict:**
+
+---
+
+## 6. positive-fixtures — .github/workflows/more-pr-skipped.yml:8
+
+**Message:** Job `e2e` runs tests but its `if:` condition skips it on pull requests.
+
+```
+       3| on: [push]
+       4|
+       5| jobs:
+       6|   e2e:
+       7|     runs-on: ubuntu-latest
+>>>    8|     if: github.event_name == 'workflow_dispatch'
+       9|     steps:
+      10|       - uses: actions/checkout@v4
+      11|       - run: npx playwright test
+      12|
+      13|   nightly:
+```
+
+**verdict:**
+
+---
+
+## 7. positive-fixtures — .github/workflows/more-pr-skipped.yml:15
+
+**Message:** Job `nightly` runs tests but its `if:` condition skips it on pull requests.
+
+```
+      10|       - uses: actions/checkout@v4
+      11|       - run: npx playwright test
+      12|
+      13|   nightly:
+      14|     runs-on: ubuntu-latest
+>>>   15|     if: github.event_name != 'pull_request'
+      16|     steps:
+      17|       - uses: actions/checkout@v4
+      18|       - run: pytest
+      19|
+      20|   main-only-suite:
+```
+
+**verdict:**
+
+---
+
+## 8. positive-fixtures — .github/workflows/pr-skipped.yml:10
+
+**Message:** Job `test` runs tests but its `if:` condition skips it on pull requests.
+
+```
+       5|     branches: [main]
+       6|
+       7| jobs:
+       8|   test:
+       9|     runs-on: ubuntu-latest
+>>>   10|     if: github.event_name != 'pull_request'
+      11|     steps:
+      12|       - uses: actions/checkout@v4
+      13|       - run: npm test
+      14|
+      15|   e2e:
+```
+
+**verdict:**
+
+---
+
+## 9. positive-fixtures — .github/workflows/pr-skipped.yml:17
+
+**Message:** Job `e2e` runs tests but its `if:` condition skips it on pull requests.
+
+```
+      12|       - uses: actions/checkout@v4
+      13|       - run: npm test
+      14|
+      15|   e2e:
+      16|     runs-on: ubuntu-latest
+>>>   17|     if: github.event_name == 'push'
+      18|     steps:
+      19|       - uses: actions/checkout@v4
+      20|       - run: npx playwright test
+      21|
+      22|   main-only:
+```
+
+**verdict:**
+
+---
+
+## 10. positive-fixtures — .github/workflows/pr-skipped.yml:24
+
+**Message:** Job `main-only` runs tests but its `if:` condition skips it on pull requests.
+
+```
+      19|       - uses: actions/checkout@v4
+      20|       - run: npx playwright test
+      21|
+      22|   main-only:
+      23|     runs-on: ubuntu-latest
+>>>   24|     if: github.ref == 'refs/heads/main'
+      25|     steps:
+      26|       - uses: actions/checkout@v4
+      27|       - run: vitest run
+      28|
 ```
 
 **verdict:**

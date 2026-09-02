@@ -198,7 +198,7 @@ describe("runScan option paths", () => {
       (_, i) => `it.only('t${i}', () => {});\n`,
     );
     writeFileSync(join(dir, "many.test.ts"), lines.join(""));
-    const plainArgs = parseArgs([dir]);
+    const plainArgs = parseArgs([dir, "--strict"]);
     if (!plainArgs) throw new Error("parseArgs failed");
     const plain = await runScan({ ...plainArgs, target: dir });
     expect(plain.findings.length).toBeGreaterThan(50);

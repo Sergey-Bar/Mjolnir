@@ -27,6 +27,7 @@ async function scan() {
     maxDurationMs: Number.POSITIVE_INFINITY,
     scopeChanged: false,
     format: "terminal",
+    strict: true,
   });
 }
 

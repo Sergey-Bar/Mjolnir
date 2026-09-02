@@ -58,6 +58,7 @@ describe("targeting one workspace package directly", () => {
       maxDurationMs: 10_000,
       scopeChanged: false,
       format: "json",
+      strict: true,
     });
 
     const files = result.findings.map((f) => f.file);
@@ -84,6 +85,7 @@ describe("targeting one workspace package directly", () => {
       maxDurationMs: 10_000,
       scopeChanged: false,
       format: "json",
+      strict: true,
     });
     const files = result.findings.map((f) => f.file);
     expect(files.some((f) => f.includes("pkg-a"))).toBe(true);

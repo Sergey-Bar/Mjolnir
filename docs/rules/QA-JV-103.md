@@ -41,9 +41,14 @@ Verified against `tests/fixtures/QA-JV-103/must-not-fire/CheckoutTest.java` — 
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo                      | Occurrences |
-| ------------------------- | ----------- |
-| microsoft-playwright-java | 97          |
+| Repo                          | Occurrences |
+| ----------------------------- | ----------- |
+| appsmithorg-appsmith          | 121         |
+| iluwatar-java-design-patterns | 41          |
+| keycloak-keycloak             | 785         |
+| microsoft-playwright-java     | 97          |
+| negative-fixtures             | 6           |
+| positive-fixtures             | 11          |
 
 ---
 

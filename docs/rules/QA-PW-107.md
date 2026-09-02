@@ -43,9 +43,18 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo                                          | Occurrences |
 | --------------------------------------------- | ----------- |
+| apache-airflow                                | 7           |
+| appsmithorg-appsmith                          | 4           |
 | dubinc-dub                                    | 2           |
+| getsentry-sentry                              | 2           |
 | grafana-grafana                               | 141         |
+| hashicorp-vault                               | 12          |
+| Humanizr-Humanizer                            | 2           |
+| keycloak-keycloak                             | 3           |
+| negative-fixtures                             | 1           |
 | playwright-community-eslint-plugin-playwright | 2           |
+| positive-fixtures                             | 1           |
+| streamlit-streamlit                           | 37          |
 | withastro-astro                               | 7           |
 
 ---

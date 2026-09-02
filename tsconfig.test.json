@@ -21,6 +21,8 @@
     "tests/fixtures/**",
     "tests/golden/repo/**",
     "tests/corpus/.cache*/**",
+    "tests/corpus/positive-fixtures/**",
+    "tests/corpus/negative-fixtures/**",
     "packages/*/example.config.ts"
   ]
 }

@@ -160,9 +160,15 @@ describe("H-3: --max-duration honours the budget in the rule loop", () => {
 describe("H-7: config.gate drives the exit code", () => {
   beforeEach(() => {
     mkdirSync(join(dir, "e2e"), { recursive: true });
+    // The gate fixture needs an ERROR finding from a NON-quarantine
+    // rule: the 2026-09-02 measured-wave demoted QA-TEST-001 (focused
+    // test) to quarantine, and the tier policy caps quarantine findings
+    // to severity=info/E0 which never gate (H-1). QA-CI-009 (exit-code
+    // not propagated) still fires error on this workflow.
+    mkdirSync(join(dir, ".github", "workflows"), { recursive: true });
     writeFileSync(
-      join(dir, "e2e", "checkout.spec.ts"),
-      "it.only('checkout', () => { expect(true).toBe(true); });\n",
+      join(dir, ".github", "workflows", "ci.yml"),
+      "on:\n  push:\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm test | tee out.log\n",
     );
   });
 
@@ -170,7 +176,10 @@ describe("H-7: config.gate drives the exit code", () => {
     writeFileSync(join(dir, "mjolnir.config.json"), JSON.stringify(cfg));
 
   const scan = async () =>
-    runScanCommand([dir, "--json"], { out: () => {}, err: () => {} });
+    runScanCommand([dir, "--json", "--strict"], {
+      out: () => {},
+      err: () => {},
+    });
 
   it("no config → default gate error → an error finding exits 1", async () => {
     expect(await scan()).toBe(1);
@@ -190,8 +199,7 @@ describe("H-7: config.gate drives the exit code", () => {
     writeConfig({
       gate: "warning",
       severityOverrides: {
-        "QA-TEST-001": "warning",
-        "QA-TQUAL-002": "warning",
+        "QA-CI-009": "warning",
       },
     });
     expect(await scan()).toBe(1);
@@ -201,8 +209,7 @@ describe("H-7: config.gate drives the exit code", () => {
     writeConfig({
       gate: "error",
       severityOverrides: {
-        "QA-TEST-001": "warning",
-        "QA-TQUAL-002": "warning",
+        "QA-CI-009": "warning",
       },
     });
     expect(await scan()).toBe(0);

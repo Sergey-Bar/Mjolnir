@@ -24,7 +24,7 @@ export const jvDisabledTest = defineRule({
   autofix: false,
   detectionStrategy: "regex pattern",
   introduced: "0.3.8",
-  tier: "extended",
+  tier: "core", // measured 2026-09-02: 0% FP at n=20 — promoted extended→core per the fp band
 
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;

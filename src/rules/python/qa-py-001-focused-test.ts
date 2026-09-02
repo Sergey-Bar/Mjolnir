@@ -25,6 +25,8 @@ export const pyFocusedTest = defineRule({
   autofix: false,
   detectionStrategy: "regex pattern",
   introduced: "0.3.0",
+  // Measured 2026-09-02 (corpus wave 5): FP ≤ 10% but n < 20 — measured-extended until the core DoD n ≥ 20 is met (plan §23).
+  tier: "core",
   // A committed -k filter or ::node selection runs a subset; everything else
   // is unverified while CI stays green. See RuleMeta.suiteInvalidating.
   suiteInvalidating: true,

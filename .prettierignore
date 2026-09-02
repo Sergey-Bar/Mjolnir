@@ -4,6 +4,11 @@ node_modules/
 package-lock.json
 scratch/
 
+# Fixture corpora are DATA (§08 class-B/C exhibits) — deliberately contain
+# anti-patterns; never reformatted.
+tests/corpus/positive-fixtures/
+tests/corpus/negative-fixtures/
+
 # Rule catalog pages generated from docs/rules/ by site/scripts/gen-rules.mjs
 site/rules/
 

@@ -1,0 +1,28 @@
+{
+  "countsByRule": {
+    "QA-CS-103": 4,
+    "QA-CS-108": 2,
+    "QA-CS-110": 4,
+    "QA-ENV-001": 1,
+    "QA-JV-103": 6,
+    "QA-JV-108": 2,
+    "QA-JV-110": 2,
+    "QA-PW-103": 16,
+    "QA-PW-107": 1,
+    "QA-PW-115": 1,
+    "QA-PW-122": 60,
+    "QA-PW-141": 24,
+    "QA-PW-143": 60,
+    "QA-PW-145": 7,
+    "QA-PY-003": 3,
+    "QA-PY-004": 3,
+    "QA-PY-005": 1,
+    "QA-PY-012": 2,
+    "QA-PY-105": 5,
+    "QA-TEST-003": 14,
+    "QA-TEST-010": 3,
+    "QA-TQUAL-002": 1
+  },
+  "totalFindings": 222,
+  "partial": false
+}

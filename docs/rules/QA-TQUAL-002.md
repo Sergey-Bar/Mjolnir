@@ -6,8 +6,8 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | ------------------------------------- | ------------------------------ |
 | Severity                              | error                          |
 | Confidence                            | high                           |
-| Tier                                  | extended (PROVISIONAL)         |
-| Measured FP rate                      | not yet measured               |
+| Tier                                  | quarantine                     |
+| Measured FP rate                      | 85% (n=20)                     |
 | Evidence level                        | E2                             |
 | QA impact                             | False-green risk (FALSE-GREEN) |
 | False-positive risk (author estimate) | low                            |
@@ -44,8 +44,13 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | Repo                 | Occurrences |
 | -------------------- | ----------- |
 | calcom-cal           | 1           |
+| getsentry-sentry     | 2           |
 | grafana-grafana      | 3           |
+| negative-fixtures    | 1           |
 | nextauthjs-next-auth | 2           |
+| positive-fixtures    | 12          |
+| streamlit-streamlit  | 1           |
+| vitest-dev-vitest    | 135         |
 
 ---
 

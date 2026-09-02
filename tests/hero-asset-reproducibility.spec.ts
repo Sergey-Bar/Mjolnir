@@ -42,6 +42,7 @@ describe("assets/readme/terminal-hero.svg reproducibility", () => {
       maxDurationMs: Number.POSITIVE_INFINITY,
       scopeChanged: false,
       format: "terminal",
+      strict: true,
     });
     expect(result.score).not.toBeNull();
     expect(result.findings.length).toBeGreaterThan(3);
@@ -55,6 +56,7 @@ describe("assets/readme/terminal-hero.svg reproducibility", () => {
       maxDurationMs: Number.POSITIVE_INFINITY,
       scopeChanged: false,
       format: "terminal",
+      strict: true,
     });
     const rendered = renderTerminal(result, { isTTY: false, ascii: true });
     const svg = readFileSync(SVG_PATH, "utf8");
@@ -90,6 +92,7 @@ describe("assets/readme/terminal-hero.svg reproducibility", () => {
       maxDurationMs: Number.POSITIVE_INFINITY,
       scopeChanged: false,
       format: "terminal",
+      strict: true,
     });
     const svg = readFileSync(SVG_PATH, "utf8");
     const realRuleIds = new Set(result.findings.map((f) => f.ruleId));

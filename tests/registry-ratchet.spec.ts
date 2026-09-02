@@ -147,13 +147,14 @@ describe("registry ratchet: evidence-state monotonicity (§20.1)", () => {
     void PREEXISTING_SET_MARKER;
   });
 
-  it("(a) the unmeasured count never grows beyond the Phase 1 ceiling", () => {
+  it("(a) the unmeasured count never grows beyond the Phase 1 exit gate", () => {
     // (a) an existing unmeasured rule may never become more unmeasured —
     // unmeasured is binary, so the tracked quantity is the registry's
-    // unmeasured count. Phase 1's exit gate drives it ≤ 20; until that
-    // work completes, it may never exceed today's 49.
+    // unmeasured count. Phase 1's exit gate (§11): unmeasured ≤ 20;
+    // the 2026-09-02 corpus wave measured 69/91 (22 unmeasured) and the
+    // ratchet was lowered to the gate so the count can only go DOWN.
     const unmeasured = RULES.filter((r) => !hasValidMeasurement(r)).length;
-    expect(unmeasured).toBeLessThanOrEqual(49);
+    expect(unmeasured).toBeLessThanOrEqual(20);
   });
 });
 

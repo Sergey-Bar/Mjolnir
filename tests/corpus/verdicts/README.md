@@ -1,6 +1,25 @@
 # Corpus Verdicts (Phase 3 — Tempering Plan)
 
-> **Status (2026-09-01, UNSURE adjudication pass): 937 classified · 0 UNSURE · 0 unclassified · 43 of 91 rules measured at n ≥ 10.**
+> **Status (2026-09-02, wave 5 — dedicated corpora): 1423 classified · 0 UNSURE · 0 unclassified · 78 of 91 rules measured at n ≥ 10.**
+>
+> Wave 5 (2026-09-02, Verification Trust Evolution Plan §11.5/§08): CORPUS
+> 19 → 34 repos — 14 new real-world repos chosen by evaluating each
+> candidate's unmeasured-rule fire count at HEAD (vitest, streamlit,
+> airflow, java-design-patterns, spectre.console, Humanizer,
+> cypress-realworld-app, keycloak, appsmith, sentry, github/docs, next.js,
+> vault, nocodb) PLUS two committed fixture corpora (§08 classes B/C):
+> `tests/corpus/positive-fixtures/` (authored anti-pattern exhibits that
+> MUST fire → every fire is TP by construction) and
+> `tests/corpus/negative-fixtures/` (realistic legitimate code that must
+> NOT fire → any fire is recorded as real precision evidence). The
+> negative corpus caught 3 real FP behaviors on day one (PW-141 fires on
+> retries+json-reporter configs where the reporter string is masked;
+> PW-141's triage regex checks codeText but reads comment evidence from
+> raw text; CI-008's tolerant-final-step shape misfires on reporting
+> steps). Measurement outcome: 43 → 78 measured; 28 newly-measured rules
+> got explicit tier declarations from their measured bands (7 core,
+> 7 extended, 14 quarantine); unmeasured 48 → 13 (Phase 1 exit gate
+> ≤ 20 MET). Sample-per-rule caps, blank-verdict rows: 0.
 >
 > 2026-08-31 status: 937 classified · 21 UNSURE · 42/91 measured. The 2026-09-01
 > adjudication pass (plan §11.5) resolved all 21 UNSURE rows — they were

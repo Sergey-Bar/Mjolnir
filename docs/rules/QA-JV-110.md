@@ -41,9 +41,13 @@ Verified against `tests/fixtures/QA-JV-110/must-not-fire/LoginPageTest.java` —
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo                      | Occurrences |
-| ------------------------- | ----------- |
-| microsoft-playwright-java | 110         |
+| Repo                          | Occurrences |
+| ----------------------------- | ----------- |
+| iluwatar-java-design-patterns | 2           |
+| keycloak-keycloak             | 84          |
+| microsoft-playwright-java     | 110         |
+| negative-fixtures             | 2           |
+| positive-fixtures             | 3           |
 
 ---
 

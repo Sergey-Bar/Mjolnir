@@ -6,8 +6,8 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | ------------------------------------- | ------------------------------ |
 | Severity                              | warning                        |
 | Confidence                            | high                           |
-| Tier                                  | extended (PROVISIONAL)         |
-| Measured FP rate                      | not yet measured               |
+| Tier                                  | core                           |
+| Measured FP rate                      | 0% (n=20)                      |
 | Evidence level                        | E2                             |
 | QA impact                             | False-green risk (FALSE-GREEN) |
 | False-positive risk (author estimate) | low                            |
@@ -41,9 +41,13 @@ Verified against `tests/fixtures/QA-JV-101/must-not-fire/LoginTest.java` — a l
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo                      | Occurrences |
-| ------------------------- | ----------- |
-| microsoft-playwright-java | 8           |
+| Repo                          | Occurrences |
+| ----------------------------- | ----------- |
+| appsmithorg-appsmith          | 11          |
+| iluwatar-java-design-patterns | 2           |
+| keycloak-keycloak             | 67          |
+| microsoft-playwright-java     | 8           |
+| positive-fixtures             | 3           |
 
 ---
 

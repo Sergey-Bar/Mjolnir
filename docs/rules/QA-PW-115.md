@@ -6,8 +6,8 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | ------------------------------------- | ---------------------------- |
 | Severity                              | warning                      |
 | Confidence                            | medium                       |
-| Tier                                  | extended (PROVISIONAL)       |
-| Measured FP rate                      | not yet measured             |
+| Tier                                  | quarantine                   |
+| Measured FP rate                      | 56% (n=16)                   |
 | Evidence level                        | E1                           |
 | QA impact                             | Flaky-test risk (FLAKY-RISK) |
 | False-positive risk (author estimate) | medium                       |
@@ -41,10 +41,14 @@ Verified against `tests/fixtures/QA-PW-115/must-not-fire/isolated-page.spec.ts` 
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo            | Occurrences |
-| --------------- | ----------- |
-| grafana-grafana | 1           |
-| withastro-astro | 3           |
+| Repo              | Occurrences |
+| ----------------- | ----------- |
+| grafana-grafana   | 1           |
+| negative-fixtures | 1           |
+| nocodb-nocodb     | 2           |
+| positive-fixtures | 6           |
+| vitest-dev-vitest | 1           |
+| withastro-astro   | 3           |
 
 ---
 

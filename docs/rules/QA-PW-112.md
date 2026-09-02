@@ -43,8 +43,13 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo                                          | Occurrences |
 | --------------------------------------------- | ----------- |
+| apache-airflow                                | 50          |
+| appsmithorg-appsmith                          | 248         |
+| getsentry-sentry                              | 116         |
 | grafana-grafana                               | 230         |
+| keycloak-keycloak                             | 193         |
 | playwright-community-eslint-plugin-playwright | 1           |
+| streamlit-streamlit                           | 1591        |
 | tanstack-query                                | 125         |
 
 ---

@@ -43,6 +43,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo                | Occurrences |
 | ------------------- | ----------- |
+| Humanizr-Humanizer  | 1           |
 | puppeteer-puppeteer | 10          |
 | sveltejs-kit        | 4           |
 | withastro-astro     | 3           |

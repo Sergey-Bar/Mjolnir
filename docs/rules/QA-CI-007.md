@@ -6,8 +6,8 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | ------------------------------------- | ---------------------------- |
 | Severity                              | warning                      |
 | Confidence                            | high                         |
-| Tier                                  | extended (PROVISIONAL)       |
-| Measured FP rate                      | not yet measured             |
+| Tier                                  | extended                     |
+| Measured FP rate                      | 27% (n=11)                   |
 | Evidence level                        | E2                           |
 | QA impact                             | Flaky-test risk (FLAKY-RISK) |
 | False-positive risk (author estimate) | low                          |
@@ -39,7 +39,15 @@ Verified against `tests/fixtures/QA-CI-007/must-not-fire/clean.yml` — a legiti
 
 ## Corpus-measured false-positive risk
 
-UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked by `npm run corpus:regression` (see `docs/FP-AUDIT.md`). That is not the same as "never fires incorrectly" — it just means no occurrence, correct or not, has been observed there yet.
+Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
+
+| Repo                | Occurrences |
+| ------------------- | ----------- |
+| github-docs         | 1           |
+| Humanizr-Humanizer  | 1           |
+| keycloak-keycloak   | 1           |
+| positive-fixtures   | 7           |
+| streamlit-streamlit | 1           |
 
 ---
 
