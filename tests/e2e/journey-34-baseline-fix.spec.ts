@@ -59,7 +59,9 @@ describe("E2E journey 3: baseline → resolve → diff → stats", () => {
     git(["config", "user.email", "t@t"]);
     git(["config", "user.name", "t"]);
 
-    const base = runCli(["baseline", dir]);
+    // --strict: the debt probes are quarantine-tier (QA-TEST-001 since
+    // Phase 2, QA-PW-003 core) — strict is where all tiers run.
+    const base = runCli(["baseline", dir, "--strict"]);
     expect(base.status).toBe(0);
     expect(base.stdout).toContain("Captured 2 findings");
     expect(existsSync(join(dir, ".mjolnir", "baseline.json"))).toBe(true);
@@ -67,11 +69,11 @@ describe("E2E journey 3: baseline → resolve → diff → stats", () => {
     // Resolve the findings.
     writeSpec("focused.spec.ts", FIXED);
 
-    const diff = runCli(["diff", dir]);
+    const diff = runCli(["diff", dir, "--strict"]);
     expect(diff.status).toBe(0);
     expect(diff.stdout).toContain("FIXED SINCE BASELINE");
 
-    const stats = runCli(["stats", dir]);
+    const stats = runCli(["stats", dir, "--strict"]);
     expect(stats.status).toBe(0);
     expect(stats.stdout).toContain("QA-TEST-001");
   });
@@ -84,7 +86,7 @@ describe("E2E journey 3: baseline → resolve → diff → stats", () => {
     const base = runCli(["baseline", dir]);
     expect(base.status).toBe(0);
     writeSpec("extra-debt.spec.ts", ONLY);
-    const diff = runCli(["diff", dir]);
+    const diff = runCli(["diff", dir, "--strict"]);
     expect(diff.stdout).toContain("NEW OR WORSENED DEBT");
   });
 
