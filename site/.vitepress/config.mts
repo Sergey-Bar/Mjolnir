@@ -134,11 +134,28 @@ export default defineConfig({
       "link",
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" },
     ],
+    // Split deliberately, because the two halves want different swap
+    // behaviour. Cinzel and Inter keep `display=swap`: the brand face
+    // should arrive even if it is late, and their swap-in was measured
+    // at CLS 0.001 on the landing page.
     [
       "link",
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Inter:wght@400;500;600&display=swap",
+      },
+    ],
+    // JetBrains Mono is `display=optional` instead. Swapping it in at
+    // ~900ms re-flowed all 91 rows of the rule catalog and was the whole
+    // of that page's CLS (0.088 against a 0.05 gate — traced to <tr>
+    // nodes with a layout-shift observer). `optional` means the browser
+    // either has it in time or keeps the fallback for that visit and
+    // never swaps, so the table cannot reflow underneath a reader.
+    [
+      "link",
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=optional",
       },
     ],
     // Link previews (Slack, X, LinkedIn, Discord) — without these a

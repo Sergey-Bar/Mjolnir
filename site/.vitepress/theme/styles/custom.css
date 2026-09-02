@@ -153,7 +153,17 @@ body {
 /* The default theme leaves several controls with only the UA outline,
    which disappears entirely against the dark hero. Keyboard users get
    the same affordance on every surface (plan §4, Phase 6). */
-:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+/* NOT :where() — that has zero specificity, so VitePress's own control
+   styles won every time and the catalog's three <select>s and its
+   checkbox drew no ring at all. Caught by the keyboard pass in
+   site/scripts/audit-live.mjs, which is why that pass exists. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
   outline: 2px solid var(--mj-aurora, #37abbd);
   outline-offset: 2px;
   border-radius: 3px;

@@ -214,7 +214,12 @@ async function copyReport() {
   --term-bg: #14171c;
   --term-bar: #20242b;
   --term-fg: #d7d3c8;
-  --term-dim: #7c8590;
+  /* Raised from the reporter's #7c8590, which axe-core measured at
+     4.16:1 on the title bar — below AA. This token only paints the
+     terminal's own chrome (command line, copy button, disclosure);
+     the report's colours still come from report.json, so the
+     rendering stays faithful to what the tool actually printed. */
+  --term-dim: #949ca8;
   --term-line: rgba(215, 211, 200, 0.14);
 
   margin: 2.6rem 0 0;
@@ -383,7 +388,10 @@ async function copyReport() {
   transform: rotate(90deg);
 }
 .muted {
-  opacity: 0.7;
+  /* A dimmer colour, not opacity. `opacity: 0.7` blended --term-dim
+     toward the background and dropped this line back under AA — axe
+     caught it on the line-count hint after the first contrast fix. */
+  color: #8b949f;
 }
 
 .foot {

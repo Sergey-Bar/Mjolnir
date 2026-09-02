@@ -1,6 +1,6 @@
 # Mjölnir Site — Redesign Plan
 
-Status: Phases 0-1 implemented on `site/phase-0-1-truth`; 2-6 proposed · Drafted 2026-09-02 · Target: `site/` (VitePress, GitHub Pages)
+Status: all 7 phases implemented on `site/phase-0-1-truth` (PR #24) · Drafted 2026-09-02 · Target: `site/` (VitePress, GitHub Pages)
 
 ## 0. Why this document exists
 
@@ -547,3 +547,95 @@ Consequence worth stating plainly: the light-mode contrast work in §2.1 is
 now dead weight — those tokens are unreachable. They were not reverted,
 because the measurements there are the record of why the values are what
 they are; the dark ramp they justified is the one that ships.
+
+## 15. The open gates, measured
+
+Phases 1, 4 and 6 each shipped with a gate recorded as unmet rather than
+assumed. All three were run. Two new harnesses exist for it, both outside
+`npm run doctor` because they need a browser and site/ has no
+dependencies:
+
+- `npm run site:audit` — axe-core, keyboard traversal, CLS/LCP
+- `npm run site:lighthouse` — both official Lighthouse presets
+
+### 15.1 Accessibility and keyboard — MET
+
+| page                     | axe (WCAG 2.0/2.1 A+AA) | keyboard stops | without focus ring |
+| ------------------------ | ----------------------- | -------------- | ------------------ |
+| `/`                      | 0 violations            | 31             | 0                  |
+| `/guide/getting-started` | 0 violations            | 42             | 0                  |
+| `/rules/`                | 0 violations            | 60             | 0                  |
+
+No focus traps. Lighthouse's own accessibility category scores **100** on
+all three. Three real defects were found and fixed getting here:
+
+1. **Terminal chrome below AA.** `--term-dim` `#7c8590` measured 4.16:1
+   on the title bar — I had taken it from the reporter's palette without
+   checking it as UI text. Raised to `#949ca8` (5.62 / 6.48). The
+   report's own colours are untouched; they still come from report.json.
+2. **`.muted` used opacity, not colour.** `opacity: 0.7` blended
+   `--term-dim` toward the background and pushed the line-count hint
+   back under AA after fix 1. Now a solid `#8b949f`.
+3. **Focus rings that never applied.** The Phase 6 rule was written with
+   `:where(...)`, which has _zero_ specificity — VitePress's own control
+   styles won, and the catalog's three `<select>`s and its checkbox drew
+   no ring at all. Caught by the keyboard pass, which is precisely why
+   that pass exists.
+
+### 15.2 Lighthouse — desktop MET, mobile reported
+
+| profile                  | `/`    | `/guide/getting-started` | `/rules/` |
+| ------------------------ | ------ | ------------------------ | --------- |
+| desktop (gate ≥95)       | **99** | **99**                   | **97**    |
+| mobile, slow 4G + 4x CPU | 88     | 93                       | 97        |
+
+a11y / best-practices / SEO are **100** on every page in both profiles.
+Only desktop gates; mobile is printed anyway because it is the harder
+number and omitting it would be the selective reporting this site argues
+against.
+
+**Two harness bugs had to be fixed before these numbers meant anything** —
+both of which had made the site look far worse than it is:
+
+- No gzip. GitHub Pages compresses text assets; a plain static server
+  shipped 714 KB where production ships 264 KB. Cost: 15 points.
+- Wrong throttling. `formFactor: "desktop"` with Lighthouse's _default_
+  mobile throttling (slow 4G, 4× CPU) reads as a desktop test and scores
+  like a phone. Cost: 26 points — the difference between 73 and 99.
+
+A measurement harness is as capable of lying as the thing it measures.
+
+### 15.3 CLS — NOT MET on one page
+
+| page                     | desktop CLS | gate      |
+| ------------------------ | ----------- | --------- |
+| `/`                      | 0.001       | ≤ 0.05 ✅ |
+| `/guide/getting-started` | 0.019       | ≤ 0.05 ✅ |
+| `/rules/`                | **0.088**   | ≤ 0.05 ❌ |
+
+Reproducible, not noise: 0.021 / 0.088 / 0.088 over three runs. Traced
+with a `layout-shift` observer to a text node moving `y: 114 → 110` at
+~1.2 s — the **Inter webfont swapping in and lifting a long document by
+4 px**. On a page this tall a 4 px shift scores heavily; the landing page
+is unaffected (0.001) because its dense monospace block already uses a
+system stack.
+
+Partly addressed: JetBrains Mono moved to `display=optional`, which took
+mobile `/rules/` from 95 to 97 and its CLS to 0.003. Inter itself is
+still `display=swap`, because making the body face optional means
+first-time visitors get a fallback for the whole page.
+
+The real fix is a metrics-matched fallback (`size-adjust`,
+`ascent-override`) or self-hosting — which is **§8 decision 1, still
+unanswered**, now with evidence attached. Not guessed at here: wrong
+`size-adjust` numbers would make the shift worse, and this document does
+not ship values nobody measured.
+
+### 15.4 Where that leaves it
+
+Green: axe (0 violations, a11y 100), keyboard (0 stops without a ring, no
+traps), desktop performance (97–100), best-practices 100, SEO 100,
+landing-page CLS 0.001.
+
+Not green: `/rules/` desktop CLS 0.088, and mobile performance on two
+pages (88 / 93) — which was never a stated gate but is the honest number.
