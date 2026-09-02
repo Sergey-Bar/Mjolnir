@@ -1,7 +1,5 @@
 {
-  "countsByRule": {
-    "QA-CS-103": 310
-  },
-  "totalFindings": 310,
+  "countsByRule": {},
+  "totalFindings": 0,
   "partial": false
 }

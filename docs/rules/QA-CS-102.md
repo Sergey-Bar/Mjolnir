@@ -2,20 +2,20 @@
 
 _Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
-| Field                                 | Value                            |
-| ------------------------------------- | -------------------------------- |
-| Severity                              | warning                          |
-| Confidence                            | high                             |
-| Tier                                  | quarantine                       |
-| Measured FP rate                      | 65% (n=20)                       |
-| Evidence level                        | E2                               |
-| QA impact                             | Flaky-test risk (FLAKY-RISK)     |
-| False-positive risk (author estimate) | low                              |
-| Autofix available                     | no                               |
-| Languages                             | csharp                           |
-| Frameworks                            | nunit, xunit, mstest, playwright |
-| Detection strategy                    | LEXICAL                          |
-| Introduced in                         | v0.3.8                           |
+| Field                                 | Value                                                                                                                                                          |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Severity                              | warning                                                                                                                                                        |
+| Confidence                            | high                                                                                                                                                           |
+| Tier                                  | core                                                                                                                                                           |
+| Measured FP rate                      | 8% (n=24)                                                                                                                                                      |
+| Evidence level                        | E2                                                                                                                                                             |
+| QA impact                             | Flaky-test risk (FLAKY-RISK)                                                                                                                                   |
+| False-positive risk (author estimate) | low                                                                                                                                                            |
+| Autofix available                     | no                                                                                                                                                             |
+| Languages                             | csharp                                                                                                                                                         |
+| Frameworks                            | nunit, xunit, mstest, playwright                                                                                                                               |
+| Detection strategy                    | AST (L2 tree-sitter invocation scoping (route/expose/server delegates, infinite blocks, WhenAny races, runner payload fixtures); regex fallback when no parse) |
+| Introduced in                         | v0.3.8                                                                                                                                                         |
 
 ## Why this fails in production
 
@@ -43,7 +43,8 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo                        | Occurrences |
 | --------------------------- | ----------- |
-| microsoft-playwright-dotnet | 52          |
+| microsoft-playwright-dotnet | 21          |
+| positive-fixtures           | 3           |
 
 ---
 

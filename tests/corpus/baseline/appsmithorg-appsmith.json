@@ -4,7 +4,7 @@
     "QA-CI-008": 5,
     "QA-JV-101": 11,
     "QA-JV-102": 10,
-    "QA-JV-103": 121,
+    "QA-JV-103": 75,
     "QA-PW-107": 4,
     "QA-PW-112": 248,
     "QA-PW-119": 7,
@@ -16,6 +16,6 @@
     "QA-TQUAL-001": 147,
     "QA-TQUAL-011": 6
   },
-  "totalFindings": 617,
+  "totalFindings": 571,
   "partial": false
 }

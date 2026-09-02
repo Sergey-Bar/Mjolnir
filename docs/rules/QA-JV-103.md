@@ -2,20 +2,20 @@
 
 _Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
-| Field                                 | Value                          |
-| ------------------------------------- | ------------------------------ |
-| Severity                              | error                          |
-| Confidence                            | high                           |
-| Tier                                  | quarantine                     |
-| Measured FP rate                      | 50% (n=20)                     |
-| Evidence level                        | E2                             |
-| QA impact                             | False-green risk (FALSE-GREEN) |
-| False-positive risk (author estimate) | medium                         |
-| Autofix available                     | no                             |
-| Languages                             | java                           |
-| Frameworks                            | junit, testng                  |
-| Detection strategy                    | LEXICAL (regex heuristic)      |
-| Introduced in                         | v0.3.8                         |
+| Field                                 | Value                                                                                                                                |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Severity                              | error                                                                                                                                |
+| Confidence                            | high                                                                                                                                 |
+| Tier                                  | extended                                                                                                                             |
+| Measured FP rate                      | 26% (n=58)                                                                                                                           |
+| Evidence level                        | E2                                                                                                                                   |
+| QA impact                             | False-green risk (FALSE-GREEN)                                                                                                       |
+| False-positive risk (author estimate) | medium                                                                                                                               |
+| Autofix available                     | no                                                                                                                                   |
+| Languages                             | java                                                                                                                                 |
+| Frameworks                            | junit, testng                                                                                                                        |
+| Detection strategy                    | AST (L2 tree-sitter test-method scoping + structural assertion oracle (throwing waits, helper idioms); regex fallback when no parse) |
+| Introduced in                         | v0.3.8                                                                                                                               |
 
 ## Why this fails in production
 
@@ -43,12 +43,11 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo                          | Occurrences |
 | ----------------------------- | ----------- |
-| appsmithorg-appsmith          | 121         |
+| appsmithorg-appsmith          | 75          |
 | iluwatar-java-design-patterns | 41          |
-| keycloak-keycloak             | 785         |
-| microsoft-playwright-java     | 97          |
-| negative-fixtures             | 6           |
-| positive-fixtures             | 11          |
+| keycloak-keycloak             | 1387        |
+| microsoft-playwright-java     | 43          |
+| positive-fixtures             | 4           |
 
 ---
 

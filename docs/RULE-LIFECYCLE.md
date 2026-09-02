@@ -160,9 +160,34 @@ unmeasured at their current revisions (sidecar entries removed);
 QA-ENV-001's fixed-port sub-pattern was dropped entirely at rev 3.
 
 **Deferred wave (quarantine rules above 30% but not at 100%):**
-QA-JV-103 (50% FP — helper-call assertions), QA-CS-103 (95% — the
-assertion vocabulary misses Shouldly/NUnit `Assert.That`/FluentAssertions),
-QA-CS-102 (65% — Task.Delay in async helpers), QA-PY-012 (60%). These
-keep their quarantine caps (severity/info, E0, --strict-only) and are the
-next triage wave; each already has a concrete candidate retune named
-here so the follow-up is mechanical, not exploratory.
+QA-PY-012 (60%). This
+keeps its quarantine caps (severity/info, E0, --strict-only) and is the
+next triage wave; it already has a concrete candidate retune named
+here so the follow-up is mechanical, not exploratory. The other three
+members of this wave — QA-JV-103, QA-CS-103, QA-CS-102 — were resolved
+by the Phase 3 L2 migration (below).
+
+## Phase 3 L2 migration (Verification Trust Evolution Plan §13)
+
+The three highest-ROI JV/CS rules from the deferred wave migrated to
+tree-sitter L2 structural analysis over the Phase 0.5 parse stage
+(`src/engine/jv-cs-ast.ts`; optional `astQuery` hook on the rule
+contract with a MANDATORY regex fallback, §13.2). All three are
+EVIDENCE-BACKED migrations: `detectorRevision` 2, verdict corpus
+reconciled (superseded rows removed, new findings adjudicated from
+source), count-lock refreshed, fixtures both directions.
+
+| Rule      | rev 1 → rev 2                   | Oracle additions (evidence)                                                                                                                                                                         | Tier                      |
+| --------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| QA-JV-103 | 50% FP (n=20) → 25.9% FP (n=58) | throwing waits are assertions (`waitFor*` except `waitForTimeout`: 6 rev-1 + delta rows); helper idiom `verify*/check*/assert*` (4 rev-1 rows)                                                      | quarantine → **extended** |
+| QA-CS-103 | 95% FP (n=20) → 0% FP (n=9)     | Shouldly extension chains (17/19 rev-1 FPs, spectre-console); Assert receivers; Verify snapshot framework; PascalCase helper idiom; C# throwing waits; conditional `throw new *Assertion*Exception` | quarantine → **core**     |
+| QA-CS-102 | 65% FP (n=20) → 8.3% FP (n=24)  | route/expose/server delegate scoping (10 rev-1 FPs + SetRoute delta); infinite/negative blocks; WhenAny races; runner payload fixtures                                                              | quarantine → **core**     |
+
+Known L2 boundaries (documented, honest — plan §13.4, no type/symbol
+semantics promised): assertions behind arbitrarily-named helpers
+(keycloak's `testValidationValid`, playwright-java's `testEnterKey`,
+appsmith's `check` — the dominant remaining JV-103 FP class), and
+one CS-102 TP trade-off (a sub-second artificial-timing delay inside a
+route delegate is no longer flagged; the structural boundary cannot
+read that intent). QA-JV-102 stays LEXICAL rev 1 — no migration for
+symmetry (plan §12.4).

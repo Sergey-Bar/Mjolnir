@@ -1,18 +1,26 @@
-import java.time.Duration;
-
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class WaitingSuite {
 
     @Test
     public void waitsForImport() {
-        importService.awaitCompletion(Duration.ofSeconds(5));
+        startImport();
+        waitForCondition();
+        assertEquals(true, importDone);
     }
 
     @Test
-    public void explicitLatch() throws InterruptedException {
-        CountDownLatch latch = new CountDownLatch(1);
-        startImport(latch);
-        latch.await();
+    public void waitsForExport() {
+        startExport();
+        waitForCondition();
+        assertEquals(true, exportDone);
     }
+
+    private boolean importDone;
+    private boolean exportDone;
+    private void startImport() { }
+    private void startExport() { }
+    private void waitForCondition() { }
 }

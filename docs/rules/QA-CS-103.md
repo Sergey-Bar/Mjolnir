@@ -2,20 +2,20 @@
 
 _Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
-| Field                                 | Value                          |
-| ------------------------------------- | ------------------------------ |
-| Severity                              | error                          |
-| Confidence                            | high                           |
-| Tier                                  | quarantine                     |
-| Measured FP rate                      | 95% (n=20)                     |
-| Evidence level                        | E2                             |
-| QA impact                             | False-green risk (FALSE-GREEN) |
-| False-positive risk (author estimate) | medium                         |
-| Autofix available                     | no                             |
-| Languages                             | csharp                         |
-| Frameworks                            | nunit, xunit, mstest           |
-| Detection strategy                    | LEXICAL (regex heuristic)      |
-| Introduced in                         | v0.3.8                         |
+| Field                                 | Value                                                                                                                                                   |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Severity                              | error                                                                                                                                                   |
+| Confidence                            | high                                                                                                                                                    |
+| Tier                                  | core                                                                                                                                                    |
+| Measured FP rate                      | 0% (n=11)                                                                                                                                               |
+| Evidence level                        | E2                                                                                                                                                      |
+| QA impact                             | False-green risk (FALSE-GREEN)                                                                                                                          |
+| False-positive risk (author estimate) | low                                                                                                                                                     |
+| Autofix available                     | no                                                                                                                                                      |
+| Languages                             | csharp                                                                                                                                                  |
+| Frameworks                            | nunit, xunit, mstest                                                                                                                                    |
+| Detection strategy                    | AST (L2 tree-sitter test-method scoping + structural assertion oracle (Shouldly/Verify/Assert receivers, throwing waits); regex fallback when no parse) |
+| Introduced in                         | v0.3.8                                                                                                                                                  |
 
 ## Why this fails in production
 
@@ -41,13 +41,11 @@ Verified against `tests/fixtures/QA-CS-103/must-not-fire/CheckoutTests.cs` — a
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo                           | Occurrences |
-| ------------------------------ | ----------- |
-| Humanizr-Humanizer             | 34          |
-| microsoft-playwright-dotnet    | 2           |
-| negative-fixtures              | 4           |
-| positive-fixtures              | 8           |
-| spectreconsole-spectre-console | 310         |
+| Repo                        | Occurrences |
+| --------------------------- | ----------- |
+| Humanizr-Humanizer          | 2           |
+| microsoft-playwright-dotnet | 1           |
+| positive-fixtures           | 8           |
 
 ---
 

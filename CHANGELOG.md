@@ -9,6 +9,68 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — Verification Trust Evolution, Phase 3 — Java/C# semantic upgrade (plan §13)
+
+### Changed — three JV/CS rules migrated to L2 tree-sitter analysis (EVIDENCE-BACKED, detectorRevision 2)
+
+The Phase 0.5 parse stage's tree-sitter trees (`parseJavaAst`/`parseCSharpAst`,
+delivered via `ParsedFile.ast`) are now consumed by rules: a new L2
+structural-analysis layer (`src/engine/jv-cs-ast.ts`) provides test-method
+scoping by annotation/attribute, invocation structure, and call/argument
+containment; the rule contract gains an optional `astQuery` hook whose
+regex path is a MANDATORY fallback (no AST ⇒ regex, never a second
+detector, plan §13.2). No type/symbol semantics are promised for JV/CS
+(no Roslyn, no classpath) — semantic depth is L2 per plan §13.4.
+
+- **QA-JV-103 (test without assertions), 50% FP (n=20) → 25.9% FP
+  (n=58), quarantine → extended.** Test boundaries now come from real
+  `method_declaration` nodes (any `@Test`/`@org.junit.Test`, argumented
+  TestNG forms included). The assertion oracle adds the two measured
+  rev-1 FP classes: Playwright's THROWING waits (`waitFor*` except
+  `waitForTimeout` — they throw on timeout, so the wait IS the
+  verification; 6 rev-1 FPs) and `verify*/check*/assert*` helper
+  calls (4 rev-1 FPs). Remaining FP class, documented as the L2
+  boundary: assertions behind arbitrarily-named helpers (keycloak's
+  `testValidationValid`, playwright-java's `testEnterKey`,
+  appsmith's `check`).
+- **QA-CS-103 (test without assertions), 95% FP (n=20) → 0% FP (n=9),
+  quarantine → core.** The rev-1 oracle missed the whole Shouldly
+  extension family — 17 of the 19 FPs were `ShouldBeOfType<...>(
+...).Message.ShouldBe(...)`-style assertion-rich tests (spectre-console,
+  310 count-lock fires → 0). The rev-2 oracle counts Shouldly chains,
+  `Assert`/`Should` receivers, the Verify snapshot framework,
+  PascalCase `verify*/check*/assert*` helpers (Humanizer's
+  `VerifyAnalyzerAsync` — the lowercase-only form was a Java camelCase
+  inheritance bug), C# throwing waits (`WaitFor*Async` except
+  `WaitForTimeoutAsync`), and conditional `throw new
+*Assertion*Exception` (playwright-dotnet's ConventionTests). Grammar
+  error-node guard: a truncated parse never produces a finding.
+- **QA-CS-102 (`Thread.Sleep`/`Task.Delay` hard sleep), 65% FP (n=20) →
+  8.3% FP (n=24), quarantine → core.** Tree-sitter invocation scoping
+  excludes the measured environment-simulation classes: delays inside
+  route/expose/server delegates (`Route*Async`, `SetRoute`,
+  `ExposeFunction*`, 10 rev-1 FPs + delta), deliberate infinite/negative
+  blocks (`Task.Delay(-1)`, `int.MaxValue`, `Timeout.Infinite*`),
+  `Task.WhenAny` timeout races, and runner payload fixtures
+  (`RunAndWaitFor{Request,RequestFinished,Response}Async(() => Task.Delay…)`,
+  `UnrouteAllAsync` timing-window sleeps stay flagged — their delay
+  creates the timing window the assertion measures). Documented
+  trade-off: one rev-1 TP (a sub-second artificial-timing delay inside a
+  route delegate) is no longer flagged; the structural boundary cannot
+  read that intent.
+
+All three: verdict corpus reconciled per the §07 loop (41 superseded rows
+removed, 49 fresh rows adjudicated from source with per-row notes, class-B
+positive fixtures for QA-CS-102/QA-JV-103 and class-C negative fixtures
+for all three), count-lock baselines refreshed (microsoft-playwright-java
+QA-JV-103 97→43, microsoft-playwright-dotnet QA-CS-102 52→21,
+spectre-console QA-CS-103 310→0, Humanizer 34→2; keycloak +602 is a
+recall gain — the rev-1 regex missed `void x() throws Exception`
+signatures, tree-sitter scoping does not), and
+`detector-revisions.json` bumped (sidecar entries stay; measurements
+stamped rev 2). QA-JV-102 stays LEXICAL rev 1 — no migration for
+symmetry (plan §12.4).
+
 ## [Unreleased] — Verification Trust Evolution, Phase 2 — quarantine-cluster triage (plan §12.2)
 
 ### Deprecated — 21 rules retired per docs/RULE-LIFECYCLE.md (measured 100% FP, premise wrong)

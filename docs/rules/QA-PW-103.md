@@ -56,6 +56,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | positive-fixtures    | 49          |
 | puppeteer-puppeteer  | 97          |
 | sveltejs-kit         | 438         |
+| vercel-next-js       | 4           |
 | vitejs-vite          | 39          |
 | vitest-dev-vitest    | 1           |
 | withastro-astro      | 6           |

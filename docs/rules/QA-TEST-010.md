@@ -48,6 +48,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | negative-fixtures | 3           |
 | positive-fixtures | 11          |
 | tanstack-query    | 2           |
+| vercel-next-js    | 201         |
 | vitest-dev-vitest | 82          |
 | withastro-astro   | 1           |
 

@@ -123,9 +123,11 @@ export interface SourceFileContext {
   path: string;
   text: string;
   /**
-   * Parsed AST provided by the engine (ts-morph SourceFile).
-   * Typed as unknown here to keep the core rule contract decoupled;
-   * the TS rule runner narrows it.
+   * Parsed AST provided by the engine — ts-morph SourceFile for
+   * TypeScript files, tree-sitter Tree for Java/C# (Phase 0.5 parse
+   * stage), workflow DOM for GitHub Actions. Typed as unknown here to
+   * keep the core rule contract decoupled; each language's helper
+   * narrows it (getTsSourceFile / getTreeSitterTree).
    */
   ast?: unknown;
   /**
@@ -142,6 +144,36 @@ export type RuleFn = (
   ctx: SourceFileContext,
 ) => Omit<Finding, "ruleId" | "category">[];
 
+/**
+ * Optional L2 structural-analysis hook (Verification Trust Evolution
+ * Plan §13.2). When the engine provides a parsed AST on the context
+ * (ts-morph SourceFile for TypeScript, tree-sitter Tree for Java/C#),
+ * the hook produces the findings; its regex path is the MANDATORY
+ * fallback, never optional — `undefined` return (or no `ctx.ast`)
+ * means "no AST — run the regex path", so fixture harnesses, grammar
+ * load failures, and degraded scans all keep working (ts-ast fallback
+ * discipline, QA-PW-002 pattern). This seam is what lets a rule
+ * declare `detectionStrategy: "AST"` honestly: the structural path is
+ * the decision when a tree exists, and the regex path is documented
+ * degraded detection, not a second source of truth.
+ */
+export type AstQueryHook = (
+  ctx: SourceFileContext,
+) => Omit<Finding, "ruleId" | "category">[] | undefined;
+
+/**
+ * Invoke an `astQuery` hook with the mandatory-fallback contract: no
+ * hook or no AST on the context resolves to `undefined` (→ regex
+ * fallback). Centralized so every consumer obeys the same rule.
+ */
+export function tryAstQuery(
+  hook: AstQueryHook | undefined,
+  ctx: SourceFileContext,
+): Omit<Finding, "ruleId" | "category">[] | undefined {
+  if (hook === undefined || ctx.ast === undefined) return undefined;
+  return hook(ctx);
+}
+
 export type AppliesTo =
   "test-files" | "ci-workflows" | "python" | "java" | "csharp" | "all";
 
@@ -157,6 +189,12 @@ export interface QADoctorRule extends RuleMeta {
    * (e.g. QA-TEST-003 "no assertions" on every playwright.config.ts).
    */
   configRule?: boolean;
+  /**
+   * L2 structural-analysis path (§13.2): runs when the engine supplies
+   * a parsed AST for the file. MUST be paired with a regex fallback in
+   * `run` (mandatory fallback discipline) — see AstQueryHook.
+   */
+  astQuery?: AstQueryHook;
   run: RuleFn;
 }
 

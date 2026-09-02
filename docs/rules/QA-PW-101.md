@@ -47,6 +47,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | grafana-grafana      | 17          |
 | nextauthjs-next-auth | 4           |
 | sveltejs-kit         | 62          |
+| vercel-next-js       | 4           |
 | vitest-dev-vitest    | 2           |
 | withastro-astro      | 4           |
 
