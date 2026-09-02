@@ -487,6 +487,7 @@ export function renderMatrixMd(data: MatrixData): string {
   lines.push(
     "- **Detection strategy**: the enforced §09.6 enum (`LEXICAL | AST | SEMANTIC | FRAMEWORK | RUNTIME`) declared on the rule (D6 closed in Phase 2 — the registry ratchet makes omission or a bad value a CI failure). `UNCLASSIFIED` renders only for an undeclared value.",
     "- **Semantic depth**: derived only from the enum (LEXICAL → Low, AST → Medium, SEMANTIC → High; FRAMEWORK/RUNTIME are decision-source labels, not depth grades).",
+    "- **Why LEXICAL rules stay lexical (plan §12.1)**: migration to deeper analysis happens only where measurement shows value — a LEXICAL rule with a valid low-FP corpus measurement (`Measured = yes`, FP rate in its tier band) is empirically validated as-shipped, and its strategy declaration is the honest record of that: the corpus, not the detector's fashion, decides. LEXICAL rules whose measurement landed in quarantine went through the §12.2 triage (retune/retire) instead of an unmeasured AST rewrite.",
     "- **Measured**: a `MEASURED_FP` entry exists — n ≥ 10 hand-classified TP/FP verdicts (`tests/corpus/verdicts/*.jsonl`).",
     "- **Corpus size / diversity**: classified verdict rows / distinct repos behind them, from the verdict corpus.",
     "- **Tier**: effective tier — the declared tier, or the `rule.ts` omitted-tier default (`core`, the D3 policy hole).",

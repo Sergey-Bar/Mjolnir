@@ -38,7 +38,7 @@
     "QA-PW-144": 12,
     "QA-PW-145": 20,
     "QA-PY-001": 12,
-    "QA-PY-003": 2,
+    "QA-PY-003": 13,
     "QA-PY-004": 9,
     "QA-PY-005": 4,
     "QA-PY-009": 10,
@@ -46,7 +46,7 @@
     "QA-PY-012": 15,
     "QA-PY-101": 4,
     "QA-PY-103": 5,
-    "QA-PY-105": 18,
+    "QA-PY-105": 12,
     "QA-PY-106": 4,
     "QA-PY-107": 3,
     "QA-PY-108": 4,
@@ -59,6 +59,6 @@
     "QA-TQUAL-009": 2,
     "QA-TQUAL-011": 6
   },
-  "totalFindings": 620,
+  "totalFindings": 625,
   "partial": false
 }

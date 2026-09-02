@@ -1,12 +1,11 @@
 {
   "countsByRule": {
     "QA-CI-010": 1,
-    "QA-ENV-001": 2,
     "QA-PW-115": 2,
     "QA-PW-120": 1,
     "QA-PW-145": 1,
     "QA-TQUAL-011": 1
   },
-  "totalFindings": 8,
+  "totalFindings": 6,
   "partial": false
 }

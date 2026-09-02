@@ -5,7 +5,7 @@
     "QA-CI-005": 1,
     "QA-CI-008": 3,
     "QA-CI-010": 2,
-    "QA-ENV-001": 96,
+    "QA-ENV-001": 7,
     "QA-PW-002": 6,
     "QA-PW-004": 5,
     "QA-PW-101": 17,
@@ -31,6 +31,6 @@
     "QA-TQUAL-009": 1,
     "QA-TQUAL-011": 2
   },
-  "totalFindings": 3235,
+  "totalFindings": 3146,
   "partial": false
 }

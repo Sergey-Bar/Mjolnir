@@ -1,7 +1,5 @@
 {
-  "countsByRule": {
-    "QA-PY-004": 9
-  },
-  "totalFindings": 9,
+  "countsByRule": {},
+  "totalFindings": 0,
   "partial": false
 }

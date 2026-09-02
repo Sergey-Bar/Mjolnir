@@ -9,10 +9,9 @@
     "QA-CS-108": 26,
     "QA-CS-110": 135,
     "QA-CS-111": 74,
-    "QA-ENV-001": 5,
     "QA-PW-122": 1,
     "QA-PW-143": 1
   },
-  "totalFindings": 456,
+  "totalFindings": 451,
   "partial": false
 }
