@@ -98,7 +98,9 @@ async function main() {
     console.error("dist/ not found — run `npm --prefix site run build` first");
     process.exit(1);
   }
-  const { chromium } = await import("playwright");
+  // @playwright/test is the declared dependency; "playwright" only
+  // resolves as a transitive of it.
+  const { chromium } = await import("@playwright/test");
   const axeSource = readFileSync(
     join(SITE, "..", "node_modules", "axe-core", "axe.min.js"),
     "utf8",
