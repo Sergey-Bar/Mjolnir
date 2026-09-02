@@ -9,6 +9,50 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — Verification Trust Evolution, Phase 6 — Runtime Evidence (plan §16)
+
+### Added — runtime corroboration + the honest L0–L5 trust ladder
+
+Built on the existing forensics ingestion (no greenfield):
+`packages/playwright-reporter` → `mjolnir.report.json` → the
+`ForensicsReport` pipeline that `forensics`/`triage`/`pw-report`
+already consume. Findings gain two additive, optional fields
+(schemaVersion 1 unchanged):
+
+- **`runtimeCorroboration`** — what a real run report vouches for:
+  `level: "file" | "test" | "defect"`, the report source, executed-test
+  count, and (test/defect level) the containing test's full verdict
+  (attempts, final status, passed-on-retry, ever-failed, skipped).
+- **`trustLevel`** — the L0–L5 ladder, derived deterministically:
+  L0 (E0 observation) / L1 (E1 heuristic) / L2 (E2 deterministic) are
+  the static-only ceiling; L3 (file executed) / L4 (the containing
+  test executed — matched via the report's spec declaration lines) /
+  L5 (the run verdict directly corroborates the defect class — a
+  FLAKY-RISK finding whose test actually flaked, retried, or timed
+  out) exist ONLY when runtime corroboration is present. The
+  no-static-only-L4/L5 invariant is structurally enforced in
+  `deriveTrustLevel` and locked by tests across the full
+  findingType×confidence×evidenceLevel matrix.
+
+- **Matching is honest by construction:** Playwright JSON reports now
+  carry the spec declaration line (additive `line` on
+  `TestRecord`/`TestVerdict`); a finding is tied to a specific test
+  only when the report's declaration spans place it there — otherwise
+  corroboration stays at file level, and files the report never ran
+  get NOTHING (no fabricated evidence). JUnit XML has no locations:
+  file-level only.
+- **Scan wiring:** `runScan` auto-discovers a run report next to the
+  scan target (`mjolnir.report.json` — the reporter package's default
+  output — or a `test-results/` directory), runs the existing
+  forensics ingestion, and stamps findings. No report → findings
+  unchanged (honest "runtime evidence: not available"). A hostile
+  report degrades the scan, never fails it.
+- **Reporters split verified vs assumed (plan §16):** the terminal
+  footer reports `Runtime evidence: N/M findings corroborated by a
+real run report (trust L3–L5)` or the explicit not-available line;
+  finding cards show `trust L4 · runtime: test executed`. SARIF
+  results carry `trustLevel` + `runtimeCorroboration` in properties.
+
 ## [Unreleased] — Verification Trust Evolution, Phase 5 — Framework Expansion (plan §15, D7 closed)
 
 ### Added — FrameworkDimension enforced (plan §15.1, defect D7 closed)

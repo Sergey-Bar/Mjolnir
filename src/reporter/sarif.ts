@@ -141,6 +141,33 @@ export function renderSarif(result: ScanResult, repoRootUri?: string): string {
         qaImpact: f.qaImpact,
         // Honesty Core: evidence strength travels with every result.
         ...(f.evidenceLevel ? { evidenceLevel: f.evidenceLevel } : {}),
+        // Plan §16: trust ladder + runtime corroboration travel with the
+        // result so Code Scanning consumers see verified vs assumed.
+        ...(f.trustLevel ? { trustLevel: f.trustLevel } : {}),
+        ...(f.runtimeCorroboration
+          ? {
+              runtimeCorroboration: {
+                level: f.runtimeCorroboration.level,
+                source: f.runtimeCorroboration.source,
+                testsExecuted: f.runtimeCorroboration.testsExecuted,
+                ...(f.runtimeCorroboration.matchedTest
+                  ? {
+                      matchedTest: {
+                        title: f.runtimeCorroboration.matchedTest.title,
+                        finalStatus:
+                          f.runtimeCorroboration.matchedTest.finalStatus,
+                        attempts: f.runtimeCorroboration.matchedTest.attempts,
+                        passedOnRetry:
+                          f.runtimeCorroboration.matchedTest.passedOnRetry,
+                        everFailed:
+                          f.runtimeCorroboration.matchedTest.everFailed,
+                        skipped: f.runtimeCorroboration.matchedTest.skipped,
+                      },
+                    }
+                  : {}),
+              },
+            }
+          : {}),
       },
     })),
   };

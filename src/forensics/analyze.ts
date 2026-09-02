@@ -59,6 +59,7 @@ export function analyze(
       passedOnRetry,
       everFailed,
       skipped: finalStatus === "skipped",
+      ...(rec.line !== undefined ? { line: rec.line } : {}),
     });
   }
 

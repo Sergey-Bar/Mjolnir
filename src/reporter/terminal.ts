@@ -302,6 +302,12 @@ function evidenceTag(f: Finding): string {
     tag += ` · measured FP ${Math.round(f.measuredFpRate * 100)}%`;
     if (f.measuredFpN !== undefined) tag += ` · n=${f.measuredFpN}`;
   }
+  // Plan §16: surface the trust ladder + what runtime vouched for.
+  if (f.trustLevel !== undefined) tag += ` · trust ${f.trustLevel}`;
+  if (f.runtimeCorroboration !== undefined) {
+    const c = f.runtimeCorroboration;
+    tag += ` · runtime: ${c.level === "defect" ? "defect corroborated" : c.level === "test" ? "test executed" : "file executed"}`;
+  }
   return `[${tag}]`;
 }
 
@@ -571,6 +577,25 @@ function appendFooter(
           ` \`mjolnir rules --unmeasured\` lists them.`,
       ),
     );
+    // Plan §16: verified vs assumed — how many findings a real run
+    // report corroborated. When no report was present, say so honestly
+    // instead of implying the split is all-assumed by choice.
+    const verified = result.findings.filter(
+      (f) => f.runtimeCorroboration !== undefined,
+    ).length;
+    if (verified > 0) {
+      lines.push(
+        p.dim(
+          `  Runtime evidence: ${verified}/${result.findings.length} findings corroborated by a real run report (trust L3–L5); the rest are static-only.`,
+        ),
+      );
+    } else {
+      lines.push(
+        p.dim(
+          `  Runtime evidence: not available — no run report (mjolnir.report.json / test-results) next to the scan target; all findings are static-only (L0–L2).`,
+        ),
+      );
+    }
   }
 
   // Audit S-8: third-party plugin code executed during this scan must be

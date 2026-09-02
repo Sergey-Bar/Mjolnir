@@ -46,6 +46,7 @@ import { renderMermaid } from "./reporter/mermaid.js";
 import { computeChangedScope, filterToChanged } from "./scope/changed.js";
 import { asUniversal } from "./engine/rule-runner.js";
 import { enforceTierPolicy, type Tier } from "./engine/tier-policy.js";
+import { stampRuntimeCorroboration } from "./engine/runtime-corroboration.js";
 import type { ParsedAst, ParsedFile } from "./engine/adapter.js";
 import { releaseTreeSitterResources } from "./engine/tree-sitter-ast.js";
 import { applyOverlapDedup, type OverlapMeta } from "./engine/overlap-dedup.js";
@@ -594,6 +595,23 @@ export async function runScan(
   // advisory by construction (info + E0) no matter what its rule
   // declares, so an unproven rule can never gate CI or deduct score.
   enforceTierPolicy(findings, tierByRuleId);
+  // Plan §16 — Runtime Evidence: when a real run report sits next to
+  // the scan target (the same ingestion `mjolnir forensics` uses:
+  // `mjolnir.report.json` or a `test-results/` directory), findings get
+  // stamped with runtime corroboration + the L0–L5 trust ladder.
+  // Absent report → findings unchanged (honest "no runtime evidence").
+  const runtimeReportPath = discoverRuntimeReport(scanRoot.root);
+  if (runtimeReportPath) {
+    try {
+      const fr = await runForensics(runtimeReportPath, {
+        writeFlakyMd: false,
+      });
+      stampRuntimeCorroboration(findings, fr.report);
+    } catch {
+      // A hostile/corrupt report must not fail the scan — the run simply
+      // carries no runtime evidence (same degrade posture as forensics).
+    }
+  }
   const dimensions = computeDimensions(findings);
   const rawDeductions = findings.reduce((sum, f) => sum + deductionFor(f), 0);
   const total = computeTotal(dimensions, findings, {
@@ -940,6 +958,24 @@ export function runExplainCommand(
     );
     return 20;
   }
+}
+
+/**
+ * Plan §16: locate a runtime run report next to the scan target, using
+ * the exact conventions the forensics ingestion already accepts —
+ * `mjolnir.report.json` (the packages/playwright-reporter default
+ * output) or a `test-results/` directory. Returns the path for
+ * `runForensics`, or undefined when neither convention is present
+ * ("no runtime evidence" — never guessed).
+ */
+function discoverRuntimeReport(scanRoot: string): string | undefined {
+  const reportFile = join(scanRoot, "mjolnir.report.json");
+  if (existsSync(reportFile)) return reportFile;
+  const resultsDir = join(scanRoot, "test-results");
+  if (existsSync(resultsDir) && statSync(resultsDir).isDirectory()) {
+    return resultsDir;
+  }
+  return undefined;
 }
 
 /** Testable default scan path. */
