@@ -72,6 +72,24 @@ const features = [
   },
 ];
 
+/**
+ * MJÖLNIR in Elder Futhark: ᛗ(mannaz) ᛃ(jera) ᛟ(othala) ᛚ(laguz)
+ * ᚾ(naudiz) ᛁ(isaz) ᚱ(raidho). Left-to-right in reading order, at
+ * varied size and opacity so it reads as depth rather than a banner —
+ * the word is there for anyone who looks, and never claimed for anyone
+ * who doesn't. Positions are fixed, not random: the hero must render
+ * identically on the server and the client.
+ */
+const runes = [
+  { g: "ᛗ", x: 7, y: 22, s: 3.6, o: 0.15, d: 0 },
+  { g: "ᛃ", x: 20, y: 68, s: 2.4, o: 0.1, d: 90 },
+  { g: "ᛟ", x: 33, y: 14, s: 2.8, o: 0.12, d: 180 },
+  { g: "ᛚ", x: 48, y: 78, s: 2.1, o: 0.09, d: 270 },
+  { g: "ᚾ", x: 63, y: 30, s: 3.1, o: 0.13, d: 360 },
+  { g: "ᛁ", x: 78, y: 72, s: 2.2, o: 0.1, d: 450 },
+  { g: "ᚱ", x: 90, y: 20, s: 3.4, o: 0.14, d: 540 },
+];
+
 /* ----- animation (client only) --------------------------------------- */
 
 const RING = 339.292; // 2πr, r = 54 — full offset = empty ring
@@ -175,6 +193,25 @@ onBeforeUnmount(() => {
       <div class="hero-bg" aria-hidden="true">
         <div class="aurora" />
         <div class="forge-glow" />
+        <!-- Not a scatter of decorative glyphs: read left to right, these
+             are ᛗ ᛃ ᛟ ᛚ ᚾ ᛁ ᚱ — MJÖLNIR transliterated into Elder Futhark.
+             Ordered, so it resolves into the word if you look; drifting at
+             different depths, so it doesn't announce itself. -->
+        <div class="runefield">
+          <span
+            v-for="r in runes"
+            :key="r.g"
+            class="rune"
+            :style="{
+              left: r.x + '%',
+              top: r.y + '%',
+              fontSize: r.s + 'rem',
+              opacity: r.o,
+              animationDelay: r.d + 'ms',
+            }"
+            >{{ r.g }}</span
+          >
+        </div>
         <svg class="bolt" viewBox="0 0 200 400" preserveAspectRatio="none">
           <path
             d="M120 -10 L70 150 L110 150 L60 410"
@@ -184,7 +221,7 @@ onBeforeUnmount(() => {
           />
           <defs>
             <linearGradient id="boltgrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#45d4c4" />
+              <stop offset="0" stop-color="#45c1d4" />
               <stop offset="1" stop-color="#e6bd57" />
             </linearGradient>
           </defs>
@@ -1137,6 +1174,33 @@ onBeforeUnmount(() => {
 }
 
 /* ---------------- keyframes ---------------- */
+/* ---------------- runefield ---------------- */
+/* The old rune field drifted forever (`floaty`, one more infinite
+   animation on top of four). These settle once and then hold: the motion
+   budget Check 5 enforces is unchanged at 4, and a reader who arrives
+   mid-scroll sees the same still field as everyone else. */
+.runefield {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.rune {
+  position: absolute;
+  font-family: var(--mj-display);
+  line-height: 1;
+  color: var(--mj-steel);
+  text-shadow: 0 0 26px rgba(69, 193, 212, 0.28);
+  user-select: none;
+  animation: rune-settle 1.1s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes rune-settle {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.94);
+  }
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -1249,7 +1313,8 @@ onBeforeUnmount(() => {
   .aurora,
   .forge-glow,
   .bolt,
-  .shimmer {
+  .shimmer,
+  .rune {
     animation: none !important;
   }
   .mj-anim [data-reveal] {

@@ -433,6 +433,72 @@ open gap rather than silently left uncovered.
 - A full axe-core audit and a manual keyboard pass.
 - Lighthouse performance and CLS are unmeasured.
 - Check 1 cannot see gradient-clip / dead-selector text defects (D12).
-- The four decisions in §8 are still unanswered; §4's recommendations
-  were followed for the rune field (dropped) and the demo repo (kept at
-  75/100). Fonts remain on Google Fonts, trimmed from ten files to six.
+- Three of the four decisions in §8 remain unanswered. The rune-field
+  one is now settled — see §13.3.
+
+## 13. Palette vs the logo — measured
+
+Asked whether the site's colours actually match the logo the brand doc
+calls "the source of truth". Sampled `assets/brand/logo.png` (opaque,
+lit pixels only) and compared the representative colour of each hue
+family against the shipped tokens in CIE Lab.
+
+| role   | logo (measured)     | shipped token       |   ΔE | Δhue | verdict  |
+| ------ | ------------------- | ------------------- | ---: | ---: | -------- |
+| gold   | `#deba84` H36 S.58  | `#c19a34` H43 S.58  | 26.9 |   7° | fine     |
+| aurora | `#1e727e` H188 S.62 | `#37bda9` H171 S.55 | 35.3 |  16° | MISMATCH |
+| cyan   | `#247896` H196 S.61 | `#5cc4e0` H193 S.68 | 28.4 |   3° | fine     |
+| steel  | `#9c9c9c` S.00      | `#c8cbcf` S.07      | 17.4 |    — | fine     |
+
+### 13.1 What the numbers actually say
+
+The large ΔE on gold, cyan and steel is almost entirely **lightness**,
+not hue — the logo's colours are lit highlights on dark artwork, and a
+UI token has to be darker to work as text on a light ground. Gold's
+saturation is identical (0.58 both). Matching the logo's lightness would
+re-create D12: light-on-light text. Those gaps are correct and stay.
+
+Steel's Δhue is undefined-by-arithmetic: the logo's steel is achromatic
+(S 0.00), so it has no hue to differ from. The token's faint blue tint
+is a defensible "cool steel" choice.
+
+**Aurora was the one real mismatch** — 16° of hue, cyan-leaning petrol
+in the logo against a green-leaning mint in the token, and it shows
+precisely where the two sit side by side: the hero glow and the bolt
+gradient, inches from the artwork.
+
+### 13.2 Fixed — hue only
+
+`--mj-aurora` → `#37abbd`, `--mj-aurora-bright` → `#45c1d4`,
+`--mj-aurora-cyan` → `#5cbde0`. Saturation and lightness untouched. All
+three are decorative (6 usages, no text), so no AA consequence. The
+semantic tokens were deliberately not moved: light-mode `--mj-trusted`
+is already `#1b6e7a` = H188, an exact match to the logo's aurora — an
+accident of the Phase 1 AA fix — and the dark pair is within 3°.
+
+### 13.3 The rune field, restored with a twist
+
+§8 decision 2 recommended dropping the drifting runes, and Phase 4 did.
+They are back by request, as `ᛗ ᛃ ᛟ ᛚ ᚾ ᛁ ᚱ` — MJÖLNIR in Elder
+Futhark, ordered left to right so it resolves into the word for anyone
+who looks, at varied size and opacity so it reads as depth rather than a
+banner. They settle once rather than drifting forever, so Check 5's
+budget stays at 4 infinite animations. Positions are fixed, not random,
+so SSR and client render identically.
+
+Not attempted: Vegvísir knotwork, extra hammers or bolts — the brand
+README rules those out explicitly ("Use one mark, calmly").
+
+### 13.4 D13 — the brand doc had drifted on every single token
+
+`assets/brand/README.md` printed a palette table in which **all twelve**
+`--mj-*` rows disagreed with `vars.css`; gold was off by ΔE 8.2, well
+past the ~2.3 just-noticeable threshold. The same defect class as D1 — a
+document asserting numbers the code does not hold — and nothing was
+watching it, because `docs-consistency.spec.ts` only validates npm
+script references.
+
+Table regenerated from `vars.css`, and **Check 8** now diffs the two on
+every build. Proven to fail before being trusted, per D11: a wrong gold
+injected into the table yields `--mj-gold — README says #deadbe,
+vars.css ships #c19a34`, and returns to PASS on restore.

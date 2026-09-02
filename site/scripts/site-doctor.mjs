@@ -489,6 +489,65 @@ function checkLinks() {
   };
 }
 
+/* ------------------------------------------------------------------ *
+ * Check 8 — the brand doc states the palette the code actually ships
+ *
+ * assets/brand/README.md calls the logo "the source of truth" and then
+ * prints a table of token values. Every one of its twelve --mj-* rows had
+ * drifted from vars.css — the gold was off by dE 8.2, well past the point
+ * a designer would notice. Same defect class as D1: a document asserting
+ * numbers the code does not hold, with nothing watching. Check 2 keeps
+ * scan numbers honest; this keeps the palette honest.
+ * ------------------------------------------------------------------ */
+
+const BRAND_README = join(ROOT, "assets", "brand", "README.md");
+
+/** `| \`--mj-gold\` | \`#C19A34\` | ... |` -> ["--mj-gold", "#C19A34"] */
+export function parseBrandTable(md) {
+  const out = [];
+  for (const m of md.matchAll(
+    /^\|\s*`(--mj-[a-z0-9-]+)`\s*\|\s*`(#[0-9a-fA-F]{6})`/gm,
+  )) {
+    out.push([m[1], m[2].toLowerCase()]);
+  }
+  return out;
+}
+
+function checkBrandPalette() {
+  if (!existsSync(BRAND_README)) {
+    return {
+      n: 8,
+      name: "Brand palette",
+      detail: "assets/brand/README.md",
+      gap: "assets/brand/README.md not found",
+    };
+  }
+  const css = readFileSync(join(THEME, "styles", "vars.css"), "utf8");
+  // The documented table is the light/base ramp, so compare against :root.
+  const light = parseTokens(css, ":root");
+  const rows = parseBrandTable(readFileSync(BRAND_README, "utf8"));
+
+  const failures = [];
+  for (const [name, documented] of rows) {
+    const shipped = light[name]?.trim().toLowerCase();
+    if (!shipped) {
+      failures.push(
+        `${name} — documented as ${documented}, not defined in vars.css :root`,
+      );
+    } else if (shipped !== documented) {
+      failures.push(
+        `${name} — README says ${documented}, vars.css ships ${shipped}`,
+      );
+    }
+  }
+  return {
+    n: 8,
+    name: "Brand palette",
+    detail: `${rows.length} --mj-* rows in assets/brand/README.md match vars.css`,
+    failures,
+  };
+}
+
 /* ------------------------------------------------------------------ */
 
 function main() {
@@ -501,6 +560,7 @@ function main() {
     checkMotion(),
     checkA11y(),
     checkLinks(),
+    checkBrandPalette(),
   ];
   const checks = all.filter((c) => !c.gap);
   const gaps = all.filter((c) => c.gap);

@@ -277,7 +277,7 @@ async function copyReport() {
   border-color: rgba(215, 211, 200, 0.3);
 }
 .term-copy:focus-visible {
-  outline: 2px solid var(--mj-aurora, #37bda9);
+  outline: 2px solid var(--mj-aurora, #37abbd);
   outline-offset: 2px;
 }
 
@@ -308,7 +308,7 @@ async function copyReport() {
   border-bottom-color: var(--mj-gold-bright, #e6bd57);
 }
 .tab:focus-visible {
-  outline: 2px solid var(--mj-aurora, #37bda9);
+  outline: 2px solid var(--mj-aurora, #37abbd);
   outline-offset: -3px;
 }
 
@@ -372,7 +372,7 @@ async function copyReport() {
   color: var(--term-fg);
 }
 .more > summary:focus-visible {
-  outline: 2px solid var(--mj-aurora, #37bda9);
+  outline: 2px solid var(--mj-aurora, #37abbd);
   outline-offset: -2px;
 }
 .chev {

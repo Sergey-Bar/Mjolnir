@@ -46,9 +46,9 @@
   --mj-gold-hot: #f4dc9c;
 
   /* aurora — secondary / verification energy */
-  --mj-aurora: #37bda9;
-  --mj-aurora-bright: #45d4c4;
-  --mj-aurora-cyan: #5cc4e0;
+  --mj-aurora: #37abbd;
+  --mj-aurora-bright: #45c1d4;
+  --mj-aurora-cyan: #5cbde0;
 
   /* semantic — verdict & status.
    * Score colors follow the ScoreState model (src/reporter/score-state.ts):
