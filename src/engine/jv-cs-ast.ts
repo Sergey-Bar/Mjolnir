@@ -277,3 +277,25 @@ export function firstAncestorCallNamed(node: Node, name: string): boolean {
   }
   return false;
 }
+
+/**
+ * Helper/verification idiom — the QA-CS-103 oracle's shared vocabulary
+ * (verify/VerifyAll/VerifyAnalyzerAsync/CheckState/Assert.Throws and
+ * camelCase helpers), case-aware so English-word false friends
+ * (checker, assertion, verified) do NOT match: prefix + uppercase
+ * boundary. Lives here so the rule and the §14 semantic model share
+ * one implementation (No False Proof: one vocabulary, one source).
+ */
+const HELPER_PREFIXES = ["verify", "check", "assert"];
+
+export function isHelperIdiom(name: string): boolean {
+  if (name.toLowerCase() === "verifyall") return true;
+  for (const prefix of HELPER_PREFIXES) {
+    if (!name.toLowerCase().startsWith(prefix)) continue;
+    const rest = name.slice(prefix.length);
+    if (rest.length === 0) return true; // bare Verify/check/assert
+    const first = rest.charCodeAt(0);
+    if (first >= 65 && first <= 90) return true; // PascalCase suffix
+  }
+  return false;
+}

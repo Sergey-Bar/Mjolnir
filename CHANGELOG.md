@@ -9,6 +9,44 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — Verification Trust Evolution, Phase 4 — Common QA Semantic Model (plan §14, behavior-neutral)
+
+### Added — `src/engine/qa-model.ts`: the normalized QA concept IR (extract-only, no scan wiring)
+
+The plan-§14 vocabulary — Test, TestBoundary, Setup/Teardown, Fixture,
+Action, Locator, Wait, Assertion, Mock, NetworkInteraction, Retry,
+Navigation, Interaction, Lifecycle — now exists as a typed model
+(`QaNode`/`QaSemanticModel`, all 14 concepts in `EXTRACTOR_COVERAGE`)
+with per-language extractors over the ALREADY-existing parse stage:
+ts-morph for TS/JS (tests/hooks via the scorer's it/test vocabulary,
+calls via the measured rule vocabularies of qa-pw-002/004/005/101–145,
+qa-test-001/003/004/006, jest/vi mock+retry), tree-sitter for Java/C#
+(test boundaries REUSE `javaTestMethods`/`csharpTestMethods` verbatim —
+the model cannot drift from the rules' scoping; call/hook/retry
+vocabularies copied from the QA-JV-_/QA-CS-_ rules), regex boundaries
+for Python (def test_, @pytest.fixture, time.sleep, assert).
+
+- **Extracted, not invented:** every classification table cites the
+  rule whose measured vocabulary it copies (headers in qa-model.ts);
+  the shared `isHelperIdiom` helper moved to `jv-cs-ast.ts` so the
+  QA-CS-103 rule and the model share ONE implementation.
+- **Adoption is additive:** NOTHING in the scan pipeline imports the
+  module — BEHAVIOR-NEUTRAL by construction, golden/corpus locks
+  untouched (proven: locks byte-identical with the model present).
+- **Coverage is honest:** `EXTRACTOR_COVERAGE` documents per-language
+  gaps (e.g. Java has no fixture/interaction/lifecycle extractor;
+  Python extracts only test/fixture/assertion/wait) — visible gaps,
+  never silent claims (No False Proof).
+- **Equivalence proven:** `tests/qa-model.spec.ts` re-expresses the
+  QA-JV-103 / QA-CS-103 / QA-CS-102 oracles over the model
+  (`testVerifies`, ancestor-chain containment via the
+  `firstAncestorCallNamed` generalization now carried as
+  `node.ancestors`) and asserts FINDING-IDENTICAL results against the
+  rules on the committed fixture corpora + synthetic edge shapes —
+  the model can carry these rules without changing any output.
+  Awaitedness (qa-pw-002's consumption oracle) rides on TS nodes as
+  `node.awaited`.
+
 ## [Unreleased] — Verification Trust Evolution, Phase 3 — Java/C# semantic upgrade (plan §13)
 
 ### Changed — three JV/CS rules migrated to L2 tree-sitter analysis (EVIDENCE-BACKED, detectorRevision 2)

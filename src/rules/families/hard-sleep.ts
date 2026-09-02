@@ -49,7 +49,7 @@ import {
 } from "../../engine/jv-cs-ast.js";
 
 /** APIs whose delegate arguments simulate the environment, not the test. */
-const ENVIRONMENT_DELEGATE_APIS = new Set([
+export const ENVIRONMENT_DELEGATE_APIS = new Set([
   "Route",
   "RouteAsync",
   "RouteFromHAR",

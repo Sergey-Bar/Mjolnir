@@ -94,19 +94,7 @@ function throwsAssertionException(node: TsNode): boolean {
 }
 
 /** Helper/verification idiom: verify/check/assert-prefixed names. */
-const HELPER_PREFIXES = ["verify", "check", "assert"];
-
-function isHelperIdiom(name: string): boolean {
-  if (name.toLowerCase() === "verifyall") return true;
-  for (const prefix of HELPER_PREFIXES) {
-    if (!name.toLowerCase().startsWith(prefix)) continue;
-    const rest = name.slice(prefix.length);
-    if (rest.length === 0) return true; // bare Verify/check/assert
-    const first = rest.charCodeAt(0);
-    if (first >= 65 && first <= 90) return true; // PascalCase suffix
-  }
-  return false;
-}
+import { isHelperIdiom } from "../../engine/jv-cs-ast.js";
 
 /** L2 path (§13.2): undefined means "no AST — run the fallback". */
 function cs103AstQuery(
