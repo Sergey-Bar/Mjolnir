@@ -36,18 +36,18 @@ Tokens live in [`site/.vitepress/theme/styles/vars.css`](../../site/.vitepress/t
 
 | Token                | Light     | Dark | Role                                          |
 | -------------------- | --------- | ---- | --------------------------------------------- |
-| `--mj-ink-950`       | `#080B12` | —    | deepest background (hero)                     |
-| `--mj-ink-900`       | `#0B0F17` | —    | app / page background (dark)                  |
-| `--mj-ink-850`       | `#0F1420` | —    | surface                                       |
-| `--mj-ink-800`       | `#141B2B` | —    | raised surface                                |
-| `--mj-steel`         | `#C6CCD6` | —    | neutral bright — hammer head, headings on ink |
-| `--mj-steel-dim`     | `#8A93A0` | —    | muted text on ink                             |
-| `--mj-gold`          | `#C9A227` | —    | **primary brand**                             |
-| `--mj-gold-bright`   | `#E0B443` | —    | primary brand on dark — accents, focus        |
-| `--mj-gold-hot`      | `#F2D488` | —    | highlight, hover                              |
-| `--mj-aurora`        | `#2FB8A6` | —    | secondary — verification energy               |
-| `--mj-aurora-bright` | `#37D4C6` | —    | secondary on dark                             |
-| `--mj-aurora-cyan`   | `#56C7E8` | —    | informational state                           |
+| `--mj-ink-950`       | `#0A1119` | —    | deepest background (hero)                     |
+| `--mj-ink-900`       | `#0C1420` | —    | app / page background (dark)                  |
+| `--mj-ink-850`       | `#111A29` | —    | surface                                       |
+| `--mj-ink-800`       | `#18243A` | —    | raised surface                                |
+| `--mj-steel`         | `#C8CBCF` | —    | neutral bright — hammer head, headings on ink |
+| `--mj-steel-dim`     | `#8B939D` | —    | muted text on ink                             |
+| `--mj-gold`          | `#C19A34` | —    | **primary brand**                             |
+| `--mj-gold-bright`   | `#E6BD57` | —    | primary brand on dark — accents, focus        |
+| `--mj-gold-hot`      | `#F4DC9C` | —    | highlight, hover                              |
+| `--mj-aurora`        | `#37ABBD` | —    | secondary — verification energy               |
+| `--mj-aurora-bright` | `#45C1D4` | —    | secondary on dark                             |
+| `--mj-aurora-cyan`   | `#5CBDE0` | —    | informational state                           |
 
 ### Semantic — status & verdict
 

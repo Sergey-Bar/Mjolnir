@@ -55,7 +55,11 @@ export default defineConfig({
   lang: "en-US",
   cleanUrls: true,
   lastUpdated: true,
-  appearance: "dark",
+  // Dark-only. "dark" merely defaulted to dark and still shipped a light
+  // ramp behind a toggle — a second theme nobody designed against, which
+  // is where the unreadable light-mode navbar wordmark came from (D12).
+  // "force-dark" also removes the appearance switch from the navbar.
+  appearance: "force-dark",
   sitemap: { hostname: SITE_URL },
   // Included docs (docs/*.md) carry links relative to the repo, not the
   // site; markdown.config below rewrites them, this silences the checker.
@@ -97,6 +101,14 @@ export default defineConfig({
     },
   },
   head: [
+    // Marks the document as "scripting is live", before the body paints.
+    // The landing page's reveal-on-scroll animation starts its elements at
+    // opacity 0, and only JS ever brought them back — so with scripting off
+    // every section below the hero was invisible (plan §2, D4). Gating that
+    // starting state on this class makes the animation an enhancement: no
+    // script, no class, nothing hidden. Inline and in <head> so there is no
+    // flash of the hidden state on the way in.
+    ["script", {}, `document.documentElement.classList.add("mj-anim")`],
     ["meta", { name: "theme-color", content: "#0b0f17" }],
     [
       "link",
@@ -122,11 +134,28 @@ export default defineConfig({
       "link",
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" },
     ],
+    // Split deliberately, because the two halves want different swap
+    // behaviour. Cinzel and Inter keep `display=swap`: the brand face
+    // should arrive even if it is late, and their swap-in was measured
+    // at CLS 0.001 on the landing page.
     [
       "link",
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;450;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Inter:wght@400;500;600&display=optional",
+      },
+    ],
+    // JetBrains Mono is `display=optional` instead. Swapping it in at
+    // ~900ms re-flowed all 91 rows of the rule catalog and was the whole
+    // of that page's CLS (0.088 against a 0.05 gate — traced to <tr>
+    // nodes with a layout-shift observer). `optional` means the browser
+    // either has it in time or keeps the fallback for that visit and
+    // never swaps, so the table cannot reflow underneath a reader.
+    [
+      "link",
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=optional",
       },
     ],
     // Link previews (Slack, X, LinkedIn, Discord) — without these a
@@ -139,17 +168,18 @@ export default defineConfig({
     ],
     ["meta", { property: "og:description", content: TAGLINE }],
     ["meta", { property: "og:url", content: SITE_URL }],
-    ["meta", { property: "og:image", content: SITE_URL + "social-card.png" }],
+    ["meta", { property: "og:image", content: SITE_URL + "social-card.jpg" }],
     ["meta", { name: "twitter:card", content: "summary_large_image" }],
     [
       "meta",
       { name: "twitter:title", content: "Mjölnir — Verification Trust Engine" },
     ],
     ["meta", { name: "twitter:description", content: TAGLINE }],
-    ["meta", { name: "twitter:image", content: SITE_URL + "social-card.png" }],
+    ["meta", { name: "twitter:image", content: SITE_URL + "social-card.jpg" }],
   ],
   themeConfig: {
-    logo: "/apple-touch-icon.png",
+    // A 64px mark, not the 180x180 touch icon scaled down to ~24px.
+    logo: "/mark-64.png",
     nav: [
       { text: "Guide", link: "/guide/getting-started" },
       { text: "Rules", link: "/rules/", activeMatch: "^/rules/" },

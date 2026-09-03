@@ -1,34 +1,43 @@
 /**
  * Mjölnir palette — storm-forged. Brushed steel and forge gold under an
  * aurora, over midnight iron. Derived from the logo; see
- * assets/brand/README.md. Light mode is the same system on a cold white.
+ * assets/brand/README.md.
+ *
+ * ONE palette. The site is dark-only (config.mts `appearance:
+ * "force-dark"`), so there is no light ramp to keep in sync and no
+ * second theme to test. That is deliberate: VitePress applies
+ * force-dark by adding `.dark` from an inline script, which a reader
+ * with scripting off never runs — so the dark values live on :root
+ * itself, and the page is dark with or without JS.
  */
 
 :root {
   /* ---- brand accent: forge gold ---- */
-  --vp-c-brand-1: #a5811c;
-  --vp-c-brand-2: #8a6d1e;
-  --vp-c-brand-3: #6f5717;
-  --vp-c-brand-soft: rgba(201, 162, 39, 0.13);
+  --vp-c-brand-1: #e6bd57;
+  --vp-c-brand-2: #c19a34;
+  --vp-c-brand-3: #a5811c;
+  --vp-c-brand-soft: rgba(230, 189, 87, 0.15);
 
-  /* ---- light surface: cold white ---- */
-  --vp-c-bg: #f7f8fa;
-  --vp-c-bg-alt: #eef1f5;
-  --vp-c-bg-soft: #e7ebf1;
-  --vp-c-bg-elv: #ffffff;
-  --vp-c-text-1: #0f1420;
-  --vp-c-text-2: #48515f;
-  --vp-c-text-3: #6e7a8c;
-  --vp-c-divider: rgba(20, 27, 43, 0.1);
-  --vp-c-border: rgba(20, 27, 43, 0.14);
-  --vp-c-gutter: rgba(20, 27, 43, 0.07);
+  /* ---- surface: midnight iron ---- */
+  --vp-c-bg: #0c1420;
+  --vp-c-bg-alt: #111a29;
+  --vp-c-bg-soft: #1a2740;
+  --vp-c-bg-elv: #141f33;
+  --vp-c-text-1: #eaeef5;
+  --vp-c-text-2: #abb6c6;
+  --vp-c-text-3: #8b939d;
+  --vp-c-divider: rgba(198, 204, 214, 0.1);
+  --vp-c-border: rgba(198, 204, 214, 0.14);
+  --vp-c-gutter: rgba(198, 204, 214, 0.06);
 
   /* ---- type ---- */
   --vp-font-family-base:
-    "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    "Inter", "Inter Fallback", ui-sans-serif, system-ui, -apple-system,
+    sans-serif;
   --vp-font-family-mono:
     "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
-  --mj-display: "Cinzel", "Trajan Pro", "Iowan Old Style", Georgia, serif;
+  --mj-display:
+    "Cinzel", "Cinzel Fallback", "Trajan Pro", "Iowan Old Style", Georgia, serif;
 
   /* ---- Mjölnir tokens: midnight iron (sampled from the logo scene) ---- */
   --mj-ink-950: #0a1119;
@@ -46,9 +55,9 @@
   --mj-gold-hot: #f4dc9c;
 
   /* aurora — secondary / verification energy */
-  --mj-aurora: #37bda9;
-  --mj-aurora-bright: #45d4c4;
-  --mj-aurora-cyan: #5cc4e0;
+  --mj-aurora: #37abbd;
+  --mj-aurora-bright: #45c1d4;
+  --mj-aurora-cyan: #5cbde0;
 
   /* semantic — verdict & status.
    * Score colors follow the ScoreState model (src/reporter/score-state.ts):
@@ -58,14 +67,14 @@
    * score contexts. */
   --mj-critical: var(--mj-unworthy);
   --mj-warning: var(--mj-needswork);
-  --mj-trusted: #2596a8;
-  --mj-trusted-bright: #5cc4e0;
-  --mj-forged: linear-gradient(90deg, #8a6d1e, #a5811c);
-  --mj-forged-hot: #8a6d1e;
+  --mj-trusted: #5cc4e0;
+  --mj-trusted-bright: #7fd4ea;
+  --mj-forged: linear-gradient(90deg, #f4dc9c, #e6bd57);
+  --mj-forged-hot: #f4dc9c;
   --mj-worthy: var(--mj-trusted);
-  --mj-needswork: #a5811c;
-  --mj-unworthy: #c13b37;
-  --mj-info: #2b7fa8;
+  --mj-needswork: #e6bd57;
+  --mj-unworthy: #ec6b66;
+  --mj-info: #5cc4e0;
 
   /* ---- legacy aliases (kept so existing rules keep resolving) ---- */
   --mj-ember: var(--mj-gold);
@@ -77,7 +86,7 @@
   --mj-forge-900: var(--mj-ink-900);
   --mj-forge-850: var(--mj-ink-850);
   --mj-forge-800: var(--mj-ink-800);
-  --mj-parchment: #e7ebf1;
+  --mj-parchment: #c8cbcf;
   --mj-iron: var(--mj-steel-dim);
 
   --mj-hero-ink: #0b1420;
@@ -97,35 +106,4 @@
   --vp-c-brand-light: var(--mj-gold-bright);
   --vp-c-brand-dark: var(--vp-c-brand-2);
   --vp-c-brand-darker: var(--vp-c-brand-3);
-}
-
-.dark {
-  --vp-c-bg: #0c1420;
-  --vp-c-bg-alt: #111a29;
-  --vp-c-bg-soft: #1a2740;
-  --vp-c-bg-elv: #141f33;
-  --vp-c-text-1: #eaeef5;
-  --vp-c-text-2: #abb6c6;
-  --vp-c-text-3: #71808f;
-  --vp-c-divider: rgba(198, 204, 214, 0.1);
-  --vp-c-border: rgba(198, 204, 214, 0.14);
-  --vp-c-gutter: rgba(198, 204, 214, 0.06);
-
-  --vp-c-brand-1: #e6bd57;
-  --vp-c-brand-2: #c19a34;
-  --vp-c-brand-3: #a5811c;
-  --vp-c-brand-soft: rgba(230, 189, 87, 0.15);
-
-  --mj-critical: #e5544e;
-  --mj-warning: #e6bd57;
-  --mj-trusted: #5cc4e0;
-  --mj-trusted-bright: #7fd4ea;
-  --mj-forged: linear-gradient(90deg, #f4dc9c, #e6bd57);
-  --mj-forged-hot: #f4dc9c;
-  --mj-needswork: #e6bd57;
-  --mj-worthy: var(--mj-trusted);
-  --mj-unworthy: #e5544e;
-  --mj-info: #5cc4e0;
-
-  --mj-parchment: #c8cbcf;
 }
