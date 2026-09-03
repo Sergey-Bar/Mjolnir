@@ -213,7 +213,7 @@ function loadJsonRule(path: string, result: LoadedExternalRules): void {
       : "Review the matched code against the rule's intent.";
   const confidence =
     decl["confidence"] === "high" || decl["confidence"] === "low"
-      ? (decl["confidence"])
+      ? decl["confidence"]
       : ("medium" as const);
 
   let languages: string[] | undefined;
