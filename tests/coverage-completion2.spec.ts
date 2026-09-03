@@ -1,4 +1,3 @@
- 
 /**
  * Remaining coverage-completion specs (Phase 5–8, CI 100% per-file gate):
  * the concurrency slot in tree-sitter-ast.ts, disposeTree's no-throw
