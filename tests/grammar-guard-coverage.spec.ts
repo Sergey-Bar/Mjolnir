@@ -85,7 +85,8 @@ function fakeTree(root: FakeNode): Tree {
   } as unknown as Tree;
 }
 
-const idNode = (text: string): FakeNode => fakeNode({ type: "identifier", text });
+const idNode = (text: string): FakeNode =>
+  fakeNode({ type: "identifier", text });
 
 describe("getTreeSitterTree — narrowing guards", () => {
   it("rejects primitives, objects without rootNode, and rootNode without the tree API", () => {
@@ -93,7 +94,9 @@ describe("getTreeSitterTree — narrowing guards", () => {
     expect(getTreeSitterTree(42)).toBeUndefined();
     expect(getTreeSitterTree({})).toBeUndefined();
     expect(getTreeSitterTree({ rootNode: 1 })).toBeUndefined();
-    expect(getTreeSitterTree({ rootNode: { hasError: false } })).toBeUndefined();
+    expect(
+      getTreeSitterTree({ rootNode: { hasError: false } }),
+    ).toBeUndefined();
   });
 
   it("accepts a duck-typed tree (rootNode with startPosition + hasError)", () => {
@@ -196,13 +199,13 @@ describe("csharpTestMethods — null/attribute guards", () => {
     });
     const decl = fakeNode({
       type: "method_declaration",
-      children: [
-        unnamedAttrList,
-        fakeNode({ type: "block" }),
-      ],
+      children: [unnamedAttrList, fakeNode({ type: "block" })],
       fields: { name: idNode("M"), body: fakeNode({ type: "block" }) },
     });
-    const root = fakeNode({ type: "program", children: [null as unknown as FakeNode, decl] });
+    const root = fakeNode({
+      type: "program",
+      children: [null as unknown as FakeNode, decl],
+    });
     root.descendantsOfType = () => [null as unknown as FakeNode, decl];
     expect(csharpTestMethods(fakeTree(root))).toEqual([]);
   });
@@ -236,7 +239,12 @@ describe("callName / receiverText — exotic callee shapes", () => {
           children: [idNode("obj")],
         }),
       ],
-      fields: { function: fakeNode({ type: "member_access_expression", children: [idNode("obj")] }) },
+      fields: {
+        function: fakeNode({
+          type: "member_access_expression",
+          children: [idNode("obj")],
+        }),
+      },
     });
     expect(callName(call as never)).toBeUndefined();
   });
@@ -318,23 +326,39 @@ describe("extractJavaModel — javaAnnotationNames guards (fake tree)", () => {
     });
     const setup = fakeNode({
       type: "method_declaration",
-      children: [fakeNode({ type: "modifiers", children: [simpleAnn] }), fakeNode({ type: "block" })],
+      children: [
+        fakeNode({ type: "modifiers", children: [simpleAnn] }),
+        fakeNode({ type: "block" }),
+      ],
       fields: { name: idNode("setup"), body: fakeNode({ type: "block" }) },
     });
     const bye = fakeNode({
       type: "method_declaration",
-      children: [fakeNode({ type: "modifiers", children: [qualifiedAnn] }), fakeNode({ type: "block" })],
+      children: [
+        fakeNode({ type: "modifiers", children: [qualifiedAnn] }),
+        fakeNode({ type: "block" }),
+      ],
       fields: { name: idNode("bye"), body: fakeNode({ type: "block" }) },
     });
     const namelessAnn = fakeNode({ type: "marker_annotation" });
     const nameless = fakeNode({
       type: "method_declaration",
-      children: [fakeNode({ type: "modifiers", children: [namelessAnn] }), fakeNode({ type: "block" })],
+      children: [
+        fakeNode({ type: "modifiers", children: [namelessAnn] }),
+        fakeNode({ type: "block" }),
+      ],
       fields: { name: idNode("nameless"), body: fakeNode({ type: "block" }) },
     });
-    const root = fakeNode({ type: "program", children: [setup, bye, nameless] });
+    const root = fakeNode({
+      type: "program",
+      children: [setup, bye, nameless],
+    });
     root.descendantsOfType = () => [setup, bye, nameless];
-    const model = extractQaModel({ path: "T.java", text: "", ast: fakeTree(root) });
+    const model = extractQaModel({
+      path: "T.java",
+      text: "",
+      ast: fakeTree(root),
+    });
     const hooks = model!.nodes.filter(
       (n) => n.concept === "setup" || n.concept === "teardown",
     );
@@ -355,10 +379,11 @@ describe("extractJavaModel — javaAnnotationNames guards (fake tree)", () => {
     });
     const root = fakeNode({ type: "program", children: [decl] });
     root.descendantsOfType = () => [decl];
-    const model = extractQaModel({ path: "T.java", text: "", ast: fakeTree(root) });
+    const model = extractQaModel({
+      path: "T.java",
+      text: "",
+      ast: fakeTree(root),
+    });
     expect(model!.nodes).toEqual([]);
   });
 });
-
-
-

@@ -9,14 +9,17 @@
  */
 
 import { readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 import { csharpAdapter } from "../src/adapters/csharp.js";
 import { javaAdapter } from "../src/adapters/java.js";
 import { pythonAdapter, pythonFileTags } from "../src/adapters/python.js";
-import { parseCSharpAst, parseJavaAst, _resetForTests } from "../src/engine/tree-sitter-ast.js";
+import {
+  parseCSharpAst,
+  parseJavaAst,
+  _resetForTests,
+} from "../src/engine/tree-sitter-ast.js";
 import type { Tree } from "web-tree-sitter";
 
 const trees: Tree[] = [];
@@ -36,8 +39,8 @@ describe("java.runRules — javaFileTags derivation via real parse", () => {
       "import org.junit.jupiter.api.Test;\nimport org.openqa.selenium.By;\nclass T {\n  @Test\n  public void m() {}\n}\n";
     const tree = await parseJavaAst(text);
     trees.push(tree!);
-    let sawFiltered = false;
-    let sawOpen = 0;
+    const sawFiltered = false;
+    const sawOpen = 0;
     javaAdapter.runRules(
       [
         {
@@ -225,7 +228,10 @@ describe("python.runRules — pythonFileTags derivation", () => {
           },
         },
       ],
-      { path: "test_a.py", text: "import json\nimport os\n\ndef test_a():\n    pass\n" },
+      {
+        path: "test_a.py",
+        text: "import json\nimport os\n\ndef test_a():\n    pass\n",
+      },
       () => {
         ran++;
       },
@@ -252,7 +258,7 @@ describe("adapters.parseAst — grammar failure resolves undefined (mocked)", ()
     // parser.parse(null) yields a tree with a root ERROR node in
     // tree-sitter — undefined is the load-failure path. Either outcome
     // honors the no-throw contract.
-    expect(parsed === undefined || parsed!.ast !== undefined).toBe(true);
+    expect(parsed === undefined || parsed.ast !== undefined).toBe(true);
   });
 
   it("csharp parseAst with an unresolvable grammar → undefined", async () => {
@@ -261,7 +267,7 @@ describe("adapters.parseAst — grammar failure resolves undefined (mocked)", ()
       path: "T.cs",
       text: undefined as unknown as string,
     });
-    expect(parsed === undefined || parsed!.ast !== undefined).toBe(true);
+    expect(parsed === undefined || parsed.ast !== undefined).toBe(true);
   });
 });
 
@@ -273,9 +279,10 @@ describe("site FAMILIES map covers shipped families (site/scripts/gen-rules.mjs)
     const famSource = readFamiliesSource();
     for (const rule of RULES) {
       const family = rule.id.split("-")[1];
-      expect(famSource, `${rule.id}: family "${family}" missing from FAMILIES`).toContain(
-        `${family}:`,
-      );
+      expect(
+        famSource,
+        `${rule.id}: family "${family}" missing from FAMILIES`,
+      ).toContain(`${family}:`);
     }
   });
 
@@ -287,4 +294,3 @@ describe("site FAMILIES map covers shipped families (site/scripts/gen-rules.mjs)
     );
   }
 });
-

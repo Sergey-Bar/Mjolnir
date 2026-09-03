@@ -7,7 +7,7 @@
  * just execution.
  */
 
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -36,7 +36,10 @@ import {
   receiverText,
   getTreeSitterTree,
 } from "../src/engine/jv-cs-ast.js";
-import { classifyProvenance, computeAgenticProfile } from "../src/engine/provenance.js";
+import {
+  classifyProvenance,
+  computeAgenticProfile,
+} from "../src/engine/provenance.js";
 import {
   extractQaModel,
   nodeContainedIn,
@@ -65,7 +68,7 @@ function tmpDir(): string {
   return d;
 }
 
-const noopRun = () => [];
+const _noopRun = () => [];
 
 // ─── frameworkFilterApplies (engine/adapter.ts) ──────────────────────
 
@@ -97,14 +100,17 @@ describe("frameworkFilterApplies — every guard branch", () => {
 
   it("intersecting tags → applies", () => {
     expect(
-      frameworkFilterApplies(rule(["cypress"]), file(["playwright", "cypress"])),
+      frameworkFilterApplies(
+        rule(["cypress"]),
+        file(["playwright", "cypress"]),
+      ),
     ).toBe(true);
   });
 
   it("disjoint tags → filtered out", () => {
-    expect(frameworkFilterApplies(rule(["cypress"]), file(["playwright"]))).toBe(
-      false,
-    );
+    expect(
+      frameworkFilterApplies(rule(["cypress"]), file(["playwright"])),
+    ).toBe(false);
   });
 });
 
@@ -162,7 +168,10 @@ describe("adapters.runRules — framework filtering + budget", () => {
     const onExceeded = viFn();
     let emitted = 0;
     typescriptAdapter.runRules(
-      [frule("R-A", ["typescript"], undefined, 1), frule("R-B", ["typescript"], undefined, 1)],
+      [
+        frule("R-A", ["typescript"], undefined, 1),
+        frule("R-B", ["typescript"], undefined, 1),
+      ],
       file,
       () => emitted++,
       undefined,
@@ -178,7 +187,10 @@ describe("adapters.runRules — framework filtering + budget", () => {
     const emitted: string[] = [];
     const onExceeded = viFn();
     javaAdapter.runRules(
-      [frule("R-F", ["java"], ["cypress"], 1), frule("R-G", ["java"], undefined, 1)],
+      [
+        frule("R-F", ["java"], ["cypress"], 1),
+        frule("R-G", ["java"], undefined, 1),
+      ],
       { path: "T.java", text: "class T { void m() {} }\n" },
       (f, ruleId) => emitted.push(ruleId),
       undefined,
@@ -189,7 +201,10 @@ describe("adapters.runRules — framework filtering + budget", () => {
 
     let blocked = 0;
     javaAdapter.runRules(
-      [frule("R-A", ["java"], undefined, 1), frule("R-B", ["java"], undefined, 1)],
+      [
+        frule("R-A", ["java"], undefined, 1),
+        frule("R-B", ["java"], undefined, 1),
+      ],
       { path: "T.java", text: "class T { void m() {} }\n" },
       () => blocked++,
       undefined,
@@ -203,7 +218,10 @@ describe("adapters.runRules — framework filtering + budget", () => {
     const emitted: string[] = [];
     const onExceeded = viFn();
     csharpAdapter.runRules(
-      [frule("R-F", ["csharp"], ["cypress"], 1), frule("R-G", ["csharp"], undefined, 1)],
+      [
+        frule("R-F", ["csharp"], ["cypress"], 1),
+        frule("R-G", ["csharp"], undefined, 1),
+      ],
       { path: "T.cs", text: "class T { void M() {} }\n" },
       (f, ruleId) => emitted.push(ruleId),
       undefined,
@@ -213,7 +231,10 @@ describe("adapters.runRules — framework filtering + budget", () => {
 
     let blocked = 0;
     csharpAdapter.runRules(
-      [frule("R-A", ["csharp"], undefined, 1), frule("R-B", ["csharp"], undefined, 1)],
+      [
+        frule("R-A", ["csharp"], undefined, 1),
+        frule("R-B", ["csharp"], undefined, 1),
+      ],
       { path: "T.cs", text: "class T { void M() {} }\n" },
       () => blocked++,
       undefined,
@@ -227,7 +248,10 @@ describe("adapters.runRules — framework filtering + budget", () => {
     const emitted: string[] = [];
     const onExceeded = viFn();
     pythonAdapter.runRules(
-      [frule("R-F", ["python"], ["cypress"], 1), frule("R-G", ["python"], undefined, 1)],
+      [
+        frule("R-F", ["python"], ["cypress"], 1),
+        frule("R-G", ["python"], undefined, 1),
+      ],
       { path: "test_a.py", text: "def test_a():\n    pass\n" },
       (f, ruleId) => emitted.push(ruleId),
       undefined,
@@ -237,7 +261,10 @@ describe("adapters.runRules — framework filtering + budget", () => {
 
     let blocked = 0;
     pythonAdapter.runRules(
-      [frule("R-A", ["python"], undefined, 1), frule("R-B", ["python"], undefined, 1)],
+      [
+        frule("R-A", ["python"], undefined, 1),
+        frule("R-B", ["python"], undefined, 1),
+      ],
       { path: "test_a.py", text: "def test_a():\n    pass\n" },
       () => blocked++,
       undefined,
@@ -290,7 +317,6 @@ describe("frameworkTagsFromImports (§15.1)", () => {
     expect(frameworkTagsFromImports(`import x from "left-pad";\n`)).toEqual([]);
   });
 });
-
 
 describe("frameworkTagsFromImports (§15.1)", () => {
   it("tags the require() form and ignores unknown specifiers", () => {
@@ -373,8 +399,10 @@ describe("jv-cs-ast guard clauses + exotic callees", () => {
     const t = getTreeSitterTree(tree!);
     const calls = [];
     for (const decl of t!.rootNode.descendantsOfType("method_declaration")) {
-        if (!decl) continue;
-      for (const c of decl.descendantsOfType("invocation_expression")) { if (c) calls.push(c); }
+      if (!decl) continue;
+      for (const c of decl.descendantsOfType("invocation_expression")) {
+        if (c) calls.push(c);
+      }
     }
     expect(calls.length).toBeGreaterThan(0);
     // Generic call resolves through the generic_name → identifier path.
@@ -389,8 +417,10 @@ describe("jv-cs-ast guard clauses + exotic callees", () => {
     const t = getTreeSitterTree(tree!);
     const calls: import("web-tree-sitter").Node[] = [];
     for (const decl of t!.rootNode.descendantsOfType("method_declaration")) {
-        if (!decl) continue;
-      for (const c of decl.descendantsOfType("invocation_expression")) { if (c) calls.push(c); }
+      if (!decl) continue;
+      for (const c of decl.descendantsOfType("invocation_expression")) {
+        if (c) calls.push(c);
+      }
     }
     // The outer Add call resolves through member_access_expression; its
     // name node is a plain identifier.
@@ -404,8 +434,10 @@ describe("jv-cs-ast guard clauses + exotic callees", () => {
     const t = getTreeSitterTree(tree!);
     const calls: import("web-tree-sitter").Node[] = [];
     for (const decl of t!.rootNode.descendantsOfType("method_declaration")) {
-        if (!decl) continue;
-      for (const c of decl.descendantsOfType("invocation_expression")) { if (c) calls.push(c); }
+      if (!decl) continue;
+      for (const c of decl.descendantsOfType("invocation_expression")) {
+        if (c) calls.push(c);
+      }
     }
     expect(receiverText(calls[0]!)).toBeUndefined();
   });
@@ -417,12 +449,14 @@ describe("jv-cs-ast guard clauses + exotic callees", () => {
     trees.push(tree!);
     const t = getTreeSitterTree(tree!);
     const delayCalls: import("web-tree-sitter").Node[] = [];
-    for (const decl of t!.rootNode.descendantsOfType("constructor_declaration")) {
-        if (!decl) continue;
+    for (const decl of t!.rootNode.descendantsOfType(
+      "constructor_declaration",
+    )) {
+      if (!decl) continue;
       for (const c of decl.descendantsOfType("invocation_expression")) {
-          if (!c) continue;
-          if (callName(c) === "Delay") delayCalls.push(c);
-        }
+        if (!c) continue;
+        if (callName(c) === "Delay") delayCalls.push(c);
+      }
     }
     expect(delayCalls.length).toBe(1);
     // The constructor boundary stops the ancestor walk before DoThing's
@@ -440,9 +474,9 @@ describe("classifyProvenance — marker branches", () => {
     expect(
       classifyProvenance({ text: "// AUTO-GENERATED — do not edit\n" }),
     ).toBe("generated-marked");
-    expect(
-      classifyProvenance({ text: "/* Generated by tool X */\n" }),
-    ).toBe("generated-marked");
+    expect(classifyProvenance({ text: "/* Generated by tool X */\n" })).toBe(
+      "generated-marked",
+    );
     expect(classifyProvenance({ text: "# generated by tool\n" })).toBe(
       "generated-marked",
     );
@@ -507,7 +541,7 @@ describe("qa-model — TS parse-failure path + extractor guards", () => {
     const model = extractQaModel({ path: "broken.spec.ts", text: "" });
     // parseTsFile tolerates empty text — model is defined but empty, or
     // undefined. Either is the honest contract; assert no-throw.
-    expect(model === undefined || model!.nodes !== undefined).toBe(true);
+    expect(model === undefined || model.nodes !== undefined).toBe(true);
   });
 
   it("unsupported extension → undefined", () => {
@@ -525,7 +559,10 @@ describe("qa-model — TS parse-failure path + extractor guards", () => {
       ast: tree!,
     });
     const concepts = model!.nodes.filter(
-      (n) => n.concept === "setup" || n.concept === "teardown" || n.concept === "retry",
+      (n) =>
+        n.concept === "setup" ||
+        n.concept === "teardown" ||
+        n.concept === "retry",
     );
     expect(concepts.map((n) => n.concept).sort()).toEqual([
       "retry",
@@ -535,12 +572,16 @@ describe("qa-model — TS parse-failure path + extractor guards", () => {
   });
 
   it("C# hooks/retry/teardown attribute branches", async () => {
-    const text = "using NUnit.Framework;\nclass T {\n  [SetUp]\n  public void Setup() {}\n\n  [TearDown]\n  public void Bye() {}\n\n  [Retry(3)]\n  public void Flaky() {}\n}\n";
+    const text =
+      "using NUnit.Framework;\nclass T {\n  [SetUp]\n  public void Setup() {}\n\n  [TearDown]\n  public void Bye() {}\n\n  [Retry(3)]\n  public void Flaky() {}\n}\n";
     const tree = await parseCSharpAst(text);
     trees.push(tree!);
     const model = extractQaModel({ path: "T.cs", text, ast: tree! });
     const concepts = model!.nodes.filter(
-      (n) => n.concept === "setup" || n.concept === "teardown" || n.concept === "retry",
+      (n) =>
+        n.concept === "setup" ||
+        n.concept === "teardown" ||
+        n.concept === "retry",
     );
     expect(concepts.map((n) => n.concept).sort()).toEqual([
       "retry",
@@ -550,7 +591,8 @@ describe("qa-model — TS parse-failure path + extractor guards", () => {
   });
 
   it("C# throw-statement without an object creation is skipped", async () => {
-    const text = "class T {\n  [Test]\n  public void A() { throw new System.InvalidOperationException(\"x\"); }\n\n  [Test]\n  public void B() { throw; }\n}\n";
+    const text =
+      'class T {\n  [Test]\n  public void A() { throw new System.InvalidOperationException("x"); }\n\n  [Test]\n  public void B() { throw; }\n}\n';
     const tree = await parseCSharpAst(text);
     trees.push(tree!);
     const model = extractQaModel({ path: "T.cs", text, ast: tree! });
@@ -682,7 +724,11 @@ describe("loadLocalRules — validation branches", () => {
     const d = localDir();
     writeFileSync(
       join(d, "mjolnir-rules", "badregex.json"),
-      JSON.stringify({ ...GOOD_RULE, id: "QA-ACME-102", patterns: ["([broke"] }),
+      JSON.stringify({
+        ...GOOD_RULE,
+        id: "QA-ACME-102",
+        patterns: ["([broke"],
+      }),
     );
     const { errors } = await loadLocalRules(d);
     expect(errors[0]).toContain("invalid regex");
@@ -701,14 +747,25 @@ describe("loadLocalRules — validation branches", () => {
     );
     const { errors } = await loadLocalRules(d);
     expect(errors.length).toBeGreaterThan(0);
-    expect(errors[0]).toContain(field === "severity" || field === "category" || field === "appliesTo" ? `"${field}"` : "qaImpact");
+    expect(errors[0]).toContain(
+      field === "severity" || field === "category" || field === "appliesTo"
+        ? `"${field}"`
+        : "qaImpact",
+    );
   });
 
   it("defaults: no title/why/fix/confidence → sensible fallbacks, rule loads", async () => {
     const d = localDir();
     writeFileSync(
       join(d, "mjolnir-rules", "min.json"),
-      JSON.stringify({ id: "QA-ACME-110", severity: "info", category: "QA-TEST", appliesTo: "test-files", patterns: ["Y+"], qaImpact: "HYGIENE" }),
+      JSON.stringify({
+        id: "QA-ACME-110",
+        severity: "info",
+        category: "QA-TEST",
+        appliesTo: "test-files",
+        patterns: ["Y+"],
+        qaImpact: "HYGIENE",
+      }),
     );
     const { rules, errors } = await loadLocalRules(d);
     expect(errors).toEqual([]);
@@ -736,9 +793,12 @@ describe("loadLocalRules — validation branches", () => {
 
   it("module without rules export → error entry", async () => {
     const d = localDir();
-    writeFileSync(join(d, "mjolnir-rules", "empty.mjs"), "export const x = 1;\n");
+    writeFileSync(
+      join(d, "mjolnir-rules", "empty.mjs"),
+      "export const x = 1;\n",
+    );
     const { errors } = await loadLocalRules(d);
-    expect(errors[0]).toContain('exports no `rules` array');
+    expect(errors[0]).toContain("exports no `rules` array");
   });
 
   it("module with a malformed rule (no run) → error entry", async () => {
@@ -855,12 +915,6 @@ describe("renderTerminal — agentic provenance lines", () => {
 // ─── reporter/sarif.ts — corroboration property branches ────────────
 
 describe("renderSarif — trust/corroboration property branches", () => {
-  const base: Partial<Finding> = {
-    ruleId: "R",
-    severity: "warning",
-    confidence: "high",
-  };
-
   it("trustLevel present without corroboration → only trustLevel emitted", () => {
     const result = makeResult({
       findings: [
@@ -969,7 +1023,9 @@ describe("renderSarif — trust/corroboration property branches", () => {
       runs: Array<{ results: Array<{ properties: Record<string, unknown> }> }>;
     };
     const props = sarif.runs[0]!.results[0]!.properties;
-    expect((props.runtimeCorroboration as { matchedTest?: unknown }).matchedTest).toBeUndefined();
+    expect(
+      (props.runtimeCorroboration as { matchedTest?: unknown }).matchedTest,
+    ).toBeUndefined();
   });
 });
 
@@ -1042,9 +1098,3 @@ describe("deriveTrustLevel — E-level derivation branches", () => {
     expect(split.assumed).toHaveLength(1);
   });
 });
-
-
-
-
-
-
