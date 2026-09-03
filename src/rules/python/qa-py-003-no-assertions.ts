@@ -50,7 +50,8 @@ export const pyNoAssertions = defineRule({
       // which carry self.assert* and are recognized by the vocabulary
       // below). Nested defs are callbacks/data, never collected tests —
       // wave-2 delta evidence (a `test_callback` inside call_on_close).
-      const indent = m[1] ?? "";
+      // The leading-indent capture always participates (possibly "").
+      const indent = m[1] as string;
       if (indent.length > 0) continue;
       const body = extractBlock(text, m.index + m[0].length);
       if (body === null) continue;

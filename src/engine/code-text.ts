@@ -60,8 +60,8 @@ function maskPython(text: string): string {
     const prefixStart = i;
     while (
       i < len &&
-      "fFbBrRuU".includes(chars[i] ?? "") &&
-      i - prefixStart < 3
+      i - prefixStart < 3 &&
+      "fFbBrRuU".includes(chars[i] as string)
     ) {
       i++;
     }

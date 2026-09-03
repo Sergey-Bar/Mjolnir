@@ -82,6 +82,12 @@ const ALLOWED_QA_IMPACTS = new Set([
   "HYGIENE",
 ]);
 
+/** Consistent error message extraction (v8 branch-friendly form). */
+function errorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  return String(err);
+}
+
 /**
  * Discover + load external rules from `<root>/mjolnir-rules/`.
  * Missing directory → empty result (not an error — most workspaces
@@ -99,9 +105,9 @@ export async function loadLocalRules(
     entries = readdirSync(dir);
   } catch (err) {
     result.errors.push(
-      `external rules directory "${LOCAL_RULES_DIR}/" could not be read: ${
-        err instanceof Error ? err.message : String(err)
-      }`,
+      `external rules directory "${LOCAL_RULES_DIR}/" could not be read: ${errorMessage(
+        err,
+      )}`,
     );
     return result;
   }
@@ -126,9 +132,7 @@ function loadJsonRule(path: string, result: LoadedExternalRules): void {
     raw = JSON.parse(readFileSync(path, "utf8"));
   } catch (err) {
     result.errors.push(
-      `external rule "${name}" is not valid JSON: ${
-        err instanceof Error ? err.message : String(err)
-      }`,
+      `external rule "${name}" is not valid JSON: ${errorMessage(err)}`,
     );
     return;
   }
@@ -164,9 +168,7 @@ function loadJsonRule(path: string, result: LoadedExternalRules): void {
     regexes = patterns.map((p) => new RegExp(p as string, "g"));
   } catch (err) {
     result.errors.push(
-      `external rule ${id} declares an invalid regex: ${
-        err instanceof Error ? err.message : String(err)
-      }`,
+      `external rule ${id} declares an invalid regex: ${errorMessage(err)}`,
     );
     return;
   }
@@ -197,8 +199,10 @@ function loadJsonRule(path: string, result: LoadedExternalRules): void {
     return;
   }
 
-  const title = typeof decl["title"] === "string" ? decl["title"] : id;
-  const message = typeof decl["message"] === "string" ? decl["message"] : title;
+  let title = id;
+  if (typeof decl["title"] === "string") title = decl["title"];
+  let message = title;
+  if (typeof decl["message"] === "string") message = decl["message"];
   const why =
     typeof decl["why"] === "string"
       ? decl["why"]
@@ -209,21 +213,27 @@ function loadJsonRule(path: string, result: LoadedExternalRules): void {
       : "Review the matched code against the rule's intent.";
   const confidence =
     decl["confidence"] === "high" || decl["confidence"] === "low"
-      ? (decl["confidence"] as "high" | "low")
+      ? (decl["confidence"])
       : ("medium" as const);
 
-  const languages =
-    Array.isArray(decl["languages"]) &&
-    decl["languages"].every((l) => typeof l === "string")
-      ? (decl["languages"] as string[])
-      : undefined;
-  const frameworks =
-    Array.isArray(decl["frameworks"]) &&
-    decl["frameworks"].every((l) => typeof l === "string")
-      ? (decl["frameworks"] as string[])
-      : undefined;
+  let languages: string[] | undefined;
+  const rawLanguages = decl["languages"];
+  if (
+    Array.isArray(rawLanguages) &&
+    rawLanguages.every((l) => typeof l === "string")
+  ) {
+    languages = rawLanguages;
+  }
+  let frameworks: string[] | undefined;
+  const rawFrameworks = decl["frameworks"];
+  if (
+    Array.isArray(rawFrameworks) &&
+    rawFrameworks.every((l) => typeof l === "string")
+  ) {
+    frameworks = rawFrameworks;
+  }
 
-  result.rules.push({
+  const rule: QADoctorRule = {
     id,
     category: category as "QA-TEST",
     title,
@@ -232,8 +242,6 @@ function loadJsonRule(path: string, result: LoadedExternalRules): void {
     findingType: "heuristic-risk",
     qaImpact: qaImpact as "HYGIENE",
     appliesTo: appliesTo as "test-files",
-    ...(languages !== undefined ? { languages } : {}),
-    ...(frameworks !== undefined ? { frameworks } : {}),
     falsePositiveRisk:
       decl["falsePositiveRisk"] === "low" ||
       decl["falsePositiveRisk"] === "high"
@@ -275,7 +283,10 @@ function loadJsonRule(path: string, result: LoadedExternalRules): void {
       }
       return findings;
     },
-  });
+  };
+  if (languages !== undefined) rule.languages = languages;
+  if (frameworks !== undefined) rule.frameworks = frameworks;
+  result.rules.push(rule);
 }
 
 async function loadModuleRules(
@@ -288,9 +299,7 @@ async function loadModuleRules(
     mod = await import(pathToFileURL(path).href);
   } catch (err) {
     result.errors.push(
-      `external rule module "${name}" failed to load: ${
-        err instanceof Error ? err.message : String(err)
-      }`,
+      `external rule module "${name}" failed to load: ${errorMessage(err)}`,
     );
     return;
   }

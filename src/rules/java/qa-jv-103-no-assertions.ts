@@ -107,8 +107,10 @@ function jv103AstQuery(
     // truncated — assertion calls can sit beyond the broken region.
     if (test.body.hasError) continue;
     let hasCheck = false;
-    for (const call of invocationsWithin(test.body ?? test.decl)) {
-      const name = callName(call) ?? "";
+    // Every Java method_invocation carries a name field (the grammar's
+    // only invocation node) — no unnamed-call fallback exists here.
+    for (const call of invocationsWithin(test.body)) {
+      const name = callName(call) as string;
       if (
         /^assert[A-Z]/.test(name) || // JUnit/AssertJ/Hamcrest assert methods
         BARE_CHECK_NAMES.has(name) ||

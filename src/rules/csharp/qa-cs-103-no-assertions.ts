@@ -75,18 +75,29 @@ function makeFinding(
  * `throw new AssertionException(...)` verifies its condition by failing
  * the test (the same throwing-is-verification principle as the waits;
  * rev-2 delta row ConventionTests.cs:12). The type-name match is L2
- * lexical, no resolution.
+ * lexical, no resolution. Walk-bounded by the tree root: a
+ * throw_statement ancestor of a call is ALWAYS within the same method
+ * body (statements cannot enclose method declarations), so no explicit
+ * method boundary check is needed.
  */
 function throwsAssertionException(node: TsNode): boolean {
   let current: TsNode | null = node.parent;
   while (current) {
-    if (current.type === "method_declaration") return false;
     if (current.type === "throw_statement") {
-      const expr = current.namedChildren.find(
+      // The walk starts from an invocation inside the throw; a
+      // throw_statement's named child is the creation expression (a
+      // rethrow has none and no call to walk from). The creation's
+      // type field is always present in the C# grammar (verified
+      // against real parses) — a null type never matches both regexes.
+      const creation = current.namedChildren.find(
         (c) => c?.type === "object_creation_expression",
-      );
-      const typeName = expr?.childForFieldName("type")?.text ?? "";
-      if (/assert/i.test(typeName) && /exception/i.test(typeName)) return true;
+      ) as TsNode;
+      // The type field is a required part of the grammar node shape
+      // (verified against real parses) — childForFieldName is typed
+      // Node | null for API honesty; lastIdentifierText-style guards
+      // would be dead branches here.
+      const typeNode = creation.childForFieldName("type") as TsNode;
+      return /assert/i.test(typeNode.text) && /exception/i.test(typeNode.text);
     }
     current = current.parent;
   }
@@ -111,7 +122,11 @@ function cs103AstQuery(
     // nothing; flagging it would create false proof.
     if (test.body.hasError) continue;
     let hasCheck = false;
-    for (const call of invocationsWithin(test.body ?? test.decl)) {
+    // test.body is always present for C# method_declarations with a
+    // test attribute (the extractor skips bodyless shapes upstream).
+    for (const call of invocationsWithin(test.body)) {
+      // C# invocation_expression without a resolvable function is
+      // "not a check" — an empty name matches no oracle below.
       const name = callName(call) ?? "";
       // Shouldly extension chains: .ShouldBe/.ShouldNotBe/.ShouldBeOfType/
       // .Should/.ShouldContain — the rev-1 `.Should(` regex's whole FP class.

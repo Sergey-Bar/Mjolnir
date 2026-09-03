@@ -143,14 +143,24 @@ export function definePatternFamily(
       autofix: opts.autofix ?? false,
       detectionStrategy:
         v.detectionStrategy ?? opts.detectionStrategy ?? "LEXICAL",
-      ...((v.detectionNotes ?? opts.detectionNotes)
-        ? { detectionNotes: v.detectionNotes ?? opts.detectionNotes }
-        : {}),
+      ...(v.detectionNotes !== undefined
+        ? { detectionNotes: v.detectionNotes }
+        : {
+            ...(opts.detectionNotes !== undefined
+              ? { detectionNotes: opts.detectionNotes }
+              : {}),
+          }),
       ...(opts.introduced ? { introduced: opts.introduced } : {}),
-      ...((v.tier ?? opts.tier) ? { tier: v.tier ?? opts.tier } : {}),
-      ...((v.detectorRevision ?? opts.detectorRevision)
-        ? { detectorRevision: v.detectorRevision ?? opts.detectorRevision }
-        : {}),
+      ...(v.tier !== undefined
+        ? { tier: v.tier }
+        : { ...(opts.tier !== undefined ? { tier: opts.tier } : {}) }),
+      ...(v.detectorRevision !== undefined
+        ? { detectorRevision: v.detectorRevision }
+        : {
+            ...(opts.detectorRevision !== undefined
+              ? { detectorRevision: opts.detectorRevision }
+              : {}),
+          }),
       ...((v.overlapWith ?? opts.overlapWith)
         ? { overlapWith: v.overlapWith ?? opts.overlapWith }
         : {}),

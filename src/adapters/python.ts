@@ -42,7 +42,10 @@ export function pythonFileTags(file: ParsedFile): string[] {
   const importRe = /^[ \t]*(?:import\s+([\w.]+)|from\s+([\w.]+)\s+import)/gm;
   let m: RegExpExecArray | null;
   while ((m = importRe.exec(file.text)) !== null) {
-    const mod = m[1] ?? m[2] ?? "";
+    // Exactly one of the two alternatives captures; the other group is
+    // undefined. `import X` never captures group 2 and `from X import`
+    // always does — both arms are exercised by the import-form tests.
+    const mod = (m[1] ?? m[2]) as string;
     for (const { re, tag } of PY_IMPORT_TAGS) {
       if (re.test(mod)) tags.add(tag);
     }

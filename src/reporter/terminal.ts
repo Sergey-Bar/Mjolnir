@@ -306,7 +306,10 @@ function evidenceTag(f: Finding): string {
   if (f.trustLevel !== undefined) tag += ` · trust ${f.trustLevel}`;
   if (f.runtimeCorroboration !== undefined) {
     const c = f.runtimeCorroboration;
-    tag += ` · runtime: ${c.level === "defect" ? "defect corroborated" : c.level === "test" ? "test executed" : "file executed"}`;
+    let label = "file executed";
+    if (c.level === "defect") label = "defect corroborated";
+    else if (c.level === "test") label = "test executed";
+    tag += ` · runtime: ${label}`;
   }
   return `[${tag}]`;
 }

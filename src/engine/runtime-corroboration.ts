@@ -83,7 +83,6 @@ export function stampRuntimeCorroboration(
         matched.everFailed ||
         matched.finalStatus === "timedOut");
     if (flakeCorroborated) corroboration.level = "defect";
-
     f.runtimeCorroboration = corroboration;
     f.trustLevel = deriveTrustLevel(f, corroboration);
     corroborated++;
@@ -106,11 +105,20 @@ function findContainingTest(
   line: number,
 ): TestVerdict | undefined {
   if (verdicts.length === 1) return verdicts[0];
-  if (verdicts.some((v) => v.line === undefined)) return undefined;
-  const sorted = [...verdicts].sort((a, b) => (a.line ?? 0) - (b.line ?? 0));
+  for (const v of verdicts) {
+    if (v.line === undefined) return undefined;
+  }
+  const sorted = [...verdicts].sort((a, b) => {
+    const la = a.line as number;
+    const lb = b.line as number;
+    if (la < lb) return -1;
+    if (la > lb) return 1;
+    return 0;
+  });
   let match: TestVerdict | undefined;
   for (const v of sorted) {
-    if ((v.line ?? 0) <= line) match = v;
+    const vl = v.line as number;
+    if (vl <= line) match = v;
     else break;
   }
   return match;
@@ -126,17 +134,23 @@ export function deriveTrustLevel(
   finding: Pick<Finding, "evidenceLevel" | "findingType" | "confidence">,
   corroboration?: RuntimeCorroboration,
 ): TrustLevel {
-  const level =
-    finding.evidenceLevel ??
-    (finding.findingType === "observation"
-      ? "E0"
-      : finding.findingType === "heuristic-risk"
-        ? "E1"
-        : finding.confidence === "low"
-          ? "E1"
-          : "E2");
-  if (!corroboration)
-    return level === "E0" ? "L0" : level === "E1" ? "L1" : "L2";
+  let level: "E0" | "E1" | "E2";
+  if (finding.evidenceLevel !== undefined) {
+    level = finding.evidenceLevel;
+  } else if (finding.findingType === "observation") {
+    level = "E0";
+  } else if (finding.findingType === "heuristic-risk") {
+    level = "E1";
+  } else if (finding.confidence === "low") {
+    level = "E1";
+  } else {
+    level = "E2";
+  }
+  if (!corroboration) {
+    if (level === "E0") return "L0";
+    if (level === "E1") return "L1";
+    return "L2";
+  }
   if (corroboration.level === "defect") return "L5";
   if (corroboration.level === "test") return "L4";
   return "L3";
@@ -156,7 +170,8 @@ export function splitByRuntimeEvidence(
   const runtimeVerified: Finding[] = [];
   const assumed: Finding[] = [];
   for (const f of findings) {
-    (f.runtimeCorroboration !== undefined ? runtimeVerified : assumed).push(f);
+    if (f.runtimeCorroboration !== undefined) runtimeVerified.push(f);
+    else assumed.push(f);
   }
   return { runtimeVerified, assumed };
 }

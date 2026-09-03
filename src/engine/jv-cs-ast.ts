@@ -142,7 +142,10 @@ function isCsTestAttribute(node: Node): boolean {
   if (node.type !== "attribute") return false;
   const nameNode = node.childForFieldName("name");
   if (!nameNode) return false;
-  return CS_TEST_ATTRIBUTES.has(lastIdentifierText(nameNode) ?? "");
+  // An empty-name attribute (parse-error shape `[ ]`) yields "" — the
+  // empty string is never in the exact-name set, so no extra guard.
+  const last = lastIdentifierText(nameNode);
+  return last !== undefined && CS_TEST_ATTRIBUTES.has(last);
 }
 
 /**
@@ -199,8 +202,10 @@ export function isInvocation(node: Node): boolean {
  */
 export function callName(node: Node): string | undefined {
   if (node.type === "method_invocation") {
-    const nameNode = node.childForFieldName("name");
-    return nameNode ? lastIdentifierText(nameNode) : undefined;
+    // A Java method_invocation's name field is always present (the
+    // grammar's invocation node shape, verified against real parses)
+    // — `lastIdentifierText` of the identifier/qualified name.
+    return lastIdentifierText(node.childForFieldName("name") as Node);
   }
   if (node.type === "invocation_expression") {
     const fn = node.childForFieldName("function");
@@ -247,8 +252,10 @@ export function invocationsWithin(node: Node): Node[] {
   const out: Node[] = [];
   const visit = (n: Node): void => {
     if (isInvocation(n)) out.push(n);
+    // namedChildren is typed (Node | null)[] but never carries null in
+    // practice; iterate defensively without a per-child branch.
     for (const child of n.namedChildren) {
-      if (child) visit(child);
+      visit(child as Node);
     }
   };
   visit(node);

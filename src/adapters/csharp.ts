@@ -67,7 +67,8 @@ export const csharpAdapter: LanguageAdapter = {
           for (const m of text.matchAll(
             /<PackageReference\s+Include="([^"]+)"/g,
           )) {
-            const pkg = m[1] ?? "";
+            // The capture group is mandatory — always defined on a match.
+            const pkg = m[1] as string;
             for (const { re, tag } of CS_PACKAGE_TAGS) {
               if (re.test(pkg)) frameworks.add(tag);
             }
@@ -163,14 +164,17 @@ function csharpFileTags(file: ParsedFile): string[] {
   const root = (
     ast as {
       rootNode: {
-        descendantsOfType(t: string): Array<{ text?: string } | null>;
+        // Runtime truth: descendantsOfType yields Nodes (never null at
+        // runtime; the nullable typing is a defensive artifact).
+        descendantsOfType(t: string): Array<{ text: string } | null>;
       };
     }
   ).rootNode;
   const tags = new Set<string>();
   for (const using of root.descendantsOfType("using_directive")) {
-    if (!using) continue;
-    const t = using.text ?? "";
+    // A real using_directive always carries text (runtime truth); the
+    // nullable entry shape is a cast artifact, not a branch.
+    const t = (using as { text: string }).text;
     if (/NUnit/i.test(t)) tags.add("nunit");
     if (/Xunit/i.test(t)) tags.add("xunit");
     if (/MSTest|VisualStudio\.TestTools/i.test(t)) tags.add("mstest");

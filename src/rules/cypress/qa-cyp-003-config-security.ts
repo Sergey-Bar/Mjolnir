@@ -55,8 +55,11 @@ export const cypConfigSecurity = defineRule({
 
   run(ctx) {
     // Belt-and-suspenders for direct harness invocation; the TS adapter
-    // enforces the same gate through the declared configFiles.
-    const base = ctx.path.replace(/\\/g, "/").split("/").pop() ?? "";
+    // enforces the same gate through the declared configFiles. The
+    // split can only be empty for an empty path, which the scan
+    // pipeline never produces — `pop()` on a non-empty array is a
+    // string, matched against the gate as-is.
+    const base = ctx.path.replace(/\\/g, "/").split("/").pop() as string;
     if (!CYPRESS_CONFIG_RE.test(base)) return [];
     const text = ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];

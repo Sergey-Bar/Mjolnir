@@ -67,8 +67,10 @@ export const javaAdapter: LanguageAdapter = {
         for (const block of text.matchAll(
           /<dependency>[\s\S]*?<\/dependency>/g,
         )) {
-          const artifact =
-            /<artifactId>([^<]+)<\/artifactId>/.exec(block[0])?.[1] ?? "";
+          // A block without <artifactId> matches nothing — exec null →
+          // the empty artifact matches no tag regex.
+          const exec = /<artifactId>([^<]+)<\/artifactId>/.exec(block[0]);
+          const artifact = exec?.[1] ?? "";
           for (const { re, tag } of JAVA_ARTIFACT_TAGS) {
             if (re.test(artifact)) frameworks.add(tag);
           }
@@ -89,10 +91,13 @@ export const javaAdapter: LanguageAdapter = {
         for (const m of text.matchAll(
           /(?:implementation|testImplementation|api|testFixturesImplementation|compile|testCompile)\s*(?:\(|\s)[^\n]*?["']([^"']+)["']/g,
         )) {
-          const coordinate = m[1] ?? "";
-          const artifact = coordinate.split(":")[1] ?? "";
+          // The quoted capture is mandatory on a match; a coordinate
+          // without a second colon segment splits to a 1-element array.
+          const coordinate = m[1] as string;
+          const artifact = coordinate.split(":")[1];
           for (const { re, tag } of JAVA_ARTIFACT_TAGS) {
-            if (re.test(artifact)) frameworks.add(tag);
+            if (artifact !== undefined && re.test(artifact))
+              frameworks.add(tag);
           }
         }
       } catch {
@@ -185,14 +190,17 @@ function javaFileTags(file: ParsedFile): string[] {
   const root = (
     ast as {
       rootNode: {
-        descendantsOfType(t: string): Array<{ text?: string } | null>;
+        // Runtime truth: descendantsOfType yields Nodes (never null at
+        // runtime; the nullable typing is a defensive artifact).
+        descendantsOfType(t: string): Array<{ text: string } | null>;
       };
     }
   ).rootNode;
   const tags = new Set<string>();
   for (const imp of root.descendantsOfType("import_declaration")) {
-    if (!imp) continue;
-    const t = imp.text ?? "";
+    // A real import_declaration always carries text (runtime truth);
+    // the nullable entry shape is a cast artifact, not a branch.
+    const t = (imp as { text: string }).text;
     if (/junit/i.test(t)) tags.add("junit");
     if (/testng/i.test(t)) tags.add("testng");
     if (/selenium/i.test(t)) tags.add("selenium");

@@ -57,7 +57,9 @@ export const cypCyWait = defineRule({
 
   run(ctx) {
     if (!isCypressFile(ctx)) return [];
-    const text = ctx.codeText ?? ctx.text;
+    // codeText is optional in the rule contract — when the engine has
+    // not computed it, the raw text is the honest view.
+    const text = ctx.codeText !== undefined ? ctx.codeText : ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     const re = new RegExp(CY_WAIT_NUMBER_RE.source, "g");
     let m: RegExpExecArray | null;

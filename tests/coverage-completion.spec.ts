@@ -893,6 +893,25 @@ describe("renderTerminal — agentic provenance lines", () => {
     expect(out).not.toContain("codegen-like");
   });
 
+  it("two codegen-like files → plural branch", () => {
+    const out = renderTerminal(
+      makeResult({
+        agenticProfile: {
+          testFiles: 4,
+          generatedMarkedFiles: 0,
+          codegenLikeFiles: 2,
+          shareMarkedGenerated: 0,
+          findingsInGeneratedFiles: 0,
+          findingsInUnmarkedFiles: 0,
+          note: "n",
+        },
+      }),
+      { isTTY: false },
+    );
+    expect(out).toContain("2 codegen-like files of");
+    expect(out).not.toContain("generated-marked");
+  });
+
   it("zero detected markers → silence (no provenance line at all)", () => {
     const out = renderTerminal(
       makeResult({

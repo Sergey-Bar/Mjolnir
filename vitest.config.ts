@@ -26,7 +26,12 @@ export default defineConfig({
       "tests/corpus/negative-fixtures/**",
     ],
     coverage: {
-      provider: "v8",
+      // Istanbul (not v8): the v8 provider's cross-worker merge
+      // under-attributes branches for files loaded by several workers,
+      // which made the per-file 100% gate non-deterministic between
+      // runs (single-file isolation passed, the full run failed).
+      // Istanbul instruments per-branch at build time — exact merge.
+      provider: "istanbul",
       include: ["src/**"],
       // json-summary feeds the CI job-summary step (bug-audit G6).
       reporter: ["text", "json", "json-summary", "html"],

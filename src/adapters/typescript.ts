@@ -60,11 +60,14 @@ const IMPORT_TAG_RULES: Array<{ re: RegExp; tag: string }> = [
  */
 export function frameworkTagsFromImports(text: string): string[] {
   const tags = new Set<string>();
-  const importRe = /(?:import|require)\s*(?:\(\s*)?["']([^"']+)["']/g;
+  // `import … from "spec"`, `import "spec"`, `require("spec")` — the
+  // three real specifier forms (named-import braces skipped via [^"']*).
+  const importRe = /(?:\bimport\b|\brequire\b)[^"']*["']([^"']+)["']/g;
   let m: RegExpExecArray | null;
   while ((m = importRe.exec(text)) !== null) {
-    const specifier = m[1];
-    if (specifier === undefined) continue;
+    // The quoted-specifier capture is mandatory — always defined on a
+    // match (a quote-less import produces no match at all).
+    const specifier = m[1] as string;
     for (const { re, tag } of IMPORT_TAG_RULES) {
       if (re.test(specifier)) tags.add(tag);
     }

@@ -49,3 +49,5 @@ package/
 .planning/CRITIQUE-REMEDIATION-PLAN.md
 .planning/M1-M2-TASKS.md
 .planning/ROADMAP-2026.md
+*.log
+.vscode/
