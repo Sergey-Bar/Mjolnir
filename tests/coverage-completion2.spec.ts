@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+ 
 /**
  * Remaining coverage-completion specs (Phase 5–8, CI 100% per-file gate):
  * the concurrency slot in tree-sitter-ast.ts, disposeTree's no-throw
@@ -103,7 +103,10 @@ describe("CLI guard branches — badge/debt/triage usage errors", () => {
 
   it("runTriageCommand without a target → usage + exit 10", () => {
     const err: string[] = [];
-    const code = runTriageCommand([], { out: () => {}, err: (s: unknown) => err.push(String(s)) });
+    const code = runTriageCommand([], {
+      out: () => {},
+      err: (s: unknown) => err.push(String(s)),
+    });
     expect(code).toBe(10);
     expect(err.join("\n")).toContain("Usage: mjolnir triage");
   });
@@ -168,7 +171,14 @@ describe("runRulesCommand --external (loaded-catalog branch)", () => {
     // Reserved-prefix file → load error → stderr warning path (L974).
     writeFileSync(
       join(d, "mjolnir-rules", "spoof.json"),
-      JSON.stringify({ id: "qa-pw-000", severity: "info", category: "QA-PW", appliesTo: "test-files", patterns: ["X+"], qaImpact: "HYGIENE" }),
+      JSON.stringify({
+        id: "qa-pw-000",
+        severity: "info",
+        category: "QA-PW",
+        appliesTo: "test-files",
+        patterns: ["X+"],
+        qaImpact: "HYGIENE",
+      }),
     );
     const loaded = await loadLocalRules(d);
     expect(loaded.rules).toHaveLength(1);
@@ -201,10 +211,7 @@ describe("runRulesCommand --external (loaded-catalog branch)", () => {
 // ─── adapters — config-rule gating branches (§15.2) ──────────────────
 
 describe("typescriptAdapter.runRules — configRule/configFiles gating", () => {
-  const mkRule = (
-    configOnly: boolean,
-    configFiles?: string[],
-  ) => ({
+  const mkRule = (configOnly: boolean, configFiles?: string[]) => ({
     id: "R-CFG",
     category: "QA-PW",
     appliesTo: ["typescript"],
@@ -269,7 +276,8 @@ describe("typescriptAdapter.runRules — configRule/configFiles gating", () => {
 
 describe("ScanResult round-trip", () => {
   it("agenticProfile + runtime fields serialize without breaking schemaVersion", async () => {
-    const { computeAgenticProfile } = await import("../src/engine/provenance.js");
+    const { computeAgenticProfile } =
+      await import("../src/engine/provenance.js");
     const profile = computeAgenticProfile(
       [{ path: "a.ts", provenance: "codegen-like" }],
       [],
@@ -283,4 +291,3 @@ describe("ScanResult round-trip", () => {
     expect(round.agenticProfile?.codegenLikeFiles).toBe(1);
   });
 });
-
