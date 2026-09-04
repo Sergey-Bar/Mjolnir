@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { Finding, ScanResult } from "../src/types.js";
-import { renderSarif } from "../src/reporter/sarif.js";
-import { renderTerminal } from "../src/reporter/terminal.js";
+import type { Finding, ScanResult } from "../../src/types.js";
+import { renderSarif } from "../../src/reporter/sarif.js";
+import { renderTerminal } from "../../src/reporter/terminal.js";
 
 /**
  * Narrows `T | undefined` to `T`, throwing if absent. Used instead of a

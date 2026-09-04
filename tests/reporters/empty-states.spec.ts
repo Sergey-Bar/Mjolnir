@@ -12,19 +12,19 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { renderTerminal } from "../src/reporter/terminal.js";
-import { renderTriage } from "../src/forensics/triage.js";
+import { renderTerminal } from "../../src/reporter/terminal.js";
+import { renderTriage } from "../../src/forensics/triage.js";
 import {
   runForensicsCommand,
   runTriageCommand,
   runPwReportCommand,
-} from "../src/cli.js";
+} from "../../src/cli.js";
 import {
   createRuleScaffold,
   renderScaffoldReport,
-} from "../src/commands/create-rule.js";
-import type { ScanResult } from "../src/types.js";
-import type { ForensicsReport } from "../src/forensics/types.js";
+} from "../../src/commands/create-rule.js";
+import type { ScanResult } from "../../src/types.js";
+import type { ForensicsReport } from "../../src/forensics/types.js";
 
 let dir: string;
 beforeEach(() => {

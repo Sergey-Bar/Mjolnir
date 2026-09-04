@@ -26,8 +26,8 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { renderTerminal } from "../src/reporter/terminal.js";
-import type { ScanResult } from "../src/types.js";
+import { renderTerminal } from "../../src/reporter/terminal.js";
+import type { ScanResult } from "../../src/types.js";
 
 // eslint-disable-next-line no-control-regex -- ANSI escape is the thing being detected
 const ANSI_ESCAPE_RE = /\x1b\[[0-9;]*m/;
@@ -109,7 +109,7 @@ describe("terminal output: NO_COLOR and non-TTY hygiene", () => {
 
 describe("crash-safety of destructive file writes", () => {
   const fixSource = readFileSync(
-    join(import.meta.dirname, "..", "src", "commands", "fix.ts"),
+    join(import.meta.dirname, "..", "..", "src", "commands", "fix.ts"),
     "utf8",
   );
 

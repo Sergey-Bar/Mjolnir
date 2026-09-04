@@ -18,14 +18,14 @@ import {
   deriveEvidenceLevel,
   type Finding,
   type ScanResult,
-} from "../src/types.js";
-import { renderSarif } from "../src/reporter/sarif.js";
-import { renderTerminal } from "../src/reporter/terminal.js";
+} from "../../src/types.js";
+import { renderSarif } from "../../src/reporter/sarif.js";
+import { renderTerminal } from "../../src/reporter/terminal.js";
 import {
   buildCatalog,
   renderCatalogMd,
-} from "../src/commands/rules-catalog.js";
-import { RULES } from "../src/rules/index.js";
+} from "../../src/commands/rules-catalog.js";
+import { RULES } from "../../src/rules/index.js";
 
 function makeFinding(over: Partial<Finding> = {}): Finding {
   return {

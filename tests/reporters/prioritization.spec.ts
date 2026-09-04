@@ -4,10 +4,10 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { prioritize, topFixes } from "../src/scorer/prioritize.js";
-import type { Finding } from "../src/types.js";
-import { renderTerminal } from "../src/reporter/terminal.js";
-import type { ScanResult } from "../src/types.js";
+import { prioritize, topFixes } from "../../src/scorer/prioritize.js";
+import type { Finding } from "../../src/types.js";
+import { renderTerminal } from "../../src/reporter/terminal.js";
+import type { ScanResult } from "../../src/types.js";
 
 function finding(over: Partial<Finding> = {}): Finding {
   return {

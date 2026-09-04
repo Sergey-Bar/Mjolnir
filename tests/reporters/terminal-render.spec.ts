@@ -6,7 +6,7 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { renderTerminal } from "../src/reporter/terminal.js";
+import { renderTerminal } from "../../src/reporter/terminal.js";
 import {
   box,
   wrapText,
@@ -14,8 +14,8 @@ import {
   measure,
   meter,
   palette,
-} from "../src/reporter/theme.js";
-import type { Finding, ScanResult } from "../src/types.js";
+} from "../../src/reporter/theme.js";
+import type { Finding, ScanResult } from "../../src/types.js";
 
 function finding(over: Partial<Finding> = {}): Finding {
   return {

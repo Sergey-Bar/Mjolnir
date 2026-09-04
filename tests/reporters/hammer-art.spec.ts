@@ -11,9 +11,9 @@ import {
   HAMMER_STATES,
   FORGED_WORDMARK,
   renderHammer,
-} from "../src/reporter/art.js";
-import { gaugeColorForBand, palette } from "../src/reporter/theme.js";
-import { deriveScoreState } from "../src/reporter/score-state.js";
+} from "../../src/reporter/art.js";
+import { gaugeColorForBand, palette } from "../../src/reporter/theme.js";
+import { deriveScoreState } from "../../src/reporter/score-state.js";
 
 const BANDS = ["critical", "warning", "trusted", "forged"] as const;
 type Band = (typeof BANDS)[number];

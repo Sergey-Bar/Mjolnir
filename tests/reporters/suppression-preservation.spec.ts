@@ -11,8 +11,8 @@
 
 import { describe, expect, it } from "vitest";
 import fc from "fast-check";
-import type { ScanResult } from "../src/types.js";
-import { renderTerminal } from "../src/reporter/terminal.js";
+import type { ScanResult } from "../../src/types.js";
+import { renderTerminal } from "../../src/reporter/terminal.js";
 
 function makeResult(over: Partial<ScanResult> = {}): ScanResult {
   return {

@@ -11,7 +11,7 @@ import {
   deriveScoreState,
   headlineFor,
   type ScoreState,
-} from "../src/reporter/score-state.js";
+} from "../../src/reporter/score-state.js";
 
 describe("band boundaries are total and exhaustive", () => {
   it.each([

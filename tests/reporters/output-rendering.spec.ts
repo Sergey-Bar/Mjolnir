@@ -10,8 +10,8 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { renderTerminal } from "../src/reporter/terminal.js";
-import type { Finding, ScanResult } from "../src/types.js";
+import { renderTerminal } from "../../src/reporter/terminal.js";
+import type { Finding, ScanResult } from "../../src/types.js";
 
 function findingOf(severity: Finding["severity"]): Finding {
   return {

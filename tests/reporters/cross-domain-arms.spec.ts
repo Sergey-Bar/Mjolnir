@@ -15,22 +15,22 @@ import {
   renderTriage,
   renderTriageMd,
   triageRows,
-} from "../src/forensics/triage.js";
-import { renderMermaid } from "../src/reporter/mermaid.js";
+} from "../../src/forensics/triage.js";
+import { renderMermaid } from "../../src/reporter/mermaid.js";
 import {
   diffAgainstBaseline,
   renderBaselineDiff,
-} from "../src/commands/baseline.js";
-import { pwMissingTimeout } from "../src/rules/playwright/qa-pw-103-missing-timeout.js";
-import { hardcodedBaseUrl } from "../src/rules/playwright/qa-pw-123-hardcoded-url.js";
-import { pwBlanketRouteMock } from "../src/rules/playwright/qa-pw-142-blanket-route.js";
-import { emptyTestBody } from "../src/rules/test/qa-test-010-empty-body.js";
-import { pwPollNoTimeout } from "../src/rules/playwright/qa-pw-105-poll-timeout.js";
-import { computeCodeText } from "../src/engine/code-text.js";
-import { retryMasking } from "../src/rules/ci/qa-ci-007-retry-masking.js";
-import { parseWorkflow } from "../src/discovery/workflow-parser.js";
-import { runBaselineCommand } from "../src/cli.js";
-import type { ScanResult } from "../src/types.js";
+} from "../../src/commands/baseline.js";
+import { pwMissingTimeout } from "../../src/rules/playwright/qa-pw-103-missing-timeout.js";
+import { hardcodedBaseUrl } from "../../src/rules/playwright/qa-pw-123-hardcoded-url.js";
+import { pwBlanketRouteMock } from "../../src/rules/playwright/qa-pw-142-blanket-route.js";
+import { emptyTestBody } from "../../src/rules/test/qa-test-010-empty-body.js";
+import { pwPollNoTimeout } from "../../src/rules/playwright/qa-pw-105-poll-timeout.js";
+import { computeCodeText } from "../../src/engine/code-text.js";
+import { retryMasking } from "../../src/rules/ci/qa-ci-007-retry-masking.js";
+import { parseWorkflow } from "../../src/discovery/workflow-parser.js";
+import { runBaselineCommand } from "../../src/cli.js";
+import type { ScanResult } from "../../src/types.js";
 
 let dir: string;
 beforeEach(() => {

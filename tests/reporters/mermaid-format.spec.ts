@@ -18,8 +18,8 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { renderMermaid } from "../src/reporter/mermaid.js";
-import type { Finding, ScanResult } from "../src/types.js";
+import { renderMermaid } from "../../src/reporter/mermaid.js";
+import type { Finding, ScanResult } from "../../src/types.js";
 
 function finding(overrides: Partial<Finding>): Finding {
   return {
