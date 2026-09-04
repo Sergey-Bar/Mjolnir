@@ -576,3 +576,41 @@ describe("stability-policy docs exist and link each other (Beta-to-Stable M1)", 
     expect(README).toContain("[SUPPORT.md](SUPPORT.md)");
   });
 });
+
+describe("flake policy holds (Beta-to-Stable M3)", () => {
+  // M3: zero known-flaky tests at 1.0. The ledger page is the proof
+  // surface — its "Open flakes" table must stay empty (or this test
+  // fails and the flake must be fixed or quarantined within the week,
+  // per the policy the page itself states), and the suite must not
+  // enable vitest retries to hide a flake behind a green check.
+  const FLAKE_LEDGER = readFileSync(
+    join(ROOT, "docs", "FLAKE-LEDGER.md"),
+    "utf8",
+  );
+
+  it("docs/FLAKE-LEDGER.md exists and states the zero-known-flakes claim", () => {
+    expect(FLAKE_LEDGER).toContain("zero known-flaky tests");
+    expect(FLAKE_LEDGER).toContain("## Open flakes");
+  });
+
+  it("the ledger's Open flakes table is empty (every flake fixed or deleted)", () => {
+    const section = FLAKE_LEDGER.split("## Open flakes")[1]?.split("## ")[0];
+    expect(
+      section,
+      "docs/FLAKE-LEDGER.md lost its Open flakes section",
+    ).toBeDefined();
+    const rows = (section?.match(/^\|.*\|$/gm) ?? []).filter(
+      (r) => !/^\|[\s|-]*\|$/.test(r) && !r.includes("None"),
+    );
+    expect(
+      rows,
+      "Open flakes table has entries — fix or quarantine per policy, " +
+        "then update the ledger in the same PR",
+    ).toEqual([]);
+  });
+
+  it("vitest config does not enable retries (retries hide flakes)", () => {
+    const config = readFileSync(join(ROOT, "vitest.config.ts"), "utf8");
+    expect(config).not.toMatch(/retries\s*:\s*\d/);
+  });
+});
