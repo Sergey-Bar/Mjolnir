@@ -90,14 +90,42 @@ export default tseslint.config(
     // trust-boundary sites are disabled inline WITH a reason, never here
     // (§21-24). A scanner CLI legitimately reads paths from argv/config
     // and runs git; that is the product, not an injection.
+    //
+    // FW-LINT-01 (lint-ratchet-sweep): two of these rules produce zero
+    // signal outside the trust boundary. `detect-object-injection` and
+    // `detect-non-literal-fs-filename` fire on every computed key and
+    // every non-literal path in src/ — but computed paths ARE the
+    // product (a scanner reads files it discovered at runtime), so these
+    // are turned off here and re-scoped at "warn" ONLY where untrusted
+    // input actually flows: src/plugins/** (JSON rule manifests supply
+    // compiled patterns and computed paths) and src/config/** (config
+    // files drive path resolution). See the block below.
     files: ["src/**/*.ts"],
     plugins: { security },
     rules: Object.fromEntries(
       Object.entries(security.configs.recommended.rules).map(([k]) => [
         k,
-        "warn",
+        k === "security/detect-object-injection" ||
+        k === "security/detect-non-literal-fs-filename"
+          ? "off" // zero-signal outside plugins/config — re-scoped below with rationale (FW-LINT-01)
+          : "warn",
       ]),
     ),
+  },
+  {
+    // FW-LINT-01: the only src/ surfaces where untrusted input actually
+    // flows into computed object keys or filesystem paths. JSON rule
+    // manifests (plugins) and config files (config/) supply compiled
+    // patterns and computed paths by design, so these two rules stay at
+    // "warn" here. Anything they still flag in this block gets an
+    // inline disable WITH a reason, not a config-level off — same
+    // convention as the security block above (§21-24).
+    files: ["src/plugins/**/*.ts", "src/config/**/*.ts"],
+    plugins: { security },
+    rules: {
+      "security/detect-object-injection": "warn",
+      "security/detect-non-literal-fs-filename": "warn",
+    },
   },
   {
     // Bug-audit B4.26: the regexp plugin catches catastrophic-backtracking
