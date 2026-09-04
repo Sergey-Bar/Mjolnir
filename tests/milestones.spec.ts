@@ -142,7 +142,9 @@ describe("first-clean-scan milestone", () => {
     const dir = makeCleanRepo();
     const cap = capture();
     await runScanCommand([dir, "--json"], cap.io);
-    expect(() => JSON.parse(cap.text())).not.toThrow();
+    expect(() => {
+      JSON.parse(cap.text());
+    }).not.toThrow();
     expect(cap.text()).not.toContain("MILESTONE");
   });
 

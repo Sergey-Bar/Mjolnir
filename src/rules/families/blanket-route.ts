@@ -52,6 +52,7 @@ function makeBlanketRoute(
       const findings: Omit<Finding, "ruleId" | "category">[] = [];
       if (!ctx.path.endsWith(ext)) return findings;
 
+      // eslint-disable-next-line security/detect-non-literal-regexp -- pattern is a compile-time literal argument of the family factory — not scan input
       const re = new RegExp(pattern.source, pattern.flags);
       let m: RegExpExecArray | null;
       while ((m = re.exec(text)) !== null) {
@@ -83,7 +84,8 @@ export const blanketRouteFamily: QADoctorRule[] = [
     ".java",
     ["java"],
     ["junit", "testng"],
-    /\.route\s*\(\s*"(\*\*(?:\/\*)?|\*\*\/[^"]*)"/g,
+    // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
+    /\.route\s*\(\s*"(\*\*(?:\/[^"]*)?)"/g,
     "page.route",
     "page.route",
   ),
@@ -93,7 +95,8 @@ export const blanketRouteFamily: QADoctorRule[] = [
     ".cs",
     ["csharp"],
     ["nunit", "xunit", "mstest", "playwright"],
-    /\.RouteAsync\s*\(\s*"(\*\*(?:\/\*)?|\*\*\/[^"]*)"/g,
+    // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
+    /\.RouteAsync\s*\(\s*"(\*\*(?:\/[^"]*)?)"/g,
     "page.RouteAsync",
     "page.RouteAsync",
   ),

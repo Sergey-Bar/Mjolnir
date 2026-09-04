@@ -74,6 +74,7 @@ export const pyNoAssertions = defineRule({
         // a list, awaited as a coroutine) is test DATA — e.g. pytester
         // scripts whose collected assertion lives in the parent test.
         const name = m[2] as string;
+        // eslint-disable-next-line security/detect-non-literal-regexp -- name is a test_\w+ identifier captured by fnRe — no regex metacharacters
         const refRe = new RegExp(`\\b${name}\\b`, "g");
         let refs = 0;
         while (refRe.exec(text) !== null) {
@@ -106,7 +107,7 @@ export const pyNoAssertions = defineRule({
 function extractBlock(text: string, afterColon: number): string | null {
   // Normalize CRLF first.
   const rest = text.slice(afterColon).replace(/\r\n/g, "\n");
-  const firstContent = /(\S)/.exec(rest);
+  const firstContent = /\S/.exec(rest);
   if (!firstContent || firstContent.index === undefined) return null;
   const firstIdx = firstContent.index;
   const before = rest.slice(0, firstIdx);

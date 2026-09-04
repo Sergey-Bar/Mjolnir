@@ -65,10 +65,10 @@ const noopRule: UniversalRule = {
   run: () => [],
 };
 
-async function expectRunRules(
+function expectRunRules(
   adapter: LanguageAdapter,
   file: { path: string; text: string },
-): Promise<Array<{ f: unknown; ruleId: string; category: string }>> {
+): Array<{ f: unknown; ruleId: string; category: string }> {
   const emitted: Array<{ f: unknown; ruleId: string; category: string }> = [];
   adapter.runRules([noopRule], file, (f, ruleId, category) =>
     emitted.push({ f, ruleId, category }),
@@ -135,7 +135,7 @@ describe("typescriptAdapter", () => {
     expect(onSkipped).not.toHaveBeenCalled();
   });
 
-  it("runRules emits findings with rule metadata and isolates crashes", async () => {
+  it("runRules emits findings with rule metadata and isolates crashes", () => {
     const boom: UniversalRule = {
       id: "BOOM",
       category: "test",
@@ -150,7 +150,7 @@ describe("typescriptAdapter", () => {
       appliesTo: ["typescript"],
       run: () => [mockFinding()],
     };
-    const emitted = await expectRunRules.call(null, typescriptAdapter, {
+    const emitted = expectRunRules.call(null, typescriptAdapter, {
       path: "x.test.ts",
       text: "",
     });

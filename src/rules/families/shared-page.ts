@@ -26,6 +26,7 @@ export const sharedPageFamily = definePatternFamily({
       frameworks: ["junit", "testng"],
       tier: "extended",
       patterns: [
+        // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
         /^\s*(?:(?:private|public|protected)\s*)?static\s+(?:final\s+)?(?:Page|Browser|BrowserContext|Playwright)\b/gm,
       ],
       message: "Static `$0` — browser state shared across tests.",
@@ -39,6 +40,7 @@ export const sharedPageFamily = definePatternFamily({
       frameworks: ["nunit", "xunit", "mstest", "playwright"],
       tier: "extended",
       patterns: [
+        // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
         /^\s*(?:(?:public|private|protected|internal)\s*)?static\s+(?:readonly\s+)?IPage\b/gm,
       ],
       message: "`static IPage` — browser state shared across tests.",

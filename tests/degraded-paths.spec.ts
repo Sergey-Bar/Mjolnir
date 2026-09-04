@@ -88,9 +88,9 @@ describe("impact degraded paths", () => {
     const { execFileSync } = await import("node:child_process");
     const dir = realGitRepo(execFileSync);
     const report = await computeImpact(dir, {
-      runScan: async () => {
-        throw new Error("scan exploded (simulated)");
-      },
+      // Contract is async (impact.ts awaits runScan); the throwing stub
+      // rejects the returned promise directly — no await-less async fn.
+      runScan: () => Promise.reject(new Error("scan exploded (simulated)")),
     });
     expect(report.hasComparison).toBe(false);
     expect(report.unknownReason).toBe("tree-materialize-failed");
@@ -105,7 +105,7 @@ describe("impact degraded paths", () => {
     (os as { tmpdir: () => string }).tmpdir = () => join(dir, "does-not-exist");
     try {
       const report = await computeImpact(dir, {
-        runScan: async () => emptyScan,
+        runScan: () => Promise.resolve(emptyScan),
       });
       expect(report.hasComparison).toBe(false);
       expect(report.unknownReason).toBe("tree-materialize-failed");

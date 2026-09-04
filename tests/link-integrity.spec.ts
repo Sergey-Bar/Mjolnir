@@ -82,7 +82,13 @@ describe.skipIf(!isGitRepo())(
 );
 
 describe("package.json identity fields", () => {
-  const pkg = JSON.parse(readFileSync(resolve(ROOT, "package.json"), "utf8"));
+  const pkg = JSON.parse(
+    readFileSync(resolve(ROOT, "package.json"), "utf8"),
+  ) as {
+    repository?: { url?: string };
+    bugs?: { url?: string };
+    homepage?: string;
+  };
 
   it("repository.url points at the real remote", () => {
     expect(pkg.repository?.url).toMatch(/github\.com\/Sergey-Bar\/Mjolnir/);

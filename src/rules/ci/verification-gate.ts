@@ -13,6 +13,7 @@
  * The regex carries no `g` flag, so `.test()` on it is not stateful and it is
  * safe to share a single instance across rules and calls.
  */
+// eslint-disable-next-line security/detect-non-literal-regexp -- source is a compile-time-constant join of literal alternatives
 export const VERIFICATION_GATE_RE = new RegExp(
   [
     // ── Test runners ────────────────────────────────────────────────
@@ -22,8 +23,8 @@ export const VERIFICATION_GATE_RE = new RegExp(
     String.raw`\bplaywright\s+test\b`,
     String.raw`\b(?:pytest|tox|nox)\b`,
     String.raw`\bpython\s+-m\s+(?:pytest|unittest)\b`,
-    String.raw`\bmvn\b[^\n]*\b(?:test|verify)\b`,
-    String.raw`\b(?:\./)?gradlew?\b[^\n]*\btest\b`,
+    String.raw`\bmvn\b[^\n]+\b(?:test|verify)\b`,
+    String.raw`\b(?:\./)?gradlew?\b[^\n]+\btest\b`,
     String.raw`\bdotnet\s+test\b`,
     String.raw`\bgo\s+test\b`,
     String.raw`\bcargo\s+test\b`,

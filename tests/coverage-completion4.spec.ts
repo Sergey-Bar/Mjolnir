@@ -314,7 +314,7 @@ describe("jv-cs-ast measured arms", () => {
 // ─── qa-model.ts measured arms ───────────────────────────────────────
 
 describe("qa-model measured arms", () => {
-  it("extractQaModel: parseTsFile failure → undefined (L229)", async () => {
+  it("extractQaModel: parseTsFile failure → undefined (L229)", () => {
     // An empty path makes ts-morph createSourceFile throw → undefined.
     expect(extractQaModel({ path: "", text: "var x = 1;" })).toBeUndefined();
     // Also drive a .ts model extraction for the success path comparison.
@@ -797,7 +797,7 @@ describe("hard-sleep remaining measured arms", () => {
     (r: { id: string }) => r.id === "QA-JV-102",
   )!;
 
-  it("QA-JV-102 without an AST → the cs102AstQuery undefined guard (L104) and the regex path", async () => {
+  it("QA-JV-102 without an AST → the cs102AstQuery undefined guard (L104) and the regex path", () => {
     // A .java run with ast undefined → tryAstQuery short-circuits, but
     // the guard at L104 is only reachable when the AST hook exists —
     // it does not for the Java variant. The honest contract probe:

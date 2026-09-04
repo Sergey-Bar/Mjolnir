@@ -22,19 +22,23 @@ vi.mock("node:fs", async (importOriginal) => {
   return { ...actual, existsSync };
 });
 
-vi.mock("web-tree-sitter", async () => {
+vi.mock("web-tree-sitter", () => {
   const state = {
     tree: null as null | object,
     loadError: null as null | Error,
   };
   class Language {
-    static async load(): Promise<never> {
-      if (state.loadError) throw state.loadError;
-      return { fake: true } as never;
+    // The adapter awaits Language.load, so the mock must return a real
+    // promise — rejection here drives the grammar-load failure arms.
+    static load(): Promise<never> {
+      if (state.loadError) return Promise.reject(state.loadError);
+      return Promise.resolve({ fake: true } as never);
     }
   }
   class Parser {
-    static async init(): Promise<void> {}
+    static init(): Promise<void> {
+      return Promise.resolve();
+    }
     setLanguage(): void {}
     parse(): object | null {
       return state.tree;

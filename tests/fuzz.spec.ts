@@ -69,9 +69,9 @@ describe("crash-proof gate: hostile inputs never throw", () => {
   });
 
   it("prototype pollution does not poison rule behavior", () => {
-    const evil: Record<string, unknown> = JSON.parse(
+    const evil = JSON.parse(
       '{"__proto__":{"run":true,"appliesTo":"all"}}',
-    );
+    ) as Record<string, unknown>;
     expect(evil.run).toBeUndefined(); // Object.create(null)-style safety via plain objects
   });
 });

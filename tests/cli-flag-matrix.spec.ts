@@ -147,7 +147,9 @@ describe("base scan command — documented flag matrix", () => {
 
   it("a usage error never writes findings-shaped JSON to stdout", async () => {
     const { stdout } = await run(["--nope"]);
-    expect(() => JSON.parse(stdout)).toThrow();
+    expect(() => {
+      JSON.parse(stdout);
+    }).toThrow();
   });
 });
 

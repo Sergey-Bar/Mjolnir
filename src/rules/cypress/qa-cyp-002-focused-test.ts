@@ -54,6 +54,7 @@ export const cypFocusedTest = defineRule({
     // not computed it, the raw text is the honest view.
     const text = ctx.codeText !== undefined ? ctx.codeText : ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
+    // eslint-disable-next-line security/detect-non-literal-regexp -- clone of a compile-time literal's .source for flag control — not scan input
     const re = new RegExp(FOCUS_RE.source, "g");
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {

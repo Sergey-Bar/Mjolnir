@@ -119,7 +119,9 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
       execFileSync("tar", ["-xzf", filename, "-C", "."], { cwd: workDir });
       pkgDir = join(workDir, "package");
 
-      pkgJson = JSON.parse(readFileSync(join(pkgDir, "package.json"), "utf8"));
+      pkgJson = JSON.parse(
+        readFileSync(join(pkgDir, "package.json"), "utf8"),
+      ) as typeof pkgJson;
       const binEntry = pkgJson.bin.mjolnir;
       if (!binEntry) throw new Error("package.json has no mjolnir bin entry");
       binPath = join(pkgDir, binEntry);
@@ -326,16 +328,16 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
             stdio: "pipe",
           }).toString();
         } catch (err) {
-          const e = err as { stdout?: unknown; stderr?: unknown };
+          const e = err as { stdout?: Uint8Array; stderr?: Uint8Array };
           // --help exits 10 by contract (usage path), so a throw here is
           // expected — what matters is that the CLI produced real output.
           // If it somehow produced nothing, surface stderr for diagnosis.
-          out = String(e.stdout ?? "");
+          out = e.stdout ? e.stdout.toString() : "";
           if (out.length === 0) {
-            throw new Error(
-              `packed CLI produced no output: stderr=${String(e.stderr ?? "")}`,
-              { cause: err },
-            );
+            const stderr = e.stderr ? e.stderr.toString() : "";
+            throw new Error(`packed CLI produced no output: stderr=${stderr}`, {
+              cause: err,
+            });
           }
         }
         expect(
@@ -370,7 +372,8 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
               cwd: pkgDir,
             }).toString();
           } catch (err) {
-            result = String((err as { stdout?: unknown }).stdout ?? "");
+            const stdout = (err as { stdout?: Uint8Array }).stdout;
+            result = stdout ? stdout.toString() : "";
           }
 
           expect(result).toMatch(/WORTHINESS|score/);

@@ -123,7 +123,7 @@
     <text x="22" y="2068.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the finding should no longer</tspan></text>
     <text x="22" y="2087.0" xml:space="preserve"><tspan fill="#d7d3c8">            appear.</tspan></text>
 
-    <text x="22" y="2125.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-146 · e2e/checkout.spec.ts:5</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · trust L3 · runtime: file executed]</tspan></text>
+    <text x="22" y="2125.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-146 · e2e/checkout.spec.ts:5</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · measured FP 12% · n=17 · trust L3 · runtime: file executed]</tspan></text>
     <text x="22" y="2144.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">CSS/XPath string selector where a normalized locator is expected.</tspan></text>
     <text x="22" y="2163.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">HYGIENE — String CSS/XPath selectors couple the test to markup the</tspan></text>
     <text x="22" y="2182.0" xml:space="preserve"><tspan fill="#d7d3c8">            user never sees — they break on any refactor and can silently</tspan></text>
@@ -155,7 +155,7 @@
     <text x="22" y="2676.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the gate should stop failing and</tspan></text>
     <text x="22" y="2695.0" xml:space="preserve"><tspan fill="#d7d3c8">            the score should recover by 8.</tspan></text>
 
-    <text x="22" y="2733.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-146 · e2e/checkout.spec.ts:13</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · trust L3 · runtime: file executed]</tspan></text>
+    <text x="22" y="2733.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-146 · e2e/checkout.spec.ts:13</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · measured FP 12% · n=17 · trust L3 · runtime: file executed]</tspan></text>
     <text x="22" y="2752.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">CSS/XPath string selector where a normalized locator is expected.</tspan></text>
     <text x="22" y="2771.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">HYGIENE — String CSS/XPath selectors couple the test to markup the</tspan></text>
     <text x="22" y="2790.0" xml:space="preserve"><tspan fill="#d7d3c8">            user never sees — they break on any refactor and can silently</tspan></text>
@@ -172,7 +172,7 @@
     <text x="22" y="2999.0" xml:space="preserve"><tspan fill="rgb(124,133,144)">──────────────────────────────────────────────────────────</tspan></text>
     <text x="22" y="3018.0" xml:space="preserve"><tspan fill="#d7d3c8">  Analysis: </tspan><tspan fill="rgb(79,180,119)">complete</tspan><tspan fill="#d7d3c8"> · a few ms</tspan></text>
     <text x="22" y="3037.0" xml:space="preserve"><tspan fill="rgb(124,133,144)">  19 advisory findings (E0 — observation only, no score impact)</tspan></text>
-    <text x="22" y="3056.0" xml:space="preserve"><tspan fill="rgb(124,133,144)">  Rule coverage: 14/16 rules that fired here have a measured false-positive rate; the rest are heuristics. `mjolnir rules --unmeasured` lists them.</tspan></text>
+    <text x="22" y="3056.0" xml:space="preserve"><tspan fill="rgb(124,133,144)">  Rule coverage: 15/16 rules that fired here have a measured false-positive rate; the rest are heuristics. `mjolnir rules --unmeasured` lists them.</tspan></text>
     <text x="22" y="3075.0" xml:space="preserve"><tspan fill="rgb(124,133,144)">  Runtime evidence: 9/27 findings corroborated by a real run report (trust L3–L5); the rest are static-only.</tspan></text>
 
   </g>

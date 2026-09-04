@@ -46,7 +46,7 @@ export const pwOrderDependence = defineRule({
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
-    if (!/\.(spec|test)\.[tj]sx?$/.test(ctx.path)) return findings;
+    if (!/\.(?:spec|test)\.[tj]sx?$/.test(ctx.path)) return findings;
 
     // Module-level `let x` assigned inside one test — a smell that another
     // test reads it. (const at module level is fine.)
@@ -55,8 +55,12 @@ export const pwOrderDependence = defineRule({
     // annotation). Destructuring — `let [a, b] = …`, `let { page } = …` —
     // is deliberately skipped: splitting `[a, b]` on `,` used to yield
     // junk "names" like `[a` that were then interpolated into a RegExp.
+    // FW-RX-03: the names group is the whole regex — the trailing
+    // type-annotation/terminator was provably dead (`$` always matched at
+    // end of line) and was the \s*/[^=;\n]+ exchange surface.
     const declRe =
-      /^let\s+([A-Za-z_$][\w$]*(?:\s*,\s*[A-Za-z_$][\w$]*)*)(?:\s*:[^=;\n]+)?\s*(?:=|;|$)/gm;
+      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
+      /^let[ \t]+([A-Za-z_$][\w$]*(?:[ \t]*,[ \t]*[A-Za-z_$][\w$]*)*)/gm;
     const shared = new Set<string>();
     let d: RegExpExecArray | null;
     while ((d = declRe.exec(text)) !== null) {
@@ -71,6 +75,7 @@ export const pwOrderDependence = defineRule({
     // pattern (fresh state per test) and must not be flagged.
     const hookRanges: Array<[number, number]> = [];
     const hookRe =
+      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
       /\b(?:beforeEach|beforeAll|afterEach|afterAll)\s*\(\s*(?:async\s*)?/g;
     let h: RegExpExecArray | null;
     while ((h = hookRe.exec(text)) !== null) {
@@ -112,6 +117,7 @@ export const pwOrderDependence = defineRule({
       hookRanges.some(([s, e]) => idx > s && idx < e);
 
     for (const name of shared) {
+      // eslint-disable-next-line security/detect-non-literal-regexp -- name is an identifier captured by declRe ([A-Za-z_$][\w$]*) — no regex metacharacters possible
       const assignRe = new RegExp(
         `(?:^|[^\\w.])(?:await\\s+)?${name}\\s*=[^=]`,
         "g",

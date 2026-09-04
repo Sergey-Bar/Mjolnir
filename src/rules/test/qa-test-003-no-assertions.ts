@@ -45,7 +45,8 @@ export const noAssertions = defineRule({
     // common in real code — silently stopped matching. `\s*` restores
     // spaceless arrows without reopening the bare-`return` exemption.
     const testRe =
-      /\b(?:it|test)\s*\(\s*['"`][^'"`]*['"`]\s*,\s*(?:(?:async\s*)?\([^)]*\)\s*=>\s*\{|\bfunction\b[^{]*\{)/g;
+      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
+      /\b(?:it|test)\s*\(\s*['"`][^'"`]*['"`]\s*,\s*(?:(?:async\s*)?\([^)]*\)\s*=>\s*\{|function\b[^{]*\{)/g;
     let m: RegExpExecArray | null;
     while ((m = testRe.exec(text)) !== null) {
       // Skip matches inside string literals containing embedded code (test data)

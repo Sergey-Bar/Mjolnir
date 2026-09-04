@@ -53,9 +53,10 @@ describe("parseArgs flag matrix", () => {
   it("survives a hole in a sparse argv array without crashing", () => {
     // A hole (not a literal "undefined" element) is the strongest form of
     // the argv[i] ?? "" guard: length says 3, index 1 is absent.
-    const sparse: string[] = new Array(3);
-    sparse[0] = "--json";
-    sparse[2] = "src";
+    const sparse: string[] = Object.assign(new Array(3), {
+      0: "--json",
+      2: "src",
+    });
     const args = parseArgs(sparse);
     expect(args).not.toBeNull();
     expect(args?.json).toBe(true);
@@ -68,14 +69,16 @@ describe("isEntryPoint", () => {
 
   afterEach(() => {
     if (origArgv1 === undefined) {
-      delete process.argv[1];
+      // Splice instead of `delete` (no-array-delete): isEntryPoint only
+      // reads argv[1], so the shortened array is behaviorally identical.
+      process.argv.splice(1, 1);
     } else {
       process.argv[1] = origArgv1;
     }
   });
 
   it("returns false when argv[1] is absent", () => {
-    delete process.argv[1];
+    process.argv.splice(1, 1);
     expect(isEntryPoint()).toBe(false);
   });
 

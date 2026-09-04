@@ -418,7 +418,7 @@ committed §08 class-C negative corpus — realistic legitimate code per rule th
 
 Source: [`local:tests/corpus/negative-fixtures`](local:tests/corpus/negative-fixtures)
 
-Total findings: **200**
+Total findings: **202**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
@@ -433,6 +433,7 @@ Total findings: **200**
 | QA-PW-141    | 24       |
 | QA-PW-143    | 60       |
 | QA-PW-145    | 7        |
+| QA-PW-146    | 2        |
 | QA-PY-004    | 1        |
 | QA-PY-005    | 1        |
 | QA-PY-012    | 1        |
@@ -523,7 +524,7 @@ committed §08 class-B positive corpus — realistic anti-pattern variants per r
 
 Source: [`local:tests/corpus/positive-fixtures`](local:tests/corpus/positive-fixtures)
 
-Total findings: **623**
+Total findings: **639**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
@@ -565,6 +566,7 @@ Total findings: **623**
 | QA-PW-143    | 60       |
 | QA-PW-144    | 12       |
 | QA-PW-145    | 20       |
+| QA-PW-146    | 15       |
 | QA-PY-001    | 12       |
 | QA-PY-003    | 13       |
 | QA-PY-004    | 9        |
@@ -578,6 +580,7 @@ Total findings: **623**
 | QA-PY-106    | 4        |
 | QA-PY-107    | 3        |
 | QA-PY-108    | 4        |
+| QA-SE-003    | 1        |
 | QA-TEST-001  | 8        |
 | QA-TEST-002  | 1        |
 | QA-TEST-003  | 58       |

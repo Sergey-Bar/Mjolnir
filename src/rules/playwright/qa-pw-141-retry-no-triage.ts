@@ -37,7 +37,7 @@ export const pwRetryMaskingNoForensics = defineRule({
     const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     const base = ctx.path.split("/").pop() as string;
-    if (!/^playwright\.config\.(ts|js|mjs|cts)$/.test(base)) return findings;
+    if (!/^playwright\.config\.(?:ts|js|mjs|cts)$/.test(base)) return findings;
 
     const retriesRe =
       /retries\s*:\s*(?:process\.env\.[A-Za-z_]+\s*\?\s*(\d+)\s*:\s*\d+|(\d+))/g;

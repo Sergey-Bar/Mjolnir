@@ -46,6 +46,7 @@ export const mockOnlyVerification = defineRule({
 
     // A test whose ONLY assertions are mock-call checks.
     const testRe =
+      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
       /\b(?:it|test)\s*\(\s*['"`][^'"`]*['"`]\s*,\s*(?:async\s*)?\([^)]*\)\s*=>\s*\{/g;
     let m: RegExpExecArray | null;
     while ((m = testRe.exec(text)) !== null) {

@@ -115,7 +115,9 @@ describe("rules catalog", () => {
   it("CLI handler exits 0 and emits JSON by default", async () => {
     let out = "";
     const code = await runRulesCommand([], {
-      out: (s) => (out += s),
+      out: (s) => {
+        out += String(s);
+      },
       err: () => {},
     });
     expect(code).toBe(0);

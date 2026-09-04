@@ -17,6 +17,7 @@ import type { Finding } from "../../types.js";
 import { lineAt, colAt } from "../shared/positions.js";
 
 const CODEGEN_DEFAULT_TITLE_RE =
+  // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
   /\b(?:test|it)\s*\(\s*['"]test(?:\s+\d+)?['"]\s*,/g;
 
 const WHY =
@@ -50,6 +51,7 @@ export const pwCodegenArtifact = defineRule({
     // the code-only view blanks.
     const text = ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
+    // eslint-disable-next-line security/detect-non-literal-regexp -- clone of a compile-time literal's .source for flag control — not scan input
     const re = new RegExp(CODEGEN_DEFAULT_TITLE_RE.source, "g");
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {

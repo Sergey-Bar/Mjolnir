@@ -148,7 +148,7 @@ describe("ASCII-only fallback (cmd.exe / legacy consoles)", () => {
       isTTY: false,
       ascii: true,
     });
-    expect(out).toMatch(/\bX\b.*ERROR/);
+    expect(out).toMatch(/\bX\b.+ERROR/);
   });
 
   it("the no-tests-found empty state uses a plain '!' glyph in ASCII mode", () => {

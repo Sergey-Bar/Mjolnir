@@ -35,8 +35,12 @@ export const pyEmptyBody = defineRule({
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     if (!ctx.path.endsWith(".py")) return findings;
 
+    // FW-RX-05: newline-disjoint classes — `[ \t]*` where only indent
+    // whitespace is legal, explicit \n at line ends — removes the \s*/\s+
+    // exchange while keeping the same line shapes.
     const re =
-      /^( *)def\s+(test_\w+)\s*\([^)]*\):\s*\n(?:\1\s+#.*\n)?\1 {4}pass\s*$/gm;
+      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
+      /^( *)def[ \t]+(test_\w+)[ \t]*\([^)\n]*\):[ \t]*\r?\n(?:\1[ \t]+#[^\r\n]*\r?\n)?\1 {4}pass[ \t]*\r?$/gm;
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {
       findings.push({

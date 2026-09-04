@@ -142,6 +142,20 @@ describe("runInitCommand", () => {
     expect(runInitCommand([], cap.io)).toBe(0);
     expect(cap.text()).toContain("MJÖLNIR INIT");
   });
+
+  it("FW-BUG-02: falls back to 'repo' when package.json has a non-string name", () => {
+    // A malformed package.json with a non-string `name` (here: an object)
+    // must not String()-coerce into "[object Object]" as the badge label.
+    writeFileSync(
+      join(dir, "package.json"),
+      JSON.stringify({ name: { raw: "weird" }, private: true }),
+    );
+    process.chdir(dir);
+    const cap = capture();
+    expect(runInitCommand([], cap.io)).toBe(0);
+    expect(cap.text()).not.toContain("[object Object]");
+    expect(cap.text()).toContain("MJÖLNIR INIT");
+  });
 });
 
 describe("runPwReportCommand", () => {
@@ -151,7 +165,7 @@ describe("runPwReportCommand", () => {
     expect(cap.errText()).toContain("Usage: mjolnir pw-report");
   });
 
-  it("summarizes a Playwright report and exits 0 for clean runs", async () => {
+  it("summarizes a Playwright report and exits 0 for clean runs", () => {
     writeFileSync(join(dir, "report.json"), PW_JSON);
     const cap = capture();
     // The single test is a TRUE-FLAKE → exit 1.
@@ -160,7 +174,7 @@ describe("runPwReportCommand", () => {
     expect(cap.text()).toContain("TRUE-FLAKE");
   });
 
-  it("returns 2 when no results recognized", async () => {
+  it("returns 2 when no results recognized", () => {
     const cap = capture();
     expect(runPwReportCommand([dir], cap.io)).toBe(2);
     expect(cap.errText()).toContain("No Playwright JSON report");

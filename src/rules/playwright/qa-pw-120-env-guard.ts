@@ -36,7 +36,7 @@ export const pwNoEnvGuard = defineRule({
   run(ctx) {
     const text = ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
-    if (!/\.(spec|test)\.[tj]sx?$/.test(ctx.path)) return findings;
+    if (!/\.(?:spec|test)\.[tj]sx?$/.test(ctx.path)) return findings;
 
     // Engine/platform-specific APIs used anywhere in the file.
     const usesEngineSpecific =

@@ -110,7 +110,7 @@ describe("java.runRules — javaFileTags derivation via real parse", () => {
     expect(runs.intersect).toBe(1); // selenium import → tag intersects
   });
 
-  it("javaFileTags: a file whose ast is missing → no tags (open-when-unknown)", async () => {
+  it("javaFileTags: a file whose ast is missing → no tags (open-when-unknown)", () => {
     let filtered = 0;
     let ran = 0;
     javaAdapter.runRules(

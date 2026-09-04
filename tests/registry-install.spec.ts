@@ -68,11 +68,10 @@ beforeAll(() => {
   const installedPkgDir = join(installDir, "node_modules", "mjolnir-qa");
   const installedPkgJson = JSON.parse(
     readFileSync(join(installedPkgDir, "package.json"), "utf8"),
-  );
+  ) as { bin?: string | Record<string, string | undefined> };
+  const binField = installedPkgJson.bin;
   const binRel =
-    typeof installedPkgJson.bin === "string"
-      ? installedPkgJson.bin
-      : (installedPkgJson.bin["mjolnir"] ?? installedPkgJson.bin.mjolnir);
+    typeof binField === "string" ? binField : (binField?.["mjolnir"] ?? "");
   entryPath = join(installedPkgDir, binRel);
 }, 120_000);
 
@@ -109,7 +108,8 @@ describe.runIf(RUN)(
         } catch (err) {
           // Findings present → non-zero exit by contract; that's success
           // here, not a crash.
-          out = String((err as { stdout?: unknown }).stdout ?? "");
+          const stdout = (err as { stdout?: Uint8Array }).stdout;
+          out = stdout ? stdout.toString() : "";
         }
         // The gauge label is WORTHINESS — this asserted /SCORE/ from
         // before the rebrand renamed it, so the check could only ever

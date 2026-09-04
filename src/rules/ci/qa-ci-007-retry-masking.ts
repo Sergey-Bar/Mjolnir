@@ -55,9 +55,11 @@ export const retryMasking = defineRule({
         // nick-fields/retry or similar retry wrappers around test commands.
         if (step?.uses && /retry/i.test(step.uses)) {
           const withCfg = step.with ?? {};
-          const command = String(
-            withCfg["command"] ?? withCfg["max_tries"] ?? "",
-          );
+          // FW-BUG-01: `with` values are unknown-typed YAML — only a real
+          // string command carries the test-run signal; a nested mapping
+          // coerced via String() produced "[object Object]" noise.
+          const command =
+            typeof withCfg["command"] === "string" ? withCfg["command"] : "";
           const runsTests =
             /\b(?:npm|yarn|pnpm)\s+(?:test|run\s+test)|\b(?:jest|vitest|pytest|playwright)\b/.test(
               command,
@@ -71,6 +73,7 @@ export const retryMasking = defineRule({
             findingType: "deterministic-defect",
             qaImpact: "FLAKY-RISK",
             file: ctx.path,
+            // eslint-disable-next-line security/detect-non-literal-regexp -- escapeRe-quoted workflow value — no regex metacharacters survive
             line: findLine(ctx.text, new RegExp(escapeRe(step.uses))),
             column: 1,
             message: `Job \`${jobName}\` wraps a test command in an automatic retry action.`,
@@ -81,7 +84,7 @@ export const retryMasking = defineRule({
         // Inline shell retry loops around test commands.
         if (
           step?.run &&
-          /\bfor\b[\s\S]*retry|max_attempts|until.*succeed/i.test(step.run) &&
+          /\bfor\b[\s\S]+retry|max_attempts|until.*succeed/i.test(step.run) &&
           /test/i.test(step.run)
         ) {
           findings.push({

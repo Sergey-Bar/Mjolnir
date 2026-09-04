@@ -48,9 +48,14 @@ export function loadConfig(
   warnings: string[];
 } {
   for (const name of CONFIG_NAMES) {
+    // FW-LINT-01 residual: the filename comes from the compile-time
+    // CONFIG_NAMES constant — no untrusted input reaches the fs call.
+
     const p = join(root, name);
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     if (!existsSync(p)) continue;
     try {
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
       const parsed = JSON.parse(readFileSync(p, "utf8")) as QADoctorConfig;
       const warnings = validate(parsed, options.knownRuleIds);
       return { config: parsed, path: p, warnings };

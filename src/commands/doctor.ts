@@ -36,7 +36,7 @@ export interface DoctorCheck {
 // Phase 5 framework namespaces (plan §15.4, frozen-contract law):
 // QA-CYP-*, QA-SE-*, QA-WDIO-*, QA-PPTR-*, QA-APM-* join the registry.
 const VALID_ID =
-  /^QA-(TEST|TQUAL|PW|CI|PY|ENV|JV|CS|CYP|SE|WDIO|PPTR|APM)-\d{3}$/;
+  /^QA-(?:TEST|TQUAL|PW|CI|PY|ENV|JV|CS|CYP|SE|WDIO|PPTR|APM)-\d{3}$/;
 
 function nonHiddenFiles(dir: string): string[] {
   if (!existsSync(dir)) return [];
@@ -201,9 +201,15 @@ export function checkTierEnforcement(
         .filter((l) => l.trim().length > 0);
       for (const line of lines) {
         try {
-          const entry = JSON.parse(line);
+          const entry = JSON.parse(line) as {
+            verdict?: unknown;
+            ruleId?: unknown;
+          };
           if (entry.verdict === "TP" || entry.verdict === "FP") {
-            live.set(entry.ruleId, (live.get(entry.ruleId) ?? 0) + 1);
+            live.set(
+              entry.ruleId as string,
+              (live.get(entry.ruleId as string) ?? 0) + 1,
+            );
           }
         } catch {
           // skip malformed

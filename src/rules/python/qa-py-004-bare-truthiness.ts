@@ -41,6 +41,7 @@ export const pyBareTruthinessAssert = defineRule({
     if (!ctx.path.endsWith(".py")) return findings;
 
     // `assert <identifier-or-call>` with no comparison/boolean operator.
+    // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
     const re = /^[ \t]*assert\s+([A-Za-z_][\w.]*(?:\([^()]*\))?)[ \t]*$/gm;
 
     // Calls whose return value is a meaningful boolean predicate — the
@@ -81,6 +82,7 @@ export const pyBareTruthinessAssert = defineRule({
         if (/^\s*def\s/.test(l) && window.length > 0) break;
         window.push(l);
       }
+      // eslint-disable-next-line security/detect-non-literal-regexp -- root is an identifier — the capture regex only admits [A-Za-z_][\w.]* targets
       const usesRoot = new RegExp(`\\b${root}\\b`);
       return window.some((l) => usesRoot.test(l));
     };

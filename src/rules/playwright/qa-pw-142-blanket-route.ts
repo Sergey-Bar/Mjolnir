@@ -35,7 +35,7 @@ export const pwBlanketRouteMock = defineRule({
   run(ctx) {
     const text = ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
-    if (!/\.(spec|test)\.[tj]sx?$/.test(ctx.path)) return findings;
+    if (!/\.(?:spec|test)\.[tj]sx?$/.test(ctx.path)) return findings;
 
     const re = /\.route\s*\(\s*['"](\*\*(?:\/\*)?|\*\*\/[^'"]*)['"]/g;
     let m: RegExpExecArray | null;

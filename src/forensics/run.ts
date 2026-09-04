@@ -158,7 +158,7 @@ function listFiles(dir: string): string[] {
       if (e.isDirectory()) {
         if (["node_modules", ".git"].includes(e.name)) continue;
         walk(full, depth + 1);
-      } else if (e.isFile() && /\.(json|xml)$/i.test(e.name)) {
+      } else if (e.isFile() && /\.(?:json|xml)$/i.test(e.name)) {
         out.push(full);
       }
     }

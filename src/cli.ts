@@ -377,8 +377,6 @@ export async function runScan(
   let discoveryTruncated = false;
   let rulesPartial = false;
 
-  let tierByRuleId: Map<string, Tier>;
-  let pluginsLoaded: Array<{ name: string; rules: number }>;
   // Plan §17.1: per-file provenance for the Agentic Trust Profile.
   const fileProvenance: Array<{
     path: string;
@@ -392,8 +390,8 @@ export async function runScan(
     tierByRuleId: tiers,
     pluginMeta,
   } = await buildUniversalRules(workspace.root, args.strict);
-  tierByRuleId = tiers;
-  pluginsLoaded = pluginMeta;
+  const tierByRuleId = tiers;
+  const pluginsLoaded = pluginMeta;
   for (const err of pluginErrors) {
     findings.push({
       ruleId: "QA-PLUGIN-000",
@@ -591,7 +589,6 @@ export async function runScan(
   // mjolnir.config.json remove findings from output, scoring, and exit
   // codes. Expired entries suppress nothing (stale config hides nothing).
   // An entry with `files` globs only suppresses findings under those paths.
-  let suppressionCount: number;
   const { config, warnings } = loadConfig(workspace.root, {
     knownRuleIds: KNOWN_RULE_IDS,
   });
@@ -599,7 +596,7 @@ export async function runScan(
   applySeverityOverrides(findings, config);
   const suppressions = loadSuppressions(workspace.root);
   const active = suppressions.entries.filter((e) => e.status === "active");
-  suppressionCount = active.length;
+  const suppressionCount = active.length;
   if (active.length > 0) {
     const ruleOnly = new Set(
       active.filter((e) => !e.files?.length).map((e) => e.ruleId),
@@ -655,7 +652,7 @@ export async function runScan(
   const runtimeReportPath = discoverRuntimeReport(scanRoot.root);
   if (runtimeReportPath) {
     try {
-      const fr = await runForensics(runtimeReportPath, {
+      const fr = runForensics(runtimeReportPath, {
         writeFlakyMd: false,
       });
       stampRuntimeCorroboration(findings, fr.report);
@@ -771,6 +768,9 @@ export function pathMatchesGlob(path: string, glob: string): boolean {
       .replaceAll("*", "[^/]*");
     if (!last) re += "/";
   }
+  // glob segments are escape-quoted line-by-line above — no unescaped
+  // regex metacharacters reach the RegExp.
+  // eslint-disable-next-line security/detect-non-literal-regexp
   return new RegExp(`${re}$`).test(p);
 }
 
@@ -1602,7 +1602,10 @@ export function runInitCommand(
     const workspace = pkg
       ? {
           root: rootDir,
-          name: String(pkg["name"] ?? "repo"),
+          // FW-BUG-02: a malformed package.json may carry a non-string
+          // `name` (number/object); only a real string is used as the
+          // badge label — everything else falls back to "repo".
+          name: typeof pkg["name"] === "string" ? pkg["name"] : "repo",
           packageJson: pkg,
           workspaceGlobs: [],
         }

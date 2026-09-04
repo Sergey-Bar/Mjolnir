@@ -39,12 +39,13 @@ const CONSUMERS: Array<{
     re: /codecov|coveralls/i,
     stepRe: /upload-artifact/i,
     producer:
+      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
       /\b(?:npx\s+)?(?:vitest|jest|nyc)\b[\s\S]*--coverage|--coverage\b/i,
     label: "coverage artifact",
   },
   {
     re: /codecov|coveralls/i,
-    producer: /--coverage\b|(?:vitest|jest|nyc)\b[\s\S]*coverage/i,
+    producer: /--coverage\b|(?:vitest|jest|nyc)\b[\s\S]+coverage/i,
     label: "coverage upload",
   },
 ];
@@ -101,7 +102,8 @@ export const reportNeverGenerated = defineRule({
               s.uses &&
               consumer.stepRe.test(s.uses) &&
               s.with &&
-              /coverage|lcov/i.test(String(s.with["path"] ?? ""))
+              typeof s.with["path"] === "string" &&
+              /coverage|lcov/i.test(s.with["path"])
             )
               return true;
             return false;

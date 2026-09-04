@@ -40,7 +40,11 @@ export const pyFocusedTest = defineRule({
       // pytest.main([... "-k", ...]) — hardcoded subset selection.
       /pytest\.main\s*\(\s*\[[^\]]*['"]-k['"]/g,
       // Hardcoded node selection: pytest.main(["tests/test_x.py::test_y"]).
-      /pytest\.main\s*\(\s*\[[^\]]*['"][^'"]+::[^'"]+['"]/g,
+      // FW-RX-04: colon-exclusive segments — `seg(::seg)+` — so the two
+      // quantifiers can never exchange colon runs (class-level node ids
+      // like file.py::Class::test still match).
+      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
+      /pytest\.main\s*\(\s*\[[^\]]*['"][^'":]+(?:::[^'":]+)+['"]/g,
       // @pytest.mark.only — not built into pytest but common via plugins.
       /@pytest\.mark\.only\b/g,
     ];

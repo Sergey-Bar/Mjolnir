@@ -52,6 +52,7 @@ export const unawaitedPromiseAssertion = defineRule({
 
       // An assertion has to be a real `expect(...)` / `assert...` call in
       // THIS callback — `res.text()` and `.map(...)` no longer count.
+      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
       if (!/\bexpect\s*\(|\bassert(?:\.\w+)?\s*\(/.test(callbackText)) continue;
 
       // Walk backwards over chained lines (`.method(...)` continuations)

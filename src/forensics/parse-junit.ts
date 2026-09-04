@@ -34,8 +34,10 @@ function attr(tag: string, name: string): string | undefined {
   // QA-2026-08-30: the name is escaped for regex metacharacters as
   // future-proofing — callers currently pass internal literals only.
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  // eslint-disable-next-line security/detect-non-literal-regexp -- name is regex-escape-quoted one line above — no unescaped metacharacters reach the RegExp
   const m = new RegExp(`(?:^|\\s)${escaped}\\s*=\\s*"([^"]*)"`, "i").exec(tag);
   if (m?.[1] !== undefined) return decodeEntities(m[1]);
+  // eslint-disable-next-line security/detect-non-literal-regexp -- name is regex-escape-quoted one line above — no unescaped metacharacters reach the RegExp
   const m2 = new RegExp(`(?:^|\\s)${escaped}\\s*=\\s*'([^']*)'`, "i").exec(tag);
   return m2?.[1] !== undefined ? decodeEntities(m2[1]) : undefined;
 }
@@ -80,7 +82,7 @@ export function parseJunitXml(xml: string): TestRecord[] {
         ? Number(timeRaw)
         : 0;
 
-    const failed = /<(failure|error)\b/i.test(inner);
+    const failed = /<(?:failure|error)\b/i.test(inner);
     const skipped = /<skipped\b/i.test(inner);
 
     const status = skipped ? "skipped" : failed ? "failed" : "passed";

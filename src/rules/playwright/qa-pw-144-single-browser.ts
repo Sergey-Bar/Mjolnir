@@ -37,7 +37,7 @@ export const pwSingleBrowserMatrix = defineRule({
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     // pop() of a split() result is always defined.
     const base = ctx.path.split("/").pop() as string;
-    if (!/^playwright\.config\.(ts|js|mjs|cts)$/.test(base)) return findings;
+    if (!/^playwright\.config\.(?:ts|js|mjs|cts)$/.test(base)) return findings;
 
     const projectsMatch = /projects\s*:\s*\[/.exec(text);
     if (!projectsMatch) return findings;
@@ -49,10 +49,10 @@ export const pwSingleBrowserMatrix = defineRule({
 
     const engines = new Set<string>();
     for (const n of names) {
-      if (/(chrom|chrome|edge|msedge)/.test(n)) engines.add("chromium");
+      if (/chrom|edge|msedge/.test(n)) engines.add("chromium");
       else if (/webkit|safari/.test(n)) engines.add("webkit");
       else if (/firefox/.test(n)) engines.add("firefox");
-      else if (/(mobile|iphone|ipad|android)/.test(n))
+      else if (/mobile|iphone|ipad|android/.test(n))
         engines.add("mobile-device");
     }
     // Spread spread-spread: also count devices via use: { browserName } /

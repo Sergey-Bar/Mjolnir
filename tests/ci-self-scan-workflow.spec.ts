@@ -87,7 +87,8 @@ describe("ci.yml self-scan job", () => {
         "re-running the job locally (Task 11: 'publish the self-scan " +
         "result as an artifact')",
     ).toBeDefined();
-    const paths = String(uploadStep?.with?.path ?? "");
+    const rawPath = uploadStep?.with?.path;
+    const paths = typeof rawPath === "string" ? rawPath : "";
     expect(paths).toContain("self-scan.json");
   });
 

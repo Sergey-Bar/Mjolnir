@@ -159,13 +159,11 @@ describe("E2E journey 1: first run from the packed tarball", () => {
     expect(result.testFileCount).toBeGreaterThan(0);
     expect(result.testDeclarationCount).toBeGreaterThan(0);
     expect(result.rawDeductions).toBeGreaterThan(0);
-    expect(result.analysisStatus).toEqual({
-      discovery: "complete",
-      rules: "complete",
-      skippedFiles: 0,
-      durationMs: expect.any(Number),
-      rulesCrashed: 0,
-    });
+    expect(result.analysisStatus.discovery).toBe("complete");
+    expect(result.analysisStatus.rules).toBe("complete");
+    expect(result.analysisStatus.skippedFiles).toBe(0);
+    expect(typeof result.analysisStatus.durationMs).toBe("number");
+    expect(result.analysisStatus.rulesCrashed).toBe(0);
     // Every reported rule is a registered catalog rule — no phantom IDs
     // from the packed build. (The per-rule EXPECTATIONS live in the
     // golden-repo lock; the demo repo here only proves the verdict band.)
@@ -196,8 +194,8 @@ describe("E2E journey 1: first run from the packed tarball", () => {
       "--json",
       "--verbose",
     ]);
-    expect(JSON.parse(quiet.stdout).score).toBe(
-      JSON.parse(verbose.stdout).score,
+    expect((JSON.parse(quiet.stdout) as { score: number }).score).toBe(
+      (JSON.parse(verbose.stdout) as { score: number }).score,
     );
   });
 

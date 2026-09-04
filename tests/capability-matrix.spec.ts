@@ -28,6 +28,7 @@ import {
 } from "../scripts/generate-capability-matrix.js";
 import { MEASURED_FP } from "../src/rules/measured-fp.generated.js";
 import { RULES } from "../src/rules/index.js";
+import { ruleStatus } from "../src/rules/measurement.js";
 
 const ROOT = join(import.meta.dirname, "..");
 const MD_PATH = join(ROOT, "docs", "RULE-CAPABILITY-MATRIX.md");
@@ -123,8 +124,18 @@ describe("capability matrix generation", () => {
   });
 
   it("every measured row's status band follows the tier FP ceilings", () => {
+    // The runtime ruleStatus (§11.2) is the single source: a rule's
+    // DECLARED tier wins — a born-quarantine rule with a good rate stays
+    // MEASURED-QUARANTINE (promotion is a human decision, never derived
+    // from the rate). The rate band only applies to rules without an
+    // explicit tier.
     for (const row of data.rows) {
       if (typeof row.fpRate !== "number") continue;
+      const declared = RULES.find((r) => r.id === row.id);
+      if (declared?.tier !== undefined) {
+        expect(row.status, row.id).toBe(ruleStatus(declared));
+        continue;
+      }
       const expected =
         row.fpRate <= 0.1
           ? "MEASURED-CORE"
@@ -251,10 +262,9 @@ describe("capability matrix generation", () => {
   it("the Wilson CI used for the §20.2 comparison contract stays exported and stable", () => {
     // §20.2 stores ciLow/ciHigh per measurement. Lock the numeric
     // behavior of one known case so a silent change can't slip in.
-    expect(wilsonInterval(0, 20)).toEqual({
-      ciLow: 0,
-      ciHigh: expect.any(Number),
-    });
-    expect(wilsonInterval(0, 20).ciHigh).toBeCloseTo(0.1611, 3);
+    const wilson = wilsonInterval(0, 20);
+    expect(wilson.ciLow).toBe(0);
+    expect(typeof wilson.ciHigh).toBe("number");
+    expect(wilson.ciHigh).toBeCloseTo(0.1611, 3);
   });
 });

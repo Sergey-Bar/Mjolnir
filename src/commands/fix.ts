@@ -140,6 +140,7 @@ function replaceInCode(
       refused: "code masking unavailable for this file — edit refused",
     };
   }
+  // eslint-disable-next-line security/detect-non-literal-regexp -- clone of a compile-time literal's .source for flag control — not scan input
   const global = new RegExp(re.source, re.flags);
   let out = "";
   let last = 0;
@@ -266,6 +267,7 @@ function removePagePause(
       refused: "code masking unavailable for this file — edit refused",
     };
   }
+  // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
   const PAUSE_ONLY = /^\s*(?:await\s+)?page\.pause\s*\(\s*\)\s*(?:;\s*)?$/;
   const PAUSE_CALL = /\bpage\.pause\s*\(\s*\)/;
   const lines = text.split("\n");
@@ -538,9 +540,9 @@ function fixVerified(
   const masked = maskFor(fixedText, langForFile(edit.file));
   switch (edit.description) {
     case "Remove `.only` focus modifier":
-      return !/\b(test|it|describe|bench)\.only\s*\(/.test(masked);
+      return !/\b(?:test|it|describe|bench)\.only\s*\(/.test(masked);
     case "Rename fit/fdescribe to it/describe":
-      return !/(^|[^\w$.])(fit|fdescribe)\s*\(/m.test(masked);
+      return !/(?:^|[^\w$.])(?:fit|fdescribe)\s*\(/m.test(masked);
     default:
       break;
   }

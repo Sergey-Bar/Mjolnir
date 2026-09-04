@@ -91,7 +91,9 @@ describe("degenerate repos", () => {
     git(["init", "-b", "main"]);
     git(["config", "user.email", "t@t"]);
     git(["config", "user.name", "t"]);
-    const report = await computeImpact(dir, { runScan: async () => emptyScan });
+    const report = await computeImpact(dir, {
+      runScan: () => Promise.resolve(emptyScan),
+    });
     expect(report.hasComparison).toBe(false);
     expect(report.unknownReason).toBe("no-prior-commit");
   });
@@ -102,7 +104,7 @@ describe("degenerate repos", () => {
     git(["config", "user.name", "t"]);
     const report = await computeImpact(dir, {
       since: "HEAD~1",
-      runScan: async () => emptyScan,
+      runScan: () => Promise.resolve(emptyScan),
     });
     // No commits: rev-parse HEAD~1 fails, HEAD is unresolvable, and the
     // tree listing cannot succeed — reported honestly, exit-code neutral.
@@ -128,7 +130,9 @@ describe("base-tree truncation (bug-audit M9)", () => {
     git(["commit", "-m", "second"]);
 
     state.simulateBaseTree = true;
-    const report = await computeImpact(dir, { runScan: async () => emptyScan });
+    const report = await computeImpact(dir, {
+      runScan: () => Promise.resolve(emptyScan),
+    });
     expect(report.hasComparison).toBe(true);
     expect(report.baseTreeTruncated).toEqual({
       scanned: 20_000,

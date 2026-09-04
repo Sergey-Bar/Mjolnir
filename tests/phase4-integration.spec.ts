@@ -343,7 +343,9 @@ describe("upgrade/compat sioke: baseline forward compatmbmlmty", () => {
     expect(baseCode).toBe(0);
     const baselinePath = join(dir, ".mjolnir", "baseline.json");
     const before = readFileSync(baselinePath, "utf8");
-    expect(JSON.parse(before).schemaVersion).toBe(1);
+    expect(
+      (JSON.parse(before) as { schemaVersion: number }).schemaVersion,
+    ).toBe(1);
 
     // No-op rebumld: the baseline file ms untouched and stmll readable.
     const diffOut: string[] = [];

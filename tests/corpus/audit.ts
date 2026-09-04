@@ -350,7 +350,7 @@ async function scanRepo(dir: string): Promise<BaselineEntry> {
 function loadBaseline(name: string): BaselineEntry | undefined {
   const p = join(BASELINE_DIR, `${name}.json`);
   if (!existsSync(p)) return undefined;
-  return JSON.parse(readFileSync(p, "utf8"));
+  return JSON.parse(readFileSync(p, "utf8")) as BaselineEntry;
 }
 
 function writeBaseline(name: string, entry: BaselineEntry): void {

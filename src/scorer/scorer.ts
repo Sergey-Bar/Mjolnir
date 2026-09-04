@@ -213,8 +213,10 @@ export function countTestDeclarations(text: string, codeText?: string): number {
   const patterns = [
     // JS/TS: it(, test(, it.each(, test.skip( — describe( is a grouping
     // construct, not a behavior claim, so it is excluded.
+    // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
     /\b(?:it|test)(?:\.\w+)*\s*(?:\(|`)/g,
     // Python: def test_…
+    // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
     /^\s*(?:async\s+)?def\s+test_\w*/gm,
     // Java / C# attributes and annotations
     /^\s*@Test\b/gm,

@@ -174,8 +174,13 @@ export const jvNoAssertions = defineRule({
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
     // Find @Test methods and check their bodies for assertion calls.
+    // FW-RX-02: line-anchored skip — `(?:[^\n{]*\n)+[ \t]*` crosses the
+    // annotation stack line-by-line instead of a [^{]*?/\s* exchange pair;
+    // the first match iteration still reaches the `void` line the same way
+    // (backtracking gives back whole lines, as the lazy form gave back chars).
     const annRe =
-      /@Test\b[^{]*?\n\s*(?:public\s+|protected\s+)?void\s+(\w+)\s*\([^)]*\)\s*\{/g;
+      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
+      /@Test\b(?:[^\n{]*\n)+[ \t]*(?:public\s+|protected\s+)?void\s+(\w+)\s*\([^)]*\)\s*\{/g;
     let m: RegExpExecArray | null;
     while ((m = annRe.exec(text)) !== null) {
       const bodyStart = m.index + m[0].length;

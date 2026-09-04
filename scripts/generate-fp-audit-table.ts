@@ -21,6 +21,7 @@ import { isMainModule } from "./lib/is-main-module.js";
 import { compareFpMeasurements, wilsonInterval } from "./lib/wilson.js";
 
 import { RULES } from "../src/rules/index.js";
+import { ruleStatus } from "../src/rules/measurement.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..");
@@ -770,14 +771,27 @@ export function renderMeasuredFpAudit(
             return `[${w.ciLow}, ${w.ciHigh}]`;
           })()
         : "—";
+    // §11.2 single source: the runtime ruleStatus (declared tier first —
+    // a born-quarantine rule DISPLAYS measured-quarantine even with a
+    // low rate; promotion out of quarantine is a human decision). The
+    // rate band only demotes, never auto-promotes.
+    const declared = RULES.find((r) => r.id === s.ruleId);
     const status =
-      s.classified >= 10
-        ? s.fpRate !== null && s.fpRate <= 0.1
-          ? "✅ core"
-          : s.fpRate !== null && s.fpRate <= 0.3
-            ? "⚠️ extended"
-            : "🔴 quarantine"
-        : "❓ unmeasured";
+      s.classified >= 10 && declared
+        ? {
+            "MEASURED-CORE": "✅ core",
+            "MEASURED-EXTENDED": "⚠️ extended",
+            "MEASURED-QUARANTINE": "🔴 quarantine",
+            PROVISIONAL: "❓ provisional",
+            UNMEASURED: "❓ unmeasured",
+          }[ruleStatus(declared)]
+        : s.classified >= 10
+          ? s.fpRate !== null && s.fpRate <= 0.1
+            ? "✅ core"
+            : s.fpRate !== null && s.fpRate <= 0.3
+              ? "⚠️ extended"
+              : "🔴 quarantine"
+          : "❓ unmeasured";
     lines.push(
       `| ${s.ruleId} | ${rate} | ${ci} | ${s.classified} | ${s.tp} | ${s.fp} | ${s.unsure} | ${rev} | ${status} |`,
     );

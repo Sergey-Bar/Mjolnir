@@ -36,7 +36,8 @@ export const pwTextContentCoupling = defineRule({
     const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
-    const re = /expect\(([^()]*(?:\([^()]*\)[^()]*)*)\)\.toHaveText\(/g;
+    // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
+    const re = /expect\([^()]*(?:\([^()]*\)[^()]*)*\)\.toHaveText\(/g;
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {
       findings.push({

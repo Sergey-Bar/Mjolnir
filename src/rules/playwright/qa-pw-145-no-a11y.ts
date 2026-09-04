@@ -37,7 +37,7 @@ export const pwNoA11yAssertions = defineRule({
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
-    if (!/\.(spec|test)\.[tj]sx?$/.test(ctx.path)) return findings;
+    if (!/\.(?:spec|test)\.[tj]sx?$/.test(ctx.path)) return findings;
 
     // Only meaningful for suites doing real UI interaction.
     const doesUiInteraction = /page\.goto|page\.click|\.fill\(/i.test(text);

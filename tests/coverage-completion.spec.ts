@@ -616,7 +616,7 @@ describe("qa-model — TS parse-failure path + extractor guards", () => {
     expect(nodeContainedIn(node as never, openSpan as never)).toBe(false);
   });
 
-  it("testVerifies: truncated body verifies without inspection; python never throwing-wait", async () => {
+  it("testVerifies: truncated body verifies without inspection; python never throwing-wait", () => {
     const model = extractQaModel({
       path: "t.spec.ts",
       text: "test('a', () => { expect(1).toBe(1); });\n",

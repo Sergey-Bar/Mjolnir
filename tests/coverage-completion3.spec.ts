@@ -361,7 +361,7 @@ describe("code-text — python string prefix masker", () => {
 // ─── qa-model + jv-cs-ast: measured uncovered arms ──────────────────
 
 describe("qa-model round 3 — measured arms", () => {
-  it("TS model: .tsx file path classifies typescript (language arm)", async () => {
+  it("TS model: .tsx file path classifies typescript (language arm)", () => {
     const model = extractQaModel({
       path: "comp.tsx",
       text: 'import { test } from "@playwright/test";\n',

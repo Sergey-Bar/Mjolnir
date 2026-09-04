@@ -33,6 +33,7 @@ export const pwDeepFrameLocator = defineRule({
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
     // Count consecutive .frameLocator( occurrences in one expression.
+    // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
     const re = /(?:\.frameLocator\s*\([^)]*\)\s*){3,}/g;
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {

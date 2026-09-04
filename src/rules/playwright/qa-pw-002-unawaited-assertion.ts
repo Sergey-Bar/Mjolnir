@@ -162,6 +162,7 @@ function runRegexFallback(
   // because a variable is named `page`.
   const matchers = [...ASYNC_PW_MATCHERS].join("|");
   // Bug-audit M0 #7: `return expect(...)` is runner-awaited — excluded.
+  // eslint-disable-next-line security/detect-non-literal-regexp -- matchers joined from the compile-time ASYNC_PW_MATCHERS constant
   const re = new RegExp(
     `(?<!await\\s{0,10})(?<!return\\s{0,10})expect\\s*\\(\\s*(?:page|locator|this\\.page)[^;]{0,300}?\\)\\s*\\.\\s*(?:${matchers})\\b`,
     "g",

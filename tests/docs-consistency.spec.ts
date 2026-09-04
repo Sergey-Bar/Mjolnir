@@ -13,14 +13,20 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { RULES } from "../src/rules/index.js";
+import { MEASURED_FP } from "../src/rules/measured-fp.generated.js";
 
 const ROOT = join(import.meta.dirname, "..");
 const README = readFileSync(join(ROOT, "README.md"), "utf8");
-const STATE = readFileSync(join(ROOT, ".planning", "STATE.md"), "utf8");
+// .planning/ is machine-local agent-session state (untracked, see
+// .gitignore) — present on dev machines, absent on CI checkouts. The
+// STATE.md-drift guards below only run when the file exists locally.
+const STATE = existsSync(join(ROOT, ".planning", "STATE.md"))
+  ? readFileSync(join(ROOT, ".planning", "STATE.md"), "utf8")
+  : null;
 
 /** Extracts `| QA-XXX-000 | ... | severity |` rows from a markdown table row. */
 function extractRuleTableRows(
@@ -90,13 +96,16 @@ describe("no doc claims a gap that source contradicts", () => {
   // so a future revert of either fix doesn't silently un-fix the docs
   // claim along with it, and so a *new* stale claim of this shape gets
   // caught by extending this describe block rather than by accident.
-  it("STATE.md does not claim the Windows tar --force-local bug is still open", () => {
-    expect(STATE).not.toMatch(
-      /Windows.{0,40}(tar --force-local|force-local).{0,60}(still open|unresolved|known gap)/i,
-    );
-  });
+  it.skipIf(STATE === null)(
+    "STATE.md does not claim the Windows tar --force-local bug is still open",
+    () => {
+      expect(STATE).not.toMatch(
+        /Windows.{0,40}(tar --force-local|force-local).{0,60}(still open|unresolved|known gap)/i,
+      );
+    },
+  );
 
-  it("ci.yml actually runs the OS matrix STATE.md credits it with", () => {
+  it("ci.yml actually runs the OS matrix the docs credit it with", () => {
     const ci = readFileSync(
       join(ROOT, ".github", "workflows", "ci.yml"),
       "utf8",
@@ -104,7 +113,7 @@ describe("no doc claims a gap that source contradicts", () => {
     for (const os of ["ubuntu-latest", "windows-latest", "macos-latest"]) {
       expect(
         ci,
-        `STATE.md and Master-Stabilization-Plan.md credit ci.yml with ` +
+        `the docs credit ci.yml with ` +
           `running ${os}, but it is not in the workflow's matrix.`,
       ).toContain(os);
     }
@@ -126,7 +135,7 @@ describe("no doc claims a gap that source contradicts", () => {
       "utf8",
     );
     const claimsAlreadyWired =
-      /already (covered|wired|running)/i.test(sarifDoc) &&
+      /already (?:covered|wired|running)/i.test(sarifDoc) &&
       /upload-sarif/i.test(sarifDoc);
     const actuallyWired =
       /upload-sarif/i.test(ci) || /upload-sarif/i.test(sarifWorkflow);
@@ -178,9 +187,96 @@ describe("no doc claims a gap that source contradicts", () => {
   });
 });
 
+describe("honesty-surface numbers match the FP-AUDIT coverage line and the registry", () => {
+  // The measured-coverage claim ("N of M rules carry a false-positive rate
+  // measured against real OSS code") appears in README.md and docs/README.md.
+  // It drifted once (stated 42 of 91 while FP-AUDIT's generated coverage line
+  // said 73 of 99) — a reader comparing the two surfaces had no way to catch
+  // the mismatch. This test pins every honesty-surface claim to both the
+  // generated FP-AUDIT coverage line and the registry itself, so the whole
+  // class of staleness fails CI instead of shipping (revision-plan task 16,
+  // product-strategy-review).
+  const FP_AUDIT = readFileSync(join(ROOT, "docs", "FP-AUDIT.md"), "utf8");
+
+  /** Every "N of M rules carry a false-positive rate" claim, wherever it lives. */
+  function honestyClaims(
+    markdown: string,
+  ): Array<{ measured: number; total: number }> {
+    const claims: Array<{ measured: number; total: number }> = [];
+    for (const m of markdown.matchAll(
+      /(\d+)\s+of\s+(\d+)\s+rules?\s+carry\s+a\s+false-positive\s+rate/g,
+    )) {
+      claims.push({ measured: Number(m[1]), total: Number(m[2]) });
+    }
+    return claims;
+  }
+
+  /** Registry truth: rules with n ≥ 10 classified verdicts — deliberately the
+   * same definition the FP-AUDIT generator uses (generate-fp-audit-table.ts's
+   * coverage count); revision staleness is owned by
+   * tests/measured-fp-generated.spec.ts, not here. */
+
+  it("FP-AUDIT's own coverage line exists and is parseable", () => {
+    // The generated line is the source of truth every claim is checked
+    // against; if the generator's format changes, this test must be
+    // updated in the same commit (deliberate friction — same discipline
+    // as the known-flags list above).
+    expect(FP_AUDIT).toMatch(
+      /## Coverage: \d+\/\d+ rules measured \(\d+%\) at n ≥ 10/,
+    );
+  });
+
+  const auditCoverage = (() => {
+    const m = FP_AUDIT.match(
+      /## Coverage: (\d+)\/(\d+) rules measured \(\d+%\) at n ≥ 10/,
+    );
+    return m ? { measured: Number(m[1]), total: Number(m[2]) } : null;
+  })();
+
+  it.each([
+    ["README.md", README],
+    ["docs/README.md", readFileSync(join(ROOT, "docs", "README.md"), "utf8")],
+  ])(
+    "%s: honesty-surface numbers match FP-AUDIT's generated coverage line",
+    (_name, text) => {
+      const claims = honestyClaims(text);
+      if (claims.length === 0) return; // no claim in this file — nothing to catch
+      const coverage = auditCoverage;
+      expect(
+        coverage,
+        "FP-AUDIT coverage line did not parse — update the regex above in the same commit as the generator change",
+      ).not.toBeNull();
+      if (!coverage) return; // unreachable: the expect above fails the test first
+      for (const c of claims) {
+        expect(
+          `${c.measured}/${c.total}`,
+          `a honesty-surface claim in ${_name} says "${c.measured} of ${c.total}" ` +
+            `but docs/FP-AUDIT.md (generated from the verdict corpus) says ` +
+            `"${coverage.measured}/${coverage.total}" — regenerate or ` +
+            `hand-fix the stale doc`,
+        ).toBe(`${coverage.measured}/${coverage.total}`);
+      }
+    },
+  );
+
+  it("the honesty-surface total equals the registry size (measured count from MEASURED_FP with n ≥ 10)", () => {
+    const coverage = auditCoverage;
+    expect(coverage, "FP-AUDIT coverage line did not parse").not.toBeNull();
+    if (!coverage) return; // unreachable: the expect above fails the test first
+    const measuredCount = RULES.filter((r) => {
+      const m = MEASURED_FP[r.id];
+      return m !== undefined && m.n >= 10;
+    }).length;
+    expect(coverage.total).toBe(RULES.length);
+    expect(coverage.measured).toBe(measuredCount);
+  });
+});
+
 describe("README Node version matches package.json engines", () => {
-  const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8"));
-  const enginesNode = pkg.engines?.node as string | undefined;
+  const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")) as {
+    engines?: { node?: string };
+  };
+  const enginesNode = pkg.engines?.node;
 
   it("package.json declares a node engines field", () => {
     expect(enginesNode).toBeDefined();
@@ -350,5 +446,69 @@ describe("the north-star law is committed, not just cited", () => {
     expect(copilot).toContain("false-proof rate ≈ 0");
     expect(copilot).toContain("equal-size removal");
     expect(copilot).toContain("must-fire AND must-not-fire");
+  });
+});
+
+describe("README alt text matches the verdict the SVG assets actually render", () => {
+  // D1-class drift, second occurrence: the README alt text said
+  // "WORTHINESS 70/100" beside regenerated SVGs reading 75/100 — the same
+  // hand-typed-number defect the landing page once shipped. The SVGs are
+  // generated and drift-locked by hero-asset-reproducibility.spec.ts;
+  // this keeps the prose describing them honest too. The score lives in
+  // separate tspans in the SVG source, so tags are stripped before
+  // parsing (same approach as site/scripts/gen-report.mjs).
+  const stripTags = (s: string) => {
+    let prev: string;
+    do {
+      prev = s;
+      s = s.replace(/<[^>]*>/g, "");
+    } while (s !== prev);
+    return s;
+  };
+
+  const svgDir = join(ROOT, "assets", "readme");
+  const svgScores = readdirSync(svgDir)
+    .filter((f) => f.endsWith(".svg"))
+    .map((f) => {
+      const m = /WORTHINESS\s+(\d+)\s*\/\s*\d+/.exec(
+        stripTags(readFileSync(join(svgDir, f), "utf8")),
+      );
+      return { file: f, score: m ? Number(m[1]) : null };
+    });
+
+  it("at least one generated SVG carries a parseable WORTHINESS line (sanity)", () => {
+    expect(svgScores.some((s) => s.score !== null)).toBe(true);
+  });
+
+  it("all generated SVGs agree on the score they render", () => {
+    const scores = new Set(
+      svgScores.filter((s) => s.score !== null).map((s) => s.score),
+    );
+    expect(scores.size).toBe(1);
+  });
+
+  it("every README alt= that mentions WORTHINESS states the SVG's number", () => {
+    const found = svgScores.find((s) => s.score !== null);
+    const expected = found?.score;
+    const alts = [...README.matchAll(/alt="([^"]*WORTHINESS[^"]*)"/g)].map(
+      (m) => m[1],
+    );
+    expect(alts.length).toBeGreaterThan(0);
+    expect(
+      expected,
+      "no generated SVG carries a parseable WORTHINESS score",
+    ).toBeDefined();
+    for (const alt of alts) {
+      const m = /WORTHINESS\s+(\d+)\s*\/\s*\d+/.exec(alt ?? "");
+      expect(
+        m,
+        `alt text carries no parseable WORTHINESS score: "${alt}"`,
+      ).not.toBeNull();
+      const rendered = m?.[1];
+      expect(
+        Number(rendered),
+        `README alt says WORTHINESS ${rendered}/100 but the generated assets render ${expected}/100`,
+      ).toBe(expected);
+    }
   });
 });

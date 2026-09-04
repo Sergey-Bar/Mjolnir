@@ -88,8 +88,11 @@ export const javaAdapter: LanguageAdapter = {
       if (!existsSync(path)) continue;
       try {
         const text = readText(path);
+        // FW-RX-01: `\s*(?:\(|\s)` became `([ \t]*\(|[ \t])` — the keyword
+        // and its argument stay on one line in every real Gradle file, and
+        // the single-char space branch removes the \s*/[^\n]*? exchange.
         for (const m of text.matchAll(
-          /(?:implementation|testImplementation|api|testFixturesImplementation|compile|testCompile)\s*(?:\(|\s)[^\n]*?["']([^"']+)["']/g,
+          /(?:implementation|testImplementation|api|testFixturesImplementation|compile|testCompile)(?:[ \t]*\(|[ \t])[^\n]*?["']([^"']+)["']/g,
         )) {
           // The quoted capture is mandatory on a match; a coordinate
           // without a second colon segment splits to a 1-element array.

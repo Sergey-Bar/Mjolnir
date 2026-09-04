@@ -63,6 +63,7 @@ export const cypConfigSecurity = defineRule({
     if (!CYPRESS_CONFIG_RE.test(base)) return [];
     const text = ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
+    // eslint-disable-next-line security/detect-non-literal-regexp -- clone of a compile-time literal's .source for flag control — not scan input
     const re = new RegExp(CHROME_WEB_SECURITY_FALSE_RE.source, "g");
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {

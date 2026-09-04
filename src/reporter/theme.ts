@@ -77,12 +77,26 @@ const on = {
  * legitimate multi-line messages) before any data reaches a renderer.
  */
 export function sanitizeData(s: string): string {
-  return s
-    .replace(/\x1b\[[0-9;:?]*[ -/]*[@-~]/g, "") // CSI … final byte
-    .replace(/\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)?/g, "") // OSC … BEL/ST
-    .replace(/\x1b[@-Z\\-_]/g, "") // two-byte C1 feeders
-    .replace(/\x1b/g, "") // any residual escape
-    .replace(/[\x00-\x08\x0b-\x1f\x7f]/g, ""); // other C0 + DEL
+  return (
+    s
+      // ECMA-48 CSI: ESC [ params(0x30–0x3F) intermediates(0x20–0x2F) final(0x40–0x7E).
+      // The ` -/` and `@-~` ranges are the spec's intermediate/final byte classes.
+      // eslint-disable-next-line regexp/no-obscure-range, no-control-regex
+      .replace(/\x1b\[[0-9;:?]*[ -/]*[@-~]/g, "") // CSI … final byte
+      // ECMA-48 OSC: ESC ] … terminated by BEL(0x07) or ST(ESC \).
+      // eslint-disable-next-line no-control-regex
+      .replace(/\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)?/g, "") // OSC … BEL/ST
+      // Two-byte C1 feeders: ESC + final byte 0x40–0x5F (`@-Z`, `\-_`).
+      // eslint-disable-next-line regexp/no-obscure-range, no-control-regex
+      .replace(/\x1b[@-Z\\-_]/g, "") // two-byte C1 feeders
+      // Any residual ESC (0x1B) that the structural strips above missed.
+      // eslint-disable-next-line no-control-regex
+      .replace(/\x1b/g, "") // any residual escape
+      // Remaining C0 controls (0x00–0x08, 0x0B–0x1F) + DEL (0x7F); tab (0x09)
+      // and LF (0x0A) are deliberately preserved for multi-line messages.
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\x00-\x08\x0b-\x1f\x7f]/g, "")
+  ); // other C0 + DEL
 }
 
 const inertId = (s: string) => sanitizeData(s);

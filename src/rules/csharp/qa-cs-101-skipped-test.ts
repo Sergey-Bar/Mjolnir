@@ -31,6 +31,7 @@ export const csSkippedTest = defineRule({
     if (!ctx.path.endsWith(".cs")) return findings;
 
     const patterns = [
+      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
       { re: /\[Ignore(?:\([^)]*\))?\]/g, label: "[Ignore]" },
       { re: /\[Skip\b[^\]]*\]/g, label: "[Skip]" },
       { re: /\[Fact\s*\(\s*Skip\s*=/g, label: "Fact(Skip=...)" },

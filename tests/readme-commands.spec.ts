@@ -21,7 +21,11 @@ const CLI_SOURCE = readFileSync(join(ROOT, "src", "cli.ts"), "utf8");
  * each `npx mjolnir-qa...`/`mjolnir ...` invocation in the
  * README's command table. */
 function extractReadmeCommands(markdown: string): string[] {
-  const re = /`(?:npx mjolnir-qa(?:@latest)?|mjolnir)\s*([^`]*)`/g;
+  // FW-RX-07: `(?:[ \t]+(args)|(?=`))` — the arg capture starts at a
+  // non-space token so the space-run and the [^`]* scan can never
+  // exchange characters; bare `mjolnir` spans yield an undefined group.
+  const re =
+    /`(?:npx mjolnir-qa(?:@latest)?|mjolnir)(?:[ \t]+([^\s`][^`]*)|(?=`))/g;
   const commands: string[] = [];
   for (const m of markdown.matchAll(re)) {
     const rest = (m[1] ?? "").trim();

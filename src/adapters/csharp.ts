@@ -37,7 +37,7 @@ const CS_TEST_RE = /(?:^|[\\/])\w+(?:Tests?|IT)\.cs$/;
 /** Package name → framework tag (.csproj PackageReference). */
 const CS_PACKAGE_TAGS: Array<{ re: RegExp; tag: string }> = [
   { re: /NUnit/i, tag: "nunit" },
-  { re: /xunit|Xunit/i, tag: "xunit" },
+  { re: /xunit/i, tag: "xunit" },
   { re: /MSTest|Microsoft\.NET\.Test\.Sdk/i, tag: "mstest" },
   { re: /Microsoft\.Playwright/i, tag: "playwright" },
   { re: /Selenium\.WebDriver/i, tag: "selenium" },

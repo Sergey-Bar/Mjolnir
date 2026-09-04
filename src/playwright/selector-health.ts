@@ -27,7 +27,9 @@ export interface SpecSelectorHealth {
 
 export function classifyLocator(line: string): LocatorClass | null {
   if (!/locator|getBy|\$x/.test(line)) return null;
-  if (/getBy(Role|Text|Label|Placeholder|AltText|Title|TestId)\s*\(/.test(line))
+  if (
+    /getBy(?:Role|Text|Label|Placeholder|AltText|Title|TestId)\s*\(/.test(line)
+  )
     return "role-based";
   if (/locator\s*\(\s*['"`]\[data-testid/.test(line)) return "testid";
   if (/\$x\s*\(|locator\s*\(\s*['"`]xpath=/.test(line)) return "xpath";
@@ -50,7 +52,7 @@ export function scoreLocatorRisk(line: string): SelectorRisk {
   if (!cls) return { score: 0, reason: "not a locator" };
   let score = LOCATOR_RISK[cls];
   const reasons: string[] = [`${cls} base ${score}`];
-  if (/nth-(child|of-type)\s*\(/.test(line)) {
+  if (/nth-(?:child|of-type)\s*\(/.test(line)) {
     score += 25;
     reasons.push("nth-child positional coupling +25");
   }
