@@ -79,7 +79,7 @@ function sleepBeforeLookup(
 // Java: Thread.sleep → findElement/findElements/click/sendKeys/clear.
 const JAVA_SLEEP_RE = /\bThread\.sleep\s*\([^)]*\)/;
 const JAVA_LOOKUP_RE =
-  /\bdriver\.findElement|\bdriver\.findElements|\.\s*sendKeys\s*\(|\.\s*click\s*\(|\.\s*clear\s*\(|findElement\s*\(/;
+  /\bdriver\.findElement|\.\s*sendKeys\s*\(|\.\s*click\s*\(|\.\s*clear\s*\(|findElement\s*\(/;
 
 export const seJavaSleepLookup = defineRule({
   id: "QA-SE-001",
@@ -111,7 +111,7 @@ export const seJavaSleepLookup = defineRule({
 // C#: Thread.Sleep / Task.Delay → FindElement/FindElements/Click/SendKeys.
 const CS_SLEEP_RE = /\b(?:Thread\.Sleep|Task\.Delay)\s*\([^)]*\)/;
 const CS_LOOKUP_RE =
-  /\bdriver\.FindElement|\bdriver\.FindElements|\.\s*SendKeys\s*\(|\.\s*Click\s*\(|\.\s*Clear\s*\(|FindElement\s*\(/;
+  /\bdriver\.FindElement|\.\s*SendKeys\s*\(|\.\s*Click\s*\(|\.\s*Clear\s*\(|FindElement\s*\(/;
 
 export const seCSharpSleepLookup = defineRule({
   id: "QA-SE-002",
@@ -143,7 +143,7 @@ export const seCSharpSleepLookup = defineRule({
 // Python: time.sleep → find_element/find_elements/send_keys/click.
 const PY_SLEEP_RE = /\btime\.sleep\s*\([^)]*\)/;
 const PY_LOOKUP_RE =
-  /\bdriver\.find_element|\bdriver\.find_elements|\.find_element\s*\(|\.find_elements\s*\(|\.send_keys\s*\(|\.click\s*\(|\.clear\s*\(/;
+  /\bdriver\.find_element|\.find_element\s*\(|\.find_elements\s*\(|\.send_keys\s*\(|\.click\s*\(|\.clear\s*\(/;
 
 export const sePythonSleepLookup = defineRule({
   id: "QA-SE-003",

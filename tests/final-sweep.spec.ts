@@ -55,6 +55,10 @@ vi.mock("yaml", async (importOriginal) => {
   const actual = await importOriginal<typeof import("yaml")>();
   const state: { throwPayload: unknown } = { throwPayload: null };
   const parse = (text: string): unknown => {
+    // Throwing a NON-Error is the point: this arm proves the workflow
+    // parser degrades third-party non-Error throwables to their string
+    // form instead of crashing the scan.
+    // eslint-disable-next-line @typescript-eslint/only-throw-error
     if (state.throwPayload !== null) throw state.throwPayload;
     return actual.parse(text);
   };
@@ -234,12 +238,32 @@ describe("QA-CI-005 guards", () => {
       "jobs:\n  bare: {}\n  e2e:\n    steps:\n      - null\n      - run: npm test\n";
     expect(() => reportNeverGenerated.run(ciCtx(y))).not.toThrow();
   });
+
+  it("FW-BUG-01: a nested with-path mapping is not coerced into a coverage signal", () => {
+    // A nested `with.path` mapping (not a string) must not be coerced via
+    // String() into "[object Object]" and then matched — the guard demands
+    // a real string value.
+    const y =
+      "jobs:\n  e2e:\n    steps:\n      - uses: actions/upload-artifact@v4\n" +
+      "        with:\n          path:\n            coverage: text\n      - run: npm test\n";
+    expect(reportNeverGenerated.run(ciCtx(y))).toEqual([]);
+  });
 });
 
 describe("QA-CI-007 retry wrapper with-config edges", () => {
   it("ignores retry wrappers without a test command in with config", () => {
     const y =
       "jobs:\n  e2e:\n    steps:\n      - uses: nick-fields/retry@v3\n        with:\n          max_tries: 3\n          command: curl -fsSL example.com\n";
+    expect(retryMasking.run(ciCtx(y))).toEqual([]);
+  });
+
+  it("FW-BUG-01: a nested with-command mapping is not coerced into a test signal", () => {
+    // `command` holding a nested mapping must not String()-coerce into a
+    // string that accidentally matches the test-command regex; the rule
+    // only fires on a real string command naming a test runner.
+    const y =
+      "jobs:\n  e2e:\n    steps:\n      - uses: nick-fields/retry@v3\n" +
+      "        with:\n          max_tries: 3\n          command:\n            npm: test\n";
     expect(retryMasking.run(ciCtx(y))).toEqual([]);
   });
 });

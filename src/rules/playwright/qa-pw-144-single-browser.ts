@@ -49,7 +49,7 @@ export const pwSingleBrowserMatrix = defineRule({
 
     const engines = new Set<string>();
     for (const n of names) {
-      if (/(chrom|chrome|edge|msedge)/.test(n)) engines.add("chromium");
+      if (/chrom|edge|msedge/.test(n)) engines.add("chromium");
       else if (/webkit|safari/.test(n)) engines.add("webkit");
       else if (/firefox/.test(n)) engines.add("firefox");
       else if (/(mobile|iphone|ipad|android)/.test(n))

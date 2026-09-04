@@ -44,7 +44,7 @@ const CONSUMERS: Array<{
   },
   {
     re: /codecov|coveralls/i,
-    producer: /--coverage\b|(?:vitest|jest|nyc)\b[\s\S]*coverage/i,
+    producer: /--coverage\b|(?:vitest|jest|nyc)\b[\s\S]+coverage/i,
     label: "coverage upload",
   },
 ];
@@ -101,7 +101,8 @@ export const reportNeverGenerated = defineRule({
               s.uses &&
               consumer.stepRe.test(s.uses) &&
               s.with &&
-              /coverage|lcov/i.test(String(s.with["path"] ?? ""))
+              typeof s.with["path"] === "string" &&
+              /coverage|lcov/i.test(s.with["path"])
             )
               return true;
             return false;
