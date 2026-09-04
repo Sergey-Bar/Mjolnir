@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | warning                                                                                                                                                                                                                                           |
 | Confidence                            | medium                                                                                                                                                                                                                                            |
 | Tier                                  | quarantine                                                                                                                                                                                                                                        |
-| Measured FP rate                      | not yet measured                                                                                                                                                                                                                                  |
+| Measured FP rate                      | 12% (n=17)                                                                                                                                                                                                                                        |
 | Evidence level                        | E1                                                                                                                                                                                                                                                |
 | QA impact                             | Test hygiene debt (HYGIENE)                                                                                                                                                                                                                       |
 | False-positive risk (author estimate) | medium                                                                                                                                                                                                                                            |
@@ -39,7 +39,12 @@ Verified against `tests/fixtures/QA-PW-146/must-not-fire/selectors.spec.ts` — 
 
 ## Corpus-measured false-positive risk
 
-UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked by `npm run corpus:regression` (see `docs/FP-AUDIT.md`). That is not the same as "never fires incorrectly" — it just means no occurrence, correct or not, has been observed there yet.
+Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
+
+| Repo              | Occurrences |
+| ----------------- | ----------- |
+| negative-fixtures | 2           |
+| positive-fixtures | 15          |
 
 ---
 
