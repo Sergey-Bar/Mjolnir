@@ -11,6 +11,7 @@
     "QA-PW-141": 24,
     "QA-PW-143": 60,
     "QA-PW-145": 7,
+    "QA-PW-146": 2,
     "QA-PY-004": 1,
     "QA-PY-005": 1,
     "QA-PY-012": 1,
@@ -18,6 +19,6 @@
     "QA-TEST-010": 3,
     "QA-TQUAL-002": 1
   },
-  "totalFindings": 200,
+  "totalFindings": 202,
   "partial": false
 }
