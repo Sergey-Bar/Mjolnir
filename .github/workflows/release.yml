@@ -173,37 +173,58 @@ jobs:
         if: vars.NPM_PUBLISH == 'true' && steps.registry.outputs.published != 'true'
         env:
           RUN_REGISTRY_INSTALL_TEST: "1"
-        run: npx vitest run tests/registry-install.spec.ts
+        run: npx vitest run tests/integrations/registry-install.spec.ts
+
+      # M4: rc tags (vX.Y.Z-rc.N) publish under the `next` dist-tag and
+      # never `latest`; promotion to `latest` happens only at the final
+      # (non-prerelease) tag. Stable tags publish with no dist-tag
+      # argument — npm defaults that to `latest`.
+      - name: Determine npm dist-tag
+        id: disttag
+        run: |
+          if echo "$VERSION" | grep -Eq -- '-rc\.[0-9]+$'; then
+            echo "tag=next" >> "$GITHUB_OUTPUT"
+            echo "Prerelease $VERSION — will publish under dist-tag next"
+          else
+            echo "tag=latest" >> "$GITHUB_OUTPUT"
+            echo "Stable $VERSION — will publish under dist-tag latest"
+          fi
 
       - name: Publish to npm (OIDC trusted publishing)
         if: vars.NPM_PUBLISH == 'true' && steps.registry.outputs.published != 'true'
-        run: npm publish --provenance --access public --loglevel verbose
+        run: npm publish --provenance --access public --tag "${{ steps.disttag.outputs.tag }}" --loglevel verbose
 
       # The gate that makes the GitHub Release below honest. Registry reads
       # can lag a publish by a few seconds, so this polls rather than
       # asserting once. If the package is not resolvable, the job fails
-      # here and no Release is created.
+      # here and no Release is created. For an rc, the poll checks the
+      # `next` dist-tag — the version must be installable from the channel
+      # it was published to, or the Release lies.
       - name: Verify the published version is live on npm
         if: vars.NPM_PUBLISH == 'true'
         run: |
+          DIST_TAG="${{ steps.disttag.outputs.tag }}"
           for attempt in 1 2 3 4 5 6; do
-            FOUND="$(npm view "mjolnir-qa@${VERSION}" version 2>/dev/null || true)"
+            FOUND="$(npm view "mjolnir-qa@${DIST_TAG}" version 2>/dev/null || true)"
             if [ "$FOUND" = "$VERSION" ]; then
-              echo "mjolnir-qa@${VERSION} is live on the registry."
+              echo "mjolnir-qa@${VERSION} is live on the registry under dist-tag ${DIST_TAG}."
               exit 0
             fi
             echo "Not resolvable yet (attempt ${attempt}/6) — waiting 10s."
             sleep 10
           done
-          echo "::error::mjolnir-qa@${VERSION} is not resolvable on the registry. Refusing to create a GitHub Release for a version nobody can install."
+          echo "::error::mjolnir-qa@${VERSION} is not resolvable on the registry under dist-tag ${DIST_TAG}. Refusing to create a GitHub Release for a version nobody can install."
           exit 1
 
       # Last, and only now: everything above proved the package is real.
+      # rc tags create a pre-release marked "Pre-release" on GitHub so it
+      # can never be mistaken for a stable announcement.
       - name: Create GitHub Release with generated notes
         uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
           tag_name: ${{ env.RELEASE_TAG }}
           generate_release_notes: true
+          prerelease: ${{ steps.disttag.outputs.tag == 'next' }}
           files: release-assets/*.tgz
           body: |
             Install: `npx mjolnir-qa@${{ env.VERSION }} .`
