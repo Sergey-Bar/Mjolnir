@@ -9,7 +9,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { loadPlugins } from "../src/plugins/load.js";
+import { loadPlugins } from "../../src/plugins/load.js";
 
 const ROOT = join(tmpdir(), `qa-doctor-plugin-test-${process.pid}`);
 

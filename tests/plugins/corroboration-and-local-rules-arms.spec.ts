@@ -16,30 +16,30 @@ import {
   parseCSharpAst,
   parseJavaAst,
   _resetForTests,
-} from "../src/engine/tree-sitter-ast.js";
-import { callName } from "../src/engine/jv-cs-ast.js";
+} from "../../src/engine/tree-sitter-ast.js";
+import { callName } from "../../src/engine/jv-cs-ast.js";
 import {
   extractQaModel,
   testsIn,
   testVerifies,
-} from "../src/engine/qa-model.js";
-import { getTreeSitterTree } from "../src/engine/jv-cs-ast.js";
-import { jvNoAssertions } from "../src/rules/java/qa-jv-103-no-assertions.js";
-import { hardSleepFamily } from "../src/rules/families/hard-sleep.js";
-import { pyNoAssertions } from "../src/rules/python/qa-py-003-no-assertions.js";
-import { pyBareTruthinessAssert } from "../src/rules/python/qa-py-004-bare-truthiness.js";
-import { pyRaisesWithoutMatch } from "../src/rules/python/qa-py-007-raises-without-match.js";
+} from "../../src/engine/qa-model.js";
+import { getTreeSitterTree } from "../../src/engine/jv-cs-ast.js";
+import { jvNoAssertions } from "../../src/rules/java/qa-jv-103-no-assertions.js";
+import { hardSleepFamily } from "../../src/rules/families/hard-sleep.js";
+import { pyNoAssertions } from "../../src/rules/python/qa-py-003-no-assertions.js";
+import { pyBareTruthinessAssert } from "../../src/rules/python/qa-py-004-bare-truthiness.js";
+import { pyRaisesWithoutMatch } from "../../src/rules/python/qa-py-007-raises-without-match.js";
 import {
   deriveTrustLevel,
   stampRuntimeCorroboration,
-} from "../src/engine/runtime-corroboration.js";
-import { loadLocalRules } from "../src/plugins/local-rules.js";
-import { renderTerminal } from "../src/reporter/terminal.js";
-import { scoreGauge, severityTag } from "../src/reporter/theme.js";
-import { renderRuleDocsIndexMd } from "../src/commands/rule-docs.js";
-import { isSuppressionActive } from "../src/config/config.js";
-import type { Finding, TrustLevel } from "../src/types.js";
-import type { TestVerdict } from "../src/forensics/types.js";
+} from "../../src/engine/runtime-corroboration.js";
+import { loadLocalRules } from "../../src/plugins/local-rules.js";
+import { renderTerminal } from "../../src/reporter/terminal.js";
+import { scoreGauge, severityTag } from "../../src/reporter/theme.js";
+import { renderRuleDocsIndexMd } from "../../src/commands/rule-docs.js";
+import { isSuppressionActive } from "../../src/config/config.js";
+import type { Finding, TrustLevel } from "../../src/types.js";
+import type { TestVerdict } from "../../src/forensics/types.js";
 
 const trees: Tree[] = [];
 const dirs: string[] = [];
@@ -349,7 +349,7 @@ describe("isSuppressionActive — now/anchor arms", () => {
 
 describe("code-text — python string prefix masker", () => {
   it("f-string prefixes are masked along with the literal", async () => {
-    const { computeCodeText } = await import("../src/engine/code-text.js");
+    const { computeCodeText } = await import("../../src/engine/code-text.js");
     const code = computeCodeText(
       { path: "test_a.py", text: 'name = f"hello {user}"\n' },
       "python",

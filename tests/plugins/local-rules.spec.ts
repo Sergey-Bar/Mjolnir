@@ -20,15 +20,15 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { loadLocalRules } from "../src/plugins/local-rules.js";
-import { buildUniversalRules } from "../src/cli.js";
-import { runScan } from "../src/cli.js";
-import { enforceTierPolicy } from "../src/engine/tier-policy.js";
+import { loadLocalRules } from "../../src/plugins/local-rules.js";
+import { buildUniversalRules } from "../../src/cli.js";
+import { runScan } from "../../src/cli.js";
+import { enforceTierPolicy } from "../../src/engine/tier-policy.js";
 import {
   buildCatalog,
   renderCatalogMd,
-} from "../src/commands/rules-catalog.js";
-import type { Finding } from "../src/types.js";
+} from "../../src/commands/rules-catalog.js";
+import type { Finding } from "../../src/types.js";
 
 const dirs: string[] = [];
 afterEach(() => {

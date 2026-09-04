@@ -16,33 +16,33 @@ import {
   parseCSharpAst,
   parseJavaAst,
   _resetForTests,
-} from "../src/engine/tree-sitter-ast.js";
+} from "../../src/engine/tree-sitter-ast.js";
 import {
   callName,
   getTreeSitterTree,
   invocationsWithin,
-} from "../src/engine/jv-cs-ast.js";
-import { extractQaModel, testsIn } from "../src/engine/qa-model.js";
-import { computeCodeText } from "../src/engine/code-text.js";
+} from "../../src/engine/jv-cs-ast.js";
+import { extractQaModel, testsIn } from "../../src/engine/qa-model.js";
+import { computeCodeText } from "../../src/engine/code-text.js";
 import {
   stampRuntimeCorroboration,
   splitByRuntimeEvidence,
-} from "../src/engine/runtime-corroboration.js";
-import * as rt from "../src/engine/runtime-corroboration.js";
-import { loadLocalRules } from "../src/plugins/local-rules.js";
-import { scoreGauge, severityTag } from "../src/reporter/theme.js";
-import { csNoAssertions } from "../src/rules/csharp/qa-cs-103-no-assertions.js";
-import { jvNoAssertions } from "../src/rules/java/qa-jv-103-no-assertions.js";
-import { pyNoAssertions } from "../src/rules/python/qa-py-003-no-assertions.js";
-import { pyBareTruthinessAssert } from "../src/rules/python/qa-py-004-bare-truthiness.js";
-import { pyRaisesWithoutMatch } from "../src/rules/python/qa-py-007-raises-without-match.js";
-import { hardSleepFamily } from "../src/rules/families/hard-sleep.js";
-import { definePatternFamily } from "../src/rules/shared/family.js";
-import { cypCyWait } from "../src/rules/cypress/qa-cyp-001-cy-wait.js";
-import { cypFocusedTest } from "../src/rules/cypress/qa-cyp-002-focused-test.js";
-import { cypConfigSecurity } from "../src/rules/cypress/qa-cyp-003-config-security.js";
-import type { Finding } from "../src/types.js";
-import type { TestVerdict } from "../src/forensics/types.js";
+} from "../../src/engine/runtime-corroboration.js";
+import * as rt from "../../src/engine/runtime-corroboration.js";
+import { loadLocalRules } from "../../src/plugins/local-rules.js";
+import { scoreGauge, severityTag } from "../../src/reporter/theme.js";
+import { csNoAssertions } from "../../src/rules/csharp/qa-cs-103-no-assertions.js";
+import { jvNoAssertions } from "../../src/rules/java/qa-jv-103-no-assertions.js";
+import { pyNoAssertions } from "../../src/rules/python/qa-py-003-no-assertions.js";
+import { pyBareTruthinessAssert } from "../../src/rules/python/qa-py-004-bare-truthiness.js";
+import { pyRaisesWithoutMatch } from "../../src/rules/python/qa-py-007-raises-without-match.js";
+import { hardSleepFamily } from "../../src/rules/families/hard-sleep.js";
+import { definePatternFamily } from "../../src/rules/shared/family.js";
+import { cypCyWait } from "../../src/rules/cypress/qa-cyp-001-cy-wait.js";
+import { cypFocusedTest } from "../../src/rules/cypress/qa-cyp-002-focused-test.js";
+import { cypConfigSecurity } from "../../src/rules/cypress/qa-cyp-003-config-security.js";
+import type { Finding } from "../../src/types.js";
+import type { TestVerdict } from "../../src/forensics/types.js";
 
 const trees: Tree[] = [];
 const dirs: string[] = [];
@@ -93,7 +93,7 @@ const verdict = (over: Partial<TestVerdict>): TestVerdict => ({
 
 describe("buildUniversalRules — local rule tier lands in tierByRuleId", () => {
   it("a local .mjs rule declaring tier 'extended' survives the quarantine filter", async () => {
-    const { buildUniversalRules } = await import("../src/cli.js");
+    const { buildUniversalRules } = await import("../../src/cli.js");
     const d = tmp();
     mkdirSync(join(d, "mjolnir-rules"), { recursive: true });
     writeFileSync(
@@ -108,7 +108,7 @@ describe("buildUniversalRules — local rule tier lands in tierByRuleId", () => 
   });
 
   it("a local rule declaring tier 'quarantine' is excluded unless --strict (L177 + the map consumer)", async () => {
-    const { buildUniversalRules } = await import("../src/cli.js");
+    const { buildUniversalRules } = await import("../../src/cli.js");
     const d = tmp();
     mkdirSync(join(d, "mjolnir-rules"), { recursive: true });
     writeFileSync(
@@ -124,7 +124,7 @@ describe("buildUniversalRules — local rule tier lands in tierByRuleId", () => 
   });
 
   it("a local module rule WITHOUT a tier takes the L177 false arm (tier stays unset)", async () => {
-    const { buildUniversalRules } = await import("../src/cli.js");
+    const { buildUniversalRules } = await import("../../src/cli.js");
     const d = tmp();
     mkdirSync(join(d, "mjolnir-rules"), { recursive: true });
     writeFileSync(
@@ -143,7 +143,7 @@ describe("buildUniversalRules — local rule tier lands in tierByRuleId", () => 
 
 describe("adapter guard arms via public surface", () => {
   it("java: a dependency block with NO artifactId (L72 arm) tags nothing", async () => {
-    const { javaAdapter } = await import("../src/adapters/java.js");
+    const { javaAdapter } = await import("../../src/adapters/java.js");
     const d = tmp();
     // The dependency block has no <artifactId> child at all → exec null.
     writeFileSync(
@@ -154,7 +154,7 @@ describe("adapter guard arms via public surface", () => {
   });
 
   it("java: a gradle dependency line whose coordinate has no colon (L94/97 arms)", async () => {
-    const { javaAdapter } = await import("../src/adapters/java.js");
+    const { javaAdapter } = await import("../../src/adapters/java.js");
     const d = tmp();
     // m[1] is a single quoted token with no group:artifact:version —
     // segments[1] is undefined → the L97 arm.
@@ -166,7 +166,7 @@ describe("adapter guard arms via public surface", () => {
   });
 
   it("csharp: runRules with a real parse drives the using-tag loop", async () => {
-    const { csharpAdapter } = await import("../src/adapters/csharp.js");
+    const { csharpAdapter } = await import("../../src/adapters/csharp.js");
     const text = "using NUnit.Framework;\nclass T { void M() {} }\n";
     const tree = await parseCSharpAst(text);
     trees.push(tree!);
@@ -198,7 +198,7 @@ describe("adapter guard arms via public surface", () => {
 describe("typescript adapter measured arms", () => {
   it("frameworkTagsFromImports: an import with no quoted specifier (L70)", async () => {
     const { frameworkTagsFromImports } =
-      await import("../src/adapters/typescript.js");
+      await import("../../src/adapters/typescript.js");
     // `import x from;` — the regex's `["']([^"']+)["']` requires a
     // quote... but the [^"']* prefix can span the newline, so this form
     // yields no match at all. The L70 arm (m[1] undefined) is only
@@ -208,7 +208,8 @@ describe("typescript adapter measured arms", () => {
   });
 
   it("runRules: a rule whose frameworks miss the file's tags is skipped (L163)", async () => {
-    const { typescriptAdapter } = await import("../src/adapters/typescript.js");
+    const { typescriptAdapter } =
+      await import("../../src/adapters/typescript.js");
     let ran = 0;
     typescriptAdapter.runRules(
       [
@@ -236,7 +237,7 @@ describe("typescript adapter measured arms", () => {
 
 describe("python adapter detectFrameworks catch arm", () => {
   it("a pyproject.toml DIRECTORY (read throws EISDIR) is skipped, not fatal", async () => {
-    const { pythonAdapter } = await import("../src/adapters/python.js");
+    const { pythonAdapter } = await import("../../src/adapters/python.js");
     const d = tmp();
     // existsSync is true for a DIRECTORY too; readText then throws
     // EISDIR → the catch arm runs, detection continues gracefully.
@@ -297,7 +298,7 @@ describe("jv-cs-ast measured arms", () => {
     // closing false (L282). firstAncestorCallNamed is the same oracle
     // the QA-CS-102 WhenAny check uses.
     const { firstAncestorCallNamed } =
-      await import("../src/engine/jv-cs-ast.js");
+      await import("../../src/engine/jv-cs-ast.js");
     const text = "class T { Func<int> f = () => Inner(1); int x = Wrap(2); }\n";
     const tree = await parseCSharpAst(text);
     trees.push(tree!);
