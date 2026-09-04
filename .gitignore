@@ -41,6 +41,7 @@ soak-drift/
 
 # Scratch/probe files (debug artifacts, never committed)
 scratch/
+probe-*
 
 # Agent-session state (plans, worktrees, scratch notes) — not repo content,
 # matching .prettierignore / mjolnir.config.json / eslint ignores.

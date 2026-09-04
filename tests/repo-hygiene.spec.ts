@@ -14,7 +14,7 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -76,6 +76,34 @@ describe(".gitignore hygiene", () => {
     expect(
       dupes,
       `duplicate .gitignore entries look like accidental appends: ${dupes.join(", ")}`,
+    ).toEqual([]);
+  });
+});
+
+// Root cleanliness (Beta-to-Stable 1.0 plan, M0.3): sweep-era debugging
+// left ~30 stray command logs (cov-ci*.log, gaps*.log, ist*.log, …) and
+// probe-*.mts scripts at the repo root — contributor-hostile clutter
+// that `git status` hid because *.log was already ignored. The guard is
+// non-recursive (the root only): legit logs exist under site/, coverage/
+// and .mjolnir/logs/, all already ignored and all subdirectories.
+describe("root directory cleanliness", () => {
+  const rootEntries = readdirSync(ROOT);
+  const strayLogs = rootEntries.filter((name) => name.endsWith(".log"));
+  const strayProbes = rootEntries.filter((name) => name.startsWith("probe-"));
+
+  it("has no *.log files at the repo root", () => {
+    expect(
+      strayLogs,
+      "stray root logs are sweep-era debug residue — delete them or " +
+        "write them under an ignored subdirectory, never at the root.",
+    ).toEqual([]);
+  });
+
+  it("has no probe-* scratch scripts at the repo root", () => {
+    expect(
+      strayProbes,
+      "probe-* files are one-off debugging scripts — put them in " +
+        "scratch/ (gitignored) or delete them once diagnosed.",
     ).toEqual([]);
   });
 });
