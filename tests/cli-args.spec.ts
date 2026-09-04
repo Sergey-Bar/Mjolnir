@@ -68,14 +68,16 @@ describe("isEntryPoint", () => {
 
   afterEach(() => {
     if (origArgv1 === undefined) {
-      delete process.argv[1];
+      // Splice instead of `delete` (no-array-delete): isEntryPoint only
+      // reads argv[1], so the shortened array is behaviorally identical.
+      process.argv.splice(1, 1);
     } else {
       process.argv[1] = origArgv1;
     }
   });
 
   it("returns false when argv[1] is absent", () => {
-    delete process.argv[1];
+    process.argv.splice(1, 1);
     expect(isEntryPoint()).toBe(false);
   });
 

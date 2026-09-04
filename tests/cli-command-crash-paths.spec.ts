@@ -140,8 +140,7 @@ describe("command handlers report a crash (exit 20) instead of throwing, when th
   it("`baseline` reports exit 20 instead of throwing when .mjolnir/ can't be written", async () => {
     if (!locked()) return;
     const errs: string[] = [];
-    let code: number | undefined;
-    code = await runBaselineCommand([dir], {
+    const code = await runBaselineCommand([dir], {
       out: () => {},
       err: (...a) => errs.push(a.map(String).join(" ")),
     });
