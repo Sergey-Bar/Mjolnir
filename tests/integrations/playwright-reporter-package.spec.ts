@@ -20,7 +20,7 @@ import { describe, expect, it } from "vitest";
 import {
   mjolnirReporter,
   MJOLNIR_REPORT_FILE,
-} from "../packages/playwright-reporter/src/index.js";
+} from "../../packages/playwright-reporter/src/index.js";
 
 describe("mjolnirReporter satisfies Playwright's real contract", () => {
   it("is accepted by defineConfig's reporter field, not just tuple-shaped", () => {

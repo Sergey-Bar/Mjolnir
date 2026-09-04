@@ -25,7 +25,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-const ROOT = resolve(import.meta.dirname, "..");
+const ROOT = resolve(import.meta.dirname, "..", "..");
 
 /**
  * `npm pack --json` writes a JSON array to stdout, but npm mixes other text

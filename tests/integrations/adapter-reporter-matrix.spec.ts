@@ -16,15 +16,15 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { runScan, runScanCommand, runBaselineCommand } from "../src/cli.js";
-import { renderSarif } from "../src/reporter/sarif.js";
-import { renderMermaid } from "../src/reporter/mermaid.js";
-import { findDuplicateTestNames } from "../src/engine/cross-file.js";
+import { runScan, runScanCommand, runBaselineCommand } from "../../src/cli.js";
+import { renderSarif } from "../../src/reporter/sarif.js";
+import { renderMermaid } from "../../src/reporter/mermaid.js";
+import { findDuplicateTestNames } from "../../src/engine/cross-file.js";
 import {
   diffAgainstBaseline,
   renderBaselineDiff,
-} from "../src/commands/baseline.js";
-import type { ScanResult } from "../src/types.js";
+} from "../../src/commands/baseline.js";
+import type { ScanResult } from "../../src/types.js";
 
 let dir: string;
 beforeEach(() => {

@@ -24,9 +24,9 @@ import {
   TEMPLATE,
   type EnforcingGate,
   type GateLevel,
-} from "../src/integrations/ci-install.js";
-import { buildBadge } from "../src/commands/badge.js";
-import type { ScanResult } from "../src/types.js";
+} from "../../src/integrations/ci-install.js";
+import { buildBadge } from "../../src/commands/badge.js";
+import type { ScanResult } from "../../src/types.js";
 
 describe("`ci install` output is valid, parseable YAML", () => {
   const gates: GateLevel[] = ["advisory", "error", "warning"];

@@ -26,9 +26,9 @@ import {
   TEMPLATE,
   gateScript,
   type GateLevel,
-} from "../src/integrations/ci-install.js";
+} from "../../src/integrations/ci-install.js";
 
-const ROOT = join(import.meta.dirname, "..");
+const ROOT = join(import.meta.dirname, "..", "..");
 
 interface WorkflowStep {
   name?: string;

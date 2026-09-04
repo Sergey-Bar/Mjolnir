@@ -24,7 +24,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { parse } from "yaml";
 
-const ROOT = join(import.meta.dirname, "..");
+const ROOT = join(import.meta.dirname, "..", "..");
 const WORKFLOWS_DIR = join(ROOT, ".github", "workflows");
 
 interface WorkflowStep {
