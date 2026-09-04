@@ -205,6 +205,28 @@ First response to a new issue is targeted within **7 days** — an honest
 solo-maintainer commitment, not an SLA with consequences (also stated
 in [`SUPPORT.md`](SUPPORT.md)).
 
+## Translations
+
+English [`README.md`](README.md) is canonical — the per-language files
+(`README.zh.md`, `README.de.md`, …) are machine-assisted translations
+carrying an explicit staleness marker, never authoritative docs.
+
+- Fix typos and logic in the English README first, then port the change
+  into the translations. A fix that lands only in a translation will be
+  lost at the next sync.
+- Translation PRs are welcome. Keep section order, tables and
+  `<details>` blocks identical to the English file (structure parity is
+  enforced by `tests/readme-translations.spec.ts`); keep rule IDs, code
+  blocks and link targets verbatim; recompute in-page anchors from the
+  translated headings; and bump the marker's `Last synced` date to the
+  date of the `README.md` commit you ported.
+- Run `npm run docs:translations` for an advisory staleness report. It
+  never blocks CI — drift is resolved by porting, not by a red build.
+- Terminology: choose one consistent term per language for the key
+  concepts ("worthiness score", "finding", "rule", "false-positive
+  rate", "flaky") and reuse it throughout the file; mention your
+  choices in the PR so later edits stay consistent.
+
 ## PR expectations
 
 - Keep PRs scoped to one concern. A rule addition and an unrelated
