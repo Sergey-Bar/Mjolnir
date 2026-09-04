@@ -17,6 +17,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { RULES } from "../src/rules/index.js";
+import { MEASURED_FP } from "../src/rules/measured-fp.generated.js";
 
 const ROOT = join(import.meta.dirname, "..");
 const README = readFileSync(join(ROOT, "README.md"), "utf8");
@@ -126,7 +127,7 @@ describe("no doc claims a gap that source contradicts", () => {
       "utf8",
     );
     const claimsAlreadyWired =
-      /already (covered|wired|running)/i.test(sarifDoc) &&
+      /already (?:covered|wired|running)/i.test(sarifDoc) &&
       /upload-sarif/i.test(sarifDoc);
     const actuallyWired =
       /upload-sarif/i.test(ci) || /upload-sarif/i.test(sarifWorkflow);
@@ -178,9 +179,96 @@ describe("no doc claims a gap that source contradicts", () => {
   });
 });
 
+describe("honesty-surface numbers match the FP-AUDIT coverage line and the registry", () => {
+  // The measured-coverage claim ("N of M rules carry a false-positive rate
+  // measured against real OSS code") appears in README.md and docs/README.md.
+  // It drifted once (stated 42 of 91 while FP-AUDIT's generated coverage line
+  // said 73 of 99) — a reader comparing the two surfaces had no way to catch
+  // the mismatch. This test pins every honesty-surface claim to both the
+  // generated FP-AUDIT coverage line and the registry itself, so the whole
+  // class of staleness fails CI instead of shipping (revision-plan task 16,
+  // product-strategy-review).
+  const FP_AUDIT = readFileSync(join(ROOT, "docs", "FP-AUDIT.md"), "utf8");
+
+  /** Every "N of M rules carry a false-positive rate" claim, wherever it lives. */
+  function honestyClaims(
+    markdown: string,
+  ): Array<{ measured: number; total: number }> {
+    const claims: Array<{ measured: number; total: number }> = [];
+    for (const m of markdown.matchAll(
+      /(\d+)\s+of\s+(\d+)\s+rules?\s+carry\s+a\s+false-positive\s+rate/g,
+    )) {
+      claims.push({ measured: Number(m[1]), total: Number(m[2]) });
+    }
+    return claims;
+  }
+
+  /** Registry truth: rules with n ≥ 10 classified verdicts — deliberately the
+   * same definition the FP-AUDIT generator uses (generate-fp-audit-table.ts's
+   * coverage count); revision staleness is owned by
+   * tests/measured-fp-generated.spec.ts, not here. */
+
+  it("FP-AUDIT's own coverage line exists and is parseable", () => {
+    // The generated line is the source of truth every claim is checked
+    // against; if the generator's format changes, this test must be
+    // updated in the same commit (deliberate friction — same discipline
+    // as the known-flags list above).
+    expect(FP_AUDIT).toMatch(
+      /## Coverage: \d+\/\d+ rules measured \(\d+%\) at n ≥ 10/,
+    );
+  });
+
+  const auditCoverage = (() => {
+    const m = FP_AUDIT.match(
+      /## Coverage: (\d+)\/(\d+) rules measured \(\d+%\) at n ≥ 10/,
+    );
+    return m ? { measured: Number(m[1]), total: Number(m[2]) } : null;
+  })();
+
+  it.each([
+    ["README.md", README],
+    ["docs/README.md", readFileSync(join(ROOT, "docs", "README.md"), "utf8")],
+  ])(
+    "%s: honesty-surface numbers match FP-AUDIT's generated coverage line",
+    (_name, text) => {
+      const claims = honestyClaims(text);
+      if (claims.length === 0) return; // no claim in this file — nothing to catch
+      const coverage = auditCoverage;
+      expect(
+        coverage,
+        "FP-AUDIT coverage line did not parse — update the regex above in the same commit as the generator change",
+      ).not.toBeNull();
+      if (!coverage) return; // unreachable: the expect above fails the test first
+      for (const c of claims) {
+        expect(
+          `${c.measured}/${c.total}`,
+          `a honesty-surface claim in ${_name} says "${c.measured} of ${c.total}" ` +
+            `but docs/FP-AUDIT.md (generated from the verdict corpus) says ` +
+            `"${coverage.measured}/${coverage.total}" — regenerate or ` +
+            `hand-fix the stale doc`,
+        ).toBe(`${coverage.measured}/${coverage.total}`);
+      }
+    },
+  );
+
+  it("the honesty-surface total equals the registry size (measured count from MEASURED_FP with n ≥ 10)", () => {
+    const coverage = auditCoverage;
+    expect(coverage, "FP-AUDIT coverage line did not parse").not.toBeNull();
+    if (!coverage) return; // unreachable: the expect above fails the test first
+    const measuredCount = RULES.filter((r) => {
+      const m = MEASURED_FP[r.id];
+      return m !== undefined && m.n >= 10;
+    }).length;
+    expect(coverage.total).toBe(RULES.length);
+    expect(coverage.measured).toBe(measuredCount);
+  });
+});
+
 describe("README Node version matches package.json engines", () => {
-  const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8"));
-  const enginesNode = pkg.engines?.node as string | undefined;
+  const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")) as {
+    engines?: { node?: string };
+  };
+  const enginesNode = pkg.engines?.node;
 
   it("package.json declares a node engines field", () => {
     expect(enginesNode).toBeDefined();
