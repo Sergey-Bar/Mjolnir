@@ -25,6 +25,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { runScan } from "../src/cli.js";
+import type { ScanResult } from "../src/types.js";
 import { renderSarif } from "../src/reporter/sarif.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -54,7 +55,7 @@ async function main(): Promise<void> {
   // The wall-clock duration is real but non-deterministic; the hero asset
   // masks it for the same reason, so regenerating is a no-op diff when
   // nothing about the scan itself changed.
-  const json = JSON.parse(JSON.stringify(result));
+  const json = JSON.parse(JSON.stringify(result)) as ScanResult;
   if (json.analysisStatus?.durationMs !== undefined) {
     json.analysisStatus.durationMs = 0;
   }

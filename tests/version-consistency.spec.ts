@@ -14,7 +14,7 @@ import { describe, expect, it } from "vitest";
 const ROOT = join(import.meta.dirname, "..");
 const packageJson = JSON.parse(
   readFileSync(join(ROOT, "package.json"), "utf8"),
-);
+) as { version: string };
 
 describe("version string consistency", () => {
   it("SARIF driver.version matches package.json version", () => {

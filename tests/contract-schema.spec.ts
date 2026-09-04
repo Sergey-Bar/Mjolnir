@@ -164,13 +164,35 @@ describe("SARIF 2.1.0 report contract", () => {
 
   it("output is valid JSON with the required top-level SARIF shape", async () => {
     const result = await scanOneFinding();
-    const sarif = JSON.parse(renderSarif(result));
+    // Minimal wire-shape type — the assertions below verify the raw JSON.
+    const sarif = JSON.parse(renderSarif(result)) as {
+      version: string;
+      runs: Array<{
+        tool: {
+          driver: {
+            name: string;
+            rules: Array<{ id: string; shortDescription: { text: string } }>;
+          };
+        };
+        results: Array<{
+          ruleId: string;
+          level: string;
+          message: { text: string };
+          locations: Array<{
+            physicalLocation: {
+              artifactLocation: { uri: string };
+              region: { startLine: number };
+            };
+          }>;
+        }>;
+      }>;
+    };
 
     expect(sarif.version).toBe("2.1.0");
     expect(Array.isArray(sarif.runs)).toBe(true);
     expect(sarif.runs.length).toBeGreaterThan(0);
 
-    const run = sarif.runs[0];
+    const run = sarif.runs[0] as (typeof sarif.runs)[number];
     expect(typeof run.tool.driver.name).toBe("string");
     expect(Array.isArray(run.tool.driver.rules)).toBe(true);
     for (const rule of run.tool.driver.rules) {
@@ -186,7 +208,8 @@ describe("SARIF 2.1.0 report contract", () => {
       expect(typeof res.message.text).toBe("string");
       expect(Array.isArray(res.locations)).toBe(true);
       expect(res.locations.length).toBeGreaterThan(0);
-      const loc = res.locations[0].physicalLocation;
+      const loc = (res.locations[0] as (typeof res.locations)[number])
+        .physicalLocation;
       expect(typeof loc.artifactLocation.uri).toBe("string");
       expect(typeof loc.region.startLine).toBe("number");
       expect(loc.region.startLine).toBeGreaterThanOrEqual(1);
@@ -198,8 +221,16 @@ describe("SARIF 2.1.0 report contract", () => {
     // matching driver.rules entry — this would fail invisibly in CI, not
     // loudly, which is exactly the class of bug worth pinning here.
     const result = await scanOneFinding();
-    const sarif = JSON.parse(renderSarif(result));
-    const run = sarif.runs[0];
+    // Same minimal wire-shape type as the test above.
+    const sarif = JSON.parse(renderSarif(result)) as {
+      runs: Array<{
+        tool: { driver: { rules: Array<{ id: string }> } };
+        results: Array<{ ruleId: string }>;
+      }>;
+    };
+    const runs = sarif.runs;
+    expect(runs.length).toBeGreaterThan(0);
+    const run = runs[0] as (typeof runs)[number];
     const declaredIds = new Set(
       run.tool.driver.rules.map((r: { id: string }) => r.id),
     );

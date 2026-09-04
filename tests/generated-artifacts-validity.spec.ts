@@ -289,7 +289,7 @@ describe("`badge` output matches the shields.io endpoint schema", () => {
 
   it("the JSON round-trips through JSON.stringify/parse without loss", () => {
     const badge = buildBadge(sampleResult(85));
-    const roundTripped = JSON.parse(JSON.stringify(badge));
+    const roundTripped = JSON.parse(JSON.stringify(badge)) as typeof badge;
     expect(roundTripped).toEqual(badge);
   });
 });

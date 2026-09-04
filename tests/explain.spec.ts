@@ -101,7 +101,12 @@ describe("runExplainCommand (CLI handler)", () => {
     let out = "";
     const code = runExplainCommand(
       ["QA-TEST-004", "--fixtures-root", FIXTURES_ROOT],
-      { out: (s) => (out += s), err: () => {} },
+      {
+        out: (s) => {
+          out += String(s);
+        },
+        err: () => {},
+      },
     );
     expect(code).toBe(0);
     expect(out).toContain("QA-TEST-004");
@@ -111,7 +116,9 @@ describe("runExplainCommand (CLI handler)", () => {
     let errOut = "";
     const code = runExplainCommand([], {
       out: () => {},
-      err: (s) => (errOut += s),
+      err: (s) => {
+        errOut += String(s);
+      },
     });
     expect(code).toBe(10);
     expect(errOut).toContain("Usage");
@@ -159,7 +166,9 @@ describe("runExplainCommand (CLI handler)", () => {
     // test runner's cwd during `npm test` is the mjolnir repo root.
     let out = "";
     const code = runExplainCommand(["QA-TEST-004"], {
-      out: (s) => (out += s),
+      out: (s) => {
+        out += String(s);
+      },
       err: () => {},
     });
     expect(code).toBe(0);

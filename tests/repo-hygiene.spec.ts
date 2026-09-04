@@ -91,7 +91,11 @@ describe.skipIf(!isGitRepo())("CHANGELOG.md is tracked", () => {
   });
 
   it("package.json 'files' includes CHANGELOG.md so npm publishes it", () => {
-    const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8"));
+    const pkg = JSON.parse(
+      readFileSync(join(ROOT, "package.json"), "utf8"),
+    ) as {
+      files?: string[];
+    };
     expect(
       pkg.files,
       "package.json 'files' must list CHANGELOG.md so upgraders receive " +

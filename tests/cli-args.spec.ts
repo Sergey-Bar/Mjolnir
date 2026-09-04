@@ -53,9 +53,10 @@ describe("parseArgs flag matrix", () => {
   it("survives a hole in a sparse argv array without crashing", () => {
     // A hole (not a literal "undefined" element) is the strongest form of
     // the argv[i] ?? "" guard: length says 3, index 1 is absent.
-    const sparse: string[] = new Array(3);
-    sparse[0] = "--json";
-    sparse[2] = "src";
+    const sparse: string[] = Object.assign(new Array(3), {
+      0: "--json",
+      2: "src",
+    });
     const args = parseArgs(sparse);
     expect(args).not.toBeNull();
     expect(args?.json).toBe(true);

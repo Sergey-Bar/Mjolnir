@@ -251,10 +251,9 @@ describe("capability matrix generation", () => {
   it("the Wilson CI used for the §20.2 comparison contract stays exported and stable", () => {
     // §20.2 stores ciLow/ciHigh per measurement. Lock the numeric
     // behavior of one known case so a silent change can't slip in.
-    expect(wilsonInterval(0, 20)).toEqual({
-      ciLow: 0,
-      ciHigh: expect.any(Number),
-    });
-    expect(wilsonInterval(0, 20).ciHigh).toBeCloseTo(0.1611, 3);
+    const wilson = wilsonInterval(0, 20);
+    expect(wilson.ciLow).toBe(0);
+    expect(typeof wilson.ciHigh).toBe("number");
+    expect(wilson.ciHigh).toBeCloseTo(0.1611, 3);
   });
 });

@@ -52,35 +52,50 @@ describe("site output-format assets agree with each other", () => {
     ).toBe(true);
   });
 
+  // Minimal wire-shape types for the generated demo artifacts.
+  const readJson = <T>(path: string): T =>
+    JSON.parse(readFileSync(path, "utf8")) as T;
+  type JsonReport = {
+    score: number;
+    schemaVersion: number;
+    findings: Array<{ ruleId: string }>;
+  };
+  type SarifReport = {
+    version: string;
+    runs: Array<{ results: Array<{ ruleId: string }> }>;
+  };
+
   it("the JSON report's score matches the terminal capture's", () => {
-    const json = JSON.parse(readFileSync(JSON_PATH, "utf8"));
+    const json = readJson<JsonReport>(JSON_PATH);
     expect(json.score).toBe(scoreFromSvg(readFileSync(SVG_PATH, "utf8")));
   });
 
   it("the JSON report keeps the frozen schemaVersion", () => {
-    const json = JSON.parse(readFileSync(JSON_PATH, "utf8"));
+    const json = readJson<JsonReport>(JSON_PATH);
     expect(json.schemaVersion).toBe(1);
   });
 
   it("SARIF carries the same findings as the JSON report", () => {
-    const json = JSON.parse(readFileSync(JSON_PATH, "utf8"));
-    const sarif = JSON.parse(readFileSync(SARIF_PATH, "utf8"));
+    const json = readJson<JsonReport>(JSON_PATH);
+    const sarif = readJson<SarifReport>(SARIF_PATH);
+    const run = sarif.runs[0] as SarifReport["runs"][number];
     expect(sarif.runs).toHaveLength(1);
-    expect(sarif.runs[0].results).toHaveLength(json.findings.length);
+    expect(run.results).toHaveLength(json.findings.length);
   });
 
   it("SARIF declares the version the docs promise", () => {
-    const sarif = JSON.parse(readFileSync(SARIF_PATH, "utf8"));
+    const sarif = readJson<SarifReport>(SARIF_PATH);
     expect(sarif.version).toBe("2.1.0");
   });
 
   it("the rule ids in SARIF are all real ids from the JSON report", () => {
-    const json = JSON.parse(readFileSync(JSON_PATH, "utf8"));
-    const sarif = JSON.parse(readFileSync(SARIF_PATH, "utf8"));
+    const json = readJson<JsonReport>(JSON_PATH);
+    const sarif = readJson<SarifReport>(SARIF_PATH);
     const fromJson = new Set(
       json.findings.map((f: { ruleId: string }) => f.ruleId),
     );
-    for (const r of sarif.runs[0].results as { ruleId: string }[]) {
+    const run = sarif.runs[0] as SarifReport["runs"][number];
+    for (const r of run.results) {
       expect(
         fromJson.has(r.ruleId),
         `SARIF ruleId ${r.ruleId} not in the JSON report`,

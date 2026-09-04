@@ -13,7 +13,7 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { RULES } from "../src/rules/index.js";
@@ -438,5 +438,69 @@ describe("the north-star law is committed, not just cited", () => {
     expect(copilot).toContain("false-proof rate ≈ 0");
     expect(copilot).toContain("equal-size removal");
     expect(copilot).toContain("must-fire AND must-not-fire");
+  });
+});
+
+describe("README alt text matches the verdict the SVG assets actually render", () => {
+  // D1-class drift, second occurrence: the README alt text said
+  // "WORTHINESS 70/100" beside regenerated SVGs reading 75/100 — the same
+  // hand-typed-number defect the landing page once shipped. The SVGs are
+  // generated and drift-locked by hero-asset-reproducibility.spec.ts;
+  // this keeps the prose describing them honest too. The score lives in
+  // separate tspans in the SVG source, so tags are stripped before
+  // parsing (same approach as site/scripts/gen-report.mjs).
+  const stripTags = (s: string) => {
+    let prev: string;
+    do {
+      prev = s;
+      s = s.replace(/<[^>]*>/g, "");
+    } while (s !== prev);
+    return s;
+  };
+
+  const svgDir = join(ROOT, "assets", "readme");
+  const svgScores = readdirSync(svgDir)
+    .filter((f) => f.endsWith(".svg"))
+    .map((f) => {
+      const m = /WORTHINESS\s+(\d+)\s*\/\s*\d+/.exec(
+        stripTags(readFileSync(join(svgDir, f), "utf8")),
+      );
+      return { file: f, score: m ? Number(m[1]) : null };
+    });
+
+  it("at least one generated SVG carries a parseable WORTHINESS line (sanity)", () => {
+    expect(svgScores.some((s) => s.score !== null)).toBe(true);
+  });
+
+  it("all generated SVGs agree on the score they render", () => {
+    const scores = new Set(
+      svgScores.filter((s) => s.score !== null).map((s) => s.score),
+    );
+    expect(scores.size).toBe(1);
+  });
+
+  it("every README alt= that mentions WORTHINESS states the SVG's number", () => {
+    const found = svgScores.find((s) => s.score !== null);
+    const expected = found?.score;
+    const alts = [...README.matchAll(/alt="([^"]*WORTHINESS[^"]*)"/g)].map(
+      (m) => m[1],
+    );
+    expect(alts.length).toBeGreaterThan(0);
+    expect(
+      expected,
+      "no generated SVG carries a parseable WORTHINESS score",
+    ).toBeDefined();
+    for (const alt of alts) {
+      const m = /WORTHINESS\s+(\d+)\s*\/\s*\d+/.exec(alt ?? "");
+      expect(
+        m,
+        `alt text carries no parseable WORTHINESS score: "${alt}"`,
+      ).not.toBeNull();
+      const rendered = m?.[1];
+      expect(
+        Number(rendered),
+        `README alt says WORTHINESS ${rendered}/100 but the generated assets render ${expected}/100`,
+      ).toBe(expected);
+    }
   });
 });
