@@ -13,7 +13,7 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { RULES } from "../src/rules/index.js";
@@ -21,7 +21,12 @@ import { MEASURED_FP } from "../src/rules/measured-fp.generated.js";
 
 const ROOT = join(import.meta.dirname, "..");
 const README = readFileSync(join(ROOT, "README.md"), "utf8");
-const STATE = readFileSync(join(ROOT, ".planning", "STATE.md"), "utf8");
+// .planning/ is machine-local agent-session state (untracked, see
+// .gitignore) — present on dev machines, absent on CI checkouts. The
+// STATE.md-drift guards below only run when the file exists locally.
+const STATE = existsSync(join(ROOT, ".planning", "STATE.md"))
+  ? readFileSync(join(ROOT, ".planning", "STATE.md"), "utf8")
+  : null;
 
 /** Extracts `| QA-XXX-000 | ... | severity |` rows from a markdown table row. */
 function extractRuleTableRows(
@@ -91,13 +96,16 @@ describe("no doc claims a gap that source contradicts", () => {
   // so a future revert of either fix doesn't silently un-fix the docs
   // claim along with it, and so a *new* stale claim of this shape gets
   // caught by extending this describe block rather than by accident.
-  it("STATE.md does not claim the Windows tar --force-local bug is still open", () => {
-    expect(STATE).not.toMatch(
-      /Windows.{0,40}(tar --force-local|force-local).{0,60}(still open|unresolved|known gap)/i,
-    );
-  });
+  it.skipIf(STATE === null)(
+    "STATE.md does not claim the Windows tar --force-local bug is still open",
+    () => {
+      expect(STATE).not.toMatch(
+        /Windows.{0,40}(tar --force-local|force-local).{0,60}(still open|unresolved|known gap)/i,
+      );
+    },
+  );
 
-  it("ci.yml actually runs the OS matrix STATE.md credits it with", () => {
+  it("ci.yml actually runs the OS matrix the docs credit it with", () => {
     const ci = readFileSync(
       join(ROOT, ".github", "workflows", "ci.yml"),
       "utf8",
@@ -105,7 +113,7 @@ describe("no doc claims a gap that source contradicts", () => {
     for (const os of ["ubuntu-latest", "windows-latest", "macos-latest"]) {
       expect(
         ci,
-        `STATE.md and Master-Stabilization-Plan.md credit ci.yml with ` +
+        `the docs credit ci.yml with ` +
           `running ${os}, but it is not in the workflow's matrix.`,
       ).toContain(os);
     }
