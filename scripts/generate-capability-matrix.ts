@@ -212,8 +212,10 @@ export interface CapabilityRow {
   appliesTo: string;
   languages: string[] | "UNCLASSIFIED";
   frameworks: string[] | "UNCLASSIFIED";
-  /** Declared §09.6 enum (D6: enforced contract, never free text). */
-  detectionStrategy: string | "UNCLASSIFIED";
+  /** Declared §09.6 enum (D6: enforced contract, never free text).
+   *  UNCLASSIFIED only when a synthetic rule object smuggles in an
+   *  out-of-contract value (deriveDetectionStrategyEnum's defensive arm). */
+  detectionStrategy: DetectionStrategyEnum;
   /** Same value as `detectionStrategy` when declared; UNCLASSIFIED otherwise. */
   detectionStrategyEnum: DetectionStrategyEnum;
   semanticDepth: "Low" | "Medium" | "High" | "UNCLASSIFIED";
