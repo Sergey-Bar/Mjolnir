@@ -31,6 +31,15 @@ export interface ParsedFile {
    * instead of `text`. Computed lazily per adapter.
    */
   codeText?: string;
+  /**
+   * Per-file framework tags (Verification Trust Evolution Plan §15.1,
+   * defect D7): derived from the file's OWN imports/usings/imports-lines
+   * by the adapter ("playwright", "jest", "cypress", "junit", "testng",
+   * "selenium", "nunit", "xunit", "mstest", "pytest", …). EMPTY/absent
+   * means "no per-file evidence" — framework filtering is then OPEN (a
+   * rule declaring `frameworks` still runs), never a silent skip.
+   */
+  frameworkTags?: readonly string[];
 }
 
 export interface FrameworkInfo {
@@ -131,10 +140,44 @@ export interface UniversalRule {
   appliesTo: readonly string[];
   /**
    * Config-hygiene rule (see QADoctorRule.configRule): the adapter runs
-   * these ONLY on playwright.config.* files, and runs every other rule
-   * only on test files. Keeps config rules measurable in real scans
-   * without letting generic test rules fire nonsense on configs.
+   * these ONLY on the config files named in `configFiles`, and runs
+   * every other rule only on test files. Keeps config rules measurable
+   * in real scans without letting generic test rules fire nonsense on
+   * configs.
    */
   configOnly?: boolean;
+  /**
+   * Config filename patterns (regex sources) this config rule gates on
+   * (plan §15.2 — replaces the hard-coded playwright.config.* regex
+   * that used to live in the TS adapter AND duplicated inside each
+   * config rule). Empty/absent + configOnly=true falls back to the
+   * adapter's built-in config list.
+   */
+  configFiles?: readonly string[];
+  /**
+   * Framework opt-in (plan §15.1, defect D7): when declared, the rule
+   * runs on a file only if the file's own `frameworkTags` intersect it.
+   * Files without tags are always analyzed (open-when-unknown).
+   */
+  frameworks?: readonly string[];
   run(file: ParsedFile): Array<Omit<Finding, "ruleId" | "category">>;
+}
+
+/**
+ * The §15.1 framework filter, shared by every language adapter: a rule
+ * that declares `frameworks` runs on a file only when the file carries
+ * at least one of those tags. Rules without `frameworks` and files
+ * without tags (unknown detection) are always analyzed — the dimension
+ * narrows, it never silently drops evidence.
+ */
+export function frameworkFilterApplies(
+  rule: Pick<UniversalRule, "frameworks">,
+  file: Pick<ParsedFile, "frameworkTags">,
+): boolean {
+  if (rule.frameworks === undefined || rule.frameworks.length === 0) {
+    return true;
+  }
+  const tags = file.frameworkTags;
+  if (tags === undefined || tags.length === 0) return true;
+  return rule.frameworks.some((f) => tags.includes(f));
 }

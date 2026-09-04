@@ -41,18 +41,17 @@ Verified against `tests/fixtures/QA-PY-004/must-not-fire/predicate-calls.py` —
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo                        | Occurrences |
-| --------------------------- | ----------- |
-| apache-airflow              | 2749        |
-| getsentry-sentry            | 3902        |
-| microsoft-playwright-pytest | 9           |
-| negative-fixtures           | 3           |
-| pallets-click               | 45          |
-| positive-fixtures           | 9           |
-| psf-requests                | 35          |
-| pytest-dev-pytest           | 393         |
-| reflex-dev-reflex           | 892         |
-| streamlit-streamlit         | 872         |
+| Repo                | Occurrences |
+| ------------------- | ----------- |
+| apache-airflow      | 615         |
+| getsentry-sentry    | 889         |
+| negative-fixtures   | 1           |
+| pallets-click       | 4           |
+| positive-fixtures   | 9           |
+| psf-requests        | 11          |
+| pytest-dev-pytest   | 115         |
+| reflex-dev-reflex   | 157         |
+| streamlit-streamlit | 372         |
 
 ---
 

@@ -75,7 +75,8 @@ export function hasStaleMeasurement(rule: QADoctorRule): boolean {
  */
 export function effectiveTier(rule: QADoctorRule): Tier {
   if (rule.tier !== undefined) return rule.tier;
-  return hasValidMeasurement(rule) ? "core" : "extended";
+  if (hasValidMeasurement(rule)) return "core";
+  return "extended";
 }
 
 /**

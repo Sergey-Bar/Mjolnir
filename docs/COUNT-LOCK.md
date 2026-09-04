@@ -59,7 +59,7 @@ real Java+TS monorepo with JUnit tests and CI workflows — QA-JV-101/102 plus Q
 
 Source: [`https://github.com/appsmithorg/appsmith`](https://github.com/appsmithorg/appsmith)
 
-Total findings: **617**
+Total findings: **571**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
@@ -67,7 +67,7 @@ Total findings: **617**
 | QA-CI-008    | 5        |
 | QA-JV-101    | 11       |
 | QA-JV-102    | 10       |
-| QA-JV-103    | 121      |
+| QA-JV-103    | 75       |
 | QA-PW-107    | 4        |
 | QA-PW-112    | 248      |
 | QA-PW-119    | 7        |
@@ -102,6 +102,28 @@ Total findings: **634**
 | QA-TQUAL-001 | 426      |
 | QA-TQUAL-002 | 1        |
 | QA-TQUAL-011 | 2        |
+
+## cypress-io-cypress-realworld-app
+
+Total findings: **17**
+
+| Rule ID      | Findings |
+| ------------ | -------- |
+| QA-TEST-002  | 3        |
+| QA-TEST-003  | 4        |
+| QA-TQUAL-009 | 10       |
+
+## cypress-io-kitchensink
+
+Total findings: **37**
+
+| Rule ID      | Findings |
+| ------------ | -------- |
+| QA-CYP-001   | 15       |
+| QA-PW-123    | 6        |
+| QA-TEST-003  | 9        |
+| QA-TEST-010  | 1        |
+| QA-TQUAL-009 | 6        |
 
 ## cypress-realworld-app
 
@@ -266,12 +288,12 @@ real C# library repo with xUnit tests and a retry-wrapped CI step — QA-CS-103 
 
 Source: [`https://github.com/Humanizr/Humanizer`](https://github.com/Humanizr/Humanizer)
 
-Total findings: **81**
+Total findings: **49**
 
 | Rule ID     | Findings |
 | ----------- | -------- |
 | QA-CI-007   | 1        |
-| QA-CS-103   | 34       |
+| QA-CS-103   | 2        |
 | QA-PW-005   | 1        |
 | QA-PW-103   | 26       |
 | QA-PW-105   | 9        |
@@ -303,14 +325,14 @@ large real Java monorepo whose UI suite is Playwright TypeScript — QA-PW-117 a
 
 Source: [`https://github.com/keycloak/keycloak`](https://github.com/keycloak/keycloak)
 
-Total findings: **1641**
+Total findings: **2243**
 
 | Rule ID     | Findings |
 | ----------- | -------- |
 | QA-CI-007   | 1        |
 | QA-JV-101   | 67       |
 | QA-JV-102   | 30       |
-| QA-JV-103   | 785      |
+| QA-JV-103   | 1387     |
 | QA-JV-110   | 84       |
 | QA-PW-103   | 1        |
 | QA-PW-105   | 1        |
@@ -329,13 +351,13 @@ real Playwright .NET test suite — C# adapter FP surface (same library-suite ca
 
 Source: [`https://github.com/microsoft/playwright-dotnet`](https://github.com/microsoft/playwright-dotnet)
 
-Total findings: **451**
+Total findings: **419**
 
 | Rule ID   | Findings |
 | --------- | -------- |
 | QA-CS-101 | 139      |
-| QA-CS-102 | 52       |
-| QA-CS-103 | 2        |
+| QA-CS-102 | 21       |
+| QA-CS-103 | 1        |
 | QA-CS-105 | 16       |
 | QA-CS-106 | 4        |
 | QA-CS-107 | 1        |
@@ -351,13 +373,13 @@ real Playwright Java test suite — Java adapter FP surface (library-suite cavea
 
 Source: [`https://github.com/microsoft/playwright-java`](https://github.com/microsoft/playwright-java)
 
-Total findings: **363**
+Total findings: **309**
 
 | Rule ID   | Findings |
 | --------- | -------- |
 | QA-JV-101 | 8        |
 | QA-JV-102 | 1        |
-| QA-JV-103 | 97       |
+| QA-JV-103 | 43       |
 | QA-JV-104 | 2        |
 | QA-JV-105 | 40       |
 | QA-JV-106 | 4        |
@@ -396,14 +418,12 @@ committed §08 class-C negative corpus — realistic legitimate code per rule th
 
 Source: [`local:tests/corpus/negative-fixtures`](local:tests/corpus/negative-fixtures)
 
-Total findings: **210**
+Total findings: **200**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
-| QA-CS-103    | 4        |
 | QA-CS-108    | 2        |
 | QA-CS-110    | 4        |
-| QA-JV-103    | 6        |
 | QA-JV-108    | 2        |
 | QA-JV-110    | 2        |
 | QA-PW-103    | 16       |
@@ -503,7 +523,7 @@ committed §08 class-B positive corpus — realistic anti-pattern variants per r
 
 Source: [`local:tests/corpus/positive-fixtures`](local:tests/corpus/positive-fixtures)
 
-Total findings: **625**
+Total findings: **623**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
@@ -513,20 +533,21 @@ Total findings: **625**
 | QA-CI-007    | 7        |
 | QA-CI-009    | 5        |
 | QA-CI-010    | 5        |
+| QA-CS-102    | 3        |
 | QA-CS-103    | 8        |
 | QA-CS-104    | 3        |
 | QA-CS-107    | 4        |
 | QA-CS-108    | 3        |
 | QA-CS-109    | 4        |
-| QA-CS-110    | 5        |
+| QA-CS-110    | 6        |
 | QA-JV-101    | 3        |
 | QA-JV-102    | 3        |
-| QA-JV-103    | 11       |
+| QA-JV-103    | 4        |
 | QA-JV-104    | 8        |
 | QA-JV-107    | 4        |
 | QA-JV-108    | 3        |
 | QA-JV-109    | 10       |
-| QA-JV-110    | 3        |
+| QA-JV-110    | 4        |
 | QA-PW-003    | 9        |
 | QA-PW-004    | 8        |
 | QA-PW-103    | 49       |
@@ -649,6 +670,28 @@ Total findings: **517**
 | QA-PY-012 | 1        |
 | QA-PY-103 | 2        |
 
+## SeleniumHQ-selenium
+
+Total findings: **832**
+
+| Rule ID      | Findings |
+| ------------ | -------- |
+| QA-CS-101    | 26       |
+| QA-CS-102    | 3        |
+| QA-CS-103    | 102      |
+| QA-ENV-001   | 1        |
+| QA-JV-101    | 316      |
+| QA-JV-102    | 28       |
+| QA-JV-103    | 249      |
+| QA-JV-108    | 1        |
+| QA-JV-110    | 72       |
+| QA-PW-112    | 22       |
+| QA-PY-007    | 2        |
+| QA-SE-002    | 4        |
+| QA-TEST-003  | 1        |
+| QA-TEST-004  | 2        |
+| QA-TQUAL-001 | 3        |
+
 ## shadcn-ui-taxonomy
 
 tiny real next.js app with a minimal Playwright config — the sharpest QA-PW-143/144 surface
@@ -665,11 +708,9 @@ real C# application repo with a large NUnit suite — QA-CS-103 at consumer scal
 
 Source: [`https://github.com/spectreconsole/spectre.console`](https://github.com/spectreconsole/spectre.console)
 
-Total findings: **310**
+Total findings: **0**
 
-| Rule ID   | Findings |
-| --------- | -------- |
-| QA-CS-103 | 310      |
+_No findings recorded for this repo._
 
 ## streamlit-streamlit
 

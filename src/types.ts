@@ -54,6 +54,54 @@ export const QA_IMPACT_LABELS: Record<QaImpact, string> = {
 /** Rule namespaces are frozen public API (§18.4). IDs are never reused. */
 export type RuleCategory = "QA-TEST" | "QA-TQUAL" | "QA-PW" | "QA-CI";
 
+/**
+ * Trust levels (Verification Trust Evolution Plan §16): the OVERALL
+ * trust a consumer can place in one finding, combining the static
+ * evidence ladder (E0–E2) with RUNTIME corroboration from a real run
+ * report. Exposed honestly, never overclaimed:
+ *   L0 — observation only (E0, no runtime evidence).
+ *   L1 — heuristic static evidence (E1), no runtime evidence.
+ *   L2 — deterministic static evidence (E2), no runtime evidence.
+ *   L3 — RUNTIME: the file containing this finding appeared in a real
+ *        run report (tests in that file executed).
+ *   L4 — RUNTIME: the specific test containing this finding was
+ *        identified in the report and executed (its outcome is known).
+ *   L5 — RUNTIME: the run verdict directly corroborates the DEFECT
+ *        class (e.g. a flake-risk finding whose test actually flaked,
+ *        retried, or timed out in the report).
+ * INVARIANT (structurally enforced): L3–L5 require runtime
+ * corroboration — a static-only finding can never claim L4/L5.
+ */
+export const TRUST_ORDER = ["L0", "L1", "L2", "L3", "L4", "L5"] as const;
+export type TrustLevel = (typeof TRUST_ORDER)[number];
+
+/**
+ * Runtime corroboration for one finding (plan §16): what a real run
+ * report says about the code this finding points at. Additive within
+ * schemaVersion 1; absent means "no runtime evidence" — never
+ * fabricated.
+ */
+export interface RuntimeCorroboration {
+  /** Granularity of what the runtime report could vouch for. */
+  level: "file" | "test" | "defect";
+  /** Report format the evidence came from. */
+  source: "playwright-json" | "junit-xml";
+  /** Number of tests executed in the finding's file (any level). */
+  testsExecuted: number;
+  /**
+   * The containing test's verdict, when the finding line falls inside a
+   * test the report identifies (level "test"/"defect").
+   */
+  matchedTest?: {
+    title: string;
+    finalStatus: string;
+    attempts: number;
+    passedOnRetry: boolean;
+    everFailed: boolean;
+    skipped: boolean;
+  };
+}
+
 export interface Finding {
   ruleId: string;
   category: RuleCategory;
@@ -77,6 +125,19 @@ export interface Finding {
   measuredFpRate?: number;
   /** Classified (TP+FP) verdicts behind `measuredFpRate`. */
   measuredFpN?: number;
+  /**
+   * Runtime corroboration from a real run report (plan §16), stamped
+   * when a report was available and matched this finding's file/test.
+   * Absent means "no runtime evidence" — the static evidence ladder
+   * (E0–E2) is all the consumer has. Additive within schemaVersion 1.
+   */
+  runtimeCorroboration?: RuntimeCorroboration;
+  /**
+   * Overall trust level (plan §16, see TRUST_ORDER). Derived
+   * deterministically from evidenceLevel + runtimeCorroboration;
+   * stamped with the corroboration pass. Additive within schemaVersion 1.
+   */
+  trustLevel?: TrustLevel;
   /** Repo-relative path with forward slashes, regardless of OS. */
   file: string;
   /** 1-based. */
@@ -179,6 +240,24 @@ export interface ScanResult {
    * when no plugins are configured.
    */
   plugins?: Array<{ name: string; rules: number }>;
+  /**
+   * Agentic Trust Profile (plan §17): per-scan provenance metadata —
+   * share of test files carrying detected generative markers and the
+   * findings split across those surfaces. PROVENANCE IS NOT TRUST: the
+   * profile never changes scoring, evidence levels, or tier behavior
+   * (§17.4 — the same evidence standard applies regardless of author).
+   * Additive within schemaVersion 1; present on every completed scan.
+   */
+  agenticProfile?: {
+    testFiles: number;
+    generatedMarkedFiles: number;
+    codegenLikeFiles: number;
+    /** generatedMarkedFiles / testFiles (0..1). */
+    shareMarkedGenerated: number;
+    findingsInGeneratedFiles: number;
+    findingsInUnmarkedFiles: number;
+    note: string;
+  };
   analysisStatus: {
     discovery: AnalysisStatus;
     rules: AnalysisStatus;

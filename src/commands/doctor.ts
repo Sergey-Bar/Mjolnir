@@ -33,7 +33,10 @@ export interface DoctorCheck {
   details: string[];
 }
 
-const VALID_ID = /^QA-(TEST|TQUAL|PW|CI|PY|ENV|JV|CS)-\d{3}$/;
+// Phase 5 framework namespaces (plan §15.4, frozen-contract law):
+// QA-CYP-*, QA-SE-*, QA-WDIO-*, QA-PPTR-*, QA-APM-* join the registry.
+const VALID_ID =
+  /^QA-(TEST|TQUAL|PW|CI|PY|ENV|JV|CS|CYP|SE|WDIO|PPTR|APM)-\d{3}$/;
 
 function nonHiddenFiles(dir: string): string[] {
   if (!existsSync(dir)) return [];

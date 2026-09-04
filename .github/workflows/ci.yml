@@ -55,7 +55,16 @@ jobs:
       # as such (QA-CI-005 verifies this pairing on every self-scan).
       - name: Run coverage (ubuntu only)
         if: matrix.os == 'ubuntu-latest'
-        run: npx vitest run --coverage
+        # --no-file-parallelism: single-worker coverage merge (the
+        # cross-worker v8 merge under-attributes branches for files
+        # loaded by several workers); generous timeouts because the
+        # instrumented run slows git- and child-process-heavy specs.
+        # scale-benchmark stays IN: its in-process 3k-file runScan is a
+        # major coverage contributor and its own per-test timeouts
+        # already give it real headroom.
+        run: >-
+          npx vitest run --coverage --no-file-parallelism
+          --testTimeout=120000 --hookTimeout=120000
       - name: Report coverage floors in the job summary
         if: matrix.os == 'ubuntu-latest'
         run: |

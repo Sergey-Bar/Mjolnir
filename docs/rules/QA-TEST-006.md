@@ -46,6 +46,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | apache-airflow    | 3           |
 | grafana-grafana   | 2           |
 | positive-fixtures | 5           |
+| vercel-next-js    | 1           |
 
 ---
 

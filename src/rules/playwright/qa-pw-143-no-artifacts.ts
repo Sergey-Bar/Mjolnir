@@ -19,6 +19,7 @@ export const pwNoFailureArtifacts = defineRule({
   qaImpact: "HYGIENE",
   appliesTo: "test-files",
   configRule: true,
+  configFiles: ["^playwright\\.config\\.(?:ts|js|mjs|cts)$"],
   // Trust Metadata
   languages: ["typescript", "javascript"],
   frameworks: ["playwright"],

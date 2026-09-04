@@ -181,7 +181,8 @@ describe("capability matrix generation", () => {
       "0",
       "1",
       "0 (contract), 2 (migration)",
-      "2 / 5",
+      // D7 closed by the Phase 5 FrameworkDimension (plan §15.1).
+      "5 (closed)",
       "1",
     ]);
   });

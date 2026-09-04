@@ -47,6 +47,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | grafana-grafana      | 3           |
 | hashicorp-vault      | 3           |
 | streamlit-streamlit  | 1           |
+| vercel-next-js       | 3           |
 | vitest-dev-vitest    | 1           |
 
 ---

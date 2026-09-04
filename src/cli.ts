@@ -46,6 +46,13 @@ import { renderMermaid } from "./reporter/mermaid.js";
 import { computeChangedScope, filterToChanged } from "./scope/changed.js";
 import { asUniversal } from "./engine/rule-runner.js";
 import { enforceTierPolicy, type Tier } from "./engine/tier-policy.js";
+import type { QADoctorRule } from "./rules/rule.js";
+import type { UniversalRule } from "./engine/adapter.js";
+import { stampRuntimeCorroboration } from "./engine/runtime-corroboration.js";
+import {
+  classifyProvenance,
+  computeAgenticProfile,
+} from "./engine/provenance.js";
 import type { ParsedAst, ParsedFile } from "./engine/adapter.js";
 import { releaseTreeSitterResources } from "./engine/tree-sitter-ast.js";
 import { applyOverlapDedup, type OverlapMeta } from "./engine/overlap-dedup.js";
@@ -97,6 +104,7 @@ import {
   applySeverityOverrides,
 } from "./config/config.js";
 import { loadPlugins } from "./plugins/load.js";
+import { loadLocalRules, LOCAL_RULES_DIR } from "./plugins/local-rules.js";
 import {
   computeSelectorHealth,
   renderSelectorHealth,
@@ -137,17 +145,25 @@ const OVERLAP_META_BY_RULE_ID: ReadonlyMap<string, OverlapMeta> = new Map(
 
 // Plugin API (Phase 6): third-party rules are appended after core rules;
 // core findings always win dedup by running first.
-function buildUniversalRules(root: string, strict?: boolean) {
+// Plan §18 (Local Extensibility): workspace-local `mjolnir-rules/` files
+// load alongside npm plugins — folder-based, zero network.
+export async function buildUniversalRules(
+  root: string,
+  strict?: boolean,
+): Promise<{
+  rules: UniversalRule[];
+  pluginErrors: string[];
+  tierByRuleId: Map<string, Tier>;
+  pluginMeta: Array<{ name: string; rules: number }>;
+  externalRules: QADoctorRule[];
+}> {
   const { plugins, errors } = loadPlugins(root);
-  const pluginRules = plugins.flatMap((p) => p.rules.map(asUniversal));
-  let rules = [...UNIVERSAL_RULES, ...pluginRules];
-  // Phase 4 (Tempering): exclude quarantine-tier rules unless --strict
-  if (!strict) {
-    rules = rules.filter((r) => {
-      const original = RULES.find((orig) => orig.id === r.id);
-      return original?.tier !== "quarantine";
-    });
-  }
+  const local = await loadLocalRules(root);
+  const allErrors = [...errors, ...local.errors];
+  const externalRules = [
+    ...plugins.map((p) => ({ name: p.name, rules: p.rules })),
+    { name: LOCAL_RULES_DIR, rules: local.rules },
+  ].flatMap((p) => p.rules.map(asUniversal));
   const tierByRuleId = new Map<string, Tier>();
   for (const r of RULES) {
     if (r.tier) tierByRuleId.set(r.id, r.tier);
@@ -157,11 +173,37 @@ function buildUniversalRules(root: string, strict?: boolean) {
       if (r.tier) tierByRuleId.set(r.id, r.tier);
     }
   }
-  const pluginMeta = plugins.map((p) => ({
-    name: p.name,
-    rules: p.rules.length,
-  }));
-  return { rules, pluginErrors: errors, tierByRuleId, pluginMeta };
+  for (const r of local.rules) {
+    if (r.tier) tierByRuleId.set(r.id, r.tier);
+  }
+  let rules = [...UNIVERSAL_RULES, ...externalRules];
+  // Phase 4 (Tempering): exclude quarantine-tier rules unless --strict.
+  // §18: the tier map covers EXTERNAL rules too — a workspace-local
+  // quarantine rule is excluded exactly like a core one.
+  if (!strict) {
+    rules = rules.filter((r) => tierByRuleId.get(r.id) !== "quarantine");
+  }
+  const pluginMeta = [
+    ...plugins.map((p) => ({
+      name: p.name,
+      rules: p.rules.length,
+    })),
+    ...(local.rules.length > 0
+      ? [
+          {
+            name: `${LOCAL_RULES_DIR}/ (workspace-local external rules)`,
+            rules: local.rules.length,
+          },
+        ]
+      : []),
+  ];
+  return {
+    rules,
+    pluginErrors: allErrors,
+    tierByRuleId,
+    pluginMeta,
+    externalRules: local.rules,
+  };
 }
 
 /** Rule-declared evidence-level overrides (Honesty Core). */ const EVIDENCE_OVERRIDES: ReadonlyMap<
@@ -337,6 +379,11 @@ export async function runScan(
 
   let tierByRuleId: Map<string, Tier>;
   let pluginsLoaded: Array<{ name: string; rules: number }>;
+  // Plan §17.1: per-file provenance for the Agentic Trust Profile.
+  const fileProvenance: Array<{
+    path: string;
+    provenance: ReturnType<typeof classifyProvenance>;
+  }> = [];
   // R1: dispatch through language adapters. Rules stay unchanged; the
   // adapters own discovery, parsing, and rule application.
   const {
@@ -344,7 +391,7 @@ export async function runScan(
     pluginErrors,
     tierByRuleId: tiers,
     pluginMeta,
-  } = buildUniversalRules(workspace.root, args.strict);
+  } = await buildUniversalRules(workspace.root, args.strict);
   tierByRuleId = tiers;
   pluginsLoaded = pluginMeta;
   for (const err of pluginErrors) {
@@ -447,6 +494,12 @@ export async function runScan(
       // score must use a denominator from the files actually judged,
       // not the whole repo.
       declarationsByFile.set(relPath, decls);
+      // Plan §17.1: per-file provenance for the Agentic Trust Profile.
+      // Metadata only (§17.4) — it never affects rules or scoring.
+      fileProvenance.push({
+        path: relPath,
+        provenance: classifyProvenance({ text }),
+      });
     }
     const adapter = isWorkflow
       ? githubActionsAdapter
@@ -594,6 +647,23 @@ export async function runScan(
   // advisory by construction (info + E0) no matter what its rule
   // declares, so an unproven rule can never gate CI or deduct score.
   enforceTierPolicy(findings, tierByRuleId);
+  // Plan §16 — Runtime Evidence: when a real run report sits next to
+  // the scan target (the same ingestion `mjolnir forensics` uses:
+  // `mjolnir.report.json` or a `test-results/` directory), findings get
+  // stamped with runtime corroboration + the L0–L5 trust ladder.
+  // Absent report → findings unchanged (honest "no runtime evidence").
+  const runtimeReportPath = discoverRuntimeReport(scanRoot.root);
+  if (runtimeReportPath) {
+    try {
+      const fr = await runForensics(runtimeReportPath, {
+        writeFlakyMd: false,
+      });
+      stampRuntimeCorroboration(findings, fr.report);
+    } catch {
+      // A hostile/corrupt report must not fail the scan — the run simply
+      // carries no runtime evidence (same degrade posture as forensics).
+    }
+  }
   const dimensions = computeDimensions(findings);
   const rawDeductions = findings.reduce((sum, f) => sum + deductionFor(f), 0);
   const total = computeTotal(dimensions, findings, {
@@ -631,6 +701,8 @@ export async function runScan(
     rawDeductions,
     suppressionCount,
     ...(pluginsLoaded.length > 0 ? { plugins: pluginsLoaded } : {}),
+    // Plan §17.2: Agentic Trust Profile — provenance metadata only.
+    agenticProfile: computeAgenticProfile(fileProvenance, findings),
     analysisStatus: {
       // Audits H-3/H-8: both fields derive from what actually happened.
       discovery: discoveryTruncated ? "partial" : "complete",
@@ -883,11 +955,23 @@ export function runDoctorCommand(
 }
 
 /** Testable `rules` handler — rule catalog with Trust Metadata. */
-export function runRulesCommand(
+export async function runRulesCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
-): number {
-  let catalog = buildCatalog();
+): Promise<number> {
+  // Plan §18: `--external` includes workspace-local mjolnir-rules/
+  // rules in the catalog (provenance "external") — the drift-check
+  // surface: an edit to a local rule file changes the next render.
+  const withExternal = argv.includes("--external");
+  const root = process.cwd();
+  const external = withExternal ? await loadLocalRules(root) : undefined;
+  let catalog = [
+    ...buildCatalog(),
+    ...(external
+      ? buildCatalog(external.rules, { provenance: "external" })
+      : []),
+  ];
+  for (const w of external?.errors ?? []) io.err(`mjolnir: ${w}`);
   // `--unmeasured`: the rules shipping on assumption — no measured
   // false-positive rate (n < 10 classified corpus verdicts). This is
   // what the scan footer's "rule coverage" line points at.
@@ -940,6 +1024,24 @@ export function runExplainCommand(
     );
     return 20;
   }
+}
+
+/**
+ * Plan §16: locate a runtime run report next to the scan target, using
+ * the exact conventions the forensics ingestion already accepts —
+ * `mjolnir.report.json` (the packages/playwright-reporter default
+ * output) or a `test-results/` directory. Returns the path for
+ * `runForensics`, or undefined when neither convention is present
+ * ("no runtime evidence" — never guessed).
+ */
+function discoverRuntimeReport(scanRoot: string): string | undefined {
+  const reportFile = join(scanRoot, "mjolnir.report.json");
+  if (existsSync(reportFile)) return reportFile;
+  const resultsDir = join(scanRoot, "test-results");
+  if (existsSync(resultsDir) && statSync(resultsDir).isDirectory()) {
+    return resultsDir;
+  }
+  return undefined;
 }
 
 /** Testable default scan path. */
@@ -1640,7 +1742,7 @@ Subcommands — everyday:
                                    generate the PR workflow; --force overwrites
                                    a hand-customized one (default: refuse)
   explain <RULE-ID> [--fixtures-root <dir>]     what/why/fix + measured FP rate
-  rules [--md] [--unmeasured|--measured]        rule catalog with trust metadata
+  rules [--md] [--unmeasured|--measured] [--external]   rule catalog with trust metadata
   suppressions                                  list suppressed findings
 
 Subcommands — when something's flaky:

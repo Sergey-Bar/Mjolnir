@@ -79,7 +79,7 @@ async function scanJson(
 }
 
 describe("plugin tier enforcement", () => {
-  it("caps quarantine-tier plugin findings to info/E0 even at severity error", async () => {
+  it("caps quarantine-tier plugin findings to info/E0 even at severity error (--strict; non-strict excludes plugin quarantine rules exactly like core ones — §18 unified the filter)", async () => {
     writePlugin("good-plugin", ACME_TIERED_RULE);
     writeFileSync(
       join(dir, "mjolnir.config.json"),
@@ -90,7 +90,7 @@ describe("plugin tier enforcement", () => {
       join(dir, "e2e", "acme.spec.ts"),
       "it('a', () => { expect(1 + 1).toBe(2); });\n",
     );
-    const { code, result } = await scanJson();
+    const { code, result } = await scanJson(undefined, ["--strict"]);
     const acme = result.findings.find((f) => f.ruleId === "QA-ACME-001");
     expect(acme).toBeDefined();
     // Tier policy: quarantine findings can never gate CI.
@@ -98,6 +98,13 @@ describe("plugin tier enforcement", () => {
     expect(acme?.evidenceLevel).toBe("E0");
     expect(code).toBe(0);
     expect(result.plugins).toEqual([{ name: "./good-plugin", rules: 1 }]);
+
+    // Non-strict: the plugin-declared quarantine rule is excluded from
+    // the rule set (the §18 tier-aware filter consults plugin tiers).
+    const nonStrict = await scanJson();
+    expect(
+      nonStrict.result.findings.some((f) => f.ruleId === "QA-ACME-001"),
+    ).toBe(false);
   });
 
   it("surfaces unloadable plugins as QA-PLUGIN-000 findings", async () => {

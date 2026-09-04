@@ -1,0 +1,21 @@
+{
+  "countsByRule": {
+    "QA-CS-101": 26,
+    "QA-CS-102": 3,
+    "QA-CS-103": 102,
+    "QA-ENV-001": 1,
+    "QA-JV-101": 316,
+    "QA-JV-102": 28,
+    "QA-JV-103": 249,
+    "QA-JV-110": 72,
+    "QA-SE-002": 4,
+    "QA-PW-112": 22,
+    "QA-TEST-003": 1,
+    "QA-TEST-004": 2,
+    "QA-TQUAL-001": 3,
+    "QA-PY-007": 2,
+    "QA-JV-108": 1
+  },
+  "totalFindings": 832,
+  "partial": false
+}

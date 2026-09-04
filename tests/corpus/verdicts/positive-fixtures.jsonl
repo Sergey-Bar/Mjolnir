@@ -234,3 +234,18 @@
 {"ruleId":"QA-PY-001","file":"QA-PY-001/test_more_focused.py","line":5,"verdict":"TP","note":"class-B positive fixture (authored exhibit): deliberately commits the QA-PY-001 anti-pattern; the rule's diagnosis holds by construction"}
 {"ruleId":"QA-PY-001","file":"QA-PY-001/test_more_focused.py","line":8,"verdict":"TP","note":"class-B positive fixture (authored exhibit): deliberately commits the QA-PY-001 anti-pattern; the rule's diagnosis holds by construction"}
 {"ruleId":"QA-PY-001","file":"QA-PY-001/test_more_focused.py","line":13,"verdict":"TP","note":"class-B positive fixture (authored exhibit): deliberately commits the QA-PY-001 anti-pattern; the rule's diagnosis holds by construction"}
+{"ruleId":"QA-CS-102","file":"QA-CS-102/TimingTests.cs","line":8,"verdict":"TP","note":"class-B positive corpus — must-fire fixture, TP by construction (rev-2 delta)"}
+{"ruleId":"QA-CS-102","file":"QA-CS-102/TimingTests.cs","line":10,"verdict":"TP","note":"class-B positive corpus — must-fire fixture, TP by construction (rev-2 delta)"}
+{"ruleId":"QA-CS-102","file":"QA-CS-102/TimingTests.cs","line":19,"verdict":"TP","note":"class-B positive corpus — must-fire fixture, TP by construction (rev-2 delta)"}
+{"ruleId":"QA-CS-103","file":"QA-CS-103/CheckoutTests.cs","line":5,"verdict":"TP","note":"class-B positive corpus — must-fire fixture, TP by construction (rev-2 delta)"}
+{"ruleId":"QA-CS-103","file":"QA-CS-103/CheckoutTests.cs","line":11,"verdict":"TP","note":"class-B positive corpus — must-fire fixture, TP by construction (rev-2 delta)"}
+{"ruleId":"QA-CS-103","file":"QA-CS-103/CheckoutTests.cs","line":17,"verdict":"TP","note":"class-B positive corpus — must-fire fixture, TP by construction (rev-2 delta)"}
+{"ruleId":"QA-CS-103","file":"QA-CS-103/CheckoutTests.cs","line":23,"verdict":"TP","note":"class-B positive corpus — must-fire fixture, TP by construction (rev-2 delta)"}
+{"ruleId":"QA-CS-103","file":"QA-CS-103/PauseOnlyTests.cs","line":5,"verdict":"TP","note":"class-B positive corpus — must-fire fixture, TP by construction (rev-2 delta)"}
+{"ruleId":"QA-CS-103","file":"QA-CS-103/PauseOnlyTests.cs","line":11,"verdict":"TP","note":"class-B positive corpus — must-fire fixture, TP by construction (rev-2 delta)"}
+{"ruleId":"QA-CS-103","file":"QA-CS-103/PauseOnlyTests.cs","line":17,"verdict":"TP","note":"class-B positive corpus — must-fire fixture, TP by construction (rev-2 delta)"}
+{"ruleId":"QA-CS-103","file":"QA-CS-103/PauseOnlyTests.cs","line":23,"verdict":"TP","note":"class-B positive corpus — must-fire fixture, TP by construction (rev-2 delta)"}
+{"ruleId":"QA-JV-103","file":"QA-JV-103/NoCheckTest.java","line":5,"verdict":"TP","note":"class-B positive corpus — must-fire fixture, TP by construction (rev-2 delta)"}
+{"ruleId":"QA-JV-103","file":"QA-JV-103/NoCheckTest.java","line":10,"verdict":"TP","note":"class-B positive corpus — must-fire fixture, TP by construction (rev-2 delta)"}
+{"ruleId":"QA-JV-103","file":"QA-JV-103/NoCheckTest.java","line":15,"verdict":"TP","note":"class-B positive corpus — must-fire fixture, TP by construction (rev-2 delta)"}
+{"ruleId":"QA-JV-103","file":"QA-JV-103/NoCheckTest.java","line":20,"verdict":"TP","note":"class-B positive corpus — must-fire fixture, TP by construction (rev-2 delta)"}

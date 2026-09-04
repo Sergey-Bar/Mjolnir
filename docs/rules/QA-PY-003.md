@@ -43,15 +43,14 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo                | Occurrences |
 | ------------------- | ----------- |
-| apache-airflow      | 3721        |
-| getsentry-sentry    | 318         |
-| negative-fixtures   | 3           |
-| pallets-click       | 14          |
-| positive-fixtures   | 2           |
-| psf-requests        | 14          |
-| pytest-dev-pytest   | 100         |
-| reflex-dev-reflex   | 101         |
-| streamlit-streamlit | 800         |
+| apache-airflow      | 45          |
+| getsentry-sentry    | 1           |
+| pallets-click       | 3           |
+| positive-fixtures   | 13          |
+| psf-requests        | 3           |
+| pytest-dev-pytest   | 30          |
+| reflex-dev-reflex   | 52          |
+| streamlit-streamlit | 29          |
 
 ---
 

@@ -25,6 +25,8 @@ interface PwTest {
 interface PwSpec {
   title?: string;
   file?: string;
+  /** Playwright JSON spec location (0-based line → we store +1). */
+  location?: { line?: number; column?: number };
   tests?: PwTest[];
 }
 
@@ -88,7 +90,19 @@ export function parsePlaywrightJson(json: unknown): TestRecord[] {
           });
         }
         if (attempts.length === 0) continue;
-        out.push({ file, title: spec.title ?? "(unnamed)", attempts });
+        // Plan §16: carry the spec declaration line (Playwright emits a
+        // 0-based line; the engine's positions are 1-based) so runtime
+        // corroboration can tie findings to the executed test.
+        const specLine =
+          typeof spec.location?.line === "number" && spec.location.line >= 0
+            ? spec.location.line + 1
+            : undefined;
+        out.push({
+          file,
+          title: spec.title ?? "(unnamed)",
+          attempts,
+          ...(specLine !== undefined ? { line: specLine } : {}),
+        });
       }
     }
   };

@@ -57,6 +57,11 @@ export const FAMILIES = {
   JV: "Java / JUnit · TestNG",
   CS: "C# / .NET",
   ENV: "Environment",
+  CYP: "Cypress",
+  SE: "Selenium (cross-language)",
+  WDIO: "WebdriverIO",
+  PPTR: "Puppeteer",
+  APM: "Appium",
 };
 
 /**

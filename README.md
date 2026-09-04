@@ -281,7 +281,7 @@ firewall.
 
 ### How much of this is measured
 
-**72 of 91 rules carry a false-positive rate measured against real OSS code** (≥ 10 hand-classified findings each; see
+**73 of 99 rules carry a false-positive rate measured against real OSS code** (≥ 10 hand-classified findings each; see
 [docs/FP-AUDIT.md](docs/FP-AUDIT.md)). The other 19 ship on the author's
 estimate. Every scan footer tells you how many of the rules that _fired_
 are measured; `mjolnir rules --unmeasured` lists the ones that aren't;
@@ -559,6 +559,16 @@ are immutable once shipped and never reused.
   There is **no sandbox**: plugin code runs with full Node privileges, the
   same trust model as ESLint or Vitest plugins. Core rule-ID prefixes are
   reserved and rejected from plugins to prevent spoofing.
+- **Workspace-local external rules** (folder-based, zero network) — a
+  `mjolnir-rules/` directory next to the scan target loads custom rules:
+  JSON files declare regex patterns (no code executed), `.mjs`/`.js`
+  modules export `rules` (full-Node trust, same as plugins). External
+  rules carry the same trust metadata as core; they can never ship in
+  the core tier (core requires a measured FP rate from the corpus
+  sidecar — a declared `tier: "core"` is clamped to `extended`), obey
+  tier caps, and are drift-checked: `mjolnir rules --md --external`
+  renders the catalog from the loaded files (provenance `external`),
+  and the matrix generator accepts `--external <root>`.
 
 ---
 

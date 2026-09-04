@@ -1,10 +1,10 @@
 {
   "planSection": "Verification Trust Evolution Plan §04/§09 — Capability Matrix v0",
   "generatedBy": "npm run docs:capability",
-  "registrySize": 91,
-  "measuredCount": 72,
-  "coverage": "72/91",
-  "declaredTierCount": 84,
+  "registrySize": 99,
+  "measuredCount": 73,
+  "coverage": "73/99",
+  "declaredTierCount": 92,
   "unmeasuredInCore": [],
   "d9Suspects": [],
   "defectLedger": [
@@ -40,8 +40,8 @@
     },
     {
       "id": "D7",
-      "defect": "`frameworks` metadata declared but unenforced; framework detection is shallow (regex over build files, first `.csproj` only)",
-      "targetPhase": "2 / 5"
+      "defect": "`frameworks` metadata declared but unenforced; framework detection is shallow (regex over build files, first `.csproj` only) [CLOSED 2026-09-02, plan §15.1: dependency parsing per build system (package.json JSON, Maven <dependency> blocks, Gradle coordinates, every .csproj PackageReference), per-file framework tags from the file's own imports/usings, rule.frameworks ∩ file.frameworkTags filtering with open-when-unknown, configFiles declaration replacing the hard-coded playwright.config regex]",
+      "targetPhase": "5 (closed)"
     },
     {
       "id": "D8",
@@ -77,7 +77,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CI-002",
@@ -105,7 +106,8 @@
       "status": "MEASURED-EXTENDED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CI-005",
@@ -133,7 +135,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CI-007",
@@ -161,7 +164,8 @@
       "status": "MEASURED-EXTENDED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CI-008",
@@ -189,7 +193,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CI-009",
@@ -217,7 +222,8 @@
       "status": "PROVISIONAL",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CI-010",
@@ -245,7 +251,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CS-101",
@@ -273,7 +280,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CS-102",
@@ -284,24 +292,25 @@
       "appliesTo": "csharp",
       "languages": ["csharp"],
       "frameworks": ["nunit", "xunit", "mstest", "playwright"],
-      "detectionStrategy": "LEXICAL",
-      "detectionStrategyEnum": "LEXICAL",
-      "semanticDepth": "Low",
+      "detectionStrategy": "AST",
+      "detectionStrategyEnum": "AST",
+      "semanticDepth": "Medium",
       "measured": true,
-      "fpRate": 0.65,
-      "n": 20,
-      "ciLow": 0.4329,
-      "ciHigh": 0.8188,
+      "fpRate": 0.083,
+      "n": 24,
+      "ciLow": 0.023,
+      "ciHigh": 0.2581,
       "recall": "UNCLASSIFIED",
-      "corpusSize": 20,
-      "corpusDiversity": 1,
+      "corpusSize": 24,
+      "corpusDiversity": 2,
       "mutationCoverage": "UNCLASSIFIED",
-      "tier": "quarantine",
+      "tier": "core",
       "tierDeclared": true,
-      "status": "MEASURED-QUARANTINE",
+      "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CS-103",
@@ -312,24 +321,25 @@
       "appliesTo": "csharp",
       "languages": ["csharp"],
       "frameworks": ["nunit", "xunit", "mstest"],
-      "detectionStrategy": "LEXICAL",
-      "detectionStrategyEnum": "LEXICAL",
-      "semanticDepth": "Low",
+      "detectionStrategy": "AST",
+      "detectionStrategyEnum": "AST",
+      "semanticDepth": "Medium",
       "measured": true,
-      "fpRate": 0.95,
-      "n": 20,
-      "ciLow": 0.7639,
-      "ciHigh": 0.9911,
+      "fpRate": 0,
+      "n": 11,
+      "ciLow": 0,
+      "ciHigh": 0.2588,
       "recall": "UNCLASSIFIED",
-      "corpusSize": 20,
-      "corpusDiversity": 2,
+      "corpusSize": 11,
+      "corpusDiversity": 3,
       "mutationCoverage": "UNCLASSIFIED",
-      "tier": "quarantine",
+      "tier": "core",
       "tierDeclared": true,
-      "status": "MEASURED-QUARANTINE",
+      "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CS-104",
@@ -357,7 +367,8 @@
       "status": "PROVISIONAL",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CS-105",
@@ -385,7 +396,8 @@
       "status": "MEASURED-EXTENDED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CS-106",
@@ -413,7 +425,8 @@
       "status": "UNMEASURED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CS-107",
@@ -441,7 +454,8 @@
       "status": "PROVISIONAL",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CS-108",
@@ -469,7 +483,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CS-109",
@@ -497,7 +512,8 @@
       "status": "PROVISIONAL",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CS-110",
@@ -525,7 +541,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-CS-111",
@@ -553,7 +570,95 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
+    },
+    {
+      "id": "QA-CYP-001",
+      "name": "Fixed cy.wait(n) hard-coded wait",
+      "category": "QA-PW",
+      "severity": "warning",
+      "confidence": "high",
+      "appliesTo": "test-files",
+      "languages": ["typescript", "javascript"],
+      "frameworks": ["cypress"],
+      "detectionStrategy": "LEXICAL",
+      "detectionStrategyEnum": "LEXICAL",
+      "semanticDepth": "Low",
+      "measured": true,
+      "fpRate": 0.2,
+      "n": 15,
+      "ciLow": 0.0705,
+      "ciHigh": 0.4519,
+      "recall": "UNCLASSIFIED",
+      "corpusSize": 15,
+      "corpusDiversity": 1,
+      "mutationCoverage": "UNCLASSIFIED",
+      "tier": "extended",
+      "tierDeclared": true,
+      "status": "MEASURED-EXTENDED",
+      "suiteInvalidating": false,
+      "knownLimitations": "UNCLASSIFIED",
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
+    },
+    {
+      "id": "QA-CYP-002",
+      "name": "Focused test (.only)",
+      "category": "QA-PW",
+      "severity": "error",
+      "confidence": "high",
+      "appliesTo": "test-files",
+      "languages": ["typescript", "javascript"],
+      "frameworks": ["cypress"],
+      "detectionStrategy": "LEXICAL",
+      "detectionStrategyEnum": "LEXICAL",
+      "semanticDepth": "Low",
+      "measured": false,
+      "fpRate": "UNCLASSIFIED",
+      "n": "UNCLASSIFIED",
+      "ciLow": "UNCLASSIFIED",
+      "ciHigh": "UNCLASSIFIED",
+      "recall": "UNCLASSIFIED",
+      "corpusSize": 0,
+      "corpusDiversity": 0,
+      "mutationCoverage": "UNCLASSIFIED",
+      "tier": "quarantine",
+      "tierDeclared": true,
+      "status": "UNMEASURED",
+      "suiteInvalidating": false,
+      "knownLimitations": "UNCLASSIFIED",
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
+    },
+    {
+      "id": "QA-CYP-003",
+      "name": "Cypress config disables chromeWebSecurity",
+      "category": "QA-PW",
+      "severity": "error",
+      "confidence": "high",
+      "appliesTo": "test-files",
+      "languages": ["typescript", "javascript"],
+      "frameworks": ["cypress"],
+      "detectionStrategy": "LEXICAL",
+      "detectionStrategyEnum": "LEXICAL",
+      "semanticDepth": "Low",
+      "measured": false,
+      "fpRate": "UNCLASSIFIED",
+      "n": "UNCLASSIFIED",
+      "ciLow": "UNCLASSIFIED",
+      "ciHigh": "UNCLASSIFIED",
+      "recall": "UNCLASSIFIED",
+      "corpusSize": 0,
+      "corpusDiversity": 0,
+      "mutationCoverage": "UNCLASSIFIED",
+      "tier": "quarantine",
+      "tierDeclared": true,
+      "status": "UNMEASURED",
+      "suiteInvalidating": false,
+      "knownLimitations": "UNCLASSIFIED",
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-ENV-001",
@@ -581,7 +686,8 @@
       "status": "UNMEASURED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-JV-101",
@@ -609,7 +715,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-JV-102",
@@ -637,7 +744,8 @@
       "status": "MEASURED-EXTENDED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-JV-103",
@@ -648,24 +756,25 @@
       "appliesTo": "java",
       "languages": ["java"],
       "frameworks": ["junit", "testng"],
-      "detectionStrategy": "LEXICAL",
-      "detectionStrategyEnum": "LEXICAL",
-      "semanticDepth": "Low",
+      "detectionStrategy": "AST",
+      "detectionStrategyEnum": "AST",
+      "semanticDepth": "Medium",
       "measured": true,
-      "fpRate": 0.5,
-      "n": 20,
-      "ciLow": 0.2993,
-      "ciHigh": 0.7007,
+      "fpRate": 0.259,
+      "n": 58,
+      "ciLow": 0.1638,
+      "ciHigh": 0.3842,
       "recall": "UNCLASSIFIED",
-      "corpusSize": 20,
-      "corpusDiversity": 1,
+      "corpusSize": 58,
+      "corpusDiversity": 5,
       "mutationCoverage": "UNCLASSIFIED",
-      "tier": "quarantine",
+      "tier": "extended",
       "tierDeclared": true,
-      "status": "MEASURED-QUARANTINE",
+      "status": "MEASURED-EXTENDED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-JV-104",
@@ -693,7 +802,8 @@
       "status": "MEASURED-EXTENDED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-JV-105",
@@ -721,7 +831,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-JV-106",
@@ -749,7 +860,8 @@
       "status": "UNMEASURED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-JV-107",
@@ -777,7 +889,8 @@
       "status": "PROVISIONAL",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-JV-108",
@@ -805,7 +918,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-JV-109",
@@ -833,7 +947,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-JV-110",
@@ -861,7 +976,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-JV-111",
@@ -889,7 +1005,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-002",
@@ -917,7 +1034,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-003",
@@ -945,7 +1063,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-004",
@@ -973,7 +1092,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-005",
@@ -1001,7 +1121,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-101",
@@ -1029,7 +1150,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-102",
@@ -1057,7 +1179,8 @@
       "status": "UNMEASURED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-103",
@@ -1085,7 +1208,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-104",
@@ -1113,7 +1237,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-105",
@@ -1141,7 +1266,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-107",
@@ -1169,7 +1295,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-108",
@@ -1197,7 +1324,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-112",
@@ -1225,7 +1353,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-113",
@@ -1253,7 +1382,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-114",
@@ -1281,7 +1411,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-115",
@@ -1309,7 +1440,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-116",
@@ -1337,7 +1469,8 @@
       "status": "PROVISIONAL",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-117",
@@ -1365,7 +1498,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-118",
@@ -1393,7 +1527,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-119",
@@ -1421,7 +1556,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-120",
@@ -1449,7 +1585,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-121",
@@ -1477,7 +1614,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-122",
@@ -1505,7 +1643,8 @@
       "status": "MEASURED-EXTENDED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-123",
@@ -1533,7 +1672,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-124",
@@ -1561,7 +1701,8 @@
       "status": "PROVISIONAL",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-125",
@@ -1589,7 +1730,8 @@
       "status": "PROVISIONAL",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-140",
@@ -1617,7 +1759,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-141",
@@ -1645,7 +1788,8 @@
       "status": "MEASURED-EXTENDED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-142",
@@ -1673,7 +1817,8 @@
       "status": "MEASURED-EXTENDED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-143",
@@ -1701,7 +1846,8 @@
       "status": "MEASURED-EXTENDED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-144",
@@ -1729,7 +1875,8 @@
       "status": "MEASURED-EXTENDED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PW-145",
@@ -1757,7 +1904,66 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
+    },
+    {
+      "id": "QA-PW-146",
+      "name": "CSS/XPath string selector instead of a normalized locator",
+      "category": "QA-PW",
+      "severity": "warning",
+      "confidence": "medium",
+      "appliesTo": "test-files",
+      "languages": ["typescript", "javascript"],
+      "frameworks": ["playwright"],
+      "detectionStrategy": "LEXICAL",
+      "detectionStrategyEnum": "LEXICAL",
+      "semanticDepth": "Low",
+      "measured": false,
+      "fpRate": "UNCLASSIFIED",
+      "n": "UNCLASSIFIED",
+      "ciLow": "UNCLASSIFIED",
+      "ciHigh": "UNCLASSIFIED",
+      "recall": "UNCLASSIFIED",
+      "corpusSize": 0,
+      "corpusDiversity": 0,
+      "mutationCoverage": "UNCLASSIFIED",
+      "tier": "quarantine",
+      "tierDeclared": true,
+      "status": "UNMEASURED",
+      "suiteInvalidating": false,
+      "knownLimitations": "UNCLASSIFIED",
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
+    },
+    {
+      "id": "QA-PW-147",
+      "name": "Playwright codegen default test title (recording artifact)",
+      "category": "QA-PW",
+      "severity": "info",
+      "confidence": "medium",
+      "appliesTo": "test-files",
+      "languages": ["typescript", "javascript"],
+      "frameworks": ["playwright"],
+      "detectionStrategy": "LEXICAL",
+      "detectionStrategyEnum": "LEXICAL",
+      "semanticDepth": "Low",
+      "measured": false,
+      "fpRate": "UNCLASSIFIED",
+      "n": "UNCLASSIFIED",
+      "ciLow": "UNCLASSIFIED",
+      "ciHigh": "UNCLASSIFIED",
+      "recall": "UNCLASSIFIED",
+      "corpusSize": 0,
+      "corpusDiversity": 0,
+      "mutationCoverage": "UNCLASSIFIED",
+      "tier": "quarantine",
+      "tierDeclared": true,
+      "status": "UNMEASURED",
+      "suiteInvalidating": false,
+      "knownLimitations": "UNCLASSIFIED",
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-001",
@@ -1785,7 +1991,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": true,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-002",
@@ -1813,7 +2020,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-003",
@@ -1841,7 +2049,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-004",
@@ -1869,7 +2078,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-005",
@@ -1897,7 +2107,8 @@
       "status": "MEASURED-EXTENDED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-006",
@@ -1925,7 +2136,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-007",
@@ -1953,7 +2165,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-008",
@@ -1981,7 +2194,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-009",
@@ -2009,7 +2223,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-010",
@@ -2037,7 +2252,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-011",
@@ -2065,7 +2281,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-012",
@@ -2093,7 +2310,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-101",
@@ -2121,7 +2339,8 @@
       "status": "PROVISIONAL",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-102",
@@ -2149,7 +2368,8 @@
       "status": "UNMEASURED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-103",
@@ -2177,7 +2397,8 @@
       "status": "MEASURED-CORE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-104",
@@ -2205,7 +2426,8 @@
       "status": "UNMEASURED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-105",
@@ -2233,7 +2455,8 @@
       "status": "UNMEASURED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-106",
@@ -2261,7 +2484,8 @@
       "status": "PROVISIONAL",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-107",
@@ -2289,7 +2513,8 @@
       "status": "PROVISIONAL",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-PY-108",
@@ -2317,7 +2542,95 @@
       "status": "UNMEASURED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
+    },
+    {
+      "id": "QA-SE-001",
+      "name": "Hard sleep before element lookup (Java, missing WebDriverWait)",
+      "category": "QA-PW",
+      "severity": "warning",
+      "confidence": "medium",
+      "appliesTo": "java",
+      "languages": ["java"],
+      "frameworks": ["selenium"],
+      "detectionStrategy": "LEXICAL",
+      "detectionStrategyEnum": "LEXICAL",
+      "semanticDepth": "Low",
+      "measured": false,
+      "fpRate": "UNCLASSIFIED",
+      "n": "UNCLASSIFIED",
+      "ciLow": "UNCLASSIFIED",
+      "ciHigh": "UNCLASSIFIED",
+      "recall": "UNCLASSIFIED",
+      "corpusSize": 0,
+      "corpusDiversity": 0,
+      "mutationCoverage": "UNCLASSIFIED",
+      "tier": "quarantine",
+      "tierDeclared": true,
+      "status": "UNMEASURED",
+      "suiteInvalidating": false,
+      "knownLimitations": "UNCLASSIFIED",
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
+    },
+    {
+      "id": "QA-SE-002",
+      "name": "Hard sleep before element lookup (C#, missing WebDriverWait)",
+      "category": "QA-PW",
+      "severity": "warning",
+      "confidence": "medium",
+      "appliesTo": "csharp",
+      "languages": ["csharp"],
+      "frameworks": ["selenium"],
+      "detectionStrategy": "LEXICAL",
+      "detectionStrategyEnum": "LEXICAL",
+      "semanticDepth": "Low",
+      "measured": false,
+      "fpRate": "UNCLASSIFIED",
+      "n": "UNCLASSIFIED",
+      "ciLow": "UNCLASSIFIED",
+      "ciHigh": "UNCLASSIFIED",
+      "recall": "UNCLASSIFIED",
+      "corpusSize": 4,
+      "corpusDiversity": 1,
+      "mutationCoverage": "UNCLASSIFIED",
+      "tier": "quarantine",
+      "tierDeclared": true,
+      "status": "UNMEASURED",
+      "suiteInvalidating": false,
+      "knownLimitations": "UNCLASSIFIED",
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
+    },
+    {
+      "id": "QA-SE-003",
+      "name": "Hard sleep before element lookup (Python, missing WebDriverWait)",
+      "category": "QA-PW",
+      "severity": "warning",
+      "confidence": "medium",
+      "appliesTo": "python",
+      "languages": ["python"],
+      "frameworks": ["selenium"],
+      "detectionStrategy": "LEXICAL",
+      "detectionStrategyEnum": "LEXICAL",
+      "semanticDepth": "Low",
+      "measured": false,
+      "fpRate": "UNCLASSIFIED",
+      "n": "UNCLASSIFIED",
+      "ciLow": "UNCLASSIFIED",
+      "ciHigh": "UNCLASSIFIED",
+      "recall": "UNCLASSIFIED",
+      "corpusSize": 0,
+      "corpusDiversity": 0,
+      "mutationCoverage": "UNCLASSIFIED",
+      "tier": "quarantine",
+      "tierDeclared": true,
+      "status": "UNMEASURED",
+      "suiteInvalidating": false,
+      "knownLimitations": "UNCLASSIFIED",
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-TEST-001",
@@ -2345,7 +2658,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": true,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-TEST-002",
@@ -2373,7 +2687,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-TEST-003",
@@ -2401,7 +2716,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-TEST-004",
@@ -2429,7 +2745,8 @@
       "status": "MEASURED-EXTENDED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-TEST-006",
@@ -2457,7 +2774,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-TEST-010",
@@ -2485,7 +2803,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-TQUAL-001",
@@ -2513,7 +2832,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-TQUAL-002",
@@ -2541,7 +2861,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-TQUAL-009",
@@ -2569,7 +2890,8 @@
       "status": "MEASURED-QUARANTINE",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     },
     {
       "id": "QA-TQUAL-011",
@@ -2597,7 +2919,8 @@
       "status": "MEASURED-EXTENDED",
       "suiteInvalidating": false,
       "knownLimitations": "UNCLASSIFIED",
-      "evidenceRequirements": "UNCLASSIFIED"
+      "evidenceRequirements": "UNCLASSIFIED",
+      "provenance": "core"
     }
   ]
 }

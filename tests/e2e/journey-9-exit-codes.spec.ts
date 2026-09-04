@@ -64,12 +64,19 @@ describe("E2E journey 9: exit-code contract sweep", () => {
     expect(runCli(["diff", dir]).status).toBe(2);
   });
 
-  it("forensics/triage/pw-report: bad flag 10, missing dir 2", () => {
-    for (const cmd of ["forensics", "triage", "pw-report"]) {
-      expect(runCli([cmd, "--bogus"]).status).toBe(10);
-      expect(runCli([cmd, join(dir, "nope")]).status).toBe(2);
-    }
-  });
+  it(
+    "forensics/triage/pw-report: bad flag 10, missing dir 2",
+    // 6 CLI spawns (3 commands × 2 args) — each a real child process;
+    // under Windows CI load a 5s Vitest default killed the test before
+    // its own assertions ran (same rationale as determinism-binary).
+    { timeout: 60_000 },
+    () => {
+      for (const cmd of ["forensics", "triage", "pw-report"]) {
+        expect(runCli([cmd, "--bogus"]).status).toBe(10);
+        expect(runCli([cmd, join(dir, "nope")]).status).toBe(2);
+      }
+    },
+  );
 
   it("impact: bad flag 10, non-git target 2, no commits 2", () => {
     expect(runCli(["impact", "--bogus"]).status).toBe(10);

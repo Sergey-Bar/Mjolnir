@@ -50,6 +50,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | nocodb-nocodb                                 | 1           |
 | playwright-community-eslint-plugin-playwright | 2           |
 | positive-fixtures                             | 6           |
+| vercel-next-js                                | 1           |
 | vitest-dev-vitest                             | 4           |
 
 ---

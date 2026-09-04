@@ -273,6 +273,37 @@ export const ANTI_PATTERN_CONTENT: Record<string, string> = {
     "Playwright is async-only (`GotoAsync`, `ClickAsync`) — the fixture " +
     "shapes that trigger this rule look meaningfully different in C# " +
     "even though the underlying defect is identical.",
+
+  "QA-CYP-002":
+    "A Cypress `it.only`/`describe.only` committed to the shared suite " +
+    "silently de-schedules every other test: `npx cypress run` executes " +
+    "the focused subset and reports a green run over it, so CI coverage " +
+    "collapses to whatever the last debugging session left focused. " +
+    "Unlike a skipped test (which announces itself as skipped in the " +
+    "report), the de-scheduled tests simply never appear — the run " +
+    "looks complete while covering a fraction of the suite.",
+
+  "QA-CYP-003":
+    "`chromeWebSecurity: false` in cypress.config.* runs the entire " +
+    "Cypress suite against a browser with its same-origin policy turned " +
+    "off. The tests stop exercising the security boundary the browser " +
+    "enforces in production: cross-origin frames, cookies, and requests " +
+    "that the app's users could never make from that origin succeed " +
+    "inside the test run, so a real cross-origin breakage ships " +
+    "unnoticed while the suite stays green. It also widens the attack " +
+    "surface of every site the tests visit — a malicious ad/CDN script " +
+    "loaded during testing can read cookies from other origins.",
+
+  "QA-SE-001":
+    "A Selenium `Thread.sleep` before `findElement` encodes a guess " +
+    "about the app's timing: the explicit wait it replaces polls the " +
+    "DOM until the element is interactive, while the sleep waits a " +
+    "constant and then proceeds blindly. Under load the element appears " +
+    "after the sleep ends and `NoSuchElementException` fails the run " +
+    "(flaky); on a fast run the sleep is pure dead time charged to " +
+    "every execution (slow). Selenium's implicit-wait setting cannot " +
+    "rescue this shape — `implicitlyWait` only applies to the lookup " +
+    "itself, not to the sleep before it.",
 };
 
 /** True when a rule has richer, hand-curated production-impact content

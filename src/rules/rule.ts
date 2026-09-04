@@ -123,9 +123,11 @@ export interface SourceFileContext {
   path: string;
   text: string;
   /**
-   * Parsed AST provided by the engine (ts-morph SourceFile).
-   * Typed as unknown here to keep the core rule contract decoupled;
-   * the TS rule runner narrows it.
+   * Parsed AST provided by the engine — ts-morph SourceFile for
+   * TypeScript files, tree-sitter Tree for Java/C# (Phase 0.5 parse
+   * stage), workflow DOM for GitHub Actions. Typed as unknown here to
+   * keep the core rule contract decoupled; each language's helper
+   * narrows it (getTsSourceFile / getTreeSitterTree).
    */
   ast?: unknown;
   /**
@@ -142,6 +144,36 @@ export type RuleFn = (
   ctx: SourceFileContext,
 ) => Omit<Finding, "ruleId" | "category">[];
 
+/**
+ * Optional L2 structural-analysis hook (Verification Trust Evolution
+ * Plan §13.2). When the engine provides a parsed AST on the context
+ * (ts-morph SourceFile for TypeScript, tree-sitter Tree for Java/C#),
+ * the hook produces the findings; its regex path is the MANDATORY
+ * fallback, never optional — `undefined` return (or no `ctx.ast`)
+ * means "no AST — run the regex path", so fixture harnesses, grammar
+ * load failures, and degraded scans all keep working (ts-ast fallback
+ * discipline, QA-PW-002 pattern). This seam is what lets a rule
+ * declare `detectionStrategy: "AST"` honestly: the structural path is
+ * the decision when a tree exists, and the regex path is documented
+ * degraded detection, not a second source of truth.
+ */
+export type AstQueryHook = (
+  ctx: SourceFileContext,
+) => Omit<Finding, "ruleId" | "category">[] | undefined;
+
+/**
+ * Invoke an `astQuery` hook with the mandatory-fallback contract: no
+ * hook or no AST on the context resolves to `undefined` (→ regex
+ * fallback). Centralized so every consumer obeys the same rule.
+ */
+export function tryAstQuery(
+  hook: AstQueryHook | undefined,
+  ctx: SourceFileContext,
+): Omit<Finding, "ruleId" | "category">[] | undefined {
+  if (hook === undefined || ctx.ast === undefined) return undefined;
+  return hook(ctx);
+}
+
 export type AppliesTo =
   "test-files" | "ci-workflows" | "python" | "java" | "csharp" | "all";
 
@@ -149,14 +181,38 @@ export interface QADoctorRule extends RuleMeta {
   /** Which file kinds this rule applies to. */
   appliesTo: AppliesTo;
   /**
-   * Config-hygiene rules: the engine only feeds these rules
-   * playwright.config.* files (and never feeds them test files), and
-   * never feeds test-file rules a config. Set on rules whose detection
-   * gates on a config filename (QA-PW-121/122/141/143/144). Without
-   * this flag the generic test rules would fire nonsense on configs
-   * (e.g. QA-TEST-003 "no assertions" on every playwright.config.ts).
+   * Config-hygiene rules: the engine only feeds these rules config
+   * files (and never feeds them test files), and never feeds test-file
+   * rules a config. Set on rules whose detection gates on a config
+   * filename (QA-PW-121/122/141/143/144). Without this flag the
+   * generic test rules would fire nonsense on configs (e.g. QA-TEST-003
+   * "no assertions" on every playwright.config.ts).
    */
   configRule?: boolean;
+  /**
+   * Config filename patterns (regex SOURCE strings) this config rule
+   * gates on (plan §15.2): the adapter matches these against the file's
+   * basename, replacing the hard-coded playwright.config.* regex that
+   * used to live in the adapter AND duplicated inside each config rule.
+   * The internal regex gate in `run` stays as belt-and-suspenders for
+   * direct harness invocation.
+   */
+  configFiles?: string[];
+  /**
+   * Framework opt-in (plan §15.1, defect D7): when declared, the rule
+   * runs on a file only if the file's own framework tags (its
+   * imports/usings) intersect it. Files without tags are always
+   * analyzed (open-when-unknown) — the dimension narrows, it never
+   * silently drops evidence. Mirror of UniversalRule.frameworks,
+   * threaded through asUniversal.
+   */
+  frameworksOverride?: string[];
+  /**
+   * L2 structural-analysis path (§13.2): runs when the engine supplies
+   * a parsed AST for the file. MUST be paired with a regex fallback in
+   * `run` (mandatory fallback discipline) — see AstQueryHook.
+   */
+  astQuery?: AstQueryHook;
   run: RuleFn;
 }
 

@@ -41,22 +41,24 @@ Verified against `tests/fixtures/QA-TEST-002/must-not-fire/clean.spec.ts` — a 
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo                  | Occurrences |
-| --------------------- | ----------- |
-| apache-airflow        | 1           |
-| calcom-cal            | 18          |
-| cypress-realworld-app | 3           |
-| dubinc-dub            | 2           |
-| getsentry-sentry      | 9           |
-| github-docs           | 11          |
-| grafana-grafana       | 45          |
-| keycloak-keycloak     | 22          |
-| nextauthjs-next-auth  | 1           |
-| positive-fixtures     | 1           |
-| sveltejs-kit          | 38          |
-| vitejs-vite           | 5           |
-| vitest-dev-vitest     | 23          |
-| withastro-astro       | 32          |
+| Repo                             | Occurrences |
+| -------------------------------- | ----------- |
+| apache-airflow                   | 1           |
+| calcom-cal                       | 18          |
+| cypress-io-cypress-realworld-app | 3           |
+| cypress-realworld-app            | 3           |
+| dubinc-dub                       | 2           |
+| getsentry-sentry                 | 9           |
+| github-docs                      | 11          |
+| grafana-grafana                  | 45          |
+| keycloak-keycloak                | 22          |
+| nextauthjs-next-auth             | 1           |
+| positive-fixtures                | 1           |
+| sveltejs-kit                     | 38          |
+| vercel-next-js                   | 230         |
+| vitejs-vite                      | 5           |
+| vitest-dev-vitest                | 23          |
+| withastro-astro                  | 32          |
 
 ---
 

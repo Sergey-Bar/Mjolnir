@@ -41,11 +41,9 @@ Verified against `tests/fixtures/QA-PY-105/must-not-fire/helper-verification.py`
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo                | Occurrences |
-| ------------------- | ----------- |
-| negative-fixtures   | 5           |
-| positive-fixtures   | 18          |
-| streamlit-streamlit | 25          |
+| Repo              | Occurrences |
+| ----------------- | ----------- |
+| positive-fixtures | 12          |
 
 ---
 

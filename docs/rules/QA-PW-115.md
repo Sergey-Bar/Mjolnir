@@ -47,6 +47,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | negative-fixtures | 1           |
 | nocodb-nocodb     | 2           |
 | positive-fixtures | 6           |
+| vercel-next-js    | 2           |
 | vitest-dev-vitest | 1           |
 | withastro-astro   | 3           |
 

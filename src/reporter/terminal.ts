@@ -302,6 +302,15 @@ function evidenceTag(f: Finding): string {
     tag += ` · measured FP ${Math.round(f.measuredFpRate * 100)}%`;
     if (f.measuredFpN !== undefined) tag += ` · n=${f.measuredFpN}`;
   }
+  // Plan §16: surface the trust ladder + what runtime vouched for.
+  if (f.trustLevel !== undefined) tag += ` · trust ${f.trustLevel}`;
+  if (f.runtimeCorroboration !== undefined) {
+    const c = f.runtimeCorroboration;
+    let label = "file executed";
+    if (c.level === "defect") label = "defect corroborated";
+    else if (c.level === "test") label = "test executed";
+    tag += ` · runtime: ${label}`;
+  }
   return `[${tag}]`;
 }
 
@@ -569,6 +578,51 @@ function appendFooter(
         `  Rule coverage: ${measuredHere}/${firedRuleIds.size} rules that fired here have a measured` +
           ` false-positive rate; the rest are heuristics.` +
           ` \`mjolnir rules --unmeasured\` lists them.`,
+      ),
+    );
+    // Plan §16: verified vs assumed — how many findings a real run
+    // report corroborated. When no report was present, say so honestly
+    // instead of implying the split is all-assumed by choice.
+    const verified = result.findings.filter(
+      (f) => f.runtimeCorroboration !== undefined,
+    ).length;
+    if (verified > 0) {
+      lines.push(
+        p.dim(
+          `  Runtime evidence: ${verified}/${result.findings.length} findings corroborated by a real run report (trust L3–L5); the rest are static-only.`,
+        ),
+      );
+    } else {
+      lines.push(
+        p.dim(
+          `  Runtime evidence: not available — no run report (mjolnir.report.json / test-results) next to the scan target; all findings are static-only (L0–L2).`,
+        ),
+      );
+    }
+  }
+
+  // Plan §17.2: Agentic Trust Profile — provenance metadata, surfaced
+  // honestly (static markers only; never a trust verdict). Only when
+  // something was actually detected — silence over noise.
+  const profile = result.agenticProfile;
+  if (
+    profile &&
+    (profile.generatedMarkedFiles > 0 || profile.codegenLikeFiles > 0)
+  ) {
+    const parts: string[] = [];
+    if (profile.generatedMarkedFiles > 0) {
+      parts.push(
+        `${profile.generatedMarkedFiles} generated-marked file${profile.generatedMarkedFiles === 1 ? "" : "s"}`,
+      );
+    }
+    if (profile.codegenLikeFiles > 0) {
+      parts.push(
+        `${profile.codegenLikeFiles} codegen-like file${profile.codegenLikeFiles === 1 ? "" : "s"}`,
+      );
+    }
+    lines.push(
+      p.dim(
+        `  Agentic provenance: ${parts.join(", ")} of ${profile.testFiles} test files (static markers only — provenance is metadata, not trust).`,
       ),
     );
   }

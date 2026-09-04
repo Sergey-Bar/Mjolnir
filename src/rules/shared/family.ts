@@ -8,8 +8,10 @@
 
 import {
   defineRule,
+  tryAstQuery,
   type QADoctorRule,
   type AppliesTo,
+  type AstQueryHook,
   type DetectionStrategy,
 } from "../rule.js";
 import type {
@@ -49,6 +51,28 @@ export interface LanguageVariant {
   falsePositiveRisk?: "low" | "medium" | "high";
   /** Tier override (defaults to family-level tier). */
   tier?: "core" | "extended" | "quarantine";
+  /**
+   * Detection-strategy override (defaults to family-level value).
+   * A variant that migrates to L2 structural analysis declares "AST"
+   * here while sibling variants stay LEXICAL (§13.3 — evidence-driven,
+   * per-rule migration, never family-wide by symmetry).
+   */
+  detectionStrategy?: DetectionStrategy;
+  /** Legacy free-text detection-notes override (family-level default). */
+  detectionNotes?: string;
+  /**
+   * Detector-implementation revision override (§07; family-level
+   * default). Bumped on any detection-logic change of THIS variant.
+   */
+  detectorRevision?: number;
+  /**
+   * L2 structural-analysis hook (§13.2). When the engine supplies a
+   * parsed AST, this produces the findings and the regex patterns
+   * become the mandatory fallback. See AstQueryHook on the rule
+   * contract — `undefined` return (or no AST) MUST fall through to
+   * the regex path, which is kept in lockstep.
+   */
+  astQuery?: AstQueryHook;
 }
 
 export interface PatternFamilyOptions {
@@ -72,6 +96,8 @@ export interface PatternFamilyOptions {
   detectionStrategy?: DetectionStrategy;
   /** Shared legacy free-text detection notes, if any. */
   detectionNotes?: string;
+  /** Shared detector-implementation revision (§07; variants override). */
+  detectorRevision?: number;
   /** Shared autofix flag. */
   autofix?: boolean;
   /** Shared introduced version. */
@@ -115,19 +141,42 @@ export function definePatternFamily(
       frameworks: v.frameworks,
       falsePositiveRisk: v.falsePositiveRisk ?? opts.falsePositiveRisk,
       autofix: opts.autofix ?? false,
-      detectionStrategy: opts.detectionStrategy ?? "LEXICAL",
-      ...(opts.detectionNotes ? { detectionNotes: opts.detectionNotes } : {}),
+      detectionStrategy:
+        v.detectionStrategy ?? opts.detectionStrategy ?? "LEXICAL",
+      ...(v.detectionNotes !== undefined
+        ? { detectionNotes: v.detectionNotes }
+        : {
+            ...(opts.detectionNotes !== undefined
+              ? { detectionNotes: opts.detectionNotes }
+              : {}),
+          }),
       ...(opts.introduced ? { introduced: opts.introduced } : {}),
-      ...((v.tier ?? opts.tier) ? { tier: v.tier ?? opts.tier } : {}),
+      ...(v.tier !== undefined
+        ? { tier: v.tier }
+        : { ...(opts.tier !== undefined ? { tier: opts.tier } : {}) }),
+      ...(v.detectorRevision !== undefined
+        ? { detectorRevision: v.detectorRevision }
+        : {
+            ...(opts.detectorRevision !== undefined
+              ? { detectorRevision: opts.detectorRevision }
+              : {}),
+          }),
       ...((v.overlapWith ?? opts.overlapWith)
         ? { overlapWith: v.overlapWith ?? opts.overlapWith }
         : {}),
+      ...(v.astQuery ? { astQuery: v.astQuery } : {}),
       run(ctx) {
         const severity = v.severity ?? opts.severity;
         const text =
           opts.useCodeText !== false ? (ctx.codeText ?? ctx.text) : ctx.text;
         const findings: Omit<Finding, "ruleId" | "category">[] = [];
         if (!ctx.path.endsWith(v.ext)) return findings;
+
+        // §13.2 mandatory fallback: the AST path decides when a tree is
+        // available; the regex path below is the degraded fallback, kept
+        // in lockstep with the structural oracle.
+        const astFindings = tryAstQuery(v.astQuery, ctx);
+        if (astFindings !== undefined) return astFindings;
 
         for (const re of v.patterns) {
           // Reset lastIndex for global regexes reused across calls

@@ -65,6 +65,8 @@ import { pwBlanketRouteMock } from "./playwright/qa-pw-142-blanket-route.js";
 import { pwNoFailureArtifacts } from "./playwright/qa-pw-143-no-artifacts.js";
 import { pwSingleBrowserMatrix } from "./playwright/qa-pw-144-single-browser.js";
 import { pwNoA11yAssertions } from "./playwright/qa-pw-145-no-a11y.js";
+import { pwLocatorNormalize } from "./playwright/qa-pw-146-css-locator.js";
+import { pwCodegenArtifact } from "./playwright/qa-pw-147-codegen-artifact.js";
 import { pyPwSyncAsyncMix } from "./python/qa-py-101-sync-async-mix.js";
 import { pyPwHardSleep } from "./python/qa-py-102-pw-hard-sleep.js";
 import { pyPwWaitForTimeout } from "./python/qa-py-103-wait-for-timeout.js";
@@ -75,6 +77,14 @@ import { jvWaitForTimeout } from "./java/qa-jv-105-wait-for-timeout.js";
 import { csSkippedTest } from "./csharp/qa-cs-101-skipped-test.js";
 import { csNoAssertions } from "./csharp/qa-cs-103-no-assertions.js";
 import { csWaitForTimeout } from "./csharp/qa-cs-105-wait-for-timeout.js";
+import { cypCyWait } from "./cypress/qa-cyp-001-cy-wait.js";
+import { cypFocusedTest } from "./cypress/qa-cyp-002-focused-test.js";
+import { cypConfigSecurity } from "./cypress/qa-cyp-003-config-security.js";
+import {
+  seJavaSleepLookup,
+  seCSharpSleepLookup,
+  sePythonSleepLookup,
+} from "./selenium/qa-se-sleep-lookup.js";
 import { hardSleepFamily } from "./families/hard-sleep.js";
 import { networkIdleFamily } from "./families/network-idle.js";
 import { hardcodedUrlFamily } from "./families/hardcoded-url.js";
@@ -146,6 +156,11 @@ export const RULES: readonly QADoctorRule[] = [
   pwNoFailureArtifacts,
   pwSingleBrowserMatrix,
   pwNoA11yAssertions,
+  // Phase 7 — Agentic QA Trust (plan §17.3): framework-standards rules
+  // aligned with Playwright's locator.normalize() standard + provenance
+  // detection. BORN QUARANTINE until measured.
+  pwLocatorNormalize,
+  pwCodegenArtifact,
   pyPwSyncAsyncMix,
   pyPwHardSleep,
   pyPwWaitForTimeout,
@@ -164,6 +179,15 @@ export const RULES: readonly QADoctorRule[] = [
   csSkippedTest,
   csNoAssertions,
   csWaitForTimeout,
+  // Phase 5 — Framework Expansion (plan §15): Cypress first, Selenium
+  // cross-language via the JV/CS/Py adapters. Every rule BORN QUARANTINE
+  // (§15.5) until measured.
+  cypCyWait,
+  cypFocusedTest,
+  cypConfigSecurity,
+  seJavaSleepLookup,
+  seCSharpSleepLookup,
+  sePythonSleepLookup,
 ];
 
 export function getRule(id: string): QADoctorRule | undefined {

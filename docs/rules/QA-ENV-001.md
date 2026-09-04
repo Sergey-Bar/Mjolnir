@@ -41,29 +41,20 @@ Verified against `tests/fixtures/QA-ENV-001/must-not-fire/code-as-test-data.spec
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo                        | Occurrences |
-| --------------------------- | ----------- |
-| apache-airflow              | 21          |
-| appsmithorg-appsmith        | 10          |
-| calcom-cal                  | 15          |
-| cypress-realworld-app       | 9           |
-| dubinc-dub                  | 5           |
-| getsentry-sentry            | 48          |
-| github-docs                 | 1           |
-| grafana-grafana             | 96          |
-| hashicorp-vault             | 1           |
-| Humanizr-Humanizer          | 1           |
-| keycloak-keycloak           | 9           |
-| microsoft-playwright-dotnet | 5           |
-| negative-fixtures           | 1           |
-| nextauthjs-next-auth        | 29          |
-| nocodb-nocodb               | 2           |
-| puppeteer-puppeteer         | 97          |
-| streamlit-streamlit         | 50          |
-| sveltejs-kit                | 28          |
-| vitejs-vite                 | 32          |
-| vitest-dev-vitest           | 28          |
-| withastro-astro             | 148         |
+| Repo                | Occurrences |
+| ------------------- | ----------- |
+| apache-airflow      | 4           |
+| dubinc-dub          | 5           |
+| getsentry-sentry    | 1           |
+| grafana-grafana     | 7           |
+| hashicorp-vault     | 1           |
+| puppeteer-puppeteer | 29          |
+| SeleniumHQ-selenium | 1           |
+| sveltejs-kit        | 8           |
+| vercel-next-js      | 6           |
+| vitejs-vite         | 6           |
+| vitest-dev-vitest   | 2           |
+| withastro-astro     | 39          |
 
 ---
 

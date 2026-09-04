@@ -64,8 +64,10 @@ export const pyBareTruthinessAssert = defineRule({
       matchIndex: number,
       target: string,
     ): boolean => {
-      const root = target.split(".")[0] ?? "";
-      if (!/^[A-Z_]\w*$/i.test(root)) return false;
+      // The capture regex only admits [A-Za-z_][\w.]* targets (plus an
+      // optional (...) tail), so the root is always an identifier —
+      // split always yields that head, no guard needed.
+      const root = target.split(".")[0] as string;
       // Search strictly AFTER this assert's own line — the line itself
       // always contains the root and would self-match.
       const lineEnd = text.indexOf("\n", matchIndex);
@@ -75,7 +77,7 @@ export const pyBareTruthinessAssert = defineRule({
       const lines = after.split("\n");
       const window: string[] = [];
       for (let i = 0; i < lines.length && window.length < 15; i++) {
-        const l = lines[i] ?? "";
+        const l = lines[i] as string;
         if (/^\s*def\s/.test(l) && window.length > 0) break;
         window.push(l);
       }

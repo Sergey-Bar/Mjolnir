@@ -47,14 +47,16 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | appsmithorg-appsmith                          | 147         |
 | calcom-cal                                    | 426         |
 | dubinc-dub                                    | 14          |
-| getsentry-sentry                              | 1343        |
+| getsentry-sentry                              | 1341        |
 | github-docs                                   | 5           |
 | grafana-grafana                               | 1653        |
 | nextauthjs-next-auth                          | 1           |
 | playwright-community-eslint-plugin-playwright | 20          |
+| SeleniumHQ-selenium                           | 3           |
 | streamlit-streamlit                           | 568         |
 | sveltejs-kit                                  | 24          |
 | tanstack-query                                | 98          |
+| vercel-next-js                                | 32          |
 | vitejs-vite                                   | 3           |
 | vitest-dev-vitest                             | 18          |
 

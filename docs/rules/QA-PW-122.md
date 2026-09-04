@@ -49,6 +49,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | nextauthjs-next-auth        | 2           |
 | positive-fixtures           | 60          |
 | sveltejs-kit                | 25          |
+| vercel-next-js              | 2           |
 | vitest-dev-vitest           | 1           |
 | withastro-astro             | 2           |
 

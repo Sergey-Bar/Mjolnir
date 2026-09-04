@@ -164,7 +164,7 @@ describe("E2E journey 8: config journey", () => {
     expect(suppressions.stdout).toContain("2099-01-01");
   });
 
-  it("an expired ignore re-reveals the finding", () => {
+  it("an expired ignore re-reveals the finding (--strict: QA-TEST-001 is quarantine-tier, Phase 2)", () => {
     mkdirSync(join(dir, "e2e"), { recursive: true });
     writeFileSync(
       join(dir, "e2e", "focused.spec.ts"),
@@ -183,7 +183,7 @@ describe("E2E journey 8: config journey", () => {
         ],
       }),
     );
-    const scan = runCli([dir, "--json"]);
+    const scan = runCli([dir, "--json", "--strict"]);
     const result = JSON.parse(scan.stdout) as {
       findings: Array<{ ruleId: string }>;
     };

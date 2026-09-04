@@ -17,6 +17,7 @@ export const pwNoTraceOnRetry = defineRule({
   qaImpact: "FALSE-GREEN",
   appliesTo: "test-files",
   configRule: true,
+  configFiles: ["^playwright\\.config\\.(?:ts|js|mjs|cts)$"],
   // Trust Metadata
   languages: ["typescript", "javascript"],
   frameworks: ["playwright"],

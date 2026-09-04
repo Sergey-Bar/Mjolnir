@@ -1,8 +1,8 @@
 {
   "countsByRule": {
     "QA-CS-101": 139,
-    "QA-CS-102": 52,
-    "QA-CS-103": 2,
+    "QA-CS-102": 21,
+    "QA-CS-103": 1,
     "QA-CS-105": 16,
     "QA-CS-106": 4,
     "QA-CS-107": 1,
@@ -12,6 +12,6 @@
     "QA-PW-122": 1,
     "QA-PW-143": 1
   },
-  "totalFindings": 451,
+  "totalFindings": 419,
   "partial": false
 }

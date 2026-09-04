@@ -112,9 +112,12 @@ describe("rules catalog", () => {
     expect(unescapedPipeCount).toBe(11);
   });
 
-  it("CLI handler exits 0 and emits JSON by default", () => {
+  it("CLI handler exits 0 and emits JSON by default", async () => {
     let out = "";
-    const code = runRulesCommand([], { out: (s) => (out += s), err: () => {} });
+    const code = await runRulesCommand([], {
+      out: (s) => (out += s),
+      err: () => {},
+    });
     expect(code).toBe(0);
     const parsed: unknown = JSON.parse(out);
     expect(Array.isArray(parsed)).toBe(true);

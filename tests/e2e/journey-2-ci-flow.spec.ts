@@ -68,14 +68,25 @@ describe("E2E journey 2: CI PR flow", () => {
     writeSpec("new-debt.spec.ts", DEBT);
     commitAll("add debt");
 
-    const full = runCli([dir, "--json"]);
-    const changed = runCli([dir, "--json", "--scope", "changed"]);
-    expect(full.status).toBe(1);
-    expect(changed.status).toBe(1);
+    // --strict: the debt probe is a quarantine-tier rule (QA-TEST-001,
+    // demoted in Phase 2) — strict is the mode where it actually runs.
+    // The tier cap makes its findings advisory (info + E0), so the scan
+    // exits 0: visible, not gating.
+    const full = runCli([dir, "--json", "--strict"]);
+    const changed = runCli([dir, "--json", "--scope", "changed", "--strict"]);
+    expect(full.status).toBe(0);
+    expect(changed.status).toBe(0);
     const fullResult = JSON.parse(full.stdout) as {
       testDeclarationCount: number;
       scope?: string;
+      findings: Array<{ ruleId: string; file: string }>;
     };
+    expect(
+      fullResult.findings.some(
+        (f) => f.ruleId === "QA-TEST-001" && f.file.startsWith("e2e/new-debt"),
+      ),
+      "the debt probe must be detected under --strict",
+    ).toBe(true);
     const changedResult = JSON.parse(changed.stdout) as {
       testDeclarationCount: number;
       scope?: string;
@@ -103,7 +114,7 @@ describe("E2E journey 2: CI PR flow", () => {
     git(["checkout", "--detach", "HEAD"]);
     // Leave no default branch behind: the merge-base becomes unresolvable.
     git(["branch", "-D", "main"]);
-    const changed = runCli([dir, "--json", "--scope", "changed"]);
+    const changed = runCli([dir, "--json", "--scope", "changed", "--strict"]);
     const result = JSON.parse(changed.stdout) as { scopeDegraded?: string };
     expect(result.scopeDegraded).toBe("no-merge-base");
   });

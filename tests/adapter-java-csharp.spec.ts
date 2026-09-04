@@ -79,16 +79,30 @@ describe("javaAdapter.detectFrameworks", () => {
     });
   });
 
-  it("detects testng via pom.xml content", () => {
+  it("detects testng via a pom.xml <dependency> block (plan §15.1 D7: dependency-block parsing, not whole-text regex)", () => {
     writeFileSync(
       join(dir, "pom.xml"),
-      "<project>testng dependency here</project>",
+      "<project><dependencies><dependency><groupId>org.testng</groupId><artifactId>testng</artifactId></dependency></dependencies></project>",
     );
     expect(javaAdapter.detectFrameworks(dir).frameworks).toContain("testng");
   });
 
+  it("does NOT claim a framework from prose mentioning the name outside a dependency (D7)", () => {
+    writeFileSync(
+      join(dir, "pom.xml"),
+      "<project><description>migrated from junit and testng both referenced historically</description></project>",
+    );
+    expect(javaAdapter.detectFrameworks(dir)).toEqual({
+      frameworks: [],
+      unknown: true,
+    });
+  });
+
   it("detects both junit and testng in the same pom.xml", () => {
-    writeFileSync(join(dir, "pom.xml"), "junit and testng both referenced");
+    writeFileSync(
+      join(dir, "pom.xml"),
+      "<project><dependencies><dependency><artifactId>junit-jupiter</artifactId></dependency><dependency><artifactId>testng</artifactId></dependency></dependencies></project>",
+    );
     const info = javaAdapter.detectFrameworks(dir);
     expect(info.frameworks).toEqual(["junit", "testng"]);
   });
@@ -104,7 +118,7 @@ describe("javaAdapter.detectFrameworks", () => {
   it("falls back to build.gradle when pom.xml is absent", () => {
     writeFileSync(
       join(dir, "build.gradle"),
-      "testImplementation 'junit:junit'",
+      "testImplementation 'junit:junit:4.13'",
     );
     expect(javaAdapter.detectFrameworks(dir).frameworks).toContain("junit");
   });
@@ -117,11 +131,28 @@ describe("javaAdapter.detectFrameworks", () => {
     expect(javaAdapter.detectFrameworks(dir).frameworks).toContain("testng");
   });
 
-  it("prefers pom.xml over build.gradle when both exist", () => {
-    writeFileSync(join(dir, "pom.xml"), "junit here");
-    writeFileSync(join(dir, "build.gradle"), "testng here");
+  it("KTS dependencies with BOTH frameworks parse both (Gradle coordinate parsing)", () => {
+    writeFileSync(
+      join(dir, "build.gradle.kts"),
+      'testImplementation("junit:junit:4.13")\ntestImplementation("org.testng:testng:7")',
+    );
+    expect(javaAdapter.detectFrameworks(dir).frameworks).toEqual([
+      "junit",
+      "testng",
+    ]);
+  });
+
+  it("prefers the union: both build files contribute (each is parsed on its own)", () => {
+    writeFileSync(
+      join(dir, "pom.xml"),
+      "<project><dependencies><dependency><artifactId>junit</artifactId></dependency></dependencies></project>",
+    );
+    writeFileSync(
+      join(dir, "build.gradle"),
+      "testImplementation 'org.testng:testng:7.4'",
+    );
     expect(javaAdapter.detectFrameworks(dir)).toEqual({
-      frameworks: ["junit"],
+      frameworks: ["junit", "testng"],
       unknown: false,
     });
   });
@@ -287,13 +318,28 @@ describe("csharpAdapter.detectFrameworks", () => {
     });
   });
 
-  it("detects nunit/xunit/mstest/playwright from a .csproj's content", () => {
+  it("detects nunit/xunit/mstest/playwright from a .csproj's PackageReferences", () => {
     writeFileSync(
       join(dir, "Tests.csproj"),
       '<Project><ItemGroup><PackageReference Include="NUnit" /><PackageReference Include="xunit" /><PackageReference Include="MSTest.TestFramework" /><PackageReference Include="Microsoft.Playwright" /></ItemGroup></Project>',
     );
     expect(csharpAdapter.detectFrameworks(dir)).toEqual({
       frameworks: ["nunit", "xunit", "mstest", "playwright"],
+      unknown: false,
+    });
+  });
+
+  it("parses EVERY .csproj at the root, not the first one (plan §15.1 D7)", () => {
+    writeFileSync(
+      join(dir, "A.Tests.csproj"),
+      '<Project><ItemGroup><PackageReference Include="NUnit" /></ItemGroup></Project>',
+    );
+    writeFileSync(
+      join(dir, "B.Tests.csproj"),
+      '<Project><ItemGroup><PackageReference Include="xunit" /></ItemGroup></Project>',
+    );
+    expect(csharpAdapter.detectFrameworks(dir)).toEqual({
+      frameworks: ["nunit", "xunit"],
       unknown: false,
     });
   });

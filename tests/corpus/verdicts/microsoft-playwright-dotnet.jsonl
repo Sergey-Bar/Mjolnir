@@ -35,26 +35,13 @@
 {"ruleId":"QA-CS-101","file":"src/Playwright.Tests/BrowserContextViewportMobileTests.cs","line":111,"verdict":"TP","note":"[Skip] for Firefox — window.orientation test permanently skipped"}
 {"ruleId":"QA-CS-101","file":"src/Playwright.Tests/BrowserContextViewportMobileTests.cs","line":132,"verdict":"TP","note":"[Skip] for Firefox — orientationchange event test permanently skipped"}
 {"ruleId":"QA-CS-101","file":"src/Playwright.Tests/BrowserContextViewportMobileTests.cs","line":163,"verdict":"TP","note":"[Skip] for Firefox — default mobile viewport test permanently skipped"}
-{"ruleId":"QA-CS-102","file":"src/Playwright.Tests/BrowserContextFetchTests.cs","line":608,"verdict":"FP","note":"Task.Delay(5000) inside server route simulating slow server — not a test sleep"}
-{"ruleId":"QA-CS-102","file":"src/Playwright.Tests/BrowserContextHarTests.cs","line":528,"verdict":"FP","note":"Task.Delay(1000) used as race timeout to verify fetch was blocked — not a state wait"}
 {"ruleId":"QA-CS-102","file":"src/Playwright.Tests/BrowserContextRouteTests.cs","line":213,"verdict":"TP","note":"Task.Delay(5000) hard sleep to let test run for duration checking for unobserved exceptions"}
-{"ruleId":"QA-CS-102","file":"src/Playwright.Tests/BrowserContextRouteTests.cs","line":243,"verdict":"TP","note":"Task.Delay(100) inside route handler creating artificial timing — hard sleep anti-pattern"}
 {"ruleId":"QA-CS-102","file":"src/Playwright.Tests/BrowserTypeConnectTests.cs","line":308,"verdict":"TP","note":"Task.Delay(1000) hard sleep for video recording to capture frames"}
-{"ruleId":"QA-CS-102","file":"src/Playwright.Tests/DownloadTests.cs","line":53,"verdict":"FP","note":"Task.Delay(3000) inside server route simulating slow download — not a test sleep"}
-{"ruleId":"QA-CS-102","file":"src/Playwright.Tests/FrameGoToTests.cs","line":48,"verdict":"FP","note":"Task.Delay(-1) in server route to block response forever — simulating hung server"}
-{"ruleId":"QA-CS-102","file":"src/Playwright.Tests/FrameGoToTests.cs","line":67,"verdict":"FP","note":"Task.Delay(10000) in server route to block response — simulating slow server"}
-{"ruleId":"QA-CS-102","file":"src/Playwright.Tests/GlobalFetchTests.cs","line":83,"verdict":"FP","note":"Task.Delay(5_000) inside server route simulating slow server — testing timeout option"}
 {"ruleId":"QA-CS-102","file":"src/Playwright.Tests/Locator/LocatorFrameTests.cs","line":138,"verdict":"TP","note":"Task.Delay(300) before navigation to test frame locator waiting — hard timing setup"}
 {"ruleId":"QA-CS-102","file":"src/Playwright.Tests/Locator/LocatorFrameTests.cs","line":152,"verdict":"TP","note":"Task.Delay(300) before removing iframe to test disappearance — hard timing setup"}
 {"ruleId":"QA-CS-102","file":"src/Playwright.Tests/Locator/LocatorFrameTests.cs","line":198,"verdict":"TP","note":"Task.Delay(500) before adding iframe to test frame appearance — hard timing setup"}
 {"ruleId":"QA-CS-102","file":"src/Playwright.Tests/Locator/LocatorFrameTests.cs","line":206,"verdict":"TP","note":"Task.Delay(500) before navigating iframe src — hard timing setup"}
-{"ruleId":"QA-CS-102","file":"src/Playwright.Tests/PageAddLocatorHandlerTests.cs","line":183,"verdict":"FP","note":"Task.Delay(int.MaxValue) deliberately times out — testing handler timeout behavior"}
-{"ruleId":"QA-CS-102","file":"src/Playwright.Tests/PageAutoWaitingBasicTests.cs","line":148,"verdict":"FP","note":"Task.Delay(10000) in server route to stall navigation — testing auto-waiting with stalled nav"}
 {"ruleId":"QA-CS-102","file":"src/Playwright.Tests/PageEmulateMediaTests.cs","line":66,"verdict":"FP","note":"Task.Delay(1) as minimal yield between emulateMedia calls — async yield, not timing wait"}
-{"ruleId":"QA-CS-102","file":"src/Playwright.Tests/PageExposeFunctionTests.cs","line":219,"verdict":"FP","note":"Task.Delay(100) is the function being exposed — testing that exposed function returning Task works"}
-{"ruleId":"QA-CS-102","file":"src/Playwright.Tests/PageGotoTests.cs","line":296,"verdict":"FP","note":"Task.Delay(-1) in server route to block forever — simulating timeout scenario"}
-{"ruleId":"QA-CS-102","file":"src/Playwright.Tests/PageGotoTests.cs","line":306,"verdict":"FP","note":"Task.Delay(-1) in server route to block forever — simulating timeout scenario"}
-{"ruleId":"QA-CS-102","file":"src/Playwright.Tests/PageGotoTests.cs","line":317,"verdict":"FP","note":"Task.Delay(-1) in server route to block forever — simulating timeout scenario"}
 {"ruleId":"QA-CS-108","file":"src/Playwright.Tests/BrowserContextHarTests.cs","line":39,"verdict":"FP","note":"http://no.playwright/ is a fake URL served by HAR replay — intentional test fixture"}
 {"ruleId":"QA-CS-108","file":"src/Playwright.Tests/BrowserContextHarTests.cs","line":52,"verdict":"FP","note":"http://no.playwright/ is a fake URL served by HAR replay — intentional test fixture"}
 {"ruleId":"QA-CS-108","file":"src/Playwright.Tests/BrowserContextHarTests.cs","line":113,"verdict":"FP","note":"http://no.playwright/ is a fake URL served by HAR replay — intentional test fixture"}
@@ -95,7 +82,6 @@
 {"ruleId":"QA-CS-111","file":"src/Playwright.Tests/PageRequestFallbackTests.cs","line":166,"verdict":"FP","note":"blanket route testing header modification via fallback — testing the API"}
 {"ruleId":"QA-CS-111","file":"src/Playwright.Tests/PageRequestFallbackTests.cs","line":192,"verdict":"FP","note":"blanket route testing request interception with continue — testing the API"}
 {"ruleId":"QA-CS-111","file":"src/Playwright.Tests/PageRequestFallbackTests.cs","line":228,"verdict":"FP","note":"blanket route testing method amendment via fallback — testing the API"}
-{"ruleId":"QA-CS-103","file":"src/Playwright.Tests/ConventionTests.cs","line":12,"verdict":"FP","note":"test uses LINQ assertions internally via collection checks — assertion is in the method body"}
 {"ruleId":"QA-CS-103","file":"src/Playwright.Tests/PauseTests.cs","line":29,"verdict":"TP","note":"test only calls PauseAsync — no assertion, only verifies no exception"}
 {"ruleId":"QA-CS-107","file":"src/Playwright.Tests/PageNetworkIdleTests.cs","line":133,"verdict":"FP","note":"the suite tests the networkidle API itself (PageNetworkIdleTests) - the load-state call is the subject, same class as the PageClock wait-is-the-test FPs"}
 {"ruleId":"QA-PW-122","file":"src/Playwright.TestingHarnessTest/playwright.config.ts","line":1,"verdict":"TP","note":"direct config with no trace capture - correct info-hygiene finding"}
@@ -124,3 +110,17 @@
 {"ruleId":"QA-CS-106","file":"src/Playwright.Tests/Locator/LocatorElementHandleTests.cs","line":67,"verdict":"FP","note":"same xpath-support self-test shape [rev-3 delta adjudication 2026-09-02]"}
 {"ruleId":"QA-CS-106","file":"src/Playwright.Tests/Locator/LocatorElementHandleTests.cs","line":77,"verdict":"FP","note":"same xpath-support self-test shape [rev-3 delta adjudication 2026-09-02]"}
 {"ruleId":"QA-CS-106","file":"src/Playwright.Tests/Locator/LocatorQueryTests.cs","line":214,"verdict":"FP","note":"same xpath-support self-test shape [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-CS-102","file":"src/Playwright.Tests/PageRouteWebSocketTests.cs","line":80,"verdict":"FP","note":"AssertAreEqualWithRetriesAsync polling loop — the delay is the retry cadence of a polling assertion helper, not a state wait"}
+{"ruleId":"QA-CS-102","file":"src/Playwright.Tests/PageWaitForNavigationTests.cs","line":346,"verdict":"TP","note":"3s artificial delay before navigation — hard timing setup"}
+{"ruleId":"QA-CS-102","file":"src/Playwright.Tests/PageWaitForNavigationTests.cs","line":350,"verdict":"TP","note":"3s delay inside RunAndWaitForNavigation action — the test's own action flow"}
+{"ruleId":"QA-CS-102","file":"src/Playwright.Tests/ScreencastTests.cs","line":52,"verdict":"TP","note":"1s hard sleep so the screencast captures frames before close"}
+{"ruleId":"QA-CS-102","file":"src/Playwright.Tests/ScreencastTests.cs","line":87,"verdict":"TP","note":"1s hard sleep for video capture to produce frames"}
+{"ruleId":"QA-CS-102","file":"src/Playwright.Tests/ScreencastTests.cs","line":144,"verdict":"TP","note":"1s hard sleep for screencast frames"}
+{"ruleId":"QA-CS-102","file":"src/Playwright.Tests/ScreencastTests.cs","line":249,"verdict":"TP","note":"1s hard sleep before screencast stop — frame capture window"}
+{"ruleId":"QA-CS-102","file":"src/Playwright.Tests/ScreencastTests.cs","line":272,"verdict":"TP","note":"1s hard sleep for frame count evidence"}
+{"ruleId":"QA-CS-102","file":"src/Playwright.Tests/ScreencastTests.cs","line":302,"verdict":"TP","note":"1s hard sleep for frame count evidence"}
+{"ruleId":"QA-CS-102","file":"src/Playwright.Tests/UnrouteBehaviorTests.cs","line":96,"verdict":"TP","note":"Task.Delay(500) then Assert.False(didUnroute) — the delay creates the timing window the assertion measures"}
+{"ruleId":"QA-CS-102","file":"src/Playwright.Tests/UnrouteBehaviorTests.cs","line":132,"verdict":"TP","note":"delay before unroutePromise — timing setup for the assertion"}
+{"ruleId":"QA-CS-102","file":"src/Playwright.Tests/UnrouteBehaviorTests.cs","line":260,"verdict":"TP","note":"Task.Delay(500) then Assert.False(didUnroute) — timing window for the assertion"}
+{"ruleId":"QA-CS-102","file":"src/Playwright.Tests/UnrouteBehaviorTests.cs","line":296,"verdict":"TP","note":"delay before unroutePromise — timing setup for the assertion"}
+{"ruleId":"QA-CS-102","file":"src/Playwright.Tests/UnrouteBehaviorTests.cs","line":332,"verdict":"TP","note":"Task.Delay(500) then Assert.False(secondHandlerCalled) — timing window for the assertion"}
