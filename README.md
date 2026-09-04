@@ -631,6 +631,7 @@ mjolnir/
 **v0.5.x · open beta.** The JSON schema and exit codes are frozen contracts.
 TypeScript and Python have the broadest measured coverage; Java and C# are
 newer — read them through the [maturity table](#rule-tiers-and-language-maturity).
+Honest scope, no invented dates: the [public roadmap](https://sergey-bar.github.io/Mjolnir/reference/roadmap).
 
 ---
 

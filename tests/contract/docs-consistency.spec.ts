@@ -614,3 +614,73 @@ describe("flake policy holds (Beta-to-Stable M3)", () => {
     expect(config).not.toMatch(/retries\s*:\s*\d/);
   });
 });
+
+describe("community files exist and cross-link (Beta-to-Stable M6)", () => {
+  // M6: the minimal honest community set. Each file promises the others;
+  // deleting one leaves dangling links in README/SUPPORT/CONTRIBUTING
+  // and a contributor dead-ends. Also guards the triage-label contract:
+  // the four issue-form labels are the triage vocabulary, and the
+  // CONTRIBUTING table must mirror the templates exactly.
+  const COC = readFileSync(join(ROOT, "CODE_OF_CONDUCT.md"), "utf8");
+  const SUPPORT = readFileSync(join(ROOT, "SUPPORT.md"), "utf8");
+  const CONTRIBUTING = readFileSync(join(ROOT, "CONTRIBUTING.md"), "utf8");
+
+  it("CODE_OF_CONDUCT.md exists, is Contributor-Covenant-based, and names an enforcement path", () => {
+    expect(COC).toContain("Contributor Covenant");
+    expect(COC).toContain("## Enforcement");
+  });
+
+  it("SUPPORT.md links the Code of Conduct? (no — it routes issues; CONTRIBUTING carries the triage table)", () => {
+    // SUPPORT.md routes to the four issue forms; the triage table lives
+    // in CONTRIBUTING.md. Both documents must agree on the labels.
+    for (const label of [
+      "bug",
+      "false-positive",
+      "rule-request",
+      "language-request",
+    ]) {
+      expect(
+        SUPPORT.includes(label),
+        `SUPPORT.md stopped routing to the ${label} issue form`,
+      ).toBe(true);
+    }
+  });
+
+  it("CONTRIBUTING's triage table mirrors the four issue-form labels + the 7-day SLA line", () => {
+    for (const label of [
+      "`bug`",
+      "`false-positive`",
+      "`rule-request`",
+      "`language-request`",
+    ]) {
+      expect(
+        CONTRIBUTING,
+        `CONTRIBUTING triage table no longer lists ${label}`,
+      ).toContain(label);
+    }
+    expect(CONTRIBUTING).toContain("7 days");
+  });
+
+  it("the public roadmap page exists on the site and is linked from the README", () => {
+    const roadmap = readFileSync(
+      join(ROOT, "site", "reference", "roadmap.md"),
+      "utf8",
+    );
+    expect(roadmap).toContain("# Roadmap");
+    // Honesty rules of the page itself (whitespace-normalized: the page
+    // is hand-wrapped prose, the phrases must survive rewrapping).
+    expect(roadmap.replace(/\*\*/g, "").replace(/\s+/g, " ")).toContain(
+      "no invented dates, ever",
+    );
+    expect(roadmap).toContain("never contain");
+    expect(README).toContain("sergey-bar.github.io/Mjolnir/reference/roadmap");
+  });
+
+  it("the site sidebar lists the roadmap page", () => {
+    const config = readFileSync(
+      join(ROOT, "site", ".vitepress", "config.mts"),
+      "utf8",
+    );
+    expect(config).toContain('link: "/reference/roadmap"');
+  });
+});

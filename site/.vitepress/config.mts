@@ -31,6 +31,7 @@ const SIDEBAR = [
       { text: "False-positive audit", link: "/reference/fp-audit" },
       { text: "Rule lifecycle", link: "/reference/rule-lifecycle" },
       { text: "SARIF integration", link: "/reference/sarif" },
+      { text: "Roadmap", link: "/reference/roadmap" },
       { text: "Contributing", link: "/reference/contributing" },
     ],
   },

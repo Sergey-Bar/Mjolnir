@@ -189,6 +189,22 @@ get made, not who to lobby:
   [`SUPPORT.md`](SUPPORT.md); version/stability commitments live in
   [`docs/VERSIONING.md`](docs/VERSIONING.md).
 
+## Issue triage
+
+Every issue form pre-assigns its label — the four labels mirror the
+four issue templates exactly:
+
+| Label              | Template             | What happens next                                                                                                                             |
+| ------------------ | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bug`              | bug-report.yml       | Reproduced, fixed, and regression-locked by a spec                                                                                            |
+| `false-positive`   | false-positive.yml   | Hand-classified into the verdict corpus (`tests/corpus/verdicts/`) — measured FP rates and the FP-AUDIT table come from exactly these reports |
+| `rule-request`     | rule-request.yml     | Evaluated against the anti-creep law (equal-size removal) and the fixture firewall                                                            |
+| `language-request` | language-request.yml | Scoped against the adapter architecture (`src/adapters/`)                                                                                     |
+
+First response to a new issue is targeted within **7 days** — an honest
+solo-maintainer commitment, not an SLA with consequences (also stated
+in [`SUPPORT.md`](SUPPORT.md)).
+
 ## PR expectations
 
 - Keep PRs scoped to one concern. A rule addition and an unrelated
