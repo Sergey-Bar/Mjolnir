@@ -21,11 +21,14 @@ import {
   deriveTrustLevel,
   stampRuntimeCorroboration,
   splitByRuntimeEvidence,
-} from "../src/engine/runtime-corroboration.js";
-import type { ForensicsReport, TestVerdict } from "../src/forensics/types.js";
-import { parsePlaywrightJson } from "../src/forensics/parse-playwright-json.js";
-import { runScan } from "../src/cli.js";
-import type { Finding, TrustLevel } from "../src/types.js";
+} from "../../src/engine/runtime-corroboration.js";
+import type {
+  ForensicsReport,
+  TestVerdict,
+} from "../../src/forensics/types.js";
+import { parsePlaywrightJson } from "../../src/forensics/parse-playwright-json.js";
+import { runScan } from "../../src/cli.js";
+import type { Finding, TrustLevel } from "../../src/types.js";
 
 const dirs: string[] = [];
 afterEach(() => {

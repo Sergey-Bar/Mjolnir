@@ -9,8 +9,8 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { ciInstall } from "../src/integrations/ci-install.js";
-import { runForensics } from "../src/forensics/run.js";
+import { ciInstall } from "../../src/integrations/ci-install.js";
+import { runForensics } from "../../src/forensics/run.js";
 
 let dir: string;
 

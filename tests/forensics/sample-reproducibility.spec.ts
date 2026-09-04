@@ -16,14 +16,14 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { runForensics } from "../src/forensics/run.js";
+import { runForensics } from "../../src/forensics/run.js";
 import {
   computeSelectorHealth,
   renderSelectorHealth,
-} from "../src/playwright/selector-health.js";
-import { createIgnoreMatcher } from "../src/discovery/ignores.js";
+} from "../../src/playwright/selector-health.js";
+import { createIgnoreMatcher } from "../../src/discovery/ignores.js";
 
-const ROOT = join(import.meta.dirname, "..");
+const ROOT = join(import.meta.dirname, "..", "..");
 const DEMO_REPO = join(ROOT, "examples", "demo-repo");
 const FORENSICS_TXT = join(ROOT, "assets", "readme", "forensics-sample.txt");
 const SELECTOR_TXT = join(

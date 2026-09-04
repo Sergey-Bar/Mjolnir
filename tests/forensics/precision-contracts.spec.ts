@@ -11,17 +11,17 @@ import { join } from "node:path";
 import {
   computeSpecHealth,
   scoreLocatorRisk,
-} from "../src/playwright/selector-health.js";
-import { analyze } from "../src/forensics/analyze.js";
-import type { ForensicsReport } from "../src/forensics/types.js";
-import { runScan } from "../src/cli.js";
-import { verdictFor } from "../src/reporter/terminal.js";
-import { renderMermaid } from "../src/reporter/mermaid.js";
-import { renderTerminal } from "../src/reporter/terminal.js";
-import type { ScanResult } from "../src/types.js";
+} from "../../src/playwright/selector-health.js";
+import { analyze } from "../../src/forensics/analyze.js";
+import type { ForensicsReport } from "../../src/forensics/types.js";
+import { runScan } from "../../src/cli.js";
+import { verdictFor } from "../../src/reporter/terminal.js";
+import { renderMermaid } from "../../src/reporter/mermaid.js";
+import { renderTerminal } from "../../src/reporter/terminal.js";
+import type { ScanResult } from "../../src/types.js";
 
 const HERE = import.meta.dirname;
-const REPO_ROOT = join(HERE, "..");
+const REPO_ROOT = join(HERE, "..", "..");
 
 describe("Selector Health exact score vectors", () => {
   it.each([

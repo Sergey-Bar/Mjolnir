@@ -18,10 +18,10 @@ import {
   leaderboard,
   renderFlakyMd,
   renderLeaderboard,
-} from "../src/forensics/analyze.js";
-import { parseJunitXml } from "../src/forensics/parse-junit.js";
-import { parsePlaywrightJson } from "../src/forensics/parse-playwright-json.js";
-import { runForensics } from "../src/forensics/run.js";
+} from "../../src/forensics/analyze.js";
+import { parseJunitXml } from "../../src/forensics/parse-junit.js";
+import { parsePlaywrightJson } from "../../src/forensics/parse-playwright-json.js";
+import { runForensics } from "../../src/forensics/run.js";
 
 let dir: string;
 beforeEach(() => {

@@ -7,7 +7,7 @@ import {
   computeSelectorHealth,
   computeSpecHealth,
   renderSelectorHealth,
-} from "../src/playwright/selector-health.js";
+} from "../../src/playwright/selector-health.js";
 
 describe("classifyLocator", () => {
   it("returns null for non-locator lines", () => {

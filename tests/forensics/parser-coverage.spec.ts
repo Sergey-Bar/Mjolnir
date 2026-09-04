@@ -15,12 +15,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { parseJunitXml } from "../src/forensics/parse-junit.js";
-import { parsePlaywrightJson } from "../src/forensics/parse-playwright-json.js";
-import { analyze, leaderboard } from "../src/forensics/analyze.js";
-import { triageRows } from "../src/forensics/triage.js";
-import { runForensics } from "../src/forensics/run.js";
-import type { TestRecord } from "../src/forensics/types.js";
+import { parseJunitXml } from "../../src/forensics/parse-junit.js";
+import { parsePlaywrightJson } from "../../src/forensics/parse-playwright-json.js";
+import { analyze, leaderboard } from "../../src/forensics/analyze.js";
+import { triageRows } from "../../src/forensics/triage.js";
+import { runForensics } from "../../src/forensics/run.js";
+import type { TestRecord } from "../../src/forensics/types.js";
 
 describe("JUnit XML: single-quoted attributes (the double-quote path is already tested)", () => {
   it("parses testcase attributes wrapped in single quotes", () => {

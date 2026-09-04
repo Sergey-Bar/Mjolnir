@@ -25,9 +25,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { runTriageCommand } from "../src/cli.js";
-import { runForensics } from "../src/forensics/run.js";
-import { parsePlaywrightJson } from "../src/forensics/parse-playwright-json.js";
+import { runTriageCommand } from "../../src/cli.js";
+import { runForensics } from "../../src/forensics/run.js";
+import { parsePlaywrightJson } from "../../src/forensics/parse-playwright-json.js";
 
 const JUNIT = `<testsuite tests="1">
   <testcase classname="tests/test_a.py" name="test_ok" time="0.100"/>

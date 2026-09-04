@@ -3,14 +3,14 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { parseJunitXml } from "../src/forensics/parse-junit.js";
-import { parsePlaywrightJson } from "../src/forensics/parse-playwright-json.js";
+import { parseJunitXml } from "../../src/forensics/parse-junit.js";
+import { parsePlaywrightJson } from "../../src/forensics/parse-playwright-json.js";
 import {
   analyze,
   leaderboard,
   renderFlakyMd,
   renderLeaderboard,
-} from "../src/forensics/analyze.js";
+} from "../../src/forensics/analyze.js";
 
 describe("parseJunitXml", () => {
   it("parses pass/fail/skip testcases", () => {

@@ -17,9 +17,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { runScan } from "../src/cli.js";
-import { parseJunitXml } from "../src/forensics/parse-junit.js";
-import { parsePlaywrightJson } from "../src/forensics/parse-playwright-json.js";
+import { runScan } from "../../src/cli.js";
+import { parseJunitXml } from "../../src/forensics/parse-junit.js";
+import { parsePlaywrightJson } from "../../src/forensics/parse-playwright-json.js";
 
 let dir: string;
 
