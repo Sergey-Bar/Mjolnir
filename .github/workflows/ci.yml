@@ -34,7 +34,15 @@ jobs:
     runs-on: ${{ matrix.os }}
     # Audit S-7: a hung npm ci or scan must not sit for the 6-hour default.
     timeout-minutes: 20
+    # M3: per-job wall-clock minutes go into the job summary. Soft
+    # budget = the timeout minus a 5-minute headroom band; exceeding it
+    # prints a summary warning (never gates — M3 hardens this into a
+    # gate only after two weeks of measured data, floors-from-observation).
+    env:
+      TIME_BUDGET_MINUTES: 15
     steps:
+      # M3: capture the job start for the soft time-budget summary below.
+      - run: echo "JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -47,7 +55,31 @@ jobs:
       # Bug-audit G11: moderate advisories are ignored at `high` — a
       # steady drip of moderate-severity vulns is how a real supply-chain
       # issue goes unnoticed between high ones.
-      - run: npm audit --audit-level=moderate
+      # M3: retry-once for registry 503s (infra flake class, commit
+      # e4f4b98: windows npm audit hit a registry 503 with all 5118
+      # tests passing). The first attempt is soft; the retry gates —
+      # two consecutive registry failures still fail the job — and any
+      # retry is recorded in the summary so the flake rate stays
+      # visible.
+      - name: npm audit (first attempt)
+        id: audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+      - name: npm audit (retry once)
+        if: steps.audit.outcome == 'failure'
+        env:
+          AUDIT_FIRST_OUTCOME: ${{ steps.audit.outcome }}
+        run: |
+          if npm audit --audit-level=moderate; then
+            echo "npm audit: first attempt failed, retry passed (registry flake?)" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "npm audit: first attempt AND retry failed" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+      - name: Record audit result in job summary
+        if: steps.audit.outcome == 'success'
+        run: >
+          echo "npm audit: first attempt ok" >> "$GITHUB_STEP_SUMMARY"
       # Bug-audit G6: headroom must be measurable — the four percentages
       # go into the job summary (and coverage/ is uploaded below) so the
       # ratchet floors can be re-raised against measured numbers. Runs
@@ -83,13 +115,54 @@ jobs:
           name: coverage-report
           path: coverage/
           retention-days: 14
+      - name: Job time budget in summary (soft)
+        if: always()
+        run: |
+          node -e '
+          const fs = require("fs");
+          const started = new Date(Number(process.env.JOB_START_EPOCH) * 1000);
+          const minutes = Math.round(((Date.now() - started.getTime()) / 60000) * 10) / 10;
+          const budget = Number(process.env.TIME_BUDGET_MINUTES);
+          let line = "Job wall-clock: " + minutes + " min (soft budget " + budget + " min)";
+          if (minutes > budget) line += " — OVER BUDGET (warning; hard gate only after 2 weeks of measured data, M3)";
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, line + "\n");
+          '
+
+  # Workflow-lint coverage (Beta-to-Stable M4): actionlint, version-pinned
+  # so its ruleset is part of the audited supply chain like every other
+  # pinned action in this repo. The tarball is downloaded from the pinned
+  # release tag and verified against that release's own checksums file
+  # before extraction — no curl|bash of mutable script bodies.
+  workflow-lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      ACTIONLINT_VERSION: v1.7.7
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install actionlint (pinned, checksum-verified)
+        run: |
+          set -euo pipefail
+          # Keep the distribution filename: sha256sum -c matches the name
+          # recorded in the checksums manifest, so a renamed download
+          # would silently check nothing (first run failed exactly here).
+          curl -fsSLO "https://github.com/rhysd/actionlint/releases/download/${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION#v}_linux_amd64.tar.gz"
+          curl -fsSLo checksums.txt "https://github.com/rhysd/actionlint/releases/download/${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION#v}_checksums.txt"
+          grep "actionlint_${ACTIONLINT_VERSION#v}_linux_amd64.tar.gz" checksums.txt | sha256sum -c -
+          tar -xzf "actionlint_${ACTIONLINT_VERSION#v}_linux_amd64.tar.gz" actionlint
+      - name: actionlint (all repo workflows)
+        run: ./actionlint -color
 
   # Self-scan gate (§30.2 #7) — activates once rules exist.
   self-scan:
     needs: build-test
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      TIME_BUDGET_MINUTES: 7
     steps:
+      # M3: capture the job start for the soft time-budget summary below.
+      - run: echo "JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -120,6 +193,18 @@ jobs:
             self-scan.json
             mjolnir-badge.json
           retention-days: 90
+      - name: Job time budget in summary (soft)
+        if: always()
+        run: |
+          node -e '
+          const fs = require("fs");
+          const started = new Date(Number(process.env.JOB_START_EPOCH) * 1000);
+          const minutes = Math.round(((Date.now() - started.getTime()) / 60000) * 10) / 10;
+          const budget = Number(process.env.TIME_BUDGET_MINUTES);
+          let line = "Job wall-clock: " + minutes + " min (soft budget " + budget + " min)";
+          if (minutes > budget) line += " — OVER BUDGET (warning; hard gate only after 2 weeks of measured data, M3)";
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, line + "\n");
+          '
 
   # Bug-audit B4.31 (generated-docs drift gate): docs/rules pages, the
   # COUNT-LOCK FP-audit table and the golden lock are GENERATED artifacts.
@@ -131,7 +216,11 @@ jobs:
     needs: build-test
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      TIME_BUDGET_MINUTES: 10
     steps:
+      # M3: capture the job start for the soft time-budget summary below.
+      - run: echo "JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -158,3 +247,15 @@ jobs:
             echo "$untracked"
             exit 1
           fi
+      - name: Job time budget in summary (soft)
+        if: always()
+        run: |
+          node -e '
+          const fs = require("fs");
+          const started = new Date(Number(process.env.JOB_START_EPOCH) * 1000);
+          const minutes = Math.round(((Date.now() - started.getTime()) / 60000) * 10) / 10;
+          const budget = Number(process.env.TIME_BUDGET_MINUTES);
+          let line = "Job wall-clock: " + minutes + " min (soft budget " + budget + " min)";
+          if (minutes > budget) line += " — OVER BUDGET (warning; hard gate only after 2 weeks of measured data, M3)";
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, line + "\n");
+          '

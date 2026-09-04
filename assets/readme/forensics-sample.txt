@@ -1,0 +1,10 @@
+▚▞ FLAKINESS LEADERBOARD
+
+3 tests · 1 failed · 1 flaky · 1 retried
+
+TRUE-FLAKE completes checkout with saved card (e2e/checkout.spec.ts)
+           ████████████████████ 6.0s · 2 attempts
+FAILING    declines an expired card (e2e/checkout.spec.ts)
+           ████░░░░░░░░░░░░░░░░ 1.1s · 1 attempt
+
+FLAKY.md not written (--no-flaky-md).

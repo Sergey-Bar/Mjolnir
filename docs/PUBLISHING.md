@@ -36,11 +36,13 @@ npm run test:coverage && npm run build && npm run self-scan`. All
    2. re-runs typecheck / lint / test / test:coverage, builds, packs,
    3. checks whether the version is already on npm (if so, the publish is
       **skipped**, not failed — see "Re-running a release" below),
-   4. **publishes to npm** with provenance,
-   5. **verifies** the version actually resolves on the registry,
-      polling for up to a minute,
+   4. **publishes to npm** with provenance — rc versions under the
+      `next` dist-tag, stable versions under `latest` (see
+      "rc channels" below),
+   5. **verifies** the version actually resolves on the registry under
+      the dist-tag it was published to, polling for up to a minute,
    6. **only then** creates the GitHub Release with auto-generated notes
-      and the tarball attached.
+      and the tarball attached (marked Pre-release for rc tags).
 
    Steps 4–6 are in that order deliberately, and
    `tests/release-workflow.spec.ts` fails the build if anyone reorders
@@ -61,6 +63,57 @@ A GitHub Release is a promise that `npm i` works. It must not be made
 before that is true. Hence the ordering above and the verification step
 between them — the job now fails rather than creating a Release for a
 version nobody can install.
+
+## rc channels (Beta-to-Stable 1.0 plan, M4)
+
+Prerelease versions (`vX.Y.Z-rc.N` tags) publish under the **`next`
+dist-tag, never `latest`** — nobody running `npx mjolnir-qa@latest`
+should receive a release candidate by accident. The final (non-rc) tag
+publishes under `latest` as usual; that is the promotion step.
+
+The full `rc.N → stable` flow, run for every release that matters
+enough to dogfood first:
+
+1. Bump to the rc version (`npm version` accepts prerelease suffixes,
+   e.g. `1.0.0-rc.1`), update the CHANGELOG, tag `v1.0.0-rc.1`,
+   `git push --follow-tags`.
+2. The workflow runs the full gate and publishes under `next`:
+   `npm i mjolnir-qa@next` / `npx mjolnir-qa@next` for the feedback
+   window.
+3. Fix whatever the window surfaces; cut `v1.0.0-rc.2` the same way if
+   the changes are non-trivial.
+4. Bump to the final version (`1.0.0`), final CHANGELOG entry, tag
+   `v1.0.0`, push. That publish lands on `latest` — done. rc versions
+   stay installed only where `@next` was requested explicitly.
+
+Rollback policy: **deprecate, never unpublish** (see `docs/VERSIONING.md`
+— a published version must stay resolvable for pinners). If an rc is
+abandoned, `npm deprecate mjolnir-qa@1.0.0-rc.1 "superseded by …"`.
+
+## Failure-mode runbook
+
+Symptoms seen from outside, causes, and the fix for each:
+
+| Symptom                                                                   | Cause                                                                                                                                   | Fix                                                                                                                                                                                                                                  |
+| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `OIDC token exchange error - package not found` / `ENEEDAUTH` on publish  | npmjs.com trusted-publisher config does not match this run's OIDC claims (case-sensitive org, workflow filename, non-empty Environment) | Correct the Trusted Publisher per "One-time setup" below; re-run via `gh workflow run release.yml -f tag=vX.Y.Z`                                                                                                                     |
+| Publish succeeded but the poll step fails for the full 60s                | Registry read lag beyond the poll window, or the version landed under an unexpected dist-tag                                            | Check `npm view mjolnir-qa@<version>` and `npm view mjolnir-qa dist-tags`; if it is live, re-run the workflow — the duplicate publish is skipped and the poll re-verifies. If it never appears, treat as a failed publish and re-tag |
+| GitHub Release exists but `npm i` 404s                                    | Should be impossible since the 2026-08-30 ordering fix (publish → poll → Release). If seen: the Release lies                            | Follow the rollback policy below and open a tracking issue — this is a P0 against the release pipeline itself                                                                                                                        |
+| `E403` "cannot publish over the previously published version" on a re-run | The version is already live — expected on workflow_dispatch re-runs                                                                     | Nothing to fix; the job skips publish and proceeds to verification                                                                                                                                                                   |
+| Fresh-install gate fails (`tests/integrations/registry-install.spec.ts`)  | The packed tarball is broken (missing files, bad bin) — the gate ran before anything was published                                      | Do NOT publish. Fix the packaging issue, cut a new tag                                                                                                                                                                               |
+
+## Rollback policy: deprecate, never unpublish
+
+npm unpublishing breaks every `package-lock.json` pinning the version
+and every mirror that resolved it. The rollback path for a bad release:
+
+1. `npm deprecate mjolnir-qa@<version> "<reason>; use <fixed version>"`
+2. Cut and publish the fixed version immediately (tag → workflow).
+3. If `latest` must move back (bad stable release), publish the
+   corrected version — a re-point of the `latest` dist-tag without a new
+   version (`npm dist-tag add mjolnir-qa@<older> latest`) is the
+   emergency brake, used only when no fixed version can ship quickly,
+   and always with a CHANGELOG entry explaining it.
 
 ## Re-running a release
 

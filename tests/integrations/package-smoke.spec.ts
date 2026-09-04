@@ -1,0 +1,397 @@
+/**
+ * Package publish integrity smoke test (Test Hardening Plan, P0 #2).
+ *
+ * Every other test in this suite runs against source via tsx/vitest — none
+ * of them exercise the actual thing a stranger receives when they run
+ * `npx mjolnir-qa@latest`: the built `dist/` output, packed exactly as npm
+ * would pack it, executed as a real child process with no source tree or
+ * test harness underneath it. Bugs in `files`, `bin`, or the built
+ * entry-point's own self-invocation guard are invisible to unit tests and
+ * fatal to a first-run user — this is the one test class that catches them.
+ */
+
+import { execFileSync, execSync } from "node:child_process";
+import {
+  chmodSync,
+  cpSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+
+const ROOT = resolve(import.meta.dirname, "..", "..");
+
+/**
+ * `npm pack --json` writes a JSON array to stdout, but npm mixes other text
+ * in with it: lifecycle-script output (`prepare > husky`, tsdown) before it,
+ * and — on npm 11+ — `npm warn`/`npm notice` lines interleaved and after it.
+ * `lastIndexOf("]")` is not safe (a trailing notice can contain `]`), so scan
+ * from the first `[` tracking bracket depth (string-aware) and stop at the
+ * matching close.
+ */
+function parseNpmJsonArray(out: string): unknown[] {
+  const start = out.indexOf("[");
+  if (start === -1) {
+    throw new Error(`npm --json output contained no JSON array:\n${out}`);
+  }
+  let depth = 0;
+  let inStr = false;
+  for (let i = start; i < out.length; i++) {
+    const ch = out[i];
+    if (inStr) {
+      if (ch === "\\") i++;
+      else if (ch === '"') inStr = false;
+      continue;
+    }
+    if (ch === '"') inStr = true;
+    else if (ch === "[") depth++;
+    else if (ch === "]" && --depth === 0) {
+      return JSON.parse(out.slice(start, i + 1)) as unknown[];
+    }
+  }
+  throw new Error(`npm --json output had an unterminated JSON array:\n${out}`);
+}
+
+describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
+  "package publish integrity",
+  () => {
+    let workDir: string;
+    let pkgDir: string;
+    let pkgJson: {
+      bin: Record<string, string | undefined>;
+      dependencies?: Record<string, string>;
+      files?: string[];
+    };
+    let binPath: string;
+
+    beforeAll(() => {
+      // Build fresh — a stale dist/ from a previous run would hide exactly
+      // the class of bug this test exists to catch. The vitest
+      // global-setup has already built at suite start; skip here to avoid
+      // racing other workers' spawns with tsdown's clean phase.
+      if (!existsSync(join(ROOT, "dist", "cli.mjs"))) {
+        execSync("npm run build", { cwd: ROOT, stdio: "pipe" });
+      }
+
+      workDir = mkdtempSync(join(tmpdir(), "mjolnir-pack-"));
+
+      // `--ignore-scripts`: dist/ is already built above, so the `prepare`
+      // (husky) script is not needed — and skipping it keeps npm's lifecycle
+      // chatter (which npm 11 writes to stdout) out of the JSON we parse.
+      const packOut = execSync(`npm pack --json --ignore-scripts`, {
+        cwd: ROOT,
+      }).toString();
+      const packResult = parseNpmJsonArray(packOut).find(
+        (e): e is { filename: string } =>
+          typeof (e as { filename?: unknown })?.filename === "string",
+      );
+      if (!packResult) {
+        throw new Error(
+          `npm pack --json produced no entry with a filename. Raw output:\n${packOut}`,
+        );
+      }
+      const { filename } = packResult;
+
+      // npm pack writes the tarball into cwd (ROOT). Move it to our isolated
+      // workDir so the extraction doesn't pollute the repo.
+      const srcTgz = join(ROOT, filename);
+      const destTgz = join(workDir, filename);
+      if (!existsSync(srcTgz)) {
+        throw new Error(
+          `npm pack claimed to produce "${filename}" but it doesn't exist at "${srcTgz}". ` +
+            `Root contents matching *.tgz: ${
+              readdirSync(ROOT)
+                .filter((f) => f.endsWith(".tgz"))
+                .join(", ") || "(none)"
+            }`,
+        );
+      }
+      cpSync(srcTgz, destTgz);
+      rmSync(srcTgz); // clean up from ROOT
+
+      // Extract using a relative path (sidesteps GNU tar vs bsdtar absolute-path issues on Windows).
+      execFileSync("tar", ["-xzf", filename, "-C", "."], { cwd: workDir });
+      pkgDir = join(workDir, "package");
+
+      pkgJson = JSON.parse(
+        readFileSync(join(pkgDir, "package.json"), "utf8"),
+      ) as typeof pkgJson;
+      const binEntry = pkgJson.bin.mjolnir;
+      if (!binEntry) throw new Error("package.json has no mjolnir bin entry");
+      binPath = join(pkgDir, binEntry);
+
+      // Give the packed CLI its runtime dependencies without a network install
+      // (a real `npm install mjolnir-qa` would fetch these from `dependencies`).
+      // We COPY rather than symlink: symlink behavior differs across platforms
+      // and CI filesystems (junctions are Windows-only; macOS temp dirs may
+      // reject dir symlinks), and a silently-broken link makes the CLI crash
+      // with empty stdout — exactly the failure this test exists to catch.
+      // Transitive deps are resolved recursively from the ROOT node_modules
+      // (npm hoists them flat): ts-morph needs @ts-morph/*, which needs
+      // minimatch, etc. A real install would do this; we replicate it.
+      mkdirSync(join(pkgDir, "node_modules"), { recursive: true });
+      const copied = new Set<string>();
+      const copyDep = (dep: string): void => {
+        if (copied.has(dep)) return;
+        copied.add(dep);
+        const src = join(ROOT, "node_modules", dep);
+        const dest = join(pkgDir, "node_modules", dep);
+        if (!existsSync(src)) return;
+        cpSync(src, dest, { recursive: true, dereference: true });
+        let deps: Record<string, unknown>;
+        try {
+          const pkg = JSON.parse(
+            readFileSync(join(src, "package.json"), "utf8"),
+          ) as { dependencies?: Record<string, unknown> };
+          deps = pkg.dependencies ?? {};
+        } catch {
+          return;
+        }
+        for (const sub of Object.keys(deps)) copyDep(sub);
+      };
+      for (const dep of Object.keys(pkgJson.dependencies ?? {})) {
+        copyDep(dep);
+      }
+    }, 60_000);
+
+    afterAll(() => {
+      rmSync(workDir, { recursive: true, force: true });
+    });
+
+    describe("published tarball contents", () => {
+      it("packs every path declared in package.json's files list", () => {
+        for (const declared of pkgJson.files as string[]) {
+          // Skip negation patterns (exclusion globs like "!dist/**/*.wasm")
+          if (declared.startsWith("!")) continue;
+          const packedPath = join(pkgDir, declared);
+          expect(
+            existsSync(packedPath),
+            `package.json "files" declares "${declared}" but it was not packed ` +
+              `into the tarball — either the file is missing from the repo, or ` +
+              `.npmignore/files config is excluding it silently.`,
+          ).toBe(true);
+        }
+      });
+
+      it("the declared bin entry exists in the tarball", () => {
+        expect(
+          existsSync(binPath),
+          `package.json "bin" points to "${pkgJson.bin.mjolnir}", which ` +
+            `is not present in the packed tarball.`,
+        ).toBe(true);
+      });
+
+      it("the packed bin entry starts with a node shebang", () => {
+        // A real, shipped bug this locks. 0.4.0 was published with no
+        // shebang on dist/cli.mjs. On POSIX, npm's bin shim executes the
+        // target file directly and the kernel falls back to /bin/sh,
+        // which parses JavaScript as shell — `npx mjolnir-qa@latest` died
+        // with "import: not found" on every Linux and macOS machine.
+        //
+        // It survived local testing because npm generates a .cmd wrapper
+        // on Windows that invokes node explicitly, and it survived this
+        // very file because every other test here runs `node <binPath>`,
+        // which supplies the interpreter the shebang would have named.
+        // Only executing it the way a real install does catches this.
+        const firstLine = readFileSync(binPath, "utf8").split("\n")[0] ?? "";
+        expect(
+          firstLine,
+          "dist/cli.mjs must begin with `#!/usr/bin/env node`. Without it " +
+            "the npm-installed `mjolnir` command is executed as a shell " +
+            "script on POSIX and fails immediately for every user.",
+        ).toBe("#!/usr/bin/env node");
+      });
+
+      it.skipIf(process.platform === "win32")(
+        "the packed bin runs when executed directly, as npm's POSIX shim does",
+        () => {
+          chmodSync(binPath, 0o755);
+          // No `node` prefix on purpose — this is the exact invocation
+          // path that was broken in 0.4.0.
+          const out = execFileSync(binPath, ["--version"], {
+            encoding: "utf8",
+          });
+          expect(out).toContain("mjolnir-qa");
+        },
+      );
+
+      it("includes CHANGELOG.md (Sprint 0 Task 2)", () => {
+        expect(
+          existsSync(join(pkgDir, "CHANGELOG.md")),
+          "CHANGELOG.md must ship in the published tarball so upgraders can " +
+            "see what changed between versions — it was previously " +
+            "git-ignored and would have been silently absent.",
+        ).toBe(true);
+      });
+
+      it("declares the tree-sitter runtime as real dependencies (D2 packaging fix)", () => {
+        // Verification Trust Evolution Plan D2: the published CLI must be
+        // able to load grammars offline. tree-sitter-wasms carries the
+        // prebuilt .wasm grammars; web-tree-sitter is the runtime loader
+        // (pinned EXACTLY — 0.26.x cannot load these grammar files, see
+        // src/engine/tree-sitter-ast.ts's header). Both must ship as
+        // `dependencies`, not devDependencies, or a consumer's
+        // `npm install mjolnir-qa` produces a CLI whose parse stage
+        // cannot load a grammar at all.
+        const deps = pkgJson.dependencies ?? {};
+        expect(
+          deps["tree-sitter-wasms"],
+          "tree-sitter-wasms must be a runtime dependency — the .wasm " +
+            "grammars are loaded from node_modules at scan time",
+        ).toBeDefined();
+        expect(
+          deps["web-tree-sitter"],
+          "web-tree-sitter must be a runtime dependency",
+        ).toBeDefined();
+        expect(
+          deps["web-tree-sitter"],
+          "web-tree-sitter must keep the exact 0.25.6 pin (0.26.x cannot " +
+            "load tree-sitter-wasms' prebuilt grammars — verified breakage)",
+        ).toBe("0.25.6");
+      });
+
+      it("the packed dependency set contains the java and c_sharp grammars (D2)", () => {
+        // The beforeAll dependency-copy loop mirrors a real npm install of
+        // `dependencies`; after it, the grammars the parse stage probes
+        // (src/engine/tree-sitter-ast.ts grammarPath) must be resolvable
+        // inside the installed tree — the offline-load guarantee.
+        for (const grammar of [
+          "tree-sitter-java.wasm",
+          "tree-sitter-c_sharp.wasm",
+        ]) {
+          expect(
+            existsSync(
+              join(pkgDir, "node_modules", "tree-sitter-wasms", "out", grammar),
+            ),
+            `${grammar} must be present in the installed dependency tree — ` +
+              `without it the published CLI cannot parse Java/C# sources offline`,
+          ).toBe(true);
+        }
+        expect(
+          existsSync(join(pkgDir, "node_modules", "web-tree-sitter")),
+          "web-tree-sitter must be present in the installed dependency tree",
+        ).toBe(true);
+      });
+
+      it("excludes dev artifacts not declared in 'files' (Sprint 1 Task 8)", () => {
+        // Checked against a fresh `npm pack --dry-run` listing rather than
+        // the shared pkgDir fixture above: that fixture's beforeAll copies
+        // node_modules into pkgDir *after* extraction (to run the CLI
+        // without a network install), which would make a node_modules
+        // check here a false positive unrelated to what npm actually packs.
+        const dryRunOut = execSync(
+          "npm pack --dry-run --json --ignore-scripts",
+          { cwd: ROOT },
+        ).toString();
+        const dryRunResult = parseNpmJsonArray(dryRunOut).find(
+          (e): e is { files: Array<{ path: string }> } =>
+            Array.isArray((e as { files?: unknown })?.files),
+        );
+        const packedPaths = (dryRunResult?.files ?? []).map((f) => f.path);
+
+        const forbiddenPrefixes = [
+          "scratch/",
+          "coverage/",
+          "node_modules/",
+          "tests/",
+          ".git/",
+          "docs/",
+          ".planning/",
+        ];
+        for (const prefix of forbiddenPrefixes) {
+          const leaked = packedPaths.filter((p) => p.startsWith(prefix));
+          expect(
+            leaked,
+            `published tarball would contain path(s) under "${prefix}", ` +
+              `which is not in package.json's "files" whitelist — dev/debug ` +
+              `artifacts must not ship to every install: ${leaked.join(", ")}`,
+          ).toEqual([]);
+        }
+      });
+    });
+
+    describe("published CLI as a real child process", () => {
+      it("running the bin entry directly (as npx would) prints help text", () => {
+        // --help is documented as a usage path (exit 10, same as any unknown
+        // flag) — see printUsage()'s own "Exit codes" line — so this only
+        // asserts real output, not a 0 exit.
+        let out: string;
+        try {
+          out = execFileSync("node", [binPath, "--help"], {
+            cwd: pkgDir,
+            stdio: "pipe",
+          }).toString();
+        } catch (err) {
+          const e = err as { stdout?: Uint8Array; stderr?: Uint8Array };
+          // --help exits 10 by contract (usage path), so a throw here is
+          // expected — what matters is that the CLI produced real output.
+          // If it somehow produced nothing, surface stderr for diagnosis.
+          out = e.stdout ? e.stdout.toString() : "";
+          if (out.length === 0) {
+            const stderr = e.stderr ? e.stderr.toString() : "";
+            throw new Error(`packed CLI produced no output: stderr=${stderr}`, {
+              cause: err,
+            });
+          }
+        }
+        expect(
+          out.length,
+          "the packed CLI produced no output at all when invoked as a binary " +
+            "— this is what a first-time `npx mjolnir-qa@latest` user would see: " +
+            "nothing.",
+        ).toBeGreaterThan(0);
+        expect(out).toContain("mjolnir");
+        expect(out).toContain("Usage:");
+      });
+
+      it("scanning a real fixture repo produces the documented score banner", () => {
+        const fixtureDir = mkdtempSync(
+          join(tmpdir(), "mjolnir-smoke-fixture-"),
+        );
+        try {
+          mkdirSync(join(fixtureDir, "e2e"), { recursive: true });
+          execFileSync("node", [
+            "-e",
+            `require("fs").writeFileSync(${JSON.stringify(
+              join(fixtureDir, "e2e", "checkout.spec.ts"),
+            )}, "import { test, expect } from '@playwright/test';\\ntest('checkout', async ({ page }) => {\\n  await page.waitForTimeout(3000);\\n  expect(true).toBe(true);\\n});\\n")`,
+          ]);
+
+          // The fixture deliberately trips an error-level finding, so the CLI
+          // exits 1 by contract (§ Exit codes) — that's success for this test,
+          // not a crash, so the non-zero exit must not be treated as a throw.
+          let result = "";
+          try {
+            result = execFileSync("node", [binPath, fixtureDir], {
+              cwd: pkgDir,
+            }).toString();
+          } catch (err) {
+            const stdout = (err as { stdout?: Uint8Array }).stdout;
+            result = stdout ? stdout.toString() : "";
+          }
+
+          expect(result).toMatch(/WORTHINESS|score/);
+        } finally {
+          rmSync(fixtureDir, { recursive: true, force: true });
+        }
+      });
+
+      it("an unknown flag exits with the documented usage-error code (10)", () => {
+        expect.assertions(1);
+        try {
+          execFileSync("node", [binPath, "--this-flag-does-not-exist"], {
+            cwd: pkgDir,
+          });
+        } catch (err) {
+          expect((err as { status: number }).status).toBe(10);
+        }
+      });
+    });
+  },
+);

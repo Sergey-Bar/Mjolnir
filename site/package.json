@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "gen": "node scripts/gen-rules.mjs && node scripts/gen-report.mjs",
+    "gen": "node scripts/gen-rules.mjs && node scripts/gen-report.mjs && node scripts/gen-samples.mjs",
     "test": "node --test \"scripts/*.test.mjs\"",
     "doctor": "node scripts/site-doctor.mjs",
     "predev": "npm run gen",

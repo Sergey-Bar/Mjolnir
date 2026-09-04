@@ -160,6 +160,12 @@ export interface UniversalRule {
    * Files without tags are always analyzed (open-when-unknown).
    */
   frameworks?: readonly string[];
+  /**
+   * Detector implementation revision (§07), threaded through asUniversal
+   * so the M5.2 cache digest can fold it in; the stale-measurement
+   * machinery reads it from the registry, the cache from this field.
+   */
+  detectorRevision?: number;
   run(file: ParsedFile): Array<Omit<Finding, "ruleId" | "category">>;
 }
 

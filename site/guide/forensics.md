@@ -11,16 +11,7 @@ JUnit XML from any runner.
 mjolnir forensics ./test-results/
 ```
 
-```text
-▚▞ FLAKINESS LEADERBOARD
-
-3 tests · 1 failed · 1 flaky · 1 retried
-
-TRUE-FLAKE completes checkout with saved card (e2e/checkout.spec.ts)
-           ████████████████████ 6.0s · 2 attempts
-FAILING    declines an expired card (e2e/checkout.spec.ts)
-           ████░░░░░░░░░░░░░░░░ 1.1s · 1 attempt
-```
+<ForensicsSample which="forensics" />
 
 ## The TRUE-FLAKE verdict
 
@@ -73,12 +64,7 @@ locators are to a DOM refactor:
 mjolnir doctor:playwright
 ```
 
-```text
-▚▞ SELECTOR HEALTH — e2e/checkout.spec.ts
-
-  [█████████████████░░░]  83 / 100
-  role/text: 2 · testid: 1 · css-chains: 1 ⚠ · xpath: 0
-```
+<ForensicsSample which="selector-health" />
 
 Role-based locators score full credit. CSS class chains and XPath tank
 the score — they break on any DOM refactor without telling you which

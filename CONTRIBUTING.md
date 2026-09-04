@@ -26,9 +26,52 @@ npm run typecheck        # tsc, twice: src/ (strict, ships in dist/),
 npm run lint              # eslint . && prettier --check .
 npm test                  # vitest run — full suite
 npm run test:coverage     # vitest run --coverage — floors enforced
+npx vitest run tests/rules          # one domain slice (path filter)
 npm run build              # tsdown src/cli.ts, then any workspace package
 npm run self-scan          # the tool scans its own repo — must add
                             # zero NEW error-severity findings
+```
+
+The spec suite is organized by domain, mirroring `src/`. Run one slice
+with a path filter (`npx vitest run tests/cli`); `npm test` always runs
+the whole suite and is what CI gates on:
+
+## First five minutes (the quick loop)
+
+```bash
+npx vitest run tests/<your-domain>   # 1. iterate fast on one slice
+npm run self-scan                    # 2. scan your own change
+npm test                             # 3. full gate before the PR
+```
+
+Step 2 is the house specialty: `npm run self-scan` runs the built tool
+against this repo and must add **zero NEW error-severity findings**.
+A rule change that fires on its own codebase shows up here first —
+cheap, immediate, and honest (the same gate CI runs in the `self-scan`
+job). Re-scans during iteration get faster with `--cache`:
+
+```bash
+npm run build && node dist/cli.mjs . --cache --json
+```
+
+The cache is content-addressed (file bytes + rule set) and lives under
+`.mjolnir/cache/` — local-only, gitignored, never leaves the machine.
+
+```text
+tests/
+  cli/          CLI verbs, flags, arg parsing, error paths
+  engine/       adapters, masking, discovery, analysis, scoring
+  rules/        rule behavior, one subdir per family (ci/, playwright/, …)
+  reporters/    terminal/SARIF/mermaid output + score state
+  forensics/    run-data forensics, selector health, runtime evidence
+  integrations/ repo workflow specs, packaging, install
+  config/       config loading + suppressions
+  plugins/      plugin + local-rule loading
+  scope/        changed-scope computation
+  contract/     repo-level guards: docs consistency, hygiene, privacy
+  stress/       scale/perf floors, crash-proof fuzz
+  e2e/          full-CLI journeys (spawn dist/)
+  golden/ corpus/ fixtures/ helpers/   data + shared harness (unchanged)
 ```
 
 Additional gates that only apply when your change touches rules or
@@ -122,6 +165,45 @@ a worked example.
 
 Maintainers: see [`docs/PUBLISHING.md`](docs/PUBLISHING.md) for the
 release checklist and the npm-provenance publishing runbook.
+
+## Governance
+
+Mjölnir is maintained by a **solo maintainer** — decisions are not made
+by committee, and this section exists so contributors know how decisions
+get made, not who to lobby:
+
+- The maintainer has final say on scope, rules, APIs and roadmap.
+  Agreement with a well-argued PR is the normal path; a "no" is a
+  decision, not an opening bid.
+- **The two laws above govern all rule changes** — a PR that violates
+  either is declined regardless of merit, because the alternative is
+  the tool growing past what one maintainer can keep honest.
+- Decisions with lasting consequences are recorded, not just made:
+  product/strategy decisions live in `.planning/` (machine-local, not
+  committed) and engineering plans in `.kilo/plans/`; completed plans
+  are archived under `docs/archive/plans/` with their per-task audit
+  trail. If you want to know _why_ something is the way it is, the
+  answer is in one of those records or in the relevant spec's failure
+  message.
+- Support expectations, issue routing and the security process live in
+  [`SUPPORT.md`](SUPPORT.md); version/stability commitments live in
+  [`docs/VERSIONING.md`](docs/VERSIONING.md).
+
+## Issue triage
+
+Every issue form pre-assigns its label — the four labels mirror the
+four issue templates exactly:
+
+| Label              | Template             | What happens next                                                                                                                             |
+| ------------------ | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bug`              | bug-report.yml       | Reproduced, fixed, and regression-locked by a spec                                                                                            |
+| `false-positive`   | false-positive.yml   | Hand-classified into the verdict corpus (`tests/corpus/verdicts/`) — measured FP rates and the FP-AUDIT table come from exactly these reports |
+| `rule-request`     | rule-request.yml     | Evaluated against the anti-creep law (equal-size removal) and the fixture firewall                                                            |
+| `language-request` | language-request.yml | Scoped against the adapter architecture (`src/adapters/`)                                                                                     |
+
+First response to a new issue is targeted within **7 days** — an honest
+solo-maintainer commitment, not an SLA with consequences (also stated
+in [`SUPPORT.md`](SUPPORT.md)).
 
 ## PR expectations
 

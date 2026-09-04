@@ -101,6 +101,7 @@ and you're done. Everything else is optional.
 | `mjolnir rules --unmeasured`        | The rules running on assumption, not measurement |
 | `mjolnir --json` / `--format sarif` | Machine-readable / GitHub Code Scanning          |
 | `mjolnir --strict`                  | Also run quarantine-tier rules (higher FP risk)  |
+| `mjolnir --cache`                   | Incremental re-scans via a local verdict cache   |
 
 <details>
 <summary><strong>When something's flaky</strong></summary>
@@ -610,16 +611,18 @@ mjolnir/
 
 ## 📚 Documentation
 
-| Document                                               | What's in it                             |
-| ------------------------------------------------------ | ---------------------------------------- |
-| [docs/SCORING.md](docs/SCORING.md)                     | Score normalization + evidence weighting |
-| [docs/FP-AUDIT.md](docs/FP-AUDIT.md)                   | Measured false-positive rates + method   |
-| [docs/RULE-LIFECYCLE.md](docs/RULE-LIFECYCLE.md)       | Rule states, suppression, deprecation    |
-| [docs/SARIF-INTEGRATION.md](docs/SARIF-INTEGRATION.md) | SARIF output + editor/CI setup           |
-| [docs/rules/](docs/rules/)                             | Generated per-rule catalog               |
-| [CONTRIBUTING.md](CONTRIBUTING.md)                     | Dev setup + contribution workflow        |
-| [CHANGELOG.md](CHANGELOG.md)                           | Release history                          |
-| [SECURITY.md](SECURITY.md)                             | Vulnerability reporting                  |
+| Document                                               | What's in it                                      |
+| ------------------------------------------------------ | ------------------------------------------------- |
+| [docs/SCORING.md](docs/SCORING.md)                     | Score normalization + evidence weighting          |
+| [docs/FP-AUDIT.md](docs/FP-AUDIT.md)                   | Measured false-positive rates + method            |
+| [docs/RULE-LIFECYCLE.md](docs/RULE-LIFECYCLE.md)       | Rule states, suppression, deprecation             |
+| [docs/VERSIONING.md](docs/VERSIONING.md)               | Semver policy, frozen surfaces, deprecation cycle |
+| [docs/SARIF-INTEGRATION.md](docs/SARIF-INTEGRATION.md) | SARIF output + editor/CI setup                    |
+| [docs/rules/](docs/rules/)                             | Generated per-rule catalog                        |
+| [CONTRIBUTING.md](CONTRIBUTING.md)                     | Dev setup + contribution workflow                 |
+| [SUPPORT.md](SUPPORT.md)                               | Where to ask, report and get help                 |
+| [CHANGELOG.md](CHANGELOG.md)                           | Release history                                   |
+| [SECURITY.md](SECURITY.md)                             | Vulnerability reporting                           |
 
 ---
 
@@ -628,6 +631,7 @@ mjolnir/
 **v0.5.x · open beta.** The JSON schema and exit codes are frozen contracts.
 TypeScript and Python have the broadest measured coverage; Java and C# are
 newer — read them through the [maturity table](#rule-tiers-and-language-maturity).
+Honest scope, no invented dates: the [public roadmap](https://sergey-bar.github.io/Mjolnir/reference/roadmap).
 
 ---
 

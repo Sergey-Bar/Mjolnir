@@ -5,6 +5,7 @@ import RuneDivider from "./RuneDivider.vue";
 import RuleCatalog from "./RuleCatalog.vue";
 import TerminalReport from "./TerminalReport.vue";
 import CatalogPreview from "./CatalogPreview.vue";
+import ForensicsSample from "./ForensicsSample.vue";
 import NotFound from "./NotFound.vue";
 import "./styles/vars.css";
 import "./styles/custom.css";
@@ -18,5 +19,6 @@ export default {
     app.component("RuleCatalog", RuleCatalog);
     app.component("TerminalReport", TerminalReport);
     app.component("CatalogPreview", CatalogPreview);
+    app.component("ForensicsSample", ForensicsSample);
   },
 } satisfies Theme;

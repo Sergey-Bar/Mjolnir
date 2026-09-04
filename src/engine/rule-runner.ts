@@ -35,12 +35,13 @@ export function asUniversal(rule: {
   appliesTo: string;
   configRule?: boolean;
   configFiles?: string[];
+  detectorRevision?: number;
   run: (file: {
     path: string;
     text: string;
     ast?: unknown;
   }) => Array<Record<string, unknown>>;
-}): UniversalRule & { legacy: true } {
+}): UniversalRule & { legacy: true; detectorRevision?: number } {
   return {
     id: rule.id,
     category: rule.category,
@@ -48,6 +49,9 @@ export function asUniversal(rule: {
     configOnly: rule.configRule === true,
     ...(rule.configFiles !== undefined
       ? { configFiles: [...rule.configFiles] }
+      : {}),
+    ...(rule.detectorRevision !== undefined
+      ? { detectorRevision: rule.detectorRevision }
       : {}),
     legacy: true,
     run(file) {
