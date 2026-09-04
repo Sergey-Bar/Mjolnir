@@ -247,6 +247,7 @@ export const csNoAssertions = defineRule({
     // `[Test(Description = "...")]` may follow) — `[TestInitialize]`/
     // `[TestCleanup]` are NOT test methods.
     const attrRe =
+      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
       /\[(?:Test|Fact|TestMethod)(?:\([^)]*\))?\]\s*(?:public\s+)?(?:async\s+)?(?:Task|void)\s+(\w+)\s*\([^)]*\)\s*\{/g;
     let m: RegExpExecArray | null;
     while ((m = attrRe.exec(text)) !== null) {

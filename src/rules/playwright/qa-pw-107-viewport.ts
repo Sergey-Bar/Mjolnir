@@ -40,6 +40,7 @@ export const pwVisibleNotInViewport = defineRule({
     // Heuristic: visibility asserted on toast/banner/modal/tooltip nodes,
     // which are exactly the ones that render off-viewport or animate in.
     // Args matched loosely (no nested parens needed for locator chains).
+    // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
     const re = /expect\(([^()]*(?:\([^()]*\)[^()]*)*)\)\.toBeVisible\(\)/g;
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {

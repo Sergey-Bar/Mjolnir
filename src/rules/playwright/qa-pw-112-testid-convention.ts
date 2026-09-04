@@ -43,6 +43,7 @@ export const pwTestIdConvention = defineRule({
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {
       const id = m[1] as string;
+      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
       if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) {
         findings.push({
           severity: "info",

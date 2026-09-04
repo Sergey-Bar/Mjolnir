@@ -39,7 +39,8 @@ export const pyEmptyBody = defineRule({
     // whitespace is legal, explicit \n at line ends — removes the \s*/\s+
     // exchange while keeping the same line shapes.
     const re =
-      /^( *)def[ \t]+(test_\w+)[ \t]*\([^)\n]*\):[ \t]*\n(?:\1[ \t]+#[^\n]*\n)?\1 {4}pass[ \t]*$/gm;
+      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
+      /^( *)def[ \t]+(test_\w+)[ \t]*\([^)\n]*\):[ \t]*\r?\n(?:\1[ \t]+#[^\r\n]*\r?\n)?\1 {4}pass[ \t]*\r?$/gm;
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {
       findings.push({

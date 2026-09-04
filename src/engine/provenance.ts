@@ -62,6 +62,7 @@ const GENERATED_HEADER_RE =
  * `'test'` with no project context.
  */
 const CODEGEN_DEFAULT_TITLE_RE =
+  // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
   /\b(?:test|it)\s*\(\s*['"]test(?:\s+\d+)?['"]\s*,/;
 
 /** Classify one file's provenance. Pure. */

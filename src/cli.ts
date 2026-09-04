@@ -768,6 +768,9 @@ export function pathMatchesGlob(path: string, glob: string): boolean {
       .replaceAll("*", "[^/]*");
     if (!last) re += "/";
   }
+  // glob segments are escape-quoted line-by-line above — no unescaped
+  // regex metacharacters reach the RegExp.
+  // eslint-disable-next-line security/detect-non-literal-regexp
   return new RegExp(`${re}$`).test(p);
 }
 

@@ -39,6 +39,7 @@ const CONSUMERS: Array<{
     re: /codecov|coveralls/i,
     stepRe: /upload-artifact/i,
     producer:
+      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
       /\b(?:npx\s+)?(?:vitest|jest|nyc)\b[\s\S]*--coverage|--coverage\b/i,
     label: "coverage artifact",
   },

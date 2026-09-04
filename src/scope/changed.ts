@@ -203,6 +203,7 @@ export function parseChangedLines(diff: string): Set<number> {
   let inHunk = false;
   let newCount = 0;
   for (const raw of diff.split("\n")) {
+    // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
     const hunk = /^@@\s*-\d+(?:,\d+)?\s*\+(\d+)(?:,(\d+))?\s*@/.exec(raw);
     if (hunk) {
       newLine = Number(hunk[1]);

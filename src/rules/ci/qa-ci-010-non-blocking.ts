@@ -30,6 +30,7 @@ interface WorkflowDoc {
 }
 
 const TEST_CMD =
+  // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
   /\b(?:npm|yarn|pnpm)\s+(?:run\s+)?test\b|\b(?:jest|vitest|pytest|playwright|mocha)\b/;
 
 /**
@@ -79,6 +80,7 @@ export const nonBlockingTestJob = defineRule({
           confidence: "medium",
           findingType: "deterministic-defect",
           file: ctx.path,
+          // eslint-disable-next-line security/detect-non-literal-regexp -- escapeRe-quoted workflow value — no regex metacharacters survive
           line: findLine(ctx.text, new RegExp(escapeRe(cond))),
           column: 1,
           message: `Job \`${jobName}\` runs tests but its \`if:\` condition skips it on pull requests.`,

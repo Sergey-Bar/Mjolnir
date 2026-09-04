@@ -33,6 +33,9 @@ export function loadSuppressions(root: string): SuppressionReport {
   // otherwise such entries stayed active forever (README §Configuration
   // promises a 90-day window). The `ignore` command writes explicit
   // dates, so documented write-time behavior is unchanged.
+  // FW-LINT-01 residual: the path is loadConfig's own resolved config
+  // location (from the compile-time CONFIG_NAMES list) — not scan input.
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   const anchor = path ? statSync(path).mtime : undefined;
   const entries = (config.ignore ?? []).map((ign) => ({
     ...ign,

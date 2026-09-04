@@ -53,6 +53,7 @@ function sleepBeforeLookup(
   const text = ctx.codeText ?? ctx.text;
   const lines = text.split("\n");
   const findings: Omit<Finding, "ruleId" | "category">[] = [];
+  // eslint-disable-next-line security/detect-non-literal-regexp -- clone of a compile-time literal's .source for flag control — not scan input
   const re = new RegExp(sleepRe.source, "g");
   let m: RegExpExecArray | null;
   while ((m = re.exec(text)) !== null) {

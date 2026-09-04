@@ -30,7 +30,7 @@ export const pwNoProjectSplit = defineRule({
     const text = ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     const base = ctx.path.split("/").pop() as string;
-    if (!/^playwright\.config\.(ts|js|mjs|cts)$/.test(base)) return findings;
+    if (!/^playwright\.config\.(?:ts|js|mjs|cts)$/.test(base)) return findings;
 
     const hasProjectsMatch = /projects\s*:\s*\[/.exec(text);
     const hasProjects = hasProjectsMatch !== null;

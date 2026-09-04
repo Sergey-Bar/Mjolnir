@@ -70,6 +70,7 @@ export const pwLocatorNormalize = defineRule({
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     const res = [STRING_SELECTOR_RE, RAW_HANDLE_RE];
     for (const re of res) {
+      // eslint-disable-next-line security/detect-non-literal-regexp -- clone of a compile-time literal's .source for flag control — not scan input
       const run = new RegExp(re.source, "g");
       let m: RegExpExecArray | null;
       while ((m = run.exec(text)) !== null) {

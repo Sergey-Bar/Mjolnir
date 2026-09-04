@@ -13,6 +13,7 @@
  * The regex carries no `g` flag, so `.test()` on it is not stateful and it is
  * safe to share a single instance across rules and calls.
  */
+// eslint-disable-next-line security/detect-non-literal-regexp -- source is a compile-time-constant join of literal alternatives
 export const VERIFICATION_GATE_RE = new RegExp(
   [
     // ── Test runners ────────────────────────────────────────────────

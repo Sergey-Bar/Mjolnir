@@ -41,7 +41,8 @@ export const pyMutableFixture = defineRule({
     // it terminates at the first column-0 content line exactly where the
     // original lookahead (?=\n\S|\n*$) terminated.
     const re =
-      /@pytest\.fixture[ \t]*\([^)\n]*scope[ \t]*=[ \t]*["'](session|module|package)["'][^)\n]*\)[ \t]*\ndef[ \t]+(\w+)[ \t]*\([^)\n]*\)[ \t]*:[ \t]*\n((?:[ \t]*\n|[ \t]+\S[^\n]*\n)*(?:[ \t]+\S[^\n]*)?)/g;
+      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
+      /@pytest\.fixture[ \t]*\([^)\n]*scope[ \t]*=[ \t]*["'](session|module|package)["'][^)\n]*\)[ \t]*\r?\ndef[ \t]+(\w+)[ \t]*\([^)\n]*\)[ \t]*:[ \t]*\r?\n((?:[ \t]*\r?\n|[ \t]+\S[^\r\n]*\r?\n)*(?:[ \t]+\S[^\r\n]*)?)/g;
 
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {

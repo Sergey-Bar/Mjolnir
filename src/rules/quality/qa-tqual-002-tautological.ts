@@ -37,7 +37,8 @@ export const tautologicalAssertion = defineRule({
     // comment or a doc-example string is documentation, not a defect.
     const text = ctx.codeText ?? getCodeOnlyText(ctx);
     const re =
-      /expect\s*\(\s*(true|false|null|undefined|\d+)\s*\)\s*\.\s*toBe(?:True|False)?\s*\(\s*(?:(true|false|null|undefined|\d+)\s*)?\)/g;
+      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
+      /expect\s*\(\s*(?:true|false|null|undefined|\d+)\s*\)\s*\.\s*toBe(?:True|False)?\s*\(\s*(?:(?:true|false|null|undefined|\d+)\s*)?\)/g;
 
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {
@@ -63,6 +64,7 @@ export const tautologicalAssertion = defineRule({
     // `expect(` head itself is real code: it must survive masking
     // unchanged (inside a comment or a string, masking blanks it).
     const rawRe =
+      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
       /expect\s*\(\s*(['"`])([^'"`]*)\1\s*\)\s*\.\s*toBe(?:True|False)?\s*\(\s*(?:(['"`])([^'"`]*)\3\s*)?\)/g;
     const codeText = ctx.codeText ?? getCodeOnlyText(ctx);
     while ((m = rawRe.exec(ctx.text)) !== null) {

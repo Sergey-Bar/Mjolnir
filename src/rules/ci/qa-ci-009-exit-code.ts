@@ -30,6 +30,7 @@ interface WorkflowDoc {
 // `playwright show-report`, `playwright merge-reports` are common setup /
 // reporting steps. Require `playwright test` explicitly.
 const TEST_CMD =
+  // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
   /\b(?:npm|yarn|pnpm)\s+(?:run\s+)?test\b|\b(?:jest|vitest|pytest|mocha)\b|\bplaywright\s+test\b/;
 
 export const exitCodeNotPropagated = defineRule({
@@ -101,6 +102,7 @@ export const exitCodeNotPropagated = defineRule({
         // command's without pipefail, so it stays active there.)
         if (/set\s+(?:-[A-Za-df-z]*e[A-Za-z]*|-o\s+errexit)\b/.test(run))
           continue;
+        // eslint-disable-next-line security/detect-non-literal-regexp -- TEST_CMD.source is a compile-time literal interpolation — not scan input
         const seqRe = new RegExp(
           `(?:${TEST_CMD.source})[^\\n;]*;\\s*[^\\n]+`,
           "g",

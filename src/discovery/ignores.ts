@@ -189,10 +189,12 @@ function compilePattern(raw: string): CompiledPattern | null {
   }
   if (pattern.trim() === "") return null;
   const re = pattern.includes("/")
-    ? new RegExp(`^${globBody(pattern)}$`)
+    ? // eslint-disable-next-line security/detect-non-literal-regexp -- glob compiled from mjolnir.config.json exclude — operator-owned config (§21 trust boundary)
+      new RegExp(`^${globBody(pattern)}$`)
     : // Bare name: gitignore semantics — matches a file or directory
       // with this name at ANY depth (a directory match ignores its
       // contents, since every file path inside contains the segment).
+      // eslint-disable-next-line security/detect-non-literal-regexp -- glob compiled from mjolnir.config.json exclude — operator-owned config (§21 trust boundary)
       new RegExp(`(?:^|/)${globBody(pattern)}(?:/|$)`);
   return { negated, re };
 }
@@ -227,6 +229,7 @@ function globBody(glob: string): string {
 
 /** Anchored full-path glob — the primitive the matcher builds on. */
 export function globToRegExp(glob: string): RegExp {
+  // eslint-disable-next-line security/detect-non-literal-regexp -- glob compiled from mjolnir.config.json exclude — operator-owned config (§21 trust boundary)
   return new RegExp(`^${globBody(glob)}$`);
 }
 

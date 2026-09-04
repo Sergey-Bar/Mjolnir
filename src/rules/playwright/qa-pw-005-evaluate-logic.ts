@@ -70,7 +70,7 @@ export const evaluateBusinessLogic = defineRule({
       // A function node's body is never absent.
       const bodyText = fnNode.getBody()?.getText();
 
-      if (/\b(if|for|while|switch)\b/.test(bodyText)) {
+      if (/\b(?:if|for|while|switch)\b/.test(bodyText)) {
         findings.push({
           severity: "info",
           confidence: "medium",
@@ -95,6 +95,7 @@ function runRegexFallback(
   path: string,
 ): Array<Omit<Finding, "ruleId" | "category">> {
   const findings: Array<Omit<Finding, "ruleId" | "category">> = [];
+  // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
   const re = /(?:page\.)?evaluate\s*\(\s*(?:async\s*)?\(/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(text)) !== null) {
@@ -103,7 +104,7 @@ function runRegexFallback(
     const closeBrace = matchBrace(text, openBrace);
     if (closeBrace === -1) continue;
     const body = text.slice(openBrace + 1, closeBrace);
-    if (/\b(if|for|while|switch)\b/.test(body)) {
+    if (/\b(?:if|for|while|switch)\b/.test(body)) {
       findings.push({
         severity: "info",
         confidence: "medium",

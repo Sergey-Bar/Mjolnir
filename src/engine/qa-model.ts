@@ -707,6 +707,7 @@ const TS_CALLEE_CONCEPTS: CallConceptTable = {
   ],
 };
 
+// eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
 const TS_TEST_CALLEE_RE = /^(?:it|test)(?:\.\w+)*$/;
 const TS_HOOK_CONCEPTS: Record<string, QaConcept> = {
   beforeEach: "setup",
@@ -764,6 +765,7 @@ function extractTsModel(file: ParsedFile, sf: SourceFile): QaSemanticModel {
     }
     // Suite lifecycle (qa-pw-117: test.describe.serial).
     if (
+      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
       /^describe(?:\.\w+)*\.serial$/.test(chain) ||
       /\.describe\.serial/.test(chain)
     ) {
@@ -838,6 +840,7 @@ function isAwaitedTsCall(call: CallExpression): boolean {
  * wait_for_timeout (qa-py-005/qa-py-102/qa-py-103), assert/self.assert*
  * (qa-py-003's oracle vocabulary).
  */
+// eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
 const PY_TEST_RE = /^([ \t]*)(?:async\s+)?def\s+(test_\w+)\s*\([^)]*\)\s*:/gm;
 const PY_FIXTURE_RE = /@pytest\.fixture\b/g;
 const PY_WAIT_RE = /\btime\.sleep\s*\(|\.wait_for_timeout\s*\(/g;

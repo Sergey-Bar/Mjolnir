@@ -84,8 +84,11 @@ function extractReadmeCommands(): string[] {
   for (const line of lines) {
     // Only match table-cell commands: `mjolnir ...` or `npx mjolnir-qa ...`
     // wrapped in backticks inside a markdown table row (starts with |).
+    // FW-RX-07: args start at a non-space token — no \s+/[^`]* exchange.
     const cellMatch =
-      /\|\s*`(?:npx mjolnir-qa(?:@latest)?|mjolnir)\s+([^`]*)`/.exec(line);
+      /\|\s*`(?:npx mjolnir-qa(?:@latest)?|mjolnir)[ \t]+([^\s`][^`]*)`/.exec(
+        line,
+      );
     if (!cellMatch) continue;
     let rest = (cellMatch[1] ?? "").trim();
     // Strip shell redirection — that's a shell concern, not a CLI-arg one.

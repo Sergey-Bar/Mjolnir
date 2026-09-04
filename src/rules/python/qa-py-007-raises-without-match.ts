@@ -61,6 +61,7 @@ export const pyRaisesWithoutMatch = defineRule({
           // Window scaled to a plausible test body; multi-line assert
           // chains and assignment-then-assert both land inside it.
           const tail = text.slice(closeParen, m.index + 2400);
+          // eslint-disable-next-line security/detect-non-literal-regexp -- name is an [A-Za-z_]\w* identifier captured from `as <name>` — no metacharacters
           const uses = new RegExp(`\\b${name}\\b`).test(tail);
           if (uses) continue;
         }

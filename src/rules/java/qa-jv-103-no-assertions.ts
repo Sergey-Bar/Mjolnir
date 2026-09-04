@@ -179,6 +179,7 @@ export const jvNoAssertions = defineRule({
     // the first match iteration still reaches the `void` line the same way
     // (backtracking gives back whole lines, as the lazy form gave back chars).
     const annRe =
+      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
       /@Test\b(?:[^\n{]*\n)+[ \t]*(?:public\s+|protected\s+)?void\s+(\w+)\s*\([^)]*\)\s*\{/g;
     let m: RegExpExecArray | null;
     while ((m = annRe.exec(text)) !== null) {

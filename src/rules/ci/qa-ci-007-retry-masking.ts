@@ -73,6 +73,7 @@ export const retryMasking = defineRule({
             findingType: "deterministic-defect",
             qaImpact: "FLAKY-RISK",
             file: ctx.path,
+            // eslint-disable-next-line security/detect-non-literal-regexp -- escapeRe-quoted workflow value — no regex metacharacters survive
             line: findLine(ctx.text, new RegExp(escapeRe(step.uses))),
             column: 1,
             message: `Job \`${jobName}\` wraps a test command in an automatic retry action.`,

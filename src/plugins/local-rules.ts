@@ -97,11 +97,17 @@ export async function loadLocalRules(
   root: string,
 ): Promise<LoadedExternalRules> {
   const result: LoadedExternalRules = { rules: [], errors: [] };
+  // FW-LINT-01 residual: the local-rules directory is a fixed name
+  // (mjolnir-rules/) under the operator's scan root — not scan data.
+
   const dir = join(root, LOCAL_RULES_DIR);
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   if (!existsSync(dir)) return result;
 
   let entries: string[];
   try {
+    // FW-LINT-01 residual: same fixed operator-owned directory.
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     entries = readdirSync(dir);
   } catch (err) {
     result.errors.push(
@@ -129,6 +135,9 @@ function loadJsonRule(path: string, result: LoadedExternalRules): void {
   const name = `${LOCAL_RULES_DIR}/${path.split(/[\\/]/).pop()}`;
   let raw: unknown;
   try {
+    // FW-LINT-01 residual: a manifest file just enumerated from the
+    // operator's own mjolnir-rules/ directory (§21-24 surface).
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     raw = JSON.parse(readFileSync(path, "utf8"));
   } catch (err) {
     result.errors.push(
@@ -165,6 +174,7 @@ function loadJsonRule(path: string, result: LoadedExternalRules): void {
   }
   let regexes: RegExp[];
   try {
+    // eslint-disable-next-line security/detect-non-literal-regexp -- patterns come from the external rule's JSON manifest — this IS the documented plugin surface (§21-24); compiled in the sandboxed, tiered external-rule pipeline with invalid-regex degradation instead of a crash
     regexes = patterns.map((p) => new RegExp(p as string, "g"));
   } catch (err) {
     result.errors.push(
@@ -264,6 +274,7 @@ function loadJsonRule(path: string, result: LoadedExternalRules): void {
         Omit<import("../types.js").Finding, "ruleId" | "category">
       > = [];
       for (const re of regexes) {
+        // eslint-disable-next-line security/detect-non-literal-regexp -- clone of a compile-time literal's .source for flag control — not scan input
         const run = new RegExp(re.source, "g");
         let m: RegExpExecArray | null;
         while ((m = run.exec(view)) !== null) {

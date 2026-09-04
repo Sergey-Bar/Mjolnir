@@ -83,6 +83,7 @@ export const continueOnError = defineRule({
             file: ctx.path,
             line: findLine(
               ctx.text,
+              // eslint-disable-next-line security/detect-non-literal-regexp -- escapeRe-quoted workflow value — no regex metacharacters survive
               new RegExp(`^\\s{2,6}${escapeRe(jobName)}:`, "m"),
             ),
             column: 1,

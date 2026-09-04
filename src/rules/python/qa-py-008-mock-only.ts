@@ -41,7 +41,7 @@ export const pyMockOnly = defineRule({
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     if (!ctx.path.endsWith(".py")) return findings;
 
-    const fnRe = /^(\s*)def\s+(test_\w+)\s*\([^)]*\)\s*:/gm;
+    const fnRe = /^\s*def\s+(test_\w+)\s*\([^)]*\)\s*:/gm;
     let m: RegExpExecArray | null;
     while ((m = fnRe.exec(text)) !== null) {
       const body = extractBlock(text, m.index + m[0].length);
@@ -72,7 +72,7 @@ export const pyMockOnly = defineRule({
           file: ctx.path,
           line: lineAt(text, m.index),
           column: colAt(text, m.index),
-          message: `Test \`${m[2]}\` asserts only on mock call bookkeeping.`,
+          message: `Test \`${m[1]}\` asserts only on mock call bookkeeping.`,
           why: "Mock.assert_called_* proves collaborators were invoked, not that the system produced the right result — the real logic can be broken while the test stays green.",
           fix: "Add at least one assertion on the actual return value or observable state.",
         });
@@ -85,7 +85,7 @@ export const pyMockOnly = defineRule({
 /** Extract an indented block starting after a `:` line; returns null if empty. */
 function extractBlock(text: string, afterColon: number): string | null {
   const rest = text.slice(afterColon).replace(/\r\n/g, "\n");
-  const firstContent = /(\S)/.exec(rest);
+  const firstContent = /\S/.exec(rest);
   if (!firstContent || firstContent.index === undefined) return null;
   const before = rest.slice(0, firstContent.index);
   if (before.includes("\n")) {

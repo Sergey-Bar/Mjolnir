@@ -81,10 +81,16 @@ function parseDecls(raw: unknown): PluginDecl[] {
 export function loadPlugins(root: string): PluginLoadResult {
   const result: PluginLoadResult = { plugins: [], errors: [] };
   const cfgPath = join(root, "mjolnir.config.json");
+  // FW-LINT-01 residual: fixed config filename under the scan root —
+  // the operator's own repo, not discovered scan data.
+  // eslint-disable-next-line security/detect-non-literal-fs-filename
   if (!existsSync(cfgPath)) return result;
 
   let raw: Record<string, unknown>;
   try {
+    // FW-LINT-01 residual: fixed config filename under the scan root —
+    // the operator's own repo, not discovered scan data.
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     raw = JSON.parse(readFileSync(cfgPath, "utf8")) as Record<string, unknown>;
   } catch {
     // Malformed config is handled by the config loader with fail-fast;
@@ -100,6 +106,10 @@ export function loadPlugins(root: string): PluginLoadResult {
   for (const decl of decls) {
     let mod: unknown;
     try {
+      // FW-LINT-01 residual: plugin package names come from
+      // mjolnir.config.json — operator-declared (§21); a hostile or
+      // missing package degrades to a plugin error below, never a crash.
+      // eslint-disable-next-line security/detect-non-literal-require
       mod = require(decl.package);
     } catch (err) {
       result.errors.push(
