@@ -161,23 +161,52 @@ function main() {
     if (rule.title === null) untitled.push(id);
     rule.title ??= id;
     rules.push(rule);
+  }
+
+  // G7: prev/next in family order (FAMILIES key order) then id — so the
+  // pager walks the catalog the way the index groups it, and a family
+  // boundary simply links across. The old flat alphabetical order made
+  // the chain useless ("91 prev/next links"); family ordering fixes what
+  // that comment was complaining about, so prev/next is back on.
+  const familyOrder = Object.keys(FAMILIES);
+  const ordered = [...rules].sort((a, b) => {
+    const fa = familyOrder.indexOf(a.family);
+    const fb = familyOrder.indexOf(b.family);
+    if (fa !== fb) return (fa < 0 ? 99 : fa) - (fb < 0 ? 99 : fb);
+    return a.id.localeCompare(b.id);
+  });
+  const neighbors = new Map();
+  ordered.forEach((r, i) => {
+    neighbors.set(r.id, {
+      prev: ordered[i - 1] ?? null,
+      next: ordered[i + 1] ?? null,
+    });
+  });
+
+  for (const rule of rules) {
+    const file = `${rule.id}.md`;
+    const md = readFileSync(join(SRC, file), "utf8");
+    const { prev, next } = neighbors.get(rule.id);
 
     const frontmatter = [
       "---",
-      `title: ${id}`,
-      // Nothing here is hand-editable and 91 prev/next links would make a
-      // useless chain.
+      `title: ${rule.id}`,
+      // Nothing here is hand-editable.
       "editLink: false",
       "lastUpdated: false",
-      "prev: false",
-      "next: false",
+      ...(prev
+        ? [`prev:\n  text: ${prev.id}\n  link: /rules/${prev.id}`]
+        : ["prev: false"]),
+      ...(next
+        ? [`next:\n  text: ${next.id}\n  link: /rules/${next.id}`]
+        : ["next: false"]),
       "---",
       "",
     ].join("\n");
 
     writeFileSync(
       join(OUT, file),
-      `${frontmatter}\n${siteBody(id, md)}`,
+      `${frontmatter}\n${siteBody(rule.id, md)}`,
       "utf8",
     );
   }
