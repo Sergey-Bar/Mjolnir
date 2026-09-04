@@ -35,8 +35,13 @@ export const pyMutableFixture = defineRule({
 
     // @pytest.fixture(scope="session"/"module"/"package") whose body returns
     // a mutable literal (list/dict/set) — shared across tests AND mutable.
+    // FW-RX-06: line-anchored scan — every quantifier is newline-disjoint
+    // or literal-anchored, so no \s/\n exchange surface remains. The body
+    // capture is a run of blank or INDENTED lines (a top-level def body);
+    // it terminates at the first column-0 content line exactly where the
+    // original lookahead (?=\n\S|\n*$) terminated.
     const re =
-      /@pytest\.fixture\s*\([^)]*scope\s*=\s*["'](session|module|package)["'][^)]*\)\s*\ndef\s+(\w+)\s*\([^)]*\)\s*:\s*\n([\s\S]*?)(?=\n\S|\n*$)/g;
+      /@pytest\.fixture[ \t]*\([^)\n]*scope[ \t]*=[ \t]*["'](session|module|package)["'][^)\n]*\)[ \t]*\ndef[ \t]+(\w+)[ \t]*\([^)\n]*\)[ \t]*:[ \t]*\n((?:[ \t]*\n|[ \t]+\S[^\n]*\n)*(?:[ \t]+\S[^\n]*)?)/g;
 
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {

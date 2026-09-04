@@ -55,8 +55,11 @@ export const pwOrderDependence = defineRule({
     // annotation). Destructuring — `let [a, b] = …`, `let { page } = …` —
     // is deliberately skipped: splitting `[a, b]` on `,` used to yield
     // junk "names" like `[a` that were then interpolated into a RegExp.
+    // FW-RX-03: the names group is the whole regex — the trailing
+    // type-annotation/terminator was provably dead (`$` always matched at
+    // end of line) and was the \s*/[^=;\n]+ exchange surface.
     const declRe =
-      /^let\s+([A-Za-z_$][\w$]*(?:\s*,\s*[A-Za-z_$][\w$]*)*)(?:\s*:[^=;\n]+)?\s*(?:=|;|$)/gm;
+      /^let[ \t]+([A-Za-z_$][\w$]*(?:[ \t]*,[ \t]*[A-Za-z_$][\w$]*)*)/gm;
     const shared = new Set<string>();
     let d: RegExpExecArray | null;
     while ((d = declRe.exec(text)) !== null) {

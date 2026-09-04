@@ -35,8 +35,11 @@ export const pyEmptyBody = defineRule({
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     if (!ctx.path.endsWith(".py")) return findings;
 
+    // FW-RX-05: newline-disjoint classes — `[ \t]*` where only indent
+    // whitespace is legal, explicit \n at line ends — removes the \s*/\s+
+    // exchange while keeping the same line shapes.
     const re =
-      /^( *)def\s+(test_\w+)\s*\([^)]*\):\s*\n(?:\1\s+#.*\n)?\1 {4}pass\s*$/gm;
+      /^( *)def[ \t]+(test_\w+)[ \t]*\([^)\n]*\):[ \t]*\n(?:\1[ \t]+#[^\n]*\n)?\1 {4}pass[ \t]*$/gm;
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {
       findings.push({
