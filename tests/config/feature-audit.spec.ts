@@ -13,7 +13,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { runScan, runScanCommand, parseArgs } from "../src/cli.js";
+import { runScan, runScanCommand, parseArgs } from "../../src/cli.js";
 
 let dir: string;
 

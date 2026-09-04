@@ -19,8 +19,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { runScan, pathMatchesGlob } from "../src/cli.js";
-import { ConfigValidationError } from "../src/config/config.js";
+import { runScan, pathMatchesGlob } from "../../src/cli.js";
+import { ConfigValidationError } from "../../src/config/config.js";
 
 let dir: string;
 

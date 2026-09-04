@@ -7,11 +7,11 @@ import {
   applySeverityOverrides,
   isSuppressionActive,
   loadConfig,
-} from "../src/config/config.js";
+} from "../../src/config/config.js";
 import {
   loadSuppressions,
   renderSuppressions,
-} from "../src/config/suppressions.js";
+} from "../../src/config/suppressions.js";
 
 let dir: string;
 
