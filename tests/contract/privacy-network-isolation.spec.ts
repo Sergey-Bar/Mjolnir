@@ -23,7 +23,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-const SRC_ROOT = join(import.meta.dirname, "..", "src");
+const SRC_ROOT = join(import.meta.dirname, "..", "..", "src");
 
 // Any of these appearing in src/ (outside a comment) means something can
 // reach the network — which the README promises never happens.

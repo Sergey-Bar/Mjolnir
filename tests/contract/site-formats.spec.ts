@@ -13,7 +13,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-const ROOT = join(import.meta.dirname, "..");
+const ROOT = join(import.meta.dirname, "..", "..");
 const ASSETS = join(ROOT, "assets", "readme");
 const SVG_PATH = join(ASSETS, "terminal-hero.svg");
 const JSON_PATH = join(ASSETS, "demo-report.json");

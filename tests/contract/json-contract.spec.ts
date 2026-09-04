@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { compareFindings, SCHEMA_VERSION, type Finding } from "../src/types.js";
-import { computeDimensions, computeTotal } from "../src/scorer/scorer.js";
+import {
+  compareFindings,
+  SCHEMA_VERSION,
+  type Finding,
+} from "../../src/types.js";
+import { computeDimensions, computeTotal } from "../../src/scorer/scorer.js";
 
 function f(partial: Partial<Finding>): Finding {
   return {

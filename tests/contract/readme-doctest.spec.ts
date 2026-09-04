@@ -27,11 +27,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { main } from "../src/cli.js";
-import { RULES } from "../src/rules/index.js";
+import { main } from "../../src/cli.js";
+import { RULES } from "../../src/rules/index.js";
 
 const README = readFileSync(
-  join(import.meta.dirname, "..", "README.md"),
+  join(import.meta.dirname, "..", "..", "README.md"),
   "utf8",
 );
 

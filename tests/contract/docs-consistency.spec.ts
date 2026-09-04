@@ -16,10 +16,10 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { RULES } from "../src/rules/index.js";
-import { MEASURED_FP } from "../src/rules/measured-fp.generated.js";
+import { RULES } from "../../src/rules/index.js";
+import { MEASURED_FP } from "../../src/rules/measured-fp.generated.js";
 
-const ROOT = join(import.meta.dirname, "..");
+const ROOT = join(import.meta.dirname, "..", "..");
 const README = readFileSync(join(ROOT, "README.md"), "utf8");
 // .planning/ is machine-local agent-session state (untracked, see
 // .gitignore) — present on dev machines, absent on CI checkouts. The

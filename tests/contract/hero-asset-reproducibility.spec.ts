@@ -17,10 +17,10 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { runScan } from "../src/cli.js";
-import { renderTerminal } from "../src/reporter/terminal.js";
+import { runScan } from "../../src/cli.js";
+import { renderTerminal } from "../../src/reporter/terminal.js";
 
-const ROOT = join(import.meta.dirname, "..");
+const ROOT = join(import.meta.dirname, "..", "..");
 const DEMO_REPO = join(ROOT, "examples", "demo-repo");
 const SVG_PATH = join(ROOT, "assets", "readme", "terminal-hero.svg");
 

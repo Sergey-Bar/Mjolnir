@@ -15,6 +15,7 @@ import { parse } from "yaml";
 const TEMPLATE_DIR = join(
   import.meta.dirname,
   "..",
+  "..",
   ".github",
   "ISSUE_TEMPLATE",
 );

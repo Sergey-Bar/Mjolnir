@@ -11,7 +11,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-const ROOT = join(import.meta.dirname, "..");
+const ROOT = join(import.meta.dirname, "..", "..");
 const packageJson = JSON.parse(
   readFileSync(join(ROOT, "package.json"), "utf8"),
 ) as { version: string };

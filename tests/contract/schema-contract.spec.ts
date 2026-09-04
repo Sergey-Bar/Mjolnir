@@ -29,15 +29,15 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { runScan } from "../src/cli.js";
-import { renderSarif } from "../src/reporter/sarif.js";
+import { runScan } from "../../src/cli.js";
+import { renderSarif } from "../../src/reporter/sarif.js";
 import {
   QA_IMPACT_LABELS,
   SCHEMA_VERSION,
   SEVERITY_ORDER,
   type Finding,
   type ScanResult,
-} from "../src/types.js";
+} from "../../src/types.js";
 
 const CONFIDENCE_VALUES = ["high", "medium", "low"];
 const FINDING_TYPE_VALUES = [
@@ -129,7 +129,7 @@ describe("JSON report contract", () => {
 
   it("the v1 baseline snapshot still structurally matches the current contract", () => {
     const raw = readFileSync(
-      join(import.meta.dirname, "contract", "scan-result.v1.json"),
+      join(import.meta.dirname, "..", "contract", "scan-result.v1.json"),
       "utf8",
     );
     const snapshot = JSON.parse(raw) as ScanResult;

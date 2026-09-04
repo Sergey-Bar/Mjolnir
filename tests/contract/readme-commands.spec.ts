@@ -13,7 +13,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-const ROOT = join(import.meta.dirname, "..");
+const ROOT = join(import.meta.dirname, "..", "..");
 const README = readFileSync(join(ROOT, "README.md"), "utf8");
 const CLI_SOURCE = readFileSync(join(ROOT, "src", "cli.ts"), "utf8");
 
