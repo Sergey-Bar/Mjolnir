@@ -121,7 +121,7 @@ happen to have been sampled.
 | 🔴 quarantine | > 30%   | Opt-in only (`--strict`)              |
 | ❓ unmeasured | n < 10  | Cannot ship in core until measured    |
 
-## Coverage: 73/97 rules measured (75%) at n ≥ 10
+## Coverage: 73/99 rules measured (74%) at n ≥ 10
 
-**24 rules carry no measured FP rate.** Any of them in the
+**26 rules carry no measured FP rate.** Any of them in the
 core tier is shipping on an unverified assumption.

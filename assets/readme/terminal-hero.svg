@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="1194" height="3036" viewBox="0 0 1194 3036" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', Menlo, monospace" font-size="13">
+<svg width="1194" height="3131" viewBox="0 0 1194 3131" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', Menlo, monospace" font-size="13">
   <defs>
     <clipPath id="winClip">
-      <rect x="0" y="0" width="1194" height="3036" rx="8" ry="8"/>
+      <rect x="0" y="0" width="1194" height="3131" rx="8" ry="8"/>
     </clipPath>
   </defs>
 
   <g clip-path="url(#winClip)">
-    <rect x="0" y="0" width="1194" height="3036" fill="#14171c"/>
+    <rect x="0" y="0" width="1194" height="3131" fill="#14171c"/>
     <rect x="0" y="0" width="1194" height="36" fill="#20242b"/>
     <circle cx="20" cy="18" r="6" fill="#ff5f56"/>
     <circle cx="40" cy="18" r="6" fill="#ffbd2e"/>
@@ -36,7 +36,7 @@
 
     <text x="22" y="434.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">WORTHINESS</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)"> 75</tspan><tspan fill="rgb(124,133,144)">/100</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">NEEDS WORK</tspan></text>
     <text x="22" y="453.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">██████████████████████</tspan><tspan fill="rgb(224,165,38)">▓</tspan><tspan fill="#d7d3c8">░░░░░░░</tspan></text>
-    <text x="22" y="472.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">The hammer holds — but 24 findings weigh it down.</tspan></text>
+    <text x="22" y="472.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">The hammer holds — but 27 findings weigh it down.</tspan></text>
     <text x="22" y="491.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">(40 raw pts / 7 test declarations — normalized)</tspan></text>
 
     <text x="22" y="529.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">DETECTED</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">[playwright]</tspan></text>
@@ -50,7 +50,7 @@
     <text x="22" y="681.0" xml:space="preserve"><tspan fill="#d7d3c8">  ╭─────────────────────────────────────────╮</tspan></text>
     <text x="22" y="700.0" xml:space="preserve"><tspan fill="#d7d3c8">  │ 4 × error   − 32                        │</tspan></text>
     <text x="22" y="719.0" xml:space="preserve"><tspan fill="#d7d3c8">  │ 3 × warning −  7</tspan><tspan fill="rgb(124,133,144)"> (evidence-discounted)</tspan><tspan fill="#d7d3c8">  │</tspan></text>
-    <text x="22" y="738.0" xml:space="preserve"><tspan fill="#d7d3c8">  │ 17 × info    −  1</tspan><tspan fill="rgb(124,133,144)"> (evidence-discounted)</tspan><tspan fill="#d7d3c8"> │</tspan></text>
+    <text x="22" y="738.0" xml:space="preserve"><tspan fill="#d7d3c8">  │ 20 × info    −  1</tspan><tspan fill="rgb(124,133,144)"> (evidence-discounted)</tspan><tspan fill="#d7d3c8"> │</tspan></text>
     <text x="22" y="757.0" xml:space="preserve"><tspan fill="#d7d3c8">  ╰─────────────────────────────────────────╯</tspan></text>
 
     <text x="22" y="795.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(138,180,216)">▚ FIX THIS FIRST</tspan></text>
@@ -112,7 +112,7 @@
     <text x="22" y="1859.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the finding should no longer</tspan></text>
     <text x="22" y="1878.0" xml:space="preserve"><tspan fill="#d7d3c8">            appear.</tspan></text>
 
-    <text x="22" y="1916.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-145 · e2e/checkout.spec.ts:1</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · measured FP 100% · n=20]</tspan></text>
+    <text x="22" y="1916.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-145 · e2e/checkout.spec.ts:1</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · measured FP 100% · n=20 · trust L3 · runtime: file executed]</tspan></text>
     <text x="22" y="1935.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">UI-interacting spec file contains no accessibility assertions.</tspan></text>
     <text x="22" y="1954.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">HYGIENE — Suites that drive the UI but never assert accessibility</tspan></text>
     <text x="22" y="1973.0" xml:space="preserve"><tspan fill="#d7d3c8">            let WCAG regressions through every PR; catching them at the point</tspan></text>
@@ -123,54 +123,59 @@
     <text x="22" y="2068.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the finding should no longer</tspan></text>
     <text x="22" y="2087.0" xml:space="preserve"><tspan fill="#d7d3c8">            appear.</tspan></text>
 
-    <text x="22" y="2125.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-004 · e2e/checkout.spec.ts:5</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · measured FP 38% · n=16]</tspan></text>
-    <text x="22" y="2144.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">Brittle multi-class CSS selector: `locator(".btn.btn-primary &gt;</tspan></text>
-    <text x="22" y="2163.0" xml:space="preserve"><tspan fill="#d7d3c8">            div:nth-child(2)")`.</tspan></text>
-    <text x="22" y="2182.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">HYGIENE — Structural selectors break on any DOM refactor and fail</tspan></text>
-    <text x="22" y="2201.0" xml:space="preserve"><tspan fill="#d7d3c8">            without telling you which behavior regressed.</tspan></text>
-    <text x="22" y="2220.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Fix     </tspan><tspan fill="#d7d3c8">Prefer role-based locators: getByRole(), getByText(),</tspan></text>
-    <text x="22" y="2239.0" xml:space="preserve"><tspan fill="#d7d3c8">            getByLabel().</tspan></text>
-    <text x="22" y="2258.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the finding should no longer</tspan></text>
-    <text x="22" y="2277.0" xml:space="preserve"><tspan fill="#d7d3c8">            appear.</tspan></text>
+    <text x="22" y="2125.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-146 · e2e/checkout.spec.ts:5</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · trust L3 · runtime: file executed]</tspan></text>
+    <text x="22" y="2144.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">CSS/XPath string selector where a normalized locator is expected.</tspan></text>
+    <text x="22" y="2163.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">HYGIENE — String CSS/XPath selectors couple the test to markup the</tspan></text>
+    <text x="22" y="2182.0" xml:space="preserve"><tspan fill="#d7d3c8">            user never sees — they break on any refactor and can silently</tspan></text>
+    <text x="22" y="2201.0" xml:space="preserve"><tspan fill="#d7d3c8">            select the wrong element after a redesign.</tspan></text>
+    <text x="22" y="2220.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Fix     </tspan><tspan fill="#d7d3c8">Normalize to Playwright's user-facing getters: getByRole('button',</tspan></text>
+    <text x="22" y="2239.0" xml:space="preserve"><tspan fill="#d7d3c8">            { name: '…' }), getByLabel('…'), getByTestId('…'), or</tspan></text>
+    <text x="22" y="2258.0" xml:space="preserve"><tspan fill="#d7d3c8">            getByText('…') — they survive markup refactors and match what a</tspan></text>
+    <text x="22" y="2277.0" xml:space="preserve"><tspan fill="#d7d3c8">            user actually perceives.</tspan></text>
+    <text x="22" y="2296.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the finding should no longer</tspan></text>
+    <text x="22" y="2315.0" xml:space="preserve"><tspan fill="#d7d3c8">            appear.</tspan></text>
 
-    <text x="22" y="2315.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(208,69,59)">✗</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(208,69,59)">ERROR  </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-101 · e2e/checkout.spec.ts:6</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E2 · deterministic · measured FP 0% · n=20]</tspan></text>
-    <text x="22" y="2334.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">`waitForTimeout()` hard sleep.</tspan></text>
-    <text x="22" y="2353.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">FLAKY-RISK — Fixed waits either wait too long (slow suite) or too</tspan></text>
-    <text x="22" y="2372.0" xml:space="preserve"><tspan fill="#d7d3c8">            little (flaky on slow machines). They encode hope, not</tspan></text>
-    <text x="22" y="2391.0" xml:space="preserve"><tspan fill="#d7d3c8">            synchronization.</tspan></text>
-    <text x="22" y="2410.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Fix     </tspan><tspan fill="#d7d3c8">Replace with a web-first assertion (`await</tspan></text>
-    <text x="22" y="2429.0" xml:space="preserve"><tspan fill="#d7d3c8">            expect(locator).toBeVisible()`) or `locator.waitFor()`.</tspan></text>
-    <text x="22" y="2448.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the gate should stop failing and</tspan></text>
-    <text x="22" y="2467.0" xml:space="preserve"><tspan fill="#d7d3c8">            the score should recover by 8.</tspan></text>
+    <text x="22" y="2353.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-004 · e2e/checkout.spec.ts:5</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · measured FP 38% · n=16 · trust L3 · runtime: file executed]</tspan></text>
+    <text x="22" y="2372.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">Brittle multi-class CSS selector: `locator(".btn.btn-primary &gt;</tspan></text>
+    <text x="22" y="2391.0" xml:space="preserve"><tspan fill="#d7d3c8">            div:nth-child(2)")`.</tspan></text>
+    <text x="22" y="2410.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">HYGIENE — Structural selectors break on any DOM refactor and fail</tspan></text>
+    <text x="22" y="2429.0" xml:space="preserve"><tspan fill="#d7d3c8">            without telling you which behavior regressed.</tspan></text>
+    <text x="22" y="2448.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Fix     </tspan><tspan fill="#d7d3c8">Prefer role-based locators: getByRole(), getByText(),</tspan></text>
+    <text x="22" y="2467.0" xml:space="preserve"><tspan fill="#d7d3c8">            getByLabel().</tspan></text>
+    <text x="22" y="2486.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the finding should no longer</tspan></text>
+    <text x="22" y="2505.0" xml:space="preserve"><tspan fill="#d7d3c8">            appear.</tspan></text>
 
-    <text x="22" y="2505.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-TEST-002 · e2e/checkout.spec.ts:16</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · measured FP 65% · n=20]</tspan></text>
-    <text x="22" y="2524.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">Skipped test without justification: `test.skip(`.</tspan></text>
-    <text x="22" y="2543.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">FALSE-GREEN — Skipped tests hide broken or unimplemented behavior</tspan></text>
-    <text x="22" y="2562.0" xml:space="preserve"><tspan fill="#d7d3c8">            behind a green checkmark.</tspan></text>
-    <text x="22" y="2581.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Fix     </tspan><tspan fill="#d7d3c8">Fix and re-enable the test, or delete it with a tracked issue</tspan></text>
-    <text x="22" y="2600.0" xml:space="preserve"><tspan fill="#d7d3c8">            reference.</tspan></text>
-    <text x="22" y="2619.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the finding should no longer</tspan></text>
-    <text x="22" y="2638.0" xml:space="preserve"><tspan fill="#d7d3c8">            appear.</tspan></text>
+    <text x="22" y="2543.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(208,69,59)">✗</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(208,69,59)">ERROR  </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-101 · e2e/checkout.spec.ts:6</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E2 · deterministic · measured FP 0% · n=20 · trust L3 · runtime: file executed]</tspan></text>
+    <text x="22" y="2562.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">`waitForTimeout()` hard sleep.</tspan></text>
+    <text x="22" y="2581.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">FLAKY-RISK — Fixed waits either wait too long (slow suite) or too</tspan></text>
+    <text x="22" y="2600.0" xml:space="preserve"><tspan fill="#d7d3c8">            little (flaky on slow machines). They encode hope, not</tspan></text>
+    <text x="22" y="2619.0" xml:space="preserve"><tspan fill="#d7d3c8">            synchronization.</tspan></text>
+    <text x="22" y="2638.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Fix     </tspan><tspan fill="#d7d3c8">Replace with a web-first assertion (`await</tspan></text>
+    <text x="22" y="2657.0" xml:space="preserve"><tspan fill="#d7d3c8">            expect(locator).toBeVisible()`) or `locator.waitFor()`.</tspan></text>
+    <text x="22" y="2676.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the gate should stop failing and</tspan></text>
+    <text x="22" y="2695.0" xml:space="preserve"><tspan fill="#d7d3c8">            the score should recover by 8.</tspan></text>
 
-    <text x="22" y="2676.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-145 · e2e/login.spec.ts:1</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · measured FP 100% · n=20]</tspan></text>
-    <text x="22" y="2695.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">UI-interacting spec file contains no accessibility assertions.</tspan></text>
-    <text x="22" y="2714.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">HYGIENE — Suites that drive the UI but never assert accessibility</tspan></text>
-    <text x="22" y="2733.0" xml:space="preserve"><tspan fill="#d7d3c8">            let WCAG regressions through every PR; catching them at the point</tspan></text>
-    <text x="22" y="2752.0" xml:space="preserve"><tspan fill="#d7d3c8">            of interaction is far cheaper than a retrofit audit.</tspan></text>
-    <text x="22" y="2771.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Fix     </tspan><tspan fill="#d7d3c8">Add `@axe-core/playwright` with `expect(await new AxeBuilder({</tspan></text>
-    <text x="22" y="2790.0" xml:space="preserve"><tspan fill="#d7d3c8">            page }).analyze()).toHaveNoViolations()` on key pages, or snapshot</tspan></text>
-    <text x="22" y="2809.0" xml:space="preserve"><tspan fill="#d7d3c8">            aria snapshots.</tspan></text>
-    <text x="22" y="2828.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the finding should no longer</tspan></text>
-    <text x="22" y="2847.0" xml:space="preserve"><tspan fill="#d7d3c8">            appear.</tspan></text>
+    <text x="22" y="2733.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-146 · e2e/checkout.spec.ts:13</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · trust L3 · runtime: file executed]</tspan></text>
+    <text x="22" y="2752.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">CSS/XPath string selector where a normalized locator is expected.</tspan></text>
+    <text x="22" y="2771.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">HYGIENE — String CSS/XPath selectors couple the test to markup the</tspan></text>
+    <text x="22" y="2790.0" xml:space="preserve"><tspan fill="#d7d3c8">            user never sees — they break on any refactor and can silently</tspan></text>
+    <text x="22" y="2809.0" xml:space="preserve"><tspan fill="#d7d3c8">            select the wrong element after a redesign.</tspan></text>
+    <text x="22" y="2828.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Fix     </tspan><tspan fill="#d7d3c8">Normalize to Playwright's user-facing getters: getByRole('button',</tspan></text>
+    <text x="22" y="2847.0" xml:space="preserve"><tspan fill="#d7d3c8">            { name: '…' }), getByLabel('…'), getByTestId('…'), or</tspan></text>
+    <text x="22" y="2866.0" xml:space="preserve"><tspan fill="#d7d3c8">            getByText('…') — they survive markup refactors and match what a</tspan></text>
+    <text x="22" y="2885.0" xml:space="preserve"><tspan fill="#d7d3c8">            user actually perceives.</tspan></text>
+    <text x="22" y="2904.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the finding should no longer</tspan></text>
+    <text x="22" y="2923.0" xml:space="preserve"><tspan fill="#d7d3c8">            appear.</tspan></text>
 
-    <text x="22" y="2885.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">… +14 more across 8 rules. Run with --verbose for all findings.</tspan></text>
+    <text x="22" y="2961.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">… +17 more across 11 rules. Run with --verbose for all findings.</tspan></text>
 
-    <text x="22" y="2923.0" xml:space="preserve"><tspan fill="rgb(124,133,144)">──────────────────────────────────────────────────────────</tspan></text>
-    <text x="22" y="2942.0" xml:space="preserve"><tspan fill="#d7d3c8">  Analysis: </tspan><tspan fill="rgb(79,180,119)">complete</tspan><tspan fill="#d7d3c8"> · a few ms</tspan></text>
-    <text x="22" y="2961.0" xml:space="preserve"><tspan fill="rgb(124,133,144)">  16 advisory findings (E0 — observation only, no score impact)</tspan></text>
-    <text x="22" y="2980.0" xml:space="preserve"><tspan fill="rgb(124,133,144)">  Rule coverage: 14/15 rules that fired here have a measured false-positive rate; the rest are heuristics. `mjolnir rules --unmeasured` lists them.</tspan></text>
+    <text x="22" y="2999.0" xml:space="preserve"><tspan fill="rgb(124,133,144)">──────────────────────────────────────────────────────────</tspan></text>
+    <text x="22" y="3018.0" xml:space="preserve"><tspan fill="#d7d3c8">  Analysis: </tspan><tspan fill="rgb(79,180,119)">complete</tspan><tspan fill="#d7d3c8"> · a few ms</tspan></text>
+    <text x="22" y="3037.0" xml:space="preserve"><tspan fill="rgb(124,133,144)">  19 advisory findings (E0 — observation only, no score impact)</tspan></text>
+    <text x="22" y="3056.0" xml:space="preserve"><tspan fill="rgb(124,133,144)">  Rule coverage: 14/16 rules that fired here have a measured false-positive rate; the rest are heuristics. `mjolnir rules --unmeasured` lists them.</tspan></text>
+    <text x="22" y="3075.0" xml:space="preserve"><tspan fill="rgb(124,133,144)">  Runtime evidence: 9/27 findings corroborated by a real run report (trust L3–L5); the rest are static-only.</tspan></text>
 
   </g>
 
-  <rect x="0.5" y="0.5" width="1193" height="3035" rx="7.5" ry="7.5" fill="none" stroke="#000000" stroke-opacity="0.5"/>
+  <rect x="0.5" y="0.5" width="1193" height="3130" rx="7.5" ry="7.5" fill="none" stroke="#000000" stroke-opacity="0.5"/>
 </svg>
