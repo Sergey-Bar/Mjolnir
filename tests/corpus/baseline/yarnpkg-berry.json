@@ -1,0 +1,13 @@
+{
+  "countsByRule": {
+    "QA-ENV-001": 5,
+    "QA-PW-145": 1,
+    "QA-TEST-002": 3,
+    "QA-TEST-003": 89,
+    "QA-TEST-004": 3,
+    "QA-TQUAL-001": 1,
+    "QA-TQUAL-011": 2
+  },
+  "totalFindings": 104,
+  "partial": false
+}

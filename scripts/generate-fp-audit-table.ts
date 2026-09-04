@@ -202,6 +202,18 @@ const CORPUS_NOTES: Record<string, { url: string; note: string }> = {
     url: "https://github.com/nocodb/nocodb.git",
     note: "real TS app with e2e and CI — QA-CI-010 and QA-PW-115 surface",
   },
+  "junit-team-junit5": {
+    url: "https://github.com/junit-team/junit5.git",
+    note: "real Java framework repo with Maven+Gradle CI workflows — QA-CI-005/008 on JVM CI plus a large QA-JV-103 consumer surface",
+  },
+  "yarnpkg-berry": {
+    url: "https://github.com/yarnpkg/berry.git",
+    note: "real Yarn monorepo with its own CI — the first real QA-CI-009 surface plus QA-TEST-003 at scale",
+  },
+  "pyca-cryptography": {
+    url: "https://github.com/pyca/cryptography.git",
+    note: "real Python+Rust crypto library with multi-language CI — QA-CI-005 surface plus QA-PY-007 at scale",
+  },
   "positive-fixtures": {
     url: "local:tests/corpus/positive-fixtures",
     note: "committed §08 class-B positive corpus — realistic anti-pattern variants per rule that MUST fire; every fire classifies TP",

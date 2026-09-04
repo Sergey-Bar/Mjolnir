@@ -8,9 +8,10 @@
     "QA-PW-120": 29,
     "QA-PW-123": 2,
     "QA-PW-145": 58,
+    "QA-PW-146": 228,
     "QA-TEST-003": 90,
     "QA-TEST-004": 3
   },
-  "totalFindings": 529,
+  "totalFindings": 757,
   "partial": false
 }

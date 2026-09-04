@@ -23,7 +23,7 @@ export const VERIFICATION_GATE_RE = new RegExp(
     String.raw`\bplaywright\s+test\b`,
     String.raw`\b(?:pytest|tox|nox)\b`,
     String.raw`\bpython\s+-m\s+(?:pytest|unittest)\b`,
-    String.raw`\bmvn\b[^\n]+\b(?:test|verify)\b`,
+    String.raw`\bmvn[wd]?\b[^\n]+\b(?:test|verify)\b`,
     String.raw`\b(?:\./)?gradlew?\b[^\n]+\btest\b`,
     String.raw`\bdotnet\s+test\b`,
     String.raw`\bgo\s+test\b`,

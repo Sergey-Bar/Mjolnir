@@ -183,6 +183,71 @@ describe("QA-CI-005 report never generated", () => {
   it("returns empty without jobs in doc", () => {
     expect(reportNeverGenerated.run({ path: "c.yml", text: "" })).toEqual([]);
   });
+
+  // ── detectorRevision 2 (M2, 2026-09-04) — adjudicated FP classes ────
+
+  it("rev2: stays silent for the Python coverage.py producer chain (adjudicated FP: streamlit python-tests.yml)", () => {
+    const findings = reportNeverGenerated.run(
+      ctx(`jobs:
+  py-unit-tests:
+    steps:
+      - run: pytest --cov=app --cov-report=xml
+      - run: coverage combine && coverage xml
+  py-coverage-report:
+    steps:
+      - uses: codecov/codecov-action@v4
+`),
+    );
+    expect(findings).toHaveLength(0);
+  });
+
+  it("rev2: stays silent for the Maven/JaCoCo producer (adjudicated FP: iluwatar maven-ci.yml)", () => {
+    const findings = reportNeverGenerated.run(
+      ctx(`jobs:
+  build:
+    steps:
+      - run: ./mvnw clean verify
+      - uses: codecov/codecov-action@v4
+`),
+    );
+    expect(findings).toHaveLength(0);
+  });
+
+  it("rev2: stays silent for a coverage-named script producer (npm run test:coverage)", () => {
+    const findings = reportNeverGenerated.run(
+      ctx(`jobs:
+  build:
+    steps:
+      - run: npm run test:coverage
+      - uses: codecov/codecov-action@v4
+`),
+    );
+    expect(findings).toHaveLength(0);
+  });
+
+  it("rev2: stays silent for the Go coverprofile producer", () => {
+    const findings = reportNeverGenerated.run(
+      ctx(`jobs:
+  test:
+    steps:
+      - run: go test ./... -coverprofile=coverage.out
+      - uses: coverallsapp/github-action@v2
+`),
+    );
+    expect(findings).toHaveLength(0);
+  });
+
+  it("rev2: still fires when the codecov upload is a genuine no-op (adjudicated TP: nextauth release.yml)", () => {
+    const findings = reportNeverGenerated.run(
+      ctx(`jobs:
+  test:
+    steps:
+      - run: pnpm test
+      - uses: codecov/codecov-action@v4
+`),
+    );
+    expect(findings.length).toBeGreaterThan(0);
+  });
 });
 
 describe("QA-CI-007 retry masking", () => {
@@ -226,6 +291,33 @@ describe("QA-CI-007 retry masking", () => {
     );
     expect(findings).toHaveLength(1);
     expect(findings[0]?.confidence).toBe("medium");
+  });
+
+  it("rev2: ignores curl/wget network retries even when the text mentions test-adjacent words (adjudicated FP: Humanizr docs.yml)", () => {
+    const findings = retryMasking.run(
+      ctx(`jobs:
+  docs:
+    steps:
+      - run: |
+          curl --retry 4 --retry-all-errors -s https://example.com/deployment.json > status.json
+          echo "waiting for the latest deployment"
+`),
+    );
+    expect(findings).toHaveLength(0);
+  });
+
+  it("rev2: still flags the mvnw stability-harness loop wrapping a real gate (adjudicated TP: keycloak)", () => {
+    const findings = retryMasking.run(
+      ctx(`jobs:
+  stability:
+    steps:
+      - run: |
+          for i in $(seq 1 $COUNT); do
+            ./mvnw test || FAILURES=$((FAILURES+1))
+          done
+`),
+    );
+    expect(findings.length).toBeGreaterThan(0);
   });
 
   it("returns empty without jobs", () => {
@@ -289,5 +381,90 @@ describe("QA-CI-008 always-success step", () => {
 
   it("returns empty without jobs", () => {
     expect(alwaysSuccessStep.run({ path: "c.yml", text: "" })).toEqual([]);
+  });
+
+  // ── detectorRevision 2 (M2, 2026-09-04) — adjudicated FP classes ────
+
+  it("rev2: stays silent when a later always() step re-enforces failure (adjudicated FP: hashicorp/vault build.yml)", () => {
+    const findings = alwaysSuccessStep.run(
+      ctx(`jobs:
+  build:
+    steps:
+      - id: status
+        run: go test ./...
+        continue-on-error: true
+      - if: always() && steps.status.outputs.result != 'success'
+        run: |
+          echo "go test failed"
+          exit 1
+`),
+    );
+    expect(findings).toHaveLength(0);
+  });
+
+  it("rev2: stays silent when the tolerated earlier step is not a verification gate (adjudicated FP: grafana digest workflows)", () => {
+    const findings = alwaysSuccessStep.run(
+      ctx(`jobs:
+  digest:
+    steps:
+      - run: make generate-digest || true
+      - run: echo "digest complete"
+`),
+    );
+    expect(findings).toHaveLength(0);
+  });
+
+  it("rev2: still flags the classic green-flip over a tolerated GATE (positive shape)", () => {
+    const findings = alwaysSuccessStep.run(
+      ctx(`jobs:
+  j:
+    steps:
+      - run: npm test
+        continue-on-error: true
+      - run: echo "done"
+`),
+    );
+    expect(findings).toHaveLength(1);
+  });
+});
+
+describe("QA-CI-001 rev2 — re-run idiom and non-gate shapes", () => {
+  it("stays silent for the attempt-1/re-run outcome idiom (adjudicated FP: appsmith ci-test-playwright.yml)", () => {
+    const findings = continueOnError.run(
+      ctx(`jobs:
+  e2e:
+    steps:
+      - id: attempt1
+        run: npx playwright test
+        continue-on-error: true
+      - if: steps.attempt1.outcome == 'failure'
+        run: npx playwright test --last-failed
+`),
+    );
+    expect(findings).toHaveLength(0);
+  });
+
+  it("stays silent for continue-on-error on a merge-reports step (adjudicated FP: vitest ci.yml)", () => {
+    const findings = continueOnError.run(
+      ctx(`jobs:
+  reports:
+    steps:
+      - run: npx vitest --merge-reports
+        continue-on-error: true
+`),
+    );
+    expect(findings).toHaveLength(0);
+  });
+
+  it("still flags a masked gate with no re-run follow-up (positive shape)", () => {
+    const findings = continueOnError.run(
+      ctx(`jobs:
+  e2e:
+    steps:
+      - run: npx playwright test
+        continue-on-error: true
+`),
+    );
+    expect(findings.length).toBeGreaterThan(0);
   });
 });

@@ -41,7 +41,6 @@
 {"ruleId":"QA-PY-005","file":"tests/units/test_config.py","line":871,"verdict":"TP","note":"hard sleep in config reload timing"}
 {"ruleId":"QA-PY-005","file":"tests/units/utils/test_processes.py","line":243,"verdict":"TP","note":"hard sleep waiting on subprocess state"}
 {"ruleId":"QA-PY-005","file":"tests/units/utils/test_processes.py","line":282,"verdict":"TP","note":"hard sleep waiting on subprocess state"}
-{"ruleId":"QA-CI-002","file":".github/workflows/check_outdated_dependencies.yml","line":33,"verdict":"FP","note":"grep with expected empty output - || true handles the no-match exit code, not a swallowed verification"}
 {"ruleId":"QA-CI-010","file":".github/workflows/unit_tests.yml","line":87,"verdict":"TP","note":"macOS unit matrix gated to main-pushes only - PRs merge without that verification; the rule's exact PR-skip case"}
 {"ruleId":"QA-PY-103","file":"tests/integration/tests_playwright/test_client_error.py","line":162,"verdict":"TP","note":"wait_for_timeout(500) for synchronization before an assertion - fixed wait instead of polling"}
 {"ruleId":"QA-PY-103","file":"tests/integration/tests_playwright/test_hmr.py","line":91,"verdict":"TP","note":"wait_for_timeout(100) inside a polling loop over captured frames - fixed-interval wait"}

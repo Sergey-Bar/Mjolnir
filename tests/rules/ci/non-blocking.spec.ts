@@ -91,4 +91,42 @@ describe("QA-CI-010 non-blocking test job", () => {
     );
     expect(findings.length).toBeGreaterThanOrEqual(1);
   });
+
+  // ── detectorRevision 2 (M2, 2026-09-04) — adjudicated FP classes ────
+
+  it("rev2: stays silent for a compound condition that also RUNS on PRs (adjudicated FP: nocodb jest-unit-test.yml)", () => {
+    const findings = nonBlockingTestJob.run(
+      ctx(`jobs:
+  test:
+    if: github.event_name == 'push' || github.event.label.name == 'trigger-CI' || (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
+    steps:
+      - run: npm test
+`),
+    );
+    expect(findings).toHaveLength(0);
+  });
+
+  it("rev2: stays silent when the condition includes non-draft PR runs (adjudicated FP: grafana run-schema-v2-e2e.yml)", () => {
+    const findings = nonBlockingTestJob.run(
+      ctx(`jobs:
+  e2e:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
+    steps:
+      - run: npx playwright test
+`),
+    );
+    expect(findings).toHaveLength(0);
+  });
+
+  it("rev2: still flags a pure push-only guard (adjudicated TP: reflex unit_tests.yml)", () => {
+    const findings = nonBlockingTestJob.run(
+      ctx(`jobs:
+  macos-tests:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - run: npm test
+`),
+    );
+    expect(findings.length).toBeGreaterThanOrEqual(1);
+  });
 });

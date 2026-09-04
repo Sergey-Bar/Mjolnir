@@ -20,7 +20,6 @@
 {"ruleId":"QA-PY-010","file":"testing/_py/test_local.py","line":742,"verdict":"FP","note":"deliberate real-time filesystem mtime test (comment says time mocking must not affect it) - the wall clock is the subject, with a 100s margin"}
 {"ruleId":"QA-PY-010","file":"testing/_py/test_local.py","line":1405,"verdict":"FP","note":"real atime semantics test - sleeps plus wall-clock measurement are the subject; freezing would defeat the test"}
 {"ruleId":"QA-PY-010","file":"testing/_py/test_local.py","line":1413,"verdict":"FP","note":"atime delta bounded by wall duration - the real clock is the subject of the filesystem test"}
-{"ruleId":"QA-CI-005","file":".github/workflows/test.yml","line":310,"verdict":"FP","note":"the tox -coverage env generates coverage.xml consumed by the upload (rule cannot see into tox.ini); files: ./coverage.xml is explicit"}
 {"ruleId":"QA-PY-006","file":"doc/en/example/assertion/global_testmodule_config/test_hello_world.py","line":7,"verdict":"FP","note":"example script used by pytester to test collection, not a real test"}
 {"ruleId":"QA-PY-006","file":"doc/en/example/customdirectory/tests/test_first.py","line":5,"verdict":"FP","note":"doc example showing custom directory collection, not a real test"}
 {"ruleId":"QA-PY-006","file":"doc/en/example/customdirectory/tests/test_second.py","line":5,"verdict":"FP","note":"doc example showing custom directory collection, not a real test"}

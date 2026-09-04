@@ -25,10 +25,12 @@ huge real pytest suite — QA-PY-011/012 at scale plus QA-TEST-006
 
 Source: [`https://github.com/apache/airflow`](https://github.com/apache/airflow)
 
-Total findings: **5743**
+Total findings: **5671**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
+| QA-CI-005    | 8        |
+| QA-CI-007    | 1        |
 | QA-ENV-001   | 4        |
 | QA-PW-103    | 2        |
 | QA-PW-105    | 3        |
@@ -40,11 +42,11 @@ Total findings: **5743**
 | QA-PW-145    | 9        |
 | QA-PY-002    | 13       |
 | QA-PY-003    | 45       |
-| QA-PY-004    | 615      |
+| QA-PY-004    | 534      |
 | QA-PY-005    | 49       |
-| QA-PY-006    | 11       |
+| QA-PY-006    | 7        |
 | QA-PY-007    | 1332     |
-| QA-PY-008    | 3357     |
+| QA-PY-008    | 3361     |
 | QA-PY-010    | 139      |
 | QA-PY-011    | 4        |
 | QA-PY-012    | 6        |
@@ -59,22 +61,21 @@ real Java+TS monorepo with JUnit tests and CI workflows — QA-JV-101/102 plus Q
 
 Source: [`https://github.com/appsmithorg/appsmith`](https://github.com/appsmithorg/appsmith)
 
-Total findings: **571**
+Total findings: **574**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
-| QA-CI-001    | 1        |
-| QA-CI-008    | 5        |
 | QA-JV-101    | 11       |
 | QA-JV-102    | 10       |
-| QA-JV-103    | 75       |
+| QA-JV-103    | 80       |
 | QA-PW-107    | 4        |
 | QA-PW-112    | 248      |
-| QA-PW-119    | 7        |
-| QA-PW-120    | 5        |
+| QA-PW-115    | 1        |
+| QA-PW-119    | 8        |
+| QA-PW-120    | 6        |
 | QA-PW-144    | 1        |
 | QA-PW-145    | 8        |
-| QA-TEST-003  | 36       |
+| QA-TEST-003  | 37       |
 | QA-TEST-004  | 7        |
 | QA-TQUAL-001 | 147      |
 | QA-TQUAL-011 | 6        |
@@ -131,12 +132,12 @@ real TS consumer app with heavy e2e — QA-TQUAL-009 at scale on application cod
 
 Source: [`https://github.com/cypress-io/cypress-realworld-app`](https://github.com/cypress-io/cypress-realworld-app)
 
-Total findings: **16**
+Total findings: **17**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
 | QA-TEST-002  | 3        |
-| QA-TEST-003  | 3        |
+| QA-TEST-003  | 4        |
 | QA-TQUAL-009 | 10       |
 
 ## dubinc-dub
@@ -226,15 +227,12 @@ large real TS monorepo with Playwright e2e + many Actions workflows — QA-PW-14
 
 Source: [`https://github.com/grafana/grafana`](https://github.com/grafana/grafana)
 
-Total findings: **3146**
+Total findings: **3395**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
 | QA-CI-001    | 2        |
 | QA-CI-002    | 2        |
-| QA-CI-005    | 1        |
-| QA-CI-008    | 3        |
-| QA-CI-010    | 2        |
 | QA-ENV-001   | 7        |
 | QA-PW-002    | 6        |
 | QA-PW-004    | 5        |
@@ -246,11 +244,12 @@ Total findings: **3146**
 | QA-PW-112    | 230      |
 | QA-PW-115    | 1        |
 | QA-PW-118    | 28       |
-| QA-PW-119    | 105      |
+| QA-PW-119    | 107      |
 | QA-PW-120    | 12       |
 | QA-PW-141    | 1        |
 | QA-PW-144    | 1        |
 | QA-PW-145    | 107      |
+| QA-PW-146    | 253      |
 | QA-TEST-002  | 45       |
 | QA-TEST-003  | 418      |
 | QA-TEST-004  | 164      |
@@ -267,12 +266,10 @@ real monorepo with UI tests and mature CI — QA-PW-004, QA-CI-001/008 and QA-PW
 
 Source: [`https://github.com/hashicorp/vault`](https://github.com/hashicorp/vault)
 
-Total findings: **85**
+Total findings: **113**
 
 | Rule ID    | Findings |
 | ---------- | -------- |
-| QA-CI-001  | 1        |
-| QA-CI-008  | 3        |
 | QA-ENV-001 | 1        |
 | QA-PW-004  | 2        |
 | QA-PW-103  | 32       |
@@ -281,6 +278,7 @@ Total findings: **85**
 | QA-PW-141  | 1        |
 | QA-PW-143  | 1        |
 | QA-PW-145  | 29       |
+| QA-PW-146  | 32       |
 
 ## Humanizr-Humanizer
 
@@ -288,11 +286,10 @@ real C# library repo with xUnit tests and a retry-wrapped CI step — QA-CS-103 
 
 Source: [`https://github.com/Humanizr/Humanizer`](https://github.com/Humanizr/Humanizer)
 
-Total findings: **49**
+Total findings: **66**
 
 | Rule ID     | Findings |
 | ----------- | -------- |
-| QA-CI-007   | 1        |
 | QA-CS-103   | 2        |
 | QA-PW-005   | 1        |
 | QA-PW-103   | 26       |
@@ -301,6 +298,7 @@ Total findings: **49**
 | QA-PW-108   | 3        |
 | QA-PW-143   | 1        |
 | QA-PW-145   | 3        |
+| QA-PW-146   | 18       |
 | QA-TEST-003 | 1        |
 
 ## iluwatar-java-design-patterns
@@ -309,15 +307,28 @@ real Java application repo with extensive JUnit tests — QA-JV-102/101 on consu
 
 Source: [`https://github.com/iluwatar/java-design-patterns`](https://github.com/iluwatar/java-design-patterns)
 
-Total findings: **67**
+Total findings: **63**
 
 | Rule ID   | Findings |
 | --------- | -------- |
-| QA-CI-005 | 4        |
 | QA-JV-101 | 2        |
 | QA-JV-102 | 18       |
 | QA-JV-103 | 41       |
 | QA-JV-110 | 2        |
+
+## junit-team-junit5
+
+real Java framework repo with Maven+Gradle CI workflows — QA-CI-005/008 on JVM CI plus a large QA-JV-103 consumer surface
+
+Source: [`https://github.com/junit-team/junit5`](https://github.com/junit-team/junit5)
+
+Total findings: **945**
+
+| Rule ID   | Findings |
+| --------- | -------- |
+| QA-JV-101 | 77       |
+| QA-JV-102 | 35       |
+| QA-JV-103 | 833      |
 
 ## keycloak-keycloak
 
@@ -325,24 +336,25 @@ large real Java monorepo whose UI suite is Playwright TypeScript — QA-PW-117 a
 
 Source: [`https://github.com/keycloak/keycloak`](https://github.com/keycloak/keycloak)
 
-Total findings: **2243**
+Total findings: **2314**
 
 | Rule ID     | Findings |
 | ----------- | -------- |
 | QA-CI-007   | 1        |
-| QA-JV-101   | 67       |
+| QA-JV-101   | 69       |
 | QA-JV-102   | 30       |
-| QA-JV-103   | 1387     |
-| QA-JV-110   | 84       |
+| QA-JV-103   | 1390     |
+| QA-JV-110   | 81       |
 | QA-PW-103   | 1        |
 | QA-PW-105   | 1        |
 | QA-PW-107   | 3        |
 | QA-PW-108   | 20       |
-| QA-PW-112   | 193      |
+| QA-PW-112   | 194      |
 | QA-PW-117   | 98       |
 | QA-PW-143   | 2        |
 | QA-PW-145   | 25       |
-| QA-TEST-002 | 22       |
+| QA-PW-146   | 67       |
+| QA-TEST-002 | 23       |
 | QA-TEST-003 | 309      |
 
 ## microsoft-playwright-dotnet
@@ -373,7 +385,7 @@ real Playwright Java test suite — Java adapter FP surface (library-suite cavea
 
 Source: [`https://github.com/microsoft/playwright-java`](https://github.com/microsoft/playwright-java)
 
-Total findings: **309**
+Total findings: **310**
 
 | Rule ID   | Findings |
 | --------- | -------- |
@@ -384,7 +396,7 @@ Total findings: **309**
 | QA-JV-105 | 40       |
 | QA-JV-106 | 4        |
 | QA-JV-108 | 31       |
-| QA-JV-110 | 110      |
+| QA-JV-110 | 111      |
 | QA-JV-111 | 70       |
 
 ## microsoft-playwright-mcp
@@ -393,10 +405,11 @@ real Playwright + GitHub Actions — TS/PW/CI adapter FP surface
 
 Source: [`https://github.com/microsoft/playwright-mcp`](https://github.com/microsoft/playwright-mcp)
 
-Total findings: **4**
+Total findings: **5**
 
 | Rule ID   | Findings |
 | --------- | -------- |
+| QA-CI-010 | 1        |
 | QA-PW-120 | 1        |
 | QA-PW-122 | 1        |
 | QA-PW-143 | 1        |
@@ -447,7 +460,7 @@ real TS app with Playwright e2e + substantial GitHub Actions — first non-trivi
 
 Source: [`https://github.com/nextauthjs/next-auth`](https://github.com/nextauthjs/next-auth)
 
-Total findings: **39**
+Total findings: **40**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
@@ -462,6 +475,7 @@ Total findings: **39**
 | QA-PW-143    | 2        |
 | QA-PW-144    | 1        |
 | QA-PW-145    | 3        |
+| QA-PW-146    | 1        |
 | QA-TEST-002  | 1        |
 | QA-TEST-003  | 3        |
 | QA-TQUAL-001 | 1        |
@@ -505,7 +519,7 @@ small real Playwright-rules repo — compact QA-PW / QA-TQUAL surface, fast clon
 
 Source: [`https://github.com/playwright-community/eslint-plugin-playwright`](https://github.com/playwright-community/eslint-plugin-playwright)
 
-Total findings: **31**
+Total findings: **292**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
@@ -514,6 +528,8 @@ Total findings: **31**
 | QA-PW-112    | 1        |
 | QA-PW-118    | 3        |
 | QA-PW-120    | 1        |
+| QA-PW-146    | 229      |
+| QA-PW-147    | 32       |
 | QA-TEST-003  | 1        |
 | QA-TQUAL-001 | 20       |
 | QA-TQUAL-011 | 2        |
@@ -524,16 +540,17 @@ committed §08 class-B positive corpus — realistic anti-pattern variants per r
 
 Source: [`local:tests/corpus/positive-fixtures`](local:tests/corpus/positive-fixtures)
 
-Total findings: **639**
+Total findings: **689**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
-| QA-CI-001    | 10       |
-| QA-CI-002    | 11       |
-| QA-CI-005    | 2        |
-| QA-CI-007    | 7        |
-| QA-CI-009    | 5        |
-| QA-CI-010    | 5        |
+| QA-CI-001    | 16       |
+| QA-CI-002    | 14       |
+| QA-CI-005    | 22       |
+| QA-CI-007    | 10       |
+| QA-CI-008    | 9        |
+| QA-CI-009    | 10       |
+| QA-CI-010    | 9        |
 | QA-CS-102    | 3        |
 | QA-CS-103    | 8        |
 | QA-CS-104    | 3        |
@@ -613,7 +630,7 @@ real TS monorepo with mocha tests and multi-job Actions — QA-CI surface plus Q
 
 Source: [`https://github.com/puppeteer/puppeteer`](https://github.com/puppeteer/puppeteer)
 
-Total findings: **529**
+Total findings: **757**
 
 | Rule ID     | Findings |
 | ----------- | -------- |
@@ -625,8 +642,25 @@ Total findings: **529**
 | QA-PW-120   | 29       |
 | QA-PW-123   | 2        |
 | QA-PW-145   | 58       |
+| QA-PW-146   | 228      |
 | QA-TEST-003 | 90       |
 | QA-TEST-004 | 3        |
+
+## pyca-cryptography
+
+real Python+Rust crypto library with multi-language CI — QA-CI-005 surface plus QA-PY-007 at scale
+
+Source: [`https://github.com/pyca/cryptography`](https://github.com/pyca/cryptography)
+
+Total findings: **1651**
+
+| Rule ID   | Findings |
+| --------- | -------- |
+| QA-PY-003 | 44       |
+| QA-PY-004 | 17       |
+| QA-PY-007 | 1567     |
+| QA-PY-010 | 18       |
+| QA-PY-012 | 5        |
 
 ## pytest-dev-pytest
 
@@ -634,14 +668,13 @@ large real pytest suite — Python adapter FP surface (QA-PY-001..012)
 
 Source: [`https://github.com/pytest-dev/pytest`](https://github.com/pytest-dev/pytest)
 
-Total findings: **361**
+Total findings: **328**
 
 | Rule ID   | Findings |
 | --------- | -------- |
-| QA-CI-005 | 2        |
 | QA-PY-002 | 19       |
 | QA-PY-003 | 30       |
-| QA-PY-004 | 115      |
+| QA-PY-004 | 84       |
 | QA-PY-006 | 19       |
 | QA-PY-007 | 164      |
 | QA-PY-009 | 3        |
@@ -655,23 +688,23 @@ mid-size real Python framework with pytest-playwright e2e — QA-PY-101..108 con
 
 Source: [`https://github.com/reflex-dev/reflex`](https://github.com/reflex-dev/reflex)
 
-Total findings: **517**
+Total findings: **506**
 
 | Rule ID   | Findings |
 | --------- | -------- |
-| QA-CI-002 | 1        |
 | QA-CI-010 | 1        |
 | QA-PY-002 | 3        |
-| QA-PY-003 | 52       |
-| QA-PY-004 | 157      |
+| QA-PY-003 | 53       |
+| QA-PY-004 | 140      |
 | QA-PY-005 | 16       |
 | QA-PY-006 | 2        |
-| QA-PY-007 | 232      |
+| QA-PY-007 | 235      |
 | QA-PY-008 | 43       |
 | QA-PY-009 | 1        |
 | QA-PY-010 | 6        |
 | QA-PY-012 | 1        |
 | QA-PY-103 | 2        |
+| QA-SE-003 | 3        |
 
 ## SeleniumHQ-selenium
 
@@ -721,33 +754,30 @@ real Python app with pytest-playwright e2e and many GitHub Actions — QA-PY-103
 
 Source: [`https://github.com/streamlit/streamlit`](https://github.com/streamlit/streamlit)
 
-Total findings: **3535**
+Total findings: **3589**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
-| QA-CI-001    | 1        |
-| QA-CI-005    | 8        |
-| QA-CI-007    | 1        |
-| QA-CI-008    | 1        |
+| QA-CI-005    | 2        |
 | QA-CI-010    | 1        |
 | QA-PW-107    | 37       |
-| QA-PW-112    | 1591     |
+| QA-PW-112    | 1633     |
 | QA-PW-119    | 7        |
-| QA-PW-120    | 24       |
+| QA-PW-120    | 26       |
 | QA-PW-145    | 4        |
 | QA-PY-002    | 5        |
 | QA-PY-003    | 29       |
-| QA-PY-004    | 372      |
+| QA-PY-004    | 361      |
 | QA-PY-005    | 29       |
 | QA-PY-006    | 2        |
-| QA-PY-007    | 488      |
-| QA-PY-008    | 196      |
+| QA-PY-007    | 490      |
+| QA-PY-008    | 195      |
 | QA-PY-010    | 33       |
 | QA-PY-012    | 2        |
-| QA-PY-103    | 114      |
+| QA-PY-103    | 115      |
 | QA-TEST-003  | 8        |
 | QA-TEST-004  | 13       |
-| QA-TQUAL-001 | 568      |
+| QA-TQUAL-001 | 596      |
 | QA-TQUAL-002 | 1        |
 
 ## sveltejs-kit
@@ -756,7 +786,7 @@ large real Playwright suite — QA-PW isolation/timing rules at scale
 
 Source: [`https://github.com/sveltejs/kit`](https://github.com/sveltejs/kit)
 
-Total findings: **1219**
+Total findings: **1628**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
@@ -774,6 +804,7 @@ Total findings: **1219**
 | QA-PW-122    | 25       |
 | QA-PW-143    | 25       |
 | QA-PW-145    | 11       |
+| QA-PW-146    | 409      |
 | QA-TEST-002  | 38       |
 | QA-TEST-003  | 62       |
 | QA-TEST-004  | 10       |
@@ -785,7 +816,7 @@ real TS monorepo — QA-PW-112 sample growth; QA-TEST-004 fires >1600× here (cl
 
 Source: [`https://github.com/TanStack/query`](https://github.com/TanStack/query)
 
-Total findings: **410**
+Total findings: **414**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
@@ -795,7 +826,7 @@ Total findings: **410**
 | QA-TEST-003  | 19       |
 | QA-TEST-004  | 157      |
 | QA-TEST-010  | 2        |
-| QA-TQUAL-001 | 98       |
+| QA-TQUAL-001 | 102      |
 | QA-TQUAL-009 | 1        |
 
 ## vercel-next-js
@@ -804,11 +835,10 @@ large real TS monorepo with its own e2e suite — QA-TEST-010, QA-TQUAL-002 at s
 
 Source: [`https://github.com/vercel/next.js`](https://github.com/vercel/next.js)
 
-Total findings: **2075**
+Total findings: **2231**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
-| QA-CI-008    | 3        |
 | QA-ENV-001   | 6        |
 | QA-PW-101    | 4        |
 | QA-PW-103    | 4        |
@@ -821,8 +851,9 @@ Total findings: **2075**
 | QA-PW-143    | 2        |
 | QA-PW-144    | 1        |
 | QA-PW-145    | 20       |
+| QA-PW-146    | 158      |
 | QA-TEST-002  | 230      |
-| QA-TEST-003  | 1390     |
+| QA-TEST-003  | 1391     |
 | QA-TEST-004  | 140      |
 | QA-TEST-006  | 1        |
 | QA-TEST-010  | 201      |
@@ -836,21 +867,22 @@ large real Playwright/Vitest suite — broad QA-PW + QA-TQUAL surface
 
 Source: [`https://github.com/vitejs/vite`](https://github.com/vitejs/vite)
 
-Total findings: **717**
+Total findings: **850**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
 | QA-ENV-001   | 6        |
 | QA-PW-004    | 1        |
 | QA-PW-103    | 39       |
-| QA-PW-105    | 504      |
-| QA-PW-114    | 62       |
-| QA-PW-119    | 6        |
+| QA-PW-105    | 513      |
+| QA-PW-114    | 66       |
+| QA-PW-119    | 7        |
 | QA-PW-120    | 7        |
-| QA-PW-145    | 38       |
+| QA-PW-145    | 39       |
+| QA-PW-146    | 117      |
 | QA-TEST-002  | 5        |
 | QA-TEST-003  | 39       |
-| QA-TEST-004  | 7        |
+| QA-TEST-004  | 8        |
 | QA-TQUAL-001 | 3        |
 
 ## vitest-dev-vitest
@@ -859,11 +891,10 @@ real TS monorepo with a large vitest suite of its own — QA-TEST-001/010, QA-TQ
 
 Source: [`https://github.com/vitest-dev/vitest`](https://github.com/vitest-dev/vitest)
 
-Total findings: **891**
+Total findings: **1066**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
-| QA-CI-001    | 1        |
 | QA-CI-008    | 1        |
 | QA-ENV-001   | 2        |
 | QA-PW-003    | 1        |
@@ -880,6 +911,8 @@ Total findings: **891**
 | QA-PW-143    | 1        |
 | QA-PW-144    | 1        |
 | QA-PW-145    | 18       |
+| QA-PW-146    | 23       |
+| QA-PW-147    | 153      |
 | QA-TEST-001  | 12       |
 | QA-TEST-002  | 23       |
 | QA-TEST-003  | 382      |
@@ -895,7 +928,7 @@ large real Playwright suite — QA-PW text-coupling / viewport / empty-body
 
 Source: [`https://github.com/withastro/astro`](https://github.com/withastro/astro)
 
-Total findings: **657**
+Total findings: **1155**
 
 | Rule ID     | Findings |
 | ----------- | -------- |
@@ -916,7 +949,26 @@ Total findings: **657**
 | QA-PW-143   | 2        |
 | QA-PW-144   | 2        |
 | QA-PW-145   | 48       |
+| QA-PW-146   | 498      |
 | QA-TEST-002 | 32       |
 | QA-TEST-003 | 101      |
 | QA-TEST-004 | 32       |
 | QA-TEST-010 | 1        |
+
+## yarnpkg-berry
+
+real Yarn monorepo with its own CI — the first real QA-CI-009 surface plus QA-TEST-003 at scale
+
+Source: [`https://github.com/yarnpkg/berry`](https://github.com/yarnpkg/berry)
+
+Total findings: **104**
+
+| Rule ID      | Findings |
+| ------------ | -------- |
+| QA-ENV-001   | 5        |
+| QA-PW-145    | 1        |
+| QA-TEST-002  | 3        |
+| QA-TEST-003  | 89       |
+| QA-TEST-004  | 3        |
+| QA-TQUAL-001 | 1        |
+| QA-TQUAL-011 | 2        |

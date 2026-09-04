@@ -16,8 +16,12 @@ const LIMITS = {
 
 export interface WorkflowStep {
   name?: string;
+  /** Step id — consumed by rules that look for outcome-keyed follow-ups. */
+  id?: string;
   run?: string;
   uses?: string;
+  /** Raw `if:` condition text (consumed by rules that key on outcomes). */
+  if?: string;
   with?: Record<string, unknown>;
   "continue-on-error"?: boolean | string;
 }
@@ -110,8 +114,10 @@ export function parseWorkflow(text: string): WorkflowDoc {
         const step = s as Record<string, unknown>;
         return {
           ...(typeof step["name"] === "string" ? { name: step["name"] } : {}),
+          ...(typeof step["id"] === "string" ? { id: step["id"] } : {}),
           ...(typeof step["run"] === "string" ? { run: step["run"] } : {}),
           ...(typeof step["uses"] === "string" ? { uses: step["uses"] } : {}),
+          ...(typeof step["if"] === "string" ? { if: step["if"] } : {}),
           ...(step["with"] &&
           typeof step["with"] === "object" &&
           !Array.isArray(step["with"])

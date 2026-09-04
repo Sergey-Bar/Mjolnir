@@ -17,8 +17,10 @@ interface JobNode {
 }
 interface StepNode {
   name?: string;
+  id?: string;
   run?: string;
   uses?: string;
+  if?: string;
   "continue-on-error"?: boolean | string;
 }
 
@@ -36,6 +38,57 @@ function stepIsVerificationGate(step: StepNode): boolean {
     return /playwright|cypress|codecov\/codecov-action/i.test(step.uses);
   }
   return false;
+}
+
+/**
+ * detectorRevision 2 (M2, 2026-09-04): legitimate continue-on-error shapes
+ * the rev-1 detector flagged. Each class was proven by adjudication
+ * (docs/FP-AUDIT.md notes, 2026-09-02):
+ * 1. Re-run idiom (appsmith ci-test-playwright.yml): the gate runs under
+ *    continue-on-error ONLY to convert attempt 1 into a non-failing
+ *    outcome so a follow-up step can re-run the SAME gate; the follow-up
+ *    runs unconditionally and its failure fails the job — the gate still
+ *    blocks.
+ * 2. Non-gate shapes that matched the rev-1 run-text regex: report
+ *    aggregation (`test --merge-reports`), test-ID collection, shard
+ *    rebalancing helpers — they execute no verification.
+ * 3. Steps whose `if:`/name explicitly mark them advisory/non-blocking
+ *    inside jobs that run the real gates (vault custom-linter,
+ *    github-docs sync-sdk-docs).
+ */
+const RERUN_OUTCOME_RE =
+  /steps\.[\w-]+\.outcome\s*==\s*['"]?failure['"]?|steps\.[\w-]+\.conclusion\s*==\s*['"]?failure['"]?/;
+
+function jobReRunsTheMaskedGate(
+  steps: StepNode[],
+  maskedIndex: number,
+): boolean {
+  return steps.some((s, i) => {
+    if (i === maskedIndex) return false;
+    const cond = typeof s?.if === "string" ? s.if : "";
+    if (!RERUN_OUTCOME_RE.test(cond)) return false;
+    // The follow-up must itself be a gate (same matcher, sans the masked
+    // step) or re-run the same command text.
+    return stepIsVerificationGate(s);
+  });
+}
+
+/** Explicit advisory/non-verification shapes in run text. */
+const NON_GATE_RUN_RE =
+  /--merge-reports\b|\bmerge-reports\b|\bcollect[- ]only\b|list[- ]tests\b|\brebalance\b/i;
+
+/**
+ * Steps whose own name declares the non-blocking intent (adjudicated FP:
+ * vault code-checker.yml "Check custom linters (non-blocking)" — the
+ * workflow's own vocabulary marks the advisory contract, so the green
+ * check hides nothing the author claimed would gate).
+ */
+const NON_BLOCKING_NAME_RE = /\(\s*non-?blocking\s*\)|\[.*non-?blocking.*\]/i;
+
+function stepIsGateExcludingNonVerification(step: StepNode): boolean {
+  if (step.name && NON_BLOCKING_NAME_RE.test(step.name)) return false;
+  if (step.run && NON_GATE_RUN_RE.test(step.run)) return false;
+  return stepIsVerificationGate(step);
 }
 
 export const continueOnError = defineRule({
@@ -56,7 +109,9 @@ export const continueOnError = defineRule({
   detectionNotes: "parsed YAML + test-command gate",
   introduced: "0.1.0",
 
-  // Measured 2026-09-02 (corpus wave 5): tier set from the measured envelope (plan §11.2).
+  // Measured (corpus wave 5): tier set from the measured envelope (plan §11.2).
+  // detectorRevision 2 (M2, 2026-09-04): re-run idiom + non-gate shapes
+  // excluded after adjudication. Rev-1 measurement invalidated per §07.
   tier: "quarantine",
   detectorRevision: 2,
   run(ctx) {
@@ -75,7 +130,7 @@ export const continueOnError = defineRule({
       // Job-level continue-on-error masks EVERY step in the job, so it only
       // constitutes a false-green if at least one of those steps is a gate.
       if (job && job["continue-on-error"] === true) {
-        if (steps.some(stepIsVerificationGate)) {
+        if (steps.some(stepIsGateExcludingNonVerification)) {
           findings.push({
             severity: "error",
             confidence: "high",
@@ -101,7 +156,11 @@ export const continueOnError = defineRule({
         // best-effort engineering (artifact upload, badge generation,
         // advisory reports) — their failure loses information, it does not
         // hide a failed check.
-        if (!stepIsVerificationGate(step)) continue;
+        if (!stepIsGateExcludingNonVerification(step)) continue;
+        // Re-run idiom: the masked step is attempt 1 of a deliberate
+        // two-attempt pattern whose follow-up re-runs the gate and fails
+        // the job on failure — the gate still blocks (adjudicated FP).
+        if (jobReRunsTheMaskedGate(steps, i)) continue;
         findings.push({
           severity: "error",
           confidence: "high",

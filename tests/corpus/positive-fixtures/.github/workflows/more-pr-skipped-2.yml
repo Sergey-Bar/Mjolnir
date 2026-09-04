@@ -1,0 +1,34 @@
+name: CI
+
+on: [push]
+
+jobs:
+  main-only-unit:
+    runs-on: ubuntu-latest
+    steps:
+      - run: npm test
+    if: github.event_name == 'push'
+
+  main-only-pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - run: pytest
+    if: github.event_name == 'push'
+
+  branch-guard-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - run: npx playwright test
+    if: github.ref == 'refs/heads/main'
+
+  push-only-vitest:
+    runs-on: ubuntu-latest
+    steps:
+      - run: vitest run
+    if: github.event_name == 'push' && github.repository == 'org/repo'
+
+  schedule-suite:
+    runs-on: ubuntu-latest
+    steps:
+      - run: cargo test
+    if: github.event_name == 'schedule'
