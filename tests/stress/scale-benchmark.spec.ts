@@ -17,7 +17,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { runScan } from "../src/cli.js";
+import { runScan } from "../../src/cli.js";
 
 const FILE_COUNT = 3_000;
 // Generous: linear per-file work over 3k small files should land well

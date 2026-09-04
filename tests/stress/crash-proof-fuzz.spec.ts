@@ -5,9 +5,9 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { RULES } from "../src/rules/index.js";
-import { isDefaultIgnored } from "../src/discovery/ignores.js";
-import { parseChangedLines } from "../src/scope/changed.js";
+import { RULES } from "../../src/rules/index.js";
+import { isDefaultIgnored } from "../../src/discovery/ignores.js";
+import { parseChangedLines } from "../../src/scope/changed.js";
 
 // Hostile inputs: malformed syntax, bombs, traversal, huge constructs.
 const HOSTILE_SNIPPETS: Array<[string, string]> = [
