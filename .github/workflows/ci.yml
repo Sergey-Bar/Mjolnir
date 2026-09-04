@@ -142,12 +142,14 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install actionlint (pinned, checksum-verified)
         run: |
-          curl -sSLo actionlint.tar.gz \
-            "https://github.com/rhysd/actionlint/releases/download/${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION#v}_linux_amd64.tar.gz"
-          curl -sSLo checksums.txt \
-            "https://github.com/rhysd/actionlint/releases/download/${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION#v}_checksums.txt"
-          grep "linux_amd64.tar.gz" checksums.txt | sha256sum -c -
-          tar -xzf actionlint.tar.gz actionlint
+          set -euo pipefail
+          # Keep the distribution filename: sha256sum -c matches the name
+          # recorded in the checksums manifest, so a renamed download
+          # would silently check nothing (first run failed exactly here).
+          curl -fsSLO "https://github.com/rhysd/actionlint/releases/download/${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION#v}_linux_amd64.tar.gz"
+          curl -fsSLo checksums.txt "https://github.com/rhysd/actionlint/releases/download/${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION#v}_checksums.txt"
+          grep "actionlint_${ACTIONLINT_VERSION#v}_linux_amd64.tar.gz" checksums.txt | sha256sum -c -
+          tar -xzf "actionlint_${ACTIONLINT_VERSION#v}_linux_amd64.tar.gz" actionlint
       - name: actionlint (all repo workflows)
         run: ./actionlint -color
 
