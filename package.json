@@ -41,6 +41,7 @@
     "site:audit": "node site/scripts/audit-live.mjs",
     "site:lighthouse": "node site/scripts/lighthouse-run.mjs",
     "docs:demo": "tsx scripts/generate-readme-demo.ts",
+    "docs:translations": "node scripts/check-readme-translations.mjs",
     "self-scan": "node dist/cli.mjs .",
     "prepare": "husky",
     "prepublishOnly": "npm run build"
