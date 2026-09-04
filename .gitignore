@@ -3,6 +3,8 @@ node_modules/
 dist/
 coverage/
 .mjolnir/logs/
+# M5.2 content-addressed scan cache (--cache) — local-only, never committed
+.mjolnir/cache/
 # Machine-local state (audit R-3): counters and milestones are per-repo,
 # per-machine — never committed. .mjolnir/baseline.json is deliberately
 # NOT ignored: it is meant to be committed (the mjolnir.yml workflow

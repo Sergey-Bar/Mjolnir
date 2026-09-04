@@ -276,4 +276,19 @@ export interface ScanResult {
      */
     rulesCrashed?: number;
   };
+  /**
+   * Local incremental cache report (Beta-to-Stable plan, M5.2). Present
+   * only when the scan ran with `--cache`; additive within
+   * schemaVersion 1. The cache is content-addressed and local-only
+   * (plan A-2) — it never leaves the machine and never touches the
+   * network.
+   */
+  cache?: {
+    /** Files whose rule verdicts were reused from the cache. */
+    hits: number;
+    /** Files analyzed fresh this run (cache misses). */
+    misses: number;
+    /** Absolute path of the cache file — auditable, gitignored. */
+    file: string;
+  };
 }

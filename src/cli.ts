@@ -56,6 +56,13 @@ import {
 import type { ParsedAst, ParsedFile } from "./engine/adapter.js";
 import { releaseTreeSitterResources } from "./engine/tree-sitter-ast.js";
 import { applyOverlapDedup, type OverlapMeta } from "./engine/overlap-dedup.js";
+import {
+  computeRulesDigest,
+  createScanCache,
+  disabledScanCache,
+  fileCacheKey,
+  type ScanCache,
+} from "./engine/scan-cache.js";
 import { isAdvisoryFinding } from "./types.js";
 import { typescriptAdapter } from "./adapters/typescript.js";
 import { githubActionsAdapter } from "./adapters/github-actions.js";
@@ -245,6 +252,13 @@ interface CliArgs {
   debug?: boolean;
   /** --record-milestones: let a scan write .mjolnir/stats.json (audit R-1). */
   recordMilestones?: boolean;
+  /**
+   * --cache: reuse per-file rule verdicts from the local content-addressed
+   * cache (M5.2). Post-loop processing always re-runs; the cache only
+   * short-circuits the read+parse+rule loop for byte-identical files
+   * under an unchanged rule set. Local-only, never leaves the machine.
+   */
+  cache?: boolean;
 }
 
 export function parseArgs(argv: string[]): CliArgs | null {
@@ -300,6 +314,8 @@ export function parseArgs(argv: string[]): CliArgs | null {
       args.debug = true;
     } else if (a === "--record-milestones") {
       args.recordMilestones = true;
+    } else if (a === "--cache") {
+      args.cache = true;
     } else if (a === "--help" || a === "-h") {
       return null;
     } else if (!a.startsWith("-")) {
@@ -392,6 +408,13 @@ export async function runScan(
   } = await buildUniversalRules(workspace.root, args.strict);
   const tierByRuleId = tiers;
   const pluginsLoaded = pluginMeta;
+  // M5.2 (A-2): local content-addressed cache. Opened BEFORE the rules
+  // digest — it needs the fully-active rule set (core + plugins + local,
+  // post-quarantine-filter) so any detector change invalidates.
+  const cache: ScanCache = args.cache
+    ? createScanCache(workspace.root)
+    : disabledScanCache;
+  const rulesDigest = computeRulesDigest(activeRules);
   for (const err of pluginErrors) {
     findings.push({
       ruleId: "QA-PLUGIN-000",
@@ -482,6 +505,7 @@ export async function runScan(
       skippedFiles++;
       continue;
     }
+    let fileBudgetExceeded = false;
     // Exposure metric (Phase 5): count declarations, not files. Workflows
     // declare no tests, so they are excluded from the denominator.
     const relPath = relative(workspace.root, path).replaceAll("\\", "/");
@@ -498,6 +522,18 @@ export async function runScan(
         path: relPath,
         provenance: classifyProvenance({ text }),
       });
+    }
+    // M5.2: content-addressed cache lookup — the key covers the file's
+    // exact post-normalization bytes and the active rule set (ids +
+    // detectorRevisions + run-source hashes), so a hit reproduces the
+    // rule-loop output for this file byte-for-byte. Denominators and
+    // provenance above stay live: a cached scan must count identically
+    // to a fresh one.
+    const cacheKey = fileCacheKey(rulesDigest, text);
+    const cachedFindings = cache.lookup(cacheKey);
+    if (cachedFindings) {
+      for (const f of cachedFindings) findings.push(f);
+      continue;
     }
     const adapter = isWorkflow
       ? githubActionsAdapter
@@ -517,6 +553,7 @@ export async function runScan(
     // and adapter throw all pass through `finally`.
     const parsedFile: ParsedFile = { path: relPath, text };
     let parsed: ParsedAst | undefined;
+    const findingsStart = findings.length;
     try {
       if (adapter.parseAst && Date.now() <= deadline) {
         parsed = await adapter.parseAst(parsedFile);
@@ -543,9 +580,14 @@ export async function runScan(
             rulesPartial = true;
             skippedFiles++;
             truncationReasons.add("file-budget");
+            fileBudgetExceeded = true;
           },
         },
       );
+      // M5.2: cache the file's raw rule-loop output (the slice produced
+      // by THIS file). A truncated analysis is never cached — see
+      // store()'s guard and the fileBudgetExceeded flag above.
+      cache.store(cacheKey, findings.slice(findingsStart), fileBudgetExceeded);
     } catch {
       // WorkflowParseSkipped and friends — counted, never fatal. A
       // parse-stage throw (contract: never happens) lands here too: the
@@ -700,6 +742,18 @@ export async function runScan(
     ...(pluginsLoaded.length > 0 ? { plugins: pluginsLoaded } : {}),
     // Plan §17.2: Agentic Trust Profile — provenance metadata only.
     agenticProfile: computeAgenticProfile(fileProvenance, findings),
+    // M5.2: present only under --cache. Hit/miss counts make the cache
+    // auditable — a report must be able to say how much of its analysis
+    // was reused (additive JSON field, within the v1 additive-only policy).
+    ...(args.cache
+      ? {
+          cache: {
+            hits: cache.stats.hits,
+            misses: cache.stats.misses,
+            file: cache.stats.file,
+          },
+        }
+      : {}),
     analysisStatus: {
       // Audits H-3/H-8: both fields derive from what actually happened.
       discovery: discoveryTruncated ? "partial" : "complete",
@@ -713,6 +767,9 @@ export async function runScan(
         : {}),
     },
   };
+  // M5.2: flush new verdicts to the local cache before reporting. Never
+  // fatal — a persist failure degrades to a cold cache next run.
+  cache.persist();
   // §10.3: every per-file tree was already disposed in the loop's
   // finally; tearing the memoized parsers down here releases the
   // grammar-level WASM state so a long-lived process (library consumer,
@@ -1737,6 +1794,9 @@ Options:
                         (display-only; exit codes unchanged)
   --record-milestones   allow this scan to write .mjolnir/stats.json for
                         milestone tracking (default: scans never write)
+  --cache               reuse per-file verdicts from the local cache
+                        (.mjolnir/cache/, content-addressed, never leaves
+                        this machine); identical results, faster re-scans
   -v, --version         print the installed version and exit
   -h, --help            show this help
 

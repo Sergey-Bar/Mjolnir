@@ -23,6 +23,12 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
+          # F6 toolchain cache probe (Beta-to-Stable M5): npm-download
+          # cache keyed on the lockfile. Explicit save happens in
+          # setup-node's post step. Dogfooded here first; the generated
+          # template deliberately stays npx-only (no lockfile to key a
+          # cache on — the pinned @version is its own cache key).
+          cache: npm
       # Audit S-5: event data reaches the shell through env, never by
       # interpolation into the `run:` body — the pattern this repo's own
       # QA-CI rules enforce in other people's workflows.

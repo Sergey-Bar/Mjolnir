@@ -101,6 +101,7 @@ and you're done. Everything else is optional.
 | `mjolnir rules --unmeasured`        | The rules running on assumption, not measurement |
 | `mjolnir --json` / `--format sarif` | Machine-readable / GitHub Code Scanning          |
 | `mjolnir --strict`                  | Also run quarantine-tier rules (higher FP risk)  |
+| `mjolnir --cache`                   | Incremental re-scans via a local verdict cache   |
 
 <details>
 <summary><strong>When something's flaky</strong></summary>

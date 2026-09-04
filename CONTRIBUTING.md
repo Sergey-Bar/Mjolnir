@@ -36,6 +36,27 @@ The spec suite is organized by domain, mirroring `src/`. Run one slice
 with a path filter (`npx vitest run tests/cli`); `npm test` always runs
 the whole suite and is what CI gates on:
 
+## First five minutes (the quick loop)
+
+```bash
+npx vitest run tests/<your-domain>   # 1. iterate fast on one slice
+npm run self-scan                    # 2. scan your own change
+npm test                             # 3. full gate before the PR
+```
+
+Step 2 is the house specialty: `npm run self-scan` runs the built tool
+against this repo and must add **zero NEW error-severity findings**.
+A rule change that fires on its own codebase shows up here first —
+cheap, immediate, and honest (the same gate CI runs in the `self-scan`
+job). Re-scans during iteration get faster with `--cache`:
+
+```bash
+npm run build && node dist/cli.mjs . --cache --json
+```
+
+The cache is content-addressed (file bytes + rule set) and lives under
+`.mjolnir/cache/` — local-only, gitignored, never leaves the machine.
+
 ```text
 tests/
   cli/          CLI verbs, flags, arg parsing, error paths

@@ -35,6 +35,10 @@ export const DEFAULT_IGNORES: readonly string[] = [
   // ANY directory named e.g. `out/` or `build/` at any depth is ignored.
   "node_modules",
   ".git",
+  // The tool's own state directory (baseline.json is read directly, not
+  // discovered; M5.2 adds .mjolnir/cache/). Its contents are machine
+  // state, never test sources.
+  ".mjolnir",
   "dist",
   "build",
   "out",
