@@ -204,6 +204,7 @@ four issue templates exactly:
 First response to a new issue is targeted within **7 days** — an honest
 solo-maintainer commitment, not an SLA with consequences (also stated
 in [`SUPPORT.md`](SUPPORT.md)).
+
 ## Translations
 
 English [`README.md`](README.md) is canonical — the per-language files
