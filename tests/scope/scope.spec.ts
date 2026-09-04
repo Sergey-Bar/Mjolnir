@@ -12,8 +12,8 @@ import {
   computeChangedScope,
   filterToChanged,
   parseChangedLines,
-} from "../src/scope/changed.js";
-import type { Finding } from "../src/types.js";
+} from "../../src/scope/changed.js";
+import type { Finding } from "../../src/types.js";
 
 let dir: string;
 

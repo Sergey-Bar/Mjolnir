@@ -19,12 +19,12 @@
 import fc from "fast-check";
 import { describe, expect, it } from "vitest";
 
-import { pathMatchesGlob } from "../src/cli.js";
-import { parseChangedLines } from "../src/scope/changed.js";
-import { parseJunitXml } from "../src/forensics/parse-junit.js";
-import { parsePlaywrightJson } from "../src/forensics/parse-playwright-json.js";
-import { parseArgs, exitForFindings } from "../src/cli.js";
-import type { Finding } from "../src/types.js";
+import { pathMatchesGlob } from "../../src/cli.js";
+import { parseChangedLines } from "../../src/scope/changed.js";
+import { parseJunitXml } from "../../src/forensics/parse-junit.js";
+import { parsePlaywrightJson } from "../../src/forensics/parse-playwright-json.js";
+import { parseArgs, exitForFindings } from "../../src/cli.js";
+import type { Finding } from "../../src/types.js";
 
 const SEGMENT_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789_-.".split("");
 
