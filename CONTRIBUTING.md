@@ -123,6 +123,29 @@ a worked example.
 Maintainers: see [`docs/PUBLISHING.md`](docs/PUBLISHING.md) for the
 release checklist and the npm-provenance publishing runbook.
 
+## Governance
+
+Mjölnir is maintained by a **solo maintainer** — decisions are not made
+by committee, and this section exists so contributors know how decisions
+get made, not who to lobby:
+
+- The maintainer has final say on scope, rules, APIs and roadmap.
+  Agreement with a well-argued PR is the normal path; a "no" is a
+  decision, not an opening bid.
+- **The two laws above govern all rule changes** — a PR that violates
+  either is declined regardless of merit, because the alternative is
+  the tool growing past what one maintainer can keep honest.
+- Decisions with lasting consequences are recorded, not just made:
+  product/strategy decisions live in `.planning/` (machine-local, not
+  committed) and engineering plans in `.kilo/plans/`; completed plans
+  are archived under `docs/archive/plans/` with their per-task audit
+  trail. If you want to know _why_ something is the way it is, the
+  answer is in one of those records or in the relevant spec's failure
+  message.
+- Support expectations, issue routing and the security process live in
+  [`SUPPORT.md`](SUPPORT.md); version/stability commitments live in
+  [`docs/VERSIONING.md`](docs/VERSIONING.md).
+
 ## PR expectations
 
 - Keep PRs scoped to one concern. A rule addition and an unrelated

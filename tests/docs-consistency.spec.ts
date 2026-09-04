@@ -512,3 +512,67 @@ describe("README alt text matches the verdict the SVG assets actually render", (
     }
   });
 });
+
+describe("stability-policy docs exist and link each other (Beta-to-Stable M1)", () => {
+  // docs/VERSIONING.md, SUPPORT.md and CONTRIBUTING.md's governance
+  // section are the 1.0 contract's prose home. Each promises the others
+  // exist; if one is deleted or renamed, the remaining docs point into
+  // the void and a reader following the chain dead-ends. These guards
+  // make that class of drift fail CI instead of rotting quietly.
+  const VERSIONING = readFileSync(join(ROOT, "docs", "VERSIONING.md"), "utf8");
+  const SUPPORT = readFileSync(join(ROOT, "SUPPORT.md"), "utf8");
+  const CONTRIBUTING = readFileSync(join(ROOT, "CONTRIBUTING.md"), "utf8");
+
+  it("docs/VERSIONING.md exists and carries the 1.0 contract table", () => {
+    expect(VERSIONING).toContain("## The 1.0 contract table");
+    // The frozen exit-code row must keep naming all five codes — a row
+    // that silently drops one would contradict site/reference/exit-codes.md.
+    expect(VERSIONING).toMatch(/\|\s*Exit codes\s*\|/);
+    for (const code of ["`0`", "`1`", "`2`", "`10`", "`20`"]) {
+      expect(
+        VERSIONING,
+        `docs/VERSIONING.md contract table no longer names exit code ${code}`,
+      ).toContain(code);
+    }
+  });
+
+  it("docs/VERSIONING.md names the frozen support matrix (Node 22 + 24, 3 OSes)", () => {
+    expect(VERSIONING).toMatch(/\|\s*Node\.js\s*\|\s*22\.x, 24\.x\s*\|/);
+    for (const os of ["ubuntu-latest", "windows-latest", "macos-latest"]) {
+      expect(
+        VERSIONING,
+        `docs/VERSIONING.md support matrix dropped ${os}`,
+      ).toContain(os);
+    }
+  });
+
+  it("SUPPORT.md exists, routes security to SECURITY.md, and links the governance section", () => {
+    expect(SUPPORT).toContain("[SECURITY.md](SECURITY.md)");
+    expect(SUPPORT).toContain("governance");
+    expect(SUPPORT).toContain("7 days");
+  });
+
+  it("CONTRIBUTING.md carries the governance statement and links both policy docs", () => {
+    expect(CONTRIBUTING).toContain("## Governance");
+    expect(CONTRIBUTING).toContain("solo maintainer");
+    expect(CONTRIBUTING).toContain("[`SUPPORT.md`](SUPPORT.md)");
+    expect(CONTRIBUTING).toContain(
+      "[`docs/VERSIONING.md`](docs/VERSIONING.md)",
+    );
+  });
+
+  it("docs/VERSIONING.md and SUPPORT.md reference each other's chain", () => {
+    // VERSIONING → SUPPORT/CONTRIBUTING links (relative from docs/).
+    expect(VERSIONING).toContain("[SUPPORT.md](../SUPPORT.md)");
+    expect(VERSIONING).toContain(
+      "governance section of [CONTRIBUTING.md](../CONTRIBUTING.md)",
+    );
+    // SUPPORT → governance.
+    expect(SUPPORT).toContain("CONTRIBUTING.md");
+  });
+
+  it("README's documentation table lists VERSIONING.md and SUPPORT.md", () => {
+    expect(README).toContain("[docs/VERSIONING.md](docs/VERSIONING.md)");
+    expect(README).toContain("[SUPPORT.md](SUPPORT.md)");
+  });
+});

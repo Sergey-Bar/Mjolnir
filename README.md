@@ -610,16 +610,18 @@ mjolnir/
 
 ## 📚 Documentation
 
-| Document                                               | What's in it                             |
-| ------------------------------------------------------ | ---------------------------------------- |
-| [docs/SCORING.md](docs/SCORING.md)                     | Score normalization + evidence weighting |
-| [docs/FP-AUDIT.md](docs/FP-AUDIT.md)                   | Measured false-positive rates + method   |
-| [docs/RULE-LIFECYCLE.md](docs/RULE-LIFECYCLE.md)       | Rule states, suppression, deprecation    |
-| [docs/SARIF-INTEGRATION.md](docs/SARIF-INTEGRATION.md) | SARIF output + editor/CI setup           |
-| [docs/rules/](docs/rules/)                             | Generated per-rule catalog               |
-| [CONTRIBUTING.md](CONTRIBUTING.md)                     | Dev setup + contribution workflow        |
-| [CHANGELOG.md](CHANGELOG.md)                           | Release history                          |
-| [SECURITY.md](SECURITY.md)                             | Vulnerability reporting                  |
+| Document                                               | What's in it                                      |
+| ------------------------------------------------------ | ------------------------------------------------- |
+| [docs/SCORING.md](docs/SCORING.md)                     | Score normalization + evidence weighting          |
+| [docs/FP-AUDIT.md](docs/FP-AUDIT.md)                   | Measured false-positive rates + method            |
+| [docs/RULE-LIFECYCLE.md](docs/RULE-LIFECYCLE.md)       | Rule states, suppression, deprecation             |
+| [docs/VERSIONING.md](docs/VERSIONING.md)               | Semver policy, frozen surfaces, deprecation cycle |
+| [docs/SARIF-INTEGRATION.md](docs/SARIF-INTEGRATION.md) | SARIF output + editor/CI setup                    |
+| [docs/rules/](docs/rules/)                             | Generated per-rule catalog                        |
+| [CONTRIBUTING.md](CONTRIBUTING.md)                     | Dev setup + contribution workflow                 |
+| [SUPPORT.md](SUPPORT.md)                               | Where to ask, report and get help                 |
+| [CHANGELOG.md](CHANGELOG.md)                           | Release history                                   |
+| [SECURITY.md](SECURITY.md)                             | Vulnerability reporting                           |
 
 ---
 
