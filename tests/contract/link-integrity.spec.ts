@@ -45,7 +45,7 @@ function trackedFiles(): string[] {
     .filter((f) => f !== ".planning/STATE.md") // status prose documents the finding by name
     .filter((f) => !f.startsWith("node_modules/"))
     .filter((f) => !f.endsWith("package-lock.json")) // dependency metadata, not our links
-    .filter((f) => f !== "tests/link-integrity.spec.ts"); // this file documents the dead patterns by name
+    .filter((f) => f !== "tests/contract/link-integrity.spec.ts"); // this file documents the dead patterns by name
 }
 
 const DEAD_PATTERNS: RegExp[] = [

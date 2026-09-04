@@ -26,9 +26,31 @@ npm run typecheck        # tsc, twice: src/ (strict, ships in dist/),
 npm run lint              # eslint . && prettier --check .
 npm test                  # vitest run — full suite
 npm run test:coverage     # vitest run --coverage — floors enforced
+npx vitest run tests/rules          # one domain slice (path filter)
 npm run build              # tsdown src/cli.ts, then any workspace package
 npm run self-scan          # the tool scans its own repo — must add
                             # zero NEW error-severity findings
+```
+
+The spec suite is organized by domain, mirroring `src/`. Run one slice
+with a path filter (`npx vitest run tests/cli`); `npm test` always runs
+the whole suite and is what CI gates on:
+
+```text
+tests/
+  cli/          CLI verbs, flags, arg parsing, error paths
+  engine/       adapters, masking, discovery, analysis, scoring
+  rules/        rule behavior, one subdir per family (ci/, playwright/, …)
+  reporters/    terminal/SARIF/mermaid output + score state
+  forensics/    run-data forensics, selector health, runtime evidence
+  integrations/ repo workflow specs, packaging, install
+  config/       config loading + suppressions
+  plugins/      plugin + local-rule loading
+  scope/        changed-scope computation
+  contract/     repo-level guards: docs consistency, hygiene, privacy
+  stress/       scale/perf floors, crash-proof fuzz
+  e2e/          full-CLI journeys (spawn dist/)
+  golden/ corpus/ fixtures/ helpers/   data + shared harness (unchanged)
 ```
 
 Additional gates that only apply when your change touches rules or
