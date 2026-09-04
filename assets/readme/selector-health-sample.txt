@@ -1,0 +1,10 @@
+
+▚▞ SELECTOR HEALTH
+
+e2e/login.spec.ts
+  [█████████████░░░░░░░]  65 / 100
+  role/text: 1 · testid: 0 · css-chains: 1 ⚠ · xpath: 0
+
+e2e/checkout.spec.ts
+  [█████████████████░░░]  86 / 100
+  role/text: 3 · testid: 1 · css-chains: 1 ⚠ · xpath: 0
