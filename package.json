@@ -36,11 +36,11 @@
     "docs:capability": "tsx scripts/generate-capability-matrix.ts",
     "docs:hero": "tsx scripts/generate-readme-hero.ts",
     "docs:formats": "tsx scripts/generate-site-formats.ts",
-    "docs:forensics-samples": "tsx scripts/generate-forensics-samples.ts",
     "site:doctor": "npm --prefix site run doctor",
     "site:audit": "node site/scripts/audit-live.mjs",
     "site:lighthouse": "node site/scripts/lighthouse-run.mjs",
     "docs:demo": "tsx scripts/generate-readme-demo.ts",
+    "docs:translations": "node scripts/check-readme-translations.mjs",
     "self-scan": "node dist/cli.mjs .",
     "prepare": "husky",
     "prepublishOnly": "npm run build"
