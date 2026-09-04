@@ -25,8 +25,11 @@ export const swallowedExitCode = defineRule({
   detectionStrategy: "LEXICAL",
   introduced: "0.1.0",
 
-  // Measured 2026-09-02 (corpus wave 5): tier set from the measured envelope (plan §11.2).
+  // Measured (corpus wave 5): tier set from the measured envelope (plan §11.2).
+  // detectorRevision 2 (M2, 2026-09-04): shared VERIFICATION_GATE_RE gained
+  // mvnw wrapper coverage — additive gate vocabulary, §07 revision bump.
   tier: "extended",
+  detectorRevision: 2,
   run(ctx) {
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 

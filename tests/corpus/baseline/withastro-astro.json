@@ -17,11 +17,12 @@
     "QA-PW-143": 2,
     "QA-PW-144": 2,
     "QA-PW-145": 48,
+    "QA-PW-146": 498,
     "QA-TEST-002": 32,
     "QA-TEST-003": 101,
     "QA-TEST-004": 32,
     "QA-TEST-010": 1
   },
-  "totalFindings": 657,
+  "totalFindings": 1155,
   "partial": false
 }
