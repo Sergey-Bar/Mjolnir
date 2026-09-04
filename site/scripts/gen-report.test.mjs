@@ -18,6 +18,8 @@ import {
   splitGroups,
   parseSummary,
   buildReport,
+  extractBands,
+  extractConstants,
   LINE_HEIGHT,
   PAD_TOP,
 } from "./gen-report.mjs";
@@ -230,4 +232,67 @@ test("parseTokens and resolve follow var() chains", () => {
     "a self-referencing var must not hang",
   );
   assert.equal(resolve(light, "--missing"), null);
+});
+
+/* ---------------- G8: scoring extraction (ScoreExplainer feed) ---------------- */
+
+test("extractBands parses the real score-state.ts into the four bands", () => {
+  const src = readFileSync(
+    join(HERE, "..", "..", "src", "reporter", "score-state.ts"),
+    "utf8",
+  );
+  const bands = extractBands(src);
+  assert.deepEqual(bands, [
+    { min: 100, verdict: "FORGED" },
+    { min: 80, verdict: "WORTHY" },
+    { min: 50, verdict: "NEEDS WORK" },
+    { min: 0, verdict: "UNWORTHY" },
+  ]);
+});
+
+test("extractBands throws loudly when the model changes shape", () => {
+  assert.throws(
+    () => extractBands("export function deriveScoreState() { return null }"),
+    /no `score >= N` thresholds found/,
+  );
+});
+
+test("extractConstants reads the two scorer constants", () => {
+  const src = readFileSync(
+    join(HERE, "..", "..", "src", "scorer", "scorer.ts"),
+    "utf8",
+  );
+  assert.deepEqual(extractConstants(src), { k: 5, smoothing: 1 });
+});
+
+test("buildScoring: report without transparency fields yields no scoring block", () => {
+  const r = buildReport(SAMPLE, JSON.stringify({ score: 75 }), null);
+  assert.equal(r.scoring, undefined);
+});
+
+test("buildScoring: the real demo report yields the reconciled strip payload", () => {
+  const r = buildReport(
+    SAMPLE,
+    readFileSync(
+      join(HERE, "..", "..", "assets", "readme", "demo-report.json"),
+      "utf8",
+    ),
+    null,
+  );
+  assert.ok(
+    r.scoring,
+    "demo report carries rawDeductions — scoring must exist",
+  );
+  assert.equal(r.scoring.rawDeductions, 40);
+  assert.equal(r.scoring.declarations, 7);
+  // Site-law reconciliation: the formula on the page must reproduce the
+  // scan's own score from these generated numbers.
+  const { rawDeductions, declarations, constants } = r.scoring;
+  const score =
+    100 -
+    Math.min(
+      100,
+      (rawDeductions / (declarations + constants.smoothing)) * constants.k,
+    );
+  assert.equal(Math.round(score), r.score);
 });

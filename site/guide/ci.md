@@ -17,6 +17,8 @@ Or wire it into GitHub Code Scanning natively via SARIF:
 
 Editor and pipeline setup for SARIF: [SARIF integration](/reference/sarif).
 
+<FalseGreenChain />
+
 ## Changed-scope coverage
 
 `--scope changed` attributes findings to lines added in your branch vs the

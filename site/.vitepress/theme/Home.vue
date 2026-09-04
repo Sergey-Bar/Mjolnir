@@ -375,7 +375,7 @@ onBeforeUnmount(() => {
           data-reveal
           :style="{ '--i': i }"
         >
-          <span class="ev-tag">{{ e.level }}</span>
+          <EvidenceBadge :level="e.level" />
           <h3>{{ e.name }}</h3>
           <p>{{ e.body }}</p>
         </article>
@@ -890,16 +890,6 @@ onBeforeUnmount(() => {
   border-radius: 14px;
   background: var(--vp-c-bg-alt);
   border: 1px solid var(--vp-c-border);
-}
-.ev-tag {
-  display: inline-block;
-  font-family: var(--vp-font-family-mono);
-  font-weight: 600;
-  font-size: 0.8rem;
-  padding: 0.2rem 0.55rem;
-  border-radius: 6px;
-  color: var(--mj-forge-950);
-  background: var(--mj-ember-bright);
 }
 .ev h3 {
   margin: 0.7rem 0 0.4rem;

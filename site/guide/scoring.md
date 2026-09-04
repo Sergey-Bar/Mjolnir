@@ -20,6 +20,8 @@ requires writing real tests.
 The `+ 1` is a Laplace smoothing constant so a tiny suite with one finding
 doesn't collapse to zero.
 
+<ScoreExplainer />
+
 ## Per-finding deductions
 
 | Severity | Base points |

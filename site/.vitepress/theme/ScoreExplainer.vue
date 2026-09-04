@@ -17,13 +17,24 @@
 import { computed } from "vue";
 import scan from "./generated/report.json";
 
-const raw = scan.rawDeductions;
-const decl = scan.declarations;
-const hasArithmetic = typeof raw === "number" && typeof decl === "number";
+// All scoring data comes from the generated block (gen-report.mjs parses
+// it out of score-state.ts / scorer.ts / the demo report). No fallback
+// defaults here: if the payload is missing, the strip degrades to the
+// explicit "cannot be shown" note — never a plausible-looking default
+// (the D1 failure mode).
+const scoring = scan.scoring ?? null;
 
 /** Constants from src/scorer/scorer.ts via generated/report.json. */
-const K = scan.scoring?.constants?.k ?? 5;
-const SMOOTHING = scan.scoring?.constants?.smoothing ?? 1;
+const K = scoring?.constants?.k;
+const SMOOTHING = scoring?.constants?.smoothing;
+
+const raw = scoring?.rawDeductions;
+const decl = scoring?.declarations;
+const hasArithmetic =
+  typeof raw === "number" &&
+  typeof decl === "number" &&
+  typeof K === "number" &&
+  typeof SMOOTHING === "number";
 
 /** The formula's steps, computed — never typed. */
 const steps = computed(() => {
@@ -85,7 +96,7 @@ if (hasArithmetic) {
  * no verdict literals here). Colors are keyed by band `min`, aligned
  * with vars.css's score tokens.
  */
-const bands = scan.scoring?.bands ?? [];
+const bands = scoring?.bands ?? [];
 const bandColor: Record<number, string> = {
   100: "var(--mj-forged-hot)",
   80: "var(--mj-trusted)",

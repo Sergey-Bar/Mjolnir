@@ -6,6 +6,9 @@ import RuleCatalog from "./RuleCatalog.vue";
 import TerminalReport from "./TerminalReport.vue";
 import CatalogPreview from "./CatalogPreview.vue";
 import ForensicsSample from "./ForensicsSample.vue";
+import EvidenceBadge from "./EvidenceBadge.vue";
+import FalseGreenChain from "./FalseGreenChain.vue";
+import ScoreExplainer from "./ScoreExplainer.vue";
 import NotFound from "./NotFound.vue";
 import "./styles/vars.css";
 import "./styles/custom.css";
@@ -20,5 +23,8 @@ export default {
     app.component("TerminalReport", TerminalReport);
     app.component("CatalogPreview", CatalogPreview);
     app.component("ForensicsSample", ForensicsSample);
+    app.component("EvidenceBadge", EvidenceBadge);
+    app.component("FalseGreenChain", FalseGreenChain);
+    app.component("ScoreExplainer", ScoreExplainer);
   },
 } satisfies Theme;

@@ -106,11 +106,7 @@ const measuredCount = computed(() => all.filter((r) => r.measured).length);
             </td>
             <td class="fam">{{ r.familyLabel }}</td>
             <td class="c">
-              <span
-                class="ev"
-                :class="'ev-' + (r.evidence || '').toLowerCase()"
-                >{{ r.evidence }}</span
-              >
+              <EvidenceBadge :level="r.evidence || ''" />
             </td>
             <td class="c fp">{{ r.measuredFp }}</td>
           </tr>
@@ -193,19 +189,6 @@ td code {
   font-size: 0.82rem;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-}
-.ev {
-  display: inline-block;
-  font-family: var(--vp-font-family-mono);
-  font-size: 0.7rem;
-  padding: 0.12em 0.45em;
-  border-radius: 4px;
-  background: var(--vp-c-bg-soft);
-  color: var(--vp-c-text-2);
-}
-.ev-e2 {
-  background: var(--vp-c-brand-soft);
-  color: var(--vp-c-brand-1);
 }
 .cp-more {
   text-align: center;

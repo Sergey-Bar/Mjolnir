@@ -208,3 +208,46 @@ summary:focus-visible,
 .hero :focus-visible {
   outline-color: var(--mj-gold-bright, #e6bd57);
 }
+
+/* ---- evidence badge (site UX plan G6) ---------------------------- */
+/* ONE primitive for the ONE evidence-level concept. Lives globally so
+   three consumers share it: EvidenceBadge.vue (interactive contexts),
+   Home.vue's evidence cards, and CatalogPreview's per-rule chip. The
+   generated rule pages emit the same classes as plain HTML from
+   gen-rules.mjs — those never mount Vue, so the styles must be here,
+   not scoped to the component. Weights are in the visible text: the
+   level is never color-only. E2 is a deterministic defect (full
+   deduction) so it takes the unworthy red; E1 heuristic (half) takes
+   the needs-work gold; E0 observation (zero, never gates) takes the
+   trusted/info blue. */
+.mj-ev {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4em;
+  font-family: var(--vp-font-family-mono);
+  font-size: 0.72rem;
+  line-height: 1.4;
+  padding: 0.14em 0.55em;
+  border-radius: 5px;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+.mj-ev-lvl {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.mj-ev-name {
+  color: var(--vp-c-text-2);
+}
+.mj-ev-e2 {
+  color: var(--mj-unworthy);
+  background: rgba(236, 107, 102, 0.08);
+}
+.mj-ev-e1 {
+  color: var(--mj-needswork);
+  background: rgba(230, 189, 87, 0.08);
+}
+.mj-ev-e0 {
+  color: var(--mj-trusted);
+  background: rgba(92, 196, 224, 0.08);
+}
