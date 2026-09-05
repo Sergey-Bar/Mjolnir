@@ -584,16 +584,10 @@ export function renderFixReport(results: FixResult[], dryRun: boolean): string {
   }
   for (const r of results) {
     // Audit (fix.ts): the dead "unchanged" status is gone — every
-    // FixResult is one of applied/planned/failed, so the renderer's
-    // fallback dot can never silently absorb a status typo.
+    // FixResult is one of applied/planned/failed, so the renderer has no
+    // fallback arm for a status typo to hide behind.
     const icon =
-      r.status === "applied"
-        ? okIcon(ui)
-        : r.status === "planned"
-          ? "▸"
-          : r.status === "failed"
-            ? "✗"
-            : "·";
+      r.status === "applied" ? okIcon(ui) : r.status === "planned" ? "▸" : "✗";
     lines.push(`${icon} [${r.ruleId}] ${r.file}:${r.line} — ${r.description}`);
   }
   const applied = results.filter((r) => r.status === "applied").length;
