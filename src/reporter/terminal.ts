@@ -108,6 +108,14 @@ export function renderTerminal(
     ascii,
   );
   appendFrameworks(lines, result, ui);
+  if (result.staged !== undefined) {
+    lines.push(
+      ui.p.dim(
+        `  staged surface: ${result.staged.files} file(s) scanned; score reflects that surface`,
+      ),
+    );
+    lines.push("");
+  }
   appendDimensions(lines, result, ui);
   appendDeductions(lines, result, counts, ui);
   // --category (agent-handoff plan §5.5): presentation filter. The

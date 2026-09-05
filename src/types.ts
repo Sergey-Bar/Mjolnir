@@ -245,6 +245,14 @@ export interface ScanResult {
   /** Present when --scope changed was requested. */
   scope?: "all" | "changed";
   scopeDegraded?: string;
+  /**
+   * Present when --staged was requested (agent-handoff plan §5.7):
+   * the scan surface was restricted to git staged files, and `files`
+   * is how many survived the intersection. The score reflects THAT
+   * surface — never present it as a full-repo score. Additive within
+   * schemaVersion 1.
+   */
+  staged?: { files: number };
   /** Detected test frameworks (0.2). Empty + unknown=true when undetectable. */
   frameworks: string[];
   frameworkDetectionUnknown: boolean;

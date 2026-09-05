@@ -21,6 +21,7 @@
  * 10 refusal/usage · 20 crash.
  */
 
+import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Output } from "../cli.js";
@@ -265,15 +266,16 @@ export function runInstallCommand(
 ): number {
   const dryRun = argv.includes("--dry-run");
   const force = argv.includes("--force");
+  const stagedHook = argv.includes("--staged-hook");
   for (const a of argv) {
-    if (a === "--dry-run" || a === "--force") continue;
+    if (a === "--dry-run" || a === "--force" || a === "--staged-hook") continue;
     if (a === "--help" || a === "-h") continue;
     io.err(usageMessageFor(a));
     return 10;
   }
 
   const { entries, detected } = planInstall(cwd, { force });
-  if (detected === 0) {
+  if (detected === 0 && !stagedHook) {
     io.out(
       "No instruction surfaces detected — nothing to install. " +
         "Surfaces probed: .claude/ (Claude Code), .kilo/ (Kilo), .cursor/ (Cursor), AGENTS.md.",
@@ -288,6 +290,10 @@ export function runInstallCommand(
       } else {
         io.out(`  ${e.action} ${e.file}`);
       }
+    }
+    if (stagedHook) {
+      const hook = planHookInstall(cwd);
+      io.out(`  ${hook.action} ${hook.file} (non-blocking pre-commit hook)`);
     }
     return 0;
   }
@@ -309,6 +315,21 @@ export function runInstallCommand(
       );
     }
   }
+  if (stagedHook) {
+    const hook = planHookInstall(cwd);
+    const hookWritten = executeHookInstall(hook);
+    io.out(
+      `  ${hook.action}: non-blocking pre-commit hook → ${hook.file} (mjolnir-qa@${CLI_VERSION} --staged --blocking warning)`,
+    );
+    void hookWritten;
+  }
+  for (const e of entries) {
+    if (e.action !== "refuse" && e.action !== "no-op") {
+      io.out(
+        `  ${e.action}: ${e.surface} → ${e.file} (mjolnir-qa@${CLI_VERSION})`,
+      );
+    }
+  }
   if (refused) {
     io.err(
       "Some surfaces were skipped — see refusals above. Nothing was overwritten.",
@@ -323,4 +344,109 @@ export function runInstallCommand(
 
 function usageMessageFor(token: string): string {
   return `mjolnir install: unknown argument "${token}" — supported: --dry-run, --force`;
+}
+
+const HOOK_MARKER_OPEN = "# mjolnir:managed pre-commit (non-blocking)";
+const HOOK_MARKER_CLOSE = "# /mjolnir:managed pre-commit";
+
+function hookBlock(version: string): string {
+  return [
+    `${HOOK_MARKER_OPEN} v${version}`,
+    `# Advisory: surfaces staged-file findings without blocking the commit.`,
+    `mjolnir --staged --blocking warning || true`,
+    HOOK_MARKER_CLOSE,
+  ].join("\n");
+}
+
+/** The hook file an existing hook manager (husky / core.hooksPath) owns. */
+function resolveHookTarget(cwd: string): string {
+  const huskyDir = join(cwd, ".husky");
+  if (existsSync(huskyDir)) return join(huskyDir, "pre-commit");
+  try {
+    const hooksPath = execFileSync("git", [
+      "-C",
+      cwd,
+      "config",
+      "core.hooksPath",
+    ])
+      .toString()
+      .trim();
+    if (hooksPath.length > 0) return join(cwd, hooksPath, "pre-commit");
+  } catch {
+    /* no custom hooksPath */
+  }
+  return join(cwd, ".git", "hooks", "pre-commit");
+}
+
+export interface HookPlanEntry {
+  action: "create" | "append" | "update" | "no-op" | "refuse";
+  file: string;
+  reason?: string;
+}
+
+/**
+ * Pure plan for `--staged-hook` (plan M5). Reuses husky/core.hooksPath
+ * when present; otherwise the default .git/hooks path. Marker-based:
+ * an existing hook WITHOUT the marker is user-owned → refuse.
+ */
+export function planHookInstall(cwd: string): HookPlanEntry {
+  const file = resolveHookTarget(cwd);
+  if (!existsSync(file)) {
+    return { action: "create", file };
+  }
+  const existing = readFileSync(file, "utf8");
+  if (existing.includes(HOOK_MARKER_OPEN)) {
+    return { action: "update", file };
+  }
+  // A hook managed by husky with a shebang/shebang-less script still
+  // safely accepts an appended non-blocking block IF it has no
+  // `set -e`-guarded early exit; we append and `|| true` the call —
+  // but a hook file we cannot append to (unreadable) refuses.
+  try {
+    readFileSync(file, "utf8");
+  } catch {
+    return { action: "refuse", file, reason: "existing hook is unreadable" };
+  }
+  return { action: "append", file };
+}
+
+export function executeHookInstall(entry: HookPlanEntry): boolean {
+  switch (entry.action) {
+    case "create": {
+      mkdirSync(join(entry.file, ".."), { recursive: true });
+      writeFileSync(entry.file, `#!/bin/sh\n${hookBlock(CLI_VERSION)}\n`);
+      return true;
+    }
+    case "append": {
+      const existing = readFileSync(entry.file, "utf8");
+      const sep = existing.endsWith("\n") ? "" : "\n";
+      writeFileSync(
+        entry.file,
+        `${existing}${sep}\n${hookBlock(CLI_VERSION)}\n`,
+      );
+      return true;
+    }
+    case "update": {
+      const existing = readFileSync(entry.file, "utf8");
+      const openIdx = existing.indexOf(HOOK_MARKER_OPEN);
+      const closeIdx = existing.indexOf(HOOK_MARKER_CLOSE);
+      if (openIdx !== -1 && closeIdx !== -1) {
+        writeFileSync(
+          entry.file,
+          existing.slice(0, openIdx) +
+            hookBlock(CLI_VERSION) +
+            existing.slice(closeIdx + HOOK_MARKER_CLOSE.length),
+        );
+      } else {
+        const sep = existing.endsWith("\n") ? "" : "\n";
+        writeFileSync(
+          entry.file,
+          `${existing}${sep}\n${hookBlock(CLI_VERSION)}\n`,
+        );
+      }
+      return true;
+    }
+    default:
+      return false;
+  }
 }

@@ -50,7 +50,11 @@ import { runSummaryCommand } from "./commands/summary.js";
 import { runWhyCommand } from "./commands/why.js";
 import { runHandoffCommand } from "./commands/handoff.js";
 import { runInstallCommand } from "./commands/install-agents.js";
-import { computeChangedScope, filterToChanged } from "./scope/changed.js";
+import {
+  computeChangedScope,
+  computeStagedFiles,
+  filterToChanged,
+} from "./scope/changed.js";
 import { asUniversal } from "./engine/rule-runner.js";
 import { enforceTierPolicy, type Tier } from "./engine/tier-policy.js";
 import type { QADoctorRule } from "./rules/rule.js";
@@ -290,6 +294,20 @@ interface CliArgs {
    * scan semantics and exit codes are unchanged (plan §5.6).
    */
   scoreOnly?: boolean;
+  /**
+   * --staged: scan-surface restriction (plan §5.7) — intersect the
+   * discovered test files with the git staged file list. Does NOT
+   * change rule semantics; score implications come only from the
+   * narrowed surface (labeled as such in the report).
+   */
+  staged?: boolean;
+  /**
+   * --blocking error|warning|none (plan §5.8): invocation-level gate
+   * override. Controls PROCESS EXIT BEHAVIOR ONLY via the existing
+   * exitForFindings mechanism — detection, rendering, JSON and score
+   * are identical under all three values. Overrides config.gate.
+   */
+  blocking?: "error" | "warning" | "none";
 }
 
 /** A usage-error detail: the offending token, when one exists. */
@@ -374,6 +392,15 @@ export function parseArgs(
       args.categories = [...(args.categories ?? []), cat as RuleCategory];
     } else if (a === "--score") {
       args.scoreOnly = true;
+    } else if (a === "--staged") {
+      args.staged = true;
+    } else if (a === "--blocking") {
+      const level = argv[++i];
+      if (level === "error" || level === "warning" || level === "none") {
+        args.blocking = level;
+      } else {
+        return reject({ flag: "--blocking", token: level });
+      }
     } else if (a === "--help" || a === "-h") {
       return null;
     } else if (!a.startsWith("-")) {
@@ -646,6 +673,34 @@ export async function runScan(
   const wfBucket: string[] = [];
   githubActionsAdapter.discoverTestFiles({ ...ctx, testFiles: wfBucket });
   ctx.testFiles.push(...wfBucket);
+  // --staged (agent-handoff plan §5.7): scan-surface restriction. The
+  // discovered set is intersected with the staged file list. Degraded
+  // (no git) → fall back to the full surface + an honest stderr note
+  // (hooked through onConfigWarning); findings are never silently
+  // dropped by a broken git call.
+  let stagedSurface = false;
+  if (args.staged) {
+    const staged = computeStagedFiles(scanRoot.root);
+    if (staged === null) {
+      hooks.onConfigWarning?.(
+        "mjolnir: --staged ignored — not a git repository (scanning the full surface).",
+      );
+    } else {
+      const stagedSet = new Set(staged.map((s) => s.replace(/\\/g, "/")));
+      ctx.testFiles = ctx.testFiles.filter((f) => {
+        const rel = f.startsWith(scanRoot.root + sep)
+          ? f.slice(scanRoot.root.length + 1).replace(/\\/g, "/")
+          : f;
+        return stagedSet.has(rel);
+      });
+      stagedSurface = true;
+      if (ctx.testFiles.length === 0) {
+        hooks.onConfigWarning?.(
+          "mjolnir: --staged — no staged files match the scan surface.",
+        );
+      }
+    }
+  }
   hooks.onProgress?.({
     phase: "discover",
     done: ctx.testFiles.length,
@@ -914,6 +969,7 @@ export async function runScan(
 
   const result: ScanResult = {
     schemaVersion: SCHEMA_VERSION,
+    ...(stagedSurface ? { staged: { files: testFileCount } } : {}),
     partial: discoveryTruncated || rulesPartial || skippedFiles > 0,
     score: hasTests ? total : null,
     ...(hasTests ? {} : { reason: "no-tests-found" as const }),
@@ -1371,7 +1427,15 @@ export async function runScanCommand(
         knownRuleIds: KNOWN_RULE_IDS,
       });
       io.out(result.score === null ? "unknown" : String(result.score));
-      return exitForFindings(result.findings, scoreConfig.gate ?? "error");
+      // Plan §5.8: --blocking (invocation) overrides config.gate —
+      // it changes exit status only, never detection or rendering.
+      // "none" maps to the existing advisory gate (exit 0 unless partial).
+      return exitForFindings(
+        result.findings,
+        args.blocking === "none"
+          ? "advisory"
+          : (args.blocking ?? scoreConfig.gate ?? "error"),
+      );
     }
     if (args.format === "sarif") {
       io.out(renderSarif(result));
@@ -1452,7 +1516,12 @@ export async function runScanCommand(
       knownRuleIds: KNOWN_RULE_IDS,
     });
     for (const w of warnings) io.err(w);
-    return exitForFindings(result.findings, config.gate ?? "error");
+    return exitForFindings(
+      result.findings,
+      args.blocking === "none"
+        ? "advisory"
+        : (args.blocking ?? config.gate ?? "error"),
+    );
   } catch (err) {
     // Bug-audit M4: a config typo is a user error with an actionable
     // message — usage exit 10, not "internal error" exit 20.
