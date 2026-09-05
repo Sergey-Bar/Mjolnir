@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 # Least-privilege top-level token; the jobs that need Pages scopes escalate
-# in their own permissions blocks (per tests/ci-config.spec.ts).
+# in their own permissions blocks (per tests/integrations/ci-install-template.spec.ts).
 permissions:
   contents: read
 

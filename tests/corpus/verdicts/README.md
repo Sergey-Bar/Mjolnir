@@ -2,6 +2,12 @@
 
 > **Status (2026-09-02, wave 5 — dedicated corpora): 1423 classified · 0 UNSURE · 0 unclassified · 78 of 91 rules measured at n ≥ 10.**
 >
+> **Current authoritative measured coverage: see `docs/RULE-CAPABILITY-MATRIX.md`
+> (drift-gated; 74/99 at v0.5.3 — the registry has grown from 91 to 99 rules and
+> the quarantine-cluster resolution moved 28 rules to info/retuned since the
+> wave-5 snapshot above; that snapshot is preserved as history, not as the
+> live count).**
+>
 > Wave 5 (2026-09-02, Verification Trust Evolution Plan §11.5/§08): CORPUS
 > 19 → 34 repos — 14 new real-world repos chosen by evaluating each
 > candidate's unmeasured-rule fire count at HEAD (vitest, streamlit,
