@@ -63,8 +63,17 @@ export function discoverAllTestFiles(
     skipDirs: walkSkips,
     isTestFile: (name) => languageAdapters.some((a) => a.isTestFile(name)),
     onTestFile: (abs) => {
+      // Audit (scan-adapters): the claiming adapter's isTestFile may be
+      // a gate on the FULL PATH (regexes anchored to path segments,
+      // e.g. the workflow adapter's `\.github[\\/]workflows[\\/].+`),
+      // not just a basename — gate and claim must see the SAME string,
+      // so the gate here receives the walk-relative path, exactly what
+      // the scan pipeline feeds back. Gating on the walk-time basename
+      // only could admit a file whose relative shape the adapter's own
+      // discovery later rejects (latent drop), or vice versa.
+      const rel = relative(ctx.workspace.root, abs).replaceAll("\\", "/");
       for (const a of languageAdapters) {
-        if (!a.isTestFile(abs)) continue;
+        if (!a.isTestFile(rel)) continue;
         // The claiming adapter's own dirSkips decide here, per language.
         if (isInsideSkippedDir(ctx.workspace.root, abs, a.dirSkips)) continue;
         const bucket = buckets.get(a.id) ?? [];

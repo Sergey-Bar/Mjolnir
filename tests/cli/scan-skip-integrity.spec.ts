@@ -81,6 +81,9 @@ describe("skip accounting under I/O failure", () => {
     expect(result.analysisStatus.discovery).toBe("complete");
     expect(result.analysisStatus.rules).toBe("complete");
     expect(result.analysisStatus.skippedFiles).toBe(2);
-    expect(result.analysisStatus.truncationReasons).toBeUndefined();
+    // Audit fix (shared-walk): skips are now COUNTED with reasons — a
+    // stat-failed file is named in truncationReasons instead of being a
+    // bare counter bump. The scan stays partial either way.
+    expect(result.analysisStatus.truncationReasons).toContain("stat-failed");
   });
 });

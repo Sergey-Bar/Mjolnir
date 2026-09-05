@@ -166,16 +166,22 @@ function maskJava(text: string): string {
     if (chars[i] === "/" && i + 1 < len && chars[i + 1] === "*") {
       const start = i;
       i += 2;
+      // Audit W1: track closure explicitly. The old "last two chars"
+      // heuristic checked whether the COMMENT ENDED at EOF — a comment
+      // that closed mid-text (e.g. `/*x*/y`) landed on i === len - 1
+      // after the break, the heuristic misread the trailing code as an
+      // unclosed tail, and everything after the close — live code — was
+      // blanked to spaces.
+      let closed = false;
       while (i < len - 1) {
         if (chars[i] === "*" && chars[i + 1] === "/") {
           i += 2;
+          closed = true;
           break;
         }
         i++;
       }
-      if (i >= len - 1 && !(chars[len - 2] === "*" && chars[len - 1] === "/")) {
-        i = len; // unclosed comment — blank to end
-      }
+      if (!closed) i = len; // unclosed comment — blank to end
       blankRange(chars, start, i);
       continue;
     }
@@ -277,16 +283,19 @@ function maskCSharp(text: string): string {
     if (chars[i] === "/" && i + 1 < len && chars[i + 1] === "*") {
       const start = i;
       i += 2;
+      // Audit W1: explicit closure flag — see the Java masker. The
+      // last-two-chars heuristic blanked live code after a comment that
+      // closed mid-text.
+      let closed = false;
       while (i < len - 1) {
         if (chars[i] === "*" && chars[i + 1] === "/") {
           i += 2;
+          closed = true;
           break;
         }
         i++;
       }
-      if (i >= len - 1 && !(chars[len - 2] === "*" && chars[len - 1] === "/")) {
-        i = len;
-      }
+      if (!closed) i = len;
       blankRange(chars, start, i);
       continue;
     }

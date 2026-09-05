@@ -165,11 +165,16 @@ export function computeChangedScope(
     if (untrackedSet.has(file)) {
       const all = allLinesOf(root, file);
       if (all === null) {
-        return {
-          changed: {},
-          degraded: true,
-          reason: "untracked-file-unreadable",
-        };
+        // Audit (changed.ts): ONE unreadable/oversized untracked file
+        // degrades only that file — treat it as fully changed (every
+        // line new, the honest superset) and keep walking. The old
+        // early-return degraded the ENTIRE scope to full-file
+        // attribution, silently discarding precise line data for every
+        // other changed file because a single file could not be read.
+        changed[file] = new Set(
+          Array.from({ length: LIMITS_MAX_LINES }, (_, i) => i + 1),
+        );
+        continue;
       }
       for (const l of all) lines.add(l);
     }
@@ -178,6 +183,9 @@ export function computeChangedScope(
 
   return { changed, degraded: false };
 }
+
+/** Sentinel size for "fully changed" — bounded, mirrors LIMITS.maxFileBytes scale. */
+const LIMITS_MAX_LINES = 1_000_000;
 
 /** Every 1-based line number of an untracked file (it is all new). */
 function allLinesOf(root: string, file: string): number[] | null {
@@ -202,6 +210,15 @@ export function parseChangedLines(diff: string): Set<number> {
   // only by accident of the next @@ resetting it.
   let inHunk = false;
   let newCount = 0;
+  // Audit (changed.ts): the header reset applies ONLY outside hunks.
+  // Git never emits file headers mid-hunk, but hunk CONTENT can look
+  // exactly like one: a source line `++ b/x` added by a hunk renders as
+  // `+++ b/x`, and the old unconditional header check abandoned the
+  // hunk mid-stream, dropping every later added line of that hunk.
+  // Inside a hunk with new-side lines still expected, header-looking
+  // lines are consumed as content.
+  const headerRe =
+    /^(?:diff --git |index |old mode |new mode |rename |copy |similarity |dissimilarity |--- |\+\+\+ )/;
   for (const raw of diff.split("\n")) {
     // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
     const hunk = /^@@\s*-\d+(?:,\d+)?\s*\+(\d+)(?:,(\d+))?\s*@/.exec(raw);
@@ -211,20 +228,14 @@ export function parseChangedLines(diff: string): Set<number> {
       inHunk = true;
       continue;
     }
-    // A following file's diff header always resets hunk state — `+++ b/…`
-    // starts with `+` and must never be read as an added line even when
-    // the previous hunk's declared count had a surplus left.
-    if (
-      /^(?:diff --git |index |--- |\+\+\+ |old mode |new mode |rename |copy |similarity |dissimilarity )/.test(
-        raw,
-      )
-    ) {
-      inHunk = false;
+    if (!inHunk || newCount <= 0) {
+      // Outside a hunk (or its new-side lines exhausted): everything is
+      // file-header material — never advances, never adds. A following
+      // file's diff header (`+++ b/…` starts with `+`) must never be
+      // read as an added line.
+      if (headerRe.test(raw)) inHunk = false;
       continue;
     }
-    // Outside a hunk (or its new-side lines exhausted): everything is
-    // file-header material — never advances, never adds.
-    if (!inHunk || newCount <= 0) continue;
     if (raw.startsWith("\\")) continue; // "\ No newline at end of file"
     if (raw.startsWith("+")) {
       lines.add(newLine);

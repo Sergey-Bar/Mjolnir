@@ -672,12 +672,38 @@ export async function runScan(
       });
     }
     // M5.2: content-addressed cache lookup — the key covers the file's
-    // exact post-normalization bytes and the active rule set (ids +
-    // detectorRevisions + run-source hashes), so a hit reproduces the
-    // rule-loop output for this file byte-for-byte. Denominators and
-    // provenance above stay live: a cached scan must count identically
-    // to a fresh one.
-    const cacheKey = fileCacheKey(rulesDigest, text);
+    // exact post-normalization bytes, the active rule set (ids +
+    // detectorRevisions + run-source hashes), and the file's own
+    // identity (rel path + adapter id + parse mode — audit C1/W9), so a
+    // hit reproduces the rule-loop output for THIS file byte-for-byte
+    // and a regex-fallback verdict can never be served as an AST one.
+    // Denominators and provenance above stay live: a cached scan must
+    // count identically to a fresh one.
+    const adapter = isWorkflow
+      ? githubActionsAdapter
+      : isPython
+        ? pythonAdapter
+        : isJava
+          ? javaAdapter
+          : isCs
+            ? csharpAdapter
+            : typescriptAdapter;
+    // Parse-mode token, decided BEFORE the lookup from what this scan
+    // intends: AST when the adapter has a parse hook and the deadline
+    // allows it, regex otherwise. After the parse below, the ACTUAL mode
+    // is re-derived — a fallback (parse returned nothing) re-keys the
+    // lookup/store so fallback verdicts land under the fallback token.
+    const wantsAst = adapter.parseAst !== undefined && Date.now() <= deadline;
+    const identity = (mode: "ast" | "regex") => ({
+      relPath,
+      adapterId: adapter.id,
+      parseMode: mode,
+    });
+    let cacheKey = fileCacheKey(
+      rulesDigest,
+      text,
+      identity(wantsAst ? "ast" : "regex"),
+    );
     const cachedFindings = cache.lookup(cacheKey);
     if (cachedFindings) {
       for (const f of cachedFindings) findings.push(f);
@@ -689,15 +715,6 @@ export async function runScan(
       total: ctx.testFiles.length,
       detail: relPath,
     });
-    const adapter = isWorkflow
-      ? githubActionsAdapter
-      : isPython
-        ? pythonAdapter
-        : isJava
-          ? javaAdapter
-          : isCs
-            ? csharpAdapter
-            : typescriptAdapter;
     // Phase 0.5 parse stage (§10): discovery and rule execution stay
     // where they were; the awaited parse sits between them. `runRules`
     // and rules remain synchronous and consume `file.ast`. Every
@@ -709,7 +726,7 @@ export async function runScan(
     let parsed: ParsedAst | undefined;
     const findingsStart = findings.length;
     try {
-      if (adapter.parseAst && Date.now() <= deadline) {
+      if (adapter.parseAst && wantsAst) {
         hooks.onProgress?.({
           phase: "rules",
           done: scanned,
@@ -718,6 +735,19 @@ export async function runScan(
         });
         parsed = await adapter.parseAst(parsedFile);
       }
+      // Audit W9: the actual mode — a parse hook that returned nothing
+      // (grammar unavailable, parser declined) means the rules ran on
+      // the regex path, and the verdicts must be stored/looked-up as
+      // such, never merged with AST-mode entries.
+      const actualMode: "ast" | "regex" = parsed ? "ast" : "regex";
+      if (wantsAst && actualMode === "regex") {
+        cacheKey = fileCacheKey(rulesDigest, text, identity(actualMode));
+        const fallbackFindings = cache.lookup(cacheKey);
+        if (fallbackFindings) {
+          for (const f of fallbackFindings) findings.push(f);
+          continue;
+        }
+      }
       const fileForRules: ParsedFile = parsed
         ? { ...parsedFile, ast: parsed.ast }
         : parsedFile;
@@ -725,6 +755,22 @@ export async function runScan(
         activeRules,
         fileForRules,
         (f, ruleId, category) => {
+          // Audit W10: the rule→Finding boundary is validated at
+          // runtime. Internal rules are typed, but plugin/JSON-manifest
+          // rules are external data — a malformed record (missing
+          // severity/line/message, or a severity outside the enum) is
+          // routed to the crash channel with a diagnostic instead of
+          // being silently scored.
+          if (!isValidFindingRecord(f)) {
+            ctx.onRuleCrash?.(
+              ruleId,
+              relPath,
+              new Error(
+                `malformed finding record rejected (severity/line/message must be present, severity ∈ error|warning|info): ${JSON.stringify(f)}`,
+              ),
+            );
+            return;
+          }
           findings.push({ ...f, ruleId, category } as Finding);
         },
         // Audit R-9: rule crashes stay isolated but are counted and
@@ -942,8 +988,16 @@ export async function runScan(
 
 export type Output = (...parts: unknown[]) => void;
 
-const out: Output = (line) => console.log(line);
-const err: Output = (line) => console.error(line);
+// Audit C3: true variadic sinks. The one-arg signatures silently DROPPED
+// every argument after the first — `io.err("mjolnir internal error:", msg)`
+// printed only the prefix, losing the actual error. Join with spaces so
+// multi-arg calls render as one readable line on the default consoles.
+// Exported for contract tests (audit C3): the default sinks must stay
+// variadic — a narrowing back to one-arg signatures is a regression.
+export const out: Output = (...parts) =>
+  console.log(parts.map(String).join(" "));
+export const err: Output = (...parts) =>
+  console.error(parts.map(String).join(" "));
 
 // Minimal glob match for suppression `files` patterns, with gitignore
 // `**` semantics (bug-audit M5). Supports:
@@ -1360,8 +1414,13 @@ export async function runScanCommand(
       // WRITE-ONLY under explicit opt-in (audit R-1): a read-only scan
       // must never dirty the scanned repo's working tree. Never printed
       // for --json/--format sarif/mermaid: those are machine contracts.
+      // Audit C5: a PARTIAL scan (truncated by --max-duration, a
+      // discovery cap, or skipped files) must never write the milestone
+      // — "clean so far" is not "clean", and a truncated scan's 100
+      // score proves nothing about the files it never analyzed.
       if (
         args.recordMilestones &&
+        !result.partial &&
         result.score === 100 &&
         result.findings.length === 0
       ) {
@@ -1421,6 +1480,41 @@ export function exitForFindings(
   )
     ? 1
     : 0;
+}
+
+/**
+ * Audit W10 — runtime shape validation at the rule→Finding boundary.
+ * A finding record coming out of a rule (plugin/JSON-manifest rules are
+ * external data, not trusted internal code) must carry the fields the
+ * whole downstream pipeline indexes on: severity within the enum,
+ * integer line ≥ 1, non-empty message, and a file path. Malformed
+ * records are rejected (routed to the crash/plugin-error channel by the
+ * caller) — never silently scored.
+ */
+function isValidFindingRecord(
+  f: unknown,
+): f is Omit<Finding, "ruleId" | "category"> {
+  if (typeof f !== "object" || f === null) return false;
+  const rec = f as Record<string, unknown>;
+  if (
+    rec["severity"] !== "error" &&
+    rec["severity"] !== "warning" &&
+    rec["severity"] !== "info"
+  ) {
+    return false;
+  }
+  if (
+    typeof rec["line"] !== "number" ||
+    !Number.isInteger(rec["line"]) ||
+    rec["line"] < 1
+  ) {
+    return false;
+  }
+  if (typeof rec["message"] !== "string" || rec["message"] === "") {
+    return false;
+  }
+  if (typeof rec["file"] !== "string" || rec["file"] === "") return false;
+  return true;
 }
 
 /** Testable `triage` handler (Tier 5 #22). */
@@ -1658,6 +1752,13 @@ export async function runDiffCommand(
     const baseline = loadBaseline(baselinePath);
     const diff = diffAgainstBaseline(result, baseline);
     io.out(renderBaselineDiff(diff));
+
+    // Audit C5: a PARTIAL (truncated) scan proves nothing about what was
+    // resolved — the head simply didn't analyze those files. It must not
+    // fold "resolved" findings into all-time stats, must not fire
+    // first-debt-reduction, and must return the partial exit code so CI
+    // never treats a truncated diff as a clean bill.
+    if (result.partial) return 2;
 
     // Fold resolved findings into all-time stats (Task 26) — only when a
     // real comparison happened; establishing a baseline records nothing.
