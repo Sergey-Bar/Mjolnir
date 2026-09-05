@@ -90,9 +90,11 @@ export async function previewFrames(
       if (!frame)
         throw new Error(`frame ${i} is past the end (${frames.length})`);
       await page.evaluate(
+        // globalThis, not window: tsconfig has no DOM lib (Node project),
+        // and globalThis is in the ES2022 lib the project already targets.
         (f) =>
           (
-            window as unknown as { __renderFrame: (f: unknown) => void }
+            globalThis as unknown as { __renderFrame: (f: unknown) => void }
           ).__renderFrame(f),
         frame,
       );
@@ -145,9 +147,11 @@ export async function renderVideo(id: VideoScript["id"]): Promise<void> {
     const started = Date.now();
     for (const [i, frame] of frames.entries()) {
       await page.evaluate(
+        // globalThis, not window: tsconfig has no DOM lib (Node project),
+        // and globalThis is in the ES2022 lib the project already targets.
         (f) =>
           (
-            window as unknown as { __renderFrame: (f: unknown) => void }
+            globalThis as unknown as { __renderFrame: (f: unknown) => void }
           ).__renderFrame(f),
         frame,
       );
