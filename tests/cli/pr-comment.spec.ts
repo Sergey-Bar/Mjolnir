@@ -197,7 +197,7 @@ describe("renderPrComment — rendering against fixture scan results", () => {
     const diff = diffAgainstBaseline(after, baseline);
 
     const body = renderPrComment(after, { diff });
-    expect(body).toContain("fixed 2 pre-existing findings");
+    expect(body).toContain("2 pre-existing findings fixed in this PR");
   });
 
   it("caps the listed findings and notes how many more exist", () => {
@@ -234,7 +234,7 @@ describe("renderPrComment — rendering against fixture scan results", () => {
     const diff = diffAgainstBaseline(after, baseline);
 
     const body = renderPrComment(after, { diff });
-    expect(body).toContain("fixed 1 pre-existing finding");
+    expect(body).toContain("1 pre-existing finding fixed in this PR");
   });
 
   it("falls back to the full scope when no baseline exists, and says so honestly", () => {
@@ -251,5 +251,61 @@ describe("renderPrComment — rendering against fixture scan results", () => {
     const body = renderPrComment(scanResult([finding({})]));
     expect(body.toLowerCase()).toContain("advisory only");
     expect(body.toLowerCase()).toContain("never blocks merging");
+  });
+});
+
+describe("renderPrComment — redesign structure (plan M5)", () => {
+  it("headers the redesigned comment and carries a verdict headline", () => {
+    const body = renderPrComment(scanResult([finding({})]));
+    expect(body).toContain("### 🔨 Mjölnir — Verification Trust");
+    expect(body).toContain("88/100");
+    expect(body).toContain("WORTHY");
+    expect(body).toMatch(/score is|hammer|findings/); // headline line present
+  });
+
+  it("renders the dimensions mini-table when the scan has them", () => {
+    const withDims: ScanResult = {
+      ...scanResult([]),
+      dimensions: [
+        { category: "QA-PW", score: 75, errors: 1, warnings: 0, infos: 0 },
+      ],
+    };
+    const body2 = renderPrComment(withDims);
+    expect(body2).toContain("| Category | Score |");
+    expect(body2).toContain("| QA-PW | 75/100 |");
+  });
+
+  it("groups findings in collapsible details — errors open, infos collapsed", () => {
+    const body = renderPrComment(
+      scanResult([
+        finding({}),
+        finding({ severity: "info", ruleId: "QA-PW-145" }),
+      ]),
+    );
+    expect(body).toContain("<details open>");
+    expect(body).toContain("<summary>🔴 1 errors</summary>");
+    expect(body).toContain("<summary>🔵 1 infos</summary>");
+    expect(body).toContain("</details>");
+  });
+
+  it("every finding line carries the Fix: label and the evidence tag", () => {
+    const body = renderPrComment(scanResult([finding({})]));
+    expect(body).toContain("Fix: _Use a locator-based wait instead._");
+    expect(body).toContain("E2");
+  });
+
+  it("ends with the what-to-run-next footer using the injected version", () => {
+    const body = renderPrComment(scanResult([]), { version: "0.5.0" });
+    expect(body).toContain("**What to run next:**");
+    expect(body).toContain("```bash");
+    expect(body).toContain("npx mjolnir-qa@0.5.0 .");
+    expect(body).toContain("--verbose");
+    expect(body).not.toContain("@latest");
+  });
+
+  it("keeps the 25-cap overflow count explicit", () => {
+    const many = Array.from({ length: 30 }, (_, i) => finding({ line: i + 1 }));
+    const body = renderPrComment(scanResult(many));
+    expect(body).toContain("...and 5 more");
   });
 });

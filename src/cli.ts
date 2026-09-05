@@ -1710,7 +1710,12 @@ export async function runPrCommentCommand(
     const result = await runScan({ ...args, target });
     const baseline = loadBaseline(join(target, DEFAULT_BASELINE_PATH));
     const diff = baseline ? diffAgainstBaseline(result, baseline) : undefined;
-    io.out(renderPrComment(result, diff ? { diff } : {}));
+    io.out(
+      renderPrComment(result, {
+        ...(diff ? { diff } : {}),
+        version: CLI_VERSION,
+      }),
+    );
     return 0;
   } catch (err) {
     internalErrorMessage(err, io.err);
