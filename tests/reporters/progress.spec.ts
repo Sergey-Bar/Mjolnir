@@ -107,7 +107,10 @@ describe("render-on-event determinism", () => {
 });
 
 describe("disable matrix (shouldRenderProgress)", () => {
-  const base = { isTTY: true };
+  // Neutral env: CI runners set CI=true/GITHUB_ACTIONS=true for every
+  // process, which would flip every matrix cell — the matrix must be
+  // driven by the env the caller passes, not the ambient one.
+  const base = { isTTY: true, env: {} as NodeJS.ProcessEnv };
 
   it("renders on an interactive TTY", () => {
     expect(shouldRenderProgress(base)).toBe(true);

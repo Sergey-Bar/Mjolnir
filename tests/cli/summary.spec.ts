@@ -42,7 +42,17 @@ afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
 });
 
+const ENV_KEYS = ["GITHUB_ACTIONS", "GITHUB_STEP_SUMMARY", "CI"] as const;
 const savedEnv = new Map<string, string | undefined>();
+beforeEach(() => {
+  // CI runners set CI=true/GITHUB_STEP_SUMMARY for every step; the
+  // tests below pin the documented per-env behavior, so each test
+  // starts from a neutral env and sets only what it declares.
+  for (const k of ENV_KEYS) {
+    savedEnv.set(k, process.env[k]);
+    delete process.env[k];
+  }
+});
 afterEach(() => {
   for (const [k, v] of savedEnv) {
     if (v === undefined) delete process.env[k];

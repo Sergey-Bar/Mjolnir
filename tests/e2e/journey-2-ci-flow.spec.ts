@@ -67,7 +67,13 @@ describe("E2E journey 2: CI PR flow", () => {
     expect(scan.status).toBe(0);
     const reportPath = join(dir, "mjolnir.json");
     writeFileSync(reportPath, scan.stdout);
-    const { stdout, status } = runCli(["summary", "mjolnir.json"], dir);
+    // Neutralize the Actions-runner env: this test pins the documented
+    // "outside GitHub Actions" behavior (summary on stdout, no
+    // annotations); the annotations flow is covered in summary.spec.
+    const { stdout, status } = runCli(["summary", "mjolnir.json"], dir, {
+      GITHUB_ACTIONS: undefined,
+      GITHUB_STEP_SUMMARY: undefined,
+    });
     expect(status).toBe(0);
     // Step summary markdown: score + verdict band + deduction context.
     expect(stdout).toContain("Verification Trust");
