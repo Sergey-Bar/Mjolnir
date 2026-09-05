@@ -9,6 +9,115 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — Terminal + CI UX Overhaul (plan 1788579907109)
+
+### Added
+
+- **Design-system core** (`src/reporter/ui.ts`): one canonical visual
+  language — `▚ TITLE` section headers (ASCII fallback `= TITLE`),
+  `✗/⚠/ℹ` severity icons (ASCII `X/!/i`), rounded panels, 58-glyph
+  dividers, and a dim `$ command` next-step affordance. All
+  subcommand renderers (`baseline`, `debt`, `init`, `doctor`, `fix`,
+  `impact`, `stats`, `handover`, `triage`, `pw-report`, `explain`,
+  `rules-catalog`, `create-rule`, `suppressions`, forensics,
+  selector-health) now render through it; per-renderer `▚▞`/`🔨`/`╔══╗`
+  headers and `╞══╡` tables are gone. `FORCE_COLOR` is honored
+  (chalk convention: `0`/`false`/empty = plain, other values force
+  color even piped, winning over `NO_COLOR`).
+- **`mjolnir help` + per-command help** (`src/commands/help.ts`): the
+  grouped overview (Scan · CI & PRs · Forensics · Maintenance · Meta,
+  copy-pasteable starts, exit-code table, docs link) and
+  `mjolnir help <verb>` / `mjolnir <verb> --help` pages for every
+  registered verb. **Behavior call-out:** `help` now dispatches as a
+  verb BEFORE the scan fall-through — bare `mjolnir help` no longer
+  scans the CWD (it never was a documented behavior); a folder named
+  `help/` is still scanned via `mjolnir ./help`. `--help`/`-h` on the
+  root scan still print usage and exit 10 (frozen contract).
+- **Friendly usage errors** (exit 10 preserved): unknown flags name
+  themselves on stderr, suggest up to three nearest real flags
+  (hand-rolled Levenshtein ≤ 2 — no new dependencies), and point at
+  `mjolnir --help`. The exit-20 crash path says "this is a bug in
+  Mjölnir, not your repo", carries the message, and prints the stack
+  trace only under `--debug`.
+- **Live scan progress** (`src/reporter/progress.ts`): an event-driven
+  stderr line (`Discovering files… → Parsing frameworks… → Running
+rules… → Scoring…`) fed by the new additive `ScanHooks.onProgress`.
+  Render-on-event only — no timers, deterministic under a fake stream.
+  Auto-off when stderr is not a TTY, in machine formats, under
+  `GITHUB_ACTIONS=true`/`CI=true`, or with the new additive
+  `--no-progress` flag. stdout purity and `--json` byte-identity are
+  unchanged.
+- **`mjolnir summary [mjolnir.json]`** (`src/commands/summary.ts` +
+  `src/reporter/github.ts`): reads a saved `--json` report and emits
+  GitHub annotations (only when `GITHUB_ACTIONS=true`, per-finding
+  `::error|warning|notice` with spec-exact `%25/%0D/%0A/%3A/%2C`
+  escaping, messages truncated at ~250 chars) and a step-summary
+  markdown document (score + band, text score bar, dimensions table,
+  collapsible per-severity `<details>` with `Fix:` lines, honesty
+  notice for `partial`/`score:null` reports). `--stdout` forces
+  stdout; `--path-prefix <dir>` re-scopes paths for subdirectory
+  scans. Exit `0` on success — the gate step decides; `10` missing
+  file; `2` invalid JSON.
+- **CI template v2** (`ci install`): the inline `SUMMARY_SCRIPT` step
+  is replaced by `mjolnir summary mjolnir.json`; the gate script is
+  unchanged. v1-generated workflows are still recognized on
+  overwrite-refusal, so `ci install` upgrades stay frictionless. The
+  dogfooded `.github/workflows/mjolnir.yml` and `ci.yml` self-scan use
+  the same command.
+- **PR comment redesign** (`pr-comment`): header
+  `### 🔨 Mjölnir — Verification Trust` with score + band + verdict
+  headline, dimensions mini-table, findings grouped in collapsible
+  `<details>` (errors open, warnings/infos collapsed) with explicit
+  `Fix:` lines and evidence tags, a "what to run next" footer with the
+  pinned `npx mjolnir-qa@<ver>` commands, and the
+  `✨ N pre-existing findings fixed in this PR` callout. Same
+  idempotency marker; same markdown escaping.
+- **Site**: new `site/reference/cli.md` (help, usage errors, summary,
+  progress, `FORCE_COLOR`) in the Reference sidebar.
+
+### Changed
+
+- README output examples and all 22 translations: the `▚▞` header
+  glyph in rendered-output samples is now `▚` (the design-system
+  token). English README is canonical; translation sync dates unchanged
+  (glyph-only diff, advisory parity script).
+- Regenerated committed assets: `assets/readme/terminal-hero.svg`,
+  `demo.svg` (`docs:hero`, `docs:demo`), and the forensics/selector
+  samples (`docs:forensics-samples`).
+
+### Removed
+
+- The hand-rolled `╔══╗`/`▚▞`/`🔨` per-command header styles and the
+  `╞══╡` ASCII tables they wrapped (replaced by the shared `ui.ts`
+  primitives; no CLI surface change).
+
+- **PR comment redesign** (`pr-comment`): header
+  `### 🔨 Mjölnir — Verification Trust` with score + band + verdict
+  headline, dimensions mini-table, findings grouped in collapsible
+  `<details>` (errors open, warnings/infos collapsed) with explicit
+  `Fix:` lines and evidence tags, a "what to run next" footer with the
+  pinned `npx mjolnir-qa@<ver>` commands, and the
+  `✨ N pre-existing findings fixed in this PR` callout. Same
+  idempotency marker; same markdown escaping.
+- **Site**: new `site/reference/cli.md` (help, usage errors, summary,
+  progress, `FORCE_COLOR`) in the Reference sidebar.
+
+### Changed
+
+- README output examples and all 22 translations: the `▚▞` header
+  glyph in rendered-output samples is now `▚` (the design-system
+  token). English README is canonical; translation sync dates unchanged
+  (glyph-only diff, advisory parity script).
+- Regenerated committed assets: `assets/readme/terminal-hero.svg`,
+  `demo.svg` (`docs:hero`, `docs:demo`), and the forensics/selector
+  samples (`docs:forensics-samples`).
+
+### Removed
+
+- The hand-rolled `╔══╗`/`▚▞`/`🔨` per-command header styles and the
+  `╞══╡` ASCII tables they wrapped (replaced by the shared `ui.ts`
+  primitives; no CLI surface change).
+
 ## [0.5.2] — 2026-09-05
 
 ### npm 12 pack-shape repair of the release pipeline

@@ -53,7 +53,7 @@ fails CI if it drifts from what the tool prints.</sub>
 Run `mjolnir explain QA-CI-001` on the first finding above and you get:
 
 ```text
-▚▞ QA-CI-001 — continue-on-error masks a failing verification gate
+▚ QA-CI-001 — continue-on-error masks a failing verification gate
 
 Severity:    error
 Confidence:  high
@@ -362,7 +362,7 @@ An empty repo scores `null`, never a fake 100 — see [Trust model](#trust-model
 The headline metric for Playwright suites — how resilient your locators are:
 
 ```text
-▚▞ SELECTOR HEALTH — e2e/checkout.spec.ts
+▚ SELECTOR HEALTH — e2e/checkout.spec.ts
 
   [█████████████████░░░]  83 / 100
   role/text: 2 · testid: 1 · css-chains: 1 ⚠ · xpath: 0
@@ -384,7 +384,7 @@ mjolnir forensics ./test-results/
 ```
 
 ```text
-▚▞ FLAKINESS LEADERBOARD
+▚ FLAKINESS LEADERBOARD
 
 3 tests · 1 failed · 1 flaky · 1 retried
 

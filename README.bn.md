@@ -62,7 +62,7 @@ npx mjolnir-qa@latest
 পাবেন:
 
 ```text
-▚▞ QA-CI-001 — continue-on-error masks a failing verification gate
+▚ QA-CI-001 — continue-on-error masks a failing verification gate
 
 Severity:    error
 Confidence:  high
@@ -373,7 +373,7 @@ finding কাঠামোগত প্রমাণ; E1 finding সঠিকভ�
 Playwright সুইটের হেডলাইন মেট্রিক — আপনার locator কতটা টেকসই:
 
 ```text
-▚▞ SELECTOR HEALTH — e2e/checkout.spec.ts
+▚ SELECTOR HEALTH — e2e/checkout.spec.ts
 
   [█████████████████░░░]  83 / 100
   role/text: 2 · testid: 1 · css-chains: 1 ⚠ · xpath: 0
@@ -395,7 +395,7 @@ mjolnir forensics ./test-results/
 ```
 
 ```text
-▚▞ FLAKINESS LEADERBOARD
+▚ FLAKINESS LEADERBOARD
 
 3 tests · 1 failed · 1 flaky · 1 retried
 

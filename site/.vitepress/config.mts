@@ -27,6 +27,7 @@ const SIDEBAR = [
   {
     text: "Reference",
     items: [
+      { text: "CLI reference", link: "/reference/cli" },
       { text: "Exit codes & contracts", link: "/reference/exit-codes" },
       { text: "False-positive audit", link: "/reference/fp-audit" },
       { text: "Rule lifecycle", link: "/reference/rule-lifecycle" },
