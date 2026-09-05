@@ -27,10 +27,10 @@ function lineIndexFor(text: string): number[] {
   const cached = lineIndexCache.get(text);
   if (cached) return cached;
   const index = buildLineIndex(text);
+  // Map preserves insertion order — evict the oldest entry. size >= MAX
+  // guarantees an oldest entry exists, so the iterator value is a string.
   if (lineIndexCache.size >= LINE_INDEX_CACHE_MAX) {
-    // Map preserves insertion order — evict the oldest entry.
-    const oldest = lineIndexCache.keys().next().value;
-    if (oldest !== undefined) lineIndexCache.delete(oldest);
+    lineIndexCache.delete(lineIndexCache.keys().next().value as string);
   }
   lineIndexCache.set(text, index);
   return index;
