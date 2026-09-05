@@ -2202,6 +2202,7 @@ export function runPwReportCommand(
  * badge).
  */
 const SUBCOMMANDS: ReadonlySet<string> = new Set([
+  "scan",
   "ci",
   "suppressions",
   "forensics",
@@ -2264,6 +2265,7 @@ export async function main(
   }
   if (argv[0] === "ci" && argv[1] === "install")
     return runCiInstall(argv.slice(2));
+  if (argv[0] === "scan") return runScanCommand(argv.slice(1));
   if (argv[0] === "suppressions") return runSuppressions();
   if (argv[0] === "forensics") return runForensicsCommand(argv.slice(1));
   if (argv[0] === "triage") return runTriageCommand(argv.slice(1));
