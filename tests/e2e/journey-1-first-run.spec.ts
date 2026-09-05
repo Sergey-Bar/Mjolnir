@@ -185,9 +185,9 @@ describe("E2E journey 1: first run from the packed tarball", () => {
     );
   });
 
-  it("--help prints the usage banner (pinned contract: exit 10, stdout)", () => {
+  it("--help prints the usage banner (audit S8: help is a query → exit 0, stdout)", () => {
     const { stdout, status } = runMjolnir(["--help"]);
-    expect(status).toBe(10); // the CLI's frozen usage contract
+    expect(status).toBe(0); // help answers a question — success, not usage error
     expect(stdout).toContain("Usage: mjolnir");
     expect(stdout).toContain("scan");
   });

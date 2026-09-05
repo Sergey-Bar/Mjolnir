@@ -139,15 +139,28 @@ export function createScanCache(root: string): ScanCache {
   const file = join(dir, `scan-v${CACHE_VERSION}.json`);
   let entries: Record<string, CacheEntry> = {};
   let dirty = false;
+  // Audit M5: incremental byte accounting. entryBytes caches each
+  // entry's serialized size; totalBytes is the running sum (bounded by
+  // MAX_TOTAL_BYTES before persist). Updated incrementally on
+  // store/lookup-refresh/evict — never by re-stringifying the cache.
+  const entryBytes = new Map<string, number>();
+  let totalBytes = 0;
   try {
     if (existsSync(file)) {
       const parsed = JSON.parse(readFileSync(file, "utf8")) as CacheFile;
       if (parsed?.version === CACHE_VERSION && parsed.entries) {
         entries = parsed.entries;
+        for (const [k, v] of Object.entries(entries)) {
+          const size = JSON.stringify(v).length + k.length + 4;
+          entryBytes.set(k, size);
+          totalBytes += size;
+        }
       }
     }
   } catch {
     entries = {}; // corrupt cache = cold cache; the scan stays honest
+    entryBytes.clear();
+    totalBytes = 0;
   }
 
   return {
@@ -175,26 +188,27 @@ export function createScanCache(root: string): ScanCache {
       if (fileBudgetExceeded) return;
       // Audit M5: refresh on re-store (same file scanned twice in one
       // process — e.g. library consumers) must not duplicate its slot.
+      const replacedBytes = entryBytes.get(key) ?? 0;
       delete entries[key];
+      const entryJson = JSON.stringify(findings);
       entries[key] = { findings: structuredClone(findings) };
+      const newBytes = entryJson.length + key.length + 4;
+      entryBytes.set(key, newBytes);
+      totalBytes = totalBytes - replacedBytes + newBytes;
       // Evict oldest-by-use until both caps hold. The byte budget is the
       // honest bound: entries are evicted in insertion (= use) order.
-      let keys = Object.keys(entries);
-      let totalBytes = JSON.stringify({
-        version: CACHE_VERSION,
-        entries,
-      }).length;
+      // Bytes are tracked INCREMENTALLY — stringifying the whole cache
+      // per store made 5,000 stores O(n²) (a real timeout in the suite).
+      let count = Object.keys(entries).length;
       while (
-        (keys.length > MAX_ENTRIES || totalBytes > MAX_TOTAL_BYTES) &&
-        keys.length > 1
+        (count > MAX_ENTRIES || totalBytes > MAX_TOTAL_BYTES) &&
+        count > 1
       ) {
-        const oldest = keys[0] as string;
-        const evicted = entries[oldest];
+        const oldest = Object.keys(entries)[0] as string;
+        totalBytes -= entryBytes.get(oldest) ?? 0;
         delete entries[oldest];
-        totalBytes -= evicted
-          ? JSON.stringify(evicted).length + oldest.length + 20
-          : 0;
-        keys = Object.keys(entries);
+        entryBytes.delete(oldest);
+        count--;
       }
       dirty = true;
     },
