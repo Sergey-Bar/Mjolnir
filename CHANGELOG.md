@@ -9,7 +9,9 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
-## [Unreleased] — npm 12 pack-shape repair of the release pipeline
+## [0.5.2] — 2026-09-05
+
+### npm 12 pack-shape repair of the release pipeline
 
 ### Fixed
 
