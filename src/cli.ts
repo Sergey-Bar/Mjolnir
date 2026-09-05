@@ -47,6 +47,7 @@ import { renderSarif } from "./reporter/sarif.js";
 import { renderMermaid } from "./reporter/mermaid.js";
 import { ProgressRenderer, shouldRenderProgress } from "./reporter/progress.js";
 import { runSummaryCommand } from "./commands/summary.js";
+import { runWhyCommand } from "./commands/why.js";
 import { computeChangedScope, filterToChanged } from "./scope/changed.js";
 import { asUniversal } from "./engine/rule-runner.js";
 import { enforceTierPolicy, type Tier } from "./engine/tier-policy.js";
@@ -1946,6 +1947,7 @@ export async function main(
   if (argv[0] === "rules") return runRulesCommand(argv.slice(1));
   if (argv[0] === "explain") return runExplainCommand(argv.slice(1));
   if (argv[0] === "doctor:playwright") return runDoctorPlaywright(argv);
+  if (argv[0] === "why") return runWhyCommand(argv.slice(1), io);
   // `help` must dispatch BEFORE the scan fall-through: an unknown verb
   // becomes a scan target (mjolnir ./help scans a folder named help;
   // bare `mjolnir help` used to scan the CWD as if it were a path).

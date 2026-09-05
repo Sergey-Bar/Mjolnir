@@ -50,7 +50,18 @@ export interface BaselineFile {
   findings: Array<Pick<Finding, "ruleId" | "file" | "message" | "severity">>;
 }
 
-function fingerprint(f: Pick<Finding, "ruleId" | "file" | "message">): string {
+/**
+ * Correlation identity for before/after comparison (agent-handoff plan
+ * §5.2): ruleId + file + message, deliberately EXCLUDING `line` — a
+ * source edit that shifts a finding still correlates. file:line is an
+ * occurrence location, not a durable identity; message rewording,
+ * file renames and rule-id changes correlate as resolved+new
+ * (documented limitation). Exported for the handoff verification
+ * contract — do not duplicate this algorithm.
+ */
+export function fingerprint(
+  f: Pick<Finding, "ruleId" | "file" | "message">,
+): string {
   return `${f.ruleId}\u0000${f.file}\u0000${f.message}`;
 }
 

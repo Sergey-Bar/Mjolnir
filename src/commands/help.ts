@@ -129,6 +129,15 @@ export const HELP_ENTRIES: HelpEntry[] = [
     examples: ["mjolnir init"],
   },
   {
+    verb: "why",
+    summary: "why did Mjölnir flag <file>:<line>? evidence + fix (not a gate)",
+    usage: "mjolnir why <file>:<line> [path] [--json <mjolnir.json>]",
+    examples: [
+      "mjolnir why e2e/a.spec.ts:3",
+      "mjolnir why e2e/a.spec.ts:3 --json mjolnir.json",
+    ],
+  },
+  {
     verb: "explain",
     summary: "what/why/fix + measured FP rate for one rule",
     usage: "mjolnir explain <RULE-ID> [--fixtures-root <dir>]",
@@ -259,7 +268,7 @@ const GROUPS: Array<{ title: string; verbs: string[] }> = [
       "create-rule",
     ],
   },
-  { title: "Meta", verbs: ["rules", "explain"] },
+  { title: "Meta", verbs: ["rules", "explain", "why"] },
 ];
 
 const SCAN_SUMMARY_LINES: string[] = [
