@@ -101,7 +101,9 @@ describe("buildUniversalRules — local rule tier lands in tierByRuleId", () => 
       join(d, "mjolnir-rules", "tiered.mjs"),
       "export const rules = [{ id: 'QA-ACME-301', title: 'T', category: 'QA-TEST', severity: 'info', confidence: 'high', findingType: 'deterministic-defect', qaImpact: 'HYGIENE', appliesTo: 'test-files', tier: 'extended', run: () => [] }];\n",
     );
-    const result = await buildUniversalRules(d);
+    const result = await buildUniversalRules(d, undefined, {
+      enablePlugins: true,
+    });
     expect(result.externalRules.some((r) => r.id === "QA-ACME-301")).toBe(true);
     expect(result.tierByRuleId.get("QA-ACME-301")).toBe("extended");
     // And it is NOT filtered out by the non-strict quarantine filter.
@@ -116,11 +118,13 @@ describe("buildUniversalRules — local rule tier lands in tierByRuleId", () => 
       join(d, "mjolnir-rules", "quar.mjs"),
       "export const rules = [{ id: 'QA-ACME-302', title: 'Q', category: 'QA-TEST', severity: 'info', confidence: 'high', findingType: 'deterministic-defect', qaImpact: 'HYGIENE', appliesTo: 'test-files', tier: 'quarantine', run: () => [] }];\n",
     );
-    const result = await buildUniversalRules(d);
+    const result = await buildUniversalRules(d, undefined, {
+      enablePlugins: true,
+    });
     expect(result.tierByRuleId.get("QA-ACME-302")).toBe("quarantine");
     expect(result.rules.some((r) => r.id === "QA-ACME-302")).toBe(false);
     // --strict keeps it.
-    const strict = await buildUniversalRules(d, true);
+    const strict = await buildUniversalRules(d, true, { enablePlugins: true });
     expect(strict.rules.some((r) => r.id === "QA-ACME-302")).toBe(true);
   });
 
@@ -132,7 +136,9 @@ describe("buildUniversalRules — local rule tier lands in tierByRuleId", () => 
       join(d, "mjolnir-rules", "notier.mjs"),
       "export const rules = [{ id: 'QA-ACME-303', title: 'N', category: 'QA-TEST', severity: 'info', confidence: 'high', findingType: 'deterministic-defect', qaImpact: 'HYGIENE', appliesTo: 'test-files', run: () => [] }];\n",
     );
-    const result = await buildUniversalRules(d);
+    const result = await buildUniversalRules(d, undefined, {
+      enablePlugins: true,
+    });
     // tier is undefined → the if at L177 is not taken → no map entry,
     // and the rule is kept (not filtered as quarantine).
     expect(result.tierByRuleId.has("QA-ACME-303")).toBe(false);
@@ -607,7 +613,7 @@ describe("local-rules L119 — the module-file branch of the loader loop", () =>
       join(d, "mjolnir-rules", "only.mjs"),
       "export const rules = [{ id: 'QA-ACME-401', title: 'M', category: 'QA-TEST', severity: 'info', confidence: 'high', findingType: 'deterministic-defect', qaImpact: 'HYGIENE', appliesTo: 'test-files', run: () => [] }];\n",
     );
-    const { rules } = await loadLocalRules(d);
+    const { rules } = await loadLocalRules(d, true);
     expect(rules.map((r) => r.id)).toContain("QA-ACME-401");
   });
 
@@ -620,7 +626,7 @@ describe("local-rules L119 — the module-file branch of the loader loop", () =>
     );
     // README.md takes neither branch of the loader loop.
     writeFileSync(join(d, "mjolnir-rules", "README.md"), "docs\n");
-    const { rules } = await loadLocalRules(d);
+    const { rules } = await loadLocalRules(d, true);
     expect(rules.map((r) => r.id)).toContain("QA-ACME-402");
   });
 });

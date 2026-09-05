@@ -56,6 +56,10 @@ export function deductionFor(finding: Finding): number {
 
 export function computeDimensions(findings: Finding[]): DimensionScore[] {
   const byCategory = new Map<RuleCategory, DimensionScore>();
+  // Audit M5: single pass. The deduction used to be recomputed in a
+  // SECOND loop per category — O(categories × findings) — and every
+  // pass re-derived the evidence level. One pass accumulates both.
+  const deductions = new Map<RuleCategory, number>();
   for (const f of findings) {
     let dim = byCategory.get(f.category);
     if (!dim) {
@@ -67,18 +71,18 @@ export function computeDimensions(findings: Finding[]): DimensionScore[] {
         infos: 0,
       };
       byCategory.set(f.category, dim);
+      deductions.set(f.category, 0);
     }
     if (f.severity === "error") dim.errors++;
     else if (f.severity === "warning") dim.warnings++;
     else dim.infos++;
+    deductions.set(
+      f.category,
+      (deductions.get(f.category) ?? 0) + deductionFor(f),
+    );
   }
   for (const dim of byCategory.values()) {
-    let deduction = 0;
-    for (const f of findings) {
-      if (f.category !== dim.category) continue;
-      deduction += deductionFor(f);
-    }
-    dim.score = Math.max(0, 100 - deduction);
+    dim.score = Math.max(0, 100 - (deductions.get(dim.category) ?? 0));
   }
   return [...byCategory.values()].sort((a, b) =>
     a.category.localeCompare(b.category),
@@ -147,7 +151,14 @@ export function computeTotal(
   exposure?: ExposureMetrics | number,
 ): number {
   if (findings.length === 0) return 100;
-  const totalDeduction = findings.reduce((sum, f) => sum + deductionFor(f), 0);
+  // Audit M5: one reduce with a NaN guard — a deduction constant that
+  // ever became NaN (or a hostile override) must render as 0-charged,
+  // never NaN the whole score.
+  let totalDeduction = 0;
+  for (const f of findings) {
+    const d = deductionFor(f);
+    if (Number.isFinite(d)) totalDeduction += d;
+  }
 
   // A number is accepted for backward compatibility with callers that only
   // have a file count; it is treated as a declaration estimate.

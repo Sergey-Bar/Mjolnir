@@ -402,10 +402,18 @@ describe("exit-20 mapping: non-Error throwables render via String()", () => {
 });
 
 describe("unknown config errors propagate (exit-20 path stays honest)", () => {
-  it("suppressions rethrows non-ConfigValidationError errors", () => {
+  it("suppressions maps non-ConfigValidationError errors to exit 20 (audit S8: contained, never rethrown)", () => {
     throwOnce(loadConfig, ERR);
     process.chdir(dir);
-    expect(() => runSuppressions({ out: () => {} })).toThrow("boom-err");
+    const errLines: string[] = [];
+    // Audit C3: the sink is variadic — join all parts so the cause is
+    // actually captured by the test harness too.
+    const code = runSuppressions({
+      out: () => {},
+      err: (...m: unknown[]) => errLines.push(m.map(String).join(" ")),
+    });
+    expect(code).toBe(20);
+    expect(errLines.join("\n")).toContain("boom-err");
   });
 
   it("scan maps a generic non-Error config failure to exit 20", async () => {

@@ -23,7 +23,7 @@ afterEach(() => {
 
 describe("loadPlugins", () => {
   it("returns empty when no config exists", () => {
-    const result = loadPlugins(ROOT);
+    const result = loadPlugins(ROOT, true);
     expect(result.plugins).toHaveLength(0);
     expect(result.errors).toHaveLength(0);
   });
@@ -34,7 +34,7 @@ describe("loadPlugins", () => {
       join(ROOT, "mjolnir.config.json"),
       JSON.stringify({ gate: "advisory" }),
     );
-    const result = loadPlugins(ROOT);
+    const result = loadPlugins(ROOT, true);
     expect(result.plugins).toHaveLength(0);
     expect(result.errors).toHaveLength(0);
   });
@@ -42,7 +42,7 @@ describe("loadPlugins", () => {
   it("reports an error for a package that cannot be resolved", () => {
     mkdirSync(ROOT, { recursive: true });
     writeConfig(["qa-doctor-plugin-does-not-exist"]);
-    const result = loadPlugins(ROOT);
+    const result = loadPlugins(ROOT, true);
     expect(result.plugins).toHaveLength(0);
     expect(result.errors[0]).toContain("failed to load");
   });
@@ -61,7 +61,7 @@ describe("loadPlugins", () => {
       `exports.rules = [{ id: "QA-PW-999", run: () => [] }];`,
     );
     writeConfig(["./bad-plugin"]);
-    const result = loadPlugins(ROOT);
+    const result = loadPlugins(ROOT, true);
     expect(result.plugins).toHaveLength(1);
     expect(result.plugins[0]?.rules).toHaveLength(0);
     expect(result.errors[0]).toContain("reserved core prefix");
@@ -90,7 +90,7 @@ describe("loadPlugins", () => {
       }];`,
     );
     writeConfig(["./good-plugin"]);
-    const result = loadPlugins(ROOT);
+    const result = loadPlugins(ROOT, true);
     expect(result.errors).toHaveLength(0);
     expect(result.plugins).toHaveLength(1);
     expect(result.plugins[0]?.rules).toHaveLength(1);
@@ -101,7 +101,7 @@ describe("loadPlugins", () => {
     mkdirSync(ROOT, { recursive: true });
     writeFileSync(join(ROOT, "mjolnir.config.json"), "{ this is not json");
     expect(() => loadPlugins(ROOT)).not.toThrow();
-    const result = loadPlugins(ROOT);
+    const result = loadPlugins(ROOT, true);
     expect(result.plugins).toHaveLength(0);
     expect(result.errors).toHaveLength(0);
   });
@@ -129,7 +129,7 @@ describe("loadPlugins", () => {
       }];`,
     );
     writeConfig([{ package: "./object-form-plugin", prefix: "QA-OBJ" }]);
-    const result = loadPlugins(ROOT);
+    const result = loadPlugins(ROOT, true);
     expect(result.errors).toHaveLength(0);
     expect(result.plugins).toHaveLength(1);
     expect(result.plugins[0]?.rules[0]?.id).toBe("QA-OBJ-001");
@@ -160,7 +160,7 @@ describe("loadPlugins", () => {
       }];`,
     );
     writeConfig([{ package: "./mismatched-prefix-plugin", prefix: "ACME" }]);
-    const result = loadPlugins(ROOT);
+    const result = loadPlugins(ROOT, true);
     // The plugin object is still listed (convention: degrade honestly),
     // but the offending rule is rejected with a named error.
     expect(result.plugins[0]?.rules).toHaveLength(0);
@@ -191,7 +191,7 @@ describe("loadPlugins", () => {
       }];`,
     );
     writeConfig([{ package: "./matching-prefix-plugin", prefix: "ACME" }]);
-    const result = loadPlugins(ROOT);
+    const result = loadPlugins(ROOT, true);
     expect(result.errors).toHaveLength(0);
     expect(result.plugins).toHaveLength(1);
   });
@@ -199,7 +199,7 @@ describe("loadPlugins", () => {
   it("ignores array entries that are neither strings nor {package} objects", () => {
     mkdirSync(ROOT, { recursive: true });
     writeConfig([42, null, { notPackage: "x" }, true]);
-    const result = loadPlugins(ROOT);
+    const result = loadPlugins(ROOT, true);
     expect(result.plugins).toHaveLength(0);
     expect(result.errors).toHaveLength(0);
   });
@@ -207,7 +207,7 @@ describe("loadPlugins", () => {
   it("ignores a non-array plugins value entirely", () => {
     mkdirSync(ROOT, { recursive: true });
     writeConfig("not-an-array");
-    const result = loadPlugins(ROOT);
+    const result = loadPlugins(ROOT, true);
     expect(result.plugins).toHaveLength(0);
     expect(result.errors).toHaveLength(0);
   });
@@ -222,7 +222,7 @@ describe("loadPlugins", () => {
     );
     writeFileSync(join(pluginDir, "index.js"), `exports.notRules = [];`);
     writeConfig(["./no-rules-plugin"]);
-    const result = loadPlugins(ROOT);
+    const result = loadPlugins(ROOT, true);
     expect(result.plugins).toHaveLength(0);
     expect(result.errors[0]).toContain("exports no `rules` array");
   });
@@ -244,7 +244,7 @@ describe("loadPlugins", () => {
       ];`,
     );
     writeConfig(["./mixed-plugin"]);
-    const result = loadPlugins(ROOT);
+    const result = loadPlugins(ROOT, true);
     expect(result.plugins).toHaveLength(1);
     expect(result.plugins[0]?.rules).toHaveLength(1);
     expect(result.plugins[0]?.rules[0]?.id).toBe("QA-MIX-001");

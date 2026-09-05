@@ -463,7 +463,7 @@ describe("scope/changed per-file diff failures", () => {
     expect(Object.keys(diff.changed)).toContain("a.spec.ts");
   });
 
-  it("degrades to untracked-file-unreadable when the file vanishes before line attribution", () => {
+  it("keeps scope precision when a file vanishes before line attribution (only that file is fully changed)", () => {
     git(["init", "-b", "main"]);
     git(["config", "user.email", "t@t"]);
     git(["config", "user.name", "t"]);
@@ -475,8 +475,11 @@ describe("scope/changed per-file diff failures", () => {
     writeFileSync(vanishing, "it('n', () => {});\n");
     procState.statFailFor = vanishing;
     const diff = computeChangedScope(dir);
-    expect(diff.degraded).toBe(true);
-    expect(diff.reason).toBe("untracked-file-unreadable");
+    // Audit fix (changed.ts): a single unreadable untracked file no
+    // longer degrades the WHOLE scope — that file alone is treated as
+    // fully changed and every other file keeps exact line attribution.
+    expect(diff.degraded).toBe(false);
+    expect(diff.changed["vanishing.spec.ts"]).toBeDefined();
   });
 
   it("degrades to diff-failed when the untracked listing fails", () => {

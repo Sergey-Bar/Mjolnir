@@ -128,15 +128,16 @@ describe("H-3: --max-duration honours the budget in the rule loop", () => {
     for (let i = 0; i < 150; i++) {
       writeFileSync(join(dir, `a${i}.spec.ts`), "it('a', () => {});\n");
     }
-    // Deterministic clock: real time through discovery — runScan calls
-    // Date.now exactly 5 times before the rule loop (scan start + one
-    // walk-entry check per language adapter) — then 60s past the
-    // deadline for every per-file loop check.
+    // Deterministic clock: real time through discovery — with the
+    // shared-walk per-entry deadline checks (audit fix), discovery
+    // consumes exactly 152 Date.now calls for 150 flat files (1 scan
+    // start + 150 walk-entry checks + 1 workflow-adapter probe); every
+    // call after that is the rule loop, 60s past the deadline.
     const realNow = Date.now();
     let calls = 0;
     vi.spyOn(Date, "now").mockImplementation(() => {
       calls++;
-      return calls <= 5 ? realNow : realNow + 60_000;
+      return calls <= 152 ? realNow : realNow + 60_000;
     });
     const result = await runScan(scanArgs(dir, { maxDurationMs: 1000 }));
     expect(result.analysisStatus.rules).toBe("partial");

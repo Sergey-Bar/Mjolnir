@@ -31,6 +31,6 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - run: npx vitest run tests/registry-install.spec.ts
+      - run: npx vitest run tests/integrations/registry-install.spec.ts
         env:
           RUN_REGISTRY_INSTALL_TEST: "1"

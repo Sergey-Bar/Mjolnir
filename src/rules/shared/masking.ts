@@ -69,7 +69,29 @@ export function isInsideEmbeddedCode(ctx: MaskCtx, index: number): boolean {
   const run = enclosingMaskedRun(ctx, index);
   if (!run) return false;
   // Strip the literal's own delimiters before looking for nested ones.
-  const inner = run.replace(/^['"`]/, "").replace(/['"`]$/, "");
+  // Audit masking:72: the edge-strips (`^['"`]` + `['"`]$`) assumed the
+  // run's FIRST and LAST characters are the literal's delimiters — but a
+  // run can BEGIN or END with a nested quote of its own (e.g. the value
+  // `(x)"` inside a single-quoted literal: the run's last char is a
+  // nested `"`, which the end-strip removed, leaving the nested-quote
+  // signal lost and the value misclassified as a plain value). Find the
+  // OUTER delimiters within the run instead: the first character that
+  // matches a quote kind and its LAST same-kind occurrence delimit the
+  // literal; anything between them is nested content.
+  const quoteKinds = ["'", '"', "`"] as const;
+  let open = -1;
+  let kind: string | undefined;
+  for (const q of quoteKinds) {
+    const at = run.indexOf(q);
+    if (at !== -1 && (open === -1 || at < open)) {
+      open = at;
+      kind = q;
+    }
+  }
+  if (open === -1 || kind === undefined) return false;
+  const close = run.lastIndexOf(kind);
+  if (close <= open) return false;
+  const inner = run.slice(open + 1, close);
   const hasNestedQuote = /['"`]/.test(inner);
   const hasCallSyntax = /\w\s*\(/.test(inner);
   return hasNestedQuote && hasCallSyntax;

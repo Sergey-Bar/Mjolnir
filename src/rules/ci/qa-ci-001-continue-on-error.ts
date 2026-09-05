@@ -58,6 +58,7 @@ export const continueOnError = defineRule({
 
   // Measured 2026-09-02 (corpus wave 5): tier set from the measured envelope (plan §11.2).
   tier: "quarantine",
+  detectorRevision: 2,
   run(ctx) {
     const findings: Omit<
       import("../../types.js").Finding,
@@ -133,25 +134,50 @@ function describeStep(step: StepNode, index: number): string {
  * name/run/uses text and take the next `continue-on-error:` at or after it.
  * The previous implementation matched the first occurrence in the whole file,
  * which reported every step-level finding on the same line.
+ *
+ * Audit S5: the raw-literal match after the anchor is now null-checked —
+ * a `continue-on-error: true` whose textual form was already consumed by
+ * an EARLIER step's search window (or reformatted across lines) made
+ * `re.exec()` return null and the non-null assertion threw a TypeError,
+ * crashing the rule into crash-isolation: the finding was silently
+ * DROPPED. The fix: widen the backward window to the enclosing list item
+ * (the step block's `- ` marker), and when no raw literal follows the
+ * anchor, fall back to the anchor's own line — an approximate line on a
+ * reported finding beats a dropped finding.
  */
 function locateStepContinueOnError(text: string, step: StepNode): number {
   // Called only for gate steps (run or uses — see stepIsVerificationGate),
   // so the anchor is always defined.
   const anchor = (step.name ?? step.uses ?? step.run?.split("\n")[0]) as string;
+  const trimmed = anchor.trim();
+  let anchorAt = -1;
+  if (trimmed !== "") anchorAt = text.indexOf(trimmed);
+  // Audit S5: the search window starts at THIS step's enclosing list
+  // item — the LAST `- ` marker (any indentation) before the anchor —
+  // so a preceding step's `continue-on-error:` can never be matched.
+  // A step's key may also be listed BEFORE its run/uses line (mapping
+  // keys are unordered in YAML), which the window now covers.
   let searchFrom = 0;
-  const at = text.indexOf(anchor.trim());
-  if (at !== -1) {
-    // Step list markers are always indented in workflow YAML, so a raw
-    // "\n- " boundary never exists; a bounded backwards window from the
-    // anchor is the practical step-block start.
-    searchFrom = Math.max(0, at - 200);
+  if (anchorAt !== -1) {
+    const windowStart = Math.max(0, anchorAt - 200);
+    const itemRe = /\n[ \t]*- /g;
+    const before = text.slice(0, anchorAt);
+    let blockStart = -1;
+    let mm: RegExpExecArray | null;
+    while ((mm = itemRe.exec(before)) !== null) {
+      blockStart = mm.index;
+    }
+    searchFrom = blockStart > windowStart ? blockStart : windowStart;
   }
   const re = /continue-on-error:\s*true/g;
   re.lastIndex = searchFrom;
-  // A parsed `true` (YAML 1.2 core schema only accepts lowercase `true`)
-  // always carries a raw `continue-on-error: true` match.
-  const m = re.exec(text) as RegExpExecArray;
-  return lineOf(text, m.index);
+  const m = re.exec(text);
+  if (m) return lineOf(text, m.index);
+  // Audit S5 fallback: no raw literal after the anchor — report on the
+  // anchor's own line instead of crashing and dropping the finding.
+  if (anchorAt !== -1) return lineOf(text, anchorAt);
+  const jobLevel = /continue-on-error:\s*true/.exec(text);
+  return jobLevel ? lineOf(text, jobLevel.index) : 1;
 }
 
 function findLine(text: string, re: RegExp): number {

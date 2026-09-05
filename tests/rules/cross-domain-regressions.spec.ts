@@ -268,29 +268,23 @@ describe("QA-5: unparseable suppression `expires` is a usage error, not NaN sile
 });
 
 describe("QA-6: the documented 90-day suppression default is enforced", () => {
-  it("a no-expiry entry with a stale config mtime is inactive", () => {
+  it("a no-expiry entry is active regardless of config mtime (audit S4: mtime anchor dropped)", () => {
     mkdirSync(dir, { recursive: true });
     const configPath = join(dir, "mjolnir.config.json");
     writeFileSync(
       configPath,
       JSON.stringify({ ignore: [{ ruleId: "QA-TEST-004", reason: "r" }] }),
     );
+    // Even a config untouched for 91 days no longer expires the entry —
+    // the mtime anchor let ANY edit (or `touch`) extend suppressions
+    // forever. Expiry is the explicit `expires` date alone; the report
+    // labels the no-expiry state honestly.
     const old = new Date(Date.now() - 91 * 86_400_000);
     utimesSync(configPath, old, old);
     const report = loadSuppressions(dir);
-    expect(report.entries[0]?.status).toBe("expired");
-  });
-
-  it("a no-expiry entry with a fresh config mtime is active — and labeled", () => {
-    mkdirSync(dir, { recursive: true });
-    writeFileSync(
-      join(dir, "mjolnir.config.json"),
-      JSON.stringify({ ignore: [{ ruleId: "QA-TEST-004", reason: "r" }] }),
-    );
-    const report = loadSuppressions(dir);
     expect(report.entries[0]?.status).toBe("active");
     expect(renderSuppressions(report)).toContain(
-      "no expiry set — 90-day default from config mtime",
+      "no expiry set — active until an explicit expires date is added",
     );
   });
 
@@ -326,7 +320,7 @@ describe("QA-7: plugin reserved-prefix rejection is case-insensitive", () => {
         join(root, "mjolnir.config.json"),
         JSON.stringify({ plugins: ["./spoof-plugin"] }),
       );
-      const result = loadPlugins(root);
+      const result = loadPlugins(root, true);
       expect(result.plugins[0]?.rules).toHaveLength(0);
       expect(result.errors[0]).toContain("reserved core prefix");
     } finally {

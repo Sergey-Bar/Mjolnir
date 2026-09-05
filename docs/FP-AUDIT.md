@@ -25,7 +25,7 @@ happen to have been sampled.
 
 | Rule ID      | FP Rate | 95% Wilson CI    | Sample (n) | TP  | FP  | UNSURE | detectorRev | Status        |
 | ------------ | ------- | ---------------- | ---------- | --- | --- | ------ | ----------- | ------------- |
-| QA-CI-001    | 32%     | [0.1536, 0.5399] | 19         | 13  | 6   | 0      | 1           | 🔴 quarantine |
+| QA-CI-001    | 32%     | [0.1536, 0.5399] | 19         | 13  | 6   | 0      | 2           | ❓ unmeasured |
 | QA-CI-002    | 19%     | [0.0659, 0.4301] | 16         | 13  | 3   | 0      | 1           | ⚠️ extended   |
 | QA-CI-005    | 82%     | [0.5897, 0.9381] | 17         | 3   | 14  | 0      | 1           | 🔴 quarantine |
 | QA-CI-007    | 27%     | [0.0975, 0.5656] | 11         | 8   | 3   | 0      | 1           | ⚠️ extended   |

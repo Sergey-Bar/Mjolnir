@@ -38,6 +38,11 @@ export const pyNoAssertions = defineRule({
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
+    // Audit M5: dynamic identifier regexes are cached per rule module —
+    // the same test names recur across every file in a suite (and across
+    // scans in one process), so recompiling `new RegExp(name)` per
+    // function is pure waste.
+    const refReCache = new Map<string, RegExp>();
     if (!ctx.path.endsWith(".py")) return findings;
 
     // Find `def test_*():` bodies and check for assert/pytest.raises.
@@ -74,8 +79,12 @@ export const pyNoAssertions = defineRule({
         // a list, awaited as a coroutine) is test DATA — e.g. pytester
         // scripts whose collected assertion lives in the parent test.
         const name = m[2] as string;
-        // eslint-disable-next-line security/detect-non-literal-regexp -- name is a test_\w+ identifier captured by fnRe — no regex metacharacters
-        const refRe = new RegExp(`\\b${name}\\b`, "g");
+        let refRe = refReCache.get(name);
+        if (refRe === undefined) {
+          // eslint-disable-next-line security/detect-non-literal-regexp -- name is a test_\w+ identifier captured by fnRe — no regex metacharacters
+          refRe = new RegExp(`\\b${name}\\b`, "g");
+          refReCache.set(name, refRe);
+        }
         let refs = 0;
         while (refRe.exec(text) !== null) {
           refs++;

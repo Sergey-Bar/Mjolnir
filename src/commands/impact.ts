@@ -66,9 +66,14 @@ export interface ImpactReport {
   unknownFacts: string[];
 }
 
+// Audit S1: git resolves to an ABSOLUTE path from PATH only — a
+// checked-in git.exe/bat/cmd in a scanned (untrusted) repo must never
+// hijack Mjölnir's own git invocations.
+import { resolveGitPath } from "../scope/git-resolve.js";
+
 function git(root: string, args: string[]): string | null {
   try {
-    return execFileSync("git", ["-C", root, ...args], {
+    return execFileSync(resolveGitPath() ?? "git", ["-C", root, ...args], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],
       timeout: 30_000,
@@ -81,7 +86,7 @@ function git(root: string, args: string[]): string | null {
 /** Like git(), but returns the raw bytes — no utf8 decode round-trip. */
 function gitBuffer(root: string, args: string[]): Buffer | null {
   try {
-    return execFileSync("git", ["-C", root, ...args], {
+    return execFileSync(resolveGitPath() ?? "git", ["-C", root, ...args], {
       // "buffer" makes stdout a Buffer: base blobs are written byte-exact,
       // so non-UTF8 files compare honestly (bug-audit M9).
       encoding: "buffer",

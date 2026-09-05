@@ -204,7 +204,7 @@ describe("mjolnir doctor self-audit", () => {
       checks: [{ name: "registry-sanity", ok: true, details: [] }],
       healthy: true,
     });
-    expect(text).toContain("✓ registry-sanity");
+    expect(text).toContain(`✓ registry-sanity`);
     expect(text).toContain("WORTHY");
   });
 
@@ -214,7 +214,7 @@ describe("mjolnir doctor self-audit", () => {
       checks: [{ name: "fixture-firewall", ok: false, details }],
       healthy: false,
     });
-    expect(text).toContain("✗ fixture-firewall");
+    expect(text).toContain(`✗ fixture-firewall`);
     expect(text).toContain("problem #0");
     expect(text).toContain("problem #19");
     expect(text).not.toContain("problem #20");

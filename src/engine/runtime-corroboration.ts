@@ -100,11 +100,33 @@ export function stampRuntimeCorroboration(
  * single-test-file case. Claiming a specific test without range
  * knowledge would fabricate precision the report does not carry.
  */
+/**
+ * The test whose declaration span contains `line`. Playwright JSON
+ * verdicts carry the spec's declaration line: the containing test is
+ * the one with the greatest declaration line ≤ the finding's line in
+ * the same file (specs are flat within a file). When the report cannot
+ * place lines (JUnit, or some verdicts lack them) the only HONEST
+ * claim is file-level corroboration — plus the unambiguous
+ * single-test-file case. Claiming a specific test without range
+ * knowledge would fabricate precision the report does not carry.
+ *
+ * Audit W8: "the finding line falls inside the verdict's span" is now
+ * enforced literally. A verdict WITHOUT a line can never be a test-level
+ * match — the old single-verdict shortcut returned `verdicts[0]`
+ * unconditionally, so a one-test JUnit report claimed test-level
+ * corroboration (and could upgrade to L4/L5) for a finding anywhere in
+ * the file, including helpers the run never placed inside that test.
+ */
 function findContainingTest(
   verdicts: TestVerdict[],
   line: number,
 ): TestVerdict | undefined {
-  if (verdicts.length === 1) return verdicts[0];
+  if (verdicts.length === 1) {
+    const only = verdicts[0] as TestVerdict;
+    // The verdict's span starts at its declaration line; without a line
+    // the span is unknowable — file-level is the honest ceiling.
+    return only.line !== undefined && only.line <= line ? only : undefined;
+  }
   for (const v of verdicts) {
     if (v.line === undefined) return undefined;
   }

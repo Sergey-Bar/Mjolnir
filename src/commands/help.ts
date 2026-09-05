@@ -175,6 +175,10 @@ export const HELP_FLAGS: Array<{ flag: string; summary: string }> = [
   { flag: "--debug", summary: "print swallowed rule crashes" },
   { flag: "--cache", summary: "reuse local per-file verdicts" },
   { flag: "--no-progress", summary: "no live scan-progress line on stderr" },
+  {
+    flag: "--enable-plugins",
+    summary: "allow npm/JS-module rules (default OFF)",
+  },
 ];
 
 export const EXIT_CODE_TABLE: Array<[string, string]> = [
