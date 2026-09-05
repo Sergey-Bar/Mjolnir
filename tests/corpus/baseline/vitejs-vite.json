@@ -3,16 +3,17 @@
     "QA-ENV-001": 6,
     "QA-PW-004": 1,
     "QA-PW-103": 39,
-    "QA-PW-105": 504,
-    "QA-PW-114": 62,
-    "QA-PW-119": 6,
+    "QA-PW-105": 513,
+    "QA-PW-114": 66,
+    "QA-PW-119": 7,
     "QA-PW-120": 7,
-    "QA-PW-145": 38,
+    "QA-PW-145": 39,
+    "QA-PW-146": 117,
     "QA-TEST-002": 5,
     "QA-TEST-003": 39,
-    "QA-TEST-004": 7,
+    "QA-TEST-004": 8,
     "QA-TQUAL-001": 3
   },
-  "totalFindings": 717,
+  "totalFindings": 850,
   "partial": false
 }

@@ -1,0 +1,52 @@
+name: CI
+
+on: [push]
+
+jobs:
+  rust-retry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: nick-fields/retry@v3
+        with:
+          command: cargo test
+
+  go-loop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          max_attempts=5
+          for i in $(seq 1 $max_attempts); do
+            go test ./... && break
+            sleep 5
+          done
+
+  node-until:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          until npm test; do
+            echo "flaky, retrying"
+          done
+
+  dotnet-while:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          while true; do
+            dotnet test && break
+            sleep 10
+          done
+
+  pnpm-loop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          for i in 1 2 3; do
+            pnpm test && break
+            echo retrying
+          done

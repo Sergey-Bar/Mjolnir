@@ -136,23 +136,31 @@ describe("property: parseChangedLines never advances on non-line input (L2 class
     );
   });
 
-  it("header lines and `\\` markers never produce line numbers", () => {
+  it("header lines and `\\` markers after an exhausted hunk never produce line numbers", () => {
     fc.assert(
       fc.property(arbHunk, fc.integer({ min: 1, max: 5 }), ({ body }, n) => {
+        // The hunk's declared new-side count is made EXACT (well-formed
+        // git framing), so the noise lines below genuinely sit OUTSIDE
+        // the hunk. Audit contract (changed.ts): header resets apply
+        // only outside hunks — inside a hunk, a header-looking line is
+        // hunk CONTENT (a source line `++ b/x` renders as `+++ b/x`),
+        // and must be counted, never mistaken for a file header.
+        const newSideCount = body.filter(
+          (l) => l.startsWith("+") || l.startsWith(" "),
+        ).length;
+        const header = `@@ -1,1 +1,${newSideCount} @@`;
         const headerNoise = Array.from(
           { length: n },
           (_, i) => `+++ b/noise${i}.ts`,
         );
         const markerNoise = ["\\ No newline at end of file"];
-        const diff = [
-          "@@ -1,3 +1,3 @@",
-          ...body,
-          ...markerNoise,
-          ...headerNoise,
-        ].join("\n");
+        const diff = [header, ...body, ...markerNoise, ...headerNoise].join(
+          "\n",
+        );
         // The result must equal the result WITHOUT the noise lines:
-        // noise never advances the counter nor adds bogus lines.
-        const clean = ["@@ -1,3 +1,3 @@", ...body].join("\n");
+        // noise beyond the hunk never advances the counter nor adds
+        // bogus lines.
+        const clean = [header, ...body].join("\n");
         expect(parseChangedLines(diff)).toEqual(parseChangedLines(clean));
       }),
       { numRuns: 200 },

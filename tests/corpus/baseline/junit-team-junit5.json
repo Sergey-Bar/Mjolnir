@@ -1,0 +1,9 @@
+{
+  "countsByRule": {
+    "QA-JV-101": 77,
+    "QA-JV-102": 35,
+    "QA-JV-103": 833
+  },
+  "totalFindings": 945,
+  "partial": false
+}

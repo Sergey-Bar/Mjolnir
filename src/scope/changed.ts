@@ -14,11 +14,11 @@
  * locally before committing still sees the change.
  */
 
-import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { LIMITS } from "../discovery/ignores.js";
 import { isKnownTestFile } from "../discovery/scan-adapters.js";
+import { runGit } from "./git-resolve.js";
 import type { Finding } from "../types.js";
 
 export interface ChangedLines {
@@ -31,18 +31,6 @@ export interface DiffResult {
   /** True when git data was unavailable — findings fall back to full files. */
   degraded: boolean;
   reason?: string;
-}
-
-function git(root: string, args: string[]): string | null {
-  try {
-    return execFileSync("git", ["-C", root, ...args], {
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
-      timeout: 15_000,
-    });
-  } catch {
-    return null;
-  }
 }
 
 /** Candidates for the default base branch, in fallback order (H-10). */
@@ -65,7 +53,7 @@ function resolveMergeBase(root: string, baseBranch?: string): string | null {
     // make git itself run an attacker-chosen command. Skip anything that
     // could parse as an option.
     if (candidate.startsWith("-")) continue;
-    const mergeBase = git(root, ["merge-base", "HEAD", candidate])?.trim();
+    const mergeBase = runGit(root, ["merge-base", "HEAD", candidate])?.trim();
     if (mergeBase) return mergeBase;
   }
   return null;
@@ -101,7 +89,7 @@ export function computeChangedScope(
     return { changed: {}, degraded: true, reason: "no-merge-base" };
   }
 
-  const committed = git(root, [
+  const committed = runGit(root, [
     "diff",
     "--name-status",
     "-z",
@@ -116,7 +104,7 @@ export function computeChangedScope(
   // Working tree: staged + unstaged changes vs HEAD, plus untracked
   // files — a local run before `git add`/`git commit` must not report
   // nothing (H-10).
-  const workingTree = git(root, [
+  const workingTree = runGit(root, [
     "diff",
     "--name-status",
     "-z",
@@ -126,7 +114,7 @@ export function computeChangedScope(
   if (workingTree === null) {
     return { changed: {}, degraded: true, reason: "diff-failed" };
   }
-  const untracked = git(root, [
+  const untracked = runGit(root, [
     "ls-files",
     "-z",
     "--others",
@@ -149,27 +137,61 @@ export function computeChangedScope(
   ].sort();
 
   const changed: ChangedLines = {};
+  // Audit M5: batched per-file diffs. The loop used to spawn TWO git
+  // processes per changed file (committed diff + working diff) — a
+  // 2,000-file branch paid 4,000 process spawns, dominating the whole
+  // scan's wall time. One batched `--unified=0` diff for ALL committed
+  // files and one for ALL working-tree files, split per header, pays
+  // exactly two spawns total.
+  const batchDiff = (args: string[], files: string[]): Map<string, string> => {
+    const perFile = new Map<string, string>();
+    if (files.length === 0) return perFile;
+    // Chunk the pathspec list — a 10,000-file branch blows the Windows
+    // ~32K command-line limit in one spawn, and a failed spawn must not
+    // silently become "no lines changed".
+    const CHUNK = 200;
+    for (let start = 0; start < files.length; start += CHUNK) {
+      const chunk = files.slice(start, start + CHUNK);
+      const output = runGit(root, [...args, "--", ...chunk]);
+      if (output === null) continue;
+      // Split per `diff --git` header. parseChangedLines already resets
+      // hunk state on headers, so feeding it whole sections is safe.
+      const sections = output.split("\ndiff --git ");
+      for (const section of sections) {
+        const body = section.startsWith("diff --git ")
+          ? section
+          : `diff --git ${section}`;
+        const pathMatch = /^diff --git a\/.+ b\/(.+)\n/.exec(`${body}\n`);
+        const file = pathMatch?.[1];
+        if (file !== undefined) perFile.set(file, body);
+      }
+    }
+    return perFile;
+  };
+  const committedDiffs = batchDiff(
+    ["diff", "--unified=0", mergeBase, "HEAD"],
+    changedFiles,
+  );
+  const workingDiffs = batchDiff(["diff", "--unified=0", "HEAD"], changedFiles);
   for (const file of changedFiles) {
-    const committedDiff = git(root, [
-      "diff",
-      "--unified=0",
-      mergeBase,
-      "HEAD",
-      "--",
-      file,
-    ]);
-    const workingDiff = git(root, ["diff", "--unified=0", "HEAD", "--", file]);
+    const committedDiff = committedDiffs.get(file);
+    const workingDiff = workingDiffs.get(file);
     const lines = parseChangedLines(
       `${committedDiff ?? ""}\n${workingDiff ?? ""}`,
     );
     if (untrackedSet.has(file)) {
       const all = allLinesOf(root, file);
       if (all === null) {
-        return {
-          changed: {},
-          degraded: true,
-          reason: "untracked-file-unreadable",
-        };
+        // Audit (changed.ts): ONE unreadable/oversized untracked file
+        // degrades only that file — treat it as fully changed (every
+        // line new, the honest superset) and keep walking. The old
+        // early-return degraded the ENTIRE scope to full-file
+        // attribution, silently discarding precise line data for every
+        // other changed file because a single file could not be read.
+        changed[file] = new Set(
+          Array.from({ length: LIMITS_MAX_LINES }, (_, i) => i + 1),
+        );
+        continue;
       }
       for (const l of all) lines.add(l);
     }
@@ -178,6 +200,9 @@ export function computeChangedScope(
 
   return { changed, degraded: false };
 }
+
+/** Sentinel size for "fully changed" — bounded, mirrors LIMITS.maxFileBytes scale. */
+const LIMITS_MAX_LINES = 1_000_000;
 
 /** Every 1-based line number of an untracked file (it is all new). */
 function allLinesOf(root: string, file: string): number[] | null {
@@ -202,6 +227,15 @@ export function parseChangedLines(diff: string): Set<number> {
   // only by accident of the next @@ resetting it.
   let inHunk = false;
   let newCount = 0;
+  // Audit (changed.ts): the header reset applies ONLY outside hunks.
+  // Git never emits file headers mid-hunk, but hunk CONTENT can look
+  // exactly like one: a source line `++ b/x` added by a hunk renders as
+  // `+++ b/x`, and the old unconditional header check abandoned the
+  // hunk mid-stream, dropping every later added line of that hunk.
+  // Inside a hunk with new-side lines still expected, header-looking
+  // lines are consumed as content.
+  const headerRe =
+    /^(?:diff --git |index |old mode |new mode |rename |copy |similarity |dissimilarity |--- |\+\+\+ )/;
   for (const raw of diff.split("\n")) {
     // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
     const hunk = /^@@\s*-\d+(?:,\d+)?\s*\+(\d+)(?:,(\d+))?\s*@/.exec(raw);
@@ -211,20 +245,14 @@ export function parseChangedLines(diff: string): Set<number> {
       inHunk = true;
       continue;
     }
-    // A following file's diff header always resets hunk state — `+++ b/…`
-    // starts with `+` and must never be read as an added line even when
-    // the previous hunk's declared count had a surplus left.
-    if (
-      /^(?:diff --git |index |--- |\+\+\+ |old mode |new mode |rename |copy |similarity |dissimilarity )/.test(
-        raw,
-      )
-    ) {
-      inHunk = false;
+    if (!inHunk || newCount <= 0) {
+      // Outside a hunk (or its new-side lines exhausted): everything is
+      // file-header material — never advances, never adds. A following
+      // file's diff header (`+++ b/…` starts with `+`) must never be
+      // read as an added line.
+      if (headerRe.test(raw)) inHunk = false;
       continue;
     }
-    // Outside a hunk (or its new-side lines exhausted): everything is
-    // file-header material — never advances, never adds.
-    if (!inHunk || newCount <= 0) continue;
     if (raw.startsWith("\\")) continue; // "\ No newline at end of file"
     if (raw.startsWith("+")) {
       lines.add(newLine);

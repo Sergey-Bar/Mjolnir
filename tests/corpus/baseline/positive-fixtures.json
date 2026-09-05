@@ -1,11 +1,12 @@
 {
   "countsByRule": {
-    "QA-CI-001": 10,
-    "QA-CI-002": 11,
-    "QA-CI-005": 2,
-    "QA-CI-007": 7,
-    "QA-CI-009": 5,
-    "QA-CI-010": 5,
+    "QA-CI-001": 16,
+    "QA-CI-002": 14,
+    "QA-CI-005": 22,
+    "QA-CI-007": 10,
+    "QA-CI-008": 9,
+    "QA-CI-009": 10,
+    "QA-CI-010": 9,
     "QA-CS-102": 3,
     "QA-CS-103": 8,
     "QA-CS-104": 3,
@@ -62,6 +63,6 @@
     "QA-TQUAL-009": 2,
     "QA-TQUAL-011": 6
   },
-  "totalFindings": 639,
+  "totalFindings": 689,
   "partial": false
 }

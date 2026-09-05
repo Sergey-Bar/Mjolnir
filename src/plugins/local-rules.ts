@@ -41,22 +41,9 @@ import { pathToFileURL } from "node:url";
 
 import type { QADoctorRule } from "../rules/rule.js";
 import type { Severity } from "../types.js";
+import { RESERVED_PREFIXES, isReservedPrefix } from "./reserved-prefixes.js";
 
-/** Core-owned ID prefixes an external rule may never claim (kept in
- * sync with src/plugins/load.ts — one spoofing-prevention law). */
-export const RESERVED_PREFIXES = [
-  "QA-TEST",
-  "QA-TQUAL",
-  "QA-PW",
-  "QA-CI",
-  "QA-PY",
-  "QA-ENV",
-  "QA-JV",
-  "QA-CS",
-  "QA-CYP",
-  "QA-SE",
-  "QA-PLUGIN",
-] as const;
+export { RESERVED_PREFIXES };
 
 export const LOCAL_RULES_DIR = "mjolnir-rules";
 
@@ -64,6 +51,13 @@ export interface LoadedExternalRules {
   rules: QADoctorRule[];
   /** Human-readable problems; surfaced as scan warnings, never fatal. */
   errors: string[];
+  /**
+   * Audit C2: JS module names that were present but NOT imported because
+   * the plugin trust gate is closed (rendered as the gate notice; the
+   * modules' code never ran). JSON manifests are never skipped — they
+   * execute no code by design.
+   */
+  skipped: string[];
 }
 
 const ALLOWED_CATEGORIES = new Set(["QA-TEST", "QA-TQUAL", "QA-PW", "QA-CI"]);
@@ -95,8 +89,9 @@ function errorMessage(err: unknown): string {
  */
 export async function loadLocalRules(
   root: string,
+  gateOpen = false,
 ): Promise<LoadedExternalRules> {
-  const result: LoadedExternalRules = { rules: [], errors: [] };
+  const result: LoadedExternalRules = { rules: [], errors: [], skipped: [] };
   // FW-LINT-01 residual: the local-rules directory is a fixed name
   // (mjolnir-rules/) under the operator's scan root — not scan data.
 
@@ -121,8 +116,18 @@ export async function loadLocalRules(
   for (const entry of entries.sort()) {
     const path = join(dir, entry);
     if (entry.endsWith(".json")) {
+      // Audit C2: JSON manifests stay declarative-safe — regex patterns
+      // compiled by the engine, zero code execution — so they load
+      // WITHOUT the gate in every mode.
       loadJsonRule(path, result);
     } else if (entry.endsWith(".mjs") || entry.endsWith(".js")) {
+      // Audit C2: a JS module executes with full Node privileges —
+      // behind the gate, always. When the gate is closed the module is
+      // reported as skipped, never imported.
+      if (!gateOpen) {
+        result.skipped.push(`${LOCAL_RULES_DIR}/${entry}`);
+        continue;
+      }
       await loadModuleRules(path, result);
     }
     // Other extensions (README, .ts sources needing a build step) are
@@ -155,7 +160,7 @@ function loadJsonRule(path: string, result: LoadedExternalRules): void {
     result.errors.push(`external rule "${name}" is missing "id" — skipped.`);
     return;
   }
-  if (RESERVED_PREFIXES.some((p) => id.toUpperCase().startsWith(p))) {
+  if (isReservedPrefix(id)) {
     result.errors.push(
       `external rule ${id} uses a reserved core prefix — rejected. Use your own family (e.g. QA-<YOURTEAM>-001).`,
     );
@@ -171,6 +176,25 @@ function loadJsonRule(path: string, result: LoadedExternalRules): void {
       `external rule ${id} must declare a non-empty "patterns" array of regex source strings.`,
     );
     return;
+  }
+  // Audit S2: pattern caps for external regexes — the manifest is
+  // untrusted workspace content. Length and wildcard-count caps bound
+  // compile cost and per-file match cost; the compiled regexes run
+  // synchronously and cannot be interrupted, so the caps are what make
+  // that safe. (Same LIMITS the ignore-pattern compiler enforces.)
+  for (const p of patterns as string[]) {
+    if (p.length > 512) {
+      result.errors.push(
+        `external rule ${id} declares a pattern longer than 512 chars — rejected (bound on sync regex cost).`,
+      );
+      return;
+    }
+    if ((p.match(/[*+?{]/g) ?? []).length > 64) {
+      result.errors.push(
+        `external rule ${id} declares a pattern with more than 64 quantifier/wildcard tokens — rejected (bound on sync regex cost).`,
+      );
+      return;
+    }
   }
   let regexes: RegExp[];
   try {
@@ -270,6 +294,25 @@ function loadJsonRule(path: string, result: LoadedExternalRules): void {
       // The contract is documented in the module header — declarative
       // patterns run against the file as written.
       const view = ctx.text;
+      // Audit M5: precomputed newline offsets — line resolution per
+      // match used to split the whole prefix (`slice(0, index).split`),
+      // O(matches × bytes). With the offset array it is one binary
+      // search per match.
+      const lineStarts = [0];
+      for (let i = 0; i < view.length; i++) {
+        if (view.charCodeAt(i) === 10) lineStarts.push(i + 1);
+      }
+      const lineOf = (index: number): number => {
+        let lo = 0;
+        let hi = lineStarts.length - 1;
+        while (lo < hi) {
+          const mid = (lo + hi + 1) >> 1;
+          const start = lineStarts.at(mid) ?? 0;
+          if (start <= index) lo = mid;
+          else hi = mid - 1;
+        }
+        return lo + 1;
+      };
       const findings: Array<
         Omit<import("../types.js").Finding, "ruleId" | "category">
       > = [];
@@ -284,7 +327,7 @@ function loadJsonRule(path: string, result: LoadedExternalRules): void {
             findingType: "heuristic-risk",
             qaImpact: qaImpact as "HYGIENE",
             file: ctx.path,
-            line: 1 + view.slice(0, m.index).split("\n").length - 1,
+            line: lineOf(m.index),
             column: m.index - (view.lastIndexOf("\n", m.index - 1) + 1) + 1,
             message,
             why,
@@ -330,9 +373,43 @@ async function loadModuleRules(
       continue;
     }
     const ruleId: string = r.id;
-    if (RESERVED_PREFIXES.some((p) => ruleId.toUpperCase().startsWith(p))) {
+    if (isReservedPrefix(ruleId)) {
       result.errors.push(
         `external rule module "${name}" rule ${ruleId} uses a reserved core prefix — rejected. Use your own family.`,
+      );
+      continue;
+    }
+    // Audit (load.ts/local-rules.ts): JS-module rules pass the SAME
+    // field validators as JSON rules — a module was previously trusted
+    // on trust-relevant fields (severity/category/appliesTo/qaImpact)
+    // that the JSON path validates. One trust contract, two transports.
+    if (typeof r.severity !== "string" || !ALLOWED_SEVERITIES.has(r.severity)) {
+      result.errors.push(
+        `external rule module "${name}" rule ${ruleId} declares an invalid "severity" (need error|warning|info) — skipped.`,
+      );
+      continue;
+    }
+    if (typeof r.category !== "string" || !ALLOWED_CATEGORIES.has(r.category)) {
+      result.errors.push(
+        `external rule module "${name}" rule ${ruleId} declares an invalid "category" (need one of ${[...ALLOWED_CATEGORIES].join("|")}) — skipped.`,
+      );
+      continue;
+    }
+    if (
+      typeof r.appliesTo !== "string" ||
+      !ALLOWED_APPLIES_TO.has(r.appliesTo)
+    ) {
+      result.errors.push(
+        `external rule module "${name}" rule ${ruleId} declares an invalid "appliesTo" (need one of ${[...ALLOWED_APPLIES_TO].join("|")}) — skipped.`,
+      );
+      continue;
+    }
+    if (
+      r.qaImpact !== undefined &&
+      (typeof r.qaImpact !== "string" || !ALLOWED_QA_IMPACTS.has(r.qaImpact))
+    ) {
+      result.errors.push(
+        `external rule module "${name}" rule ${ruleId} declares an invalid "qaImpact" — skipped.`,
       );
       continue;
     }

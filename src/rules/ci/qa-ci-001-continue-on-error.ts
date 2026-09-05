@@ -17,8 +17,10 @@ interface JobNode {
 }
 interface StepNode {
   name?: string;
+  id?: string;
   run?: string;
   uses?: string;
+  if?: string;
   "continue-on-error"?: boolean | string;
 }
 
@@ -36,6 +38,57 @@ function stepIsVerificationGate(step: StepNode): boolean {
     return /playwright|cypress|codecov\/codecov-action/i.test(step.uses);
   }
   return false;
+}
+
+/**
+ * detectorRevision 2 (M2, 2026-09-04): legitimate continue-on-error shapes
+ * the rev-1 detector flagged. Each class was proven by adjudication
+ * (docs/FP-AUDIT.md notes, 2026-09-02):
+ * 1. Re-run idiom (appsmith ci-test-playwright.yml): the gate runs under
+ *    continue-on-error ONLY to convert attempt 1 into a non-failing
+ *    outcome so a follow-up step can re-run the SAME gate; the follow-up
+ *    runs unconditionally and its failure fails the job — the gate still
+ *    blocks.
+ * 2. Non-gate shapes that matched the rev-1 run-text regex: report
+ *    aggregation (`test --merge-reports`), test-ID collection, shard
+ *    rebalancing helpers — they execute no verification.
+ * 3. Steps whose `if:`/name explicitly mark them advisory/non-blocking
+ *    inside jobs that run the real gates (vault custom-linter,
+ *    github-docs sync-sdk-docs).
+ */
+const RERUN_OUTCOME_RE =
+  /steps\.[\w-]+\.outcome\s*==\s*['"]?failure['"]?|steps\.[\w-]+\.conclusion\s*==\s*['"]?failure['"]?/;
+
+function jobReRunsTheMaskedGate(
+  steps: StepNode[],
+  maskedIndex: number,
+): boolean {
+  return steps.some((s, i) => {
+    if (i === maskedIndex) return false;
+    const cond = typeof s?.if === "string" ? s.if : "";
+    if (!RERUN_OUTCOME_RE.test(cond)) return false;
+    // The follow-up must itself be a gate (same matcher, sans the masked
+    // step) or re-run the same command text.
+    return stepIsVerificationGate(s);
+  });
+}
+
+/** Explicit advisory/non-verification shapes in run text. */
+const NON_GATE_RUN_RE =
+  /--merge-reports\b|\bmerge-reports\b|\bcollect[- ]only\b|list[- ]tests\b|\brebalance\b/i;
+
+/**
+ * Steps whose own name declares the non-blocking intent (adjudicated FP:
+ * vault code-checker.yml "Check custom linters (non-blocking)" — the
+ * workflow's own vocabulary marks the advisory contract, so the green
+ * check hides nothing the author claimed would gate).
+ */
+const NON_BLOCKING_NAME_RE = /\(\s*non-?blocking\s*\)|\[.*non-?blocking.*\]/i;
+
+function stepIsGateExcludingNonVerification(step: StepNode): boolean {
+  if (step.name && NON_BLOCKING_NAME_RE.test(step.name)) return false;
+  if (step.run && NON_GATE_RUN_RE.test(step.run)) return false;
+  return stepIsVerificationGate(step);
 }
 
 export const continueOnError = defineRule({
@@ -56,8 +109,11 @@ export const continueOnError = defineRule({
   detectionNotes: "parsed YAML + test-command gate",
   introduced: "0.1.0",
 
-  // Measured 2026-09-02 (corpus wave 5): tier set from the measured envelope (plan §11.2).
+  // Measured (corpus wave 5): tier set from the measured envelope (plan §11.2).
+  // detectorRevision 2 (M2, 2026-09-04): re-run idiom + non-gate shapes
+  // excluded after adjudication. Rev-1 measurement invalidated per §07.
   tier: "quarantine",
+  detectorRevision: 2,
   run(ctx) {
     const findings: Omit<
       import("../../types.js").Finding,
@@ -74,7 +130,7 @@ export const continueOnError = defineRule({
       // Job-level continue-on-error masks EVERY step in the job, so it only
       // constitutes a false-green if at least one of those steps is a gate.
       if (job && job["continue-on-error"] === true) {
-        if (steps.some(stepIsVerificationGate)) {
+        if (steps.some(stepIsGateExcludingNonVerification)) {
           findings.push({
             severity: "error",
             confidence: "high",
@@ -100,7 +156,11 @@ export const continueOnError = defineRule({
         // best-effort engineering (artifact upload, badge generation,
         // advisory reports) — their failure loses information, it does not
         // hide a failed check.
-        if (!stepIsVerificationGate(step)) continue;
+        if (!stepIsGateExcludingNonVerification(step)) continue;
+        // Re-run idiom: the masked step is attempt 1 of a deliberate
+        // two-attempt pattern whose follow-up re-runs the gate and fails
+        // the job on failure — the gate still blocks (adjudicated FP).
+        if (jobReRunsTheMaskedGate(steps, i)) continue;
         findings.push({
           severity: "error",
           confidence: "high",
@@ -133,25 +193,50 @@ function describeStep(step: StepNode, index: number): string {
  * name/run/uses text and take the next `continue-on-error:` at or after it.
  * The previous implementation matched the first occurrence in the whole file,
  * which reported every step-level finding on the same line.
+ *
+ * Audit S5: the raw-literal match after the anchor is now null-checked —
+ * a `continue-on-error: true` whose textual form was already consumed by
+ * an EARLIER step's search window (or reformatted across lines) made
+ * `re.exec()` return null and the non-null assertion threw a TypeError,
+ * crashing the rule into crash-isolation: the finding was silently
+ * DROPPED. The fix: widen the backward window to the enclosing list item
+ * (the step block's `- ` marker), and when no raw literal follows the
+ * anchor, fall back to the anchor's own line — an approximate line on a
+ * reported finding beats a dropped finding.
  */
 function locateStepContinueOnError(text: string, step: StepNode): number {
   // Called only for gate steps (run or uses — see stepIsVerificationGate),
   // so the anchor is always defined.
   const anchor = (step.name ?? step.uses ?? step.run?.split("\n")[0]) as string;
+  const trimmed = anchor.trim();
+  let anchorAt = -1;
+  if (trimmed !== "") anchorAt = text.indexOf(trimmed);
+  // Audit S5: the search window starts at THIS step's enclosing list
+  // item — the LAST `- ` marker (any indentation) before the anchor —
+  // so a preceding step's `continue-on-error:` can never be matched.
+  // A step's key may also be listed BEFORE its run/uses line (mapping
+  // keys are unordered in YAML), which the window now covers.
   let searchFrom = 0;
-  const at = text.indexOf(anchor.trim());
-  if (at !== -1) {
-    // Step list markers are always indented in workflow YAML, so a raw
-    // "\n- " boundary never exists; a bounded backwards window from the
-    // anchor is the practical step-block start.
-    searchFrom = Math.max(0, at - 200);
+  if (anchorAt !== -1) {
+    const windowStart = Math.max(0, anchorAt - 200);
+    const itemRe = /\n[ \t]*- /g;
+    const before = text.slice(0, anchorAt);
+    let blockStart = -1;
+    let mm: RegExpExecArray | null;
+    while ((mm = itemRe.exec(before)) !== null) {
+      blockStart = mm.index;
+    }
+    searchFrom = blockStart > windowStart ? blockStart : windowStart;
   }
   const re = /continue-on-error:\s*true/g;
   re.lastIndex = searchFrom;
-  // A parsed `true` (YAML 1.2 core schema only accepts lowercase `true`)
-  // always carries a raw `continue-on-error: true` match.
-  const m = re.exec(text) as RegExpExecArray;
-  return lineOf(text, m.index);
+  const m = re.exec(text);
+  if (m) return lineOf(text, m.index);
+  // Audit S5 fallback: no raw literal after the anchor — report on the
+  // anchor's own line instead of crashing and dropping the finding.
+  if (anchorAt !== -1) return lineOf(text, anchorAt);
+  const jobLevel = /continue-on-error:\s*true/.exec(text);
+  return jobLevel ? lineOf(text, jobLevel.index) : 1;
 }
 
 function findLine(text: string, re: RegExp): number {

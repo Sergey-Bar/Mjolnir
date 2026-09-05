@@ -225,15 +225,14 @@ export function extractQaModel(file: ParsedFile): QaSemanticModel | undefined {
   if (file.path.endsWith(".cs")) return extractCSharpModel(file);
   if (file.path.endsWith(".py")) return extractPythonModel(file);
   if (/\.[cm]?[jt]sx?$/.test(file.path)) {
-    // ts-morph's in-memory project cannot fail on a real scanned path
-    // (it is error-tolerant; empty text parses to an empty source
-    // file) — the undefined-seam is exercised only by java/csharp
-    // trees above.
-    // ts-morph's in-memory project cannot fail on a real scanned path
-    // (it is error-tolerant; empty text parses to an empty source
-    // file) — the undefined-seam is exercised only by java/csharp
-    // trees above. A failed parse means "no model", never a crash.
-    return extractTsModel(file, parseTsFile(file) as SourceFile);
+    // Audit W4: honor parseTsFile's undefined contract. ts-morph is
+    // error-tolerant on real scanned paths, but the contract is
+    // `SourceFile | undefined` — asserting otherwise fed `undefined`
+    // straight into extractTsModel. A failed parse means "no model",
+    // never a crash.
+    const sf = parseTsFile(file);
+    if (!sf) return undefined;
+    return extractTsModel(file, sf);
   }
   return undefined;
 }
@@ -312,7 +311,10 @@ function extractJavaModel(file: ParsedFile): QaSemanticModel | undefined {
     if (!modifiers || modifiers.type !== "modifiers") continue;
     const body = decl.childForFieldName("body");
     if (!body) continue;
-    const nameNode = decl.childForFieldName("name") as TsNode;
+    // Audit W4: the name field is not guaranteed by the grammar on every
+    // declaration shape — null-guard instead of asserting non-null.
+    const nameNode = decl.childForFieldName("name");
+    if (!nameNode) continue;
     for (const annotation of javaAnnotationNames(modifiers)) {
       if (JAVA_HOOK_ANNOTATIONS.has(annotation)) {
         let concept: QaConcept = "setup";
@@ -391,14 +393,18 @@ function extractCSharpModel(file: ParsedFile): QaSemanticModel | undefined {
   ) as TsNode[]) {
     const body = decl.childForFieldName("body");
     if (!body) continue;
-    const nameNode = decl.childForFieldName("name") as TsNode;
+    // Audit W4: null-guards instead of unchecked assertions — a
+    // declaration without a name node, or an attribute without a name
+    // field, is skipped, never dereferenced.
+    const nameNode = decl.childForFieldName("name");
+    if (!nameNode) continue;
     let attr: string | undefined;
     for (const child of decl.children) {
       if (child?.type !== "attribute_list") continue;
       for (const grand of child.children) {
         if (grand?.type !== "attribute") continue;
-        // The attribute grammar always carries a name field.
-        const attrName = grand.childForFieldName("name") as TsNode;
+        const attrName = grand.childForFieldName("name");
+        if (!attrName) continue;
         let last: string | undefined;
         for (const part of attrName.children) {
           if (part?.type === "identifier") last = part.text;
@@ -440,10 +446,12 @@ function extractCSharpModel(file: ParsedFile): QaSemanticModel | undefined {
       (c) => c?.type === "object_creation_expression",
     );
     if (!creation) continue;
-    // Every object_creation_expression in the C# grammar carries a
-    // type field (verified against real parses) — the cast trusts the
-    // shape; a rethrow is filtered by the `creation` guard above.
-    const typeName = (creation.childForFieldName("type") as TsNode).text;
+    // Audit W4: the type field is optional in the grammar contract —
+    // null-guard instead of asserting non-null; a shape without one is
+    // not an assertion-exception throw.
+    const typeNode = creation.childForFieldName("type");
+    if (!typeNode) continue;
+    const typeName = typeNode.text;
     if (/assert/i.test(typeName) && /exception/i.test(typeName)) {
       nodes.push({
         concept: "assertion",

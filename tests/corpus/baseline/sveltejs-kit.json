@@ -14,11 +14,12 @@
     "QA-PW-122": 25,
     "QA-PW-143": 25,
     "QA-PW-145": 11,
+    "QA-PW-146": 409,
     "QA-TEST-002": 38,
     "QA-TEST-003": 62,
     "QA-TEST-004": 10,
     "QA-TQUAL-001": 24
   },
-  "totalFindings": 1219,
+  "totalFindings": 1628,
   "partial": false
 }

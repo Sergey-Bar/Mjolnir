@@ -170,7 +170,7 @@ describe("local-rules round 3", () => {
       join(d, "mjolnir-rules", "throw-string.mjs"),
       "throw 'a string error';\n",
     );
-    const { errors } = await loadLocalRules(d);
+    const { errors } = await loadLocalRules(d, true);
     expect(errors[0]).toContain("failed to load");
     expect(errors[0]).toContain("a string error");
   });
@@ -190,14 +190,14 @@ describe("local-rules round 3", () => {
         qaImpact: "HYGIENE",
       }),
     );
-    const { rules } = await loadLocalRules(d);
+    const { rules } = await loadLocalRules(d, true);
     expect(rules[0]?.confidence).toBe("low");
     // And the .mjs arm of the loader loop: a JS module next to the JSON.
     writeFileSync(
       join(d, "mjolnir-rules", "m.js"),
       "export const rules = [{ id: 'QA-ACME-211', title: 'Js', category: 'QA-TEST', severity: 'info', confidence: 'high', findingType: 'deterministic-defect', qaImpact: 'HYGIENE', appliesTo: 'test-files', run: () => [] }];\n",
     );
-    const again = await loadLocalRules(d);
+    const again = await loadLocalRules(d, true);
     expect(again.rules.map((r) => r.id)).toContain("QA-ACME-211");
   });
 });
@@ -310,34 +310,29 @@ describe("renderRuleDocsIndexMd — default-arg arm", () => {
   });
 });
 
-// ─── config: isSuppressionActive anchor arm ─────────────────────────
+// ─── config: isSuppressionActive arms (audit S4: no mtime anchor) ────
 
-describe("isSuppressionActive — now/anchor arms", () => {
-  it("an expired entry (no anchor) is inactive", () => {
+describe("isSuppressionActive — expiry is the explicit date alone (S4)", () => {
+  it("an expired entry is inactive", () => {
     expect(
       isSuppressionActive({ ruleId: "R", reason: "r", expires: "2020-01-01" }),
     ).toBe(false);
   });
 
-  it("an active entry (no anchor, no expiry) is active", () => {
+  it("an active entry with a future expiry is active", () => {
+    expect(
+      isSuppressionActive({ ruleId: "R", reason: "r", expires: "2030-01-01" }),
+    ).toBe(true);
+  });
+
+  it("an entry with no expiry stays active (labeled, not mtime-anchored)", () => {
     expect(isSuppressionActive({ ruleId: "R", reason: "r" })).toBe(true);
   });
 
-  it("an anchored expiry in the past is inactive; future is active", () => {
+  it("an entry with an unparseable expiry is inactive (fail-closed)", () => {
     expect(
-      isSuppressionActive(
-        { ruleId: "R", reason: "r", expires: "2020-01-01" },
-        undefined,
-        new Date("2021-06-01"),
-      ),
+      isSuppressionActive({ ruleId: "R", reason: "r", expires: "garbage" }),
     ).toBe(false);
-    expect(
-      isSuppressionActive(
-        { ruleId: "R", reason: "r", expires: "2030-01-01" },
-        undefined,
-        new Date("2021-06-01"),
-      ),
-    ).toBe(true);
   });
 });
 

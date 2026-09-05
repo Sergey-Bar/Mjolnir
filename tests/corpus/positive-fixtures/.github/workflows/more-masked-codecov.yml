@@ -1,0 +1,46 @@
+name: Release checks
+
+on: [push]
+
+jobs:
+  release-suite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      - run: npm test
+      - uses: codecov/codecov-action@v4
+
+  docs-only:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: mkdocs build
+      - uses: codecov/codecov-action@v4
+
+  nightly-artifact:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: make build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/lcov.info
+
+  lint-only:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm run lint
+      - uses: coverallsapp/github-action@v2
+
+  packaging:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pnpm build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: coverage/

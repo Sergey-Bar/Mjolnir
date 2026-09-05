@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  schedule:
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - run: npm test
+
+  e2e-non-draft:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
+    steps:
+      - run: npx playwright test
+
+  pr-and-push:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    steps:
+      - run: pytest
+
+  labeled-or-push:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event.label.name == 'run-ci'
+    steps:
+      - run: vitest run
+
+  internal-prs:
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false
+    steps:
+      - run: go test ./...

@@ -54,6 +54,7 @@ describe("adapter→reporter matrix (one fixture, four surfaces)", () => {
       scopeChanged: false,
       format: "json",
       strict: true,
+      enablePlugins: true,
     });
     const finding = scan.findings.find((f) => f.ruleId === "QA-TEST-001");
     expect(finding).toBeDefined();
@@ -107,6 +108,7 @@ describe("adapter→reporter matrix (one fixture, four surfaces)", () => {
       scopeChanged: false,
       format: "json",
       strict: true,
+      enablePlugins: true,
     });
     const pyFinding = scan.findings.find((f) => f.ruleId.startsWith("QA-PY-"));
     expect(pyFinding).toBeDefined();
@@ -164,6 +166,7 @@ describe("plugin flow integration", () => {
       scopeChanged: false,
       format: "json",
       strict: true,
+      enablePlugins: true,
     });
     const acme = scan.findings.find((f) => f.ruleId === "QA-ACME-001");
     expect(acme).toBeDefined();
@@ -205,6 +208,7 @@ describe("plugin flow integration", () => {
       scopeChanged: false,
       format: "json",
       strict: true,
+      enablePlugins: true,
     });
     const hmjack = scan.findings.find((f) => f.ruleId === "QA-TEST-777");
     expect(hmjack).toBeUndefined(); // rejected — never regmstered
@@ -263,6 +267,7 @@ describe("monorepo containment", () => {
       scopeChanged: false,
       format: "json",
       strict: true,
+      enablePlugins: true,
     });
     const files = new Set(appScan.findings.map((f) => f.file));
     for (const f of files) expect(f.startsWith("lmb")).toBe(false);
@@ -361,6 +366,7 @@ describe("upgrade/compat sioke: baseline forward compatmbmlmty", () => {
       scopeChanged: false,
       format: "json",
       strict: true,
+      enablePlugins: true,
     });
     const baselineFmle = JSON.parse(before) as {
       findings: Array<Record<string, unknown>>;

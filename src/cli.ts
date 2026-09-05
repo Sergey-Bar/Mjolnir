@@ -5,13 +5,7 @@
  * 10 usage error · 20 internal error.
  */
 
-import {
-  existsSync,
-  readFileSync,
-  realpathSync,
-  statSync,
-  writeFileSync,
-} from "node:fs";
+import { existsSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { join, dirname, relative, resolve, sep } from "node:path";
 import process from "node:process";
@@ -120,6 +114,13 @@ import {
 import { loadPlugins } from "./plugins/load.js";
 import { loadLocalRules, LOCAL_RULES_DIR } from "./plugins/local-rules.js";
 import {
+  pluginsGateOpen,
+  renderGateNotice,
+  type SkippedRuleSource,
+} from "./plugins/trust-gate.js";
+import { resolveGitPath } from "./scope/git-resolve.js";
+import { writeFileAtomic } from "./lib/fs-atomic.js";
+import {
   computeSelectorHealth,
   renderSelectorHealth,
 } from "./playwright/selector-health.js";
@@ -161,9 +162,19 @@ const OVERLAP_META_BY_RULE_ID: ReadonlyMap<string, OverlapMeta> = new Map(
 // core findings always win dedup by running first.
 // Plan §18 (Local Extensibility): workspace-local `mjolnir-rules/` files
 // load alongside npm plugins — folder-based, zero network.
+// Audit C2 (locked decision): code-executing rule sources (npm plugins,
+// JS modules) load ONLY behind the plugin trust gate (--enable-plugins /
+// MJOLNIR_ENABLE_PLUGINS=1, default OFF). JSON manifests stay
+// declarative-safe and load without the gate.
 export async function buildUniversalRules(
   root: string,
   strict?: boolean,
+  opts: {
+    /** CLI trust-gate flag (`--enable-plugins`) for this scan. */
+    enablePlugins?: boolean;
+    /** Called with the gate notice when code sources were skipped. */
+    onGateNotice?: (notice: string) => void;
+  } = {},
 ): Promise<{
   rules: UniversalRule[];
   pluginErrors: string[];
@@ -171,8 +182,23 @@ export async function buildUniversalRules(
   pluginMeta: Array<{ name: string; rules: number }>;
   externalRules: QADoctorRule[];
 }> {
-  const { plugins, errors } = loadPlugins(root);
-  const local = await loadLocalRules(root);
+  const gateOpen = pluginsGateOpen(opts.enablePlugins);
+  const { plugins, errors, skipped } = loadPlugins(root, gateOpen);
+  const local = await loadLocalRules(root, gateOpen);
+  // Audit C2: when rule sources are present but the gate is off, say so
+  // loudly on stderr — a silent boundary looks like a bug, not a policy.
+  if (!gateOpen && opts.onGateNotice) {
+    const skippedSources: SkippedRuleSource[] = [
+      ...skipped.map((name) => ({
+        kind: "plugin-package" as const,
+        name,
+      })),
+      ...local.skipped.map((name) => ({ kind: "js-module" as const, name })),
+    ];
+    if (skippedSources.length > 0) {
+      opts.onGateNotice(renderGateNotice(skippedSources));
+    }
+  }
   const allErrors = [...errors, ...local.errors];
   const externalRules = [
     ...plugins.map((p) => ({ name: p.name, rules: p.rules })),
@@ -272,6 +298,13 @@ interface CliArgs {
    * and auto-disabled in CI/machine formats; this flag is the manual off.
    */
   noProgress?: boolean;
+  /**
+   * Audit C2: --enable-plugins opens the plugin trust gate for THIS
+   * invocation — npm-plugin and JS-module rule sources may load (and
+   * execute). Default OFF; MJOLNIR_ENABLE_PLUGINS=1 is the env
+   * equivalent. JSON rule manifests are unaffected (no code by design).
+   */
+  enablePlugins?: boolean;
 }
 
 /** A usage-error detail: the offending token, when one exists. */
@@ -347,6 +380,10 @@ export function parseArgs(
       args.cache = true;
     } else if (a === "--no-progress") {
       args.noProgress = true;
+    } else if (a === "--enable-plugins") {
+      // Audit C2: opt-in code execution for plugin/JS-module rule
+      // sources. Additive flag, accepted by every verb that loads rules.
+      args.enablePlugins = true;
     } else if (a === "--help" || a === "-h") {
       return null;
     } else if (!a.startsWith("-")) {
@@ -475,6 +512,13 @@ export interface ScanHooks {
     total?: number | undefined;
     detail?: string | undefined;
   }) => void;
+  /**
+   * Audit C2: invoked when code-executing rule sources were skipped
+   * because the plugin trust gate is closed. Default (no hook): the
+   * gate notice is written straight to stderr — loud in every verb,
+   * never on the stdout machine contracts.
+   */
+  onGateNotice?: (notice: string) => void;
 }
 
 /**
@@ -510,6 +554,12 @@ export async function runScan(
   const deadline = started + args.maxDurationMs;
   // package.json workspace OR non-JS repo (Python etc.) — fall back to the
   // target dir itself so language adapters can still discover their files.
+  // Audit S3: the explicit scan target is the anchor. Config,
+  // .mjolnirignore, plugins, and local rules resolve from the target or
+  // ABOVE the target only when the target sits inside the discovered
+  // project — never from an unrelated ancestor of the CWD. Concretely:
+  // `mjolnir scan C:\other\repo` while CWD is a hostile checkout of our
+  // own monorepo must not read the hostile repo's mjolnir.config.json.
   const discovered = discoverWorkspace(args.target);
   const targetAbs = resolve(args.target);
   // Scope containment: when the user targets a subdirectory of the
@@ -522,6 +572,13 @@ export async function runScan(
       ? { ...discovered, root: targetAbs }
       : (discovered ?? fallbackWorkspace(targetAbs));
   const workspace = scanRoot;
+  // Audit S3: verbose mode states the resolved root — operators can SEE
+  // which config/ignore anchor the scan is honoring.
+  if (args.verbose) {
+    hooks.onConfigWarning?.(
+      `verbose: scan root (config/ignore anchor): ${workspace.root}`,
+    );
+  }
   const findings: Finding[] = [];
   let skippedFiles = 0;
   let testFileCount = 0;
@@ -548,7 +605,16 @@ export async function runScan(
     pluginErrors,
     tierByRuleId: tiers,
     pluginMeta,
-  } = await buildUniversalRules(workspace.root, args.strict);
+  } = await buildUniversalRules(workspace.root, args.strict, {
+    ...(args.enablePlugins !== undefined
+      ? { enablePlugins: args.enablePlugins }
+      : {}),
+    // Audit C2: default destination is stderr — the notice must be loud
+    // in every verb and never contaminate the stdout machine contracts
+    // (--json/--format sarif/mermaid).
+    onGateNotice: (notice) =>
+      hooks.onGateNotice ? hooks.onGateNotice(notice) : err(notice),
+  });
   const tierByRuleId = tiers;
   const pluginsLoaded = pluginMeta;
   // M5.2 (A-2): local content-addressed cache. Opened BEFORE the rules
@@ -672,12 +738,38 @@ export async function runScan(
       });
     }
     // M5.2: content-addressed cache lookup — the key covers the file's
-    // exact post-normalization bytes and the active rule set (ids +
-    // detectorRevisions + run-source hashes), so a hit reproduces the
-    // rule-loop output for this file byte-for-byte. Denominators and
-    // provenance above stay live: a cached scan must count identically
-    // to a fresh one.
-    const cacheKey = fileCacheKey(rulesDigest, text);
+    // exact post-normalization bytes, the active rule set (ids +
+    // detectorRevisions + run-source hashes), and the file's own
+    // identity (rel path + adapter id + parse mode — audit C1/W9), so a
+    // hit reproduces the rule-loop output for THIS file byte-for-byte
+    // and a regex-fallback verdict can never be served as an AST one.
+    // Denominators and provenance above stay live: a cached scan must
+    // count identically to a fresh one.
+    const adapter = isWorkflow
+      ? githubActionsAdapter
+      : isPython
+        ? pythonAdapter
+        : isJava
+          ? javaAdapter
+          : isCs
+            ? csharpAdapter
+            : typescriptAdapter;
+    // Parse-mode token, decided BEFORE the lookup from what this scan
+    // intends: AST when the adapter has a parse hook and the deadline
+    // allows it, regex otherwise. After the parse below, the ACTUAL mode
+    // is re-derived — a fallback (parse returned nothing) re-keys the
+    // lookup/store so fallback verdicts land under the fallback token.
+    const wantsAst = adapter.parseAst !== undefined && Date.now() <= deadline;
+    const identity = (mode: "ast" | "regex") => ({
+      relPath,
+      adapterId: adapter.id,
+      parseMode: mode,
+    });
+    let cacheKey = fileCacheKey(
+      rulesDigest,
+      text,
+      identity(wantsAst ? "ast" : "regex"),
+    );
     const cachedFindings = cache.lookup(cacheKey);
     if (cachedFindings) {
       for (const f of cachedFindings) findings.push(f);
@@ -689,15 +781,6 @@ export async function runScan(
       total: ctx.testFiles.length,
       detail: relPath,
     });
-    const adapter = isWorkflow
-      ? githubActionsAdapter
-      : isPython
-        ? pythonAdapter
-        : isJava
-          ? javaAdapter
-          : isCs
-            ? csharpAdapter
-            : typescriptAdapter;
     // Phase 0.5 parse stage (§10): discovery and rule execution stay
     // where they were; the awaited parse sits between them. `runRules`
     // and rules remain synchronous and consume `file.ast`. Every
@@ -709,7 +792,7 @@ export async function runScan(
     let parsed: ParsedAst | undefined;
     const findingsStart = findings.length;
     try {
-      if (adapter.parseAst && Date.now() <= deadline) {
+      if (adapter.parseAst && wantsAst) {
         hooks.onProgress?.({
           phase: "rules",
           done: scanned,
@@ -718,6 +801,19 @@ export async function runScan(
         });
         parsed = await adapter.parseAst(parsedFile);
       }
+      // Audit W9: the actual mode — a parse hook that returned nothing
+      // (grammar unavailable, parser declined) means the rules ran on
+      // the regex path, and the verdicts must be stored/looked-up as
+      // such, never merged with AST-mode entries.
+      const actualMode: "ast" | "regex" = parsed ? "ast" : "regex";
+      if (wantsAst && actualMode === "regex") {
+        cacheKey = fileCacheKey(rulesDigest, text, identity(actualMode));
+        const fallbackFindings = cache.lookup(cacheKey);
+        if (fallbackFindings) {
+          for (const f of fallbackFindings) findings.push(f);
+          continue;
+        }
+      }
       const fileForRules: ParsedFile = parsed
         ? { ...parsedFile, ast: parsed.ast }
         : parsedFile;
@@ -725,6 +821,22 @@ export async function runScan(
         activeRules,
         fileForRules,
         (f, ruleId, category) => {
+          // Audit W10: the rule→Finding boundary is validated at
+          // runtime. Internal rules are typed, but plugin/JSON-manifest
+          // rules are external data — a malformed record (missing
+          // severity/line/message, or a severity outside the enum) is
+          // routed to the crash channel with a diagnostic instead of
+          // being silently scored.
+          if (!isValidFindingRecord(f)) {
+            ctx.onRuleCrash?.(
+              ruleId,
+              relPath,
+              new Error(
+                `malformed finding record rejected (severity/line/message must be present, severity ∈ error|warning|info): ${JSON.stringify(f)}`,
+              ),
+            );
+            return;
+          }
           findings.push({ ...f, ruleId, category } as Finding);
         },
         // Audit R-9: rule crashes stay isolated but are counted and
@@ -942,8 +1054,16 @@ export async function runScan(
 
 export type Output = (...parts: unknown[]) => void;
 
-const out: Output = (line) => console.log(line);
-const err: Output = (line) => console.error(line);
+// Audit C3: true variadic sinks. The one-arg signatures silently DROPPED
+// every argument after the first — `io.err("mjolnir internal error:", msg)`
+// printed only the prefix, losing the actual error. Join with spaces so
+// multi-arg calls render as one readable line on the default consoles.
+// Exported for contract tests (audit C3): the default sinks must stay
+// variadic — a narrowing back to one-arg signatures is a regression.
+export const out: Output = (...parts) =>
+  console.log(parts.map(String).join(" "));
+export const err: Output = (...parts) =>
+  console.error(parts.map(String).join(" "));
 
 // Minimal glob match for suppression `files` patterns, with gitignore
 // `**` semantics (bug-audit M5). Supports:
@@ -1062,7 +1182,13 @@ export function runSuppressions(
       (io.err ?? err)(e.message);
       return 10;
     }
-    throw e;
+    // Audit S8: any other throw is contained (catch-to-20) instead of
+    // escaping as an unhandled rejection with a misleading exit 1.
+    (io.err ?? err)(
+      "mjolnir internal error:",
+      e instanceof Error ? e.message : String(e),
+    );
+    return 20;
   }
 }
 
@@ -1104,34 +1230,50 @@ export async function runDoctorPlaywright(
   argv: string[],
   io: { out: Output; err?: Output } = { out },
 ): Promise<number> {
-  const targetArg = argv[1] && !argv[1].startsWith("-") ? argv[1] : ".";
-  const target = resolve(targetArg);
-  const invalid = validateScanTarget(target, io.err ?? err);
-  if (invalid !== null) return invalid;
-  // A resolved absolute path is never flag-like, so parseArgs([target])
-  // is exactly the defaults with target set — constructed directly, since
-  // a null-check here would be a dead branch v8 can never cover.
-  const args: CliArgs = {
-    target,
-    json: false,
-    verbose: false,
-    maxDurationMs: Number.POSITIVE_INFINITY,
-    scopeChanged: false,
-    format: "terminal",
-  };
-  const result = await runScan({ ...args, target });
-  const pwFindings = result.findings.filter((f) => f.category === "QA-PW");
-  io.out(
-    renderTerminal(
-      { ...result, findings: pwFindings },
-      { isTTY: process.stdout.isTTY ?? false, verbose: args.verbose },
-    ),
-  );
+  try {
+    const targetArg = argv[1] && !argv[1].startsWith("-") ? argv[1] : ".";
+    const target = resolve(targetArg);
+    const invalid = validateScanTarget(target, io.err ?? err);
+    if (invalid !== null) return invalid;
+    // A resolved absolute path is never flag-like, so parseArgs([target])
+    // is exactly the defaults with target set — constructed directly, since
+    // a null-check here would be a dead branch v8 can never cover.
+    const args: CliArgs = {
+      target,
+      json: false,
+      verbose: false,
+      maxDurationMs: Number.POSITIVE_INFINITY,
+      scopeChanged: false,
+      format: "terminal",
+      // Audit C2: this verb loads rules, so it honors the gate flag too.
+      enablePlugins: argv.includes("--enable-plugins"),
+    };
+    const result = await runScan({ ...args, target });
+    const pwFindings = result.findings.filter((f) => f.category === "QA-PW");
+    io.out(
+      renderTerminal(
+        { ...result, findings: pwFindings },
+        { isTTY: process.stdout.isTTY ?? false, verbose: args.verbose },
+      ),
+    );
 
-  // Selector Health per spec — same ignore state as the scan (audit R-8).
-  const specs = computeSelectorHealth(target, createIgnoreMatcher(target));
-  io.out(renderSelectorHealth(specs));
-  return 0;
+    // Selector Health per spec — same ignore state as the scan (audit R-8).
+    const specs = computeSelectorHealth(target, createIgnoreMatcher(target));
+    io.out(renderSelectorHealth(specs));
+    return 0;
+  } catch (e) {
+    // Audit S8: contained (catch-to-20) — never an unhandled rejection.
+    // ConfigValidationError keeps the fixable-message exit 10.
+    if (e instanceof ConfigValidationError) {
+      (io.err ?? err)(e.message);
+      return 10;
+    }
+    (io.err ?? err)(
+      "mjolnir internal error:",
+      e instanceof Error ? e.message : String(e),
+    );
+    return 20;
+  }
 }
 
 /** Testable `doctor` handler — self-audit of Mjölnir's own rule base. */
@@ -1219,6 +1361,18 @@ export function runExplainCommand(
     return 10;
   }
   const fixturesRootIdx = argv.indexOf("--fixtures-root");
+  // Audit S8: a dangling `--fixtures-root` is a usage error, not a
+  // silent fall back to the default fixtures directory.
+  if (
+    fixturesRootIdx !== -1 &&
+    (fixturesRootIdx + 1 >= argv.length ||
+      argv[fixturesRootIdx + 1]?.startsWith("--"))
+  ) {
+    io.err(
+      "--fixtures-root requires a value: mjolnir explain <RULE-ID> --fixtures-root <dir>",
+    );
+    return 10;
+  }
   const explicitRoot =
     fixturesRootIdx !== -1 ? argv[fixturesRootIdx + 1] : undefined;
   const fixturesRoot = resolve(
@@ -1304,6 +1458,9 @@ export async function runScanCommand(
       {
         onConfigWarning: (message) => io.err(message),
         onProgress: (e) => progress.onEvent(e),
+        // Audit C2: the gate notice rides the injected io so tests can
+        // capture it and it never pollutes stdout machine contracts.
+        onGateNotice: (notice) => io.err(notice),
         ...(args.debug
           ? {
               onRuleCrash: (ruleId: string, file: string, error: unknown) => {
@@ -1360,8 +1517,13 @@ export async function runScanCommand(
       // WRITE-ONLY under explicit opt-in (audit R-1): a read-only scan
       // must never dirty the scanned repo's working tree. Never printed
       // for --json/--format sarif/mermaid: those are machine contracts.
+      // Audit C5: a PARTIAL scan (truncated by --max-duration, a
+      // discovery cap, or skipped files) must never write the milestone
+      // — "clean so far" is not "clean", and a truncated scan's 100
+      // score proves nothing about the files it never analyzed.
       if (
         args.recordMilestones &&
+        !result.partial &&
         result.score === 100 &&
         result.findings.length === 0
       ) {
@@ -1423,6 +1585,41 @@ export function exitForFindings(
     : 0;
 }
 
+/**
+ * Audit W10 — runtime shape validation at the rule→Finding boundary.
+ * A finding record coming out of a rule (plugin/JSON-manifest rules are
+ * external data, not trusted internal code) must carry the fields the
+ * whole downstream pipeline indexes on: severity within the enum,
+ * integer line ≥ 1, non-empty message, and a file path. Malformed
+ * records are rejected (routed to the crash/plugin-error channel by the
+ * caller) — never silently scored.
+ */
+function isValidFindingRecord(
+  f: unknown,
+): f is Omit<Finding, "ruleId" | "category"> {
+  if (typeof f !== "object" || f === null) return false;
+  const rec = f as Record<string, unknown>;
+  if (
+    rec["severity"] !== "error" &&
+    rec["severity"] !== "warning" &&
+    rec["severity"] !== "info"
+  ) {
+    return false;
+  }
+  if (
+    typeof rec["line"] !== "number" ||
+    !Number.isInteger(rec["line"]) ||
+    rec["line"] < 1
+  ) {
+    return false;
+  }
+  if (typeof rec["message"] !== "string" || rec["message"] === "") {
+    return false;
+  }
+  if (typeof rec["file"] !== "string" || rec["file"] === "") return false;
+  return true;
+}
+
 /** Testable `triage` handler (Tier 5 #22). */
 export function runTriageCommand(
   argv: string[],
@@ -1449,7 +1646,7 @@ export function runTriageCommand(
       const mdPath = statSync(absTarget).isDirectory()
         ? join(absTarget, "TRIAGE.md")
         : join(dirname(absTarget), "TRIAGE.md");
-      writeFileSync(mdPath, renderTriageMd(report));
+      writeFileAtomic(mdPath, renderTriageMd(report));
       io.out(`\nWrote ${mdPath}`);
     }
     // Nothing recognized (e.g. missing dir) → honest no-op, not a crash.
@@ -1480,7 +1677,13 @@ export async function runBadgeCommand(
     const invalid = validateScanTarget(target, io.err);
     if (invalid !== null) return invalid;
     const result = await runScan({ ...args, target });
-    const outPath = writeBadge(result, { outDir: process.cwd() });
+    // Audit (badge): the badge belongs to the SCANNED repo — it stamps
+    // that repo's HEAD commit and lands in the scanned target, not in
+    // whatever directory the user happened to run from.
+    const outPath = writeBadge(result, {
+      outDir: target,
+      commit: currentCommit(target),
+    });
     io.out(`Wrote ${outPath}`);
     io.out("");
     io.out(renderBadgeSnippet(result));
@@ -1570,10 +1773,16 @@ export function runCreateRuleCommand(
 
 function currentCommit(root: string): string {
   try {
-    return execFileSync("git", ["-C", root, "rev-parse", "HEAD"], {
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
-    }).trim();
+    // Audit S1: absolute git path — never resolvable from the scanned
+    // repo's own directory.
+    return execFileSync(
+      resolveGitPath() ?? "git",
+      ["-C", root, "rev-parse", "HEAD"],
+      {
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "ignore"],
+      },
+    ).trim();
   } catch {
     return "unknown";
   }
@@ -1585,6 +1794,15 @@ export async function runImpactCommand(
   io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
   const sinceIdx = argv.indexOf("--since");
+  // Audit S8: a dangling `--since` (no value after it) is a usage error,
+  // not a silent "compare against the default base".
+  if (
+    sinceIdx !== -1 &&
+    (sinceIdx + 1 >= argv.length || argv[sinceIdx + 1]?.startsWith("--"))
+  ) {
+    io.err("--since requires a value: mjolnir impact [--since <ref>]");
+    return 10;
+  }
   const since = sinceIdx !== -1 ? argv[sinceIdx + 1] : undefined;
   const args = parseArgs(
     sinceIdx === -1
@@ -1655,9 +1873,16 @@ export async function runDiffCommand(
     if (invalid !== null) return invalid;
     const result = await runScan({ ...args, target });
     const baselinePath = join(target, DEFAULT_BASELINE_PATH);
-    const baseline = loadBaseline(baselinePath);
+    const baseline = loadBaseline(baselinePath, (w) => io.err(w));
     const diff = diffAgainstBaseline(result, baseline);
     io.out(renderBaselineDiff(diff));
+
+    // Audit C5: a PARTIAL (truncated) scan proves nothing about what was
+    // resolved — the head simply didn't analyze those files. It must not
+    // fold "resolved" findings into all-time stats, must not fire
+    // first-debt-reduction, and must return the partial exit code so CI
+    // never treats a truncated diff as a clean bill.
+    if (result.partial) return 2;
 
     // Fold resolved findings into all-time stats (Task 26) — only when a
     // real comparison happened; establishing a baseline records nothing.
@@ -1711,7 +1936,9 @@ export async function runPrCommentCommand(
     const invalid = validateScanTarget(target, io.err);
     if (invalid !== null) return invalid;
     const result = await runScan({ ...args, target });
-    const baseline = loadBaseline(join(target, DEFAULT_BASELINE_PATH));
+    const baseline = loadBaseline(join(target, DEFAULT_BASELINE_PATH), (w) =>
+      io.err(w),
+    );
     const diff = baseline ? diffAgainstBaseline(result, baseline) : undefined;
     io.out(
       renderPrComment(result, {
@@ -1837,6 +2064,38 @@ export function runPwReportCommand(
   }
 }
 
+/**
+ * Audit S8: the subcommand registry. Every verb name main() dispatches
+ * on lives here — a first token that is neither a registered subcommand
+ * nor an existing path is a TYPO, and a typo must not silently fall
+ * through to a scan of whatever the remaining arguments parse to (the
+ * classic `mjolnir sccan .` accident: exit 0, nothing checked, green
+ * badge).
+ */
+const SUBCOMMANDS: ReadonlySet<string> = new Set([
+  "scan",
+  "ci",
+  "suppressions",
+  "forensics",
+  "triage",
+  "badge",
+  "debt",
+  "impact",
+  "baseline",
+  "diff",
+  "pr-comment",
+  "stats",
+  "fix",
+  "create-rule",
+  "handover",
+  "init",
+  "pw-report",
+  "doctor",
+  "rules",
+  "explain",
+  "doctor:playwright",
+]);
+
 export async function main(
   argv: string[] = process.argv.slice(2),
   io: { out: Output; err: Output } = { out, err },
@@ -1868,6 +2127,7 @@ export async function main(
   }
   if (argv[0] === "ci" && argv[1] === "install")
     return runCiInstall(argv.slice(2));
+  if (argv[0] === "scan") return runScanCommand(argv.slice(1));
   if (argv[0] === "suppressions") return runSuppressions();
   if (argv[0] === "forensics") return runForensicsCommand(argv.slice(1));
   if (argv[0] === "triage") return runTriageCommand(argv.slice(1));
@@ -1892,6 +2152,29 @@ export async function main(
   // becomes a scan target (mjolnir ./help scans a folder named help;
   // bare `mjolnir help` used to scan the CWD as if it were a path).
   if (argv[0] === "help") return runHelpCommand(argv.slice(1), io);
+  // Audit S8: a first token that LOOKS like a verb but is not one is a
+  // typo — reject with usage instead of scanning with the typo dropped.
+  // Bare non-verbs (paths, flags) still mean "scan this".
+  if (SUBCOMMANDS.has(argv[0] ?? "")) {
+    // A known subcommand stem that fell through (e.g. bare `ci` without
+    // `install`) is usage.
+    err(`mjolnir: incomplete or unknown subcommand "${argv[0]}".`);
+    printUsage(out);
+    return 10;
+  }
+  if (
+    argv[0] !== undefined &&
+    argv[0].length > 0 &&
+    !argv[0].startsWith("-") &&
+    !existsSync(argv[0]) &&
+    argv[0].match(/^[a-z][\w:-]*$/i) !== null
+  ) {
+    // Word-like token, not a path that exists, not a flag: the user
+    // almost certainly meant a subcommand. `mjolnir scna` must not scan.
+    err(`mjolnir: unknown subcommand "${argv[0]}".`);
+    err("Run `mjolnir --help` for the verb list, or pass a directory to scan.");
+    return 10;
+  }
   return runScanCommand(argv);
 }
 

@@ -284,13 +284,13 @@ firewall.
 
 ### How much of this is measured
 
-**74 of 99 rules carry a false-positive rate measured against real OSS code** (≥ 10 hand-classified findings each; see
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). The other 19 ship on the author's
+**76 of 99 rules carry a false-positive rate measured against real OSS code** (≥ 10 hand-classified findings each; see
+[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). The other 23 ship on the author's
 estimate. Every scan footer tells you how many of the rules that _fired_
 are measured; `mjolnir rules --unmeasured` lists the ones that aren't;
 every rule's `mjolnir explain` page states its status. We publish the rate
 even when it's ugly — QA-CS-103 audits at 95% and is quarantined for it.
-Growing that 78 is the project's continuing work.
+Growing that number is the project's continuing work.
 
 ### Rule tiers and language maturity
 
@@ -558,10 +558,17 @@ are immutable once shipped and never reused.
   real OSS code ship in the headline tiers (see
   [How much of this is measured](#how-much-of-this-is-measured)); the scan
   footer and `mjolnir rules --unmeasured` tell you which is which.
-- **Plugin trust** — plugins are npm packages declared under `"plugins"`.
-  There is **no sandbox**: plugin code runs with full Node privileges, the
-  same trust model as ESLint or Vitest plugins. Core rule-ID prefixes are
-  reserved and rejected from plugins to prevent spoofing.
+- **Plugin trust & execution gate** — plugins are npm packages declared
+  under `"plugins"`; JS modules live in `mjolnir-rules/*.mjs`. There is
+  **no sandbox**: plugin code runs with full Node privileges, the same
+  trust model as ESLint or Vitest plugins. Because of that, code execution
+  is **opt-in at every scan**: pass `--enable-plugins` (or set
+  `MJOLNIR_ENABLE_PLUGINS=1`) or the sources are NOT loaded — a loud
+  stderr notice lists exactly what was skipped. Scanning untrusted code
+  never executes it. JSON rule manifests (`mjolnir-rules/*.json`) are
+  unaffected: they declare regex patterns and execute no code by design.
+  Core rule-ID prefixes are reserved and rejected from plugins and
+  external rules to prevent spoofing.
 - **Workspace-local external rules** (folder-based, zero network) — a
   `mjolnir-rules/` directory next to the scan target loads custom rules:
   JSON files declare regex patterns (no code executed), `.mjs`/`.js`
