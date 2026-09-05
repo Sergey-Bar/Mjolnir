@@ -21,6 +21,7 @@ import {
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { parseNpmPackJson } from "../helpers/npm-pack-json.js";
 
 const ROOT = resolve(import.meta.dirname, "..", "..");
 
@@ -48,30 +49,15 @@ beforeAll(() => {
         cwd: ROOT,
       },
     ).toString();
-    // npm mixes notices into --json output; scan from the first `[` with
-    // string-aware bracket depth (the package-smoke battle-tested parser).
-    const start = packOut.indexOf("[");
-    let depth = 0;
-    let inStr = false;
-    let end = -1;
-    for (let i = start; i < packOut.length; i++) {
-      const ch = packOut[i];
-      if (inStr) {
-        if (ch === "\\") i++;
-        else if (ch === '"') inStr = false;
-        continue;
-      }
-      if (ch === '"') inStr = true;
-      else if (ch === "[") depth++;
-      else if (ch === "]" && --depth === 0) {
-        end = i + 1;
-        break;
-      }
+    // Shape-tolerant parse (npm ≤ 11 array / npm ≥ 12 object-keyed) with
+    // notice pollution handled — see tests/helpers/npm-pack-json.ts.
+    const packed = parseNpmPackJson(packOut);
+    if (!packed) {
+      throw new Error(
+        `npm pack --json produced no entry with a filename. Raw output:\n${packOut}`,
+      );
     }
-    const packed = JSON.parse(packOut.slice(start, end)) as Array<{
-      filename: string;
-    }>;
-    const tarball = join(workDir, packed[0]?.filename ?? "");
+    const tarball = join(workDir, packed.filename);
     const installDir = join(workDir, "install");
     mkdirSync(installDir, { recursive: true });
     execSync(`npm install "${tarball}" --no-audit --no-fund`, {

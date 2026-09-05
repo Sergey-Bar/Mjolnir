@@ -31,6 +31,7 @@ import {
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { parseNpmPackJson } from "../helpers/npm-pack-json.js";
 
 const ROOT = resolve(import.meta.dirname, "..", "..");
 const RUN = process.env["RUN_REGISTRY_INSTALL_TEST"] === "1";
@@ -53,8 +54,14 @@ beforeAll(() => {
   const packOut = execSync(`npm pack --pack-destination "${workDir}" --json`, {
     cwd: ROOT,
   }).toString();
-  const packResult = (JSON.parse(packOut) as Array<{ filename: string }>)[0];
-  if (!packResult) throw new Error("npm pack produced no output entry");
+  // Shape-tolerant: npm ≤ 11 emits an array, npm ≥ 12 an object keyed
+  // by package name (the change that stopped the v0.5.1 publish).
+  const packResult = parseNpmPackJson(packOut);
+  if (!packResult) {
+    throw new Error(
+      `npm pack --json produced no entry with a filename. Raw output:\n${packOut}`,
+    );
+  }
   const { filename } = packResult;
   const tarball = join(workDir, filename);
 
@@ -76,9 +83,11 @@ beforeAll(() => {
 }, 120_000);
 
 afterAll(() => {
-  if (!RUN) return;
-  rmSync(workDir, { recursive: true, force: true });
-  rmSync(installDir, { recursive: true, force: true });
+  // beforeAll can fail before workDir/installDir are assigned (e.g. a
+  // pack parse failure) — cleanup must not cascade into a second error
+  // that buries the real one.
+  if (workDir) rmSync(workDir, { recursive: true, force: true });
+  if (installDir) rmSync(installDir, { recursive: true, force: true });
 });
 
 describe.runIf(RUN)(
