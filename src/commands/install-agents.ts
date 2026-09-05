@@ -150,15 +150,8 @@ export function planInstall(
   const entries: InstallPlanEntry[] = [];
   for (const s of surfaces) {
     if (s.mode === "append-block") {
-      if (!existsSync(s.file)) {
-        entries.push({
-          action: "create",
-          surface: s.name,
-          file: s.file,
-          content: s.content,
-        });
-        continue;
-      }
+      // AGENTS.md append mode: the surface is only detected when the
+      // file exists, so this arm always merges into existing content.
       const existing = readFileSync(s.file, "utf8");
       if (hasMjolnirMarker(existing)) {
         const merged = mergedBlock(existing, s.content);
@@ -363,15 +356,19 @@ function resolveHookTarget(cwd: string): string {
   const huskyDir = join(cwd, ".husky");
   if (existsSync(huskyDir)) return join(huskyDir, "pre-commit");
   try {
-    const hooksPath = execFileSync("git", [
-      "-C",
-      cwd,
-      "config",
-      "core.hooksPath",
-    ])
+    const hooksPath = execFileSync(
+      "git",
+      ["-C", cwd, "config", "core.hooksPath"],
+      {
+        // An unset key makes git exit non-zero → the catch below treats it
+        // as "no custom hooksPath". (A set-but-empty key also unsets, so
+        // `hooksPath` is always non-empty when this line runs.)
+        stdio: ["ignore", "pipe", "ignore"],
+      },
+    )
       .toString()
       .trim();
-    if (hooksPath.length > 0) return join(cwd, hooksPath, "pre-commit");
+    return join(cwd, hooksPath, "pre-commit");
   } catch {
     /* no custom hooksPath */
   }
@@ -394,19 +391,21 @@ export function planHookInstall(cwd: string): HookPlanEntry {
   if (!existsSync(file)) {
     return { action: "create", file };
   }
-  const existing = readFileSync(file, "utf8");
+  // An existing hook that cannot be read (EISDIR on a path collision,
+  // permission loss, …) is user infrastructure we do not understand →
+  // refuse honestly instead of guessing.
+  let existing: string;
+  try {
+    existing = readFileSync(file, "utf8");
+  } catch {
+    return { action: "refuse", file, reason: "existing hook is unreadable" };
+  }
   if (existing.includes(HOOK_MARKER_OPEN)) {
     return { action: "update", file };
   }
   // A hook managed by husky with a shebang/shebang-less script still
-  // safely accepts an appended non-blocking block IF it has no
-  // `set -e`-guarded early exit; we append and `|| true` the call —
-  // but a hook file we cannot append to (unreadable) refuses.
-  try {
-    readFileSync(file, "utf8");
-  } catch {
-    return { action: "refuse", file, reason: "existing hook is unreadable" };
-  }
+  // safely accepts an appended non-blocking block (the call is `|| true`
+  // so it never blocks); the existing content is preserved verbatim.
   return { action: "append", file };
 }
 

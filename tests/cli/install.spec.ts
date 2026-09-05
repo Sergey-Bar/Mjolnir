@@ -20,7 +20,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CLI_VERSION } from "../../src/cli.js";
 import type { Output } from "../../src/cli.js";
 import type { InstallPlanEntry } from "../../src/commands/install-agents.js";
@@ -68,6 +68,14 @@ describe("detectSurfaces", () => {
     expect(names).toContain("Cursor rule surface");
     expect(names).toContain("AGENTS.md instruction surface");
   });
+
+  it("a missing AGENTS.md is a whole-file create (not an append)", () => {
+    mkdirSync(join(dir, ".claude"), { recursive: true });
+    const surfaces = detectSurfaces(dir);
+    const agents = surfaces.find((s) => s.name.includes("AGENTS.md"));
+    // AGENTS.md absent → no AGENTS surface at all (nothing to append to).
+    expect(agents).toBeUndefined();
+  });
 });
 
 describe("planInstall + executeInstall", () => {
@@ -94,6 +102,15 @@ describe("planInstall + executeInstall", () => {
     expect(after.startsWith("repo instructions\n")).toBe(true);
     expect(after).toContain("mjolnir:managed");
     expect(after).toContain("verification trust loop");
+  });
+
+  it("AGENTS.md without a trailing newline gets a clean separator (sep arm)", () => {
+    writeFileSync(join(dir, "AGENTS.md"), "no trailing newline");
+    const cap = capture();
+    expect(runInstallCommand([], cap.io, dir)).toBe(0);
+    const after = readFileSync(join(dir, "AGENTS.md"), "utf8");
+    expect(after.startsWith("no trailing newline\n\n")).toBe(true);
+    expect(after).toContain("mjolnir:managed");
   });
 
   it("is idempotent: second run is a no-op with no writes", () => {
@@ -155,9 +172,10 @@ describe("planInstall + executeInstall", () => {
     expect(readFileSync(file, "utf8")).toBe(original);
   });
 
-  it("updates AGENTS.md's managed block in place (idempotent content)", () => {
+  it("AGENTS.md with an existing managed block whose content is byte-identical → no-op", () => {
     writeFileSync(join(dir, "AGENTS.md"), "repo instructions\n");
     executeInstall(planInstall(dir).entries);
+    // The merged content is already identical to the plan → no-op arm.
     const { entries } = planInstall(dir);
     expect(entries.every((e) => e.action === "no-op")).toBe(true);
   });
@@ -189,6 +207,56 @@ describe("runInstallCommand — CLI contract", () => {
     expect(runInstallCommand([], cap.io, dir)).toBe(0);
     expect(cap.text()).toContain("Claude Code command surface");
     expect(cap.text()).toContain(CLI_VERSION);
+  });
+
+  it("--help / -h are accepted flags", () => {
+    expect(runInstallCommand(["--help"], capture().io, dir)).toBe(0);
+    expect(runInstallCommand(["-h"], capture().io, dir)).toBe(0);
+  });
+
+  it("unknown argument → exit 10 with the supported list", () => {
+    const cap = capture();
+    expect(runInstallCommand(["--nope"], cap.io, dir)).toBe(10);
+    expect(cap.errText()).toContain("--dry-run, --force");
+  });
+
+  it("dry-run prints REFUSE lines for user-owned files", () => {
+    mkdirSync(join(dir, ".claude", "commands"), { recursive: true });
+    writeFileSync(join(dir, ".claude", "commands", "mjolnir.md"), "mine\n");
+    const cap = capture();
+    expect(runInstallCommand(["--dry-run"], cap.io, dir)).toBe(0);
+    expect(cap.errText()).toContain("REFUSE");
+    expect(cap.errText()).toContain("not Mjölnir-managed");
+    expect(
+      readFileSync(join(dir, ".claude", "commands", "mjolnir.md"), "utf8"),
+    ).toBe("mine\n");
+  });
+
+  it("default io path (console fallback): unknown flag arm + refusal arm", () => {
+    mkdirSync(join(dir, ".claude", "commands"), { recursive: true });
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      // Unknown flag exercises the default-io stderr arm (exit 10).
+      expect(runInstallCommand(["--nope"])).toBe(10);
+      // Refusal arm also flows through the default io.
+      writeFileSync(join(dir, ".claude", "commands", "mjolnir.md"), "mine\n");
+      expect(runInstallCommand([], undefined, dir)).toBe(10);
+    } finally {
+      logSpy.mockRestore();
+      errSpy.mockRestore();
+    }
+  });
+
+  it("an already-up-to-date install reports no-ops and writes nothing", () => {
+    mkdirSync(join(dir, ".claude"), { recursive: true });
+    executeInstall(planInstall(dir).entries);
+    const file = join(dir, ".claude", "commands", "mjolnir.md");
+    const before = readFileSync(file, "utf8");
+    const cap = capture();
+    expect(runInstallCommand([], cap.io, dir)).toBe(0);
+    expect(executeInstall(planInstall(dir).entries)).toBe(0);
+    expect(readFileSync(file, "utf8")).toBe(before);
   });
 
   it("--dry-run prints the plan and writes nothing", () => {

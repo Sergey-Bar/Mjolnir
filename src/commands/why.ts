@@ -19,6 +19,7 @@
  * 2 invalid saved report · 20 crash.
  */
 
+import { existsSync } from "node:fs";
 import type { Finding, ScanResult } from "../types.js";
 import type { Output } from "../cli.js";
 import { runScan } from "../cli.js";
@@ -190,6 +191,12 @@ export async function runWhyCommand(
     }
   } else {
     // Live mode: a fresh scan of the target via the real scan pipeline.
+    // A nonexistent/non-directory target is a usage error (audit H-4
+    // posture), not a silent empty scan.
+    if (!existsSync(target)) {
+      io.err(`mjolnir why: scan target does not exist: ${target}`);
+      return 10;
+    }
     try {
       result = await runScan({
         target: target,
@@ -198,6 +205,7 @@ export async function runWhyCommand(
         maxDurationMs: Number.POSITIVE_INFINITY,
         scopeChanged: false,
         format: "terminal",
+        strict: argv.includes("--strict"),
       });
     } catch (err) {
       io.err(`mjolnir why: scan failed: ${errorText(err)}`);
@@ -206,6 +214,19 @@ export async function runWhyCommand(
   }
 
   const match = explainAt(result.findings, location.file, location.line);
-  io.out(renderWhy(match));
-  return match.findings.length > 0 ? 0 : 1;
+  // --category is a presentation filter (plan §5.5): narrows the why
+  // answer; the underlying report is untouched.
+  const catIdxs: number[] = [];
+  argv.forEach((a, i) => {
+    if (a === "--category") catIdxs.push(i + 1);
+  });
+  const categories = catIdxs
+    .map((i) => argv[i])
+    .filter((c): c is string => c !== undefined);
+  const filtered =
+    categories.length > 0
+      ? match.findings.filter((f) => categories.includes(f.category))
+      : match.findings;
+  io.out(renderWhy({ ...match, findings: filtered }));
+  return filtered.length > 0 ? 0 : 1;
 }

@@ -233,9 +233,9 @@ describe("--score end-to-end", () => {
 
   it("preserves the gate exit code (fixture has an error finding → 1)", async () => {
     const cap = capture();
-    const plainCap = capture();
     const code = await runScanCommand([dir, "--score"], cap.io);
-    const plain = await runScanCommand([dir], plainCap.io);
+    // No-io call: exercises runScanCommand's console-fallback default io.
+    const plain = await runScanCommand([dir]);
     // Exit code identical to the equivalent scan without --score.
     expect(code).toBe(plain);
     expect(code).toBe(1);

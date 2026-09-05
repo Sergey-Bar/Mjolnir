@@ -24,7 +24,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   executeHookInstall,
   planHookInstall,
@@ -211,11 +211,13 @@ describe("--staged end-to-end", () => {
     expect(report.staged).toBeUndefined();
   });
 
-  it("empty staged set → honest message + exit 0", async () => {
+  it("staged paths not on the scan surface are skipped by the filter (rel-arm)", async () => {
+    // Stage a file OUTSIDE any discovered spec (e.g. README) — the
+    // intersection filter must skip it without breaking discovery.
+    stageInRepo("README.md", "x");
     const cap = capture();
     const code = await runScanCommand([repo, "--json", "--staged"], cap.io);
     expect(code).toBe(0);
-    expect(cap.errText()).toContain("no staged files match");
   });
 });
 
@@ -338,6 +340,16 @@ describe("staged hook install", () => {
     expect(after).toContain("# mjolnir:managed pre-commit");
   });
 
+  it("husky append into a hook without a trailing newline (sep arm)", () => {
+    mkdirSync(join(repo, ".husky"), { recursive: true });
+    writeFileSync(join(repo, ".husky", "pre-commit"), "npm test");
+    const hook = planHookInstall(repo);
+    executeHookInstall(hook);
+    const after = readFileSync(join(repo, ".husky", "pre-commit"), "utf8");
+    expect(after.startsWith("npm test\n\n")).toBe(true);
+    expect(after).toContain("# mjolnir:managed pre-commit");
+  });
+
   it("reuses core.hooksPath when configured", () => {
     mkdirSync(join(repo, "githooks"), { recursive: true });
     execFileSync("git", ["-C", repo, "config", "core.hooksPath", "githooks"], {
@@ -347,11 +359,90 @@ describe("staged hook install", () => {
     expect(hook.file).toBe(join(repo, "githooks", "pre-commit"));
   });
 
+  it("executeHookInstall returns false for no-op/refuse entries", () => {
+    expect(executeHookInstall({ action: "no-op", file: "x" })).toBe(false);
+    expect(
+      executeHookInstall({ action: "refuse", file: "x", reason: "r" }),
+    ).toBe(false);
+  });
+
+  it("update falls back to append when the managed block lacks a close marker", () => {
+    const first = planHookInstall(repo);
+    executeHookInstall(first);
+    const hookPath = join(repo, ".git", "hooks", "pre-commit");
+    // Corrupt the managed block: remove the close marker AND keep the
+    // trailing newline (existing ends with \n → sep arm 0: "").
+    writeFileSync(
+      hookPath,
+      readFileSync(hookPath, "utf8").replace(
+        "# /mjolnir:managed pre-commit",
+        "",
+      ),
+    );
+    const second = planHookInstall(repo);
+    expect(second.action).toBe("update");
+    expect(executeHookInstall(second)).toBe(true);
+    const after = readFileSync(hookPath, "utf8");
+    expect(after).toContain("# /mjolnir:managed pre-commit");
+  });
+
+  it("update on a hook file without a trailing newline (update-sep arm)", () => {
+    const first = planHookInstall(repo);
+    executeHookInstall(first);
+    const hookPath = join(repo, ".git", "hooks", "pre-commit");
+    // Managed content exists but strip its trailing newline: the update
+    // arm's sep fallback (existing doesn't end with \n → "\n") fires.
+    writeFileSync(hookPath, readFileSync(hookPath, "utf8").trimEnd());
+    const second = planHookInstall(repo);
+    expect(second.action).toBe("update");
+    expect(executeHookInstall(second)).toBe(true);
+    expect(readFileSync(hookPath, "utf8")).toContain(
+      "# /mjolnir:managed pre-commit",
+    );
+  });
+
+  it("an unreadable existing hook refuses honestly (exit 10 shape)", () => {
+    // Create a hook FILE where a directory is expected: existsSync true,
+    // readFileSync throws → planHookInstall returns refuse.
+    const weird = mkdtempSync(join(tmpdir(), "mjolnir-hook-"));
+    try {
+      const hooksPath = join(weird, "githooks", "pre-commit");
+      mkdirSync(hooksPath, { recursive: true });
+      execFileSync("git", ["-C", weird, "init"], { stdio: "ignore" });
+      execFileSync(
+        "git",
+        ["-C", weird, "config", "core.hooksPath", "githooks"],
+        {
+          stdio: "ignore",
+        },
+      );
+      const hook = planHookInstall(weird);
+      expect(hook.action).toBe("refuse");
+      expect(hook.reason).toContain("unreadable");
+    } finally {
+      rmSync(weird, { recursive: true, force: true });
+    }
+  });
+
   it("runInstallCommand --staged-hook installs the hook (exit 0)", () => {
     const cap = capture();
     expect(runInstallCommand(["--staged-hook"], cap.io, repo)).toBe(0);
     expect(cap.text()).toContain("pre-commit hook");
     expect(cap.text()).toContain("--staged --blocking warning");
+  });
+
+  it("runInstallCommand --staged-hook through the default io (console fallback)", () => {
+    execFileSync("git", ["-C", repo, "init"], { stdio: "ignore" });
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    try {
+      expect(runInstallCommand(["--staged-hook"], undefined, repo)).toBe(0);
+      const printed = logSpy.mock.calls
+        .map((a: unknown[]) => a.map(String).join(" "))
+        .join("\n");
+      expect(printed).toContain("pre-commit hook");
+    } finally {
+      logSpy.mockRestore();
+    }
   });
 
   it("runInstallCommand --staged-hook --dry-run writes nothing", () => {

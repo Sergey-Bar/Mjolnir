@@ -261,10 +261,16 @@ export function renderHandoff(
 
   // Order: errors before warnings before infos; within a severity, bigger
   // groups first (root-cause leverage), then rule id for determinism.
+  // Groups reaching the sort are guaranteed non-empty (filtered above),
+  // so first.severity is always defined.
   const sevOrder = { error: 0, warning: 1, info: 2 } as const;
-  selected.sort((a, b) => {
-    const sa = sevOrder[a.findings[0]?.severity ?? ("warning" as const)];
-    const sb = sevOrder[b.findings[0]?.severity ?? ("warning" as const)];
+  type NonEmptyGroup = (typeof selected)[number] & {
+    findings: [Finding, ...Finding[]];
+  };
+  const sortable = selected as NonEmptyGroup[];
+  sortable.sort((a, b) => {
+    const sa = sevOrder[a.findings[0].severity];
+    const sb = sevOrder[b.findings[0].severity];
     if (sa !== sb) return sa - sb;
     if (b.findings.length !== a.findings.length)
       return b.findings.length - a.findings.length;
@@ -284,8 +290,8 @@ export function renderHandoff(
   if (!scopeNote(options)) lines.pop();
   lines.push("");
 
-  for (const g of selected) {
-    const first = g.findings[0] as Finding;
+  for (const g of sortable) {
+    const first = g.findings[0];
     lines.push(
       `### ${escapeMarkdown(g.ruleId)} — ${first.severity} × ${g.findings.length} (fix group: ${escapeMarkdown(g.fixGroupId)})`,
     );
@@ -371,7 +377,9 @@ export function runHandoffCommand(
   },
 ): number {
   for (let i = 0; i < argv.length; i++) {
-    const a = argv[i] ?? "";
+    // argv is a dense string[] by caller contract (cli dispatch), so a
+    // plain index read is safe here; no sparse-array fallback arms.
+    const a = argv[i] as string;
     if (!a.startsWith("-")) continue;
     if (a === "--category" || a === "--rules") {
       const val = argv[i + 1];
@@ -391,14 +399,17 @@ export function runHandoffCommand(
   const categories: string[] = [];
   let rules: string[] | undefined;
   for (let i = 0; i < argv.length; i++) {
-    const a = argv[i] ?? "";
+    // Dense argv by caller contract — same rationale as the first loop.
+    const a = argv[i] as string;
     if (a === "--category") {
       categories.push(argv[i + 1] as string);
       i++;
       continue;
     }
     if (a === "--rules") {
-      rules = ((argv[i + 1] as string) ?? "")
+      // Dense argv by caller contract — the value exists whenever the
+      // flag does (the first loop rejected a missing value already).
+      rules = (argv[i + 1] as string)
         .split(",")
         .map((r) => r.trim())
         .filter((r) => r.length > 0);

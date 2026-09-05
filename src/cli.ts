@@ -687,12 +687,11 @@ export async function runScan(
       );
     } else {
       const stagedSet = new Set(staged.map((s) => s.replace(/\\/g, "/")));
-      ctx.testFiles = ctx.testFiles.filter((f) => {
-        const rel = f.startsWith(scanRoot.root + sep)
-          ? f.slice(scanRoot.root.length + 1).replace(/\\/g, "/")
-          : f;
-        return stagedSet.has(rel);
-      });
+      // relative() normalizes absolute discovered paths to staged-name
+      // form; both sides are POSIX-slashed before comparison.
+      ctx.testFiles = ctx.testFiles.filter((f) =>
+        stagedSet.has(relative(scanRoot.root, f).replace(/\\/g, "/")),
+      );
       stagedSurface = true;
       if (ctx.testFiles.length === 0) {
         hooks.onConfigWarning?.(
@@ -2025,7 +2024,7 @@ export async function main(
   // becomes a scan target (mjolnir ./help scans a folder named help;
   // bare `mjolnir help` used to scan the CWD as if it were a path).
   if (argv[0] === "help") return runHelpCommand(argv.slice(1), io);
-  return runScanCommand(argv);
+  return runScanCommand(argv, io);
 }
 
 /**
