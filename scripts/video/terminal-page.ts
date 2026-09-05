@@ -15,7 +15,7 @@
  * makes the timeline reproducible rather than merely repeatable.
  */
 
-import { ansiLineToSpans, stripAnsi } from "../readme-svg.js";
+import { ansiLineToSpans, DEFAULT_FG, stripAnsi } from "../readme-svg.js";
 import { fontFaceCss, FONT_STACK } from "./fonts.js";
 import { pacingFor } from "./pacing.js";
 import type { VideoScript } from "./script-types.js";
@@ -288,7 +288,12 @@ html,body{width:${vw}px;height:${vh}px;overflow:hidden;background:${INK_950}}
 #screen{flex:1;overflow:hidden;padding:${pad}px;display:flex;
   justify-content:center;align-items:flex-start}
 #viewport{height:${viewportHeight}px;overflow:hidden}
-#lines{width:${boxWidth}px;font:${fontSize}px/${lineHeight}px ${FONT_STACK};
+/* A base colour, so nothing can ever inherit the browser default again.
+   Every line of reporter output carries its own span colour from
+   ansiLineToSpans, which hid the fact that the typed command line — bare
+   text with no span — was rendering BLACK on a dark window and was
+   effectively invisible. */
+#lines{color:${DEFAULT_FG};width:${boxWidth}px;font:${fontSize}px/${lineHeight}px ${FONT_STACK};
   white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased;
   text-rendering:geometricPrecision}
 #lines div{height:${lineHeight}px}
@@ -303,6 +308,9 @@ html,body{width:${vw}px;height:${vh}px;overflow:hidden;background:${INK_950}}
 #lines .rune{-webkit-text-stroke:${(1.1 / dpr).toFixed(3)}px currentColor}
 .caret{color:${GOLD}}
 .prompt{color:#4FB477}
+/* The command is what the viewer is meant to copy — the brightest text in
+   the frame, in the reporter's own bone white. */
+.cmd{color:#EDE6D6;font-weight:700}
 .add{color:#4FB477}
 .remove{color:#E5544E}
 .header{color:${STEEL_DIM}}
@@ -335,7 +343,8 @@ window.__renderFrame = function (frame) {
         : "";
       var cmd = beat.command.slice(0, typed)
         .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-      html += '<div><span class="prompt">$</span> ' + cmd + caret + "</div>";
+      html += '<div><span class="prompt">$</span> <span class="cmd">' +
+        cmd + "</span>" + caret + "</div>";
     }
     for (var i = 0; i < shown; i++) html += "<div>" + beat.lines[i] + "</div>";
     for (var j = 0; j < patched; j++) {

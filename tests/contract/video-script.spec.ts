@@ -39,6 +39,7 @@ import { requiredGlyphs } from "../../scripts/video/glyph-inventory.js";
 import { stripAnsi } from "../../scripts/readme-svg.js";
 import type { VideoScript } from "../../scripts/video/script-types.js";
 import { readScript, serialize } from "../../scripts/video/script-io.js";
+import { buildPage } from "../../scripts/video/terminal-page.js";
 
 const ROOT = join(import.meta.dirname, "..", "..");
 
@@ -210,4 +211,34 @@ describe("every glyph the videos render resolves in a vendored font", () => {
       ).toEqual([]);
     },
   );
+});
+
+describe("the render page cannot draw invisible text", () => {
+  /**
+   * Every line of reporter output carries its own colour from
+   * ansiLineToSpans, which masked the fact that the page set no base
+   * colour at all: the typed command line is bare text, so it inherited
+   * the browser default — BLACK — and rendered invisible on a dark
+   * window through several published renders before anyone spotted it.
+   */
+  it.each(["demo", "tour"] as const)(
+    "script.%s.json's page declares a base text colour",
+    (id) => {
+      const page = buildPage(readScript(id));
+      const base = /#lines\{[^}]*color:\s*(#[0-9a-fA-F]{3,8})/.exec(page);
+      expect(
+        base,
+        "the text container sets no base `color`, so any element without " +
+          "an explicit colour renders in the browser default (black) on a " +
+          "dark terminal",
+      ).not.toBeNull();
+      expect(base?.[1]?.toLowerCase()).not.toBe("#000000");
+    },
+  );
+
+  it("the typed command is styled, not left to inherit", () => {
+    const page = buildPage(readScript("demo"));
+    expect(page).toContain('class="cmd"');
+    expect(page).toMatch(/\.cmd\{color:#[0-9a-fA-F]{3,8}/);
+  });
 });
