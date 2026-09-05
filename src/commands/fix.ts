@@ -32,6 +32,7 @@ import type { Finding, ScanResult } from "../types.js";
 import { computeCodeText } from "../engine/code-text.js";
 import { okIcon, sectionHeader, plainContext } from "../reporter/ui.js";
 import { sweepStaleTempFiles } from "../lib/fs-atomic.js";
+import { glyphs } from "../reporter/theme.js";
 
 const ui = plainContext();
 
