@@ -259,6 +259,39 @@ describe("honesty-surface numbers match the FP-AUDIT coverage line and the regis
     },
   );
 
+  /**
+   * The measured count ("74 of 99") was already guarded above; the
+   * REMAINDER stated in the same paragraph was not, and it rotted: README.md
+   * read "74 of 99 … The other 19 ship on the author's estimate" (99 − 74 is
+   * 25) alongside a "Growing that 78" that matched no pair in the repo at
+   * all. A reader checking the project's honesty section could not trust the
+   * honesty section. Deliberately scoped to the canonical surfaces —
+   * CHANGELOG.md carries the same phrasing as a historical record of what an
+   * older release actually claimed, and must not be rewritten to match today.
+   */
+  it.each([
+    ["README.md", README],
+    ["docs/README.md", readFileSync(join(ROOT, "docs", "README.md"), "utf8")],
+  ])("%s: the unmeasured remainder equals total − measured", (_name, text) => {
+    const coverage = auditCoverage;
+    expect(coverage, "FP-AUDIT coverage line did not parse").not.toBeNull();
+    if (!coverage) return; // unreachable: the expect above fails the test first
+    // Prose wraps across lines, so match against a whitespace-collapsed copy.
+    const flat = text.replace(/\s+/g, " ");
+    const expected = coverage.total - coverage.measured;
+    for (const m of flat.matchAll(
+      /The other (\d+) ship on the author's estimate/g,
+    )) {
+      expect(
+        Number(m[1]),
+        `${_name} says "The other ${m[1]} ship on the author's estimate", ` +
+          `but docs/FP-AUDIT.md reports ${coverage.measured} of ` +
+          `${coverage.total} measured — the remainder is ${expected}. ` +
+          `The honesty section is the last place a stale number may sit.`,
+      ).toBe(expected);
+    }
+  });
+
   it("the honesty-surface total equals the registry size (measured count from MEASURED_FP with n ≥ 10)", () => {
     const coverage = auditCoverage;
     expect(coverage, "FP-AUDIT coverage line did not parse").not.toBeNull();
