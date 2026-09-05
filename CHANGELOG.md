@@ -19,8 +19,6 @@ once shipped, so this file is the record of what changed between versions.
   sources are listed on a loud stderr notice; they are never imported.
   JSON rule manifests execute no code and load without the gate. See
   SECURITY.md (trust model) and docs/VERSIONING.md (gate contract).
-- **`mjolnir --help` / `-h` exit 0** (audit S8): help is a query, not a
-  scan — previously usage exit 10.
 
 ### Fixed — engine correctness (audit M1)
 
@@ -232,82 +230,6 @@ rules… → Scoring…`) fed by the new additive `ScanHooks.onProgress`.
 ## [0.5.1] — 2026-09-05
 
 ### Verification Trust Evolution, Phase 8 — Local Extensibility (plan §18)
-
-### Added — folder-based external rules, zero network
-
-### Changed — plugin execution gate (audit C2, contract-visible, pre-1.0)
-
-- **`--enable-plugins` / `MJOLNIR_ENABLE_PLUGINS=1`** — npm plugins and
-  JS-module external rules (`mjolnir-rules/*.mjs`) now load and execute
-  only behind an explicit opt-in (default OFF). Declared-but-gated
-  sources are listed on a loud stderr notice; they are never imported.
-  JSON rule manifests execute no code and load without the gate. See
-  SECURITY.md (trust model) and docs/VERSIONING.md (gate contract).
-- **`mjolnir --help` / `-h` exit 0** (audit S8): help is a query, not a
-  scan — previously usage exit 10.
-
-### Fixed — engine correctness (audit M1)
-
-- **C1/W9 (`--cache`)**: the cache key folds in the repo-relative path,
-  adapter id, and parse mode — byte-identical files no longer share
-  verdicts (findings carried the first-scanned file's path), and
-  regex-fallback verdicts are never served as AST ones. `CACHE_VERSION`
-  bumped to 2: one-time invalidation, first post-upgrade scan cold.
-- **C3**: the default console sinks are variadic —
-  "mjolnir internal error:" now carries the actual cause (the message
-  used to be dropped).
-- **C5**: a partial (truncated) scan never writes the
-  first-clean-scan milestone; `mjolnir diff` on a truncated head
-  returns exit 2 and folds no resolved findings into stats.
-- **W1**: the Java/C# maskers keep code after a closed block comment
-  live (`/*x*/y` used to blank `y`).
-- **W2/W3**: parse-semaphore re-check (cap holds under fan-out) and
-  parser-creation retry on rejection (a transient WASM load failure no
-  longer disables the AST path for the process).
-- **W4**: unchecked grammar-shape casts removed in the QA-model
-  extractor; `parseTsFile`'s undefined contract honored.
-- **W8**: runtime corroboration claims "test" level only when the
-  finding's line falls inside the verdict's span; lineless reports
-  degrade to file level.
-- **W10**: malformed rule records at the rule→Finding boundary are
-  rejected with a diagnostic (crash channel), never silently scored.
-- **S5 (QA-CI-001, detectorRevision 2)**: step-level line resolution
-  falls back to the anchor line instead of crashing — the rule no
-  longer vanishes into crash isolation on workflows where the raw
-  `continue-on-error: true` literal sits outside the search window.
-  Behavior changes from crash-dropped to reported; sidecar +
-  measured-FP regenerated per policy.
-- **masking.ts**: outer-delimiter search fixes misclassification of
-  string values ending in a nested quote.
-- **changed.ts**: hunk-content lines that look like diff headers no
-  longer abandon the hunk; one unreadable untracked file degrades only
-  itself (treated fully changed), never the whole scope.
-- **shared-walk.ts**: unreadable directories and skipped symlinks are
-  counted skips with reasons; deadline/cap checks run inside the entry
-  loop.
-- **workflow-parser.ts**: the documented nesting-depth cap is enforced;
-  `jobs` builds on a null-prototype object; step `with` is copied.
-
-### Changed — suppressions expiry (audit S4, contract-visible, pre-1.0)
-
-- The 90-day default for hand-authored `ignore` entries is no longer
-  anchored at the config file's mtime — any config edit used to reset
-  every suppression window. Expiry is the entry's explicit `expires`
-  date; entries without one stay active and are labeled accordingly in
-  `mjolnir suppressions`.
-
-### Hardened — trust boundary (audits S1/S2/S3/S7)
-
-- **S1**: git resolves to an absolute path from PATH (never the scanned
-  CWD) — a planted `git.exe`/`git.bat` cannot hijack Mjölnir's git
-  calls on Windows.
-- **S2**: ignore/glob patterns and external JSON-rule regexes are
-  length/wildcard-capped at compile time; `**/` compiles segment-aware.
-- **S3**: config/ignore/plugins resolve from the explicit scan target's
-  project; the resolved anchor prints in verbose mode.
-- **S7**: `ignore[].files` must be `string[]` (exit 10 on typo);
-  unknown top-level config keys warn; baseline `schemaVersion` is
-  checked (future versions degrade to "no baseline" with a warning).
 
 ### Added — folder-based external rules, zero network
 

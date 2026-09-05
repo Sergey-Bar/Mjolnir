@@ -2108,15 +2108,6 @@ export async function main(
     io.out(`mjolnir-qa ${CLI_VERSION}\n`);
     return 0;
   }
-  // Audit S8: help is a QUERY, not a scan — answering it must exit 0 on
-  // every verb, and the answer goes to stdout as the successful output
-  // of this invocation. Checked for ANY argument position: flags are
-  // position-free in every scan-backed verb. (Previously --help fell
-  // into the scan parser's usage-error path: exit 10.)
-  if (argv.includes("--help") || argv.includes("-h")) {
-    printUsage(out);
-    return 0;
-  }
   // Subcommands (§69): ci install · suppressions · forensics · doctor:playwright
   // Scan-backed handlers are async since the Phase 0.5 parse stage (§10) —
   // returning their promise from this async dispatcher awaits it.
