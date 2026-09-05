@@ -21,10 +21,12 @@ import { pacingFor } from "./pacing.js";
 import type { VideoScript } from "./script-types.js";
 
 /** Brand tokens, from assets/brand/README.md. */
-const INK = "#0A1119";
-const CHROME = "#111A29";
+const INK_950 = "#0A1119"; // deepest — the page behind the window
+const INK_900 = "#0C1420"; // the terminal body
+const CHROME = "#111A29"; // title bar
 const STEEL_DIM = "#8B939D";
 const GOLD = "#C19A34";
+const AURORA = "#37ABBD";
 
 /** One rendered step of the timeline: what is on screen at frame n. */
 export interface Frame {
@@ -210,7 +212,12 @@ export function widestLine(script: VideoScript): number {
 export function buildPage(script: VideoScript): string {
   const pacing = pacingFor(script.id);
   const [vw, vh] = pacing.viewport;
-  const pad = 28;
+  // Window chrome. The terminal is inset from the frame edges so it reads
+  // as a window on a surface rather than a maximised screenshot.
+  const inset = 44;
+  const radius = 20;
+  const barHeight = 40;
+  const pad = 30;
   const cols = widestLine(script);
   // JetBrains Mono advances 0.6em per character. The font is sized so the
   // widest real line fills the frame at its natural size — upscaling a
@@ -222,7 +229,7 @@ export function buildPage(script: VideoScript): string {
   // on a different sub-pixel offset — antialiasing then draws a seam
   // between every pair of blocks and the hammer reads as a brick wall.
   const dpr = pacing.deviceScaleFactor;
-  const maxFont = Math.min(24, (vw - pad * 2) / (cols * 0.6));
+  const maxFont = Math.min(24, (vw - inset * 2 - pad * 2) / (cols * 0.6));
   const advance = Math.floor(maxFont * 0.6 * dpr) / dpr;
   const fontSize = advance / 0.6;
   // ~1.15 line height, snapped the same way so rows tile too.
@@ -232,6 +239,16 @@ export function buildPage(script: VideoScript): string {
   // that long. Centring a box of exactly that width keeps the layout
   // balanced without shifting as lines reveal.
   const boxWidth = Math.ceil(cols * advance);
+
+  // The scroll viewport is sized to a WHOLE number of lines.
+  //
+  // Scrolling to (scrollHeight - clientHeight) keeps the newest line flush
+  // with the bottom, but when the viewport is not an exact multiple of the
+  // line height that offset is fractional — so the top line renders sliced
+  // in half against the title bar on every frame after the screen fills.
+  const viewportAvail = vh - inset * 2 - barHeight - pad * 2;
+  const visibleLines = Math.floor(viewportAvail / lineHeight);
+  const viewportHeight = visibleLines * lineHeight;
 
   const beats = script.beats.map((beat) => ({
     command: beat.command,
@@ -250,36 +267,56 @@ export function buildPage(script: VideoScript): string {
 <style>
 ${fontFaceCss()}
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:${vw}px;height:${vh}px;overflow:hidden;background:${INK}}
-#win{position:absolute;inset:0;display:flex;flex-direction:column;background:${INK}}
-#bar{height:34px;flex:0 0 34px;background:${CHROME};display:flex;align-items:center;padding:0 14px;gap:8px}
-.dot{width:11px;height:11px;border-radius:50%}
-#title{flex:1;text-align:center;color:${STEEL_DIM};font:12px ${FONT_STACK};letter-spacing:.08em}
-#screen{flex:1;overflow:hidden;padding:${pad}px;display:flex;justify-content:center;align-items:flex-start}
-#lines{width:${boxWidth}px;font:${fontSize}px/${lineHeight}px ${FONT_STACK};white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}
+html,body{width:${vw}px;height:${vh}px;overflow:hidden;background:${INK_950}}
+/* The frame is a designed surface, not a maximised terminal screenshot:
+   a soft brand glow behind a floating window, the way a product page
+   presents a terminal rather than the way an OS does. */
+#page{position:absolute;inset:0;background:
+  radial-gradient(120% 90% at 50% -10%, ${GOLD}1F 0%, transparent 55%),
+  radial-gradient(90% 70% at 8% 108%, ${AURORA}14 0%, transparent 60%),
+  ${INK_950}}
+#win{position:absolute;inset:${inset}px;display:flex;flex-direction:column;
+  background:${INK_900};border-radius:${radius}px;overflow:hidden;
+  box-shadow:0 0 0 1px #FFFFFF14, 0 2px 4px #00000040,
+    0 18px 48px -12px #00000080, 0 48px 96px -32px #000000A6}
+#bar{height:${barHeight}px;flex:0 0 ${barHeight}px;background:${CHROME};
+  display:flex;align-items:center;padding:0 20px;gap:9px;
+  box-shadow:inset 0 -1px 0 #FFFFFF0D}
+.dot{width:12px;height:12px;border-radius:50%;background:#2B3442}
+#title{flex:1;text-align:center;color:${STEEL_DIM};
+  font:13px ${FONT_STACK};letter-spacing:.06em}
+#screen{flex:1;overflow:hidden;padding:${pad}px;display:flex;
+  justify-content:center;align-items:flex-start}
+#viewport{height:${viewportHeight}px;overflow:hidden}
+#lines{width:${boxWidth}px;font:${fontSize}px/${lineHeight}px ${FONT_STACK};
+  white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased;
+  text-rendering:geometricPrecision}
 #lines div{height:${lineHeight}px}
-/* JetBrains Mono's block glyphs (U+2580-259F) do not span their full
-   advance, so tiled runs — the hammer, the score gauge, the category
-   meters — show a hairline seam between every pair even at whole-pixel
-   positions. A stroke of half a device pixel closes the gap without
-   disturbing the character grid. Applied only to spans that are pure
-   block art, so ordinary text is untouched. */
-#lines .blocks{-webkit-text-stroke:${(0.75 / pacing.deviceScaleFactor).toFixed(3)}px currentColor}
-#lines .rune{-webkit-text-stroke:${(1.1 / pacing.deviceScaleFactor).toFixed(3)}px currentColor}
+/* JetBrains Mono's block glyphs do not span their full advance, so tiled
+   runs — the hammer, the score gauge, the meters — show a hairline seam
+   between every pair even at whole-pixel positions. Half a device pixel
+   of stroke closes it. Shade glyphs are excluded: they are dither
+   patterns, and stroking them turns the gauge's empty track into noise. */
+#lines .blocks{-webkit-text-stroke:${(0.75 / dpr).toFixed(3)}px currentColor}
+/* Runes come from the lighter fallback face — see the .rune note in
+   lineHtml. */
+#lines .rune{-webkit-text-stroke:${(1.1 / dpr).toFixed(3)}px currentColor}
 .caret{color:${GOLD}}
 .prompt{color:#4FB477}
 .add{color:#4FB477}
 .remove{color:#E5544E}
 .header{color:${STEEL_DIM}}
 </style>
-<div id="win">
-  <div id="bar">
-    <span class="dot" style="background:#ff5f56"></span>
-    <span class="dot" style="background:#ffbd2e"></span>
-    <span class="dot" style="background:#27c93f"></span>
-    <span id="title">demo-repo &#8212; mjolnir</span>
+<div id="page">
+  <div id="win">
+    <div id="bar">
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span id="title">mjolnir &#8212; demo-repo</span>
+    </div>
+    <div id="screen"><div id="viewport"><div id="lines"></div></div></div>
   </div>
-  <div id="screen"><div id="lines"></div></div>
 </div>
 <script>
 window.__BEATS__ = ${JSON.stringify(beats)};
@@ -311,7 +348,7 @@ window.__renderFrame = function (frame) {
   screen.innerHTML = html;
   // Keep the newest line in view with no scroll animation: what is
   // visible is a pure function of how many lines are showing.
-  var view = screen.parentNode;
+  var view = document.getElementById("viewport");
   view.scrollTop = view.scrollHeight - view.clientHeight;
 };
 </script>
