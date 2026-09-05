@@ -19,13 +19,8 @@
  * command does not make for them.
  */
 
-import {
-  copyFileSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  writeFileSync,
-} from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
+import { writeFileAtomic } from "../lib/fs-atomic.js";
 import { dirname, join } from "node:path";
 
 import type { Finding, ScanResult } from "../types.js";
@@ -102,7 +97,7 @@ export function saveBaseline(
     backupPath = `${outPath}.bak`;
     copyFileSync(outPath, backupPath);
   }
-  writeFileSync(
+  writeFileAtomic(
     outPath,
     JSON.stringify(buildBaseline(result, commit), null, 2) + "\n",
   );

@@ -25,7 +25,8 @@
  * it does not change scores, exit codes or the JSON schema.
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync } from "node:fs";
+import { writeFileAtomic } from "../lib/fs-atomic.js";
 import { dirname, join } from "node:path";
 
 import type { BaselineDiff } from "./baseline.js";
@@ -180,7 +181,7 @@ export function recordResolved(
 export function saveStats(stats: StatsFile, outPath: string): boolean {
   try {
     mkdirSync(dirname(outPath), { recursive: true });
-    writeFileSync(outPath, JSON.stringify(stats, null, 2) + "\n");
+    writeFileAtomic(outPath, JSON.stringify(stats, null, 2) + "\n");
     return true;
   } catch {
     return false;

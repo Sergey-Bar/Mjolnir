@@ -36,10 +36,12 @@ export interface DoctorCheck {
   details: string[];
 }
 
-// Phase 5 framework namespaces (plan §15.4, frozen-contract law):
-// QA-CYP-*, QA-SE-*, QA-WDIO-*, QA-PPTR-*, QA-APM-* join the registry.
-const VALID_ID =
-  /^QA-(?:TEST|TQUAL|PW|CI|PY|ENV|JV|CS|CYP|SE|WDIO|PPTR|APM)-\d{3}$/;
+// Audit M3: the ID validator derives from the shared RULE_FAMILIES
+// table (src/commands/rule-families.ts) — doctor and create-rule can
+// never disagree about which families exist again.
+import { RULE_ID_RE } from "./rule-families.js";
+
+const VALID_ID = RULE_ID_RE;
 
 function nonHiddenFiles(dir: string): string[] {
   if (!existsSync(dir)) return [];

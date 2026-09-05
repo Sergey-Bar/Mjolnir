@@ -5,13 +5,7 @@
  * 10 usage error · 20 internal error.
  */
 
-import {
-  existsSync,
-  readFileSync,
-  realpathSync,
-  statSync,
-  writeFileSync,
-} from "node:fs";
+import { existsSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { join, dirname, relative, resolve, sep } from "node:path";
 import process from "node:process";
@@ -125,6 +119,7 @@ import {
   type SkippedRuleSource,
 } from "./plugins/trust-gate.js";
 import { resolveGitPath } from "./scope/git-resolve.js";
+import { writeFileAtomic } from "./lib/fs-atomic.js";
 import {
   computeSelectorHealth,
   renderSelectorHealth,
@@ -1187,7 +1182,13 @@ export function runSuppressions(
       (io.err ?? err)(e.message);
       return 10;
     }
-    throw e;
+    // Audit S8: any other throw is contained (catch-to-20) instead of
+    // escaping as an unhandled rejection with a misleading exit 1.
+    (io.err ?? err)(
+      "mjolnir internal error:",
+      e instanceof Error ? e.message : String(e),
+    );
+    return 20;
   }
 }
 
@@ -1229,36 +1230,50 @@ export async function runDoctorPlaywright(
   argv: string[],
   io: { out: Output; err?: Output } = { out },
 ): Promise<number> {
-  const targetArg = argv[1] && !argv[1].startsWith("-") ? argv[1] : ".";
-  const target = resolve(targetArg);
-  const invalid = validateScanTarget(target, io.err ?? err);
-  if (invalid !== null) return invalid;
-  // A resolved absolute path is never flag-like, so parseArgs([target])
-  // is exactly the defaults with target set — constructed directly, since
-  // a null-check here would be a dead branch v8 can never cover.
-  const args: CliArgs = {
-    target,
-    json: false,
-    verbose: false,
-    maxDurationMs: Number.POSITIVE_INFINITY,
-    scopeChanged: false,
-    format: "terminal",
-    // Audit C2: this verb loads rules, so it honors the gate flag too.
-    enablePlugins: argv.includes("--enable-plugins"),
-  };
-  const result = await runScan({ ...args, target });
-  const pwFindings = result.findings.filter((f) => f.category === "QA-PW");
-  io.out(
-    renderTerminal(
-      { ...result, findings: pwFindings },
-      { isTTY: process.stdout.isTTY ?? false, verbose: args.verbose },
-    ),
-  );
+  try {
+    const targetArg = argv[1] && !argv[1].startsWith("-") ? argv[1] : ".";
+    const target = resolve(targetArg);
+    const invalid = validateScanTarget(target, io.err ?? err);
+    if (invalid !== null) return invalid;
+    // A resolved absolute path is never flag-like, so parseArgs([target])
+    // is exactly the defaults with target set — constructed directly, since
+    // a null-check here would be a dead branch v8 can never cover.
+    const args: CliArgs = {
+      target,
+      json: false,
+      verbose: false,
+      maxDurationMs: Number.POSITIVE_INFINITY,
+      scopeChanged: false,
+      format: "terminal",
+      // Audit C2: this verb loads rules, so it honors the gate flag too.
+      enablePlugins: argv.includes("--enable-plugins"),
+    };
+    const result = await runScan({ ...args, target });
+    const pwFindings = result.findings.filter((f) => f.category === "QA-PW");
+    io.out(
+      renderTerminal(
+        { ...result, findings: pwFindings },
+        { isTTY: process.stdout.isTTY ?? false, verbose: args.verbose },
+      ),
+    );
 
-  // Selector Health per spec — same ignore state as the scan (audit R-8).
-  const specs = computeSelectorHealth(target, createIgnoreMatcher(target));
-  io.out(renderSelectorHealth(specs));
-  return 0;
+    // Selector Health per spec — same ignore state as the scan (audit R-8).
+    const specs = computeSelectorHealth(target, createIgnoreMatcher(target));
+    io.out(renderSelectorHealth(specs));
+    return 0;
+  } catch (e) {
+    // Audit S8: contained (catch-to-20) — never an unhandled rejection.
+    // ConfigValidationError keeps the fixable-message exit 10.
+    if (e instanceof ConfigValidationError) {
+      (io.err ?? err)(e.message);
+      return 10;
+    }
+    (io.err ?? err)(
+      "mjolnir internal error:",
+      e instanceof Error ? e.message : String(e),
+    );
+    return 20;
+  }
 }
 
 /** Testable `doctor` handler — self-audit of Mjölnir's own rule base. */
@@ -1346,6 +1361,18 @@ export function runExplainCommand(
     return 10;
   }
   const fixturesRootIdx = argv.indexOf("--fixtures-root");
+  // Audit S8: a dangling `--fixtures-root` is a usage error, not a
+  // silent fall back to the default fixtures directory.
+  if (
+    fixturesRootIdx !== -1 &&
+    (fixturesRootIdx + 1 >= argv.length ||
+      argv[fixturesRootIdx + 1]?.startsWith("--"))
+  ) {
+    io.err(
+      "--fixtures-root requires a value: mjolnir explain <RULE-ID> --fixtures-root <dir>",
+    );
+    return 10;
+  }
   const explicitRoot =
     fixturesRootIdx !== -1 ? argv[fixturesRootIdx + 1] : undefined;
   const fixturesRoot = resolve(
@@ -1619,7 +1646,7 @@ export function runTriageCommand(
       const mdPath = statSync(absTarget).isDirectory()
         ? join(absTarget, "TRIAGE.md")
         : join(dirname(absTarget), "TRIAGE.md");
-      writeFileSync(mdPath, renderTriageMd(report));
+      writeFileAtomic(mdPath, renderTriageMd(report));
       io.out(`\nWrote ${mdPath}`);
     }
     // Nothing recognized (e.g. missing dir) → honest no-op, not a crash.
@@ -1650,7 +1677,13 @@ export async function runBadgeCommand(
     const invalid = validateScanTarget(target, io.err);
     if (invalid !== null) return invalid;
     const result = await runScan({ ...args, target });
-    const outPath = writeBadge(result, { outDir: process.cwd() });
+    // Audit (badge): the badge belongs to the SCANNED repo — it stamps
+    // that repo's HEAD commit and lands in the scanned target, not in
+    // whatever directory the user happened to run from.
+    const outPath = writeBadge(result, {
+      outDir: target,
+      commit: currentCommit(target),
+    });
     io.out(`Wrote ${outPath}`);
     io.out("");
     io.out(renderBadgeSnippet(result));
@@ -1761,6 +1794,15 @@ export async function runImpactCommand(
   io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
   const sinceIdx = argv.indexOf("--since");
+  // Audit S8: a dangling `--since` (no value after it) is a usage error,
+  // not a silent "compare against the default base".
+  if (
+    sinceIdx !== -1 &&
+    (sinceIdx + 1 >= argv.length || argv[sinceIdx + 1]?.startsWith("--"))
+  ) {
+    io.err("--since requires a value: mjolnir impact [--since <ref>]");
+    return 10;
+  }
   const since = sinceIdx !== -1 ? argv[sinceIdx + 1] : undefined;
   const args = parseArgs(
     sinceIdx === -1
@@ -2022,6 +2064,37 @@ export function runPwReportCommand(
   }
 }
 
+/**
+ * Audit S8: the subcommand registry. Every verb name main() dispatches
+ * on lives here — a first token that is neither a registered subcommand
+ * nor an existing path is a TYPO, and a typo must not silently fall
+ * through to a scan of whatever the remaining arguments parse to (the
+ * classic `mjolnir sccan .` accident: exit 0, nothing checked, green
+ * badge).
+ */
+const SUBCOMMANDS: ReadonlySet<string> = new Set([
+  "ci",
+  "suppressions",
+  "forensics",
+  "triage",
+  "badge",
+  "debt",
+  "impact",
+  "baseline",
+  "diff",
+  "pr-comment",
+  "stats",
+  "fix",
+  "create-rule",
+  "handover",
+  "init",
+  "pw-report",
+  "doctor",
+  "rules",
+  "explain",
+  "doctor:playwright",
+]);
+
 export async function main(
   argv: string[] = process.argv.slice(2),
   io: { out: Output; err: Output } = { out, err },
@@ -2036,9 +2109,10 @@ export async function main(
   }
   // Audit S8: help is a QUERY, not a scan — answering it must exit 0 on
   // every verb, and the answer goes to stdout as the successful output
-  // of this invocation. (Previously --help fell into the scan parser's
-  // usage-error path: exit 10.)
-  if (argv[0] === "--help" || argv[0] === "-h") {
+  // of this invocation. Checked for ANY argument position: flags are
+  // position-free in every scan-backed verb. (Previously --help fell
+  // into the scan parser's usage-error path: exit 10.)
+  if (argv.includes("--help") || argv.includes("-h")) {
     printUsage(out);
     return 0;
   }
@@ -2085,6 +2159,29 @@ export async function main(
   // becomes a scan target (mjolnir ./help scans a folder named help;
   // bare `mjolnir help` used to scan the CWD as if it were a path).
   if (argv[0] === "help") return runHelpCommand(argv.slice(1), io);
+  // Audit S8: a first token that LOOKS like a verb but is not one is a
+  // typo — reject with usage instead of scanning with the typo dropped.
+  // Bare non-verbs (paths, flags) still mean "scan this".
+  if (SUBCOMMANDS.has(argv[0] ?? "")) {
+    // A known subcommand stem that fell through (e.g. bare `ci` without
+    // `install`) is usage.
+    err(`mjolnir: incomplete or unknown subcommand "${argv[0]}".`);
+    printUsage(out);
+    return 10;
+  }
+  if (
+    argv[0] !== undefined &&
+    argv[0].length > 0 &&
+    !argv[0].startsWith("-") &&
+    !existsSync(argv[0]) &&
+    argv[0].match(/^[a-z][\w:-]*$/i) !== null
+  ) {
+    // Word-like token, not a path that exists, not a flag: the user
+    // almost certainly meant a subcommand. `mjolnir scna` must not scan.
+    err(`mjolnir: unknown subcommand "${argv[0]}".`);
+    err("Run `mjolnir --help` for the verb list, or pass a directory to scan.");
+    return 10;
+  }
   return runScanCommand(argv);
 }
 

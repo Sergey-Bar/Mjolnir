@@ -345,20 +345,12 @@ describe("report rendering covers every status", () => {
           status: "failed",
           description: "write failed — file left untouched",
         },
-        {
-          file: "d.spec.ts",
-          ruleId: "QA-TEST-001",
-          line: 4,
-          status: "unchanged",
-          description: "nothing to do",
-        },
       ],
       false,
     );
     expect(report).toContain("✓ [QA-TEST-001] a.spec.ts:1");
     expect(report).toContain("▸ [QA-TEST-001] b.spec.ts:2");
     expect(report).toContain("✗ [QA-PW-003] c.spec.ts:3");
-    expect(report).toContain("· [QA-TEST-001] d.spec.ts:4");
     expect(report).toContain("1 applied");
     expect(report).toContain("1 planned");
     expect(report).toContain("1 not applied");

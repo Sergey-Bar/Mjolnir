@@ -52,7 +52,23 @@ export const QA_IMPACT_LABELS: Record<QaImpact, string> = {
 };
 
 /** Rule namespaces are frozen public API (§18.4). IDs are never reused. */
-export type RuleCategory = "QA-TEST" | "QA-TQUAL" | "QA-PW" | "QA-CI";
+export type RuleCategory =
+  | "QA-TEST"
+  | "QA-TQUAL"
+  | "QA-PW"
+  | "QA-CI"
+  // Audit M3 (create-rule FAMILY table): per-family categories exist so
+  // a new rule is born reporting under its own dimension instead of
+  // aliasing QA-PW. Additive within schemaVersion 1.
+  | "QA-PY"
+  | "QA-ENV"
+  | "QA-JV"
+  | "QA-CS"
+  | "QA-CYP"
+  | "QA-SE"
+  | "QA-WDIO"
+  | "QA-PPTR"
+  | "QA-APM";
 
 /**
  * Trust levels (Verification Trust Evolution Plan §16): the OVERALL
