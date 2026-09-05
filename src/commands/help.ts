@@ -138,6 +138,15 @@ export const HELP_ENTRIES: HelpEntry[] = [
     ],
   },
   {
+    verb: "handoff",
+    summary: "deterministic fix-handoff artifact from a saved --json report",
+    usage: "mjolnir handoff [mjolnir.json] [--category <cat>] [--rules <ids>]",
+    examples: [
+      "mjolnir --json > mjolnir.json && mjolnir handoff mjolnir.json",
+      "mjolnir handoff mjolnir.json --category QA-PW",
+    ],
+  },
+  {
     verb: "explain",
     summary: "what/why/fix + measured FP rate for one rule",
     usage: "mjolnir explain <RULE-ID> [--fixtures-root <dir>]",
@@ -268,7 +277,7 @@ const GROUPS: Array<{ title: string; verbs: string[] }> = [
       "create-rule",
     ],
   },
-  { title: "Meta", verbs: ["rules", "explain", "why"] },
+  { title: "Meta", verbs: ["rules", "explain", "why", "handoff"] },
 ];
 
 const SCAN_SUMMARY_LINES: string[] = [
