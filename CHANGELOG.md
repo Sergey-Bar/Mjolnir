@@ -9,7 +9,9 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
-## [Unreleased] — Verification Trust Evolution, Phase 8 — Local Extensibility (plan §18)
+## [0.5.1] — 2026-09-05
+
+### Verification Trust Evolution, Phase 8 — Local Extensibility (plan §18)
 
 ### Added — folder-based external rules, zero network
 
@@ -48,7 +50,7 @@ once shipped, so this file is the record of what changed between versions.
 
 Registry/marketplace explicitly deferred (plan §18).
 
-## [Unreleased] — Verification Trust Evolution, Phase 7 — Agentic QA Trust (plan §17)
+### Verification Trust Evolution, Phase 7 — Agentic QA Trust (plan §17)
 
 ### Added — Agentic Trust Profile (plan §17.2, §17.4)
 
@@ -93,7 +95,7 @@ measured before leaving provisional), fixtures both directions:
 Registry: 99 rules (73 measured). Docs pages + capability matrix
 regenerated.
 
-## [Unreleased] — Verification Trust Evolution, Phase 6 — Runtime Evidence (plan §16)
+### Verification Trust Evolution, Phase 6 — Runtime Evidence (plan §16)
 
 ### Added — runtime corroboration + the honest L0–L5 trust ladder
 
@@ -137,7 +139,7 @@ real run report (trust L3–L5)` or the explicit not-available line;
   finding cards show `trust L4 · runtime: test executed`. SARIF
   results carry `trustLevel` + `runtimeCorroboration` in properties.
 
-## [Unreleased] — Verification Trust Evolution, Phase 5 — Framework Expansion (plan §15, D7 closed)
+### Verification Trust Evolution, Phase 5 — Framework Expansion (plan §15, D7 closed)
 
 ### Added — FrameworkDimension enforced (plan §15.1, defect D7 closed)
 
@@ -222,7 +224,7 @@ QUARANTINE:
   regenerated (97 rules); docs pages regenerated; corpus baselines
   added for the three Phase 5 measurement repos.
 
-## [Unreleased] — Verification Trust Evolution, Phase 4 — Common QA Semantic Model (plan §14, behavior-neutral)
+### Verification Trust Evolution, Phase 4 — Common QA Semantic Model (plan §14, behavior-neutral)
 
 ### Added — `src/engine/qa-model.ts`: the normalized QA concept IR (extract-only, no scan wiring)
 
@@ -260,7 +262,7 @@ for Python (def test_, @pytest.fixture, time.sleep, assert).
   Awaitedness (qa-pw-002's consumption oracle) rides on TS nodes as
   `node.awaited`.
 
-## [Unreleased] — Verification Trust Evolution, Phase 3 — Java/C# semantic upgrade (plan §13)
+### Verification Trust Evolution, Phase 3 — Java/C# semantic upgrade (plan §13)
 
 ### Changed — three JV/CS rules migrated to L2 tree-sitter analysis (EVIDENCE-BACKED, detectorRevision 2)
 
@@ -322,7 +324,7 @@ signatures, tree-sitter scoping does not), and
 stamped rev 2). QA-JV-102 stays LEXICAL rev 1 — no migration for
 symmetry (plan §12.4).
 
-## [Unreleased] — Verification Trust Evolution, Phase 2 — quarantine-cluster triage (plan §12.2)
+### Verification Trust Evolution, Phase 2 — quarantine-cluster triage (plan §12.2)
 
 ### Deprecated — 21 rules retired per docs/RULE-LIFECYCLE.md (measured 100% FP, premise wrong)
 
@@ -484,7 +486,7 @@ capability matrix calls "re-measure"):
   does not describe the current detector, so it is neither flagged nor
   blessed.
 
-## [Unreleased] — Verification Trust Evolution, Phase 2 — detectionStrategy enum (D6 closed, scan-behavior-neutral)
+### Verification Trust Evolution, Phase 2 — detectionStrategy enum (D6 closed, scan-behavior-neutral)
 
 ### Changed — D6 enum migration (plan §12.1; metadata-only)
 
@@ -514,7 +516,7 @@ SEMANTIC | FRAMEWORK | RUNTIME`) instead of free text: `src/rules/rule.ts`
   (QA-CI-001/009/010) → `FRAMEWORK`. `SEMANTIC` and `RUNTIME` remain
   reserved (no rule ships either yet).
 
-## [Unreleased] — Verification Trust Evolution, Phase 1 exit — dedicated corpora + wave-5 measurement (plan §11.5/§08)
+### Verification Trust Evolution, Phase 1 exit — dedicated corpora + wave-5 measurement (plan §11.5/§08)
 
 ### Added — dedicated corpora (§11.5) and the wave-5 measurement
 
@@ -590,7 +592,7 @@ SEMANTIC | FRAMEWORK | RUNTIME`) instead of free text: `src/rules/rule.ts`
   with `--strict` so the committed assets and their drift locks stay in
   sync with the precision-contract spec.
 
-## [Unreleased] — Verification Trust Evolution, Phase 1 — measurement infrastructure
+### Verification Trust Evolution, Phase 1 — measurement infrastructure
 
 ### Added — UNSURE adjudication gate + QA-PW-101 measured (plan §11.5)
 
@@ -666,7 +668,7 @@ detectorRevision, FP ≤ 10%, n ≥ 10`), on any detectorRevision mismatch
   (`mjolnir explain`, `mjolnir rules`, generated rule docs, capability
   matrix) render the PROVISIONAL status honestly.
 
-## [Unreleased] — Verification Trust Evolution, Phase 0 + Phase 1 prep
+### Verification Trust Evolution, Phase 0 + Phase 1 prep
 
 ### Added — Rule Capability Matrix (Phase 0)
 
@@ -722,7 +724,7 @@ detectorRevision, FP ≤ 10%, n ≥ 10`), on any detectorRevision mismatch
   `src/adapters/csharp.ts` and `src/engine/adapter.ts` (whose header
   still claimed tree-sitter "arrives in R2 with Python").
 
-## [Unreleased] — Verification Trust Evolution, Phase 0.5 — async parse stage (D1)
+### Verification Trust Evolution, Phase 0.5 — async parse stage (D1)
 
 ### Changed — parse stage wired into the scan pipeline (D1 closed, BEHAVIOR-NEUTRAL)
 

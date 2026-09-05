@@ -62,7 +62,7 @@ export function renderSarif(result: ScanResult, repoRootUri?: string): string {
         informationUri: "https://github.com/Sergey-Bar/Mjolnir",
         // Tool version — MUST match package.json (enforced by
         // tests/version-consistency.spec.ts). Bump on release.
-        version: "0.5.0",
+        version: "0.5.1",
         rules: [...rules.values()].map((r) => {
           // Trust Metadata passthrough when the rule declares it.
           const meta = RULES.find((x) => x.id === r.id);
