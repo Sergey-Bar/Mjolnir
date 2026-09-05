@@ -12,42 +12,14 @@
  * implements it — you cannot ship a stub.
  */
 
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync } from "node:fs";
+import { writeFileAtomic } from "../lib/fs-atomic.js";
 import { join } from "node:path";
 import { sectionHeader, plainContext } from "../reporter/ui.js";
 
 const ui = plainContext();
 
-type Family =
-  "test" | "quality" | "playwright" | "ci" | "python" | "cypress" | "selenium";
-
-/** Map rule family prefix → source directory + default category. */
-const FAMILY_META: Record<
-  Family,
-  { dir: string; category: string; appliesTo: string }
-> = {
-  test: { dir: "test", category: "QA-TEST", appliesTo: "test-files" },
-  quality: { dir: "quality", category: "QA-TQUAL", appliesTo: "test-files" },
-  playwright: { dir: "playwright", category: "QA-PW", appliesTo: "test-files" },
-  ci: { dir: "ci", category: "QA-CI", appliesTo: "ci-workflows" },
-  python: {
-    dir: "python",
-    category: "QA-TEST",
-    appliesTo: "python",
-  },
-  // Phase 5 namespaces (plan §15.4): new frozen families scaffold into
-  // their own directories, born quarantine.
-  cypress: {
-    dir: "cypress",
-    category: "QA-PW",
-    appliesTo: "test-files",
-  },
-  selenium: {
-    dir: "selenium",
-    category: "QA-PW",
-    appliesTo: "test-files",
-  },
-};
+import { familyByToken, RULE_ID_RE } from "./rule-families.js";
 
 export interface ScaffoldInput {
   id: string; // e.g. QA-PW-130
@@ -61,23 +33,27 @@ export interface ScaffoldResult {
   registryEdit: string;
 }
 
-function parseId(
-  id: string,
-): { family: Family; num: string; lower: string } | null {
-  const m = /^QA-(TEST|TQUAL|PW|CI|PY|CYP|SE)-(\d{3})$/.exec(id);
-  if (!m?.[1] || !m[2]) return null;
-  const map: Record<string, Family> = {
-    TEST: "test",
-    TQUAL: "quality",
-    PW: "playwright",
-    CI: "ci",
-    PY: "python",
-    CYP: "cypress",
-    SE: "selenium",
+function parseId(id: string): {
+  family: string;
+  dir: string;
+  category: string;
+  appliesTo: string;
+  num: string;
+  lower: string;
+} | null {
+  const m = RULE_ID_RE.exec(id);
+  if (!m) return null;
+  const token = (id.match(/^QA-([A-Z]+)-/) ?? [])[1] ?? "";
+  const family = familyByToken(token);
+  if (!family) return null;
+  return {
+    family: family.dir,
+    dir: family.dir,
+    category: family.category,
+    appliesTo: family.appliesTo,
+    num: (m[2] as string) ?? "",
+    lower: id.toLowerCase(),
   };
-  // The map covers every alternation of the ID regex above.
-  const family = map[m[1]] as Family;
-  return { family, num: m[2], lower: id.toLowerCase() };
 }
 
 export function createRuleScaffold(
@@ -89,7 +65,7 @@ export function createRuleScaffold(
     return {
       ok: false,
       error:
-        "Invalid rule ID. Expected QA-TEST-nnn, QA-TQUAL-nnn, QA-PW-nnn, QA-CI-nnn or QA-PY-nnn.",
+        "Invalid rule ID. Expected QA-<FAMILY>-NNN with one of the registered families (TEST, TQUAL, PW, CI, PY, ENV, JV, CS, CYP, SE, WDIO, PPTR, APM).",
       files: [],
       registryEdit: "",
     };
@@ -103,8 +79,9 @@ export function createRuleScaffold(
     };
   }
 
-  const meta = FAMILY_META[parsed.family];
-  const ruleRel = join("src", "rules", meta.dir, `${parsed.lower}.ts`);
+  // The family row IS the metadata source (audit M3: one table).
+  const dirRel = join("src", "rules", parsed.dir);
+  const ruleRel = join(dirRel, `${parsed.lower}.ts`);
   const absRule = join(rootDir, ruleRel);
   if (existsSync(absRule)) {
     return {
@@ -114,7 +91,7 @@ export function createRuleScaffold(
       registryEdit: "",
     };
   }
-  mkdirSync(join(rootDir, "src", "rules", meta.dir), { recursive: true });
+  mkdirSync(join(rootDir, "src", "rules", parsed.dir), { recursive: true });
 
   const files: string[] = [];
 
@@ -132,13 +109,13 @@ import type { Finding } from "../../types.js";
 
 export const ${camel(parsed.lower)} = defineRule({
   id: "${input.id}",
-  category: "${meta.category}",
+  category: "${parsed.category}",
   title: ${JSON.stringify(input.title)},
   severity: "warning",
   confidence: "medium",
   findingType: "heuristic-risk",
   qaImpact: "HYGIENE",
-  appliesTo: ${JSON.stringify(meta.appliesTo)},
+  appliesTo: ${JSON.stringify(parsed.appliesTo)},
   run(ctx) {
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     void ctx; // TODO: implement detection over ctx.path / ctx.text
@@ -146,7 +123,7 @@ export const ${camel(parsed.lower)} = defineRule({
   },
 });
 `;
-  writeFileSync(absRule, ruleSrc);
+  writeFileAtomic(absRule, ruleSrc);
   files.push(ruleRel);
 
   // 2+3. Fixture skeletons in both directions.
@@ -159,14 +136,14 @@ export const ${camel(parsed.lower)} = defineRule({
     const content = isPy
       ? `# ${input.id} ${direction} fixture — replace with a real case.\n`
       : `// ${input.id} ${direction} fixture — replace with a real case.\n`;
-    writeFileSync(join(absDir, name), content);
+    writeFileAtomic(join(absDir, name), content);
     files.push(join(dirRel, name));
   }
 
   const exportName = camel(parsed.lower);
   const registryEdit = [
     `// 1. Add import to src/rules/index.ts:`,
-    `import { ${exportName} } from "./${meta.dir}/${parsed.lower}.js";`,
+    `import { ${exportName} } from "./${parsed.dir}/${parsed.lower}.js";`,
     `// 2. Add to the RULES array:`,
     `  ${exportName},`,
   ].join("\n");
