@@ -28,7 +28,10 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { main } from "../../src/cli.js";
+import { explainRule, renderExplain } from "../../src/commands/explain.js";
 import { RULES } from "../../src/rules/index.js";
+
+const ROOT = join(import.meta.dirname, "..", "..");
 
 const README = readFileSync(
   join(import.meta.dirname, "..", "..", "README.md"),
@@ -127,4 +130,32 @@ describe("every `mjolnir` command in the README actually runs", () => {
       ).not.toBe(20);
     });
   }
+});
+
+describe("the README's `explain` sample is the real thing", () => {
+  /**
+   * The README prints a full `mjolnir explain QA-CI-001` transcript under
+   * the heading "One finding, up close", directly below a line calling
+   * detector output "real … not a mockup". Nothing checked it, and it had
+   * rotted: it claimed the rule was "not yet measured — this rule ships on
+   * assumption" when the corpus had since measured it at 32% and
+   * quarantined it for that. A stale sample in the honesty section is the
+   * worst place in the document for one.
+   */
+  it("matches what `mjolnir explain QA-CI-001` actually prints", () => {
+    const block = /```text\n(▚▞ QA-CI-001[\s\S]*?)```/.exec(README);
+    expect(
+      block,
+      "README no longer contains the QA-CI-001 explain sample — if it was " +
+        "moved or removed, update this test in the same commit",
+    ).not.toBeNull();
+    const actual = renderExplain(
+      explainRule("QA-CI-001", join(ROOT, "tests", "fixtures")),
+    );
+    expect(
+      (block?.[1] ?? "").trimEnd(),
+      "the README's explain sample no longer matches the real command — " +
+        "re-run `mjolnir explain QA-CI-001` and paste the current output",
+    ).toBe(actual.trimEnd());
+  });
 });

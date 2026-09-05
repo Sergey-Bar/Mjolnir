@@ -82,10 +82,17 @@ ${textLines}
 `;
 }
 
-async function main(): Promise<void> {
+/**
+ * Builds the hero SVG from a real scan and returns it — no writes.
+ *
+ * Exported so tests/contract/hero-asset-reproducibility.spec.ts can
+ * compare the committed file against a freshly built one. Importing this
+ * module must never write the asset: a spec that regenerates its own
+ * expected value cannot fail.
+ */
+export async function buildHeroSvg(): Promise<string> {
   if (!existsSync(DEMO_REPO)) {
-    console.error(`examples/demo-repo not found at ${DEMO_REPO}`);
-    process.exit(1);
+    throw new Error(`examples/demo-repo not found at ${DEMO_REPO}`);
   }
   const result = await runScan({
     target: DEMO_REPO,
@@ -103,27 +110,22 @@ async function main(): Promise<void> {
   // own stdout is likely piped — the SVG needs colors regardless of
   // whether THIS process's terminal happens to be interactive.
   const rendered = renderTerminal(result, { isTTY: true, ascii: false });
-  const lines = rendered.split("\n").map((l) => `$ ${l}`.replace("$ ", ""));
-  // Prepend the invocation line shown in the original hero asset.
   const allLines = [
     "\x1b[92m$ \x1b[0m\x1b[1mnpx mjolnir-qa@latest\x1b[0m",
-    ...lines,
-  ].map((line) =>
-    // The wall-clock duration on the "Analysis: complete · Nms" line is
-    // real but non-deterministic run-to-run — masking it here (only in
-    // this asset, never in the actual reporter) keeps regenerating the
-    // hero asset a no-op diff when nothing about the scan itself
-    // changed, instead of a spurious diff on every single run.
-    line.replace(/· \d+ms$/, "· a few ms"),
-  );
+    ...rendered.split("\n"),
+    // The wall-clock duration is real but non-deterministic run-to-run;
+    // masked here only, never in the reporter, so regenerating is a
+    // no-op diff when the scan itself is unchanged.
+  ].map((line) => line.replace(/· \d+ms$/, "· a few ms"));
+  return renderSvg(allLines);
+}
 
-  const svg = renderSvg(allLines);
+async function main(): Promise<void> {
+  const svg = await buildHeroSvg();
   mkdirSync(dirname(OUT_PATH), { recursive: true });
   writeFileSync(OUT_PATH, svg);
   console.log(`Wrote ${OUT_PATH} from a real scan of ${DEMO_REPO}`);
-  console.log(
-    `(${allLines.length} lines, longest visible width ${Math.max(...allLines.map((l) => stripAnsi(l).length))})`,
-  );
 }
 
-await main();
+// Only when invoked as a script — see buildHeroSvg's note.
+if (process.argv[1]?.endsWith("generate-readme-hero.ts")) await main();

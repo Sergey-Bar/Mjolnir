@@ -89,18 +89,31 @@ Run `mjolnir explain QA-CI-001` on the first finding above and you get:
 
 Severity:    error
 Confidence:  high
+Tier:        quarantine
 Evidence:    E2
-Measured FP: not yet measured — this rule ships on assumption (see docs/FP-AUDIT.md)
+QA impact:   False-green risk (FALSE-GREEN)
+Measured FP: 32% (19 hand-classified corpus verdicts)
+FP risk:     low (author estimate)
+Languages:   yaml
+Frameworks:  github-actions
 
 WHAT WAS FOUND (real detector output, not a mockup)
   Job `security-scan` runs a verification gate under `continue-on-error: true`.
 
 WHY IT MATTERS
-  This job can fail every day and CI will still show green. The checkmark
-  on this workflow cannot be trusted.
+  This job can fail every day and CI will still show green. The checkmark on
+  this workflow cannot be trusted.
 
 HOW TO FIX
   Remove continue-on-error, or scope it to individual non-blocking steps only.
+
+  Example from this rule's own must-fire fixture: QA-CI-001/must-fire/masked.yml
+
+HOW TO VERIFY THE FIX
+  Re-run `mjolnir` on the changed file(s) — this finding should no longer
+  appear. `mjolnir --scope changed` scopes the check to just what you touched.
+
+Docs: mjolnir rules --md   (full catalog, this rule included)
 ```
 
 That is the unit of value: not a style nit, but a place where your CI is

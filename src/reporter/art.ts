@@ -8,27 +8,27 @@ import type { Palette } from "./theme.js";
 import { gaugeColorForBand } from "./theme.js";
 import type { ScoreBand, ScoreState } from "./score-state.js";
 
-/** Block-character logo. Keep ≤ 62 cols wide. */
+/**
+ * The report's wordmark. A LOCKUP, not a picture of a hammer.
+ *
+ * This used to be eight rows of box-drawing that spelled out a hammer —
+ * directly above the score instrument, which is also a hammer. Two
+ * hammers, ten lines apart, and the smaller static one came first, so
+ * appendScoreSection's own claim that "the hammer is the instrument: the
+ * first thing the eye lands on" was false in every report the tool has
+ * ever printed.
+ *
+ * There is one hammer now, and it is the one that means something: the
+ * state-resolved instrument in HAMMER_STATES. The wordmark stays out of
+ * its way.
+ */
 export const LOGO = `
- ╔═══════════╗
- ║           ║
- ╠═══════════╣    M J Ö L N I R
- ║     ║     ║
- ╚═════╩═════╝    VERIFICATION TRUST ENGINE
-       ║
-       ║
+  M J Ö L N I R  ·  VERIFICATION TRUST ENGINE
 `;
 
-/** Plain-ASCII fallback logo for cmd.exe/legacy consoles where the
- * block-drawing LOGO above renders as mangled "?" glyphs. */
+/** Plain-ASCII fallback for cmd.exe/legacy consoles. */
 export const LOGO_ASCII = `
- +-----------+
- |           |
- +-----------+    M J O L N I R
- |     |     |
- +-----+-----+    VERIFICATION TRUST ENGINE
-       |
-       |
+  M J O L N I R  -  VERIFICATION TRUST ENGINE
 `;
 
 export const TROPHY = String.raw`

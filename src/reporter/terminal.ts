@@ -19,8 +19,10 @@ import {
   scoreGauge,
   severityTag,
   box,
+  measure,
   padTo,
   sanitizeData,
+  wrapText,
 } from "./theme.js";
 import { deriveScoreState, headlineFor } from "./score-state.js";
 import {
@@ -109,7 +111,7 @@ export function renderTerminal(
   if (counts.total === 0 && result.score === 100) {
     appendForgedBlock(lines, p, ascii);
   }
-  appendFooter(lines, result, p);
+  appendFooter(lines, result, p, width);
   return lines.join("\n");
 }
 
@@ -379,9 +381,19 @@ function pushCard(
     20,
     width - 2 - CARD_GUTTER.length - CARD_LABEL_PAD,
   );
-  lines.push(
-    `  ${severityTag(card.severity, p, ascii)} ${p.bold(card.loc)}  ${p.dim(card.evidence)}`,
-  );
+  // The evidence bracket is the longest thing on a card header and it is
+  // one atomic unit — "[E2 · deterministic · measured FP 0% · n=20 · trust
+  // L3 · runtime: file executed]" is 78 columns on its own. Keeping it
+  // inline pushed the header past 128 columns and out of any default
+  // terminal. It drops to its own indented line when it does not fit,
+  // matching what the grouped "same fix applies" header already does.
+  const header = `  ${severityTag(card.severity, p, ascii)} ${p.bold(card.loc)}`;
+  if (measure(`${header}  ${card.evidence}`) <= width) {
+    lines.push(`${header}  ${p.dim(card.evidence)}`);
+  } else {
+    lines.push(header);
+    lines.push(`${CARD_GUTTER}${p.dim(card.evidence)}`);
+  }
   const fields: Array<{ label: string; text: string; dim: boolean }> = [
     { label: "Problem", text: card.problem, dim: false },
     { label: "Impact", text: card.impact, dim: false },
@@ -477,16 +489,43 @@ function appendFindings(
         hiddenRules.add(unit.ruleId);
         continue;
       }
-      lines.push(
-        `  ${severityTag(maxSeverity(unit.findings), p, ascii)} ${p.bold(sanitizeData(unit.ruleId))} ${p.dim(`× ${n} — same fix applies`)} ${p.dim(evidenceTag(first))}`,
+      // Same overflow rule as a single card: the evidence bracket moves to
+      // its own line rather than running the group header off the screen.
+      const groupHead = `  ${severityTag(maxSeverity(unit.findings), p, ascii)} ${p.bold(sanitizeData(unit.ruleId))} ${p.dim(`× ${n} — same fix applies`)}`;
+      const groupEvidence = evidenceTag(first);
+      if (measure(`${groupHead} ${groupEvidence}`) <= width) {
+        lines.push(`${groupHead} ${p.dim(groupEvidence)}`);
+      } else {
+        lines.push(groupHead);
+        lines.push(`${CARD_GUTTER}${p.dim(groupEvidence)}`);
+      }
+      // The shared fix is prose and wraps like every other card field; it
+      // was the one field pushed unwrapped, so a long fix ran ~140 columns.
+      const groupContentWidth = Math.max(
+        20,
+        width - 2 - CARD_GUTTER.length - CARD_LABEL_PAD,
       );
-      lines.push(
-        `${CARD_GUTTER}${p.accent("Fix".padEnd(CARD_LABEL_PAD))}${p.dim(sanitizeData(first.fix))}`,
+      wrapLines(sanitizeData(first.fix), groupContentWidth).forEach(
+        (seg, i) => {
+          const label =
+            i === 0
+              ? p.accent("Fix".padEnd(CARD_LABEL_PAD))
+              : " ".repeat(CARD_LABEL_PAD);
+          lines.push(`${CARD_GUTTER}${label}${p.dim(seg)}`);
+        },
       );
+      // The per-occurrence one-liners wrap too — a long rule message plus
+      // a deep path ran past 100 columns and was the last thing in the
+      // report that ignored the width budget.
       for (const f of unit.findings) {
-        lines.push(
-          `${CARD_GUTTER}${" ".repeat(CARD_LABEL_PAD)}${p.dim(`· ${sanitizeData(f.file)}:${f.line} — ${sanitizeData(f.message)}`)}`,
-        );
+        wrapLines(
+          `· ${sanitizeData(f.file)}:${f.line} — ${sanitizeData(f.message)}`,
+          groupContentWidth,
+        ).forEach((seg, i) => {
+          lines.push(
+            `${CARD_GUTTER}${" ".repeat(CARD_LABEL_PAD)}${p.dim(i === 0 ? seg : `  ${seg}`)}`,
+          );
+        });
       }
       lines.push("");
       shown++;
@@ -540,10 +579,31 @@ function appendForgedBlock(
   lines.push("");
 }
 
+/**
+ * Pushes dimmed prose that respects the terminal width.
+ *
+ * The honesty footer used to be pushed as single unbroken strings — the
+ * rule-coverage line alone is ~147 columns, so it overflowed every
+ * default 80- or 100-column terminal and ignored `--width` entirely.
+ * `wrapText` is the same helper the finding cards already use.
+ */
+function pushWrapped(
+  lines: string[],
+  p: ReturnType<typeof palette>,
+  text: string,
+  width: number,
+): void {
+  const indent = "  ";
+  for (const line of wrapText(text, Math.max(20, width - indent.length))) {
+    lines.push(p.dim(`${indent}${line}`));
+  }
+}
+
 function appendFooter(
   lines: string[],
   result: ScanResult,
   p: ReturnType<typeof palette>,
+  width: number,
 ): void {
   lines.push(p.dim(DIVIDER));
   const status =
@@ -558,10 +618,11 @@ function appendFooter(
       "E0",
   ).length;
   if (advisory > 0) {
-    lines.push(
-      p.dim(
-        `  ${advisory} advisory finding${advisory === 1 ? "" : "s"} (E0 — observation only, no score impact)`,
-      ),
+    pushWrapped(
+      lines,
+      p,
+      `${advisory} advisory finding${advisory === 1 ? "" : "s"} (E0 — observation only, no score impact)`,
+      width,
     );
   }
 
@@ -573,12 +634,13 @@ function appendFooter(
     const measuredHere = [...firedRuleIds].filter(
       (id) => MEASURED_FP[id] !== undefined,
     ).length;
-    lines.push(
-      p.dim(
-        `  Rule coverage: ${measuredHere}/${firedRuleIds.size} rules that fired here have a measured` +
-          ` false-positive rate; the rest are heuristics.` +
-          ` \`mjolnir rules --unmeasured\` lists them.`,
-      ),
+    pushWrapped(
+      lines,
+      p,
+      `Rule coverage: ${measuredHere}/${firedRuleIds.size} rules that fired here have a measured` +
+        ` false-positive rate; the rest are heuristics.` +
+        ` \`mjolnir rules --unmeasured\` lists them.`,
+      width,
     );
     // Plan §16: verified vs assumed — how many findings a real run
     // report corroborated. When no report was present, say so honestly
@@ -587,16 +649,18 @@ function appendFooter(
       (f) => f.runtimeCorroboration !== undefined,
     ).length;
     if (verified > 0) {
-      lines.push(
-        p.dim(
-          `  Runtime evidence: ${verified}/${result.findings.length} findings corroborated by a real run report (trust L3–L5); the rest are static-only.`,
-        ),
+      pushWrapped(
+        lines,
+        p,
+        `Runtime evidence: ${verified}/${result.findings.length} findings corroborated by a real run report (trust L3–L5); the rest are static-only.`,
+        width,
       );
     } else {
-      lines.push(
-        p.dim(
-          `  Runtime evidence: not available — no run report (mjolnir.report.json / test-results) next to the scan target; all findings are static-only (L0–L2).`,
-        ),
+      pushWrapped(
+        lines,
+        p,
+        `Runtime evidence: not available — no run report (mjolnir.report.json / test-results) next to the scan target; all findings are static-only (L0–L2).`,
+        width,
       );
     }
   }

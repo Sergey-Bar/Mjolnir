@@ -156,6 +156,17 @@ function escapeHtml(s: string): string {
  */
 const SOLID_BLOCK_RUN = /^[\u2580\u2584\u2588\u258C\u2590\u2596-\u259F\s]+$/;
 
+/**
+ * Runic characters, which come from the fallback face.
+ *
+ * FreeMono is a noticeably lighter design than JetBrains Mono, so the
+ * runes on the hammer rendered as thin specks beside the bold blocks they
+ * sit on. A stroke brings their weight into line with the rest of the
+ * frame; without it the one detail unique to this tool's output is also
+ * the least legible thing in it.
+ */
+const RUNIC = /[\u16A0-\u16FF]/gu;
+
 /** ANSI line to colored spans, via the repo's single parser. */
 function lineHtml(line: string): string {
   const spans = ansiLineToSpans(line);
@@ -164,7 +175,13 @@ function lineHtml(line: string): string {
   return spans
     .map((s) => {
       const cls = SOLID_BLOCK_RUN.test(s.text) ? ' class="blocks"' : "";
-      return `<span${cls} style="color:${s.color}">${s.text}</span>`;
+      // Runes are wrapped individually so only they get the weight
+      // correction — the surrounding text is already the right face.
+      const text = s.text.replace(
+        RUNIC,
+        (ch) => `<span class="rune">${ch}</span>`,
+      );
+      return `<span${cls} style="color:${s.color}">${text}</span>`;
     })
     .join("");
 }
@@ -205,7 +222,7 @@ export function buildPage(script: VideoScript): string {
   // on a different sub-pixel offset — antialiasing then draws a seam
   // between every pair of blocks and the hammer reads as a brick wall.
   const dpr = pacing.deviceScaleFactor;
-  const maxFont = Math.min(17, (vw - pad * 2) / (cols * 0.6));
+  const maxFont = Math.min(24, (vw - pad * 2) / (cols * 0.6));
   const advance = Math.floor(maxFont * 0.6 * dpr) / dpr;
   const fontSize = advance / 0.6;
   // ~1.15 line height, snapped the same way so rows tile too.
@@ -248,6 +265,7 @@ html,body{width:${vw}px;height:${vh}px;overflow:hidden;background:${INK}}
    disturbing the character grid. Applied only to spans that are pure
    block art, so ordinary text is untouched. */
 #lines .blocks{-webkit-text-stroke:${(0.75 / pacing.deviceScaleFactor).toFixed(3)}px currentColor}
+#lines .rune{-webkit-text-stroke:${(1.1 / pacing.deviceScaleFactor).toFixed(3)}px currentColor}
 .caret{color:${GOLD}}
 .prompt{color:#4FB477}
 .add{color:#4FB477}

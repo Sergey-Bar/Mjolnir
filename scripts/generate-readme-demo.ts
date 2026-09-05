@@ -109,10 +109,17 @@ ${textLines}
 `;
 }
 
-async function main(): Promise<void> {
+/**
+ * Builds the SVG from a real scan and returns it — no writes, no console.
+ *
+ * Exported so tests/contract/demo-asset-reproducibility.spec.ts can
+ * compare the committed file against a freshly built one. Importing this
+ * module must never write the asset: a spec that regenerates its own
+ * expected value cannot fail.
+ */
+export async function buildDemoSvg(): Promise<string> {
   if (!existsSync(DEMO_REPO)) {
-    console.error(`examples/demo-repo not found at ${DEMO_REPO}`);
-    process.exit(1);
+    throw new Error(`examples/demo-repo not found at ${DEMO_REPO}`);
   }
   const result = await runScan({
     target: DEMO_REPO,
@@ -121,17 +128,8 @@ async function main(): Promise<void> {
     maxDurationMs: Number.POSITIVE_INFINITY,
     scopeChanged: false,
     format: "terminal",
-    // The committed demo asset must reflect the same scan the
-    // precision-contract spec asserts (which runs --strict): quarantine
-    // rules like the measured-into-quarantine QA-TEST-001 stay visible
-    // at severity=info/E0 so the demo score band is reproducible.
     strict: true,
   });
-
-  // verbose: true → the reporter prints every finding, not the top 5.
-  // ascii: false pins Unicode glyphs (matching generate-readme-hero.ts) so
-  // the committed SVG does not depend on whoever ran the generator last —
-  // shouldUseAscii() is host/env-dependent and made this asset drift in CI.
   const rendered = renderTerminal(result, {
     isTTY: true,
     verbose: true,
@@ -140,22 +138,16 @@ async function main(): Promise<void> {
   const lines = [
     "\x1b[92m$\x1b[0m \x1b[1mnpx mjolnir-qa@latest --verbose\x1b[0m",
     ...rendered.split("\n"),
-  ].map((line) =>
-    // The wall-clock duration is real but non-deterministic run-to-run —
-    // masked here (only in this asset, never in the real reporter) so
-    // regenerating is a no-op diff when the scan itself is unchanged.
-    line.replace(/· \d+ms$/, "· a few ms"),
-  );
+  ].map((line) => line.replace(/· \d+ms$/, "· a few ms"));
+  return renderSvg(lines);
+}
 
-  const svg = renderSvg(lines);
+async function main(): Promise<void> {
+  const svg = await buildDemoSvg();
   mkdirSync(dirname(OUT_PATH), { recursive: true });
   writeFileSync(OUT_PATH, svg);
   console.log(`Wrote ${OUT_PATH} from a real --verbose scan of ${DEMO_REPO}`);
-  console.log(
-    `(${lines.length} lines, longest visible width ${Math.max(
-      ...lines.map((l) => stripAnsi(l).length),
-    )})`,
-  );
 }
 
-await main();
+// Only when invoked as a script — see buildDemoSvg's note.
+if (process.argv[1]?.endsWith("generate-readme-demo.ts")) await main();
