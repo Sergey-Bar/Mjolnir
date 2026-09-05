@@ -26,6 +26,9 @@ import {
 } from "../rules/measurement.js";
 import { deriveEvidenceLevel } from "../types.js";
 import { capForTier } from "../engine/tier-policy.js";
+import { sectionHeader, plainContext } from "../reporter/ui.js";
+
+const ui = plainContext();
 
 export interface DoctorCheck {
   name: string;
@@ -335,7 +338,7 @@ export function runDoctorSelfAudit(fixturesRoot: string): DoctorReport {
 }
 
 export function renderDoctorReport(report: DoctorReport): string {
-  const lines: string[] = ["", "🔨 MJÖLNIR — SELF-AUDIT", ""];
+  const lines: string[] = ["", sectionHeader("MJÖLNIR — SELF-AUDIT", ui), ""];
   for (const c of report.checks) {
     const mark = c.ok ? "✓" : "✗";
     lines.push(`${mark} ${c.name}`);

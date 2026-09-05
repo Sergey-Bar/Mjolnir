@@ -29,6 +29,9 @@ import {
 import { dirname, join } from "node:path";
 
 import type { Finding, ScanResult } from "../types.js";
+import { nextStep, sectionHeader, plainContext } from "../reporter/ui.js";
+
+const ui = plainContext();
 
 export const DEFAULT_BASELINE_PATH = join(".mjolnir", "baseline.json");
 
@@ -224,7 +227,7 @@ export function renderBaselineSaved(
   replaced?: { backupPath?: string },
 ): string {
   const lines = [
-    "▚▞ BASELINE SAVED",
+    sectionHeader("BASELINE SAVED", ui),
     "",
     `Captured ${count} finding${count === 1 ? "" : "s"} to ${path}.`,
   ];
@@ -235,20 +238,20 @@ export function renderBaselineSaved(
       `Replaced an existing baseline — the previous one was saved to ${replaced.backupPath}.`,
     );
   }
-  lines.push(
-    'Run "mjolnir diff" after future changes to see only what\'s new.',
-  );
+  lines.push(nextStep("mjolnir diff", ui) + " — see only what's new.");
   return lines.join("\n");
 }
 
 export function renderBaselineDiff(diff: BaselineDiff): string {
   const lines: string[] = [];
-  lines.push("▚▞ DIFF AGAINST BASELINE");
+  lines.push(sectionHeader("DIFF AGAINST BASELINE", ui));
   lines.push("");
 
   if (!diff.hasBaseline) {
     lines.push("UNKNOWN — no baseline found.");
-    lines.push('Run "mjolnir baseline" first to capture a comparison point.');
+    lines.push(
+      nextStep("mjolnir baseline", ui) + " to capture a comparison point.",
+    );
     return lines.join("\n");
   }
 

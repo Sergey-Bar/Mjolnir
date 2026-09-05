@@ -23,6 +23,13 @@ import {
   createRuleScaffold,
   renderScaffoldReport,
 } from "../../src/commands/create-rule.js";
+import {
+  diffAgainstBaseline,
+  renderBaselineDiff,
+  renderBaselineSaved,
+} from "../../src/commands/baseline.js";
+import { renderInit, runInit } from "../../src/commands/init.js";
+import { renderStats } from "../../src/commands/stats.js";
 import type { ScanResult } from "../../src/types.js";
 import type { ForensicsReport } from "../../src/forensics/types.js";
 
@@ -177,5 +184,57 @@ describe("dead end: create-rule's deliberately-failing stub", () => {
     expect(text).toContain("intentional");
     expect(text).toMatch(/FAILING|fail/i);
     expect(text).toContain("fixture-firewall");
+  });
+});
+
+/**
+ * Subcommand dead ends (Terminal + CI UX Overhaul plan, M1b): every
+ * empty/unresolvable state explains what happened AND points at the
+ * exact `$ command` to run next. The `$` affordance is the design
+ * system's next-step token — a command the user can copy verbatim.
+ */
+describe("subcommand dead ends carry a $ next-step command", () => {
+  it("diff without a baseline says what to capture", () => {
+    const diff = diffAgainstBaseline(
+      {
+        schemaVersion: 1,
+        partial: false,
+        score: 50,
+        frameworks: [],
+        frameworkDetectionUnknown: false,
+        dimensions: [],
+        findings: [],
+        analysisStatus: {
+          discovery: "complete",
+          rules: "complete",
+          skippedFiles: 0,
+          durationMs: 1,
+        },
+      },
+      null,
+    );
+    const text = renderBaselineDiff(diff);
+    expect(text).toContain("UNKNOWN — no baseline found.");
+    expect(text).toMatch(/^\s*\$ mjolnir baseline\b/m);
+  });
+
+  it("baseline saved points at diff", () => {
+    const text = renderBaselineSaved(".mjolnir/baseline.json", 2);
+    expect(text).toMatch(/^\s*\$ mjolnir diff\b/m);
+  });
+
+  it("stats with no recorded fixes points at the baseline→diff loop", () => {
+    const text = renderStats(null);
+    expect(text).toContain("No fixes recorded yet");
+    expect(text).toMatch(/^\s*\$ mjolnir baseline$/m);
+    expect(text).toMatch(/^\s*\$ mjolnir diff$/m);
+  });
+
+  it("init prints next commands as $ lines", () => {
+    const result = runInit(dir, null);
+    const text = renderInit(result);
+    for (const cmd of result.nextCommands) {
+      expect(text).toContain(`$ ${cmd}`);
+    }
   });
 });

@@ -19,13 +19,23 @@
  */
 
 import type { Palette } from "./theme.js";
-import { box, measure, padTo, wrapText } from "./theme.js";
+import { palette, box, measure, padTo, wrapText } from "./theme.js";
 
 /** Resolved render context — built once per command run, passed down. */
 export interface UiContext {
   p: Palette;
   ascii: boolean;
   width: number;
+}
+
+/**
+ * Neutral context for direct calls (tests, library use) and as the
+ * safe default when a command runner is invoked without wiring: no
+ * color, unicode glyphs, 80 columns. cli.ts builds the real context
+ * once per run (TTY, width, ASCII heuristic) and passes it down.
+ */
+export function plainContext(width = 80): UiContext {
+  return { p: palette(false), ascii: false, width };
 }
 
 /** Canonical divider length (art.ts DIVIDER matches; keep in sync). */

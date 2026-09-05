@@ -11,6 +11,9 @@ import {
   loadConfig,
   type IgnoreEntry,
 } from "../config/config.js";
+import { sectionHeader, plainContext } from "../reporter/ui.js";
+
+const ui = plainContext();
 
 export interface SuppressionReport {
   total: number;
@@ -57,7 +60,7 @@ export function renderSuppressions(report: SuppressionReport): string {
   }
   const lines = [
     "",
-    "▚▞ QUALITY GOVERNANCE",
+    sectionHeader("QUALITY GOVERNANCE", ui),
     "",
     `Suppressed findings: ${report.total}`,
     `Active:              ${report.active}`,

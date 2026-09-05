@@ -10,6 +10,9 @@
  */
 
 import type { ForensicsReport, TestVerdict } from "./types.js";
+import { FLAKE_GLYPH, sectionHeader, plainContext } from "../reporter/ui.js";
+
+const ui = plainContext();
 
 export interface TriageRow {
   file: string;
@@ -58,7 +61,7 @@ function suggestAction(v: TestVerdict): string {
 export function renderTriage(report: ForensicsReport): string {
   const rows = triageRows(report);
   const lines: string[] = [];
-  lines.push("▚▞ FLAKY TRIAGE — auto-generated, do not edit");
+  lines.push(sectionHeader("FLAKY TRIAGE — auto-generated, do not edit", ui));
   lines.push("");
   if (rows.length === 0) {
     lines.push("Nothing to triage — no failures or retries in this run.");
@@ -102,7 +105,7 @@ export function renderTriageMd(report: ForensicsReport): string {
     "|--------|------|------|----------|----------|------------------|-------------|",
   );
   for (const r of rows) {
-    const status = r.passedOnRetry ? "🔥 TRUE-FLAKE" : "❌ FAILING";
+    const status = r.passedOnRetry ? `${FLAKE_GLYPH} TRUE-FLAKE` : "❌ FAILING";
     lines.push(
       `| ${status} | \`${r.title}\` | \`${r.file}\` | ${r.attempts} | ${(r.totalDurationMs / 1000).toFixed(1)}s | ${r.suggestedAction} | ${r.proposedQuarantine ? "✅ propose" : "—"} |`,
     );
