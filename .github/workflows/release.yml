@@ -254,9 +254,18 @@ jobs:
       # publish PUT fails with a misleading "404 Not Found". OIDC needs npm
       # >= 11.5.1. Done here, after the test gate, so the rest of the job keeps
       # running on the toolchain-pinned npm.
+      #
+      # Pinned to the npm 11 line deliberately, NOT @latest: npm 12.0
+      # (current latest) changed `npm pack --json` from an array to an
+      # object keyed by package name, which broke the fresh-install gate
+      # below on the very first auto-release (v0.5.1, 2026-09-05 — tag
+      # cut, publish stopped by the gate, nothing shipped). The gate's
+      # parsers now tolerate both shapes, but npm 12's publish/OIDC path
+      # is unproven for this pipeline — move to 12 as a deliberate,
+      # separately-verified change, never via an implicit @latest drift.
       - name: Upgrade npm for OIDC trusted publishing
         if: vars.NPM_PUBLISH == 'true' && steps.registry.outputs.published != 'true'
-        run: npm install -g npm@latest
+        run: npm install -g npm@11
 
       # setup-node writes an .npmrc containing `always-auth=true` and
       # `//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}`. With

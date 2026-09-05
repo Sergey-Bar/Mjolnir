@@ -9,6 +9,23 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — npm 12 pack-shape repair of the release pipeline
+
+### Fixed
+
+- The fresh-install gate (`tests/integrations/registry-install.spec.ts`),
+  `tests/integrations/package-smoke.spec.ts`, and
+  `tests/e2e/journey-1-first-run.spec.ts` parse `npm pack --json` through
+  a shared shape-tolerant helper
+  (`tests/helpers/npm-pack-json.ts`): npm 12 changed the output from an
+  array to an object keyed by package name, which stopped the v0.5.1
+  publish at the gate — tag cut, nothing shipped, by design.
+- `release.yml` upgrades to `npm@11` (the proven line) instead of
+  `npm@latest`: toolchain majors must be deliberate, verified changes,
+  never implicit drift on the publish path.
+- `registry-install.spec.ts` cleanup no longer cascades a second error
+  when `beforeAll` fails early (the cascade buried the real diagnosis).
+
 ## [0.5.1] — 2026-09-05
 
 ### Verification Trust Evolution, Phase 8 — Local Extensibility (plan §18)

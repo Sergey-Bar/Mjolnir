@@ -24,39 +24,9 @@ import {
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { parseNpmPackJson } from "../helpers/npm-pack-json.js";
 
 const ROOT = resolve(import.meta.dirname, "..", "..");
-
-/**
- * `npm pack --json` writes a JSON array to stdout, but npm mixes other text
- * in with it: lifecycle-script output (`prepare > husky`, tsdown) before it,
- * and — on npm 11+ — `npm warn`/`npm notice` lines interleaved and after it.
- * `lastIndexOf("]")` is not safe (a trailing notice can contain `]`), so scan
- * from the first `[` tracking bracket depth (string-aware) and stop at the
- * matching close.
- */
-function parseNpmJsonArray(out: string): unknown[] {
-  const start = out.indexOf("[");
-  if (start === -1) {
-    throw new Error(`npm --json output contained no JSON array:\n${out}`);
-  }
-  let depth = 0;
-  let inStr = false;
-  for (let i = start; i < out.length; i++) {
-    const ch = out[i];
-    if (inStr) {
-      if (ch === "\\") i++;
-      else if (ch === '"') inStr = false;
-      continue;
-    }
-    if (ch === '"') inStr = true;
-    else if (ch === "[") depth++;
-    else if (ch === "]" && --depth === 0) {
-      return JSON.parse(out.slice(start, i + 1)) as unknown[];
-    }
-  }
-  throw new Error(`npm --json output had an unterminated JSON array:\n${out}`);
-}
 
 describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
   "package publish integrity",
@@ -83,14 +53,13 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
 
       // `--ignore-scripts`: dist/ is already built above, so the `prepare`
       // (husky) script is not needed — and skipping it keeps npm's lifecycle
-      // chatter (which npm 11 writes to stdout) out of the JSON we parse.
+      // chatter (which npm 11+ writes to stdout) out of the JSON we parse.
       const packOut = execSync(`npm pack --json --ignore-scripts`, {
         cwd: ROOT,
       }).toString();
-      const packResult = parseNpmJsonArray(packOut).find(
-        (e): e is { filename: string } =>
-          typeof (e as { filename?: unknown })?.filename === "string",
-      );
+      // Shape-tolerant: npm ≤ 11 emits an array, npm ≥ 12 an object keyed
+      // by package name.
+      const packResult = parseNpmPackJson(packOut);
       if (!packResult) {
         throw new Error(
           `npm pack --json produced no entry with a filename. Raw output:\n${packOut}`,
@@ -289,11 +258,15 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
           "npm pack --dry-run --json --ignore-scripts",
           { cwd: ROOT },
         ).toString();
-        const dryRunResult = parseNpmJsonArray(dryRunOut).find(
-          (e): e is { files: Array<{ path: string }> } =>
-            Array.isArray((e as { files?: unknown })?.files),
-        );
-        const packedPaths = (dryRunResult?.files ?? []).map((f) => f.path);
+        // Shape-tolerant (npm ≤ 11 array / npm ≥ 12 object-keyed): the
+        // pack entry carries the `files` listing in both shapes.
+        const dryRunResult = parseNpmPackJson(dryRunOut);
+        const packedFiles = dryRunResult?.files;
+        const packedPaths = (
+          Array.isArray(packedFiles)
+            ? (packedFiles as Array<{ path: string }>)
+            : []
+        ).map((f) => f.path);
 
         const forbiddenPrefixes = [
           "scratch/",
