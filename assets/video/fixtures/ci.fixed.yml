@@ -1,0 +1,44 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - shell: bash
+        run: |
+          set -o pipefail
+          npm test | tee test-results.log
+      - shell: bash
+        run: |
+          set -o pipefail
+          yarn test --coverage | tee coverage.log
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm run lint; npm run typecheck
+
+  deploy-smoke:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm test && npm run smoke
+      - shell: bash
+        run: |
+          set -o pipefail
+          vitest run --coverage | tee vitest-results.log
+      - shell: bash
+        run: |
+          set -o pipefail
+          pnpm test | tee pnpm-results.log
+
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm audit --audit-level=high

@@ -1,7 +1,7 @@
 {
   "name": "mjolnir-qa",
   "version": "0.5.0",
-  "description": "Mjölnir — the Verification Trust Engine for QA. Audits test suites and CI pipelines, reports a worthiness score and prioritized findings.",
+  "description": "Mj\u00f6lnir \u2014 the Verification Trust Engine for QA. Audits test suites and CI pipelines, reports a worthiness score and prioritized findings.",
   "type": "module",
   "engines": {
     "node": ">=22.18"
@@ -41,6 +41,8 @@
     "site:audit": "node site/scripts/audit-live.mjs",
     "site:lighthouse": "node site/scripts/lighthouse-run.mjs",
     "docs:demo": "tsx scripts/generate-readme-demo.ts",
+    "docs:video:capture": "tsx scripts/video/write-scripts.ts",
+    "docs:video:glyphs": "tsx scripts/video/check-glyphs.ts",
     "docs:translations": "node scripts/check-readme-translations.mjs",
     "self-scan": "node dist/cli.mjs .",
     "prepare": "husky",
@@ -58,7 +60,7 @@
     "linter",
     "static-analysis"
   ],
-  "author": "Mjölnir Team",
+  "author": "Mj\u00f6lnir Team",
   "license": "MIT",
   "repository": {
     "type": "git",
