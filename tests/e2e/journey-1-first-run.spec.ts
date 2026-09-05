@@ -192,11 +192,16 @@ describe("E2E journey 1: first run from the packed tarball", () => {
     expect(stdout).toContain("scan");
   });
 
-  it("an unknown flag exits 10 with a usage line", () => {
+  it("an unknown flag exits 10 with a friendly usage error", () => {
     const { stdout, stderr, status } = runMjolnir([
       "--this-flag-does-not-exist",
     ]);
     expect(status).toBe(10);
-    expect(stdout + stderr).toContain("Usage");
+    // Plan M2: the friendly error names the flag, suggests neighbors and
+    // points at the help command (stderr; stdout stays findings-only).
+    expect(stdout + stderr).toContain(
+      'mjolnir: unknown flag "--this-flag-does-not-exist"',
+    );
+    expect(stdout + stderr).toContain("Run mjolnir --help");
   });
 });

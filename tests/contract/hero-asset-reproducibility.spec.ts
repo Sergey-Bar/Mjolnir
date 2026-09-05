@@ -64,17 +64,17 @@ describe("assets/readme/terminal-hero.svg reproducibility", () => {
     // Every section header the real reporter renders for this scan must
     // appear in the SVG — this is exactly the check that would have
     // caught "FIX THIS FIRST" going missing after Sprint 5 shipped it.
-    // Matched narrowly on the literal "▚ " header prefix (not just any
-    // leading "#", which also matches the ASCII score gauge's fill
-    // characters when ascii:true is used for a stable, TTY-independent
-    // render).
+    // Matched narrowly on the literal header glyph prefix (`▚ ` unicode,
+    // `= ` the design system's ASCII fallback — not just any leading "#",
+    // which also matches the ASCII score gauge's fill characters when
+    // ascii:true is used for a stable, TTY-independent render).
     const sectionHeaders = rendered
       .split("\n")
       .map((l) => l.trim())
-      .filter((l) => l.startsWith("▚ "));
+      .filter((l) => /^[▚=] /.test(l));
     expect(sectionHeaders.length).toBeGreaterThan(0);
     for (const header of sectionHeaders) {
-      const text = header.replace(/^▚\s*/, "");
+      const text = header.replace(/^[▚=]\s*/, "");
       expect(
         svg,
         `hero asset is missing the "${text}" section that the current ` +

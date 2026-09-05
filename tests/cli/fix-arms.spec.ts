@@ -355,7 +355,7 @@ describe("report rendering covers every status", () => {
       ],
       false,
     );
-    expect(report).toContain("✔ [QA-TEST-001] a.spec.ts:1");
+    expect(report).toContain("✓ [QA-TEST-001] a.spec.ts:1");
     expect(report).toContain("▸ [QA-TEST-001] b.spec.ts:2");
     expect(report).toContain("✗ [QA-PW-003] c.spec.ts:3");
     expect(report).toContain("· [QA-TEST-001] d.spec.ts:4");

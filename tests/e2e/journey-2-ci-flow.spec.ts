@@ -55,6 +55,33 @@ describe("E2E journey 2: CI PR flow", () => {
     const text = readFileSync(wf, "utf8");
     expect(text).toContain("jobs:");
     expect(text).toContain("on:");
+    // Template v2: the summary step is the `mjolnir summary` command,
+    // not an inline script (plan M4 — one emitter, one code path).
+    expect(text).toContain("summary mjolnir.json");
+  });
+
+  it("summary turns a saved --json report into a step summary (CI flow tail)", () => {
+    writeSpec("clean.spec.ts", CLEAN);
+    writeSpec("debt.spec.ts", DEBT);
+    const scan = runCli([dir, "--json", "--strict"]);
+    expect(scan.status).toBe(0);
+    const reportPath = join(dir, "mjolnir.json");
+    writeFileSync(reportPath, scan.stdout);
+    // Neutralize the Actions-runner env: this test pins the documented
+    // "outside GitHub Actions" behavior (summary on stdout, no
+    // annotations); the annotations flow is covered in summary.spec.
+    const { stdout, status } = runCli(["summary", "mjolnir.json"], dir, {
+      GITHUB_ACTIONS: undefined,
+      GITHUB_STEP_SUMMARY: undefined,
+    });
+    expect(status).toBe(0);
+    // Step summary markdown: score + verdict band + deduction context.
+    expect(stdout).toContain("Verification Trust");
+    expect(stdout).toMatch(/Score: \*\*\d+\/100\*\*/);
+    expect(stdout).toContain("QA-TEST-001");
+    expect(stdout).toContain("- Fix:");
+    // Outside GITHUB_ACTIONS there are no annotation lines.
+    expect(stdout).not.toContain("::error");
   });
 
   it("--scope changed attributes findings only to changed lines on a branch", () => {

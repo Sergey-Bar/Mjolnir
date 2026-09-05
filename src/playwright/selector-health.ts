@@ -17,6 +17,9 @@ import type { LocatorClass, SelectorRisk } from "./selector-health-types.js";
 
 export type { LocatorClass, SelectorRisk } from "./selector-health-types.js";
 import { LOCATOR_RISK } from "./selector-health-types.js";
+import { sectionHeader, plainContext } from "../reporter/ui.js";
+
+const ui = plainContext();
 
 export interface SpecSelectorHealth {
   file: string;
@@ -128,7 +131,7 @@ export function computeSpecHealth(
 }
 
 export function renderSelectorHealth(specs: SpecSelectorHealth[]): string {
-  const lines: string[] = ["", "▚▞ SELECTOR HEALTH", ""];
+  const lines: string[] = ["", sectionHeader("SELECTOR HEALTH", ui), ""];
   for (const spec of specs) {
     const filled = Math.round(spec.score / 5);
     const bar = "█".repeat(filled) + "░".repeat(20 - filled);

@@ -46,6 +46,11 @@ jobs:
       # Dogfooding requires running the code being proposed.
       - run: npm ci && npm run build
       - run: node dist/cli.mjs . --scope changed --json > mjolnir.json
+      # Dogfooded template v2 (plan M4): annotations + Job Summary via the
+      # same `summary` command the generated workflow uses — one emitter.
+      - name: Annotations + Job Summary
+        if: always()
+        run: node dist/cli.mjs summary mjolnir.json
       # Advisory mode by design: this workflow reports findings, it never
       # blocks a PR. `diff` legitimately exits 1 when it finds new/worsened
       # debt — continue-on-error on THIS step only keeps that exit code
