@@ -116,12 +116,17 @@ export const pwOrderDependence = defineRule({
     const inHook = (idx: number) =>
       hookRanges.some(([s, e]) => idx > s && idx < e);
 
+    const assignReCache = new Map<string, RegExp>();
     for (const name of shared) {
-      // eslint-disable-next-line security/detect-non-literal-regexp -- name is an identifier captured by declRe ([A-Za-z_$][\w$]*) — no regex metacharacters possible
-      const assignRe = new RegExp(
-        `(?:^|[^\\w.])(?:await\\s+)?${name}\\s*=[^=]`,
-        "g",
-      );
+      let assignRe = assignReCache.get(name);
+      if (assignRe === undefined) {
+        // eslint-disable-next-line security/detect-non-literal-regexp -- name is an identifier captured by declRe ([A-Za-z_$][\w$]*) — no regex metacharacters possible
+        assignRe = new RegExp(
+          `(?:^|[^\\w.])(?:await\\s+)?${name}\\s*=[^=]`,
+          "g",
+        );
+        assignReCache.set(name, assignRe);
+      }
       let a: RegExpExecArray | null;
       while ((a = assignRe.exec(text)) !== null) {
         if (inHook(a.index)) continue; // setup hooks are fine

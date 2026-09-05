@@ -137,22 +137,45 @@ export function computeChangedScope(
   ].sort();
 
   const changed: ChangedLines = {};
+  // Audit M5: batched per-file diffs. The loop used to spawn TWO git
+  // processes per changed file (committed diff + working diff) — a
+  // 2,000-file branch paid 4,000 process spawns, dominating the whole
+  // scan's wall time. One batched `--unified=0` diff for ALL committed
+  // files and one for ALL working-tree files, split per header, pays
+  // exactly two spawns total.
+  const batchDiff = (args: string[], files: string[]): Map<string, string> => {
+    const perFile = new Map<string, string>();
+    if (files.length === 0) return perFile;
+    // Chunk the pathspec list — a 10,000-file branch blows the Windows
+    // ~32K command-line limit in one spawn, and a failed spawn must not
+    // silently become "no lines changed".
+    const CHUNK = 200;
+    for (let start = 0; start < files.length; start += CHUNK) {
+      const chunk = files.slice(start, start + CHUNK);
+      const output = runGit(root, [...args, "--", ...chunk]);
+      if (output === null) continue;
+      // Split per `diff --git` header. parseChangedLines already resets
+      // hunk state on headers, so feeding it whole sections is safe.
+      const sections = output.split("\ndiff --git ");
+      for (const section of sections) {
+        const body = section.startsWith("diff --git ")
+          ? section
+          : `diff --git ${section}`;
+        const pathMatch = /^diff --git a\/.+ b\/(.+)\n/.exec(`${body}\n`);
+        const file = pathMatch?.[1];
+        if (file !== undefined) perFile.set(file, body);
+      }
+    }
+    return perFile;
+  };
+  const committedDiffs = batchDiff(
+    ["diff", "--unified=0", mergeBase, "HEAD"],
+    changedFiles,
+  );
+  const workingDiffs = batchDiff(["diff", "--unified=0", "HEAD"], changedFiles);
   for (const file of changedFiles) {
-    const committedDiff = runGit(root, [
-      "diff",
-      "--unified=0",
-      mergeBase,
-      "HEAD",
-      "--",
-      file,
-    ]);
-    const workingDiff = runGit(root, [
-      "diff",
-      "--unified=0",
-      "HEAD",
-      "--",
-      file,
-    ]);
+    const committedDiff = committedDiffs.get(file);
+    const workingDiff = workingDiffs.get(file);
     const lines = parseChangedLines(
       `${committedDiff ?? ""}\n${workingDiff ?? ""}`,
     );
