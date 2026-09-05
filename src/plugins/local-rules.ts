@@ -307,7 +307,8 @@ function loadJsonRule(path: string, result: LoadedExternalRules): void {
         let hi = lineStarts.length - 1;
         while (lo < hi) {
           const mid = (lo + hi + 1) >> 1;
-          const start = lineStarts.at(mid) ?? 0;
+          // mid is within [1, hi] (lineStarts[0] = 0 always).
+          const start = lineStarts.at(mid) as number;
           if (start <= index) lo = mid;
           else hi = mid - 1;
         }

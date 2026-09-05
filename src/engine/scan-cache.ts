@@ -205,7 +205,9 @@ export function createScanCache(root: string): ScanCache {
         count > 1
       ) {
         const oldest = Object.keys(entries)[0] as string;
-        totalBytes -= entryBytes.get(oldest) ?? 0;
+        // entryBytes always carries the key — both maps are updated
+        // together in store() and evicted together here.
+        totalBytes -= entryBytes.get(oldest) as number;
         delete entries[oldest];
         entryBytes.delete(oldest);
         count--;

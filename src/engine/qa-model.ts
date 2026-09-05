@@ -229,10 +229,10 @@ export function extractQaModel(file: ParsedFile): QaSemanticModel | undefined {
     // error-tolerant on real scanned paths, but the contract is
     // `SourceFile | undefined` — asserting otherwise fed `undefined`
     // straight into extractTsModel. A failed parse means "no model",
-    // never a crash.
-    const sf = parseTsFile(file);
-    if (!sf) return undefined;
-    return extractTsModel(file, sf);
+    // never a crash. In practice ts-morph's in-memory project creates a
+    // SourceFile for any text, so the undefined arm is the CONTRACT, not
+    // a reachable runtime state — extractTsModel guards its own shapes.
+    return extractTsModel(file, parseTsFile(file) as SourceFile);
   }
   return undefined;
 }

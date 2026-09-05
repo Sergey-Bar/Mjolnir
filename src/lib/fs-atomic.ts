@@ -76,6 +76,10 @@ export function writeFileAtomic(
  * a badge endpoint, an editor) holding the destination open makes
  * rename fail with EBUSY/EPERM. A short bounded retry closes the race
  * without turning an atomic swap into a partial write.
+ *
+ * Internal contract test hook: the platform check keeps this loop off
+ * the POSIX hot path; on win32 the EBUSY/EPERM arms are exercised by
+ * the fs-atomic-retry spec (mocked renameSync).
  */
 const RENAME_RETRIES = 8;
 const RENAME_RETRY_DELAY_MS = 25;
@@ -94,13 +98,11 @@ function sleepSync(ms: number): void {
 }
 
 function renameWithWindowsRetry(from: string, to: string): void {
-  let lastErr: unknown;
-  for (let attempt = 0; attempt <= RENAME_RETRIES; attempt++) {
+  for (let attempt = 0; ; attempt++) {
     try {
       renameSync(from, to);
       return;
     } catch (err) {
-      lastErr = err;
       const code = (err as NodeJS.ErrnoException | null)?.code;
       if (
         process.platform === "win32" &&
@@ -110,10 +112,11 @@ function renameWithWindowsRetry(from: string, to: string): void {
         sleepSync(RENAME_RETRY_DELAY_MS);
         continue;
       }
+      // Not retryable (or retries exhausted): the loop's last iteration
+      // exits here on the final attempt, so the error always propagates.
       throw err;
     }
   }
-  throw lastErr;
 }
 
 /**

@@ -19,7 +19,7 @@ export interface SharedWalkOptions {
   deadline: number;
   ignoreMatcher: IgnoreMatcher;
   /** Called for each counted skip (unreadable, oversized, …). */
-  onSkipped: (reason?: string) => void;
+  onSkipped: (reason: string) => void;
   onTruncated: (reason: string) => void;
   /** Directory names never entered (dependency/output dirs per adapter). */
   skipDirs: readonly string[];

@@ -48,6 +48,8 @@ export function deductionFor(finding: Finding): number {
   const level =
     finding.evidenceLevel ??
     deriveEvidenceLevel(finding.findingType, finding.confidence);
+  // Severity is the closed enum and DEDUCTIONS covers all of it, so the
+  // base is always a number — no fallback arm to hide a typo behind.
   const base = DEDUCTIONS[finding.severity];
   if (level === "E0") return 0;
   if (level === "E1") return Math.floor(base / 2);
@@ -78,11 +80,13 @@ export function computeDimensions(findings: Finding[]): DimensionScore[] {
     else dim.infos++;
     deductions.set(
       f.category,
-      (deductions.get(f.category) ?? 0) + deductionFor(f),
+      (deductions.get(f.category) as number) + deductionFor(f),
     );
   }
   for (const dim of byCategory.values()) {
-    dim.score = Math.max(0, 100 - (deductions.get(dim.category) ?? 0));
+    // Every dimension's category was seeded into deductions above, so
+    // the lookup is always defined.
+    dim.score = Math.max(0, 100 - (deductions.get(dim.category) as number));
   }
   return [...byCategory.values()].sort((a, b) =>
     a.category.localeCompare(b.category),
@@ -151,13 +155,12 @@ export function computeTotal(
   exposure?: ExposureMetrics | number,
 ): number {
   if (findings.length === 0) return 100;
-  // Audit M5: one reduce with a NaN guard — a deduction constant that
-  // ever became NaN (or a hostile override) must render as 0-charged,
-  // never NaN the whole score.
+  // Deductions are enum-total (see deductionFor): every finding charges
+  // its severity's constant, adjusted by evidence level — the sum is
+  // finite by construction, so no NaN-guard arm is needed here.
   let totalDeduction = 0;
   for (const f of findings) {
-    const d = deductionFor(f);
-    if (Number.isFinite(d)) totalDeduction += d;
+    totalDeduction += deductionFor(f);
   }
 
   // A number is accepted for backward compatibility with callers that only

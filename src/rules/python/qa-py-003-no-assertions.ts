@@ -38,11 +38,9 @@ export const pyNoAssertions = defineRule({
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
-    // Audit M5: dynamic identifier regexes are cached per rule module —
-    // the same test names recur across every file in a suite (and across
-    // scans in one process), so recompiling `new RegExp(name)` per
-    // function is pure waste.
-    const refReCache = new Map<string, RegExp>();
+    // Audit M5 note (revised): identifier regexes were cached per module,
+    // but each `test_*` name is unique per file (fnRe would not match the
+    // same def twice) — the cache never hit. Compiled fresh per function.
     if (!ctx.path.endsWith(".py")) return findings;
 
     // Find `def test_*():` bodies and check for assert/pytest.raises.
@@ -78,13 +76,11 @@ export const pyNoAssertions = defineRule({
         // referenced elsewhere in the file (passed to a runner, stored in
         // a list, awaited as a coroutine) is test DATA — e.g. pytester
         // scripts whose collected assertion lives in the parent test.
+        // One word-boundary regex per `test_*` function; names come from
+        // the fnRe capture (identifiers only — no metacharacters).
         const name = m[2] as string;
-        let refRe = refReCache.get(name);
-        if (refRe === undefined) {
-          // eslint-disable-next-line security/detect-non-literal-regexp -- name is a test_\w+ identifier captured by fnRe — no regex metacharacters
-          refRe = new RegExp(`\\b${name}\\b`, "g");
-          refReCache.set(name, refRe);
-        }
+        // eslint-disable-next-line security/detect-non-literal-regexp -- name is a test_\w+ identifier captured by fnRe — no regex metacharacters
+        const refRe = new RegExp(`\\b${name}\\b`, "g");
         let refs = 0;
         while (refRe.exec(text) !== null) {
           refs++;

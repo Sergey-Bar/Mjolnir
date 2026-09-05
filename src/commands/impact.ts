@@ -71,9 +71,16 @@ export interface ImpactReport {
 // hijack Mjölnir's own git invocations.
 import { resolveGitPath } from "../scope/git-resolve.js";
 
+/** The S1-resolved absolute git binary, or the bare name to fail on. */
+function gitExe(): string {
+  return resolveGitPath() ?? "git";
+}
+
 function git(root: string, args: string[]): string | null {
+  // When PATH carries no git at all, gitExe() degrades to the bare name
+  // and the exec below fails — one degrade path, expressed once.
   try {
-    return execFileSync(resolveGitPath() ?? "git", ["-C", root, ...args], {
+    return execFileSync(gitExe(), ["-C", root, ...args], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],
       timeout: 30_000,
@@ -86,7 +93,7 @@ function git(root: string, args: string[]): string | null {
 /** Like git(), but returns the raw bytes — no utf8 decode round-trip. */
 function gitBuffer(root: string, args: string[]): Buffer | null {
   try {
-    return execFileSync(resolveGitPath() ?? "git", ["-C", root, ...args], {
+    return execFileSync(gitExe(), ["-C", root, ...args], {
       // "buffer" makes stdout a Buffer: base blobs are written byte-exact,
       // so non-UTF8 files compare honestly (bug-audit M9).
       encoding: "buffer",

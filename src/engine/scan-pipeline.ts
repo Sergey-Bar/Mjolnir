@@ -525,9 +525,9 @@ export async function runScan(
     deadline,
     maxFiles: LIMITS.maxFilesPerAdapter,
     ignoreMatcher: createIgnoreMatcher(workspace.root),
-    onSkippedFile: (reason?: string) => {
+    onSkippedFile: (reason: string) => {
       skippedFiles++;
-      if (reason) truncationReasons.add(reason);
+      truncationReasons.add(reason);
     },
     onDiscoveryTruncated: (reason: string) => {
       discoveryTruncated = true;

@@ -19,7 +19,7 @@ import { sectionHeader, plainContext } from "../reporter/ui.js";
 
 const ui = plainContext();
 
-import { familyByToken, RULE_ID_RE } from "./rule-families.js";
+import { familyByToken, RULE_ID_RE, type RuleFamily } from "./rule-families.js";
 
 export interface ScaffoldInput {
   id: string; // e.g. QA-PW-130
@@ -43,15 +43,18 @@ function parseId(id: string): {
 } | null {
   const m = RULE_ID_RE.exec(id);
   if (!m) return null;
-  const token = (id.match(/^QA-([A-Z]+)-/) ?? [])[1] ?? "";
-  const family = familyByToken(token);
-  if (!family) return null;
+  // RULE_ID_RE matched, so the id has the shape QA-<TOKEN>-NNN: the
+  // token is the slice between the fixed prefix/suffix, and the family
+  // lookup cannot miss (RULE_ID_RE is compiled from the same family
+  // table). No fallback arms — dead safety nets hide live bugs.
+  const token = id.slice(3, id.length - 4);
+  const family = familyByToken(token) as RuleFamily;
   return {
     family: family.dir,
     dir: family.dir,
     category: family.category,
     appliesTo: family.appliesTo,
-    num: (m[2] as string) ?? "",
+    num: id.slice(-3),
     lower: id.toLowerCase(),
   };
 }

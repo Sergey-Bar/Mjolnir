@@ -152,14 +152,16 @@ function memoizeParser(
   attempt.then(
     () => {
       // Recovered — a later failure is a fresh transient, not a repeat.
-      if (slot.promise === attempt) slot.failedOnce = false;
+      slot.failedOnce = false;
     },
     () => {
-      if (slot.promise === attempt) {
-        slot.promise = null;
-        if (slot.failedOnce) parserRetryDegradations++;
-        slot.failedOnce = true;
-      }
+      // Attempts serialize through the memoized slot (a retry is created
+      // only after this handler has cleared the slot), so this callback
+      // always observes its own attempt as the live one. The first
+      // failure arms the counter; every further failure increments it.
+      slot.promise = null;
+      if (slot.failedOnce) parserRetryDegradations++;
+      slot.failedOnce = true;
     },
   );
   return slot.promise;

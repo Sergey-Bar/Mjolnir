@@ -147,16 +147,16 @@ function describeStep(step: StepNode, index: number): string {
  */
 function locateStepContinueOnError(text: string, step: StepNode): number {
   // Called only for gate steps (run or uses — see stepIsVerificationGate),
-  // so the anchor is always defined.
+  // so the anchor is always defined and never empty.
   const anchor = (step.name ?? step.uses ?? step.run?.split("\n")[0]) as string;
-  const trimmed = anchor.trim();
-  let anchorAt = -1;
-  if (trimmed !== "") anchorAt = text.indexOf(trimmed);
+  const anchorAt = text.indexOf(anchor.trim());
   // Audit S5: the search window starts at THIS step's enclosing list
   // item — the LAST `- ` marker (any indentation) before the anchor —
   // so a preceding step's `continue-on-error:` can never be matched.
   // A step's key may also be listed BEFORE its run/uses line (mapping
-  // keys are unordered in YAML), which the window now covers.
+  // keys are unordered in YAML), which the window now covers. An anchor
+  // that only occurs BEFORE any list marker (early comment) yields no
+  // marker and falls back to the default window start.
   let searchFrom = 0;
   if (anchorAt !== -1) {
     const windowStart = Math.max(0, anchorAt - 200);
@@ -174,10 +174,12 @@ function locateStepContinueOnError(text: string, step: StepNode): number {
   const m = re.exec(text);
   if (m) return lineOf(text, m.index);
   // Audit S5 fallback: no raw literal after the anchor — report on the
-  // anchor's own line instead of crashing and dropping the finding.
+  // anchor's own line instead of crashing and dropping the finding. An
+  // absent anchor (anchorAt === -1) means the raw scan above already
+  // covered the whole text from index 0, so a job-level re-scan here
+  // would be redundant — line 1 is the honest floor.
   if (anchorAt !== -1) return lineOf(text, anchorAt);
-  const jobLevel = /continue-on-error:\s*true/.exec(text);
-  return jobLevel ? lineOf(text, jobLevel.index) : 1;
+  return 1;
 }
 
 function findLine(text: string, re: RegExp): number {
