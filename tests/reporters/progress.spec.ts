@@ -24,12 +24,7 @@ function fakeStream() {
     write(s: string): void {
       chunks.push(s);
     },
-  } satisfies {
-    chunks: string[];
-    text: () => string;
-    lines: () => string[];
-    write: (s: string) => void;
-  } & NodeJS.WritableStream;
+  };
 }
 
 const ev = (over: Partial<ProgressEvent>): ProgressEvent => ({

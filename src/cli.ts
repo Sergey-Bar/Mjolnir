@@ -44,6 +44,7 @@ import { renderTerminal } from "./reporter/terminal.js";
 import { renderSarif } from "./reporter/sarif.js";
 import { renderMermaid } from "./reporter/mermaid.js";
 import { ProgressRenderer, shouldRenderProgress } from "./reporter/progress.js";
+import { runSummaryCommand } from "./commands/summary.js";
 import { computeChangedScope, filterToChanged } from "./scope/changed.js";
 import { asUniversal } from "./engine/rule-runner.js";
 import { enforceTierPolicy, type Tier } from "./engine/tier-policy.js";
@@ -1859,6 +1860,7 @@ export async function main(
   if (argv[0] === "baseline") return runBaselineCommand(argv.slice(1));
   if (argv[0] === "diff") return runDiffCommand(argv.slice(1));
   if (argv[0] === "pr-comment") return runPrCommentCommand(argv.slice(1));
+  if (argv[0] === "summary") return runSummaryCommand(argv.slice(1));
   if (argv[0] === "stats") return runStatsCommand(argv.slice(1));
   if (argv[0] === "fix") return runFixCommand(argv.slice(1));
   if (argv[0] === "create-rule") return runCreateRuleCommand(argv.slice(1));

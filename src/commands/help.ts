@@ -40,6 +40,15 @@ export const HELP_ENTRIES: HelpEntry[] = [
     ],
   },
   {
+    verb: "summary",
+    summary: "CI annotations + step summary from a saved --json report",
+    usage: "mjolnir summary [mjolnir.json] [--stdout] [--path-prefix <dir>]",
+    examples: [
+      "mjolnir --json > mjolnir.json && mjolnir summary mjolnir.json",
+      "mjolnir summary mjolnir.json --stdout",
+    ],
+  },
+  {
     verb: "forensics",
     summary: "runtime evidence from a real run: retries, flakes, durations",
     usage:
@@ -223,7 +232,15 @@ const GROUPS: Array<{ title: string; verbs: string[] }> = [
   { title: "Scan", verbs: [] },
   {
     title: "CI & PRs",
-    verbs: ["ci install", "pr-comment", "badge", "impact", "baseline", "diff"],
+    verbs: [
+      "ci install",
+      "summary",
+      "pr-comment",
+      "badge",
+      "impact",
+      "baseline",
+      "diff",
+    ],
   },
   {
     title: "Forensics",

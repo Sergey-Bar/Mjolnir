@@ -170,6 +170,11 @@ jobs:
           cache: npm
       - run: npm ci && npm run build
       - run: node dist/cli.mjs . --json > self-scan.json
+      # Self-scan annotations (plan M4): inline findings on the run page
+      # via the same single emitter the generated workflow uses.
+      - name: Self-scan annotations
+        if: always()
+        run: node dist/cli.mjs summary self-scan.json
       # Bug-audit G8 (self-scan honesty gate): the old gate blocked only on
       # error-severity findings — a TRUNCATED self-scan (partial: true) or
       # one where rules crashed silently passed. A truncated self-scan of

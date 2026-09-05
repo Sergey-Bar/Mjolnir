@@ -30,7 +30,7 @@ export interface ProgressEvent {
 
 export interface ProgressOptions {
   /** Target stream (stderr in production; a fake in tests). */
-  stream: NodeJS.WritableStream;
+  stream: { write: (s: string) => void };
   /** Force ASCII frames (matches the --ascii glyph contract). */
   ascii?: boolean;
   /** TTY gate — when false the renderer is inert. */
@@ -88,7 +88,7 @@ const ERASE_TAIL = "\x1b[K";
 export class ProgressRenderer {
   private frameIndex = 0;
   private activeLines = 0;
-  private readonly stream: NodeJS.WritableStream;
+  private readonly stream: { write: (s: string) => void };
   private readonly ascii: boolean;
   private readonly enabled: boolean;
 
