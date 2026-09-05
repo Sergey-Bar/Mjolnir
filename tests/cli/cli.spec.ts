@@ -266,10 +266,12 @@ describe("runDoctorPlaywright", () => {
 });
 
 describe("runScanCommand / main dispatch", () => {
-  it("prints usage and exits 10 on bad args", async () => {
+  it("prints a friendly usage error and exits 10 on bad args", async () => {
     const cap = capture();
     expect(await runScanCommand(["--bogus"], cap.io)).toBe(10);
-    expect(cap.text()).toContain("Usage: mjolnir");
+    // The friendly error is an error → stderr; stdout stays findings-only.
+    expect(cap.errText()).toContain('mjolnir: unknown flag "--bogus"');
+    expect(cap.errText()).toContain("Run mjolnir --help");
   });
 
   it("emits JSON output with schemaVersion", async () => {

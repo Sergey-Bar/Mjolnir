@@ -137,10 +137,10 @@ describe("scan-target validation across subcommands (audit H-4)", () => {
     expect(cap.errText()).toContain("does not exist");
   });
 
-  it("diff prints usage and exits 10 on an unknown flag", async () => {
+  it("diff prints a friendly usage error and exits 10 on an unknown flag", async () => {
     const cap = capture();
     expect(await runDiffCommand(["--bogus"], cap.io)).toBe(10);
-    expect(cap.text()).toContain("Usage: mjolnir");
+    expect(cap.errText()).toContain('mjolnir: unknown flag "--bogus"');
   });
 });
 
