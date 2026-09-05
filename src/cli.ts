@@ -134,7 +134,7 @@ import {
  * `scripts/sync-sarif-version.cjs` on release and guarded by
  * `tests/version-consistency.spec.ts` locally.
  */
-export const CLI_VERSION = "0.5.2";
+export const CLI_VERSION = "0.5.3";
 
 const UNIVERSAL_RULES = RULES.map(asUniversal);
 
