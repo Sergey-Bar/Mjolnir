@@ -54,6 +54,16 @@ export const QA_IMPACT_LABELS: Record<QaImpact, string> = {
 /** Rule namespaces are frozen public API (§18.4). IDs are never reused. */
 export type RuleCategory = "QA-TEST" | "QA-TQUAL" | "QA-PW" | "QA-CI";
 
+/** The closed set of rule categories (plan §5.5). `--category` values
+ * are validated against this list — unknown categories are a usage
+ * error, not a silent no-op. */
+export const RULE_CATEGORIES = [
+  "QA-TEST",
+  "QA-TQUAL",
+  "QA-PW",
+  "QA-CI",
+] as const;
+
 /**
  * Trust levels (Verification Trust Evolution Plan §16): the OVERALL
  * trust a consumer can place in one finding, combining the static
@@ -150,6 +160,21 @@ export interface Finding {
   /** How to fix — concrete action. */
   fix: string;
   docsUrl?: string;
+  /**
+   * Stable semantic identity of a remediation group: findings that can
+   * be reasoned about and potentially remediated as one root-cause unit
+   * (agent-handoff plan §5.1). This is intentionally a DIFFERENT
+   * concept from `ruleId` (which identifies the detector/rule).
+   *
+   * Current implementation strategy: fixGroupId = ruleId, because each
+   * rule currently represents one remediation group. Future rules may
+   * emit multiple findings belonging to one fix group, or multiple
+   * remediation groups. Consumers MUST NOT rely on
+   * fixGroupId === ruleId permanently.
+   *
+   * Additive within schemaVersion 1.
+   */
+  fixGroupId?: string;
 }
 
 /**

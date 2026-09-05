@@ -19,8 +19,10 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 import {
   compareFindings,
+  RULE_CATEGORIES,
   SCHEMA_VERSION,
   type Finding,
+  type RuleCategory,
   type ScanResult,
   type Severity,
 } from "./types.js";
@@ -272,6 +274,19 @@ interface CliArgs {
    * and auto-disabled in CI/machine formats; this flag is the manual off.
    */
   noProgress?: boolean;
+  /**
+   * --category <cat> (repeatable): presentation filter — narrows the
+   * TERMINAL findings display (and handoff/why output) to the given
+   * rule categories. NEVER filters the scan, the JSON/SARIF output,
+   * or the score (agent-handoff plan §5.5).
+   */
+  categories?: RuleCategory[];
+  /**
+   * --score: print only the numeric score (or `unknown` when the repo
+   * has no tests) instead of the full report. Pure rendering flag:
+   * scan semantics and exit codes are unchanged (plan §5.6).
+   */
+  scoreOnly?: boolean;
 }
 
 /** A usage-error detail: the offending token, when one exists. */
@@ -347,6 +362,15 @@ export function parseArgs(
       args.cache = true;
     } else if (a === "--no-progress") {
       args.noProgress = true;
+    } else if (a === "--category") {
+      const cat = argv[++i];
+      const valid: readonly string[] = RULE_CATEGORIES;
+      if (cat === undefined || !valid.includes(cat)) {
+        return reject({ flag: "--category", token: cat });
+      }
+      args.categories = [...(args.categories ?? []), cat as RuleCategory];
+    } else if (a === "--score") {
+      args.scoreOnly = true;
     } else if (a === "--help" || a === "-h") {
       return null;
     } else if (!a.startsWith("-")) {
@@ -877,6 +901,14 @@ export async function runScan(
   // A "100/100" on a repo with zero tests would be a false proof.
   const hasTests = testFileCount > 0;
 
+  // Agent-handoff plan §5.1: every emitted finding carries a remediation
+  // group id. Current strategy: one rule = one remediation group, so
+  // fixGroupId = ruleId — an implementation choice, NOT a semantic
+  // promise (consumers must not rely on the equality permanently).
+  for (const f of findings) {
+    f.fixGroupId = f.ruleId;
+  }
+
   const result: ScanResult = {
     schemaVersion: SCHEMA_VERSION,
     partial: discoveryTruncated || rulesPartial || skippedFiles > 0,
@@ -1323,6 +1355,21 @@ export async function runScanCommand(
       for (const line of crashLog.slice(0, 50)) io.err(`  ${line}`);
       if (crashLog.length > 50) io.err(`  … and ${crashLog.length - 50} more`);
     }
+    if (args.scoreOnly) {
+      // Plan §5.6: --score prints ONLY the numeric score (or `unknown`
+      // when the repo has no tests — never a fake 0, R2). Pure rendering
+      // flag: scan semantics and the exit code below are unchanged. A
+      // stderr note keeps stdout machine-clean when --json was also
+      // requested.
+      if (args.json) {
+        io.err("--score overrides --json; stdout is the bare score.");
+      }
+      const { config: scoreConfig } = loadConfig(target, {
+        knownRuleIds: KNOWN_RULE_IDS,
+      });
+      io.out(result.score === null ? "unknown" : String(result.score));
+      return exitForFindings(result.findings, scoreConfig.gate ?? "error");
+    }
     if (args.format === "sarif") {
       io.out(renderSarif(result));
     } else if (args.format === "mermaid") {
@@ -1330,10 +1377,21 @@ export async function runScanCommand(
     } else if (args.json) {
       io.out(JSON.stringify(result, null, 2));
     } else {
+      // Plan §5.5: --category is a presentation filter. The renderer
+      // sees only the filtered list; the score/JSON/full contract are
+      // untouched, and the renderer prints the hidden-count note.
+      const categories = args.categories;
+      const visible =
+        categories && categories.length > 0
+          ? result.findings.filter((f) => categories.includes(f.category))
+          : result.findings;
       io.out(
         renderTerminal(result, {
           isTTY: process.stdout.isTTY ?? false,
           verbose: args.verbose,
+          ...(categories && categories.length > 0
+            ? { visibleFindings: visible }
+            : {}),
           ...(args.width !== undefined ? { width: args.width } : {}),
           ...(args.ascii !== undefined ? { ascii: args.ascii } : {}),
           ...(args.tone !== undefined ? { tone: args.tone } : {}),
