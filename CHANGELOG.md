@@ -9,6 +9,69 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — Agent Handoff + Minimized Reporting (plan 1788599400000)
+
+### Added
+
+- **`mjolnir why <file>:<line>`** — occurrence-level evidence query
+  (informational, NOT a gate): exact file+line match, severity icon,
+  message/why/fix, evidence level, trust level, measured FP rate
+  (or the honest "ships on assumption"), runtime corroboration when
+  present, and the suppression contract (reason required, 90-day
+  expiry). Saved-report mode (`--json <mjolnir.json>`) is
+  authoritative; live scan runs otherwise. Exit 0 match / 1 no match.
+- **`mjolnir handoff [mjolnir.json]`** — the deterministic fix-handoff
+  artifact: per-rule remediation sections (what is wrong / why
+  Mjölnir believes it / evidence boundary by level / occurrences
+  capped at 25 / fix / constraints / occurrences list), a per-rule
+  fenced copy block and a one-shot handoff prompt, and the formal
+  verification contract (TARGET_RESOLVED / TARGET_REMAINS /
+  NEW_FINDINGS_INTRODUCED / VERIFICATION_NOT_RUN, correlated by the
+  fingerprint ruleId+file+message; the standing caveat that a clean
+  `--scope changed` run verifies the changed surface only). Generated
+  solely from Mjölnir's own rule metadata — offline, deterministic,
+  escapeMarkdown'd. Zero findings → exit 0, non-actionable clean
+  artifact with no prompt. `--category`/`--rules` are presentation
+  filters.
+- **`mjolnir install`** — installs the agent instruction surfaces
+  (`.claude/commands/mjolnir.md`, `.kilo/command/mjolnir.md`,
+  `.cursor/rules/mjolnir.mdc`, marker-appended `AGENTS.md`): the
+  version-pinned trust loop brief (scan `--scope changed` before
+  finishing, never suppress to green, report files changed and checks
+  not run). `--staged-hook` adds a NON-BLOCKING pre-commit hook
+  (`mjolnir --staged --blocking warning`, reusing `.husky`/
+  `core.hooksPath` when present). Marker-based idempotency;
+  `--dry-run` writes nothing; refusal (exit 10) before overwriting
+  any non-Mjölnir file; `--force` overwrites only Mjölnir-marked
+  files; never @latest.
+- **`--score`** — prints only the numeric score (`unknown` when no
+  tests exist — never a fake 0); pure rendering flag, exit code
+  unchanged; stderr note when --json was also requested.
+- **`--category <cat>`** (repeatable) — presentation filter on the
+  terminal findings display (and handoff/why): NEVER filters the
+  scan, the JSON/SARIF output, or the score; the terminal prints
+  `filtered view: N of M findings shown; score reflects the full
+scan`. Unknown categories are a usage error (exit 10).
+- **`--staged`** — scan-surface restriction: intersects discovered
+  test files with the git staged list; score reflects the staged
+  surface and is labeled as such (`staged surface: N file(s)`); not a
+  git repo → honest degraded fallback; empty staged set → exit 0.
+- **`--blocking error|warning|none`** — exit-status override only:
+  maps onto the existing gate model (none→advisory, error→errors
+  block, warning→errors+warnings block). Detection and rendering are
+  identical under all three values; E0 findings never block; partial
+  scans stay exit 2.
+- **`fixGroupId`** (additive JSON field): the stable semantic identity
+  of a remediation group — intentionally distinct from `ruleId`
+  (which identifies the detector). Current strategy: one rule = one
+  group, so fixGroupId equals ruleId today; consumers must not rely
+  on that permanently.
+
+### Changed
+
+- help registry gained `why`, `handoff`, `install` and the new flags;
+  site/reference/cli.md documents the handoff trust model.
+
 ## [0.5.3] — 2026-09-05
 
 ### Terminal + CI UX Overhaul (plan 1788579907109)
