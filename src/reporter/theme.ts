@@ -163,44 +163,6 @@ export function shouldUseAscii(): boolean {
   return process.platform === "win32" && !process.env["TERM"];
 }
 
-/**
- * Audit M7: the shared glyph strategy for every reporter. The command
- * reporters (debt/baseline/fix/doctor/stats/handover) each hard-coded
- * Unicode runes (▚▞ ✓ ✗ ✔ ▸) that render as garbage on legacy
- * conhost/cmd.exe where shouldUseAscii() is true. One source of truth:
- * the same heuristic the terminal reporter uses decides between the
- * Unicode rune and its ASCII fallback.
- */
-export const GLYPHS = {
-  /** Section banner (▚▞ / ==). */
-  banner: (ascii: boolean): string => (ascii ? "==>" : "▚▞"),
-  /** Pass/success marker (✓✔ / v). */
-  ok: (ascii: boolean): string => (ascii ? "v" : "✓"),
-  /** Fail marker (✗ / x). */
-  fail: (ascii: boolean): string => (ascii ? "x" : "✗"),
-  /** Planned/pending marker (▸ / >). */
-  planned: (ascii: boolean): string => (ascii ? ">" : "▸"),
-} as const;
-
-/**
- * One call reporters use: banner/fail marks honoring the shared
- * heuristic, with an optional forced-ASCII override for tests.
- */
-export function glyphs(): {
-  banner: string;
-  ok: string;
-  fail: string;
-  planned: string;
-} {
-  const ascii = shouldUseAscii();
-  return {
-    banner: GLYPHS.banner(ascii),
-    ok: GLYPHS.ok(ascii),
-    fail: GLYPHS.fail(ascii),
-    planned: GLYPHS.planned(ascii),
-  };
-}
-
 /** Wraps a single line of plain text (no ANSI) to fit within `width`,
  * breaking on whitespace where possible. Never splits mid-word unless
  * a single word alone exceeds the width. */

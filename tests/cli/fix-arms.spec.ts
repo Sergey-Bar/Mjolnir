@@ -44,7 +44,6 @@ vi.mock("../../src/engine/code-text.js", async (importOriginal) => {
 
 import { computeCodeText } from "../../src/engine/code-text.js";
 import { planAndApplyFixes, renderFixReport } from "../../src/commands/fix.js";
-import { glyphs } from "../../src/reporter/theme.js";
 import type { Finding, ScanResult } from "../../src/types.js";
 
 /** Set by the tmp-write failure test; consulted by the fs mock above. */

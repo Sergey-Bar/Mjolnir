@@ -27,7 +27,6 @@
 
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { writeFileAtomic } from "../lib/fs-atomic.js";
-import { glyphs } from "../reporter/theme.js";
 import { dirname, join } from "node:path";
 
 import type { BaselineDiff } from "./baseline.js";
