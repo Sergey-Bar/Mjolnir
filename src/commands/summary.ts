@@ -24,6 +24,8 @@
 import { appendFileSync, existsSync, readFileSync } from "node:fs";
 import type { Finding, ScanResult } from "../types.js";
 import type { Output } from "../cli.js";
+import { usageErrorMessage } from "../cli.js";
+import { sanitizeData } from "../reporter/theme.js";
 import { deriveScoreState, headlineFor } from "../reporter/score-state.js";
 import { verdictFor } from "../reporter/terminal.js";
 import {
@@ -31,6 +33,7 @@ import {
   truncateMessage,
   stripAnsiForSummary,
 } from "../reporter/github.js";
+import { escapeMarkdown } from "./pr-comment.js";
 
 export interface SummaryOptions {
   /** Force the summary to stdout even when $GITHUB_STEP_SUMMARY is set. */
@@ -43,7 +46,9 @@ export interface SummaryOptions {
 
 const DETAILS_PER_SEVERITY_CAP = 25;
 
-export function validateReportJson(text: string): ScanResult {
+/** Parse-and-validate a saved report. Module-private: the command is
+ * the only consumer; tests exercise it through runSummaryCommand. */
+function validateReportJson(text: string): ScanResult {
   let parsed: unknown;
   try {
     parsed = JSON.parse(text);
@@ -114,7 +119,7 @@ export function renderStepSummary(
     lines.push("| Category | Score |");
     lines.push("|----------|-------|");
     for (const d of result.dimensions) {
-      lines.push(`| ${d.category} | ${d.score}/100 |`);
+      lines.push(`| ${escapeMarkdown(d.category)} | ${d.score}/100 |`);
     }
     lines.push("");
   }
@@ -144,13 +149,16 @@ export function renderStepSummary(
       "",
     );
     for (const f of list.slice(0, DETAILS_PER_SEVERITY_CAP)) {
+      // QA-10 posture: ruleId/file/message/fix are untrusted data, and
+      // GitHub job summaries render HTML — escape everything the way the
+      // PR comment does so a hostile report cannot fabricate sections.
       const path = options.pathPrefix
         ? `${options.pathPrefix.replace(/\/$/, "")}/${f.file}`
         : f.file;
       lines.push(
-        `- **${f.ruleId}** \`${path}:${f.line}\` — ${stripAnsiForSummary(f.message)}`,
+        `- **${escapeMarkdown(f.ruleId)}** \`${escapeMarkdown(path)}:${f.line}\` — ${escapeMarkdown(stripAnsiForSummary(f.message))}`,
       );
-      lines.push(`  - Fix: ${stripAnsiForSummary(f.fix)}`);
+      lines.push(`  - Fix: ${escapeMarkdown(stripAnsiForSummary(f.fix))}`);
     }
     if (list.length > DETAILS_PER_SEVERITY_CAP) {
       lines.push(
@@ -178,17 +186,33 @@ export function renderStepSummary(
   return lines.join("\n");
 }
 
-/** Render one finding as an escaped annotation line. */
+/** Render one finding as an escaped annotation line. Fields are
+ * sanitized with the same sanitizeData layer the terminal uses
+ * (github.ts's escapers cover %/CR/LF, not OSC/C0), then %/CR/LF-escaped. */
 export function annotationForFinding(f: Finding): string {
   return renderAnnotations([
-    { ...f, message: truncateMessage(stripAnsiForSummary(f.message)) },
+    {
+      ...f,
+      file: sanitizeData(f.file),
+      ruleId: sanitizeData(f.ruleId),
+      message: truncateMessage(stripAnsiForSummary(sanitizeData(f.message))),
+    },
   ])[0] as string;
 }
+
+const KNOWN_SUMMARY_FLAGS = new Set([
+  "--stdout",
+  "--path-prefix",
+  "--help",
+  "-h",
+]);
 
 /**
  * Testable summary command core. Returns the process exit code.
  * Streams: annotations → stdout (always; GitHub greps them), summary →
- * step-summary file when set unless --stdout.
+ * step-summary file when set unless --stdout. Unknown flags are a
+ * usage error (exit 10) — a typo'd --stdout must not silently route
+ * the summary to $GITHUB_STEP_SUMMARY.
  */
 export function runSummaryCommand(
   argv: string[],
@@ -197,6 +221,22 @@ export function runSummaryCommand(
     err: (line) => console.error(line),
   },
 ): number {
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i] ?? "";
+    if (!a.startsWith("-")) continue;
+    if (a === "--path-prefix") {
+      const val = argv[i + 1];
+      if (val === undefined || val.startsWith("-")) {
+        io.err(usageErrorMessage({ flag: "--path-prefix", token: val }));
+        return 10;
+      }
+      i++;
+      continue;
+    }
+    if (KNOWN_SUMMARY_FLAGS.has(a)) continue;
+    io.err(usageErrorMessage({ token: a }));
+    return 10;
+  }
   const stdout = argv.includes("--stdout");
   const prefixIdx = argv.indexOf("--path-prefix");
   const pathPrefix = prefixIdx !== -1 ? argv[prefixIdx + 1] : undefined;

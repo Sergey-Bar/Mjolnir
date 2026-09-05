@@ -19,7 +19,7 @@
  */
 
 import type { Palette } from "./theme.js";
-import { palette, box, measure, padTo, wrapText } from "./theme.js";
+import { palette, box, padTo } from "./theme.js";
 
 /** Resolved render context — built once per command run, passed down. */
 export interface UiContext {
@@ -78,7 +78,7 @@ export function keyValue(
   return `  ${ui.p.dim(padTo(label, w))}  ${value}`;
 }
 
-/** `- text` bullet (ascii identical minus glyph weight; `-` is ascii-safe). */
+/** `- text` bullet (ascii-safe by construction; `-` needs no fallback). */
 export function bullet(text: string, ui: UiContext): string {
   return `  ${ui.p.dim("-")} ${text}`;
 }
@@ -114,16 +114,6 @@ export function okIcon(ui: UiContext): string {
   return ui.p.ok(g);
 }
 
-/** Inline severity glyph without the label (compact contexts). */
-export function severityGlyph(severity: Severity, ui: UiContext): string {
-  const g = (ui.ascii ? SEVERITY_GLYPHS.ascii : SEVERITY_GLYPHS.unicode)[
-    severity
-  ];
-  if (severity === "error") return ui.p.error(g);
-  if (severity === "warning") return ui.p.warning(g);
-  return ui.p.info(g);
-}
-
 /**
  * Footer builder: `Analysis complete · <duration>ms` + optional
  * suppressed count + optional next action. `durationMs` is formatted
@@ -156,18 +146,4 @@ export function buildFooter(opts: {
 export function formatDuration(ms?: number): string {
   if (ms === undefined) return "?";
   return ms >= 1000 ? `${(ms / 1000).toFixed(1)}s` : `${ms}ms`;
-}
-
-/** Wrap plain text to the context width minus an indent. */
-export function wrapFor(text: string, ui: UiContext, indent = 2): string[] {
-  return wrapText(text, Math.max(10, ui.width - indent));
-}
-
-/** Visible-width-aware center pad — for title bars. */
-export function centerIn(text: string, width: number): string {
-  const visible = measure(text);
-  if (visible >= width) return text;
-  const left = Math.floor((width - visible) / 2);
-  const right = width - visible - left;
-  return `${" ".repeat(left)}${text}${" ".repeat(right)}`;
 }

@@ -308,4 +308,47 @@ describe("renderPrComment — redesign structure (plan M5)", () => {
     const body = renderPrComment(scanResult(many));
     expect(body).toContain("...and 5 more");
   });
+
+  it("does not claim a phantom overall overflow when every group is under the cap", () => {
+    const many = [
+      ...Array.from({ length: 10 }, (_, i) =>
+        finding({ line: i + 1, file: `e2e/err${i}.spec.ts` }),
+      ),
+      ...Array.from({ length: 20 }, (_, i) =>
+        finding({
+          severity: "warning",
+          ruleId: "QA-PW-118",
+          line: i + 1,
+          file: `e2e/warn${i}.spec.ts`,
+        }),
+      ),
+    ];
+    const body = renderPrComment(scanResult(many));
+    expect(body).toContain("10 errors");
+    expect(body).toContain("20 warnings");
+    // All 30 findings are rendered (10 + 20, each under the 25 cap), so
+    // no "...and N more" line may appear anywhere.
+    expect(body).not.toContain("...and");
+  });
+
+  it("counts the overall overflow from the rendered total, not a flat 25", () => {
+    const many = [
+      ...Array.from({ length: 30 }, (_, i) =>
+        finding({ line: i + 1, file: `e2e/err${i}.spec.ts` }),
+      ),
+      ...Array.from({ length: 30 }, (_, i) =>
+        finding({
+          severity: "warning",
+          ruleId: "QA-PW-118",
+          line: i + 1,
+          file: `e2e/warn${i}.spec.ts`,
+        }),
+      ),
+    ];
+    const body = renderPrComment(scanResult(many));
+    // 60 findings, 50 rendered (25 per group) → 10 hidden overall.
+    expect(body).toContain("...and 5 more errors.");
+    expect(body).toContain("...and 5 more warnings.");
+    expect(body).toContain("...and 10 more overall");
+  });
 });

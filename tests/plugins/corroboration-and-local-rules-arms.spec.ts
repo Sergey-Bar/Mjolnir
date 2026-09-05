@@ -35,7 +35,8 @@ import {
 } from "../../src/engine/runtime-corroboration.js";
 import { loadLocalRules } from "../../src/plugins/local-rules.js";
 import { renderTerminal } from "../../src/reporter/terminal.js";
-import { scoreGauge, severityTag } from "../../src/reporter/theme.js";
+import { scoreGauge } from "../../src/reporter/theme.js";
+import { severityIcon, plainContext } from "../../src/reporter/ui.js";
 import { renderRuleDocsIndexMd } from "../../src/commands/rule-docs.js";
 import { isSuppressionActive } from "../../src/config/config.js";
 import type { Finding, TrustLevel } from "../../src/types.js";
@@ -291,16 +292,11 @@ describe("theme — default-arg arms", () => {
     expect(typeof g2).toBe("string");
   });
 
-  it("severityTag with ascii true", () => {
-    const p = {
-      dim: (s: string) => s,
-      ok: (s: string) => s,
-      warning: (s: string) => s,
-      error: (s: string) => s,
-      info: (s: string) => s,
-    } as never;
-    expect(typeof severityTag("error", p, true)).toBe("string");
-    expect(typeof severityTag("info", p, false)).toBe("string");
+  it("severityIcon in ascii and unicode contexts", () => {
+    expect(typeof severityIcon("error", plainContext(80))).toBe("string");
+    expect(
+      typeof severityIcon("info", { ...plainContext(), ascii: true }),
+    ).toBe("string");
   });
 });
 

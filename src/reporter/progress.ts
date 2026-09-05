@@ -15,6 +15,8 @@
  * constants; erasure is plain `\r` + ESC[K.
  */
 
+import { sanitizeData } from "./theme.js";
+
 /** Spinner frames: braille, ASCII fallback. */
 const BRAILLE_FRAMES = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏";
 const ASCII_FRAMES = "|/-\\";
@@ -73,7 +75,7 @@ export function renderProgressLine(
   if (event.total !== undefined) {
     parts.push(`${event.done ?? 0}/${event.total}`);
   }
-  if (event.detail) parts.push(event.detail);
+  if (event.detail) parts.push(sanitizeData(event.detail));
   if (parts.length > 0) line += ` (${parts.join(" · ")})`;
   return line;
 }

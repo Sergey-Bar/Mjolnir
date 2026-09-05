@@ -91,32 +91,46 @@ rules… → Scoring…`) fed by the new additive `ScanHooks.onProgress`.
   `╞══╡` ASCII tables they wrapped (replaced by the shared `ui.ts`
   primitives; no CLI surface change).
 
-- **PR comment redesign** (`pr-comment`): header
-  `### 🔨 Mjölnir — Verification Trust` with score + band + verdict
-  headline, dimensions mini-table, findings grouped in collapsible
-  `<details>` (errors open, warnings/infos collapsed) with explicit
-  `Fix:` lines and evidence tags, a "what to run next" footer with the
-  pinned `npx mjolnir-qa@<ver>` commands, and the
-  `✨ N pre-existing findings fixed in this PR` callout. Same
-  idempotency marker; same markdown escaping.
-- **Site**: new `site/reference/cli.md` (help, usage errors, summary,
-  progress, `FORCE_COLOR`) in the Reference sidebar.
+### Fixed — review hardening (post-implementation audit)
 
-### Changed
-
-- README output examples and all 22 translations: the `▚▞` header
-  glyph in rendered-output samples is now `▚` (the design-system
-  token). English README is canonical; translation sync dates unchanged
-  (glyph-only diff, advisory parity script).
-- Regenerated committed assets: `assets/readme/terminal-hero.svg`,
-  `demo.svg` (`docs:hero`, `docs:demo`), and the forensics/selector
-  samples (`docs:forensics-samples`).
-
-### Removed
-
-- The hand-rolled `╔══╗`/`▚▞`/`🔨` per-command header styles and the
-  `╞══╡` ASCII tables they wrapped (replaced by the shared `ui.ts`
-  primitives; no CLI surface change).
+- **`ci install` v1 recognition actually works now:** the v1 inline
+  summary script is matched in its INDENTED form (`indentBlock(…, 10)`)
+  — the raw unindented needle never appeared in a real v1 workflow, so
+  the first cut of the recognition would have refused every genuine v1
+  file despite the "frictionless upgrade" promise. Spec reconstructs
+  the embedded form from the real v1 output and pins that
+  hand-customized files are still refused.
+- **Advisory template stays green on a crashed scan:** the generated
+  "Annotations + Job Summary" step is now `continue-on-error: true` —
+  a crashed scan leaves `mjolnir.json` empty and `summary` exits 2,
+  which must not turn the advisory job red (v1's inline script never
+  did). The gate step still owns the verdict.
+- **Step summary escapes hostile finding metadata:** `ruleId`, `file`,
+  `message` and `fix` are markdown-escaped before `$GITHUB_STEP_SUMMARY`
+  (GitHub renders HTML there) — a hostile report can no longer break
+  out of the `<details>` structure. Annotations additionally sanitize
+  `file`/`ruleId`/`message` through the same `sanitizeData` layer the
+  terminal uses (OSC/C0 bytes), closing the gap its own docs assumed.
+- **Progress line sanitizes the detail path** through `sanitizeData` —
+  a filename with ANSI/OSC bytes can no longer hijack the terminal.
+- **PR comment overflow counts are honest:** the "...and N more
+  overall" line now subtracts the actually rendered count
+  (Σ min(group, 25)) instead of a flat 25 — no more phantom hidden
+  findings, and per-group overflow lines name their group
+  ("...and 5 more errors").
+- **Usage-error contract completed:** the 8 scan-backed subcommands
+  (badge, debt, fix, impact, baseline, diff, pr-comment, handover) no
+  longer print the full usage wall after the friendly stderr error;
+  `mjolnir summary` rejects unknown flags with the shared
+  did-you-mean machinery (exit 10) instead of silently swallowing a
+  typo'd `--stdout`; `mjolnir ci --help` / `mjolnir help ci install` /
+  `mjolnir ci install --help` now reach the `ci install` help page
+  (two-word verb lookup).
+- **Dead surface removed:** `theme.severityTag` (byte-identical twin of
+  `ui.severityIcon`, test-only) deleted with the two plugin specs
+  re-pointed; the new-module exports nothing without a caller
+  (`severityGlyph`, `wrapFor`, `centerIn` dropped; `keyValue` and
+  `bullet` remain — the plan's primitive list mandates them).
 
 ## [0.5.2] — 2026-09-05
 

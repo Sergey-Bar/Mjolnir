@@ -80,6 +80,18 @@ describe("render-on-event determinism", () => {
     expect(line).toContain("a.spec.ts");
   });
 
+  it("strips ANSI/OSC escape sequences from the detail (QA-10: hostile filenames)", () => {
+    const line = renderProgressLine(
+      {
+        phase: "rules",
+        detail: "a\x1b[2Jclear\x1b]0;title\x07b.spec.ts",
+      },
+      0,
+    );
+    expect(line).not.toContain("\x1b");
+    expect(line).toContain("aclearb.spec.ts");
+  });
+
   it("phase labels cover all four phases", () => {
     expect(renderProgressLine({ phase: "discover" }, 0)).toContain(
       "Discovering files",

@@ -283,21 +283,6 @@ export function gaugeColorForBand(
   return band === "warning" ? p.warning : p.error;
 }
 
-/** Severity glyph + label, themed. Falls back to plain ASCII glyphs
- * (X/!/i) when `ascii` is set — ✗/⚠/ℹ render as "?" boxes on some
- * legacy Windows consoles, and color already carries the same signal
- * (color-blind-safe symbols remain: the label text itself). */
-export function severityTag(
-  severity: "error" | "warning" | "info",
-  p: Palette,
-  ascii = false,
-): string {
-  const glyphs = ascii
-    ? { error: "X", warning: "!", info: "i" }
-    : { error: "✗", warning: "⚠", info: "ℹ" };
-  if (severity === "error")
-    return `${p.error(glyphs.error)} ${p.error("ERROR  ")}`;
-  if (severity === "warning")
-    return `${p.warning(glyphs.warning)} ${p.warning("WARN   ")}`;
-  return `${p.info(glyphs.info)} ${p.info("INFO   ")}`;
-}
+/* The severity glyph + label primitive lives in ui.ts (severityIcon) —
+ * the design-system module owns the severity vocabulary; theme.ts owns
+ * the palette and gauge math. */

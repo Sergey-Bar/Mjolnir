@@ -166,8 +166,10 @@ export function renderPrComment(
       { icon: "🟡", label: "warnings", list: warnings, open: false },
       { icon: "🔵", label: "infos", list: infos, open: false },
     ];
+    let rendered = 0;
     for (const g of groups) {
       if (g.list.length === 0) continue;
+      rendered += Math.min(g.list.length, 25);
       lines.push("<details" + (g.open ? " open" : "") + ">");
       lines.push(`<summary>${g.icon} ${g.list.length} ${g.label}</summary>`);
       lines.push("");
@@ -177,14 +179,14 @@ export function renderPrComment(
       if (g.list.length > 25) {
         lines.push("");
         lines.push(
-          `_...and ${g.list.length - 25} more. Run \`mjolnir\` locally for the full list._`,
+          `_...and ${g.list.length - 25} more ${g.label}. Run \`mjolnir\` locally for the full list._`,
         );
       }
       lines.push("");
       lines.push("</details>");
       lines.push("");
     }
-    const overflow = findings.length - 25;
+    const overflow = findings.length - rendered;
     if (overflow > 0) {
       lines.push(
         `_...and ${overflow} more overall — run \`mjolnir\` locally (or \`--verbose\`) for the full list._`,
@@ -217,4 +219,4 @@ export function renderPrComment(
   return lines.join("\n");
 }
 
-export { MARKER as PR_COMMENT_MARKER };
+export { MARKER as PR_COMMENT_MARKER, escapeMarkdown };

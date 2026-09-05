@@ -75,7 +75,11 @@ import { ciInstall, type GateLevel } from "./integrations/ci-install.js";
 import { runForensics } from "./forensics/run.js";
 import { renderTriage, renderTriageMd } from "./forensics/triage.js";
 import { renderBadgeSnippet, writeBadge } from "./commands/badge.js";
-import { renderRootHelp, renderVerbHelp } from "./commands/help.js";
+import {
+  renderRootHelp,
+  renderVerbHelp,
+  hasVerbHelp,
+} from "./commands/help.js";
 import { renderDebt } from "./commands/debt.js";
 import {
   createRuleScaffold,
@@ -1463,7 +1467,6 @@ export async function runBadgeCommand(
 ): Promise<number> {
   const args = parseArgsOrUsage(argv, io);
   if (!args) {
-    printUsage(io.out);
     return 10;
   }
   try {
@@ -1489,7 +1492,6 @@ export async function runDebtCommand(
 ): Promise<number> {
   const args = parseArgsOrUsage(argv, io);
   if (!args) {
-    printUsage(io.out);
     return 10;
   }
   try {
@@ -1516,7 +1518,6 @@ export async function runFixCommand(
     io,
   );
   if (!args) {
-    printUsage(io.out);
     return 10;
   }
   try {
@@ -1585,7 +1586,6 @@ export async function runImpactCommand(
       : argv.filter((_a, i) => i !== sinceIdx && i !== sinceIdx + 1),
   );
   if (!args) {
-    printUsage(io.out);
     return 10;
   }
   try {
@@ -1611,7 +1611,6 @@ export async function runBaselineCommand(
 ): Promise<number> {
   const args = parseArgsOrUsage(argv, io);
   if (!args) {
-    printUsage(io.out);
     return 10;
   }
   try {
@@ -1642,7 +1641,6 @@ export async function runDiffCommand(
 ): Promise<number> {
   const args = parseArgsOrUsage(argv, io);
   if (!args) {
-    printUsage(io.out);
     return 10;
   }
   try {
@@ -1700,7 +1698,6 @@ export async function runPrCommentCommand(
 ): Promise<number> {
   const args = parseArgsOrUsage(argv, io);
   if (!args) {
-    printUsage(io.out);
     return 10;
   }
   try {
@@ -1747,7 +1744,6 @@ export async function runHandoverCommand(
 ): Promise<number> {
   const args = parseArgsOrUsage(argv, io);
   if (!args) {
-    printUsage(io.out);
     return 10;
   }
   try {
@@ -1854,6 +1850,15 @@ export async function main(
   if (argv.length >= 2 && (argv[1] === "--help" || argv[1] === "-h")) {
     return runHelpCommand([argv[0] as string], { out, err });
   }
+  // Two-word verb: `ci install --help` (argv[1] is "install", so the
+  // single-word interception above does not fire).
+  if (
+    argv[0] === "ci" &&
+    argv.length >= 3 &&
+    (argv[2] === "--help" || argv[2] === "-h")
+  ) {
+    return runHelpCommand(["ci", "install"], { out, err });
+  }
   if (argv[0] === "ci" && argv[1] === "install")
     return runCiInstall(argv.slice(2));
   if (argv[0] === "suppressions") return runSuppressions();
@@ -1886,14 +1891,23 @@ export async function main(
 /**
  * `mjolnir help` / `mjolnir help <verb>` (plan M2). `--help`/`-h` and
  * `<verb> --help` route here too. Exit 0 — help answers a question.
+ * Two-word verbs (`ci install`) are resolved first via the join of the
+ * leading non-flag tokens, then the single-word form.
  */
 export function runHelpCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
 ): number {
-  const verb = argv.find((a) => !a.startsWith("-"));
-  if (verb) {
-    io.out(renderVerbHelp(verb));
+  const tokens = argv.filter((a) => !a.startsWith("-"));
+  if (tokens.length >= 2) {
+    const joined = `${tokens[0]} ${tokens[1]}`;
+    if (hasVerbHelp(joined)) {
+      io.out(renderVerbHelp(joined));
+      return 0;
+    }
+  }
+  if (tokens.length > 0) {
+    io.out(renderVerbHelp(tokens[0] as string));
     return 0;
   }
   io.out(renderRootHelp(SCHEMA_VERSION));

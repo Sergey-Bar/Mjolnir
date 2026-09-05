@@ -374,4 +374,43 @@ describe("step summary", () => {
     );
     expect(md).toContain("Partial scan");
   });
+
+  it("escapes hostile finding metadata before it reaches the job summary", () => {
+    const md = renderStepSummary(
+      report({
+        findings: [
+          finding({
+            ruleId: "QA-EVIL|001",
+            file: "a</script>`b.spec.ts",
+            message: "msg with </details> and `backticks`",
+            fix: "fix | it",
+          }),
+        ],
+      }),
+    );
+    expect(md).toContain("QA-EVIL\\|001");
+    // escapeMarkdown backslash-escapes < > ` | — the code span cannot
+    // terminate and the HTML tag cannot parse.
+    expect(md).toContain("a\\</script\\>\\`b.spec.ts");
+    expect(md).toContain("\\`backticks\\`");
+    // The details envelope survives: no unescaped </details> from data.
+    expect(md.match(/<\/details>/g)).toHaveLength(1);
+    expect(md).toContain("Fix: fix \\| it");
+  });
+
+  it("rejects unknown flags with the shared usage error (exit 10)", () => {
+    withEnv("GITHUB_ACTIONS", "true");
+    withEnv("GITHUB_STEP_SUMMARY", join(dir, "never.md"));
+    const p = writeReport();
+    const cap = capture();
+    expect(runSummaryCommand([p, "--stduot"], cap.io)).toBe(10);
+    expect(cap.errText()).toContain('unknown flag "--stduot"');
+    expect(existsSync(join(dir, "never.md"))).toBe(false);
+  });
+
+  it("rejects --path-prefix without a value (exit 10)", () => {
+    const cap = capture();
+    expect(runSummaryCommand(["--path-prefix"], cap.io)).toBe(10);
+    expect(cap.errText()).toContain("--path-prefix");
+  });
 });

@@ -30,7 +30,8 @@ import {
 } from "../../src/engine/runtime-corroboration.js";
 import * as rt from "../../src/engine/runtime-corroboration.js";
 import { loadLocalRules } from "../../src/plugins/local-rules.js";
-import { scoreGauge, severityTag } from "../../src/reporter/theme.js";
+import { scoreGauge } from "../../src/reporter/theme.js";
+import { severityIcon, plainContext } from "../../src/reporter/ui.js";
 import { csNoAssertions } from "../../src/rules/csharp/qa-cs-103-no-assertions.js";
 import { jvNoAssertions } from "../../src/rules/java/qa-jv-103-no-assertions.js";
 import { pyNoAssertions } from "../../src/rules/python/qa-py-003-no-assertions.js";
@@ -637,15 +638,9 @@ describe("theme default-arg arms — omitted args take the defaults", () => {
     expect(typeof scoreGauge(75, p)).toBe("string");
   });
 
-  it("severityTag called with two args uses ascii=false", () => {
-    const p = {
-      dim: (s: string) => s,
-      ok: (s: string) => s,
-      warning: (s: string) => s,
-      error: (s: string) => s,
-      info: (s: string) => s,
-    } as never;
-    expect(typeof severityTag("warning", p)).toBe("string");
+  it("severityIcon called with two args (unicode context) returns a string", () => {
+    const ui = plainContext();
+    expect(typeof severityIcon("warning", ui)).toBe("string");
   });
 });
 
