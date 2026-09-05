@@ -88,6 +88,7 @@
     "husky": "^9.1.7",
     "lighthouse": "^13.4.1",
     "lint-staged": "^17.3.0",
+    "playwright-core": "^1.63.0",
     "prettier": "^3.3.0",
     "tsdown": "^0.22.14",
     "tsx": "^4.16.0",
