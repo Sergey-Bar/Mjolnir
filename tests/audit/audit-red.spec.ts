@@ -255,7 +255,7 @@ describe("audit-W1: closed block comments keep trailing code live", () => {
 });
 
 describe("audit-C4: cypress-only repo reaches QA-CYP-003", () => {
-  it("scanning a repo with only cypress.config.ts + chromeWebSecurity:false yields QA-CYP-003", async () => {
+  it("scanning a repo with only cypress.config.ts + chromeWebSecurity:false yields QA-CYP-003 (--strict: quarantine tier)", async () => {
     const dir = tmpRepo("c4");
     mkdirSync(join(dir, "test"), { recursive: true });
     writeFileSync(
@@ -271,8 +271,10 @@ describe("audit-C4: cypress-only repo reaches QA-CYP-003", () => {
         "});\n",
     );
     const cap = capture();
-    const code = await runScanCommand([dir], cap.io);
-    expect(code).toBe(1);
+    const code = await runScanCommand([dir, "--strict", "--json"], cap.io);
+    // Quarantine tier caps the finding to info/E0 — it reports (the
+    // dead rule now fires) but does not gate the exit code.
     expect(cap.text()).toContain("QA-CYP-003");
+    expect(code).toBe(0);
   });
 });
