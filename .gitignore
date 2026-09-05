@@ -58,3 +58,8 @@ package/
 .planning/ROADMAP-2026.md
 *.log
 .vscode/
+
+# Rendered demo-video output. The MP4s that ship are copied out of here
+# deliberately (see assets/video/README.md); previews and intermediates
+# are throwaway.
+assets/video/out/

@@ -18,9 +18,8 @@
       "id": "tour-scan",
       "narrative": "The full report: score, category breakdown, and every finding.",
       "source": "examples/demo-repo",
-      "command": "npx mjolnir-qa@latest",
+      "command": "npx mjolnir-qa@latest --verbose",
       "ansi": [
-        "\u001b[92m$\u001b[0m \u001b[1mnpx mjolnir-qa@latest\u001b[0m",
         "\u001b[38;2;138;180;216m ╔═══════════╗\u001b[0m",
         "\u001b[38;2;138;180;216m ║           ║\u001b[0m",
         "\u001b[38;2;138;180;216m ╠═══════════╣    M J Ö L N I R\u001b[0m",

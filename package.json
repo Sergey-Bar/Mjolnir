@@ -43,6 +43,8 @@
     "docs:demo": "tsx scripts/generate-readme-demo.ts",
     "docs:video:capture": "tsx scripts/video/write-scripts.ts",
     "docs:video:glyphs": "tsx scripts/video/check-glyphs.ts",
+    "docs:video:render": "tsx scripts/video/render.ts",
+    "docs:video": "npm run docs:video:capture && npm run docs:video:render",
     "docs:translations": "node scripts/check-readme-translations.mjs",
     "self-scan": "node dist/cli.mjs .",
     "prepare": "husky",

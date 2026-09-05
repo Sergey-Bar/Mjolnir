@@ -61,17 +61,29 @@ export const NORMALIZATION = ["/· \\d+ms$/ → '· a few ms'"];
 const normalize = (line: string): string =>
   line.replace(/· \d+ms$/, "· a few ms");
 
-/** `$ command` as the prompt line the video types out, in the reporter's palette. */
-function promptLine(command: string): string {
-  return `\u001b[92m$\u001b[0m \u001b[1m${command}\u001b[0m`;
+/**
+ * A scan beat: the command line shown on screen and the output beneath it
+ * are built from ONE set of flags, so they cannot disagree.
+ *
+ * This is not a stylistic preference. The first version of this file
+ * displayed `npx mjolnir-qa@latest` while capturing `--verbose` output —
+ * a video showing 246 lines of findings under a command that does not
+ * produce them. Deriving the command string from the flags makes that
+ * class of lie unrepresentable rather than merely tested for.
+ */
+interface ScanFlags {
+  verbose: boolean;
 }
 
-/** A real scan, run exactly as generate-readme-demo.ts runs it. */
-async function scan(target: string): Promise<ScanResult> {
+function scanCommand(flags: ScanFlags): string {
+  return `npx mjolnir-qa@latest${flags.verbose ? " --verbose" : ""}`;
+}
+
+async function scan(target: string, flags: ScanFlags): Promise<ScanResult> {
   return runScan({
     target,
     json: false,
-    verbose: true,
+    verbose: flags.verbose,
     maxDurationMs: Number.POSITIVE_INFINITY,
     scopeChanged: false,
     format: "terminal",
@@ -82,19 +94,22 @@ async function scan(target: string): Promise<ScanResult> {
   });
 }
 
-/** Turns a scan into the lines the reporter would print for it. */
-function renderScan(result: ScanResult, command: string): string[] {
+/** Turns a scan into the lines the reporter prints for those same flags. */
+function renderScan(result: ScanResult, flags: ScanFlags): string[] {
   // ascii:false pins Unicode glyphs and isTTY:true pins color, so the
   // capture does not depend on how the generator happened to be invoked;
   // shouldUseAscii() and shouldColorize() are both host/env-dependent and
   // have made committed assets drift before.
   const rendered = renderTerminal(result, {
     isTTY: true,
-    verbose: true,
+    verbose: flags.verbose,
     ascii: false,
     width: PACING.reporterWidth,
   });
-  return [promptLine(command), ...rendered.split("\n")].map(normalize);
+  // No prompt line here: `$ command` is chrome the renderer draws, not
+  // something the CLI printed. Keeping it out means every line in a
+  // committed script is real CLI output and nothing else.
+  return rendered.split("\n").map(normalize);
 }
 
 /** Semantic facts about a scan — discovered, never hand-written. */
@@ -154,9 +169,12 @@ const environment = (): VideoScript["environment"] => ({
 
 /** The ~45s hero loop: a false-green CI gate found, fixed, and re-proved. */
 export async function captureDemoScript(): Promise<VideoScript> {
-  const command = "npx mjolnir-qa@latest";
-  const before = await scan(DEMO_REPO);
-  const after = await withFixedWorkflow((dir) => scan(dir));
+  // The hero shows the bare command, so it captures the bare command's
+  // output — the capped report a first-time user actually sees.
+  const flags: ScanFlags = { verbose: false };
+  const command = scanCommand(flags);
+  const before = await scan(DEMO_REPO, flags);
+  const after = await withFixedWorkflow((dir) => scan(dir, flags));
 
   const beats: Beat[] = [
     {
@@ -165,7 +183,7 @@ export async function captureDemoScript(): Promise<VideoScript> {
         "A real suite scores 75/100 NEEDS WORK, with the CI gate itself among the findings.",
       source: "examples/demo-repo",
       command,
-      ansi: renderScan(before, command),
+      ansi: renderScan(before, flags),
       assertions: {
         // The findings the video points at. If either stops firing, the
         // narrative is no longer true and the spec fails.
@@ -187,7 +205,7 @@ export async function captureDemoScript(): Promise<VideoScript> {
         "Re-scanned after the fix: the false-green findings are gone and the score recovers — but not to 100, because the suite's other problems are still real.",
       source: "examples/demo-repo + assets/video/fixtures/ci.fixed.yml",
       command,
-      ansi: renderScan(after, command),
+      ansi: renderScan(after, flags),
       assertions: {
         absentFindings: ["QA-CI-009", "QA-CI-001"],
         ...observed(after),
@@ -211,8 +229,9 @@ export async function captureDemoScript(): Promise<VideoScript> {
 
 /** The ~2min tour: the scan, then the three commands it leads to. */
 export async function captureTourScript(): Promise<VideoScript> {
-  const scanCommand = "npx mjolnir-qa@latest";
-  const result = await scan(DEMO_REPO);
+  // The tour is the deep pass, and its command line says so.
+  const flags: ScanFlags = { verbose: true };
+  const result = await scan(DEMO_REPO, flags);
 
   const explainId = "QA-CI-009";
   const beats: Beat[] = [
@@ -221,8 +240,8 @@ export async function captureTourScript(): Promise<VideoScript> {
       narrative:
         "The full report: score, category breakdown, and every finding.",
       source: "examples/demo-repo",
-      command: scanCommand,
-      ansi: renderScan(result, scanCommand),
+      command: scanCommand(flags),
+      ansi: renderScan(result, flags),
       assertions: { requiredFindings: [explainId], ...observed(result) },
     },
     {
