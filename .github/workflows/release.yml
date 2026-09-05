@@ -1,12 +1,18 @@
 name: Release
 
-# Automatic release: push a version tag (v*) → the full gate runs → the
-# package is published to npm → a GitHub Release is created with
-# auto-generated notes and the built CLI attached.
+# Two release paths, one workflow file (the npmjs.com Trusted Publisher
+# matches the workflow FILENAME exactly — a second file would fail OIDC
+# with ENEEDAUTH):
 #
-# Usage:
-#   npm version patch|minor|major   # bumps package.json + creates the tag
-#   git push --follow-tags
+# 1. Automated (default): merge to `main` → the `version` job computes
+#    the bump from PR labels (no label = patch; release:major / minor /
+#    skip override), collapses CHANGELOG.md's [Unreleased] sections
+#    under the new version, commits + tags v<X> as mjolnir-release-bot,
+#    and the `release` job publishes from that tag. Zero manual
+#    commands.
+# 2. Manual: push a version tag (v*) or `gh workflow run release.yml
+#    -f tag=vX.Y.Z` → the `release` job runs the full gate and
+#    publishes. This is the rc-channel path (docs/PUBLISHING.md).
 #
 # ORDER MATTERS. npm publish runs BEFORE the GitHub Release is created,
 # and the release job refuses to create a Release until the version is
@@ -18,6 +24,11 @@ name: Release
 
 on:
   push:
+    # Auto-release path: every merge to main produces exactly one
+    # release (major/minor/patch — no gaps, no manual npm version).
+    branches:
+      - main
+    # Manual rc releases (npm version 1.1.0-rc.1 + push --follow-tags).
     tags:
       - "v*"
   # Re-run a release for a tag that already exists. Needed whenever a
@@ -32,20 +43,130 @@ on:
         required: true
         type: string
 
-# Least privilege at the top level; the release job escalates what it
-# actually needs. Job-level `permissions` replaces this block, so the
-# job below still gets contents:write.
+# Least privilege at the top level; each job escalates what it actually
+# needs via job-level `permissions`.
 permissions:
   contents: read
 
+# Serializes simultaneous main-push runs (queued merges release in
+# order, one version each); tag runs group per-tag. The registry
+# duplicate-skip in the release job absorbs any remaining race.
 concurrency:
-  group: release-${{ inputs.tag || github.ref }}
+  group: release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
+  # ── Job 1: version — the auto-release brain ─────────────────────────
+  # Runs ONLY on branch pushes to main (tag pushes and workflow_dispatch
+  # skip straight to the release job below).
+  version:
+    name: Compute and cut the next version
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write # push the bump commit + tag to main
+      pull-requests: read # label lookups for every PR in the range
+    outputs:
+      bump: ${{ steps.compute.outputs.bump }}
+      version: ${{ steps.cut.outputs.version }}
+      tag: ${{ steps.cut.outputs.tag }}
+      # True when any phase decided to skip (bot-commit loop guard, no
+      # commits since last tag, or every commit labeled release:skip).
+      skip: >-
+        ${{
+          steps.guard.outputs.skip == 'true'
+          || steps.commits.outputs.skip == 'true'
+          || steps.compute.outputs.skip == 'true'
+        }}
+    steps:
+      # Full history + all tags: the range since the last release tag
+      # and the loop guard both need them.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      # Loop-breaker / idempotency guard. The bot's own bump commit is
+      # tagged v<its package.json version> AT HEAD; a regular merge
+      # commit never is. (A GITHUB_TOKEN push does not trigger workflow
+      # runs, so this guards re-runs and future PAT-based pushes too.)
+      - name: Loop guard — HEAD already tagged with its own version?
+        id: guard
+        run: |
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          HEAD_TAG="$(git describe --tags --exact-match HEAD 2>/dev/null || true)"
+          if [ -n "$HEAD_TAG" ] && [ "$HEAD_TAG" = "v$PKG_VERSION" ]; then
+            echo "HEAD is tagged $HEAD_TAG — this push is the release bot's own bump commit. Skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "HEAD is not a release commit (package version $PKG_VERSION). Proceeding."
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Collect commits since the last tag
+        id: commits
+        if: steps.guard.outputs.skip != 'true'
+        run: |
+          LAST_TAG="$(git describe --tags --abbrev=0 2>/dev/null || true)"
+          RANGE="${LAST_TAG:+"$LAST_TAG.."}HEAD"
+          COUNT="$(git rev-list --count "$RANGE")"
+          echo "range=$RANGE" >> "$GITHUB_OUTPUT"
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          if [ "$COUNT" -eq 0 ]; then
+            echo "::notice::No commits since ${LAST_TAG:-the first commit} — nothing to release."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Commits since ${LAST_TAG:-the beginning}: $COUNT"
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Thin wrapper: scripts/compute-release.mjs resolves labels via
+      # `gh pr view` and writes bump/skip to $GITHUB_OUTPUT. Label
+      # failures fall back to patch with a ::warning:: — never fatal.
+      - name: Resolve the bump from PR labels
+        id: compute
+        if: steps.commits.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node scripts/compute-release.mjs --github-output --range "${{ steps.commits.outputs.range }}"
+
+      - name: Cut the release commit and tag
+        id: cut
+        if: steps.compute.outputs.skip != 'true'
+        env:
+          BUMP: ${{ steps.compute.outputs.bump }}
+        run: |
+          git config user.name "mjolnir-release-bot"
+          git config user.email "bot@users.noreply.github.com"
+          NEW_VERSION="$(npm version "$BUMP" --no-git-tag-version)"
+          NEW_VERSION="${NEW_VERSION#v}"
+          node scripts/sync-sarif-version.cjs
+          node scripts/release-changelog.mjs "$NEW_VERSION" "$(date -u +%F)"
+          git add -A
+          git commit -m "chore(release): v$NEW_VERSION"
+          git tag "v$NEW_VERSION"
+          git push origin "HEAD:refs/heads/main" "refs/tags/v$NEW_VERSION"
+          echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Cut v$NEW_VERSION (bump: $BUMP) and pushed commit + tag."
+
+  # ── Job 2: release — the publish pipeline (unchanged) ───────────────
+  # For tag pushes and workflow_dispatch the version job above is
+  # skipped and this job releases the tag directly. For main-branch
+  # pushes it runs only when the version job actually cut a tag —
+  # never on skip and never on a failed version job (no half state:
+  # no release commit means no publish).
   release:
+    needs: version
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    if: >-
+      always() && !cancelled() &&
+      (
+        (needs.version.result == 'skipped' && (github.event_name != 'push' || startsWith(github.ref, 'refs/tags/')))
+        || (needs.version.result == 'success' && needs.version.outputs.skip != 'true')
+      )
     # id-token: write is required for `npm publish --provenance` (OIDC).
     permissions:
       contents: write
@@ -54,11 +175,11 @@ jobs:
       # One name for "the tag being released", whichever trigger fired.
       # Read through env rather than interpolated into `run:` bodies so a
       # tag name can never be parsed as shell.
-      RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+      RELEASE_TAG: ${{ inputs.tag || needs.version.outputs.tag || github.ref_name }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ inputs.tag || github.ref }}
+          ref: ${{ inputs.tag || needs.version.outputs.tag || github.ref }}
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:

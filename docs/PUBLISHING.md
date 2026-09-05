@@ -1,9 +1,66 @@
 # Publishing Runbook
 
-Covers: the release checklist for every version bump, and the one-time
-account-level setup required before `npm publish` can go live.
+Covers: the automated release path (default — merge to `main` and the
+release happens), the manual release checklist for rc versions and
+retries, and the one-time account-level setup required before
+`npm publish` can go live.
 
-## Release checklist (every version)
+## Automated release (default path)
+
+Every merge to `main` produces exactly one npm release — major, minor
+or patch, no gaps, no manual `npm version` / `git push --follow-tags`.
+`release.yml` runs two jobs in sequence (one file, because the
+npmjs.com Trusted Publisher matches the workflow **filename**; a second
+workflow file would fail OIDC with `ENEEDAUTH`):
+
+1. **`version`** — computes the bump and cuts the release:
+   - **Label-driven with patch default.** PR labels `release:major` /
+     `release:minor` override the default; **no label = patch**;
+     `release:skip` excludes that PR's commits. Direct pushes to
+     `main` without a PR are patch.
+   - **Batch behavior.** Labels are collected across EVERY commit since
+     the last tag and the highest bump wins — if three PRs merge
+     between releases and one carries `release:minor`, the single
+     release cut by the last of them is a minor.
+   - **Changelog.** `scripts/release-changelog.mjs` merges every
+     `## [Unreleased] — …` section under the new
+     `## [X.Y.Z] — date` heading (hand-curated content stays
+     authoritative). No Unreleased sections → a minimal
+     `### Changes since vX` list is generated from merged PR titles —
+     a version bump with no changelog record remains forbidden.
+   - The job commits `chore(release): vX.Y.Z` as
+     `mjolnir-release-bot`, tags it, and pushes both; the `release`
+     job then publishes from that tag.
+2. **`release`** — the existing publish pipeline, byte-identical:
+   full gate → registry duplicate check → fresh-install gate → publish
+   (OIDC, provenance) → registry poll → GitHub Release.
+
+Guardrails and failure modes:
+
+| Symptom                                             | Behavior                                                                                                                |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| The push IS the bot's own bump commit (loop risk)   | Loop guard: HEAD already tagged `v<package.json version>` → the version job exits with `skip=true`, nothing re-releases |
+| PR subject lacks `(#N)` (direct push)               | Patch default + `::warning::` in the run log                                                                            |
+| `gh` label lookup fails (API blip)                  | Patch default + `::warning::` — a lookup failure never fails or drops a release                                         |
+| Every commit in the range is labeled `release:skip` | Version job succeeds with a `::notice::`, no tag cut, no release                                                        |
+| Version job fails (dirty tree, bad transform)       | Release job is skipped — no publish, no half state; the next main-branch push retries the whole chain                   |
+| Two main-push runs race                             | Serialized by the `release-refs/heads/main` concurrency group; the registry duplicate-skip absorbs any remaining race   |
+| Version already on npm (re-run / dispatch)          | Publish skipped, verification still runs (existing behavior)                                                            |
+
+So the default contribution flow is: **add a label → merge → done.**
+Verify from the registry, not the green tick:
+
+```bash
+npm view mjolnir-qa version      # must print the new version
+npm audit signatures             # provenance attestation present
+```
+
+## Manual release checklist (rc and retries)
+
+The checklist below is the **manual/rc flow** — the automated path
+above replaced it for ordinary merges to `main`. Use it for release
+candidates (the `next` dist-tag flow) and for anything else the
+automation must not decide.
 
 1. **Version bump** — `npm version patch|minor|major`. This is the
    single source of truth for the version (per Master-Stabilization-Plan
@@ -140,7 +197,9 @@ publishing with a SLSA provenance attestation (`npm audit signatures`).
 - Version 0.4.0 was published **manually** (no `v0.4.0` git tag; npm
   records its `gitHead` as `7b7a61a`). It shipped a POSIX-broken bin —
   superseded by 0.5.0.
-- Every release from here is `git push --follow-tags` and nothing else.
+- Since the 2026-09 auto-release landing, every merge to `main`
+  releases by itself (see "Automated release (default path)" above);
+  `git push --follow-tags` remains the manual/rc path.
   No `NODE_AUTH_TOKEN` exists anywhere — OIDC replaces it.
 
 ### What was wrong before 0.5.0
