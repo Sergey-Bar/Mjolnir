@@ -120,6 +120,12 @@ import {
 import { loadPlugins } from "./plugins/load.js";
 import { loadLocalRules, LOCAL_RULES_DIR } from "./plugins/local-rules.js";
 import {
+  pluginsGateOpen,
+  renderGateNotice,
+  type SkippedRuleSource,
+} from "./plugins/trust-gate.js";
+import { resolveGitPath } from "./scope/git-resolve.js";
+import {
   computeSelectorHealth,
   renderSelectorHealth,
 } from "./playwright/selector-health.js";
@@ -161,9 +167,19 @@ const OVERLAP_META_BY_RULE_ID: ReadonlyMap<string, OverlapMeta> = new Map(
 // core findings always win dedup by running first.
 // Plan §18 (Local Extensibility): workspace-local `mjolnir-rules/` files
 // load alongside npm plugins — folder-based, zero network.
+// Audit C2 (locked decision): code-executing rule sources (npm plugins,
+// JS modules) load ONLY behind the plugin trust gate (--enable-plugins /
+// MJOLNIR_ENABLE_PLUGINS=1, default OFF). JSON manifests stay
+// declarative-safe and load without the gate.
 export async function buildUniversalRules(
   root: string,
   strict?: boolean,
+  opts: {
+    /** CLI trust-gate flag (`--enable-plugins`) for this scan. */
+    enablePlugins?: boolean;
+    /** Called with the gate notice when code sources were skipped. */
+    onGateNotice?: (notice: string) => void;
+  } = {},
 ): Promise<{
   rules: UniversalRule[];
   pluginErrors: string[];
@@ -171,8 +187,23 @@ export async function buildUniversalRules(
   pluginMeta: Array<{ name: string; rules: number }>;
   externalRules: QADoctorRule[];
 }> {
-  const { plugins, errors } = loadPlugins(root);
-  const local = await loadLocalRules(root);
+  const gateOpen = pluginsGateOpen(opts.enablePlugins);
+  const { plugins, errors, skipped } = loadPlugins(root, gateOpen);
+  const local = await loadLocalRules(root, gateOpen);
+  // Audit C2: when rule sources are present but the gate is off, say so
+  // loudly on stderr — a silent boundary looks like a bug, not a policy.
+  if (!gateOpen && opts.onGateNotice) {
+    const skippedSources: SkippedRuleSource[] = [
+      ...skipped.map((name) => ({
+        kind: "plugin-package" as const,
+        name,
+      })),
+      ...local.skipped.map((name) => ({ kind: "js-module" as const, name })),
+    ];
+    if (skippedSources.length > 0) {
+      opts.onGateNotice(renderGateNotice(skippedSources));
+    }
+  }
   const allErrors = [...errors, ...local.errors];
   const externalRules = [
     ...plugins.map((p) => ({ name: p.name, rules: p.rules })),
@@ -272,6 +303,13 @@ interface CliArgs {
    * and auto-disabled in CI/machine formats; this flag is the manual off.
    */
   noProgress?: boolean;
+  /**
+   * Audit C2: --enable-plugins opens the plugin trust gate for THIS
+   * invocation — npm-plugin and JS-module rule sources may load (and
+   * execute). Default OFF; MJOLNIR_ENABLE_PLUGINS=1 is the env
+   * equivalent. JSON rule manifests are unaffected (no code by design).
+   */
+  enablePlugins?: boolean;
 }
 
 /** A usage-error detail: the offending token, when one exists. */
@@ -347,6 +385,10 @@ export function parseArgs(
       args.cache = true;
     } else if (a === "--no-progress") {
       args.noProgress = true;
+    } else if (a === "--enable-plugins") {
+      // Audit C2: opt-in code execution for plugin/JS-module rule
+      // sources. Additive flag, accepted by every verb that loads rules.
+      args.enablePlugins = true;
     } else if (a === "--help" || a === "-h") {
       return null;
     } else if (!a.startsWith("-")) {
@@ -475,6 +517,13 @@ export interface ScanHooks {
     total?: number | undefined;
     detail?: string | undefined;
   }) => void;
+  /**
+   * Audit C2: invoked when code-executing rule sources were skipped
+   * because the plugin trust gate is closed. Default (no hook): the
+   * gate notice is written straight to stderr — loud in every verb,
+   * never on the stdout machine contracts.
+   */
+  onGateNotice?: (notice: string) => void;
 }
 
 /**
@@ -510,6 +559,12 @@ export async function runScan(
   const deadline = started + args.maxDurationMs;
   // package.json workspace OR non-JS repo (Python etc.) — fall back to the
   // target dir itself so language adapters can still discover their files.
+  // Audit S3: the explicit scan target is the anchor. Config,
+  // .mjolnirignore, plugins, and local rules resolve from the target or
+  // ABOVE the target only when the target sits inside the discovered
+  // project — never from an unrelated ancestor of the CWD. Concretely:
+  // `mjolnir scan C:\other\repo` while CWD is a hostile checkout of our
+  // own monorepo must not read the hostile repo's mjolnir.config.json.
   const discovered = discoverWorkspace(args.target);
   const targetAbs = resolve(args.target);
   // Scope containment: when the user targets a subdirectory of the
@@ -522,6 +577,13 @@ export async function runScan(
       ? { ...discovered, root: targetAbs }
       : (discovered ?? fallbackWorkspace(targetAbs));
   const workspace = scanRoot;
+  // Audit S3: verbose mode states the resolved root — operators can SEE
+  // which config/ignore anchor the scan is honoring.
+  if (args.verbose) {
+    hooks.onConfigWarning?.(
+      `verbose: scan root (config/ignore anchor): ${workspace.root}`,
+    );
+  }
   const findings: Finding[] = [];
   let skippedFiles = 0;
   let testFileCount = 0;
@@ -548,7 +610,16 @@ export async function runScan(
     pluginErrors,
     tierByRuleId: tiers,
     pluginMeta,
-  } = await buildUniversalRules(workspace.root, args.strict);
+  } = await buildUniversalRules(workspace.root, args.strict, {
+    ...(args.enablePlugins !== undefined
+      ? { enablePlugins: args.enablePlugins }
+      : {}),
+    // Audit C2: default destination is stderr — the notice must be loud
+    // in every verb and never contaminate the stdout machine contracts
+    // (--json/--format sarif/mermaid).
+    onGateNotice: (notice) =>
+      hooks.onGateNotice ? hooks.onGateNotice(notice) : err(notice),
+  });
   const tierByRuleId = tiers;
   const pluginsLoaded = pluginMeta;
   // M5.2 (A-2): local content-addressed cache. Opened BEFORE the rules
@@ -1172,6 +1243,8 @@ export async function runDoctorPlaywright(
     maxDurationMs: Number.POSITIVE_INFINITY,
     scopeChanged: false,
     format: "terminal",
+    // Audit C2: this verb loads rules, so it honors the gate flag too.
+    enablePlugins: argv.includes("--enable-plugins"),
   };
   const result = await runScan({ ...args, target });
   const pwFindings = result.findings.filter((f) => f.category === "QA-PW");
@@ -1358,6 +1431,9 @@ export async function runScanCommand(
       {
         onConfigWarning: (message) => io.err(message),
         onProgress: (e) => progress.onEvent(e),
+        // Audit C2: the gate notice rides the injected io so tests can
+        // capture it and it never pollutes stdout machine contracts.
+        onGateNotice: (notice) => io.err(notice),
         ...(args.debug
           ? {
               onRuleCrash: (ruleId: string, file: string, error: unknown) => {
@@ -1664,10 +1740,16 @@ export function runCreateRuleCommand(
 
 function currentCommit(root: string): string {
   try {
-    return execFileSync("git", ["-C", root, "rev-parse", "HEAD"], {
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
-    }).trim();
+    // Audit S1: absolute git path — never resolvable from the scanned
+    // repo's own directory.
+    return execFileSync(
+      resolveGitPath() ?? "git",
+      ["-C", root, "rev-parse", "HEAD"],
+      {
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "ignore"],
+      },
+    ).trim();
   } catch {
     return "unknown";
   }
@@ -1749,7 +1831,7 @@ export async function runDiffCommand(
     if (invalid !== null) return invalid;
     const result = await runScan({ ...args, target });
     const baselinePath = join(target, DEFAULT_BASELINE_PATH);
-    const baseline = loadBaseline(baselinePath);
+    const baseline = loadBaseline(baselinePath, (w) => io.err(w));
     const diff = diffAgainstBaseline(result, baseline);
     io.out(renderBaselineDiff(diff));
 
@@ -1812,7 +1894,9 @@ export async function runPrCommentCommand(
     const invalid = validateScanTarget(target, io.err);
     if (invalid !== null) return invalid;
     const result = await runScan({ ...args, target });
-    const baseline = loadBaseline(join(target, DEFAULT_BASELINE_PATH));
+    const baseline = loadBaseline(join(target, DEFAULT_BASELINE_PATH), (w) =>
+      io.err(w),
+    );
     const diff = baseline ? diffAgainstBaseline(result, baseline) : undefined;
     io.out(
       renderPrComment(result, {
@@ -1948,6 +2032,14 @@ export async function main(
   // crash, but it answers a different question than the one asked.
   if (argv[0] === "--version" || argv[0] === "-v") {
     io.out(`mjolnir-qa ${CLI_VERSION}\n`);
+    return 0;
+  }
+  // Audit S8: help is a QUERY, not a scan — answering it must exit 0 on
+  // every verb, and the answer goes to stdout as the successful output
+  // of this invocation. (Previously --help fell into the scan parser's
+  // usage-error path: exit 10.)
+  if (argv[0] === "--help" || argv[0] === "-h") {
+    printUsage(out);
     return 0;
   }
   // Subcommands (§69): ci install · suppressions · forensics · doctor:playwright

@@ -46,6 +46,21 @@ by `detectorRevision`), adding rules, adding flags, adding JSON fields,
 changing the score of any given repo (the score is a measurement, not a
 contract).
 
+## Plugin execution gate (pre-1.0 clarification)
+
+As of the audit-remediation 1.0 close-out, npm plugins and JS-module
+external rules (`mjolnir-rules/*.mjs`) load and execute only behind the
+plugin trust gate: `--enable-plugins` on any verb that loads rules, or
+`MJOLNIR_ENABLE_PLUGINS=1` in the environment. The default is OFF.
+Declaring a plugin in config without the gate prints a loud stderr
+notice listing the skipped sources — it never changes the exit code or
+the JSON contract (the `plugins` field appears only when sources actually
+loaded). JSON rule manifests (`mjolnir-rules/*.json`) never execute code
+and load without the gate. This is a behavior change to the pre-1.0
+"always load" posture, shipped before the freeze per the versioning
+contract; the gate's existence and both spellings of the opt-in are
+frozen at 1.0.
+
 ## Deprecation cycle
 
 For every frozen surface except rule IDs (which have their own lifecycle

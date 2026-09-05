@@ -667,21 +667,21 @@ describe("loadLocalRules — validation branches", () => {
     // Simulated via a file where the dir should be: readdirSync throws.
     const d = tmpDir();
     writeFileSync(join(d, "mjolnir-rules"), "not a dir");
-    const { errors } = await loadLocalRules(d);
+    const { errors } = await loadLocalRules(d, true);
     expect(errors[0]).toContain("could not be read");
   });
 
   it("invalid JSON → error entry", async () => {
     const d = localDir();
     writeFileSync(join(d, "mjolnir-rules", "bad.json"), "{ not json");
-    const { errors } = await loadLocalRules(d);
+    const { errors } = await loadLocalRules(d, true);
     expect(errors[0]).toContain("is not valid JSON");
   });
 
   it("non-object JSON (array) → error entry", async () => {
     const d = localDir();
     writeFileSync(join(d, "mjolnir-rules", "arr.json"), "[]");
-    const { errors } = await loadLocalRules(d);
+    const { errors } = await loadLocalRules(d, true);
     expect(errors[0]).toContain("must be a JSON object");
   });
 
@@ -691,7 +691,7 @@ describe("loadLocalRules — validation branches", () => {
       join(d, "mjolnir-rules", "noid.json"),
       JSON.stringify({ severity: "info" }),
     );
-    const { errors } = await loadLocalRules(d);
+    const { errors } = await loadLocalRules(d, true);
     expect(errors[0]).toContain('missing "id"');
   });
 
@@ -701,7 +701,7 @@ describe("loadLocalRules — validation branches", () => {
       join(d, "mjolnir-rules", "emptyid.json"),
       JSON.stringify({ ...GOOD_RULE, id: "" }),
     );
-    const { errors } = await loadLocalRules(d);
+    const { errors } = await loadLocalRules(d, true);
     expect(errors[0]).toContain('missing "id"');
   });
 
@@ -715,7 +715,7 @@ describe("loadLocalRules — validation branches", () => {
       join(d, "mjolnir-rules", "badpat.json"),
       JSON.stringify({ ...GOOD_RULE, id: "QA-ACME-101", patterns: [42] }),
     );
-    const { errors } = await loadLocalRules(d);
+    const { errors } = await loadLocalRules(d, true);
     expect(errors).toHaveLength(2);
     expect(errors.every((e) => e.includes('"patterns"'))).toBe(true);
   });
@@ -730,7 +730,7 @@ describe("loadLocalRules — validation branches", () => {
         patterns: ["([broke"],
       }),
     );
-    const { errors } = await loadLocalRules(d);
+    const { errors } = await loadLocalRules(d, true);
     expect(errors[0]).toContain("invalid regex");
   });
 
@@ -745,7 +745,7 @@ describe("loadLocalRules — validation branches", () => {
       join(d, "mjolnir-rules", `${field}.json`),
       JSON.stringify({ ...GOOD_RULE, id: `QA-ACME-${field}`, [field]: value }),
     );
-    const { errors } = await loadLocalRules(d);
+    const { errors } = await loadLocalRules(d, true);
     expect(errors.length).toBeGreaterThan(0);
     expect(errors[0]).toContain(
       field === "severity" || field === "category" || field === "appliesTo"
@@ -767,7 +767,7 @@ describe("loadLocalRules — validation branches", () => {
         qaImpact: "HYGIENE",
       }),
     );
-    const { rules, errors } = await loadLocalRules(d);
+    const { rules, errors } = await loadLocalRules(d, true);
     expect(errors).toEqual([]);
     expect(rules[0]?.title).toBe("QA-ACME-110");
     expect(rules[0]?.confidence).toBe("medium");
@@ -787,7 +787,7 @@ describe("loadLocalRules — validation branches", () => {
       join(d, "mjolnir-rules", "throw.mjs"),
       "throw new Error('module boom');\n",
     );
-    const { errors } = await loadLocalRules(d);
+    const { errors } = await loadLocalRules(d, true);
     expect(errors[0]).toContain("failed to load");
   });
 
@@ -797,7 +797,7 @@ describe("loadLocalRules — validation branches", () => {
       join(d, "mjolnir-rules", "empty.mjs"),
       "export const x = 1;\n",
     );
-    const { errors } = await loadLocalRules(d);
+    const { errors } = await loadLocalRules(d, true);
     expect(errors[0]).toContain("exports no `rules` array");
   });
 
@@ -807,7 +807,7 @@ describe("loadLocalRules — validation branches", () => {
       join(d, "mjolnir-rules", "malformed.mjs"),
       "export const rules = [{ id: 'QA-ACME-120' }];\n",
     );
-    const { errors } = await loadLocalRules(d);
+    const { errors } = await loadLocalRules(d, true);
     expect(errors[0]).toContain("missing id/run");
   });
 
@@ -817,7 +817,7 @@ describe("loadLocalRules — validation branches", () => {
       join(d, "mjolnir-rules", "spoof.mjs"),
       "export const rules = [{ id: 'qa-cs-777', run: () => [] }];\n",
     );
-    const { errors } = await loadLocalRules(d);
+    const { errors } = await loadLocalRules(d, true);
     expect(errors[0]).toContain("reserved core prefix");
   });
 
@@ -827,7 +827,7 @@ describe("loadLocalRules — validation branches", () => {
       join(d, "mjolnir-rules", "core.mjs"),
       "export const rules = [{ id: 'QA-ACME-130', title: 'T', category: 'QA-TEST', severity: 'info', confidence: 'high', findingType: 'deterministic-defect', qaImpact: 'HYGIENE', appliesTo: 'test-files', tier: 'core', run: () => [] }];\n",
     );
-    const { rules, errors } = await loadLocalRules(d);
+    const { rules, errors } = await loadLocalRules(d, true);
     expect(errors[0]).toContain('clamped to "extended"');
     expect((rules[0] as { tier?: string }).tier).toBe("extended");
   });

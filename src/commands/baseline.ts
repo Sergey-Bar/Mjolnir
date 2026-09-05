@@ -113,7 +113,10 @@ export function saveBaseline(
   };
 }
 
-export function loadBaseline(path: string): BaselineFile | null {
+export function loadBaseline(
+  path: string,
+  onWarning?: (message: string) => void,
+): BaselineFile | null {
   if (!existsSync(path)) return null;
   try {
     const parsed: unknown = JSON.parse(readFileSync(path, "utf8"));
@@ -124,6 +127,22 @@ export function loadBaseline(path: string): BaselineFile | null {
       Array.isArray(parsed.findings)
     ) {
       const file = parsed as BaselineFile;
+      // Audit S7: the schemaVersion gate. A FUTURE version's file may
+      // carry shapes this build cannot interpret — diffing it as v1
+      // would produce confident nonsense. Missing version (legacy
+      // pre-versioning files) is tolerated with a warning; an unknown
+      // version degrades to "no baseline" with the reason printed.
+      const version = (parsed as { schemaVersion?: unknown }).schemaVersion;
+      if (version === undefined) {
+        onWarning?.(
+          "baseline file has no schemaVersion (pre-versioning format) — treated as v1.",
+        );
+      } else if (version !== 1) {
+        onWarning?.(
+          `baseline file declares schemaVersion ${JSON.stringify(version)}; this Mjölnir understands v1 — baseline ignored (upgrade Mjölnir to diff it).`,
+        );
+        return null;
+      }
       // Bug-audit QA-2026-08-30 QA-12 (totality, M3-style): the file is
       // arbitrary local JSON — a hostile or hand-edited baseline must not
       // be able to crash `diff` (a `null` element used to explode in

@@ -558,10 +558,17 @@ are immutable once shipped and never reused.
   real OSS code ship in the headline tiers (see
   [How much of this is measured](#how-much-of-this-is-measured)); the scan
   footer and `mjolnir rules --unmeasured` tell you which is which.
-- **Plugin trust** — plugins are npm packages declared under `"plugins"`.
-  There is **no sandbox**: plugin code runs with full Node privileges, the
-  same trust model as ESLint or Vitest plugins. Core rule-ID prefixes are
-  reserved and rejected from plugins to prevent spoofing.
+- **Plugin trust & execution gate** — plugins are npm packages declared
+  under `"plugins"`; JS modules live in `mjolnir-rules/*.mjs`. There is
+  **no sandbox**: plugin code runs with full Node privileges, the same
+  trust model as ESLint or Vitest plugins. Because of that, code execution
+  is **opt-in at every scan**: pass `--enable-plugins` (or set
+  `MJOLNIR_ENABLE_PLUGINS=1`) or the sources are NOT loaded — a loud
+  stderr notice lists exactly what was skipped. Scanning untrusted code
+  never executes it. JSON rule manifests (`mjolnir-rules/*.json`) are
+  unaffected: they declare regex patterns and execute no code by design.
+  Core rule-ID prefixes are reserved and rejected from plugins and
+  external rules to prevent spoofing.
 - **Workspace-local external rules** (folder-based, zero network) — a
   `mjolnir-rules/` directory next to the scan target loads custom rules:
   JSON files declare regex patterns (no code executed), `.mjs`/`.js`

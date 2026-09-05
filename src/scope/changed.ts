@@ -14,11 +14,11 @@
  * locally before committing still sees the change.
  */
 
-import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { LIMITS } from "../discovery/ignores.js";
 import { isKnownTestFile } from "../discovery/scan-adapters.js";
+import { runGit } from "./git-resolve.js";
 import type { Finding } from "../types.js";
 
 export interface ChangedLines {
@@ -31,18 +31,6 @@ export interface DiffResult {
   /** True when git data was unavailable — findings fall back to full files. */
   degraded: boolean;
   reason?: string;
-}
-
-function git(root: string, args: string[]): string | null {
-  try {
-    return execFileSync("git", ["-C", root, ...args], {
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
-      timeout: 15_000,
-    });
-  } catch {
-    return null;
-  }
 }
 
 /** Candidates for the default base branch, in fallback order (H-10). */
@@ -65,7 +53,7 @@ function resolveMergeBase(root: string, baseBranch?: string): string | null {
     // make git itself run an attacker-chosen command. Skip anything that
     // could parse as an option.
     if (candidate.startsWith("-")) continue;
-    const mergeBase = git(root, ["merge-base", "HEAD", candidate])?.trim();
+    const mergeBase = runGit(root, ["merge-base", "HEAD", candidate])?.trim();
     if (mergeBase) return mergeBase;
   }
   return null;
@@ -101,7 +89,7 @@ export function computeChangedScope(
     return { changed: {}, degraded: true, reason: "no-merge-base" };
   }
 
-  const committed = git(root, [
+  const committed = runGit(root, [
     "diff",
     "--name-status",
     "-z",
@@ -116,7 +104,7 @@ export function computeChangedScope(
   // Working tree: staged + unstaged changes vs HEAD, plus untracked
   // files — a local run before `git add`/`git commit` must not report
   // nothing (H-10).
-  const workingTree = git(root, [
+  const workingTree = runGit(root, [
     "diff",
     "--name-status",
     "-z",
@@ -126,7 +114,7 @@ export function computeChangedScope(
   if (workingTree === null) {
     return { changed: {}, degraded: true, reason: "diff-failed" };
   }
-  const untracked = git(root, [
+  const untracked = runGit(root, [
     "ls-files",
     "-z",
     "--others",
@@ -150,7 +138,7 @@ export function computeChangedScope(
 
   const changed: ChangedLines = {};
   for (const file of changedFiles) {
-    const committedDiff = git(root, [
+    const committedDiff = runGit(root, [
       "diff",
       "--unified=0",
       mergeBase,
@@ -158,7 +146,13 @@ export function computeChangedScope(
       "--",
       file,
     ]);
-    const workingDiff = git(root, ["diff", "--unified=0", "HEAD", "--", file]);
+    const workingDiff = runGit(root, [
+      "diff",
+      "--unified=0",
+      "HEAD",
+      "--",
+      file,
+    ]);
     const lines = parseChangedLines(
       `${committedDiff ?? ""}\n${workingDiff ?? ""}`,
     );

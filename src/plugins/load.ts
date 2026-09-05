@@ -9,12 +9,21 @@
  * user's explicit choice. Sandboxing (isolated-vm etc.) was evaluated and
  * rejected for v1: it breaks the zero-native-deps portability guarantee.
  *
+ * Audit C2 (locked decision, remediation plan): code execution is also
+ * OPT-IN at the scan level. `require()`ing a plugin package happens only
+ * behind the plugin trust gate (`--enable-plugins` /
+ * MJOLNIR_ENABLE_PLUGINS=1, default OFF). A scan of an untrusted repo
+ * must never execute the repo's own plugin declarations. When the gate
+ * is closed and plugins ARE declared, the declarations are reported as
+ * skipped (loud stderr notice upstream) — never silently ignored and
+ * never executed.
+ *
  * Contract:
  * - Plugins are declared in mjolnir.config.json under "plugins":
  *   ["mjolnir-plugin-acme", ...] or [{ "package": "...", "prefix": "ACME" }]
  * - Each package must export `rules: QADoctorRule[]` (same shape as core).
  * - Rule IDs MUST use a plugin-specific prefix (e.g. QA-ACME-001) — core
- *   prefixes (QA-TEST/TQUAL/PW/CI/PY/ENV) are rejected to prevent spoofing.
+ *   prefixes (shared RESERVED_PREFIXES law) are rejected to prevent spoofing.
  * - Load failures degrade honestly: a warning finding-style entry, never
  *   a crash; exit codes stay frozen.
  */
@@ -23,22 +32,11 @@ import { createRequire } from "node:module";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import type { QADoctorRule } from "../rules/rule.js";
+import { RESERVED_PREFIXES, isReservedPrefix } from "./reserved-prefixes.js";
 
-/** Core-owned ID prefixes a plugin may never claim. Kept in sync with
- * every shipped adapter family — a plugin spoofing a core-looking ID
- * would silently inherit core trust. */
-const RESERVED_PREFIXES = [
-  "QA-TEST",
-  "QA-TQUAL",
-  "QA-PW",
-  "QA-CI",
-  "QA-PY",
-  "QA-ENV",
-  "QA-JV",
-  "QA-CS",
-  "QA-PLUGIN",
-] as const;
+export { RESERVED_PREFIXES };
+
+import type { QADoctorRule } from "../rules/rule.js";
 
 export interface LoadedPlugin {
   name: string;
@@ -50,6 +48,12 @@ export interface PluginLoadResult {
   plugins: LoadedPlugin[];
   /** Human-readable problems; surfaced as scan warnings, never fatal. */
   errors: string[];
+  /**
+   * Audit C2: plugin package names that were declared but NOT loaded
+   * because the trust gate is closed. Rendered as the gate notice; the
+   * packages' code never ran.
+   */
+  skipped: string[];
 }
 
 interface PluginDecl {
@@ -78,8 +82,8 @@ function parseDecls(raw: unknown): PluginDecl[] {
   return decls;
 }
 
-export function loadPlugins(root: string): PluginLoadResult {
-  const result: PluginLoadResult = { plugins: [], errors: [] };
+export function loadPlugins(root: string, gateOpen = false): PluginLoadResult {
+  const result: PluginLoadResult = { plugins: [], errors: [], skipped: [] };
   const cfgPath = join(root, "mjolnir.config.json");
   // FW-LINT-01 residual: fixed config filename under the scan root —
   // the operator's own repo, not discovered scan data.
@@ -100,6 +104,13 @@ export function loadPlugins(root: string): PluginLoadResult {
 
   const decls = parseDecls(raw["plugins"]);
   if (decls.length === 0) return result;
+
+  // Audit C2: the gate is checked BEFORE any require(). A declared
+  // plugin's code never runs without explicit opt-in.
+  if (!gateOpen) {
+    result.skipped.push(...decls.map((d) => d.package));
+    return result;
+  }
 
   const require = createRequire(join(root, "package.json"));
 
@@ -141,8 +152,8 @@ export function loadPlugins(root: string): PluginLoadResult {
       // Bug-audit QA-2026-08-30 QA-7: the comparison was case-sensitive,
       // so a plugin rule id like "qa-test-001" walked straight past the
       // reserved-prefix spoof rejection. IDs are matched
-      // case-insensitively against the reserved list.
-      if (RESERVED_PREFIXES.some((p) => ruleId.toUpperCase().startsWith(p))) {
+      // case-insensitively against the shared reserved list.
+      if (isReservedPrefix(ruleId)) {
         result.errors.push(
           `plugin "${decl.package}" rule ${ruleId} uses a reserved core prefix — rejected. Use your own family (e.g. QA-<PLUGIN>-001).`,
         );

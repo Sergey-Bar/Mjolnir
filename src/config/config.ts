@@ -24,6 +24,19 @@ export interface QADoctorConfig {
   ignore?: IgnoreEntry[];
 }
 
+/**
+ * Audit S7: every config key the engine consumes. A top-level key
+ * OUTSIDE this set is a likely typo ("severities", "ingore") — unknown
+ * keys emit a warning (fail-noisy, not fail-silent) and are ignored.
+ */
+const KNOWN_CONFIG_KEYS: ReadonlySet<string> = new Set([
+  "gate",
+  "exclude",
+  "severityOverrides",
+  "ignore",
+  "plugins",
+]);
+
 const CONFIG_NAMES = ["mjolnir.config.json", ".mjolnir.json"] as const;
 
 /**
@@ -105,6 +118,24 @@ function validate(
     if (!ign.ruleId) throw new Error("ignore entries require ruleId");
     if (!ign.reason)
       throw new Error(`ignore for ${ign.ruleId} requires a "reason" (§27)`);
+    // Audit S7: ignore[].files feeds glob compilation — a non-string
+    // entry (number/object/null) crashed the suppression matcher with a
+    // TypeError (exit 20) instead of a fixable usage error. A user's
+    // config typo is exit 10 (M4 convention).
+    if (ign.files !== undefined) {
+      if (!Array.isArray(ign.files)) {
+        throw new Error(
+          `ignore for ${ign.ruleId}: "files" must be an array of glob strings, got ${typeof ign.files}`,
+        );
+      }
+      for (const g of ign.files) {
+        if (typeof g !== "string") {
+          throw new Error(
+            `ignore for ${ign.ruleId}: "files" entries must be strings, got ${typeof g} (${JSON.stringify(g)})`,
+          );
+        }
+      }
+    }
     // Bug-audit QA-2026-08-30 QA-5: `new Date(garbage)` is NaN, and NaN
     // comparisons are always false — an unparseable `expires` silently
     // degraded to "expired" (or to active, depending on the comparison
@@ -116,6 +147,16 @@ function validate(
     ) {
       throw new Error(
         `ignore for ${ign.ruleId}: "expires" must be an ISO date, got "${ign.expires}"`,
+      );
+    }
+  }
+  // Audit S7: unknown top-level keys warn — a typo'd key ("severities",
+  // "ingnore") currently vanishes silently while the operator believes
+  // it took effect. Fail-noisy, not fail-silent.
+  for (const key of Object.keys(cfg)) {
+    if (!KNOWN_CONFIG_KEYS.has(key)) {
+      warnings.push(
+        `warning: mjolnir.config.json has an unknown top-level key "${key}" — ignored (typo? see README §Configuration).`,
       );
     }
   }
@@ -148,24 +189,23 @@ export const SUPPRESSION_DEFAULT_DAYS = 90;
  * Bug-audit QA-2026-08-30 QA-6: the 90-day policy in the README was only
  * applied at WRITE time by the `ignore` command — a hand-written entry
  * without `expires` stayed active forever, silently bypassing the
- * documented window. When the caller supplies an anchor (the config
- * file's mtime, threaded through loadSuppressions), the default is
- * enforced here: a no-expiry entry is active only while the anchor is
- * within the window. Without an anchor the entry stays active — the
- * predicate cannot invent a creation date — and the suppressions report
- * labels the entry accordingly.
+ * documented window.
+ *
+ * Audit S4 (remediation plan): the config-file MTIME is no longer an
+ * expiry anchor. Anchoring the 90-day default at mtime meant ANY edit to
+ * mjolnir.config.json — a reformat, an unrelated key, a `touch` — reset
+ * the 90-day window for EVERY hand-authored entry: suppressions could be
+ * extended indefinitely without touching their own fields. The expiry is
+ * now the entry's explicit `expires` date alone; an entry without one
+ * stays active and is honestly labeled "(no expiry set)" in the
+ * suppressions report. Hand-authored entries should declare `expires` at
+ * creation (README §Configuration documents the shape).
  */
 export function isSuppressionActive(
   ign: IgnoreEntry,
   now = new Date(),
-  anchor?: Date,
 ): boolean {
-  if (!ign.expires) {
-    if (!anchor) return true;
-    return (
-      now.getTime() - anchor.getTime() < SUPPRESSION_DEFAULT_DAYS * 86_400_000
-    );
-  }
+  if (!ign.expires) return true;
   return new Date(ign.expires) > now;
 }
 

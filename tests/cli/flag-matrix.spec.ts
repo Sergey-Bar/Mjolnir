@@ -97,8 +97,10 @@ describe("base scan command — documented flag matrix", () => {
       argv: (d) => [d, "--max-duration", "5"],
       expectExit: [1],
     },
-    { name: "-h", argv: () => ["-h"], expectExit: [10] },
-    { name: "--help", argv: () => ["--help"], expectExit: [10] },
+    // Audit S8: help is a query, not a scan — it answers with usage on
+    // stdout and exits 0 on every verb (was 10 via the scan parser).
+    { name: "-h", argv: () => ["-h"], expectExit: [0] },
+    { name: "--help", argv: () => ["--help"], expectExit: [0] },
     // --version answers a question, so it succeeds (0) rather than
     // falling through to the scan parser's usage error like --help does.
     { name: "--version", argv: () => ["--version"], expectExit: [0] },
