@@ -154,7 +154,7 @@ describe("scope/changed degradation paths", () => {
     expect(diff.reason).toBe("diff-failed");
   });
 
-  it("marks an oversized untracked test file unreadable instead of scanning it", () => {
+  it("treats an oversized untracked test file as fully changed for that file only (no whole-scope degradation)", () => {
     git(["init", "-b", "main"]);
     git(["config", "user.email", "t@t"]);
     git(["config", "user.name", "t"]);
@@ -167,8 +167,12 @@ describe("scope/changed degradation paths", () => {
       "it('big', () => {});\n".repeat(60_000),
     );
     const diff = computeChangedScope(dir);
-    expect(diff.degraded).toBe(true);
-    expect(diff.reason).toBe("untracked-file-unreadable");
+    // Audit fix (changed.ts): one unreadable/oversized untracked file
+    // degrades ONLY that file — treated as fully changed (honest
+    // superset) — instead of discarding line precision for the whole
+    // scope. The scope stays precise.
+    expect(diff.degraded).toBe(false);
+    expect(diff.changed["big.spec.ts"]?.size).toBeGreaterThan(0);
   });
 });
 

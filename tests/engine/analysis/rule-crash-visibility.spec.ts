@@ -247,9 +247,11 @@ describe("P-1: a single expensive file can no longer own the scan", () => {
     for (const n of ["a", "b", "c"]) {
       writeFileSync(join(dir, `${n}.spec.ts`), "it('x', () => {});\n");
     }
-    // Deterministic clock: real time through discovery (5 Date.now calls),
-    // then +6s per call — each file's 5s budget is exceeded mid-pass, well
-    // before the global 60s deadline.
+    // Deterministic clock: real time through discovery (5 Date.now calls
+    // with the shared-walk per-entry checks: scan start + 3 root entries
+    // + the workflow adapter's probe), then +6s per call — each file's
+    // 5s budget is exceeded mid-pass, well before the global 60s
+    // deadline.
     const realNow = Date.now();
     let calls = 0;
     vi.spyOn(Date, "now").mockImplementation(() => {

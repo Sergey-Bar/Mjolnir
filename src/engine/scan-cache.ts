@@ -4,7 +4,9 @@
  * Content-addressed, local-only verdict cache: `--cache` reuses the
  * per-file rule outputs of a previous scan when the file's bytes AND the
  * active rule set are unchanged, and invalidates everything else. The
- * key is `sha256(fileText) + rulesDigest`, where the rules digest folds
+ * key is `sha256(fileText) + rulesDigest` + the file's own identity
+ * (repo-relative path + adapter id + parse mode — audit C1/W9), where
+ * the rules digest folds
  * in every active rule's id + `detectorRevision ?? 1` (the existing
  * stale-measurement machinery — Verification Trust Evolution Plan §07 —
  * reused as the cache invalidation signal, per A-2) plus a source hash
@@ -27,7 +29,7 @@ import { join } from "node:path";
 
 import type { Finding } from "../types.js";
 
-const CACHE_VERSION = 1;
+const CACHE_VERSION = 2;
 /** Entry cap: a monorepo-scale suite stays far below this; bounded file. */
 const MAX_ENTRIES = 4096;
 
@@ -88,9 +90,28 @@ export function computeRulesDigest(
   return sha256(parts.join("|"));
 }
 
-/** Content-addressed key for one file's rule-loop verdicts. */
-export function fileCacheKey(rulesDigest: string, fileText: string): string {
-  return sha256(`${CACHE_VERSION}\u0000${rulesDigest}\u0000${fileText}`);
+/**
+ * Content-addressed key for one file's rule-loop verdicts.
+ *
+ * Audit C1: the key MUST identify the verdict's producer, not just the
+ * bytes — two files with byte-identical text (a copied spec, a generated
+ * snapshot) previously shared one entry, and the first file's cached
+ * findings were re-emitted for the second with the wrong `file` stamp.
+ * The key therefore folds in the repo-relative path AND the adapter id,
+ * plus a parse-mode token (audit W9): a file whose analysis degraded to
+ * the regex fallback (or skipped the AST path) must not collide with a
+ * fully-AST-analyzed verdict for the same bytes — the fallback output
+ * belongs only to the fallback mode.
+ */
+export function fileCacheKey(
+  rulesDigest: string,
+  fileText: string,
+  identity: { relPath: string; adapterId: string; parseMode?: string },
+): string {
+  const parseMode = identity.parseMode ?? "ast";
+  return sha256(
+    `${CACHE_VERSION}\u0000${rulesDigest}\u0000${identity.relPath}\u0000${identity.adapterId}\u0000${parseMode}\u0000${fileText}`,
+  );
 }
 
 /** No-op cache used when --cache is absent: zero stats, zero I/O. */
@@ -102,7 +123,7 @@ export const disabledScanCache: ScanCache = {
 };
 
 /**
- * Opens (and lazily creates) `<root>/.mjolnir/cache/scan-v1.json`. A
+ * Opens (and lazily creates) `<root>/.mjolnir/cache/scan-v<CACHE_VERSION>.json`. A
  * corrupt, hostile or future-versioned cache file degrades to a cold
  * cache — never fails the scan.
  */
