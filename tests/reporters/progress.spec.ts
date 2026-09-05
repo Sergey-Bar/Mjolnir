@@ -10,6 +10,7 @@
 import { describe, expect, it } from "vitest";
 import {
   ProgressRenderer,
+  pickFrame,
   renderProgressLine,
   shouldRenderProgress,
   type ProgressEvent,
@@ -171,5 +172,21 @@ describe("stream discipline (stderr only, TTY-gated)", () => {
   it("events with total but no done render a 0/total count", () => {
     const line = renderProgressLine({ phase: "discover", total: 5 }, 0);
     expect(line).toContain("0/5");
+  });
+});
+
+describe("pickFrame (exported fallback math)", () => {
+  it("wraps the index across the frames list", () => {
+    const frames = ["a", "b"];
+    expect(pickFrame(frames, 0)).toBe("a");
+    expect(pickFrame(frames, 1)).toBe("b");
+    expect(pickFrame(frames, 2)).toBe("a");
+    expect(pickFrame(frames, 3)).toBe("b");
+  });
+
+  it("falls back to the first frame for an out-of-range modulo (defensive)", () => {
+    // An empty list would be a programming error; pickFrame degrades to
+    // " " instead of returning undefined and leaking it into output.
+    expect(pickFrame([], 0)).toBe(" ");
   });
 });

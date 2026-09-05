@@ -17,7 +17,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import fc from "fast-check";
 import {
   runSummaryCommand,
@@ -28,6 +28,7 @@ import {
   escapeAnnotationMessage,
   escapeAnnotationProperty,
   renderAnnotation,
+  renderAnnotations,
   truncateMessage,
   stripAnsiForSummary,
 } from "../../src/reporter/github.js";
@@ -224,6 +225,14 @@ describe("annotation escaping (workflow-command spec)", () => {
       }),
     ).toContain("::notice ");
   });
+
+  it("renderAnnotations falls back to notice for any non-error/warning severity", () => {
+    const [line] = renderAnnotations([
+      { severity: "info", file: "a", line: 1, ruleId: "R", message: "m" },
+      { severity: "bogus", file: "a", line: 2, ruleId: "R", message: "m" },
+    ]);
+    expect(line).toContain("::notice ");
+  });
 });
 
 describe("runSummaryCommand exit codes", () => {
@@ -260,8 +269,24 @@ describe("runSummaryCommand exit codes", () => {
 
   it("exit 2 on valid JSON that is not a Mjölnir report (no findings array)", () => {
     const p = join(dir, "other.json");
-    writeFileSync(p, JSON.stringify({ hello: 1 }));
+    writeFileSync(p, JSON.stringify({ schemaVersion: 1 }));
     expect(runSummaryCommand([p], capture().io)).toBe(2);
+  });
+
+  it("exit 2 on a non-object JSON document (bare value)", () => {
+    const p = join(dir, "scalar.json");
+    writeFileSync(p, "5");
+    const cap = capture();
+    expect(runSummaryCommand([p], cap.io)).toBe(2);
+    expect(cap.errText()).toContain("not an object");
+  });
+
+  it("errorText renders non-Error throws readably (string, object, primitive)", async () => {
+    const { errorText } = await import("../../src/commands/summary.js");
+    expect(errorText("plain failure")).toBe("plain failure");
+    expect(errorText({ code: "EISDIR" })).toBe('{"code":"EISDIR"}');
+    expect(errorText(42)).toBe("42");
+    expect(errorText(undefined)).toBe("undefined");
   });
 
   it("exit 0 on success — the command NEVER blocks the gate", () => {
@@ -270,6 +295,60 @@ describe("runSummaryCommand exit codes", () => {
     const cap = capture();
     expect(runSummaryCommand([p], cap.io)).toBe(0);
     expect(cap.text()).toContain("Verification Trust");
+  });
+
+  it("falls back to console streams when io is omitted (default io)", () => {
+    const logs: string[] = [];
+    const errors: string[] = [];
+    const logSpy = vi.spyOn(console, "log").mockImplementation((...a) => {
+      logs.push(a.map(String).join(" "));
+    });
+    const errSpy = vi.spyOn(console, "error").mockImplementation((...a) => {
+      errors.push(a.map(String).join(" "));
+    });
+    try {
+      const p = writeReport();
+      expect(runSummaryCommand([p])).toBe(0);
+      expect(logs.join("\n")).toContain("Verification Trust");
+      // The not-found branch also flows through the default io.
+      expect(runSummaryCommand([join(dir, "nope.json")])).toBe(10);
+      expect(errors.join("\n")).toContain("not found");
+    } finally {
+      logSpy.mockRestore();
+      errSpy.mockRestore();
+    }
+  });
+
+  it("degrades to stdout with a warning when $GITHUB_STEP_SUMMARY is unwritable", () => {
+    withEnv("GITHUB_ACTIONS", "true");
+    // A DIRECTORY as the summary target: appendFileSync throws (EISDIR).
+    withEnv("GITHUB_STEP_SUMMARY", dir);
+    const p = writeReport();
+    const cap = capture();
+    expect(runSummaryCommand([p], cap.io)).toBe(0);
+    expect(cap.errText()).toContain("could not write $GITHUB_STEP_SUMMARY");
+    expect(cap.text()).toContain("Verification Trust");
+  });
+
+  it("renders the transparency line when the raw-deduction fields exist", () => {
+    const md = renderStepSummary(
+      report({ rawDeductions: 41, testDeclarationCount: 120 }),
+    );
+    expect(md).toContain(
+      "Transparency: 41 raw pts over 120 test declarations (normalized).",
+    );
+  });
+
+  it("caps per severity and names the overflow count explicitly", () => {
+    const many = Array.from({ length: 30 }, (_, i) => finding({ line: i + 1 }));
+    const md = renderStepSummary(report({ findings: many }));
+    expect(md).toContain("🔴 30 errors");
+    expect(md).toContain("… and 5 more — see the full JSON artifact.");
+  });
+
+  it("celebrates a zero-finding scored report rather than staying silent", () => {
+    const md = renderStepSummary(report({ findings: [], score: 100 }));
+    expect(md).toContain("Zero findings — nothing to fix.");
   });
 });
 
@@ -339,12 +418,15 @@ describe("step summary", () => {
         reason: "no-tests-found",
         findings: [],
         dimensions: [],
+        frameworks: [],
       }),
     );
     expect(md).toContain("not measurable");
     expect(md).toContain("no-tests-found");
     expect(md).toContain("No fake numbers");
     expect(md).not.toMatch(/0\/100/);
+    // Empty frameworks suppress the Detected line entirely.
+    expect(md).not.toContain("Detected:");
   });
 
   it("errors are open, warnings/info collapsed, each finding carries Fix", () => {
@@ -422,5 +504,31 @@ describe("step summary", () => {
     const cap = capture();
     expect(runSummaryCommand(["--path-prefix"], cap.io)).toBe(10);
     expect(cap.errText()).toContain("--path-prefix");
+  });
+
+  it("tolerates a sparse argv entry (?? fallback, positional filter intact)", () => {
+    const p = writeReport();
+    const sparse = [p, undefined] as unknown as string[];
+    const cap = capture();
+    expect(runSummaryCommand(sparse, cap.io)).toBe(0);
+    expect(cap.text()).toContain("Verification Trust");
+  });
+
+  it("rejects --path-prefix followed by another flag (missing value, exit 10)", () => {
+    const cap = capture();
+    expect(
+      runSummaryCommand(["--path-prefix", "--stdout", "missing.json"], cap.io),
+    ).toBe(10);
+    expect(cap.errText()).toContain("--path-prefix");
+  });
+
+  it("routes the step summary through $GITHUB_STEP_SUMMARY when set (default path)", () => {
+    withEnv("GITHUB_ACTIONS", "true");
+    const summaryPath = join(dir, "step.md");
+    withEnv("GITHUB_STEP_SUMMARY", summaryPath);
+    const p = writeReport();
+    const cap = capture();
+    expect(runSummaryCommand([p], cap.io)).toBe(0);
+    expect(readFileSync(summaryPath, "utf8")).toContain("Verification Trust");
   });
 });

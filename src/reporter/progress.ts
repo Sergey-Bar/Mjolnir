@@ -18,8 +18,8 @@
 import { sanitizeData } from "./theme.js";
 
 /** Spinner frames: braille, ASCII fallback. */
-const BRAILLE_FRAMES = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏";
-const ASCII_FRAMES = "|/-\\";
+const BRAILLE_FRAMES = [..."⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"];
+const ASCII_FRAMES = [..."|/-\\"];
 
 export type ScanPhase = "discover" | "parse" | "rules" | "score";
 
@@ -39,19 +39,29 @@ export interface ProgressOptions {
   isTTY: boolean;
 }
 
-/** True when a live progress renderer may write to the stream at all. */
+/** True when a live progress renderer may write to the stream at all.
+ * `env` is required: the caller owns the ambient-vs-test distinction
+ * (cli.ts passes process.env; tests pass a controlled object). */
 export function shouldRenderProgress(opts: {
   isTTY: boolean;
   noProgress?: boolean;
   machineFormat?: boolean;
-  env?: NodeJS.ProcessEnv;
+  env: NodeJS.ProcessEnv;
 }): boolean {
   if (opts.noProgress) return false;
   if (opts.machineFormat) return false;
   if (!opts.isTTY) return false;
-  const env = opts.env ?? process.env;
-  if (env["GITHUB_ACTIONS"] === "true" || env["CI"] === "true") return false;
+  if (opts.env["GITHUB_ACTIONS"] === "true" || opts.env["CI"] === "true") {
+    return false;
+  }
   return true;
+}
+
+/** Frame at `index`, defensive against an empty frames list. Exported
+ * so the fallback arms stay pinned (renderProgressLine always passes a
+ * non-empty constant list and an in-range index). */
+export function pickFrame(frames: readonly string[], index: number): string {
+  return frames[index % frames.length] ?? frames[0] ?? " ";
 }
 
 const PHASE_LABELS: Record<ScanPhase, string> = {
@@ -67,8 +77,10 @@ export function renderProgressLine(
   frameIndex: number,
   opts: { ascii?: boolean } = {},
 ): string {
-  const frames = opts.ascii ? ASCII_FRAMES : BRAILLE_FRAMES;
-  const frame = frames[frameIndex % frames.length] ?? frames[0] ?? " ";
+  const frame = pickFrame(
+    opts.ascii ? ASCII_FRAMES : BRAILLE_FRAMES,
+    frameIndex,
+  );
   const label = PHASE_LABELS[event.phase];
   let line = `${frame} ${label}…`;
   const parts: string[] = [];

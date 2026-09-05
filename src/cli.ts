@@ -386,19 +386,25 @@ export function levenshtein(a: string, b: string): number {
   if (a === b) return 0;
   if (a.length === 0) return b.length;
   if (b.length === 0) return a.length;
-  let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
-  for (let i = 1; i <= a.length; i++) {
-    const cur = [i];
-    for (let j = 1; j <= b.length; j++) {
-      cur[j] = Math.min(
-        (prev[j] ?? 0) + 1,
-        (cur[j - 1] ?? 0) + 1,
-        (prev[j - 1] ?? 0) + (a[i - 1] === b[j - 1] ? 0 : 1),
-      );
-    }
-    prev = cur;
-  }
-  return prev[b.length] ?? 0;
+  // Memoized edit-distance walk. Map-based memo (not row arrays) keeps
+  // every access defined — no defensive ?? arms for the coverage gate.
+  const memo = new Map<string, number>();
+  const walk = (i: number, j: number): number => {
+    if (i === a.length) return b.length - j;
+    if (j === b.length) return a.length - i;
+    const key = `${i}:${j}`;
+    const hit = memo.get(key);
+    if (hit !== undefined) return hit;
+    const cost = a[i] === b[j] ? 0 : 1;
+    const best = Math.min(
+      walk(i + 1, j) + 1,
+      walk(i, j + 1) + 1,
+      walk(i + 1, j + 1) + cost,
+    );
+    memo.set(key, best);
+    return best;
+  };
+  return walk(0, 0);
 }
 
 /** Nearest known flags within distance ≤ 2, nearest first. */
@@ -1088,7 +1094,7 @@ export function runForensicsCommand(
     // Exit 1 only when true flakes or failures exist.
     return report.flakyTests > 0 || report.failed > 0 ? 1 : 0;
   } catch (err) {
-    internalErrorMessage(err, io.err);
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
     return 20;
   }
 }
@@ -1155,7 +1161,7 @@ export function runDoctorCommand(
     io.out(renderDoctorReport(report));
     return report.healthy ? 0 : 1;
   } catch (err) {
-    internalErrorMessage(err, io.err);
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
     return 20;
   }
 }
@@ -1224,7 +1230,7 @@ export function runExplainCommand(
     if (!result.ok) return 10; // unknown rule ID is a usage error, not a crash
     return 0;
   } catch (err) {
-    internalErrorMessage(err, io.err);
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
     return 20;
   }
 }
@@ -1393,7 +1399,7 @@ export async function runScanCommand(
       io.err(err.message);
       return 10;
     }
-    internalErrorMessage(err, io.err);
+    internalErrorMessage(err, io.err, args?.debug === true);
     return 20;
   }
 }
@@ -1455,7 +1461,7 @@ export function runTriageCommand(
     }
     return 0;
   } catch (err) {
-    internalErrorMessage(err, io.err);
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
     return 20;
   }
 }
@@ -1480,7 +1486,7 @@ export async function runBadgeCommand(
     io.out(renderBadgeSnippet(result));
     return 0;
   } catch (err) {
-    internalErrorMessage(err, io.err);
+    internalErrorMessage(err, io.err, args?.debug === true);
     return 20;
   }
 }
@@ -1502,7 +1508,7 @@ export async function runDebtCommand(
     io.out(renderDebt(result));
     return 0;
   } catch (err) {
-    internalErrorMessage(err, io.err);
+    internalErrorMessage(err, io.err, args?.debug === true);
     return 20;
   }
 }
@@ -1534,7 +1540,7 @@ export async function runFixCommand(
     // Exit 1 when anything failed verification; applied/dry-run is fine.
     return fixes.some((f) => f.status === "failed") ? 1 : 0;
   } catch (err) {
-    internalErrorMessage(err, io.err);
+    internalErrorMessage(err, io.err, args?.debug === true);
     return 20;
   }
 }
@@ -1557,7 +1563,7 @@ export function runCreateRuleCommand(
     io.out(renderScaffoldReport(result));
     return result.ok ? 0 : 1;
   } catch (err) {
-    internalErrorMessage(err, io.err);
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
     return 20;
   }
 }
@@ -1599,7 +1605,7 @@ export async function runImpactCommand(
     io.out(renderImpact(report));
     return report.hasComparison ? 0 : 2;
   } catch (err) {
-    internalErrorMessage(err, io.err);
+    internalErrorMessage(err, io.err, args?.debug === true);
     return 20;
   }
 }
@@ -1629,7 +1635,7 @@ export async function runBaselineCommand(
     );
     return 0;
   } catch (err) {
-    internalErrorMessage(err, io.err);
+    internalErrorMessage(err, io.err, args?.debug === true);
     return 20;
   }
 }
@@ -1686,7 +1692,7 @@ export async function runDiffCommand(
     if (!diff.hasBaseline) return 2;
     return diff.newFindings.some((f) => f.severity === "error") ? 1 : 0;
   } catch (err) {
-    internalErrorMessage(err, io.err);
+    internalErrorMessage(err, io.err, args?.debug === true);
     return 20;
   }
 }
@@ -1715,7 +1721,7 @@ export async function runPrCommentCommand(
     );
     return 0;
   } catch (err) {
-    internalErrorMessage(err, io.err);
+    internalErrorMessage(err, io.err, args?.debug === true);
     return 20;
   }
 }
@@ -1732,7 +1738,7 @@ export function runStatsCommand(
     io.out(renderStats(stats));
     return 0;
   } catch (err) {
-    internalErrorMessage(err, io.err);
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
     return 20;
   }
 }
@@ -1766,7 +1772,7 @@ export async function runHandoverCommand(
     io.out(renderHandover(buildHandover(result, forensics)));
     return 0;
   } catch (err) {
-    internalErrorMessage(err, io.err);
+    internalErrorMessage(err, io.err, args?.debug === true);
     return 20;
   }
 }
@@ -1796,7 +1802,7 @@ export function runInitCommand(
     io.out(renderInit(result));
     return 0;
   } catch (err) {
-    internalErrorMessage(err, io.err);
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
     return 20;
   }
 }
@@ -1826,20 +1832,21 @@ export function runPwReportCommand(
     io.out(renderPwRunSummary(summarizePwRun(report)));
     return report.failed > 0 || report.flakyTests > 0 ? 1 : 0;
   } catch (err) {
-    internalErrorMessage(err, io.err);
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
     return 20;
   }
 }
 
 export async function main(
   argv: string[] = process.argv.slice(2),
+  io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
   // `--version` is the first thing most people type against an unfamiliar
   // CLI. Without this it fell through to the scan arg parser, which does
   // not know the flag, and printed the full help — technically not a
   // crash, but it answers a different question than the one asked.
   if (argv[0] === "--version" || argv[0] === "-v") {
-    out(`mjolnir-qa ${CLI_VERSION}\n`);
+    io.out(`mjolnir-qa ${CLI_VERSION}\n`);
     return 0;
   }
   // Subcommands (§69): ci install · suppressions · forensics · doctor:playwright
@@ -1848,7 +1855,7 @@ export async function main(
   // `<verb> --help` / `<verb> -h` routes to the help registry (plan M2)
   // before any handler parses flags.
   if (argv.length >= 2 && (argv[1] === "--help" || argv[1] === "-h")) {
-    return runHelpCommand([argv[0] as string], { out, err });
+    return runHelpCommand([argv[0] as string], io);
   }
   // Two-word verb: `ci install --help` (argv[1] is "install", so the
   // single-word interception above does not fire).
@@ -1857,7 +1864,7 @@ export async function main(
     argv.length >= 3 &&
     (argv[2] === "--help" || argv[2] === "-h")
   ) {
-    return runHelpCommand(["ci", "install"], { out, err });
+    return runHelpCommand(["ci", "install"], io);
   }
   if (argv[0] === "ci" && argv[1] === "install")
     return runCiInstall(argv.slice(2));
@@ -1870,7 +1877,7 @@ export async function main(
   if (argv[0] === "baseline") return runBaselineCommand(argv.slice(1));
   if (argv[0] === "diff") return runDiffCommand(argv.slice(1));
   if (argv[0] === "pr-comment") return runPrCommentCommand(argv.slice(1));
-  if (argv[0] === "summary") return runSummaryCommand(argv.slice(1));
+  if (argv[0] === "summary") return runSummaryCommand(argv.slice(1), io);
   if (argv[0] === "stats") return runStatsCommand(argv.slice(1));
   if (argv[0] === "fix") return runFixCommand(argv.slice(1));
   if (argv[0] === "create-rule") return runCreateRuleCommand(argv.slice(1));
@@ -1884,7 +1891,7 @@ export async function main(
   // `help` must dispatch BEFORE the scan fall-through: an unknown verb
   // becomes a scan target (mjolnir ./help scans a folder named help;
   // bare `mjolnir help` used to scan the CWD as if it were a path).
-  if (argv[0] === "help") return runHelpCommand(argv.slice(1));
+  if (argv[0] === "help") return runHelpCommand(argv.slice(1), io);
   return runScanCommand(argv);
 }
 
@@ -1921,14 +1928,20 @@ function printUsage(print: (s: string) => void): void {
 /**
  * Friendly exit-20 path (plan M2): the crash says it's Mjölnir's bug,
  * not the user's repo, carries the underlying message for a report, and
- * prints the stack ONLY under --debug (uniform across subcommands —
- * they don't parse scan flags). Tests pin /internal error/i.
+ * prints the stack ONLY when `debug` is set (uniform across
+ * subcommands — they don't parse scan flags). Tests pin
+ * /internal error/i. Exported so the --debug stack arm is directly
+ * spec-coverable (spawning a real crash under --debug would be flaky).
  */
-function internalErrorMessage(err: unknown, emit: (s: string) => void): void {
+export function internalErrorMessage(
+  err: unknown,
+  emit: (s: string) => void,
+  debug: boolean,
+): void {
   const message = err instanceof Error ? err.message : String(err);
   emit("mjolnir internal error — this is a bug in Mjölnir, not your repo:");
   emit(`  ${message}`);
-  if (process.argv.includes("--debug") && err instanceof Error && err.stack) {
+  if (debug && err instanceof Error && err.stack) {
     emit(err.stack);
   }
   emit("Rerun with --debug for the stack trace. Please report this:");

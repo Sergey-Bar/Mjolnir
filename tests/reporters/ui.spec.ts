@@ -11,6 +11,8 @@ import {
   buildFooter,
   bullet,
   divider,
+  formatDuration,
+  keyValue,
   nextStep,
   okIcon,
   panel,
@@ -90,9 +92,33 @@ describe("okIcon", () => {
   });
 });
 
+describe("formatDuration", () => {
+  it("keeps sub-second durations in ms", () => {
+    expect(formatDuration(850)).toBe("850ms");
+  });
+
+  it("renders seconds above one second", () => {
+    expect(formatDuration(1200)).toBe("1.2s");
+  });
+
+  it("answers ? when no duration is known", () => {
+    expect(formatDuration(undefined)).toBe("?");
+  });
+});
+
 describe("bullet", () => {
   it("prefixes with a dash", () => {
     expect(bullet("one thing", ui)).toBe("  - one thing");
+  });
+});
+
+describe("keyValue", () => {
+  it("pads the label to its own length by default", () => {
+    expect(keyValue("K", "v", ui)).toBe("  K  v");
+  });
+
+  it("honors an explicit label width for column alignment", () => {
+    expect(keyValue("K", "v", ui, 5)).toBe("  K      v");
   });
 });
 

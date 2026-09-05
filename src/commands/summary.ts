@@ -46,6 +46,14 @@ export interface SummaryOptions {
 
 const DETAILS_PER_SEVERITY_CAP = 25;
 
+/** Human message for any thrown value — never "undefined"/"[object Object]". */
+export function errorText(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (typeof err === "string") return err;
+  if (typeof err === "object" && err !== null) return JSON.stringify(err);
+  return String(err);
+}
+
 /** Parse-and-validate a saved report. Module-private: the command is
  * the only consumer; tests exercise it through runSummaryCommand. */
 function validateReportJson(text: string): ScanResult {
@@ -53,10 +61,7 @@ function validateReportJson(text: string): ScanResult {
   try {
     parsed = JSON.parse(text);
   } catch (err) {
-    throw new Error(
-      `not valid JSON (${err instanceof Error ? err.message : String(err)})`,
-      { cause: err },
-    );
+    throw new Error(`not valid JSON (${errorText(err)})`, { cause: err });
   }
   if (typeof parsed !== "object" || parsed === null) {
     throw new Error("the file is a JSON value but not an object");
@@ -241,7 +246,10 @@ export function runSummaryCommand(
   const prefixIdx = argv.indexOf("--path-prefix");
   const pathPrefix = prefixIdx !== -1 ? argv[prefixIdx + 1] : undefined;
   const positional = argv.filter(
-    (a, i) => !a.startsWith("-") && (prefixIdx === -1 || i !== prefixIdx + 1),
+    (a, i) =>
+      a !== undefined &&
+      !a.startsWith("-") &&
+      (prefixIdx === -1 || i !== prefixIdx + 1),
   );
   const reportPath = positional[0] ?? "mjolnir.json";
 
@@ -255,9 +263,7 @@ export function runSummaryCommand(
   try {
     result = validateReportJson(readFileSync(reportPath, "utf8"));
   } catch (err) {
-    io.err(
-      `mjolnir summary: cannot read ${reportPath}: ${err instanceof Error ? err.message : String(err)}`,
-    );
+    io.err(`mjolnir summary: cannot read ${reportPath}: ${errorText(err)}`);
     return 2;
   }
 
@@ -282,7 +288,7 @@ export function runSummaryCommand(
       appendFileSync(stepSummaryPath, `${summary}\n`);
     } catch (err) {
       io.err(
-        `mjolnir summary: could not write $GITHUB_STEP_SUMMARY (${err instanceof Error ? err.message : String(err)}); printing to stdout instead.`,
+        `mjolnir summary: could not write $GITHUB_STEP_SUMMARY (${errorText(err)}); printing to stdout instead.`,
       );
       io.out(summary);
     }

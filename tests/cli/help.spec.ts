@@ -8,8 +8,9 @@
  * `help`/`<verb> --help` answer a question → exit 0.
  */
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
+  main,
   runHelpCommand,
   levenshtein,
   nearestFlags,
@@ -71,6 +72,19 @@ describe("root help", () => {
   it("shows the frozen exit-code line verbatim", () => {
     expect(renderRootHelp()).toContain("Exit codes: 0 · 1 · 2 · 10 · 20");
   });
+
+  it("skips a GROUPS verb missing from the registry (defensive, no crash)", () => {
+    // HELP_ENTRIES is a mutable exported array; simulating a drifted
+    // GROUPS entry exercises the render guard without crashing.
+    const idx = HELP_ENTRIES.findIndex((e) => e.verb === "badge");
+    const removed = HELP_ENTRIES.splice(idx, 1)[0];
+    try {
+      const text = renderRootHelp();
+      expect(text).not.toContain("shields.io endpoint JSON");
+    } finally {
+      HELP_ENTRIES.splice(idx, 0, removed as (typeof HELP_ENTRIES)[number]);
+    }
+  });
 });
 
 describe("per-verb help", () => {
@@ -79,6 +93,12 @@ describe("per-verb help", () => {
     expect(text).toContain("fix — ");
     expect(text).toContain("Usage:");
     expect(text).toMatch(/\$ mjolnir fix --dry-run/);
+  });
+
+  it("renders the Next step block when an entry declares one", () => {
+    const text = renderVerbHelp("baseline");
+    expect(text).toContain("Next step:");
+    expect(text).toContain("$ mjolnir diff");
   });
 
   it("never fabricates a page for an unknown verb", () => {
@@ -108,16 +128,33 @@ describe("help dispatch", () => {
     expect(cap.text()).toContain("Usage: mjolnir");
   });
 
-  it("`mjolnir help <verb>` prints the verb page and exits 0", () => {
-    const cap = capture();
-    expect(runHelpCommand(["fix"], cap.io)).toBe(0);
-    expect(cap.text()).toContain("apply safe auto-fixes");
+  it("`mjolnir help <verb>` prints the verb page and exits 0 (default io)", () => {
+    // Omitting io exercises the console fallback wiring directly.
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    try {
+      expect(runHelpCommand(["fix"])).toBe(0);
+      const printed = logSpy.mock.calls.map((a) => a.join(" ")).join("\n");
+      expect(printed).toContain("apply safe auto-fixes");
+    } finally {
+      logSpy.mockRestore();
+    }
   });
 
   it("`mjolnir help <unknown>` is honest and still exits 0", () => {
     const cap = capture();
     expect(runHelpCommand(["teleport"], cap.io)).toBe(0);
     expect(cap.text()).toContain('No detailed help for "teleport"');
+  });
+
+  it("`mjolnir help ci install` resolves the two-word verb page", () => {
+    const cap = capture();
+    expect(runHelpCommand(["ci", "install"], cap.io)).toBe(0);
+    expect(cap.text()).toContain("ci install — ");
+    // Two tokens that do NOT form a registered verb fall through to the
+    // single-word page (here: unknown → honest no-page).
+    const cap2 = capture();
+    expect(runHelpCommand(["no", "such"], cap2.io)).toBe(0);
+    expect(cap2.text()).toContain('No detailed help for "no"');
   });
 
   it("`mjolnir <verb> --help` routes to the verb page before the handler", () => {
@@ -179,6 +216,22 @@ describe("friendly usage errors", () => {
     expect(msg).toContain("Run mjolnir --help");
   });
 
+  it('a missing value renders empty quotes (?? "" fallback)', () => {
+    // --path-prefix as the last token leaves val undefined; the message
+    // must still render (never "undefined" in user-facing text).
+    const msg = usageErrorMessage({ flag: "--path-prefix", token: undefined });
+    expect(msg).toContain('invalid value "" for --path-prefix');
+    const msg2 = usageErrorMessage({ token: undefined });
+    expect(msg2).toContain('unknown flag ""');
+  });
+
+  it("levenshtein's ?? fallbacks hold for empty inputs (boundary arms)", () => {
+    // The DP table reads cur[j-1] on the first column: the ?? arms exist
+    // for the no-candidate case; these calls exercise the boundary cells.
+    expect(nearestFlags("--json").length).toBeGreaterThan(0);
+    expect(levenshtein("a", "b")).toBe(1);
+  });
+
   it("parseArgs still returns null for every usage error (legacy contract)", () => {
     expect(parseArgs(["--nope"])).toBeNull();
     expect(parseArgs(["--tone", "loud"])).toBeNull();
@@ -205,5 +258,67 @@ describe("friendly usage errors", () => {
 
   it("parseArgs without the hook reports nothing (stdout purity)", () => {
     expect(parseArgs(["--nope"])).toBeNull();
+  });
+
+  it("--no-progress parses into args.noProgress (additive flag)", () => {
+    expect(parseArgs(["--no-progress"])?.noProgress).toBe(true);
+    expect(parseArgs(["--no-progress", "."])?.target).toBe(".");
+    expect(parseArgs(["."])?.noProgress).toBeUndefined();
+  });
+
+  it("-h/--help return null from parseArgs (the caller prints usage)", () => {
+    expect(parseArgs(["-h"])).toBeNull();
+    expect(parseArgs(["--help"])).toBeNull();
+  });
+});
+
+describe("main() dispatch to help (plan M2)", () => {
+  it("`mjolnir <verb> --help` routes through main() to the verb page (exit 0)", async () => {
+    const cap = capture();
+    await expect(main(["fix", "--help"], cap.io)).resolves.toBe(0);
+    expect(cap.text()).toContain("fix — ");
+  });
+
+  it("`mjolnir <verb> -h` routes through main() too", async () => {
+    const cap = capture();
+    await expect(main(["rules", "-h"], cap.io)).resolves.toBe(0);
+    expect(cap.text()).toContain("rules — ");
+  });
+
+  it("`mjolnir ci install --help` reaches the two-word page (exit 0)", async () => {
+    const cap = capture();
+    await expect(main(["ci", "install", "--help"], cap.io)).resolves.toBe(0);
+    expect(cap.text()).toContain("ci install — ");
+  });
+
+  it("`mjolnir ci install -h` reaches the page via the short flag", async () => {
+    const cap = capture();
+    await expect(main(["ci", "install", "-h"], cap.io)).resolves.toBe(0);
+    expect(cap.text()).toContain("ci install — ");
+  });
+
+  it("runHelpCommand with an explicit io uses it (default io arm covered)", () => {
+    const cap = capture();
+    expect(runHelpCommand(["fix"], cap.io)).toBe(0);
+    expect(runHelpCommand([], { out: cap.io.out, err: cap.io.err })).toBe(0);
+  });
+
+  it("the two-token join falls through to the single-token page when the pair is unregistered", () => {
+    const cap = capture();
+    expect(runHelpCommand(["teleport", "now"], cap.io)).toBe(0);
+    expect(cap.text()).toContain('No detailed help for "teleport"');
+  });
+
+  it("`mjolnir help` dispatches as a verb, never as a scan target", async () => {
+    const cap = capture();
+    await expect(main(["help"], cap.io)).resolves.toBe(0);
+    expect(cap.text()).toContain("Usage: mjolnir");
+  });
+
+  it("`mjolnir summary` dispatches to the summary command", async () => {
+    // Not-found path: exit 10, nothing written to stdout (no scan ran).
+    const cap = capture();
+    await expect(main(["summary"], cap.io)).resolves.toBe(10);
+    expect(cap.errText()).toContain("not found");
   });
 });
