@@ -117,8 +117,19 @@ function rgb([r, g, b]: readonly [number, number, number]) {
   return (s: string) => `\x1b[38;2;${r};${g};${b}m${sanitizeData(s)}\x1b[0m`;
 }
 
-/** True when colors should be emitted for this render call. */
+/**
+ * True when colors should be emitted for this render call.
+ *
+ * Precedence (chalk convention): FORCE_COLOR wins over everything —
+ * `FORCE_COLOR=0` (or "false"/empty) forces plain output even on a TTY,
+ * any other value forces color even when piped. Without FORCE_COLOR,
+ * NO_COLOR disables color and the rest follows TTY-ness.
+ */
 export function shouldColorize(isTTY: boolean): boolean {
+  const forced = process.env["FORCE_COLOR"];
+  if (forced !== undefined) {
+    return forced !== "0" && forced !== "false" && forced !== "";
+  }
   return isTTY && !process.env["NO_COLOR"];
 }
 

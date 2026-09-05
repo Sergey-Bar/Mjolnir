@@ -52,10 +52,10 @@ describe("assets/readme/demo.svg reproducibility", () => {
     const sectionHeaders = rendered
       .split("\n")
       .map((l) => l.trim())
-      .filter((l) => l.startsWith("▚ "));
+      .filter((l) => /^[▚=] /.test(l));
     expect(sectionHeaders.length).toBeGreaterThan(0);
     for (const header of sectionHeaders) {
-      const text = header.replace(/^▚\s*/, "");
+      const text = header.replace(/^[▚=]\s*/, "");
       expect(
         svg,
         `demo asset is missing the "${text}" section the current reporter ` +
