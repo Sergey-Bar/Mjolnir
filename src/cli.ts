@@ -43,6 +43,7 @@ import {
 import { renderTerminal } from "./reporter/terminal.js";
 import { renderSarif } from "./reporter/sarif.js";
 import { renderMermaid } from "./reporter/mermaid.js";
+import { ProgressRenderer, shouldRenderProgress } from "./reporter/progress.js";
 import { computeChangedScope, filterToChanged } from "./scope/changed.js";
 import { asUniversal } from "./engine/rule-runner.js";
 import { enforceTierPolicy, type Tier } from "./engine/tier-policy.js";
@@ -260,6 +261,12 @@ interface CliArgs {
    * under an unchanged rule set. Local-only, never leaves the machine.
    */
   cache?: boolean;
+  /**
+   * --no-progress: never render the live scan-progress line, even on an
+   * interactive TTY (plan M3, additive flag). Progress is stderr-only
+   * and auto-disabled in CI/machine formats; this flag is the manual off.
+   */
+  noProgress?: boolean;
 }
 
 /** A usage-error detail: the offending token, when one exists. */
@@ -333,6 +340,8 @@ export function parseArgs(
       args.recordMilestones = true;
     } else if (a === "--cache") {
       args.cache = true;
+    } else if (a === "--no-progress") {
+      args.noProgress = true;
     } else if (a === "--help" || a === "-h") {
       return null;
     } else if (!a.startsWith("-")) {
@@ -443,6 +452,18 @@ export interface ScanHooks {
   onRuleCrash?: (ruleId: string, file: string, error: unknown) => void;
   /** Invoked for non-fatal config warnings (bug-audit M4). */
   onConfigWarning?: (message: string) => void;
+  /**
+   * Live-progress feed (plan M3, additive). Fired from the per-file
+   * parse+rules loop and the phase boundaries. Render-on-event only —
+   * the scan never waits on a timer, and output contracts are
+   * unchanged when the hook is absent.
+   */
+  onProgress?: (e: {
+    phase: "discover" | "parse" | "rules" | "score";
+    done?: number | undefined;
+    total?: number | undefined;
+    detail?: string | undefined;
+  }) => void;
 }
 
 /**
@@ -587,6 +608,11 @@ export async function runScan(
   const wfBucket: string[] = [];
   githubActionsAdapter.discoverTestFiles({ ...ctx, testFiles: wfBucket });
   ctx.testFiles.push(...wfBucket);
+  hooks.onProgress?.({
+    phase: "discover",
+    done: ctx.testFiles.length,
+    total: ctx.testFiles.length,
+  });
 
   // Audit H-3: the deadline is checked per file here too — discovery
   // alone no longer owns the budget.
@@ -646,6 +672,12 @@ export async function runScan(
       for (const f of cachedFindings) findings.push(f);
       continue;
     }
+    hooks.onProgress?.({
+      phase: "parse",
+      done: scanned,
+      total: ctx.testFiles.length,
+      detail: relPath,
+    });
     const adapter = isWorkflow
       ? githubActionsAdapter
       : isPython
@@ -667,6 +699,12 @@ export async function runScan(
     const findingsStart = findings.length;
     try {
       if (adapter.parseAst && Date.now() <= deadline) {
+        hooks.onProgress?.({
+          phase: "rules",
+          done: scanned,
+          total: ctx.testFiles.length,
+          detail: relPath,
+        });
         parsed = await adapter.parseAst(parsedFile);
       }
       const fileForRules: ParsedFile = parsed
@@ -814,6 +852,7 @@ export async function runScan(
       // carries no runtime evidence (same degrade posture as forensics).
     }
   }
+  hooks.onProgress?.({ phase: "score", done: findings.length });
   const dimensions = computeDimensions(findings);
   const rawDeductions = findings.reduce((sum, f) => sum + deductionFor(f), 0);
   const total = computeTotal(dimensions, findings, {
@@ -1236,11 +1275,24 @@ export async function runScanCommand(
   try {
     // Audit R-9: collect swallowed rule crashes; --debug prints them.
     const crashLog: string[] = [];
+    // Plan M3: live progress on stderr, event-driven. Auto-off when
+    // stderr is not a TTY, in machine formats, in CI, or via
+    // --no-progress — shouldRenderProgress owns the whole matrix.
+    const progress = new ProgressRenderer({
+      stream: process.stderr,
+      isTTY: shouldRenderProgress({
+        isTTY: (process.stderr as { isTTY?: boolean }).isTTY === true,
+        noProgress: args.noProgress === true,
+        machineFormat: args.format !== "terminal",
+        env: process.env,
+      }),
+    });
     // Bug-audit M4: non-fatal config warnings reach stderr in every mode.
     const result = await runScan(
       { ...args, target },
       {
         onConfigWarning: (message) => io.err(message),
+        onProgress: (e) => progress.onEvent(e),
         ...(args.debug
           ? {
               onRuleCrash: (ruleId: string, file: string, error: unknown) => {
@@ -1252,6 +1304,7 @@ export async function runScanCommand(
           : {}),
       },
     );
+    progress.done();
     if (args.debug && crashLog.length > 0) {
       io.err(
         `debug: ${crashLog.length} rule crash(es) were swallowed by crash isolation:`,

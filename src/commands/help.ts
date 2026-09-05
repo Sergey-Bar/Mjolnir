@@ -165,6 +165,7 @@ export const HELP_FLAGS: Array<{ flag: string; summary: string }> = [
   { flag: "--strict", summary: "include quarantine-tier rules" },
   { flag: "--debug", summary: "print swallowed rule crashes" },
   { flag: "--cache", summary: "reuse local per-file verdicts" },
+  { flag: "--no-progress", summary: "no live scan-progress line on stderr" },
 ];
 
 export const EXIT_CODE_TABLE: Array<[string, string]> = [
