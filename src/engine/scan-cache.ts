@@ -32,6 +32,13 @@ import type { Finding } from "../types.js";
 const CACHE_VERSION = 2;
 /** Entry cap: a monorepo-scale suite stays far below this; bounded file. */
 const MAX_ENTRIES = 4096;
+/**
+ * Audit M5: total byte budget. The old cap counted only ENTRIES, so
+ * 4096 files × ~100KB of findings each could still produce a
+ * multi-hundred-MB writeFileSync on persist. The budget bounds the
+ * serialized size; the newest entries win (real LRU-by-use).
+ */
+const MAX_TOTAL_BYTES = 32 * 1024 * 1024;
 
 export interface CacheStats {
   hits: number;
@@ -152,9 +159,13 @@ export function createScanCache(root: string): ScanCache {
         return undefined;
       }
       this.stats.hits++;
-      // Structured copy: post-processing (evidence stamping, tier policy,
+      // Audit M5: LRU-by-use — a hit re-inserts the key so the eviction
+      // order below reflects actual use, not file-scan order. Structured
+      // copy: post-processing (evidence stamping, tier policy,
       // measured-FP tagging) mutates findings in place after the loop —
       // a shared reference would let a fresh run pollute cached entries.
+      delete entries[key];
+      entries[key] = entry;
       return structuredClone(entry.findings);
     },
     store(key, findings, fileBudgetExceeded) {
@@ -162,10 +173,28 @@ export function createScanCache(root: string): ScanCache {
       // produced partial results — baking those into the cache would
       // turn a truncated scan into a permanent lie for that file.
       if (fileBudgetExceeded) return;
+      // Audit M5: refresh on re-store (same file scanned twice in one
+      // process — e.g. library consumers) must not duplicate its slot.
+      delete entries[key];
       entries[key] = { findings: structuredClone(findings) };
-      const keys = Object.keys(entries);
-      if (keys.length > MAX_ENTRIES) {
-        delete entries[keys[0] as string]; // insertion-ordered FIFO
+      // Evict oldest-by-use until both caps hold. The byte budget is the
+      // honest bound: entries are evicted in insertion (= use) order.
+      let keys = Object.keys(entries);
+      let totalBytes = JSON.stringify({
+        version: CACHE_VERSION,
+        entries,
+      }).length;
+      while (
+        (keys.length > MAX_ENTRIES || totalBytes > MAX_TOTAL_BYTES) &&
+        keys.length > 1
+      ) {
+        const oldest = keys[0] as string;
+        const evicted = entries[oldest];
+        delete entries[oldest];
+        totalBytes -= evicted
+          ? JSON.stringify(evicted).length + oldest.length + 20
+          : 0;
+        keys = Object.keys(entries);
       }
       dirty = true;
     },

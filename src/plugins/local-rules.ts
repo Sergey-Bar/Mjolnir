@@ -294,6 +294,25 @@ function loadJsonRule(path: string, result: LoadedExternalRules): void {
       // The contract is documented in the module header — declarative
       // patterns run against the file as written.
       const view = ctx.text;
+      // Audit M5: precomputed newline offsets — line resolution per
+      // match used to split the whole prefix (`slice(0, index).split`),
+      // O(matches × bytes). With the offset array it is one binary
+      // search per match.
+      const lineStarts = [0];
+      for (let i = 0; i < view.length; i++) {
+        if (view.charCodeAt(i) === 10) lineStarts.push(i + 1);
+      }
+      const lineOf = (index: number): number => {
+        let lo = 0;
+        let hi = lineStarts.length - 1;
+        while (lo < hi) {
+          const mid = (lo + hi + 1) >> 1;
+          const start = lineStarts.at(mid) ?? 0;
+          if (start <= index) lo = mid;
+          else hi = mid - 1;
+        }
+        return lo + 1;
+      };
       const findings: Array<
         Omit<import("../types.js").Finding, "ruleId" | "category">
       > = [];
@@ -308,7 +327,7 @@ function loadJsonRule(path: string, result: LoadedExternalRules): void {
             findingType: "heuristic-risk",
             qaImpact: qaImpact as "HYGIENE",
             file: ctx.path,
-            line: 1 + view.slice(0, m.index).split("\n").length - 1,
+            line: lineOf(m.index),
             column: m.index - (view.lastIndexOf("\n", m.index - 1) + 1) + 1,
             message,
             why,
