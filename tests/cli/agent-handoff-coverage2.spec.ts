@@ -98,9 +98,11 @@ describe("main() dispatch to the new verbs (plan §9 wiring)", () => {
   it("`mjolnir install` dispatches with the caller's io", async () => {
     const cap = capture();
     // The worktree itself has instruction surfaces (.kilo); --force makes
-    // the run idempotent regardless of prior local edits.
+    // the run idempotent regardless of prior local edits. Whether files
+    // were written or already up-to-date (no-op), the dispatch itself is
+    // what's under test — assert only the summary line.
     await expect(main(["install", "--force"], cap.io)).resolves.toBe(0);
-    expect(cap.text()).toContain("mjolnir-qa@");
+    expect(cap.text()).toContain("Installed on");
     // Cleanup: do not leave test artifacts in the worktree.
     rmSync(join(process.cwd(), ".kilo", "command", "mjolnir.md"), {
       force: true,
