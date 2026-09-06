@@ -80,12 +80,20 @@ fails CI if it drifts.</sub>
 3. It turned each into a concrete finding with a rule ID, a location and a
    fix — and a single score you can gate a PR on.
 
+There's also an 89-second tour covering `explain`, `forensics`, and the
+rest of the walkthrough below — same pipeline, same guarantee (every
+frame is real CLI output). It's built as
+[`assets/video/script.tour.json`](assets/video/script.tour.json) but not
+committed as an MP4 (it's ~16MB; every clone shouldn't pay for a video
+most readers won't open) — run `npm run docs:video` to render it, or
+check the repo's [Releases](../../releases) for a published copy.
+
 ### One finding, up close
 
 Run `mjolnir explain QA-CI-001` on the first finding above and you get:
 
 ```text
-▚ QA-CI-001 — continue-on-error masks a failing verification gate
+  ▚ QA-CI-001 — continue-on-error masks a failing verification gate
 
 Severity:    error
 Confidence:  high

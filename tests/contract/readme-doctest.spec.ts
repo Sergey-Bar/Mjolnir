@@ -143,7 +143,7 @@ describe("the README's `explain` sample is the real thing", () => {
    * worst place in the document for one.
    */
   it("matches what `mjolnir explain QA-CI-001` actually prints", () => {
-    const block = /```text\n(▚▞ QA-CI-001[\s\S]*?)```/.exec(README);
+    const block = /```text\n( *▚ QA-CI-001[\s\S]*?)```/.exec(README);
     expect(
       block,
       "README no longer contains the QA-CI-001 explain sample — if it was " +

@@ -299,7 +299,7 @@
       "source": "tests/fixtures",
       "command": "mjolnir explain QA-CI-009",
       "ansi": [
-        "▚▞ QA-CI-009 — Test command does not propagate exit code",
+        "  ▚ QA-CI-009 — Test command does not propagate exit code",
         "",
         "Severity:    error",
         "Confidence:  high",
@@ -338,7 +338,7 @@
       "source": "examples/demo-repo/test-results",
       "command": "mjolnir forensics ./test-results/",
       "ansi": [
-        "▚▞ FLAKINESS LEADERBOARD",
+        "  ▚ FLAKINESS LEADERBOARD",
         "",
         "3 tests · 1 failed · 1 flaky · 1 retried",
         "",
