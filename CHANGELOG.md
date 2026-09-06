@@ -74,6 +74,13 @@ scan`. Unknown categories are a usage error (exit 10).
 - help registry gained `why`, `handoff`, `install` and the new flags;
   site/reference/cli.md documents the handoff trust model.
 
+## [0.5.10] — 2026-09-06
+
+### Changes since 0.5.9
+
+- Merge pull request #43 from Sergey-Bar/eng/closeout-2.4
+- docs: close-out eligibility audit + final 2.0 certification report (five-way verification classification)
+
 ## [0.5.9] — 2026-09-06
 
 ### Changes since 0.5.8
