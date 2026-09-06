@@ -1055,7 +1055,21 @@ export async function runBaselineCommand(
     if (invalid !== null) return invalid;
     const result = await runScan({ ...args, target });
     const outPath = join(target, DEFAULT_BASELINE_PATH);
-    const saved = saveBaseline(result, currentCommit(target), outPath);
+    let saved: ReturnType<typeof saveBaseline>;
+    try {
+      saved = saveBaseline(result, currentCommit(target), outPath);
+    } catch (saveErr) {
+      // Honest-degrade: an unwritable path is the environment's fault,
+      // not a Mjölnir bug — the friendly exit-20 message would lie.
+      // The scan completed; the snapshot simply was not written.
+      io.err(
+        `baseline save FAILED — ${saveErr instanceof Error ? saveErr.message : String(saveErr)}`,
+      );
+      io.err(
+        "The scan completed; the snapshot was not written. Fix the path permissions and re-run `mjolnir baseline`.",
+      );
+      return 1;
+    }
     io.out(
       renderBaselineSaved(DEFAULT_BASELINE_PATH, result.findings.length, {
         ...(saved.backupPath !== undefined

@@ -242,10 +242,14 @@ describe("exit-20 mapping: Error payload carries the message", () => {
     expect(cap.errText()).toContain("boom-err");
   });
 
-  it("baseline", async () => {
+  it("baseline: a saveBaseline throw is the honest-degrade exit 1, not exit 20", async () => {
+    // An unwritable baseline path is the environment's fault — the
+    // friendly "this is a bug in Mjölnir" exit-20 message would lie. The
+    // command degrades to exit 1 with the actionable reason instead.
     throwOnce(saveBaseline, ERR);
     const cap = capture();
-    expect(await runBaselineCommand([dir], cap.io)).toBe(20);
+    expect(await runBaselineCommand([dir], cap.io)).toBe(1);
+    expect(cap.errText()).toContain("baseline save FAILED");
     expect(cap.errText()).toContain("boom-err");
   });
 
@@ -358,10 +362,11 @@ describe("exit-20 mapping: non-Error throwables render via String()", () => {
     expect(cap.errText()).toContain("boom-str");
   });
 
-  it("baseline", async () => {
+  it("baseline: a non-Error throw also degrades to exit 1 via String()", async () => {
     throwOnce(saveBaseline, STR);
     const cap = capture();
-    expect(await runBaselineCommand([dir], cap.io)).toBe(20);
+    expect(await runBaselineCommand([dir], cap.io)).toBe(1);
+    expect(cap.errText()).toContain("baseline save FAILED");
     expect(cap.errText()).toContain("boom-str");
   });
 
