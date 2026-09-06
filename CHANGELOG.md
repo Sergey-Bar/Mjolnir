@@ -9,7 +9,9 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
-## [Unreleased] — Agent Handoff + Minimized Reporting (plan 1788599400000)
+## [0.5.4] — 2026-09-06
+
+### Agent Handoff + Minimized Reporting (plan 1788599400000)
 
 ### Added
 
