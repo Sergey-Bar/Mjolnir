@@ -74,6 +74,17 @@ scan`. Unknown categories are a usage error (exit 10).
 - help registry gained `why`, `handoff`, `install` and the new flags;
   site/reference/cli.md documents the handoff trust model.
 
+## [0.5.6] — 2026-09-06
+
+### Changes since 0.5.5
+
+- Merge pull request #39 from Sergey-Bar/eng/verification-trust-2.0
+- docs: regenerate readme SVGs under the revision-2 CI-rule measurements
+- docs: regenerate rule-doc occurrence tables (yarnpkg-berry corpus lane)
+- fix: eslint pragma for the file-wide consumer fallback regex
+- fix: rev-2 enforcement arm in QA-CI-008 was dead code + coverage arms for CI rules
+- ci-family trust repair: M2 detector re-adjudication, revision 2 re-measurement, workflow corpus lane
+
 ## [0.5.5] — 2026-09-06
 
 ### Audit Remediation 1.0 (engine correctness + trust boundary)
