@@ -22,6 +22,7 @@
     "build": "tsdown src/cli.ts --format esm --dts --out-dir dist && npm run build --workspaces --if-present",
     "dev": "tsx src/cli.ts",
     "test": "vitest run",
+    "bench:scan": "tsx scripts/bench-scan.ts .mjolnir --files 300",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "lint": "eslint . --max-warnings=0 && prettier --check .",

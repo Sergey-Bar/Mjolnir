@@ -96,6 +96,17 @@ export const LIMITS = {
    * named in analysisStatus.truncationReasons as "file-budget".
    */
   maxFileAnalysisMs: 5_000,
+  /**
+   * Audit S2: ignore/glob pattern caps. A pattern (operator config or
+   * hostile-repo .mjolnirignore) longer than this, or with more
+   * wildcards than this, is rejected at compile time — regex
+   * construction cost and match cost are bounded by the pattern, so the
+   * caps bound both. Note: the compiled regexes run SYNCHRONOUSLY in
+   * the scan loop and cannot be interrupted; the caps are what make
+   * that safe.
+   */
+  maxPatternLength: 512,
+  maxPatternWildcards: 64,
 } as const;
 
 /** An immutable, per-root resolved ignore matcher (audit R-8). */
@@ -192,6 +203,13 @@ function compilePattern(raw: string): CompiledPattern | null {
     pattern = pattern.slice(1);
   }
   if (pattern.trim() === "") return null;
+  // Audit S2: pattern caps — length and wildcard count bound both regex
+  // construction cost and per-path match cost. A pattern over the cap is
+  // rejected at compile (never at match time); a hostile
+  // .mjolnirignore with a megabyte of `*a*a*a*…` cannot own the scan.
+  if (pattern.length > LIMITS.maxPatternLength) return null;
+  const wildcards = (pattern.match(/[*?]/g) ?? []).length;
+  if (wildcards > LIMITS.maxPatternWildcards) return null;
   const re = pattern.includes("/")
     ? // eslint-disable-next-line security/detect-non-literal-regexp -- glob compiled from mjolnir.config.json exclude — operator-owned config (§21 trust boundary)
       new RegExp(`^${globBody(pattern)}$`)
@@ -211,9 +229,15 @@ function globBody(glob: string): string {
     const c: string = glob[i] as string;
     if (c === "*") {
       if (glob[i + 1] === "*") {
-        // `**/` matches zero or more path segments; `**` matches anything.
+        // Audit S2: `**/` compiles to the segment-aware form — one
+        // bounded unit per path segment, repeated. The old `.*` spanned
+        // slashes (nested-quantifier surface, and looser than gitignore:
+        // it matched `b` inside `a/b/**/c` even when `b` was not a real
+        // segment boundary). `(?:[^/]*/)*` matches zero-or-more WHOLE
+        // segments with no ambiguity between repeats — gitignore
+        // semantics, linear match cost.
         if (glob[i + 2] === "/") {
-          re += "(?:.*/)?";
+          re += "(?:[^/]*/)*";
           i += 2;
         } else {
           re += ".*";

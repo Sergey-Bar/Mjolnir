@@ -60,6 +60,14 @@ export function parseWorkflow(text: string): WorkflowDoc {
   if (typeof doc !== "object")
     throw new YamlParseError("Workflow root must be a mapping");
 
+  // Audit (workflow-parser): enforce the documented depth cap by walking
+  // the parsed doc. The yaml package's own alias guard does not bound
+  // NESTING depth — a legitimately-alias-free document nested 10,000
+  // levels deep would still be built (and later walked recursively by
+  // consumers). Iterative walk, so the check itself cannot overflow the
+  // stack on a hostile doc.
+  enforceDepthCap(doc, LIMITS.maxDepth);
+
   const root = doc as Record<string, unknown>;
   const jobsRaw = root["jobs"];
   if (jobsRaw === undefined || jobsRaw === null) return {};
@@ -68,7 +76,15 @@ export function parseWorkflow(text: string): WorkflowDoc {
     throw new YamlParseError('"jobs" must be a mapping');
   }
 
-  const jobs: Record<string, WorkflowJob> = {};
+  // Audit (workflow-parser): null-prototype map for job names — a
+  // hostile workflow declaring `jobs: { __proto__: … }` must not reach
+  // the parsed object's prototype chain (the assignment used to be a
+  // silent prototype write, never an own property, and downstream
+  // Object.entries iterations saw phantom keys).
+  const jobs: Record<string, WorkflowJob> = Object.create(null) as Record<
+    string,
+    WorkflowJob
+  >;
   for (const [jobName, jobVal] of Object.entries(
     jobsRaw as Record<string, unknown>,
   )) {
@@ -99,7 +115,13 @@ export function parseWorkflow(text: string): WorkflowDoc {
           ...(step["with"] &&
           typeof step["with"] === "object" &&
           !Array.isArray(step["with"])
-            ? { with: step["with"] as Record<string, unknown> }
+            ? {
+                // Audit (workflow-parser): the parsed doc is shared by
+                // every CI rule for this file — `with` must be a copy,
+                // or one rule's mutation of a step input would leak
+                // into the other rules' view of the same workflow.
+                with: { ...(step["with"] as Record<string, unknown>) },
+              }
             : {}),
           ...(typeof step["continue-on-error"] === "boolean" ||
           typeof step["continue-on-error"] === "string"
@@ -113,4 +135,27 @@ export function parseWorkflow(text: string): WorkflowDoc {
   }
 
   return { jobs };
+}
+
+/**
+ * Iterative depth check over any parsed YAML value. Throws when any
+ * path from the root is deeper than `max` nesting levels (audit:
+ * the documented cap was never enforced on the parsed structure).
+ */
+function enforceDepthCap(value: unknown, max: number): void {
+  const stack: Array<{ v: unknown; d: number }> = [{ v: value, d: 0 }];
+  while (stack.length > 0) {
+    const { v, d } = stack.pop() as { v: unknown; d: number };
+    if (v === null || typeof v !== "object") continue;
+    if (d >= max) {
+      throw new YamlParseError(`Workflow nesting depth exceeds limit ${max}`);
+    }
+    if (Array.isArray(v)) {
+      for (const item of v) stack.push({ v: item, d: d + 1 });
+    } else {
+      for (const item of Object.values(v as Record<string, unknown>)) {
+        stack.push({ v: item, d: d + 1 });
+      }
+    }
+  }
 }

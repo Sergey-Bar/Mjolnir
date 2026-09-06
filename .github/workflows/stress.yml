@@ -115,7 +115,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx vitest run tests/registry-install.spec.ts
+      - run: npx vitest run tests/integrations/registry-install.spec.ts
 
   concurrent:
     name: "Tier 2 / 4 concurrent scans of one read-only target (ubuntu, Node 22)"

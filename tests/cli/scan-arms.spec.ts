@@ -90,7 +90,10 @@ describe("plugin tier enforcement", () => {
       join(dir, "e2e", "acme.spec.ts"),
       "it('a', () => { expect(1 + 1).toBe(2); });\n",
     );
-    const { code, result } = await scanJson(undefined, ["--strict"]);
+    const { code, result } = await scanJson(undefined, [
+      "--strict",
+      "--enable-plugins",
+    ]);
     const acme = result.findings.find((f) => f.ruleId === "QA-ACME-001");
     expect(acme).toBeDefined();
     // Tier policy: quarantine findings can never gate CI.
@@ -117,7 +120,10 @@ describe("plugin tier enforcement", () => {
       join(dir, "e2e", "a.spec.ts"),
       "it('a', () => { expect(1 + 1).toBe(2); });\n",
     );
-    const { result } = await scanJson();
+    // Audit C2: the gate must be open for the plugin to ATTEMPT to load
+    // (and fail honestly as QA-PLUGIN-000). Gate closed → skipped, no
+    // attempt, no finding.
+    const { result } = await scanJson(undefined, ["--enable-plugins"]);
     const pluginFinding = result.findings.find(
       (f) => f.ruleId === "QA-PLUGIN-000",
     );

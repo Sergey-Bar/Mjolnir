@@ -6,7 +6,7 @@
  */
 
 import { execSync } from "node:child_process";
-import { writeFileSync } from "node:fs";
+import { writeFileAtomic } from "../lib/fs-atomic.js";
 import { join } from "node:path";
 
 import type { ScanResult } from "../types.js";
@@ -15,6 +15,11 @@ import { deriveScoreState } from "../reporter/score-state.js";
 export interface BadgeOptions {
   /** Where to write mjolnir-badge.json. */
   outDir: string;
+  /**
+   * Audit (badge): HEAD commit of the scanned repo ("unknown" outside a
+   * git checkout) — a badge must be attributable to the code it measured.
+   */
+  commit?: string;
 }
 
 export interface BadgeJson {
@@ -24,6 +29,12 @@ export interface BadgeJson {
   color: string;
   namedLogo?: string;
   style?: string;
+  /**
+   * Audit (badge): HEAD commit of the scanned repo when available
+   * ("unknown" outside a git checkout) — a badge must be attributable
+   * to the code it measured.
+   */
+  commit?: string;
 }
 
 /**
@@ -46,7 +57,7 @@ function colorFor(score: number | null): string {
 }
 
 /** Build the shields.io endpoint payload from a scan result. */
-export function buildBadge(result: ScanResult): BadgeJson {
+export function buildBadge(result: ScanResult, commit?: string): BadgeJson {
   const errors = result.findings.filter((f) => f.severity === "error").length;
   const score = result.score;
   const message =
@@ -61,6 +72,7 @@ export function buildBadge(result: ScanResult): BadgeJson {
     message,
     color: colorFor(score),
     namedLogo: "vitest",
+    ...(commit !== undefined ? { commit } : {}),
   };
 }
 
@@ -107,6 +119,9 @@ export function renderBadgeSnippet(
 
 export function writeBadge(result: ScanResult, options: BadgeOptions): string {
   const path = join(options.outDir, "mjolnir-badge.json");
-  writeFileSync(path, JSON.stringify(buildBadge(result), null, 2));
+  writeFileAtomic(
+    path,
+    JSON.stringify(buildBadge(result, options.commit), null, 2),
+  );
   return path;
 }

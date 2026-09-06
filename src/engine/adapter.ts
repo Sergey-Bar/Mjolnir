@@ -69,7 +69,7 @@ export interface ScanContext {
   /** Resolved per-scan ignore matcher (audit R-8) — no module globals. */
   ignoreMatcher: IgnoreMatcher;
   /** Called once per file that could not be read/analyzed. */
-  onSkippedFile: (reason?: string) => void;
+  onSkippedFile: (reason: string) => void;
   /**
    * Called when discovery stops early (audit H-8): deadline expiry or
    * the per-adapter file cap. The reason is named in analysisStatus.

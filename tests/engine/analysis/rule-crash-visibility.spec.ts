@@ -114,16 +114,19 @@ describe("R-9: swallowed rule crashes become visible", () => {
     mkdirSync(join(dir, "e2e"), { recursive: true });
     writeFileSync(join(dir, "e2e", "a.spec.ts"), "it('a', () => {});\n");
 
-    const result = await runScan(
-      parseArgs([dir]) ?? {
+    const result = await runScan({
+      ...(parseArgs([dir]) ?? {
         target: dir,
         json: false,
         verbose: false,
         maxDurationMs: 60_000,
         scopeChanged: false,
-        format: "terminal",
-      },
-    );
+        format: "terminal" as const,
+      }),
+      // Audit C2: the plugin gate must be open for the crashing plugin
+      // to load at all.
+      enablePlugins: true,
+    });
     expect(result.analysisStatus.rulesCrashed).toBe(1);
     // Audit S-8: the plugin that ran is visible in the JSON contract.
     expect(result.plugins).toEqual([{ name: "crashing-plugin", rules: 1 }]);
@@ -159,7 +162,9 @@ describe("R-9: swallowed rule crashes become visible", () => {
     writeFileSync(join(dir, "a.spec.ts"), "it('a', () => {});\n");
 
     const loud: string[] = [];
-    await runScanCommand([dir, "--debug", "--json"], {
+    // Audit C2: the plugin gate must be open for the crashing plugin to
+    // actually load — --enable-plugins rides along with --debug.
+    await runScanCommand([dir, "--debug", "--json", "--enable-plugins"], {
       out: () => {},
       err: (...parts) => loud.push(parts.map(String).join(" ")),
     });
@@ -247,9 +252,11 @@ describe("P-1: a single expensive file can no longer own the scan", () => {
     for (const n of ["a", "b", "c"]) {
       writeFileSync(join(dir, `${n}.spec.ts`), "it('x', () => {});\n");
     }
-    // Deterministic clock: real time through discovery (5 Date.now calls),
-    // then +6s per call — each file's 5s budget is exceeded mid-pass, well
-    // before the global 60s deadline.
+    // Deterministic clock: real time through discovery (5 Date.now calls
+    // with the shared-walk per-entry checks: scan start + 3 root entries
+    // + the workflow adapter's probe), then +6s per call — each file's
+    // 5s budget is exceeded mid-pass, well before the global 60s
+    // deadline.
     const realNow = Date.now();
     let calls = 0;
     vi.spyOn(Date, "now").mockImplementation(() => {

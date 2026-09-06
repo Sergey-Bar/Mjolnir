@@ -122,13 +122,13 @@ describe("discoverTestFiles guard rails", () => {
     );
   });
 
-  it("counts a stat-failed workflow as skipped without a reason", () => {
+  it("counts a stat-failed workflow as skipped with its reason", () => {
     writeWorkflow("ghost.yml");
     const onSkippedFile = vi.fn();
     const ctx = makeCtx({ onSkippedFile });
     githubActionsAdapter.discoverTestFiles(ctx);
     expect(ctx.testFiles).toHaveLength(0);
-    expect(onSkippedFile).toHaveBeenCalledWith();
+    expect(onSkippedFile).toHaveBeenCalledWith("unreadable-entry");
   });
 
   it("counts an oversized workflow as skipped with a reason", () => {

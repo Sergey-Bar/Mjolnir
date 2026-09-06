@@ -72,7 +72,7 @@ describe("loadLocalRules — the folder contract (zero network)", () => {
   it("a JSON rule file loads and runs (declarative patterns, no code executed)", async () => {
     const dir = workspace();
     writeRule(dir, "acme.json", VALID_RULE);
-    const { rules, errors } = await loadLocalRules(dir);
+    const { rules, errors } = await loadLocalRules(dir, true);
     expect(errors).toEqual([]);
     expect(rules).toHaveLength(1);
     expect(rules[0]?.id).toBe("QA-ACME-001");
@@ -96,7 +96,7 @@ describe("loadLocalRules — the folder contract (zero network)", () => {
       join(dir, "mjolnir-rules", "acme.mjs"),
       `export const rules = [{ id: "QA-ACME-002", title: "Module rule", category: "QA-TEST", severity: "info", confidence: "medium", findingType: "deterministic-defect", qaImpact: "HYGIENE", appliesTo: "test-files", tier: "quarantine", run: () => [] }];`,
     );
-    const { rules, errors } = await loadLocalRules(dir);
+    const { rules, errors } = await loadLocalRules(dir, true);
     expect(errors).toEqual([]);
     expect(rules.map((r) => r.id)).toEqual(["QA-ACME-002"]);
   });
@@ -104,7 +104,7 @@ describe("loadLocalRules — the folder contract (zero network)", () => {
   it("reserved core prefixes are rejected (case-insensitive spoofing guard)", async () => {
     const dir = workspace();
     writeRule(dir, "spoof.json", { ...VALID_RULE, id: "qa-pw-999" });
-    const { rules, errors } = await loadLocalRules(dir);
+    const { rules, errors } = await loadLocalRules(dir, true);
     expect(rules).toHaveLength(0);
     expect(errors[0]).toContain("reserved core prefix");
   });
@@ -116,7 +116,7 @@ describe("loadLocalRules — the folder contract (zero network)", () => {
       join(dir, "mjolnir-rules", "core.mjs"),
       `export const rules = [{ id: "QA-ACME-003", title: "Wants core", category: "QA-TEST", severity: "error", confidence: "high", findingType: "deterministic-defect", qaImpact: "BLOCKS-RELEASE", appliesTo: "test-files", tier: "core", run: () => [] }];`,
     );
-    const { rules, errors } = await loadLocalRules(dir);
+    const { rules, errors } = await loadLocalRules(dir, true);
     expect((rules[0] as { tier?: string }).tier).toBe("extended");
     expect(errors[0]).toContain('clamped to "extended"');
   });
@@ -133,14 +133,18 @@ describe("loadLocalRules — the folder contract (zero network)", () => {
       id: "QA-ACME-005",
       severity: "fatal",
     });
-    const { rules, errors } = await loadLocalRules(dir);
+    const { rules, errors } = await loadLocalRules(dir, true);
     expect(rules).toHaveLength(0);
     expect(errors).toHaveLength(2);
   });
 
   it("no mjolnir-rules directory → empty result, not an error", async () => {
     const dir = workspace();
-    expect(await loadLocalRules(dir)).toEqual({ rules: [], errors: [] });
+    expect(await loadLocalRules(dir, true)).toEqual({
+      rules: [],
+      errors: [],
+      skipped: [],
+    });
   });
 });
 
@@ -214,7 +218,7 @@ describe("exit gate: an external rule loads, runs, obeys tier caps, and is drift
   it("DRIFT-CHECK: the rules catalog is generated from the loaded rules — an on-disk edit changes the next render", async () => {
     const dir = workspace();
     writeRule(dir, "acme.json", VALID_RULE);
-    const loaded = await loadLocalRules(dir);
+    const loaded = await loadLocalRules(dir, true);
     const before = renderCatalogMd(
       buildCatalog(loaded.rules, { provenance: "external" }),
     );
@@ -226,7 +230,7 @@ describe("exit gate: an external rule loads, runs, obeys tier caps, and is drift
       ...VALID_RULE,
       title: "Renamed rule on disk",
     });
-    const loaded2 = await loadLocalRules(dir);
+    const loaded2 = await loadLocalRules(dir, true);
     const after = renderCatalogMd(
       buildCatalog(loaded2.rules, { provenance: "external" }),
     );
@@ -241,7 +245,7 @@ describe("exit gate: an external rule loads, runs, obeys tier caps, and is drift
   it("external findings flow through enforceTierPolicy unchanged for non-quarantine tiers", async () => {
     const dir = workspace();
     writeRule(dir, "acme.json", { ...VALID_RULE, severity: "error" });
-    const { rules } = await loadLocalRules(dir);
+    const { rules } = await loadLocalRules(dir, true);
     const finding: Finding = {
       ruleId: "QA-ACME-001",
       category: "QA-TEST",
@@ -269,7 +273,7 @@ describe("exit gate: an external rule loads, runs, obeys tier caps, and is drift
   it("the JSON external rule file can carry languages/frameworks (framework dimension §15.1)", async () => {
     const dir = workspace();
     writeRule(dir, "acme.json", VALID_RULE);
-    const { rules } = await loadLocalRules(dir);
+    const { rules } = await loadLocalRules(dir, true);
     expect(rules[0]?.languages).toEqual(["typescript"]);
     expect(rules[0]?.frameworks).toEqual(["playwright"]);
   });

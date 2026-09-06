@@ -68,7 +68,14 @@ export function renderSarif(result: ScanResult, repoRootUri?: string): string {
           const meta = RULES.find((x) => x.id === r.id);
           return {
             id: r.id,
-            shortDescription: { text: r.short },
+            // Audit M7: shortDescription comes from the registry's stable
+            // title — the first finding's message was per-INSTANCE text
+            // ("`foo` has continue-on-error…"), so the same rule rendered
+            // a different description per repo scan and rule drill-downs
+            // never matched across runs.
+            shortDescription: {
+              text: meta?.title ?? r.short,
+            },
             ...(r.helpUri ? { helpUri: r.helpUri } : {}),
             ...(meta?.falsePositiveRisk
               ? { properties: { falsePositiveRisk: meta.falsePositiveRisk } }
@@ -174,12 +181,33 @@ export function renderSarif(result: ScanResult, repoRootUri?: string): string {
 
   // SARIF format version (the spec's own version — NOT the tool version,
   // which is the literal below, kept in sync by tests/version-consistency).
+  // Audit M7: the SRCROOT uri is a FILE-SYSTEM path — `[]{}^` and spaces
+  // are legal in paths but not in an RFC 3986 uri-reference, and Code
+  // Scanning resolves the base against them literally. Per-segment
+  // encoding keeps `/` separators while encoding everything path-hostile.
   const sarif = {
     $schema: "https://json.schemastore.org/sarif-2.1.0.json",
     version: ["2", "1", "0"].join("."),
     runs: [
       repoRootUri
-        ? { ...run, originalUriBaseIds: { SRCROOT: { uri: repoRootUri } } }
+        ? {
+            ...run,
+            originalUriBaseIds: {
+              SRCROOT: {
+                uri: repoRootUri
+                  .replaceAll("\\", "/")
+                  .split("/")
+                  .map((seg) =>
+                    seg === ""
+                      ? ""
+                      : encodeURI(seg)
+                          .replaceAll("#", "%23")
+                          .replaceAll("?", "%3F"),
+                  )
+                  .join("/"),
+              },
+            },
+          }
         : run,
     ],
   };

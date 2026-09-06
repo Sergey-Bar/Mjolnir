@@ -178,11 +178,22 @@ export function definePatternFamily(
         const astFindings = tryAstQuery(v.astQuery, ctx);
         if (astFindings !== undefined) return astFindings;
 
-        for (const re of v.patterns) {
+        // Audit M4: infinite-loop guard. A variant pattern WITHOUT the
+        // `g` flag never advances lastIndex — the exec loop below would
+        // spin forever on the first match, hanging the whole scan. A
+        // missing flag is a family-declaration bug; clone with `g` and
+        // let the registry test (tests/audit) name the offending variant.
+        const variantPatterns = v.patterns.map((p) =>
+          // eslint-disable-next-line security/detect-non-literal-regexp -- clone of a declared family pattern's own source/flags, not scan input
+          p.global ? p : new RegExp(p.source, `${p.flags}g`),
+        );
+
+        for (const re of variantPatterns) {
           // Reset lastIndex for global regexes reused across calls
           re.lastIndex = 0;
           let m: RegExpExecArray | null;
           while ((m = re.exec(text)) !== null) {
+            const matched: string = m[0];
             findings.push({
               severity,
               confidence: opts.confidence,
@@ -191,7 +202,12 @@ export function definePatternFamily(
               file: ctx.path,
               line: lineAt(text, m.index),
               column: colAt(text, m.index),
-              message: v.message.replace("$0", m[0].slice(0, 60)),
+              // Audit M4: the $0 substitution uses a FUNCTION replacer.
+              // A string replacer interprets `$&`/`` $` ``/`$'` inside
+              // the replacement — i.e. inside the MATCHED CODE — so a
+              // match containing `$&` produced mangled messages. A
+              // function replacer inserts the text literally.
+              message: v.message.replace("$0", () => matched.slice(0, 60)),
               why: opts.why,
               fix: v.fix,
             });
