@@ -131,7 +131,18 @@ export function explainRule(
     rule,
     exampleFinding: example,
     exampleFixturePath: fixturePath,
-    exampleFixtureRelPath: relative(fixturesRoot, fixturePath),
+    // Forward-slash-normalized, matching the convention every other
+    // relative-path site in this codebase already follows (e.g. the
+    // `normalizedPath` a few lines up, src/discovery/shared-walk.ts,
+    // src/cli.ts). node:path's `relative()` returns OS-native
+    // separators, so this printed `QA-CI-001\must-fire\masked.yml` on
+    // Windows CI — different bytes than the committed README sample and
+    // video script, both generated on Linux, and a real Windows-only CI
+    // failure (readme-doctest.spec.ts, video-script.spec.ts).
+    exampleFixtureRelPath: relative(fixturesRoot, fixturePath).replaceAll(
+      "\\",
+      "/",
+    ),
   };
 }
 

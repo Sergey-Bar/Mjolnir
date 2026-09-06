@@ -35,6 +35,21 @@ describe("explainRule — 100% of registered rules", () => {
       expect(result.exampleFinding?.why.length).toBeGreaterThan(0);
       expect(result.exampleFinding?.fix.length).toBeGreaterThan(0);
       expect(result.exampleFinding?.message.length).toBeGreaterThan(0);
+      // exampleFixtureRelPath is quoted verbatim in README.md and in the
+      // committed video scripts. node:path's relative() returns OS-native
+      // separators, so this printed "QA-CI-001\must-fire\masked.yml" on
+      // Windows CI — different bytes than the Linux-generated committed
+      // samples, and a real cross-platform CI failure (caught on
+      // windows-latest, not on any Linux/macOS runner). The fix is
+      // unconditional forward-slash normalization; this asserts the
+      // invariant it establishes rather than the OS-dependent behavior it
+      // replaced.
+      expect(
+        result.exampleFixtureRelPath,
+        `${id}: exampleFixtureRelPath contains a raw backslash — it will ` +
+          `print differently on Windows than on the Linux/macOS runners ` +
+          `every committed sample was generated on`,
+      ).not.toMatch(/\\/);
     },
   );
 });
