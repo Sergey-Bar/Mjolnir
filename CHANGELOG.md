@@ -74,6 +74,14 @@ scan`. Unknown categories are a usage error (exit 10).
 - help registry gained `why`, `handoff`, `install` and the new flags;
   site/reference/cli.md documents the handoff trust model.
 
+## [0.5.9] — 2026-09-06
+
+### Changes since 0.5.8
+
+- Merge pull request #42 from Sergey-Bar/eng/lane-a-qamodel-2.3
+- docs: regenerate all generated artifacts under the Lane A rev-2 rules
+- feat: Lane A — hard-sleep JV/CS family migrated to the QA-model substrate (blueprint §10)
+
 ## [0.5.8] — 2026-09-06
 
 ### Changes since 0.5.7
