@@ -19,8 +19,9 @@
     "CHANGELOG.md"
   ],
   "scripts": {
-    "build": "tsdown src/cli.ts --format esm --dts --out-dir dist && npm run build --workspaces --if-present",
+    "build": "tsdown src/cli.ts --format esm --dts --out-dir dist && tsdown src/mcp/stdio.ts --format esm --out-dir dist/mcp && npm run build --workspaces --if-present",
     "dev": "tsx src/cli.ts",
+    "mcp": "node dist/mcp/stdio.mjs",
     "test": "vitest run",
     "bench:scan": "tsx scripts/bench-scan.ts .mjolnir --files 300",
     "test:coverage": "vitest run --coverage",
