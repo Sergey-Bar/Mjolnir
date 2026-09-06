@@ -15,7 +15,7 @@
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | 日本語 | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-04.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-06.
 
 ```bash
 npx mjolnir-qa@latest
@@ -294,14 +294,14 @@ Python ルールは合計 20 本（QA-PY-001…012 pytest 衛生 + QA-PY-101…1
 
 ### どれだけが測定されているか
 
-**99 ルールのうち 74 ルールが、実際の OSS コードに対して測定された
+**99 ルールのうち 76 ルールが、実際の OSS コードに対して測定された
 false-positive 率を備えています**（各ルールにつき手作業で分類された
-検出 ≥ 10 件。[docs/FP-AUDIT.md](docs/FP-AUDIT.md) 参照）。残り 19 ルール
+検出 ≥ 10 件。[docs/FP-AUDIT.md](docs/FP-AUDIT.md) 参照）。残り 23 ルール
 は作者の推定で出荷されます。すべてのスキャンのフッターは、_発火した_
 ルールのうちいくつが測定済みかを教えてくれます。`mjolnir rules --unmeasured`
 は未測定のものを列挙します。各ルールの `mjolnir explain` ページはその
 状態を明言します。率は醜くても公開します——QA-CS-103 は 95% で監査され、
-それゆえ隔離されています。この 78 を増やすことが、プロジェクトの継続的
+それゆえ隔離されています。この数字を増やすことが、プロジェクトの継続的
 な仕事です。
 
 ### ルールのティアと言語ごとの成熟度
@@ -459,7 +459,7 @@ flakiness レポートは生成しません。
 | 決定論的（同じ入力 → 同じ出力）       |         ❌（非決定論的）          |                 **✅**                 |
 | 数か月眠っていたパターンを検出        |    コンテキストにある場合のみ     |     **✅**（全ファイルをスキャン）     |
 | 実行間で検出を記憶                    |   ❌（セッション間の記憶なし）    |       **✅**（baseline + diff）        |
-| 人間のトリガーなしで動く              |     PR またはプロンプトが必要     |       **✅**（CI フック、3 秒）        |
+| 人間のトリガーなしで動く              |     PR またはプロンプトが必要     |    **✅**（CI フック、数秒で実行）     |
 
 **両方使いましょう。** AI は、どんな正規表現も見つけられないニュアンス、
 意図、設計上の欠陥を捉えます。Mjölnir は、「意図的」に見えるがゆえに
@@ -581,11 +581,18 @@ JSON/SARIF レポートは `schemaVersion: 1` です。ルール ID
   （[どれだけが測定されているか](#どれだけが測定されているか) 参照）。
   スキャンのフッターと `mjolnir rules --unmeasured` がどれがどれかを
   教えます。
-- **プラグインの信頼** — プラグインは `"plugins"` の下で宣言された npm
-  パッケージです。**サンドボックスはありません**: プラグインコードは
+- **プラグインの信頼と実行ゲート** — プラグインは `"plugins"` の下で宣言された npm
+  パッケージです; JS モジュールは `mjolnir-rules/*.mjs` に置かれます。
+  **サンドボックスはありません**: プラグインコードは
   完全な Node 権限で動作し、ESLint や Vitest のプラグインと同じ信頼
-  モデルです。コアルール ID の接頭辞は予約されており、なりすまし防止の
-  ためプラグインからは拒否されます。
+  モデルです。そのため、コード実行は**スキャンごとにオプトイン**です:
+  `--enable-plugins` を渡すか（`MJOLNIR_ENABLE_PLUGINS=1` を設定するか）、
+  そうでなければソースはロードされません — 目立つ stderr の通知が、
+  スキップされたものを正確に列挙します。信頼できないコードをスキャンしても、
+  それが実行されることはありません。JSON ルールマニフェスト
+  （`mjolnir-rules/*.json`）は影響を受けません: 正規表現パターンを宣言し、
+  設計上コードを一切実行しません。コアルール ID の接頭辞は予約されており、
+  なりすまし防止のためプラグインおよび外部ルールからは拒否されます。
 - **ワークスペースローカルの外部ルール**（フォルダベース、ネットワーク
   ゼロ）— スキャン対象の隣にある `mjolnir-rules/` ディレクトリがカスタム
   ルールを読み込みます: JSON ファイルは正規表現パターンを宣言し（コードは

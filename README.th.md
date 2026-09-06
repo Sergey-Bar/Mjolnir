@@ -15,7 +15,7 @@ CI pipelines รายงานคะแนนความน่าเชื่�
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | ไทย | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-04.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-06.
 
 ```bash
 npx mjolnir-qa@latest
@@ -290,13 +290,13 @@ fixture ลบของตัวเองจะปล่อยไม่ได้
 
 ### วัดไปแล้วเท่าไร
 
-**74 จาก 99 กฎ มีอัตรา false positive ที่วัดกับโค้ด OSS จริง** (อย่างน้อย
+**76 จาก 99 กฎ มีอัตรา false positive ที่วัดกับโค้ด OSS จริง** (อย่างน้อย
 10 findings ที่จัดหมวดด้วยมือต่อกฎ; ดู
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md)) อีก 19 กฎออกมาบนการประเมินของผู้เขียน
+[docs/FP-AUDIT.md](docs/FP-AUDIT.md)) อีก 23 กฎออกมาบนการประเมินของผู้เขียน
 ส่วนท้ายของทุกการสแกนบอกว่ากฎที่ _ยิง_ มีกี่กฎที่วัดแล้ว;
 `mjolnir rules --unmeasured` แสดงกฎที่ยังไม่วัด; หน้า `mjolnir explain`
 ของทุกกฎระบุสถานะ เราเผยแพร่อัตรานี้แม้มันจะน่าเกลียด — QA-CS-103 ตรวจได้
-ที่ 95 % และถูกส่งไปกักกันเพราะเหตุนี้ การทำให้ตัวเลข 78 นั้นโตขึ้นคืองาน
+ที่ 95 % และถูกส่งไปกักกันเพราะเหตุนี้ การทำให้ตัวเลขนั้นโตขึ้นคืองาน
 ต่อเนื่องของโปรเจกต์
 
 ### Tier ของกฎและความสุกงอมของภาษา
@@ -451,7 +451,7 @@ diff ได้ แต่มันไม่พิสูจน์ว่าระ�
 | กำหนดตาย (input เดียวกัน → output เดียวกัน) |       ❌ (ไม่กำหนดตาย)       |                 **✅**                 |
 | จับรูปแบบที่หลับมาหลายเดือน                 |     เฉพาะถ้าอยู่ในบริบท      |          **✅** (สแกนทุกไฟล์)          |
 | จำ finding ข้ามการรัน                       |  ❌ (ไม่มีความจำข้ามเซสชัน)  |        **✅** (baseline + diff)        |
-| รันโดยไม่ต้องมีคนสั่ง                       |    ต้องมี PR หรือ prompt     |       **✅** (hook CI, 3 วินาที)       |
+| รันโดยไม่ต้องมีคนสั่ง                       |    ต้องมี PR หรือ prompt     |  **✅** (hook CI, รันในไม่กี่วินาที)   |
 
 **ใช้ทั้งสอง** AI เก็บรายละเอียดปลีกย่อย เจตนา และข้อบกพร่องเชิงออกแบบ
 ที่ regex หาไม่เจอ Mjölnir เก็บรูปแบบเชิงโครงสร้างที่ AI มองข้ามเพราะ
@@ -566,10 +566,17 @@ Mjölnir เป็น zero-config `mjolnir.config.json` (หรือ `.mjolnir.
 - **วัด ไม่ใช่อ้าง** — เฉพาะกฎที่มีอัตรา false positive จากโค้ด OSS จริง
   จึงอยู่ใน tier พาดหัว (ดู [วัดไปแล้วเท่าไร](#วัดไปแล้วเท่าไร));
   ส่วนท้ายการสแกนและ `mjolnir rules --unmeasured` บอกว่ากฎไหนสถานะไหน
-- **ความไว้วางใจต่อปลั๊กอิน** — ปลั๊กอินคือแพ็กเกจ npm ประกาศใต้
-  `"plugins"` **ไม่มี sandbox**: โค้ดปลั๊กอินรันด้วยสิทธิ์ Node เต็ม
-  โมเดลความไว้วางใจเดียวกับปลั๊กอิน ESLint หรือ Vitest คำนำหน้า rule ID
-  ของ core สงวนไว้และถูกปฏิเสธจากปลั๊กอิน เพื่อกันการอ้างปลอม
+- **ความไว้วางใจต่อปลั๊กอินและประตูการรันโค้ด** — ปลั๊กอินคือแพ็กเกจ npm ประกาศใต้
+  `"plugins"`; โมดูล JS อยู่ใน `mjolnir-rules/*.mjs`
+  **ไม่มี sandbox**: โค้ดปลั๊กอินรันด้วยสิทธิ์ Node เต็ม
+  โมเดลความไว้วางใจเดียวกับปลั๊กอิน ESLint หรือ Vitest ด้วยเหตุนี้
+  การรันโค้ดจึงเป็น **opt-in ในทุกการสแกน**: ส่ง `--enable-plugins`
+  (หรือตั้ง `MJOLNIR_ENABLE_PLUGINS=1`) ไม่งั้นซอร์สจะไม่ถูกโหลด —
+  แจ้งเตือนบน stderr อย่างชัดเจนว่าข้ามอะไรไปบ้าง การสแกนโค้ดที่ไม่
+  น่าเชื่อถือไม่เคยรันมัน ไฟล์ JSON rule manifest (`mjolnir-rules/*.json`)
+  ไม่ได้รับผลกระทบ: ประกาศ regex pattern และไม่รันโค้ดโดยการออกแบบ
+  คำนำหน้า rule ID ของ core สงวนไว้และถูกปฏิเสธจากปลั๊กอินและกฎภายนอก
+  เพื่อกันการอ้างปลอม
 - **กฎภายนอกประจำ workspace** (อิงโฟลเดอร์ ศูนย์เครือข่าย) — ไดเรกทอรี
   `mjolnir-rules/` ติดกับเป้าสแกนโหลดกฎกำหนดเอง: ไฟล์ JSON ประกาศรูปแบบ
   regex (ไม่รันโค้ด) โมดูล `.mjs`/`.js` export `rules` (ความไว้วางใจ

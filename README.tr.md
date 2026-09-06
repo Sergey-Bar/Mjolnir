@@ -15,7 +15,7 @@ olarak nerede kırıldığını gösterir.
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | Türkçe | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-04.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-06.
 
 ```bash
 npx mjolnir-qa@latest
@@ -294,14 +294,14 @@ Toplam 20 Python kuralı (QA-PY-001…012 pytest hijyeni + QA-PY-101…108 Playw
 
 ### Ne kadarı ölçülmüş
 
-**99 kuraldan 74'ü, gerçek OSS koduna karşı ölçülmüş bir yanlış pozitif
+**99 kuraldan 76'sı, gerçek OSS koduna karşı ölçülmüş bir yanlış pozitif
 oranı taşıyor** (her biri için ≥ 10 elle sınıflandırılmış bulgu; bkz.
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Diğer 19'u yazarın tahminine göre
+[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Diğer 23'ü yazarın tahminine göre
 yayına giriyor. Her tarama alt bilgisi, _tetiklenen_ kuralların kaçının
 ölçüldüğünü söyler; `mjolnir rules --unmeasured` ölçülmeyenleri listeler;
 her kuralın `mjolnir explain` sayfası durumunu belirtir. Oranı çirkin
 olduğunda bile yayımlarız — QA-CS-103 %95 ile denetleniyor ve bu yüzden
-karantinada. O 78'i büyütmek, projenin süregelen işidir.
+karantinada. O sayıyı büyütmek, projenin süregelen işidir.
 
 ### Kural katmanları ve dil olgunluğu
 
@@ -454,14 +454,14 @@ Farklı sorun, farklı katman. AI incelemesi bir diff'teki şüpheli test
 değişikliğini fark edebilir; doğrulama sisteminin bütünüyle güvenilir
 olduğunu kanıtlamaz — ve yalnızca ona gösterdiğiniz diff'i görür.
 
-|                                              |  AI kod incelemesi (Copilot vb.)  |          **Mjölnir**          |
-| -------------------------------------------- | :-------------------------------: | :---------------------------: |
-| Tarama başına maliyet                        | Token (diff boyutuyla ölçeklenir) |   **Sıfır** (yerel, kurulu)   |
-| Tüm takımı + tüm CI yapılandırmalarını görür | Yalnızca gösterdiğiniz PR diff'i  |  **Her şey, her seferinde**   |
-| Belirleyici (aynı girdi → aynı çıktı)        |           ❌ (belirsiz)           |            **✅**             |
-| Aylardır uyuyan örüntüleri yakalar           |       Yalnızca bağlamdaysa        | **✅** (tüm dosyaları tarar)  |
-| Çalıştırmalar arasında bulguları hatırlar    |  ❌ (oturumlar arası bellek yok)  |   **✅** (baseline + diff)    |
-| İnsan tetiklemesi olmadan çalışır            |      PR veya prompt gerekir       | **✅** (CI kancası, 3 saniye) |
+|                                              |  AI kod incelemesi (Copilot vb.)  |                  **Mjölnir**                  |
+| -------------------------------------------- | :-------------------------------: | :-------------------------------------------: |
+| Tarama başına maliyet                        | Token (diff boyutuyla ölçeklenir) |           **Sıfır** (yerel, kurulu)           |
+| Tüm takımı + tüm CI yapılandırmalarını görür | Yalnızca gösterdiğiniz PR diff'i  |          **Her şey, her seferinde**           |
+| Belirleyici (aynı girdi → aynı çıktı)        |           ❌ (belirsiz)           |                    **✅**                     |
+| Aylardır uyuyan örüntüleri yakalar           |       Yalnızca bağlamdaysa        |         **✅** (tüm dosyaları tarar)          |
+| Çalıştırmalar arasında bulguları hatırlar    |  ❌ (oturumlar arası bellek yok)  |           **✅** (baseline + diff)            |
+| İnsan tetiklemesi olmadan çalışır            |      PR veya prompt gerekir       | **✅** (CI kancası, saniyeler içinde çalışır) |
 
 **İkisini de kullanın.** AI, hiçbir regex'in bulamayacağı nüansı, niyeti
 ve tasarım kusurlarını yakalar. Mjölnir, AI'nın «kasıtlı» göründükleri
@@ -585,11 +585,18 @@ kullanılmaz.
   yanlış pozitif oranı olan kurallar başlık katmanlarına girer (bkz.
   [Ne kadarı ölçülmüş](#ne-kadarı-ölçülmüş)); tarama alt bilgisi ve
   `mjolnir rules --unmeasured` hangisinin ne olduğunu söyler.
-- **Eklenti güveni** — eklentiler `"plugins"` altında bildirilen npm
-  paketleridir. **Sandbox yok**: eklenti kodu tam Node ayrıcalıklarıyla
-  çalışır; ESLint veya Vitest eklentileriyle aynı güven modeli. Çekirdek
+- **Eklenti güveni ve yürütme kapısı** — eklentiler `"plugins"` altında
+  bildirilen npm paketleridir; JS modülleri `mjolnir-rules/*.mjs`
+  içinde yaşar. **Sandbox yok**: eklenti kodu tam Node ayrıcalıklarıyla
+  çalışır; ESLint veya Vitest eklentileriyle aynı güven modeli. Bu
+  yüzden kod yürütme **her taramada opt-in**'dir: `--enable-plugins`
+  geçirin (veya `MJOLNIR_ENABLE_PLUGINS=1` ayarlayın), yoksa kaynaklar
+  YÜKLENMEZ — gürültülü bir stderr bildirimi atlananları tam olarak
+  listeler. Güvenilmeyen kodu taramak onu asla çalıştırmaz. JSON kural
+  bildirimleri (`mjolnir-rules/*.json`) etkilenmez: regex desenleri
+  bildirirler ve tasarımları gereği hiçbir kod çalıştırmazlar. Çekirdek
   kural kimliği önekleri rezerve edilmiştir ve kimlik taklidini önlemek
-  için eklentilerden reddedilir.
+  için eklentilerden ve dış kurallardan reddedilir.
 - **Workspace-yerel dış kurallar** (klasör tabanlı, sıfır ağ) — tarama
   hedefinin yanındaki bir `mjolnir-rules/` dizini özel kurallar yükler:
   JSON dosyaları regex örüntüleri bildirir (kod yürütülmez),

@@ -2,7 +2,7 @@
  * Syncs every hardcoded version literal in src/ to package.json's
  * version — the single source of truth. Used by
  * .github/workflows/release.yml so a release can never ship a stale one.
- * (tests/version-consistency.spec.ts keeps the literals honest locally.)
+ * (tests/contract/version-consistency.spec.ts keeps the literals honest locally.)
  *
  * Two surfaces carry a literal, both deliberately: SARIF's
  * `driver.version` (what GitHub Code Scanning displays) and cli.ts's

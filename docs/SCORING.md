@@ -56,6 +56,7 @@ version bump.
 
 | Score   | Verdict    |
 | ------- | ---------- |
+| 100     | FORGED     |
 | ≥ 80    | WORTHY     |
 | 50 – 79 | NEEDS WORK |
 | < 50    | UNWORTHY   |

@@ -15,7 +15,7 @@ exactamente dónde se rompe la confianza.
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | Español | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-04.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-06.
 
 ```bash
 npx mjolnir-qa@latest
@@ -299,14 +299,14 @@ ese es el cortafuegos de falsos positivos.
 
 ### Cuánto está medido
 
-**74 de 99 reglas llevan una tasa de falsos positivos medida contra
+**76 de 99 reglas llevan una tasa de falsos positivos medida contra
 código OSS real** (≥ 10 hallazgos clasificados a mano cada una; ver
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Las otras 19 salen sobre la
+[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Las otras 23 salen sobre la
 estimación del autor. Cada pie de escaneo te dice cuántas de las reglas
 _que se dispararon_ están medidas; `mjolnir rules --unmeasured` lista
 las que no; la página `mjolnir explain` de cada regla declara su
 estado. Publicamos la tasa aunque sea fea — QA-CS-103 audita al 95 % y
-está en cuarentena por ello. Hacer crecer ese 78 es el trabajo continuo
+está en cuarentena por ello. Hacer crecer esa cifra es el trabajo continuo
 del proyecto.
 
 ### Tiers de reglas y madurez por lenguaje
@@ -461,14 +461,14 @@ cambio de test sospechoso en un diff; no demuestra que el sistema de
 verificación en su conjunto sea confiable — y solo ve el diff que le
 muestras.
 
-|                                             | Revisión de código con IA (Copilot, etc.) |             **Mjölnir**             |
-| ------------------------------------------- | :---------------------------------------: | :---------------------------------: |
-| Coste por escaneo                           |  Tokens (escala con el tamaño del diff)   |     **Cero** (local, instalado)     |
-| Ve toda la suite + todas las configs de CI  |    Solo el diff de PR que le muestras     |         **Todo, cada vez**          |
-| Determinista (misma entrada → misma salida) |           ❌ (no determinista)            |               **✅**                |
-| Detecta patrones dormidos durante meses     |        Solo si está en el contexto        | **✅** (escanea todos los archivos) |
-| Recuerda hallazgos entre ejecuciones        |      ❌ (sin memoria entre sesiones)      |      **✅** (baseline + diff)       |
-| Corre sin disparador humano                 |        Necesita una PR o un prompt        |   **✅** (hook de CI, 3 segundos)   |
+|                                             | Revisión de código con IA (Copilot, etc.) |              **Mjölnir**               |
+| ------------------------------------------- | :---------------------------------------: | :------------------------------------: |
+| Coste por escaneo                           |  Tokens (escala con el tamaño del diff)   |      **Cero** (local, instalado)       |
+| Ve toda la suite + todas las configs de CI  |    Solo el diff de PR que le muestras     |           **Todo, cada vez**           |
+| Determinista (misma entrada → misma salida) |           ❌ (no determinista)            |                 **✅**                 |
+| Detecta patrones dormidos durante meses     |        Solo si está en el contexto        |  **✅** (escanea todos los archivos)   |
+| Recuerda hallazgos entre ejecuciones        |      ❌ (sin memoria entre sesiones)      |        **✅** (baseline + diff)        |
+| Corre sin disparador humano                 |        Necesita una PR o un prompt        | **✅** (hook de CI, corre en segundos) |
 
 **Usa ambos.** La IA capta el matiz, la intención y los defectos de
 diseño que ninguna regex encuentra. Mjölnir capta los patrones
@@ -594,11 +594,20 @@ reutilizan.
   código OSS real salen en los tiers titulares (ver
   [Cuánto está medido](#cuánto-está-medido)); el pie del escaneo y
   `mjolnir rules --unmeasured` te dicen cuál es cuál.
-- **Confianza en plugins** — los plugins son paquetes npm declarados
-  bajo `"plugins"`. **No hay sandbox**: el código del plugin corre con
+- **Confianza en plugins y puerta de ejecución** — los plugins son
+  paquetes npm declarados
+  bajo `"plugins"`; los módulos JS viven en `mjolnir-rules/*.mjs`.
+  **No hay sandbox**: el código del plugin corre con
   todos los privilegios de Node, el mismo modelo de confianza que los
-  plugins de ESLint o Vitest. Los prefijos de IDs de reglas core están
-  reservados y se rechazan de los plugins para evitar suplantación.
+  plugins de ESLint o Vitest. Por eso, la ejecución de código es
+  **opt-in en cada escaneo**: pasa `--enable-plugins` (o define
+  `MJOLNIR_ENABLE_PLUGINS=1`), o las fuentes NO se cargan — un aviso
+  ruidoso en stderr lista exactamente qué se omitió. Escanear código
+  no confiable nunca lo ejecuta. Los manifiestos de reglas JSON
+  (`mjolnir-rules/*.json`) no se ven afectados: declaran patrones regex
+  y por diseño no ejecutan código. Los prefijos de IDs de reglas core
+  están reservados y se rechazan de plugins y reglas externas para
+  evitar suplantación.
 - **Reglas externas locales al workspace** (basadas en carpeta, cero
   red) — un directorio `mjolnir-rules/` junto al objetivo del escaneo
   carga reglas personalizadas: archivos JSON declaran patrones regex

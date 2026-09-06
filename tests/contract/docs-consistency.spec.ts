@@ -513,6 +513,82 @@ describe("README alt text matches the verdict the SVG assets actually render", (
   });
 });
 
+describe("product surfaces use the canonical vocabulary (docs/TERMINOLOGY.md)", () => {
+  // Product-Experience Master Plan Phase 2: Mjölnir's surfaces must speak
+  // one vocabulary — "finding", "worthiness score", the locked verdict
+  // words. The spec-era synonyms ("trust score", "bug score", findings
+  // called "issues") erode trust exactly like any other cross-surface
+  // drift: a reader comparing the README, the site and the terminal
+  // output has no way to know the words mean the same thing. The
+  // anti-vocabulary and its tracker-sense carve-out live in
+  // docs/TERMINOLOGY.md; this test enforces it (Law 7: one concept, one
+  // word).
+  const SURFACES: Array<[string, string]> = [
+    ["README.md", README],
+    ["CONTRIBUTING.md", readFileSync(join(ROOT, "CONTRIBUTING.md"), "utf8")],
+    ["docs/README.md", readFileSync(join(ROOT, "docs", "README.md"), "utf8")],
+  ];
+  // TERMINOLOGY.md itself is exempt from both checks below: it must be
+  // able to *name* the forbidden terms to define them (the dictionary
+  // is the spec the other surfaces are checked against).
+  // Hand-written site pages are product surfaces too; generated pages
+  // (site/rules/) inherit their wording from the registry. The CLI's
+  // own user-visible strings are swept by tests/cli/terminology.spec.ts.
+  for (const dir of ["site/guide", "site/reference"]) {
+    for (const f of readdirSync(join(ROOT, dir)).filter((f) =>
+      f.endsWith(".md"),
+    )) {
+      SURFACES.push([`${dir}/${f}`, readFileSync(join(ROOT, dir, f), "utf8")]);
+    }
+  }
+  // docs/*.md hand-written pages (generated ones — docs/rules/,
+  // RULE-CAPABILITY-MATRIX, machine-contract — regenerate from source
+  // strings covered by tests/cli/terminology.spec.ts).
+  for (const f of [
+    "SCORING.md",
+    "VERSIONING.md",
+    "RULE-LIFECYCLE.md",
+    "PUBLISHING.md",
+    "SARIF-INTEGRATION.md",
+    "COUNT-LOCK.md",
+    "FLAKE-LEDGER.md",
+  ]) {
+    SURFACES.push([`docs/${f}`, readFileSync(join(ROOT, "docs", f), "utf8")]);
+  }
+
+  it("finds product surfaces to check (sanity)", () => {
+    expect(SURFACES.length).toBeGreaterThan(10);
+  });
+
+  it.each(SURFACES.map(([name, text]) => [name, text]))(
+    "%s: no spec-era synonym terms (trust score / bug score)",
+    (name, text) => {
+      expect(text, `${name} uses a spec-era synonym`).not.toMatch(
+        /\btrust\s+score\b|\bbug\s+score\b/i,
+      );
+    },
+  );
+
+  it.each(SURFACES.map(([name, text]) => [name, text]))(
+    "%s: findings are never called issues (tracker senses allowed)",
+    (name, text) => {
+      // The finding-vocabulary senses of "issue" — the words a reader
+      // would read as "what Mjölnir detected" — are forbidden. The
+      // GitHub-tracker senses (open/track/file an issue, issue
+      // tracker/form/template/routing/triage, good-first-issue, the
+      // issues URL) are legitimate and stay.
+      const findingSense =
+        /\b(?:no\s+|zero\s+|new\s+|an?\s+|reported\s+|detected\s+|found\s+)?issues?\s+(?:found|in|with|were|was|remain|reported|detected|introduced|resolved)\b|\bissues?\s+(?:the|your|this|a|an)\s+(?:suite|repo|scan|report|code|PR|branch)\b/i;
+      const hits = [...text.matchAll(new RegExp(findingSense.source, "gi"))];
+      expect(
+        hits.map((m) => m[0]),
+        `${name} uses "issue" for what Mjölnir detects — call it a ` +
+          `finding (docs/TERMINOLOGY.md anti-vocabulary)`,
+      ).toEqual([]);
+    },
+  );
+});
+
 describe("stability-policy docs exist and link each other (Beta-to-Stable M1)", () => {
   // docs/VERSIONING.md, SUPPORT.md and CONTRIBUTING.md's governance
   // section are the 1.0 contract's prose home. Each promises the others

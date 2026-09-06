@@ -66,7 +66,7 @@ describe("renderPrComment — rendering against fixture scan results", () => {
 
   it("renders a clean-scan comment when there are no findings", () => {
     const body = renderPrComment(scanResult([]));
-    expect(body).toContain("No new issues found");
+    expect(body).toContain("No new findings");
   });
 
   it("renders every finding with rule id, file:line, message, and fix", () => {

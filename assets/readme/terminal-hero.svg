@@ -61,7 +61,7 @@
     <text x="22" y="890.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(138,180,216)">▚ FINDINGS</tspan></text>
 
     <text x="22" y="928.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(208,69,59)">✗</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(208,69,59)">ERROR  </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-CI-009 · .github/workflows/ci.yml:10</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E2 · deterministic · measured FP 0% · n=10]</tspan></text>
-    <text x="22" y="947.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">Job `test` pipes the test command into another tool without `set</tspan></text>
+    <text x="22" y="947.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Finding </tspan><tspan fill="#d7d3c8">Job `test` pipes the test command into another tool without `set</tspan></text>
     <text x="22" y="966.0" xml:space="preserve"><tspan fill="#d7d3c8">            -o pipefail`.</tspan></text>
     <text x="22" y="985.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">FALSE-GREEN — In a shell pipeline only the last command's exit</tspan></text>
     <text x="22" y="1004.0" xml:space="preserve"><tspan fill="#d7d3c8">            code counts — a failing test run is masked by the downstream tool</tspan></text>
@@ -72,7 +72,7 @@
     <text x="22" y="1099.0" xml:space="preserve"><tspan fill="#d7d3c8">            the score should recover by 8.</tspan></text>
 
     <text x="22" y="1137.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(208,69,59)">✗</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(208,69,59)">ERROR  </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-CI-009 · .github/workflows/ci.yml:10</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E2 · deterministic · measured FP 0% · n=10]</tspan></text>
-    <text x="22" y="1156.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">Job `deploy-smoke` sequences commands with `; ` after the test</tspan></text>
+    <text x="22" y="1156.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Finding </tspan><tspan fill="#d7d3c8">Job `deploy-smoke` sequences commands with `; ` after the test</tspan></text>
     <text x="22" y="1175.0" xml:space="preserve"><tspan fill="#d7d3c8">            command — the test result does not fail the step.</tspan></text>
     <text x="22" y="1194.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">FALSE-GREEN — With `;` sequencing the step's exit status comes</tspan></text>
     <text x="22" y="1213.0" xml:space="preserve"><tspan fill="#d7d3c8">            from the last command only, so failed tests still yield a green</tspan></text>
@@ -82,7 +82,7 @@
     <text x="22" y="1289.0" xml:space="preserve"><tspan fill="#d7d3c8">            the score should recover by 8.</tspan></text>
 
     <text x="22" y="1327.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-CI-010 · .github/workflows/ci.yml:21</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · measured FP 10% · n=10]</tspan></text>
-    <text x="22" y="1346.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">Job `deploy-smoke` runs tests but its `if:` condition skips it on</tspan></text>
+    <text x="22" y="1346.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Finding </tspan><tspan fill="#d7d3c8">Job `deploy-smoke` runs tests but its `if:` condition skips it on</tspan></text>
     <text x="22" y="1365.0" xml:space="preserve"><tspan fill="#d7d3c8">            pull requests.</tspan></text>
     <text x="22" y="1384.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">FALSE-GREEN — If this job is a required check, PRs can satisfy it</tspan></text>
     <text x="22" y="1403.0" xml:space="preserve"><tspan fill="#d7d3c8">            while zero tests executed — the green checkmark verifies nothing.</tspan></text>
@@ -92,7 +92,7 @@
     <text x="22" y="1479.0" xml:space="preserve"><tspan fill="#d7d3c8">            appear.</tspan></text>
 
     <text x="22" y="1517.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(208,69,59)">✗</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(208,69,59)">ERROR  </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-CI-009 · .github/workflows/ci.yml:26</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E2 · deterministic · measured FP 0% · n=10]</tspan></text>
-    <text x="22" y="1536.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">Job `deploy-smoke` pipes the test command into another tool</tspan></text>
+    <text x="22" y="1536.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Finding </tspan><tspan fill="#d7d3c8">Job `deploy-smoke` pipes the test command into another tool</tspan></text>
     <text x="22" y="1555.0" xml:space="preserve"><tspan fill="#d7d3c8">            without `set -o pipefail`.</tspan></text>
     <text x="22" y="1574.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">FALSE-GREEN — In a shell pipeline only the last command's exit</tspan></text>
     <text x="22" y="1593.0" xml:space="preserve"><tspan fill="#d7d3c8">            code counts — a failing test run is masked by the downstream tool</tspan></text>
@@ -103,7 +103,7 @@
     <text x="22" y="1688.0" xml:space="preserve"><tspan fill="#d7d3c8">            the score should recover by 8.</tspan></text>
 
     <text x="22" y="1726.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-CI-001 · .github/workflows/ci.yml:27</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · measured FP 11% · n=19]</tspan></text>
-    <text x="22" y="1745.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">Job `security-scan` runs a verification gate under</tspan></text>
+    <text x="22" y="1745.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Finding </tspan><tspan fill="#d7d3c8">Job `security-scan` runs a verification gate under</tspan></text>
     <text x="22" y="1764.0" xml:space="preserve"><tspan fill="#d7d3c8">            `continue-on-error: true`.</tspan></text>
     <text x="22" y="1783.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">FALSE-GREEN — This job can fail every day and CI will still show</tspan></text>
     <text x="22" y="1802.0" xml:space="preserve"><tspan fill="#d7d3c8">            green. The checkmark on this workflow cannot be trusted.</tspan></text>
@@ -113,7 +113,7 @@
     <text x="22" y="1878.0" xml:space="preserve"><tspan fill="#d7d3c8">            appear.</tspan></text>
 
     <text x="22" y="1916.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-145 · e2e/checkout.spec.ts:1</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · measured FP 50% · n=40 · trust L3 · runtime: file executed]</tspan></text>
-    <text x="22" y="1935.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">UI-interacting spec file contains no accessibility assertions.</tspan></text>
+    <text x="22" y="1935.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Finding </tspan><tspan fill="#d7d3c8">UI-interacting spec file contains no accessibility assertions.</tspan></text>
     <text x="22" y="1954.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">HYGIENE — Suites that drive the UI but never assert accessibility</tspan></text>
     <text x="22" y="1973.0" xml:space="preserve"><tspan fill="#d7d3c8">            let WCAG regressions through every PR; catching them at the point</tspan></text>
     <text x="22" y="1992.0" xml:space="preserve"><tspan fill="#d7d3c8">            of interaction is far cheaper than a retrofit audit.</tspan></text>
@@ -124,7 +124,7 @@
     <text x="22" y="2087.0" xml:space="preserve"><tspan fill="#d7d3c8">            appear.</tspan></text>
 
     <text x="22" y="2125.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-146 · e2e/checkout.spec.ts:5</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · measured FP 12% · n=17 · trust L3 · runtime: file executed]</tspan></text>
-    <text x="22" y="2144.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">CSS/XPath string selector where a normalized locator is expected.</tspan></text>
+    <text x="22" y="2144.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Finding </tspan><tspan fill="#d7d3c8">CSS/XPath string selector where a normalized locator is expected.</tspan></text>
     <text x="22" y="2163.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">HYGIENE — String CSS/XPath selectors couple the test to markup the</tspan></text>
     <text x="22" y="2182.0" xml:space="preserve"><tspan fill="#d7d3c8">            user never sees — they break on any refactor and can silently</tspan></text>
     <text x="22" y="2201.0" xml:space="preserve"><tspan fill="#d7d3c8">            select the wrong element after a redesign.</tspan></text>
@@ -136,7 +136,7 @@
     <text x="22" y="2315.0" xml:space="preserve"><tspan fill="#d7d3c8">            appear.</tspan></text>
 
     <text x="22" y="2353.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-004 · e2e/checkout.spec.ts:5</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · measured FP 43% · n=14 · trust L3 · runtime: file executed]</tspan></text>
-    <text x="22" y="2372.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">Brittle multi-class CSS selector: `locator(".btn.btn-primary &gt;</tspan></text>
+    <text x="22" y="2372.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Finding </tspan><tspan fill="#d7d3c8">Brittle multi-class CSS selector: `locator(".btn.btn-primary &gt;</tspan></text>
     <text x="22" y="2391.0" xml:space="preserve"><tspan fill="#d7d3c8">            div:nth-child(2)")`.</tspan></text>
     <text x="22" y="2410.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">HYGIENE — Structural selectors break on any DOM refactor and fail</tspan></text>
     <text x="22" y="2429.0" xml:space="preserve"><tspan fill="#d7d3c8">            without telling you which behavior regressed.</tspan></text>
@@ -146,7 +146,7 @@
     <text x="22" y="2505.0" xml:space="preserve"><tspan fill="#d7d3c8">            appear.</tspan></text>
 
     <text x="22" y="2543.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(208,69,59)">✗</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(208,69,59)">ERROR  </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-101 · e2e/checkout.spec.ts:6</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E2 · deterministic · measured FP 0% · n=20 · trust L3 · runtime: file executed]</tspan></text>
-    <text x="22" y="2562.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">`waitForTimeout()` hard sleep.</tspan></text>
+    <text x="22" y="2562.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Finding </tspan><tspan fill="#d7d3c8">`waitForTimeout()` hard sleep.</tspan></text>
     <text x="22" y="2581.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">FLAKY-RISK — Fixed waits either wait too long (slow suite) or too</tspan></text>
     <text x="22" y="2600.0" xml:space="preserve"><tspan fill="#d7d3c8">            little (flaky on slow machines). They encode hope, not</tspan></text>
     <text x="22" y="2619.0" xml:space="preserve"><tspan fill="#d7d3c8">            synchronization.</tspan></text>
@@ -156,7 +156,7 @@
     <text x="22" y="2695.0" xml:space="preserve"><tspan fill="#d7d3c8">            the score should recover by 8.</tspan></text>
 
     <text x="22" y="2733.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-146 · e2e/checkout.spec.ts:13</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · measured FP 12% · n=17 · trust L3 · runtime: file executed]</tspan></text>
-    <text x="22" y="2752.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">CSS/XPath string selector where a normalized locator is expected.</tspan></text>
+    <text x="22" y="2752.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Finding </tspan><tspan fill="#d7d3c8">CSS/XPath string selector where a normalized locator is expected.</tspan></text>
     <text x="22" y="2771.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">HYGIENE — String CSS/XPath selectors couple the test to markup the</tspan></text>
     <text x="22" y="2790.0" xml:space="preserve"><tspan fill="#d7d3c8">            user never sees — they break on any refactor and can silently</tspan></text>
     <text x="22" y="2809.0" xml:space="preserve"><tspan fill="#d7d3c8">            select the wrong element after a redesign.</tspan></text>

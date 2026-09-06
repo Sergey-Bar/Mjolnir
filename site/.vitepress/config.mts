@@ -29,6 +29,7 @@ const SIDEBAR = [
     items: [
       { text: "CLI reference", link: "/reference/cli" },
       { text: "Exit codes & contracts", link: "/reference/exit-codes" },
+      { text: "Terminology", link: "/reference/terminology" },
       { text: "False-positive audit", link: "/reference/fp-audit" },
       { text: "Rule lifecycle", link: "/reference/rule-lifecycle" },
       { text: "SARIF integration", link: "/reference/sarif" },

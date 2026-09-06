@@ -14,7 +14,7 @@ same mark, same palette, same type, same verdict colours.
 | [`icon.png`](icon.png)                                                      | downscaled from `mark.png` (512 px)    | npm, GitHub social preview, tooling. Recognisable without the wordmark.          |
 | `site/public/favicon-32.png` · `favicon-16.png`                             | downscaled from `mark.png`             | browser tab icon.                                                                |
 | `site/public/apple-touch-icon.png`                                          | 180 px                                 | iOS home screen, site nav mark.                                                  |
-| `site/public/social-card.png`                                               | 1200×630, `logo.png` on `--mj-ink-950` | link previews (og:image / twitter:image).                                        |
+| `site/public/social-card.jpg`                                               | 1200×630, `logo.png` on `--mj-ink-950` | link previews (og:image / twitter:image).                                        |
 
 The downscaled set is produced from the two masters by simple canvas
 resize (`ctx.drawImage`) at the target width, keeping the aspect ratio —
@@ -24,10 +24,12 @@ resize (`ctx.drawImage`) at the target width, keeping the aspect ratio —
 
 A Norse war-hammer seen head-on: a peaked, tiered steel head engraved with
 Vegvísir knotwork, a gold-scroll collar, a wrapped haft with three gold
-studs, and an openwork gold foot ending in a diamond pommel. An aurora and
-gold lightning frame it in the full lockup.
+studs, and an openwork gold foot ending in a diamond pommel. An aurora
+frames it in the full lockup.
 
-Use one mark, calmly. Do not add extra hammers, bolts or knotwork.
+Use one mark, calmly. Do not add extra hammers, bolts, lightning or
+knotwork in product surfaces; the master mark's own engraving is
+grandfathered.
 
 ## Colour system
 
@@ -99,3 +101,11 @@ body stays at `line-height: 1.7`. Never set body copy in the display face.
 - Clear space around the lockup ≥ the height of the hammer head.
 - Place the mark on `--mj-ink-900` or darker, or on white. Never recolour it.
 - Minimum lockup width ≈ 180 px; below that use the hammer mark alone.
+- No lightning bolts and no additional Norse ornaments in product
+  surfaces (site, README, terminal, reports). The master mark's own
+  engraving is grandfathered; everything drawn in code stays calm —
+  aurora, forge glow and the ordered runefield are the only hero
+  atmosphere, and the terminal state runes are functional (non-color
+  state communication), not decoration.
+- The terminal NORSE palette names (`trusted`, `forged`, …) are internal
+  token names for the ScoreState bands, not user-facing Norse theming.

@@ -336,6 +336,7 @@ discounted numbers the score uses — no black box. Full method:
 
 | Score   | Verdict          |
 | ------- | ---------------- |
+| 100     | ⚡ **FORGED**    |
 | ≥ 80    | ✓ **WORTHY**     |
 | 50 – 79 | ⚠ **NEEDS WORK** |
 | < 50    | ✖ **UNWORTHY**   |
@@ -436,14 +437,14 @@ Different problem, different layer. AI review can spot a suspicious test
 change in a diff; it does not prove the verification system as a whole is
 trustworthy — and it only sees the diff you show it.
 
-|                                       | AI code review (Copilot, etc.) |         **Mjölnir**         |
-| ------------------------------------- | :----------------------------: | :-------------------------: |
-| Cost per scan                         | Tokens (scales with diff size) | **Zero** (local, installed) |
-| Sees the whole suite + all CI configs |  Only the PR diff you show it  | **Everything, every time**  |
-| Deterministic (same input → same out) |     ❌ (non-deterministic)     |           **✅**            |
-| Catches patterns dormant for months   |  Only if it's in the context   |  **✅** (scans all files)   |
-| Remembers findings between runs       | ❌ (no memory across sessions) |  **✅** (baseline + diff)   |
-| Runs without human triggering         |      Needs a PR or prompt      | **✅** (CI hook, 3 seconds) |
+|                                       | AI code review (Copilot, etc.) |            **Mjölnir**            |
+| ------------------------------------- | :----------------------------: | :-------------------------------: |
+| Cost per scan                         | Tokens (scales with diff size) |    **Zero** (local, installed)    |
+| Sees the whole suite + all CI configs |  Only the PR diff you show it  |    **Everything, every time**     |
+| Deterministic (same input → same out) |     ❌ (non-deterministic)     |              **✅**               |
+| Catches patterns dormant for months   |  Only if it's in the context   |     **✅** (scans all files)      |
+| Remembers findings between runs       | ❌ (no memory across sessions) |     **✅** (baseline + diff)      |
+| Runs without human triggering         |      Needs a PR or prompt      | **✅** (CI hook, runs in seconds) |
 
 **Use both.** AI catches nuance, intent, and design flaws no regex can
 find. Mjölnir catches the structural patterns AI overlooks because they
@@ -623,6 +624,7 @@ mjolnir/
 | Document                                               | What's in it                                      |
 | ------------------------------------------------------ | ------------------------------------------------- |
 | [docs/SCORING.md](docs/SCORING.md)                     | Score normalization + evidence weighting          |
+| [docs/TERMINOLOGY.md](docs/TERMINOLOGY.md)             | Canonical vocabulary — one word per concept       |
 | [docs/FP-AUDIT.md](docs/FP-AUDIT.md)                   | Measured false-positive rates + method            |
 | [docs/RULE-LIFECYCLE.md](docs/RULE-LIFECYCLE.md)       | Rule states, suppression, deprecation             |
 | [docs/VERSIONING.md](docs/VERSIONING.md)               | Semver policy, frozen surfaces, deprecation cycle |
