@@ -863,6 +863,13 @@ export async function runScan(
   // advisory by construction (info + E0) no matter what its rule
   // declares, so an unproven rule can never gate CI or deduct score.
   enforceTierPolicy(findings, tierByRuleId);
+  // Agent-handoff plan §5.1: every emitted finding carries a remediation
+  // group id. Current strategy: one rule = one remediation group, so
+  // fixGroupId = ruleId — an implementation choice, NOT a semantic
+  // promise (consumers must not rely on the equality permanently).
+  for (const f of findings) {
+    f.fixGroupId = f.ruleId;
+  }
   // Plan §16 — Runtime Evidence: when a real run report sits next to
   // the scan target (the same ingestion `mjolnir forensics` uses:
   // `mjolnir.report.json` or a `test-results/` directory), findings get
