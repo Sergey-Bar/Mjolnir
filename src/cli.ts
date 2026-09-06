@@ -12,12 +12,10 @@ import process from "node:process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import {
-  compareFindings,
   RULE_CATEGORIES,
   SCHEMA_VERSION,
   type Finding,
   type RuleCategory,
-  type ScanResult,
   type Severity,
   isAdvisoryFinding,
 } from "./types.js";
@@ -50,10 +48,6 @@ import { runSummaryCommand } from "./commands/summary.js";
 import { runWhyCommand } from "./commands/why.js";
 import { runHandoffCommand } from "./commands/handoff.js";
 import { runInstallCommand } from "./commands/install-agents.js";
-import {
-  computeChangedScope,
-  filterToChanged,
-} from "./scope/changed.js";
 import { ciInstall, type GateLevel } from "./integrations/ci-install.js";
 import { runForensics } from "./forensics/run.js";
 import { renderTriage, renderTriageMd } from "./forensics/triage.js";

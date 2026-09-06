@@ -148,7 +148,6 @@ scan`. Unknown categories are a usage error (exit 10).
   unknown top-level config keys warn; baseline `schemaVersion` is
   checked (future versions degrade to "no baseline" with a warning).
 
-
 ## [0.5.3] — 2026-09-05
 
 ### Terminal + CI UX Overhaul (plan 1788579907109)

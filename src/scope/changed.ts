@@ -297,8 +297,5 @@ export function computeStagedFiles(root: string): string[] | null {
   if (!existsSync(join(root, ".git"))) return null;
   const raw = runGit(root, ["diff", "--cached", "--name-only", "-z"]);
   if (raw === null) return null;
-  return (raw as string)
-    .split("\0")
-    .map((s: string) => s.trim())
-    .filter((s: string) => s.length > 0);
+  return raw.split("\0").filter((s) => s.length > 0);
 }
