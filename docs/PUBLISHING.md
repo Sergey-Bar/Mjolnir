@@ -1,9 +1,66 @@
 # Publishing Runbook
 
-Covers: the release checklist for every version bump, and the one-time
-account-level setup required before `npm publish` can go live.
+Covers: the automated release path (default — merge to `main` and the
+release happens), the manual release checklist for rc versions and
+retries, and the one-time account-level setup required before
+`npm publish` can go live.
 
-## Release checklist (every version)
+## Automated release (default path)
+
+Every merge to `main` produces exactly one npm release — major, minor
+or patch, no gaps, no manual `npm version` / `git push --follow-tags`.
+`release.yml` runs two jobs in sequence (one file, because the
+npmjs.com Trusted Publisher matches the workflow **filename**; a second
+workflow file would fail OIDC with `ENEEDAUTH`):
+
+1. **`version`** — computes the bump and cuts the release:
+   - **Label-driven with patch default.** PR labels `release:major` /
+     `release:minor` override the default; **no label = patch**;
+     `release:skip` excludes that PR's commits. Direct pushes to
+     `main` without a PR are patch.
+   - **Batch behavior.** Labels are collected across EVERY commit since
+     the last tag and the highest bump wins — if three PRs merge
+     between releases and one carries `release:minor`, the single
+     release cut by the last of them is a minor.
+   - **Changelog.** `scripts/release-changelog.mjs` merges every
+     `## [Unreleased] — …` section under the new
+     `## [X.Y.Z] — date` heading (hand-curated content stays
+     authoritative). No Unreleased sections → a minimal
+     `### Changes since vX` list is generated from merged PR titles —
+     a version bump with no changelog record remains forbidden.
+   - The job commits `chore(release): vX.Y.Z` as
+     `mjolnir-release-bot`, tags it, and pushes both; the `release`
+     job then publishes from that tag.
+2. **`release`** — the existing publish pipeline, byte-identical:
+   full gate → registry duplicate check → fresh-install gate → publish
+   (OIDC, provenance) → registry poll → GitHub Release.
+
+Guardrails and failure modes:
+
+| Symptom                                             | Behavior                                                                                                                |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| The push IS the bot's own bump commit (loop risk)   | Loop guard: HEAD already tagged `v<package.json version>` → the version job exits with `skip=true`, nothing re-releases |
+| PR subject lacks `(#N)` (direct push)               | Patch default + `::warning::` in the run log                                                                            |
+| `gh` label lookup fails (API blip)                  | Patch default + `::warning::` — a lookup failure never fails or drops a release                                         |
+| Every commit in the range is labeled `release:skip` | Version job succeeds with a `::notice::`, no tag cut, no release                                                        |
+| Version job fails (dirty tree, bad transform)       | Release job is skipped — no publish, no half state; the next main-branch push retries the whole chain                   |
+| Two main-push runs race                             | Serialized by the `release-refs/heads/main` concurrency group; the registry duplicate-skip absorbs any remaining race   |
+| Version already on npm (re-run / dispatch)          | Publish skipped, verification still runs (existing behavior)                                                            |
+
+So the default contribution flow is: **add a label → merge → done.**
+Verify from the registry, not the green tick:
+
+```bash
+npm view mjolnir-qa version      # must print the new version
+npm audit signatures             # provenance attestation present
+```
+
+## Manual release checklist (rc and retries)
+
+The checklist below is the **manual/rc flow** — the automated path
+above replaced it for ordinary merges to `main`. Use it for release
+candidates (the `next` dist-tag flow) and for anything else the
+automation must not decide.
 
 1. **Version bump** — `npm version patch|minor|major`. This is the
    single source of truth for the version (per Master-Stabilization-Plan
@@ -94,13 +151,14 @@ abandoned, `npm deprecate mjolnir-qa@1.0.0-rc.1 "superseded by …"`.
 
 Symptoms seen from outside, causes, and the fix for each:
 
-| Symptom                                                                   | Cause                                                                                                                                   | Fix                                                                                                                                                                                                                                  |
-| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `OIDC token exchange error - package not found` / `ENEEDAUTH` on publish  | npmjs.com trusted-publisher config does not match this run's OIDC claims (case-sensitive org, workflow filename, non-empty Environment) | Correct the Trusted Publisher per "One-time setup" below; re-run via `gh workflow run release.yml -f tag=vX.Y.Z`                                                                                                                     |
-| Publish succeeded but the poll step fails for the full 60s                | Registry read lag beyond the poll window, or the version landed under an unexpected dist-tag                                            | Check `npm view mjolnir-qa@<version>` and `npm view mjolnir-qa dist-tags`; if it is live, re-run the workflow — the duplicate publish is skipped and the poll re-verifies. If it never appears, treat as a failed publish and re-tag |
-| GitHub Release exists but `npm i` 404s                                    | Should be impossible since the 2026-08-30 ordering fix (publish → poll → Release). If seen: the Release lies                            | Follow the rollback policy below and open a tracking issue — this is a P0 against the release pipeline itself                                                                                                                        |
-| `E403` "cannot publish over the previously published version" on a re-run | The version is already live — expected on workflow_dispatch re-runs                                                                     | Nothing to fix; the job skips publish and proceeds to verification                                                                                                                                                                   |
-| Fresh-install gate fails (`tests/integrations/registry-install.spec.ts`)  | The packed tarball is broken (missing files, bad bin) — the gate ran before anything was published                                      | Do NOT publish. Fix the packaging issue, cut a new tag                                                                                                                                                                               |
+| Symptom                                                                           | Cause                                                                                                                                                                                                         | Fix                                                                                                                                                                                                                                                                                          |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `OIDC token exchange error - package not found` / `ENEEDAUTH` on publish          | npmjs.com trusted-publisher config does not match this run's OIDC claims (case-sensitive org, workflow filename, non-empty Environment)                                                                       | Correct the Trusted Publisher per "One-time setup" below; re-run via `gh workflow run release.yml -f tag=vX.Y.Z`                                                                                                                                                                             |
+| Publish succeeded but the poll step fails for the full 60s                        | Registry read lag beyond the poll window, or the version landed under an unexpected dist-tag                                                                                                                  | Check `npm view mjolnir-qa@<version>` and `npm view mjolnir-qa dist-tags`; if it is live, re-run the workflow — the duplicate publish is skipped and the poll re-verifies. If it never appears, treat as a failed publish and re-tag                                                         |
+| GitHub Release exists but `npm i` 404s                                            | Should be impossible since the 2026-08-30 ordering fix (publish → poll → Release). If seen: the Release lies                                                                                                  | Follow the rollback policy below and open a tracking issue — this is a P0 against the release pipeline itself                                                                                                                                                                                |
+| `E403` "cannot publish over the previously published version" on a re-run         | The version is already live — expected on workflow_dispatch re-runs                                                                                                                                           | Nothing to fix; the job skips publish and proceeds to verification                                                                                                                                                                                                                           |
+| Fresh-install gate fails (`tests/integrations/registry-install.spec.ts`)          | The packed tarball is broken (missing files, bad bin) — the gate ran before anything was published                                                                                                            | Do NOT publish. Fix the packaging issue, cut a new tag                                                                                                                                                                                                                                       |
+| Fresh-install gate fails with `npm pack --json produced no entry with a filename` | A new npm major changed `pack --json`'s output shape — npm 12.0 turned the array into an object keyed by package name (hit by the v0.5.1 auto-release, 2026-09-05: tag cut, publish stopped, nothing shipped) | Fixed by the shape-tolerant parser (`tests/helpers/npm-pack-json.ts`); the release toolchain is pinned to `npm@11` so majors reach the publish path only as deliberate verified changes. Merge the fix — the next auto-release cuts the next version; never rewrite the failed version's tag |
 
 ## Rollback policy: deprecate, never unpublish
 
@@ -140,8 +198,15 @@ publishing with a SLSA provenance attestation (`npm audit signatures`).
 - Version 0.4.0 was published **manually** (no `v0.4.0` git tag; npm
   records its `gitHead` as `7b7a61a`). It shipped a POSIX-broken bin —
   superseded by 0.5.0.
-- Every release from here is `git push --follow-tags` and nothing else.
+- Since the 2026-09 auto-release landing, every merge to `main`
+  releases by itself (see "Automated release (default path)" above);
+  `git push --follow-tags` remains the manual/rc path.
   No `NODE_AUTH_TOKEN` exists anywhere — OIDC replaces it.
+- Version 0.5.1 was **tagged by the auto-release but never published**
+  (2026-09-05): its release run's fresh-install gate caught npm 12's
+  `pack --json` output-shape change and stopped the publish exactly as
+  designed — no Release ever advertised it. The tag stays (never
+  rewrite tags); npm's next version is the first one after the repair.
 
 ### What was wrong before 0.5.0
 

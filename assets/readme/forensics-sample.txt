@@ -1,4 +1,4 @@
-▚▞ FLAKINESS LEADERBOARD
+  ▚ FLAKINESS LEADERBOARD
 
 3 tests · 1 failed · 1 flaky · 1 retried
 

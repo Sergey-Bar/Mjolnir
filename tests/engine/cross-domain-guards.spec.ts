@@ -93,24 +93,30 @@ describe("tree-sitter-ast — concurrency slot + dispose contract", () => {
 // ─── CLI guard branches (badge/debt/triage usage errors) ─────────────
 
 describe("CLI guard branches — badge/debt/triage usage errors", () => {
-  it("runBadgeCommand with an unknown flag → usage + exit 10 (parseArgs null)", async () => {
+  it("runBadgeCommand with an unknown flag → friendly stderr error, exit 10, no usage wall", async () => {
     const out: string[] = [];
+    const errs: string[] = [];
     const code = await runBadgeCommand(["--bogus"], {
       out: (s: unknown) => out.push(String(s)),
-      err: () => {},
+      err: (s: unknown) => errs.push(String(s)),
     });
     expect(code).toBe(10);
-    expect(out.join("\n")).toContain("Usage:");
+    // Plan M2 contract: friendly did-you-mean on stderr; stdout stays
+    // findings-only (no usage wall after the error).
+    expect(errs.join("\n")).toContain('mjolnir: unknown flag "--bogus"');
+    expect(out.join("\n")).not.toContain("Usage:");
   });
 
-  it("runDebtCommand with an unknown flag → usage + exit 10 (parseArgs null)", async () => {
+  it("runDebtCommand with an unknown flag → friendly stderr error, exit 10, no usage wall", async () => {
     const out: string[] = [];
+    const errs: string[] = [];
     const code = await runDebtCommand(["--bogus"], {
       out: (s: unknown) => out.push(String(s)),
-      err: () => {},
+      err: (s: unknown) => errs.push(String(s)),
     });
     expect(code).toBe(10);
-    expect(out.join("\n")).toContain("Usage:");
+    expect(errs.join("\n")).toContain('mjolnir: unknown flag "--bogus"');
+    expect(out.join("\n")).not.toContain("Usage:");
   });
 
   it("runTriageCommand without a target → usage + exit 10", () => {

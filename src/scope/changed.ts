@@ -258,3 +258,19 @@ export function filterToChanged(
     return false;
   });
 }
+
+/**
+ * --staged (agent-handoff plan §5.7): the staged file names, as a
+ * *scan-surface restriction*. Returns null when git data is
+ * unavailable (degraded — callers fall back to the full surface with
+ * an honest stderr note). Empty list = genuinely nothing staged.
+ */
+export function computeStagedFiles(root: string): string[] | null {
+  if (!existsSync(join(root, ".git"))) return null;
+  const raw = git(root, ["diff", "--cached", "--name-only", "-z"]);
+  if (raw === null) return null;
+  return raw
+    .split("\0")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+}

@@ -14,6 +14,9 @@
 
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { sectionHeader, plainContext } from "../reporter/ui.js";
+
+const ui = plainContext();
 
 type Family =
   "test" | "quality" | "playwright" | "ci" | "python" | "cypress" | "selenium";
@@ -181,7 +184,7 @@ export function renderScaffoldReport(result: ScaffoldResult): string {
     return `create-rule failed: ${result.error}`;
   }
   const lines: string[] = [];
-  lines.push("▚▞ RULE SCAFFOLD CREATED");
+  lines.push(sectionHeader("RULE SCAFFOLD CREATED", ui));
   lines.push("");
   for (const f of result.files) lines.push(`  + ${f}`);
   lines.push("");

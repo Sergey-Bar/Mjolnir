@@ -9,7 +9,218 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
-## [Unreleased] — Verification Trust Evolution, Phase 8 — Local Extensibility (plan §18)
+## [0.5.4] — 2026-09-06
+
+### Agent Handoff + Minimized Reporting (plan 1788599400000)
+
+### Added
+
+- **`mjolnir why <file>:<line>`** — occurrence-level evidence query
+  (informational, NOT a gate): exact file+line match, severity icon,
+  message/why/fix, evidence level, trust level, measured FP rate
+  (or the honest "ships on assumption"), runtime corroboration when
+  present, and the suppression contract (reason required, 90-day
+  expiry). Saved-report mode (`--json <mjolnir.json>`) is
+  authoritative; live scan runs otherwise. Exit 0 match / 1 no match.
+- **`mjolnir handoff [mjolnir.json]`** — the deterministic fix-handoff
+  artifact: per-rule remediation sections (what is wrong / why
+  Mjölnir believes it / evidence boundary by level / occurrences
+  capped at 25 / fix / constraints / occurrences list), a per-rule
+  fenced copy block and a one-shot handoff prompt, and the formal
+  verification contract (TARGET_RESOLVED / TARGET_REMAINS /
+  NEW_FINDINGS_INTRODUCED / VERIFICATION_NOT_RUN, correlated by the
+  fingerprint ruleId+file+message; the standing caveat that a clean
+  `--scope changed` run verifies the changed surface only). Generated
+  solely from Mjölnir's own rule metadata — offline, deterministic,
+  escapeMarkdown'd. Zero findings → exit 0, non-actionable clean
+  artifact with no prompt. `--category`/`--rules` are presentation
+  filters.
+- **`mjolnir install`** — installs the agent instruction surfaces
+  (`.claude/commands/mjolnir.md`, `.kilo/command/mjolnir.md`,
+  `.cursor/rules/mjolnir.mdc`, marker-appended `AGENTS.md`): the
+  version-pinned trust loop brief (scan `--scope changed` before
+  finishing, never suppress to green, report files changed and checks
+  not run). `--staged-hook` adds a NON-BLOCKING pre-commit hook
+  (`mjolnir --staged --blocking warning`, reusing `.husky`/
+  `core.hooksPath` when present). Marker-based idempotency;
+  `--dry-run` writes nothing; refusal (exit 10) before overwriting
+  any non-Mjölnir file; `--force` overwrites only Mjölnir-marked
+  files; never @latest.
+- **`--score`** — prints only the numeric score (`unknown` when no
+  tests exist — never a fake 0); pure rendering flag, exit code
+  unchanged; stderr note when --json was also requested.
+- **`--category <cat>`** (repeatable) — presentation filter on the
+  terminal findings display (and handoff/why): NEVER filters the
+  scan, the JSON/SARIF output, or the score; the terminal prints
+  `filtered view: N of M findings shown; score reflects the full
+scan`. Unknown categories are a usage error (exit 10).
+- **`--staged`** — scan-surface restriction: intersects discovered
+  test files with the git staged list; score reflects the staged
+  surface and is labeled as such (`staged surface: N file(s)`); not a
+  git repo → honest degraded fallback; empty staged set → exit 0.
+- **`--blocking error|warning|none`** — exit-status override only:
+  maps onto the existing gate model (none→advisory, error→errors
+  block, warning→errors+warnings block). Detection and rendering are
+  identical under all three values; E0 findings never block; partial
+  scans stay exit 2.
+- **`fixGroupId`** (additive JSON field): the stable semantic identity
+  of a remediation group — intentionally distinct from `ruleId`
+  (which identifies the detector). Current strategy: one rule = one
+  group, so fixGroupId equals ruleId today; consumers must not rely
+  on that permanently.
+
+### Changed
+
+- help registry gained `why`, `handoff`, `install` and the new flags;
+  site/reference/cli.md documents the handoff trust model.
+
+## [0.5.3] — 2026-09-05
+
+### Terminal + CI UX Overhaul (plan 1788579907109)
+
+### Added
+
+- **Design-system core** (`src/reporter/ui.ts`): one canonical visual
+  language — `▚ TITLE` section headers (ASCII fallback `= TITLE`),
+  `✗/⚠/ℹ` severity icons (ASCII `X/!/i`), rounded panels, 58-glyph
+  dividers, and a dim `$ command` next-step affordance. All
+  subcommand renderers (`baseline`, `debt`, `init`, `doctor`, `fix`,
+  `impact`, `stats`, `handover`, `triage`, `pw-report`, `explain`,
+  `rules-catalog`, `create-rule`, `suppressions`, forensics,
+  selector-health) now render through it; per-renderer `▚▞`/`🔨`/`╔══╗`
+  headers and `╞══╡` tables are gone. `FORCE_COLOR` is honored
+  (chalk convention: `0`/`false`/empty = plain, other values force
+  color even piped, winning over `NO_COLOR`).
+- **`mjolnir help` + per-command help** (`src/commands/help.ts`): the
+  grouped overview (Scan · CI & PRs · Forensics · Maintenance · Meta,
+  copy-pasteable starts, exit-code table, docs link) and
+  `mjolnir help <verb>` / `mjolnir <verb> --help` pages for every
+  registered verb. **Behavior call-out:** `help` now dispatches as a
+  verb BEFORE the scan fall-through — bare `mjolnir help` no longer
+  scans the CWD (it never was a documented behavior); a folder named
+  `help/` is still scanned via `mjolnir ./help`. `--help`/`-h` on the
+  root scan still print usage and exit 10 (frozen contract).
+- **Friendly usage errors** (exit 10 preserved): unknown flags name
+  themselves on stderr, suggest up to three nearest real flags
+  (hand-rolled Levenshtein ≤ 2 — no new dependencies), and point at
+  `mjolnir --help`. The exit-20 crash path says "this is a bug in
+  Mjölnir, not your repo", carries the message, and prints the stack
+  trace only under `--debug`.
+- **Live scan progress** (`src/reporter/progress.ts`): an event-driven
+  stderr line (`Discovering files… → Parsing frameworks… → Running
+rules… → Scoring…`) fed by the new additive `ScanHooks.onProgress`.
+  Render-on-event only — no timers, deterministic under a fake stream.
+  Auto-off when stderr is not a TTY, in machine formats, under
+  `GITHUB_ACTIONS=true`/`CI=true`, or with the new additive
+  `--no-progress` flag. stdout purity and `--json` byte-identity are
+  unchanged.
+- **`mjolnir summary [mjolnir.json]`** (`src/commands/summary.ts` +
+  `src/reporter/github.ts`): reads a saved `--json` report and emits
+  GitHub annotations (only when `GITHUB_ACTIONS=true`, per-finding
+  `::error|warning|notice` with spec-exact `%25/%0D/%0A/%3A/%2C`
+  escaping, messages truncated at ~250 chars) and a step-summary
+  markdown document (score + band, text score bar, dimensions table,
+  collapsible per-severity `<details>` with `Fix:` lines, honesty
+  notice for `partial`/`score:null` reports). `--stdout` forces
+  stdout; `--path-prefix <dir>` re-scopes paths for subdirectory
+  scans. Exit `0` on success — the gate step decides; `10` missing
+  file; `2` invalid JSON.
+- **CI template v2** (`ci install`): the inline `SUMMARY_SCRIPT` step
+  is replaced by `mjolnir summary mjolnir.json`; the gate script is
+  unchanged. v1-generated workflows are still recognized on
+  overwrite-refusal, so `ci install` upgrades stay frictionless. The
+  dogfooded `.github/workflows/mjolnir.yml` and `ci.yml` self-scan use
+  the same command.
+- **PR comment redesign** (`pr-comment`): header
+  `### 🔨 Mjölnir — Verification Trust` with score + band + verdict
+  headline, dimensions mini-table, findings grouped in collapsible
+  `<details>` (errors open, warnings/infos collapsed) with explicit
+  `Fix:` lines and evidence tags, a "what to run next" footer with the
+  pinned `npx mjolnir-qa@<ver>` commands, and the
+  `✨ N pre-existing findings fixed in this PR` callout. Same
+  idempotency marker; same markdown escaping.
+- **Site**: new `site/reference/cli.md` (help, usage errors, summary,
+  progress, `FORCE_COLOR`) in the Reference sidebar.
+
+### Changed
+
+- README output examples and all 22 translations: the `▚▞` header
+  glyph in rendered-output samples is now `▚` (the design-system
+  token). English README is canonical; translation sync dates unchanged
+  (glyph-only diff, advisory parity script).
+- Regenerated committed assets: `assets/readme/terminal-hero.svg`,
+  `demo.svg` (`docs:hero`, `docs:demo`), and the forensics/selector
+  samples (`docs:forensics-samples`).
+
+### Removed
+
+- The hand-rolled `╔══╗`/`▚▞`/`🔨` per-command header styles and the
+  `╞══╡` ASCII tables they wrapped (replaced by the shared `ui.ts`
+  primitives; no CLI surface change).
+
+### Fixed — review hardening (post-implementation audit)
+
+- **`ci install` v1 recognition actually works now:** the v1 inline
+  summary script is matched in its INDENTED form (`indentBlock(…, 10)`)
+  — the raw unindented needle never appeared in a real v1 workflow, so
+  the first cut of the recognition would have refused every genuine v1
+  file despite the "frictionless upgrade" promise. Spec reconstructs
+  the embedded form from the real v1 output and pins that
+  hand-customized files are still refused.
+- **Advisory template stays green on a crashed scan:** the generated
+  "Annotations + Job Summary" step is now `continue-on-error: true` —
+  a crashed scan leaves `mjolnir.json` empty and `summary` exits 2,
+  which must not turn the advisory job red (v1's inline script never
+  did). The gate step still owns the verdict.
+- **Step summary escapes hostile finding metadata:** `ruleId`, `file`,
+  `message` and `fix` are markdown-escaped before `$GITHUB_STEP_SUMMARY`
+  (GitHub renders HTML there) — a hostile report can no longer break
+  out of the `<details>` structure. Annotations additionally sanitize
+  `file`/`ruleId`/`message` through the same `sanitizeData` layer the
+  terminal uses (OSC/C0 bytes), closing the gap its own docs assumed.
+- **Progress line sanitizes the detail path** through `sanitizeData` —
+  a filename with ANSI/OSC bytes can no longer hijack the terminal.
+- **PR comment overflow counts are honest:** the "...and N more
+  overall" line now subtracts the actually rendered count
+  (Σ min(group, 25)) instead of a flat 25 — no more phantom hidden
+  findings, and per-group overflow lines name their group
+  ("...and 5 more errors").
+- **Usage-error contract completed:** the 8 scan-backed subcommands
+  (badge, debt, fix, impact, baseline, diff, pr-comment, handover) no
+  longer print the full usage wall after the friendly stderr error;
+  `mjolnir summary` rejects unknown flags with the shared
+  did-you-mean machinery (exit 10) instead of silently swallowing a
+  typo'd `--stdout`; `mjolnir ci --help` / `mjolnir help ci install` /
+  `mjolnir ci install --help` now reach the `ci install` help page
+  (two-word verb lookup).
+- **Dead surface removed:** `theme.severityTag` (byte-identical twin of
+  `ui.severityIcon`, test-only) deleted with the two plugin specs
+  re-pointed; the new-module exports nothing without a caller
+  (`severityGlyph`, `wrapFor`, `centerIn` dropped; `keyValue` and
+  `bullet` remain — the plan's primitive list mandates them).
+
+## [0.5.2] — 2026-09-05
+
+### npm 12 pack-shape repair of the release pipeline
+
+### Fixed
+
+- The fresh-install gate (`tests/integrations/registry-install.spec.ts`),
+  `tests/integrations/package-smoke.spec.ts`, and
+  `tests/e2e/journey-1-first-run.spec.ts` parse `npm pack --json` through
+  a shared shape-tolerant helper
+  (`tests/helpers/npm-pack-json.ts`): npm 12 changed the output from an
+  array to an object keyed by package name, which stopped the v0.5.1
+  publish at the gate — tag cut, nothing shipped, by design.
+- `release.yml` upgrades to `npm@11` (the proven line) instead of
+  `npm@latest`: toolchain majors must be deliberate, verified changes,
+  never implicit drift on the publish path.
+- `registry-install.spec.ts` cleanup no longer cascades a second error
+  when `beforeAll` fails early (the cascade buried the real diagnosis).
+
+## [0.5.1] — 2026-09-05
+
+### Verification Trust Evolution, Phase 8 — Local Extensibility (plan §18)
 
 ### Added — folder-based external rules, zero network
 
@@ -48,7 +259,7 @@ once shipped, so this file is the record of what changed between versions.
 
 Registry/marketplace explicitly deferred (plan §18).
 
-## [Unreleased] — Verification Trust Evolution, Phase 7 — Agentic QA Trust (plan §17)
+### Verification Trust Evolution, Phase 7 — Agentic QA Trust (plan §17)
 
 ### Added — Agentic Trust Profile (plan §17.2, §17.4)
 
@@ -93,7 +304,7 @@ measured before leaving provisional), fixtures both directions:
 Registry: 99 rules (73 measured). Docs pages + capability matrix
 regenerated.
 
-## [Unreleased] — Verification Trust Evolution, Phase 6 — Runtime Evidence (plan §16)
+### Verification Trust Evolution, Phase 6 — Runtime Evidence (plan §16)
 
 ### Added — runtime corroboration + the honest L0–L5 trust ladder
 
@@ -137,7 +348,7 @@ real run report (trust L3–L5)` or the explicit not-available line;
   finding cards show `trust L4 · runtime: test executed`. SARIF
   results carry `trustLevel` + `runtimeCorroboration` in properties.
 
-## [Unreleased] — Verification Trust Evolution, Phase 5 — Framework Expansion (plan §15, D7 closed)
+### Verification Trust Evolution, Phase 5 — Framework Expansion (plan §15, D7 closed)
 
 ### Added — FrameworkDimension enforced (plan §15.1, defect D7 closed)
 
@@ -222,7 +433,7 @@ QUARANTINE:
   regenerated (97 rules); docs pages regenerated; corpus baselines
   added for the three Phase 5 measurement repos.
 
-## [Unreleased] — Verification Trust Evolution, Phase 4 — Common QA Semantic Model (plan §14, behavior-neutral)
+### Verification Trust Evolution, Phase 4 — Common QA Semantic Model (plan §14, behavior-neutral)
 
 ### Added — `src/engine/qa-model.ts`: the normalized QA concept IR (extract-only, no scan wiring)
 
@@ -260,7 +471,7 @@ for Python (def test_, @pytest.fixture, time.sleep, assert).
   Awaitedness (qa-pw-002's consumption oracle) rides on TS nodes as
   `node.awaited`.
 
-## [Unreleased] — Verification Trust Evolution, Phase 3 — Java/C# semantic upgrade (plan §13)
+### Verification Trust Evolution, Phase 3 — Java/C# semantic upgrade (plan §13)
 
 ### Changed — three JV/CS rules migrated to L2 tree-sitter analysis (EVIDENCE-BACKED, detectorRevision 2)
 
@@ -322,7 +533,7 @@ signatures, tree-sitter scoping does not), and
 stamped rev 2). QA-JV-102 stays LEXICAL rev 1 — no migration for
 symmetry (plan §12.4).
 
-## [Unreleased] — Verification Trust Evolution, Phase 2 — quarantine-cluster triage (plan §12.2)
+### Verification Trust Evolution, Phase 2 — quarantine-cluster triage (plan §12.2)
 
 ### Deprecated — 21 rules retired per docs/RULE-LIFECYCLE.md (measured 100% FP, premise wrong)
 
@@ -484,7 +695,7 @@ capability matrix calls "re-measure"):
   does not describe the current detector, so it is neither flagged nor
   blessed.
 
-## [Unreleased] — Verification Trust Evolution, Phase 2 — detectionStrategy enum (D6 closed, scan-behavior-neutral)
+### Verification Trust Evolution, Phase 2 — detectionStrategy enum (D6 closed, scan-behavior-neutral)
 
 ### Changed — D6 enum migration (plan §12.1; metadata-only)
 
@@ -514,7 +725,7 @@ SEMANTIC | FRAMEWORK | RUNTIME`) instead of free text: `src/rules/rule.ts`
   (QA-CI-001/009/010) → `FRAMEWORK`. `SEMANTIC` and `RUNTIME` remain
   reserved (no rule ships either yet).
 
-## [Unreleased] — Verification Trust Evolution, Phase 1 exit — dedicated corpora + wave-5 measurement (plan §11.5/§08)
+### Verification Trust Evolution, Phase 1 exit — dedicated corpora + wave-5 measurement (plan §11.5/§08)
 
 ### Added — dedicated corpora (§11.5) and the wave-5 measurement
 
@@ -590,7 +801,7 @@ SEMANTIC | FRAMEWORK | RUNTIME`) instead of free text: `src/rules/rule.ts`
   with `--strict` so the committed assets and their drift locks stay in
   sync with the precision-contract spec.
 
-## [Unreleased] — Verification Trust Evolution, Phase 1 — measurement infrastructure
+### Verification Trust Evolution, Phase 1 — measurement infrastructure
 
 ### Added — UNSURE adjudication gate + QA-PW-101 measured (plan §11.5)
 
@@ -666,7 +877,7 @@ detectorRevision, FP ≤ 10%, n ≥ 10`), on any detectorRevision mismatch
   (`mjolnir explain`, `mjolnir rules`, generated rule docs, capability
   matrix) render the PROVISIONAL status honestly.
 
-## [Unreleased] — Verification Trust Evolution, Phase 0 + Phase 1 prep
+### Verification Trust Evolution, Phase 0 + Phase 1 prep
 
 ### Added — Rule Capability Matrix (Phase 0)
 
@@ -722,7 +933,7 @@ detectorRevision, FP ≤ 10%, n ≥ 10`), on any detectorRevision mismatch
   `src/adapters/csharp.ts` and `src/engine/adapter.ts` (whose header
   still claimed tree-sitter "arrives in R2 with Python").
 
-## [Unreleased] — Verification Trust Evolution, Phase 0.5 — async parse stage (D1)
+### Verification Trust Evolution, Phase 0.5 — async parse stage (D1)
 
 ### Changed — parse stage wired into the scan pipeline (D1 closed, BEHAVIOR-NEUTRAL)
 

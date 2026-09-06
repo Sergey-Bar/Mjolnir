@@ -17,19 +17,25 @@ import {
   shouldColorize,
   shouldUseAscii,
   scoreGauge,
-  severityTag,
   box,
   measure,
   padTo,
   sanitizeData,
   wrapText,
 } from "./theme.js";
+import {
+  buildFooter,
+  sectionHeader,
+  severityIcon,
+  nextStep,
+  panel,
+  type UiContext,
+} from "./ui.js";
 import { deriveScoreState, headlineFor } from "./score-state.js";
 import {
   LOGO,
   LOGO_ASCII,
   TROPHY,
-  DIVIDER,
   FORGED_WORDMARK,
   renderHammer,
 } from "./art.js";
@@ -61,6 +67,14 @@ export interface RenderTerminalOpts {
   ascii?: boolean;
   /** --tone blunt: blunter, pattern-mocking messages (Sprint 9 Task 40). */
   tone?: "blunt";
+  /**
+   * Pre-filtered finding list for `--category` (agent-handoff plan
+   * §5.5): the renderer displays ONLY these, and prints the dim
+   * `filtered view` note whenever the full list is larger. The score,
+   * dimensions and gauge in the same render ALWAYS reflect the full
+   * scan — --category is a presentation filter, never a scoring filter.
+   */
+  visibleFindings?: ScanResult["findings"];
 }
 
 export function renderTerminal(
@@ -73,6 +87,7 @@ export function renderTerminal(
     opts.width ?? process.stdout.columns ?? 80,
   );
   const ascii = opts.ascii ?? shouldUseAscii();
+  const ui: UiContext = { p, ascii, width };
   const lines: string[] = [];
 
   const logo = ascii ? LOGO_ASCII : LOGO;
@@ -80,7 +95,7 @@ export function renderTerminal(
   lines.push("");
 
   if (result.score === null) {
-    return renderNoTests(p, ascii);
+    return renderNoTests(ui);
   }
 
   const counts = countBySeverity(result);
@@ -94,24 +109,41 @@ export function renderTerminal(
     width,
     ascii,
   );
-  appendFrameworks(lines, result, p);
-  appendDimensions(lines, result, p, ascii);
-  appendDeductions(lines, result, counts, p, width, ascii);
-  appendFixThisFirst(lines, result, p);
-  appendFindings(
-    lines,
-    result,
-    counts,
-    opts.verbose === true,
-    p,
-    ascii,
-    width,
-    opts.tone,
-  );
+  appendFrameworks(lines, result, ui);
+  if (result.staged !== undefined) {
+    lines.push(
+      ui.p.dim(
+        `  staged surface: ${result.staged.files} file(s) scanned; score reflects that surface`,
+      ),
+    );
+    lines.push("");
+  }
+  appendDimensions(lines, result, ui);
+  appendDeductions(lines, result, counts, ui);
+  // --category (agent-handoff plan §5.5): presentation filter. The
+  // filtered list drives FIX THIS FIRST + FINDINGS; score/dimensions/
+  // deductions above always reflect the full scan. The dim note keeps
+  // the full-scan vs filtered-view distinction unambiguous.
+  const filtered = opts.visibleFindings;
+  const filtering =
+    filtered !== undefined && filtered.length < result.findings.length;
+  const display: ScanResult = filtering
+    ? { ...result, findings: filtered }
+    : result;
+  appendFixThisFirst(lines, display, ui);
+  if (filtering) {
+    lines.push(
+      ui.p.dim(
+        `  filtered view: ${filtered?.length} of ${result.findings.length} findings shown; score reflects the full scan`,
+      ),
+    );
+    lines.push("");
+  }
+  appendFindings(lines, display, counts, opts.verbose === true, ui, opts.tone);
   if (counts.total === 0 && result.score === 100) {
     appendForgedBlock(lines, p, ascii);
   }
-  appendFooter(lines, result, p, width);
+  appendFooter(lines, result, ui);
   return lines.join("\n");
 }
 
@@ -182,8 +214,9 @@ function colorizeVerdict(
 function appendFrameworks(
   lines: string[],
   result: ScanResult,
-  p: ReturnType<typeof palette>,
+  ui: UiContext,
 ): void {
+  const { p } = ui;
   if (result.frameworks.length > 0) {
     const tags = result.frameworks.map((f) => `[${f}]`).join(" ");
     lines.push(`  ${p.dim("DETECTED")} ${p.info(tags)}`);
@@ -199,20 +232,21 @@ function appendFrameworks(
 function appendDimensions(
   lines: string[],
   result: ScanResult,
-  p: ReturnType<typeof palette>,
-  ascii: boolean,
+  ui: UiContext,
 ): void {
   const dims =
     result.dimensions.length > 0
       ? result.dimensions
       : computeDimensions(result.findings);
   if (dims.length === 0) return;
-  lines.push(`  ${p.accent("▚ DIAGNOSTICS BY CATEGORY")}`);
+  lines.push(sectionHeader("DIAGNOSTICS BY CATEGORY", ui));
   const width = Math.max(...dims.map((d) => d.category.length));
   for (const d of dims) {
     const label = padTo(d.category, width);
     const scoreText = String(d.score).padStart(3);
-    lines.push(`  ${label}  ${scoreGauge(d.score, p, 16, ascii)} ${scoreText}`);
+    lines.push(
+      `  ${label}  ${scoreGauge(d.score, ui.p, 16, ui.ascii)} ${scoreText}`,
+    );
   }
   lines.push("");
 }
@@ -221,12 +255,11 @@ function appendDeductions(
   lines: string[],
   result: ScanResult,
   counts: { error: number; warning: number; info: number; total: number },
-  p: ReturnType<typeof palette>,
-  width: number,
-  ascii: boolean,
+  ui: UiContext,
 ): void {
+  const { p } = ui;
   if (counts.total === 0) return;
-  lines.push(`  ${p.accent("▚ WHERE POINTS WERE LOST")}`);
+  lines.push(sectionHeader("WHERE POINTS WERE LOST", ui));
   // Honesty Core: the table must reconcile with the score. Deductions are
   // computed per finding via deductionFor — E0 costs 0, E1 costs half —
   // so count × base would silently lie whenever evidence levels apply.
@@ -250,26 +283,25 @@ function appendDeductions(
       `${s.n} × ${sev.padEnd(7)} −${String(s.ded).padStart(3)}${discounted ? p.dim(" (evidence-discounted)") : ""}`,
     );
   }
-  for (const row of box(rows, 1, { maxWidth: width - 2, ascii }))
-    lines.push(`  ${row}`);
+  for (const row of panel(rows, ui)) lines.push(row);
   lines.push("");
 }
 
 function appendFixThisFirst(
   lines: string[],
   result: ScanResult,
-  p: ReturnType<typeof palette>,
+  ui: UiContext,
 ): void {
   const fixes = topFixes(result.findings, 3);
   if (fixes.length === 0) return;
-  lines.push(`  ${p.accent("▚ FIX THIS FIRST")}`);
+  lines.push(sectionHeader("FIX THIS FIRST", ui));
   for (const { finding: f, scoreGain, autofixable } of fixes) {
     const gainText = `+${scoreGain} pt${scoreGain === 1 ? "" : "s"}`;
-    const autofixTag = autofixable ? p.ok(" [autofix available]") : "";
+    const autofixTag = autofixable ? ui.p.ok(" [autofix available]") : "";
     // QA-2026-08-30 QA-10: ruleId/file are data (plugin rule ids, hostile
     // filenames) — sanitize before raw interpolation outside the palette.
     const loc = `${sanitizeData(f.ruleId)} · ${sanitizeData(f.file)}:${f.line}`;
-    lines.push(`  ${p.bold(gainText)}  ${loc}${autofixTag}`);
+    lines.push(`  ${ui.p.bold(gainText)}  ${loc}${autofixTag}`);
   }
   lines.push("");
 }
@@ -370,13 +402,8 @@ function wrapLines(text: string, width: number): string[] {
 const CARD_LABEL_PAD = 8;
 const CARD_GUTTER = "    ";
 
-function pushCard(
-  lines: string[],
-  card: FindingCard,
-  p: ReturnType<typeof palette>,
-  width: number,
-  ascii: boolean,
-): void {
+function pushCard(lines: string[], card: FindingCard, ui: UiContext): void {
+  const { p, width } = ui;
   const contentWidth = Math.max(
     20,
     width - 2 - CARD_GUTTER.length - CARD_LABEL_PAD,
@@ -387,7 +414,7 @@ function pushCard(
   // inline pushed the header past 128 columns and out of any default
   // terminal. It drops to its own indented line when it does not fit,
   // matching what the grouped "same fix applies" header already does.
-  const header = `  ${severityTag(card.severity, p, ascii)} ${p.bold(card.loc)}`;
+  const header = `  ${severityIcon(card.severity, ui)} ${p.bold(card.loc)}`;
   if (measure(`${header}  ${card.evidence}`) <= width) {
     lines.push(`${header}  ${p.dim(card.evidence)}`);
   } else {
@@ -426,12 +453,22 @@ function appendFindings(
   result: ScanResult,
   counts: { total: number },
   verbose: boolean,
-  p: ReturnType<typeof palette>,
-  ascii: boolean,
-  width: number,
+  ui: UiContext,
   tone?: "blunt",
 ): void {
+  const { p, width } = ui;
   if (counts.total === 0) return;
+
+  // --category presentation filter: when nothing survives the filter,
+  // say so honestly instead of silently rendering an empty FINDINGS
+  // section (plan §5.5).
+  if (result.findings.length === 0) {
+    lines.push(
+      ui.p.dim("  filtered view: no findings in the selected category"),
+    );
+    lines.push("");
+    return;
+  }
 
   // Group by ruleId when >3 findings share a rule — one header, count,
   // "same fix applies", then one-liners. Groups keep first-appearance
@@ -478,7 +515,7 @@ function appendFindings(
   let hidden = 0;
   const hiddenRules = new Set<string>();
 
-  lines.push(`  ${p.accent("▚ FINDINGS")}`);
+  lines.push(sectionHeader("FINDINGS", ui));
   lines.push("");
   for (const unit of units) {
     if (unit.kind === "group") {
@@ -491,7 +528,7 @@ function appendFindings(
       }
       // Same overflow rule as a single card: the evidence bracket moves to
       // its own line rather than running the group header off the screen.
-      const groupHead = `  ${severityTag(maxSeverity(unit.findings), p, ascii)} ${p.bold(sanitizeData(unit.ruleId))} ${p.dim(`× ${n} — same fix applies`)}`;
+      const groupHead = `  ${severityIcon(maxSeverity(unit.findings), ui)} ${p.bold(sanitizeData(unit.ruleId))} ${p.dim(`× ${n} — same fix applies`)}`;
       const groupEvidence = evidenceTag(first);
       if (measure(`${groupHead} ${groupEvidence}`) <= width) {
         lines.push(`${groupHead} ${p.dim(groupEvidence)}`);
@@ -536,7 +573,7 @@ function appendFindings(
       hiddenRules.add(unit.finding.ruleId);
       continue;
     }
-    pushCard(lines, toCard(unit.finding, tone), p, width, ascii);
+    pushCard(lines, toCard(unit.finding, tone), ui);
     shown++;
   }
 
@@ -602,15 +639,16 @@ function pushWrapped(
 function appendFooter(
   lines: string[],
   result: ScanResult,
-  p: ReturnType<typeof palette>,
-  width: number,
+  ui: UiContext,
 ): void {
-  lines.push(p.dim(DIVIDER));
-  const status =
-    result.analysisStatus.discovery === "partial"
-      ? p.warning("PARTIAL — verdict may be incomplete")
-      : p.ok("complete");
-  lines.push(`  Analysis: ${status} · ${result.analysisStatus.durationMs}ms`);
+  const { p, width } = ui;
+  lines.push(
+    ...buildFooter({
+      ui,
+      complete: result.analysisStatus.discovery !== "partial",
+      durationMs: result.analysisStatus.durationMs,
+    }),
+  );
   // Honesty Core: advisory findings are visible but never cost points.
   const advisory = result.findings.filter(
     (f) =>
@@ -707,7 +745,8 @@ function appendFooter(
   lines.push("");
 }
 
-function renderNoTests(p: ReturnType<typeof palette>, ascii: boolean): string {
+function renderNoTests(ui: UiContext): string {
+  const { p, ascii } = ui;
   const warnGlyph = ascii ? "!" : "⚠";
   // Audit H-6: say what was actually searched for, per adapter — the
   // tool ships five adapters, not three JavaScript frameworks.
@@ -728,7 +767,7 @@ function renderNoTests(p: ReturnType<typeof palette>, ascii: boolean): string {
       { ascii, maxWidth: 78 },
     ).map((l) => `  ${l}`),
     "",
-    "  If your tests live elsewhere: mjolnir <path-to-your-tests>",
+    nextStep("mjolnir <path-to-your-tests>", ui),
     "",
   ];
   return lines.join("\n");

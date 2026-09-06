@@ -64,7 +64,7 @@ Yukarıdaki ilk bulgu için `mjolnir explain QA-CI-001` komutunu çalıştırın
 elde edeceğiniz:
 
 ```text
-▚▞ QA-CI-001 — continue-on-error masks a failing verification gate
+▚ QA-CI-001 — continue-on-error masks a failing verification gate
 
 Severity:    error
 Confidence:  high
@@ -377,7 +377,7 @@ Playwright takımları için başlık metriği — locator'larınız ne kadar
 dayanıklı:
 
 ```text
-▚▞ SELECTOR HEALTH — e2e/checkout.spec.ts
+▚ SELECTOR HEALTH — e2e/checkout.spec.ts
 
   [█████████████████░░░]  83 / 100
   role/text: 2 · testid: 1 · css-chains: 1 ⚠ · xpath: 0
@@ -400,7 +400,7 @@ mjolnir forensics ./test-results/
 ```
 
 ```text
-▚▞ FLAKINESS LEADERBOARD
+▚ FLAKINESS LEADERBOARD
 
 3 tests · 1 failed · 1 flaky · 1 retried
 

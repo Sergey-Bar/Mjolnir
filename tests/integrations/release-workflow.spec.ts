@@ -5,6 +5,13 @@
  * *intentionally* gated off (if: false), not accidentally live — a
  * publish to the parked/wrong npm name would be a real, damaging
  * mistake (see docs/plans/Master-Stabilization-Plan.md §5).
+ *
+ * Auto-NPM-Release plan (2026-09-05): extended for the two-job shape —
+ * a `version` job (auto-release brain: label-driven bump, CHANGELOG
+ * collapse, bot commit + tag) ahead of the `release` job (the publish
+ * pipeline, byte-identical). The one-workflow-file constraint is hard:
+ * npmjs.com's Trusted Publisher matches the workflow FILENAME, so a
+ * second file would fail OIDC with ENEEDAUTH.
  */
 
 import { readFileSync } from "node:fs";
@@ -19,16 +26,20 @@ interface WorkflowStep {
   run?: string;
   uses?: string;
   if?: boolean | string;
+  with?: Record<string, unknown>;
+}
+
+interface WorkflowJob {
+  permissions?: Record<string, string>;
+  steps?: WorkflowStep[];
+  if?: string;
+  needs?: string | string[];
+  outputs?: Record<string, string>;
 }
 
 interface Workflow {
-  jobs: Record<
-    string,
-    {
-      permissions?: Record<string, string>;
-      steps?: WorkflowStep[];
-    }
-  >;
+  on?: Record<string, unknown>;
+  jobs: Record<string, WorkflowJob>;
 }
 
 function loadReleaseWorkflow(): Workflow {
@@ -184,6 +195,117 @@ describe("release.yml", () => {
       "re-running a release for an already-published version must skip the " +
         "publish (npm rejects duplicates with E403), not fail the job. " +
         `Found: ${JSON.stringify(publishStep?.if)}`,
+    ).toBe(true);
+  });
+
+  // ── Auto-release: the version job (merge to main → publish) ─────────
+  //
+  // Every merge to main must produce exactly one npm release with zero
+  // manual commands. The version job computes the bump from PR labels,
+  // collapses the CHANGELOG [Unreleased] sections, and pushes the bot
+  // commit + tag; the release job then publishes from that tag. These
+  // tests lock the two-job shape so neither job can regress silently.
+
+  const pushTriggers = loadReleaseWorkflow().on?.push as
+    { branches?: string[]; tags?: string[] } | undefined;
+
+  it("triggers on main-branch pushes (the auto-release path) as well as v* tags", () => {
+    expect(
+      pushTriggers?.branches,
+      "release.yml must trigger on pushes to main — that is the whole " +
+        "auto-release path (plan: merge → publish, zero manual commands)",
+    ).toContain("main");
+    expect(
+      pushTriggers?.tags,
+      "the manual rc path (push a v* tag) must keep working",
+    ).toContain("v*");
+  });
+
+  it("has a version job with contents: write + pull-requests: read", () => {
+    const wf = loadReleaseWorkflow();
+    const version = wf.jobs.version;
+    expect(
+      version,
+      "the auto-release brain job must exist before the release job",
+    ).toBeDefined();
+    expect(
+      version?.permissions?.["contents"],
+      "the version job pushes the bump commit and tag to main",
+    ).toBe("write");
+    expect(
+      version?.permissions?.["pull-requests"],
+      "the version job resolves PR labels via gh pr view",
+    ).toBe("read");
+  });
+
+  it("the release job needs the version job", () => {
+    const wf = loadReleaseWorkflow();
+    const needs = wf.jobs.release?.needs;
+    expect(
+      Array.isArray(needs) ? needs : [needs],
+      "publishing must be chained behind the version job (needs: version) " +
+        "in the SAME workflow file — a GITHUB_TOKEN-pushed tag fires no " +
+        "new run, so chaining is what makes the tag publish at all",
+    ).toContain("version");
+  });
+
+  it("the version job has a tag-exists loop-guard step", () => {
+    const steps = loadReleaseWorkflow().jobs.version?.steps ?? [];
+    expect(
+      steps.some(
+        (s) =>
+          s.run?.includes("git describe --tags --exact-match") &&
+          s.run?.includes("skip=true"),
+      ),
+      "the version job must detect that HEAD is already the bot's own " +
+        "release commit (tagged v<package.json version> at HEAD) and exit " +
+        "with skip=true — without it a re-run or PAT-based push would " +
+        "release in an infinite loop",
+    ).toBe(true);
+  });
+
+  it("the version job only runs on main-branch pushes", () => {
+    const jobIf = loadReleaseWorkflow().jobs.version?.if;
+    expect(
+      typeof jobIf === "string" &&
+        jobIf.includes("github.event_name == 'push'") &&
+        jobIf.includes("startsWith(github.ref, 'refs/heads/')"),
+      "the version job must be restricted to branch pushes (tag pushes and " +
+        "workflow_dispatch go straight to the release job). " +
+        `Found: ${JSON.stringify(jobIf)}`,
+    ).toBe(true);
+  });
+
+  it("the release job checks out the version job's tag on the auto path", () => {
+    const steps = loadReleaseWorkflow().jobs.release?.steps ?? [];
+    const checkout = steps.find((s) => s.uses?.startsWith("actions/checkout"));
+    expect(
+      typeof checkout?.with?.ref === "string" &&
+        checkout.with.ref.includes("needs.version.outputs.tag"),
+      "on a main-branch push the release job must check out the tag the " +
+        "version job just cut (needs.version.outputs.tag), not the branch " +
+        `tip. Found: ${JSON.stringify(checkout?.with?.ref)}`,
+    ).toBe(true);
+  });
+
+  it("the release job publishes only when the version job actually cut a tag", () => {
+    const jobIf = loadReleaseWorkflow().jobs.release?.if;
+    expect(
+      typeof jobIf === "string" && jobIf.includes("needs.version.outputs.skip"),
+      "the release job must consult needs.version.outputs.skip so a skipped " +
+        "decision (bot-commit loop guard, all-release:skip) does not publish " +
+        "a half state. Found: " +
+        JSON.stringify(jobIf),
+    ).toBe(true);
+    expect(
+      typeof jobIf === "string" &&
+        jobIf.includes("needs.version.result == 'success'") &&
+        jobIf.includes("needs.version.result == 'skipped'"),
+      "the release job must run when the version job was skipped (tag-push " +
+        "and dispatch triggers) but NOT when it failed — a failed version " +
+        "job means no release commit, and publishing the branch tip would " +
+        "ship unversioned code. Found: " +
+        JSON.stringify(jobIf),
     ).toBe(true);
   });
 });

@@ -30,6 +30,9 @@ import { resolve as resolvePath, sep } from "node:path";
 
 import type { Finding, ScanResult } from "../types.js";
 import { computeCodeText } from "../engine/code-text.js";
+import { okIcon, sectionHeader, plainContext } from "../reporter/ui.js";
+
+const ui = plainContext();
 
 export interface FixEdit {
   ruleId: string;
@@ -558,7 +561,7 @@ function fixVerified(
 
 export function renderFixReport(results: FixResult[], dryRun: boolean): string {
   const lines: string[] = [];
-  lines.push(dryRun ? "▚▞ FIX PLAN (dry-run)" : "▚▞ FIX REPORT");
+  lines.push(sectionHeader(dryRun ? "FIX PLAN (dry-run)" : "FIX REPORT", ui));
   lines.push("");
   if (results.length === 0) {
     lines.push("No safe auto-fixes available for these findings.");
@@ -570,7 +573,7 @@ export function renderFixReport(results: FixResult[], dryRun: boolean): string {
   for (const r of results) {
     const icon =
       r.status === "applied"
-        ? "✔"
+        ? okIcon(ui)
         : r.status === "planned"
           ? "▸"
           : r.status === "failed"

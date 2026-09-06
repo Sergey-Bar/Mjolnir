@@ -24,6 +24,9 @@ import type { Finding } from "../types.js";
 import { parseWorkflow } from "../discovery/workflow-parser.js";
 import { computeCodeText } from "../engine/code-text.js";
 import { firstFixtureFile } from "./fixture-example.js";
+import { sectionHeader, plainContext } from "../reporter/ui.js";
+
+const ui = plainContext();
 
 export interface ExplainResult {
   ok: boolean;
@@ -161,7 +164,7 @@ export function renderExplain(
     }
   };
 
-  lines.push(`▚▞ ${r.id} — ${r.title}`);
+  lines.push(sectionHeader(`${r.id} — ${r.title}`, ui));
   lines.push("");
   lines.push(`Severity:    ${r.severity}`);
   lines.push(`Confidence:  ${r.confidence}`);

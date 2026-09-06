@@ -25,6 +25,9 @@ import { parse } from "yaml";
 import {
   TEMPLATE,
   gateScript,
+  indentBlock,
+  isKnownTemplate,
+  SUMMARY_SCRIPT_V1,
   type GateLevel,
 } from "../../src/integrations/ci-install.js";
 
@@ -160,6 +163,52 @@ describe("ci-install template (all gates)", () => {
         "pull-requests": "write",
       });
     }
+  });
+
+  it("the Annotations + Job Summary step is continue-on-error: a crashed scan must not turn the advisory job red", () => {
+    for (const gate of GATES) {
+      const { wf } = renderParsed(gate);
+      const summary = (wf.jobs.scan?.steps ?? []).find((s) =>
+        s.name?.includes("Annotations + Job Summary"),
+      );
+      expect(summary, "no summary step in template").toBeDefined();
+      expect(summary?.["continue-on-error"]).toBe(true);
+    }
+  });
+});
+
+describe("v1 template recognition (upgrade path)", () => {
+  it("recognizes a real v1-generated workflow: the script embedded with indentBlock(…, 10)", () => {
+    const v1File = [
+      "name: Mjölnir",
+      "",
+      "on:",
+      "  pull_request:",
+      "",
+      "jobs:",
+      "  scan:",
+      "    runs-on: ubuntu-latest",
+      "    steps:",
+      "      - name: Scan changed code",
+      "        continue-on-error: true",
+      "        run: npx --yes mjolnir-qa@0.4.0 . --scope changed --json > mjolnir.json",
+      "      - name: Append findings to the Job Summary",
+      "        if: always()",
+      "        run: |",
+      `          node -e '`,
+      indentBlock(SUMMARY_SCRIPT_V1, 10),
+      `          '`,
+    ].join("\n");
+    expect(isKnownTemplate(v1File)).toBe(true);
+  });
+
+  it("still refuses a genuinely hand-customized workflow", () => {
+    const handCustomized = TEMPLATE("advisory").replace(
+      "Scan changed code",
+      "My custom scan",
+    );
+    expect(handCustomized).not.toBe(TEMPLATE("advisory"));
+    expect(isKnownTemplate(handCustomized)).toBe(false);
   });
 });
 

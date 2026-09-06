@@ -19,8 +19,10 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 import {
   compareFindings,
+  RULE_CATEGORIES,
   SCHEMA_VERSION,
   type Finding,
+  type RuleCategory,
   type ScanResult,
   type Severity,
 } from "./types.js";
@@ -43,7 +45,16 @@ import {
 import { renderTerminal } from "./reporter/terminal.js";
 import { renderSarif } from "./reporter/sarif.js";
 import { renderMermaid } from "./reporter/mermaid.js";
-import { computeChangedScope, filterToChanged } from "./scope/changed.js";
+import { ProgressRenderer, shouldRenderProgress } from "./reporter/progress.js";
+import { runSummaryCommand } from "./commands/summary.js";
+import { runWhyCommand } from "./commands/why.js";
+import { runHandoffCommand } from "./commands/handoff.js";
+import { runInstallCommand } from "./commands/install-agents.js";
+import {
+  computeChangedScope,
+  computeStagedFiles,
+  filterToChanged,
+} from "./scope/changed.js";
 import { asUniversal } from "./engine/rule-runner.js";
 import { enforceTierPolicy, type Tier } from "./engine/tier-policy.js";
 import type { QADoctorRule } from "./rules/rule.js";
@@ -73,6 +84,11 @@ import { ciInstall, type GateLevel } from "./integrations/ci-install.js";
 import { runForensics } from "./forensics/run.js";
 import { renderTriage, renderTriageMd } from "./forensics/triage.js";
 import { renderBadgeSnippet, writeBadge } from "./commands/badge.js";
+import {
+  renderRootHelp,
+  renderVerbHelp,
+  hasVerbHelp,
+} from "./commands/help.js";
 import { renderDebt } from "./commands/debt.js";
 import {
   createRuleScaffold,
@@ -127,7 +143,7 @@ import {
  * `scripts/sync-sarif-version.cjs` on release and guarded by
  * `tests/version-consistency.spec.ts` locally.
  */
-export const CLI_VERSION = "0.5.0";
+export const CLI_VERSION = "0.5.4";
 
 const UNIVERSAL_RULES = RULES.map(asUniversal);
 
@@ -259,9 +275,53 @@ interface CliArgs {
    * under an unchanged rule set. Local-only, never leaves the machine.
    */
   cache?: boolean;
+  /**
+   * --no-progress: never render the live scan-progress line, even on an
+   * interactive TTY (plan M3, additive flag). Progress is stderr-only
+   * and auto-disabled in CI/machine formats; this flag is the manual off.
+   */
+  noProgress?: boolean;
+  /**
+   * --category <cat> (repeatable): presentation filter — narrows the
+   * TERMINAL findings display (and handoff/why output) to the given
+   * rule categories. NEVER filters the scan, the JSON/SARIF output,
+   * or the score (agent-handoff plan §5.5).
+   */
+  categories?: RuleCategory[];
+  /**
+   * --score: print only the numeric score (or `unknown` when the repo
+   * has no tests) instead of the full report. Pure rendering flag:
+   * scan semantics and exit codes are unchanged (plan §5.6).
+   */
+  scoreOnly?: boolean;
+  /**
+   * --staged: scan-surface restriction (plan §5.7) — intersect the
+   * discovered test files with the git staged file list. Does NOT
+   * change rule semantics; score implications come only from the
+   * narrowed surface (labeled as such in the report).
+   */
+  staged?: boolean;
+  /**
+   * --blocking error|warning|none (plan §5.8): invocation-level gate
+   * override. Controls PROCESS EXIT BEHAVIOR ONLY via the existing
+   * exitForFindings mechanism — detection, rendering, JSON and score
+   * are identical under all three values. Overrides config.gate.
+   */
+  blocking?: "error" | "warning" | "none";
 }
 
-export function parseArgs(argv: string[]): CliArgs | null {
+/** A usage-error detail: the offending token, when one exists. */
+export interface UsageErrorDetail {
+  /** The unknown flag or rejected value (e.g. `--nope`, `loud`). */
+  token?: string | undefined;
+  /** The flag whose value was rejected (`--tone` for `--tone loud`). */
+  flag?: string | undefined;
+}
+
+export function parseArgs(
+  argv: string[],
+  onError?: (detail: UsageErrorDetail) => void,
+): CliArgs | null {
   const args: CliArgs = {
     target: ".",
     json: false,
@@ -269,6 +329,10 @@ export function parseArgs(argv: string[]): CliArgs | null {
     maxDurationMs: Number.POSITIVE_INFINITY,
     scopeChanged: false,
     format: "terminal",
+  };
+  const reject = (detail: UsageErrorDetail): null => {
+    onError?.(detail);
+    return null;
   };
   for (let i = 0; i < argv.length; i++) {
     const a: string = argv[i] ?? "";
@@ -282,12 +346,13 @@ export function parseArgs(argv: string[]): CliArgs | null {
       else if (fmt === "json") {
         args.format = "json";
         args.json = true;
-      } else if (fmt !== "terminal") return null;
+      } else if (fmt !== "terminal")
+        return reject({ flag: "--format", token: fmt });
     } else if (a === "--verbose") args.verbose = true;
     else if (a === "--scope") {
       const mode = argv[++i];
       if (mode === "changed") args.scopeChanged = true;
-      else return null; // unknown scope = usage error
+      else return reject({ flag: "--scope", token: mode }); // unknown scope
     } else if (a === "--base") {
       const ref = argv[++i];
       if (!ref || ref.startsWith("-")) return null;
@@ -307,7 +372,7 @@ export function parseArgs(argv: string[]): CliArgs | null {
     } else if (a === "--tone") {
       const tone = argv[++i];
       if (tone === "blunt") args.tone = "blunt";
-      else return null; // unknown tone = usage error
+      else return reject({ flag: "--tone", token: tone }); // unknown tone
     } else if (a === "--strict") {
       args.strict = true;
     } else if (a === "--debug") {
@@ -316,14 +381,134 @@ export function parseArgs(argv: string[]): CliArgs | null {
       args.recordMilestones = true;
     } else if (a === "--cache") {
       args.cache = true;
+    } else if (a === "--no-progress") {
+      args.noProgress = true;
+    } else if (a === "--category") {
+      const cat = argv[++i];
+      const valid: readonly string[] = RULE_CATEGORIES;
+      if (cat === undefined || !valid.includes(cat)) {
+        return reject({ flag: "--category", token: cat });
+      }
+      args.categories = [...(args.categories ?? []), cat as RuleCategory];
+    } else if (a === "--score") {
+      args.scoreOnly = true;
+    } else if (a === "--staged") {
+      args.staged = true;
+    } else if (a === "--blocking") {
+      const level = argv[++i];
+      if (level === "error" || level === "warning" || level === "none") {
+        args.blocking = level;
+      } else {
+        return reject({ flag: "--blocking", token: level });
+      }
     } else if (a === "--help" || a === "-h") {
       return null;
     } else if (!a.startsWith("-")) {
       args.target = a;
     } else {
-      return null; // unknown flag = usage error (exit 10)
+      return reject({ token: a }); // unknown flag = usage error (exit 10)
     }
   }
+  return args;
+}
+
+/** Scan flags that exist — the "did you mean" candidate pool. */
+const KNOWN_SCAN_FLAGS = [
+  "--json",
+  "--format",
+  "--verbose",
+  "--scope",
+  "--base",
+  "--max-duration",
+  "--width",
+  "--ascii",
+  "--no-ascii",
+  "--tone",
+  "--strict",
+  "--debug",
+  "--record-milestones",
+  "--cache",
+  "--help",
+  "-h",
+  "--version",
+  "-v",
+  "--dry-run",
+];
+
+/** Hand-rolled Levenshtein distance (plan M2: no new dependencies). */
+export function levenshtein(a: string, b: string): number {
+  if (a === b) return 0;
+  if (a.length === 0) return b.length;
+  if (b.length === 0) return a.length;
+  // Memoized edit-distance walk. Map-based memo (not row arrays) keeps
+  // every access defined — no defensive ?? arms for the coverage gate.
+  const memo = new Map<string, number>();
+  const walk = (i: number, j: number): number => {
+    if (i === a.length) return b.length - j;
+    if (j === b.length) return a.length - i;
+    const key = `${i}:${j}`;
+    const hit = memo.get(key);
+    if (hit !== undefined) return hit;
+    const cost = a[i] === b[j] ? 0 : 1;
+    const best = Math.min(
+      walk(i + 1, j) + 1,
+      walk(i, j + 1) + 1,
+      walk(i + 1, j + 1) + cost,
+    );
+    memo.set(key, best);
+    return best;
+  };
+  return walk(0, 0);
+}
+
+/** Nearest known flags within distance ≤ 2, nearest first. */
+export function nearestFlags(flag: string, max = 3): string[] {
+  return KNOWN_SCAN_FLAGS.map((f) => ({ f, d: levenshtein(flag, f) }))
+    .filter((x) => x.d <= 2)
+    .sort((x, y) => x.d - y.d)
+    .slice(0, max)
+    .map((x) => x.f);
+}
+
+/**
+ * Friendly usage error (plan M2, exit 10 preserved): nearest-flag
+ * suggestion, the valid neighbors, and the exact help command. Printed
+ * to stderr; findings/usage stay on their documented streams.
+ */
+export function usageErrorMessage(detail: UsageErrorDetail): string {
+  const lines: string[] = [];
+  if (detail.flag) {
+    lines.push(
+      `mjolnir: invalid value "${detail.token ?? ""}" for ${detail.flag}`,
+    );
+  } else {
+    lines.push(`mjolnir: unknown flag "${detail.token ?? ""}"`);
+  }
+  if (detail.token) {
+    const near = nearestFlags(detail.token);
+    if (near.length > 0) {
+      lines.push(`  Did you mean: ${near.join("  ")}`);
+    }
+  }
+  lines.push(`  Run mjolnir --help for the full flag list.`);
+  return lines.join("\n");
+}
+
+/**
+ * Shared parse-or-report path for scan-backed subcommands: friendly
+ * usage errors on stderr (exit 10), the full overview only for an
+ * explicit help flag. Returns null when the caller must exit 10.
+ */
+function parseArgsOrUsage(
+  argv: string[],
+  io: { out: Output; err: Output },
+): CliArgs | null {
+  let reported = false;
+  const args = parseArgs(argv, (detail) => {
+    reported = true;
+    io.err(usageErrorMessage(detail));
+  });
+  if (!args && !reported) printUsage(io.out);
   return args;
 }
 
@@ -332,6 +517,18 @@ export interface ScanHooks {
   onRuleCrash?: (ruleId: string, file: string, error: unknown) => void;
   /** Invoked for non-fatal config warnings (bug-audit M4). */
   onConfigWarning?: (message: string) => void;
+  /**
+   * Live-progress feed (plan M3, additive). Fired from the per-file
+   * parse+rules loop and the phase boundaries. Render-on-event only —
+   * the scan never waits on a timer, and output contracts are
+   * unchanged when the hook is absent.
+   */
+  onProgress?: (e: {
+    phase: "discover" | "parse" | "rules" | "score";
+    done?: number | undefined;
+    total?: number | undefined;
+    detail?: string | undefined;
+  }) => void;
 }
 
 /**
@@ -476,6 +673,38 @@ export async function runScan(
   const wfBucket: string[] = [];
   githubActionsAdapter.discoverTestFiles({ ...ctx, testFiles: wfBucket });
   ctx.testFiles.push(...wfBucket);
+  // --staged (agent-handoff plan §5.7): scan-surface restriction. The
+  // discovered set is intersected with the staged file list. Degraded
+  // (no git) → fall back to the full surface + an honest stderr note
+  // (hooked through onConfigWarning); findings are never silently
+  // dropped by a broken git call.
+  let stagedSurface = false;
+  if (args.staged) {
+    const staged = computeStagedFiles(scanRoot.root);
+    if (staged === null) {
+      hooks.onConfigWarning?.(
+        "mjolnir: --staged ignored — not a git repository (scanning the full surface).",
+      );
+    } else {
+      const stagedSet = new Set(staged.map((s) => s.replace(/\\/g, "/")));
+      // relative() normalizes absolute discovered paths to staged-name
+      // form; both sides are POSIX-slashed before comparison.
+      ctx.testFiles = ctx.testFiles.filter((f) =>
+        stagedSet.has(relative(scanRoot.root, f).replace(/\\/g, "/")),
+      );
+      stagedSurface = true;
+      if (ctx.testFiles.length === 0) {
+        hooks.onConfigWarning?.(
+          "mjolnir: --staged — no staged files match the scan surface.",
+        );
+      }
+    }
+  }
+  hooks.onProgress?.({
+    phase: "discover",
+    done: ctx.testFiles.length,
+    total: ctx.testFiles.length,
+  });
 
   // Audit H-3: the deadline is checked per file here too — discovery
   // alone no longer owns the budget.
@@ -535,6 +764,12 @@ export async function runScan(
       for (const f of cachedFindings) findings.push(f);
       continue;
     }
+    hooks.onProgress?.({
+      phase: "parse",
+      done: scanned,
+      total: ctx.testFiles.length,
+      detail: relPath,
+    });
     const adapter = isWorkflow
       ? githubActionsAdapter
       : isPython
@@ -556,6 +791,12 @@ export async function runScan(
     const findingsStart = findings.length;
     try {
       if (adapter.parseAst && Date.now() <= deadline) {
+        hooks.onProgress?.({
+          phase: "rules",
+          done: scanned,
+          total: ctx.testFiles.length,
+          detail: relPath,
+        });
         parsed = await adapter.parseAst(parsedFile);
       }
       const fileForRules: ParsedFile = parsed
@@ -703,6 +944,7 @@ export async function runScan(
       // carries no runtime evidence (same degrade posture as forensics).
     }
   }
+  hooks.onProgress?.({ phase: "score", done: findings.length });
   const dimensions = computeDimensions(findings);
   const rawDeductions = findings.reduce((sum, f) => sum + deductionFor(f), 0);
   const total = computeTotal(dimensions, findings, {
@@ -716,8 +958,17 @@ export async function runScan(
   // A "100/100" on a repo with zero tests would be a false proof.
   const hasTests = testFileCount > 0;
 
+  // Agent-handoff plan §5.1: every emitted finding carries a remediation
+  // group id. Current strategy: one rule = one remediation group, so
+  // fixGroupId = ruleId — an implementation choice, NOT a semantic
+  // promise (consumers must not rely on the equality permanently).
+  for (const f of findings) {
+    f.fixGroupId = f.ruleId;
+  }
+
   const result: ScanResult = {
     schemaVersion: SCHEMA_VERSION,
+    ...(stagedSurface ? { staged: { files: testFileCount } } : {}),
     partial: discoveryTruncated || rulesPartial || skippedFiles > 0,
     score: hasTests ? total : null,
     ...(hasTests ? {} : { reason: "no-tests-found" as const }),
@@ -933,10 +1184,7 @@ export function runForensicsCommand(
     // Exit 1 only when true flakes or failures exist.
     return report.flakyTests > 0 || report.failed > 0 ? 1 : 0;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
     return 20;
   }
 }
@@ -1003,10 +1251,7 @@ export function runDoctorCommand(
     io.out(renderDoctorReport(report));
     return report.healthy ? 0 : 1;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
     return 20;
   }
 }
@@ -1075,10 +1320,7 @@ export function runExplainCommand(
     if (!result.ok) return 10; // unknown rule ID is a usage error, not a crash
     return 0;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
     return 20;
   }
 }
@@ -1124,9 +1366,8 @@ export async function runScanCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
-  const args = parseArgs(argv);
+  const args = parseArgsOrUsage(argv, io);
   if (!args) {
-    printUsage(io.out);
     return 10;
   }
   const target = resolve(args.target);
@@ -1135,11 +1376,24 @@ export async function runScanCommand(
   try {
     // Audit R-9: collect swallowed rule crashes; --debug prints them.
     const crashLog: string[] = [];
+    // Plan M3: live progress on stderr, event-driven. Auto-off when
+    // stderr is not a TTY, in machine formats, in CI, or via
+    // --no-progress — shouldRenderProgress owns the whole matrix.
+    const progress = new ProgressRenderer({
+      stream: process.stderr,
+      isTTY: shouldRenderProgress({
+        isTTY: (process.stderr as { isTTY?: boolean }).isTTY === true,
+        noProgress: args.noProgress === true,
+        machineFormat: args.format !== "terminal",
+        env: process.env,
+      }),
+    });
     // Bug-audit M4: non-fatal config warnings reach stderr in every mode.
     const result = await runScan(
       { ...args, target },
       {
         onConfigWarning: (message) => io.err(message),
+        onProgress: (e) => progress.onEvent(e),
         ...(args.debug
           ? {
               onRuleCrash: (ruleId: string, file: string, error: unknown) => {
@@ -1151,12 +1405,36 @@ export async function runScanCommand(
           : {}),
       },
     );
+    progress.done();
     if (args.debug && crashLog.length > 0) {
       io.err(
         `debug: ${crashLog.length} rule crash(es) were swallowed by crash isolation:`,
       );
       for (const line of crashLog.slice(0, 50)) io.err(`  ${line}`);
       if (crashLog.length > 50) io.err(`  … and ${crashLog.length - 50} more`);
+    }
+    if (args.scoreOnly) {
+      // Plan §5.6: --score prints ONLY the numeric score (or `unknown`
+      // when the repo has no tests — never a fake 0, R2). Pure rendering
+      // flag: scan semantics and the exit code below are unchanged. A
+      // stderr note keeps stdout machine-clean when --json was also
+      // requested.
+      if (args.json) {
+        io.err("--score overrides --json; stdout is the bare score.");
+      }
+      const { config: scoreConfig } = loadConfig(target, {
+        knownRuleIds: KNOWN_RULE_IDS,
+      });
+      io.out(result.score === null ? "unknown" : String(result.score));
+      // Plan §5.8: --blocking (invocation) overrides config.gate —
+      // it changes exit status only, never detection or rendering.
+      // "none" maps to the existing advisory gate (exit 0 unless partial).
+      return exitForFindings(
+        result.findings,
+        args.blocking === "none"
+          ? "advisory"
+          : (args.blocking ?? scoreConfig.gate ?? "error"),
+      );
     }
     if (args.format === "sarif") {
       io.out(renderSarif(result));
@@ -1165,10 +1443,21 @@ export async function runScanCommand(
     } else if (args.json) {
       io.out(JSON.stringify(result, null, 2));
     } else {
+      // Plan §5.5: --category is a presentation filter. The renderer
+      // sees only the filtered list; the score/JSON/full contract are
+      // untouched, and the renderer prints the hidden-count note.
+      const categories = args.categories;
+      const visible =
+        categories && categories.length > 0
+          ? result.findings.filter((f) => categories.includes(f.category))
+          : result.findings;
       io.out(
         renderTerminal(result, {
           isTTY: process.stdout.isTTY ?? false,
           verbose: args.verbose,
+          ...(categories && categories.length > 0
+            ? { visibleFindings: visible }
+            : {}),
           ...(args.width !== undefined ? { width: args.width } : {}),
           ...(args.ascii !== undefined ? { ascii: args.ascii } : {}),
           ...(args.tone !== undefined ? { tone: args.tone } : {}),
@@ -1226,7 +1515,12 @@ export async function runScanCommand(
       knownRuleIds: KNOWN_RULE_IDS,
     });
     for (const w of warnings) io.err(w);
-    return exitForFindings(result.findings, config.gate ?? "error");
+    return exitForFindings(
+      result.findings,
+      args.blocking === "none"
+        ? "advisory"
+        : (args.blocking ?? config.gate ?? "error"),
+    );
   } catch (err) {
     // Bug-audit M4: a config typo is a user error with an actionable
     // message — usage exit 10, not "internal error" exit 20.
@@ -1234,10 +1528,7 @@ export async function runScanCommand(
       io.err(err.message);
       return 10;
     }
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, args?.debug === true);
     return 20;
   }
 }
@@ -1299,10 +1590,7 @@ export function runTriageCommand(
     }
     return 0;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
     return 20;
   }
 }
@@ -1312,9 +1600,8 @@ export async function runBadgeCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
-  const args = parseArgs(argv);
+  const args = parseArgsOrUsage(argv, io);
   if (!args) {
-    printUsage(io.out);
     return 10;
   }
   try {
@@ -1328,10 +1615,7 @@ export async function runBadgeCommand(
     io.out(renderBadgeSnippet(result));
     return 0;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, args?.debug === true);
     return 20;
   }
 }
@@ -1341,9 +1625,8 @@ export async function runDebtCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
-  const args = parseArgs(argv);
+  const args = parseArgsOrUsage(argv, io);
   if (!args) {
-    printUsage(io.out);
     return 10;
   }
   try {
@@ -1354,10 +1637,7 @@ export async function runDebtCommand(
     io.out(renderDebt(result));
     return 0;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, args?.debug === true);
     return 20;
   }
 }
@@ -1368,9 +1648,11 @@ export async function runFixCommand(
   io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
   const dryRun = argv.includes("--dry-run");
-  const args = parseArgs(argv.filter((a) => a !== "--dry-run"));
+  const args = parseArgsOrUsage(
+    argv.filter((a) => a !== "--dry-run"),
+    io,
+  );
   if (!args) {
-    printUsage(io.out);
     return 10;
   }
   try {
@@ -1387,10 +1669,7 @@ export async function runFixCommand(
     // Exit 1 when anything failed verification; applied/dry-run is fine.
     return fixes.some((f) => f.status === "failed") ? 1 : 0;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, args?.debug === true);
     return 20;
   }
 }
@@ -1413,10 +1692,7 @@ export function runCreateRuleCommand(
     io.out(renderScaffoldReport(result));
     return result.ok ? 0 : 1;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
     return 20;
   }
 }
@@ -1445,7 +1721,6 @@ export async function runImpactCommand(
       : argv.filter((_a, i) => i !== sinceIdx && i !== sinceIdx + 1),
   );
   if (!args) {
-    printUsage(io.out);
     return 10;
   }
   try {
@@ -1459,10 +1734,7 @@ export async function runImpactCommand(
     io.out(renderImpact(report));
     return report.hasComparison ? 0 : 2;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, args?.debug === true);
     return 20;
   }
 }
@@ -1472,9 +1744,8 @@ export async function runBaselineCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
-  const args = parseArgs(argv);
+  const args = parseArgsOrUsage(argv, io);
   if (!args) {
-    printUsage(io.out);
     return 10;
   }
   try {
@@ -1493,10 +1764,7 @@ export async function runBaselineCommand(
     );
     return 0;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, args?.debug === true);
     return 20;
   }
 }
@@ -1506,9 +1774,8 @@ export async function runDiffCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
-  const args = parseArgs(argv);
+  const args = parseArgsOrUsage(argv, io);
   if (!args) {
-    printUsage(io.out);
     return 10;
   }
   try {
@@ -1554,10 +1821,7 @@ export async function runDiffCommand(
     if (!diff.hasBaseline) return 2;
     return diff.newFindings.some((f) => f.severity === "error") ? 1 : 0;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, args?.debug === true);
     return 20;
   }
 }
@@ -1567,9 +1831,8 @@ export async function runPrCommentCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
-  const args = parseArgs(argv);
+  const args = parseArgsOrUsage(argv, io);
   if (!args) {
-    printUsage(io.out);
     return 10;
   }
   try {
@@ -1579,13 +1842,15 @@ export async function runPrCommentCommand(
     const result = await runScan({ ...args, target });
     const baseline = loadBaseline(join(target, DEFAULT_BASELINE_PATH));
     const diff = baseline ? diffAgainstBaseline(result, baseline) : undefined;
-    io.out(renderPrComment(result, diff ? { diff } : {}));
+    io.out(
+      renderPrComment(result, {
+        ...(diff ? { diff } : {}),
+        version: CLI_VERSION,
+      }),
+    );
     return 0;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, args?.debug === true);
     return 20;
   }
 }
@@ -1602,10 +1867,7 @@ export function runStatsCommand(
     io.out(renderStats(stats));
     return 0;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
     return 20;
   }
 }
@@ -1615,9 +1877,8 @@ export async function runHandoverCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
-  const args = parseArgs(argv);
+  const args = parseArgsOrUsage(argv, io);
   if (!args) {
-    printUsage(io.out);
     return 10;
   }
   try {
@@ -1640,10 +1901,7 @@ export async function runHandoverCommand(
     io.out(renderHandover(buildHandover(result, forensics)));
     return 0;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, args?.debug === true);
     return 20;
   }
 }
@@ -1673,10 +1931,7 @@ export function runInitCommand(
     io.out(renderInit(result));
     return 0;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
     return 20;
   }
 }
@@ -1706,28 +1961,40 @@ export function runPwReportCommand(
     io.out(renderPwRunSummary(summarizePwRun(report)));
     return report.failed > 0 || report.flakyTests > 0 ? 1 : 0;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
     return 20;
   }
 }
 
 export async function main(
   argv: string[] = process.argv.slice(2),
+  io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
   // `--version` is the first thing most people type against an unfamiliar
   // CLI. Without this it fell through to the scan arg parser, which does
   // not know the flag, and printed the full help — technically not a
   // crash, but it answers a different question than the one asked.
   if (argv[0] === "--version" || argv[0] === "-v") {
-    out(`mjolnir-qa ${CLI_VERSION}\n`);
+    io.out(`mjolnir-qa ${CLI_VERSION}\n`);
     return 0;
   }
   // Subcommands (§69): ci install · suppressions · forensics · doctor:playwright
   // Scan-backed handlers are async since the Phase 0.5 parse stage (§10) —
   // returning their promise from this async dispatcher awaits it.
+  // `<verb> --help` / `<verb> -h` routes to the help registry (plan M2)
+  // before any handler parses flags.
+  if (argv.length >= 2 && (argv[1] === "--help" || argv[1] === "-h")) {
+    return runHelpCommand([argv[0] as string], io);
+  }
+  // Two-word verb: `ci install --help` (argv[1] is "install", so the
+  // single-word interception above does not fire).
+  if (
+    argv[0] === "ci" &&
+    argv.length >= 3 &&
+    (argv[2] === "--help" || argv[2] === "-h")
+  ) {
+    return runHelpCommand(["ci", "install"], io);
+  }
   if (argv[0] === "ci" && argv[1] === "install")
     return runCiInstall(argv.slice(2));
   if (argv[0] === "suppressions") return runSuppressions();
@@ -1739,6 +2006,7 @@ export async function main(
   if (argv[0] === "baseline") return runBaselineCommand(argv.slice(1));
   if (argv[0] === "diff") return runDiffCommand(argv.slice(1));
   if (argv[0] === "pr-comment") return runPrCommentCommand(argv.slice(1));
+  if (argv[0] === "summary") return runSummaryCommand(argv.slice(1), io);
   if (argv[0] === "stats") return runStatsCommand(argv.slice(1));
   if (argv[0] === "fix") return runFixCommand(argv.slice(1));
   if (argv[0] === "create-rule") return runCreateRuleCommand(argv.slice(1));
@@ -1749,85 +2017,67 @@ export async function main(
   if (argv[0] === "rules") return runRulesCommand(argv.slice(1));
   if (argv[0] === "explain") return runExplainCommand(argv.slice(1));
   if (argv[0] === "doctor:playwright") return runDoctorPlaywright(argv);
-  return runScanCommand(argv);
+  if (argv[0] === "why") return runWhyCommand(argv.slice(1), io);
+  if (argv[0] === "handoff") return runHandoffCommand(argv.slice(1), io);
+  if (argv[0] === "install") return runInstallCommand(argv.slice(1), io);
+  // `help` must dispatch BEFORE the scan fall-through: an unknown verb
+  // becomes a scan target (mjolnir ./help scans a folder named help;
+  // bare `mjolnir help` used to scan the CWD as if it were a path).
+  if (argv[0] === "help") return runHelpCommand(argv.slice(1), io);
+  return runScanCommand(argv, io);
+}
+
+/**
+ * `mjolnir help` / `mjolnir help <verb>` (plan M2). `--help`/`-h` and
+ * `<verb> --help` route here too. Exit 0 — help answers a question.
+ * Two-word verbs (`ci install`) are resolved first via the join of the
+ * leading non-flag tokens, then the single-word form.
+ */
+export function runHelpCommand(
+  argv: string[],
+  io: { out: Output; err: Output } = { out, err },
+): number {
+  const tokens = argv.filter((a) => !a.startsWith("-"));
+  if (tokens.length >= 2) {
+    const joined = `${tokens[0]} ${tokens[1]}`;
+    if (hasVerbHelp(joined)) {
+      io.out(renderVerbHelp(joined));
+      return 0;
+    }
+  }
+  if (tokens.length > 0) {
+    io.out(renderVerbHelp(tokens[0] as string));
+    return 0;
+  }
+  io.out(renderRootHelp(SCHEMA_VERSION));
+  return 0;
 }
 
 function printUsage(print: (s: string) => void): void {
-  print(`🔨 mjölnir — verification trust engine for test suites and CI pipelines
+  print(renderRootHelp());
+}
 
-Usage: mjolnir [path] [options] · mjolnir <subcommand> [args]
-
-The product is one command in CI:
-
-  mjolnir --scope changed        scan only what the branch touched; exit 1 on
-                                 new findings. \`mjolnir ci install\` writes the
-                                 workflow for you.
-
-Everything else is optional.
-
-  mjolnir [path]                 full-repo scan + WORTHINESS score
-  mjolnir explain <RULE-ID>      what/why/fix + measured FP rate for one rule
-  mjolnir rules --unmeasured     the rules running on assumption, not measurement
-
-Options:
-  --json                machine-readable output (schemaVersion ${SCHEMA_VERSION})
-  --format sarif        SARIF 2.1 output for GitHub Code Scanning
-  --format mermaid      test-architecture diagram (frameworks → rule
-                        categories → severity), pastes directly into a
-                        GitHub/GitLab markdown comment or a slide
-  --tone blunt          blunter, pattern-mocking messages (opt-in)
-  --verbose             show all findings
-  --scope changed       only findings on new/changed lines vs merge-base
-  --base <ref>          base ref for --scope changed (default: main, then
-                        master, then origin/HEAD); uncommitted local
-                        changes are always included
-  --max-duration <sec>  stop analysis after N seconds (partial results flagged)
-  --width <cols>        override terminal width for box/gauge wrapping
-                        (defaults to the detected terminal width, or 80)
-  --ascii               force plain-ASCII glyphs/box-drawing (auto-detected
-                        for cmd.exe/legacy consoles; use this to force it
-                        anywhere, e.g. an unrecognized CI log renderer)
-  --no-ascii            force Unicode box-drawing even where auto-detection
-                        would have chosen ASCII
-  --strict              include quarantine-tier rules (higher FP risk) in scan
-  --debug               print errors swallowed by rule crash isolation
-                        (display-only; exit codes unchanged)
-  --record-milestones   allow this scan to write .mjolnir/stats.json for
-                        milestone tracking (default: scans never write)
-  --cache               reuse per-file verdicts from the local cache
-                        (.mjolnir/cache/, content-addressed, never leaves
-                        this machine); identical results, faster re-scans
-  -v, --version         print the installed version and exit
-  -h, --help            show this help
-
-Subcommands — everyday:
-  ci install [--gate advisory|error|warning] [--force]
-                                   generate the PR workflow; --force overwrites
-                                   a hand-customized one (default: refuse)
-  explain <RULE-ID> [--fixtures-root <dir>]     what/why/fix + measured FP rate
-  rules [--md] [--unmeasured|--measured] [--external]   rule catalog with trust metadata
-  suppressions                                  list suppressed findings
-
-Subcommands — when something's flaky:
-  forensics <dir|file> [--no-flaky-md]          runtime evidence: retries, flakes
-  triage <dir|file> [--no-md]                   flaky-triage proposal + TRIAGE.md
-  pw-report <dir|file>                          Playwright run summary
-  doctor:playwright                             Playwright deep scan + Selector Health
-
-Subcommands — occasional / reporting:
-  fix [--dry-run]                               apply safe auto-fixes with proof
-  baseline / diff                               snapshot findings, then new/worsened only
-  impact [--since <ref>]                        what changed since a prior commit
-  debt                                          test-debt register with a cost model
-  handover                                      new-QA onboarding map of the suite
-  stats                                         all-time local counters of fixes seen
-  badge                                         shields.io endpoint JSON + snippet
-  pr-comment                                    render a scoped PR comment (Markdown)
-  init [--interactive]                          detect frameworks + setup checklist
-  create-rule <ID> --title "..."                scaffold a new rule + fixtures
-  doctor                                        self-audit of the rule base
-
-Exit codes: 0 clean · 1 errors found · 2 partial · 10 usage · 20 crash`);
+/**
+ * Friendly exit-20 path (plan M2): the crash says it's Mjölnir's bug,
+ * not the user's repo, carries the underlying message for a report, and
+ * prints the stack ONLY when `debug` is set (uniform across
+ * subcommands — they don't parse scan flags). Tests pin
+ * /internal error/i. Exported so the --debug stack arm is directly
+ * spec-coverable (spawning a real crash under --debug would be flaky).
+ */
+export function internalErrorMessage(
+  err: unknown,
+  emit: (s: string) => void,
+  debug: boolean,
+): void {
+  const message = err instanceof Error ? err.message : String(err);
+  emit("mjolnir internal error — this is a bug in Mjölnir, not your repo:");
+  emit(`  ${message}`);
+  if (debug && err instanceof Error && err.stack) {
+    emit(err.stack);
+  }
+  emit("Rerun with --debug for the stack trace. Please report this:");
+  emit("  https://github.com/Sergey-Bar/Mjolnir/issues");
 }
 
 // Run only when this module is the entry point (not when tests import it).

@@ -11,6 +11,9 @@
  */
 
 import type { ForensicsReport } from "../forensics/types.js";
+import { FLAKE_GLYPH, sectionHeader, plainContext } from "../reporter/ui.js";
+
+const ui = plainContext();
 
 export interface PwRunSummary {
   total: number;
@@ -47,14 +50,14 @@ export function summarizePwRun(report: ForensicsReport): PwRunSummary {
 
 export function renderPwRunSummary(s: PwRunSummary): string {
   const lines: string[] = [];
-  lines.push("🔨 MJÖLNIR — RUN SUMMARY");
+  lines.push(sectionHeader("MJÖLNIR — RUN SUMMARY", ui));
   lines.push("");
   lines.push(
     `${s.total} tests · ${s.passed} passed · ${s.failed} failed · ${s.skipped} skipped`,
   );
   if (s.retried > 0 || s.trueFlakes > 0) {
     lines.push(
-      `↻ ${s.retried} retried · 🔥 ${s.trueFlakes} TRUE-FLAKE${s.trueFlakes === 1 ? "" : "S"} (passed only on attempt ≥2)`,
+      `↻ ${s.retried} retried · ${FLAKE_GLYPH} ${s.trueFlakes} TRUE-FLAKE${s.trueFlakes === 1 ? "" : "S"} (passed only on attempt ≥2)`,
     );
   }
   const secs = (s.wallTimeMs / 1000).toFixed(1);

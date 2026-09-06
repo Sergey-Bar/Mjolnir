@@ -29,6 +29,9 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 
 import type { Finding, ScanResult } from "../types.js";
+import { sectionHeader, plainContext } from "../reporter/ui.js";
+
+const ui = plainContext();
 
 export interface ImpactFinding {
   ruleId: string;
@@ -278,7 +281,7 @@ export async function computeImpact(
 
 export function renderImpact(report: ImpactReport): string {
   const lines: string[] = [];
-  lines.push("▚▞ IMPACT REPORT");
+  lines.push(sectionHeader("IMPACT REPORT", ui));
   lines.push("");
 
   if (!report.hasComparison) {

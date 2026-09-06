@@ -9,6 +9,9 @@
 
 import type { ScanResult, Finding } from "../types.js";
 import type { ForensicsReport } from "../forensics/types.js";
+import { sectionHeader, plainContext } from "../reporter/ui.js";
+
+const ui = plainContext();
 
 export interface HandoverSection {
   heading: string;
@@ -138,9 +141,9 @@ export function buildHandover(
 
 export function renderHandover(map: HandoverMap): string {
   const lines: string[] = [];
-  lines.push("╔══════════════════════════════════════════════╗");
-  lines.push("║ WELCOME TO THE TEST SUITE — WHAT YOU NEED TO KNOW");
-  lines.push("╚══════════════════════════════════════════════╝");
+  lines.push(
+    sectionHeader("WELCOME TO THE TEST SUITE — WHAT YOU NEED TO KNOW", ui),
+  );
   lines.push("");
   lines.push(map.summaryLine);
   for (const s of map.sections) {

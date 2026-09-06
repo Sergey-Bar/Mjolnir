@@ -85,7 +85,7 @@ fails CI if it drifts.</sub>
 Run `mjolnir explain QA-CI-001` on the first finding above and you get:
 
 ```text
-▚▞ QA-CI-001 — continue-on-error masks a failing verification gate
+▚ QA-CI-001 — continue-on-error masks a failing verification gate
 
 Severity:    error
 Confidence:  high
@@ -417,7 +417,7 @@ mjolnir forensics ./test-results/
 ```
 
 ```text
-▚▞ FLAKINESS LEADERBOARD
+▚ FLAKINESS LEADERBOARD
 
 3 tests · 1 failed · 1 flaky · 1 retried
 

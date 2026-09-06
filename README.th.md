@@ -61,7 +61,7 @@ npx mjolnir-qa@latest
 รัน `mjolnir explain QA-CI-001` กับ finding แรกด้านบน แล้วคุณจะได้:
 
 ```text
-▚▞ QA-CI-001 — continue-on-error masks a failing verification gate
+▚ QA-CI-001 — continue-on-error masks a failing verification gate
 
 Severity:    error
 Confidence:  high
@@ -370,7 +370,7 @@ repo ว่างจะได้คะแนน `null` ไม่ใช่เล�
 ตัวชี้วัดพาดหัวสำหรับชุด Playwright — locator ของคุณทนทานแค่ไหน:
 
 ```text
-▚▞ SELECTOR HEALTH — e2e/checkout.spec.ts
+▚ SELECTOR HEALTH — e2e/checkout.spec.ts
 
   [█████████████████░░░]  83 / 100
   role/text: 2 · testid: 1 · css-chains: 1 ⚠ · xpath: 0
@@ -391,7 +391,7 @@ mjolnir forensics ./test-results/
 ```
 
 ```text
-▚▞ FLAKINESS LEADERBOARD
+▚ FLAKINESS LEADERBOARD
 
 3 tests · 1 failed · 1 flaky · 1 retried
 

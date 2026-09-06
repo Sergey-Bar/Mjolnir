@@ -1,5 +1,5 @@
 
-▚▞ SELECTOR HEALTH
+  ▚ SELECTOR HEALTH
 
 e2e/login.spec.ts
   [█████████████░░░░░░░]  65 / 100

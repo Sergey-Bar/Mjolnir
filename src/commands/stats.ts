@@ -29,6 +29,9 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 import type { BaselineDiff } from "./baseline.js";
+import { nextStep, sectionHeader, plainContext } from "../reporter/ui.js";
+
+const ui = plainContext();
 
 export const DEFAULT_STATS_PATH = join(".mjolnir", "stats.json");
 
@@ -186,15 +189,17 @@ export function saveStats(stats: StatsFile, outPath: string): boolean {
 
 export function renderStats(stats: StatsFile | null): string {
   const lines: string[] = [];
-  lines.push("▚▞ ALL-TIME STATS (this machine, this repo)");
+  lines.push(sectionHeader("ALL-TIME STATS (this machine, this repo)", ui));
   lines.push("");
 
   if (!stats || stats.recordedFixEvents === 0) {
     lines.push("No fixes recorded yet.");
     lines.push(
-      'Run "mjolnir baseline" then "mjolnir diff" after making fixes —',
+      "Fixes are counted here only when observed by mjolnir diff —",
+      "capture a baseline first, then diff after making fixes:",
     );
-    lines.push("every real fix diff observes gets counted here, honestly.");
+    lines.push(nextStep("mjolnir baseline", ui));
+    lines.push(nextStep("mjolnir diff", ui));
     lines.push("");
     lines.push(
       "UNKNOWN: totals before tracking started. This command only counts",

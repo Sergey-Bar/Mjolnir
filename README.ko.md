@@ -61,7 +61,7 @@ docs:demo`로 재생성합니다.
 위의 첫 번째 발견에 대해 `mjolnir explain QA-CI-001`을 실행하면:
 
 ```text
-▚▞ QA-CI-001 — continue-on-error masks a failing verification gate
+▚ QA-CI-001 — continue-on-error masks a failing verification gate
 
 Severity:    error
 Confidence:  high
@@ -372,7 +372,7 @@ TypeScript와 Python이 가장 넓은 측정된 커버리지를 갖습니다. Ja
 Playwright 스위트의 대표 지표 — 당신의 로케이터는 얼마나 튼튼한가:
 
 ```text
-▚▞ SELECTOR HEALTH — e2e/checkout.spec.ts
+▚ SELECTOR HEALTH — e2e/checkout.spec.ts
 
   [█████████████████░░░]  83 / 100
   role/text: 2 · testid: 1 · css-chains: 1 ⚠ · xpath: 0
@@ -394,7 +394,7 @@ mjolnir forensics ./test-results/
 ```
 
 ```text
-▚▞ FLAKINESS LEADERBOARD
+▚ FLAKINESS LEADERBOARD
 
 3 tests · 1 failed · 1 flaky · 1 retried
 

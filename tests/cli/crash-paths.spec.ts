@@ -24,6 +24,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import {
+  internalErrorMessage,
   parseArgs,
   runBadgeCommand,
   runBaselineCommand,
@@ -32,6 +33,39 @@ import {
   runForensicsCommand,
   runHandoverCommand,
 } from "../../src/cli.js";
+
+describe("internalErrorMessage: the --debug stack arm", () => {
+  const emit = (): { lines: string[]; out: (s: string) => void } => {
+    const lines: string[] = [];
+    return { lines, out: (s: string) => lines.push(s) };
+  };
+
+  it("with debug: the Error's stack is emitted between the message and the pointer", () => {
+    const { lines, out } = emit();
+    const err = new Error("boom");
+    internalErrorMessage(err, out, true);
+    expect(lines.join("\n")).toContain("boom");
+    expect(lines.join("\n")).toContain(err.stack ?? "");
+    expect(lines[lines.length - 1]).toContain("issues");
+  });
+
+  it("without debug: the stack is never emitted", () => {
+    const { lines, out } = emit();
+    internalErrorMessage(new Error("boom"), out, false);
+    expect(lines.join("\n")).toContain("boom");
+    expect(lines.join("\n")).not.toContain("at ");
+  });
+
+  it("a non-Error throw degrades to String(err), with or without debug", () => {
+    const a = emit();
+    internalErrorMessage("plain string failure", a.out, true);
+    expect(a.lines.join("\n")).toContain("plain string failure");
+    expect(a.lines.join("\n")).not.toContain("at ");
+    const b = emit();
+    internalErrorMessage(undefined, b.out, false);
+    expect(b.lines.join("\n")).toContain("undefined");
+  });
+});
 
 describe("parseArgs: a flag as the last token with nothing after it", () => {
   it("--format with no value is a usage error", () => {
