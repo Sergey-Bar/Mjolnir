@@ -250,6 +250,30 @@ export const CORPUS: CorpusRepo[] = [
     note: "real TS app with e2e and CI — QA-CI-010 (PR-skipped test jobs) and QA-PW-115 surface.",
   },
 
+  // ── 2026-09-04 expansion — Stable 1.0 plan M2 (CI-family trust
+  //    repair): the dedicated GitHub-Actions workflow lane. Chosen so the
+  //    QA-CI-* rules are measured on DIVERSE real workflows (JVM, Yarn,
+  //    Python/multi-language CI), not starved samples: junit5 fires
+  //    QA-CI-005/008 on Maven-centric CI, yarn berry is the first real
+  //    QA-CI-009 surface (piped/sequenced test commands), pyca adds a
+  //    Python+Rust+OpenSSL CI surface. Scan durations verified non-
+  //    truncating against the 120s budget before adoption.
+  {
+    name: "junit-team-junit5",
+    url: "https://github.com/junit-team/junit5.git",
+    note: "real Java framework repo with Maven+Gradle CI workflows — QA-CI-005/008 on JVM CI plus a large QA-JV-103 consumer surface.",
+  },
+  {
+    name: "yarnpkg-berry",
+    url: "https://github.com/yarnpkg/berry.git",
+    note: "real Yarn monorepo with its own CI — the first real QA-CI-009 surface (piped/sequenced test commands in workflow run blocks) plus QA-TEST-003 at scale.",
+  },
+  {
+    name: "pyca-cryptography",
+    url: "https://github.com/pyca/cryptography.git",
+    note: "real Python+Rust crypto library with multi-language CI — QA-CI-005 surface plus QA-PY-007 at scale.",
+  },
+
   // ── §08 classes B/C — committed positive/negative fixture corpora.
   //    Class A (real OSS repos) is the preferred FP surface, but rules
   //    whose patterns are rare in the wild (deep frameLocator chains,

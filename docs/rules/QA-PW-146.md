@@ -41,10 +41,22 @@ Verified against `tests/fixtures/QA-PW-146/must-not-fire/selectors.spec.ts` — 
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo              | Occurrences |
-| ----------------- | ----------- |
-| negative-fixtures | 2           |
-| positive-fixtures | 15          |
+| Repo                                          | Occurrences |
+| --------------------------------------------- | ----------- |
+| grafana-grafana                               | 253         |
+| hashicorp-vault                               | 32          |
+| Humanizr-Humanizer                            | 18          |
+| keycloak-keycloak                             | 67          |
+| negative-fixtures                             | 2           |
+| nextauthjs-next-auth                          | 1           |
+| playwright-community-eslint-plugin-playwright | 229         |
+| positive-fixtures                             | 15          |
+| puppeteer-puppeteer                           | 228         |
+| sveltejs-kit                                  | 409         |
+| vercel-next-js                                | 158         |
+| vitejs-vite                                   | 117         |
+| vitest-dev-vitest                             | 23          |
+| withastro-astro                               | 498         |
 
 ---
 

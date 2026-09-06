@@ -50,6 +50,13 @@ export const exitCodeNotPropagated = defineRule({
   detectionStrategy: "FRAMEWORK",
   detectionNotes: "regex pattern on parsed workflow AST",
   introduced: "0.4.0",
+  // detectorRevision 2 (M2, 2026-09-04): quoted-string separators stripped
+  // from the `;`-sequence scan (adjudicated FP: yarn berry e2e workflow).
+  // detectorRevision 2 measured 2026-09-04: 0% FP at n=10 — declared
+  // extended because the core DoD requires n ≥ 20 AND the Wilson CI upper
+  // bound within the core bar (plan §23; CI high = 0.28 at n=10).
+  detectorRevision: 2,
+  tier: "extended",
 
   run(ctx) {
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
@@ -100,18 +107,35 @@ export const exitCodeNotPropagated = defineRule({
         // short-circuit `pipefail` already honored. (Case 1 above is NOT
         // covered by errexit: a pipeline's status is still the last
         // command's without pipefail, so it stays active there.)
+        // detectorRevision 2 (M2, 2026-09-04): `;` separators inside quoted
+        // strings (a generated JS test file piped through `tee`) are text,
+        // not shell separators — adjudicated FP: yarn berry
+        // e2e-vitest-workflow.yml. Quoted segments are stripped before the
+        // sequence scan; `TEST_CMD` is matched on the stripped text too, so
+        // a test command mentioned only inside a string no longer anchors
+        // the finding.
         if (/set\s+(?:-[A-Za-df-z]*e[A-Za-z]*|-o\s+errexit)\b/.test(run))
           continue;
+        const strippedRun = stripQuoted(run);
         // eslint-disable-next-line security/detect-non-literal-regexp -- TEST_CMD.source is a compile-time literal interpolation — not scan input
         const seqRe = new RegExp(
           `(?:${TEST_CMD.source})[^\\n;]*;\\s*[^\\n]+`,
           "g",
         );
         let sm: RegExpExecArray | null;
-        while ((sm = seqRe.exec(run)) !== null) {
+        while ((sm = seqRe.exec(strippedRun)) !== null) {
           // Skip when the sequence is guarded by && or || (status matters).
           const seg = sm[0];
           if (/&&|\|\|/.test(seg)) continue;
+          // Skip when the text after `;` is a shell block keyword —
+          // `until npm test; do` is loop syntax, not a swallowed sequence
+          // (fixture-verified: positive corpus until-loop).
+          if (
+            /^\s*(?:do|then|else|fi|done|elif|esac)\b|^\s*\}/.test(
+              seg.slice(seg.indexOf(";") + 1),
+            )
+          )
+            continue;
           // Skip `setup; <test>` where the TEST command runs LAST — its exit
           // code IS the step's. e.g. `playwright install; playwright test`.
           const afterSemi = seg.slice(seg.indexOf(";") + 1);
@@ -134,6 +158,18 @@ export const exitCodeNotPropagated = defineRule({
     return findings;
   },
 });
+
+/**
+ * Replaces the CONTENT of double- and single-quoted segments with spaces
+ * (length-preserving) so shell separators inside strings — a JS test file
+ * echoed through `tee`, e.g. `echo "it('x'); expect(y)" | tee t.js` — can
+ * never anchor a `;`-sequence finding. Quotes are shell-sensitive; this is
+ * deliberately conservative: only quote-delimited, same-line segments are
+ * stripped.
+ */
+function stripQuoted(text: string): string {
+  return text.replace(/"[^"\n]*"|'[^'\n]*'/g, (m) => " ".repeat(m.length));
+}
 
 function findLine(text: string, needle: string): number {
   const idx = text.indexOf(needle);

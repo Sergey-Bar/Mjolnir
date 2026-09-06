@@ -60,7 +60,7 @@
 
     <text x="22" y="890.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(138,180,216)">▚ FINDINGS</tspan></text>
 
-    <text x="22" y="928.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(208,69,59)">✗</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(208,69,59)">ERROR  </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-CI-009 · .github/workflows/ci.yml:10</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E2 · deterministic]</tspan></text>
+    <text x="22" y="928.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(208,69,59)">✗</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(208,69,59)">ERROR  </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-CI-009 · .github/workflows/ci.yml:10</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E2 · deterministic · measured FP 0% · n=10]</tspan></text>
     <text x="22" y="947.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">Job `test` pipes the test command into another tool without `set</tspan></text>
     <text x="22" y="966.0" xml:space="preserve"><tspan fill="#d7d3c8">            -o pipefail`.</tspan></text>
     <text x="22" y="985.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">FALSE-GREEN — In a shell pipeline only the last command's exit</tspan></text>
@@ -71,7 +71,7 @@
     <text x="22" y="1080.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the gate should stop failing and</tspan></text>
     <text x="22" y="1099.0" xml:space="preserve"><tspan fill="#d7d3c8">            the score should recover by 8.</tspan></text>
 
-    <text x="22" y="1137.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(208,69,59)">✗</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(208,69,59)">ERROR  </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-CI-009 · .github/workflows/ci.yml:10</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E2 · deterministic]</tspan></text>
+    <text x="22" y="1137.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(208,69,59)">✗</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(208,69,59)">ERROR  </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-CI-009 · .github/workflows/ci.yml:10</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E2 · deterministic · measured FP 0% · n=10]</tspan></text>
     <text x="22" y="1156.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">Job `deploy-smoke` sequences commands with `; ` after the test</tspan></text>
     <text x="22" y="1175.0" xml:space="preserve"><tspan fill="#d7d3c8">            command — the test result does not fail the step.</tspan></text>
     <text x="22" y="1194.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">FALSE-GREEN — With `;` sequencing the step's exit status comes</tspan></text>
@@ -81,7 +81,7 @@
     <text x="22" y="1270.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the gate should stop failing and</tspan></text>
     <text x="22" y="1289.0" xml:space="preserve"><tspan fill="#d7d3c8">            the score should recover by 8.</tspan></text>
 
-    <text x="22" y="1327.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-CI-010 · .github/workflows/ci.yml:21</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · measured FP 40% · n=10]</tspan></text>
+    <text x="22" y="1327.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-CI-010 · .github/workflows/ci.yml:21</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · measured FP 10% · n=10]</tspan></text>
     <text x="22" y="1346.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">Job `deploy-smoke` runs tests but its `if:` condition skips it on</tspan></text>
     <text x="22" y="1365.0" xml:space="preserve"><tspan fill="#d7d3c8">            pull requests.</tspan></text>
     <text x="22" y="1384.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">FALSE-GREEN — If this job is a required check, PRs can satisfy it</tspan></text>
@@ -91,7 +91,7 @@
     <text x="22" y="1460.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the finding should no longer</tspan></text>
     <text x="22" y="1479.0" xml:space="preserve"><tspan fill="#d7d3c8">            appear.</tspan></text>
 
-    <text x="22" y="1517.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(208,69,59)">✗</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(208,69,59)">ERROR  </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-CI-009 · .github/workflows/ci.yml:26</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E2 · deterministic]</tspan></text>
+    <text x="22" y="1517.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(208,69,59)">✗</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(208,69,59)">ERROR  </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-CI-009 · .github/workflows/ci.yml:26</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E2 · deterministic · measured FP 0% · n=10]</tspan></text>
     <text x="22" y="1536.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">Job `deploy-smoke` pipes the test command into another tool</tspan></text>
     <text x="22" y="1555.0" xml:space="preserve"><tspan fill="#d7d3c8">            without `set -o pipefail`.</tspan></text>
     <text x="22" y="1574.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">FALSE-GREEN — In a shell pipeline only the last command's exit</tspan></text>
@@ -102,7 +102,7 @@
     <text x="22" y="1669.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the gate should stop failing and</tspan></text>
     <text x="22" y="1688.0" xml:space="preserve"><tspan fill="#d7d3c8">            the score should recover by 8.</tspan></text>
 
-    <text x="22" y="1726.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-CI-001 · .github/workflows/ci.yml:27</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · measured FP 32% · n=19]</tspan></text>
+    <text x="22" y="1726.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-CI-001 · .github/workflows/ci.yml:27</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · measured FP 11% · n=19]</tspan></text>
     <text x="22" y="1745.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">Job `security-scan` runs a verification gate under</tspan></text>
     <text x="22" y="1764.0" xml:space="preserve"><tspan fill="#d7d3c8">            `continue-on-error: true`.</tspan></text>
     <text x="22" y="1783.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">FALSE-GREEN — This job can fail every day and CI will still show</tspan></text>
@@ -112,7 +112,7 @@
     <text x="22" y="1859.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the finding should no longer</tspan></text>
     <text x="22" y="1878.0" xml:space="preserve"><tspan fill="#d7d3c8">            appear.</tspan></text>
 
-    <text x="22" y="1916.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-145 · e2e/checkout.spec.ts:1</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · measured FP 100% · n=20 · trust L3 · runtime: file executed]</tspan></text>
+    <text x="22" y="1916.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-145 · e2e/checkout.spec.ts:1</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · measured FP 50% · n=40 · trust L3 · runtime: file executed]</tspan></text>
     <text x="22" y="1935.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">UI-interacting spec file contains no accessibility assertions.</tspan></text>
     <text x="22" y="1954.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">HYGIENE — Suites that drive the UI but never assert accessibility</tspan></text>
     <text x="22" y="1973.0" xml:space="preserve"><tspan fill="#d7d3c8">            let WCAG regressions through every PR; catching them at the point</tspan></text>
@@ -135,7 +135,7 @@
     <text x="22" y="2296.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(124,133,144)">Verify  </tspan><tspan fill="#d7d3c8">Re-run mjolnir after the change — the finding should no longer</tspan></text>
     <text x="22" y="2315.0" xml:space="preserve"><tspan fill="#d7d3c8">            appear.</tspan></text>
 
-    <text x="22" y="2353.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-004 · e2e/checkout.spec.ts:5</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · measured FP 38% · n=16 · trust L3 · runtime: file executed]</tspan></text>
+    <text x="22" y="2353.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(63,176,160)">ℹ</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">INFO   </tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)">QA-PW-004 · e2e/checkout.spec.ts:5</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">[E0 · observation · measured FP 43% · n=14 · trust L3 · runtime: file executed]</tspan></text>
     <text x="22" y="2372.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Problem </tspan><tspan fill="#d7d3c8">Brittle multi-class CSS selector: `locator(".btn.btn-primary &gt;</tspan></text>
     <text x="22" y="2391.0" xml:space="preserve"><tspan fill="#d7d3c8">            div:nth-child(2)")`.</tspan></text>
     <text x="22" y="2410.0" xml:space="preserve"><tspan fill="#d7d3c8">    </tspan><tspan fill="rgb(138,180,216)">Impact  </tspan><tspan fill="#d7d3c8">HYGIENE — Structural selectors break on any DOM refactor and fail</tspan></text>
@@ -172,7 +172,7 @@
     <text x="22" y="2999.0" xml:space="preserve"><tspan fill="rgb(124,133,144)">──────────────────────────────────────────────────────────</tspan></text>
     <text x="22" y="3018.0" xml:space="preserve"><tspan fill="#d7d3c8">  Analysis: </tspan><tspan fill="rgb(79,180,119)">complete</tspan><tspan fill="#d7d3c8"> · a few ms</tspan></text>
     <text x="22" y="3037.0" xml:space="preserve"><tspan fill="rgb(124,133,144)">  19 advisory findings (E0 — observation only, no score impact)</tspan></text>
-    <text x="22" y="3056.0" xml:space="preserve"><tspan fill="rgb(124,133,144)">  Rule coverage: 15/16 rules that fired here have a measured false-positive rate; the rest are heuristics. `mjolnir rules --unmeasured` lists them.</tspan></text>
+    <text x="22" y="3056.0" xml:space="preserve"><tspan fill="rgb(124,133,144)">  Rule coverage: 16/16 rules that fired here have a measured false-positive rate; the rest are heuristics. `mjolnir rules --unmeasured` lists them.</tspan></text>
     <text x="22" y="3075.0" xml:space="preserve"><tspan fill="rgb(124,133,144)">  Runtime evidence: 9/27 findings corroborated by a real run report (trust L3–L5); the rest are static-only.</tspan></text>
 
   </g>

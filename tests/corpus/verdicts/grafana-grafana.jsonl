@@ -6,7 +6,6 @@
 {"ruleId":"QA-PW-120","file":"public/app/features/dashboard-scene/settings/variables/editors/QueryVariableEditor/VariableOptionsSpreadsheet/clipboard.test.ts","line":1,"verdict":"FP","note":"clipboard unit tests run in jsdom - engine-agnostic"}
 {"ruleId":"QA-PW-120","file":"public/app/features/explore/SignalExplorer/SignalCard.test.tsx","line":1,"verdict":"FP","note":"RTL render test - engine-agnostic"}
 {"ruleId":"QA-PW-120","file":"public/app/features/logs/components/panel/processing.test.ts","line":1,"verdict":"FP","note":"pure log processing unit tests - engine-agnostic"}
-{"ruleId":"QA-CI-005","file":".github/workflows/check-frontend-test-coverage.yml","line":1,"verdict":"FP","note":"the rule anchored on line 1 of a workflow whose coverage job DOES generate coverage (jest --coverage upstream); count-lock cannot see the generating step"}
 {"ruleId":"QA-CI-001","file":".github/workflows/backend-unit-tests.yml","line":37,"verdict":"TP","note":"the whole grafana backend verification job runs under continue-on-error - real masked gate"}
 {"ruleId":"QA-CI-001","file":".github/workflows/run-schema-v2-e2e.yml","line":16,"verdict":"TP","note":"e2e verification job marked continue-on-error at the job level - real masked gate"}
 {"ruleId":"QA-TQUAL-002","file":"packages/grafana-runtime/src/services/logging/registry.test.ts","line":157,"verdict":"FP","note":"guarded placeholder inside if(throws) - asserts the else-branch reached; the tautology is conditional scaffolding, not a fake-green test"}
@@ -40,10 +39,5 @@
 {"ruleId":"QA-TQUAL-009","file":"public/app/features/dashboard-scene/scene/DashboardScene.test.tsx","line":1958,"verdict":"TP","note":"expect inside .then on an unawaited promise - assertion can race past test end, exactly the rule's case"}
 {"ruleId":"QA-CI-002","file":".github/workflows/alerting-update-module.yml","line":120,"verdict":"TP","note":"go test gate swallowed with || true in a snapshot-update step - failures cannot block, exactly the rule's case"}
 {"ruleId":"QA-CI-002","file":".github/workflows/alerting-update-module.yml","line":121,"verdict":"TP","note":"second swallowed go test - same mask"}
-{"ruleId":"QA-CI-008","file":".github/workflows/external-fr-weekly-digest.yml","line":207,"verdict":"FP","note":"digest content steps are not verification gates - a final echo/cleanup after best-effort cleanup steps is correct non-verification structure"}
-{"ruleId":"QA-CI-008","file":".github/workflows/external-issue-weekly-digest.yml","line":207,"verdict":"FP","note":"digest content steps are not verification gates"}
-{"ruleId":"QA-CI-008","file":".github/workflows/external-pr-weekly-digest.yml","line":221,"verdict":"FP","note":"conditional no-PR summary step - housekeeping, not a masked verification gate"}
-{"ruleId":"QA-CI-010","file":".github/workflows/pr-frontend-unit-tests.yml","line":112,"verdict":"FP","note":"if explicitly RUNS internal PRs (fork=false) - the rule misread the condition; enterprise PR coverage exists"}
-{"ruleId":"QA-CI-010","file":".github/workflows/run-schema-v2-e2e.yml","line":20,"verdict":"FP","note":"if runs non-draft PRs (e2e does run on PRs) - combined with push condition it is not a PR skip"}
 {"ruleId":"QA-TEST-006","file":"public/app/features/alerting/unified/components/contact-points/EditContactPoint.test.tsx","line":54,"verdict":"TP","note":"jest.retryTimes(2) inside a describe - retry-on-flake in unit tests, masking without triage"}
 {"ruleId":"QA-TEST-006","file":"public/app/features/alerting/unified/components/rule-editor/labels/LabelsField.test.tsx","line":81,"verdict":"TP","note":"jest.retryTimes(2) inside a describe - retry-on-flake masking"}

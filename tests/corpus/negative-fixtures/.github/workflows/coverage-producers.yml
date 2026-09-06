@@ -1,0 +1,43 @@
+name: CI
+
+on: [push]
+
+jobs:
+  jest-no-prod:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      - run: jest --coverage
+      - uses: codecov/codecov-action@v4
+
+  graal-root:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: gradle-build-action@v2
+        with:
+          arguments: build jacocoTestReport
+      - uses: codecov/codecov-action@v4
+
+  dotnet-cov:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: dotnet test --collect "XPlat Code Coverage"
+      - uses: coverallsapp/github-action@v2
+
+  py-xml:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pytest --cov=src --cov-report=xml
+      - run: coverage xml
+      - uses: codecov/codecov-action@v4
+
+  go-cover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: go test ./... -coverprofile=coverage.out
+      - uses: coverallsapp/github-action@v2

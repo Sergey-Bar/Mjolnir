@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | error                          |
 | Confidence                            | high                           |
 | Tier                                  | quarantine                     |
-| Measured FP rate                      | 75% (n=16)                     |
+| Measured FP rate                      | 10% (n=10)                     |
 | Evidence level                        | E2                             |
 | QA impact                             | False-green risk (FALSE-GREEN) |
 | False-positive risk (author estimate) | low                            |
@@ -41,14 +41,10 @@ Verified against `tests/fixtures/QA-CI-008/must-not-fire/clean.yml` — a legiti
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo                 | Occurrences |
-| -------------------- | ----------- |
-| appsmithorg-appsmith | 5           |
-| grafana-grafana      | 3           |
-| hashicorp-vault      | 3           |
-| streamlit-streamlit  | 1           |
-| vercel-next-js       | 3           |
-| vitest-dev-vitest    | 1           |
+| Repo              | Occurrences |
+| ----------------- | ----------- |
+| positive-fixtures | 9           |
+| vitest-dev-vitest | 1           |
 
 ---
 

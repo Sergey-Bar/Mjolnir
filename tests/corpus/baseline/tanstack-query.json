@@ -6,9 +6,9 @@
     "QA-TEST-003": 19,
     "QA-TEST-004": 157,
     "QA-TEST-010": 2,
-    "QA-TQUAL-001": 98,
+    "QA-TQUAL-001": 102,
     "QA-TQUAL-009": 1
   },
-  "totalFindings": 410,
+  "totalFindings": 414,
   "partial": false
 }
