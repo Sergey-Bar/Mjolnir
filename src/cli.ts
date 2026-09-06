@@ -109,7 +109,7 @@ import {
  * `scripts/sync-sarif-version.cjs` on release and guarded by
  * `tests/version-consistency.spec.ts` locally.
  */
-export const CLI_VERSION = "0.5.4";
+export const CLI_VERSION = "0.5.5";
 
 /** A usage-error detail: the offending token, when one exists. */
 export interface UsageErrorDetail {

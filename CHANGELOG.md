@@ -74,7 +74,9 @@ scan`. Unknown categories are a usage error (exit 10).
 - help registry gained `why`, `handoff`, `install` and the new flags;
   site/reference/cli.md documents the handoff trust model.
 
-## [Unreleased] — Audit Remediation 1.0 (engine correctness + trust boundary)
+## [0.5.5] — 2026-09-06
+
+### Audit Remediation 1.0 (engine correctness + trust boundary)
 
 ### Changed — plugin execution gate (audit C2, contract-visible, pre-1.0)
 
