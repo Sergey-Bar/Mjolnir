@@ -21,7 +21,7 @@
  * `--path-prefix <dir>` re-scopes for subdirectory scans.
  */
 
-import { appendFileSync, existsSync, readFileSync } from "node:fs";
+import { appendFileSync, existsSync } from "node:fs";
 import type { Finding, ScanResult } from "../types.js";
 import type { Output } from "../cli.js";
 import { usageErrorMessage } from "../cli.js";
@@ -46,39 +46,14 @@ export interface SummaryOptions {
 
 const DETAILS_PER_SEVERITY_CAP = 25;
 
-/** Human message for any thrown value — never "undefined"/"[object Object]". */
-export function errorText(err: unknown): string {
-  if (err instanceof Error) return err.message;
-  if (typeof err === "string") return err;
-  if (typeof err === "object" && err !== null) return JSON.stringify(err);
-  return String(err);
-}
-
-/** Parse-and-validate a saved report. Module-private: the command is
- * the only consumer; tests exercise it through runSummaryCommand. */
-function validateReportJson(text: string): ScanResult {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(text);
-  } catch (err) {
-    throw new Error(`not valid JSON (${errorText(err)})`, { cause: err });
-  }
-  if (typeof parsed !== "object" || parsed === null) {
-    throw new Error("the file is a JSON value but not an object");
-  }
-  const doc = parsed as { schemaVersion?: unknown; findings?: unknown };
-  if (doc.schemaVersion !== 1) {
-    throw new Error(
-      `unsupported schemaVersion ${JSON.stringify(doc.schemaVersion)} — expected 1`,
-    );
-  }
-  if (!Array.isArray(doc.findings)) {
-    throw new Error(
-      'missing a "findings" array — is this a Mjölnir --json report?',
-    );
-  }
-  return parsed as ScanResult;
-}
+// Report loading/validation was extracted to report-io.ts (agent-handoff
+// plan §9.0) so summary, handoff and why share one loader and one error
+// shape. errorText is re-exported for the summary.spec assertions.
+import {
+  errorText,
+  loadSavedReport as loadValidatedReport,
+} from "./report-io.js";
+export { errorText };
 
 function scoreBar(score: number, width = 20): string {
   const filled = Math.round((score / 100) * width);
@@ -261,7 +236,7 @@ export function runSummaryCommand(
 
   let result: ScanResult;
   try {
-    result = validateReportJson(readFileSync(reportPath, "utf8"));
+    result = loadValidatedReport(reportPath);
   } catch (err) {
     io.err(`mjolnir summary: cannot read ${reportPath}: ${errorText(err)}`);
     return 2;

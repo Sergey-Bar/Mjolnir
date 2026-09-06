@@ -69,3 +69,61 @@ stays byte-identical in every mode.
 | `--no-progress`          | never render the live progress line                                                                   |
 | `FORCE_COLOR`            | `0`/`false`/empty forces plain output; any other value forces color even piped (wins over `NO_COLOR`) |
 | `--ascii` / `--no-ascii` | force plain-ASCII or Unicode glyphs (auto-detected by default)                                        |
+
+## The remediation loop (why / handoff / install)
+
+Mjölnir provides evidence and verification. The agent (or human) remains
+responsible for every change.
+
+```
+SCAN → DETECT → EVIDENCE → EXPLAIN → HANDOFF → FIX → RE-SCAN → VERIFY
+```
+
+### `mjolnir why <file>:<line>`
+
+Occurrence-level evidence query — informational, NOT a gate. Exact
+file+line match over the report; renders the finding's severity,
+message/why/fix, evidence level (E0–E2), trust level (L0–L5 runtime
+corroboration), measured FP rate (or "ships on assumption"), and the
+suppression contract (`ignore` entries in `mjolnir.config.json`: reason
+required, 90-day expiry). Saved-report mode (`--json
+<mjolnir.json>`) is authoritative; live scan runs otherwise. Exit 0
+match, 1 no match, 10 usage, 2 invalid report.
+
+### `mjolnir handoff [mjolnir.json]`
+
+Turns a saved `--json` report into a deterministic remediation plan:
+per-rule sections (what is wrong / why / evidence boundary / occurrences
+capped at 25 / fix / constraints), a self-contained per-rule copy block
+and a one-shot handoff prompt, and the verification contract:
+
+- **TARGET_RESOLVED** — every fingerprint (ruleId + file + message)
+  from the document is absent from the post-fix scan.
+- **TARGET_REMAINS** — at least one still present; report honestly.
+- **NEW_FINDINGS_INTRODUCED** — new fingerprints appeared; report them.
+- **VERIFICATION_NOT_RUN** — no post-fix scan, or a partial scan.
+
+A clean `--scope changed` run verifies the changed-scope surface only —
+it is never a statement that the entire repository is clean. Exit 0 on
+success (10 missing file, 2 invalid JSON). Zero findings → a clean,
+non-actionable artifact.
+
+### `mjolnir install [--staged-hook] [--dry-run] [--force]`
+
+Installs the trust-loop brief into detected instruction surfaces
+(`.claude/commands/mjolnir.md`, `.kilo/command/mjolnir.md`,
+`.cursor/rules/mjolnir.mdc`, marker-appended `AGENTS.md`) — version
+pinned, never @latest. `--staged-hook` adds a NON-BLOCKING pre-commit
+hook (`mjolnir --staged --blocking warning`), reusing `.husky` or
+`core.hooksPath` when present. Marker-based idempotency; `--dry-run`
+writes nothing; refuses (exit 10) before overwriting anything not
+Mjölnir-marked.
+
+### `--score`, `--category`, `--staged`, `--blocking`
+
+| Flag                 | Effect                                                                                                          |
+| -------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `--score`            | stdout is ONLY the score (`unknown` when no tests); scan semantics and exit codes unchanged                     |
+| `--category <cat>`   | presentation filter on rendered findings — never a scan/data/score filter; score keeps reflecting the full scan |
+| `--staged`           | scan-surface restriction to git staged files; the score reflects that surface and is labeled                    |
+| `--blocking <level>` | exit-status override (`error`/`warning`/`none`); detection and rendering identical; E0 findings never block     |

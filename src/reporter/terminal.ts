@@ -65,6 +65,14 @@ export interface RenderTerminalOpts {
   ascii?: boolean;
   /** --tone blunt: blunter, pattern-mocking messages (Sprint 9 Task 40). */
   tone?: "blunt";
+  /**
+   * Pre-filtered finding list for `--category` (agent-handoff plan
+   * §5.5): the renderer displays ONLY these, and prints the dim
+   * `filtered view` note whenever the full list is larger. The score,
+   * dimensions and gauge in the same render ALWAYS reflect the full
+   * scan — --category is a presentation filter, never a scoring filter.
+   */
+  visibleFindings?: ScanResult["findings"];
 }
 
 export function renderTerminal(
@@ -100,10 +108,36 @@ export function renderTerminal(
     ascii,
   );
   appendFrameworks(lines, result, ui);
+  if (result.staged !== undefined) {
+    lines.push(
+      ui.p.dim(
+        `  staged surface: ${result.staged.files} file(s) scanned; score reflects that surface`,
+      ),
+    );
+    lines.push("");
+  }
   appendDimensions(lines, result, ui);
   appendDeductions(lines, result, counts, ui);
-  appendFixThisFirst(lines, result, ui);
-  appendFindings(lines, result, counts, opts.verbose === true, ui, opts.tone);
+  // --category (agent-handoff plan §5.5): presentation filter. The
+  // filtered list drives FIX THIS FIRST + FINDINGS; score/dimensions/
+  // deductions above always reflect the full scan. The dim note keeps
+  // the full-scan vs filtered-view distinction unambiguous.
+  const filtered = opts.visibleFindings;
+  const filtering =
+    filtered !== undefined && filtered.length < result.findings.length;
+  const display: ScanResult = filtering
+    ? { ...result, findings: filtered }
+    : result;
+  appendFixThisFirst(lines, display, ui);
+  if (filtering) {
+    lines.push(
+      ui.p.dim(
+        `  filtered view: ${filtered?.length} of ${result.findings.length} findings shown; score reflects the full scan`,
+      ),
+    );
+    lines.push("");
+  }
+  appendFindings(lines, display, counts, opts.verbose === true, ui, opts.tone);
   if (counts.total === 0 && result.score === 100) {
     appendForgedBlock(lines, p, ascii);
   }
@@ -412,6 +446,17 @@ function appendFindings(
 ): void {
   const { p } = ui;
   if (counts.total === 0) return;
+
+  // --category presentation filter: when nothing survives the filter,
+  // say so honestly instead of silently rendering an empty FINDINGS
+  // section (plan §5.5).
+  if (result.findings.length === 0) {
+    lines.push(
+      ui.p.dim("  filtered view: no findings in the selected category"),
+    );
+    lines.push("");
+    return;
+  }
 
   // Group by ruleId when >3 findings share a rule — one header, count,
   // "same fix applies", then one-liners. Groups keep first-appearance

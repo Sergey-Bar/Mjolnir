@@ -129,6 +129,24 @@ export const HELP_ENTRIES: HelpEntry[] = [
     examples: ["mjolnir init"],
   },
   {
+    verb: "why",
+    summary: "why did Mjölnir flag <file>:<line>? evidence + fix (not a gate)",
+    usage: "mjolnir why <file>:<line> [path] [--json <mjolnir.json>]",
+    examples: [
+      "mjolnir why e2e/a.spec.ts:3",
+      "mjolnir why e2e/a.spec.ts:3 --json mjolnir.json",
+    ],
+  },
+  {
+    verb: "handoff",
+    summary: "deterministic fix-handoff artifact from a saved --json report",
+    usage: "mjolnir handoff [mjolnir.json] [--category <cat>] [--rules <ids>]",
+    examples: [
+      "mjolnir --json > mjolnir.json && mjolnir handoff mjolnir.json",
+      "mjolnir handoff mjolnir.json --category QA-PW",
+    ],
+  },
+  {
     verb: "explain",
     summary: "what/why/fix + measured FP rate for one rule",
     usage: "mjolnir explain <RULE-ID> [--fixtures-root <dir>]",
@@ -158,6 +176,12 @@ export const HELP_ENTRIES: HelpEntry[] = [
     usage: "mjolnir doctor [repo-root]",
     examples: ["mjolnir doctor"],
   },
+  {
+    verb: "install",
+    summary: "install the agent instruction surfaces + optional staged hook",
+    usage: "mjolnir install [--staged-hook] [--dry-run] [--force]",
+    examples: ["mjolnir install --dry-run", "mjolnir install --staged-hook"],
+  },
 ];
 
 /** Scan-flag entries documented per-flag via the overview. */
@@ -175,6 +199,13 @@ export const HELP_FLAGS: Array<{ flag: string; summary: string }> = [
   { flag: "--debug", summary: "print swallowed rule crashes" },
   { flag: "--cache", summary: "reuse local per-file verdicts" },
   { flag: "--no-progress", summary: "no live scan-progress line on stderr" },
+  { flag: "--score", summary: "print only the numeric score (or `unknown`)" },
+  { flag: "--category <cat>", summary: "presentation filter (repeatable)" },
+  { flag: "--staged", summary: "scan only git staged files" },
+  {
+    flag: "--blocking <level>",
+    summary: "exit-status override: error|warning|none",
+  },
 ];
 
 export const EXIT_CODE_TABLE: Array<[string, string]> = [
@@ -259,7 +290,7 @@ const GROUPS: Array<{ title: string; verbs: string[] }> = [
       "create-rule",
     ],
   },
-  { title: "Meta", verbs: ["rules", "explain"] },
+  { title: "Meta", verbs: ["rules", "explain", "why", "handoff", "install"] },
 ];
 
 const SCAN_SUMMARY_LINES: string[] = [
