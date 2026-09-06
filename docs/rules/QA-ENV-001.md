@@ -55,6 +55,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | vitejs-vite         | 6           |
 | vitest-dev-vitest   | 2           |
 | withastro-astro     | 39          |
+| yarnpkg-berry       | 5           |
 
 ---
 

@@ -171,15 +171,19 @@ describe("command handlers report a crash (exit 20) instead of throwing, when th
     expect(code).toBe(20);
   });
 
-  it("`baseline` reports exit 20 instead of throwing when .mjolnir/ can't be written", async () => {
+  it("`baseline` degrades honestly (exit 1) when .mjolnir/ can't be written", async () => {
+    // Contract change (audit-remediation branch): an unwritable path is
+    // an environment fault, not a Mjölnir bug — the friendly exit-20
+    // "this is a bug in Mjölnir" message would lie. The command now
+    // reports `baseline save FAILED — <reason>` and exits 1.
     if (!locked()) return;
     const errs: string[] = [];
     const code = await runBaselineCommand([dir], {
       out: () => {},
       err: (...a) => errs.push(a.map(String).join(" ")),
     });
-    expect(code).toBe(20);
-    expect(errs.join(" ")).toMatch(/internal error/i);
+    expect(code).toBe(1);
+    expect(errs.join(" ")).toMatch(/baseline save FAILED/i);
   });
 });
 

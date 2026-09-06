@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | error                           |
 | Confidence                            | high                            |
 | Tier                                  | quarantine                      |
-| Measured FP rate                      | 85% (n=20)                      |
+| Measured FP rate                      | 22% (n=78)                      |
 | Evidence level                        | E2                              |
 | QA impact                             | False-green risk (FALSE-GREEN)  |
 | False-positive risk (author estimate) | medium                          |
@@ -44,11 +44,11 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | Repo                                          | Occurrences |
 | --------------------------------------------- | ----------- |
 | apache-airflow                                | 52          |
-| appsmithorg-appsmith                          | 36          |
+| appsmithorg-appsmith                          | 37          |
 | calcom-cal                                    | 119         |
 | cypress-io-cypress-realworld-app              | 4           |
 | cypress-io-kitchensink                        | 9           |
-| cypress-realworld-app                         | 3           |
+| cypress-realworld-app                         | 4           |
 | dubinc-dub                                    | 17          |
 | getsentry-sentry                              | 199         |
 | grafana-grafana                               | 418         |
@@ -63,10 +63,11 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | streamlit-streamlit                           | 8           |
 | sveltejs-kit                                  | 62          |
 | tanstack-query                                | 19          |
-| vercel-next-js                                | 1390        |
+| vercel-next-js                                | 1391        |
 | vitejs-vite                                   | 39          |
 | vitest-dev-vitest                             | 382         |
 | withastro-astro                               | 101         |
+| yarnpkg-berry                                 | 89          |
 
 ---
 

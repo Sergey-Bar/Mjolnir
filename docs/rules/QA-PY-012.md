@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | error                          |
 | Confidence                            | high                           |
 | Tier                                  | quarantine                     |
-| Measured FP rate                      | 60% (n=20)                     |
+| Measured FP rate                      | 40% (n=30)                     |
 | Evidence level                        | E2                             |
 | QA impact                             | False-green risk (FALSE-GREEN) |
 | False-positive risk (author estimate) | low                            |
@@ -47,6 +47,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | getsentry-sentry    | 1           |
 | negative-fixtures   | 1           |
 | positive-fixtures   | 15          |
+| pyca-cryptography   | 5           |
 | pytest-dev-pytest   | 5           |
 | reflex-dev-reflex   | 1           |
 | streamlit-streamlit | 2           |

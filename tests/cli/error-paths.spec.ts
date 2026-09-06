@@ -242,10 +242,14 @@ describe("exit-20 mapping: Error payload carries the message", () => {
     expect(cap.errText()).toContain("boom-err");
   });
 
-  it("baseline", async () => {
+  it("baseline: a saveBaseline throw is the honest-degrade exit 1, not exit 20", async () => {
+    // An unwritable baseline path is the environment's fault — the
+    // friendly "this is a bug in Mjölnir" exit-20 message would lie. The
+    // command degrades to exit 1 with the actionable reason instead.
     throwOnce(saveBaseline, ERR);
     const cap = capture();
-    expect(await runBaselineCommand([dir], cap.io)).toBe(20);
+    expect(await runBaselineCommand([dir], cap.io)).toBe(1);
+    expect(cap.errText()).toContain("baseline save FAILED");
     expect(cap.errText()).toContain("boom-err");
   });
 
@@ -358,10 +362,11 @@ describe("exit-20 mapping: non-Error throwables render via String()", () => {
     expect(cap.errText()).toContain("boom-str");
   });
 
-  it("baseline", async () => {
+  it("baseline: a non-Error throw also degrades to exit 1 via String()", async () => {
     throwOnce(saveBaseline, STR);
     const cap = capture();
-    expect(await runBaselineCommand([dir], cap.io)).toBe(20);
+    expect(await runBaselineCommand([dir], cap.io)).toBe(1);
+    expect(cap.errText()).toContain("baseline save FAILED");
     expect(cap.errText()).toContain("boom-str");
   });
 
@@ -402,10 +407,18 @@ describe("exit-20 mapping: non-Error throwables render via String()", () => {
 });
 
 describe("unknown config errors propagate (exit-20 path stays honest)", () => {
-  it("suppressions rethrows non-ConfigValidationError errors", () => {
+  it("suppressions maps non-ConfigValidationError errors to exit 20 (audit S8: contained, never rethrown)", () => {
     throwOnce(loadConfig, ERR);
     process.chdir(dir);
-    expect(() => runSuppressions({ out: () => {} })).toThrow("boom-err");
+    const errLines: string[] = [];
+    // Audit C3: the sink is variadic — join all parts so the cause is
+    // actually captured by the test harness too.
+    const code = runSuppressions({
+      out: () => {},
+      err: (...m: unknown[]) => errLines.push(m.map(String).join(" ")),
+    });
+    expect(code).toBe(20);
+    expect(errLines.join("\n")).toContain("boom-err");
   });
 
   it("scan maps a generic non-Error config failure to exit 20", async () => {

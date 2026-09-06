@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | warning                      |
 | Confidence                            | medium                       |
 | Tier                                  | core                         |
-| Measured FP rate                      | 0% (n=10)                    |
+| Measured FP rate                      | 0% (n=18)                    |
 | Evidence level                        | E1                           |
 | QA impact                             | Flaky-test risk (FLAKY-RISK) |
 | False-positive risk (author estimate) | medium                       |

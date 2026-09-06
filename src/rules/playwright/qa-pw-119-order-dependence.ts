@@ -116,6 +116,9 @@ export const pwOrderDependence = defineRule({
     const inHook = (idx: number) =>
       hookRanges.some(([s, e]) => idx > s && idx < e);
 
+    // One regex per variable; names come from declRe captures, which
+    // cannot contain regex metacharacters, and `shared` is a Set — so
+    // each name is compiled exactly once. No memoization needed.
     for (const name of shared) {
       // eslint-disable-next-line security/detect-non-literal-regexp -- name is an identifier captured by declRe ([A-Za-z_$][\w$]*) — no regex metacharacters possible
       const assignRe = new RegExp(

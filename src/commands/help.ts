@@ -206,6 +206,10 @@ export const HELP_FLAGS: Array<{ flag: string; summary: string }> = [
     flag: "--blocking <level>",
     summary: "exit-status override: error|warning|none",
   },
+  {
+    flag: "--enable-plugins",
+    summary: "allow npm/JS-module rules (default OFF)",
+  },
 ];
 
 export const EXIT_CODE_TABLE: Array<[string, string]> = [

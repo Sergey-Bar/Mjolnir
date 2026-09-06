@@ -44,7 +44,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | Repo                                          | Occurrences |
 | --------------------------------------------- | ----------- |
 | apache-airflow                                | 2           |
-| appsmithorg-appsmith                          | 5           |
+| appsmithorg-appsmith                          | 6           |
 | calcom-cal                                    | 53          |
 | getsentry-sentry                              | 42          |
 | grafana-grafana                               | 12          |
@@ -52,7 +52,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | nocodb-nocodb                                 | 1           |
 | playwright-community-eslint-plugin-playwright | 1           |
 | puppeteer-puppeteer                           | 29          |
-| streamlit-streamlit                           | 24          |
+| streamlit-streamlit                           | 26          |
 | vercel-next-js                                | 19          |
 | vitejs-vite                                   | 7           |
 | vitest-dev-vitest                             | 14          |

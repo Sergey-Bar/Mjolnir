@@ -157,7 +157,7 @@ describe("--cache invalidation (A-2: stale entries can never survive)", () => {
 
   it("a corrupt cache file degrades to a cold cache, never fails the scan", async () => {
     await runScan({ ...baseArgs, cache: true });
-    const cacheFile = join(dir, ".mjolnir", "cache", "scan-v1.json");
+    const cacheFile = join(dir, ".mjolnir", "cache", "scan-v2.json");
     expect(existsSync(cacheFile)).toBe(true);
     writeFileSync(cacheFile, "{not json at all", "utf8");
     const third = await runScan({ ...baseArgs, cache: true });
@@ -169,7 +169,7 @@ describe("--cache invalidation (A-2: stale entries can never survive)", () => {
   it("a future-versioned cache file is ignored, not trusted", async () => {
     mkdirSync(join(dir, ".mjolnir", "cache"), { recursive: true });
     writeFileSync(
-      join(dir, ".mjolnir", "cache", "scan-v1.json"),
+      join(dir, ".mjolnir", "cache", "scan-v2.json"),
       JSON.stringify({ version: 999, entries: { bogus: { findings: [] } } }),
       "utf8",
     );
@@ -179,7 +179,10 @@ describe("--cache invalidation (A-2: stale entries can never survive)", () => {
 
   it("store() refuses file-budget-truncated results (a truncated analysis must not become permanent)", () => {
     const cache = createScanCache(dir);
-    const key = fileCacheKey("digest", "text");
+    const key = fileCacheKey("digest", "text", {
+      relPath: "a.spec.ts",
+      adapterId: "typescript",
+    });
     cache.store(key, [], true);
     cache.persist();
     const reopened = createScanCache(dir);
@@ -204,7 +207,14 @@ describe("--cache invalidation (A-2: stale entries can never survive)", () => {
     writeFileSync(blocker, "not a directory", "utf8");
     const cache = createScanCache(join(blocker, "sub"));
     expect(() => {
-      cache.store(fileCacheKey("d", "t"), [], false);
+      cache.store(
+        fileCacheKey("d", "t", {
+          relPath: "a.spec.ts",
+          adapterId: "typescript",
+        }),
+        [],
+        false,
+      );
       cache.persist();
     }).not.toThrow();
   });
@@ -289,17 +299,36 @@ describe("--cache CLI plumbing", () => {
 
   it("fileCacheKey is content-addressed: same bytes+rules, same key", () => {
     const digest = computeRulesDigest([]);
-    expect(fileCacheKey(digest, "const a = 1;")).toBe(
-      fileCacheKey(digest, "const a = 1;"),
+    expect(
+      fileCacheKey(digest, "const a = 1;", {
+        relPath: "a.ts",
+        adapterId: "typescript",
+      }),
+    ).toBe(
+      fileCacheKey(digest, "const a = 1;", {
+        relPath: "a.ts",
+        adapterId: "typescript",
+      }),
     );
-    expect(fileCacheKey(digest, "const a = 2;")).not.toBe(
-      fileCacheKey(digest, "const a = 1;"),
+    expect(
+      fileCacheKey(digest, "const a = 2;", {
+        relPath: "a.ts",
+        adapterId: "typescript",
+      }),
+    ).not.toBe(
+      fileCacheKey(digest, "const a = 1;", {
+        relPath: "a.ts",
+        adapterId: "typescript",
+      }),
     );
   });
 
   it("a cache round-trip through disk survives process boundaries (persist → reopen)", () => {
     const c1 = createScanCache(dir);
-    const key = fileCacheKey("digest", "text");
+    const key = fileCacheKey("digest", "text", {
+      relPath: "a.spec.ts",
+      adapterId: "typescript",
+    });
     c1.store(key, [], false);
     c1.persist();
     const c2 = createScanCache(dir);

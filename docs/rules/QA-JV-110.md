@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | info                        |
 | Confidence                            | low                         |
 | Tier                                  | quarantine                  |
-| Measured FP rate                      | 100% (n=20)                 |
+| Measured FP rate                      | 83% (n=24)                  |
 | Evidence level                        | E1                          |
 | QA impact                             | Test hygiene debt (HYGIENE) |
 | False-positive risk (author estimate) | high                        |
@@ -44,8 +44,8 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | Repo                          | Occurrences |
 | ----------------------------- | ----------- |
 | iluwatar-java-design-patterns | 2           |
-| keycloak-keycloak             | 84          |
-| microsoft-playwright-java     | 110         |
+| keycloak-keycloak             | 81          |
+| microsoft-playwright-java     | 111         |
 | negative-fixtures             | 2           |
 | positive-fixtures             | 4           |
 | SeleniumHQ-selenium           | 72          |

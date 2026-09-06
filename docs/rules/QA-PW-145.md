@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | info                                             |
 | Confidence                            | low                                              |
 | Tier                                  | quarantine                                       |
-| Measured FP rate                      | 100% (n=20)                                      |
+| Measured FP rate                      | 50% (n=40)                                       |
 | Evidence level                        | E1                                               |
 | QA impact                             | Test hygiene debt (HYGIENE)                      |
 | False-positive risk (author estimate) | high                                             |
@@ -62,9 +62,10 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | sveltejs-kit         | 11          |
 | tanstack-query       | 3           |
 | vercel-next-js       | 20          |
-| vitejs-vite          | 38          |
+| vitejs-vite          | 39          |
 | vitest-dev-vitest    | 18          |
 | withastro-astro      | 48          |
+| yarnpkg-berry        | 1           |
 
 ---
 

@@ -47,10 +47,11 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | getsentry-sentry    | 1350        |
 | pallets-click       | 14          |
 | psf-requests        | 42          |
+| pyca-cryptography   | 1567        |
 | pytest-dev-pytest   | 164         |
-| reflex-dev-reflex   | 232         |
+| reflex-dev-reflex   | 235         |
 | SeleniumHQ-selenium | 2           |
-| streamlit-streamlit | 488         |
+| streamlit-streamlit | 490         |
 
 ---
 

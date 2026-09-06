@@ -224,7 +224,7 @@ describe("forensics listing edge", () => {
       }),
     );
     const out: string[] = [];
-    await runScanCommand([dir, "--json"], {
+    await runScanCommand([dir, "--json", "--enable-plugins"], {
       out: (...p: unknown[]) => out.push(p.map(String).join(" ")),
       err: () => {},
     });
@@ -251,7 +251,7 @@ describe("forensics listing edge", () => {
       "it('a', () => { expect(1 + 1).toBe(2); });\n",
     );
     const out: string[] = [];
-    await runScanCommand([dir, "--json"], {
+    await runScanCommand([dir, "--json", "--enable-plugins"], {
       out: (...p: unknown[]) => out.push(p.map(String).join(" ")),
       err: () => {},
     });

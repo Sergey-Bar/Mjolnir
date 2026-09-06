@@ -202,10 +202,12 @@ export function isInvocation(node: Node): boolean {
  */
 export function callName(node: Node): string | undefined {
   if (node.type === "method_invocation") {
-    // A Java method_invocation's name field is always present (the
-    // grammar's invocation node shape, verified against real parses)
-    // — `lastIdentifierText` of the identifier/qualified name.
-    return lastIdentifierText(node.childForFieldName("name") as Node);
+    // Audit W4: the name field is nullable in the grammar contract —
+    // null-guard instead of asserting; a shape without one is "not a
+    // match" like every other exotic callee.
+    const nameNode = node.childForFieldName("name");
+    if (!nameNode) return undefined;
+    return lastIdentifierText(nameNode);
   }
   if (node.type === "invocation_expression") {
     const fn = node.childForFieldName("function");

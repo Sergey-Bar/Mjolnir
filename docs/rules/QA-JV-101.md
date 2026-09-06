@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | warning                        |
 | Confidence                            | high                           |
 | Tier                                  | core                           |
-| Measured FP rate                      | 0% (n=20)                      |
+| Measured FP rate                      | 0% (n=23)                      |
 | Evidence level                        | E2                             |
 | QA impact                             | False-green risk (FALSE-GREEN) |
 | False-positive risk (author estimate) | low                            |
@@ -45,7 +45,8 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | ----------------------------- | ----------- |
 | appsmithorg-appsmith          | 11          |
 | iluwatar-java-design-patterns | 2           |
-| keycloak-keycloak             | 67          |
+| junit-team-junit5             | 77          |
+| keycloak-keycloak             | 69          |
 | microsoft-playwright-java     | 8           |
 | positive-fixtures             | 3           |
 | SeleniumHQ-selenium           | 316         |

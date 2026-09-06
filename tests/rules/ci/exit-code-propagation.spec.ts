@@ -38,6 +38,38 @@ describe("QA-CI-009 exit code propagation", () => {
     expect(findings[0]?.message).toContain("`; `");
   });
 
+  it("rev2: does not flag `;` separators that only appear inside quoted strings (adjudicated FP: yarn berry e2e-vitest-workflow.yml)", () => {
+    const findings = exitCodeNotPropagated.run(
+      ctx(`jobs:
+  chore:
+    steps:
+      - run: |
+          source scripts/e2e-setup-ci.sh
+          yarn init -p
+          yarn add vitest
+          echo "import { it, expect } from 'vitest'; it('should pass', () => { expect(true).toBeTruthy(); });" | tee pass.test.js
+          yarn vitest run pass.test.js
+          echo "import { it, expect } from 'vitest'; it('should fail', () => { expect(false).toBeTruthy(); });" | tee fail.test.js
+          ! yarn vitest run fail.test.js
+          yarn add left-pad
+`),
+    );
+    expect(findings).toHaveLength(0);
+  });
+
+  it("rev2: still flags a real `;` sequence between unquoted commands", () => {
+    const findings = exitCodeNotPropagated.run(
+      ctx(`jobs:
+  test:
+    steps:
+      - run: |
+          echo "setup message"
+          pytest; make lint
+`),
+    );
+    expect(findings).toHaveLength(1);
+  });
+
   it("stays silent with pipefail set", () => {
     const findings = exitCodeNotPropagated.run(
       ctx(`jobs:

@@ -1,0 +1,34 @@
+name: CI
+
+on: [push]
+
+jobs:
+  jest-pipe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: jest | tee jest-results.log
+
+  pnpm-suite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pnpm test; pnpm run lint
+
+  piped-pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pytest | tee pytest-out.txt
+
+  mocha-sequenced:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: mocha --reporter spec; npm run typecheck
+
+  vitest-sequenced:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: vitest run; make lint

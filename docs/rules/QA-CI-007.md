@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | warning                      |
 | Confidence                            | high                         |
 | Tier                                  | extended                     |
-| Measured FP rate                      | 27% (n=11)                   |
+| Measured FP rate                      | 0% (n=11)                    |
 | Evidence level                        | E2                           |
 | QA impact                             | Flaky-test risk (FLAKY-RISK) |
 | False-positive risk (author estimate) | low                          |
@@ -41,13 +41,12 @@ Verified against `tests/fixtures/QA-CI-007/must-not-fire/clean.yml` — a legiti
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo                | Occurrences |
-| ------------------- | ----------- |
-| github-docs         | 1           |
-| Humanizr-Humanizer  | 1           |
-| keycloak-keycloak   | 1           |
-| positive-fixtures   | 7           |
-| streamlit-streamlit | 1           |
+| Repo              | Occurrences |
+| ----------------- | ----------- |
+| apache-airflow    | 1           |
+| github-docs       | 1           |
+| keycloak-keycloak | 1           |
+| positive-fixtures | 10          |
 
 ---
 

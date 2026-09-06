@@ -31,13 +31,21 @@ import {
 const TEST_FILE_RE =
   /\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs)$|\.cy\.(?:js|jsx|ts|tsx)$/;
 const PW_CONFIG_RE = /^playwright\.config\.(?:ts|js|mjs|cts)$/;
+// Audit C4: configOnly rules may declare configFiles the ADAPTER must be
+// able to discover. QA-CYP-003 declared ^cypress\.config\.(?:js|ts|mjs)$
+// while ADAPTER_CONFIG_FILES only carried the playwright pattern — the
+// rule could never fire (a dead rule presenting as coverage). The
+// cypress glob joins the adapter's compile-time literal list, and the
+// registry reachability test (tests/audit) locks the invariant: every
+// configOnly rule's configFiles must be matchable by its adapter.
+const CYPRESS_CONFIG_RE_SOURCE = "^cypress\\.config\\.(?:js|ts|mjs)$";
 
 /**
  * Fallback config list for `configOnly` rules that do not declare
  * `configFiles` (the legacy playwright.config.* gating, preserved
  * byte-identically for the existing five config rules).
  */
-const ADAPTER_CONFIG_FILES = [PW_CONFIG_RE.source];
+const ADAPTER_CONFIG_FILES = [PW_CONFIG_RE.source, CYPRESS_CONFIG_RE_SOURCE];
 
 /** Import-path → framework tag (plan §15.1 vocabulary). */
 const IMPORT_TAG_RULES: Array<{ re: RegExp; tag: string }> = [

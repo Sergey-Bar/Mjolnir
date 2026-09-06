@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | warning                       |
 | Confidence                            | high                          |
 | Tier                                  | core                          |
-| Measured FP rate                      | 10% (n=20)                    |
+| Measured FP rate                      | 8% (n=25)                     |
 | Evidence level                        | E2                            |
 | QA impact                             | Flaky-test risk (FLAKY-RISK)  |
 | False-positive risk (author estimate) | low                           |
@@ -45,7 +45,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | ------------------- | ----------- |
 | positive-fixtures   | 5           |
 | reflex-dev-reflex   | 2           |
-| streamlit-streamlit | 114         |
+| streamlit-streamlit | 115         |
 
 ---
 

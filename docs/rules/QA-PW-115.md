@@ -41,15 +41,16 @@ Verified against `tests/fixtures/QA-PW-115/must-not-fire/isolated-page.spec.ts` 
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo              | Occurrences |
-| ----------------- | ----------- |
-| grafana-grafana   | 1           |
-| negative-fixtures | 1           |
-| nocodb-nocodb     | 2           |
-| positive-fixtures | 6           |
-| vercel-next-js    | 2           |
-| vitest-dev-vitest | 1           |
-| withastro-astro   | 3           |
+| Repo                 | Occurrences |
+| -------------------- | ----------- |
+| appsmithorg-appsmith | 1           |
+| grafana-grafana      | 1           |
+| negative-fixtures    | 1           |
+| nocodb-nocodb        | 2           |
+| positive-fixtures    | 6           |
+| vercel-next-js       | 2           |
+| vitest-dev-vitest    | 1           |
+| withastro-astro      | 3           |
 
 ---
 
