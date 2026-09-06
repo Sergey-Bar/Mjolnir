@@ -24,11 +24,28 @@ import { writeFileAtomic } from "../lib/fs-atomic.js";
 import { dirname, join } from "node:path";
 
 import type { Finding, ScanResult } from "../types.js";
+import {
+  resolve,
+  renderResolution,
+  type Resolution,
+} from "../engine/resolution.js";
+import { RULES } from "../rules/index.js";
 import { nextStep, sectionHeader, plainContext } from "../reporter/ui.js";
 
 const ui = plainContext();
 
 export const DEFAULT_BASELINE_PATH = join(".mjolnir", "baseline.json");
+
+/**
+ * Registry-declared detector revisions (§17): a baseline entry whose
+ * revision differs from today's registry is INCONCLUSIVE(revision-
+ * changed), never resolved. Omitted declarations mean revision 1 (the
+ * documented RuleMeta default for first-generation detectors); a
+ * ruleId ABSENT from this map means the rule is retired.
+ */
+const REGISTRY_REVISIONS: ReadonlyMap<string, number> = new Map(
+  RULES.map((r) => [r.id, r.detectorRevision ?? 1]),
+);
 
 export interface BaselineFile {
   schemaVersion: 1;
@@ -42,7 +59,12 @@ export interface BaselineFile {
    * (the PR comment's score-delta line degrades to no delta).
    */
   score?: number;
-  findings: Array<Pick<Finding, "ruleId" | "file" | "message" | "severity">>;
+  findings: Array<
+    Pick<Finding, "ruleId" | "file" | "message" | "severity"> & {
+      /** detectorRevision at capture time (§17); absent = legacy entry. */
+      detectorRevision?: number;
+    }
+  >;
 }
 
 /**
@@ -77,6 +99,10 @@ export function buildBaseline(
       file: f.file,
       message: f.message,
       severity: f.severity,
+      // §17: revision-aware baseline entries — additive within v1.
+      ...(f.detectorRevision !== undefined
+        ? { detectorRevision: f.detectorRevision }
+        : {}),
     })),
   };
 }
@@ -188,9 +214,17 @@ export interface BaselineDiff {
   baselineScore?: number;
   /** Findings in the current scan not present in the baseline. */
   newFindings: Finding[];
-  /** Findings in the baseline no longer present — real, evidenced fixes. */
+  /**
+   * Findings in the baseline no longer present — real, evidenced fixes.
+   * §15 (Contract E): this list carries the lifecycle RESOLUTION for
+   * each disappearance; only VERIFIED-RESOLVED entries render as
+   * "FIXED". Legacy-baseline entries (no detectorRevision) classify
+   * INCONCLUSIVE(legacy-baseline) — never a fix claim.
+   */
   resolvedFindings: Array<
-    Pick<Finding, "ruleId" | "file" | "message" | "severity">
+    Pick<Finding, "ruleId" | "file" | "message" | "severity"> & {
+      resolution: Resolution;
+    }
   >;
   /** Findings present in both — pre-existing debt, deliberately not reported as new. */
   unchangedCount: number;
@@ -229,10 +263,22 @@ export function diffAgainstBaseline(
   }
 
   const resolvedFindings: Array<
-    Pick<Finding, "ruleId" | "file" | "message" | "severity">
+    Pick<Finding, "ruleId" | "file" | "message" | "severity"> & {
+      resolution: Resolution;
+    }
   > = [];
   for (const [key, f] of baseSet) {
-    if (!headKeys.has(key)) resolvedFindings.push(f);
+    if (!headKeys.has(key)) {
+      // §15: every disappearance gets its lifecycle resolution via the
+      // ordered algorithm — first match wins, deterministic, pure.
+      const resolution = resolve({
+        entry: f,
+        baseline,
+        current: result,
+        registryRevisions: REGISTRY_REVISIONS,
+      });
+      resolvedFindings.push({ ...f, resolution });
+    }
   }
 
   return {
@@ -305,9 +351,32 @@ export function renderBaselineDiff(diff: BaselineDiff): string {
   lines.push("");
 
   if (diff.resolvedFindings.length > 0) {
-    lines.push(`FIXED SINCE BASELINE (${diff.resolvedFindings.length}):`);
-    for (const f of diff.resolvedFindings) {
-      lines.push(`  ✓ ${f.ruleId} (${f.severity}) · ${f.file} — ${f.message}`);
+    // §15 rendering law: "FIXED" appears only for VERIFIED-RESOLVED; all
+    // other outcomes render with their cause.
+    const verified = diff.resolvedFindings.filter(
+      (f) => f.resolution.status === "VERIFIED-RESOLVED",
+    );
+    const unresolved = diff.resolvedFindings.filter(
+      (f) => f.resolution.status !== "VERIFIED-RESOLVED",
+    );
+    if (verified.length > 0) {
+      lines.push(`FIXED SINCE BASELINE (${verified.length}):`);
+      for (const f of verified) {
+        lines.push(
+          `  ✓ ${f.ruleId} (${f.severity}) · ${f.file} — ${f.message}`,
+        );
+      }
+      lines.push("");
+    }
+    if (unresolved.length > 0) {
+      lines.push(
+        `DISAPPEARED — NOT CLASSIFIED AS FIXED (${unresolved.length}):`,
+      );
+      for (const f of unresolved) {
+        lines.push(
+          `  ${renderResolution(f.resolution)} · ${f.ruleId} (${f.severity}) · ${f.file} — ${f.message}`,
+        );
+      }
     }
   }
 

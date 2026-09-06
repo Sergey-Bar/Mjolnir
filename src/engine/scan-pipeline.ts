@@ -495,6 +495,17 @@ export async function runScan(
   });
   const tierByRuleId = tiers;
   const pluginsLoaded = pluginMeta;
+  // Blueprint §13: detector revisions for the active rule set. Sources
+  // in priority order: the rule's own declared revision, the measured-FP
+  // sidecar (a measured rule is always pinned to its measured
+  // revision), and the documented default 1 for first-generation
+  // detectors (RuleMeta — omitted means 1).
+  const REVISION_BY_RULE_ID = new Map<string, number>(
+    activeRules.map((r) => [
+      r.id,
+      r.detectorRevision ?? MEASURED_FP[r.id]?.detectorRevision ?? 1,
+    ]),
+  );
   // M5.2 (A-2): local content-addressed cache. Opened BEFORE the rules
   // digest — it needs the fully-active rule set (core + plugins + local,
   // post-quarantine-filter) so any detector change invalidates.
@@ -858,6 +869,14 @@ export async function runScan(
       f.measuredFpRate = m.fpRate;
       f.measuredFpN = m.n;
     }
+  }
+  // Blueprint §13 (G-16): stamp each finding with its rule's detector
+  // revision — identity-relevant metadata, additive within
+  // schemaVersion 1. Rules without a declared revision stay unstamped
+  // (revision-unknown).
+  for (const f of findings) {
+    const rev = REVISION_BY_RULE_ID.get(f.ruleId);
+    if (rev !== undefined) f.detectorRevision = rev;
   }
   // Audit H-1: the tier is authoritative — a quarantine finding is
   // advisory by construction (info + E0) no matter what its rule
