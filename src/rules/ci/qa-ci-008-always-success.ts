@@ -124,7 +124,27 @@ export const alwaysSuccessStep = defineRule({
       // Adjudicated FP class (hashicorp/vault): a later step keyed on
       // always() that re-checks the tolerated outcomes and exits 1 on
       // failure means the verdict IS enforced — nothing is masked.
-      if (laterStepEnforcesFailure(steps, steps.indexOf(last))) continue;
+      // Enforcement is checked from the TOLERATED step onward: an
+      // always() step that follows the gate is what makes the verdict
+      // honest, so a step between the gate and the end that checks
+      // `steps.<gate>.result` and exits 1 suppresses the finding for
+      // that gate. (`steps.indexOf(last)` always sliced past the final
+      // element — an empty window — so rev-2's enforcement arm could
+      // never fire; found via the coverage floor.)
+      const toleratedIdx = steps.findIndex(
+        (s) =>
+          (s?.["continue-on-error"] === true ||
+            /\|\|\s*true\b/.test(s?.run ?? "")) &&
+          (looksLikeVerificationGate(s?.run ?? "") ||
+            (s?.uses !== undefined &&
+              /playwright|cypress|codecov\/codecov-action/i.test(s.uses))),
+      );
+      if (
+        toleratedIdx !== -1 &&
+        laterStepEnforcesFailure(steps, toleratedIdx)
+      ) {
+        continue;
+      }
 
       if (suspicious && earlierTolerantGate) {
         findings.push({

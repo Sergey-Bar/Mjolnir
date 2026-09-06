@@ -260,21 +260,20 @@ function findJobConsumerLine(
     "m",
   );
   const declMatch = jobDecl.exec(text);
-  const from = declMatch ? declMatch.index : 0;
   // `g` is required for lastIndex to have any effect on exec().
   // eslint-disable-next-line security/detect-non-literal-regexp -- consumerRe.source is a compile-time-constant literal from CONSUMERS — not scan input
   const re = new RegExp(consumerRe.source, "gi");
-  re.lastIndex = from;
-  const m = re.exec(text);
-  if (!m) {
-    // The consumer matched in `uses:`/`with:` aggregation but its text may
-    // span lines oddly — fall back to the first occurrence anywhere.
-    // eslint-disable-next-line security/detect-non-literal-regexp -- consumerRe.source is a compile-time-constant literal from CONSUMERS — not scan input
-    const any = new RegExp(consumerRe.source, "i").exec(text);
-    if (!any) return 1;
-    return lineOfIndex(text, any.index);
-  }
-  return lineOfIndex(text, m.index);
+  re.lastIndex = declMatch ? declMatch.index : 0;
+  // The raw-text search from the job declaration, then — because the
+  // consumer may match via the parsed `uses:`/`with:` aggregation while
+  // its raw text sits anywhere (or nowhere) — the file-wide fallback.
+  // Both regexes share the consumer source; the anchored one decides,
+  // the unanchored one covers the aggregation-above-declaration case,
+  // and when NEITHER matches, line 1 is the honest floor.
+  const anchored = re.exec(text);
+  if (anchored) return lineOfIndex(text, anchored.index);
+  const anywhere = new RegExp(consumerRe.source, "i").exec(text);
+  return anywhere ? lineOfIndex(text, anywhere.index) : 1;
 }
 
 function lineOfIndex(text: string, index: number): number {

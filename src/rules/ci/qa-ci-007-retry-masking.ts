@@ -64,13 +64,14 @@ export const retryMasking = defineRule({
           // coerced via String() produced "[object Object]" noise.
           const command =
             typeof withCfg["command"] === "string" ? withCfg["command"] : "";
-          const runsTests =
-            /\b(?:npm|yarn|pnpm)\s+(?:test|run\s+test)|\b(?:jest|vitest|pytest|playwright)\b/.test(
-              command,
-            );
           // Fire only when the retry wrapper actually runs tests; a retry
           // around a non-test command (curl, deploy…) is legitimate.
-          if (!runsTests) continue;
+          if (
+            !/\b(?:npm|yarn|pnpm)\s+(?:test|run\s+test)|\b(?:jest|vitest|pytest|playwright)\b/.test(
+              command,
+            )
+          )
+            continue;
           findings.push({
             severity: "warning",
             confidence: "high",
@@ -152,11 +153,15 @@ function findStepLoopLine(text: string, run: string, loopRe: RegExp): number {
     .split("\n")
     .map((l) => l.trim())
     .find((l) => l.length > 0);
-  const anchorAt = firstLine ? text.indexOf(firstLine) : -1;
+  // Call sites guarantee a non-empty run (LOOP_RE + TEST_GATE_RE both
+  // require it), so firstLine is always defined — the cast is the
+  // documented invariant; indexOf -1 then degrades to a file-wide
+  // search via lastIndex coercion (negative → 0).
+  const anchorAt = text.indexOf(firstLine as string);
   // `g` is required for lastIndex to have any effect on exec().
   // eslint-disable-next-line security/detect-non-literal-regexp -- loopRe.source is a compile-time-constant literal (LOOP_RE) — not scan input
   const re = new RegExp(loopRe.source, "gi");
-  if (anchorAt !== -1) re.lastIndex = anchorAt;
+  re.lastIndex = Math.max(0, anchorAt);
   const m = re.exec(text);
   if (!m) return 1;
   let line = 1;
@@ -175,18 +180,21 @@ function findStepLoopLine(text: string, run: string, loopRe: RegExp): number {
 function findStepUsesLine(text: string, uses: string, command: string): number {
   const needle = uses.trim();
   const firstCmdLine = command.trim().split("\n")[0]?.trim();
-  const cmdAnchor = firstCmdLine ? text.indexOf(firstCmdLine) : -1;
-  let at = -1;
-  if (cmdAnchor !== -1) {
-    // Nearest occurrence of the uses string at or before the command line.
-    const windowStart = Math.max(0, cmdAnchor - 2000);
-    const window = text.slice(windowStart, cmdAnchor + 1);
-    const rel = window.lastIndexOf(needle);
-    if (rel !== -1) at = windowStart + rel;
-  }
-  if (at === -1) at = text.indexOf(needle);
+  // Call sites guarantee `command` is non-empty (the runsTests regex
+  // requires a command string), so firstCmdLine is always defined — the
+  // cast is the documented invariant; indexOf -1 then Math.max 0
+  // degrades to a file-wide search.
+  const cmdAnchor = Math.max(0, text.indexOf(firstCmdLine as string));
+  const at = nearestBefore(text, cmdAnchor, needle);
   if (at === -1) return 1;
   let line = 1;
   for (let i = 0; i < at; i++) if (text[i] === "\n") line++;
   return line;
+}
+
+/** The nearest occurrence of `needle` ending at or before `at`. */
+function nearestBefore(text: string, at: number, needle: string): number {
+  const windowStart = Math.max(0, at - 2000);
+  const rel = text.slice(windowStart, at + 1).lastIndexOf(needle);
+  return rel !== -1 ? windowStart + rel : -1;
 }
