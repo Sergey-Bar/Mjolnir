@@ -1,0 +1,56 @@
+{
+  "generatedAt": "2026-09-06",
+  "gate": "Required (1.0.0 close-out) — 99/99 measured at n>=10, revision-current, provenance complete",
+  "measured": 76,
+  "unmeasured": 23,
+  "harvest": {
+    "command": "npm run corpus:sample -- --unmeasured-only",
+    "appendedReviewSheets": [
+      "QA-JV-106.md (4 findings)",
+      "QA-PW-102.md (1 finding)",
+      "QA-PW-147.md (20 findings)",
+      "QA-SE-003.md (4 findings)"
+    ],
+    "unclassifiedVerdictRows": 0,
+    "note": "Sampled findings were NOT auto-classified: the §19 anti-Goodhart invariant forbids bulk-auto-classification, and the committed unclassified/UNSURE ceilings (0) enforce it mechanically. The 29 sampled findings await hand adjudication via the review sheets."
+  },
+  "perRule": {
+    "hasPartialVerdicts_needingTopUp": {
+      "QA-CS-104": 3,
+      "QA-CS-106": 4,
+      "QA-CS-107": 9,
+      "QA-CS-109": 7,
+      "QA-ENV-001": 6,
+      "QA-JV-106": 4,
+      "QA-JV-107": 4,
+      "QA-PY-101": 4,
+      "QA-PY-106": 4,
+      "QA-PY-107": 3,
+      "QA-PY-108": 4,
+      "QA-SE-002": 4,
+      "QA-SE-003": 2
+    },
+    "noVerdictsAtAll_needingFullSampling": [
+      "QA-CYP-002",
+      "QA-PW-102",
+      "QA-PW-116",
+      "QA-PW-124",
+      "QA-PW-125",
+      "QA-PW-147",
+      "QA-PY-102",
+      "QA-PY-104",
+      "QA-SE-001"
+    ],
+    "alreadyHarvested_thisSession": [
+      "QA-JV-106.md",
+      "QA-PW-102.md",
+      "QA-PW-147.md",
+      "QA-SE-003.md"
+    ]
+  },
+  "classificationEffort": {
+    "rowsNeededForN10": 147,
+    "note": "Rule-by-rule: rules already at 9/7 classified need 1-3 more; rules at 0 need full n>=10. All sampled findings carry 5-line source context in tests/corpus/review/*.md for adjudication."
+  },
+  "hardStop": "Per blueprint §19 anti-Goodhart invariant: verdict classification is human work by design. No programmatic path to 99/99 exists that does not violate the provenance discipline. The 1.0.0 release gate (Required tier) remains intentionally open until hand adjudication completes."
+}
