@@ -257,6 +257,19 @@ describe("§25.2 resolution — table-driven cause fixtures (§15)", () => {
     expect(r.cause).toBe("legacy-baseline");
     expect(renderResolution(r).startsWith("FIXED")).toBe(false);
   });
+
+  it("a baseline without a commit degrades comparedAgainst to 'unknown baseline'", () => {
+    // Arm: the final ?? fallback in the comparedAgainst chain — a
+    // baseline captured without git has no commit to compare against.
+    const r = resolve({
+      entry: entry({}),
+      baseline: { findings: [entry({})] },
+      current: gone,
+      registryRevisions: new Map([["QA-PW-101", 1]]),
+    });
+    expect(r.status).toBe("VERIFIED-RESOLVED");
+    expect(r.comparedAgainst).toBe("unknown baseline");
+  });
 });
 
 describe("§25.3 parity — machine contract agrees with the canonical result", () => {

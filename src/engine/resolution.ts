@@ -89,11 +89,11 @@ export function resolve(input: ResolveInput): Resolution {
   const comparedAgainst =
     input.baselineCommit ?? baseline.commit ?? "unknown baseline";
   // 1. Incomplete scan — nothing can be resolved from a partial view.
-  // One condition suffices: a partial scan never carries a complete
-  // rules phase (the pipeline sets rules="partial" whenever it sets
-  // partial=true) — the rules check is a documented invariant, not a
-  // live second branch. Conjoined for defensive clarity against a
-  // future ScanResult that separates the two.
+  // Both signals classify here: a partial scan OR an incomplete rules
+  // phase. The pipeline sets rules="partial" whenever it sets
+  // partial=true, so the disjunction's second arm is exercised only by
+  // canonical results that report rules-partial independently — the
+  // semantic-integrity suite covers both arms.
   if (current.partial || current.analysisStatus.rules !== "complete") {
     return { status: "INCONCLUSIVE", cause: "partial", comparedAgainst };
   }

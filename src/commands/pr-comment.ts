@@ -225,9 +225,14 @@ export function renderPrComment(
       );
     }
     if (inconclusive.length > 0) {
+      const causes = [
+        ...new Set(
+          inconclusive.map((f) => f.resolution.cause ?? ("unknown" as const)),
+        ),
+      ].join(", ");
       lines.push("");
       lines.push(
-        `ℹ ${inconclusive.length} pre-existing finding${inconclusive.length === 1 ? "" : "s"} disappeared, but this scan can't confirm a fix (${[...new Set(inconclusive.map((f) => f.resolution.cause ?? "unknown"))].join(", ")}).`,
+        `ℹ ${inconclusive.length} pre-existing finding${inconclusive.length === 1 ? "" : "s"} disappeared, but this scan can't confirm a fix (${causes}).`,
       );
     }
   }

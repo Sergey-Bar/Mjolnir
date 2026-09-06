@@ -206,6 +206,54 @@ describe("renderPrComment — rendering against fixture scan results", () => {
     );
   });
 
+  it("renders inconclusive disappearances with their causes — never as fixes (§15)", () => {
+    // §17: a v1 legacy baseline entry (no detectorRevision) resolves
+    // INCONCLUSIVE(legacy-baseline) — the PR comment reports it honestly
+    // instead of claiming a fix.
+    const before = scanResult([finding({})]);
+    const baseline = buildBaseline(before, "abc123");
+    const after = scanResult([]);
+    const diff = diffAgainstBaseline(after, baseline);
+    // Erase the revision from the baseline entries — the legacy shape.
+    diff.resolvedFindings = diff.resolvedFindings.map((f) => ({
+      ...f,
+      resolution: {
+        status: "INCONCLUSIVE" as const,
+        cause: "legacy-baseline" as const,
+        comparedAgainst: "abc123",
+      },
+    }));
+
+    const body = renderPrComment(after, { diff });
+    expect(body).not.toContain("verified as fixed");
+    expect(body).toContain(
+      "disappeared, but this scan can't confirm a fix (legacy-baseline)",
+    );
+    // An UNKNOWN cause (no cause field) still renders via the ?? arm, and
+    // the plural arm is exercised by a second inconclusive finding.
+    const unknownCauseDiff = {
+      ...diff,
+      resolvedFindings: [
+        ...diff.resolvedFindings,
+        {
+          ruleId: "QA-PW-102",
+          file: "e2e/c.spec.ts",
+          message: "Hard sleep detected",
+          severity: "error" as const,
+          resolution: {
+            status: "INCONCLUSIVE" as const,
+            comparedAgainst: "x",
+          },
+        },
+      ],
+    };
+    const body2 = renderPrComment(after, { diff: unknownCauseDiff });
+    // Both inconclusive findings render in ONE line with their union of
+    // causes — legacy-baseline (with a cause) and unknown (without).
+    expect(body2).toContain("2 pre-existing findings disappeared");
+    expect(body2).toContain("can't confirm a fix (legacy-baseline, unknown)");
+  });
+
   it("caps the listed findings and notes how many more exist", () => {
     const many = Array.from({ length: 30 }, (_, i) =>
       finding({ file: `e2e/f${i}.spec.ts`, message: `Finding ${i}` }),
