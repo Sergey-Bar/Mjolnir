@@ -29,7 +29,7 @@ import type {
  *   Phase 6).
  */
 export type DetectionStrategy =
-  "LEXICAL" | "AST" | "SEMANTIC" | "FRAMEWORK" | "RUNTIME";
+  "LEXICAL" | "AST" | "SEMANTIC" | "QA_MODEL" | "FRAMEWORK" | "RUNTIME";
 
 export interface RuleMeta {
   /** Frozen public API — never reused (§18.4). */

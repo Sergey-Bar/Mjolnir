@@ -117,7 +117,13 @@ export const DEFECT_LEDGER: readonly DefectLedgerEntry[] = [
 // ─── Detection-strategy enum (§09.6/§12.1 — enforced contract) ──────
 
 export type DetectionStrategyEnum =
-  "LEXICAL" | "AST" | "SEMANTIC" | "FRAMEWORK" | "RUNTIME" | "UNCLASSIFIED";
+  | "LEXICAL"
+  | "AST"
+  | "SEMANTIC"
+  | "QA_MODEL"
+  | "FRAMEWORK"
+  | "RUNTIME"
+  | "UNCLASSIFIED";
 
 /**
  * The declared `detectionStrategy` IS the §09.6 enum since the Phase 2
@@ -126,7 +132,7 @@ export type DetectionStrategyEnum =
  * defensive rendering: an undeclared strategy (or an out-of-contract
  * value smuggled in via a synthetic rule object) renders UNCLASSIFIED
  * instead of a fabricated claim. Every registry rule maps to its declared
- * enum value.
+ * enum value. Lane A (§10) adds QA_MODEL — the substrate strategy.
  */
 export function deriveDetectionStrategyEnum(
   declared: string | undefined,
@@ -136,6 +142,7 @@ export function deriveDetectionStrategyEnum(
     declared === "LEXICAL" ||
     declared === "AST" ||
     declared === "SEMANTIC" ||
+    declared === "QA_MODEL" ||
     declared === "FRAMEWORK" ||
     declared === "RUNTIME"
   ) {
@@ -147,6 +154,9 @@ export function deriveDetectionStrategyEnum(
 /**
  * Semantic depth (§04: Low/Medium/High) derived ONLY from the provisional
  * enum — no invented claims. UNCLASSIFIED enum → UNCLASSIFIED depth.
+ * QA_MODEL is High: it classifies over the normalized concept IR built on
+ * a real grammar parse (deeper than raw-AST walking, which has no concept
+ * classification).
  */
 export function deriveSemanticDepth(
   strategy: DetectionStrategyEnum,
@@ -154,6 +164,7 @@ export function deriveSemanticDepth(
   if (strategy === "LEXICAL") return "Low";
   if (strategy === "AST") return "Medium";
   if (strategy === "SEMANTIC") return "High";
+  if (strategy === "QA_MODEL") return "High";
   return "UNCLASSIFIED";
 }
 
