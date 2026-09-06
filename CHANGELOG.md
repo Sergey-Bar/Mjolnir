@@ -74,6 +74,14 @@ scan`. Unknown categories are a usage error (exit 10).
 - help registry gained `why`, `handoff`, `install` and the new flags;
   site/reference/cli.md documents the handoff trust model.
 
+## [0.5.7] — 2026-09-06
+
+### Changes since 0.5.6
+
+- Merge pull request #40 from Sergey-Bar/eng/machine-contract-2.1
+- test: plural + unknown-cause arms for inconclusive resolution rendering
+- feat: machine verification contract + finding detectorRevision + lifecycle resolution (blueprint §12-§15, §17, §25)
+
 ## [0.5.6] — 2026-09-06
 
 ### Changes since 0.5.5
