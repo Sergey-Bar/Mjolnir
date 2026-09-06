@@ -74,14 +74,29 @@ maps and fails before rendering if anything the reporter prints has no
 glyph — a tofu box where the hammer should be is the video misrepresenting
 the CLI.
 
-JetBrains Mono (the brand's code face) covers 132 of the 138 required
-glyphs, including all box drawing and block elements. It does **not** cover
-the Runic block or `ℹ` U+2139, and `src/reporter/art.ts` puts `ᚦ` and `ᚹ` on
-the hammer in every score state above critical. GNU FreeMono supplies those
-six and is itself monospace, so the runes land on the same character grid.
+**Geist Mono** (Vercel, SIL OFL) is the primary face — chosen to match
+react.doctor's terminal, the reference this pipeline's framing was built
+against. It covers 120 of the 129 required glyphs, including all box
+drawing and block elements. It does **not** cover the Runic block, `ℹ`
+U+2139, `⚠` U+26A0, `⚡` U+26A1 or `✗` U+2717 — verified with
+`check-glyphs.ts`, not assumed — and `src/reporter/art.ts` puts `ᚦ` and
+`ᚹ` on the hammer in every score state above critical. **GNU FreeMono**
+supplies all nine and is itself monospace, so the fallback glyphs land on
+the same character grid as everything around them.
 
 Both faces are embedded as base64 data: URIs at render time. Nothing is
 fetched, and nothing is taken from whatever fonts the host has installed.
+
+Two things were deliberately copied from react.doctor's terminal, both
+pulled from the site's own shipped CSS rather than eyeballed: the
+near-black background (`#08090A`, their `.rn-terminal` rule) and Geist
+Mono. What was NOT copied: react.doctor's terminal shows syntax-
+highlighted source (Shiki, GitHub-dark tokens), so its text colors have
+no correspondence to a CLI report. Mjölnir's severity colors already
+carry real meaning tied to the score bands and the brand's verdict
+palette (`assets/brand/README.md`) — repainting them to match a syntax
+theme they do not correspond to would be inventing color, not reusing
+it.
 
 ## Note on GitHub playback
 

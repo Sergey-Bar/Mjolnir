@@ -8,16 +8,17 @@
  * fonts: a video that renders differently depending on what the machine
  * happens to have installed is not a reproducible artifact.
  *
- * Two faces are required, not one. JetBrains Mono is the brand's code
- * face (assets/brand/README.md) and covers the box drawing, block
- * elements and severity marks the reporter draws. It does NOT cover the
- * Runic block — and `src/reporter/art.ts` puts ᚦ and ᚹ on the hammer in
- * every score state above critical. GNU FreeMono supplies those — and U+2139 ℹ, the INFO severity mark, which
- * JetBrains Mono also lacks. FreeMono is itself monospace, so the runes
- * land on the same character grid as everything around them; a
- * proportional fallback would knock the hammer art out of alignment.
- * `probe-glyphs.ts` proves this split rather than assuming it; if either
- * file changes, the probe is the thing that catches it.
+ * Primary face is Geist Mono (Vercel, SIL OFL) — chosen to match the
+ * reference the user pointed at (react.doctor's terminal), which ships
+ * the same family. It covers box drawing, block elements and the
+ * severity glyphs the reporter draws. It does NOT cover the Runic block,
+ * ℹ, ⚠, ⚡ or ✗ — checked with check-glyphs.ts, not assumed — and
+ * `src/reporter/art.ts` puts ᚦ and ᚹ on the hammer in every score state
+ * above critical. GNU FreeMono supplies all nine. FreeMono is itself
+ * monospace, so the fallback glyphs land on the same character grid as
+ * everything around them; a proportional fallback would knock the hammer
+ * art out of alignment. `check-glyphs.ts` proves this split rather than
+ * assuming it; if either file changes, that script is what catches it.
  */
 
 import { readFileSync } from "node:fs";
@@ -44,13 +45,13 @@ export function fontPath(f: VendoredFont): string {
 export const FONTS: VendoredFont[] = [
   {
     family: "MjolnirMono",
-    file: "JetBrainsMono-Regular.ttf",
+    file: "GeistMono-Regular.ttf",
     weight: 400,
     mime: "font/ttf",
   },
   {
     family: "MjolnirMono",
-    file: "JetBrainsMono-Bold.ttf",
+    file: "GeistMono-Bold.ttf",
     weight: 700,
     mime: "font/ttf",
   },
@@ -62,7 +63,8 @@ export const FONTS: VendoredFont[] = [
   },
 ];
 
-/** The CSS font stack. Order matters: runes fall through to DejaVu. */
+/** The CSS font stack. Order matters: the nine glyphs Geist Mono lacks
+ * (runes, ℹ, ⚠, ⚡, ✗) fall through to FreeMono. */
 export const FONT_STACK = `"MjolnirMono", "MjolnirRunes", monospace`;
 
 /** `@font-face` rules with the files inlined — no network, no system fonts. */

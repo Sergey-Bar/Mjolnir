@@ -20,10 +20,35 @@ import { fontFaceCss, FONT_STACK } from "./fonts.js";
 import { pacingFor } from "./pacing.js";
 import type { VideoScript } from "./script-types.js";
 
-/** Brand tokens, from assets/brand/README.md. */
-const INK_950 = "#0A1119"; // deepest — the page behind the window
-const INK_900 = "#0C1420"; // the terminal body
-const CHROME = "#111A29"; // title bar
+/**
+ * Frame palette.
+ *
+ * The near-black base (#08090A) and neutral title-bar dots (#323232) are
+ * taken directly from react.doctor's own terminal — the user pointed at
+ * that page as the reference and pulled its real values from the site's
+ * shipped CSS (.rn-terminal{background-color:#08090a}, dark-mode dot
+ * fill dark:bg-[#323232]), not eyeballed from a screenshot. Their window
+ * is a SINGLE tone with no separate title-bar fill — the only seam is a
+ * hairline ring and an inset shadow — so INK_900 and CHROME share one
+ * value here too.
+ *
+ * The gold/aurora wash is Mjölnir's own brand identity (assets/brand
+ * /README.md), not something react.doctor has — their page is flat black
+ * with no glow. Kept, but turned down to a whisper: enough to read as
+ * this product's window and not react.doctor's, without competing with
+ * the near-black base that was the actual thing borrowed.
+ *
+ * What was deliberately NOT copied: react.doctor's terminal shows a
+ * syntax-highlighted code diff (Shiki, GitHub-dark tokens — blue/green
+ * /purple/red for keywords, strings, JSX). Mjölnir's terminal shows a CLI
+ * report, not source code, and its severity colors already carry real
+ * meaning tied to the score bands and the brand's verdict palette.
+ * Repainting them to match a syntax theme they have no correspondence to
+ * would be inventing color, not reusing it.
+ */
+const INK_950 = "#08090A"; // page behind the window — react.doctor's exact value
+const INK_900 = "#08090A"; // terminal body — same tone, no separate fill
+const CHROME = "#08090A"; // title bar — separated by shadow only, not color
 const STEEL_DIM = "#8B939D";
 const GOLD = "#C19A34";
 const AURORA = "#37ABBD";
@@ -161,11 +186,11 @@ const SOLID_BLOCK_RUN = /^[\u2580\u2584\u2588\u258C\u2590\u2596-\u259F\s]+$/;
 /**
  * Runic characters, which come from the fallback face.
  *
- * FreeMono is a noticeably lighter design than JetBrains Mono, so the
- * runes on the hammer rendered as thin specks beside the bold blocks they
- * sit on. A stroke brings their weight into line with the rest of the
- * frame; without it the one detail unique to this tool's output is also
- * the least legible thing in it.
+ * FreeMono is a noticeably lighter design than the primary face (Geist
+ * Mono), so the runes on the hammer rendered as thin specks beside the
+ * bold blocks they sit on. A stroke brings their weight into line with
+ * the rest of the frame; without it the one detail unique to this tool's
+ * output is also the least legible thing in it.
  */
 const RUNIC = /[\u16A0-\u16FF]/gu;
 
@@ -219,9 +244,11 @@ export function buildPage(script: VideoScript): string {
   const barHeight = 40;
   const pad = 30;
   const cols = widestLine(script);
-  // JetBrains Mono advances 0.6em per character. The font is sized so the
-  // widest real line fills the frame at its natural size — upscaling a
-  // small render is what makes terminal video look soft.
+  // The primary face advances 0.6em per character (true of both Geist
+  // Mono and JetBrains Mono — both ship at the conventional 3:5 aspect).
+  // The font is sized so the widest real line fills the frame at its
+  // natural size — upscaling a small render is what makes terminal video
+  // look soft.
   //
   // Both metrics are then snapped so that one character cell is a WHOLE
   // number of device pixels. Block-drawing glyphs (the hammer, the score
@@ -272,8 +299,8 @@ html,body{width:${vw}px;height:${vh}px;overflow:hidden;background:${INK_950}}
    a soft brand glow behind a floating window, the way a product page
    presents a terminal rather than the way an OS does. */
 #page{position:absolute;inset:0;background:
-  radial-gradient(120% 90% at 50% -10%, ${GOLD}1F 0%, transparent 55%),
-  radial-gradient(90% 70% at 8% 108%, ${AURORA}14 0%, transparent 60%),
+  radial-gradient(120% 90% at 50% -10%, ${GOLD}14 0%, transparent 55%),
+  radial-gradient(90% 70% at 8% 108%, ${AURORA}0D 0%, transparent 60%),
   ${INK_950}}
 #win{position:absolute;inset:${inset}px;display:flex;flex-direction:column;
   background:${INK_900};border-radius:${radius}px;overflow:hidden;
@@ -282,7 +309,7 @@ html,body{width:${vw}px;height:${vh}px;overflow:hidden;background:${INK_950}}
 #bar{height:${barHeight}px;flex:0 0 ${barHeight}px;background:${CHROME};
   display:flex;align-items:center;padding:0 20px;gap:9px;
   box-shadow:inset 0 -1px 0 #FFFFFF0D}
-.dot{width:12px;height:12px;border-radius:50%;background:#2B3442}
+.dot{width:12px;height:12px;border-radius:50%;background:#323232}
 #title{flex:1;text-align:center;color:${STEEL_DIM};
   font:13px ${FONT_STACK};letter-spacing:.06em}
 #screen{flex:1;overflow:hidden;padding:${pad}px;display:flex;
@@ -297,11 +324,15 @@ html,body{width:${vw}px;height:${vh}px;overflow:hidden;background:${INK_950}}
   white-space:pre;font-variant-ligatures:none;-webkit-font-smoothing:antialiased;
   text-rendering:geometricPrecision}
 #lines div{height:${lineHeight}px}
-/* JetBrains Mono's block glyphs do not span their full advance, so tiled
-   runs — the hammer, the score gauge, the meters — show a hairline seam
-   between every pair even at whole-pixel positions. Half a device pixel
-   of stroke closes it. Shade glyphs are excluded: they are dither
-   patterns, and stroking them turns the gauge's empty track into noise. */
+/* The primary face's block glyphs do not span their full advance, so
+   tiled runs — the hammer, the score gauge, the meters — show a hairline
+   seam between every pair even at whole-pixel positions. Confirmed on
+   both fonts tried here (JetBrains Mono, then Geist Mono): removing the
+   stroke reintroduces the seam on Geist Mono too, so this is a property
+   of how monospace faces draw box/block glyphs in Chromium, not one
+   font's defect. Half a device pixel of stroke closes it. Shade glyphs
+   are excluded: they are dither patterns, and stroking them turns the
+   gauge's empty track into noise. */
 #lines .blocks{-webkit-text-stroke:${(0.75 / dpr).toFixed(3)}px currentColor}
 /* Runes come from the lighter fallback face — see the .rune note in
    lineHtml. */

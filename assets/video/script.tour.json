@@ -13,8 +13,8 @@
     "deviceScaleFactor": 2,
     "fps": 30,
     "fonts": [
-      "JetBrainsMono-Regular.ttf",
-      "JetBrainsMono-Bold.ttf",
+      "GeistMono-Regular.ttf",
+      "GeistMono-Bold.ttf",
       "FreeMono.ttf"
     ]
   },
