@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | error                          |
 | Confidence                            | high                           |
 | Tier                                  | extended                       |
-| Measured FP rate                      | 19% (n=16)                     |
+| Measured FP rate                      | 11% (n=18)                     |
 | Evidence level                        | E2                             |
 | QA impact                             | False-green risk (FALSE-GREEN) |
 | False-positive risk (author estimate) | low                            |
@@ -45,8 +45,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | ----------------- | ----------- |
 | calcom-cal        | 1           |
 | grafana-grafana   | 2           |
-| positive-fixtures | 11          |
-| reflex-dev-reflex | 1           |
+| positive-fixtures | 14          |
 
 ---
 

@@ -46,6 +46,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | apache-airflow      | 139         |
 | getsentry-sentry    | 592         |
 | pallets-click       | 1           |
+| pyca-cryptography   | 18          |
 | pytest-dev-pytest   | 3           |
 | reflex-dev-reflex   | 6           |
 | streamlit-streamlit | 33          |

@@ -43,7 +43,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo                | Occurrences |
 | ------------------- | ----------- |
-| apache-airflow      | 11          |
+| apache-airflow      | 7           |
 | pytest-dev-pytest   | 19          |
 | reflex-dev-reflex   | 2           |
 | streamlit-streamlit | 2           |

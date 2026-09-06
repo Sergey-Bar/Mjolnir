@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | error                           |
 | Confidence                            | high                            |
 | Tier                                  | quarantine                      |
-| Measured FP rate                      | 63% (n=19)                      |
+| Measured FP rate                      | 60% (n=20)                      |
 | Evidence level                        | E2                              |
 | QA impact                             | False-green risk (FALSE-GREEN)  |
 | False-positive risk (author estimate) | low                             |

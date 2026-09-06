@@ -45,7 +45,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | ------------------- | ----------- |
 | puppeteer-puppeteer | 210         |
 | sveltejs-kit        | 5           |
-| vitejs-vite         | 62          |
+| vitejs-vite         | 66          |
 | withastro-astro     | 2           |
 
 ---

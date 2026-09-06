@@ -53,12 +53,13 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | nextauthjs-next-auth                          | 1           |
 | playwright-community-eslint-plugin-playwright | 20          |
 | SeleniumHQ-selenium                           | 3           |
-| streamlit-streamlit                           | 568         |
+| streamlit-streamlit                           | 596         |
 | sveltejs-kit                                  | 24          |
-| tanstack-query                                | 98          |
+| tanstack-query                                | 102         |
 | vercel-next-js                                | 32          |
 | vitejs-vite                                   | 3           |
 | vitest-dev-vitest                             | 18          |
+| yarnpkg-berry                                 | 1           |
 
 ---
 

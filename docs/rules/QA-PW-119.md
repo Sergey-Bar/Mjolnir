@@ -44,17 +44,17 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | Repo                 | Occurrences |
 | -------------------- | ----------- |
 | apache-airflow       | 8           |
-| appsmithorg-appsmith | 7           |
+| appsmithorg-appsmith | 8           |
 | calcom-cal           | 3           |
 | getsentry-sentry     | 6           |
-| grafana-grafana      | 105         |
+| grafana-grafana      | 107         |
 | nextauthjs-next-auth | 9           |
 | puppeteer-puppeteer  | 1           |
 | streamlit-streamlit  | 7           |
 | sveltejs-kit         | 8           |
 | tanstack-query       | 5           |
 | vercel-next-js       | 8           |
-| vitejs-vite          | 6           |
+| vitejs-vite          | 7           |
 | vitest-dev-vitest    | 24          |
 | withastro-astro      | 11          |
 

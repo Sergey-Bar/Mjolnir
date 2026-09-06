@@ -54,9 +54,10 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | sveltejs-kit         | 10          |
 | tanstack-query       | 157         |
 | vercel-next-js       | 140         |
-| vitejs-vite          | 7           |
+| vitejs-vite          | 8           |
 | vitest-dev-vitest    | 77          |
 | withastro-astro      | 32          |
+| yarnpkg-berry        | 3           |
 
 ---
 

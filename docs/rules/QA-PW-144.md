@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | info                        |
 | Confidence                            | high                        |
 | Tier                                  | extended                    |
-| Measured FP rate                      | 15% (n=20)                  |
+| Measured FP rate                      | 14% (n=21)                  |
 | Evidence level                        | E2                          |
 | QA impact                             | Test hygiene debt (HYGIENE) |
 | False-positive risk (author estimate) | low                         |

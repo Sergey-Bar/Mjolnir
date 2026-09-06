@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | error                          |
 | Confidence                            | high                           |
 | Tier                                  | quarantine                     |
-| Measured FP rate                      | 82% (n=17)                     |
+| Measured FP rate                      | 47% (n=30)                     |
 | Evidence level                        | E2                             |
 | QA impact                             | False-green risk (FALSE-GREEN) |
 | False-positive risk (author estimate) | low                            |
@@ -48,8 +48,9 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | pallets-click       | 3           |
 | positive-fixtures   | 13          |
 | psf-requests        | 3           |
+| pyca-cryptography   | 44          |
 | pytest-dev-pytest   | 30          |
-| reflex-dev-reflex   | 52          |
+| reflex-dev-reflex   | 53          |
 | streamlit-streamlit | 29          |
 
 ---
