@@ -272,6 +272,7 @@ function findJobConsumerLine(
   // and when NEITHER matches, line 1 is the honest floor.
   const anchored = re.exec(text);
   if (anchored) return lineOfIndex(text, anchored.index);
+  // eslint-disable-next-line security/detect-non-literal-regexp -- consumerRe.source is a compile-time-constant literal from CONSUMERS — not scan input
   const anywhere = new RegExp(consumerRe.source, "i").exec(text);
   return anywhere ? lineOfIndex(text, anywhere.index) : 1;
 }
