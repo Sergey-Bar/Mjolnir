@@ -100,7 +100,7 @@ Confidence:  high
 Tier:        quarantine
 Evidence:    E2
 QA impact:   False-green risk (FALSE-GREEN)
-Measured FP: 32% (19 hand-classified corpus verdicts)
+Measured FP: 11% (19 hand-classified corpus verdicts)
 FP risk:     low (author estimate)
 Languages:   yaml
 Frameworks:  github-actions
