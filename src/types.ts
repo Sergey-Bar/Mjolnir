@@ -152,6 +152,15 @@ export interface Finding {
   /** Classified (TP+FP) verdicts behind `measuredFpRate`. */
   measuredFpN?: number;
   /**
+   * Detector revision of the rule that produced this finding, stamped
+   * from the registry at scan time (blueprint §13, G-16). Identity
+   * participates: "same ruleId, different detectorRevision" is formally
+   * a different detector for comparison purposes. Additive within
+   * schemaVersion 1; absent means the producer predates the field
+   * (revision-unknown).
+   */
+  detectorRevision?: number;
+  /**
    * Runtime corroboration from a real run report (plan §16), stamped
    * when a report was available and matched this finding's file/test.
    * Absent means "no runtime evidence" — the static evidence ladder

@@ -237,6 +237,7 @@ jobs:
           npm run docs:rules
           npm run fp-audit:generate
           npm run docs:capability
+          npm run docs:machine-contract
           npm run golden:update
           npm run docs:hero
           npm run docs:demo

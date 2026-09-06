@@ -16,6 +16,16 @@ function normalize(json: string): string {
   const r = JSON.parse(json) as Record<string, unknown>;
   const status = r.analysisStatus as Record<string, unknown> | undefined;
   if (status) delete status.durationMs;
+  // The machine contract (§12) embeds durationMs in its completeness
+  // projection — same wall-clock exclusion as above.
+  const contract = r.contract as Record<string, unknown> | undefined;
+  if (
+    contract &&
+    typeof contract.completeness === "object" &&
+    contract.completeness !== null
+  ) {
+    delete (contract.completeness as Record<string, unknown>).durationMs;
+  }
   return JSON.stringify(r);
 }
 

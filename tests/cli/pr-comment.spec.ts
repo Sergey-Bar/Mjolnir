@@ -25,7 +25,7 @@ function finding(overrides: Partial<Finding>): Finding {
     confidence: "high",
     findingType: "deterministic-defect",
     qaImpact: "FLAKY-RISK",
-    evidenceLevel: "E2",
+    detectorRevision: 1,
     file: "e2e/a.spec.ts",
     line: 4,
     column: 3,
@@ -190,14 +190,20 @@ describe("renderPrComment — rendering against fixture scan results", () => {
   it("uses plural grammar for multiple resolved findings", () => {
     const before = scanResult([
       finding({}),
-      finding({ ruleId: "QA-TEST-001", file: "e2e/b.spec.ts" }),
+      finding({
+        ruleId: "QA-TEST-001",
+        file: "e2e/b.spec.ts",
+        detectorRevision: 1,
+      }),
     ]);
     const baseline = buildBaseline(before, "abc123");
     const after = scanResult([]);
     const diff = diffAgainstBaseline(after, baseline);
 
     const body = renderPrComment(after, { diff });
-    expect(body).toContain("2 pre-existing findings fixed in this PR");
+    expect(body).toContain(
+      "2 pre-existing findings verified as fixed in this PR",
+    );
   });
 
   it("caps the listed findings and notes how many more exist", () => {
@@ -234,7 +240,9 @@ describe("renderPrComment — rendering against fixture scan results", () => {
     const diff = diffAgainstBaseline(after, baseline);
 
     const body = renderPrComment(after, { diff });
-    expect(body).toContain("1 pre-existing finding fixed in this PR");
+    expect(body).toContain(
+      "1 pre-existing finding verified as fixed in this PR",
+    );
   });
 
   it("falls back to the full scope when no baseline exists, and says so honestly", () => {
