@@ -12,6 +12,7 @@
     "QA-PW-120": 14,
     "QA-PW-122": 1,
     "QA-PW-123": 1,
+    "QA-PW-124": 1,
     "QA-PW-141": 1,
     "QA-PW-143": 1,
     "QA-PW-144": 1,
@@ -20,13 +21,13 @@
     "QA-PW-147": 153,
     "QA-TEST-001": 12,
     "QA-TEST-002": 23,
-    "QA-TEST-003": 382,
+    "QA-TEST-003": 568,
     "QA-TEST-004": 77,
-    "QA-TEST-010": 82,
+    "QA-TEST-010": 218,
     "QA-TQUAL-001": 18,
-    "QA-TQUAL-002": 135,
+    "QA-TQUAL-002": 137,
     "QA-TQUAL-011": 4
   },
-  "totalFindings": 1066,
+  "totalFindings": 1391,
   "partial": false
 }

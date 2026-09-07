@@ -5,11 +5,12 @@
     "QA-PW-103": 32,
     "QA-PW-107": 12,
     "QA-PW-108": 3,
+    "QA-PW-124": 1,
     "QA-PW-141": 1,
     "QA-PW-143": 1,
     "QA-PW-145": 29,
     "QA-PW-146": 32
   },
-  "totalFindings": 113,
+  "totalFindings": 114,
   "partial": false
 }
