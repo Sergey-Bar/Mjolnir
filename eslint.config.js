@@ -38,6 +38,11 @@ export default tseslint.config(
       // tests/fixtures: deliberately contain anti-patterns.
       "tests/corpus/positive-fixtures/**",
       "tests/corpus/negative-fixtures/**",
+      // Certification/QA evidence area (certification plan 1788804968910):
+      // raw captured output committed VERBATIM per the evidence protocol —
+      // its throwaway probe scripts and raw transcripts are DATA and must
+      // never be held to (or block) the source linter.
+      "QA/**",
       // Workspace build output and the deliberate out-of-project example
       // config (excluded from every tsconfig on purpose).
       "packages/*/dist/**",
