@@ -186,6 +186,91 @@ describe("checkMeasurementConsistency (D7)", () => {
     expect(result.ok).toBe(false);
     expect(result.details.join("\n")).toContain("unparseable verdict row");
   });
+
+  it("FAILS on an unreadable/malformed SIDECAR (parse arm)", () => {
+    const { verdictsDir, sidecarPath } = makeCorpus([]);
+    writeFileSync(sidecarPath, "{ not json");
+    const result = checkMeasurementConsistency(verdictsDir, sidecarPath, [
+      { ...minimalRules.one(), id: "QA-CI-001" },
+    ]);
+    expect(result.ok).toBe(false);
+    expect(result.details.join("\n")).toContain("sidecar unreadable/malformed");
+  });
+
+  it("INCONCLUSIVE (never pass) when the sidecar is missing but measured rules declare revisions", () => {
+    const { verdictsDir, sidecarPath } = makeCorpus([]);
+    // No sidecar file at all — a measured rule with declared revision 2
+    // cannot be verified fresh without the sidecar.
+    const result = checkMeasurementConsistency(
+      verdictsDir,
+      sidecarPath.replace(".json", "-absent.json"),
+      [{ ...minimalRules.one(), id: "QA-CI-001" }],
+      {
+        "QA-CI-001": { fpRate: 0.105, n: 19, detectorRevision: 2 },
+      },
+    );
+    expect(result.ok).toBe(false);
+    expect(result.status).toBe("inconclusive");
+    expect(result.details.join("\n")).toContain("sidecar");
+    expect(result.details.join("\n")).toContain("declare revisions");
+  });
+
+  it("PASSES when the sidecar agrees with MEASURED_FP and the live count matches n", () => {
+    // Full reconcile with an INJECTED measurement map (G6 seam): 19 rows
+    // in the corpus (15 TP + 4 FP = n 19), sidecar revision 2 matching
+    // the map's revision — every invariant arm on its passing side.
+    const rows = [
+      ...Array.from({ length: 15 }, () => ({
+        ruleId: "QA-CI-001",
+        verdict: "TP",
+      })),
+      ...Array.from({ length: 4 }, () => ({
+        ruleId: "QA-CI-001",
+        verdict: "FP",
+      })),
+    ];
+    const { verdictsDir, sidecarPath } = makeCorpus(rows);
+    writeFileSync(
+      sidecarPath,
+      JSON.stringify({ "QA-CI-001": { detectorRevision: 2 } }),
+    );
+    const result = checkMeasurementConsistency(
+      verdictsDir,
+      sidecarPath,
+      [{ ...minimalRules.one(), id: "QA-CI-001" }],
+      {
+        "QA-CI-001": { fpRate: 4 / 19, n: 19, detectorRevision: 2 },
+      },
+    );
+    expect(result.ok).toBe(true);
+    expect(result.status).toBe("pass");
+    expect(result.details.join("\n")).toContain("agree");
+  });
+
+  it("skips non-jsonl files and rows without ruleId when counting (robustness arms)", () => {
+    const root = mkdtempSync(join(tmpdir(), "mjolnir-meascons-"));
+    tmpDirs.push(root);
+    const verdictsDir = join(root, "tests", "corpus", "verdicts");
+    mkdirSync(verdictsDir, { recursive: true });
+    writeFileSync(
+      join(verdictsDir, "qa-ci-001.jsonl"),
+      [
+        JSON.stringify({ ruleId: "QA-CI-001", verdict: "TP" }),
+        JSON.stringify({ verdict: "FP" }), // no ruleId — skipped
+        JSON.stringify({ ruleId: "QA-CI-001", verdict: "UNSURE" }), // unclassified — not counted
+      ].join("\n") + "\n",
+    );
+    // A non-jsonl file in the same directory must be ignored.
+    writeFileSync(join(verdictsDir, "README.md"), "verdicts corpus notes\n");
+    const result = checkMeasurementConsistency(
+      verdictsDir,
+      join(root, "tests", "corpus", "detector-revisions.json"),
+      [minimalRules.one()],
+      {}, // no measured entries — the row is informational only
+    );
+    expect(result.ok).toBe(true);
+    expect(result.details.join("\n")).not.toContain("unparseable");
+  });
 });
 
 describe("measurementBlock (Phase 4.3)", () => {
@@ -209,13 +294,24 @@ describe("measurementBlock (Phase 4.3)", () => {
     // QA-CI-001 IS measured in the shipped map (n=19, detectorRevision 2)
     // — the synthetic rule must declare that same revision to count as
     // measured, and the quarantine tier to land in the quarantine census.
+    // A second MEASURED rule at tier core proves quarantine excludes it.
     const rule = minimalRules.one({
       id: "QA-CI-001",
       tier: "quarantine",
       detectorRevision: 2,
     });
-    const block = measurementBlock([rule]);
-    expect(block.measured).toBe(1);
+    const coreMeasured = minimalRules.one({
+      id: "QA-CI-002",
+      tier: "core",
+      detectorRevision: 2,
+    });
+    const block = measurementBlock([
+      rule,
+      coreMeasured,
+      { ...minimalRules.one(), id: "QA-T-999" }, // unmeasured → excluded
+    ]);
+    expect(block.measured).toBe(2);
     expect(block.quarantine).toBe(1);
+    expect(block.unmeasured).toBe(1);
   });
 });

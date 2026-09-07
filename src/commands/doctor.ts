@@ -22,6 +22,10 @@ import { RULES } from "../rules/index.js";
 import { RULE_CATEGORIES } from "../types.js";
 import { MEASURED_FP } from "../rules/measured-fp.generated.js";
 
+/** The shipped measurement map's entry shape (re-exported for the G6 seam). */
+export type { MeasuredFp } from "../rules/measured-fp.generated.js";
+import type { MeasuredFp as MeasuredFpEntry } from "../rules/measured-fp.generated.js";
+
 /** Uniform error rendering for doctor details (Error or thrown-as-string). */
 export function errorText(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
@@ -200,9 +204,10 @@ export function measurementBlock(
       m !== undefined && m.detectorRevision === declaredDetectorRevision(r)
     );
   });
-  const quarantine = measured.filter(
-    (r) => (r.tier ?? "core") === "quarantine",
-  );
+  // effectiveTier (not raw tier): an omitted tier resolves
+  // measurement-dependently (plan §11.2 Step 2) — the census must agree
+  // with the tier-enforcement check about who counts as quarantine.
+  const quarantine = measured.filter((r) => effectiveTier(r) === "quarantine");
   return {
     measured: measured.length,
     unmeasured: rules.length - measured.length,
@@ -617,6 +622,10 @@ export function checkMeasurementConsistency(
   verdictsDir: string,
   sidecarPath: string,
   rules: readonly QADoctorRule[] = RULES,
+  // Injectable for anti-false-green tests (G6 seam): the shipped map by
+  // default; tests pass synthetic maps so every invariant arm is
+  // reachable without fabricating corpus rows for real rules.
+  measuredFp: Readonly<Record<string, MeasuredFpEntry>> = MEASURED_FP,
 ): DoctorCheck {
   const details: string[] = [];
   const failures: string[] = [];
@@ -667,8 +676,8 @@ export function checkMeasurementConsistency(
     // No sidecar at all: only MEASURED_FP entries with declared revision
     // 1 can be consistent (the declared-revision default). Anything else
     // is unverifiable → inconclusive (honesty over assertion).
-    const needsSidecar = Object.keys(MEASURED_FP).filter(
-      (id) => MEASURED_FP[id]?.detectorRevision !== 1,
+    const needsSidecar = Object.keys(measuredFp).filter(
+      (id) => measuredFp[id]?.detectorRevision !== 1,
     );
     if (needsSidecar.length > 0) {
       return check("measurement-consistency", "inconclusive", [
@@ -677,7 +686,7 @@ export function checkMeasurementConsistency(
     }
   }
 
-  for (const [id, m] of Object.entries(MEASURED_FP)) {
+  for (const [id, m] of Object.entries(measuredFp)) {
     // Invariant 2: sidecar revision agreement.
     const side = sidecar[id];
     if (side !== undefined && side.detectorRevision !== undefined) {
