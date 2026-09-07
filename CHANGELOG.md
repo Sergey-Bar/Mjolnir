@@ -74,6 +74,19 @@ scan`. Unknown categories are a usage error (exit 10).
 - help registry gained `why`, `handoff`, `install` and the new flags;
   site/reference/cli.md documents the handoff trust model.
 
+## [0.5.14] — 2026-09-07
+
+### Changes since 0.5.13
+
+- Merge pull request #47 from Sergey-Bar/claude/readme-demo-video-4rzxij
+- Cover the mjolnir mcp dispatch branch — CI's 100% ratchet caught it
+- README: define Selector Health, state the limits, lock the samples
+- Expose the MCP server, and document the agent surface in the README
+- See it work: embed the real demo video inline
+- Rework See it work and the score section: real video, fixed-size cards
+- Replace the See it work poster+MP4 and shorten the score hero image
+- Replace the score/verdict table with an animated hammer sweep
+
 ## [0.5.13] — 2026-09-07
 
 ### Changes since 0.5.12
