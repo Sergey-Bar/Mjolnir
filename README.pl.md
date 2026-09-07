@@ -15,7 +15,7 @@ gdzie zaufanie się łamie.
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | Polski | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-04.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
 
 ```bash
 npx mjolnir-qa@latest
@@ -297,14 +297,14 @@ nie może się wydać — to zapora na fałszywe pozytywy.
 
 ### Ile z tego jest zmierzone
 
-**74 z 99 reguł niesie stopę fałszywych pozytywów zmierzoną na
+**78 z 99 reguł niesie stopę fałszywych pozytywów zmierzoną na
 prawdziwym kodzie OSS** (≥ 10 ręcznie zaklasyfikowanych znalezisk każda;
-zob. [docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Pozostałe 19 wychodzi na
+zob. [docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Pozostałe 21 wychodzi na
 oszacowaniu autora. Stopka każdego skanu mówi, ile z _odpalonych_
 reguł jest zmierzonych; `mjolnir rules --unmeasured` wypisuje
 niezmierzone; strona `mjolnir explain` każdej reguły deklaruje jej
 status. Publikujemy stopę, nawet gdy jest brzydka — QA-CS-103 audytuje
-się na 95 % i za to trafia do kwarantanny. Powiększanie tej 78-ki to
+się na 95 % i za to trafia do kwarantanny. Powiększanie tej liczby to
 stale trwająca praca projektu.
 
 ### Tiery reguł i dojrzałość językowa
@@ -465,7 +465,7 @@ godny zaufania — i widzi tylko diff, który mu pokażesz.
 | Deterministyczny (ten sam input → ten sam output) |     ❌ (niedeterministyczny)      |              **✅**               |
 | Łapie wzorce śpiące miesiącami                    |   Tylko jeśli jest w kontekście   | **✅** (skanuje wszystkie pliki)  |
 | Pamięta znaleziska między przebiegami             | ❌ (brak pamięci między sesjami)  |     **✅** (baseline + diff)      |
-| Działa bez ludzkiego wyzwalacza                   |   Potrzebuje PR-a albo promptu    |    **✅** (hak CI, 3 sekundy)     |
+| Działa bez ludzkiego wyzwalacza                   |   Potrzebuje PR-a albo promptu    |  **✅** (hak CI, działa sekundy)  |
 
 **Używaj obu.** AI łapie niuans, intencję i wady projektowe, których
 żaden regex nie znajdzie. Mjölnir łapie strukturalne wzorce, które AI
@@ -587,11 +587,19 @@ są niezmienne po wydaniu i nigdy nie są używane ponownie.
   reguły ze stopą fałszywych pozytywów z prawdziwego kodu OSS (zob.
   [Ile z tego jest zmierzone](#ile-z-tego-jest-zmierzone)); stopka
   skanu i `mjolnir rules --unmeasured` powiedzą ci, które które.
-- **Zaufanie do pluginów** — pluginy to pakiety npm deklarowane pod
-  `"plugins"`. **Nie ma sandboxa**: kod pluginu działa z pełnymi
+- **Zaufanie do pluginów i brama wykonania** — pluginy to pakiety npm
+  deklarowane pod
+  `"plugins"`; moduły JS żyją w `mjolnir-rules/*.mjs`.
+  **Nie ma sandboxa**: kod pluginu działa z pełnymi
   uprawnieniami Node, ten sam model zaufania co pluginy ESLint czy
-  Vitest. Prefiksy ID reguł core są zarezerwowane i odrzucane od
-  pluginów przeciw spoofingowi.
+  Vitest. Dlatego wykonanie kodu jest **opt-in przy każdym skanie**:
+  przekaż `--enable-plugins` (albo ustaw `MJOLNIR_ENABLE_PLUGINS=1`),
+  inaczej źródła NIE są ładowane — głośny komunikat na stderr wylicza
+  dokładnie, co pominięto. Skanowanie niezaufanego kodu nigdy go nie
+  wykonuje. Manifesty reguł JSON (`mjolnir-rules/*.json`) nie są
+  dotknięte: deklarują wzorce regex i z założenia nie wykonują kodu.
+  Prefiksy ID reguł core są zarezerwowane i odrzucane od
+  pluginów i zewnętrznych reguł przeciw spoofingowi.
 - **Zewnętrzne reguły lokalne wobec workspace'u** (folderowe, zero
   sieci) — katalog `mjolnir-rules/` obok celu skanu ładuje własne
   reguły: pliki JSON deklarują wzorce regex (żaden kod nie jest

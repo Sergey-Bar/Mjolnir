@@ -14,7 +14,7 @@
 
 [English](README.md) | 简体中文 | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-04.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
 
 ```bash
 npx mjolnir-qa@latest
@@ -287,12 +287,12 @@ npx mjolnir-qa@latest --scope changed
 
 ### 这些规则中有多少经过测量
 
-**99 条规则中有 74 条携带在真实 OSS 代码上测得的假阳性率**（每条 ≥ 10 个
-人工分类的发现；见 [docs/FP-AUDIT.md](docs/FP-AUDIT.md)）。其余 19 条按
+**99 条规则中有 78 条携带在真实 OSS 代码上测得的假阳性率**（每条 ≥ 10 个
+人工分类的发现；见 [docs/FP-AUDIT.md](docs/FP-AUDIT.md)）。其余 21 条按
 作者的估计发布。每次扫描的页脚都会告诉你，_触发过的_ 规则中有多少经过
 测量；`mjolnir rules --unmeasured` 列出未测量的；每条规则的
 `mjolnir explain` 页面都声明其状态。即使数字难看我们也照样公布——
-QA-CS-103 的实测假阳性率是 95%，因此被隔离。把这个 78 扩大，是项目的
+QA-CS-103 的实测假阳性率是 95%，因此被隔离。把这个数字扩大，是项目的
 持续性工作。
 
 ### 规则层级与语言成熟度
@@ -433,14 +433,14 @@ Linter 告诉你代码是否守规矩。Mjölnir 告诉你你的验证能不能�
 问题不同、层面不同。AI 评审能在 diff 里发现可疑的测试改动；但它无法
 证明整个验证系统值得信任——而且它只看到你展示给它的 diff。
 
-|                               | AI 代码评审（Copilot 等） |        **Mjölnir**        |
-| ----------------------------- | :-----------------------: | :-----------------------: |
-| 每次扫描成本                  | Token（随 diff 大小增长） |  **零**（本地、已安装）   |
-| 看到整个套件 + 所有 CI 配置   |   只有你展示的 PR diff    |     **每次都是全部**      |
-| 确定性（相同输入 → 相同输出） |      ❌（非确定性）       |          **✅**           |
-| 抓出沉睡数月的模式            |    只在其进入上下文时     |  **✅**（扫描所有文件）   |
-| 跨运行记住发现                |   ❌（会话间没有记忆）    | **✅**（baseline + diff） |
-| 无人触发也能运行              |     需要 PR 或提示词      |  **✅**（CI 钩子，3 秒）  |
+|                               | AI 代码评审（Copilot 等） |            **Mjölnir**            |
+| ----------------------------- | :-----------------------: | :-------------------------------: |
+| 每次扫描成本                  | Token（随 diff 大小增长） |      **零**（本地、已安装）       |
+| 看到整个套件 + 所有 CI 配置   |   只有你展示的 PR diff    |         **每次都是全部**          |
+| 确定性（相同输入 → 相同输出） |      ❌（非确定性）       |              **✅**               |
+| 抓出沉睡数月的模式            |    只在其进入上下文时     |      **✅**（扫描所有文件）       |
+| 跨运行记住发现                |   ❌（会话间没有记忆）    |     **✅**（baseline + diff）     |
+| 无人触发也能运行              |     需要 PR 或提示词      | **✅**（CI 钩子，数秒内运行完成） |
 
 **两者都用。** AI 能捕捉任何正则都找不到的细微差别、意图与设计缺陷。
 Mjölnir 捕捉 AI 因其看起来「像是有意为之」而放过的结构模式——提交进
@@ -550,9 +550,15 @@ JSON/SARIF 报告为 `schemaVersion: 1`。规则 ID（`QA-<FAMILY>-NNN`）一经
 - **测量，而非断言**——只有具有来自真实 OSS 代码的假阳性率的规则才
   进入主打层级（见[这些规则中有多少经过测量](#这些规则中有多少经过测量)）；
   扫描页脚和 `mjolnir rules --unmeasured` 会告诉你哪条是哪条。
-- **插件信任**——插件是在 `"plugins"` 下声明的 npm 包。**没有沙箱**：
-  插件代码以完整 Node 特权运行，与 ESLint 或 Vitest 插件相同的信任
-  模型。核心规则 ID 前缀是保留的，插件若使用将被拒绝以防伪装。
+- **插件信任与执行闸门**——插件是在 `"plugins"` 下声明的 npm 包；
+  JS 模块位于 `mjolnir-rules/*.mjs`。**没有沙箱**：插件代码以完整
+  Node 特权运行，与 ESLint 或 Vitest 插件相同的信任模型。正因如此，
+  代码执行**在每次扫描时都是选择性的**：传入 `--enable-plugins`（或
+  设置 `MJOLNIR_ENABLE_PLUGINS=1`），否则这些来源不会被加载——一条
+  醒目的 stderr 提示会准确列出被跳过的内容。扫描不可信的代码绝不会
+  执行它。JSON 规则清单（`mjolnir-rules/*.json`）不受影响：它们声明
+  正则模式，按设计不执行任何代码。核心规则 ID 前缀是保留的，插件与
+  外部规则若使用将被拒绝以防伪装。
 - **工作区本地外部规则**（基于文件夹、零网络）——扫描目标旁的
   `mjolnir-rules/` 目录可加载自定义规则：JSON 文件声明正则模式（不执行
   代码），`.mjs`/`.js` 模块导出 `rules`（完整 Node 信任，同插件）。外部

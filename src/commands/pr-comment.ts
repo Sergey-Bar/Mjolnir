@@ -145,7 +145,7 @@ export function renderPrComment(
   }
 
   if (findings.length === 0) {
-    lines.push("✅ No new issues found in this PR's changes.");
+    lines.push("✅ No new findings in this PR's changes.");
   } else {
     const errors = findings.filter((f) => f.severity === "error");
     const warnings = findings.filter((f) => f.severity === "warning");

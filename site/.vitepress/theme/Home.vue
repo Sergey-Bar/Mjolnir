@@ -212,20 +212,6 @@ onBeforeUnmount(() => {
             >{{ r.g }}</span
           >
         </div>
-        <svg class="bolt" viewBox="0 0 200 400" preserveAspectRatio="none">
-          <path
-            d="M120 -10 L70 150 L110 150 L60 410"
-            fill="none"
-            stroke="url(#boltgrad)"
-            stroke-width="3"
-          />
-          <defs>
-            <linearGradient id="boltgrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#45c1d4" />
-              <stop offset="1" stop-color="#e6bd57" />
-            </linearGradient>
-          </defs>
-        </svg>
       </div>
 
       <div class="hero-inner">
@@ -559,22 +545,6 @@ onBeforeUnmount(() => {
     transparent 72%
   );
   animation: breathe 7s ease-in-out infinite;
-}
-.bolt {
-  position: absolute;
-  top: 0;
-  right: 7%;
-  height: 100%;
-  width: 180px;
-  opacity: 0.42;
-  filter: drop-shadow(0 0 10px rgba(55, 212, 198, 0.5));
-  animation: flicker 6s steps(1) infinite;
-}
-@media (max-width: 860px) {
-  .bolt {
-    right: -6%;
-    opacity: 0.16;
-  }
 }
 
 .hero-inner {
@@ -1207,26 +1177,6 @@ onBeforeUnmount(() => {
     transform: translateX(-50%) scale(1.06);
   }
 }
-@keyframes flicker {
-  0%,
-  100% {
-    opacity: 0.15;
-  }
-  4%,
-  8% {
-    opacity: 0.7;
-  }
-  6% {
-    opacity: 0.25;
-  }
-  50% {
-    opacity: 0.12;
-  }
-  52%,
-  56% {
-    opacity: 0.55;
-  }
-}
 @keyframes rise {
   from {
     opacity: 0;
@@ -1302,7 +1252,6 @@ onBeforeUnmount(() => {
 @media (prefers-reduced-motion: reduce) {
   .aurora,
   .forge-glow,
-  .bolt,
   .shimmer,
   .rune {
     animation: none !important;
