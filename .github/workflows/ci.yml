@@ -61,6 +61,12 @@ jobs:
       # + harness oracle).
       - name: Python fixture syntax tier (compileall)
         if: runner.os == 'Linux'
+        env:
+          # Bytecode must NOT land in the fixture trees: __pycache__ dirs
+          # are non-hidden entries the fixture-harness/docs-generator read
+          # as fixture files, which would silence the QA-PY rules in every
+          # later step (the ubuntu-only coverage run caught exactly that).
+          PYTHONPYCACHEPREFIX: /tmp/mjolnir-pycache
         run: |
           find tests/fixtures tests/corpus/positive-fixtures -name "*.py" | grep -q . \
             && python3 -m compileall -q tests/fixtures tests/corpus/positive-fixtures \
