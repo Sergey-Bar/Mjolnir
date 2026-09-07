@@ -15,7 +15,7 @@ CI pipelines รายงานคะแนนความน่าเชื่�
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | ไทย | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-06.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
 
 ```bash
 npx mjolnir-qa@latest
@@ -290,9 +290,9 @@ fixture ลบของตัวเองจะปล่อยไม่ได้
 
 ### วัดไปแล้วเท่าไร
 
-**76 จาก 99 กฎ มีอัตรา false positive ที่วัดกับโค้ด OSS จริง** (อย่างน้อย
+**78 จาก 99 กฎ มีอัตรา false positive ที่วัดกับโค้ด OSS จริง** (อย่างน้อย
 10 findings ที่จัดหมวดด้วยมือต่อกฎ; ดู
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md)) อีก 23 กฎออกมาบนการประเมินของผู้เขียน
+[docs/FP-AUDIT.md](docs/FP-AUDIT.md)) อีก 21 กฎออกมาบนการประเมินของผู้เขียน
 ส่วนท้ายของทุกการสแกนบอกว่ากฎที่ _ยิง_ มีกี่กฎที่วัดแล้ว;
 `mjolnir rules --unmeasured` แสดงกฎที่ยังไม่วัด; หน้า `mjolnir explain`
 ของทุกกฎระบุสถานะ เราเผยแพร่อัตรานี้แม้มันจะน่าเกลียด — QA-CS-103 ตรวจได้

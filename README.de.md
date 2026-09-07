@@ -15,7 +15,7 @@ bricht.
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | Deutsch | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-06.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
 
 ```bash
 npx mjolnir-qa@latest
@@ -301,9 +301,9 @@ geshippt werden — das ist die False-Positive-Firewall.
 
 ### Wie viel davon gemessen ist
 
-**76 von 99 Regeln tragen eine False-Positive-Rate, gemessen an echtem
+**78 von 99 Regeln tragen eine False-Positive-Rate, gemessen an echtem
 OSS-Code** (jeweils ≥ 10 handklassifizierte Befunde; siehe
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Die anderen 23 gehen auf der
+[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Die anderen 21 gehen auf der
 Schätzung des Autors. Jeder Scan-Footer sagt dir, wie viele der
 _ausgelösten_ Regeln gemessen sind; `mjolnir rules --unmeasured` listet
 die nicht gemessenen; die `mjolnir explain`-Seite jeder Regel nennt

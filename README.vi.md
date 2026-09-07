@@ -15,7 +15,7 @@ niềm tin gãy.
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | Tiếng Việt | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-06.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
 
 ```bash
 npx mjolnir-qa@latest
@@ -292,9 +292,9 @@ Tổng cộng 20 quy tắc Python (QA-PY-001…012 vệ sinh pytest + QA-PY-101�
 
 ### Bao nhiêu đã được đo
 
-**76 trong 99 quy tắc mang tỷ lệ false positive được đo trên mã OSS
+**78 trong 99 quy tắc mang tỷ lệ false positive được đo trên mã OSS
 thật** (≥ 10 finding được phân loại tay mỗi quy tắc; xem
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). 23 quy tắc còn lại ra mắt trên
+[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). 21 quy tắc còn lại ra mắt trên
 ước lượng của tác giả. Chân mỗi bản quét cho biết bao nhiêu quy tắc
 _đã bắn_ được đo; `mjolnir rules --unmeasured` liệt kê những quy tắc
 chưa đo; trang `mjolnir explain` của từng quy tắc nêu trạng thái. Chúng

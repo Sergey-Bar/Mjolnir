@@ -15,7 +15,7 @@ CI-пайплайни, видає показник гідності й пока�
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | Українська | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-06.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
 
 ```bash
 npx mjolnir-qa@latest
@@ -296,9 +296,9 @@ macOS і Linux.
 
 ### Скільки з цього виміряно
 
-**76 з 99 правил несуть хибнопозитивну частоту, виміряну на реальному
+**78 з 99 правил несуть хибнопозитивну частоту, виміряну на реальному
 OSS-коді** (по ≥ 10 вручну класифікованих знахідок на правило; див.
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Інші 23 виходять на оцінці
+[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Інші 21 виходять на оцінці
 автора. Футер кожного скана каже, скільки із _спрацьованих_ правил
 виміряно; `mjolnir rules --unmeasured` перелічує невиміряні; сторінка
 `mjolnir explain` кожного правила вказує її статус. Ми публікуємо

@@ -14,7 +14,7 @@ CI, מדווח ציון הגינות ומציג בדיוק היכן האמון �
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | עברית | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-06.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
 
 ```bash
 npx mjolnir-qa@latest
@@ -288,9 +288,9 @@ npx mjolnir-qa@latest --scope changed
 
 ### כמה מזה נמדד
 
-**76 מתוך 99 כללים נושאים שיעור false positives שנמדד מול קוד OSS אמיתי**
+**78 מתוך 99 כללים נושאים שיעור false positives שנמדד מול קוד OSS אמיתי**
 (≥ 10 ממצאים שסווגו ידנית כל אחד; ראו
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). ה‑23 האחרים יוצאים על הערכת
+[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). ה‑21 האחרים יוצאים על הערכת
 המחבר. התחתית של כל סריקה אומרת כמה מהכללים ש_ירו_ נמדדו;
 `mjolnir rules --unmeasured` מפרט את אלה שלא; עמוד `mjolnir explain`
 של כל כלל מצהיר על מעמדו. אנחנו מפרסמים את השיעור גם כשהוא מכוער —

@@ -15,7 +15,7 @@ exactement où la confiance se brise.
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | Français | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-06.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
 
 ```bash
 npx mjolnir-qa@latest
@@ -300,9 +300,9 @@ sortir — c'est le pare-feu anti faux positifs.
 
 ### Quelle part est mesurée
 
-**76 des 99 règles portent un taux de faux positifs mesuré sur du vrai
+**78 des 99 règles portent un taux de faux positifs mesuré sur du vrai
 code OSS** (≥ 10 constats classés à la main chacun ; voir
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Les 23 autres sortent sur
+[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Les 21 autres sortent sur
 l'estimation de l'auteur. Chaque pied de scan vous dit combien des
 règles _déclenchées_ sont mesurées ; `mjolnir rules --unmeasured` liste
 celles qui ne le sont pas ; la page `mjolnir explain` de chaque règle

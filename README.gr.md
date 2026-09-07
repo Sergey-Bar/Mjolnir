@@ -15,7 +15,7 @@ CI pipelines, αναφέρει δείκτη αξιοπιστίας και δεί
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | Ελληνικά | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-06.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
 
 ```bash
 npx mjolnir-qa@latest
@@ -296,9 +296,9 @@ npx mjolnir-qa@latest --scope changed
 
 ### Πόσο από αυτό είναι μετρημένο
 
-**76 από 99 κανόνες φέρουν ποσοστό false positive μετρημένο σε πραγματικό
+**78 από 99 κανόνες φέρουν ποσοστό false positive μετρημένο σε πραγματικό
 κώδικα OSS** (≥ 10 χειροκίνητα ταξινομημένα ευρήματα ο καθένας· βλ.
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Οι άλλοι 23 κυκλοφορούν πάνω στην
+[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Οι άλλοι 21 κυκλοφορούν πάνω στην
 εκτίμηση του συγγραφέα. Το υποσέλιδο κάθε σκαν σου λέει πόσοι από τους
 _ενεργούς_ κανόνες είναι μετρημένοι· `mjolnir rules --unmeasured`
 παραθέτει τους άμετρητους· η σελίδα `mjolnir explain` κάθε κανόνα

@@ -14,7 +14,7 @@
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | العربية | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-06.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
 
 ```bash
 npx mjolnir-qa@latest
@@ -290,9 +290,9 @@ npx mjolnir-qa@latest --scope changed
 
 ### كم من هذا مقيس
 
-**76 من 99 قاعدة تحمل معدل إنذارات كاذبة مقيسًا على كود OSS حقيقي**
+**78 من 99 قاعدة تحمل معدل إنذارات كاذبة مقيسًا على كود OSS حقيقي**
 (≥ 10 اكتشافات مصنفة يدويًا لكل منها؛ راجع
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). الـ23 الأخرى تُشحن على تقدير
+[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). الـ21 الأخرى تُشحن على تقدير
 المؤلف. ذيل كل فحص يخبرك كم من القواعد التي _انطلقت_ مقيسة؛ و
 `mjolnir rules --unmeasured` يسرد غير المقيسة؛ وصفحة `mjolnir explain`
 لكل قاعدة تُصرّح بحالتها. ننشر المعدل حتى حين يكون قبيحًا — QA-CS-103

@@ -15,7 +15,7 @@ exatamente onde a confiança se quebra.
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | Português (Brasil) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-06.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
 
 ```bash
 npx mjolnir-qa@latest
@@ -299,9 +299,9 @@ que dispara na própria fixture negativa não pode ser publicada — esse
 
 ### Quanto disso é medido
 
-**76 de 99 regras carregam uma taxa de falsos positivos medida contra
+**78 de 99 regras carregam uma taxa de falsos positivos medida contra
 código OSS real** (≥ 10 findings classificados à mão cada; veja
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). As outras 23 são publicadas com
+[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). As outras 21 são publicadas com
 a estimativa do autor. O rodapé de cada escaneio diz quantas das regras
 _que dispararam_ são medidas; `mjolnir rules --unmeasured` lista as que
 não são; a página `mjolnir explain` de cada regra declara seu status.

@@ -15,7 +15,7 @@ tilliten bryter sammen.
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | Norsk | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-06.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
 
 ```bash
 npx mjolnir-qa@latest
@@ -296,9 +296,9 @@ det er false-positive-brannmuren.
 
 ### Hvor mye er målt
 
-**76 av 99 regler bærer en false-positive-rate målt mot ekte OSS-kode**
+**78 av 99 regler bærer en false-positive-rate målt mot ekte OSS-kode**
 (≥ 10 håndklassifiserte funn hver; se
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). De andre 23 skiper på
+[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). De andre 21 skiper på
 forfatterens estimat. Hver skann-fotnote forteller hvor mange av de
 _utløste_ reglene som er målt; `mjolnir rules --unmeasured` lister de
 umålte; hver regels `mjolnir explain`-side angir statusen. Vi publiserer

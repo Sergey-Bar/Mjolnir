@@ -15,7 +15,7 @@
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | 한국어 | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-06.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
 
 ```bash
 npx mjolnir-qa@latest
@@ -292,9 +292,9 @@ npx mjolnir-qa@latest --scope changed
 
 ### 이 중 얼마나가 측정되었나
 
-**99개 규칙 중 76개가 실제 OSS 코드에 대해 측정된 거짓 양성 비율을
+**99개 규칙 중 78개가 실제 OSS 코드에 대해 측정된 거짓 양성 비율을
 갖습니다** (각 규칙당 손으로 분류된 발견 ≥ 10건;
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md) 참조). 나머지 23개는 저자의 추정으로
+[docs/FP-AUDIT.md](docs/FP-AUDIT.md) 참조). 나머지 21개는 저자의 추정으로
 출시됩니다. 모든 스캔의 바닥글은 _발화한_ 규칙 중 몇 개가 측정되었는지
 말해줍니다; `mjolnir rules --unmeasured`는 측정되지 않은 것들을 나열합니다;
 각 규칙의 `mjolnir explain` 페이지는 그 상태를 명시합니다. 수치가 흉해도

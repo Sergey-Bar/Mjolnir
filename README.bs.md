@@ -15,7 +15,7 @@ povjerenje lomi.
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | Bosanski
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-06.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
 
 ```bash
 npx mjolnir-qa@latest
@@ -291,9 +291,9 @@ Ukupno 20 Python pravila (QA-PY-001…012 pytest higijena + QA-PY-101…108 Play
 
 ### Koliko je od ovoga izmjereno
 
-**76 od 99 pravila nose stopu lažnih pozitiva izmjerenu nad stvarnim
+**78 od 99 pravila nose stopu lažnih pozitiva izmjerenu nad stvarnim
 OSS kodom** (≥ 10 ručno klasificiranih nalaza svako; vidi
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Ostalih 23 izlazi na autorovoj
+[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Ostalih 21 izlazi na autorovoj
 procjeni. Podnožje svakog skana kaže koliko od _okinutih_ pravila je
 izmjereno; `mjolnir rules --unmeasured` izlista neizmjerena; stranica
 `mjolnir explain` svakog pravila navodi njen status. Objavljujemo stopu

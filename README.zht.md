@@ -14,7 +14,7 @@
 
 [English](README.md) | [简体中文](README.zh.md) | 繁體中文 | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-06.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
 
 ```bash
 npx mjolnir-qa@latest
@@ -287,8 +287,8 @@ npx mjolnir-qa@latest --scope changed
 
 ### 這些規則中有多少經過測量
 
-**99 條規則中有 76 條攜帶在真實 OSS 程式碼上測得的假陽性率**（每條 ≥ 10 個
-人工分類的發現；見 [docs/FP-AUDIT.md](docs/FP-AUDIT.md)）。其餘 23 條按
+**99 條規則中有 78 條攜帶在真實 OSS 程式碼上測得的假陽性率**（每條 ≥ 10 個
+人工分類的發現；見 [docs/FP-AUDIT.md](docs/FP-AUDIT.md)）。其餘 21 條按
 作者的估計發布。每次掃描的頁尾都會告訴你，_觸發過的_ 規則中有多少經過
 測量；`mjolnir rules --unmeasured` 列出未測量的；每條規則的
 `mjolnir explain` 頁面都聲明其狀態。即使數字難看我們也照樣公布——

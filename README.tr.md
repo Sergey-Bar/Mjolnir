@@ -15,7 +15,7 @@ olarak nerede kırıldığını gösterir.
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | Türkçe | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-06.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
 
 ```bash
 npx mjolnir-qa@latest
@@ -294,9 +294,9 @@ Toplam 20 Python kuralı (QA-PY-001…012 pytest hijyeni + QA-PY-101…108 Playw
 
 ### Ne kadarı ölçülmüş
 
-**99 kuraldan 76'sı, gerçek OSS koduna karşı ölçülmüş bir yanlış pozitif
+**99 kuraldan 78'sı, gerçek OSS koduna karşı ölçülmüş bir yanlış pozitif
 oranı taşıyor** (her biri için ≥ 10 elle sınıflandırılmış bulgu; bkz.
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Diğer 23'ü yazarın tahminine göre
+[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Diğer 21'i yazarın tahminine göre
 yayına giriyor. Her tarama alt bilgisi, _tetiklenen_ kuralların kaçının
 ölçüldüğünü söyler; `mjolnir rules --unmeasured` ölçülmeyenleri listeler;
 her kuralın `mjolnir explain` sayfası durumunu belirtir. Oranı çirkin

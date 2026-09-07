@@ -15,7 +15,7 @@
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | বাংলা | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-06.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
 
 ```bash
 npx mjolnir-qa@latest
@@ -293,9 +293,9 @@ false-positive ফায়ারওয়াল।
 
 ### এর মধ্যে কতটা পরিমাপ করা হয়েছে
 
-**৯৯টি রুলের ৭৬টি বাস্তব OSS কোডের বিরুদ্ধে পরিমাপকৃত false-positive
+**৯৯টি রুলের ৭৮টি বাস্তব OSS কোডের বিরুদ্ধে পরিমাপকৃত false-positive
 হার বহন করে** (প্রতিটিতে ≥ ১০টি হাতে-শ্রেণিবদ্ধ finding; দেখুন
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md))। বাকি ২৩টি লেখকের অনুমানে শিপ হয়।
+[docs/FP-AUDIT.md](docs/FP-AUDIT.md))। বাকি ২১টি লেখকের অনুমানে শিপ হয়।
 প্রতিটি স্ক্যানের ফুটার বলে দেয় _ফায়ার_ করা রুলগুলোর কতগুলো পরিমাপকৃত;
 `mjolnir rules --unmeasured` যেগুলো নয় তা তালিকাভুক্ত করে; প্রতিটি রুলের
 `mjolnir explain` পেজ তার অবস্থা জানায়। আমরা হারটি প্রকাশ করি — এমনকি
