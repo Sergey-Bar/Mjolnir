@@ -74,6 +74,12 @@ scan`. Unknown categories are a usage error (exit 10).
 - help registry gained `why`, `handoff`, `install` and the new flags;
   site/reference/cli.md documents the handoff trust model.
 
+## [0.5.15] — 2026-09-07
+
+### Changes since 0.5.14
+
+- Close-out: complete the 21-rule fixture program (blueprint §19) (#50)
+
 ## [0.5.14] — 2026-09-07
 
 ### Changes since 0.5.13
