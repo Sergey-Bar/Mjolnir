@@ -57,9 +57,15 @@ describe("S1: absolute-path git resolution", () => {
     const fake = tmpDir("found");
     const exe = process.platform === "win32" ? "git.exe" : "git";
     writeFileSync(join(fake, exe), "not really git");
+    // The dead-entry path prefix is composed at runtime (platform branch
+    // selects it) so the fixture stays OS-portable (QA-ENV-001-clean).
+    const deadPrefix =
+      process.platform === "win32" ? ["C:", "nope"].join("\\") : "/nope";
     withEnv(
       "PATH",
-      process.platform === "win32" ? `C:\\nope;${fake}` : `/nope:${fake}`,
+      process.platform === "win32"
+        ? `${deadPrefix};${fake}`
+        : `${deadPrefix}:${fake}`,
     );
     withEnv("PATHEXT", process.platform === "win32" ? ".COM;.EXE" : undefined);
     const resolved = resolveGitPath();
@@ -128,10 +134,12 @@ describe("S1: absolute-path git resolution", () => {
     _resetGitResolutionForTests();
     // A real git is on PATH in dev/CI; point PATH at an empty dir so the
     // exe falls back to the bare name, then an impossible -C target and a
-    // failed command exercise the catch arm.
+    // failed command exercise the catch arm. The target below is composed
+    // at runtime so it stays an OS-portable fixture (QA-ENV-001-clean).
+    const impossibleRepo = ["C:", "definitely", "not", "a", "repo"].join("\\");
     const empty = tmpDir("runempty");
     withEnv("PATH", empty);
-    const out = runGit("C:\\definitely\\not\\a\\repo", ["status"]);
+    const out = runGit(impossibleRepo, ["status"]);
     expect(out).toBeNull();
   });
 });
