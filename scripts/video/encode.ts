@@ -14,9 +14,7 @@ export function resolveFfmpeg(bin: "ffmpeg" | "ffprobe" = "ffmpeg"): string {
   const override =
     process.env[bin === "ffmpeg" ? "MJOLNIR_FFMPEG" : "MJOLNIR_FFPROBE"];
   if (override) return override;
-  const found = spawnSync("sh", ["-c", `command -v ${bin}`], {
-    encoding: "utf8",
-  });
+  const found = spawnSync("which", [bin], { encoding: "utf8" });
   const path = found.stdout.trim();
   if (path) return path;
   throw new Error(
