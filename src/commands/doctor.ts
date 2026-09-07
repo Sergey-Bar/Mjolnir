@@ -40,10 +40,31 @@ import {
 
 const ui = plainContext();
 
+/**
+ * Check outcome status (certification-audit Phase 5, G2):
+ *   - "pass"         — evaluated, no violations;
+ *   - "fail"         — evaluated, violations found (blocking);
+ *   - "inconclusive" — could NOT be evaluated (missing inputs, installed
+ *     package, malformed manifest). Blocking, and rendered distinctly:
+ *     an INCONCLUSIVE check never renders as PASS, in text or JSON.
+ */
+export type CheckStatus = "pass" | "fail" | "inconclusive";
+
 export interface DoctorCheck {
   name: string;
+  status: CheckStatus;
+  /** Convenience mirror of `status === "pass"` (existing consumers). */
   ok: boolean;
   details: string[];
+}
+
+/** Builds the check record: `ok` is always the pass-mirror of `status`. */
+function check(
+  name: string,
+  status: CheckStatus,
+  details: string[],
+): DoctorCheck {
+  return { name, status, ok: status === "pass", details };
 }
 
 // Audit M3: the ID validator derives from the shared RULE_FAMILIES
@@ -77,7 +98,7 @@ export function checkFixtureFirewall(fixturesRoot: string): DoctorCheck {
       details.push(`${rule.id}: missing must-not-fire fixture`);
     }
   }
-  return { name: "fixture-firewall", ok, details };
+  return check("fixture-firewall", ok ? "pass" : "fail", details);
 }
 
 /** Check 2: registry sanity — IDs unique, well-formed, titles distinct. */
@@ -112,7 +133,7 @@ export function checkRegistry(
       }
     }
   }
-  return { name: "registry-sanity", ok, details };
+  return check("registry-sanity", ok ? "pass" : "fail", details);
 }
 
 /** Check 3: Trust Metadata presence (informational until full coverage). */
@@ -125,13 +146,11 @@ export function checkTrustMetadata(
       !r.frameworks?.length ||
       r.falsePositiveRisk === undefined,
   );
-  return {
-    name: "trust-metadata",
-    // Ratchet: informational while metadata adoption is partial; flips to
-    // blocking (ok=false) automatically once every rule declares it.
-    ok: missing.length === 0,
-    details: missing.map((r) => `${r.id}: missing trust metadata`),
-  };
+  return check(
+    "trust-metadata",
+    missing.length === 0 ? "pass" : "fail",
+    missing.map((r) => `${r.id}: missing trust metadata`),
+  );
 }
 
 /**
@@ -155,7 +174,7 @@ export function checkEvidenceHonesty(
       );
     }
   }
-  return { name: "evidence-honesty", ok, details };
+  return check("evidence-honesty", ok ? "pass" : "fail", details);
 }
 
 export interface DoctorReport {
@@ -261,7 +280,7 @@ export function checkTierEnforcement(
       : `BLOCKING: ${unmeasured}/${total} core rules unmeasured — exceeds the Law #3 ratchet cap of ${MAX_UNMEASURED_CORE}`,
   );
 
-  return { name: "tier-enforcement", ok, details };
+  return check("tier-enforcement", ok ? "pass" : "fail", details);
 }
 
 /**
@@ -305,7 +324,7 @@ export function checkAntiCreep(
     );
   }
 
-  return { name: "anti-creep", ok, details };
+  return check("anti-creep", ok ? "pass" : "fail", details);
 }
 
 /**
@@ -332,7 +351,7 @@ export function checkQuarantineEnforcement(
   details.unshift(
     `${quarantine.length} quarantine rules capped to severity=info, evidence=E0 — no quarantine rule may emit error`,
   );
-  return { name: "quarantine-enforcement", ok, details };
+  return check("quarantine-enforcement", ok ? "pass" : "fail", details);
 }
 
 /**
@@ -415,7 +434,7 @@ export function checkFixtureIntegrity(
   details.unshift(
     `fixture trees: ${fixtureDirs} rule dirs, ${fixtureFiles} fixture files — orphaned dirs and empty dirs are blocking`,
   );
-  return { name: "fixture-integrity", ok, details };
+  return check("fixture-integrity", ok ? "pass" : "fail", details);
 }
 
 /**
@@ -451,48 +470,32 @@ export function checkRevisionIntegrity(
   const rulesDir = join(repoRoot, "src", "rules");
 
   if (!existsSync(manifestPath)) {
-    return {
-      name: "revision-integrity",
-      ok: false,
-      details: [
-        "INCONCLUSIVE: tests/corpus/detector-hashes.json is missing — run `npm run detector-hashes:update` (certification-critical: an unevaluable check never renders as pass)",
-      ],
-    };
+    return check("revision-integrity", "inconclusive", [
+      "INCONCLUSIVE: tests/corpus/detector-hashes.json is missing — run `npm run detector-hashes:update` (certification-critical: an unevaluable check never renders as pass)",
+    ]);
   }
   if (!existsSync(rulesDir)) {
-    return {
-      name: "revision-integrity",
-      ok: false,
-      details: [
-        "INCONCLUSIVE: src/rules is not present (installed package) — detector source identity cannot be verified here",
-      ],
-    };
+    return check("revision-integrity", "inconclusive", [
+      "INCONCLUSIVE: src/rules is not present (installed package) — detector source identity cannot be verified here",
+    ]);
   }
 
   let manifest: DetectorHashManifest;
   try {
     manifest = loadManifest(manifestPath);
   } catch {
-    return {
-      name: "revision-integrity",
-      ok: false,
-      details: [
-        "INCONCLUSIVE: tests/corpus/detector-hashes.json is unreadable/malformed — regenerate with `npm run detector-hashes:update`",
-      ],
-    };
+    return check("revision-integrity", "inconclusive", [
+      "INCONCLUSIVE: tests/corpus/detector-hashes.json is unreadable/malformed — regenerate with `npm run detector-hashes:update`",
+    ]);
   }
 
   let current: DetectorHashManifest;
   try {
     current = computeDetectorHashes(rules, rulesDir);
   } catch (e) {
-    return {
-      name: "revision-integrity",
-      ok: false,
-      details: [
-        `INCONCLUSIVE: detector hash computation failed — ${errorText(e)}`,
-      ],
-    };
+    return check("revision-integrity", "inconclusive", [
+      `INCONCLUSIVE: detector hash computation failed — ${errorText(e)}`,
+    ]);
   }
 
   const failures: string[] = [];
@@ -524,12 +527,12 @@ export function checkRevisionIntegrity(
 
   if (failures.length > 0) {
     details.push(...failures);
-    return { name: "revision-integrity", ok: false, details };
+    return check("revision-integrity", "fail", details);
   }
   details.push(
     `${rules.length} rules attested: source identity and declared revision match the manifest (check A + check B, G4)`,
   );
-  return { name: "revision-integrity", ok: true, details };
+  return check("revision-integrity", "pass", details);
 }
 
 export function runDoctorSelfAudit(fixturesRoot: string): DoctorReport {
@@ -545,13 +548,14 @@ export function runDoctorSelfAudit(fixturesRoot: string): DoctorReport {
     checkFixtureIntegrity(fixturesRoot),
     checkRevisionIntegrity(join(fixturesRoot, "..", "..")),
   ];
-  return { checks, healthy: checks.every((c) => c.ok) };
+  return { checks, healthy: checks.every((c) => c.status === "pass") };
 }
 
 export function renderDoctorReport(report: DoctorReport): string {
   const lines: string[] = ["", sectionHeader("MJÖLNIR — SELF-AUDIT", ui), ""];
   for (const c of report.checks) {
-    const mark = c.ok ? "✓" : "✗";
+    const mark =
+      c.status === "pass" ? "✓" : c.status === "fail" ? "✗" : "? INCONCLUSIVE";
     lines.push(`${mark} ${c.name}`);
     for (const d of c.details.slice(0, 20)) lines.push(`    ${d}`);
     if (c.details.length > 20)
@@ -564,4 +568,57 @@ export function renderDoctorReport(report: DoctorReport): string {
       : "Mjölnir self-audit: VIOLATIONS FOUND",
   );
   return lines.join("\n");
+}
+
+/** Versioned JSON schema name for `doctor --json` (G5). */
+export const DOCTOR_REPORT_SCHEMA = "mjolnir.doctor-report@1";
+
+export interface DoctorReportJson {
+  schema: typeof DOCTOR_REPORT_SCHEMA;
+  healthy: boolean;
+  /** Counts by status (pass/fail/inconclusive) — machine-summarizable. */
+  summary: { pass: number; fail: number; inconclusive: number };
+  checks: Array<{
+    name: string;
+    status: CheckStatus;
+    ok: boolean;
+    details: string[];
+  }>;
+}
+
+/**
+ * Serializes the doctor report to the machine-readable contract (Phase 5,
+ * G5): versioned `schema` field, stable key order (constructed once, here),
+ * details limited exactly like the text render, paths already POSIX-relative
+ * (the checks build them that way), and byte-identical across two runs on
+ * the same tree — the CI certification job re-runs the command twice and
+ * diffs, so any nondeterminism fails there.
+ */
+export function doctorReportJson(
+  report: DoctorReport,
+  opts: { maxDetails?: number } = {},
+): DoctorReportJson {
+  const maxDetails = opts.maxDetails ?? 20;
+  const summary = { pass: 0, fail: 0, inconclusive: 0 };
+  const checks = report.checks.map((c) => {
+    summary[c.status]++;
+    return {
+      name: c.name,
+      status: c.status,
+      ok: c.ok,
+      details:
+        c.details.length > maxDetails
+          ? [
+              ...c.details.slice(0, maxDetails),
+              `… and ${c.details.length - maxDetails} more`,
+            ]
+          : c.details,
+    };
+  });
+  return {
+    schema: DOCTOR_REPORT_SCHEMA,
+    healthy: report.healthy,
+    summary,
+    checks,
+  };
 }

@@ -201,7 +201,9 @@ describe("mjolnir doctor self-audit", () => {
 
   it("renderDoctorReport renders a healthy report", () => {
     const text = renderDoctorReport({
-      checks: [{ name: "registry-sanity", ok: true, details: [] }],
+      checks: [
+        { name: "registry-sanity", status: "pass", ok: true, details: [] },
+      ],
       healthy: true,
     });
     expect(text).toContain(`✓ registry-sanity`);
@@ -211,7 +213,9 @@ describe("mjolnir doctor self-audit", () => {
   it("renderDoctorReport renders violations, truncating past 20 details", () => {
     const details = Array.from({ length: 25 }, (_, i) => `problem #${i}`);
     const text = renderDoctorReport({
-      checks: [{ name: "fixture-firewall", ok: false, details }],
+      checks: [
+        { name: "fixture-firewall", status: "fail", ok: false, details },
+      ],
       healthy: false,
     });
     expect(text).toContain(`✗ fixture-firewall`);
@@ -219,6 +223,23 @@ describe("mjolnir doctor self-audit", () => {
     expect(text).toContain("problem #19");
     expect(text).not.toContain("problem #20");
     expect(text).toContain("… and 5 more");
+    expect(text).toContain("VIOLATIONS FOUND");
+  });
+
+  it("renderDoctorReport renders INCONCLUSIVE distinctly from fail (G2)", () => {
+    const text = renderDoctorReport({
+      checks: [
+        {
+          name: "revision-integrity",
+          status: "inconclusive",
+          ok: false,
+          details: ["INCONCLUSIVE: manifest missing"],
+        },
+      ],
+      healthy: false,
+    });
+    expect(text).toContain("? INCONCLUSIVE revision-integrity");
+    expect(text).not.toContain("✗ revision-integrity");
     expect(text).toContain("VIOLATIONS FOUND");
   });
 });

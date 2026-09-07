@@ -87,7 +87,7 @@ import { renderPrComment } from "./commands/pr-comment.js";
 import { runInit, renderInit, tryReadPackageJson } from "./commands/init.js";
 import { renderPwRunSummary, summarizePwRun } from "./commands/pw-report.js";
 import { planAndApplyFixes, renderFixReport } from "./commands/fix.js";
-import { renderDoctorReport, runDoctorSelfAudit } from "./commands/doctor.js";
+import { runDoctorCommand } from "./commands/doctor-run.js";
 import { buildCatalog, renderCatalogMd } from "./commands/rules-catalog.js";
 import { explainRule, renderExplain } from "./commands/explain.js";
 import { loadSuppressions, renderSuppressions } from "./config/suppressions.js";
@@ -319,7 +319,8 @@ function parseArgsOrUsage(
   return args;
 }
 
-export type Output = (...parts: unknown[]) => void;
+import type { Output } from "./cli-io.js";
+export type { Output };
 
 // Audit C3: true variadic sinks. The one-arg signatures silently DROPPED
 // every argument after the first — `io.err("mjolnir internal error:", msg)`
@@ -327,10 +328,8 @@ export type Output = (...parts: unknown[]) => void;
 // multi-arg calls render as one readable line on the default consoles.
 // Exported for contract tests (audit C3): the default sinks must stay
 // variadic — a narrowing back to one-arg signatures is a regression.
-export const out: Output = (...parts) =>
-  console.log(parts.map(String).join(" "));
-export const err: Output = (...parts) =>
-  console.error(parts.map(String).join(" "));
+import { internalErrorMessage, out, err } from "./cli-io.js";
+export { out, err, internalErrorMessage } from "./cli-io.js";
 
 /** Testable `ci install` handler. Returns the process exit code. */
 export function runCiInstall(
@@ -496,37 +495,10 @@ export async function runDoctorPlaywright(
   }
 }
 
-/** Testable `doctor` handler — self-audit of Mjölnir's own rule base. */
-export function runDoctorCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): number {
-  // Flag-parity with every other subcommand (flagged by the Open-Beta
-  // E2E exit-code sweep): `doctor` accepts only an optional repo-root
-  // positional, so a flag-shaped arg is a typo — silently ignoring it
-  // used to turn `doctor --bogus` into a surprise full scan of the CWD.
-  if (argv.some((a) => a.startsWith("-"))) {
-    io.err("Usage: mjolnir doctor [repo-root]");
-    return 10;
-  }
-  const targetArg = argv[0] ?? process.cwd();
-  try {
-    // Fixtures live under <repo>/tests/fixtures relative to the target.
-    const fixturesRoot = resolve(join(targetArg, "tests", "fixtures"));
-    if (!existsSync(fixturesRoot)) {
-      io.err(
-        `No fixtures directory at ${fixturesRoot}. Run from the mjolnir repo root.`,
-      );
-      return 2;
-    }
-    const report = runDoctorSelfAudit(fixturesRoot);
-    io.out(renderDoctorReport(report));
-    return report.healthy ? 0 : 1;
-  } catch (err) {
-    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
-    return 20;
-  }
-}
+// `doctor` moved to commands/doctor-run.ts (certification-audit Phase 5,
+// G6): the dispatch table re-exports the handler so the public import
+// surface (tests import runDoctorCommand from cli.ts) stays stable.
+export { runDoctorCommand } from "./commands/doctor-run.js";
 
 /** Testable `rules` handler — rule catalog with Trust Metadata. */
 export async function runRulesCommand(
@@ -1471,28 +1443,8 @@ function printUsage(print: (s: string) => void): void {
   print(renderRootHelp());
 }
 
-/**
- * Friendly exit-20 path (plan M2): the crash says it's Mjölnir's bug,
- * not the user's repo, carries the underlying message for a report, and
- * prints the stack ONLY when `debug` is set (uniform across
- * subcommands — they don't parse scan flags). Tests pin
- * /internal error/i. Exported so the --debug stack arm is directly
- * spec-coverable (spawning a real crash under --debug would be flaky).
- */
-export function internalErrorMessage(
-  err: unknown,
-  emit: (s: string) => void,
-  debug: boolean,
-): void {
-  const message = err instanceof Error ? err.message : String(err);
-  emit("mjolnir internal error — this is a bug in Mjölnir, not your repo:");
-  emit(`  ${message}`);
-  if (debug && err instanceof Error && err.stack) {
-    emit(err.stack);
-  }
-  emit("Rerun with --debug for the stack trace. Please report this:");
-  emit("  https://github.com/Sergey-Bar/Mjolnir/issues");
-}
+// internalErrorMessage moved to cli-io.ts (certification-audit Phase 5,
+// G6) — re-exported above. Tests pin /internal error/i via the re-export.
 
 // Run only when this module is the entry point (not when tests import it).
 // Comparing resolved real paths (not raw string equality on
