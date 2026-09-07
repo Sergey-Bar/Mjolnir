@@ -68,9 +68,11 @@ jobs:
           # later step (the ubuntu-only coverage run caught exactly that).
           PYTHONPYCACHEPREFIX: /tmp/mjolnir-pycache
         run: |
-          find tests/fixtures tests/corpus/positive-fixtures -name "*.py" | grep -q . \
-            && python3 -m compileall -q tests/fixtures tests/corpus/positive-fixtures \
-            || echo "no Python fixtures present — nothing to compile"
+          if find tests/fixtures tests/corpus/positive-fixtures -name "*.py" | grep -q .; then
+            python3 -m compileall -q tests/fixtures tests/corpus/positive-fixtures
+          else
+            echo "no Python fixtures present — nothing to compile"
+          fi
       # Bug-audit G11: moderate advisories are ignored at `high` — a
       # steady drip of moderate-severity vulns is how a real supply-chain
       # issue goes unnoticed between high ones.
@@ -251,9 +253,12 @@ jobs:
       - name: G5 determinism self-verify (second run must be byte-identical)
         run: |
           node dist/cli.mjs doctor . --json > /tmp/doctor-report-2.json
-          diff doctor-report.json /tmp/doctor-report-2.json \
-            && echo "doctor --json: byte-identical across runs ✓" \
-            || { echo "doctor --json output is NOT deterministic — G5 violated"; exit 1; }
+          if diff doctor-report.json /tmp/doctor-report-2.json; then
+            echo "doctor --json: byte-identical across runs ✓"
+          else
+            echo "doctor --json output is NOT deterministic — G5 violated"
+            exit 1
+          fi
       - name: Sanity-check the report contract in the summary
         if: always()
         run: |
@@ -261,7 +266,8 @@ jobs:
           const fs = require("fs");
           const r = JSON.parse(fs.readFileSync("doctor-report.json", "utf8"));
           if (r.schema !== "mjolnir.doctor-report@1") { console.error("unknown schema", r.schema); process.exit(1); }
-          const line = `doctor: ${r.summary.pass} pass · ${r.summary.fail} fail · ${r.summary.inconclusive} inconclusive → ${r.healthy ? "WORTHY" : "VIOLATIONS"}`;
+          const verdict = r.healthy ? "WORTHY" : "VIOLATIONS";
+          const line = "doctor: " + r.summary.pass + " pass · " + r.summary.fail + " fail · " + r.summary.inconclusive + " inconclusive → " + verdict;
           fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, line + "\n");
           console.log(line);
           '

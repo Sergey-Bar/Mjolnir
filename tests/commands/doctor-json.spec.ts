@@ -13,10 +13,11 @@
  */
 
 import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 import {
   DOCTOR_REPORT_SCHEMA,
@@ -135,6 +136,41 @@ describe("doctor --json machine contract (Phase 5)", () => {
     expect(runDoctorCommand([join(ROOT)], sink)).toBe(0);
   });
 
+  it("G2: an unhealthy tree exits 1 — with and without --json (exit code is the gate)", () => {
+    // Minimal repo-shaped tree: tests/fixtures EXISTS (so the run does not
+    // exit 2) but is empty — the fixture firewall fails immediately.
+    const root = mkdtempSync(join(tmpdir(), "mjolnir-doctor-unhealthy-"));
+    tmpDirs.push(root);
+    mkdirSync(join(root, "tests", "fixtures"), { recursive: true });
+    const jsonOut: string[] = [];
+    const codeJson = runDoctorCommand([root, "--json"], {
+      out: (...p) => jsonOut.push(p.join(" ")),
+      err: () => {},
+    });
+    expect(codeJson).toBe(1);
+    const parsed = JSON.parse(jsonOut.join("\n")) as {
+      healthy: boolean;
+      summary: { fail: number };
+    };
+    expect(parsed.healthy).toBe(false);
+    expect(parsed.summary.fail).toBeGreaterThan(0);
+    // Text mode: same exit code, distinct render.
+    const textOut: string[] = [];
+    const codeText = runDoctorCommand([root], {
+      out: (...p) => textOut.push(p.join(" ")),
+      err: () => {},
+    });
+    expect(codeText).toBe(1);
+    expect(textOut.join("\n")).toContain("VIOLATIONS FOUND");
+  });
+
+  it("exit 2: a target without tests/fixtures is a distinct usage error", () => {
+    const root = mkdtempSync(join(tmpdir(), "mjolnir-doctor-empty-"));
+    tmpDirs.push(root);
+    const sink = { out: () => {}, err: () => {} };
+    expect(runDoctorCommand([root], sink)).toBe(2);
+  });
+
   it("the CLI build carries the doctor --json flag (dist smoke via spawned binary)", () => {
     // Contract smoke on the BUILT artifact — the CI certification job runs
     // exactly this shape (node dist/cli.mjs doctor . --json).
@@ -162,7 +198,8 @@ describe("doctor --json machine contract (Phase 5)", () => {
   });
 });
 
-// The readFileSync import keeps the contract test honest about the
-// fixture-tree dependency of runDoctorSelfAudit (used by the first test
-// to prove the fixtures root it reads is the committed one).
-void readFileSync;
+let tmpDirs: string[] = [];
+afterEach(() => {
+  for (const d of tmpDirs) rmSync(d, { recursive: true, force: true });
+  tmpDirs = [];
+});
