@@ -30,6 +30,7 @@
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json && tsx scripts/typecheck-fixtures.ts",
     "golden:update": "tsx tests/golden/gen.ts",
+    "detector-hashes:update": "tsx scripts/generate-detector-hashes.ts",
     "corpus:regression": "tsx tests/corpus/audit.ts",
     "corpus:regression:update": "tsx tests/corpus/audit.ts --update",
     "corpus:sample": "tsx scripts/corpus-sample.ts",
