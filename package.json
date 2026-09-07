@@ -28,7 +28,7 @@
     "test:watch": "vitest",
     "lint": "eslint . --max-warnings=0 && prettier --check .",
     "format": "prettier --write .",
-    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json && tsx scripts/typecheck-fixtures.ts",
     "golden:update": "tsx tests/golden/gen.ts",
     "corpus:regression": "tsx tests/corpus/audit.ts",
     "corpus:regression:update": "tsx tests/corpus/audit.ts --update",
