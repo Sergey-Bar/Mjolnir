@@ -6,7 +6,7 @@
  * severity=info/E0, doctor must fail loudly).
  */
 
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -27,6 +27,7 @@ vi.mock("../../src/engine/tier-policy.js", async (importOriginal) => {
 import {
   checkAntiCreep,
   checkEvidenceHonesty,
+  checkFixtureIntegrity,
   checkQuarantineEnforcement,
   checkTierEnforcement,
 } from "../../src/commands/doctor.js";
@@ -112,5 +113,159 @@ describe("checkQuarantineEnforcement", () => {
     const result = checkQuarantineEnforcement([quarantine]);
     expect(result.ok).toBe(false);
     expect(result.details.join("\n")).toContain("could gate CI");
+  });
+});
+
+describe("checkFixtureIntegrity (certification-audit Phase 2.5)", () => {
+  function makeFixturesTree(): string {
+    return mkdtempSync(join(tmpdir(), "mjolnir-doctor-fxint-"));
+  }
+
+  it("passes a healthy tree with registered rule dirs and populated fire/no-fire fixtures", () => {
+    const root = makeFixturesTree();
+    try {
+      const fixtures = join(root, "fixtures");
+      const rules = [
+        minimalRule({ id: "QA-TEST-910" }),
+        minimalRule({ id: "QA-TEST-911" }),
+      ];
+      for (const rule of rules) {
+        for (const kind of ["must-fire", "must-not-fire"]) {
+          mkdirSync(join(fixtures, rule.id, kind), { recursive: true });
+          writeFileSync(
+            join(fixtures, rule.id, kind, "a.spec.ts"),
+            "it('a', () => {});\n",
+          );
+        }
+      }
+      const result = checkFixtureIntegrity(fixtures, rules);
+      expect(result.ok).toBe(true);
+      expect(result.details.join("\n")).not.toContain("orphaned fixture dir");
+      expect(result.details.join("\n")).not.toContain("empty fixture dir");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("FAILS on an empty must-not-fire dir (the QA-PW-124 deletion class)", () => {
+    const root = makeFixturesTree();
+    try {
+      const fixtures = join(root, "fixtures");
+      const rules = [minimalRule({ id: "QA-TEST-912" })];
+      mkdirSync(join(fixtures, "QA-TEST-912", "must-fire"), {
+        recursive: true,
+      });
+      writeFileSync(
+        join(fixtures, "QA-TEST-912", "must-fire", "a.spec.ts"),
+        "it('a', () => {});\n",
+      );
+      mkdirSync(join(fixtures, "QA-TEST-912", "must-not-fire"), {
+        recursive: true,
+      });
+      // left empty — the firewall alone would catch this too, but the
+      // integrity census must NOT stay green when the firewall is bypassed.
+      const result = checkFixtureIntegrity(fixtures, rules);
+      expect(result.ok).toBe(false);
+      expect(result.details.join("\n")).toContain(
+        "empty fixture dir: QA-TEST-912/must-not-fire",
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("FAILS on an orphaned fixture dir with no registered rule", () => {
+    const root = makeFixturesTree();
+    try {
+      const fixtures = join(root, "fixtures");
+      mkdirSync(join(fixtures, "QA-GHOST-999", "must-fire"), {
+        recursive: true,
+      });
+      writeFileSync(join(fixtures, "QA-GHOST-999", "must-fire", "a.ts"), "x\n");
+      const result = checkFixtureIntegrity(fixtures, [
+        minimalRule({ id: "QA-TEST-913" }),
+      ]);
+      expect(result.ok).toBe(false);
+      expect(result.details.join("\n")).toContain(
+        "orphaned fixture dir (no registered rule): QA-GHOST-999",
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("ignores hidden dirs (.github in harvested corpus trees) and reports the allowlist census", () => {
+    const root = makeFixturesTree();
+    try {
+      const fixtures = join(root, "fixtures");
+      mkdirSync(join(fixtures, ".github", "workflows"), { recursive: true });
+      writeFileSync(
+        join(fixtures, ".github", "workflows", "ci.yml"),
+        "on: push\n",
+      );
+      writeFileSync(
+        join(fixtures, "typecheck-allowlist.json"),
+        JSON.stringify({
+          entries: [{ path: "x", reason: "justified entry here" }],
+        }),
+      );
+      const result = checkFixtureIntegrity(fixtures, []);
+      expect(result.ok).toBe(true);
+      expect(result.details.join("\n")).toContain("allowlist: 1 justified");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("counts loose files directly inside a rule dir (no empty-dir false positive)", () => {
+    const root = makeFixturesTree();
+    try {
+      const fixtures = join(root, "fixtures");
+      const rules = [minimalRule({ id: "QA-TEST-914" })];
+      mkdirSync(join(fixtures, "QA-TEST-914", "must-fire"), {
+        recursive: true,
+      });
+      writeFileSync(join(fixtures, "QA-TEST-914", "must-fire", "a.ts"), "x\n");
+      // A loose top-level file inside the rule dir is counted, not flagged.
+      writeFileSync(join(fixtures, "QA-TEST-914", "README.md"), "notes\n");
+      // A hidden OS-stray (macOS .DS_Store class) is skipped, not counted.
+      writeFileSync(join(fixtures, "QA-TEST-914", ".DS_Store"), "\x00\x01");
+      const result = checkFixtureIntegrity(fixtures, rules);
+      expect(result.ok).toBe(true);
+      expect(result.details[0]).toContain("2 fixture files");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("FAILS when the allowlist exists but its entries field is not an array", () => {
+    const root = makeFixturesTree();
+    try {
+      const fixtures = join(root, "fixtures");
+      mkdirSync(fixtures, { recursive: true });
+      writeFileSync(
+        join(fixtures, "typecheck-allowlist.json"),
+        JSON.stringify({ entries: "not-an-array" }),
+      );
+      const result = checkFixtureIntegrity(fixtures, []);
+      expect(result.ok).toBe(false);
+      expect(result.details.join("\n")).toContain("entries is not an array");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("FAILS when the allowlist is unreadable/malformed JSON", () => {
+    const root = makeFixturesTree();
+    try {
+      const fixtures = join(root, "fixtures");
+      mkdirSync(fixtures, { recursive: true });
+      writeFileSync(join(fixtures, "typecheck-allowlist.json"), "{ not json");
+      const result = checkFixtureIntegrity(fixtures, []);
+      expect(result.ok).toBe(false);
+      expect(result.details.join("\n")).toContain("unreadable/malformed");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 });
