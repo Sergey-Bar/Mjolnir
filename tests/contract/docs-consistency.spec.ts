@@ -502,6 +502,13 @@ describe("README alt text matches the verdict the SVG assets actually render", (
   const svgDir = join(ROOT, "assets", "readme");
   const svgScores = readdirSync(svgDir)
     .filter((f) => f.endsWith(".svg"))
+    // score-gauge.svg is not a scan of any one repo — it sweeps every
+    // score 0-100 through the real deriveScoreState/renderHammer/
+    // scoreGauge model, so it legitimately carries every WORTHINESS
+    // number and would trip the "agree on one score" check below for a
+    // reason that isn't drift. Its own reproducibility lock is
+    // score-gauge-asset-reproducibility.spec.ts.
+    .filter((f) => f !== "score-gauge.svg")
     .map((f) => {
       const m = /WORTHINESS\s+(\d+)\s*\/\s*\d+/.exec(
         stripTags(readFileSync(join(svgDir, f), "utf8")),
