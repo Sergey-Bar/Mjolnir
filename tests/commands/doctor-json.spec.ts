@@ -62,6 +62,7 @@ describe("doctor --json machine contract (Phase 5)", () => {
       "healthy",
       "summary",
       "checks",
+      "measurement",
     ]);
     const firstCheck = json.checks[0];
     if (!firstCheck) throw new Error("checks must be non-empty");
@@ -90,6 +91,7 @@ describe("doctor --json machine contract (Phase 5)", () => {
         },
       ],
       healthy: false,
+      measurement: { measured: 0, unmeasured: 0, total: 0, quarantine: 0 },
     };
     const json = doctorReportJson(report);
     const rev = json.checks.find((c) => c.name === "revision-integrity");

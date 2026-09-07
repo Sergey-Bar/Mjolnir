@@ -1,6 +1,7 @@
 {
   "generatedAt": "2026-09-06",
   "gate": "Required (1.0.0 close-out) — 99/99 measured at n>=10, revision-current, provenance complete",
+  "supersededBy": "src/rules/measured-fp.generated.ts + doctor measurement-consistency (live) — this hand-authored close-out snapshot is NOT drift-locked (D7): the generated map and the doctor's measurement-consistency check are the living truth; this file records the 2026-09-06 close-out decision only.",
   "measured": 76,
   "unmeasured": 23,
   "harvest": {

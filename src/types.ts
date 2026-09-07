@@ -51,34 +51,52 @@ export const QA_IMPACT_LABELS: Record<QaImpact, string> = {
   HYGIENE: "Test hygiene debt",
 };
 
-/** Rule namespaces are frozen public API (§18.4). IDs are never reused. */
-export type RuleCategory =
-  | "QA-TEST"
-  | "QA-TQUAL"
-  | "QA-PW"
-  | "QA-CI"
-  // Audit M3 (create-rule FAMILY table): per-family categories exist so
-  // a new rule is born reporting under its own dimension instead of
-  // aliasing QA-PW. Additive within schemaVersion 1.
-  | "QA-PY"
-  | "QA-ENV"
-  | "QA-JV"
-  | "QA-CS"
-  | "QA-CYP"
-  | "QA-SE"
-  | "QA-WDIO"
-  | "QA-PPTR"
-  | "QA-APM";
-
-/** The closed set of rule categories (plan §5.5). `--category` values
- * are validated against this list — unknown categories are a usage
- * error, not a silent no-op. */
+/**
+ * The closed set of rule categories (plan §5.5, certification-audit D6).
+ * Declared FIRST as the single source of truth: the RuleCategory type is
+ * DERIVED from this list (compile-time exhaustiveness — a category added
+ * to the type without the value list, or vice versa, cannot compile).
+ * `--category` values are validated against this list — unknown
+ * categories are a usage error, not a silent no-op. Rule namespaces are
+ * frozen public API (§18.4): IDs are never reused.
+ */
 export const RULE_CATEGORIES = [
   "QA-TEST",
   "QA-TQUAL",
   "QA-PW",
   "QA-CI",
+  // Audit M3 (create-rule FAMILY table): per-family categories exist so
+  // a new rule is born reporting under its own dimension instead of
+  // aliasing QA-PW. Additive within schemaVersion 1.
+  "QA-PY",
+  "QA-ENV",
+  "QA-JV",
+  "QA-CS",
+  "QA-CYP",
+  "QA-SE",
+  "QA-WDIO",
+  "QA-PPTR",
+  "QA-APM",
 ] as const;
+
+export type RuleCategory = (typeof RULE_CATEGORIES)[number];
+
+/**
+ * Category argument validation shared by every verb accepting
+ * `--category` (scan/why/handoff — certification-audit Phase 1.2): the
+ * three verbs must never disagree about what a valid category is. A
+ * missing value or an unknown value is a usage error (exit 10) at the
+ * caller — this helper returns the verdict, the caller renders the
+ * rejection.
+ */
+export function isValidCategory(
+  value: string | undefined,
+): value is RuleCategory {
+  return (
+    value !== undefined &&
+    (RULE_CATEGORIES as readonly string[]).includes(value)
+  );
+}
 
 /**
  * Trust levels (Verification Trust Evolution Plan §16): the OVERALL

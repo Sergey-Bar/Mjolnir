@@ -19,7 +19,12 @@ import { join } from "node:path";
 
 import type { QADoctorRule } from "../rules/rule.js";
 import { RULES } from "../rules/index.js";
+import { RULE_CATEGORIES } from "../types.js";
 import { MEASURED_FP } from "../rules/measured-fp.generated.js";
+
+/** The shipped measurement map's entry shape (re-exported for the G6 seam). */
+export type { MeasuredFp } from "../rules/measured-fp.generated.js";
+import type { MeasuredFp as MeasuredFpEntry } from "../rules/measured-fp.generated.js";
 
 /** Uniform error rendering for doctor details (Error or thrown-as-string). */
 export function errorText(e: unknown): string {
@@ -180,6 +185,42 @@ export function checkEvidenceHonesty(
 export interface DoctorReport {
   checks: DoctorCheck[];
   healthy: boolean;
+  /** The measurement census (Phase 4.3) — see measurementBlock(). */
+  measurement: MeasurementBlock;
+}
+
+/**
+ * Measurement census (Phase 4.3): measured = rules with a valid
+ * MEASURED_FP entry; unmeasured = the rest; quarantine = measured rules
+ * whose effective tier is quarantine. One function, used by the doctor
+ * report AND the JSON contract — a single reproducible answer.
+ */
+export function measurementBlock(
+  rules: readonly QADoctorRule[] = RULES,
+): MeasurementBlock {
+  const measured = rules.filter((r) => {
+    const m = MEASURED_FP[r.id];
+    return (
+      m !== undefined && m.detectorRevision === declaredDetectorRevision(r)
+    );
+  });
+  // effectiveTier (not raw tier): an omitted tier resolves
+  // measurement-dependently (plan §11.2 Step 2) — the census must agree
+  // with the tier-enforcement check about who counts as quarantine.
+  const quarantine = measured.filter((r) => effectiveTier(r) === "quarantine");
+  return {
+    measured: measured.length,
+    unmeasured: rules.length - measured.length,
+    total: rules.length,
+    quarantine: quarantine.length,
+  };
+}
+
+export interface MeasurementBlock {
+  measured: number;
+  unmeasured: number;
+  total: number;
+  quarantine: number;
 }
 
 /**
@@ -535,8 +576,163 @@ export function checkRevisionIntegrity(
   return check("revision-integrity", "pass", details);
 }
 
+/**
+ * Check 8 (certification-audit Phase 1.4, D6 — HARD-BLOCKING):
+ * category-integrity. Every registry rule's category must be a member of
+ * the closed RULE_CATEGORIES set (compile-time exhaustive via the D6
+ * derivation, so this check is the runtime backstop for values arriving
+ * from external rule sources), and no two rules may collide on an id.
+ * Registry ids are already unique-checked by registry-sanity; this check
+ * owns the category dimension.
+ */
+export function checkCategoryIntegrity(
+  rules: readonly QADoctorRule[] = RULES,
+): DoctorCheck {
+  const details: string[] = [];
+  const known: readonly string[] = RULE_CATEGORIES;
+  const unknown = rules.filter((r) => !known.includes(r.category));
+  for (const r of unknown) {
+    details.push(
+      `${r.id}: category "${r.category}" is not in RULE_CATEGORIES — registries may not invent categories (D6)`,
+    );
+  }
+  const byCategory = new Map<string, number>();
+  for (const r of rules) {
+    byCategory.set(r.category, (byCategory.get(r.category) ?? 0) + 1);
+  }
+  return check("category-integrity", unknown.length === 0 ? "pass" : "fail", [
+    `${byCategory.size} categories in use across ${rules.length} rules (closed set: ${RULE_CATEGORIES.length})`,
+    ...details,
+  ]);
+}
+
+/**
+ * Check 10 (certification-audit Phase 4.1, D7 — HARD-BLOCKING):
+ * measurement-consistency. Three invariants over the measurement surface:
+ *   (1) every MEASURED_FP entry's `n` equals the LIVE classified verdict
+ *       count (TP+FP rows in tests/corpus/verdicts/*.jsonl) — a snapshot
+ *       that drifted from the corpus is a lie about evidence;
+ *   (2) MEASURED_FP's detectorRevision equals the sidecar's
+ *       (tests/corpus/detector-revisions.json) — a measurement taken
+ *       against a different detector revision than attested is stale;
+ *   (3) every sidecar entry maps to a registered rule.
+ * Mismatch → FAIL (certification-critical).
+ */
+export function checkMeasurementConsistency(
+  verdictsDir: string,
+  sidecarPath: string,
+  rules: readonly QADoctorRule[] = RULES,
+  // Injectable for anti-false-green tests (G6 seam): the shipped map by
+  // default; tests pass synthetic maps so every invariant arm is
+  // reachable without fabricating corpus rows for real rules.
+  measuredFp: Readonly<Record<string, MeasuredFpEntry>> = MEASURED_FP,
+): DoctorCheck {
+  const details: string[] = [];
+  const failures: string[] = [];
+
+  const registered = new Map(rules.map((r) => [r.id, r] as const));
+
+  // Live classified verdict counts (TP + FP) per rule id.
+  const liveCounts = new Map<string, number>();
+  if (existsSync(verdictsDir)) {
+    for (const f of readdirSync(verdictsDir)) {
+      if (!f.endsWith(".jsonl")) continue;
+      const lines = readFileSync(join(verdictsDir, f), "utf8").split("\n");
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.length === 0) continue;
+        let row: { ruleId?: string; verdict?: string };
+        try {
+          row = JSON.parse(trimmed) as { ruleId?: string; verdict?: string };
+        } catch {
+          failures.push(`${f}: unparseable verdict row (corpus integrity)`);
+          continue;
+        }
+        if (row.ruleId === undefined) continue;
+        if (row.verdict === "TP" || row.verdict === "FP") {
+          liveCounts.set(row.ruleId, (liveCounts.get(row.ruleId) ?? 0) + 1);
+        }
+      }
+    }
+  } else {
+    return check("measurement-consistency", "inconclusive", [
+      "INCONCLUSIVE: verdicts directory missing — measurement consistency cannot be evaluated (certification-critical: never renders as pass)",
+    ]);
+  }
+
+  let sidecar: Record<string, { detectorRevision?: number }> = {};
+  if (existsSync(sidecarPath)) {
+    try {
+      sidecar = JSON.parse(readFileSync(sidecarPath, "utf8")) as Record<
+        string,
+        { detectorRevision?: number }
+      >;
+    } catch (e) {
+      failures.push(
+        `sidecar unreadable/malformed: ${errorText(e)} — regenerate the measurement artifacts`,
+      );
+    }
+  } else {
+    // No sidecar at all: only MEASURED_FP entries with declared revision
+    // 1 can be consistent (the declared-revision default). Anything else
+    // is unverifiable → inconclusive (honesty over assertion).
+    const needsSidecar = Object.keys(measuredFp).filter(
+      (id) => measuredFp[id]?.detectorRevision !== 1,
+    );
+    if (needsSidecar.length > 0) {
+      return check("measurement-consistency", "inconclusive", [
+        `INCONCLUSIVE: sidecar tests/corpus/detector-revisions.json missing but ${needsSidecar.length} measured rule(s) declare revisions — cannot verify measurement freshness`,
+      ]);
+    }
+  }
+
+  for (const [id, m] of Object.entries(measuredFp)) {
+    // Invariant 2: sidecar revision agreement.
+    const side = sidecar[id];
+    if (side !== undefined && side.detectorRevision !== undefined) {
+      if (side.detectorRevision !== m.detectorRevision) {
+        failures.push(
+          `${id}: MEASURED_FP revision ${m.detectorRevision} ≠ sidecar ${side.detectorRevision} — the measurement is stale (§07: re-measure or bump)`,
+        );
+      }
+    }
+    // Invariant 1: live verdict count equals the recorded n.
+    const live = liveCounts.get(id);
+    if (live !== undefined && live !== m.n) {
+      failures.push(
+        `${id}: MEASURED_FP.n=${m.n} but the live corpus has ${live} classified verdict(s) — regenerate (npm run fp-audit:generate)`,
+      );
+    }
+    if (live === undefined && m.n > 0) {
+      failures.push(
+        `${id}: MEASURED_FP.n=${m.n} but no classified verdicts exist in the live corpus`,
+      );
+    }
+  }
+
+  // Invariant 3: sidecar entries map to registered rules.
+  for (const id of Object.keys(sidecar)) {
+    if (!registered.has(id)) {
+      failures.push(
+        `${id}: sidecar entry for an unregistered rule — remove it from tests/corpus/detector-revisions.json`,
+      );
+    }
+  }
+
+  if (failures.length > 0) {
+    details.push(...failures);
+    return check("measurement-consistency", "fail", details);
+  }
+  const block = measurementBlock(rules);
+  details.push(
+    `${block.measured} measured / ${block.unmeasured} unmeasured / ${block.total} total (${block.quarantine} quarantine) — MEASURED_FP, live verdicts and sidecar revisions agree`,
+  );
+  return check("measurement-consistency", "pass", details);
+}
+
 export function runDoctorSelfAudit(fixturesRoot: string): DoctorReport {
   const verdictsDir = join(fixturesRoot, "..", "corpus", "verdicts");
+  const repoRoot = join(fixturesRoot, "..", "..");
   const checks = [
     checkFixtureFirewall(fixturesRoot),
     checkRegistry(),
@@ -545,10 +741,19 @@ export function runDoctorSelfAudit(fixturesRoot: string): DoctorReport {
     checkTierEnforcement(verdictsDir),
     checkAntiCreep(),
     checkQuarantineEnforcement(),
+    checkCategoryIntegrity(),
     checkFixtureIntegrity(fixturesRoot),
-    checkRevisionIntegrity(join(fixturesRoot, "..", "..")),
+    checkRevisionIntegrity(repoRoot),
+    checkMeasurementConsistency(
+      verdictsDir,
+      join(repoRoot, "tests", "corpus", "detector-revisions.json"),
+    ),
   ];
-  return { checks, healthy: checks.every((c) => c.status === "pass") };
+  return {
+    checks,
+    healthy: checks.every((c) => c.status === "pass"),
+    measurement: measurementBlock(),
+  };
 }
 
 export function renderDoctorReport(report: DoctorReport): string {
@@ -584,6 +789,12 @@ export interface DoctorReportJson {
     ok: boolean;
     details: string[];
   }>;
+  /**
+   * THE single reproducible answer to "how many rules are measured"
+   * (certification-audit Phase 4.3): derived from the live registry +
+   * MEASURED_FP at report time, not from a hand-authored snapshot.
+   */
+  measurement: MeasurementBlock;
 }
 
 /**
@@ -620,5 +831,6 @@ export function doctorReportJson(
     healthy: report.healthy,
     summary,
     checks,
+    measurement: report.measurement,
   };
 }

@@ -20,7 +20,13 @@
  */
 
 import { existsSync } from "node:fs";
-import type { Finding, ScanResult } from "../types.js";
+import {
+  isValidCategory,
+  RULE_CATEGORIES,
+  type Finding,
+  type RuleCategory,
+  type ScanResult,
+} from "../types.js";
 import type { Output } from "../cli.js";
 import { runScan } from "../cli.js";
 import {
@@ -154,6 +160,26 @@ export async function runWhyCommand(
     err: (line) => console.error(line),
   },
 ): Promise<number> {
+  // --category validation runs FIRST (Phase 1.2): a malformed category is
+  // a parse-time usage error even when the location is also malformed —
+  // parse-time errors are position-independent.
+  const catIdxs: number[] = [];
+  argv.forEach((a, i) => {
+    if (a === "--category") catIdxs.push(i + 1);
+  });
+  const categories: RuleCategory[] = [];
+  for (const i of catIdxs) {
+    const value = argv[i];
+    if (!isValidCategory(value)) {
+      io.err(
+        `mjolnir why: unknown --category: ${value === undefined ? "(missing value)" : value}`,
+      );
+      io.err(`  Valid categories: ${RULE_CATEGORIES.join(", ")}`);
+      return 10;
+    }
+    categories.push(value);
+  }
+
   const locationToken = argv.find((a) => !a.startsWith("-"));
   if (!locationToken) {
     io.err("Usage: mjolnir why <file>:<line> [--json <mjolnir.json>]");
@@ -169,9 +195,13 @@ export async function runWhyCommand(
 
   const jsonIdx = argv.indexOf("--json");
   const reportPath = jsonIdx !== -1 ? argv[jsonIdx + 1] : undefined;
+  // Positions consumed by flag VALUES (never candidates for the target):
+  // --json's value and every --category's value (Phase 1.2).
+  const valuePositions = new Set<number>();
+  if (jsonIdx !== -1) valuePositions.add(jsonIdx + 1);
+  for (const i of catIdxs) valuePositions.add(i);
   const targetIdx = argv.findIndex(
-    (a, i) =>
-      !a.startsWith("-") && i !== 0 && (jsonIdx === -1 || i !== jsonIdx + 1),
+    (a, i) => !a.startsWith("-") && i !== 0 && !valuePositions.has(i),
   );
   const target = targetIdx !== -1 ? (argv[targetIdx] as string) : ".";
 
@@ -215,14 +245,8 @@ export async function runWhyCommand(
 
   const match = explainAt(result.findings, location.file, location.line);
   // --category is a presentation filter (plan §5.5): narrows the why
-  // answer; the underlying report is untouched.
-  const catIdxs: number[] = [];
-  argv.forEach((a, i) => {
-    if (a === "--category") catIdxs.push(i + 1);
-  });
-  const categories = catIdxs
-    .map((i) => argv[i])
-    .filter((c): c is string => c !== undefined);
+  // answer; the underlying report is untouched. Validation happened at
+  // parse time above.
   const filtered =
     categories.length > 0
       ? match.findings.filter((f) => categories.includes(f.category))

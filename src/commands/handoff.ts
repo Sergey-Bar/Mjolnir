@@ -21,7 +21,12 @@
  * 2 unreadable/invalid JSON.
  */
 
-import type { Finding, ScanResult } from "../types.js";
+import {
+  isValidCategory,
+  RULE_CATEGORIES,
+  type Finding,
+  type ScanResult,
+} from "../types.js";
 import type { Output } from "../cli.js";
 import { usageErrorMessage } from "../cli.js";
 import { CLI_VERSION } from "../cli.js";
@@ -385,6 +390,13 @@ export function runHandoffCommand(
       const val = argv[i + 1];
       if (val === undefined || val.startsWith("-")) {
         io.err(usageErrorMessage({ flag: a, token: val }));
+        return 10;
+      }
+      // --category values validate against RULE_CATEGORIES (Phase 1.2) —
+      // same contract as scan/why; unknown = usage error (exit 10).
+      if (a === "--category" && !isValidCategory(val)) {
+        io.err(`mjolnir handoff: unknown --category: ${val}`);
+        io.err(`  Valid categories: ${RULE_CATEGORIES.join(", ")}`);
         return 10;
       }
       i++;
