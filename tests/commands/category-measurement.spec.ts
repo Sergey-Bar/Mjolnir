@@ -206,7 +206,13 @@ describe("checkMeasurementConsistency (D7)", () => {
       sidecarPath.replace(".json", "-absent.json"),
       [{ ...minimalRules.one(), id: "QA-CI-001" }],
       {
-        "QA-CI-001": { fpRate: 0.105, n: 19, detectorRevision: 2 },
+        "QA-CI-001": {
+          fpRate: 0.105,
+          n: 19,
+          detectorRevision: 2,
+          ciLow: 0.03,
+          ciHigh: 0.25,
+        },
       },
     );
     expect(result.ok).toBe(false);
@@ -239,7 +245,13 @@ describe("checkMeasurementConsistency (D7)", () => {
       sidecarPath,
       [{ ...minimalRules.one(), id: "QA-CI-001" }],
       {
-        "QA-CI-001": { fpRate: 4 / 19, n: 19, detectorRevision: 2 },
+        "QA-CI-001": {
+          fpRate: 4 / 19,
+          n: 19,
+          detectorRevision: 2,
+          ciLow: 0.03,
+          ciHigh: 0.25,
+        },
       },
     );
     expect(result.ok).toBe(true);
