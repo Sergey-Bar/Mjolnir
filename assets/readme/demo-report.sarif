@@ -7,12 +7,12 @@
         "driver": {
           "name": "Mjölnir",
           "informationUri": "https://github.com/Sergey-Bar/Mjolnir",
-          "version": "0.5.0",
+          "version": "0.5.7",
           "rules": [
             {
               "id": "QA-CI-009",
               "shortDescription": {
-                "text": "Job `test` pipes the test command into another tool without `set -o pipefail`."
+                "text": "Test command does not propagate exit code"
               },
               "properties": {
                 "falsePositiveRisk": "low"
@@ -21,7 +21,7 @@
             {
               "id": "QA-CI-010",
               "shortDescription": {
-                "text": "Job `deploy-smoke` runs tests but its `if:` condition skips it on pull requests."
+                "text": "Tests skipped where they must block"
               },
               "properties": {
                 "falsePositiveRisk": "medium"
@@ -30,7 +30,7 @@
             {
               "id": "QA-CI-001",
               "shortDescription": {
-                "text": "Job `security-scan` runs a verification gate under `continue-on-error: true`."
+                "text": "continue-on-error masks a failing verification gate"
               },
               "properties": {
                 "falsePositiveRisk": "low"
@@ -39,7 +39,7 @@
             {
               "id": "QA-PW-145",
               "shortDescription": {
-                "text": "UI-interacting spec file contains no accessibility assertions."
+                "text": "UI suite without accessibility assertions"
               },
               "properties": {
                 "falsePositiveRisk": "high"
@@ -48,16 +48,25 @@
             {
               "id": "QA-PW-103",
               "shortDescription": {
-                "text": "`goto(\"/checkout\")` without an explicit timeout."
+                "text": "Navigation wait without explicit timeout budget"
               },
               "properties": {
                 "falsePositiveRisk": "high"
               }
             },
             {
+              "id": "QA-PW-146",
+              "shortDescription": {
+                "text": "CSS/XPath string selector instead of a normalized locator"
+              },
+              "properties": {
+                "falsePositiveRisk": "medium"
+              }
+            },
+            {
               "id": "QA-PW-004",
               "shortDescription": {
-                "text": "Brittle multi-class CSS selector: `locator(\".btn.btn-primary > div:nth-child(2)\""
+                "text": "Brittle selector instead of role-based locator"
               },
               "properties": {
                 "falsePositiveRisk": "medium"
@@ -66,7 +75,7 @@
             {
               "id": "QA-PW-101",
               "shortDescription": {
-                "text": "`waitForTimeout()` hard sleep."
+                "text": "Hard sleep via waitForTimeout"
               },
               "properties": {
                 "falsePositiveRisk": "low"
@@ -75,7 +84,7 @@
             {
               "id": "QA-TEST-002",
               "shortDescription": {
-                "text": "Skipped test without justification: `test.skip(`."
+                "text": "Skipped test"
               },
               "properties": {
                 "falsePositiveRisk": "medium"
@@ -84,7 +93,7 @@
             {
               "id": "QA-PW-123",
               "shortDescription": {
-                "text": "Hardcoded URL: `goto(\"https://staging.example.com/login\"`."
+                "text": "Hardcoded environment URL in spec"
               },
               "properties": {
                 "falsePositiveRisk": "low"
@@ -93,7 +102,7 @@
             {
               "id": "QA-PW-118",
               "shortDescription": {
-                "text": "`waitForLoadState('networkidle')` used."
+                "text": "Network idle wait (flaky by design)"
               },
               "properties": {
                 "falsePositiveRisk": "high"
@@ -102,7 +111,7 @@
             {
               "id": "QA-PW-122",
               "shortDescription": {
-                "text": "playwright.config has no `trace` capture setting."
+                "text": "No trace capture on retry"
               },
               "properties": {
                 "falsePositiveRisk": "low"
@@ -111,7 +120,7 @@
             {
               "id": "QA-PW-143",
               "shortDescription": {
-                "text": "playwright.config captures neither screenshots nor video on failure."
+                "text": "No screenshot/video capture on failure"
               },
               "properties": {
                 "falsePositiveRisk": "low"
@@ -120,7 +129,7 @@
             {
               "id": "QA-PW-141",
               "shortDescription": {
-                "text": "retries: undefined with no visible flake-triage loop."
+                "text": "Retries configured without a flake-triage loop"
               },
               "properties": {
                 "falsePositiveRisk": "low"
@@ -129,7 +138,7 @@
             {
               "id": "QA-PY-003",
               "shortDescription": {
-                "text": "Test `test_checkout_endpoint_responds` contains no assertions."
+                "text": "Test function with no assertions"
               },
               "properties": {
                 "falsePositiveRisk": "low"
@@ -138,7 +147,7 @@
             {
               "id": "QA-PY-005",
               "shortDescription": {
-                "text": "Hard sleep: `time.sleep(2…`."
+                "text": "time.sleep() in test"
               },
               "properties": {
                 "falsePositiveRisk": "low"
@@ -306,7 +315,13 @@
             "severity": "info",
             "confidence": "low",
             "qaImpact": "HYGIENE",
-            "evidenceLevel": "E0"
+            "evidenceLevel": "E0",
+            "trustLevel": "L3",
+            "runtimeCorroboration": {
+              "level": "file",
+              "source": "playwright-json",
+              "testsExecuted": 3
+            }
           }
         },
         {
@@ -332,7 +347,45 @@
             "severity": "info",
             "confidence": "low",
             "qaImpact": "HYGIENE",
-            "evidenceLevel": "E0"
+            "evidenceLevel": "E0",
+            "trustLevel": "L3",
+            "runtimeCorroboration": {
+              "level": "file",
+              "source": "playwright-json",
+              "testsExecuted": 3
+            }
+          }
+        },
+        {
+          "ruleId": "QA-PW-146",
+          "level": "note",
+          "message": {
+            "text": "CSS/XPath string selector where a normalized locator is expected. — String CSS/XPath selectors couple the test to markup the user never sees — they break on any refactor and can silently select the wrong element after a redesign. Fix: Normalize to Playwright's user-facing getters: getByRole('button', { name: '…' }), getByLabel('…'), getByTestId('…'), or getByText('…') — they survive markup refactors and match what a user actually perceives."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "e2e/checkout.spec.ts"
+                },
+                "region": {
+                  "startLine": 5,
+                  "startColumn": 13
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "medium",
+            "qaImpact": "HYGIENE",
+            "evidenceLevel": "E0",
+            "trustLevel": "L3",
+            "runtimeCorroboration": {
+              "level": "file",
+              "source": "playwright-json",
+              "testsExecuted": 3
+            }
           }
         },
         {
@@ -358,7 +411,13 @@
             "severity": "info",
             "confidence": "medium",
             "qaImpact": "HYGIENE",
-            "evidenceLevel": "E0"
+            "evidenceLevel": "E0",
+            "trustLevel": "L3",
+            "runtimeCorroboration": {
+              "level": "file",
+              "source": "playwright-json",
+              "testsExecuted": 3
+            }
           }
         },
         {
@@ -384,7 +443,13 @@
             "severity": "error",
             "confidence": "high",
             "qaImpact": "FLAKY-RISK",
-            "evidenceLevel": "E2"
+            "evidenceLevel": "E2",
+            "trustLevel": "L3",
+            "runtimeCorroboration": {
+              "level": "file",
+              "source": "playwright-json",
+              "testsExecuted": 3
+            }
           }
         },
         {
@@ -410,7 +475,45 @@
             "severity": "info",
             "confidence": "low",
             "qaImpact": "HYGIENE",
-            "evidenceLevel": "E0"
+            "evidenceLevel": "E0",
+            "trustLevel": "L3",
+            "runtimeCorroboration": {
+              "level": "file",
+              "source": "playwright-json",
+              "testsExecuted": 3
+            }
+          }
+        },
+        {
+          "ruleId": "QA-PW-146",
+          "level": "note",
+          "message": {
+            "text": "CSS/XPath string selector where a normalized locator is expected. — String CSS/XPath selectors couple the test to markup the user never sees — they break on any refactor and can silently select the wrong element after a redesign. Fix: Normalize to Playwright's user-facing getters: getByRole('button', { name: '…' }), getByLabel('…'), getByTestId('…'), or getByText('…') — they survive markup refactors and match what a user actually perceives."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "e2e/checkout.spec.ts"
+                },
+                "region": {
+                  "startLine": 13,
+                  "startColumn": 20
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "medium",
+            "qaImpact": "HYGIENE",
+            "evidenceLevel": "E0",
+            "trustLevel": "L3",
+            "runtimeCorroboration": {
+              "level": "file",
+              "source": "playwright-json",
+              "testsExecuted": 3
+            }
           }
         },
         {
@@ -436,7 +539,13 @@
             "severity": "info",
             "confidence": "high",
             "qaImpact": "FALSE-GREEN",
-            "evidenceLevel": "E0"
+            "evidenceLevel": "E0",
+            "trustLevel": "L3",
+            "runtimeCorroboration": {
+              "level": "file",
+              "source": "playwright-json",
+              "testsExecuted": 3
+            }
           }
         },
         {
@@ -462,7 +571,13 @@
             "severity": "info",
             "confidence": "low",
             "qaImpact": "HYGIENE",
-            "evidenceLevel": "E0"
+            "evidenceLevel": "E0",
+            "trustLevel": "L3",
+            "runtimeCorroboration": {
+              "level": "file",
+              "source": "playwright-json",
+              "testsExecuted": 3
+            }
           }
         },
         {
@@ -566,6 +681,32 @@
             "severity": "info",
             "confidence": "high",
             "qaImpact": "FLAKY-RISK",
+            "evidenceLevel": "E0"
+          }
+        },
+        {
+          "ruleId": "QA-PW-146",
+          "level": "note",
+          "message": {
+            "text": "CSS/XPath string selector where a normalized locator is expected. — String CSS/XPath selectors couple the test to markup the user never sees — they break on any refactor and can silently select the wrong element after a redesign. Fix: Normalize to Playwright's user-facing getters: getByRole('button', { name: '…' }), getByLabel('…'), getByTestId('…'), or getByText('…') — they survive markup refactors and match what a user actually perceives."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "e2e/login.spec.ts"
+                },
+                "region": {
+                  "startLine": 6,
+                  "startColumn": 13
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "medium",
+            "qaImpact": "HYGIENE",
             "evidenceLevel": "E0"
           }
         },

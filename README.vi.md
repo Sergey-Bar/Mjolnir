@@ -15,7 +15,7 @@ niềm tin gãy.
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | Tiếng Việt | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-04.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
 
 ```bash
 npx mjolnir-qa@latest
@@ -292,14 +292,14 @@ Tổng cộng 20 quy tắc Python (QA-PY-001…012 vệ sinh pytest + QA-PY-101�
 
 ### Bao nhiêu đã được đo
 
-**74 trong 99 quy tắc mang tỷ lệ false positive được đo trên mã OSS
+**78 trong 99 quy tắc mang tỷ lệ false positive được đo trên mã OSS
 thật** (≥ 10 finding được phân loại tay mỗi quy tắc; xem
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). 19 quy tắc còn lại ra mắt trên
+[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). 21 quy tắc còn lại ra mắt trên
 ước lượng của tác giả. Chân mỗi bản quét cho biết bao nhiêu quy tắc
 _đã bắn_ được đo; `mjolnir rules --unmeasured` liệt kê những quy tắc
 chưa đo; trang `mjolnir explain` của từng quy tắc nêu trạng thái. Chúng
 tôi công bố tỷ lệ kể cả khi nó xấu xí — QA-CS-103 kiểm toán ở mức 95 %
-và bị cách ly vì thế. Mở rộng con số 78 đó là công việc liên tục của
+và bị cách ly vì thế. Mở rộng con số đó là công việc liên tục của
 dự án.
 
 ### Tier quy tắc và độ trưởng thành theo ngôn ngữ
@@ -448,14 +448,14 @@ Vấn đề khác, tầng khác. AI review có thể phát hiện thay đổi ki
 nghi ngờ trong diff; nó không chứng minh hệ thống kiểm chứng như một
 toàn thể đáng tin — và nó chỉ thấy diff bạn cho nó xem.
 
-|                                     |   AI code review (Copilot v.v.)    |        **Mjölnir**        |
-| ----------------------------------- | :--------------------------------: | :-----------------------: |
-| Chi phí mỗi lần quét                | Token (scale theo kích thước diff) | **Zero** (cục bộ, đã cài) |
-| Thấy cả suite + mọi cấu hình CI     |      Chỉ diff PR bạn cho xem       |   **Mọi thứ, mỗi lần**    |
-| Tất định (cùng input → cùng output) |        ❌ (không tất định)         |          **✅**           |
-| Bắt mẫu nằm im hàng tháng           |     Chỉ khi có trong ngữ cảnh      |  **✅** (quét mọi file)   |
-| Nhớ finding giữa các lần chạy       | ❌ (không trí nhớ giữa các phiên)  | **✅** (baseline + diff)  |
-| Chạy không cần người kích hoạt      |         Cần PR hoặc prompt         | **✅** (hook CI, 3 giây)  |
+|                                     |   AI code review (Copilot v.v.)    |              **Mjölnir**              |
+| ----------------------------------- | :--------------------------------: | :-----------------------------------: |
+| Chi phí mỗi lần quét                | Token (scale theo kích thước diff) |       **Zero** (cục bộ, đã cài)       |
+| Thấy cả suite + mọi cấu hình CI     |      Chỉ diff PR bạn cho xem       |         **Mọi thứ, mỗi lần**          |
+| Tất định (cùng input → cùng output) |        ❌ (không tất định)         |                **✅**                 |
+| Bắt mẫu nằm im hàng tháng           |     Chỉ khi có trong ngữ cảnh      |        **✅** (quét mọi file)         |
+| Nhớ finding giữa các lần chạy       | ❌ (không trí nhớ giữa các phiên)  |       **✅** (baseline + diff)        |
+| Chạy không cần người kích hoạt      |         Cần PR hoặc prompt         | **✅** (hook CI, chạy trong vài giây) |
 
 **Dùng cả hai.** AI bắt được sắc thái, ý đồ và lỗi thiết kế không regex
 nào tìm ra. Mjölnir bắt các mẫu cấu trúc AI bỏ sót vì chúng trông
@@ -573,10 +573,17 @@ bất biến sau khi ra mắt và không bao giờ tái sử dụng.
   từ mã OSS thật mới ra tier tiêu đề (xem
   [Bao nhiêu đã được đo](#bao-nhiêu-đã-được-đo)); chân bản quét và
   `mjolnir rules --unmeasured` cho biết cái nào là cái nào.
-- **Niềm tin plugin** — plugin là gói npm khai báo trong `"plugins"`.
+- **Niềm tin plugin và cổng thực thi** — plugin là gói npm khai báo trong
+  `"plugins"`; module JS nằm trong `mjolnir-rules/*.mjs`.
   **Không sandbox**: mã plugin chạy với đầy đủ đặc quyền Node, cùng mô
-  hình tin cậy như plugin ESLint hay Vitest. Tiền tố rule ID core được
-  bảo lưu và từ chối khỏi plugin để chống giả danh.
+  hình tin cậy như plugin ESLint hay Vitest. Vì vậy việc thực thi mã là
+  **opt-in trong mỗi lần quét**: truyền `--enable-plugins` (hoặc đặt
+  `MJOLNIR_ENABLE_PLUGINS=1`), nếu không nguồn sẽ KHÔNG được nạp — một
+  thông báo stderr rõ ràng liệt kê chính xác điều gì bị bỏ qua. Quét mã
+  không đáng tin cậy không bao giờ chạy nó. JSON rule manifest
+  (`mjolnir-rules/*.json`) không bị ảnh hưởng: khai báo regex pattern và
+  không thực thi mã theo thiết kế. Tiền tố rule ID core được
+  bảo lưu và từ chối khỏi plugin và quy tắc ngoài để chống giả danh.
 - **Quy tắc ngoài cục bộ theo workspace** (theo thư mục, 0 mạng) — một
   thư mục `mjolnir-rules/` cạnh đích quét nạp quy tắc riêng: file JSON
   khai báo mẫu regex (không chạy mã), module `.mjs`/`.js` export

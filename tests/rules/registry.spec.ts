@@ -40,6 +40,7 @@ describe("RULES registry", () => {
       "LEXICAL",
       "AST",
       "SEMANTIC",
+      "QA_MODEL",
       "FRAMEWORK",
       "RUNTIME",
     ];

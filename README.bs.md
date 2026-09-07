@@ -15,7 +15,7 @@ povjerenje lomi.
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | Bosanski
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-04.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
 
 ```bash
 npx mjolnir-qa@latest
@@ -291,14 +291,14 @@ Ukupno 20 Python pravila (QA-PY-001…012 pytest higijena + QA-PY-101…108 Play
 
 ### Koliko je od ovoga izmjereno
 
-**74 od 99 pravila nose stopu lažnih pozitiva izmjerenu nad stvarnim
+**78 od 99 pravila nose stopu lažnih pozitiva izmjerenu nad stvarnim
 OSS kodom** (≥ 10 ručno klasificiranih nalaza svako; vidi
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Ostalih 19 izlazi na autorovoj
+[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Ostalih 21 izlazi na autorovoj
 procjeni. Podnožje svakog skana kaže koliko od _okinutih_ pravila je
 izmjereno; `mjolnir rules --unmeasured` izlista neizmjerena; stranica
 `mjolnir explain` svakog pravila navodi njen status. Objavljujemo stopu
 čak i kad je ružna — QA-CS-103 se audita na 95 % i u karanteni je radi
-toga. Rast tog 78 je neprekidni rad projekta.
+toga. Rast tog broja je neprekidni rad projekta.
 
 ### Tierovi pravila i jezična zrelost
 
@@ -448,14 +448,14 @@ Drugi problem, drugi sloj. AI review može primijetiti sumnjivu promjenu
 testa u diffu; ne dokazuje da je verifikacioni sistem kao cjelina
 dostojan povjerenja — i vidi samo diff koji mu pokažeš.
 
-|                                          |  AI code review (Copilot i sl.)  |           **Mjölnir**           |
-| ---------------------------------------- | :------------------------------: | :-----------------------------: |
-| Trošak po skanu                          | Tokeni (raste s veličinom diffa) | **Nula** (lokalno, instalirano) |
-| Vidi cijeli suite + sve CI konfiguracije |    Samo PR diff koji pokažeš     |       **Sve, svaki put**        |
-| Deterministički (isti ulaz → isti izlaz) |      ❌ (nedeterministički)      |             **✅**              |
-| Hvata obrasce dormantne mjesecima        |     Samo ako je u kontekstu      |  **✅** (skenira sve fajlove)   |
-| Pamti nalaze između runova               | ❌ (nema memorije između sesija) |    **✅** (baseline + diff)     |
-| Radi bez ljudskog okidača                |       Treba PR ili prompt        |   **✅** (CI hook, 3 sekunde)   |
+|                                          |  AI code review (Copilot i sl.)  |               **Mjölnir**               |
+| ---------------------------------------- | :------------------------------: | :-------------------------------------: |
+| Trošak po skanu                          | Tokeni (raste s veličinom diffa) |     **Nula** (lokalno, instalirano)     |
+| Vidi cijeli suite + sve CI konfiguracije |    Samo PR diff koji pokažeš     |           **Sve, svaki put**            |
+| Deterministički (isti ulaz → isti izlaz) |      ❌ (nedeterministički)      |                 **✅**                  |
+| Hvata obrasce dormantne mjesecima        |     Samo ako je u kontekstu      |      **✅** (skenira sve fajlove)       |
+| Pamti nalaze između runova               | ❌ (nema memorije između sesija) |        **✅** (baseline + diff)         |
+| Radi bez ljudskog okidača                |       Treba PR ili prompt        | **✅** (CI hook, izvodi se u sekundama) |
 
 **Koristi oba.** AI hvata nijansu, namjeru i dizajnerske mane koje
 nijedan regex ne nađe. Mjölnir hvata strukturne obrasce koje AI
@@ -578,11 +578,19 @@ ponovo koriste.
   stopom lažnih pozitiva iz stvarnog OSS koda (vidi
   [Koliko je od ovoga izmjereno](#koliko-je-od-ovoga-izmjereno));
   podnožje skana i `mjolnir rules --unmeasured` kažu koje su koje.
-- **Povjerenje u pluginove** — pluginovi su npm paketi deklarirani pod
-  `"plugins"`. **Nema sandboxa**: plugin kod radi s punim Node
+- **Povjerenje u pluginove i kapija izvršavanja** — pluginovi su npm
+  paketi deklarirani pod
+  `"plugins"`; JS moduli žive u `mjolnir-rules/*.mjs`.
+  **Nema sandboxa**: plugin kod radi s punim Node
   privilegijama, isti model povjerenja kao ESLint ili Vitest pluginovi.
+  Zato je izvršavanje koda **opt-in pri svakom skanu**: proslijedite
+  `--enable-plugins` (ili postavite `MJOLNIR_ENABLE_PLUGINS=1`), inače
+  se izvori NE učitavaju — glasna stderr obavijesta izlista tačno što
+  je preskočeno. Skeniranje nepouzdanog koda nikada ga ne izvršava.
+  JSON pravila manifesti (`mjolnir-rules/*.json`) nisu pogođeni:
+  deklariraju regex obrasce i po konstrukciji ne izvršavaju kod.
   Core prefiksi ID-jeva pravila su rezervirani i odbijaju se od
-  pluginova radi sprečavanja spoofinga.
+  pluginova i eksternih pravila radi sprečavanja spoofinga.
 - **Eksterna pravila lokalna workspaceu** (folder-bazirana, nula
   mreže) — `mjolnir-rules/` direktorij pored skan cilja učitava
   vlastita pravila: JSON fajlovi deklariraju regex obrasce (nikakav kod

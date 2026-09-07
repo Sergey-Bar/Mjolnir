@@ -40,6 +40,12 @@ export default defineConfig({
       // executable interface glue (the ScanContext contract every adapter
       // implements); excluding it let real code paths escape the ratchet.
       exclude: [
+        // Process-launch glue: exercised functionally by the spawned-
+        // binary integration test (mcp-transport.spec.ts), but a spawned
+        // subprocess's istanbul report cannot merge into the parent run —
+        // same class as dist/** (bug-audit G6 precedent). All transport
+        // logic lives in src/mcp/transport.ts and IS ratchet-covered.
+        "src/mcp/stdio.ts",
         "src/types.ts",
         "src/forensics/types.ts",
         "src/playwright/selector-health-types.ts",

@@ -115,6 +115,21 @@ describe("score-neutrality (--tone blunt)", () => {
       ) {
         delete (copy.analysisStatus as Record<string, unknown>).durationMs;
       }
+      // The machine contract embeds durationMs in its completeness
+      // projection — same wall-clock exclusion as above.
+      if (
+        typeof copy.contract === "object" &&
+        copy.contract !== null &&
+        typeof (copy.contract as Record<string, unknown>).completeness ===
+          "object"
+      ) {
+        delete (
+          (copy.contract as Record<string, unknown>).completeness as Record<
+            string,
+            unknown
+          >
+        ).durationMs;
+      }
       return copy;
     };
     expect(strip(obj1)).toEqual(strip(obj2));

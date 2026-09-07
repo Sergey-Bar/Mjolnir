@@ -145,7 +145,7 @@ export function renderPrComment(
   }
 
   if (findings.length === 0) {
-    lines.push("✅ No new issues found in this PR's changes.");
+    lines.push("✅ No new findings in this PR's changes.");
   } else {
     const errors = findings.filter((f) => f.severity === "error");
     const warnings = findings.filter((f) => f.severity === "warning");
@@ -210,10 +210,31 @@ export function renderPrComment(
   );
 
   if (usingDiff && diff.resolvedFindings.length > 0) {
-    lines.push("");
-    lines.push(
-      `✨ ${diff.resolvedFindings.length} pre-existing finding${diff.resolvedFindings.length === 1 ? "" : "s"} fixed in this PR.`,
+    // §15 rendering law: "fixed" claims only for VERIFIED-RESOLVED;
+    // inconclusive/non-fix disappearances render with their cause.
+    const verified = diff.resolvedFindings.filter(
+      (f) => f.resolution.status === "VERIFIED-RESOLVED",
     );
+    const inconclusive = diff.resolvedFindings.filter(
+      (f) => f.resolution.status === "INCONCLUSIVE",
+    );
+    if (verified.length > 0) {
+      lines.push("");
+      lines.push(
+        `✨ ${verified.length} pre-existing finding${verified.length === 1 ? "" : "s"} verified as fixed in this PR.`,
+      );
+    }
+    if (inconclusive.length > 0) {
+      const causes = [
+        ...new Set(
+          inconclusive.map((f) => f.resolution.cause ?? ("unknown" as const)),
+        ),
+      ].join(", ");
+      lines.push("");
+      lines.push(
+        `ℹ ${inconclusive.length} pre-existing finding${inconclusive.length === 1 ? "" : "s"} disappeared, but this scan can't confirm a fix (${causes}).`,
+      );
+    }
   }
 
   return lines.join("\n");

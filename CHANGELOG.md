@@ -74,6 +74,51 @@ scan`. Unknown categories are a usage error (exit 10).
 - help registry gained `why`, `handoff`, `install` and the new flags;
   site/reference/cli.md documents the handoff trust model.
 
+## [0.5.12] — 2026-09-07
+
+### Changes since 0.5.11
+
+- Product-Experience Master Plan: content integrity, canonical terminology, brand cleanup, CI path integrity (#44)
+
+## [0.5.11] — 2026-09-07
+
+### Changes since 0.5.10
+
+- Merge pull request #45 from Sergey-Bar/eng/closeout-recommendations
+- docs: FP-AUDIT status column settles on the second generator pass (stale module import in single-pass)
+- docs: regenerate QA-ENV-001 + QA-PW-147 rule docs (now measured)
+- close-out: 39 verdicts adjudicated (AI-assisted, owner-authorized) — 78/99 measured
+
+## [0.5.10] — 2026-09-06
+
+### Changes since 0.5.9
+
+- Merge pull request #43 from Sergey-Bar/eng/closeout-2.4
+- docs: close-out eligibility audit + final 2.0 certification report (five-way verification classification)
+
+## [0.5.9] — 2026-09-06
+
+### Changes since 0.5.8
+
+- Merge pull request #42 from Sergey-Bar/eng/lane-a-qamodel-2.3
+- docs: regenerate all generated artifacts under the Lane A rev-2 rules
+- feat: Lane A — hard-sleep JV/CS family migrated to the QA-model substrate (blueprint §10)
+
+## [0.5.8] — 2026-09-06
+
+### Changes since 0.5.7
+
+- Merge pull request #41 from Sergey-Bar/eng/mcp-transport-2.2
+- feat: MCP stdio transport — pure transport over the machine contract (blueprint §21, Phase 4)
+
+## [0.5.7] — 2026-09-06
+
+### Changes since 0.5.6
+
+- Merge pull request #40 from Sergey-Bar/eng/machine-contract-2.1
+- test: plural + unknown-cause arms for inconclusive resolution rendering
+- feat: machine verification contract + finding detectorRevision + lifecycle resolution (blueprint §12-§15, §17, §25)
+
 ## [0.5.6] — 2026-09-06
 
 ### Changes since 0.5.5

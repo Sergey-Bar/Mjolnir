@@ -368,8 +368,8 @@ or `mjolnir rules --md`.
 
 ### How much of this is measured
 
-**76 of 99 rules carry a false-positive rate measured against real OSS code** (≥ 10 hand-classified findings each; see
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). The other 23 ship on the author's
+**78 of 99 rules carry a false-positive rate measured against real OSS code** (≥ 10 hand-classified findings each; see
+[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). The other 21 ship on the author's
 estimate. Every scan footer tells you how many of the rules that _fired_
 are measured; `mjolnir rules --unmeasured` lists the ones that aren't;
 every rule's `mjolnir explain` page states its status. We publish the rate
@@ -402,9 +402,10 @@ discounted numbers the score uses — no black box.
 
 | Score   | Verdict          |     | Level | Evidence             | Score impact     |
 | ------- | ---------------- | --- | ----- | -------------------- | ---------------- |
-| ≥ 80    | ✓ **WORTHY**     |     | E2    | Deterministic defect | Full deduction   |
-| 50 – 79 | ⚠ **NEEDS WORK** |     | E1    | Heuristic pattern    | Half deduction   |
-| < 50    | ✖ **UNWORTHY**   |     | E0    | Observation          | Zero (info only) |
+| 100     | ⚡ **FORGED**    |     | E2    | Deterministic defect | Full deduction   |
+| ≥ 80    | ✓ **WORTHY**     |     | E1    | Heuristic pattern    | Half deduction   |
+| 50 – 79 | ⚠ **NEEDS WORK** |     | E0    | Observation          | Zero (info only) |
+| < 50    | ✖ **UNWORTHY**   |     |       |                      |                  |
 
 Most rules are **E1**. The tagline "we prove it" refers to this system:
 E2 findings are structural proof; E1 findings are correctly-positioned
@@ -520,6 +521,7 @@ Architecture, the full rule catalog, and the tree-sitter roadmap live in
 | Document                                               | What's in it                                      |
 | ------------------------------------------------------ | ------------------------------------------------- |
 | [docs/SCORING.md](docs/SCORING.md)                     | Score normalization + evidence weighting          |
+| [docs/TERMINOLOGY.md](docs/TERMINOLOGY.md)             | Canonical vocabulary — one word per concept       |
 | [docs/FP-AUDIT.md](docs/FP-AUDIT.md)                   | Measured false-positive rates + method            |
 | [docs/RULE-LIFECYCLE.md](docs/RULE-LIFECYCLE.md)       | Rule states, suppression, deprecation             |
 | [docs/VERSIONING.md](docs/VERSIONING.md)               | Semver policy, frozen surfaces, deprecation cycle |

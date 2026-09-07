@@ -14,7 +14,7 @@
  * second file would fail OIDC with ENEEDAUTH.
  */
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { parse } from "yaml";
@@ -307,5 +307,42 @@ describe("release.yml", () => {
         "ship unversioned code. Found: " +
         JSON.stringify(jobIf),
     ).toBe(true);
+  });
+
+  it("every spec path a workflow executes exists in the tree", () => {
+    // Product-Experience Master Plan Phase 7: the M6 spec reorg moved
+    // whole spec files; a workflow step that still names the old path
+    // fails the release pipeline only when the pipeline next runs — the
+    // worst possible moment to learn about it. This pins every
+    // `tests/…` .spec.ts path in every workflow's run commands to a
+    // real file (comment references are prose, commands are contracts).
+    const files = readdirSync(join(ROOT, ".github", "workflows")).filter(
+      (f) => f.endsWith(".yml") || f.endsWith(".yaml"),
+    );
+    const missing: string[] = [];
+    for (const file of files) {
+      const raw = readFileSync(
+        join(ROOT, ".github", "workflows", file),
+        "utf8",
+      );
+      // Strip comments first: a stale path in prose is bad documentation,
+      // not a pipeline failure waiting to happen.
+      const active = raw
+        .split("\n")
+        .map((l) => l.replace(/(^|\s)#.*$/, "$1"))
+        .join("\n");
+      for (const m of active.matchAll(
+        /(?:npx vitest run |vitest run )?(tests\/[\w/.-]+\.spec\.ts)/g,
+      )) {
+        const spec = m[1] ?? "";
+        if (spec && !existsSync(join(ROOT, spec)))
+          missing.push(`${file}: ${spec}`);
+      }
+    }
+    expect(
+      missing,
+      "these workflows execute spec files that do not exist — a moved or " +
+        "renamed spec was not tracked back into CI",
+    ).toEqual([]);
   });
 });

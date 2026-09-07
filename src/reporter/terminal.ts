@@ -310,7 +310,7 @@ interface FindingCard {
   severity: Finding["severity"];
   /** One-line location summary shown under the card title. */
   loc: string;
-  /** Problem = the (tone-adjusted) message. */
+  /** The finding itself = the (tone-adjusted) message. */
   problem: string;
   /** Evidence tag: [E2 · deterministic] / [E1 · heuristic · measured FP 14% · n=38]. */
   evidence: string;
@@ -422,7 +422,7 @@ function pushCard(lines: string[], card: FindingCard, ui: UiContext): void {
     lines.push(`${CARD_GUTTER}${p.dim(card.evidence)}`);
   }
   const fields: Array<{ label: string; text: string; dim: boolean }> = [
-    { label: "Problem", text: card.problem, dim: false },
+    { label: "Finding", text: card.problem, dim: false },
     { label: "Impact", text: card.impact, dim: false },
     { label: "Fix", text: card.fix, dim: false },
     { label: "Verify", text: card.verify, dim: true },
@@ -443,7 +443,7 @@ function pushCard(lines: string[], card: FindingCard, ui: UiContext): void {
 
 /**
  * The findings experience — EVIDENCE layer. Cards carry
- * severity → Problem → Impact → Fix → Verify; the evidence tag sits
+ * severity → Finding → Impact → Fix → Verify; the evidence tag sits
  * beside the title. >3 findings sharing a rule collapse under one
  * "same fix applies" header. Non-verbose shows MAX_CARDS cards plus an
  * overflow line; --verbose shows everything.

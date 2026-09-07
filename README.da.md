@@ -15,7 +15,7 @@ tilliden brister.
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | Dansk | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-04.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
 
 ```bash
 npx mjolnir-qa@latest
@@ -297,14 +297,14 @@ det er false-positive-firewallen.
 
 ### Hvor meget er målt
 
-**74 af 99 regler bærer en false-positive-rate målt mod rigtig OSS-kode**
+**78 af 99 regler bærer en false-positive-rate målt mod rigtig OSS-kode**
 (≥ 10 håndklassificerede fund hver; se
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). De andre 19 skiber på forfatterens
+[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). De andre 21 skiber på forfatterens
 estimat. Hver scan-fodnote fortæller, hvor mange af de _udløste_ regler,
 der er målt; `mjolnir rules --unmeasured` lister de uregistrerede; hver
 regels `mjolnir explain`-side angiver dens status. Vi offentliggør
 raten, selv når den er grim — QA-CS-103 auditeres til 95 % og er sat i
-karantæne for det. At få de 78 til at vokse er projektets fortsatte
+karantæne for det. At få det tal til at vokse er projektets fortsatte
 arbejde.
 
 ### Regel-tiers og sproglig modenhed
@@ -456,14 +456,14 @@ Andet problem, andet lag. AI-review kan spotte en mistænkelig
 testændring i en diff; det beviser ikke, at verifikationssystemet som
 helhed er troværdigt — og det ser kun den diff, du viser det.
 
-|                                             |        AI-kodereview (Copilot m.fl.)        |         **Mjölnir**          |
-| ------------------------------------------- | :-----------------------------------------: | :--------------------------: |
-| Omkostning pr. scan                         |    Tokens (skalerer med diff-størrelse)     | **Nul** (lokal, installeret) |
-| Ser hele suiten + alle CI-konfigs           |          Kun den PR-diff, du viser          |      **Alt, hver gang**      |
-| Deterministisk (samme input → samme output) |          ❌ (ikke-deterministisk)           |            **✅**            |
-| Fanger mønstre, der har sovet i måneder     |        Kun hvis det er i konteksten         | **✅** (scanner alle filer)  |
-| Husker fund mellem kørsler                  | ❌ (ingen hukommelse på tværs af sessioner) |   **✅** (baseline + diff)   |
-| Kører uden menneskelig udløser              |          Kræver en PR eller prompt          | **✅** (CI-hook, 3 sekunder) |
+|                                             |        AI-kodereview (Copilot m.fl.)        |            **Mjölnir**             |
+| ------------------------------------------- | :-----------------------------------------: | :--------------------------------: |
+| Omkostning pr. scan                         |    Tokens (skalerer med diff-størrelse)     |    **Nul** (lokal, installeret)    |
+| Ser hele suiten + alle CI-konfigs           |          Kun den PR-diff, du viser          |         **Alt, hver gang**         |
+| Deterministisk (samme input → samme output) |          ❌ (ikke-deterministisk)           |               **✅**               |
+| Fanger mønstre, der har sovet i måneder     |        Kun hvis det er i konteksten         |    **✅** (scanner alle filer)     |
+| Husker fund mellem kørsler                  | ❌ (ingen hukommelse på tværs af sessioner) |      **✅** (baseline + diff)      |
+| Kører uden menneskelig udløser              |          Kræver en PR eller prompt          | **✅** (CI-hook, kører i sekunder) |
 
 **Brug begge.** AI fanger nuance, intention og designfejl, ingen regex
 kan finde. Mjölnir fanger de strukturelle mønstre, AI overser, fordi de
@@ -587,11 +587,18 @@ genbruges aldrig.
   rigtig OSS-kode skiber i overskriftstierne (se
   [Hvor meget er målt](#hvor-meget-er-målt)); scan-fodnoten og
   `mjolnir rules --unmeasured` fortæller dig, hvilke der er hvad.
-- **Plugin-tillid** — plugins er npm-pakker deklareret under
-  `"plugins"`. Der er **ingen sandbox**: plugin-kode kører med fulde
+- **Plugin-tillid og kørselsport** — plugins er npm-pakker deklareret under
+  `"plugins"`; JS-moduler bor i `mjolnir-rules/*.mjs`.
+  Der er **ingen sandbox**: plugin-kode kører med fulde
   Node-privilegier, samme tillidsmodel som ESLint- eller
-  Vitest-plugins. Core regel-ID-præfikser er reserverede og afvises
-  fra plugins mod spoofing.
+  Vitest-plugins. Derfor er kodekørsel **opt-in ved hver scan**: giv
+  `--enable-plugins` (eller sæt `MJOLNIR_ENABLE_PLUGINS=1`), ellers
+  indlæses kilderne IKKE — en højlydt stderr-meddelelse lister
+  præcis, hvad der blev sprunget over. At skanne utroværdig kode
+  udfører den aldrig. JSON-regelmanifester (`mjolnir-rules/*.json`)
+  berøres ikke: de deklarerer regex-mønstre og udfører ingen kode af
+  konstruktion. Core regel-ID-præfikser er reserverede og afvises
+  fra plugins og eksterne regler mod spoofing.
 - **Workspace-lokale eksterne regler** (mappebaserede, nul netværk) —
   en `mjolnir-rules/`-mappe ved siden af scan-målet loader brugerdefinerede
   regler: JSON-filer deklarerer regex-mønstre (ingen kode eksekveres),

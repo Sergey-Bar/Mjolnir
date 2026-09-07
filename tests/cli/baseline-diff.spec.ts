@@ -39,6 +39,7 @@ function finding(overrides: Partial<Finding>): Finding {
     findingType: "deterministic-defect",
     qaImpact: "FLAKY-RISK",
     evidenceLevel: "E2",
+    detectorRevision: 1,
     file: "e2e/a.spec.ts",
     line: 4,
     column: 3,

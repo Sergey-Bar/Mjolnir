@@ -17,7 +17,7 @@
       "score": 87,
       "errors": 1,
       "warnings": 2,
-      "infos": 12
+      "infos": 15
     },
     {
       "category": "QA-TEST",
@@ -41,7 +41,11 @@
       "qaImpact": "FALSE-GREEN",
       "ruleId": "QA-CI-009",
       "category": "QA-CI",
-      "evidenceLevel": "E2"
+      "evidenceLevel": "E2",
+      "measuredFpRate": 0,
+      "measuredFpN": 10,
+      "detectorRevision": 2,
+      "fixGroupId": "QA-CI-009"
     },
     {
       "severity": "error",
@@ -56,7 +60,11 @@
       "qaImpact": "FALSE-GREEN",
       "ruleId": "QA-CI-009",
       "category": "QA-CI",
-      "evidenceLevel": "E2"
+      "evidenceLevel": "E2",
+      "measuredFpRate": 0,
+      "measuredFpN": 10,
+      "detectorRevision": 2,
+      "fixGroupId": "QA-CI-009"
     },
     {
       "severity": "info",
@@ -72,8 +80,10 @@
       "ruleId": "QA-CI-010",
       "category": "QA-CI",
       "evidenceLevel": "E0",
-      "measuredFpRate": 0.4,
-      "measuredFpN": 10
+      "measuredFpRate": 0.1,
+      "measuredFpN": 10,
+      "detectorRevision": 2,
+      "fixGroupId": "QA-CI-010"
     },
     {
       "severity": "error",
@@ -88,7 +98,11 @@
       "qaImpact": "FALSE-GREEN",
       "ruleId": "QA-CI-009",
       "category": "QA-CI",
-      "evidenceLevel": "E2"
+      "evidenceLevel": "E2",
+      "measuredFpRate": 0,
+      "measuredFpN": 10,
+      "detectorRevision": 2,
+      "fixGroupId": "QA-CI-009"
     },
     {
       "severity": "info",
@@ -104,8 +118,10 @@
       "ruleId": "QA-CI-001",
       "category": "QA-CI",
       "evidenceLevel": "E0",
-      "measuredFpRate": 0.316,
-      "measuredFpN": 19
+      "measuredFpRate": 0.105,
+      "measuredFpN": 19,
+      "detectorRevision": 2,
+      "fixGroupId": "QA-CI-001"
     },
     {
       "severity": "info",
@@ -121,8 +137,16 @@
       "ruleId": "QA-PW-145",
       "category": "QA-PW",
       "evidenceLevel": "E0",
-      "measuredFpRate": 1,
-      "measuredFpN": 20
+      "measuredFpRate": 0.5,
+      "measuredFpN": 40,
+      "detectorRevision": 1,
+      "fixGroupId": "QA-PW-145",
+      "runtimeCorroboration": {
+        "level": "file",
+        "source": "playwright-json",
+        "testsExecuted": 3
+      },
+      "trustLevel": "L3"
     },
     {
       "severity": "info",
@@ -138,8 +162,41 @@
       "ruleId": "QA-PW-103",
       "category": "QA-PW",
       "evidenceLevel": "E0",
-      "measuredFpRate": 1,
-      "measuredFpN": 20
+      "measuredFpRate": 0.29,
+      "measuredFpN": 69,
+      "detectorRevision": 1,
+      "fixGroupId": "QA-PW-103",
+      "runtimeCorroboration": {
+        "level": "file",
+        "source": "playwright-json",
+        "testsExecuted": 3
+      },
+      "trustLevel": "L3"
+    },
+    {
+      "severity": "info",
+      "confidence": "medium",
+      "findingType": "heuristic-risk",
+      "qaImpact": "HYGIENE",
+      "file": "e2e/checkout.spec.ts",
+      "line": 5,
+      "column": 13,
+      "message": "CSS/XPath string selector where a normalized locator is expected.",
+      "why": "String CSS/XPath selectors couple the test to markup the user never sees — they break on any refactor and can silently select the wrong element after a redesign.",
+      "fix": "Normalize to Playwright's user-facing getters: getByRole('button', { name: '…' }), getByLabel('…'), getByTestId('…'), or getByText('…') — they survive markup refactors and match what a user actually perceives.",
+      "ruleId": "QA-PW-146",
+      "category": "QA-PW",
+      "evidenceLevel": "E0",
+      "measuredFpRate": 0.118,
+      "measuredFpN": 17,
+      "detectorRevision": 1,
+      "fixGroupId": "QA-PW-146",
+      "runtimeCorroboration": {
+        "level": "file",
+        "source": "playwright-json",
+        "testsExecuted": 3
+      },
+      "trustLevel": "L3"
     },
     {
       "severity": "info",
@@ -155,8 +212,16 @@
       "ruleId": "QA-PW-004",
       "category": "QA-PW",
       "evidenceLevel": "E0",
-      "measuredFpRate": 0.375,
-      "measuredFpN": 16
+      "measuredFpRate": 0.429,
+      "measuredFpN": 14,
+      "detectorRevision": 1,
+      "fixGroupId": "QA-PW-004",
+      "runtimeCorroboration": {
+        "level": "file",
+        "source": "playwright-json",
+        "testsExecuted": 3
+      },
+      "trustLevel": "L3"
     },
     {
       "severity": "error",
@@ -173,7 +238,15 @@
       "category": "QA-PW",
       "evidenceLevel": "E2",
       "measuredFpRate": 0,
-      "measuredFpN": 20
+      "measuredFpN": 20,
+      "detectorRevision": 1,
+      "fixGroupId": "QA-PW-101",
+      "runtimeCorroboration": {
+        "level": "file",
+        "source": "playwright-json",
+        "testsExecuted": 3
+      },
+      "trustLevel": "L3"
     },
     {
       "severity": "info",
@@ -189,8 +262,41 @@
       "ruleId": "QA-PW-103",
       "category": "QA-PW",
       "evidenceLevel": "E0",
-      "measuredFpRate": 1,
-      "measuredFpN": 20
+      "measuredFpRate": 0.29,
+      "measuredFpN": 69,
+      "detectorRevision": 1,
+      "fixGroupId": "QA-PW-103",
+      "runtimeCorroboration": {
+        "level": "file",
+        "source": "playwright-json",
+        "testsExecuted": 3
+      },
+      "trustLevel": "L3"
+    },
+    {
+      "severity": "info",
+      "confidence": "medium",
+      "findingType": "heuristic-risk",
+      "qaImpact": "HYGIENE",
+      "file": "e2e/checkout.spec.ts",
+      "line": 13,
+      "column": 20,
+      "message": "CSS/XPath string selector where a normalized locator is expected.",
+      "why": "String CSS/XPath selectors couple the test to markup the user never sees — they break on any refactor and can silently select the wrong element after a redesign.",
+      "fix": "Normalize to Playwright's user-facing getters: getByRole('button', { name: '…' }), getByLabel('…'), getByTestId('…'), or getByText('…') — they survive markup refactors and match what a user actually perceives.",
+      "ruleId": "QA-PW-146",
+      "category": "QA-PW",
+      "evidenceLevel": "E0",
+      "measuredFpRate": 0.118,
+      "measuredFpN": 17,
+      "detectorRevision": 1,
+      "fixGroupId": "QA-PW-146",
+      "runtimeCorroboration": {
+        "level": "file",
+        "source": "playwright-json",
+        "testsExecuted": 3
+      },
+      "trustLevel": "L3"
     },
     {
       "severity": "info",
@@ -206,8 +312,16 @@
       "ruleId": "QA-TEST-002",
       "category": "QA-TEST",
       "evidenceLevel": "E0",
-      "measuredFpRate": 0.65,
-      "measuredFpN": 20
+      "measuredFpRate": 0.619,
+      "measuredFpN": 21,
+      "detectorRevision": 1,
+      "fixGroupId": "QA-TEST-002",
+      "runtimeCorroboration": {
+        "level": "file",
+        "source": "playwright-json",
+        "testsExecuted": 3
+      },
+      "trustLevel": "L3"
     },
     {
       "severity": "info",
@@ -223,8 +337,16 @@
       "ruleId": "QA-PW-103",
       "category": "QA-PW",
       "evidenceLevel": "E0",
-      "measuredFpRate": 1,
-      "measuredFpN": 20
+      "measuredFpRate": 0.29,
+      "measuredFpN": 69,
+      "detectorRevision": 1,
+      "fixGroupId": "QA-PW-103",
+      "runtimeCorroboration": {
+        "level": "file",
+        "source": "playwright-json",
+        "testsExecuted": 3
+      },
+      "trustLevel": "L3"
     },
     {
       "severity": "info",
@@ -240,8 +362,10 @@
       "ruleId": "QA-PW-145",
       "category": "QA-PW",
       "evidenceLevel": "E0",
-      "measuredFpRate": 1,
-      "measuredFpN": 20
+      "measuredFpRate": 0.5,
+      "measuredFpN": 40,
+      "detectorRevision": 1,
+      "fixGroupId": "QA-PW-145"
     },
     {
       "severity": "info",
@@ -257,8 +381,10 @@
       "ruleId": "QA-PW-103",
       "category": "QA-PW",
       "evidenceLevel": "E0",
-      "measuredFpRate": 1,
-      "measuredFpN": 20
+      "measuredFpRate": 0.29,
+      "measuredFpN": 69,
+      "detectorRevision": 1,
+      "fixGroupId": "QA-PW-103"
     },
     {
       "severity": "info",
@@ -275,7 +401,9 @@
       "category": "QA-PW",
       "evidenceLevel": "E0",
       "measuredFpRate": 0.455,
-      "measuredFpN": 11
+      "measuredFpN": 11,
+      "detectorRevision": 1,
+      "fixGroupId": "QA-PW-123"
     },
     {
       "severity": "info",
@@ -292,7 +420,28 @@
       "category": "QA-PW",
       "evidenceLevel": "E0",
       "measuredFpRate": 1,
-      "measuredFpN": 20
+      "measuredFpN": 20,
+      "detectorRevision": 1,
+      "fixGroupId": "QA-PW-118"
+    },
+    {
+      "severity": "info",
+      "confidence": "medium",
+      "findingType": "heuristic-risk",
+      "qaImpact": "HYGIENE",
+      "file": "e2e/login.spec.ts",
+      "line": 6,
+      "column": 13,
+      "message": "CSS/XPath string selector where a normalized locator is expected.",
+      "why": "String CSS/XPath selectors couple the test to markup the user never sees — they break on any refactor and can silently select the wrong element after a redesign.",
+      "fix": "Normalize to Playwright's user-facing getters: getByRole('button', { name: '…' }), getByLabel('…'), getByTestId('…'), or getByText('…') — they survive markup refactors and match what a user actually perceives.",
+      "ruleId": "QA-PW-146",
+      "category": "QA-PW",
+      "evidenceLevel": "E0",
+      "measuredFpRate": 0.118,
+      "measuredFpN": 17,
+      "detectorRevision": 1,
+      "fixGroupId": "QA-PW-146"
     },
     {
       "severity": "info",
@@ -308,8 +457,10 @@
       "ruleId": "QA-PW-103",
       "category": "QA-PW",
       "evidenceLevel": "E0",
-      "measuredFpRate": 1,
-      "measuredFpN": 20
+      "measuredFpRate": 0.29,
+      "measuredFpN": 69,
+      "detectorRevision": 1,
+      "fixGroupId": "QA-PW-103"
     },
     {
       "severity": "info",
@@ -326,7 +477,9 @@
       "category": "QA-PW",
       "evidenceLevel": "E0",
       "measuredFpRate": 0.455,
-      "measuredFpN": 11
+      "measuredFpN": 11,
+      "detectorRevision": 1,
+      "fixGroupId": "QA-PW-123"
     },
     {
       "severity": "warning",
@@ -342,8 +495,10 @@
       "ruleId": "QA-PW-122",
       "category": "QA-PW",
       "evidenceLevel": "E2",
-      "measuredFpRate": 0.25,
-      "measuredFpN": 20
+      "measuredFpRate": 0.063,
+      "measuredFpN": 80,
+      "detectorRevision": 1,
+      "fixGroupId": "QA-PW-122"
     },
     {
       "severity": "info",
@@ -359,8 +514,10 @@
       "ruleId": "QA-PW-143",
       "category": "QA-PW",
       "evidenceLevel": "E2",
-      "measuredFpRate": 0.25,
-      "measuredFpN": 20
+      "measuredFpRate": 0.063,
+      "measuredFpN": 80,
+      "detectorRevision": 1,
+      "fixGroupId": "QA-PW-143"
     },
     {
       "severity": "warning",
@@ -376,8 +533,10 @@
       "ruleId": "QA-PW-141",
       "category": "QA-PW",
       "evidenceLevel": "E1",
-      "measuredFpRate": 0.15,
-      "measuredFpN": 20
+      "measuredFpRate": 0.091,
+      "measuredFpN": 33,
+      "detectorRevision": 1,
+      "fixGroupId": "QA-PW-141"
     },
     {
       "severity": "info",
@@ -393,8 +552,10 @@
       "ruleId": "QA-PY-003",
       "category": "QA-TEST",
       "evidenceLevel": "E0",
-      "measuredFpRate": 0.824,
-      "measuredFpN": 17
+      "measuredFpRate": 0.467,
+      "measuredFpN": 30,
+      "detectorRevision": 3,
+      "fixGroupId": "QA-PY-003"
     },
     {
       "severity": "warning",
@@ -410,8 +571,10 @@
       "ruleId": "QA-PY-005",
       "category": "QA-TEST",
       "evidenceLevel": "E2",
-      "measuredFpRate": 0.158,
-      "measuredFpN": 19
+      "measuredFpRate": 0.13,
+      "measuredFpN": 23,
+      "detectorRevision": 1,
+      "fixGroupId": "QA-PY-005"
     },
     {
       "severity": "info",
@@ -427,14 +590,25 @@
       "ruleId": "QA-PY-003",
       "category": "QA-TEST",
       "evidenceLevel": "E0",
-      "measuredFpRate": 0.824,
-      "measuredFpN": 17
+      "measuredFpRate": 0.467,
+      "measuredFpN": 30,
+      "detectorRevision": 3,
+      "fixGroupId": "QA-PY-003"
     }
   ],
   "testFileCount": 4,
   "testDeclarationCount": 7,
   "rawDeductions": 40,
   "suppressionCount": 0,
+  "agenticProfile": {
+    "testFiles": 4,
+    "generatedMarkedFiles": 0,
+    "codegenLikeFiles": 0,
+    "shareMarkedGenerated": 0,
+    "findingsInGeneratedFiles": 0,
+    "findingsInUnmarkedFiles": 27,
+    "note": "Static provenance markers only (generated-file headers, Playwright codegen default titles). Absence of a marker does not prove human authorship; healed and MCP-edited files without markers are indistinguishable from hand-written ones. Provenance never changes scoring or evidence — authorship is metadata, not trust."
+  },
   "analysisStatus": {
     "discovery": "complete",
     "rules": "complete",

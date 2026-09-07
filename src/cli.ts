@@ -39,6 +39,7 @@ export const {
 } = pipeline;
 export type { ScanHooks, CliArgs } from "./engine/scan-pipeline.js";
 import type { CliArgs } from "./engine/scan-pipeline.js";
+import { buildMachineContract } from "./engine/machine-contract.js";
 
 import { renderTerminal } from "./reporter/terminal.js";
 import { renderSarif } from "./reporter/sarif.js";
@@ -109,7 +110,7 @@ import {
  * `scripts/sync-sarif-version.cjs` on release and guarded by
  * `tests/version-consistency.spec.ts` locally.
  */
-export const CLI_VERSION = "0.5.6";
+export const CLI_VERSION = "0.5.12";
 
 /** A usage-error detail: the offending token, when one exists. */
 export interface UsageErrorDetail {
@@ -710,7 +711,16 @@ export async function runScanCommand(
     } else if (args.format === "mermaid") {
       io.out(renderMermaid(result));
     } else if (args.json) {
-      io.out(JSON.stringify(result, null, 2));
+      // Blueprint §12: the machine contract rides the JSON output as an
+      // additive field (schemaVersion 1 + contractVersion 1). Derived
+      // deterministically from this exact result — no parallel model.
+      io.out(
+        JSON.stringify(
+          { ...result, contract: buildMachineContract(result) },
+          null,
+          2,
+        ),
+      );
     } else {
       // Plan §5.5: --category is a presentation filter. The renderer
       // sees only the filtered list; the score/JSON/full contract are
@@ -1118,8 +1128,13 @@ export async function runDiffCommand(
       }
 
       // Milestones (Sprint 9 Task 39) — real event this command just
-      // witnessed (diff.resolvedFindings is non-empty), never a guess.
-      if (diff.resolvedFindings.length > 0) {
+      // witnessed (a VERIFIED-RESOLVED resolution), never a guess. §15:
+      // only verified resolutions prove first-debt-reduction.
+      if (
+        diff.resolvedFindings.some(
+          (f) => f.resolution.status === "VERIFIED-RESOLVED",
+        )
+      ) {
         const milestone = recordMilestones(stats, ["first-debt-reduction"]);
         if (milestone.newlyAnnounced.length > 0) {
           if (saveStats(milestone.stats, statsPath)) {

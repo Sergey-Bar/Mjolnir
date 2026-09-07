@@ -15,7 +15,7 @@
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | 한국어 | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-04.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
 
 ```bash
 npx mjolnir-qa@latest
@@ -292,14 +292,14 @@ npx mjolnir-qa@latest --scope changed
 
 ### 이 중 얼마나가 측정되었나
 
-**99개 규칙 중 74개가 실제 OSS 코드에 대해 측정된 거짓 양성 비율을
+**99개 규칙 중 78개가 실제 OSS 코드에 대해 측정된 거짓 양성 비율을
 갖습니다** (각 규칙당 손으로 분류된 발견 ≥ 10건;
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md) 참조). 나머지 19개는 저자의 추정으로
+[docs/FP-AUDIT.md](docs/FP-AUDIT.md) 참조). 나머지 21개는 저자의 추정으로
 출시됩니다. 모든 스캔의 바닥글은 _발화한_ 규칙 중 몇 개가 측정되었는지
 말해줍니다; `mjolnir rules --unmeasured`는 측정되지 않은 것들을 나열합니다;
 각 규칙의 `mjolnir explain` 페이지는 그 상태를 명시합니다. 수치가 흉해도
 우리는 비율을 공개합니다 — QA-CS-103은 95%로 감사되었고 그래서 격리
-계층에 있습니다. 그 78을 늘려가는 것이 프로젝트의 지속적인 작업입니다.
+계층에 있습니다. 그 숫자를 늘려가는 것이 프로젝트의 지속적인 작업입니다.
 
 ### 규칙 계층과 언어 성숙도
 
@@ -447,14 +447,14 @@ flakiness 보고서를 만들지는 않습니다.
 발견할 수 있습니다; 그러나 검증 시스템 전체가 신뢰할 만하다는 증명은
 하지 못합니다 — 그리고 보여주는 diff만 볼 뿐입니다.
 
-|                                  |   AI 코드 리뷰 (Copilot 등)    |        **Mjölnir**        |
-| -------------------------------- | :----------------------------: | :-----------------------: |
-| 스캔당 비용                      | 토큰 (diff 크기에 비례해 증가) |  **제로** (로컬, 설치됨)  |
-| 전체 스위트 + 모든 CI 설정을 봄  |    당신이 보여준 PR diff만     |     **매번 모든 것**      |
-| 결정론적 (같은 입력 → 같은 출력) |        ❌ (비결정론적)         |          **✅**           |
-| 수개월 잠들어 있던 패턴을 잡음   |      컨텍스트에 있을 때만      | **✅** (모든 파일을 스캔) |
-| 실행 사이에 발견을 기억          |     ❌ (세션 간 기억 없음)     | **✅** (baseline + diff)  |
-| 사람의 트리거 없이 실행          |     PR이나 프롬프트가 필요     |    **✅** (CI 훅, 3초)    |
+|                                  |   AI 코드 리뷰 (Copilot 등)    |          **Mjölnir**          |
+| -------------------------------- | :----------------------------: | :---------------------------: |
+| 스캔당 비용                      | 토큰 (diff 크기에 비례해 증가) |    **제로** (로컬, 설치됨)    |
+| 전체 스위트 + 모든 CI 설정을 봄  |    당신이 보여준 PR diff만     |       **매번 모든 것**        |
+| 결정론적 (같은 입력 → 같은 출력) |        ❌ (비결정론적)         |            **✅**             |
+| 수개월 잠들어 있던 패턴을 잡음   |      컨텍스트에 있을 때만      |   **✅** (모든 파일을 스캔)   |
+| 실행 사이에 발견을 기억          |     ❌ (세션 간 기억 없음)     |   **✅** (baseline + diff)    |
+| 사람의 트리거 없이 실행          |     PR이나 프롬프트가 필요     | **✅** (CI 훅, 몇 초 내 실행) |
 
 **둘 다 사용하세요.** AI는 어떤 정규식도 찾을 수 없는 뉘앙스, 의도,
 설계 결함을 잡아냅니다. Mjölnir는 "의도적인" 것처럼 보여서 AI가 놓치는
@@ -573,10 +573,18 @@ JSON/SARIF 보고서는 `schemaVersion: 1`입니다. 규칙 ID (`QA-<FAMILY>-NNN
   규칙만이 헤드라인 계층에 출시됩니다 ([이 중 얼마나가 측정되었나](#이-중-얼마나가-측정되었나)
   참조); 스캔 바닥글과 `mjolnir rules --unmeasured`가 어느 것이 어느 것인지
   알려줍니다.
-- **플러그인 신뢰** — 플러그인은 `"plugins"` 아래 선언된 npm 패키지입니다.
+- **플러그인 신뢰 및 실행 게이트** — 플러그인은 `"plugins"` 아래 선언된
+  npm 패키지입니다; JS 모듈은 `mjolnir-rules/*.mjs`에 위치합니다.
   **샌드박스가 없습니다**: 플러그인 코드는 완전한 Node 권한으로
-  실행되며, ESLint나 Vitest 플러그인과 같은 신뢰 모델입니다. 코어 규칙 ID
-  접두사는 예약되어 있고 사칭 방지를 위해 플러그인으로부터 거부됩니다.
+  실행되며, ESLint나 Vitest 플러그인과 같은 신뢰 모델입니다. 그렇기
+  때문에 코드 실행은 **매 스캔마다 옵트인**입니다: `--enable-plugins`를
+  전달하거나(`MJOLNIR_ENABLE_PLUGINS=1` 설정) 그렇지 않으면 해당 소스는
+  로드되지 않습니다 — 시끄러운 stderr 알림이 건너뛴 항목을 정확히
+  나열합니다. 신뢰할 수 없는 코드를 스캔하는 것이 그 코드를 실행하지는
+  않습니다. JSON 규칙 매니페스트(`mjolnir-rules/*.json`)는 영향을 받지
+  않습니다: 정규식 패턴을 선언하며 설계상 코드를 실행하지 않습니다.
+  코어 규칙 ID 접두사는 예약되어 있고 사칭 방지를 위해 플러그인과 외부
+  규칙으로부터 거부됩니다.
 - **워크스페이스 로컬 외부 규칙** (폴더 기반, 네트워크 제로) — 스캔 대상
   옆의 `mjolnir-rules/` 디렉터리가 사용자 정의 규칙을 로드합니다: JSON
   파일은 정규식 패턴을 선언하고 (코드는 실행되지 않음), `.mjs`/`.js`

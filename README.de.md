@@ -15,7 +15,7 @@ bricht.
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | Deutsch | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-04.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
 
 ```bash
 npx mjolnir-qa@latest
@@ -301,15 +301,15 @@ geshippt werden — das ist die False-Positive-Firewall.
 
 ### Wie viel davon gemessen ist
 
-**74 von 99 Regeln tragen eine False-Positive-Rate, gemessen an echtem
+**78 von 99 Regeln tragen eine False-Positive-Rate, gemessen an echtem
 OSS-Code** (jeweils ≥ 10 handklassifizierte Befunde; siehe
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Die anderen 19 gehen auf der
+[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Die anderen 21 gehen auf der
 Schätzung des Autors. Jeder Scan-Footer sagt dir, wie viele der
 _ausgelösten_ Regeln gemessen sind; `mjolnir rules --unmeasured` listet
 die nicht gemessenen; die `mjolnir explain`-Seite jeder Regel nennt
 ihren Status. Wir veröffentlichen die Rate, selbst wenn sie hässlich
 ist — QA-CS-103 auditiert bei 95 % und ist deshalb quarantäniert. Diese
-78 zu vergrößern ist die fortlaufende Arbeit des Projekts.
+Zahl zu vergrößern ist die fortlaufende Arbeit des Projekts.
 
 ### Regel-Tiers und Sprachreife
 
@@ -463,14 +463,14 @@ Teständerung in einem Diff erkennen; sie beweist nicht, dass das
 Verifikationssystem als Ganzes vertrauenswürdig ist — und sie sieht nur
 das Diff, das du ihr zeigst.
 
-|                                                    |   KI-Code-Review (Copilot & co.)   |          **Mjölnir**          |
-| -------------------------------------------------- | :--------------------------------: | :---------------------------: |
-| Kosten pro Scan                                    |  Tokens (skaliert mit Diff-Größe)  | **Null** (lokal, installiert) |
-| Sieht die ganze Suite + alle CI-Konfigs            |   Nur das PR-Diff, das du zeigst   |     **Alles, jedes Mal**      |
-| Deterministisch (gleicher Input → gleicher Output) |     ❌ (nicht-deterministisch)     |            **✅**             |
-| Findet monatelang schlafende Muster                |   Nur, wenn es im Kontext steht    | **✅** (scannt alle Dateien)  |
-| Erinnert sich an Befunde zwischen Läufen           | ❌ (kein Gedächtnis über Sessions) |   **✅** (Baseline + Diff)    |
-| Läuft ohne menschlichen Auslöser                   |    Braucht einen PR oder Prompt    | **✅** (CI-Hook, 3 Sekunden)  |
+|                                                    |   KI-Code-Review (Copilot & co.)   |             **Mjölnir**             |
+| -------------------------------------------------- | :--------------------------------: | :---------------------------------: |
+| Kosten pro Scan                                    |  Tokens (skaliert mit Diff-Größe)  |    **Null** (lokal, installiert)    |
+| Sieht die ganze Suite + alle CI-Konfigs            |   Nur das PR-Diff, das du zeigst   |        **Alles, jedes Mal**         |
+| Deterministisch (gleicher Input → gleicher Output) |     ❌ (nicht-deterministisch)     |               **✅**                |
+| Findet monatelang schlafende Muster                |   Nur, wenn es im Kontext steht    |    **✅** (scannt alle Dateien)     |
+| Erinnert sich an Befunde zwischen Läufen           | ❌ (kein Gedächtnis über Sessions) |      **✅** (Baseline + Diff)       |
+| Läuft ohne menschlichen Auslöser                   |    Braucht einen PR oder Prompt    | **✅** (CI-Hook, läuft in Sekunden) |
 
 **Benutze beides.** KI findet Nuance, Intent und Designfehler, die
 keine Regex findet. Mjölnir findet die strukturellen Muster, die KI
@@ -597,11 +597,19 @@ nie wiederverwendet.
   Headline-Tiers (siehe [Wie viel davon gemessen ist](#wie-viel-davon-gemessen-ist));
   der Scan-Footer und `mjolnir rules --unmeasured` sagen dir, welche
   welche sind.
-- **Plugin-Vertrauen** — Plugins sind npm-Pakete, deklariert unter
-  `"plugins"`. Es gibt **keine Sandbox**: Plugin-Code läuft mit vollen
+- **Plugin-Vertrauen & Ausführungs-Gate** — Plugins sind npm-Pakete,
+  deklariert unter `"plugins"`; JS-Module liegen in `mjolnir-rules/*.mjs`.
+  Es gibt **keine Sandbox**: Plugin-Code läuft mit vollen
   Node-Privilegien, dasselbe Vertrauensmodell wie ESLint- oder
-  Vitest-Plugins. Kern-Regel-ID-Präfixe sind reserviert und werden von
-  Plugins abgelehnt, um Spoofing zu verhindern.
+  Vitest-Plugins. Deshalb ist Code-Ausführung **bei jedem Scan
+  Opt-in**: Übergib `--enable-plugins` (oder setze
+  `MJOLNIR_ENABLE_PLUGINS=1`), sonst werden die Quellen NICHT geladen —
+  ein deutlicher stderr-Hinweis listet genau, was übersprungen wurde.
+  Das Scannen nicht vertrauenswürdigen Codes führt ihn nie aus.
+  JSON-Regel-Manifeste (`mjolnir-rules/*.json`) sind davon unberührt:
+  sie deklarieren Regex-Muster und führen per Design keinen Code aus.
+  Kern-Regel-ID-Präfixe sind reserviert und werden von Plugins und
+  externen Regeln abgelehnt, um Spoofing zu verhindern.
 - **Workspace-lokale externe Regeln** (ordnerbasiert, null Netzwerk) —
   ein `mjolnir-rules/`-Verzeichnis neben dem Scan-Ziel lädt eigene
   Regeln: JSON-Dateien deklarieren Regex-Muster (kein Code wird

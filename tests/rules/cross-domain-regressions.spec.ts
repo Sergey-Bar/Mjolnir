@@ -468,11 +468,32 @@ describe("QA-12: baseline/stats ingestion is total over arbitrary JSON", () => {
     const baseline = loadBaseline(p);
     expect(baseline).not.toBeNull();
     expect(baseline?.findings).toHaveLength(1);
+    // The loaded entry has no detectorRevision — a legacy v1 entry
+    // resolves INCONCLUSIVE(legacy-baseline) per §17, never a fix claim.
     const diff = diffAgainstBaseline(
-      { score: 50, findings: [], scope: "all" } as unknown as ScanResult,
+      {
+        score: 50,
+        findings: [],
+        scope: "all",
+        partial: false,
+        frameworks: [],
+        frameworkDetectionUnknown: false,
+        dimensions: [],
+        analysisStatus: {
+          discovery: "complete",
+          rules: "complete",
+          skippedFiles: 0,
+          durationMs: 1,
+        },
+      } as unknown as ScanResult,
       baseline,
     );
     expect(diff.resolvedFindings).toHaveLength(1);
+    expect(diff.resolvedFindings[0]?.resolution).toEqual({
+      status: "INCONCLUSIVE",
+      cause: "legacy-baseline",
+      comparedAgainst: "abc1234",
+    });
   });
 
   it("a hostile stats file is coerced into an honest shape", () => {

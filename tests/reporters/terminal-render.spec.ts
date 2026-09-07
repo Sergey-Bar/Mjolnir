@@ -315,9 +315,9 @@ describe("findings cards", () => {
     },
   });
 
-  it("renders Problem/Impact/Fix/Verify fields with the evidence tag", () => {
+  it("renders Finding/Impact/Fix/Verify fields with the evidence tag", () => {
     const out = renderTerminal(scan([finding()]), { isTTY: false, width: 100 });
-    expect(out).toContain("Problem");
+    expect(out).toContain("Finding");
     expect(out).toContain("Impact");
     expect(out).toContain("Fix");
     expect(out).toContain("Verify");
@@ -426,8 +426,8 @@ describe("findings cards", () => {
     const out = renderTerminal(scan([finding({ message: "" })]), {
       isTTY: false,
     });
-    const problemLine = out.split("\n").find((l) => l.includes("Problem"));
-    expect(problemLine).toContain("—");
+    const findingLine = out.split("\n").find((l) => l.includes("Finding"));
+    expect(findingLine).toContain("—");
   });
 });
 
