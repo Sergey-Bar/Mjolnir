@@ -74,6 +74,12 @@ scan`. Unknown categories are a usage error (exit 10).
 - help registry gained `why`, `handoff`, `install` and the new flags;
   site/reference/cli.md documents the handoff trust model.
 
+## [0.5.12] — 2026-09-07
+
+### Changes since 0.5.11
+
+- Product-Experience Master Plan: content integrity, canonical terminology, brand cleanup, CI path integrity (#44)
+
 ## [0.5.11] — 2026-09-07
 
 ### Changes since 0.5.10
