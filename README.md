@@ -36,22 +36,24 @@ it; `npm run docs:translations` reports how far.
 
 ## 🎬 See it work
 
-<!-- INLINE VIDEO — paste the user-content URL as `src` and delete the poster block below.
-     Get the URL: drag assets/video/mjolnir-demo.mp4 into any GitHub issue comment,
-     wait for the upload, then copy the https://github.com/user-attachments/assets/… URL
-     it inserts (do NOT submit the comment).
-<video src="PASTE_USER_CONTENT_URL_HERE" poster="https://raw.githubusercontent.com/Sergey-Bar/Mjolnir/main/assets/video/mjolnir-demo-poster.png" controls muted playsinline width="900"></video>
--->
-
+<!-- Plays inline on github.com only: <video> is rendered for GitHub's own
+     user-content CDN, never for a repo-relative path. The <a> below is the
+     fallback for every other renderer (npm, mirrors, offline clones). -->
 <p align="center">
-  <a href="assets/video/mjolnir-demo.mp4">
-    <img src="assets/video/mjolnir-demo-poster.png" alt="Mjölnir scanning a demo repo — the hammer instrument at [STRAINED], WORTHINESS 75/100 NEEDS WORK, and the false-green CI findings that put it there" width="900" />
-  </a>
+  <video
+    src="https://github.com/user-attachments/assets/0e1af1e4-1e27-4c1c-9ec4-2717d194df05"
+    poster="https://raw.githubusercontent.com/Sergey-Bar/Mjolnir/main/assets/video/mjolnir-demo-poster.png"
+    controls
+    muted
+    playsinline
+    width="900"></video>
 </p>
 
 <p align="center">
-  <strong><a href="assets/video/mjolnir-demo.mp4">▶ Watch the 42-second demo</a></strong> —
-  one false-green CI gate: found, fixed, re-proved, then handed to an agent.
+  <strong>42 seconds</strong> — one false-green CI gate: found, fixed,
+  re-proved, then handed to an agent.
+  <a href="assets/video/mjolnir-demo.mp4">Download the 1440p MP4</a> if the
+  player above doesn't load.
 </p>
 
 <sub>Every frame is real CLI output — the 75 → 90 score change is a real
