@@ -9,6 +9,12 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [0.5.19] — 2026-09-07
+
+### Changes since 0.5.18
+
+- Detector revision integrity: manifest, doctor check, CI WARN base-diff (D8v2, G4) (#54)
+
 ## [0.5.18] — 2026-09-07
 
 ### Changes since 0.5.17
