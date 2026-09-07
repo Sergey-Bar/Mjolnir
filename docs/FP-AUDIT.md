@@ -44,7 +44,8 @@ happen to have been sampled.
 | QA-CS-110    | 77%     | [0.5795, 0.8897] | 26         | 6   | 20  | 0      | 1           | 🔴 quarantine |
 | QA-CS-111    | 100%    | [0.8389, 1]      | 20         | 0   | 20  | 0      | 1           | 🔴 quarantine |
 | QA-CYP-001   | 20%     | [0.0705, 0.4519] | 15         | 12  | 3   | 0      | 1           | ⚠️ extended   |
-| QA-ENV-001   | 100%    | —                | 6          | 0   | 6   | 0      | —           | ❓ unmeasured |
+| QA-CYP-003   | 0%      | —                | 1          | 1   | 0   | 0      | —           | ❓ unmeasured |
+| QA-ENV-001   | 100%    | [0.8389, 1]      | 20         | 0   | 20  | 0      | 3           | ❓ unmeasured |
 | QA-JV-101    | 0%      | [0, 0.1431]      | 23         | 23  | 0   | 0      | 1           | ✅ core       |
 | QA-JV-102    | 26%     | [0.1255, 0.4647] | 23         | 17  | 6   | 0      | 1           | ⚠️ extended   |
 | QA-JV-103    | 26%     | [0.1635, 0.3838] | 58         | 43  | 15  | 0      | 2           | ⚠️ extended   |
@@ -61,6 +62,7 @@ happen to have been sampled.
 | QA-PW-004    | 43%     | [0.2138, 0.6741] | 14         | 8   | 6   | 0      | 1           | 🔴 quarantine |
 | QA-PW-005    | 100%    | [0.8157, 1]      | 17         | 0   | 17  | 0      | 1           | 🔴 quarantine |
 | QA-PW-101    | 0%      | [0, 0.1611]      | 20         | 20  | 0   | 0      | 1           | ✅ core       |
+| QA-PW-102    | 100%    | —                | 1          | 0   | 1   | 0      | —           | ❓ unmeasured |
 | QA-PW-103    | 29%     | [0.1962, 0.4057] | 69         | 49  | 20  | 0      | 1           | 🔴 quarantine |
 | QA-PW-104    | 0%      | [0, 0.2775]      | 10         | 10  | 0   | 0      | 1           | ✅ core       |
 | QA-PW-105    | 100%    | [0.8389, 1]      | 20         | 0   | 20  | 0      | 1           | 🔴 quarantine |
@@ -84,6 +86,7 @@ happen to have been sampled.
 | QA-PW-144    | 14%     | [0.0498, 0.3464] | 21         | 18  | 3   | 0      | 1           | ⚠️ extended   |
 | QA-PW-145    | 50%     | [0.352, 0.648]   | 40         | 20  | 20  | 0      | 1           | 🔴 quarantine |
 | QA-PW-146    | 12%     | [0.0329, 0.3434] | 17         | 15  | 2   | 0      | 1           | 🔴 quarantine |
+| QA-PW-147    | 100%    | [0.8389, 1]      | 20         | 0   | 20  | 0      | 1           | 🔴 quarantine |
 | QA-PY-001    | 0%      | [0, 0.2425]      | 12         | 12  | 0   | 0      | 1           | ✅ core       |
 | QA-PY-002    | 4%      | [0.0077, 0.2099] | 23         | 22  | 1   | 0      | 1           | ✅ core       |
 | QA-PY-003    | 47%     | [0.3023, 0.6386] | 30         | 16  | 14  | 0      | 3           | 🔴 quarantine |
@@ -103,7 +106,7 @@ happen to have been sampled.
 | QA-PY-107    | 0%      | —                | 3          | 3   | 0   | 0      | —           | ❓ unmeasured |
 | QA-PY-108    | 0%      | —                | 4          | 4   | 0   | 0      | —           | ❓ unmeasured |
 | QA-SE-002    | 25%     | —                | 4          | 3   | 1   | 0      | —           | ❓ unmeasured |
-| QA-SE-003    | 0%      | —                | 2          | 2   | 0   | 0      | —           | ❓ unmeasured |
+| QA-SE-003    | 0%      | —                | 5          | 5   | 0   | 0      | —           | ❓ unmeasured |
 | QA-TEST-001  | 60%     | [0.3866, 0.7812] | 20         | 8   | 12  | 0      | 1           | 🔴 quarantine |
 | QA-TEST-002  | 62%     | [0.4088, 0.7925] | 21         | 8   | 13  | 0      | 1           | 🔴 quarantine |
 | QA-TEST-003  | 22%     | [0.1408, 0.3216] | 78         | 61  | 17  | 0      | 1           | 🔴 quarantine |
@@ -124,7 +127,7 @@ happen to have been sampled.
 | 🔴 quarantine | > 30%   | Opt-in only (`--strict`)              |
 | ❓ unmeasured | n < 10  | Cannot ship in core until measured    |
 
-## Coverage: 76/99 rules measured (77%) at n ≥ 10
+## Coverage: 78/99 rules measured (79%) at n ≥ 10
 
-**23 rules carry no measured FP rate.** Any of them in the
+**21 rules carry no measured FP rate.** Any of them in the
 core tier is shipping on an unverified assumption.

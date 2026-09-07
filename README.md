@@ -284,7 +284,7 @@ firewall.
 
 ### How much of this is measured
 
-**76 of 99 rules carry a false-positive rate measured against real OSS code** (≥ 10 hand-classified findings each; see
+**78 of 99 rules carry a false-positive rate measured against real OSS code** (≥ 10 hand-classified findings each; see
 [docs/FP-AUDIT.md](docs/FP-AUDIT.md)). The other 23 ship on the author's
 estimate. Every scan footer tells you how many of the rules that _fired_
 are measured; `mjolnir rules --unmeasured` lists the ones that aren't;
