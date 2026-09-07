@@ -9,6 +9,12 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [0.5.21] — 2026-09-07
+
+### Changes since 0.5.20
+
+- Integrity layer: category + measurement consistency, measurement census, §27 design pass (Phases 1+4+7) (#56)
+
 ## [0.5.20] — 2026-09-07
 
 ### Changes since 0.5.19
