@@ -10,6 +10,10 @@ coverage/
 # NOT ignored: it is meant to be committed (the mjolnir.yml workflow
 # fetches it from the base branch).
 .mjolnir/stats.json
+# Bench artifacts (plan §20 performance evidence): machine-local timings,
+# regenerated per run; the bench fixture tree is scratch.
+.mjolnir/bench-artifact.json
+.mjolnir/.bench-fixture/
 
 # FP corpus audit — cloned real-world repos, never committed
 # (Bug Map M-04: also cover any rogue clone dir like .cache-kit)
