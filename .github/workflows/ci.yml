@@ -230,6 +230,37 @@ jobs:
           fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, line + "\n");
           '
 
+  # Detector revision integrity, check C (certification-audit Phase 3.4,
+  # G4/D17): a WARN-level review visibility step — a detector whose source
+  # identity changed without a declared revision bump gets a ::warning::
+  # annotation asking for a behavior-neutrality statement or a bump. Never
+  # a hard fail: a hard fail would manufacture the routine-bump culture
+  # G4 prohibits. The blocking invariants (manifest ↔ source ↔ registry)
+  # are owned by the doctor's revision-integrity check inside npm test.
+  detector-revision-diff:
+    needs: build-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Diff detector-hashes manifest against base branch
+        run: |
+          BASE="$(git merge-base "origin/${{ github.base_ref || 'main' }}" HEAD)"
+          git show "${BASE}:tests/corpus/detector-hashes.json" > /tmp/detector-hashes-base.json \
+            || echo "no base manifest (first landing)"
+          if [ -s /tmp/detector-hashes-base.json ]; then
+            npx tsx scripts/diff-detector-hashes.ts /tmp/detector-hashes-base.json
+          else
+            echo "INFO: no detector-hashes manifest on the base branch (first landing) — nothing to diff."
+          fi
+
   # Bug-audit B4.31 (generated-docs drift gate): docs/rules pages, the
   # COUNT-LOCK FP-audit table and the golden lock are GENERATED artifacts.
   # If a rule change lands without re-running its generator, the committed
@@ -260,6 +291,7 @@ jobs:
           npm run golden:update
           npm run docs:hero
           npm run docs:demo
+          npm run detector-hashes:update
       - name: Fail when committed artifacts differ from regenerated ones
         run: |
           git diff --exit-code

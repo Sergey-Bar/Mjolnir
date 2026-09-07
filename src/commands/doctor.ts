@@ -20,6 +20,11 @@ import { join } from "node:path";
 import type { QADoctorRule } from "../rules/rule.js";
 import { RULES } from "../rules/index.js";
 import { MEASURED_FP } from "../rules/measured-fp.generated.js";
+
+/** Uniform error rendering for doctor details (Error or thrown-as-string). */
+export function errorText(e: unknown): string {
+  return e instanceof Error ? e.message : String(e);
+}
 import {
   declaredDetectorRevision,
   effectiveTier,
@@ -27,6 +32,11 @@ import {
 import { deriveEvidenceLevel } from "../types.js";
 import { capForTier } from "../engine/tier-policy.js";
 import { sectionHeader, plainContext } from "../reporter/ui.js";
+import {
+  computeDetectorHashes,
+  loadManifest,
+  type DetectorHashManifest,
+} from "../engine/detector-hash.js";
 
 const ui = plainContext();
 
@@ -408,6 +418,120 @@ export function checkFixtureIntegrity(
   return { name: "fixture-integrity", ok, details };
 }
 
+/**
+ * Check 9 (certification-audit Phase 3.3, G4/D8v2 — HARD-BLOCKING):
+ * revision-integrity. The manifest tests/corpus/detector-hashes.json
+ * attests each rule's source identity (logicHash = sha256 of the rule's
+ * metadata ‖ its defining module's token stream) against the declared
+ * detectorRevision:
+ *   check A — current logicHash ≠ manifest logicHash → FAIL ("bump +
+ *             re-measure + regen, or regen with stated behavior-neutrality");
+ *   check B — declared revision ≠ manifest revision → FAIL (stale manifest);
+ *   manifest missing/unreadable, or the source tree unavailable (the
+ *             installed-package case) → the check CANNOT be evaluated
+ *             honestly → reported as INCONCLUSIVE and ok=false — a
+ *             certification-critical INCONCLUSIVE never renders as pass
+ *             (G2); Phase 5's status migration carries the same rule.
+ *
+ * Where the check runs: the doctor self-audits THIS repo, so `repoRoot`
+ * must be the Mjölnir checkout (src/ present). On an installed package
+ * the src tree does not exist → honest INCONCLUSIVE, same as above.
+ */
+export function checkRevisionIntegrity(
+  repoRoot: string,
+  rules: readonly QADoctorRule[] = RULES,
+): DoctorCheck {
+  const details: string[] = [];
+  const manifestPath = join(
+    repoRoot,
+    "tests",
+    "corpus",
+    "detector-hashes.json",
+  );
+  const rulesDir = join(repoRoot, "src", "rules");
+
+  if (!existsSync(manifestPath)) {
+    return {
+      name: "revision-integrity",
+      ok: false,
+      details: [
+        "INCONCLUSIVE: tests/corpus/detector-hashes.json is missing — run `npm run detector-hashes:update` (certification-critical: an unevaluable check never renders as pass)",
+      ],
+    };
+  }
+  if (!existsSync(rulesDir)) {
+    return {
+      name: "revision-integrity",
+      ok: false,
+      details: [
+        "INCONCLUSIVE: src/rules is not present (installed package) — detector source identity cannot be verified here",
+      ],
+    };
+  }
+
+  let manifest: DetectorHashManifest;
+  try {
+    manifest = loadManifest(manifestPath);
+  } catch {
+    return {
+      name: "revision-integrity",
+      ok: false,
+      details: [
+        "INCONCLUSIVE: tests/corpus/detector-hashes.json is unreadable/malformed — regenerate with `npm run detector-hashes:update`",
+      ],
+    };
+  }
+
+  let current: DetectorHashManifest;
+  try {
+    current = computeDetectorHashes(rules, rulesDir);
+  } catch (e) {
+    return {
+      name: "revision-integrity",
+      ok: false,
+      details: [
+        `INCONCLUSIVE: detector hash computation failed — ${errorText(e)}`,
+      ],
+    };
+  }
+
+  const failures: string[] = [];
+  for (const rule of rules) {
+    const attested = manifest[rule.id];
+    if (!attested) {
+      failures.push(
+        `${rule.id}: not attested in the manifest (stale manifest — regenerate)`,
+      );
+      continue;
+    }
+    if (attested.logicHash !== current[rule.id]?.logicHash) {
+      failures.push(
+        `${rule.id}: source identity changed since manifest attestation — ` +
+          `bump detectorRevision + re-measure + regen, or regen with stated behavior-neutrality (G4)`,
+      );
+    }
+    if (attested.detectorRevision !== declaredDetectorRevision(rule)) {
+      failures.push(
+        `${rule.id}: manifest revision ${attested.detectorRevision} ≠ declared ${declaredDetectorRevision(rule)} (stale manifest — regenerate)`,
+      );
+    }
+  }
+  for (const id of Object.keys(manifest)) {
+    if (!rules.some((r) => r.id === id)) {
+      failures.push(`${id}: attested in the manifest but not in the registry`);
+    }
+  }
+
+  if (failures.length > 0) {
+    details.push(...failures);
+    return { name: "revision-integrity", ok: false, details };
+  }
+  details.push(
+    `${rules.length} rules attested: source identity and declared revision match the manifest (check A + check B, G4)`,
+  );
+  return { name: "revision-integrity", ok: true, details };
+}
+
 export function runDoctorSelfAudit(fixturesRoot: string): DoctorReport {
   const verdictsDir = join(fixturesRoot, "..", "corpus", "verdicts");
   const checks = [
@@ -419,6 +543,7 @@ export function runDoctorSelfAudit(fixturesRoot: string): DoctorReport {
     checkAntiCreep(),
     checkQuarantineEnforcement(),
     checkFixtureIntegrity(fixturesRoot),
+    checkRevisionIntegrity(join(fixturesRoot, "..", "..")),
   ];
   return { checks, healthy: checks.every((c) => c.ok) };
 }
