@@ -200,6 +200,7 @@ and you're done. Everything else is optional.
 | `mjolnir badge`                 | shields.io endpoint JSON + snippet                     |
 | `mjolnir rules --md`            | Full rule catalog (JSON or Markdown)                   |
 | `mjolnir doctor`                | Self-audit of Mjölnir's own rule base                  |
+| `mjolnir doctor --json`         | The same self-audit as a machine-readable contract     |
 | `mjolnir create-rule <ID>`      | Scaffold a new rule + fixtures                         |
 | `mjolnir --format mermaid`      | Test-architecture diagram for a PR comment             |
 

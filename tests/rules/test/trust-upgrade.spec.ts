@@ -205,6 +205,7 @@ describe("mjolnir doctor self-audit", () => {
         { name: "registry-sanity", status: "pass", ok: true, details: [] },
       ],
       healthy: true,
+      measurement: { measured: 0, unmeasured: 0, total: 0, quarantine: 0 },
     });
     expect(text).toContain(`✓ registry-sanity`);
     expect(text).toContain("WORTHY");
@@ -217,6 +218,7 @@ describe("mjolnir doctor self-audit", () => {
         { name: "fixture-firewall", status: "fail", ok: false, details },
       ],
       healthy: false,
+      measurement: { measured: 0, unmeasured: 0, total: 0, quarantine: 0 },
     });
     expect(text).toContain(`✗ fixture-firewall`);
     expect(text).toContain("problem #0");
@@ -237,6 +239,7 @@ describe("mjolnir doctor self-audit", () => {
         },
       ],
       healthy: false,
+      measurement: { measured: 0, unmeasured: 0, total: 0, quarantine: 0 },
     });
     expect(text).toContain("? INCONCLUSIVE revision-integrity");
     expect(text).not.toContain("✗ revision-integrity");
