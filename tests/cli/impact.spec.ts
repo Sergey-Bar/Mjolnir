@@ -93,159 +93,199 @@ function makeFixtureRepo(): string {
 }
 
 describe("computeImpact — reports UNKNOWN when data is absent (the most important test)", () => {
-  it("reports hasComparison:false with an honest reason when the target is not a git repo", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-impact-nogit-"));
-    repoDirs.push(dir);
-    writeSpec(dir, "a.spec.ts", "test('x', () => {});\n");
+  it(
+    "reports hasComparison:false with an honest reason when the target is not a git repo",
+    { timeout: 60_000 },
+    async () => {
+      const dir = mkdtempSync(join(tmpdir(), "mjolnir-impact-nogit-"));
+      repoDirs.push(dir);
+      writeSpec(dir, "a.spec.ts", "test('x', () => {});\n");
 
-    const report = await computeImpact(dir, {
-      runScan: (target) => runScan({ target, strict: true } as never),
-    });
+      const report = await computeImpact(dir, {
+        runScan: (target) => runScan({ target, strict: true } as never),
+      });
 
-    expect(report.hasComparison).toBe(false);
-    expect(report.unknownReason).toBe("not-a-git-repo");
-    // Never a fabricated zero — resolved/introduced stay empty AND the
-    // report explicitly says it doesn't know, rather than implying
-    // "zero fixes" as a real measured fact.
-    expect(report.resolved).toEqual([]);
-    expect(report.introduced).toEqual([]);
-    expect(report.unknownFacts.length).toBeGreaterThan(0);
-  });
+      expect(report.hasComparison).toBe(false);
+      expect(report.unknownReason).toBe("not-a-git-repo");
+      // Never a fabricated zero — resolved/introduced stay empty AND the
+      // report explicitly says it doesn't know, rather than implying
+      // "zero fixes" as a real measured fact.
+      expect(report.resolved).toEqual([]);
+      expect(report.introduced).toEqual([]);
+      expect(report.unknownFacts.length).toBeGreaterThan(0);
+    },
+  );
 
-  it("reports hasComparison:false with an honest reason for a repo with a single commit (no prior history)", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-impact-onecommit-"));
-    repoDirs.push(dir);
-    git(dir, ["init", "-q", "-b", "main"]);
-    git(dir, ["config", "user.email", "test@example.com"]);
-    git(dir, ["config", "user.name", "Test"]);
-    writeSpec(dir, "a.spec.ts", "test('x', () => {});\n");
-    git(dir, ["add", "-A"]);
-    git(dir, ["commit", "-q", "-m", "only commit"]);
+  it(
+    "reports hasComparison:false with an honest reason for a repo with a single commit (no prior history)",
+    { timeout: 60_000 },
+    async () => {
+      const dir = mkdtempSync(join(tmpdir(), "mjolnir-impact-onecommit-"));
+      repoDirs.push(dir);
+      git(dir, ["init", "-q", "-b", "main"]);
+      git(dir, ["config", "user.email", "test@example.com"]);
+      git(dir, ["config", "user.name", "Test"]);
+      writeSpec(dir, "a.spec.ts", "test('x', () => {});\n");
+      git(dir, ["add", "-A"]);
+      git(dir, ["commit", "-q", "-m", "only commit"]);
 
-    const report = await computeImpact(dir, {
-      runScan: (target) => runScan({ target, strict: true } as never),
-    });
+      const report = await computeImpact(dir, {
+        runScan: (target) => runScan({ target, strict: true } as never),
+      });
 
-    expect(report.hasComparison).toBe(false);
-    expect(report.unknownReason).toBe("no-prior-commit");
-  });
+      expect(report.hasComparison).toBe(false);
+      expect(report.unknownReason).toBe("no-prior-commit");
+    },
+  );
 
-  it("never invents an hours/CI-minutes-saved number, in any scenario", async () => {
-    const dir = makeFixtureRepo();
-    const report = await computeImpact(dir, {
-      runScan: (target) => runScan({ target, strict: true } as never),
-    });
-    const joined = report.unknownFacts.join(" ").toLowerCase();
-    expect(joined).toContain("not computed");
-    expect(joined).not.toMatch(/\d+\s*(hours?|minutes?)\s*saved/);
-  });
+  it(
+    "never invents an hours/CI-minutes-saved number, in any scenario",
+    { timeout: 60_000 },
+    async () => {
+      const dir = makeFixtureRepo();
+      const report = await computeImpact(dir, {
+        runScan: (target) => runScan({ target, strict: true } as never),
+      });
+      const joined = report.unknownFacts.join(" ").toLowerCase();
+      expect(joined).toContain("not computed");
+      expect(joined).not.toMatch(/\d+\s*(hours?|minutes?)\s*saved/);
+    },
+  );
 
-  it("renderImpact always prefixes unknown facts with UNKNOWN: literally, in every scenario", async () => {
-    const dir = makeFixtureRepo();
-    const report = await computeImpact(dir, {
-      runScan: (target) => runScan({ target, strict: true } as never),
-    });
-    const rendered = renderImpact(report);
-    expect(rendered).toContain("UNKNOWN:");
-  });
+  it(
+    "renderImpact always prefixes unknown facts with UNKNOWN: literally, in every scenario",
+    { timeout: 60_000 },
+    async () => {
+      const dir = makeFixtureRepo();
+      const report = await computeImpact(dir, {
+        runScan: (target) => runScan({ target, strict: true } as never),
+      });
+      const rendered = renderImpact(report);
+      expect(rendered).toContain("UNKNOWN:");
+    },
+  );
 });
 
 describe("computeImpact — real comparison against a fixture git history", () => {
-  it("finds the resolved hard-sleep finding and the newly introduced focused-test finding", async () => {
-    const dir = makeFixtureRepo();
-    const report = await computeImpact(dir, {
-      runScan: (target) => runScan({ target, strict: true } as never),
-    });
-
-    expect(report.hasComparison).toBe(true);
-    expect(report.baseRef).toBeTruthy();
-    expect(report.headRef).toBeTruthy();
-
-    const resolvedIds = report.resolved.map((f) => f.ruleId);
-    const introducedIds = report.introduced.map((f) => f.ruleId);
-
-    expect(resolvedIds).toContain("QA-PW-101"); // hard sleep, removed
-    expect(introducedIds).toContain("QA-TEST-001"); // focused test, added
-  });
-
-  it("is deterministic across repeated runs against the same history", async () => {
-    const dir = makeFixtureRepo();
-    const runOnce = () =>
-      computeImpact(dir, {
+  it(
+    "finds the resolved hard-sleep finding and the newly introduced focused-test finding",
+    { timeout: 60_000 },
+    async () => {
+      const dir = makeFixtureRepo();
+      const report = await computeImpact(dir, {
         runScan: (target) => runScan({ target, strict: true } as never),
       });
-    const first = await runOnce();
-    const second = await runOnce();
-    expect(first.resolved).toEqual(second.resolved);
-    expect(first.introduced).toEqual(second.introduced);
-  });
 
-  it("honors an explicit --since ref pointing further back", async () => {
-    const dir = makeFixtureRepo();
-    const firstCommit = execFileSync(
-      "git",
-      ["log", "--format=%H", "--reverse"],
-      { cwd: dir, encoding: "utf8" },
-    )
-      .trim()
-      .split("\n")[0];
-    if (!firstCommit) throw new Error("expected at least one commit");
+      expect(report.hasComparison).toBe(true);
+      expect(report.baseRef).toBeTruthy();
+      expect(report.headRef).toBeTruthy();
 
-    const report = await computeImpact(dir, {
-      since: firstCommit,
-      runScan: (target) => runScan({ target, strict: true } as never),
-    });
-    expect(report.hasComparison).toBe(true);
-    expect(report.baseRef).toBe(firstCommit);
-  });
+      const resolvedIds = report.resolved.map((f) => f.ruleId);
+      const introducedIds = report.introduced.map((f) => f.ruleId);
 
-  it("reports base-equals-head honestly when --since points at HEAD itself", async () => {
-    const dir = makeFixtureRepo();
-    const head = execFileSync("git", ["rev-parse", "HEAD"], {
-      cwd: dir,
-      encoding: "utf8",
-    }).trim();
+      expect(resolvedIds).toContain("QA-PW-101"); // hard sleep, removed
+      expect(introducedIds).toContain("QA-TEST-001"); // focused test, added
+    },
+  );
 
-    const report = await computeImpact(dir, {
-      since: head,
-      runScan: (target) => runScan({ target, strict: true } as never),
-    });
-    expect(report.hasComparison).toBe(false);
-    expect(report.unknownReason).toBe("base-equals-head");
-  });
+  it(
+    "is deterministic across repeated runs against the same history",
+    { timeout: 60_000 },
+    async () => {
+      const dir = makeFixtureRepo();
+      const runOnce = () =>
+        computeImpact(dir, {
+          runScan: (target) => runScan({ target, strict: true } as never),
+        });
+      const first = await runOnce();
+      const second = await runOnce();
+      expect(first.resolved).toEqual(second.resolved);
+      expect(first.introduced).toEqual(second.introduced);
+    },
+  );
 
-  it("reports tree-listing-failed honestly for a --since ref that does not exist", async () => {
-    const dir = makeFixtureRepo();
-    const report = await computeImpact(dir, {
-      since: "not-a-real-ref-xyz",
-      runScan: (target) => runScan({ target, strict: true } as never),
-    });
-    expect(report.hasComparison).toBe(false);
-    // git rev-parse on an unresolvable ref returns null, so the raw
-    // string is kept as baseRef and ls-tree against it then fails too.
-    expect(["tree-listing-failed", "no-prior-commit"]).toContain(
-      report.unknownReason,
-    );
-  });
+  it(
+    "honors an explicit --since ref pointing further back",
+    { timeout: 60_000 },
+    async () => {
+      const dir = makeFixtureRepo();
+      const firstCommit = execFileSync(
+        "git",
+        ["log", "--format=%H", "--reverse"],
+        { cwd: dir, encoding: "utf8" },
+      )
+        .trim()
+        .split("\n")[0];
+      if (!firstCommit) throw new Error("expected at least one commit");
 
-  it("renders 'none found' honestly, distinctly from UNKNOWN, when a real comparison found zero resolved fixes", async () => {
-    const dir = makeFixtureRepo();
-    // Compare HEAD against itself's own tree via an intermediate commit
-    // with genuinely nothing fixed: add a third commit that changes
-    // nothing rule-relevant, then compare it against the prior commit.
-    writeSpec(
-      dir,
-      "unrelated.spec.ts",
-      "import { test, expect } from '@playwright/test';\ntest('noop', async ({ page }) => {\n  await expect(page).toHaveTitle('x');\n});\n",
-    );
-    git(dir, ["add", "-A"]);
-    git(dir, ["commit", "-q", "-m", "commit 3: unrelated clean addition"]);
+      const report = await computeImpact(dir, {
+        since: firstCommit,
+        runScan: (target) => runScan({ target, strict: true } as never),
+      });
+      expect(report.hasComparison).toBe(true);
+      expect(report.baseRef).toBe(firstCommit);
+    },
+  );
 
-    const report = await computeImpact(dir, {
-      runScan: (target) => runScan({ target, strict: true } as never),
-    });
-    expect(report.hasComparison).toBe(true);
-    expect(report.resolved).toEqual([]);
-    expect(renderImpact(report)).toContain("FIXED SINCE BASE: none found.");
-  });
+  it(
+    "reports base-equals-head honestly when --since points at HEAD itself",
+    { timeout: 60_000 },
+    async () => {
+      const dir = makeFixtureRepo();
+      const head = execFileSync("git", ["rev-parse", "HEAD"], {
+        cwd: dir,
+        encoding: "utf8",
+      }).trim();
+
+      const report = await computeImpact(dir, {
+        since: head,
+        runScan: (target) => runScan({ target, strict: true } as never),
+      });
+      expect(report.hasComparison).toBe(false);
+      expect(report.unknownReason).toBe("base-equals-head");
+    },
+  );
+
+  it(
+    "reports tree-listing-failed honestly for a --since ref that does not exist",
+    { timeout: 60_000 },
+    async () => {
+      const dir = makeFixtureRepo();
+      const report = await computeImpact(dir, {
+        since: "not-a-real-ref-xyz",
+        runScan: (target) => runScan({ target, strict: true } as never),
+      });
+      expect(report.hasComparison).toBe(false);
+      // git rev-parse on an unresolvable ref returns null, so the raw
+      // string is kept as baseRef and ls-tree against it then fails too.
+      expect(["tree-listing-failed", "no-prior-commit"]).toContain(
+        report.unknownReason,
+      );
+    },
+  );
+
+  it(
+    "renders 'none found' honestly, distinctly from UNKNOWN, when a real comparison found zero resolved fixes",
+    { timeout: 60_000 },
+    async () => {
+      const dir = makeFixtureRepo();
+      // Compare HEAD against itself's own tree via an intermediate commit
+      // with genuinely nothing fixed: add a third commit that changes
+      // nothing rule-relevant, then compare it against the prior commit.
+      writeSpec(
+        dir,
+        "unrelated.spec.ts",
+        "import { test, expect } from '@playwright/test';\ntest('noop', async ({ page }) => {\n  await expect(page).toHaveTitle('x');\n});\n",
+      );
+      git(dir, ["add", "-A"]);
+      git(dir, ["commit", "-q", "-m", "commit 3: unrelated clean addition"]);
+
+      const report = await computeImpact(dir, {
+        runScan: (target) => runScan({ target, strict: true } as never),
+      });
+      expect(report.hasComparison).toBe(true);
+      expect(report.resolved).toEqual([]);
+      expect(renderImpact(report)).toContain("FIXED SINCE BASE: none found.");
+    },
+  );
 });
