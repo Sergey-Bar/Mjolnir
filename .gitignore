@@ -63,3 +63,6 @@ package/
 # deliberately (see assets/video/README.md); previews and intermediates
 # are throwaway.
 assets/video/out/
+
+# tmp probe scripts from harvest sessions — never part of the tree (F7 recurrence guard)
+tests/**/tmp-*.mts
