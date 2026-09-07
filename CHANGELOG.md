@@ -74,6 +74,15 @@ scan`. Unknown categories are a usage error (exit 10).
 - help registry gained `why`, `handoff`, `install` and the new flags;
   site/reference/cli.md documents the handoff trust model.
 
+## [0.5.11] — 2026-09-07
+
+### Changes since 0.5.10
+
+- Merge pull request #45 from Sergey-Bar/eng/closeout-recommendations
+- docs: FP-AUDIT status column settles on the second generator pass (stale module import in single-pass)
+- docs: regenerate QA-ENV-001 + QA-PW-147 rule docs (now measured)
+- close-out: 39 verdicts adjudicated (AI-assisted, owner-authorized) — 78/99 measured
+
 ## [0.5.10] — 2026-09-06
 
 ### Changes since 0.5.9
