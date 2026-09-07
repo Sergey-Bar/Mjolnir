@@ -216,4 +216,54 @@ describe("checkFixtureIntegrity (certification-audit Phase 2.5)", () => {
       rmSync(root, { recursive: true, force: true });
     }
   });
+
+  it("counts loose files directly inside a rule dir (no empty-dir false positive)", () => {
+    const root = makeFixturesTree();
+    try {
+      const fixtures = join(root, "fixtures");
+      const rules = [minimalRule({ id: "QA-TEST-914" })];
+      mkdirSync(join(fixtures, "QA-TEST-914", "must-fire"), {
+        recursive: true,
+      });
+      writeFileSync(join(fixtures, "QA-TEST-914", "must-fire", "a.ts"), "x\n");
+      // A loose top-level file inside the rule dir is counted, not flagged.
+      writeFileSync(join(fixtures, "QA-TEST-914", "README.md"), "notes\n");
+      const result = checkFixtureIntegrity(fixtures, rules);
+      expect(result.ok).toBe(true);
+      expect(result.details[0]).toContain("2 fixture files");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("FAILS when the allowlist exists but its entries field is not an array", () => {
+    const root = makeFixturesTree();
+    try {
+      const fixtures = join(root, "fixtures");
+      mkdirSync(fixtures, { recursive: true });
+      writeFileSync(
+        join(fixtures, "typecheck-allowlist.json"),
+        JSON.stringify({ entries: "not-an-array" }),
+      );
+      const result = checkFixtureIntegrity(fixtures, []);
+      expect(result.ok).toBe(false);
+      expect(result.details.join("\n")).toContain("entries is not an array");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("FAILS when the allowlist is unreadable/malformed JSON", () => {
+    const root = makeFixturesTree();
+    try {
+      const fixtures = join(root, "fixtures");
+      mkdirSync(fixtures, { recursive: true });
+      writeFileSync(join(fixtures, "typecheck-allowlist.json"), "{ not json");
+      const result = checkFixtureIntegrity(fixtures, []);
+      expect(result.ok).toBe(false);
+      expect(result.details.join("\n")).toContain("unreadable/malformed");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
 });
