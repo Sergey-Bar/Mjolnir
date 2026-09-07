@@ -1,0 +1,74 @@
+[
+  {
+    "name": "empty",
+    "exit": 0,
+    "jsonValid": "valid",
+    "partial": false,
+    "completeness": "{\"discovery\":\"complete\",\"rules\":\"complete\",\"skippedFiles\":0,\"durationMs\":3,\"rulesCrashed\":0}",
+    "findings": 0,
+    "score": null
+  },
+  {
+    "name": "no-tests",
+    "exit": 0,
+    "jsonValid": "valid",
+    "partial": false,
+    "completeness": "{\"discovery\":\"complete\",\"rules\":\"complete\",\"skippedFiles\":0,\"durationMs\":2,\"rulesCrashed\":0}",
+    "findings": 0,
+    "score": null
+  },
+  {
+    "name": "binary-garbage",
+    "exit": 0,
+    "jsonValid": "valid",
+    "partial": false,
+    "completeness": "{\"discovery\":\"complete\",\"rules\":\"complete\",\"skippedFiles\":0,\"durationMs\":17,\"rulesCrashed\":0}",
+    "findings": 0,
+    "score": 100
+  },
+  {
+    "name": "utf16-bom",
+    "exit": 0,
+    "jsonValid": "valid",
+    "partial": false,
+    "completeness": "{\"discovery\":\"complete\",\"rules\":\"complete\",\"skippedFiles\":0,\"durationMs\":30,\"rulesCrashed\":0}",
+    "findings": 0,
+    "score": 100
+  },
+  {
+    "name": "crlf",
+    "exit": 0,
+    "jsonValid": "valid",
+    "partial": false,
+    "completeness": "{\"discovery\":\"complete\",\"rules\":\"complete\",\"skippedFiles\":0,\"durationMs\":19,\"rulesCrashed\":0}",
+    "findings": 1,
+    "score": 93
+  },
+  {
+    "name": "weird-names",
+    "exit": 1,
+    "jsonValid": "valid",
+    "partial": false,
+    "completeness": "{\"discovery\":\"complete\",\"rules\":\"complete\",\"skippedFiles\":0,\"durationMs\":30,\"rulesCrashed\":0}",
+    "findings": 1,
+    "score": 87
+  },
+  {
+    "name": "symlink-loop",
+    "exit": 2,
+    "jsonValid": "valid",
+    "partial": true,
+    "completeness": "{\"discovery\":\"complete\",\"rules\":\"complete\",\"skippedFiles\":1,\"durationMs\":17,\"rulesCrashed\":0,\"truncationReasons\":[\"symlink-skipped\"]}",
+    "findings": 0,
+    "score": 100
+  },
+  {
+    "name": "traversal-name",
+    "exit": 0,
+    "jsonValid": "valid",
+    "partial": false,
+    "completeness": "{\"discovery\":\"complete\",\"rules\":\"complete\",\"skippedFiles\":0,\"durationMs\":27,\"rulesCrashed\":0}",
+    "findings": 0,
+    "score": 100
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "version": "mjolnir-qa 0.5.18",
+  "parity": "IDENTICAL",
+  "mcpBootExit": 0,
+  "mcpResponded": true,
+  "wasmOk": "rules-complete",
+  "hasSrcLeak": false,
+  "topDirs": "CHANGELOG.md, dist, LICENSE, package.json, README.ar.md, README.bn.md, README.br.md, README.bs.md, README.da.md, README.de.md, README.es.md, README.fr.md, README.gr.md, README.he.md, README.it.md, README.ja.md, README.ko.md, README.md, README.no.md, README.pl.md, README.ru.md, README.th.md, README.tr.md, README.uk.md, README.vi.md, README.zh.md, README.zht.md"
+}

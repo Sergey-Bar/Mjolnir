@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "partial": false,
+  "score": 80,
+  "frameworks": [],
+  "frameworkDetectionUnknown": true,
+  "dimensions": [
+    {
+      "category": "QA-PW",
+      "score": 92,
+      "errors": 1,
+      "warnings": 0,
+      "infos": 1
+    }
+  ],
+  "findings": [
+    {
+      "severity": "error",
+      "confidence": "high",
+      "findingType": "deterministic-defect",
+      "qaImpact": "FALSE-GREEN",
+      "file": "RouteTests.cs",
+      "line": 3,
+      "column": 4,
+      "message": "Test `ShouldRoute` contains no assertions.",
+      "why": "Without an assertion the test can only fail by throwing — it cannot detect behavioral regressions.",
+      "fix": "Add an assertion on the expected outcome, or remove the test.",
+      "ruleId": "QA-CS-103",
+      "category": "QA-PW",
+      "evidenceLevel": "E2",
+      "measuredFpRate": 0,
+      "measuredFpN": 11,
+      "detectorRevision": 2,
+      "fixGroupId": "QA-CS-103"
+    },
+    {
+      "severity": "info",
+      "confidence": "medium",
+      "findingType": "heuristic-risk",
+      "qaImpact": "FLAKY-RISK",
+      "file": "RouteTests.cs",
+      "line": 5,
+      "column": 9,
+      "message": "`page.RouteAsync(\"**\")` — blanket interception of all requests.",
+      "why": "Blanket route mocks hide real network errors and drift from the actual API contract — tests pass while the integration is broken.",
+      "fix": "Scope to the endpoint under test: `page.RouteAsync(\"**/api/orders\")` + `route.FallbackAsync()`.",
+      "ruleId": "QA-CS-111",
+      "category": "QA-PW",
+      "evidenceLevel": "E0",
+      "measuredFpRate": 1,
+      "measuredFpN": 20,
+      "detectorRevision": 1,
+      "fixGroupId": "QA-CS-111"
+    }
+  ],
+  "testFileCount": 1,
+  "testDeclarationCount": 1,
+  "rawDeductions": 8,
+  "suppressionCount": 0,
+  "agenticProfile": {
+    "testFiles": 1,
+    "generatedMarkedFiles": 0,
+    "codegenLikeFiles": 0,
+    "shareMarkedGenerated": 0,
+    "findingsInGeneratedFiles": 0,
+    "findingsInUnmarkedFiles": 2,
+    "note": "Static provenance markers only (generated-file headers, Playwright codegen default titles). Absence of a marker does not prove human authorship; healed and MCP-edited files without markers are indistinguishable from hand-written ones. Provenance never changes scoring or evidence — authorship is metadata, not trust."
+  },
+  "analysisStatus": {
+    "discovery": "complete",
+    "rules": "complete",
+    "skippedFiles": 0,
+    "durationMs": 25,
+    "rulesCrashed": 0
+  },
+  "contract": {
+    "contractVersion": 1,
+    "summary": {
+      "digest": "sha256:211d92b6a67d136c869ddaa04db6295c26defb44fb2f9da3f84662bc4822b9e2",
+      "findings": 2,
+      "score": 80,
+      "errors": 1,
+      "warnings": 0,
+      "infos": 1,
+      "advisory": 1
+    },
+    "annotations": [
+      {
+        "path": "RouteTests.cs",
+        "start_line": 3,
+        "annotation_level": "failure",
+        "message": "QA-CS-103: Test `ShouldRoute` contains no assertions.",
+        "ruleId": "QA-CS-103",
+        "detectorRevision": 2,
+        "advisory": false
+      },
+      {
+        "path": "RouteTests.cs",
+        "start_line": 5,
+        "annotation_level": "notice",
+        "message": "QA-CS-111: `page.RouteAsync(\"**\")` — blanket interception of all requests.",
+        "ruleId": "QA-CS-111",
+        "detectorRevision": 1,
+        "advisory": true
+      }
+    ],
+    "annotationsTruncated": false,
+    "completeness": {
+      "partial": false,
+      "discovery": "complete",
+      "rules": "complete",
+      "skippedFiles": 0,
+      "rulesCrashed": 0,
+      "truncationReasons": [],
+      "frameworkDetectionUnknown": true,
+      "durationMs": 25
+    }
+  }
+}

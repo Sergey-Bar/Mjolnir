@@ -1,0 +1,30 @@
+[
+  {
+    "name": "gh-coe-strict",
+    "exit": 0,
+    "findings": 1,
+    "rules": "QA-CI-001",
+    "severities": "info"
+  },
+  {
+    "name": "gh-coe-default",
+    "exit": 0,
+    "findings": 0,
+    "rules": "",
+    "severities": ""
+  },
+  {
+    "name": "tautology-strict",
+    "exit": 0,
+    "findings": 1,
+    "rules": "QA-TEST-010",
+    "severities": "info"
+  },
+  {
+    "name": "true-assert-strict",
+    "exit": 0,
+    "findings": 1,
+    "rules": "QA-TQUAL-002",
+    "severities": "info"
+  }
+]

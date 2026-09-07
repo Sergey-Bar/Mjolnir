@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "partial": false,
+  "score": 93,
+  "frameworks": [],
+  "frameworkDetectionUnknown": true,
+  "dimensions": [
+    {
+      "category": "QA-TEST",
+      "score": 97,
+      "errors": 0,
+      "warnings": 1,
+      "infos": 0
+    },
+    {
+      "category": "QA-TQUAL",
+      "score": 100,
+      "errors": 0,
+      "warnings": 0,
+      "infos": 2
+    }
+  ],
+  "findings": [
+    {
+      "severity": "warning",
+      "confidence": "high",
+      "findingType": "deterministic-defect",
+      "qaImpact": "FLAKY-RISK",
+      "file": "test_pay.py",
+      "line": 4,
+      "column": 5,
+      "message": "Hard sleep: `time.sleep(5…`.",
+      "why": "Fixed sleeps make tests slow and flaky — they guess at timing instead of waiting for state.",
+      "fix": "Wait for an explicit condition (polling helper, pytest-timeout wait_until, or event).",
+      "ruleId": "QA-PY-005",
+      "category": "QA-TEST",
+      "evidenceLevel": "E2",
+      "measuredFpRate": 0.13,
+      "measuredFpN": 23,
+      "detectorRevision": 1,
+      "fixGroupId": "QA-PY-005"
+    },
+    {
+      "severity": "info",
+      "confidence": "medium",
+      "findingType": "heuristic-risk",
+      "qaImpact": "FALSE-GREEN",
+      "file": "test_pay.py",
+      "line": 5,
+      "column": 1,
+      "message": "Bare truthiness assert: `assert True`.",
+      "why": "This passes for any truthy value — a wrong object, wrong count, or partially-built result all slip through. It verifies existence, not correctness.",
+      "fix": "Assert the specific expected value or property: `assert result.id == expected`, `assert len(items) == 3`.",
+      "ruleId": "QA-PY-004",
+      "category": "QA-TQUAL",
+      "evidenceLevel": "E0",
+      "measuredFpRate": 0.533,
+      "measuredFpN": 30,
+      "detectorRevision": 3,
+      "fixGroupId": "QA-PY-004"
+    },
+    {
+      "severity": "info",
+      "confidence": "high",
+      "findingType": "deterministic-defect",
+      "qaImpact": "FALSE-GREEN",
+      "file": "test_pay.py",
+      "line": 5,
+      "column": 1,
+      "message": "Tautological assertion: `assert True`.",
+      "why": "Asserting a literal against itself can never fail — it verifies no system behavior.",
+      "fix": "Assert on actual output of the code under test.",
+      "ruleId": "QA-PY-012",
+      "category": "QA-TQUAL",
+      "evidenceLevel": "E0",
+      "measuredFpRate": 0.4,
+      "measuredFpN": 30,
+      "detectorRevision": 1,
+      "fixGroupId": "QA-PY-012"
+    }
+  ],
+  "testFileCount": 1,
+  "testDeclarationCount": 1,
+  "rawDeductions": 3,
+  "suppressionCount": 0,
+  "agenticProfile": {
+    "testFiles": 1,
+    "generatedMarkedFiles": 0,
+    "codegenLikeFiles": 0,
+    "shareMarkedGenerated": 0,
+    "findingsInGeneratedFiles": 0,
+    "findingsInUnmarkedFiles": 3,
+    "note": "Static provenance markers only (generated-file headers, Playwright codegen default titles). Absence of a marker does not prove human authorship; healed and MCP-edited files without markers are indistinguishable from hand-written ones. Provenance never changes scoring or evidence — authorship is metadata, not trust."
+  },
+  "analysisStatus": {
+    "discovery": "complete",
+    "rules": "complete",
+    "skippedFiles": 0,
+    "durationMs": 13,
+    "rulesCrashed": 0
+  },
+  "contract": {
+    "contractVersion": 1,
+    "summary": {
+      "digest": "sha256:ef4e4818d705c5bc13bf3522c00ab5b244ef21530a25be1c5cc20289c9865c4c",
+      "findings": 3,
+      "score": 93,
+      "errors": 0,
+      "warnings": 1,
+      "infos": 2,
+      "advisory": 2
+    },
+    "annotations": [
+      {
+        "path": "test_pay.py",
+        "start_line": 4,
+        "annotation_level": "warning",
+        "message": "QA-PY-005: Hard sleep: `time.sleep(5…`.",
+        "ruleId": "QA-PY-005",
+        "detectorRevision": 1,
+        "advisory": false
+      },
+      {
+        "path": "test_pay.py",
+        "start_line": 5,
+        "annotation_level": "notice",
+        "message": "QA-PY-004: Bare truthiness assert: `assert True`.",
+        "ruleId": "QA-PY-004",
+        "detectorRevision": 3,
+        "advisory": true
+      },
+      {
+        "path": "test_pay.py",
+        "start_line": 5,
+        "annotation_level": "notice",
+        "message": "QA-PY-012: Tautological assertion: `assert True`.",
+        "ruleId": "QA-PY-012",
+        "detectorRevision": 1,
+        "advisory": true
+      }
+    ],
+    "annotationsTruncated": false,
+    "completeness": {
+      "partial": false,
+      "discovery": "complete",
+      "rules": "complete",
+      "skippedFiles": 0,
+      "rulesCrashed": 0,
+      "truncationReasons": [],
+      "frameworkDetectionUnknown": true,
+      "durationMs": 13
+    }
+  }
+}

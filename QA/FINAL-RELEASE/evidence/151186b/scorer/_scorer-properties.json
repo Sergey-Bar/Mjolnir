@@ -1,0 +1,52 @@
+{
+  "rows": [
+    {
+      "n": 0,
+      "findings": 0,
+      "score": 100,
+      "exit": 0
+    },
+    {
+      "n": 1,
+      "findings": 1,
+      "score": 93,
+      "exit": 0
+    },
+    {
+      "n": 2,
+      "findings": 0,
+      "score": 100,
+      "exit": 0
+    },
+    {
+      "n": 5,
+      "findings": 5,
+      "score": 88,
+      "exit": 0
+    },
+    {
+      "n": 10,
+      "findings": 0,
+      "score": 100,
+      "exit": 0
+    },
+    {
+      "n": 25,
+      "findings": 25,
+      "score": 86,
+      "exit": 0
+    },
+    {
+      "n": 50,
+      "findings": 0,
+      "score": 100,
+      "exit": 0
+    }
+  ],
+  "boundedOk": true,
+  "nanOk": true,
+  "monotonicOk": false,
+  "deterministicPairEqual": true,
+  "d1": 86,
+  "d2": 86
+}

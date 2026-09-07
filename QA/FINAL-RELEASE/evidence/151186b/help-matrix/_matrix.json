@@ -1,0 +1,211 @@
+[
+  {
+    "verb": "scan",
+    "exit": 0,
+    "stdoutLen": 52,
+    "stderrLen": 0,
+    "firstLine": "No detailed help for \"scan\"."
+  },
+  {
+    "verb": "ci",
+    "exit": 0,
+    "stdoutLen": 50,
+    "stderrLen": 0,
+    "firstLine": "No detailed help for \"ci\"."
+  },
+  {
+    "verb": "suppressions",
+    "exit": 0,
+    "stdoutLen": 144,
+    "stderrLen": 0,
+    "firstLine": "suppressions — list suppressed findings (governance transparency)"
+  },
+  {
+    "verb": "forensics",
+    "exit": 0,
+    "stdoutLen": 208,
+    "stderrLen": 0,
+    "firstLine": "forensics — runtime evidence from a real run: retries, flakes, durations"
+  },
+  {
+    "verb": "triage",
+    "exit": 0,
+    "stdoutLen": 191,
+    "stderrLen": 0,
+    "firstLine": "triage — flaky-triage proposal + TRIAGE.md meeting artifact"
+  },
+  {
+    "verb": "badge",
+    "exit": 0,
+    "stdoutLen": 128,
+    "stderrLen": 0,
+    "firstLine": "badge — shields.io endpoint JSON + snippet from a scan"
+  },
+  {
+    "verb": "debt",
+    "exit": 0,
+    "stdoutLen": 128,
+    "stderrLen": 0,
+    "firstLine": "debt — test-debt register with an estimated quarterly cost"
+  },
+  {
+    "verb": "impact",
+    "exit": 0,
+    "stdoutLen": 174,
+    "stderrLen": 0,
+    "firstLine": "impact — what a commit introduced vs resolved, since a prior commit"
+  },
+  {
+    "verb": "baseline",
+    "exit": 0,
+    "stdoutLen": 197,
+    "stderrLen": 0,
+    "firstLine": "baseline — snapshot the current finding set as the comparison point"
+  },
+  {
+    "verb": "diff",
+    "exit": 0,
+    "stdoutLen": 138,
+    "stderrLen": 0,
+    "firstLine": "diff — compare a fresh scan against the baseline — new/worsened only"
+  },
+  {
+    "verb": "pr-comment",
+    "exit": 0,
+    "stdoutLen": 195,
+    "stderrLen": 0,
+    "firstLine": "pr-comment — render a scoped PR comment (Markdown)"
+  },
+  {
+    "verb": "summary",
+    "exit": 0,
+    "stdoutLen": 273,
+    "stderrLen": 0,
+    "firstLine": "summary — CI annotations + step summary from a saved --json report"
+  },
+  {
+    "verb": "stats",
+    "exit": 0,
+    "stdoutLen": 119,
+    "stderrLen": 0,
+    "firstLine": "stats — all-time local counters of fixes seen via diff"
+  },
+  {
+    "verb": "fix",
+    "exit": 0,
+    "stdoutLen": 172,
+    "stderrLen": 0,
+    "firstLine": "fix — apply safe auto-fixes with proof (re-scan verifies each)"
+  },
+  {
+    "verb": "create-rule",
+    "exit": 0,
+    "stdoutLen": 219,
+    "stderrLen": 0,
+    "firstLine": "create-rule — scaffold a new rule + fixtures (must-fire, must-not-fire)"
+  },
+  {
+    "verb": "handover",
+    "exit": 0,
+    "stdoutLen": 123,
+    "stderrLen": 0,
+    "firstLine": "handover — new-QA onboarding map of the suite"
+  },
+  {
+    "verb": "init",
+    "exit": 0,
+    "stdoutLen": 140,
+    "stderrLen": 0,
+    "firstLine": "init — detect frameworks + setup checklist (never overwrites)"
+  },
+  {
+    "verb": "pw-report",
+    "exit": 0,
+    "stdoutLen": 201,
+    "stderrLen": 0,
+    "firstLine": "pw-report — Playwright run summary (counts, true flakes, slowest tests)"
+  },
+  {
+    "verb": "doctor",
+    "exit": 0,
+    "stdoutLen": 147,
+    "stderrLen": 0,
+    "firstLine": "doctor — self-audit of the rule base (fixture firewall, tiers, caps)"
+  },
+  {
+    "verb": "rules",
+    "exit": 0,
+    "stdoutLen": 190,
+    "stderrLen": 0,
+    "firstLine": "rules — rule catalog with trust metadata (md/json/unmeasured)"
+  },
+  {
+    "verb": "explain",
+    "exit": 0,
+    "stdoutLen": 202,
+    "stderrLen": 0,
+    "firstLine": "explain — what/why/fix + measured FP rate for one rule"
+  },
+  {
+    "verb": "doctor:playwright",
+    "exit": 0,
+    "stdoutLen": 165,
+    "stderrLen": 0,
+    "firstLine": "doctor:playwright — Playwright deep scan + Selector Health report"
+  },
+  {
+    "verb": "why",
+    "exit": 0,
+    "stdoutLen": 245,
+    "stderrLen": 0,
+    "firstLine": "why — why did Mjölnir flag <file>:<line>? evidence + fix (not a gate)"
+  },
+  {
+    "verb": "handoff",
+    "exit": 0,
+    "stdoutLen": 288,
+    "stderrLen": 0,
+    "firstLine": "handoff — deterministic fix-handoff artifact from a saved --json report"
+  },
+  {
+    "verb": "install",
+    "exit": 0,
+    "stdoutLen": 224,
+    "stderrLen": 0,
+    "firstLine": "install — install the agent instruction surfaces + optional staged hook"
+  },
+  {
+    "verb": "help",
+    "exit": 0,
+    "stdoutLen": 52,
+    "stderrLen": 0,
+    "firstLine": "No detailed help for \"help\"."
+  },
+  {
+    "verb": "mcp",
+    "exit": 0,
+    "stdoutLen": 128,
+    "stderrLen": 0,
+    "firstLine": "mcp — run as an MCP server over stdio (scan / explain / diff tools)"
+  },
+  {
+    "verb": "scan-unknown-flag",
+    "exit": 10,
+    "firstLine": "mjolnir: unknown flag \"--bogus-flag\""
+  },
+  {
+    "verb": "unknown-verb",
+    "exit": 10,
+    "firstLine": "mjolnir: unknown subcommand \"scna\"."
+  },
+  {
+    "verb": "bare-known-stem",
+    "exit": 10,
+    "firstLine": "mjolnir: incomplete or unknown subcommand \"ci\"."
+  },
+  {
+    "verb": "dangling-value",
+    "exit": 10,
+    "firstLine": "mjolnir: invalid value \"\" for --format"
+  }
+]

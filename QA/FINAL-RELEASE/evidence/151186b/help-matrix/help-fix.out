@@ -1,0 +1,9 @@
+  fix — apply safe auto-fixes with proof (re-scan verifies each)
+
+  Usage:
+    mjolnir fix [path] [--dry-run]
+
+  Examples:
+    $ mjolnir fix --dry-run
+    $ mjolnir fix .
+

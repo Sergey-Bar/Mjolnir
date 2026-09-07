@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Mjölnir",
+          "informationUri": "https://github.com/Sergey-Bar/Mjolnir",
+          "version": "0.5.18",
+          "rules": [
+            {
+              "id": "QA-TEST-003",
+              "shortDescription": {
+                "text": "Test with no assertions"
+              },
+              "properties": {
+                "falsePositiveRisk": "medium"
+              }
+            },
+            {
+              "id": "QA-TEST-004",
+              "shortDescription": {
+                "text": "Hard sleep in test"
+              },
+              "properties": {
+                "falsePositiveRisk": "low"
+              }
+            }
+          ]
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "results": [
+        {
+          "ruleId": "QA-TEST-003",
+          "level": "note",
+          "message": {
+            "text": "Test contains no assertions. — Without an assertion the test can only fail by crashing — it cannot detect behavioral regressions. Fix: Add an assertion on the expected outcome, or remove the test."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "login.spec.ts"
+                },
+                "region": {
+                  "startLine": 2,
+                  "startColumn": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "high",
+            "qaImpact": "FALSE-GREEN",
+            "evidenceLevel": "E0"
+          }
+        },
+        {
+          "ruleId": "QA-TEST-004",
+          "level": "warning",
+          "message": {
+            "text": "Hard sleep: `await new Promise(r => setTimeout(r, 3000))`. — Fixed sleeps make tests both slow and flaky — they guess at timing instead of waiting for state. Fix: Wait for an explicit condition (element state, promise, or signal) instead of a fixed delay."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "login.spec.ts"
+                },
+                "region": {
+                  "startLine": 3,
+                  "startColumn": 3
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "warning",
+            "confidence": "high",
+            "qaImpact": "FLAKY-RISK",
+            "evidenceLevel": "E2"
+          }
+        }
+      ]
+    }
+  ]
+}

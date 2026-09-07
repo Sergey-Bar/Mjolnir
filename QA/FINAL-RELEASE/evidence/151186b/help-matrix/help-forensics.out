@@ -1,0 +1,8 @@
+  forensics — runtime evidence from a real run: retries, flakes, durations
+
+  Usage:
+    mjolnir forensics <test-results-dir-or-report-file> [--no-flaky-md]
+
+  Examples:
+    $ mjolnir forensics test-results
+

@@ -1,0 +1,7 @@
+EXIT:2
+OUT:  ▚ DIFF AGAINST BASELINE
+
+UNKNOWN — no baseline found.
+  $ mjolnir baseline to capture a comparison point.
+
+ERR:

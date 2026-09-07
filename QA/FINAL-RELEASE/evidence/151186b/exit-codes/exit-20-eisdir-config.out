@@ -1,0 +1,6 @@
+CMD: mjolnir <repo-with-config-dir> --json
+EXIT: 10
+--- STDOUT ---
+
+--- STDERR ---
+Invalid mjolnir config at C:\Users\User\AppData\Local\Temp\mjolnir-e20-unwgu2\repo\mjolnir.config.json: EISDIR: illegal operation on a directory, read

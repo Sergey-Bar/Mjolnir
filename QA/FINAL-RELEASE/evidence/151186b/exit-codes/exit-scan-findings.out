@@ -1,0 +1,97 @@
+CMD: mjolnir C:\Users\User\AppData\Local\Temp\mjolnir-exit-YjXQpm\findings --json
+EXPECTED: 1
+EXIT: 1
+--- STDOUT ---
+{
+  "schemaVersion": 1,
+  "partial": false,
+  "score": 80,
+  "frameworks": [],
+  "frameworkDetectionUnknown": true,
+  "dimensions": [
+    {
+      "category": "QA-PW",
+      "score": 92,
+      "errors": 1,
+      "warnings": 0,
+      "infos": 0
+    }
+  ],
+  "findings": [
+    {
+      "severity": "error",
+      "confidence": "high",
+      "findingType": "deterministic-defect",
+      "qaImpact": "FALSE-GREEN",
+      "file": "focus.spec.ts",
+      "line": 2,
+      "column": 1,
+      "message": "`test.only()` committed in an e2e spec.",
+      "why": "test.only() skips every other e2e test while CI reports green.",
+      "fix": "Remove `.only` before committing.",
+      "ruleId": "QA-PW-003",
+      "category": "QA-PW",
+      "evidenceLevel": "E2",
+      "measuredFpRate": 0.1,
+      "measuredFpN": 10,
+      "detectorRevision": 1,
+      "fixGroupId": "QA-PW-003"
+    }
+  ],
+  "testFileCount": 1,
+  "testDeclarationCount": 1,
+  "rawDeductions": 8,
+  "suppressionCount": 0,
+  "agenticProfile": {
+    "testFiles": 1,
+    "generatedMarkedFiles": 0,
+    "codegenLikeFiles": 0,
+    "shareMarkedGenerated": 0,
+    "findingsInGeneratedFiles": 0,
+    "findingsInUnmarkedFiles": 1,
+    "note": "Static provenance markers only (generated-file headers, Playwright codegen default titles). Absence of a marker does not prove human authorship; healed and MCP-edited files without markers are indistinguishable from hand-written ones. Provenance never changes scoring or evidence — authorship is metadata, not trust."
+  },
+  "analysisStatus": {
+    "discovery": "complete",
+    "rules": "complete",
+    "skippedFiles": 0,
+    "durationMs": 18,
+    "rulesCrashed": 0
+  },
+  "contract": {
+    "contractVersion": 1,
+    "summary": {
+      "digest": "sha256:77cb09d37aadb675b0e075a0141afe82c6399556423cbab3caeae4b9e9bbc8ae",
+      "findings": 1,
+      "score": 80,
+      "errors": 1,
+      "warnings": 0,
+      "infos": 0,
+      "advisory": 0
+    },
+    "annotations": [
+      {
+        "path": "focus.spec.ts",
+        "start_line": 2,
+        "annotation_level": "failure",
+        "message": "QA-PW-003: `test.only()` committed in an e2e spec.",
+        "ruleId": "QA-PW-003",
+        "detectorRevision": 1,
+        "advisory": false
+      }
+    ],
+    "annotationsTruncated": false,
+    "completeness": {
+      "partial": false,
+      "discovery": "complete",
+      "rules": "complete",
+      "skippedFiles": 0,
+      "rulesCrashed": 0,
+      "truncationReasons": [],
+      "frameworkDetectionUnknown": true,
+      "durationMs": 18
+    }
+  }
+}
+
+--- STDERR ---

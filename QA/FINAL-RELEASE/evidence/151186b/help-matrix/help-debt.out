@@ -1,0 +1,8 @@
+  debt — test-debt register with an estimated quarterly cost
+
+  Usage:
+    mjolnir debt [path]
+
+  Examples:
+    $ mjolnir debt
+

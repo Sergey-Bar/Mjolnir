@@ -1,0 +1,12 @@
+  baseline — snapshot the current finding set as the comparison point
+
+  Usage:
+    mjolnir baseline [path]
+
+  Examples:
+    $ mjolnir baseline
+    $ mjolnir diff
+
+  Next step:
+    $ mjolnir diff
+

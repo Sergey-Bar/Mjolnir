@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Mjölnir",
+          "informationUri": "https://github.com/Sergey-Bar/Mjolnir",
+          "version": "0.5.18",
+          "rules": [
+            {
+              "id": "QA-JV-103",
+              "shortDescription": {
+                "text": "Test without assertions"
+              },
+              "properties": {
+                "falsePositiveRisk": "medium"
+              }
+            },
+            {
+              "id": "QA-JV-111",
+              "shortDescription": {
+                "text": "Blanket route mock intercepts all requests"
+              },
+              "properties": {
+                "falsePositiveRisk": "high"
+              }
+            }
+          ]
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "results": [
+        {
+          "ruleId": "QA-JV-103",
+          "level": "error",
+          "message": {
+            "text": "Test `shouldRoute` contains no assertions. — Without an assertion the test can only fail by crashing — it cannot detect behavioral regressions. Fix: Add an assertion on the expected outcome (`assertEquals`, `assertThat(locator).isVisible()`), or remove the test."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "RouteTest.java"
+                },
+                "region": {
+                  "startLine": 3,
+                  "startColumn": 3
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "error",
+            "confidence": "high",
+            "qaImpact": "FALSE-GREEN",
+            "evidenceLevel": "E2"
+          }
+        },
+        {
+          "ruleId": "QA-JV-111",
+          "level": "note",
+          "message": {
+            "text": "`page.route(\"**\")` — blanket interception of all requests. — Blanket route mocks hide real network errors and drift from the actual API contract — tests pass while the integration is broken. Fix: Scope to the endpoint under test: `page.route(\"**/api/orders\")` + `route.fallback()`."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "RouteTest.java"
+                },
+                "region": {
+                  "startLine": 5,
+                  "startColumn": 9
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "medium",
+            "qaImpact": "FLAKY-RISK",
+            "evidenceLevel": "E0"
+          }
+        }
+      ]
+    }
+  ]
+}

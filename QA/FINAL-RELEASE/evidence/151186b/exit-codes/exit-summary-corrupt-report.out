@@ -1,0 +1,7 @@
+CMD: mjolnir summary C:\Users\User\AppData\Local\Temp\mjolnir-exit-YjXQpm\corrupt\mjolnir.json
+EXPECTED: 2
+EXIT: 2
+--- STDOUT ---
+
+--- STDERR ---
+mjolnir summary: cannot read C:\Users\User\AppData\Local\Temp\mjolnir-exit-YjXQpm\corrupt\mjolnir.json: not valid JSON (Expected property name or '}' in JSON at position 1 (line 1 column 2))

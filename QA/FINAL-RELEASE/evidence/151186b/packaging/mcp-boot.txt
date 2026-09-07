@@ -1,0 +1,12 @@
+EXIT:0
+STDOUT:
+  ! NO TESTS DETECTED
+
+  +----------------------------------------------------------------------------+
+  | No test files found for any supported framework.                           |
+  | Searched for:                                                              |
+  | TypeScript/JavaScript: *.test.{js,jsx,ts,tsx,mjs,cjs}                      |
+  | *.spec.{js,jsx,ts,tsx,mjs,cjs} *.cy.{js,jsx,ts,tsx}                        |
+  | playwright.config.{ts,js,mjs,cts} cypress.config.{js,ts,mjs}               |
+  | Python (pytest): test_*.py  *_test.py                                      |
+  | Java 
