@@ -116,92 +116,112 @@ function runMjolnir(
 }
 
 describe("E2E journey 1: first run from the packed tarball", () => {
-  it("scans examples/demo-repo: NEEDS WORK verdict, all JSON fields, well-formed findings", () => {
-    const { stdout, stderr, status } = runMjolnir([
-      join(ROOT, "examples", "demo-repo"),
-      "--json",
-    ]);
-    expect(stderr).toBe("");
-    expect(status).toBe(1); // findings >= error gate
+  it(
+    "scans examples/demo-repo: NEEDS WORK verdict, all JSON fields, well-formed findings",
+    { timeout: 60_000 },
+    () => {
+      const { stdout, stderr, status } = runMjolnir([
+        join(ROOT, "examples", "demo-repo"),
+        "--json",
+      ]);
+      expect(stderr).toBe("");
+      expect(status).toBe(1); // findings >= error gate
 
-    const result = JSON.parse(stdout) as {
-      schemaVersion: number;
-      score: number | null;
-      partial: boolean;
-      frameworks: string[];
-      frameworkDetectionUnknown: boolean;
-      dimensions: Array<{ category: string; score: number }>;
-      findings: Array<{ ruleId: string; file: string; line: number }>;
-      testFileCount: number;
-      testDeclarationCount: number;
-      rawDeductions: number;
-      suppressionCount: number;
-      analysisStatus: Record<string, unknown>;
-    };
-    expect(result.schemaVersion).toBe(1);
-    expect(result.partial).toBe(false);
-    expect(result.score).toBeGreaterThanOrEqual(50);
-    expect(result.score).toBeLessThanOrEqual(79); // NEEDS WORK band
-    expect(result.testFileCount).toBeGreaterThan(0);
-    expect(result.testDeclarationCount).toBeGreaterThan(0);
-    expect(result.rawDeductions).toBeGreaterThan(0);
-    expect(result.analysisStatus.discovery).toBe("complete");
-    expect(result.analysisStatus.rules).toBe("complete");
-    expect(result.analysisStatus.skippedFiles).toBe(0);
-    expect(typeof result.analysisStatus.durationMs).toBe("number");
-    expect(result.analysisStatus.rulesCrashed).toBe(0);
-    // Every reported rule is a registered catalog rule — no phantom IDs
-    // from the packed build. (The per-rule EXPECTATIONS live in the
-    // golden-repo lock; the demo repo here only proves the verdict band.)
-    expect(result.testFileCount).toBeGreaterThanOrEqual(3);
-    for (const f of result.findings) {
-      expect(f.ruleId).toMatch(
-        /^QA-(TEST|TQUAL|PW|CI|PY|JV|CS|ENV|ACME)-\d{3}$/,
+      const result = JSON.parse(stdout) as {
+        schemaVersion: number;
+        score: number | null;
+        partial: boolean;
+        frameworks: string[];
+        frameworkDetectionUnknown: boolean;
+        dimensions: Array<{ category: string; score: number }>;
+        findings: Array<{ ruleId: string; file: string; line: number }>;
+        testFileCount: number;
+        testDeclarationCount: number;
+        rawDeductions: number;
+        suppressionCount: number;
+        analysisStatus: Record<string, unknown>;
+      };
+      expect(result.schemaVersion).toBe(1);
+      expect(result.partial).toBe(false);
+      expect(result.score).toBeGreaterThanOrEqual(50);
+      expect(result.score).toBeLessThanOrEqual(79); // NEEDS WORK band
+      expect(result.testFileCount).toBeGreaterThan(0);
+      expect(result.testDeclarationCount).toBeGreaterThan(0);
+      expect(result.rawDeductions).toBeGreaterThan(0);
+      expect(result.analysisStatus.discovery).toBe("complete");
+      expect(result.analysisStatus.rules).toBe("complete");
+      expect(result.analysisStatus.skippedFiles).toBe(0);
+      expect(typeof result.analysisStatus.durationMs).toBe("number");
+      expect(result.analysisStatus.rulesCrashed).toBe(0);
+      // Every reported rule is a registered catalog rule — no phantom IDs
+      // from the packed build. (The per-rule EXPECTATIONS live in the
+      // golden-repo lock; the demo repo here only proves the verdict band.)
+      expect(result.testFileCount).toBeGreaterThanOrEqual(3);
+      for (const f of result.findings) {
+        expect(f.ruleId).toMatch(
+          /^QA-(TEST|TQUAL|PW|CI|PY|JV|CS|ENV|ACME)-\d{3}$/,
+        );
+        expect(f.file).not.toMatch(/\\/); // repo-relative forward slashes
+      }
+    },
+  );
+
+  it(
+    "terminal output names the WORTHINESS verdict and measured-rule count",
+    { timeout: 60_000 },
+    () => {
+      const { stdout, status } = runMjolnir([
+        join(ROOT, "examples", "demo-repo"),
+        "--ascii",
+      ]);
+      expect(status).toBe(1);
+      expect(stdout).toContain("WORTHINESS");
+      expect(stdout).toMatch(/WORTHY|NEEDS WORK|UNWORTHY/);
+      expect(stdout).toContain("NEEDS WORK");
+    },
+  );
+
+  it(
+    "--verbose adds the transparency section without changing the verdict",
+    { timeout: 60_000 },
+    () => {
+      const quiet = runMjolnir([join(ROOT, "examples", "demo-repo"), "--json"]);
+      const verbose = runMjolnir([
+        join(ROOT, "examples", "demo-repo"),
+        "--json",
+        "--verbose",
+      ]);
+      expect((JSON.parse(quiet.stdout) as { score: number }).score).toBe(
+        (JSON.parse(verbose.stdout) as { score: number }).score,
       );
-      expect(f.file).not.toMatch(/\\/); // repo-relative forward slashes
-    }
-  });
+    },
+  );
 
-  it("terminal output names the WORTHINESS verdict and measured-rule count", () => {
-    const { stdout, status } = runMjolnir([
-      join(ROOT, "examples", "demo-repo"),
-      "--ascii",
-    ]);
-    expect(status).toBe(1);
-    expect(stdout).toContain("WORTHINESS");
-    expect(stdout).toMatch(/WORTHY|NEEDS WORK|UNWORTHY/);
-    expect(stdout).toContain("NEEDS WORK");
-  });
+  it(
+    "--help prints the usage banner (pinned contract: exit 10, stdout)",
+    { timeout: 60_000 },
+    () => {
+      const { stdout, status } = runMjolnir(["--help"]);
+      expect(status).toBe(10); // the CLI's frozen usage contract
+      expect(stdout).toContain("Usage: mjolnir");
+      expect(stdout).toContain("scan");
+    },
+  );
 
-  it("--verbose adds the transparency section without changing the verdict", () => {
-    const quiet = runMjolnir([join(ROOT, "examples", "demo-repo"), "--json"]);
-    const verbose = runMjolnir([
-      join(ROOT, "examples", "demo-repo"),
-      "--json",
-      "--verbose",
-    ]);
-    expect((JSON.parse(quiet.stdout) as { score: number }).score).toBe(
-      (JSON.parse(verbose.stdout) as { score: number }).score,
-    );
-  });
-
-  it("--help prints the usage banner (pinned contract: exit 10, stdout)", () => {
-    const { stdout, status } = runMjolnir(["--help"]);
-    expect(status).toBe(10); // the CLI's frozen usage contract
-    expect(stdout).toContain("Usage: mjolnir");
-    expect(stdout).toContain("scan");
-  });
-
-  it("an unknown flag exits 10 with a friendly usage error", () => {
-    const { stdout, stderr, status } = runMjolnir([
-      "--this-flag-does-not-exist",
-    ]);
-    expect(status).toBe(10);
-    // Plan M2: the friendly error names the flag, suggests neighbors and
-    // points at the help command (stderr; stdout stays findings-only).
-    expect(stdout + stderr).toContain(
-      'mjolnir: unknown flag "--this-flag-does-not-exist"',
-    );
-    expect(stdout + stderr).toContain("Run mjolnir --help");
-  });
+  it(
+    "an unknown flag exits 10 with a friendly usage error",
+    { timeout: 60_000 },
+    () => {
+      const { stdout, stderr, status } = runMjolnir([
+        "--this-flag-does-not-exist",
+      ]);
+      expect(status).toBe(10);
+      // Plan M2: the friendly error names the flag, suggests neighbors and
+      // points at the help command (stderr; stdout stays findings-only).
+      expect(stdout + stderr).toContain(
+        'mjolnir: unknown flag "--this-flag-does-not-exist"',
+      );
+      expect(stdout + stderr).toContain("Run mjolnir --help");
+    },
+  );
 });
