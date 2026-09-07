@@ -14,6 +14,7 @@ import { describe, expect, it } from "vitest";
 
 import { runScan } from "../../src/cli.js";
 import { renderTerminal } from "../../src/reporter/terminal.js";
+import { buildDemoSvg } from "../../scripts/generate-readme-demo.js";
 
 const ROOT = join(import.meta.dirname, "..", "..");
 const DEMO_REPO = join(ROOT, "examples", "demo-repo");
@@ -32,6 +33,19 @@ async function scan() {
 }
 
 describe("assets/readme/demo.svg reproducibility", () => {
+  it("the committed SVG is byte-identical to a freshly built one", async () => {
+    // The real reproducibility lock. Everything above is a sanity check;
+    // until this existed the suite passed with a committed asset showing
+    // an eight-row ASCII hammer the reporter had stopped printing, because
+    // nothing compared the rendered output to the file. The README claimed
+    // this test "fails CI if it drifts from what the reporter actually
+    // prints" — now it does.
+    expect(
+      await buildDemoSvg(),
+      "the committed asset no longer matches what the reporter produces — " +
+        "regenerate with `npm run docs:demo` and commit the result.",
+    ).toBe(readFileSync(SVG_PATH, "utf8"));
+  });
   it("the README references the demo asset (a generated file no page shows is a maintained orphan)", () => {
     const readme = readFileSync(join(ROOT, "README.md"), "utf8");
     expect(readme).toContain("assets/readme/demo.svg");

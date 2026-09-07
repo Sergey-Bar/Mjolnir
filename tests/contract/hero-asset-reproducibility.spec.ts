@@ -19,12 +19,26 @@ import { describe, expect, it } from "vitest";
 
 import { runScan } from "../../src/cli.js";
 import { renderTerminal } from "../../src/reporter/terminal.js";
+import { buildHeroSvg } from "../../scripts/generate-readme-hero.js";
 
 const ROOT = join(import.meta.dirname, "..", "..");
 const DEMO_REPO = join(ROOT, "examples", "demo-repo");
 const SVG_PATH = join(ROOT, "assets", "readme", "terminal-hero.svg");
 
 describe("assets/readme/terminal-hero.svg reproducibility", () => {
+  it("the committed SVG is byte-identical to a freshly built one", async () => {
+    // The real reproducibility lock. Everything above is a sanity check;
+    // until this existed the suite passed with a committed asset showing
+    // an eight-row ASCII hammer the reporter had stopped printing, because
+    // nothing compared the rendered output to the file. The README claimed
+    // this test "fails CI if it drifts from what the reporter actually
+    // prints" — now it does.
+    expect(
+      await buildHeroSvg(),
+      "the committed asset no longer matches what the reporter produces — " +
+        "regenerate with `npm run docs:hero` and commit the result.",
+    ).toBe(readFileSync(SVG_PATH, "utf8"));
+  });
   it("the README actually references the hero asset (it was generated, tested, and orphaned once before)", () => {
     // The whole point of a generated, drift-locked hero asset is that
     // the README shows it. Between the rebrand and now it was kept

@@ -12,12 +12,13 @@
  */
 
 import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, relative } from "node:path";
 
 import { getRule, RULES } from "../rules/index.js";
 import type { QADoctorRule } from "../rules/rule.js";
 import { MEASURED_FP } from "../rules/measured-fp.generated.js";
 import { effectiveTier, isProvisional } from "../rules/measurement.js";
+import { wrapText } from "../reporter/theme.js";
 import { deriveEvidenceLevel, QA_IMPACT_LABELS } from "../types.js";
 import type { Finding } from "../types.js";
 import { parseWorkflow } from "../discovery/workflow-parser.js";
@@ -38,6 +39,16 @@ export interface ExplainResult {
    * command already catches separately). */
   exampleFinding?: Omit<Finding, "ruleId" | "category">;
   exampleFixturePath?: string;
+  /**
+   * `exampleFixturePath` relative to the fixtures root it was found under.
+   *
+   * The absolute path is ~117 columns of someone else's checkout, and
+   * relativising it against `process.cwd()` at render time made the
+   * output depend on where the process was started — the same transcript
+   * printed differently from the repo root and from a test runner, which
+   * broke both determinism and the README sample that quotes it.
+   */
+  exampleFixtureRelPath?: string;
 }
 
 /**
@@ -120,10 +131,36 @@ export function explainRule(
     rule,
     exampleFinding: example,
     exampleFixturePath: fixturePath,
+    // Forward-slash-normalized, matching the convention every other
+    // relative-path site in this codebase already follows (e.g. the
+    // `normalizedPath` a few lines up, src/discovery/shared-walk.ts,
+    // src/cli.ts). node:path's `relative()` returns OS-native
+    // separators, so this printed `QA-CI-001\must-fire\masked.yml` on
+    // Windows CI — different bytes than the committed README sample and
+    // video script, both generated on Linux, and a real Windows-only CI
+    // failure (readme-doctest.spec.ts, video-script.spec.ts).
+    exampleFixtureRelPath: relative(fixturesRoot, fixturePath).replaceAll(
+      "\\",
+      "/",
+    ),
   };
 }
 
-export function renderExplain(result: ExplainResult): string {
+/**
+ * Default column budget when no width is supplied.
+ *
+ * `explain`'s prose used to be pushed as unbroken strings — the
+ * "HOW TO VERIFY THE FIX" paragraph alone is 150 columns — so every
+ * explanation overflowed a default terminal. Renderers here take a width
+ * rather than reading process.stdout, so output stays a pure function of
+ * its arguments (same rule the reporter's palette follows).
+ */
+const DEFAULT_EXPLAIN_WIDTH = 80;
+
+export function renderExplain(
+  result: ExplainResult,
+  width: number = DEFAULT_EXPLAIN_WIDTH,
+): string {
   if (!result.ok || !result.rule) {
     return `explain failed: ${result.error ?? "unknown error"}`;
   }
@@ -131,6 +168,12 @@ export function renderExplain(result: ExplainResult): string {
   const evidenceLevel =
     r.evidenceLevel ?? deriveEvidenceLevel(r.findingType, r.confidence);
   const lines: string[] = [];
+  /** Pushes prose indented two columns, wrapped to the budget. */
+  const pushBody = (text: string): void => {
+    for (const seg of wrapText(text, Math.max(20, width - 2))) {
+      lines.push(`  ${seg}`);
+    }
+  };
 
   lines.push(sectionHeader(`${r.id} — ${r.title}`, ui));
   lines.push("");
@@ -161,28 +204,35 @@ export function renderExplain(result: ExplainResult): string {
   if (result.exampleFinding) {
     const f = result.exampleFinding;
     lines.push("WHAT WAS FOUND (real detector output, not a mockup)");
-    lines.push(`  ${f.message}`);
+    pushBody(f.message);
     lines.push("");
     lines.push("WHY IT MATTERS");
-    lines.push(`  ${f.why}`);
+    pushBody(f.why);
     lines.push("");
     lines.push("HOW TO FIX");
-    lines.push(`  ${f.fix}`);
+    pushBody(f.fix);
     lines.push("");
-    lines.push(
-      `Example from this rule's own must-fire fixture: ${result.exampleFixturePath ?? "(unknown path)"}`,
+    pushBody(
+      `Example from this rule's own must-fire fixture: ${
+        result.exampleFixtureRelPath ??
+        result.exampleFixturePath ??
+        "(unknown path)"
+      }`,
     );
   } else {
-    lines.push(
+    for (const seg of wrapText(
       "No example available — run this command from a mjolnir checkout " +
         "(or pass --fixtures-root) so the fixture that proves this rule " +
         "works can be shown as a real example.",
-    );
+      width,
+    )) {
+      lines.push(seg);
+    }
   }
   lines.push("");
   lines.push("HOW TO VERIFY THE FIX");
-  lines.push(
-    "  Re-run `mjolnir` on the changed file(s) — this finding should " +
+  pushBody(
+    "Re-run `mjolnir` on the changed file(s) — this finding should " +
       "no longer appear. `mjolnir --scope changed` scopes the check " +
       "to just what you touched.",
   );

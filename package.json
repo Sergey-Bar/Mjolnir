@@ -1,7 +1,7 @@
 {
   "name": "mjolnir-qa",
   "version": "0.5.12",
-  "description": "Mjölnir — the Verification Trust Engine for QA. Audits test suites and CI pipelines, reports a worthiness score and prioritized findings.",
+  "description": "Mj\u00f6lnir \u2014 the Verification Trust Engine for QA. Audits test suites and CI pipelines, reports a worthiness score and prioritized findings.",
   "type": "module",
   "engines": {
     "node": ">=22.18"
@@ -44,6 +44,10 @@
     "site:audit": "node site/scripts/audit-live.mjs",
     "site:lighthouse": "node site/scripts/lighthouse-run.mjs",
     "docs:demo": "tsx scripts/generate-readme-demo.ts",
+    "docs:video:capture": "tsx scripts/video/write-scripts.ts",
+    "docs:video:glyphs": "tsx scripts/video/check-glyphs.ts",
+    "docs:video:render": "tsx scripts/video/render.ts",
+    "docs:video": "npm run docs:video:capture && npm run docs:video:render",
     "docs:translations": "node scripts/check-readme-translations.mjs",
     "self-scan": "node dist/cli.mjs .",
     "prepare": "husky",
@@ -61,7 +65,7 @@
     "linter",
     "static-analysis"
   ],
-  "author": "Mjölnir Team",
+  "author": "Mj\u00f6lnir Team",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -91,6 +95,7 @@
     "husky": "^9.1.7",
     "lighthouse": "^13.4.1",
     "lint-staged": "^17.3.0",
+    "playwright-core": "^1.63.0",
     "prettier": "^3.3.0",
     "tsdown": "^0.22.14",
     "tsx": "^4.16.0",
