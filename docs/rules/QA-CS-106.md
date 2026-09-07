@@ -27,7 +27,7 @@ XPath paths and structural CSS break on any markup refactor and silently select 
 Brittle selector (xpath= selector).
 ```
 
-Example from this rule's own must-fire fixture: `tests/fixtures/QA-CS-106/must-fire/SelectorTests.cs`
+Example from this rule's own must-fire fixture: `tests/fixtures/QA-CS-106/must-fire/InventoryTests.cs`
 
 ## The fix
 
@@ -35,7 +35,7 @@ Prefer role-based locators (`page.GetByRole(...)`) or data-testid attributes.
 
 ## Confirmed NOT to fire on the corresponding clean pattern
 
-Verified against `tests/fixtures/QA-CS-106/must-not-fire/SelectorTests.cs` — a legitimate, similar-looking pattern this rule correctly leaves alone.
+Verified against `tests/fixtures/QA-CS-106/must-not-fire/RoleLocatorTests.cs` — a legitimate, similar-looking pattern this rule correctly leaves alone.
 
 ## Corpus-measured false-positive risk
 

@@ -24,10 +24,10 @@ Migrations/seeds/deletes against a shared environment break every other pipeline
 ## What gets flagged (real detector output)
 
 ```
-Global setup mutates shared state: `execSync("npx prisma migrate deploy --schema ./prisma"…`.
+Global setup mutates shared state: `execSync("npx prisma migrate deploy --schema ./prisma/stagin…`.
 ```
 
-Example from this rule's own must-fire fixture: `tests/fixtures/QA-PW-125/must-fire/global-setup.ts`
+Example from this rule's own must-fire fixture: `tests/fixtures/QA-PW-125/must-fire/global-setup-auth.ts`
 
 ## The fix
 

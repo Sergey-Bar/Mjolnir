@@ -26,6 +26,9 @@ function detectLanguage(
 
 for (const rule of RULES) {
   // CI rules get corpus tests in W4; Python rules use .py fixtures here.
+  // configRule rules (CYP-003, PW-124) are exercised via the config-file
+  // corpus lanes, not the must-fire fixture harness.
+  if (rule.configRule === true) continue;
   if (rule.appliesTo !== "test-files" && rule.appliesTo !== ("python" as never))
     continue;
 
