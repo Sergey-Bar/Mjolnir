@@ -18,6 +18,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
+import * as detectorHash from "../../src/engine/detector-hash.js";
 import {
   annotationFor,
   computeRuleLogicHash,
@@ -28,7 +29,10 @@ import {
   type DetectorHashManifest,
   type RuleHashMetadata,
 } from "../../src/engine/detector-hash.js";
-import { checkRevisionIntegrity } from "../../src/commands/doctor.js";
+import {
+  checkRevisionIntegrity,
+  errorText,
+} from "../../src/commands/doctor.js";
 import { minimalRules } from "./helpers.js";
 
 const BASE_MODULE = [
@@ -79,6 +83,22 @@ describe("token stream (G4 contract)", () => {
     expect(moduleTokenStream(withComments)).toBe(
       moduleTokenStream(BASE_MODULE),
     );
+  });
+
+  it("a module STARTING with a regex literal resolves regex-vs-division from the statement start", () => {
+    // Covers the endsExpression(undefined) arm: the first token is a slash.
+    const stream = moduleTokenStream("/qa-rules/g;\nconst ok = 1;\n");
+    expect(stream).toContain("/qa-rules/g");
+    expect(stream).toContain("const");
+  });
+
+  it("a division operator after an identifier stays a division (not a regex)", () => {
+    const stream = moduleTokenStream(
+      "const half = count / 2;\nconst re = /ab/g;\n",
+    );
+    // The division is two separate tokens (/ then 2), not one regex literal.
+    expect(stream).toContain("\u241F/\u241F2");
+    expect(stream).toContain("/ab/g");
   });
 });
 
@@ -138,6 +158,16 @@ describe("manifest mechanics", () => {
     expect(s1.endsWith("\n")).toBe(true);
   });
 
+  it("serialization skips undefined-valued entries (defensive against hand-built maps)", () => {
+    const m = {
+      "QA-B-002": { logicHash: "b".repeat(64), detectorRevision: 1 },
+      "QA-A-001": undefined,
+    } as unknown as DetectorHashManifest;
+    const out = serializeManifest(m);
+    expect(out).not.toContain("QA-A-001");
+    expect(out).toContain("QA-B-002");
+  });
+
   it("diffManifests flags hash-changed-same-revision as WARN-able and revision-changed as INFO", () => {
     const base: DetectorHashManifest = {
       "QA-A-001": { logicHash: "a".repeat(64), detectorRevision: 1 },
@@ -182,6 +212,104 @@ describe("manifest mechanics", () => {
     expect(warnings).toHaveLength(1);
     expect(warnings[0]).toContain("QA-A-001");
     expect(warnings[0]).toContain("behavior-neutrality");
+  });
+});
+
+describe("computeDetectorHashes — registry ↔ tree reconciliation", () => {
+  const SYNTHETIC = [
+    "export const r = {",
+    '  id: "QA-T-900",',
+    '  severity: "info",',
+    '  confidence: "high",',
+    '  findingType: "deterministic-defect",',
+    '  appliesTo: "test-files",',
+    "  run: () => [],",
+    "};",
+    "",
+  ].join("\n");
+
+  function makeTree(): string {
+    const root = mkdtempSync(join(tmpdir(), "mjolnir-cdh-"));
+    tmpDirs.push(root);
+    mkdirSync(join(root, "src", "rules"), { recursive: true });
+    writeFileSync(join(root, "src", "rules", "synthetic.ts"), SYNTHETIC);
+    return root;
+  }
+
+  it("throws when a registered rule has no defining module in the tree", () => {
+    const root = makeTree();
+    const ghost = minimalRules.one();
+    expect(() =>
+      detectorHash.computeDetectorHashes(
+        [ghost, { ...ghost, id: "QA-T-901" }],
+        join(root, "src", "rules"),
+      ),
+    ).toThrow(/no defining module/);
+  });
+
+  it("throws when the tree claims a rule that is not in the registry", () => {
+    const root = makeTree();
+    expect(() =>
+      detectorHash.computeDetectorHashes([], join(root, "src", "rules")),
+    ).toThrow(/not in the registry/);
+  });
+
+  it("throws when two modules claim the same rule id (ambiguous defining module)", () => {
+    const root = makeTree();
+    writeFileSync(join(root, "src", "rules", "synthetic-b.ts"), SYNTHETIC);
+    expect(() =>
+      detectorHash.computeDetectorHashes(
+        [minimalRules.one()],
+        join(root, "src", "rules"),
+      ),
+    ).toThrow(/claimed by both/);
+  });
+
+  it("ignores index.ts, *.generated.ts and .d.ts files, and descends into subdirectories", () => {
+    const root = makeTree();
+    // index.ts: re-export only — must not claim.
+    writeFileSync(join(root, "src", "rules", "index.ts"), SYNTHETIC);
+    // generated data keyed by rule id — must not claim.
+    writeFileSync(
+      join(root, "src", "rules", "measured-fp.generated.ts"),
+      'export const M = { "QA-T-900": { fpRate: 0 } };\n',
+    );
+    // ambient declarations — must not claim (and must not break tsc).
+    writeFileSync(
+      join(root, "src", "rules", "ambient.d.ts"),
+      "declare const x: number;\n",
+    );
+    // a nested directory IS descended into and its rule claims.
+    mkdirSync(join(root, "src", "rules", "nested"), { recursive: true });
+    writeFileSync(
+      join(root, "src", "rules", "nested", "other.ts"),
+      SYNTHETIC.replace("QA-T-900", "QA-T-902"),
+    );
+    const rules = [
+      minimalRules.one(),
+      { ...minimalRules.one(), id: "QA-T-902" },
+    ];
+    const manifest = detectorHash.computeDetectorHashes(
+      rules,
+      join(root, "src", "rules"),
+    );
+    expect(Object.keys(manifest).sort()).toEqual(["QA-T-900", "QA-T-902"]);
+  });
+
+  it("produces a reconciled manifest for matching registry and tree", () => {
+    const root = makeTree();
+    const rule = minimalRules.one();
+    const manifest = detectorHash.computeDetectorHashes(
+      [rule],
+      join(root, "src", "rules"),
+    );
+    expect(manifest[rule.id]).toBeDefined();
+    expect(manifest[rule.id]?.detectorRevision).toBe(1);
+  });
+  it("errorText renders both thrown Errors and thrown strings (uniform doctor details)", () => {
+    expect(errorText(new Error("boom"))).toBe("boom");
+    expect(errorText("thrown string")).toBe("thrown string");
+    expect(errorText(42)).toBe("42");
   });
 });
 
@@ -247,6 +375,23 @@ describe("checkRevisionIntegrity (doctor check, blocking)", () => {
     expect(result.details.join("\n")).toContain("unreadable/malformed");
   });
 
+  it("FAILS (INCONCLUSIVE) when the computation fails: a registered rule has no module", () => {
+    const root = mkdtempSync(join(tmpdir(), "mjolnir-revint-"));
+    tmpDirs.push(root);
+    mkdirSync(join(root, "tests", "corpus"), { recursive: true });
+    mkdirSync(join(root, "src", "rules"), { recursive: true }); // exists but EMPTY
+    writeFileSync(
+      join(root, "tests", "corpus", "detector-hashes.json"),
+      JSON.stringify({
+        "QA-T-900": { logicHash: "z".repeat(64), detectorRevision: 1 },
+      }),
+    );
+    const result = checkRevisionIntegrity(root, [minimalRules.one()]);
+    expect(result.ok).toBe(false);
+    expect(result.details.join("\n")).toContain("computation failed");
+    expect(result.details.join("\n")).toContain("no defining module");
+  });
+
   it("(d) FAILS when a module changed but the manifest was NOT regenerated (check A)", () => {
     const rule = minimalRules.one();
     const root = makeRepo(
@@ -296,6 +441,31 @@ describe("checkRevisionIntegrity (doctor check, blocking)", () => {
     const result = checkRevisionIntegrity(root, [minimalRules.one()]);
     expect(result.ok).toBe(false);
     expect(result.details.join("\n")).toContain("not in the registry");
+  });
+
+  it("FAILS when a registered rule is missing from the manifest (not attested)", () => {
+    const root = makeRepo(
+      { "QA-OTHER-001": { logicHash: "z".repeat(64), detectorRevision: 1 } },
+      SYNTHETIC_MODULE,
+    );
+    const result = checkRevisionIntegrity(root, [minimalRules.one()]);
+    expect(result.ok).toBe(false);
+    expect(result.details.join("\n")).toContain("not attested in the manifest");
+  });
+
+  it("FAILS when src/rules is absent (installed package — honest INCONCLUSIVE)", () => {
+    const root = mkdtempSync(join(tmpdir(), "mjolnir-revint-"));
+    tmpDirs.push(root);
+    mkdirSync(join(root, "tests", "corpus"), { recursive: true });
+    writeFileSync(
+      join(root, "tests", "corpus", "detector-hashes.json"),
+      JSON.stringify({
+        "QA-T-900": { logicHash: "z".repeat(64), detectorRevision: 1 },
+      }),
+    );
+    const result = checkRevisionIntegrity(root, [minimalRules.one()]);
+    expect(result.ok).toBe(false);
+    expect(result.details.join("\n")).toContain("src/rules is not present");
   });
 
   it("PASSES a reconciled manifest (hashes + revisions + registry all agree)", () => {

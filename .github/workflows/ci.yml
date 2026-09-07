@@ -252,8 +252,8 @@ jobs:
       - run: npm ci
       - name: Diff detector-hashes manifest against base branch
         run: |
-          BASE=$(git merge-base origin/${{ github.base_ref || 'main' }} HEAD)
-          git show ${BASE}:tests/corpus/detector-hashes.json > /tmp/detector-hashes-base.json \
+          BASE="$(git merge-base "origin/${{ github.base_ref || 'main' }}" HEAD)"
+          git show "${BASE}:tests/corpus/detector-hashes.json" > /tmp/detector-hashes-base.json \
             || echo "no base manifest (first landing)"
           if [ -s /tmp/detector-hashes-base.json ]; then
             npx tsx scripts/diff-detector-hashes.ts /tmp/detector-hashes-base.json

@@ -28,7 +28,7 @@
  */
 
 import { createHash } from "node:crypto";
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ts } from "ts-morph";
 import type { QADoctorRule } from "../rules/rule.js";
@@ -116,7 +116,9 @@ export function* walkTokens(moduleText: string): Generator<{
       tok = s.reScanTemplateToken(false);
     }
     const text = scanner.getTokenText();
-    if (text.length > 0) yield { kind: tok, text };
+    // Every non-EOF token from scan()/reScan*() has at least one character —
+    // the scanner never produces zero-width tokens — so no emptiness guard.
+    yield { kind: tok, text };
 
     // Template nesting: TemplateHead opens the template; TemplateMiddle
     // ENDS an interpolation but keeps the template open (another `${…}`
@@ -344,10 +346,6 @@ export function loadManifest(path: string): DetectorHashManifest {
   return JSON.parse(readFileSync(path, "utf8")) as DetectorHashManifest;
 }
 
-export function manifestExists(path: string): boolean {
-  return existsSync(path);
-}
-
 /**
  * G4 check C — base-diff comparison for the CI annotation step.
  * WARN semantics: `logicHash` changed while `detectorRevision` is
@@ -371,16 +369,14 @@ export function diffManifests(
   for (const id of [...ids].sort()) {
     const b = base[id];
     const h = head[id];
-    if (b && !h) {
-      findings.push({ ruleId: id, kind: "removed" });
+    if (b === undefined || h === undefined) {
+      // Exactly one side has the id (ids come from the union of both key
+      // sets), so this is either added or removed — never both-absent.
+      findings.push({
+        ruleId: id,
+        kind: b === undefined ? "added" : "removed",
+      });
       continue;
-    }
-    if (!b && h) {
-      findings.push({ ruleId: id, kind: "added" });
-      continue;
-    }
-    if (!b || !h) {
-      continue; // added/removed handled above; both-present falls through
     }
     if (b.logicHash !== h.logicHash) {
       findings.push({

@@ -20,6 +20,11 @@ import { join } from "node:path";
 import type { QADoctorRule } from "../rules/rule.js";
 import { RULES } from "../rules/index.js";
 import { MEASURED_FP } from "../rules/measured-fp.generated.js";
+
+/** Uniform error rendering for doctor details (Error or thrown-as-string). */
+export function errorText(e: unknown): string {
+  return e instanceof Error ? e.message : String(e);
+}
 import {
   declaredDetectorRevision,
   effectiveTier,
@@ -485,7 +490,7 @@ export function checkRevisionIntegrity(
       name: "revision-integrity",
       ok: false,
       details: [
-        `INCONCLUSIVE: detector hash computation failed — ${e instanceof Error ? e.message : String(e)}`,
+        `INCONCLUSIVE: detector hash computation failed — ${errorText(e)}`,
       ],
     };
   }
