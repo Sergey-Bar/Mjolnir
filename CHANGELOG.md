@@ -9,6 +9,15 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [0.5.22] — 2026-09-07
+
+### Changes since 0.5.21
+
+- chore: gitignore bench artifacts (machine-local timings + fixture scratch)
+- test(corpus): D14 re-baseline after Wave-1 merges — QA-PW-124 now adapter-gated (configRule metadata), QA-TEST-003/010 surface on repos whose baselines predate the TS project split, corpus regen of partial scans pending quiet-machine rerun
+- chore(qa): eslint-ignore the verbatim QA evidence area (raw probes are committed DATA, certification protocol)
+- chore(qa): commit FINAL-RELEASE certification evidence verbatim (cycle 0, RC 151186b) + lint/format exclusions for raw evidence area (certification plan 1788804968910 protocol)
+
 ## [0.5.21] — 2026-09-07
 
 ### Changes since 0.5.20
