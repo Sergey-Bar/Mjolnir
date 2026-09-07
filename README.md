@@ -381,6 +381,29 @@ or `mjolnir rules --md`.
 >
 > Per-rule pages live under [`docs/rules/`](docs/rules/).
 
+### Selector Health Score
+
+A pass rate says the suite went green today. It says nothing about whether
+it will still go green after a redesign. `mjolnir doctor:playwright` grades
+every locator in a spec file by how it finds an element — the way a user
+identifies it (role, label, text), an explicit contract (`data-testid`), or
+a structural accident (CSS chains, XPath) — and scores the file 0–100:
+
+```text
+  ▚ SELECTOR HEALTH
+
+e2e/login.spec.ts
+  [█████████████░░░░░░░]  65 / 100
+  role/text: 1 · testid: 0 · css-chains: 1 ⚠ · xpath: 0
+
+e2e/checkout.spec.ts
+  [█████████████████░░░]  86 / 100
+  role/text: 3 · testid: 1 · css-chains: 1 ⚠ · xpath: 0
+```
+
+`.btn.btn-primary > div:nth-child(2)` is not a test failure today — it's a
+test failure scheduled for whenever someone touches the markup.
+
 ### How much of this is measured
 
 **78 of 99 rules carry a false-positive rate measured against real OSS code** (≥ 10 hand-classified findings each; see
@@ -397,6 +420,34 @@ Every rule is `core`, `extended`, or `quarantine`, assigned from its
 **measured** false-positive rate — quarantine rules only run under
 `--strict`. Tiers, language maturity and the promotion/demotion rules:
 [rule lifecycle](https://sergey-bar.github.io/Mjolnir/reference/rule-lifecycle).
+
+### What it can't tell you
+
+A tool that claims your tests are lying should be blunt about its own
+limits:
+
+- **It does not run your tests.** It reads your code and, when you point
+  it at one, a run report. A clean scan is not a passing suite.
+- **It cannot tell you an assertion is _wrong_.** `expect(total).toBe(41)`
+  is a perfectly healthy-looking test. Mjölnir finds tests that can't fail
+  and pipelines that can't go red — not tests that check the wrong thing.
+- **A 100 is not proof of a good suite.** It means none of these 99 rules
+  fired. Coverage of your actual risk is a different question, and this
+  tool does not pretend to answer it.
+- **21 of 99 rules ship on an estimate**, not a measured rate — and they
+  say so, per rule, in `mjolnir explain`.
+- **E1 findings are heuristics.** They are positioned to be worth reading,
+  not to be applied blindly; the evidence level is attached to every
+  finding precisely so you can tell the difference.
+- **An empty repo scores `null`, never 100.** "Unknown" is a verdict here.
+
+### We run it on ourselves
+
+Every CI run scans this repository with the build produced by that same
+run, and the gate fails on **any** error-severity finding — but also on a
+_partial_ scan or a crashed rule, because a truncated self-scan that
+reports nothing is exactly the false green this project exists to catch.
+The result is uploaded as a build artifact on every run.
 
 ---
 
@@ -458,7 +509,7 @@ mjolnir forensics ./test-results/
 ```
 
 ```text
-▚ FLAKINESS LEADERBOARD
+  ▚ FLAKINESS LEADERBOARD
 
 3 tests · 1 failed · 1 flaky · 1 retried
 
