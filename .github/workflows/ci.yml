@@ -230,6 +230,49 @@ jobs:
           fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, line + "\n");
           '
 
+  # Certification gate (certification-audit Phase 5.5, G2/G5): the doctor
+  # self-audit runs on the BUILT artifact and gates the pipeline — exit 0
+  # requires every check pass (a fail OR an INCONCLUSIVE check exits 1).
+  # The JSON report is the evidence artifact; determinism is re-proven by
+  # running the command twice and diffing (G5 self-verify).
+  certification:
+    needs: build-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci && npm run build
+      - name: Doctor self-audit gate (exit 0 = all checks pass)
+        run: node dist/cli.mjs doctor . --json > doctor-report.json
+      - name: G5 determinism self-verify (second run must be byte-identical)
+        run: |
+          node dist/cli.mjs doctor . --json > /tmp/doctor-report-2.json
+          diff doctor-report.json /tmp/doctor-report-2.json \
+            && echo "doctor --json: byte-identical across runs ✓" \
+            || { echo "doctor --json output is NOT deterministic — G5 violated"; exit 1; }
+      - name: Sanity-check the report contract in the summary
+        if: always()
+        run: |
+          node -e '
+          const fs = require("fs");
+          const r = JSON.parse(fs.readFileSync("doctor-report.json", "utf8"));
+          if (r.schema !== "mjolnir.doctor-report@1") { console.error("unknown schema", r.schema); process.exit(1); }
+          const line = `doctor: ${r.summary.pass} pass · ${r.summary.fail} fail · ${r.summary.inconclusive} inconclusive → ${r.healthy ? "WORTHY" : "VIOLATIONS"}`;
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, line + "\n");
+          console.log(line);
+          '
+      - name: Upload doctor report as a build artifact
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: doctor-report
+          path: doctor-report.json
+          retention-days: 90
+
   # Detector revision integrity, check C (certification-audit Phase 3.4,
   # G4/D17): a WARN-level review visibility step — a detector whose source
   # identity changed without a declared revision bump gets a ::warning::
