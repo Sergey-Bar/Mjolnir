@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | info                                                                                                                                                         |
 | Confidence                            | medium                                                                                                                                                       |
 | Tier                                  | quarantine                                                                                                                                                   |
-| Measured FP rate                      | not yet measured                                                                                                                                             |
+| Measured FP rate                      | 100% (n=20)                                                                                                                                                  |
 | Evidence level                        | E0                                                                                                                                                           |
 | QA impact                             | Test hygiene debt (HYGIENE)                                                                                                                                  |
 | False-positive risk (author estimate) | medium                                                                                                                                                       |
