@@ -371,6 +371,8 @@ export function checkFixtureIntegrity(
             details.push(`empty fixture dir: ${ruleId}/${child.name}`);
           }
         } else if (!child.name.startsWith(".")) {
+          // Loose files directly inside the rule dir (outside must-fire/
+          // must-not-fire subdirs) still count as fixture material.
           fixtureFiles++;
         }
       }

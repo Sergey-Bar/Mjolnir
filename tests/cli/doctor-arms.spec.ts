@@ -228,6 +228,8 @@ describe("checkFixtureIntegrity (certification-audit Phase 2.5)", () => {
       writeFileSync(join(fixtures, "QA-TEST-914", "must-fire", "a.ts"), "x\n");
       // A loose top-level file inside the rule dir is counted, not flagged.
       writeFileSync(join(fixtures, "QA-TEST-914", "README.md"), "notes\n");
+      // A hidden OS-stray (macOS .DS_Store class) is skipped, not counted.
+      writeFileSync(join(fixtures, "QA-TEST-914", ".DS_Store"), "\x00\x01");
       const result = checkFixtureIntegrity(fixtures, rules);
       expect(result.ok).toBe(true);
       expect(result.details[0]).toContain("2 fixture files");
