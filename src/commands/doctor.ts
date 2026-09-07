@@ -325,6 +325,87 @@ export function checkQuarantineEnforcement(
   return { name: "quarantine-enforcement", ok, details };
 }
 
+/**
+ * Check 8 (certification-audit Phase 2.5, plan G3 Layer A support):
+ * fixture-integrity — deterministic structural census of the fixture
+ * trees. Complements the fixture firewall (which proves must-fire /
+ * must-not-fire PRESENCE per rule) with: orphaned fixture dirs (no
+ * registered rule), empty dirs, and the Layer A typecheck allowlist
+ * census. Blocking: an orphaned dir or an empty fixture dir means the
+ * structural layer has silently drifted.
+ */
+export function checkFixtureIntegrity(
+  fixturesRoot: string,
+  rules: readonly QADoctorRule[] = RULES,
+): DoctorCheck {
+  const details: string[] = [];
+  let ok = true;
+
+  const registeredIds = new Set(rules.map((r) => r.id));
+
+  // Census over the must-fire/must-not-fire tree.
+  const fixtureRoots = [
+    fixturesRoot,
+    join(fixturesRoot, "..", "corpus", "positive-fixtures"),
+  ];
+  let fixtureFiles = 0;
+  let fixtureDirs = 0;
+  for (const root of fixtureRoots) {
+    if (!existsSync(root)) continue;
+    for (const entry of readdirSync(root, { withFileTypes: true })) {
+      if (!entry.isDirectory() || entry.name.startsWith(".")) continue;
+      fixtureDirs++;
+      const ruleId = entry.name;
+      if (!registeredIds.has(ruleId)) {
+        ok = false;
+        details.push(`orphaned fixture dir (no registered rule): ${ruleId}`);
+        continue;
+      }
+      const sub = join(root, ruleId);
+      for (const child of readdirSync(sub, { withFileTypes: true })) {
+        if (child.isDirectory()) {
+          const files = nonHiddenFiles(join(sub, child.name));
+          fixtureFiles += files.length;
+          if (files.length === 0) {
+            ok = false;
+            details.push(`empty fixture dir: ${ruleId}/${child.name}`);
+          }
+        } else if (!child.name.startsWith(".")) {
+          fixtureFiles++;
+        }
+      }
+    }
+  }
+
+  // Layer A allowlist census (informational summary; the allowlist itself
+  // is mechanically guarded by scripts/typecheck-fixtures.ts + the gate
+  // spec's snapshot lock).
+  const allowlistPath = join(fixturesRoot, "typecheck-allowlist.json");
+  if (existsSync(allowlistPath)) {
+    try {
+      const parsed = JSON.parse(readFileSync(allowlistPath, "utf8")) as {
+        entries?: unknown[];
+      };
+      if (Array.isArray(parsed.entries)) {
+        details.push(
+          `Layer A typecheck allowlist: ${parsed.entries.length} justified entr(ies)`,
+        );
+      } else {
+        ok = false;
+        details.push("typecheck-allowlist.json entries is not an array");
+      }
+    } catch {
+      ok = false;
+      details.push("typecheck-allowlist.json is unreadable/malformed");
+    }
+  }
+
+  details.unshift(
+    `fixture trees: ${fixtureDirs} rule dirs, ${fixtureFiles} fixture files — orphaned dirs and empty dirs are blocking`,
+  );
+  return { name: "fixture-integrity", ok, details };
+}
+
 export function runDoctorSelfAudit(fixturesRoot: string): DoctorReport {
   const verdictsDir = join(fixturesRoot, "..", "corpus", "verdicts");
   const checks = [
@@ -335,6 +416,7 @@ export function runDoctorSelfAudit(fixturesRoot: string): DoctorReport {
     checkTierEnforcement(verdictsDir),
     checkAntiCreep(),
     checkQuarantineEnforcement(),
+    checkFixtureIntegrity(fixturesRoot),
   ];
   return { checks, healthy: checks.every((c) => c.ok) };
 }

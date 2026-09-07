@@ -52,6 +52,19 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test
+      # Fixture integrity, non-TS tier (certification-audit Phase 2.4):
+      # Python fixtures are real code the detectors consume as text —
+      # a syntax error in one must not pass silently. Syntax-tier only
+      # (the bytecode artifact is throwaway). Java/C# fixtures have no
+      # reliable syntax-check toolchain on all runners; documented INFO
+      # (their structural layer stays covered by the fixture firewall
+      # + harness oracle).
+      - name: Python fixture syntax tier (compileall)
+        if: runner.os == 'Linux'
+        run: |
+          find tests/fixtures tests/corpus/positive-fixtures -name "*.py" | grep -q . \
+            && python3 -m compileall -q tests/fixtures tests/corpus/positive-fixtures \
+            || echo "no Python fixtures present — nothing to compile"
       # Bug-audit G11: moderate advisories are ignored at `high` — a
       # steady drip of moderate-severity vulns is how a real supply-chain
       # issue goes unnoticed between high ones.
