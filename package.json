@@ -39,7 +39,6 @@
     "docs:machine-contract": "tsx scripts/generate-machine-contract-doc.ts",
     "docs:hero": "tsx scripts/generate-readme-hero.ts",
     "docs:gauge": "tsx scripts/generate-readme-score-gauge.ts",
-    "docs:see-it-work": "tsx scripts/generate-readme-see-it-work.ts",
     "docs:formats": "tsx scripts/generate-site-formats.ts",
     "docs:forensics-samples": "tsx scripts/generate-forensics-samples.ts",
     "site:doctor": "npm --prefix site run doctor",

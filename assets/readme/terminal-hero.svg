@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="443" height="794" viewBox="0 0 443 794" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', Menlo, monospace" font-size="13">
+<svg width="443" height="566" viewBox="0 0 443 566" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', Menlo, monospace" font-size="13">
   <defs>
     <clipPath id="winClip">
-      <rect x="0" y="0" width="443" height="794" rx="8" ry="8"/>
+      <rect x="0" y="0" width="443" height="566" rx="8" ry="8"/>
     </clipPath>
   </defs>
 
   <g clip-path="url(#winClip)">
-    <rect x="0" y="0" width="443" height="794" fill="#14171c"/>
+    <rect x="0" y="0" width="443" height="566" fill="#14171c"/>
     <rect x="0" y="0" width="443" height="36" fill="#20242b"/>
     <circle cx="20" cy="18" r="6" fill="#ff5f56"/>
     <circle cx="40" cy="18" r="6" fill="#ffbd2e"/>
@@ -15,44 +15,32 @@
     <text x="221.5" y="22" fill="#a0a0a0" font-size="12" text-anchor="middle">demo-repo &#8212; mjolnir</text>
 
     <text x="22" y="54.0" xml:space="preserve"><tspan fill="#d7d3c8">$ </tspan><tspan fill="#ede6d6">npx mjolnir-qa@latest</tspan></text>
-    <text x="22" y="73.0" xml:space="preserve"><tspan fill="rgb(138,180,216)">  M J Ö L N I R  ·  VERIFICATION TRUST ENGINE</tspan></text>
 
+    <text x="22" y="92.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">WORTHINESS</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)"> 75</tspan><tspan fill="rgb(124,133,144)">/100</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">NEEDS WORK</tspan></text>
+    <text x="22" y="111.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">██████████████████████</tspan><tspan fill="rgb(224,165,38)">▓</tspan><tspan fill="#d7d3c8">░░░░░░░</tspan></text>
+    <text x="22" y="130.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">The hammer holds — but 27 findings weigh it down.</tspan></text>
+    <text x="22" y="149.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">(40 raw pts / 7 test declarations — normalized)</tspan></text>
 
-    <text x="22" y="130.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">    ᚦ       ᚹ</tspan></text>
-    <text x="22" y="149.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">   ▄▄▄▄▄▄▄▄▄▄▄</tspan></text>
-    <text x="22" y="168.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">   ███████████</tspan></text>
-    <text x="22" y="187.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">   ▀▀▀▀▀▀▀▀▀▀▀</tspan></text>
-    <text x="22" y="206.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">        ██</tspan></text>
-    <text x="22" y="225.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">        ██</tspan></text>
-    <text x="22" y="244.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">        ██</tspan></text>
-    <text x="22" y="263.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">       ▄██</tspan></text>
-    <text x="22" y="282.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">ᚦ [STRAINED]</tspan></text>
+    <text x="22" y="187.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">DETECTED</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">[playwright]</tspan></text>
 
-    <text x="22" y="320.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">WORTHINESS</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)"> 75</tspan><tspan fill="rgb(124,133,144)">/100</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">NEEDS WORK</tspan></text>
-    <text x="22" y="339.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">██████████████████████</tspan><tspan fill="rgb(224,165,38)">▓</tspan><tspan fill="#d7d3c8">░░░░░░░</tspan></text>
-    <text x="22" y="358.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">The hammer holds — but 27 findings weigh it down.</tspan></text>
-    <text x="22" y="377.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">(40 raw pts / 7 test declarations — normalized)</tspan></text>
+    <text x="22" y="225.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(138,180,216)">▚ DIAGNOSTICS BY CATEGORY</tspan></text>
+    <text x="22" y="244.0" xml:space="preserve"><tspan fill="#d7d3c8">  QA-CI    </tspan><tspan fill="rgb(224,165,38)">███████████</tspan><tspan fill="rgb(224,165,38)">▓</tspan><tspan fill="#d7d3c8">░░░░  76</tspan></text>
+    <text x="22" y="263.0" xml:space="preserve"><tspan fill="#d7d3c8">  QA-PW    </tspan><tspan fill="rgb(92,196,224)">█████████████</tspan><tspan fill="rgb(92,196,224)">▓</tspan><tspan fill="#d7d3c8">░░  87</tspan></text>
+    <text x="22" y="282.0" xml:space="preserve"><tspan fill="#d7d3c8">  QA-TEST  </tspan><tspan fill="rgb(92,196,224)">████████████████</tspan><tspan fill="#d7d3c8">  97</tspan></text>
 
-    <text x="22" y="415.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">DETECTED</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(63,176,160)">[playwright]</tspan></text>
+    <text x="22" y="320.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(138,180,216)">▚ WHERE POINTS WERE LOST</tspan></text>
+    <text x="22" y="339.0" xml:space="preserve"><tspan fill="#d7d3c8">  ╭─────────────────────────────────────────╮</tspan></text>
+    <text x="22" y="358.0" xml:space="preserve"><tspan fill="#d7d3c8">  │ 4 × error   − 32                        │</tspan></text>
+    <text x="22" y="377.0" xml:space="preserve"><tspan fill="#d7d3c8">  │ 3 × warning −  7</tspan><tspan fill="rgb(124,133,144)"> (evidence-discounted)</tspan><tspan fill="#d7d3c8">  │</tspan></text>
+    <text x="22" y="396.0" xml:space="preserve"><tspan fill="#d7d3c8">  │ 20 × info    −  1</tspan><tspan fill="rgb(124,133,144)"> (evidence-discounted)</tspan><tspan fill="#d7d3c8"> │</tspan></text>
+    <text x="22" y="415.0" xml:space="preserve"><tspan fill="#d7d3c8">  ╰─────────────────────────────────────────╯</tspan></text>
 
-    <text x="22" y="453.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(138,180,216)">▚ DIAGNOSTICS BY CATEGORY</tspan></text>
-    <text x="22" y="472.0" xml:space="preserve"><tspan fill="#d7d3c8">  QA-CI    </tspan><tspan fill="rgb(224,165,38)">███████████</tspan><tspan fill="rgb(224,165,38)">▓</tspan><tspan fill="#d7d3c8">░░░░  76</tspan></text>
-    <text x="22" y="491.0" xml:space="preserve"><tspan fill="#d7d3c8">  QA-PW    </tspan><tspan fill="rgb(92,196,224)">█████████████</tspan><tspan fill="rgb(92,196,224)">▓</tspan><tspan fill="#d7d3c8">░░  87</tspan></text>
-    <text x="22" y="510.0" xml:space="preserve"><tspan fill="#d7d3c8">  QA-TEST  </tspan><tspan fill="rgb(92,196,224)">████████████████</tspan><tspan fill="#d7d3c8">  97</tspan></text>
-
-    <text x="22" y="548.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(138,180,216)">▚ WHERE POINTS WERE LOST</tspan></text>
-    <text x="22" y="567.0" xml:space="preserve"><tspan fill="#d7d3c8">  ╭─────────────────────────────────────────╮</tspan></text>
-    <text x="22" y="586.0" xml:space="preserve"><tspan fill="#d7d3c8">  │ 4 × error   − 32                        │</tspan></text>
-    <text x="22" y="605.0" xml:space="preserve"><tspan fill="#d7d3c8">  │ 3 × warning −  7</tspan><tspan fill="rgb(124,133,144)"> (evidence-discounted)</tspan><tspan fill="#d7d3c8">  │</tspan></text>
-    <text x="22" y="624.0" xml:space="preserve"><tspan fill="#d7d3c8">  │ 20 × info    −  1</tspan><tspan fill="rgb(124,133,144)"> (evidence-discounted)</tspan><tspan fill="#d7d3c8"> │</tspan></text>
-    <text x="22" y="643.0" xml:space="preserve"><tspan fill="#d7d3c8">  ╰─────────────────────────────────────────╯</tspan></text>
-
-    <text x="22" y="681.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(138,180,216)">▚ FIX THIS FIRST</tspan></text>
-    <text x="22" y="700.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">+8 pts</tspan><tspan fill="#d7d3c8">  QA-CI-009 · .github/workflows/ci.yml:10</tspan></text>
-    <text x="22" y="719.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">+8 pts</tspan><tspan fill="#d7d3c8">  QA-CI-009 · .github/workflows/ci.yml:10</tspan></text>
-    <text x="22" y="738.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">+8 pts</tspan><tspan fill="#d7d3c8">  QA-CI-009 · .github/workflows/ci.yml:26</tspan></text>
+    <text x="22" y="453.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(138,180,216)">▚ FIX THIS FIRST</tspan></text>
+    <text x="22" y="472.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">+8 pts</tspan><tspan fill="#d7d3c8">  QA-CI-009 · .github/workflows/ci.yml:10</tspan></text>
+    <text x="22" y="491.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">+8 pts</tspan><tspan fill="#d7d3c8">  QA-CI-009 · .github/workflows/ci.yml:10</tspan></text>
+    <text x="22" y="510.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">+8 pts</tspan><tspan fill="#d7d3c8">  QA-CI-009 · .github/workflows/ci.yml:26</tspan></text>
 
   </g>
 
-  <rect x="0.5" y="0.5" width="442" height="793" rx="7.5" ry="7.5" fill="none" stroke="#000000" stroke-opacity="0.5"/>
+  <rect x="0.5" y="0.5" width="442" height="565" rx="7.5" ry="7.5" fill="none" stroke="#000000" stroke-opacity="0.5"/>
 </svg>

@@ -112,24 +112,36 @@ export async function buildHeroSvg(): Promise<string> {
   const rendered = renderTerminal(result, { isTTY: true, ascii: false });
   const renderedLines = rendered.split("\n");
 
-  // This hero illustrates the score MECHANISM (hammer, gauge, deductions,
-  // fix-this-first) — the per-finding detail it used to carry in full is
-  // already shown by "One finding, up close" and the full --verbose
-  // demo.svg elsewhere in the README, and repeating it here is what made
-  // a single illustrative image ~3800px tall. Cut right before the
-  // FINDINGS section (and the footer after it) so the hero stays scoped
-  // to what this README section actually explains.
+  // This asset answers ONE question for its README section: where the
+  // points actually went. It is deliberately an excerpt, cut at both ends:
+  //
+  //  - The hammer art above WORTHINESS is dropped. assets/readme/
+  //    score-gauge.svg already animates the hammer through every band, so
+  //    carrying it here too showed the same thing twice in one section
+  //    while costing 11 lines of height.
+  //  - Everything from FINDINGS down is dropped. The per-finding detail
+  //    lives in "One finding, up close" and in the full --verbose
+  //    demo.svg; repeating it here is what made a single illustrative
+  //    image ~3800px tall.
+  //
+  // What is left — the score line, the gauge, the category breakdown, the
+  // deduction box and FIX THIS FIRST — is contiguous, unedited reporter
+  // output, and it fits a fixed, compact frame.
+  const startIndex = renderedLines.findIndex((line) =>
+    stripAnsi(line).includes("WORTHINESS"),
+  );
   const findingsHeaderIndex = renderedLines.findIndex(
     (line) => stripAnsi(line).trim() === "▚ FINDINGS",
   );
-  const scoreLines =
-    findingsHeaderIndex === -1
-      ? renderedLines
-      : renderedLines.slice(0, findingsHeaderIndex);
+  const breakdownLines = renderedLines.slice(
+    startIndex === -1 ? 0 : startIndex,
+    findingsHeaderIndex === -1 ? renderedLines.length : findingsHeaderIndex,
+  );
 
   const allLines = [
     "\x1b[92m$ \x1b[0m\x1b[1mnpx mjolnir-qa@latest\x1b[0m",
-    ...scoreLines,
+    "",
+    ...breakdownLines,
     // The wall-clock duration is real but non-deterministic run-to-run;
     // masked here only, never in the reporter, so regenerating is a
     // no-op diff when the scan itself is unchanged.
