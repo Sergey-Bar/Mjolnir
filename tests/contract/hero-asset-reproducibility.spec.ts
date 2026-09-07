@@ -85,7 +85,14 @@ describe("assets/readme/terminal-hero.svg reproducibility", () => {
     const sectionHeaders = rendered
       .split("\n")
       .map((l) => l.trim())
-      .filter((l) => /^[▚=] /.test(l));
+      .filter((l) => /^[▚=] /.test(l))
+      // The hero is deliberately scoped to the score MECHANISM — it cuts
+      // the render right before FINDINGS (see generate-readme-hero.ts's
+      // buildHeroSvg) because the per-finding detail is already shown by
+      // "One finding, up close" and the full --verbose demo.svg, and
+      // repeating it here made a single illustrative image ~3800px tall.
+      // This is the one section this check must not demand.
+      .filter((l) => !/^[▚=] FINDINGS$/.test(l));
     expect(sectionHeaders.length).toBeGreaterThan(0);
     for (const header of sectionHeaders) {
       const text = header.replace(/^[▚=]\s*/, "");

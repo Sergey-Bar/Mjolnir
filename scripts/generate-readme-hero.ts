@@ -110,9 +110,26 @@ export async function buildHeroSvg(): Promise<string> {
   // own stdout is likely piped — the SVG needs colors regardless of
   // whether THIS process's terminal happens to be interactive.
   const rendered = renderTerminal(result, { isTTY: true, ascii: false });
+  const renderedLines = rendered.split("\n");
+
+  // This hero illustrates the score MECHANISM (hammer, gauge, deductions,
+  // fix-this-first) — the per-finding detail it used to carry in full is
+  // already shown by "One finding, up close" and the full --verbose
+  // demo.svg elsewhere in the README, and repeating it here is what made
+  // a single illustrative image ~3800px tall. Cut right before the
+  // FINDINGS section (and the footer after it) so the hero stays scoped
+  // to what this README section actually explains.
+  const findingsHeaderIndex = renderedLines.findIndex(
+    (line) => stripAnsi(line).trim() === "▚ FINDINGS",
+  );
+  const scoreLines =
+    findingsHeaderIndex === -1
+      ? renderedLines
+      : renderedLines.slice(0, findingsHeaderIndex);
+
   const allLines = [
     "\x1b[92m$ \x1b[0m\x1b[1mnpx mjolnir-qa@latest\x1b[0m",
-    ...rendered.split("\n"),
+    ...scoreLines,
     // The wall-clock duration is real but non-deterministic run-to-run;
     // masked here only, never in the reporter, so regenerating is a
     // no-op diff when the scan itself is unchanged.
