@@ -9,6 +9,12 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [0.5.17] — 2026-09-07
+
+### Changes since 0.5.16
+
+- Fixture integrity gate: Layer A structural typecheck, doctor fixture-integrity, Python tier (F1, D9, G3) (#53)
+
 ## [0.5.16] — 2026-09-07
 
 ### Changes since 0.5.15
