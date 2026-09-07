@@ -61,7 +61,7 @@ describe("README rule-ID claims match the registry", () => {
 let dir: string;
 let origCwd: string;
 
-beforeEach(() => {
+beforeEach(async () => {
   dir = mkdtempSync(join(tmpdir(), "mjolnir-readme-doctest-"));
   mkdirSync(join(dir, "e2e"), { recursive: true });
   writeFileSync(
@@ -74,6 +74,20 @@ beforeEach(() => {
   );
   origCwd = process.cwd();
   process.chdir(dir);
+  // Report-consuming verbs (`summary`, `handoff`, `diff`, `pr-comment`)
+  // exit 10 with no saved report, which would make the README's rows for
+  // them permanently un-doctestable. Give the fixture the same
+  // `mjolnir --json > mjolnir.json` a reader would have run first, so
+  // those rows are actually exercised instead of excluded. Captured from
+  // the real CLI, so it can't drift from the schema those verbs parse.
+  let captured = "";
+  await main(["--json"], {
+    out: (...parts: unknown[]) => {
+      captured += parts.join(" ");
+    },
+    err: () => {},
+  });
+  writeFileSync(join(dir, "mjolnir.json"), captured);
 });
 
 afterEach(() => {
@@ -98,6 +112,13 @@ function extractReadmeCommands(): string[] {
     rest = rest.replace(/\s*>.*$/, "").trim();
     // Skip commands with placeholder args like <RULE-ID>, <dir>
     if (rest.includes("<")) continue;
+    // `mcp` is a server, not a command: it reads JSON-RPC frames from
+    // stdin until the client closes the stream, so "run it and check the
+    // exit code" has no meaning here — it would block on the runner's
+    // own stdin. Its real coverage is the spawned-binary handshake in
+    // tests/contract/mcp-transport.spec.ts, which is the right shape for
+    // a transport. This is the only exclusion; keep it that way.
+    if (rest === "mcp") continue;
     if (rest) commands.push(rest);
   }
   return [...new Set(commands)];

@@ -182,6 +182,12 @@ export const HELP_ENTRIES: HelpEntry[] = [
     usage: "mjolnir install [--staged-hook] [--dry-run] [--force]",
     examples: ["mjolnir install --dry-run", "mjolnir install --staged-hook"],
   },
+  {
+    verb: "mcp",
+    summary: "run as an MCP server over stdio (scan / explain / diff tools)",
+    usage: "mjolnir mcp",
+    examples: ["mjolnir mcp"],
+  },
 ];
 
 /** Scan-flag entries documented per-flag via the overview. */
@@ -294,7 +300,10 @@ const GROUPS: Array<{ title: string; verbs: string[] }> = [
       "create-rule",
     ],
   },
-  { title: "Meta", verbs: ["rules", "explain", "why", "handoff", "install"] },
+  {
+    title: "Meta",
+    verbs: ["rules", "explain", "why", "handoff", "install", "mcp"],
+  },
 ];
 
 const SCAN_SUMMARY_LINES: string[] = [
