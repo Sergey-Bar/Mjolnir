@@ -18,7 +18,7 @@ npx mjolnir-qa@latest
 
 **Are your tests worthy of trust?**
 
-[See it work](#-see-it-work) · [Quickstart](#-quickstart) · [Who it's for](#-who-is-this-for) · [Why not a linter](#-mjölnir-is-not-another-linter) · [What it verifies](#-what-mjölnir-verifies) · [Scoring](#-how-the-score-works) · [Runtime evidence](#-runtime-evidence) · [CI](#-ci-integration) · [Exit codes](#-exit-codes--contracts) · [Docs](#-documentation) · [Contributing](#-contributing)
+[See it work](#-see-it-work) · [Quickstart](#-quickstart) · [Who it's for](#-who-is-this-for) · [Why not a linter](#-mjölnir-is-not-another-linter) · [What it verifies](#-what-mjölnir-verifies) · [Scoring](#-how-the-score-works) · [Runtime evidence](#-runtime-evidence) · [CI](#-ci-integration) · [Agents & MCP](#-works-with-your-agent) · [Docs](#-documentation) · [Contributing](#-contributing)
 
 <details>
 <summary>Read this in another language — 22 translations</summary>
@@ -36,19 +36,28 @@ it; `npm run docs:translations` reports how far.
 
 ## 🎬 See it work
 
+<!-- Plays inline on github.com only: <video> is rendered for GitHub's own
+     user-content CDN, never for a repo-relative path. The <a> below is the
+     fallback for every other renderer (npm, mirrors, offline clones). -->
 <p align="center">
-  <a href="assets/video/mjolnir-demo.mp4">
-    <img src="assets/video/mjolnir-demo-poster.png" alt="Mjölnir scanning a demo repo: the hammer instrument at [STRAINED] and WORTHINESS 75/100 NEEDS WORK" width="900" />
-  </a>
+  <video
+    src="https://github.com/user-attachments/assets/0e1af1e4-1e27-4c1c-9ec4-2717d194df05"
+    poster="https://raw.githubusercontent.com/Sergey-Bar/Mjolnir/main/assets/video/mjolnir-demo-poster.png"
+    controls
+    muted
+    playsinline
+    width="900"></video>
 </p>
 
 <p align="center">
-  <strong><a href="assets/video/mjolnir-demo.mp4">▶ Watch the 42-second demo</a></strong> —
-  one false-green CI gate: found, fixed, and re-proved.
+  <strong>42 seconds</strong> — one false-green CI gate: found, fixed,
+  re-proved, then handed to an agent.
+  <a href="assets/video/mjolnir-demo.mp4">Download the 1440p MP4</a> if the
+  player above doesn't load.
 </p>
 
-<sub>Every frame is real CLI output. The 75 → 90 score change is a real
-re-scan after applying the fix the tool itself printed — never a mockup.
+<sub>Every frame is real CLI output — the 75 → 90 score change is a real
+re-scan after applying the fix the tool itself printed, never a mockup.
 Rendered by `npm run docs:video` from
 [`assets/video/script.demo.json`](assets/video/script.demo.json);
 [`tests/contract/video-script.spec.ts`](tests/contract/video-script.spec.ts)
@@ -79,14 +88,15 @@ fails CI if it drifts.</sub>
    brittle selector, hardcoded staging URLs, a `networkidle` wait.
 3. It turned each into a concrete finding with a rule ID, a location and a
    fix — and a single score you can gate a PR on.
+4. `mjolnir handoff` turned the findings into a remediation plan — evidence,
+   constraints and a copy-pastable prompt per finding — that Claude Code
+   (or any other agent) can work through, with the tool's own verification
+   discipline built in.
 
-There's also an 89-second tour covering `explain`, `forensics`, and the
-rest of the walkthrough below — same pipeline, same guarantee (every
-frame is real CLI output). It's built as
-[`assets/video/script.tour.json`](assets/video/script.tour.json) but not
-committed as an MP4 (it's ~16MB; every clone shouldn't pay for a video
-most readers won't open) — run `npm run docs:video` to render it, or
-check the repo's [Releases](../../releases) for a published copy.
+An 89-second tour of `explain` and `forensics` is built from
+[`script.tour.json`](assets/video/script.tour.json) by `npm run docs:video`
+— not committed as an MP4 (~16MB), so check
+[Releases](../../releases) or render it yourself.
 
 ### One finding, up close
 
@@ -153,6 +163,7 @@ and you're done. Everything else is optional.
 | `mjolnir --scope changed`           | Only what your branch introduced — the CI form   |
 | `mjolnir ci install`                | Generate the advisory PR workflow                |
 | `mjolnir explain QA-CI-001`         | What / why / fix + measured FP rate for one rule |
+| `mjolnir why src/a.spec.ts:42`      | Why this exact line was flagged — never a gate   |
 | `mjolnir rules --unmeasured`        | The rules running on assumption, not measurement |
 | `mjolnir --json` / `--format sarif` | Machine-readable / GitHub Code Scanning          |
 | `mjolnir --strict`                  | Also run quarantine-tier rules (higher FP risk)  |
@@ -173,19 +184,23 @@ and you're done. Everything else is optional.
 <details>
 <summary><strong>Occasional / reporting</strong></summary>
 
-| Command                         | What it does                                     |
-| ------------------------------- | ------------------------------------------------ |
-| `mjolnir fix --dry-run` / `fix` | Safe auto-fixes with proof                       |
-| `mjolnir baseline` / `diff`     | Snapshot findings, then report only new/worsened |
-| `mjolnir impact --since <ref>`  | What changed since a prior commit                |
-| `mjolnir debt`                  | Test-debt register with a cost model             |
-| `mjolnir handover`              | New-QA onboarding map of the suite               |
-| `mjolnir stats`                 | Local all-time counters of fixes seen            |
-| `mjolnir badge`                 | shields.io endpoint JSON + snippet               |
-| `mjolnir rules --md`            | Full rule catalog (JSON or Markdown)             |
-| `mjolnir doctor`                | Self-audit of Mjölnir's own rule base            |
-| `mjolnir create-rule <ID>`      | Scaffold a new rule + fixtures                   |
-| `mjolnir --format mermaid`      | Test-architecture diagram for a PR comment       |
+| Command                         | What it does                                           |
+| ------------------------------- | ------------------------------------------------------ |
+| `mjolnir fix --dry-run` / `fix` | Safe auto-fixes with proof                             |
+| `mjolnir baseline` / `diff`     | Snapshot findings, then report only new/worsened       |
+| `mjolnir impact --since <ref>`  | What changed since a prior commit                      |
+| `mjolnir summary`               | CI annotations + step summary from a saved report      |
+| `mjolnir pr-comment`            | A scoped PR comment, as Markdown                       |
+| `mjolnir debt`                  | Test-debt register with a cost model                   |
+| `mjolnir handover`              | New-QA onboarding map of the suite                     |
+| `mjolnir init`                  | Detect frameworks + setup checklist (never overwrites) |
+| `mjolnir suppressions`          | List suppressed findings — governance transparency     |
+| `mjolnir stats`                 | Local all-time counters of fixes seen                  |
+| `mjolnir badge`                 | shields.io endpoint JSON + snippet                     |
+| `mjolnir rules --md`            | Full rule catalog (JSON or Markdown)                   |
+| `mjolnir doctor`                | Self-audit of Mjölnir's own rule base                  |
+| `mjolnir create-rule <ID>`      | Scaffold a new rule + fixtures                         |
+| `mjolnir --format mermaid`      | Test-architecture diagram for a PR comment             |
 
 </details>
 
@@ -366,6 +381,29 @@ or `mjolnir rules --md`.
 >
 > Per-rule pages live under [`docs/rules/`](docs/rules/).
 
+### Selector Health Score
+
+A pass rate says the suite went green today. It says nothing about whether
+it will still go green after a redesign. `mjolnir doctor:playwright` grades
+every locator in a spec file by how it finds an element — the way a user
+identifies it (role, label, text), an explicit contract (`data-testid`), or
+a structural accident (CSS chains, XPath) — and scores the file 0–100:
+
+```text
+  ▚ SELECTOR HEALTH
+
+e2e/login.spec.ts
+  [█████████████░░░░░░░]  65 / 100
+  role/text: 1 · testid: 0 · css-chains: 1 ⚠ · xpath: 0
+
+e2e/checkout.spec.ts
+  [█████████████████░░░]  86 / 100
+  role/text: 3 · testid: 1 · css-chains: 1 ⚠ · xpath: 0
+```
+
+`.btn.btn-primary > div:nth-child(2)` is not a test failure today — it's a
+test failure scheduled for whenever someone touches the markup.
+
 ### How much of this is measured
 
 **78 of 99 rules carry a false-positive rate measured against real OSS code** (≥ 10 hand-classified findings each; see
@@ -383,33 +421,76 @@ Every rule is `core`, `extended`, or `quarantine`, assigned from its
 `--strict`. Tiers, language maturity and the promotion/demotion rules:
 [rule lifecycle](https://sergey-bar.github.io/Mjolnir/reference/rule-lifecycle).
 
+### What it can't tell you
+
+A tool that claims your tests are lying should be blunt about its own
+limits:
+
+- **It does not run your tests.** It reads your code and, when you point
+  it at one, a run report. A clean scan is not a passing suite.
+- **It cannot tell you an assertion is _wrong_.** `expect(total).toBe(41)`
+  is a perfectly healthy-looking test. Mjölnir finds tests that can't fail
+  and pipelines that can't go red — not tests that check the wrong thing.
+- **A 100 is not proof of a good suite.** It means none of these 99 rules
+  fired. Coverage of your actual risk is a different question, and this
+  tool does not pretend to answer it.
+- **21 of 99 rules ship on an estimate**, not a measured rate — and they
+  say so, per rule, in `mjolnir explain`.
+- **E1 findings are heuristics.** They are positioned to be worth reading,
+  not to be applied blindly; the evidence level is attached to every
+  finding precisely so you can tell the difference.
+- **An empty repo scores `null`, never 100.** "Unknown" is a verdict here.
+
+### We run it on ourselves
+
+Every CI run scans this repository with the build produced by that same
+run, and the gate fails on **any** error-severity finding — but also on a
+_partial_ scan or a crashed rule, because a truncated self-scan that
+reports nothing is exactly the false green this project exists to catch.
+The result is uploaded as a build artifact on every run.
+
 ---
 
 ## 📊 How the score works
 
-<p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Mjölnir terminal output — WORTHINESS 75/100 NEEDS WORK, a diagnostics-by-category breakdown, and a FIX THIS FIRST list" width="820" />
-</p>
+<table>
+<tr>
+<td width="46%" valign="top" align="center">
 
-<sub>Regenerated by `npm run docs:hero`;
-[`tests/contract/hero-asset-reproducibility.spec.ts`](tests/contract/hero-asset-reproducibility.spec.ts)
-fails CI if it drifts from what the reporter actually prints.</sub>
+<img src="assets/readme/score-gauge.svg" alt="The hammer sweeping every score from 0 to 100 — cracked below 50 (UNWORTHY), strained 50-79 (NEEDS WORK), charged 80-99 (WORTHY), forged at 100 (FORGED) — then holding on FORGED before it loops" width="270" />
+
+**What the score means**
+
+</td>
+<td width="54%" valign="top" align="center">
+
+<img src="assets/readme/terminal-hero.svg" alt="Mjölnir's deduction breakdown — WORTHINESS 75/100 NEEDS WORK, a diagnostics-by-category bar chart, the per-severity deduction box, and a FIX THIS FIRST list" width="330" />
+
+**Where the points went**
+
+</td>
+</tr>
+</table>
+
+<sub>Left: every score 0–100 through the real `deriveScoreState`/`renderHammer`
+(`npm run docs:gauge`) — the hammer has four real states, so it snaps at the
+exact thresholds rather than faking an in-between shape. Right: a real strict
+scan of `examples/demo-repo` (`npm run docs:hero`), excerpted to the deduction
+block. Both are drift-locked
+([gauge](tests/contract/score-gauge-asset-reproducibility.spec.ts) ·
+[breakdown](tests/contract/hero-asset-reproducibility.spec.ts)).</sub>
 
 The score is transparent: **error −8, warning −3, info −1**, then normalized
 by suite exposure (deductions per test declaration). Evidence-weighted
 deductions mean weak signals cost less. The terminal shows the same
 discounted numbers the score uses — no black box.
 
-| Score   | Verdict          |     | Level | Evidence             | Score impact     |
-| ------- | ---------------- | --- | ----- | -------------------- | ---------------- |
-| 100     | ⚡ **FORGED**    |     | E2    | Deterministic defect | Full deduction   |
-| ≥ 80    | ✓ **WORTHY**     |     | E1    | Heuristic pattern    | Half deduction   |
-| 50 – 79 | ⚠ **NEEDS WORK** |     | E0    | Observation          | Zero (info only) |
-| < 50    | ✖ **UNWORTHY**   |     |       |                      |                  |
-
-Most rules are **E1**. The tagline "we prove it" refers to this system:
-E2 findings are structural proof; E1 findings are correctly-positioned
-warnings, not formal proofs.
+Each band also carries an evidence level: **100/FORGED** is **E2**
+(deterministic defect, full deduction), **≥ 80/WORTHY** and **50–79/NEEDS
+WORK** findings are mostly **E1** (heuristic pattern, half deduction), and
+**E0** (observation) findings cost nothing — info only. The tagline "we
+prove it" refers to this system: E2 findings are structural proof; E1
+findings are correctly-positioned warnings, not formal proofs.
 
 **No false proof.** We'd rather say "unknown" than "verified" — an empty
 repo scores `null`, never a fake 100. Full method:
@@ -428,7 +509,7 @@ mjolnir forensics ./test-results/
 ```
 
 ```text
-▚ FLAKINESS LEADERBOARD
+  ▚ FLAKINESS LEADERBOARD
 
 3 tests · 1 failed · 1 flaky · 1 retried
 
@@ -474,6 +555,49 @@ ref with `--base <ref>`.
 
 ---
 
+## 🧠 Works with your agent
+
+Findings are only worth something if something acts on them. Mjölnir hands
+its evidence to a coding agent three ways — none of them "paste the
+terminal output and hope".
+
+| Command           | What the agent gets                                                                                                                                                           |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mjolnir mcp`     | Runs as an [MCP](https://modelcontextprotocol.io) server over stdio — `scan`, `explain` and `diff` become tools Claude Code, Claude Desktop or any MCP client can call.       |
+| `mjolnir handoff` | A saved `--json` report becomes a deterministic Markdown remediation plan: what was detected, the evidence boundary per finding, what must **not** change, and how to verify. |
+| `mjolnir install` | Writes the agent instruction surfaces your repo already has (e.g. `.claude/commands/`), so the agent knows to re-scan before it claims it's done.                             |
+
+Add the MCP server to Claude Code:
+
+```bash
+claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
+```
+
+Or to any client that takes an `mcpServers` block:
+
+```json
+{
+  "mcpServers": {
+    "mjolnir": { "command": "npx", "args": ["-y", "mjolnir-qa@latest", "mcp"] }
+  }
+}
+```
+
+Everything a machine consumes — MCP tool results, `--json`, SARIF — comes
+off one canonical result under a versioned, additive-only schema, so a
+consumer never has to reconstruct semantics for itself:
+[the machine contract](docs/machine-contract.md) (`contractVersion: 1`).
+
+**The guardrail matters more than the convenience.** Every finding in a
+handoff carries its evidence boundary: **E2** says _deterministic — check
+the location and apply the fix_; **E1** says _REQUIRES CONFIRMATION — the
+observation alone does not prove the defect_. An agent that "fixes" E1
+findings blindly, or suppresses a rule to get a green scan, is doing the
+exact thing this tool exists to catch — so the artifact says so, in the
+prompt, next to the finding.
+
+---
+
 ## 📐 Exit codes & contracts
 
 Frozen — safe to build CI logic on:
@@ -491,27 +615,24 @@ are immutable once shipped and never reused.
 
 ---
 
-## Trust model
+## 🔒 Trust model
 
-**Local-first, zero telemetry, no false proof** — full detail in
-[docs/SCORING.md](docs/SCORING.md) and
-[docs/RULE-LIFECYCLE.md](docs/RULE-LIFECYCLE.md). The one piece worth
-stating here because it changes how you invoke the tool:
+**Local-first, zero telemetry, no false proof.** Scanning untrusted code
+never executes it.
 
-- **Plugin trust & execution gate** — plugins are npm packages declared
-  under `"plugins"`; JS modules live in `mjolnir-rules/*.mjs`. There is
-  **no sandbox**: plugin code runs with full Node privileges, the same
-  trust model as ESLint or Vitest plugins. Because of that, code execution
-  is **opt-in at every scan**: pass `--enable-plugins` (or set
-  `MJOLNIR_ENABLE_PLUGINS=1`) or the sources are NOT loaded — a loud
-  stderr notice lists exactly what was skipped. Scanning untrusted code
-  never executes it. JSON rule manifests (`mjolnir-rules/*.json`) are
-  unaffected: they declare regex patterns and execute no code by design.
-  Core rule-ID prefixes are reserved and rejected from plugins and
-  external rules to prevent spoofing.
+The one part that changes how you invoke the tool: **plugins are not
+sandboxed.** JS plugins (`mjolnir-rules/*.mjs`, or npm packages under
+`"plugins"`) run with full Node privileges — the same trust model as
+ESLint or Vitest plugins — so loading them is opt-in **per scan**: without
+`--enable-plugins` (or `MJOLNIR_ENABLE_PLUGINS=1`) the sources are not
+loaded, and a stderr notice lists exactly what was skipped. JSON rule
+manifests declare regex patterns and execute no code by design. Core
+rule-ID prefixes are reserved, so a plugin cannot impersonate one.
 
-Architecture, the full rule catalog, and the tree-sitter roadmap live in
-[CONTRIBUTING.md](CONTRIBUTING.md) and the
+Scoring math, rule lifecycle, architecture and the tree-sitter roadmap:
+[docs/SCORING.md](docs/SCORING.md) ·
+[docs/RULE-LIFECYCLE.md](docs/RULE-LIFECYCLE.md) ·
+[CONTRIBUTING.md](CONTRIBUTING.md) ·
 [docs site](https://sergey-bar.github.io/Mjolnir/).
 
 ---

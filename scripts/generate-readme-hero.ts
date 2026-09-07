@@ -110,9 +110,38 @@ export async function buildHeroSvg(): Promise<string> {
   // own stdout is likely piped — the SVG needs colors regardless of
   // whether THIS process's terminal happens to be interactive.
   const rendered = renderTerminal(result, { isTTY: true, ascii: false });
+  const renderedLines = rendered.split("\n");
+
+  // This asset answers ONE question for its README section: where the
+  // points actually went. It is deliberately an excerpt, cut at both ends:
+  //
+  //  - The hammer art above WORTHINESS is dropped. assets/readme/
+  //    score-gauge.svg already animates the hammer through every band, so
+  //    carrying it here too showed the same thing twice in one section
+  //    while costing 11 lines of height.
+  //  - Everything from FINDINGS down is dropped. The per-finding detail
+  //    lives in "One finding, up close" and in the full --verbose
+  //    demo.svg; repeating it here is what made a single illustrative
+  //    image ~3800px tall.
+  //
+  // What is left — the score line, the gauge, the category breakdown, the
+  // deduction box and FIX THIS FIRST — is contiguous, unedited reporter
+  // output, and it fits a fixed, compact frame.
+  const startIndex = renderedLines.findIndex((line) =>
+    stripAnsi(line).includes("WORTHINESS"),
+  );
+  const findingsHeaderIndex = renderedLines.findIndex(
+    (line) => stripAnsi(line).trim() === "▚ FINDINGS",
+  );
+  const breakdownLines = renderedLines.slice(
+    startIndex === -1 ? 0 : startIndex,
+    findingsHeaderIndex === -1 ? renderedLines.length : findingsHeaderIndex,
+  );
+
   const allLines = [
     "\x1b[92m$ \x1b[0m\x1b[1mnpx mjolnir-qa@latest\x1b[0m",
-    ...rendered.split("\n"),
+    "",
+    ...breakdownLines,
     // The wall-clock duration is real but non-deterministic run-to-run;
     // masked here only, never in the reporter, so regenerating is a
     // no-op diff when the scan itself is unchanged.

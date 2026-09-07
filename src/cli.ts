@@ -49,6 +49,7 @@ import { runSummaryCommand } from "./commands/summary.js";
 import { runWhyCommand } from "./commands/why.js";
 import { runHandoffCommand } from "./commands/handoff.js";
 import { runInstallCommand } from "./commands/install-agents.js";
+import { runStdioTransport } from "./mcp/transport.js";
 import { ciInstall, type GateLevel } from "./integrations/ci-install.js";
 import { runForensics } from "./forensics/run.js";
 import { renderTriage, renderTriageMd } from "./forensics/triage.js";
@@ -1329,6 +1330,7 @@ const SUBCOMMANDS: ReadonlySet<string> = new Set([
   "rules",
   "explain",
   "doctor:playwright",
+  "mcp",
 ]);
 
 export async function main(
@@ -1386,6 +1388,29 @@ export async function main(
   if (argv[0] === "why") return runWhyCommand(argv.slice(1), io);
   if (argv[0] === "handoff") return runHandoffCommand(argv.slice(1), io);
   if (argv[0] === "install") return runInstallCommand(argv.slice(1), io);
+  // `mcp` is a long-lived mode, not a one-shot verb: it runs the stdio
+  // JSON-RPC loop until the client closes stdin. Until this branch
+  // existed the transport shipped in the tarball (dist/mcp/stdio.mjs)
+  // with no way to reach it through the installed `mjolnir` binary, so
+  // an MCP client had to be pointed at a path inside node_modules.
+  //
+  // The import is STATIC on purpose. A dynamic `await import()` here is
+  // the obvious-looking choice — lazy-load a transport most invocations
+  // never use — and it silently breaks the whole CLI: rolldown responds
+  // by code-splitting, `dist/cli.mjs` becomes a re-export shim, and
+  // isEntryPoint()'s `import.meta.url === argv[1]` check then compares
+  // the chunk's URL against the shim's. main() never runs, every command
+  // exits 0 printing nothing. That is the exact failure isEntryPoint's
+  // own comment warns about. The transport shares nearly all of its
+  // graph with the scan engine the CLI already bundles, so loading it
+  // eagerly costs almost nothing.
+  //
+  // Nothing but JSON-RPC frames may reach stdout: this branch hands the
+  // stream to the transport and returns without printing.
+  if (argv[0] === "mcp") {
+    await runStdioTransport(process.stdin, process.stdout);
+    return 0;
+  }
   // `help` must dispatch BEFORE the scan fall-through: an unknown verb
   // becomes a scan target (mjolnir ./help scans a folder named help;
   // bare `mjolnir help` used to scan the CWD as if it were a path).
