@@ -74,6 +74,32 @@ scan`. Unknown categories are a usage error (exit 10).
 - help registry gained `why`, `handoff`, `install` and the new flags;
   site/reference/cli.md documents the handoff trust model.
 
+## [0.5.13] — 2026-09-07
+
+### Changes since 0.5.12
+
+- Merge pull request #33 from Sergey-Bar/claude/readme-demo-video-4rzxij
+- fix(video): resolve ffmpeg/ffprobe without a shell
+- Resync generated assets after merging origin/main (v0.5.12)
+- Merge remote-tracking branch 'origin/main' into claude/readme-demo-video-4rzxij
+- merge: catch up to main again (v0.5.6) — a second PR landed underneath this one
+- Merge remote-tracking branch 'origin/main' into claude/readme-demo-video-4rzxij
+- fix: explain's fixture path was OS-native, breaking Windows CI
+- merge: bring in main's UX overhaul, reconcile the reporter conflicts
+- Merge remote-tracking branch 'origin/main' into claude/readme-demo-video-4rzxij
+- video: adopt react.doctor's terminal palette and font
+- video: fix invisible command text, and guard the whole class
+- video: present the terminal as a window, not a maximised screenshot
+- video: re-render both demos against the fixed reporter
+- report: one hammer, and output that fits the terminal it prints to
+- video: add the manual render workflow and document the pipeline
+- docs: restructure the README around the demo, and lead with the video
+- video: add the media-format contract, and ship the hero MP4
+- video: render the committed scripts to 1440p H.264, frame by frame
+- video: capture the demo scripts from real scans, and contract them
+- video: vendor the render font stack, gated by a cmap-exact glyph probe
+- docs: fix the stale numbers in the honesty section, and guard them
+
 ## [0.5.12] — 2026-09-07
 
 ### Changes since 0.5.11

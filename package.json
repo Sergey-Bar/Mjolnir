@@ -1,7 +1,7 @@
 {
   "name": "mjolnir-qa",
-  "version": "0.5.12",
-  "description": "Mj\u00f6lnir \u2014 the Verification Trust Engine for QA. Audits test suites and CI pipelines, reports a worthiness score and prioritized findings.",
+  "version": "0.5.13",
+  "description": "Mjölnir — the Verification Trust Engine for QA. Audits test suites and CI pipelines, reports a worthiness score and prioritized findings.",
   "type": "module",
   "engines": {
     "node": ">=22.18"
@@ -65,7 +65,7 @@
     "linter",
     "static-analysis"
   ],
-  "author": "Mj\u00f6lnir Team",
+  "author": "Mjölnir Team",
   "license": "MIT",
   "repository": {
     "type": "git",
