@@ -27,7 +27,7 @@ XPath paths and structural CSS break on any markup refactor and silently select 
 Brittle selector (xpath= selector).
 ```
 
-Example from this rule's own must-fire fixture: `tests/fixtures/QA-JV-106/must-fire/SelectorTest.java`
+Example from this rule's own must-fire fixture: `tests/fixtures/QA-JV-106/must-fire/InventoryTest.java`
 
 ## The fix
 

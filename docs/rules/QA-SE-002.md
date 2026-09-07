@@ -24,10 +24,10 @@ The sleep is standing in for an explicit wait: the element lookup after it still
 ## What gets flagged (real detector output)
 
 ```
-Hard sleep before an element lookup (sleep at line 17) — the explicit-wait substitute (QA-SE-002).
+Hard sleep before an element lookup (sleep at line 10) — the explicit-wait substitute (QA-SE-002).
 ```
 
-Example from this rule's own must-fire fixture: `tests/fixtures/QA-SE-002/must-fire/LoginFlowsTests.cs`
+Example from this rule's own must-fire fixture: `tests/fixtures/QA-SE-002/must-fire/InventoryTest.cs`
 
 ## The fix
 

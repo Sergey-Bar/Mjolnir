@@ -35,7 +35,7 @@ Replace the sleep with an explicit wait: Java `new WebDriverWait(driver, Duratio
 
 ## Confirmed NOT to fire on the corresponding clean pattern
 
-Verified against `tests/fixtures/QA-SE-003/must-not-fire/test_inventory.py` — a legitimate, similar-looking pattern this rule correctly leaves alone.
+Verified against `tests/fixtures/QA-SE-003/must-not-fire/test_explicit_waits.py` — a legitimate, similar-looking pattern this rule correctly leaves alone.
 
 ## Corpus-measured false-positive risk
 

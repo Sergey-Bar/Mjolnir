@@ -35,7 +35,7 @@ Assert on the element you actually care about: `await expect(page.getByRole('hea
 
 ## Confirmed NOT to fire on the corresponding clean pattern
 
-Verified against `tests/fixtures/QA-PW-102/must-not-fire/clean.spec.ts` — a legitimate, similar-looking pattern this rule correctly leaves alone.
+Verified against `tests/fixtures/QA-PW-102/must-not-fire/LoadStateTest.java` — a legitimate, similar-looking pattern this rule correctly leaves alone.
 
 ## Corpus-measured false-positive risk
 

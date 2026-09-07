@@ -24,10 +24,10 @@ A Selenium `Thread.sleep` before `findElement` encodes a guess about the app's t
 ## What gets flagged (real detector output)
 
 ```
-Hard sleep before an element lookup (sleep at line 17) — the explicit-wait substitute (QA-SE-001).
+Hard sleep before an element lookup (sleep at line 8) — the explicit-wait substitute (QA-SE-001).
 ```
 
-Example from this rule's own must-fire fixture: `tests/fixtures/QA-SE-001/must-fire/SearchFlowsTest.java`
+Example from this rule's own must-fire fixture: `tests/fixtures/QA-SE-001/must-fire/InventoryTest.java`
 
 ## The fix
 
@@ -35,7 +35,7 @@ Replace the sleep with an explicit wait: Java `new WebDriverWait(driver, Duratio
 
 ## Confirmed NOT to fire on the corresponding clean pattern
 
-Verified against `tests/fixtures/QA-SE-001/must-not-fire/SearchFlowsTest.java` — a legitimate, similar-looking pattern this rule correctly leaves alone.
+Verified against `tests/fixtures/QA-SE-001/must-not-fire/InventoryTest.java` — a legitimate, similar-looking pattern this rule correctly leaves alone.
 
 ## Corpus-measured false-positive risk
 

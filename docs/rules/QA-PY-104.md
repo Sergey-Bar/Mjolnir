@@ -27,7 +27,7 @@ XPath paths and structural CSS break on any markup refactor and silently select 
 Brittle selector (xpath= selector).
 ```
 
-Example from this rule's own must-fire fixture: `tests/fixtures/QA-PY-104/must-fire/test_rows.py`
+Example from this rule's own must-fire fixture: `tests/fixtures/QA-PY-104/must-fire/test_inventory_selectors.py`
 
 ## The fix
 
@@ -35,7 +35,7 @@ Prefer role-based locators (`get_by_role(...)`) or data-testid attributes.
 
 ## Confirmed NOT to fire on the corresponding clean pattern
 
-Verified against `tests/fixtures/QA-PY-104/must-not-fire/test_rows.py` — a legitimate, similar-looking pattern this rule correctly leaves alone.
+Verified against `tests/fixtures/QA-PY-104/must-not-fire/test_role_selectors.py` — a legitimate, similar-looking pattern this rule correctly leaves alone.
 
 ## Corpus-measured false-positive risk
 
