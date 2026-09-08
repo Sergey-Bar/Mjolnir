@@ -204,6 +204,25 @@ jobs:
           echo "VERSION=$PKG_VERSION" >> "$GITHUB_ENV"
           echo "Releasing $RELEASE_TAG (package version $PKG_VERSION)"
 
+      # WI-12A (plan §31): CHANGELOG integrity gate — RELEASE-BLOCKING.
+      # Runs before publication and before Release creation, never as a
+      # post-release audit. Validates: the released version has a dated
+      # CHANGELOG heading; gate-era (≥0.6.0) headings strictly descend;
+      # no duplicate/undated/empty sections; and when the release diff
+      # touched src/rules/**, at least one rule ID is documented (§32.5).
+      # Historical (pre-gate) entries are validated for shape only and
+      # are never rewritten.
+      - name: CHANGELOG integrity gate
+        run: |
+          PREV_TAG="$(git describe --abbrev=0 --tags "${RELEASE_TAG}^" 2>/dev/null || true)"
+          RULES_TOUCHED=0
+          if [ -n "$PREV_TAG" ]; then
+            RULES_TOUCHED="$(git diff --name-only "${PREV_TAG}..HEAD" -- src/rules/ | wc -l | tr -d ' ')"
+          fi
+          ARGS=(--expect-version "$VERSION")
+          if [ "$RULES_TOUCHED" -gt 0 ]; then ARGS+=(--rules-touched); fi
+          npx tsx scripts/check-changelog.ts "${ARGS[@]}"
+
       - run: npm ci
 
       # The SARIF reporter hardcodes the tool version (kept honest by

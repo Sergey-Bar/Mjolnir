@@ -248,6 +248,11 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci && npm run build
+      # WI-12A: keep the gate honest on main too — every CI run validates
+      # the CURRENT version's CHANGELOG section (cheap; the release flow
+      # re-runs it release-blocking with --rules-touched semantics).
+      - name: CHANGELOG integrity gate (WI-12A)
+        run: npx tsx scripts/check-changelog.ts --expect-version "$(node -p "require('./package.json').version")"
       - name: Doctor self-audit gate (exit 0 = all checks pass)
         run: node dist/cli.mjs doctor . --json > doctor-report.json
       - name: G5 determinism self-verify (second run must be byte-identical)
