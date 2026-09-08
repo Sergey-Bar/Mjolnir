@@ -55,6 +55,7 @@ import { ciInstall, type GateLevel } from "./integrations/ci-install.js";
 import { runForensics } from "./forensics/run.js";
 import { renderTriage, renderTriageMd } from "./forensics/triage.js";
 import { renderBadgeSnippet, writeBadge } from "./commands/badge.js";
+import { runTrustReportCommand } from "./commands/trust-report.js";
 import {
   renderRootHelp,
   renderVerbHelp,
@@ -1314,6 +1315,7 @@ const SUBCOMMANDS: ReadonlySet<string> = new Set([
   "forensics",
   "triage",
   "badge",
+  "trust-report",
   "debt",
   "impact",
   "baseline",
@@ -1368,6 +1370,8 @@ export async function main(
   if (argv[0] === "forensics") return runForensicsCommand(argv.slice(1));
   if (argv[0] === "triage") return runTriageCommand(argv.slice(1));
   if (argv[0] === "badge") return runBadgeCommand(argv.slice(1));
+  if (argv[0] === "trust-report")
+    return runTrustReportCommand(argv.slice(1), io);
   if (argv[0] === "debt") return runDebtCommand(argv.slice(1));
   if (argv[0] === "impact") return runImpactCommand(argv.slice(1));
   if (argv[0] === "baseline") return runBaselineCommand(argv.slice(1));

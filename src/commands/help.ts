@@ -129,6 +129,12 @@ export const HELP_ENTRIES: HelpEntry[] = [
     examples: ["mjolnir badge ."],
   },
   {
+    verb: "trust-report",
+    summary: "deterministic, self-contained Trust Artifact (md + json)",
+    usage: "mjolnir trust-report [path]",
+    examples: ["mjolnir trust-report ."],
+  },
+  {
     verb: "init",
     summary: "detect frameworks + setup checklist (never overwrites)",
     usage: "mjolnir init [--interactive]",
@@ -297,6 +303,7 @@ const GROUPS: Array<{ title: string; verbs: string[] }> = [
       "summary",
       "pr-comment",
       "badge",
+      "trust-report",
       "impact",
       "baseline",
       "diff",
