@@ -241,7 +241,7 @@ globally with `npm i -g mjolnir-qa` if you prefer it over `npx`.
 
 ## What Mjölnir finds
 
-**99 rules** in four families — **test hygiene**, **test quality**,
+**<!-- census:total-rules -->99 rules<!-- /census:total-rules -->** in four families — **test hygiene**, **test quality**,
 **Playwright**, **CI integrity** — over TypeScript/JavaScript, Python,
 Java, C# and GitHub Actions YAML, covering Playwright in all four bindings
 plus pytest, JUnit, TestNG, NUnit, xUnit, MSTest, Jest, Vitest and Mocha,
@@ -433,9 +433,9 @@ Rung by rung: [docs/TERMINOLOGY.md](docs/TERMINOLOGY.md).
 
 ### How much of this is measured
 
-**78 of 99 rules carry a false-positive rate measured against real OSS code**
+**<!-- census:measured-of-total -->78 of 99<!-- /census:measured-of-total --> rules carry a false-positive rate measured against real OSS code**
 (≥ 10 hand-classified findings each — [docs/FP-AUDIT.md](docs/FP-AUDIT.md)).
-The other 21 ship on the author's estimate and say so, per rule, in
+The other <!-- census:unmeasured -->21<!-- /census:unmeasured --> ship on the author's estimate and say so, per rule, in
 `mjolnir explain`; `mjolnir rules --unmeasured` lists them, and every scan
 footer reports how many of the rules that actually _fired_ are measured.
 
@@ -658,7 +658,7 @@ artifacts.
   product does what the requirement asked for.
 - **A 100 is not proof of a good suite.** Whether your suite covers your
   actual risk is a different question, and this tool does not answer it.
-- **21 of 99 rules ship on an estimate**, not a measured rate — disclosed
+- **<!-- census:unmeasured-of-total -->21 of 99<!-- /census:unmeasured-of-total --> rules ship on an estimate**, not a measured rate — disclosed
   per rule, not buried here.
 - **E1 is not E2.** Heuristic findings are worth reading, not worth
   applying blindly.

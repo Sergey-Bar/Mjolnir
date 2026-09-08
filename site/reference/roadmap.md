@@ -8,7 +8,7 @@ direction with an entry condition.
 
 ## Where Mjölnir is now
 
-- **v0.5.x — open beta.** 99 rules, 74 with a false-positive rate
+- **v0.5.x — open beta.** <!-- census:total-rules -->99 rules<!-- /census:total-rules -->, <!-- census:measured -->78<!-- /census:measured --> with a false-positive rate
   measured against real OSS code
   ([FP-AUDIT](/reference/fp-audit)).
 - JSON report (`schemaVersion: 1`), exit codes and CLI surface are
@@ -44,6 +44,16 @@ direction with an entry condition.
 
 ## Shipped recently
 
+- Certification policy: a consolidated, owner-ratified lawbook —
+  [CERTIFICATION-POLICY](https://github.com/Sergey-Bar/Mjolnir/blob/main/docs/CERTIFICATION-POLICY.md)
+  (axioms A1–A4, laws 1–22, L1–L6) with an eleven-check executable
+  doctor gate and a machine-readable doctor report.
+- Certification findings remediation: schema-incomplete report
+  rejection, scan-artifact determinism gate, managed-surface stamp
+  drift as a CI-visible failure, README tier honesty, SARIF SRCROOT.
+- Cross-language §19 review aids: side-by-side review view for rule
+  families 106/107 (review-only — decides nothing; classification
+  stays human).
 - Local incremental `--cache` scan mode (content-addressed, local-only).
 - Stability policy: [VERSIONING](https://github.com/Sergey-Bar/Mjolnir/blob/main/docs/VERSIONING.md),
   [SUPPORT](https://github.com/Sergey-Bar/Mjolnir/blob/main/SUPPORT.md),
