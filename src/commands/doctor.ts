@@ -862,14 +862,25 @@ export function doctorReportJson(
   // G5: fields named in NON_DETERMINISTIC_FIELDS are stripped from the
   // artifact (the allowlist is the documented wall-clock escape hatch;
   // it is empty by default, so today this is a no-op shape guard).
-  const json: DoctorReportJson = {
+  return stripNonDeterministicFields({
     schema: DOCTOR_REPORT_SCHEMA,
     healthy: report.healthy,
     summary,
     checks,
     measurement: report.measurement,
-  };
-  for (const field of NON_DETERMINISTIC_FIELDS) {
+  });
+}
+
+/**
+ * G5 strip step: removes every allowlisted field from the artifact.
+ * `fields` is a seam (defaults to the shipped NON_DETERMINISTIC_FIELDS)
+ * so the strip path is testable while the allowlist stays empty.
+ */
+export function stripNonDeterministicFields<T extends object>(
+  json: T,
+  fields: readonly string[] = NON_DETERMINISTIC_FIELDS,
+): T {
+  for (const field of fields) {
     delete (json as unknown as Record<string, unknown>)[field];
   }
   return json;

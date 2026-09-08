@@ -24,6 +24,7 @@ import {
   NON_DETERMINISTIC_FIELDS,
   doctorReportJson,
   runDoctorSelfAudit,
+  stripNonDeterministicFields,
   type DoctorReport,
 } from "../../src/commands/doctor.js";
 import { runDoctorCommand } from "../../src/commands/doctor-run.js";
@@ -33,6 +34,25 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 describe("doctor --json machine contract (Phase 5)", () => {
   it("G5: NON_DETERMINISTIC_FIELDS stays EMPTY — additions need a conscious allowlist decision", () => {
     expect(NON_DETERMINISTIC_FIELDS.length).toBe(0);
+  });
+
+  it("G5: the strip step removes exactly the allowlisted fields (seam-covered)", () => {
+    // The shipped allowlist is empty → the artifact round-trips untouched.
+    const report: DoctorReport = {
+      checks: [],
+      healthy: true,
+      measurement: { measured: 0, unmeasured: 0, total: 0, quarantine: 0 },
+    };
+    const json = stripNonDeterministicFields(doctorReportJson(report));
+    expect(Object.keys(json)).toContain("measurement");
+    // A non-empty field list strips exactly those fields — the mechanism
+    // a future wall-clock field (e.g. a duration) would ride on.
+    const stripped = stripNonDeterministicFields(
+      doctorReportJson(report) as unknown as Record<string, unknown>,
+      ["healthy"],
+    );
+    expect(stripped).not.toHaveProperty("healthy");
+    expect(stripped).toHaveProperty("schema");
   });
 
   it("runDoctorSelfAudit on this repo: all checks evaluated, none inconclusive", () => {
