@@ -13,6 +13,10 @@
  * Usage:
  *   npx tsx scripts/corpus-sample.ts           # generate review sheets
  *   npx tsx scripts/corpus-sample.ts --update  # re-scan and regenerate
+ *   npx tsx scripts/corpus-sample.ts --update --repo <name> [--repo <n>…]
+ *                                              # resumable: named repos only
+ *   … --budget 300000                          # raise per-repo scan budget
+ *                                              # (chronic truncation remedy)
  *
  * The review sheets are the INPUT to the manual classification process.
  * Once classified, verdicts go into the .jsonl files. The FP-rate
@@ -53,8 +57,27 @@ const CONTEXT_LINES = 5; // lines above and below the finding
  * rules without a valid measurement so classification effort goes to the
  * Phase 1 exit gate (unmeasured ≤ 20) instead of re-sampling rules that
  * are already measured at their quota.
+ *
+ * `--repo <name>` (repeatable): sample only the named corpus repos —
+ * resumability. The full-corpus run in one process hits V8 heap limits
+ * on the large monorepos (observed: OOM at sveltejs-kit / withastro-astro
+ * even at 12 GB); running repo-by-repo keeps each process small, and the
+ * append-only verdict writer makes partial runs safe to accumulate.
+ *
+ * `--budget <ms>`: override the per-repo scan budget (default 120_000).
+ * audit.ts's own guidance: if truncation is chronic for a repo, raise
+ * the budget rather than record a partial scan.
  */
 const UNMEASURED_ONLY = process.argv.includes("--unmeasured-only");
+
+const ONLY_REPOS = process.argv
+  .flatMap((a, i) => (a === "--repo" ? [process.argv[i + 1] ?? ""] : []))
+  .filter((n) => n.length > 0);
+const BUDGET_MS = (() => {
+  const idx = process.argv.indexOf("--budget");
+  const v = idx !== -1 ? Number(process.argv[idx + 1]) : NaN;
+  return Number.isFinite(v) && v > 0 ? v : 120_000;
+})();
 
 function ruleIsUnmeasured(ruleId: string): boolean {
   return MEASURED_FP[ruleId] === undefined;
@@ -116,6 +139,7 @@ async function scanAndSample(): Promise<Map<string, SampledFinding[]>> {
   const byRule = new Map<string, SampledFinding[]>();
 
   for (const repo of CORPUS) {
+    if (ONLY_REPOS.length > 0 && !ONLY_REPOS.includes(repo.name)) continue;
     console.log(`\n=== Scanning ${repo.name} ===`);
     let dir: string;
     try {
@@ -131,7 +155,7 @@ async function scanAndSample(): Promise<Map<string, SampledFinding[]>> {
       target: dir,
       json: true,
       verbose: true,
-      maxDurationMs: 120_000,
+      maxDurationMs: BUDGET_MS,
       scopeChanged: false,
       format: "json",
       // --strict: sample quarantine-tier rules too. Without this, every
