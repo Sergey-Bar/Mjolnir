@@ -13,8 +13,8 @@
  * module moved. Re-exports in cli.ts keep the historical import surface.
  */
 
-import { existsSync, readFileSync, statSync } from "node:fs";
-import { join, relative, resolve, sep } from "node:path";
+import { readFileSync } from "node:fs";
+import { relative, resolve, sep } from "node:path";
 
 import {
   compareFindings,
@@ -24,6 +24,7 @@ import {
   type ScanResult,
 } from "../types.js";
 import { buildTrustSummary } from "./trust-summary.js";
+import { discoverEvidenceCandidates } from "../discovery/evidence-discovery.js";
 import { discoverWorkspace, type Workspace } from "../discovery/workspace.js";
 import { computeStagedFiles } from "../scope/changed.js";
 import { detectFrameworks } from "../discovery/frameworks.js";
@@ -370,19 +371,18 @@ export function pathMatchesGlob(path: string, glob: string): boolean {
 }
 
 /**
- * Plan §16: locate a runtime run report next to the scan target, using
- * the exact conventions the forensics ingestion already accepts —
- * `mjolnir.report.json` (the packages/playwright-reporter default
- * output) or a `test-results/` directory. Returns the path for
- * `runForensics`, or undefined when neither convention is present
- * ("no runtime evidence" — never guessed).
+ * Plan §16 + WI-11: locate a runtime run report next to the scan
+ * target, using the exact conventions the forensics ingestion already
+ * accepts. Zero-config search over conventional artifact names at
+ * depth ≤ 2 (src/discovery/evidence-discovery.ts); the FIRST parsable
+ * candidate wins (priority: mjolnir-report > playwright-json >
+ * test-results-dir > junit-file). Returns the path for `runForensics`,
+ * or undefined when no convention is present ("no runtime evidence" —
+ * never guessed; the CLI surfaces the missing-evidence message).
  */
 export function discoverRuntimeReport(scanRoot: string): string | undefined {
-  const reportFile = join(scanRoot, "mjolnir.report.json");
-  if (existsSync(reportFile)) return reportFile;
-  const resultsDir = join(scanRoot, "test-results");
-  if (existsSync(resultsDir) && statSync(resultsDir).isDirectory()) {
-    return resultsDir;
+  for (const c of discoverEvidenceCandidates(scanRoot)) {
+    return c.path; // sorted candidates: highest-priority convention first per directory level
   }
   return undefined;
 }
