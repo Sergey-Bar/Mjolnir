@@ -11,6 +11,56 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Added
+
+- **Trust Report — the hero product surface (WI-5).** `mjolnir` now leads
+  with the five questions — TRUST VERDICT (trust level + headline),
+  CONFIDENCE (confidence, evidence coverage, inconclusive rate, measured-FP
+  of fired rules, tests analyzed), WHY THIS VERDICT (evidence-backed
+  reasons), TOP TRUST RISKS (corroboration-ranked), NEXT ACTION (concrete
+  command) — all rendered from the canonical scan result only (every
+  number exists in `--json`). `--classic` escapes to the previous render;
+  rendering flag only, semantics and exit codes unchanged.
+- **`mjolnir trust-report` (WI-6).** Emits deterministic, self-contained
+  `mjolnir-trust-report.{md,json}` — no cloud/telemetry; PR-attachable,
+  agent-consumable; byte-identical for the same scan.
+- **`trustSummary` on the scan JSON (WI-3, plan §6).** Scan-level trust
+  measurement: level, ceiling-capped confidence (partial 0.5 /
+  truncation 0.6 / rules-crashed 0.8 / framework-unknown 0.9),
+  evidenceCoverage, inconclusiveRate, measuredFpOfFiredRules with
+  PROVISIONAL disclosure of unmeasured fired rules. Formulas published in
+  `docs/SCORING.md`.
+- **Machine contract extension (WI-4).** `buildMachineContract` now
+  carries `trustSummary` and `provenance` verbatim from the canonical
+  result, plus a reserved `forensicVerdicts` slot (unpopulated until the
+  1.1.x forensic taxonomy). `contractVersion` stays 1; additive only.
+- **Canonical Evidence Core (WI-2).** `src/engine/evidence-core.ts` — one
+  normalized `EvidenceRecord` shape with deterministic ordering; the scan
+  pipeline fans all runtime evidence through it; stamping semantics
+  preserved byte-identically (differential preservation suite).
+- **Explain v2 (WI-7).** `mjolnir explain` gains verdict mode
+  (`mjolnir explain verdict --json <mjolnir.json>`) and finding mode
+  (file:line delegates to `mjolnir why`); every mode now answers the §8
+  checklist including WHAT WOULD CHANGE THE VERDICT and NEXT ACTION.
+- **Triage v2 (WI-8).** `mjolnir triage` now runs the §9 guided workflow —
+  CLASSIFY → EVIDENCE → TRUST VERDICT → NEXT ACTION per row, every row
+  ending in a concrete command; `--classic` keeps the table, `--json`
+  emits the structured twin.
+- **Zero-config evidence discovery (WI-11).** The scan auto-discovers
+  run evidence from conventional layouts (mjolnir.report.json, PW JSON
+  reporter names, test-results/, JUnit XML) at depth ≤ 2; scans without
+  evidence state exactly what is missing and the honest trust ceiling.
+- **Canonical MVP evidence corpus + golden harness stage 1 (WI-13A/B).**
+  `examples/mvp-demo/` covers all 12 evidence case classes (9 active / 3
+  awaiting-ingestion, trace.zip deferred to WI-17); the stage-1 harness
+  proves same-evidence → same-verdict across CLI + JSON with
+  INCONCLUSIVE-as-pass semantics.
+- **CHANGELOG integrity gate (WI-12A).** `scripts/check-changelog.ts` is
+  release-blocking in the release workflow (before publish, before
+  Release creation) and runs on every main CI build: released version
+  must have a dated CHANGELOG section; gate-era headings strictly
+  ordered; rule changes must be documented.
+
 ### Removed
 
 - **21 rules retired and unregistered (E-1 retirement reconciliation, owner

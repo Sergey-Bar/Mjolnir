@@ -190,11 +190,11 @@ reporting a pass it did not earn.
 npx mjolnir-qa@latest
 ```
 
-That is the whole product: it scans the current directory, prints a
-worthiness score and the findings behind it, and exits `0` if nothing at or
-above the gate was found. **In CI, use the changed-scope form** — it
-attributes findings to what your branch introduced, so a legacy suite does
-not drown a first PR:
+That is the whole product: it scans the current directory and prints the
+Trust Report — what the scan found, how much you can trust it, why, and
+what to do next — then exits `0` if nothing at or above the gate was
+found. **In CI, use the changed-scope form** — it attributes findings to
+what your branch introduced, so a legacy suite does not drown a first PR:
 
 ```bash
 npx mjolnir-qa@latest --scope changed
@@ -207,12 +207,13 @@ pinned to the `v1` major tag) by default, or plain `npx` with
 
 | Command                             | What it does                                     |
 | ----------------------------------- | ------------------------------------------------ |
-| `mjolnir`                           | Full-repo scan + worthiness score                |
+| `mjolnir`                           | Trust Report — verdict, confidence, next action  |
 | `mjolnir --scope changed`           | Only what your branch introduced — the CI form   |
 | `mjolnir ci install`                | Generate the advisory PR workflow (action-based) |
 | `mjolnir explain QA-CI-001`         | What / why / fix + measured FP rate for one rule |
 | `mjolnir why src/a.spec.ts:42`      | Why this exact line was flagged — never a gate   |
 | `mjolnir forensics ./test-results/` | Runtime evidence from a real run                 |
+| `mjolnir trust-report`              | Self-contained Trust Artifact (md + json)        |
 | `mjolnir handoff`                   | Remediation plan for a coding agent              |
 | `mjolnir --json` / `--format sarif` | Machine-readable / GitHub Code Scanning          |
 | `mjolnir --strict`                  | Also run quarantine-tier rules (higher FP risk)  |
@@ -220,28 +221,30 @@ pinned to the `v1` major tag) by default, or plain `npx` with
 <details>
 <summary><strong>Everything else</strong> — flake triage, reporting, governance</summary>
 
-| Command                             | What it does                                           |
-| ----------------------------------- | ------------------------------------------------------ |
-| `mjolnir triage ./test-results/`    | Quarantine proposal from execution history             |
-| `mjolnir pw-report ./test-results/` | Playwright run summary — retries / flakes / slowest    |
-| `mjolnir doctor:playwright`         | Playwright-only deep scan + Selector Health Score      |
-| `mjolnir fix --dry-run` / `fix`     | Safe auto-fixes, each re-scanned to prove it landed    |
-| `mjolnir baseline` / `diff`         | Snapshot findings, then report only new/worsened       |
-| `mjolnir impact --since <ref>`      | What a commit introduced vs resolved                   |
-| `mjolnir summary`                   | CI annotations + step summary from a saved report      |
-| `mjolnir pr-comment`                | A scoped PR comment, as Markdown                       |
-| `mjolnir debt`                      | Test-debt register with a cost model                   |
-| `mjolnir handover`                  | New-QA onboarding map of the suite                     |
-| `mjolnir init`                      | Detect frameworks + setup checklist (never overwrites) |
-| `mjolnir suppressions`              | List suppressed findings — governance transparency     |
-| `mjolnir rules --unmeasured`        | The rules running on assumption, not measurement       |
-| `mjolnir rules --md`                | Full rule catalog (JSON or Markdown)                   |
-| `mjolnir doctor`                    | Self-audit of Mjölnir's own rule base                  |
-| `mjolnir create-rule <ID>`          | Scaffold a new rule + fixtures                         |
-| `mjolnir stats`                     | Local all-time counters of fixes seen                  |
-| `mjolnir badge`                     | shields.io endpoint JSON + snippet                     |
-| `mjolnir --cache`                   | Incremental re-scans via a local verdict cache         |
-| `mjolnir --format mermaid`          | Test-architecture diagram for a PR comment             |
+| Command                             | What it does                                             |
+| ----------------------------------- | -------------------------------------------------------- |
+| `mjolnir --classic`                 | The pre-Trust-Report score banner render                 |
+| `mjolnir explain verdict`           | Why the saved scan's verdict is what it is               |
+| `mjolnir triage ./test-results/`    | Guided triage workflow — every row ends in a next action |
+| `mjolnir pw-report ./test-results/` | Playwright run summary — retries / flakes / slowest      |
+| `mjolnir doctor:playwright`         | Playwright-only deep scan + Selector Health Score        |
+| `mjolnir fix --dry-run` / `fix`     | Safe auto-fixes, each re-scanned to prove it landed      |
+| `mjolnir baseline` / `diff`         | Snapshot findings, then report only new/worsened         |
+| `mjolnir impact --since <ref>`      | What a commit introduced vs resolved                     |
+| `mjolnir summary`                   | CI annotations + step summary from a saved report        |
+| `mjolnir pr-comment`                | A scoped PR comment, as Markdown                         |
+| `mjolnir debt`                      | Test-debt register with a cost model                     |
+| `mjolnir handover`                  | New-QA onboarding map of the suite                       |
+| `mjolnir init`                      | Detect frameworks + setup checklist (never overwrites)   |
+| `mjolnir suppressions`              | List suppressed findings — governance transparency       |
+| `mjolnir rules --unmeasured`        | The rules running on assumption, not measurement         |
+| `mjolnir rules --md`                | Full rule catalog (JSON or Markdown)                     |
+| `mjolnir doctor`                    | Self-audit of Mjölnir's own rule base                    |
+| `mjolnir create-rule <ID>`          | Scaffold a new rule + fixtures                           |
+| `mjolnir stats`                     | Local all-time counters of fixes seen                    |
+| `mjolnir badge`                     | shields.io endpoint JSON + snippet                       |
+| `mjolnir --cache`                   | Incremental re-scans via a local verdict cache           |
+| `mjolnir --format mermaid`          | Test-architecture diagram for a PR comment               |
 
 `mjolnir help <command>` prints usage, examples and the next step for any
 of them.
