@@ -8,6 +8,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   main,
@@ -325,13 +326,12 @@ describe("runScanCommand / main dispatch", () => {
     const srcroot = run.originalUriBaseIds?.SRCROOT?.uri;
     expect(srcroot, "SRCROOT base uri must be present").toMatch(/^file:\/\//);
     if (srcroot === undefined) return;
-    // Compare decoded against the RAW path: the encoder percent-encodes
-    // path-hostile characters (Windows 8.3 short names: ~ → %7E), so the
-    // decoded form must be exactly the scanned target with / separators.
+    // fileURLToPath decodes percent-encoding and normalizes to the
+    // platform path — the result must be exactly the scanned target.
     expect(
-      decodeURIComponent(srcroot),
+      fileURLToPath(srcroot),
       "SRCROOT must resolve to the scanned target",
-    ).toBe(`file:///${dir.split("\\").join("/")}`);
+    ).toBe(dir);
     // At least one result carries the uriBaseId resolving against it.
     const withBaseId = run.results.flatMap((r) =>
       r.locations.map((l) => l.physicalLocation.artifactLocation.uriBaseId),
