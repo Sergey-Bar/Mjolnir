@@ -3,20 +3,17 @@
  * calls with crafted contexts (the established rule-branch-coverage
  * convention) plus forensics/scope/reporter edge shapes.
  *
- * Rules under test: QA-PW-005 (AST evaluate), QA-PW-002 (return-awaited
- * assertion), QA-PW-105 (string-aware arg scanning), QA-PW-004 (comment
- * masking of brittle selectors), QA-PY-105 (indentation edge cases),
- * QA-TQUAL-009 (statement-start edge), QA-TQUAL-002 (assertion forms),
- * QA-CI-005/009 (workflow guards), QA-CI-001 (step label + line fallbacks),
- * QA-PW-144 (engine naming + mobile).
+ * Rules under test: QA-PW-002 (return-awaited assertion), QA-PW-004
+ * (comment masking of brittle selectors), QA-PY-105 (indentation edge
+ * cases), QA-TQUAL-009 (statement-start edge), QA-TQUAL-002 (assertion
+ * forms), QA-CI-005/009 (workflow guards), QA-CI-001 (step label + line
+ * fallbacks), QA-PW-144 (engine naming + mobile).
  */
 
 import { describe, expect, it } from "vitest";
 
 import { computeCodeText } from "../../../src/engine/code-text.js";
-import { evaluateBusinessLogic } from "../../../src/rules/playwright/qa-pw-005-evaluate-logic.js";
 import { unawaitedLocatorAssertion } from "../../../src/rules/playwright/qa-pw-002-unawaited-assertion.js";
-import { pwPollNoTimeout } from "../../../src/rules/playwright/qa-pw-105-poll-timeout.js";
 import { brittleSelectors } from "../../../src/rules/playwright/qa-pw-004-brittle-selectors.js";
 import { pyPwNoAssertions } from "../../../src/rules/python/qa-py-105-pw-no-assertions.js";
 import { unawaitedPromiseAssertion } from "../../../src/rules/quality/qa-tqual-009-promise-assertion.js";
@@ -35,34 +32,6 @@ function ctxOf(text: string, ast?: unknown, path = "a.spec.ts") {
 function astOf(text: string, path = "a.spec.ts"): unknown {
   return parseTsSourceFile(text, path);
 }
-
-describe("QA-PW-005: AST evaluate-logic arms", () => {
-  it("ignores evaluate calls whose first argument is not a function", () => {
-    const text =
-      "const v = page.evaluate('window.x');\nconst w = evaluate(42);\n";
-    const findings = evaluateBusinessLogic.run(ctxOf(text, astOf(text)));
-    expect(findings).toEqual([]);
-  });
-
-  it("ignores an evaluate call with no arguments", () => {
-    const text = "page.evaluate();\n";
-    expect(evaluateBusinessLogic.run(ctxOf(text, astOf(text)))).toEqual([]);
-  });
-
-  it("flags branching logic inside an evaluate function expression", () => {
-    const text =
-      "page.evaluate(function run() { if (window.x) { document.title = 'y'; } });\n";
-    const findings = evaluateBusinessLogic.run(ctxOf(text, astOf(text)));
-    expect(findings).toHaveLength(1);
-    expect(findings[0]?.message).toContain("Branching logic");
-  });
-
-  it("stays silent for branch-free evaluate bodies", () => {
-    const text =
-      "const n = page.evaluate(() => document.body.childNodes.length);\n";
-    expect(evaluateBusinessLogic.run(ctxOf(text, astOf(text)))).toEqual([]);
-  });
-});
 
 describe("QA-PW-002: unawaited assertion arms", () => {
   it("treats `return expect(...)` as awaited (runner-awaits-return)", () => {
@@ -87,38 +56,6 @@ describe("QA-PW-002: unawaited assertion arms", () => {
   it("stays silent when the locator does not start with page/locator/this.page", () => {
     const text = "test('a', () => { expect(order.total).toBe(2); });\n";
     expect(unawaitedLocatorAssertion.run(ctxOf(text, astOf(text)))).toEqual([]);
-  });
-});
-
-describe("QA-PW-105: expect.poll arg scanning", () => {
-  it("survives an unclosed expect.poll call", () => {
-    const text = "await expect.poll(() => window.x > 0\n";
-    expect(pwPollNoTimeout.run(ctxOf(text))).toEqual([]);
-  });
-
-  it("flags a poll without timeout, skipping commas inside strings", () => {
-    const text = "await expect.poll(() => cmp('a,b'));\n";
-    const findings = pwPollNoTimeout.run(ctxOf(text));
-    expect(findings).toHaveLength(1);
-    expect(findings[0]?.message).toContain("without an explicit `timeout`");
-  });
-
-  it("handles escaped quotes inside the argument region", () => {
-    const text = "await expect.poll(() => cmp('a\\'b'));\n";
-    const findings = pwPollNoTimeout.run(ctxOf(text));
-    expect(findings).toHaveLength(1);
-  });
-
-  it("treats backtick strings as strings while scanning", () => {
-    const text = "await expect.poll(() => cmp(`x,y`));\n";
-    const findings = pwPollNoTimeout.run(ctxOf(text));
-    expect(findings).toHaveLength(1);
-  });
-
-  it("stays silent when an explicit timeout is present", () => {
-    const text =
-      "await expect.poll(async () => status, { timeout: 10_000 });\n";
-    expect(pwPollNoTimeout.run(ctxOf(text))).toEqual([]);
   });
 });
 

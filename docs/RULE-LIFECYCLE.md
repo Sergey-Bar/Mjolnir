@@ -167,6 +167,37 @@ here so the follow-up is mechanical, not exploratory. The other three
 members of this wave — QA-JV-103, QA-CS-103, QA-CS-102 — were resolved
 by the Phase 3 L2 migration (below).
 
+## Retirement reconciliation — 2026-09-08 (owner ruling, E-1)
+
+The Phase 2 triage's 21 RETIRE decisions were originally executed as
+severity downgrades: the rules stayed registered in quarantine with their
+code, fixtures and verdict rows in place ("code + fixtures stay"). On
+2026-09-08 the owner resolved the ambiguity this created (MVP recon audit
+`.kilo/plans/1788891015969-mvp-recon-audit.md`, finding E-1) with a
+binding ruling:
+
+> RETIRED rules/variants are NOT part of the canonical census.
+> `RETIRED_RULE_IDS` is the canonical source of retirement.
+> Quarantine does not equal retirement. A rule explicitly marked RETIRED
+> must be reconciled into `RETIRED_RULE_IDS`; retired rules must not be
+> allowed to inflate the active rule count.
+
+Executed accordingly:
+
+- All 21 RETIRE-marked IDs are now listed in `RETIRED_RULE_IDS`
+  (`src/rules/index.ts`) with per-rule rationale, and were unregistered.
+- The active registry is **78 rules** (57 measured, 21 author-estimated);
+  the census (`measurementBlock`), the capability matrix, the rule docs,
+  the README sentinels and the count-lock baselines were regenerated from
+  the live registry.
+- Historical evidence is preserved in-tree: retired rule verdict rows
+  moved to `tests/corpus/verdicts/archive/`; fixture dirs stay on disk
+  (the doctor's fixture-integrity check discloses them instead of failing);
+  this document's tables above remain the root-cause record.
+- The measurement KPI for 1.0.0 certification is 100% of the ACTIVE
+  canonical registry (currently 78/78), never padded with retired IDs and
+  never shrunken by silent re-baselining.
+
 ## Phase 3 L2 migration (Verification Trust Evolution Plan §13)
 
 The three highest-ROI JV/CS rules from the deferred wave migrated to

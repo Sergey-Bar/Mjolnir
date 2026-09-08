@@ -17,7 +17,7 @@
 
     <text x="22" y="92.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(237,230,214)">WORTHINESS</tspan><tspan fill="#d7d3c8"> </tspan><tspan fill="rgb(237,230,214)"> 75</tspan><tspan fill="rgb(124,133,144)">/100</tspan><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">NEEDS WORK</tspan></text>
     <text x="22" y="111.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,165,38)">██████████████████████</tspan><tspan fill="rgb(224,165,38)">▓</tspan><tspan fill="#d7d3c8">░░░░░░░</tspan></text>
-    <text x="22" y="130.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">The hammer holds — but 27 findings weigh it down.</tspan></text>
+    <text x="22" y="130.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">The hammer holds — but 19 findings weigh it down.</tspan></text>
     <text x="22" y="149.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">(40 raw pts / 7 test declarations — normalized)</tspan></text>
     <text x="22" y="168.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(124,133,144)">(capped: deduction mass 40 pts — absolute ceiling 85)</tspan></text>
 
@@ -32,7 +32,7 @@
     <text x="22" y="358.0" xml:space="preserve"><tspan fill="#d7d3c8">  ╭─────────────────────────────────────────╮</tspan></text>
     <text x="22" y="377.0" xml:space="preserve"><tspan fill="#d7d3c8">  │ 4 × error   − 32                        │</tspan></text>
     <text x="22" y="396.0" xml:space="preserve"><tspan fill="#d7d3c8">  │ 3 × warning −  7</tspan><tspan fill="rgb(124,133,144)"> (evidence-discounted)</tspan><tspan fill="#d7d3c8">  │</tspan></text>
-    <text x="22" y="415.0" xml:space="preserve"><tspan fill="#d7d3c8">  │ 20 × info    −  1</tspan><tspan fill="rgb(124,133,144)"> (evidence-discounted)</tspan><tspan fill="#d7d3c8"> │</tspan></text>
+    <text x="22" y="415.0" xml:space="preserve"><tspan fill="#d7d3c8">  │ 12 × info    −  1</tspan><tspan fill="rgb(124,133,144)"> (evidence-discounted)</tspan><tspan fill="#d7d3c8"> │</tspan></text>
     <text x="22" y="434.0" xml:space="preserve"><tspan fill="#d7d3c8">  ╰─────────────────────────────────────────╯</tspan></text>
 
     <text x="22" y="472.0" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(138,180,216)">▚ FIX THIS FIRST</tspan></text>

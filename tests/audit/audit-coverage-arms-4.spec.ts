@@ -21,7 +21,6 @@ import { writeFileAtomic } from "../../src/lib/fs-atomic.js";
 import { loadLocalRules } from "../../src/plugins/local-rules.js";
 import { continueOnError } from "../../src/rules/ci/qa-ci-001-continue-on-error.js";
 import { pyNoAssertions } from "../../src/rules/python/qa-py-003-no-assertions.js";
-import { pwOrderDependence } from "../../src/rules/playwright/qa-pw-119-order-dependence.js";
 import { createRuleScaffold } from "../../src/commands/create-rule.js";
 import {
   main,
@@ -151,26 +150,11 @@ describe("QA-CI-001 fallback arms via direct run call", () => {
   });
 });
 
-describe("rule data-shape arms (PY-003 / PW-119)", () => {
+describe("rule data-shape arms (PY-003)", () => {
   it("py-003: an unreferenced no-assert test still fires", () => {
     const text = "def test_lonely():\n    pass\n";
     const findings = pyNoAssertions.run({ path: "t.py", text });
     expect(findings).toHaveLength(1);
-  });
-
-  it("pw-119: hook-range guard skips setup-hook assignments", () => {
-    const text = [
-      "let shared = 0;",
-      "test.beforeEach(() => {",
-      "  shared = 0;",
-      "  fixtureSetup = 1;",
-      "});",
-      "test('a', () => {});",
-    ].join("\n");
-    const findings = pwOrderDependence.run({ path: "a.spec.ts", text });
-    // Only the hook-internal assignment is skipped; nothing here assigns
-    // inside a test body, so nothing fires — or a hook-range miss fires.
-    for (const f of findings) expect(f.line).toBeGreaterThan(0);
   });
 });
 

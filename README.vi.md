@@ -15,7 +15,7 @@ niềm tin gãy.
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | Tiếng Việt | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-08.
 
 ```bash
 npx mjolnir-qa@latest
@@ -198,7 +198,6 @@ lửa false positive.
 
 | ID           | Quy tắc                                 | Severity |
 | ------------ | --------------------------------------- | -------- |
-| QA-TQUAL-001 | Xác minh chỉ bằng mock                  | info     |
 | QA-TQUAL-002 | Assertion đồng nghĩa lặp (tautological) | error    |
 | QA-TQUAL-009 | Assertion của promise không await       | error    |
 | QA-TQUAL-011 | Kiểm thử bị comment                     | warning  |
@@ -213,9 +212,6 @@ lửa false positive.
 | QA-PW-002 | Assertion locator không await            | error    |
 | QA-PW-003 | `page.pause()` / `test.only()` bị commit | error    |
 | QA-PW-004 | Selector CSS/XPath giòn                  | warning  |
-| QA-PW-005 | Logic nghiệp vụ trong `page.evaluate()`  | info     |
-| QA-PW-114 | Element handle kiểu cũ (`page.$`)        | info     |
-| QA-PW-118 | Chờ `networkidle` (flaky by design)      | info     |
 | QA-PW-123 | URL môi trường hardcode                  | warning  |
 
 </details>
@@ -243,8 +239,6 @@ lửa false positive.
 | QA-PY-002 | Kiểm thử bị bỏ qua (`skip`, `xfail` không nghiêm) | warning  |
 | QA-PY-003 | Hàm kiểm thử không có assertion                   | error    |
 | QA-PY-005 | `time.sleep()` trong kiểm thử                     | warning  |
-| QA-PY-006 | Thân kiểm thử rỗng (`pass`)                       | info     |
-| QA-PY-010 | Phụ thuộc ngẫu nhiên/thời gian mà không freeze    | info     |
 | QA-PY-012 | Assertion tautological                            | error    |
 
 Tổng cộng 20 quy tắc Python (QA-PY-001…012 vệ sinh pytest + QA-PY-101…108 Playwright-Python).
@@ -261,8 +255,6 @@ Tổng cộng 20 quy tắc Python (QA-PY-001…012 vệ sinh pytest + QA-PY-101�
 | QA-JV-103 | Phương thức kiểm thử không có assertion  | error    |
 | QA-JV-105 | Sleep cứng Playwright `waitForTimeout()` | warning  |
 | QA-JV-106 | Selector giòn thay vì role locator       | warning  |
-| QA-JV-108 | URL môi trường hardcode trong kiểm thử   | info     |
-| QA-JV-111 | Mock phủ sóng `page.route("**")`         | info     |
 
 </details>
 
@@ -276,8 +268,6 @@ Tổng cộng 20 quy tắc Python (QA-PY-001…012 vệ sinh pytest + QA-PY-101�
 | QA-CS-103 | Phương thức kiểm thử không có assertion          | error    |
 | QA-CS-105 | Sleep cứng `WaitForTimeoutAsync()`               | warning  |
 | QA-CS-106 | Selector giòn thay vì role locator               | warning  |
-| QA-CS-108 | URL môi trường hardcode trong kiểm thử           | info     |
-| QA-CS-111 | Mock phủ sóng `page.RouteAsync("**")`            | info     |
 
 </details>
 
@@ -298,7 +288,6 @@ thật** (≥ 10 finding được phân loại tay mỗi quy tắc; xem
 ước lượng của tác giả. Chân mỗi bản quét cho biết bao nhiêu quy tắc
 _đã bắn_ được đo; `mjolnir rules --unmeasured` liệt kê những quy tắc
 chưa đo; trang `mjolnir explain` của từng quy tắc nêu trạng thái. Chúng
-tôi công bố tỷ lệ kể cả khi nó xấu xí — QA-PW-107 kiểm toán ở mức 95 %
 và bị cách ly vì thế. Mở rộng con số đó là công việc liên tục của
 dự án.
 
@@ -515,7 +504,7 @@ không bao giờ đổi ngữ nghĩa phát hiện.
 {
   "gate": "error",
   "exclude": ["legacy/**"],
-  "severityOverrides": { "QA-PW-118": "warning" },
+  "severityOverrides": { "QA-PW-141": "warning" },
   "ignore": [
     {
       "ruleId": "QA-TEST-004",

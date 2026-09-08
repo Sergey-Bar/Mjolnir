@@ -18,7 +18,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 import type { QADoctorRule } from "../rules/rule.js";
-import { RULES } from "../rules/index.js";
+import { RETIRED_RULE_IDS, RULES } from "../rules/index.js";
 import { RULE_CATEGORIES } from "../types.js";
 import { MEASURED_FP } from "../rules/measured-fp.generated.js";
 
@@ -435,18 +435,27 @@ export function checkFixtureIntegrity(
   const registeredIds = new Set(rules.map((r) => r.id));
 
   // Census over the must-fire/must-not-fire tree.
+  // Retired-rule fixture dirs (RETIRED_RULE_IDS — owner ruling 2026-09-08,
+  // E-1) are historical artifacts, not drift: they are disclosed, never
+  // blocking, and never counted as registered coverage.
+  const retiredIds = new Set(RETIRED_RULE_IDS);
   const fixtureRoots = [
     fixturesRoot,
     join(fixturesRoot, "..", "corpus", "positive-fixtures"),
   ];
   let fixtureFiles = 0;
   let fixtureDirs = 0;
+  let retiredFixtureDirs = 0;
   for (const root of fixtureRoots) {
     if (!existsSync(root)) continue;
     for (const entry of readdirSync(root, { withFileTypes: true })) {
       if (!entry.isDirectory() || entry.name.startsWith(".")) continue;
       fixtureDirs++;
       const ruleId = entry.name;
+      if (retiredIds.has(ruleId)) {
+        retiredFixtureDirs++;
+        continue;
+      }
       if (!registeredIds.has(ruleId)) {
         ok = false;
         details.push(`orphaned fixture dir (no registered rule): ${ruleId}`);
@@ -494,7 +503,7 @@ export function checkFixtureIntegrity(
   }
 
   details.unshift(
-    `fixture trees: ${fixtureDirs} rule dirs, ${fixtureFiles} fixture files — orphaned dirs and empty dirs are blocking`,
+    `fixture trees: ${fixtureDirs} rule dirs (${retiredFixtureDirs} retired-rule dirs preserved as history), ${fixtureFiles} fixture files — orphaned dirs and empty dirs are blocking`,
   );
   return check("fixture-integrity", ok ? "pass" : "fail", details);
 }

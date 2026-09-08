@@ -246,7 +246,7 @@ have no such requirement.)
 
 ## What Mjölnir finds
 
-**<!-- census:total-rules -->99 rules<!-- /census:total-rules -->** in four families — **test hygiene**, **test quality**,
+**<!-- census:total-rules -->78 rules<!-- /census:total-rules -->** in four families — **test hygiene**, **test quality**,
 **Playwright**, **CI integrity** — over TypeScript/JavaScript, Python,
 Java, C# and GitHub Actions YAML, covering Playwright in all four bindings
 plus pytest, JUnit, TestNG, NUnit, xUnit, MSTest, Jest, Vitest and Mocha,
@@ -262,7 +262,6 @@ is clear:
 | QA-TQUAL-009 | Unawaited promise assertion                                       | error    | quarantine |
 | QA-PW-002    | Unawaited locator assertion                                       | error    | core       |
 | QA-PW-004    | Brittle CSS/XPath selectors                                       | warning  | quarantine |
-| QA-PW-118    | `networkidle` waits (flaky by design)                             | info     | quarantine |
 | QA-PY-002    | Skipped test (`skip`, non-strict `xfail`)                         | warning  | core       |
 | QA-CS-103    | Test method with no assertions                                    | error    | core       |
 
@@ -271,7 +270,7 @@ The full catalog is generated from the registry, never hand-maintained:
 [what-it-checks guide](https://sergey-bar.github.io/Mjolnir/guide/what-it-checks).
 
 <details>
-<summary><strong>Every rule named in this README, in one table</strong> — the other 53 live in <code>mjolnir rules --md</code></summary>
+<summary><strong>Every rule named in this README, in one table</strong> — the rest live in <code>mjolnir rules --md</code></summary>
 
 > `quarantine` rules run only under `--strict` and never gate (capped to
 > info); the severity shown is the authored severity.
@@ -284,17 +283,12 @@ The full catalog is generated from the registry, never hand-maintained:
 | QA-TEST-004  | Hygiene    | Hard sleep (`waitForTimeout`, `sleep()`, `delay()`)                 | warning                       | extended                  |
 | QA-TEST-006  | Hygiene    | Retry abuse hiding flakiness                                        | warning                       | quarantine                |
 | QA-TEST-010  | Hygiene    | Empty test body                                                     | error                         | quarantine                |
-| QA-TQUAL-001 | Quality    | Mock-only verification                                              | info                          | quarantine                |
 | QA-TQUAL-002 | Quality    | Tautological assertion                                              | error                         | quarantine                |
 | QA-TQUAL-009 | Quality    | Unawaited promise assertion                                         | error                         | quarantine                |
 | QA-TQUAL-011 | Quality    | Commented-out tests                                                 | warning                       | extended                  |
 | QA-PW-002    | Playwright | Unawaited locator assertion                                         | error                         | core                      |
 | QA-PW-003    | Playwright | `page.pause()` / `test.only()` committed                            | error                         | core                      |
 | QA-PW-004    | Playwright | Brittle CSS/XPath selectors                                         | warning                       | quarantine                |
-| QA-PW-005    | Playwright | Business logic inside `page.evaluate()`                             | info                          | quarantine                |
-| QA-PW-107    | Playwright | `toBeVisible` where `toBeInViewport` fits better                    | info                          | quarantine                |
-| QA-PW-114    | Playwright | Legacy element handles (`page.$`)                                   | info                          | quarantine                |
-| QA-PW-118    | Playwright | `networkidle` waits (flaky by design)                               | info                          | quarantine                |
 | QA-PW-123    | Playwright | Hardcoded environment URLs                                          | warning                       | quarantine                |
 | QA-PW-140    | Playwright | Screenshot without `maxDiffPixelRatio`                              | warning                       | core                      |
 | QA-CI-001    | CI         | `continue-on-error` masks a failing gate                            | error                         | quarantine                |
@@ -307,23 +301,17 @@ The full catalog is generated from the registry, never hand-maintained:
 | QA-PY-002    | Python     | Skipped test (`skip`, non-strict `xfail`)                           | warning                       | core                      |
 | QA-PY-003    | Python     | Test function with no assertions                                    | error                         | quarantine                |
 | QA-PY-005    | Python     | `time.sleep()` in tests                                             | warning                       | extended                  |
-| QA-PY-006    | Python     | Empty test body (`pass`)                                            | info                          | quarantine                |
-| QA-PY-010    | Python     | Random/time dependence without freeze                               | info                          | quarantine                |
 | QA-PY-012    | Python     | Tautological assertion                                              | error                         | quarantine                |
 | QA-JV-101    | Java       | Disabled test (`@Disabled`)                                         | warning                       | core                      |
 | QA-JV-102    | Java       | Hard sleep (`Thread.sleep()`)                                       | warning                       | extended                  |
 | QA-JV-103    | Java       | Test method with no assertions                                      | error                         | extended                  |
 | QA-JV-105    | Java       | Playwright `waitForTimeout()` hard sleep                            | warning                       | core                      |
 | QA-JV-106    | Java       | Brittle selector instead of role locator                            | warning                       | quarantine                |
-| QA-JV-108    | Java       | Hardcoded environment URL in test                                   | info                          | quarantine                |
-| QA-JV-111    | Java       | Blanket `page.route("**")` mock                                     | info                          | quarantine                |
 | QA-CS-101    | C#         | Skipped test (`[Ignore]`, `[Fact(Skip=)]`)                          | warning                       | core                      |
 | QA-CS-102    | C#         | Hard sleep (`Thread.Sleep` / `Task.Delay`)                          | warning                       | core                      |
 | QA-CS-103    | C#         | Test method with no assertions                                      | error                         | core                      |
 | QA-CS-105    | C#         | `WaitForTimeoutAsync()` hard sleep                                  | warning                       | extended                  |
 | QA-CS-106    | C#         | Brittle selector instead of role locator                            | warning                       | quarantine                |
-| QA-CS-108    | C#         | Hardcoded environment URL in test                                   | info                          | quarantine                |
-| QA-CS-111    | C#         | Blanket `page.RouteAsync("**")` mock                                | info                          | quarantine                |
 
 Python also ships QA-PY-001…012 (pytest hygiene) and QA-PY-101…108
 (Playwright-Python); Cypress and Selenium have starter sets of three
@@ -438,13 +426,13 @@ Rung by rung: [docs/TERMINOLOGY.md](docs/TERMINOLOGY.md).
 
 ### How much of this is measured
 
-**<!-- census:measured-of-total -->78 of 99<!-- /census:measured-of-total --> rules carry a false-positive rate measured against real OSS code**
+**<!-- census:measured-of-total -->57 of 78<!-- /census:measured-of-total --> rules carry a false-positive rate measured against real OSS code**
 (≥ 10 hand-classified findings each — [docs/FP-AUDIT.md](docs/FP-AUDIT.md)).
 The other <!-- census:unmeasured -->21<!-- /census:unmeasured --> ship on the author's estimate and say so, per rule, in
 `mjolnir explain`; `mjolnir rules --unmeasured` lists them, and every scan
 footer reports how many of the rules that actually _fired_ are measured.
 
-The rate is published even when unflattering: QA-PW-107 audits at 95% and
+The rate is published even when unflattering: QA-PW-141 audits at 43% and
 is quarantined for it. **Mjölnir measures its own uncertainty** — that is
 the product, not a caveat.
 
@@ -676,7 +664,7 @@ artifacts.
   product does what the requirement asked for.
 - **A 100 is not proof of a good suite.** Whether your suite covers your
   actual risk is a different question, and this tool does not answer it.
-- **<!-- census:unmeasured-of-total -->21 of 99<!-- /census:unmeasured-of-total --> rules ship on an estimate**, not a measured rate — disclosed
+- **<!-- census:unmeasured-of-total -->21 of 78<!-- /census:unmeasured-of-total --> rules ship on an estimate**, not a measured rate — disclosed
   per rule, not buried here.
 - **E1 is not E2.** Heuristic findings are worth reading, not worth
   applying blindly.

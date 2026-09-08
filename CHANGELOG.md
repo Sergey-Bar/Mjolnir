@@ -9,6 +9,34 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased]
+
+### Removed
+
+- **21 rules retired and unregistered (E-1 retirement reconciliation, owner
+  ruling 2026-09-08).** `RETIRED_RULE_IDS` (in `src/rules/index.ts`) is now the
+  canonical, auditable record of retirement: a rule explicitly marked RETIRED by
+  `docs/RULE-LIFECYCLE.md`'s Phase 2 quarantine-cluster triage no longer counts
+  toward the active registry, the census, or the measurement KPI — quarantine
+  does not equal retirement. The active registry is now **78 rules (57 measured,
+  21 author-estimated)**. Every removed rule was measured at 100% FP with zero
+  true positives (n ≥ 10 each, `docs/FP-AUDIT.md`), i.e. its premise is wrong on
+  real code, not its tuning. Behavioral impact: none on default scans (all 21
+  were quarantine-tier, which runs only under `--strict`); `--strict` scans stop
+  reporting these advisory findings. Evidence level of every removed finding was
+  E0 (observation only, never gating). Measurement status: all 21 measured at
+  1.0 FP rate (detector revision 1) — the measurements and their verdict rows
+  are preserved as history (`tests/corpus/verdicts/archive/`,
+  `docs/RULE-LIFECYCLE.md`). User-visible impact: fewer false-positive advisory
+  findings under `--strict`; the "99 rules" claim everywhere becomes the honest
+  count of active canonical rules (78). Frozen IDs are never reused; the
+  retired IDs are listed with per-rule rationale in `RETIRED_RULE_IDS`.
+  Removed IDs — Playwright TS: QA-PW-005, QA-PW-103, QA-PW-105, QA-PW-107,
+  QA-PW-108, QA-PW-112, QA-PW-114, QA-PW-118, QA-PW-119, QA-PW-120, QA-PW-145;
+  quality: QA-TQUAL-001; Python: QA-PY-006, QA-PY-008, QA-PY-010; family
+  variants: QA-JV-108, QA-CS-108 (hardcoded-URL), QA-JV-110, QA-CS-110
+  (no-a11y), QA-JV-111, QA-CS-111 (blanket-route).
+
 ## [0.5.34] — 2026-09-08
 
 ### Changes since 0

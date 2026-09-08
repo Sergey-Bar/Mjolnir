@@ -60,7 +60,6 @@ import { retryMasking } from "../../src/rules/ci/qa-ci-007-retry-masking.js";
 import { alwaysSuccessStep } from "../../src/rules/ci/qa-ci-008-always-success.js";
 import { exitCodeNotPropagated } from "../../src/rules/ci/qa-ci-009-exit-code.js";
 import { nonBlockingTestJob } from "../../src/rules/ci/qa-ci-010-non-blocking.js";
-import { pwOrderDependence } from "../../src/rules/playwright/qa-pw-119-order-dependence.js";
 import { definePatternFamily } from "../../src/rules/shared/family.js";
 import { parseWorkflow } from "../../src/discovery/workflow-parser.js";
 import type { DimensionScore, Finding, ScanResult } from "../../src/types.js";
@@ -806,31 +805,6 @@ describe("CI rule guards", () => {
 });
 
 describe("remaining rule arms", () => {
-  it("QA-PW-119: handles hook paren nesting, expression hooks, and blank names", () => {
-    const text = [
-      "let counter = 0;",
-      "beforeEach(async (opts = getDefault(1)) => { if (opts) { counter = 1; } });",
-      "beforeEach(() => counter++)",
-      "let other = 1;",
-      "test('a', () => { counter = 2; other = 3; });",
-      "",
-    ].join("\n");
-    const findings = pwOrderDependence.run({ path: "a.spec.ts", text });
-    expect(findings.length).toBeGreaterThanOrEqual(1);
-  });
-
-  it("QA-PW-119: shared module state assigned inside a test is flagged", () => {
-    const text = [
-      "let shared = 0;",
-      "beforeEach(() => { shared = 0; });",
-      "test('a', () => { shared = 5; });",
-      "",
-    ].join("\n");
-    const findings = pwOrderDependence.run({ path: "a.spec.ts", text });
-    expect(findings).toHaveLength(1);
-    expect(findings[0]?.message).toContain("shared");
-  });
-
   it("definePatternFamily applies default detection strategy and omits introduced", () => {
     const rules = definePatternFamily({
       id: "QA-TEST-998",

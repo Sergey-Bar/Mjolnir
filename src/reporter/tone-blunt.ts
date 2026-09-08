@@ -67,7 +67,6 @@ const BLUNT_MESSAGES: Readonly<Record<string, string>> = {
   // Empty test bodies
   "QA-TEST-010":
     "This test has no body. It's a placeholder that reports 'passed' forever.",
-  "QA-PY-006": "An empty test body — `pass` with a green checkmark attached.",
 
   // Tautological assertions
   "QA-TQUAL-002":
@@ -76,10 +75,6 @@ const BLUNT_MESSAGES: Readonly<Record<string, string>> = {
     "assert True — congratulations, you've proven that Python executes.",
 
   // Mock-only verification
-  "QA-TQUAL-001":
-    "This test mocks everything and asserts the mock. It proves the mock works, not the code.",
-  "QA-PY-008":
-    "This test mocks everything and asserts the mock. It proves the mock works, not the code.",
 
   // No assertions
   "QA-TEST-003":
@@ -94,12 +89,6 @@ const BLUNT_MESSAGES: Readonly<Record<string, string>> = {
     "A screenshot check with no maxDiffPixelRatio bound — any pixel garbage passes. That's not a visual assertion.",
 
   // Accessibility
-  "QA-PW-145":
-    "UI test with zero accessibility checks. Users with screen readers? Apparently not a thing.",
-  "QA-JV-110":
-    "No accessibility assertions in a UI test — a11y regressions ship silently.",
-  "QA-CS-110":
-    "No accessibility assertions in a UI test — a11y regressions ship silently.",
 
   // Retry abuse
   "QA-TEST-006":
@@ -115,8 +104,6 @@ const BLUNT_MESSAGES: Readonly<Record<string, string>> = {
   // Flaky interaction / polling
   "QA-PW-104":
     "A trial click with no follow-up assertion — you verified that clicking doesn't throw, not that anything happened.",
-  "QA-PW-105":
-    "expect.poll with no timeout bound — it either passes instantly or hangs the worker until the default eats your CI minutes.",
 
   // Shared state
   "QA-PW-115":
@@ -129,12 +116,9 @@ const BLUNT_MESSAGES: Readonly<Record<string, string>> = {
     "Module-level page/context — browser state from test A bleeds into test B.",
 
   // Order dependence
-  "QA-PW-119":
-    "This test only passes when another test runs first. Tests are not a conga line.",
 
   // Brittle selectors / conventions
-  "QA-PW-112":
-    "A data-testid that breaks the naming convention — the contract your selectors rely on is eroding.",
+
   "QA-JV-106":
     "Brittle selector: one frontend refactor and this test stops finding anything.",
   "QA-CS-106":
@@ -143,8 +127,7 @@ const BLUNT_MESSAGES: Readonly<Record<string, string>> = {
   // networkidle / load waits
   "QA-PW-102":
     "Waiting for a load event instead of asserting on a web-first locator — hoping is not asserting.",
-  "QA-PW-118":
-    "Waiting for network idle is a race condition with extra steps. The network never promises silence.",
+
   "QA-JV-107":
     "NETWORKIDLE: 'wait for the network to stop' is a race condition with extra steps.",
   "QA-CS-107":
@@ -155,10 +138,7 @@ const BLUNT_MESSAGES: Readonly<Record<string, string>> = {
   // Hardcoded URLs
   "QA-PW-123":
     "Hardcoded environment URL in a spec. When staging rotates, this test points at nothing.",
-  "QA-JV-108":
-    "Hardcoded URL: works on your machine, breaks on every other machine.",
-  "QA-CS-108":
-    "Hardcoded URL: works on one dev's machine, breaks on CI, confuses everyone else.",
+
   "QA-PY-108":
     "Hardcoded URL: works on your machine, breaks on every other machine.",
 

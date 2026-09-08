@@ -1,0 +1,1 @@
+{"ruleId":"QA-PY-010","file":"tests/test_termui.py","line":28,"verdict":"FP","note":"FakeClock helper seeds from time.time() then advances manually - this IS the deterministic freeze pattern, not an unfrozen use"}

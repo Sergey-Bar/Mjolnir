@@ -1,10 +1,8 @@
 {
   "countsByRule": {
     "QA-PW-115": 2,
-    "QA-PW-120": 1,
-    "QA-PW-145": 1,
     "QA-TQUAL-011": 1
   },
-  "totalFindings": 5,
+  "totalFindings": 3,
   "partial": false
 }

@@ -5,15 +5,12 @@
     "QA-PY-003": 53,
     "QA-PY-004": 140,
     "QA-PY-005": 16,
-    "QA-PY-006": 2,
     "QA-PY-007": 235,
-    "QA-PY-008": 43,
     "QA-PY-009": 1,
-    "QA-PY-010": 6,
     "QA-PY-012": 1,
     "QA-PY-103": 2,
     "QA-SE-003": 3
   },
-  "totalFindings": 506,
+  "totalFindings": 455,
   "partial": false
 }

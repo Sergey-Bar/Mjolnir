@@ -230,15 +230,10 @@ describe("blunt map is aligned with the rule registry (bug-audit M8)", () => {
   // defect the RULE actually detects (keyword from the rule's own title).
   const FAMILY_SPOT_CHECKS: Array<[string, RegExp]> = [
     ["QA-PW-104", /trial/i], // old text mocked test.only
-    ["QA-PW-105", /poll/i], // old text described hardcoded URLs
-    ["QA-PW-112", /testid/i], // old text described CSS class selectors
-    ["QA-PW-119", /order|conga|runs first/i], // old text described shared page
     ["QA-TEST-006", /retr/i], // old text described empty bodies
-    ["QA-TQUAL-001", /mock/i], // old text described no-assertions
     ["QA-TQUAL-002", /proven|true/i], // old text described mock-only
     ["QA-PW-140", /screenshot|pixel/i], // old text described no-assertions
     ["QA-PW-115", /shared/i], // the shared-page text lives here now
-    ["QA-PW-118", /network idle|race/i],
   ];
 
   for (const [ruleId, pattern] of FAMILY_SPOT_CHECKS) {

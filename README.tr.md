@@ -15,7 +15,7 @@ olarak nerede kırıldığını gösterir.
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | Türkçe | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-08.
 
 ```bash
 npx mjolnir-qa@latest
@@ -200,7 +200,6 @@ yanlış pozitif duvarıdır.
 
 | ID           | Kural                               | Severity |
 | ------------ | ----------------------------------- | -------- |
-| QA-TQUAL-001 | Yalnızca mock ile doğrulama         | info     |
 | QA-TQUAL-002 | Totolojik assertion                 | error    |
 | QA-TQUAL-009 | Await edilmemiş promise assertion'ı | error    |
 | QA-TQUAL-011 | Yorum satırına çevrilmiş testler    | warning  |
@@ -215,9 +214,6 @@ yanlış pozitif duvarıdır.
 | QA-PW-002 | Await edilmemiş locator assertion'ı           | error    |
 | QA-PW-003 | Commit edilmiş `page.pause()` / `test.only()` | error    |
 | QA-PW-004 | Kırılgan CSS/XPath seçicileri                 | warning  |
-| QA-PW-005 | `page.evaluate()` içinde iş mantığı           | info     |
-| QA-PW-114 | Eski element handle'ları (`page.$`)           | info     |
-| QA-PW-118 | `networkidle` beklemeleri (flaky by design)   | info     |
 | QA-PW-123 | Sabitlenmiş ortam URL'leri                    | warning  |
 
 </details>
@@ -240,14 +236,12 @@ yanlış pozitif duvarıdır.
 <details>
 <summary><strong>Python / pytest 🐍</strong></summary>
 
-| ID        | Kural                                        | Severity |
-| --------- | -------------------------------------------- | -------- |
-| QA-PY-002 | Atlanan test (`skip`, katı olmayan `xfail`)  | warning  |
-| QA-PY-003 | Assertion içermeyen test fonksiyonu          | error    |
-| QA-PY-005 | Testlerde `time.sleep()`                     | warning  |
-| QA-PY-006 | Boş test gövdesi (`pass`)                    | info     |
-| QA-PY-010 | Freeze olmadan rastgelelik/zaman bağımlılığı | info     |
-| QA-PY-012 | Totolojik assertion                          | error    |
+| ID        | Kural                                       | Severity |
+| --------- | ------------------------------------------- | -------- |
+| QA-PY-002 | Atlanan test (`skip`, katı olmayan `xfail`) | warning  |
+| QA-PY-003 | Assertion içermeyen test fonksiyonu         | error    |
+| QA-PY-005 | Testlerde `time.sleep()`                    | warning  |
+| QA-PY-012 | Totolojik assertion                         | error    |
 
 Toplam 20 Python kuralı (QA-PY-001…012 pytest hijyeni + QA-PY-101…108 Playwright-Python).
 
@@ -263,8 +257,6 @@ Toplam 20 Python kuralı (QA-PY-001…012 pytest hijyeni + QA-PY-101…108 Playw
 | QA-JV-103 | Assertion içermeyen test yöntemi         | error    |
 | QA-JV-105 | Playwright katı sleep `waitForTimeout()` | warning  |
 | QA-JV-106 | Role locator yerine kırılgan seçici      | warning  |
-| QA-JV-108 | Testte sabitlenmiş ortam URL'si          | info     |
-| QA-JV-111 | Kapsayıcı mock `page.route("**")`        | info     |
 
 </details>
 
@@ -278,8 +270,6 @@ Toplam 20 Python kuralı (QA-PY-001…012 pytest hijyeni + QA-PY-101…108 Playw
 | QA-CS-103 | Assertion içermeyen test yöntemi           | error    |
 | QA-CS-105 | Katı sleep `WaitForTimeoutAsync()`         | warning  |
 | QA-CS-106 | Role locator yerine kırılgan seçici        | warning  |
-| QA-CS-108 | Testte sabitlenmiş ortam URL'si            | info     |
-| QA-CS-111 | Kapsayıcı mock `page.RouteAsync("**")`     | info     |
 
 </details>
 
@@ -300,7 +290,6 @@ oranı taşıyor** (her biri için ≥ 10 elle sınıflandırılmış bulgu; bkz
 yayına giriyor. Her tarama alt bilgisi, _tetiklenen_ kuralların kaçının
 ölçüldüğünü söyler; `mjolnir rules --unmeasured` ölçülmeyenleri listeler;
 her kuralın `mjolnir explain` sayfası durumunu belirtir. Oranı çirkin
-olduğunda bile yayımlarız — QA-PW-107 %95 ile denetleniyor ve bu yüzden
 karantinada. O sayıyı büyütmek, projenin süregelen işidir.
 
 ### Kural katmanları ve dil olgunluğu
@@ -522,7 +511,7 @@ ayarlar — algılama anlamını asla değiştirmez.
 {
   "gate": "error",
   "exclude": ["legacy/**"],
-  "severityOverrides": { "QA-PW-118": "warning" },
+  "severityOverrides": { "QA-PW-141": "warning" },
   "ignore": [
     {
       "ruleId": "QA-TEST-004",
