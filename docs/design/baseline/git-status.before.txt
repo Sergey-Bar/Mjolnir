@@ -1,0 +1,17 @@
+ M README.md
+ M assets/readme/demo.svg
+ D assets/readme/flow.svg
+ M assets/readme/score-gauge.svg
+ M assets/readme/terminal-hero.svg
+ M package.json
+ M scripts/generate-readme-architecture.ts
+ M scripts/generate-readme-demo.ts
+ D scripts/generate-readme-flow.ts
+ M scripts/generate-readme-hero.ts
+ M scripts/generate-readme-score-gauge.ts
+ M scripts/readme-svg.ts
+ D tests/contract/flow-asset-reproducibility.spec.ts
+ M tests/corpus/verdicts/grafana-grafana.jsonl
+ M tests/corpus/verdicts/microsoft-playwright-mcp.jsonl
+ M tests/corpus/verdicts/nextauthjs-next-auth.jsonl
+?? docs/design/

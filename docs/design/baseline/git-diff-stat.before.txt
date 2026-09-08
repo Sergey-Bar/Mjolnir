@@ -1,0 +1,17 @@
+ README.md                                          |  29 +-
+ assets/readme/demo.svg                             | 605 +++++++++++----------
+ assets/readme/flow.svg                             |  31 --
+ assets/readme/score-gauge.svg                      | 419 +++++++-------
+ assets/readme/terminal-hero.svg                    |  53 +-
+ package.json                                       |   1 -
+ scripts/generate-readme-architecture.ts            |   6 +-
+ scripts/generate-readme-demo.ts                    |   7 +-
+ scripts/generate-readme-flow.ts                    | 331 -----------
+ scripts/generate-readme-hero.ts                    |   7 +-
+ scripts/generate-readme-score-gauge.ts             |   7 +-
+ scripts/readme-svg.ts                              |  69 ++-
+ tests/contract/flow-asset-reproducibility.spec.ts  |  65 ---
+ tests/corpus/verdicts/grafana-grafana.jsonl        |   1 +
+ .../corpus/verdicts/microsoft-playwright-mcp.jsonl |   1 +
+ tests/corpus/verdicts/nextauthjs-next-auth.jsonl   |   1 +
+ 16 files changed, 630 insertions(+), 1003 deletions(-)
