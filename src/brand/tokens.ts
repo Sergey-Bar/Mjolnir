@@ -211,14 +211,14 @@ export const TYPOGRAPHY = {
   display: {
     family: "Cinzel",
     weights: [600],
-    stack: `"Cinzel", "Cinzel Fallback", "Trajan Pro", "Iowan Old Style", Georgia, serif`,
+    stack: `"Cinzel", "Trajan Pro", "Iowan Old Style", Georgia, "Times New Roman", serif`,
     /** Display type is caps or title-case, always tracked out. */
     letterSpacing: { tight: "0.04em", wide: "0.18em", widest: "0.32em" },
   },
   sans: {
     family: "Geist",
     weights: [400, 500, 600],
-    stack: `"Geist", "Geist Fallback", ui-sans-serif, system-ui, -apple-system, sans-serif`,
+    stack: `"Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`,
   },
   mono: {
     family: "Geist Mono",
@@ -226,7 +226,7 @@ export const TYPOGRAPHY = {
     /** `MjolnirMono` is the embedded @font-face name used inside SVG and
      * the video render page; the web stack names the real family. */
     embeddedFamily: "MjolnirMono",
-    stack: `"Geist Mono", "Geist Mono Fallback", ui-monospace, "SFMono-Regular", monospace`,
+    stack: `"Geist Mono", ui-monospace, "SFMono-Regular", "Cascadia Mono", Consolas, monospace`,
   },
   /** Rune glyph fallback only — never a text face. */
   runes: { family: "FreeMono", embeddedFamily: "MjolnirRunes" },
@@ -332,23 +332,20 @@ export const PENDING_TERMINAL = {
 } as const;
 
 /**
- * TEMPORARY. The site's shipped typefaces and its three off-ramp
- * neutrals, quoted so the token generator reproduces `vars.css`
- * unchanged in Phase 1.
+ * TEMPORARY. Three off-ramp neutrals the site still holds, quoted here
+ * so the drift is visible in one place.
  *
- *   shipped                     canonical              why it changes
+ *   shipped                  canonical         why it changes
  *   ──────────────────────────────────────────────────────────────────
- *   Inter                       TYPOGRAPHY.sans        → Geist: the face the SVGs and the video already embed
- *   JetBrains Mono              TYPOGRAPHY.mono        → Geist Mono: same
- *   heroInk    #0b1420          SURFACE.ink900         one hex off the ramp, for no reason
- *   heroMuted  #9aa6b6          TEXT.secondary         a fourth text grey
- *   heroNameTop #dfe4ec         BRAND.steel            gradient stop above the steel ramp
+ *   heroInk    #0b1420       SURFACE.ink900    one hex off the ramp, for no reason
+ *   heroMuted  #9aa6b6       TEXT.secondary    a fourth text grey
+ *   heroNameTop #dfe4ec      BRAND.steel       a gradient stop above the steel ramp
  *
- * Cinzel stays: it is already the display face and is kept, self-hosted.
+ * Inter and JetBrains Mono used to be quoted here too. They are gone:
+ * the site now ships Geist and Geist Mono, the faces the README SVGs and
+ * the demo video already embed, self-hosted from site/public/fonts.
  */
 export const PENDING_SITE = {
-  sansStack: `"Inter", "Inter Fallback", ui-sans-serif, system-ui, -apple-system, sans-serif`,
-  monoStack: `"JetBrains Mono", ui-monospace, "SFMono-Regular", monospace`,
   heroInk: "#0b1420",
   heroMuted: "#9aa6b6",
   heroNameTop: "#dfe4ec",

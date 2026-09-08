@@ -10,6 +10,7 @@ import EvidenceBadge from "./EvidenceBadge.vue";
 import FalseGreenChain from "./FalseGreenChain.vue";
 import ScoreExplainer from "./ScoreExplainer.vue";
 import NotFound from "./NotFound.vue";
+import "./styles/fonts.css";
 import "./styles/vars.css";
 import "./styles/custom.css";
 

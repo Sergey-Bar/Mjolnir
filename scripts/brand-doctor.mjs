@@ -137,6 +137,10 @@ const NON_BRAND_HEX = new Map([
   ],
 ]);
 
+/** Faces the brand no longer uses anywhere. Named, so a stack cannot
+ * quietly reacquire one as a "harmless" fallback. */
+const RETIRED_FACES = ["Inter", "JetBrains Mono"];
+
 /**
  * Known, planned findings. Each is closed by the named phase of
  * `.planning/BRAND-UNIFICATION-PLAN.md`. An entry that stops firing is a
@@ -156,13 +160,6 @@ export const KNOWN_OPEN = [
     phase: "Phase 4 — palette convergence",
     reason:
       "the architecture diagram still reads PENDING_ARCHITECTURE for its seven neutrals",
-  },
-  {
-    id: "site-type-pending",
-    rule: 1,
-    phase: "Phase 3 — typography convergence",
-    reason:
-      "vars.css still emits the Inter / JetBrains Mono stacks via PENDING_SITE",
   },
   {
     id: "site-theme-hex",
@@ -224,31 +221,28 @@ export function rule1() {
   for (const k of ["l0", "l1", "l2", "l3", "l4", "l5"])
     expect(`--mj-${k}`, T.trust[k]);
 
-  // Typography, still pending: the site must not name a face the token
-  // module does not know about.
-  const known = [
-    T.typography.sans.family,
-    T.typography.mono.family,
-    T.typography.display.family,
-    "Inter",
-    "JetBrains Mono",
-  ];
-  for (const v of ["--vp-font-family-base", "--vp-font-family-mono"]) {
+  // Typography. The site leads with the token faces, and names no
+  // retired one anywhere in a stack — a fallback entry still downloads
+  // nothing but it does still render, which is how a page ends up
+  // looking like two products on a machine that happens to have Inter.
+  const lead = {
+    "--vp-font-family-base": T.typography.sans.family,
+    "--vp-font-family-mono": T.typography.mono.family,
+    "--mj-display": T.typography.display.family,
+  };
+  for (const [v, want] of Object.entries(lead)) {
     const stack = shipped[v] ?? "";
     const first = /"([^"]+)"/.exec(stack)?.[1];
-    if (first && !known.some((f) => f.toLowerCase() === first.toLowerCase()))
-      failures.push(`${v} — leads with "${first}", not a token typeface`);
+    if (!first)
+      failures.push(`${v} — no quoted family at the head of the stack`);
+    else if (first.toLowerCase() !== want.toLowerCase())
+      failures.push(
+        `${v} — leads with "${first}", the token face is "${want}"`,
+      );
+    for (const retired of RETIRED_FACES)
+      if (stack.includes(retired.toLowerCase()))
+        failures.push(`${v} — still names the retired face "${retired}"`);
   }
-  if ((shipped["--vp-font-family-base"] ?? "").includes("inter"))
-    failures.push({
-      known: "site-type-pending",
-      text: `--vp-font-family-base still leads with Inter (PENDING_SITE.sansStack)`,
-    });
-  if ((shipped["--vp-font-family-mono"] ?? "").includes("jetbrains"))
-    failures.push({
-      known: "site-type-pending",
-      text: `--vp-font-family-mono still leads with JetBrains Mono (PENDING_SITE.monoStack)`,
-    });
 
   return {
     n: 1,

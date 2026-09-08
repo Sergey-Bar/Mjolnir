@@ -60,6 +60,16 @@ const SEEDS = [
     expect: "--mj-gold — tokens say #c19a34, css has #ff0000",
   },
   {
+    rule: "1 (retired face)",
+    what: "a retired typeface creeps back into a stack",
+    file: p("site", ".vitepress", "theme", "styles", "vars.css"),
+    // A fallback entry downloads nothing but it still RENDERS, which is
+    // exactly how a page ends up looking like two products on a machine
+    // that happens to have Inter installed.
+    edit: (s) => s.replace('"Geist", ui-sans-serif', '"Geist", "Inter"'),
+    expect: 'still names the retired face "Inter"',
+  },
+  {
     rule: 2,
     what: "the terminal palette names a colour of its own",
     file: p("src", "reporter", "theme.ts"),

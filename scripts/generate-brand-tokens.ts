@@ -161,8 +161,8 @@ export async function buildVarsCss(): Promise<string> {
   --vp-c-gutter: rgba(${HAIRLINE_RGB}, 0.06);
 
   /* ---- type ---- */
-  --vp-font-family-base: ${PENDING_SITE.sansStack};
-  --vp-font-family-mono: ${PENDING_SITE.monoStack};
+  --vp-font-family-base: ${TYPOGRAPHY.sans.stack};
+  --vp-font-family-mono: ${TYPOGRAPHY.mono.stack};
   --mj-display: ${TYPOGRAPHY.display.stack};
 
   /* ---- palette ---- */

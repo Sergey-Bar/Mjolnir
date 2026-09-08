@@ -64,6 +64,12 @@ jobs:
       # it, and the file restored. A check never seen to fail is not
       # evidence.
       - run: npm run brand:doctor:selftest
+      # The vendored webfonts are what ships; this re-verifies the
+      # committed bytes against their sha256 manifest, offline. The build
+      # itself never fetches a font — the site used to pull Cinzel and
+      # Inter from a third party at runtime, on the page whose whole
+      # argument is that you should not trust what you have not verified.
+      - run: npm run brand:fonts:check
       - run: npm test
       # Fixture integrity, non-TS tier (certification-audit Phase 2.4):
       # Python fixtures are real code the detectors consume as text —

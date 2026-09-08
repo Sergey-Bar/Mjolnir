@@ -132,35 +132,35 @@ export default defineConfig({
       },
     ],
     ["link", { rel: "apple-touch-icon", href: BASE + "apple-touch-icon.png" }],
-    ["link", { rel: "preconnect", href: "https://fonts.googleapis.com" }],
-    [
-      "link",
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" },
-    ],
-    // Split deliberately, because the two halves want different swap
-    // behaviour. Cinzel and Inter keep `display=swap`: the brand face
-    // should arrive even if it is late, and their swap-in was measured
-    // at CLS 0.001 on the landing page.
-    [
-      "link",
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Inter:wght@400;500;600&display=optional",
-      },
-    ],
-    // JetBrains Mono is `display=optional` instead. Swapping it in at
-    // ~900ms re-flowed all 91 rows of the rule catalog and was the whole
-    // of that page's CLS (0.088 against a 0.05 gate — traced to <tr>
-    // nodes with a layout-shift observer). `optional` means the browser
-    // either has it in time or keeps the fallback for that visit and
-    // never swaps, so the table cannot reflow underneath a reader.
-    [
-      "link",
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=optional",
-      },
-    ],
+    // Fonts are self-hosted from site/public/fonts (vendored by
+    // `npm run brand:fonts`, sha256-locked in fonts.lock.json). There is
+    // no preconnect and no third-party stylesheet: the page renders its
+    // own wordmark without asking anyone else, and the two cross-origin
+    // round-trips that used to sit on the critical path are gone.
+    //
+    // Preloading the three latin faces first paint needs — body, code
+    // and the display face the wordmark is set in — is what makes
+    // `font-display: swap` safe here. Dropping the Cinzel preload was
+    // measured and made no difference (mobile 93 vs 92, inside the
+    // run-to-run noise), so it stays: the hero renders in its own face
+    // from the first paint rather than swapping into it. The measured lesson
+    // this replaces: JetBrains Mono swapping in at ~900ms re-flowed all
+    // 91 rows of the rule catalog and was the whole of that page's CLS
+    // (0.088 against a 0.05 gate). A same-origin, preloaded, 23 KB face
+    // arrives before the paint that would have to shift.
+    ...["geist-400-latin", "geist-mono-400-latin", "cinzel-600-latin"].map(
+      (f) =>
+        [
+          "link",
+          {
+            rel: "preload",
+            as: "font",
+            type: "font/woff2",
+            href: `${BASE}fonts/${f}.woff2`,
+            crossorigin: "",
+          },
+        ] as [string, Record<string, string>],
+    ),
     // Link previews (Slack, X, LinkedIn, Discord) — without these a
     // shared link renders as a bare URL.
     ["meta", { property: "og:type", content: "website" }],
