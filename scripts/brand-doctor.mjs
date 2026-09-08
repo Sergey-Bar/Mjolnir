@@ -161,13 +161,6 @@ export const KNOWN_OPEN = [
     reason:
       "src/reporter/mermaid.ts styles its diagrams with a Tailwind-ish light palette that is in no token, and — worse — paints the no-tests-found node `critical` red. UNKNOWN is a legitimate answer, not a failure; that node is an honesty defect, not only an off-brand one. Fixed with the rest of the reporter vocabulary, where the light/dark constraint of GitHub-rendered mermaid can be solved once.",
   },
-  {
-    id: "readme-badges-stale",
-    rule: 7,
-    phase: "Phase 6 — README and badges",
-    reason:
-      "the retired C9A227 / 0B0F17 / 2E8C7F palette is still in the badge URLs of all 23 READMEs",
-  },
 ];
 
 /* ══ Rule 1 — vars.css matches the tokens ═══════════════════════ */
@@ -496,12 +489,6 @@ export function rule7() {
   const allowed = new Set(
     Object.values(T.badge).map((v) => String(v).toLowerCase()),
   );
-  // The three retired values, and only those three, are the known
-  // Phase-6 debt. Anything ELSE off-palette is a hard failure — keyed to
-  // the exact hexes rather than to "any non-token colour", or the
-  // known-open entry would swallow a brand-new mistake as well as the
-  // old one.
-  const retired = new Set(["c9a227", "0b0f17", "2e8c7f"]);
   const failures = [];
 
   for (const name of readmes) {
@@ -514,12 +501,7 @@ export function rule7() {
         const hex = (c[1] ?? c[2]).toLowerCase();
         if (allowed.has(hex) || seen.has(hex)) continue;
         seen.add(hex);
-        const entry = `${name} — badge colour ${hex} is not a brand token`;
-        failures.push(
-          retired.has(hex)
-            ? { known: "readme-badges-stale", text: entry }
-            : entry,
-        );
+        failures.push(`${name} — badge colour ${hex} is not a brand token`);
       }
     }
   }

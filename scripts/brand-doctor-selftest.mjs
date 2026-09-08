@@ -125,7 +125,7 @@ const SEEDS = [
     rule: 7,
     what: "a README badge uses a colour that is neither token nor known debt",
     file: p("README.md"),
-    edit: (s) => s.replace("color=C9A227", "color=ABCDEF"),
+    edit: (s) => s.replace("color=C19A34", "color=ABCDEF"),
     expect: "README.md — badge colour abcdef is not a brand token",
   },
   {
