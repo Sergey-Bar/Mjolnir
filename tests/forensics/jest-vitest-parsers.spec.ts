@@ -149,7 +149,9 @@ describe("Jest JSON parser (P4)", () => {
       ],
     });
     expect(records).toHaveLength(5);
-    expect(records.every((r) => r.attempts[0]?.durationMs >= 0)).toBe(true);
+    expect(records.every((r) => (r.attempts[0]?.durationMs ?? 0) >= 0)).toBe(
+      true,
+    );
     expect(records.every((r) => r.line === undefined)).toBe(true);
     // The second file entry carried no testFilePath → the honest
     // "unknown" identity, never a crash.
@@ -230,7 +232,9 @@ describe("Vitest JSON parser (P4)", () => {
       ],
     });
     expect(records).toHaveLength(5);
-    expect(records.every((r) => r.attempts[0]?.durationMs >= 0)).toBe(true);
+    expect(records.every((r) => (r.attempts[0]?.durationMs ?? 0) >= 0)).toBe(
+      true,
+    );
     expect(records.every((r) => r.line === undefined)).toBe(true);
     expect(records[4]?.file).toBe("unknown");
   });
