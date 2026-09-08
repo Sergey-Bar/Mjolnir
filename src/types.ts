@@ -128,8 +128,15 @@ export type TrustLevel = (typeof TRUST_ORDER)[number];
 export interface RuntimeCorroboration {
   /** Granularity of what the runtime report could vouch for. */
   level: "file" | "test" | "defect";
-  /** Report format the evidence came from. */
-  source: "playwright-json" | "junit-xml";
+  /**
+   * Report format the evidence came from. Widened additively in P4
+   * (plan 1788853205786) to mirror ForensicsReport's source union:
+   * Jest/Vitest JSON reports corroborate at file/test level exactly
+   * like Playwright's — their one-attempt-per-record shape only
+   * constrains TRUE-FLAKE derivation, which lives in the analysis, not
+   * in the provenance label.
+   */
+  source: "playwright-json" | "junit-xml" | "jest-json" | "vitest-json";
   /** Number of tests executed in the finding's file (any level). */
   testsExecuted: number;
   /**

@@ -4,7 +4,9 @@
  * Accepts either a single report file or a directory. In a directory it
  * looks for, in priority order:
  *   1. report.json / playwright-report.json — Playwright JSON report
- *   2. *.xml                                — JUnit XML reports
+ *   2. jest-report.json / vitest-report.json — Jest/Vitest JSON reports
+ *   3. *.json (shape-sniffed: Playwright, Jest, Vitest)
+ *   4. *.xml                                — JUnit XML reports
  *
  * Writes FLAKY.md next to the scan target unless --no-flaky-md.
  */
@@ -19,8 +21,10 @@ import {
 import { join, dirname } from "node:path";
 
 import { analyze, renderFlakyMd, renderLeaderboard } from "./analyze.js";
+import { looksLikeJestJson, parseJestJson } from "./parse-jest-json.js";
 import { parseJunitXml } from "./parse-junit.js";
 import { parsePlaywrightJson } from "./parse-playwright-json.js";
+import { looksLikeVitestJson, parseVitestJson } from "./parse-vitest-json.js";
 import type { ForensicsReport, TestRecord } from "./types.js";
 
 const MAX_FILES = 500;
@@ -133,8 +137,24 @@ function parseFile(
   ) {
     return { records: parseJunitXml(text), source: "junit-xml" };
   }
+  let json: unknown;
   try {
-    const json: unknown = JSON.parse(text);
+    json = JSON.parse(text);
+  } catch {
+    return { records: [], source: "playwright-json" };
+  }
+  // P4 (plan 1788853205786): Jest/Vitest JSON reports. Discovery order
+  // matters — Jest and Vitest share the top-level `testResults` key —
+  // so the sniffers run BEFORE the Playwright parser would otherwise
+  // misread them (Playwright's walk finds no suites and returns zero
+  // records, silently dropping the report).
+  if (looksLikeJestJson(json)) {
+    return { records: parseJestJson(json), source: "jest-json" };
+  }
+  if (looksLikeVitestJson(json)) {
+    return { records: parseVitestJson(json), source: "vitest-json" };
+  }
+  try {
     return { records: parsePlaywrightJson(json), source: "playwright-json" };
   } catch {
     return { records: [], source: "playwright-json" };

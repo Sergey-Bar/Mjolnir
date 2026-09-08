@@ -499,7 +499,8 @@ scanning.
 ## Runtime forensics
 
 Static analysis reasons about code that was never run. Forensics reads what
-actually happened — Playwright JSON reports and JUnit XML from any runner:
+actually happened — Playwright JSON, Jest JSON, Vitest JSON, and JUnit XML
+from any runner:
 
 ```text
 Static analysis  →  what the code appears to do
