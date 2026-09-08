@@ -9,6 +9,12 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [0.5.29] — 2026-09-08
+
+### Changes since 0.5.28
+
+- fix(corpus-sample): never delete review sheets of rules not sampled in the current run — scoped runs used to wipe pending §19 owner classifications
+
 ## [0.5.28] — 2026-09-08
 
 ### Changes since 0.5.27
