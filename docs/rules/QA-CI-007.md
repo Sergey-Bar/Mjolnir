@@ -44,7 +44,6 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | Repo              | Occurrences |
 | ----------------- | ----------- |
 | apache-airflow    | 1           |
-| github-docs       | 1           |
 | keycloak-keycloak | 1           |
 | positive-fixtures | 10          |
 

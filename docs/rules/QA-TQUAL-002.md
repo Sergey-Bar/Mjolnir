@@ -51,7 +51,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | positive-fixtures    | 12          |
 | streamlit-streamlit  | 1           |
 | vercel-next-js       | 5           |
-| vitest-dev-vitest    | 135         |
+| vitest-dev-vitest    | 137         |
 
 ---
 

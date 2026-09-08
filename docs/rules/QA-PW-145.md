@@ -56,7 +56,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | negative-fixtures    | 7           |
 | nextauthjs-next-auth | 3           |
 | nocodb-nocodb        | 1           |
-| positive-fixtures    | 20          |
+| positive-fixtures    | 25          |
 | puppeteer-puppeteer  | 58          |
 | streamlit-streamlit  | 4           |
 | sveltejs-kit         | 11          |

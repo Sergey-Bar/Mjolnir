@@ -49,7 +49,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | grafana-grafana          | 1           |
 | microsoft-playwright-mcp | 1           |
 | nextauthjs-next-auth     | 1           |
-| positive-fixtures        | 12          |
+| positive-fixtures        | 13          |
 | vercel-next-js           | 1           |
 | vitest-dev-vitest        | 1           |
 | withastro-astro          | 2           |

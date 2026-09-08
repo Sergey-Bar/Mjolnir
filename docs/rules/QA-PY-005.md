@@ -46,7 +46,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | apache-airflow      | 49          |
 | getsentry-sentry    | 39          |
 | negative-fixtures   | 1           |
-| positive-fixtures   | 4           |
+| positive-fixtures   | 13          |
 | psf-requests        | 3           |
 | reflex-dev-reflex   | 16          |
 | streamlit-streamlit | 29          |

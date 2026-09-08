@@ -43,7 +43,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo              | Occurrences |
 | ----------------- | ----------- |
-| positive-fixtures | 1           |
+| positive-fixtures | 7           |
 | reflex-dev-reflex | 3           |
 
 ---

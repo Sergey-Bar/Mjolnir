@@ -47,7 +47,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | getsentry-sentry    | 889         |
 | negative-fixtures   | 1           |
 | pallets-click       | 4           |
-| positive-fixtures   | 9           |
+| positive-fixtures   | 11          |
 | psf-requests        | 11          |
 | pyca-cryptography   | 17          |
 | pytest-dev-pytest   | 84          |

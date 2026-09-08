@@ -61,10 +61,11 @@ real Java+TS monorepo with JUnit tests and CI workflows — QA-JV-101/102 plus Q
 
 Source: [`https://github.com/appsmithorg/appsmith`](https://github.com/appsmithorg/appsmith)
 
-Total findings: **574**
+Total findings: **575**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
+| QA-CYP-003   | 1        |
 | QA-JV-101    | 11       |
 | QA-JV-102    | 10       |
 | QA-JV-103    | 80       |
@@ -205,18 +206,18 @@ workflow-dense docs repo (small code footprint) — QA-CI-001 and QA-CI-007 surf
 
 Source: [`https://github.com/github/docs`](https://github.com/github/docs)
 
-Total findings: **137**
+Total findings: **211**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
-| QA-CI-001    | 2        |
-| QA-CI-007    | 1        |
 | QA-PW-101    | 10       |
 | QA-PW-103    | 90       |
 | QA-PW-105    | 7        |
 | QA-PW-108    | 3        |
+| QA-PW-124    | 1        |
 | QA-PW-143    | 1        |
 | QA-PW-145    | 3        |
+| QA-PW-146    | 76       |
 | QA-TEST-002  | 11       |
 | QA-TEST-004  | 4        |
 | QA-TQUAL-001 | 5        |
@@ -231,7 +232,7 @@ Total findings: **3395**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
-| QA-CI-001    | 2        |
+| QA-CI-001    | 1        |
 | QA-CI-002    | 2        |
 | QA-ENV-001   | 7        |
 | QA-PW-002    | 6        |
@@ -246,6 +247,7 @@ Total findings: **3395**
 | QA-PW-118    | 28       |
 | QA-PW-119    | 107      |
 | QA-PW-120    | 12       |
+| QA-PW-124    | 1        |
 | QA-PW-141    | 1        |
 | QA-PW-144    | 1        |
 | QA-PW-145    | 107      |
@@ -266,7 +268,7 @@ real monorepo with UI tests and mature CI — QA-PW-004, QA-CI-001/008 and QA-PW
 
 Source: [`https://github.com/hashicorp/vault`](https://github.com/hashicorp/vault)
 
-Total findings: **113**
+Total findings: **114**
 
 | Rule ID    | Findings |
 | ---------- | -------- |
@@ -275,6 +277,7 @@ Total findings: **113**
 | QA-PW-103  | 32       |
 | QA-PW-107  | 12       |
 | QA-PW-108  | 3        |
+| QA-PW-124  | 1        |
 | QA-PW-141  | 1        |
 | QA-PW-143  | 1        |
 | QA-PW-145  | 29       |
@@ -405,13 +408,15 @@ real Playwright + GitHub Actions — TS/PW/CI adapter FP surface
 
 Source: [`https://github.com/microsoft/playwright-mcp`](https://github.com/microsoft/playwright-mcp)
 
-Total findings: **5**
+Total findings: **8**
 
 | Rule ID   | Findings |
 | --------- | -------- |
 | QA-CI-010 | 1        |
+| QA-PW-103 | 2        |
 | QA-PW-120 | 1        |
 | QA-PW-122 | 1        |
+| QA-PW-124 | 1        |
 | QA-PW-143 | 1        |
 | QA-PW-144 | 1        |
 
@@ -431,7 +436,7 @@ committed §08 class-C negative corpus — realistic legitimate code per rule th
 
 Source: [`local:tests/corpus/negative-fixtures`](local:tests/corpus/negative-fixtures)
 
-Total findings: **202**
+Total findings: **214**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
@@ -443,6 +448,7 @@ Total findings: **202**
 | QA-PW-107    | 1        |
 | QA-PW-115    | 1        |
 | QA-PW-122    | 60       |
+| QA-PW-124    | 12       |
 | QA-PW-141    | 24       |
 | QA-PW-143    | 60       |
 | QA-PW-145    | 7        |
@@ -460,7 +466,7 @@ real TS app with Playwright e2e + substantial GitHub Actions — first non-trivi
 
 Source: [`https://github.com/nextauthjs/next-auth`](https://github.com/nextauthjs/next-auth)
 
-Total findings: **40**
+Total findings: **41**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
@@ -471,6 +477,7 @@ Total findings: **40**
 | QA-PW-119    | 9        |
 | QA-PW-122    | 2        |
 | QA-PW-123    | 2        |
+| QA-PW-124    | 1        |
 | QA-PW-141    | 1        |
 | QA-PW-143    | 2        |
 | QA-PW-144    | 1        |
@@ -487,11 +494,10 @@ real TS app with e2e and CI — QA-CI-010 and QA-PW-115 surface
 
 Source: [`https://github.com/nocodb/nocodb`](https://github.com/nocodb/nocodb)
 
-Total findings: **6**
+Total findings: **5**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
-| QA-CI-010    | 1        |
 | QA-PW-115    | 2        |
 | QA-PW-120    | 1        |
 | QA-PW-145    | 1        |
@@ -503,14 +509,14 @@ real pytest suite — Python adapter FP surface
 
 Source: [`https://github.com/pallets/click`](https://github.com/pallets/click)
 
-Total findings: **23**
+Total findings: **25**
 
 | Rule ID   | Findings |
 | --------- | -------- |
 | QA-PY-002 | 1        |
 | QA-PY-003 | 3        |
 | QA-PY-004 | 4        |
-| QA-PY-007 | 14       |
+| QA-PY-007 | 16       |
 | QA-PY-010 | 1        |
 
 ## playwright-community-eslint-plugin-playwright
@@ -519,18 +525,21 @@ small real Playwright-rules repo — compact QA-PW / QA-TQUAL surface, fast clon
 
 Source: [`https://github.com/playwright-community/eslint-plugin-playwright`](https://github.com/playwright-community/eslint-plugin-playwright)
 
-Total findings: **292**
+Total findings: **564**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
 | QA-PW-102    | 1        |
+| QA-PW-103    | 10       |
 | QA-PW-107    | 2        |
 | QA-PW-112    | 1        |
 | QA-PW-118    | 3        |
 | QA-PW-120    | 1        |
+| QA-PW-123    | 9        |
 | QA-PW-146    | 229      |
 | QA-PW-147    | 32       |
-| QA-TEST-003  | 1        |
+| QA-TEST-003  | 125      |
+| QA-TEST-010  | 129      |
 | QA-TQUAL-001 | 20       |
 | QA-TQUAL-011 | 2        |
 
@@ -540,7 +549,7 @@ committed §08 class-B positive corpus — realistic anti-pattern variants per r
 
 Source: [`local:tests/corpus/positive-fixtures`](local:tests/corpus/positive-fixtures)
 
-Total findings: **689**
+Total findings: **814**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
@@ -551,56 +560,69 @@ Total findings: **689**
 | QA-CI-008    | 9        |
 | QA-CI-009    | 10       |
 | QA-CI-010    | 9        |
-| QA-CS-102    | 3        |
+| QA-CS-102    | 4        |
 | QA-CS-103    | 8        |
-| QA-CS-104    | 3        |
-| QA-CS-107    | 4        |
-| QA-CS-108    | 3        |
-| QA-CS-109    | 4        |
-| QA-CS-110    | 6        |
+| QA-CS-104    | 4        |
+| QA-CS-106    | 3        |
+| QA-CS-107    | 7        |
+| QA-CS-108    | 11       |
+| QA-CS-109    | 6        |
+| QA-CS-110    | 9        |
+| QA-CYP-002   | 3        |
+| QA-CYP-003   | 1        |
+| QA-ENV-001   | 3        |
 | QA-JV-101    | 3        |
-| QA-JV-102    | 3        |
-| QA-JV-103    | 4        |
+| QA-JV-102    | 5        |
+| QA-JV-103    | 5        |
 | QA-JV-104    | 8        |
-| QA-JV-107    | 4        |
-| QA-JV-108    | 3        |
+| QA-JV-106    | 2        |
+| QA-JV-107    | 7        |
+| QA-JV-108    | 8        |
 | QA-JV-109    | 10       |
-| QA-JV-110    | 4        |
+| QA-JV-110    | 7        |
 | QA-PW-003    | 9        |
 | QA-PW-004    | 8        |
-| QA-PW-103    | 49       |
+| QA-PW-101    | 1        |
+| QA-PW-102    | 3        |
+| QA-PW-103    | 54       |
 | QA-PW-104    | 10       |
 | QA-PW-107    | 1        |
 | QA-PW-113    | 11       |
 | QA-PW-115    | 6        |
+| QA-PW-116    | 1        |
 | QA-PW-117    | 4        |
 | QA-PW-121    | 12       |
-| QA-PW-122    | 60       |
-| QA-PW-123    | 6        |
+| QA-PW-122    | 62       |
+| QA-PW-123    | 8        |
+| QA-PW-124    | 14       |
 | QA-PW-140    | 10       |
 | QA-PW-141    | 24       |
 | QA-PW-142    | 8        |
-| QA-PW-143    | 60       |
-| QA-PW-144    | 12       |
-| QA-PW-145    | 20       |
+| QA-PW-143    | 62       |
+| QA-PW-144    | 13       |
+| QA-PW-145    | 25       |
 | QA-PW-146    | 15       |
+| QA-PW-147    | 1        |
 | QA-PY-001    | 12       |
 | QA-PY-003    | 13       |
-| QA-PY-004    | 9        |
-| QA-PY-005    | 4        |
+| QA-PY-004    | 11       |
+| QA-PY-005    | 13       |
 | QA-PY-009    | 10       |
 | QA-PY-011    | 5        |
 | QA-PY-012    | 15       |
 | QA-PY-101    | 4        |
 | QA-PY-103    | 5        |
+| QA-PY-104    | 5        |
 | QA-PY-105    | 12       |
 | QA-PY-106    | 4        |
 | QA-PY-107    | 3        |
-| QA-PY-108    | 4        |
-| QA-SE-003    | 1        |
-| QA-TEST-001  | 8        |
+| QA-PY-108    | 9        |
+| QA-SE-001    | 1        |
+| QA-SE-002    | 2        |
+| QA-SE-003    | 7        |
+| QA-TEST-001  | 11       |
 | QA-TEST-002  | 1        |
-| QA-TEST-003  | 58       |
+| QA-TEST-003  | 69       |
 | QA-TEST-006  | 5        |
 | QA-TEST-010  | 11       |
 | QA-TQUAL-002 | 12       |
@@ -630,17 +652,17 @@ real TS monorepo with mocha tests and multi-job Actions — QA-CI surface plus Q
 
 Source: [`https://github.com/puppeteer/puppeteer`](https://github.com/puppeteer/puppeteer)
 
-Total findings: **757**
+Total findings: **763**
 
 | Rule ID     | Findings |
 | ----------- | -------- |
-| QA-ENV-001  | 29       |
+| QA-ENV-001  | 33       |
 | QA-PW-005   | 10       |
-| QA-PW-103   | 97       |
+| QA-PW-103   | 98       |
 | QA-PW-114   | 210      |
 | QA-PW-119   | 1        |
 | QA-PW-120   | 29       |
-| QA-PW-123   | 2        |
+| QA-PW-123   | 3        |
 | QA-PW-145   | 58       |
 | QA-PW-146   | 228      |
 | QA-TEST-003 | 90       |
@@ -668,7 +690,7 @@ large real pytest suite — Python adapter FP surface (QA-PY-001..012)
 
 Source: [`https://github.com/pytest-dev/pytest`](https://github.com/pytest-dev/pytest)
 
-Total findings: **328**
+Total findings: **331**
 
 | Rule ID   | Findings |
 | --------- | -------- |
@@ -676,7 +698,7 @@ Total findings: **328**
 | QA-PY-003 | 30       |
 | QA-PY-004 | 84       |
 | QA-PY-006 | 19       |
-| QA-PY-007 | 164      |
+| QA-PY-007 | 167      |
 | QA-PY-009 | 3        |
 | QA-PY-010 | 3        |
 | QA-PY-011 | 1        |
@@ -891,7 +913,7 @@ real TS monorepo with a large vitest suite of its own — QA-TEST-001/010, QA-TQ
 
 Source: [`https://github.com/vitest-dev/vitest`](https://github.com/vitest-dev/vitest)
 
-Total findings: **1066**
+Total findings: **1391**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
@@ -907,6 +929,7 @@ Total findings: **1066**
 | QA-PW-120    | 14       |
 | QA-PW-122    | 1        |
 | QA-PW-123    | 1        |
+| QA-PW-124    | 1        |
 | QA-PW-141    | 1        |
 | QA-PW-143    | 1        |
 | QA-PW-144    | 1        |
@@ -915,11 +938,11 @@ Total findings: **1066**
 | QA-PW-147    | 153      |
 | QA-TEST-001  | 12       |
 | QA-TEST-002  | 23       |
-| QA-TEST-003  | 382      |
+| QA-TEST-003  | 568      |
 | QA-TEST-004  | 77       |
-| QA-TEST-010  | 82       |
+| QA-TEST-010  | 218      |
 | QA-TQUAL-001 | 18       |
-| QA-TQUAL-002 | 135      |
+| QA-TQUAL-002 | 137      |
 | QA-TQUAL-011 | 4        |
 
 ## withastro-astro

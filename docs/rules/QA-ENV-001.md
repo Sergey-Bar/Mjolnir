@@ -48,7 +48,8 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | getsentry-sentry    | 1           |
 | grafana-grafana     | 7           |
 | hashicorp-vault     | 1           |
-| puppeteer-puppeteer | 29          |
+| positive-fixtures   | 3           |
+| puppeteer-puppeteer | 33          |
 | SeleniumHQ-selenium | 1           |
 | sveltejs-kit        | 8           |
 | vercel-next-js      | 6           |

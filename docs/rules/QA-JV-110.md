@@ -47,7 +47,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | keycloak-keycloak             | 81          |
 | microsoft-playwright-java     | 111         |
 | negative-fixtures             | 2           |
-| positive-fixtures             | 4           |
+| positive-fixtures             | 7           |
 | SeleniumHQ-selenium           | 72          |
 
 ---

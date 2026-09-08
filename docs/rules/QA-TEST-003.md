@@ -56,8 +56,8 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | keycloak-keycloak                             | 309         |
 | negative-fixtures                             | 14          |
 | nextauthjs-next-auth                          | 3           |
-| playwright-community-eslint-plugin-playwright | 1           |
-| positive-fixtures                             | 58          |
+| playwright-community-eslint-plugin-playwright | 125         |
+| positive-fixtures                             | 69          |
 | puppeteer-puppeteer                           | 90          |
 | SeleniumHQ-selenium                           | 1           |
 | streamlit-streamlit                           | 8           |
@@ -65,7 +65,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | tanstack-query                                | 19          |
 | vercel-next-js                                | 1391        |
 | vitejs-vite                                   | 39          |
-| vitest-dev-vitest                             | 382         |
+| vitest-dev-vitest                             | 568         |
 | withastro-astro                               | 101         |
 | yarnpkg-berry                                 | 89          |
 
