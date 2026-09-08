@@ -303,6 +303,29 @@ describe("main() dispatch to help (plan M2)", () => {
     expect(runHelpCommand([], { out: cap.io.out, err: cap.io.err })).toBe(0);
   });
 
+  it("scan/ci/help render the ROOT help, not the no-page stub (certification P3)", () => {
+    // Registry design: scan's help IS the root help — the overview
+    // carries the scan usage lines, so `mjolnir scan --help`,
+    // `mjolnir ci --help` and `mjolnir help --help` must render it
+    // instead of the "No detailed help for X" stub (audit help-matrix:
+    // all three rendered the stub at exit 0).
+    const root = renderRootHelp();
+    for (const verb of ["scan", "ci", "help"]) {
+      const cap = capture();
+      expect(runHelpCommand([verb], cap.io), verb).toBe(0);
+      expect(cap.text(), verb).toBe(`${root}\n`);
+      expect(cap.text(), verb).not.toContain("No detailed help for");
+    }
+    // The page render (which `--help` routes through) agrees.
+    expect(renderVerbHelp("scan")).toBe(root);
+    // ...and the root help actually carries scan's usage line.
+    expect(root).toContain("mjolnir [path]");
+    // Unknown verbs keep the honest stub.
+    const stub = capture();
+    expect(runHelpCommand(["teleport"], stub.io)).toBe(0);
+    expect(stub.text()).toContain('No detailed help for "teleport"');
+  });
+
   it("the two-token join falls through to the single-token page when the pair is unregistered", () => {
     const cap = capture();
     expect(runHelpCommand(["teleport", "now"], cap.io)).toBe(0);

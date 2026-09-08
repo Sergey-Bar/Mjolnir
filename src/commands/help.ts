@@ -238,8 +238,21 @@ export function hasVerbHelp(verb: string): boolean {
   return findEntry(verb) !== undefined;
 }
 
+/**
+ * Verbs whose detailed help IS the root help (certification P3):
+ * `scan` is the product's one command — the registry has no separate
+ * scan page, so `mjolnir scan --help` / `mjolnir help scan` must render
+ * the overview (which carries the scan usage lines), not the "no
+ * detailed help" stub. `ci` (the bare stem) and `help` are the same
+ * shape: real verbs, no dedicated page.
+ */
+const ROOT_HELP_VERBS: ReadonlySet<string> = new Set(["scan", "ci", "help"]);
+
 /** One per-verb help page: summary, usage, examples, next step. */
 export function renderVerbHelp(verb: string): string {
+  if (!hasVerbHelp(verb) && ROOT_HELP_VERBS.has(verb)) {
+    return renderRootHelp();
+  }
   const e = findEntry(verb);
   if (!e) {
     return [
