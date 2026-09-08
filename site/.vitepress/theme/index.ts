@@ -2,6 +2,7 @@ import DefaultTheme from "vitepress/theme";
 import type { Theme } from "vitepress";
 import Home from "./Home.vue";
 import RuneDivider from "./RuneDivider.vue";
+import TrustLadder from "./TrustLadder.vue";
 import RuleCatalog from "./RuleCatalog.vue";
 import TerminalReport from "./TerminalReport.vue";
 import CatalogPreview from "./CatalogPreview.vue";
@@ -20,6 +21,7 @@ export default {
   enhanceApp({ app }) {
     app.component("Home", Home);
     app.component("RuneDivider", RuneDivider);
+    app.component("TrustLadder", TrustLadder);
     app.component("RuleCatalog", RuleCatalog);
     app.component("TerminalReport", TerminalReport);
     app.component("CatalogPreview", CatalogPreview);

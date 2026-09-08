@@ -71,6 +71,7 @@
   --mj-needswork: #e6bd57; /* score band 50–79 */
   --mj-unworthy: #ec6b66; /* score band 0–49 */
   --mj-info: #5cc4e0; /* informational */
+  --mj-on-gold: #0a1119; /* ink for text set ON gold */
   --mj-ok: #4fb477; /* non-score success only — never a score colour */
   --mj-e0: #8b939d; /* observation */
   --mj-e1: #abb6c6; /* pattern evidence */

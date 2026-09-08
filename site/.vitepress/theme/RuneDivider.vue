@@ -1,11 +1,26 @@
 <script setup lang="ts">
-withDefaults(defineProps<{ rune?: string }>(), { rune: "ᛏ" });
+/**
+ * The section rule.
+ *
+ * It used to centre a rune on the line — a different arbitrary glyph per
+ * section (ᚦ ᛖ ᛗ ᛁ ᚨ ᛞ), set in the display face and glowing in the
+ * brand's gold. Two rules broken at once: a rune belongs beside a
+ * verdict or a state and never becomes ornament, and gold means forged,
+ * certified, earned — not "here is a horizontal rule".
+ *
+ * What is left is the rule itself and one small lozenge, the pommel
+ * shape from the foot of the mark, in the quiet neutral. It gives the
+ * page its rhythm without claiming anything.
+ *
+ * The name stays: it is imported in a dozen places and renaming it would
+ * be churn with no reader-visible benefit.
+ */
 </script>
 
 <template>
   <div class="rune-divider" aria-hidden="true">
     <span class="line" />
-    <span class="glyph">{{ rune }}</span>
+    <span class="mark" />
     <span class="line" />
   </div>
 </template>
@@ -32,11 +47,12 @@ withDefaults(defineProps<{ rune?: string }>(), { rune: "ᛏ" });
 .line:last-child {
   --dir: left;
 }
-.glyph {
-  font-family: var(--mj-display);
-  font-size: 1.15rem;
-  color: var(--vp-c-brand-1);
-  text-shadow: 0 0 14px rgba(224, 180, 67, 0.4);
-  letter-spacing: 0.1em;
+.mark {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  transform: rotate(45deg);
+  background: var(--mj-steel-dim);
+  opacity: 0.7;
 }
 </style>

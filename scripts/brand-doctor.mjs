@@ -148,13 +148,6 @@ const RETIRED_FACES = ["Inter", "JetBrains Mono"];
  */
 export const KNOWN_OPEN = [
   {
-    id: "site-theme-hex",
-    rule: 6,
-    phase: "Phase 8 — website",
-    reason:
-      "Home.vue, TerminalReport.vue and custom.css still hold hardcoded hexes; they are rewritten when the site consumes the symbol system",
-  },
-  {
     id: "mermaid-palette-offbrand",
     rule: 6,
     phase: "Phase 10 — CLI consistency",
@@ -455,6 +448,11 @@ export function rule6() {
       // has to seed invalid ones. Scanning them would make the rule
       // fail on its own machinery.
       if (/scripts\/brand-doctor(-selftest)?\.mjs$/.test(rel(file))) continue;
+      // vars.css IS the token values, emitted by `npm run brand:tokens`.
+      // It is the one file in the site that is supposed to hold hexes,
+      // and rule 1 already checks every one of them against the token
+      // module. Scanning it here would report the source as the drift.
+      if (rel(file).endsWith("theme/styles/vars.css")) continue;
       scanned++;
       const src = readFileSync(file, "utf8");
       const seen = new Set();
@@ -463,11 +461,9 @@ export function rule6() {
         if (isComment(h.text)) continue;
         seen.add(h.hex);
         const entry = `${rel(file)}:${h.line} — hex literal ${h.hex}`;
-        const known = rel(file).startsWith("site/")
-          ? "site-theme-hex"
-          : rel(file).endsWith("src/reporter/mermaid.ts")
-            ? "mermaid-palette-offbrand"
-            : null;
+        const known = rel(file).endsWith("src/reporter/mermaid.ts")
+          ? "mermaid-palette-offbrand"
+          : null;
         failures.push(known ? { known, text: entry } : entry);
       }
     }

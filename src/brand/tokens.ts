@@ -344,6 +344,7 @@ export const CSS_SEMANTIC: readonly (readonly [
   ["--mj-needswork", SCORE.warning, "score band 50–79"],
   ["--mj-unworthy", SCORE.critical, "score band 0–49"],
   ["--mj-info", STATUS.info, "informational"],
+  ["--mj-on-gold", TEXT.onGold, "ink for text set ON gold"],
   ["--mj-ok", STATUS.ok, "non-score success only — never a score colour"],
   ["--mj-e0", EVIDENCE.e0, "observation"],
   ["--mj-e1", EVIDENCE.e1, "pattern evidence"],

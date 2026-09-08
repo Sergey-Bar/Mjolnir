@@ -35,37 +35,31 @@ const evidence = [
 
 const features = [
   {
-    r: "ᛏ",
     title: "Worthiness Score",
     body: "One number, a transparent deduction table, no black box. Gate a pull request on it.",
     to: "/guide/scoring",
   },
   {
-    r: "ᛗ",
     title: "Selector Health",
     body: "Grades your Playwright locators for resilience — not just whether the run went green.",
     to: "/guide/forensics#selector-health-score",
   },
   {
-    r: "ᚦ",
     title: "Runtime Forensics",
     body: "Reads real Playwright & JUnit run data to catch TRUE-FLAKE, not a static guess.",
     to: "/guide/forensics",
   },
   {
-    r: "ᚨ",
     title: "CI-Integrity Rules",
     body: "Catches continue-on-error, “|| true”, and every other trick that turns red pipelines green.",
     to: "/guide/ci",
   },
   {
-    r: "ᛟ",
     title: "Four Languages, One Pass",
     body: "TypeScript, Python, Java and C#/.NET — plus pytest, JUnit / TestNG and CI workflows.",
     to: "/rules/",
   },
   {
-    r: "ᛉ",
     title: "Local-First",
     body: "Zero network calls while scanning. Zero telemetry. The whole audit runs in seconds.",
     to: "/reference/exit-codes#trust-model",
@@ -225,8 +219,8 @@ onBeforeUnmount(() => {
           />
         </h1>
         <p class="lede">
-          Your tests are lying to you.
-          <span class="shimmer">We prove it.</span>
+          Tests tell you what passed.
+          <span class="shimmer">Mjölnir tells you what you can trust.</span>
         </p>
         <p class="sub">
           Mjölnir audits test suites and CI pipelines, reports one worthiness
@@ -315,7 +309,7 @@ onBeforeUnmount(() => {
       </div>
     </section>
 
-    <RuneDivider rune="ᚦ" />
+    <RuneDivider />
 
     <!-- ===================== SHOWCASE ===================== -->
     <section class="showcase">
@@ -341,12 +335,12 @@ onBeforeUnmount(() => {
       <TerminalReport data-reveal />
     </section>
 
-    <RuneDivider rune="ᛖ" />
+    <RuneDivider />
 
     <!-- ===================== EVIDENCE ===================== -->
     <section class="evidence">
       <div class="ev-head" data-reveal>
-        <h2>"We prove it" is a system, not a slogan</h2>
+        <h2>Trust is a system here, not a slogan</h2>
         <p>
           Every finding carries an evidence level that sets how much it can cost
           the score. A structural proof and a heuristic hunch are not weighted
@@ -368,7 +362,7 @@ onBeforeUnmount(() => {
       </div>
     </section>
 
-    <RuneDivider rune="ᛗ" />
+    <RuneDivider />
 
     <!-- ===================== FEATURES ===================== -->
     <section class="features">
@@ -382,7 +376,6 @@ onBeforeUnmount(() => {
           data-reveal
           :style="{ '--i': i }"
         >
-          <span class="feat-rune" aria-hidden="true">{{ f.r }}</span>
           <h3>{{ f.title }}</h3>
           <p>{{ f.body }}</p>
           <span class="feat-go" aria-hidden="true">→</span>
@@ -390,7 +383,7 @@ onBeforeUnmount(() => {
       </div>
     </section>
 
-    <RuneDivider rune="ᛁ" />
+    <RuneDivider />
 
     <!-- ===================== MEASURED, NOT ASSERTED ===================== -->
     <section class="measured" data-reveal>
@@ -415,12 +408,12 @@ onBeforeUnmount(() => {
       </div>
     </section>
 
-    <RuneDivider rune="ᚨ" />
+    <RuneDivider />
 
     <!-- ================ RULE CATALOG PREVIEW ================ -->
     <CatalogPreview />
 
-    <RuneDivider rune="ᛞ" />
+    <RuneDivider />
 
     <!-- ===================== NOT A LINTER ===================== -->
     <section class="compare" data-reveal>
@@ -436,7 +429,6 @@ onBeforeUnmount(() => {
           </ul>
         </div>
         <div class="cmp cmp-us">
-          <span class="cmp-mark" aria-hidden="true">ᛏ</span>
           <h3>Mjölnir</h3>
           <p>tells you whether your verification can be trusted.</p>
           <ul>
@@ -578,15 +570,15 @@ onBeforeUnmount(() => {
   color: var(--mj-hero-text);
 }
 .shimmer {
-  /* never split "We prove it." across lines */
+  /* never split the second clause across lines */
   white-space: nowrap;
   background: linear-gradient(
     100deg,
     var(--mj-ember-hot) 0%,
-    #fff2d6 20%,
+    var(--mj-gold-hot) 20%,
     var(--mj-spark-bright) 40%,
     var(--mj-ember-hot) 60%,
-    #fff2d6 80%,
+    var(--mj-gold-hot) 80%,
     var(--mj-ember-hot) 100%
   );
   background-size: 300% 100%;
@@ -631,7 +623,7 @@ onBeforeUnmount(() => {
     background 0.16s ease;
 }
 .btn-primary {
-  color: #0b0f17;
+  color: var(--mj-on-gold);
   background: linear-gradient(180deg, var(--mj-ember-hot), var(--mj-ember));
   box-shadow:
     0 10px 30px -8px rgba(224, 180, 67, 0.6),
@@ -991,12 +983,6 @@ onBeforeUnmount(() => {
 .feat:hover::before {
   opacity: 1;
 }
-.feat-rune {
-  font-family: var(--mj-display);
-  font-size: 1.7rem;
-  color: var(--vp-c-brand-1);
-  text-shadow: 0 0 20px rgba(224, 180, 67, 0.35);
-}
 .feat h3 {
   margin: 0.7rem 0 0.4rem;
   font-size: 1.12rem;
@@ -1071,18 +1057,13 @@ onBeforeUnmount(() => {
   );
   border-color: rgba(224, 180, 67, 0.35);
 }
+/* A list marker, not a rune. ᛏ (Tiwaz) is the TRUSTED score band's rune
+   in score-state.ts; using it as a bullet — and again as a badge in the
+   corner of this card — spent a state symbol on decoration and implied a
+   verdict the card is not entitled to make. */
 .cmp-us li::before {
-  content: "ᛏ";
-  font-family: var(--mj-display);
+  content: "▸";
   color: var(--vp-c-brand-1);
-}
-.cmp-mark {
-  position: absolute;
-  top: 1rem;
-  right: 1.2rem;
-  font-family: var(--mj-display);
-  font-size: 1.6rem;
-  color: rgba(224, 180, 67, 0.5);
 }
 
 /* ---------------- FINAL ---------------- */

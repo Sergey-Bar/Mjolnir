@@ -35,7 +35,11 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const SITE = join(HERE, "..");
 const DIST = join(SITE, ".vitepress", "dist");
 const BASE = "/Mjolnir/";
-const ROUTES = ["", "guide/getting-started", "rules/"];
+// guide/scoring carries the trust ladder and the evidence weighting —
+// the two components that state the product's epistemics. A visual
+// treatment nothing ever audits is a visual treatment nobody has
+// checked, so it is on the list.
+const ROUTES = ["", "guide/getting-started", "guide/scoring", "rules/"];
 const PERF_GATE = 95;
 
 const MIME = {
