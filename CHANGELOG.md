@@ -9,6 +9,12 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [0.5.24] — 2026-09-08
+
+### Changes since 0.5.23
+
+- L4 ruling: tier-enforcement INCONCLUSIVE without live verdicts (MEASURED_FP = historical artifact only) (#58)
+
 ## [0.5.23] — 2026-09-08
 
 ### Changes since 0.5.22
