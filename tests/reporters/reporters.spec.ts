@@ -166,6 +166,17 @@ describe("renderSarif", () => {
     );
   });
 
+  it("SRCROOT encoding is idempotent over a pathToFileURL href (F5: 8.3 short names)", () => {
+    // Windows runners give tmpdir() as an 8.3 short path (RUNNER~1);
+    // pathToFileURL percent-encodes the `~` → %7E, and the encoder's
+    // per-segment encodeURI must NOT re-encode that `%` into %25.
+    const href = "file:///C:/Users/RUNNER%7E1/AppData/Local/Temp/repo";
+    const sarif = JSON.parse(renderSarif(makeResult({}), href)) as {
+      runs: Array<{ originalUriBaseIds: Record<string, { uri: string }> }>;
+    };
+    expect(sarif.runs[0]?.originalUriBaseIds.SRCROOT?.uri).toBe(href);
+  });
+
   // ── Bug-audit M7: SARIF 2.1.0 schema honesty ─────────────────────────
 
   it("reports partial success via toolExecutionNotifications, never the illegal partiallySuccessfulReason member (M7a)", () => {

@@ -185,6 +185,11 @@ export function renderSarif(result: ScanResult, repoRootUri?: string): string {
   // are legal in paths but not in an RFC 3986 uri-reference, and Code
   // Scanning resolves the base against them literally. Per-segment
   // encoding keeps `/` separators while encoding everything path-hostile.
+  // F5: the production call site passes a pathToFileURL() href, which is
+  // ALREADY percent-encoded — encodeURI would double-encode the `%`
+  // (a `~`-containing Windows 8.3 path became `%257E` on CI), so valid
+  // escapes are restored after encoding. The result is idempotent: a
+  // raw path and its href produce the same uri.
   const sarif = {
     $schema: "https://json.schemastore.org/sarif-2.1.0.json",
     version: ["2", "1", "0"].join("."),
@@ -201,6 +206,7 @@ export function renderSarif(result: ScanResult, repoRootUri?: string): string {
                     seg === ""
                       ? ""
                       : encodeURI(seg)
+                          .replaceAll("%25", "%")
                           .replaceAll("#", "%23")
                           .replaceAll("?", "%3F"),
                   )
