@@ -25,6 +25,20 @@
  * counts but never classifies whether findings are TP or FP. That
  * classification lives in tests/corpus/verdicts/ (Phase 3).
  *
+ * D14 baseline policy (as amended by the owner, 2026-09-08 — two
+ * obligations, deliberately separated):
+ *   1. Re-baseline after every merged wave — BLOCKING. The committed
+ *      baselines must agree with the shipped rules before the wave's
+ *      evidence run is accepted.
+ *   2. PARTIAL scans are TRACKED DEBT, never baselines, and never an
+ *      exemption. A deadline-truncated scan is refused outright (see
+ *      the refusal below); the repos that stayed PARTIAL are recorded
+ *      as named debt until a quiet-machine re-run completes. Their
+ *      existence does NOT block certification — the only invariant
+ *      certification depends on is that NO PARTIAL scan was ever
+ *      recorded as a baseline. Zero-PARTIAL is the desired end state,
+ *      not a gate.
+ *
  * Not part of `npm test` — this clones real repos over the network and
  * is meant to run as its own (nightly) CI job, not on every PR.
  */
