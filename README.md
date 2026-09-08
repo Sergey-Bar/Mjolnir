@@ -160,6 +160,18 @@ HOW TO FIX
 
   Example from this rule's own must-fire fixture: QA-CI-001/must-fire/masked.yml
 
+WHAT WOULD CHANGE THE VERDICT
+  - a run report next to the scan target (mjolnir.report.json or test-results/)
+  corroborating this file lifts its findings to L3–L5
+  - a documented suppression (mjolnir.config.json) lowers the finding count
+  without claiming correctness
+  - quarantine findings run only under --strict and are advisory (E0) — they can
+  never gate CI
+
+NEXT ACTION
+  Fix the first occurrence, then re-run: `mjolnir --scope changed`. Every
+  occurrence of this rule is listed in the scan output.
+
 HOW TO VERIFY THE FIX
   Re-run `mjolnir` on the changed file(s) — this finding should no longer
   appear. `mjolnir --scope changed` scopes the check to just what you touched.

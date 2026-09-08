@@ -48,6 +48,7 @@ import { renderMermaid } from "./reporter/mermaid.js";
 import { ProgressRenderer, shouldRenderProgress } from "./reporter/progress.js";
 import { runSummaryCommand } from "./commands/summary.js";
 import { runWhyCommand } from "./commands/why.js";
+import { explainVerdict, renderVerdictExplain } from "./commands/explain.js";
 import { runHandoffCommand } from "./commands/handoff.js";
 import { runInstallCommand } from "./commands/install-agents.js";
 import { runStdioTransport } from "./mcp/transport.js";
@@ -564,14 +565,41 @@ export async function runRulesCommand(
  * (this repo checkout, or --fixtures-root), and honestly omitted
  * otherwise — never a fabricated example.
  */
-export function runExplainCommand(
+export async function runExplainCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
-): number {
-  const ruleId = argv.find((a) => !a.startsWith("-"));
-  if (!ruleId) {
-    io.err("Usage: mjolnir explain <RULE-ID>");
+): Promise<number> {
+  const subject = argv.find((a) => !a.startsWith("-"));
+  if (!subject) {
+    io.err(
+      "Usage: mjolnir explain <RULE-ID | file:line | verdict> [--json <mjolnir.json>]",
+    );
     return 10;
+  }
+  // WI-7 (plan §8): `explain verdict` — explain a SAVED scan's overall
+  // verdict from its --json artifact. --json <path> supplies the file.
+  if (subject === "verdict") {
+    const jsonIdx = argv.indexOf("--json");
+    const jsonPath =
+      jsonIdx !== -1 ? argv[jsonIdx + 1] : join(process.cwd(), "mjolnir.json");
+    if (jsonPath === undefined || jsonPath.startsWith("--")) {
+      io.err("explain verdict requires a saved scan: --json <mjolnir.json>");
+      return 10;
+    }
+    try {
+      io.out(renderVerdictExplain(explainVerdict(resolve(jsonPath))));
+      const r = explainVerdict(resolve(jsonPath));
+      return r.ok ? 0 : 10;
+    } catch (err) {
+      internalErrorMessage(err, io.err, argv.includes("--debug"));
+      return 20;
+    }
+  }
+  // finding mode: file:line delegates to the `why` command — same
+  // evidence checklist, one implementation (plan §18 parity: no parallel
+  // implementations of the same semantics).
+  if (/^[^:]+\.\w+:\d+$/.test(subject)) {
+    return runWhyCommand([subject, ...argv.filter((a) => a !== subject)], io);
   }
   const fixturesRootIdx = argv.indexOf("--fixtures-root");
   // Audit S8: a dangling `--fixtures-root` is a usage error, not a
@@ -592,7 +620,7 @@ export function runExplainCommand(
     explicitRoot ?? join(process.cwd(), "tests", "fixtures"),
   );
   try {
-    const result = explainRule(ruleId, fixturesRoot);
+    const result = explainRule(subject, fixturesRoot);
     io.out(renderExplain(result));
     if (!result.ok) return 10; // unknown rule ID is a usage error, not a crash
     return 0;

@@ -20,7 +20,7 @@ import { MEASURED_FP } from "../rules/measured-fp.generated.js";
 import { effectiveTier, isProvisional } from "../rules/measurement.js";
 import { wrapText } from "../reporter/theme.js";
 import { deriveEvidenceLevel, QA_IMPACT_LABELS } from "../types.js";
-import type { Finding } from "../types.js";
+import type { Finding, ScanResult } from "../types.js";
 import { parseWorkflow } from "../discovery/workflow-parser.js";
 import { computeCodeText } from "../engine/code-text.js";
 import { firstFixtureFile } from "./fixture-example.js";
@@ -230,6 +230,17 @@ export function renderExplain(
     }
   }
   lines.push("");
+  lines.push("WHAT WOULD CHANGE THE VERDICT");
+  for (const c of whatWouldChangeTheVerdict(r)) {
+    pushBody(`- ${c}`);
+  }
+  lines.push("");
+  lines.push("NEXT ACTION");
+  pushBody(
+    "Fix the first occurrence, then re-run: `mjolnir --scope changed`. " +
+      "Every occurrence of this rule is listed in the scan output.",
+  );
+  lines.push("");
   lines.push("HOW TO VERIFY THE FIX");
   pushBody(
     "Re-run `mjolnir` on the changed file(s) — this finding should " +
@@ -239,6 +250,222 @@ export function renderExplain(
   lines.push("");
   lines.push(`Docs: mjolnir rules --md   (full catalog, this rule included)`);
   return lines.join("\n");
+}
+
+/**
+ * WHAT WOULD CHANGE THE VERDICT for a rule-level explanation (plan §26
+ * WI-7, §8): the honest list of state changes that move this rule's
+ * findings on the trust ladder or the census. Deterministic, derived
+ * from the rule's own metadata — no invented promises.
+ */
+export function whatWouldChangeTheVerdict(r: QADoctorRule): string[] {
+  const changes: string[] = [];
+  changes.push(
+    "a run report next to the scan target (mjolnir.report.json or test-results/) corroborating this file lifts its findings to L3–L5",
+  );
+  if (!MEASURED_FP[r.id]) {
+    changes.push(
+      "corpus measurement (n ≥ 10) would move this rule off PROVISIONAL and could change its tier",
+    );
+  }
+  changes.push(
+    "a documented suppression (mjolnir.config.json) lowers the finding count without claiming correctness",
+  );
+  if (effectiveTier(r) === "quarantine") {
+    changes.push(
+      "quarantine findings run only under --strict and are advisory (E0) — they can never gate CI",
+    );
+  }
+  return changes;
+}
+
+// ---------------------------------------------------------------------------
+// verdict mode (WI-7): explain a SAVED scan's overall verdict
+// ---------------------------------------------------------------------------
+
+export interface VerdictExplainResult {
+  ok: boolean;
+  error?: string;
+  /** The parsed canonical scan result. */
+  scan?: ScanResult;
+}
+
+/** Structural validation of the loaded JSON (hostile-input safe). */
+function parseScanJson(raw: string): ScanResult | undefined {
+  try {
+    const j = JSON.parse(raw) as Partial<ScanResult>;
+    if (j.schemaVersion !== 1 || !Array.isArray(j.findings)) return undefined;
+    if (!j.analysisStatus || typeof j.partial !== "boolean") return undefined;
+    return j as ScanResult;
+  } catch {
+    return undefined;
+  }
+}
+
+export function explainVerdict(jsonPath: string): VerdictExplainResult {
+  let raw: string;
+  try {
+    raw = readFileSync(jsonPath, "utf8");
+  } catch {
+    return { ok: false, error: `cannot read ${jsonPath}` };
+  }
+  const scan = parseScanJson(raw);
+  if (!scan) {
+    return {
+      ok: false,
+      error:
+        "not a canonical mjolnir scan result (schemaVersion 1) — generate one with `mjolnir <target> --json`",
+    };
+  }
+  return { ok: true, scan };
+}
+
+/**
+ * EVIDENCE checklist for the verdict mode: every item is a fact from
+ * the saved scan (✓ present / ⚠ absent) the user can independently
+ * re-derive (plan §8).
+ */
+export function verdictEvidenceChecklist(scan: ScanResult): string[] {
+  const items: string[] = [];
+  items.push(
+    scan.partial
+      ? "⚠ scan was PARTIAL — some of the surface was never judged"
+      : "✓ scan completed on the whole surface",
+  );
+  items.push(
+    scan.frameworkDetectionUnknown
+      ? "⚠ framework detection could not decide"
+      : `✓ frameworks detected: ${scan.frameworks.join(", ") || "none"}`,
+  );
+  const corroborated = scan.findings.filter(
+    (f) => f.runtimeCorroboration !== undefined,
+  ).length;
+  items.push(
+    corroborated > 0
+      ? `✓ runtime corroboration: ${corroborated} finding(s) matched a real run report`
+      : "⚠ no runtime report — findings are static-only (trust caps at L2)",
+  );
+  const measuredFired = scan.findings.filter(
+    (f) => MEASURED_FP[f.ruleId] !== undefined,
+  ).length;
+  items.push(
+    `✓ measured rules: ${measuredFired} of ${scan.findings.length} finding(s) come from rules with a measured FP rate`,
+  );
+  return items;
+}
+
+/** CORRELATION summary for the verdict mode. */
+export function verdictCorrelation(scan: ScanResult): string {
+  const c = scan.findings.filter((f) => f.runtimeCorroboration !== undefined);
+  const defect = c.filter((f) => f.runtimeCorroboration?.level === "defect");
+  if (defect.length > 0) {
+    return `${defect.length} finding(s) L5 — the run verdict corroborates the defect class.`;
+  }
+  if (c.length > 0) {
+    return `${c.length} finding(s) corroborated at file/test level.`;
+  }
+  return "no runtime correlation — the ladder stays static (L0–L2).";
+}
+
+/** WHAT WOULD CHANGE THE VERDICT for a scan verdict. */
+export function verdictWhatWouldChange(scan: ScanResult): string[] {
+  const changes: string[] = [];
+  if (scan.partial) {
+    changes.push(
+      "completing the scan (higher --max-duration, no skipped files) removes the confidence ceiling",
+    );
+  }
+  changes.push(
+    "running the tests and keeping the run report next to the scan target enables L3–L5 corroboration",
+  );
+  if (scan.frameworkDetectionUnknown) {
+    changes.push(
+      "committing a recognizable test-runner config unlocks framework-aware rules",
+    );
+  }
+  changes.push(
+    "fixing the top trust risks (mjolnir explain <RULE-ID>) moves the score and the verdict band",
+  );
+  return changes;
+}
+
+export function renderVerdictExplain(
+  result: VerdictExplainResult,
+  width: number = DEFAULT_EXPLAIN_WIDTH,
+): string {
+  if (!result.ok || !result.scan) {
+    return `explain failed: ${result.error ?? "unknown error"}`;
+  }
+  const scan = result.scan;
+  const s = scan.trustSummary;
+  const lines: string[] = [];
+  const pushBody = (text: string): void => {
+    for (const seg of wrapText(text, Math.max(20, width - 2))) {
+      lines.push(`  ${seg}`);
+    }
+  };
+
+  lines.push(sectionHeader("SCAN VERDICT", ui));
+  lines.push("");
+  lines.push(
+    `Score:       ${scan.score ?? "unknown"}${scan.reason === "no-tests-found" ? " (no tests found)" : ""}`,
+  );
+  lines.push(`Trust level: ${s?.level ?? "L0"}`);
+  if (s) {
+    lines.push(
+      `Confidence:  ${pctOf(s.confidence)}${s.confidenceCeiling !== undefined ? ` (ceiling ${pctOf(s.confidenceCeiling)})` : ""}`,
+    );
+    lines.push(
+      `Coverage:    ${pctOf(s.evidenceCoverage)} evidence-backed declarations`,
+    );
+    lines.push(`Inconclusive: ${pctOf(s.inconclusiveRate)}`);
+  }
+  lines.push("");
+  lines.push("EVIDENCE");
+  for (const item of verdictEvidenceChecklist(scan)) {
+    pushBody(item);
+  }
+  lines.push("");
+  lines.push("CORRELATION");
+  pushBody(verdictCorrelation(scan));
+  lines.push("");
+  lines.push("WHY THIS VERDICT");
+  if (s) {
+    for (const r of s.ceilingReasons) {
+      pushBody(`- confidence capped by: ${r}`);
+    }
+    if (s.provisionalRuleIds.length > 0) {
+      pushBody(
+        `- ${s.provisionalRuleIds.length} fired rule(s) are PROVISIONAL (unmeasured)`,
+      );
+    }
+  }
+  const errors = scan.findings.filter((f) => f.severity === "error").length;
+  pushBody(
+    errors > 0
+      ? `${errors} error-severity finding(s) drive the exit code and the verdict band.`
+      : "no error-severity findings — the gate stays green unless the scan was partial.",
+  );
+  lines.push("");
+  lines.push("WHAT WOULD CHANGE THE VERDICT");
+  for (const c of verdictWhatWouldChange(scan)) {
+    pushBody(`- ${c}`);
+  }
+  lines.push("");
+  lines.push("NEXT ACTION");
+  pushBody(
+    scan.partial
+      ? "re-run with a higher --max-duration to close the truncated surface"
+      : errors > 0
+        ? "mjolnir triage <test-results-dir-or-report> — then fix the top trust risk"
+        : "keep the gate green (mjolnir ci install)",
+  );
+  lines.push("");
+  return lines.join("\n");
+}
+
+function pctOf(v: number): string {
+  return `${Math.round(v * 100)}%`;
 }
 
 /** Every registered rule ID, for `--list` and error suggestions. */

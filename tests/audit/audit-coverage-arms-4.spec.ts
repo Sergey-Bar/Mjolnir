@@ -174,9 +174,12 @@ describe("create-rule parseId arms", () => {
 });
 
 describe("CLI explain/impact/diff flag-validation arms", () => {
-  it("explain --fixtures-root without a value exits 10", () => {
+  it("explain --fixtures-root without a value exits 10", async () => {
     const cap = capture();
-    const code = runExplainCommand(["QA-PW-101", "--fixtures-root"], cap.io);
+    const code = await runExplainCommand(
+      ["QA-PW-101", "--fixtures-root"],
+      cap.io,
+    );
     expect(code).toBe(10);
     expect(cap.errText()).toContain("--fixtures-root requires a value");
   });
