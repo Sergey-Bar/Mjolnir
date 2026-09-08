@@ -21,6 +21,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import {
   DOCTOR_REPORT_SCHEMA,
+  NON_DETERMINISTIC_FIELDS,
   doctorReportJson,
   runDoctorSelfAudit,
   type DoctorReport,
@@ -30,6 +31,10 @@ import { runDoctorCommand } from "../../src/commands/doctor-run.js";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
 describe("doctor --json machine contract (Phase 5)", () => {
+  it("G5: NON_DETERMINISTIC_FIELDS stays EMPTY — additions need a conscious allowlist decision", () => {
+    expect(NON_DETERMINISTIC_FIELDS.length).toBe(0);
+  });
+
   it("runDoctorSelfAudit on this repo: all checks evaluated, none inconclusive", () => {
     const report = runDoctorSelfAudit(join(ROOT, "tests", "fixtures"));
     expect(report.checks.length).toBeGreaterThanOrEqual(9);

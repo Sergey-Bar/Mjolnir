@@ -259,6 +259,8 @@ jobs:
             echo "doctor --json output is NOT deterministic — G5 violated"
             exit 1
           fi
+      - name: F2 scan-artifact determinism (two scans byte-identical minus durationMs allowlist)
+        run: node scripts/scan-determinism-replay.mjs .
       - name: Sanity-check the report contract in the summary
         if: always()
         run: |
@@ -353,6 +355,13 @@ jobs:
             echo "$untracked"
             exit 1
           fi
+      # F3 (certification-audit remediation): agent instruction surfaces
+      # are version-stamped generated content the regen step above never
+      # touched — the v0.5.15-stamp drift shipped silently through this
+      # job. planInstall is deterministic (version-pinned, no timestamps),
+      # so re-planning here and failing on any mismatch closes the hole.
+      - name: Managed-surface stamp gate (agent surfaces match the install plan)
+        run: npx tsx scripts/check-managed-surfaces.mjs .
       - name: Job time budget in summary (soft)
         if: always()
         run: |

@@ -799,6 +799,18 @@ export function renderDoctorReport(report: DoctorReport): string {
 /** Versioned JSON schema name for `doctor --json` (G5). */
 export const DOCTOR_REPORT_SCHEMA = "mjolnir.doctor-report@1";
 
+/**
+ * G5 determinism allowlist: names of doctor --json fields whose values
+ * legitimately vary between two runs on the same tree. EMPTY by default
+ * — every field the doctor emits must be deterministic (stable key
+ * order, no timestamps, no absolute paths), and the structural tests
+ * assert this length stays 0. A future field that cannot be
+ * deterministic (e.g. a duration) must be added to this constant
+ * CONSCIOUSLY, with the CI byte-equality gate's expectations updated in
+ * the same commit — never by quietly weakening the byte-compare.
+ */
+export const NON_DETERMINISTIC_FIELDS: readonly string[] = [];
+
 export interface DoctorReportJson {
   schema: typeof DOCTOR_REPORT_SCHEMA;
   healthy: boolean;
@@ -847,11 +859,18 @@ export function doctorReportJson(
           : c.details,
     };
   });
-  return {
+  // G5: fields named in NON_DETERMINISTIC_FIELDS are stripped from the
+  // artifact (the allowlist is the documented wall-clock escape hatch;
+  // it is empty by default, so today this is a no-op shape guard).
+  const json: DoctorReportJson = {
     schema: DOCTOR_REPORT_SCHEMA,
     healthy: report.healthy,
     summary,
     checks,
     measurement: report.measurement,
   };
+  for (const field of NON_DETERMINISTIC_FIELDS) {
+    delete (json as unknown as Record<string, unknown>)[field];
+  }
+  return json;
 }
