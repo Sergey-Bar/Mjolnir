@@ -51,6 +51,24 @@ const fixture: ScanResult = {
     skippedFiles: 0,
     durationMs: 1234,
   },
+  trustSummary: {
+    level: "L2",
+    confidence: 0.7,
+    evidenceCoverage: 0.2,
+    inconclusiveRate: 0,
+    measuredFpOfFiredRules: 0.429,
+    provisionalRuleIds: [],
+    ceilingReasons: [],
+  },
+  agenticProfile: {
+    testFiles: 1,
+    generatedMarkedFiles: 0,
+    codegenLikeFiles: 0,
+    shareMarkedGenerated: 0,
+    findingsInGeneratedFiles: 0,
+    findingsInUnmarkedFiles: 1,
+    note: "n",
+  },
 };
 
 const shape = (obj: Record<string, unknown>, indent: string): string =>
@@ -105,6 +123,18 @@ reconstruct semantics.
 - \`completeness\` accurately describes the scan's actual coverage.
 - \`summary.advisory\` findings (E0) are advisory — reported, never gating.
 - \`score\` is a measurement, not a contract.
+- \`trustSummary\` is the scan's trust MEASUREMENT (docs/SCORING.md):
+  \`confidence\` is ceiling-capped by the disclosed incompleteness
+  factors — a partial scan can never read higher confidence than its
+  ceiling. It is additive and optional (absent on pre-WI-3 producers).
+- \`provenance\` discloses detected generative markers (share of test
+  files). It is metadata only — it must never gate, score, or filter
+  (§17.4: provenance is not trust). Optional; absent when no profile
+  was computed.
+- \`forensicVerdicts\` is RESERVED and unpopulated in 0.6.x — the
+  forensic classification taxonomy arrives in 1.1.x (WI-18). Machines
+  must treat its absence as "no forensic classifications", not "no
+  failures".
 
 ## What a machine MUST NEVER infer
 
