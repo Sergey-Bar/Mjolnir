@@ -43,6 +43,9 @@ export default tseslint.config(
       // its throwaway probe scripts and raw transcripts are DATA and must
       // never be held to (or block) the source linter.
       "QA/**",
+      // Machine-local state under .mjolnir/ (stats, bench fixture tree,
+      // machine-local timings) — generated scratch, matching .gitignore.
+      ".mjolnir/**",
       // Workspace build output and the deliberate out-of-project example
       // config (excluded from every tsconfig on purpose).
       "packages/*/dist/**",

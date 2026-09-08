@@ -31,3 +31,6 @@ soak-drift/
 # collapses their short arrays, which would rewrite the file the contract
 # compares against and break the lock on every format run.
 assets/video/script.*.json
+
+# Machine-local state under .mjolnir/ (bench fixture tree, timings) — generated scratch
+.mjolnir/
