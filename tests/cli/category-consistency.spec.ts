@@ -102,12 +102,16 @@ describe("category consistency across verbs (F3/D6)", () => {
 
   it(
     "every RULE_CATEGORIES value is accepted by why (exit 0 or 1, never 10)",
-    { timeout: 120_000 },
+    // 13 serial LIVE scans of the demo repo. Observed: ~55s locally,
+    // 123s on a loaded windows-latest runner — budget 300s so the
+    // Windows CI multiplier (~2.3x local) cannot trip the timeout.
+    // Same flake class the journey specs document: spawn latency, not
+    // assertion logic.
+    { timeout: 300_000 },
     async () => {
       // One live why invocation per category against a REAL demo-repo
       // file (the location must parse for the usage-error distinction to
-      // be observable). Each runs a real scan — 13 × ~1.5s on a dev
-      // box, more on loaded CI — so journey-class timeout headroom.
+      // be observable).
       for (const cat of RULE_CATEGORIES) {
         const { io } = sink();
         const code = await runWhyCommand(
@@ -136,7 +140,9 @@ describe("category consistency across verbs (F3/D6)", () => {
 
   it(
     "end-to-end: a valid --category filters the why view without a usage error",
-    { timeout: 60_000 },
+    // One live scan; CI multiplier observed ~2.3x local (8s local → 19s
+    // windows CI). Budget 120s for the same runner-latency reason.
+    { timeout: 120_000 },
     async () => {
       const { io, out } = sink();
       const code = await runWhyCommand(
