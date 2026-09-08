@@ -23,6 +23,7 @@ import {
   type RuleCategory,
   type ScanResult,
 } from "../types.js";
+import { buildTrustSummary } from "./trust-summary.js";
 import { discoverWorkspace, type Workspace } from "../discovery/workspace.js";
 import { computeStagedFiles } from "../scope/changed.js";
 import { detectFrameworks } from "../discovery/frameworks.js";
@@ -986,6 +987,12 @@ export async function runScan(
         : {}),
     },
   };
+  // WI-3 (plan §6): scan-level trust summary — a measurement, not a
+  // contract. Built here (single definition site: engine/trust-summary);
+  // formulas published in docs/SCORING.md. The per-file declaration
+  // census is passed through — evidence-backed declarations are counted
+  // inside the summary module (advisory-aware).
+  result.trustSummary = buildTrustSummary(result, declarationsByFile);
   // M5.2: flush new verdicts to the local cache before reporting. Never
   // fatal — a persist failure degrades to a cold cache next run.
   cache.persist();

@@ -97,6 +97,61 @@ version bump.
 | E1    | Pattern evidence    | Half (rounded down) |
 | E0    | Observation only    | Zero                |
 
+## Trust summary formulas (v1 — WI-3, plan §6)
+
+`trustSummary` on the scan JSON is a **measurement, not a contract** — the
+scan's own claim of how much its verdict can be trusted. Single definition
+site: `src/engine/trust-summary.ts`; this section is the published formula.
+All four metrics are deterministic (same scan → same summary) and none can
+exceed its incompleteness ceiling.
+
+**`level`** — the best trust rung any finding reached
+(`max(trustLevel)`; uncorroborated findings settle at L2 by
+`deriveTrustLevel`; a findings-free scan reads L0 — an observation, not a
+proof).
+
+**`confidence`** ∈ [0, 1], over findings:
+
+```
+evidenceMass(f)  = 1 (E2) · 0.5 (E1) · 0 (E0)
+rung(f)          = L0..L5 → 0..5          (deriveTrustLevel; uncorroborated cap L2)
+composite        = ( mean(evidenceMass) + mean(rung / 5) ) / 2     — 0.5·0.5·0.5 halves
+confidence       = min(1, max(0, composite)) × incompletenessCeiling
+```
+
+A findings-free whole scan reads 1 ("nothing found, nothing hidden"); a
+findings-free **partial** scan reads only its ceiling — unknowns may be
+hiding under the truncation, and missing evidence never becomes confidence.
+
+**Incompleteness ceilings** (the binding value is the minimum of the
+applicable factors; each application is disclosed in `ceilingReasons`):
+
+| Factor                      | Ceiling | Trigger                                                         |
+| --------------------------- | ------- | --------------------------------------------------------------- |
+| partial-scan                | 0.5     | `partial` (discovery truncated / rules partial / files skipped) |
+| truncated-analysis          | 0.6     | `discovery: partial` or any `truncationReasons`                 |
+| rules-crashed:N             | 0.8     | any rule crashed mid-scan                                       |
+| framework-detection-unknown | 0.9     | `frameworkDetectionUnknown`                                     |
+
+**`evidenceCoverage`** = `evidenceBackedDeclarations / analyzedDeclarations`
+— declarations living in files that produced at least one **non-advisory
+(E1+)** finding. E0-only files back nothing: an observation is not
+evidence of coverage. Zero analyzed declarations → 0 (never NaN).
+
+**`inconclusiveRate`** = `scan-level unknowns / (unknowns + findings)`,
+where unknowns = rules crashed + truncation reasons + skipped files +
+framework-unknown. 0.6.x has no forensic INCONCLUSIVE classifications yet
+(1.1.x adds them per plan WI-18); the scan-level unknowns are today's
+honest inconclusive signals.
+
+**`measuredFpOfFiredRules`** — evidence-weighted measured FP rate over
+fired rules: `Σ(fpRateᵣ × wᵣ) / Σ wᵣ` with `wᵣ` = the rule's summed
+evidence mass. The rate is **absent** when nothing fired, when no fired
+rule is measured, or when the fired set mixes measured and unmeasured
+rules — a mixed average would silently hide the unknown. Unmeasured fired
+rules are disclosed by ID in `provisionalRuleIds` (the PROVISIONAL
+disclosure; the KPI itself closes at WI-14).
+
 ## Verdict Bands
 
 | Score   | Verdict    |

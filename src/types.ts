@@ -376,4 +376,39 @@ export interface ScanResult {
     /** Absolute path of the cache file — auditable, gitignored. */
     file: string;
   };
+  /**
+   * Scan-level trust summary (Mega MVP Master Plan v3.1 §26 WI-3, §6).
+   * A MEASUREMENT, not a contract: additive within schemaVersion 1,
+   * formulas published in docs/SCORING.md, hard incompleteness ceilings
+   * (a summary never claims more certainty than the scan that produced
+   * it). Present on every completed scan (absent only on scans whose
+   * producer predates this field). Built by
+   * src/engine/trust-summary.ts — the single definition site.
+   */
+  trustSummary?: TrustSummary;
+}
+
+/** Trust summary metric block (plan §6 — measurement, not contract). */
+export interface TrustSummary {
+  /** Best trust level any finding reached (L2 when none corroborated). */
+  level: TrustLevel;
+  /** Deterministic composite in [0,1], capped by the incompleteness ceiling. */
+  confidence: number;
+  /** evidenceBackedDeclarations / analyzedDeclarations. */
+  evidenceCoverage: number;
+  /** INCONCLUSIVE classifications + scan-level unknowns, over judged. */
+  inconclusiveRate: number;
+  /**
+   * Evidence-weighted measured FP rate over fired rules. Absent when no
+   * fired rule is measured OR the fired set mixes measured and
+   * unmeasured rules (a mixed average would hide the unknown) — see
+   * `provisionalRuleIds`.
+   */
+  measuredFpOfFiredRules?: number;
+  /** Fired rules without a valid measurement — the PROVISIONAL disclosure. */
+  provisionalRuleIds: string[];
+  /** The incompleteness ceiling that bound confidence (present when < 1). */
+  confidenceCeiling?: number;
+  /** Which incompleteness factors applied (audit trail for the cap). */
+  ceilingReasons: string[];
 }
