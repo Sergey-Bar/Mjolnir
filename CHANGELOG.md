@@ -9,6 +9,12 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [0.5.34] — 2026-09-08
+
+### Changes since 0
+
+- p2: structural anti-dilution — deduction-mass ceilings close the padding vector (plan 1788853205786 P2, decision 4) (#64)
+
 ## [0.5.33] — 2026-09-08
 
 ### Changes since 0.5.32
