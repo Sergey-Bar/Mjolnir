@@ -5,7 +5,7 @@
  * 10 usage error · 20 internal error.
  */
 
-import { existsSync, realpathSync, statSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { join, dirname, resolve } from "node:path";
 import process from "node:process";
@@ -54,6 +54,16 @@ import { runStdioTransport } from "./mcp/transport.js";
 import { ciInstall, type GateLevel } from "./integrations/ci-install.js";
 import { runForensics } from "./forensics/run.js";
 import { renderTriage, renderTriageMd } from "./forensics/triage.js";
+import {
+  parseStrykerJson,
+  looksLikeStrykerJson,
+} from "./mutation/parse-stryker.js";
+import { looksLikeMutmutXml, parseMutmutXml } from "./mutation/parse-mutmut.js";
+import {
+  renderMutationSummary,
+  stampMutationEvidence,
+} from "./mutation/derive.js";
+import type { MutationReport } from "./mutation/types.js";
 import { renderBadgeSnippet, writeBadge } from "./commands/badge.js";
 import {
   renderRootHelp,
@@ -878,6 +888,118 @@ export function runTriageCommand(
   }
 }
 
+/**
+ * Sniff + parse a mutation report: Stryker JSON, mutmut junitxml, else
+ * an empty report (the caller renders the honest "nothing recognized").
+ */
+function ingestMutationReport(text: string): MutationReport {
+  const trimmed = text.trimStart();
+  if (trimmed.startsWith("<?xml") || trimmed.startsWith("<testsuite")) {
+    return parseMutmutXml(text);
+  }
+  try {
+    const json: unknown = JSON.parse(text);
+    if (looksLikeStrykerJson(json)) return parseStrykerJson(json);
+  } catch {
+    /* not JSON — fall through */
+  }
+  if (looksLikeMutmutXml(text)) return parseMutmutXml(text);
+  return { tool: "stryker", survived: [], noCoverage: 0, killed: 0 };
+}
+
+/** Testable `mutation` handler (master plan P5, plan 1788853205786).
+ * Reads a mutation report (Stryker JSON / mutmut junitxml), renders the
+ * survived-mutant leaderboard, and — with `--scan <path>` — re-scans the
+ * target, stamps matching findings with `mutationEvidence` (E1→E2 by
+ * derivation) and renders the stamped findings. NEVER spawns mutation
+ * tools: it reads reports the user already produced. Exit 2 when
+ * nothing in the report is recognized — honest no-evidence, not an
+ * error. Exit 0 in every other case: the reader is report-only, never a
+ * gate. */
+export async function runMutationCommand(
+  argv: string[],
+  io: { out: Output; err: Output } = { out, err },
+): Promise<number> {
+  const targetArg = argv.find((a) => !a.startsWith("-"));
+  if (!targetArg) {
+    io.err("Usage: mjolnir mutation <mutation-report> [--scan <path>]");
+    return 10;
+  }
+  const scanIdx = argv.indexOf("--scan");
+  const scanArg = scanIdx !== -1 ? argv[scanIdx + 1] : undefined;
+  if (scanIdx !== -1 && (!scanArg || scanArg.startsWith("-"))) {
+    io.err("--scan requires a path argument");
+    return 10;
+  }
+  let report: MutationReport;
+  try {
+    const path = resolve(targetArg);
+    if (!existsSync(path)) {
+      io.err(`No such file: ${path}`);
+      return 2;
+    }
+    const text = readFileSync(path, "utf8");
+    report = ingestMutationReport(text);
+    if (
+      report.survived.length === 0 &&
+      report.killed === 0 &&
+      report.noCoverage === 0
+    ) {
+      io.err(
+        "No mutants recognized. Expected a Stryker JSON report (mutation-report.json) or a mutmut junitxml report.",
+      );
+      return 2;
+    }
+  } catch (err) {
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
+    return 20;
+  }
+  io.out(renderMutationSummary(report));
+
+  if (scanArg === undefined) return 0;
+  try {
+    const scanPath = resolve(scanArg);
+    const invalid = validateScanTarget(scanPath, io.err);
+    if (invalid !== null) return invalid;
+    const result = await runScan({
+      target: scanPath,
+      json: true,
+      verbose: true,
+      maxDurationMs: 120_000,
+      scopeChanged: false,
+      format: "json",
+    });
+    const stats = stampMutationEvidence(result.findings, report);
+    io.out("");
+    if (stats.stamped === 0) {
+      io.out(
+        "No findings intersect the survived-mutant surface — nothing to derive.",
+      );
+    } else {
+      io.out(
+        `${stats.stamped} finding(s) carry mutationEvidence (${stats.derived} consolidated E1→E2 by derivation — docs/RULE-LIFECYCLE.md):`,
+      );
+      for (const f of result.findings) {
+        if (!f.mutationEvidence) continue;
+        io.out(
+          `  ${f.ruleId} ${f.file}:${f.line} — ${f.evidenceLevel} · ` +
+            `${f.mutationEvidence.matchedMutants} mutant(s) @ ${f.mutationEvidence.granularity} granularity`,
+        );
+      }
+      io.out("");
+      io.out(
+        "Machine form: re-run with --json — mutationEvidence rides the findings additively.",
+      );
+    }
+    // Report-only, never a gate: survived mutants NEVER fail this
+    // command (decision 8). The exit code is 0 regardless.
+    return 0;
+  } catch (err) {
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
+    return 20;
+  }
+}
+
 /** Testable `badge` handler (Tier 1 #5). */
 export async function runBadgeCommand(
   argv: string[],
@@ -1366,6 +1488,7 @@ export async function main(
   if (argv[0] === "suppressions") return runSuppressions();
   if (argv[0] === "forensics") return runForensicsCommand(argv.slice(1));
   if (argv[0] === "triage") return runTriageCommand(argv.slice(1));
+  if (argv[0] === "mutation") return runMutationCommand(argv.slice(1));
   if (argv[0] === "badge") return runBadgeCommand(argv.slice(1));
   if (argv[0] === "debt") return runDebtCommand(argv.slice(1));
   if (argv[0] === "impact") return runImpactCommand(argv.slice(1));
