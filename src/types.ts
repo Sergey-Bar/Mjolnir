@@ -198,6 +198,17 @@ export interface Finding {
    * stamped with the corroboration pass. Additive within schemaVersion 1.
    */
   trustLevel?: TrustLevel;
+  /**
+   * Mutation evidence (master plan P5, plan 1788853205786): what a
+   * mutation-testing report says about the code this finding points at.
+   * PROVENANCE, not proof — a survived mutant is code the suite would
+   * not notice changing; matching findings consolidate E1→E2 BY
+   * DERIVATION (documented in docs/RULE-LIFECYCLE.md), and trustLevel
+   * never rises from mutation evidence alone (nothing ran). Absent
+   * means no mutation report was available or nothing matched — never
+   * fabricated. Additive within schemaVersion 1.
+   */
+  mutationEvidence?: MutationEvidence | undefined;
   /** Repo-relative path with forward slashes, regardless of OS. */
   file: string;
   /** 1-based. */
@@ -274,6 +285,35 @@ export const DEDUCTIONS: Record<Severity, number> = {
   warning: 3,
   info: 1,
 };
+
+/**
+ * Mutation evidence (master plan P5, plan 1788853205786 — flag 6,
+ * decision 8): provenance from a mutation-testing report
+ * (`mjolnir mutation <report>`), stamped on matching findings.
+ *
+ * PROVENANCE IS NOT TRUTH: a survived mutant is code the suite would
+ * not notice changing — evidence FOR a nearby finding, never a claim
+ * the finding is "proven real". The E1→E2 consolidation is BY
+ * DERIVATION and lives in src/mutation/derive.ts (documented in
+ * docs/RULE-LIFECYCLE.md + the machine-contract docs). trustLevel never
+ * rises from mutation evidence alone: nothing ran.
+ */
+export interface MutationEvidence {
+  /** Which mutation tool produced the report. */
+  source: "stryker" | "mutmut";
+  /** How many survived mutants matched this finding. */
+  matchedMutants: number;
+  /** The mutator names of the matched mutants (deduped, sorted). */
+  mutators: string[];
+  /**
+   * "line" = the mutant's span contains the finding's position
+   * (Stryker evidence); "file" = file-level match only (mutmut —
+   * its JUnit report carries no per-mutant lines — or an unplaceable
+   * Stryker span). Same prefer-claiming-less rule as the runtime
+   * corroboration's granularity fallback.
+   */
+  granularity: "line" | "file";
+}
 
 export interface DimensionScore {
   category: RuleCategory;

@@ -27,6 +27,11 @@ reconstruct semantics.
 - Suppression does not mean correctness.
 - No findings on a `partial` scan does not mean no issues.
 - Runtime corroboration is evidence, not truth.
+- Mutation evidence (`mutationEvidence`) is provenance, not truth: a
+  survived mutant is code the suite would not notice changing — never a
+  claim the finding is proven real. The E1→E2 consolidation it enables
+  is BY DERIVATION (docs/RULE-LIFECYCLE.md, master plan P5); a finding's
+  `trustLevel` never rises from mutation evidence alone.
 - Provenance is not trust. Score is not production readiness.
 
 All completeness/trust/lifecycle facts below are machine-readable

@@ -68,6 +68,16 @@ export const HELP_ENTRIES: HelpEntry[] = [
     examples: ["mjolnir triage test-results --no-md"],
   },
   {
+    verb: "mutation",
+    summary:
+      "mutation-evidence reader: survived-mutant leaderboard + E1→E2 derivation",
+    usage: "mjolnir mutation <mutation-report> [--scan .]",
+    examples: [
+      "mjolnir mutation reports/mutation-report.json",
+      "mjolnir mutation reports/… --scan .",
+    ],
+  },
+  {
     verb: "pw-report",
     summary: "Playwright run summary (counts, true flakes, slowest tests)",
     usage: "mjolnir pw-report <playwright-report.json | test-results-dir>",
@@ -309,6 +319,10 @@ const GROUPS: Array<{ title: string; verbs: string[] }> = [
   {
     title: "Forensics",
     verbs: ["forensics", "triage", "pw-report", "doctor:playwright"],
+  },
+  {
+    title: "Mutation evidence",
+    verbs: ["mutation"],
   },
   {
     title: "Maintenance",
