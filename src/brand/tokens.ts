@@ -279,57 +279,7 @@ export const BADGE = {
   secondary: "37ABBD",
 } as const;
 
-/* ── Terminal palette, pending convergence ───────────────────── */
-
-/**
- * TEMPORARY. The terminal's shipped values, quoted here so Phase 1 of
- * the brand-unification plan is a pure refactor with zero visual change
- * — and so the divergence is visible in exactly one place instead of
- * being invisible across six.
- *
- * Every entry below is a role that disagrees with the canonical token it
- * names. Phase 4 retargets `src/reporter/theme.ts` and the SVG/video
- * chrome to the canonical values, regenerates the assets, and deletes
- * this block. `brand-doctor` rule 2 fails until then, by design: the
- * gate reports the drift it was built to report rather than being
- * taught to ignore it.
- *
- *   role        shipped     canonical         why it changes
- *   ────────────────────────────────────────────────────────────────
- *   background  #08090A     SURFACE.terminal  neutral near-black → the brand's ink
- *   fg          #D7D3C8     TEXT.secondary    warm parchment → the one text ramp
- *   bold        #EDE6D6     TEXT.primary      bone white → the one text ramp
- *   accent      #8AB4D8     BRAND.steel       frost blue → brushed steel
- *   info        #3FB0A0     BRAND.aurora      teal → aurora
- *   warning     #E0A526     STATUS.warning    amber → forge gold
- *   error       #D0453B     STATUS.error      rune-red at 4.36:1 → 6.20:1 (fixes the one AA failure)
- *   dim         #7C8590     TEXT.muted        weathered stone → steel-dim
- *   chromeDots  3 × macOS   SURFACE.chromeDot red/amber/green → one neutral dot
- *
- * `ok`, `trusted` and `forged` already agree with the canonical tokens
- * and are absent from this block.
- */
-export const PENDING_TERMINAL = {
-  background: "#08090A",
-  foreground: "#D7D3C8",
-  bold: "#EDE6D6",
-  accent: "#8AB4D8",
-  info: "#3FB0A0",
-  warning: "#E0A526",
-  error: "#D0453B",
-  dim: "#7C8590",
-  /** macOS traffic lights in the three README SVG generators, in draw
-   * order. Replaced by one neutral `SURFACE.chromeDot`. */
-  chromeDots: ["#ff5f56", "#ffbd2e", "#27c93f"],
-  /** The video's own window dot. Already neutral — it is the precedent
-   * the README stills converge on — but `#323232` is a bare grey that
-   * belongs to no ramp. Becomes `SURFACE.chromeDot`. */
-  videoChromeDot: "#323232",
-  /** The video's removed-line red. Differs from both the terminal's
-   * `error` and the canonical `STATUS.error`; a third red for one
-   * purpose. Becomes `STATUS.error`. */
-  videoRemove: "#E5544E",
-} as const;
+/* ── Site neutrals, pending convergence ──────────────────────── */
 
 /**
  * TEMPORARY. Three off-ramp neutrals the site still holds, quoted here
@@ -349,32 +299,6 @@ export const PENDING_SITE = {
   heroInk: "#0b1420",
   heroMuted: "#9aa6b6",
   heroNameTop: "#dfe4ec",
-} as const;
-
-/**
- * TEMPORARY, same deal: the neutral ramp
- * `scripts/generate-readme-architecture.ts` invented for itself. Neither
- * `vars.css` nor `NORSE` contains any of these. Phase 4 maps each onto
- * the `SURFACE` ramp and deletes this block.
- *
- *   shipped    role in the diagram        canonical
- *   ───────────────────────────────────────────────────────
- *   #0C0E12    page                       SURFACE.ink950
- *   #0E1013    band fill                  SURFACE.ink900
- *   #15181D    card fill                  SURFACE.ink850
- *   #1C2026    card stroke                SURFACE.ink800
- *   #39414B    hairline                   SURFACE.ink800
- *   #5A6169    quiet label                TEXT.muted
- *   #4A3D1B    gold shadow                (dropped — gold needs no shadow tint)
- */
-export const PENDING_ARCHITECTURE = {
-  page: "#0C0E12",
-  band: "#0E1013",
-  card: "#15181D",
-  cardStroke: "#1C2026",
-  hairline: "#39414B",
-  quietLabel: "#5A6169",
-  goldShadow: "#4A3D1B",
 } as const;
 
 /* ── CSS emission ────────────────────────────────────────────── */

@@ -148,20 +148,6 @@ const RETIRED_FACES = ["Inter", "JetBrains Mono"];
  */
 export const KNOWN_OPEN = [
   {
-    id: "terminal-palette-pending",
-    rule: 2,
-    phase: "Phase 4 — palette convergence",
-    reason:
-      "the terminal still reads PENDING_TERMINAL for six roles; converging it regenerates every terminal SVG and the video, so it is its own reviewable change",
-  },
-  {
-    id: "architecture-ramp-pending",
-    rule: 4,
-    phase: "Phase 4 — palette convergence",
-    reason:
-      "the architecture diagram still reads PENDING_ARCHITECTURE for its seven neutrals",
-  },
-  {
     id: "site-theme-hex",
     rule: 6,
     phase: "Phase 8 — website",
@@ -263,9 +249,7 @@ function resolveRef(ref) {
     TEXT: T.text,
     STATUS: T.status,
     SCORE: T.score,
-    PENDING_TERMINAL: T.pending.terminal,
     PENDING_SITE: T.pending.site,
-    PENDING_ARCHITECTURE: T.pending.architecture,
   };
   return { pending: group.startsWith("PENDING"), value: map[group]?.[key] };
 }
@@ -286,7 +270,6 @@ export function rule2() {
     "TEXT",
     "STATUS",
     "SCORE",
-    "PENDING_TERMINAL",
   ]);
   const failures = [];
 
@@ -294,12 +277,10 @@ export function rule2() {
     if (!NON_BRAND_HEX.has(h.hex) && !isComment(h.text))
       failures.push(`${rel(file)}:${h.line} — hex literal ${h.hex}`);
 
-  const pending = refs.filter((r) => resolveRef(r).pending);
-  for (const r of pending)
-    failures.push({
-      known: "terminal-palette-pending",
-      text: `${rel(file)} still reads ${r} (${resolveRef(r).value})`,
-    });
+  for (const r of refs.filter((x) => resolveRef(x).pending))
+    failures.push(
+      `${rel(file)} still reads the pre-unification value ${r} (${resolveRef(r).value})`,
+    );
 
   return {
     n: 2,
@@ -326,17 +307,13 @@ export function rule3() {
       "TEXT",
       "STATUS",
       "SCORE",
-      "PENDING_TERMINAL",
     ]);
     refCount += refs.length;
     for (const h of hexLiterals(src))
       if (!NON_BRAND_HEX.has(h.hex) && !isComment(h.text))
         failures.push(`${rel(file)}:${h.line} — hex literal ${h.hex}`);
     for (const r of refs.filter((x) => resolveRef(x).pending))
-      failures.push({
-        known: "terminal-palette-pending",
-        text: `${rel(file)} still reads ${r}`,
-      });
+      failures.push(`${rel(file)} still reads the pre-unification value ${r}`);
   }
 
   return {
@@ -366,19 +343,12 @@ export function rule4() {
       "TEXT",
       "STATUS",
       "SCORE",
-      "PENDING_TERMINAL",
-      "PENDING_ARCHITECTURE",
     ]);
     for (const h of hexLiterals(src))
       if (!NON_BRAND_HEX.has(h.hex) && !isComment(h.text))
         failures.push(`${rel(g)}:${h.line} — hex literal ${h.hex}`);
     for (const r of refs.filter((x) => resolveRef(x).pending))
-      failures.push({
-        known: r.startsWith("PENDING_ARCHITECTURE")
-          ? "architecture-ramp-pending"
-          : "terminal-palette-pending",
-        text: `${rel(g)} still reads ${r}`,
-      });
+      failures.push(`${rel(g)} still reads the pre-unification value ${r}`);
   }
 
   // The committed SVGs themselves: any colour they carry must be a
@@ -392,9 +362,10 @@ export function rule4() {
       ...Object.values(T.score),
       ...Object.values(T.evidence),
       ...Object.values(T.trust),
-      ...Object.values(T.pending.terminal).flat(),
-      ...Object.values(T.pending.site),
-      ...Object.values(T.pending.architecture),
+      // Whatever pending groups are left, flattened: a group is deleted
+      // from the token module the moment its surface converges, so this
+      // must not name any one of them.
+      ...Object.values(T.pending).flatMap((g) => Object.values(g).flat()),
     ]
       .filter((v) => typeof v === "string" && v.startsWith("#"))
       .map((v) => v.toLowerCase()),

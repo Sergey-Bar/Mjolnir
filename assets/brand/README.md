@@ -79,8 +79,14 @@ parses these rows, which is why it can no longer happen quietly.
 failure would be the same dishonesty as a CI gate reporting green
 without having run.
 
-The terminal NORSE palette mirrors the same bands: `trusted: #5CC4E0`,
-`forged: #F4DC9C`.
+The terminal does not mirror these values — it **is** them. Every colour
+`src/reporter/theme.ts` emits resolves through `src/brand/tokens.ts`, and
+`brand-doctor` rule 2 fails if that file names a hex of its own. It used
+to have six colours no other surface had: a frost-steel blue for
+headers, a teal for info, an amber for warnings, a rune-red for errors, a
+bone white for bold and a weathered stone for dim. The rune-red also
+failed WCAG AA at 4.36:1 on the terminal's own background; the canonical
+`status.error` reaches 6.20:1 on the canonical ground.
 
 **Green is no longer a score color.** `WORTHY` scores render in
 aurora-cyan (trusted); Yggdrasil green (`ok`) survives only for non-score

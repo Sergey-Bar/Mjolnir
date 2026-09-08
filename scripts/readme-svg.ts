@@ -35,7 +35,7 @@
 
 import { readFileSync } from "node:fs";
 
-import { PENDING_TERMINAL, TEXT } from "../src/brand/tokens.js";
+import { SURFACE, TEXT } from "../src/brand/tokens.js";
 
 import { FONTS, fontPath } from "./video/fonts.js";
 
@@ -72,17 +72,29 @@ export function fontFaceCss(): string {
  * plus the bare SGR codes 1 (bold) and 2 (dim), mapped here as fallbacks.
  */
 export const ANSI_COLOR: Record<string, string> = {
-  "1": PENDING_TERMINAL.bold, // bold  → TEXT.primary
+  "1": TEXT.primary, // bold
   "2": TEXT.muted, // dim
 };
 /* The token module is `as const`, so these need widening to `string`:
    the ANSI parser assigns a computed `rgb(r,g,b)` into the same slot. */
-export const DEFAULT_FG: string = PENDING_TERMINAL.foreground; // → TEXT.secondary
-export const BG: string = PENDING_TERMINAL.background; // → SURFACE.terminal
+export const DEFAULT_FG: string = TEXT.secondary;
+export const BG: string = SURFACE.terminal;
 /** Same tone as BG: the window's seam is shadow, never a second fill. */
-export const TITLE_BAR_BG: string = PENDING_TERMINAL.background;
-/** The three window dots. Still macOS traffic lights; → SURFACE.chromeDot. */
-export const CHROME_DOTS: readonly string[] = PENDING_TERMINAL.chromeDots;
+export const TITLE_BAR_BG: string = SURFACE.terminalBar;
+/**
+ * The three window dots — one neutral, drawn three times.
+ *
+ * They used to be macOS traffic lights (#ff5f56 / #ffbd2e / #27c93f):
+ * three saturated colours that belong to another company's window
+ * chrome, sitting at the top of the two most-viewed images this project
+ * has, one of them the very green the brand retired from score contexts.
+ * The video's own window had already dropped them; the stills now agree.
+ */
+export const CHROME_DOTS: readonly string[] = [
+  SURFACE.chromeDot,
+  SURFACE.chromeDot,
+  SURFACE.chromeDot,
+];
 
 export interface Span {
   text: string;

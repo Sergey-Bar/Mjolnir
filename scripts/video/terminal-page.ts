@@ -17,7 +17,7 @@
 
 import { ansiLineToSpans, DEFAULT_FG, stripAnsi } from "../readme-svg.js";
 import { fontFaceCss, FONT_STACK } from "./fonts.js";
-import { BRAND, PENDING_TERMINAL, STATUS } from "../../src/brand/tokens.js";
+import { BRAND, STATUS, SURFACE, TEXT } from "../../src/brand/tokens.js";
 
 import { pacingFor } from "./pacing.js";
 import type { VideoScript } from "./script-types.js";
@@ -48,10 +48,10 @@ import type { VideoScript } from "./script-types.js";
  * Repainting them to match a syntax theme they have no correspondence to
  * would be inventing color, not reusing it.
  */
-const INK_950 = PENDING_TERMINAL.background; // page behind the window
-const INK_900 = PENDING_TERMINAL.background; // terminal body — same tone
-const CHROME = PENDING_TERMINAL.background; // title bar — seam is shadow
-const CHROME_DOT = PENDING_TERMINAL.videoChromeDot; // → SURFACE.chromeDot
+const INK_950 = SURFACE.terminal; // page behind the window
+const INK_900 = SURFACE.terminal; // terminal body — same tone
+const CHROME = SURFACE.terminalBar; // title bar — the seam is shadow
+const CHROME_DOT = SURFACE.chromeDot;
 const STEEL_DIM = BRAND.steelDim;
 const GOLD = BRAND.gold;
 const AURORA = BRAND.aurora;
@@ -344,9 +344,9 @@ html,body{width:${vw}px;height:${vh}px;overflow:hidden;background:${INK_950}}
 .prompt{color:${STATUS.ok}}
 /* The command is what the viewer is meant to copy — the brightest text in
    the frame, in the reporter's own bone white. */
-.cmd{color:${PENDING_TERMINAL.bold};font-weight:700}
+.cmd{color:${TEXT.primary};font-weight:700}
 .add{color:${STATUS.ok}}
-.remove{color:${PENDING_TERMINAL.videoRemove}}
+.remove{color:${STATUS.error}}
 .header{color:${STEEL_DIM}}
 </style>
 <div id="page">

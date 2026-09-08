@@ -95,7 +95,12 @@ const SEEDS = [
     rule: 4,
     what: "a committed SVG carries a colour that is in no token",
     file: p("assets", "readme", "terminal-hero.svg"),
-    edit: (s) => s.replace('fill="#ff5f56"', 'fill="#abcdef"'),
+    // Anchored on the window dot, which is a token value now that the
+    // macOS traffic lights are gone. The seed that named #ff5f56
+    // directly went stale the moment they were removed and reported
+    // itself as a broken seed — which is the self-test doing its job:
+    // an anchor that stops matching is a check that stopped checking.
+    edit: (s) => s.replace('r="6" fill="#18243A"', 'r="6" fill="#ABCDEF"'),
     expect: "assets/readme/terminal-hero.svg — colour #abcdef is in no token",
   },
   {

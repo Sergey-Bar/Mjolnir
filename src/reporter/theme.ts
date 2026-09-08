@@ -21,7 +21,7 @@
  * consoles that mangle box-drawing glyphs and emoji.
  */
 
-import { PENDING_TERMINAL, SCORE, STATUS } from "../brand/tokens.js";
+import { BRAND, SCORE, STATUS, TEXT } from "../brand/tokens.js";
 
 import { deriveScoreState, type ScoreBand } from "./score-state.js";
 
@@ -57,24 +57,26 @@ export interface Palette {
 /**
  * The terminal palette, 24-bit truecolor, resolved from
  * `src/brand/tokens.ts` — the single source of brand truth. Nothing in
- * this file may name a hex value of its own.
+ * this file may name a hex value of its own, and `brand-doctor` rule 2
+ * fails if it tries.
  *
- * `ok`, `trusted` and `forged` already agree with the canonical tokens.
- * The other six still read from `PENDING_TERMINAL`, which quotes the
- * values the terminal shipped before the brand-unification work and
- * documents what each one converges to; that block (and these six
- * references) go away in the palette-convergence phase.
+ * Every role is now the canonical token. Six of them used to be the
+ * terminal's own: a frost-steel blue for headers, a teal for info, an
+ * amber for warnings, a rune-red for errors, a bone white for bold and a
+ * weathered stone for dim — a second palette for one product. The
+ * rune-red also failed WCAG AA at 4.36:1 on this terminal's own
+ * background; `STATUS.error` on the canonical ground is 6.20:1.
  */
 export const NORSE = {
   ok: fromHex(STATUS.ok), // Yggdrasil green — non-score success only
-  info: fromHex(PENDING_TERMINAL.info), // → BRAND.aurora
-  accent: fromHex(PENDING_TERMINAL.accent), // → BRAND.steel
-  warning: fromHex(PENDING_TERMINAL.warning), // → STATUS.warning
-  error: fromHex(PENDING_TERMINAL.error), // → STATUS.error
+  info: fromHex(BRAND.aurora), // aurora — informational
+  accent: fromHex(BRAND.steel), // brushed steel — the hammer, headers
+  warning: fromHex(STATUS.warning), // forge gold
+  error: fromHex(STATUS.error), // 6.20:1 on the terminal ground
   trusted: fromHex(SCORE.trusted), // aurora-cyan — trusted score band
   forged: fromHex(SCORE.forged), // forged white-gold — score 100
-  bold: fromHex(PENDING_TERMINAL.bold), // → TEXT.primary
-  dim: fromHex(PENDING_TERMINAL.dim), // → TEXT.muted
+  bold: fromHex(TEXT.primary), // the one text ramp, brightest step
+  dim: fromHex(TEXT.muted), // the one text ramp, quietest step
 } as const;
 
 const on = {
