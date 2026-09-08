@@ -57,6 +57,13 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import {
+  EVIDENCE_MARKS,
+  evidenceMarkSvg,
+  RUNTIME_BOUNDARY,
+  trustLadderSvg,
+  TRUST_RUNGS,
+} from "../src/brand/symbols.js";
 import { BRAND, STATUS, SURFACE, TEXT } from "../src/brand/tokens.js";
 
 import { FONTS, fontPath } from "./video/fonts.js";
@@ -488,16 +495,23 @@ export function buildArchitectureSvg(): string {
     22,
   );
   g.push(sig.svg);
-  const ev: Array<[string, string, number, string]> = [
-    ["E0", "observation", 16, "var(--quiet)"],
-    ["E1", "pattern evidence", 30, "var(--muted)"],
-    ["E2", "deterministic proof", 48, "var(--accent)"],
-  ];
-  ev.forEach(([code, label, h, color], i) => {
+  // The evidence marks come from src/brand/symbols.ts, so the ring the
+  // diagram draws is the ring the site and the terminal mean. They used
+  // to be three bars of increasing height with E2 in gold — which read
+  // as "E2 is the good one" when E2 is a defect we are certain about.
+  // A ring that fills says what the model actually says: the fill IS the
+  // scorer's weight, none / half / full.
+  EVIDENCE_MARKS.forEach((mark, i) => {
     const x = PR + i * 84;
-    g.push(rect(x, Y_EV_BASE - h, 7, h, { r: 3, fill: color }));
-    g.push(text(x + 14, Y_EV_BASE - h + 12, code, { size: 13, fill: color }));
-    g.push(text(x, Y_EV_TEXT, label, { size: 9, fill: "var(--quiet)" }));
+    const r = 11;
+    g.push(evidenceMarkSvg(mark, x + r, Y_EV_BASE - r - 2, r));
+    g.push(
+      text(x + r * 2 + 8, Y_EV_BASE - r + 3, mark.level, {
+        size: 13,
+        fill: mark.color,
+      }),
+    );
+    g.push(text(x, Y_EV_TEXT, mark.meaning, { size: 9, fill: "var(--quiet)" }));
   });
   g.push(
     text(PR, Y_EV_NOTE, "weight  none · half · full", {
@@ -515,23 +529,35 @@ export function buildArchitectureSvg(): string {
 
   /* trust ladder — subordinate to E0/E1/E2 */
   g.push(eyebrow(PL, Y_TL_LABEL, "TRUST LADDER"));
-  for (let i = 0; i < 6; i++) {
-    const bx = PL + i * 24;
-    const bh = 6 + i * 3.2;
+  // Six rungs from src/brand/symbols.ts, with a real gap at the runtime
+  // boundary. The rungs used to run L0-L2 in a hairline grey and L3-L5
+  // in GOLD, evenly spaced — which spent the brand's scarcest colour on
+  // a legend and drew the most important boundary in the product as one
+  // more step in a ramp. Neutral steel below, aurora above, and an empty
+  // column between them: a change of kind, not of degree.
+  const ladder = trustLadderSvg(PL, Y_TL_BASE);
+  g.push(ladder.svg);
+  TRUST_RUNGS.forEach((rung, i) => {
+    const tx = ladder.tickXs[i] ?? 0;
     g.push(
-      rect(bx, Y_TL_BASE - bh, 14, bh, {
-        r: 2,
-        fill: i >= 3 ? "var(--accent)" : "var(--edge-lit)",
-      }),
-    );
-    g.push(
-      text(bx + 7, Y_TL_TICK, `L${i}`, {
+      text(tx, Y_TL_TICK, rung.level, {
         size: 8.5,
         fill: "var(--quiet)",
         anchor: "middle",
       }),
     );
-  }
+  });
+  // The boundary, drawn where it happens rather than only named in the
+  // caption beside it.
+  const beforeBreak = ladder.tickXs[RUNTIME_BOUNDARY - 1] ?? 0;
+  const afterBreak = ladder.tickXs[RUNTIME_BOUNDARY] ?? 0;
+  const boundaryX = (beforeBreak + afterBreak) / 2;
+  g.push(
+    line(boundaryX, Y_TL_BASE - 30, boundaryX, Y_TL_BASE + 2, {
+      sw: 1,
+      dash: true,
+    }),
+  );
   g.push(
     text(PL + 172, Y_TL_BASE - 12, "L3–L5 require a real run.", {
       size: 10.5,
