@@ -680,7 +680,13 @@ export async function runScanCommand(
       );
     }
     if (args.format === "sarif") {
-      io.out(renderSarif(result));
+      // F5 (certification-audit remediation): the SRCROOT capability is
+      // implemented in sarif.ts (originalUriBaseIds + per-artifact
+      // uriBaseId) but was never wired at this production call site —
+      // shipped SARIF had no artifact base. `target` is resolved+validated
+      // above; pathToFileURL yields the file:/// base shape the unit
+      // contract pins (reporters.spec) and the encoder expects.
+      io.out(renderSarif(result, pathToFileURL(target).href));
     } else if (args.format === "mermaid") {
       io.out(renderMermaid(result));
     } else if (args.json) {
