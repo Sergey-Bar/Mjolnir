@@ -129,6 +129,33 @@ describe("Jest JSON parser (P4)", () => {
     expect(records[0]?.attempts[0]?.status).toBe("interrupted");
   });
 
+  it("defensive edges: missing duration/location, negative duration, missing path", () => {
+    const records = parseJestJson({
+      testResults: [
+        {
+          testResults: [
+            { title: "no duration", status: "passed" },
+            { title: "negative", status: "passed", duration: -5 },
+            { title: "no location", status: "failed", duration: 10 },
+            {
+              title: "zero line",
+              status: "passed",
+              duration: 10,
+              location: { line: 0, column: 1 },
+            },
+          ],
+        },
+        { testResults: [{ title: "no path test", status: "passed" }] },
+      ],
+    });
+    expect(records).toHaveLength(5);
+    expect(records.every((r) => r.attempts[0]?.durationMs >= 0)).toBe(true);
+    expect(records.every((r) => r.line === undefined)).toBe(true);
+    // The second file entry carried no testFilePath → the honest
+    // "unknown" identity, never a crash.
+    expect(records[4]?.file).toBe("unknown");
+  });
+
   it("corrupt/shapeless payloads degrade to zero records (M3 containment)", () => {
     expect(parseJestJson(null)).toEqual([]);
     expect(parseJestJson("nope")).toEqual([]);
@@ -143,7 +170,24 @@ describe("Jest JSON parser (P4)", () => {
     expect(looksLikeJestJson(VITEST_REPORT)).toBe(false); // assertionResults, not testResults
     expect(looksLikeJestJson({ suites: [] })).toBe(false);
     expect(looksLikeJestJson({})).toBe(false);
+    expect(looksLikeJestJson({ testResults: [] })).toBe(false);
     expect(looksLikeJestJson(null)).toBe(false);
+  });
+
+  it("an empty testResults array and a missing title degrade honestly", () => {
+    expect(parseJestJson({})).toEqual([]);
+    const records = parseJestJson({
+      testResults: [
+        // Assertion ELEMENTS from a corrupt report can be primitives:
+        // contained, never crashed on (same discipline as Playwright's).
+        {
+          testResults: [null, { status: "passed", duration: 1 }],
+        },
+      ],
+    });
+    expect(records).toHaveLength(1);
+    expect(records[0]?.title).toBe("(unnamed)");
+    expect(records[0]?.attempts[0]?.status).toBe("passed");
   });
 });
 
@@ -164,6 +208,69 @@ describe("Vitest JSON parser (P4)", () => {
     expect(looksLikeVitestJson(VITEST_REPORT)).toBe(true);
     expect(looksLikeVitestJson(JEST_REPORT)).toBe(false);
     expect(looksLikeVitestJson({ testResults: [{}] })).toBe(false);
+  });
+
+  it("defensive edges: missing duration/location, negative duration, missing path", () => {
+    const records = parseVitestJson({
+      testResults: [
+        {
+          assertionResults: [
+            { title: "no duration", status: "passed" },
+            { title: "negative", status: "passed", duration: -1 },
+            { title: "no location", status: "failed", duration: 3 },
+            {
+              title: "zero line",
+              status: "passed",
+              duration: 3,
+              location: { line: 0, column: 2 },
+            },
+          ],
+        },
+        { assertionResults: [{ title: "no path", status: "passed" }] },
+      ],
+    });
+    expect(records).toHaveLength(5);
+    expect(records.every((r) => r.attempts[0]?.durationMs >= 0)).toBe(true);
+    expect(records.every((r) => r.line === undefined)).toBe(true);
+    expect(records[4]?.file).toBe("unknown");
+  });
+
+  it("non-executing statuses (pending/todo/disabled) → skipped, unknown → interrupted", () => {
+    const records = parseVitestJson({
+      testResults: [
+        {
+          assertionResults: [
+            { title: "a", status: "pending" },
+            { title: "b", status: "todo" },
+            { title: "c", status: "disabled" },
+            { title: "d", status: "skipped" },
+            { title: "e", status: "wat" },
+          ],
+        },
+      ],
+    });
+    expect(
+      records.slice(0, 4).every((r) => r.attempts[0]?.status === "skipped"),
+    ).toBe(true);
+    expect(records[4]?.attempts[0]?.status).toBe("interrupted");
+  });
+
+  it("corrupt/shapeless payloads degrade to zero records (M3 containment)", () => {
+    expect(parseVitestJson(null)).toEqual([]);
+    expect(parseVitestJson("nope")).toEqual([]);
+    expect(parseVitestJson({})).toEqual([]);
+    expect(parseVitestJson({ testResults: [null, 7, {}] })).toEqual([]);
+    const records = parseVitestJson({
+      testResults: [
+        // Assertion elements can be primitives in a corrupt report —
+        // contained, never crashed on.
+        { assertionResults: [null, { status: "passed", duration: 2 }] },
+      ],
+    });
+    expect(records).toHaveLength(1);
+    expect(records[0]?.title).toBe("(unnamed)");
+    expect(looksLikeVitestJson({ testResults: [] })).toBe(false);
+    expect(looksLikeVitestJson(null)).toBe(false);
   });
 
   it("HONEST DEGRADATION locked: TRUE-FLAKE cannot fire from Jest/Vitest sources", () => {
@@ -213,6 +320,20 @@ describe("discovery: forensics directory picks the right parser (P4)", () => {
         join(dir, "jest-report.json"),
         '{"testResults": [{"testFilePath": "/x", "testResults": [',
       );
+      const { report } = runForensics(dir);
+      expect(report.totalTests).toBe(0);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("a hostile JSON payload cannot crash the discovery path", () => {
+    // Not Jest/Vitest-shaped, valid JSON — the Playwright walk is total
+    // over arbitrary JSON (M3 guards), so this degrades to zero records
+    // on the honest exit-2 path instead of a crash.
+    const dir = mkdtempSync(join(tmpdir(), "mjolnir-p4-hostile-"));
+    try {
+      writeFileSync(join(dir, "report.json"), '{"suites": {"not": "array"}}');
       const { report } = runForensics(dir);
       expect(report.totalTests).toBe(0);
     } finally {

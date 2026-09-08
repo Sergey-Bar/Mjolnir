@@ -154,11 +154,10 @@ function parseFile(
   if (looksLikeVitestJson(json)) {
     return { records: parseVitestJson(json), source: "vitest-json" };
   }
-  try {
-    return { records: parsePlaywrightJson(json), source: "playwright-json" };
-  } catch {
-    return { records: [], source: "playwright-json" };
-  }
+  // parsePlaywrightJson is total over arbitrary JSON (Bug-audit M3's
+  // Array.isArray guards) — no catch arm here, or coverage would pin a
+  // dead branch and the reader would assume a throw that cannot happen.
+  return { records: parsePlaywrightJson(json), source: "playwright-json" };
 }
 
 function listFiles(dir: string): string[] {
