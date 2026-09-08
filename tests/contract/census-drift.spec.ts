@@ -65,16 +65,26 @@ function liveSurfaces(): Array<{ name: string; text: string }> {
     // Strip HTML comments (including the census sentinels themselves):
     // the sweep checks what a reader sees, and a sentinel boundary must
     // not split a claim phrase so far that its shape stops matching.
-    // Two passes with negated guards, not `[\s\S]*?`: a lone opener that
-    // never closes must not swallow the rest of the file, and the first
-    // pass cannot re-open on a stray `<!--` inside a comment body
-    // (CodeQL js/incomplete-multi-character-sanitization).
-    const stripped = raw.replace(/<!--(?!>)(?:(?!<!--)[\s\S])*?-->/g, "");
-    return {
-      name,
-      text: stripped.replace(/<!--(?!>)(?:(?!<!--)[\s\S])*?-->/g, ""),
-    };
+    // Procedural indexOf stripping — complete by construction (every
+    // opener either closes, or its unterminated tail is kept), which the
+    // regex form could not guarantee (CodeQL
+    // js/incomplete-multi-character-sanitization).
+    return { name, text: stripHtmlComments(raw) };
   });
+}
+
+/** Removes complete `<!-- … -->` comments; keeps unterminated tails. */
+function stripHtmlComments(text: string): string {
+  let out = "";
+  let rest = text;
+  for (;;) {
+    const open = rest.indexOf("<!--");
+    if (open === -1) return out + rest;
+    const close = rest.indexOf("-->", open + 4);
+    if (close === -1) return out + rest;
+    out += rest.slice(0, open);
+    rest = rest.slice(close + 3);
+  }
 }
 
 /**
