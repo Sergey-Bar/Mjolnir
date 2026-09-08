@@ -59,10 +59,7 @@ export function looksLikeVitestJson(json: unknown): boolean {
   const testResults = (json as VitestJsonReport).testResults;
   if (!Array.isArray(testResults) || testResults.length === 0) return false;
   return testResults.some(
-    (r) =>
-      r &&
-      typeof r === "object" &&
-      Array.isArray((r).assertionResults),
+    (r) => r && typeof r === "object" && Array.isArray(r.assertionResults),
   );
 }
 

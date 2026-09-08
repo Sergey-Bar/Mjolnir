@@ -65,10 +65,7 @@ export function looksLikeJestJson(json: unknown): boolean {
   const testResults = (json as JestJsonReport).testResults;
   if (!Array.isArray(testResults) || testResults.length === 0) return false;
   return testResults.some(
-    (r) =>
-      r &&
-      typeof r === "object" &&
-      Array.isArray((r).testResults),
+    (r) => r && typeof r === "object" && Array.isArray(r.testResults),
   );
 }
 
