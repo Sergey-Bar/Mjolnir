@@ -9,6 +9,12 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [0.5.32] — 2026-09-08
+
+### Changes since 0.5.31
+
+- P0: repo state + truth drift — single measured count with drift lock (#62)
+
 ## [0.5.31] — 2026-09-08
 
 ### Changes since 0.5.30
