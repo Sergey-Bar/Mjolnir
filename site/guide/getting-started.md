@@ -20,6 +20,26 @@ npm i -g mjolnir-qa
 
 Requires Node.js ≥ 22.18. Works on Windows, macOS, and Linux.
 
+**Why ≥ 22.18?** The build toolchain sets the floor — tsdown targets
+Node 22.18, and that is the oldest runtime the release pipeline
+compiles and smoke-tests against; the runtime dependencies themselves
+have no such requirement.
+
+## GitHub Action
+
+The Marketplace action runs the same scan from any workflow:
+
+```yaml
+- uses: Sergey-Bar/Mjolnir@v1
+  with:
+    scope: changed
+    fail-on: error
+```
+
+Pin `@v1` to follow the major line, or an exact tag (`@v0.5.32`) for a
+reproducible gate; `mjolnir ci install` writes a workflow that does
+this for you (plain `npx` instead, with `--no-action`).
+
 ## Core commands
 
 | Command                             | What it does                                     |

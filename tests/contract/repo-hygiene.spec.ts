@@ -106,6 +106,65 @@ describe("root directory cleanliness", () => {
         "scratch/ (gitignored) or delete them once diagnosed.",
     ).toEqual([]);
   });
+
+  // Product-gap-remediation master plan P1.1 (plan 1788853205786) —
+  // documented contract amendment, per policy: the root now carries the
+  // distribution surfaces. GitHub Marketplace requires action.yml at the
+  // ROOT (a subdirectory action cannot be published); smithery.yaml must
+  // sit at the package root for the Smithery registry to resolve the MCP
+  // server (see docs/DISTRIBUTION-KIT.md). They are deliberate, they are
+  // tracked, and this test keeps them from silently disappearing. A NEW
+  // root file itself needs no allowlist edit — it arrives through a PR
+  // where it is visible by definition; what must stay pinned is the
+  // distribution contract and the absence of untracked debris.
+  it("root contract: the distribution surfaces exist, are tracked, and are documented", () => {
+    const DISTRIBUTION_ENTRIES = ["action.yml", "smithery.yaml"];
+    for (const name of DISTRIBUTION_ENTRIES) {
+      expect(
+        existsSync(join(ROOT, name)),
+        `${name} is missing from the repo root — the P1 distribution ` +
+          `contract (docs/DISTRIBUTION-KIT.md) requires it there`,
+      ).toBe(true);
+      expect(
+        gitLsFiles(name).length,
+        `${name} exists on disk but git does not track it — a fresh clone ` +
+          `would never receive it`,
+      ).toBeGreaterThan(0);
+    }
+  });
+
+  it("root has no untracked debris beyond the known ignored build/scratch dirs", () => {
+    const IGNORED_DIRS = new Set([
+      ".git",
+      ".claude",
+      ".husky",
+      ".kilo",
+      ".mjolnir",
+      ".planning",
+      ".vitepress",
+      ".vscode",
+      "node_modules",
+      "dist",
+      "coverage",
+      "scratch",
+      "release-assets",
+      ".mjolnir",
+    ]);
+    const untracked = execFileSync(
+      "git",
+      ["ls-files", "--others", "--exclude-standard"],
+      { cwd: ROOT, encoding: "utf8" },
+    )
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean)
+      .filter((f) => !f.includes("/") && !IGNORED_DIRS.has(f));
+    expect(
+      untracked,
+      "untracked files at the repo root — commit them, gitignore them, " +
+        "or move them under a scratch directory",
+    ).toEqual([]);
+  });
 });
 
 describe.skipIf(!isGitRepo())("CHANGELOG.md is tracked", () => {

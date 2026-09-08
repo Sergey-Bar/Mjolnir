@@ -1,0 +1,186 @@
+# Marketplace-grade composite action (product-gap-remediation master
+# plan P1.1, plan .kilo/plans/1788853205786). Lives at the repo ROOT
+# because GitHub Actions Marketplace requires it there — a conscious,
+# documented amendment to the repo's root contract
+# (tests/contract/repo-hygiene.spec.ts), never a silent one.
+#
+# Consumers pin a major tag (`uses: Sergey-Bar/Mjolnir@v1`); release.yml's
+# action-tags job keeps that tag moving to every stable release.
+# Scanning runs through the published npm package (`npx mjolnir-qa@…`),
+# never an `npm ci` of this repo — the action must work for consumers,
+# not contributors.
+#
+# SARIF upload: the optional `upload-sarif` input (default true) wires
+# `github/codeql-action/upload-sarif` after the scan, so findings land in
+# the Security tab. It requires `permissions: security-events: write` —
+# consumers grant that in their own workflow; a composite action cannot
+# escalate its caller's permissions by design.
+#
+# Event-data safety (audit S-5, the repo's own QA-CI rule): every input
+# reaches the shell through `env:`, never by interpolation into a `run:`
+# body.
+name: "Mjölnir — verification trust scan"
+description: >-
+  Scans your repository's test suites, Playwright configs and CI
+  workflows, and fails the job when findings at or above the gate are
+  present. Measured false-positive rates per rule; partial scans never
+  block (a scan that did not finish has not found nothing).
+
+branding:
+  icon: "shield"
+  color: "blue"
+
+inputs:
+  path:
+    description: "Repository path to scan"
+    required: false
+    default: "."
+  scope:
+    description: "'all' (default) or 'changed' — only what this branch touched"
+    required: false
+    default: "all"
+  strict:
+    description: "Include quarantine-tier rules in the scan (--strict)"
+    required: false
+    default: "false"
+  format:
+    description: "Output format: terminal, json, or sarif"
+    required: false
+    default: "terminal"
+  fail-on:
+    description: >-
+      Exit-status gate: error (block on error findings), warning (block
+      on warnings too), or none (report only, never block)
+    required: false
+    default: "error"
+  node-version:
+    description: "Node.js version to run the scan with"
+    required: false
+    default: "22"
+  version:
+    description: >-
+      mjolnir-qa npm spec to run. Default: latest. Pin an exact version
+      in your workflow for reproducible gates.
+    required: false
+    default: "latest"
+  upload-sarif:
+    description: >-
+      Upload SARIF to GitHub Code Scanning (requires security-events:
+      write permission). Ignored unless format is sarif.
+    required: false
+    default: "true"
+
+outputs:
+  exit-code:
+    description: "The scan's exit code (0 clean · 1 findings at gate · 2 partial)"
+    value: ${{ steps.scan.outputs.exit }}
+  findings:
+    description: "Finding count from the JSON report (format: json only, else empty)"
+    value: ${{ steps.scan.outputs.findings }}
+  sarif-file:
+    description: "Path of the SARIF report when format is sarif, else empty"
+    value: ${{ steps.scan.outputs.sarif-file }}
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Validate inputs
+      shell: bash
+      env:
+        MJ_SCOPE: ${{ inputs.scope }}
+        MJ_FAIL_ON: ${{ inputs.fail-on }}
+        MJ_FORMAT: ${{ inputs.format }}
+        MJ_STRICT: ${{ inputs.strict }}
+      run: |
+        case "$MJ_SCOPE" in
+          all|changed) ;;
+          *) echo "::error::scope must be 'all' or 'changed', got '$MJ_SCOPE'"; exit 10 ;;
+        esac
+        case "$MJ_FAIL_ON" in
+          error|warning|none) ;;
+          *) echo "::error::fail-on must be 'error', 'warning' or 'none', got '$MJ_FAIL_ON'"; exit 10 ;;
+        esac
+        case "$MJ_FORMAT" in
+          terminal|json|sarif) ;;
+          *) echo "::error::format must be 'terminal', 'json' or 'sarif', got '$MJ_FORMAT'"; exit 10 ;;
+        esac
+        case "$MJ_STRICT" in
+          true|false) ;;
+          *) echo "::error::strict must be 'true' or 'false', got '$MJ_STRICT'"; exit 10 ;;
+        esac
+
+    - name: Scan
+      id: scan
+      shell: bash
+      env:
+        MJ_PATH: ${{ inputs.path }}
+        MJ_SCOPE: ${{ inputs.scope }}
+        MJ_STRICT: ${{ inputs.strict }}
+        MJ_FORMAT: ${{ inputs.format }}
+        MJ_FAIL_ON: ${{ inputs.fail-on }}
+        MJ_VERSION: ${{ inputs.version }}
+      run: |
+        ARGS=("$MJ_PATH")
+        if [ "$MJ_SCOPE" = "changed" ]; then ARGS+=(--scope changed); fi
+        if [ "$MJ_STRICT" = "true" ]; then ARGS+=(--strict); fi
+        case "$MJ_FORMAT" in
+          json)  ARGS+=(--json) ;;
+          sarif) ARGS+=(--format sarif) ;;
+        esac
+        case "$MJ_FAIL_ON" in
+          error)   ARGS+=(--blocking error) ;;
+          warning) ARGS+=(--blocking warning) ;;
+          none)    ARGS+=(--blocking none) ;;
+        esac
+        echo "Running: npx --yes mjolnir-qa@${MJ_VERSION} ${ARGS[*]}"
+        set +e
+        if [ "$MJ_FORMAT" = "json" ]; then
+          npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}" > mjolnir.json
+        elif [ "$MJ_FORMAT" = "sarif" ]; then
+          npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}" > mjolnir-report.sarif
+        else
+          npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}"
+        fi
+        EXIT=$?
+        set -e
+        echo "exit=$EXIT" >> "$GITHUB_OUTPUT"
+        # The frozen exit-code contract: 2 = partial scan, NEVER blocks —
+        # a scan that did not finish has not found nothing. Downgrade it
+        # to a loud warning so a truncated run cannot fail the job, while
+        # 1 (findings at gate) and 10/20 (usage/internal) still do.
+        if [ "$EXIT" = "2" ]; then
+          echo "::warning::Mjölnir scan was PARTIAL — some files were not analyzed; the gate is not enforced. Re-run on a quieter runner or raise --max-duration."
+          exit 0
+        fi
+        if [ "$MJ_FORMAT" = "sarif" ]; then
+          echo "sarif-file=mjolnir-report.sarif" >> "$GITHUB_OUTPUT"
+        else
+          echo "sarif-file=" >> "$GITHUB_OUTPUT"
+        fi
+        if [ "$MJ_FORMAT" = "json" ] && [ -s mjolnir.json ]; then
+          node -e '
+            const fs = require("fs");
+            try {
+              const r = JSON.parse(fs.readFileSync("mjolnir.json", "utf8"));
+              const findings = Array.isArray(r.findings) ? r.findings.length : 0;
+              fs.appendFileSync(process.env.GITHUB_OUTPUT,
+                "findings=" + findings + "\n");
+            } catch { fs.appendFileSync(process.env.GITHUB_OUTPUT, "findings=\n"); }
+          '
+        else
+          echo "findings=" >> "$GITHUB_OUTPUT"
+        fi
+        # Propagate the gate result (exit 2 partial already downgraded).
+        exit "$EXIT"
+
+    - name: Upload SARIF to GitHub Code Scanning
+      if: >-
+        inputs.format == 'sarif' && inputs.upload-sarif == 'true' &&
+        steps.scan.outputs.sarif-file != ''
+      uses: github/codeql-action/upload-sarif@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4
+      with:
+        sarif_file: ${{ steps.scan.outputs.sarif-file }}

@@ -21,6 +21,7 @@ import { describe, expect, it } from "vitest";
 import {
   ciInstall,
   gateScript,
+  ACTION_TEMPLATE,
   TEMPLATE,
   type EnforcingGate,
   type GateLevel,
@@ -196,14 +197,27 @@ describe("`ci install` never silently overwrites a customized workflow (bug-audi
     }
   });
 
-  it("--force replaces the customized file with the template", () => {
+  it("--force replaces the customized file with the template (default: action-based)", () => {
     const dir = mkdtempSync(join(tmpdir(), "mjolnir-ci-force-"));
     try {
       const first = ciInstall(dir, "advisory");
       writeFileSync(first.written, "name: mine\n");
       const forced = ciInstall(dir, "advisory", { force: true });
       expect(forced.refused).toBe(false);
-      expect(readFileSync(first.written, "utf8")).toBe(TEMPLATE("advisory"));
+      expect(readFileSync(first.written, "utf8")).toBe(
+        ACTION_TEMPLATE("advisory"),
+      );
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("--force with { action: false } writes the plain-npx template", () => {
+    const dir = mkdtempSync(join(tmpdir(), "mjolnir-ci-force-npx-"));
+    try {
+      const forced = ciInstall(dir, "advisory", { force: true, action: false });
+      expect(forced.refused).toBe(false);
+      expect(readFileSync(forced.written, "utf8")).toBe(TEMPLATE("advisory"));
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
@@ -219,8 +233,10 @@ describe("`ci install` never silently overwrites a customized workflow (bug-audi
       const switched = ciInstall(dir, "warning");
       expect(switched.refused).toBe(false);
       expect(readFileSync(switched.written, "utf8")).toContain(
-        "Gate (warning)",
+        "fail-on: warning",
       );
+      // switching to the plain-npx shape is also a generated template
+      expect(ciInstall(dir, "warning", { action: false }).refused).toBe(false);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
