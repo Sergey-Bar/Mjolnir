@@ -18,7 +18,7 @@
  */
 
 import { spawn } from "node:child_process";
-import { mkdirSync } from "node:fs";
+import { copyFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { chromium } from "playwright-core";
 
@@ -43,6 +43,35 @@ export function videoPath(id: VideoScript["id"]): string {
 }
 export function posterPath(id: VideoScript["id"]): string {
   return join(OUT_DIR, `mjolnir-${id}-poster.png`);
+}
+
+/**
+ * The demo is the only video committed to the repository — it is what
+ * the README plays and what every clone pays for — so it is PUBLISHED
+ * out of the gitignored render directory into assets/video/ at the end
+ * of a render.
+ *
+ * Before this it was not. `docs:video` wrote to assets/video/out/ and
+ * stopped, while assets/video/mjolnir-demo.mp4 was put there by a step
+ * that existed in nobody's repository: the shipping artifact had no
+ * reproducible provenance, the media contract checked the render output
+ * instead of the file readers download, and the two could disagree
+ * indefinitely without anything noticing. They had.
+ *
+ * The tour is not published: it is a longer walkthrough kept as a CI
+ * artifact, not a committed asset.
+ */
+export function publishedVideoPath(): string {
+  return join(SCRIPT_DIR, "mjolnir-demo.mp4");
+}
+export function publishedPosterPath(): string {
+  return join(SCRIPT_DIR, "mjolnir-demo-poster.png");
+}
+
+/** Copies the freshly rendered demo over the committed asset. */
+export function publishDemo(): void {
+  copyFileSync(videoPath("demo"), publishedVideoPath());
+  copyFileSync(posterPath("demo"), publishedPosterPath());
 }
 
 /** Guards the render against drawing a character no vendored face has. */
@@ -202,6 +231,12 @@ async function main(): Promise<void> {
   }
 
   for (const id of ids) await renderVideo(id);
+
+  // Publishing is part of rendering, not a separate thing to remember.
+  if (ids.includes("demo")) {
+    publishDemo();
+    console.log(`  demo: published -> ${publishedVideoPath()}`);
+  }
 }
 
 if (process.argv[1]?.endsWith("render.ts")) await main();

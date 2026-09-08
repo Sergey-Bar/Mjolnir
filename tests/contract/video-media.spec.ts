@@ -20,7 +20,12 @@ import { describe, expect, it } from "vitest";
 import { pacingFor } from "../../scripts/video/pacing.js";
 import { readScript } from "../../scripts/video/script-io.js";
 import { planFrames, posterFrame } from "../../scripts/video/terminal-page.js";
-import { posterPath, videoPath } from "../../scripts/video/render.js";
+import {
+  posterPath,
+  publishedPosterPath,
+  publishedVideoPath,
+  videoPath,
+} from "../../scripts/video/render.js";
 import type { VideoScript } from "../../scripts/video/script-types.js";
 
 /** The hero is committed to the repo, so its weight is everyone's clone. */
@@ -29,22 +34,44 @@ const HERO_MAX_BYTES = 12 * 1024 * 1024;
 const FRAME_TOLERANCE = 2;
 
 function ffprobe(): string | null {
+  let candidate: string;
   try {
-    return (
+    candidate =
       process.env["MJOLNIR_FFPROBE"] ??
       execFileSync("sh", ["-c", "command -v ffprobe"], {
         encoding: "utf8",
-      }).trim()
-    );
+      }).trim();
+  } catch {
+    return null;
+  }
+  if (!candidate) return null;
+  // Finding a path is not the same as being able to run it. Under Git
+  // Bash on Windows, `command -v` answers with a POSIX path
+  // (/c/Users/...) that Node cannot spawn, and every assertion below
+  // then failed with ENOENT on a perfectly good video. Prove the binary
+  // runs before claiming it is available; otherwise skip, loudly, which
+  // is what this spec does for every other absence.
+  try {
+    execFileSync(candidate, ["-version"], { stdio: "ignore" });
+    return candidate;
   } catch {
     return null;
   }
 }
 
 function probe(bin: string, file: string, args: string[]): string {
+  // Trim EVERY line, not just the ends of the block. ffprobe on Windows
+  // separates records with CRLF, so a multi-value probe returned
+  // "h264\r" and every equality assertion here failed on a correct
+  // video — the check was platform-locked to the Linux CI runner and
+  // could not be run where the renders are actually made.
   return execFileSync(bin, ["-v", "error", ...args, file], {
     encoding: "utf8",
-  }).trim();
+  })
+    .split("\n")
+    .map((line: string) => line.trim())
+    .join("\n")
+    .trim();
 }
 
 const bin = ffprobe();
@@ -142,19 +169,48 @@ describe.skipIf(reason !== null)(
     });
 
     it.skipIf(!rendered.includes("demo"))(
-      "the hero stays within the size budget for a committed asset",
+      "a fresh render and the shipped hero are the same bytes",
       () => {
-        const bytes = statSync(videoPath("demo")).size;
+        // `docs:video` publishes as its last step. If these differ, a
+        // render happened and was not published — which is exactly how
+        // the shipped video came to be an artifact no command in this
+        // repository could reproduce.
         expect(
-          bytes,
-          `the hero is ${(bytes / 1024 / 1024).toFixed(1)}MB; it is committed ` +
-            `to the repo, so every clone pays for it. Budget is ` +
-            `${HERO_MAX_BYTES / 1024 / 1024}MB — shorten it or raise CRF.`,
-        ).toBeLessThanOrEqual(HERO_MAX_BYTES);
+          statSync(publishedVideoPath()).size,
+          "assets/video/mjolnir-demo.mp4 differs from the render — " +
+            "re-run `npm run docs:video` and commit the result.",
+        ).toBe(statSync(videoPath("demo")).size);
       },
     );
   },
 );
+
+/**
+ * The committed artifact, checked on every checkout.
+ *
+ * These need no ffprobe, no Chromium and no render — assets/video/
+ * mjolnir-demo.mp4 is in the repository, which is the whole reason it
+ * has a budget. It was previously checked by nothing: the size
+ * assertion lived inside the skipped block above and measured the
+ * gitignored render output, so it ran only on a machine that had just
+ * rendered, and the 8.7 MB file every reader downloaded was verified by
+ * no one.
+ */
+describe("the committed demo video", () => {
+  it("stays within the size budget", () => {
+    const bytes = statSync(publishedVideoPath()).size;
+    expect(
+      bytes,
+      `the hero is ${(bytes / 1024 / 1024).toFixed(1)}MB; it is committed ` +
+        `to the repo, so every clone pays for it. Budget is ` +
+        `${HERO_MAX_BYTES / 1024 / 1024}MB — shorten it or raise CRF.`,
+    ).toBeLessThanOrEqual(HERO_MAX_BYTES);
+  });
+
+  it("has its poster beside it", () => {
+    expect(existsSync(publishedPosterPath()), publishedPosterPath()).toBe(true);
+  });
+});
 
 // A visible record when the suite ran without checking anything, so a
 // green board is never mistaken for a verified one.
