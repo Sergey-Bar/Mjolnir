@@ -8,6 +8,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   main,
@@ -286,6 +287,56 @@ describe("runScanCommand / main dispatch", () => {
     const cap = capture();
     await runScanCommand([dir, "--format", "sarif"], cap.io);
     expect(JSON.parse(cap.text())).toHaveProperty("version", "2.1.0");
+  });
+
+  it("SARIF carries SRCROOT wired at the CLI surface (certification F5)", async () => {
+    // A temp fixture with a real finding, scanned via the PUBLIC
+    // runScanCommand path — this is the production call site that used
+    // to call renderSarif(result) with no repoRootUri, shipping SARIF
+    // without originalUriBaseIds.SRCROOT (audit F5).
+    mkdirSync(join(dir, "e2e"), { recursive: true });
+    writeFileSync(
+      join(dir, "e2e", "a.spec.ts"),
+      "test('tautology', () => { expect(true).toBe(true); });\n",
+    );
+    const cap = capture();
+    // --strict: the fixture finding (tautological assertion) is a
+    // quarantine-tier rule — silent by default, fired under --strict.
+    const code = await runScanCommand(
+      [dir, "--format", "sarif", "--strict"],
+      cap.io,
+    );
+    expect([0, 1]).toContain(code);
+    const sarif = JSON.parse(cap.text()) as {
+      runs: Array<{
+        originalUriBaseIds?: Record<string, { uri: string }>;
+        results: Array<{
+          locations: Array<{
+            physicalLocation: {
+              artifactLocation: { uriBaseId?: string };
+            };
+          }>;
+        }>;
+      }>;
+    };
+    const run = sarif.runs[0];
+    expect(run).toBeDefined();
+    if (!run) return;
+    expect(run.results.length).toBeGreaterThan(0);
+    const srcroot = run.originalUriBaseIds?.SRCROOT?.uri;
+    expect(srcroot, "SRCROOT base uri must be present").toMatch(/^file:\/\//);
+    if (srcroot === undefined) return;
+    // fileURLToPath decodes percent-encoding and normalizes to the
+    // platform path — the result must be exactly the scanned target.
+    expect(
+      fileURLToPath(srcroot),
+      "SRCROOT must resolve to the scanned target",
+    ).toBe(dir);
+    // At least one result carries the uriBaseId resolving against it.
+    const withBaseId = run.results.flatMap((r) =>
+      r.locations.map((l) => l.physicalLocation.artifactLocation.uriBaseId),
+    );
+    expect(withBaseId).toContain("SRCROOT");
   });
 
   it("main dispatches subcommands", async () => {

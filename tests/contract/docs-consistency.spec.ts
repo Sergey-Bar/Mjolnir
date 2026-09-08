@@ -28,16 +28,29 @@ const STATE = existsSync(join(ROOT, ".planning", "STATE.md"))
   ? readFileSync(join(ROOT, ".planning", "STATE.md"), "utf8")
   : null;
 
-/** Extracts `| QA-XXX-000 | ... | severity |` rows from a markdown table row. */
+/**
+ * Extracts `| QA-XXX-000 | ... | severity [| tier] |` rows from a
+ * markdown table row. The trailing Tier column (certification F4) is
+ * optional; severity is anchored to the closed severity vocabulary so
+ * rule names containing escaped pipes (`\|\| true`) cannot shift the
+ * column, and a tier cell can never be misread as a severity.
+ */
+const SEVERITY_WORDS = "error|warning|info";
+const TIER_WORDS = "core|extended|quarantine";
+
 function extractRuleTableRows(
   markdown: string,
-): Array<{ id: string; severity: string }> {
-  const rows: Array<{ id: string; severity: string }> = [];
-  const lineRe = /^\|\s*(QA-[A-Z]+-\d{3})\s*\|.*\|\s*([a-z]+)\s*\|\s*$/gm;
+): Array<{ id: string; severity: string; tier?: string }> {
+  const rows: Array<{ id: string; severity: string; tier?: string }> = [];
+  const lineRe = new RegExp(
+    `^\\|\\s*(QA-[A-Z]+-\\d{3})\\s*\\|.*\\|\\s*(${SEVERITY_WORDS})\\s*(?:\\|\\s*(${TIER_WORDS})\\s*)?\\|\\s*$`,
+    "gm",
+  );
   for (const m of markdown.matchAll(lineRe)) {
     const id = m[1];
     const severity = m[2];
-    if (id && severity) rows.push({ id, severity });
+    if (id && severity)
+      rows.push({ id, severity, ...(m[3] ? { tier: m[3] } : {}) });
   }
   return rows;
 }
@@ -85,6 +98,20 @@ describe("README.md rule tables match the actual registry", () => {
           `this rule would block their CI is reading a false claim.`,
       ).toBeDefined();
       expect(allowed).toContain(severity);
+    },
+  );
+
+  it.each(rows)(
+    "$id: README tier matches the registry (certification F4 tier honesty)",
+    ({ id, tier }) => {
+      const rule = byId.get(id);
+      if (!rule || tier === undefined) return;
+      expect(
+        tier,
+        `README.md lists "${id}" with tier "${tier}", but the registry ` +
+          `declares "${rule.tier}" — the tier column must mirror ` +
+          `docs/RULE-CAPABILITY-MATRIX.md (regenerate with npm run docs:capability).`,
+      ).toBe(rule.tier);
     },
   );
 });

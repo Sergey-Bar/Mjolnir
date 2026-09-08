@@ -24,7 +24,11 @@ export function errorText(err: unknown): string {
 /**
  * Parse-and-validate a saved report. Throws Error with a
  * human-explanatory message on: invalid JSON, non-object document,
- * wrong schemaVersion, missing findings array.
+ * wrong schemaVersion, missing findings array, missing frameworks
+ * array (certification F1: a schema-1 report is MORE than
+ * `{schemaVersion, findings}` — summary/handoff/why read
+ * `result.frameworks`, so a schema-incomplete stub must be rejected
+ * HERE, by the one shared loader, not crash downstream).
  */
 export function validateReportJson(text: string): ScanResult {
   let parsed: unknown;
@@ -36,7 +40,11 @@ export function validateReportJson(text: string): ScanResult {
   if (typeof parsed !== "object" || parsed === null) {
     throw new Error("the file is a JSON value but not an object");
   }
-  const doc = parsed as { schemaVersion?: unknown; findings?: unknown };
+  const doc = parsed as {
+    schemaVersion?: unknown;
+    findings?: unknown;
+    frameworks?: unknown;
+  };
   if (doc.schemaVersion !== 1) {
     throw new Error(
       `unsupported schemaVersion ${JSON.stringify(doc.schemaVersion)} — expected 1`,
@@ -45,6 +53,11 @@ export function validateReportJson(text: string): ScanResult {
   if (!Array.isArray(doc.findings)) {
     throw new Error(
       'missing a "findings" array — is this a Mjölnir --json report?',
+    );
+  }
+  if (!Array.isArray(doc.frameworks)) {
+    throw new Error(
+      'missing a "frameworks" array — is this a complete Mjölnir --json report?',
     );
   }
   return parsed as ScanResult;
