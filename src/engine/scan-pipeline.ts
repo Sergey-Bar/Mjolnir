@@ -46,6 +46,7 @@ import { enforceTierPolicy, type Tier } from "./tier-policy.js";
 import type { QADoctorRule } from "../rules/rule.js";
 import type { UniversalRule, ParsedAst, ParsedFile } from "./adapter.js";
 import { stampRuntimeCorroboration } from "./runtime-corroboration.js";
+import { buildEvidenceRecords } from "./evidence-core.js";
 import { classifyProvenance, computeAgenticProfile } from "./provenance.js";
 import { releaseTreeSitterResources } from "./tree-sitter-ast.js";
 import { applyOverlapDedup, type OverlapMeta } from "./overlap-dedup.js";
@@ -894,13 +895,20 @@ export async function runScan(
   // `mjolnir.report.json` or a `test-results/` directory), findings get
   // stamped with runtime corroboration + the L0–L5 trust ladder.
   // Absent report → findings unchanged (honest "no runtime evidence").
+  // WI-2 (Canonical Evidence Core): the report is normalized into the
+  // evidence core first — one canonical record shape fans out from
+  // here; stamping semantics are byte-identical to pre-core behavior.
   const runtimeReportPath = discoverRuntimeReport(scanRoot.root);
   if (runtimeReportPath) {
     try {
       const fr = runForensics(runtimeReportPath, {
         writeFlakyMd: false,
       });
-      stampRuntimeCorroboration(findings, fr.report);
+      // WI-2 (Canonical Evidence Core): normalize the report into the
+      // canonical record shape once, then fan the SAME records into
+      // corroboration — one evidence path, byte-identical stamps.
+      const evidence = buildEvidenceRecords(fr.report, runtimeReportPath);
+      stampRuntimeCorroboration(findings, fr.report, evidence);
     } catch {
       // A hostile/corrupt report must not fail the scan — the run simply
       // carries no runtime evidence (same degrade posture as forensics).
