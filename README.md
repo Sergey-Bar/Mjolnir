@@ -203,6 +203,7 @@ pinned to the `v1` major tag) by default, or plain `npx` with
 | `mjolnir forensics ./test-results/` | Runtime evidence from a real run                 |
 | `mjolnir handoff`                   | Remediation plan for a coding agent              |
 | `mjolnir --json` / `--format sarif` | Machine-readable / GitHub Code Scanning          |
+| `mjolnir --format codequality`      | GitLab Code Quality report (MR widget artifact)  |
 | `mjolnir --strict`                  | Also run quarantine-tier rules (higher FP risk)  |
 
 <details>
@@ -565,6 +566,10 @@ Or wire it into GitHub Code Scanning natively via SARIF:
     sarif_file: mjolnir.sarif
 ```
 
+On GitLab, `--format codequality` emits the Code Quality report the MR
+widget and diff annotations consume
+([docs/GITLAB-CI.md](docs/GITLAB-CI.md)).
+
 Editor and pipeline setup: [docs/SARIF-INTEGRATION.md](docs/SARIF-INTEGRATION.md).
 
 ### Changed-scope attribution
@@ -718,6 +723,7 @@ Rule IDs (`QA-<FAMILY>-NNN`) are immutable once shipped and never reused.
 | [docs/VERSIONING.md](docs/VERSIONING.md)               | Semver policy, frozen surfaces, deprecation cycle |
 | [docs/machine-contract.md](docs/machine-contract.md)   | The canonical machine-readable result             |
 | [docs/SARIF-INTEGRATION.md](docs/SARIF-INTEGRATION.md) | SARIF output + editor/CI setup                    |
+| [docs/GITLAB-CI.md](docs/GITLAB-CI.md)                 | GitLab: Code Quality report, MR recipe, gate      |
 | [docs/rules/](docs/rules/)                             | Generated per-rule catalog                        |
 | [CONTRIBUTING.md](CONTRIBUTING.md)                     | Dev setup + contribution workflow                 |
 | [SUPPORT.md](SUPPORT.md)                               | Where to ask, report and get help                 |
