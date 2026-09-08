@@ -65,7 +65,15 @@ function liveSurfaces(): Array<{ name: string; text: string }> {
     // Strip HTML comments (including the census sentinels themselves):
     // the sweep checks what a reader sees, and a sentinel boundary must
     // not split a claim phrase so far that its shape stops matching.
-    return { name, text: raw.replace(/<!--[\s\S]*?-->/g, "") };
+    // Two passes with negated guards, not `[\s\S]*?`: a lone opener that
+    // never closes must not swallow the rest of the file, and the first
+    // pass cannot re-open on a stray `<!--` inside a comment body
+    // (CodeQL js/incomplete-multi-character-sanitization).
+    const stripped = raw.replace(/<!--(?!>)(?:(?!<!--)[\s\S])*?-->/g, "");
+    return {
+      name,
+      text: stripped.replace(/<!--(?!>)(?:(?!<!--)[\s\S])*?-->/g, ""),
+    };
   });
 }
 
