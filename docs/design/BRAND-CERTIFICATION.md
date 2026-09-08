@@ -1,7 +1,8 @@
 # Mjölnir — brand certification
 
-The close-out of `.planning/BRAND-UNIFICATION-PLAN.md`, on branch
-`brand/unification`.
+The close-out of the brand-unification work, on branch
+`brand/unification`. The plan it executed is a local working document
+under `.planning/`, which this repository does not track.
 
 Every number here is a run that happened. Where something was not
 measured it says **NOT MEASURED**, never "pass".

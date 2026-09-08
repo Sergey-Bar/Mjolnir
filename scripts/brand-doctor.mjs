@@ -18,8 +18,10 @@
  * `tests/contract/brand-tokens-reproducibility.spec.ts`.
  *
  * THE RATCHET. Some findings are known, planned, and being burned down
- * by a named phase of `.planning/BRAND-UNIFICATION-PLAN.md`. Those live
- * in `KNOWN_OPEN` with the phase that closes them and a written reason.
+ * by a named phase of the brand-unification work. Those live in
+ * `KNOWN_OPEN` with the phase that closes them and a written reason.
+ * The list is empty today; the mechanism stays for the next time it is
+ * not.
  * Two things make that an honest mechanism rather than a silencer:
  *
  *   1. A known-open entry that STOPS firing is itself a failure. A stale
@@ -142,9 +144,13 @@ const NON_BRAND_HEX = new Map([
 const RETIRED_FACES = ["Inter", "JetBrains Mono"];
 
 /**
- * Known, planned findings. Each is closed by the named phase of
- * `.planning/BRAND-UNIFICATION-PLAN.md`. An entry that stops firing is a
- * failure: a stale allowlist is how a gate becomes decoration.
+ * Known, planned findings. Each names the phase of work that closes it
+ * and why it is still open. An entry that stops firing is a failure: a
+ * stale allowlist is how a gate becomes decoration.
+ *
+ * Empty is the correct steady state. It has been emptied once already —
+ * every entry the brand unification carried was deleted the moment its
+ * debt was paid, which is the only way this stays a ratchet.
  */
 export const KNOWN_OPEN = [];
 

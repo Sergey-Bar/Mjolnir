@@ -6,8 +6,9 @@ it is, where its values come from, and what stops it drifting.
 The scores are honest, not generous. A 10 means the surface takes every
 value from the token module **and** something fails CI when it stops.
 
-Measured at `brand/unification`, after Phases 0–11 of
-[`.planning/BRAND-UNIFICATION-PLAN.md`](../../.planning/BRAND-UNIFICATION-PLAN.md).
+Measured at `brand/unification`. The outcome, with every measurement and
+every remaining gap, is
+[`BRAND-CERTIFICATION.md`](BRAND-CERTIFICATION.md).
 
 ---
 
