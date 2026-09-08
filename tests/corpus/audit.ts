@@ -312,6 +312,17 @@ interface BaselineEntry {
   countsByRule: Record<string, number>;
   totalFindings: number;
   /**
+   * P2.4 calibration (plan 1788853205786): the normalization denominator
+   * runScan measured for this repo. Persisted so NORMALIZATION_K / the
+   * deduction-mass ceilings can be calibrated against REAL corpus data
+   * (docs/SCORING.md "not fitted" note) instead of the maintainer's
+   * intuition. Optional: baselines recorded before this field existed
+   * stay valid; the next reviewed --update fills it in. Not compared in
+   * the regression check — upstream repos change their suites, so the
+   * count is calibration CONTEXT, not a lock.
+   */
+  testDeclarationCount?: number;
+  /**
    * Set by scanRepo from runScan's result — NOT persisted to the
    * baseline JSON (a partial scan never gets recorded; see the
    * FAIL branch in main). Present on the in-memory current entry only.
@@ -375,12 +386,15 @@ async function scanRepo(dir: string): Promise<BaselineEntry> {
   const sortedCounts = Object.fromEntries(
     Object.entries(countsByRule).sort(([a], [b]) => a.localeCompare(b)),
   );
-  // TODO: Record testDeclarationCount in the baseline so that
-  // NORMALIZATION_K can be calibrated against real corpus data.
-  // Currently runScan returns this value but we don't persist it.
+  // P2.4 (plan 1788853205786): persist the normalization denominator so
+  // NORMALIZATION_K and the deduction-mass ceilings are calibratable
+  // against real corpus data (the TODO SCORING.md carried is closed).
   return {
     countsByRule: sortedCounts,
     totalFindings: result.findings.length,
+    ...(result.testDeclarationCount !== undefined
+      ? { testDeclarationCount: result.testDeclarationCount }
+      : {}),
     partial: result.partial,
   };
 }

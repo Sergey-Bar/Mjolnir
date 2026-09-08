@@ -909,6 +909,11 @@ export async function runScan(
   hooks.onProgress?.({ phase: "score", done: findings.length });
   const dimensions = computeDimensions(findings);
   const rawDeductions = findings.reduce((sum, f) => sum + deductionFor(f), 0);
+  // P2.3 (plan 1788853205786): effectiveDeductions is the mass-ceiling
+  // input — the SAME evidence-discounted sum computeTotal caps against.
+  // Additive JSON field so consumers can recompute the ceiling
+  // (docs/SCORING.md formula v2) without re-deriving evidence levels.
+  const effectiveDeductions = rawDeductions;
   const total = computeTotal(dimensions, findings, {
     testDeclarations: testDeclarationCount,
     testFileCount,
@@ -943,6 +948,7 @@ export async function runScan(
     testFileCount,
     testDeclarationCount,
     rawDeductions,
+    effectiveDeductions,
     suppressionCount,
     ...(pluginsLoaded.length > 0 ? { plugins: pluginsLoaded } : {}),
     // Plan §17.2: Agentic Trust Profile — provenance metadata only.
