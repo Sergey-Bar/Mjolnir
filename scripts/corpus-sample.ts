@@ -205,9 +205,19 @@ async function scanAndSample(): Promise<Map<string, SampledFinding[]>> {
 function writeReviewSheets(byRule: Map<string, SampledFinding[]>): void {
   mkdirSync(REVIEW_DIR, { recursive: true });
 
-  // Clear old review sheets
+  // Clear old review sheets — EXCEPT sheets whose rule was not sampled in
+  // this run. §19 review material is owner work-in-progress (pending
+  // verdict classifications); --repo resumability used to delete every
+  // sheet of a rule the current run did not visit, wiping 25 sheets /
+  // 191 pending classifications on a scoped run. Sheets are regenerated
+  // only when their rule is re-sampled (de-duped against existing
+  // verdict rows), so deleting a not-visited sheet loses owner work for
+  // nothing.
+  const sampledRules = new Set(byRule.keys());
   for (const f of readdirSync(REVIEW_DIR)) {
-    if (f.endsWith(".md")) rmSync(join(REVIEW_DIR, f));
+    if (f.endsWith(".md") && !sampledRules.has(f.replace(/\.md$/, ""))) {
+      rmSync(join(REVIEW_DIR, f));
+    }
   }
 
   for (const [ruleId, samples] of [...byRule.entries()].sort((a, b) =>
