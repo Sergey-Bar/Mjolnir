@@ -252,11 +252,24 @@ export function checkTierEnforcement(
 ): DoctorCheck {
   const details: string[] = [];
 
+  // L4 ruling (owner, 2026-09-08): without LIVE verdicts there is no live
+  // evidence that any tier claim is proven — INCONCLUSIVE, blocking, and
+  // never silently substituted by MEASURED_FP. The generated map remains a
+  // historical artifact (see below), but it may not stand in for evidence
+  // that is simply not present — same principle as revision-integrity's
+  // installed-package arm: a check that cannot be evaluated never renders
+  // as pass (G2/22).
+  if (!existsSync(verdictsDir)) {
+    return check("tier-enforcement", "inconclusive", [
+      "INCONCLUSIVE: live verdicts unavailable (tests/corpus/verdicts missing — installed package) — tier claims cannot be proven without live evidence; MEASURED_FP is a historical artifact and does not substitute (owner ruling 2026-09-08, L4)",
+    ]);
+  }
+
   // Classified-verdict count per rule. The shipped src/rules/
-  // measured-fp.generated.ts is the source of truth (baked in because
-  // tests/corpus/verdicts/ is not packed). When running from a checkout
-  // whose verdicts have grown since the last `fp-audit:generate`, prefer
-  // the live directory so `doctor` reflects the newer classification.
+  // measured-fp.generated.ts is the HISTORICAL ARTIFACT base (baked in
+  // because tests/corpus/verdicts/ is not packed). When running from a
+  // checkout whose verdicts have grown since the last `fp-audit:generate`,
+  // the live directory is authoritative wherever it has rows.
   const classifiedPerRule = new Map<string, number>();
   const byId = new Map(rules.map((r) => [r.id, r] as const));
   for (const [id, m] of Object.entries(MEASURED_FP)) {
@@ -267,8 +280,9 @@ export function checkTierEnforcement(
       classifiedPerRule.set(id, m.n);
     }
   }
+  let live: Map<string, number>;
   try {
-    const live = new Map<string, number>();
+    live = new Map<string, number>();
     const files = readdirSync(verdictsDir).filter((f) => f.endsWith(".jsonl"));
     for (const f of files) {
       const lines = readFileSync(join(verdictsDir, f), "utf8")
@@ -287,15 +301,22 @@ export function checkTierEnforcement(
             );
           }
         } catch {
-          // skip malformed
+          // Unparseable rows are FAILed by checkMeasurementConsistency,
+          // which always runs alongside this check in the self-audit —
+          // the owner's per-failure-type delegation (L4, 2026-09-08).
         }
       }
     }
-    if (live.size > 0) {
-      for (const [id, n] of live) classifiedPerRule.set(id, n);
-    }
-  } catch {
-    // verdicts dir absent (installed package) — fall back to MEASURED_FP.
+  } catch (e) {
+    // The directory exists but cannot be read — the evidence is present
+    // and invalid, which is a different failure than absent: still not
+    // evaluable here, and still never rendered as pass (G2/22).
+    return check("tier-enforcement", "inconclusive", [
+      `INCONCLUSIVE: live verdicts unreadable — ${errorText(e)} (owner ruling 2026-09-08, L4)`,
+    ]);
+  }
+  if (live.size > 0) {
+    for (const [id, n] of live) classifiedPerRule.set(id, n);
   }
 
   const coreRules = rules.filter((r) => effectiveTier(r) === "core");
