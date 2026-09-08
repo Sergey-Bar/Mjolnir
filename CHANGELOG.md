@@ -9,6 +9,12 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [0.5.30] — 2026-09-08
+
+### Changes since 0.5.29
+
+- Cross-language side-by-side review aid for rule families 106/107 (§19 review tool, decides nothing) (#60)
+
 ## [0.5.29] — 2026-09-08
 
 ### Changes since 0.5.28
