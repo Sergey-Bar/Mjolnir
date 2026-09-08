@@ -15,6 +15,11 @@ export default tseslint.config(
       "dist/",
       "coverage/",
       "node_modules/",
+      // Machine-local state (cache, bench fixtures, stats) — generated
+      // artifacts, never committed. The bench fixture tree carries
+      // generated *.spec.ts outside any tsconfig project, which would
+      // otherwise crash the typed parser.
+      ".mjolnir/**",
       // Local debug artifacts (gitignored — "never committed"); a dev's
       // throwaway probe scripts must never be able to redden `npm run lint`.
       "scratch/",
