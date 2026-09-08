@@ -8,7 +8,6 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { pathToFileURL } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   main,
@@ -326,12 +325,13 @@ describe("runScanCommand / main dispatch", () => {
     const srcroot = run.originalUriBaseIds?.SRCROOT?.uri;
     expect(srcroot, "SRCROOT base uri must be present").toMatch(/^file:\/\//);
     if (srcroot === undefined) return;
-    // Compare decoded: Windows CI temp dirs contain 8.3 short names
-    // (RUNNER~1) whose ~ is percent-encoded in the uri (%7E).
+    // Compare decoded against the RAW path: the encoder percent-encodes
+    // path-hostile characters (Windows 8.3 short names: ~ → %7E), so the
+    // decoded form must be exactly the scanned target with / separators.
     expect(
       decodeURIComponent(srcroot),
       "SRCROOT must resolve to the scanned target",
-    ).toBe(pathToFileURL(dir).href.replaceAll("\\", "/"));
+    ).toBe(`file:///${dir.split("\\").join("/")}`);
     // At least one result carries the uriBaseId resolving against it.
     const withBaseId = run.results.flatMap((r) =>
       r.locations.map((l) => l.physicalLocation.artifactLocation.uriBaseId),
