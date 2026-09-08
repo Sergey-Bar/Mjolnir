@@ -42,6 +42,7 @@
         "  \u001b[38;2;224;165;38m██████████████████████\u001b[0m\u001b[38;2;224;165;38m▓\u001b[0m░░░░░░░",
         "  \u001b[38;2;124;133;144mThe hammer holds — but 27 findings weigh it down.\u001b[0m",
         "  \u001b[38;2;124;133;144m(40 raw pts / 7 test declarations — normalized)\u001b[0m",
+        "  \u001b[38;2;124;133;144m(capped: deduction mass 40 pts — absolute ceiling 85)\u001b[0m",
         "",
         "  \u001b[38;2;124;133;144mDETECTED\u001b[0m \u001b[38;2;63;176;160m[playwright]\u001b[0m",
         "",

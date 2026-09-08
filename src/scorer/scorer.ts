@@ -140,6 +140,53 @@ export const SUITE_INVALIDATED_CEILING = 49;
  */
 export const ERROR_SEVERITY_CEILING = 95;
 
+/**
+ * Deduction-mass ceilings (product-gap-remediation master plan P2,
+ * plan 1788853205786 — structural anti-dilution, decision 4).
+ *
+ * The Goodhart vector the density formula permits: fixed deduction mass
+ * ÷ padded denominator → score → 99. A repo with 80 warning-points of
+ * real findings and 10,000 test declarations reads 99+ ("one minor
+ * issue") because the RATE is tiny — the padding is free. Density stays
+ * as the legitimate differentiator for small masses (a lone warning in
+ * a 10k suite must still read ≥ 95), but it can no longer dilute a
+ * large mass: each absolute deduction-mass band caps the score. Padding
+ * cannot move a ceiling — the vector is structurally closed. 80
+ * warning-pts read ≤ 75 in ANY suite size.
+ *
+ * The error-severity floor (95) is the ≥ 8 band seen from the other
+ * side: 1 error ≥ 8 pts, so it is subsumed and left standing as a named
+ * special case for prose continuity. The > 0 band is the honesty guard
+ * (clampWithFindings) — subsumed as well.
+ *
+ * Calibration (P2.4): these boundaries were chosen to hold the three
+ * known data points (self 100, golden 49 via suiteVoided, demo 67) and
+ * are then FROZEN with a changelog entry. Never tune them to flatter a
+ * repo (docs/SCORING.md Correction section is the precedent).
+ */
+export const DEDUCTION_MASS_CEILINGS: ReadonlyArray<{
+  minMass: number;
+  ceiling: number;
+}> = [
+  { minMass: 160, ceiling: 65 },
+  { minMass: 80, ceiling: 75 },
+  { minMass: 40, ceiling: 85 },
+  { minMass: 8, ceiling: 95 },
+];
+
+/**
+ * The score ceiling for a given evidence-discounted deduction mass.
+ * 0 → no ceiling (the 100 honesty guard lives in clampWithFindings);
+ * below the smallest band → no ceiling beyond the named guards.
+ * Exported for the JSON contract (effectiveDeductions) and the tests.
+ */
+export function massCeiling(totalDeduction: number): number | null {
+  for (const band of DEDUCTION_MASS_CEILINGS) {
+    if (totalDeduction >= band.minMass) return band.ceiling;
+  }
+  return null;
+}
+
 export interface ExposureMetrics {
   /** Test declarations found across scanned files (it/test/def test_/@Test). */
   testDeclarations: number;
@@ -185,9 +232,19 @@ export function computeTotal(
     score = clampWithFindings(100 - totalDeduction, totalDeduction);
   }
 
+  // Deduction-mass ceiling (P2.1, structural anti-dilution): an absolute
+  // floor on the score that the denominator cannot move. Applied before
+  // the categorical overrides — density still decides within a band;
+  // the band decides the ceiling. The error-severity floor below is the
+  // ≥ 8 band's named special case and cannot raise the score past it.
+  const ceiling = massCeiling(totalDeduction);
+  if (ceiling !== null && score > ceiling) score = ceiling;
+
   // Error-severity floor: if any error-level finding exists, cap at 95.
   // Errors are categorical defects — a 10,000-test repo with a committed
   // .only is not 99% worthy, it's fundamentally compromised on that axis.
+  // (P2: subsumed by the ≥ 8 mass band — 1 error ≥ 8 pts — kept as the
+  // named guard so the law stays visible and the two cannot drift.)
   const hasErrors = findings.some(
     (f) => f.severity === "error" && deductionFor(f) > 0,
   );

@@ -307,6 +307,15 @@ export interface ScanResult {
   testDeclarationCount?: number;
   /** Raw deduction total before normalization (Phase 5 — transparency). */
   rawDeductions?: number;
+  /**
+   * The evidence-discounted deduction mass the P2 anti-dilution ceiling
+   * caps against (equals rawDeductions today — E0 charges 0, E1 halves;
+   * the ceiling input is deliberately the full discount surface).
+   * Additive within schemaVersion 1; present so consumers recompute the
+   * ceiling from docs/SCORING.md formula v2 without re-deriving
+   * evidence levels.
+   */
+  effectiveDeductions?: number;
   /** Number of findings suppressed by active config entries (suppression transparency). */
   suppressionCount?: number;
   /**

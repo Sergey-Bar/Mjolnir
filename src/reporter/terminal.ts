@@ -10,7 +10,11 @@
 
 import type { Finding, ScanResult } from "../types.js";
 import { DEDUCTIONS, deriveEvidenceLevel } from "../types.js";
-import { computeDimensions, deductionFor } from "../scorer/scorer.js";
+import {
+  computeDimensions,
+  deductionFor,
+  massCeiling,
+} from "../scorer/scorer.js";
 import { topFixes } from "../scorer/prioritize.js";
 import {
   palette,
@@ -191,6 +195,21 @@ function appendScoreSection(
     lines.push(
       `  ${p.dim(`(${result.rawDeductions} raw pts / ${result.testDeclarationCount} test declarations — normalized)`)}`,
     );
+  }
+  // P2.3: when the deduction-mass ceiling binds (the score was capped by
+  // absolute mass, not density), say so — a reader comparing a padded
+  // suite's tiny rate with its low score must be able to see why.
+  if (result.effectiveDeductions !== undefined && result.score !== null) {
+    const ceiling = massCeiling(result.effectiveDeductions);
+    if (
+      ceiling !== null &&
+      result.score <= ceiling &&
+      result.rawDeductions !== undefined
+    ) {
+      lines.push(
+        `  ${p.dim(`(capped: deduction mass ${result.effectiveDeductions} pts — absolute ceiling ${ceiling})`)}`,
+      );
+    }
   }
   if (result.suppressionCount && result.suppressionCount > 0) {
     lines.push(
