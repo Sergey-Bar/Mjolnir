@@ -9,6 +9,12 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [0.5.37] — 2026-09-08
+
+### Changes since 0
+
+- P5: mutation evidence reader — Stryker/mutmut, E1→E2 derivation, report-only (#67)
+
 ## [0.5.36] — 2026-09-08
 
 ### Changes since 0
