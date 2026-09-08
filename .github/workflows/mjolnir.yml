@@ -97,3 +97,27 @@ jobs:
                 body,
               });
             }
+
+  # P1 dogfood (plan 1788853205786): the repo's own action.yml runs on
+  # every PR that touches it — the Marketplace surface is exercised by
+  # the repository that ships it, not just described. Advisory (fail-on:
+  # none): this reports through the Job Summary and never blocks; the
+  # PR-blocking self-scan stays in ci.yml.
+  action-dogfood:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Run only when the action surface itself changes — a composite
+    # action bug must be caught before a release publishes it.
+    if: >-
+      github.event_name == 'pull_request' &&
+      !github.event.pull_request.head.repo.fork
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: ./
+        with:
+          scope: changed
+          format: terminal
+          fail-on: none
+          version: latest

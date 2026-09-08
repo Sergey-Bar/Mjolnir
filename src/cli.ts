@@ -339,12 +339,18 @@ export function runCiInstall(
   let gateArg: string | undefined;
   let gateSeen = false;
   let force = false;
+  let noAction = false;
   const unknown: string[] = [];
   for (const arg of argv) {
     if (arg === "--gate") {
       gateSeen = true;
     } else if (arg === "--force") {
       force = true;
+    } else if (arg === "--no-action") {
+      // P1.3: opt out of the action-based workflow (the default) and
+      // keep the plain-npx template — for repos or runners where
+      // composite actions are unavailable.
+      noAction = true;
     } else if (gateSeen && gateArg === undefined && !arg.startsWith("--")) {
       gateArg = arg;
     } else {
@@ -368,6 +374,7 @@ export function runCiInstall(
   }
   const result = ciInstall(resolve("."), (gateArg as GateLevel) ?? "advisory", {
     force,
+    action: !noAction,
   });
   if (result.refused) {
     // H2(e): the existing workflow differs from anything Mjölnir generates
@@ -382,8 +389,15 @@ export function runCiInstall(
     return 10;
   }
   io.out(`${result.existed ? "Updated" : "Created"} ${result.written}`);
-  io.out("Default mode: advisory — findings reported, never blocking.");
+  io.out(
+    noAction
+      ? "Plain-npx template (—no-action). Default mode: advisory — findings reported, never blocking."
+      : "Action-based template: uses Sergey-Bar/Mjolnir@v1 (major moving tag).",
+  );
   io.out("Change with: mjolnir ci install --gate error|warning|advisory");
+  if (!noAction) {
+    io.out("Prefer the plain-npx workflow? Re-run with --no-action.");
+  }
   return 0;
 }
 

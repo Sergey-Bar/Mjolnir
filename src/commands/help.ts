@@ -25,9 +25,15 @@ export interface HelpEntry {
 export const HELP_ENTRIES: HelpEntry[] = [
   {
     verb: "ci install",
-    summary: "generate the PR workflow (scan + annotations + gate)",
-    usage: "mjolnir ci install [--gate advisory|error|warning] [--force]",
-    examples: ["mjolnir ci install", "mjolnir ci install --gate error --force"],
+    summary:
+      "generate the PR workflow (action-based by default; scan + annotations + gate)",
+    usage:
+      "mjolnir ci install [--gate advisory|error|warning] [--no-action] [--force]",
+    examples: [
+      "mjolnir ci install",
+      "mjolnir ci install --gate error",
+      "mjolnir ci install --no-action --gate error --force",
+    ],
     next: "mjolnir --scope changed",
   },
   {

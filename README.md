@@ -188,14 +188,16 @@ not drown a first PR:
 npx mjolnir-qa@latest --scope changed
 ```
 
-`mjolnir ci install` writes that as a GitHub Actions workflow — advisory by
-default, never blocking until you say so.
+`mjolnir ci install` writes that as a GitHub Actions workflow — the
+[action](https://github.com/Sergey-Bar/Mjolnir#readme) (Marketplace-grade,
+pinned to the `v1` major tag) by default, or plain `npx` with
+`--no-action`. Advisory by default, never blocking until you say so.
 
 | Command                             | What it does                                     |
 | ----------------------------------- | ------------------------------------------------ |
 | `mjolnir`                           | Full-repo scan + worthiness score                |
 | `mjolnir --scope changed`           | Only what your branch introduced — the CI form   |
-| `mjolnir ci install`                | Generate the advisory PR workflow                |
+| `mjolnir ci install`                | Generate the advisory PR workflow (action-based) |
 | `mjolnir explain QA-CI-001`         | What / why / fix + measured FP rate for one rule |
 | `mjolnir why src/a.spec.ts:42`      | Why this exact line was flagged — never a gate   |
 | `mjolnir forensics ./test-results/` | Runtime evidence from a real run                 |
@@ -236,6 +238,9 @@ of them.
 
 Requires **Node.js ≥ 22.18**. Runs on Windows, macOS and Linux. Install
 globally with `npm i -g mjolnir-qa` if you prefer it over `npx`.
+(Why ≥ 22.18? The build toolchain sets the floor — tsdown targets it and
+the release pipeline smoke-tests against it; the runtime dependencies
+have no such requirement.)
 
 ---
 
@@ -537,6 +542,19 @@ One command generates the PR workflow — advisory by default:
 ```bash
 mjolnir ci install
 ```
+
+Prefer the Marketplace action over a generated workflow? It is one line:
+
+```yaml
+- uses: Sergey-Bar/Mjolnir@v1
+  with:
+    scope: changed
+    fail-on: error
+```
+
+Pin `@v1` to follow the major line or an exact tag (`@v0.5.32`) for a
+reproducible gate — [docs/DISTRIBUTION-KIT.md](docs/DISTRIBUTION-KIT.md)
+covers Marketplace, Smithery and the MCP registries.
 
 Or wire it into GitHub Code Scanning natively via SARIF:
 
