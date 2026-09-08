@@ -45,7 +45,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | --------------------------- | ----------- |
 | microsoft-playwright-dotnet | 26          |
 | negative-fixtures           | 2           |
-| positive-fixtures           | 3           |
+| positive-fixtures           | 11          |
 
 ---
 

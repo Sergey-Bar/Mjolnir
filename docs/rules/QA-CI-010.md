@@ -44,7 +44,6 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | Repo                     | Occurrences |
 | ------------------------ | ----------- |
 | microsoft-playwright-mcp | 1           |
-| nocodb-nocodb            | 1           |
 | positive-fixtures        | 9           |
 | reflex-dev-reflex        | 1           |
 | streamlit-streamlit      | 1           |

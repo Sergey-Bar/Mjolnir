@@ -44,8 +44,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | Repo                 | Occurrences |
 | -------------------- | ----------- |
 | getsentry-sentry     | 1           |
-| github-docs          | 2           |
-| grafana-grafana      | 2           |
+| grafana-grafana      | 1           |
 | nextauthjs-next-auth | 2           |
 | positive-fixtures    | 16          |
 

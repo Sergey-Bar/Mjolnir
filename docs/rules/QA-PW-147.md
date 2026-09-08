@@ -44,6 +44,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | Repo                                          | Occurrences |
 | --------------------------------------------- | ----------- |
 | playwright-community-eslint-plugin-playwright | 32          |
+| positive-fixtures                             | 1           |
 | vitest-dev-vitest                             | 153         |
 
 ---

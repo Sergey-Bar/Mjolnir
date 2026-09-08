@@ -44,7 +44,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | Repo                        | Occurrences |
 | --------------------------- | ----------- |
 | microsoft-playwright-dotnet | 21          |
-| positive-fixtures           | 3           |
+| positive-fixtures           | 4           |
 | SeleniumHQ-selenium         | 3           |
 
 ---

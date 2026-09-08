@@ -5,7 +5,8 @@
 
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
@@ -286,9 +287,32 @@ describe("mjolnir doctor — anti-creep and tier-enforcement checks", () => {
   });
 
   it("checkTierEnforcement passes while the unmeasured core count stays within the Law #3 ratchet", () => {
-    const check = checkTierEnforcement("/definitely/not/a/real/dir");
+    // Live verdicts exist (the committed corpus) — evaluation proceeds.
+    const check = checkTierEnforcement(
+      join(
+        dirname(fileURLToPath(import.meta.url)),
+        "..",
+        "..",
+        "corpus",
+        "verdicts",
+      ),
+    );
     expect(check.ok).toBe(true);
+    expect(check.status).toBe("pass");
     expect(check.details.join(" ")).toMatch(/Ratchet \(Law #3\)/);
+  });
+
+  it("checkTierEnforcement is INCONCLUSIVE when live verdicts are unavailable (L4 ruling, 2026-09-08)", () => {
+    // The owner's L4 ruling: no live verdicts → no live evidence → the
+    // check cannot be evaluated → INCONCLUSIVE (blocking, G2/22). The
+    // silent fallback to MEASURED_FP (a historical artifact) was the
+    // pre-ruling behavior and is forbidden: MEASURED_FP may not quietly
+    // stand in for evidence that is simply not present.
+    const check = checkTierEnforcement("/definitely/not/a/real/dir");
+    expect(check.ok).toBe(false);
+    expect(check.status).toBe("inconclusive");
+    expect(check.details.join(" ")).toContain("INCONCLUSIVE");
+    expect(check.details.join(" ")).toContain("does not substitute");
   });
 
   it("checkQuarantineEnforcement caps every shipped quarantine rule to info/E0", () => {
@@ -315,18 +339,47 @@ describe("mjolnir doctor — anti-creep and tier-enforcement checks", () => {
     // unmeasured effective-core rule is already a blocking failure.
     // The rule must declare core explicitly: an omitted tier would
     // resolve to extended (unmeasured) and never count as core.
+    // Live verdicts: an EMPTY corpus dir (exists, zero rows) — evidence
+    // exists and says "not measured", so this is an honest FAIL (n=0),
+    // not INCONCLUSIVE.
+    const empty = mkdtempSync(join(tmpdir(), "mjolnir-tier-empty-"));
+    mkdirSync(join(empty, "verdicts"), { recursive: true });
     const rules = [fakeRule("QA-TEST-700", "core")];
-    const check = checkTierEnforcement("/definitely/not/a/real/dir", rules);
+    const check = checkTierEnforcement(join(empty, "verdicts"), rules);
     expect(check.ok).toBe(false);
     expect(check.details.join(" ")).toMatch(/exceeds the Law #3 ratchet cap/);
+  });
+
+  it("checkTierEnforcement is INCONCLUSIVE when the live verdicts path is unreadable (present but invalid)", () => {
+    // L4 ruling, per-failure-type: the evidence EXISTS but cannot be
+    // read (a file passed as a directory) → INCONCLUSIVE, never pass.
+    const probe = mkdtempSync(join(tmpdir(), "mjolnir-tier-file-"));
+    const asFile = join(probe, "not-a-dir");
+    writeFileSync(asFile, "not a directory\n");
+    const check = checkTierEnforcement(asFile, [
+      fakeRule("QA-TEST-702", "core"),
+    ]);
+    expect(check.ok).toBe(false);
+    expect(check.status).toBe("inconclusive");
+    expect(check.details.join(" ")).toContain("unreadable");
   });
 
   it("checkTierEnforcement ignores unmeasured rules that omit their tier (they are provisional-extended, not core)", () => {
     // Plan §11.2 Step 2: the measurement-dependent default means an
     // unmeasured rule without a declared tier is extended (PROVISIONAL),
-    // so it never trips the core ratchet.
+    // so it never trips the core ratchet. Live corpus exists (committed)
+    // so evaluation proceeds.
     const rules = [fakeRule("QA-TEST-701")];
-    const check = checkTierEnforcement("/definitely/not/a/real/dir", rules);
+    const check = checkTierEnforcement(
+      join(
+        dirname(fileURLToPath(import.meta.url)),
+        "..",
+        "..",
+        "corpus",
+        "verdicts",
+      ),
+      rules,
+    );
     expect(check.ok).toBe(true);
   });
 });

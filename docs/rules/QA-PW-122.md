@@ -47,7 +47,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | microsoft-playwright-mcp    | 1           |
 | negative-fixtures           | 60          |
 | nextauthjs-next-auth        | 2           |
-| positive-fixtures           | 60          |
+| positive-fixtures           | 62          |
 | sveltejs-kit                | 25          |
 | vercel-next-js              | 2           |
 | vitest-dev-vitest           | 1           |

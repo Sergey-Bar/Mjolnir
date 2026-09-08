@@ -41,17 +41,18 @@ Verified against `tests/fixtures/QA-TEST-010/must-not-fire/clean.spec.ts` — a 
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo                   | Occurrences |
-| ---------------------- | ----------- |
-| cypress-io-kitchensink | 1           |
-| getsentry-sentry       | 1           |
-| grafana-grafana        | 2           |
-| negative-fixtures      | 3           |
-| positive-fixtures      | 11          |
-| tanstack-query         | 2           |
-| vercel-next-js         | 201         |
-| vitest-dev-vitest      | 82          |
-| withastro-astro        | 1           |
+| Repo                                          | Occurrences |
+| --------------------------------------------- | ----------- |
+| cypress-io-kitchensink                        | 1           |
+| getsentry-sentry                              | 1           |
+| grafana-grafana                               | 2           |
+| negative-fixtures                             | 3           |
+| playwright-community-eslint-plugin-playwright | 129         |
+| positive-fixtures                             | 11          |
+| tanstack-query                                | 2           |
+| vercel-next-js                                | 201         |
+| vitest-dev-vitest                             | 218         |
+| withastro-astro                               | 1           |
 
 ---
 

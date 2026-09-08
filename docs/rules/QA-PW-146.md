@@ -43,6 +43,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo                                          | Occurrences |
 | --------------------------------------------- | ----------- |
+| github-docs                                   | 76          |
 | grafana-grafana                               | 253         |
 | hashicorp-vault                               | 32          |
 | Humanizr-Humanizer                            | 18          |
