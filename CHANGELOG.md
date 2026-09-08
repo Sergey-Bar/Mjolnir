@@ -9,6 +9,12 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [0.5.23] — 2026-09-08
+
+### Changes since 0.5.22
+
+- docs(corpus): D14 as amended by owner — re-baseline-per-wave is blocking, PARTIAL repos are tracked debt (never baselines, never a certification gate); zero-PARTIAL is the end state, not the gate
+
 ## [0.5.22] — 2026-09-07
 
 ### Changes since 0.5.21
