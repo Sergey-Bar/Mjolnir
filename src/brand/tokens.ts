@@ -264,6 +264,44 @@ export const MOTION = {
   },
 } as const;
 
+/* ── Diagram tints ───────────────────────────────────────────── */
+
+/**
+ * The one place Mjölnir draws on someone else's ground.
+ *
+ * `mjolnir --mermaid` emits a flowchart that GitHub renders inside a
+ * README, on a background this palette does not control and cannot
+ * predict — light or dark, depending on the reader's theme. So these
+ * nodes carry explicit light fills with dark text: legible on white,
+ * and legible on GitHub's #0D1117 too, because a filled node with dark
+ * text reads the same either way.
+ *
+ * Each triple is the brand hue taken to a pale fill, a mid stroke and a
+ * deep text tone. Verified rather than eyeballed: text on fill is
+ * 9.3-11.5:1 and stroke on fill is 4.8-5.4:1, both well past what AA
+ * asks of text and of a non-text boundary.
+ *
+ * They previously came from a Tailwind-ish palette that appears nowhere
+ * else in this product.
+ */
+export interface DiagramTint {
+  fill: string;
+  stroke: string;
+  text: string;
+}
+
+export const TINT: Record<
+  "gold" | "aurora" | "error" | "neutral" | "ok",
+  DiagramTint
+> = {
+  gold: { fill: "#F6EBCC", stroke: "#7A5F16", text: "#4A3A0E" },
+  aurora: { fill: "#D9F0F4", stroke: "#1F6F7C", text: "#10353C" },
+  error: { fill: "#FADEDD", stroke: "#A83A35", text: "#4E1B19" },
+  /** The unmeasured / unknown state. Neutral, never the error tint. */
+  neutral: { fill: "#E4E7EB", stroke: "#5C646E", text: "#262B31" },
+  ok: { fill: "#DCF0E4", stroke: "#276B45", text: "#163A26" },
+};
+
 /* ── Badges ──────────────────────────────────────────────────── */
 
 /**

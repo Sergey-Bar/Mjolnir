@@ -146,15 +146,7 @@ const RETIRED_FACES = ["Inter", "JetBrains Mono"];
  * `.planning/BRAND-UNIFICATION-PLAN.md`. An entry that stops firing is a
  * failure: a stale allowlist is how a gate becomes decoration.
  */
-export const KNOWN_OPEN = [
-  {
-    id: "mermaid-palette-offbrand",
-    rule: 6,
-    phase: "Phase 10 — CLI consistency",
-    reason:
-      "src/reporter/mermaid.ts styles its diagrams with a Tailwind-ish light palette that is in no token, and — worse — paints the no-tests-found node `critical` red. UNKNOWN is a legitimate answer, not a failure; that node is an honesty defect, not only an off-brand one. Fixed with the rest of the reporter vocabulary, where the light/dark constraint of GitHub-rendered mermaid can be solved once.",
-  },
-];
+export const KNOWN_OPEN = [];
 
 /* ══ Rule 1 — vars.css matches the tokens ═══════════════════════ */
 
@@ -348,6 +340,7 @@ export function rule4() {
       ...Object.values(T.score),
       ...Object.values(T.evidence),
       ...Object.values(T.trust),
+      ...Object.values(T.tint).flatMap((t) => Object.values(t)),
       // Whatever pending groups are left, flattened: a group is deleted
       // from the token module the moment its surface converges, so this
       // must not name any one of them.
@@ -461,10 +454,7 @@ export function rule6() {
         if (isComment(h.text)) continue;
         seen.add(h.hex);
         const entry = `${rel(file)}:${h.line} — hex literal ${h.hex}`;
-        const known = rel(file).endsWith("src/reporter/mermaid.ts")
-          ? "mermaid-palette-offbrand"
-          : null;
-        failures.push(known ? { known, text: entry } : entry);
+        failures.push(entry);
       }
     }
   }
@@ -542,10 +532,27 @@ export function rule8() {
         `text.onGold on brand.${gold} — ${ratio.toFixed(2)}:1 (AA needs 4.5)`,
       );
   }
+  // The diagram tints are the one place Mjölnir paints on a ground it
+  // does not own, so both their text and their boundary are checked: AA
+  // for the label, and the 3:1 non-text minimum for the stroke.
+  for (const [name, t] of Object.entries(T.tint)) {
+    const text = contrast(t.text, t.fill);
+    if (text < 4.5)
+      failures.push(
+        `tint.${name} text on fill — ${text.toFixed(2)}:1 (AA needs 4.5)`,
+      );
+    const stroke = contrast(t.stroke, t.fill);
+    if (stroke < 3)
+      failures.push(
+        `tint.${name} stroke on fill — ${stroke.toFixed(2)}:1 (non-text needs 3)`,
+      );
+  }
   return {
     n: 8,
     name: "Declared pairings meet WCAG AA",
-    detail: `${foregrounds.length} foregrounds × ${surfaces.length} surfaces, computed`,
+    detail:
+      `${foregrounds.length} foregrounds × ${surfaces.length} surfaces ` +
+      `+ ${Object.keys(T.tint).length} diagram tints, computed`,
     failures,
   };
 }
