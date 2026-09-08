@@ -54,7 +54,6 @@
     "self-scan": "node dist/cli.mjs .",
     "prepare": "husky",
     "prepublishOnly": "npm run build",
-    "docs:flow": "tsx scripts/generate-readme-flow.ts",
     "docs:architecture": "tsx scripts/generate-readme-architecture.ts"
   },
   "keywords": [

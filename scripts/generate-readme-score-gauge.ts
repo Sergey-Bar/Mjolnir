@@ -34,7 +34,9 @@ import {
   ansiLineToSpans,
   BG,
   CHAR_W,
+  FONT_FAMILY,
   FONT_SIZE,
+  fontFaceCss,
   LINE_HEIGHT,
   PAD_BOTTOM,
   PAD_TOP,
@@ -257,7 +259,10 @@ export function buildScoreGaugeSvg(): string {
   ].join("\n      ");
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', Menlo, monospace" font-size="${FONT_SIZE}">
+<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" font-family="${FONT_FAMILY}" font-size="${FONT_SIZE}">
+  <style>
+${fontFaceCss()}
+  </style>
   <defs>
     <style>
       .hb, .fr { opacity: 0; }

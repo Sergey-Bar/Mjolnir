@@ -1,9 +1,9 @@
 /**
  * README / docs architecture asset (assets/readme/architecture.svg).
  *
- * The "how it works" picture, 1600×900. Its sibling assets/readme/flow.svg
- * is the "see it work" one-run story; this one is the system: what
- * Mjölnir reads, what it does with it, and what can actually be trusted.
+ * The "how it works" picture, 1600×900: what Mjölnir reads, what it does
+ * with it, and what can actually be trusted. The README's "see it work"
+ * section carries the demo recording of one real run instead.
  *
  * HONESTY NOTES — claims a naive version of this diagram would make that
  * this repository does NOT support, checked against source before drawing:

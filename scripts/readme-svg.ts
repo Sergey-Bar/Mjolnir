@@ -1,29 +1,66 @@
 /**
  * Shared ANSI→SVG rendering primitives for the README asset generators
- * (generate-readme-hero.ts, generate-readme-demo.ts).
+ * (generate-readme-hero.ts, generate-readme-demo.ts,
+ * generate-readme-score-gauge.ts).
  *
- * Both assets are rendered from `renderTerminal`'s real ANSI output, so
+ * All three are rendered from `renderTerminal`'s real ANSI output, so
  * this module owns the single copy of: the terminal metrics, the
- * fallback palette mapping for theme.ts's bare SGR codes, the truecolor
- * ANSI parser, and the XML escaping. The palette values here mirror
- * src/reporter/theme.ts's Norse-forge hex colors — when the theme
- * changes, change them here once and regenerate BOTH assets
- * (`npm run docs:hero && npm run docs:demo`); the reproducibility specs
- * fail if either asset drifts from what the reporter actually prints.
+ * typeface, the fallback palette mapping for theme.ts's bare SGR codes,
+ * the truecolor ANSI parser, and the XML escaping. Change a color or the
+ * font here once and regenerate all three
+ * (`npm run docs:hero && npm run docs:demo && npm run docs:gauge`); the
+ * reproducibility specs fail if any asset drifts from what the reporter
+ * actually prints.
+ *
+ * TYPEFACE — the terminal assets embed Geist Mono, the same vendored file
+ * scripts/video/fonts.ts puts in the demo video, inlined as a base64
+ * `@font-face`. They previously named a generic `ui-monospace, …`
+ * stack, which meant the README rendered in whatever mono the reader
+ * happened to have — Consolas, DejaVu, Courier — so the assets looked
+ * different on every machine and nothing matched the video. CHAR_W is
+ * now Geist Mono's real advance (0.6em) rather than a stack average.
+ *
+ * PALETTE — the chrome values are scripts/video/terminal-page.ts's, so a
+ * still of the terminal and a frame of the video are the same terminal.
+ * The COLOURED text still comes from the reporter's own truecolor codes;
+ * only the background, the default foreground and the bare bold/dim
+ * fallbacks live here.
  *
  * The SVG scaffolds themselves (static hero vs animated demo window)
  * stay in their own generators — only their animation differs; every
- * color and metric they consume must come from this module.
+ * color, metric and font they consume must come from this module.
  */
 
-/** Terminal metrics (px). CHAR_W is the advance of the monospace stack at FONT_SIZE. */
+import { readFileSync } from "node:fs";
+
+import { FONTS, fontPath } from "./video/fonts.js";
+
+/** Terminal metrics (px). CHAR_W is Geist Mono's advance at FONT_SIZE. */
 export const FONT_SIZE = 13;
-export const CHAR_W = 7.82;
+export const ADVANCE = 0.6;
+export const CHAR_W = FONT_SIZE * ADVANCE;
 export const LINE_HEIGHT = 19;
 export const TITLE_BAR = 36;
 export const PAD_X = 22;
 export const PAD_TOP = TITLE_BAR + 18;
 export const PAD_BOTTOM = 18;
+
+/** The embedded family name, and the attribute every generator sets. */
+export const FONT_FAMILY = "MjolnirMono, monospace";
+
+/**
+ * `@font-face` for Geist Mono Regular, inlined as a data URI. Regular
+ * only: ansiLineToSpans renders SGR 1 as a brighter colour, never as a
+ * bold face, so a bold file would be ~190KB of base64 nothing uses.
+ */
+export function fontFaceCss(): string {
+  const mono = FONTS.find(
+    (f) => f.family === "MjolnirMono" && f.weight === 400,
+  );
+  if (!mono) throw new Error("Geist Mono Regular is no longer vendored");
+  const b64 = readFileSync(fontPath(mono)).toString("base64");
+  return `@font-face{font-family:"MjolnirMono";font-style:normal;src:url(data:font/ttf;base64,${b64}) format("truetype")}`;
+}
 
 /**
  * The reporter (src/reporter/theme.ts) emits its Norse-forge palette as
@@ -31,12 +68,12 @@ export const PAD_BOTTOM = 18;
  * plus the bare SGR codes 1 (bold) and 2 (dim), mapped here as fallbacks.
  */
 export const ANSI_COLOR: Record<string, string> = {
-  "1": "#ede6d6", // bold  — bone white
-  "2": "#7c8590", // dim   — weathered stone
+  "1": "#EDE6D6", // bold — terminal-page.ts .cmd
+  "2": "#8B939D", // dim  — terminal-page.ts STEEL_DIM
 };
-export const DEFAULT_FG = "#d7d3c8"; // parchment
-export const BG = "#14171c"; // cold iron
-export const TITLE_BAR_BG = "#20242b";
+export const DEFAULT_FG = "#D7D3C8"; // parchment
+export const BG = "#08090A"; // terminal-page.ts INK_950
+export const TITLE_BAR_BG = "#08090A"; // same tone: separated by shadow, not colour
 
 export interface Span {
   text: string;
