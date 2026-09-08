@@ -11,8 +11,8 @@ mjolnir brand doctor — failure-first self-test
            seeded scripts\readme-svg.ts → exit 1, named the finding
   Rule 4: PROVEN — a committed SVG carries a colour that is in no token
            seeded assets\readme\terminal-hero.svg → exit 1, named the finding
-  Rule 5: PROVEN — the brand document states a value the code does not ship
-           seeded assets\brand\README.md → exit 1, named the finding
+  Rule 5: PROVEN — a design document states a value the code does not hold
+           seeded docs\design\BRAND-SYSTEM.md → exit 1, named the finding
   Rule 6: PROVEN — an unapproved hex appears outside the token module
            seeded src\reporter\ui.ts → exit 1, named the finding
   Rule 7: PROVEN — a README badge uses a colour that is neither token nor known debt

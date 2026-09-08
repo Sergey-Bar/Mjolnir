@@ -105,14 +105,12 @@ const SEEDS = [
   },
   {
     rule: 5,
-    what: "the brand document states a value the code does not ship",
-    file: p("assets", "brand", "README.md"),
-    edit: (s) =>
-      s.replace(
-        "| `--mj-gold`          | `#C19A34`",
-        "| `--mj-gold`          | `#FF0000`",
-      ),
-    expect: "--mj-gold — the brand doc says #ff0000",
+    what: "a design document states a value the code does not hold",
+    file: p("docs", "design", "BRAND-SYSTEM.md"),
+    edit: (s) => `${s}
+<!-- seeded: #FF0000 -->
+`,
+    expect: "states #ff0000, which is in no token",
   },
   {
     rule: 6,

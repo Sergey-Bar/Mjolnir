@@ -12,6 +12,7 @@
  * Emits:
  *   assets/brand/tokens.json                    machine surface (any consumer)
  *   site/.vitepress/theme/styles/vars.css       the website's variables
+ *   docs/design/DESIGN-TOKENS.md                the human reference
  *
  * `assets/brand/README.md`'s palette table is verified against the
  * tokens rather than rewritten by this script — it is prose with a table
@@ -28,6 +29,8 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { format, resolveConfig } from "prettier";
+
+import { buildTokensDoc } from "./brand-doc.js";
 
 import {
   BADGE,
@@ -58,6 +61,7 @@ const VARS_CSS = join(
   "styles",
   "vars.css",
 );
+const TOKENS_DOC = join(ROOT, "docs", "design", "DESIGN-TOKENS.md");
 
 /** The header every generated file carries, so no one edits the output. */
 const BANNER = [
@@ -221,10 +225,16 @@ ${semantic}
 
 /* ── main ────────────────────────────────────────────────────── */
 
+/** The human reference, from the same source as the machine surfaces. */
+export async function buildTokensMarkdown(): Promise<string> {
+  return formatted(TOKENS_DOC, buildTokensDoc(BANNER));
+}
+
 export async function writeAll(): Promise<string[]> {
   writeFileSync(TOKENS_JSON, await buildTokensJson(), "utf8");
   writeFileSync(VARS_CSS, await buildVarsCss(), "utf8");
-  return [TOKENS_JSON, VARS_CSS];
+  writeFileSync(TOKENS_DOC, await buildTokensMarkdown(), "utf8");
+  return [TOKENS_JSON, VARS_CSS, TOKENS_DOC];
 }
 
 const isMain = process.argv[1]

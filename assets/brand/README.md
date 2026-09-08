@@ -1,8 +1,19 @@
-# Mjölnir — Brand System
+# Mjölnir — brand assets
 
-The single visual identity for Mjölnir. The **logo is the source of truth**;
-the website ([`site/`](../../site)) and the README render the same system —
-same mark, same palette, same type, same verdict colours.
+The provided masters and everything downscaled from them. This file is
+about the FILES; the system that uses them lives in
+[`docs/design/`](../../docs/design/BRAND-SYSTEM.md).
+
+| For                                            | Read                                                                         |
+| ---------------------------------------------- | ---------------------------------------------------------------------------- |
+| colour, typography, symbols, the rules         | [`BRAND-SYSTEM.md`](../../docs/design/BRAND-SYSTEM.md)                       |
+| every token value                              | [`DESIGN-TOKENS.md`](../../docs/design/DESIGN-TOKENS.md) — generated         |
+| what each surface consumes and who enforces it | [`BRAND-SURFACE-INVENTORY.md`](../../docs/design/BRAND-SURFACE-INVENTORY.md) |
+| motion                                         | [`MOTION-SYSTEM.md`](../../docs/design/MOTION-SYSTEM.md)                     |
+| voice                                          | [`VOICE-AND-TERMINOLOGY.md`](../../docs/design/VOICE-AND-TERMINOLOGY.md)     |
+
+The **logo is the source of truth** for the visual system, and the values
+derived from it are the token module, not this page.
 
 ## Assets
 
@@ -31,90 +42,20 @@ Use one mark, calmly. Do not add extra hammers, bolts, lightning or
 knotwork in product surfaces; the master mark's own engraving is
 grandfathered.
 
-## Colour system
+## Colour and type
 
-Derived from the logo: brushed steel, forge gold, aurora over midnight.
-Tokens live in [`site/.vitepress/theme/styles/vars.css`](../../site/.vitepress/theme/styles/vars.css).
+Not restated here. They are generated from
+[`src/brand/tokens.ts`](../../src/brand/tokens.ts) into
+[`DESIGN-TOKENS.md`](../../docs/design/DESIGN-TOKENS.md), and the rules
+that govern them are in
+[`BRAND-SYSTEM.md`](../../docs/design/BRAND-SYSTEM.md).
 
-| Token                | Light     | Dark | Role                                          |
-| -------------------- | --------- | ---- | --------------------------------------------- |
-| `--mj-ink-950`       | `#0A1119` | —    | deepest background (hero)                     |
-| `--mj-ink-900`       | `#0C1420` | —    | app / page background (dark)                  |
-| `--mj-ink-850`       | `#111A29` | —    | surface                                       |
-| `--mj-ink-800`       | `#18243A` | —    | raised surface                                |
-| `--mj-steel`         | `#C8CBCF` | —    | neutral bright — hammer head, headings on ink |
-| `--mj-steel-dim`     | `#8B939D` | —    | muted text on ink                             |
-| `--mj-gold`          | `#C19A34` | —    | **primary brand**                             |
-| `--mj-gold-bright`   | `#E6BD57` | —    | primary brand on dark — accents, focus        |
-| `--mj-gold-hot`      | `#F4DC9C` | —    | highlight, hover                              |
-| `--mj-aurora`        | `#37ABBD` | —    | secondary — verification energy               |
-| `--mj-aurora-bright` | `#45C1D4` | —    | secondary on dark                             |
-| `--mj-aurora-cyan`   | `#5CBDE0` | —    | informational state                           |
-
-### Semantic — status & verdict
-
-Score colors follow the ScoreState model (`src/reporter/score-state.ts`) —
-one mapping, every surface. Bands: critical 0–49, warning 50–79,
-trusted 80–99, forged 100.
-
-There is one column, not two. The site is dark-only (`config.mts`
-`appearance: "force-dark"`), the terminal is dark, and the README assets
-are dark — so a light ramp would be a documented palette nothing ships.
-This table previously carried one, and its dark column had drifted too:
-it named `#E5544E` for `UNWORTHY` and `#5CC4E8` for informational where
-the code shipped `#EC6B66` and `#5CC4E0`. `brand-doctor` rule 5 now
-parses these rows, which is why it can no longer happen quietly.
-
-| Verdict                | Token                             | Shipped                      |
-| ---------------------- | --------------------------------- | ---------------------------- |
-| `UNWORTHY` / critical  | `--mj-unworthy` / `--mj-critical` | `#EC6B66`                    |
-| `NEEDS WORK` / warning | `--mj-needswork` / `--mj-warning` | `#E6BD57`                    |
-| `WORTHY` / trusted     | `--mj-trusted`                    | `#5CC4E0`                    |
-| `FORGED` (score 100)   | `--mj-forged`                     | gradient `#F4DC9C → #E6BD57` |
-| informational          | `--mj-info`                       | `#5CC4E0`                    |
-| unmeasured / `UNKNOWN` | `--mj-steel-dim`                  | `#8B939D`                    |
-
-`UNKNOWN` is deliberately neutral, never red. It is a legitimate answer —
-"this was not measured" is not "this is broken" — and colouring it as a
-failure would be the same dishonesty as a CI gate reporting green
-without having run.
-
-The terminal does not mirror these values — it **is** them. Every colour
-`src/reporter/theme.ts` emits resolves through `src/brand/tokens.ts`, and
-`brand-doctor` rule 2 fails if that file names a hex of its own. It used
-to have six colours no other surface had: a frost-steel blue for
-headers, a teal for info, an amber for warnings, a rune-red for errors, a
-bone white for bold and a weathered stone for dim. The rune-red also
-failed WCAG AA at 4.36:1 on the terminal's own background; the canonical
-`status.error` reaches 6.20:1 on the canonical ground.
-
-**Green is no longer a score color.** `WORTHY` scores render in
-aurora-cyan (trusted); Yggdrasil green (`ok`) survives only for non-score
-success contexts (e.g. "autofix applied", "analysis complete"). The same
-verdict colours drive the website gauge, the README badges and the
-rule-catalog severity chips. The shields.io badge maps the bands to the
-closest named colors (`red` / `yellow` / `important` / `success`) — the
-badge is peripheral, ScoreState remains the truth.
-
-## Typography
-
-| Face                         | Use                              | Fallback                     |
-| ---------------------------- | -------------------------------- | ---------------------------- |
-| **Cinzel** (600/700)         | display headings, runic accents  | `Trajan Pro, Georgia, serif` |
-| **Inter** (400–700)          | body, UI                         | `system-ui, sans-serif`      |
-| **JetBrains Mono** (400/500) | code, commands, rule IDs, scores | `ui-monospace, monospace`    |
-
-Display type is title-case or all-caps with `letter-spacing: 0.04–0.32em`;
-body stays at `line-height: 1.7`. Never set body copy in the display face.
-
-**Score typography rules:**
-
-- Scores are **always JetBrains Mono** — the digits never appear in the
-  display face.
-- Verdict labels (`UNWORTHY / NEEDS WORK / WORTHY / FORGED`) are
-  display-face caps with `letter-spacing ≥ 0.18em`, colored by band.
-- Restraint: the score digits carry no color; color lands on the verdict
-  word and the instrument (gauge/hammer) only.
+This page used to hold both. Every one of its twelve palette rows had
+drifted from what the code shipped — the gold by dE 8.2, well past what
+a designer would notice — and its verdict table documented a light ramp
+for a product that is dark-only everywhere. A hand-written table of
+values is a promise nobody keeps; `brand-doctor` rule 5 now fails on any
+value stated in a design document that the source does not hold.
 
 ## Usage rules
 

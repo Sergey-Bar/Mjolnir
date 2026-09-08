@@ -25,6 +25,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildTokensJson,
+  buildTokensMarkdown,
   buildVarsCss,
 } from "../../scripts/generate-brand-tokens.js";
 import {
@@ -48,6 +49,7 @@ const VARS_CSS = join(
   "styles",
   "vars.css",
 );
+const TOKENS_DOC = join(ROOT, "docs", "design", "DESIGN-TOKENS.md");
 
 /** WCAG 2.1 relative luminance. */
 function luminance(hex: string): number {
@@ -85,9 +87,22 @@ describe("brand token surfaces", () => {
     ).toBe(readFileSync(VARS_CSS, "utf8"));
   });
 
+  it("the design-token reference is byte-identical to a freshly built one", async () => {
+    // Generated for the same reason vars.css is: a document that states
+    // values by hand eventually states values the code does not hold.
+    // That already happened here — the brand document's palette table had
+    // drifted on all twelve of its rows.
+    expect(
+      await buildTokensMarkdown(),
+      "docs/design/DESIGN-TOKENS.md no longer matches src/brand/tokens.ts — " +
+        "regenerate with `npm run brand:tokens` and commit the result.",
+    ).toBe(readFileSync(TOKENS_DOC, "utf8"));
+  });
+
   it("the generator is deterministic — same tokens in, same bytes out", async () => {
     expect(await buildTokensJson()).toBe(await buildTokensJson());
     expect(await buildVarsCss()).toBe(await buildVarsCss());
+    expect(await buildTokensMarkdown()).toBe(await buildTokensMarkdown());
   });
 });
 

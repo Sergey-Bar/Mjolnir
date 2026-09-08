@@ -370,55 +370,85 @@ export function rule4() {
 
 /* ══ Rule 5 — the brand document matches the tokens ═════════════ */
 
-/** `| \`--mj-gold\` | \`#C19A34\` | …` → ["--mj-gold", "#c19a34"] */
-export function parseBrandTable(md) {
-  const out = [];
-  for (const m of md.matchAll(
-    /^\|\s*`(--mj-[a-z0-9-]+)`\s*\|\s*`(#[0-9a-fA-F]{6})`/gm,
-  ))
-    out.push([m[1], m[2].toLowerCase()]);
-  return out;
-}
+/**
+ * Every colour value stated in a hand-written design document must be a
+ * value the source actually holds.
+ *
+ * This replaces a narrower check that compared two tables in
+ * `assets/brand/README.md` against `vars.css`. That check was worth
+ * having — all twelve of its palette rows had drifted, the gold by
+ * dE 8.2 — but it could only see the rows it knew the shape of, so the
+ * verdict table beside them documented a light ramp for a dark-only
+ * product and two stale dark values, unnoticed.
+ *
+ * The tables are gone now: colour and type live in one generated
+ * reference. What is left is prose, and prose still quotes values. So
+ * the rule is the general one — any hex in a design document is either a
+ * token or it is a claim the code does not support.
+ */
+const DESIGN_DOCS = () =>
+  [BRAND_README, ...walk(join(ROOT, "docs", "design"), [".md"])].filter(
+    // docs/design/baseline is the recorded BEFORE state. Quoting the
+    // retired values is the entire point of it — a historical record
+    // that had to be edited every time the palette moved would stop
+    // being a record.
+    (f) => !rel(f).startsWith("docs/design/baseline/"),
+  );
 
-/** Verdict rows: `| \`WORTHY\` | \`--mj-trusted\` | \`#2596A8\` | …` —
- * the table Check 8 never parsed, and which drifted unnoticed. */
-export function parseVerdictTable(md) {
-  const out = [];
-  for (const m of md.matchAll(
-    /^\|[^|\n]*\|\s*`(--mj-[a-z0-9-]+)`[^|\n]*\|[^|\n]*`(#[0-9a-fA-F]{6})`/gm,
-  ))
-    out.push([m[1], m[2].toLowerCase()]);
-  return out;
-}
+/** Colours a document may cite that are deliberately not ours. */
+const CITED_NON_BRAND = new Map([
+  [
+    "#0d121a",
+    "the demo video's poster corner, sampled once by hand — the canonical terminal ground as it survives yuv420p at CRF 32, quoted as evidence that the render converged",
+  ],
+  [
+    "#0d1117",
+    "GitHub's dark background — cited because mermaid output has to stay legible on it, and it is not ours to change",
+  ],
+]);
 
 export function rule5() {
-  if (!existsSync(BRAND_README))
+  const docs = DESIGN_DOCS().filter((f) => existsSync(f));
+  if (docs.length === 0)
     return {
       n: 5,
-      name: "Brand document matches the tokens",
-      detail: rel(BRAND_README),
-      gap: "assets/brand/README.md not found",
+      name: "Design docs state only real values",
+      detail: "docs/design",
+      gap: "no design documents found",
     };
-  const md = readFileSync(BRAND_README, "utf8");
-  const shipped = parseCssTokens(readFileSync(VARS_CSS, "utf8"));
-  const failures = [];
-  const rows = [...parseBrandTable(md), ...parseVerdictTable(md)];
 
-  for (const [name, documented] of rows) {
-    const actual = shipped[name];
-    if (!actual)
+  const known = new Set(
+    [
+      ...Object.values(T.brand),
+      ...Object.values(T.surface),
+      ...Object.values(T.text),
+      ...Object.values(T.status),
+      ...Object.values(T.score),
+      ...Object.values(T.evidence),
+      ...Object.values(T.trust),
+      ...Object.values(T.tint).flatMap((t) => Object.values(t)),
+      ...Object.values(T.pending).flatMap((g) => Object.values(g).flat()),
+      ...Object.values(T.badge).map((v) => `#${v}`),
+    ]
+      .filter((v) => typeof v === "string" && v.startsWith("#"))
+      .map((v) => v.toLowerCase()),
+  );
+
+  const failures = [];
+  let stated = 0;
+  for (const doc of docs) {
+    for (const h of hexLiterals(readFileSync(doc, "utf8"))) {
+      stated++;
+      if (known.has(h.hex) || CITED_NON_BRAND.has(h.hex)) continue;
       failures.push(
-        `${name} — documented as ${documented}, not defined in vars.css`,
+        `${rel(doc)}:${h.line} — states ${h.hex}, which is in no token`,
       );
-    else if (actual.startsWith("#") && actual !== documented)
-      failures.push(
-        `${name} — the brand doc says ${documented}, vars.css ships ${actual}`,
-      );
+    }
   }
   return {
     n: 5,
-    name: "Brand document matches the tokens",
-    detail: `${rows.length} token rows in assets/brand/README.md`,
+    name: "Design docs state only real values",
+    detail: `${stated} colour values across ${docs.length} documents`,
     failures,
   };
 }
