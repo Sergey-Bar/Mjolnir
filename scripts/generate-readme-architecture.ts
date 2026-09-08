@@ -40,11 +40,26 @@
  * recur.
  *
  * Regenerate with `npm run docs:architecture`.
+ *
+ * PALETTE — every colour resolves through src/brand/tokens.ts, the
+ * single source of brand truth; this file names no hex of its own. The
+ * PENDING_ARCHITECTURE entries are the neutral ramp this diagram had
+ * invented for itself, quoted there alongside the SURFACE step each one
+ * converges to. Explanations stay in this file and never reach the
+ * emitted SVG: a byte in the output is a byte the reproducibility spec
+ * carries forever.
  */
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+
+import {
+  BRAND,
+  PENDING_ARCHITECTURE,
+  PENDING_TERMINAL,
+  STATUS,
+} from "../src/brand/tokens.js";
 
 import { FONTS, fontPath } from "./video/fonts.js";
 
@@ -798,11 +813,11 @@ export function buildArchitectureSvg(): string {
   <style>
 ${fontFaceCss()}
     :root{
-      --bg:#08090A; --surface:#0E1013; --engine:#0C0E12; --chip:#15181D;
-      --edge:#1C2026; --edge-lit:#39414B;
-      --text:#EDE6D6; --muted:#8B939D; --quiet:#5A6169;
-      --accent:#C19A34; --accent-dim:#4A3D1B;
-      --success:#4FB477; --warning:#C19A34;
+      --bg:${PENDING_TERMINAL.background}; --surface:${PENDING_ARCHITECTURE.band}; --engine:${PENDING_ARCHITECTURE.page}; --chip:${PENDING_ARCHITECTURE.card};
+      --edge:${PENDING_ARCHITECTURE.cardStroke}; --edge-lit:${PENDING_ARCHITECTURE.hairline};
+      --text:${PENDING_TERMINAL.bold}; --muted:${BRAND.steelDim}; --quiet:${PENDING_ARCHITECTURE.quietLabel};
+      --accent:${BRAND.gold}; --accent-dim:${PENDING_ARCHITECTURE.goldShadow};
+      --success:${STATUS.ok}; --warning:${BRAND.gold};
     }
   </style>
   <rect x="0" y="0" width="${W}" height="${H}" fill="var(--bg)"/>

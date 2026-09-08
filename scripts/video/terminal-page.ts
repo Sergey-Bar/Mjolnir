@@ -17,6 +17,8 @@
 
 import { ansiLineToSpans, DEFAULT_FG, stripAnsi } from "../readme-svg.js";
 import { fontFaceCss, FONT_STACK } from "./fonts.js";
+import { BRAND, PENDING_TERMINAL, STATUS } from "../../src/brand/tokens.js";
+
 import { pacingFor } from "./pacing.js";
 import type { VideoScript } from "./script-types.js";
 
@@ -46,12 +48,13 @@ import type { VideoScript } from "./script-types.js";
  * Repainting them to match a syntax theme they have no correspondence to
  * would be inventing color, not reusing it.
  */
-const INK_950 = "#08090A"; // page behind the window — react.doctor's exact value
-const INK_900 = "#08090A"; // terminal body — same tone, no separate fill
-const CHROME = "#08090A"; // title bar — separated by shadow only, not color
-const STEEL_DIM = "#8B939D";
-const GOLD = "#C19A34";
-const AURORA = "#37ABBD";
+const INK_950 = PENDING_TERMINAL.background; // page behind the window
+const INK_900 = PENDING_TERMINAL.background; // terminal body — same tone
+const CHROME = PENDING_TERMINAL.background; // title bar — seam is shadow
+const CHROME_DOT = PENDING_TERMINAL.videoChromeDot; // → SURFACE.chromeDot
+const STEEL_DIM = BRAND.steelDim;
+const GOLD = BRAND.gold;
+const AURORA = BRAND.aurora;
 
 /** One rendered step of the timeline: what is on screen at frame n. */
 export interface Frame {
@@ -309,7 +312,7 @@ html,body{width:${vw}px;height:${vh}px;overflow:hidden;background:${INK_950}}
 #bar{height:${barHeight}px;flex:0 0 ${barHeight}px;background:${CHROME};
   display:flex;align-items:center;padding:0 20px;gap:9px;
   box-shadow:inset 0 -1px 0 #FFFFFF0D}
-.dot{width:12px;height:12px;border-radius:50%;background:#323232}
+.dot{width:12px;height:12px;border-radius:50%;background:${CHROME_DOT}}
 #title{flex:1;text-align:center;color:${STEEL_DIM};
   font:13px ${FONT_STACK};letter-spacing:.06em}
 #screen{flex:1;overflow:hidden;padding:${pad}px;display:flex;
@@ -338,12 +341,12 @@ html,body{width:${vw}px;height:${vh}px;overflow:hidden;background:${INK_950}}
    lineHtml. */
 #lines .rune{-webkit-text-stroke:${(1.1 / dpr).toFixed(3)}px currentColor}
 .caret{color:${GOLD}}
-.prompt{color:#4FB477}
+.prompt{color:${STATUS.ok}}
 /* The command is what the viewer is meant to copy — the brightest text in
    the frame, in the reporter's own bone white. */
-.cmd{color:#EDE6D6;font-weight:700}
-.add{color:#4FB477}
-.remove{color:#E5544E}
+.cmd{color:${PENDING_TERMINAL.bold};font-weight:700}
+.add{color:${STATUS.ok}}
+.remove{color:${PENDING_TERMINAL.videoRemove}}
 .header{color:${STEEL_DIM}}
 </style>
 <div id="page">

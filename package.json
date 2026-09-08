@@ -36,6 +36,7 @@
     "corpus:sample": "tsx scripts/corpus-sample.ts",
     "fp-audit:generate": "tsx scripts/generate-fp-audit-table.ts",
     "docs:rules": "tsx scripts/generate-rule-docs.ts",
+    "docs:counts": "tsx scripts/generate-counts.ts",
     "docs:capability": "tsx scripts/generate-capability-matrix.ts",
     "docs:machine-contract": "tsx scripts/generate-machine-contract-doc.ts",
     "docs:hero": "tsx scripts/generate-readme-hero.ts",
@@ -54,7 +55,8 @@
     "self-scan": "node dist/cli.mjs .",
     "prepare": "husky",
     "prepublishOnly": "npm run build",
-    "docs:architecture": "tsx scripts/generate-readme-architecture.ts"
+    "docs:architecture": "tsx scripts/generate-readme-architecture.ts",
+    "brand:tokens": "tsx scripts/generate-brand-tokens.ts"
   },
   "keywords": [
     "qa",

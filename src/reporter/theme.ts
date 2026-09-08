@@ -3,11 +3,11 @@
  * Respects NO_COLOR and non-TTY via `palette(isTTY)` — every renderer
  * receives a palette and never touches process.env directly.
  *
- * Palette: a cold northern set — frost-steel, aurora teal, Yggdrasil
- * green — with amber for warnings (Mjölnir's lightning) and a
- * rune-red for errors. No magenta/pink. Emitted as 24-bit truecolor
- * SGR (`38;2;r;g;b`), which every modern terminal renders and which
- * `shouldColorize` already gates behind TTY + !NO_COLOR.
+ * Palette: resolved from `src/brand/tokens.ts`, the single source of
+ * brand truth — this file defines no colour of its own. Emitted as
+ * 24-bit truecolor SGR (`38;2;r;g;b`), which every modern terminal
+ * renders and which `shouldColorize` already gates behind
+ * TTY + !NO_COLOR.
  *
  * Symbols always accompany color (color-blind safe, R11).
  *
@@ -21,7 +21,19 @@
  * consoles that mangle box-drawing glyphs and emoji.
  */
 
+import { PENDING_TERMINAL, SCORE, STATUS } from "../brand/tokens.js";
+
 import { deriveScoreState, type ScoreBand } from "./score-state.js";
+
+/**
+ * `"#RRGGBB"` → the `[r, g, b]` triplet the SGR truecolor emitter needs.
+ * Lives here rather than in `src/brand/tokens.ts`, which is pure data:
+ * each surface converts the canonical hex into its own colour space.
+ */
+function fromHex(hex: string): readonly [number, number, number] {
+  const n = Number.parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 0xff, (n >> 8) & 0xff, n & 0xff] as const;
+}
 
 export interface Palette {
   /** Yggdrasil green — healthy / passing (non-score success contexts, e.g. "autofix applied"). */
@@ -42,17 +54,27 @@ export interface Palette {
   dim: (s: string) => string;
 }
 
-/** Norse-forge palette, 24-bit truecolor. */
+/**
+ * The terminal palette, 24-bit truecolor, resolved from
+ * `src/brand/tokens.ts` — the single source of brand truth. Nothing in
+ * this file may name a hex value of its own.
+ *
+ * `ok`, `trusted` and `forged` already agree with the canonical tokens.
+ * The other six still read from `PENDING_TERMINAL`, which quotes the
+ * values the terminal shipped before the brand-unification work and
+ * documents what each one converges to; that block (and these six
+ * references) go away in the palette-convergence phase.
+ */
 export const NORSE = {
-  ok: [0x4f, 0xb4, 0x77], // Yggdrasil green
-  info: [0x3f, 0xb0, 0xa0], // aurora teal
-  accent: [0x8a, 0xb4, 0xd8], // frost-steel blue
-  warning: [0xe0, 0xa5, 0x26], // amber / lightning
-  error: [0xd0, 0x45, 0x3b], // rune-red
-  trusted: [0x5c, 0xc4, 0xe0], // aurora-cyan — trusted score band
-  forged: [0xf4, 0xdc, 0x9c], // forged white-gold — score 100
-  bold: [0xed, 0xe6, 0xd6], // bone white
-  dim: [0x7c, 0x85, 0x90], // weathered stone
+  ok: fromHex(STATUS.ok), // Yggdrasil green — non-score success only
+  info: fromHex(PENDING_TERMINAL.info), // → BRAND.aurora
+  accent: fromHex(PENDING_TERMINAL.accent), // → BRAND.steel
+  warning: fromHex(PENDING_TERMINAL.warning), // → STATUS.warning
+  error: fromHex(PENDING_TERMINAL.error), // → STATUS.error
+  trusted: fromHex(SCORE.trusted), // aurora-cyan — trusted score band
+  forged: fromHex(SCORE.forged), // forged white-gold — score 100
+  bold: fromHex(PENDING_TERMINAL.bold), // → TEXT.primary
+  dim: fromHex(PENDING_TERMINAL.dim), // → TEXT.muted
 } as const;
 
 const on = {

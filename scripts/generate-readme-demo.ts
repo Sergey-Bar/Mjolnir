@@ -27,6 +27,7 @@ import {
   ansiLineToSpans,
   BG,
   CHAR_W,
+  CHROME_DOTS,
   FONT_FAMILY,
   FONT_SIZE,
   fontFaceCss,
@@ -97,9 +98,9 @@ ${fontFaceCss()}
   <g clip-path="url(#winClip)">
     <rect x="0" y="0" width="${width}" height="${height}" fill="${BG}"/>
     <rect x="0" y="0" width="${width}" height="${TITLE_BAR}" fill="${TITLE_BAR_BG}"/>
-    <circle cx="20" cy="${TITLE_BAR / 2}" r="6" fill="#ff5f56"/>
-    <circle cx="40" cy="${TITLE_BAR / 2}" r="6" fill="#ffbd2e"/>
-    <circle cx="60" cy="${TITLE_BAR / 2}" r="6" fill="#27c93f"/>
+    <circle cx="20" cy="${TITLE_BAR / 2}" r="6" fill="${CHROME_DOTS[0]}"/>
+    <circle cx="40" cy="${TITLE_BAR / 2}" r="6" fill="${CHROME_DOTS[1]}"/>
+    <circle cx="60" cy="${TITLE_BAR / 2}" r="6" fill="${CHROME_DOTS[2]}"/>
 
 ${textLines}
   </g>

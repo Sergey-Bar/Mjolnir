@@ -20,11 +20,13 @@
  * different on every machine and nothing matched the video. CHAR_W is
  * now Geist Mono's real advance (0.6em) rather than a stack average.
  *
- * PALETTE — the chrome values are scripts/video/terminal-page.ts's, so a
- * still of the terminal and a frame of the video are the same terminal.
- * The COLOURED text still comes from the reporter's own truecolor codes;
- * only the background, the default foreground and the bare bold/dim
- * fallbacks live here.
+ * PALETTE — every value resolves through src/brand/tokens.ts, the single
+ * source of brand truth; this module names no hex of its own. The
+ * chrome matches scripts/video/terminal-page.ts, so a still of the
+ * terminal and a frame of the video are the same terminal. The COLOURED
+ * text still comes from the reporter's own truecolor codes; only the
+ * background, the default foreground, the window dots and the bare
+ * bold/dim fallbacks live here.
  *
  * The SVG scaffolds themselves (static hero vs animated demo window)
  * stay in their own generators — only their animation differs; every
@@ -32,6 +34,8 @@
  */
 
 import { readFileSync } from "node:fs";
+
+import { PENDING_TERMINAL, TEXT } from "../src/brand/tokens.js";
 
 import { FONTS, fontPath } from "./video/fonts.js";
 
@@ -68,12 +72,17 @@ export function fontFaceCss(): string {
  * plus the bare SGR codes 1 (bold) and 2 (dim), mapped here as fallbacks.
  */
 export const ANSI_COLOR: Record<string, string> = {
-  "1": "#EDE6D6", // bold — terminal-page.ts .cmd
-  "2": "#8B939D", // dim  — terminal-page.ts STEEL_DIM
+  "1": PENDING_TERMINAL.bold, // bold  → TEXT.primary
+  "2": TEXT.muted, // dim
 };
-export const DEFAULT_FG = "#D7D3C8"; // parchment
-export const BG = "#08090A"; // terminal-page.ts INK_950
-export const TITLE_BAR_BG = "#08090A"; // same tone: separated by shadow, not colour
+/* The token module is `as const`, so these need widening to `string`:
+   the ANSI parser assigns a computed `rgb(r,g,b)` into the same slot. */
+export const DEFAULT_FG: string = PENDING_TERMINAL.foreground; // → TEXT.secondary
+export const BG: string = PENDING_TERMINAL.background; // → SURFACE.terminal
+/** Same tone as BG: the window's seam is shadow, never a second fill. */
+export const TITLE_BAR_BG: string = PENDING_TERMINAL.background;
+/** The three window dots. Still macOS traffic lights; → SURFACE.chromeDot. */
+export const CHROME_DOTS: readonly string[] = PENDING_TERMINAL.chromeDots;
 
 export interface Span {
   text: string;
