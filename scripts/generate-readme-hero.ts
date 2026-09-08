@@ -72,7 +72,6 @@ function renderSvg(lines: string[]): string {
     <circle cx="20" cy="${TITLE_BAR / 2}" r="6" fill="#ff5f56"/>
     <circle cx="40" cy="${TITLE_BAR / 2}" r="6" fill="#ffbd2e"/>
     <circle cx="60" cy="${TITLE_BAR / 2}" r="6" fill="#27c93f"/>
-    <text x="${width / 2}" y="${TITLE_BAR / 2 + 4}" fill="#a0a0a0" font-size="12" text-anchor="middle">demo-repo &#8212; mjolnir</text>
 
 ${textLines}
   </g>

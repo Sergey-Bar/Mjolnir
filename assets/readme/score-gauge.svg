@@ -30,7 +30,6 @@
     <circle cx="20" cy="18" r="6" fill="#ff5f56"/>
     <circle cx="40" cy="18" r="6" fill="#ffbd2e"/>
     <circle cx="60" cy="18" r="6" fill="#27c93f"/>
-    <text x="139.5" y="22" fill="#a0a0a0" font-size="12" text-anchor="middle">mjolnir &#8212; score model</text>
 
     <g class="hb hb-critical">
       <text x="22" y="92.0" xml:space="preserve"><tspan fill="rgb(208,69,59)">   ▄▄▄▄▄▄▄▄▄▄▄</tspan></text>
