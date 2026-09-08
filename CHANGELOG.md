@@ -9,6 +9,12 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [0.5.25] — 2026-09-08
+
+### Changes since 0.5.24
+
+- docs: CERTIFICATION-POLICY.md — consolidated owner-ratified lawbook (1-22 + L1-L6), contradiction pass, verdict semantics; eslint/prettier ignore machine-local .mjolnir scratch (#59)
+
 ## [0.5.24] — 2026-09-08
 
 ### Changes since 0.5.23
