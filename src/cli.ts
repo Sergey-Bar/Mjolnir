@@ -54,7 +54,12 @@ import { runInstallCommand } from "./commands/install-agents.js";
 import { runStdioTransport } from "./mcp/transport.js";
 import { ciInstall, type GateLevel } from "./integrations/ci-install.js";
 import { runForensics } from "./forensics/run.js";
-import { renderTriage, renderTriageMd } from "./forensics/triage.js";
+import {
+  renderTriage,
+  renderTriageMd,
+  renderTriageWorkflow,
+  renderTriageWorkflowJson,
+} from "./forensics/triage.js";
 import { renderBadgeSnippet, writeBadge } from "./commands/badge.js";
 import { runTrustReportCommand } from "./commands/trust-report.js";
 import {
@@ -872,17 +877,28 @@ export function runTriageCommand(
 ): number {
   const targetArg = argv.find((a) => !a.startsWith("-"));
   if (!targetArg) {
-    io.err("Usage: mjolnir triage <test-results-dir-or-report-file> [--no-md]");
+    io.err(
+      "Usage: mjolnir triage <test-results-dir-or-report-file> [--no-md] [--json] [--classic]",
+    );
     return 10;
   }
+  // WI-8 (plan §9): the guided workflow is the default triage surface;
+  // --classic keeps the legacy table. --json emits the structured twin.
+  const jsonMode = argv.includes("--json");
+  const classic = argv.includes("--classic");
   try {
     const { report } = runForensics(resolve(targetArg), {
       writeFlakyMd: false,
     });
-    io.out(renderTriage(report));
-    // Only write TRIAGE.md when there's something to triage AND the
+    if (jsonMode) {
+      io.out(renderTriageWorkflowJson(report));
+    } else if (classic) {
+      io.out(renderTriage(report));
+    } else {
+      io.out(renderTriageWorkflow(report));
+    } // Only write TRIAGE.md when there's something to triage AND the
     // target dir exists — a missing dir must degrade honestly, not crash.
-    if (!argv.includes("--no-md") && report.totalTests > 0) {
+    if (!argv.includes("--no-md") && !jsonMode && report.totalTests > 0) {
       // Bug-audit M1: the documented `mjolnir triage <report-file>` joined
       // the FILE path with "TRIAGE.md" → `<file>/TRIAGE.md` is not a
       // directory → writeFileSync threw → "internal error" exit 20 after
