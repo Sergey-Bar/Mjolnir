@@ -140,6 +140,21 @@ async function scanAndSample(): Promise<Map<string, SampledFinding[]>> {
       strict: true,
     });
 
+    // D14/§19 discipline (same refusal as tests/corpus/audit.ts): a
+    // deadline-truncated scan is NOT evidence — sampling from it would
+    // record machine-speed-contaminated counts as review material. Fail
+    // the run loudly; re-run on a quiet machine, never classify from a
+    // partial scan.
+    if (result.partial) {
+      console.error(
+        `  FAIL: scan of ${repo.name} was PARTIAL (deadline/budget ` +
+          `truncation) — findings from a partial scan are not evidence. ` +
+          `Re-run on a quiet machine; do NOT classify from a partial scan.`,
+      );
+      process.exitCode = 1;
+      continue;
+    }
+
     for (const finding of result.findings) {
       if (UNMEASURED_ONLY && !ruleIsUnmeasured(finding.ruleId)) continue;
       const samples = byRule.get(finding.ruleId) ?? [];
