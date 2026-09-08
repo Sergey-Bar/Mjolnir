@@ -9,6 +9,13 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [0.5.31] — 2026-09-08
+
+### Changes since 0.5.30
+
+- chore: resync managed surface stamp to v0.5.30 (docs narrative landed on the release state)
+- docs: README narrative refresh + reproducible flow/architecture assets with contract locks (docs:flow, docs:architecture)
+
 ## [0.5.30] — 2026-09-08
 
 ### Changes since 0.5.29
