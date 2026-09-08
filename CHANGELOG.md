@@ -9,6 +9,12 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [0.5.33] — 2026-09-08
+
+### Changes since 0.5.32
+
+- P1: distribution — root action, moving v1 tag, action-based ci install (#63)
+
 ## [0.5.32] — 2026-09-08
 
 ### Changes since 0.5.31
