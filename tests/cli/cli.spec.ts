@@ -105,9 +105,32 @@ describe("runCiInstall", () => {
     const code = runCiInstall([], cap.io);
     expect(code).toBe(0);
     expect(cap.text()).toContain("Created");
+    expect(cap.text()).toContain("Action-based template");
+    expect(
+      readFileSync(join(dir, ".github", "workflows", "mjolnir.yml"), "utf8"),
+    ).toContain("Sergey-Bar/Mjolnir@v1");
     expect(existsSync(join(dir, ".github", "workflows", "mjolnir.yml"))).toBe(
       true,
     );
+  });
+
+  it("--no-action keeps the plain-npx template and says so", () => {
+    process.chdir(dir);
+    const cap = capture();
+    expect(runCiInstall(["--no-action"], cap.io)).toBe(0);
+    expect(cap.text()).toContain("Plain-npx template");
+    expect(
+      readFileSync(join(dir, ".github", "workflows", "mjolnir.yml"), "utf8"),
+    ).not.toContain("Sergey-Bar/Mjolnir@v1");
+  });
+
+  it("--no-action --gate error writes the enforcing npx template", () => {
+    process.chdir(dir);
+    const cap = capture();
+    expect(runCiInstall(["--no-action", "--gate", "error"], cap.io)).toBe(0);
+    expect(
+      readFileSync(join(dir, ".github", "workflows", "mjolnir.yml"), "utf8"),
+    ).toContain("Gate (error)");
   });
 
   it("reports update on second run", () => {
