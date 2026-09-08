@@ -303,7 +303,7 @@ zob. [docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Pozostałe 21 wychodzi na
 oszacowaniu autora. Stopka każdego skanu mówi, ile z _odpalonych_
 reguł jest zmierzonych; `mjolnir rules --unmeasured` wypisuje
 niezmierzone; strona `mjolnir explain` każdej reguły deklaruje jej
-status. Publikujemy stopę, nawet gdy jest brzydka — QA-CS-103 audytuje
+status. Publikujemy stopę, nawet gdy jest brzydka — QA-PW-107 audytuje
 się na 95 % i za to trafia do kwarantanny. Powiększanie tej liczby to
 stale trwająca praca projektu.
 

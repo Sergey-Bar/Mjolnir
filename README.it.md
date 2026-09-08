@@ -304,7 +304,7 @@ codice OSS** (≥ 10 riscontri classificati a mano ciascuna; vedi
 dell'autore. Ogni footer di scansione dice quante delle regole
 _scattate_ sono misurate; `mjolnir rules --unmeasured` elenca quelle
 che non lo sono; la pagina `mjolnir explain` di ogni regola dichiara il
-suo stato. Pubblichiamo il tasso anche quando è brutto — QA-CS-103 si
+suo stato. Pubblichiamo il tasso anche quando è brutto — QA-PW-107 si
 audita al 95 % ed è in quarantena per questo. Far crescere quel numero è il
 lavoro continuo del progetto.
 

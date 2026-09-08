@@ -297,7 +297,7 @@ OSS kodom** (≥ 10 ručno klasificiranih nalaza svako; vidi
 procjeni. Podnožje svakog skana kaže koliko od _okinutih_ pravila je
 izmjereno; `mjolnir rules --unmeasured` izlista neizmjerena; stranica
 `mjolnir explain` svakog pravila navodi njen status. Objavljujemo stopu
-čak i kad je ružna — QA-CS-103 se audita na 95 % i u karanteni je radi
+čak i kad je ružna — QA-PW-107 se audita na 95 % i u karanteni je radi
 toga. Rast tog broja je neprekidni rad projekta.
 
 ### Tierovi pravila i jezična zrelost

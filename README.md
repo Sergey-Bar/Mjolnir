@@ -216,8 +216,9 @@ Requires Node.js ≥ 22.18. Works on Windows, macOS, and Linux.
 - **QA / SDET** owning an e2e or integration suite who need evidence the
   suite actually deserves the green checkmark it produces.
 - **Platform / DevEx** teams responsible for CI integrity and release
-  gates — the people who care that a `continue-on-error` never silently
-  turns a red pipeline green.
+  gates — the people who care that a swallowed exit code (`\|\| true`,
+  caught by default) or a `continue-on-error` gate (caught under
+  `--strict`) never silently turns a red pipeline green.
 - **OSS maintainers** who want a cheap, always-on verification gate that
   runs locally and in CI with zero network calls.
 
@@ -246,8 +247,8 @@ frameworks.
 **Use AI review too.** It catches nuance, intent, and design flaws no regex
 can find. Mjölnir catches the structural patterns AI overlooks because they
 look "intentional" — a committed `.only`, a swallowed exit code, a
-`continue-on-error` on a test job. Those aren't bugs that need reasoning;
-they're facts that need scanning.
+`continue-on-error` on a test job (that one under `--strict`). Those aren't
+bugs that need reasoning; they're facts that need scanning.
 
 ---
 
@@ -258,7 +259,7 @@ they're facts that need scanning.
 | ⚖️  | **Worthiness Score** — one number, transparent deduction table, no black box                                      |
 | 🎭  | **Selector Health Score** — grades your Playwright locators, not just your pass rate                              |
 | 🔬  | **Runtime forensics** — reads real Playwright/JUnit run data to catch `TRUE-FLAKE`, not just static guesses       |
-| 🚨  | **CI-integrity rules** — catches `continue-on-error`, `\|\| true`, and other false-green tricks                   |
+| 🚨  | **CI-integrity rules** — catches `\|\| true` by default; `continue-on-error` detection runs under `--strict`      |
 | 🐍  | **All four Playwright bindings** — TypeScript, Python, Java, C#/.NET — plus pytest, JUnit/TestNG and CI workflows |
 | 🔒  | **Local-first** — zero network calls while scanning, zero telemetry, runs in seconds                              |
 
@@ -271,74 +272,77 @@ full catalog lives in [`docs/rules/`](docs/rules/),
 [what it checks](https://sergey-bar.github.io/Mjolnir/guide/what-it-checks),
 or `mjolnir rules --md`.
 
+> **Tier** — `quarantine` rules run only under `--strict` and never gate
+> (capped to info); the severity shown is the authored severity.
+
 <details>
 <summary><strong>Test Hygiene</strong></summary>
 
-| ID          | Rule                                                | Severity |
-| ----------- | --------------------------------------------------- | -------- |
-| QA-TEST-001 | Focused test committed (`.only`, `fit`)             | error    |
-| QA-TEST-002 | Skipped test without justification                  | error    |
-| QA-TEST-002 | Skipped test with tracked justification             | warning  |
-| QA-TEST-003 | Test with no assertions                             | error    |
-| QA-TEST-004 | Hard sleep (`waitForTimeout`, `sleep()`, `delay()`) | warning  |
-| QA-TEST-006 | Retry abuse hiding flakiness                        | warning  |
-| QA-TEST-010 | Empty test body                                     | error    |
+| ID          | Rule                                                | Severity | Tier       |
+| ----------- | --------------------------------------------------- | -------- | ---------- |
+| QA-TEST-001 | Focused test committed (`.only`, `fit`)             | error    | quarantine |
+| QA-TEST-002 | Skipped test without justification                  | error    | quarantine |
+| QA-TEST-002 | Skipped test with tracked justification             | warning  | quarantine |
+| QA-TEST-003 | Test with no assertions                             | error    | quarantine |
+| QA-TEST-004 | Hard sleep (`waitForTimeout`, `sleep()`, `delay()`) | warning  | extended   |
+| QA-TEST-006 | Retry abuse hiding flakiness                        | warning  | quarantine |
+| QA-TEST-010 | Empty test body                                     | error    | quarantine |
 
 </details>
 
 <details>
 <summary><strong>Test Quality</strong></summary>
 
-| ID           | Rule                        | Severity |
-| ------------ | --------------------------- | -------- |
-| QA-TQUAL-001 | Mock-only verification      | info     |
-| QA-TQUAL-002 | Tautological assertion      | error    |
-| QA-TQUAL-009 | Unawaited promise assertion | error    |
-| QA-TQUAL-011 | Commented-out tests         | warning  |
+| ID           | Rule                        | Severity | Tier       |
+| ------------ | --------------------------- | -------- | ---------- |
+| QA-TQUAL-001 | Mock-only verification      | info     | quarantine |
+| QA-TQUAL-002 | Tautological assertion      | error    | quarantine |
+| QA-TQUAL-009 | Unawaited promise assertion | error    | quarantine |
+| QA-TQUAL-011 | Commented-out tests         | warning  | extended   |
 
 </details>
 
 <details>
 <summary><strong>Playwright 🎭</strong></summary>
 
-| ID        | Rule                                     | Severity |
-| --------- | ---------------------------------------- | -------- |
-| QA-PW-002 | Unawaited locator assertion              | error    |
-| QA-PW-003 | `page.pause()` / `test.only()` committed | error    |
-| QA-PW-004 | Brittle CSS/XPath selectors              | warning  |
-| QA-PW-005 | Business logic inside `page.evaluate()`  | info     |
-| QA-PW-114 | Legacy element handles (`page.$`)        | info     |
-| QA-PW-118 | `networkidle` waits (flaky by design)    | info     |
-| QA-PW-123 | Hardcoded environment URLs               | warning  |
+| ID        | Rule                                     | Severity | Tier       |
+| --------- | ---------------------------------------- | -------- | ---------- |
+| QA-PW-002 | Unawaited locator assertion              | error    | core       |
+| QA-PW-003 | `page.pause()` / `test.only()` committed | error    | core       |
+| QA-PW-004 | Brittle CSS/XPath selectors              | warning  | quarantine |
+| QA-PW-005 | Business logic inside `page.evaluate()`  | info     | quarantine |
+| QA-PW-114 | Legacy element handles (`page.$`)        | info     | quarantine |
+| QA-PW-118 | `networkidle` waits (flaky by design)    | info     | quarantine |
+| QA-PW-123 | Hardcoded environment URLs               | warning  | quarantine |
 
 </details>
 
 <details>
 <summary><strong>CI Integrity</strong></summary>
 
-| ID        | Rule                                                              | Severity |
-| --------- | ----------------------------------------------------------------- | -------- |
-| QA-CI-001 | `continue-on-error` masks failures                                | error    |
-| QA-CI-002 | `\|\| true` swallows exit codes                                   | error    |
-| QA-CI-005 | Report consumed but never generated                               | error    |
-| QA-CI-007 | Retry wrappers around tests                                       | warning  |
-| QA-CI-008 | Always-success step masks failures                                | error    |
-| QA-CI-009 | Test exit code not propagated (`\|` without pipefail, `;` chains) | error    |
-| QA-CI-010 | Tests skipped where they must block (skip-on-PR guards)           | error    |
+| ID        | Rule                                                              | Severity | Tier       |
+| --------- | ----------------------------------------------------------------- | -------- | ---------- |
+| QA-CI-001 | `continue-on-error` masks failures                                | error    | quarantine |
+| QA-CI-002 | `\|\| true` swallows exit codes                                   | error    | extended   |
+| QA-CI-005 | Report consumed but never generated                               | error    | quarantine |
+| QA-CI-007 | Retry wrappers around tests                                       | warning  | extended   |
+| QA-CI-008 | Always-success step masks failures                                | error    | quarantine |
+| QA-CI-009 | Test exit code not propagated (`\|` without pipefail, `;` chains) | error    | extended   |
+| QA-CI-010 | Tests skipped where they must block (skip-on-PR guards)           | error    | quarantine |
 
 </details>
 
 <details>
 <summary><strong>Python / pytest 🐍</strong></summary>
 
-| ID        | Rule                                      | Severity |
-| --------- | ----------------------------------------- | -------- |
-| QA-PY-002 | Skipped test (`skip`, non-strict `xfail`) | warning  |
-| QA-PY-003 | Test function with no assertions          | error    |
-| QA-PY-005 | `time.sleep()` in tests                   | warning  |
-| QA-PY-006 | Empty test body (`pass`)                  | info     |
-| QA-PY-010 | Random/time dependence without freeze     | info     |
-| QA-PY-012 | Tautological assertion                    | error    |
+| ID        | Rule                                      | Severity | Tier       |
+| --------- | ----------------------------------------- | -------- | ---------- |
+| QA-PY-002 | Skipped test (`skip`, non-strict `xfail`) | warning  | core       |
+| QA-PY-003 | Test function with no assertions          | error    | quarantine |
+| QA-PY-005 | `time.sleep()` in tests                   | warning  | extended   |
+| QA-PY-006 | Empty test body (`pass`)                  | info     | quarantine |
+| QA-PY-010 | Random/time dependence without freeze     | info     | quarantine |
+| QA-PY-012 | Tautological assertion                    | error    | quarantine |
 
 20 Python rules total (QA-PY-001…012 pytest hygiene + QA-PY-101…108 Playwright-Python).
 
@@ -347,30 +351,30 @@ or `mjolnir rules --md`.
 <details>
 <summary><strong>Java / JUnit · TestNG ☕</strong></summary>
 
-| ID        | Rule                                     | Severity |
-| --------- | ---------------------------------------- | -------- |
-| QA-JV-101 | Disabled test (`@Disabled`)              | warning  |
-| QA-JV-102 | Hard sleep (`Thread.sleep()`)            | warning  |
-| QA-JV-103 | Test method with no assertions           | error    |
-| QA-JV-105 | Playwright `waitForTimeout()` hard sleep | warning  |
-| QA-JV-106 | Brittle selector instead of role locator | warning  |
-| QA-JV-108 | Hardcoded environment URL in test        | info     |
-| QA-JV-111 | Blanket `page.route("**")` mock          | info     |
+| ID        | Rule                                     | Severity | Tier       |
+| --------- | ---------------------------------------- | -------- | ---------- |
+| QA-JV-101 | Disabled test (`@Disabled`)              | warning  | core       |
+| QA-JV-102 | Hard sleep (`Thread.sleep()`)            | warning  | extended   |
+| QA-JV-103 | Test method with no assertions           | error    | extended   |
+| QA-JV-105 | Playwright `waitForTimeout()` hard sleep | warning  | core       |
+| QA-JV-106 | Brittle selector instead of role locator | warning  | quarantine |
+| QA-JV-108 | Hardcoded environment URL in test        | info     | quarantine |
+| QA-JV-111 | Blanket `page.route("**")` mock          | info     | quarantine |
 
 </details>
 
 <details>
 <summary><strong>C# / .NET — NUnit · xUnit · MSTest 🟣</strong></summary>
 
-| ID        | Rule                                       | Severity |
-| --------- | ------------------------------------------ | -------- |
-| QA-CS-101 | Skipped test (`[Ignore]`, `[Fact(Skip=)]`) | warning  |
-| QA-CS-102 | Hard sleep (`Thread.Sleep` / `Task.Delay`) | warning  |
-| QA-CS-103 | Test method with no assertions             | error    |
-| QA-CS-105 | `WaitForTimeoutAsync()` hard sleep         | warning  |
-| QA-CS-106 | Brittle selector instead of role locator   | warning  |
-| QA-CS-108 | Hardcoded environment URL in test          | info     |
-| QA-CS-111 | Blanket `page.RouteAsync("**")` mock       | info     |
+| ID        | Rule                                       | Severity | Tier       |
+| --------- | ------------------------------------------ | -------- | ---------- |
+| QA-CS-101 | Skipped test (`[Ignore]`, `[Fact(Skip=)]`) | warning  | core       |
+| QA-CS-102 | Hard sleep (`Thread.Sleep` / `Task.Delay`) | warning  | core       |
+| QA-CS-103 | Test method with no assertions             | error    | core       |
+| QA-CS-105 | `WaitForTimeoutAsync()` hard sleep         | warning  | extended   |
+| QA-CS-106 | Brittle selector instead of role locator   | warning  | quarantine |
+| QA-CS-108 | Hardcoded environment URL in test          | info     | quarantine |
+| QA-CS-111 | Blanket `page.RouteAsync("**")` mock       | info     | quarantine |
 
 </details>
 
@@ -413,7 +417,7 @@ test failure scheduled for whenever someone touches the markup.
 estimate. Every scan footer tells you how many of the rules that _fired_
 are measured; `mjolnir rules --unmeasured` lists the ones that aren't;
 every rule's `mjolnir explain` page states its status. We publish the rate
-even when it's ugly — QA-CS-103 audits at 95% and is quarantined for it.
+even when it's ugly — QA-PW-107 audits at 95% and is quarantined for it.
 Growing that number is the project's continuing work.
 
 ### Rule tiers and language maturity

@@ -300,7 +300,7 @@ oranı taşıyor** (her biri için ≥ 10 elle sınıflandırılmış bulgu; bkz
 yayına giriyor. Her tarama alt bilgisi, _tetiklenen_ kuralların kaçının
 ölçüldüğünü söyler; `mjolnir rules --unmeasured` ölçülmeyenleri listeler;
 her kuralın `mjolnir explain` sayfası durumunu belirtir. Oranı çirkin
-olduğunda bile yayımlarız — QA-CS-103 %95 ile denetleniyor ve bu yüzden
+olduğunda bile yayımlarız — QA-PW-107 %95 ile denetleniyor ve bu yüzden
 karantinada. O sayıyı büyütmek, projenin süregelen işidir.
 
 ### Kural katmanları ve dil olgunluğu

@@ -305,7 +305,7 @@ código OSS real** (≥ 10 hallazgos clasificados a mano cada una; ver
 estimación del autor. Cada pie de escaneo te dice cuántas de las reglas
 _que se dispararon_ están medidas; `mjolnir rules --unmeasured` lista
 las que no; la página `mjolnir explain` de cada regla declara su
-estado. Publicamos la tasa aunque sea fea — QA-CS-103 audita al 95 % y
+estado. Publicamos la tasa aunque sea fea — QA-PW-107 audita al 95 % y
 está en cuarentena por ello. Hacer crecer esa cifra es el trabajo continuo
 del proyecto.
 

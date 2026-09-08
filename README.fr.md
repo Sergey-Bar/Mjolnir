@@ -307,7 +307,7 @@ l'estimation de l'auteur. Chaque pied de scan vous dit combien des
 règles _déclenchées_ sont mesurées ; `mjolnir rules --unmeasured` liste
 celles qui ne le sont pas ; la page `mjolnir explain` de chaque règle
 énonce son statut. Nous publions le taux même quand il est laid —
-QA-CS-103 s'audite à 95 % et est mis en quarantaine pour ça. Faire
+QA-PW-107 s'audite à 95 % et est mis en quarantaine pour ça. Faire
 grandir ce chiffre est le travail continu du projet.
 
 ### Tiers de règles et maturité par langage

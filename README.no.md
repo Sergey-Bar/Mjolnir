@@ -302,7 +302,7 @@ det er false-positive-brannmuren.
 forfatterens estimat. Hver skann-fotnote forteller hvor mange av de
 _utløste_ reglene som er målt; `mjolnir rules --unmeasured` lister de
 umålte; hver regels `mjolnir explain`-side angir statusen. Vi publiserer
-raten selv når den er stygg — QA-CS-103 auditeres til 95 % og er satt i
+raten selv når den er stygg — QA-PW-107 auditeres til 95 % og er satt i
 karantene for det. Å få det tallet til å vokse er prosjektets fortsatte
 arbeid.
 

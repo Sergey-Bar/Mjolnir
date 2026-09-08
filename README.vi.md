@@ -298,7 +298,7 @@ thật** (≥ 10 finding được phân loại tay mỗi quy tắc; xem
 ước lượng của tác giả. Chân mỗi bản quét cho biết bao nhiêu quy tắc
 _đã bắn_ được đo; `mjolnir rules --unmeasured` liệt kê những quy tắc
 chưa đo; trang `mjolnir explain` của từng quy tắc nêu trạng thái. Chúng
-tôi công bố tỷ lệ kể cả khi nó xấu xí — QA-CS-103 kiểm toán ở mức 95 %
+tôi công bố tỷ lệ kể cả khi nó xấu xí — QA-PW-107 kiểm toán ở mức 95 %
 và bị cách ly vì thế. Mở rộng con số đó là công việc liên tục của
 dự án.
 

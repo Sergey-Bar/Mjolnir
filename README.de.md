@@ -308,7 +308,7 @@ Schätzung des Autors. Jeder Scan-Footer sagt dir, wie viele der
 _ausgelösten_ Regeln gemessen sind; `mjolnir rules --unmeasured` listet
 die nicht gemessenen; die `mjolnir explain`-Seite jeder Regel nennt
 ihren Status. Wir veröffentlichen die Rate, selbst wenn sie hässlich
-ist — QA-CS-103 auditiert bei 95 % und ist deshalb quarantäniert. Diese
+ist — QA-PW-107 auditiert bei 95 % und ist deshalb quarantäniert. Diese
 Zahl zu vergrößern ist die fortlaufende Arbeit des Projekts.
 
 ### Regel-Tiers und Sprachreife

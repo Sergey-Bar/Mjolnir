@@ -303,7 +303,7 @@ det er false-positive-firewallen.
 estimat. Hver scan-fodnote fortæller, hvor mange af de _udløste_ regler,
 der er målt; `mjolnir rules --unmeasured` lister de uregistrerede; hver
 regels `mjolnir explain`-side angiver dens status. Vi offentliggør
-raten, selv når den er grim — QA-CS-103 auditeres til 95 % og er sat i
+raten, selv når den er grim — QA-PW-107 auditeres til 95 % og er sat i
 karantæne for det. At få det tal til at vokse er projektets fortsatte
 arbejde.
 
