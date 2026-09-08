@@ -9,6 +9,12 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [0.5.26] — 2026-09-08
+
+### Changes since 0.5.25
+
+- Certification findings remediation: F1-F5 + P3 (plan 1788806598818) (#57)
+
 ## [0.5.25] — 2026-09-08
 
 ### Changes since 0.5.24
