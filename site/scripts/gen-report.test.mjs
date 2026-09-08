@@ -153,9 +153,30 @@ test("splitGroups drops the ASCII hammer but keeps the state chip", () => {
   assert.equal(g.footerLines[0].text.trim(), "Analysis: complete");
 });
 
-test("splitGroups throws on a report missing a boundary", () => {
+test("splitGroups accepts a hero that stops before the findings", () => {
+  // The shipped hero does exactly this: generate-readme-hero.ts drops
+  // everything from "▚ FINDINGS" down, because the hero is the score
+  // instrument and demo.svg is the full report. This used to throw, and
+  // that throw took the site's prebuild — and so the pages deploy —
+  // down with it. A missing findings block is a shape, not a defect.
   const lines = svgToLines(SAMPLE).filter((l) => !/FINDINGS/.test(l.text));
-  assert.throws(() => splitGroups(lines), /FINDINGS heading/);
+  const g = splitGroups(lines);
+  assert.deepEqual(g.findingLines, [], "no findings block, no finding lines");
+  assert.ok(
+    g.verdictLines.length > 0,
+    "the verdict block still carries the score and the breakdown",
+  );
+});
+
+test("splitGroups still throws when a real boundary is missing", () => {
+  // The boundaries that cannot be absent still fail loudly: a wrong
+  // number on this page is the defect the whole script exists to stop.
+  const noScore = svgToLines(SAMPLE).filter((l) => !/WORTHINESS/.test(l.text));
+  assert.throws(() => splitGroups(noScore), /WORTHINESS/);
+  const noCommand = svgToLines(SAMPLE).filter(
+    (l) => !/npx mjolnir/.test(l.text),
+  );
+  assert.throws(() => splitGroups(noCommand), /command/);
 });
 
 test("buildReport keeps the finding COUNT and the finding LINES apart", () => {
@@ -184,7 +205,16 @@ test(
     assert.match(r.verdict, /^(WORTHY|NEEDS WORK|UNWORTHY|FORGED)$/);
     assert.ok(r.categories.length > 0, "expected at least one category row");
     assert.ok(r.deductions.length > 0, "expected a deduction table");
-    assert.ok(r.verdictLines.length > 0 && r.findingLines.length > 0);
+    // The verdict block always has content. The finding lines are
+    // present only when the hero asset carries them — today it stops at
+    // "FIX THIS FIRST" — so this asserts the invariant that actually
+    // holds: the count and the lines never contradict each other.
+    assert.ok(r.verdictLines.length > 0, "the verdict block is never empty");
+    assert.ok(
+      r.findingLines.length === 0 ||
+        r.findingLines.some((l) => /FINDINGS/.test(l.text)),
+      "a non-empty findings block must start at the FINDINGS heading",
+    );
 
     // The verdict block is the part that stays visible on a phone, so its
     // width is a load-bearing property, not an incidental one.

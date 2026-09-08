@@ -148,6 +148,24 @@ at 5.95 — all pass.
 
 ## 7. Lighthouse / axe — the numbers Phase 3 and Phase 8 must not regress
 
+> **Correction, recorded after the fact.** These numbers were measured
+> against a **stale `site/.vitepress/dist`**. The site build at `2bb915f`
+> does not complete: `site/scripts/gen-report.mjs` throws
+> `no FINDINGS heading line in the hero asset`, because commit `9f59bc5`
+> (2026-09-07) shortened `terminal-hero.svg` to the score instrument and
+> dropped everything from `▚ FINDINGS` down, which that parser required.
+> The failure was invisible here because the build command was piped to
+> `tail`, so the shell reported the pipeline's exit status and not the
+> build's. Recorded as pre-existing defect **D15**; it also means the
+> GitHub Pages deploy has been failing since that commit.
+>
+> The baseline below is therefore a measurement of the last successfully
+> built site, not of `2bb915f`. It is kept because it is still the
+> honest "before" a reader would have seen on the deployed page — but
+> the mobile figures in particular are not a clean comparison against
+> anything measured after the build was repaired, and the after-state
+> report says so rather than claiming an improvement it cannot support.
+
 Local-server measurements with gzip on and the official Lighthouse
 presets, per `site/scripts/lighthouse-run.mjs` — a local floor, not a
 promise about production. Raw runs:
@@ -193,3 +211,4 @@ these exact numbers or better.
 | D12 no motion language                                   | confirmed                                                                                                                                                                                                              |
 | **D13** voice divergence: site hero vs canonical tagline | new, found at baseline                                                                                                                                                                                                 |
 | **D14** decorative rune wallpaper on the homepage        | new, found at baseline                                                                                                                                                                                                 |
+| **D15** the site build has been broken since `9f59bc5`   | new, found in Phase 3 when a real build was first attempted; see the correction in §7                                                                                                                                  |

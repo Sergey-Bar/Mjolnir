@@ -124,8 +124,16 @@ async function copyReport() {
       </div>
 
       <!-- Findings — opt-in, and scrolling inside its own box so the page
-           body never scrolls sideways. -->
+           body never scrolls sideways.
+
+           Rendered only when the hero asset actually carries the
+           per-finding detail. It stopped carrying it when the hero was
+           shortened to the score instrument, and a disclosure offering
+           to "show all 27 findings (0 lines)" would be the page claiming
+           evidence it does not have — the one thing this site may never
+           do. -->
       <details
+        v-if="report.findingLines.length > 0"
         class="more"
         @toggle="open = ($event.target as HTMLDetailsElement).open"
       >
