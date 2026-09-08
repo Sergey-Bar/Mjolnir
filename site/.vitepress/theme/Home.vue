@@ -92,8 +92,19 @@ const offsetFor = (n: number) => RING * (1 - n / 100);
 
 // Rendered (and served) at the real value, so the gauge is correct with
 // no JS at all — an empty ring reading 0/100 would be exactly the kind of
-// unearned number the site law forbids. The count-up resets it to zero in
-// onMounted, only when there is actually a client to animate it.
+// unearned number the site law forbids.
+//
+// THE NUMBER DOES NOT ANIMATE. It used to count up from zero, which put
+// a "0" on screen beside "75/100" for a second and a half — the page
+// stating a score the scan did not produce, on the page whose argument
+// is that nothing is asserted without evidence. The comment defending it
+// said the gauge sat ~900px down, "well below the fold"; at a 455px-tall
+// viewport it is above the fold, and a screenshot caught it.
+//
+// The RING still sweeps. An instrument travelling to its reading is a
+// state resolving; a digit counting through values nobody measured is a
+// claim. Only one of those is honest, and it happens to be the one that
+// reads better.
 const score = ref(scan.score);
 const dash = ref(offsetFor(scan.score));
 let io: IntersectionObserver | undefined;
@@ -112,7 +123,6 @@ function runGauge() {
   const tick = (now: number) => {
     const p = Math.min(1, (now - start) / dur);
     const e = 1 - Math.pow(1 - p, 3);
-    score.value = Math.round(e * target);
     dash.value = offsetFor(e * target);
     if (p < 1) raf = requestAnimationFrame(tick);
   };
@@ -146,11 +156,10 @@ onMounted(() => {
     return;
   }
 
-  // There is a client and it will animate, so wind the gauge back to zero
-  // for the count-up. The gauge sits ~900px down, well below the fold, so
-  // this never reads as a flicker.
+  // There is a client and it will animate, so wind the RING back to empty
+  // for the sweep. The score itself is never touched: it is served at its
+  // real value and stays there.
   if (!reduce) {
-    score.value = 0;
     dash.value = RING;
   }
 
