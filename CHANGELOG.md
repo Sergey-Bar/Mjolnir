@@ -9,6 +9,12 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [0.5.36] — 2026-09-08
+
+### Changes since 0
+
+- P4: forensics breadth — Jest + Vitest JSON ingestion (honest degradation) (#66)
+
 ## [0.5.35] — 2026-09-08
 
 ### Changes since 0
