@@ -39,4 +39,3 @@
 {"ruleId":"QA-PW-119","file":"packages/adapter-pouchdb/test/index.test.ts","line":32,"verdict":"FP","note":"module-level initializers/hoisted fixtures of external-service mocks - setup infrastructure, not cross-test write-then-read"}
 {"ruleId":"QA-PW-119","file":"packages/next-auth/test/actions.test.ts","line":85,"verdict":"FP","note":"module-level initializers/hoisted fixtures of external-service mocks - setup infrastructure, not cross-test write-then-read"}
 {"ruleId":"QA-PW-141","file":"packages/next-auth/playwright.config.ts","line":26,"verdict":"TP","note":"retries: CI?2:0 with no machine-readable reporter - retry outcomes not triageable"}
-{"ruleId":"QA-PW-124","file":"packages/next-auth/playwright.config.ts","line":40,"verdict":"","note":""}

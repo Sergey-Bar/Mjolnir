@@ -41,4 +41,3 @@
 {"ruleId":"QA-CI-002","file":".github/workflows/alerting-update-module.yml","line":121,"verdict":"TP","note":"second swallowed go test - same mask"}
 {"ruleId":"QA-TEST-006","file":"public/app/features/alerting/unified/components/contact-points/EditContactPoint.test.tsx","line":54,"verdict":"TP","note":"jest.retryTimes(2) inside a describe - retry-on-flake in unit tests, masking without triage"}
 {"ruleId":"QA-TEST-006","file":"public/app/features/alerting/unified/components/rule-editor/labels/LabelsField.test.tsx","line":81,"verdict":"TP","note":"jest.retryTimes(2) inside a describe - retry-on-flake masking"}
-{"ruleId":"QA-PW-124","file":"playwright.config.ts","line":59,"verdict":"","note":""}
