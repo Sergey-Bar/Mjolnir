@@ -270,6 +270,13 @@ export interface CliArgs {
    * equivalent. JSON rule manifests are unaffected (no code by design).
    */
   enablePlugins?: boolean;
+  /**
+   * --classic (plan §26 WI-5): escape hatch back to the pre-Trust-Report
+   * terminal render. Rendering flag only — scan semantics, exit codes
+   * and JSON are identical under both surfaces. Default OFF: the Trust
+   * Report is the hero output.
+   */
+  classic?: boolean;
 }
 
 export interface ScanHooks {

@@ -67,7 +67,7 @@ describe("--tone blunt opt-in changes terminal messages", () => {
   it("produces different, blunter messages when explicitly opted in", async () => {
     const dir = makeFixtureWithFindings();
     const cap = capture();
-    await runScanCommand([dir, "--tone", "blunt"], cap.io);
+    await runScanCommand([dir, "--classic", "--tone", "blunt"], cap.io);
     // At least one blunt message should appear — e.g. the sleep rule.
     expect(cap.text()).toMatch(/prayer|congratulations|lie|fix it or suppress/);
   });
@@ -75,7 +75,7 @@ describe("--tone blunt opt-in changes terminal messages", () => {
   it("never targets a person or author name", async () => {
     const dir = makeFixtureWithFindings();
     const cap = capture();
-    await runScanCommand([dir, "--tone", "blunt"], cap.io);
+    await runScanCommand([dir, "--classic", "--tone", "blunt"], cap.io);
     const text = cap.text();
     // Should not contain "you" addressing an author, "your" possessive
     // about the developer personally, or generic offensive words.

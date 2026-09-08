@@ -349,7 +349,9 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
             result = stdout ? stdout.toString() : "";
           }
 
-          expect(result).toMatch(/WORTHINESS|score/);
+          // WI-5: the default surface is the Trust Report; accept either
+          // the classic WORTHINESS banner or the Trust Report verdict.
+          expect(result).toMatch(/WORTHINESS|TRUST VERDICT|score/);
         } finally {
           rmSync(fixtureDir, { recursive: true, force: true });
         }

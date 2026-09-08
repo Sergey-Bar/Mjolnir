@@ -42,6 +42,7 @@ import type { CliArgs } from "./engine/scan-pipeline.js";
 import { buildMachineContract } from "./engine/machine-contract.js";
 
 import { renderTerminal } from "./reporter/terminal.js";
+import { renderTrustReport } from "./reporter/trust-report.js";
 import { renderSarif } from "./reporter/sarif.js";
 import { renderMermaid } from "./reporter/mermaid.js";
 import { ProgressRenderer, shouldRenderProgress } from "./reporter/progress.js";
@@ -208,6 +209,10 @@ export function parseArgs(
       // Audit C2: opt-in code execution for plugin/JS-module rule
       // sources. Additive flag, accepted by every verb that loads rules.
       args.enablePlugins = true;
+    } else if (a === "--classic") {
+      // WI-5: escape hatch from the Trust Report hero surface back to
+      // the classic terminal render. Rendering flag only.
+      args.classic = true;
     } else if (a === "--help" || a === "-h") {
       return null;
     } else if (!a.startsWith("-")) {
@@ -231,6 +236,7 @@ const KNOWN_SCAN_FLAGS = [
   "--ascii",
   "--no-ascii",
   "--tone",
+  "--classic",
   "--strict",
   "--debug",
   "--record-milestones",
@@ -724,7 +730,7 @@ export async function runScanCommand(
           ? result.findings.filter((f) => categories.includes(f.category))
           : result.findings;
       io.out(
-        renderTerminal(result, {
+        renderTrustReport(result, {
           isTTY: process.stdout.isTTY ?? false,
           verbose: args.verbose,
           ...(categories && categories.length > 0
@@ -733,6 +739,7 @@ export async function runScanCommand(
           ...(args.width !== undefined ? { width: args.width } : {}),
           ...(args.ascii !== undefined ? { ascii: args.ascii } : {}),
           ...(args.tone !== undefined ? { tone: args.tone } : {}),
+          ...(args.classic ? { classic: true } : {}),
         }),
       );
       // First-run hint — terminal only, and only for the bare, full-repo
