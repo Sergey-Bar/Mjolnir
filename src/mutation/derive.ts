@@ -59,18 +59,12 @@ export function stampMutationEvidence(
     const mutants = byFile.get(f.file);
     if (!mutants || mutants.length === 0) continue;
 
-    let matched: SurvivedMutant[] = [];
-    let granularity: MutationEvidence["granularity"] = "file";
-    if (f.line !== undefined) {
-      const lineLevel = mutants.filter(
-        (m) =>
-          f.line !== undefined && f.line >= m.startLine && f.line <= m.endLine,
-      );
-      if (lineLevel.length > 0) {
-        matched = lineLevel;
-        granularity = "line";
-      }
-    }
+    // Finding.line is a REQUIRED 1-based field (no undefined case) — no
+    // dead guard here, or coverage would pin structurally-dead code.
+    let matched: SurvivedMutant[] = mutants.filter(
+      (m) => f.line >= m.startLine && f.line <= m.endLine,
+    );
+    let granularity: MutationEvidence["granularity"] = "line";
     if (matched.length === 0) {
       // File-level fallback: the same prefer-claiming-less rule as the
       // runtime corroboration — a weaker claim beats a fabricated one.

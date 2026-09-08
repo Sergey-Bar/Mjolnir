@@ -147,6 +147,38 @@ describe("Stryker JSON parser (P5)", () => {
     expect(looksLikeStrykerJson({})).toBe(false);
     expect(looksLikeStrykerJson(null)).toBe(false);
   });
+
+  it("defensive edges: non-array mutants, missing mutator/end, malformed location", () => {
+    const r = parseStrykerJson({
+      files: {
+        "a.ts": {
+          mutants: [
+            {
+              id: "1",
+              status: "Survived", // no mutatorName, no location.end
+              location: { start: { line: 0 } },
+            },
+            {
+              id: "2",
+              status: "Survived",
+              mutatorName: 42, // hostile type → "unknown"
+              location: { start: { line: 4 }, end: "nope" },
+            },
+            // id: "3" — a survived mutant with NO start line at all is
+            // unplaceable: dropped from the span set, never fabricated.
+            { id: "3", status: "Survived", mutatorName: "X" },
+          ],
+        },
+        "b.ts": { mutants: "not-an-array" },
+      },
+    });
+    expect(r.survived).toHaveLength(2);
+    expect(r.survived.every((m) => m.file === "a.ts")).toBe(true);
+    expect(r.survived[0]?.mutator).toBe("unknown");
+    expect(r.survived[0]?.startLine).toBe(1);
+    expect(r.survived[0]?.endLine).toBe(1); // no end → span collapses to start
+    expect(r.survived[1]?.startLine).toBe(5); // 0-based 4 → 1-based 5
+  });
 });
 
 describe("mutmut junitxml parser (P5)", () => {
@@ -175,6 +207,26 @@ describe("mutmut junitxml parser (P5)", () => {
     expect(
       looksLikeMutmutXml('<?xml version="1.0"?><testsuite name="x"/>'),
     ).toBe(false);
+  });
+
+  it("defensive edges: oversized input, unclosed testcases, missing classname", () => {
+    const huge = "x".repeat(20 * 1024 * 1024 + 1);
+    const r = parseMutmutXml(huge);
+    expect(r.survived).toEqual([]); // oversized → zero, never a crash
+    // Unclosed <testcase: no later start can close either (linear scan).
+    const unclosed = parseMutmutXml(
+      `<testsuite><testcase classname="a.py-mutmut1" name="m"><failure>`,
+    );
+    expect(unclosed.survived).toEqual([]);
+    // Missing classname entirely → no file identity → honest no-coverage.
+    const noClass = parseMutmutXml(
+      `<testsuite><testcase name="m"/></testsuite>`,
+    );
+    expect(noClass.survived).toEqual([]);
+    expect(noClass.noCoverage).toBe(1);
+    // gt === -1: a <testcase with no closing >.
+    const noGt = parseMutmutXml(`<testsuite><testcase`);
+    expect(noGt.survived).toEqual([]);
   });
 });
 
@@ -206,6 +258,16 @@ describe("derivation (E1→E2 by derivation, never claimed)", () => {
     const f = finding({ line: 1, evidenceLevel: "E2" });
     const stats = stampMutationEvidence([f], parseStrykerJson(STRYKER_REPORT));
     expect(stats.derived).toBe(0);
+    expect(f.evidenceLevel).toBe("E2");
+  });
+
+  it("a finding outside every span falls back to FILE granularity", () => {
+    // Stryker span covers line 1 only; a finding at line 900 matches no
+    // span — the fallback claims file-level, never line-level.
+    const f = finding({ line: 900, evidenceLevel: "E1" });
+    const stats = stampMutationEvidence([f], parseStrykerJson(STRYKER_REPORT));
+    expect(stats.stamped).toBe(1);
+    expect(f.mutationEvidence?.granularity).toBe("file");
     expect(f.evidenceLevel).toBe("E2");
   });
 
@@ -246,6 +308,51 @@ describe("derivation (E1→E2 by derivation, never claimed)", () => {
     expect(out).not.toContain("proven");
     const empty = renderMutationSummary(parseStrykerJson({ files: {} }));
     expect(empty).toContain("no-coverage is not survived");
+  });
+
+  it("the leaderboard sorts most-survived first", () => {
+    const report = parseStrykerJson({
+      files: {
+        "src/heavy.ts": {
+          mutants: [
+            {
+              id: "1",
+              status: "Survived",
+              mutatorName: "A",
+              location: { start: { line: 0 } },
+            },
+            {
+              id: "2",
+              status: "Survived",
+              mutatorName: "B",
+              location: { start: { line: 1 } },
+            },
+            {
+              id: "3",
+              status: "Survived",
+              mutatorName: "C",
+              location: { start: { line: 2 } },
+            },
+          ],
+        },
+        "src/light.ts": {
+          mutants: [
+            {
+              id: "4",
+              status: "Survived",
+              mutatorName: "D",
+              location: { start: { line: 0 } },
+            },
+          ],
+        },
+      },
+    });
+    const out = renderMutationSummary(report);
+    expect(out.indexOf("src/heavy.ts")).toBeLessThan(
+      out.indexOf("src/light.ts"),
+    );
+    expect(out).toContain("3× src/heavy.ts");
+    expect(out).toContain("A, B, C");
   });
 });
 

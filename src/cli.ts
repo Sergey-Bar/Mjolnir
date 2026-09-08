@@ -1488,7 +1488,7 @@ export async function main(
   if (argv[0] === "suppressions") return runSuppressions();
   if (argv[0] === "forensics") return runForensicsCommand(argv.slice(1));
   if (argv[0] === "triage") return runTriageCommand(argv.slice(1));
-  if (argv[0] === "mutation") return runMutationCommand(argv.slice(1));
+  if (argv[0] === "mutation") return runMutationCommand(argv.slice(1), io);
   if (argv[0] === "badge") return runBadgeCommand(argv.slice(1));
   if (argv[0] === "debt") return runDebtCommand(argv.slice(1));
   if (argv[0] === "impact") return runImpactCommand(argv.slice(1));
