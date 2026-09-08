@@ -57,13 +57,27 @@ Score colors follow the ScoreState model (`src/reporter/score-state.ts`) —
 one mapping, every surface. Bands: critical 0–49, warning 50–79,
 trusted 80–99, forged 100.
 
-| Verdict                | Token                             | Light                        | Dark                         |
-| ---------------------- | --------------------------------- | ---------------------------- | ---------------------------- |
-| `UNWORTHY` / critical  | `--mj-unworthy` / `--mj-critical` | `#C13B37`                    | `#E5544E`                    |
-| `NEEDS WORK` / warning | `--mj-needswork` / `--mj-warning` | `#A5811C`                    | `#E6BD57`                    |
-| `WORTHY` / trusted     | `--mj-trusted`                    | `#2596A8`                    | `#5CC4E0`                    |
-| `FORGED` (score 100)   | `--mj-forged`                     | gradient `#8A6D1E → #A5811C` | gradient `#F4DC9C → #E6BD57` |
-| informational          | `--mj-info`                       | `#2B7FA8`                    | `#5CC4E8`                    |
+There is one column, not two. The site is dark-only (`config.mts`
+`appearance: "force-dark"`), the terminal is dark, and the README assets
+are dark — so a light ramp would be a documented palette nothing ships.
+This table previously carried one, and its dark column had drifted too:
+it named `#E5544E` for `UNWORTHY` and `#5CC4E8` for informational where
+the code shipped `#EC6B66` and `#5CC4E0`. `brand-doctor` rule 5 now
+parses these rows, which is why it can no longer happen quietly.
+
+| Verdict                | Token                             | Shipped                      |
+| ---------------------- | --------------------------------- | ---------------------------- |
+| `UNWORTHY` / critical  | `--mj-unworthy` / `--mj-critical` | `#EC6B66`                    |
+| `NEEDS WORK` / warning | `--mj-needswork` / `--mj-warning` | `#E6BD57`                    |
+| `WORTHY` / trusted     | `--mj-trusted`                    | `#5CC4E0`                    |
+| `FORGED` (score 100)   | `--mj-forged`                     | gradient `#F4DC9C → #E6BD57` |
+| informational          | `--mj-info`                       | `#5CC4E0`                    |
+| unmeasured / `UNKNOWN` | `--mj-steel-dim`                  | `#8B939D`                    |
+
+`UNKNOWN` is deliberately neutral, never red. It is a legitimate answer —
+"this was not measured" is not "this is broken" — and colouring it as a
+failure would be the same dishonesty as a CI gate reporting green
+without having run.
 
 The terminal NORSE palette mirrors the same bands: `trusted: #5CC4E0`,
 `forged: #F4DC9C`.

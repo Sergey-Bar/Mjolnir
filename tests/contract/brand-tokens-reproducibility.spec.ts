@@ -40,7 +40,14 @@ import {
 
 const ROOT = join(import.meta.dirname, "..", "..");
 const TOKENS_JSON = join(ROOT, "assets", "brand", "tokens.json");
-const VARS_CSS = join(ROOT, "site", ".vitepress", "theme", "styles", "vars.css");
+const VARS_CSS = join(
+  ROOT,
+  "site",
+  ".vitepress",
+  "theme",
+  "styles",
+  "vars.css",
+);
 
 /** WCAG 2.1 relative luminance. */
 function luminance(hex: string): number {
@@ -176,8 +183,11 @@ describe("brand token semantics", () => {
     // about, not good news. Brightness carries the ramp and the mark's
     // geometry carries the meaning, so it survives --ascii and NO_COLOR.
     const levels = [EVIDENCE.e0, EVIDENCE.e1, EVIDENCE.e2];
-    for (let i = 1; i < levels.length; i++) {
-      expect(luminance(levels[i]!)).toBeGreaterThan(luminance(levels[i - 1]!));
+    const lum = levels.map(luminance);
+    for (let i = 1; i < lum.length; i++) {
+      expect(lum[i], `E${i} is not brighter than E${i - 1}`).toBeGreaterThan(
+        lum[i - 1] ?? 0,
+      );
     }
   });
 });

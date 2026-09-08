@@ -56,7 +56,9 @@
     "prepare": "husky",
     "prepublishOnly": "npm run build",
     "docs:architecture": "tsx scripts/generate-readme-architecture.ts",
-    "brand:tokens": "tsx scripts/generate-brand-tokens.ts"
+    "brand:tokens": "tsx scripts/generate-brand-tokens.ts",
+    "brand:doctor": "node scripts/brand-doctor.mjs",
+    "brand:doctor:selftest": "node scripts/brand-doctor-selftest.mjs"
   },
   "keywords": [
     "qa",

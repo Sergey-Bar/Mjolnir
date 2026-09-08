@@ -37,7 +37,9 @@ import {
   EVIDENCE,
   HAIRLINE_RGB,
   MOTION,
+  PENDING_ARCHITECTURE,
   PENDING_SITE,
+  PENDING_TERMINAL,
   SCORE,
   STATUS,
   SURFACE,
@@ -92,6 +94,14 @@ export async function buildTokensJson(): Promise<string> {
     typography: TYPOGRAPHY,
     motion: MOTION,
     hairlineRgb: HAIRLINE_RGB,
+    // The convergence debt, published rather than hidden: brand-doctor
+    // resolves generator source against this to tell "reads a canonical
+    // token" from "still reads a pre-unification value".
+    pending: {
+      terminal: PENDING_TERMINAL,
+      site: PENDING_SITE,
+      architecture: PENDING_ARCHITECTURE,
+    },
   };
   return formatted(TOKENS_JSON, `${JSON.stringify(doc, null, 2)}\n`);
 }

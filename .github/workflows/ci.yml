@@ -51,6 +51,19 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run lint
+      # The brand gate. Every colour, typeface and badge in the tree is
+      # checked against src/brand/tokens.ts, and every declared
+      # foreground/background pairing has its WCAG contrast computed.
+      # Blocking, for the reason site:doctor is blocking in pages.yml: a
+      # brand that is only enforced by review drifts back the moment
+      # nobody is looking, which is how six copies of one palette
+      # happened.
+      - run: npm run brand:doctor
+      # And the gate is proven able to fail before it is trusted: each
+      # rule is seeded with a deliberate violation, observed rejecting
+      # it, and the file restored. A check never seen to fail is not
+      # evidence.
+      - run: npm run brand:doctor:selftest
       - run: npm test
       # Fixture integrity, non-TS tier (certification-audit Phase 2.4):
       # Python fixtures are real code the detectors consume as text —
@@ -339,6 +352,7 @@ jobs:
           npm run fp-audit:generate
           npm run docs:capability
           npm run docs:machine-contract
+          npm run brand:tokens
           npm run golden:update
           npm run docs:hero
           npm run docs:demo
