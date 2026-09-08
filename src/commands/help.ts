@@ -200,6 +200,10 @@ export const HELP_ENTRIES: HelpEntry[] = [
 export const HELP_FLAGS: Array<{ flag: string; summary: string }> = [
   { flag: "--json", summary: "machine-readable output" },
   { flag: "--format sarif", summary: "SARIF 2.1 for GitHub Code Scanning" },
+  {
+    flag: "--format codequality",
+    summary: "GitLab Code Quality report (MR widget artifact)",
+  },
   { flag: "--format mermaid", summary: "test-architecture diagram" },
   { flag: "--tone blunt", summary: "blunter, pattern-mocking messages" },
   { flag: "--verbose", summary: "show all findings" },

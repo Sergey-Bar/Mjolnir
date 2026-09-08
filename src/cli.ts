@@ -43,6 +43,7 @@ import { buildMachineContract } from "./engine/machine-contract.js";
 
 import { renderTerminal } from "./reporter/terminal.js";
 import { renderSarif } from "./reporter/sarif.js";
+import { renderCodeQuality } from "./reporter/codequality.js";
 import { renderMermaid } from "./reporter/mermaid.js";
 import { ProgressRenderer, shouldRenderProgress } from "./reporter/progress.js";
 import { runSummaryCommand } from "./commands/summary.js";
@@ -146,6 +147,9 @@ export function parseArgs(
       const fmt = argv[++i];
       if (fmt === "sarif") args.format = "sarif";
       else if (fmt === "mermaid") args.format = "mermaid";
+      // P3a (plan 1788853205786): GitLab Code Quality report — the
+      // `codequality` CI artifact GitLab renders as MR widgets.
+      else if (fmt === "codequality") args.format = "codequality";
       else if (fmt === "json") {
         args.format = "json";
         args.json = true;
@@ -703,6 +707,8 @@ export async function runScanCommand(
       io.out(renderSarif(result, pathToFileURL(target).href));
     } else if (args.format === "mermaid") {
       io.out(renderMermaid(result));
+    } else if (args.format === "codequality") {
+      io.out(renderCodeQuality(result));
     } else if (args.json) {
       // Blueprint §12: the machine contract rides the JSON output as an
       // additive field (schemaVersion 1 + contractVersion 1). Derived
