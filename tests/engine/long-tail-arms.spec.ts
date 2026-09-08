@@ -135,45 +135,55 @@ describe("scope/changed degradation paths", () => {
     execFileSync("git", ["-C", dir, ...args], { stdio: "ignore" });
   }
 
-  it("reports diff-failed when a base object is missing from the store", () => {
-    git(["init", "-b", "main"]);
-    git(["config", "user.email", "t@t"]);
-    git(["config", "user.name", "t"]);
-    writeFileSync(join(dir, "a.spec.ts"), "it('a', () => {});\n");
-    git(["add", "."]);
-    git(["commit", "-m", "base"]);
-    // Corrupt the base TREE object: merge-base still resolves (it needs
-    // only commits) but the committed name-status diff cannot read it.
-    const sha = execFileSync("git", ["-C", dir, "rev-parse", "HEAD^{tree}"])
-      .toString()
-      .trim();
-    const obj = join(dir, ".git", "objects", sha.slice(0, 2), sha.slice(2));
-    rmSync(obj, { force: true });
-    const diff = computeChangedScope(dir);
-    expect(diff.degraded).toBe(true);
-    expect(diff.reason).toBe("diff-failed");
-  });
+  it(
+    "reports diff-failed when a base object is missing from the store",
+    // Real git in a temp dir — Windows CI spawn latency class (same
+    // remedy as the journey/impact/category specs).
+    { timeout: 60_000 },
+    () => {
+      git(["init", "-b", "main"]);
+      git(["config", "user.email", "t@t"]);
+      git(["config", "user.name", "t"]);
+      writeFileSync(join(dir, "a.spec.ts"), "it('a', () => {});\n");
+      git(["add", "."]);
+      git(["commit", "-m", "base"]);
+      // Corrupt the base TREE object: merge-base still resolves (it needs
+      // only commits) but the committed name-status diff cannot read it.
+      const sha = execFileSync("git", ["-C", dir, "rev-parse", "HEAD^{tree}"])
+        .toString()
+        .trim();
+      const obj = join(dir, ".git", "objects", sha.slice(0, 2), sha.slice(2));
+      rmSync(obj, { force: true });
+      const diff = computeChangedScope(dir);
+      expect(diff.degraded).toBe(true);
+      expect(diff.reason).toBe("diff-failed");
+    },
+  );
 
-  it("treats an oversized untracked test file as fully changed for that file only (no whole-scope degradation)", () => {
-    git(["init", "-b", "main"]);
-    git(["config", "user.email", "t@t"]);
-    git(["config", "user.name", "t"]);
-    writeFileSync(join(dir, "base.spec.ts"), "it('a', () => {});\n");
-    git(["add", "."]);
-    git(["commit", "-m", "base"]);
-    git(["checkout", "-b", "feat"]);
-    writeFileSync(
-      join(dir, "big.spec.ts"),
-      "it('big', () => {});\n".repeat(60_000),
-    );
-    const diff = computeChangedScope(dir);
-    // Audit fix (changed.ts): one unreadable/oversized untracked file
-    // degrades ONLY that file — treated as fully changed (honest
-    // superset) — instead of discarding line precision for the whole
-    // scope. The scope stays precise.
-    expect(diff.degraded).toBe(false);
-    expect(diff.changed["big.spec.ts"]?.size).toBeGreaterThan(0);
-  });
+  it(
+    "treats an oversized untracked test file as fully changed for that file only (no whole-scope degradation)",
+    { timeout: 60_000 },
+    () => {
+      git(["init", "-b", "main"]);
+      git(["config", "user.email", "t@t"]);
+      git(["config", "user.name", "t"]);
+      writeFileSync(join(dir, "base.spec.ts"), "it('a', () => {});\n");
+      git(["add", "."]);
+      git(["commit", "-m", "base"]);
+      git(["checkout", "-b", "feat"]);
+      writeFileSync(
+        join(dir, "big.spec.ts"),
+        "it('big', () => {});\n".repeat(60_000),
+      );
+      const diff = computeChangedScope(dir);
+      // Audit fix (changed.ts): one unreadable/oversized untracked file
+      // degrades ONLY that file — treated as fully changed (honest
+      // superset) — instead of discarding line precision for the whole
+      // scope. The scope stays precise.
+      expect(diff.degraded).toBe(false);
+      expect(diff.changed["big.spec.ts"]?.size).toBeGreaterThan(0);
+    },
+  );
 });
 
 const baseScan: ScanResult = {
