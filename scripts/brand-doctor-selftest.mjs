@@ -150,6 +150,19 @@ const SEEDS = [
     expect: "steel #141F33 on",
   },
   {
+    rule: 9,
+    what: "a brand mark changes without anyone deciding to change it",
+    file: p("assets", "brand", "marks.lock.json"),
+    // Seeded on the lock rather than on a 2 MB PNG: the rule compares
+    // the two, and either side moving is the same finding.
+    edit: (s) =>
+      s.replace(
+        /"assets\/brand\/logo\.png": "[0-9a-f]{4}/,
+        (m) => m.slice(0, -4) + "dead",
+      ),
+    expect: "assets/brand/logo.png — sha256",
+  },
+  {
     rule: "ratchet",
     what: "a known-open entry that no longer fires is reported as stale",
     file: DOCTOR,

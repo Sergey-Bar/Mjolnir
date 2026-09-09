@@ -63,7 +63,8 @@
     "brand:doctor": "node scripts/brand-doctor.mjs",
     "brand:doctor:selftest": "node scripts/brand-doctor-selftest.mjs",
     "brand:fonts": "tsx scripts/vendor-fonts.ts",
-    "brand:fonts:check": "tsx scripts/vendor-fonts.ts --check"
+    "brand:fonts:check": "tsx scripts/vendor-fonts.ts --check",
+    "brand:marks:update": "node scripts/update-mark-hashes.mjs"
   },
   "keywords": [
     "qa",

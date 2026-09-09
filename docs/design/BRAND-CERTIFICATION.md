@@ -22,15 +22,27 @@ sixteen defects are closed, five of them found during the work rather
 than in the plan — the last of those because Sergey asked whether the CI
 surfaces were covered, and they were not.
 
-It is not 10/10 because three surfaces are enforced by convention rather
-than by a check, and I will not score enforcement I did not build:
+Two of the three things holding it back have since been built rather
+than argued away:
 
-1. **Nothing verifies the brand masters.** No hash lock detects a
-   redrawn or re-exported logo.
-2. **Nothing verifies the video's pixels.** Format, frame count, size
-   and provenance are checked; colour was sampled by hand, once.
-3. **The prose design documents can drift.** Only `DESIGN-TOKENS.md` is
-   generated and byte-locked.
+- **The brand masters are pinned.** Rule 9 hashes the two provided
+  masters and the nine files derived from them. Re-encoding is allowed
+  and redrawing is not; a hash cannot tell them apart, which is the
+  point — the change now arrives as a decision instead of a diff nobody
+  opens.
+- **The video's ground is measured.** `video-pixels.spec.ts` decodes the
+  poster's first scanline in pure Node and finds it 3.32 from
+  `SURFACE.terminal` and 19.03 from the ground it replaced, against a
+  tolerance of 12. No ffmpeg, so it runs on every checkout — unlike the
+  format contract beside it, which is right to skip and would have made
+  a colour check meaningless.
+
+**One remains, and I do not believe it is closable.** The prose design
+documents can go out of date. `DESIGN-TOKENS.md` is generated and
+byte-locked, and rule 5 checks that every colour these files state is a
+value the source holds — but no check reaches a sentence that is merely
+no longer true. Claiming 10/10 over that would be exactly the move this
+product exists to refuse.
 
 Two further items are honest gaps rather than failures: mobile
 Lighthouse is 88–92 against a desktop-gated 100, and the site's terminal
@@ -48,19 +60,19 @@ value from the token module **and** something fails CI when it stops.
 | Nordic sophistication     |       8 |       9 | decorative runes removed, `art.ts` still the benchmark                                           |
 | Typography                |       4 |      10 | three disjoint systems → two shared faces, self-hosted, retired faces blocked by rule 1          |
 | Colour system             |       6 |      10 | one palette, one source, eight rules                                                             |
-| Logo integration          |       8 |       8 | **unchanged — no automated check exists**                                                        |
+| Logo integration          |       8 |      10 | rule 9 — sha256 on 2 masters + 9 derived                                                         |
 | Iconography               |       5 |       9 | one geometry source; no icon set beyond the three marks                                          |
 | Symbol language           |       5 |      10 | evidence ring, trust ladder, band runes — one definition each                                    |
 | Website consistency       |       8 |      10 | tokenised, symbol-driven, measured                                                               |
 | README consistency        |       6 |       9 | badges and assets converged; the prose was already strong and was not rewritten                  |
 | SVG consistency           |       6 |      10 | rule 4 checks every committed SVG                                                                |
-| MP4 consistency           |       7 |       9 | reproducible and checked; pixels unverified                                                      |
+| MP4 consistency           |       7 |      10 | reproducible, checked, and its ground measured in pure Node                                      |
 | CLI consistency           |       6 |      10 | 0 hex literals, AA fixed, mermaid honest                                                         |
 | Documentation consistency |       7 |       9 | five documents, one generated; prose can still drift                                             |
 | Motion language           |       6 |       8 | defined and partly enforced; durations unchecked                                                 |
 | Terminology consistency   |       9 |      10 | the site now leads with the canonical tagline                                                    |
 | Accessibility             |       7 |      10 | AA computed everywhere, axe 0, 187 focus rings                                                   |
-| **Overall coherence**     | **6.5** | **9.4** |                                                                                                  |
+| **Overall coherence**     | **6.5** | **9.6** |                                                                                                  |
 
 ## 3. The defects
 
@@ -113,7 +125,7 @@ brand defect:
 `npm run brand:doctor` — [full output](after/brand-doctor.after.txt)
 
 ```
-0 of 8 rules failing, 0 findings, 0 known open, 0 stale
+0 of 9 rules failing, 0 findings, 0 known open, 0 stale
 ```
 
 Every known-open entry the ratchet carried during the work was **deleted
@@ -126,7 +138,7 @@ rather than passing vacuously.
 [transcript](gate-evidence/brand-doctor-selftest.txt)
 
 ```
-11 of 11 rules observed rejecting an invalid state
+12 of 12 rules observed rejecting an invalid state
 ```
 
 Each rule was seeded with a deliberate violation, required to reject it
@@ -345,8 +357,10 @@ honest edges of the work as it stands.
 MJÖLNIR BRAND SYSTEM — NOT YET 10/10
 ```
 
-Overall coherence **9.4/10**, and the missing 0.6 is three specific
-absent checks, each named above with what would close it.
+Overall coherence **9.6/10**. Two of the three absent checks were built
+after this document first said they were missing; the remaining 0.4 is
+one gap I do not think a check can reach, and I would rather carry it
+than dress it.
 
 The system is one palette, two typefaces, three marks and one source of
 truth, enforced by a gate that has been watched rejecting every kind of

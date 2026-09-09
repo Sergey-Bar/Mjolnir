@@ -35,6 +35,7 @@
  * self-test — see `verifySeeding` at the bottom.
  */
 
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -45,6 +46,7 @@ const THEME = join(ROOT, "site", ".vitepress", "theme");
 const VARS_CSS = join(THEME, "styles", "vars.css");
 const TOKENS_JSON = join(ROOT, "assets", "brand", "tokens.json");
 const BRAND_README = join(ROOT, "assets", "brand", "README.md");
+const MARKS_LOCK = join(ROOT, "assets", "brand", "marks.lock.json");
 
 const T = JSON.parse(readFileSync(TOKENS_JSON, "utf8"));
 
@@ -620,9 +622,58 @@ export function rule8() {
   };
 }
 
+/* ══ Rule 9 — the marks are the marks ═══════════════════════════ */
+
+/**
+ * The logo is the source of truth for this whole system, and it was the
+ * one thing nothing checked.
+ *
+ * Every colour, typeface and generated asset in this repository resolves
+ * to a module and is locked byte-for-byte. The eleven image files the
+ * brand actually rests on were governed by a sentence in a document
+ * asking people not to redraw the hammer — which is a convention, and
+ * conventions are what the other eight rules exist because of.
+ *
+ * Re-encoding is permitted by the brand rules and redrawing is not, but
+ * a hash cannot tell those apart, so it pins both: a silent re-export at
+ * a different quality still changes what a reader sees, and it should
+ * arrive as a decision rather than as a diff nobody opens.
+ */
+export function rule9() {
+  if (!existsSync(MARKS_LOCK))
+    return {
+      n: 9,
+      name: "The brand marks are unchanged",
+      detail: rel(MARKS_LOCK),
+      gap: "assets/brand/marks.lock.json is missing — run npm run brand:marks:update",
+    };
+  const lock = JSON.parse(readFileSync(MARKS_LOCK, "utf8"));
+  const entries = { ...lock.masters, ...lock.derived };
+  const failures = [];
+  for (const [path, want] of Object.entries(entries)) {
+    const file = join(ROOT, path);
+    if (!existsSync(file)) {
+      failures.push(`${path} — pinned, but missing from the tree`);
+      continue;
+    }
+    const got = createHash("sha256").update(readFileSync(file)).digest("hex");
+    if (got !== want)
+      failures.push(
+        `${path} — sha256 ${got.slice(0, 12)} != ${String(want).slice(0, 12)}. ` +
+          `If this was deliberate, run \`npm run brand:marks:update\` and say why.`,
+      );
+  }
+  return {
+    n: 9,
+    name: "The brand marks are unchanged",
+    detail: `${Object.keys(lock.masters).length} masters + ${Object.keys(lock.derived).length} derived, sha256`,
+    failures,
+  };
+}
+
 /* ── runner ──────────────────────────────────────────────────── */
 
-const RULES = [rule1, rule2, rule3, rule4, rule5, rule6, rule7, rule8];
+const RULES = [rule1, rule2, rule3, rule4, rule5, rule6, rule7, rule8, rule9];
 
 export function runAll() {
   return RULES.map((r) => r());

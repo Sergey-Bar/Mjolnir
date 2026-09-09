@@ -5,10 +5,11 @@ mjolnir brand doctor
   PASS  Rule 2 · Terminal palette matches the tokens — 9 token references in src/reporter/theme.ts, 0 hex literals
   PASS  Rule 3 · SVG and video chrome match the tokens — 15 token references across 2 files
   PASS  Rule 4 · Generated assets consume brand values — 4 generators + every assets/readme/*.svg
-  PASS  Rule 5 · Design docs state only real values — 56 colour values across 7 documents
-  PASS  Rule 6 · No unapproved hex outside the token module — 68 files in src/reporter, scripts and the site theme
-  PASS  Rule 7 · README badges use canonical colours — 23 README files
+  PASS  Rule 5 · Design docs state only real values — 58 colour values across 8 documents
+  PASS  Rule 6 · No unapproved hex outside the token module — 75 files in src/reporter, scripts and the site theme
+  PASS  Rule 7 · Badges use canonical colours — 23 README files + 5 generated bands
   PASS  Rule 8 · Declared pairings meet WCAG AA — 28 foregrounds × 9 surfaces + 5 diagram tints, computed
+  PASS  Rule 9 · The brand marks are unchanged — 2 masters + 9 derived, sha256
 
-  0 of 8 rules failing, 0 findings, 0 known open, 0 stale
+  0 of 9 rules failing, 0 findings, 0 known open, 0 stale
 

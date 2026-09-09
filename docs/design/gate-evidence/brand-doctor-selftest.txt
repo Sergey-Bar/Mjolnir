@@ -21,10 +21,12 @@ mjolnir brand doctor — failure-first self-test
            seeded src\commands\badge.ts → exit 1, named the finding
   Rule 8: PROVEN — a declared pairing drops below WCAG AA
            seeded assets\brand\tokens.json → exit 1, named the finding
+  Rule 9: PROVEN — a brand mark changes without anyone deciding to change it
+           seeded assets\brand\marks.lock.json → exit 1, named the finding
   Rule ratchet: PROVEN — a known-open entry that no longer fires is reported as stale
            seeded scripts\brand-doctor.mjs → exit 1, named the finding
 
   restored: exit 0 (expected 0)
 
-  11 of 11 rules observed rejecting an invalid state
+  12 of 12 rules observed rejecting an invalid state
 
