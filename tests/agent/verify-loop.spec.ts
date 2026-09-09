@@ -290,3 +290,42 @@ describe("`mjolnir verify` verb (frozen exit contract)", () => {
     },
   );
 });
+
+describe("digest unit gaps — new-findings render + unchanged overflow", () => {
+  it("NEW findings render with rule, location, and severity; >5 locations elide", () => {
+    const baseline: BaselineFile = {
+      schemaVersion: 1,
+      capturedAt: "2026-09-09T00:00:00.000Z",
+      commit: "abc1234",
+      score: 99,
+      findings: [],
+    };
+    const mk = (file: string): ScanResult["findings"][number] => ({
+      ruleId: "QA-PW-101",
+      category: "QA-PW",
+      severity: "error",
+      confidence: "high",
+      findingType: "deterministic-defect",
+      qaImpact: "HYGIENE",
+      file,
+      line: 1,
+      column: 1,
+      message: "m-" + file,
+      why: "w",
+      fix: "f",
+      evidenceLevel: "E2",
+    });
+    const findings = [
+      mk("src/a.spec.ts"),
+      ...Array.from({ length: 7 }, (_, i) => mk("src/g" + i + ".spec.ts")),
+    ];
+    const d = buildVerifyDigest(scan({ findings, score: 80 }), baseline);
+    expect(d.new).toHaveLength(8);
+    expect(d.scoreDelta).toBe(-19);
+    const out = renderVerifyDigest(d);
+    expect(out).toContain("NEW (introduced by the change under verification):");
+    expect(out).toContain("QA-PW-101 src/a.spec.ts:1 (error)");
+    expect(out).toContain("worse, Δ-19");
+    expect(out).toContain("… and 2 more"); // 7 locations, 5 shown
+  });
+});
