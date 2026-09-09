@@ -9,6 +9,12 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [0.6.5] — 2026-09-09
+
+### Changes since 0.6.4
+
+- chore(test): re-baseline the coverage ratchet for the 0.6.x line (measured 99.8/99.37/99.81/99.82; per-file pause documented)
+
 ## [0.6.4] — 2026-09-09
 
 ### Changes since 0.6.3
