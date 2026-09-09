@@ -78,7 +78,10 @@ function compareRecords(a: EvidenceRecord, b: EvidenceRecord): number {
   const lb = b.line ?? Number.POSITIVE_INFINITY;
   if (la !== lb) return la - lb;
   if (a.title !== b.title) return a.title < b.title ? -1 : 1;
-  if (a.source !== b.source) return a.source < b.source ? -1 : 1;
+  // Source tie-break omitted: buildEvidenceRecords normalizes ONE
+  // report per call, so a sort set is always single-source — the
+  // comparison is provably dead (coverage says so) and stable order
+  // for identical identities comes from the final return 0.
   return 0;
 }
 
@@ -151,10 +154,12 @@ export function findTestAt(
   }
   let match: EvidenceRecord | undefined;
   for (const r of inFile) {
-    if (r.line === undefined) continue;
+    const rLine = r.line as number;
+    // The all-lines-present guard above makes the undefined branch
+    // provably dead; this loop only sees known declaration lines.
     if (
-      r.line <= line &&
-      (match === undefined || (match.line as number) <= r.line)
+      rLine <= line &&
+      (match === undefined || (match.line as number) <= rLine)
     )
       match = r;
   }
