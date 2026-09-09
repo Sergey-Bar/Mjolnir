@@ -9,6 +9,12 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [0.6.2] — 2026-09-09
+
+### Changes since 0.6.1
+
+- Create FUNDING.yml
+
 ## [0.6.1] — 2026-09-09
 
 ### Changes since 0.6.0
