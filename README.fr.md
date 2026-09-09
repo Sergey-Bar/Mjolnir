@@ -15,7 +15,7 @@ exactement où la confiance se brise.
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | Français | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-08.
 
 ```bash
 npx mjolnir-qa@latest
@@ -203,27 +203,23 @@ sortir — c'est le pare-feu anti faux positifs.
 <details>
 <summary><strong>Qualité des tests</strong></summary>
 
-| ID           | Règle                             | Severity |
-| ------------ | --------------------------------- | -------- |
-| QA-TQUAL-001 | Vérification par mocks uniquement | info     |
-| QA-TQUAL-002 | Assertion tautologique            | error    |
-| QA-TQUAL-009 | Assertion de promise non awaitée  | error    |
-| QA-TQUAL-011 | Tests commentés                   | warning  |
+| ID           | Règle                            | Severity |
+| ------------ | -------------------------------- | -------- |
+| QA-TQUAL-002 | Assertion tautologique           | error    |
+| QA-TQUAL-009 | Assertion de promise non awaitée | error    |
+| QA-TQUAL-011 | Tests commentés                  | warning  |
 
 </details>
 
 <details>
 <summary><strong>Playwright 🎭</strong></summary>
 
-| ID        | Règle                                            | Severity |
-| --------- | ------------------------------------------------ | -------- |
-| QA-PW-002 | Assertion de locator non awaitée                 | error    |
-| QA-PW-003 | `page.pause()` / `test.only()` commités          | error    |
-| QA-PW-004 | Sélecteurs CSS/XPath fragiles                    | warning  |
-| QA-PW-005 | Logique métier dans `page.evaluate()`            | info     |
-| QA-PW-114 | Element handles historiques (`page.$`)           | info     |
-| QA-PW-118 | Attentes `networkidle` (instables de conception) | info     |
-| QA-PW-123 | URLs d'environnement codées en dur               | warning  |
+| ID        | Règle                                   | Severity |
+| --------- | --------------------------------------- | -------- |
+| QA-PW-002 | Assertion de locator non awaitée        | error    |
+| QA-PW-003 | `page.pause()` / `test.only()` commités | error    |
+| QA-PW-004 | Sélecteurs CSS/XPath fragiles           | warning  |
+| QA-PW-123 | URLs d'environnement codées en dur      | warning  |
 
 </details>
 
@@ -245,14 +241,12 @@ sortir — c'est le pare-feu anti faux positifs.
 <details>
 <summary><strong>Python / pytest 🐍</strong></summary>
 
-| ID        | Règle                                     | Severity |
-| --------- | ----------------------------------------- | -------- |
-| QA-PY-002 | Test sauté (`skip`, `xfail` non strict)   | warning  |
-| QA-PY-003 | Fonction de test sans assertion           | error    |
-| QA-PY-005 | `time.sleep()` dans les tests             | warning  |
-| QA-PY-006 | Corps de test vide (`pass`)               | info     |
-| QA-PY-010 | Dépendance au hasard/au temps sans freeze | info     |
-| QA-PY-012 | Assertion tautologique                    | error    |
+| ID        | Règle                                   | Severity |
+| --------- | --------------------------------------- | -------- |
+| QA-PY-002 | Test sauté (`skip`, `xfail` non strict) | warning  |
+| QA-PY-003 | Fonction de test sans assertion         | error    |
+| QA-PY-005 | `time.sleep()` dans les tests           | warning  |
+| QA-PY-012 | Assertion tautologique                  | error    |
 
 20 règles Python au total (QA-PY-001…012 hygiène pytest + QA-PY-101…108 Playwright-Python).
 
@@ -261,30 +255,26 @@ sortir — c'est le pare-feu anti faux positifs.
 <details>
 <summary><strong>Java / JUnit · TestNG ☕</strong></summary>
 
-| ID        | Règle                                         | Severity |
-| --------- | --------------------------------------------- | -------- |
-| QA-JV-101 | Test désactivé (`@Disabled`)                  | warning  |
-| QA-JV-102 | Sleep en dur (`Thread.sleep()`)               | warning  |
-| QA-JV-103 | Méthode de test sans assertion                | error    |
-| QA-JV-105 | Sleep en dur Playwright `waitForTimeout()`    | warning  |
-| QA-JV-106 | Sélecteur fragile au lieu d'un role locator   | warning  |
-| QA-JV-108 | URL d'environnement codée en dur dans le test | info     |
-| QA-JV-111 | Mock blanket `page.route("**")`               | info     |
+| ID        | Règle                                       | Severity |
+| --------- | ------------------------------------------- | -------- |
+| QA-JV-101 | Test désactivé (`@Disabled`)                | warning  |
+| QA-JV-102 | Sleep en dur (`Thread.sleep()`)             | warning  |
+| QA-JV-103 | Méthode de test sans assertion              | error    |
+| QA-JV-105 | Sleep en dur Playwright `waitForTimeout()`  | warning  |
+| QA-JV-106 | Sélecteur fragile au lieu d'un role locator | warning  |
 
 </details>
 
 <details>
 <summary><strong>C# / .NET — NUnit · xUnit · MSTest 🟣</strong></summary>
 
-| ID        | Règle                                         | Severity |
-| --------- | --------------------------------------------- | -------- |
-| QA-CS-101 | Test sauté (`[Ignore]`, `[Fact(Skip=)]`)      | warning  |
-| QA-CS-102 | Sleep en dur (`Thread.Sleep` / `Task.Delay`)  | warning  |
-| QA-CS-103 | Méthode de test sans assertion                | error    |
-| QA-CS-105 | Sleep en dur `WaitForTimeoutAsync()`          | warning  |
-| QA-CS-106 | Sélecteur fragile au lieu d'un role locator   | warning  |
-| QA-CS-108 | URL d'environnement codée en dur dans le test | info     |
-| QA-CS-111 | Mock blanket `page.RouteAsync("**")`          | info     |
+| ID        | Règle                                        | Severity |
+| --------- | -------------------------------------------- | -------- |
+| QA-CS-101 | Test sauté (`[Ignore]`, `[Fact(Skip=)]`)     | warning  |
+| QA-CS-102 | Sleep en dur (`Thread.Sleep` / `Task.Delay`) | warning  |
+| QA-CS-103 | Méthode de test sans assertion               | error    |
+| QA-CS-105 | Sleep en dur `WaitForTimeoutAsync()`         | warning  |
+| QA-CS-106 | Sélecteur fragile au lieu d'un role locator  | warning  |
 
 </details>
 
@@ -307,7 +297,6 @@ l'estimation de l'auteur. Chaque pied de scan vous dit combien des
 règles _déclenchées_ sont mesurées ; `mjolnir rules --unmeasured` liste
 celles qui ne le sont pas ; la page `mjolnir explain` de chaque règle
 énonce son statut. Nous publions le taux même quand il est laid —
-QA-PW-107 s'audite à 95 % et est mis en quarantaine pour ça. Faire
 grandir ce chiffre est le travail continu du projet.
 
 ### Tiers de règles et maturité par langage
@@ -534,7 +523,7 @@ périmètre — il ne change jamais la sémantique de détection.
 {
   "gate": "error",
   "exclude": ["legacy/**"],
-  "severityOverrides": { "QA-PW-118": "warning" },
+  "severityOverrides": { "QA-PW-141": "warning" },
   "ignore": [
     {
       "ruleId": "QA-TEST-004",

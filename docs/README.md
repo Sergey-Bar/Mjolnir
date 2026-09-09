@@ -8,7 +8,7 @@ new findings. Everything else (`forensics`, `debt`, `handover`, `impact`,
 `baseline`/`diff`, `stats`, `badge`, `--tone blunt`, …) is optional and
 should be read as such.
 
-Honesty surface: 78 of 99 rules carry a false-positive rate measured against
+Honesty surface: <!-- census:measured-of-total -->57 of 78<!-- /census:measured-of-total --> rules carry a false-positive rate measured against
 real OSS code (`docs/FP-AUDIT.md`). The scan footer, `mjolnir rules
 --unmeasured`, and every `mjolnir explain` page report which rules are which.
 

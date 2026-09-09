@@ -151,6 +151,18 @@ HOW TO FIX
 
   Example from this rule's own must-fire fixture: QA-CI-001/must-fire/masked.yml
 
+WHAT WOULD CHANGE THE VERDICT
+  - a run report next to the scan target (mjolnir.report.json or test-results/)
+  corroborating this file lifts its findings to L3–L5
+  - a documented suppression (mjolnir.config.json) lowers the finding count
+  without claiming correctness
+  - quarantine findings run only under --strict and are advisory (E0) — they can
+  never gate CI
+
+NEXT ACTION
+  Fix the first occurrence, then re-run: `mjolnir --scope changed`. Every
+  occurrence of this rule is listed in the scan output.
+
 HOW TO VERIFY THE FIX
   Re-run `mjolnir` on the changed file(s) — this finding should no longer
   appear. `mjolnir --scope changed` scopes the check to just what you touched.
@@ -169,56 +181,62 @@ reporting a pass it did not earn.
 npx mjolnir-qa@latest
 ```
 
-That is the whole product: it scans the current directory, prints a
-worthiness score and the findings behind it, and exits `0` if nothing at or
-above the gate was found. **In CI, use the changed-scope form** — it
-attributes findings to what your branch introduced, so a legacy suite does
-not drown a first PR:
+That is the whole product: it scans the current directory and prints the
+Trust Report — what the scan found, how much you can trust it, why, and
+what to do next — then exits `0` if nothing at or above the gate was
+found. **In CI, use the changed-scope form** — it attributes findings to
+what your branch introduced, so a legacy suite does not drown a first PR:
 
 ```bash
 npx mjolnir-qa@latest --scope changed
 ```
 
-`mjolnir ci install` writes that as a GitHub Actions workflow — advisory by
-default, never blocking until you say so.
+`mjolnir ci install` writes that as a GitHub Actions workflow — the
+[action](https://github.com/Sergey-Bar/Mjolnir#readme) (Marketplace-grade,
+pinned to the `v1` major tag) by default, or plain `npx` with
+`--no-action`. Advisory by default, never blocking until you say so.
 
 | Command                             | What it does                                     |
 | ----------------------------------- | ------------------------------------------------ |
-| `mjolnir`                           | Full-repo scan + worthiness score                |
+| `mjolnir`                           | Trust Report — verdict, confidence, next action  |
 | `mjolnir --scope changed`           | Only what your branch introduced — the CI form   |
-| `mjolnir ci install`                | Generate the advisory PR workflow                |
+| `mjolnir ci install`                | Generate the advisory PR workflow (action-based) |
 | `mjolnir explain QA-CI-001`         | What / why / fix + measured FP rate for one rule |
 | `mjolnir why src/a.spec.ts:42`      | Why this exact line was flagged — never a gate   |
 | `mjolnir forensics ./test-results/` | Runtime evidence from a real run                 |
+| `mjolnir trust-report`              | Self-contained Trust Artifact (md + json)        |
 | `mjolnir handoff`                   | Remediation plan for a coding agent              |
 | `mjolnir --json` / `--format sarif` | Machine-readable / GitHub Code Scanning          |
+| `mjolnir --format codequality`      | GitLab Code Quality report (MR widget artifact)  |
 | `mjolnir --strict`                  | Also run quarantine-tier rules (higher FP risk)  |
 
 <details>
 <summary><strong>Everything else</strong> — flake triage, reporting, governance</summary>
 
-| Command                             | What it does                                           |
-| ----------------------------------- | ------------------------------------------------------ |
-| `mjolnir triage ./test-results/`    | Quarantine proposal from execution history             |
-| `mjolnir pw-report ./test-results/` | Playwright run summary — retries / flakes / slowest    |
-| `mjolnir doctor:playwright`         | Playwright-only deep scan + Selector Health Score      |
-| `mjolnir fix --dry-run` / `fix`     | Safe auto-fixes, each re-scanned to prove it landed    |
-| `mjolnir baseline` / `diff`         | Snapshot findings, then report only new/worsened       |
-| `mjolnir impact --since <ref>`      | What a commit introduced vs resolved                   |
-| `mjolnir summary`                   | CI annotations + step summary from a saved report      |
-| `mjolnir pr-comment`                | A scoped PR comment, as Markdown                       |
-| `mjolnir debt`                      | Test-debt register with a cost model                   |
-| `mjolnir handover`                  | New-QA onboarding map of the suite                     |
-| `mjolnir init`                      | Detect frameworks + setup checklist (never overwrites) |
-| `mjolnir suppressions`              | List suppressed findings — governance transparency     |
-| `mjolnir rules --unmeasured`        | The rules running on assumption, not measurement       |
-| `mjolnir rules --md`                | Full rule catalog (JSON or Markdown)                   |
-| `mjolnir doctor`                    | Self-audit of Mjölnir's own rule base                  |
-| `mjolnir create-rule <ID>`          | Scaffold a new rule + fixtures                         |
-| `mjolnir stats`                     | Local all-time counters of fixes seen                  |
-| `mjolnir badge`                     | shields.io endpoint JSON + snippet                     |
-| `mjolnir --cache`                   | Incremental re-scans via a local verdict cache         |
-| `mjolnir --format mermaid`          | Test-architecture diagram for a PR comment             |
+| Command                             | What it does                                             |
+| ----------------------------------- | -------------------------------------------------------- |
+| `mjolnir --classic`                 | The pre-Trust-Report score banner render                 |
+| `mjolnir explain verdict`           | Why the saved scan's verdict is what it is               |
+| `mjolnir triage ./test-results/`    | Guided triage workflow — every row ends in a next action |
+| `mjolnir pw-report ./test-results/` | Playwright run summary — retries / flakes / slowest      |
+| `mjolnir doctor:playwright`         | Playwright-only deep scan + Selector Health Score        |
+| `mjolnir fix --dry-run` / `fix`     | Safe auto-fixes, each re-scanned to prove it landed      |
+| `mjolnir baseline` / `diff`         | Snapshot findings, then report only new/worsened         |
+| `mjolnir impact --since <ref>`      | What a commit introduced vs resolved                     |
+| `mjolnir summary`                   | CI annotations + step summary from a saved report        |
+| `mjolnir pr-comment`                | A scoped PR comment, as Markdown                         |
+| `mjolnir debt`                      | Test-debt register with a cost model                     |
+| `mjolnir handover`                  | New-QA onboarding map of the suite                       |
+| `mjolnir init`                      | Detect frameworks + setup checklist (never overwrites)   |
+| `mjolnir suppressions`              | List suppressed findings — governance transparency       |
+| `mjolnir rules --unmeasured`        | The rules running on assumption, not measurement         |
+| `mjolnir rules --md`                | Full rule catalog (JSON or Markdown)                     |
+| `mjolnir doctor`                    | Self-audit of Mjölnir's own rule base                    |
+| `mjolnir create-rule <ID>`          | Scaffold a new rule + fixtures                           |
+| `mjolnir stats`                     | Local all-time counters of fixes seen                    |
+| `mjolnir badge`                     | shields.io endpoint JSON + snippet                       |
+| `mjolnir --cache`                   | Incremental re-scans via a local verdict cache           |
+| `mjolnir --format mermaid`          | Test-architecture diagram for a PR comment               |
 
 `mjolnir help <command>` prints usage, examples and the next step for any
 of them.
@@ -227,12 +245,15 @@ of them.
 
 Requires **Node.js ≥ 22.18**. Runs on Windows, macOS and Linux. Install
 globally with `npm i -g mjolnir-qa` if you prefer it over `npx`.
+(Why ≥ 22.18? The build toolchain sets the floor — tsdown targets it and
+the release pipeline smoke-tests against it; the runtime dependencies
+have no such requirement.)
 
 ---
 
 ## What Mjölnir finds
 
-**99 rules** in four families — **test hygiene**, **test quality**,
+**<!-- census:total-rules -->78 rules<!-- /census:total-rules -->** in four families — **test hygiene**, **test quality**,
 **Playwright**, **CI integrity** — over TypeScript/JavaScript, Python,
 Java, C# and GitHub Actions YAML, covering Playwright in all four bindings
 plus pytest, JUnit, TestNG, NUnit, xUnit, MSTest, Jest, Vitest and Mocha,
@@ -248,7 +269,6 @@ is clear:
 | QA-TQUAL-009 | Unawaited promise assertion                                       | error    | quarantine |
 | QA-PW-002    | Unawaited locator assertion                                       | error    | core       |
 | QA-PW-004    | Brittle CSS/XPath selectors                                       | warning  | quarantine |
-| QA-PW-118    | `networkidle` waits (flaky by design)                             | info     | quarantine |
 | QA-PY-002    | Skipped test (`skip`, non-strict `xfail`)                         | warning  | core       |
 | QA-CS-103    | Test method with no assertions                                    | error    | core       |
 
@@ -257,7 +277,7 @@ The full catalog is generated from the registry, never hand-maintained:
 [what-it-checks guide](https://sergey-bar.github.io/Mjolnir/guide/what-it-checks).
 
 <details>
-<summary><strong>Every rule named in this README, in one table</strong> — the other 53 live in <code>mjolnir rules --md</code></summary>
+<summary><strong>Every rule named in this README, in one table</strong> — the rest live in <code>mjolnir rules --md</code></summary>
 
 > `quarantine` rules run only under `--strict` and never gate (capped to
 > info); the severity shown is the authored severity.
@@ -270,17 +290,12 @@ The full catalog is generated from the registry, never hand-maintained:
 | QA-TEST-004  | Hygiene    | Hard sleep (`waitForTimeout`, `sleep()`, `delay()`)                 | warning                       | extended                  |
 | QA-TEST-006  | Hygiene    | Retry abuse hiding flakiness                                        | warning                       | quarantine                |
 | QA-TEST-010  | Hygiene    | Empty test body                                                     | error                         | quarantine                |
-| QA-TQUAL-001 | Quality    | Mock-only verification                                              | info                          | quarantine                |
 | QA-TQUAL-002 | Quality    | Tautological assertion                                              | error                         | quarantine                |
 | QA-TQUAL-009 | Quality    | Unawaited promise assertion                                         | error                         | quarantine                |
 | QA-TQUAL-011 | Quality    | Commented-out tests                                                 | warning                       | extended                  |
 | QA-PW-002    | Playwright | Unawaited locator assertion                                         | error                         | core                      |
 | QA-PW-003    | Playwright | `page.pause()` / `test.only()` committed                            | error                         | core                      |
 | QA-PW-004    | Playwright | Brittle CSS/XPath selectors                                         | warning                       | quarantine                |
-| QA-PW-005    | Playwright | Business logic inside `page.evaluate()`                             | info                          | quarantine                |
-| QA-PW-107    | Playwright | `toBeVisible` where `toBeInViewport` fits better                    | info                          | quarantine                |
-| QA-PW-114    | Playwright | Legacy element handles (`page.$`)                                   | info                          | quarantine                |
-| QA-PW-118    | Playwright | `networkidle` waits (flaky by design)                               | info                          | quarantine                |
 | QA-PW-123    | Playwright | Hardcoded environment URLs                                          | warning                       | quarantine                |
 | QA-PW-140    | Playwright | Screenshot without `maxDiffPixelRatio`                              | warning                       | core                      |
 | QA-CI-001    | CI         | `continue-on-error` masks a failing gate                            | error                         | quarantine                |
@@ -293,23 +308,17 @@ The full catalog is generated from the registry, never hand-maintained:
 | QA-PY-002    | Python     | Skipped test (`skip`, non-strict `xfail`)                           | warning                       | core                      |
 | QA-PY-003    | Python     | Test function with no assertions                                    | error                         | quarantine                |
 | QA-PY-005    | Python     | `time.sleep()` in tests                                             | warning                       | extended                  |
-| QA-PY-006    | Python     | Empty test body (`pass`)                                            | info                          | quarantine                |
-| QA-PY-010    | Python     | Random/time dependence without freeze                               | info                          | quarantine                |
 | QA-PY-012    | Python     | Tautological assertion                                              | error                         | quarantine                |
 | QA-JV-101    | Java       | Disabled test (`@Disabled`)                                         | warning                       | core                      |
 | QA-JV-102    | Java       | Hard sleep (`Thread.sleep()`)                                       | warning                       | extended                  |
 | QA-JV-103    | Java       | Test method with no assertions                                      | error                         | extended                  |
 | QA-JV-105    | Java       | Playwright `waitForTimeout()` hard sleep                            | warning                       | core                      |
 | QA-JV-106    | Java       | Brittle selector instead of role locator                            | warning                       | quarantine                |
-| QA-JV-108    | Java       | Hardcoded environment URL in test                                   | info                          | quarantine                |
-| QA-JV-111    | Java       | Blanket `page.route("**")` mock                                     | info                          | quarantine                |
 | QA-CS-101    | C#         | Skipped test (`[Ignore]`, `[Fact(Skip=)]`)                          | warning                       | core                      |
 | QA-CS-102    | C#         | Hard sleep (`Thread.Sleep` / `Task.Delay`)                          | warning                       | core                      |
 | QA-CS-103    | C#         | Test method with no assertions                                      | error                         | core                      |
 | QA-CS-105    | C#         | `WaitForTimeoutAsync()` hard sleep                                  | warning                       | extended                  |
 | QA-CS-106    | C#         | Brittle selector instead of role locator                            | warning                       | quarantine                |
-| QA-CS-108    | C#         | Hardcoded environment URL in test                                   | info                          | quarantine                |
-| QA-CS-111    | C#         | Blanket `page.RouteAsync("**")` mock                                | info                          | quarantine                |
 
 Python also ships QA-PY-001…012 (pytest hygiene) and QA-PY-101…108
 (Playwright-Python); Cypress and Selenium have starter sets of three
@@ -424,13 +433,13 @@ Rung by rung: [docs/TERMINOLOGY.md](docs/TERMINOLOGY.md).
 
 ### How much of this is measured
 
-**78 of 99 rules carry a false-positive rate measured against real OSS code**
+**<!-- census:measured-of-total -->57 of 78<!-- /census:measured-of-total --> rules carry a false-positive rate measured against real OSS code**
 (≥ 10 hand-classified findings each — [docs/FP-AUDIT.md](docs/FP-AUDIT.md)).
-The other 21 ship on the author's estimate and say so, per rule, in
+The other <!-- census:unmeasured -->21<!-- /census:unmeasured --> ship on the author's estimate and say so, per rule, in
 `mjolnir explain`; `mjolnir rules --unmeasured` lists them, and every scan
 footer reports how many of the rules that actually _fired_ are measured.
 
-The rate is published even when unflattering: QA-PW-107 audits at 95% and
+The rate is published even when unflattering: QA-PW-141 audits at 43% and
 is quarantined for it. **Mjölnir measures its own uncertainty** — that is
 the product, not a caveat.
 
@@ -484,7 +493,8 @@ scanning.
 ## Runtime forensics
 
 Static analysis reasons about code that was never run. Forensics reads what
-actually happened — Playwright JSON reports and JUnit XML from any runner:
+actually happened — Playwright JSON, Jest JSON, Vitest JSON, and JUnit XML
+from any runner:
 
 ```text
 Static analysis  →  what the code appears to do
@@ -529,6 +539,19 @@ One command generates the PR workflow — advisory by default:
 mjolnir ci install
 ```
 
+Prefer the Marketplace action over a generated workflow? It is one line:
+
+```yaml
+- uses: Sergey-Bar/Mjolnir@v1
+  with:
+    scope: changed
+    fail-on: error
+```
+
+Pin `@v1` to follow the major line or an exact tag (`@v0.5.32`) for a
+reproducible gate — [docs/DISTRIBUTION-KIT.md](docs/DISTRIBUTION-KIT.md)
+covers Marketplace, Smithery and the MCP registries.
+
 Or wire it into GitHub Code Scanning natively via SARIF:
 
 ```yaml
@@ -537,6 +560,10 @@ Or wire it into GitHub Code Scanning natively via SARIF:
   with:
     sarif_file: mjolnir.sarif
 ```
+
+On GitLab, `--format codequality` emits the Code Quality report the MR
+widget and diff annotations consume
+([docs/GITLAB-CI.md](docs/GITLAB-CI.md)).
 
 Editor and pipeline setup: [docs/SARIF-INTEGRATION.md](docs/SARIF-INTEGRATION.md).
 
@@ -649,7 +676,7 @@ artifacts.
   product does what the requirement asked for.
 - **A 100 is not proof of a good suite.** Whether your suite covers your
   actual risk is a different question, and this tool does not answer it.
-- **21 of 99 rules ship on an estimate**, not a measured rate — disclosed
+- **<!-- census:unmeasured-of-total -->21 of 78<!-- /census:unmeasured-of-total --> rules ship on an estimate**, not a measured rate — disclosed
   per rule, not buried here.
 - **E1 is not E2.** Heuristic findings are worth reading, not worth
   applying blindly.
@@ -691,6 +718,7 @@ Rule IDs (`QA-<FAMILY>-NNN`) are immutable once shipped and never reused.
 | [docs/VERSIONING.md](docs/VERSIONING.md)               | Semver policy, frozen surfaces, deprecation cycle |
 | [docs/machine-contract.md](docs/machine-contract.md)   | The canonical machine-readable result             |
 | [docs/SARIF-INTEGRATION.md](docs/SARIF-INTEGRATION.md) | SARIF output + editor/CI setup                    |
+| [docs/GITLAB-CI.md](docs/GITLAB-CI.md)                 | GitLab: Code Quality report, MR recipe, gate      |
 | [docs/rules/](docs/rules/)                             | Generated per-rule catalog                        |
 | [CONTRIBUTING.md](CONTRIBUTING.md)                     | Dev setup + contribution workflow                 |
 | [SUPPORT.md](SUPPORT.md)                               | Where to ask, report and get help                 |

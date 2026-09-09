@@ -171,6 +171,11 @@ jobs:
     permissions:
       contents: write
       id-token: write
+    # Exposed to the action-tags job: the tag being released and whether
+    # it is an rc (rc tags must never move the action's major tag).
+    outputs:
+      tag: ${{ env.RELEASE_TAG }}
+      prerelease: ${{ steps.disttag.outputs.tag == 'next' }}
     env:
       # One name for "the tag being released", whichever trigger fired.
       # Read through env rather than interpolated into `run:` bodies so a
@@ -198,6 +203,25 @@ jobs:
           fi
           echo "VERSION=$PKG_VERSION" >> "$GITHUB_ENV"
           echo "Releasing $RELEASE_TAG (package version $PKG_VERSION)"
+
+      # WI-12A (plan §31): CHANGELOG integrity gate — RELEASE-BLOCKING.
+      # Runs before publication and before Release creation, never as a
+      # post-release audit. Validates: the released version has a dated
+      # CHANGELOG heading; gate-era (≥0.6.0) headings strictly descend;
+      # no duplicate/undated/empty sections; and when the release diff
+      # touched src/rules/**, at least one rule ID is documented (§32.5).
+      # Historical (pre-gate) entries are validated for shape only and
+      # are never rewritten.
+      - name: CHANGELOG integrity gate
+        run: |
+          PREV_TAG="$(git describe --abbrev=0 --tags "${RELEASE_TAG}^" 2>/dev/null || true)"
+          RULES_TOUCHED=0
+          if [ -n "$PREV_TAG" ]; then
+            RULES_TOUCHED="$(git diff --name-only "${PREV_TAG}..HEAD" -- src/rules/ | wc -l | tr -d ' ')"
+          fi
+          ARGS=(--expect-version "$VERSION")
+          if [ "$RULES_TOUCHED" -gt 0 ]; then ARGS+=(--rules-touched); fi
+          npx tsx scripts/check-changelog.ts "${ARGS[@]}"
 
       - run: npm ci
 
@@ -359,3 +383,39 @@ jobs:
           body: |
             Install: `npx mjolnir-qa@${{ env.VERSION }} .`
             Full changelog is auto-generated below from all commits and PRs since the previous release.
+
+  # ── Job 3: action-tags — keep the action's major moving tag honest ──
+  # The root action.yml (P1.1) is consumed as `uses: Sergey-Bar/Mjolnir@v1`.
+  # A major moving tag must advance on every STABLE release so consumers
+  # pinned to `v1` receive updates, and must NOT move for rc tags (an rc
+  # must never become what `@v1` resolves to — the same ruling as npm's
+  # `next` dist-tag). rc releases skip this job; the tag stays where the
+  # last stable release put it.
+  action-tags:
+    name: Maintain the v1 major moving tag
+    needs: release
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: >-
+      always() && !cancelled() && needs.release.result == 'success' &&
+      needs.release.outputs.prerelease != 'true'
+    permissions:
+      contents: write
+    env:
+      RELEASE_TAG: ${{ needs.release.outputs.tag }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+          fetch-depth: 0
+      - name: Move the v1 tag to this release (never force-push another major)
+        env:
+          RELEASE_TAG: ${{ env.RELEASE_TAG }}
+        run: |
+          MAJOR="$(echo "$RELEASE_TAG" | sed -E 's/^v([0-9]+)\..*/\1/')"
+          MOVING_TAG="v${MAJOR}"
+          echo "Stable release $RELEASE_TAG — moving $MOVING_TAG to it."
+          git tag -f "$MOVING_TAG" "$RELEASE_TAG"
+          git push origin "refs/tags/$MOVING_TAG" --force
+          echo "$MOVING_TAG now resolves to $RELEASE_TAG."
+          echo "::notice::Action consumers pinned to $MOVING_TAG now run $RELEASE_TAG."

@@ -1,19 +1,13 @@
 {
   "countsByRule": {
     "QA-PW-102": 1,
-    "QA-PW-103": 10,
-    "QA-PW-107": 2,
-    "QA-PW-112": 1,
-    "QA-PW-118": 3,
-    "QA-PW-120": 1,
     "QA-PW-123": 9,
     "QA-PW-146": 229,
     "QA-PW-147": 32,
     "QA-TEST-003": 125,
     "QA-TEST-010": 129,
-    "QA-TQUAL-001": 20,
     "QA-TQUAL-011": 2
   },
-  "totalFindings": 564,
+  "totalFindings": 527,
   "partial": false
 }

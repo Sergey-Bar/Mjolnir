@@ -7,7 +7,6 @@
 
 import { describe, expect, it } from "vitest";
 import { qaPw140 } from "../../../src/rules/playwright/qa-pw-140.js";
-import { evaluateBusinessLogic } from "../../../src/rules/playwright/qa-pw-005-evaluate-logic.js";
 import { pwNoProjectSplit } from "../../../src/rules/playwright/qa-pw-124-project-split.js";
 import { pyBareTruthinessAssert } from "../../../src/rules/python/qa-py-004-bare-truthiness.js";
 
@@ -21,35 +20,6 @@ describe("QA-PW-140: unbalanced parens bail out rather than guess", () => {
   it("brace matcher handles an escaped quote inside a screenshot name argument", () => {
     const text = `await expect(page).toHaveScreenshot("a\\"b.png");\n`;
     const findings = qaPw140.run({ path: "x.spec.ts", text });
-    expect(findings.length).toBeGreaterThan(0);
-  });
-});
-
-describe("QA-PW-005: page.evaluate() with no braces at all", () => {
-  it("does not throw on an arrow-expression body (no opening brace to find)", () => {
-    const text = `test("x", async ({ page }) => {\n  await page.evaluate(() => document.title);\n});\n`;
-    expect(() =>
-      evaluateBusinessLogic.run({ path: "x.spec.ts", text }),
-    ).not.toThrow();
-  });
-
-  it("does not fire for a trivial evaluate body with no branching logic", () => {
-    const text = `test("x", async ({ page }) => {\n  await page.evaluate(() => { return document.title; });\n});\n`;
-    expect(evaluateBusinessLogic.run({ path: "x.spec.ts", text })).toHaveLength(
-      0,
-    );
-  });
-
-  it("does not throw when the evaluate() block is never closed", () => {
-    const text = `page.evaluate(() => {\n  if (x) { do(); }`;
-    expect(() =>
-      evaluateBusinessLogic.run({ path: "x.spec.ts", text }),
-    ).not.toThrow();
-  });
-
-  it("brace matcher handles an escaped quote inside the evaluate body", () => {
-    const text = `page.evaluate(() => {\n  if (x) { console.log("a\\"b"); }\n});\n`;
-    const findings = evaluateBusinessLogic.run({ path: "x.spec.ts", text });
     expect(findings.length).toBeGreaterThan(0);
   });
 });

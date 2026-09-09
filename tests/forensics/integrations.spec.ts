@@ -22,12 +22,15 @@ afterEach(() => {
 });
 
 describe("ciInstall", () => {
-  it("creates workflow dir and writes advisory template", () => {
+  it("creates workflow dir and writes the action-based advisory template", () => {
     const res = ciInstall(dir);
     expect(res.existed).toBe(false);
     expect(existsSync(res.written)).toBe(true);
     const text = readFileSync(res.written, "utf8");
     expect(text).toContain("name: Mjölnir");
+    // Action-based by default (P1): the root action.yml, fail-on none.
+    expect(text).toContain("Sergey-Bar/Mjolnir@v1");
+    expect(text).toContain("fail-on: none");
     expect(text).toContain(
       "Advisory mode — findings reported, never blocking.",
     );
@@ -40,15 +43,26 @@ describe("ciInstall", () => {
     expect(res.existed).toBe(true);
     expect(res.refused).toBe(false);
     const text = readFileSync(res.written, "utf8");
+    // The action template carries the gate via `fail-on: error` and the
+    // standalone gate script (defense-in-depth read) is still exercised
+    // by generated-artifacts-validity's executed-gate cases.
+    expect(text).toContain("fail-on: error");
+    expect(text).toContain("Sergey-Bar/Mjolnir@v1");
+  });
+
+  it("renders warning gate (action template)", () => {
+    const res = ciInstall(dir, "warning");
+    expect(readFileSync(res.written, "utf8")).toContain("fail-on: warning");
+  });
+
+  it("--no-action keeps the plain-npx template with the inline gate", () => {
+    const res = ciInstall(dir, "error", { action: false });
+    const text = readFileSync(res.written, "utf8");
     expect(text).toContain("Gate (error)");
     // the enforcing gate reads the scan result and exits non-zero on errors
     expect(text).toContain('readFileSync("mjolnir.json"');
     expect(text).toContain("process.exit(1)");
-  });
-
-  it("renders warning gate", () => {
-    const res = ciInstall(dir, "warning");
-    expect(readFileSync(res.written, "utf8")).toContain("Gate (warning)");
+    expect(text).not.toContain("Sergey-Bar/Mjolnir@v1");
   });
 });
 

@@ -15,7 +15,7 @@ bricht.
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | Deutsch | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-08.
 
 ```bash
 npx mjolnir-qa@latest
@@ -206,7 +206,6 @@ geshippt werden — das ist die False-Positive-Firewall.
 
 | ID           | Regel                               | Severity |
 | ------------ | ----------------------------------- | -------- |
-| QA-TQUAL-001 | Nur-Mock-Verifikation               | info     |
 | QA-TQUAL-002 | Tautologische Assertion             | error    |
 | QA-TQUAL-009 | Nicht abgewartete Promise-Assertion | error    |
 | QA-TQUAL-011 | Auskommentierte Tests               | warning  |
@@ -221,9 +220,6 @@ geshippt werden — das ist die False-Positive-Firewall.
 | QA-PW-002 | Nicht abgewartete Locator-Assertion      | error    |
 | QA-PW-003 | `page.pause()` / `test.only()` committed | error    |
 | QA-PW-004 | Spröde CSS/XPath-Selektoren              | warning  |
-| QA-PW-005 | Business-Logik in `page.evaluate()`      | info     |
-| QA-PW-114 | Legacy Element Handles (`page.$`)        | info     |
-| QA-PW-118 | `networkidle`-Warten (flaky by design)   | info     |
 | QA-PW-123 | Hartkodierte Umgebungs-URLs              | warning  |
 
 </details>
@@ -251,8 +247,6 @@ geshippt werden — das ist die False-Positive-Firewall.
 | QA-PY-002 | Übersprungener Test (`skip`, nicht-strictes `xfail`) | warning  |
 | QA-PY-003 | Testfunktion ohne Assertionen                        | error    |
 | QA-PY-005 | `time.sleep()` in Tests                              | warning  |
-| QA-PY-006 | Leerer Testkörper (`pass`)                           | info     |
-| QA-PY-010 | Zufalls-/Zeitabhängigkeit ohne Freeze                | info     |
 | QA-PY-012 | Tautologische Assertion                              | error    |
 
 20 Python-Regeln insgesamt (QA-PY-001…012 pytest-Hygiene + QA-PY-101…108 Playwright-Python).
@@ -269,8 +263,6 @@ geshippt werden — das ist die False-Positive-Firewall.
 | QA-JV-103 | Testmethode ohne Assertionen               | error    |
 | QA-JV-105 | Playwright `waitForTimeout()`-harter Sleep | warning  |
 | QA-JV-106 | Spröder Selektor statt Role-Locator        | warning  |
-| QA-JV-108 | Hartkodierte Umgebungs-URL im Test         | info     |
-| QA-JV-111 | Pauschales `page.route("**")`-Mock         | info     |
 
 </details>
 
@@ -284,8 +276,6 @@ geshippt werden — das ist die False-Positive-Firewall.
 | QA-CS-103 | Testmethode ohne Assertionen                      | error    |
 | QA-CS-105 | `WaitForTimeoutAsync()`-harter Sleep              | warning  |
 | QA-CS-106 | Spröder Selektor statt Role-Locator               | warning  |
-| QA-CS-108 | Hartkodierte Umgebungs-URL im Test                | info     |
-| QA-CS-111 | Pauschales `page.RouteAsync("**")`-Mock           | info     |
 
 </details>
 
@@ -308,7 +298,6 @@ Schätzung des Autors. Jeder Scan-Footer sagt dir, wie viele der
 _ausgelösten_ Regeln gemessen sind; `mjolnir rules --unmeasured` listet
 die nicht gemessenen; die `mjolnir explain`-Seite jeder Regel nennt
 ihren Status. Wir veröffentlichen die Rate, selbst wenn sie hässlich
-ist — QA-PW-107 auditiert bei 95 % und ist deshalb quarantäniert. Diese
 Zahl zu vergrößern ist die fortlaufende Arbeit des Projekts.
 
 ### Regel-Tiers und Sprachreife
@@ -533,7 +522,7 @@ sie ändert nie die Erkennungssemantik.
 {
   "gate": "error",
   "exclude": ["legacy/**"],
-  "severityOverrides": { "QA-PW-118": "warning" },
+  "severityOverrides": { "QA-PW-141": "warning" },
   "ignore": [
     {
       "ruleId": "QA-TEST-004",

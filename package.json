@@ -1,6 +1,6 @@
 {
   "name": "mjolnir-qa",
-  "version": "0.5.31",
+  "version": "0.6.1",
   "description": "Mjölnir — the Verification Trust Engine for QA. Audits test suites and CI pipelines, reports a worthiness score and prioritized findings.",
   "type": "module",
   "engines": {
@@ -52,9 +52,12 @@
     "docs:video:render": "tsx scripts/video/render.ts",
     "docs:video": "npm run docs:video:capture && npm run docs:video:render",
     "docs:translations": "node scripts/check-readme-translations.mjs",
+    "changelog:check": "tsx scripts/check-changelog.ts --expect-version $(node -p \"require('./package.json').version\")",
+    "reporter:version-check": "tsx scripts/check-reporter-version.ts",
     "self-scan": "node dist/cli.mjs .",
     "prepare": "husky",
     "prepublishOnly": "npm run build",
+    "docs:flow": "tsx scripts/generate-readme-flow.ts",
     "docs:architecture": "tsx scripts/generate-readme-architecture.ts",
     "brand:tokens": "tsx scripts/generate-brand-tokens.ts",
     "brand:doctor": "node scripts/brand-doctor.mjs",

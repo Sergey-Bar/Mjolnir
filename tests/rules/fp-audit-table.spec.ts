@@ -124,16 +124,11 @@ describe("coverage denominator is the whole registry", () => {
   });
 
   it("includes the family-declared rules a source grep would miss", () => {
+    // (The retired JV/CS-110/111 variants were unregistered per the
+    // owner ruling of 2026-09-08 — QA-CS-106/JV-106/PY-104 remain the
+    // family-declared, still-active representatives this lock targets.)
     const ids = new Set(registryRuleIds());
-    for (const id of [
-      "QA-CS-106",
-      "QA-CS-110",
-      "QA-CS-111",
-      "QA-JV-106",
-      "QA-JV-110",
-      "QA-JV-111",
-      "QA-PY-104",
-    ]) {
+    for (const id of ["QA-CS-106", "QA-JV-106", "QA-PY-104"]) {
       expect(ids.has(id), `${id} missing from the coverage denominator`).toBe(
         true,
       );

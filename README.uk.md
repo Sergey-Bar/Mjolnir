@@ -15,7 +15,7 @@ CI-пайплайни, видає показник гідності й пока�
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | Українська | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-08.
 
 ```bash
 npx mjolnir-qa@latest
@@ -202,7 +202,6 @@ macOS і Linux.
 
 | ID           | Правило                       | Severity |
 | ------------ | ----------------------------- | -------- |
-| QA-TQUAL-001 | Верифікація лише моками       | info     |
 | QA-TQUAL-002 | Тавтологічний ассерт          | error    |
 | QA-TQUAL-009 | Ассерт не-awaitнутого promise | error    |
 | QA-TQUAL-011 | Закоментовані тести           | warning  |
@@ -212,15 +211,12 @@ macOS і Linux.
 <details>
 <summary><strong>Playwright 🎭</strong></summary>
 
-| ID        | Правило                                       | Severity |
-| --------- | --------------------------------------------- | -------- |
-| QA-PW-002 | Ассерт локатора без await                     | error    |
-| QA-PW-003 | `page.pause()` / `test.only()` у коміті       | error    |
-| QA-PW-004 | Крихкі CSS/XPath-селектори                    | warning  |
-| QA-PW-005 | Бізнес-логіка всередині `page.evaluate()`     | info     |
-| QA-PW-114 | Легасі element handles (`page.$`)             | info     |
-| QA-PW-118 | Очікування `networkidle` (флейкові by design) | info     |
-| QA-PW-123 | Захардкоджені URL середовищ                   | warning  |
+| ID        | Правило                                 | Severity |
+| --------- | --------------------------------------- | -------- |
+| QA-PW-002 | Ассерт локатора без await               | error    |
+| QA-PW-003 | `page.pause()` / `test.only()` у коміті | error    |
+| QA-PW-004 | Крихкі CSS/XPath-селектори              | warning  |
+| QA-PW-123 | Захардкоджені URL середовищ             | warning  |
 
 </details>
 
@@ -247,8 +243,6 @@ macOS і Linux.
 | QA-PY-002 | Пропущений тест (`skip`, нестрогий `xfail`) | warning  |
 | QA-PY-003 | Тестова функція без ассертів                | error    |
 | QA-PY-005 | `time.sleep()` у тестах                     | warning  |
-| QA-PY-006 | Порожнє тіло тесту (`pass`)                 | info     |
-| QA-PY-010 | Залежність від випадковості/часу без freeze | info     |
 | QA-PY-012 | Тавтологічний ассерт                        | error    |
 
 Усього 20 Python-правил (QA-PY-001…012 гігієна pytest + QA-PY-101…108 Playwright-Python).
@@ -265,8 +259,6 @@ macOS і Linux.
 | QA-JV-103 | Тестовий метод без ассертів                  | error    |
 | QA-JV-105 | Жорсткий sleep Playwright `waitForTimeout()` | warning  |
 | QA-JV-106 | Крихкий селектор замість role-локатора       | warning  |
-| QA-JV-108 | Захардкоджений URL середовища у тесті        | info     |
-| QA-JV-111 | Бланкетний мок `page.route("**")`            | info     |
 
 </details>
 
@@ -280,8 +272,6 @@ macOS і Linux.
 | QA-CS-103 | Тестовий метод без ассертів                    | error    |
 | QA-CS-105 | Жорсткий sleep `WaitForTimeoutAsync()`         | warning  |
 | QA-CS-106 | Крихкий селектор замість role-локатора         | warning  |
-| QA-CS-108 | Захардкоджений URL середовища у тесті          | info     |
-| QA-CS-111 | Бланкетний мок `page.RouteAsync("**")`         | info     |
 
 </details>
 
@@ -302,7 +292,6 @@ OSS-коді** (по ≥ 10 вручну класифікованих знахі
 автора. Футер кожного скана каже, скільки із _спрацьованих_ правил
 виміряно; `mjolnir rules --unmeasured` перелічує невиміряні; сторінка
 `mjolnir explain` кожного правила вказує її статус. Ми публікуємо
-частоту, навіть коли вона негарна — QA-PW-107 аудитується на 95 % і за
 це відправлено в карантин. Збільшувати це число — постійна робота проєкту.
 
 ### Тіри правил і зрілість мов
@@ -520,7 +509,7 @@ Mjölnir — zero-config. Опціональний `mjolnir.config.json` (або
 {
   "gate": "error",
   "exclude": ["legacy/**"],
-  "severityOverrides": { "QA-PW-118": "warning" },
+  "severityOverrides": { "QA-PW-141": "warning" },
   "ignore": [
     {
       "ruleId": "QA-TEST-004",

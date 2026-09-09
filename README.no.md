@@ -15,7 +15,7 @@ tilliten bryter sammen.
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | Norsk | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-08.
 
 ```bash
 npx mjolnir-qa@latest
@@ -201,7 +201,6 @@ det er false-positive-brannmuren.
 
 | ID           | Regel                           | Severity |
 | ------------ | ------------------------------- | -------- |
-| QA-TQUAL-001 | Kun-mock-verifisering           | info     |
 | QA-TQUAL-002 | Tautologisk assertion           | error    |
 | QA-TQUAL-009 | Assertion på promise uten await | error    |
 | QA-TQUAL-011 | Utkommenterte tester            | warning  |
@@ -211,15 +210,12 @@ det er false-positive-brannmuren.
 <details>
 <summary><strong>Playwright 🎭</strong></summary>
 
-| ID        | Regel                                    | Severity |
-| --------- | ---------------------------------------- | -------- |
-| QA-PW-002 | Locator-assertion uten await             | error    |
-| QA-PW-003 | `page.pause()` / `test.only()` commitet  | error    |
-| QA-PW-004 | Skjøre CSS/XPath-selektorer              | warning  |
-| QA-PW-005 | Forretningslogikk i `page.evaluate()`    | info     |
-| QA-PW-114 | Legacy element handles (`page.$`)        | info     |
-| QA-PW-118 | `networkidle`-ventetid (flaky by design) | info     |
-| QA-PW-123 | Hardkodede miljø-URLer                   | warning  |
+| ID        | Regel                                   | Severity |
+| --------- | --------------------------------------- | -------- |
+| QA-PW-002 | Locator-assertion uten await            | error    |
+| QA-PW-003 | `page.pause()` / `test.only()` commitet | error    |
+| QA-PW-004 | Skjøre CSS/XPath-selektorer             | warning  |
+| QA-PW-123 | Hardkodede miljø-URLer                  | warning  |
 
 </details>
 
@@ -246,8 +242,6 @@ det er false-positive-brannmuren.
 | QA-PY-002 | Hoppet over test (`skip`, ikke-strikt `xfail`) | warning  |
 | QA-PY-003 | Testfunksjon uten assertions                   | error    |
 | QA-PY-005 | `time.sleep()` i tester                        | warning  |
-| QA-PY-006 | Tomt testkropp (`pass`)                        | info     |
-| QA-PY-010 | Tilfeldighets-/tidsavhengighet uten freeze     | info     |
 | QA-PY-012 | Tautologisk assertion                          | error    |
 
 20 Python-regler totalt (QA-PY-001…012 pytest-hygiene + QA-PY-101…108 Playwright-Python).
@@ -264,8 +258,6 @@ det er false-positive-brannmuren.
 | QA-JV-103 | Testmetode uten assertions                | error    |
 | QA-JV-105 | Playwright hardt sleep `waitForTimeout()` | warning  |
 | QA-JV-106 | Skjør selector i stedet for role-locator  | warning  |
-| QA-JV-108 | Hardkodet miljø-URL i test                | info     |
-| QA-JV-111 | Blanket-mock `page.route("**")`           | info     |
 
 </details>
 
@@ -279,8 +271,6 @@ det er false-positive-brannmuren.
 | QA-CS-103 | Testmetode uten assertions                     | error    |
 | QA-CS-105 | Hardt sleep `WaitForTimeoutAsync()`            | warning  |
 | QA-CS-106 | Skjør selector i stedet for role-locator       | warning  |
-| QA-CS-108 | Hardkodet miljø-URL i test                     | info     |
-| QA-CS-111 | Blanket-mock `page.RouteAsync("**")`           | info     |
 
 </details>
 
@@ -302,7 +292,6 @@ det er false-positive-brannmuren.
 forfatterens estimat. Hver skann-fotnote forteller hvor mange av de
 _utløste_ reglene som er målt; `mjolnir rules --unmeasured` lister de
 umålte; hver regels `mjolnir explain`-side angir statusen. Vi publiserer
-raten selv når den er stygg — QA-PW-107 auditeres til 95 % og er satt i
 karantene for det. Å få det tallet til å vokse er prosjektets fortsatte
 arbeid.
 
@@ -522,7 +511,7 @@ scope — den endrer aldri deteksjonssemantikken.
 {
   "gate": "error",
   "exclude": ["legacy/**"],
-  "severityOverrides": { "QA-PW-118": "warning" },
+  "severityOverrides": { "QA-PW-141": "warning" },
   "ignore": [
     {
       "ruleId": "QA-TEST-004",

@@ -15,7 +15,7 @@ CI pipelines, αναφέρει δείκτη αξιοπιστίας και δεί
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | Ελληνικά | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-08.
 
 ```bash
 npx mjolnir-qa@latest
@@ -201,7 +201,6 @@ npx mjolnir-qa@latest --scope changed
 
 | ID           | Κανόνας                       | Severity |
 | ------------ | ----------------------------- | -------- |
-| QA-TQUAL-001 | Επαλήθευση μόνο με mocks      | info     |
 | QA-TQUAL-002 | Ταυτολογική assertion         | error    |
 | QA-TQUAL-009 | Assertion promise χωρίς await | error    |
 | QA-TQUAL-011 | Σχολιασμένα τεστ              | warning  |
@@ -211,15 +210,12 @@ npx mjolnir-qa@latest --scope changed
 <details>
 <summary><strong>Playwright 🎭</strong></summary>
 
-| ID        | Κανόνας                                        | Severity |
-| --------- | ---------------------------------------------- | -------- |
-| QA-PW-002 | Assertion locator χωρίς await                  | error    |
-| QA-PW-003 | `page.pause()` / `test.only()` στο commit      | error    |
-| QA-PW-004 | Εύθραυστοι CSS/XPath selectors                 | warning  |
-| QA-PW-005 | Επιχειρησιακή λογική μέσα σε `page.evaluate()` | info     |
-| QA-PW-114 | Legacy element handles (`page.$`)              | info     |
-| QA-PW-118 | Αναμονές `networkidle` (flaky by design)       | info     |
-| QA-PW-123 | Σκληρά URL περιβάλλοντος                       | warning  |
+| ID        | Κανόνας                                   | Severity |
+| --------- | ----------------------------------------- | -------- |
+| QA-PW-002 | Assertion locator χωρίς await             | error    |
+| QA-PW-003 | `page.pause()` / `test.only()` στο commit | error    |
+| QA-PW-004 | Εύθραυστοι CSS/XPath selectors            | warning  |
+| QA-PW-123 | Σκληρά URL περιβάλλοντος                  | warning  |
 
 </details>
 
@@ -246,8 +242,6 @@ npx mjolnir-qa@latest --scope changed
 | QA-PY-002 | Παραλειμένο τεστ (`skip`, μη αυστηρό `xfail`) | warning  |
 | QA-PY-003 | Συνάρτηση τεστ χωρίς assertions               | error    |
 | QA-PY-005 | `time.sleep()` σε τεστ                        | warning  |
-| QA-PY-006 | Κενό σώμα τεστ (`pass`)                       | info     |
-| QA-PY-010 | Εξάρτηση από τύχη/χρόνο χωρίς freeze          | info     |
 | QA-PY-012 | Ταυτολογική assertion                         | error    |
 
 Συνολικά 20 κανόνες Python (QA-PY-001…012 υγιεινή pytest + QA-PY-101…108 Playwright-Python).
@@ -264,8 +258,6 @@ npx mjolnir-qa@latest --scope changed
 | QA-JV-103 | Μέθοδος τεστ χωρίς assertions              | error    |
 | QA-JV-105 | Σκληρό sleep Playwright `waitForTimeout()` | warning  |
 | QA-JV-106 | Εύθραυστος selector αντί για role locator  | warning  |
-| QA-JV-108 | Σκληρό URL περιβάλλοντος στο τεστ          | info     |
-| QA-JV-111 | Μαζικό mock `page.route("**")`             | info     |
 
 </details>
 
@@ -279,8 +271,6 @@ npx mjolnir-qa@latest --scope changed
 | QA-CS-103 | Μέθοδος τεστ χωρίς assertions                  | error    |
 | QA-CS-105 | Σκληρό sleep `WaitForTimeoutAsync()`           | warning  |
 | QA-CS-106 | Εύθραυστος selector αντί για role locator      | warning  |
-| QA-CS-108 | Σκληρό URL περιβάλλοντος στο τεστ              | info     |
-| QA-CS-111 | Μαζικό mock `page.RouteAsync("**")`            | info     |
 
 </details>
 
@@ -303,7 +293,6 @@ npx mjolnir-qa@latest --scope changed
 _ενεργούς_ κανόνες είναι μετρημένοι· `mjolnir rules --unmeasured`
 παραθέτει τους άμετρητους· η σελίδα `mjolnir explain` κάθε κανόνα
 δηλώνει την κατάστασή του. Δημοσιεύουμε το ποσοστό ακόμα κι όταν είναι
-άσχημο — ο QA-PW-107 αυτοελέγχεται στο 95 % και είναι σε καραντίνα γι'
 αυτό. Να μεγαλώσει αυτός ο αριθμός είναι η συνεχιζόμενη δουλειά του έργου.
 
 ### Tiers κανόνων και ωριμότητα γλωσσών
@@ -528,7 +517,7 @@ detached HEAD, μη-git στόχος, διαφορετικό default branch — 
 {
   "gate": "error",
   "exclude": ["legacy/**"],
-  "severityOverrides": { "QA-PW-118": "warning" },
+  "severityOverrides": { "QA-PW-141": "warning" },
   "ignore": [
     {
       "ruleId": "QA-TEST-004",

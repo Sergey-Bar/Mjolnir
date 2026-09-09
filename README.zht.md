@@ -14,7 +14,7 @@
 
 [English](README.md) | [简体中文](README.zh.md) | 繁體中文 | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-08.
 
 ```bash
 npx mjolnir-qa@latest
@@ -193,7 +193,6 @@ npx mjolnir-qa@latest --scope changed
 
 | ID           | 規則                     | Severity |
 | ------------ | ------------------------ | -------- |
-| QA-TQUAL-001 | 僅用 mock 驗證           | info     |
 | QA-TQUAL-002 | 同義反覆的斷言           | error    |
 | QA-TQUAL-009 | 未 await 的 promise 斷言 | error    |
 | QA-TQUAL-011 | 被註解掉的測試           | warning  |
@@ -208,9 +207,6 @@ npx mjolnir-qa@latest --scope changed
 | QA-PW-002 | 未 await 的 locator 斷言              | error    |
 | QA-PW-003 | 提交了 `page.pause()` / `test.only()` | error    |
 | QA-PW-004 | 脆弱的 CSS/XPath 選擇器               | warning  |
-| QA-PW-005 | 在 `page.evaluate()` 中寫商業邏輯     | info     |
-| QA-PW-114 | 舊式元素控制代碼（`page.$`）          | info     |
-| QA-PW-118 | `networkidle` 等待（天生不穩定）      | info     |
 | QA-PW-123 | 寫死的環境 URL                        | warning  |
 
 </details>
@@ -238,8 +234,6 @@ npx mjolnir-qa@latest --scope changed
 | QA-PY-002 | 跳過的測試（`skip`、非嚴格 `xfail`） | warning  |
 | QA-PY-003 | 無斷言的測試函式                     | error    |
 | QA-PY-005 | 測試中的 `time.sleep()`              | warning  |
-| QA-PY-006 | 空測試主體（`pass`）                 | info     |
-| QA-PY-010 | 未凍結的隨機/時間依賴                | info     |
 | QA-PY-012 | 同義反覆的斷言                       | error    |
 
 共 20 條 Python 規則（QA-PY-001…012 pytest 衛生 + QA-PY-101…108 Playwright-Python）。
@@ -256,8 +250,6 @@ npx mjolnir-qa@latest --scope changed
 | QA-JV-103 | 無斷言的測試方法                         | error    |
 | QA-JV-105 | Playwright 硬式 sleep `waitForTimeout()` | warning  |
 | QA-JV-106 | 脆弱選擇器取代 role 定位器               | warning  |
-| QA-JV-108 | 測試裡寫死的環境 URL                     | info     |
-| QA-JV-111 | 全覆蓋 mock `page.route("**")`           | info     |
 
 </details>
 
@@ -271,8 +263,6 @@ npx mjolnir-qa@latest --scope changed
 | QA-CS-103 | 無斷言的測試方法                            | error    |
 | QA-CS-105 | 硬式 sleep `WaitForTimeoutAsync()`          | warning  |
 | QA-CS-106 | 脆弱選擇器取代 role 定位器                  | warning  |
-| QA-CS-108 | 測試裡寫死的環境 URL                        | info     |
-| QA-CS-111 | 全覆蓋 mock `page.RouteAsync("**")`         | info     |
 
 </details>
 
@@ -292,7 +282,6 @@ npx mjolnir-qa@latest --scope changed
 作者的估計發布。每次掃描的頁尾都會告訴你，_觸發過的_ 規則中有多少經過
 測量；`mjolnir rules --unmeasured` 列出未測量的；每條規則的
 `mjolnir explain` 頁面都聲明其狀態。即使數字難看我們也照樣公布——
-QA-PW-107 的實測假陽性率是 95%，因此被隔離。把這個數字擴大，是專案的
 持續性工作。
 
 ### 規則層級與語言成熟度
@@ -495,7 +484,7 @@ Mjölnir 是零設定的。儲存庫根目錄下選用的 `mjolnir.config.json`�
 {
   "gate": "error",
   "exclude": ["legacy/**"],
-  "severityOverrides": { "QA-PW-118": "warning" },
+  "severityOverrides": { "QA-PW-141": "warning" },
   "ignore": [
     {
       "ruleId": "QA-TEST-004",

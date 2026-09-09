@@ -5,7 +5,7 @@
  * 10 usage error · 20 internal error.
  */
 
-import { existsSync, realpathSync, statSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { join, dirname, resolve } from "node:path";
 import process from "node:process";
@@ -42,18 +42,37 @@ import type { CliArgs } from "./engine/scan-pipeline.js";
 import { buildMachineContract } from "./engine/machine-contract.js";
 
 import { renderTerminal } from "./reporter/terminal.js";
+import { renderTrustReport } from "./reporter/trust-report.js";
 import { renderSarif } from "./reporter/sarif.js";
+import { renderCodeQuality } from "./reporter/codequality.js";
 import { renderMermaid } from "./reporter/mermaid.js";
 import { ProgressRenderer, shouldRenderProgress } from "./reporter/progress.js";
 import { runSummaryCommand } from "./commands/summary.js";
 import { runWhyCommand } from "./commands/why.js";
+import { explainVerdict, renderVerdictExplain } from "./commands/explain.js";
 import { runHandoffCommand } from "./commands/handoff.js";
 import { runInstallCommand } from "./commands/install-agents.js";
 import { runStdioTransport } from "./mcp/transport.js";
 import { ciInstall, type GateLevel } from "./integrations/ci-install.js";
 import { runForensics } from "./forensics/run.js";
-import { renderTriage, renderTriageMd } from "./forensics/triage.js";
+import {
+  renderTriage,
+  renderTriageMd,
+  renderTriageWorkflow,
+  renderTriageWorkflowJson,
+} from "./forensics/triage.js";
+import {
+  parseStrykerJson,
+  looksLikeStrykerJson,
+} from "./mutation/parse-stryker.js";
+import { looksLikeMutmutXml, parseMutmutXml } from "./mutation/parse-mutmut.js";
+import {
+  renderMutationSummary,
+  stampMutationEvidence,
+} from "./mutation/derive.js";
+import type { MutationReport } from "./mutation/types.js";
 import { renderBadgeSnippet, writeBadge } from "./commands/badge.js";
+import { runTrustReportCommand } from "./commands/trust-report.js";
 import {
   renderRootHelp,
   renderVerbHelp,
@@ -74,6 +93,7 @@ import {
   renderBaselineSaved,
   saveBaseline,
 } from "./commands/baseline.js";
+import { buildVerifyDigest, renderVerifyDigest } from "./commands/verify.js";
 import {
   DEFAULT_STATS_PATH,
   loadStats,
@@ -111,7 +131,7 @@ import {
  * `scripts/sync-sarif-version.cjs` on release and guarded by
  * `tests/version-consistency.spec.ts` locally.
  */
-export const CLI_VERSION = "0.5.31";
+export const CLI_VERSION = "0.6.1";
 
 /** A usage-error detail: the offending token, when one exists. */
 export interface UsageErrorDetail {
@@ -146,6 +166,9 @@ export function parseArgs(
       const fmt = argv[++i];
       if (fmt === "sarif") args.format = "sarif";
       else if (fmt === "mermaid") args.format = "mermaid";
+      // P3a (plan 1788853205786): GitLab Code Quality report — the
+      // `codequality` CI artifact GitLab renders as MR widgets.
+      else if (fmt === "codequality") args.format = "codequality";
       else if (fmt === "json") {
         args.format = "json";
         args.json = true;
@@ -208,6 +231,10 @@ export function parseArgs(
       // Audit C2: opt-in code execution for plugin/JS-module rule
       // sources. Additive flag, accepted by every verb that loads rules.
       args.enablePlugins = true;
+    } else if (a === "--classic") {
+      // WI-5: escape hatch from the Trust Report hero surface back to
+      // the classic terminal render. Rendering flag only.
+      args.classic = true;
     } else if (a === "--help" || a === "-h") {
       return null;
     } else if (!a.startsWith("-")) {
@@ -231,6 +258,7 @@ const KNOWN_SCAN_FLAGS = [
   "--ascii",
   "--no-ascii",
   "--tone",
+  "--classic",
   "--strict",
   "--debug",
   "--record-milestones",
@@ -339,12 +367,18 @@ export function runCiInstall(
   let gateArg: string | undefined;
   let gateSeen = false;
   let force = false;
+  let noAction = false;
   const unknown: string[] = [];
   for (const arg of argv) {
     if (arg === "--gate") {
       gateSeen = true;
     } else if (arg === "--force") {
       force = true;
+    } else if (arg === "--no-action") {
+      // P1.3: opt out of the action-based workflow (the default) and
+      // keep the plain-npx template — for repos or runners where
+      // composite actions are unavailable.
+      noAction = true;
     } else if (gateSeen && gateArg === undefined && !arg.startsWith("--")) {
       gateArg = arg;
     } else {
@@ -368,6 +402,7 @@ export function runCiInstall(
   }
   const result = ciInstall(resolve("."), (gateArg as GateLevel) ?? "advisory", {
     force,
+    action: !noAction,
   });
   if (result.refused) {
     // H2(e): the existing workflow differs from anything Mjölnir generates
@@ -382,8 +417,15 @@ export function runCiInstall(
     return 10;
   }
   io.out(`${result.existed ? "Updated" : "Created"} ${result.written}`);
-  io.out("Default mode: advisory — findings reported, never blocking.");
+  io.out(
+    noAction
+      ? "Plain-npx template (—no-action). Default mode: advisory — findings reported, never blocking."
+      : "Action-based template: uses Sergey-Bar/Mjolnir@v1 (major moving tag).",
+  );
   io.out("Change with: mjolnir ci install --gate error|warning|advisory");
+  if (!noAction) {
+    io.out("Prefer the plain-npx workflow? Re-run with --no-action.");
+  }
   return 0;
 }
 
@@ -543,14 +585,41 @@ export async function runRulesCommand(
  * (this repo checkout, or --fixtures-root), and honestly omitted
  * otherwise — never a fabricated example.
  */
-export function runExplainCommand(
+export async function runExplainCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
-): number {
-  const ruleId = argv.find((a) => !a.startsWith("-"));
-  if (!ruleId) {
-    io.err("Usage: mjolnir explain <RULE-ID>");
+): Promise<number> {
+  const subject = argv.find((a) => !a.startsWith("-"));
+  if (!subject) {
+    io.err(
+      "Usage: mjolnir explain <RULE-ID | file:line | verdict> [--json <mjolnir.json>]",
+    );
     return 10;
+  }
+  // WI-7 (plan §8): `explain verdict` — explain a SAVED scan's overall
+  // verdict from its --json artifact. --json <path> supplies the file.
+  if (subject === "verdict") {
+    const jsonIdx = argv.indexOf("--json");
+    const jsonPath =
+      jsonIdx !== -1 ? argv[jsonIdx + 1] : join(process.cwd(), "mjolnir.json");
+    if (jsonPath === undefined || jsonPath.startsWith("--")) {
+      io.err("explain verdict requires a saved scan: --json <mjolnir.json>");
+      return 10;
+    }
+    try {
+      io.out(renderVerdictExplain(explainVerdict(resolve(jsonPath))));
+      const r = explainVerdict(resolve(jsonPath));
+      return r.ok ? 0 : 10;
+    } catch (err) {
+      internalErrorMessage(err, io.err, argv.includes("--debug"));
+      return 20;
+    }
+  }
+  // finding mode: file:line delegates to the `why` command — same
+  // evidence checklist, one implementation (plan §18 parity: no parallel
+  // implementations of the same semantics).
+  if (/^[^:]+\.\w+:\d+$/.test(subject)) {
+    return runWhyCommand([subject, ...argv.filter((a) => a !== subject)], io);
   }
   const fixturesRootIdx = argv.indexOf("--fixtures-root");
   // Audit S8: a dangling `--fixtures-root` is a usage error, not a
@@ -571,7 +640,7 @@ export function runExplainCommand(
     explicitRoot ?? join(process.cwd(), "tests", "fixtures"),
   );
   try {
-    const result = explainRule(ruleId, fixturesRoot);
+    const result = explainRule(subject, fixturesRoot);
     io.out(renderExplain(result));
     if (!result.ok) return 10; // unknown rule ID is a usage error, not a crash
     return 0;
@@ -689,6 +758,8 @@ export async function runScanCommand(
       io.out(renderSarif(result, pathToFileURL(target).href));
     } else if (args.format === "mermaid") {
       io.out(renderMermaid(result));
+    } else if (args.format === "codequality") {
+      io.out(renderCodeQuality(result));
     } else if (args.json) {
       // Blueprint §12: the machine contract rides the JSON output as an
       // additive field (schemaVersion 1 + contractVersion 1). Derived
@@ -710,7 +781,7 @@ export async function runScanCommand(
           ? result.findings.filter((f) => categories.includes(f.category))
           : result.findings;
       io.out(
-        renderTerminal(result, {
+        renderTrustReport(result, {
           isTTY: process.stdout.isTTY ?? false,
           verbose: args.verbose,
           ...(categories && categories.length > 0
@@ -719,6 +790,7 @@ export async function runScanCommand(
           ...(args.width !== undefined ? { width: args.width } : {}),
           ...(args.ascii !== undefined ? { ascii: args.ascii } : {}),
           ...(args.tone !== undefined ? { tone: args.tone } : {}),
+          ...(args.classic ? { classic: true } : {}),
         }),
       );
       // First-run hint — terminal only, and only for the bare, full-repo
@@ -822,17 +894,28 @@ export function runTriageCommand(
 ): number {
   const targetArg = argv.find((a) => !a.startsWith("-"));
   if (!targetArg) {
-    io.err("Usage: mjolnir triage <test-results-dir-or-report-file> [--no-md]");
+    io.err(
+      "Usage: mjolnir triage <test-results-dir-or-report-file> [--no-md] [--json] [--classic]",
+    );
     return 10;
   }
+  // WI-8 (plan §9): the guided workflow is the default triage surface;
+  // --classic keeps the legacy table. --json emits the structured twin.
+  const jsonMode = argv.includes("--json");
+  const classic = argv.includes("--classic");
   try {
     const { report } = runForensics(resolve(targetArg), {
       writeFlakyMd: false,
     });
-    io.out(renderTriage(report));
-    // Only write TRIAGE.md when there's something to triage AND the
+    if (jsonMode) {
+      io.out(renderTriageWorkflowJson(report));
+    } else if (classic) {
+      io.out(renderTriage(report));
+    } else {
+      io.out(renderTriageWorkflow(report));
+    } // Only write TRIAGE.md when there's something to triage AND the
     // target dir exists — a missing dir must degrade honestly, not crash.
-    if (!argv.includes("--no-md") && report.totalTests > 0) {
+    if (!argv.includes("--no-md") && !jsonMode && report.totalTests > 0) {
       // Bug-audit M1: the documented `mjolnir triage <report-file>` joined
       // the FILE path with "TRIAGE.md" → `<file>/TRIAGE.md` is not a
       // directory → writeFileSync threw → "internal error" exit 20 after
@@ -851,6 +934,118 @@ export function runTriageCommand(
       );
       return 2;
     }
+    return 0;
+  } catch (err) {
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
+    return 20;
+  }
+}
+
+/**
+ * Sniff + parse a mutation report: Stryker JSON, mutmut junitxml, else
+ * an empty report (the caller renders the honest "nothing recognized").
+ */
+function ingestMutationReport(text: string): MutationReport {
+  const trimmed = text.trimStart();
+  if (trimmed.startsWith("<?xml") || trimmed.startsWith("<testsuite")) {
+    return parseMutmutXml(text);
+  }
+  try {
+    const json: unknown = JSON.parse(text);
+    if (looksLikeStrykerJson(json)) return parseStrykerJson(json);
+  } catch {
+    /* not JSON — fall through */
+  }
+  if (looksLikeMutmutXml(text)) return parseMutmutXml(text);
+  return { tool: "stryker", survived: [], noCoverage: 0, killed: 0 };
+}
+
+/** Testable `mutation` handler (master plan P5, plan 1788853205786).
+ * Reads a mutation report (Stryker JSON / mutmut junitxml), renders the
+ * survived-mutant leaderboard, and — with `--scan <path>` — re-scans the
+ * target, stamps matching findings with `mutationEvidence` (E1→E2 by
+ * derivation) and renders the stamped findings. NEVER spawns mutation
+ * tools: it reads reports the user already produced. Exit 2 when
+ * nothing in the report is recognized — honest no-evidence, not an
+ * error. Exit 0 in every other case: the reader is report-only, never a
+ * gate. */
+export async function runMutationCommand(
+  argv: string[],
+  io: { out: Output; err: Output } = { out, err },
+): Promise<number> {
+  const targetArg = argv.find((a) => !a.startsWith("-"));
+  if (!targetArg) {
+    io.err("Usage: mjolnir mutation <mutation-report> [--scan <path>]");
+    return 10;
+  }
+  const scanIdx = argv.indexOf("--scan");
+  const scanArg = scanIdx !== -1 ? argv[scanIdx + 1] : undefined;
+  if (scanIdx !== -1 && (!scanArg || scanArg.startsWith("-"))) {
+    io.err("--scan requires a path argument");
+    return 10;
+  }
+  let report: MutationReport;
+  try {
+    const path = resolve(targetArg);
+    if (!existsSync(path)) {
+      io.err(`No such file: ${path}`);
+      return 2;
+    }
+    const text = readFileSync(path, "utf8");
+    report = ingestMutationReport(text);
+    if (
+      report.survived.length === 0 &&
+      report.killed === 0 &&
+      report.noCoverage === 0
+    ) {
+      io.err(
+        "No mutants recognized. Expected a Stryker JSON report (mutation-report.json) or a mutmut junitxml report.",
+      );
+      return 2;
+    }
+  } catch (err) {
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
+    return 20;
+  }
+  io.out(renderMutationSummary(report));
+
+  if (scanArg === undefined) return 0;
+  try {
+    const scanPath = resolve(scanArg);
+    const invalid = validateScanTarget(scanPath, io.err);
+    if (invalid !== null) return invalid;
+    const result = await runScan({
+      target: scanPath,
+      json: true,
+      verbose: true,
+      maxDurationMs: 120_000,
+      scopeChanged: false,
+      format: "json",
+    });
+    const stats = stampMutationEvidence(result.findings, report);
+    io.out("");
+    if (stats.stamped === 0) {
+      io.out(
+        "No findings intersect the survived-mutant surface — nothing to derive.",
+      );
+    } else {
+      io.out(
+        `${stats.stamped} finding(s) carry mutationEvidence (${stats.derived} consolidated E1→E2 by derivation — docs/RULE-LIFECYCLE.md):`,
+      );
+      for (const f of result.findings) {
+        if (!f.mutationEvidence) continue;
+        io.out(
+          `  ${f.ruleId} ${f.file}:${f.line} — ${f.evidenceLevel} · ` +
+            `${f.mutationEvidence.matchedMutants} mutant(s) @ ${f.mutationEvidence.granularity} granularity`,
+        );
+      }
+      io.out("");
+      io.out(
+        "Machine form: re-run with --json — mutationEvidence rides the findings additively.",
+      );
+    }
+    // Report-only, never a gate: survived mutants NEVER fail this
+    // command (decision 8). The exit code is 0 regardless.
     return 0;
   } catch (err) {
     internalErrorMessage(err, io.err, process.argv.includes("--debug"));
@@ -1068,6 +1263,38 @@ export async function runBaselineCommand(
 }
 
 /** Testable `diff` handler (Sprint 6 Task 24) — new/worsened debt only. */
+/** Testable `verify` handler — the agent-loop verb (master plan P7,
+ * plan 1788853205786). Scans the target and diffs against the committed
+ * baseline, rendering the before/after digest the agent loop consumes
+ * (resolved per §15 · new · unchanged by ruleId+location · score delta).
+ * Exit semantics are the frozen contract: 0 clean · 1 new error
+ * findings · 2 partial scan or no baseline · 20 internal. */
+export async function runVerifyCommand(
+  argv: string[],
+  io: { out: Output; err: Output } = { out, err },
+): Promise<number> {
+  const args = parseArgsOrUsage(argv, io);
+  if (!args) {
+    return 10;
+  }
+  try {
+    const target = resolve(args.target);
+    const invalid = validateScanTarget(target, io.err);
+    if (invalid !== null) return invalid;
+    const result = await runScan({ ...args, target });
+    const baselinePath = join(target, DEFAULT_BASELINE_PATH);
+    const baseline = loadBaseline(baselinePath, (w) => io.err(w));
+    const digest = buildVerifyDigest(result, baseline);
+    io.out(renderVerifyDigest(digest));
+    if (result.partial) return 2;
+    if (!digest.hasBaseline) return 2;
+    return digest.new.some((f) => f.severity === "error") ? 1 : 0;
+  } catch (err) {
+    internalErrorMessage(err, io.err, args?.debug === true);
+    return 20;
+  }
+}
+
 export async function runDiffCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
@@ -1293,6 +1520,7 @@ const SUBCOMMANDS: ReadonlySet<string> = new Set([
   "forensics",
   "triage",
   "badge",
+  "trust-report",
   "debt",
   "impact",
   "baseline",
@@ -1346,11 +1574,15 @@ export async function main(
   if (argv[0] === "suppressions") return runSuppressions();
   if (argv[0] === "forensics") return runForensicsCommand(argv.slice(1));
   if (argv[0] === "triage") return runTriageCommand(argv.slice(1));
+  if (argv[0] === "mutation") return runMutationCommand(argv.slice(1), io);
   if (argv[0] === "badge") return runBadgeCommand(argv.slice(1));
+  if (argv[0] === "trust-report")
+    return runTrustReportCommand(argv.slice(1), io);
   if (argv[0] === "debt") return runDebtCommand(argv.slice(1));
   if (argv[0] === "impact") return runImpactCommand(argv.slice(1));
   if (argv[0] === "baseline") return runBaselineCommand(argv.slice(1));
   if (argv[0] === "diff") return runDiffCommand(argv.slice(1));
+  if (argv[0] === "verify") return runVerifyCommand(argv.slice(1), io);
   if (argv[0] === "pr-comment") return runPrCommentCommand(argv.slice(1));
   if (argv[0] === "summary") return runSummaryCommand(argv.slice(1), io);
   if (argv[0] === "stats") return runStatsCommand(argv.slice(1));

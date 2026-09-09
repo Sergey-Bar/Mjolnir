@@ -198,10 +198,10 @@ describe("exit-20 mapping: Error payload carries the message", () => {
     expect(cap.errText()).toContain("boom-err");
   });
 
-  it("explain", () => {
+  it("explain", async () => {
     throwOnce(explainRule, ERR);
     const cap = capture();
-    expect(runExplainCommand(["QA-TEST-001"], cap.io)).toBe(20);
+    expect(await runExplainCommand(["QA-TEST-001"], cap.io)).toBe(20);
     expect(cap.errText()).toContain("boom-err");
   });
 
@@ -318,10 +318,10 @@ describe("exit-20 mapping: non-Error throwables render via String()", () => {
     expect(cap.errText()).toContain("boom-str");
   });
 
-  it("explain", () => {
+  it("explain", async () => {
     throwOnce(explainRule, STR);
     const cap = capture();
-    expect(runExplainCommand(["QA-TEST-001"], cap.io)).toBe(20);
+    expect(await runExplainCommand(["QA-TEST-001"], cap.io)).toBe(20);
     expect(cap.errText()).toContain("boom-str");
   });
 

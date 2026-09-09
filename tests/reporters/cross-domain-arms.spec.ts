@@ -21,11 +21,9 @@ import {
   diffAgainstBaseline,
   renderBaselineDiff,
 } from "../../src/commands/baseline.js";
-import { pwMissingTimeout } from "../../src/rules/playwright/qa-pw-103-missing-timeout.js";
 import { hardcodedBaseUrl } from "../../src/rules/playwright/qa-pw-123-hardcoded-url.js";
 import { pwBlanketRouteMock } from "../../src/rules/playwright/qa-pw-142-blanket-route.js";
 import { emptyTestBody } from "../../src/rules/test/qa-test-010-empty-body.js";
-import { pwPollNoTimeout } from "../../src/rules/playwright/qa-pw-105-poll-timeout.js";
 import { computeCodeText } from "../../src/engine/code-text.js";
 import { retryMasking } from "../../src/rules/ci/qa-ci-007-retry-masking.js";
 import { parseWorkflow } from "../../src/discovery/workflow-parser.js";
@@ -192,16 +190,6 @@ describe("embedded-code skip arms with codeText oracle", () => {
       codeText: computeCodeText({ path: "a.spec.ts", text }, "typescript"),
     };
   }
-
-  it("QA-PW-103: a goto written as string data is skipped", () => {
-    const text = "const s = \"page.goto('https://example.com')\";\n";
-    expect(pwMissingTimeout.run(masked(text))).toEqual([]);
-  });
-
-  it("QA-PW-105: quoted timeouts inside a data string are skipped", () => {
-    const text = 'const s = "await page.waitForTimeout(100)";\n';
-    expect(pwPollNoTimeout.run(masked(text))).toEqual([]);
-  });
 
   it("QA-PW-123: a URL written as test data is skipped", () => {
     const text = "const s = \"await page.goto('https://example.com')\";\n";

@@ -15,6 +15,21 @@ Or wire it into GitHub Code Scanning natively via SARIF:
     sarif_file: mjolnir.sarif
 ```
 
+On GitLab, the Code Quality report renders as the MR widget and inline
+diff annotations:
+
+```yaml
+mjolnir:
+  image: node:22
+  script: npx --yes mjolnir-qa@latest . --scope changed --format codequality
+    > gl-code-quality-report.json
+  artifacts:
+    reports:
+      codequality: gl-code-quality-report.json
+```
+
+Full recipe (gate step, scheduled audit, self-hosted notes):
+[GitLab CI](https://github.com/Sergey-Bar/Mjolnir/blob/main/docs/GITLAB-CI.md).
 Editor and pipeline setup for SARIF: [SARIF integration](/reference/sarif).
 
 <FalseGreenChain />

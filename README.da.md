@@ -15,7 +15,7 @@ tilliden brister.
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | Dansk | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-08.
 
 ```bash
 npx mjolnir-qa@latest
@@ -202,7 +202,6 @@ det er false-positive-firewallen.
 
 | ID           | Regel                           | Severity |
 | ------------ | ------------------------------- | -------- |
-| QA-TQUAL-001 | Kun-mock-verifikation           | info     |
 | QA-TQUAL-002 | Tautologisk assertion           | error    |
 | QA-TQUAL-009 | Assertion på promise uden await | error    |
 | QA-TQUAL-011 | Udkommenterede tests            | warning  |
@@ -217,9 +216,6 @@ det er false-positive-firewallen.
 | QA-PW-002 | Locator-assertion uden await             | error    |
 | QA-PW-003 | `page.pause()` / `test.only()` committet | error    |
 | QA-PW-004 | Skrøbelige CSS/XPath-selectors           | warning  |
-| QA-PW-005 | Forretningslogik i `page.evaluate()`     | info     |
-| QA-PW-114 | Legacy element handles (`page.$`)        | info     |
-| QA-PW-118 | `networkidle`-venten (flaky by design)   | info     |
 | QA-PW-123 | Hårdkodede miljø-URL'er                  | warning  |
 
 </details>
@@ -247,8 +243,6 @@ det er false-positive-firewallen.
 | QA-PY-002 | Sprunget test (`skip`, ikke-strikt `xfail`) | warning  |
 | QA-PY-003 | Testfunktion uden assertions                | error    |
 | QA-PY-005 | `time.sleep()` i tests                      | warning  |
-| QA-PY-006 | Tomt testlegeme (`pass`)                    | info     |
-| QA-PY-010 | Tilfældigheds-/tidsafhængighed uden freeze  | info     |
 | QA-PY-012 | Tautologisk assertion                       | error    |
 
 20 Python-regler i alt (QA-PY-001…012 pytest-hygiejne + QA-PY-101…108 Playwright-Python).
@@ -265,8 +259,6 @@ det er false-positive-firewallen.
 | QA-JV-103 | Testmetode uden assertions                   | error    |
 | QA-JV-105 | Playwright hårdt sleep `waitForTimeout()`    | warning  |
 | QA-JV-106 | Skrøbelig selector i stedet for role-locator | warning  |
-| QA-JV-108 | Hårdkodet miljø-URL i test                   | info     |
-| QA-JV-111 | Blanket-mock `page.route("**")`              | info     |
 
 </details>
 
@@ -280,8 +272,6 @@ det er false-positive-firewallen.
 | QA-CS-103 | Testmetode uden assertions                   | error    |
 | QA-CS-105 | Hårdt sleep `WaitForTimeoutAsync()`          | warning  |
 | QA-CS-106 | Skrøbelig selector i stedet for role-locator | warning  |
-| QA-CS-108 | Hårdkodet miljø-URL i test                   | info     |
-| QA-CS-111 | Blanket-mock `page.RouteAsync("**")`         | info     |
 
 </details>
 
@@ -303,7 +293,6 @@ det er false-positive-firewallen.
 estimat. Hver scan-fodnote fortæller, hvor mange af de _udløste_ regler,
 der er målt; `mjolnir rules --unmeasured` lister de uregistrerede; hver
 regels `mjolnir explain`-side angiver dens status. Vi offentliggør
-raten, selv når den er grim — QA-PW-107 auditeres til 95 % og er sat i
 karantæne for det. At få det tal til at vokse er projektets fortsatte
 arbejde.
 
@@ -524,7 +513,7 @@ scope — den ændrer aldrig detektionssemantikken.
 {
   "gate": "error",
   "exclude": ["legacy/**"],
-  "severityOverrides": { "QA-PW-118": "warning" },
+  "severityOverrides": { "QA-PW-141": "warning" },
   "ignore": [
     {
       "ruleId": "QA-TEST-004",

@@ -25,9 +25,15 @@ export interface HelpEntry {
 export const HELP_ENTRIES: HelpEntry[] = [
   {
     verb: "ci install",
-    summary: "generate the PR workflow (scan + annotations + gate)",
-    usage: "mjolnir ci install [--gate advisory|error|warning] [--force]",
-    examples: ["mjolnir ci install", "mjolnir ci install --gate error --force"],
+    summary:
+      "generate the PR workflow (action-based by default; scan + annotations + gate)",
+    usage:
+      "mjolnir ci install [--gate advisory|error|warning] [--no-action] [--force]",
+    examples: [
+      "mjolnir ci install",
+      "mjolnir ci install --gate error",
+      "mjolnir ci install --no-action --gate error --force",
+    ],
     next: "mjolnir --scope changed",
   },
   {
@@ -62,6 +68,16 @@ export const HELP_ENTRIES: HelpEntry[] = [
     examples: ["mjolnir triage test-results --no-md"],
   },
   {
+    verb: "mutation",
+    summary:
+      "mutation-evidence reader: survived-mutant leaderboard + E1→E2 derivation",
+    usage: "mjolnir mutation <mutation-report> [--scan .]",
+    examples: [
+      "mjolnir mutation reports/mutation-report.json",
+      "mjolnir mutation reports/… --scan .",
+    ],
+  },
+  {
     verb: "pw-report",
     summary: "Playwright run summary (counts, true flakes, slowest tests)",
     usage: "mjolnir pw-report <playwright-report.json | test-results-dir>",
@@ -88,9 +104,16 @@ export const HELP_ENTRIES: HelpEntry[] = [
   },
   {
     verb: "diff",
-    summary: "compare a fresh scan against the baseline — new/worsened only",
-    usage: "mjolnir diff [path]",
+    summary: "lifecycle diff vs the committed baseline",
+    usage: "mjolnir diff [path] [--json] [scan flags]",
     examples: ["mjolnir diff"],
+  },
+  {
+    verb: "verify",
+    summary:
+      "agent-loop digest: resolved/new/unchanged vs baseline + score delta",
+    usage: "mjolnir verify [path] [--json] [scan flags]",
+    examples: ["mjolnir verify"],
   },
   {
     verb: "impact",
@@ -121,6 +144,12 @@ export const HELP_ENTRIES: HelpEntry[] = [
     summary: "shields.io endpoint JSON + snippet from a scan",
     usage: "mjolnir badge [path]",
     examples: ["mjolnir badge ."],
+  },
+  {
+    verb: "trust-report",
+    summary: "deterministic, self-contained Trust Artifact (md + json)",
+    usage: "mjolnir trust-report [path]",
+    examples: ["mjolnir trust-report ."],
   },
   {
     verb: "init",
@@ -184,7 +213,8 @@ export const HELP_ENTRIES: HelpEntry[] = [
   },
   {
     verb: "mcp",
-    summary: "run as an MCP server over stdio (scan / explain / diff tools)",
+    summary:
+      "run as an MCP server over stdio (scan / explain / diff / verify tools)",
     usage: "mjolnir mcp",
     examples: ["mjolnir mcp"],
   },
@@ -194,6 +224,10 @@ export const HELP_ENTRIES: HelpEntry[] = [
 export const HELP_FLAGS: Array<{ flag: string; summary: string }> = [
   { flag: "--json", summary: "machine-readable output" },
   { flag: "--format sarif", summary: "SARIF 2.1 for GitHub Code Scanning" },
+  {
+    flag: "--format codequality",
+    summary: "GitLab Code Quality report (MR widget artifact)",
+  },
   { flag: "--format mermaid", summary: "test-architecture diagram" },
   { flag: "--tone blunt", summary: "blunter, pattern-mocking messages" },
   { flag: "--verbose", summary: "show all findings" },
@@ -291,14 +325,20 @@ const GROUPS: Array<{ title: string; verbs: string[] }> = [
       "summary",
       "pr-comment",
       "badge",
+      "trust-report",
       "impact",
       "baseline",
       "diff",
+      "verify",
     ],
   },
   {
     title: "Forensics",
     verbs: ["forensics", "triage", "pw-report", "doctor:playwright"],
+  },
+  {
+    title: "Mutation evidence",
+    verbs: ["mutation"],
   },
   {
     title: "Maintenance",

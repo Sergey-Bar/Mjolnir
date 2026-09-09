@@ -11,16 +11,13 @@
 import { describe, expect, it } from "vitest";
 
 import { brittleSelectors } from "../../../src/rules/playwright/qa-pw-004-brittle-selectors.js";
-import { evaluateBusinessLogic } from "../../../src/rules/playwright/qa-pw-005-evaluate-logic.js";
 import { pwWaitForTimeout } from "../../../src/rules/playwright/qa-pw-101-wait-for-timeout.js";
-import { pwMissingTimeout } from "../../../src/rules/playwright/qa-pw-103-missing-timeout.js";
 import { pwDeepFrameLocator } from "../../../src/rules/playwright/qa-pw-113-deep-frames.js";
 import { pwStorageStateNoExpiry } from "../../../src/rules/playwright/qa-pw-116-storage-state.js";
 import { pwSerialNoJustification } from "../../../src/rules/playwright/qa-pw-117-serial.js";
 import { pwNoTraceOnRetry } from "../../../src/rules/playwright/qa-pw-122-no-trace.js";
 import { hardcodedBaseUrl } from "../../../src/rules/playwright/qa-pw-123-hardcoded-url.js";
 import { pwSingleBrowserMatrix } from "../../../src/rules/playwright/qa-pw-144-single-browser.js";
-import { pyRandomTimeDependence } from "../../../src/rules/python/qa-py-010-random-time.js";
 
 type Ctx = Parameters<typeof pwWaitForTimeout.run>[0];
 const ctx = (path: string, text: string, extra: Partial<Ctx> = {}): Ctx => ({
@@ -55,19 +52,6 @@ describe("QA-PW-004 brittle selectors — every pattern arm + masked skip", () =
   });
 });
 
-describe("QA-PW-005 evaluate logic — AST path and regex fallback", () => {
-  it("regex fallback (no ast) flags branching inside evaluate()", () => {
-    const src = `await page.evaluate(() => { if (window.x) return 1; return 2; });`;
-    const f = evaluateBusinessLogic.run(ctx("e2e/a.spec.ts", src));
-    expect(f.length).toBe(1);
-  });
-
-  it("regex fallback stays silent on a trivial evaluate read", () => {
-    const src = `const t = await page.evaluate(() => document.title);`;
-    expect(evaluateBusinessLogic.run(ctx("e2e/a.spec.ts", src))).toEqual([]);
-  });
-});
-
 describe("QA-PW-101 waitForTimeout", () => {
   it("flags each occurrence", () => {
     const src = `await page.waitForTimeout(500);\nawait page.waitForTimeout(1000);`;
@@ -77,23 +61,6 @@ describe("QA-PW-101 waitForTimeout", () => {
     expect(
       pwWaitForTimeout.run(
         ctx("e2e/a.spec.ts", `await expect(x).toBeVisible();`),
-      ),
-    ).toEqual([]);
-  });
-});
-
-describe("QA-PW-103 missing timeout", () => {
-  it("flags a bare goto() with a single string arg", () => {
-    expect(
-      pwMissingTimeout.run(
-        ctx("e2e/a.spec.ts", `await page.goto("/checkout");`),
-      ),
-    ).toHaveLength(1);
-  });
-  it("silent when an options object is passed", () => {
-    expect(
-      pwMissingTimeout.run(
-        ctx("e2e/a.spec.ts", `await page.goto("/x", { timeout: 5000 });`),
       ),
     ).toEqual([]);
   });
@@ -203,35 +170,5 @@ describe("QA-PW-144 single-browser matrix", () => {
     expect(pwSingleBrowserMatrix.run(ctx("playwright.config.ts", src))).toEqual(
       [],
     );
-  });
-});
-
-describe("QA-PY-010 random/time dependence", () => {
-  it("flags random.*, datetime.now(), and time.time()", () => {
-    const src = [
-      "import random, time, datetime",
-      "def test_x():",
-      "    a = random.randint(0, 9)",
-      "    b = datetime.now()",
-      "    c = time.time()",
-      "    assert a or b or c",
-    ].join("\n");
-    const f = pyRandomTimeDependence.run(ctx("test_x.py", src));
-    expect(f).toHaveLength(3);
-  });
-
-  it("skips a line that also mentions freeze_time / mock / patch", () => {
-    const src = [
-      "def test_x(freezer):",
-      "    with freeze_time('2020-01-01'): now = datetime.now()",
-      "    assert now",
-    ].join("\n");
-    expect(pyRandomTimeDependence.run(ctx("test_x.py", src))).toEqual([]);
-  });
-
-  it("ignores non-.py files", () => {
-    expect(
-      pyRandomTimeDependence.run(ctx("x.ts", `const n = random.randint(0,9)`)),
-    ).toEqual([]);
   });
 });

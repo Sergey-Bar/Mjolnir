@@ -55,20 +55,8 @@
     "logicHash": "e3e153db4762f8408dc78d0742c0aeffc51f0c24b3deca2e2a9453fc55d1a9d9",
     "detectorRevision": 1
   },
-  "QA-CS-108": {
-    "logicHash": "23a594bdb75cb490fb9aee449178d0d19f787eccced28212d633298dadf50206",
-    "detectorRevision": 1
-  },
   "QA-CS-109": {
     "logicHash": "d20ec14df8ef346c1a78b4b8a70c61a9cd84b956218e5b85c5870eaf65e483ee",
-    "detectorRevision": 1
-  },
-  "QA-CS-110": {
-    "logicHash": "810cd4733eede21ec9ddf49312c6822cebc7f0a5a8e95f65548ab1cadbb5f001",
-    "detectorRevision": 1
-  },
-  "QA-CS-111": {
-    "logicHash": "4a629683dbf6959e3f9cd692cd84b4f759fb2e448c0c4952eeb812fe19cb49bd",
     "detectorRevision": 1
   },
   "QA-CYP-001": {
@@ -115,20 +103,8 @@
     "logicHash": "e52487cd40ba222dbde9990b04b3dc2959c00910f8ba044401ba705c86570a80",
     "detectorRevision": 1
   },
-  "QA-JV-108": {
-    "logicHash": "1c5f5f06d27544fff15391bd4e33de849e48b1821deaae71fe1fb2395b431ed4",
-    "detectorRevision": 1
-  },
   "QA-JV-109": {
     "logicHash": "b3e2a5ad00cee85cc83928668bf6d5fd32f29658af65f6bdd03cee2312e0807a",
-    "detectorRevision": 1
-  },
-  "QA-JV-110": {
-    "logicHash": "4c6f3eef87f0cd367eb321208f57e34d057d2341cf067397361e64ec421953e0",
-    "detectorRevision": 1
-  },
-  "QA-JV-111": {
-    "logicHash": "9fee2ffe14b2536672c71b1ca4f87bd02c165fb488d765f36edeb321cf2d4779",
     "detectorRevision": 1
   },
   "QA-PW-002": {
@@ -143,10 +119,6 @@
     "logicHash": "94320b5d52de1c227d3a01b138defa868d0a7aadf4d00dc8c2e5751450a34c6a",
     "detectorRevision": 1
   },
-  "QA-PW-005": {
-    "logicHash": "0f65106385eae28c0b492eb9c64ae2ed38d030da72911908b89c2056b03283e1",
-    "detectorRevision": 1
-  },
   "QA-PW-101": {
     "logicHash": "b0f69b3ec167af684f120c29fa9d80194717e4c16f8fb837c967d4c883157046",
     "detectorRevision": 1
@@ -155,36 +127,12 @@
     "logicHash": "4d1e48d06a76ab64cca0d07811b6e0bf24d957fc112bc94b7f7cc798404e4ef3",
     "detectorRevision": 2
   },
-  "QA-PW-103": {
-    "logicHash": "0da68b9ee2e89dca0d1c633759e8be21ebf1a44313997347ac26d8b7ab34849a",
-    "detectorRevision": 1
-  },
   "QA-PW-104": {
     "logicHash": "cac47472c82b16490dc25427248ef12507160fd2133712408e222831eeac16e9",
     "detectorRevision": 1
   },
-  "QA-PW-105": {
-    "logicHash": "9b4f827b984cd768dcf9f75305cd0626cb18d3e7e3e6c0ce92df010f221012df",
-    "detectorRevision": 1
-  },
-  "QA-PW-107": {
-    "logicHash": "e3295390880d6c4d599bc641543e111adb58f923896017607eed5b769310e02b",
-    "detectorRevision": 1
-  },
-  "QA-PW-108": {
-    "logicHash": "0c63432a0b04e3ed07e3bbdf858d513d95c32771e474048885aee202e0a00189",
-    "detectorRevision": 1
-  },
-  "QA-PW-112": {
-    "logicHash": "3785779b9835362f4a84b7e9ca4d8501185ef112983a9649e3f50071e107a5e8",
-    "detectorRevision": 1
-  },
   "QA-PW-113": {
     "logicHash": "c16e57f480a28ac39ac48f5a7ba156004ea2dcd7fb972cccc3ed7d593c49bccd",
-    "detectorRevision": 1
-  },
-  "QA-PW-114": {
-    "logicHash": "90cf29160acf285dfb9d8f42690e627b01072cf3561f3d5b9a30150d97c4b245",
     "detectorRevision": 1
   },
   "QA-PW-115": {
@@ -197,18 +145,6 @@
   },
   "QA-PW-117": {
     "logicHash": "dcaa6c2b2408d3a563403ad47f0bdc7ccb25e7233631f381d9206195a3472f23",
-    "detectorRevision": 1
-  },
-  "QA-PW-118": {
-    "logicHash": "9f323c552e14634a5cca0f067053d905bdaf3660c987456f7a7ec0dfa9e5f541",
-    "detectorRevision": 1
-  },
-  "QA-PW-119": {
-    "logicHash": "a8a069d95e59de8264c4756170736854332a4ef2a17c2e92f0ca287576b5eb70",
-    "detectorRevision": 1
-  },
-  "QA-PW-120": {
-    "logicHash": "e1a50c0b2165b76188b5db7e41b26da269de991b7c60e92b5a45635c0c290df8",
     "detectorRevision": 1
   },
   "QA-PW-121": {
@@ -251,10 +187,6 @@
     "logicHash": "bdbf6b80f5a4fc0f5f660ad3aa5f021605df898c5b3666caff03f211a6c74d02",
     "detectorRevision": 1
   },
-  "QA-PW-145": {
-    "logicHash": "0b64f498bf325051339ce1494cba42247e09806d78c2bd90cb64b977359cc49c",
-    "detectorRevision": 1
-  },
   "QA-PW-146": {
     "logicHash": "a775067d66546b366431257779e5a54007c46dd5abf3108817334f6d1582f9f3",
     "detectorRevision": 1
@@ -283,24 +215,12 @@
     "logicHash": "09e0c7bdd9a9b4f24b89fbcacb32fe226427872bd004ed1630d39e8b0185e5b7",
     "detectorRevision": 1
   },
-  "QA-PY-006": {
-    "logicHash": "3116685cb778ac377ab3e14b692e82d535956ed12f730b70ac8c58ecdc15e1f4",
-    "detectorRevision": 1
-  },
   "QA-PY-007": {
     "logicHash": "d3ba259e47113f97276f7e94ed2fa8a8f4b511cb0329696bb5953636cc9a0087",
     "detectorRevision": 3
   },
-  "QA-PY-008": {
-    "logicHash": "14c3f8951db5b76eb20348fbad803ed84b92e310e510be9593ab7a500a405db0",
-    "detectorRevision": 1
-  },
   "QA-PY-009": {
     "logicHash": "dd355acc8aa3fdd67373a48d7a58a99c92517a08431d3b8e8a4e2beec789c66d",
-    "detectorRevision": 1
-  },
-  "QA-PY-010": {
-    "logicHash": "a5edced7a4c08f8e8524ad4c3f38e15051ee9a335122fe6c9b1c84beb6216ec2",
     "detectorRevision": 1
   },
   "QA-PY-011": {
@@ -340,7 +260,7 @@
     "detectorRevision": 1
   },
   "QA-PY-108": {
-    "logicHash": "bb73a6473b9e9729bcb9d359f440031fc1896791de12cf7982d2f79cfa0c577f",
+    "logicHash": "fbb3ac6f4dec4471edc2a93a30a1b238fe0dbe41fa587d76a99faa66eb88faa4",
     "detectorRevision": 1
   },
   "QA-SE-001": {
@@ -377,10 +297,6 @@
   },
   "QA-TEST-010": {
     "logicHash": "73af3ad979f70fe66f31f43848f58a3153670ba07bbf745814884eabc313efc9",
-    "detectorRevision": 1
-  },
-  "QA-TQUAL-001": {
-    "logicHash": "bfacd8d13ac2a05b165c91273f5fe35ef17cf1ca05f00688c6860805b4bdd14d",
     "detectorRevision": 1
   },
   "QA-TQUAL-002": {

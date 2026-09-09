@@ -15,7 +15,7 @@ exatamente onde a confiança se quebra.
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | Português (Brasil) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-08.
 
 ```bash
 npx mjolnir-qa@latest
@@ -204,7 +204,6 @@ que dispara na própria fixture negativa não pode ser publicada — esse
 
 | ID           | Regra                         | Severity |
 | ------------ | ----------------------------- | -------- |
-| QA-TQUAL-001 | Verificação só com mocks      | info     |
 | QA-TQUAL-002 | Asserção tautológica          | error    |
 | QA-TQUAL-009 | Asserção de promise sem await | error    |
 | QA-TQUAL-011 | Testes comentados             | warning  |
@@ -214,15 +213,12 @@ que dispara na própria fixture negativa não pode ser publicada — esse
 <details>
 <summary><strong>Playwright 🎭</strong></summary>
 
-| ID        | Regra                                         | Severity |
-| --------- | --------------------------------------------- | -------- |
-| QA-PW-002 | Asserção de locator sem await                 | error    |
-| QA-PW-003 | `page.pause()` / `test.only()` commitados     | error    |
-| QA-PW-004 | Seletores CSS/XPath frágeis                   | warning  |
-| QA-PW-005 | Lógica de negócio dentro de `page.evaluate()` | info     |
-| QA-PW-114 | Element handles legados (`page.$`)            | info     |
-| QA-PW-118 | Esperas `networkidle` (instáveis por design)  | info     |
-| QA-PW-123 | URLs de ambiente fixas no código              | warning  |
+| ID        | Regra                                     | Severity |
+| --------- | ----------------------------------------- | -------- |
+| QA-PW-002 | Asserção de locator sem await             | error    |
+| QA-PW-003 | `page.pause()` / `test.only()` commitados | error    |
+| QA-PW-004 | Seletores CSS/XPath frágeis               | warning  |
+| QA-PW-123 | URLs de ambiente fixas no código          | warning  |
 
 </details>
 
@@ -244,14 +240,12 @@ que dispara na própria fixture negativa não pode ser publicada — esse
 <details>
 <summary><strong>Python / pytest 🐍</strong></summary>
 
-| ID        | Regra                                         | Severity |
-| --------- | --------------------------------------------- | -------- |
-| QA-PY-002 | Teste pulado (`skip`, `xfail` não estrito)    | warning  |
-| QA-PY-003 | Função de teste sem asserções                 | error    |
-| QA-PY-005 | `time.sleep()` em testes                      | warning  |
-| QA-PY-006 | Corpo de teste vazio (`pass`)                 | info     |
-| QA-PY-010 | Dependência de aleatoriedade/tempo sem freeze | info     |
-| QA-PY-012 | Asserção tautológica                          | error    |
+| ID        | Regra                                      | Severity |
+| --------- | ------------------------------------------ | -------- |
+| QA-PY-002 | Teste pulado (`skip`, `xfail` não estrito) | warning  |
+| QA-PY-003 | Função de teste sem asserções              | error    |
+| QA-PY-005 | `time.sleep()` em testes                   | warning  |
+| QA-PY-012 | Asserção tautológica                       | error    |
 
 20 regras Python no total (QA-PY-001…012 higiene pytest + QA-PY-101…108 Playwright-Python).
 
@@ -267,8 +261,6 @@ que dispara na própria fixture negativa não pode ser publicada — esse
 | QA-JV-103 | Método de teste sem asserções               | error    |
 | QA-JV-105 | Sleep fixo do Playwright `waitForTimeout()` | warning  |
 | QA-JV-106 | Seletor frágil em vez de role locator       | warning  |
-| QA-JV-108 | URL de ambiente fixa no teste               | info     |
-| QA-JV-111 | Mock generalizado `page.route("**")`        | info     |
 
 </details>
 
@@ -282,8 +274,6 @@ que dispara na própria fixture negativa não pode ser publicada — esse
 | QA-CS-103 | Método de teste sem asserções              | error    |
 | QA-CS-105 | Sleep fixo `WaitForTimeoutAsync()`         | warning  |
 | QA-CS-106 | Seletor frágil em vez de role locator      | warning  |
-| QA-CS-108 | URL de ambiente fixa no teste              | info     |
-| QA-CS-111 | Mock generalizado `page.RouteAsync("**")`  | info     |
 
 </details>
 
@@ -305,7 +295,6 @@ código OSS real** (≥ 10 findings classificados à mão cada; veja
 a estimativa do autor. O rodapé de cada escaneio diz quantas das regras
 _que dispararam_ são medidas; `mjolnir rules --unmeasured` lista as que
 não são; a página `mjolnir explain` de cada regra declara seu status.
-Publicamos a taxa mesmo quando ela é feia — QA-PW-107 audita em 95 % e
 está em quarentena por isso. Fazer esse número crescer é o trabalho contínuo
 do projeto.
 
@@ -529,7 +518,7 @@ ele nunca muda a semântica de detecção.
 {
   "gate": "error",
   "exclude": ["legacy/**"],
-  "severityOverrides": { "QA-PW-118": "warning" },
+  "severityOverrides": { "QA-PW-141": "warning" },
   "ignore": [
     {
       "ruleId": "QA-TEST-004",

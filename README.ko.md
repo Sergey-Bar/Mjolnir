@@ -15,7 +15,7 @@
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | 한국어 | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-08.
 
 ```bash
 npx mjolnir-qa@latest
@@ -198,7 +198,6 @@ npx mjolnir-qa@latest --scope changed
 
 | ID           | 규칙                          | Severity |
 | ------------ | ----------------------------- | -------- |
-| QA-TQUAL-001 | 모크(mock)만으로 검증         | info     |
 | QA-TQUAL-002 | 동어반복적 어설션             | error    |
 | QA-TQUAL-009 | await되지 않은 promise 어설션 | error    |
 | QA-TQUAL-011 | 주석 처리된 테스트            | warning  |
@@ -213,9 +212,6 @@ npx mjolnir-qa@latest --scope changed
 | QA-PW-002 | await되지 않은 로케이터 어설션        | error    |
 | QA-PW-003 | 커밋된 `page.pause()` / `test.only()` | error    |
 | QA-PW-004 | 취약한 CSS/XPath 선택자               | warning  |
-| QA-PW-005 | `page.evaluate()` 안의 비즈니스 로직  | info     |
-| QA-PW-114 | 레거시 요소 핸들 (`page.$`)           | info     |
-| QA-PW-118 | `networkidle` 대기 (설계상 flaky)     | info     |
 | QA-PW-123 | 하드코딩된 환경 URL                   | warning  |
 
 </details>
@@ -243,8 +239,6 @@ npx mjolnir-qa@latest --scope changed
 | QA-PY-002 | 건너뛴 테스트 (`skip`, 비엄격 `xfail`) | warning  |
 | QA-PY-003 | 어설션이 없는 테스트 함수              | error    |
 | QA-PY-005 | 테스트 안의 `time.sleep()`             | warning  |
-| QA-PY-006 | 빈 테스트 본문 (`pass`)                | info     |
-| QA-PY-010 | freeze 없는 무작위성/시간 의존         | info     |
 | QA-PY-012 | 동어반복적 어설션                      | error    |
 
 총 20개의 Python 규칙 (QA-PY-001…012 pytest 위생 + QA-PY-101…108 Playwright-Python).
@@ -261,8 +255,6 @@ npx mjolnir-qa@latest --scope changed
 | QA-JV-103 | 어설션이 없는 테스트 메서드              | error    |
 | QA-JV-105 | Playwright 하드 sleep `waitForTimeout()` | warning  |
 | QA-JV-106 | role 로케이터 대신 취약한 선택자         | warning  |
-| QA-JV-108 | 테스트에 하드코딩된 환경 URL             | info     |
-| QA-JV-111 | 전면 모크 `page.route("**")`             | info     |
 
 </details>
 
@@ -276,8 +268,6 @@ npx mjolnir-qa@latest --scope changed
 | QA-CS-103 | 어설션이 없는 테스트 메서드                 | error    |
 | QA-CS-105 | 하드 sleep `WaitForTimeoutAsync()`          | warning  |
 | QA-CS-106 | role 로케이터 대신 취약한 선택자            | warning  |
-| QA-CS-108 | 테스트에 하드코딩된 환경 URL                | info     |
-| QA-CS-111 | 전면 모크 `page.RouteAsync("**")`           | info     |
 
 </details>
 
@@ -298,7 +288,6 @@ npx mjolnir-qa@latest --scope changed
 출시됩니다. 모든 스캔의 바닥글은 _발화한_ 규칙 중 몇 개가 측정되었는지
 말해줍니다; `mjolnir rules --unmeasured`는 측정되지 않은 것들을 나열합니다;
 각 규칙의 `mjolnir explain` 페이지는 그 상태를 명시합니다. 수치가 흉해도
-우리는 비율을 공개합니다 — QA-PW-107은 95%로 감사되었고 그래서 격리
 계층에 있습니다. 그 숫자를 늘려가는 것이 프로젝트의 지속적인 작업입니다.
 
 ### 규칙 계층과 언어 성숙도
@@ -515,7 +504,7 @@ Mjölnir는 제로 설정입니다. 리포지터리 루트의 선택적 `mjolnir
 {
   "gate": "error",
   "exclude": ["legacy/**"],
-  "severityOverrides": { "QA-PW-118": "warning" },
+  "severityOverrides": { "QA-PW-141": "warning" },
   "ignore": [
     {
       "ruleId": "QA-TEST-004",

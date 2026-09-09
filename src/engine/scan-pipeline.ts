@@ -13,8 +13,8 @@
  * module moved. Re-exports in cli.ts keep the historical import surface.
  */
 
-import { existsSync, readFileSync, statSync } from "node:fs";
-import { join, relative, resolve, sep } from "node:path";
+import { readFileSync } from "node:fs";
+import { relative, resolve, sep } from "node:path";
 
 import {
   compareFindings,
@@ -23,6 +23,8 @@ import {
   type RuleCategory,
   type ScanResult,
 } from "../types.js";
+import { buildTrustSummary } from "./trust-summary.js";
+import { discoverEvidenceCandidates } from "../discovery/evidence-discovery.js";
 import { discoverWorkspace, type Workspace } from "../discovery/workspace.js";
 import { computeStagedFiles } from "../scope/changed.js";
 import { detectFrameworks } from "../discovery/frameworks.js";
@@ -46,6 +48,7 @@ import { enforceTierPolicy, type Tier } from "./tier-policy.js";
 import type { QADoctorRule } from "../rules/rule.js";
 import type { UniversalRule, ParsedAst, ParsedFile } from "./adapter.js";
 import { stampRuntimeCorroboration } from "./runtime-corroboration.js";
+import { buildEvidenceRecords } from "./evidence-core.js";
 import { classifyProvenance, computeAgenticProfile } from "./provenance.js";
 import { releaseTreeSitterResources } from "./tree-sitter-ast.js";
 import { applyOverlapDedup, type OverlapMeta } from "./overlap-dedup.js";
@@ -206,7 +209,7 @@ export interface CliArgs {
   verbose: boolean;
   maxDurationMs: number;
   scopeChanged: boolean;
-  format: "terminal" | "json" | "sarif" | "mermaid";
+  format: "terminal" | "json" | "sarif" | "mermaid" | "codequality";
   /** --width override for terminal box/gauge wrapping (Sprint 5 Task 22). */
   width?: number;
   /** --ascii / --no-ascii override for shouldUseAscii()'s heuristic. */
@@ -268,6 +271,13 @@ export interface CliArgs {
    * equivalent. JSON rule manifests are unaffected (no code by design).
    */
   enablePlugins?: boolean;
+  /**
+   * --classic (plan §26 WI-5): escape hatch back to the pre-Trust-Report
+   * terminal render. Rendering flag only — scan semantics, exit codes
+   * and JSON are identical under both surfaces. Default OFF: the Trust
+   * Report is the hero output.
+   */
+  classic?: boolean;
 }
 
 export interface ScanHooks {
@@ -361,19 +371,18 @@ export function pathMatchesGlob(path: string, glob: string): boolean {
 }
 
 /**
- * Plan §16: locate a runtime run report next to the scan target, using
- * the exact conventions the forensics ingestion already accepts —
- * `mjolnir.report.json` (the packages/playwright-reporter default
- * output) or a `test-results/` directory. Returns the path for
- * `runForensics`, or undefined when neither convention is present
- * ("no runtime evidence" — never guessed).
+ * Plan §16 + WI-11: locate a runtime run report next to the scan
+ * target, using the exact conventions the forensics ingestion already
+ * accepts. Zero-config search over conventional artifact names at
+ * depth ≤ 2 (src/discovery/evidence-discovery.ts); the FIRST parsable
+ * candidate wins (priority: mjolnir-report > playwright-json >
+ * test-results-dir > junit-file). Returns the path for `runForensics`,
+ * or undefined when no convention is present ("no runtime evidence" —
+ * never guessed; the CLI surfaces the missing-evidence message).
  */
 export function discoverRuntimeReport(scanRoot: string): string | undefined {
-  const reportFile = join(scanRoot, "mjolnir.report.json");
-  if (existsSync(reportFile)) return reportFile;
-  const resultsDir = join(scanRoot, "test-results");
-  if (existsSync(resultsDir) && statSync(resultsDir).isDirectory()) {
-    return resultsDir;
+  for (const c of discoverEvidenceCandidates(scanRoot)) {
+    return c.path; // sorted candidates: highest-priority convention first per directory level
   }
   return undefined;
 }
@@ -894,13 +903,20 @@ export async function runScan(
   // `mjolnir.report.json` or a `test-results/` directory), findings get
   // stamped with runtime corroboration + the L0–L5 trust ladder.
   // Absent report → findings unchanged (honest "no runtime evidence").
+  // WI-2 (Canonical Evidence Core): the report is normalized into the
+  // evidence core first — one canonical record shape fans out from
+  // here; stamping semantics are byte-identical to pre-core behavior.
   const runtimeReportPath = discoverRuntimeReport(scanRoot.root);
   if (runtimeReportPath) {
     try {
       const fr = runForensics(runtimeReportPath, {
         writeFlakyMd: false,
       });
-      stampRuntimeCorroboration(findings, fr.report);
+      // WI-2 (Canonical Evidence Core): normalize the report into the
+      // canonical record shape once, then fan the SAME records into
+      // corroboration — one evidence path, byte-identical stamps.
+      const evidence = buildEvidenceRecords(fr.report, runtimeReportPath);
+      stampRuntimeCorroboration(findings, fr.report, evidence);
     } catch {
       // A hostile/corrupt report must not fail the scan — the run simply
       // carries no runtime evidence (same degrade posture as forensics).
@@ -909,6 +925,11 @@ export async function runScan(
   hooks.onProgress?.({ phase: "score", done: findings.length });
   const dimensions = computeDimensions(findings);
   const rawDeductions = findings.reduce((sum, f) => sum + deductionFor(f), 0);
+  // P2.3 (plan 1788853205786): effectiveDeductions is the mass-ceiling
+  // input — the SAME evidence-discounted sum computeTotal caps against.
+  // Additive JSON field so consumers can recompute the ceiling
+  // (docs/SCORING.md formula v2) without re-deriving evidence levels.
+  const effectiveDeductions = rawDeductions;
   const total = computeTotal(dimensions, findings, {
     testDeclarations: testDeclarationCount,
     testFileCount,
@@ -943,6 +964,7 @@ export async function runScan(
     testFileCount,
     testDeclarationCount,
     rawDeductions,
+    effectiveDeductions,
     suppressionCount,
     ...(pluginsLoaded.length > 0 ? { plugins: pluginsLoaded } : {}),
     // Plan §17.2: Agentic Trust Profile — provenance metadata only.
@@ -972,6 +994,12 @@ export async function runScan(
         : {}),
     },
   };
+  // WI-3 (plan §6): scan-level trust summary — a measurement, not a
+  // contract. Built here (single definition site: engine/trust-summary);
+  // formulas published in docs/SCORING.md. The per-file declaration
+  // census is passed through — evidence-backed declarations are counted
+  // inside the summary module (advisory-aware).
+  result.trustSummary = buildTrustSummary(result, declarationsByFile);
   // M5.2: flush new verdicts to the local cache before reporting. Never
   // fatal — a persist failure degrades to a cold cache next run.
   cache.persist();

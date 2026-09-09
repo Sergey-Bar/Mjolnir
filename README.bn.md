@@ -15,7 +15,7 @@
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | বাংলা | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-08.
 
 ```bash
 npx mjolnir-qa@latest
@@ -199,7 +199,6 @@ false-positive ফায়ারওয়াল।
 
 | ID           | রুল                           | Severity |
 | ------------ | ----------------------------- | -------- |
-| QA-TQUAL-001 | শুধু mock-ভিত্তিক যাচাই       | info     |
 | QA-TQUAL-002 | টাটলজিক্যাল assertion         | error    |
 | QA-TQUAL-009 | await-বিহীন promise assertion | error    |
 | QA-TQUAL-011 | কমেন্ট-আউট করা টেস্ট          | warning  |
@@ -214,9 +213,6 @@ false-positive ফায়ারওয়াল।
 | QA-PW-002 | await-বিহীন locator assertion           | error    |
 | QA-PW-003 | কমিট করা `page.pause()` / `test.only()` | error    |
 | QA-PW-004 | ভঙ্গুর CSS/XPath selector               | warning  |
-| QA-PW-005 | `page.evaluate()`-এর ভিতরে বিজনেস লজিক  | info     |
-| QA-PW-114 | লিগেসি element handle (`page.$`)        | info     |
-| QA-PW-118 | `networkidle` wait (flaky by design)    | info     |
 | QA-PW-123 | hardcode করা পরিবেশ URL                 | warning  |
 
 </details>
@@ -244,8 +240,6 @@ false-positive ফায়ারওয়াল।
 | QA-PY-002 | বাদ দেওয়া টেস্ট (`skip`, কঠোর-নয় এমন `xfail`) | warning  |
 | QA-PY-003 | assertion-বিহীন টেস্ট ফাংশন                     | error    |
 | QA-PY-005 | টেস্টে `time.sleep()`                           | warning  |
-| QA-PY-006 | খালি টেস্ট বডি (`pass`)                         | info     |
-| QA-PY-010 | freeze ছাড়া এলোমেলো/সময় নির্ভরতা              | info     |
 | QA-PY-012 | টাটলজিক্যাল assertion                           | error    |
 
 মোট ২০টি Python রুল (QA-PY-001…012 pytest হাইজিন + QA-PY-101…108 Playwright-Python)।
@@ -262,8 +256,6 @@ false-positive ফায়ারওয়াল।
 | QA-JV-103 | assertion-বিহীন টেস্ট মেথড               | error    |
 | QA-JV-105 | Playwright কড়া sleep `waitForTimeout()` | warning  |
 | QA-JV-106 | role locator-এর বদলে ভঙ্গুর selector     | warning  |
-| QA-JV-108 | টেস্টে hardcode করা পরিবেশ URL           | info     |
-| QA-JV-111 | ছাতা-মক `page.route("**")`               | info     |
 
 </details>
 
@@ -277,8 +269,6 @@ false-positive ফায়ারওয়াল।
 | QA-CS-103 | assertion-বিহীন টেস্ট মেথড                     | error    |
 | QA-CS-105 | কড়া sleep `WaitForTimeoutAsync()`             | warning  |
 | QA-CS-106 | role locator-এর বদলে ভঙ্গুর selector           | warning  |
-| QA-CS-108 | টেস্টে hardcode করা পরিবেশ URL                 | info     |
-| QA-CS-111 | ছাতা-মক `page.RouteAsync("**")`                | info     |
 
 </details>
 
@@ -299,7 +289,6 @@ false-positive ফায়ারওয়াল।
 প্রতিটি স্ক্যানের ফুটার বলে দেয় _ফায়ার_ করা রুলগুলোর কতগুলো পরিমাপকৃত;
 `mjolnir rules --unmeasured` যেগুলো নয় তা তালিকাভুক্ত করে; প্রতিটি রুলের
 `mjolnir explain` পেজ তার অবস্থা জানায়। আমরা হারটি প্রকাশ করি — এমনকি
-কুৎসিত হলেও — QA-PW-107 ৯৫%-এ অডিট হয় এবং এজন্যই কোয়ারেন্টাইনে। সেই
 সংখ্যা বাড়ানোই প্রজেক্টের চলমান কাজ।
 
 ### রুল টিয়ার ও ভাষা-পরিপক্বতা
@@ -514,7 +503,7 @@ Mjölnir zero-config। রিপো রুটে ঐচ্ছিক `mjolnir.co
 {
   "gate": "error",
   "exclude": ["legacy/**"],
-  "severityOverrides": { "QA-PW-118": "warning" },
+  "severityOverrides": { "QA-PW-141": "warning" },
   "ignore": [
     {
       "ruleId": "QA-TEST-004",

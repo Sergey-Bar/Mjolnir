@@ -25,33 +25,37 @@
  */
 
 import type { Finding, RuntimeCorroboration, TrustLevel } from "../types.js";
-import type { ForensicsReport, TestVerdict } from "../forensics/types.js";
+import type { ForensicsReport } from "../forensics/types.js";
+import {
+  buildEvidenceRecords,
+  countTestsIn,
+  findTestAt,
+  type EvidenceRecord,
+} from "./evidence-core.js";
 
 /**
  * Stamp runtime corroboration + trust levels onto findings (mutates in
  * place, the same contract as stampEvidenceLevels). Returns the number
  * of findings that gained runtime corroboration.
+ *
+ * WI-2 (Canonical Evidence Core): matching is delegated to the core —
+ * `evidence` is the pipeline's normalized record set; when omitted, the
+ * records are built from the report internally. Either way the stamped
+ * output is identical (preservation suite pins this).
  */
 export function stampRuntimeCorroboration(
   findings: Finding[],
   report: ForensicsReport,
+  evidence?: EvidenceRecord[],
 ): number {
-  // Group verdicts per file once; verdicts keep report order, which for
-  // Playwright JSON is suite order (ascending-ish by file section).
-  const byFile = new Map<string, TestVerdict[]>();
-  for (const v of report.verdicts) {
-    const list = byFile.get(v.file) ?? [];
-    list.push(v);
-    byFile.set(v.file, list);
-  }
+  const records = evidence ?? buildEvidenceRecords(report, "runtime-report");
 
   let corroborated = 0;
   for (const f of findings) {
-    const verdicts = byFile.get(f.file);
-    if (!verdicts || verdicts.length === 0) continue;
+    const testsExecuted = countTestsIn(records, f.file);
+    if (testsExecuted === 0) continue;
 
-    const testsExecuted = verdicts.length;
-    const matched = findContainingTest(verdicts, f.line);
+    const matched = findTestAt(records, f.file, f.line);
     let corroboration: RuntimeCorroboration;
     if (matched) {
       corroboration = {
@@ -60,11 +64,11 @@ export function stampRuntimeCorroboration(
         testsExecuted,
         matchedTest: {
           title: matched.title,
-          finalStatus: matched.finalStatus,
+          finalStatus: matched.status.final,
           attempts: matched.attempts,
-          passedOnRetry: matched.passedOnRetry,
-          everFailed: matched.everFailed,
-          skipped: matched.skipped,
+          passedOnRetry: matched.status.passedOnRetry,
+          everFailed: matched.status.failed,
+          skipped: matched.status.skipped,
         },
       };
     } else {
@@ -79,9 +83,9 @@ export function stampRuntimeCorroboration(
     const flakeCorroborated =
       f.qaImpact === "FLAKY-RISK" &&
       matched !== undefined &&
-      (matched.passedOnRetry ||
-        matched.everFailed ||
-        matched.finalStatus === "timedOut");
+      (matched.status.passedOnRetry ||
+        matched.status.failed ||
+        matched.status.final === "timedOut");
     if (flakeCorroborated) corroboration.level = "defect";
     f.runtimeCorroboration = corroboration;
     f.trustLevel = deriveTrustLevel(f, corroboration);
@@ -91,60 +95,12 @@ export function stampRuntimeCorroboration(
 }
 
 /**
- * The test whose declaration span contains `line`. Playwright JSON
- * verdicts carry the spec's declaration line: the containing test is
- * the one with the greatest declaration line ≤ the finding's line in
- * the same file (specs are flat within a file). When the report cannot
- * place lines (JUnit, or some verdicts lack them) the only HONEST
- * claim is file-level corroboration — plus the unambiguous
- * single-test-file case. Claiming a specific test without range
- * knowledge would fabricate precision the report does not carry.
+ * (Matching semantics live in the evidence core — `findTestAt`. The
+ * doc comments below were the pre-core contract and are preserved
+ * there; Audit W8's honesty rule is enforced by `findTestAt` verbatim:
+ * a record without a declaration line can never produce a test-level
+ * match.)
  */
-/**
- * The test whose declaration span contains `line`. Playwright JSON
- * verdicts carry the spec's declaration line: the containing test is
- * the one with the greatest declaration line ≤ the finding's line in
- * the same file (specs are flat within a file). When the report cannot
- * place lines (JUnit, or some verdicts lack them) the only HONEST
- * claim is file-level corroboration — plus the unambiguous
- * single-test-file case. Claiming a specific test without range
- * knowledge would fabricate precision the report does not carry.
- *
- * Audit W8: "the finding line falls inside the verdict's span" is now
- * enforced literally. A verdict WITHOUT a line can never be a test-level
- * match — the old single-verdict shortcut returned `verdicts[0]`
- * unconditionally, so a one-test JUnit report claimed test-level
- * corroboration (and could upgrade to L4/L5) for a finding anywhere in
- * the file, including helpers the run never placed inside that test.
- */
-function findContainingTest(
-  verdicts: TestVerdict[],
-  line: number,
-): TestVerdict | undefined {
-  if (verdicts.length === 1) {
-    const only = verdicts[0] as TestVerdict;
-    // The verdict's span starts at its declaration line; without a line
-    // the span is unknowable — file-level is the honest ceiling.
-    return only.line !== undefined && only.line <= line ? only : undefined;
-  }
-  for (const v of verdicts) {
-    if (v.line === undefined) return undefined;
-  }
-  const sorted = [...verdicts].sort((a, b) => {
-    const la = a.line as number;
-    const lb = b.line as number;
-    if (la < lb) return -1;
-    if (la > lb) return 1;
-    return 0;
-  });
-  let match: TestVerdict | undefined;
-  for (const v of sorted) {
-    const vl = v.line as number;
-    if (vl <= line) match = v;
-    else break;
-  }
-  return match;
-}
 
 /**
  * The deterministic L0–L5 derivation (see TRUST_ORDER). Static base

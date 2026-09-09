@@ -10,15 +10,12 @@ import { pwGlobalSetupSharedState } from "../../src/rules/playwright/qa-pw-125-g
 import { qaPw140 } from "../../src/rules/playwright/qa-pw-140.js";
 import { jvNoAssertions } from "../../src/rules/java/qa-jv-103-no-assertions.js";
 import { csNoAssertions } from "../../src/rules/csharp/qa-cs-103-no-assertions.js";
-import { mockOnlyVerification } from "../../src/rules/quality/qa-tqual-001-mock-only.js";
 import { pyNoAssertions } from "../../src/rules/python/qa-py-003-no-assertions.js";
 import { parseTsSourceFile } from "../helpers/ts-ast-helper.js";
-import { pwPollNoTimeout } from "../../src/rules/playwright/qa-pw-105-poll-timeout.js";
 import { hardcodedBaseUrl } from "../../src/rules/playwright/qa-pw-123-hardcoded-url.js";
 import { pwBlanketRouteMock } from "../../src/rules/playwright/qa-pw-142-blanket-route.js";
 import { emptyTestBody } from "../../src/rules/test/qa-test-010-empty-body.js";
 import { computeCodeText } from "../../src/engine/code-text.js";
-import { pwOrderDependence } from "../../src/rules/playwright/qa-pw-119-order-dependence.js";
 import { explainRule } from "../../src/commands/explain.js";
 
 let root: string;
@@ -50,14 +47,6 @@ describe("rule-arm completion", () => {
     const findings = csNoAssertions.run({
       path: "T.cs",
       text: "class T {\n  [Test]\n  public void T() { if (x) { fn((x); } }\n}\n",
-    });
-    expect(findings).toHaveLength(1);
-  });
-
-  it("QA-TQUAL-001: counts mock-only assertions through the non-null match", () => {
-    const findings = mockOnlyVerification.run({
-      path: "a.spec.ts",
-      text: "test('a', () => {\n  const fn = jest.fn();\n  fn();\n  expect(fn).toHaveBeenCalled();\n});\n",
     });
     expect(findings).toHaveLength(1);
   });
@@ -109,24 +98,7 @@ describe("rule-arm completion", () => {
     ).toEqual([]);
   });
 
-  it("QA-PW-119: hook param-walk survives a comment inside the call", () => {
-    const text =
-      "let shared;\nbeforeEach( /* setup */ () => { shared = 1; });\ntest('a', () => { expect(shared).toBe(1); });\n";
-    expect(pwOrderDependence.run({ path: "a.spec.ts", text })).toEqual([]);
-  });
-
-  it("QA-PW-119: expression-bodied hook at end of file is tolerated", () => {
-    const text =
-      "let shared;\nbeforeEach(() => shared++);\ntest('a', () => { expect(shared).toBe(1); });\n";
-    expect(pwOrderDependence.run({ path: "a.spec.ts", text })).toEqual([]);
-  });
-
   it.each([
-    [
-      "QA-PW-105",
-      pwPollNoTimeout,
-      "const s = \"page.waitForTimeout('100')\";\n",
-    ],
     [
       "QA-PW-123",
       hardcodedBaseUrl,

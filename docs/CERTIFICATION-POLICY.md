@@ -77,8 +77,8 @@ amendment; silence is never a downgrade path.
 The `measurement` census block in `doctor --json`
 (`{measured, unmeasured, total, quarantine}`) is **the** reproducible
 answer to "how many rules are measured" — derived from the live
-registry and revision-valid measurements (currently 78/21/99, 43
-quarantine).
+registry and revision-valid measurements (currently
+<!-- census:census -->57/21/78, 22<!-- /census:census --> quarantine).
 
 **Machine contract:** `mjolnir doctor --json` emits
 `mjolnir.doctor-report@1` — frozen key order

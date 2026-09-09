@@ -264,7 +264,7 @@ describe("scan flags — score/category/staged arms via runScanCommand", () => {
   it("--blocking none forces exit 0 on the terminal path too", async () => {
     setup();
     const cap = capture();
-    const code = await main(["--blocking", "none", dir], cap.io);
+    const code = await main(["--blocking", "none", "--classic", dir], cap.io);
     expect(code).toBe(0);
     expect(cap.text()).toContain("WORTHINESS");
     expect(cap.text()).toContain("QA-PW-003");
@@ -276,7 +276,7 @@ describe("scan flags — score/category/staged arms via runScanCommand", () => {
     // QA-TEST-001 is quarantine-tier (not emitted without --strict), so
     // the QA-TEST filter shows 0 of 1 — the note is the acceptance pin.
     const code = await main(
-      [dir, "--category", "QA-TEST", "--blocking", "none"],
+      [dir, "--classic", "--category", "QA-TEST", "--blocking", "none"],
       cap.io,
     );
     expect(code).toBe(0);

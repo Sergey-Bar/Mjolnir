@@ -128,8 +128,15 @@ export type TrustLevel = (typeof TRUST_ORDER)[number];
 export interface RuntimeCorroboration {
   /** Granularity of what the runtime report could vouch for. */
   level: "file" | "test" | "defect";
-  /** Report format the evidence came from. */
-  source: "playwright-json" | "junit-xml";
+  /**
+   * Report format the evidence came from. Widened additively in P4
+   * (plan 1788853205786) to mirror ForensicsReport's source union:
+   * Jest/Vitest JSON reports corroborate at file/test level exactly
+   * like Playwright's — their one-attempt-per-record shape only
+   * constrains TRUE-FLAKE derivation, which lives in the analysis, not
+   * in the provenance label.
+   */
+  source: "playwright-json" | "junit-xml" | "jest-json" | "vitest-json";
   /** Number of tests executed in the finding's file (any level). */
   testsExecuted: number;
   /**
@@ -191,6 +198,17 @@ export interface Finding {
    * stamped with the corroboration pass. Additive within schemaVersion 1.
    */
   trustLevel?: TrustLevel;
+  /**
+   * Mutation evidence (master plan P5, plan 1788853205786): what a
+   * mutation-testing report says about the code this finding points at.
+   * PROVENANCE, not proof — a survived mutant is code the suite would
+   * not notice changing; matching findings consolidate E1→E2 BY
+   * DERIVATION (documented in docs/RULE-LIFECYCLE.md), and trustLevel
+   * never rises from mutation evidence alone (nothing ran). Absent
+   * means no mutation report was available or nothing matched — never
+   * fabricated. Additive within schemaVersion 1.
+   */
+  mutationEvidence?: MutationEvidence | undefined;
   /** Repo-relative path with forward slashes, regardless of OS. */
   file: string;
   /** 1-based. */
@@ -268,6 +286,35 @@ export const DEDUCTIONS: Record<Severity, number> = {
   info: 1,
 };
 
+/**
+ * Mutation evidence (master plan P5, plan 1788853205786 — flag 6,
+ * decision 8): provenance from a mutation-testing report
+ * (`mjolnir mutation <report>`), stamped on matching findings.
+ *
+ * PROVENANCE IS NOT TRUTH: a survived mutant is code the suite would
+ * not notice changing — evidence FOR a nearby finding, never a claim
+ * the finding is "proven real". The E1→E2 consolidation is BY
+ * DERIVATION and lives in src/mutation/derive.ts (documented in
+ * docs/RULE-LIFECYCLE.md + the machine-contract docs). trustLevel never
+ * rises from mutation evidence alone: nothing ran.
+ */
+export interface MutationEvidence {
+  /** Which mutation tool produced the report. */
+  source: "stryker" | "mutmut";
+  /** How many survived mutants matched this finding. */
+  matchedMutants: number;
+  /** The mutator names of the matched mutants (deduped, sorted). */
+  mutators: string[];
+  /**
+   * "line" = the mutant's span contains the finding's position
+   * (Stryker evidence); "file" = file-level match only (mutmut —
+   * its JUnit report carries no per-mutant lines — or an unplaceable
+   * Stryker span). Same prefer-claiming-less rule as the runtime
+   * corroboration's granularity fallback.
+   */
+  granularity: "line" | "file";
+}
+
 export interface DimensionScore {
   category: RuleCategory;
   score: number;
@@ -307,6 +354,15 @@ export interface ScanResult {
   testDeclarationCount?: number;
   /** Raw deduction total before normalization (Phase 5 — transparency). */
   rawDeductions?: number;
+  /**
+   * The evidence-discounted deduction mass the P2 anti-dilution ceiling
+   * caps against (equals rawDeductions today — E0 charges 0, E1 halves;
+   * the ceiling input is deliberately the full discount surface).
+   * Additive within schemaVersion 1; present so consumers recompute the
+   * ceiling from docs/SCORING.md formula v2 without re-deriving
+   * evidence levels.
+   */
+  effectiveDeductions?: number;
   /** Number of findings suppressed by active config entries (suppression transparency). */
   suppressionCount?: number;
   /**
@@ -367,4 +423,39 @@ export interface ScanResult {
     /** Absolute path of the cache file — auditable, gitignored. */
     file: string;
   };
+  /**
+   * Scan-level trust summary (Mega MVP Master Plan v3.1 §26 WI-3, §6).
+   * A MEASUREMENT, not a contract: additive within schemaVersion 1,
+   * formulas published in docs/SCORING.md, hard incompleteness ceilings
+   * (a summary never claims more certainty than the scan that produced
+   * it). Present on every completed scan (absent only on scans whose
+   * producer predates this field). Built by
+   * src/engine/trust-summary.ts — the single definition site.
+   */
+  trustSummary?: TrustSummary;
+}
+
+/** Trust summary metric block (plan §6 — measurement, not contract). */
+export interface TrustSummary {
+  /** Best trust level any finding reached (L2 when none corroborated). */
+  level: TrustLevel;
+  /** Deterministic composite in [0,1], capped by the incompleteness ceiling. */
+  confidence: number;
+  /** evidenceBackedDeclarations / analyzedDeclarations. */
+  evidenceCoverage: number;
+  /** INCONCLUSIVE classifications + scan-level unknowns, over judged. */
+  inconclusiveRate: number;
+  /**
+   * Evidence-weighted measured FP rate over fired rules. Absent when no
+   * fired rule is measured OR the fired set mixes measured and
+   * unmeasured rules (a mixed average would hide the unknown) — see
+   * `provisionalRuleIds`.
+   */
+  measuredFpOfFiredRules?: number;
+  /** Fired rules without a valid measurement — the PROVISIONAL disclosure. */
+  provisionalRuleIds: string[];
+  /** The incompleteness ceiling that bound confidence (present when < 1). */
+  confidenceCeiling?: number;
+  /** Which incompleteness factors applied (audit trail for the cap). */
+  ceilingReasons: string[];
 }

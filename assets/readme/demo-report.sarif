@@ -7,7 +7,7 @@
         "driver": {
           "name": "Mjölnir",
           "informationUri": "https://github.com/Sergey-Bar/Mjolnir",
-          "version": "0.5.7",
+          "version": "0.5.34",
           "rules": [
             {
               "id": "QA-CI-009",
@@ -34,24 +34,6 @@
               },
               "properties": {
                 "falsePositiveRisk": "low"
-              }
-            },
-            {
-              "id": "QA-PW-145",
-              "shortDescription": {
-                "text": "UI suite without accessibility assertions"
-              },
-              "properties": {
-                "falsePositiveRisk": "high"
-              }
-            },
-            {
-              "id": "QA-PW-103",
-              "shortDescription": {
-                "text": "Navigation wait without explicit timeout budget"
-              },
-              "properties": {
-                "falsePositiveRisk": "high"
               }
             },
             {
@@ -97,15 +79,6 @@
               },
               "properties": {
                 "falsePositiveRisk": "low"
-              }
-            },
-            {
-              "id": "QA-PW-118",
-              "shortDescription": {
-                "text": "Network idle wait (flaky by design)"
-              },
-              "properties": {
-                "falsePositiveRisk": "high"
               }
             },
             {
@@ -293,70 +266,6 @@
           }
         },
         {
-          "ruleId": "QA-PW-145",
-          "level": "note",
-          "message": {
-            "text": "UI-interacting spec file contains no accessibility assertions. — Suites that drive the UI but never assert accessibility let WCAG regressions through every PR; catching them at the point of interaction is far cheaper than a retrofit audit. Fix: Add `@axe-core/playwright` with `expect(await new AxeBuilder({ page }).analyze()).toHaveNoViolations()` on key pages, or snapshot aria snapshots."
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "e2e/checkout.spec.ts"
-                },
-                "region": {
-                  "startLine": 1,
-                  "startColumn": 1
-                }
-              }
-            }
-          ],
-          "properties": {
-            "severity": "info",
-            "confidence": "low",
-            "qaImpact": "HYGIENE",
-            "evidenceLevel": "E0",
-            "trustLevel": "L3",
-            "runtimeCorroboration": {
-              "level": "file",
-              "source": "playwright-json",
-              "testsExecuted": 3
-            }
-          }
-        },
-        {
-          "ruleId": "QA-PW-103",
-          "level": "note",
-          "message": {
-            "text": "`goto(\"/checkout\")` without an explicit timeout. — Magic-default timeouts make failures opaque (was it slow, or broken?) and never encode the product's actual performance budget. Fix: Pass `{ timeout: <budget-ms> }` matching your performance SLO, or set actionTimeout/navigationTimeout deliberately in config."
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "e2e/checkout.spec.ts"
-                },
-                "region": {
-                  "startLine": 4,
-                  "startColumn": 14
-                }
-              }
-            }
-          ],
-          "properties": {
-            "severity": "info",
-            "confidence": "low",
-            "qaImpact": "HYGIENE",
-            "evidenceLevel": "E0",
-            "trustLevel": "L3",
-            "runtimeCorroboration": {
-              "level": "file",
-              "source": "playwright-json",
-              "testsExecuted": 3
-            }
-          }
-        },
-        {
           "ruleId": "QA-PW-146",
           "level": "note",
           "message": {
@@ -453,38 +362,6 @@
           }
         },
         {
-          "ruleId": "QA-PW-103",
-          "level": "note",
-          "message": {
-            "text": "`goto(\"/checkout\")` without an explicit timeout. — Magic-default timeouts make failures opaque (was it slow, or broken?) and never encode the product's actual performance budget. Fix: Pass `{ timeout: <budget-ms> }` matching your performance SLO, or set actionTimeout/navigationTimeout deliberately in config."
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "e2e/checkout.spec.ts"
-                },
-                "region": {
-                  "startLine": 11,
-                  "startColumn": 14
-                }
-              }
-            }
-          ],
-          "properties": {
-            "severity": "info",
-            "confidence": "low",
-            "qaImpact": "HYGIENE",
-            "evidenceLevel": "E0",
-            "trustLevel": "L3",
-            "runtimeCorroboration": {
-              "level": "file",
-              "source": "playwright-json",
-              "testsExecuted": 3
-            }
-          }
-        },
-        {
           "ruleId": "QA-PW-146",
           "level": "note",
           "message": {
@@ -549,90 +426,6 @@
           }
         },
         {
-          "ruleId": "QA-PW-103",
-          "level": "note",
-          "message": {
-            "text": "`goto(\"/checkout\")` without an explicit timeout. — Magic-default timeouts make failures opaque (was it slow, or broken?) and never encode the product's actual performance budget. Fix: Pass `{ timeout: <budget-ms> }` matching your performance SLO, or set actionTimeout/navigationTimeout deliberately in config."
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "e2e/checkout.spec.ts"
-                },
-                "region": {
-                  "startLine": 17,
-                  "startColumn": 14
-                }
-              }
-            }
-          ],
-          "properties": {
-            "severity": "info",
-            "confidence": "low",
-            "qaImpact": "HYGIENE",
-            "evidenceLevel": "E0",
-            "trustLevel": "L3",
-            "runtimeCorroboration": {
-              "level": "file",
-              "source": "playwright-json",
-              "testsExecuted": 3
-            }
-          }
-        },
-        {
-          "ruleId": "QA-PW-145",
-          "level": "note",
-          "message": {
-            "text": "UI-interacting spec file contains no accessibility assertions. — Suites that drive the UI but never assert accessibility let WCAG regressions through every PR; catching them at the point of interaction is far cheaper than a retrofit audit. Fix: Add `@axe-core/playwright` with `expect(await new AxeBuilder({ page }).analyze()).toHaveNoViolations()` on key pages, or snapshot aria snapshots."
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "e2e/login.spec.ts"
-                },
-                "region": {
-                  "startLine": 1,
-                  "startColumn": 1
-                }
-              }
-            }
-          ],
-          "properties": {
-            "severity": "info",
-            "confidence": "low",
-            "qaImpact": "HYGIENE",
-            "evidenceLevel": "E0"
-          }
-        },
-        {
-          "ruleId": "QA-PW-103",
-          "level": "note",
-          "message": {
-            "text": "`goto(\"https://staging.example.com/login\")` without an explicit timeout. — Magic-default timeouts make failures opaque (was it slow, or broken?) and never encode the product's actual performance budget. Fix: Pass `{ timeout: <budget-ms> }` matching your performance SLO, or set actionTimeout/navigationTimeout deliberately in config."
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "e2e/login.spec.ts"
-                },
-                "region": {
-                  "startLine": 4,
-                  "startColumn": 14
-                }
-              }
-            }
-          ],
-          "properties": {
-            "severity": "info",
-            "confidence": "low",
-            "qaImpact": "HYGIENE",
-            "evidenceLevel": "E0"
-          }
-        },
-        {
           "ruleId": "QA-PW-123",
           "level": "note",
           "message": {
@@ -659,32 +452,6 @@
           }
         },
         {
-          "ruleId": "QA-PW-118",
-          "level": "note",
-          "message": {
-            "text": "`waitForLoadState('networkidle')` used. — Network idle is unreliable — background requests, analytics, and websockets make it never fire or fire randomly. Fix: Wait for a specific element or response: `page.waitForResponse()` or `expect(locator).toBeVisible()`."
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "e2e/login.spec.ts"
-                },
-                "region": {
-                  "startLine": 5,
-                  "startColumn": 14
-                }
-              }
-            }
-          ],
-          "properties": {
-            "severity": "info",
-            "confidence": "high",
-            "qaImpact": "FLAKY-RISK",
-            "evidenceLevel": "E0"
-          }
-        },
-        {
           "ruleId": "QA-PW-146",
           "level": "note",
           "message": {
@@ -706,32 +473,6 @@
           "properties": {
             "severity": "info",
             "confidence": "medium",
-            "qaImpact": "HYGIENE",
-            "evidenceLevel": "E0"
-          }
-        },
-        {
-          "ruleId": "QA-PW-103",
-          "level": "note",
-          "message": {
-            "text": "`goto(\"https://staging.example.com/\")` without an explicit timeout. — Magic-default timeouts make failures opaque (was it slow, or broken?) and never encode the product's actual performance budget. Fix: Pass `{ timeout: <budget-ms> }` matching your performance SLO, or set actionTimeout/navigationTimeout deliberately in config."
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "e2e/login.spec.ts"
-                },
-                "region": {
-                  "startLine": 11,
-                  "startColumn": 14
-                }
-              }
-            }
-          ],
-          "properties": {
-            "severity": "info",
-            "confidence": "low",
             "qaImpact": "HYGIENE",
             "evidenceLevel": "E0"
           }
