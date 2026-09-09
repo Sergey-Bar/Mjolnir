@@ -9,11 +9,29 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
-## [0.6.13] — 2026-09-09
+## [1.0.0] — 2026-09-09
 
-### Changes since 0.6.12
+### Added
 
-- fix(lint): {4} quantifier for the remaining literal spaces in sync-census regex
+- **Core Certification (WI-16): 1.0.0 is the first fully-measured
+  release.** Every active canonical rule (77) satisfies the
+  measurement law — n ≥ 10 hand-classified verdicts at the current
+  detectorRevision, zero PROVISIONAL, zero denominator games. The
+  2026-09-09 harvest waves (WI-14) measured the final 15 rules via the
+  class-B fixture corpus and closed the census; QA-PY-102 was retired
+  as a structural dead duplicate (its measured sibling QA-PY-005
+  declares overlapWith, so it could never fire). Certification report:
+  docs/CERTIFICATION-1.0.md. Evidence chain: doctor self-audit WORTHY
+  (77/77), full suite 7,054 green, determinism replay byte-identical,
+  adversarial + benchmark suites green, CHANGELOG integrity gate
+  active.
+
+### Removed
+
+- **QA-PY-102 retired** (22nd retirement, WI-14 closeout): structural
+  dead duplicate — QA-PY-005 (the measured survivor) declares
+  overlapWith QA-PY-102, so every finding dedups away and the rule can
+  never fire, never be measured. Frozen IDs are never reused.
 
 ## [0.6.12] — 2026-09-09
 
