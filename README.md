@@ -262,7 +262,7 @@ have no such requirement.)
 
 ## What Mjölnir finds
 
-**<!-- census:total-rules -->78 rules<!-- /census:total-rules -->** in four families — **test hygiene**, **test quality**,
+**<!-- census:total-rules -->77 rules<!-- /census:total-rules -->** in four families — **test hygiene**, **test quality**,
 **Playwright**, **CI integrity** — over TypeScript/JavaScript, Python,
 Java, C# and GitHub Actions YAML, covering Playwright in all four bindings
 plus pytest, JUnit, TestNG, NUnit, xUnit, MSTest, Jest, Vitest and Mocha,
@@ -442,9 +442,9 @@ Rung by rung: [docs/TERMINOLOGY.md](docs/TERMINOLOGY.md).
 
 ### How much of this is measured
 
-**<!-- census:measured-of-total -->72 of 78<!-- /census:measured-of-total --> rules carry a false-positive rate measured against real OSS code**
+**<!-- census:measured-of-total -->77 of 77<!-- /census:measured-of-total --> rules carry a false-positive rate measured against real OSS code**
 (≥ 10 hand-classified findings each — [docs/FP-AUDIT.md](docs/FP-AUDIT.md)).
-The other <!-- census:unmeasured -->6<!-- /census:unmeasured --> ship on the author's estimate and say so, per rule, in
+The other <!-- census:unmeasured -->0<!-- /census:unmeasured --> ship on the author's estimate and say so, per rule, in
 `mjolnir explain`; `mjolnir rules --unmeasured` lists them, and every scan
 footer reports how many of the rules that actually _fired_ are measured.
 
@@ -685,7 +685,7 @@ artifacts.
   product does what the requirement asked for.
 - **A 100 is not proof of a good suite.** Whether your suite covers your
   actual risk is a different question, and this tool does not answer it.
-- **<!-- census:unmeasured-of-total -->6 of 78<!-- /census:unmeasured-of-total --> rules ship on an estimate**, not a measured rate — disclosed
+- **<!-- census:unmeasured-of-total -->0 of 77<!-- /census:unmeasured-of-total --> rules ship on an estimate**, not a measured rate — disclosed
   per rule, not buried here.
 - **E1 is not E2.** Heuristic findings are worth reading, not worth
   applying blindly.

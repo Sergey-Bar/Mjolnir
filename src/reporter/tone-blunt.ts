@@ -35,8 +35,7 @@ const BLUNT_MESSAGES: Readonly<Record<string, string>> = {
     "A hard sleep in a test is a prayer, not a synchronization strategy.",
   "QA-PY-005":
     "time.sleep() in a test is a prayer. Python doesn't negotiate with timeouts either.",
-  "QA-PY-102":
-    "time.sleep() inside a Playwright test — the browser doesn't pause because you asked nicely.",
+
   "QA-PY-103":
     "wait_for_timeout() as synchronization — the Playwright-Python edition of hoping.",
   "QA-JV-102":

@@ -184,19 +184,16 @@ describe("rule mode — WI-7 additions keep the original explanation intact", ()
     }
   });
 
-  it("whatWouldChangeTheVerdict: measured rule skips the measurement line; unmeasured cites it", () => {
+  it("whatWouldChangeTheVerdict: measured rule skips the measurement line", () => {
+    // The 1.0.0 registry is fully measured (77/77) - the unmeasured
+    // branch in the implementation is retained for future rules but has
+    // no live exemplar to test against.
     const measured = RULES.find((r) => MEASURED_FP[r.id] !== undefined);
-    const unmeasured = RULES.find((r) => MEASURED_FP[r.id] === undefined);
     expect(measured).toBeDefined();
-    expect(unmeasured).toBeDefined();
     if (measured) {
       const changes = whatWouldChangeTheVerdict(measured);
       expect(changes.some((c) => c.includes("run report"))).toBe(true);
       expect(changes.some((c) => c.includes("corpus measurement"))).toBe(false);
-    }
-    if (unmeasured) {
-      const changes = whatWouldChangeTheVerdict(unmeasured);
-      expect(changes.some((c) => c.includes("corpus measurement"))).toBe(true);
     }
   });
 

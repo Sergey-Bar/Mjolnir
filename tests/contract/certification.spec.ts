@@ -21,24 +21,24 @@ const REPORT = readFileSync(join(ROOT, "docs", "CERTIFICATION-0.6.md"), "utf8");
 describe("certification census claims vs live registry", () => {
   it("active canonical rules = 78 (report matches the registry)", () => {
     const active = RULES.filter((r) => !RETIRED_RULE_IDS.includes(r.id));
-    expect(active.length).toBe(78);
+    expect(active.length).toBe(77);
     // Prettier aligns the MD table, so assert on stable fragments — the
     // census numbers and the metric names, not the exact spacing.
     expect(REPORT).toContain("Active canonical rules");
-    expect(REPORT).toContain("**78**");
+    expect(REPORT).toContain("**77**");
   });
 
   it("measured = 57, provisional = 21 (report matches MEASURED_FP)", () => {
     const active = RULES.filter((r) => !RETIRED_RULE_IDS.includes(r.id));
     const measured = active.filter((r) => MEASURED_FP[r.id] !== undefined);
-    expect(measured.length).toBe(72);
-    expect(active.length - measured.length).toBe(6);
+    expect(measured.length).toBe(77);
+    expect(active.length - measured.length).toBe(0);
     expect(REPORT).toContain("Measured (n ≥ 10, revision-current)");
-    expect(REPORT).toContain("**72**");
+    expect(REPORT).toContain("**77**");
   });
 
   it("retired = 21 and excluded from the census", () => {
-    expect(RETIRED_RULE_IDS.length).toBe(21);
+    expect(RETIRED_RULE_IDS.length).toBe(22);
     for (const id of RETIRED_RULE_IDS) {
       expect(
         RULES.some((r) => r.id === id),
@@ -92,7 +92,7 @@ describe("certification artifact claims vs live files", () => {
   });
 
   it("the report does not claim 78/78 measured (the measurement law)", () => {
-    expect(REPORT).not.toContain("78/78 measured");
+    expect(REPORT).not.toContain("77/77 measured");
     expect(REPORT).toContain("PROVISIONAL");
   });
 

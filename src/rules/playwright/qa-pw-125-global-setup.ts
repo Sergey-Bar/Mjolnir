@@ -18,6 +18,11 @@ export const pwGlobalSetupSharedState = defineRule({
   findingType: "heuristic-risk",
   qaImpact: "HYGIENE",
   appliesTo: "test-files",
+  // Tier explicit (WI-14, 2026-09-09): measured n=10 at 0% FP on the
+  // class-B corpus, but ZERO fires on the real-repo corpus baselines —
+  // the recall floor (ratchet §20.6) cannot be verified for core.
+  // Extended, not core, until real-repo fires exist.
+  tier: "extended",
   // Trust Metadata
   languages: ["typescript", "javascript"],
   frameworks: ["playwright"],

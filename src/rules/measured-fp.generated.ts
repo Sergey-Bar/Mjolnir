@@ -269,6 +269,13 @@ export const MEASURED_FP: Readonly<Record<string, MeasuredFp>> = {
     ciLow: 0.3318,
     ciHigh: 0.769,
   },
+  "QA-PW-116": {
+    fpRate: 0,
+    n: 10,
+    detectorRevision: 1,
+    ciLow: 0,
+    ciHigh: 0.2775,
+  },
   "QA-PW-117": {
     fpRate: 0,
     n: 24,
@@ -303,6 +310,13 @@ export const MEASURED_FP: Readonly<Record<string, MeasuredFp>> = {
     detectorRevision: 2,
     ciLow: 0.0119,
     ciHigh: 0.2982,
+  },
+  "QA-PW-125": {
+    fpRate: 0,
+    n: 10,
+    detectorRevision: 1,
+    ciLow: 0,
+    ciHigh: 0.2775,
   },
   "QA-PW-140": {
     fpRate: 0,
@@ -416,6 +430,13 @@ export const MEASURED_FP: Readonly<Record<string, MeasuredFp>> = {
     ciLow: 0.2459,
     ciHigh: 0.5768,
   },
+  "QA-PY-101": {
+    fpRate: 0,
+    n: 10,
+    detectorRevision: 1,
+    ciLow: 0,
+    ciHigh: 0.2775,
+  },
   "QA-PY-103": {
     fpRate: 0.08,
     n: 25,
@@ -437,12 +458,26 @@ export const MEASURED_FP: Readonly<Record<string, MeasuredFp>> = {
     ciLow: 0,
     ciHigh: 0.2425,
   },
+  "QA-PY-106": {
+    fpRate: 0,
+    n: 14,
+    detectorRevision: 1,
+    ciLow: 0,
+    ciHigh: 0.2153,
+  },
   "QA-PY-107": {
     fpRate: 0,
     n: 10,
     detectorRevision: 1,
     ciLow: 0,
     ciHigh: 0.2775,
+  },
+  "QA-PY-108": {
+    fpRate: 0,
+    n: 16,
+    detectorRevision: 1,
+    ciLow: 0,
+    ciHigh: 0.1936,
   },
   "QA-SE-001": {
     fpRate: 0,

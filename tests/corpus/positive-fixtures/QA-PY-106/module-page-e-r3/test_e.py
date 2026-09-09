@@ -1,7 +1,7 @@
 from playwright.sync_api import Page, sync_playwright
 
 # Module-level page shared by every test below.
-page: Page = sync_playwright().start().new_page()
+page = sync_playwright().start().new_page()
 
 
 def test_{name}_renders() -> None:
