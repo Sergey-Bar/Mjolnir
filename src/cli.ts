@@ -85,6 +85,7 @@ import {
   renderBaselineSaved,
   saveBaseline,
 } from "./commands/baseline.js";
+import { buildVerifyDigest, renderVerifyDigest } from "./commands/verify.js";
 import {
   DEFAULT_STATS_PATH,
   loadStats,
@@ -1210,6 +1211,38 @@ export async function runBaselineCommand(
 }
 
 /** Testable `diff` handler (Sprint 6 Task 24) — new/worsened debt only. */
+/** Testable `verify` handler — the agent-loop verb (master plan P7,
+ * plan 1788853205786). Scans the target and diffs against the committed
+ * baseline, rendering the before/after digest the agent loop consumes
+ * (resolved per §15 · new · unchanged by ruleId+location · score delta).
+ * Exit semantics are the frozen contract: 0 clean · 1 new error
+ * findings · 2 partial scan or no baseline · 20 internal. */
+export async function runVerifyCommand(
+  argv: string[],
+  io: { out: Output; err: Output } = { out, err },
+): Promise<number> {
+  const args = parseArgsOrUsage(argv, io);
+  if (!args) {
+    return 10;
+  }
+  try {
+    const target = resolve(args.target);
+    const invalid = validateScanTarget(target, io.err);
+    if (invalid !== null) return invalid;
+    const result = await runScan({ ...args, target });
+    const baselinePath = join(target, DEFAULT_BASELINE_PATH);
+    const baseline = loadBaseline(baselinePath, (w) => io.err(w));
+    const digest = buildVerifyDigest(result, baseline);
+    io.out(renderVerifyDigest(digest));
+    if (result.partial) return 2;
+    if (!digest.hasBaseline) return 2;
+    return digest.new.some((f) => f.severity === "error") ? 1 : 0;
+  } catch (err) {
+    internalErrorMessage(err, io.err, args?.debug === true);
+    return 20;
+  }
+}
+
 export async function runDiffCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
@@ -1494,6 +1527,7 @@ export async function main(
   if (argv[0] === "impact") return runImpactCommand(argv.slice(1));
   if (argv[0] === "baseline") return runBaselineCommand(argv.slice(1));
   if (argv[0] === "diff") return runDiffCommand(argv.slice(1));
+  if (argv[0] === "verify") return runVerifyCommand(argv.slice(1));
   if (argv[0] === "pr-comment") return runPrCommentCommand(argv.slice(1));
   if (argv[0] === "summary") return runSummaryCommand(argv.slice(1), io);
   if (argv[0] === "stats") return runStatsCommand(argv.slice(1));

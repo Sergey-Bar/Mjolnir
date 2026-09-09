@@ -105,6 +105,7 @@ describe("mjolnir mcp (CLI dispatch)", () => {
       "diff",
       "explain",
       "scan",
+      "verify",
     ]);
   });
 });
