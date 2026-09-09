@@ -9,11 +9,11 @@ software. Mjölnir verifies the system that does the verifying — the test
 suite, the run artifacts and the CI pipeline — and reports a worthiness
 score with the evidence behind every deduction.
 
-[![npm](https://img.shields.io/npm/v/mjolnir-qa.svg?style=flat-square&color=C19A34&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
-[![downloads](https://img.shields.io/npm/dm/mjolnir-qa.svg?style=flat-square&color=C19A34&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
-[![ci](https://img.shields.io/github/actions/workflow/status/Sergey-Bar/Mjolnir/ci.yml?branch=main&style=flat-square&label=ci&labelColor=0A1119)](https://github.com/Sergey-Bar/Mjolnir/actions/workflows/ci.yml)
-[![license](https://img.shields.io/badge/license-MIT-C19A34.svg?style=flat-square&labelColor=0A1119)](LICENSE)
-[![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-37ABBD.svg?style=flat-square&labelColor=0A1119)](https://nodejs.org)
+[![npm](https://img.shields.io/npm/v/mjolnir-qa.svg?style=flat-square&color=C9A227&labelColor=0B0F17)](https://www.npmjs.com/package/mjolnir-qa)
+[![downloads](https://img.shields.io/npm/dm/mjolnir-qa.svg?style=flat-square&color=C9A227&labelColor=0B0F17)](https://www.npmjs.com/package/mjolnir-qa)
+[![ci](https://img.shields.io/github/actions/workflow/status/Sergey-Bar/Mjolnir/ci.yml?branch=main&style=flat-square&label=ci&labelColor=0B0F17)](https://github.com/Sergey-Bar/Mjolnir/actions/workflows/ci.yml)
+[![license](https://img.shields.io/badge/license-MIT-C9A227.svg?style=flat-square&labelColor=0B0F17)](LICENSE)
+[![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-2E8C7F.svg?style=flat-square&labelColor=0B0F17)](https://nodejs.org)
 
 ```bash
 npx mjolnir-qa@latest
@@ -94,7 +94,14 @@ the full-resolution version.</sub>
 ## See it work
 
 One false-green CI gate — caught, fixed with the tool's own printed fix,
-and re-proved by a second scan. 42 seconds.
+and re-proved by a second scan.
+
+<p align="center">
+  <img src="assets/readme/flow.svg" alt="npx mjolnir-qa@latest. A large grey 75 labelled NEEDS WORK, an arrow marked ONE FIX above and RE-SCANNED below, then a large lit 90 labelled WORTHY. Beneath: set -o pipefail, &amp;&amp; not a semicolon, no continue-on-error — the fix the report printed, closing QA-CI-009 and QA-CI-001. Then 27 findings to 23, 4 errors to 1. Finally: 90, not 100 — the suite's other problems are still real." width="900" />
+</p>
+
+<details>
+<summary><strong>Prefer to watch it?</strong> The same run, as a 42-second recording</summary>
 
 <!-- Plays inline on github.com only: <video> is rendered for GitHub's own
      user-content CDN, never for a repo-relative path. The link below is
@@ -109,17 +116,19 @@ and re-proved by a second scan. 42 seconds.
     width="900"></video>
 </p>
 
-<sub>Every frame is real CLI output — the 75 → 90 change is a real re-scan
-after applying the fix the tool itself printed. If the player above
+<sub>Found, fixed, re-proved, then handed to an agent. If the player above
 doesn't load, the file is
 [`assets/video/mjolnir-demo.mp4`](assets/video/mjolnir-demo.mp4). Rendered
-by `npm run docs:video` from
-[`script.demo.json`](assets/video/script.demo.json);
-[`video-script.spec.ts`](tests/contract/video-script.spec.ts) fails CI if
-that script stops matching what the CLI prints, or if the findings the
-video shows as fixed turn out to still be there. The full `--verbose`
-report of the same scan is [`demo.svg`](assets/readme/demo.svg)
-(`npm run docs:demo`).</sub>
+by `npm run docs:video`. The full `--verbose` report of the same scan is
+[`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
+
+</details>
+
+<sub>Every number above is read from
+[`script.demo.json`](assets/video/script.demo.json) — the same values
+[`video-script.spec.ts`](tests/contract/video-script.spec.ts) checks
+against real CLI output — and the diff quotes the two committed workflows
+verbatim. Regenerate with `npm run docs:flow`; drift-locked in CI.</sub>
 
 ### One finding, up close
 
