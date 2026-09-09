@@ -9,6 +9,12 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [1.0.1] — 2026-09-09
+
+### Changes since 0
+
+- chore(release): v1.0.0 — Core Certification cut (WI-16)
+
 ## [1.0.0] — 2026-09-09
 
 ### Added
