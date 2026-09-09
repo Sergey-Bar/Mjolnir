@@ -22,6 +22,13 @@ export const pyTautological = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "tautological assertions in Python (assert x == x) are " +
+      "assertion-semantics on the code-only text; the detector matches " +
+      "the tautology shapes — the AST re-derives the same comparison",
+  },
   introduced: "0.3.0",
 
   // Measured 2026-09-02 (corpus wave 5): tier set from the measured envelope (plan §11.2).

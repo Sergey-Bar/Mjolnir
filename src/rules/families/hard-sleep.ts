@@ -157,6 +157,14 @@ export const hardSleepFamily = definePatternFamily({
   why: WHY,
   falsePositiveRisk: "low",
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "family-fallback-lockstep",
+    detail:
+      "the hard-sleep family's Java variant (QA-JV-102): the family's " +
+      "structural path carries the depth where a tree is available; this " +
+      "lexical path is the mandatory deterministic fallback kept in " +
+      "lockstep (§13.2)",
+  },
   introduced: "0.3.8",
   tier: "extended",
   useCodeText: true,

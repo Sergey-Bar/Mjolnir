@@ -22,6 +22,13 @@ export const pyHardSleep = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "exact-key-match",
+    detail:
+      "time.sleep(n) is an exact stdlib token with a numeric argument; " +
+      "the detector matches the call identifier on the code-only text — " +
+      "closed token, unique to the defect",
+  },
   introduced: "0.3.0",
 
   // Measured FP 16% (n=19): genuine e2e hard sleeps, but browser-side instrumentation and wall-clock timing subjects are legitimate (16% <= 30% = extended).

@@ -121,6 +121,61 @@ describe("mjolnir doctor self-audit", () => {
     expect(check.details.some((d) => d.includes("duplicate title"))).toBe(true);
   });
 
+  it("P8 depth adjudication: flags a LEXICAL rule without strategyJustification", () => {
+    const lexical: (typeof RULES)[number] = { ...firstRule() };
+    delete (lexical as { strategyJustification?: unknown })
+      .strategyJustification;
+    const check = checkRegistry([lexical]);
+    expect(check.ok).toBe(false);
+    expect(
+      check.details.some((d) => d.includes("LEXICAL strategy without")),
+    ).toBe(true);
+  });
+
+  it("P8 depth adjudication: flags an out-of-set reason code", () => {
+    const bad: (typeof RULES)[number] = {
+      ...firstRule(),
+      strategyJustification: {
+        reasonCode: "because-i-said-so" as never,
+        detail: "a real derivation citing the detector's actual shape",
+      },
+    };
+    const check = checkRegistry([bad]);
+    expect(check.ok).toBe(false);
+    expect(
+      check.details.some((d) => d.includes("outside the closed set")),
+    ).toBe(true);
+  });
+
+  it("P8 depth adjudication: flags boilerplate detail (< 20 chars)", () => {
+    const bad: (typeof RULES)[number] = {
+      ...firstRule(),
+      strategyJustification: { reasonCode: "exact-key-match", detail: "short" },
+    };
+    const check = checkRegistry([bad]);
+    expect(check.ok).toBe(false);
+    expect(check.details.some((d) => d.includes("boilerplate"))).toBe(true);
+  });
+
+  it("P8 depth adjudication: a valid record passes; non-LEXICAL needs none", () => {
+    const good: (typeof RULES)[number] = {
+      ...firstRule(),
+      strategyJustification: {
+        reasonCode: "exact-key-match",
+        detail: "the detector matches the runner's exact API tokens",
+      },
+    };
+    expect(checkRegistry([good]).ok).toBe(true);
+    // Non-LEXICAL: destructure so exactOptionalPropertyTypes never sees
+    // an explicit `undefined` for an optional field.
+    const { strategyJustification: _omit, ...deeper } = {
+      ...firstRule(),
+      detectionStrategy: "AST" as const,
+    };
+    void _omit;
+    expect(checkRegistry([deeper]).ok).toBe(true);
+  });
+
   it("trust metadata check passes once every rule declares metadata", () => {
     const check = checkTrustMetadata();
     // Ratchet reached: full adoption — the check is now blocking.

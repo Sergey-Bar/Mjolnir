@@ -29,6 +29,13 @@ export const pwGlobalSetupSharedState = defineRule({
   falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "globalSetup/globalTeardown are runner lifecycle hooks declared in " +
+      "the config file; the detector matches those exact keys — the " +
+      "defect is the runner's execution order, not a code shape",
+  },
   detectionNotes: "regex heuristic",
   introduced: "0.3.0",
 

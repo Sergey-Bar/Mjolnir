@@ -21,6 +21,15 @@ export const hardSleep = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "hard-sleep is behavioral wait-shape matching (the wait call plus " +
+      "its interaction context), not a single node; the detector's " +
+      "pattern+wait-shape oracle is the recorded design (§12.1), and the " +
+      "hard-sleep family's structural path carries the depth where " +
+      "available",
+  },
   detectionNotes: "regex pattern + behavioral wait-shape matching",
   introduced: "0.1.0",
   tier: "extended",

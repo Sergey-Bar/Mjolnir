@@ -13,6 +13,7 @@ import {
   type AppliesTo,
   type AstQueryHook,
   type DetectionStrategy,
+  type StrategyJustification,
 } from "../rule.js";
 import type {
   Finding,
@@ -58,6 +59,12 @@ export interface LanguageVariant {
    * per-rule migration, never family-wide by symmetry).
    */
   detectionStrategy?: DetectionStrategy;
+  /**
+   * Depth-adjudication record (master plan P8) — variant-level override
+   * of the family default. REQUIRED when THIS variant ships LEXICAL
+   * (registry ratchet).
+   */
+  strategyJustification?: StrategyJustification;
   /** Legacy free-text detection-notes override (family-level default). */
   detectionNotes?: string;
   /**
@@ -94,6 +101,12 @@ export interface PatternFamilyOptions {
   falsePositiveRisk: "low" | "medium" | "high";
   /** Shared detection strategy enum value (defaults to LEXICAL). */
   detectionStrategy?: DetectionStrategy;
+  /**
+   * Shared depth-adjudication record (master plan P8) — family-level
+   * default; variants override. REQUIRED when the family ships LEXICAL
+   * (registry ratchet).
+   */
+  strategyJustification?: StrategyJustification;
   /** Shared legacy free-text detection notes, if any. */
   detectionNotes?: string;
   /** Shared detector-implementation revision (§07; variants override). */
@@ -143,6 +156,12 @@ export function definePatternFamily(
       autofix: opts.autofix ?? false,
       detectionStrategy:
         v.detectionStrategy ?? opts.detectionStrategy ?? "LEXICAL",
+      ...((v.strategyJustification ?? opts.strategyJustification)
+        ? {
+            strategyJustification:
+              v.strategyJustification ?? opts.strategyJustification,
+          }
+        : {}),
       ...(v.detectionNotes !== undefined
         ? { detectionNotes: v.detectionNotes }
         : {

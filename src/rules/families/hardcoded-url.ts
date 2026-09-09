@@ -32,6 +32,14 @@ export const hardcodedUrlFamily = definePatternFamily({
   why: "Absolute URLs break when environments change and can hit production by accident from a CI runner.",
   falsePositiveRisk: "low",
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "string-content-defect",
+    detail:
+      "the hardcoded-url family's variants " +
+      "(QA-JV-108/QA-CS-108/QA-PY-108): hardcoded URLs are string " +
+      "literals; the detector matches the http(s):// string shapes — the " +
+      "URL lives in the string, not the syntax tree",
+  },
   introduced: "0.4.0",
   useCodeText: false,
   variants: [

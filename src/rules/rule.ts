@@ -31,6 +31,53 @@ import type {
 export type DetectionStrategy =
   "LEXICAL" | "AST" | "SEMANTIC" | "QA_MODEL" | "FRAMEWORK" | "RUNTIME";
 
+/**
+ * Closed reason-code set for `strategyJustification` (master plan P8,
+ * plan 1788853205786 — flag 6, decision 9: "no unexplained depth").
+ * A LEXICAL rule ships only when its lexical form is JUSTIFIED by one
+ * of these codes; the depth-adjudication doc renders them.
+ */
+export type StrategyReasonCode =
+  /** The detection target is a config/workflow surface whose statements
+   * ARE string literals (shell in YAML, key=value) — a syntax tree adds
+   * nothing the text does not already carry. */
+  | "shell-string-in-config"
+  /** The detection is an exact, unambiguous runner-API token (`.only`,
+   * `test.skip`, `fit`) — lexical precision equals structural precision. */
+  | "exact-key-match"
+  /** The defect IS the lexical artifact (commented-out test code, a
+   * recorder's default title left committed) — the text is the finding. */
+  | "lexical-artifact"
+  /** The semantics live in runner behavior (retries, report generation,
+   * fixture lifecycle) that no language syntax tree represents. */
+  | "runner-semantic"
+  /** The defect lives in string content (selector, URL) that the
+   * code-text masking deliberately excludes from structural analysis. */
+  | "string-content-defect"
+  /** Absence detection over a suite/directory — there is no single
+   * syntax node; the evidence is the aggregate shape of the tree. */
+  | "absence-aggregate"
+  /** The variant must stay in lockstep with its family's §13.2 mandatory
+   * regex fallback — the family's structural path already carries the
+   * depth, and the lexical path is the deterministic degraded mode. */
+  | "family-fallback-lockstep"
+  /** Migration to AST/QA_MODEL is plausible but UNPROVEN: no measurement
+   * yet demonstrates an FP reduction. Deferred to the next measurement
+   * round by owner directive (2026-09-09); the lexical detector ships
+   * with its measured tier in the meantime. */
+  | "migration-deferred-next-measurement";
+
+export interface StrategyJustification {
+  /** One of the closed codes above — the machine-readable verdict. */
+  reasonCode: StrategyReasonCode;
+  /**
+   * The human-readable derivation: WHY this code applies to THIS rule,
+   * citing the detector's actual shape. Rendered by the rule docs and
+   * the depth-adjudication doc; vague boilerplate is a review rejection.
+   */
+  detail: string;
+}
+
 export interface RuleMeta {
   /** Frozen public API — never reused (§18.4). */
   id: string;
@@ -116,6 +163,15 @@ export interface RuleMeta {
    * findings that merely weaken a single test.
    */
   suiteInvalidating?: boolean;
+  /**
+   * Depth-adjudication record (master plan P8, plan 1788853205786 —
+   * flag 6, decision 9: "no unexplained depth"). REQUIRED for every
+   * rule whose `detectionStrategy` is LEXICAL (enforced by the doctor's
+   * registry-sanity check): the reason the lexical form is the honest
+   * shipped detector, with a closed reason code and a derivation that
+   * cites the detector's actual shape. Non-LEXICAL rules may omit it.
+   */
+  strategyJustification?: StrategyJustification;
 }
 
 export interface SourceFileContext {

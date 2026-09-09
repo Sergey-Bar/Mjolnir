@@ -21,6 +21,13 @@ export const skippedTest = defineRule({
   falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "skip/xfail/ignore are runner skip-state annotations whose forms " +
+      "are runner API tokens (it.skip, xit, t.skip, @unittest.skip); the " +
+      "detector matches those exact tokens on the code-only text",
+  },
   introduced: "0.1.0",
   // Measured FP 65% (n=20, docs/FP-AUDIT.md 2026-08-31): conditional
   // capability/environment skips (test.skip(fn), skip(!!process.env.DEV))

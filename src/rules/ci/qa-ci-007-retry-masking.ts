@@ -40,6 +40,13 @@ export const retryMasking = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "retry masking is defined by the runner's retry semantics, which no " +
+      "language syntax tree represents; the detector matches the runner's " +
+      "own retry keys in workflow YAML where statements are shell strings",
+  },
   introduced: "0.1.0",
 
   // Measured (corpus wave 5): tier set from the measured envelope (plan §11.2).

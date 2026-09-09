@@ -27,6 +27,13 @@ export const pwBlanketRouteMock = defineRule({
   falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "absence-aggregate",
+    detail:
+      "blanket route interception is an aggregate of route calls across " +
+      "the suite; the detector aggregates the route-call shapes — the " +
+      "finding is the pattern's breadth, not one call",
+  },
   detectionNotes: "regex heuristic",
   introduced: "0.3.8",
 

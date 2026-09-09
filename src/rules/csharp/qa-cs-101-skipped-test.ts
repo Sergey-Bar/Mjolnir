@@ -23,6 +23,13 @@ export const csSkippedTest = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "exact-key-match",
+    detail:
+      "[Ignore]/[Fact(Skip=…)] are exact xUnit/NUnit/MSTest attribute " +
+      "tokens; the detector matches the attribute identifiers — closed " +
+      "token sets where lexical precision equals structural",
+  },
   introduced: "0.3.8",
 
   run(ctx) {

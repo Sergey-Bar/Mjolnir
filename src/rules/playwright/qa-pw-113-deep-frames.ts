@@ -24,6 +24,13 @@ export const pwDeepFrameLocator = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "exact-key-match",
+    detail:
+      "frameLocator chaining depth is an exact Playwright token sequence; " +
+      "the detector matches the frameLocator call chains — the token " +
+      "sequence is closed and unique to the defect",
+  },
   introduced: "0.3.0",
 
   // Measured 2026-09-02 (corpus wave 5): FP ≤ 10% but n < 20 — measured-extended until the core DoD n ≥ 20 is met (plan §23).

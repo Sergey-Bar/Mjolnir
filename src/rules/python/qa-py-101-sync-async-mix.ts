@@ -24,6 +24,14 @@ export const pyPwSyncAsyncMix = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "family-fallback-lockstep",
+    detail:
+      "the hard-sleep family's Python sync/async variant: the family's " +
+      "structural path carries the depth; this variant's lexical path is " +
+      "the lockstep fallback (async-mix shapes across the sync/async " +
+      "boundary)",
+  },
   detectionNotes: "regex heuristic",
   introduced: "0.3.8",
 

@@ -32,6 +32,13 @@ export const pwNoProjectSplit = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "project split is a runner config concept (projects array " +
+      "arrangement); the detector reads playwright.config.* keys " +
+      "(adapter-gated), whose object-literal shape is exact-match text",
+  },
   detectionNotes: "regex heuristic over playwright.config.* (adapter-gated)",
   introduced: "0.3.0",
 

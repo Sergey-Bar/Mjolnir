@@ -26,6 +26,13 @@ export const pwNoFailureArtifacts = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "absence-aggregate",
+    detail:
+      "artifact-capture absence (no trace/video/screenshot anywhere in " +
+      "the suite) is a directory-level aggregate; the detector aggregates " +
+      "over the suite's shapes — absence, not presence",
+  },
   detectionNotes: "regex heuristic",
   introduced: "0.3.8",
 

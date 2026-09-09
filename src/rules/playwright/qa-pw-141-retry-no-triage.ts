@@ -28,6 +28,13 @@ export const pwRetryMaskingNoForensics = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "retry triage is the runner's retry loop interacting with the " +
+      "reporter config; the detector reads both config keys and the " +
+      "triage call shape — the semantics live in runner behavior",
+  },
   detectionNotes: "regex heuristic",
   introduced: "0.3.8",
 

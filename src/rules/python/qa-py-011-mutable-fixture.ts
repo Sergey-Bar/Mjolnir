@@ -24,6 +24,13 @@ export const pyMutableFixture = defineRule({
   falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "pytest fixture mutation is fixture-lifecycle semantics " +
+      "(autouse/scope keys plus mutation calls); the detector matches the " +
+      "runner's fixture decorator tokens plus the mutation shapes",
+  },
   introduced: "0.3.0",
 
   // Measured 2026-09-02 (corpus wave 5): tier set from the measured envelope (plan §11.2).

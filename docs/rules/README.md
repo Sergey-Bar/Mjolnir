@@ -65,7 +65,6 @@ One page per rule, each showing a real detected example, the fix, confirmation o
 | [QA-PY-011](./QA-PY-011.md)       | Mutable fixture shared across tests                              | warning  |
 | [QA-PY-012](./QA-PY-012.md)       | Tautological assertion                                           | error    |
 | [QA-PY-101](./QA-PY-101.md)       | Sync/async Playwright API mix                                    | warning  |
-| [QA-PY-102](./QA-PY-102.md)       | time.sleep() in Playwright test                                  | warning  |
 | [QA-PY-103](./QA-PY-103.md)       | wait_for_timeout() as sync                                       | warning  |
 | [QA-PY-104](./QA-PY-104.md)       | Brittle selector instead of role-based locator                   | warning  |
 | [QA-PY-105](./QA-PY-105.md)       | Playwright test without assertions                               | error    |

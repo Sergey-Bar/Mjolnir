@@ -56,6 +56,13 @@ export const pwLocatorNormalize = defineRule({
   falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "string-content-defect",
+    detail:
+      "CSS/XPath string selectors are string-argument shapes (css=/xpath= " +
+      "engines, bare id/class/attr CSS, nth-child); the detector " +
+      "classifies the string shapes directly",
+  },
   detectionNotes:
     "string-selector shapes (css=/xpath= engines, bare id/class/attr CSS, nth-child) inside .locator()/waitForSelector()/page.$ APIs, on the RAW text view (the selector text lives inside string literals, which the code-only view blanks)",
   introduced: "0.6.0",

@@ -23,6 +23,13 @@ export const jvDisabledTest = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "exact-key-match",
+    detail:
+      "@Disabled/@Ignore are exact JUnit/TestNG annotation tokens; the " +
+      "detector matches the annotation identifier — annotation shapes are " +
+      "closed token sets where lexical and structural match coincide",
+  },
   introduced: "0.3.8",
   tier: "core", // measured 2026-09-02: 0% FP at n=20 — promoted extended→core per the fp band
 

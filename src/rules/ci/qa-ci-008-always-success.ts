@@ -69,6 +69,13 @@ export const alwaysSuccessStep = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "always()-success is a workflow-step outcome contract, not a code " +
+      "construct; the detector matches the step's run/if keys, which are " +
+      "string fields of the YAML config surface",
+  },
   introduced: "0.1.0",
 
   // Measured (corpus wave 5): tier set from the measured envelope (plan §11.2).

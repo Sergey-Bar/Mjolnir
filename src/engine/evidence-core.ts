@@ -72,16 +72,16 @@ export interface EvidenceRecord {
 }
 
 /** Deterministic canonical order: file → line (absent last) → title → source. */
-function compareRecords(a: EvidenceRecord, b: EvidenceRecord): number {
+export function compareEvidenceRecords(
+  a: EvidenceRecord,
+  b: EvidenceRecord,
+): number {
   if (a.file !== b.file) return a.file < b.file ? -1 : 1;
   const la = a.line ?? Number.POSITIVE_INFINITY;
   const lb = b.line ?? Number.POSITIVE_INFINITY;
   if (la !== lb) return la - lb;
   if (a.title !== b.title) return a.title < b.title ? -1 : 1;
-  // Source tie-break omitted: buildEvidenceRecords normalizes ONE
-  // report per call, so a sort set is always single-source — the
-  // comparison is provably dead (coverage says so) and stable order
-  // for identical identities comes from the final return 0.
+  if (a.source !== b.source) return a.source < b.source ? -1 : 1;
   return 0;
 }
 
@@ -127,7 +127,7 @@ export function buildEvidenceRecords(
 ): EvidenceRecord[] {
   return report.verdicts
     .map((v) => normalizeOne(report, artifact, v))
-    .sort(compareRecords);
+    .sort(compareEvidenceRecords);
 }
 
 /**
@@ -152,15 +152,13 @@ export function findTestAt(
   for (const r of inFile) {
     if (r.line === undefined) return undefined;
   }
+  // Every record here carries a line (the guard above returns on the
+  // first absence) — the narrowing persists; the loop picks the greatest
+  // declaration line ≤ the finding's line.
   let match: EvidenceRecord | undefined;
   for (const r of inFile) {
-    const rLine = r.line as number;
-    // The all-lines-present guard above makes the undefined branch
-    // provably dead; this loop only sees known declaration lines.
-    if (
-      rLine <= line &&
-      (match === undefined || (match.line as number) <= rLine)
-    )
+    const l = r.line as number;
+    if (l <= line && (match === undefined || (match.line as number) <= l))
       match = r;
   }
   return match;
