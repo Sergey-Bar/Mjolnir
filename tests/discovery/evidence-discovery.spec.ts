@@ -159,3 +159,18 @@ describe("layout variants (WI-11 layout-variant fixtures)", () => {
     expect(msg).toContain("caps at L2");
   });
 });
+
+describe("listDirs hostile fallback (P8 coverage)", () => {
+  it("a FILE passed as the scan root degrades to zero candidates — no crash", () => {
+    const root = mkdtempSync(join(tmpdir(), "mjolnir-evdisc-"));
+    try {
+      const fileAsDir = join(root, "not-a-dir.txt");
+      writeFileSync(fileAsDir, "x");
+      const out = discoverEvidenceCandidates(fileAsDir);
+      expect(Array.isArray(out)).toBe(true);
+      expect(out).toEqual([]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});

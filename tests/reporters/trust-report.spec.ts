@@ -263,3 +263,111 @@ describe("derived facts — deterministic, canonical-derived", () => {
     expect(reasons.some((x) => x.includes("framework detection"))).toBe(true);
   });
 });
+
+describe("P8 coverage — the remaining arms of the hero render", () => {
+  it("PROVISIONAL fired-rules line renders with the >3 truncation", () => {
+    const out = renderTrustReport(
+      result({
+        trustSummary: {
+          level: "L2",
+          confidence: 0.5,
+          evidenceCoverage: 0.3,
+          inconclusiveRate: 0,
+          provisionalRuleIds: [
+            "QA-PY-008",
+            "QA-PY-010",
+            "QA-PW-122",
+            "QA-PW-004",
+            "QA-PW-123",
+          ],
+          ceilingReasons: ["provisional-rules"],
+        },
+      }),
+      STATIC_OPTS,
+    );
+    expect(out).toContain("PROVISIONAL — unmeasured rules fired:");
+    expect(out).toContain("+2 more");
+  });
+
+  it("no measured-FP line when nothing fired and no provisional rules", () => {
+    const out = renderTrustReport(
+      result({
+        trustSummary: {
+          level: "L2",
+          confidence: 0.5,
+          evidenceCoverage: 0.4,
+          inconclusiveRate: 0,
+          provisionalRuleIds: [],
+          ceilingReasons: [],
+        },
+      }),
+      STATIC_OPTS,
+    );
+    expect(out).toContain("none fired — nothing to weight");
+  });
+
+  it("a >3-risk eligible list renders the overflow line", () => {
+    const out = renderTrustReport(
+      result({
+        findings: [
+          finding({ ruleId: "QA-TEST-901", file: "a.spec.ts", line: 1 }),
+          finding({ ruleId: "QA-TEST-902", file: "b.spec.ts", line: 2 }),
+          finding({ ruleId: "QA-TEST-903", file: "c.spec.ts", line: 3 }),
+          finding({ ruleId: "QA-TEST-904", file: "d.spec.ts", line: 4 }),
+        ],
+      }),
+      STATIC_OPTS,
+    );
+    expect(out).toContain("more in --json / --verbose");
+  });
+
+  it("deterministic-evidence tag renders for non-corroborated E2 findings", () => {
+    const out = renderTrustReport(
+      result({
+        findings: [
+          finding({ ruleId: "QA-TEST-905", file: "a.spec.ts", line: 1 }),
+        ],
+      }),
+      STATIC_OPTS,
+    );
+    expect(out).toContain("[deterministic]");
+  });
+
+  it("pattern tag renders for E1 non-corroborated findings", () => {
+    const out = renderTrustReport(
+      result({
+        findings: [
+          finding({
+            ruleId: "QA-TEST-906",
+            file: "a.spec.ts",
+            line: 1,
+            evidenceLevel: "E1",
+          }),
+        ],
+      }),
+      STATIC_OPTS,
+    );
+    expect(out).toContain("[pattern]");
+  });
+
+  it("run-executed tag renders for file/test-level corroboration", () => {
+    const out = renderTrustReport(
+      result({
+        findings: [
+          finding({
+            ruleId: "QA-TEST-907",
+            file: "a.spec.ts",
+            line: 1,
+            runtimeCorroboration: {
+              level: "test",
+              source: "junit-xml",
+              testsExecuted: 2,
+            },
+          }),
+        ],
+      }),
+      STATIC_OPTS,
+    );
+    expect(out).toContain("[run executed]");
+  });
+});

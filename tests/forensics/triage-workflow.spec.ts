@@ -9,8 +9,9 @@
  * mirrors the terminal rows; hostile/empty inputs degrade honestly.
  */
 
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import { runTriageCommand } from "../../src/cli.js";
 import {
   classifyVerdict,
   renderTriage,
@@ -19,6 +20,9 @@ import {
   triageRows,
   workflowRows,
 } from "../../src/forensics/triage.js";
+import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import type {
   ForensicsReport,
   TestVerdict,
@@ -282,5 +286,72 @@ describe("triageRows + renderTriage — the legacy surface (P8 completeness)", (
       }),
     );
     expect(rows[0]?.suggestedAction).toBe("fix now — failing");
+  });
+});
+
+describe("CLI mode arms (P8 rebase — coverage of the triage command flags)", () => {
+  let dir = "";
+  let origCwd = "";
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), "mjolnir-triage-cmd-"));
+    origCwd = process.cwd();
+    process.chdir(dir);
+  });
+  afterEach(() => {
+    process.chdir(origCwd);
+    rmSync(dir, { recursive: true, force: true });
+  });
+  function capture() {
+    const out: string[] = [];
+    const errs: string[] = [];
+    return {
+      io: {
+        out: (...a: unknown[]) => out.push(a.map(String).join(" ")),
+        err: (...a: unknown[]) => errs.push(a.map(String).join(" ")),
+      },
+      text: () => out.join("\n"),
+      errors: () => errs.join("\n"),
+    };
+  }
+
+  it("--classic renders the legacy table through the command", () => {
+    // The command reads REAL report files (JUnit/Playwright JSON) — not
+    // the analyzed ForensicsReport. A JUnit failure row → FAILING row.
+    writeFileSync(
+      join(dir, "junit.xml"),
+      `<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="suite" tests="1">
+  <testcase name="checkout flow" classname="e2e/shop.spec.ts">
+    <failure message="boom"/>
+  </testcase>
+</testsuite>`,
+    );
+    const cap = capture();
+    const code = runTriageCommand(
+      [join(dir, "junit.xml"), "--classic", "--no-md"],
+      cap.io,
+    );
+    expect(code).toBe(0);
+    expect(cap.text()).toContain("FLAKY TRIAGE");
+    expect(cap.text()).toContain("FAILING");
+  });
+
+  it("--json renders the structured twin through the command", () => {
+    writeFileSync(
+      join(dir, "junit.xml"),
+      `<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="suite" tests="1">
+  <testcase name="checkout flow" classname="e2e/shop.spec.ts">
+    <failure message="boom"/>
+  </testcase>
+</testsuite>`,
+    );
+    const cap = capture();
+    const code = runTriageCommand(
+      [join(dir, "junit.xml"), "--json", "--no-md"],
+      cap.io,
+    );
+    expect(code).toBe(0);
+    expect(cap.text()).toContain('"artifact": "mjolnir-triage-workflow"');
   });
 });
