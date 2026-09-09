@@ -189,6 +189,16 @@ get made, not who to lobby:
   [`SUPPORT.md`](SUPPORT.md); version/stability commitments live in
   [`docs/VERSIONING.md`](docs/VERSIONING.md).
 
+**Bus-factor program (P9):** maintenance is deliberately operable beyond
+one person — the roles ladder, entry gates, and the path to
+co-maintainership live in [`docs/MAINTAINERS.md`](docs/MAINTAINERS.md);
+every owner-bound operation is inventoried (runbook or identity-bound,
+nothing silent) in [`docs/OWNER-RUNBOOK.md`](docs/OWNER-RUNBOOK.md); and
+verdict classification — the project's spine — is documented to the
+same standard in [`docs/ADJUDICATION-KIT.md`](docs/ADJUDICATION-KIT.md)
+so a second human adjudicates identically. A4 keeps adjudication human;
+these documents make it _any_ human.
+
 ## Issue triage
 
 Every issue form pre-assigns its label — the four labels mirror the
