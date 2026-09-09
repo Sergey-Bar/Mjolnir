@@ -166,11 +166,13 @@ describe("mjolnir doctor self-audit", () => {
       },
     };
     expect(checkRegistry([good]).ok).toBe(true);
-    const deeper: (typeof RULES)[number] = {
+    // Non-LEXICAL: destructure so exactOptionalPropertyTypes never sees
+    // an explicit `undefined` for an optional field.
+    const { strategyJustification: _omit, ...deeper } = {
       ...firstRule(),
-      detectionStrategy: "AST",
-      strategyJustification: undefined,
+      detectionStrategy: "AST" as const,
     };
+    void _omit;
     expect(checkRegistry([deeper]).ok).toBe(true);
   });
 
