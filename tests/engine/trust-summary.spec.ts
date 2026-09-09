@@ -317,17 +317,19 @@ describe("measuredFpOfFiredRules — evidence-weighted, PROVISIONAL disclosure",
   });
 
   it("any unmeasured fired rule flips the set PROVISIONAL — the rate disappears, the disclosure appears", () => {
+    // QA-PW-102 measured at rev 2 (n=10, 2026-09-09 harvest) — use the
+    // current unmeasured set for the disclosure: QA-PW-125.
     const s = buildTrustSummary(
       result({
         findings: [
           finding({ ruleId: "QA-PW-004" }),
-          finding({ ruleId: "QA-PW-102", evidenceLevel: "E1" }),
+          finding({ ruleId: "QA-PW-125", evidenceLevel: "E1" }),
         ],
       }),
       new Map(),
     );
     expect(s.measuredFpOfFiredRules).toBeUndefined();
-    expect(s.provisionalRuleIds).toEqual(["QA-PW-102"]);
+    expect(s.provisionalRuleIds).toEqual(["QA-PW-125"]);
   });
 
   it("nothing fired → no rate, no provisional disclosure", () => {

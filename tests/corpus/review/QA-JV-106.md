@@ -1,6 +1,6 @@
 # QA-JV-106 — Sample Findings for Classification
 
-Total sampled: 4 (max 20 per rule)
+Total sampled: 8 (max 20 per rule)
 
 Classify each finding as:
 
@@ -10,87 +10,171 @@ Classify each finding as:
 
 ---
 
-## 1. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestLocatorElementHandle.java:64
+## 1. positive-fixtures — QA-JV-106/OrderHistoryXpathTest.java:10
 
 **Message:** Brittle selector (xpath= selector).
 
 ```
-      59|   @Test
-      60|   void xpathShouldQueryExistingElement() {
-      61|     page.navigate(server.PREFIX + "/playground.html");
-      62|     page.setContent("<html><body><div class='second'><div class='inner'>A</div></div></body></html>");
-      63|     Locator html = page.locator("html");
->>>   64|     Locator second = html.locator("xpath=./body/div[contains(@class, 'second')]");
-      65|     Locator inner = second.locator("xpath=./div[contains(@class, 'inner')]");
-      66|     Object content = page.evaluate("e => e.textContent", inner.elementHandle());
-      67|     assertEquals("A", content);
-      68|   }
-      69|
+       5| public class OrderHistoryXpathTest {
+       6|
+       7|     @Test
+       8|     void xpathFindsOrderRow() {
+       9|         page.setContent("<table><tr class='order'><td>1</td></tr></table>");
+>>>   10|         Integer rows = (Integer) page.locator("xpath=//table//tr[contains(@class, 'order')]").count();
+      11|         assertEquals(1, rows);
+      12|     }
+      13|
+      14|     @Test
+      15|     void xpathFindsNestedBadge() {
 ```
 
 **verdict:**
 
 ---
 
-## 2. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestLocatorElementHandle.java:65
+## 2. positive-fixtures — QA-JV-106/OrderHistoryXpathTest.java:17
 
 **Message:** Brittle selector (xpath= selector).
 
 ```
-      60|   void xpathShouldQueryExistingElement() {
-      61|     page.navigate(server.PREFIX + "/playground.html");
-      62|     page.setContent("<html><body><div class='second'><div class='inner'>A</div></div></body></html>");
-      63|     Locator html = page.locator("html");
-      64|     Locator second = html.locator("xpath=./body/div[contains(@class, 'second')]");
->>>   65|     Locator inner = second.locator("xpath=./div[contains(@class, 'inner')]");
-      66|     Object content = page.evaluate("e => e.textContent", inner.elementHandle());
-      67|     assertEquals("A", content);
-      68|   }
-      69|
-      70|   @Test
+      12|     }
+      13|
+      14|     @Test
+      15|     void xpathFindsNestedBadge() {
+      16|         page.setContent("<div class='order'><span class='badge'>NEW</span></div>");
+>>>   17|         String badge = page.locator("xpath=//div[@class='order']/span[@class='badge']").textContent();
+      18|         assertEquals("NEW", badge);
+      19|     }
+      20|
+      21|     @Test
+      22|     void xpathHandlesAncestorAxis() {
 ```
 
 **verdict:**
 
 ---
 
-## 3. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestLocatorElementHandle.java:74
+## 3. positive-fixtures — QA-JV-106/OrderHistoryXpathTest.java:24
 
 **Message:** Brittle selector (xpath= selector).
 
 ```
-      69|
-      70|   @Test
-      71|   void xpathShouldReturnNullForNonExistingElement() {
-      72|     page.setContent("<html><body><div class='second'><div class='inner'>B</div></div></body></html>");
-      73|     Locator html = page.locator("html");
->>>   74|     List<ElementHandle> second = html.locator("xpath=/div[contains(@class, 'third')]").elementHandles();
-      75|     assertEquals(asList(), second);
-      76|   }
-      77| }
-      78|
+      19|     }
+      20|
+      21|     @Test
+      22|     void xpathHandlesAncestorAxis() {
+      23|         page.setContent("<ul><li class='item'><span>go</span></li></ul>");
+>>>   24|         Object li = page.locator("xpath=//span[text()='go']/ancestor::li").evaluate("e => e.className");
+      25|         assertEquals("item", li);
+      26|     }
+      27|
+      28|     @Test
+      29|     void xpathHandlesPositionalPredicate() {
 ```
 
 **verdict:**
 
 ---
 
-## 4. microsoft-playwright-java — playwright/src/test/java/com/microsoft/playwright/TestPageLocatorQuery.java:187
+## 4. positive-fixtures — QA-JV-106/OrderHistoryXpathTest.java:31
 
 **Message:** Brittle selector (xpath= selector).
 
 ```
-     182|     page.setContent("<div><span>hello</span></div><div><span>world</span></div>");
-     183|     assertThat(page.locator("div", new Page.LocatorOptions().setHas(page.locator("text=world")))).hasCount(1);
-     184|     assertEquals("<div><span>world</span></div>", removeHighlight((String) page.locator("div", new Page.LocatorOptions().setHas(page.locator("text=world"))).evaluate("e => e.outerHTML")));
-     185|     assertThat(page.locator("div", new Page.LocatorOptions().setHas(page.locator("text='hello'")))).hasCount(1);
-     186|     assertEquals("<div><span>hello</span></div>", removeHighlight((String) page.locator("div", new Page.LocatorOptions().setHas(page.locator("text='hello'"))).evaluate("e => e.outerHTML")));
->>>  187|     assertThat(page.locator("div", new Page.LocatorOptions().setHas(page.locator("xpath=./span")))).hasCount(2);
-     188|     assertThat(page.locator("div", new Page.LocatorOptions().setHas(page.locator("span")))).hasCount(2);
-     189|     assertThat(page.locator("div", new Page.LocatorOptions().setHas(page.locator("span", new Page.LocatorOptions().setHasText("wor"))))).hasCount(1);
-     190|     assertEquals("<div><span>world</span></div>", removeHighlight((String) page.locator("div", new Page.LocatorOptions().setHas(
-     191|       page.locator("span", new Page.LocatorOptions().setHasText("wor")))).evaluate("e => e.outerHTML")));
-     192|     assertThat(page.locator("div", new Page.LocatorOptions()
+      26|     }
+      27|
+      28|     @Test
+      29|     void xpathHandlesPositionalPredicate() {
+      30|         page.setContent("<div><p>one</p><p>two</p></div>");
+>>>   31|         String second = page.locator("xpath=//div/p[position()=2]").textContent();
+      32|         assertEquals("two", second);
+      33|     }
+      34| }
+      35|
+```
+
+**verdict:**
+
+---
+
+## 5. positive-fixtures — QA-JV-106/SelectorPortabilityTest.java:13
+
+**Message:** Brittle selector (xpath= selector).
+
+```
+       8| class SelectorPortabilityTest {
+       9|
+      10|     @Test
+      11|     void xpathFindsNestedWidget() {
+      12|         page.setContent("<div class='panel'><span class='widget'>A</span></div>");
+>>>   13|         Object first = page.locator("xpath=//span[contains(@class, 'widget')]").evaluate("e => e.textContent");
+      14|         assertEquals("A", first);
+      15|     }
+      16|
+      17|     @Test
+      18|     void xpathHandlesDeepChains() {
+```
+
+**verdict:**
+
+---
+
+## 6. positive-fixtures — QA-JV-106/SelectorPortabilityTest.java:20
+
+**Message:** Brittle selector (xpath= selector).
+
+```
+      15|     }
+      16|
+      17|     @Test
+      18|     void xpathHandlesDeepChains() {
+      19|         page.setContent("<main><section><div class='row'><button>Go</button></div></section></main>");
+>>>   20|         Integer count = (Integer) page.locator("xpath=//main//section//div[@class='row']/button").count();
+      21|         assertEquals(1, count);
+      22|     }
+      23| }
+      24|
+```
+
+**verdict:**
+
+---
+
+## 7. positive-fixtures — QA-JV-106/SelectorTest.java:7
+
+**Message:** Brittle selector (xpath= selector).
+
+```
+       2|
+       3| class SelectorTest {
+       4|
+       5|     @Test
+       6|     void shouldSubmitForm() {
+>>>    7|         page.locator("xpath=//button[@type='submit']").click();
+       8|         page.locator("//div/section/form").click();
+       9|     }
+      10| }
+      11|
+```
+
+**verdict:**
+
+---
+
+## 8. positive-fixtures — QA-JV-106/SelectorTest.java:8
+
+**Message:** Brittle selector (absolute XPath).
+
+```
+       3| class SelectorTest {
+       4|
+       5|     @Test
+       6|     void shouldSubmitForm() {
+       7|         page.locator("xpath=//button[@type='submit']").click();
+>>>    8|         page.locator("//div/section/form").click();
+       9|     }
+      10| }
+      11|
 ```
 
 **verdict:**

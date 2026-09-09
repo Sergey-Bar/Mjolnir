@@ -31,10 +31,10 @@ describe("certification census claims vs live registry", () => {
   it("measured = 57, provisional = 21 (report matches MEASURED_FP)", () => {
     const active = RULES.filter((r) => !RETIRED_RULE_IDS.includes(r.id));
     const measured = active.filter((r) => MEASURED_FP[r.id] !== undefined);
-    expect(measured.length).toBe(57);
-    expect(active.length - measured.length).toBe(21);
+    expect(measured.length).toBe(72);
+    expect(active.length - measured.length).toBe(6);
     expect(REPORT).toContain("Measured (n ≥ 10, revision-current)");
-    expect(REPORT).toContain("**57**");
+    expect(REPORT).toContain("**72**");
   });
 
   it("retired = 21 and excluded from the census", () => {
@@ -88,7 +88,7 @@ describe("certification artifact claims vs live files", () => {
 
   it("the two honest ⚠️s are stated, not hidden", () => {
     expect(REPORT).toContain("partial");
-    expect(REPORT).toContain("21 rules PROVISIONAL");
+    expect(REPORT).toContain("6 rules PROVISIONAL");
   });
 
   it("the report does not claim 78/78 measured (the measurement law)", () => {
