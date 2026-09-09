@@ -1,0 +1,14 @@
+# Bus-factor program P9 (plan 1788853205786, decision 10): ownership is
+# explicit per surface, never implicit. The @Sergey-Bar default covers
+# everything until a co-maintainer exists (see docs/MAINTAINERS.md) —
+# extend this file deliberately; the diff IS the review surface.
+#
+# Normative lawbook — owner-ratified, changes are lawbook amendments:
+/docs/CERTIFICATION-POLICY.md @Sergey-Bar
+# Publishing + the identity-bound inventory:
+/docs/PUBLISHING.md        @Sergey-Bar
+/docs/OWNER-RUNBOOK.md     @Sergey-Bar
+/docs/BUS-FACTOR-AUDIT.md  @Sergey-Bar
+# The measured-FP corpus gates the registry:
+/tests/corpus/verdicts/    @Sergey-Bar
+/tests/corpus/baseline/    @Sergey-Bar

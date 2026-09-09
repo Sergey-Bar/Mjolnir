@@ -87,6 +87,36 @@ once shipped, so this file is the record of what changed between versions.
   variants: QA-JV-108, QA-CS-108 (hardcoded-URL), QA-JV-110, QA-CS-110
   (no-a11y), QA-JV-111, QA-CS-111 (blanket-route).
 
+## [0.5.39] — 2026-09-09
+
+### Changes since 0
+
+- P9: bus-factor program — MAINTAINERS ladder, OWNER-RUNBOOK, ADJUDICATION-KIT, CODEOWNERS (#69)
+
+## [0.5.38] — 2026-09-09
+
+### Changes since 0
+
+- P7: agent loop — mjolnir verify + MCP verify tool + install surfaces (#68)
+
+## [0.5.37] — 2026-09-08
+
+### Changes since 0
+
+- P5: mutation evidence reader — Stryker/mutmut, E1→E2 derivation, report-only (#67)
+
+## [0.5.36] — 2026-09-08
+
+### Changes since 0
+
+- P4: forensics breadth — Jest + Vitest JSON ingestion (honest degradation) (#66)
+
+## [0.5.35] — 2026-09-08
+
+### Changes since 0
+
+- P3a: GitLab CI — Code Quality report, MR recipe, exit-code discipline (#65)
+
 ## [0.5.34] — 2026-09-08
 
 ### Changes since 0

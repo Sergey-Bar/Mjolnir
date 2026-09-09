@@ -209,7 +209,7 @@ export interface CliArgs {
   verbose: boolean;
   maxDurationMs: number;
   scopeChanged: boolean;
-  format: "terminal" | "json" | "sarif" | "mermaid";
+  format: "terminal" | "json" | "sarif" | "mermaid" | "codequality";
   /** --width override for terminal box/gauge wrapping (Sprint 5 Task 22). */
   width?: number;
   /** --ascii / --no-ascii override for shouldUseAscii()'s heuristic. */

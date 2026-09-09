@@ -5,7 +5,7 @@
  * 10 usage error · 20 internal error.
  */
 
-import { existsSync, realpathSync, statSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { join, dirname, resolve } from "node:path";
 import process from "node:process";
@@ -44,6 +44,7 @@ import { buildMachineContract } from "./engine/machine-contract.js";
 import { renderTerminal } from "./reporter/terminal.js";
 import { renderTrustReport } from "./reporter/trust-report.js";
 import { renderSarif } from "./reporter/sarif.js";
+import { renderCodeQuality } from "./reporter/codequality.js";
 import { renderMermaid } from "./reporter/mermaid.js";
 import { ProgressRenderer, shouldRenderProgress } from "./reporter/progress.js";
 import { runSummaryCommand } from "./commands/summary.js";
@@ -60,6 +61,16 @@ import {
   renderTriageWorkflow,
   renderTriageWorkflowJson,
 } from "./forensics/triage.js";
+import {
+  parseStrykerJson,
+  looksLikeStrykerJson,
+} from "./mutation/parse-stryker.js";
+import { looksLikeMutmutXml, parseMutmutXml } from "./mutation/parse-mutmut.js";
+import {
+  renderMutationSummary,
+  stampMutationEvidence,
+} from "./mutation/derive.js";
+import type { MutationReport } from "./mutation/types.js";
 import { renderBadgeSnippet, writeBadge } from "./commands/badge.js";
 import { runTrustReportCommand } from "./commands/trust-report.js";
 import {
@@ -82,6 +93,7 @@ import {
   renderBaselineSaved,
   saveBaseline,
 } from "./commands/baseline.js";
+import { buildVerifyDigest, renderVerifyDigest } from "./commands/verify.js";
 import {
   DEFAULT_STATS_PATH,
   loadStats,
@@ -119,7 +131,7 @@ import {
  * `scripts/sync-sarif-version.cjs` on release and guarded by
  * `tests/version-consistency.spec.ts` locally.
  */
-export const CLI_VERSION = "0.5.34";
+export const CLI_VERSION = "0.5.39";
 
 /** A usage-error detail: the offending token, when one exists. */
 export interface UsageErrorDetail {
@@ -154,6 +166,9 @@ export function parseArgs(
       const fmt = argv[++i];
       if (fmt === "sarif") args.format = "sarif";
       else if (fmt === "mermaid") args.format = "mermaid";
+      // P3a (plan 1788853205786): GitLab Code Quality report — the
+      // `codequality` CI artifact GitLab renders as MR widgets.
+      else if (fmt === "codequality") args.format = "codequality";
       else if (fmt === "json") {
         args.format = "json";
         args.json = true;
@@ -743,6 +758,8 @@ export async function runScanCommand(
       io.out(renderSarif(result, pathToFileURL(target).href));
     } else if (args.format === "mermaid") {
       io.out(renderMermaid(result));
+    } else if (args.format === "codequality") {
+      io.out(renderCodeQuality(result));
     } else if (args.json) {
       // Blueprint §12: the machine contract rides the JSON output as an
       // additive field (schemaVersion 1 + contractVersion 1). Derived
@@ -917,6 +934,118 @@ export function runTriageCommand(
       );
       return 2;
     }
+    return 0;
+  } catch (err) {
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
+    return 20;
+  }
+}
+
+/**
+ * Sniff + parse a mutation report: Stryker JSON, mutmut junitxml, else
+ * an empty report (the caller renders the honest "nothing recognized").
+ */
+function ingestMutationReport(text: string): MutationReport {
+  const trimmed = text.trimStart();
+  if (trimmed.startsWith("<?xml") || trimmed.startsWith("<testsuite")) {
+    return parseMutmutXml(text);
+  }
+  try {
+    const json: unknown = JSON.parse(text);
+    if (looksLikeStrykerJson(json)) return parseStrykerJson(json);
+  } catch {
+    /* not JSON — fall through */
+  }
+  if (looksLikeMutmutXml(text)) return parseMutmutXml(text);
+  return { tool: "stryker", survived: [], noCoverage: 0, killed: 0 };
+}
+
+/** Testable `mutation` handler (master plan P5, plan 1788853205786).
+ * Reads a mutation report (Stryker JSON / mutmut junitxml), renders the
+ * survived-mutant leaderboard, and — with `--scan <path>` — re-scans the
+ * target, stamps matching findings with `mutationEvidence` (E1→E2 by
+ * derivation) and renders the stamped findings. NEVER spawns mutation
+ * tools: it reads reports the user already produced. Exit 2 when
+ * nothing in the report is recognized — honest no-evidence, not an
+ * error. Exit 0 in every other case: the reader is report-only, never a
+ * gate. */
+export async function runMutationCommand(
+  argv: string[],
+  io: { out: Output; err: Output } = { out, err },
+): Promise<number> {
+  const targetArg = argv.find((a) => !a.startsWith("-"));
+  if (!targetArg) {
+    io.err("Usage: mjolnir mutation <mutation-report> [--scan <path>]");
+    return 10;
+  }
+  const scanIdx = argv.indexOf("--scan");
+  const scanArg = scanIdx !== -1 ? argv[scanIdx + 1] : undefined;
+  if (scanIdx !== -1 && (!scanArg || scanArg.startsWith("-"))) {
+    io.err("--scan requires a path argument");
+    return 10;
+  }
+  let report: MutationReport;
+  try {
+    const path = resolve(targetArg);
+    if (!existsSync(path)) {
+      io.err(`No such file: ${path}`);
+      return 2;
+    }
+    const text = readFileSync(path, "utf8");
+    report = ingestMutationReport(text);
+    if (
+      report.survived.length === 0 &&
+      report.killed === 0 &&
+      report.noCoverage === 0
+    ) {
+      io.err(
+        "No mutants recognized. Expected a Stryker JSON report (mutation-report.json) or a mutmut junitxml report.",
+      );
+      return 2;
+    }
+  } catch (err) {
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
+    return 20;
+  }
+  io.out(renderMutationSummary(report));
+
+  if (scanArg === undefined) return 0;
+  try {
+    const scanPath = resolve(scanArg);
+    const invalid = validateScanTarget(scanPath, io.err);
+    if (invalid !== null) return invalid;
+    const result = await runScan({
+      target: scanPath,
+      json: true,
+      verbose: true,
+      maxDurationMs: 120_000,
+      scopeChanged: false,
+      format: "json",
+    });
+    const stats = stampMutationEvidence(result.findings, report);
+    io.out("");
+    if (stats.stamped === 0) {
+      io.out(
+        "No findings intersect the survived-mutant surface — nothing to derive.",
+      );
+    } else {
+      io.out(
+        `${stats.stamped} finding(s) carry mutationEvidence (${stats.derived} consolidated E1→E2 by derivation — docs/RULE-LIFECYCLE.md):`,
+      );
+      for (const f of result.findings) {
+        if (!f.mutationEvidence) continue;
+        io.out(
+          `  ${f.ruleId} ${f.file}:${f.line} — ${f.evidenceLevel} · ` +
+            `${f.mutationEvidence.matchedMutants} mutant(s) @ ${f.mutationEvidence.granularity} granularity`,
+        );
+      }
+      io.out("");
+      io.out(
+        "Machine form: re-run with --json — mutationEvidence rides the findings additively.",
+      );
+    }
+    // Report-only, never a gate: survived mutants NEVER fail this
+    // command (decision 8). The exit code is 0 regardless.
     return 0;
   } catch (err) {
     internalErrorMessage(err, io.err, process.argv.includes("--debug"));
@@ -1134,6 +1263,38 @@ export async function runBaselineCommand(
 }
 
 /** Testable `diff` handler (Sprint 6 Task 24) — new/worsened debt only. */
+/** Testable `verify` handler — the agent-loop verb (master plan P7,
+ * plan 1788853205786). Scans the target and diffs against the committed
+ * baseline, rendering the before/after digest the agent loop consumes
+ * (resolved per §15 · new · unchanged by ruleId+location · score delta).
+ * Exit semantics are the frozen contract: 0 clean · 1 new error
+ * findings · 2 partial scan or no baseline · 20 internal. */
+export async function runVerifyCommand(
+  argv: string[],
+  io: { out: Output; err: Output } = { out, err },
+): Promise<number> {
+  const args = parseArgsOrUsage(argv, io);
+  if (!args) {
+    return 10;
+  }
+  try {
+    const target = resolve(args.target);
+    const invalid = validateScanTarget(target, io.err);
+    if (invalid !== null) return invalid;
+    const result = await runScan({ ...args, target });
+    const baselinePath = join(target, DEFAULT_BASELINE_PATH);
+    const baseline = loadBaseline(baselinePath, (w) => io.err(w));
+    const digest = buildVerifyDigest(result, baseline);
+    io.out(renderVerifyDigest(digest));
+    if (result.partial) return 2;
+    if (!digest.hasBaseline) return 2;
+    return digest.new.some((f) => f.severity === "error") ? 1 : 0;
+  } catch (err) {
+    internalErrorMessage(err, io.err, args?.debug === true);
+    return 20;
+  }
+}
+
 export async function runDiffCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
@@ -1413,6 +1574,7 @@ export async function main(
   if (argv[0] === "suppressions") return runSuppressions();
   if (argv[0] === "forensics") return runForensicsCommand(argv.slice(1));
   if (argv[0] === "triage") return runTriageCommand(argv.slice(1));
+  if (argv[0] === "mutation") return runMutationCommand(argv.slice(1), io);
   if (argv[0] === "badge") return runBadgeCommand(argv.slice(1));
   if (argv[0] === "trust-report")
     return runTrustReportCommand(argv.slice(1), io);
@@ -1420,6 +1582,7 @@ export async function main(
   if (argv[0] === "impact") return runImpactCommand(argv.slice(1));
   if (argv[0] === "baseline") return runBaselineCommand(argv.slice(1));
   if (argv[0] === "diff") return runDiffCommand(argv.slice(1));
+  if (argv[0] === "verify") return runVerifyCommand(argv.slice(1), io);
   if (argv[0] === "pr-comment") return runPrCommentCommand(argv.slice(1));
   if (argv[0] === "summary") return runSummaryCommand(argv.slice(1), io);
   if (argv[0] === "stats") return runStatsCommand(argv.slice(1));

@@ -57,7 +57,14 @@ export interface TestVerdict {
 }
 
 export interface ForensicsReport {
-  source: "playwright-json" | "junit-xml";
+  /**
+   * Which report family the records came from. P4 (plan 1788853205786)
+   * widens the union additively: `jest-json` and `vitest-json` ingest
+   * with ONE attempt per record (their reports carry no per-attempt
+   * history), so TRUE-FLAKE can never fire from these sources — honest
+   * degradation, see the parsers' module docs.
+   */
+  source: "playwright-json" | "junit-xml" | "jest-json" | "vitest-json";
   totalTests: number;
   failed: number;
   skipped: number;

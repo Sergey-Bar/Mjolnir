@@ -17,6 +17,7 @@ const SIDEBAR = [
       { text: "How the score works", link: "/guide/scoring" },
       { text: "Runtime forensics", link: "/guide/forensics" },
       { text: "CI integration", link: "/guide/ci" },
+      { text: "Agent integration", link: "/guide/agents" },
       { text: "Configuration", link: "/guide/configuration" },
     ],
   },

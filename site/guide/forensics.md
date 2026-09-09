@@ -4,8 +4,9 @@ Static flakiness detection is guessing. A rule can tell you a test
 _looks_ flaky — a hard sleep, a `networkidle` wait — but it cannot tell
 you whether that test actually failed last Tuesday.
 
-Forensics reads **real execution data**: Playwright JSON reports and
-JUnit XML from any runner.
+Forensics reads **real execution data**: Playwright JSON reports, Jest
+JSON (`--json --outputFile`), Vitest JSON (`--reporter=json`) and JUnit
+XML from any runner.
 
 ```bash
 mjolnir forensics ./test-results/
@@ -35,8 +36,16 @@ This is the difference between the two halves of the tool:
 | `mjolnir pw-report ./test-results/` | Playwright run summary — retries / flakes / slowest |
 
 All three accept a directory or a single report file. They read
-Playwright's JSON reporter output and JUnit XML — so pytest, JUnit,
-TestNG, NUnit and anything else that emits JUnit XML all work.
+Playwright's JSON reporter output, Jest's and Vitest's JSON reports, and
+JUnit XML — so pytest, JUnit, TestNG, NUnit and anything else that emits
+JUnit XML all work.
+
+**An honest limitation, by design:** Jest's and Vitest's JSON reports
+record each test's final outcome, not its per-attempt history — so
+records from those sources always carry one attempt, and TRUE-FLAKE
+never fires from them (a report that cannot show the attempts must not
+imply a clean retry history). Retry forensics need Playwright JSON or
+cross-run JUnit aggregation.
 
 ## Wiring it up in CI
 

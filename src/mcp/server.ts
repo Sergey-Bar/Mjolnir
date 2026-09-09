@@ -33,6 +33,7 @@ import {
   loadBaseline,
   DEFAULT_BASELINE_PATH,
 } from "../commands/baseline.js";
+import { buildVerifyDigest } from "../commands/verify.js";
 
 /** Hard caps (§21 threat model: parameter size + resource bounds). */
 const MAX_PARAM_BYTES = 64 * 1024;
@@ -111,6 +112,18 @@ export const MCP_TOOLS = [
       required: ["path", "scanResult"],
     },
   },
+  {
+    name: "verify",
+    description:
+      "Agent-loop digest (1:1 with `mjolnir verify`): scan the target and diff against the committed baseline. Returns resolved (per §15 lifecycle), new, unchanged (grouped by ruleId + location), and the score delta. Read-only; the same transport guardrails as every other tool.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        path: { type: "string", description: "Directory to scan and verify." },
+      },
+      required: ["path"],
+    },
+  },
 ] as const;
 
 /** Strict param validation — unknown/missing/mistyped ⇒ INVALID_PARAMS. */
@@ -147,6 +160,11 @@ function validateParams(
     }
     if (typeof args["scanResult"] !== "object" || args["scanResult"] === null) {
       return "diff requires the `scanResult` object from a previous scan tool call";
+    }
+  }
+  if (name === "verify") {
+    if (typeof args["path"] !== "string" || args["path"].length === 0) {
+      return "verify requires a non-empty string `path`";
     }
   }
   return null;
@@ -281,6 +299,63 @@ export async function handleToolCall(call: McpToolCall): Promise<McpResponse> {
             resolution: f.resolution,
           })),
           unchangedCount: diff.unchangedCount,
+        },
+      };
+    }
+
+    if (call.name === "verify") {
+      const target = resolve(call.args["path"] as string);
+      if (!existsSync(target)) {
+        return {
+          jsonrpc: "2.0",
+          id: call.id,
+          error: {
+            code: MCP_ERRORS.INVALID_PARAMS,
+            message: `verify target does not exist: ${target}`,
+          },
+        };
+      }
+      const baselinePath = join(target, DEFAULT_BASELINE_PATH);
+      if (!existsSync(baselinePath)) {
+        return {
+          jsonrpc: "2.0",
+          id: call.id,
+          result: {
+            hasBaseline: false,
+            note: "no committed baseline at .mjolnir/baseline.json — establish the before-state with `mjolnir baseline` first",
+          },
+        };
+      }
+      // 1:1 with the CLI verb: run the scan through the same serialized
+      // queue, derive from the same §15 comparison machinery.
+      const result = await serializeScan(() =>
+        runScan({
+          target,
+          json: true,
+          verbose: false,
+          maxDurationMs: Number.POSITIVE_INFINITY,
+          scopeChanged: false,
+          format: "json",
+        }),
+      );
+      const baseline = loadBaseline(baselinePath);
+      const digest = buildVerifyDigest(result, baseline);
+      return {
+        jsonrpc: "2.0",
+        id: call.id,
+        result: {
+          hasBaseline: digest.hasBaseline,
+          baselineCapturedAt: digest.baselineCapturedAt,
+          baselineCommit: digest.baselineCommit,
+          resolved: digest.resolved,
+          new: digest.new,
+          unchanged: digest.unchanged,
+          unchangedCount: digest.unchangedCount,
+          scoreBefore: digest.scoreBefore,
+          scoreAfter: digest.scoreAfter,
+          scoreDelta: digest.scoreDelta,
+          // §14: partial scans never masquerade as clean verifications.
+          partial: result.partial,
         },
       };
     }

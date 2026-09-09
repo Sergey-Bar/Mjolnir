@@ -222,3 +222,39 @@ one CS-102 TP trade-off (a sub-second artificial-timing delay inside a
 route delegate is no longer flagged; the structural boundary cannot
 read that intent). QA-JV-102 stays LEXICAL rev 1 — no migration for
 symmetry (plan §12.4).
+
+## Mutation-evidence derivation (master plan P5, plan 1788853205786)
+
+Findings may carry mutationEvidence provenance (additive within
+schemaVersion 1) when a mutation-testing report matched them
+(mjolnir mutation <report>, Stryker JSON / mutmut junitxml; the reader
+NEVER spawns mutation tools).
+
+**The E1→E2 consolidation is BY DERIVATION, not an upgrade claim:**
+an E1 finding's evidence was already pattern evidence. A survived
+mutant on that surface does not add a second, independent proof — it
+removes the standing excuse for the pattern ("the suite would catch it
+if it mattered"). The derivation is: the mutation report shows the
+suite does not constrain this code, so the pattern-level evidence
+consolidates to what a deterministic check on the same surface carries.
+
+The boundaries that keep this honest:
+
+- **E0 stays E0** — an observation gains nothing from a survived
+  mutant (an observation is not a risk claim; there is nothing to
+  consolidate).
+- **E2 stays E2** — deterministic evidence is already at the top of
+  the static ladder.
+- **trustLevel never rises from mutation evidence alone** — the L3+
+  rungs mean a real run executed this code; a mutation report is
+  evidence ABOUT runs, not a run. The provenance is stamped; the
+  ladder is untouched.
+- **Only Survived mutants count.** NoCoverage is a different fact
+  (never executed ≠ tested-and-passed-by-nothing) and is reported
+  separately; killed/timeout mutants are the suite working.
+- **mutmut evidence is file-granularity by construction** — its JUnit
+  report carries no per-mutant lines, so spans are the whole file and
+  the stamped granularity says exactly what the report supported.
+- **Provenance is not truth** — a survived mutant is code the suite
+  would not notice changing; it never proves the finding real. The
+  command is report-only and never gates (decision 8).
