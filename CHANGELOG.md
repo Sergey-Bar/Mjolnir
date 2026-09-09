@@ -9,6 +9,12 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [0.6.6] — 2026-09-09
+
+### Changes since 0.6.5
+
+- fix(release): format the collapsed CHANGELOG before the lint gate (bot fix)
+
 ## [0.6.5] — 2026-09-09
 
 ### Changes since 0.6.4
@@ -18,7 +24,6 @@ once shipped, so this file is the record of what changed between versions.
 ## [0.6.4] — 2026-09-09
 
 ### Changes since 0.6.3
-
 
 ## [0.6.3] — 2026-09-09
 
