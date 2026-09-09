@@ -13,7 +13,6 @@ once shipped, so this file is the record of what changed between versions.
 
 ### Changes since 0.6.0
 
-
 ## [0.6.0] — 2026-09-09
 
 ### Changed
