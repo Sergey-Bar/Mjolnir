@@ -9,6 +9,12 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [1.0.2] — 2026-09-09
+
+### Changes since 1
+
+- P8: depth adjudication — no unexplained depth (all 89 LEXICAL rules + matrix completion + migration deferral) (#70)
+
 ## [1.0.1] — 2026-09-09
 
 ### Changes since 0
