@@ -122,8 +122,15 @@ describe("JSON-RPC strict validation (§21 threat model)", () => {
 });
 
 describe("tools/list — the catalog is 1:1 with canonical semantics", () => {
-  it("exposes exactly scan/explain/diff — nothing unmappable", () => {
-    expect(MCP_TOOLS.map((t) => t.name)).toEqual(["scan", "explain", "diff"]);
+  it("exposes exactly scan/explain/diff/verify — nothing unmappable", () => {
+    // P7: `verify` joins the catalog 1:1 with the CLI verb (same digest
+    // derivation, same guardrails).
+    expect(MCP_TOOLS.map((t) => t.name)).toEqual([
+      "scan",
+      "explain",
+      "diff",
+      "verify",
+    ]);
   });
 
   it("the catalog digest is stable across process instances", () => {
@@ -598,7 +605,7 @@ describe("handleMcpMessage — the full JSON-RPC surface (§21)", () => {
       id: 41,
     });
     const result = res?.result as { tools: unknown[] };
-    expect(result.tools).toHaveLength(3);
+    expect(result.tools).toHaveLength(4);
   });
 
   it("tools/list returns the full catalog", async () => {
@@ -612,6 +619,7 @@ describe("handleMcpMessage — the full JSON-RPC surface (§21)", () => {
       "scan",
       "explain",
       "diff",
+      "verify",
     ]);
   });
 

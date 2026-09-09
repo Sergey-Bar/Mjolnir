@@ -89,6 +89,15 @@ per-rule measured FP rates against real OSS code; GitHub Action
 | awesome-testing    | CI/CD tooling section                                               | pending |
 | awesome-actions    | Linting / testing categories — list the ACTION, not the npm package | pending |
 
+**Agent-loop listing angles (P7):** the MCP registries' entries and the
+awesome PR bodies should lead with the agent loop — `mjolnir verify`
+gives an agent a before/after digest (resolved per §15 lifecycle, new,
+unchanged by ruleId+location, score delta) with frozen exit semantics;
+the MCP `verify` tool is 1:1 under the same transport guardrails. The
+agent-loop pitch belongs in the PulseMCP/mcp.so descriptions and the
+modelcontextprotocol/servers PR (the stdio transport ships `verify`
+since v0.5.37).
+
 ## MCP registries (P1.6)
 
 | Channel                      | Artifact                                                                                                                                                                                       | State   |

@@ -104,9 +104,16 @@ export const HELP_ENTRIES: HelpEntry[] = [
   },
   {
     verb: "diff",
-    summary: "compare a fresh scan against the baseline — new/worsened only",
-    usage: "mjolnir diff [path]",
+    summary: "lifecycle diff vs the committed baseline",
+    usage: "mjolnir diff [path] [--json] [scan flags]",
     examples: ["mjolnir diff"],
+  },
+  {
+    verb: "verify",
+    summary:
+      "agent-loop digest: resolved/new/unchanged vs baseline + score delta",
+    usage: "mjolnir verify [path] [--json] [scan flags]",
+    examples: ["mjolnir verify"],
   },
   {
     verb: "impact",
@@ -200,7 +207,8 @@ export const HELP_ENTRIES: HelpEntry[] = [
   },
   {
     verb: "mcp",
-    summary: "run as an MCP server over stdio (scan / explain / diff tools)",
+    summary:
+      "run as an MCP server over stdio (scan / explain / diff / verify tools)",
     usage: "mjolnir mcp",
     examples: ["mjolnir mcp"],
   },
@@ -314,6 +322,7 @@ const GROUPS: Array<{ title: string; verbs: string[] }> = [
       "impact",
       "baseline",
       "diff",
+      "verify",
     ],
   },
   {
