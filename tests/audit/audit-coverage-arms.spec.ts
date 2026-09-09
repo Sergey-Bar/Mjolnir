@@ -39,7 +39,6 @@ import { loadConfig } from "../../src/config/config.js";
 import type { Finding } from "../../src/types.js";
 import { continueOnError } from "../../src/rules/ci/qa-ci-001-continue-on-error.js";
 import { pyNoAssertions } from "../../src/rules/python/qa-py-003-no-assertions.js";
-import { pwOrderDependence } from "../../src/rules/playwright/qa-pw-119-order-dependence.js";
 import * as jvCs from "../../src/engine/jv-cs-ast.js";
 import { createScanCache, fileCacheKey } from "../../src/engine/scan-cache.js";
 
@@ -308,18 +307,6 @@ describe("QA-PY-003 referenced-test-data arm", () => {
     ].join("\n");
     const findings = pyNoAssertions.run({ path: "test_x.py", text });
     expect(findings).toHaveLength(0);
-  });
-});
-
-describe("QA-PW-119 assignment arms", () => {
-  it("flags module-level mutable state assigned in a test, not in hooks", () => {
-    const text = [
-      "let shared = 0;",
-      "test.beforeEach(() => { shared = 0; });",
-      "test('a', () => { shared = 1; });",
-    ].join("\n");
-    const findings = pwOrderDependence.run({ path: "a.spec.ts", text });
-    expect(findings.length).toBeGreaterThan(0);
   });
 });
 

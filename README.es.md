@@ -15,7 +15,7 @@ exactamente dónde se rompe la confianza.
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | Español | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-08.
 
 ```bash
 npx mjolnir-qa@latest
@@ -204,7 +204,6 @@ ese es el cortafuegos de falsos positivos.
 
 | ID           | Regla                         | Severity |
 | ------------ | ----------------------------- | -------- |
-| QA-TQUAL-001 | Verificación solo con mocks   | info     |
 | QA-TQUAL-002 | Aserción tautológica          | error    |
 | QA-TQUAL-009 | Aserción de promesa sin await | error    |
 | QA-TQUAL-011 | Tests comentados              | warning  |
@@ -214,15 +213,12 @@ ese es el cortafuegos de falsos positivos.
 <details>
 <summary><strong>Playwright 🎭</strong></summary>
 
-| ID        | Regla                                         | Severity |
-| --------- | --------------------------------------------- | -------- |
-| QA-PW-002 | Aserción de locator sin await                 | error    |
-| QA-PW-003 | `page.pause()` / `test.only()` committeados   | error    |
-| QA-PW-004 | Selectores CSS/XPath frágiles                 | warning  |
-| QA-PW-005 | Lógica de negocio dentro de `page.evaluate()` | info     |
-| QA-PW-114 | Element handles heredados (`page.$`)          | info     |
-| QA-PW-118 | Esperas `networkidle` (inestables por diseño) | info     |
-| QA-PW-123 | URLs de entorno hardcodeadas                  | warning  |
+| ID        | Regla                                       | Severity |
+| --------- | ------------------------------------------- | -------- |
+| QA-PW-002 | Aserción de locator sin await               | error    |
+| QA-PW-003 | `page.pause()` / `test.only()` committeados | error    |
+| QA-PW-004 | Selectores CSS/XPath frágiles               | warning  |
+| QA-PW-123 | URLs de entorno hardcodeadas                | warning  |
 
 </details>
 
@@ -249,8 +245,6 @@ ese es el cortafuegos de falsos positivos.
 | QA-PY-002 | Test saltado (`skip`, `xfail` no estricto) | warning  |
 | QA-PY-003 | Función de test sin aserciones             | error    |
 | QA-PY-005 | `time.sleep()` en tests                    | warning  |
-| QA-PY-006 | Cuerpo de test vacío (`pass`)              | info     |
-| QA-PY-010 | Dependencia de azar/tiempo sin freeze      | info     |
 | QA-PY-012 | Aserción tautológica                       | error    |
 
 20 reglas de Python en total (QA-PY-001…012 higiene pytest + QA-PY-101…108 Playwright-Python).
@@ -267,8 +261,6 @@ ese es el cortafuegos de falsos positivos.
 | QA-JV-103 | Método de test sin aserciones                  | error    |
 | QA-JV-105 | Sleep en duro de Playwright `waitForTimeout()` | warning  |
 | QA-JV-106 | Selector frágil en vez de role locator         | warning  |
-| QA-JV-108 | URL de entorno hardcodeada en el test          | info     |
-| QA-JV-111 | Mock en blanquete `page.route("**")`           | info     |
 
 </details>
 
@@ -282,8 +274,6 @@ ese es el cortafuegos de falsos positivos.
 | QA-CS-103 | Método de test sin aserciones                 | error    |
 | QA-CS-105 | Sleep en duro `WaitForTimeoutAsync()`         | warning  |
 | QA-CS-106 | Selector frágil en vez de role locator        | warning  |
-| QA-CS-108 | URL de entorno hardcodeada en el test         | info     |
-| QA-CS-111 | Mock en blanquete `page.RouteAsync("**")`     | info     |
 
 </details>
 
@@ -305,7 +295,6 @@ código OSS real** (≥ 10 hallazgos clasificados a mano cada una; ver
 estimación del autor. Cada pie de escaneo te dice cuántas de las reglas
 _que se dispararon_ están medidas; `mjolnir rules --unmeasured` lista
 las que no; la página `mjolnir explain` de cada regla declara su
-estado. Publicamos la tasa aunque sea fea — QA-PW-107 audita al 95 % y
 está en cuarentena por ello. Hacer crecer esa cifra es el trabajo continuo
 del proyecto.
 
@@ -531,7 +520,7 @@ nunca cambia la semántica de detección.
 {
   "gate": "error",
   "exclude": ["legacy/**"],
-  "severityOverrides": { "QA-PW-118": "warning" },
+  "severityOverrides": { "QA-PW-141": "warning" },
   "ignore": [
     {
       "ruleId": "QA-TEST-004",

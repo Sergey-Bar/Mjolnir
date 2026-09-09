@@ -15,7 +15,7 @@ dove la fiducia si rompe.
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | Italiano | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-08.
 
 ```bash
 npx mjolnir-qa@latest
@@ -203,7 +203,6 @@ pubblicata — quello è il firewall dei falsi positivi.
 
 | ID           | Regla                             | Severity |
 | ------------ | --------------------------------- | -------- |
-| QA-TQUAL-001 | Verifica solo con mock            | info     |
 | QA-TQUAL-002 | Asserzione tautologica            | error    |
 | QA-TQUAL-009 | Asserzione di promise senza await | error    |
 | QA-TQUAL-011 | Test commentati                   | warning  |
@@ -213,15 +212,12 @@ pubblicata — quello è il firewall dei falsi positivi.
 <details>
 <summary><strong>Playwright 🎭</strong></summary>
 
-| ID        | Regla                                         | Severity |
-| --------- | --------------------------------------------- | -------- |
-| QA-PW-002 | Asserzione di locator senza await             | error    |
-| QA-PW-003 | `page.pause()` / `test.only()` committati     | error    |
-| QA-PW-004 | Selettori CSS/XPath fragili                   | warning  |
-| QA-PW-005 | Logica di business dentro `page.evaluate()`   | info     |
-| QA-PW-114 | Element handle legacy (`page.$`)              | info     |
-| QA-PW-118 | Attese `networkidle` (instabili per progetto) | info     |
-| QA-PW-123 | URL di ambiente hardcoded                     | warning  |
+| ID        | Regla                                     | Severity |
+| --------- | ----------------------------------------- | -------- |
+| QA-PW-002 | Asserzione di locator senza await         | error    |
+| QA-PW-003 | `page.pause()` / `test.only()` committati | error    |
+| QA-PW-004 | Selettori CSS/XPath fragili               | warning  |
+| QA-PW-123 | URL di ambiente hardcoded                 | warning  |
 
 </details>
 
@@ -243,14 +239,12 @@ pubblicata — quello è il firewall dei falsi positivi.
 <details>
 <summary><strong>Python / pytest 🐍</strong></summary>
 
-| ID        | Regla                                      | Severity |
-| --------- | ------------------------------------------ | -------- |
-| QA-PY-002 | Test saltato (`skip`, `xfail` non strict)  | warning  |
-| QA-PY-003 | Funzione di test senza asserzioni          | error    |
-| QA-PY-005 | `time.sleep()` nei test                    | warning  |
-| QA-PY-006 | Corpo del test vuoto (`pass`)              | info     |
-| QA-PY-010 | Dipendenza da casualità/tempo senza freeze | info     |
-| QA-PY-012 | Asserzione tautologica                     | error    |
+| ID        | Regla                                     | Severity |
+| --------- | ----------------------------------------- | -------- |
+| QA-PY-002 | Test saltato (`skip`, `xfail` non strict) | warning  |
+| QA-PY-003 | Funzione di test senza asserzioni         | error    |
+| QA-PY-005 | `time.sleep()` nei test                   | warning  |
+| QA-PY-012 | Asserzione tautologica                    | error    |
 
 20 regole Python in totale (QA-PY-001…012 igiene pytest + QA-PY-101…108 Playwright-Python).
 
@@ -266,8 +260,6 @@ pubblicata — quello è il firewall dei falsi positivi.
 | QA-JV-103 | Metodo di test senza asserzioni               | error    |
 | QA-JV-105 | Sleep hardcoded Playwright `waitForTimeout()` | warning  |
 | QA-JV-106 | Selettore fragile invece di un role locator   | warning  |
-| QA-JV-108 | URL di ambiente hardcoded nel test            | info     |
-| QA-JV-111 | Mock blanket `page.route("**")`               | info     |
 
 </details>
 
@@ -281,8 +273,6 @@ pubblicata — quello è il firewall dei falsi positivi.
 | QA-CS-103 | Metodo di test senza asserzioni                 | error    |
 | QA-CS-105 | Sleep hardcoded `WaitForTimeoutAsync()`         | warning  |
 | QA-CS-106 | Selettore fragile invece di un role locator     | warning  |
-| QA-CS-108 | URL di ambiente hardcoded nel test              | info     |
-| QA-CS-111 | Mock blanket `page.RouteAsync("**")`            | info     |
 
 </details>
 
@@ -304,7 +294,6 @@ codice OSS** (≥ 10 riscontri classificati a mano ciascuna; vedi
 dell'autore. Ogni footer di scansione dice quante delle regole
 _scattate_ sono misurate; `mjolnir rules --unmeasured` elenca quelle
 che non lo sono; la pagina `mjolnir explain` di ogni regola dichiara il
-suo stato. Pubblichiamo il tasso anche quando è brutto — QA-PW-107 si
 audita al 95 % ed è in quarantena per questo. Far crescere quel numero è il
 lavoro continuo del progetto.
 
@@ -531,7 +520,7 @@ perimetro — non cambia mai la semantica di rilevamento.
 {
   "gate": "error",
   "exclude": ["legacy/**"],
-  "severityOverrides": { "QA-PW-118": "warning" },
+  "severityOverrides": { "QA-PW-141": "warning" },
   "ignore": [
     {
       "ruleId": "QA-TEST-004",

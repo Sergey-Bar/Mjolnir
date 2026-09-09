@@ -17,28 +17,6 @@
 {"ruleId":"QA-PY-002","file":"testing/test_terminal.py","line":1762,"verdict":"FP","note":"conditional xfail only fires when os.dup is missing — platform-specific skip is legitimate"}
 {"ruleId":"QA-PY-002","file":"testing/test_warnings.py","line":153,"verdict":"TP","note":"unconditional @pytest.mark.skip — test is dead code"}
 {"ruleId":"QA-PY-002","file":"testing/test_warnings.py","line":566,"verdict":"TP","note":"unconditional @pytest.mark.skip deferring to next major release — dead code"}
-{"ruleId":"QA-PY-010","file":"testing/_py/test_local.py","line":742,"verdict":"FP","note":"deliberate real-time filesystem mtime test (comment says time mocking must not affect it) - the wall clock is the subject, with a 100s margin"}
-{"ruleId":"QA-PY-010","file":"testing/_py/test_local.py","line":1405,"verdict":"FP","note":"real atime semantics test - sleeps plus wall-clock measurement are the subject; freezing would defeat the test"}
-{"ruleId":"QA-PY-010","file":"testing/_py/test_local.py","line":1413,"verdict":"FP","note":"atime delta bounded by wall duration - the real clock is the subject of the filesystem test"}
-{"ruleId":"QA-PY-006","file":"doc/en/example/assertion/global_testmodule_config/test_hello_world.py","line":7,"verdict":"FP","note":"example script used by pytester to test collection, not a real test"}
-{"ruleId":"QA-PY-006","file":"doc/en/example/customdirectory/tests/test_first.py","line":5,"verdict":"FP","note":"doc example showing custom directory collection, not a real test"}
-{"ruleId":"QA-PY-006","file":"doc/en/example/customdirectory/tests/test_second.py","line":5,"verdict":"FP","note":"doc example showing custom directory collection, not a real test"}
-{"ruleId":"QA-PY-006","file":"doc/en/example/customdirectory/tests/test_third.py","line":5,"verdict":"FP","note":"doc example showing custom directory collection, not a real test"}
-{"ruleId":"QA-PY-006","file":"testing/code/test_source.py","line":43,"verdict":"FP","note":"inner class used as input to Source() — testing source introspection, not a real test method"}
-{"ruleId":"QA-PY-006","file":"testing/example_scripts/collect/collect_init_tests/tests/test_foo.py","line":5,"verdict":"FP","note":"fixture script run by pytester to test collection behavior"}
-{"ruleId":"QA-PY-006","file":"testing/example_scripts/collect/package_init_given_as_arg/pkg/test_foo.py","line":5,"verdict":"FP","note":"fixture script run by pytester to test collection behavior"}
-{"ruleId":"QA-PY-006","file":"testing/example_scripts/config/collect_pytest_prefix/test_foo.py","line":5,"verdict":"FP","note":"fixture script run by pytester to test config collection"}
-{"ruleId":"QA-PY-006","file":"testing/example_scripts/customdirectory/tests/test_first.py","line":6,"verdict":"FP","note":"fixture script for custom directory test, not a real test"}
-{"ruleId":"QA-PY-006","file":"testing/example_scripts/customdirectory/tests/test_second.py","line":6,"verdict":"FP","note":"fixture script for custom directory test, not a real test"}
-{"ruleId":"QA-PY-006","file":"testing/example_scripts/customdirectory/tests/test_third.py","line":6,"verdict":"FP","note":"fixture script for custom directory test, not a real test"}
-{"ruleId":"QA-PY-006","file":"testing/example_scripts/fixtures/fill_fixtures/test_conftest_funcargs_only_available_in_subdir/sub1/test_in_sub1.py","line":5,"verdict":"FP","note":"fixture script testing fixture availability, assertion is in the parent test"}
-{"ruleId":"QA-PY-006","file":"testing/example_scripts/fixtures/fill_fixtures/test_conftest_funcargs_only_available_in_subdir/sub2/test_in_sub2.py","line":5,"verdict":"FP","note":"fixture script testing fixture availability, assertion is in the parent test"}
-{"ruleId":"QA-PY-006","file":"testing/example_scripts/fixtures/fill_fixtures/test_funcarg_basic.py","line":17,"verdict":"FP","note":"fixture script testing fixture injection works, assertion is in parent test via pytester"}
-{"ruleId":"QA-PY-006","file":"testing/example_scripts/fixtures/fill_fixtures/test_funcarg_lookupfails.py","line":12,"verdict":"FP","note":"fixture script expected to fail on lookup, assertion is in the parent test"}
-{"ruleId":"QA-PY-006","file":"testing/example_scripts/issue88_initial_file_multinodes/test_hello.py","line":5,"verdict":"FP","note":"fixture script for issue reproduction, run via pytester"}
-{"ruleId":"QA-PY-006","file":"testing/example_scripts/marks/marks_considered_keywords/test_marks_as_keywords.py","line":8,"verdict":"FP","note":"fixture script testing mark-as-keyword selection via pytester"}
-{"ruleId":"QA-PY-006","file":"testing/example_scripts/perf_examples/collect_stats/template_test.py","line":5,"verdict":"FP","note":"template for performance stats collection, not a real test"}
-{"ruleId":"QA-PY-006","file":"testing/example_scripts/unittest/test_parametrized_fixture_error_message.py","line":16,"verdict":"FP","note":"fixture script testing error message for parametrized fixtures via pytester"}
 {"ruleId":"QA-PY-011","file":"doc/en/example/fixtures/test_fixtures_order_scope.py","line":6,"verdict":"FP","note":"doc example deliberately demonstrating session-scoped mutable fixture ordering - documentation material"}
 {"ruleId":"QA-PY-012","file":"testing/_py/test_local.py","line":37,"verdict":"FP","note":"verifies .new() returns an equal copy - the right side is a call, not the same expression"}
 {"ruleId":"QA-PY-012","file":"testing/code/test_code.py","line":20,"verdict":"FP","note":"custom __eq__ reflexivity for pytest's Code class - the operator implementation is under test, x==x can genuinely fail"}

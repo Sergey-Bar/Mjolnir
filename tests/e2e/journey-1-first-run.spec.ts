@@ -167,7 +167,25 @@ describe("E2E journey 1: first run from the packed tarball", () => {
   );
 
   it(
-    "terminal output names the WORTHINESS verdict and measured-rule count",
+    "terminal output names the WORTHINESS verdict and measured-rule count (--classic)",
+    { timeout: 60_000 },
+    () => {
+      const { stdout, status } = runMjolnir([
+        join(ROOT, "examples", "demo-repo"),
+        "--ascii",
+        // WI-5: the default hero surface is now the Trust Report; the
+        // WORTHINESS banner lives on the --classic escape hatch.
+        "--classic",
+      ]);
+      expect(status).toBe(1);
+      expect(stdout).toContain("WORTHINESS");
+      expect(stdout).toMatch(/WORTHY|NEEDS WORK|UNWORTHY/);
+      expect(stdout).toContain("NEEDS WORK");
+    },
+  );
+
+  it(
+    "default terminal output is the Trust Report answering the five questions",
     { timeout: 60_000 },
     () => {
       const { stdout, status } = runMjolnir([
@@ -175,9 +193,16 @@ describe("E2E journey 1: first run from the packed tarball", () => {
         "--ascii",
       ]);
       expect(status).toBe(1);
-      expect(stdout).toContain("WORTHINESS");
-      expect(stdout).toMatch(/WORTHY|NEEDS WORK|UNWORTHY/);
-      expect(stdout).toContain("NEEDS WORK");
+      for (const section of [
+        "TRUST VERDICT",
+        "CONFIDENCE",
+        "WHY THIS VERDICT",
+        "TOP TRUST RISKS",
+        "NEXT ACTION",
+      ]) {
+        expect(stdout).toContain(section);
+      }
+      expect(stdout).toContain("mjolnir explain");
     },
   );
 

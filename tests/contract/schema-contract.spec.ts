@@ -91,6 +91,33 @@ function assertScanResultShape(r: ScanResult): void {
   expect(ANALYSIS_STATUS_VALUES).toContain(r.analysisStatus.rules);
   expect(typeof r.analysisStatus.skippedFiles).toBe("number");
   expect(typeof r.analysisStatus.durationMs).toBe("number");
+  // WI-3 (additive): trustSummary is a measurement, not a contract —
+  // present on fresh scans, absent in pre-WI-3 snapshots. When present,
+  // its values must obey the published formula bounds (docs/SCORING.md).
+  if (r.trustSummary !== undefined) {
+    const t = r.trustSummary;
+    expect(["L0", "L1", "L2", "L3", "L4", "L5"]).toContain(t.level);
+    for (const [k, v] of Object.entries({
+      confidence: t.confidence,
+      evidenceCoverage: t.evidenceCoverage,
+      inconclusiveRate: t.inconclusiveRate,
+    })) {
+      expect(typeof v, `trustSummary.${k}`).toBe("number");
+      expect(v, `trustSummary.${k}`).toBeGreaterThanOrEqual(0);
+      expect(v, `trustSummary.${k}`).toBeLessThanOrEqual(1);
+    }
+    expect(
+      Array.isArray(t.provisionalRuleIds),
+      "trustSummary.provisionalRuleIds",
+    ).toBe(true);
+    expect(Array.isArray(t.ceilingReasons), "trustSummary.ceilingReasons").toBe(
+      true,
+    );
+    // The WI-3 acceptance law: no confidence above its ceiling.
+    if (t.confidenceCeiling !== undefined) {
+      expect(t.confidence).toBeLessThanOrEqual(t.confidenceCeiling);
+    }
+  }
 }
 
 describe("JSON report contract", () => {

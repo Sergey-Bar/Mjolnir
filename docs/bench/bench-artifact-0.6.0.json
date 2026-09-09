@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "harnessVersion": "1.0.0",
+  "mjolnirVersion": "0.5.34",
+  "nodeVersion": "v26.3.1",
+  "os": "win32",
+  "cpu": "13th Gen Intel(R) Core(TM) i7-13650HX",
+  "measuredAt": "2026-09-09T04:20:01.109Z",
+  "commit": "2257020232aa2c6b66c7aa88589a68fe3ed7a6fc",
+  "fixture": {
+    "generator": "synthetic-repo",
+    "fileCount": 120,
+    "manifestHash": "870ddea237c6a487"
+  },
+  "samples": [
+    {
+      "scenario": "cache-miss",
+      "durationMs": 157,
+      "runs": [204, 157, 146],
+      "rssDeltaBytes": 13488128,
+      "state": {
+        "warm": true,
+        "cache": "miss"
+      }
+    },
+    {
+      "scenario": "cache-hit",
+      "durationMs": 61,
+      "runs": [142, 61, 57],
+      "rssDeltaBytes": 1003520,
+      "state": {
+        "warm": true,
+        "cache": "hit"
+      }
+    },
+    {
+      "scenario": "warm-start",
+      "durationMs": 143,
+      "runs": [154, 143, 135],
+      "rssDeltaBytes": -233472,
+      "state": {
+        "warm": true,
+        "cache": "none"
+      }
+    },
+    {
+      "scenario": "startup-overhead",
+      "durationMs": 0,
+      "runs": [0],
+      "rssDeltaBytes": 0,
+      "state": {
+        "warm": false,
+        "cache": "none"
+      }
+    }
+  ]
+}

@@ -14,7 +14,7 @@ CI, מדווח ציון הגינות ומציג בדיוק היכן האמון �
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | עברית | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-08.
 
 ```bash
 npx mjolnir-qa@latest
@@ -194,7 +194,6 @@ npx mjolnir-qa@latest --scope changed
 
 | ID           | כלל                            | Severity |
 | ------------ | ------------------------------ | -------- |
-| QA-TQUAL-001 | אימות ב‑mocks בלבד             | info     |
 | QA-TQUAL-002 | assertion טאוטולוגי            | error    |
 | QA-TQUAL-009 | assertion של promise ללא await | error    |
 | QA-TQUAL-011 | בדיקות שהועברו להערה           | warning  |
@@ -209,9 +208,6 @@ npx mjolnir-qa@latest --scope changed
 | QA-PW-002 | assertion של locator ללא await           | error    |
 | QA-PW-003 | `page.pause()` / `test.only()` עם commit | error    |
 | QA-PW-004 | selectors שבירים של CSS/XPath            | warning  |
-| QA-PW-005 | לוגיקה עסקית בתוך `page.evaluate()`      | info     |
-| QA-PW-114 | element handles ישנים (`page.$`)         | info     |
-| QA-PW-118 | המתנות `networkidle` (flaky by design)   | info     |
 | QA-PW-123 | כתובות סביבה מקודדות מראש                | warning  |
 
 </details>
@@ -239,8 +235,6 @@ npx mjolnir-qa@latest --scope changed
 | QA-PY-002 | בדיקה מדולגת (`skip`, `xfail` לא קפדני) | warning  |
 | QA-PY-003 | פונקציית בדיקה ללא assertions           | error    |
 | QA-PY-005 | `time.sleep()` בבדיקות                  | warning  |
-| QA-PY-006 | גוף בדיקה ריק (`pass`)                  | info     |
-| QA-PY-010 | תלות באקראי/זמן ללא freeze              | info     |
 | QA-PY-012 | assertion טאוטולוגי                     | error    |
 
 סה״כ 20 כללי Python (QA-PY-001…012 היגיינת pytest + QA-PY-101…108 Playwright-Python).
@@ -257,8 +251,6 @@ npx mjolnir-qa@latest --scope changed
 | QA-JV-103 | מתודת בדיקה ללא assertions                  | error    |
 | QA-JV-105 | שינה קבועה של Playwright `waitForTimeout()` | warning  |
 | QA-JV-106 | selector שביר במקום role locator            | warning  |
-| QA-JV-108 | כתובת סביבה מקודדת מראש בבדיקה              | info     |
-| QA-JV-111 | mock כוללני `page.route("**")`              | info     |
 
 </details>
 
@@ -272,8 +264,6 @@ npx mjolnir-qa@latest --scope changed
 | QA-CS-103 | מתודת בדיקה ללא assertions                 | error    |
 | QA-CS-105 | שינה קבועה `WaitForTimeoutAsync()`         | warning  |
 | QA-CS-106 | selector שביר במקום role locator           | warning  |
-| QA-CS-108 | כתובת סביבה מקודדת מראש בבדיקה             | info     |
-| QA-CS-111 | mock כוללני `page.RouteAsync("**")`        | info     |
 
 </details>
 
@@ -294,7 +284,6 @@ npx mjolnir-qa@latest --scope changed
 המחבר. התחתית של כל סריקה אומרת כמה מהכללים ש_ירו_ נמדדו;
 `mjolnir rules --unmeasured` מפרט את אלה שלא; עמוד `mjolnir explain`
 של כל כלל מצהיר על מעמדו. אנחנו מפרסמים את השיעור גם כשהוא מכוער —
-QA-PW-107 נבדק ב‑95% ומצוי בהסגר בגין זה. להגדיל את המספר הזה הוא
 העבודה המתמשכת של הפרויקט.
 
 ### רמות (tiers) של כללים ובשלות לפי שפה
@@ -503,7 +492,7 @@ Mjölnir הוא zero-config. `mjolnir.config.json` אופציונלי (או
 {
   "gate": "error",
   "exclude": ["legacy/**"],
-  "severityOverrides": { "QA-PW-118": "warning" },
+  "severityOverrides": { "QA-PW-141": "warning" },
   "ignore": [
     {
       "ruleId": "QA-TEST-004",

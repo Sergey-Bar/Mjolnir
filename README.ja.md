@@ -15,7 +15,7 @@
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | 日本語 | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-08.
 
 ```bash
 npx mjolnir-qa@latest
@@ -200,7 +200,6 @@ Linux で動作します。
 
 | ID           | ルール                                  | Severity |
 | ------------ | --------------------------------------- | -------- |
-| QA-TQUAL-001 | モックのみの検証                        | info     |
 | QA-TQUAL-002 | トートロジカルなアサーション            | error    |
 | QA-TQUAL-009 | await されていない promise アサーション | error    |
 | QA-TQUAL-011 | コメントアウトされたテスト              | warning  |
@@ -215,9 +214,6 @@ Linux で動作します。
 | QA-PW-002 | await されていないロケータアサーション        | error    |
 | QA-PW-003 | コミットされた `page.pause()` / `test.only()` | error    |
 | QA-PW-004 | 脆弱な CSS/XPath セレクタ                     | warning  |
-| QA-PW-005 | `page.evaluate()` 内のビジネスロジック        | info     |
-| QA-PW-114 | レガシーな要素ハンドル（`page.$`）            | info     |
-| QA-PW-118 | `networkidle` 待ち（設計上 flaky）            | info     |
 | QA-PW-123 | ハードコードされた環境 URL                    | warning  |
 
 </details>
@@ -245,8 +241,6 @@ Linux で動作します。
 | QA-PY-002 | スキップされたテスト（`skip`、非厳格な `xfail`） | warning  |
 | QA-PY-003 | アサーションのないテスト関数                     | error    |
 | QA-PY-005 | テスト内の `time.sleep()`                        | warning  |
-| QA-PY-006 | 空のテスト本体（`pass`）                         | info     |
-| QA-PY-010 | freeze なしのランダム/時刻依存                   | info     |
 | QA-PY-012 | トートロジカルなアサーション                     | error    |
 
 Python ルールは合計 20 本（QA-PY-001…012 pytest 衛生 + QA-PY-101…108 Playwright-Python）。
@@ -263,8 +257,6 @@ Python ルールは合計 20 本（QA-PY-001…012 pytest 衛生 + QA-PY-101…1
 | QA-JV-103 | アサーションのないテストメソッド               | error    |
 | QA-JV-105 | Playwright のハードな sleep `waitForTimeout()` | warning  |
 | QA-JV-106 | role ロケータの代わりの脆弱なセレクタ          | warning  |
-| QA-JV-108 | テストにハードコードされた環境 URL             | info     |
-| QA-JV-111 | 全域モック `page.route("**")`                  | info     |
 
 </details>
 
@@ -278,8 +270,6 @@ Python ルールは合計 20 本（QA-PY-001…012 pytest 衛生 + QA-PY-101…1
 | QA-CS-103 | アサーションのないテストメソッド                    | error    |
 | QA-CS-105 | ハードな sleep `WaitForTimeoutAsync()`              | warning  |
 | QA-CS-106 | role ロケータの代わりの脆弱なセレクタ               | warning  |
-| QA-CS-108 | テストにハードコードされた環境 URL                  | info     |
-| QA-CS-111 | 全域モック `page.RouteAsync("**")`                  | info     |
 
 </details>
 
@@ -300,7 +290,6 @@ false-positive 率を備えています**（各ルールにつき手作業で分
 は作者の推定で出荷されます。すべてのスキャンのフッターは、_発火した_
 ルールのうちいくつが測定済みかを教えてくれます。`mjolnir rules --unmeasured`
 は未測定のものを列挙します。各ルールの `mjolnir explain` ページはその
-状態を明言します。率は醜くても公開します——QA-PW-107 は 95% で監査され、
 それゆえ隔離されています。この数字を増やすことが、プロジェクトの継続的
 な仕事です。
 
@@ -520,7 +509,7 @@ Mjölnir はゼロ設定です。リポジトリルートの任意の `mjolnir.c
 {
   "gate": "error",
   "exclude": ["legacy/**"],
-  "severityOverrides": { "QA-PW-118": "warning" },
+  "severityOverrides": { "QA-PW-141": "warning" },
   "ignore": [
     {
       "ruleId": "QA-TEST-004",

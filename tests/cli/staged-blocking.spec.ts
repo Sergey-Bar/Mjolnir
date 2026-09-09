@@ -197,7 +197,7 @@ describe("--staged end-to-end", () => {
     // The surface is labeled in the JSON (additive) and the terminal.
     expect(report.staged).toEqual({ files: 1 });
     const termCap = capture();
-    await runScanCommand([repo, "--staged"], termCap.io);
+    await runScanCommand([repo, "--classic", "--staged"], termCap.io);
     expect(termCap.text()).toContain("staged surface:");
   });
 

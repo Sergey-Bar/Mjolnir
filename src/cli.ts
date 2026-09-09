@@ -42,18 +42,25 @@ import type { CliArgs } from "./engine/scan-pipeline.js";
 import { buildMachineContract } from "./engine/machine-contract.js";
 
 import { renderTerminal } from "./reporter/terminal.js";
+import { renderTrustReport } from "./reporter/trust-report.js";
 import { renderSarif } from "./reporter/sarif.js";
 import { renderCodeQuality } from "./reporter/codequality.js";
 import { renderMermaid } from "./reporter/mermaid.js";
 import { ProgressRenderer, shouldRenderProgress } from "./reporter/progress.js";
 import { runSummaryCommand } from "./commands/summary.js";
 import { runWhyCommand } from "./commands/why.js";
+import { explainVerdict, renderVerdictExplain } from "./commands/explain.js";
 import { runHandoffCommand } from "./commands/handoff.js";
 import { runInstallCommand } from "./commands/install-agents.js";
 import { runStdioTransport } from "./mcp/transport.js";
 import { ciInstall, type GateLevel } from "./integrations/ci-install.js";
 import { runForensics } from "./forensics/run.js";
-import { renderTriage, renderTriageMd } from "./forensics/triage.js";
+import {
+  renderTriage,
+  renderTriageMd,
+  renderTriageWorkflow,
+  renderTriageWorkflowJson,
+} from "./forensics/triage.js";
 import {
   parseStrykerJson,
   looksLikeStrykerJson,
@@ -65,6 +72,7 @@ import {
 } from "./mutation/derive.js";
 import type { MutationReport } from "./mutation/types.js";
 import { renderBadgeSnippet, writeBadge } from "./commands/badge.js";
+import { runTrustReportCommand } from "./commands/trust-report.js";
 import {
   renderRootHelp,
   renderVerbHelp,
@@ -223,6 +231,10 @@ export function parseArgs(
       // Audit C2: opt-in code execution for plugin/JS-module rule
       // sources. Additive flag, accepted by every verb that loads rules.
       args.enablePlugins = true;
+    } else if (a === "--classic") {
+      // WI-5: escape hatch from the Trust Report hero surface back to
+      // the classic terminal render. Rendering flag only.
+      args.classic = true;
     } else if (a === "--help" || a === "-h") {
       return null;
     } else if (!a.startsWith("-")) {
@@ -246,6 +258,7 @@ const KNOWN_SCAN_FLAGS = [
   "--ascii",
   "--no-ascii",
   "--tone",
+  "--classic",
   "--strict",
   "--debug",
   "--record-milestones",
@@ -572,14 +585,41 @@ export async function runRulesCommand(
  * (this repo checkout, or --fixtures-root), and honestly omitted
  * otherwise — never a fabricated example.
  */
-export function runExplainCommand(
+export async function runExplainCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
-): number {
-  const ruleId = argv.find((a) => !a.startsWith("-"));
-  if (!ruleId) {
-    io.err("Usage: mjolnir explain <RULE-ID>");
+): Promise<number> {
+  const subject = argv.find((a) => !a.startsWith("-"));
+  if (!subject) {
+    io.err(
+      "Usage: mjolnir explain <RULE-ID | file:line | verdict> [--json <mjolnir.json>]",
+    );
     return 10;
+  }
+  // WI-7 (plan §8): `explain verdict` — explain a SAVED scan's overall
+  // verdict from its --json artifact. --json <path> supplies the file.
+  if (subject === "verdict") {
+    const jsonIdx = argv.indexOf("--json");
+    const jsonPath =
+      jsonIdx !== -1 ? argv[jsonIdx + 1] : join(process.cwd(), "mjolnir.json");
+    if (jsonPath === undefined || jsonPath.startsWith("--")) {
+      io.err("explain verdict requires a saved scan: --json <mjolnir.json>");
+      return 10;
+    }
+    try {
+      io.out(renderVerdictExplain(explainVerdict(resolve(jsonPath))));
+      const r = explainVerdict(resolve(jsonPath));
+      return r.ok ? 0 : 10;
+    } catch (err) {
+      internalErrorMessage(err, io.err, argv.includes("--debug"));
+      return 20;
+    }
+  }
+  // finding mode: file:line delegates to the `why` command — same
+  // evidence checklist, one implementation (plan §18 parity: no parallel
+  // implementations of the same semantics).
+  if (/^[^:]+\.\w+:\d+$/.test(subject)) {
+    return runWhyCommand([subject, ...argv.filter((a) => a !== subject)], io);
   }
   const fixturesRootIdx = argv.indexOf("--fixtures-root");
   // Audit S8: a dangling `--fixtures-root` is a usage error, not a
@@ -600,7 +640,7 @@ export function runExplainCommand(
     explicitRoot ?? join(process.cwd(), "tests", "fixtures"),
   );
   try {
-    const result = explainRule(ruleId, fixturesRoot);
+    const result = explainRule(subject, fixturesRoot);
     io.out(renderExplain(result));
     if (!result.ok) return 10; // unknown rule ID is a usage error, not a crash
     return 0;
@@ -741,7 +781,7 @@ export async function runScanCommand(
           ? result.findings.filter((f) => categories.includes(f.category))
           : result.findings;
       io.out(
-        renderTerminal(result, {
+        renderTrustReport(result, {
           isTTY: process.stdout.isTTY ?? false,
           verbose: args.verbose,
           ...(categories && categories.length > 0
@@ -750,6 +790,7 @@ export async function runScanCommand(
           ...(args.width !== undefined ? { width: args.width } : {}),
           ...(args.ascii !== undefined ? { ascii: args.ascii } : {}),
           ...(args.tone !== undefined ? { tone: args.tone } : {}),
+          ...(args.classic ? { classic: true } : {}),
         }),
       );
       // First-run hint — terminal only, and only for the bare, full-repo
@@ -853,17 +894,28 @@ export function runTriageCommand(
 ): number {
   const targetArg = argv.find((a) => !a.startsWith("-"));
   if (!targetArg) {
-    io.err("Usage: mjolnir triage <test-results-dir-or-report-file> [--no-md]");
+    io.err(
+      "Usage: mjolnir triage <test-results-dir-or-report-file> [--no-md] [--json] [--classic]",
+    );
     return 10;
   }
+  // WI-8 (plan §9): the guided workflow is the default triage surface;
+  // --classic keeps the legacy table. --json emits the structured twin.
+  const jsonMode = argv.includes("--json");
+  const classic = argv.includes("--classic");
   try {
     const { report } = runForensics(resolve(targetArg), {
       writeFlakyMd: false,
     });
-    io.out(renderTriage(report));
-    // Only write TRIAGE.md when there's something to triage AND the
+    if (jsonMode) {
+      io.out(renderTriageWorkflowJson(report));
+    } else if (classic) {
+      io.out(renderTriage(report));
+    } else {
+      io.out(renderTriageWorkflow(report));
+    } // Only write TRIAGE.md when there's something to triage AND the
     // target dir exists — a missing dir must degrade honestly, not crash.
-    if (!argv.includes("--no-md") && report.totalTests > 0) {
+    if (!argv.includes("--no-md") && !jsonMode && report.totalTests > 0) {
       // Bug-audit M1: the documented `mjolnir triage <report-file>` joined
       // the FILE path with "TRIAGE.md" → `<file>/TRIAGE.md` is not a
       // directory → writeFileSync threw → "internal error" exit 20 after
@@ -1468,6 +1520,7 @@ const SUBCOMMANDS: ReadonlySet<string> = new Set([
   "forensics",
   "triage",
   "badge",
+  "trust-report",
   "debt",
   "impact",
   "baseline",
@@ -1523,6 +1576,8 @@ export async function main(
   if (argv[0] === "triage") return runTriageCommand(argv.slice(1));
   if (argv[0] === "mutation") return runMutationCommand(argv.slice(1), io);
   if (argv[0] === "badge") return runBadgeCommand(argv.slice(1));
+  if (argv[0] === "trust-report")
+    return runTrustReportCommand(argv.slice(1), io);
   if (argv[0] === "debt") return runDebtCommand(argv.slice(1));
   if (argv[0] === "impact") return runImpactCommand(argv.slice(1));
   if (argv[0] === "baseline") return runBaselineCommand(argv.slice(1));

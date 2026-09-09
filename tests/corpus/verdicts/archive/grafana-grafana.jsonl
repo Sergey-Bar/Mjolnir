@@ -1,0 +1,18 @@
+{"ruleId":"QA-PW-120","file":"packages/grafana-data/src/datetime/easytz_lookup.test.ts","line":1,"verdict":"FP","note":"pure datetime unit tests valid on all engines - the engine-specific heuristic overreaches on unit test files"}
+{"ruleId":"QA-PW-120","file":"packages/grafana-ui/src/components/Table/TableNG/TableNG.test.tsx","line":1,"verdict":"FP","note":"RTL render tests, engine-agnostic - the rule fired on file-level position, not on any engine-specific behavior"}
+{"ruleId":"QA-PW-120","file":"public/app/core/services/echo/backends/grafana-javascript-agent/beforeSendHandler.test.ts","line":1,"verdict":"FP","note":"userAgent mocking is browser-agnostic unit testing - no engine guard needed"}
+{"ruleId":"QA-PW-120","file":"public/app/core/utils/browser.test.ts","line":1,"verdict":"FP","note":"compatibility check unit tests stub navigator - engine-agnostic"}
+{"ruleId":"QA-PW-120","file":"public/app/features/dashboard-scene/settings/variables/editors/QueryVariableEditor/VariableOptionsSpreadsheet/clipboard.test.ts","line":1,"verdict":"FP","note":"clipboard unit tests run in jsdom - engine-agnostic"}
+{"ruleId":"QA-PW-120","file":"public/app/features/explore/SignalExplorer/SignalCard.test.tsx","line":1,"verdict":"FP","note":"RTL render test - engine-agnostic"}
+{"ruleId":"QA-PW-120","file":"public/app/features/logs/components/panel/processing.test.ts","line":1,"verdict":"FP","note":"pure log processing unit tests - engine-agnostic"}
+{"ruleId":"QA-PW-107","file":"e2e-playwright/dashboards-suite/dashboard-browse.spec.ts","line":77,"verdict":"FP","note":"toBeVisible on a success alert the test then closes - auto-retrying presence assertion is the correct idiom here, not a viewport check"}
+{"ruleId":"QA-PW-107","file":"e2e-playwright/dashboards-suite/dashboard-export-image.spec.ts","line":45,"verdict":"FP","note":"toBeVisible asserting the alert is DISPLAYED, followed by toContainText - presence semantics, correct idiom"}
+{"ruleId":"QA-PW-107","file":"e2e-playwright/dashboards-suite/dashboard-restore-permissions.spec.ts","line":134,"verdict":"FP","note":"toBeVisible on an error toast then toContainText - auto-retrying presence, correct"}
+{"ruleId":"QA-PW-107","file":"e2e-playwright/dashboards-suite/dashboard-restore-permissions.spec.ts","line":165,"verdict":"FP","note":"toBeVisible on an error toast then toContainText - auto-retrying presence, correct"}
+{"ruleId":"QA-PW-107","file":"e2e-playwright/dashboards-suite/dashboard-restore-v1.spec.ts","line":265,"verdict":"FP","note":"toBeVisible on a modal alert before filling the confirm field - presence semantics"}
+{"ruleId":"QA-PW-107","file":"e2e-playwright/dashboards-suite/dashboard-restore-v2.spec.ts","line":151,"verdict":"FP","note":"toBeVisible on the same modal alert - presence semantics"}
+{"ruleId":"QA-PW-107","file":"e2e-playwright/panels-suite/annotations-clustering.spec.ts","line":219,"verdict":"FP","note":"toBeVisible on a panel-control toggle then count assertion - presence semantics"}
+{"ruleId":"QA-PW-107","file":"e2e-playwright/panels-suite/annotations-clustering.spec.ts","line":224,"verdict":"FP","note":"toBeVisible on a tooltip then text assertions - presence semantics"}
+{"ruleId":"QA-PW-107","file":"e2e-playwright/panels-suite/annotations-clustering.spec.ts","line":227,"verdict":"FP","note":"toBeVisible with explicit description arg - auto-retrying presence assertion, correct"}
+{"ruleId":"QA-PW-107","file":"e2e-playwright/panels-suite/annotations-clustering.spec.ts","line":231,"verdict":"FP","note":"toBeVisible with description - presence semantics"}
+{"ruleId":"QA-PW-107","file":"e2e-playwright/panels-suite/annotations-clustering.spec.ts","line":233,"verdict":"FP","note":"toBeVisible with description - presence semantics"}

@@ -14,7 +14,7 @@
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | العربية | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-08.
 
 ```bash
 npx mjolnir-qa@latest
@@ -196,7 +196,6 @@ npx mjolnir-qa@latest --scope changed
 
 | ID           | القاعدة                   | Severity |
 | ------------ | ------------------------- | -------- |
-| QA-TQUAL-001 | تحقق بالمحاكاة فقط        | info     |
 | QA-TQUAL-002 | تأكيد مُبرهن ذاتيًا       | error    |
 | QA-TQUAL-009 | تأكيد وعد بلا await       | error    |
 | QA-TQUAL-011 | اختبارات معطَّلة بالتعليق | warning  |
@@ -206,15 +205,12 @@ npx mjolnir-qa@latest --scope changed
 <details>
 <summary><strong>Playwright 🎭</strong></summary>
 
-| ID        | القاعدة                                   | Severity |
-| --------- | ----------------------------------------- | -------- |
-| QA-PW-002 | تأكيد محدِّد بلا await                    | error    |
-| QA-PW-003 | `page.pause()` / `test.only()` مودعة      | error    |
-| QA-PW-004 | محدِّدات CSS/XPath هشّة                   | warning  |
-| QA-PW-005 | منطق عمل داخل `page.evaluate()`           | info     |
-| QA-PW-114 | مقابض عناصر قديمة (`page.$`)              | info     |
-| QA-PW-118 | انتظارات `networkidle` (متذبذبة بطبيعتها) | info     |
-| QA-PW-123 | عناوين بيئات مضمّنة                       | warning  |
+| ID        | القاعدة                              | Severity |
+| --------- | ------------------------------------ | -------- |
+| QA-PW-002 | تأكيد محدِّد بلا await               | error    |
+| QA-PW-003 | `page.pause()` / `test.only()` مودعة | error    |
+| QA-PW-004 | محدِّدات CSS/XPath هشّة              | warning  |
+| QA-PW-123 | عناوين بيئات مضمّنة                  | warning  |
 
 </details>
 
@@ -241,8 +237,6 @@ npx mjolnir-qa@latest --scope changed
 | QA-PY-002 | اختبار متجاوز (`skip`، `xfail` غير صارم) | warning  |
 | QA-PY-003 | دالة اختبار بلا تأكيدات                  | error    |
 | QA-PY-005 | `time.sleep()` في الاختبارات             | warning  |
-| QA-PY-006 | جسد اختبار فارغ (`pass`)                 | info     |
-| QA-PY-010 | اعتماد على العشوائية/الزمن بلا freeze    | info     |
 | QA-PY-012 | تأكيد مُبرهن ذاتيًا                      | error    |
 
 20 قاعدة Python إجمالًا (QA-PY-001…012 نظافة pytest + QA-PY-101…108 Playwright-Python).
@@ -259,8 +253,6 @@ npx mjolnir-qa@latest --scope changed
 | QA-JV-103 | طريقة اختبار بلا تأكيدات                   | error    |
 | QA-JV-105 | سبات صارم في Playwright `waitForTimeout()` | warning  |
 | QA-JV-106 | محدِّد هشّ بدل role locator                | warning  |
-| QA-JV-108 | عنوان بيئة مضمّن في اختبار                 | info     |
-| QA-JV-111 | محاكاة شاملة `page.route("**")`            | info     |
 
 </details>
 
@@ -274,8 +266,6 @@ npx mjolnir-qa@latest --scope changed
 | QA-CS-103 | طريقة اختبار بلا تأكيدات                    | error    |
 | QA-CS-105 | سبات صارم `WaitForTimeoutAsync()`           | warning  |
 | QA-CS-106 | محدِّد هشّ بدل role locator                 | warning  |
-| QA-CS-108 | عنوان بيئة مضمّن في اختبار                  | info     |
-| QA-CS-111 | محاكاة شاملة `page.RouteAsync("**")`        | info     |
 
 </details>
 
@@ -295,7 +285,6 @@ npx mjolnir-qa@latest --scope changed
 [docs/FP-AUDIT.md](docs/FP-AUDIT.md)). الـ21 الأخرى تُشحن على تقدير
 المؤلف. ذيل كل فحص يخبرك كم من القواعد التي _انطلقت_ مقيسة؛ و
 `mjolnir rules --unmeasured` يسرد غير المقيسة؛ وصفحة `mjolnir explain`
-لكل قاعدة تُصرّح بحالتها. ننشر المعدل حتى حين يكون قبيحًا — QA-PW-107
 يدقّق عند 95% ولذلك هو في الحجر الصحي. تنمية ذلك العدد هي العمل
 المستمر للمشروع.
 
@@ -505,7 +494,7 @@ Mjölnir صفر إعداد. ملف `mjolnir.config.json` اختياري (أو `.
 {
   "gate": "error",
   "exclude": ["legacy/**"],
-  "severityOverrides": { "QA-PW-118": "warning" },
+  "severityOverrides": { "QA-PW-141": "warning" },
   "ignore": [
     {
       "ruleId": "QA-TEST-004",

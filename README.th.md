@@ -15,7 +15,7 @@ CI pipelines รายงานคะแนนความน่าเชื่�
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | ไทย | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-08.
 
 ```bash
 npx mjolnir-qa@latest
@@ -196,7 +196,6 @@ fixture ลบของตัวเองจะปล่อยไม่ได้
 
 | ID           | กฎ                                     | Severity |
 | ------------ | -------------------------------------- | -------- |
-| QA-TQUAL-001 | ตรวจยืนยันด้วย mock เท่านั้น           | info     |
 | QA-TQUAL-002 | assertion พรรคพวกตัวเอง (tautological) | error    |
 | QA-TQUAL-009 | assertion ของ promise ที่ไม่ await     | error    |
 | QA-TQUAL-011 | ทดสอบที่ถูกคอมเมนต์ทิ้งไว้             | warning  |
@@ -211,9 +210,6 @@ fixture ลบของตัวเองจะปล่อยไม่ได้
 | QA-PW-002 | assertion ของ locator ที่ไม่ await        | error    |
 | QA-PW-003 | `page.pause()` / `test.only()` ถูก commit | error    |
 | QA-PW-004 | selector CSS/XPath เปราะ                  | warning  |
-| QA-PW-005 | ตรรกะธุรกิจใน `page.evaluate()`           | info     |
-| QA-PW-114 | element handles รุ่นเก่า (`page.$`)       | info     |
-| QA-PW-118 | การรอ `networkidle` (flaky by design)     | info     |
 | QA-PW-123 | URL สภาพแวดล้อมฝังตาย                     | warning  |
 
 </details>
@@ -241,8 +237,6 @@ fixture ลบของตัวเองจะปล่อยไม่ได้
 | QA-PY-002 | ทดสอบถูกข้าม (`skip`, `xfail` ไม่เข้มงวด) | warning  |
 | QA-PY-003 | ฟังก์ชันทดสอบไม่มี assertion              | error    |
 | QA-PY-005 | `time.sleep()` ในการทดสอบ                 | warning  |
-| QA-PY-006 | เนื้อความทดสอบว่าง (`pass`)               | info     |
-| QA-PY-010 | พึ่งพาความสุ่ม/เวลาโดยไม่ freeze          | info     |
 | QA-PY-012 | assertion พรรคพวกตัวเอง                   | error    |
 
 กฎ Python รวม 20 ข้อ (QA-PY-001…012 สุขอนามัย pytest + QA-PY-101…108 Playwright-Python)
@@ -259,8 +253,6 @@ fixture ลบของตัวเองจะปล่อยไม่ได้
 | QA-JV-103 | วิธีทดสอบไม่มี assertion                 | error    |
 | QA-JV-105 | hard sleep Playwright `waitForTimeout()` | warning  |
 | QA-JV-106 | selector เปราะแทน role locator           | warning  |
-| QA-JV-108 | URL สภาพแวดล้อมฝังตายในทดสอบ             | info     |
-| QA-JV-111 | mock ครอบคลุมหมด `page.route("**")`      | info     |
 
 </details>
 
@@ -274,8 +266,6 @@ fixture ลบของตัวเองจะปล่อยไม่ได้
 | QA-CS-103 | วิธีทดสอบไม่มี assertion                   | error    |
 | QA-CS-105 | hard sleep `WaitForTimeoutAsync()`         | warning  |
 | QA-CS-106 | selector เปราะแทน role locator             | warning  |
-| QA-CS-108 | URL สภาพแวดล้อมฝังตายในทดสอบ               | info     |
-| QA-CS-111 | mock ครอบคลุมหมด `page.RouteAsync("**")`   | info     |
 
 </details>
 
@@ -295,7 +285,6 @@ fixture ลบของตัวเองจะปล่อยไม่ได้
 [docs/FP-AUDIT.md](docs/FP-AUDIT.md)) อีก 21 กฎออกมาบนการประเมินของผู้เขียน
 ส่วนท้ายของทุกการสแกนบอกว่ากฎที่ _ยิง_ มีกี่กฎที่วัดแล้ว;
 `mjolnir rules --unmeasured` แสดงกฎที่ยังไม่วัด; หน้า `mjolnir explain`
-ของทุกกฎระบุสถานะ เราเผยแพร่อัตรานี้แม้มันจะน่าเกลียด — QA-PW-107 ตรวจได้
 ที่ 95 % และถูกส่งไปกักกันเพราะเหตุนี้ การทำให้ตัวเลขนั้นโตขึ้นคืองาน
 ต่อเนื่องของโปรเจกต์
 
@@ -510,7 +499,7 @@ Mjölnir เป็น zero-config `mjolnir.config.json` (หรือ `.mjolnir.
 {
   "gate": "error",
   "exclude": ["legacy/**"],
-  "severityOverrides": { "QA-PW-118": "warning" },
+  "severityOverrides": { "QA-PW-141": "warning" },
   "ignore": [
     {
       "ruleId": "QA-TEST-004",

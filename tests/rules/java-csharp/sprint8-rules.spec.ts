@@ -1,24 +1,22 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /**
  * Unit tests for the Sprint 8 Java/.NET Playwright-parity rules
- * (Master-Stabilization-Plan Sprint 8, Task 32/33): QA-JV-106/107/108
- * and QA-CS-105/106/107/108. Idiom mapping verified in
+ * (Master-Stabilization-Plan Sprint 8, Task 32/33): QA-JV-106/107
+ * and QA-CS-105/106/107. (The JV/CS-108 hardcoded-URL variants and the
+ * no-a11y/blanket-route families were RETIRED by the Phase 2 triage and
+ * unregistered per the owner ruling of 2026-09-08 — their blocks were
+ * removed with them.) Idiom mapping verified in
  * docs/JAVA-CSHARP-IDIOM-MAPPING.md before any of these regexes were
- * written — in particular, QA-JV-108 tests specifically that
- * `.goto(` (the JS/Python idiom) does NOT trigger it, since Java's own
- * idiom is `.navigate(`.
+ * written.
  */
 
 import { describe, expect, it } from "vitest";
 import { brittleSelectorsFamily } from "../../../src/rules/families/brittle-selectors.js";
 import { retryMaskingFamily } from "../../../src/rules/families/retry-masking.js";
-import { noA11yFamily } from "../../../src/rules/families/no-a11y.js";
 import { csWaitForTimeout } from "../../../src/rules/csharp/qa-cs-105-wait-for-timeout.js";
 import { networkIdleFamily } from "../../../src/rules/families/network-idle.js";
-import { hardcodedUrlFamily } from "../../../src/rules/families/hardcoded-url.js";
 import { jvNoAssertions } from "../../../src/rules/java/qa-jv-103-no-assertions.js";
 import { csNoAssertions } from "../../../src/rules/csharp/qa-cs-103-no-assertions.js";
-import { blanketRouteFamily } from "../../../src/rules/families/blanket-route.js";
 describe("QA-JV-106 brittle selectors", () => {
   it("ignores non-.java files", () => {
     expect(
@@ -114,50 +112,6 @@ describe("QA-JV-107 networkidle wait", () => {
       .run({
         path: "T.java",
         text: "page.waitForLoadState(LoadState.DOMCONTENTLOADED); page.waitForLoadState(LoadState.LOAD);",
-      });
-    expect(findings).toEqual([]);
-  });
-});
-
-describe("QA-JV-108 hardcoded URL", () => {
-  it("ignores non-.java files", () => {
-    expect(
-      hardcodedUrlFamily
-        .find((r) => r.id === "QA-JV-108")!
-        .run({
-          path: "T.cs",
-          text: '.navigate("https://example.com")',
-        }),
-    ).toEqual([]);
-  });
-
-  it('fires on page.navigate("https://...")', () => {
-    const findings = hardcodedUrlFamily
-      .find((r) => r.id === "QA-JV-108")!
-      .run({
-        path: "T.java",
-        text: 'page.navigate("https://staging.example.com/checkout");',
-      });
-    expect(findings).toHaveLength(1);
-    expect(findings[0]?.message).toContain("staging.example.com");
-  });
-
-  it("does NOT fire on .goto( — the JS/Python idiom, deliberately not Java's", () => {
-    const findings = hardcodedUrlFamily
-      .find((r) => r.id === "QA-JV-108")!
-      .run({
-        path: "T.java",
-        text: 'page.goto("https://staging.example.com/checkout");',
-      });
-    expect(findings).toEqual([]);
-  });
-
-  it("does not fire on relative paths or localhost/127.0.0.1", () => {
-    const findings = hardcodedUrlFamily
-      .find((r) => r.id === "QA-JV-108")!
-      .run({
-        path: "T.java",
-        text: 'page.navigate("/checkout"); page.navigate("http://localhost:3000/checkout"); page.navigate("http://127.0.0.1:3000/checkout");',
       });
     expect(findings).toEqual([]);
   });
@@ -284,50 +238,6 @@ describe("QA-CS-107 networkidle wait", () => {
       .run({
         path: "T.cs",
         text: "await Page.WaitForLoadStateAsync(LoadState.DOMContentLoaded); await Page.WaitForLoadStateAsync(LoadState.Load);",
-      });
-    expect(findings).toEqual([]);
-  });
-});
-
-describe("QA-CS-108 hardcoded URL", () => {
-  it("ignores non-.cs files", () => {
-    expect(
-      hardcodedUrlFamily
-        .find((r) => r.id === "QA-CS-108")!
-        .run({
-          path: "T.java",
-          text: '.GotoAsync("https://example.com")',
-        }),
-    ).toEqual([]);
-  });
-
-  it('fires on GotoAsync("https://...")', () => {
-    const findings = hardcodedUrlFamily
-      .find((r) => r.id === "QA-CS-108")!
-      .run({
-        path: "T.cs",
-        text: 'await Page.GotoAsync("https://staging.example.com/checkout");',
-      });
-    expect(findings).toHaveLength(1);
-    expect(findings[0]?.message).toContain("staging.example.com");
-  });
-
-  it("fires on GetAsync/PostAsync hardcoded URLs", () => {
-    const findings = hardcodedUrlFamily
-      .find((r) => r.id === "QA-CS-108")!
-      .run({
-        path: "T.cs",
-        text: 'await Request.GetAsync("https://api.example.com/data"); await Request.PostAsync("https://api.example.com/data");',
-      });
-    expect(findings).toHaveLength(2);
-  });
-
-  it("does not fire on relative paths or localhost/127.0.0.1", () => {
-    const findings = hardcodedUrlFamily
-      .find((r) => r.id === "QA-CS-108")!
-      .run({
-        path: "T.cs",
-        text: 'await Page.GotoAsync("/checkout"); await Page.GotoAsync("http://localhost:3000/checkout"); await Page.GotoAsync("http://127.0.0.1:3000/checkout");',
       });
     expect(findings).toEqual([]);
   });
@@ -509,154 +419,6 @@ describe("QA-CS-109 retry masking (C#)", () => {
         .run({
           path: "T.cs",
           text: "[Test]\npublic async Task T() {}\n",
-        }),
-    ).toEqual([]);
-  });
-});
-
-describe("QA-JV-110 no a11y assertions", () => {
-  it("ignores non-.java files", () => {
-    expect(
-      noA11yFamily
-        .find((r) => r.id === "QA-JV-110")!
-        .run({ path: "T.cs", text: "page.navigate" }),
-    ).toEqual([]);
-  });
-
-  it("does not fire when there is no UI interaction at all", () => {
-    expect(
-      noA11yFamily
-        .find((r) => r.id === "QA-JV-110")!
-        .run({
-          path: "T.java",
-          text: "class T { void t() { int x = 1; } }",
-        }),
-    ).toEqual([]);
-  });
-
-  it("fires on a UI-interacting file with no a11y assertion", () => {
-    const findings = noA11yFamily
-      .find((r) => r.id === "QA-JV-110")!
-      .run({
-        path: "T.java",
-        text: 'page.navigate("/login"); page.click("button");',
-      });
-    expect(findings).toHaveLength(1);
-    expect(findings[0]?.severity).toBe("info");
-  });
-
-  it("does not fire when AxeBuilder/analyze is present", () => {
-    expect(
-      noA11yFamily
-        .find((r) => r.id === "QA-JV-110")!
-        .run({
-          path: "T.java",
-          text: 'page.navigate("/login"); new AxeBuilder(page).analyze();',
-        }),
-    ).toEqual([]);
-  });
-});
-
-describe("QA-CS-110 no a11y assertions", () => {
-  it("ignores non-.cs files", () => {
-    expect(
-      noA11yFamily
-        .find((r) => r.id === "QA-CS-110")!
-        .run({ path: "T.java", text: "GotoAsync" }),
-    ).toEqual([]);
-  });
-
-  it("does not fire when there is no UI interaction at all", () => {
-    expect(
-      noA11yFamily
-        .find((r) => r.id === "QA-CS-110")!
-        .run({
-          path: "T.cs",
-          text: "public class T { public void M() { int x = 1; } }",
-        }),
-    ).toEqual([]);
-  });
-
-  it("fires on a UI-interacting file with no a11y assertion", () => {
-    const findings = noA11yFamily
-      .find((r) => r.id === "QA-CS-110")!
-      .run({
-        path: "T.cs",
-        text: 'await Page.GotoAsync("/login"); await Page.ClickAsync("button");',
-      });
-    expect(findings).toHaveLength(1);
-    expect(findings[0]?.severity).toBe("info");
-  });
-
-  it("does not fire when RunAxe is present", () => {
-    expect(
-      noA11yFamily
-        .find((r) => r.id === "QA-CS-110")!
-        .run({
-          path: "T.cs",
-          text: 'await Page.GotoAsync("/login"); var r = await Page.RunAxe();',
-        }),
-    ).toEqual([]);
-  });
-});
-
-describe("QA-JV-111 blanket route mock", () => {
-  it("ignores non-.java files", () => {
-    expect(
-      blanketRouteFamily
-        .find((r) => r.id === "QA-JV-111")!
-        .run({ path: "T.cs", text: '.route("**/*")' }),
-    ).toEqual([]);
-  });
-
-  it("fires on a catch-all route pattern", () => {
-    const findings = blanketRouteFamily
-      .find((r) => r.id === "QA-JV-111")!
-      .run({
-        path: "T.java",
-        text: 'page.route("**/*", route -> route.fulfill());',
-      });
-    expect(findings).toHaveLength(1);
-  });
-
-  it("does not fire on a scoped route pattern", () => {
-    expect(
-      blanketRouteFamily
-        .find((r) => r.id === "QA-JV-111")!
-        .run({
-          path: "T.java",
-          text: 'page.route("**/api/orders", route -> route.fulfill());',
-        }),
-    ).toEqual([]);
-  });
-});
-
-describe("QA-CS-111 blanket route mock", () => {
-  it("ignores non-.cs files", () => {
-    expect(
-      blanketRouteFamily
-        .find((r) => r.id === "QA-CS-111")!
-        .run({ path: "T.java", text: '.RouteAsync("**/*")' }),
-    ).toEqual([]);
-  });
-
-  it("fires on a catch-all route pattern", () => {
-    const findings = blanketRouteFamily
-      .find((r) => r.id === "QA-CS-111")!
-      .run({
-        path: "T.cs",
-        text: 'await Page.RouteAsync("**/*", route => route.FulfillAsync());',
-      });
-    expect(findings).toHaveLength(1);
-  });
-
-  it("does not fire on a scoped route pattern", () => {
-    expect(
-      blanketRouteFamily
-        .find((r) => r.id === "QA-CS-111")!
-        .run({
-          path: "T.cs",
-          text: 'await Page.RouteAsync("**/api/orders", route => route.FulfillAsync());',
         }),
     ).toEqual([]);
   });

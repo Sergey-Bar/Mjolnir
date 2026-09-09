@@ -112,9 +112,9 @@ describe("renderExplain — snapshot stability per rule (determinism law)", () =
 });
 
 describe("runExplainCommand (CLI handler)", () => {
-  it("exits 0 and prints the rule's explanation", () => {
+  it("exits 0 and prints the rule's explanation", async () => {
     let out = "";
-    const code = runExplainCommand(
+    const code = await runExplainCommand(
       ["QA-TEST-004", "--fixtures-root", FIXTURES_ROOT],
       {
         out: (s) => {
@@ -127,9 +127,9 @@ describe("runExplainCommand (CLI handler)", () => {
     expect(out).toContain("QA-TEST-004");
   });
 
-  it("exits 10 (usage error) with no rule ID given", () => {
+  it("exits 10 (usage error) with no rule ID given", async () => {
     let errOut = "";
-    const code = runExplainCommand([], {
+    const code = await runExplainCommand([], {
       out: () => {},
       err: (s) => {
         errOut += String(s);
@@ -139,8 +139,8 @@ describe("runExplainCommand (CLI handler)", () => {
     expect(errOut).toContain("Usage");
   });
 
-  it("exits 10 (usage error) for an unknown rule ID", () => {
-    const code = runExplainCommand(
+  it("exits 10 (usage error) for an unknown rule ID", async () => {
+    const code = await runExplainCommand(
       ["QA-NOPE-999", "--fixtures-root", FIXTURES_ROOT],
       {
         out: () => {},
@@ -176,11 +176,11 @@ describe("runExplainCommand (CLI handler)", () => {
     expect(new Set(ids)).toEqual(new Set(RULES.map((r) => r.id)));
   });
 
-  it("defaults to <cwd>/tests/fixtures when --fixtures-root is omitted", () => {
+  it("defaults to <cwd>/tests/fixtures when --fixtures-root is omitted", async () => {
     // Run from this repo's own root implicitly via process.cwd() — the
     // test runner's cwd during `npm test` is the mjolnir repo root.
     let out = "";
-    const code = runExplainCommand(["QA-TEST-004"], {
+    const code = await runExplainCommand(["QA-TEST-004"], {
       out: (s) => {
         out += String(s);
       },

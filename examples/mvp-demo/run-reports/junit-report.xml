@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- CASE: junit-evidence (ACTIVE through `mjolnir forensics`) — the same
+     suite as mjolnir.report.json rendered as JUnit XML: retry history is
+     reported as one testcases element with a failure child (JUnit cannot
+     express per-attempt detail, so corroboration honestly caps at file
+     level). -->
+<testsuites name="mvp-demo" tests="4" failures="2">
+  <testsuite name="checkout.spec.ts" tests="2" failures="1">
+    <testcase name="charges the card exactly once" classname="e2e.checkout" time="2.140">
+      <failure message="expected receipt total $42.00 but charged twice">AssertionError</failure>
+    </testcase>
+    <testcase name="declines an expired card" classname="e2e.checkout" time="0.830"/>
+  </testsuite>
+  <testsuite name="login.spec.ts" tests="1" failures="1">
+    <testcase name="signs in after the network hiccup" classname="e2e.login" time="11.790">
+      <failure message="passed on retry after network hiccup">AssertionError (attempt 2)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="account.spec.ts" tests="1" failures="0">
+    <testcase name="lists recent orders" classname="e2e.account" time="0.720"/>
+  </testsuite>
+</testsuites>

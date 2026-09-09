@@ -15,7 +15,7 @@ gdzie zaufanie się łamie.
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | Polski | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-08.
 
 ```bash
 npx mjolnir-qa@latest
@@ -200,12 +200,11 @@ nie może się wydać — to zapora na fałszywe pozytywy.
 <details>
 <summary><strong>Jakość testów</strong></summary>
 
-| ID           | Reguła                        | Severity |
-| ------------ | ----------------------------- | -------- |
-| QA-TQUAL-001 | Weryfikacja wyłącznie mockami | info     |
-| QA-TQUAL-002 | Asercja tautologiczna         | error    |
-| QA-TQUAL-009 | Asercja promise bez await     | error    |
-| QA-TQUAL-011 | Zakomentowane testy           | warning  |
+| ID           | Reguła                    | Severity |
+| ------------ | ------------------------- | -------- |
+| QA-TQUAL-002 | Asercja tautologiczna     | error    |
+| QA-TQUAL-009 | Asercja promise bez await | error    |
+| QA-TQUAL-011 | Zakomentowane testy       | warning  |
 
 </details>
 
@@ -217,9 +216,6 @@ nie może się wydać — to zapora na fałszywe pozytywy.
 | QA-PW-002 | Asercja lokatora bez await                  | error    |
 | QA-PW-003 | `page.pause()` / `test.only()` committowane | error    |
 | QA-PW-004 | Kruche selektory CSS/XPath                  | warning  |
-| QA-PW-005 | Logika biznesowa wewnątrz `page.evaluate()` | info     |
-| QA-PW-114 | Legacy element handles (`page.$`)           | info     |
-| QA-PW-118 | Czekanie `networkidle` (flaky by design)    | info     |
 | QA-PW-123 | Zaszyte na sztywno URL-e środowisk          | warning  |
 
 </details>
@@ -247,8 +243,6 @@ nie może się wydać — to zapora na fałszywe pozytywy.
 | QA-PY-002 | Pominięty test (`skip`, niestrykt `xfail`) | warning  |
 | QA-PY-003 | Funkcja testowa bez asercji                | error    |
 | QA-PY-005 | `time.sleep()` w testach                   | warning  |
-| QA-PY-006 | Puste ciało testu (`pass`)                 | info     |
-| QA-PY-010 | Zależność od losowości/czasu bez freeze    | info     |
 | QA-PY-012 | Asercja tautologiczna                      | error    |
 
 Łącznie 20 reguł Pythona (QA-PY-001…012 higiena pytest + QA-PY-101…108 Playwright-Python).
@@ -265,8 +259,6 @@ nie może się wydać — to zapora na fałszywe pozytywy.
 | QA-JV-103 | Metoda testowa bez asercji                 | error    |
 | QA-JV-105 | Twardy sleep Playwright `waitForTimeout()` | warning  |
 | QA-JV-106 | Kruchy selektor zamiast role lokatora      | warning  |
-| QA-JV-108 | Zaszyty na sztywno URL środowiska w teście | info     |
-| QA-JV-111 | Blanketowy mock `page.route("**")`         | info     |
 
 </details>
 
@@ -280,8 +272,6 @@ nie może się wydać — to zapora na fałszywe pozytywy.
 | QA-CS-103 | Metoda testowa bez asercji                   | error    |
 | QA-CS-105 | Twardy sleep `WaitForTimeoutAsync()`         | warning  |
 | QA-CS-106 | Kruchy selektor zamiast role lokatora        | warning  |
-| QA-CS-108 | Zaszyty na sztywno URL środowiska w teście   | info     |
-| QA-CS-111 | Blanketowy mock `page.RouteAsync("**")`      | info     |
 
 </details>
 
@@ -303,7 +293,6 @@ zob. [docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Pozostałe 21 wychodzi na
 oszacowaniu autora. Stopka każdego skanu mówi, ile z _odpalonych_
 reguł jest zmierzonych; `mjolnir rules --unmeasured` wypisuje
 niezmierzone; strona `mjolnir explain` każdej reguły deklaruje jej
-status. Publikujemy stopę, nawet gdy jest brzydka — QA-PW-107 audytuje
 się na 95 % i za to trafia do kwarantanny. Powiększanie tej liczby to
 stale trwająca praca projektu.
 
@@ -526,7 +515,7 @@ nigdy nie zmienia semantyki detekcji.
 {
   "gate": "error",
   "exclude": ["legacy/**"],
-  "severityOverrides": { "QA-PW-118": "warning" },
+  "severityOverrides": { "QA-PW-141": "warning" },
   "ignore": [
     {
       "ruleId": "QA-TEST-004",

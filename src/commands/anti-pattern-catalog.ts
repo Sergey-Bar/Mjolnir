@@ -189,18 +189,6 @@ export const ANTI_PATTERN_CONTENT: Record<string, string> = {
     "faster on average, because it proceeds the instant the condition is " +
     "true instead of always waiting the full fixed duration.",
 
-  "QA-PW-119":
-    "A test that writes to module-level mutable state which a LATER " +
-    "test reads creates a hidden dependency on execution order that " +
-    "nothing in either test's own code makes visible. It passes reliably " +
-    "as long as the test runner happens to execute them in the order " +
-    "the author had in mind. The moment anything reorders execution — " +
-    "test sharding across CI workers, a runner's parallelization " +
-    "strategy, someone reordering `describe` blocks, or simply upgrading " +
-    "the test runner to a version with a different default ordering — " +
-    "the dependent test starts failing with no code change to itself, " +
-    "and the actual cause is in a completely different file.",
-
   "QA-PY-001":
     'A hardcoded `pytest.main([..., "-k", ...])` call or `::`-scoped ' +
     "node selection committed into source, or an `@pytest.mark.only` " +
@@ -222,16 +210,6 @@ export const ANTI_PATTERN_CONTENT: Record<string, string> = {
     "keyword, which makes it easy to write a test that only calls the " +
     "function under test for its side effects and never checks the " +
     "result.",
-
-  "QA-PY-006":
-    "A pytest test function whose entire body is `pass` (optionally " +
-    "preceded by a comment) is Python's most literal form of \"empty " +
-    'test" — there is no simpler way to write a function that does ' +
-    "nothing and returns normally. pytest reports it as passed for the " +
-    "same reason QA-TEST-010 does in JS/TS: nothing raised, so nothing " +
-    "failed. It shows up most often as a stub left behind after " +
-    "`# TODO: implement` scaffolding never got filled in, quietly " +
-    "inflating the pass count in the meantime.",
 
   "QA-PY-012":
     "`assert True` and `assert x == x` are literal tautologies in " +

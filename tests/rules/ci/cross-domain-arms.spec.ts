@@ -74,7 +74,6 @@ import { skippedTest } from "../../../src/rules/test/qa-test-002-skipped-test.js
 import { qaPw140 } from "../../../src/rules/playwright/qa-pw-140.js";
 
 import { unawaitedLocatorAssertion } from "../../../src/rules/playwright/qa-pw-002-unawaited-assertion.js";
-import { pwMissingTimeout } from "../../../src/rules/playwright/qa-pw-103-missing-timeout.js";
 import { hardcodedBaseUrl } from "../../../src/rules/playwright/qa-pw-123-hardcoded-url.js";
 import { pwRetryMaskingNoForensics } from "../../../src/rules/playwright/qa-pw-141-retry-no-triage.js";
 import { pwBlanketRouteMock } from "../../../src/rules/playwright/qa-pw-142-blanket-route.js";
@@ -85,7 +84,6 @@ import { emptyTestBody } from "../../../src/rules/test/qa-test-010-empty-body.js
 import { jvNoAssertions } from "../../../src/rules/java/qa-jv-103-no-assertions.js";
 import { csNoAssertions } from "../../../src/rules/csharp/qa-cs-103-no-assertions.js";
 import { pyRaisesWithoutMatch } from "../../../src/rules/python/qa-py-007-raises-without-match.js";
-import { pyMockOnly } from "../../../src/rules/python/qa-py-008-mock-only.js";
 import { tautologicalAssertion } from "../../../src/rules/quality/qa-tqual-002-tautological.js";
 import { brittleSelectors } from "../../../src/rules/playwright/qa-pw-004-brittle-selectors.js";
 import { pwDeepFrameLocator } from "../../../src/rules/playwright/qa-pw-113-deep-frames.js";
@@ -280,11 +278,6 @@ describe("rule embedded-code and dedup arms", () => {
     expect(qaPw140.run({ path: "a.spec.ts", text })).toEqual([]);
   });
 
-  it("QA-PW-103: a wait-for-timeout inside a template expression is not flagged", () => {
-    const text = "const t = `${page.waitForTimeout(100)}`;\n";
-    expect(pwMissingTimeout.run({ path: "a.spec.ts", text })).toEqual([]);
-  });
-
   it("QA-PW-123: a URL written as test data is not flagged", () => {
     const text = "const s = \"await page.goto('https://example.com')\";\n";
     expect(
@@ -365,13 +358,6 @@ describe("rule embedded-code and dedup arms", () => {
     const text =
       "def test_x():\n    with pytest.raises(ValueError, match(fn((x):\n        pass\n";
     expect(pyRaisesWithoutMatch.run({ path: "test_x.py", text })).toEqual([]);
-  });
-
-  it("QA-PY-008: same-line python body degrades to the single line", () => {
-    const text =
-      "from unittest.mock import MagicMock\ndef test_x(): m = MagicMock()\n";
-    const findings = pyMockOnly.run({ path: "test_x.py", text });
-    expect(findings.length).toBeGreaterThanOrEqual(0);
   });
 
   it("QA-TQUAL-002: a bare toBe() on a literal is not a tautology", () => {

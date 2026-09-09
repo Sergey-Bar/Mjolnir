@@ -15,7 +15,7 @@ CI-пайплайны, выдаёт показатель достойности 
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | Русский | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-08.
 
 ```bash
 npx mjolnir-qa@latest
@@ -203,7 +203,6 @@ macOS и Linux.
 
 | ID           | Правило                       | Severity |
 | ------------ | ----------------------------- | -------- |
-| QA-TQUAL-001 | Верификация только моками     | info     |
 | QA-TQUAL-002 | Тавтологический ассерт        | error    |
 | QA-TQUAL-009 | Ассерт не-awaitнутого promise | error    |
 | QA-TQUAL-011 | Закомментированные тесты      | warning  |
@@ -213,15 +212,12 @@ macOS и Linux.
 <details>
 <summary><strong>Playwright 🎭</strong></summary>
 
-| ID        | Правило                                     | Severity |
-| --------- | ------------------------------------------- | -------- |
-| QA-PW-002 | Ассерт локатора без await                   | error    |
-| QA-PW-003 | `page.pause()` / `test.only()` в коммите    | error    |
-| QA-PW-004 | Хрупкие CSS/XPath-селекторы                 | warning  |
-| QA-PW-005 | Бизнес-логика внутри `page.evaluate()`      | info     |
-| QA-PW-114 | Легаси element handles (`page.$`)           | info     |
-| QA-PW-118 | Ожидания `networkidle` (флаковые by design) | info     |
-| QA-PW-123 | Захардкоженные URL окружений                | warning  |
+| ID        | Правило                                  | Severity |
+| --------- | ---------------------------------------- | -------- |
+| QA-PW-002 | Ассерт локатора без await                | error    |
+| QA-PW-003 | `page.pause()` / `test.only()` в коммите | error    |
+| QA-PW-004 | Хрупкие CSS/XPath-селекторы              | warning  |
+| QA-PW-123 | Захардкоженные URL окружений             | warning  |
 
 </details>
 
@@ -243,14 +239,12 @@ macOS и Linux.
 <details>
 <summary><strong>Python / pytest 🐍</strong></summary>
 
-| ID        | Правило                                       | Severity |
-| --------- | --------------------------------------------- | -------- |
-| QA-PY-002 | Пропущенный тест (`skip`, нестрогий `xfail`)  | warning  |
-| QA-PY-003 | Тестовая функция без ассертов                 | error    |
-| QA-PY-005 | `time.sleep()` в тестах                       | warning  |
-| QA-PY-006 | Пустое тело теста (`pass`)                    | info     |
-| QA-PY-010 | Зависимость от случайности/времени без freeze | info     |
-| QA-PY-012 | Тавтологический ассерт                        | error    |
+| ID        | Правило                                      | Severity |
+| --------- | -------------------------------------------- | -------- |
+| QA-PY-002 | Пропущенный тест (`skip`, нестрогий `xfail`) | warning  |
+| QA-PY-003 | Тестовая функция без ассертов                | error    |
+| QA-PY-005 | `time.sleep()` в тестах                      | warning  |
+| QA-PY-012 | Тавтологический ассерт                       | error    |
 
 Всего 20 Python-правил (QA-PY-001…012 гигиена pytest + QA-PY-101…108 Playwright-Python).
 
@@ -266,8 +260,6 @@ macOS и Linux.
 | QA-JV-103 | Тестовый метод без ассертов                 | error    |
 | QA-JV-105 | Жёсткий sleep Playwright `waitForTimeout()` | warning  |
 | QA-JV-106 | Хрупкий селектор вместо role-локатора       | warning  |
-| QA-JV-108 | Захардкоженный URL окружения в тесте        | info     |
-| QA-JV-111 | Бланкетный мок `page.route("**")`           | info     |
 
 </details>
 
@@ -281,8 +273,6 @@ macOS и Linux.
 | QA-CS-103 | Тестовый метод без ассертов                    | error    |
 | QA-CS-105 | Жёсткий sleep `WaitForTimeoutAsync()`          | warning  |
 | QA-CS-106 | Хрупкий селектор вместо role-локатора          | warning  |
-| QA-CS-108 | Захардкоженный URL окружения в тесте           | info     |
-| QA-CS-111 | Бланкетный мок `page.RouteAsync("**")`         | info     |
 
 </details>
 
@@ -304,7 +294,6 @@ macOS и Linux.
 выходят на оценке автора. Футер каждого скана говорит, сколько из
 _сработавших_ правил измерены; `mjolnir rules --unmeasured` перечисляет
 неизмеренные; страница `mjolnir explain` каждого правила указывает её
-статус. Мы публикуем частоту, даже когда она уродлива — QA-PW-107
 аудируется на 95 % и за это отправлен в карантин. Увеличивать это
 число — постоянная работа проекта.
 
@@ -526,7 +515,7 @@ Mjölnir — zero-config. Опциональный `mjolnir.config.json` (или
 {
   "gate": "error",
   "exclude": ["legacy/**"],
-  "severityOverrides": { "QA-PW-118": "warning" },
+  "severityOverrides": { "QA-PW-141": "warning" },
   "ignore": [
     {
       "ruleId": "QA-TEST-004",

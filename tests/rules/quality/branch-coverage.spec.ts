@@ -1,29 +1,14 @@
 /**
  * Quality/test-family rule branch coverage (Test Hardening Plan —
  * coverage-gap closure).
+ *
+ * QA-TQUAL-001 (mock-only) was RETIRED by the Phase 2 quarantine-cluster
+ * triage and unregistered (owner ruling 2026-09-08, E-1); its coverage
+ * blocks were removed with it.
  */
 
 import { describe, expect, it } from "vitest";
-import { mockOnlyVerification } from "../../../src/rules/quality/qa-tqual-001-mock-only.js";
 import { unawaitedPromiseAssertion } from "../../../src/rules/quality/qa-tqual-009-promise-assertion.js";
-
-describe("QA-TQUAL-001: brace matcher handles escaped characters inside strings", () => {
-  it("does not miscount braces when a string argument contains an escaped backslash/quote", () => {
-    const text = `it("x", () => {\n  expect(mock).toHaveBeenCalledWith("a\\\\b\\"c");\n});\n`;
-    expect(() =>
-      mockOnlyVerification.run({ path: "x.spec.ts", text }),
-    ).not.toThrow();
-    const findings = mockOnlyVerification.run({ path: "x.spec.ts", text });
-    expect(findings.length).toBeGreaterThan(0);
-  });
-
-  it("does not throw on an unterminated test body (unbalanced braces)", () => {
-    const text = `it("x", () => {\n  expect(mock).toHaveBeenCalled();\n`;
-    expect(() =>
-      mockOnlyVerification.run({ path: "x.spec.ts", text }),
-    ).not.toThrow();
-  });
-});
 
 describe("QA-TQUAL-009: promise-chain assertion detection edge shapes", () => {
   it("does not throw on .then( with an arrow-expression body (no braces)", () => {

@@ -15,7 +15,7 @@ povjerenje lomi.
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | Bosanski
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-07.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-08.
 
 ```bash
 npx mjolnir-qa@latest
@@ -197,7 +197,6 @@ to je vatrozid lažnih pozitiva.
 
 | ID           | Pravilo                       | Severity |
 | ------------ | ----------------------------- | -------- |
-| QA-TQUAL-001 | Verifikacija samo mockovima   | info     |
 | QA-TQUAL-002 | Tautološka asercija           | error    |
 | QA-TQUAL-009 | Asercija neawaitanog promisea | error    |
 | QA-TQUAL-011 | Komentarisani testovi         | warning  |
@@ -212,9 +211,6 @@ to je vatrozid lažnih pozitiva.
 | QA-PW-002 | Asercija lokatora bez awaita               | error    |
 | QA-PW-003 | `page.pause()` / `test.only()` commitirani | error    |
 | QA-PW-004 | Krhki CSS/XPath selektori                  | warning  |
-| QA-PW-005 | Poslovna logika unutar `page.evaluate()`   | info     |
-| QA-PW-114 | Legacy element handleovi (`page.$`)        | info     |
-| QA-PW-118 | `networkidle` čekanja (flaky po dizajnu)   | info     |
 | QA-PW-123 | Ugrađeni URL-ovi okruženja                 | warning  |
 
 </details>
@@ -237,14 +233,12 @@ to je vatrozid lažnih pozitiva.
 <details>
 <summary><strong>Python / pytest 🐍</strong></summary>
 
-| ID        | Pravilo                                    | Severity |
-| --------- | ------------------------------------------ | -------- |
-| QA-PY-002 | Preskočen test (`skip`, nestrogi `xfail`)  | warning  |
-| QA-PY-003 | Test funkcija bez asercija                 | error    |
-| QA-PY-005 | `time.sleep()` u testovima                 | warning  |
-| QA-PY-006 | Prazno tijelo testa (`pass`)               | info     |
-| QA-PY-010 | Ovisnost o slučajnosti/vremenu bez freezea | info     |
-| QA-PY-012 | Tautološka asercija                        | error    |
+| ID        | Pravilo                                   | Severity |
+| --------- | ----------------------------------------- | -------- |
+| QA-PY-002 | Preskočen test (`skip`, nestrogi `xfail`) | warning  |
+| QA-PY-003 | Test funkcija bez asercija                | error    |
+| QA-PY-005 | `time.sleep()` u testovima                | warning  |
+| QA-PY-012 | Tautološka asercija                       | error    |
 
 Ukupno 20 Python pravila (QA-PY-001…012 pytest higijena + QA-PY-101…108 Playwright-Python).
 
@@ -260,8 +254,6 @@ Ukupno 20 Python pravila (QA-PY-001…012 pytest higijena + QA-PY-101…108 Play
 | QA-JV-103 | Test metoda bez asercija                  | error    |
 | QA-JV-105 | Tvrdi sleep Playwright `waitForTimeout()` | warning  |
 | QA-JV-106 | Krhki selektor umjesto role lokatora      | warning  |
-| QA-JV-108 | Ugrađeni URL okruženja u testu            | info     |
-| QA-JV-111 | Pokrivni mock `page.route("**")`          | info     |
 
 </details>
 
@@ -275,8 +267,6 @@ Ukupno 20 Python pravila (QA-PY-001…012 pytest higijena + QA-PY-101…108 Play
 | QA-CS-103 | Test metoda bez asercija                     | error    |
 | QA-CS-105 | Tvrdi sleep `WaitForTimeoutAsync()`          | warning  |
 | QA-CS-106 | Krhki selektor umjesto role lokatora         | warning  |
-| QA-CS-108 | Ugrađeni URL okruženja u testu               | info     |
-| QA-CS-111 | Pokrivni mock `page.RouteAsync("**")`        | info     |
 
 </details>
 
@@ -297,7 +287,6 @@ OSS kodom** (≥ 10 ručno klasificiranih nalaza svako; vidi
 procjeni. Podnožje svakog skana kaže koliko od _okinutih_ pravila je
 izmjereno; `mjolnir rules --unmeasured` izlista neizmjerena; stranica
 `mjolnir explain` svakog pravila navodi njen status. Objavljujemo stopu
-čak i kad je ružna — QA-PW-107 se audita na 95 % i u karanteni je radi
 toga. Rast tog broja je neprekidni rad projekta.
 
 ### Tierovi pravila i jezična zrelost
@@ -516,7 +505,7 @@ nikad ne mijenja semantiku detekcije.
 {
   "gate": "error",
   "exclude": ["legacy/**"],
-  "severityOverrides": { "QA-PW-118": "warning" },
+  "severityOverrides": { "QA-PW-141": "warning" },
   "ignore": [
     {
       "ruleId": "QA-TEST-004",

@@ -53,7 +53,6 @@ import {
   computeSelectorHealth,
   computeSpecHealth,
 } from "../../src/playwright/selector-health.js";
-import { pwOrderDependence } from "../../src/rules/playwright/qa-pw-119-order-dependence.js";
 import { runForensics } from "../../src/forensics/run.js";
 import { parsePlaywrightJson } from "../../src/forensics/parse-playwright-json.js";
 import { renderDebt } from "../../src/commands/debt.js";
@@ -174,25 +173,6 @@ describe("selector-health classify arms", () => {
       "it('a', () => {});",
     ]);
     expect(health.counts.xpath).toBe(1);
-  });
-});
-
-describe("QA-PW-119 hook-shape arms", () => {
-  it("skips a comment between the hook call and its params", () => {
-    const text = [
-      "let shared;",
-      "beforeEach( /* setup */ () => { shared = 1; });",
-      "test('a', () => { expect(shared).toBe(1); });",
-      "",
-    ].join("\n");
-    expect(pwOrderDependence.run({ path: "a.spec.ts", text })).toEqual([]);
-  });
-
-  it("tolerates an expression-bodied hook at end of file", () => {
-    // The hook is the last statement — no later brace exists for the
-    // body search to find, exercising the open === -1 tolerance.
-    const text = "let shared;\nbeforeEach(() => shared++);";
-    expect(pwOrderDependence.run({ path: "a.spec.ts", text })).toEqual([]);
   });
 });
 
