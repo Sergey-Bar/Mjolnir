@@ -24,6 +24,7 @@ every remaining gap, is
 | **Website**              | generated `vars.css` + `symbols.ts`                                     | rules 1 + 6, `site:doctor` 8 checks, axe, Lighthouse       |      8 |    10 |
 | **Badges (23 READMEs)**  | `BADGE` tokens                                                          | rule 7, across every README file                           |      3 |    10 |
 | **Documentation**        | this directory; `docs/TERMINOLOGY.md` for meanings                      | rule 5, `docs-consistency.spec.ts`, `link-integrity`       |      7 |     9 |
+| **Badge (generated)**    | `BADGE_BAND` tokens                                                     | rule 7, plus a seeded revert to a shields named colour     |      2 |    10 |
 | **Mermaid output**       | `TINT` tokens                                                           | rules 6 + 8 (text AA + stroke 3:1)                         |      4 |    10 |
 
 Three surfaces are not 10, and the reasons are specific:
@@ -68,16 +69,22 @@ known-open, zero stale.
 | 4   | the generators, and every committed `assets/readme/*.svg`, carry only token colours                   |
 | 5   | every colour a hand-written design document states is a value the source holds                        |
 | 6   | no unapproved hex outside the token module, across `src/reporter/**`, `scripts/**` and the site theme |
-| 7   | badges in all 23 READMEs use only `BADGE` values                                                      |
+| 7   | badges in all 23 READMEs **and** the one the product generates use only token values                  |
 | 8   | every declared pairing meets WCAG AA, computed — plus the diagram tints' text and stroke              |
 
 `npm run brand:doctor:selftest` seeds a violation of each and requires
-rejection: **10 of 10 observed failing**, transcript at
+rejection: **11 of 11 observed failing**, transcript at
 [`gate-evidence/brand-doctor-selftest.txt`](gate-evidence/brand-doctor-selftest.txt).
 
 `site:doctor` Check 8 delegates to rule 5 rather than keeping a second
 copy — the duplication it would otherwise be is the exact defect the
 gate exists to prevent.
+
+Two CI surfaces are deliberately absent from this table:
+`src/commands/pr-comment.ts` renders Markdown, which carries no colour,
+and `src/reporter/github.ts` emits workflow annotations whose colour
+GitHub owns. Both were reviewed for vocabulary; neither has a palette to
+enforce.
 
 ## Known remaining gaps
 

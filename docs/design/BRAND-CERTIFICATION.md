@@ -17,9 +17,10 @@ MJÖLNIR BRAND SYSTEM — NOT YET 10/10
 
 The system is built, enforced and green: one token source, one gate with
 eight blocking rules and zero findings, one typography system, one
-symbol vocabulary, and every surface consuming them. Fourteen of the
-fifteen defects are closed, four of them found during the work rather
-than in the plan.
+symbol vocabulary, and every surface consuming them. Fifteen of the
+sixteen defects are closed, five of them found during the work rather
+than in the plan — the last of those because Sergey asked whether the CI
+surfaces were covered, and they were not.
 
 It is not 10/10 because three surfaces are enforced by convention rather
 than by a check, and I will not score enforcement I did not build:
@@ -81,6 +82,18 @@ value from the token module **and** something fails CI when it stops.
 | D14 | decorative rune ornament on the site              | **closed** — found at baseline; the hero runefield is a wordmark and stays                              |
 | D15 | the site build broken since `9f59bc5`             | **closed** — found in Phase 3; the Pages deploy had been failing for a day                              |
 
+| D16 | the generated badge sent shields.io named colours | **closed** — found when Sergey asked whether CI was covered; it was not |
+
+D16 is worth its own line because two of those names were wrong, not
+merely off-brand. `success` is GREEN, so a 100 badge said "your software
+is fine". `important` is ORANGE, so every WORTHY badge rendered the
+trusted band in a warning hue — for eight releases, behind a code
+comment asserting it was "blue-family, closest to aurora-cyan". The test
+guarding it checked that each value was a name shields RECOGNISES, which
+every one of them was. Nobody had resolved a name to a colour and
+looked. The badge also wore `namedLogo: "vitest"` — another project's
+mark, on the image users paste into their own READMEs.
+
 Two more were found and fixed while proving the work, and neither was a
 brand defect:
 
@@ -113,7 +126,7 @@ rather than passing vacuously.
 [transcript](gate-evidence/brand-doctor-selftest.txt)
 
 ```
-10 of 10 rules observed rejecting an invalid state
+11 of 11 rules observed rejecting an invalid state
 ```
 
 Each rule was seeded with a deliberate violation, required to reject it
