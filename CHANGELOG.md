@@ -9,6 +9,12 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [0.5.38] — 2026-09-09
+
+### Changes since 0
+
+- P7: agent loop — mjolnir verify + MCP verify tool + install surfaces (#68)
+
 ## [0.5.37] — 2026-09-08
 
 ### Changes since 0
