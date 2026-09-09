@@ -30,9 +30,7 @@ for (const rule of RULES) {
   if (!rule.overlapWith) continue;
   for (const target of rule.overlapWith) {
     if (UNMEASURED.has(target)) {
-      console.log(
-        `${rule.id} (${rule.tier}) dedups -> ${target} (unmeasured)`,
-      );
+      console.log(`${rule.id} (${rule.tier}) dedups -> ${target} (unmeasured)`);
     }
   }
   void active;

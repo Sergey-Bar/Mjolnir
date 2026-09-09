@@ -5,11 +5,7 @@ const ROOT = "tests/corpus/positive-fixtures";
 
 // ── QA-PY-101 (final 3): sync-import + async def test — the mix the
 // detector targets. Three distinct app shapes.
-for (const [i, name] of [
-  "warehouse",
-  "portal",
-  "vault",
-] as const) {
+for (const [i, name] of ["warehouse", "portal", "vault"] as const) {
   const dir = join(ROOT, "QA-PY-101", `${name}-mix-${i + 21}`);
   mkdirSync(dir, { recursive: true });
   writeFileSync(

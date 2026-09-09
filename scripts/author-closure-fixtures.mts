@@ -73,11 +73,7 @@ public class SelectorPortabilityTests
 // ── QA-CS-109 (1): retry masking the real failure — pytest-style
 // NUnit Retry attribute hiding a genuine flaky assertion.
 writeFileSync(
-  join(
-    ROOT,
-    "QA-CS-109",
-    "RetryMaskedFailureTests.cs",
-  ),
+  join(ROOT, "QA-CS-109", "RetryMaskedFailureTests.cs"),
   `using NUnit.Framework;
 
 // The Retry attribute silently re-runs the flaky timing assertion —

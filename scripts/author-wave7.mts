@@ -28,11 +28,7 @@ def test_profile_settings(page: Page) -> None:
 );
 
 // ── QA-PY-101 (+3): sync/async mix — final exhibits.
-for (const [i, name] of [
-  "vault_half",
-  "billing_mixed",
-  "cron_half",
-] as const) {
+for (const [i, name] of ["vault_half", "billing_mixed", "cron_half"] as const) {
   const dir = join(ROOT, "QA-PY-101", `${name}-m-${i + 7}`);
   mkdirSync(dir, { recursive: true });
   writeFileSync(

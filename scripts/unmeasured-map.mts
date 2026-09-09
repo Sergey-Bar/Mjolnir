@@ -7,10 +7,7 @@ const active = RULES.filter((r) => !RETIRED_RULE_IDS.includes(r.id));
 const unmeasured = active
   .filter((r) => MEASURED_FP[r.id] === undefined)
   .map((r) => r.id);
-console.log(
-  `unmeasured (${unmeasured.length}):`,
-  unmeasured.join(", "),
-);
+console.log(`unmeasured (${unmeasured.length}):`, unmeasured.join(", "));
 const dir = "tests/corpus/baseline";
 for (const f of readdirSync(dir).filter((f) => f.endsWith(".json"))) {
   const j = JSON.parse(readFileSync(join(dir, f), "utf8"));

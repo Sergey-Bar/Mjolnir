@@ -8,14 +8,20 @@ const unmeasured = active
   .filter((r) => MEASURED_FP[r.id] === undefined)
   .map((r) => r.id);
 
-const counts = new Map<string, { tp: number; fp: number; unsure: number; blank: number }>();
+const counts = new Map<
+  string,
+  { tp: number; fp: number; unsure: number; blank: number }
+>();
 for (const id of unmeasured)
   counts.set(id, { tp: 0, fp: 0, unsure: 0, blank: 0 });
 
 for (const f of readdirSync("tests/corpus/verdicts").filter((f) =>
   f.endsWith(".jsonl"),
 )) {
-  for (const line of readFileSync(join("tests/corpus/verdicts", f), "utf8").split("\n")) {
+  for (const line of readFileSync(
+    join("tests/corpus/verdicts", f),
+    "utf8",
+  ).split("\n")) {
     if (!line.trim()) continue;
     const j = JSON.parse(line);
     const c = counts.get(j.ruleId);

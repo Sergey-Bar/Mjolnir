@@ -12,11 +12,7 @@ for (const rule of RULES) {
   sidecar[rule.id] = declaredDetectorRevision(rule);
 }
 const sidecarPath = "tests/corpus/detector-revisions.json";
-writeFileSync(
-  sidecarPath,
-  JSON.stringify(sidecar, null, 2) + "\n",
-  "utf8",
-);
+writeFileSync(sidecarPath, JSON.stringify(sidecar, null, 2) + "\n", "utf8");
 console.log(`sidecar rebuilt: ${Object.keys(sidecar).length} entries`);
 
 // 2) tone-blunt: drop dead keys for rules no longer registered.
@@ -25,7 +21,8 @@ let blunt = readFileSync(bluntPath, "utf8");
 const registered = new Set(RULES.map((r) => r.id));
 let bluntRemoved = 0;
 for (const key of [...registered.keys()]) void key;
-const keyRe = / {2}"(QA-[A-Z0-9-]+)":(?:[^\n]*\n(?:    "[^\n]*"\n)?\s*,)?| {2}"(QA-[A-Z0-9-]+)": "[^"]*",\n/g;
+const keyRe =
+  / {2}"(QA-[A-Z0-9-]+)":(?:[^\n]*\n(?: {4}"[^\n]*"\n)?\s*,)?| {2}"(QA-[A-Z0-9-]+)": "[^"]*",\n/g;
 const found = new Set<string>();
 for (const m of blunt.matchAll(/"(QA-[A-Z0-9-]+)":/g)) found.add(m[1]);
 for (const id of found) {
@@ -45,4 +42,6 @@ console.log(`tone-blunt: removed ${bluntRemoved} dead keys`);
 
 // 3) Regenerate FP-AUDIT (heading census) + capability matrix are run
 // by the repo's npm scripts afterward — listed here for the operator.
-console.log("next: npm run fp-audit:generate && npm run docs:counts && npm run docs:capability");
+console.log(
+  "next: npm run fp-audit:generate && npm run docs:counts && npm run docs:capability",
+);

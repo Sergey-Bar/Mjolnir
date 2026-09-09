@@ -7,7 +7,17 @@ const ROOT = "tests/corpus/positive-fixtures";
 // any freshness-vocabulary word (the hasRefresh scan is file-wide and
 // previously matched "refresh"/"regenerate" inside the comments).
 const pw116 = ["QA-PW-116"];
-for (const dirA of ["legacy-a-spa-admin1", "legacy-b-spa-billing1", "legacy-c-spa-crm1", "legacy-h-spa-helpdesk1", "legacy-h-spa-hr1", "legacy-i-spa-inventory1", "legacy-l-spa-lms1", "legacy-l-spa-logistics1", "legacy-m-spa-marketing1"]) {
+for (const dirA of [
+  "legacy-a-spa-admin1",
+  "legacy-b-spa-billing1",
+  "legacy-c-spa-crm1",
+  "legacy-h-spa-helpdesk1",
+  "legacy-h-spa-hr1",
+  "legacy-i-spa-inventory1",
+  "legacy-l-spa-lms1",
+  "legacy-l-spa-logistics1",
+  "legacy-m-spa-marketing1",
+]) {
   writeFileSync(
     join(ROOT, "QA-PW-116", dirA, "playwright.config.ts"),
     `import { defineConfig } from "@playwright/test";\n\n// Auth state captured by an external script; the config carries no\n// freshness marker of any kind.\nexport default defineConfig({\n  use: {\n    storageState: ".auth/user.json",\n  },\n});\n`,
@@ -75,13 +85,13 @@ for (const [i, name] of [
       "",
       "",
       "def test_{name}_renders() -> None:",
-      "    page.goto(\"/{name}\")",
-      "    assert page.locator(\"main\").is_visible()",
+      '    page.goto("/{name}")',
+      '    assert page.locator("main").is_visible()',
       "",
       "",
       "def test_{name}_details() -> None:",
-      "    page.goto(\"/{name}/details\")",
-      "    assert page.locator(\".details\").is_visible()",
+      '    page.goto("/{name}/details")',
+      '    assert page.locator(".details").is_visible()',
       "",
     ].join("\n"),
   );

@@ -462,13 +462,13 @@ n| Rule | Tier | Corpus surface | Status |
 | QA-PY-106 | extended   | module-level page fixture (Py)  | 4 verdicts — 6 more (single-file exhibits: module-level page + tests in one file)                                                                                                                                             |
 | QA-PY-108 | quarantine | hardcoded URL (Py)              | 9 verdicts — 1 more                                                                                                                                                                                                           |
 
-> | Rule | Tier | Corpus surface | Status |
-> | --- | --- | --- | --- |
-> | QA-PW-116 | extended | stale storageState configs | 1 verdict — author 9 more spec exhibits |
+> | Rule      | Tier       | Corpus surface                  | Status                                                                                                                                                                                                                        |
+> | --------- | ---------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+> | QA-PW-116 | extended   | stale storageState configs      | 1 verdict — author 9 more spec exhibits                                                                                                                                                                                       |
 > | QA-PW-125 | quarantine | globalSetup + inline stage seed | **STRUCTURAL: the rule runs only on test files, but global-setup.ts is never scanned (walker gates on TEST_FILE_RE) — exhibits must be playwright.config.ts with inline globalSetup + execSync seed, or the rule is retired** |
-> | QA-PY-101 | extended | sync/async Playwright mix (Py) | 7 verdicts — 3 more |
-> | QA-PY-106 | extended | module-level page fixture (Py) | 4 verdicts — 6 more (single-file exhibits: module-level page + tests in one file) |
-> | QA-PY-108 | quarantine | hardcoded URL (Py) | 9 verdicts — 1 more |
+> | QA-PY-101 | extended   | sync/async Playwright mix (Py)  | 7 verdicts — 3 more                                                                                                                                                                                                           |
+> | QA-PY-106 | extended   | module-level page fixture (Py)  | 4 verdicts — 6 more (single-file exhibits: module-level page + tests in one file)                                                                                                                                             |
+> | QA-PY-108 | quarantine | hardcoded URL (Py)              | 9 verdicts — 1 more                                                                                                                                                                                                           |
 
 | Rule      | Tier       | Corpus surface                  | Status                                                                                                                                                                                                                        |
 | --------- | ---------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -998,13 +998,13 @@ t| Rule | Tier | Corpus surface | Status |
 | QA-PY-106 | extended   | module-level page fixture (Py)  | 4 verdicts — 6 more (single-file exhibits: module-level page + tests in one file)                                                                                                                                             |
 | QA-PY-108 | quarantine | hardcoded URL (Py)              | 9 verdicts — 1 more                                                                                                                                                                                                           |
 
-> | Rule | Tier | Corpus surface | Status |
-> | --- | --- | --- | --- |
-> | QA-PW-116 | extended | stale storageState configs | 1 verdict — author 9 more spec exhibits |
+> | Rule      | Tier       | Corpus surface                  | Status                                                                                                                                                                                                                        |
+> | --------- | ---------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+> | QA-PW-116 | extended   | stale storageState configs      | 1 verdict — author 9 more spec exhibits                                                                                                                                                                                       |
 > | QA-PW-125 | quarantine | globalSetup + inline stage seed | **STRUCTURAL: the rule runs only on test files, but global-setup.ts is never scanned (walker gates on TEST_FILE_RE) — exhibits must be playwright.config.ts with inline globalSetup + execSync seed, or the rule is retired** |
-> | QA-PY-101 | extended | sync/async Playwright mix (Py) | 7 verdicts — 3 more |
-> | QA-PY-106 | extended | module-level page fixture (Py) | 4 verdicts — 6 more (single-file exhibits: module-level page + tests in one file) |
-> | QA-PY-108 | quarantine | hardcoded URL (Py) | 9 verdicts — 1 more |
+> | QA-PY-101 | extended   | sync/async Playwright mix (Py)  | 7 verdicts — 3 more                                                                                                                                                                                                           |
+> | QA-PY-106 | extended   | module-level page fixture (Py)  | 4 verdicts — 6 more (single-file exhibits: module-level page + tests in one file)                                                                                                                                             |
+> | QA-PY-108 | quarantine | hardcoded URL (Py)              | 9 verdicts — 1 more                                                                                                                                                                                                           |
 
 | Rule      | Tier       | Corpus surface                  | Status                                                                                                                                                                                                                        |
 | --------- | ---------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -1566,13 +1566,13 @@ e| Rule | Tier | Corpus surface | Status |
 | QA-PY-106 | extended   | module-level page fixture (Py)  | 4 verdicts — 6 more (single-file exhibits: module-level page + tests in one file)                                                                                                                                             |
 | QA-PY-108 | quarantine | hardcoded URL (Py)              | 9 verdicts — 1 more                                                                                                                                                                                                           |
 
-> | Rule | Tier | Corpus surface | Status |
-> | --- | --- | --- | --- |
-> | QA-PW-116 | extended | stale storageState configs | 1 verdict — author 9 more spec exhibits |
+> | Rule      | Tier       | Corpus surface                  | Status                                                                                                                                                                                                                        |
+> | --------- | ---------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+> | QA-PW-116 | extended   | stale storageState configs      | 1 verdict — author 9 more spec exhibits                                                                                                                                                                                       |
 > | QA-PW-125 | quarantine | globalSetup + inline stage seed | **STRUCTURAL: the rule runs only on test files, but global-setup.ts is never scanned (walker gates on TEST_FILE_RE) — exhibits must be playwright.config.ts with inline globalSetup + execSync seed, or the rule is retired** |
-> | QA-PY-101 | extended | sync/async Playwright mix (Py) | 7 verdicts — 3 more |
-> | QA-PY-106 | extended | module-level page fixture (Py) | 4 verdicts — 6 more (single-file exhibits: module-level page + tests in one file) |
-> | QA-PY-108 | quarantine | hardcoded URL (Py) | 9 verdicts — 1 more |
+> | QA-PY-101 | extended   | sync/async Playwright mix (Py)  | 7 verdicts — 3 more                                                                                                                                                                                                           |
+> | QA-PY-106 | extended   | module-level page fixture (Py)  | 4 verdicts — 6 more (single-file exhibits: module-level page + tests in one file)                                                                                                                                             |
+> | QA-PY-108 | quarantine | hardcoded URL (Py)              | 9 verdicts — 1 more                                                                                                                                                                                                           |
 
 | Rule      | Tier       | Corpus surface                  | Status                                                                                                                                                                                                                        |
 | --------- | ---------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -2214,13 +2214,13 @@ s| Rule | Tier | Corpus surface | Status |
 | QA-PY-106 | extended   | module-level page fixture (Py)  | 4 verdicts — 6 more (single-file exhibits: module-level page + tests in one file)                                                                                                                                             |
 | QA-PY-108 | quarantine | hardcoded URL (Py)              | 9 verdicts — 1 more                                                                                                                                                                                                           |
 
-> | Rule | Tier | Corpus surface | Status |
-> | --- | --- | --- | --- |
-> | QA-PW-116 | extended | stale storageState configs | 1 verdict — author 9 more spec exhibits |
+> | Rule      | Tier       | Corpus surface                  | Status                                                                                                                                                                                                                        |
+> | --------- | ---------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+> | QA-PW-116 | extended   | stale storageState configs      | 1 verdict — author 9 more spec exhibits                                                                                                                                                                                       |
 > | QA-PW-125 | quarantine | globalSetup + inline stage seed | **STRUCTURAL: the rule runs only on test files, but global-setup.ts is never scanned (walker gates on TEST_FILE_RE) — exhibits must be playwright.config.ts with inline globalSetup + execSync seed, or the rule is retired** |
-> | QA-PY-101 | extended | sync/async Playwright mix (Py) | 7 verdicts — 3 more |
-> | QA-PY-106 | extended | module-level page fixture (Py) | 4 verdicts — 6 more (single-file exhibits: module-level page + tests in one file) |
-> | QA-PY-108 | quarantine | hardcoded URL (Py) | 9 verdicts — 1 more |
+> | QA-PY-101 | extended   | sync/async Playwright mix (Py)  | 7 verdicts — 3 more                                                                                                                                                                                                           |
+> | QA-PY-106 | extended   | module-level page fixture (Py)  | 4 verdicts — 6 more (single-file exhibits: module-level page + tests in one file)                                                                                                                                             |
+> | QA-PY-108 | quarantine | hardcoded URL (Py)              | 9 verdicts — 1 more                                                                                                                                                                                                           |
 
 | Rule      | Tier       | Corpus surface                  | Status                                                                                                                                                                                                                        |
 | --------- | ---------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -2758,13 +2758,13 @@ y| Rule | Tier | Corpus surface | Status |
 | QA-PY-106 | extended   | module-level page fixture (Py)  | 4 verdicts — 6 more (single-file exhibits: module-level page + tests in one file)                                                                                                                                             |
 | QA-PY-108 | quarantine | hardcoded URL (Py)              | 9 verdicts — 1 more                                                                                                                                                                                                           |
 
-> | Rule | Tier | Corpus surface | Status |
-> | --- | --- | --- | --- |
-> | QA-PW-116 | extended | stale storageState configs | 1 verdict — author 9 more spec exhibits |
+> | Rule      | Tier       | Corpus surface                  | Status                                                                                                                                                                                                                        |
+> | --------- | ---------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+> | QA-PW-116 | extended   | stale storageState configs      | 1 verdict — author 9 more spec exhibits                                                                                                                                                                                       |
 > | QA-PW-125 | quarantine | globalSetup + inline stage seed | **STRUCTURAL: the rule runs only on test files, but global-setup.ts is never scanned (walker gates on TEST_FILE_RE) — exhibits must be playwright.config.ts with inline globalSetup + execSync seed, or the rule is retired** |
-> | QA-PY-101 | extended | sync/async Playwright mix (Py) | 7 verdicts — 3 more |
-> | QA-PY-106 | extended | module-level page fixture (Py) | 4 verdicts — 6 more (single-file exhibits: module-level page + tests in one file) |
-> | QA-PY-108 | quarantine | hardcoded URL (Py) | 9 verdicts — 1 more |
+> | QA-PY-101 | extended   | sync/async Playwright mix (Py)  | 7 verdicts — 3 more                                                                                                                                                                                                           |
+> | QA-PY-106 | extended   | module-level page fixture (Py)  | 4 verdicts — 6 more (single-file exhibits: module-level page + tests in one file)                                                                                                                                             |
+> | QA-PY-108 | quarantine | hardcoded URL (Py)              | 9 verdicts — 1 more                                                                                                                                                                                                           |
 
 | Rule      | Tier       | Corpus surface                  | Status                                                                                                                                                                                                                        |
 | --------- | ---------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -8702,13 +8702,13 @@ e| Rule | Tier | Corpus surface | Status |
 | QA-PY-106 | extended | module-level page fixture (Py) | 4 verdicts — 6 more (single-file exhibits: module-level page + tests in one file) |
 | QA-PY-108 | quarantine | hardcoded URL (Py) | 9 verdicts — 1 more |
 
-> | Rule | Tier | Corpus surface | Status |
-> | --- | --- | --- | --- |
-> | QA-PW-116 | extended | stale storageState configs | 1 verdict — author 9 more spec exhibits |
+> | Rule      | Tier       | Corpus surface                  | Status                                                                                                                                                                                                                        |
+> | --------- | ---------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+> | QA-PW-116 | extended   | stale storageState configs      | 1 verdict — author 9 more spec exhibits                                                                                                                                                                                       |
 > | QA-PW-125 | quarantine | globalSetup + inline stage seed | **STRUCTURAL: the rule runs only on test files, but global-setup.ts is never scanned (walker gates on TEST_FILE_RE) — exhibits must be playwright.config.ts with inline globalSetup + execSync seed, or the rule is retired** |
-> | QA-PY-101 | extended | sync/async Playwright mix (Py) | 7 verdicts — 3 more |
-> | QA-PY-106 | extended | module-level page fixture (Py) | 4 verdicts — 6 more (single-file exhibits: module-level page + tests in one file) |
-> | QA-PY-108 | quarantine | hardcoded URL (Py) | 9 verdicts — 1 more |
+> | QA-PY-101 | extended   | sync/async Playwright mix (Py)  | 7 verdicts — 3 more                                                                                                                                                                                                           |
+> | QA-PY-106 | extended   | module-level page fixture (Py)  | 4 verdicts — 6 more (single-file exhibits: module-level page + tests in one file)                                                                                                                                             |
+> | QA-PY-108 | quarantine | hardcoded URL (Py)              | 9 verdicts — 1 more                                                                                                                                                                                                           |
 
 …| Rule | Tier | Corpus surface | Status |
 | --- | --- | --- | --- |
@@ -10302,13 +10302,13 @@ D| Rule | Tier | Corpus surface | Status |
 | QA-PY-106 | extended | module-level page fixture (Py) | 4 verdicts — 6 more (single-file exhibits: module-level page + tests in one file) |
 | QA-PY-108 | quarantine | hardcoded URL (Py) | 9 verdicts — 1 more |
 
-> | Rule | Tier | Corpus surface | Status |
-> | --- | --- | --- | --- |
-> | QA-PW-116 | extended | stale storageState configs | 1 verdict — author 9 more spec exhibits |
+> | Rule      | Tier       | Corpus surface                  | Status                                                                                                                                                                                                                        |
+> | --------- | ---------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+> | QA-PW-116 | extended   | stale storageState configs      | 1 verdict — author 9 more spec exhibits                                                                                                                                                                                       |
 > | QA-PW-125 | quarantine | globalSetup + inline stage seed | **STRUCTURAL: the rule runs only on test files, but global-setup.ts is never scanned (walker gates on TEST_FILE_RE) — exhibits must be playwright.config.ts with inline globalSetup + execSync seed, or the rule is retired** |
-> | QA-PY-101 | extended | sync/async Playwright mix (Py) | 7 verdicts — 3 more |
-> | QA-PY-106 | extended | module-level page fixture (Py) | 4 verdicts — 6 more (single-file exhibits: module-level page + tests in one file) |
-> | QA-PY-108 | quarantine | hardcoded URL (Py) | 9 verdicts — 1 more |
+> | QA-PY-101 | extended   | sync/async Playwright mix (Py)  | 7 verdicts — 3 more                                                                                                                                                                                                           |
+> | QA-PY-106 | extended   | module-level page fixture (Py)  | 4 verdicts — 6 more (single-file exhibits: module-level page + tests in one file)                                                                                                                                             |
+> | QA-PY-108 | quarantine | hardcoded URL (Py)              | 9 verdicts — 1 more                                                                                                                                                                                                           |
 
 .| Rule | Tier | Corpus surface | Status |
 | --- | --- | --- | --- |
@@ -10742,13 +10742,13 @@ o| Rule | Tier | Corpus surface | Status |
 | QA-PY-106 | extended | module-level page fixture (Py) | 4 verdicts — 6 more (single-file exhibits: module-level page + tests in one file) |
 | QA-PY-108 | quarantine | hardcoded URL (Py) | 9 verdicts — 1 more |
 
-> | Rule | Tier | Corpus surface | Status |
-> | --- | --- | --- | --- |
-> | QA-PW-116 | extended | stale storageState configs | 1 verdict — author 9 more spec exhibits |
+> | Rule      | Tier       | Corpus surface                  | Status                                                                                                                                                                                                                        |
+> | --------- | ---------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+> | QA-PW-116 | extended   | stale storageState configs      | 1 verdict — author 9 more spec exhibits                                                                                                                                                                                       |
 > | QA-PW-125 | quarantine | globalSetup + inline stage seed | **STRUCTURAL: the rule runs only on test files, but global-setup.ts is never scanned (walker gates on TEST_FILE_RE) — exhibits must be playwright.config.ts with inline globalSetup + execSync seed, or the rule is retired** |
-> | QA-PY-101 | extended | sync/async Playwright mix (Py) | 7 verdicts — 3 more |
-> | QA-PY-106 | extended | module-level page fixture (Py) | 4 verdicts — 6 more (single-file exhibits: module-level page + tests in one file) |
-> | QA-PY-108 | quarantine | hardcoded URL (Py) | 9 verdicts — 1 more |
+> | QA-PY-101 | extended   | sync/async Playwright mix (Py)  | 7 verdicts — 3 more                                                                                                                                                                                                           |
+> | QA-PY-106 | extended   | module-level page fixture (Py)  | 4 verdicts — 6 more (single-file exhibits: module-level page + tests in one file)                                                                                                                                             |
+> | QA-PY-108 | quarantine | hardcoded URL (Py)              | 9 verdicts — 1 more                                                                                                                                                                                                           |
 
 .| Rule | Tier | Corpus surface | Status |
 | --- | --- | --- | --- |

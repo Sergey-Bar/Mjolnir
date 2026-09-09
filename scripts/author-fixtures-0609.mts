@@ -77,7 +77,11 @@ for (const [i, scenario] of [
   "pdf_render",
   "search_index",
 ] as const) {
-  const dir = join(ROOT, "QA-PY-102", `${scenario.replace(/_/g, "-")}-${i + 1}`);
+  const dir = join(
+    ROOT,
+    "QA-PY-102",
+    `${scenario.replace(/_/g, "-")}-${i + 1}`,
+  );
   mkdirSync(dir, { recursive: true });
   writeFileSync(
     join(dir, `test_${scenario}.py`),

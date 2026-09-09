@@ -51,11 +51,7 @@ def shared_page() -> Page:
 
 // ── QA-SE-001 (+6): Selenium hard sleeps — 2 more scenario sets across
 // the three languages the rule covers.
-for (const [i, name] of [
-  "leads",
-  "tickets",
-  "vendors",
-] as const) {
+for (const [i, name] of ["leads", "tickets", "vendors"] as const) {
   const dirJ = join(ROOT, "QA-SE-001", `sleep-${name}-java-${i + 5}`);
   mkdirSync(dirJ, { recursive: true });
   writeFileSync(

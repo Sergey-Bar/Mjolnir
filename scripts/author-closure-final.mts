@@ -375,11 +375,7 @@ for (const [i, name] of [
 }
 
 // ── QA-SE-001 (+9): Selenium hard sleep (3 language variants each).
-for (const [i, name] of [
-  "invoices",
-  "shipments",
-  "customers",
-] as const) {
+for (const [i, name] of ["invoices", "shipments", "customers"] as const) {
   const dir = join(ROOT, "QA-SE-001", `sleep-${name}-java-${i + 2}`);
   mkdirSync(dir, { recursive: true });
   w(
@@ -442,7 +438,11 @@ for (const [i, name] of [
   "inventory-count",
   "user-list",
 ] as const) {
-  const dir = join(ROOT, "QA-SE-002", `${name.replace("-", "-")}-sleep-${i + 3}`);
+  const dir = join(
+    ROOT,
+    "QA-SE-002",
+    `${name.replace("-", "-")}-sleep-${i + 3}`,
+  );
   mkdirSync(dir, { recursive: true });
   w(
     join(dir, `${name}.spec.js`),
