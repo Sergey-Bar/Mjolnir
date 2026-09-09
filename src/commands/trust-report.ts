@@ -13,8 +13,8 @@
  * wall-clock-free input is the ScanResult + the target label.
  */
 
-import { writeFileSync, statSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { writeFileSync, statSync, readFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 
 import type { ScanResult, TrustSummary } from "../types.js";
 import { isAdvisoryFinding } from "../types.js";
@@ -24,6 +24,8 @@ import type { Output } from "../cli-io.js";
 
 export const TRUST_REPORT_MD = "mjolnir-trust-report.md";
 export const TRUST_REPORT_JSON = "mjolnir-trust-report.json";
+/** Upsert marker line for PR-comment posting (GitHub Action, WI-9). */
+export const TRUST_REPORT_MARKER = "<!-- mjolnir-trust-report:v1 -->";
 
 function pct(v: number): string {
   return `${Math.round(v * 100)}%`;
@@ -50,6 +52,10 @@ export function renderTrustReportMarkdown(
   const s = fallbackSummary(result);
   const lines: string[] = [];
 
+  // Upsert marker: the GitHub Action posts/updates the PR comment by
+  // searching for this line — one comment per PR, never a flood.
+  lines.push(`<!-- mjolnir-trust-report:v1 -->`);
+  lines.push("");
   lines.push(`# Mjölnir Trust Report — ${label}`);
   lines.push("");
   lines.push(
@@ -207,6 +213,52 @@ export async function runTrustReportCommand(
   argv: string[],
   io: { out: Output; err: Output },
 ): Promise<number> {
+  // WI-9 (plan §13): `trust-report --from <mjolnir.json> [--stdout]` —
+  // render the artifact from a SAVED canonical scan result instead of
+  // re-scanning. The GitHub Action uses this: it already produced the
+  // --json report, so the comment/annotation step must derive from that
+  // exact result (one semantic truth — no second scan, no drift).
+  const fromIdx = argv.indexOf("--from");
+  if (fromIdx !== -1) {
+    const fromPath = argv[fromIdx + 1];
+    if (!fromPath || fromPath.startsWith("-")) {
+      io.err(
+        "error: --from requires a saved report path (mjolnir <target> --json)",
+      );
+      return 10;
+    }
+    let scan: ScanResult;
+    try {
+      const parsed = JSON.parse(readFileSync(resolve(fromPath), "utf8")) as {
+        schemaVersion?: number;
+        contract?: unknown;
+      };
+      // The Action saves `{...result, contract}` — the contract rides on
+      // the same object. Accept either shape; require schemaVersion 1.
+      if (parsed.schemaVersion !== 1) {
+        io.err(
+          `error: ${fromPath} is not a canonical mjolnir scan result (schemaVersion 1)`,
+        );
+        return 10;
+      }
+      const { contract: _contract, ...result } = parsed;
+      scan = result as unknown as ScanResult;
+    } catch (err) {
+      io.err(
+        `error: cannot read ${fromPath}: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      return 10;
+    }
+    const md = renderTrustReportMarkdown(scan, fromPath);
+    if (argv.includes("--stdout")) {
+      io.out(md);
+      return 0;
+    }
+    const outPath = resolve(dirname(fromPath), TRUST_REPORT_MD);
+    writeFileSync(outPath, md);
+    io.out(`trust report written: ${outPath}`);
+    return 0;
+  }
   const targetArg = argv.find((a) => !a.startsWith("-")) ?? ".";
   const target = resolve(targetArg);
   // Target validation mirrors runScanCommand's gate: the artifact must

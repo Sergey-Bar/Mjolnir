@@ -253,6 +253,12 @@ jobs:
       # re-runs it release-blocking with --rules-touched semantics).
       - name: CHANGELOG integrity gate (WI-12A)
         run: npx tsx scripts/check-changelog.ts --expect-version "$(node -p "require('./package.json').version")"
+      # WI-10 (plan §14): reporter version-sync gate — ADVISORY while the
+      # reporter line is unpublished; becomes blocking after three green
+      # release cycles. The hard-drift case (reporter AHEAD of the root
+      # package; ingestion-contract break) exits 1 even in advisory mode.
+      - name: Reporter version-sync gate (advisory)
+        run: npx tsx scripts/check-reporter-version.ts
       - name: Doctor self-audit gate (exit 0 = all checks pass)
         run: node dist/cli.mjs doctor . --json > doctor-report.json
       - name: G5 determinism self-verify (second run must be byte-identical)

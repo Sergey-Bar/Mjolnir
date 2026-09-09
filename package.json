@@ -52,6 +52,8 @@
     "docs:video:render": "tsx scripts/video/render.ts",
     "docs:video": "npm run docs:video:capture && npm run docs:video:render",
     "docs:translations": "node scripts/check-readme-translations.mjs",
+    "changelog:check": "tsx scripts/check-changelog.ts --expect-version $(node -p \"require('./package.json').version\")",
+    "reporter:version-check": "tsx scripts/check-reporter-version.ts",
     "self-scan": "node dist/cli.mjs .",
     "prepare": "husky",
     "prepublishOnly": "npm run build",
