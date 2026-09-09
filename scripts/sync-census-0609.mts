@@ -25,7 +25,7 @@ let blunt = readFileSync(bluntPath, "utf8");
 const registered = new Set(RULES.map((r) => r.id));
 let bluntRemoved = 0;
 for (const key of [...registered.keys()]) void key;
-const keyRe = /  "(QA-[A-Z0-9-]+)":(?:[^\n]*\n(?:    "[^\n]*"\n)?\s*,)?|  "(QA-[A-Z0-9-]+)": "[^"]*",\n/g;
+const keyRe = / {2}"(QA-[A-Z0-9-]+)":(?:[^\n]*\n(?:    "[^\n]*"\n)?\s*,)?| {2}"(QA-[A-Z0-9-]+)": "[^"]*",\n/g;
 const found = new Set<string>();
 for (const m of blunt.matchAll(/"(QA-[A-Z0-9-]+)":/g)) found.add(m[1]);
 for (const id of found) {
