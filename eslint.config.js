@@ -210,4 +210,21 @@ export default tseslint.config(
       "@typescript-eslint/no-unused-vars": "off",
     },
   },
+  {
+    // scripts/*.mts — one-shot measurement/adjudication tooling (WI-14
+    // verdict-harvest waves, 2026-09-09). Node-runtime scripts outside
+    // every tsconfig project: the typed parser cannot resolve them, so
+    // they run under the plain JS ruleset instead (typecheck owns the
+    // type guarantees for the sources they consume).
+    files: ["scripts/**/*.mts"],
+    languageOptions: {
+      globals: {
+        console: "readonly",
+        process: "readonly",
+      },
+    },
+    rules: {
+      "@typescript-eslint/no-unused-vars": "off",
+    },
+  },
 );
