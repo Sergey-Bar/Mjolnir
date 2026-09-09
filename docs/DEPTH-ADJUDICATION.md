@@ -13,8 +13,8 @@ source of truth, rendered here and in the capability matrix.
 
 ## Verdict summary
 
-- Registry: 78 rules.
-- LEXICAL rules adjudicated: 69 — every one carries a strategyJustification record (doctor-enforced).
+- Registry: 77 rules.
+- LEXICAL rules adjudicated: 68 — every one carries a strategyJustification record (doctor-enforced).
 - Rules on a deeper strategy: 6 (AST, AST, QA_MODEL, AST, QA_MODEL, AST).
 
 ## Migration record (DEFERRED — owner directive 2026-09-09)
@@ -50,23 +50,22 @@ evidence supported it:
 ### `exact-key-match` — exact, unambiguous runner/API token — lexical precision equals structural (11 rules)
 
 - **QA-CS-101** (0% FP at n=20): [Ignore]/[Fact(Skip=…)] are exact xUnit/NUnit/MSTest attribute tokens; the detector matches the attribute identifiers — closed token sets where lexical precision equals structural
-- **QA-CYP-003** (unmeasured): chromeWebSecurity:false is an exact config key/value pair inside cypress.config.*; the detector matches the key and value literally — the config surface's statements are the finding
+- **QA-CYP-003** (0% FP at n=10): chromeWebSecurity:false is an exact config key/value pair inside cypress.config.*; the detector matches the key and value literally — the config surface's statements are the finding
 - **QA-JV-101** (0% FP at n=23): @Disabled/@Ignore are exact JUnit/TestNG annotation tokens; the detector matches the annotation identifier — annotation shapes are closed token sets where lexical and structural match coincide
 - **QA-PW-003** (10% FP at n=10): page.pause() and test.only() are exact Playwright runner tokens; the detector matches the member-call identifiers on the code-only text — closed token set, unique to the defect
-- **QA-PW-102** (unmeasured): waitForLoadState('load') is an exact Playwright token plus a closed argument enum; the detector matches the call plus its argument — the AST re-derives the same call shape
+- **QA-PW-102** (10% FP at n=10): waitForLoadState('load') is an exact Playwright token plus a closed argument enum; the detector matches the call plus its argument — the AST re-derives the same call shape
 - **QA-PW-104** (0% FP at n=10): the trial-click shape is an exact Playwright API token pair; the detector matches the call identifier on the code-only text — the token is closed and unique to the defect
 - **QA-PW-113** (0% FP at n=11): frameLocator chaining depth is an exact Playwright token sequence; the detector matches the frameLocator call chains — the token sequence is closed and unique to the defect
-- **QA-PW-116** (unmeasured): storageState is an exact Playwright config/use option token; the detector matches the option key and its value shapes — closed config surface
+- **QA-PW-116** (0% FP at n=10): storageState is an exact Playwright config/use option token; the detector matches the option key and its value shapes — closed config surface
 - **QA-PW-140** (0% FP at n=10): the detector matches a closed, exact runner API token on the code-only text; the token identifies the defect uniquely
 - **QA-PY-005** (13% FP at n=23): time.sleep(n) is an exact stdlib token with a numeric argument; the detector matches the call identifier on the code-only text — closed token, unique to the defect
 - **QA-PY-103** (8% FP at n=25): page.waitForTimeout is an exact Playwright token in Python tests; the detector matches the call identifier — closed token, same predicate the AST would encode
 
-### `family-fallback-lockstep` — the §13.2 mandatory regex fallback kept in lockstep with the family's structural path (4 rules)
+### `family-fallback-lockstep` — the §13.2 mandatory regex fallback kept in lockstep with the family's structural path (3 rules)
 
 - **QA-JV-102** (26% FP at n=23): the hard-sleep family's Java variant (QA-JV-102): the family's structural path carries the depth where a tree is available; this lexical path is the mandatory deterministic fallback kept in lockstep (§13.2)
 - **QA-PW-101** (0% FP at n=20): the hard-sleep family's §13.2 structural path (AST hook) carries the depth where a tree is available; this lexical path is the mandatory deterministic fallback kept in lockstep — the family's depth is real, the regex is its degraded mode
-- **QA-PY-101** (unmeasured): the hard-sleep family's Python sync/async variant: the family's structural path carries the depth; this variant's lexical path is the lockstep fallback (async-mix shapes across the sync/async boundary)
-- **QA-PY-102** (unmeasured): the hard-sleep family's Python Playwright variant: the family's structural path carries the depth; this variant's lexical path is the lockstep fallback (tree-sitter python availability varies by runner)
+- **QA-PY-101** (0% FP at n=10): the hard-sleep family's Python sync/async variant: the family's structural path carries the depth; this variant's lexical path is the lockstep fallback (async-mix shapes across the sync/async boundary)
 
 ### `lexical-artifact` — the defect IS the lexical artifact (text = finding) (3 rules)
 
@@ -79,20 +78,20 @@ evidence supported it:
 - **QA-CI-005** (8% FP at n=13): report generation is a runner side effect of the workflow step sequence, not a syntax tree property; the detector reads the workflow step graph, whose statements are already literal text
 - **QA-CI-007** (0% FP at n=11): retry masking is defined by the runner's retry semantics, which no language syntax tree represents; the detector matches the runner's own retry keys in workflow YAML where statements are shell strings
 - **QA-CI-008** (10% FP at n=10): always()-success is a workflow-step outcome contract, not a code construct; the detector matches the step's run/if keys, which are string fields of the YAML config surface
-- **QA-CS-104** (unmeasured): the shared-page family's variants (QA-JV-104/QA-CS-104/QA-PY-106): page/fixture reuse across tests is runner fixture-lifecycle semantics; the detector matches the consumption shapes against test boundaries
-- **QA-CS-107** (unmeasured): the network-idle family's variants (QA-JV-107/QA-CS-107/QA-PY-107): networkidle waits are runner timing semantics; the detector matches the runner's wait tokens — exact keys
-- **QA-CS-109** (unmeasured): the retry-masking family's variants (QA-JV-109/QA-CS-109): retry masking is the runner's retry contract; the detector matches the runner's retry tokens on the code-only text
+- **QA-CS-104** (0% FP at n=10): the shared-page family's variants (QA-JV-104/QA-CS-104/QA-PY-106): page/fixture reuse across tests is runner fixture-lifecycle semantics; the detector matches the consumption shapes against test boundaries
+- **QA-CS-107** (8% FP at n=12): the network-idle family's variants (QA-JV-107/QA-CS-107/QA-PY-107): networkidle waits are runner timing semantics; the detector matches the runner's wait tokens — exact keys
+- **QA-CS-109** (0% FP at n=10): the retry-masking family's variants (QA-JV-109/QA-CS-109): retry masking is the runner's retry contract; the detector matches the runner's retry tokens on the code-only text
 - **QA-CYP-001** (20% FP at n=15): cy.wait(numeric) is a Cypress runner wait contract; the detector matches the member-call token with a numeric-literal argument on the code-only text — alias waits (cy.wait('@…')) are structurally distinct and excluded by the argument shape
-- **QA-CYP-002** (unmeasured): Cypress .only is the runner's focus token; the detector matches the it/describe/context .only member-call shape on the code-only text — exact-key precision
+- **QA-CYP-002** (0% FP at n=10): Cypress .only is the runner's focus token; the detector matches the it/describe/context .only member-call shape on the code-only text — exact-key precision
 - **QA-JV-104** (20% FP at n=10): the shared-page family's variants (QA-JV-104/QA-CS-104/QA-PY-106): page/fixture reuse across tests is runner fixture-lifecycle semantics; the detector matches the consumption shapes against test boundaries
-- **QA-JV-107** (unmeasured): the network-idle family's variants (QA-JV-107/QA-CS-107/QA-PY-107): networkidle waits are runner timing semantics; the detector matches the runner's wait tokens — exact keys
+- **QA-JV-107** (0% FP at n=10): the network-idle family's variants (QA-JV-107/QA-CS-107/QA-PY-107): networkidle waits are runner timing semantics; the detector matches the runner's wait tokens — exact keys
 - **QA-JV-109** (0% FP at n=18): the retry-masking family's variants (QA-JV-109/QA-CS-109): retry masking is the runner's retry contract; the detector matches the runner's retry tokens on the code-only text
 - **QA-PW-115** (56% FP at n=16): page reuse across tests is runner fixture-lifecycle semantics; the detector matches the page-consumption shapes against the test boundaries — the lifecycle is runner behavior
 - **QA-PW-117** (0% FP at n=24): fullyParallel/serial are runner scheduling keys on the config and describe blocks; the detector matches the runner's exact API tokens — the semantics are scheduling, not syntax
 - **QA-PW-121** (0% FP at n=12): retries in playwright.config.* is a runner top-level option, not a syntax node; the detector reads the config surface whose statements are object-literal keys — exact-key precision
 - **QA-PW-122** (6% FP at n=80): trace/reporter capture is runner lifecycle state set in the config file; the detector reads the config surface's keys and enum values, which are exact matches — a syntax tree adds no semantic the config text lacks
-- **QA-PW-124** (unmeasured): project split is a runner config concept (projects array arrangement); the detector reads playwright.config.* keys (adapter-gated), whose object-literal shape is exact-match text
-- **QA-PW-125** (unmeasured): globalSetup/globalTeardown are runner lifecycle hooks declared in the config file; the detector matches those exact keys — the defect is the runner's execution order, not a code shape
+- **QA-PW-124** (7% FP at n=15): project split is a runner config concept (projects array arrangement); the detector reads playwright.config.* keys (adapter-gated), whose object-literal shape is exact-match text
+- **QA-PW-125** (0% FP at n=10): globalSetup/globalTeardown are runner lifecycle hooks declared in the config file; the detector matches those exact keys — the defect is the runner's execution order, not a code shape
 - **QA-PW-141** (9% FP at n=33): retry triage is the runner's retry loop interacting with the reporter config; the detector reads both config keys and the triage call shape — the semantics live in runner behavior
 - **QA-PY-001** (0% FP at n=12): pytest.skip/xfail/parametrize marks are runner decorators and module-level calls; the detector matches those exact tokens on the code-only text — the semantics are runner skip state
 - **QA-PY-002** (4% FP at n=23): pytest.mark.skip/xfail are runner marker decorators — exact runner tokens; a syntax tree re-derives the same call shape with no added classification power
@@ -102,11 +101,11 @@ evidence supported it:
 - **QA-PY-011** (10% FP at n=10): pytest fixture mutation is fixture-lifecycle semantics (autouse/scope keys plus mutation calls); the detector matches the runner's fixture decorator tokens plus the mutation shapes
 - **QA-PY-012** (40% FP at n=30): tautological assertions in Python (assert x == x) are assertion-semantics on the code-only text; the detector matches the tautology shapes — the AST re-derives the same comparison
 - **QA-PY-105** (0% FP at n=12): Playwright test bodies without assertions are runner-outcome semantics; the detector matches the test-def plus body shapes on the code-only text
-- **QA-PY-106** (unmeasured): the shared-page family's variants (QA-JV-104/QA-CS-104/QA-PY-106): page/fixture reuse across tests is runner fixture-lifecycle semantics; the detector matches the consumption shapes against test boundaries
-- **QA-PY-107** (unmeasured): the network-idle family's variants (QA-JV-107/QA-CS-107/QA-PY-107): networkidle waits are runner timing semantics; the detector matches the runner's wait tokens — exact keys
-- **QA-SE-001** (unmeasured): the Selenium family's variants (QA-SE-001/002/003): the defect is the SEQUENCE sleep-then-interact — runner timing semantics, not a single node; the detector matches the sleep token followed by a lookup within the recorded window
-- **QA-SE-002** (unmeasured): the Selenium family's variants (QA-SE-001/002/003): the defect is the SEQUENCE sleep-then-interact — runner timing semantics, not a single node; the detector matches the sleep token followed by a lookup within the recorded window
-- **QA-SE-003** (unmeasured): the Selenium family's variants (QA-SE-001/002/003): the defect is the SEQUENCE sleep-then-interact — runner timing semantics, not a single node; the detector matches the sleep token followed by a lookup within the recorded window
+- **QA-PY-106** (0% FP at n=14): the shared-page family's variants (QA-JV-104/QA-CS-104/QA-PY-106): page/fixture reuse across tests is runner fixture-lifecycle semantics; the detector matches the consumption shapes against test boundaries
+- **QA-PY-107** (0% FP at n=10): the network-idle family's variants (QA-JV-107/QA-CS-107/QA-PY-107): networkidle waits are runner timing semantics; the detector matches the runner's wait tokens — exact keys
+- **QA-SE-001** (0% FP at n=10): the Selenium family's variants (QA-SE-001/002/003): the defect is the SEQUENCE sleep-then-interact — runner timing semantics, not a single node; the detector matches the sleep token followed by a lookup within the recorded window
+- **QA-SE-002** (8% FP at n=13): the Selenium family's variants (QA-SE-001/002/003): the defect is the SEQUENCE sleep-then-interact — runner timing semantics, not a single node; the detector matches the sleep token followed by a lookup within the recorded window
+- **QA-SE-003** (0% FP at n=11): the Selenium family's variants (QA-SE-001/002/003): the defect is the SEQUENCE sleep-then-interact — runner timing semantics, not a single node; the detector matches the sleep token followed by a lookup within the recorded window
 - **QA-TEST-001** (60% FP at n=20): .only/focus is runner skip-scheduling state; the detector matches the runner's own member-call tokens (.only/.fit/fdescribe) on the code-only text — lexical precision equals the AST call-shape here, and the §13.2 fallback keeps parity
 - **QA-TEST-002** (62% FP at n=21): skip/xfail/ignore are runner skip-state annotations whose forms are runner API tokens (it.skip, xit, t.skip, @unittest.skip); the detector matches those exact tokens on the code-only text
 - **QA-TEST-003** (22% FP at n=78): assertion-less test bodies are runner-outcome semantics (the runner reports a pass that proves nothing); the detector matches the test-def plus body shapes on the code-only text
@@ -122,13 +121,13 @@ evidence supported it:
 
 ### `string-content-defect` — the defect lives in string content (selector/URL) — outside AST semantics by design (7 rules)
 
-- **QA-CS-106** (unmeasured): the brittle-selector family's variants (QA-JV-106/QA-CS-106/QA-PY-104): selector defects are string-argument shapes (xpath=/nth-child/absolute-path); the detector classifies the string shapes the code-text mask preserves for this class
-- **QA-JV-106** (unmeasured): the brittle-selector family's variants (QA-JV-106/QA-CS-106/QA-PY-104): selector defects are string-argument shapes (xpath=/nth-child/absolute-path); the detector classifies the string shapes the code-text mask preserves for this class
+- **QA-CS-106** (33% FP at n=12): the brittle-selector family's variants (QA-JV-106/QA-CS-106/QA-PY-104): selector defects are string-argument shapes (xpath=/nth-child/absolute-path); the detector classifies the string shapes the code-text mask preserves for this class
+- **QA-JV-106** (33% FP at n=12): the brittle-selector family's variants (QA-JV-106/QA-CS-106/QA-PY-104): selector defects are string-argument shapes (xpath=/nth-child/absolute-path); the detector classifies the string shapes the code-text mask preserves for this class
 - **QA-PW-004** (43% FP at n=14): brittle selectors ARE string arguments (css=/xpath=/nth-child shapes) — the code-text masking that protects other rules deliberately excludes string content here; the detector reads the string shapes directly (inside-string oracle)
 - **QA-PW-123** (46% FP at n=11): hardcoded environment URLs are string literals (http(s):// shapes); the detector reads the string-content shapes the code-text mask preserves for exactly this defect class
 - **QA-PW-146** (12% FP at n=17): CSS/XPath string selectors are string-argument shapes (css=/xpath= engines, bare id/class/attr CSS, nth-child); the detector classifies the string shapes directly
-- **QA-PY-104** (unmeasured): the brittle-selector family's variants (QA-JV-106/QA-CS-106/QA-PY-104): selector defects are string-argument shapes (xpath=/nth-child/absolute-path); the detector classifies the string shapes the code-text mask preserves for this class
-- **QA-PY-108** (unmeasured): the hardcoded-url family's variants (QA-JV-108/QA-CS-108/QA-PY-108): hardcoded URLs are string literals; the detector matches the http(s):// string shapes — the URL lives in the string, not the syntax tree
+- **QA-PY-104** (0% FP at n=10): the brittle-selector family's variants (QA-JV-106/QA-CS-106/QA-PY-104): selector defects are string-argument shapes (xpath=/nth-child/absolute-path); the detector classifies the string shapes the code-text mask preserves for this class
+- **QA-PY-108** (0% FP at n=16): the hardcoded-url family's variants (QA-JV-108/QA-CS-108/QA-PY-108): hardcoded URLs are string literals; the detector matches the http(s):// string shapes — the URL lives in the string, not the syntax tree
 
 ## Mutation-coverage status (P8.3 — zero UNCLASSIFIED cells)
 
@@ -204,7 +203,6 @@ evidence supported it:
 | QA-PY-011    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PY-012    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PY-101    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
-| QA-PY-102    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PY-103    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PY-104    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PY-105    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
