@@ -9,7 +9,8 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
-## [Unreleased]
+## [0.5.40] — 2026-09-09
+
 
 ### Added
 
