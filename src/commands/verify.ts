@@ -87,15 +87,21 @@ export function buildVerifyDigest(
 
   // Group unchanged debt by ruleId + location (the agent's working key).
   // Baseline entries are narrowed (no line) — the location is recovered
-  // from the HEAD finding that still carries the same §15 fingerprint
-  // (unchanged means present in both, so the pairing is exact).
+  // from the HEAD finding carrying the same §15 FINGERPRINT (ruleId +
+  // file + message — unchanged means present in both, so the pairing is
+  // exact). Keyed by fingerprint, not message: two different locations
+  // can produce identical message text, and a message key would collide.
   if (diff.hasBaseline && baseline) {
     const byRule = new Map<string, VerifyUnchangedGroup>();
-    const headByMessage = new Map<string, Finding>();
-    for (const f of result.findings) headByMessage.set(f.message, f);
+    const headByFingerprint = new Map<string, Finding>();
+    for (const f of result.findings) {
+      headByFingerprint.set(`${f.ruleId}\u0000${f.file}\u0000${f.message}`, f);
+    }
     for (const b of baseline.findings) {
-      const head = headByMessage.get(b.message);
-      if (!head || head.ruleId !== b.ruleId || head.file !== b.file) {
+      const head = headByFingerprint.get(
+        `${b.ruleId}\u0000${b.file}\u0000${b.message}`,
+      );
+      if (!head) {
         continue; // resolved or key-rotated — not unchanged
       }
       let group = byRule.get(b.ruleId);

@@ -139,6 +139,19 @@ describe("buildVerifyDigest (P7)", () => {
     expect(out).toContain("No committed baseline");
     expect(out).toContain("mjolnir baseline");
   });
+
+  it("a scoreless scan (empty target) degrades the delta — never fabricates", () => {
+    const d = buildVerifyDigest(scan({ score: null }), BASE);
+    expect(d.scoreAfter).toBeNull();
+    expect(d.scoreDelta).toBeNull();
+    expect(renderVerifyDigest(d)).not.toContain("score:");
+  });
+
+  it("a zero delta renders 'unchanged' — the direction names all three states", () => {
+    const d = buildVerifyDigest(scan({ score: 90 }), BASE);
+    expect(d.scoreDelta).toBe(0);
+    expect(renderVerifyDigest(d)).toContain("90 → 90 (unchanged, Δ+0)");
+  });
 });
 
 describe("`mjolnir verify` verb (frozen exit contract)", () => {
@@ -326,6 +339,47 @@ describe("digest unit gaps — new-findings render + unchanged overflow", () => 
     expect(out).toContain("NEW (introduced by the change under verification):");
     expect(out).toContain("QA-PW-101 src/a.spec.ts:1 (error)");
     expect(out).toContain("worse, Δ-19");
-    expect(out).toContain("… and 2 more"); // 7 locations, 5 shown
+    // The overflow elision lives in the UNCHANGED section; to reach it,
+    // put 7 unchanged baseline findings in one rule and let the digest
+    // render 5 + "… and 2 more".
+    const baselineDebt: BaselineFile = {
+      schemaVersion: 1,
+      capturedAt: "2026-09-09T00:00:00.000Z",
+      commit: "abc1234",
+      score: 99,
+      findings: Array.from({ length: 7 }, (_, i) => ({
+        ruleId: "QA-PW-004",
+        file: "src/debt" + i + ".spec.ts",
+        message: "waitForTimeout() is a hard sleep",
+        severity: "warning" as const,
+      })),
+    };
+    // The head still carries ALL 7 (same fingerprints) — unchanged debt.
+    const debtFindings = Array.from(
+      { length: 7 },
+      (_, i) =>
+        ({
+          ruleId: "QA-PW-004",
+          category: "QA-PW",
+          severity: "warning",
+          confidence: "high",
+          findingType: "deterministic-defect",
+          qaImpact: "HYGIENE",
+          file: "src/debt" + i + ".spec.ts",
+          line: 3,
+          column: 1,
+          message: "waitForTimeout() is a hard sleep",
+          why: "w",
+          fix: "f",
+          evidenceLevel: "E2",
+        }),
+    );
+    const d2 = buildVerifyDigest(
+      scan({ findings: debtFindings, score: 95 }),
+      baselineDebt,
+    );
+    const out2 = renderVerifyDigest(d2);
+    expect(out2).toContain("QA-PW-004 × 7");
+    expect(out2).toContain("… and 2 more"); // 7 locations, 5 shown
   });
 });

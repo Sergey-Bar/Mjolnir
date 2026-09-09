@@ -1527,7 +1527,7 @@ export async function main(
   if (argv[0] === "impact") return runImpactCommand(argv.slice(1));
   if (argv[0] === "baseline") return runBaselineCommand(argv.slice(1));
   if (argv[0] === "diff") return runDiffCommand(argv.slice(1));
-  if (argv[0] === "verify") return runVerifyCommand(argv.slice(1));
+  if (argv[0] === "verify") return runVerifyCommand(argv.slice(1), io);
   if (argv[0] === "pr-comment") return runPrCommentCommand(argv.slice(1));
   if (argv[0] === "summary") return runSummaryCommand(argv.slice(1), io);
   if (argv[0] === "stats") return runStatsCommand(argv.slice(1));
