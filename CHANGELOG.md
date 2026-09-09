@@ -9,6 +9,24 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [0.6.3] — 2026-09-09
+
+### Added
+
+- `trust-report --from <mjolnir.json> [--stdout]` (WI-9): the Trust
+  Artifact rendered from a SAVED canonical scan result — the GitHub
+  Action's comment/annotation steps derive from the exact saved report
+  (one semantic truth, no second scan). Includes honest error paths:
+  read / parse / write failures each surface their own catch via the
+  consolidated `errorMessage` derivation in cli-io.ts.
+
+### Fixed
+
+- Error-path hardening across the trust-report verb: read and parse
+  failures split into separate honest catches; artifact-write failures
+  (disk-full / permission) exit 20 instead of crashing; the
+  no-positional default-target arm covered.
+
 ## [0.6.2] — 2026-09-09
 
 ### Changes since 0.6.1
@@ -18,7 +36,6 @@ once shipped, so this file is the record of what changed between versions.
 ## [0.6.1] — 2026-09-09
 
 ### Changes since 0.6.0
-
 
 ## [0.6.0] — 2026-09-09
 
