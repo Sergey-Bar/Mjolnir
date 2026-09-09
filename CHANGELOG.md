@@ -9,6 +9,12 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [0.6.13] — 2026-09-09
+
+### Changes since 0.6.12
+
+- fix(lint): {4} quantifier for the remaining literal spaces in sync-census regex
+
 ## [0.6.12] — 2026-09-09
 
 ### Changes since 0.6.11
