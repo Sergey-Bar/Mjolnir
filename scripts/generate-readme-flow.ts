@@ -46,6 +46,8 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { SCORE, STATUS, SURFACE, TEXT } from "../src/brand/tokens.js";
+
 import { FONTS, fontPath } from "./video/fonts.js";
 
 const ROOT = join(fileURLToPath(new URL(".", import.meta.url)), "..");
@@ -53,12 +55,17 @@ const OUT = join(ROOT, "assets", "readme", "flow.svg");
 const SANS_TTF = join(ROOT, "assets", "readme", "fonts", "Geist-SemiBold.ttf");
 
 /* ── palette: scripts/video/terminal-page.ts's constants ── */
-const INK = "#08090A"; // page + terminal body
-const BONE = "#EDE6D6"; // .cmd — the lit "after"
-const STEEL = "#8B939D"; // STEEL_DIM — the neutral "before"
-const QUIET = "#5A6169"; // captions; below STEEL, still legible
-const GREEN = "#4FB477"; // .prompt
-const ACCENT = "#5CC4E0"; // the one accent in the frame: WORTHY
+/* Every colour resolves through src/brand/tokens.ts — this file names
+   none of its own, and brand-doctor rule 6 fails if it starts to. The
+   two dimness levels the drawing needs (the neutral "before", and the
+   captions under it) are the text ramp's own two lower steps, so the
+   relationship between them is the one every other surface uses. */
+const INK = SURFACE.terminal; // page + terminal body
+const BONE = TEXT.primary; // .cmd — the lit "after"
+const STEEL = TEXT.secondary; // the neutral "before"
+const QUIET = TEXT.muted; // captions; below STEEL, still legible
+const GREEN = STATUS.ok; // .prompt
+const ACCENT = SCORE.trusted; // the one accent in the frame: WORTHY
 
 const SANS = "MjolnirSans";
 const MONO = "MjolnirMono";
