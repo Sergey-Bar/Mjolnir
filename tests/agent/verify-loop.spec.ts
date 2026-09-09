@@ -357,22 +357,21 @@ describe("digest unit gaps — new-findings render + unchanged overflow", () => 
     // The head still carries ALL 7 (same fingerprints) — unchanged debt.
     const debtFindings = Array.from(
       { length: 7 },
-      (_, i) =>
-        ({
-          ruleId: "QA-PW-004",
-          category: "QA-PW",
-          severity: "warning",
-          confidence: "high",
-          findingType: "deterministic-defect",
-          qaImpact: "HYGIENE",
-          file: "src/debt" + i + ".spec.ts",
-          line: 3,
-          column: 1,
-          message: "waitForTimeout() is a hard sleep",
-          why: "w",
-          fix: "f",
-          evidenceLevel: "E2",
-        }),
+      (_, i): ScanResult["findings"][number] => ({
+        ruleId: "QA-PW-004",
+        category: "QA-PW",
+        severity: "warning",
+        confidence: "high",
+        findingType: "deterministic-defect",
+        qaImpact: "HYGIENE",
+        file: "src/debt" + i + ".spec.ts",
+        line: 3,
+        column: 1,
+        message: "waitForTimeout() is a hard sleep",
+        why: "w",
+        fix: "f",
+        evidenceLevel: "E2",
+      }),
     );
     const d2 = buildVerifyDigest(
       scan({ findings: debtFindings, score: 95 }),
