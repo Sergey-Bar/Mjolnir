@@ -13,9 +13,9 @@ source of truth, rendered here and in the capability matrix.
 
 ## Verdict summary
 
-- Registry: 99 rules.
-- LEXICAL rules adjudicated: 89 — every one carries a strategyJustification record (doctor-enforced).
-- Rules on a deeper strategy: 7 (AST, AST, QA_MODEL, AST, QA_MODEL, AST, AST).
+- Registry: 78 rules.
+- LEXICAL rules adjudicated: 69 — every one carries a strategyJustification record (doctor-enforced).
+- Rules on a deeper strategy: 6 (AST, AST, QA_MODEL, AST, QA_MODEL, AST).
 
 ## Migration record (DEFERRED — owner directive 2026-09-09)
 
@@ -37,37 +37,26 @@ evidence supported it:
 - **QA-JV-103** — AST (Medium depth): Test without assertions
 - **QA-JV-105** — QA_MODEL (High depth): waitForTimeout hard sleep
 - **QA-PW-002** — AST (Medium depth): Unawaited Playwright assertion
-- **QA-PW-005** — AST (Medium depth): Logic inside page.evaluate()
 
 ## Verdicts by reason code
 
-### `absence-aggregate` — absence over a suite/directory — the evidence is the aggregate shape (7 rules)
+### `absence-aggregate` — absence over a suite/directory — the evidence is the aggregate shape (4 rules)
 
-- **QA-CS-110** (77% FP at n=26): the no-a11y family's variants (QA-JV-110/QA-CS-110): accessibility-assertion absence is an aggregate property of the test file — no single node constitutes the finding
 - **QA-ENV-001** (100% FP at n=20): environment-guard absence over the suite is an aggregate property; the detector aggregates the suite's guard shapes — the defect is what the suite lacks, not a node it has
-- **QA-JV-110** (83% FP at n=24): the no-a11y family's variants (QA-JV-110/QA-CS-110): accessibility-assertion absence is an aggregate property of the test file — no single node constitutes the finding
 - **QA-PW-142** (18% FP at n=11): blanket route interception is an aggregate of route calls across the suite; the detector aggregates the route-call shapes — the finding is the pattern's breadth, not one call
 - **QA-PW-143** (6% FP at n=80): artifact-capture absence (no trace/video/screenshot anywhere in the suite) is a directory-level aggregate; the detector aggregates over the suite's shapes — absence, not presence
 - **QA-PW-144** (14% FP at n=21): single-browser coverage absence is a config/projects aggregate property; the detector reads the projects arrangement across the config — no single node constitutes the finding
-- **QA-PW-145** (50% FP at n=40): accessibility-assertion absence is a property of the SUITE (no a11y assertion anywhere in the directory), not of any single syntax node; the detector aggregates the directory's shapes — the plan's absence-heuristic class
 
-### `exact-key-match` — exact, unambiguous runner/API token — lexical precision equals structural (18 rules)
+### `exact-key-match` — exact, unambiguous runner/API token — lexical precision equals structural (11 rules)
 
 - **QA-CS-101** (0% FP at n=20): [Ignore]/[Fact(Skip=…)] are exact xUnit/NUnit/MSTest attribute tokens; the detector matches the attribute identifiers — closed token sets where lexical precision equals structural
 - **QA-CYP-003** (unmeasured): chromeWebSecurity:false is an exact config key/value pair inside cypress.config.*; the detector matches the key and value literally — the config surface's statements are the finding
 - **QA-JV-101** (0% FP at n=23): @Disabled/@Ignore are exact JUnit/TestNG annotation tokens; the detector matches the annotation identifier — annotation shapes are closed token sets where lexical and structural match coincide
 - **QA-PW-003** (10% FP at n=10): page.pause() and test.only() are exact Playwright runner tokens; the detector matches the member-call identifiers on the code-only text — closed token set, unique to the defect
 - **QA-PW-102** (unmeasured): waitForLoadState('load') is an exact Playwright token plus a closed argument enum; the detector matches the call plus its argument — the AST re-derives the same call shape
-- **QA-PW-103** (29% FP at n=69): waitForURL/load-state navigation waits are exact Playwright API tokens on the code-only text; the token set is closed and unambiguous — structural parsing re-derives the same call identifier
 - **QA-PW-104** (0% FP at n=10): the trial-click shape is an exact Playwright API token pair; the detector matches the call identifier on the code-only text — the token is closed and unique to the defect
-- **QA-PW-105** (100% FP at n=20): expect.poll without an options argument is an exact API shape; the detector matches the call plus its argumentless form — the AST call-shape is the same predicate the regex encodes
-- **QA-PW-107** (95% FP at n=21): toBeVisible vs toBeInViewport is an exact assertion-method token distinction; the detector matches the assertion call identifier on the code-only text — closed token set
-- **QA-PW-108** (100% FP at n=20): textContent/innerText assertions are exact assertion-method tokens; the detector matches the call identifier on the code-only text — closed token set, unique to the defect
 - **QA-PW-113** (0% FP at n=11): frameLocator chaining depth is an exact Playwright token sequence; the detector matches the frameLocator call chains — the token sequence is closed and unique to the defect
-- **QA-PW-114** (100% FP at n=20): page.$/$$ legacy handle APIs are exact Playwright tokens; the detector matches the member-call identifiers on the code-only text — closed deprecated-API token set
 - **QA-PW-116** (unmeasured): storageState is an exact Playwright config/use option token; the detector matches the option key and its value shapes — closed config surface
-- **QA-PW-118** (100% FP at n=20): waitForLoadState('networkidle') is an exact Playwright token plus its closed argument enum; the detector matches the call plus argument — the networkidle value is unique to the defect
-- **QA-PW-120** (100% FP at n=20): browser engine selection (firefox/webkit) without a guard is an exact config-token shape; the detector matches the engine tokens — closed browser-name set
 - **QA-PW-140** (0% FP at n=10): the detector matches a closed, exact runner API token on the code-only text; the token identifies the defect uniquely
 - **QA-PY-005** (13% FP at n=23): time.sleep(n) is an exact stdlib token with a numeric argument; the detector matches the call identifier on the code-only text — closed token, unique to the defect
 - **QA-PY-103** (8% FP at n=25): page.waitForTimeout is an exact Playwright token in Python tests; the detector matches the call identifier — closed token, same predicate the AST would encode
@@ -85,7 +74,7 @@ evidence supported it:
 - **QA-PY-009** (6% FP at n=18): commented-out test code is a lexical artifact by definition — the text IS the finding (comment-wrapped test bodies); the detector matches the commented shapes on the raw text, which is where the artifact lives
 - **QA-TQUAL-011** (24% FP at n=25): commented-out assertions are lexical artifacts — the comment-wrapped assertion text is the finding itself; the detector matches the shapes on the raw text
 
-### `runner-semantic` — semantics live in runner behavior no syntax tree represents (46 rules)
+### `runner-semantic` — semantics live in runner behavior no syntax tree represents (39 rules)
 
 - **QA-CI-005** (8% FP at n=13): report generation is a runner side effect of the workflow step sequence, not a syntax tree property; the detector reads the workflow step graph, whose statements are already literal text
 - **QA-CI-007** (0% FP at n=11): retry masking is defined by the runner's retry semantics, which no language syntax tree represents; the detector matches the runner's own retry keys in workflow YAML where statements are shell strings
@@ -93,16 +82,13 @@ evidence supported it:
 - **QA-CS-104** (unmeasured): the shared-page family's variants (QA-JV-104/QA-CS-104/QA-PY-106): page/fixture reuse across tests is runner fixture-lifecycle semantics; the detector matches the consumption shapes against test boundaries
 - **QA-CS-107** (unmeasured): the network-idle family's variants (QA-JV-107/QA-CS-107/QA-PY-107): networkidle waits are runner timing semantics; the detector matches the runner's wait tokens — exact keys
 - **QA-CS-109** (unmeasured): the retry-masking family's variants (QA-JV-109/QA-CS-109): retry masking is the runner's retry contract; the detector matches the runner's retry tokens on the code-only text
-- **QA-CS-111** (100% FP at n=20): the blanket-route family's variants (QA-JV-111/QA-CS-111): blanket route mocking is the runner's network-interception contract; the detector matches the route API tokens
 - **QA-CYP-001** (20% FP at n=15): cy.wait(numeric) is a Cypress runner wait contract; the detector matches the member-call token with a numeric-literal argument on the code-only text — alias waits (cy.wait('@…')) are structurally distinct and excluded by the argument shape
 - **QA-CYP-002** (unmeasured): Cypress .only is the runner's focus token; the detector matches the it/describe/context .only member-call shape on the code-only text — exact-key precision
 - **QA-JV-104** (20% FP at n=10): the shared-page family's variants (QA-JV-104/QA-CS-104/QA-PY-106): page/fixture reuse across tests is runner fixture-lifecycle semantics; the detector matches the consumption shapes against test boundaries
 - **QA-JV-107** (unmeasured): the network-idle family's variants (QA-JV-107/QA-CS-107/QA-PY-107): networkidle waits are runner timing semantics; the detector matches the runner's wait tokens — exact keys
 - **QA-JV-109** (0% FP at n=18): the retry-masking family's variants (QA-JV-109/QA-CS-109): retry masking is the runner's retry contract; the detector matches the runner's retry tokens on the code-only text
-- **QA-JV-111** (100% FP at n=20): the blanket-route family's variants (QA-JV-111/QA-CS-111): blanket route mocking is the runner's network-interception contract; the detector matches the route API tokens
 - **QA-PW-115** (56% FP at n=16): page reuse across tests is runner fixture-lifecycle semantics; the detector matches the page-consumption shapes against the test boundaries — the lifecycle is runner behavior
 - **QA-PW-117** (0% FP at n=24): fullyParallel/serial are runner scheduling keys on the config and describe blocks; the detector matches the runner's exact API tokens — the semantics are scheduling, not syntax
-- **QA-PW-119** (100% FP at n=24): order dependence (test.describe.serial / sequential) is a runner scheduling annotation; the detector matches the runner's own API tokens — exact-key precision, structural depth would only re-derive the same call
 - **QA-PW-121** (0% FP at n=12): retries in playwright.config.* is a runner top-level option, not a syntax node; the detector reads the config surface whose statements are object-literal keys — exact-key precision
 - **QA-PW-122** (6% FP at n=80): trace/reporter capture is runner lifecycle state set in the config file; the detector reads the config surface's keys and enum values, which are exact matches — a syntax tree adds no semantic the config text lacks
 - **QA-PW-124** (unmeasured): project split is a runner config concept (projects array arrangement); the detector reads playwright.config.* keys (adapter-gated), whose object-literal shape is exact-match text
@@ -112,10 +98,7 @@ evidence supported it:
 - **QA-PY-002** (4% FP at n=23): pytest.mark.skip/xfail are runner marker decorators — exact runner tokens; a syntax tree re-derives the same call shape with no added classification power
 - **QA-PY-003** (47% FP at n=30): assertion-less pytest bodies are runner-outcome semantics (the runner reports a pass that proves nothing); the detector matches the test-def plus body shapes on the code-only text — pytest's pass contract is runner behavior
 - **QA-PY-004** (53% FP at n=30): bare truthiness asserts (assert obj) are assertion-semantics on the code-only text; the detector matches the bare-assert shapes — the AST re-derives the same call
-- **QA-PY-006** (100% FP at n=20): pass-only test bodies are runner-outcome semantics; the detector matches the def-plus-pass shape on the code-only text — the AST body-shape is the same predicate
 - **QA-PY-007** (79% FP at n=34): pytest.raises without match is a runner exception-contract semantic; the detector matches the raises-call plus its argumentless form — the runner's exception contract, not a syntax property
-- **QA-PY-008** (100% FP at n=20): mock-only verification in Python tests is runner-interaction semantics; the detector matches the mock-API shapes on the code-only text — retained in quarantine until measured otherwise
-- **QA-PY-010** (100% FP at n=10): random/time dependence (random.seed, time.time in test bodies) is runtime-behavior semantics; the detector matches the module-call tokens — closed stdlib token set
 - **QA-PY-011** (10% FP at n=10): pytest fixture mutation is fixture-lifecycle semantics (autouse/scope keys plus mutation calls); the detector matches the runner's fixture decorator tokens plus the mutation shapes
 - **QA-PY-012** (40% FP at n=30): tautological assertions in Python (assert x == x) are assertion-semantics on the code-only text; the detector matches the tautology shapes — the AST re-derives the same comparison
 - **QA-PY-105** (0% FP at n=12): Playwright test bodies without assertions are runner-outcome semantics; the detector matches the test-def plus body shapes on the code-only text
@@ -130,7 +113,6 @@ evidence supported it:
 - **QA-TEST-004** (30% FP at n=20): hard-sleep is behavioral wait-shape matching (the wait call plus its interaction context), not a single node; the detector's pattern+wait-shape oracle is the recorded design (§12.1), and the hard-sleep family's structural path carries the depth where available
 - **QA-TEST-006** (36% FP at n=11): retry abuse is the runner's retry contract (jest.retries, vitest retry, playwright retries); the detector matches the runner's retry API tokens across runners — each an exact key
 - **QA-TEST-010** (58% FP at n=31): empty test bodies are runner-outcome semantics; the detector matches the test-def plus empty-body shapes on the code-only text — the AST body-shape is the same predicate
-- **QA-TQUAL-001** (100% FP at n=26): mock-only verification is a runner-interaction semantics question (the test exercises mocks, not the SUT); the detector matches the mock-API call shapes on the code-only text — the runner-semantic boundary this lexical heuristic approximates, retained in quarantine until measured otherwise
 - **QA-TQUAL-002** (53% FP at n=32): tautological assertions (x === x, expect(true)) are assertion-semantics on the code-only text; the detector matches the tautology shapes after comment stripping — the AST call-shape is the same predicate
 - **QA-TQUAL-009** (79% FP at n=14): un-awaited promise assertions are runner async semantics; the detector matches the assertion-call shapes inside promise chains on the code-only text — the async contract is runner behavior
 
@@ -138,14 +120,11 @@ evidence supported it:
 
 - **QA-CI-002** (11% FP at n=18): exit-code swallowing lives inside workflow run: strings (shell scripts embedded in YAML); the YAML statement IS a string literal — a shell syntax tree of a YAML value adds parsing without adding classification power
 
-### `string-content-defect` — the defect lives in string content (selector/URL) — outside AST semantics by design (10 rules)
+### `string-content-defect` — the defect lives in string content (selector/URL) — outside AST semantics by design (7 rules)
 
 - **QA-CS-106** (unmeasured): the brittle-selector family's variants (QA-JV-106/QA-CS-106/QA-PY-104): selector defects are string-argument shapes (xpath=/nth-child/absolute-path); the detector classifies the string shapes the code-text mask preserves for this class
-- **QA-CS-108** (87% FP at n=23): the hardcoded-url family's variants (QA-JV-108/QA-CS-108/QA-PY-108): hardcoded URLs are string literals; the detector matches the http(s):// string shapes — the URL lives in the string, not the syntax tree
 - **QA-JV-106** (unmeasured): the brittle-selector family's variants (QA-JV-106/QA-CS-106/QA-PY-104): selector defects are string-argument shapes (xpath=/nth-child/absolute-path); the detector classifies the string shapes the code-text mask preserves for this class
-- **QA-JV-108** (87% FP at n=23): the hardcoded-url family's variants (QA-JV-108/QA-CS-108/QA-PY-108): hardcoded URLs are string literals; the detector matches the http(s):// string shapes — the URL lives in the string, not the syntax tree
 - **QA-PW-004** (43% FP at n=14): brittle selectors ARE string arguments (css=/xpath=/nth-child shapes) — the code-text masking that protects other rules deliberately excludes string content here; the detector reads the string shapes directly (inside-string oracle)
-- **QA-PW-112** (100% FP at n=20): data-testid naming is a convention over string attribute values; the detector reads the attribute-name token plus the value shape — the convention lives in the string, not the tree
 - **QA-PW-123** (46% FP at n=11): hardcoded environment URLs are string literals (http(s):// shapes); the detector reads the string-content shapes the code-text mask preserves for exactly this defect class
 - **QA-PW-146** (12% FP at n=17): CSS/XPath string selectors are string-argument shapes (css=/xpath= engines, bare id/class/attr CSS, nth-child); the detector classifies the string shapes directly
 - **QA-PY-104** (unmeasured): the brittle-selector family's variants (QA-JV-106/QA-CS-106/QA-PY-104): selector defects are string-argument shapes (xpath=/nth-child/absolute-path); the detector classifies the string shapes the code-text mask preserves for this class
@@ -180,10 +159,7 @@ evidence supported it:
 | QA-CS-105    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-CS-106    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-CS-107    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
-| QA-CS-108    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-CS-109    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
-| QA-CS-110    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
-| QA-CS-111    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-CYP-001   | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-CYP-002   | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-CYP-003   | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
@@ -195,30 +171,17 @@ evidence supported it:
 | QA-JV-105    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-JV-106    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-JV-107    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
-| QA-JV-108    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-JV-109    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
-| QA-JV-110    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
-| QA-JV-111    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PW-002    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PW-003    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PW-004    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
-| QA-PW-005    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PW-101    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PW-102    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
-| QA-PW-103    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PW-104    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
-| QA-PW-105    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
-| QA-PW-107    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
-| QA-PW-108    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
-| QA-PW-112    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PW-113    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
-| QA-PW-114    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PW-115    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PW-116    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PW-117    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
-| QA-PW-118    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
-| QA-PW-119    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
-| QA-PW-120    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PW-121    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PW-122    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PW-123    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
@@ -229,7 +192,6 @@ evidence supported it:
 | QA-PW-142    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PW-143    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PW-144    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
-| QA-PW-145    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PW-146    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PW-147    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PY-001    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
@@ -237,11 +199,8 @@ evidence supported it:
 | QA-PY-003    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PY-004    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PY-005    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
-| QA-PY-006    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PY-007    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
-| QA-PY-008    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PY-009    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
-| QA-PY-010    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PY-011    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PY-012    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-PY-101    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
@@ -261,7 +220,6 @@ evidence supported it:
 | QA-TEST-004  | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-TEST-006  | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-TEST-010  | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
-| QA-TQUAL-001 | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-TQUAL-002 | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-TQUAL-009 | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-TQUAL-011 | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
