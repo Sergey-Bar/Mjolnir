@@ -34,6 +34,7 @@ import { buildTokensDoc } from "./brand-doc.js";
 
 import {
   BADGE,
+  BADGE_BAND,
   BRAND,
   CSS_SEMANTIC,
   CSS_TOKENS,
@@ -95,6 +96,7 @@ export async function buildTokensJson(): Promise<string> {
     trust: { ...TRUST, runtimeBoundary: TRUST_RUNTIME_BOUNDARY },
     tint: TINT,
     badge: BADGE,
+    badgeBand: BADGE_BAND,
     typography: TYPOGRAPHY,
     motion: MOTION,
     hairlineRgb: HAIRLINE_RGB,

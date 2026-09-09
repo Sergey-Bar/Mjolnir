@@ -127,6 +127,20 @@ const SEEDS = [
     expect: "README.md — badge colour abcdef is not a brand token",
   },
   {
+    rule: "7 (generated badge)",
+    what: "the badge the product emits reverts to a shields.io named colour",
+    file: p("src", "commands", "badge.ts"),
+    // `important` is orange and `success` is green — neither is what its
+    // name suggests, and both shipped for eight releases behind a comment
+    // claiming otherwise.
+    edit: (s) =>
+      s.replace(
+        "  return BADGE_BAND[band];",
+        '  if (band === "trusted") return "important";\n  return BADGE_BAND[band];',
+      ),
+    expect: 'returns the shields.io named colour "important"',
+  },
+  {
     rule: 8,
     what: "a declared pairing drops below WCAG AA",
     file: p("assets", "brand", "tokens.json"),

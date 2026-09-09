@@ -17,6 +17,8 @@ mjolnir brand doctor — failure-first self-test
            seeded src\reporter\ui.ts → exit 1, named the finding
   Rule 7: PROVEN — a README badge uses a colour that is neither token nor known debt
            seeded README.md → exit 1, named the finding
+  Rule 7 (generated badge): PROVEN — the badge the product emits reverts to a shields.io named colour
+           seeded src\commands\badge.ts → exit 1, named the finding
   Rule 8: PROVEN — a declared pairing drops below WCAG AA
            seeded assets\brand\tokens.json → exit 1, named the finding
   Rule ratchet: PROVEN — a known-open entry that no longer fires is reported as stale
@@ -24,5 +26,5 @@ mjolnir brand doctor — failure-first self-test
 
   restored: exit 0 (expected 0)
 
-  10 of 10 rules observed rejecting an invalid state
+  11 of 11 rules observed rejecting an invalid state
 

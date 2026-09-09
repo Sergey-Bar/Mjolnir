@@ -411,6 +411,10 @@ const CITED_NON_BRAND = new Map([
     "#0d1117",
     "GitHub's dark background — cited because mermaid output has to stay legible on it, and it is not ours to change",
   ],
+  [
+    "#ea7233",
+    "what shields.io's named colour `important` actually resolves to — quoted as the evidence that the badge rendered the trusted band orange for eight releases",
+  ],
 ]);
 
 export function rule5() {
@@ -527,10 +531,33 @@ export function rule7() {
       }
     }
   }
+  // The badge the PRODUCT generates, not just the ones written by hand.
+  // src/commands/badge.ts used to emit shields.io named colours, and the
+  // rule above could not see it: `important` rendered the trusted band
+  // ORANGE and `success` rendered the 100 state GREEN for eight
+  // releases, behind a code comment asserting the opposite. Nobody had
+  // resolved a shields name to a value and looked.
+  const badgeSrc = join(ROOT, "src", "commands", "badge.ts");
+  let generated = 0;
+  if (existsSync(badgeSrc)) {
+    const src = readFileSync(badgeSrc, "utf8");
+    for (const h of hexLiterals(src))
+      if (!isComment(h.text))
+        failures.push(`${rel(badgeSrc)}:${h.line} — hex literal ${h.hex}`);
+    for (const m of src.matchAll(
+      /return\s+"(brightgreen|green|yellowgreen|yellow|orange|red|blue|lightgrey|success|important|critical|informational|inactive)"/g,
+    ))
+      failures.push(
+        `${rel(badgeSrc)} — returns the shields.io named colour "${m[1]}"; ` +
+          `names are not brand values and do not resolve to what they suggest`,
+      );
+    generated = Object.keys(T.badgeBand).length;
+  }
+
   return {
     n: 7,
-    name: "README badges use canonical colours",
-    detail: `${readmes.length} README files`,
+    name: "Badges use canonical colours",
+    detail: `${readmes.length} README files + ${generated} generated bands`,
     failures,
   };
 }

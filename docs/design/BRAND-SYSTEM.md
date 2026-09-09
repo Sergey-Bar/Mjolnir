@@ -92,6 +92,26 @@ worthiness meaning: "autofix applied", "analysis complete". A green
 score would say "your software is fine", which is the exact claim this
 product refuses to make. `WORTHY` renders in aurora-cyan.
 
+### The badge is peripheral, but not unchecked
+
+`ScoreState` is the truth; the badge is a downstream rendering of it.
+That was already documented — and it was being used as cover. The badge
+sent shields.io's **named** colours, and two of them did not mean what
+the code's comment said they meant: `important` resolves to `#ea7233`,
+an orange, so every `WORTHY` badge rendered the trusted band in a
+warning hue; `success` resolves to green, so a 100 said "your software
+is fine".
+
+It now sends `BADGE_BAND` hex. Those values are deeper than the score
+tokens for a reason that is not taste: shields sets the message text in
+white and gives you no say in it, so `score.forged` under white measures
+1.35:1 — an unreadable badge, shipped to look on-brand. The deep steps
+put every band between 4.9 and 6.3:1, where the named colours it
+replaced ranged 1.95 to 4.24.
+
+The badge also wore `namedLogo: "vitest"` — someone else's mark, on the
+image people paste into their own READMEs. Removed.
+
 ### UNKNOWN is neutral, never red
 
 `score.unmeasured` is steel-dim, and so is the "no test files detected"

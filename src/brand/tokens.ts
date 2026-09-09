@@ -317,6 +317,47 @@ export const BADGE = {
   secondary: "37ABBD",
 } as const;
 
+/**
+ * The score bands as the badge Mjölnir itself generates renders them.
+ *
+ * These are DEEPER than the score tokens on purpose, and it is not a
+ * style preference: shields.io sets the message text in white and gives
+ * you no say in it. `score.forged` (#F4DC9C) under white text measures
+ * 1.35:1 — an unreadable badge, shipped to look on-brand. The brand's
+ * own deep steps put every band between 4.9 and 6.3:1.
+ *
+ * What they replace was worse than off-brand, it was wrong:
+ *
+ *   band        was              rendered as        white-on   now       white-on
+ *   ────────────────────────────────────────────────────────────────────────────
+ *   0-49        `red`            #dd4343            4.24       #A83A35   6.32
+ *   50-79       `yellow`         #d8b800            1.95       #7A5F16   6.04
+ *   80-99       `important`      #ea7233  ORANGE    3.02       #1F6F7C   5.80
+ *   100         `success`        #44bb00  GREEN     2.51       #8A6D1E   4.90
+ *   unmeasured  `lightgrey`      #939393            3.07       #5C646E   5.99
+ *
+ * Two of those were defects, not preferences. `success` is green, and
+ * green is not a score colour here — a 100 badge said "your software is
+ * fine", which is the one claim this product refuses to make. And
+ * `important` is ORANGE, not the blue-family colour the code's own
+ * comment claimed for eight releases: every WORTHY badge ever rendered
+ * showed the trusted band in a warning colour. Nobody had resolved a
+ * shields name to a value and looked.
+ *
+ * Values are hex without `#`, the form shields.io's endpoint takes.
+ * `A83A35`, `7A5F16`, `1F6F7C` and `5C646E` are the `TINT` strokes —
+ * the same deep steps the mermaid diagrams use, for the same reason.
+ * `8A6D1E` is the gold the brand document already named as the light
+ * FORGED gradient's start.
+ */
+export const BADGE_BAND = {
+  critical: "A83A35",
+  warning: "7A5F16",
+  trusted: "1F6F7C",
+  forged: "8A6D1E",
+  unmeasured: "5C646E",
+} as const;
+
 /* ── Site neutrals, pending convergence ──────────────────────── */
 
 /**
