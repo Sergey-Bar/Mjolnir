@@ -9,8 +9,22 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
-## [0.5.40] — 2026-09-09
+## [0.6.0] — 2026-09-09
 
+### Changed
+
+- Version line opens: **0.6.x = Productized Core (plan §31)**. The full
+  workstream-A capability set (Trust Report hero surface, Canonical
+  Evidence Core, trustSummary metrics, machine contract extension,
+  explain v2, triage v2 guided workflow, Action Trust-Report
+  consumption, zero-config evidence discovery, CHANGELOG integrity
+  gate, mvp-demo corpus + golden harness, E-1 retirement of 21 rules —
+  active census 78 rules: 57 measured, 21 PROVISIONAL) shipped in
+  **0.5.40**, the first release produced under the active CHANGELOG
+  integrity gate. 0.6.0 establishes the 0.6.x version line; no code
+  changes in this release.
+
+## [0.5.40] — 2026-09-09
 
 ### Added
 

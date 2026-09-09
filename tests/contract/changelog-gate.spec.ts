@@ -67,6 +67,20 @@ function synthetic(body: string, version = "0.6.0"): string {
   ].join("\n");
 }
 
+/**
+ * Insert a block right after the newest version heading of the real
+ * baseline. The baseline no longer carries an [Unreleased] section in
+ * every era — anchoring on the literal newest heading keeps the drift
+ * fixtures valid regardless.
+ */
+function insertAfterNewestHeading(baseline: string, block: string): string {
+  const anchor = /^## \[\d+\.\d+\.\d+\] — \d{4}-\d{2}-\d{2}$/m;
+  const m = anchor.exec(baseline);
+  expect(m, "baseline has a version heading").not.toBeNull();
+  const idx = m?.index ?? 0;
+  return baseline.slice(0, idx) + block + baseline.slice(idx);
+}
+
 describe("CHANGELOG integrity gate (WI-12A)", () => {
   it("green on the real baseline (0.5.34) — history preserved, not rewritten", () => {
     const r = runGate(BASELINE, ["--expect-version", "0.5.34"]);
@@ -81,10 +95,9 @@ describe("CHANGELOG integrity gate (WI-12A)", () => {
   });
 
   it("fails on gate-era misordering", () => {
-    const drifted = BASELINE.replace(
-      "## [Unreleased]",
+    const drifted = insertAfterNewestHeading(
+      BASELINE,
       [
-        "## [Unreleased]",
         "",
         "## [0.6.0] — 2026-09-09",
         "",
@@ -106,10 +119,9 @@ describe("CHANGELOG integrity gate (WI-12A)", () => {
   });
 
   it("fails on a duplicate heading", () => {
-    const drifted = BASELINE.replace(
-      "## [Unreleased]",
+    const drifted = insertAfterNewestHeading(
+      BASELINE,
       [
-        "## [Unreleased]",
         "",
         "## [0.6.0] — 2026-09-09",
         "",
