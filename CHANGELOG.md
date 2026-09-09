@@ -9,6 +9,12 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [0.6.11] — 2026-09-09
+
+### Changes since 0.6.10
+
+- fix(lint): exclude scripts/*.mts from the typed-parser project route
+
 ## [0.6.10] — 2026-09-09
 
 ### Changes since 0.6.9
