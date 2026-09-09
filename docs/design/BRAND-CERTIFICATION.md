@@ -231,6 +231,41 @@ instead verified structurally in the emitted SVG (three evidence rings
 in the brightness ramp, six ladder rungs with spacing 24/24/**36**/24/24
 placing the gap exactly at L2\|L3).
 
+## 8b. Rebased onto v0.6.1
+
+Main moved 37 commits under this branch while it was being built — the
+whole 0.6.x Productized Core line. Merged, and everything re-verified
+against it rather than against the tree the work started on.
+
+Six conflicts, all in generated artifacts or a stamp; all 23 READMEs and
+`ci.yml` auto-merged, which is the brand work's own doing — it had
+touched those files mechanically, from tokens, rather than by hand.
+
+Three things the merge settled:
+
+- **`flow.svg` is restored.** Its deletion arrived with the pre-existing
+  work this branch carried, and I had judged it part of the mission. It
+  was not: whether the README tells its story with one asset or two is
+  editorial, and main is still shipping the two-asset version. Restored
+  whole, then brought into the token system — its generator held six
+  colours of its own, on an asset the README shows above the fold.
+  `README.md` was reset to main's and swept for badges only; the diff is
+  now five lines, all of them badge colours.
+- **The Trust Report had already drifted.** A new surface, and it typed
+  its own six rung labels — five words different from the symbol
+  module's. Now built from `TRUST_RUNGS`.
+- **Neither new reporter needed a colour change.** Both consume
+  `palette()`, so the converged terminal palette reached them the moment
+  the merge landed. That is the token system paying for itself.
+
+And a second site-build breakage found on main, of the same class as
+D15: `docs/RULE-LIFECYCLE.md` wrote `mjolnir mutation <report>` as prose,
+Vue's template compiler read `<report>` as an element, and the build
+failed. Both times the cause was the same — **nothing runs the site
+build except the Pages workflow**, and a deploy that fails after merge is
+a deploy nobody reads. Putting `npm --prefix site run build` in the main
+CI job would have caught both, and costs twelve seconds.
+
 ## 9. What changed
 
 Twelve commits, each independently reviewable.
