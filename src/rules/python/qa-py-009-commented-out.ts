@@ -23,6 +23,14 @@ export const pyCommentedOutTest = defineRule({
   falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "lexical-artifact",
+    detail:
+      "commented-out test code is a lexical artifact by definition — the " +
+      "text IS the finding (comment-wrapped test bodies); the detector " +
+      "matches the commented shapes on the raw text, which is where the " +
+      "artifact lives",
+  },
   detectionNotes: "regex heuristic",
   introduced: "0.3.0",
 

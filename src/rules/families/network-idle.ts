@@ -15,6 +15,14 @@ export const networkIdleFamily = definePatternFamily({
   why: "Analytics, websockets, and polling make network idle never fire or fire randomly — a documented source of Playwright flakes.",
   falsePositiveRisk: "low",
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "the network-idle family's variants " +
+      "(QA-JV-107/QA-CS-107/QA-PY-107): networkidle waits are runner " +
+      "timing semantics; the detector matches the runner's wait tokens — " +
+      "exact keys",
+  },
   introduced: "0.4.0",
   useCodeText: false,
   variants: [

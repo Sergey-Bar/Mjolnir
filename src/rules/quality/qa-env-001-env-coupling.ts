@@ -24,6 +24,13 @@ export const envCoupling = defineRule({
   falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "absence-aggregate",
+    detail:
+      "environment-guard absence over the suite is an aggregate property; " +
+      "the detector aggregates the suite's guard shapes — the defect is " +
+      "what the suite lacks, not a node it has",
+  },
   detectionNotes: "regex heuristic",
   introduced: "0.2.0",
   tier: "quarantine",

@@ -24,6 +24,13 @@ export const noAssertions = defineRule({
   falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "assertion-less test bodies are runner-outcome semantics (the " +
+      "runner reports a pass that proves nothing); the detector matches " +
+      "the test-def plus body shapes on the code-only text",
+  },
   introduced: "0.1.0",
   // Measured FP 82% (n=17, docs/FP-AUDIT.md 2026-08-31): hidden-assertion
   // helpers (expectSnapshot, verify helpers) and deliberate no-throw smoke

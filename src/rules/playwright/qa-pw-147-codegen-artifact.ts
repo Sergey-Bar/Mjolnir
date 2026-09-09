@@ -40,6 +40,14 @@ export const pwCodegenArtifact = defineRule({
   falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "lexical-artifact",
+    detail:
+      "the codegen recorder's default title ('test', 'test 1', …) " +
+      "committed is a recording artifact — the default-title string is " +
+      "the finding; the detector matches the recorder's exact title " +
+      "shapes",
+  },
   detectionNotes:
     "the codegen recorder's default test title ('test', 'test 1', 'test 2', …) committed verbatim, on the RAW text view (the title is a string literal)",
   introduced: "0.6.0",

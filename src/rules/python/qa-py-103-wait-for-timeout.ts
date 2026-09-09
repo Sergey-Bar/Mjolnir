@@ -23,6 +23,13 @@ export const pyPwWaitForTimeout = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "exact-key-match",
+    detail:
+      "page.waitForTimeout is an exact Playwright token in Python tests; " +
+      "the detector matches the call identifier — closed token, same " +
+      "predicate the AST would encode",
+  },
   introduced: "0.3.8",
   tier: "core", // measured 2026-09-02: 10% FP at n=20 (band edge, ≤ 10%)
 

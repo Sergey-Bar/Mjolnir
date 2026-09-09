@@ -23,6 +23,13 @@ export const pwTrialMisuse = defineRule({
   falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "exact-key-match",
+    detail:
+      "the trial-click shape is an exact Playwright API token pair; the " +
+      "detector matches the call identifier on the code-only text — the " +
+      "token is closed and unique to the defect",
+  },
   introduced: "0.3.0",
 
   // Measured 2026-09-02 (corpus wave 5): FP ≤ 10% but n < 20 — measured-extended until the core DoD n ≥ 20 is met (plan §23).

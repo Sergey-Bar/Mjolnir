@@ -23,6 +23,14 @@ export const pyNoAssertions = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "assertion-less pytest bodies are runner-outcome semantics (the " +
+      "runner reports a pass that proves nothing); the detector matches " +
+      "the test-def plus body shapes on the code-only text — pytest's " +
+      "pass contract is runner behavior",
+  },
   introduced: "0.3.0",
   tier: "quarantine",
   // Phase 2 retune wave 2 (EVIDENCE-BACKED, detectorRevision 3 — §07):

@@ -24,6 +24,13 @@ export const pyBareTruthinessAssert = defineRule({
   falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "bare truthiness asserts (assert obj) are assertion-semantics on " +
+      "the code-only text; the detector matches the bare-assert shapes — " +
+      "the AST re-derives the same call",
+  },
   introduced: "0.3.0",
   tier: "quarantine",
   // Phase 2 retune wave 2 (EVIDENCE-BACKED, detectorRevision 3 — §07):

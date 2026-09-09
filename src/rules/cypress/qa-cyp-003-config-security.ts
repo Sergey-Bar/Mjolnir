@@ -47,6 +47,13 @@ export const cypConfigSecurity = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "exact-key-match",
+    detail:
+      "chromeWebSecurity:false is an exact config key/value pair inside " +
+      "cypress.config.*; the detector matches the key and value literally " +
+      "— the config surface's statements are the finding",
+  },
   detectionNotes:
     "positive match on chromeWebSecurity:false inside cypress.config.* (the config is the artifact — no heuristic)",
   introduced: "0.6.0",

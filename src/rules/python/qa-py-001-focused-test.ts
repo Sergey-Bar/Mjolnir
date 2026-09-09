@@ -24,6 +24,13 @@ export const pyFocusedTest = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "pytest.skip/xfail/parametrize marks are runner decorators and " +
+      "module-level calls; the detector matches those exact tokens on the " +
+      "code-only text — the semantics are runner skip state",
+  },
   introduced: "0.3.0",
   // Measured 2026-09-02 (corpus wave 5): FP ≤ 10% but n < 20 — measured-extended until the core DoD n ≥ 20 is met (plan §23).
   tier: "core",

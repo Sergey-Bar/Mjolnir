@@ -22,6 +22,13 @@ export const committedDebugArtifacts = defineRule({
   falsePositiveRisk: "low",
   autofix: true,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "exact-key-match",
+    detail:
+      "page.pause() and test.only() are exact Playwright runner tokens; " +
+      "the detector matches the member-call identifiers on the code-only " +
+      "text — closed token set, unique to the defect",
+  },
   introduced: "0.1.0",
 
   // Measured 2026-09-02 (corpus wave 5): tier set from the measured envelope (plan §11.2).

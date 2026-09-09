@@ -97,6 +97,14 @@ export const seJavaSleepLookup = defineRule({
   falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "the Selenium family's variants (QA-SE-001/002/003): the defect is " +
+      "the SEQUENCE sleep-then-interact — runner timing semantics, not a " +
+      "single node; the detector matches the sleep token followed by a " +
+      "lookup within the recorded window",
+  },
   detectionNotes:
     "sequence shape: Thread.sleep followed by a findElement/interaction call within 3 lines (code-only view)",
   introduced: "0.6.0",
@@ -129,6 +137,14 @@ export const seCSharpSleepLookup = defineRule({
   falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "the Selenium family's variants (QA-SE-001/002/003): the defect is " +
+      "the SEQUENCE sleep-then-interact — runner timing semantics, not a " +
+      "single node; the detector matches the sleep token followed by a " +
+      "lookup within the recorded window",
+  },
   detectionNotes:
     "sequence shape: Thread.Sleep/Task.Delay followed by a FindElement/interaction call within 3 lines (code-only view)",
   introduced: "0.6.0",
@@ -161,6 +177,14 @@ export const sePythonSleepLookup = defineRule({
   falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "the Selenium family's variants (QA-SE-001/002/003): the defect is " +
+      "the SEQUENCE sleep-then-interact — runner timing semantics, not a " +
+      "single node; the detector matches the sleep token followed by a " +
+      "lookup within the recorded window",
+  },
   detectionNotes:
     "sequence shape: time.sleep followed by a find_element/interaction call within 3 lines (code-only view)",
   introduced: "0.6.0",

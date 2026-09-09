@@ -24,6 +24,14 @@ export const focusedTestCommitted = defineRule({
   falsePositiveRisk: "low",
   autofix: true,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      ".only/focus is runner skip-scheduling state; the detector matches " +
+      "the runner's own member-call tokens (.only/.fit/fdescribe) on the " +
+      "code-only text — lexical precision equals the AST call-shape here, " +
+      "and the §13.2 fallback keeps parity",
+  },
   introduced: "0.1.0",
   // Measured 2026-09-02 (corpus wave 5): tier set from the measured envelope (plan §11.2).
   tier: "quarantine",

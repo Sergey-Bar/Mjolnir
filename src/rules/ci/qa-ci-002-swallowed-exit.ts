@@ -23,6 +23,14 @@ export const swallowedExitCode = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "shell-string-in-config",
+    detail:
+      "exit-code swallowing lives inside workflow run: strings (shell " +
+      "scripts embedded in YAML); the YAML statement IS a string literal " +
+      "— a shell syntax tree of a YAML value adds parsing without adding " +
+      "classification power",
+  },
   introduced: "0.1.0",
 
   // Measured (corpus wave 5): tier set from the measured envelope (plan §11.2).

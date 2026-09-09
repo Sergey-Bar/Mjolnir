@@ -23,6 +23,13 @@ export const emptyTestBody = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "empty test bodies are runner-outcome semantics; the detector " +
+      "matches the test-def plus empty-body shapes on the code-only text " +
+      "— the AST body-shape is the same predicate",
+  },
   introduced: "0.1.0",
 
   // Measured 2026-09-02 (corpus wave 5): tier set from the measured envelope (plan §11.2).
