@@ -13,8 +13,10 @@ import { describe, expect, it } from "vitest";
 
 import {
   classifyVerdict,
+  renderTriage,
   renderTriageWorkflow,
   renderTriageWorkflowJson,
+  triageRows,
   workflowRows,
 } from "../../src/forensics/triage.js";
 import type {
@@ -186,5 +188,99 @@ describe("determinism + hostile inputs", () => {
       report({ verdicts: [verdict({})], failed: 0 }),
     );
     expect(out).toContain("Nothing to triage");
+  });
+});
+
+describe("triageRows + renderTriage — the legacy surface (P8 completeness)", () => {
+  it("rows sort worst-first: flake by passedOnRetry, then attempts desc, then duration", () => {
+    const rep = report({
+      verdicts: [
+        verdict({
+          file: "a.spec.ts",
+          title: "plain-fail",
+          everFailed: true,
+          attempts: 1,
+        }),
+        verdict({
+          file: "b.spec.ts",
+          title: "flake-3",
+          passedOnRetry: true,
+          everFailed: true,
+          attempts: 3,
+        }),
+        verdict({
+          file: "c.spec.ts",
+          title: "flake-2-slow",
+          passedOnRetry: true,
+          everFailed: true,
+          attempts: 2,
+          totalDurationMs: 900,
+        }),
+        verdict({
+          file: "d.spec.ts",
+          title: "flake-2-fast",
+          passedOnRetry: true,
+          everFailed: true,
+          attempts: 2,
+          totalDurationMs: 100,
+        }),
+        verdict({
+          file: "e.spec.ts",
+          title: "clean",
+          attempts: 1,
+          totalDurationMs: 50,
+        }),
+      ],
+    });
+    const rows = triageRows(rep);
+    expect(rows.map((r) => r.title)).toEqual([
+      "flake-3",
+      "flake-2-slow",
+      "flake-2-fast",
+      "plain-fail",
+    ]);
+    expect(rows[0]?.suggestedAction).toBe("quarantine + ticket");
+  });
+
+  it("renderTriage renders TRUE-FLAKE/FAILING rows + the quarantine proposal", () => {
+    const rep = report({
+      verdicts: [
+        verdict({
+          file: "b.spec.ts",
+          title: "flake",
+          passedOnRetry: true,
+          everFailed: true,
+          attempts: 3,
+        }),
+        verdict({
+          file: "a.spec.ts",
+          title: "failing",
+          everFailed: true,
+          attempts: 1,
+        }),
+      ],
+    });
+    const out = renderTriage(rep);
+    expect(out).toContain("TRUE-FLAKE");
+    expect(out).toContain("FAILING");
+    expect(out).toContain("Auto-quarantine proposal: 1 test");
+    expect(out).toContain("quarantine is not deletion");
+  });
+
+  it("renderTriage with no failures says so and renders nothing else", () => {
+    const rep = report({ verdicts: [verdict({})] });
+    const out = renderTriage(rep);
+    expect(out).toContain("Nothing to triage");
+  });
+
+  it("timedOut failures get the fix-now action (suggestAction arm)", () => {
+    const rows = triageRows(
+      report({
+        verdicts: [
+          verdict({ finalStatus: "timedOut", everFailed: true, attempts: 1 }),
+        ],
+      }),
+    );
+    expect(rows[0]?.suggestedAction).toBe("fix now — failing");
   });
 });

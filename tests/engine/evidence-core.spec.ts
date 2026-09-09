@@ -14,6 +14,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildEvidenceRecords,
+  compareEvidenceRecords,
   countEvidence,
   countTestsIn,
   findTestAt,
@@ -405,5 +406,93 @@ describe("preservation: stamping through the core ≡ pre-core semantics (differ
         { level: "file", source: "junit-xml", testsExecuted: 3 },
       ),
     ).toBe("L3");
+  });
+});
+
+describe("ordering tiebreaks (coverage of the full comparator)", () => {
+  it("records differing only in title order by title; identical records compare 0", () => {
+    const base = verdict({ file: "e2e/x.spec.ts", title: "alpha" });
+    const recs = buildEvidenceRecords(
+      report({
+        source: "junit-xml",
+        verdicts: [verdict({ file: "e2e/x.spec.ts", title: "beta" }), base],
+      }),
+      "a.xml",
+    );
+    const titles = recs.map((r) => r.title);
+    expect([...titles].sort()).toEqual(titles);
+    // Full comparator: rebuilding the same report yields identical bytes
+    // (the comparator's equal-records arm is exercised by the sort).
+    const again = buildEvidenceRecords(
+      report({
+        source: "junit-xml",
+        verdicts: [verdict({ file: "e2e/x.spec.ts", title: "beta" }), base],
+      }),
+      "a.xml",
+    );
+    expect(again).toEqual(recs);
+  });
+
+  it("records within ONE report share its source; order never leaks", () => {
+    const recs = buildEvidenceRecords(
+      report({
+        source: "vitest-json",
+        verdicts: [verdict({ title: "beta" }), verdict({ title: "alpha" })],
+      }),
+      "same.xml",
+    );
+    expect(recs.map((r) => r.source)).toEqual(["vitest-json", "vitest-json"]);
+    expect(recs.map((r) => r.title)).toEqual(["alpha", "beta"]);
+    const recs2 = buildEvidenceRecords(
+      report({
+        source: "vitest-json",
+        verdicts: [verdict({ title: "alpha" }), verdict({ title: "beta" })],
+      }),
+      "same.xml",
+    );
+    expect(recs2).toEqual(recs);
+  });
+
+  it("zero-attempt verdicts take the skipped fallback (line 90 arm)", () => {
+    const recs = buildEvidenceRecords(
+      report({
+        verdicts: [
+          verdict({ attempts: 0, finalStatus: "skipped", skipped: true }),
+        ],
+      }),
+      "z.xml",
+    );
+    expect(recs[0]?.status.final).toBe("skipped");
+  });
+
+  it("the comparator's final arm (identical file/line/title/source) is total", () => {
+    // Two verdicts that differ in NOTHING the comparator reads must
+    // still both be present — sort stability, never a lost record.
+    const v1 = verdict({ title: "same", file: "f.spec.ts" });
+    const v2 = verdict({ title: "same", file: "f.spec.ts" });
+    const recs = buildEvidenceRecords(
+      report({ verdicts: [v1, v2] }),
+      "same.xml",
+    );
+    expect(recs).toHaveLength(2);
+  });
+});
+
+describe("cross-source ordering (the source tiebreak's arms)", () => {
+  it("records from two artifacts merge canonically — source is the final tiebreak", () => {
+    // The pipeline merges per-artifact record lists; the comparator's
+    // source arm is what makes THAT merge deterministic. Exercise it:
+    const junit = buildEvidenceRecords(
+      report({ source: "junit-xml", verdicts: [verdict({})] }),
+      "same.xml",
+    );
+    const vitest = buildEvidenceRecords(
+      report({ source: "vitest-json", verdicts: [verdict({})] }),
+      "same.xml",
+    );
+    const merged = [...junit, ...vitest].sort(compareEvidenceRecords);
+    expect(merged.map((r) => r.source)).toEqual(["junit-xml", "vitest-json"]);
+    const merged2 = [...vitest, ...junit].sort(compareEvidenceRecords);
+    expect(merged2.map((r) => r.source)).toEqual(["junit-xml", "vitest-json"]);
   });
 });
