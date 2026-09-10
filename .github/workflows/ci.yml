@@ -387,3 +387,52 @@ jobs:
           if (minutes > budget) line += " — OVER BUDGET (warning; hard gate only after 2 weeks of measured data, M3)";
           fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, line + "\n");
           '
+
+  # WI-15 (plan 1788882429145 §20/§25): benchmark artifact + advisory perf
+  # compare against the pinned baseline (.mjolnir/bench-baseline.json,
+  # committed). Fresh timings are environment-dependent and are NEVER
+  # asserted — the advisory compare only WARNS on a >25% regression vs
+  # the pinned median (§340: "advisory gate → blocking after proven
+  # reliability"). A harness failure is absorbed by continue-on-error on
+  # the run step; the summary stays honest via if: always().
+  bench-advisory:
+    needs: build-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TIME_BUDGET_MINUTES: 7
+    steps:
+      # M3: capture the job start for the soft time-budget summary below.
+      - run: echo "JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Benchmark scan + advisory compare vs pinned baseline
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          npm run bench:scan 2>&1 | tee bench-output.log
+      - name: Advisory perf result in the job summary (non-blocking)
+        if: always()
+        run: |
+          node -e '
+          const fs = require("fs");
+          let out = "bench:scan produced no output (harness failure) — advisory, non-blocking";
+          try { out = fs.readFileSync("bench-output.log", "utf8").trim(); } catch {}
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, "## Bench advisory (non-blocking)\n\n```\n" + out + "\n```\n");
+          '
+      - name: Job time budget in summary (soft)
+        if: always()
+        run: |
+          node -e '
+          const fs = require("fs");
+          const started = new Date(Number(process.env.JOB_START_EPOCH) * 1000);
+          const minutes = Math.round(((Date.now() - started.getTime()) / 60000) * 10) / 10;
+          const budget = Number(process.env.TIME_BUDGET_MINUTES);
+          let line = "Job wall-clock: " + minutes + " min (soft budget " + budget + " min)";
+          if (minutes > budget) line += " — OVER BUDGET (warning; hard gate only after 2 weeks of measured data, M3)";
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, line + "\n");
+          '
