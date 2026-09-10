@@ -9,6 +9,42 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [1.0.3] — 2026-09-10
+
+### Changes since 1
+
+- Brand system unification: one source of truth, and a gate that proves it (#71)
+- docs(brand): certification to its final state — v1.0.2, 9 rules, CI green
+- ci: the lockfile-marker guard needs an explicit bash shell
+- ci: run the site build on PRs, and guard against lockfile conflict markers
+- fix: resolve committed merge-conflict markers in package-lock.json
+- Merge origin/main (v0.6.1 → v1.0.2) into brand/unification
+- feat(brand): close the two gaps that were closable — 9.4 → 9.6
+- docs(brand): record the v0.6.1 merge in the certification
+- refactor(reporter): the Trust Report takes its rungs from the symbol module
+- feat(brand): rebuild every asset on the merged reporter, and adopt flow.svg
+- fix(docs): a placeholder was breaking the site build again
+- chore: one blank line, so `npm run lint` is green again
+- Merge origin/main (v0.5.31 → v0.6.1) into brand/unification
+- docs(brand): record D16 and the CI surfaces in the certification
+- feat(brand): Phase 13 — the badge the product emits joins the brand
+- docs(brand): stop the shipped docs pointing at an untracked file
+- docs(brand): Phase 12 — certification, and the score it actually earned
+- docs(brand): Phases 9 and 11 — write the system down, once each
+- feat(brand): Phase 10 — the reporter's diagrams stop lying about UNKNOWN
+- feat(brand): Phase 8 — the website says what the product says
+- fix(video): the shipped demo is now reproducible, and checked
+- feat(brand): Phase 6 — the badges join the brand, in all 23 READMEs
+- feat(brand): Phase 5 — one geometry for evidence and trust
+- feat(brand): Phase 4 — one palette, and the AA failure it was hiding
+- feat(brand): Phase 3 — one typography system across every surface
+- fix(site): the site build has been broken since 9f59bc5 — repair it
+- feat(brand): Phase 2 — the brand gate, proven able to fail
+- feat(brand): Phase 1 — one source of brand truth, zero visual change
+- docs(brand): Phase 0 — freeze the tree and measure the before-state
+- docs(brand): carry forward in-flight README asset work
+- chore: resync managed surface stamp to v0.5.31
+
 ## [1.0.2] — 2026-09-09
 
 ### Changes since 1
