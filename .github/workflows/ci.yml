@@ -417,13 +417,18 @@ jobs:
           npm run bench:scan 2>&1 | tee bench-output.log
       - name: Advisory perf result in the job summary (non-blocking)
         if: always()
+        # shellcheck SC2016 (actionlint): markdown fences would put
+        # backticks inside the shell script — indenting by four spaces
+        # renders the same GFM code block without them.
         run: |
-          node -e '
-          const fs = require("fs");
-          let out = "bench:scan produced no output (harness failure) — advisory, non-blocking";
-          try { out = fs.readFileSync("bench-output.log", "utf8").trim(); } catch {}
-          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, "## Bench advisory (non-blocking)\n\n```\n" + out + "\n```\n");
-          '
+          {
+            echo "## Bench advisory (non-blocking)"
+            if [ -f bench-output.log ]; then
+              sed 's/^/    /' bench-output.log
+            else
+              echo "    bench:scan produced no output (harness failure) — advisory, non-blocking"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Job time budget in summary (soft)
         if: always()
         run: |
