@@ -21,6 +21,10 @@ import { effectiveTier, isProvisional } from "../rules/measurement.js";
 import { deriveEvidenceLevel, QA_IMPACT_LABELS } from "../types.js";
 import type { Finding } from "../types.js";
 import { parseWorkflow } from "../discovery/workflow-parser.js";
+import {
+  isAzurePipelineFixture,
+  parseAzurePipeline,
+} from "../discovery/azure-pipeline-parser.js";
 import { computeCodeText } from "../engine/code-text.js";
 import { getAntiPatternContent } from "./anti-pattern-catalog.js";
 import { firstFixtureFile } from "./fixture-example.js";
@@ -56,7 +60,11 @@ function runRuleAgainstFixture(
   let ast: unknown;
   if (rule.appliesTo === "ci-workflows") {
     try {
-      ast = parseWorkflow(text);
+      // P3b: parse with the machinery matching the fixture's platform so
+      // the rule sees the doc model its scan path would hand it.
+      ast = isAzurePipelineFixture(normalizedPath)
+        ? parseAzurePipeline(text)
+        : parseWorkflow(text);
     } catch {
       return null;
     }

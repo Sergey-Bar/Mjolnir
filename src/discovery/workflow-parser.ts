@@ -1,18 +1,19 @@
 /**
  * Safe GitHub Actions workflow parser (Phase 0.3, W4-03 debt).
  *
- * Replaces the naive regex placeholder. Uses the `yaml` package with
- * hostile-input guards (R3): alias-count limits (YAML bombs), depth caps,
- * and object-prototype safety. Produces the doc model CI rules expect.
+ * Replaces the naive regex placeholder. Uses the `yaml` package through
+ * the shared hostile-input guards (src/discovery/yaml-guards.ts — R3):
+ * alias-count limits (YAML bombs), depth caps, and object-prototype
+ * safety. Produces the doc model CI rules expect. The same guards back
+ * the Azure DevOps pipeline parser (P3b), so both CI surfaces share one
+ * attack-surface defense.
  */
 
-import { parse as yamlParse } from "yaml";
+import { YamlParseError, parseYamlGuarded } from "./yaml-guards.js";
 
-/** Hard limits for hostile YAML (billion-laughs style attacks). */
-const LIMITS = {
-  maxAliases: 50,
-  maxDepth: 40,
-} as const;
+// The shared guards throw THIS class — re-exported so every consumer's
+// instanceof check (tests, adapter catch-sites) sees the same error type.
+export { YamlParseError };
 
 export interface WorkflowStep {
   name?: string;
@@ -37,41 +38,16 @@ export interface WorkflowDoc {
   jobs?: Record<string, WorkflowJob>;
 }
 
-export class YamlParseError extends Error {}
+const LABELS = {
+  invalidPrefix: "Invalid workflow YAML",
+  rootMessage: "Workflow root must be a mapping",
+  depthMessage: "Workflow nesting depth exceeds limit",
+} as const;
 
 export function parseWorkflow(text: string): WorkflowDoc {
-  // Alias-bomb guard BEFORE parse: the yaml package expands aliases during
-  // parsing, so a billion-laughs document would already have exploded by the
-  // time we could count aliases in the parsed doc. Count textually first.
-  const aliasMatches = text.match(/(?:^|[\s[{,])\*[^\s,\]}]+/g) ?? [];
-  if (aliasMatches.length > LIMITS.maxAliases) {
-    throw new YamlParseError(
-      `YAML alias count ${aliasMatches.length} exceeds limit ${LIMITS.maxAliases}`,
-    );
-  }
-
-  let doc: unknown;
-  try {
-    doc = yamlParse(text, { maxAliasCount: LIMITS.maxAliases });
-  } catch (err) {
-    // The yaml library throws Error subclasses, but it is third-party
-    // code — degrade non-Error throwables to String() rather than trust it.
-    const msg = err instanceof Error ? err.message : String(err);
-    throw new YamlParseError(`Invalid workflow YAML: ${msg}`);
-  }
+  const doc = parseYamlGuarded(text, LABELS);
 
   if (doc === null || doc === undefined) return {};
-  if (typeof doc !== "object")
-    throw new YamlParseError("Workflow root must be a mapping");
-
-  // Audit (workflow-parser): enforce the documented depth cap by walking
-  // the parsed doc. The yaml package's own alias guard does not bound
-  // NESTING depth — a legitimately-alias-free document nested 10,000
-  // levels deep would still be built (and later walked recursively by
-  // consumers). Iterative walk, so the check itself cannot overflow the
-  // stack on a hostile doc.
-  enforceDepthCap(doc, LIMITS.maxDepth);
-
   const root = doc as Record<string, unknown>;
   const jobsRaw = root["jobs"];
   if (jobsRaw === undefined || jobsRaw === null) return {};
@@ -141,27 +117,4 @@ export function parseWorkflow(text: string): WorkflowDoc {
   }
 
   return { jobs };
-}
-
-/**
- * Iterative depth check over any parsed YAML value. Throws when any
- * path from the root is deeper than `max` nesting levels (audit:
- * the documented cap was never enforced on the parsed structure).
- */
-function enforceDepthCap(value: unknown, max: number): void {
-  const stack: Array<{ v: unknown; d: number }> = [{ v: value, d: 0 }];
-  while (stack.length > 0) {
-    const { v, d } = stack.pop() as { v: unknown; d: number };
-    if (v === null || typeof v !== "object") continue;
-    if (d >= max) {
-      throw new YamlParseError(`Workflow nesting depth exceeds limit ${max}`);
-    }
-    if (Array.isArray(v)) {
-      for (const item of v) stack.push({ v: item, d: d + 1 });
-    } else {
-      for (const item of Object.values(v as Record<string, unknown>)) {
-        stack.push({ v: item, d: d + 1 });
-      }
-    }
-  }
 }

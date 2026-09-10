@@ -27,14 +27,14 @@ export const MEASURED_FP: Readonly<Record<string, MeasuredFp>> = {
   "QA-CI-001": {
     fpRate: 0.105,
     n: 19,
-    detectorRevision: 2,
+    detectorRevision: 3,
     ciLow: 0.0294,
     ciHigh: 0.3139,
   },
   "QA-CI-002": {
     fpRate: 0.111,
     n: 18,
-    detectorRevision: 2,
+    detectorRevision: 3,
     ciLow: 0.031,
     ciHigh: 0.328,
   },
@@ -48,14 +48,14 @@ export const MEASURED_FP: Readonly<Record<string, MeasuredFp>> = {
   "QA-CI-007": {
     fpRate: 0,
     n: 11,
-    detectorRevision: 2,
+    detectorRevision: 3,
     ciLow: 0,
     ciHigh: 0.2588,
   },
   "QA-CI-008": {
     fpRate: 0.1,
     n: 10,
-    detectorRevision: 2,
+    detectorRevision: 3,
     ciLow: 0.0179,
     ciHigh: 0.4042,
   },

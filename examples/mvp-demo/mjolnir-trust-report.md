@@ -1,6 +1,6 @@
 <!-- mjolnir-trust-report:v1 -->
 
-# Mjölnir Trust Report — C:\Work\Mjolnir-QA\Mjolnir-p8\examples\mvp-demo
+# Mjölnir Trust Report — C:\Work\Mjolnir-QA\Mjolnir\examples\mvp-demo
 
 > Tests tell you what passed. Mjölnir tells you what you can trust.
 

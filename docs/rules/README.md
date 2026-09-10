@@ -13,6 +13,7 @@ One page per rule, each showing a real detected example, the fix, confirmation o
 | [QA-CI-008](./QA-CI-008.md)       | Always-success step masks failures                               | error    |
 | [QA-CI-009](./QA-CI-009.md)       | Test command does not propagate exit code                        | error    |
 | [QA-CI-010](./QA-CI-010.md)       | Tests skipped where they must block                              | error    |
+| [QA-CI-013](./QA-CI-013.md)       | Verification gate conditioned so it can never fail the pipeline  | error    |
 | [QA-CS-101](./QA-CS-101.md)       | Skipped test                                                     | warning  |
 | [QA-CS-102](./QA-CS-102.md)       | Hard sleep in test                                               | warning  |
 | [QA-CS-103](./QA-CS-103.md)       | Test without assertions                                          | error    |

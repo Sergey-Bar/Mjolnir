@@ -9,6 +9,36 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — P3b Azure DevOps (remediation/remote-first R1)
+
+### Added
+
+- Azure DevOps pipeline detection: `azure-pipelines.yml` at the repo root is now
+  discovered and scanned (`azure-pipelines` adapter, safe-YAML machinery shared
+  with the GitHub Actions parser — alias-bomb guard, depth cap, prototype-safe
+  keys; docs/AZURE-DEVOPS.md).
+- New rule **QA-CI-013** "Verification gate conditioned so it can never fail the
+  pipeline" — `condition: failed()` rescue, `condition: false`, `enabled: false`
+  on Azure verification gates. BORN QUARANTINE (§15.5): opt-in via `--strict`
+  until corpus-measured; never silent-core.
+- docs/AZURE-DEVOPS.md — platform recipe with the frozen exit-code contract.
+
+### Changed
+
+- **QA-CI-001** (detectorRevision 3): Azure DevOps arm — `continueOnError: true`
+  on a verification step or a gate-bearing job (same mechanism, framework-tagged
+  `azure-pipelines`).
+- **QA-CI-002** (detectorRevision 3): Azure routing — the lexical `|| true` scan
+  now reaches `bash:`/`pwsh:` script blocks in azure-pipelines.yml.
+- **QA-CI-007** (detectorRevision 3): Azure DevOps arm — `retryCountOnTaskFailure`
+  on verification tasks.
+- **QA-CI-008** (detectorRevision 3): Azure DevOps arm — verification gate jobs
+  conditioned `always()` / `succeededOrFailed()` (master-plan P3b shape).
+- Measurement: sidecar + `MEASURED_FP` re-recorded at detectorRevision 3 for
+  QA-CI-001/002/007/008; corpus re-run showed zero QA-CI count drift (no corpus
+  repo carries a discoverable azure-pipelines.yml), so the existing classified
+  verdicts remain the measurement evidence.
+
 ## [1.0.5] — 2026-09-10
 
 ### Changes since 1

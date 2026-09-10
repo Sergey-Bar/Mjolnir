@@ -15,7 +15,13 @@ describe("legacyAppliesTo", () => {
     // languages: ["typescript", "javascript"] and detects JS syntax.
     // Cross-language coverage is the QA-PY / QA-JV / QA-CS families'.
     expect(legacyAppliesTo("test-files")).toEqual(["typescript"]);
-    expect(legacyAppliesTo("ci-workflows")).toEqual(["github-actions"]);
+    // P3b: CI rules host on BOTH workflow adapters — each parses its own
+    // surface (GitHub Actions YAML vs azure-pipelines.yml) and hands the
+    // rules the matching doc model through the ast slot.
+    expect(legacyAppliesTo("ci-workflows")).toEqual([
+      "github-actions",
+      "azure-pipelines",
+    ]);
     expect(legacyAppliesTo("typescript")).toEqual(["typescript"]);
   });
 

@@ -25,11 +25,11 @@ happen to have been sampled.
 
 | Rule ID      | FP Rate | 95% Wilson CI    | Sample (n) | TP  | FP  | UNSURE | detectorRev | Status        |
 | ------------ | ------- | ---------------- | ---------- | --- | --- | ------ | ----------- | ------------- |
-| QA-CI-001    | 11%     | [0.0294, 0.3139] | 19         | 17  | 2   | 0      | 2           | 🔴 quarantine |
-| QA-CI-002    | 11%     | [0.031, 0.328]   | 18         | 16  | 2   | 0      | 2           | ⚠️ extended   |
+| QA-CI-001    | 11%     | [0.0294, 0.3139] | 19         | 17  | 2   | 0      | 3           | 🔴 quarantine |
+| QA-CI-002    | 11%     | [0.031, 0.328]   | 18         | 16  | 2   | 0      | 3           | ⚠️ extended   |
 | QA-CI-005    | 8%      | [0.0137, 0.3331] | 13         | 12  | 1   | 0      | 2           | 🔴 quarantine |
-| QA-CI-007    | 0%      | [0, 0.2588]      | 11         | 11  | 0   | 0      | 2           | ⚠️ extended   |
-| QA-CI-008    | 10%     | [0.0179, 0.4042] | 10         | 9   | 1   | 0      | 2           | 🔴 quarantine |
+| QA-CI-007    | 0%      | [0, 0.2588]      | 11         | 11  | 0   | 0      | 3           | ⚠️ extended   |
+| QA-CI-008    | 10%     | [0.0179, 0.4042] | 10         | 9   | 1   | 0      | 3           | 🔴 quarantine |
 | QA-CI-009    | 0%      | [0, 0.2775]      | 10         | 10  | 0   | 0      | 2           | ⚠️ extended   |
 | QA-CI-010    | 10%     | [0.0179, 0.4042] | 10         | 9   | 1   | 0      | 2           | 🔴 quarantine |
 | QA-CS-101    | 0%      | [0, 0.1611]      | 20         | 20  | 0   | 0      | 1           | ✅ core       |
@@ -112,4 +112,7 @@ happen to have been sampled.
 | 🔴 quarantine | > 30%   | Opt-in only (`--strict`)              |
 | ❓ unmeasured | n < 10  | Cannot ship in core until measured    |
 
-## Coverage: 77/77 rules measured (100%) at n ≥ 10
+## Coverage: 77/78 rules measured (99%) at n ≥ 10
+
+**1 rules carry no measured FP rate.** Any of them in the
+core tier is shipping on an unverified assumption.

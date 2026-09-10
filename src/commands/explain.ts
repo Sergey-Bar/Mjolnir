@@ -22,6 +22,10 @@ import { wrapText } from "../reporter/theme.js";
 import { deriveEvidenceLevel, QA_IMPACT_LABELS } from "../types.js";
 import type { Finding, ScanResult } from "../types.js";
 import { parseWorkflow } from "../discovery/workflow-parser.js";
+import {
+  isAzurePipelineFixture,
+  parseAzurePipeline,
+} from "../discovery/azure-pipeline-parser.js";
 import { computeCodeText } from "../engine/code-text.js";
 import { firstFixtureFile } from "./fixture-example.js";
 import { sectionHeader, plainContext } from "../reporter/ui.js";
@@ -92,12 +96,17 @@ export function explainRule(
   const normalizedPath = fixturePath.replaceAll("\\", "/");
 
   // CI-workflow rules read a parsed YAML AST from ctx.ast, exactly as
-  // githubActionsAdapter.runRules provides it (never raw ctx.text) —
+  // the workflow adapters' runRules provides it (never raw ctx.text) —
   // without this, every QA-CI-* rule silently no-ops on its own fixture.
+  // P3b: the parser matches the fixture's platform (azure-pipelines.yml
+  // parses through the Azure machinery, GitHub YAML through the Actions
+  // one) so the rule sees the doc model its scan path would hand it.
   let ast: unknown;
   if (rule.appliesTo === "ci-workflows") {
     try {
-      ast = parseWorkflow(text);
+      ast = isAzurePipelineFixture(normalizedPath)
+        ? parseAzurePipeline(text)
+        : parseWorkflow(text);
     } catch {
       return { ok: true, rule };
     }

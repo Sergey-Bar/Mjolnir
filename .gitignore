@@ -70,3 +70,11 @@ assets/video/out/
 
 # tmp probe scripts from harvest sessions — never part of the tree (F7 recurrence guard)
 tests/**/tmp-*.mts
+# Added by code-review-graph
+.code-review-graph/
+
+# Machine-local agent-tooling configs (Kilo/agent-manager sessions on this
+# checkout) — environment state, never part of the tree.
+.mcp.json
+opencode.jsonc
+skills-lock.json

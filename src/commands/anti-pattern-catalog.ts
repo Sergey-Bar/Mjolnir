@@ -103,6 +103,18 @@ export const ANTI_PATTERN_CONTENT: Record<string, string> = {
     '"neutral," which several branch-protection configurations treat as ' +
     "passing — the PR merges having never been tested at all.",
 
+  "QA-CI-013":
+    "A verification gate (Azure DevOps stage, job, or step) whose own " +
+    "condition or enablement guarantees it never executes on the pipeline " +
+    "path it is supposed to guard: `condition: failed()` turns the gate " +
+    "into a rescue step that only runs after something already failed, " +
+    "`condition: false` and `enabled: false` switch it off outright. On " +
+    "the green path the gate is skipped, so the pipeline passes with zero " +
+    "verification executed — the checkmark is green precisely because the " +
+    "check did not happen. (The sibling shape — a gate marked " +
+    "`succeededOrFailed()`/`always()`, which runs on failed pipelines too " +
+    "— is QA-CI-008's Azure arm.)",
+
   "QA-TEST-001":
     "`.only`/`test.only`/`it.only` restricts a test run to just the " +
     "marked test(s) — that's the entire point of the API, for local " +

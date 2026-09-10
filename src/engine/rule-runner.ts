@@ -24,7 +24,10 @@ import type { UniversalRule } from "./adapter.js";
  */
 export function legacyAppliesTo(value: string): string[] {
   if (value === "test-files") return ["typescript"];
-  if (value === "ci-workflows") return ["github-actions"];
+  // P3b: CI rules host on both workflow adapters — each adapter parses
+  // its own surface (GitHub Actions YAML vs azure-pipelines.yml) and
+  // hands the rules the matching doc model through the ast slot.
+  if (value === "ci-workflows") return ["github-actions", "azure-pipelines"];
   return [value];
 }
 

@@ -10,6 +10,12 @@
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
 import { looksLikeVerificationGate } from "./verification-gate.js";
+import {
+  isAzurePipelineDoc,
+  jobRunsVerificationGate,
+  locateAzureJobKey,
+} from "./azure-gates.js";
+import type { AzurePipelineDoc } from "../../discovery/azure-pipeline-parser.js";
 
 interface StepNode {
   name?: string;
@@ -65,7 +71,9 @@ export const alwaysSuccessStep = defineRule({
   appliesTo: "ci-workflows",
   // Trust Metadata
   languages: ["yaml"],
-  frameworks: ["github-actions"],
+  // P3b: Azure verification jobs/stages conditioned to run regardless of
+  // prerequisite failures (`condition: always()` / `succeededOrFailed()`).
+  frameworks: ["github-actions", "azure-pipelines"],
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
@@ -74,7 +82,8 @@ export const alwaysSuccessStep = defineRule({
     detail:
       "always()-success is a workflow-step outcome contract, not a code " +
       "construct; the detector matches the step's run/if keys, which are " +
-      "string fields of the YAML config surface",
+      "string fields of the YAML config surface — on Azure DevOps the same " +
+      "contract lives in job/stage `condition:` text",
   },
   introduced: "0.1.0",
 
@@ -83,12 +92,20 @@ export const alwaysSuccessStep = defineRule({
   // (a) earlier-tolerated steps must include an actual verification gate,
   // (b) a later always() enforcement step re-enforces failure. Rev-1
   // measurement invalidated per plan §07 (stale → re-measured).
+  // detectorRevision 3 (P3b, 2026-09-10): Azure DevOps arm added — a
+  // verification gate job conditioned `always()`/`succeededOrFailed()`
+  // (master-plan P3b shape). Additive platform detection; GitHub paths
+  // unchanged.
   tier: "quarantine",
-  detectorRevision: 2,
+  detectorRevision: 3,
   run(ctx) {
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
-    const doc = ctx.ast as WorkflowDoc | undefined;
+    const doc = ctx.ast as WorkflowDoc | AzurePipelineDoc | undefined;
+    if (isAzurePipelineDoc(doc)) {
+      azureArm(ctx, doc, findings);
+      return findings;
+    }
     if (!doc?.jobs) return findings;
 
     for (const [jobName, job] of Object.entries(doc.jobs)) {
@@ -178,4 +195,46 @@ function findStepLine(text: string, needle: string): number {
   let line = 1;
   for (let i = 0; i < idx; i++) if (text[i] === "\n") line++;
   return line;
+}
+
+type FindingPart = Omit<Finding, "ruleId" | "category">;
+
+/**
+ * Azure DevOps arm (detectorRevision 3, P3b — master-plan shape): a
+ * verification gate job conditioned `always()` / `succeededOrFailed()`.
+ * Such a job runs even when the build or prerequisite jobs failed, so its
+ * own green result cannot certify the pipeline path it was meant to guard;
+ * combined with tolerated steps its failure can never surface at all.
+ * Reporting-only jobs (no gate steps) are excluded by the gate check.
+ */
+function azureArm(
+  ctx: { path: string; text: string },
+  doc: AzurePipelineDoc,
+  findings: FindingPart[],
+): void {
+  const jobs = [
+    ...(doc.stages ?? []).flatMap((s) => s.jobs ?? []),
+    ...(doc.jobs ?? []),
+  ];
+  if (doc.steps?.length) {
+    jobs.push({ name: "steps", kind: "job" as const, steps: doc.steps });
+  }
+  const RUNS_ANYWAY_RE = /\balways\s*\(\s*\)|succeededOrFailed\s*\(\s*\)/i;
+  for (const job of jobs) {
+    const cond = job.condition ?? "";
+    if (!RUNS_ANYWAY_RE.test(cond)) continue;
+    if (!jobRunsVerificationGate(job)) continue;
+    findings.push({
+      severity: "error",
+      confidence: "medium",
+      findingType: "deterministic-defect",
+      qaImpact: "FALSE-GREEN",
+      file: ctx.path,
+      line: locateAzureJobKey(ctx.text, job, "condition"),
+      column: 1,
+      message: `Verification job \`${job.name ?? "?"}\` is conditioned \`${cond.trim()}\` — it runs even when its prerequisites failed.`,
+      why: "A green result from this job cannot prove the pipeline path it was meant to guard: it executes on failed pipelines too, and its verdict is decoupled from the build it verifies.",
+      fix: "Condition the verification job on success (the default), or add an explicit failure-enforcement step that fails when the guarded work did not succeed.",
+    });
+  }
 }

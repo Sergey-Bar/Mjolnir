@@ -1,0 +1,7 @@
+# QA-CI-007 must-fire (Azure DevOps) — retryCountOnTaskFailure on a
+# verification task: retry-until-pass masks intermittent failures.
+jobs:
+  - job: Tests
+    steps:
+      - script: npm test
+        retryCountOnTaskFailure: 2

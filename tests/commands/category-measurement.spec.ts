@@ -303,19 +303,20 @@ describe("measurementBlock (Phase 4.3)", () => {
   });
 
   it("quarantine counts only measured quarantine rules", () => {
-    // QA-CI-001 IS measured in the shipped map (n=19, detectorRevision 2)
-    // — the synthetic rule must declare that same revision to count as
-    // measured, and the quarantine tier to land in the quarantine census.
-    // A second MEASURED rule at tier core proves quarantine excludes it.
+    // QA-CI-001 IS measured in the shipped map (n=19, detectorRevision 3
+    // since the P3b Azure arm) — the synthetic rules must declare the
+    // revisions MEASURED_FP records to count as measured, and the
+    // quarantine tier to land in the quarantine census. A second MEASURED
+    // rule at tier core proves quarantine excludes it.
     const rule = minimalRules.one({
       id: "QA-CI-001",
       tier: "quarantine",
-      detectorRevision: 2,
+      detectorRevision: 3,
     });
     const coreMeasured = minimalRules.one({
       id: "QA-CI-002",
       tier: "core",
-      detectorRevision: 2,
+      detectorRevision: 3,
     });
     const block = measurementBlock([
       rule,
