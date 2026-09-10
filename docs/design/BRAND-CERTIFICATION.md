@@ -16,14 +16,19 @@ MJÖLNIR BRAND SYSTEM — NOT YET 10/10
 ```
 
 The system is built, enforced and green: one token source, one gate with
-eight blocking rules and zero findings, one typography system, one
-symbol vocabulary, and every surface consuming them. Fifteen of the
-sixteen defects are closed, five of them found during the work rather
-than in the plan — the last of those because Sergey asked whether the CI
-surfaces were covered, and they were not.
+nine blocking rules and zero findings, one typography system, one symbol
+vocabulary, and every surface consuming them. Sixteen of the sixteen
+brand defects are closed, five of them found during the work rather than
+in the plan.
 
-Two of the three things holding it back have since been built rather
-than argued away:
+The branch is on `origin/main` at **v1.0.2** — main released 1.0 (a
+measurement-census milestone, no schema break) during review, and every
+generated asset was re-verified byte-identical against it. PR #71 is
+green on all 20 real checks; the one red is `security/snyk`, which fails
+on main's own tip and which PR #70 was merged past — see §8c.
+
+Two of the three things it was scored down for have since been built
+rather than argued away:
 
 - **The brand masters are pinned.** Rule 9 hashes the two provided
   masters and the nine files derived from them. Re-encoding is allowed
@@ -243,7 +248,7 @@ instead verified structurally in the emitted SVG (three evidence rings
 in the brightness ramp, six ladder rungs with spacing 24/24/**36**/24/24
 placing the gap exactly at L2\|L3).
 
-## 8b. Rebased onto v0.6.1
+## 8b. Rebased onto v1.0.2 (via v0.6.1)
 
 Main moved 37 commits under this branch while it was being built — the
 whole 0.6.x Productized Core line. Merged, and everything re-verified
@@ -275,27 +280,90 @@ D15: `docs/RULE-LIFECYCLE.md` wrote `mjolnir mutation <report>` as prose,
 Vue's template compiler read `<report>` as an element, and the build
 failed. Both times the cause was the same — **nothing runs the site
 build except the Pages workflow**, and a deploy that fails after merge is
-a deploy nobody reads. Putting `npm --prefix site run build` in the main
-CI job would have caught both, and costs twelve seconds.
+a deploy nobody reads. Both were caught in the same way this time — by running the gate
+locally — and both are now fixed for good: see §8c.
+
+## 8c. Two CI checks, so the class cannot recur
+
+This branch surfaced four pre-existing breakages just by running the
+gates: the site build broken twice (`gen-report.mjs` requiring a heading
+the hero asset had dropped; `mjolnir mutation <report>` in a doc read by
+Vue's compiler as an element), a `prettier --check` failure on a
+CHANGELOG blank line, and `<<<<<<<` conflict markers committed in
+`package-lock.json` on main since v1.0.0 — a file npm parses as JSON, so
+`npm ci` fails on a clean checkout and Snyk cannot parse the manifest.
+
+Each was fixed in its own commit. Two of them were also holes in CI, now
+closed:
+
+- **`site-build` job** (`ci.yml`). The site build only ran on
+  push-to-main, so a commit that broke it passed every PR check and
+  failed the deploy after merge. The new job runs the same
+  install / catalog-test / build / site-doctor sequence `pages.yml`
+  does, on the PR. ~2 minutes.
+- **Lockfile marker guard** in `build-test`. A scoped `git grep` for a
+  line that is exactly seven `<`, `=` or `>` in a lockfile — JSON has no
+  such line — run right after checkout so it fails fast with the file
+  named. `shell: bash` because `windows-latest` defaults `run:` to
+  PowerShell (my first cut without it failed the Windows leg; CI caught
+  it, `2a659a5` fixed it — which is the check doing its job).
+
+## 8d. Snyk
+
+`security/snyk (sergey-bar)` reports `1 test has failed`, and it is not
+from this branch:
+
+- `npm audit` is clean everywhere — root, `site/`, `packages/*`, prod
+  and dev. Zero vulnerabilities.
+- This PR adds, changes and removes **zero** dependencies.
+- It fails on `main`'s own tip for the same reason, and **PR #70** — now
+  part of main's 1.0 line — got the identical `1 test has failed` and was
+  merged.
+- Snyk is a GitHub App integration with no configuration in the repo.
+  This PR only _triggers_ it because commit `5fcd69b` had to edit
+  `package-lock.json` to remove the conflict markers, after which Snyk
+  can parse the file and surfaces a repo-wide advisory that predates
+  this branch.
+
+It is a Snyk-dashboard triage item — bump the flagged transitive
+dependency, or add a `.snyk` ignore with a reason. Left for the
+maintainer because suppressing an advisory that `npm audit` cannot even
+see, blind, would be worse than naming it here.
 
 ## 9. What changed
 
-Twelve commits, each independently reviewable.
+29 commits on `brand/unification`, each independently reviewable. The
+brand phases:
 
-|           |                                                              |
-| --------- | ------------------------------------------------------------ |
-| `ce6dc05` | **fix(site)** the site build, broken since `9f59bc5`         |
-| `f58d7cf` | Phase 0 — freeze the tree, measure the before-state          |
-| `ead9124` | Phase 1 — one source of brand truth, zero visual change      |
-| `f05166e` | Phase 2 — the brand gate, proven able to fail                |
-| `61ad5dd` | Phase 3 — one typography system across every surface         |
-| `2390109` | Phase 4 — one palette, and the AA failure it was hiding      |
-| `732e206` | Phase 5 — one geometry for evidence and trust                |
-| `643ef68` | Phase 6 — the badges join the brand, in all 23 READMEs       |
-| `73e4437` | **fix(video)** the shipped demo is reproducible, and checked |
-| `75f3823` | Phase 8 — the website says what the product says             |
-| `8b642f4` | Phase 10 — the reporter's diagrams stop lying about UNKNOWN  |
-| `4a442f2` | Phases 9 and 11 — write the system down, once each           |
+| Phase |           |                                                    |
+| ----- | --------- | -------------------------------------------------- |
+| 0     | `f58d7cf` | freeze the tree, measure the before-state          |
+| 1     | `ead9124` | one source of brand truth, zero visual change      |
+| 2     | `f05166e` | the brand gate, proven able to fail                |
+| 3     | `61ad5dd` | one typography system across every surface         |
+| 4     | `2390109` | one palette, and the AA failure it was hiding      |
+| 5     | `732e206` | one geometry for evidence and trust                |
+| 6     | `643ef68` | the badges join the brand, in all 23 READMEs       |
+| 8     | `75f3823` | the website says what the product says             |
+| 9/11  | `4a442f2` | write the system down, once each                   |
+| 10    | `8b642f4` | the reporter's diagrams stop lying about UNKNOWN   |
+| 12    | `5b1de26` | certification                                      |
+| 13    | `7c4fb6e` | the badge the product emits joins the brand        |
+| —     | `2ea48a7` | close the two closable gaps — rule 9, video-pixels |
+
+Not brand work, fixed in their own commits so a reviewer can drop or
+cherry-pick them:
+
+|                     |                                                            |
+| ------------------- | ---------------------------------------------------------- |
+| `ce6dc05`           | site build broken since `9f59bc5`                          |
+| `8963e73`           | site build broken again — `<report>` read as a Vue tag     |
+| `e4a4c66`           | CHANGELOG blank line failing `prettier --check`            |
+| `73e4437`           | the shipped demo video was reproducible by no command      |
+| `5fcd69b`           | `package-lock.json` conflict markers, on main since v1.0.0 |
+| `2d4bde6` `2a659a5` | the two CI checks from §8c                                 |
+
+Two merge commits — `a13e8be` (v0.6.1) and `d639762` (v1.0.2).
 
 Created: `src/brand/tokens.ts`, `src/brand/symbols.ts`,
 `scripts/generate-brand-tokens.ts`, `scripts/brand-doc.ts`,
@@ -326,30 +394,33 @@ vendored woff2 files, and three contract specs.
 Nothing here is hidden, and nothing here is scheduled — these are the
 honest edges of the work as it stands.
 
-1. **No image-hash lock on the brand masters.** _(blocks 10/10)_
-2. **The MP4's pixels are unverified.** Sampled by hand once: the poster
-   corner reads `#0D121A`, the canonical terminal ground through yuv420p
-   at CRF 32. _(blocks 10/10)_
-3. **Prose design documents can drift.** Only the token reference is
-   generated. _(blocks 10/10)_
-4. **Motion durations are not checked** against the `MOTION` tokens.
-5. **The site's terminal component uses a system monospace stack**, not
+1. **Prose design documents can drift.** Only the token reference is
+   generated and byte-locked; rule 5 catches any colour they state that
+   the source does not hold, but no check reaches a sentence that is
+   merely no longer true. _(the sole thing blocking 10/10 — and I do not
+   think a check can reach it)_
+2. **Motion durations are not checked** against the `MOTION` tokens.
+3. **The site's terminal component uses a system monospace stack**, not
    Geist Mono: the web subset lacks the box-drawing and block-element
    glyphs the reporter prints, and mixing faces mid-line broke column
    alignment by up to 3.6 columns. Documented in the component.
-6. **Mobile Lighthouse is 88–92**, and the baseline it would be compared
+4. **Mobile Lighthouse is 88–92**, and the baseline it would be compared
    against is not sound.
-7. **The tour video is rendered and tested but ships nowhere.**
-8. **Two pre-existing test flakes remain**, both load-dependent timeouts,
-   both green in isolation and unrelated to this work:
-   `doctor-json.spec.ts` G5 and `package-smoke.spec.ts`.
-9. **The README's prose and section rhythm were deliberately not
+5. **The tour video is rendered and tested but ships nowhere.**
+6. **Pre-existing test flakes** under full parallel load, all green in
+   isolation and unrelated to this work: `doctor-json.spec.ts` G5,
+   `package-smoke.spec.ts`, and `scale-benchmark.spec.ts`.
+7. **The README's prose and section rhythm were deliberately not
    rewritten.** Its badges, assets and diagrams converged; its technical
    argument was already its strongest asset and the mission's own rule
    was to preserve it.
-10. **Another session was writing to the primary worktree** during this
-    work. Its files were preserved untouched and this work moved to an
-    isolated worktree; the two have not been reconciled.
+8. **`security/snyk`** — a dashboard triage item, not a code defect;
+   see §8d.
+9. **The primary worktree** (`C:\Work\Mjolnir-QA\Mjolnir`) was left on
+   this branch's Phase-0 fork with another session's uncommitted files.
+   Those files were verified to be entirely superseded by `origin/main`
+   (the census work landed via the P8 / WI-14 PRs); they are preserved
+   in a stash, and the worktree was reset to current `main` content.
 
 ## 12. Final verdict
 
@@ -357,10 +428,15 @@ honest edges of the work as it stands.
 MJÖLNIR BRAND SYSTEM — NOT YET 10/10
 ```
 
-Overall coherence **9.6/10**. Two of the three absent checks were built
-after this document first said they were missing; the remaining 0.4 is
-one gap I do not think a check can reach, and I would rather carry it
-than dress it.
+Overall coherence **9.6/10**. The three checks this document first
+listed as missing — hash lock, pixel verification, and one more — became
+two built checks (rule 9, `video-pixels.spec.ts`) and one gap I do not
+believe a check can reach: a prose sentence going quietly out of date.
+The remaining 0.4 is that, and I would rather carry it than dress it.
+
+PR #71 is green on all 20 real checks against `main` at v1.0.2. The one
+red, `security/snyk`, fails on main's own tip and was merged past on
+PR #70 — §8d.
 
 The system is one palette, two typefaces, three marks and one source of
 truth, enforced by a gate that has been watched rejecting every kind of
