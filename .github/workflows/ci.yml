@@ -51,6 +51,10 @@ jobs:
       # main once already (the v1.0.0 merge). Fail here, fast, with the
       # file named — before the confusing npm error.
       - name: No unresolved merge markers in lockfiles
+        # bash explicitly: windows-latest defaults `run:` to PowerShell,
+        # where `if … then … fi` is a syntax error. Git Bash is present
+        # on every runner.
+        shell: bash
         run: |
           # JSON has no line that is exactly seven <, = or > — so in a
           # lockfile these are unambiguously conflict markers.
