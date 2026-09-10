@@ -18,11 +18,13 @@ export const swallowedExitCode = defineRule({
   qaImpact: "FALSE-GREEN",
   appliesTo: "ci-workflows",
   // Trust Metadata
-  languages: ["yaml"],
+  languages: ["yaml", "groovy"],
   // P3b: the detector is lexical over the file text — an Azure DevOps
   // `bash:`/`pwsh:` block carrying `npm test || true` is the same defect.
-  // Routing delivers azure-pipelines.yml through this rule unchanged.
-  frameworks: ["github-actions", "azure-pipelines"],
+  // P3c: so is `|| true` inside Jenkinsfile `sh` strings.
+  // Routing delivers azure-pipelines.yml and Jenkinsfile through this
+  // rule unchanged.
+  frameworks: ["github-actions", "azure-pipelines", "jenkins"],
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
@@ -30,10 +32,11 @@ export const swallowedExitCode = defineRule({
     reasonCode: "shell-string-in-config",
     detail:
       "exit-code swallowing lives inside workflow run: strings (shell " +
-      "scripts embedded in YAML) and Azure DevOps script/bash/pwsh steps " +
-      "(shell scripts embedded in YAML); the YAML statement IS a string " +
-      "literal — a shell syntax tree of a YAML value adds parsing without " +
-      "adding classification power",
+      "scripts embedded in YAML), Azure DevOps script/bash/pwsh steps " +
+      "(shell scripts embedded in YAML), and Jenkinsfile `sh` strings " +
+      "(shell scripts embedded in Groovy); the statement IS a string " +
+      "literal — a shell syntax tree of an embedded value adds parsing " +
+      "without adding classification power",
   },
   introduced: "0.1.0",
 
@@ -43,8 +46,10 @@ export const swallowedExitCode = defineRule({
   // detectorRevision 3 (P3b, 2026-09-10): Azure DevOps routing (the lexical
   // scan now also reaches azure-pipelines.yml script blocks) — additive
   // platform delivery; the detection patterns are unchanged.
+  // detectorRevision 4 (P3c, 2026-09-10): Jenkinsfile routing — same
+  // additive-platform law as rev 3.
   tier: "extended",
-  detectorRevision: 3,
+  detectorRevision: 4,
   run(ctx) {
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 

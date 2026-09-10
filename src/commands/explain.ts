@@ -98,17 +98,23 @@ export function explainRule(
   // CI-workflow rules read a parsed YAML AST from ctx.ast, exactly as
   // the workflow adapters' runRules provides it (never raw ctx.text) —
   // without this, every QA-CI-* rule silently no-ops on its own fixture.
-  // P3b: the parser matches the fixture's platform (azure-pipelines.yml
+  // P3b/P3c: the parser matches the fixture's platform (azure-pipelines.yml
   // parses through the Azure machinery, GitHub YAML through the Actions
-  // one) so the rule sees the doc model its scan path would hand it.
+  // one, and the Jenkinsfile stays un-parsed text exactly as its adapter
+  // delivers it) so the rule sees the context its scan path would hand it.
   let ast: unknown;
   if (rule.appliesTo === "ci-workflows") {
-    try {
-      ast = isAzurePipelineFixture(normalizedPath)
-        ? parseAzurePipeline(text)
-        : parseWorkflow(text);
-    } catch {
-      return { ok: true, rule };
+    const base = normalizedPath.split("/").pop() ?? "";
+    if (base === "Jenkinsfile") {
+      ast = undefined;
+    } else {
+      try {
+        ast = isAzurePipelineFixture(normalizedPath)
+          ? parseAzurePipeline(text)
+          : parseWorkflow(text);
+      } catch {
+        return { ok: true, rule };
+      }
     }
   }
 

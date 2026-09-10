@@ -115,6 +115,18 @@ export const ANTI_PATTERN_CONTENT: Record<string, string> = {
     "`succeededOrFailed()`/`always()`, which runs on failed pipelines too " +
     "— is QA-CI-008's Azure arm.)",
 
+  "QA-CI-014":
+    "A Jenkinsfile `try` block that runs a verification gate and a `catch` " +
+    "that absorbs the failure without any failure marking — no rethrow, no " +
+    "`error(...)`, no `unstable(...)`, no `currentBuild.result` assignment. " +
+    "The stage completes, the build stays green, and the only trace of the " +
+    "failed tests is a log line. This is the Groovy spelling of the same " +
+    "defect QA-CI-002 catches in shell (`|| true`): the runner never sees " +
+    "the exit status it needs to fail the build. (A catch that downgrades " +
+    "to `unstable()` IS a failure marking — that rescue shape is " +
+    "QA-CI-008's Jenkins arm, and the two rules split the family without " +
+    "overlap.)",
+
   "QA-TEST-001":
     "`.only`/`test.only`/`it.only` restricts a test run to just the " +
     "marked test(s) — that's the entire point of the API, for local " +

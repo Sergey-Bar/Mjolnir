@@ -1,0 +1,26 @@
+// QA-CI-014 must-not-fire — honest Jenkinsfiles.
+// 1. A verification stage with no try/catch.
+// 2. A catch that rethrows the failure (the fix QA-CI-014 asks for).
+// 3. A try/catch around NON-verification work (cleanup) — its failure
+//    hides nothing that blocks release.
+pipeline {
+  agent any
+  stages {
+    stage('Verify') {
+      steps {
+        sh 'npm test'
+      }
+    }
+    stage('Deploy') {
+      steps {
+        script {
+          try {
+            sh 'make push-image'
+          } catch (err) {
+            echo "push failed: ${err}"
+          }
+        }
+      }
+    }
+  }
+}

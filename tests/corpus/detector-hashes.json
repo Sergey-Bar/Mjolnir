@@ -4,8 +4,8 @@
     "detectorRevision": 3
   },
   "QA-CI-002": {
-    "logicHash": "caf2b3d00b67068c11669e11e2c3d169c4b90ecf74f03ee305f24c370ea205d1",
-    "detectorRevision": 3
+    "logicHash": "6abec759ff8dce0256d7ea82cd548db88f7ec107741be47ac87b82242de30846",
+    "detectorRevision": 4
   },
   "QA-CI-005": {
     "logicHash": "bb3114651c462cc1a6bc6756335dd31bc17ae1c59f2168ff79c034c6da11b9c0",
@@ -16,12 +16,12 @@
     "detectorRevision": 3
   },
   "QA-CI-008": {
-    "logicHash": "071c559a091c330d542fe9d2198a397d798bf39086891a0c8f59a31953042c28",
-    "detectorRevision": 3
+    "logicHash": "dd99d7aa34179d2f08e1e6023831827051b34f0ca44acf82cbddb1cd0759feec",
+    "detectorRevision": 4
   },
   "QA-CI-009": {
-    "logicHash": "9b00bf679ccc256d44dc327326df776cbb922320d8a24a51d7e8ae7a5eaf2ef4",
-    "detectorRevision": 2
+    "logicHash": "8cfb716ca89c44d769f9705d01acb558dc48cd2d4100e8596409051c5a1c47ef",
+    "detectorRevision": 3
   },
   "QA-CI-010": {
     "logicHash": "866a8f0329cfb63b2d2a7849d7a532ee22e0b8f5f938daa22b8473116040f298",
@@ -29,6 +29,10 @@
   },
   "QA-CI-013": {
     "logicHash": "9d4305fe30cd70e09ada504cdef7284e1f1218c46b1eb07cfbc658b2550b22b0",
+    "detectorRevision": 1
+  },
+  "QA-CI-014": {
+    "logicHash": "24dbc1f4a9a7fe40e6da1369e57ea48a4f948a18c5cbd34b1eae5eb277b664c8",
     "detectorRevision": 1
   },
   "QA-CS-101": {

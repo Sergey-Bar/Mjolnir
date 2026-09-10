@@ -15,6 +15,7 @@ import { javaAdapter } from "../adapters/java.js";
 import { csharpAdapter } from "../adapters/csharp.js";
 import { githubActionsAdapter } from "../adapters/github-actions.js";
 import { azurePipelinesAdapter } from "../adapters/azure-pipelines.js";
+import { jenkinsAdapter } from "../adapters/jenkins.js";
 import type { LanguageAdapter } from "../engine/adapter.js";
 
 import { sharedWalk } from "./shared-walk.js";
@@ -28,6 +29,7 @@ export const SCAN_ADAPTERS: readonly LanguageAdapter[] = [
   csharpAdapter,
   githubActionsAdapter,
   azurePipelinesAdapter,
+  jenkinsAdapter,
 ];
 
 /**
@@ -156,5 +158,10 @@ export const SEARCHED_FOR: readonly SearchedForEntry[] = [
     id: "azure-pipelines",
     label: "Azure DevOps pipelines",
     globs: azurePipelinesAdapter.testFileGlobs,
+  },
+  {
+    id: "jenkins",
+    label: "Jenkinsfiles",
+    globs: jenkinsAdapter.testFileGlobs,
   },
 ];

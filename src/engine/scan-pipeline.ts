@@ -62,6 +62,7 @@ import {
 import { typescriptAdapter } from "../adapters/typescript.js";
 import { githubActionsAdapter } from "../adapters/github-actions.js";
 import { azurePipelinesAdapter } from "../adapters/azure-pipelines.js";
+import { jenkinsAdapter } from "../adapters/jenkins.js";
 import { pythonAdapter } from "../adapters/python.js";
 import { javaAdapter } from "../adapters/java.js";
 import { csharpAdapter } from "../adapters/csharp.js";
@@ -571,7 +572,10 @@ export async function runScan(
   // via ONE shared tree walk — the pipeline no longer readdirSyncs
   // every directory once per language.
   const languageAdapters = ADAPTERS.filter(
-    (a) => a.id !== "github-actions" && a.id !== "azure-pipelines",
+    (a) =>
+      a.id !== "github-actions" &&
+      a.id !== "azure-pipelines" &&
+      a.id !== "jenkins",
   );
   const buckets = new Map<string, string[]>(
     languageAdapters.map((a) => [a.id, [] as string[]]),
@@ -589,6 +593,9 @@ export async function runScan(
   const azBucket: string[] = [];
   azurePipelinesAdapter.discoverTestFiles({ ...ctx, testFiles: azBucket });
   ctx.testFiles.push(...azBucket);
+  const jfBucket: string[] = [];
+  jenkinsAdapter.discoverTestFiles({ ...ctx, testFiles: jfBucket });
+  ctx.testFiles.push(...jfBucket);
   // --staged (agent-handoff plan §5.7): scan-surface restriction. The
   // discovered set is intersected with the staged file list. Degraded
   // (no git) → fall back to the full surface + an honest stderr note
@@ -635,10 +642,11 @@ export async function runScan(
     scanned++;
     const isWorkflow = githubActionsAdapter.isTestFile(path);
     const isAzurePipeline = azurePipelinesAdapter.isTestFile(path);
+    const isJenkinsfile = jenkinsAdapter.isTestFile(path);
     const isPython = pythonAdapter.isTestFile(path);
     const isJava = javaAdapter.isTestFile(path);
     const isCs = csharpAdapter.isTestFile(path);
-    if (!isWorkflow && !isAzurePipeline) testFileCount++;
+    if (!isWorkflow && !isAzurePipeline && !isJenkinsfile) testFileCount++;
     let text: string;
     try {
       // Normalize once at read time: strip BOM (breaks ^-anchored regexes)
@@ -655,7 +663,7 @@ export async function runScan(
     // Exposure metric (Phase 5): count declarations, not files. Workflows
     // declare no tests, so they are excluded from the denominator.
     const relPath = relative(workspace.root, path).replaceAll("\\", "/");
-    if (!isWorkflow && !isAzurePipeline) {
+    if (!isWorkflow && !isAzurePipeline && !isJenkinsfile) {
       const decls = countTestDeclarations(text);
       testDeclarationCount += decls;
       // Per-file accounting (bug-audit L3): in changed-scope mode the
@@ -681,13 +689,15 @@ export async function runScan(
       ? githubActionsAdapter
       : isAzurePipeline
         ? azurePipelinesAdapter
-        : isPython
-          ? pythonAdapter
-          : isJava
-            ? javaAdapter
-            : isCs
-              ? csharpAdapter
-              : typescriptAdapter;
+        : isJenkinsfile
+          ? jenkinsAdapter
+          : isPython
+            ? pythonAdapter
+            : isJava
+              ? javaAdapter
+              : isCs
+                ? csharpAdapter
+                : typescriptAdapter;
     // Parse-mode token, decided BEFORE the lookup from what this scan
     // intends: AST when the adapter has a parse hook and the deadline
     // allows it, regex otherwise. After the parse below, the ACTUAL mode

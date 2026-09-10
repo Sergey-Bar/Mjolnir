@@ -16,6 +16,17 @@ import {
   locateAzureJobKey,
 } from "./azure-gates.js";
 import type { AzurePipelineDoc } from "../../discovery/azure-pipeline-parser.js";
+import {
+  catchErrorBlocks,
+  lineOfOffset,
+  textIsVerificationGate,
+  tryCatchPairs,
+} from "./jenkins-gates.js";
+
+/** Basename of the text-target Jenkins surface (P3c). */
+function isJenkinsfilePath(path: string): boolean {
+  return path.replaceAll("\\", "/").split("/").pop() === "Jenkinsfile";
+}
 
 interface StepNode {
   name?: string;
@@ -70,10 +81,12 @@ export const alwaysSuccessStep = defineRule({
   qaImpact: "FALSE-GREEN",
   appliesTo: "ci-workflows",
   // Trust Metadata
-  languages: ["yaml"],
+  languages: ["yaml", "groovy"],
   // P3b: Azure verification jobs/stages conditioned to run regardless of
   // prerequisite failures (`condition: always()` / `succeededOrFailed()`).
-  frameworks: ["github-actions", "azure-pipelines"],
+  // P3c: `catchError(buildResult: 'SUCCESS')` around a gate, and
+  // `unstable()` used as a rescue for a failed verification stage.
+  frameworks: ["github-actions", "azure-pipelines", "jenkins"],
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
@@ -83,7 +96,8 @@ export const alwaysSuccessStep = defineRule({
       "always()-success is a workflow-step outcome contract, not a code " +
       "construct; the detector matches the step's run/if keys, which are " +
       "string fields of the YAML config surface — on Azure DevOps the same " +
-      "contract lives in job/stage `condition:` text",
+      "contract lives in job/stage `condition:` text, on Jenkins in the " +
+      "catchError/unstable build-result API",
   },
   introduced: "0.1.0",
 
@@ -96,10 +110,18 @@ export const alwaysSuccessStep = defineRule({
   // verification gate job conditioned `always()`/`succeededOrFailed()`
   // (master-plan P3b shape). Additive platform detection; GitHub paths
   // unchanged.
+  // detectorRevision 4 (P3c, 2026-09-10): Jenkinsfile arms added —
+  // `catchError(buildResult: 'SUCCESS')` wrapping a gate; `unstable()` as a
+  // rescue for a failed verification stage (master-plan P3c shape).
   tier: "quarantine",
-  detectorRevision: 3,
+  detectorRevision: 4,
   run(ctx) {
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
+
+    if (isJenkinsfilePath(ctx.path)) {
+      jenkinsArm(ctx, findings);
+      return findings;
+    }
 
     const doc = ctx.ast as WorkflowDoc | AzurePipelineDoc | undefined;
     if (isAzurePipelineDoc(doc)) {
@@ -235,6 +257,60 @@ function azureArm(
       message: `Verification job \`${job.name ?? "?"}\` is conditioned \`${cond.trim()}\` — it runs even when its prerequisites failed.`,
       why: "A green result from this job cannot prove the pipeline path it was meant to guard: it executes on failed pipelines too, and its verdict is decoupled from the build it verifies.",
       fix: "Condition the verification job on success (the default), or add an explicit failure-enforcement step that fails when the guarded work did not succeed.",
+    });
+  }
+}
+
+/**
+ * Jenkinsfile arms (detectorRevision 4, P3c — master-plan shapes):
+ *  (a) `catchError(buildResult: 'SUCCESS')` wrapping a verification gate —
+ *      the stage's failure is converted to SUCCESS; the gate cannot fail
+ *      the build. `buildResult: 'UNSTABLE'` is a visible downgrade, not a
+ *      false green, and never fires.
+ *  (b) `unstable()` used as a rescue for a failed verification stage — the
+ *      try block runs the gate and the catch downgrades the result instead
+ *      of failing the build. (A catch with NO failure marking is QA-CI-014's
+ *      silent-swallow shape; the two arms split the family without overlap.)
+ */
+function jenkinsArm(
+  ctx: { path: string; text: string },
+  findings: FindingPart[],
+): void {
+  const text = ctx.text;
+
+  for (const block of catchErrorBlocks(text)) {
+    if (!/buildResult\s*:\s*['"]SUCCESS['"]/i.test(block.text)) continue;
+    if (!textIsVerificationGate(block.text)) continue;
+    findings.push({
+      severity: "error",
+      confidence: "high",
+      findingType: "deterministic-defect",
+      qaImpact: "FALSE-GREEN",
+      file: ctx.path,
+      line: lineOfOffset(text, block.start),
+      column: 1,
+      message:
+        "A verification gate runs inside `catchError(buildResult: 'SUCCESS')` — its failure is converted to a successful build.",
+      why: "The gate can fail every run and the build stays green: the catchError wrapper rewrites the stage result before Jenkins ever sees the failure.",
+      fix: "Remove the catchError wrapper from the gate, or set buildResult so a failed verification still fails the build (e.g. leave the result unchanged).",
+    });
+  }
+
+  for (const { tryBlock, catchBlock } of tryCatchPairs(text)) {
+    if (!textIsVerificationGate(tryBlock.text)) continue;
+    if (!/\bunstable\s*\(/.test(catchBlock.text)) continue;
+    findings.push({
+      severity: "error",
+      confidence: "medium",
+      findingType: "deterministic-defect",
+      qaImpact: "FALSE-GREEN",
+      file: ctx.path,
+      line: lineOfOffset(text, catchBlock.start),
+      column: 1,
+      message:
+        "A failed verification stage is downgraded with `unstable()` instead of failing the build.",
+      why: "The catch swallows the gate's failure and rewrites the build result to UNSTABLE — the red signal the gate exists to raise never reaches the build status.",
+      fix: "Let the verification failure propagate (rethrow or `error(...)`), or record the failure in a report the build gates on — do not rewrite the build result.",
     });
   }
 }

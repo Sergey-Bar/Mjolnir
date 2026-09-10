@@ -307,7 +307,8 @@ describe("measurementBlock (Phase 4.3)", () => {
     // since the P3b Azure arm) — the synthetic rules must declare the
     // revisions MEASURED_FP records to count as measured, and the
     // quarantine tier to land in the quarantine census. A second MEASURED
-    // rule at tier core proves quarantine excludes it.
+    // rule at tier core proves quarantine excludes it. (QA-CI-002 is rev 4
+    // since the P3c Jenkins routing.)
     const rule = minimalRules.one({
       id: "QA-CI-001",
       tier: "quarantine",
@@ -316,7 +317,7 @@ describe("measurementBlock (Phase 4.3)", () => {
     const coreMeasured = minimalRules.one({
       id: "QA-CI-002",
       tier: "core",
-      detectorRevision: 3,
+      detectorRevision: 4,
     });
     const block = measurementBlock([
       rule,

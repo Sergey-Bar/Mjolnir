@@ -1,0 +1,20 @@
+// QA-CI-014 must-fire — a verification stage inside a try whose catch
+// swallows the failure: no rethrow, no error(), no unstable(), no
+// currentBuild.result marking. The build stays green with failed tests.
+pipeline {
+  agent any
+  stages {
+    stage('Verify') {
+      steps {
+        sh 'npm install'
+        script {
+          try {
+            sh 'npm test'
+          } catch (err) {
+            echo "tests failed, continuing anyway: ${err}"
+          }
+        }
+      }
+    }
+  }
+}

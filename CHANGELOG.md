@@ -9,6 +9,33 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — P3c Jenkins (remediation/remote-first R2)
+
+### Added
+
+- Jenkinsfile detection: the root `Jenkinsfile` (declarative and scripted
+  pipelines) is now discovered and scanned as a TEXT-target kind — a bounded,
+  string-aware Groovy block scanner (`sh` segments, `catchError` blocks,
+  `try`/`catch` pairs); no new language grammar (master-plan P3c wording).
+- New rule **QA-CI-014** "try/catch swallows a verification-stage failure" —
+  a `try` running a gate whose `catch` neither rethrows, calls `error(...)`,
+  marks `currentBuild.result`, nor downgrades via `unstable()`. BORN
+  QUARANTINE (§15.5): opt-in via `--strict` until corpus-measured.
+
+### Changed
+
+- **QA-CI-002** (detectorRevision 4): Jenkinsfile routing — the lexical
+  `|| true` scan now reaches `sh` strings.
+- **QA-CI-008** (detectorRevision 4): Jenkinsfile arms —
+  `catchError(buildResult: 'SUCCESS')` wrapping a gate, and `unstable()` used
+  as a rescue for a failed verification stage (master-plan P3c shapes;
+  `buildResult: 'UNSTABLE'` is a visible downgrade and never fires).
+- **QA-CI-009** (detectorRevision 3): Jenkinsfile arm — `sh` running a
+  verification gate with `returnStatus: true` discards the exit code.
+- Measurement: sidecar + `MEASURED_FP` re-recorded for QA-CI-002/008/009
+  (corpus re-run: no corpus repo carries a root Jenkinsfile, so the
+  classified verdict evidence carries over unchanged).
+
 ## [Unreleased] — P3b Azure DevOps (remediation/remote-first R1)
 
 ### Added
