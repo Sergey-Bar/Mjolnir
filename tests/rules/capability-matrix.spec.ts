@@ -97,10 +97,40 @@ describe("capability matrix generation", () => {
 
   it("UNCLASSIFIED is used for unknown fields, never a fabricated value (plan §04)", () => {
     for (const row of data.rows) {
-      expect(row.mutationCoverage, row.id).toBe("UNCLASSIFIED");
+      // P8: mutation coverage is no longer blanket-UNCLASSIFIED — it is
+      // honest per defect class (not-applicable / not-yet-measured /
+      // measured), never UNCLASSIFIED (zero-UNCLASSIFIED contract).
+      expect(["not-applicable", "not-yet-measured", "measured"]).toContain(
+        row.mutationCoverage,
+      );
       expect(row.recall, row.id).toBe("UNCLASSIFIED");
       expect(row.knownLimitations, row.id).toBe("UNCLASSIFIED");
       expect(row.evidenceRequirements, row.id).toBe("UNCLASSIFIED");
+    }
+  });
+
+  it("P8: mutation coverage is honest per defect class, zero UNCLASSIFIED cells", () => {
+    for (const row of data.rows) {
+      expect(row.mutationCoverage, row.id).not.toBe("UNCLASSIFIED");
+      if (row.mutationCoverage === "not-applicable") {
+        // Runner-enforced semantics: the defect class a mutation tool
+        // cannot reach. Today: the skip/focus runner contract.
+        expect(row.id, row.id).toMatch(/^QA-TEST-00[12]$/);
+      }
+    }
+  });
+
+  it("P8: every LEXICAL rule carries a strategyJustification reason code (no MISSING cells)", () => {
+    for (const row of data.rows) {
+      if (row.detectionStrategy === "LEXICAL") {
+        expect(
+          row.strategyJustification,
+          `${row.id}: LEXICAL without a depth verdict — the doctor's registry-sanity check should already fail`,
+        ).not.toBe("MISSING");
+        expect(row.strategyJustification, row.id).not.toBe("not-applicable");
+      } else {
+        expect(row.strategyJustification, row.id).toBe("not-applicable");
+      }
     }
   });
 

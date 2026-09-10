@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "artifact": "mjolnir-trust-report",
+  "trust": {
+    "level": "L5",
+    "confidence": 1,
+    "evidenceCoverage": 0.29,
+    "inconclusiveRate": 0,
+    "measuredFpOfFiredRules": 0,
+    "provisionalRuleIds": [],
+    "confidenceCeiling": null,
+    "ceilingReasons": []
+  },
+  "score": 95,
+  "tests": {
+    "files": 4,
+    "declarations": 7
+  },
+  "findings": {
+    "total": 1,
+    "errors": 1,
+    "warnings": 0,
+    "infos": 0,
+    "advisory": 0
+  },
+  "topTrustRisks": [
+    {
+      "ruleId": "QA-PW-101",
+      "file": "e2e/login.spec.ts",
+      "line": 12,
+      "severity": "error",
+      "evidence": "defect",
+      "message": "`waitForTimeout()` hard sleep."
+    }
+  ],
+  "nextAction": "mjolnir explain QA-PW-101 — then fix the top risk first"
+}

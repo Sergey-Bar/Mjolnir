@@ -26,6 +26,13 @@ export const pwConfigRetryAbuse = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "retries in playwright.config.* is a runner top-level option, not a " +
+      "syntax node; the detector reads the config surface whose " +
+      "statements are object-literal keys — exact-key precision",
+  },
   detectionNotes: "regex heuristic",
   introduced: "0.3.0",
 

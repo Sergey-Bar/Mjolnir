@@ -1,6 +1,6 @@
 {
   "name": "mjolnir-qa",
-  "version": "0.6.1",
+  "version": "1.0.2",
   "description": "Mjölnir — the Verification Trust Engine for QA. Audits test suites and CI pipelines, reports a worthiness score and prioritized findings.",
   "type": "module",
   "engines": {
@@ -37,6 +37,7 @@
     "fp-audit:generate": "tsx scripts/generate-fp-audit-table.ts",
     "docs:rules": "tsx scripts/generate-rule-docs.ts",
     "docs:counts": "tsx scripts/generate-counts.ts",
+    "docs:depth-adjudication": "tsx scripts/generate-depth-adjudication.ts",
     "docs:capability": "tsx scripts/generate-capability-matrix.ts",
     "docs:machine-contract": "tsx scripts/generate-machine-contract-doc.ts",
     "docs:hero": "tsx scripts/generate-readme-hero.ts",

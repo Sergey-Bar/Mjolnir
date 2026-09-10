@@ -28,6 +28,13 @@ export const unawaitedPromiseAssertion = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "un-awaited promise assertions are runner async semantics; the " +
+      "detector matches the assertion-call shapes inside promise chains " +
+      "on the code-only text — the async contract is runner behavior",
+  },
   introduced: "0.2.0",
 
   // Measured 2026-09-02 (corpus wave 5): tier set from the measured envelope (plan §11.2).

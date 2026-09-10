@@ -19,8 +19,12 @@ import { dirname, join, resolve } from "node:path";
 import type { ScanResult, TrustSummary } from "../types.js";
 import { isAdvisoryFinding } from "../types.js";
 import { runScan } from "../engine/scan-pipeline.js";
-import { topTrustRisks, trustHeadline } from "../reporter/trust-report.js";
-import type { Output } from "../cli-io.js";
+import {
+  nextAction,
+  topTrustRisks,
+  trustHeadline,
+} from "../reporter/trust-report.js";
+import { errorMessage, type Output } from "../cli-io.js";
 
 export const TRUST_REPORT_MD = "mjolnir-trust-report.md";
 export const TRUST_REPORT_JSON = "mjolnir-trust-report.json";
@@ -130,19 +134,9 @@ export function renderTrustReportMarkdown(
   lines.push("");
   lines.push(`## Next action`);
   lines.push("");
-  if (result.partial) {
-    lines.push(
-      `Re-run with a higher \`--max-duration\` to close the truncated surface.`,
-    );
-  } else if (risks.length > 0) {
-    lines.push(
-      `\`mjolnir explain ${risks[0]?.ruleId ?? ""}\` — then fix the top risk first.`,
-    );
-  } else {
-    lines.push(
-      `Nothing to triage — keep the gate green with \`mjolnir ci install\`.`,
-    );
-  }
+  // NEXT ACTION — one canonical derivation (parity law): the same
+  // nextAction() the Trust Report and the JSON twin use.
+  lines.push(nextAction(result));
   lines.push("");
   lines.push(`---`);
   lines.push("");
@@ -196,12 +190,7 @@ export function renderTrustReportJson(result: ScanResult): string {
               : f.runtimeCorroboration.level,
           message: f.message,
         })),
-        nextAction:
-          result.partial === true
-            ? "re-run with a higher --max-duration"
-            : topTrustRisks(result.findings, 1).length > 0
-              ? `mjolnir explain ${topTrustRisks(result.findings, 1)[0]?.ruleId ?? ""}`
-              : "mjolnir ci install",
+        nextAction: nextAction(result),
       },
       null,
       2,
@@ -227,37 +216,56 @@ export async function runTrustReportCommand(
       );
       return 10;
     }
-    let scan: ScanResult;
+    let raw: string;
     try {
-      const parsed = JSON.parse(readFileSync(resolve(fromPath), "utf8")) as {
+      raw = readFileSync(resolve(fromPath), "utf8");
+    } catch (err) {
+      io.err(`error: cannot read ${fromPath}: ${errorMessage(err)}`);
+      return 10;
+    }
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw) as {
         schemaVersion?: number;
         contract?: unknown;
       };
-      // The Action saves `{...result, contract}` — the contract rides on
-      // the same object. Accept either shape; require schemaVersion 1.
-      if (parsed.schemaVersion !== 1) {
-        io.err(
-          `error: ${fromPath} is not a canonical mjolnir scan result (schemaVersion 1)`,
-        );
-        return 10;
-      }
-      const { contract: _contract, ...result } = parsed;
-      scan = result as unknown as ScanResult;
     } catch (err) {
+      io.err(`error: cannot read ${fromPath}: ${errorMessage(err)}`);
+      return 10;
+    }
+    // The Action saves `{...result, contract}` — the contract rides on
+    // the same object. Accept either shape; require schemaVersion 1.
+    if (
+      typeof parsed !== "object" ||
+      parsed === null ||
+      (parsed as { schemaVersion?: number }).schemaVersion !== 1
+    ) {
       io.err(
-        `error: cannot read ${fromPath}: ${err instanceof Error ? err.message : String(err)}`,
+        `error: ${fromPath} is not a canonical mjolnir scan result (schemaVersion 1)`,
       );
       return 10;
     }
+    const { contract: _contract, ...result } = parsed as Record<
+      string,
+      unknown
+    >;
+    const scan = result as unknown as ScanResult;
     const md = renderTrustReportMarkdown(scan, fromPath);
     if (argv.includes("--stdout")) {
       io.out(md);
       return 0;
     }
-    const outPath = resolve(dirname(fromPath), TRUST_REPORT_MD);
-    writeFileSync(outPath, md);
-    io.out(`trust report written: ${outPath}`);
-    return 0;
+    try {
+      const outPath = resolve(dirname(fromPath), TRUST_REPORT_MD);
+      writeFileSync(outPath, md);
+      io.out(`trust report written: ${outPath}`);
+      return 0;
+    } catch (err) {
+      // Disk-full / permission on the artifact write — an honest 20, not
+      // an uncaught crash (the same degrade posture as the rescan path).
+      io.err(`internal error: ${errorMessage(err)}`);
+      return 20;
+    }
   }
   const targetArg = argv.find((a) => !a.startsWith("-")) ?? ".";
   const target = resolve(targetArg);
@@ -285,9 +293,7 @@ export async function runTrustReportCommand(
     );
     return 0;
   } catch (err) {
-    io.err(
-      `internal error: ${err instanceof Error ? err.message : String(err)}`,
-    );
+    io.err(`internal error: ${errorMessage(err)}`);
     return 20;
   }
 }

@@ -61,11 +61,19 @@ describe("RULES registry", () => {
     // keeps its explicit core declaration.
     for (const rule of RULES) {
       if (rule.tier === undefined) {
-        expect(
-          hasValidMeasurement(rule),
-          `${rule.id}: omitted tier with no valid measurement must resolve to extended, never core`,
-        ).toBe(false);
-        expect(effectiveTier(rule), rule.id).toBe("extended");
+        if (hasValidMeasurement(rule)) {
+          // D3: omitted tier + valid measurement → the measured band
+          // resolves the tier (never unmeasured-core by accident).
+          expect(
+            ["core", "extended", "quarantine"],
+            `${rule.id}: measured band must resolve to a concrete tier`,
+          ).toContain(effectiveTier(rule));
+        } else {
+          expect(
+            effectiveTier(rule),
+            `${rule.id}: omitted tier with no valid measurement must resolve to extended`,
+          ).toBe("extended");
+        }
       } else {
         expect(["core", "extended", "quarantine"]).toContain(rule.tier);
       }

@@ -42,6 +42,13 @@ export const cypFocusedTest = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "Cypress .only is the runner's focus token; the detector matches " +
+      "the it/describe/context .only member-call shape on the code-only " +
+      "text — exact-key precision",
+  },
   detectionNotes:
     "it/describe/context .only member-call shape on the code-only text view",
   introduced: "0.6.0",

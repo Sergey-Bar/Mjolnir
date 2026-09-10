@@ -24,6 +24,13 @@ export const pwStorageStateNoExpiry = defineRule({
   falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "exact-key-match",
+    detail:
+      "storageState is an exact Playwright config/use option token; the " +
+      "detector matches the option key and its value shapes — closed " +
+      "config surface",
+  },
   introduced: "0.3.0",
 
   run(ctx) {

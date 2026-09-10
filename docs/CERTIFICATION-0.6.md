@@ -1,4 +1,4 @@
-# Mjölnir 0.6.0 — Gate A Certification Report (honest)
+# Mjölnir 0.6.x — Gate A Certification Report (honest)
 
 > Generated for the 0.6.x release candidate on branch
 > `mvp/productized-core-0.6` (base: `origin/main` @ 47763ea, v0.5.34).
@@ -10,10 +10,10 @@
 
 | Metric                              | Value  | Source                                  |
 | ----------------------------------- | ------ | --------------------------------------- |
-| Active canonical rules              | **78** | `src/rules/index.ts` `RULES`            |
-| Measured (n ≥ 10, revision-current) | **57** | `src/rules/measured-fp.generated.ts`    |
-| PROVISIONAL (author-estimated)      | **21** | `docs/MEASUREMENT-CLOSEOUT.md`          |
-| Retired (excluded from census)      | **21** | `src/rules/index.ts` `RETIRED_RULE_IDS` |
+| Active canonical rules              | **77** | `src/rules/index.ts` `RULES`            |
+| Measured (n ≥ 10, revision-current) | **77** | `src/rules/measured-fp.generated.ts`    |
+| PROVISIONAL (author-estimated)      | **0**  | `docs/MEASUREMENT-CLOSEOUT.md`          |
+| Retired (excluded from census)      | **22** | `src/rules/index.ts` `RETIRED_RULE_IDS` |
 
 The denominator is the honest active set. The 1.0.0 gate (WI-14)
 closes the remaining 21 via the documented measurement loop
@@ -48,7 +48,8 @@ npx tsx scripts/check-reporter-version.ts        # advisory mode
 
 ## Known-honest limitations (stated, not hidden)
 
-1. **21 rules PROVISIONAL** — measurement is the 1.0.0 gate (WI-14);
+1. **6 rules PROVISIONAL** (down from 21 at the 0.6.7 cut — the WI-14
+   harvest measured 15 more) — measurement is the 1.0.0 gate (WI-14);
    the loop, run-plan and per-rule state are in
    `docs/MEASUREMENT-CLOSEOUT.md`. The ratchet keeps them out of
    effective core.
@@ -66,7 +67,7 @@ npx tsx scripts/check-reporter-version.ts        # advisory mode
 
 **Gate A (0.6.x Productized Core): PASS** — every plan-§33 requirement
 is implemented, tested and verified, with two honest ⚠️s (reporter
-publish posture; 21 PROVISIONAL rules) that are themselves gated on
+publish posture; fully measured registry) that are themselves gated on
 later releases by the plan's own version-gate law. No fabricated
 evidence; no denominator manipulation; no capability moved across
 version gates.

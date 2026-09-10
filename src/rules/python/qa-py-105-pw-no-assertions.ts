@@ -24,6 +24,13 @@ export const pyPwNoAssertions = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "Playwright test bodies without assertions are runner-outcome " +
+      "semantics; the detector matches the test-def plus body shapes on " +
+      "the code-only text",
+  },
   detectionNotes: "regex heuristic",
   introduced: "0.3.8",
 

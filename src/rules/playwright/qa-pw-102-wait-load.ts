@@ -23,6 +23,13 @@ export const pwWaitForLoadEvent = defineRule({
   falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "exact-key-match",
+    detail:
+      "waitForLoadState('load') is an exact Playwright token plus a " +
+      "closed argument enum; the detector matches the call plus its " +
+      "argument — the AST re-derives the same call shape",
+  },
   introduced: "0.3.0",
   // Measured FP 100% (n=20, docs/FP-AUDIT.md 2026-08-31): real-world uses
   // pre-register the load promise around an edit as reload synchronization,

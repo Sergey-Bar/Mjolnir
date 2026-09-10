@@ -25,6 +25,14 @@ export const pyRaisesWithoutMatch = defineRule({
   falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "pytest.raises without match is a runner exception-contract " +
+      "semantic; the detector matches the raises-call plus its " +
+      "argumentless form — the runner's exception contract, not a syntax " +
+      "property",
+  },
   introduced: "0.3.0",
   tier: "quarantine",
   // Phase 2 retune wave 2 (EVIDENCE-BACKED, detectorRevision 3 — §07):

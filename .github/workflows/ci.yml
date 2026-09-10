@@ -369,6 +369,7 @@ jobs:
           npm run fp-audit:generate
           npm run docs:capability
           npm run docs:counts
+          npm run docs:depth-adjudication
           npm run docs:machine-contract
           npm run brand:tokens
           npm run golden:update

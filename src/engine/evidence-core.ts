@@ -72,7 +72,10 @@ export interface EvidenceRecord {
 }
 
 /** Deterministic canonical order: file → line (absent last) → title → source. */
-function compareRecords(a: EvidenceRecord, b: EvidenceRecord): number {
+export function compareEvidenceRecords(
+  a: EvidenceRecord,
+  b: EvidenceRecord,
+): number {
   if (a.file !== b.file) return a.file < b.file ? -1 : 1;
   const la = a.line ?? Number.POSITIVE_INFINITY;
   const lb = b.line ?? Number.POSITIVE_INFINITY;
@@ -124,7 +127,7 @@ export function buildEvidenceRecords(
 ): EvidenceRecord[] {
   return report.verdicts
     .map((v) => normalizeOne(report, artifact, v))
-    .sort(compareRecords);
+    .sort(compareEvidenceRecords);
 }
 
 /**
@@ -149,13 +152,13 @@ export function findTestAt(
   for (const r of inFile) {
     if (r.line === undefined) return undefined;
   }
+  // Every record here carries a line (the guard above returns on the
+  // first absence) — the narrowing persists; the loop picks the greatest
+  // declaration line ≤ the finding's line.
   let match: EvidenceRecord | undefined;
   for (const r of inFile) {
-    if (r.line === undefined) continue;
-    if (
-      r.line <= line &&
-      (match === undefined || (match.line as number) <= r.line)
-    )
+    const l = r.line as number;
+    if (l <= line && (match === undefined || (match.line as number) <= l))
       match = r;
   }
   return match;

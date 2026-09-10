@@ -27,6 +27,13 @@ export const pwSingleBrowserMatrix = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "absence-aggregate",
+    detail:
+      "single-browser coverage absence is a config/projects aggregate " +
+      "property; the detector reads the projects arrangement across the " +
+      "config — no single node constitutes the finding",
+  },
   detectionNotes: "regex heuristic",
   introduced: "0.3.8",
 

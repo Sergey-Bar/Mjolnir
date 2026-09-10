@@ -68,10 +68,14 @@ export default tseslint.config(
   // no tsconfig project and would crash the typed parser).
   ...tseslint.configs.recommendedTypeChecked.map((c) => ({
     ...c,
-    files: ["**/*.{ts,tsx,mts,cts}"],
+    // scripts/*.mts are one-shot measurement/adjudication tooling
+    // (WI-14, 2026-09-09): Node-runtime scripts outside every tsconfig
+    // project — the typed parser cannot resolve them. They run under
+    // the plain JS ruleset block below instead.
+    files: ["**/*.{ts,tsx,cts}"],
   })),
   {
-    files: ["**/*.{ts,tsx,mts,cts}"],
+    files: ["**/*.{ts,tsx,cts}"],
     languageOptions: {
       parserOptions: {
         // Explicit project list: the repo has two tsconfigs (src vs
@@ -207,6 +211,23 @@ export default tseslint.config(
     },
     rules: {
       // The generators are data factories — unused helper args are fine.
+      "@typescript-eslint/no-unused-vars": "off",
+    },
+  },
+  {
+    // scripts/*.mts — one-shot measurement/adjudication tooling (WI-14
+    // verdict-harvest waves, 2026-09-09). Node-runtime scripts outside
+    // every tsconfig project: the typed parser cannot resolve them, so
+    // they run under the plain JS ruleset instead (typecheck owns the
+    // type guarantees for the sources they consume).
+    files: ["scripts/**/*.mts"],
+    languageOptions: {
+      globals: {
+        console: "readonly",
+        process: "readonly",
+      },
+    },
+    rules: {
       "@typescript-eslint/no-unused-vars": "off",
     },
   },

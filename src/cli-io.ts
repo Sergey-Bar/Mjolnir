@@ -32,3 +32,11 @@ export function internalErrorMessage(
   emit("Rerun with --debug for the stack trace. Please report this:");
   emit("  https://github.com/Sergey-Bar/Mjolnir/issues");
 }
+
+/**
+ * The single error-to-message derivation shared by every catch site:
+ * Error instances render their message; anything else is stringified
+ * honestly (a hostile non-Error throw must surface, not vanish).
+ */
+export const errorMessage = (err: unknown): string =>
+  err instanceof Error ? err.message : String(err);

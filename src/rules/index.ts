@@ -63,7 +63,6 @@ import { pwSingleBrowserMatrix } from "./playwright/qa-pw-144-single-browser.js"
 import { pwLocatorNormalize } from "./playwright/qa-pw-146-css-locator.js";
 import { pwCodegenArtifact } from "./playwright/qa-pw-147-codegen-artifact.js";
 import { pyPwSyncAsyncMix } from "./python/qa-py-101-sync-async-mix.js";
-import { pyPwHardSleep } from "./python/qa-py-102-pw-hard-sleep.js";
 import { pyPwWaitForTimeout } from "./python/qa-py-103-wait-for-timeout.js";
 import { pyPwNoAssertions } from "./python/qa-py-105-pw-no-assertions.js";
 import { jvDisabledTest } from "./java/qa-jv-101-disabled-test.js";
@@ -140,7 +139,6 @@ export const RULES: readonly QADoctorRule[] = [
   pwLocatorNormalize,
   pwCodegenArtifact,
   pyPwSyncAsyncMix,
-  pyPwHardSleep,
   pyPwWaitForTimeout,
   pyPwNoAssertions,
   ...sharedPageFamily,
@@ -205,7 +203,17 @@ export const RETIRED_RULE_IDS: readonly string[] = [
   "QA-PY-006", // 18/20 pytester test-data scripts; real empty tests don't occur (n=20)
   "QA-PY-008", // boundary mocking and real-output spies are contract testing (n=20)
   "QA-PY-010", // wall-clock IS the test subject (n=10)
+  // WI-14 measurement-closeout retirement (2026-09-09): QA-PY-102 is
+  // a STRUCTURAL dead duplicate — QA-PY-005 (the measured survivor)
+  // declares overlapWith: ["QA-PY-102"], so every QA-PY-102 finding
+  // is removed by the overlap pass and the rule can never fire, and
+  // can therefore never be measured (n = 0 forever). Resolved per
+  // plan §12: retire the dead duplicate; the root-cause measurement
+  // lives on QA-PY-005 (docs/FP-AUDIT.md). Frozen IDs are never
+  // reused.
   // Phase 2 triage, cross-language family variants:
+  "QA-PY-102", // dead duplicate (overlapWith survivor: QA-PY-005)
+  // — can never fire, never measured
   "QA-JV-108", // hardcoded-URL family, Java: HAR/proxy/deployed targets scatter (n=20)
   "QA-CS-108", // hardcoded-URL family, C#: same as QA-JV-108 (+ route-mocked origins) (n=20)
   "QA-JV-110", // no-a11y family, Java: same absence-heuristic premise failure as QA-PW-145 (n=20)

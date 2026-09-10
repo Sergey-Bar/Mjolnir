@@ -26,6 +26,12 @@ export const qaPw140 = defineRule({
   falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "exact-key-match",
+    detail:
+      "the detector matches a closed, exact runner API token on the " +
+      "code-only text; the token identifies the defect uniquely",
+  },
   introduced: "0.3.0",
 
   // Measured 2026-09-02 (corpus wave 5): FP ≤ 10% but n < 20 — measured-extended until the core DoD n ≥ 20 is met (plan §23).

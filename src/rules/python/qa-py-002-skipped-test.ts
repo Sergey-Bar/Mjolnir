@@ -23,6 +23,13 @@ export const pySkippedTest = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "pytest.mark.skip/xfail are runner marker decorators — exact runner " +
+      "tokens; a syntax tree re-derives the same call shape with no added " +
+      "classification power",
+  },
   introduced: "0.3.0",
 
   run(ctx) {

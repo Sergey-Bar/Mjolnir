@@ -141,6 +141,13 @@ export const reportNeverGenerated = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "report generation is a runner side effect of the workflow step " +
+      "sequence, not a syntax tree property; the detector reads the " +
+      "workflow step graph, whose statements are already literal text",
+  },
   introduced: "0.1.0",
 
   // Measured (corpus wave 5): tier set from the measured envelope (plan §11.2).

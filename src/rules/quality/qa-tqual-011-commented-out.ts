@@ -26,6 +26,13 @@ export const commentedOutTest = defineRule({
   falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "lexical-artifact",
+    detail:
+      "commented-out assertions are lexical artifacts — the " +
+      "comment-wrapped assertion text is the finding itself; the detector " +
+      "matches the shapes on the raw text",
+  },
   detectionNotes: "regex heuristic",
   introduced: "0.2.0",
 

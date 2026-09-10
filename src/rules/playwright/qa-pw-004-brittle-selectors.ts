@@ -30,6 +30,14 @@ export const brittleSelectors = defineRule({
   falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "string-content-defect",
+    detail:
+      "brittle selectors ARE string arguments (css=/xpath=/nth-child " +
+      "shapes) — the code-text masking that protects other rules " +
+      "deliberately excludes string content here; the detector reads the " +
+      "string shapes directly (inside-string oracle)",
+  },
   detectionNotes: "regex pattern + inside-string oracle",
   introduced: "0.1.0",
 

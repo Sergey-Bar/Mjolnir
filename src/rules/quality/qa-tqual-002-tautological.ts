@@ -24,6 +24,14 @@ export const tautologicalAssertion = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "tautological assertions (x === x, expect(true)) are " +
+      "assertion-semantics on the code-only text; the detector matches " +
+      "the tautology shapes after comment stripping — the AST call-shape " +
+      "is the same predicate",
+  },
   detectionNotes: "AST-stripped text pattern",
   introduced: "0.1.0",
 

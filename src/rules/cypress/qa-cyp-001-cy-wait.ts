@@ -45,6 +45,14 @@ export const cypCyWait = defineRule({
   falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "cy.wait(numeric) is a Cypress runner wait contract; the detector " +
+      "matches the member-call token with a numeric-literal argument on " +
+      "the code-only text — alias waits (cy.wait('@…')) are structurally " +
+      "distinct and excluded by the argument shape",
+  },
   detectionNotes:
     "cy.wait with a numeric-literal argument only — alias waits (cy.wait('@…')) are the legitimate routed-request form and never fire",
   introduced: "0.6.0",

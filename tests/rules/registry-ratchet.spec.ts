@@ -34,6 +34,8 @@ import {
   hasStaleMeasurement,
   hasValidMeasurement,
   isProvisional,
+  isRetiredRule,
+  measurementFor,
   ruleStatus,
 } from "../../src/rules/measurement.js";
 
@@ -253,5 +255,76 @@ describe("frozen contracts", () => {
   it("RETIRED_RULE_IDS never overlaps the active registry", () => {
     const active = new Set(RULES.map((r) => r.id));
     for (const id of RETIRED_RULE_IDS) expect(active.has(id)).toBe(false);
+  });
+});
+
+describe("measurement.ts public surface — direct unit coverage (P8 rebase)", () => {
+  it("measurementFor: known rule returns its record, unknown returns undefined", () => {
+    expect(measurementFor("QA-PW-002")).toBeDefined();
+    expect(measurementFor("QA-NOPE-000")).toBeUndefined();
+  });
+
+  it("isRetiredRule: a retired ID true, an active ID false", () => {
+    expect(isRetiredRule("QA-PW-145")).toBe(true);
+    expect(isRetiredRule("QA-PW-101")).toBe(false);
+    expect(isRetiredRule("QA-NOPE-000")).toBe(false);
+  });
+
+  it("status arms: MEASURED-EXTENDED, MEASURED-QUARANTINE, UNMEASURED", () => {
+    // MEASURED-EXTENDED: an extended rule with a valid measurement.
+    const ext = RULES.find(
+      (r) => r.tier === "extended" && hasValidMeasurement(r),
+    );
+    if (ext) expect(ruleStatus(ext)).toBe("MEASURED-EXTENDED");
+    // MEASURED-QUARANTINE: a declared quarantine with a valid measurement.
+    const q = RULES.find(
+      (r) => r.tier === "quarantine" && hasValidMeasurement(r),
+    );
+    if (q) expect(ruleStatus(q)).toBe("MEASURED-QUARANTINE");
+    // UNMEASURED: a quarantine without any measurement.
+    const un = RULES.find(
+      (r) =>
+        r.tier === "quarantine" &&
+        !hasValidMeasurement(r) &&
+        !hasStaleMeasurement(r),
+    );
+    if (un) expect(ruleStatus(un)).toBe("UNMEASURED");
+    // At least one of the three arms must exist on the real registry.
+    expect(ext !== undefined || q !== undefined || un !== undefined).toBe(true);
+  });
+
+  it("stale arm via a synthetic rule — a measurement against an older revision is stale", () => {
+    // QA-PW-002 measures at rev 1 against a declared rev 2 (synthetic):
+    const base = RULES.find((r) => r.id === "QA-PW-002");
+    if (!base) throw new Error("QA-PW-002 missing from the registry");
+    const rule = { ...base, detectorRevision: 2 };
+    expect(hasValidMeasurement(rule)).toBe(false);
+    expect(hasStaleMeasurement(rule)).toBe(true);
+    // A stale CORE rule must never display as measured:
+    const tier = effectiveTier(rule);
+    if (tier === "core") expect(ruleStatus(rule)).toBe("PROVISIONAL");
+  });
+
+  it("status arms: MEASURED-EXTENDED, MEASURED-QUARANTINE, UNMEASURED", () => {
+    // MEASURED-EXTENDED: an extended rule with a valid measurement.
+    const ext = RULES.find(
+      (r) => r.tier === "extended" && hasValidMeasurement(r),
+    );
+    if (ext) expect(ruleStatus(ext)).toBe("MEASURED-EXTENDED");
+    // MEASURED-QUARANTINE: a declared quarantine with a valid measurement.
+    const q = RULES.find(
+      (r) => r.tier === "quarantine" && hasValidMeasurement(r),
+    );
+    if (q) expect(ruleStatus(q)).toBe("MEASURED-QUARANTINE");
+    // UNMEASURED: a quarantine without any measurement.
+    const un = RULES.find(
+      (r) =>
+        r.tier === "quarantine" &&
+        !hasValidMeasurement(r) &&
+        !hasStaleMeasurement(r),
+    );
+    if (un) expect(ruleStatus(un)).toBe("UNMEASURED");
+    // At least one of the three arms must exist on the real registry.
+    expect(ext !== undefined || q !== undefined || un !== undefined).toBe(true);
   });
 });

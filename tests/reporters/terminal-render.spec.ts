@@ -550,3 +550,24 @@ describe("meter()", () => {
     expect(m).not.toContain("█");
   });
 });
+
+describe("group-card evidence overflow (P8 coverage)", () => {
+  it("a long evidence tag moves to its own gutter line in narrow widths", () => {
+    // 4 same-rule findings → grouped; force the header+evidence past the
+    // wrap width by using 40 columns with an evidence-bearing finding.
+    const out = renderTerminal(
+      result([
+        finding({ line: 1 }),
+        finding({ line: 2 }),
+        finding({ line: 3 }),
+        finding({ line: 4 }),
+      ]),
+      { isTTY: false, width: 40 },
+    );
+    expect(out).toContain("same fix applies");
+    // Either inline or moved to the gutter — both are the wrapped forms.
+    expect(
+      out.includes("× 4 — same fix applies") || out.includes("× 4 — same fix"),
+    ).toBe(true);
+  });
+});

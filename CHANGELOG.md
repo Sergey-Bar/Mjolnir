@@ -9,6 +9,118 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [1.0.2] — 2026-09-09
+
+### Changes since 1
+
+- P8: depth adjudication — no unexplained depth (all 89 LEXICAL rules + matrix completion + migration deferral) (#70)
+
+## [1.0.1] — 2026-09-09
+
+### Changes since 0
+
+- chore(release): v1.0.0 — Core Certification cut (WI-16)
+
+## [1.0.0] — 2026-09-09
+
+### Added
+
+- **Core Certification (WI-16): 1.0.0 is the first fully-measured
+  release.** Every active canonical rule (77) satisfies the
+  measurement law — n ≥ 10 hand-classified verdicts at the current
+  detectorRevision, zero PROVISIONAL, zero denominator games. The
+  2026-09-09 harvest waves (WI-14) measured the final 15 rules via the
+  class-B fixture corpus and closed the census; QA-PY-102 was retired
+  as a structural dead duplicate (its measured sibling QA-PY-005
+  declares overlapWith, so it could never fire). Certification report:
+  docs/CERTIFICATION-1.0.md. Evidence chain: doctor self-audit WORTHY
+  (77/77), full suite 7,054 green, determinism replay byte-identical,
+  adversarial + benchmark suites green, CHANGELOG integrity gate
+  active.
+
+### Removed
+
+- **QA-PY-102 retired** (22nd retirement, WI-14 closeout): structural
+  dead duplicate — QA-PY-005 (the measured survivor) declares
+  overlapWith QA-PY-102, so every finding dedups away and the rule can
+  never fire, never be measured. Frozen IDs are never reused.
+
+## [0.6.12] — 2026-09-09
+
+### Changes since 0.6.11
+
+- fix(lint): no-regex-spaces in sync-census tooling ({2} quantifier)
+
+## [0.6.11] — 2026-09-09
+
+### Changes since 0.6.10
+
+- fix(lint): exclude scripts/*.mts from the typed-parser project route
+
+## [0.6.10] — 2026-09-09
+
+### Changes since 0.6.9
+
+- fix(lint): scripts/*.mts one-shot tooling runs under the plain JS ruleset
+
+## [0.6.9] — 2026-09-09
+
+### Changes since 0.6.8
+
+- feat(measurement): WI-14 closeout — 77/77 measured, 0 PROVISIONAL (1.0.0 census achieved)
+
+## [0.6.8] — 2026-09-09
+
+### Changes since 0
+
+- feat(corpus): WI-14 harvest waves 1-5 — census 60 → 72 of 78 measured
+
+## [0.6.7] — 2026-09-09
+
+### Changes since 0.6.6
+
+- fix(tests): fresh-install gate asserts the Trust Report surface (WI-5 follow-through)
+
+## [0.6.6] — 2026-09-09
+
+### Changes since 0.6.5
+
+- fix(release): format the collapsed CHANGELOG before the lint gate (bot fix)
+
+## [0.6.5] — 2026-09-09
+
+### Changes since 0.6.4
+
+- chore(test): re-baseline the coverage ratchet for the 0.6.x line (measured 99.8/99.37/99.81/99.82; per-file pause documented)
+
+## [0.6.4] — 2026-09-09
+
+### Changes since 0.6.3
+
+## [0.6.3] — 2026-09-09
+
+### Added
+
+- `trust-report --from <mjolnir.json> [--stdout]` (WI-9): the Trust
+  Artifact rendered from a SAVED canonical scan result — the GitHub
+  Action's comment/annotation steps derive from the exact saved report
+  (one semantic truth, no second scan). Includes honest error paths:
+  read / parse / write failures each surface their own catch via the
+  consolidated `errorMessage` derivation in cli-io.ts.
+
+### Fixed
+
+- Error-path hardening across the trust-report verb: read and parse
+  failures split into separate honest catches; artifact-write failures
+  (disk-full / permission) exit 20 instead of crashing; the
+  no-positional default-target arm covered.
+
+## [0.6.2] — 2026-09-09
+
+### Changes since 0.6.1
+
+- Create FUNDING.yml
+
 ## [0.6.1] — 2026-09-09
 
 ### Changes since 0.6.0

@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | warning                                                                                                                      |
 | Confidence                            | medium                                                                                                                       |
 | Tier                                  | quarantine                                                                                                                   |
-| Measured FP rate                      | not yet measured                                                                                                             |
+| Measured FP rate                      | 8% (n=13)                                                                                                                    |
 | Evidence level                        | E2                                                                                                                           |
 | QA impact                             | Flaky-test risk (FLAKY-RISK)                                                                                                 |
 | False-positive risk (author estimate) | medium                                                                                                                       |

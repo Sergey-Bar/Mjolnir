@@ -47,6 +47,15 @@ function makeBrittleSelectors(
     falsePositiveRisk: "medium",
     autofix: false,
     detectionStrategy: "LEXICAL",
+    strategyJustification: {
+      reasonCode: "string-content-defect",
+      detail:
+        "the brittle-selector family's variants " +
+        "(QA-JV-106/QA-CS-106/QA-PY-104): selector defects are " +
+        "string-argument shapes (xpath=/nth-child/absolute-path); the " +
+        "detector classifies the string shapes the code-text mask preserves " +
+        "for this class",
+    },
     introduced: "0.4.0",
     // Quarantine-tier since tempering; the Phase 2 triage keeps tier
     // quarantine and bumps detectorRevision to 2 (the M-06 pattern

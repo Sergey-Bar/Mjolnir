@@ -9,7 +9,7 @@
  * rule-mode additions keep the original rule explanation intact.
  */
 
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import {
   explainVerdict,
@@ -25,7 +25,8 @@ import type { ScanResult } from "../../src/types.js";
 import { RULES } from "../../src/rules/index.js";
 import { MEASURED_FP } from "../../src/rules/measured-fp.generated.js";
 import { effectiveTier } from "../../src/rules/measurement.js";
-import { writeFileSync, mkdtempSync } from "node:fs";
+import { runExplainCommand } from "../../src/cli.js";
+import { writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -184,19 +185,16 @@ describe("rule mode — WI-7 additions keep the original explanation intact", ()
     }
   });
 
-  it("whatWouldChangeTheVerdict: measured rule skips the measurement line; unmeasured cites it", () => {
+  it("whatWouldChangeTheVerdict: measured rule skips the measurement line", () => {
+    // The 1.0.0 registry is fully measured (77/77) - the unmeasured
+    // branch in the implementation is retained for future rules but has
+    // no live exemplar to test against.
     const measured = RULES.find((r) => MEASURED_FP[r.id] !== undefined);
-    const unmeasured = RULES.find((r) => MEASURED_FP[r.id] === undefined);
     expect(measured).toBeDefined();
-    expect(unmeasured).toBeDefined();
     if (measured) {
       const changes = whatWouldChangeTheVerdict(measured);
       expect(changes.some((c) => c.includes("run report"))).toBe(true);
       expect(changes.some((c) => c.includes("corpus measurement"))).toBe(false);
-    }
-    if (unmeasured) {
-      const changes = whatWouldChangeTheVerdict(unmeasured);
-      expect(changes.some((c) => c.includes("corpus measurement"))).toBe(true);
     }
   });
 
@@ -208,5 +206,91 @@ describe("rule mode — WI-7 additions keep the original explanation intact", ()
         whatWouldChangeTheVerdict(q).some((c) => c.includes("--strict")),
       ).toBe(true);
     }
+  });
+});
+
+describe("explain verdict — CLI-handler arms (P8 coverage)", () => {
+  let dir2 = "";
+  beforeEach(() => {
+    dir2 = mkdtempSync(join(tmpdir(), "mjolnir-p8-explain-cli-"));
+  });
+  afterEach(() => rmSync(dir2, { recursive: true, force: true }));
+
+  it("verdict with a --json flag but no path → usage error (exit 10)", async () => {
+    let errOut = "";
+    const code = await runExplainCommand(["verdict", "--json"], {
+      out: () => {},
+      err: (s) => {
+        errOut += String(s);
+      },
+    });
+    expect(code).toBe(10);
+    expect(errOut).toContain("explain verdict requires a saved scan");
+  });
+
+  it("verdict --json <file> that is not a scan → render of the failure (exit 10)", async () => {
+    const p = join(dir2, "bad.json");
+    writeFileSync(p, JSON.stringify({ hello: 1 }));
+    let out2 = "";
+    const code = await runExplainCommand(["verdict", "--json", p], {
+      out: (s) => {
+        out2 += String(s);
+      },
+      err: () => {},
+    });
+    expect(code).toBe(10);
+    expect(out2).toContain("schemaVersion 1");
+  });
+
+  it("file:line subject delegates to the why surface (no crash, exit recorded)", async () => {
+    // The delegation arm (cli.ts 621–622): exit value is whatever the why
+    // surface returns for an unknown finding — the lock here is that the
+    // arm EXECUTES and does not crash with exit 20.
+    const code = await runExplainCommand(
+      [
+        "e2e/shop.spec.ts:1",
+        "--fixtures-root",
+        join(import.meta.dirname, "..", "fixtures"),
+      ],
+      { out: () => {}, err: () => {} },
+    );
+    expect([0, 1, 10]).toContain(code);
+  });
+
+  it("verdict --json <valid scan> renders the report (exit 0)", async () => {
+    const p = join(dir2, "good.json");
+    writeFileSync(
+      p,
+      JSON.stringify(
+        scan({
+          findings: [
+            {
+              ruleId: "QA-TEST-004",
+              category: "QA-TEST",
+              severity: "warning",
+              confidence: "high",
+              findingType: "deterministic-defect",
+              qaImpact: "FLAKY-RISK",
+              evidenceLevel: "E2",
+              file: "e2e/a.spec.ts",
+              line: 1,
+              column: 1,
+              message: "m",
+              why: "w",
+              fix: "f",
+            },
+          ],
+        }),
+      ),
+    );
+    let out = "";
+    const code = await runExplainCommand(["verdict", "--json", p], {
+      out: (s) => {
+        out += String(s);
+      },
+      err: () => {},
+    });
+    expect(code).toBe(0);
+    expect(out).toContain("SCAN VERDICT");
   });
 });

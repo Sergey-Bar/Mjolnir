@@ -120,13 +120,12 @@ describe.runIf(RUN)(
           const stdout = (err as { stdout?: Uint8Array }).stdout;
           out = stdout ? stdout.toString() : "";
         }
-        // The gauge label is WORTHINESS — this asserted /SCORE/ from
-        // before the rebrand renamed it, so the check could only ever
-        // have passed against a pre-0.4.0 build. Assert on the real
-        // label plus a verdict word, so it fails loudly if either the
-        // reporter or the install stops producing a scan.
-        expect(out).toMatch(/WORTHINESS/);
-        expect(out).toMatch(/WORTHY|NEEDS WORK|UNWORTHY/);
+        // WI-5: the default surface is the Trust Report. Assert the real
+        // hero label plus its verdict-derived next action, so the check
+        // fails loudly if either the reporter or the install stops
+        // producing a scan.
+        expect(out).toMatch(/TRUST VERDICT/);
+        expect(out).toMatch(/NEXT ACTION/);
       } finally {
         rmSync(fixtureDir, { recursive: true, force: true });
       }

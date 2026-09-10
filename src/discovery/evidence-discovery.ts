@@ -94,7 +94,7 @@ export function discoverEvidenceCandidates(
   const levels: string[][] = [[scanRoot]];
   for (let depth = 0; depth <= SEARCH_DEPTH; depth++) {
     const next: string[] = [];
-    for (const dir of levels[depth] ?? []) {
+    for (const dir of levels[depth] as string[]) {
       for (const conv of EVIDENCE_CONVENTIONS) {
         for (const name of conv.names) {
           const p = join(dir, name);

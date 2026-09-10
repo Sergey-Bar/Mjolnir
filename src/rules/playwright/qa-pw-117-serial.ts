@@ -24,6 +24,13 @@ export const pwSerialNoJustification = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "fullyParallel/serial are runner scheduling keys on the config and " +
+      "describe blocks; the detector matches the runner's exact API " +
+      "tokens — the semantics are scheduling, not syntax",
+  },
   introduced: "0.3.0",
   tier: "core", // measured 2026-09-02: 0% FP at n=20
 

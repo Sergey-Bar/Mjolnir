@@ -23,6 +23,13 @@ export const hardcodedBaseUrl = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "string-content-defect",
+    detail:
+      "hardcoded environment URLs are string literals (http(s):// " +
+      "shapes); the detector reads the string-content shapes the " +
+      "code-text mask preserves for exactly this defect class",
+  },
   introduced: "0.3.0",
 
   // Measured 2026-09-02 (corpus wave 5): tier set from the measured envelope (plan §11.2).

@@ -17,10 +17,24 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
-import type { QADoctorRule } from "../rules/rule.js";
+import type { QADoctorRule, StrategyReasonCode } from "../rules/rule.js";
 import { RETIRED_RULE_IDS, RULES } from "../rules/index.js";
 import { RULE_CATEGORIES } from "../types.js";
 import { MEASURED_FP } from "../rules/measured-fp.generated.js";
+
+/** The closed reason-code set (master plan P8) — mirrored from
+ * src/rules/rule.ts's StrategyReasonCode union via a runtime set so the
+ * doctor check validates membership without an extra export cycle. */
+const VALID_REASON_CODES: ReadonlySet<string> = new Set<StrategyReasonCode>([
+  "shell-string-in-config",
+  "exact-key-match",
+  "lexical-artifact",
+  "runner-semantic",
+  "string-content-defect",
+  "absence-aggregate",
+  "family-fallback-lockstep",
+  "migration-deferred-next-measurement",
+]);
 
 /** The shipped measurement map's entry shape (re-exported for the G6 seam). */
 export type { MeasuredFp } from "../rules/measured-fp.generated.js";
@@ -106,7 +120,8 @@ export function checkFixtureFirewall(fixturesRoot: string): DoctorCheck {
   return check("fixture-firewall", ok ? "pass" : "fail", details);
 }
 
-/** Check 2: registry sanity — IDs unique, well-formed, titles distinct. */
+/** Check 2: registry sanity — IDs unique, well-formed, titles distinct,
+ * and (P8) every LEXICAL rule carries a valid depth-adjudication record. */
 export function checkRegistry(
   rules: readonly QADoctorRule[] = RULES,
 ): DoctorCheck {
@@ -123,6 +138,33 @@ export function checkRegistry(
       details.push(`${r.id}: duplicate registration`);
     }
     ids.add(r.id);
+    // Master plan P8 (plan 1788853205786, decision 9 — "no unexplained
+    // depth"): a LEXICAL rule without a depth-adjudication record is a
+    // registry violation. The reason code must be a member of the closed
+    // set and the detail must carry a real derivation.
+    if (r.detectionStrategy === "LEXICAL") {
+      const j = r.strategyJustification;
+      if (!j) {
+        ok = false;
+        details.push(
+          `${r.id}: LEXICAL strategy without strategyJustification — ` +
+            `declare the reason the lexical form ships (docs/DEPTH-ADJUDICATION.md)`,
+        );
+      } else if (!VALID_REASON_CODES.has(j.reasonCode)) {
+        ok = false;
+        details.push(
+          `${r.id}: strategyJustification.reasonCode "${String(
+            (j as { reasonCode: unknown }).reasonCode,
+          )}" is outside the closed set (${[...VALID_REASON_CODES].join(", ")})`,
+        );
+      } else if (j.detail.trim().length < 20) {
+        ok = false;
+        details.push(
+          `${r.id}: strategyJustification.detail is boilerplate — cite the ` +
+            `detector's actual shape`,
+        );
+      }
+    }
     // Duplicate titles are allowed across languages (TS and Python rules
     // legitimately share a title, e.g. "Skipped test") — only flag exact
     // duplicates within the same category family.

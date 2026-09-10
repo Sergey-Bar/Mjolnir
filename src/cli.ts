@@ -131,7 +131,7 @@ import {
  * `scripts/sync-sarif-version.cjs` on release and guarded by
  * `tests/version-consistency.spec.ts` locally.
  */
-export const CLI_VERSION = "0.6.1";
+export const CLI_VERSION = "1.0.2";
 
 /** A usage-error detail: the offending token, when one exists. */
 export interface UsageErrorDetail {
@@ -607,8 +607,8 @@ export async function runExplainCommand(
       return 10;
     }
     try {
-      io.out(renderVerdictExplain(explainVerdict(resolve(jsonPath))));
       const r = explainVerdict(resolve(jsonPath));
+      io.out(renderVerdictExplain(r));
       return r.ok ? 0 : 10;
     } catch (err) {
       internalErrorMessage(err, io.err, argv.includes("--debug"));
