@@ -9,6 +9,22 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — R4 blast radius audit (remediation/remote-first R4)
+
+### Added
+
+- **docs/BLAST-RADIUS-AUDIT.md** — the machine-verified surface manifest
+  (`npm run docs:blast-radius`): src inventory with per-area LOC, the internal
+  import fan-in ranking (change-blast candidates), the external dependency
+  allowlist, and the shipped surface (adapters, rules census, CLI flags, report
+  formats, frozen exit codes).
+- **tests/contract/blast-radius.spec.ts** — the machine-TESTABLE boundary
+  contract: the committed manifest must equal a fresh render; every external
+  import in src/ must belong to the allowlist (`yaml`, `ts-morph`,
+  `web-tree-sitter`, `tree-sitter-wasms`; node builtins are platform
+  contracts); every CLI flag parsed must appear in the manifest; every
+  `process.exit(N)` in src/ must be inside the frozen set (0/1/2/10/20).
+
 ## [Unreleased] — P6 quarantine remediation (remediation/remote-first R3)
 
 ### Added

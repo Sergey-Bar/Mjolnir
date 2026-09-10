@@ -147,7 +147,20 @@ export function renderLedger(): string {
   return buildLedger();
 }
 
+/** Prettier-formatted commit render (the docs tree is prettier-gated). */
+export async function renderForCommit(): Promise<string> {
+  const prettier = await import("prettier");
+  return prettier.format(renderLedger(), { parser: "markdown" });
+}
+
 if (process.argv[1]?.endsWith("generate-quarantine-ledger.ts")) {
-  writeFileSync(OUT_PATH, buildLedger());
-  console.log("Wrote docs/QUARANTINE-REMEDIATION.md");
+  renderForCommit()
+    .then((md) => {
+      writeFileSync(OUT_PATH, md);
+      console.log("Wrote docs/QUARANTINE-REMEDIATION.md");
+    })
+    .catch((err) => {
+      console.error(err);
+      process.exit(20);
+    });
 }

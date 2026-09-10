@@ -17,13 +17,13 @@ import { describe, expect, it } from "vitest";
 import { RULES, RETIRED_RULE_IDS } from "../../src/rules/index.js";
 import { MEASURED_FP } from "../../src/rules/measured-fp.generated.js";
 import { declaredDetectorRevision } from "../../src/rules/measurement.js";
-import { renderLedger } from "../../scripts/generate-quarantine-ledger.ts";
+import { renderForCommit } from "../../scripts/generate-quarantine-ledger.ts";
 
 const ROOT = join(import.meta.dirname, "..", "..");
 const LEDGER_PATH = join(ROOT, "docs", "QUARANTINE-REMEDIATION.md");
 
 const COMMITTED = readFileSync(LEDGER_PATH, "utf8");
-const LIVE = renderLedger();
+const LIVE = await renderForCommit();
 
 describe("docs/QUARANTINE-REMEDIATION.md matches the live registry", () => {
   it("the committed file equals a fresh render (regenerate if this fails)", () => {
