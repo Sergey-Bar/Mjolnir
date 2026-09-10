@@ -9,6 +9,12 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [1.0.4] — 2026-09-10
+
+### Changes since 1
+
+- P15: adversarial suites — parser fuzz, determinism soak, bench advisory CI (#72)
+
 ## [1.0.3] — 2026-09-10
 
 ### Changes since 1
