@@ -1,8 +1,19 @@
-# Mjölnir — Brand System
+# Mjölnir — brand assets
 
-The single visual identity for Mjölnir. The **logo is the source of truth**;
-the website ([`site/`](../../site)) and the README render the same system —
-same mark, same palette, same type, same verdict colours.
+The provided masters and everything downscaled from them. This file is
+about the FILES; the system that uses them lives in
+[`docs/design/`](../../docs/design/BRAND-SYSTEM.md).
+
+| For                                            | Read                                                                         |
+| ---------------------------------------------- | ---------------------------------------------------------------------------- |
+| colour, typography, symbols, the rules         | [`BRAND-SYSTEM.md`](../../docs/design/BRAND-SYSTEM.md)                       |
+| every token value                              | [`DESIGN-TOKENS.md`](../../docs/design/DESIGN-TOKENS.md) — generated         |
+| what each surface consumes and who enforces it | [`BRAND-SURFACE-INVENTORY.md`](../../docs/design/BRAND-SURFACE-INVENTORY.md) |
+| motion                                         | [`MOTION-SYSTEM.md`](../../docs/design/MOTION-SYSTEM.md)                     |
+| voice                                          | [`VOICE-AND-TERMINOLOGY.md`](../../docs/design/VOICE-AND-TERMINOLOGY.md)     |
+
+The **logo is the source of truth** for the visual system, and the values
+derived from it are the token module, not this page.
 
 ## Assets
 
@@ -31,70 +42,20 @@ Use one mark, calmly. Do not add extra hammers, bolts, lightning or
 knotwork in product surfaces; the master mark's own engraving is
 grandfathered.
 
-## Colour system
+## Colour and type
 
-Derived from the logo: brushed steel, forge gold, aurora over midnight.
-Tokens live in [`site/.vitepress/theme/styles/vars.css`](../../site/.vitepress/theme/styles/vars.css).
+Not restated here. They are generated from
+[`src/brand/tokens.ts`](../../src/brand/tokens.ts) into
+[`DESIGN-TOKENS.md`](../../docs/design/DESIGN-TOKENS.md), and the rules
+that govern them are in
+[`BRAND-SYSTEM.md`](../../docs/design/BRAND-SYSTEM.md).
 
-| Token                | Light     | Dark | Role                                          |
-| -------------------- | --------- | ---- | --------------------------------------------- |
-| `--mj-ink-950`       | `#0A1119` | —    | deepest background (hero)                     |
-| `--mj-ink-900`       | `#0C1420` | —    | app / page background (dark)                  |
-| `--mj-ink-850`       | `#111A29` | —    | surface                                       |
-| `--mj-ink-800`       | `#18243A` | —    | raised surface                                |
-| `--mj-steel`         | `#C8CBCF` | —    | neutral bright — hammer head, headings on ink |
-| `--mj-steel-dim`     | `#8B939D` | —    | muted text on ink                             |
-| `--mj-gold`          | `#C19A34` | —    | **primary brand**                             |
-| `--mj-gold-bright`   | `#E6BD57` | —    | primary brand on dark — accents, focus        |
-| `--mj-gold-hot`      | `#F4DC9C` | —    | highlight, hover                              |
-| `--mj-aurora`        | `#37ABBD` | —    | secondary — verification energy               |
-| `--mj-aurora-bright` | `#45C1D4` | —    | secondary on dark                             |
-| `--mj-aurora-cyan`   | `#5CBDE0` | —    | informational state                           |
-
-### Semantic — status & verdict
-
-Score colors follow the ScoreState model (`src/reporter/score-state.ts`) —
-one mapping, every surface. Bands: critical 0–49, warning 50–79,
-trusted 80–99, forged 100.
-
-| Verdict                | Token                             | Light                        | Dark                         |
-| ---------------------- | --------------------------------- | ---------------------------- | ---------------------------- |
-| `UNWORTHY` / critical  | `--mj-unworthy` / `--mj-critical` | `#C13B37`                    | `#E5544E`                    |
-| `NEEDS WORK` / warning | `--mj-needswork` / `--mj-warning` | `#A5811C`                    | `#E6BD57`                    |
-| `WORTHY` / trusted     | `--mj-trusted`                    | `#2596A8`                    | `#5CC4E0`                    |
-| `FORGED` (score 100)   | `--mj-forged`                     | gradient `#8A6D1E → #A5811C` | gradient `#F4DC9C → #E6BD57` |
-| informational          | `--mj-info`                       | `#2B7FA8`                    | `#5CC4E8`                    |
-
-The terminal NORSE palette mirrors the same bands: `trusted: #5CC4E0`,
-`forged: #F4DC9C`.
-
-**Green is no longer a score color.** `WORTHY` scores render in
-aurora-cyan (trusted); Yggdrasil green (`ok`) survives only for non-score
-success contexts (e.g. "autofix applied", "analysis complete"). The same
-verdict colours drive the website gauge, the README badges and the
-rule-catalog severity chips. The shields.io badge maps the bands to the
-closest named colors (`red` / `yellow` / `important` / `success`) — the
-badge is peripheral, ScoreState remains the truth.
-
-## Typography
-
-| Face                         | Use                              | Fallback                     |
-| ---------------------------- | -------------------------------- | ---------------------------- |
-| **Cinzel** (600/700)         | display headings, runic accents  | `Trajan Pro, Georgia, serif` |
-| **Inter** (400–700)          | body, UI                         | `system-ui, sans-serif`      |
-| **JetBrains Mono** (400/500) | code, commands, rule IDs, scores | `ui-monospace, monospace`    |
-
-Display type is title-case or all-caps with `letter-spacing: 0.04–0.32em`;
-body stays at `line-height: 1.7`. Never set body copy in the display face.
-
-**Score typography rules:**
-
-- Scores are **always JetBrains Mono** — the digits never appear in the
-  display face.
-- Verdict labels (`UNWORTHY / NEEDS WORK / WORTHY / FORGED`) are
-  display-face caps with `letter-spacing ≥ 0.18em`, colored by band.
-- Restraint: the score digits carry no color; color lands on the verdict
-  word and the instrument (gauge/hammer) only.
+This page used to hold both. Every one of its twelve palette rows had
+drifted from what the code shipped — the gold by dE 8.2, well past what
+a designer would notice — and its verdict table documented a light ramp
+for a product that is dark-only everywhere. A hand-written table of
+values is a promise nobody keeps; `brand-doctor` rule 5 now fails on any
+value stated in a design document that the source does not hold.
 
 ## Usage rules
 

@@ -44,9 +44,22 @@ heuristic match costs less than a structural proof:
 | E1    | Heuristic pattern    | Half (round down) | regex-matched `sleep()` — strong signal, not proof |
 | E0    | Observation          | Zero (info only)  | reported, never gates or deducts                   |
 
-Most rules are **E1**. "We prove it" refers to this system: E2 findings
-are structural proof; E1 findings are correctly-positioned warnings, not
-formal proofs.
+Most rules are **E1**. Evidence level is what "trust" means here in
+practice: E2 findings are structural proof; E1 findings are
+correctly-positioned warnings, not formal proofs.
+
+## How far a finding can be trusted
+
+Evidence level says how sure the analysis is. Trust level says something
+stricter: whether anything was ever observed to run.
+
+<TrustLadder />
+
+The two are related but not the same. A finding can be E2 — deterministic,
+structurally provable — and still sit at L2, because proving a defect
+exists in the source is not the same as watching it happen. Nothing
+Mjölnir derives from source text alone can climb past L2; L3 and above
+need the artifacts of a run that already finished.
 
 ## Three ceilings, applied in order
 

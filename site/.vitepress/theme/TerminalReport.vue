@@ -124,8 +124,16 @@ async function copyReport() {
       </div>
 
       <!-- Findings — opt-in, and scrolling inside its own box so the page
-           body never scrolls sideways. -->
+           body never scrolls sideways.
+
+           Rendered only when the hero asset actually carries the
+           per-finding detail. It stopped carrying it when the hero was
+           shortened to the score instrument, and a disclosure offering
+           to "show all 27 findings (0 lines)" would be the page claiming
+           evidence it does not have — the one thing this site may never
+           do. -->
       <details
+        v-if="report.findingLines.length > 0"
         class="more"
         @toggle="open = ($event.target as HTMLDetailsElement).open"
       >
@@ -211,16 +219,19 @@ async function copyReport() {
     ui-monospace, "SF Mono", "Cascadia Code", "Cascadia Mono", Consolas,
     "DejaVu Sans Mono", Menlo, monospace;
 
-  --term-bg: #14171c;
-  --term-bar: #20242b;
-  --term-fg: #d7d3c8;
-  /* Raised from the reporter's #7c8590, which axe-core measured at
-     4.16:1 on the title bar — below AA. This token only paints the
-     terminal's own chrome (command line, copy button, disclosure);
-     the report's colours still come from report.json, so the
-     rendering stays faithful to what the tool actually printed. */
-  --term-dim: #949ca8;
-  --term-line: rgba(215, 211, 200, 0.14);
+  --term-bg: var(--mj-ink-950);
+  --term-bar: var(--mj-ink-950);
+  --term-fg: var(--vp-c-text-2);
+  /* The reporter's dim used to be #7c8590, which axe-core measured at
+     4.16:1 on the title bar — below AA — so this was raised by hand.
+     Both now resolve to the same token: the palette convergence moved
+     the terminal itself onto --mj-steel-dim, which clears AA, so the
+     local override and the tool agree instead of diverging. This token
+     paints only the terminal's own chrome (command line, copy button,
+     disclosure); the report's colours still come from report.json, so
+     the rendering stays faithful to what the tool actually printed. */
+  --term-dim: var(--mj-steel-dim);
+  --term-line: var(--vp-c-border);
 
   margin: 2.6rem 0 0;
   border-radius: 14px;
@@ -282,7 +293,7 @@ async function copyReport() {
   border-color: rgba(215, 211, 200, 0.3);
 }
 .term-copy:focus-visible {
-  outline: 2px solid var(--mj-aurora, #37abbd);
+  outline: 2px solid var(--mj-aurora);
   outline-offset: 2px;
 }
 
@@ -310,10 +321,10 @@ async function copyReport() {
 }
 .tab.on {
   color: var(--term-fg);
-  border-bottom-color: var(--mj-gold-bright, #e6bd57);
+  border-bottom-color: var(--mj-gold-bright);
 }
 .tab:focus-visible {
-  outline: 2px solid var(--mj-aurora, #37abbd);
+  outline: 2px solid var(--mj-aurora);
   outline-offset: -3px;
 }
 
@@ -326,7 +337,7 @@ async function copyReport() {
   color: var(--term-dim);
 }
 .excerpt-note a {
-  color: var(--mj-gold-bright, #e6bd57);
+  color: var(--mj-gold-bright);
 }
 
 .term-body {
@@ -377,7 +388,7 @@ async function copyReport() {
   color: var(--term-fg);
 }
 .more > summary:focus-visible {
-  outline: 2px solid var(--mj-aurora, #37abbd);
+  outline: 2px solid var(--mj-aurora);
   outline-offset: -2px;
 }
 .chev {
@@ -391,7 +402,7 @@ async function copyReport() {
   /* A dimmer colour, not opacity. `opacity: 0.7` blended --term-dim
      toward the background and dropped this line back under AA — axe
      caught it on the line-count hint after the first contrast fix. */
-  color: #8b949f;
+  color: var(--mj-steel-dim);
 }
 
 .foot {

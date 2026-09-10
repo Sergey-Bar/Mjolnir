@@ -2,6 +2,7 @@ import DefaultTheme from "vitepress/theme";
 import type { Theme } from "vitepress";
 import Home from "./Home.vue";
 import RuneDivider from "./RuneDivider.vue";
+import TrustLadder from "./TrustLadder.vue";
 import RuleCatalog from "./RuleCatalog.vue";
 import TerminalReport from "./TerminalReport.vue";
 import CatalogPreview from "./CatalogPreview.vue";
@@ -10,6 +11,7 @@ import EvidenceBadge from "./EvidenceBadge.vue";
 import FalseGreenChain from "./FalseGreenChain.vue";
 import ScoreExplainer from "./ScoreExplainer.vue";
 import NotFound from "./NotFound.vue";
+import "./styles/fonts.css";
 import "./styles/vars.css";
 import "./styles/custom.css";
 
@@ -19,6 +21,7 @@ export default {
   enhanceApp({ app }) {
     app.component("Home", Home);
     app.component("RuneDivider", RuneDivider);
+    app.component("TrustLadder", TrustLadder);
     app.component("RuleCatalog", RuleCatalog);
     app.component("TerminalReport", TerminalReport);
     app.component("CatalogPreview", CatalogPreview);

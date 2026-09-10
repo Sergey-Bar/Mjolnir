@@ -34,7 +34,10 @@ import {
   ansiLineToSpans,
   BG,
   CHAR_W,
+  CHROME_DOTS,
+  FONT_FAMILY,
   FONT_SIZE,
+  fontFaceCss,
   LINE_HEIGHT,
   PAD_BOTTOM,
   PAD_TOP,
@@ -257,7 +260,10 @@ export function buildScoreGaugeSvg(): string {
   ].join("\n      ");
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', Menlo, monospace" font-size="${FONT_SIZE}">
+<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" font-family="${FONT_FAMILY}" font-size="${FONT_SIZE}">
+  <style>
+${fontFaceCss()}
+  </style>
   <defs>
     <style>
       .hb, .fr { opacity: 0; }
@@ -281,9 +287,9 @@ export function buildScoreGaugeSvg(): string {
   <g clip-path="url(#gaugeClip)">
     <rect x="0" y="0" width="${width}" height="${height}" fill="${BG}"/>
     <rect x="0" y="0" width="${width}" height="${TITLE_BAR}" fill="${TITLE_BAR_BG}"/>
-    <circle cx="20" cy="${TITLE_BAR / 2}" r="6" fill="#ff5f56"/>
-    <circle cx="40" cy="${TITLE_BAR / 2}" r="6" fill="#ffbd2e"/>
-    <circle cx="60" cy="${TITLE_BAR / 2}" r="6" fill="#27c93f"/>
+    <circle cx="20" cy="${TITLE_BAR / 2}" r="6" fill="${CHROME_DOTS[0]}"/>
+    <circle cx="40" cy="${TITLE_BAR / 2}" r="6" fill="${CHROME_DOTS[1]}"/>
+    <circle cx="60" cy="${TITLE_BAR / 2}" r="6" fill="${CHROME_DOTS[2]}"/>
 
 ${bandGroups}
 ${frameGroups}

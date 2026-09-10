@@ -4,6 +4,7 @@
 
 import { describe, expect, it } from "vitest";
 import { buildBadge, renderBadgeSnippet } from "../../src/commands/badge.js";
+import { BADGE_BAND } from "../../src/brand/tokens.js";
 import { computeDebt, renderDebt } from "../../src/commands/debt.js";
 import {
   renderTriage,
@@ -58,22 +59,28 @@ describe("badge", () => {
       }),
     );
     expect(badge.message).toBe("82/100 · 1 error");
-    // ScoreState bands: 82 is the trusted band → shields `important`
-    // (threshold drift fix — was 90/75/50 with `green` at 82).
-    expect(badge.color).toBe("important");
+    // ScoreState bands: 82 is the trusted band. The colour is the brand's
+    // deep aurora, not shields' `important` — which resolves to #ea7233,
+    // an ORANGE, so every WORTHY badge used to render in a warning hue.
+    expect(badge.color).toBe(BADGE_BAND.trusted);
     expect(badge.schemaVersion).toBe(1);
   });
 
   it("the forged state reads 100/100 · forged", () => {
     const badge = buildBadge(fakeScan({ score: 100 }));
     expect(badge.message).toBe("100/100 · forged");
-    expect(badge.color).toBe("success");
+    // Not shields' `success`, which is green (#4b0). Green is not a
+    // score colour here: a green 100 badge says "your software is fine".
+    expect(badge.color).toBe(BADGE_BAND.forged);
+    expect(badge.color).not.toBe("success");
   });
 
   it("honest empty state when no tests found", () => {
     const badge = buildBadge(fakeScan({ score: null }));
     expect(badge.message).toBe("no tests found");
-    expect(badge.color).toBe("lightgrey");
+    // UNKNOWN is neutral, and never the critical colour.
+    expect(badge.color).toBe(BADGE_BAND.unmeasured);
+    expect(badge.color).not.toBe(BADGE_BAND.critical);
   });
 
   it("snippet contains commit-bound verification comment", () => {

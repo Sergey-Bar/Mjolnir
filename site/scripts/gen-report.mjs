@@ -163,10 +163,27 @@ export function splitGroups(lines) {
 
   const commandIdx = idx(/npx mjolnir/, "command");
   const worthinessIdx = idx(/\bWORTHINESS\b/, "WORTHINESS");
-  const findingsIdx = idx(/▚\s*FINDINGS/, "FINDINGS heading");
+  // The per-finding detail is OPTIONAL, and this used to throw when it
+  // was absent. `scripts/generate-readme-hero.ts` deliberately stops the
+  // hero asset at the end of "FIX THIS FIRST" — everything from
+  // "▚ FINDINGS" down is dropped, because the hero is the score
+  // instrument and the full report is demo.svg's job. When that landed,
+  // the site's prebuild started throwing here, which took the whole
+  // pages deploy down with it and went unnoticed because the site build
+  // is not what anyone was watching.
+  //
+  // So a missing FINDINGS heading is a shape, not a format error: the
+  // verdict block runs to the footer and there are no finding lines. The
+  // boundaries that genuinely cannot be missing — the command and the
+  // WORTHINESS line — still throw, because a wrong number here is
+  // exactly the defect this script exists to prevent.
+  const foundFindings = lines.findIndex((l) => /▚\s*FINDINGS/.test(l.text));
+  const hasFindings = foundFindings >= 0;
   const footerIdx = lines.findIndex(
-    (l, i) => i > findingsIdx && /^\s*─{10,}\s*$/.test(l.text),
+    (l, i) => i > worthinessIdx && /^\s*─{10,}\s*$/.test(l.text),
   );
+  const blockEnd = footerIdx < 0 ? lines.length : footerIdx;
+  const findingsIdx = hasFindings ? foundFindings : blockEnd;
 
   // The state chip ("ᚦ [STRAINED]") sits just above the score, with a
   // blank line or two between it and the ASCII hammer. Anchor on the chip
@@ -188,10 +205,7 @@ export function splitGroups(lines) {
     title: lines.title ?? "",
     command: lines[commandIdx].text.trim(),
     verdictLines: lines.slice(verdictStart, findingsIdx),
-    findingLines: lines.slice(
-      findingsIdx,
-      footerIdx < 0 ? lines.length : footerIdx,
-    ),
+    findingLines: hasFindings ? lines.slice(findingsIdx, blockEnd) : [],
     footerLines: footerIdx < 0 ? [] : lines.slice(footerIdx + 1),
   };
 }

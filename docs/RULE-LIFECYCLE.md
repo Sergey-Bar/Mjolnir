@@ -227,7 +227,7 @@ symmetry (plan §12.4).
 
 Findings may carry mutationEvidence provenance (additive within
 schemaVersion 1) when a mutation-testing report matched them
-(mjolnir mutation <report>, Stryker JSON / mutmut junitxml; the reader
+(`mjolnir mutation <report>`, Stryker JSON / mutmut junitxml; the reader
 NEVER spawns mutation tools).
 
 **The E1→E2 consolidation is BY DERIVATION, not an upgrade claim:**

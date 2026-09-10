@@ -27,6 +27,7 @@ import {
   type GateLevel,
 } from "../../src/integrations/ci-install.js";
 import { buildBadge } from "../../src/commands/badge.js";
+import { BADGE_BAND } from "../../src/brand/tokens.js";
 import type { ScanResult } from "../../src/types.js";
 
 describe("`ci install` output is valid, parseable YAML", () => {
@@ -262,21 +263,17 @@ describe("`badge` output matches the shields.io endpoint schema", () => {
     };
   }
 
-  const SHIELDS_COLORS = new Set([
-    "brightgreen",
-    "green",
-    "yellowgreen",
-    "yellow",
-    "orange",
-    "red",
-    "blue",
-    "lightgrey",
-    "success",
-    "important",
-    "critical",
-    "informational",
-    "inactive",
-  ]);
+  /**
+   * shields.io accepts a CSS named colour OR a hex value; the badge now
+   * sends hex, so this checks the shape it actually sends.
+   *
+   * The named-colour set this replaced was checking the wrong thing. It
+   * confirmed every value was a name shields RECOGNISES, and every value
+   * was — while `important` rendered the trusted band orange and
+   * `success` rendered the 100 state green. A name being valid says
+   * nothing about it being right.
+   */
+  const HEX = /^[0-9a-f]{6}$/i;
 
   it("schemaVersion is the literal 1 shields.io requires", () => {
     const badge = buildBadge(sampleResult(85));
@@ -291,16 +288,27 @@ describe("`badge` output matches the shields.io endpoint schema", () => {
     expect(badge.message.length).toBeGreaterThan(0);
   });
 
-  it("color is one of shields.io's recognized named colors, for every score band", () => {
+  it("color is a brand band value, for every score band", () => {
+    const bands = new Set<string>(Object.values(BADGE_BAND));
     for (const score of [null, 0, 40, 55, 76, 91, 100]) {
       const badge = buildBadge(sampleResult(score));
       expect(
-        SHIELDS_COLORS.has(badge.color),
-        `score ${score} produced color "${badge.color}", which shields.io ` +
-          `does not recognize as a named color — it would render the ` +
-          `badge with a fallback/gray color instead of the intended one.`,
+        HEX.test(badge.color),
+        `score ${score} produced color "${badge.color}", which is not the ` +
+          `6-digit hex shields.io's endpoint takes.`,
+      ).toBe(true);
+      expect(
+        bands.has(badge.color),
+        `score ${score} produced color "${badge.color}", which is in no ` +
+          `BADGE_BAND token — the badge is a brand surface too.`,
       ).toBe(true);
     }
+  });
+
+  it("the badge wears no other project's logo", () => {
+    // It carried `namedLogo: "vitest"` — the badge people paste into
+    // their own READMEs, wearing someone else's mark.
+    expect(buildBadge(sampleResult(85)).namedLogo).toBeUndefined();
   });
 
   it("the JSON round-trips through JSON.stringify/parse without loss", () => {

@@ -44,7 +44,32 @@ export function assertH264(ffmpeg: string): void {
 export interface EncodeOptions {
   fps: number;
   out: string;
+  /** Constant-quality target; defaults to `CRF`. */
+  crf?: number;
 }
+
+/**
+ * Constant-quality target.
+ *
+ * 18 is visually transparent and produced a 31 MB demo — nearly three
+ * times the 12 MB budget `video-media.spec.ts` enforces on an asset
+ * every clone pays for. The 8.7 MB file that actually shipped was
+ * produced by some compression step that lived outside this repository,
+ * which meant the documented command could not reproduce the artifact
+ * readers download, and nothing checked the one that did ship.
+ *
+ * Calibrated by rendering, not guessed: at 2560x1440 / 30 fps / 42.7 s
+ * this demo measures 31.2 MB at CRF 18 and 18.7 MB at CRF 24. 32 is the
+ * step that lands it inside the budget with margin, at a bitrate close
+ * to the 1.63 Mbps the previously shipped file happened to use.
+ *
+ * The visible cost is small because of what the content is: flat colour
+ * on flat ground, with motion confined to a typing caret and a scrolling
+ * report. That is the easiest thing x264 encodes, and CRF 18 was
+ * spending five megabits per second describing a near-black background
+ * in perfect fidelity.
+ */
+export const CRF = 32;
 
 /**
  * PNG frames on stdin to an H.264 MP4.
@@ -59,7 +84,7 @@ export interface EncodeOptions {
  * run; libx264's scene detection is content-adaptive and would otherwise
  * make byte-identical output depend on the encoder's mood.
  */
-export function ffmpegArgs({ fps, out }: EncodeOptions): string[] {
+export function ffmpegArgs({ fps, out, crf = CRF }: EncodeOptions): string[] {
   return [
     "-hide_banner",
     "-loglevel",
@@ -78,7 +103,7 @@ export function ffmpegArgs({ fps, out }: EncodeOptions): string[] {
     "-preset",
     "slow",
     "-crf",
-    "18",
+    String(crf),
     "-profile:v",
     "high",
     "-pix_fmt",

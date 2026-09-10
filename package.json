@@ -59,7 +59,13 @@
     "prepare": "husky",
     "prepublishOnly": "npm run build",
     "docs:flow": "tsx scripts/generate-readme-flow.ts",
-    "docs:architecture": "tsx scripts/generate-readme-architecture.ts"
+    "docs:architecture": "tsx scripts/generate-readme-architecture.ts",
+    "brand:tokens": "tsx scripts/generate-brand-tokens.ts",
+    "brand:doctor": "node scripts/brand-doctor.mjs",
+    "brand:doctor:selftest": "node scripts/brand-doctor-selftest.mjs",
+    "brand:fonts": "tsx scripts/vendor-fonts.ts",
+    "brand:fonts:check": "tsx scripts/vendor-fonts.ts --check",
+    "brand:marks:update": "node scripts/update-mark-hashes.mjs"
   },
   "keywords": [
     "qa",

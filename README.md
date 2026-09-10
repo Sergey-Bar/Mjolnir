@@ -9,11 +9,11 @@ software. Mjölnir verifies the system that does the verifying — the test
 suite, the run artifacts and the CI pipeline — and reports a worthiness
 score with the evidence behind every deduction.
 
-[![npm](https://img.shields.io/npm/v/mjolnir-qa.svg?style=flat-square&color=C9A227&labelColor=0B0F17)](https://www.npmjs.com/package/mjolnir-qa)
-[![downloads](https://img.shields.io/npm/dm/mjolnir-qa.svg?style=flat-square&color=C9A227&labelColor=0B0F17)](https://www.npmjs.com/package/mjolnir-qa)
-[![ci](https://img.shields.io/github/actions/workflow/status/Sergey-Bar/Mjolnir/ci.yml?branch=main&style=flat-square&label=ci&labelColor=0B0F17)](https://github.com/Sergey-Bar/Mjolnir/actions/workflows/ci.yml)
-[![license](https://img.shields.io/badge/license-MIT-C9A227.svg?style=flat-square&labelColor=0B0F17)](LICENSE)
-[![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-2E8C7F.svg?style=flat-square&labelColor=0B0F17)](https://nodejs.org)
+[![npm](https://img.shields.io/npm/v/mjolnir-qa.svg?style=flat-square&color=C19A34&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
+[![downloads](https://img.shields.io/npm/dm/mjolnir-qa.svg?style=flat-square&color=C19A34&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
+[![ci](https://img.shields.io/github/actions/workflow/status/Sergey-Bar/Mjolnir/ci.yml?branch=main&style=flat-square&label=ci&labelColor=0A1119)](https://github.com/Sergey-Bar/Mjolnir/actions/workflows/ci.yml)
+[![license](https://img.shields.io/badge/license-MIT-C19A34.svg?style=flat-square&labelColor=0A1119)](LICENSE)
+[![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-37ABBD.svg?style=flat-square&labelColor=0A1119)](https://nodejs.org)
 
 ```bash
 npx mjolnir-qa@latest

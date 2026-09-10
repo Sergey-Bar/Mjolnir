@@ -34,7 +34,11 @@ const DIST = join(SITE, ".vitepress", "dist");
 const BASE = "/Mjolnir/";
 
 /** Pages worth auditing: the landing page, a doc page, and the catalog. */
-const ROUTES = ["", "guide/getting-started", "rules/"];
+// guide/scoring carries the trust ladder and the evidence weighting —
+// the two components that state the product's epistemics. A visual
+// treatment nothing ever audits is a visual treatment nobody has
+// checked, so it is on the list.
+const ROUTES = ["", "guide/getting-started", "guide/scoring", "rules/"];
 
 const MIME = {
   ".html": "text/html",

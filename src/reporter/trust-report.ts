@@ -20,6 +20,7 @@
 
 import type { Finding, ScanResult, TrustSummary } from "../types.js";
 import { isAdvisoryFinding } from "../types.js";
+import { TRUST_RUNGS } from "../brand/symbols.js";
 import { palette, shouldColorize, shouldUseAscii } from "./theme.js";
 import { sectionHeader, type UiContext } from "./ui.js";
 import { renderTerminal } from "./terminal.js";
@@ -39,14 +40,27 @@ export interface RenderTrustReportOpts {
   classic?: boolean;
 }
 
-const TRUST_LABELS: Record<string, string> = {
-  L0: "L0 · observation only",
-  L1: "L1 · heuristic static",
-  L2: "L2 · deterministic static",
-  L3: "L3 · file executed",
-  L4: "L4 · test executed",
-  L5: "L5 · run corroborates defect",
-};
+/**
+ * The rung labels, built from `src/brand/symbols.ts` rather than typed
+ * again here.
+ *
+ * They had drifted the moment there were two copies: this file said
+ * "file executed" and "run corroborates defect" where the symbol module,
+ * the architecture diagram and the website's ladder all said "the
+ * finding's file executed" and "the run verdict corroborates". Small
+ * enough that nobody would notice, and exactly the kind of divergence
+ * that makes a reader wonder whether two surfaces mean the same thing.
+ *
+ * The runtime marker is not decoration either: L3 and above cannot be
+ * reached without a real run report, and the label says so wherever the
+ * ladder is not drawn to show it.
+ */
+const TRUST_LABELS: Record<string, string> = Object.fromEntries(
+  TRUST_RUNGS.map((r) => [
+    r.level,
+    `${r.level} · ${r.meaning}${r.runtime ? " · runtime" : ""}`,
+  ]),
+);
 
 function pct(v: number): string {
   return `${Math.round(v * 100)}%`;
