@@ -44,6 +44,20 @@ jobs:
       # M3: capture the job start for the soft time-budget summary below.
       - run: echo "JOB_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # A merge that hit a conflict in package-lock.json and was
+      # committed unresolved leaves `<<<<<<<` markers in a file npm reads
+      # as JSON: `npm ci` then fails with a cryptic parser error, and
+      # Snyk's PR check cannot parse the manifest at all. It shipped on
+      # main once already (the v1.0.0 merge). Fail here, fast, with the
+      # file named — before the confusing npm error.
+      - name: No unresolved merge markers in lockfiles
+        run: |
+          # JSON has no line that is exactly seven <, = or > — so in a
+          # lockfile these are unambiguously conflict markers.
+          if git grep -nE '^(<{7} |={7}$|>{7} )' -- 'package-lock.json' ':(glob)**/package-lock.json'; then
+            echo "::error::committed git conflict markers in a lockfile (above) — resolve the merge"
+            exit 1
+          fi
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ matrix.node }}
@@ -173,6 +187,39 @@ jobs:
   # pinned action in this repo. The tarball is downloaded from the pinned
   # release tag and verified against that release's own checksums file
   # before extraction — no curl|bash of mutable script bodies.
+  # The site build only ran on push-to-main (pages.yml), so a commit that
+  # broke it passed every PR check and failed the deploy after merge —
+  # twice: gen-report.mjs requiring a heading the hero asset had dropped,
+  # and `mjolnir mutation <report>` in a doc read by Vue's compiler as an
+  # element. This runs the same build + gate pages.yml does, on the PR,
+  # where it can still be fixed.
+  site-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # VitePress dates pages from git history; a shallow clone would
+          # stamp every page with this commit.
+          fetch-depth: 0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - name: Install site deps
+        working-directory: site
+        run: npm ci
+      - name: Test the catalog generator
+        working-directory: site
+        run: npm test
+      - name: Build site
+        working-directory: site
+        run: npm run build
+      - name: Site doctor
+        working-directory: site
+        run: npm run doctor
+
   workflow-lint:
     runs-on: ubuntu-latest
     timeout-minutes: 5
