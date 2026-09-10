@@ -19,7 +19,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 
 ## Why this fails in production
 
-The gate can fail every run while the build stays green: the catch absorbs the exception and the stage completes without ever recording the failure.
+A Jenkinsfile `try` block that runs a verification gate and a `catch` that absorbs the failure without any failure marking — no rethrow, no `error(...)`, no `unstable(...)`, no `currentBuild.result` assignment. The stage completes, the build stays green, and the only trace of the failed tests is a log line. This is the Groovy spelling of the same defect QA-CI-002 catches in shell (`|| true`): the runner never sees the exit status it needs to fail the build. (A catch that downgrades to `unstable()` IS a failure marking — that rescue shape is QA-CI-008's Jenkins arm, and the two rules split the family without overlap.)
 
 ## What gets flagged (real detector output)
 

@@ -9,6 +9,42 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — P6 quarantine remediation (remediation/remote-first R3)
+
+### Added
+
+- **docs/QUARANTINE-REMEDIATION.md** — the ledger-first quarantine view, generated
+  from the live registry (`npm run docs:quarantine-ledger`) and drift-locked
+  (tests/contract/quarantine-ledger.spec.ts): one row per live quarantine rule
+  with failure-mode class, disposition, and re-measure gate; historical section
+  records the governed retirements.
+- Python tree-sitter parse stage: `parsePythonAst` wired into the python
+  adapter's async `parseAst` hook (the §10 parse-or-fallback contract), with
+  `src/engine/python-ast.ts` structural queries — the first real python AST
+  substrate (the Sprint-8 "unwired" caveat is closed and re-pinned honestly).
+
+### Changed
+
+- **QA-PY-007** (detectorRevision 4, AST rework): fires only on ≥2-statement
+  with-blocks or broad root exception types — the adjudicated FP core
+  (single-statement/specific-type) suppressed. Corpus: pytest-dev 167 → 11,
+  pallets-click 16 → 1 live findings.
+- **QA-TQUAL-009** (detectorRevision 2, AST rework): skips Cypress command
+  chains (`cy.`-rooted — the driver awaits them) and deliberate `void`
+  discards. Corpus: cypress-realworld-app 10 → 0.
+- **QA-PW-147** (detectorRevision 2, final attempt): AST arm fires only on real
+  test/it declarations — code-as-data (`test('test')` inside lint-rule test
+  strings) can never fire. Corpus: eslint-plugin repo 32 → 0.
+- **QA-ENV-001** (detectorRevision 4, final attempt): OS-path sub-pattern
+  dropped (20/20 adjudicated FP — deliberate path fixtures, same undecidability
+  as the wave-2 host drop); locale/local-time families kept. Corpus: grafana
+  7 → 4.
+- Measurement: orphaned verdicts (findings the reworks suppressed) archived to
+  `tests/corpus/verdicts/archive/` per the established prune flow; the three
+  fully-reworked rules fall below the n ≥ 10 threshold and ship UNMEASURED
+  until owner re-adjudication (measured census 77 → 74 of 79; the
+  certification floor test documents the P6 invalidations).
+
 ## [Unreleased] — P3c Jenkins (remediation/remote-first R2)
 
 ### Added

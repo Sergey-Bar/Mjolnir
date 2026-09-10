@@ -80,8 +80,8 @@
     "detectorRevision": 1
   },
   "QA-ENV-001": {
-    "logicHash": "fcc4f9f76bd31e69e22eb4872907f78700696c3c62d0f4603968b99074f4dd4c",
-    "detectorRevision": 3
+    "logicHash": "e69cc2124206fb24223af173831e6422eff0af3e3df3eea549f90b8e3b9568d7",
+    "detectorRevision": 4
   },
   "QA-JV-101": {
     "logicHash": "8ab879f39d9d6dc0d8c05d4443b6a4beaf1518b94b13c4c73ba8589b9f2aca55",
@@ -200,8 +200,8 @@
     "detectorRevision": 1
   },
   "QA-PW-147": {
-    "logicHash": "feb26bfecc400a695ac67c05b0938c0701d80fe8c653f68802b6ed038be7cebc",
-    "detectorRevision": 1
+    "logicHash": "2b82d4d95f33013bb8099e224183d4a08070d5c201d6688450a37079a0632cac",
+    "detectorRevision": 2
   },
   "QA-PY-001": {
     "logicHash": "79174c1a2c3ed03aa8443e94980a7641b42722f9b6a37e10ef0aab4a833a1206",
@@ -224,8 +224,8 @@
     "detectorRevision": 1
   },
   "QA-PY-007": {
-    "logicHash": "2c0dfbdbdb127e754eaa8406ec098d6a2913054da594a2eb5fc9fb4ee1d5e7ae",
-    "detectorRevision": 3
+    "logicHash": "e3fd4aeb50b9f807a421e8018328ad01791ccdfe2b79cb71f0ef8074ecb2c72a",
+    "detectorRevision": 4
   },
   "QA-PY-009": {
     "logicHash": "2f71e5d3a4c821f054a927d850c5f1d9bbec285cce05b4f58743797266ad5e42",
@@ -308,8 +308,8 @@
     "detectorRevision": 1
   },
   "QA-TQUAL-009": {
-    "logicHash": "99b90ac920b7a7c2ae50d06563692dca55a89b647cc6f640a726ca36ea941f57",
-    "detectorRevision": 1
+    "logicHash": "0aaa6150a18d0a0c777fdc91861f40d44128d36cc21f314787c06598556d327a",
+    "detectorRevision": 2
   },
   "QA-TQUAL-011": {
     "logicHash": "745703eef45c18f10ef81da51397ad2a7dcee88d6142652d775d9efa80e576b9",

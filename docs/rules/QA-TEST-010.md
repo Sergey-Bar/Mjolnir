@@ -47,7 +47,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | getsentry-sentry                              | 1           |
 | grafana-grafana                               | 2           |
 | negative-fixtures                             | 3           |
-| playwright-community-eslint-plugin-playwright | 129         |
+| playwright-community-eslint-plugin-playwright | 165         |
 | positive-fixtures                             | 11          |
 | tanstack-query                                | 2           |
 | vercel-next-js                                | 201         |

@@ -20,3 +20,23 @@
 {"ruleId":"QA-PY-006","file":"testing/example_scripts/marks/marks_considered_keywords/test_marks_as_keywords.py","line":8,"verdict":"FP","note":"fixture script testing mark-as-keyword selection via pytester"}
 {"ruleId":"QA-PY-006","file":"testing/example_scripts/perf_examples/collect_stats/template_test.py","line":5,"verdict":"FP","note":"template for performance stats collection, not a real test"}
 {"ruleId":"QA-PY-006","file":"testing/example_scripts/unittest/test_parametrized_fixture_error_message.py","line":16,"verdict":"FP","note":"fixture script testing error message for parametrized fixtures via pytester"}
+{"ruleId":"QA-PY-007","file":"testing/_py/test_local.py","line":177,"verdict":"FP","note":"ENOTDIR — the only possible OS error for listdir on a file [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/_py/test_local.py","line":317,"verdict":"FP","note":"TypeError from wrong relto arg type — type IS the assertion [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/_py/test_local.py","line":419,"verdict":"FP","note":"EEXIST — the only possible error for mkdir of an existing dir [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/_py/test_local.py","line":583,"verdict":"FP","note":"ValueError from bad hash algo — single possible error [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/_py/test_local.py","line":623,"verdict":"FP","note":"ENOENT — the only possible error after chdir-removed [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/_py/test_local.py","line":628,"verdict":"FP","note":"ENOENT same shape [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/_py/test_local.py","line":652,"verdict":"FP","note":"ValueError re-raise — propagation IS the assertion [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/_py/test_local.py","line":933,"verdict":"FP","note":"ExecutionFailed/RuntimeError from sysfind of a known command — single possible error [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/_py/test_local.py","line":993,"verdict":"FP","note":"ImportMismatchError — the only possible error for the renamed-dir pyimport scenario [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/_py/test_local.py","line":995,"verdict":"FP","note":"same ImportMismatchError shape [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/_py/test_local.py","line":1019,"verdict":"FP","note":"ImportMismatchError after dir rename — single possible error [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/_py/test_local.py","line":1028,"verdict":"FP","note":"same pyimport mismatch shape [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/_py/test_local.py","line":1134,"verdict":"FP","note":"ImportError from pyimport of a dir — the only possible error [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/_py/test_local.py","line":1144,"verdict":"FP","note":"same pyimport error-contract shape [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/code/test_code.py","line":38,"verdict":"FP","note":"TypeError from Code.from_function(class) — type IS the assertion [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/code/test_excinfo.py","line":483,"verdict":"FP","note":"ValueError rejection contract — type IS the assertion [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/code/test_excinfo.py","line":484,"verdict":"FP","note":"same rejection-contract shape [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/code/test_source.py","line":215,"verdict":"FP","note":"SyntaxError — the only possible error for the malformed-source scenario [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/code/test_source.py","line":416,"verdict":"FP","note":"same malformed-source shape [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-007","file":"testing/code/test_source.py","line":430,"verdict":"FP","note":"same malformed-source shape [rev-3 delta adjudication 2026-09-02]"}

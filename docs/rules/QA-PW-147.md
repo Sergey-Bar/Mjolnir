@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | info                                                                                                                                                         |
 | Confidence                            | medium                                                                                                                                                       |
 | Tier                                  | quarantine                                                                                                                                                   |
-| Measured FP rate                      | 100% (n=20)                                                                                                                                                  |
+| Measured FP rate                      | not yet measured                                                                                                                                             |
 | Evidence level                        | E0                                                                                                                                                           |
 | QA impact                             | Test hygiene debt (HYGIENE)                                                                                                                                  |
 | False-positive risk (author estimate) | medium                                                                                                                                                       |
@@ -41,11 +41,10 @@ Verified against `tests/fixtures/QA-PW-147/must-not-fire/cart.spec.ts` — a leg
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo                                          | Occurrences |
-| --------------------------------------------- | ----------- |
-| playwright-community-eslint-plugin-playwright | 32          |
-| positive-fixtures                             | 1           |
-| vitest-dev-vitest                             | 153         |
+| Repo              | Occurrences |
+| ----------------- | ----------- |
+| positive-fixtures | 1           |
+| vitest-dev-vitest | 153         |
 
 ---
 

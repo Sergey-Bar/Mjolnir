@@ -78,7 +78,7 @@ The `measurement` census block in `doctor --json`
 (`{measured, unmeasured, total, quarantine}`) is **the** reproducible
 answer to "how many rules are measured" — derived from the live
 registry and revision-valid measurements (currently
-<!-- census:census -->77/2/79, 32<!-- /census:census --> quarantine).
+<!-- census:census -->74/5/79, 29<!-- /census:census --> quarantine).
 
 **Machine contract:** `mjolnir doctor --json` emits
 `mjolnir.doctor-report@1` — frozen key order

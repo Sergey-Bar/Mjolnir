@@ -8,7 +8,7 @@ direction with an entry condition.
 
 ## Where Mjölnir is now
 
-- **v0.5.x — open beta.** <!-- census:total-rules -->79 rules<!-- /census:total-rules -->, <!-- census:measured -->77<!-- /census:measured --> with a false-positive rate
+- **v0.5.x — open beta.** <!-- census:total-rules -->79 rules<!-- /census:total-rules -->, <!-- census:measured -->74<!-- /census:measured --> with a false-positive rate
   measured against real OSS code
   ([FP-AUDIT](/reference/fp-audit)).
 - JSON report (`schemaVersion: 1`), exit codes and CLI surface are
