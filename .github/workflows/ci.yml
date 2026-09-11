@@ -416,17 +416,7 @@ jobs:
       - run: npm ci
       - name: Regenerate docs, COUNT-LOCK table and golden lock
         run: |
-          npm run docs:rules
-          npm run fp-audit:generate
-          npm run docs:capability
-          npm run docs:counts
-          npm run docs:depth-adjudication
-          npm run docs:machine-contract
-          npm run brand:tokens
-          npm run golden:update
-          npm run docs:hero
-          npm run docs:demo
-          npm run detector-hashes:update
+          npm run docs:regen
       - name: Fail when committed artifacts differ from regenerated ones
         run: |
           git diff --exit-code
