@@ -111,7 +111,7 @@ describe("parseAzurePipeline — step field arms", () => {
         "steps:",
         "  - script: npm test",
         "    condition: true",
-        "  - script: npm run e2e",
+        "  - script: npx playwright test",
         "    condition: 0",
       ].join("\n"),
     );
@@ -125,7 +125,7 @@ describe("parseAzurePipeline — step field arms", () => {
         "steps:",
         "  - script: npm test",
         "    retryCountOnTaskFailure: 2",
-        "  - script: npm run e2e",
+        "  - script: npx playwright test",
         "    retryCountOnTaskFailure: '3'",
       ].join("\n"),
     );
@@ -139,7 +139,7 @@ describe("parseAzurePipeline — step field arms", () => {
         "steps:",
         "  - script: npm test",
         "    enabled: false",
-        "  - script: npm run e2e",
+        "  - script: npx playwright test",
         "    enabled: 'true'",
       ].join("\n"),
     );
