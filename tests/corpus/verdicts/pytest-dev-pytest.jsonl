@@ -60,3 +60,30 @@
 {"ruleId":"QA-PY-004","file":"testing/code/test_code.py","line":165,"verdict":"FP","note":"assert False inside try/except — deliberate fail-marker raising AssertionError for excinfo introspection (DATA) [rev-3 delta adjudication 2026-09-02]"}
 {"ruleId":"QA-PY-004","file":"testing/code/test_code.py","line":168,"verdict":"TP","note":"getrepr() existence check — sole verification that the repr is non-empty; failure-by-crash otherwise [rev-3 delta adjudication 2026-09-02]"}
 {"ruleId":"QA-PY-004","file":"testing/code/test_code.py","line":181,"verdict":"FP","note":"assert False fail-marker DATA (same introspection fixture shape) [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-004","file":"testing/code/test_code.py","line":192,"verdict":"","note":""}
+{"ruleId":"QA-PY-004","file":"testing/code/test_excinfo.py","line":382,"verdict":"","note":""}
+{"ruleId":"QA-PY-004","file":"testing/code/test_excinfo.py","line":473,"verdict":"","note":""}
+{"ruleId":"QA-PY-004","file":"testing/code/test_excinfo.py","line":479,"verdict":"","note":""}
+{"ruleId":"QA-PY-004","file":"testing/code/test_excinfo.py","line":490,"verdict":"","note":""}
+{"ruleId":"QA-PY-004","file":"testing/code/test_excinfo.py","line":508,"verdict":"","note":""}
+{"ruleId":"QA-PY-004","file":"testing/code/test_excinfo.py","line":520,"verdict":"","note":""}
+{"ruleId":"QA-PY-004","file":"testing/code/test_excinfo.py","line":532,"verdict":"","note":""}
+{"ruleId":"QA-PY-004","file":"testing/code/test_excinfo.py","line":538,"verdict":"","note":""}
+{"ruleId":"QA-PY-004","file":"testing/code/test_excinfo.py","line":550,"verdict":"","note":""}
+{"ruleId":"QA-PY-004","file":"testing/code/test_excinfo.py","line":558,"verdict":"","note":""}
+{"ruleId":"QA-PY-002","file":"testing/test_mark.py","line":1036,"verdict":"","note":""}
+{"ruleId":"QA-PY-002","file":"testing/test_runner.py","line":604,"verdict":"","note":""}
+{"ruleId":"QA-PY-007","file":"testing/test_capture.py","line":1116,"verdict":"","note":""}
+{"ruleId":"QA-PY-007","file":"testing/test_capture.py","line":1377,"verdict":"","note":""}
+{"ruleId":"QA-PY-007","file":"testing/test_capture.py","line":1393,"verdict":"","note":""}
+{"ruleId":"QA-PY-007","file":"testing/test_compat.py","line":97,"verdict":"","note":""}
+{"ruleId":"QA-PY-007","file":"testing/test_compat.py","line":107,"verdict":"","note":""}
+{"ruleId":"QA-PY-007","file":"testing/test_doctest.py","line":1758,"verdict":"","note":""}
+{"ruleId":"QA-PY-007","file":"testing/test_recwarn.py","line":101,"verdict":"","note":""}
+{"ruleId":"QA-PY-007","file":"testing/test_recwarn.py","line":123,"verdict":"","note":""}
+{"ruleId":"QA-PY-007","file":"testing/test_recwarn.py","line":123,"verdict":"","note":""}
+{"ruleId":"QA-PY-007","file":"testing/test_recwarn.py","line":127,"verdict":"","note":""}
+{"ruleId":"QA-PY-007","file":"testing/test_recwarn.py","line":242,"verdict":"","note":""}
+{"ruleId":"QA-PY-003","file":"testing/example_scripts/fixtures/fill_fixtures/test_funcarg_lookupfails.py","line":12,"verdict":"","note":""}
+{"ruleId":"QA-PY-003","file":"testing/example_scripts/issue88_initial_file_multinodes/test_hello.py","line":5,"verdict":"","note":""}
+{"ruleId":"QA-PY-003","file":"testing/example_scripts/marks/marks_considered_keywords/test_marks_as_keywords.py","line":8,"verdict":"","note":""}

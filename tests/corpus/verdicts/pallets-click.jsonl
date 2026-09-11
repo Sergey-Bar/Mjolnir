@@ -7,3 +7,4 @@
 {"ruleId":"QA-PY-004","file":"tests/test_options.py","line":390,"verdict":"FP","note":"issubclass type predicate — the truthiness IS the check [rev-3 delta adjudication 2026-09-02]"}
 {"ruleId":"QA-PY-004","file":"tests/test_termui.py","line":139,"verdict":"TP","note":"bar.finished bare attribute truthiness — sole evidence for that attribute; a wrong truthy value passes (the rule's diagnosis) [rev-3 delta adjudication 2026-09-02]"}
 {"ruleId":"QA-PY-004","file":"tests/test_testing.py","line":246,"verdict":"FP","note":"exception-presence guard — the adjacent `result.output == 'Error: ...'` precise assert pins the failure [rev-3 delta adjudication 2026-09-02]"}
+{"ruleId":"QA-PY-004","file":"tests/test_options.py","line":414,"verdict":"","note":""}

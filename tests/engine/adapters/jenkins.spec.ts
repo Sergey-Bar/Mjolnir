@@ -90,6 +90,8 @@ describe("jenkinsAdapter.runRules", () => {
                 line: 1,
                 column: 1,
                 message: "x",
+                why: "w",
+                fix: "f",
               },
             ];
           },
@@ -129,6 +131,8 @@ describe("jenkinsAdapter.runRules", () => {
               line: 1,
               column: 1,
               message: "ok",
+              why: "w",
+              fix: "f",
             },
           ],
         },

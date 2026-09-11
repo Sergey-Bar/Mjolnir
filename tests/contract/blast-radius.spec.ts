@@ -17,7 +17,7 @@ import { MEASURED_FP } from "../../src/rules/measured-fp.generated.js";
 import {
   buildManifest,
   extractImportSpecifiers,
-} from "../../scripts/generate-blast-radius.ts";
+} from "../../scripts/generate-blast-radius.js";
 
 const ROOT = join(import.meta.dirname, "..", "..");
 const SRC = join(ROOT, "src");
@@ -35,7 +35,7 @@ const FROZEN_EXIT_CODES = new Set([0, 1, 2, 10, 20]);
 const COMMITTED = readFileSync(AUDIT_PATH, "utf8");
 const LIVE = await (async () => {
   const { renderForCommit } =
-    await import("../../scripts/generate-blast-radius.ts");
+    await import("../../scripts/generate-blast-radius.js");
   return renderForCommit();
 })();
 

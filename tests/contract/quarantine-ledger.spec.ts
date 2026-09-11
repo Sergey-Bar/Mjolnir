@@ -15,9 +15,10 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { RULES, RETIRED_RULE_IDS } from "../../src/rules/index.js";
+import type { QADoctorRule } from "../../src/rules/rule.js";
 import { MEASURED_FP } from "../../src/rules/measured-fp.generated.js";
 import { declaredDetectorRevision } from "../../src/rules/measurement.js";
-import { renderForCommit } from "../../scripts/generate-quarantine-ledger.ts";
+import { renderForCommit } from "../../scripts/generate-quarantine-ledger.js";
 
 const ROOT = join(import.meta.dirname, "..", "..");
 const LEDGER_PATH = join(ROOT, "docs", "QUARANTINE-REMEDIATION.md");
@@ -74,7 +75,7 @@ describe("docs/QUARANTINE-REMEDIATION.md matches the live registry", () => {
     for (const [id, rev] of Object.entries(expected)) {
       const rule = RULES.find((r) => r.id === id);
       expect(rule, `${id} missing from the registry`).toBeDefined();
-      expect(declaredDetectorRevision(rule)).toBe(rev);
+      expect(declaredDetectorRevision(rule as QADoctorRule)).toBe(rev);
       expect(
         COMMITTED.includes(id),
         `${id} disposition row missing from the ledger`,

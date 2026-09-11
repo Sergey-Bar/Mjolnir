@@ -307,7 +307,6 @@ describe("mcp-failures — unknown tools and bad params answer errors, never suc
   it("fg-mcp-unknown-tool: an unknown tool call → JSON-RPC error", async () => {
     const { handleToolCall } = await import("../../src/mcp/server.js");
     const res = await handleToolCall({
-      jsonrpc: "2.0",
       id: 1,
       name: "definitely-not-a-tool",
       args: {},
@@ -319,7 +318,6 @@ describe("mcp-failures — unknown tools and bad params answer errors, never suc
   it("fg-mcp-invalid-params: a scan call with a hostile target → error response", async () => {
     const { handleToolCall } = await import("../../src/mcp/server.js");
     const res = await handleToolCall({
-      jsonrpc: "2.0",
       id: 2,
       name: "scan",
       args: { path: 42 },

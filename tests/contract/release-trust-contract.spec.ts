@@ -136,7 +136,7 @@ describe("status algebra (Constitution §2) — derivation table + terminality",
   };
 
   it("all PROVEN + all satisfied ⇒ PASS", () => {
-    const v = computeVerdict([dim("PASS", "PROVEN")], baseInvariant, "9.9.9");
+    const v = computeVerdict([dim("PASS", "PROVEN")], baseInvariant);
     expect(v.releaseTrust).toBe("PASS");
   });
 
@@ -144,7 +144,6 @@ describe("status algebra (Constitution §2) — derivation table + terminality",
     const v = computeVerdict(
       [dim("PASS", "PROVEN"), dim("FAILED", "PROVEN")],
       baseInvariant,
-      "9.9.9",
     );
     expect(v.releaseTrust).toBe("FAILED");
     expect(v.strictestState).toBe("FAILED");
@@ -154,7 +153,6 @@ describe("status algebra (Constitution §2) — derivation table + terminality",
     const v = computeVerdict(
       [dim("PASS", "PROVEN"), dim("UNPROVEN", "UNPROVEN")],
       baseInvariant,
-      "9.9.9",
     );
     expect(v.releaseTrust).toBe("FAILED");
     expect(v.strictestState).toBe("UNPROVEN");
@@ -164,7 +162,6 @@ describe("status algebra (Constitution §2) — derivation table + terminality",
     const v = computeVerdict(
       [dim("PASS", "PROVEN"), dim("PARTIAL", "PARTIAL")],
       baseInvariant,
-      "9.9.9",
     );
     expect(v.releaseTrust).toBe("FAILED");
     expect(v.strictestState).toBe("PARTIAL");
@@ -174,7 +171,6 @@ describe("status algebra (Constitution §2) — derivation table + terminality",
     const v = computeVerdict(
       [dim("UNPROVEN", "UNPROVEN"), dim("BLOCKED", "BLOCKED")],
       baseInvariant,
-      "9.9.9",
     );
     expect(v.strictestState).toBe("BLOCKED");
   });
@@ -183,7 +179,6 @@ describe("status algebra (Constitution §2) — derivation table + terminality",
     const v = computeVerdict(
       [dim("PASS", "PROVEN"), dim("INCONCLUSIVE", "INCONCLUSIVE")],
       baseInvariant,
-      "9.9.9",
     );
     expect(v.releaseTrust).toBe("FAILED");
     expect(v.strictestState).toBe("INCONCLUSIVE");
@@ -194,7 +189,7 @@ describe("status algebra (Constitution §2) — derivation table + terminality",
       ...baseInvariant,
       provenance: "UNSUPPORTED",
     };
-    const v = computeVerdict([dim("PASS", "PROVEN")], preR4c, "1.1.4");
+    const v = computeVerdict([dim("PASS", "PROVEN")], preR4c);
     expect(v.releaseTrust).toBe("PASS");
   });
 
@@ -203,13 +198,13 @@ describe("status algebra (Constitution §2) — derivation table + terminality",
       ...baseInvariant,
       contract: "violated",
     };
-    const v = computeVerdict([dim("PASS", "PROVEN")], violated, "9.9.9");
+    const v = computeVerdict([dim("PASS", "PROVEN")], violated);
     expect(v.releaseTrust).toBe("FAILED");
     expect(v.strictestState).toBe("UNPROVEN");
   });
 
   it("zero applicable dimensions can never PASS (no vacuous verdicts)", () => {
-    const v = computeVerdict([], baseInvariant, "9.9.9");
+    const v = computeVerdict([], baseInvariant);
     expect(v.releaseTrust).toBe("FAILED");
     expect(v.requiredCount).toBe(0);
   });
