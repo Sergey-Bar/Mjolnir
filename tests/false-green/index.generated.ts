@@ -13,7 +13,7 @@ export const CLASS_COVERAGE: Record<string, number> = {
   "evidence-failures": 5,
   "execution-failures": 3,
   "mcp-failures": 3,
-  "parser-failures": 5,
+  "parser-failures": 10,
   "rule-failures": 1,
 };
 
@@ -221,6 +221,51 @@ export const CLASS_COVERAGE: Record<string, number> = {
 //   report field: totalTests: ==3
 //   release impact: retry storms stay visible in the record count instead of collapsing to one green row
 //   mutation: fg-parser-duplicate-records/m1 — partial→complete (deduplicate the records silently)
+// fg-parser-trace-corrupt — WIRED
+//   input: a .trace NDJSON stream whose lines are not JSON (garbage bytes)
+//   expected execution: trace parser rejects the stream (corrupt)
+//   expected evidence: PROVEN (the zero-record state is the honest evidence)
+//   expected verdict: totalTests === 0 → exit 2 — a corrupt trace is never a green empty suite
+//   expected exit code: 2
+//   report field: totalTests: ==0
+//   release impact: a corrupt Playwright trace cannot be published as a clean forensic verdict
+//   mutation: fg-parser-trace-corrupt/m1 — parser-failure→clean (a valid passing trace)
+// fg-parser-trace-truncated — WIRED
+//   input: a .trace stream truncated mid-line (valid events, then a cut JSON fragment)
+//   expected execution: trace parser rejects the stream (truncated)
+//   expected evidence: PROVEN (the truncation is surfaced, not healed)
+//   expected verdict: totalTests === 0 → exit 2 — truncation is never healed into a green run
+//   expected exit code: 2
+//   report field: totalTests: ==0
+//   release impact: a cut-off trace cannot masquerade as a finished run
+//   mutation: fg-parser-trace-truncated/m1 — partial→complete (close the stream properly)
+// fg-parser-trace-enormous — WIRED
+//   input: a .trace stream with more events than the parser's bounded cap
+//   expected execution: trace parser refuses (unbounded) before streaming past the cap
+//   expected evidence: PROVEN (the bound is machine-enforced)
+//   expected verdict: totalTests === 0 → exit 2 — an enormous trace can never DoS the ingest into green
+//   expected exit code: 2
+//   report field: totalTests: ==0
+//   release impact: a zip-bomb-shaped trace cannot exhaust the scanner or read as clean
+//   mutation: fg-parser-trace-enormous/m1 — unbounded→bounded (shrink the stream under the cap)
+// fg-parser-trace-mismatched-version — WIRED
+//   input: a trace stream declaring an unsupported format version marker
+//   expected execution: trace parser aborts with unsupported-version
+//   expected evidence: PROVEN (the mismatch is explicit)
+//   expected verdict: totalTests === 0 → exit 2 — UNSUPPORTED is recorded, never parsed-blind
+//   expected exit code: 2
+//   report field: totalTests: ==0
+//   release impact: a future trace format cannot be silently mis-parsed as today's
+//   mutation: fg-parser-trace-mismatched-version/m1 — unsupported→PASS (declare the supported version)
+// fg-parser-trace-zip-valid — WIRED
+//   input: a real trace.zip (stored member trace.trace with valid action events)
+//   expected execution: zip member extracted, stream parsed, one record built
+//   expected evidence: PROVEN (the record reflects the trace's actions)
+//   expected verdict: totalTests === 1 → exit 0 — the positive control for the zip path
+//   expected exit code: 0
+//   report field: totalTests: ==1
+//   release impact: the bounded offline zip reader ingests real Playwright artifacts
+//   mutation: fg-parser-trace-zip-valid/m1 — parser-failure→clean (an empty trace.trace member)
 
 // ── rule-failures ─────────────────────────────────────────────
 // fg-rule-crash-isolated — WIRED
@@ -233,5 +278,5 @@ export const CLASS_COVERAGE: Record<string, number> = {
 //   release impact: a crashed detector can never render as a full-coverage clean bill
 //   mutation: fg-rule-crash-isolated/m1 — crashed-rule→clean (drop rulesCrashed from the report)
 
-// Wired cases: 19 · Unsurfaced rows: 3 · Total: 22
-// Mutation inventory: 19 fixtures across the wired set.
+// Wired cases: 24 · Unsurfaced rows: 3 · Total: 27
+// Mutation inventory: 24 fixtures across the wired set.

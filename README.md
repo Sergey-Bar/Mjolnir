@@ -442,9 +442,9 @@ Rung by rung: [docs/TERMINOLOGY.md](docs/TERMINOLOGY.md).
 
 ### How much of this is measured
 
-**<!-- census:measured-of-total -->77 of 79<!-- /census:measured-of-total --> rules carry a false-positive rate measured against real OSS code**
+**<!-- census:measured-of-total -->74 of 79<!-- /census:measured-of-total --> rules carry a false-positive rate measured against real OSS code**
 (≥ 10 hand-classified findings each — [docs/FP-AUDIT.md](docs/FP-AUDIT.md)).
-The other <!-- census:unmeasured -->2<!-- /census:unmeasured --> ship on the author's estimate and say so, per rule, in
+The other <!-- census:unmeasured -->5<!-- /census:unmeasured --> ship on the author's estimate and say so, per rule, in
 `mjolnir explain`; `mjolnir rules --unmeasured` lists them, and every scan
 footer reports how many of the rules that actually _fired_ are measured.
 
@@ -685,7 +685,7 @@ artifacts.
   product does what the requirement asked for.
 - **A 100 is not proof of a good suite.** Whether your suite covers your
   actual risk is a different question, and this tool does not answer it.
-- **<!-- census:unmeasured-of-total -->2 of 79<!-- /census:unmeasured-of-total --> rules ship on an estimate**, not a measured rate — disclosed
+- **<!-- census:unmeasured-of-total -->5 of 79<!-- /census:unmeasured-of-total --> rules ship on an estimate**, not a measured rate — disclosed
   per rule, not buried here.
 - **E1 is not E2.** Heuristic findings are worth reading, not worth
   applying blindly.

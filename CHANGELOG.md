@@ -9,6 +9,30 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — R5 trace ingester (remediation/remote-first WI-17)
+
+### Added
+
+- **Playwright trace ingester** (`src/forensics/trace.ts`, WI-17): deterministic,
+  offline, bounded, version-aware ingestion of per-test traces — `trace.zip`
+  (a bounded, dependency-free ZIP reader: EOCD scan, central-directory
+  enumeration, stored/deflate members via `node:zlib` with a decompressed-output
+  cap) or raw `.trace`/`.ndjson` NDJSON streams. Action pairs become
+  Evidence-Core `TestRecord`s (start/end pairing, durations, per-action
+  errors; timeout errors render `timedOut`). `runForensics` recognizes trace
+  artifacts in both file and directory modes; the report source union gains
+  `playwright-trace` additively (`contractVersion 1` unchanged).
+- False-Green corpus cases for the trace surface: corrupt stream, truncated
+  stream, event-count overflow, unsupported version marker, zip without
+  `trace.trace` — all degrade to the zero-record exit-2 state, never a green
+  empty suite; plus positive controls (real stored zip + valid stream ingest
+  with paired durations) proving the rejections are precision, not blindness.
+
+### Changed
+
+- `ForensicsReport.source` + `RuntimeCorroboration.source` widened additively
+  with `"playwright-trace"`.
+
 ## [Unreleased] — R4c Evidence Graph + Scope Integrity + Exit-Code proofs (remediation/remote-first)
 
 ### Added

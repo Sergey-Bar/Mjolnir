@@ -136,7 +136,12 @@ export interface RuntimeCorroboration {
    * constrains TRUE-FLAKE derivation, which lives in the analysis, not
    * in the provenance label.
    */
-  source: "playwright-json" | "junit-xml" | "jest-json" | "vitest-json";
+  source:
+    | "playwright-json"
+    | "junit-xml"
+    | "jest-json"
+    | "vitest-json"
+    | "playwright-trace";
   /** Number of tests executed in the finding's file (any level). */
   testsExecuted: number;
   /**

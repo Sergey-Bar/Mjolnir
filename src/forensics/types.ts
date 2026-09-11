@@ -62,9 +62,16 @@ export interface ForensicsReport {
    * widens the union additively: `jest-json` and `vitest-json` ingest
    * with ONE attempt per record (their reports carry no per-attempt
    * history), so TRUE-FLAKE can never fire from these sources — honest
-   * degradation, see the parsers' module docs.
+   * degradation, see the parsers' module docs. R5 (WI-17) adds
+   * `playwright-trace`: one record per trace artifact (the per-test
+   * trace convention), action-level facts only.
    */
-  source: "playwright-json" | "junit-xml" | "jest-json" | "vitest-json";
+  source:
+    | "playwright-json"
+    | "junit-xml"
+    | "jest-json"
+    | "vitest-json"
+    | "playwright-trace";
   totalTests: number;
   failed: number;
   skipped: number;

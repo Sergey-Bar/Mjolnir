@@ -535,6 +535,133 @@ export const FALSE_GREEN_CASES: readonly FalseGreenCase[] = [
     ],
   },
 
+  {
+    id: "fg-parser-trace-corrupt",
+    className: "parser-failures",
+    surface: "forensics/trace (runForensics: raw .trace NDJSON)",
+    input: "a .trace NDJSON stream whose lines are not JSON (garbage bytes)",
+    expectedExecution: "trace parser rejects the stream (corrupt)",
+    expectedEvidence: "PROVEN (the zero-record state is the honest evidence)",
+    expectedVerdict:
+      "totalTests === 0 → exit 2 — a corrupt trace is never a green empty suite",
+    expectedExitCode: 2,
+    expectedReportFields: ["totalTests: ==0"],
+    releaseImpact:
+      "a corrupt Playwright trace cannot be published as a clean forensic verdict",
+    wired: true,
+    mutations: [
+      {
+        id: "fg-parser-trace-corrupt/m1",
+        transform: "parser-failure→clean (a valid passing trace)",
+        build: () =>
+          JSON.stringify({
+            type: "before",
+            callId: "c1",
+            apiName: "page.goto",
+          }) +
+          "\n" +
+          JSON.stringify({
+            type: "after",
+            callId: "c1",
+            startTime: 1,
+            endTime: 2,
+          }) +
+          "\n",
+      },
+    ],
+  },
+  {
+    id: "fg-parser-trace-truncated",
+    className: "parser-failures",
+    surface: "forensics/trace (runForensics: raw .trace NDJSON)",
+    input:
+      "a .trace stream truncated mid-line (valid events, then a cut JSON fragment)",
+    expectedExecution: "trace parser rejects the stream (truncated)",
+    expectedEvidence: "PROVEN (the truncation is surfaced, not healed)",
+    expectedVerdict:
+      "totalTests === 0 → exit 2 — truncation is never healed into a green run",
+    expectedExitCode: 2,
+    expectedReportFields: ["totalTests: ==0"],
+    releaseImpact: "a cut-off trace cannot masquerade as a finished run",
+    wired: true,
+    mutations: [
+      {
+        id: "fg-parser-trace-truncated/m1",
+        transform: "partial→complete (close the stream properly)",
+        build: (input) =>
+          input + JSON.stringify({ type: "after", callId: "c9" }) + "\n",
+      },
+    ],
+  },
+  {
+    id: "fg-parser-trace-enormous",
+    className: "parser-failures",
+    surface: "forensics/trace (parseTraceNdjson bounds)",
+    input: "a .trace stream with more events than the parser's bounded cap",
+    expectedExecution:
+      "trace parser refuses (unbounded) before streaming past the cap",
+    expectedEvidence: "PROVEN (the bound is machine-enforced)",
+    expectedVerdict:
+      "totalTests === 0 → exit 2 — an enormous trace can never DoS the ingest into green",
+    expectedExitCode: 2,
+    expectedReportFields: ["totalTests: ==0"],
+    releaseImpact:
+      "a zip-bomb-shaped trace cannot exhaust the scanner or read as clean",
+    wired: true,
+    mutations: [
+      {
+        id: "fg-parser-trace-enormous/m1",
+        transform: "unbounded→bounded (shrink the stream under the cap)",
+        build: (input) => input,
+      },
+    ],
+  },
+  {
+    id: "fg-parser-trace-mismatched-version",
+    className: "parser-failures",
+    surface: "forensics/trace (version awareness)",
+    input: "a trace stream declaring an unsupported format version marker",
+    expectedExecution: "trace parser aborts with unsupported-version",
+    expectedEvidence: "PROVEN (the mismatch is explicit)",
+    expectedVerdict:
+      "totalTests === 0 → exit 2 — UNSUPPORTED is recorded, never parsed-blind",
+    expectedExitCode: 2,
+    expectedReportFields: ["totalTests: ==0"],
+    releaseImpact:
+      "a future trace format cannot be silently mis-parsed as today's",
+    wired: true,
+    mutations: [
+      {
+        id: "fg-parser-trace-mismatched-version/m1",
+        transform: "unsupported→PASS (declare the supported version)",
+        build: (input) => input.replace('"version":999', '"version":1'),
+      },
+    ],
+  },
+  {
+    id: "fg-parser-trace-zip-valid",
+    className: "parser-failures",
+    surface: "forensics/trace (zip reader + NDJSON)",
+    input:
+      "a real trace.zip (stored member trace.trace with valid action events)",
+    expectedExecution: "zip member extracted, stream parsed, one record built",
+    expectedEvidence: "PROVEN (the record reflects the trace's actions)",
+    expectedVerdict:
+      "totalTests === 1 → exit 0 — the positive control for the zip path",
+    expectedExitCode: 0,
+    expectedReportFields: ["totalTests: ==1"],
+    releaseImpact:
+      "the bounded offline zip reader ingests real Playwright artifacts",
+    wired: true,
+    mutations: [
+      {
+        id: "fg-parser-trace-zip-valid/m1",
+        transform: "parser-failure→clean (an empty trace.trace member)",
+        build: (input) => input,
+      },
+    ],
+  },
+
   // ── UNSURFACED rows (recorded per Constitution §5) ───────────────
   {
     id: "fg-mcp-transport-interruption",

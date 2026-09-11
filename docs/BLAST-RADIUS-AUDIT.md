@@ -7,18 +7,18 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 193 files, 38179 LOC
+## Inventory: 194 files, 38678 LOC
 
 | Area             | Files | LOC   |
 | ---------------- | ----- | ----- |
 | src/rules        | 79    | 10490 |
-| src/commands     | 28    | 8261  |
-| src/engine       | 22    | 5965  |
-| src/reporter     | 12    | 2830  |
-| src/(root)       | 3     | 2279  |
+| src/commands     | 28    | 8330  |
+| src/engine       | 22    | 5975  |
+| src/reporter     | 12    | 2833  |
+| src/(root)       | 3     | 2284  |
+| src/forensics    | 9     | 1576  |
 | src/discovery    | 9     | 1449  |
 | src/adapters     | 7     | 1187  |
-| src/forensics    | 8     | 1164  |
 | src/plugins      | 4     | 701   |
 | src/brand        | 2     | 643   |
 | src/mcp          | 3     | 604   |
@@ -40,7 +40,7 @@ codes) must match this document exactly.
 | src/rules/shared/positions          | 57        |
 | src/reporter/ui                     | 18        |
 | src/engine/adapter                  | 13        |
-| src/forensics/types                 | 11        |
+| src/forensics/types                 | 12        |
 | src/engine/ts-ast                   | 10        |
 | src/discovery/ignores               | 9         |
 | src/rules/index                     | 9         |
@@ -65,6 +65,7 @@ codes) must match this document exactly.
 | node:os            | 2                  |
 | node:process       | 1                  |
 | yaml               | 1                  |
+| node:zlib          | 1                  |
 | node:readline      | 1                  |
 | node:module        | 1                  |
 
