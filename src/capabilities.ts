@@ -11,8 +11,11 @@
  * "yes" cell names a pointer that does not resolve. Claims never exceed
  * proven capability.
  *
- * Agents column: every row is "no" until R8 ships the Agent Skill — said
- * plainly rather than implied by silence.
+ * Agents column: the foundational Agent Skill shipped with R8 (1.3.0,
+ * WI-22) — `mjolnir install` writes the SCAN → EVIDENCE → FORENSICS →
+ * TRIAGE → FIX → RESCAN → PROOF loop onto every detected instruction
+ * surface (§17 safety wording contract-locked), so every capability the
+ * CLI/MCP surfaces flows to agents through that loop.
  */
 
 import { existsSync } from "node:fs";
@@ -64,10 +67,10 @@ export interface CapabilityRow {
   cols: Record<DepthColumn, MatrixCell>;
 }
 
-/** Column that is uniformly "no" until its shipping increment. */
-const noAgents = (why = "Agent Skill ships with R8 (1.3.0)"): MatrixCell => ({
-  state: "no",
-  note: why,
+/** The agents column: backed by the R8 Agent Skill's installer surface. */
+const agentSkill = (): MatrixCell => ({
+  state: "yes",
+  evidence: ["src/commands/install-agents.ts"],
 });
 
 const yes = (evidence: string[]): MatrixCell => ({
@@ -91,7 +94,7 @@ export const CAPABILITY_MATRIX: readonly CapabilityRow[] = [
       trustVerdict: yes(["classifyForensicVerdict"]),
       cli: yes(["src/playwright/selector-health.ts"]),
       mcp: yes(["src/mcp/server.ts"]),
-      agents: noAgents(),
+      agents: agentSkill(),
     },
   },
   {
@@ -111,7 +114,7 @@ export const CAPABILITY_MATRIX: readonly CapabilityRow[] = [
       trustVerdict: yes(["classifyForensicVerdict"]),
       cli: yes(["src/forensics/run.ts"]),
       mcp: yes(["src/mcp/server.ts"]),
-      agents: noAgents(),
+      agents: agentSkill(),
     },
   },
   {
@@ -124,7 +127,7 @@ export const CAPABILITY_MATRIX: readonly CapabilityRow[] = [
       trustVerdict: yes(["classifyForensicVerdict"]),
       cli: yes(["src/forensics/run.ts"]),
       mcp: yes(["src/mcp/server.ts"]),
-      agents: noAgents(),
+      agents: agentSkill(),
     },
   },
   {
@@ -137,7 +140,7 @@ export const CAPABILITY_MATRIX: readonly CapabilityRow[] = [
       trustVerdict: no(),
       cli: yes(["src/commands/trust-report.ts"]),
       mcp: yes(["src/mcp/server.ts"]),
-      agents: noAgents(),
+      agents: agentSkill(),
     },
   },
   {
@@ -150,7 +153,7 @@ export const CAPABILITY_MATRIX: readonly CapabilityRow[] = [
       trustVerdict: no(),
       cli: no(),
       mcp: no(),
-      agents: noAgents(),
+      agents: agentSkill(),
     },
   },
   {
@@ -165,7 +168,7 @@ export const CAPABILITY_MATRIX: readonly CapabilityRow[] = [
       trustVerdict: yes(["classifyForensicVerdict"]),
       cli: yes(["src/forensics/run.ts"]),
       mcp: yes(["src/mcp/server.ts"]),
-      agents: noAgents(),
+      agents: agentSkill(),
     },
   },
   {
@@ -178,7 +181,7 @@ export const CAPABILITY_MATRIX: readonly CapabilityRow[] = [
       trustVerdict: no(),
       cli: no(),
       mcp: no(),
-      agents: noAgents(),
+      agents: agentSkill(),
     },
   },
   {
@@ -194,7 +197,7 @@ export const CAPABILITY_MATRIX: readonly CapabilityRow[] = [
       trustVerdict: yes(["classifyForensicVerdict"]),
       cli: yes(["src/forensics/run.ts"]),
       mcp: yes(["src/mcp/server.ts"]),
-      agents: noAgents(),
+      agents: agentSkill(),
     },
   },
   {
@@ -210,7 +213,7 @@ export const CAPABILITY_MATRIX: readonly CapabilityRow[] = [
       trustVerdict: yes(["classifyForensicVerdict"]),
       cli: yes(["src/forensics/run.ts", "src/forensics/triage.ts"]),
       mcp: yes(["src/mcp/server.ts"]),
-      agents: noAgents(),
+      agents: agentSkill(),
     },
   },
   {
@@ -223,7 +226,7 @@ export const CAPABILITY_MATRIX: readonly CapabilityRow[] = [
       trustVerdict: no(),
       cli: no(),
       mcp: no(),
-      agents: noAgents(),
+      agents: agentSkill(),
     },
   },
   {
@@ -236,7 +239,7 @@ export const CAPABILITY_MATRIX: readonly CapabilityRow[] = [
       trustVerdict: no(),
       cli: yes(["src/forensics/run.ts"]),
       mcp: yes(["src/mcp/server.ts"]),
-      agents: noAgents(),
+      agents: agentSkill(),
     },
   },
   {
@@ -252,7 +255,7 @@ export const CAPABILITY_MATRIX: readonly CapabilityRow[] = [
       trustVerdict: yes(["src/commands/release-trust.ts"]),
       cli: yes(["src/commands/verify.ts"]),
       mcp: yes(["src/mcp/server.ts"]),
-      agents: noAgents(),
+      agents: agentSkill(),
     },
   },
 ];

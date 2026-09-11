@@ -6,8 +6,9 @@
  * `validateCapabilityMatrix` resolves fail-closed.
  *
  * "This — not rule counts — measures Playwright depth." The doc is
- * generated and drift-locked; the agents column is uniformly "no" until
- * R8 ships the Agent Skill, stated rather than implied.
+ * generated and drift-locked; the agents column is backed by the
+ * Agent Skill the R8 increment shipped (WI-22), stated with its
+ * evidence pointer rather than implied by silence.
  */
 
 import { writeFileSync } from "node:fs";
@@ -76,9 +77,12 @@ export function renderCapabilities(root: string): string {
     "",
   );
   lines.push(
-    "The `to agents` column is uniformly **no** until R8 ships the",
-    "foundational Agent Skill (growth roadmap WI-22) — stated here rather",
-    "than implied by silence.",
+    "The `to agents` column is backed by the foundational Agent Skill",
+    "that shipped with R8 (1.3.0, growth roadmap WI-22): `mjolnir install`",
+    "writes the SCAN → EVIDENCE → FORENSICS → TRIAGE → FIX → RESCAN →",
+    "PROOF loop — §17 safety wording included — onto every detected",
+    "instruction surface, so each capability above flows to agents through",
+    "that loop.",
     "",
   );
 

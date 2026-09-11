@@ -9,6 +9,44 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — R10 2.0 preparation: breaking-set inventory + boundary-law guards (remediation/remote-first WI-25)
+
+### Added
+
+- **2.0 breaking-set inventory** (`docs/2.0-BREAKING-SET.md`, WI-25): the
+  proposal sheet per the strategic blueprint's §28/§18 — two justified
+  breaking candidates (BS-1 default suppression expiry with the explicit
+  never-expire opt-out; BS-2 retirement completion into `RETIRED_RULE_IDS`),
+  each carrying its benefit>cost justification, its migration pointer, and a
+  PROPOSED decision line awaiting owner ratification, plus the locked
+  NOT-breaking list (`schemaVersion 1` additive extension, exit codes,
+  additive verbs, Node matrix, frozen surfaces). **Nothing is implemented in
+  this release** — nothing enters 2.0 "because large", and no frozen surface
+  breaks without evidence that `schemaVersion 1` cannot represent the
+  behavior.
+- **Migration guide draft** (`docs/MIGRATION-2.0-DRAFT.md`): the working
+  draft of the 2.0.0 guide (publication law: CHANGELOG + site with the
+  release itself) covering BS-1 (init config check → explicit `expires` /
+  `expires: false`; no silent retroactive expiry) and BS-2 (retired-rule
+  list, suppression cleanup, §15-lifecycle-honest disappearance causes).
+- **Boundary-law + non-goal guards** (`tests/contract/boundary-law.spec.ts`,
+  blueprint §9.1/§24/§36): the canonical layers (engine, forensics,
+  adapters, rules) never import upward into commands/ or the transports;
+  the MCP transport imports no detection machinery and rides the canonical
+  machine contract (pipeline → contract → runtime evidence → agent
+  transport is never reversed); the zero-network contract holds; the
+  dependency list carries no telemetry/cloud/hosted-backend package; src/
+  reads no telemetry configuration; and the breaking-set discipline is
+  drift-locked (every entry carries a Decision, nothing is implemented).
+
+### Changed
+
+- **Final capability matrix update** (`src/capabilities.ts`,
+  `docs/PLAYWRIGHT-CAPABILITIES.md`): the `to agents` column now carries the
+  foundational Agent Skill's evidence pointer (`src/commands/install-agents.ts`,
+  shipped with R8/WI-22) on every row — a `no → yes` flip in the same change
+  set that shipped its evidence, per the claim law.
+
 ## [Unreleased] — R9 Trust Artifact integrity + HTML completion (remediation/remote-first WI-23+24)
 
 ### Added

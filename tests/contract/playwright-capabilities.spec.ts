@@ -1,8 +1,8 @@
 /**
- * Playwright capability matrix drift-lock (plan §9 R7 / WI-20): the
- * committed doc equals a fresh render; the matrix is fail-closed
- * (every "yes" pointer resolves); zero UNCLASSIFIED cells; the agents
- * column is honestly "no" until R8.
+ * Playwright capability matrix drift-lock (plan §9 R7 / WI-20; final
+ * matrix update R10): the committed doc equals a fresh render; the
+ * matrix is fail-closed (every "yes" pointer resolves); zero
+ * UNCLASSIFIED cells; the agents column carries the R8 skill pointer.
  */
 
 import { readFileSync } from "node:fs";
@@ -46,12 +46,18 @@ describe("docs/PLAYWRIGHT-CAPABILITIES.md — the depth claim surface", () => {
     }
   });
 
-  it("the agents column is honestly no until R8 (stated, not implied)", () => {
+  it("the agents column carries the R8 Agent Skill pointer on every row", () => {
+    // R8 (WI-22) shipped the skill; the R10 final matrix update flipped
+    // the column with its evidence pointer (claim law: a cell may move
+    // no → yes only in the same change that ships its evidence).
     for (const row of CAPABILITY_MATRIX) {
-      expect(row.cols.agents.state, row.capability).toBe("no");
-      expect(row.cols.agents.note ?? "").toContain("R8");
+      expect(row.cols.agents.state, row.capability).toBe("yes");
+      expect(row.cols.agents.evidence).toContain(
+        "src/commands/install-agents.ts",
+      );
     }
-    expect(COMMITTED).toContain("uniformly **no** until R8");
+    expect(COMMITTED).toContain("shipped with R8");
+    expect(COMMITTED).not.toContain("uniformly **no** until R8");
   });
 
   it("claims never exceed proven capability: a root without the artifacts refuses to validate", () => {
