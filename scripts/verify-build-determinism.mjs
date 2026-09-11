@@ -19,7 +19,7 @@
 
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readdirSync, readFileSync, rmSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { join, relative } from "node:path";
 import { tmpdir } from "node:os";
 
@@ -88,15 +88,13 @@ function run() {
         stdio: "inherit",
       });
       manifests.push(distManifest(join(wt, "dist")));
-      execFileSync(
-        NPM,
-        ["pack", "--pack-destination", join(wt, "pack"), "--silent"],
-        {
-          cwd: wt,
-          shell: process.platform === "win32",
-          stdio: "pipe",
-        },
-      );
+      const packDir = join(wt, "pack");
+      mkdirSync(packDir, { recursive: true });
+      execFileSync(NPM, ["pack", "--pack-destination", packDir, "--silent"], {
+        cwd: wt,
+        shell: process.platform === "win32",
+        stdio: "pipe",
+      });
       const tgz = readdirSync(join(wt, "pack"))[0];
       tarballHashes.push([tgz, sha256(join(wt, "pack", tgz))]);
     }
