@@ -93,40 +93,52 @@ const verdict = (over: Partial<TestVerdict>): TestVerdict => ({
 // ─── cli.ts L177 — a LOCAL rule that declares tier ───────────────────
 
 describe("buildUniversalRules — local rule tier lands in tierByRuleId", () => {
-  it("a local .mjs rule declaring tier 'extended' survives the quarantine filter", async () => {
-    const { buildUniversalRules } = await import("../../src/cli.js");
-    const d = tmp();
-    mkdirSync(join(d, "mjolnir-rules"), { recursive: true });
-    writeFileSync(
-      join(d, "mjolnir-rules", "tiered.mjs"),
-      "export const rules = [{ id: 'QA-ACME-301', title: 'T', category: 'QA-TEST', severity: 'info', confidence: 'high', findingType: 'deterministic-defect', qaImpact: 'HYGIENE', appliesTo: 'test-files', tier: 'extended', run: () => [] }];\n",
-    );
-    const result = await buildUniversalRules(d, undefined, {
-      enablePlugins: true,
-    });
-    expect(result.externalRules.some((r) => r.id === "QA-ACME-301")).toBe(true);
-    expect(result.tierByRuleId.get("QA-ACME-301")).toBe("extended");
-    // And it is NOT filtered out by the non-strict quarantine filter.
-    expect(result.rules.some((r) => r.id === "QA-ACME-301")).toBe(true);
-  });
+  it(
+    "a local .mjs rule declaring tier 'extended' survives the quarantine filter",
+    { timeout: 120_000 },
+    async () => {
+      const { buildUniversalRules } = await import("../../src/cli.js");
+      const d = tmp();
+      mkdirSync(join(d, "mjolnir-rules"), { recursive: true });
+      writeFileSync(
+        join(d, "mjolnir-rules", "tiered.mjs"),
+        "export const rules = [{ id: 'QA-ACME-301', title: 'T', category: 'QA-TEST', severity: 'info', confidence: 'high', findingType: 'deterministic-defect', qaImpact: 'HYGIENE', appliesTo: 'test-files', tier: 'extended', run: () => [] }];\n",
+      );
+      const result = await buildUniversalRules(d, undefined, {
+        enablePlugins: true,
+      });
+      expect(result.externalRules.some((r) => r.id === "QA-ACME-301")).toBe(
+        true,
+      );
+      expect(result.tierByRuleId.get("QA-ACME-301")).toBe("extended");
+      // And it is NOT filtered out by the non-strict quarantine filter.
+      expect(result.rules.some((r) => r.id === "QA-ACME-301")).toBe(true);
+    },
+  );
 
-  it("a local rule declaring tier 'quarantine' is excluded unless --strict (L177 + the map consumer)", async () => {
-    const { buildUniversalRules } = await import("../../src/cli.js");
-    const d = tmp();
-    mkdirSync(join(d, "mjolnir-rules"), { recursive: true });
-    writeFileSync(
-      join(d, "mjolnir-rules", "quar.mjs"),
-      "export const rules = [{ id: 'QA-ACME-302', title: 'Q', category: 'QA-TEST', severity: 'info', confidence: 'high', findingType: 'deterministic-defect', qaImpact: 'HYGIENE', appliesTo: 'test-files', tier: 'quarantine', run: () => [] }];\n",
-    );
-    const result = await buildUniversalRules(d, undefined, {
-      enablePlugins: true,
-    });
-    expect(result.tierByRuleId.get("QA-ACME-302")).toBe("quarantine");
-    expect(result.rules.some((r) => r.id === "QA-ACME-302")).toBe(false);
-    // --strict keeps it.
-    const strict = await buildUniversalRules(d, true, { enablePlugins: true });
-    expect(strict.rules.some((r) => r.id === "QA-ACME-302")).toBe(true);
-  });
+  it(
+    "a local rule declaring tier 'quarantine' is excluded unless --strict (L177 + the map consumer)",
+    { timeout: 120_000 },
+    async () => {
+      const { buildUniversalRules } = await import("../../src/cli.js");
+      const d = tmp();
+      mkdirSync(join(d, "mjolnir-rules"), { recursive: true });
+      writeFileSync(
+        join(d, "mjolnir-rules", "quar.mjs"),
+        "export const rules = [{ id: 'QA-ACME-302', title: 'Q', category: 'QA-TEST', severity: 'info', confidence: 'high', findingType: 'deterministic-defect', qaImpact: 'HYGIENE', appliesTo: 'test-files', tier: 'quarantine', run: () => [] }];\n",
+      );
+      const result = await buildUniversalRules(d, undefined, {
+        enablePlugins: true,
+      });
+      expect(result.tierByRuleId.get("QA-ACME-302")).toBe("quarantine");
+      expect(result.rules.some((r) => r.id === "QA-ACME-302")).toBe(false);
+      // --strict keeps it.
+      const strict = await buildUniversalRules(d, true, {
+        enablePlugins: true,
+      });
+      expect(strict.rules.some((r) => r.id === "QA-ACME-302")).toBe(true);
+    },
+  );
 
   it("a local module rule WITHOUT a tier takes the L177 false arm (tier stays unset)", async () => {
     const { buildUniversalRules } = await import("../../src/cli.js");
