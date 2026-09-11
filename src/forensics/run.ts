@@ -21,6 +21,7 @@ import {
 import { join, dirname } from "node:path";
 
 import { analyze, renderFlakyMd, renderLeaderboard } from "./analyze.js";
+import { parseTraceArtifact } from "./trace.js";
 import { looksLikeJestJson, parseJestJson } from "./parse-jest-json.js";
 import { parseJunitXml } from "./parse-junit.js";
 import { parsePlaywrightJson } from "./parse-playwright-json.js";
@@ -62,6 +63,44 @@ export function runForensics(
     // skips unreadable/corrupt files; the single-file path did not — a
     // corrupt report crashed with exit 20 instead of the honest exit 2.
     // Same containment here: corrupt → zero records.
+    // R5 (WI-17): trace artifacts (.zip with trace.trace, or raw
+    // .trace/.ndjson) are BINARY/NDJSON — read as bytes and ingested
+    // through the bounded trace parser (hostile → throw → zero records).
+    if (/\.(?:zip|trace|ndjson)$/i.test(target)) {
+      try {
+        const bytes = readFileSync(target);
+        const record = parseTraceArtifact(bytes, traceArtifactName(target));
+        if (record === undefined) {
+          const report = analyze([], "playwright-trace");
+          return {
+            report,
+            output: [
+              renderLeaderboard(report),
+              "",
+              renderFlakyMdNotWritten(options),
+            ].join("\n"),
+          };
+        }
+        const report = analyze([record], "playwright-trace");
+        return {
+          report,
+          output: [renderLeaderboard(report), "", renderFlakyMdHint()].join(
+            "\n",
+          ),
+        };
+      } catch {
+        /* hostile trace → zero records → honest exit 2 upstream */
+        const report = analyze([], "playwright-trace");
+        return {
+          report,
+          output: [
+            renderLeaderboard(report),
+            "",
+            renderFlakyMdNotWritten(options),
+          ].join("\n"),
+        };
+      }
+    }
     try {
       const text = readFileSync(target, "utf8");
       const parsed = parseFile(target, text);
@@ -75,6 +114,15 @@ export function runForensics(
     for (const full of listFiles(target)) {
       if (++count > MAX_FILES) break;
       try {
+        // R5: trace artifacts ride the byte path (see the single-file arm).
+        if (/\.(?:zip|trace|ndjson)$/i.test(full)) {
+          const bytes = readFileSync(full);
+          const record = parseTraceArtifact(bytes, traceArtifactName(full));
+          if (record === undefined) continue;
+          if (records.length === 0) source = "playwright-trace";
+          records.push(record);
+          continue;
+        }
         const text = readFileSync(full, "utf8");
         const parsed = parseFile(full, text);
         if (parsed.records.length === 0) continue;
@@ -127,6 +175,21 @@ function renderFlakyMdNotWritten(options: ForensicsOptions): string {
   return "FLAKY.md was not written — nothing recognized to report (or the target directory is not writable).";
 }
 
+/**
+ * R5: the trace artifact's test identity. The per-test trace convention
+ * parks each trace at `test-results/<sanitized-test-title>/trace.zip` —
+ * the parent directory carries the test identity (sanitized, lossy but
+ * honest); a bare `.trace`/`.ndjson` file falls back to its own name.
+ */
+function traceArtifactName(fullPath: string): string {
+  const dir = dirname(fullPath);
+  const base = dir.split(/[\\/]/).pop() ?? "";
+  if (base === "test-results" || base === "" || base === ".") {
+    return fullPath.split(/[\\/]/).pop() ?? "unknown";
+  }
+  return base;
+}
+
 function parseFile(
   path: string,
   text: string,
@@ -177,7 +240,10 @@ function listFiles(dir: string): string[] {
       if (e.isDirectory()) {
         if (["node_modules", ".git"].includes(e.name)) continue;
         walk(full, depth + 1);
-      } else if (e.isFile() && /\.(?:json|xml)$/i.test(e.name)) {
+      } else if (
+        e.isFile() &&
+        /\.(?:json|xml|zip|trace|ndjson)$/i.test(e.name)
+      ) {
         out.push(full);
       }
     }

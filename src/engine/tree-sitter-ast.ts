@@ -174,6 +174,7 @@ interface ParserSlot {
 
 const javaParserSlot: ParserSlot = { promise: null, failedOnce: false };
 const csharpParserSlot: ParserSlot = { promise: null, failedOnce: false };
+const pythonParserSlot: ParserSlot = { promise: null, failedOnce: false };
 
 async function getJavaParser(): Promise<Parser> {
   await ensureParserInitialized();
@@ -190,6 +191,18 @@ async function getCSharpParser(): Promise<Parser> {
   return memoizeParser(csharpParserSlot, async () => {
     const language = await Language.load(
       grammarPath("tree-sitter-c_sharp.wasm"),
+    );
+    const parser = new Parser();
+    parser.setLanguage(language);
+    return parser;
+  });
+}
+
+async function getPythonParser(): Promise<Parser> {
+  await ensureParserInitialized();
+  return memoizeParser(pythonParserSlot, async () => {
+    const language = await Language.load(
+      grammarPath("tree-sitter-python.wasm"),
     );
     const parser = new Parser();
     parser.setLanguage(language);
@@ -230,6 +243,23 @@ export async function parseCSharpAst(text: string): Promise<Tree | undefined> {
 }
 
 /**
+ * Parses Python source into a tree-sitter Tree (product-gap master plan
+ * P6: the AST substrate for the QA-PY-007 rework — the python adapter was
+ * pure-regex until this wiring). Same fallback contract as parseJavaAst:
+ * returns undefined on any failure, never throws.
+ */
+export async function parsePythonAst(text: string): Promise<Tree | undefined> {
+  try {
+    return await withParseSlot(async () => {
+      const parser = await getPythonParser();
+      return parser.parse(text) ?? undefined;
+    });
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * Releases a parsed tree's WASM memory (`tree.delete()`, §10.3). Safe to
  * call on anything — non-trees, already-deleted trees, null — so the
  * pipeline's finally-path can never turn a cleanup into a crash.
@@ -252,7 +282,7 @@ export function disposeTree(tree: unknown): void {
  * parse after this re-creates the parser from scratch.
  */
 export async function releaseTreeSitterResources(): Promise<void> {
-  const slots = [javaParserSlot, csharpParserSlot];
+  const slots = [javaParserSlot, csharpParserSlot, pythonParserSlot];
   for (const slot of slots) {
     const p = slot.promise;
     slot.promise = null;
@@ -274,7 +304,7 @@ export async function releaseTreeSitterResources(): Promise<void> {
  */
 export function _resetForTests(): void {
   parserInitPromise = null;
-  for (const slot of [javaParserSlot, csharpParserSlot]) {
+  for (const slot of [javaParserSlot, csharpParserSlot, pythonParserSlot]) {
     slot.promise = null;
     slot.failedOnce = false;
   }

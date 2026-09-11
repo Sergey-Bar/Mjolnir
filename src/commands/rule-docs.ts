@@ -21,6 +21,10 @@ import { effectiveTier, isProvisional } from "../rules/measurement.js";
 import { deriveEvidenceLevel, QA_IMPACT_LABELS } from "../types.js";
 import type { Finding } from "../types.js";
 import { parseWorkflow } from "../discovery/workflow-parser.js";
+import {
+  isAzurePipelineFixture,
+  parseAzurePipeline,
+} from "../discovery/azure-pipeline-parser.js";
 import { computeCodeText } from "../engine/code-text.js";
 import { getAntiPatternContent } from "./anti-pattern-catalog.js";
 import { firstFixtureFile } from "./fixture-example.js";
@@ -55,10 +59,20 @@ function runRuleAgainstFixture(
   const normalizedPath = fixturePath.replaceAll("\\", "/");
   let ast: unknown;
   if (rule.appliesTo === "ci-workflows") {
-    try {
-      ast = parseWorkflow(text);
-    } catch {
-      return null;
+    // P3b/P3c: parse with the machinery matching the fixture's platform
+    // so the rule sees the context its scan path would hand it; the
+    // Jenkinsfile is a text-target kind and stays un-parsed.
+    const base = normalizedPath.split("/").pop() ?? "";
+    if (base === "Jenkinsfile") {
+      ast = undefined;
+    } else {
+      try {
+        ast = isAzurePipelineFixture(normalizedPath)
+          ? parseAzurePipeline(text)
+          : parseWorkflow(text);
+      } catch {
+        return null;
+      }
     }
   }
   try {

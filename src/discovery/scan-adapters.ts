@@ -14,6 +14,8 @@ import { pythonAdapter } from "../adapters/python.js";
 import { javaAdapter } from "../adapters/java.js";
 import { csharpAdapter } from "../adapters/csharp.js";
 import { githubActionsAdapter } from "../adapters/github-actions.js";
+import { azurePipelinesAdapter } from "../adapters/azure-pipelines.js";
+import { jenkinsAdapter } from "../adapters/jenkins.js";
 import type { LanguageAdapter } from "../engine/adapter.js";
 
 import { sharedWalk } from "./shared-walk.js";
@@ -26,6 +28,8 @@ export const SCAN_ADAPTERS: readonly LanguageAdapter[] = [
   javaAdapter,
   csharpAdapter,
   githubActionsAdapter,
+  azurePipelinesAdapter,
+  jenkinsAdapter,
 ];
 
 /**
@@ -95,6 +99,10 @@ export function discoverAllTestFiles(
         (a) => (buckets.get(a.id)?.length ?? 0) >= ctx.maxFiles,
       ),
     fixtureDirMemo,
+    // R4c Scope Integrity: the walk's exclusion accounting feeds the
+    // scope verdict (claimed scope ≡ analyzed scope).
+    onIgnored: ctx.onIgnored,
+    onUnrecognized: ctx.onUnrecognized,
   });
 }
 
@@ -149,5 +157,15 @@ export const SEARCHED_FOR: readonly SearchedForEntry[] = [
     id: "github-actions",
     label: "GitHub Actions workflows",
     globs: githubActionsAdapter.testFileGlobs,
+  },
+  {
+    id: "azure-pipelines",
+    label: "Azure DevOps pipelines",
+    globs: azurePipelinesAdapter.testFileGlobs,
+  },
+  {
+    id: "jenkins",
+    label: "Jenkinsfiles",
+    globs: jenkinsAdapter.testFileGlobs,
   },
 ];

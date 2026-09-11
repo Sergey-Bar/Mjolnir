@@ -103,6 +103,30 @@ export const ANTI_PATTERN_CONTENT: Record<string, string> = {
     '"neutral," which several branch-protection configurations treat as ' +
     "passing — the PR merges having never been tested at all.",
 
+  "QA-CI-013":
+    "A verification gate (Azure DevOps stage, job, or step) whose own " +
+    "condition or enablement guarantees it never executes on the pipeline " +
+    "path it is supposed to guard: `condition: failed()` turns the gate " +
+    "into a rescue step that only runs after something already failed, " +
+    "`condition: false` and `enabled: false` switch it off outright. On " +
+    "the green path the gate is skipped, so the pipeline passes with zero " +
+    "verification executed — the checkmark is green precisely because the " +
+    "check did not happen. (The sibling shape — a gate marked " +
+    "`succeededOrFailed()`/`always()`, which runs on failed pipelines too " +
+    "— is QA-CI-008's Azure arm.)",
+
+  "QA-CI-014":
+    "A Jenkinsfile `try` block that runs a verification gate and a `catch` " +
+    "that absorbs the failure without any failure marking — no rethrow, no " +
+    "`error(...)`, no `unstable(...)`, no `currentBuild.result` assignment. " +
+    "The stage completes, the build stays green, and the only trace of the " +
+    "failed tests is a log line. This is the Groovy spelling of the same " +
+    "defect QA-CI-002 catches in shell (`|| true`): the runner never sees " +
+    "the exit status it needs to fail the build. (A catch that downgrades " +
+    "to `unstable()` IS a failure marking — that rescue shape is " +
+    "QA-CI-008's Jenkins arm, and the two rules split the family without " +
+    "overlap.)",
+
   "QA-TEST-001":
     "`.only`/`test.only`/`it.only` restricts a test run to just the " +
     "marked test(s) — that's the entire point of the API, for local " +

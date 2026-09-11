@@ -100,12 +100,12 @@ since v0.5.37).
 
 ## MCP registries (P1.6)
 
-| Channel                      | Artifact                                                                                                                                                                                       | State   |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| modelcontextprotocol/servers | PR adding Mjölnir to the community servers README (line: `- [mjolnir-qa](…) — verification trust scanning: fails CI on tests that cannot fail; stdio MCP server with scan/explain/diff tools`) | pending |
-| Smithery                     | `/smithery.yaml` ships with the repo; submit via smithery.ai "Add server" pointing at the repo                                                                                                 | pending |
-| PulseMCP                     | Directory entry form (owner: requires Sergey-Bar identity): name, description from smithery.yaml, stdio transport, install `npx -y mjolnir-qa@latest mcp`                                      | pending |
-| mcp.so                       | Entry form with the same payload as PulseMCP                                                                                                                                                   | pending |
+| Channel                      | Artifact                                                                                                                                                                                                                         | State   |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| modelcontextprotocol/servers | PR adding Mjölnir to the community servers README (line: `- [mjolnir-qa](…) — verification trust scanning: fails CI on tests that cannot fail; stdio MCP server with scan/explain/diff/verify/forensics/triage/pw-report tools`) | pending |
+| Smithery                     | `/smithery.yaml` ships with the repo; submit via smithery.ai "Add server" pointing at the repo                                                                                                                                   | pending |
+| PulseMCP                     | Directory entry form (owner: requires Sergey-Bar identity): name, description from smithery.yaml, stdio transport, install `npx -y mjolnir-qa@latest mcp`                                                                        | pending |
+| mcp.so                       | Entry form with the same payload as PulseMCP                                                                                                                                                                                     | pending |
 
 ## Ministry of Testing (P1.6)
 

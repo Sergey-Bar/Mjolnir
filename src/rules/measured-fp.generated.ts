@@ -27,14 +27,14 @@ export const MEASURED_FP: Readonly<Record<string, MeasuredFp>> = {
   "QA-CI-001": {
     fpRate: 0.105,
     n: 19,
-    detectorRevision: 2,
+    detectorRevision: 3,
     ciLow: 0.0294,
     ciHigh: 0.3139,
   },
   "QA-CI-002": {
     fpRate: 0.111,
     n: 18,
-    detectorRevision: 2,
+    detectorRevision: 4,
     ciLow: 0.031,
     ciHigh: 0.328,
   },
@@ -48,21 +48,21 @@ export const MEASURED_FP: Readonly<Record<string, MeasuredFp>> = {
   "QA-CI-007": {
     fpRate: 0,
     n: 11,
-    detectorRevision: 2,
+    detectorRevision: 3,
     ciLow: 0,
     ciHigh: 0.2588,
   },
   "QA-CI-008": {
     fpRate: 0.1,
     n: 10,
-    detectorRevision: 2,
+    detectorRevision: 4,
     ciLow: 0.0179,
     ciHigh: 0.4042,
   },
   "QA-CI-009": {
     fpRate: 0,
     n: 10,
-    detectorRevision: 2,
+    detectorRevision: 3,
     ciLow: 0,
     ciHigh: 0.2775,
   },
@@ -153,7 +153,7 @@ export const MEASURED_FP: Readonly<Record<string, MeasuredFp>> = {
   "QA-ENV-001": {
     fpRate: 1,
     n: 20,
-    detectorRevision: 3,
+    detectorRevision: 4,
     ciLow: 0.8389,
     ciHigh: 1,
   },
@@ -360,13 +360,6 @@ export const MEASURED_FP: Readonly<Record<string, MeasuredFp>> = {
     ciLow: 0.0329,
     ciHigh: 0.3434,
   },
-  "QA-PW-147": {
-    fpRate: 1,
-    n: 20,
-    detectorRevision: 1,
-    ciLow: 0.8389,
-    ciHigh: 1,
-  },
   "QA-PY-001": {
     fpRate: 0,
     n: 12,
@@ -401,13 +394,6 @@ export const MEASURED_FP: Readonly<Record<string, MeasuredFp>> = {
     detectorRevision: 1,
     ciLow: 0.0454,
     ciHigh: 0.3213,
-  },
-  "QA-PY-007": {
-    fpRate: 0.794,
-    n: 34,
-    detectorRevision: 3,
-    ciLow: 0.632,
-    ciHigh: 0.8965,
   },
   "QA-PY-009": {
     fpRate: 0.056,
@@ -548,13 +534,6 @@ export const MEASURED_FP: Readonly<Record<string, MeasuredFp>> = {
     detectorRevision: 1,
     ciLow: 0.3645,
     ciHigh: 0.6913,
-  },
-  "QA-TQUAL-009": {
-    fpRate: 0.786,
-    n: 14,
-    detectorRevision: 1,
-    ciLow: 0.5241,
-    ciHigh: 0.9243,
   },
   "QA-TQUAL-011": {
     fpRate: 0.24,

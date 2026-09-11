@@ -6,6 +6,18 @@
 
 import { defineRule } from "../rule.js";
 import { VERIFICATION_GATE_RE } from "./verification-gate.js";
+import {
+  isAzurePipelineDoc,
+  jobRunsVerificationGate,
+  locateAzureJobKey,
+  locateAzureStepKey,
+  stepIsVerificationGate as stepIsAzureVerificationGate,
+} from "./azure-gates.js";
+import type {
+  AzureJob,
+  AzurePipelineDoc,
+  AzureStep,
+} from "../../discovery/azure-pipeline-parser.js";
 
 interface WorkflowDoc {
   jobs?: Record<string, JobNode>;
@@ -102,26 +114,36 @@ export const continueOnError = defineRule({
   appliesTo: "ci-workflows",
   // Trust Metadata
   languages: ["yaml"],
-  frameworks: ["github-actions"],
+  // P3b: same mechanism on Azure DevOps (`continueOnError: true` on a
+  // verification step, or on a job whose steps include a gate).
+  frameworks: ["github-actions", "azure-pipelines"],
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "FRAMEWORK",
-  detectionNotes: "parsed YAML + test-command gate",
+  detectionNotes:
+    "parsed YAML + test-command gate (GitHub Actions + Azure DevOps)",
   introduced: "0.1.0",
 
   // Measured (corpus wave 5): tier set from the measured envelope (plan §11.2).
   // detectorRevision 2 (M2, 2026-09-04): re-run idiom + non-gate shapes
   // excluded after adjudication. Rev-1 measurement invalidated per §07.
+  // detectorRevision 3 (P3b, 2026-09-10): Azure DevOps arm added
+  // (step/job-level continueOnError on verification gates) — additive
+  // platform detection; the GitHub detection paths are unchanged.
   tier: "quarantine",
-  detectorRevision: 2,
+  detectorRevision: 3,
   run(ctx) {
     const findings: Omit<
       import("../../types.js").Finding,
       "ruleId" | "category"
     >[] = [];
 
-    const doc = ctx.ast as WorkflowDoc | undefined;
+    const doc = ctx.ast as WorkflowDoc | AzurePipelineDoc | undefined;
     if (!doc || typeof doc !== "object") return findings;
+    if (isAzurePipelineDoc(doc)) {
+      azureArm(ctx, doc, findings);
+      return findings;
+    }
 
     const jobs = doc.jobs ?? {};
     for (const [jobName, job] of Object.entries(jobs)) {
@@ -255,4 +277,88 @@ function lineOf(text: string, index: number): number {
 
 function escapeRe(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+type FindingPart = Omit<
+  import("../../types.js").Finding,
+  "ruleId" | "category"
+>;
+
+/**
+ * Azure DevOps arm (detectorRevision 3, P3b): the SAME mechanism as the
+ * GitHub path — a verification gate running under `continueOnError: true`,
+ * at step level or job level. Gate-ness is decided by the shared
+ * VERIFICATION_GATE_RE over the step's inline script text plus its task
+ * `inputs:` string values (azure-gates.ts). Azure has no `steps.<id>.outcome`
+ * expression surface, so the GitHub re-run-idiom guard has no analog here:
+ * a step's outcome cannot be re-checked after a tolerated failure.
+ */
+function azureArm(
+  ctx: { path: string; text: string },
+  doc: AzurePipelineDoc,
+  findings: FindingPart[],
+): void {
+  const emitJob = (job: AzureJob): void => {
+    const steps = job.steps ?? [];
+    if (job.continueOnError === true && jobRunsVerificationGate(job)) {
+      findings.push({
+        severity: "error",
+        confidence: "high",
+        findingType: "deterministic-defect",
+        qaImpact: "FALSE-GREEN",
+        file: ctx.path,
+        line: locateAzureJobKey(ctx.text, job, "continueOnError"),
+        column: 1,
+        message: `Job \`${job.name ?? "?"}\` runs a verification gate under \`continueOnError: true\`.`,
+        why: "This job can fail every day and the pipeline will still show green. The checkmark on this pipeline cannot be trusted.",
+        fix: "Remove continueOnError, or scope it to individual non-blocking steps only.",
+      });
+    }
+    for (const step of steps) {
+      emitStep(job, step);
+    }
+  };
+
+  const emitStep = (job: AzureJob, step: AzureStep): void => {
+    if (!step || step.continueOnError !== true) return;
+    // A disabled gate cannot be masked by continueOnError — it never runs
+    // at all, which is QA-CI-013's never-runs finding, not this rule's.
+    if (step.enabled === false) return;
+    // Reporting/artifact tasks under continueOnError are ordinary
+    // best-effort engineering — their failure loses information, it does
+    // not hide a failed check. (Upload/comment/notify task names carry
+    // the same vocabulary the GitHub uses-arm excludes.)
+    if (step.task && /upload|publish|comment|notify|cache/i.test(step.task)) {
+      return;
+    }
+    if (!stepIsAzureVerificationGate(step)) return;
+    findings.push({
+      severity: "error",
+      confidence: "high",
+      findingType: "deterministic-defect",
+      qaImpact: "FALSE-GREEN",
+      file: ctx.path,
+      line: locateAzureStepKey(ctx.text, step, "continueOnError"),
+      column: 1,
+      message: `Verification step \`${describeAzureStep(step)}\` in \`${job.name ?? "?"}\` has \`continueOnError: true\`.`,
+      why: "A failing gate will not fail the job — the pipeline reports green while the check it was supposed to enforce did not pass.",
+      fix: "Remove continueOnError from the gate. If the check is genuinely unreliable, quarantine it explicitly instead of hiding the exit code.",
+    });
+  };
+
+  for (const stage of doc.stages ?? []) {
+    for (const job of stage.jobs ?? []) emitJob(job);
+  }
+  for (const job of doc.jobs ?? []) emitJob(job);
+  if (doc.steps?.length) {
+    emitJob({ name: "steps", kind: "job", steps: doc.steps });
+  }
+}
+
+function describeAzureStep(step: AzureStep): string {
+  if (step.name) return step.name;
+  const firstScriptLine = step.script?.split("\n")[0]?.trim();
+  if (firstScriptLine) return firstScriptLine.slice(0, 40);
+  if (step.task) return step.task;
+  return "step";
 }

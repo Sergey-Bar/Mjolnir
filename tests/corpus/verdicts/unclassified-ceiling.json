@@ -1,6 +1,9 @@
 {
-  "total": 0,
-  "byFile": {},
-  "recordedAt": "2026-09-01T18:33:57.661Z",
+  "total": 28,
+  "byFile": {
+    "pallets-click.jsonl": 1,
+    "pytest-dev-pytest.jsonl": 27
+  },
+  "recordedAt": "2026-09-11T05:31:10.419Z",
   "note": "Committed ratchet ceiling (bug-audit B4.29/L13): the generator fails when unclassified verdict rows exceed these counts. Classification work lowers them; --update re-records."
 }

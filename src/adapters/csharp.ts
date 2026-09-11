@@ -97,6 +97,8 @@ export const csharpAdapter: LanguageAdapter = {
       skipDirs: ["bin", "obj"],
       isTestFile: (name) => CS_TEST_RE.test(name),
       onTestFile: (f) => ctx.testFiles.push(f),
+      onIgnored: ctx.onIgnored,
+      onUnrecognized: ctx.onUnrecognized,
       isFull: () => ctx.testFiles.length >= ctx.maxFiles,
       fixtureDirMemo: new Map(),
     });

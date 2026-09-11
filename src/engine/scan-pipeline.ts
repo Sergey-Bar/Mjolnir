@@ -13,7 +13,7 @@
  * module moved. Re-exports in cli.ts keep the historical import surface.
  */
 
-import { readFileSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import { relative, resolve, sep } from "node:path";
 
 import {
@@ -24,6 +24,8 @@ import {
   type ScanResult,
 } from "../types.js";
 import { buildTrustSummary } from "./trust-summary.js";
+import { buildEvidenceGraph, buildRunIdentity } from "./run-identity.js";
+import { ENGINE_VERSION } from "./version.js";
 import { discoverEvidenceCandidates } from "../discovery/evidence-discovery.js";
 import { discoverWorkspace, type Workspace } from "../discovery/workspace.js";
 import { computeStagedFiles } from "../scope/changed.js";
@@ -61,6 +63,8 @@ import {
 } from "./scan-cache.js";
 import { typescriptAdapter } from "../adapters/typescript.js";
 import { githubActionsAdapter } from "../adapters/github-actions.js";
+import { azurePipelinesAdapter } from "../adapters/azure-pipelines.js";
+import { jenkinsAdapter } from "../adapters/jenkins.js";
 import { pythonAdapter } from "../adapters/python.js";
 import { javaAdapter } from "../adapters/java.js";
 import { csharpAdapter } from "../adapters/csharp.js";
@@ -478,6 +482,12 @@ export async function runScan(
   const truncationReasons = new Set<string>();
   let discoveryTruncated = false;
   let rulesPartial = false;
+  // R4c Scope Integrity: the claimed-vs-analyzed accounting — the walk's
+  // matcher exclusions, files no adapter claims, and files whose
+  // parse/analysis threw (each counted at its own site).
+  let scopeIgnored = 0;
+  let scopeUnrecognized = 0;
+  let parseFailed = 0;
 
   // Plan §17.1: per-file provenance for the Agentic Trust Profile.
   const fileProvenance: Array<{
@@ -560,6 +570,14 @@ export async function runScan(
       rulesCrashed++;
       hooks.onRuleCrash?.(ruleId, file, error);
     },
+    // R4c Scope Integrity: the walk's exclusion accounting feeds the
+    // scope verdict (claimed scope ≡ analyzed scope).
+    onIgnored: () => {
+      scopeIgnored++;
+    },
+    onUnrecognized: () => {
+      scopeUnrecognized++;
+    },
   };
 
   // Phase 2 (Tempering): resolve ignore patterns from .mjolnirignore
@@ -569,7 +587,12 @@ export async function runScan(
   // Audit H-8/P-2: each adapter discovers into its own capped bucket,
   // via ONE shared tree walk — the pipeline no longer readdirSyncs
   // every directory once per language.
-  const languageAdapters = ADAPTERS.filter((a) => a.id !== "github-actions");
+  const languageAdapters = ADAPTERS.filter(
+    (a) =>
+      a.id !== "github-actions" &&
+      a.id !== "azure-pipelines" &&
+      a.id !== "jenkins",
+  );
   const buckets = new Map<string, string[]>(
     languageAdapters.map((a) => [a.id, [] as string[]]),
   );
@@ -583,6 +606,12 @@ export async function runScan(
   const wfBucket: string[] = [];
   githubActionsAdapter.discoverTestFiles({ ...ctx, testFiles: wfBucket });
   ctx.testFiles.push(...wfBucket);
+  const azBucket: string[] = [];
+  azurePipelinesAdapter.discoverTestFiles({ ...ctx, testFiles: azBucket });
+  ctx.testFiles.push(...azBucket);
+  const jfBucket: string[] = [];
+  jenkinsAdapter.discoverTestFiles({ ...ctx, testFiles: jfBucket });
+  ctx.testFiles.push(...jfBucket);
   // --staged (agent-handoff plan §5.7): scan-surface restriction. The
   // discovered set is intersected with the staged file list. Degraded
   // (no git) → fall back to the full surface + an honest stderr note
@@ -628,10 +657,12 @@ export async function runScan(
     }
     scanned++;
     const isWorkflow = githubActionsAdapter.isTestFile(path);
+    const isAzurePipeline = azurePipelinesAdapter.isTestFile(path);
+    const isJenkinsfile = jenkinsAdapter.isTestFile(path);
     const isPython = pythonAdapter.isTestFile(path);
     const isJava = javaAdapter.isTestFile(path);
     const isCs = csharpAdapter.isTestFile(path);
-    if (!isWorkflow) testFileCount++;
+    if (!isWorkflow && !isAzurePipeline && !isJenkinsfile) testFileCount++;
     let text: string;
     try {
       // Normalize once at read time: strip BOM (breaks ^-anchored regexes)
@@ -648,7 +679,7 @@ export async function runScan(
     // Exposure metric (Phase 5): count declarations, not files. Workflows
     // declare no tests, so they are excluded from the denominator.
     const relPath = relative(workspace.root, path).replaceAll("\\", "/");
-    if (!isWorkflow) {
+    if (!isWorkflow && !isAzurePipeline && !isJenkinsfile) {
       const decls = countTestDeclarations(text);
       testDeclarationCount += decls;
       // Per-file accounting (bug-audit L3): in changed-scope mode the
@@ -672,13 +703,17 @@ export async function runScan(
     // count identically to a fresh one.
     const adapter = isWorkflow
       ? githubActionsAdapter
-      : isPython
-        ? pythonAdapter
-        : isJava
-          ? javaAdapter
-          : isCs
-            ? csharpAdapter
-            : typescriptAdapter;
+      : isAzurePipeline
+        ? azurePipelinesAdapter
+        : isJenkinsfile
+          ? jenkinsAdapter
+          : isPython
+            ? pythonAdapter
+            : isJava
+              ? javaAdapter
+              : isCs
+                ? csharpAdapter
+                : typescriptAdapter;
     // Parse-mode token, decided BEFORE the lookup from what this scan
     // intends: AST when the adapter has a parse hook and the deadline
     // allows it, regex otherwise. After the parse below, the ACTUAL mode
@@ -790,6 +825,10 @@ export async function runScan(
       // parse-stage throw (contract: never happens) lands here too: the
       // file produced no analysis, so counting it as skipped is honest.
       skippedFiles++;
+      // R4c Scope Integrity: this is the parseFailed class — the file was
+      // DISCOVERED but its parse/analysis threw (distinct from unreadable
+      // or oversized, which never reach this stage).
+      parseFailed++;
     } finally {
       // §10.3: release the AST on every exit path, success or not.
       parsed?.dispose();
@@ -937,6 +976,61 @@ export async function runScan(
   });
   const elapsed = Date.now() - started;
 
+  // R4c (plan §7): Scope Integrity — claimed scope ≡ analyzed scope,
+  // as an additive machine block. The verdict is PROVEN only when every
+  // discovered file was analyzed: no matcher exclusions, no unrecognized
+  // files, no parse failures, no truncation. Otherwise PARTIAL with the
+  // named reasons — a "repository verified" claim is forbidden output
+  // unless this verdict is PROVEN.
+  const scopeReasons: string[] = [];
+  if (scopeIgnored > 0) scopeReasons.push(`ignored:${scopeIgnored}`);
+  if (scopeUnrecognized > 0) {
+    scopeReasons.push(`unrecognized:${scopeUnrecognized}`);
+  }
+  if (parseFailed > 0) scopeReasons.push(`parseFailed:${parseFailed}`);
+  for (const reason of truncationReasons)
+    scopeReasons.push(`truncated:${reason}`);
+  const scopeIntegrity = {
+    discovered: ctx.testFiles.length,
+    analyzed: Math.max(0, scanned),
+    ignored: scopeIgnored,
+    unrecognized: scopeUnrecognized,
+    parseFailed,
+    truncated: truncationReasons.size,
+    scopeVerdict: scopeReasons.length === 0 ? "PROVEN" : "PARTIAL",
+    ...(scopeReasons.length > 0 ? { reasons: scopeReasons } : {}),
+  } as const;
+  // R4c (plan §7): the run identity — the deterministic anchor binding
+  // verdict ← evidence ← execution ← scope ← source ← rule(rev). The
+  // input snapshot is the DISCOVERED file set with byte sizes; the rule
+  // set is the active rules with their effective detector revisions. No
+  // fabrication: the config fingerprint is deliberately null here (the
+  // pipeline sees no config object — the field is omitted downstream
+  // when unavailable).
+  const inputSnapshot = ctx.testFiles.map((p) => {
+    try {
+      return {
+        path: relative(workspace.root, p).replaceAll("\\", "/"),
+        size: statSync(p).size,
+      };
+    } catch {
+      return {
+        path: relative(workspace.root, p).replaceAll("\\", "/"),
+        size: 0,
+      };
+    }
+  });
+  const runIdentity = buildRunIdentity({
+    files: inputSnapshot,
+    rules: [...REVISION_BY_RULE_ID.entries()].map(([id, detectorRevision]) => ({
+      id,
+      detectorRevision,
+    })),
+    config: null,
+    engineVersion: ENGINE_VERSION,
+  });
+  const evidenceGraph = buildEvidenceGraph({ runId: runIdentity });
+
   // R2 empty-state: score is null when no test files exist at all.
   // A "100/100" on a repo with zero tests would be a false proof.
   const hasTests = testFileCount > 0;
@@ -944,6 +1038,9 @@ export async function runScan(
   const result: ScanResult = {
     schemaVersion: SCHEMA_VERSION,
     partial: discoveryTruncated || rulesPartial || skippedFiles > 0,
+    scopeIntegrity,
+    runIdentity,
+    evidenceGraph,
     score: hasTests ? total : null,
     ...(hasTests ? {} : { reason: "no-tests-found" as const }),
     frameworks: frameworks.frameworks,

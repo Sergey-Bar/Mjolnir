@@ -13,7 +13,7 @@ source of truth, rendered here and in the capability matrix.
 
 ## Verdict summary
 
-- Registry: 77 rules.
+- Registry: 79 rules.
 - LEXICAL rules adjudicated: 68 — every one carries a strategyJustification record (doctor-enforced).
 - Rules on a deeper strategy: 6 (AST, AST, QA_MODEL, AST, QA_MODEL, AST).
 
@@ -69,15 +69,15 @@ evidence supported it:
 
 ### `lexical-artifact` — the defect IS the lexical artifact (text = finding) (3 rules)
 
-- **QA-PW-147** (100% FP at n=20): the codegen recorder's default title ('test', 'test 1', …) committed is a recording artifact — the default-title string is the finding; the detector matches the recorder's exact title shapes
+- **QA-PW-147** (unmeasured): the codegen recorder's default title ('test', 'test 1', …) committed is a recording artifact — the default-title string is the finding; the detector matches the recorder's exact title shapes
 - **QA-PY-009** (6% FP at n=18): commented-out test code is a lexical artifact by definition — the text IS the finding (comment-wrapped test bodies); the detector matches the commented shapes on the raw text, which is where the artifact lives
 - **QA-TQUAL-011** (24% FP at n=25): commented-out assertions are lexical artifacts — the comment-wrapped assertion text is the finding itself; the detector matches the shapes on the raw text
 
 ### `runner-semantic` — semantics live in runner behavior no syntax tree represents (39 rules)
 
 - **QA-CI-005** (8% FP at n=13): report generation is a runner side effect of the workflow step sequence, not a syntax tree property; the detector reads the workflow step graph, whose statements are already literal text
-- **QA-CI-007** (0% FP at n=11): retry masking is defined by the runner's retry semantics, which no language syntax tree represents; the detector matches the runner's own retry keys in workflow YAML where statements are shell strings
-- **QA-CI-008** (10% FP at n=10): always()-success is a workflow-step outcome contract, not a code construct; the detector matches the step's run/if keys, which are string fields of the YAML config surface
+- **QA-CI-007** (0% FP at n=11): retry masking is defined by the runner's retry semantics, which no language syntax tree represents; the detector matches the runner's own retry keys (GitHub `uses:`/shell loops, Azure `retryCountOnTaskFailure`) in pipeline YAML where statements are shell strings
+- **QA-CI-008** (10% FP at n=10): always()-success is a workflow-step outcome contract, not a code construct; the detector matches the step's run/if keys, which are string fields of the YAML config surface — on Azure DevOps the same contract lives in job/stage `condition:` text, on Jenkins in the catchError/unstable build-result API
 - **QA-CS-104** (0% FP at n=10): the shared-page family's variants (QA-JV-104/QA-CS-104/QA-PY-106): page/fixture reuse across tests is runner fixture-lifecycle semantics; the detector matches the consumption shapes against test boundaries
 - **QA-CS-107** (8% FP at n=12): the network-idle family's variants (QA-JV-107/QA-CS-107/QA-PY-107): networkidle waits are runner timing semantics; the detector matches the runner's wait tokens — exact keys
 - **QA-CS-109** (0% FP at n=10): the retry-masking family's variants (QA-JV-109/QA-CS-109): retry masking is the runner's retry contract; the detector matches the runner's retry tokens on the code-only text
@@ -97,7 +97,7 @@ evidence supported it:
 - **QA-PY-002** (4% FP at n=23): pytest.mark.skip/xfail are runner marker decorators — exact runner tokens; a syntax tree re-derives the same call shape with no added classification power
 - **QA-PY-003** (47% FP at n=30): assertion-less pytest bodies are runner-outcome semantics (the runner reports a pass that proves nothing); the detector matches the test-def plus body shapes on the code-only text — pytest's pass contract is runner behavior
 - **QA-PY-004** (53% FP at n=30): bare truthiness asserts (assert obj) are assertion-semantics on the code-only text; the detector matches the bare-assert shapes — the AST re-derives the same call
-- **QA-PY-007** (79% FP at n=34): pytest.raises without match is a runner exception-contract semantic; the detector matches the raises-call plus its argumentless form — the runner's exception contract, not a syntax property
+- **QA-PY-007** (unmeasured): pytest.raises without match is a runner exception-contract semantic; the detector matches the raises-call plus its argumentless form — the runner's exception contract, not a syntax property
 - **QA-PY-011** (10% FP at n=10): pytest fixture mutation is fixture-lifecycle semantics (autouse/scope keys plus mutation calls); the detector matches the runner's fixture decorator tokens plus the mutation shapes
 - **QA-PY-012** (40% FP at n=30): tautological assertions in Python (assert x == x) are assertion-semantics on the code-only text; the detector matches the tautology shapes — the AST re-derives the same comparison
 - **QA-PY-105** (0% FP at n=12): Playwright test bodies without assertions are runner-outcome semantics; the detector matches the test-def plus body shapes on the code-only text
@@ -113,11 +113,11 @@ evidence supported it:
 - **QA-TEST-006** (36% FP at n=11): retry abuse is the runner's retry contract (jest.retries, vitest retry, playwright retries); the detector matches the runner's retry API tokens across runners — each an exact key
 - **QA-TEST-010** (58% FP at n=31): empty test bodies are runner-outcome semantics; the detector matches the test-def plus empty-body shapes on the code-only text — the AST body-shape is the same predicate
 - **QA-TQUAL-002** (53% FP at n=32): tautological assertions (x === x, expect(true)) are assertion-semantics on the code-only text; the detector matches the tautology shapes after comment stripping — the AST call-shape is the same predicate
-- **QA-TQUAL-009** (79% FP at n=14): un-awaited promise assertions are runner async semantics; the detector matches the assertion-call shapes inside promise chains on the code-only text — the async contract is runner behavior
+- **QA-TQUAL-009** (unmeasured): un-awaited promise assertions are runner async semantics; the detector matches the assertion-call shapes inside promise chains on the code-only text — the async contract is runner behavior
 
 ### `shell-string-in-config` — config surface: the statements ARE string literals (shell in YAML) (1 rules)
 
-- **QA-CI-002** (11% FP at n=18): exit-code swallowing lives inside workflow run: strings (shell scripts embedded in YAML); the YAML statement IS a string literal — a shell syntax tree of a YAML value adds parsing without adding classification power
+- **QA-CI-002** (11% FP at n=18): exit-code swallowing lives inside workflow run: strings (shell scripts embedded in YAML), Azure DevOps script/bash/pwsh steps (shell scripts embedded in YAML), and Jenkinsfile `sh` strings (shell scripts embedded in Groovy); the statement IS a string literal — a shell syntax tree of an embedded value adds parsing without adding classification power
 
 ### `string-content-defect` — the defect lives in string content (selector/URL) — outside AST semantics by design (7 rules)
 
@@ -151,6 +151,8 @@ evidence supported it:
 | QA-CI-008    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-CI-009    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-CI-010    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
+| QA-CI-013    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
+| QA-CI-014    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-CS-101    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-CS-102    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |
 | QA-CS-103    | not-yet-measured  | no mutation-evidence run has covered this defect class yet    |

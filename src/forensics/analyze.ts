@@ -14,6 +14,7 @@ import type {
   TestVerdict,
 } from "./types.js";
 import { FLAKE_GLYPH, sectionHeader, plainContext } from "../reporter/ui.js";
+import { classifyForensicVerdict } from "./classify.js";
 
 const ui = plainContext();
 
@@ -63,6 +64,21 @@ export function analyze(
       everFailed,
       skipped: finalStatus === "skipped",
       ...(rec.line !== undefined ? { line: rec.line } : {}),
+      // WI-18 (plan 1788882429145 §6): the forensic verdict taxonomy runs
+      // over machine-visible facts only (attempts + error text the source
+      // carries). Additive fields; sources without error text mark the
+      // state unsupported rather than guessing.
+      forensic: classifyForensicVerdict({
+        verdict: {
+          attempts: attempts.length,
+          finalStatus,
+          passedOnRetry,
+          everFailed,
+          skipped: finalStatus === "skipped",
+        },
+        errorTexts: rec.errors ?? [],
+        errorTextsUnsupported: source === "junit-xml",
+      }),
     });
   }
 

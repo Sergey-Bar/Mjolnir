@@ -244,6 +244,16 @@ jobs:
 
       - run: npm run build
 
+      # R4a (plan §5/§10, plan 1789009691197): the Release Trust Verdict
+      # gate — RELEASE-BLOCKING, pre-publish, before any registry write.
+      # Runs the BUILT binary (the shipped artifact itself carries the
+      # gate) and fails the job on any non-PASS verdict. No waiver path.
+      - name: Release-trust gate (verdict must PASS)
+        run: |
+          mkdir -p release-assets
+          node dist/cli.mjs release-trust --json > release-assets/release-trust.json
+          node dist/cli.mjs release-trust | tee release-assets/release-trust.txt
+
       - name: Pack distribution tarball
         run: |
           mkdir -p release-assets
@@ -376,16 +386,30 @@ jobs:
       # Last, and only now: everything above proved the package is real.
       # rc tags create a pre-release marked "Pre-release" on GitHub so it
       # can never be mistaken for a stable announcement.
+      # Publication honesty (Constitution §6): the verdict block is
+      # appended to the Release body and the machine contract ships as an
+      # asset — a missing proof renders UNPROVEN, never omitted.
+      - name: Build the release body with the verdict block
+        run: |
+          {
+            echo "Install: \`npx mjolnir-qa@${VERSION} .\`"
+            echo "Full changelog is auto-generated below from all commits and PRs since the previous release."
+            echo ""
+            echo '```text'
+            cat release-assets/release-trust.txt
+            echo '```'
+          } > release-body.md
+
       - name: Create GitHub Release with generated notes
         uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
           tag_name: ${{ env.RELEASE_TAG }}
           generate_release_notes: true
           prerelease: ${{ steps.disttag.outputs.tag == 'next' }}
-          files: release-assets/*.tgz
-          body: |
-            Install: `npx mjolnir-qa@${{ env.VERSION }} .`
-            Full changelog is auto-generated below from all commits and PRs since the previous release.
+          files: |
+            release-assets/*.tgz
+            release-assets/release-trust.json
+          body_path: release-body.md
 
   # ── Job 3: action-tags — keep the action's major moving tag honest ──
   # The root action.yml (P1.1) is consumed as `uses: Sergey-Bar/Mjolnir@v1`.

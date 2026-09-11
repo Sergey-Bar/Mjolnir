@@ -16,3 +16,4 @@
 {"ruleId":"QA-PW-107","file":"e2e-playwright/panels-suite/annotations-clustering.spec.ts","line":227,"verdict":"FP","note":"toBeVisible with explicit description arg - auto-retrying presence assertion, correct"}
 {"ruleId":"QA-PW-107","file":"e2e-playwright/panels-suite/annotations-clustering.spec.ts","line":231,"verdict":"FP","note":"toBeVisible with description - presence semantics"}
 {"ruleId":"QA-PW-107","file":"e2e-playwright/panels-suite/annotations-clustering.spec.ts","line":233,"verdict":"FP","note":"toBeVisible with description - presence semantics"}
+{"ruleId":"QA-TQUAL-009","file":"public/app/features/dashboard-scene/scene/DashboardScene.test.tsx","line":1958,"verdict":"TP","note":"expect inside .then on an unawaited promise - assertion can race past test end, exactly the rule's case"}

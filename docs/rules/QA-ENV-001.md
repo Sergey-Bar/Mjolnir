@@ -19,19 +19,19 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 
 ## Why this fails in production
 
-Absolute OS paths make the test machine-dependent — it fails on any developer or CI runner with a different filesystem.
+Locale-less date formatting depends on the machine's timezone and locale — passes on your laptop, fails on CI.
 
 ## What gets flagged (real detector output)
 
 ```
-Environment coupling (OS path): `"/tmp/cache/session.json"`.
+Environment coupling (timezone/locale): `.toLocaleDateString()`.
 ```
 
 Example from this rule's own must-fire fixture: `tests/fixtures/QA-ENV-001/must-fire/coupled.spec.ts`
 
 ## The fix
 
-Use os.tmpdir() / path.join with relative paths inside the test workspace.
+Pass an explicit locale + timeZone, or assert on ISO strings / fixed timestamps.
 
 ## Confirmed NOT to fire on the corresponding clean pattern
 
@@ -46,7 +46,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | apache-airflow      | 4           |
 | dubinc-dub          | 5           |
 | getsentry-sentry    | 1           |
-| grafana-grafana     | 7           |
+| grafana-grafana     | 4           |
 | hashicorp-vault     | 1           |
 | positive-fixtures   | 3           |
 | puppeteer-puppeteer | 33          |

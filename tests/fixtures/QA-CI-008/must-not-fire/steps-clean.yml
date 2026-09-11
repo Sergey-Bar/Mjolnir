@@ -1,0 +1,15 @@
+# QA-CI-008 must-not-fire (Azure DevOps) — `condition: always()` on a
+# REPORTING job (no verification gates inside) is the legitimate
+# publish-results-even-on-failure idiom; the gate job keeps the default
+# succeeded() condition.
+stages:
+  - stage: CI
+    jobs:
+      - job: Tests
+        steps:
+          - script: npm test
+
+      - job: Reports
+        condition: always()
+        steps:
+          - task: PublishTestResults@2

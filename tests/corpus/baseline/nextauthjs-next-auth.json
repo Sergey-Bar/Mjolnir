@@ -15,5 +15,6 @@
     "QA-TQUAL-002": 2
   },
   "totalFindings": 24,
+  "testDeclarationCount": 171,
   "partial": false
 }

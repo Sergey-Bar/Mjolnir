@@ -110,13 +110,12 @@ real TS consumer app with heavy e2e — QA-TQUAL-009 at scale on application cod
 
 Source: [`https://github.com/cypress-io/cypress-realworld-app`](https://github.com/cypress-io/cypress-realworld-app)
 
-Total findings: **17**
+Total findings: **7**
 
-| Rule ID      | Findings |
-| ------------ | -------- |
-| QA-TEST-002  | 3        |
-| QA-TEST-003  | 4        |
-| QA-TQUAL-009 | 10       |
+| Rule ID     | Findings |
+| ----------- | -------- |
+| QA-TEST-002 | 3        |
+| QA-TEST-003 | 4        |
 
 ## dubinc-dub
 
@@ -186,13 +185,13 @@ large real TS monorepo with Playwright e2e + many Actions workflows — QA-PW-14
 
 Source: [`https://github.com/grafana/grafana`](https://github.com/grafana/grafana)
 
-Total findings: **932**
+Total findings: **928**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
 | QA-CI-001    | 1        |
 | QA-CI-002    | 2        |
-| QA-ENV-001   | 7        |
+| QA-ENV-001   | 4        |
 | QA-PW-002    | 6        |
 | QA-PW-004    | 5        |
 | QA-PW-101    | 17       |
@@ -202,7 +201,7 @@ Total findings: **932**
 | QA-PW-144    | 1        |
 | QA-PW-146    | 253      |
 | QA-TEST-002  | 45       |
-| QA-TEST-003  | 418      |
+| QA-TEST-003  | 417      |
 | QA-TEST-004  | 164      |
 | QA-TEST-006  | 2        |
 | QA-TEST-010  | 2        |
@@ -418,14 +417,14 @@ real pytest suite — Python adapter FP surface
 
 Source: [`https://github.com/pallets/click`](https://github.com/pallets/click)
 
-Total findings: **24**
+Total findings: **9**
 
 | Rule ID   | Findings |
 | --------- | -------- |
 | QA-PY-002 | 1        |
 | QA-PY-003 | 3        |
 | QA-PY-004 | 4        |
-| QA-PY-007 | 16       |
+| QA-PY-007 | 1        |
 
 ## playwright-community-eslint-plugin-playwright
 
@@ -433,16 +432,15 @@ small real Playwright-rules repo — compact QA-PW / QA-TQUAL surface, fast clon
 
 Source: [`https://github.com/playwright-community/eslint-plugin-playwright`](https://github.com/playwright-community/eslint-plugin-playwright)
 
-Total findings: **527**
+Total findings: **577**
 
 | Rule ID      | Findings |
 | ------------ | -------- |
 | QA-PW-102    | 1        |
 | QA-PW-123    | 9        |
-| QA-PW-146    | 229      |
-| QA-PW-147    | 32       |
-| QA-TEST-003  | 125      |
-| QA-TEST-010  | 129      |
+| QA-PW-146    | 235      |
+| QA-TEST-003  | 165      |
+| QA-TEST-010  | 165      |
 | QA-TQUAL-011 | 2        |
 
 ## positive-fixtures
@@ -577,14 +575,14 @@ large real pytest suite — Python adapter FP surface (QA-PY-001..012)
 
 Source: [`https://github.com/pytest-dev/pytest`](https://github.com/pytest-dev/pytest)
 
-Total findings: **309**
+Total findings: **153**
 
 | Rule ID   | Findings |
 | --------- | -------- |
 | QA-PY-002 | 19       |
 | QA-PY-003 | 30       |
 | QA-PY-004 | 84       |
-| QA-PY-007 | 167      |
+| QA-PY-007 | 11       |
 | QA-PY-009 | 3        |
 | QA-PY-011 | 1        |
 | QA-PY-012 | 5        |

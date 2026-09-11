@@ -12,6 +12,11 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import {
+  lineOfOffset,
+  shSegments,
+  textIsVerificationGate,
+} from "./jenkins-gates.js";
 
 interface StepNode {
   run?: string;
@@ -43,23 +48,34 @@ export const exitCodeNotPropagated = defineRule({
   qaImpact: "FALSE-GREEN",
   appliesTo: "ci-workflows",
   // Trust Metadata
-  languages: ["yaml"],
-  frameworks: ["github-actions"],
+  languages: ["yaml", "groovy"],
+  // P3c: `sh returnStatus: true` discards the exit code on Jenkins.
+  frameworks: ["github-actions", "jenkins"],
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "FRAMEWORK",
-  detectionNotes: "regex pattern on parsed workflow AST",
+  detectionNotes:
+    "regex pattern on parsed workflow AST (GitHub); lexical sh-segment scan on the Jenkinsfile text (Jenkins)",
   introduced: "0.4.0",
   // detectorRevision 2 (M2, 2026-09-04): quoted-string separators stripped
   // from the `;`-sequence scan (adjudicated FP: yarn berry e2e workflow).
   // detectorRevision 2 measured 2026-09-04: 0% FP at n=10 — declared
   // extended because the core DoD requires n ≥ 20 AND the Wilson CI upper
   // bound within the core bar (plan §23; CI high = 0.28 at n=10).
-  detectorRevision: 2,
+  // detectorRevision 3 (P3c, 2026-09-10): Jenkinsfile arm added —
+  // `returnStatus: true` on an `sh` call that runs a verification gate
+  // (master-plan P3c shape). Additive platform detection; GitHub paths
+  // unchanged.
+  detectorRevision: 3,
   tier: "extended",
 
   run(ctx) {
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
+
+    if (isJenkinsfilePath(ctx.path)) {
+      jenkinsArm(ctx, findings);
+      return findings;
+    }
 
     const doc = ctx.ast as WorkflowDoc | undefined;
     if (!doc?.jobs) return findings;
@@ -177,4 +193,38 @@ function findLine(text: string, needle: string): number {
   let line = 1;
   for (let i = 0; i < idx; i++) if (text[i] === "\n") line++;
   return line;
+}
+
+function isJenkinsfilePath(path: string): boolean {
+  return path.replaceAll("\\", "/").split("/").pop() === "Jenkinsfile";
+}
+
+/**
+ * Jenkinsfile arm (detectorRevision 3, P3c — master-plan shape): an `sh`
+ * call carrying `returnStatus: true` whose script runs a verification
+ * gate — the exit code is returned as the call's value and discarded
+ * unless the caller propagates it. Structural swallowing, the Jenkins
+ * spelling of the same defect the GitHub pipe arm catches.
+ */
+function jenkinsArm(
+  ctx: { path: string; text: string },
+  findings: Array<Omit<Finding, "ruleId" | "category">>,
+): void {
+  for (const seg of shSegments(ctx.text)) {
+    if (!/returnStatus\s*:\s*true\b/i.test(seg.text)) continue;
+    if (!textIsVerificationGate(seg.text)) continue;
+    findings.push({
+      severity: "error",
+      confidence: "high",
+      findingType: "deterministic-defect",
+      qaImpact: "FALSE-GREEN",
+      file: ctx.path,
+      line: lineOfOffset(ctx.text, seg.start),
+      column: 1,
+      message:
+        "`sh` runs a verification gate with `returnStatus: true` — the exit code is discarded.",
+      why: "The step's exit code is returned as a value instead of failing the stage; unless the caller propagates it, failed tests still yield a green build.",
+      fix: "Drop returnStatus and let the gate fail the stage, or propagate the returned status (e.g. `if (status != 0) error('tests failed')`).",
+    });
+  }
 }

@@ -108,6 +108,7 @@ import { runInit, renderInit, tryReadPackageJson } from "./commands/init.js";
 import { renderPwRunSummary, summarizePwRun } from "./commands/pw-report.js";
 import { planAndApplyFixes, renderFixReport } from "./commands/fix.js";
 import { runDoctorCommand } from "./commands/doctor-run.js";
+import { runReleaseTrustCommand } from "./commands/release-trust.js";
 import { buildCatalog, renderCatalogMd } from "./commands/rules-catalog.js";
 import { explainRule, renderExplain } from "./commands/explain.js";
 import { loadSuppressions, renderSuppressions } from "./config/suppressions.js";
@@ -129,9 +130,13 @@ import {
  * where the file happens to sit after install. This follows the same
  * discipline as SARIF's `driver.version` — kept in sync by
  * `scripts/sync-sarif-version.cjs` on release and guarded by
- * `tests/version-consistency.spec.ts` locally.
+ * `tests/version-consistency.spec.ts` locally. R4c moved the literal to
+ * src/engine/version.ts (a leaf module) so the scan pipeline's run
+ * identity can carry it without a cli.ts import cycle; this re-export
+ * keeps every existing consumer stable.
  */
-export const CLI_VERSION = "1.0.5";
+import { ENGINE_VERSION as CLI_VERSION } from "./engine/version.js";
+export { CLI_VERSION };
 
 /** A usage-error detail: the offending token, when one exists. */
 export interface UsageErrorDetail {
@@ -1535,6 +1540,7 @@ const SUBCOMMANDS: ReadonlySet<string> = new Set([
   "doctor",
   "rules",
   "explain",
+  "release-trust",
   "doctor:playwright",
   "mcp",
 ]);
@@ -1592,6 +1598,7 @@ export async function main(
   if (argv[0] === "init") return runInitCommand(argv.slice(1));
   if (argv[0] === "pw-report") return runPwReportCommand(argv.slice(1));
   if (argv[0] === "doctor") return runDoctorCommand(argv.slice(1));
+  if (argv[0] === "release-trust") return runReleaseTrustCommand(argv.slice(1));
   if (argv[0] === "rules") return runRulesCommand(argv.slice(1));
   if (argv[0] === "explain") return runExplainCommand(argv.slice(1));
   if (argv[0] === "doctor:playwright") return runDoctorPlaywright(argv);

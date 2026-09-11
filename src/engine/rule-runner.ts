@@ -24,7 +24,14 @@ import type { UniversalRule } from "./adapter.js";
  */
 export function legacyAppliesTo(value: string): string[] {
   if (value === "test-files") return ["typescript"];
-  if (value === "ci-workflows") return ["github-actions"];
+  // P3b/P3c: CI rules host on every workflow adapter — each parses its
+  // own surface (GitHub Actions YAML, azure-pipelines.yml, or the root
+  // Jenkinsfile as a text-target kind) and hands the rules the matching
+  // context through the ast slot (Jenkins rules are lexical over text;
+  // GitHub/Azure-shaped rules no-op on the absent doc).
+  if (value === "ci-workflows") {
+    return ["github-actions", "azure-pipelines", "jenkins"];
+  }
   return [value];
 }
 

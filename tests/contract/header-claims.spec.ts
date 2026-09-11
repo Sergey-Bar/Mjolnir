@@ -77,13 +77,24 @@ describe("header-claims lint (plan §20.4, D4 class)", () => {
     }
   });
 
-  it("python.ts and github-actions.ts declare no parse stage (regex/YAML adapters)", () => {
-    for (const name of ["python.ts", "github-actions.ts"]) {
-      const text = readFileSync(join(ADAPTERS, name), "utf8");
-      expect(
-        text.includes("parseAst("),
-        `${name} must not declare parseAst`,
-      ).toBe(false);
-    }
+  it("python.ts declares the wired tree-sitter parse stage — and means it (P6); github-actions.ts stays parse-free", () => {
+    // P6 (plan 1789009691197 R3) wired the python adapter's async
+    // parseAst hook — the historical "pure regex, no AST" claim is
+    // superseded, and the header must keep claiming the parse-or-fallback
+    // contract the hook implements. github-actions.ts remains a pure
+    // YAML adapter with no parse stage.
+    const pyText = readFileSync(join(ADAPTERS, "python.ts"), "utf8");
+    expect(
+      pyText.includes("parsePythonAst"),
+      "python.ts must consume parsePythonAst (P6 contract)",
+    ).toBe(true);
+    expect(headerOf(join(ADAPTERS, "python.ts")).toLowerCase()).toContain(
+      "parseast",
+    );
+    const ghText = readFileSync(join(ADAPTERS, "github-actions.ts"), "utf8");
+    expect(
+      ghText.includes("parseAst("),
+      "github-actions.ts must not declare parseAst",
+    ).toBe(false);
   });
 });

@@ -1,0 +1,22 @@
+# QA-CI-013 must-fire — verification gates that can never run on the green path.
+# Azure DevOps P3b shapes: condition: failed() rescue, condition: false,
+# enabled: false — all three leave the pipeline green with zero verification.
+stages:
+  - stage: Verify
+    jobs:
+      - job: Tests
+        condition: failed() # rescue shape: skipped on every green pipeline
+        steps:
+          - script: npm test
+
+      - job: Lint
+        steps:
+          - script: npm run lint
+            condition: false # never runs, in any path
+
+      - job: Typecheck
+        steps:
+          - task: Npm@1
+            enabled: false # switched off, still "present" in the pipeline
+            inputs:
+              command: test

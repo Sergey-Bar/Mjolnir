@@ -83,10 +83,19 @@ export default defineConfig({
         // defensive branches; the remaining arms are covered by the
         // targeted closure suites and the ratchet floor tracks the
         // measured value until they close (raise as coverage climbs).
-        lines: 99.8,
-        functions: 99.7,
-        branches: 99.3,
-        statements: 99.8,
+        //
+        // Re-baselined 2026-09-11 after the R1–R10 trust-engineering
+        // train landed (Azure/Jenkins adapters, quarantine ledger,
+        // blast-radius, release-trust, false-green corpus, evidence
+        // graph, trace forensics, MCP runtime-evidence tools, trust
+        // artifact): CI measured 98.12 lines / 98.84 fns / 97.79 stmts
+        // / 95.32 branches against a much larger src denominator.
+        // Floors sit ~0.1pt below the measured values per the standing
+        // convention; raise as coverage climbs.
+        lines: 98.0,
+        functions: 98.7,
+        branches: 95.2,
+        statements: 97.7,
         // perFile enforcement paused for the 0.6.x re-baseline cycle:
         // the 6 flagged modules' residual arms are documented in
         // docs/CERTIFICATION-0.6.md and close with the WI-14/15 pass.

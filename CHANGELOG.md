@@ -9,6 +9,428 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — R10 2.0 preparation: breaking-set inventory + boundary-law guards (remediation/remote-first WI-25)
+
+### Added
+
+- **2.0 breaking-set inventory** (`docs/2.0-BREAKING-SET.md`, WI-25): the
+  proposal sheet per the strategic blueprint's §28/§18 — two justified
+  breaking candidates (BS-1 default suppression expiry with the explicit
+  never-expire opt-out; BS-2 retirement completion into `RETIRED_RULE_IDS`),
+  each carrying its benefit>cost justification, its migration pointer, and a
+  PROPOSED decision line awaiting owner ratification, plus the locked
+  NOT-breaking list (`schemaVersion 1` additive extension, exit codes,
+  additive verbs, Node matrix, frozen surfaces). **Nothing is implemented in
+  this release** — nothing enters 2.0 "because large", and no frozen surface
+  breaks without evidence that `schemaVersion 1` cannot represent the
+  behavior.
+- **Migration guide draft** (`docs/MIGRATION-2.0-DRAFT.md`): the working
+  draft of the 2.0.0 guide (publication law: CHANGELOG + site with the
+  release itself) covering BS-1 (init config check → explicit `expires` /
+  `expires: false`; no silent retroactive expiry) and BS-2 (retired-rule
+  list, suppression cleanup, §15-lifecycle-honest disappearance causes).
+- **Boundary-law + non-goal guards** (`tests/contract/boundary-law.spec.ts`,
+  blueprint §9.1/§24/§36): the canonical layers (engine, forensics,
+  adapters, rules) never import upward into commands/ or the transports;
+  the MCP transport imports no detection machinery and rides the canonical
+  machine contract (pipeline → contract → runtime evidence → agent
+  transport is never reversed); the zero-network contract holds; the
+  dependency list carries no telemetry/cloud/hosted-backend package; src/
+  reads no telemetry configuration; and the breaking-set discipline is
+  drift-locked (every entry carries a Decision, nothing is implemented).
+
+### Changed
+
+- **Final capability matrix update** (`src/capabilities.ts`,
+  `docs/PLAYWRIGHT-CAPABILITIES.md`): the `to agents` column now carries the
+  foundational Agent Skill's evidence pointer (`src/commands/install-agents.ts`,
+  shipped with R8/WI-22) on every row — a `no → yes` flip in the same change
+  set that shipped its evidence, per the claim law.
+
+### Fixed
+
+- **MCP stdio bundle no longer prints the terminal Trust Report onto the
+  JSON-RPC stream** (`src/mcp/server.ts`): the standalone entry
+  (`node dist/mcp/stdio.mjs`, `npm run mcp`) dragged the CLI module in via
+  `import { runScan, CLI_VERSION } from "../cli.js"`, and cli.ts's entry
+  tail fired inside the bundle (`import.meta.url === argv[1]`), emitting the
+  full terminal Trust Report before/between JSON-RPC frames — a fatal
+  protocol violation for any MCP client. The transport now imports the
+  canonical homes directly (`engine/scan-pipeline.js`, `engine/version.js`),
+  the bundle contains no CLI entry tail, and the boundary-law guard bans the
+  `../cli.js` import from the MCP layer permanently. Found by the R10
+  bug-hunt smoke against the real stdio transport.
+- **Stale dist can no longer mask new code in spawned-binary tests**
+  (`tests/e2e/global-setup.ts`): the EXISTS-ONLY guard skipped the build
+  whenever a bundle was present, so the spawned stdio binary kept answering
+  from a pre-R8 catalog ("unknown tool: triage") while the suite stayed
+  green. The setup now rebuilds whenever any `src/**/*.ts` is newer than the
+  bundle (the same freshness discipline as the generated-docs drift gates).
+- **Freshness diagnosis names each drift class** (`checkArtifactFreshness`):
+  a revision bump (`rule@old -> new`), a rule retired since the render
+  (`rule@rev (retired)`), and a rule added since the render
+  (`rule@rev (new)`) are distinct remediations — a flat list hid which one
+  happened.
+- **`trust-report --from` reports the complete artifact set** it writes
+  (md + html + json), not just the MD path.
+- **The `provenance = bound` system-invariant item is now WIRED** (plan
+  §5.2 activation; `src/commands/release-trust.ts`): the release-trust
+  invariant previously hardcoded `provenance: UNSUPPORTED` even after the
+  machinery it waited for shipped. It is now PROVEN exactly when the
+  machine-anchored identity chain is proven — scope-integrity (runIdentity +
+  evidence graph, R4c) AND artifact-integrity (artifact scanId binding, R9)
+  both PASS — and stays UNSUPPORTED (recorded, non-blocking) otherwise. The
+  contract doc's activation sentence and the drift-lock are updated
+  accordingly; the shipped verdict is unchanged (PASS 12/12, provenance
+  bound).
+
+## [Unreleased] — R9 Trust Artifact integrity + HTML completion (remediation/remote-first WI-23+24)
+
+### Added
+
+- **Artifact integrity binding** (`src/commands/trust-report.ts`, R9): every
+  Trust Artifact (md · json · html) now embeds its IDENTITY — the machine
+  anchor (`scanId` from runIdentity), the bound commit when resolvable
+  (offline git read; null, never fabricated), the fired rule(rev) inventory
+  (deduped, sorted, undeclared revisions omitted — never a fabricated rev),
+  and the evidence inventory (totals, runtime-corroborated count, per-level
+  counts). Consumers detect **stale artifacts** (a scanId from another run),
+  **mismatched revisions** (rule-set drift, named per rule), and **unbound
+  artifacts** (pre-R9 producers) via `checkArtifactFreshness` — an unbound or
+  stale artifact is RECORDED, never assumed current.
+- **HTML Trust Artifact** (WI-23 completion, §18): deterministic,
+  self-contained `mjolnir-trust-report.html` — inline CSS only, zero external
+  resources, hostile interpolations escaped, byte-identical regen (same
+  ScanResult + label + commit → same bytes), the same five-question structure
+  as the MD. The command writes all three formats; `--from` gains an optional
+  `--commit <sha>` so the Action binds the artifact to the executing run's
+  HEAD.
+- **Artifact Integrity dimension wired** (`check:artifact-integrity` in
+  `src/commands/release-trust.ts`, R9 surface): the structural evaluation
+  asserts the identity binding, the three-format output, the freshness
+  detection, and the byte-regen/hostile-safety contract locks. The
+  release-trust contract's documented-unwired list is now EMPTY — all 12
+  canonical dimensions are wired and machine-evaluated.
+
+## [Unreleased] — R8 MCP runtime-evidence tools + Agent Safety (remediation/remote-first WI-21+22)
+
+### Added
+
+- **MCP runtime-evidence tools** (`src/mcp/server.ts`, WI-21): `forensics`,
+  `triage`, `pw-report` join the tool catalog as 1:1 mappings onto the SAME
+  engine functions the CLI verbs call — no MCP-only semantics. Parity is
+  drift-locked table-driven (`tests/mcp/parity.spec.ts`): for every new tool ×
+  every fixture class (Playwright JSON · JUnit XML · hostile corrupt report ·
+  no-reports directory) the MCP result deep-equals the canonical CLI
+  derivation, hostile inputs degrade to zero records on BOTH surfaces, and the
+  hostile parameter matrix (missing / empty / non-string / nonexistent path)
+  yields INVALID_PARAMS naming the target, never a crash. A crashing tool
+  never kills the server (`tests/mcp/crash-containment.spec.ts`): the failure
+  lands in the transport's existing catch as a structured INTERNAL error and
+  the server keeps answering. One scan in flight; zero network; the plugin
+  gate applies unchanged.
+- **Agent Safety dimension wired** (`check:agent-safety` in
+  `src/commands/release-trust.ts`, R8 surface): the structural evaluation
+  asserts the §17 safety wording on every installed skill surface, that the
+  MCP tool surface never opens the plugin trust gate, and that the agent edge
+  case (`fg-agent-unsafe-action`) stays registered in the False-Green Attack
+  Corpus. The release-trust contract's documented-unwired list shrinks to
+  artifact-integrity only (ships R9).
+
+### Changed
+
+- **Agent brief inherits the Constitution** (`src/commands/install-agents.ts`,
+  WI-22): every installed instruction surface (.claude/, .cursor/, .kilo/,
+  AGENTS.md) now carries the non-negotiable agent-safety contract — NEVER
+  declare trustworthiness without evidence · AGENT CLAIM ≠ VERIFICATION ·
+  NEVER manufacture, edit, or synthesize evidence · NEVER convert INCONCLUSIVE
+  to pass · NEVER suppress findings or weaken rules to get green — plus the
+  loop preconditions (FIX requires a proven actionable defect; RESCAN requires
+  changed-scope identification; PROOF requires fresh post-fix execution
+  evidence). Drift-locked by `tests/contract/agent-skill-surface.spec.ts`
+  (frozen surfaces only; safety wording asserted).
+
+## [Unreleased] — R7 Playwright capability matrix (remediation/remote-first WI-20)
+
+### Added
+
+- **Playwright Capability Matrix** (`docs/PLAYWRIGHT-CAPABILITIES.md`,
+  `src/capabilities.ts`, WI-20): the product-depth surface — 12 Playwright
+  capabilities × 8 depth columns (detect · explain · produce evidence ·
+  correlate runtime · trust verdict · CLI · MCP · agents), every cell
+  explicitly classed (zero UNCLASSIFIED), every `yes` backed by a resolvable
+  evidence pointer (registered rule ID or in-repo artifact) with FAIL-CLOSED
+  validation: the generator refuses to render a claim on a dangling pointer.
+  Generated (`npm run docs:capabilities-playwright`) and drift-locked
+  (tests/contract/playwright-capabilities.spec.ts). The `to agents` column is
+  uniformly **no** until R8 ships the Agent Skill — stated, not implied.
+  Claims never exceed proven capability; rule counts stay out of the claim
+  surface entirely.
+
+## [Unreleased] — R6 forensic taxonomy + Selector Health v2 (remediation/remote-first WI-18+19)
+
+### Added
+
+- **Forensic verdict taxonomy** (`src/forensics/classify.ts`, WI-18): the
+  canonical §6 verdict set (likely-real-defect · environmental-failure ·
+  infrastructure-failure · flaky · retry-dependent · unstable-construction ·
+  **inconclusive default**) applied by a deterministic minimum-signal table —
+  a single weak signal can never classify confidently; conflicting signal
+  families force INCONCLUSIVE with an explicit `contradictory` evidence-state.
+  Every `TestVerdict` now carries a machine-visible `forensic` classification
+  (attempts + captured error text; sources without error text mark
+  `unsupported`, never a guess). Contradiction reconciliation
+  (`corroborates | contradicts | insufficient`) implements Contract H: the
+  runtime can corroborate but never silently weakens a static claim — a
+  contradiction renders the PAIR inconclusive while the claim stands.
+- **Selector Health v2** (`correlateSelectorHealth`, WI-19): runtime
+  correlation + concrete safe next actions; **no correlation ⇒ no claim** —
+  absent or merely-green runtime evidence yields no health claim in either
+  direction; the v1 static score is secondary and never altered here.
+
+### Changed
+
+- `TestRecord` gains an optional `errors` text surface (the trace ingester
+  populates it); `TestVerdict` gains the additive `forensic` field.
+
+## [Unreleased] — R5 trace ingester (remediation/remote-first WI-17)
+
+### Added
+
+- **Playwright trace ingester** (`src/forensics/trace.ts`, WI-17): deterministic,
+  offline, bounded, version-aware ingestion of per-test traces — `trace.zip`
+  (a bounded, dependency-free ZIP reader: EOCD scan, central-directory
+  enumeration, stored/deflate members via `node:zlib` with a decompressed-output
+  cap) or raw `.trace`/`.ndjson` NDJSON streams. Action pairs become
+  Evidence-Core `TestRecord`s (start/end pairing, durations, per-action
+  errors; timeout errors render `timedOut`). `runForensics` recognizes trace
+  artifacts in both file and directory modes; the report source union gains
+  `playwright-trace` additively (`contractVersion 1` unchanged).
+- False-Green corpus cases for the trace surface: corrupt stream, truncated
+  stream, event-count overflow, unsupported version marker, zip without
+  `trace.trace` — all degrade to the zero-record exit-2 state, never a green
+  empty suite; plus positive controls (real stored zip + valid stream ingest
+  with paired durations) proving the rejections are precision, not blindness.
+
+### Changed
+
+- `ForensicsReport.source` + `RuntimeCorroboration.source` widened additively
+  with `"playwright-trace"`.
+
+## [Unreleased] — R4c Evidence Graph + Scope Integrity + Exit-Code proofs (remediation/remote-first)
+
+### Added
+
+- **Run Identity** (`src/engine/run-identity.ts`): the deterministic anchor —
+  `scanId = sha256(input snapshot fingerprint + rulesDigest + config
+fingerprint + engine version)`; set-identity semantics (input order does not
+  matter); every scan report carries `runIdentity` + `evidenceGraph` — the
+  chain-law links VERDICT ← EVIDENCE ← EXECUTION ← SCOPE ← SOURCE ← RULE(rev)
+  ← FIXTURE ← REPRODUCTION, each `ref` present only when its identity input
+  exists (no fabrication). The engine-version literal moved to the leaf module
+  `src/engine/version.ts` (cli.ts re-exports it as CLI_VERSION;
+  sync-sarif-version.cjs + version-consistency spec follow).
+- **Scope Integrity** (`ScanResult.scopeIntegrity`, additive): discovered /
+  analyzed / ignored / unrecognized / parseFailed / truncated counts +
+  `scopeVerdict` — PROVEN only when analyzed ≡ claimed scope; else PARTIAL
+  with named reasons. The terminal reporter renders the scope block and the
+  "repository verified" phrasing is forbidden output unless PROVEN. Walk-level
+  accounting: matcher exclusions (`onIgnored`) and unclaimed files
+  (`onUnrecognized`) are counted at the shared walk; parse failures are
+  counted at the rule stage.
+- **Exit-code decision proofs** (tests/blast-radius/scope-and-exit.spec.ts):
+  the frozen decision points exercised in both directions — trigger present →
+  frozen code, trigger absent → a different code — plus the closed frozen set
+  {0,1,2,10,20}.
+- Machine-contract doc regenerated with the three additive blocks
+  (`contractVersion 1` unchanged — additive within the schema).
+
+### Changed
+
+- Discovery accounting: the shared walk counts matcher-excluded files and
+  unclaimed files (ScanContext gains optional `onIgnored`/`onUnrecognized`;
+  all shared-walk adapters pass them through).
+
+## [Unreleased] — R4b False-Green Attack Corpus (remediation/remote-first)
+
+### Added
+
+- **tests/false-green/** — the adversarial corpus (plan §6, P0): 20 cases
+  across the plan's seven hostile classes (execution · parser · adapter ·
+  evidence · rule · mcp · agent failures), each declaring the seven
+  owner-required fields (INPUT / EXPECTED EXECUTION / EVIDENCE / VERDICT /
+  EXIT CODE / REPORT FIELDS / RELEASE IMPACT) and executed against real
+  surfaces with specific field bindings:
+  - execution: empty suite (score null + no-tests-found recorded), deadline
+    truncation, and the partial+findings never-blocks invariant (audit C5);
+  - parsers (through the real `runForensics` entry): corrupt JSON, truncated
+    Playwright report, malformed JUnit, unsupported schema → zero records →
+    exit-2 state — PARSER FAILURE ≠ CLEAN; duplicate retry-storm records stay
+    visible;
+  - adapters: scalar-jobs workflow fabricates nothing; broken YAML is SKIPPED
+    with accounting;
+  - rules: a throwing local plugin rule (QA-ACME-666) → `rulesCrashed ≥ 1`
+    with the scan completing — RULE CRASH ≠ CLEAN;
+  - evidence: missing/corrupt baseline → hasBaseline=false (exit 2); stale
+    baseline resolutions stay scoped to their capture; the foreign
+    baselineCommit is recorded (binding gate ships R4c);
+  - MCP: unknown tool / invalid params answer JSON-RPC errors, never success;
+  - agent: codegen and generated-header provenance classification — AGENT
+    CLAIM ≠ VERIFICATION.
+- **Mutation / assertion-strength protocol** (tests/false-green/mutation-
+  protocol.spec.ts): for every wired case and every report-field binding, the
+  false-green twin of the honest report (failure→success, partial→complete,
+  unknown→clean, crashed-rule→clean…) is injected and the case's assertion
+  must FAIL on it — a decorative assertion fails CI. Parser input twins flip
+  the hostile input to its benign form and require the observed verdict to
+  flip with it.
+- **Generated, drift-locked index** (npm run false-green:index + index.spec.ts):
+  one row per case with all seven declarations, the mutation inventory, and
+  the UNSURFACED rows (MCP transport internals / agent-action policy → R8;
+  artifact binding → R9) — recorded per Constitution §5, never silently
+  dropped. All seven plan classes present.
+
+## [Unreleased] — R4a Trust Constitution + Release Trust Verdict (remediation/remote-first)
+
+### Added
+
+- **docs/TRUST-CONSTITUTION.md** — canonical law: CERTIFICATION-POLICY A1–A4
+  adopted as §1; the 18 PASS-forbidden conditions (verbatim); the closed status
+  algebra (PROVEN evidence-state → PASS/FAILED derivation, terminality rule,
+  record shape); the core law (`PASS = conclusion backed by sufficient
+evidence`); per-dimension applicability (UNSUPPORTED surfaces are recorded,
+  non-blocking, and drift-locked); publication honesty.
+- **docs/RELEASE-TRUST-CONTRACT.md** — the canonical 12 dimensions (fixed set,
+  fixed order, governance-locked): Engine/Evidence/Rule Integrity, Failure
+  Containment, Corpus Integrity, Contract Compatibility, Determinism, Scope
+  Integrity (ships R4c), Reproducibility, Zero-Network Compliance, Agent Safety
+  (R8), Artifact Integrity (R9).
+- New verb **`mjolnir release-trust`** emitting `mjolnir.release-trust@1` —
+  byte-deterministic (frozen key order, no timestamps, zero absolute paths),
+  per-dimension `evidence` + `determination` via the status algebra, verdict =
+  contract satisfaction (never a PROVEN count) with the binding system
+  invariant. Exit contract: 0 PASS · 1 non-PASS · 2 blocked context · 10 usage ·
+  20 internal. Drift-locked by tests/contract/release-trust-contract.spec.ts
+  (canonical set/order, binding resolution, derivation table + terminality,
+  byte-stability, path-freedom).
+
+### Changed
+
+- **release.yml**: the Release Trust Verdict gate is wired RELEASE-BLOCKING
+  pre-publish (Tests → Certification → CHANGELOG Gate → … → release-trust gate
+  → publish), running the BUILT binary; the verdict block + machine contract
+  ship with the GitHub Release (publication honesty — a missing proof renders
+  UNPROVEN, never omitted). No waiver path.
+
+## [Unreleased] — R4 blast radius audit (remediation/remote-first R4)
+
+### Added
+
+- **docs/BLAST-RADIUS-AUDIT.md** — the machine-verified surface manifest
+  (`npm run docs:blast-radius`): src inventory with per-area LOC, the internal
+  import fan-in ranking (change-blast candidates), the external dependency
+  allowlist, and the shipped surface (adapters, rules census, CLI flags, report
+  formats, frozen exit codes).
+- **tests/contract/blast-radius.spec.ts** — the machine-TESTABLE boundary
+  contract: the committed manifest must equal a fresh render; every external
+  import in src/ must belong to the allowlist (`yaml`, `ts-morph`,
+  `web-tree-sitter`, `tree-sitter-wasms`; node builtins are platform
+  contracts); every CLI flag parsed must appear in the manifest; every
+  `process.exit(N)` in src/ must be inside the frozen set (0/1/2/10/20).
+
+## [Unreleased] — P6 quarantine remediation (remediation/remote-first R3)
+
+### Added
+
+- **docs/QUARANTINE-REMEDIATION.md** — the ledger-first quarantine view, generated
+  from the live registry (`npm run docs:quarantine-ledger`) and drift-locked
+  (tests/contract/quarantine-ledger.spec.ts): one row per live quarantine rule
+  with failure-mode class, disposition, and re-measure gate; historical section
+  records the governed retirements.
+- Python tree-sitter parse stage: `parsePythonAst` wired into the python
+  adapter's async `parseAst` hook (the §10 parse-or-fallback contract), with
+  `src/engine/python-ast.ts` structural queries — the first real python AST
+  substrate (the Sprint-8 "unwired" caveat is closed and re-pinned honestly).
+
+### Changed
+
+- **QA-PY-007** (detectorRevision 4, AST rework): fires only on ≥2-statement
+  with-blocks or broad root exception types — the adjudicated FP core
+  (single-statement/specific-type) suppressed. Corpus: pytest-dev 167 → 11,
+  pallets-click 16 → 1 live findings.
+- **QA-TQUAL-009** (detectorRevision 2, AST rework): skips Cypress command
+  chains (`cy.`-rooted — the driver awaits them) and deliberate `void`
+  discards. Corpus: cypress-realworld-app 10 → 0.
+- **QA-PW-147** (detectorRevision 2, final attempt): AST arm fires only on real
+  test/it declarations — code-as-data (`test('test')` inside lint-rule test
+  strings) can never fire. Corpus: eslint-plugin repo 32 → 0.
+- **QA-ENV-001** (detectorRevision 4, final attempt): OS-path sub-pattern
+  dropped (20/20 adjudicated FP — deliberate path fixtures, same undecidability
+  as the wave-2 host drop); locale/local-time families kept. Corpus: grafana
+  7 → 4.
+- Measurement: orphaned verdicts (findings the reworks suppressed) archived to
+  `tests/corpus/verdicts/archive/` per the established prune flow; the three
+  fully-reworked rules fall below the n ≥ 10 threshold and ship UNMEASURED
+  until owner re-adjudication (measured census 77 → 74 of 79; the
+  certification floor test documents the P6 invalidations).
+
+## [Unreleased] — P3c Jenkins (remediation/remote-first R2)
+
+### Added
+
+- Jenkinsfile detection: the root `Jenkinsfile` (declarative and scripted
+  pipelines) is now discovered and scanned as a TEXT-target kind — a bounded,
+  string-aware Groovy block scanner (`sh` segments, `catchError` blocks,
+  `try`/`catch` pairs); no new language grammar (master-plan P3c wording).
+- New rule **QA-CI-014** "try/catch swallows a verification-stage failure" —
+  a `try` running a gate whose `catch` neither rethrows, calls `error(...)`,
+  marks `currentBuild.result`, nor downgrades via `unstable()`. BORN
+  QUARANTINE (§15.5): opt-in via `--strict` until corpus-measured.
+
+### Changed
+
+- **QA-CI-002** (detectorRevision 4): Jenkinsfile routing — the lexical
+  `|| true` scan now reaches `sh` strings.
+- **QA-CI-008** (detectorRevision 4): Jenkinsfile arms —
+  `catchError(buildResult: 'SUCCESS')` wrapping a gate, and `unstable()` used
+  as a rescue for a failed verification stage (master-plan P3c shapes;
+  `buildResult: 'UNSTABLE'` is a visible downgrade and never fires).
+- **QA-CI-009** (detectorRevision 3): Jenkinsfile arm — `sh` running a
+  verification gate with `returnStatus: true` discards the exit code.
+- Measurement: sidecar + `MEASURED_FP` re-recorded for QA-CI-002/008/009
+  (corpus re-run: no corpus repo carries a root Jenkinsfile, so the
+  classified verdict evidence carries over unchanged).
+
+## [Unreleased] — P3b Azure DevOps (remediation/remote-first R1)
+
+### Added
+
+- Azure DevOps pipeline detection: `azure-pipelines.yml` at the repo root is now
+  discovered and scanned (`azure-pipelines` adapter, safe-YAML machinery shared
+  with the GitHub Actions parser — alias-bomb guard, depth cap, prototype-safe
+  keys; docs/AZURE-DEVOPS.md).
+- New rule **QA-CI-013** "Verification gate conditioned so it can never fail the
+  pipeline" — `condition: failed()` rescue, `condition: false`, `enabled: false`
+  on Azure verification gates. BORN QUARANTINE (§15.5): opt-in via `--strict`
+  until corpus-measured; never silent-core.
+- docs/AZURE-DEVOPS.md — platform recipe with the frozen exit-code contract.
+
+### Changed
+
+- **QA-CI-001** (detectorRevision 3): Azure DevOps arm — `continueOnError: true`
+  on a verification step or a gate-bearing job (same mechanism, framework-tagged
+  `azure-pipelines`).
+- **QA-CI-002** (detectorRevision 3): Azure routing — the lexical `|| true` scan
+  now reaches `bash:`/`pwsh:` script blocks in azure-pipelines.yml.
+- **QA-CI-007** (detectorRevision 3): Azure DevOps arm — `retryCountOnTaskFailure`
+  on verification tasks.
+- **QA-CI-008** (detectorRevision 3): Azure DevOps arm — verification gate jobs
+  conditioned `always()` / `succeededOrFailed()` (master-plan P3b shape).
+- Measurement: sidecar + `MEASURED_FP` re-recorded at detectorRevision 3 for
+  QA-CI-001/002/007/008; corpus re-run showed zero QA-CI count drift (no corpus
+  repo carries a discoverable azure-pipelines.yml), so the existing classified
+  verdicts remain the measurement evidence.
+
 ## [1.0.5] — 2026-09-10
 
 ### Changes since 1

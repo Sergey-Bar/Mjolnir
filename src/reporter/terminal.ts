@@ -699,6 +699,32 @@ function appendFooter(
         ` \`mjolnir rules --unmeasured\` lists them.`,
       width,
     );
+    // R4c Scope Integrity: "repository verified" is FORBIDDEN output
+    // unless scopeVerdict is PROVEN (plan §7). On PARTIAL, the scope
+    // block states the shortfall instead — the phrasing never claims
+    // more than the run analyzed. (A producer predating the block gets
+    // the honest PARTIAL rendering with the absent-block marker.)
+    const scope = result.scopeIntegrity;
+    if (scope?.scopeVerdict === "PROVEN") {
+      pushWrapped(
+        lines,
+        p,
+        `Scope: PROVEN — analyzed == claimed scope (${scope.analyzed}/${scope.discovered} discovered files; no exclusions, no parse failures).`,
+        width,
+      );
+    } else {
+      const reasons =
+        scope?.reasons?.join(", ") ??
+        (scope === undefined
+          ? "scope-integrity block absent (producer predates R4c)"
+          : "unspecified");
+      pushWrapped(
+        lines,
+        p,
+        `Scope: PARTIAL — ${reasons}; analyzed ${scope?.analyzed ?? 0} of ${scope?.discovered ?? 0} discovered files. No repository-verified claim applies to this scan.`,
+        width,
+      );
+    }
     // Plan §16: verified vs assumed — how many findings a real run
     // report corroborated. When no report was present, say so honestly
     // instead of implying the split is all-assumed by choice.

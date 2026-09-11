@@ -2,12 +2,12 @@
   "countsByRule": {
     "QA-PW-102": 1,
     "QA-PW-123": 9,
-    "QA-PW-146": 229,
-    "QA-PW-147": 32,
-    "QA-TEST-003": 125,
-    "QA-TEST-010": 129,
+    "QA-PW-146": 235,
+    "QA-TEST-003": 165,
+    "QA-TEST-010": 165,
     "QA-TQUAL-011": 2
   },
-  "totalFindings": 527,
+  "totalFindings": 577,
+  "testDeclarationCount": 3031,
   "partial": false
 }

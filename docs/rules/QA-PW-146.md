@@ -50,7 +50,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | keycloak-keycloak                             | 67          |
 | negative-fixtures                             | 2           |
 | nextauthjs-next-auth                          | 1           |
-| playwright-community-eslint-plugin-playwright | 229         |
+| playwright-community-eslint-plugin-playwright | 235         |
 | positive-fixtures                             | 15          |
 | puppeteer-puppeteer                           | 228         |
 | sveltejs-kit                                  | 409         |

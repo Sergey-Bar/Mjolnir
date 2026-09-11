@@ -70,3 +70,30 @@ assets/video/out/
 
 # tmp probe scripts from harvest sessions — never part of the tree (F7 recurrence guard)
 tests/**/tmp-*.mts
+# Added by code-review-graph
+.code-review-graph/
+
+# Machine-local agent-tooling configs (Kilo/agent-manager sessions on this
+# checkout) — environment state, never part of the tree.
+.mcp.json
+opencode.jsonc
+skills-lock.json
+
+# Machine-local agent-session/tool dirs (same class as .kilo/ above) — never repo content
+.agents/
+.codebuddy/
+.gemini/
+.kiro/
+.opencode/
+.qoder/
+
+# Skill symlinks that point into the gitignored .agents/ tree (leaked in
+# R3, 1044461): on other checkouts they are dangling links, and on CI the
+# symlink skip degraded the self-scan to PARTIAL (exit 2). The repo's own
+# .claude/skills/<name>/ dirs remain tracked — only the machine-local
+# links are ignored.
+.claude/skills/nodejs-backend-patterns
+.claude/skills/nodejs-best-practices
+.claude/skills/playwright-best-practices
+.claude/skills/typescript-advanced-types
+.claude/skills/vitest

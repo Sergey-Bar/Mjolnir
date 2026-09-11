@@ -21,11 +21,13 @@
  *   was started with MJOLNIR_ENABLE_PLUGINS=1 in its own environment).
  */
 
+import { Buffer } from "node:buffer";
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-import { runScan, CLI_VERSION } from "../cli.js";
+import { runScan } from "../engine/scan-pipeline.js";
+import { ENGINE_VERSION as CLI_VERSION } from "../engine/version.js";
 import { buildMachineContract } from "../engine/machine-contract.js";
 import { explainRule } from "../commands/explain.js";
 import {
@@ -34,6 +36,9 @@ import {
   DEFAULT_BASELINE_PATH,
 } from "../commands/baseline.js";
 import { buildVerifyDigest } from "../commands/verify.js";
+import { runForensics } from "../forensics/run.js";
+import { renderTriageWorkflowJson } from "../forensics/triage.js";
+import { summarizePwRun, renderPwRunSummary } from "../commands/pw-report.js";
 
 /** Hard caps (§21 threat model: parameter size + resource bounds). */
 const MAX_PARAM_BYTES = 64 * 1024;
@@ -124,6 +129,46 @@ export const MCP_TOOLS = [
       required: ["path"],
     },
   },
+  {
+    name: "forensics",
+    description:
+      "Runtime-evidence report (1:1 with the forensics engine behind `mjolnir pw-report`): ingest a run report (Playwright JSON, JUnit XML, Jest/Vitest JSON, or a Playwright trace artifact) and return the ForensicsReport — per-test verdicts, retries, TRUE-FLAKE, durations. Hostile reports degrade to zero records (never a fabricated clean run). Read-only.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        path: {
+          type: "string",
+          description:
+            "Report file or directory of reports (json/xml/trace artifacts).",
+        },
+      },
+      required: ["path"],
+    },
+  },
+  {
+    name: "triage",
+    description:
+      "Triage workflow (1:1 with the triage surface): ingest a run report and return the per-test workflow rows — classification, evidence, trust verdict, next action — ordered for work. Read-only.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        path: { type: "string", description: "Report file or directory." },
+      },
+      required: ["path"],
+    },
+  },
+  {
+    name: "pw-report",
+    description:
+      "Playwright run summary (1:1 with `mjolnir pw-report`): ingest a run report and return both the ForensicsReport and the rendered run summary. Read-only.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        path: { type: "string", description: "Report file or directory." },
+      },
+      required: ["path"],
+    },
+  },
 ] as const;
 
 /** Strict param validation — unknown/missing/mistyped ⇒ INVALID_PARAMS. */
@@ -131,7 +176,9 @@ function validateParams(
   name: string,
   args: Record<string, unknown>,
 ): string | null {
-  const size = JSON.stringify(args).length;
+  // The threat-model cap is BYTES: JSON.stringify's .length counts UTF-16
+  // code units, which under-counts multi-byte input by up to 4x.
+  const size = Buffer.byteLength(JSON.stringify(args), "utf8");
   if (size > MAX_PARAM_BYTES) {
     return `parameters exceed ${MAX_PARAM_BYTES} bytes (threat model §21)`;
   }
@@ -165,6 +212,11 @@ function validateParams(
   if (name === "verify") {
     if (typeof args["path"] !== "string" || args["path"].length === 0) {
       return "verify requires a non-empty string `path`";
+    }
+  }
+  if (name === "forensics" || name === "triage" || name === "pw-report") {
+    if (typeof args["path"] !== "string" || args["path"].length === 0) {
+      return `${name} requires a non-empty string \`path\``;
     }
   }
   return null;
@@ -357,6 +409,51 @@ export async function handleToolCall(call: McpToolCall): Promise<McpResponse> {
           // §14: partial scans never masquerade as clean verifications.
           partial: result.partial,
         },
+      };
+    }
+
+    // WI-21 (remediation plan §9 R8): forensics / triage / pw-report —
+    // 1:1 mappings onto the SAME engine functions the CLI verbs call.
+    // No MCP-only semantics: equivalent inputs produce equivalent
+    // results (parity-locked by tests/mcp/parity.spec.ts), hostile
+    // inputs degrade exactly as the CLI's containment dictates, and a
+    // crash lands in this handler's catch — the server survives.
+    if (
+      call.name === "forensics" ||
+      call.name === "triage" ||
+      call.name === "pw-report"
+    ) {
+      const target = resolve(call.args["path"] as string);
+      if (!existsSync(target)) {
+        return {
+          jsonrpc: "2.0",
+          id: call.id,
+          error: {
+            code: MCP_ERRORS.INVALID_PARAMS,
+            message: `${call.name} target does not exist: ${target}`,
+          },
+        };
+      }
+      const { report } = runForensics(target, { writeFlakyMd: false });
+      if (call.name === "forensics") {
+        return { jsonrpc: "2.0", id: call.id, result: report };
+      }
+      if (call.name === "triage") {
+        return {
+          jsonrpc: "2.0",
+          id: call.id,
+          result: {
+            workflow: JSON.parse(renderTriageWorkflowJson(report)) as Record<
+              string,
+              unknown
+            >,
+          },
+        };
+      }
+      return {
+        jsonrpc: "2.0",
+        id: call.id,
+        result: { report, summary: renderPwRunSummary(summarizePwRun(report)) },
       };
     }
 

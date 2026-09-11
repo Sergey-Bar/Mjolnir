@@ -9,6 +9,12 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import {
+  isAzurePipelineDoc,
+  locateAzureStepKey,
+  stepIsVerificationGate as stepIsAzureVerificationGate,
+} from "./azure-gates.js";
+import type { AzurePipelineDoc } from "../../discovery/azure-pipeline-parser.js";
 
 interface StepNode {
   uses?: string;
@@ -36,7 +42,8 @@ export const retryMasking = defineRule({
   appliesTo: "ci-workflows",
   // Trust Metadata
   languages: ["yaml"],
-  frameworks: ["github-actions"],
+  // P3b: `retryCountOnTaskFailure` is the Azure DevOps retry mechanism.
+  frameworks: ["github-actions", "azure-pipelines"],
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
@@ -45,7 +52,9 @@ export const retryMasking = defineRule({
     detail:
       "retry masking is defined by the runner's retry semantics, which no " +
       "language syntax tree represents; the detector matches the runner's " +
-      "own retry keys in workflow YAML where statements are shell strings",
+      "own retry keys (GitHub `uses:`/shell loops, Azure " +
+      "`retryCountOnTaskFailure`) in pipeline YAML where statements are " +
+      "shell strings",
   },
   introduced: "0.1.0",
 
@@ -53,12 +62,19 @@ export const retryMasking = defineRule({
   // detectorRevision 2 (M2, 2026-09-04): inline-loop branch requires a real
   // retry construct around a verification gate (curl-probe FPs excluded).
   // Rev-1 measurement invalidated per §07 (stale → re-measured).
+  // detectorRevision 3 (P3b, 2026-09-10): Azure DevOps arm added —
+  // `retryCountOnTaskFailure` on a verification task/script step. Additive
+  // platform detection; the GitHub paths are unchanged.
   tier: "extended",
-  detectorRevision: 2,
+  detectorRevision: 3,
   run(ctx) {
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
-    const doc = ctx.ast as WorkflowDoc | undefined;
+    const doc = ctx.ast as WorkflowDoc | AzurePipelineDoc | undefined;
+    if (isAzurePipelineDoc(doc)) {
+      azureArm(ctx, doc, findings);
+      return findings;
+    }
     if (!doc?.jobs) return findings;
 
     for (const [jobName, job] of Object.entries(doc.jobs)) {
@@ -204,4 +220,52 @@ function nearestBefore(text: string, at: number, needle: string): number {
   const windowStart = Math.max(0, at - 2000);
   const rel = text.slice(windowStart, at + 1).lastIndexOf(needle);
   return rel !== -1 ? windowStart + rel : -1;
+}
+
+type FindingPart = Omit<Finding, "ruleId" | "category">;
+
+/**
+ * Azure DevOps arm (detectorRevision 3, P3b): `retryCountOnTaskFailure` on
+ * a step that runs a verification gate — the same masking semantics as the
+ * GitHub retry wrappers, in the Azure runner's own retry key. A retry
+ * count of 0 or a missing key is the honest default and never fires.
+ */
+function azureArm(
+  ctx: { path: string; text: string },
+  doc: AzurePipelineDoc,
+  findings: FindingPart[],
+): void {
+  const jobs = [
+    ...(doc.stages ?? []).flatMap((s) => s.jobs ?? []),
+    ...(doc.jobs ?? []),
+  ];
+  if (doc.steps?.length) {
+    jobs.push({ name: "steps", kind: "job" as const, steps: doc.steps });
+  }
+  for (const job of jobs) {
+    for (const step of job.steps ?? []) {
+      if (!step) continue;
+      const retry = step.retryCountOnTaskFailure;
+      const n =
+        typeof retry === "number"
+          ? retry
+          : typeof retry === "string"
+            ? Number.parseInt(retry, 10)
+            : 0;
+      if (!Number.isInteger(n) || n <= 0) continue;
+      if (!stepIsAzureVerificationGate(step)) continue;
+      findings.push({
+        severity: "warning",
+        confidence: "high",
+        findingType: "deterministic-defect",
+        qaImpact: "FLAKY-RISK",
+        file: ctx.path,
+        line: locateAzureStepKey(ctx.text, step, "retryCountOnTaskFailure"),
+        column: 1,
+        message: `Job \`${job.name ?? "?"}\` retries a verification task \`${step.name ?? "?"}\` on failure (retryCountOnTaskFailure: ${n}).`,
+        why: "Retrying tests until they pass hides flaky and intermittent failures — the green stage no longer means the suite passed.",
+        fix: "Remove retryCountOnTaskFailure from the verification task; investigate the underlying flakiness instead.",
+      });
+    }
+  }
 }

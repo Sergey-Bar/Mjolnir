@@ -206,6 +206,13 @@ export const HELP_ENTRIES: HelpEntry[] = [
     examples: ["mjolnir doctor"],
   },
   {
+    verb: "release-trust",
+    summary:
+      "Release Trust Verdict over the canonical 12 dimensions (docs/RELEASE-TRUST-CONTRACT.md)",
+    usage: "mjolnir release-trust [--json] [repo-root]",
+    examples: ["mjolnir release-trust", "mjolnir release-trust --json"],
+  },
+  {
     verb: "install",
     summary: "install the agent instruction surfaces + optional staged hook",
     usage: "mjolnir install [--staged-hook] [--dry-run] [--force]",
@@ -350,6 +357,7 @@ const GROUPS: Array<{ title: string; verbs: string[] }> = [
       "handover",
       "init",
       "doctor",
+      "release-trust",
       "create-rule",
     ],
   },

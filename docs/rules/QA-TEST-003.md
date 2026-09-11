@@ -51,12 +51,12 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | cypress-realworld-app                         | 4           |
 | dubinc-dub                                    | 17          |
 | getsentry-sentry                              | 199         |
-| grafana-grafana                               | 418         |
+| grafana-grafana                               | 417         |
 | Humanizr-Humanizer                            | 1           |
 | keycloak-keycloak                             | 309         |
 | negative-fixtures                             | 14          |
 | nextauthjs-next-auth                          | 3           |
-| playwright-community-eslint-plugin-playwright | 125         |
+| playwright-community-eslint-plugin-playwright | 165         |
 | positive-fixtures                             | 69          |
 | puppeteer-puppeteer                           | 90          |
 | SeleniumHQ-selenium                           | 1           |

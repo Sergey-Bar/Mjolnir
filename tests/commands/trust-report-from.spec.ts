@@ -7,6 +7,7 @@
 
 import { describe, expect, it, afterAll } from "vitest";
 import {
+  cpSync,
   mkdtempSync,
   writeFileSync,
   rmSync,
@@ -143,23 +144,30 @@ describe("trust-report --from (WI-9 consumption path)", () => {
       "scans a real target and writes both artifacts",
       { timeout: 120_000 },
       async () => {
-        // Scan the canonical mvp-demo corpus — the artifacts land in
-        // the corpus dir (the target), cleaned up below.
-        const corpus = join(
-          import.meta.dirname,
-          "..",
-          "..",
-          "examples",
-          "mvp-demo",
-        );
-        const code = await runTrustReportCommand([corpus], io);
-        expect(code).toBe(0);
-        const md = join(corpus, "mjolnir-trust-report.md");
-        expect(existsSync(md)).toBe(true);
-        expect(readFileSync(md, "utf8")).toContain("# Mjölnir Trust Report");
-        expect(existsSync(join(corpus, "mjolnir-trust-report.json"))).toBe(
-          true,
-        );
+        // Scan a COPY of the canonical mvp-demo corpus in a temp dir:
+        // the artifacts land next to the scanned corpus (the target),
+        // and the COMMITTED demo corpus stays pristine. Regenerating the
+        // committed demo artifacts mid-suite is exactly the drift the
+        // standing trap warns about — it poisoned sibling tests that
+        // assert on the real repo's state.
+        const corpusCopy = mkdtempSync(join(tmpdir(), "mjolnir-tr-rescan-"));
+        try {
+          cpSync(
+            join(import.meta.dirname, "..", "..", "examples", "mvp-demo"),
+            corpusCopy,
+            { recursive: true },
+          );
+          const code = await runTrustReportCommand([corpusCopy], io);
+          expect(code).toBe(0);
+          const md = join(corpusCopy, "mjolnir-trust-report.md");
+          expect(existsSync(md)).toBe(true);
+          expect(readFileSync(md, "utf8")).toContain("# Mjölnir Trust Report");
+          expect(
+            existsSync(join(corpusCopy, "mjolnir-trust-report.json")),
+          ).toBe(true);
+        } finally {
+          rmSync(corpusCopy, { recursive: true, force: true });
+        }
       },
     );
 

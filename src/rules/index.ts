@@ -33,6 +33,8 @@ import { reportNeverGenerated } from "./ci/qa-ci-005-report-never-generated.js";
 import { alwaysSuccessStep } from "./ci/qa-ci-008-always-success.js";
 import { exitCodeNotPropagated } from "./ci/qa-ci-009-exit-code.js";
 import { nonBlockingTestJob } from "./ci/qa-ci-010-non-blocking.js";
+import { canNeverFailGate } from "./ci/qa-ci-013-can-never-fail.js";
+import { swallowedVerificationFailure } from "./ci/qa-ci-014-swallowed-verification.js";
 import { pyNoAssertions } from "./python/qa-py-003-no-assertions.js";
 import { pyHardSleep } from "./python/qa-py-005-hard-sleep.js";
 import { pySkippedTest } from "./python/qa-py-002-skipped-test.js";
@@ -106,6 +108,12 @@ export const RULES: readonly QADoctorRule[] = [
   alwaysSuccessStep,
   exitCodeNotPropagated,
   nonBlockingTestJob,
+  // P3b (plan 1789009691197): Azure DevOps can-never-fail gates — born
+  // quarantine (§15.5) until measured. Introduced 1.1.0.
+  canNeverFailGate,
+  // P3c: Jenkins try/catch verification swallow — born quarantine (§15.5).
+  // Introduced 1.1.1.
+  swallowedVerificationFailure,
   pyNoAssertions,
   pyHardSleep,
   pySkippedTest,
