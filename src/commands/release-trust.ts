@@ -254,7 +254,7 @@ function doctorCheck(
  * violation occurred is still PROVEN evidence); an inconclusive check
  * = INCONCLUSIVE (unreconciled — blocking); all pass = PROVEN + PASS.
  */
-function fromDoctorChecks(
+export function fromDoctorChecks(
   report: { checks: DoctorCheck[] },
   refs: string[],
 ): {
