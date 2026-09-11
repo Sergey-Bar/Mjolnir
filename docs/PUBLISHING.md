@@ -314,3 +314,35 @@ No other lifecycle hook (`preinstall`, `install`, `postinstall`,
 section: the repo-hygiene suite fails when a hook exists that this
 document does not justify (supply-chain gate SC-7 — hooks run arbitrary
 code on consumer machines, so the set stays minimal and written down).
+
+## Build determinism (SC-8)
+
+`node scripts/verify-build-determinism.mjs` builds the current HEAD twice
+from two independent clean checkouts (fresh worktree + `npm ci` from the
+committed lockfile), compares every `dist/` artifact byte-for-byte, then
+both tarballs.
+
+Recorded run (2026-09-11, tree @ `a000aa2`, Windows 11 · Node 26 ·
+npm 11): **dist byte-identical (4 files) · tarballs byte-identical**
+(`mjolnir-qa-1.0.8.tgz`, sha256 prefix `d10243d8018988f8`).
+
+The honest claim this supports: **same-input clean-build determinism
+under the pinned project toolchain**. It is deliberately NOT a
+cross-environment "reproducible builds" claim — that would require
+recording toolchain hashes and reproducing on foreign machines, which
+this project does not assert.
+
+## Secret-material controls (SC-11)
+
+Two different controls, stated separately and honestly:
+
+- **Artifact side (implemented):** the pack-audit gate (`SC-6`,
+  `scripts/pack-audit.mjs`) scans every file of the packed tarball for
+  private-key material and machine-local absolute paths before any
+  registry write.
+- **Repository side (owner action pending):** GitHub secret scanning and
+  push protection are currently **disabled** on this repository (verified
+  via the API, 2026-09-11). Enabling both is a two-toggle, zero-cost
+  owner action (Settings → Code security → Secret scanning + Push
+  protection). Until then, the repo-side control is NO_EVIDENCE — CodeQL
+  and OSV are code and dependency analyzers and are NOT secret scanning.
