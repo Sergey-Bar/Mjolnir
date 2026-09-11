@@ -262,6 +262,34 @@ jobs:
           mkdir -p release-assets
           npm pack --pack-destination ./release-assets
 
+      # SC-6 (master plan §6, MR-8.B): the packed tarball is audited
+      # BEFORE any registry write — entry allowlist (shippable product
+      # code + metadata only: no tests, no maps, no machine-local dirs)
+      # and a local-path/secret content scan. This is the same file the
+      # publish step uploads: audit → publish, never pack twice.
+      - name: Pack-audit the exact tarball (SC-6)
+        run: |
+          TGZLIST=(release-assets/mjolnir-qa-*.tgz)
+          if [ "${#TGZLIST[@]}" -ne 1 ]; then
+            echo "expected exactly one packed tarball, found ${#TGZLIST[@]}" >&2
+            exit 1
+          fi
+          node scripts/pack-audit.mjs "${TGZLIST[0]}"
+
+      # SC-6 (master plan §6, MR-8.B): the packed tarball is audited
+      # BEFORE any registry write — entry allowlist (shippable product
+      # code + metadata only: no tests, no maps, no machine-local dirs)
+      # and a local-path/secret content scan. This is the same file the
+      # publish step uploads: audit → publish, never pack twice.
+      - name: Pack-audit the exact tarball (SC-6)
+        run: |
+          TGZLIST=(release-assets/mjolnir-qa-*.tgz)
+          if [ "${#TGZLIST[@]}" -ne 1 ]; then
+            echo "expected exactly one packed tarball, found ${#TGZLIST[@]}" >&2
+            exit 1
+          fi
+          node scripts/pack-audit.mjs "${TGZLIST[0]}"
+
       # Idempotency. A version already on the registry must not be a hard
       # failure: re-running a release for an existing tag (workflow_dispatch
       # above), or backfilling a tag for a version published earlier, is a
