@@ -36,6 +36,24 @@ The spec suite is organized by domain, mirroring `src/`. Run one slice
 with a path filter (`npx vitest run tests/cli`); `npm test` always runs
 the whole suite and is what CI gates on:
 
+Newer targeted slices — run the ones your change actually touches:
+
+- `tests/false-green/` — the adversarial corpus; must stay green whenever
+  rules, fixtures, or scoring move (a scanner that can be fooled into a
+  clean verdict is the one bug this repo never ships)
+- `tests/blast-radius/` + `tests/contract/blast-radius.spec.ts` — the
+  machine-verified containment contract (engine, adapter, or scanner
+  surface changes)
+- `tests/contract/boundary-law.spec.ts` and the exit-code mutation proofs
+  (anything near exit codes, scope integrity, or the evidence chain)
+- `tests/**/*arms.spec.ts` — the adversarial arms suites (rule or command
+  behavior changes)
+- `npm run docs:regen` — every generated surface, byte-identical (rule
+  pages, FP-audit, capability matrix, census counts, machine contract,
+  brand tokens, golden lock, README SVGs, detector hashes)
+- `npm --prefix site run doctor` — the site gates, including emitted-HTML
+  link integrity (any `site/` change)
+
 ## First five minutes (the quick loop)
 
 ```bash
