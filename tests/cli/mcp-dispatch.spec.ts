@@ -104,7 +104,10 @@ describe("mjolnir mcp (CLI dispatch)", () => {
     expect(reply.result.tools.map((t) => t.name).sort()).toEqual([
       "diff",
       "explain",
+      "forensics",
+      "pw-report",
       "scan",
+      "triage",
       "verify",
     ]);
   });

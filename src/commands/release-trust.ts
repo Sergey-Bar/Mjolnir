@@ -525,6 +525,79 @@ export function checkScopeIntegrity(root: string): {
       };
 }
 
+/**
+ * check:agent-safety — the Agent Safety MACHINERY shipped with R8
+ * (structural evaluation; the behavioral proofs live in
+ * tests/mcp/parity.spec.ts, tests/mcp/crash-containment.spec.ts and
+ * tests/contract/agent-skill-surface.spec.ts, locked by CI): the
+ * installed agent brief carries the §17 safety wording on every
+ * surface, the MCP transport never opens the plugin trust gate, and
+ * the agent edge case is registered in the False-Green Attack Corpus
+ * (an agent edge case recorded in false-green defense, never dropped).
+ */
+export function checkAgentSafety(root: string): {
+  evidence: EvidenceState;
+  determination: Determination;
+  details: string[];
+} {
+  const installPath = join(root, "src", "commands", "install-agents.ts");
+  const serverPath = join(root, "src", "mcp", "server.ts");
+  const corpusPath = join(root, "tests", "false-green", "cases.ts");
+  const missing = [installPath, serverPath, corpusPath].filter(
+    (p) => !existsSync(p),
+  );
+  if (missing.length > 0) {
+    return {
+      evidence: "INCONCLUSIVE",
+      determination: "INCONCLUSIVE",
+      details: missing.map((p) => `missing: ${p.slice(root.length + 1)}`),
+    };
+  }
+  const install = readFileSync(installPath, "utf8");
+  const server = readFileSync(serverPath, "utf8");
+  const corpus = readFileSync(corpusPath, "utf8");
+  const guards = [
+    {
+      ok:
+        install.includes("AGENT CLAIM ≠ VERIFICATION") &&
+        install.includes("NEVER convert INCONCLUSIVE to pass") &&
+        install.includes("NEVER manufacture, edit, or synthesize evidence"),
+      what: "the agent brief carries the §17 safety wording on every surface",
+    },
+    {
+      ok:
+        install.includes("FIX requires a proven actionable defect") &&
+        install.includes("RESCAN requires changed-scope identification") &&
+        install.includes("PROOF requires fresh post-fix execution evidence"),
+      what: "the agent loop carries the FIX/RESCAN/PROOF preconditions",
+    },
+    {
+      ok:
+        !/enablePlugins\s*:\s*true/.test(server) &&
+        !/process\.env(?:\.|\[\s*["'])MJOLNIR_ENABLE_PLUGINS/.test(server),
+      what: "the MCP tool surface never opens the plugin trust gate",
+    },
+    {
+      ok:
+        corpus.includes("fg-agent-unsafe-action") &&
+        corpus.includes("AGENT CLAIM ≠ VERIFICATION"),
+      what: "the agent edge case is registered in the False-Green Attack Corpus",
+    },
+  ];
+  const bad = guards.filter((g) => !g.ok).map((g) => g.what);
+  return bad.length === 0
+    ? {
+        evidence: "PROVEN",
+        determination: "PASS",
+        details: guards.map((g) => `ok: ${g.what}`),
+      }
+    : {
+        evidence: "PROVEN",
+        determination: "FAILED",
+        details: bad,
+      };
+}
+
 export function checkReleaseVersionConsistency(root: string): {
   evidence: EvidenceState;
   determination: Determination;
@@ -656,6 +729,7 @@ export function buildReleaseTrust(fixturesRoot: string): ReleaseTrustReport {
     ["check:release-version-consistency", checkReleaseVersionConsistency(root)],
     ["check:non-deterministic-fields", checkNonDeterministicFields()],
     ["check:scope-integrity", checkScopeIntegrity(root)],
+    ["check:agent-safety", checkAgentSafety(root)],
   ]);
 
   const dimensions: DimensionRecord[] = CANONICAL_DIMENSIONS.map((d) => {

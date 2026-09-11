@@ -9,6 +9,44 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — R8 MCP runtime-evidence tools + Agent Safety (remediation/remote-first WI-21+22)
+
+### Added
+
+- **MCP runtime-evidence tools** (`src/mcp/server.ts`, WI-21): `forensics`,
+  `triage`, `pw-report` join the tool catalog as 1:1 mappings onto the SAME
+  engine functions the CLI verbs call — no MCP-only semantics. Parity is
+  drift-locked table-driven (`tests/mcp/parity.spec.ts`): for every new tool ×
+  every fixture class (Playwright JSON · JUnit XML · hostile corrupt report ·
+  no-reports directory) the MCP result deep-equals the canonical CLI
+  derivation, hostile inputs degrade to zero records on BOTH surfaces, and the
+  hostile parameter matrix (missing / empty / non-string / nonexistent path)
+  yields INVALID_PARAMS naming the target, never a crash. A crashing tool
+  never kills the server (`tests/mcp/crash-containment.spec.ts`): the failure
+  lands in the transport's existing catch as a structured INTERNAL error and
+  the server keeps answering. One scan in flight; zero network; the plugin
+  gate applies unchanged.
+- **Agent Safety dimension wired** (`check:agent-safety` in
+  `src/commands/release-trust.ts`, R8 surface): the structural evaluation
+  asserts the §17 safety wording on every installed skill surface, that the
+  MCP tool surface never opens the plugin trust gate, and that the agent edge
+  case (`fg-agent-unsafe-action`) stays registered in the False-Green Attack
+  Corpus. The release-trust contract's documented-unwired list shrinks to
+  artifact-integrity only (ships R9).
+
+### Changed
+
+- **Agent brief inherits the Constitution** (`src/commands/install-agents.ts`,
+  WI-22): every installed instruction surface (.claude/, .cursor/, .kilo/,
+  AGENTS.md) now carries the non-negotiable agent-safety contract — NEVER
+  declare trustworthiness without evidence · AGENT CLAIM ≠ VERIFICATION ·
+  NEVER manufacture, edit, or synthesize evidence · NEVER convert INCONCLUSIVE
+  to pass · NEVER suppress findings or weaken rules to get green — plus the
+  loop preconditions (FIX requires a proven actionable defect; RESCAN requires
+  changed-scope identification; PROOF requires fresh post-fix execution
+  evidence). Drift-locked by `tests/contract/agent-skill-surface.spec.ts`
+  (frozen surfaces only; safety wording asserted).
+
 ## [Unreleased] — R7 Playwright capability matrix (remediation/remote-first WI-20)
 
 ### Added
