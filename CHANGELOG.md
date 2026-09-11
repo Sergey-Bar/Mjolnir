@@ -9,6 +9,34 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — R9 Trust Artifact integrity + HTML completion (remediation/remote-first WI-23+24)
+
+### Added
+
+- **Artifact integrity binding** (`src/commands/trust-report.ts`, R9): every
+  Trust Artifact (md · json · html) now embeds its IDENTITY — the machine
+  anchor (`scanId` from runIdentity), the bound commit when resolvable
+  (offline git read; null, never fabricated), the fired rule(rev) inventory
+  (deduped, sorted, undeclared revisions omitted — never a fabricated rev),
+  and the evidence inventory (totals, runtime-corroborated count, per-level
+  counts). Consumers detect **stale artifacts** (a scanId from another run),
+  **mismatched revisions** (rule-set drift, named per rule), and **unbound
+  artifacts** (pre-R9 producers) via `checkArtifactFreshness` — an unbound or
+  stale artifact is RECORDED, never assumed current.
+- **HTML Trust Artifact** (WI-23 completion, §18): deterministic,
+  self-contained `mjolnir-trust-report.html` — inline CSS only, zero external
+  resources, hostile interpolations escaped, byte-identical regen (same
+  ScanResult + label + commit → same bytes), the same five-question structure
+  as the MD. The command writes all three formats; `--from` gains an optional
+  `--commit <sha>` so the Action binds the artifact to the executing run's
+  HEAD.
+- **Artifact Integrity dimension wired** (`check:artifact-integrity` in
+  `src/commands/release-trust.ts`, R9 surface): the structural evaluation
+  asserts the identity binding, the three-format output, the freshness
+  detection, and the byte-regen/hostile-safety contract locks. The
+  release-trust contract's documented-unwired list is now EMPTY — all 12
+  canonical dimensions are wired and machine-evaluated.
+
 ## [Unreleased] — R8 MCP runtime-evidence tools + Agent Safety (remediation/remote-first WI-21+22)
 
 ### Added

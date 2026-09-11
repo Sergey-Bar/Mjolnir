@@ -59,6 +59,7 @@ function agentBrief(surface: string, cwdNote: string): string {
     "- After fixing: re-run the scan, report files changed, report checks not run, report unresolved findings honestly.",
     "",
     "## Agent safety contract (non-negotiable)",
+    "",
     "- NEVER declare trustworthiness without evidence. AGENT CLAIM ≠ VERIFICATION: a claim you did not verify with a fresh scan is not a result, it is a guess.",
     "- NEVER manufacture, edit, or synthesize evidence. Evidence exists only as Mjölnir's own deterministic output (scan / verify / triage / forensics / trust-report).",
     "- NEVER convert INCONCLUSIVE to pass. INCONCLUSIVE is integrity — insufficient evidence is recorded honestly, never laundered into success.",

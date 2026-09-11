@@ -598,6 +598,82 @@ export function checkAgentSafety(root: string): {
       };
 }
 
+/**
+ * check:artifact-integrity — the Artifact Integrity MACHINERY shipped
+ * with R9 (structural evaluation; the behavioral proofs live in
+ * tests/commands/artifact-integrity.spec.ts, locked by CI): the trust
+ * artifact embeds its identity binding (scanId / commit / rule(rev)
+ * inventory / evidence inventory), the HTML artifact ships as a
+ * deterministic self-contained third format, the command writes all
+ * three artifacts, and stale/wrong-run/mismatched-rev/unbound
+ * detection exists and is contract-locked.
+ */
+export function checkArtifactIntegrity(root: string): {
+  evidence: EvidenceState;
+  determination: Determination;
+  details: string[];
+} {
+  const reportPath = join(root, "src", "commands", "trust-report.ts");
+  const specPath = join(
+    root,
+    "tests",
+    "commands",
+    "artifact-integrity.spec.ts",
+  );
+  const missing = [reportPath, specPath].filter((p) => !existsSync(p));
+  if (missing.length > 0) {
+    return {
+      evidence: "INCONCLUSIVE",
+      determination: "INCONCLUSIVE",
+      details: missing.map((p) => `missing: ${p.slice(root.length + 1)}`),
+    };
+  }
+  const report = readFileSync(reportPath, "utf8");
+  const spec = readFileSync(specPath, "utf8");
+  const guards = [
+    {
+      ok:
+        report.includes("buildArtifactIdentity") &&
+        report.includes("checkArtifactFreshness") &&
+        report.includes("detectorRevisions") &&
+        report.includes("evidenceInventory"),
+      what: "the artifact embeds its identity binding (scanId/commit/rule(rev)/evidence inventory)",
+    },
+    {
+      ok:
+        report.includes("TRUST_REPORT_HTML") &&
+        report.includes("renderTrustReportHtml") &&
+        /writeFileSync\(join\(target,\s*TRUST_REPORT_HTML\)/.test(report),
+      what: "the HTML artifact ships and the command writes all three formats",
+    },
+    {
+      ok:
+        report.includes('verdict: "STALE"') &&
+        report.includes("MISMATCHED-REVISIONS") &&
+        report.includes("UNBOUND"),
+      what: "stale / wrong-run / mismatched-rev / unbound artifacts are detected and recorded",
+    },
+    {
+      ok:
+        spec.includes("byte-identical HTML") &&
+        spec.includes("cannot inject HTML"),
+      what: "byte-identical regen + hostile-input safety are contract-locked",
+    },
+  ];
+  const bad = guards.filter((g) => !g.ok).map((g) => g.what);
+  return bad.length === 0
+    ? {
+        evidence: "PROVEN",
+        determination: "PASS",
+        details: guards.map((g) => `ok: ${g.what}`),
+      }
+    : {
+        evidence: "PROVEN",
+        determination: "FAILED",
+        details: bad,
+      };
+}
+
 export function checkReleaseVersionConsistency(root: string): {
   evidence: EvidenceState;
   determination: Determination;
@@ -730,6 +806,7 @@ export function buildReleaseTrust(fixturesRoot: string): ReleaseTrustReport {
     ["check:non-deterministic-fields", checkNonDeterministicFields()],
     ["check:scope-integrity", checkScopeIntegrity(root)],
     ["check:agent-safety", checkAgentSafety(root)],
+    ["check:artifact-integrity", checkArtifactIntegrity(root)],
   ]);
 
   const dimensions: DimensionRecord[] = CANONICAL_DIMENSIONS.map((d) => {

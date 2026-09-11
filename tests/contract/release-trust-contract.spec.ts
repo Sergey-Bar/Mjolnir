@@ -72,12 +72,12 @@ describe("canonical dimension set (docs/RELEASE-TRUST-CONTRACT.md)", () => {
   });
 
   it("every evidence binding resolves — a typo must fail CI, not render UNSUPPORTED", () => {
-    // The real repo run: all WIREABLE dimensions must evaluate (the one
-    // documented-unwired surface legitimately renders UNSUPPORTED — that
-    // is Constitution §5, not a typo). Anything else UNSUPPORTED here
-    // means a canonical binding is miswired. (scope-integrity wired with
-    // R4c; agent-safety wired with R8; artifact-integrity ships with R9.)
-    const documentedUnwired = new Set(["artifact-integrity"]);
+    // The real repo run: every dimension's machinery is now wired
+    // (scope-integrity with R4c, agent-safety with R8, artifact-integrity
+    // with R9). ANYTHING rendering UNSUPPORTED here means a canonical
+    // binding is miswired — the UNSUPPORTED state is reserved for
+    // genuinely unwired surfaces, and none remain (Constitution §5).
+    const documentedUnwired: ReadonlySet<string> = new Set();
     for (const d of REPORT.dimensions) {
       if (documentedUnwired.has(d.id)) continue;
       expect(
@@ -85,32 +85,23 @@ describe("canonical dimension set (docs/RELEASE-TRUST-CONTRACT.md)", () => {
         `${d.id} rendered UNSUPPORTED in the mjolnir checkout — a binding must be typo'd`,
       ).toBe(false);
     }
-    // And the unwired surface must say SO (genuine unwiring, never a typo).
-    for (const d of REPORT.dimensions) {
-      if (!documentedUnwired.has(d.id)) continue;
-      expect(d.details.join(" ")).toContain("surface not wired");
+  });
+
+  it("the last-wired surfaces (agent-safety R8, artifact-integrity R9) PASS and are required", () => {
+    const byId = new Map(REPORT.dimensions.map((d) => [d.id, d]));
+    for (const id of ["agent-safety", "artifact-integrity"] as const) {
+      const d = byId.get(id);
+      expect(d, id).toBeDefined();
+      expect(d?.applicability.required).toBe(true);
+      expect(d?.evidence).toBe("PROVEN");
+      expect(d?.determination).toBe("PASS");
     }
   });
 
-  it("the unwired surface renders UNSUPPORTED, recorded and non-blocking", () => {
-    const byId = new Map(REPORT.dimensions.map((d) => [d.id, d]));
-    const d = byId.get("artifact-integrity");
-    expect(d, "artifact-integrity").toBeDefined();
-    expect(d?.evidence).toBe("UNSUPPORTED");
-    expect(d?.determination).toBe("UNSUPPORTED");
-    expect(d?.applicability.required).toBe(false);
-    expect(d?.applicability.applicableFrom).toBe("1.4.0");
-    expect(d?.details.join(" ")).toContain("Constitution §5");
-  });
-
-  it("agent-safety (wired with R8) evaluates and PASSES in the mjolnir checkout", () => {
+  it("agent-safety (wired with R8) asserts the §17 machinery", () => {
     const d = new Map(REPORT.dimensions.map((x) => [x.id, x])).get(
       "agent-safety",
     );
-    expect(d, "agent-safety").toBeDefined();
-    expect(d?.applicability.required).toBe(true);
-    expect(d?.evidence).toBe("PROVEN");
-    expect(d?.determination).toBe("PASS");
     expect(d?.details.join(" ")).toContain("§17 safety wording");
   });
 });

@@ -7,12 +7,12 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 196 files, 39580 LOC
+## Inventory: 196 files, 40000 LOC
 
 | Area             | Files | LOC   |
 | ---------------- | ----- | ----- |
 | src/rules        | 79    | 10490 |
-| src/commands     | 28    | 8412  |
+| src/commands     | 28    | 8832  |
 | src/engine       | 22    | 5975  |
 | src/reporter     | 12    | 2833  |
 | src/(root)       | 4     | 2602  |
@@ -59,7 +59,7 @@ codes) must match this document exactly.
 | node:path          | 45                 |
 | node:crypto        | 8                  |
 | ts-morph           | 7                  |
-| node:child_process | 5                  |
+| node:child_process | 6                  |
 | web-tree-sitter    | 4                  |
 | node:url           | 3                  |
 | node:os            | 2                  |
