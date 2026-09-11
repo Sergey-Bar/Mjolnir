@@ -86,3 +86,14 @@ skills-lock.json
 .kiro/
 .opencode/
 .qoder/
+
+# Skill symlinks that point into the gitignored .agents/ tree (leaked in
+# R3, 1044461): on other checkouts they are dangling links, and on CI the
+# symlink skip degraded the self-scan to PARTIAL (exit 2). The repo's own
+# .claude/skills/<name>/ dirs remain tracked — only the machine-local
+# links are ignored.
+.claude/skills/nodejs-backend-patterns
+.claude/skills/nodejs-best-practices
+.claude/skills/playwright-best-practices
+.claude/skills/typescript-advanced-types
+.claude/skills/vitest
