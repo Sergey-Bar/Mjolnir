@@ -79,10 +79,12 @@ function run() {
       console.log(`  build ${i + 1}: ${wt}`);
       execFileSync(NPM, ["ci", "--no-fund", "--no-audit", "--loglevel=error"], {
         cwd: wt,
+        shell: process.platform === "win32",
         stdio: "inherit",
       });
       execFileSync(NPM, ["run", "build", "--silent"], {
         cwd: wt,
+        shell: process.platform === "win32",
         stdio: "inherit",
       });
       manifests.push(distManifest(join(wt, "dist")));
@@ -91,6 +93,7 @@ function run() {
         ["pack", "--pack-destination", join(wt, "pack"), "--silent"],
         {
           cwd: wt,
+          shell: process.platform === "win32",
           stdio: "pipe",
         },
       );
