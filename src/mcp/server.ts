@@ -21,6 +21,7 @@
  *   was started with MJOLNIR_ENABLE_PLUGINS=1 in its own environment).
  */
 
+import { Buffer } from "node:buffer";
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -175,7 +176,9 @@ function validateParams(
   name: string,
   args: Record<string, unknown>,
 ): string | null {
-  const size = JSON.stringify(args).length;
+  // The threat-model cap is BYTES: JSON.stringify's .length counts UTF-16
+  // code units, which under-counts multi-byte input by up to 4x.
+  const size = Buffer.byteLength(JSON.stringify(args), "utf8");
   if (size > MAX_PARAM_BYTES) {
     return `parameters exceed ${MAX_PARAM_BYTES} bytes (threat model §21)`;
   }

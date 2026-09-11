@@ -104,6 +104,20 @@ describe("WI-18 minimum-signal table", () => {
     expect(got.verdict).toBe("retry-dependent");
   });
 
+  it("single-attempt hard failure with an error-text-incapable source is still the named failure fact", () => {
+    // The deliberate asymmetry (R6 adjudication): the hard failure is a
+    // named fact that does not need error text; UNSUPPORTED applies to the
+    // error-text SIGNAL, not to the whole classification. Contrast: a
+    // source CAPABLE of carrying texts that captured none (no unsupported
+    // flag, zero texts) stays inconclusive/insufficient.
+    const got = classifyForensicVerdict({
+      verdict: v({ attempts: 1, finalStatus: "failed" }),
+      errorTexts: [],
+      errorTextsUnsupported: true,
+    });
+    expect(got.verdict).toBe("likely-real-defect");
+  });
+
   it("deterministic single-attempt failure with captured error text is likely-real-defect", () => {
     const got = classifyForensicVerdict({
       verdict: v({ attempts: 1 }),
