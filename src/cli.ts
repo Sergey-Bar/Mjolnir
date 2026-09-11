@@ -108,6 +108,7 @@ import { runInit, renderInit, tryReadPackageJson } from "./commands/init.js";
 import { renderPwRunSummary, summarizePwRun } from "./commands/pw-report.js";
 import { planAndApplyFixes, renderFixReport } from "./commands/fix.js";
 import { runDoctorCommand } from "./commands/doctor-run.js";
+import { runReleaseTrustCommand } from "./commands/release-trust.js";
 import { buildCatalog, renderCatalogMd } from "./commands/rules-catalog.js";
 import { explainRule, renderExplain } from "./commands/explain.js";
 import { loadSuppressions, renderSuppressions } from "./config/suppressions.js";
@@ -1535,6 +1536,7 @@ const SUBCOMMANDS: ReadonlySet<string> = new Set([
   "doctor",
   "rules",
   "explain",
+  "release-trust",
   "doctor:playwright",
   "mcp",
 ]);
@@ -1592,6 +1594,7 @@ export async function main(
   if (argv[0] === "init") return runInitCommand(argv.slice(1));
   if (argv[0] === "pw-report") return runPwReportCommand(argv.slice(1));
   if (argv[0] === "doctor") return runDoctorCommand(argv.slice(1));
+  if (argv[0] === "release-trust") return runReleaseTrustCommand(argv.slice(1));
   if (argv[0] === "rules") return runRulesCommand(argv.slice(1));
   if (argv[0] === "explain") return runExplainCommand(argv.slice(1));
   if (argv[0] === "doctor:playwright") return runDoctorPlaywright(argv);

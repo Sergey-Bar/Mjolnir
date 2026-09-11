@@ -9,6 +9,38 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — R4a Trust Constitution + Release Trust Verdict (remediation/remote-first)
+
+### Added
+
+- **docs/TRUST-CONSTITUTION.md** — canonical law: CERTIFICATION-POLICY A1–A4
+  adopted as §1; the 18 PASS-forbidden conditions (verbatim); the closed status
+  algebra (PROVEN evidence-state → PASS/FAILED derivation, terminality rule,
+  record shape); the core law (`PASS = conclusion backed by sufficient
+evidence`); per-dimension applicability (UNSUPPORTED surfaces are recorded,
+  non-blocking, and drift-locked); publication honesty.
+- **docs/RELEASE-TRUST-CONTRACT.md** — the canonical 12 dimensions (fixed set,
+  fixed order, governance-locked): Engine/Evidence/Rule Integrity, Failure
+  Containment, Corpus Integrity, Contract Compatibility, Determinism, Scope
+  Integrity (ships R4c), Reproducibility, Zero-Network Compliance, Agent Safety
+  (R8), Artifact Integrity (R9).
+- New verb **`mjolnir release-trust`** emitting `mjolnir.release-trust@1` —
+  byte-deterministic (frozen key order, no timestamps, zero absolute paths),
+  per-dimension `evidence` + `determination` via the status algebra, verdict =
+  contract satisfaction (never a PROVEN count) with the binding system
+  invariant. Exit contract: 0 PASS · 1 non-PASS · 2 blocked context · 10 usage ·
+  20 internal. Drift-locked by tests/contract/release-trust-contract.spec.ts
+  (canonical set/order, binding resolution, derivation table + terminality,
+  byte-stability, path-freedom).
+
+### Changed
+
+- **release.yml**: the Release Trust Verdict gate is wired RELEASE-BLOCKING
+  pre-publish (Tests → Certification → CHANGELOG Gate → … → release-trust gate
+  → publish), running the BUILT binary; the verdict block + machine contract
+  ship with the GitHub Release (publication honesty — a missing proof renders
+  UNPROVEN, never omitted). No waiver path.
+
 ## [Unreleased] — R4 blast radius audit (remediation/remote-first R4)
 
 ### Added
