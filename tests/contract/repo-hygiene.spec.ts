@@ -267,3 +267,108 @@ describe("smithery.yaml descriptor sync", () => {
     ).toEqual([]);
   });
 });
+
+// Supply-chain hygiene (master plan 1789041108156 §6, MR-8.A): SC-3
+// (action pinning) and SC-4 (workflow permissions) are enforced by TEST,
+// not by review — the review-only version of these gates is how drift
+// ships silently. SC-3 also locks the version-comment consistency spot-
+// checks to a grep at gate time (SC-5 stays G2).
+describe("workflow supply-chain hygiene (SC-3/SC-4)", () => {
+  const wfDir = join(ROOT, ".github", "workflows");
+  const files = readdirSync(wfDir).filter((f) => /\.ya?ml$/.test(f));
+
+  /** Every `uses:` value anywhere in one parsed workflow document. */
+  function usesRefs(node: unknown, out: string[] = []): string[] {
+    if (Array.isArray(node)) {
+      for (const item of node) usesRefs(item, out);
+    } else if (node && typeof node === "object") {
+      for (const [key, value] of Object.entries(node)) {
+        if (key === "uses" && typeof value === "string") out.push(value);
+        else usesRefs(value, out);
+      }
+    }
+    return out;
+  }
+
+  it("SC-3: every uses: is a local ./ action or a full 40-hex SHA pin", () => {
+    expect(
+      files.length,
+      "no workflow files found — the gate went blind",
+    ).toBeGreaterThan(0);
+    const violations: string[] = [];
+    for (const file of files) {
+      const doc = parse(readFileSync(join(wfDir, file), "utf8")) as unknown;
+      for (const ref of usesRefs(doc)) {
+        const ok = ref.startsWith("./") || /^[^@\s]+@[0-9a-f]{40}$/.test(ref);
+        if (!ok) violations.push(`${file}: ${ref}`);
+      }
+    }
+    expect(
+      violations,
+      "actions must be pinned to a full commit SHA (or be a local ./ " +
+        "action) — a mutable tag ref is a supply-chain hole: whoever " +
+        "pushes to the upstream repo executes arbitrary code in OUR CI. " +
+        "Pin: owner/repo@<40-hex-sha> # vX.Y.Z",
+    ).toEqual([]);
+  });
+
+  it("SC-4: every workflow declares top-level permissions and none grants write-all", () => {
+    const violations: string[] = [];
+    for (const file of files) {
+      const doc = parse(readFileSync(join(wfDir, file), "utf8")) as {
+        permissions?: unknown;
+      };
+      if (doc.permissions === undefined)
+        violations.push(`${file}: no top-level permissions:`);
+      if (JSON.stringify(doc).includes("write-all"))
+        violations.push(`${file}: grants write-all`);
+    }
+    expect(
+      violations,
+      "each workflow must declare a least-privilege top-level " +
+        "permissions: block — the GITHUB_TOKEN default is the blast " +
+        "radius of a compromised action or a poisoned PR",
+    ).toEqual([]);
+  });
+});
+
+// SC-7 (master plan §6, MR-8.A): npm lifecycle hooks run arbitrary code
+// on every consumer's install/prepublish — the set must stay minimal and
+// every hook must be justified in docs/PUBLISHING.md. The test fails the
+// moment a hook appears without its documented justification (and vice
+// versa is caught by review: a documented hook that no longer exists is
+// a docs-consistency defect the same suite's npm-run scan also covers).
+describe("lifecycle scripts are documented (SC-7)", () => {
+  const LIFECYCLE_HOOKS = [
+    "preinstall",
+    "install",
+    "postinstall",
+    "prepublish",
+    "prepublishOnly",
+    "prepack",
+    "postpack",
+    "prepare",
+  ] as const;
+
+  const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")) as {
+    scripts?: Record<string, string>;
+  };
+  const hooks = LIFECYCLE_HOOKS.filter((h) => pkg.scripts?.[h] !== undefined);
+
+  it("every lifecycle hook in package.json is justified in docs/PUBLISHING.md", () => {
+    const publishing = readFileSync(
+      join(ROOT, "docs", "PUBLISHING.md"),
+      "utf8",
+    );
+    const undocumented = hooks.filter(
+      (h) => !new RegExp(`\\b${h}\\b`).test(publishing),
+    );
+    expect(
+      undocumented,
+      "a lifecycle hook runs on consumers' machines without a written " +
+        "justification — document it in docs/PUBLISHING.md 'Lifecycle " +
+        "scripts' (what it runs, why it must exist, who it runs for) or " +
+        "remove the hook",
+    ).toEqual([]);
+  });
+});
