@@ -9,6 +9,12 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [1.0.7] — 2026-09-11
+
+### Changes since 1.0.6
+
+- docs: 1.0.6 CHANGELOG section lead-ins (Merged PR #75)
+
 ## [1.0.6] — 2026-09-11
 
 ### R10 2.0 preparation: breaking-set inventory + boundary-law guards (remediation/remote-first WI-25)
