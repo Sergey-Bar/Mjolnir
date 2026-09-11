@@ -78,3 +78,11 @@ tests/**/tmp-*.mts
 .mcp.json
 opencode.jsonc
 skills-lock.json
+
+# Machine-local agent-session/tool dirs (same class as .kilo/ above) — never repo content
+.agents/
+.codebuddy/
+.gemini/
+.kiro/
+.opencode/
+.qoder/
