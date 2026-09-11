@@ -25,8 +25,10 @@
  * Applicability (Constitution §5): a dimension whose surface does not
  * exist yet renders UNSUPPORTED — recorded, non-blocking; once shipped
  * (its applicableFrom version is reached) it becomes blocking. Honesty,
- * not a bypass: `provenance = bound` activates with R4c; before that it
- * is itself UNSUPPORTED and recorded.
+ * not a bypass: `provenance = bound` activated with R4c+R9 — it is
+ * PROVEN exactly when the identity chain (runIdentity + evidence graph
+ * + artifact scanId binding) is proven by scope-integrity and
+ * artifact-integrity; otherwise it is itself UNSUPPORTED and recorded.
  */
 
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
@@ -877,6 +879,7 @@ export function buildReleaseTrust(fixturesRoot: string): ReleaseTrustReport {
 
   const scopeDim = dimensions.find((d) => d.id === "scope-integrity");
   const contractDim = dimensions.find((d) => d.id === "contract-compatibility");
+  const artifactDim = dimensions.find((d) => d.id === "artifact-integrity");
   const executionEvidence: EvidenceState =
     doctor.healthy || doctor.checks.length > 0 ? "PROVEN" : "UNPROVEN";
   const evidenceState: EvidenceState = dimensions.some(
@@ -900,9 +903,18 @@ export function buildReleaseTrust(fixturesRoot: string): ReleaseTrustReport {
     contradictions: dimensions.some((d) => d.determination === "INCONCLUSIVE")
       ? "present"
       : "none",
-    // provenance = bound activates with R4c (plan §5.2): until then the
-    // item is itself UNSUPPORTED and recorded, never silently dropped.
-    provenance: "UNSUPPORTED",
+    // provenance = bound (plan §5.2): the verdict is machine-anchored to
+    // its execution when BOTH halves of the chain are proven — the
+    // scope-integrity dimension proves runIdentity + the evidence graph
+    // are stamped into every scan result (R4c), and the artifact-integrity
+    // dimension proves the artifact binds that identity (scanId/commit,
+    // R9). Until both ship, the item stays UNSUPPORTED and recorded —
+    // never silently dropped, never asserted without the machinery.
+    provenance:
+      scopeDim?.determination === "PASS" &&
+      artifactDim?.determination === "PASS"
+        ? "PROVEN"
+        : "UNSUPPORTED",
   };
 
   const verdict = computeVerdict(dimensions, invariant);

@@ -54,8 +54,11 @@ RELEASE-TRUST = PASS  ⟺  ∀ d ∈ Required(release): determination(d) = PASS
 The system invariant is **binding**: no release may achieve RELEASE-PASS
 unless execution is PROVEN, evidence is PROVEN, scope is PROVEN, the contract
 is satisfied, contradictions are none, and provenance is bound. The
-`provenance = bound` condition activates with R4c — before that it is itself
-UNSUPPORTED and recorded, not silently dropped. Any required dimension not
+`provenance = bound` condition activated with R4c+R9: it is PROVEN exactly
+when the machine-anchored identity chain (runIdentity + evidence graph +
+artifact scanId binding) is proven by the scope-integrity and
+artifact-integrity dimensions — before both shipped it was itself UNSUPPORTED
+and recorded, not silently dropped. Any required dimension not
 PASS ⇒ RELEASE-TRUST ≠ PASS, rendered as the strictest state present with
 precedence **FAILED > BLOCKED > INCONCLUSIVE > UNPROVEN > PARTIAL**. **No
 waiver path** (decision 5).

@@ -73,6 +73,16 @@ once shipped, so this file is the record of what changed between versions.
   happened.
 - **`trust-report --from` reports the complete artifact set** it writes
   (md + html + json), not just the MD path.
+- **The `provenance = bound` system-invariant item is now WIRED** (plan
+  §5.2 activation; `src/commands/release-trust.ts`): the release-trust
+  invariant previously hardcoded `provenance: UNSUPPORTED` even after the
+  machinery it waited for shipped. It is now PROVEN exactly when the
+  machine-anchored identity chain is proven — scope-integrity (runIdentity +
+  evidence graph, R4c) AND artifact-integrity (artifact scanId binding, R9)
+  both PASS — and stays UNSUPPORTED (recorded, non-blocking) otherwise. The
+  contract doc's activation sentence and the drift-lock are updated
+  accordingly; the shipped verdict is unchanged (PASS 12/12, provenance
+  bound).
 
 ## [Unreleased] — R9 Trust Artifact integrity + HTML completion (remediation/remote-first WI-23+24)
 

@@ -181,6 +181,16 @@ describe("status algebra (Constitution §2) — derivation table + terminality",
     expect(v.strictestState).toBe("INCONCLUSIVE");
   });
 
+  it("provenance is BOUND in the mjolnir checkout (R4c identity chain + R9 artifact binding proven)", () => {
+    // Plan §5.2 activation: provenance = PROVEN exactly when the
+    // scope-integrity dimension (runIdentity + evidence graph) AND the
+    // artifact-integrity dimension (artifact scanId binding) both prove
+    // their machinery. Before both shipped, the item rendered UNSUPPORTED
+    // and non-blocking — recorded, never silently dropped.
+    expect(REPORT.invariant.provenance).toBe("PROVEN");
+    expect(REPORT.verdict.releaseTrust).toBe("PASS");
+  });
+
   it("the provenance=bound activation: UNSUPPORTED invariant item is recorded, non-blocking (§5)", () => {
     const preR4c: ReleaseTrustReport["invariant"] = {
       ...baseInvariant,
