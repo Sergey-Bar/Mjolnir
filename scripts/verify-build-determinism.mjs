@@ -19,7 +19,7 @@
 
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import { readdirSync, readFileSync, rmSync } from "node:fs";
 import { join, relative } from "node:path";
 import { tmpdir } from "node:os";
 
@@ -63,7 +63,12 @@ function run() {
     const manifests = [];
     const tarballHashes = [];
     for (let i = 0; i < 2; i++) {
-      const wt = mkdtempSync(join(tmpdir(), `sc8-build-${i}-`));
+      // NOT pre-created: `git worktree add` refuses an existing directory
+      // and creates it itself.
+      const wt = join(
+        tmpdir(),
+        `sc8-build-${i}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      );
       worktrees.push(wt);
       execFileSync("git", ["worktree", "add", "--detach", wt, sha], {
         cwd: ROOT,
