@@ -38,6 +38,7 @@
     "docs:rules": "tsx scripts/generate-rule-docs.ts",
     "docs:counts": "tsx scripts/generate-counts.ts",
     "docs:depth-adjudication": "tsx scripts/generate-depth-adjudication.ts",
+    "false-green:index": "tsx scripts/generate-false-green-index.ts",
     "docs:blast-radius": "tsx scripts/generate-blast-radius.ts",
     "docs:quarantine-ledger": "tsx scripts/generate-quarantine-ledger.ts",
     "docs:capability": "tsx scripts/generate-capability-matrix.ts",

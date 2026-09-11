@@ -9,6 +9,45 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — R4b False-Green Attack Corpus (remediation/remote-first)
+
+### Added
+
+- **tests/false-green/** — the adversarial corpus (plan §6, P0): 20 cases
+  across the plan's seven hostile classes (execution · parser · adapter ·
+  evidence · rule · mcp · agent failures), each declaring the seven
+  owner-required fields (INPUT / EXPECTED EXECUTION / EVIDENCE / VERDICT /
+  EXIT CODE / REPORT FIELDS / RELEASE IMPACT) and executed against real
+  surfaces with specific field bindings:
+  - execution: empty suite (score null + no-tests-found recorded), deadline
+    truncation, and the partial+findings never-blocks invariant (audit C5);
+  - parsers (through the real `runForensics` entry): corrupt JSON, truncated
+    Playwright report, malformed JUnit, unsupported schema → zero records →
+    exit-2 state — PARSER FAILURE ≠ CLEAN; duplicate retry-storm records stay
+    visible;
+  - adapters: scalar-jobs workflow fabricates nothing; broken YAML is SKIPPED
+    with accounting;
+  - rules: a throwing local plugin rule (QA-ACME-666) → `rulesCrashed ≥ 1`
+    with the scan completing — RULE CRASH ≠ CLEAN;
+  - evidence: missing/corrupt baseline → hasBaseline=false (exit 2); stale
+    baseline resolutions stay scoped to their capture; the foreign
+    baselineCommit is recorded (binding gate ships R4c);
+  - MCP: unknown tool / invalid params answer JSON-RPC errors, never success;
+  - agent: codegen and generated-header provenance classification — AGENT
+    CLAIM ≠ VERIFICATION.
+- **Mutation / assertion-strength protocol** (tests/false-green/mutation-
+  protocol.spec.ts): for every wired case and every report-field binding, the
+  false-green twin of the honest report (failure→success, partial→complete,
+  unknown→clean, crashed-rule→clean…) is injected and the case's assertion
+  must FAIL on it — a decorative assertion fails CI. Parser input twins flip
+  the hostile input to its benign form and require the observed verdict to
+  flip with it.
+- **Generated, drift-locked index** (npm run false-green:index + index.spec.ts):
+  one row per case with all seven declarations, the mutation inventory, and
+  the UNSURFACED rows (MCP transport internals / agent-action policy → R8;
+  artifact binding → R9) — recorded per Constitution §5, never silently
+  dropped. All seven plan classes present.
+
 ## [Unreleased] — R4a Trust Constitution + Release Trust Verdict (remediation/remote-first)
 
 ### Added
