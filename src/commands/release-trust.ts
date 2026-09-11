@@ -456,7 +456,75 @@ export function checkNonDeterministicFields(): {
       };
 }
 
-/** check:release-version-consistency — package.json == CHANGELOG head. */
+/**
+ * check:scope-integrity — the Scope Integrity MACHINERY shipped with R4c
+ * is present and internally consistent (structural evaluation; the
+ * behavioral proof lives in tests/blast-radius/scope-and-exit.spec.ts,
+ * locked by CI): the pipeline builds the block (scopeVerdict,
+ * runIdentity, evidenceGraph chain) and the terminal reporter carries
+ * the forbidden-phrasing guard ("repository verified" only on PROVEN).
+ */
+export function checkScopeIntegrity(root: string): {
+  evidence: EvidenceState;
+  determination: Determination;
+  details: string[];
+} {
+  const pipelinePath = join(root, "src", "engine", "scan-pipeline.ts");
+  const terminalPath = join(root, "src", "reporter", "terminal.ts");
+  const identityPath = join(root, "src", "engine", "run-identity.ts");
+  const missing = [pipelinePath, terminalPath, identityPath].filter(
+    (p) => !existsSync(p),
+  );
+  if (missing.length > 0) {
+    return {
+      evidence: "INCONCLUSIVE",
+      determination: "INCONCLUSIVE",
+      details: missing.map((p) => `missing: ${p.slice(root.length + 1)}`),
+    };
+  }
+  const pipeline = readFileSync(pipelinePath, "utf8");
+  const terminal = readFileSync(terminalPath, "utf8");
+  const identity = readFileSync(identityPath, "utf8");
+  const guards = [
+    {
+      ok:
+        pipeline.includes("scopeVerdict") &&
+        pipeline.includes("buildRunIdentity"),
+      what: "scan-pipeline builds the scopeIntegrity block + run identity",
+    },
+    {
+      ok:
+        pipeline.includes("parseFailed++") &&
+        pipeline.includes("onIgnored") &&
+        pipeline.includes("onUnrecognized"),
+      what: "the walk counts ignored/unrecognized and the rule stage counts parse failures",
+    },
+    {
+      ok: terminal.includes("repository-verified"),
+      what: "the terminal reporter gates 'repository verified' phrasing on scopeVerdict",
+    },
+    {
+      ok:
+        identity.includes("sha256") &&
+        identity.includes("buildEvidenceGraph") &&
+        identity.includes("reproduction"),
+      what: "run identity + the full chain-law graph (verdict…reproduction)",
+    },
+  ];
+  const bad = guards.filter((g) => !g.ok).map((g) => g.what);
+  return bad.length === 0
+    ? {
+        evidence: "PROVEN",
+        determination: "PASS",
+        details: guards.map((g) => `ok: ${g.what}`),
+      }
+    : {
+        evidence: "PROVEN",
+        determination: "FAILED",
+        details: bad,
+      };
+}
+
 export function checkReleaseVersionConsistency(root: string): {
   evidence: EvidenceState;
   determination: Determination;
@@ -587,6 +655,7 @@ export function buildReleaseTrust(fixturesRoot: string): ReleaseTrustReport {
     ["check:machine-contract-version", checkMachineContractVersion(root)],
     ["check:release-version-consistency", checkReleaseVersionConsistency(root)],
     ["check:non-deterministic-fields", checkNonDeterministicFields()],
+    ["check:scope-integrity", checkScopeIntegrity(root)],
   ]);
 
   const dimensions: DimensionRecord[] = CANONICAL_DIMENSIONS.map((d) => {

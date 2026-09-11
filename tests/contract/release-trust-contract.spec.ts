@@ -72,15 +72,12 @@ describe("canonical dimension set (docs/RELEASE-TRUST-CONTRACT.md)", () => {
   });
 
   it("every evidence binding resolves — a typo must fail CI, not render UNSUPPORTED", () => {
-    // The real repo run: all WIREABLE dimensions must evaluate (the three
+    // The real repo run: all WIREABLE dimensions must evaluate (the two
     // documented-unwired surfaces legitimately render UNSUPPORTED — that
     // is Constitution §5, not a typo). Anything else UNSUPPORTED here
-    // means a canonical binding is miswired.
-    const documentedUnwired = new Set([
-      "scope-integrity",
-      "agent-safety",
-      "artifact-integrity",
-    ]);
+    // means a canonical binding is miswired. (scope-integrity wired with
+    // R4c; agent-safety/artifact-integrity ship with R8/R9.)
+    const documentedUnwired = new Set(["agent-safety", "artifact-integrity"]);
     for (const d of REPORT.dimensions) {
       if (documentedUnwired.has(d.id)) continue;
       expect(
@@ -95,10 +92,9 @@ describe("canonical dimension set (docs/RELEASE-TRUST-CONTRACT.md)", () => {
     }
   });
 
-  it("the three unwired surfaces render UNSUPPORTED, recorded and non-blocking", () => {
+  it("the unwired surfaces render UNSUPPORTED, recorded and non-blocking", () => {
     const byId = new Map(REPORT.dimensions.map((d) => [d.id, d]));
     for (const [id, expectedFrom] of [
-      ["scope-integrity", "1.1.6"],
       ["agent-safety", "1.3.0"],
       ["artifact-integrity", "1.4.0"],
     ] as const) {
