@@ -13,6 +13,8 @@ once shipped, so this file is the record of what changed between versions.
 
 ### R10 2.0 preparation: breaking-set inventory + boundary-law guards (remediation/remote-first WI-25)
 
+Preparation-only increment: the 2.0 breaking-set proposal sheet, its migration draft, and the boundary-law guard tests — nothing breaking ships in this release.
+
 ### Added
 
 - **2.0 breaking-set inventory** (`docs/2.0-BREAKING-SET.md`, WI-25): the
@@ -88,6 +90,8 @@ once shipped, so this file is the record of what changed between versions.
 
 ### R9 Trust Artifact integrity + HTML completion (remediation/remote-first WI-23+24)
 
+Trust Artifacts gain machine-anchored identity and a deterministic HTML surface; stale, wrong-run, revision-drifted, and unbound artifacts are now detectable.
+
 ### Added
 
 - **Artifact integrity binding** (`src/commands/trust-report.ts`, R9): every
@@ -115,6 +119,8 @@ once shipped, so this file is the record of what changed between versions.
   canonical dimensions are wired and machine-evaluated.
 
 ### R8 MCP runtime-evidence tools + Agent Safety (remediation/remote-first WI-21+22)
+
+The MCP transport learns the runtime-evidence tools, and every installed agent surface inherits the safety contract.
 
 ### Added
 
@@ -154,6 +160,8 @@ once shipped, so this file is the record of what changed between versions.
 
 ### R7 Playwright capability matrix (remediation/remote-first WI-20)
 
+The Playwright capability matrix becomes a product surface with its own drift lock.
+
 ### Added
 
 - **Playwright Capability Matrix** (`docs/PLAYWRIGHT-CAPABILITIES.md`,
@@ -170,6 +178,8 @@ once shipped, so this file is the record of what changed between versions.
   surface entirely.
 
 ### R6 forensic taxonomy + Selector Health v2 (remediation/remote-first WI-18+19)
+
+Forensic verdicts gain the semantic taxonomy, and Selector Health v2 replaces the locator heuristic.
 
 ### Added
 
@@ -197,6 +207,8 @@ once shipped, so this file is the record of what changed between versions.
 
 ### R5 trace ingester (remediation/remote-first WI-17)
 
+Trace forensics: bounded ingestion of Playwright trace.zip artifacts into the evidence core.
+
 ### Added
 
 - **Playwright trace ingester** (`src/forensics/trace.ts`, WI-17): deterministic,
@@ -220,6 +232,8 @@ once shipped, so this file is the record of what changed between versions.
   with `"playwright-trace"`.
 
 ### R4c Evidence Graph + Scope Integrity + Exit-Code proofs (remediation/remote-first)
+
+Every verdict now carries a machine-anchored evidence graph, scope-integrity accounting, and exit-code proofs.
 
 ### Added
 
@@ -254,6 +268,8 @@ fingerprint + engine version)`; set-identity semantics (input order does not
   all shared-walk adapters pass them through).
 
 ### R4b False-Green Attack Corpus (remediation/remote-first)
+
+The False-Green Attack Corpus: hostile failure classes with mutation-based detection proofs.
 
 ### Added
 
@@ -294,6 +310,8 @@ fingerprint + engine version)`; set-identity semantics (input order does not
 
 ### R4a Trust Constitution + Release Trust Verdict (remediation/remote-first)
 
+The Trust Constitution and the two-layer release-trust verdict algebra.
+
 ### Added
 
 - **docs/TRUST-CONSTITUTION.md** — canonical law: CERTIFICATION-POLICY A1–A4
@@ -325,6 +343,8 @@ evidence`); per-dimension applicability (UNSUPPORTED surfaces are recorded,
   UNPROVEN, never omitted). No waiver path.
 
 ### R4 blast radius audit (remediation/remote-first R4)
+
+The blast-radius audit: a machine-verified surface manifest with its own drift lock.
 
 ### Added
 
