@@ -450,20 +450,17 @@ function checkA11y() {
  * then every link is final.
  * ------------------------------------------------------------------ */
 
-function checkLinks() {
-  const pages = distPages();
-  if (!pages) {
-    return {
-      n: 7,
-      name: "Link integrity",
-      detail: "needs a built site",
-      gap: "run `npm run build` first — dist/ not found",
-    };
-  }
-
-  const have = new Set(walk(DIST).map((f) => toPosix(relative(DIST, f))));
+/**
+ * The pure link-integrity core (exported for the negative test — the
+ * D-2 gate must be proven able to fire AND able to stay silent, not
+ * just green on the happy path).
+ *
+ * @param {ReadonlyArray<{file: string, html: string}>} pages
+ * @param {ReadonlySet<string>} have - dist-relative paths that exist
+ * @returns {string[]} human-readable failures; empty = clean
+ */
+export function linkFailures(pages, have) {
   const failures = [];
-
   for (const { file, html } of pages) {
     for (const m of html.matchAll(/\shref="([^"]+)"/g)) {
       const href = m[1];
@@ -484,6 +481,22 @@ function checkLinks() {
       }
     }
   }
+  return failures;
+}
+
+function checkLinks() {
+  const pages = distPages();
+  if (!pages) {
+    return {
+      n: 7,
+      name: "Link integrity",
+      detail: "needs a built site",
+      gap: "run `npm run build` first — dist/ not found",
+    };
+  }
+
+  const have = new Set(walk(DIST).map((f) => toPosix(relative(DIST, f))));
+  const failures = linkFailures(pages, have);
 
   return {
     n: 7,
