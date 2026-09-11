@@ -298,3 +298,19 @@ This is the same falsifiable-claim philosophy the rest of this project
 uses (badges, self-scan artifacts) applied to the package itself: a
 stranger can verify the published tarball was built by this exact
 workflow from this exact commit, not hand-assembled and uploaded.
+
+## Lifecycle scripts (SC-7)
+
+The published package carries exactly two npm lifecycle hooks, both
+deliberate:
+
+| Script           | Command         | Why it exists                                                                                                                                                                                                                 |
+| ---------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `prepare`        | `husky`         | Dev-only: installs the repo's git hooks when a contributor runs `npm ci`/`install`. npm skips `prepare` for the published tarball's consumers, so it never executes on user machines — it only touches contributor checkouts. |
+| `prepublishOnly` | `npm run build` | Belt and braces: `dist/` must exist before any publish. The release workflow builds explicitly before packing; this hook guarantees that no publish path (manual included) can ship a stale or missing `dist/`.               |
+
+No other lifecycle hook (`preinstall`, `install`, `postinstall`,
+`prepack`, `postpack`, `prepublish`) may be added without updating this
+section: the repo-hygiene suite fails when a hook exists that this
+document does not justify (supply-chain gate SC-7 — hooks run arbitrary
+code on consumer machines, so the set stays minimal and written down).
