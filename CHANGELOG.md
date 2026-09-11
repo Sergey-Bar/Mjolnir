@@ -9,6 +9,12 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [1.0.8] — 2026-09-11
+
+### Changes since 1.0.7
+
+- chore: sync smithery.yaml in the release cut step (Merged PR #76)
+
 ## [1.0.7] — 2026-09-11
 
 ### Changes since 1.0.6
