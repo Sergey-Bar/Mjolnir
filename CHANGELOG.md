@@ -362,6 +362,8 @@ The blast-radius audit: a machine-verified surface manifest with its own drift l
 
 ### P6 quarantine remediation (remediation/remote-first R3)
 
+Quarantine remediation: measured verdicts recorded, the quarantine ledger reconciled, and three rules restored to the live set.
+
 ### Added
 
 - **docs/QUARANTINE-REMEDIATION.md** — the ledger-first quarantine view, generated
@@ -398,6 +400,8 @@ The blast-radius audit: a machine-verified surface manifest with its own drift l
 
 ### P3c Jenkins (remediation/remote-first R2)
 
+Jenkins support: a bounded Jenkinsfile scanner and the QA-CI Jenkins arms (retry masking, catchError rescue, silent swallow).
+
 ### Added
 
 - Jenkinsfile detection: the root `Jenkinsfile` (declarative and scripted
@@ -424,6 +428,8 @@ The blast-radius audit: a machine-verified surface manifest with its own drift l
   classified verdict evidence carries over unchanged).
 
 ### P3b Azure DevOps (remediation/remote-first R1)
+
+Azure DevOps support: guarded azure-pipelines.yml parsing, the QA-CI Azure arms, and the adapter's honest accounting.
 
 ### Added
 
