@@ -9,7 +9,9 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
-## [Unreleased] — R10 2.0 preparation: breaking-set inventory + boundary-law guards (remediation/remote-first WI-25)
+## [1.0.6] — 2026-09-11
+
+### R10 2.0 preparation: breaking-set inventory + boundary-law guards (remediation/remote-first WI-25)
 
 ### Added
 
@@ -84,7 +86,7 @@ once shipped, so this file is the record of what changed between versions.
   accordingly; the shipped verdict is unchanged (PASS 12/12, provenance
   bound).
 
-## [Unreleased] — R9 Trust Artifact integrity + HTML completion (remediation/remote-first WI-23+24)
+### R9 Trust Artifact integrity + HTML completion (remediation/remote-first WI-23+24)
 
 ### Added
 
@@ -112,7 +114,7 @@ once shipped, so this file is the record of what changed between versions.
   release-trust contract's documented-unwired list is now EMPTY — all 12
   canonical dimensions are wired and machine-evaluated.
 
-## [Unreleased] — R8 MCP runtime-evidence tools + Agent Safety (remediation/remote-first WI-21+22)
+### R8 MCP runtime-evidence tools + Agent Safety (remediation/remote-first WI-21+22)
 
 ### Added
 
@@ -150,7 +152,7 @@ once shipped, so this file is the record of what changed between versions.
   evidence). Drift-locked by `tests/contract/agent-skill-surface.spec.ts`
   (frozen surfaces only; safety wording asserted).
 
-## [Unreleased] — R7 Playwright capability matrix (remediation/remote-first WI-20)
+### R7 Playwright capability matrix (remediation/remote-first WI-20)
 
 ### Added
 
@@ -167,7 +169,7 @@ once shipped, so this file is the record of what changed between versions.
   Claims never exceed proven capability; rule counts stay out of the claim
   surface entirely.
 
-## [Unreleased] — R6 forensic taxonomy + Selector Health v2 (remediation/remote-first WI-18+19)
+### R6 forensic taxonomy + Selector Health v2 (remediation/remote-first WI-18+19)
 
 ### Added
 
@@ -193,7 +195,7 @@ once shipped, so this file is the record of what changed between versions.
 - `TestRecord` gains an optional `errors` text surface (the trace ingester
   populates it); `TestVerdict` gains the additive `forensic` field.
 
-## [Unreleased] — R5 trace ingester (remediation/remote-first WI-17)
+### R5 trace ingester (remediation/remote-first WI-17)
 
 ### Added
 
@@ -217,7 +219,7 @@ once shipped, so this file is the record of what changed between versions.
 - `ForensicsReport.source` + `RuntimeCorroboration.source` widened additively
   with `"playwright-trace"`.
 
-## [Unreleased] — R4c Evidence Graph + Scope Integrity + Exit-Code proofs (remediation/remote-first)
+### R4c Evidence Graph + Scope Integrity + Exit-Code proofs (remediation/remote-first)
 
 ### Added
 
@@ -251,7 +253,7 @@ fingerprint + engine version)`; set-identity semantics (input order does not
   unclaimed files (ScanContext gains optional `onIgnored`/`onUnrecognized`;
   all shared-walk adapters pass them through).
 
-## [Unreleased] — R4b False-Green Attack Corpus (remediation/remote-first)
+### R4b False-Green Attack Corpus (remediation/remote-first)
 
 ### Added
 
@@ -290,7 +292,7 @@ fingerprint + engine version)`; set-identity semantics (input order does not
   artifact binding → R9) — recorded per Constitution §5, never silently
   dropped. All seven plan classes present.
 
-## [Unreleased] — R4a Trust Constitution + Release Trust Verdict (remediation/remote-first)
+### R4a Trust Constitution + Release Trust Verdict (remediation/remote-first)
 
 ### Added
 
@@ -322,7 +324,7 @@ evidence`); per-dimension applicability (UNSUPPORTED surfaces are recorded,
   ship with the GitHub Release (publication honesty — a missing proof renders
   UNPROVEN, never omitted). No waiver path.
 
-## [Unreleased] — R4 blast radius audit (remediation/remote-first R4)
+### R4 blast radius audit (remediation/remote-first R4)
 
 ### Added
 
@@ -338,7 +340,7 @@ evidence`); per-dimension applicability (UNSUPPORTED surfaces are recorded,
   contracts); every CLI flag parsed must appear in the manifest; every
   `process.exit(N)` in src/ must be inside the frozen set (0/1/2/10/20).
 
-## [Unreleased] — P6 quarantine remediation (remediation/remote-first R3)
+### P6 quarantine remediation (remediation/remote-first R3)
 
 ### Added
 
@@ -374,7 +376,7 @@ evidence`); per-dimension applicability (UNSUPPORTED surfaces are recorded,
   until owner re-adjudication (measured census 77 → 74 of 79; the
   certification floor test documents the P6 invalidations).
 
-## [Unreleased] — P3c Jenkins (remediation/remote-first R2)
+### P3c Jenkins (remediation/remote-first R2)
 
 ### Added
 
@@ -401,7 +403,7 @@ evidence`); per-dimension applicability (UNSUPPORTED surfaces are recorded,
   (corpus re-run: no corpus repo carries a root Jenkinsfile, so the
   classified verdict evidence carries over unchanged).
 
-## [Unreleased] — P3b Azure DevOps (remediation/remote-first R1)
+### P3b Azure DevOps (remediation/remote-first R1)
 
 ### Added
 
