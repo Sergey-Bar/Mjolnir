@@ -99,6 +99,10 @@ export function discoverAllTestFiles(
         (a) => (buckets.get(a.id)?.length ?? 0) >= ctx.maxFiles,
       ),
     fixtureDirMemo,
+    // R4c Scope Integrity: the walk's exclusion accounting feeds the
+    // scope verdict (claimed scope ≡ analyzed scope).
+    onIgnored: ctx.onIgnored,
+    onUnrecognized: ctx.onUnrecognized,
   });
 }
 

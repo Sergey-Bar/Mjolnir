@@ -130,9 +130,13 @@ import {
  * where the file happens to sit after install. This follows the same
  * discipline as SARIF's `driver.version` — kept in sync by
  * `scripts/sync-sarif-version.cjs` on release and guarded by
- * `tests/version-consistency.spec.ts` locally.
+ * `tests/version-consistency.spec.ts` locally. R4c moved the literal to
+ * src/engine/version.ts (a leaf module) so the scan pipeline's run
+ * identity can carry it without a cli.ts import cycle; this re-export
+ * keeps every existing consumer stable.
  */
-export const CLI_VERSION = "1.0.5";
+import { ENGINE_VERSION as CLI_VERSION } from "./engine/version.js";
+export { CLI_VERSION };
 
 /** A usage-error detail: the offending token, when one exists. */
 export interface UsageErrorDetail {

@@ -9,6 +9,40 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — R4c Evidence Graph + Scope Integrity + Exit-Code proofs (remediation/remote-first)
+
+### Added
+
+- **Run Identity** (`src/engine/run-identity.ts`): the deterministic anchor —
+  `scanId = sha256(input snapshot fingerprint + rulesDigest + config
+fingerprint + engine version)`; set-identity semantics (input order does not
+  matter); every scan report carries `runIdentity` + `evidenceGraph` — the
+  chain-law links VERDICT ← EVIDENCE ← EXECUTION ← SCOPE ← SOURCE ← RULE(rev)
+  ← FIXTURE ← REPRODUCTION, each `ref` present only when its identity input
+  exists (no fabrication). The engine-version literal moved to the leaf module
+  `src/engine/version.ts` (cli.ts re-exports it as CLI_VERSION;
+  sync-sarif-version.cjs + version-consistency spec follow).
+- **Scope Integrity** (`ScanResult.scopeIntegrity`, additive): discovered /
+  analyzed / ignored / unrecognized / parseFailed / truncated counts +
+  `scopeVerdict` — PROVEN only when analyzed ≡ claimed scope; else PARTIAL
+  with named reasons. The terminal reporter renders the scope block and the
+  "repository verified" phrasing is forbidden output unless PROVEN. Walk-level
+  accounting: matcher exclusions (`onIgnored`) and unclaimed files
+  (`onUnrecognized`) are counted at the shared walk; parse failures are
+  counted at the rule stage.
+- **Exit-code decision proofs** (tests/blast-radius/scope-and-exit.spec.ts):
+  the frozen decision points exercised in both directions — trigger present →
+  frozen code, trigger absent → a different code — plus the closed frozen set
+  {0,1,2,10,20}.
+- Machine-contract doc regenerated with the three additive blocks
+  (`contractVersion 1` unchanged — additive within the schema).
+
+### Changed
+
+- Discovery accounting: the shared walk counts matcher-excluded files and
+  unclaimed files (ScanContext gains optional `onIgnored`/`onUnrecognized`;
+  all shared-walk adapters pass them through).
+
 ## [Unreleased] — R4b False-Green Attack Corpus (remediation/remote-first)
 
 ### Added

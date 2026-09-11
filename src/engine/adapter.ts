@@ -78,6 +78,11 @@ export interface ScanContext {
   /** Per-adapter discovery budget (audit H-8). One language can no
    * longer consume the whole list and starve the others. */
   maxFiles: number;
+  /** R4c Scope Integrity: counted matcher exclusions (optional — adapters
+   * whose discovery walks sharedWalk pass this through to the counters). */
+  onIgnored?: () => void;
+  /** R4c Scope Integrity: counted files no adapter claims (optional). */
+  onUnrecognized?: () => void;
   /**
    * Called when a rule throws on a file (audit R-9): crash isolation
    * stays silent by default, but the scan counts it and `--debug`

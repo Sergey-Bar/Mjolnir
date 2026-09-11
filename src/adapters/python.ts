@@ -128,6 +128,8 @@ export const pythonAdapter: LanguageAdapter = {
       skipDirs: ["venv", ".venv", "env", "__pycache__", "site-packages"],
       isTestFile: (name) => PYTHON_TEST_RE.test(name),
       onTestFile: (f) => ctx.testFiles.push(f),
+      onIgnored: ctx.onIgnored,
+      onUnrecognized: ctx.onUnrecognized,
       isFull: () => ctx.testFiles.length >= ctx.maxFiles,
       fixtureDirMemo: new Map(),
     });

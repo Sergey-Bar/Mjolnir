@@ -32,6 +32,10 @@ export interface SharedWalkOptions {
   isFull: () => boolean;
   /** Memo map shared across every walk of one scan (audit P-2). */
   fixtureDirMemo: Map<string, boolean>;
+  /** R4c Scope Integrity: counted matcher exclusions. */
+  onIgnored?: (() => void) | undefined;
+  /** R4c Scope Integrity: counted files no adapter claims. */
+  onUnrecognized?: (() => void) | undefined;
 }
 
 export function sharedWalk(options: SharedWalkOptions): void {
@@ -63,7 +67,12 @@ export function sharedWalk(options: SharedWalkOptions): void {
       // scan root is a drive root ("C:\") or carries a trailing
       // separator — the relative path came out empty or mis-sliced.
       const rel = relative(options.root, full).replaceAll("\\", "/");
-      if (options.ignoreMatcher.isIgnored(rel)) continue;
+      if (options.ignoreMatcher.isIgnored(rel)) {
+        // R4c Scope Integrity: ignored files are COUNTED — the scope
+        // verdict must know how much of the tree the matcher excluded.
+        options.onIgnored?.();
+        continue;
+      }
       // Symlinks are never followed: a link can point outside the repo
       // (scanning files we have no business reading) or create cycles.
       // Audit (shared-walk): the skip is counted — discovery can state
@@ -99,6 +108,11 @@ export function sharedWalk(options: SharedWalkOptions): void {
         } catch {
           options.onSkipped("stat-failed");
         }
+      } else if (entry.isFile()) {
+        // R4c Scope Integrity: a file no adapter claims is COUNTED as
+        // unrecognized — the scan can state what it saw but did not
+        // analyze, instead of pretending the tree was fully covered.
+        options.onUnrecognized?.();
       }
     }
   };

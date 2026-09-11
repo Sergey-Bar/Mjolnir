@@ -24,10 +24,13 @@ const SURFACES = [
     label: "SARIF driver.version",
   },
   {
-    path: "/../src/cli.ts",
-    find: /export const CLI_VERSION = "[^"]+";/,
-    replace: `export const CLI_VERSION = "${v}";`,
-    label: "cli.ts CLI_VERSION",
+    // R4c: the literal moved to the leaf module (run-identity needs the
+    // engine version inside scan-pipeline without a cli.ts import cycle);
+    // cli.ts re-exports it as CLI_VERSION.
+    path: "/../src/engine/version.ts",
+    find: /export const ENGINE_VERSION = "[^"]+";/,
+    replace: `export const ENGINE_VERSION = "${v}";`,
+    label: "engine/version.ts ENGINE_VERSION",
   },
 ];
 

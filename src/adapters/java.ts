@@ -125,6 +125,8 @@ export const javaAdapter: LanguageAdapter = {
       skipDirs: ["target", "build", ".gradle"],
       isTestFile: (name) => JAVA_TEST_RE.test(name),
       onTestFile: (f) => ctx.testFiles.push(f),
+      onIgnored: ctx.onIgnored,
+      onUnrecognized: ctx.onUnrecognized,
       isFull: () => ctx.testFiles.length >= ctx.maxFiles,
       fixtureDirMemo: new Map(),
     });

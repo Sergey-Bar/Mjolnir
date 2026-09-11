@@ -409,6 +409,59 @@ export interface ScanResult {
     rulesCrashed?: number;
   };
   /**
+   * Scope Integrity block (product-gap master plan §7, R4c): the
+   * claimed-vs-analyzed accounting. `scopeVerdict` is PROVEN only when
+   * every discovered file was analyzed — no matcher exclusions, no
+   * unrecognized files, no parse failures, no truncation. Additive
+   * within schemaVersion 1.
+   */
+  scopeIntegrity?: {
+    /** Files discovery claimed for adapters. */
+    discovered: number;
+    /** Files that reached (and survived) the rule stage. */
+    analyzed: number;
+    /** Files excluded by the ignore matcher (counted at the walk). */
+    ignored: number;
+    /** Files the walk saw but no adapter claims. */
+    unrecognized: number;
+    /** Discovered files whose parse/analysis threw (counted, never fatal). */
+    parseFailed: number;
+    /** Named truncation events (deadline, file caps). */
+    truncated: number;
+    /** PROVEN only when analyzed ≡ claimed scope; else PARTIAL + reasons. */
+    scopeVerdict: "PROVEN" | "PARTIAL";
+    /** The named scope reasons, present only when PARTIAL. */
+    reasons?: string[];
+  };
+  /**
+   * Run Identity (R4c): the deterministic anchor binding verdict ←
+   * evidence ← execution ← scope ← source ← rule(rev). Present when the
+   * execution was machine-anchored; never fabricated.
+   */
+  runIdentity?: {
+    scanId: string;
+    inputFingerprint: string;
+    rulesDigest: string;
+    configFingerprint: string;
+    engineVersion: string;
+  };
+  /**
+   * Evidence Graph (R4c): the chain-law links (VERDICT ← EVIDENCE ←
+   * EXECUTION ← SCOPE ← SOURCE ← RULE(rev) ← FIXTURE ← REPRODUCTION).
+   * A link's `ref` is present only when its identity input exists — the
+   * CHAIN is always emitted so unbound links stay visible.
+   */
+  evidenceGraph?: {
+    chain: Array<{ link: string; ref?: string }>;
+    runId?: {
+      scanId: string;
+      inputFingerprint: string;
+      rulesDigest: string;
+      configFingerprint: string;
+      engineVersion: string;
+    };
+  };
+  /**
    * Local incremental cache report (Beta-to-Stable plan, M5.2). Present
    * only when the scan ran with `--cache`; additive within
    * schemaVersion 1. The cache is content-addressed and local-only
