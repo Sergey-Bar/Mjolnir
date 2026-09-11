@@ -217,7 +217,7 @@ describe("freshness detection (stale / wrong-run / mismatched-rev / unbound)", (
     }
   });
 
-  it("same scanId with drifted revisions ⇒ MISMATCHED-REVISIONS (sorted, named)", () => {
+  it("same scanId with drifted revisions ⇒ MISMATCHED-REVISIONS, each drift class named", () => {
     const artifact = {
       ...buildArtifactIdentity(result({})),
       detectorRevisions: [
@@ -235,9 +235,11 @@ describe("freshness detection (stale / wrong-run / mismatched-rev / unbound)", (
     const f = checkArtifactFreshness(artifact, driftedCurrent);
     expect(f.verdict).toBe("MISMATCHED-REVISIONS");
     if (f.verdict === "MISMATCHED-REVISIONS") {
+      // A rev bump, a retirement, and a new rule are distinct
+      // remediations — the diagnosis names each class explicitly.
       expect(f.drifted).toEqual([
-        "QA-PW-090@1",
-        "QA-PW-101@2",
+        "QA-PW-090@1 (retired)",
+        "QA-PW-101@2 -> 3",
         "QA-PW-140@1 (new)",
       ]);
     }

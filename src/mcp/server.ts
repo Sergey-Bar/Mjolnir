@@ -25,7 +25,8 @@ import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-import { runScan, CLI_VERSION } from "../cli.js";
+import { runScan } from "../engine/scan-pipeline.js";
+import { ENGINE_VERSION as CLI_VERSION } from "../engine/version.js";
 import { buildMachineContract } from "../engine/machine-contract.js";
 import { explainRule } from "../commands/explain.js";
 import {

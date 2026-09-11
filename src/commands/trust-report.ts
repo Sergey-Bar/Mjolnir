@@ -127,8 +127,10 @@ export type ArtifactFreshness =
   /** The artifact describes a DIFFERENT execution (stale / wrong run). */
   | { verdict: "STALE"; artifactScanId: string; currentScanId: string }
   /** Same run, but the rule(rev) set drifted since the render. */
-  | { verdict: "MISMATCHED-REVISIONS"; drifted: string[] }
-  /** No identity to compare — recorded, never assumed current. */
+  | {
+      verdict: "MISMATCHED-REVISIONS";
+      drifted: string[];
+    } /** No identity to compare — recorded, never assumed current. */
   | { verdict: "UNBOUND"; reason: string };
 
 /**
@@ -165,9 +167,17 @@ export function checkArtifactFreshness(
   const artifactRevs = new Map(
     artifact.detectorRevisions.map((r) => [r.ruleId, r.detectorRevision]),
   );
+  // Diagnose each drift CLASS distinctly: a revision bump, a rule retired
+  // since the render, and a rule added since the render are different
+  // remediations — a flat list would hide which one happened.
   const drifted: string[] = [];
-  for (const [ruleId, rev] of artifactRevs) {
-    if (currentRevs.get(ruleId) !== rev) drifted.push(`${ruleId}@${rev}`);
+  for (const [ruleId, artifactRev] of artifactRevs) {
+    const currentRev = currentRevs.get(ruleId);
+    if (currentRev === undefined) {
+      drifted.push(`${ruleId}@${artifactRev} (retired)`);
+    } else if (currentRev !== artifactRev) {
+      drifted.push(`${ruleId}@${artifactRev} -> ${currentRev}`);
+    }
   }
   for (const [ruleId, rev] of currentRevs) {
     if (!artifactRevs.has(ruleId)) drifted.push(`${ruleId}@${rev} (new)`);
@@ -594,7 +604,9 @@ export async function runTrustReportCommand(
       writeFileSync(outPath, md);
       writeFileSync(resolve(dirname(fromPath), TRUST_REPORT_HTML), html);
       writeFileSync(resolve(dirname(fromPath), TRUST_REPORT_JSON), json);
-      io.out(`trust report written: ${outPath}`);
+      io.out(
+        `trust report written: ${outPath} (plus ${TRUST_REPORT_HTML}, ${TRUST_REPORT_JSON} — same identity binding)`,
+      );
       return 0;
     } catch (err) {
       // Disk-full / permission on the artifact write — an honest 20, not

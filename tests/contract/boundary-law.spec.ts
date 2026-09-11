@@ -90,12 +90,17 @@ describe("module boundary law (blueprint §9.1 — never reversed)", () => {
     expect(violations, violations.join(", ")).toEqual([]);
   });
 
-  it("the MCP transport rides the canonical machine contract (not a second one)", () => {
+  it("the MCP transport rides the canonical machine contract and never the CLI module", () => {
     // Pure-transport law (blueprint §21): the MCP tool surface derives
-    // its payload from the canonical projection built by the engine.
+    // its payload from the canonical projection built by the engine —
+    // and it must NOT import the CLI module at all: dragging cli.ts
+    // into the stdio bundle once shipped the CLI's entry tail with it,
+    // which printed the terminal trust report onto the JSON-RPC stream
+    // (found by the R10 bug-hunt smoke; the import is now banned here).
     const server = readFileSync(join(SRC, "mcp", "server.ts"), "utf8");
     expect(server).toContain('from "../engine/machine-contract.js"');
-    expect(server).toContain('from "../cli.js"');
+    expect(server).toContain('from "../engine/scan-pipeline.js"');
+    expect(server).not.toContain('from "../cli.js"');
   });
 });
 

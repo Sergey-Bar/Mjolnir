@@ -47,6 +47,33 @@ once shipped, so this file is the record of what changed between versions.
   shipped with R8/WI-22) on every row — a `no → yes` flip in the same change
   set that shipped its evidence, per the claim law.
 
+### Fixed
+
+- **MCP stdio bundle no longer prints the terminal Trust Report onto the
+  JSON-RPC stream** (`src/mcp/server.ts`): the standalone entry
+  (`node dist/mcp/stdio.mjs`, `npm run mcp`) dragged the CLI module in via
+  `import { runScan, CLI_VERSION } from "../cli.js"`, and cli.ts's entry
+  tail fired inside the bundle (`import.meta.url === argv[1]`), emitting the
+  full terminal Trust Report before/between JSON-RPC frames — a fatal
+  protocol violation for any MCP client. The transport now imports the
+  canonical homes directly (`engine/scan-pipeline.js`, `engine/version.js`),
+  the bundle contains no CLI entry tail, and the boundary-law guard bans the
+  `../cli.js` import from the MCP layer permanently. Found by the R10
+  bug-hunt smoke against the real stdio transport.
+- **Stale dist can no longer mask new code in spawned-binary tests**
+  (`tests/e2e/global-setup.ts`): the EXISTS-ONLY guard skipped the build
+  whenever a bundle was present, so the spawned stdio binary kept answering
+  from a pre-R8 catalog ("unknown tool: triage") while the suite stayed
+  green. The setup now rebuilds whenever any `src/**/*.ts` is newer than the
+  bundle (the same freshness discipline as the generated-docs drift gates).
+- **Freshness diagnosis names each drift class** (`checkArtifactFreshness`):
+  a revision bump (`rule@old -> new`), a rule retired since the render
+  (`rule@rev (retired)`), and a rule added since the render
+  (`rule@rev (new)`) are distinct remediations — a flat list hid which one
+  happened.
+- **`trust-report --from` reports the complete artifact set** it writes
+  (md + html + json), not just the MD path.
+
 ## [Unreleased] — R9 Trust Artifact integrity + HTML completion (remediation/remote-first WI-23+24)
 
 ### Added
