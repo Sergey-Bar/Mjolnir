@@ -6,6 +6,8 @@
  * retries, flakiness, slow tests, failure rates.
  */
 
+import type { ForensicClassification } from "./classify.js";
+
 export type RunStatus =
   "passed" | "failed" | "timedOut" | "skipped" | "interrupted";
 
@@ -30,6 +32,12 @@ export interface TestRecord {
    * declaration span ties the static finding to the executed test.
    */
   line?: number;
+  /**
+   * WI-18: error texts the source captured for this test (trace actions,
+   * report failure messages). Absent/empty = the source carries no error
+   * text for it — an INSUFFICIENT evidence state, never a negative one.
+   */
+  errors?: string[];
 }
 
 /** Derived per-test reliability facts. */
@@ -54,6 +62,12 @@ export interface TestVerdict {
    * test. Undefined when the report format omits locations (JUnit).
    */
   line?: number;
+  /**
+   * WI-18 (growth roadmap §6): the forensic verdict classification —
+   * deterministic minimum-signal table over machine-visible facts
+   * (see forensics/classify.ts). Additive within schemaVersion.
+   */
+  forensic?: ForensicClassification;
 }
 
 export interface ForensicsReport {

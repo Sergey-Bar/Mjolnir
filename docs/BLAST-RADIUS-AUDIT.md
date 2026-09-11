@@ -7,7 +7,7 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 194 files, 38678 LOC
+## Inventory: 195 files, 39087 LOC
 
 | Area             | Files | LOC   |
 | ---------------- | ----- | ----- |
@@ -16,7 +16,7 @@ codes) must match this document exactly.
 | src/engine       | 22    | 5975  |
 | src/reporter     | 12    | 2833  |
 | src/(root)       | 3     | 2284  |
-| src/forensics    | 9     | 1576  |
+| src/forensics    | 10    | 1896  |
 | src/discovery    | 9     | 1449  |
 | src/adapters     | 7     | 1187  |
 | src/plugins      | 4     | 701   |
@@ -28,7 +28,7 @@ codes) must match this document exactly.
 | src/scorer       | 2     | 387   |
 | src/bench        | 2     | 315   |
 | src/config       | 2     | 301   |
-| src/playwright   | 2     | 211   |
+| src/playwright   | 2     | 300   |
 | src/lib          | 1     | 144   |
 
 ## Internal fan-in — top 15 (change-blast candidates)
@@ -40,7 +40,7 @@ codes) must match this document exactly.
 | src/rules/shared/positions          | 57        |
 | src/reporter/ui                     | 18        |
 | src/engine/adapter                  | 13        |
-| src/forensics/types                 | 12        |
+| src/forensics/types                 | 13        |
 | src/engine/ts-ast                   | 10        |
 | src/discovery/ignores               | 9         |
 | src/rules/index                     | 9         |

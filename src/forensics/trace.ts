@@ -204,6 +204,7 @@ export function traceActionsToRecord(
     file: artifact,
     title: actions[0]?.apiName ?? "(trace)",
     attempts: [{ index: 1, status, durationMs: totalMs }],
+    ...(errors.length > 0 ? { errors } : {}),
   };
 }
 

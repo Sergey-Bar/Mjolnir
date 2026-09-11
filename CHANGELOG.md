@@ -9,6 +9,32 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — R6 forensic taxonomy + Selector Health v2 (remediation/remote-first WI-18+19)
+
+### Added
+
+- **Forensic verdict taxonomy** (`src/forensics/classify.ts`, WI-18): the
+  canonical §6 verdict set (likely-real-defect · environmental-failure ·
+  infrastructure-failure · flaky · retry-dependent · unstable-construction ·
+  **inconclusive default**) applied by a deterministic minimum-signal table —
+  a single weak signal can never classify confidently; conflicting signal
+  families force INCONCLUSIVE with an explicit `contradictory` evidence-state.
+  Every `TestVerdict` now carries a machine-visible `forensic` classification
+  (attempts + captured error text; sources without error text mark
+  `unsupported`, never a guess). Contradiction reconciliation
+  (`corroborates | contradicts | insufficient`) implements Contract H: the
+  runtime can corroborate but never silently weakens a static claim — a
+  contradiction renders the PAIR inconclusive while the claim stands.
+- **Selector Health v2** (`correlateSelectorHealth`, WI-19): runtime
+  correlation + concrete safe next actions; **no correlation ⇒ no claim** —
+  absent or merely-green runtime evidence yields no health claim in either
+  direction; the v1 static score is secondary and never altered here.
+
+### Changed
+
+- `TestRecord` gains an optional `errors` text surface (the trace ingester
+  populates it); `TestVerdict` gains the additive `forensic` field.
+
 ## [Unreleased] — R5 trace ingester (remediation/remote-first WI-17)
 
 ### Added
