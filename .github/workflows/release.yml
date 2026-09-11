@@ -142,6 +142,9 @@ jobs:
           NEW_VERSION="$(npm version "$BUMP" --no-git-tag-version)"
           NEW_VERSION="${NEW_VERSION#v}"
           node scripts/sync-sarif-version.cjs
+          # The Smithery registry must never advertise a version the
+          # package is not (tests/contract/repo-hygiene.spec.ts).
+          node scripts/sync-smithery-version.cjs
           node scripts/release-changelog.mjs "$NEW_VERSION" "$(date -u +%F)"
           # The changelog collapse regenerates MD tables/text; format it
           # BEFORE lint runs (the lint gate includes prettier --check).
