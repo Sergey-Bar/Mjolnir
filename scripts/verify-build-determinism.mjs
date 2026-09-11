@@ -24,6 +24,8 @@ import { join, relative } from "node:path";
 import { tmpdir } from "node:os";
 
 const ROOT = process.cwd();
+// Windows: npm is npm.cmd — spawnSync cannot exec .cmd files by bare name.
+const NPM = process.platform === "win32" ? "npm.cmd" : "npm";
 
 const sha256 = (p) =>
   createHash("sha256").update(readFileSync(p)).digest("hex");
@@ -75,21 +77,17 @@ function run() {
         stdio: "pipe",
       });
       console.log(`  build ${i + 1}: ${wt}`);
-      execFileSync(
-        "npm",
-        ["ci", "--no-fund", "--no-audit", "--loglevel=error"],
-        {
-          cwd: wt,
-          stdio: "inherit",
-        },
-      );
-      execFileSync("npm", ["run", "build", "--silent"], {
+      execFileSync(NPM, ["ci", "--no-fund", "--no-audit", "--loglevel=error"], {
+        cwd: wt,
+        stdio: "inherit",
+      });
+      execFileSync(NPM, ["run", "build", "--silent"], {
         cwd: wt,
         stdio: "inherit",
       });
       manifests.push(distManifest(join(wt, "dist")));
       execFileSync(
-        "npm",
+        NPM,
         ["pack", "--pack-destination", join(wt, "pack"), "--silent"],
         {
           cwd: wt,
