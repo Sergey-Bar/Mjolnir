@@ -9,6 +9,23 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — R7 Playwright capability matrix (remediation/remote-first WI-20)
+
+### Added
+
+- **Playwright Capability Matrix** (`docs/PLAYWRIGHT-CAPABILITIES.md`,
+  `src/capabilities.ts`, WI-20): the product-depth surface — 12 Playwright
+  capabilities × 8 depth columns (detect · explain · produce evidence ·
+  correlate runtime · trust verdict · CLI · MCP · agents), every cell
+  explicitly classed (zero UNCLASSIFIED), every `yes` backed by a resolvable
+  evidence pointer (registered rule ID or in-repo artifact) with FAIL-CLOSED
+  validation: the generator refuses to render a claim on a dangling pointer.
+  Generated (`npm run docs:capabilities-playwright`) and drift-locked
+  (tests/contract/playwright-capabilities.spec.ts). The `to agents` column is
+  uniformly **no** until R8 ships the Agent Skill — stated, not implied.
+  Claims never exceed proven capability; rule counts stay out of the claim
+  surface entirely.
+
 ## [Unreleased] — R6 forensic taxonomy + Selector Health v2 (remediation/remote-first WI-18+19)
 
 ### Added

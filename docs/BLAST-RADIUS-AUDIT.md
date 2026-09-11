@@ -7,7 +7,7 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 195 files, 39087 LOC
+## Inventory: 196 files, 39405 LOC
 
 | Area             | Files | LOC   |
 | ---------------- | ----- | ----- |
@@ -15,7 +15,7 @@ codes) must match this document exactly.
 | src/commands     | 28    | 8330  |
 | src/engine       | 22    | 5975  |
 | src/reporter     | 12    | 2833  |
-| src/(root)       | 3     | 2284  |
+| src/(root)       | 4     | 2602  |
 | src/forensics    | 10    | 1896  |
 | src/discovery    | 9     | 1449  |
 | src/adapters     | 7     | 1187  |
@@ -42,8 +42,8 @@ codes) must match this document exactly.
 | src/engine/adapter                  | 13        |
 | src/forensics/types                 | 13        |
 | src/engine/ts-ast                   | 10        |
+| src/rules/index                     | 10        |
 | src/discovery/ignores               | 9         |
-| src/rules/index                     | 9         |
 | src/discovery/azure-pipeline-parser | 8         |
 | src/rules/measured-fp.generated     | 8         |
 | src/reporter/theme                  | 8         |
@@ -55,8 +55,8 @@ codes) must match this document exactly.
 
 | Dependency         | Files importing it |
 | ------------------ | ------------------ |
-| node:fs            | 45                 |
-| node:path          | 44                 |
+| node:fs            | 46                 |
+| node:path          | 45                 |
 | node:crypto        | 8                  |
 | ts-morph           | 7                  |
 | node:child_process | 5                  |
