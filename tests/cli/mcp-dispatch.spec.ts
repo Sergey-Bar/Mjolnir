@@ -86,7 +86,7 @@ describe("mjolnir mcp (CLI dispatch)", () => {
     expect(result["serverInfo"]).toMatchObject({ name: "mjolnir-qa" });
   });
 
-  it("exposes the scan/explain/diff tools through the same route", async () => {
+  it("exposes the full MCP tool catalog through the same route", async () => {
     const { code, stdout } = await runWithStdio(
       ["mcp"],
       `${JSON.stringify({

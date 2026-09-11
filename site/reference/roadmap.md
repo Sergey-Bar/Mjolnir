@@ -1,67 +1,52 @@
 # Roadmap
 
 Honest scope from the project's planning records — **no invented
-dates**, ever. This page is generated from the same phase structure the
-maintainer works from; when planning changes, this page changes with
-it. Nothing on this page is a promise with a deadline; each item is a
-direction with an entry condition.
+dates**, ever. This page tracks the same phase structure the maintainer
+works from; when planning changes, this page changes with it. Nothing on
+this page is a promise with a deadline; each item is a direction with an
+entry condition.
 
 ## Where Mjölnir is now
 
-- **v0.5.x — open beta.** <!-- census:total-rules -->79 rules<!-- /census:total-rules -->, <!-- census:measured -->74<!-- /census:measured --> with a false-positive rate
-  measured against real OSS code
-  ([FP-AUDIT](/reference/fp-audit)).
+- **v1.0.x — stable.** Published on npm and GitHub Releases, with
+  <!-- census:total-rules -->79 rules<!-- /census:total-rules -->,
+  <!-- census:measured -->74<!-- /census:measured --> of them carrying a
+  false-positive rate measured against real OSS code
+  ([FP-AUDIT](/reference/fp-audit)); the unmeasured remainder is
+  quarantined, never silently shipped.
 - JSON report (`schemaVersion: 1`), exit codes and CLI surface are
   [frozen contracts](/reference/exit-codes).
-- A parallel engineering track (stability policy, test-suite domain
-  reorg, CI hardening, rc channels, the local `--cache` mode,
-  community files) is preparing the **1.0 cutover** — see
-  [VERSIONING](https://github.com/Sergey-Bar/Mjolnir/blob/main/docs/VERSIONING.md)
-  for what "stable" will mean as a contract, not a label.
+- The scan core is deterministic and zero-network: the same input
+  produces the same verdict, and nothing leaves the machine.
 
-## Next — measurement & gate excellence
+## The trust-engineering train — built, entering release
 
-- **Close the measurement gap.** Every registered rule gets a measured
-  false-positive rate (n ≥ 10 real-world verdicts); unmeasured rules
-  already carry the PROVISIONAL marker (`mjolnir rules --unmeasured`).
-  This is the entry condition for 1.0 — it will not be traded away for
-  a release date.
-- **CI gate excellence:** tighter false-positive rates on the rules
-  that gate CI, better default baselines, and the workflow patterns the
-  tool itself audits (`ci install` keeps improving with the repo).
-- **Consent telemetry, isolated:** opt-in-only, asks at install time,
-  ships separately from everything above and never by default.
+An eleven-increment engineering train hardened the product's release
+trust end-to-end. It is **complete and verified on the engineering
+branch**; it lands through the 1.1.x–1.4.0 releases, each gated by the
+new release-trust verdict, ahead of the 2.0 cutover.
 
-## Later — the agent loop
+| Release | Content                                                                                                                                                                                                                                                      |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1.1.0   | Azure DevOps Pipelines as a first-class scan target — adapter, detection and CI-workflow rules                                                                                                                                                               |
+| 1.1.1   | Jenkins (root `Jenkinsfile`) as a first-class scan target                                                                                                                                                                                                    |
+| 1.1.2   | Quarantine remediation: a generated, drift-locked ledger plus rework-or-retire of the worst measured rules ([QUARANTINE-REMEDIATION](https://github.com/Sergey-Bar/Mjolnir/blob/main/docs/QUARANTINE-REMEDIATION.md))                                        |
+| 1.1.3   | Machine-verified blast-radius audit and containment fixes ([BLAST-RADIUS-AUDIT](https://github.com/Sergey-Bar/Mjolnir/blob/main/docs/BLAST-RADIUS-AUDIT.md))                                                                                                 |
+| 1.1.4   | The [Trust Constitution](https://github.com/Sergey-Bar/Mjolnir/blob/main/docs/TRUST-CONSTITUTION.md) and the `mjolnir release-trust` verdict gate ([RELEASE-TRUST-CONTRACT](https://github.com/Sergey-Bar/Mjolnir/blob/main/docs/RELEASE-TRUST-CONTRACT.md)) |
+| 1.1.5   | A false-green attack corpus: adversarial suites that prove the scanner cannot be fooled into a clean verdict                                                                                                                                                 |
+| 1.1.6   | Evidence-graph provenance binding, scope integrity, and exit-code mutation proofs                                                                                                                                                                            |
+| 1.2.x   | Playwright `trace.zip` forensics · the forensic verdict taxonomy and Selector Health v2 · the Playwright capability matrix as a product surface                                                                                                              |
+| 1.3.0   | MCP runtime-evidence tools (`forensics`, `triage`, `pw-report`) and the agent safety contract                                                                                                                                                                |
+| 1.4.0   | Trust Artifact identity binding and the full HTML artifact                                                                                                                                                                                                   |
+| 2.0.0   | 2.0 preparation: breaking-set inventory, migration draft, boundary-law guards                                                                                                                                                                                |
 
-- **Agent-loop integration** (the single distribution bet): Mjölnir's
-  findings and fix programs surfaced inside coding-agent workflows.
-  Gated on the measurement work being complete — an agent that ships
-  verdicts faster than they can be trusted is a regression, not a
-  feature.
-- **Evidence & distribution** work follows only if the agent loop
-  shows real pull.
+## Next
 
-## Shipped recently
-
-- Certification policy: a consolidated, owner-ratified lawbook —
-  [CERTIFICATION-POLICY](https://github.com/Sergey-Bar/Mjolnir/blob/main/docs/CERTIFICATION-POLICY.md)
-  (axioms A1–A4, laws 1–22, L1–L6) with an eleven-check executable
-  doctor gate and a machine-readable doctor report.
-- Certification findings remediation: schema-incomplete report
-  rejection, scan-artifact determinism gate, managed-surface stamp
-  drift as a CI-visible failure, README tier honesty, SARIF SRCROOT.
-- Cross-language §19 review aids: side-by-side review view for rule
-  families 106/107 (review-only — decides nothing; classification
-  stays human).
-- Local incremental `--cache` scan mode (content-addressed, local-only).
-- Stability policy: [VERSIONING](https://github.com/Sergey-Bar/Mjolnir/blob/main/docs/VERSIONING.md),
-  [SUPPORT](https://github.com/Sergey-Bar/Mjolnir/blob/main/SUPPORT.md),
-  governance, [flake ledger](https://github.com/Sergey-Bar/Mjolnir/blob/main/docs/FLAKE-LEDGER.md).
-- rc release channels (`next` dist-tag) with a publishing runbook.
-- Repo-contract guards: docs consistency, root cleanliness, link
-  integrity, issue templates.
-- 22-language README translations with honest staleness markers.
+- **Merge and release the train** through the standing gates — the
+  release-trust verdict (not a date) decides when each increment ships.
+- **The 2.0 cutover**, on the breaking-set inventory and migration draft
+  prepared above; [VERSIONING](https://github.com/Sergey-Bar/Mjolnir/blob/main/docs/VERSIONING.md)
+  remains the contract for what "stable" means.
 
 ## What this roadmap will never contain
 

@@ -14,10 +14,11 @@ real OSS code (`docs/FP-AUDIT.md`). The scan footer, `mjolnir rules
 
 ## Status
 
-Current state: `.planning/STATE.md` — the single living document,
-updated after every completed sprint. It is the one-page summary of
-what's actually shipped versus what's still open, and it outranks every
-plan file listed below.
+Current state: the [CHANGELOG](../CHANGELOG.md) records what actually
+shipped, release by release, and the
+[roadmap](../site/reference/roadmap.md) is the one-page view of what is
+done versus what is next. This file is the map of the historical plans —
+they are kept for their audit trail, not as instructions.
 
 **Every plan in the table below is complete or superseded.** They live
 in `docs/archive/plans/` and are kept for their per-task audit trail,
@@ -25,21 +26,22 @@ not as instructions. `Master-Stabilization-Plan.md`'s sprints 0–9 are
 all done; the "Tempering Mjölnir" plan that followed it (phases 1–8:
 string masking, fixture exclusion, the measured FP audit, the tier
 system, score normalization, rule families, executable laws, docs truth
-pass) is also complete — see `.planning/STATE.md` for both records.
+pass) is also complete — see the
+[CHANGELOG](../CHANGELOG.md) for both records.
 
 ## Plans (`docs/archive/plans/`) — historical
 
-| File                             | Purpose                                                                                                                                 | Status                                                                                                                          |
-| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `Master-Stabilization-Plan.md`   | Stabilization & trust plan gating the open beta — sprints 0-9                                                                           | **Complete** — all 9 sprints shipped; superseded by the Tempering plan, then by `.planning/STATE.md`                            |
-| `Implementation-Master-Plan.txt` | Master implementation plan, phase-by-phase                                                                                              | **Superseded** by Master-Stabilization-Plan.md; kept for its per-task audit trail                                               |
-| `Upgrade-Plan-v2.txt`            | R1 LanguageAdapter → R2 Python → R3 Playwright Deep Mode, with rule-ID tables                                                           | Fully annotated, historical — shipped                                                                                           |
-| `Upgrade-Plan-v3.txt`            | New Playwright layers → Playwright-Python → TS AST precision upgrade → Java/.NET Playwright adapters → Plugin API + cross-file analysis | Shipped (see `.planning/STATE.md`); Sprint 8 of Master-Stabilization-Plan continues the Java/.NET parity work this plan started |
-| `Product-MVP.txt`                | MVP §1–35 — rules, scoring, guardrails, risks                                                                                           | Frozen contract, largely implemented                                                                                            |
-| `Product.txt`                    | Long-term vision — Evidence Graph, E0–E4, release confidence                                                                            | Vision only, ~0% implemented                                                                                                    |
-| `Plan.md`                        | A second, independent long-term vision (Evidence Engine/False-Green Engine/etc)                                                         | **Duplicate of Product.txt's vision under different names — superseded, kept for reference only**                               |
-| `Sprint-Plan.txt`                | 13-week sprint plan (Option A: solo dev + AI)                                                                                           | **Superseded** — predates multi-language/Playwright work already shipped                                                        |
-| `Legendary-Roadmap.txt`          | Full legendary-OSS roadmap                                                                                                              | **Duplicate of `docs/tiers/*.md`** — the tier files carry the status markers, this doesn't                                      |
+| File                             | Purpose                                                                                                                                 | Status                                                                                               |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `Master-Stabilization-Plan.md`   | Stabilization & trust plan gating the open beta — sprints 0-9                                                                           | **Complete** — all 9 sprints shipped; superseded by the Tempering plan, then by 1.0                  |
+| `Implementation-Master-Plan.txt` | Master implementation plan, phase-by-phase                                                                                              | **Superseded** by Master-Stabilization-Plan.md; kept for its per-task audit trail                    |
+| `Upgrade-Plan-v2.txt`            | R1 LanguageAdapter → R2 Python → R3 Playwright Deep Mode, with rule-ID tables                                                           | Fully annotated, historical — shipped                                                                |
+| `Upgrade-Plan-v3.txt`            | New Playwright layers → Playwright-Python → TS AST precision upgrade → Java/.NET Playwright adapters → Plugin API + cross-file analysis | Shipped; Sprint 8 of Master-Stabilization-Plan continues the Java/.NET parity work this plan started |
+| `Product-MVP.txt`                | MVP §1–35 — rules, scoring, guardrails, risks                                                                                           | Frozen contract, largely implemented                                                                 |
+| `Product.txt`                    | Long-term vision — Evidence Graph, E0–E4, release confidence                                                                            | Vision only, ~0% implemented                                                                         |
+| `Plan.md`                        | A second, independent long-term vision (Evidence Engine/False-Green Engine/etc)                                                         | **Duplicate of Product.txt's vision under different names — superseded, kept for reference only**    |
+| `Sprint-Plan.txt`                | 13-week sprint plan (Option A: solo dev + AI)                                                                                           | **Superseded** — predates multi-language/Playwright work already shipped                             |
+| `Legendary-Roadmap.txt`          | Full legendary-OSS roadmap                                                                                                              | **Duplicate of `docs/tiers/*.md`** — the tier files carry the status markers, this doesn't           |
 
 ## Legendary Roadmap by Tier (`docs/tiers/`) — status-annotated
 
@@ -54,11 +56,11 @@ pass) is also complete — see `.planning/STATE.md` for both records.
 
 Tier statuses above predate Sprint 6/7/9 of Master-Stabilization-Plan
 (impact/stats commands, living docs, delight features) — treat them as
-historical snapshots, not live counts; `.planning/STATE.md` is current.
+historical snapshots, not live counts; the
+[CHANGELOG](../CHANGELOG.md) is current.
 
 ## Other folders (repo-relative, from this repo's own root)
 
-- `.planning/` — current sprint state (`STATE.md`)
 - `packages/` — workspace member packages (`mjolnir-qa-playwright-reporter`,
   source-only: not published to npm, see its README)
 - `examples/` — the deliberately-imperfect demo repo used in the README hero

@@ -16,6 +16,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { parse } from "yaml";
 import { describe, expect, it } from "vitest";
 
 const ROOT = resolve(import.meta.dirname, "..", "..");
@@ -222,5 +223,47 @@ describe("source plans referenced by .planning/STATE.md exist and are tracked", 
       `"${relPath}" (cited by .planning/STATE.md as a source of truth) ` +
         `does not exist at that path relative to the package root.`,
     ).toBe(true);
+  });
+});
+
+// Smithery registry descriptor (master plan 1789041108156, M0.4): the
+// descriptor shipped "MCP tools: scan, explain, diff" while the server
+// catalog had grown to seven tools, and its version read 1.0.0 while
+// package.json was at 1.0.5 — a stale public claim on a registry
+// surface that no other gate covered. The catalog itself is already
+// drift-locked (mcp-transport/parity suites); this pins the descriptor
+// to both single sources of truth.
+describe("smithery.yaml descriptor sync", () => {
+  // The descriptor is YAML (its flow mappings carry trailing commas), so
+  // parse it with the repo's YAML library, never JSON.parse.
+  const smithery = parse(readFileSync(join(ROOT, "smithery.yaml"), "utf8")) as {
+    version?: string;
+    description?: string;
+  };
+
+  it("declares the same version as package.json", () => {
+    const pkg = JSON.parse(
+      readFileSync(join(ROOT, "package.json"), "utf8"),
+    ) as { version?: string };
+    expect(
+      smithery.version,
+      "smithery.yaml 'version' drifted from package.json — the registry " +
+        "must never advertise a version the package is not. Update the " +
+        "descriptor in the same commit as the version bump.",
+    ).toBe(pkg.version);
+  });
+
+  it("names every tool in the MCP catalog in its description", async () => {
+    const { MCP_TOOLS } = await import("../../src/mcp/server.js");
+    const description = smithery.description ?? "";
+    const missing = MCP_TOOLS.map((t) => t.name).filter(
+      (name) => !description.includes(name),
+    );
+    expect(
+      missing,
+      "smithery.yaml 'description' omits MCP tool(s) that the server " +
+        "actually serves — a stale public claim on the registry surface. " +
+        "Sync the descriptor when the catalog changes.",
+    ).toEqual([]);
   });
 });
