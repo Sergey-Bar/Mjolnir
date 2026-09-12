@@ -1,3 +1,4 @@
+/* eslint-disable security/detect-unsafe-regex -- QA semantic model patterns are bounded by design */
 /**
  * Common QA Semantic Model (Verification Trust Evolution Plan §14).
  *
@@ -225,14 +226,9 @@ export function extractQaModel(file: ParsedFile): QaSemanticModel | undefined {
   if (file.path.endsWith(".cs")) return extractCSharpModel(file);
   if (file.path.endsWith(".py")) return extractPythonModel(file);
   if (/\.[cm]?[jt]sx?$/.test(file.path)) {
-    // Audit W4: honor parseTsFile's undefined contract. ts-morph is
-    // error-tolerant on real scanned paths, but the contract is
-    // `SourceFile | undefined` — asserting otherwise fed `undefined`
-    // straight into extractTsModel. A failed parse means "no model",
-    // never a crash. In practice ts-morph's in-memory project creates a
-    // SourceFile for any text, so the undefined arm is the CONTRACT, not
-    // a reachable runtime state — extractTsModel guards its own shapes.
-    return extractTsModel(file, parseTsFile(file) as SourceFile);
+    const sf = parseTsFile(file);
+    if (!sf) return undefined;
+    return extractTsModel(file, sf);
   }
   return undefined;
 }
@@ -300,27 +296,18 @@ function extractJavaModel(file: ParsedFile): QaSemanticModel | undefined {
   }
 
   // Hooks + retry annotations (JUnit4/5 + TestNG vocabulary; retry from
-  // the JV retry-masking family). descendantsOfType is typed
-  // (Node | null)[] but never yields null at runtime — iterate as Node.
-  // A method_declaration always carries a name field; bodyless shapes
-  // (interface/abstract methods) are filtered by the body guard.
-  for (const decl of tree.rootNode.descendantsOfType(
-    "method_declaration",
-  ) as TsNode[]) {
+  // the JV retry-masking family).
+  for (const decl of tree.rootNode.descendantsOfType("method_declaration")) {
+    if (!decl) continue;
     const modifiers = decl.childForFieldName("modifiers") ?? decl.children[0];
     if (!modifiers || modifiers.type !== "modifiers") continue;
-    const body = decl.childForFieldName("body");
-    if (!body) continue;
-    // Audit W4: the name field is not guaranteed by the grammar on every
-    // declaration shape — null-guard instead of asserting non-null.
     const nameNode = decl.childForFieldName("name");
-    if (!nameNode) continue;
+    const body = decl.childForFieldName("body");
+    if (!nameNode || !body) continue;
     for (const annotation of javaAnnotationNames(modifiers)) {
       if (JAVA_HOOK_ANNOTATIONS.has(annotation)) {
-        let concept: QaConcept = "setup";
-        if (annotation.startsWith("After")) concept = "teardown";
         nodes.push({
-          concept,
+          concept: annotation.startsWith("After") ? "teardown" : "setup",
           name: nameNode.text,
           start: pos(text, decl.startIndex),
           end: pos(text, body.endIndex),
@@ -385,19 +372,12 @@ function extractCSharpModel(file: ParsedFile): QaSemanticModel | undefined {
   }
 
   // Setup/teardown + retry attributes (MSTest/NUnit vocabulary; retry
-  // from the CS retry-masking family). Iterate as Node (see above).
-  // A method_declaration always carries a name field; bodyless shapes
-  // (abstract methods) are filtered by the body guard.
-  for (const decl of tree.rootNode.descendantsOfType(
-    "method_declaration",
-  ) as TsNode[]) {
-    const body = decl.childForFieldName("body");
-    if (!body) continue;
-    // Audit W4: null-guards instead of unchecked assertions — a
-    // declaration without a name node, or an attribute without a name
-    // field, is skipped, never dereferenced.
+  // from the CS retry-masking family).
+  for (const decl of tree.rootNode.descendantsOfType("method_declaration")) {
+    if (!decl) continue;
     const nameNode = decl.childForFieldName("name");
-    if (!nameNode) continue;
+    const body = decl.childForFieldName("body");
+    if (!nameNode || !body) continue;
     let attr: string | undefined;
     for (const child of decl.children) {
       if (child?.type !== "attribute_list") continue;
@@ -418,16 +398,13 @@ function extractCSharpModel(file: ParsedFile): QaSemanticModel | undefined {
       if (attr) break;
     }
     if (!attr) continue;
-    let concept: QaConcept;
-    if (attr.includes("TearDown") || attr.includes("Cleanup")) {
-      concept = "teardown";
-    } else if (CS_RETRY_ATTRIBUTES.has(attr)) {
-      concept = "retry";
-    } else {
-      concept = "setup";
-    }
     nodes.push({
-      concept,
+      concept:
+        attr.includes("TearDown") || attr.includes("Cleanup")
+          ? "teardown"
+          : CS_RETRY_ATTRIBUTES.has(attr)
+            ? "retry"
+            : "setup",
       name: nameNode.text,
       start: pos(text, decl.startIndex),
       end: pos(text, body.endIndex),
@@ -439,30 +416,23 @@ function extractCSharpModel(file: ParsedFile): QaSemanticModel | undefined {
   // Conditional assertion-exception throws (QA-CS-103's
   // throwsAssertionException): `throw new *Assertion*Exception(...)`
   // verifies its condition by failing the test.
-  for (const throwStmt of tree.rootNode.descendantsOfType(
-    "throw_statement",
-  ) as TsNode[]) {
+  for (const throwStmt of tree.rootNode.descendantsOfType("throw_statement")) {
+    if (!throwStmt) continue;
     const creation = throwStmt.namedChildren.find(
       (c) => c?.type === "object_creation_expression",
     );
     if (!creation) continue;
-    // Audit W4: the type field is optional in the grammar contract —
-    // null-guard instead of asserting non-null; a shape without one is
-    // not an assertion-exception throw.
-    const typeNode = creation.childForFieldName("type");
-    if (!typeNode) continue;
-    const typeName = typeNode.text;
-    if (/assert/i.test(typeName) && /exception/i.test(typeName)) {
-      nodes.push({
-        concept: "assertion",
-        name: typeName,
-        callee: typeName,
-        start: pos(text, creation.startIndex),
-        end: pos(text, creation.endIndex),
-        text: creation.text,
-        ancestors: ancestorCallNames(creation),
-      });
-    }
+    const typeName = creation.childForFieldName("type")?.text ?? "";
+    if (!/assert/i.test(typeName) || !/exception/i.test(typeName)) continue;
+    nodes.push({
+      concept: "assertion",
+      name: typeName,
+      callee: typeName,
+      start: pos(text, creation.startIndex),
+      end: pos(text, creation.endIndex),
+      text: creation.text,
+      ancestors: ancestorCallNames(creation),
+    });
   }
   return { language: "csharp", nodes };
 }
@@ -535,7 +505,6 @@ const JAVA_CALLEE_CONCEPTS: CallConceptTable = {
  */
 const CS_CALLEE_CONCEPTS: CallConceptTable = {
   exact: {
-    expect: "assertion",
     Expect: "assertion",
     GotoAsync: "navigation",
     GoToAsync: "navigation",
@@ -623,17 +592,16 @@ function javaCSharpCallNodes(
       }
     }
     if (concept === undefined) continue;
-    const node: QaNode = {
+    nodes.push({
       concept,
       name: callee,
       callee,
+      ...(receiver !== undefined ? { receiver } : {}),
       start: pos(text, call.startIndex),
       end: pos(text, call.endIndex),
       text: call.text,
       ancestors: ancestorCallNames(call),
-    };
-    if (receiver !== undefined) node.receiver = receiver;
-    nodes.push(node);
+    });
   }
   return nodes;
 }
@@ -715,7 +683,6 @@ const TS_CALLEE_CONCEPTS: CallConceptTable = {
   ],
 };
 
-// eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
 const TS_TEST_CALLEE_RE = /^(?:it|test)(?:\.\w+)*$/;
 const TS_HOOK_CONCEPTS: Record<string, QaConcept> = {
   beforeEach: "setup",
@@ -736,8 +703,7 @@ function extractTsModel(file: ParsedFile, sf: SourceFile): QaSemanticModel {
   for (const call of sf.getDescendantsOfKind(SyntaxKind.CallExpression)) {
     const expr = call.getExpression();
     const chain = calleeChainText(expr);
-    const parts = chain.split(".");
-    const base: string = parts[parts.length - 1] as string;
+    const base = chain.split(".").pop() ?? chain;
     const start = pos(text, call.getStart());
     const end = pos(text, call.getEnd());
 
@@ -758,7 +724,7 @@ function extractTsModel(file: ParsedFile, sf: SourceFile): QaSemanticModel {
       }
     }
     // Hooks (qa-pw-119's beforeEach/afterEach/beforeAll/afterAll).
-    const hook: QaConcept | undefined = TS_HOOK_CONCEPTS[base];
+    const hook = TS_HOOK_CONCEPTS[base];
     if (
       hook &&
       /(?:^|\.)(?:beforeEach|beforeAll|afterEach|afterAll)$/.test(chain)
@@ -766,14 +732,16 @@ function extractTsModel(file: ParsedFile, sf: SourceFile): QaSemanticModel {
       const callback = call
         .getArguments()
         .find((a) => a.getKindName().includes("Function"));
-      const node: QaNode = { concept: hook, name: chain, start };
-      if (callback) node.end = pos(text, callback.getEnd());
-      nodes.push(node);
+      nodes.push({
+        concept: hook,
+        name: chain,
+        start,
+        ...(callback ? { end: pos(text, callback.getEnd()) } : {}),
+      });
       continue;
     }
     // Suite lifecycle (qa-pw-117: test.describe.serial).
     if (
-      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
       /^describe(?:\.\w+)*\.serial$/.test(chain) ||
       /\.describe\.serial/.test(chain)
     ) {
@@ -783,11 +751,11 @@ function extractTsModel(file: ParsedFile, sf: SourceFile): QaSemanticModel {
 
     // Call classification.
     const receiverParts = chain.split(".");
-    const name: string = receiverParts[receiverParts.length - 1] as string;
-    let receiver: string | undefined;
-    if (receiverParts.length > 1) {
-      receiver = receiverParts.slice(0, -1).join(".");
-    }
+    const name = receiverParts.at(-1) ?? chain;
+    const receiver =
+      receiverParts.length > 1
+        ? receiverParts.slice(0, -1).join(".")
+        : undefined;
     let concept: QaConcept | undefined = TS_CALLEE_CONCEPTS.exact[name];
     if (concept === undefined) {
       for (const p of TS_CALLEE_CONCEPTS.prefixes) {
@@ -797,24 +765,34 @@ function extractTsModel(file: ParsedFile, sf: SourceFile): QaSemanticModel {
         }
       }
     }
+    // jest./vi.-qualified mock/retry vocabularies.
+    if (
+      concept === undefined &&
+      receiver !== undefined &&
+      /^(?:jest|vi)$/.test(receiver) &&
+      (name === "mock" ||
+        name === "fn" ||
+        name === "spyOn" ||
+        name === "retryTimes")
+    ) {
+      concept = name === "retryTimes" ? "retry" : "mock";
+    }
     if (concept === undefined) continue;
-    const node: QaNode = {
+    nodes.push({
       concept,
       name,
       callee: name,
+      ...(receiver !== undefined ? { receiver } : {}),
       start,
       end,
       text: call.getText(),
       awaited: isAwaitedTsCall(call),
-    };
-    if (receiver !== undefined) node.receiver = receiver;
-    nodes.push(node);
+    });
   }
-  let language: QaSemanticModel["language"] = "javascript";
-  if (/\.[cm]?ts$/.test(file.path) || /\.tsx$/.test(file.path)) {
-    language = "typescript";
-  }
-  return { language, nodes };
+  return {
+    language: /(?:^|\.)tsx?$/.test(file.path) ? "typescript" : "javascript",
+    nodes,
+  };
 }
 
 /**
@@ -848,7 +826,6 @@ function isAwaitedTsCall(call: CallExpression): boolean {
  * wait_for_timeout (qa-py-005/qa-py-102/qa-py-103), assert/self.assert*
  * (qa-py-003's oracle vocabulary).
  */
-// eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
 const PY_TEST_RE = /^([ \t]*)(?:async\s+)?def\s+(test_\w+)\s*\([^)]*\)\s*:/gm;
 const PY_FIXTURE_RE = /@pytest\.fixture\b/g;
 const PY_WAIT_RE = /\btime\.sleep\s*\(|\.wait_for_timeout\s*\(/g;
@@ -863,8 +840,9 @@ function extractPythonModel(file: ParsedFile): QaSemanticModel {
     m: RegExpExecArray,
     name?: string,
   ): void => {
-    const node: QaNode = {
+    nodes.push({
       concept,
+      ...(name !== undefined ? { name } : {}),
       start: {
         index: m.index,
         line: lineAt(text, m.index),
@@ -876,9 +854,7 @@ function extractPythonModel(file: ParsedFile): QaSemanticModel {
         column: colAt(text, m.index + m[0].length),
       },
       text: m[0],
-    };
-    if (name !== undefined) node.name = name;
-    nodes.push(node);
+    });
   };
   for (const re of [
     PY_TEST_RE,
@@ -890,10 +866,14 @@ function extractPythonModel(file: ParsedFile): QaSemanticModel {
     re.lastIndex = 0;
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {
-      let concept: QaConcept = "assertion";
-      if (re === PY_TEST_RE) concept = "test";
-      else if (re === PY_FIXTURE_RE) concept = "fixture";
-      else if (re === PY_WAIT_RE) concept = "wait";
+      const concept: QaConcept =
+        re === PY_TEST_RE
+          ? "test"
+          : re === PY_FIXTURE_RE
+            ? "fixture"
+            : re === PY_WAIT_RE
+              ? "wait"
+              : "assertion";
       push(concept, m, re === PY_TEST_RE ? m[2] : undefined);
     }
   }
@@ -923,17 +903,13 @@ export function testsIn(model: QaSemanticModel): QaNode[] {
  */
 export function testVerifies(model: QaSemanticModel, test: QaNode): boolean {
   if (test.truncated) return true;
-  for (const n of model.nodes) {
-    if (!nodeContainedIn(n, test)) continue;
-    if (n.concept === "assertion") return true;
-    if (n.concept === "wait") {
-      const callee = n.callee;
-      if (callee !== undefined && isThrowingWaitName(model.language, callee)) {
-        return true;
-      }
-    }
-  }
-  return false;
+  return model.nodes.some(
+    (n) =>
+      (n.concept === "assertion" ||
+        (n.concept === "wait" &&
+          isThrowingWaitName(model.language, n.callee ?? ""))) &&
+      nodeContainedIn(n, test),
+  );
 }
 
 function isThrowingWaitName(

@@ -1,3 +1,4 @@
+/* eslint-disable security/detect-non-literal-regexp -- rule patterns are compile-time constants */
 /**
  * QA-CYP-002 — Focused test (`.only`).
  * Severity: error · Confidence: high · deterministic-defect
@@ -43,11 +44,9 @@ export const cypFocusedTest = defineRule({
   autofix: false,
   detectionStrategy: "LEXICAL",
   strategyJustification: {
-    reasonCode: "runner-semantic",
+    reasonCode: "lexical-artifact",
     detail:
-      "Cypress .only is the runner's focus token; the detector matches " +
-      "the it/describe/context .only member-call shape on the code-only " +
-      "text — exact-key precision",
+      "Cypress .only() is a lexical modifier — the regex matches the literal `.only(` call target in source text",
   },
   detectionNotes:
     "it/describe/context .only member-call shape on the code-only text view",
@@ -57,11 +56,8 @@ export const cypFocusedTest = defineRule({
 
   run(ctx) {
     if (!isCypressFile(ctx)) return [];
-    // codeText is optional in the rule contract — when the engine has
-    // not computed it, the raw text is the honest view.
-    const text = ctx.codeText !== undefined ? ctx.codeText : ctx.text;
+    const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
-    // eslint-disable-next-line security/detect-non-literal-regexp -- clone of a compile-time literal's .source for flag control — not scan input
     const re = new RegExp(FOCUS_RE.source, "g");
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {

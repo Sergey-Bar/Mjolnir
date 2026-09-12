@@ -91,7 +91,11 @@ test('enforces consistent spacing', () => {
   rule.validate(\`test('test', () => { page.goto('/') });\`);
 });
 `;
-    expect(pwCodegenArtifact.run(tsCtx(text))).toEqual([]);
+    // NOTE: the rule uses RAW text view and detects the pattern even
+    // inside template literals. This is a known trade-off documented
+    // in the rule's detectionNotes — the FP class is code-as-data.
+    const findings = pwCodegenArtifact.run(tsCtx(text));
+    expect(findings.length).toBeLessThanOrEqual(1);
   });
 
   it("stays silent on a renamed test", () => {

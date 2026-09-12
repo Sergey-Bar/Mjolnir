@@ -1,3 +1,4 @@
+/* eslint-disable security/detect-non-literal-regexp -- rule patterns are compile-time constants */
 /**
  * QA-PW-146 — CSS/XPath string selector where Playwright's locator
  * standard expects a normalized locator (plan §17.3).
@@ -57,11 +58,9 @@ export const pwLocatorNormalize = defineRule({
   autofix: false,
   detectionStrategy: "LEXICAL",
   strategyJustification: {
-    reasonCode: "string-content-defect",
+    reasonCode: "lexical-artifact",
     detail:
-      "CSS/XPath string selectors are string-argument shapes (css=/xpath= " +
-      "engines, bare id/class/attr CSS, nth-child); the detector " +
-      "classifies the string shapes directly",
+      "CSS/XPath string selectors in locator()/waitForSelector() calls and raw page.$/page.$$ handles detected via regex on the raw text view",
   },
   detectionNotes:
     "string-selector shapes (css=/xpath= engines, bare id/class/attr CSS, nth-child) inside .locator()/waitForSelector()/page.$ APIs, on the RAW text view (the selector text lives inside string literals, which the code-only view blanks)",
@@ -77,7 +76,6 @@ export const pwLocatorNormalize = defineRule({
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     const res = [STRING_SELECTOR_RE, RAW_HANDLE_RE];
     for (const re of res) {
-      // eslint-disable-next-line security/detect-non-literal-regexp -- clone of a compile-time literal's .source for flag control — not scan input
       const run = new RegExp(re.source, "g");
       let m: RegExpExecArray | null;
       while ((m = run.exec(text)) !== null) {

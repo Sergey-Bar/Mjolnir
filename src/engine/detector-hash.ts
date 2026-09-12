@@ -295,10 +295,12 @@ function listRuleModules(rulesDir: string): string[] {
 export function computeDetectorHashes(
   rules: readonly QADoctorRule[],
   rulesDir: string,
+  retiredIds: readonly string[] = [],
 ): DetectorHashManifest {
   const modules = collectRuleModules(rulesDir);
   const byId = new Map(modules.map((m) => [m.ruleId, m] as const));
   const registryIds = new Set(rules.map((r) => r.id));
+  const retiredSet = new Set(retiredIds);
 
   const manifest: DetectorHashManifest = {};
   for (const rule of rules) {
@@ -315,7 +317,7 @@ export function computeDetectorHashes(
     };
   }
   for (const id of byId.keys()) {
-    if (!registryIds.has(id)) {
+    if (!registryIds.has(id) && !retiredSet.has(id)) {
       throw new Error(
         `rule ${id} defines a module under ${rulesDir} but is not in the registry — ` +
           `the manifest must cover exactly the registry`,

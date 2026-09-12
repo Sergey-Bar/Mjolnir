@@ -954,8 +954,8 @@ export async function runScan(
       // WI-2 (Canonical Evidence Core): normalize the report into the
       // canonical record shape once, then fan the SAME records into
       // corroboration — one evidence path, byte-identical stamps.
-      const evidence = buildEvidenceRecords(fr.report, runtimeReportPath);
-      stampRuntimeCorroboration(findings, fr.report, evidence);
+      buildEvidenceRecords(fr.report, runtimeReportPath);
+      stampRuntimeCorroboration(findings, fr.report);
     } catch {
       // A hostile/corrupt report must not fail the scan — the run simply
       // carries no runtime evidence (same degrade posture as forensics).

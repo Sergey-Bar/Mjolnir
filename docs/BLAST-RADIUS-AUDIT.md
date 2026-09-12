@@ -7,20 +7,20 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 196 files, 40031 LOC
+## Inventory: 196 files, 39864 LOC
 
 | Area             | Files | LOC   |
 | ---------------- | ----- | ----- |
-| src/rules        | 79    | 10490 |
+| src/rules        | 79    | 10393 |
 | src/commands     | 28    | 8856  |
-| src/engine       | 22    | 5975  |
+| src/engine       | 22    | 5951  |
 | src/reporter     | 12    | 2833  |
 | src/(root)       | 4     | 2605  |
 | src/forensics    | 10    | 1896  |
 | src/discovery    | 9     | 1449  |
 | src/adapters     | 7     | 1187  |
 | src/mcp          | 3     | 701   |
-| src/plugins      | 4     | 701   |
+| src/plugins      | 4     | 655   |
 | src/brand        | 2     | 643   |
 | src/mutation     | 4     | 432   |
 | src/integrations | 1     | 414   |
@@ -41,9 +41,9 @@ codes) must match this document exactly.
 | src/reporter/ui                     | 18        |
 | src/engine/adapter                  | 13        |
 | src/forensics/types                 | 13        |
-| src/engine/ts-ast                   | 10        |
 | src/rules/index                     | 10        |
 | src/discovery/ignores               | 9         |
+| src/engine/ts-ast                   | 9         |
 | src/discovery/azure-pipeline-parser | 8         |
 | src/rules/measured-fp.generated     | 8         |
 | src/reporter/theme                  | 8         |
@@ -58,8 +58,8 @@ codes) must match this document exactly.
 | node:fs            | 46                 |
 | node:path          | 45                 |
 | node:crypto        | 8                  |
-| ts-morph           | 7                  |
 | node:child_process | 6                  |
+| ts-morph           | 6                  |
 | web-tree-sitter    | 4                  |
 | node:url           | 3                  |
 | node:os            | 2                  |
