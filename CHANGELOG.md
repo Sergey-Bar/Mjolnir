@@ -9,6 +9,41 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [1.0.10] — 2026-09-12
+
+### Changes since 1.0.9
+
+- Merge remediation/remote-first: complete R1-R10 trust-engineering train onto main
+- Merge origin/main into remediation/remote-first
+- chore: add testTimeout: 30_000 to vitest.config.ts
+- chore: sync smithery.yaml in the release cut step (the registry must match the package)
+- test: keep CI fixture scripts off the docs-consistency scanner (npm run e2e -> npx playwright test)
+- test: arms-coverage wave for the R1-R10 train (CI gates, adapters, parser, trace, release-trust, trust surfaces)
+- docs: resync DEPTH-ADJUDICATION.md to the train's measured state (drift-lock)
+- chore: re-baseline coverage ratchet after the R1-R10 train landing
+- chore: exclude machine-local agent dirs via .mjolnirignore (self-scan honesty)
+- chore: untrack machine-local skill symlinks (leaked in R3 1044461)
+- Master-plan M0 docs truth (M0.2/M0.4/M0.5)
+- chore: gitignore machine-local agent tool dirs (same class as .kilo/)
+- Review hardening: MCP param cap measured in true bytes; pin the WI-18 unsupported-source asymmetry
+- Wire provenance=bound invariant (plan 5.2 activation): scope-integrity + artifact-integrity prove the identity chain
+- Fix: MCP stdio stream pollution (CLI entry tail in bundle), stale-dist e2e guard, freshness drift classes
+- R10: 2.0 preparation — breaking-set inventory, migration draft, boundary-law guards (WI-25, 2.0.0)
+- R9: Trust Artifact identity binding + HTML completion (WI-23+24, 1.4.0)
+- R8: MCP runtime-evidence tools + Agent Safety (WI-21+22, 1.3.0)
+- R7: Playwright capability matrix as a product surface (WI-20, 1.2.x)
+- R6: forensic verdict taxonomy + Selector Health v2 (WI-18+19, 1.2.x)
+- R5: Playwright trace ingester + false-green trace corpus (WI-17, 1.2.x)
+- CI hardening: test-tsconfig conformance + unclassified-ceiling re-record
+- R4c follow-up: wire the scope-integrity dimension into release-trust
+- R4c: Evidence Graph + Scope Integrity + exit-code proofs (1.1.6)
+- R4b: False-Green Attack Corpus + mutation/assertion-strength protocol (1.1.5)
+- R4a: Trust Constitution + Release Trust Verdict (1.1.4)
+- R4: blast-radius audit + machine-testable boundary contract (1.1.3)
+- P6: quarantine remediation ledger + rework-or-retire the >=75 percent set (R3, 1.1.2)
+- P3c: Jenkinsfile detection + rule arms + QA-CI-014 (R2, 1.1.1)
+- P3b: Azure DevOps detection + rule extensions + QA-CI-013 (R1, 1.1.0)
+
 ## [1.0.9] — 2026-09-12
 
 ### Changes since 1
