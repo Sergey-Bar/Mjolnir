@@ -1,7 +1,7 @@
 # Mjölnir — brand assets
 
-The provided masters and everything downscaled from them. This file is
-about the FILES; the system that uses them lives in
+Every file here is rendered, not drawn by hand. This file is about the
+FILES; the system that uses them lives in
 [`docs/design/`](../../docs/design/BRAND-SYSTEM.md).
 
 | For                                            | Read                                                                         |
@@ -17,30 +17,50 @@ derived from it are the token module, not this page.
 
 ## Assets
 
-| File                                                                        | Source                                 | Use                                                                              |
-| --------------------------------------------------------------------------- | -------------------------------------- | -------------------------------------------------------------------------------- |
-| [`logo.png`](logo.png)                                                      | provided master (≈1800 px)             | full lockup — hammer + `MJÖLNIR` + `VERIFICATION TRUST ENGINE`. Archival master. |
-| [`../readme/logo.png`](../readme/logo.png) · [`.webp`](../readme/logo.webp) | downscaled to 1000 px                  | README header and website hero.                                                  |
-| [`mark.png`](mark.png)                                                      | provided master (1235 px, transparent) | the hammer alone — app / package / social icon source.                           |
-| [`icon.png`](icon.png)                                                      | downscaled from `mark.png` (512 px)    | npm, GitHub social preview, tooling. Recognisable without the wordmark.          |
-| `site/public/favicon-32.png` · `favicon-16.png`                             | downscaled from `mark.png`             | browser tab icon.                                                                |
-| `site/public/apple-touch-icon.png`                                          | 180 px                                 | iOS home screen, site nav mark.                                                  |
-| `site/public/social-card.jpg`                                               | 1200×630, `logo.png` on `--mj-ink-950` | link previews (og:image / twitter:image).                                        |
+Every file below is rendered by
+[`scripts/generate-brand-marks.ts`](../../scripts/generate-brand-marks.ts)
+(`npm run brand:marks`) from two vector sources — the Cinzel wordmark and
+the Mansaz rune — each shot at its own native pixel size, not resized
+from a larger bitmap. `masters` in `marks.lock.json` names the two large
+reference renders below; everything else is a real surface's own size.
 
-The downscaled set is produced from the two masters by simple canvas
-resize (`ctx.drawImage`) at the target width, keeping the aspect ratio —
-16 / 32 / 180 / 512 px from `mark.png`, 1000 px from `logo.png`.
+| File                                                                        | Rendered as                                   | Use                                                                     |
+| --------------------------------------------------------------------------- | --------------------------------------------- | ----------------------------------------------------------------------- |
+| [`logo.png`](logo.png)                                                      | wordmark, 1800×504                            | full lockup — `MJÖLNIR` alone. Reference master.                        |
+| [`../readme/logo.png`](../readme/logo.png) · [`.webp`](../readme/logo.webp) | wordmark, 1000×280                            | README header and website hero.                                         |
+| [`mark.png`](mark.png)                                                      | monogram, 1235×1235                           | the rune alone — app / package / social icon source. Reference master.  |
+| [`icon.png`](icon.png)                                                      | monogram, 512×512                             | npm, GitHub social preview, tooling. Recognisable without the wordmark. |
+| `site/public/favicon-32.png` · `favicon-16.png`                             | monogram, native 32 / 16 px                   | browser tab icon.                                                       |
+| `site/public/apple-touch-icon.png` · `mark-64.png`                          | monogram, native 180 / 64 px                  | iOS home screen, site nav mark.                                         |
+| `site/public/social-card.jpg`                                               | wordmark centered on `--mj-ink-950`, 1200×630 | link previews (og:image / twitter:image).                               |
+
+Rendering each size natively, rather than downscaling one raster, is
+deliberate: a hammer illustration shrunk to 16px loses detail it cannot
+regain, but a vector wordmark and a single rune stay legible at any size
+because each one is its own render, not a resample of a bigger file.
 
 ## The motif
 
-A Norse war-hammer seen head-on: a peaked, tiered steel head engraved with
-Vegvísir knotwork, a gold-scroll collar, a wrapped haft with three gold
-studs, and an openwork gold foot ending in a diamond pommel. An aurora
-frames it in the full lockup.
+`MJÖLNIR` set in Cinzel 600 — the display typeface this system already
+uses everywhere else (`TYPOGRAPHY.display`), tracked out. No
+illustration: the wordmark IS the logo.
 
-Use one mark, calmly. Do not add extra hammers, bolts, lightning or
-knotwork in product surfaces; the master mark's own engraving is
-grandfathered.
+The square/tiny contexts a wordmark cannot survive (favicons, the
+npm/social icon) fall back to a single rune — ᛗ, Mansaz — set in the
+same vendored FreeMono face the terminal reporter already uses for Runic
+coverage. It is not a new choice: it is already the "M" of MJÖLNIR in
+the hero runefield's own Elder Futhark spelling of the product's name
+(ᛗ ᛃ ᛟ ᛚ ᚾ ᛁ ᚱ — see [`BRAND-SYSTEM.md`](../../docs/design/BRAND-SYSTEM.md)).
+It is deliberately not one of the five runes `RUNES` in
+[`score-state.ts`](../../src/reporter/score-state.ts) places beside an
+actual verdict (ᚲ ᚦ ᛏ ᛟ ᛁ) — the permanent brand mark must never look
+like a standing verdict ("this product is always FORGED"). ᛗ appears
+elsewhere only as ambient four-rune flourish decoration in
+[`art.ts`](../../src/reporter/art.ts), never as a single-glyph state
+indicator, so it carries no score meaning on its own.
+
+Use one mark, calmly. Do not add ornament, illustration, or additional
+Norse motifs to either mark in product surfaces.
 
 ## Colour and type
 
@@ -59,14 +79,17 @@ value stated in a design document that the source does not hold.
 
 ## Usage rules
 
-- Clear space around the lockup ≥ the height of the hammer head.
-- Place the mark on `--mj-ink-900` or darker, or on white. Never recolour it.
-- Minimum lockup width ≈ 180 px; below that use the hammer mark alone.
-- No lightning bolts and no additional Norse ornaments in product
-  surfaces (site, README, terminal, reports). The master mark's own
-  engraving is grandfathered; everything drawn in code stays calm —
-  aurora, forge glow and the ordered runefield are the only hero
-  atmosphere, and the terminal state runes are functional (non-color
+- Clear space around the wordmark ≥ the cap-height of the letters.
+- Place either mark on `--mj-ink-900` or darker; both are rendered on
+  that ground already and are not designed to sit on white.
+- Never recolour either mark, and never re-set the wordmark in a
+  different typeface or weight than Cinzel 600.
+- Below the wordmark's minimum legible width (~180 px), use the
+  monogram alone.
+- No illustration, bolts, or additional Norse ornaments anywhere in
+  product surfaces (site, README, terminal, reports) — the aurora, forge
+  glow and ordered runefield in generated hero art are the only hero
+  atmosphere, and the terminal state runes are functional (non-colour
   state communication), not decoration.
 - The terminal NORSE palette names (`trusted`, `forged`, …) are internal
   token names for the ScoreState bands, not user-facing Norse theming.

@@ -231,10 +231,17 @@ right, is MJÖLNIR in Elder Futhark. That is a wordmark, not wallpaper.
 
 ### The mark
 
-`assets/brand/mark.png` and `logo.png` are the source of truth.
-Re-encoding and downscaling are fine; redrawing is not. One mark,
-calmly — no extra hammers, bolts, lightning or knotwork anywhere in
-product surfaces.
+The logo is `MJÖLNIR` set in Cinzel 600 — no illustration. Below the
+wordmark's legible width it falls back to a single rune, ᛗ (Mansaz) —
+the same "M" the hero runefield above already spells the name with, and
+deliberately not one of the five verdict runes in the table above, so
+the permanent mark can never read as a standing score.
+
+`assets/brand/mark.png` and `logo.png` are the rendered source of truth
+(`scripts/generate-brand-marks.ts`, `npm run brand:marks`). Regenerating
+and re-locking are how a deliberate change happens; adding illustration,
+ornament, or a different typeface to either mark in product surfaces is
+not.
 
 ## 6. What the visual system must never imply
 
