@@ -442,3 +442,47 @@ The system is one palette, two typefaces, three marks and one source of
 truth, enforced by a gate that has been watched rejecting every kind of
 violation it claims to catch. What it is not is finished — and saying so
 is the only ending this particular product could honestly have.
+
+## 13. The wordmark rework (2026-09-12)
+
+Requested directly: replace the illustrated hammer mark with a plain
+`MJÖLNIR` wordmark, Cinzel 600, display-only, with a rune as the only
+fallback for contexts too small to read a word.
+
+**What changed.** `scripts/generate-brand-marks.ts` is new: it renders
+both marks as HTML/CSS shot with the same Chromium the demo video uses,
+from `src/brand/tokens.ts` and the already-vendored Cinzel and FreeMono
+files — no new dependency, no illustration. The wordmark is the full
+lockup everywhere there is room to read a word; the fallback is a single
+rune, ᛗ (Mansaz), for favicons and the npm/social icon. All eleven files
+rule 9 already pinned were regenerated and re-locked through the normal
+`npm run brand:marks:update` flow.
+
+**Why ᛗ and not a new rune.** The hero runefield already spells the
+product's own name in Elder Futhark (ᛗ ᛃ ᛟ ᛚ ᚾ ᛁ ᚱ, §5 above) — ᛗ is
+already the brand's own "M". It is deliberately not one of the five
+runes `RUNES` in `score-state.ts` places beside an actual verdict (ᚲ ᚦ
+ᛏ ᛟ ᛁ): a permanent logo built from a verdict rune would make the brand
+itself look like a standing score, which is the one thing this whole
+system exists to prevent the reporter from doing anywhere.
+
+**Why native rendering, not downscaling.** The prior nine derived files
+were downscales of two provided raster masters; a hammer illustration
+shrunk to 16px had already lost detail it could not regain. Every size
+here is its own render from the same vector source instead, so a 16px
+favicon is not a resample of a 1800px file — it is its own shot at 16px.
+
+**What this did NOT touch.** Score/rule logic, exit codes, schema
+version, and every non-mark token are untouched — brand:doctor's other
+eight rules and the reproducibility specs all still pass unchanged.
+
+**What I have not verified beyond the gate.** This is a design change
+delivered on the maintainer's direct sign-off ("do what you think is
+right"), not a re-run of the accessibility/performance measurement pass
+in §§5–6 — those numbers were about SVG chrome and page weight, neither
+of which this touches, but I have not re-measured them to confirm that
+belief rather than assume it. The certification score above (9.6) was
+set before this section existed and is not re-scored here; a change of
+this kind — replacing the one asset every other rule was built to
+protect — is exactly the kind of decision this document exists to make
+visible, not to grade itself on.

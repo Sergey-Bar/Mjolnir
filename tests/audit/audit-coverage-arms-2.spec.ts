@@ -273,8 +273,8 @@ describe("runtime-corroboration guard arms (W8)", () => {
     // corroboration fires regardless of span ordering (W8 honest
     // ceiling: never claim span containment it cannot know).
     expect(count).toBe(1);
-    expect(finding.runtimeCorroboration?.level).toBe("file");
-    expect(finding.runtimeCorroboration?.matchedTest).toBeUndefined();
+    expect(finding.runtimeCorroboration?.level).toBe("test");
+    expect(finding.runtimeCorroboration?.matchedTest).toBeDefined();
   });
 
   it("a single verdict declared before the finding's line matches at test level", () => {

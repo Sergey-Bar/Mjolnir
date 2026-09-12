@@ -14,18 +14,18 @@ every remaining gap, is
 
 ## The surfaces
 
-| Surface                  | Source of its values                                                    | Enforced by                                                | Before | After |
-| ------------------------ | ----------------------------------------------------------------------- | ---------------------------------------------------------- | -----: | ----: |
-| **Logo / mark**          | `assets/brand/{logo,mark,icon}.png` — provided masters, re-encoded only | **rule 9** — sha256 on 2 masters + 9 derived files         |      8 |    10 |
-| **Terminal (reporter)**  | `src/brand/tokens.ts` via `theme.ts`                                    | `brand:doctor` rule 2 — 0 hex literals allowed             |      6 |    10 |
-| **README SVG assets**    | tokens via `readme-svg.ts` + the four generators                        | rules 3 + 4, and four byte-identical reproducibility specs |      6 |    10 |
-| **Architecture diagram** | tokens + `symbols.ts`                                                   | rules 4 + 6, `architecture-asset-reproducibility.spec.ts`  |      5 |    10 |
-| **Demo MP4 + poster**    | tokens via `video/terminal-page.ts`; timing from `pacing.ts`            | `video-media.spec.ts` + `video-pixels.spec.ts` (pure Node) |      7 |    10 |
-| **Website**              | generated `vars.css` + `symbols.ts`                                     | rules 1 + 6, `site:doctor` 8 checks, axe, Lighthouse       |      8 |    10 |
-| **Badges (23 READMEs)**  | `BADGE` tokens                                                          | rule 7, across every README file                           |      3 |    10 |
-| **Documentation**        | this directory; `docs/TERMINOLOGY.md` for meanings                      | rule 5, `docs-consistency.spec.ts`, `link-integrity`       |      7 |     9 |
-| **Badge (generated)**    | `BADGE_BAND` tokens                                                     | rule 7, plus a seeded revert to a shields named colour     |      2 |    10 |
-| **Mermaid output**       | `TINT` tokens                                                           | rules 6 + 8 (text AA + stroke 3:1)                         |      4 |    10 |
+| Surface                  | Source of its values                                          | Enforced by                                                | Before | After |
+| ------------------------ | ------------------------------------------------------------- | ---------------------------------------------------------- | -----: | ----: |
+| **Logo / mark**          | `generate-brand-marks.ts` — Cinzel wordmark + ᛗ rune monogram | **rule 9** — sha256 on 2 masters + 9 derived files         |      8 |    10 |
+| **Terminal (reporter)**  | `src/brand/tokens.ts` via `theme.ts`                          | `brand:doctor` rule 2 — 0 hex literals allowed             |      6 |    10 |
+| **README SVG assets**    | tokens via `readme-svg.ts` + the four generators              | rules 3 + 4, and four byte-identical reproducibility specs |      6 |    10 |
+| **Architecture diagram** | tokens + `symbols.ts`                                         | rules 4 + 6, `architecture-asset-reproducibility.spec.ts`  |      5 |    10 |
+| **Demo MP4 + poster**    | tokens via `video/terminal-page.ts`; timing from `pacing.ts`  | `video-media.spec.ts` + `video-pixels.spec.ts` (pure Node) |      7 |    10 |
+| **Website**              | generated `vars.css` + `symbols.ts`                           | rules 1 + 6, `site:doctor` 8 checks, axe, Lighthouse       |      8 |    10 |
+| **Badges (23 READMEs)**  | `BADGE` tokens                                                | rule 7, across every README file                           |      3 |    10 |
+| **Documentation**        | this directory; `docs/TERMINOLOGY.md` for meanings            | rule 5, `docs-consistency.spec.ts`, `link-integrity`       |      7 |     9 |
+| **Badge (generated)**    | `BADGE_BAND` tokens                                           | rule 7, plus a seeded revert to a shields named colour     |      2 |    10 |
+| **Mermaid output**       | `TINT` tokens                                                 | rules 6 + 8 (text AA + stroke 3:1)                         |      4 |    10 |
 
 One surface is not 10:
 
@@ -38,11 +38,13 @@ One surface is not 10:
 The two that were open here are now closed, and both were closed by
 building the check rather than by re-reading the surface:
 
-- **Logo / mark, 8 → 10.** Rule 9 pins the two provided masters and the
-  nine files downscaled from them by sha256. Re-encoding is permitted
-  and redrawing is not, and a hash cannot tell those apart — which is
-  the point. It makes the change arrive as a decision instead of a diff
-  nobody opens. `npm run brand:marks:update` is how you say yes.
+- **Logo / mark, 8 → 10.** Rule 9 pins all eleven rendered marks by
+  sha256, whether the source is a hand-provided master (the original
+  hammer illustration) or, since the wordmark rework, a generator run
+  (`generate-brand-marks.ts`). Either way a regenerated file with
+  different bytes is still a change to what a reader sees, and the lock
+  makes it arrive as a decision instead of a diff nobody opens.
+  `npm run brand:marks:update` is how you say yes.
 - **MP4, 9 → 10.** `video-pixels.spec.ts` decodes the poster's first
   scanline in pure Node — zlib is built in, and row 0 needs no other row
   — and measures its ground. It is 3.32 from `SURFACE.terminal` and

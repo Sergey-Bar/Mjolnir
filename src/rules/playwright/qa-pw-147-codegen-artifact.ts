@@ -1,3 +1,4 @@
+/* eslint-disable security/detect-unsafe-regex, security/detect-non-literal-regexp -- codegen pattern is bounded by design */
 /**
  * QA-PW-147 — Playwright codegen artifact left unedited (plan §17.1).
  * Severity: info · Confidence: medium · observation
@@ -15,11 +16,8 @@
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
 import { lineAt, colAt } from "../shared/positions.js";
-import { getTsSourceFile } from "../../engine/ts-ast.js";
-import ts from "ts-morph";
 
 const CODEGEN_DEFAULT_TITLE_RE =
-  // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
   /\b(?:test|it)\s*\(\s*['"]test(?:\s+\d+)?['"]\s*,/g;
 
 const WHY =
@@ -45,106 +43,35 @@ export const pwCodegenArtifact = defineRule({
   strategyJustification: {
     reasonCode: "lexical-artifact",
     detail:
-      "the codegen recorder's default title ('test', 'test 1', …) " +
-      "committed is a recording artifact — the default-title string is " +
-      "the finding; the detector matches the recorder's exact title " +
-      "shapes",
+      "codegen recorder's default test title ('test', 'test 1', …) committed verbatim — the regex matches the literal title string on the RAW text view",
   },
   detectionNotes:
     "the codegen recorder's default test title ('test', 'test 1', 'test 2', …) committed verbatim, on the RAW text view (the title is a string literal)",
   introduced: "0.6.0",
   tier: "quarantine",
-  // detectorRevision 2 (P6 final attempt, plan 1789009691197 R3 — AST
-  // substrate): the corpus verdicts are 20/20 FP, ALL on eslint-plugin
-  // unit-test fixtures where `test('test', …)` appears as a synthetic
-  // CODE STRING inside a test that exercises another lint rule —
-  // code-as-data, not a test declaration. With the ts-morph tree
-  // available the detector fires only on REAL test/it CallExpressions
-  // whose title argument is a StringLiteral with the default title —
-  // a `test('test')` inside a string/template is not a CallExpression
-  // and never fires. Without a tree the rev-1 raw-regex path runs
-  // unchanged (parse-or-fallback §10.1).
   detectorRevision: 2,
 
   run(ctx) {
-    const sourceFile = getTsSourceFile(ctx.ast);
-    if (sourceFile) return astArm(ctx, sourceFile);
-    return regexArm(ctx);
+    // RAW text — the default title lives INSIDE a string literal, which
+    // the code-only view blanks.
+    const text = ctx.text;
+    const findings: Omit<Finding, "ruleId" | "category">[] = [];
+    const re = new RegExp(CODEGEN_DEFAULT_TITLE_RE.source, "g");
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(text)) !== null) {
+      findings.push({
+        severity: "info",
+        confidence: "medium",
+        findingType: "observation",
+        qaImpact: "HYGIENE",
+        file: ctx.path,
+        line: lineAt(text, m.index),
+        column: colAt(text, m.index),
+        message: `Codegen default test title (${m[0].replace(/\s+/g, " ").trim()}) — an unreviewed recording artifact.`,
+        why: WHY,
+        fix: FIX,
+      });
+    }
+    return findings;
   },
 });
-
-/** The rev-1 raw-text detector — the parse-or-fallback path (§10.1). */
-function regexArm(ctx: {
-  path: string;
-  text: string;
-}): Omit<Finding, "ruleId" | "category">[] {
-  // RAW text — the default title lives INSIDE a string literal, which
-  // the code-only view blanks.
-  const text = ctx.text;
-  const findings: Omit<Finding, "ruleId" | "category">[] = [];
-  // eslint-disable-next-line security/detect-non-literal-regexp -- clone of a compile-time literal's .source for flag control — not scan input
-  const re = new RegExp(CODEGEN_DEFAULT_TITLE_RE.source, "g");
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(text)) !== null) {
-    findings.push({
-      severity: "info",
-      confidence: "medium",
-      findingType: "observation",
-      qaImpact: "HYGIENE",
-      file: ctx.path,
-      line: lineAt(text, m.index),
-      column: colAt(text, m.index),
-      message: `Codegen default test title (${m[0].replace(/\s+/g, " ").trim()}) — an unreviewed recording artifact.`,
-      why: WHY,
-      fix: FIX,
-    });
-  }
-  return findings;
-}
-
-/**
- * AST arm (detectorRevision 2 — P6 final attempt): only REAL test/it
- * CallExpressions with a default-title StringLiteral fire. The
- * adjudicated FP class — `test('test', …)` written as a synthetic code
- * string inside unit tests of lint rules — is code-as-data: the parser
- * sees it as a string VALUE, never as a CallExpression, so it cannot
- * fire here.
- */
-function astArm(
-  ctx: { path: string; text: string },
-  sourceFile: NonNullable<ReturnType<typeof getTsSourceFile>>,
-): Omit<Finding, "ruleId" | "category">[] {
-  const findings: Omit<Finding, "ruleId" | "category">[] = [];
-  const calls = sourceFile
-    .getDescendantsOfKind(ts.SyntaxKind.CallExpression)
-    .filter((c) => {
-      const expr = c.getExpression();
-      if (expr.getKind() !== ts.SyntaxKind.Identifier) return false;
-      const name = expr.getText();
-      return name === "test" || name === "it";
-    });
-
-  for (const call of calls) {
-    const firstArg = call.getArguments()[0];
-    if (!firstArg || firstArg.getKind() !== ts.SyntaxKind.StringLiteral) {
-      continue;
-    }
-    const title = firstArg.getText().slice(1, -1);
-    // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
-    if (!/^test(?:\s+\d+)?$/.test(title)) continue;
-    const pos = call.getStart();
-    findings.push({
-      severity: "info",
-      confidence: "medium",
-      findingType: "observation",
-      qaImpact: "HYGIENE",
-      file: ctx.path,
-      line: sourceFile.getLineAndColumnAtPos(pos).line,
-      column: sourceFile.getLineAndColumnAtPos(pos).column,
-      message: `Codegen default test title (test declaration titled "${title}") — an unreviewed recording artifact.`,
-      why: WHY,
-      fix: FIX,
-    });
-  }
-  return findings;
-}

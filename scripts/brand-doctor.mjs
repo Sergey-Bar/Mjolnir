@@ -630,9 +630,10 @@ export function rule8() {
  *
  * Every colour, typeface and generated asset in this repository resolves
  * to a module and is locked byte-for-byte. The eleven image files the
- * brand actually rests on were governed by a sentence in a document
- * asking people not to redraw the hammer — which is a convention, and
- * conventions are what the other eight rules exist because of.
+ * brand actually rests on are rendered by `generate-brand-marks.ts`, and
+ * a generator with no lock on its own output is just a convention asking
+ * people not to re-run it with different numbers — which is what the
+ * other eight rules exist to replace with something enforceable.
  *
  * Re-encoding is permitted by the brand rules and redrawing is not, but
  * a hash cannot tell those apart, so it pins both: a silent re-export at

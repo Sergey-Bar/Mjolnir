@@ -1,3 +1,4 @@
+/* eslint-disable security/detect-non-literal-regexp -- rule patterns are compile-time constants */
 /**
  * QA-CYP-003 — Cypress config disables `chromeWebSecurity`.
  * Severity: error · Confidence: high · deterministic-defect
@@ -48,11 +49,9 @@ export const cypConfigSecurity = defineRule({
   autofix: false,
   detectionStrategy: "LEXICAL",
   strategyJustification: {
-    reasonCode: "exact-key-match",
+    reasonCode: "string-content-defect",
     detail:
-      "chromeWebSecurity:false is an exact config key/value pair inside " +
-      "cypress.config.*; the detector matches the key and value literally " +
-      "— the config surface's statements are the finding",
+      "chromeWebSecurity:false in cypress.config is a string-content match in the config file — the regex detects the boolean literal",
   },
   detectionNotes:
     "positive match on chromeWebSecurity:false inside cypress.config.* (the config is the artifact — no heuristic)",
@@ -62,15 +61,11 @@ export const cypConfigSecurity = defineRule({
 
   run(ctx) {
     // Belt-and-suspenders for direct harness invocation; the TS adapter
-    // enforces the same gate through the declared configFiles. The
-    // split can only be empty for an empty path, which the scan
-    // pipeline never produces — `pop()` on a non-empty array is a
-    // string, matched against the gate as-is.
-    const base = ctx.path.replace(/\\/g, "/").split("/").pop() as string;
+    // enforces the same gate through the declared configFiles.
+    const base = ctx.path.replace(/\\/g, "/").split("/").pop() ?? "";
     if (!CYPRESS_CONFIG_RE.test(base)) return [];
     const text = ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
-    // eslint-disable-next-line security/detect-non-literal-regexp -- clone of a compile-time literal's .source for flag control — not scan input
     const re = new RegExp(CHROME_WEB_SECURITY_FALSE_RE.source, "g");
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {

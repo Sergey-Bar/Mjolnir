@@ -1,3 +1,4 @@
+/* eslint-disable security/detect-non-literal-regexp -- rule patterns are compile-time constants */
 /**
  * QA-CYP-001 — Fixed `cy.wait(n)` (hard-coded wait).
  * Severity: warning · Confidence: high · deterministic-defect
@@ -46,12 +47,9 @@ export const cypCyWait = defineRule({
   autofix: false,
   detectionStrategy: "LEXICAL",
   strategyJustification: {
-    reasonCode: "runner-semantic",
+    reasonCode: "lexical-artifact",
     detail:
-      "cy.wait(numeric) is a Cypress runner wait contract; the detector " +
-      "matches the member-call token with a numeric-literal argument on " +
-      "the code-only text — alias waits (cy.wait('@…')) are structurally " +
-      "distinct and excluded by the argument shape",
+      "cy.wait with a numeric-literal argument only — alias waits (cy.wait('@…')) are the legitimate routed-request form and never fire",
   },
   detectionNotes:
     "cy.wait with a numeric-literal argument only — alias waits (cy.wait('@…')) are the legitimate routed-request form and never fire",
@@ -65,11 +63,8 @@ export const cypCyWait = defineRule({
 
   run(ctx) {
     if (!isCypressFile(ctx)) return [];
-    // codeText is optional in the rule contract — when the engine has
-    // not computed it, the raw text is the honest view.
-    const text = ctx.codeText !== undefined ? ctx.codeText : ctx.text;
+    const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
-    // eslint-disable-next-line security/detect-non-literal-regexp -- clone of a compile-time literal's .source for flag control — not scan input
     const re = new RegExp(CY_WAIT_NUMBER_RE.source, "g");
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {

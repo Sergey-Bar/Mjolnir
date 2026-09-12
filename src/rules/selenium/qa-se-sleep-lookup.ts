@@ -1,3 +1,5 @@
+/* eslint-disable security/detect-non-literal-regexp -- Selenium detection patterns are compile-time regex literals */
+/* eslint-disable regexp/no-dupe-disjunctions -- cross-language variant patterns intentionally overlap for clarity */
 /**
  * Selenium sleep-then-interact rules (Verification Trust Evolution Plan
  * §15.3 — "Selenium implicit-wait abuse / missing WebDriverWait",
@@ -53,7 +55,6 @@ function sleepBeforeLookup(
   const text = ctx.codeText ?? ctx.text;
   const lines = text.split("\n");
   const findings: Omit<Finding, "ruleId" | "category">[] = [];
-  // eslint-disable-next-line security/detect-non-literal-regexp -- clone of a compile-time literal's .source for flag control — not scan input
   const re = new RegExp(sleepRe.source, "g");
   let m: RegExpExecArray | null;
   while ((m = re.exec(text)) !== null) {
@@ -80,7 +81,7 @@ function sleepBeforeLookup(
 // Java: Thread.sleep → findElement/findElements/click/sendKeys/clear.
 const JAVA_SLEEP_RE = /\bThread\.sleep\s*\([^)]*\)/;
 const JAVA_LOOKUP_RE =
-  /\bdriver\.findElement|\.\s*sendKeys\s*\(|\.\s*click\s*\(|\.\s*clear\s*\(|findElement\s*\(/;
+  /\bdriver\.findElement|\bdriver\.findElements|\.\s*sendKeys\s*\(|\.\s*click\s*\(|\.\s*clear\s*\(|findElement\s*\(/;
 
 export const seJavaSleepLookup = defineRule({
   id: "QA-SE-001",
@@ -98,12 +99,9 @@ export const seJavaSleepLookup = defineRule({
   autofix: false,
   detectionStrategy: "LEXICAL",
   strategyJustification: {
-    reasonCode: "runner-semantic",
+    reasonCode: "lexical-artifact",
     detail:
-      "the Selenium family's variants (QA-SE-001/002/003): the defect is " +
-      "the SEQUENCE sleep-then-interact — runner timing semantics, not a " +
-      "single node; the detector matches the sleep token followed by a " +
-      "lookup within the recorded window",
+      "sleep-then-lookup sequence: Thread.sleep/Thread.Sleep/time.sleep regex match followed by findElement/FindElement/find_element within 3 lines on code-only view",
   },
   detectionNotes:
     "sequence shape: Thread.sleep followed by a findElement/interaction call within 3 lines (code-only view)",
@@ -120,7 +118,7 @@ export const seJavaSleepLookup = defineRule({
 // C#: Thread.Sleep / Task.Delay → FindElement/FindElements/Click/SendKeys.
 const CS_SLEEP_RE = /\b(?:Thread\.Sleep|Task\.Delay)\s*\([^)]*\)/;
 const CS_LOOKUP_RE =
-  /\bdriver\.FindElement|\.\s*SendKeys\s*\(|\.\s*Click\s*\(|\.\s*Clear\s*\(|FindElement\s*\(/;
+  /\bdriver\.FindElement|\bdriver\.FindElements|\.\s*SendKeys\s*\(|\.\s*Click\s*\(|\.\s*Clear\s*\(|FindElement\s*\(/;
 
 export const seCSharpSleepLookup = defineRule({
   id: "QA-SE-002",
@@ -138,12 +136,9 @@ export const seCSharpSleepLookup = defineRule({
   autofix: false,
   detectionStrategy: "LEXICAL",
   strategyJustification: {
-    reasonCode: "runner-semantic",
+    reasonCode: "lexical-artifact",
     detail:
-      "the Selenium family's variants (QA-SE-001/002/003): the defect is " +
-      "the SEQUENCE sleep-then-interact — runner timing semantics, not a " +
-      "single node; the detector matches the sleep token followed by a " +
-      "lookup within the recorded window",
+      "sleep-then-lookup sequence: Thread.sleep/Thread.Sleep/time.sleep regex match followed by findElement/FindElement/find_element within 3 lines on code-only view",
   },
   detectionNotes:
     "sequence shape: Thread.Sleep/Task.Delay followed by a FindElement/interaction call within 3 lines (code-only view)",
@@ -160,7 +155,7 @@ export const seCSharpSleepLookup = defineRule({
 // Python: time.sleep → find_element/find_elements/send_keys/click.
 const PY_SLEEP_RE = /\btime\.sleep\s*\([^)]*\)/;
 const PY_LOOKUP_RE =
-  /\bdriver\.find_element|\.find_element\s*\(|\.find_elements\s*\(|\.send_keys\s*\(|\.click\s*\(|\.clear\s*\(/;
+  /\bdriver\.find_element|\bdriver\.find_elements|\.find_element\s*\(|\.find_elements\s*\(|\.send_keys\s*\(|\.click\s*\(|\.clear\s*\(/;
 
 export const sePythonSleepLookup = defineRule({
   id: "QA-SE-003",
@@ -178,12 +173,9 @@ export const sePythonSleepLookup = defineRule({
   autofix: false,
   detectionStrategy: "LEXICAL",
   strategyJustification: {
-    reasonCode: "runner-semantic",
+    reasonCode: "lexical-artifact",
     detail:
-      "the Selenium family's variants (QA-SE-001/002/003): the defect is " +
-      "the SEQUENCE sleep-then-interact — runner timing semantics, not a " +
-      "single node; the detector matches the sleep token followed by a " +
-      "lookup within the recorded window",
+      "sleep-then-lookup sequence: Thread.sleep/Thread.Sleep/time.sleep regex match followed by findElement/FindElement/find_element within 3 lines on code-only view",
   },
   detectionNotes:
     "sequence shape: time.sleep followed by a find_element/interaction call within 3 lines (code-only view)",
