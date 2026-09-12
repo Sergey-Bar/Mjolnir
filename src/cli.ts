@@ -169,6 +169,8 @@ export function parseArgs(
       args.format = "json";
     } else if (a === "--format") {
       const fmt = argv[++i];
+      if (fmt === undefined)
+        return reject({ flag: "--format", token: "(missing)" });
       if (fmt === "sarif") args.format = "sarif";
       else if (fmt === "mermaid") args.format = "mermaid";
       // P3a (plan 1788853205786): GitLab Code Quality report — the
@@ -186,15 +188,23 @@ export function parseArgs(
       else return reject({ flag: "--scope", token: mode }); // unknown scope
     } else if (a === "--base") {
       const ref = argv[++i];
-      if (!ref || ref.startsWith("-")) return null;
+      // Bug-audit 3.6: these three flags returned bare null WITHOUT
+      // reject(), so a bad value surfaced as the generic full usage
+      // block (or, via other verbs, silence) instead of the targeted
+      // "invalid value … for <flag>" usage error every other flag
+      // emits. Same contract as --tone below.
+      if (!ref || ref.startsWith("-"))
+        return reject({ flag: "--base", token: ref });
       args.base = ref;
     } else if (a === "--max-duration") {
       const v = Number(argv[++i]);
-      if (!Number.isFinite(v) || v <= 0) return null;
+      if (!Number.isFinite(v) || v <= 0)
+        return reject({ flag: "--max-duration", token: argv[i] });
       args.maxDurationMs = v * 1000;
     } else if (a === "--width") {
       const v = Number(argv[++i]);
-      if (!Number.isFinite(v) || v <= 0) return null;
+      if (!Number.isFinite(v) || v <= 0)
+        return reject({ flag: "--width", token: argv[i] });
       args.width = v;
     } else if (a === "--ascii") {
       args.ascii = true;
@@ -1554,8 +1564,16 @@ export async function main(
   // not know the flag, and printed the full help — technically not a
   // crash, but it answers a different question than the one asked.
   if (argv[0] === "--version" || argv[0] === "-v") {
-    io.out(`mjolnir-qa ${CLI_VERSION}\n`);
+    io.out(`mjolnir-qa ${CLI_VERSION}`);
     return 0;
+  }
+  // Bug-audit 3.7: bare `mjolnir --help` is a question, not a scan —
+  // it used to fall through to the scan parser (whose --help arm only
+  // returns null) and surfaced as exit 10 after printing usage via
+  // parseArgsOrUsage's null-without-error path. Help answers a
+  // question: exit 0 (plan M2). `<verb> --help` is intercepted below.
+  if (argv[0] === "--help" || argv[0] === "-h") {
+    return runHelpCommand([], io);
   }
   // Subcommands (§69): ci install · suppressions · forensics · doctor:playwright
   // Scan-backed handlers are async since the Phase 0.5 parse stage (§10) —
@@ -1575,33 +1593,35 @@ export async function main(
     return runHelpCommand(["ci", "install"], io);
   }
   if (argv[0] === "ci" && argv[1] === "install")
-    return runCiInstall(argv.slice(2));
+    return runCiInstall(argv.slice(2), io);
   if (argv[0] === "scan") return runScanCommand(argv.slice(1), io);
-  if (argv[0] === "suppressions") return runSuppressions();
-  if (argv[0] === "forensics") return runForensicsCommand(argv.slice(1));
-  if (argv[0] === "triage") return runTriageCommand(argv.slice(1));
+  if (argv[0] === "suppressions") return runSuppressions(io);
+  if (argv[0] === "forensics") return runForensicsCommand(argv.slice(1), io);
+  if (argv[0] === "triage") return runTriageCommand(argv.slice(1), io);
   if (argv[0] === "mutation") return runMutationCommand(argv.slice(1), io);
-  if (argv[0] === "badge") return runBadgeCommand(argv.slice(1));
+  if (argv[0] === "badge") return runBadgeCommand(argv.slice(1), io);
   if (argv[0] === "trust-report")
     return runTrustReportCommand(argv.slice(1), io);
-  if (argv[0] === "debt") return runDebtCommand(argv.slice(1));
-  if (argv[0] === "impact") return runImpactCommand(argv.slice(1));
-  if (argv[0] === "baseline") return runBaselineCommand(argv.slice(1));
-  if (argv[0] === "diff") return runDiffCommand(argv.slice(1));
+  if (argv[0] === "debt") return runDebtCommand(argv.slice(1), io);
+  if (argv[0] === "impact") return runImpactCommand(argv.slice(1), io);
+  if (argv[0] === "baseline") return runBaselineCommand(argv.slice(1), io);
+  if (argv[0] === "diff") return runDiffCommand(argv.slice(1), io);
   if (argv[0] === "verify") return runVerifyCommand(argv.slice(1), io);
-  if (argv[0] === "pr-comment") return runPrCommentCommand(argv.slice(1));
+  if (argv[0] === "pr-comment") return runPrCommentCommand(argv.slice(1), io);
   if (argv[0] === "summary") return runSummaryCommand(argv.slice(1), io);
-  if (argv[0] === "stats") return runStatsCommand(argv.slice(1));
-  if (argv[0] === "fix") return runFixCommand(argv.slice(1));
-  if (argv[0] === "create-rule") return runCreateRuleCommand(argv.slice(1));
-  if (argv[0] === "handover") return runHandoverCommand(argv.slice(1));
-  if (argv[0] === "init") return runInitCommand(argv.slice(1));
-  if (argv[0] === "pw-report") return runPwReportCommand(argv.slice(1));
-  if (argv[0] === "doctor") return runDoctorCommand(argv.slice(1));
-  if (argv[0] === "release-trust") return runReleaseTrustCommand(argv.slice(1));
-  if (argv[0] === "rules") return runRulesCommand(argv.slice(1));
-  if (argv[0] === "explain") return runExplainCommand(argv.slice(1));
-  if (argv[0] === "doctor:playwright") return runDoctorPlaywright(argv);
+  if (argv[0] === "stats") return runStatsCommand(argv.slice(1), io);
+  if (argv[0] === "fix") return runFixCommand(argv.slice(1), io);
+  if (argv[0] === "create-rule") return runCreateRuleCommand(argv.slice(1), io);
+  if (argv[0] === "handover") return runHandoverCommand(argv.slice(1), io);
+  if (argv[0] === "init") return runInitCommand(argv.slice(1), io);
+  if (argv[0] === "pw-report") return runPwReportCommand(argv.slice(1), io);
+  if (argv[0] === "doctor") return runDoctorCommand(argv.slice(1), io);
+  if (argv[0] === "release-trust")
+    return runReleaseTrustCommand(argv.slice(1), io);
+  if (argv[0] === "rules") return runRulesCommand(argv.slice(1), io);
+  if (argv[0] === "explain") return runExplainCommand(argv.slice(1), io);
+  if (argv[0] === "doctor:playwright")
+    return runDoctorPlaywright(argv.slice(1), io);
   if (argv[0] === "why") return runWhyCommand(argv.slice(1), io);
   if (argv[0] === "handoff") return runHandoffCommand(argv.slice(1), io);
   if (argv[0] === "install") return runInstallCommand(argv.slice(1), io);
@@ -1638,8 +1658,8 @@ export async function main(
   if (SUBCOMMANDS.has(argv[0] ?? "")) {
     // A known subcommand stem that fell through (e.g. bare `ci` without
     // `install`) is usage.
-    err(`mjolnir: incomplete or unknown subcommand "${argv[0]}".`);
-    printUsage(out);
+    io.err(`mjolnir: incomplete or unknown subcommand "${argv[0]}".`);
+    printUsage(io.out);
     return 10;
   }
   if (
@@ -1651,8 +1671,10 @@ export async function main(
   ) {
     // Word-like token, not a path that exists, not a flag: the user
     // almost certainly meant a subcommand. `mjolnir scna` must not scan.
-    err(`mjolnir: unknown subcommand "${argv[0]}".`);
-    err("Run `mjolnir --help` for the verb list, or pass a directory to scan.");
+    io.err(`mjolnir: unknown subcommand "${argv[0]}".`);
+    io.err(
+      "Run `mjolnir --help` for the verb list, or pass a directory to scan.",
+    );
     return 10;
   }
   return runScanCommand(argv, io);

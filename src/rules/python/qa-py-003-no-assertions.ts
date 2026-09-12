@@ -41,7 +41,16 @@ export const pyNoAssertions = defineRule({
   // artifacts (accepted residue), 1 is a callback named test_* (covered
   // by the nesting skip). Helper-idiom recognition added and collection
   // scoping narrowed to module-level defs.
-  detectorRevision: 3,
+  //
+  // detectorRevision 4 (bug-audit 3.12): pytest ALSO collects `test_*`
+  // METHODS of `Test*` classes — rev-3's blanket "indent > 0 → skip"
+  // skipped those methods, so an assertion-less method in a Test* class
+  // was invisible: exactly a false green this rule exists to catch.
+  // The nesting check now walks the enclosing block headers: a method
+  // whose nearest enclosing def/class chain is `class Test*` is a
+  // collected test and is checked; a def nested inside another def, or
+  // inside a class that is not Test*, stays skipped (callbacks/data).
+  detectorRevision: 4,
 
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;
@@ -61,9 +70,14 @@ export const pyNoAssertions = defineRule({
       // which carry self.assert* and are recognized by the vocabulary
       // below). Nested defs are callbacks/data, never collected tests —
       // wave-2 delta evidence (a `test_callback` inside call_on_close).
-      // The leading-indent capture always participates (possibly "").
+      // detectorRevision 4: the indent check is now a real nesting
+      // classification — collected iff module-level (indent "") OR the
+      // nearest enclosing header chain is a `class Test*` whose body
+      // contains this def and which is itself not nested inside a def.
       const indent = m[1] as string;
-      if (indent.length > 0) continue;
+      if (indent.length > 0 && !isCollectedTestMethod(text, m.index, indent)) {
+        continue;
+      }
       const body = extractBlock(text, m.index + m[0].length);
       if (body === null) continue;
       const hasCheck =
@@ -115,6 +129,36 @@ export const pyNoAssertions = defineRule({
     return findings;
   },
 });
+
+/**
+ * detectorRevision 4: true when the def at `defAt` (indent `indent`) is
+ * a `test_*` METHOD of a pytest-collectable class — every header between
+ * the def and the file top at a SMALLER indent must be either another
+ * def (the method is nested in a function → not collected) or a
+ * `class Test*` (collected). A class with a non-Test name, or any
+ * non-header line at a smaller indent before a class header, means the
+ * def is data → not collected.
+ */
+function isCollectedTestMethod(
+  text: string,
+  defAt: number,
+  indent: string,
+): boolean {
+  const lines = text.slice(0, defAt).split("\n");
+  // Walk backwards; the FIRST header line at a smaller indent decides.
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const line = lines[i] as string;
+    if (line.trim() === "") continue;
+    const lineIndent = (/^[ \t]*/.exec(line) as RegExpExecArray)[0];
+    if (lineIndent.length >= indent.length) continue;
+    const classM = /^[ \t]*class\s+(\w+)/.exec(line);
+    if (classM) return /^Test/.test(classM[1] as string);
+    // Any other smaller-indent line (def, assignment, code) encloses
+    // the method in something that is not a collectable class.
+    return false;
+  }
+  return false;
+}
 
 /** Extract an indented block starting after a `:` line; returns null if empty. */
 function extractBlock(text: string, afterColon: number): string | null {

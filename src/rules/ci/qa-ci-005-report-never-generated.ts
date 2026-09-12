@@ -9,6 +9,8 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+// Bug-audit 3.10: shared O(log n) lineAt replaces the private O(n) copy.
+import { lineAt } from "../shared/positions.js";
 
 interface StepNode {
   run?: string;
@@ -278,14 +280,8 @@ function findJobConsumerLine(
   // the unanchored one covers the aggregation-above-declaration case,
   // and when NEITHER matches, line 1 is the honest floor.
   const anchored = re.exec(text);
-  if (anchored) return lineOfIndex(text, anchored.index);
+  if (anchored) return lineAt(text, anchored.index);
   // eslint-disable-next-line security/detect-non-literal-regexp -- consumerRe.source is a compile-time-constant literal from CONSUMERS — not scan input
   const anywhere = new RegExp(consumerRe.source, "i").exec(text);
-  return anywhere ? lineOfIndex(text, anywhere.index) : 1;
-}
-
-function lineOfIndex(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
+  return anywhere ? lineAt(text, anywhere.index) : 1;
 }

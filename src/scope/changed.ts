@@ -161,8 +161,11 @@ export function computeChangedScope(
         const body = section.startsWith("diff --git ")
           ? section
           : `diff --git ${section}`;
-        const pathMatch = /^diff --git a\/.+ b\/(.+)\n/.exec(`${body}\n`);
-        const file = pathMatch?.[1];
+        const pathMatch =
+          /^diff --git (?:a\/"(.+?)"|a\/.+)b\/(?:"(.+?)"|(.+))\n/.exec(
+            `${body}\n`,
+          );
+        const file = pathMatch?.[1] ?? pathMatch?.[2] ?? pathMatch?.[3];
         if (file !== undefined) perFile.set(file, body);
       }
     }

@@ -42,6 +42,15 @@ export const brittleSelectors = defineRule({
   introduced: "0.1.0",
 
   // Measured 2026-09-02 (corpus wave 5): tier set from the measured envelope (plan §11.2).
+  // detectorRevision 2 (bug-audit 4.1): the fallback stripComments built
+  // its mask array with [...ctx.text] — CODE POINTS — while range
+  // start/end are UTF-16 CODE-UNIT offsets from ts-morph. Any astral
+  // char (emoji etc.) before a comment collapsed to one array element,
+  // so every offset after it misaligned: comments survived un-masked or
+  // live code got blanked. The same bug was fixed at the source in
+  // ts-ast.ts (Bug-audit QA-15) — this copy was never migrated. The
+  // mask now iterates UTF-16 code units, matching String offsets.
+  detectorRevision: 2,
   tier: "quarantine",
   run(ctx) {
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
@@ -151,7 +160,11 @@ function stripComments(ctx: {
         const slice = ctx.text.slice(r.start, r.end);
         return slice.startsWith("//") || slice.startsWith("/*");
       });
-      const chars = [...ctx.text];
+      // detectorRevision 2 (bug-audit 4.1): split("") indexes UTF-16
+      // code units — the same space the range offsets live in. [...text]
+      // iterated code points and misaligned every offset after an
+      // astral character (see ts-ast.ts QA-15 for the identical fix).
+      const chars = ctx.text.split("");
       for (const r of ranges) {
         for (let i = r.start; i < r.end && i < chars.length; i++) {
           if (chars[i] !== "\n" && chars[i] !== "\r") chars[i] = " ";

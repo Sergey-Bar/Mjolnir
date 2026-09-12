@@ -14,6 +14,10 @@ import type {
   AzureStep,
 } from "../../discovery/azure-pipeline-parser.js";
 import { VERIFICATION_GATE_RE } from "./verification-gate.js";
+// Bug-audit 3.10: one shared O(log n) lineAt instead of a private
+// O(n) lineOf copy per rule file (positions.ts keeps a memoized
+// newline-index + binary search).
+import { lineAt } from "../shared/positions.js";
 
 /** Discriminator: the Azure parser is the only one emitting `platform`. */
 export function isAzurePipelineDoc(ast: unknown): ast is AzurePipelineDoc {
@@ -103,12 +107,12 @@ export function locateAzureStepKey(
   if (anchorAt !== -1) {
     keyRe.lastIndex = anchorAt;
     const m = keyRe.exec(text);
-    if (m) return lineOf(text, m.index);
-    return lineOf(text, anchorAt);
+    if (m) return lineAt(text, m.index);
+    return lineAt(text, anchorAt);
   }
   // No anchor: the key anywhere in the file is the honest floor.
   const m = keyRe.exec(text);
-  if (m) return lineOf(text, m.index);
+  if (m) return lineAt(text, m.index);
   return 1;
 }
 
@@ -125,16 +129,10 @@ export function locateAzureJobKey(
   if (anchorAt !== -1) {
     keyRe.lastIndex = anchorAt;
     const m = keyRe.exec(text);
-    if (m) return lineOf(text, m.index);
-    return lineOf(text, anchorAt);
+    if (m) return lineAt(text, m.index);
+    return lineAt(text, anchorAt);
   }
   const m = keyRe.exec(text);
-  if (m) return lineOf(text, m.index);
+  if (m) return lineAt(text, m.index);
   return 1;
-}
-
-function lineOf(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
 }

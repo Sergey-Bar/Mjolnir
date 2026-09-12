@@ -19,6 +19,9 @@
  */
 
 import { VERIFICATION_GATE_RE } from "./verification-gate.js";
+// Bug-audit 3.10: the exported lineOfOffset now delegates to the shared
+// O(log n) lineAt (positions.ts) instead of its own O(n) walk.
+import { lineAt } from "../shared/positions.js";
 
 interface Block {
   /** Full text of the region, including delimiters. */
@@ -326,9 +329,5 @@ export function textIsVerificationGate(text: string): boolean {
 
 /** Line (1-based) of an offset — for finding anchors. */
 export function lineOfOffset(text: string, offset: number): number {
-  let line = 1;
-  for (let i = 0; i < offset && i < text.length; i++) {
-    if (text[i] === "\n") line++;
-  }
-  return line;
+  return lineAt(text, offset);
 }

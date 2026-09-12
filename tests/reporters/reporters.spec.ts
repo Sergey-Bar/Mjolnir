@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Finding, ScanResult } from "../../src/types.js";
 import { renderSarif } from "../../src/reporter/sarif.js";
 import { renderTerminal } from "../../src/reporter/terminal.js";
+import { computeSpecHealth } from "../../src/playwright/selector-health.js";
 
 /**
  * Narrows `T | undefined` to `T`, throwing if absent. Used instead of a
@@ -414,7 +415,7 @@ describe("renderTerminal", () => {
     expect(out).toContain("FRAMEWORK");
     expect(out).toContain("unknown — scanning all test-looking files");
     // 10 non-verbose cards, overflow counted across the remaining rules.
-    expect(out).toContain("+50 more across 50 rules");
+    expect(out).toContain("+55 more across 55 rules");
   });
 
   it("shows PARTIAL analysis status", () => {
@@ -459,8 +460,16 @@ describe("renderTerminal", () => {
 });
 
 describe("selector-health", () => {
-  // Imported lazily below via static import at top of module scope instead.
-  it("placeholder guard", () => {
-    expect(true).toBe(true);
+  it("returns 100 for specs with only role-based locators", () => {
+    const result = computeSpecHealth("test.spec.ts", [
+      'await page.getByRole("button").click()',
+    ]);
+    expect(result.score).toBe(100);
+  });
+
+  it("drops score for plain-css locators", () => {
+    const result = computeSpecHealth("test.spec.ts", ["locator('button')"]);
+    expect(result.score).toBeLessThan(100);
+    expect(result.counts["plain-css"]).toBe(1);
   });
 });

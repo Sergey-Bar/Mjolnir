@@ -100,12 +100,12 @@ describe("selector health", () => {
     expect(nth.reason).toContain("nth-child positional coupling +25");
   });
 
-  it("returns null for a bare quoted locator that is not structural", () => {
+  it("returns plain-css for a bare quoted locator that is not structural", () => {
     // A line with no ., >, # or [ after the quoted selector is CSS but
-    // not structural — the class is dropped and the risk stays 0.
+    // not structural — classified as plain-css with base score 60.
     expect(scoreLocatorRisk("await locator('button')")).toEqual({
-      score: 0,
-      reason: "not a locator",
+      score: 60,
+      reason: "plain-css base 60",
     });
   });
 

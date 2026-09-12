@@ -352,11 +352,11 @@ and scores the file 0–100:
 
 e2e/login.spec.ts
   [█████████████░░░░░░░]  65 / 100
-  role/text: 1 · testid: 0 · css-chains: 1 ⚠ · xpath: 0
+  role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 
 e2e/checkout.spec.ts
   [█████████████████░░░]  86 / 100
-  role/text: 3 · testid: 1 · css-chains: 1 ⚠ · xpath: 0
+  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 ```
 
 This is **resilience, not correctness**.

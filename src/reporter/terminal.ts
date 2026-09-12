@@ -50,7 +50,7 @@ import { SEARCHED_FOR } from "../discovery/scan-adapters.js";
 /** Non-verbose finding cards shown before the overflow line. The
  * JSON/SARIF contract always carries ALL findings — this cap is a
  * terminal display concern only. */
-const MAX_CARDS = 10;
+const MAX_CARDS = 5;
 
 /** Group findings under a single rule header when more than this many
  * share the same ruleId ("same fix applies" collapse). */
@@ -421,30 +421,25 @@ function wrapLines(text: string, width: number): string[] {
 const CARD_LABEL_PAD = 8;
 const CARD_GUTTER = "    ";
 
-function pushCard(lines: string[], card: FindingCard, ui: UiContext): void {
+function pushCard(
+  lines: string[],
+  card: FindingCard,
+  ui: UiContext,
+  verbose = true,
+): void {
   const { p, width } = ui;
   const contentWidth = Math.max(
     20,
     width - 2 - CARD_GUTTER.length - CARD_LABEL_PAD,
   );
-  // The evidence bracket is the longest thing on a card header and it is
-  // one atomic unit — "[E2 · deterministic · measured FP 0% · n=20 · trust
-  // L3 · runtime: file executed]" is 78 columns on its own. Keeping it
-  // inline pushed the header past 128 columns and out of any default
-  // terminal. It drops to its own indented line when it does not fit,
-  // matching what the grouped "same fix applies" header already does.
   const header = `  ${severityIcon(card.severity, ui)} ${p.bold(card.loc)}`;
-  if (measure(`${header}  ${card.evidence}`) <= width) {
-    lines.push(`${header}  ${p.dim(card.evidence)}`);
-  } else {
-    lines.push(header);
-    lines.push(`${CARD_GUTTER}${p.dim(card.evidence)}`);
-  }
+  lines.push(header);
+  lines.push(`${CARD_GUTTER}${p.dim(card.evidence)}`);
   const fields: Array<{ label: string; text: string; dim: boolean }> = [
     { label: "Finding", text: card.problem, dim: false },
-    { label: "Impact", text: card.impact, dim: false },
+    ...(verbose ? [{ label: "Impact", text: card.impact, dim: false }] : []),
     { label: "Fix", text: card.fix, dim: false },
-    { label: "Verify", text: card.verify, dim: true },
+    ...(verbose ? [{ label: "Verify", text: card.verify, dim: true }] : []),
   ];
   for (const field of fields) {
     const body = wrapLines(field.text, contentWidth);
@@ -592,7 +587,7 @@ function appendFindings(
       hiddenRules.add(unit.finding.ruleId);
       continue;
     }
-    pushCard(lines, toCard(unit.finding, tone), ui);
+    pushCard(lines, toCard(unit.finding, tone), ui, verbose);
     shown++;
   }
 

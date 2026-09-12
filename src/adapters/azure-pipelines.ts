@@ -26,7 +26,14 @@ export const azurePipelinesAdapter: LanguageAdapter = {
 
   isTestFile(path: string): boolean {
     const normalized = path.replaceAll("\\", "/");
-    return (AZURE_PIPELINE_NAMES as readonly string[]).includes(normalized);
+    const basename = normalized.split("/").pop() ?? normalized;
+    if (!(AZURE_PIPELINE_NAMES as readonly string[]).includes(basename))
+      return false;
+    return (
+      normalized === basename ||
+      normalized.startsWith("/") ||
+      /^[A-Z]:/i.test(normalized)
+    );
   },
 
   detectFrameworks(): { frameworks: string[]; unknown: boolean } {

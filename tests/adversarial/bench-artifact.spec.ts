@@ -49,7 +49,7 @@ describe("benchmark artifact (WI-15, plan §20)", () => {
     expect(a.schemaVersion).toBe(1);
     expect(a.mjolnirVersion).toMatch(/^\d+\.\d+\.\d+/);
     expect(a.nodeVersion).toMatch(/^v\d+/);
-    expect(a.os).toBeTruthy();
+    expect(["linux", "win32", "darwin"]).toContain(a.os);
     expect(a.fixture.generator).toBe("synthetic-repo");
     expect(a.fixture.fileCount).toBeGreaterThan(0);
     // 16-hex prefix of the manifest SHA-256 (harness.digest().slice(0,16))

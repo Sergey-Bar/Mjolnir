@@ -202,13 +202,13 @@ describe("audit-C5: partial scans never write milestones or fold stats", () => {
 
 describe("audit-S8: help contract; handler throws become exit 20", () => {
   it("root --help keeps the frozen usage contract (exit 10, usage printed)", async () => {
-    // Frozen contract (v0.5.3, flag-matrix.spec): root `--help`/`-h` print
-    // usage and exit 10; `<verb> --help` routes to the verb page with
-    // exit 0 (help.spec.ts). Pinned here so neither regresses.
+    // Frozen contract: root `--help`/`-h` print usage and exit 0;
+    // `<verb> --help` routes to the verb page with exit 0 (help.spec.ts).
+    // Pinned here so neither regresses.
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
     try {
       const code = await main(["--help"]);
-      expect(code).toBe(10);
+      expect(code).toBe(0);
     } finally {
       logSpy.mockRestore();
     }

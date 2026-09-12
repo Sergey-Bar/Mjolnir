@@ -233,7 +233,14 @@ describe("correlateSelectorHealth — claim arms", () => {
   const spec = (over: Record<string, unknown> = {}) => ({
     file: "e2e/a.spec.ts",
     score: 60,
-    counts: { "css-chain": 1, xpath: 0, "role-based": 0, testid: 0, text: 0 },
+    counts: {
+      "css-chain": 1,
+      xpath: 0,
+      "role-based": 0,
+      testid: 0,
+      "plain-css": 0,
+      text: 0,
+    },
     ...over,
   });
 
@@ -272,6 +279,7 @@ describe("correlateSelectorHealth — claim arms", () => {
           xpath: 0,
           "role-based": 2,
           testid: 0,
+          "plain-css": 0,
           text: 0,
         },
       }),

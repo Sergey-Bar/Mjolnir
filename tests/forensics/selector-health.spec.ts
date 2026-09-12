@@ -92,7 +92,13 @@ describe("renderSelectorHealth", () => {
       {
         file: "a.spec.ts",
         score: 50,
-        counts: { "role-based": 1, testid: 0, "css-chain": 0, xpath: 1 },
+        counts: {
+          "role-based": 1,
+          testid: 0,
+          "css-chain": 0,
+          xpath: 1,
+          "plain-css": 0,
+        },
       },
     ]);
     expect(out).toContain("SELECTOR HEALTH");

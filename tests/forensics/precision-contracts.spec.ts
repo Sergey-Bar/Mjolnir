@@ -39,9 +39,11 @@ describe("Selector Health exact score vectors", () => {
     expect(scoreLocatorRisk(line).score).toBe(expected);
   });
 
-  it("a locator with no structural chars classifies as null", () => {
-    expect(scoreLocatorRisk("locator('button')").score).toBe(0);
-    expect(scoreLocatorRisk("locator('button')").reason).toBe("not a locator");
+  it("a locator with no structural chars classifies as plain-css", () => {
+    expect(scoreLocatorRisk("locator('button')").score).toBe(60);
+    expect(scoreLocatorRisk("locator('button')").reason).toBe(
+      "plain-css base 60",
+    );
   });
 
   it("health score: 2 role + 2 testid + 2 css + 2 xpath = 58", () => {

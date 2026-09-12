@@ -39,7 +39,7 @@ export function classifyLocator(line: string): LocatorClass | null {
   if (/locator\s*\(\s*['"`][^'"`]*['"`]/.test(line)) {
     // Any locator with a quoted selector that isn't testid/xpath = CSS.
     const isStructural = /[.>#[]/.test(line);
-    return isStructural ? "css-chain" : null;
+    return isStructural ? "css-chain" : "plain-css";
   }
   return null;
 }
@@ -91,6 +91,7 @@ export function computeSpecHealth(
   const counts: Record<LocatorClass, number> = {
     "role-based": 0,
     testid: 0,
+    "plain-css": 0,
     "css-chain": 0,
     xpath: 0,
   };
@@ -114,13 +115,20 @@ export function computeSpecHealth(
   });
 
   const total =
-    counts["role-based"] + counts.testid + counts["css-chain"] + counts.xpath;
-  // Score: role/testid = full credit, css-chain = 0.3, xpath = 0.
+    counts["role-based"] +
+    counts.testid +
+    counts["plain-css"] +
+    counts["css-chain"] +
+    counts.xpath;
+  // Score: role/testid = full credit, plain-css/css-chain = 0.3, xpath = 0.
   const good = counts["role-based"] + counts.testid;
   const score =
     total === 0
       ? 100
-      : Math.round(((good + counts["css-chain"] * 0.3) / total) * 100);
+      : Math.round(
+          ((good + (counts["plain-css"] + counts["css-chain"]) * 0.3) / total) *
+            100,
+        );
 
   return {
     file,
@@ -139,7 +147,7 @@ export function renderSelectorHealth(specs: SpecSelectorHealth[]): string {
     lines.push(`  [${bar}]  ${spec.score} / 100`);
     lines.push(
       `  role/text: ${spec.counts["role-based"]} · testid: ${spec.counts.testid}` +
-        ` · css-chains: ${spec.counts["css-chain"]} ⚠ · xpath: ${spec.counts.xpath}`,
+        ` · plain-css: ${spec.counts["plain-css"]} · css-chains: ${spec.counts["css-chain"]} ⚠ · xpath: ${spec.counts.xpath}`,
     );
     lines.push("");
   }

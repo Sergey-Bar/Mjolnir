@@ -392,7 +392,9 @@ describe("stdio loop — newline-delimited JSON-RPC framing (§21)", () => {
     );
     expect(out).toHaveLength(2);
     const second = JSON.parse(out[1] ?? "{}") as { result?: unknown };
-    expect(second.result).toBeTruthy();
+    const toolsResult = second.result as { tools: unknown[] };
+    expect(toolsResult.tools).toBeInstanceOf(Array);
+    expect(toolsResult.tools.length).toBeGreaterThan(0);
   });
 
   it("empty lines are skipped silently", async () => {
@@ -505,7 +507,8 @@ describe("stdio binary — the spawned transport (§21)", () => {
               result?: unknown;
             },
         );
-      expect(frames[0]?.result).toBeTruthy(); // initialize
+      const initResult = frames[0]?.result as { protocolVersion: string };
+      expect(initResult.protocolVersion).toBe("2025-06-18"); // initialize
       expect(frames[1]?.id).toBe(2); // tools/list
       expect(frames[2]?.error?.code).toBe(-32700); // malformed frame
       expect(frames[3]?.id).toBe(3); // still alive after malformed input
@@ -551,7 +554,7 @@ describe("handleMcpMessage — the full JSON-RPC surface (§21)", () => {
     };
     expect(result.protocolVersion).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(result.serverInfo.name).toBe("mjolnir-qa");
-    expect(result.serverInfo.version).toBeTruthy();
+    expect(result.serverInfo.version).toMatch(/^\d+\.\d+\.\d+/);
   });
 
   it("handleMcpMessage passes maxDurationMs through to the pipeline budget", async () => {
@@ -654,8 +657,8 @@ describe("handleMcpMessage — the full JSON-RPC surface (§21)", () => {
       structuredContent: unknown;
     };
     expect(result.content[0]?.type).toBe("text");
-    expect(result.structuredContent).toBeTruthy();
-    expect(JSON.parse(result.content[0]?.text ?? "{}")).toBeTruthy();
+    expect(result.structuredContent).toBeDefined();
+    expect(typeof JSON.parse(result.content[0]?.text ?? "{}")).toBe("object");
   });
 
   it("tools/call errors propagate as JSON-RPC errors", async () => {
@@ -730,17 +733,18 @@ describe("param-validator arms (§21 strict shape validation)", () => {
 });
 
 describe("diff tool — degraded baseline arms", () => {
-  it("a baseline that fails to parse yields hasBaseline:false + note (transport stays alive)", () => {
+  it("a baseline that fails to parse yields hasBaseline:false + note (transport stays alive)", async () => {
     const dir = tmpRepo("badbase");
     mkdirSync(join(dir, ".mjolnir"), { recursive: true });
     writeFileSync(join(dir, ".mjolnir", "baseline.json"), "{ not json");
-    void handleToolCall({
+    const res = await handleToolCall({
       id: 25,
       name: "diff",
       args: { path: dir, scanResult: scanResultFixture(dir, { empty: true }) },
     });
-    // The promise is asserted in the async test below; this sync arm
-    // documents the fixture.
+    const result = res.result as { hasBaseline: boolean; note?: string };
+    expect(result.hasBaseline).toBe(false);
+    expect(result.note).toContain("failed to parse");
   });
 
   it("a baseline that fails to parse yields hasBaseline:false (async)", async () => {

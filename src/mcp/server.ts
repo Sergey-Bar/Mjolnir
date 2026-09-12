@@ -96,6 +96,10 @@ export const MCP_TOOLS = [
       type: "object",
       properties: {
         ruleId: { type: "string", description: "e.g. QA-PW-101" },
+        fixturesRoot: {
+          type: "string",
+          description: "Root directory for fixture lookups (defaults to cwd).",
+        },
       },
       required: ["ruleId"],
     },
@@ -295,7 +299,9 @@ export async function handleToolCall(call: McpToolCall): Promise<McpResponse> {
 
     if (call.name === "explain") {
       const ruleId = call.args["ruleId"] as string;
-      const explanation = explainRule(ruleId, process.cwd());
+      const fixturesRoot =
+        (call.args["fixturesRoot"] as string | undefined) ?? process.cwd();
+      const explanation = explainRule(ruleId, fixturesRoot);
       if (!explanation.ok) {
         return {
           jsonrpc: "2.0",

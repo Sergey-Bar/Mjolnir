@@ -18,6 +18,8 @@ import type {
   AzurePipelineDoc,
   AzureStep,
 } from "../../discovery/azure-pipeline-parser.js";
+// Bug-audit 3.10: shared O(log n) lineAt replaces the private O(n) copy.
+import { lineAt } from "../shared/positions.js";
 
 interface WorkflowDoc {
   jobs?: Record<string, JobNode>;
@@ -253,26 +255,20 @@ function locateStepContinueOnError(text: string, step: StepNode): number {
   const re = /continue-on-error:\s*true/g;
   re.lastIndex = searchFrom;
   const m = re.exec(text);
-  if (m) return lineOf(text, m.index);
+  if (m) return lineAt(text, m.index);
   // Audit S5 fallback: no raw literal after the anchor — report on the
   // anchor's own line instead of crashing and dropping the finding. An
   // absent anchor (anchorAt === -1) means the raw scan above already
   // covered the whole text from index 0, so a job-level re-scan here
   // would be redundant — line 1 is the honest floor.
-  if (anchorAt !== -1) return lineOf(text, anchorAt);
+  if (anchorAt !== -1) return lineAt(text, anchorAt);
   return 1;
 }
 
 function findLine(text: string, re: RegExp): number {
   const m = re.exec(text);
   if (!m) return 1;
-  return lineOf(text, m.index);
-}
-
-function lineOf(text: string, index: number): number {
-  let line = 1;
-  for (let i = 0; i < index; i++) if (text[i] === "\n") line++;
-  return line;
+  return lineAt(text, m.index);
 }
 
 function escapeRe(s: string): string {

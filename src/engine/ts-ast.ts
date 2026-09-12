@@ -201,3 +201,8 @@ export function getCodeOnlyText(file: ParsedFile): string {
     return file.text;
   }
 }
+
+/** Release the shared ts-morph Project between scans to free memory. */
+export function resetTsMorphProject(): void {
+  project = null;
+}

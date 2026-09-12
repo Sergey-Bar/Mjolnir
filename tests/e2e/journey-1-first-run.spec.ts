@@ -223,11 +223,11 @@ describe("E2E journey 1: first run from the packed tarball", () => {
   );
 
   it(
-    "--help prints the usage banner (pinned contract: exit 10, stdout)",
+    "--help prints the usage banner (pinned contract: exit 0, stdout)",
     { timeout: 60_000 },
     () => {
       const { stdout, status } = runMjolnir(["--help"]);
-      expect(status).toBe(10); // the CLI's frozen usage contract
+      expect(status).toBe(0); // the CLI's frozen usage contract
       expect(stdout).toContain("Usage: mjolnir");
       expect(stdout).toContain("scan");
     },

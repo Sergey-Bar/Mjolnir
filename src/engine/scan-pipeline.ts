@@ -53,6 +53,7 @@ import { stampRuntimeCorroboration } from "./runtime-corroboration.js";
 import { buildEvidenceRecords } from "./evidence-core.js";
 import { classifyProvenance, computeAgenticProfile } from "./provenance.js";
 import { releaseTreeSitterResources } from "./tree-sitter-ast.js";
+import { resetTsMorphProject } from "./ts-ast.js";
 import { applyOverlapDedup, type OverlapMeta } from "./overlap-dedup.js";
 import {
   computeRulesDigest,
@@ -1106,5 +1107,6 @@ export async function runScan(
   // test runner) doesn't pin it between scans. The next scan
   // transparently re-creates them.
   await releaseTreeSitterResources();
+  resetTsMorphProject();
   return result;
 }

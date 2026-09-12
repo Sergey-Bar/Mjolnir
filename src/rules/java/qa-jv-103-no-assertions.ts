@@ -222,7 +222,7 @@ function matchBrace(text: string, open: number): number {
       else if (ch === inStr) inStr = null;
       continue;
     }
-    if (ch === '"') inStr = ch;
+    if (ch === '"' || ch === "'") inStr = ch;
     else if (ch === "{") depth++;
     else if (ch === "}") {
       depth--;

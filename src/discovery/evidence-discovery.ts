@@ -25,6 +25,8 @@ export interface EvidenceCandidate {
     | "playwright-json" // PW JSON reporter outputs
     | "test-results-dir" // PW test-results directory
     | "junit-file"; // JUnit XML outputs
+  /** Discovery depth (0 = scan root, 1 = one level down, etc.). */
+  depth: number;
 }
 
 /**
@@ -75,9 +77,15 @@ const SKIP_DIRS = new Set([
 
 function listDirs(dir: string): string[] {
   try {
+    // Bug-audit 4.2: readdirSync order is filesystem-dependent (NTFS
+    // returns insertion order, ext4 hashes) — sorting the discovered
+    // directories keeps every downstream traversal (and any truncation
+    // that happens BEFORE the final candidate sort) byte-identical
+    // across platforms.
     return readdirSync(dir, { withFileTypes: true })
       .filter((e) => e.isDirectory() && !SKIP_DIRS.has(e.name))
-      .map((e) => join(dir, e.name));
+      .map((e) => join(dir, e.name))
+      .sort();
   } catch {
     return [];
   }
@@ -101,7 +109,7 @@ export function discoverEvidenceCandidates(
           if (!existsSync(p)) continue;
           const st = statSync(p);
           if (conv.kind === "dir" ? st.isDirectory() : st.isFile()) {
-            out.push({ path: p, convention: conv.convention });
+            out.push({ path: p, convention: conv.convention, depth });
           }
         }
       }
@@ -109,7 +117,10 @@ export function discoverEvidenceCandidates(
     }
     levels.push(next);
   }
-  return out.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
+  return out.sort(
+    (a, b) =>
+      a.depth - b.depth || (a.path < b.path ? -1 : a.path > b.path ? 1 : 0),
+  );
 }
 
 /** Explicit statement of what a scan with no evidence is missing (§16). */

@@ -133,6 +133,13 @@ function isDeclaredByPresent(
     if (g === f || g.ruleId === f.ruleId) continue;
     const meta = metaByRuleId.get(g.ruleId);
     if (!meta?.overlapWith?.includes(f.ruleId)) continue;
+    // Bug-audit 3.11: an undefined column (file-level rules emit no
+    // column) made `g.column - f.column` NaN, and NaN > DELTA is false —
+    // so the proximity guard silently PASSED and the dedup swallowed a
+    // twin at an unknown distance. Missing columns are now UNKNOWN
+    // distance: the pair is never a same-root-cause match (dedup needs
+    // positive evidence of proximity, not a NaN-passed guard).
+    if (f.column === undefined || g.column === undefined) continue;
     if (Math.abs(g.column - f.column) > MAX_SAME_ROOT_COLUMN_DELTA) continue;
     return true;
   }
@@ -179,5 +186,11 @@ function dropOrderBefore(
 ): boolean {
   if (ranksBefore(a, b, metaByRuleId)) return false;
   if (ranksBefore(b, a, metaByRuleId)) return true;
-  return a.column < b.column;
+  // Bug-audit 3.11: the final tie-break reads the column — an undefined
+  // column is the LOWEST order (undefined < 0 was false, so undefined
+  // columns sorted inconsistently against real ones); treated as the
+  // largest value so a defined column always sorts before it.
+  const ac = a.column ?? Number.MAX_SAFE_INTEGER;
+  const bc = b.column ?? Number.MAX_SAFE_INTEGER;
+  return ac < bc;
 }

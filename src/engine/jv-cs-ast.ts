@@ -28,6 +28,8 @@
 
 import type { Node, Tree } from "web-tree-sitter";
 
+import { lineAt, colAt } from "../rules/shared/positions.js";
+
 /** Type re-export: consumers annotate their node params with this. */
 export type { Node as TsNode } from "web-tree-sitter";
 
@@ -56,12 +58,7 @@ export function nodeLineCol(
   text: string,
   charIndex: number,
 ): { line: number; column: number } {
-  let line = 1;
-  for (let i = 0; i < charIndex; i++) {
-    if (text.charCodeAt(i) === 10) line++;
-  }
-  const lastBreak = charIndex <= 0 ? -1 : text.lastIndexOf("\n", charIndex - 1);
-  return { line, column: charIndex - lastBreak };
+  return { line: lineAt(text, charIndex), column: colAt(text, charIndex) };
 }
 
 // ─── Java: @Test method boundaries ───────────────────────────────────

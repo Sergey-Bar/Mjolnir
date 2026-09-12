@@ -206,7 +206,29 @@ export function isSuppressionActive(
   now = new Date(),
 ): boolean {
   if (!ign.expires) return true;
-  return new Date(ign.expires) > now;
+  // Bug-audit 3.9 (timezone sensitivity): the expires value is an ISO
+  // DATE (YYYY-MM-DD — validated as an ISO date at load time), which
+  // JS parses at UTC midnight, while `now` carries the local wall
+  // clock. In a UTC+3 locale, an entry expiring "2026-09-01" stayed
+  // active until 03:00 local on expiry day (Date comparison vs local
+  // now); in UTC-8 it expired at 16:00 the day BEFORE. Both drift
+  // against the documented "expires <date>" contract. Fixed by
+  // normalizing BOTH sides to UTC-day boundaries: the expiry date's
+  // UTC midnight vs the CURRENT UTC date's midnight — a pure calendar
+  // comparison that reads identically in every timezone.
+  return utcMidnight(ign.expires) > utcMidnightOf(now);
+}
+
+/** UTC-midnight timestamp of an ISO date string (YYYY-MM-DD). */
+function utcMidnight(isoDate: string): number {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(isoDate);
+  if (!m) return new Date(isoDate).getTime();
+  return Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+}
+
+/** UTC-midnight timestamp of a Date (calendar day, timezone-independent). */
+function utcMidnightOf(d: Date): number {
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
 }
 
 export function applySeverityOverrides(

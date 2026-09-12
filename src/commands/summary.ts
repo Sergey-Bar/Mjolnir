@@ -116,7 +116,27 @@ export function renderStepSummary(
     warning: [],
     info: [],
   };
-  for (const f of result.findings) bySeverity[f.severity].push(f);
+  // Bug-audit 3.8: an unknown severity used to throw a TypeError here
+  // (bySeverity[f.severity] is undefined → .push crashes), taking the
+  // whole summary command down with it. Per the crash ≠ clean law, an
+  // unrecognized value is RECORDED, never silently folded into a
+  // bucket — it renders as its own honesty notice and is skipped from
+  // the per-severity details.
+  const unknownSeverity = new Set<string>();
+  for (const f of result.findings) {
+    const sev = f.severity as string;
+    if (sev === "error" || sev === "warning" || sev === "info") {
+      bySeverity[sev].push(f);
+    } else {
+      unknownSeverity.add(sev);
+    }
+  }
+  if (unknownSeverity.size > 0) {
+    lines.push(
+      `> ⚠ ${unknownSeverity.size} finding(s) carried an unrecognized severity (${[...unknownSeverity].join(", ")}) — excluded from the per-severity breakdown; the full JSON artifact still holds them.`,
+    );
+  }
+  lines.push("");
 
   const icons = { error: "🔴", warning: "🟡", info: "🔵" } as const;
   for (const sev of ["error", "warning", "info"] as const) {

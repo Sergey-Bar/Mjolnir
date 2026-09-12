@@ -316,7 +316,11 @@ describe("findings cards", () => {
   });
 
   it("renders Finding/Impact/Fix/Verify fields with the evidence tag", () => {
-    const out = renderTerminal(scan([finding()]), { isTTY: false, width: 100 });
+    const out = renderTerminal(scan([finding()]), {
+      isTTY: false,
+      width: 100,
+      verbose: true,
+    });
     expect(out).toContain("Finding");
     expect(out).toContain("Impact");
     expect(out).toContain("Fix");
@@ -391,7 +395,7 @@ describe("findings cards", () => {
   });
 
   it("hides groups that fall beyond the card budget behind the overflow line", () => {
-    const singles = Array.from({ length: 10 }, (_, i) =>
+    const singles = Array.from({ length: 5 }, (_, i) =>
       finding({ ruleId: `QA-SINGLE-${i}`, line: i + 1 }),
     );
     const out = renderTerminal(
@@ -404,7 +408,7 @@ describe("findings cards", () => {
       ]),
       { isTTY: false, width: 120 },
     );
-    // The 10 single cards fill the budget; the grouped rule lands beyond
+    // The 5 single cards fill the budget (MAX_CARDS=5); the grouped rule lands beyond
     // it and collapses into the overflow line instead of rendering.
     expect(out).not.toContain("same fix applies");
     expect(out).toContain("… +4 more across 1 rule");
@@ -413,7 +417,7 @@ describe("findings cards", () => {
   it("advisory (E0) findings render with a zero-cost verify hint", () => {
     const out = renderTerminal(
       scan([finding({ severity: "error", evidenceLevel: "E0" })]),
-      { isTTY: false },
+      { isTTY: false, verbose: true },
     );
     // E0 costs zero points, so the hint promises a clean re-run, not a
     // score recovery. (The hint wraps across card-width lines — match
