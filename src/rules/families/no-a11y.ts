@@ -70,25 +70,4 @@ function makeNoA11y(
   });
 }
 
-export const noA11yFamily: QADoctorRule[] = [
-  makeNoA11y(
-    "QA-JV-110",
-    "java",
-    ".java",
-    ["java"],
-    ["junit", "testng"],
-    /\.navigate\s*\(|\.click\s*\(|\.fill\s*\(/i,
-    /AxeBuilder|\.analyze\s*\(\s*\)|axeResults/i,
-    "Add `com.deque.html.axe-core:playwright` and run `new AxeBuilder(page).analyze()` once per page-under-test.",
-  ),
-  makeNoA11y(
-    "QA-CS-110",
-    "csharp",
-    ".cs",
-    ["csharp"],
-    ["nunit", "xunit", "mstest", "playwright"],
-    /\.GotoAsync\s*\(|\.ClickAsync\s*\(|\.FillAsync\s*\(/i,
-    /\.RunAxe\s*\(|AxeResult/i,
-    "Add `Deque.AxeCore.Playwright` NuGet and call `await page.RunAxe()` once per page-under-test.",
-  ),
-];
+export const noA11yFamily: QADoctorRule[] = [];

@@ -68,15 +68,15 @@
     "detectorRevision": 1
   },
   "QA-CYP-001": {
-    "logicHash": "3a2ed63758ade07cf87c53befd5a6e9be0ef0537bd96c87815add759247537d3",
+    "logicHash": "9651ff71a91846bcb3509c5c40ec0ba0ec35ac1daedb18c11e66f14ca1e97cc4",
     "detectorRevision": 1
   },
   "QA-CYP-002": {
-    "logicHash": "fe201a083e4200b72f03a7befd3e801aa03368acb55c9fb3b617e1081de4e268",
+    "logicHash": "48ce7fa83c5675d2800c4975211a7dbf87f729067d7d5c7aad6d178b76ed9b0c",
     "detectorRevision": 1
   },
   "QA-CYP-003": {
-    "logicHash": "07d0c43bb863d964ccd06984e67db6304323b50e607615d91ab080f115ca26a8",
+    "logicHash": "f5ccd77b70b85eb4e273c2cbb6e9323b08de4ec4fe8e95c4f26c7fe69423a7a0",
     "detectorRevision": 1
   },
   "QA-ENV-001": {
@@ -196,12 +196,12 @@
     "detectorRevision": 1
   },
   "QA-PW-146": {
-    "logicHash": "3312722d6fa5c644b66e3a75daca73ceb90063faf53bb0629158ebc587f64a1f",
+    "logicHash": "a775067d66546b366431257779e5a54007c46dd5abf3108817334f6d1582f9f3",
     "detectorRevision": 1
   },
   "QA-PW-147": {
-    "logicHash": "2b82d4d95f33013bb8099e224183d4a08070d5c201d6688450a37079a0632cac",
-    "detectorRevision": 2
+    "logicHash": "3bf45550497321580d4fc7fec6feb0701b147e9e6357a649b187c60e76849e68",
+    "detectorRevision": 1
   },
   "QA-PY-001": {
     "logicHash": "79174c1a2c3ed03aa8443e94980a7641b42722f9b6a37e10ef0aab4a833a1206",
@@ -268,15 +268,15 @@
     "detectorRevision": 1
   },
   "QA-SE-001": {
-    "logicHash": "be090d16bf8911a604e02fdcab56a541c860e6f66d3a99a1404db5439c634f4a",
+    "logicHash": "2f927e18d22227b02658ac98d9f36e51458fe7edf2b08f7b9a17ec630344fd1a",
     "detectorRevision": 1
   },
   "QA-SE-002": {
-    "logicHash": "17ab7fc69bf50e5b08f7e58628e15c47b7c4e8229e210170c61764aba132d6b1",
+    "logicHash": "6f8a0d930ec543377e92e52294778eba090b0608a0cfbcfe295669ca957740be",
     "detectorRevision": 1
   },
   "QA-SE-003": {
-    "logicHash": "bd0359cbda473964558cafa9528257e616ed37c951f5089ec835b43abdb8c4e4",
+    "logicHash": "402eb8f4ad1d4fc4ac9f54fd2810b695a0acff25253ed19880c737c524e56234",
     "detectorRevision": 1
   },
   "QA-TEST-001": {

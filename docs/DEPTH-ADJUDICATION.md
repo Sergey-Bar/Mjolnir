@@ -47,10 +47,9 @@ evidence supported it:
 - **QA-PW-143** (6% FP at n=80): artifact-capture absence (no trace/video/screenshot anywhere in the suite) is a directory-level aggregate; the detector aggregates over the suite's shapes — absence, not presence
 - **QA-PW-144** (14% FP at n=21): single-browser coverage absence is a config/projects aggregate property; the detector reads the projects arrangement across the config — no single node constitutes the finding
 
-### `exact-key-match` — exact, unambiguous runner/API token — lexical precision equals structural (11 rules)
+### `exact-key-match` — exact, unambiguous runner/API token — lexical precision equals structural (10 rules)
 
 - **QA-CS-101** (0% FP at n=20): [Ignore]/[Fact(Skip=…)] are exact xUnit/NUnit/MSTest attribute tokens; the detector matches the attribute identifiers — closed token sets where lexical precision equals structural
-- **QA-CYP-003** (0% FP at n=10): chromeWebSecurity:false is an exact config key/value pair inside cypress.config.*; the detector matches the key and value literally — the config surface's statements are the finding
 - **QA-JV-101** (0% FP at n=23): @Disabled/@Ignore are exact JUnit/TestNG annotation tokens; the detector matches the annotation identifier — annotation shapes are closed token sets where lexical and structural match coincide
 - **QA-PW-003** (10% FP at n=10): page.pause() and test.only() are exact Playwright runner tokens; the detector matches the member-call identifiers on the code-only text — closed token set, unique to the defect
 - **QA-PW-102** (10% FP at n=10): waitForLoadState('load') is an exact Playwright token plus a closed argument enum; the detector matches the call plus its argument — the AST re-derives the same call shape
@@ -67,13 +66,12 @@ evidence supported it:
 - **QA-PW-101** (0% FP at n=20): the hard-sleep family's §13.2 structural path (AST hook) carries the depth where a tree is available; this lexical path is the mandatory deterministic fallback kept in lockstep — the family's depth is real, the regex is its degraded mode
 - **QA-PY-101** (0% FP at n=10): the hard-sleep family's Python sync/async variant: the family's structural path carries the depth; this variant's lexical path is the lockstep fallback (async-mix shapes across the sync/async boundary)
 
-### `lexical-artifact` — the defect IS the lexical artifact (text = finding) (3 rules)
+### `lexical-artifact` — the defect IS the lexical artifact (text = finding) (2 rules)
 
-- **QA-PW-147** (unmeasured): the codegen recorder's default title ('test', 'test 1', …) committed is a recording artifact — the default-title string is the finding; the detector matches the recorder's exact title shapes
 - **QA-PY-009** (6% FP at n=18): commented-out test code is a lexical artifact by definition — the text IS the finding (comment-wrapped test bodies); the detector matches the commented shapes on the raw text, which is where the artifact lives
 - **QA-TQUAL-011** (24% FP at n=25): commented-out assertions are lexical artifacts — the comment-wrapped assertion text is the finding itself; the detector matches the shapes on the raw text
 
-### `runner-semantic` — semantics live in runner behavior no syntax tree represents (39 rules)
+### `runner-semantic` — semantics live in runner behavior no syntax tree represents (34 rules)
 
 - **QA-CI-005** (8% FP at n=13): report generation is a runner side effect of the workflow step sequence, not a syntax tree property; the detector reads the workflow step graph, whose statements are already literal text
 - **QA-CI-007** (0% FP at n=11): retry masking is defined by the runner's retry semantics, which no language syntax tree represents; the detector matches the runner's own retry keys (GitHub `uses:`/shell loops, Azure `retryCountOnTaskFailure`) in pipeline YAML where statements are shell strings
@@ -81,8 +79,6 @@ evidence supported it:
 - **QA-CS-104** (0% FP at n=10): the shared-page family's variants (QA-JV-104/QA-CS-104/QA-PY-106): page/fixture reuse across tests is runner fixture-lifecycle semantics; the detector matches the consumption shapes against test boundaries
 - **QA-CS-107** (8% FP at n=12): the network-idle family's variants (QA-JV-107/QA-CS-107/QA-PY-107): networkidle waits are runner timing semantics; the detector matches the runner's wait tokens — exact keys
 - **QA-CS-109** (0% FP at n=10): the retry-masking family's variants (QA-JV-109/QA-CS-109): retry masking is the runner's retry contract; the detector matches the runner's retry tokens on the code-only text
-- **QA-CYP-001** (20% FP at n=15): cy.wait(numeric) is a Cypress runner wait contract; the detector matches the member-call token with a numeric-literal argument on the code-only text — alias waits (cy.wait('@…')) are structurally distinct and excluded by the argument shape
-- **QA-CYP-002** (0% FP at n=10): Cypress .only is the runner's focus token; the detector matches the it/describe/context .only member-call shape on the code-only text — exact-key precision
 - **QA-JV-104** (20% FP at n=10): the shared-page family's variants (QA-JV-104/QA-CS-104/QA-PY-106): page/fixture reuse across tests is runner fixture-lifecycle semantics; the detector matches the consumption shapes against test boundaries
 - **QA-JV-107** (0% FP at n=10): the network-idle family's variants (QA-JV-107/QA-CS-107/QA-PY-107): networkidle waits are runner timing semantics; the detector matches the runner's wait tokens — exact keys
 - **QA-JV-109** (0% FP at n=18): the retry-masking family's variants (QA-JV-109/QA-CS-109): retry masking is the runner's retry contract; the detector matches the runner's retry tokens on the code-only text
@@ -103,9 +99,6 @@ evidence supported it:
 - **QA-PY-105** (0% FP at n=12): Playwright test bodies without assertions are runner-outcome semantics; the detector matches the test-def plus body shapes on the code-only text
 - **QA-PY-106** (0% FP at n=14): the shared-page family's variants (QA-JV-104/QA-CS-104/QA-PY-106): page/fixture reuse across tests is runner fixture-lifecycle semantics; the detector matches the consumption shapes against test boundaries
 - **QA-PY-107** (0% FP at n=10): the network-idle family's variants (QA-JV-107/QA-CS-107/QA-PY-107): networkidle waits are runner timing semantics; the detector matches the runner's wait tokens — exact keys
-- **QA-SE-001** (0% FP at n=10): the Selenium family's variants (QA-SE-001/002/003): the defect is the SEQUENCE sleep-then-interact — runner timing semantics, not a single node; the detector matches the sleep token followed by a lookup within the recorded window
-- **QA-SE-002** (8% FP at n=13): the Selenium family's variants (QA-SE-001/002/003): the defect is the SEQUENCE sleep-then-interact — runner timing semantics, not a single node; the detector matches the sleep token followed by a lookup within the recorded window
-- **QA-SE-003** (0% FP at n=11): the Selenium family's variants (QA-SE-001/002/003): the defect is the SEQUENCE sleep-then-interact — runner timing semantics, not a single node; the detector matches the sleep token followed by a lookup within the recorded window
 - **QA-TEST-001** (60% FP at n=20): .only/focus is runner skip-scheduling state; the detector matches the runner's own member-call tokens (.only/.fit/fdescribe) on the code-only text — lexical precision equals the AST call-shape here, and the §13.2 fallback keeps parity
 - **QA-TEST-002** (62% FP at n=21): skip/xfail/ignore are runner skip-state annotations whose forms are runner API tokens (it.skip, xit, t.skip, @unittest.skip); the detector matches those exact tokens on the code-only text
 - **QA-TEST-003** (22% FP at n=78): assertion-less test bodies are runner-outcome semantics (the runner reports a pass that proves nothing); the detector matches the test-def plus body shapes on the code-only text
@@ -119,13 +112,12 @@ evidence supported it:
 
 - **QA-CI-002** (11% FP at n=18): exit-code swallowing lives inside workflow run: strings (shell scripts embedded in YAML), Azure DevOps script/bash/pwsh steps (shell scripts embedded in YAML), and Jenkinsfile `sh` strings (shell scripts embedded in Groovy); the statement IS a string literal — a shell syntax tree of an embedded value adds parsing without adding classification power
 
-### `string-content-defect` — the defect lives in string content (selector/URL) — outside AST semantics by design (7 rules)
+### `string-content-defect` — the defect lives in string content (selector/URL) — outside AST semantics by design (6 rules)
 
 - **QA-CS-106** (33% FP at n=12): the brittle-selector family's variants (QA-JV-106/QA-CS-106/QA-PY-104): selector defects are string-argument shapes (xpath=/nth-child/absolute-path); the detector classifies the string shapes the code-text mask preserves for this class
 - **QA-JV-106** (33% FP at n=12): the brittle-selector family's variants (QA-JV-106/QA-CS-106/QA-PY-104): selector defects are string-argument shapes (xpath=/nth-child/absolute-path); the detector classifies the string shapes the code-text mask preserves for this class
 - **QA-PW-004** (43% FP at n=14): brittle selectors ARE string arguments (css=/xpath=/nth-child shapes) — the code-text masking that protects other rules deliberately excludes string content here; the detector reads the string shapes directly (inside-string oracle)
 - **QA-PW-123** (46% FP at n=11): hardcoded environment URLs are string literals (http(s):// shapes); the detector reads the string-content shapes the code-text mask preserves for exactly this defect class
-- **QA-PW-146** (12% FP at n=17): CSS/XPath string selectors are string-argument shapes (css=/xpath= engines, bare id/class/attr CSS, nth-child); the detector classifies the string shapes directly
 - **QA-PY-104** (0% FP at n=10): the brittle-selector family's variants (QA-JV-106/QA-CS-106/QA-PY-104): selector defects are string-argument shapes (xpath=/nth-child/absolute-path); the detector classifies the string shapes the code-text mask preserves for this class
 - **QA-PY-108** (0% FP at n=16): the hardcoded-url family's variants (QA-JV-108/QA-CS-108/QA-PY-108): hardcoded URLs are string literals; the detector matches the http(s):// string shapes — the URL lives in the string, not the syntax tree
 

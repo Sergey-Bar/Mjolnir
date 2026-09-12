@@ -62,9 +62,7 @@ export const LOCAL_RULES_DIR = "mjolnir-rules";
 
 export interface LoadedExternalRules {
   rules: QADoctorRule[];
-  /** Human-readable problems; surfaced as scan warnings, never fatal. */
   errors: string[];
-  /** JS/MJS modules skipped because the plugin gate was closed. */
   skipped: string[];
 }
 

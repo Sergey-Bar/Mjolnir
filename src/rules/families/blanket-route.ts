@@ -76,25 +76,4 @@ function makeBlanketRoute(
   });
 }
 
-export const blanketRouteFamily: QADoctorRule[] = [
-  makeBlanketRoute(
-    "QA-JV-111",
-    "java",
-    ".java",
-    ["java"],
-    ["junit", "testng"],
-    /\.route\s*\(\s*"(\*\*(?:\/\*)?|\*\*\/[^"]*)"/g,
-    "page.route",
-    "page.route",
-  ),
-  makeBlanketRoute(
-    "QA-CS-111",
-    "csharp",
-    ".cs",
-    ["csharp"],
-    ["nunit", "xunit", "mstest", "playwright"],
-    /\.RouteAsync\s*\(\s*"(\*\*(?:\/\*)?|\*\*\/[^"]*)"/g,
-    "page.RouteAsync",
-    "page.RouteAsync",
-  ),
-];
+export const blanketRouteFamily: QADoctorRule[] = [];
