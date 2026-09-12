@@ -9,7 +9,37 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
-## [Unreleased] — R10 2.0 preparation: breaking-set inventory + boundary-law guards (remediation/remote-first WI-25)
+## [1.0.9] — 2026-09-12
+
+### Changes since 1
+
+- chore: add testTimeout: 30_000 to vitest.config.ts
+- test: MR-7A release-verification machinery contract (#84)
+- feat: SC-8 determinism verifier + SC-11 control-state record (MR-8.C/D) (#83)
+- feat: pack-audit gate wired before publish (SC-6, MR-8.B) (#82)
+- test: SC-3/SC-4/SC-7 supply-chain hygiene gates (MR-8.A) (#81)
+- docs: PR template + CONTRIBUTING targeted-slice ladder (MR-4, GC-2) (#80)
+- feat: docs:regen aggregate — one idempotent command for every generated surface (MR-5) (#79)
+- test(site): negative proof for the D-2 emitted-HTML link gate (MR-6) (#78)
+- fix(release): recognize the '(Merged PR #N)' squash subject so PR labels drive the bump (#77)
+
+## [1.0.8] — 2026-09-11
+
+### Changes since 1.0.7
+
+- chore: sync smithery.yaml in the release cut step (Merged PR #76)
+
+## [1.0.7] — 2026-09-11
+
+### Changes since 1.0.6
+
+- docs: 1.0.6 CHANGELOG section lead-ins (Merged PR #75)
+
+## [1.0.6] — 2026-09-11
+
+### R10 2.0 preparation: breaking-set inventory + boundary-law guards (remediation/remote-first WI-25)
+
+Preparation-only increment: the 2.0 breaking-set proposal sheet, its migration draft, and the boundary-law guard tests — nothing breaking ships in this release.
 
 ### Added
 
@@ -84,7 +114,9 @@ once shipped, so this file is the record of what changed between versions.
   accordingly; the shipped verdict is unchanged (PASS 12/12, provenance
   bound).
 
-## [Unreleased] — R9 Trust Artifact integrity + HTML completion (remediation/remote-first WI-23+24)
+### R9 Trust Artifact integrity + HTML completion (remediation/remote-first WI-23+24)
+
+Trust Artifacts gain machine-anchored identity and a deterministic HTML surface; stale, wrong-run, revision-drifted, and unbound artifacts are now detectable.
 
 ### Added
 
@@ -112,7 +144,9 @@ once shipped, so this file is the record of what changed between versions.
   release-trust contract's documented-unwired list is now EMPTY — all 12
   canonical dimensions are wired and machine-evaluated.
 
-## [Unreleased] — R8 MCP runtime-evidence tools + Agent Safety (remediation/remote-first WI-21+22)
+### R8 MCP runtime-evidence tools + Agent Safety (remediation/remote-first WI-21+22)
+
+The MCP transport learns the runtime-evidence tools, and every installed agent surface inherits the safety contract.
 
 ### Added
 
@@ -150,7 +184,9 @@ once shipped, so this file is the record of what changed between versions.
   evidence). Drift-locked by `tests/contract/agent-skill-surface.spec.ts`
   (frozen surfaces only; safety wording asserted).
 
-## [Unreleased] — R7 Playwright capability matrix (remediation/remote-first WI-20)
+### R7 Playwright capability matrix (remediation/remote-first WI-20)
+
+The Playwright capability matrix becomes a product surface with its own drift lock.
 
 ### Added
 
@@ -167,7 +203,9 @@ once shipped, so this file is the record of what changed between versions.
   Claims never exceed proven capability; rule counts stay out of the claim
   surface entirely.
 
-## [Unreleased] — R6 forensic taxonomy + Selector Health v2 (remediation/remote-first WI-18+19)
+### R6 forensic taxonomy + Selector Health v2 (remediation/remote-first WI-18+19)
+
+Forensic verdicts gain the semantic taxonomy, and Selector Health v2 replaces the locator heuristic.
 
 ### Added
 
@@ -193,7 +231,9 @@ once shipped, so this file is the record of what changed between versions.
 - `TestRecord` gains an optional `errors` text surface (the trace ingester
   populates it); `TestVerdict` gains the additive `forensic` field.
 
-## [Unreleased] — R5 trace ingester (remediation/remote-first WI-17)
+### R5 trace ingester (remediation/remote-first WI-17)
+
+Trace forensics: bounded ingestion of Playwright trace.zip artifacts into the evidence core.
 
 ### Added
 
@@ -217,7 +257,9 @@ once shipped, so this file is the record of what changed between versions.
 - `ForensicsReport.source` + `RuntimeCorroboration.source` widened additively
   with `"playwright-trace"`.
 
-## [Unreleased] — R4c Evidence Graph + Scope Integrity + Exit-Code proofs (remediation/remote-first)
+### R4c Evidence Graph + Scope Integrity + Exit-Code proofs (remediation/remote-first)
+
+Every verdict now carries a machine-anchored evidence graph, scope-integrity accounting, and exit-code proofs.
 
 ### Added
 
@@ -251,7 +293,9 @@ fingerprint + engine version)`; set-identity semantics (input order does not
   unclaimed files (ScanContext gains optional `onIgnored`/`onUnrecognized`;
   all shared-walk adapters pass them through).
 
-## [Unreleased] — R4b False-Green Attack Corpus (remediation/remote-first)
+### R4b False-Green Attack Corpus (remediation/remote-first)
+
+The False-Green Attack Corpus: hostile failure classes with mutation-based detection proofs.
 
 ### Added
 
@@ -290,7 +334,9 @@ fingerprint + engine version)`; set-identity semantics (input order does not
   artifact binding → R9) — recorded per Constitution §5, never silently
   dropped. All seven plan classes present.
 
-## [Unreleased] — R4a Trust Constitution + Release Trust Verdict (remediation/remote-first)
+### R4a Trust Constitution + Release Trust Verdict (remediation/remote-first)
+
+The Trust Constitution and the two-layer release-trust verdict algebra.
 
 ### Added
 
@@ -322,7 +368,9 @@ evidence`); per-dimension applicability (UNSUPPORTED surfaces are recorded,
   ship with the GitHub Release (publication honesty — a missing proof renders
   UNPROVEN, never omitted). No waiver path.
 
-## [Unreleased] — R4 blast radius audit (remediation/remote-first R4)
+### R4 blast radius audit (remediation/remote-first R4)
+
+The blast-radius audit: a machine-verified surface manifest with its own drift lock.
 
 ### Added
 
@@ -338,7 +386,9 @@ evidence`); per-dimension applicability (UNSUPPORTED surfaces are recorded,
   contracts); every CLI flag parsed must appear in the manifest; every
   `process.exit(N)` in src/ must be inside the frozen set (0/1/2/10/20).
 
-## [Unreleased] — P6 quarantine remediation (remediation/remote-first R3)
+### P6 quarantine remediation (remediation/remote-first R3)
+
+Quarantine remediation: measured verdicts recorded, the quarantine ledger reconciled, and three rules restored to the live set.
 
 ### Added
 
@@ -374,7 +424,9 @@ evidence`); per-dimension applicability (UNSUPPORTED surfaces are recorded,
   until owner re-adjudication (measured census 77 → 74 of 79; the
   certification floor test documents the P6 invalidations).
 
-## [Unreleased] — P3c Jenkins (remediation/remote-first R2)
+### P3c Jenkins (remediation/remote-first R2)
+
+Jenkins support: a bounded Jenkinsfile scanner and the QA-CI Jenkins arms (retry masking, catchError rescue, silent swallow).
 
 ### Added
 
@@ -401,7 +453,9 @@ evidence`); per-dimension applicability (UNSUPPORTED surfaces are recorded,
   (corpus re-run: no corpus repo carries a root Jenkinsfile, so the
   classified verdict evidence carries over unchanged).
 
-## [Unreleased] — P3b Azure DevOps (remediation/remote-first R1)
+### P3b Azure DevOps (remediation/remote-first R1)
+
+Azure DevOps support: guarded azure-pipelines.yml parsing, the QA-CI Azure arms, and the adapter's honest accounting.
 
 ### Added
 

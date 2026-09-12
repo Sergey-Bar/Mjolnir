@@ -38,14 +38,21 @@ const LABEL_TO_BUMP = {
 };
 
 /**
- * Extract the PR number from a squash-merge subject like
- * "site: … (#29)". Returns null when there is none (direct pushes).
+ * Extract the PR number from a squash-merge subject, in either format
+ * GitHub produces for this repo: "site: … (#29)" or the observed
+ * "Remediation/remote-first trust-engineering train: R1-R10 (Merged PR
+ * #73)". Returns null when there is none (direct pushes).
+ *
+ * Defect this second format closes (2026-09-11): the train PR #73
+ * squash-merged as "… (Merged PR #73)" — the old "(#N)"-only match
+ * returned null, the PR's release:skip label was never consulted, and
+ * the merge auto-cut patch v1.0.6 against the intended release policy.
  *
  * @param {string} subject
  * @returns {number | null}
  */
 export function prNumberFromSubject(subject) {
-  const m = subject.match(/\(#(\d+)\)/);
+  const m = subject.match(/\((?:Merged PR )?#(\d+)\)/);
   return m ? Number(m[1]) : null;
 }
 

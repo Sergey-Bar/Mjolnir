@@ -29,6 +29,34 @@ describe("prNumberFromSubject", () => {
     ).toBe(29);
   });
 
+  // Regression (2026-09-11): the R1–R10 train PR #73 squash-merged as
+  // "… (Merged PR #73)" — the "(#N)"-only match returned null, the PR's
+  // release:skip label was never consulted, and the merge auto-cut
+  // patch v1.0.6 against the intended release policy. Both GitHub
+  // subject formats this repo produces must resolve.
+  it("extracts the PR number from the '(Merged PR #N)' subject format", () => {
+    expect(
+      prNumberFromSubject(
+        "Remediation/remote-first trust-engineering train: R1-R10 (Merged PR #73)",
+      ),
+    ).toBe(73);
+    expect(prNumberFromSubject("docs: lead-ins (Merged PR #75)")).toBe(75);
+  });
+
+  it("release:skip on a '(Merged PR #N)' commit is honored", async () => {
+    const decision = await computeRelease(
+      [
+        {
+          subject:
+            "Remediation/remote-first trust-engineering train: R1-R10 (Merged PR #73)",
+        },
+      ],
+      (pr) => Promise.resolve(pr === 73 ? ["release:skip"] : ([] as string[])),
+    );
+    expect(decision.skip).toBe(true);
+    expect(decision.reason).toContain("release:skip");
+  });
+
   it("returns null for subjects without a PR reference", () => {
     expect(
       prNumberFromSubject(

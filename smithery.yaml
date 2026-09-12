@@ -3,7 +3,7 @@
   "name": "mjolnir-qa",
   "displayName": "Mjölnir — verification trust scan",
   "description": "Scans test suites, Playwright configs and CI workflows, grades the verification system (not the product code), and publishes a measured false-positive rate per rule. MCP tools: scan, explain, diff, verify, forensics, triage, pw-report.",
-  "version": "1.0.7",
+  "version": "1.0.9",
   "server":
     {
       "type": "stdio",

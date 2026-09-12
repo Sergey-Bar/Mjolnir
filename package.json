@@ -1,6 +1,6 @@
 {
   "name": "mjolnir-qa",
-  "version": "1.0.5",
+  "version": "1.0.9",
   "description": "Mjölnir — the Verification Trust Engine for QA. Audits test suites and CI pipelines, reports a worthiness score and prioritized findings.",
   "type": "module",
   "engines": {
@@ -69,7 +69,8 @@
     "brand:doctor:selftest": "node scripts/brand-doctor-selftest.mjs",
     "brand:fonts": "tsx scripts/vendor-fonts.ts",
     "brand:fonts:check": "tsx scripts/vendor-fonts.ts --check",
-    "brand:marks:update": "node scripts/update-mark-hashes.mjs"
+    "brand:marks:update": "node scripts/update-mark-hashes.mjs",
+    "docs:regen": "npm run docs:rules && npm run fp-audit:generate && npm run docs:capability && npm run docs:counts && npm run docs:depth-adjudication && npm run docs:machine-contract && npm run brand:tokens && npm run golden:update && npm run docs:hero && npm run docs:demo && npm run detector-hashes:update"
   },
   "keywords": [
     "qa",
