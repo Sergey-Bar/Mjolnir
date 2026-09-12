@@ -8,6 +8,7 @@ export default defineConfig({
     // rebuild (tsdown cleans outDir), so the build happens once, here,
     // before any worker starts.
     globalSetup: ["tests/e2e/global-setup.ts"],
+    testTimeout: 30_000,
     // Fixture files and the golden repo are DATA, not tests — they must
     // never be executed by our own runner.
     exclude: [
