@@ -1,0 +1,57 @@
+EXIT:0
+STDOUT:{
+  "schemaVersion": 1,
+  "partial": false,
+  "score": null,
+  "reason": "no-tests-found",
+  "frameworks": [],
+  "frameworkDetectionUnknown": true,
+  "dimensions": [],
+  "findings": [],
+  "testFileCount": 0,
+  "testDeclarationCount": 0,
+  "rawDeductions": 0,
+  "suppressionCount": 0,
+  "agenticProfile": {
+    "testFiles": 0,
+    "generatedMarkedFiles": 0,
+    "codegenLikeFiles": 0,
+    "shareMarkedGenerated": 0,
+    "findingsInGeneratedFiles": 0,
+    "findingsInUnmarkedFiles": 0,
+    "note": "Static provenance markers only (generated-file headers, Playwright codegen default titles). Absence of a marker does not prove human authorship; healed and MCP-edited files without markers are indistinguishable from hand-written ones. Provenance never changes scoring or evidence — authorship is metadata, not trust."
+  },
+  "analysisStatus": {
+    "discovery": "complete",
+    "rules": "complete",
+    "skippedFiles": 0,
+    "durationMs": 2,
+    "rulesCrashed": 0
+  },
+  "contract": {
+    "contractVersion": 1,
+    "summary": {
+      "digest": "sha256:7d0d2398a94591398dcc7857e01591764af59a41bdcb0c77cb09b1b1420207a4",
+      "findings": 0,
+      "score": null,
+      "errors": 0,
+      "warnings": 0,
+      "infos": 0,
+      "advisory": 0
+    },
+    "annotations": [],
+    "annotationsTruncated": false,
+    "completeness": {
+      "partial": false,
+      "discovery": "complete",
+      "rules": "complete",
+      "skippedFiles": 0,
+      "rulesCrashed": 0,
+      "truncationReasons": [],
+      "frameworkDetectionUnknown": true,
+      "durationMs": 2
+    }
+  }
+}
+
+STDERR:

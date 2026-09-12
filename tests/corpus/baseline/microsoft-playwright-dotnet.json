@@ -6,12 +6,9 @@
     "QA-CS-105": 16,
     "QA-CS-106": 4,
     "QA-CS-107": 1,
-    "QA-CS-108": 26,
-    "QA-CS-110": 135,
-    "QA-CS-111": 74,
     "QA-PW-122": 1,
     "QA-PW-143": 1
   },
-  "totalFindings": 419,
+  "totalFindings": 184,
   "partial": false
 }

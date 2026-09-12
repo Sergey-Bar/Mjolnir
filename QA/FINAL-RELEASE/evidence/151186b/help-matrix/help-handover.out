@@ -1,0 +1,8 @@
+  handover — new-QA onboarding map of the suite
+
+  Usage:
+    mjolnir handover [path]
+
+  Examples:
+    $ mjolnir handover
+

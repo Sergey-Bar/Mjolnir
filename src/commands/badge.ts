@@ -6,15 +6,21 @@
  */
 
 import { execSync } from "node:child_process";
-import { writeFileSync } from "node:fs";
+import { writeFileAtomic } from "../lib/fs-atomic.js";
 import { join } from "node:path";
 
+import { BADGE_BAND } from "../brand/tokens.js";
 import type { ScanResult } from "../types.js";
 import { deriveScoreState } from "../reporter/score-state.js";
 
 export interface BadgeOptions {
   /** Where to write mjolnir-badge.json. */
   outDir: string;
+  /**
+   * Audit (badge): HEAD commit of the scanned repo ("unknown" outside a
+   * git checkout) — a badge must be attributable to the code it measured.
+   */
+  commit?: string;
 }
 
 export interface BadgeJson {
@@ -24,6 +30,12 @@ export interface BadgeJson {
   color: string;
   namedLogo?: string;
   style?: string;
+  /**
+   * Audit (badge): HEAD commit of the scanned repo when available
+   * ("unknown" outside a git checkout) — a badge must be attributable
+   * to the code it measured.
+   */
+  commit?: string;
 }
 
 /**
@@ -32,21 +44,23 @@ export interface BadgeJson {
  * retarget fixes the historical threshold drift (the badge used
  * ≥90/≥75/≥50 with four bands while the reporter used ≥80/≥50).
  *
- * Shields.io has no cyan or white-gold, so the mapping is documented
- * here: trusted → `important` (blue-family, closest to aurora-cyan),
- * forged → `success` (the strongest positive signal shields offers).
- * The badge is a peripheral surface; ScoreState remains the truth.
+ * They are brand values now, from `BADGE_BAND`, not shields.io's named
+ * colors. That mapping was documented as "trusted → `important`
+ * (blue-family, closest to aurora-cyan)" and was simply untrue:
+ * `important` resolves to #ea7233, which is orange. Every WORTHY badge
+ * rendered the trusted band in a warning colour, and `success` — the
+ * 100 state — rendered green, which is not a score colour here.
+ *
+ * ScoreState remains the truth; the badge is still a peripheral
+ * surface. But peripheral is not the same as unchecked.
  */
 function colorFor(score: number | null): string {
   const band = deriveScoreState(score).band;
-  if (band === "unmeasured") return "lightgrey";
-  if (band === "forged") return "success";
-  if (band === "trusted") return "important";
-  return band === "warning" ? "yellow" : "red";
+  return BADGE_BAND[band];
 }
 
 /** Build the shields.io endpoint payload from a scan result. */
-export function buildBadge(result: ScanResult): BadgeJson {
+export function buildBadge(result: ScanResult, commit?: string): BadgeJson {
   const errors = result.findings.filter((f) => f.severity === "error").length;
   const score = result.score;
   const message =
@@ -60,7 +74,7 @@ export function buildBadge(result: ScanResult): BadgeJson {
     label: "MJÖLNIR",
     message,
     color: colorFor(score),
-    namedLogo: "vitest",
+    ...(commit !== undefined ? { commit } : {}),
   };
 }
 
@@ -107,6 +121,9 @@ export function renderBadgeSnippet(
 
 export function writeBadge(result: ScanResult, options: BadgeOptions): string {
   const path = join(options.outDir, "mjolnir-badge.json");
-  writeFileSync(path, JSON.stringify(buildBadge(result), null, 2));
+  writeFileAtomic(
+    path,
+    JSON.stringify(buildBadge(result, options.commit), null, 2),
+  );
   return path;
 }

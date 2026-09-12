@@ -13,6 +13,10 @@ import type {
   TestRecord,
   TestVerdict,
 } from "./types.js";
+import { FLAKE_GLYPH, sectionHeader, plainContext } from "../reporter/ui.js";
+import { classifyForensicVerdict } from "./classify.js";
+
+const ui = plainContext();
 
 const MAX_RECORDS = 100_000;
 
@@ -60,6 +64,21 @@ export function analyze(
       everFailed,
       skipped: finalStatus === "skipped",
       ...(rec.line !== undefined ? { line: rec.line } : {}),
+      // WI-18 (plan 1788882429145 §6): the forensic verdict taxonomy runs
+      // over machine-visible facts only (attempts + error text the source
+      // carries). Additive fields; sources without error text mark the
+      // state unsupported rather than guessing.
+      forensic: classifyForensicVerdict({
+        verdict: {
+          attempts: attempts.length,
+          finalStatus,
+          passedOnRetry,
+          everFailed,
+          skipped: finalStatus === "skipped",
+        },
+        errorTexts: rec.errors ?? [],
+        errorTextsUnsupported: source === "junit-xml",
+      }),
     });
   }
 
@@ -98,7 +117,7 @@ function bar(ms: number, maxMs: number, width = 20): string {
 
 export function renderLeaderboard(report: ForensicsReport): string {
   const lines: string[] = [];
-  lines.push("▚▞ FLAKINESS LEADERBOARD");
+  lines.push(sectionHeader("FLAKINESS LEADERBOARD", ui));
   lines.push("");
   lines.push(
     `${report.totalTests} tests · ${report.failed} failed · ${report.flakyTests} flaky · ${report.retriedTests} retried`,
@@ -151,7 +170,7 @@ export function renderFlakyMd(report: ForensicsReport): string {
   lines.push("|--------|------|------|----------|----------|");
   for (const v of top) {
     // Same two-row invariant as renderLeaderboard: a failure or a flake.
-    const status = v.passedOnRetry ? "🔥 TRUE-FLAKE" : "❌ failing";
+    const status = v.passedOnRetry ? `${FLAKE_GLYPH} TRUE-FLAKE` : "❌ failing";
     lines.push(
       `| ${status} | \`${v.title}\` | \`${v.file}\` | ${v.attempts} | ${(v.totalDurationMs / 1000).toFixed(1)}s |`,
     );

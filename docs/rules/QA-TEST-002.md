@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | warning                        |
 | Confidence                            | high                           |
 | Tier                                  | quarantine                     |
-| Measured FP rate                      | 65% (n=20)                     |
+| Measured FP rate                      | 62% (n=21)                     |
 | Evidence level                        | E2                             |
 | QA impact                             | False-green risk (FALSE-GREEN) |
 | False-positive risk (author estimate) | medium                         |
@@ -51,7 +51,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | getsentry-sentry                 | 9           |
 | github-docs                      | 11          |
 | grafana-grafana                  | 45          |
-| keycloak-keycloak                | 22          |
+| keycloak-keycloak                | 23          |
 | nextauthjs-next-auth             | 1           |
 | positive-fixtures                | 1           |
 | sveltejs-kit                     | 38          |
@@ -59,6 +59,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | vitejs-vite                      | 5           |
 | vitest-dev-vitest                | 23          |
 | withastro-astro                  | 32          |
+| yarnpkg-berry                    | 3           |
 
 ---
 

@@ -6,8 +6,8 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | ------------------------------------- | --------------------------- |
 | Severity                              | warning                     |
 | Confidence                            | medium                      |
-| Tier                                  | extended (PROVISIONAL)      |
-| Measured FP rate                      | not yet measured            |
+| Tier                                  | extended                    |
+| Measured FP rate                      | 0% (n=10)                   |
 | Evidence level                        | E1                          |
 | QA impact                             | Test hygiene debt (HYGIENE) |
 | False-positive risk (author estimate) | medium                      |
@@ -24,10 +24,10 @@ Migrations/seeds/deletes against a shared environment break every other pipeline
 ## What gets flagged (real detector output)
 
 ```
-Global setup mutates shared state: `execSync("npx prisma migrate deploy --schema ./prisma"…`.
+Global setup mutates shared state: `execSync("npx prisma migrate deploy --schema ./prisma/stagin…`.
 ```
 
-Example from this rule's own must-fire fixture: `tests/fixtures/QA-PW-125/must-fire/global-setup.ts`
+Example from this rule's own must-fire fixture: `tests/fixtures/QA-PW-125/must-fire/global-setup-auth.ts`
 
 ## The fix
 

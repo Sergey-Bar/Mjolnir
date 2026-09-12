@@ -2,20 +2,20 @@
 
 _Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
-| Field                                 | Value                          |
-| ------------------------------------- | ------------------------------ |
-| Severity                              | error                          |
-| Confidence                            | high                           |
-| Tier                                  | quarantine                     |
-| Measured FP rate                      | 75% (n=16)                     |
-| Evidence level                        | E2                             |
-| QA impact                             | False-green risk (FALSE-GREEN) |
-| False-positive risk (author estimate) | low                            |
-| Autofix available                     | no                             |
-| Languages                             | yaml                           |
-| Frameworks                            | github-actions                 |
-| Detection strategy                    | LEXICAL                        |
-| Introduced in                         | v0.1.0                         |
+| Field                                 | Value                                    |
+| ------------------------------------- | ---------------------------------------- |
+| Severity                              | error                                    |
+| Confidence                            | high                                     |
+| Tier                                  | quarantine                               |
+| Measured FP rate                      | 10% (n=10)                               |
+| Evidence level                        | E2                                       |
+| QA impact                             | False-green risk (FALSE-GREEN)           |
+| False-positive risk (author estimate) | low                                      |
+| Autofix available                     | no                                       |
+| Languages                             | yaml, groovy                             |
+| Frameworks                            | github-actions, azure-pipelines, jenkins |
+| Detection strategy                    | LEXICAL                                  |
+| Introduced in                         | v0.1.0                                   |
 
 ## Why this fails in production
 
@@ -41,14 +41,10 @@ Verified against `tests/fixtures/QA-CI-008/must-not-fire/clean.yml` — a legiti
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo                 | Occurrences |
-| -------------------- | ----------- |
-| appsmithorg-appsmith | 5           |
-| grafana-grafana      | 3           |
-| hashicorp-vault      | 3           |
-| streamlit-streamlit  | 1           |
-| vercel-next-js       | 3           |
-| vitest-dev-vitest    | 1           |
+| Repo              | Occurrences |
+| ----------------- | ----------- |
+| positive-fixtures | 9           |
+| vitest-dev-vitest | 1           |
 
 ---
 

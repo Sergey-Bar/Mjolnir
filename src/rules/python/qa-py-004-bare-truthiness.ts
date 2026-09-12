@@ -24,6 +24,13 @@ export const pyBareTruthinessAssert = defineRule({
   falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "bare truthiness asserts (assert obj) are assertion-semantics on " +
+      "the code-only text; the detector matches the bare-assert shapes — " +
+      "the AST re-derives the same call",
+  },
   introduced: "0.3.0",
   tier: "quarantine",
   // Phase 2 retune wave 2 (EVIDENCE-BACKED, detectorRevision 3 — §07):
@@ -41,6 +48,7 @@ export const pyBareTruthinessAssert = defineRule({
     if (!ctx.path.endsWith(".py")) return findings;
 
     // `assert <identifier-or-call>` with no comparison/boolean operator.
+    // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
     const re = /^[ \t]*assert\s+([A-Za-z_][\w.]*(?:\([^()]*\))?)[ \t]*$/gm;
 
     // Calls whose return value is a meaningful boolean predicate — the
@@ -64,8 +72,10 @@ export const pyBareTruthinessAssert = defineRule({
       matchIndex: number,
       target: string,
     ): boolean => {
-      const root = target.split(".")[0] ?? "";
-      if (!/^[A-Z_]\w*$/i.test(root)) return false;
+      // The capture regex only admits [A-Za-z_][\w.]* targets (plus an
+      // optional (...) tail), so the root is always an identifier —
+      // split always yields that head, no guard needed.
+      const root = target.split(".")[0] as string;
       // Search strictly AFTER this assert's own line — the line itself
       // always contains the root and would self-match.
       const lineEnd = text.indexOf("\n", matchIndex);
@@ -75,10 +85,11 @@ export const pyBareTruthinessAssert = defineRule({
       const lines = after.split("\n");
       const window: string[] = [];
       for (let i = 0; i < lines.length && window.length < 15; i++) {
-        const l = lines[i] ?? "";
+        const l = lines[i] as string;
         if (/^\s*def\s/.test(l) && window.length > 0) break;
         window.push(l);
       }
+      // eslint-disable-next-line security/detect-non-literal-regexp -- root is an identifier — the capture regex only admits [A-Za-z_][\w.]* targets
       const usesRoot = new RegExp(`\\b${root}\\b`);
       return window.some((l) => usesRoot.test(l));
     };

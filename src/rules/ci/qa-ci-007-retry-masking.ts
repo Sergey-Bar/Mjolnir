@@ -9,6 +9,12 @@
 
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
+import {
+  isAzurePipelineDoc,
+  locateAzureStepKey,
+  stepIsVerificationGate as stepIsAzureVerificationGate,
+} from "./azure-gates.js";
+import type { AzurePipelineDoc } from "../../discovery/azure-pipeline-parser.js";
 
 interface StepNode {
   uses?: string;
@@ -36,18 +42,39 @@ export const retryMasking = defineRule({
   appliesTo: "ci-workflows",
   // Trust Metadata
   languages: ["yaml"],
-  frameworks: ["github-actions"],
+  // P3b: `retryCountOnTaskFailure` is the Azure DevOps retry mechanism.
+  frameworks: ["github-actions", "azure-pipelines"],
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "retry masking is defined by the runner's retry semantics, which no " +
+      "language syntax tree represents; the detector matches the runner's " +
+      "own retry keys (GitHub `uses:`/shell loops, Azure " +
+      "`retryCountOnTaskFailure`) in pipeline YAML where statements are " +
+      "shell strings",
+  },
   introduced: "0.1.0",
 
-  // Measured 2026-09-02 (corpus wave 5): tier set from the measured envelope (plan §11.2).
+  // Measured (corpus wave 5): tier set from the measured envelope (plan §11.2).
+  // detectorRevision 2 (M2, 2026-09-04): inline-loop branch requires a real
+  // retry construct around a verification gate (curl-probe FPs excluded).
+  // Rev-1 measurement invalidated per §07 (stale → re-measured).
+  // detectorRevision 3 (P3b, 2026-09-10): Azure DevOps arm added —
+  // `retryCountOnTaskFailure` on a verification task/script step. Additive
+  // platform detection; the GitHub paths are unchanged.
   tier: "extended",
+  detectorRevision: 3,
   run(ctx) {
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
-    const doc = ctx.ast as WorkflowDoc | undefined;
+    const doc = ctx.ast as WorkflowDoc | AzurePipelineDoc | undefined;
+    if (isAzurePipelineDoc(doc)) {
+      azureArm(ctx, doc, findings);
+      return findings;
+    }
     if (!doc?.jobs) return findings;
 
     for (const [jobName, job] of Object.entries(doc.jobs)) {
@@ -55,23 +82,29 @@ export const retryMasking = defineRule({
         // nick-fields/retry or similar retry wrappers around test commands.
         if (step?.uses && /retry/i.test(step.uses)) {
           const withCfg = step.with ?? {};
-          const command = String(
-            withCfg["command"] ?? withCfg["max_tries"] ?? "",
-          );
-          const runsTests =
-            /\b(?:npm|yarn|pnpm)\s+(?:test|run\s+test)|\b(?:jest|vitest|pytest|playwright)\b/.test(
-              command,
-            );
+          // FW-BUG-01: `with` values are unknown-typed YAML — only a real
+          // string command carries the test-run signal; a nested mapping
+          // coerced via String() produced "[object Object]" noise.
+          const command =
+            typeof withCfg["command"] === "string" ? withCfg["command"] : "";
           // Fire only when the retry wrapper actually runs tests; a retry
           // around a non-test command (curl, deploy…) is legitimate.
-          if (!runsTests) continue;
+          if (
+            !/\b(?:npm|yarn|pnpm)\s+(?:test|run\s+test)|\b(?:jest|vitest|pytest|playwright)\b/.test(
+              command,
+            )
+          )
+            continue;
           findings.push({
             severity: "warning",
             confidence: "high",
             findingType: "deterministic-defect",
             qaImpact: "FLAKY-RISK",
             file: ctx.path,
-            line: findLine(ctx.text, new RegExp(escapeRe(step.uses))),
+            // detectorRevision 2: anchor the line at THIS step's uses: text
+            // (file-wide search collapsed every matching step onto the
+            // first retry-action occurrence in the file).
+            line: findStepUsesLine(ctx.text, step.uses, command),
             column: 1,
             message: `Job \`${jobName}\` wraps a test command in an automatic retry action.`,
             why: "Retrying tests until they pass hides flaky and intermittent failures — the green check no longer means the suite passed.",
@@ -79,23 +112,51 @@ export const retryMasking = defineRule({
           });
         }
         // Inline shell retry loops around test commands.
-        if (
-          step?.run &&
-          /\bfor\b[\s\S]*retry|max_attempts|until.*succeed/i.test(step.run) &&
-          /test/i.test(step.run)
-        ) {
-          findings.push({
-            severity: "warning",
-            confidence: "medium",
-            findingType: "heuristic-risk",
-            qaImpact: "FLAKY-RISK",
-            file: ctx.path,
-            line: findLine(ctx.text, /max_attempts|until.*succeed/i),
-            column: 1,
-            message: `Job \`${jobName}\` contains a shell retry loop around tests.`,
-            why: "Retry-until-pass loops mask intermittent failures instead of surfacing them.",
-            fix: "Run tests once; track and fix flakes explicitly.",
-          });
+        // detectorRevision 2 (M2, 2026-09-04): rev-1 matched /test/i
+        // anywhere in the run block — "latest", "contest" — and counted
+        // curl/wget network retries (`curl --retry`) as test-retry loops
+        // (adjudicated FPs: github-docs local-dev.yml, Humanizr docs.yml).
+        // The loop must be a real shell retry construct (a bare word like
+        // "attempt"/"try" also matched JS try-blocks and step names —
+        // adjudicated FPs: appsmith rerun-failures, grafana release-build)
+        // AND wrap a TEST runner (build/lint targets are not flake-masking:
+        // adjudicated FPs: grafana make build-docker, vault make ci-get-date
+        // inside a while-read file iteration).
+        if (step?.run) {
+          // Counter-style retry loops only: $(seq …) / {1..N} / digit lists,
+          // while-true, max_attempts, until-succeed. A bare `for X in Y` also
+          // matched glob picks (grafana dist/*.tar.gz), file iteration
+          // (vault while-read), and even comment text ("Check for X in …") —
+          // adjudicated FPs, 2026-09-04.
+          const LOOP_RE =
+            // eslint-disable-next-line security/detect-unsafe-regex, regexp/no-contradiction-with-assertion -- bounded literal one-line patterns; ReDoS authoritatively gated by regexp/no-super-linear-backtracking (error) + tests/redos-audit.spec.ts
+            /\bfor\b[^\n]*\$\(\s*(?:seq|range)\b|\bfor\b[^\n]*\{\d+\.\.\d+\}|\bfor\s+\w+\s+in\s+\d+(?:[,\t ]+\d+)*[;\s]*do\b|\bwhile\b[^\n]*\btrue\b|\bwhile\s+:;|\bmax_attempts\b|\buntil\b[^\n]*\bsucceed\b/i;
+          const TEST_GATE_RE =
+            // eslint-disable-next-line security/detect-unsafe-regex, regexp/no-useless-character-class -- bounded literal one-line patterns; ReDoS authoritatively gated by regexp/no-super-linear-backtracking (error) + tests/redos-audit.spec.ts
+            /\b(?:npm|yarn|pnpm|bun)\s+(?:run\s+)?(?:test|t)\b|\bnpx\s+(?:vitest|jest|mocha|ava|playwright\s+test)\b|\b(?:vitest|jest|mocha|ava|tap)\b|\bplaywright\s+test\b|\b(?:pytest|tox|nox)\b|\bpython\s+-m\s+(?:pytest|unittest)\b|\bmvn[wd]?\b[^\n]+\b(?:test|verify)\b|\b(?:[.]\/)?gradlew?\b[^\n]+\btest\b|\bdotnet\s+test\b|\bgo\s+test\b|\bcargo\s+test\b|\bmake\s+[\w./\\-]*test\b/i;
+          const isCurlProbe =
+            /\b(?:curl|wget)\b/.test(step.run) && !TEST_GATE_RE.test(step.run);
+          if (
+            LOOP_RE.test(step.run) &&
+            TEST_GATE_RE.test(step.run) &&
+            !isCurlProbe
+          ) {
+            findings.push({
+              severity: "warning",
+              confidence: "medium",
+              findingType: "heuristic-risk",
+              qaImpact: "FLAKY-RISK",
+              file: ctx.path,
+              // detectorRevision 2: anchor the line at THIS step's run text
+              // (file-wide search collapsed every matching step onto the
+              // first loop occurrence — distinct findings shared one line).
+              line: findStepLoopLine(ctx.text, step.run, LOOP_RE),
+              column: 1,
+              message: `Job \`${jobName}\` contains a shell retry loop around tests.`,
+              why: "Retry-until-pass loops mask intermittent failures instead of surfacing them.",
+              fix: "Run tests once; track and fix flakes explicitly.",
+            });
+          }
         }
       }
     }
@@ -103,7 +164,27 @@ export const retryMasking = defineRule({
   },
 });
 
-function findLine(text: string, re: RegExp): number {
+/**
+ * Line of the loop construct belonging to THIS step.
+ *
+ * detectorRevision 2: anchors at the step's first run line, then finds the
+ * loop construct at or after it — a file-wide LOOP_RE search reported every
+ * matching step on the first loop occurrence in the file.
+ */
+function findStepLoopLine(text: string, run: string, loopRe: RegExp): number {
+  const firstLine = run
+    .split("\n")
+    .map((l) => l.trim())
+    .find((l) => l.length > 0);
+  // Call sites guarantee a non-empty run (LOOP_RE + TEST_GATE_RE both
+  // require it), so firstLine is always defined — the cast is the
+  // documented invariant; indexOf -1 then degrades to a file-wide
+  // search via lastIndex coercion (negative → 0).
+  const anchorAt = text.indexOf(firstLine as string);
+  // `g` is required for lastIndex to have any effect on exec().
+  // eslint-disable-next-line security/detect-non-literal-regexp -- loopRe.source is a compile-time-constant literal (LOOP_RE) — not scan input
+  const re = new RegExp(loopRe.source, "gi");
+  re.lastIndex = Math.max(0, anchorAt);
   const m = re.exec(text);
   if (!m) return 1;
   let line = 1;
@@ -111,6 +192,80 @@ function findLine(text: string, re: RegExp): number {
   return line;
 }
 
-function escapeRe(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+/**
+ * Line of the retry-action `uses:` belonging to THIS step.
+ *
+ * detectorRevision 2: anchors at the step's own `with.command` text and
+ * takes the nearest `uses:` occurrence at or before it — a file-wide search
+ * reported every wrapping step on the first occurrence when several jobs
+ * use the same retry action at the same version.
+ */
+function findStepUsesLine(text: string, uses: string, command: string): number {
+  const needle = uses.trim();
+  const firstCmdLine = command.trim().split("\n")[0]?.trim();
+  // Call sites guarantee `command` is non-empty (the runsTests regex
+  // requires a command string), so firstCmdLine is always defined — the
+  // cast is the documented invariant; indexOf -1 then Math.max 0
+  // degrades to a file-wide search.
+  const cmdAnchor = Math.max(0, text.indexOf(firstCmdLine as string));
+  const at = nearestBefore(text, cmdAnchor, needle);
+  if (at === -1) return 1;
+  let line = 1;
+  for (let i = 0; i < at; i++) if (text[i] === "\n") line++;
+  return line;
+}
+
+/** The nearest occurrence of `needle` ending at or before `at`. */
+function nearestBefore(text: string, at: number, needle: string): number {
+  const windowStart = Math.max(0, at - 2000);
+  const rel = text.slice(windowStart, at + 1).lastIndexOf(needle);
+  return rel !== -1 ? windowStart + rel : -1;
+}
+
+type FindingPart = Omit<Finding, "ruleId" | "category">;
+
+/**
+ * Azure DevOps arm (detectorRevision 3, P3b): `retryCountOnTaskFailure` on
+ * a step that runs a verification gate — the same masking semantics as the
+ * GitHub retry wrappers, in the Azure runner's own retry key. A retry
+ * count of 0 or a missing key is the honest default and never fires.
+ */
+function azureArm(
+  ctx: { path: string; text: string },
+  doc: AzurePipelineDoc,
+  findings: FindingPart[],
+): void {
+  const jobs = [
+    ...(doc.stages ?? []).flatMap((s) => s.jobs ?? []),
+    ...(doc.jobs ?? []),
+  ];
+  if (doc.steps?.length) {
+    jobs.push({ name: "steps", kind: "job" as const, steps: doc.steps });
+  }
+  for (const job of jobs) {
+    for (const step of job.steps ?? []) {
+      if (!step) continue;
+      const retry = step.retryCountOnTaskFailure;
+      const n =
+        typeof retry === "number"
+          ? retry
+          : typeof retry === "string"
+            ? Number.parseInt(retry, 10)
+            : 0;
+      if (!Number.isInteger(n) || n <= 0) continue;
+      if (!stepIsAzureVerificationGate(step)) continue;
+      findings.push({
+        severity: "warning",
+        confidence: "high",
+        findingType: "deterministic-defect",
+        qaImpact: "FLAKY-RISK",
+        file: ctx.path,
+        line: locateAzureStepKey(ctx.text, step, "retryCountOnTaskFailure"),
+        column: 1,
+        message: `Job \`${job.name ?? "?"}\` retries a verification task \`${step.name ?? "?"}\` on failure (retryCountOnTaskFailure: ${n}).`,
+        why: "Retrying tests until they pass hides flaky and intermittent failures — the green stage no longer means the suite passed.",
+        fix: "Remove retryCountOnTaskFailure from the verification task; investigate the underlying flakiness instead.",
+      });
+    }
+  }
 }

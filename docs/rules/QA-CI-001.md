@@ -2,20 +2,20 @@
 
 _Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
-| Field                                 | Value                                       |
-| ------------------------------------- | ------------------------------------------- |
-| Severity                              | error                                       |
-| Confidence                            | high                                        |
-| Tier                                  | quarantine                                  |
-| Measured FP rate                      | 32% (n=19)                                  |
-| Evidence level                        | E2                                          |
-| QA impact                             | False-green risk (FALSE-GREEN)              |
-| False-positive risk (author estimate) | low                                         |
-| Autofix available                     | no                                          |
-| Languages                             | yaml                                        |
-| Frameworks                            | github-actions                              |
-| Detection strategy                    | FRAMEWORK (parsed YAML + test-command gate) |
-| Introduced in                         | v0.1.0                                      |
+| Field                                 | Value                                                                       |
+| ------------------------------------- | --------------------------------------------------------------------------- |
+| Severity                              | error                                                                       |
+| Confidence                            | high                                                                        |
+| Tier                                  | quarantine                                                                  |
+| Measured FP rate                      | 11% (n=19)                                                                  |
+| Evidence level                        | E2                                                                          |
+| QA impact                             | False-green risk (FALSE-GREEN)                                              |
+| False-positive risk (author estimate) | low                                                                         |
+| Autofix available                     | no                                                                          |
+| Languages                             | yaml                                                                        |
+| Frameworks                            | github-actions, azure-pipelines                                             |
+| Detection strategy                    | FRAMEWORK (parsed YAML + test-command gate (GitHub Actions + Azure DevOps)) |
+| Introduced in                         | v0.1.0                                                                      |
 
 ## Why this fails in production
 
@@ -43,15 +43,10 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo                 | Occurrences |
 | -------------------- | ----------- |
-| appsmithorg-appsmith | 1           |
 | getsentry-sentry     | 1           |
-| github-docs          | 2           |
-| grafana-grafana      | 2           |
-| hashicorp-vault      | 1           |
+| grafana-grafana      | 1           |
 | nextauthjs-next-auth | 2           |
-| positive-fixtures    | 10          |
-| streamlit-streamlit  | 1           |
-| vitest-dev-vitest    | 1           |
+| positive-fixtures    | 16          |
 
 ---
 

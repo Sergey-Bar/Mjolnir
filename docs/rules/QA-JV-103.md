@@ -43,11 +43,12 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo                          | Occurrences |
 | ----------------------------- | ----------- |
-| appsmithorg-appsmith          | 75          |
+| appsmithorg-appsmith          | 80          |
 | iluwatar-java-design-patterns | 41          |
-| keycloak-keycloak             | 1387        |
+| junit-team-junit5             | 833         |
+| keycloak-keycloak             | 1390        |
 | microsoft-playwright-java     | 43          |
-| positive-fixtures             | 4           |
+| positive-fixtures             | 5           |
 | SeleniumHQ-selenium           | 249         |
 
 ---

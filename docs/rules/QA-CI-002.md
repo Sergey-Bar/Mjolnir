@@ -2,20 +2,20 @@
 
 _Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
-| Field                                 | Value                          |
-| ------------------------------------- | ------------------------------ |
-| Severity                              | error                          |
-| Confidence                            | high                           |
-| Tier                                  | extended                       |
-| Measured FP rate                      | 19% (n=16)                     |
-| Evidence level                        | E2                             |
-| QA impact                             | False-green risk (FALSE-GREEN) |
-| False-positive risk (author estimate) | low                            |
-| Autofix available                     | no                             |
-| Languages                             | yaml                           |
-| Frameworks                            | github-actions                 |
-| Detection strategy                    | LEXICAL                        |
-| Introduced in                         | v0.1.0                         |
+| Field                                 | Value                                    |
+| ------------------------------------- | ---------------------------------------- |
+| Severity                              | error                                    |
+| Confidence                            | high                                     |
+| Tier                                  | extended                                 |
+| Measured FP rate                      | 11% (n=18)                               |
+| Evidence level                        | E2                                       |
+| QA impact                             | False-green risk (FALSE-GREEN)           |
+| False-positive risk (author estimate) | low                                      |
+| Autofix available                     | no                                       |
+| Languages                             | yaml, groovy                             |
+| Frameworks                            | github-actions, azure-pipelines, jenkins |
+| Detection strategy                    | LEXICAL                                  |
+| Introduced in                         | v0.1.0                                   |
 
 ## Why this fails in production
 
@@ -45,8 +45,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | ----------------- | ----------- |
 | calcom-cal        | 1           |
 | grafana-grafana   | 2           |
-| positive-fixtures | 11          |
-| reflex-dev-reflex | 1           |
+| positive-fixtures | 14          |
 
 ---
 

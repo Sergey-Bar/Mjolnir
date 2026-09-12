@@ -92,7 +92,11 @@ const WHY =
   "Fixed sleeps are flaky under load and slow everywhere; Playwright locators auto-wait for actionability.";
 
 function firstArgText(call: TsNode): string | undefined {
-  const args = call.childForFieldName("arguments") ?? call.namedChildren.at(-1);
+  // Every invocation_expression in the C# grammar carries the
+  // arguments field (verified against real parses) — but a Java-style
+  // `method_invocation` node passed in by a future consumer would not;
+  // the cast trusts the C# shape and returns the argument list text.
+  const args = call.childForFieldName("arguments") as TsNode | undefined;
   return args?.namedChildren[0]?.text;
 }
 
@@ -153,6 +157,14 @@ export const hardSleepFamily = definePatternFamily({
   why: WHY,
   falsePositiveRisk: "low",
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "family-fallback-lockstep",
+    detail:
+      "the hard-sleep family's Java variant (QA-JV-102): the family's " +
+      "structural path carries the depth where a tree is available; this " +
+      "lexical path is the mandatory deterministic fallback kept in " +
+      "lockstep (§13.2)",
+  },
   introduced: "0.3.8",
   tier: "extended",
   useCodeText: true,

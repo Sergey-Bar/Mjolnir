@@ -1,0 +1,8 @@
+  mcp — run as an MCP server over stdio (scan / explain / diff tools)
+
+  Usage:
+    mjolnir mcp
+
+  Examples:
+    $ mjolnir mcp
+

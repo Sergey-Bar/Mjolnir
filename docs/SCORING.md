@@ -1,37 +1,82 @@
 # Scoring — How WORTHINESS Is Computed
 
-> **Status (post-Sprint 8):** `NORMALIZATION_K = 5` produces correct verdicts
-> on all three known data points (see table below) and the self-scan scores 100
-> with 5 suppressions (down from 19 after the `isInsideEmbeddedCode`
-> architectural fix). The constant is **not fitted** against the 6-repo corpus
-> because the corpus baselines record `totalFindings` but not
-> `testDeclarationCount` — a full calibration requires the `corpus:audit`
-> script to also persist declaration counts per repo (TODO added).
+> **Status (post-P2, 2026-09-08):** `NORMALIZATION_K = 5` still produces the
+> documented verdicts on the measured data points (see the re-measured table
+> below); the self-scan carries 2 suppression-free warning points (QA-PW-125
+> tree drift, see the table). The constant remains **not fitted** against the
+> corpus, but the calibration debt is now actionable: `corpus:audit` persists
+> `testDeclarationCount` per repo (P2.4), so the next baseline refresh makes a
+> corpus fit a measurement rather than a guess. The deduction-mass ceilings
+> (v2) are boundary-frozen — their calibration inputs are recorded, their
+> values are not tuned to flatter any repo.
 > `SMOOTHING_C` is the standard Laplace constant (1), not a tuned value.
 
-## Formula
+## Formula (v2 — deduction-mass ceilings)
 
 ```
-rate  = totalDeductions / (testDeclarations + SMOOTHING_C)
+rate  = totalDeductions / (testDeclarations + SMOOTHING_C)   // density — unchanged
 score = 100 − min(100, rate × NORMALIZATION_K)
+score = min(score, MASS_CEILING(totalDeductions))            // NEW absolute term
 ```
 
-Then three overrides, in order:
+Then the categorical overrides, in order:
 
 1. **Honesty guard** — if any deduction was charged, the score is capped at 99.
-   100 is reserved for zero deductions.
-2. **Error-severity floor** — if any error-level finding with a non-zero
-   deduction exists, the score is capped at 95. Errors are categorical defects;
-   a 10,000-declaration repo cannot outgrow them through sheer size.
-3. **Categorical override** — if any finding is suite-invalidating, the score is
-   capped at `SUITE_INVALIDATED_CEILING` (49), placing it in UNWORTHY.
+   100 is reserved for zero deductions. (Also the trivial case of the mass
+   ceiling: > 0 pts can never read 100.)
+2. **Deduction-mass ceiling (new, non-dilutable)** — an absolute deduction mass
+   caps the score regardless of the denominator:
 
-| Constant                    | Value | Fitted?                     |
-| --------------------------- | ----- | --------------------------- |
-| `NORMALIZATION_K`           | 5     | No                          |
-| `SMOOTHING_C`               | 1     | Laplace default, not fitted |
-| `ERROR_SEVERITY_CEILING`    | 95    | Derived from design intent  |
-| `SUITE_INVALIDATED_CEILING` | 49    | Derived from the 50 floor   |
+   | Evidence-discounted mass (`effectiveDeductions`) | Ceiling                                                 |
+   | ------------------------------------------------ | ------------------------------------------------------- |
+   | 0                                                | 100 — no ceiling (zero deductions)                      |
+   | > 0                                              | 99 (the honesty guard, subsumed)                        |
+   | ≥ 8                                              | 95 (subsumes the error-severity floor: 1 error ≥ 8 pts) |
+   | ≥ 40                                             | 85                                                      |
+   | ≥ 80                                             | 75                                                      |
+   | ≥ 160                                            | 65                                                      |
+
+3. **Error-severity floor** — if any error-level finding with a non-zero
+   deduction exists, the score is capped at 95. Errors are categorical defects;
+   a 10,000-declaration repo cannot outgrow them through sheer size. Since v2
+   this is the ≥ 8 mass band seen from the other side — kept as a named guard
+   so the law stays visible and the two cannot drift apart.
+4. **Categorical override** — if any finding is suite-invalidating, the score is
+   capped at `SUITE_INVALIDATED_CEILING` (49), placing it in UNWORTHY. Applied
+   last, unchanged.
+
+| Constant                    | Value                      | Fitted?                                                                            |
+| --------------------------- | -------------------------- | ---------------------------------------------------------------------------------- |
+| `NORMALIZATION_K`           | 5                          | No                                                                                 |
+| `SMOOTHING_C`               | 1                          | Laplace default, not fitted                                                        |
+| `DEDUCTION_MASS_CEILINGS`   | 8→95, 40→85, 80→75, 160→65 | Boundaries chosen to hold the three known data points, then frozen (see changelog) |
+| `ERROR_SEVERITY_CEILING`    | 95                         | Subsumed by the ≥ 8 mass band; kept as a named guard                               |
+| `SUITE_INVALIDATED_CEILING` | 49                         | Derived from the 50 floor                                                          |
+
+The `effectiveDeductions` field on the JSON report is the exact mass the
+ceiling caps against — a consumer can recompute `MASS_CEILING` from the
+report without re-deriving evidence levels. When the ceiling is what
+binds (not density), the terminal render says `capped: deduction mass`.
+
+## Why padding stops working
+
+Under formula v1 the attack was arithmetic and free: fix the deduction
+mass, pad the denominator. 80 warning-points of real findings over
+10,000 declarations scored `100 − (80/10001) × 5 ≈ 99.96` → 99 — "one
+minor issue" while the suite carried 26+ warning-grade defects. Density
+normalization measures _how much of the suite is questionable_, so
+growing the suite _necessarily_ shrinks the rate; padding was not a bug
+in the rate, it was the rate doing exactly what it measures — and the
+result was still a lie about the suite.
+
+The mass ceiling closes the vector structurally: the ceiling's input is
+the deduction mass alone, so **padding cannot move it**. The same 80
+warning-points read ≤ 75 in a 40-test repo and in a 10,000-test one.
+What density still gets to decide is placement _within_ the band — a
+lone warning (3 pts) in a 10,000-declaration suite scores
+`100 − (3/10001) × 5 ≈ 99.9` → 99, untouched by any ceiling. Small
+masses stay the density formula's legitimate domain (the design intent
+of normalization is preserved); large masses stop being dilutable.
 
 ## Per-Finding Deductions
 
@@ -52,10 +97,66 @@ version bump.
 | E1    | Pattern evidence    | Half (rounded down) |
 | E0    | Observation only    | Zero                |
 
+## Trust summary formulas (v1 — WI-3, plan §6)
+
+`trustSummary` on the scan JSON is a **measurement, not a contract** — the
+scan's own claim of how much its verdict can be trusted. Single definition
+site: `src/engine/trust-summary.ts`; this section is the published formula.
+All four metrics are deterministic (same scan → same summary) and none can
+exceed its incompleteness ceiling.
+
+**`level`** — the best trust rung any finding reached
+(`max(trustLevel)`; uncorroborated findings settle at L2 by
+`deriveTrustLevel`; a findings-free scan reads L0 — an observation, not a
+proof).
+
+**`confidence`** ∈ [0, 1], over findings:
+
+```
+evidenceMass(f)  = 1 (E2) · 0.5 (E1) · 0 (E0)
+rung(f)          = L0..L5 → 0..5          (deriveTrustLevel; uncorroborated cap L2)
+composite        = ( mean(evidenceMass) + mean(rung / 5) ) / 2     — 0.5·0.5·0.5 halves
+confidence       = min(1, max(0, composite)) × incompletenessCeiling
+```
+
+A findings-free whole scan reads 1 ("nothing found, nothing hidden"); a
+findings-free **partial** scan reads only its ceiling — unknowns may be
+hiding under the truncation, and missing evidence never becomes confidence.
+
+**Incompleteness ceilings** (the binding value is the minimum of the
+applicable factors; each application is disclosed in `ceilingReasons`):
+
+| Factor                      | Ceiling | Trigger                                                         |
+| --------------------------- | ------- | --------------------------------------------------------------- |
+| partial-scan                | 0.5     | `partial` (discovery truncated / rules partial / files skipped) |
+| truncated-analysis          | 0.6     | `discovery: partial` or any `truncationReasons`                 |
+| rules-crashed:N             | 0.8     | any rule crashed mid-scan                                       |
+| framework-detection-unknown | 0.9     | `frameworkDetectionUnknown`                                     |
+
+**`evidenceCoverage`** = `evidenceBackedDeclarations / analyzedDeclarations`
+— declarations living in files that produced at least one **non-advisory
+(E1+)** finding. E0-only files back nothing: an observation is not
+evidence of coverage. Zero analyzed declarations → 0 (never NaN).
+
+**`inconclusiveRate`** = `scan-level unknowns / (unknowns + findings)`,
+where unknowns = rules crashed + truncation reasons + skipped files +
+framework-unknown. 0.6.x has no forensic INCONCLUSIVE classifications yet
+(1.1.x adds them per plan WI-18); the scan-level unknowns are today's
+honest inconclusive signals.
+
+**`measuredFpOfFiredRules`** — evidence-weighted measured FP rate over
+fired rules: `Σ(fpRateᵣ × wᵣ) / Σ wᵣ` with `wᵣ` = the rule's summed
+evidence mass. The rate is **absent** when nothing fired, when no fired
+rule is measured, or when the fired set mixes measured and unmeasured
+rules — a mixed average would silently hide the unknown. Unmeasured fired
+rules are disclosed by ID in `provisionalRuleIds` (the PROVISIONAL
+disclosure; the KPI itself closes at WI-14).
+
 ## Verdict Bands
 
 | Score   | Verdict    |
 | ------- | ---------- |
+| 100     | FORGED     |
 | ≥ 80    | WORTHY     |
 | 50 – 79 | NEEDS WORK |
 | < 50    | UNWORTHY   |
@@ -120,10 +221,15 @@ The floor ensures errors always have visible impact on the score. You cannot
 outgrow them by adding more declarations — the only way to get above 95 is to
 fix the errors.
 
+Since formula v2 this floor is the ≥ 8 deduction-mass band's named special
+case (1 error ≥ 8 pts always crosses the band), and the mass ceiling extends
+the same non-dilutable logic to warning/info masses — 80 warning-points of
+real findings now read ≤ 75 at any suite size, where v1 read 99.
+
 ## Current measured behavior
 
-Measured after the FP fixes and the `isInsideEmbeddedCode` architectural fix,
-with the constants above:
+Measured at the Phase-5 constants (still current): `NORMALIZATION_K = 5`,
+`SMOOTHING_C = 1`, and — since v2 — the mass ceilings:
 
 | Repo                 | Declarations | Raw pts | Score | Verdict    | Driver                  |
 | -------------------- | ------------ | ------- | ----- | ---------- | ----------------------- |
@@ -132,7 +238,27 @@ with the constants above:
 | `examples/demo-repo` | 2            | 20      | 67    | NEEDS WORK | density                 |
 
 All three verdict bands are reachable, and each is reached for a different and
-stated reason rather than by an arithmetic accident.
+stated reason rather than by an arithmetic accident. The v2 mass ceiling
+re-verified all three: self 0 pts (no ceiling), golden 40 pts (below the ≥ 40
+band; categorical driver unchanged), demo 20 pts (below the ≥ 40 band; density
+driver unchanged). The known data points hold without tuning the boundaries.
+
+**Re-measured 2026-09-08 at v0.5.33 (post-P2), same tree, ceilings active** —
+the corpus and the registry grew since the Phase-5 table, and the numbers moved
+with the tree, not with the formula:
+
+| Repo                 | Declarations | Raw pts       | Score | Verdict    | Driver                                |
+| -------------------- | ------------ | ------------- | ----- | ---------- | ------------------------------------- |
+| this repo            | 3480         | 2             | 99    | WORTHY     | honesty guard (2 new QA-PW-125 fires) |
+| `tests/golden/repo`  | 4            | 16 (--strict) | 49    | UNWORTHY   | `it.only` (categorical — unchanged)   |
+| `examples/demo-repo` | 7            | 40            | 75    | NEEDS WORK | density (85 ceiling does not bind)    |
+
+The drifted rows are re-measured evidence, not regressions: scores are
+identical with and without the v2 ceiling at these masses (2 pts and 40 pts
+cross no band; the golden repo's 49 is the categorical override, reproduced
+exactly under `--strict`). The declaration-count persistence added to
+`corpus:audit` (P2.4) is what makes the next calibration a measurement instead
+of this kind of hand-check.
 
 Suppression count: **5** (down from 19). The 14 eliminated suppressions were
 masking-gap false positives on test-data strings — now handled architecturally

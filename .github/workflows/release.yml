@@ -1,12 +1,18 @@
 name: Release
 
-# Automatic release: push a version tag (v*) → the full gate runs → the
-# package is published to npm → a GitHub Release is created with
-# auto-generated notes and the built CLI attached.
+# Two release paths, one workflow file (the npmjs.com Trusted Publisher
+# matches the workflow FILENAME exactly — a second file would fail OIDC
+# with ENEEDAUTH):
 #
-# Usage:
-#   npm version patch|minor|major   # bumps package.json + creates the tag
-#   git push --follow-tags
+# 1. Automated (default): merge to `main` → the `version` job computes
+#    the bump from PR labels (no label = patch; release:major / minor /
+#    skip override), collapses CHANGELOG.md's [Unreleased] sections
+#    under the new version, commits + tags v<X> as mjolnir-release-bot,
+#    and the `release` job publishes from that tag. Zero manual
+#    commands.
+# 2. Manual: push a version tag (v*) or `gh workflow run release.yml
+#    -f tag=vX.Y.Z` → the `release` job runs the full gate and
+#    publishes. This is the rc-channel path (docs/PUBLISHING.md).
 #
 # ORDER MATTERS. npm publish runs BEFORE the GitHub Release is created,
 # and the release job refuses to create a Release until the version is
@@ -18,6 +24,11 @@ name: Release
 
 on:
   push:
+    # Auto-release path: every merge to main produces exactly one
+    # release (major/minor/patch — no gaps, no manual npm version).
+    branches:
+      - main
+    # Manual rc releases (npm version 1.1.0-rc.1 + push --follow-tags).
     tags:
       - "v*"
   # Re-run a release for a tag that already exists. Needed whenever a
@@ -32,33 +43,154 @@ on:
         required: true
         type: string
 
-# Least privilege at the top level; the release job escalates what it
-# actually needs. Job-level `permissions` replaces this block, so the
-# job below still gets contents:write.
+# Least privilege at the top level; each job escalates what it actually
+# needs via job-level `permissions`.
 permissions:
   contents: read
 
+# Serializes simultaneous main-push runs (queued merges release in
+# order, one version each); tag runs group per-tag. The registry
+# duplicate-skip in the release job absorbs any remaining race.
 concurrency:
-  group: release-${{ inputs.tag || github.ref }}
+  group: release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
+  # ── Job 1: version — the auto-release brain ─────────────────────────
+  # Runs ONLY on branch pushes to main (tag pushes and workflow_dispatch
+  # skip straight to the release job below).
+  version:
+    name: Compute and cut the next version
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write # push the bump commit + tag to main
+      pull-requests: read # label lookups for every PR in the range
+    outputs:
+      bump: ${{ steps.compute.outputs.bump }}
+      version: ${{ steps.cut.outputs.version }}
+      tag: ${{ steps.cut.outputs.tag }}
+      # True when any phase decided to skip (bot-commit loop guard, no
+      # commits since last tag, or every commit labeled release:skip).
+      skip: >-
+        ${{
+          steps.guard.outputs.skip == 'true'
+          || steps.commits.outputs.skip == 'true'
+          || steps.compute.outputs.skip == 'true'
+        }}
+    steps:
+      # Full history + all tags: the range since the last release tag
+      # and the loop guard both need them.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      # Loop-breaker / idempotency guard. The bot's own bump commit is
+      # tagged v<its package.json version> AT HEAD; a regular merge
+      # commit never is. (A GITHUB_TOKEN push does not trigger workflow
+      # runs, so this guards re-runs and future PAT-based pushes too.)
+      - name: Loop guard — HEAD already tagged with its own version?
+        id: guard
+        run: |
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          HEAD_TAG="$(git describe --tags --exact-match HEAD 2>/dev/null || true)"
+          if [ -n "$HEAD_TAG" ] && [ "$HEAD_TAG" = "v$PKG_VERSION" ]; then
+            echo "HEAD is tagged $HEAD_TAG — this push is the release bot's own bump commit. Skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "HEAD is not a release commit (package version $PKG_VERSION). Proceeding."
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Collect commits since the last tag
+        id: commits
+        if: steps.guard.outputs.skip != 'true'
+        run: |
+          LAST_TAG="$(git describe --tags --abbrev=0 2>/dev/null || true)"
+          RANGE="${LAST_TAG:+"$LAST_TAG.."}HEAD"
+          COUNT="$(git rev-list --count "$RANGE")"
+          echo "range=$RANGE" >> "$GITHUB_OUTPUT"
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          if [ "$COUNT" -eq 0 ]; then
+            echo "::notice::No commits since ${LAST_TAG:-the first commit} — nothing to release."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Commits since ${LAST_TAG:-the beginning}: $COUNT"
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Thin wrapper: scripts/compute-release.mjs resolves labels via
+      # `gh pr view` and writes bump/skip to $GITHUB_OUTPUT. Label
+      # failures fall back to patch with a ::warning:: — never fatal.
+      - name: Resolve the bump from PR labels
+        id: compute
+        if: steps.commits.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node scripts/compute-release.mjs --github-output --range "${{ steps.commits.outputs.range }}"
+
+      - name: Cut the release commit and tag
+        id: cut
+        if: steps.compute.outputs.skip != 'true'
+        env:
+          BUMP: ${{ steps.compute.outputs.bump }}
+        run: |
+          git config user.name "mjolnir-release-bot"
+          git config user.email "bot@users.noreply.github.com"
+          NEW_VERSION="$(npm version "$BUMP" --no-git-tag-version)"
+          NEW_VERSION="${NEW_VERSION#v}"
+          node scripts/sync-sarif-version.cjs
+          # The Smithery registry must never advertise a version the
+          # package is not (tests/contract/repo-hygiene.spec.ts).
+          node scripts/sync-smithery-version.cjs
+          node scripts/release-changelog.mjs "$NEW_VERSION" "$(date -u +%F)"
+          # The changelog collapse regenerates MD tables/text; format it
+          # BEFORE lint runs (the lint gate includes prettier --check).
+          npx --yes prettier --write CHANGELOG.md
+          git add -A
+          git commit -m "chore(release): v$NEW_VERSION"
+          git tag "v$NEW_VERSION"
+          git push origin "HEAD:refs/heads/main" "refs/tags/v$NEW_VERSION"
+          echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Cut v$NEW_VERSION (bump: $BUMP) and pushed commit + tag."
+
+  # ── Job 2: release — the publish pipeline (unchanged) ───────────────
+  # For tag pushes and workflow_dispatch the version job above is
+  # skipped and this job releases the tag directly. For main-branch
+  # pushes it runs only when the version job actually cut a tag —
+  # never on skip and never on a failed version job (no half state:
+  # no release commit means no publish).
   release:
+    needs: version
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    if: >-
+      always() && !cancelled() &&
+      (
+        (needs.version.result == 'skipped' && (github.event_name != 'push' || startsWith(github.ref, 'refs/tags/')))
+        || (needs.version.result == 'success' && needs.version.outputs.skip != 'true')
+      )
     # id-token: write is required for `npm publish --provenance` (OIDC).
     permissions:
       contents: write
       id-token: write
+    # Exposed to the action-tags job: the tag being released and whether
+    # it is an rc (rc tags must never move the action's major tag).
+    outputs:
+      tag: ${{ env.RELEASE_TAG }}
+      prerelease: ${{ steps.disttag.outputs.tag == 'next' }}
     env:
       # One name for "the tag being released", whichever trigger fired.
       # Read through env rather than interpolated into `run:` bodies so a
       # tag name can never be parsed as shell.
-      RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+      RELEASE_TAG: ${{ inputs.tag || needs.version.outputs.tag || github.ref_name }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ inputs.tag || github.ref }}
+          ref: ${{ inputs.tag || needs.version.outputs.tag || github.ref }}
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -78,10 +210,29 @@ jobs:
           echo "VERSION=$PKG_VERSION" >> "$GITHUB_ENV"
           echo "Releasing $RELEASE_TAG (package version $PKG_VERSION)"
 
+      # WI-12A (plan §31): CHANGELOG integrity gate — RELEASE-BLOCKING.
+      # Runs before publication and before Release creation, never as a
+      # post-release audit. Validates: the released version has a dated
+      # CHANGELOG heading; gate-era (≥0.6.0) headings strictly descend;
+      # no duplicate/undated/empty sections; and when the release diff
+      # touched src/rules/**, at least one rule ID is documented (§32.5).
+      # Historical (pre-gate) entries are validated for shape only and
+      # are never rewritten.
+      - name: CHANGELOG integrity gate
+        run: |
+          PREV_TAG="$(git describe --abbrev=0 --tags "${RELEASE_TAG}^" 2>/dev/null || true)"
+          RULES_TOUCHED=0
+          if [ -n "$PREV_TAG" ]; then
+            RULES_TOUCHED="$(git diff --name-only "${PREV_TAG}..HEAD" -- src/rules/ | wc -l | tr -d ' ')"
+          fi
+          ARGS=(--expect-version "$VERSION")
+          if [ "$RULES_TOUCHED" -gt 0 ]; then ARGS+=(--rules-touched); fi
+          npx tsx scripts/check-changelog.ts "${ARGS[@]}"
+
       - run: npm ci
 
       # The SARIF reporter hardcodes the tool version (kept honest by
-      # tests/version-consistency.spec.ts). Sync it to the released
+      # tests/contract/version-consistency.spec.ts). Sync it to the released
       # package.json version here so a release can never ship with a
       # stale driver.version — the source of truth is package.json.
       - name: Sync SARIF driver version to package.json
@@ -96,10 +247,48 @@ jobs:
 
       - run: npm run build
 
+      # R4a (plan §5/§10, plan 1789009691197): the Release Trust Verdict
+      # gate — RELEASE-BLOCKING, pre-publish, before any registry write.
+      # Runs the BUILT binary (the shipped artifact itself carries the
+      # gate) and fails the job on any non-PASS verdict. No waiver path.
+      - name: Release-trust gate (verdict must PASS)
+        run: |
+          mkdir -p release-assets
+          node dist/cli.mjs release-trust --json > release-assets/release-trust.json
+          node dist/cli.mjs release-trust | tee release-assets/release-trust.txt
+
       - name: Pack distribution tarball
         run: |
           mkdir -p release-assets
           npm pack --pack-destination ./release-assets
+
+      # SC-6 (master plan §6, MR-8.B): the packed tarball is audited
+      # BEFORE any registry write — entry allowlist (shippable product
+      # code + metadata only: no tests, no maps, no machine-local dirs)
+      # and a local-path/secret content scan. This is the same file the
+      # publish step uploads: audit → publish, never pack twice.
+      - name: Pack-audit the exact tarball (SC-6)
+        run: |
+          TGZLIST=(release-assets/mjolnir-qa-*.tgz)
+          if [ "${#TGZLIST[@]}" -ne 1 ]; then
+            echo "expected exactly one packed tarball, found ${#TGZLIST[@]}" >&2
+            exit 1
+          fi
+          node scripts/pack-audit.mjs "${TGZLIST[0]}"
+
+      # SC-6 (master plan §6, MR-8.B): the packed tarball is audited
+      # BEFORE any registry write — entry allowlist (shippable product
+      # code + metadata only: no tests, no maps, no machine-local dirs)
+      # and a local-path/secret content scan. This is the same file the
+      # publish step uploads: audit → publish, never pack twice.
+      - name: Pack-audit the exact tarball (SC-6)
+        run: |
+          TGZLIST=(release-assets/mjolnir-qa-*.tgz)
+          if [ "${#TGZLIST[@]}" -ne 1 ]; then
+            echo "expected exactly one packed tarball, found ${#TGZLIST[@]}" >&2
+            exit 1
+          fi
+          node scripts/pack-audit.mjs "${TGZLIST[0]}"
 
       # Idempotency. A version already on the registry must not be a hard
       # failure: re-running a release for an existing tag (workflow_dispatch
@@ -133,9 +322,18 @@ jobs:
       # publish PUT fails with a misleading "404 Not Found". OIDC needs npm
       # >= 11.5.1. Done here, after the test gate, so the rest of the job keeps
       # running on the toolchain-pinned npm.
+      #
+      # Pinned to the npm 11 line deliberately, NOT @latest: npm 12.0
+      # (current latest) changed `npm pack --json` from an array to an
+      # object keyed by package name, which broke the fresh-install gate
+      # below on the very first auto-release (v0.5.1, 2026-09-05 — tag
+      # cut, publish stopped by the gate, nothing shipped). The gate's
+      # parsers now tolerate both shapes, but npm 12's publish/OIDC path
+      # is unproven for this pipeline — move to 12 as a deliberate,
+      # separately-verified change, never via an implicit @latest drift.
       - name: Upgrade npm for OIDC trusted publishing
         if: vars.NPM_PUBLISH == 'true' && steps.registry.outputs.published != 'true'
-        run: npm install -g npm@latest
+        run: npm install -g npm@11
 
       # setup-node writes an .npmrc containing `always-auth=true` and
       # `//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}`. With
@@ -173,38 +371,109 @@ jobs:
         if: vars.NPM_PUBLISH == 'true' && steps.registry.outputs.published != 'true'
         env:
           RUN_REGISTRY_INSTALL_TEST: "1"
-        run: npx vitest run tests/registry-install.spec.ts
+        run: npx vitest run tests/integrations/registry-install.spec.ts
+
+      # M4: rc tags (vX.Y.Z-rc.N) publish under the `next` dist-tag and
+      # never `latest`; promotion to `latest` happens only at the final
+      # (non-prerelease) tag. Stable tags publish with no dist-tag
+      # argument — npm defaults that to `latest`.
+      - name: Determine npm dist-tag
+        id: disttag
+        run: |
+          if echo "$VERSION" | grep -Eq -- '-rc\.[0-9]+$'; then
+            echo "tag=next" >> "$GITHUB_OUTPUT"
+            echo "Prerelease $VERSION — will publish under dist-tag next"
+          else
+            echo "tag=latest" >> "$GITHUB_OUTPUT"
+            echo "Stable $VERSION — will publish under dist-tag latest"
+          fi
 
       - name: Publish to npm (OIDC trusted publishing)
         if: vars.NPM_PUBLISH == 'true' && steps.registry.outputs.published != 'true'
-        run: npm publish --provenance --access public --loglevel verbose
+        run: npm publish --provenance --access public --tag "${{ steps.disttag.outputs.tag }}" --loglevel verbose
 
       # The gate that makes the GitHub Release below honest. Registry reads
       # can lag a publish by a few seconds, so this polls rather than
       # asserting once. If the package is not resolvable, the job fails
-      # here and no Release is created.
+      # here and no Release is created. For an rc, the poll checks the
+      # `next` dist-tag — the version must be installable from the channel
+      # it was published to, or the Release lies.
       - name: Verify the published version is live on npm
         if: vars.NPM_PUBLISH == 'true'
         run: |
+          DIST_TAG="${{ steps.disttag.outputs.tag }}"
           for attempt in 1 2 3 4 5 6; do
-            FOUND="$(npm view "mjolnir-qa@${VERSION}" version 2>/dev/null || true)"
+            FOUND="$(npm view "mjolnir-qa@${DIST_TAG}" version 2>/dev/null || true)"
             if [ "$FOUND" = "$VERSION" ]; then
-              echo "mjolnir-qa@${VERSION} is live on the registry."
+              echo "mjolnir-qa@${VERSION} is live on the registry under dist-tag ${DIST_TAG}."
               exit 0
             fi
             echo "Not resolvable yet (attempt ${attempt}/6) — waiting 10s."
             sleep 10
           done
-          echo "::error::mjolnir-qa@${VERSION} is not resolvable on the registry. Refusing to create a GitHub Release for a version nobody can install."
+          echo "::error::mjolnir-qa@${VERSION} is not resolvable on the registry under dist-tag ${DIST_TAG}. Refusing to create a GitHub Release for a version nobody can install."
           exit 1
 
       # Last, and only now: everything above proved the package is real.
+      # rc tags create a pre-release marked "Pre-release" on GitHub so it
+      # can never be mistaken for a stable announcement.
+      # Publication honesty (Constitution §6): the verdict block is
+      # appended to the Release body and the machine contract ships as an
+      # asset — a missing proof renders UNPROVEN, never omitted.
+      - name: Build the release body with the verdict block
+        run: |
+          {
+            echo "Install: \`npx mjolnir-qa@${VERSION} .\`"
+            echo "Full changelog is auto-generated below from all commits and PRs since the previous release."
+            echo ""
+            echo '```text'
+            cat release-assets/release-trust.txt
+            echo '```'
+          } > release-body.md
+
       - name: Create GitHub Release with generated notes
         uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
           tag_name: ${{ env.RELEASE_TAG }}
           generate_release_notes: true
-          files: release-assets/*.tgz
-          body: |
-            Install: `npx mjolnir-qa@${{ env.VERSION }} .`
-            Full changelog is auto-generated below from all commits and PRs since the previous release.
+          prerelease: ${{ steps.disttag.outputs.tag == 'next' }}
+          files: |
+            release-assets/*.tgz
+            release-assets/release-trust.json
+          body_path: release-body.md
+
+  # ── Job 3: action-tags — keep the action's major moving tag honest ──
+  # The root action.yml (P1.1) is consumed as `uses: Sergey-Bar/Mjolnir@v1`.
+  # A major moving tag must advance on every STABLE release so consumers
+  # pinned to `v1` receive updates, and must NOT move for rc tags (an rc
+  # must never become what `@v1` resolves to — the same ruling as npm's
+  # `next` dist-tag). rc releases skip this job; the tag stays where the
+  # last stable release put it.
+  action-tags:
+    name: Maintain the v1 major moving tag
+    needs: release
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: >-
+      always() && !cancelled() && needs.release.result == 'success' &&
+      needs.release.outputs.prerelease != 'true'
+    permissions:
+      contents: write
+    env:
+      RELEASE_TAG: ${{ needs.release.outputs.tag }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+          fetch-depth: 0
+      - name: Move the v1 tag to this release (never force-push another major)
+        env:
+          RELEASE_TAG: ${{ env.RELEASE_TAG }}
+        run: |
+          MAJOR="$(echo "$RELEASE_TAG" | sed -E 's/^v([0-9]+)\..*/\1/')"
+          MOVING_TAG="v${MAJOR}"
+          echo "Stable release $RELEASE_TAG — moving $MOVING_TAG to it."
+          git tag -f "$MOVING_TAG" "$RELEASE_TAG"
+          git push origin "refs/tags/$MOVING_TAG" --force
+          echo "$MOVING_TAG now resolves to $RELEASE_TAG."
+          echo "::notice::Action consumers pinned to $MOVING_TAG now run $RELEASE_TAG."

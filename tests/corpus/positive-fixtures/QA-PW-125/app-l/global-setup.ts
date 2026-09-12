@@ -1,3 +1,5 @@
+import { execSync } from "node:child_process";
+
 export default async function setup() {
   // Migrate + seed the shared environment before tests run.
   await fetch("https://staging11.example.com/api/admin/seed", { method: "POST" });

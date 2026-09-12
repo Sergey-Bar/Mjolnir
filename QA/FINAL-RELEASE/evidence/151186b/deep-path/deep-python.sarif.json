@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Mjölnir",
+          "informationUri": "https://github.com/Sergey-Bar/Mjolnir",
+          "version": "0.5.18",
+          "rules": [
+            {
+              "id": "QA-PY-005",
+              "shortDescription": {
+                "text": "time.sleep() in test"
+              },
+              "properties": {
+                "falsePositiveRisk": "low"
+              }
+            },
+            {
+              "id": "QA-PY-004",
+              "shortDescription": {
+                "text": "Bare truthiness assert on complex object"
+              },
+              "properties": {
+                "falsePositiveRisk": "medium"
+              }
+            },
+            {
+              "id": "QA-PY-012",
+              "shortDescription": {
+                "text": "Tautological assertion"
+              },
+              "properties": {
+                "falsePositiveRisk": "low"
+              }
+            }
+          ]
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "results": [
+        {
+          "ruleId": "QA-PY-005",
+          "level": "warning",
+          "message": {
+            "text": "Hard sleep: `time.sleep(5…`. — Fixed sleeps make tests slow and flaky — they guess at timing instead of waiting for state. Fix: Wait for an explicit condition (polling helper, pytest-timeout wait_until, or event)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "test_pay.py"
+                },
+                "region": {
+                  "startLine": 4,
+                  "startColumn": 5
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "warning",
+            "confidence": "high",
+            "qaImpact": "FLAKY-RISK",
+            "evidenceLevel": "E2"
+          }
+        },
+        {
+          "ruleId": "QA-PY-004",
+          "level": "note",
+          "message": {
+            "text": "Bare truthiness assert: `assert True`. — This passes for any truthy value — a wrong object, wrong count, or partially-built result all slip through. It verifies existence, not correctness. Fix: Assert the specific expected value or property: `assert result.id == expected`, `assert len(items) == 3`."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "test_pay.py"
+                },
+                "region": {
+                  "startLine": 5,
+                  "startColumn": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "medium",
+            "qaImpact": "FALSE-GREEN",
+            "evidenceLevel": "E0"
+          }
+        },
+        {
+          "ruleId": "QA-PY-012",
+          "level": "note",
+          "message": {
+            "text": "Tautological assertion: `assert True`. — Asserting a literal against itself can never fail — it verifies no system behavior. Fix: Assert on actual output of the code under test."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "test_pay.py"
+                },
+                "region": {
+                  "startLine": 5,
+                  "startColumn": 1
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "info",
+            "confidence": "high",
+            "qaImpact": "FALSE-GREEN",
+            "evidenceLevel": "E0"
+          }
+        }
+      ]
+    }
+  ]
+}

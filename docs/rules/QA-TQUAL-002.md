@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | error                               |
 | Confidence                            | high                                |
 | Tier                                  | quarantine                          |
-| Measured FP rate                      | 85% (n=20)                          |
+| Measured FP rate                      | 53% (n=32)                          |
 | Evidence level                        | E2                                  |
 | QA impact                             | False-green risk (FALSE-GREEN)      |
 | False-positive risk (author estimate) | low                                 |
@@ -51,7 +51,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | positive-fixtures    | 12          |
 | streamlit-streamlit  | 1           |
 | vercel-next-js       | 5           |
-| vitest-dev-vitest    | 135         |
+| vitest-dev-vitest    | 137         |
 
 ---
 

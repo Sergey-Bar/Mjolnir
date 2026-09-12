@@ -24,6 +24,13 @@ export const noAssertions = defineRule({
   falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "assertion-less test bodies are runner-outcome semantics (the " +
+      "runner reports a pass that proves nothing); the detector matches " +
+      "the test-def plus body shapes on the code-only text",
+  },
   introduced: "0.1.0",
   // Measured FP 82% (n=17, docs/FP-AUDIT.md 2026-08-31): hidden-assertion
   // helpers (expectSnapshot, verify helpers) and deliberate no-throw smoke
@@ -45,7 +52,8 @@ export const noAssertions = defineRule({
     // common in real code — silently stopped matching. `\s*` restores
     // spaceless arrows without reopening the bare-`return` exemption.
     const testRe =
-      /\b(?:it|test)\s*\(\s*['"`][^'"`]*['"`]\s*,\s*(?:(?:async\s*)?\([^)]*\)\s*=>\s*\{|\bfunction\b[^{]*\{)/g;
+      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
+      /\b(?:it|test)\s*\(\s*['"`][^'"`]*['"`]\s*,\s*(?:(?:async\s*)?\([^)]*\)\s*=>\s*\{|function\b[^{]*\{)/g;
     let m: RegExpExecArray | null;
     while ((m = testRe.exec(text)) !== null) {
       // Skip matches inside string literals containing embedded code (test data)

@@ -1,0 +1,8 @@
+  stats — all-time local counters of fixes seen via diff
+
+  Usage:
+    mjolnir stats
+
+  Examples:
+    $ mjolnir stats
+

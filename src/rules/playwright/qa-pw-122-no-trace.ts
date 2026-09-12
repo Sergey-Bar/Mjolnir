@@ -24,6 +24,14 @@ export const pwNoTraceOnRetry = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "trace/reporter capture is runner lifecycle state set in the config " +
+      "file; the detector reads the config surface's keys and enum " +
+      "values, which are exact matches — a syntax tree adds no semantic " +
+      "the config text lacks",
+  },
   detectionNotes: "regex heuristic",
   introduced: "0.3.0",
 
@@ -35,7 +43,7 @@ export const pwNoTraceOnRetry = defineRule({
     const text = ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     const base = ctx.path.split("/").pop() as string;
-    if (!/^playwright\.config\.(ts|js|mjs|cts)$/.test(base)) return findings;
+    if (!/^playwright\.config\.(?:ts|js|mjs|cts)$/.test(base)) return findings;
 
     if (
       !/trace\s*:\s*['"](?:on-first-retry|retain-on-failure|on)['"]/.test(text)

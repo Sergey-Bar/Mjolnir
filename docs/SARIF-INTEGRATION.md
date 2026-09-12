@@ -22,6 +22,13 @@ Every result carries `ruleId`, `level` (`error`/`warning`/`note`),
 properties can surface the Honesty Core evidence level too, not just a
 plain error/warning icon.
 
+The scanned target is emitted as the SARIF artifact base:
+`runs[0].originalUriBaseIds.SRCROOT.uri` carries the scan target as a
+`file://` URI, and every result's `artifactLocation` resolves against it
+via `uriBaseId: "SRCROOT"` — so tools consuming the file from a
+different working directory still resolve relative artifact paths
+correctly.
+
 ## VS Code
 
 Install the [SARIF Viewer](https://marketplace.visualstudio.com/items?itemName=MS-SarifVSCode.sarif-viewer)

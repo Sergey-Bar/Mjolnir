@@ -63,7 +63,7 @@ export const githubActionsAdapter: LanguageAdapter = {
         }
         ctx.testFiles.push(full);
       } catch {
-        ctx.onSkippedFile();
+        ctx.onSkippedFile("unreadable-entry");
       }
     }
   },

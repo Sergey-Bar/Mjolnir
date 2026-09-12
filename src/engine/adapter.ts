@@ -69,7 +69,7 @@ export interface ScanContext {
   /** Resolved per-scan ignore matcher (audit R-8) — no module globals. */
   ignoreMatcher: IgnoreMatcher;
   /** Called once per file that could not be read/analyzed. */
-  onSkippedFile: (reason?: string) => void;
+  onSkippedFile: (reason: string) => void;
   /**
    * Called when discovery stops early (audit H-8): deadline expiry or
    * the per-adapter file cap. The reason is named in analysisStatus.
@@ -78,6 +78,11 @@ export interface ScanContext {
   /** Per-adapter discovery budget (audit H-8). One language can no
    * longer consume the whole list and starve the others. */
   maxFiles: number;
+  /** R4c Scope Integrity: counted matcher exclusions (optional — adapters
+   * whose discovery walks sharedWalk pass this through to the counters). */
+  onIgnored?: () => void;
+  /** R4c Scope Integrity: counted files no adapter claims (optional). */
+  onUnrecognized?: () => void;
   /**
    * Called when a rule throws on a file (audit R-9): crash isolation
    * stays silent by default, but the scan counts it and `--debug`
@@ -160,6 +165,12 @@ export interface UniversalRule {
    * Files without tags are always analyzed (open-when-unknown).
    */
   frameworks?: readonly string[];
+  /**
+   * Detector implementation revision (§07), threaded through asUniversal
+   * so the M5.2 cache digest can fold it in; the stale-measurement
+   * machinery reads it from the registry, the cache from this field.
+   */
+  detectorRevision?: number;
   run(file: ParsedFile): Array<Omit<Finding, "ruleId" | "category">>;
 }
 

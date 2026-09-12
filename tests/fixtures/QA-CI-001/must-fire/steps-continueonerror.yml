@@ -1,0 +1,19 @@
+# QA-CI-001 must-fire (Azure DevOps) — verification gates under
+# `continueOnError: true`, the Azure spelling of the masked-gate defect.
+stages:
+  - stage: CI
+    jobs:
+      - job: E2E
+        continueOnError: true # job-level: every gate inside is tolerated
+        steps:
+          - script: npx playwright test
+
+      - job: Unit
+        steps:
+          - script: npm test
+            continueOnError: true # step-level: the gate cannot fail the job
+
+          - task: Npm@1
+            continueOnError: true # task-level gate via inputs
+            inputs:
+              command: test

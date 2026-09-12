@@ -46,7 +46,10 @@ const CLEAN = "it('a', () => { expect(1 + 1).toBe(2); });\n";
 const DEBT = "it.only('a', () => {});\n";
 
 describe("E2E journey 2: CI PR flow", () => {
-  it("ci install writes a valid workflow file", () => {
+  // Journey tests spawn real child processes (npm/npx) — the 5s default
+  // is too tight on loaded Windows CI runners (flake class: process spawn
+  // latency, not assertion logic). 60s matches journey-1/3 headroom.
+  it("ci install writes a valid workflow file", { timeout: 60_000 }, () => {
     const { stdout, status } = runCli(["ci", "install"], dir);
     expect(status).toBe(0);
     expect(stdout).toContain("ci");
@@ -55,67 +58,122 @@ describe("E2E journey 2: CI PR flow", () => {
     const text = readFileSync(wf, "utf8");
     expect(text).toContain("jobs:");
     expect(text).toContain("on:");
+    // Template v2: the summary step is the `mjolnir summary` command,
+    // not an inline script (plan M4 — one emitter, one code path).
+    expect(text).toContain("summary mjolnir.json");
   });
 
-  it("--scope changed attributes findings only to changed lines on a branch", () => {
-    git(["init", "-b", "main"]);
-    git(["config", "user.email", "t@t"]);
-    git(["config", "user.name", "t"]);
-    writeSpec("clean.spec.ts", CLEAN);
-    writeFileSync(join(dir, "README.md"), "docs\n");
-    commitAll("clean base");
-    git(["checkout", "-b", "feat"]);
-    writeSpec("new-debt.spec.ts", DEBT);
-    commitAll("add debt");
+  it(
+    "summary turns a saved --json report into a step summary (CI flow tail)",
+    { timeout: 60_000 },
+    () => {
+      writeSpec("clean.spec.ts", CLEAN);
+      writeSpec("debt.spec.ts", DEBT);
+      const scan = runCli([dir, "--json", "--strict"]);
+      expect(scan.status).toBe(0);
+      const reportPath = join(dir, "mjolnir.json");
+      writeFileSync(reportPath, scan.stdout);
+      // Neutralize the Actions-runner env: this test pins the documented
+      // "outside GitHub Actions" behavior (summary on stdout, no
+      // annotations); the annotations flow is covered in summary.spec.
+      const { stdout, status } = runCli(["summary", "mjolnir.json"], dir, {
+        GITHUB_ACTIONS: undefined,
+        GITHUB_STEP_SUMMARY: undefined,
+      });
+      expect(status).toBe(0);
+      // Step summary markdown: score + verdict band + deduction context.
+      expect(stdout).toContain("Verification Trust");
+      expect(stdout).toMatch(/Score: \*\*\d+\/100\*\*/);
+      expect(stdout).toContain("QA-TEST-001");
+      expect(stdout).toContain("- Fix:");
+      // Outside GITHUB_ACTIONS there are no annotation lines.
+      expect(stdout).not.toContain("::error");
+    },
+  );
 
-    const full = runCli([dir, "--json", "--strict"]);
-    const changed = runCli([dir, "--json", "--strict", "--scope", "changed"]);
-    expect(full.status).toBe(0);
-    expect(changed.status).toBe(0);
-    const fullResult = JSON.parse(full.stdout) as {
-      testDeclarationCount: number;
-      scope?: string;
-    };
-    const changedResult = JSON.parse(changed.stdout) as {
-      testDeclarationCount: number;
-      scope?: string;
-      scopeDegraded?: string;
-      findings: Array<{ file: string }>;
-    };
-    expect(fullResult.scope).toBeUndefined(); // full scan: no scope field
-    expect(changedResult.scope).toBe("changed");
-    expect(changedResult.scopeDegraded).toBeUndefined();
-    // The changed set contains only the new spec (README has no tests).
-    expect(changedResult.testDeclarationCount).toBeLessThan(
-      fullResult.testDeclarationCount,
-    );
-    for (const f of changedResult.findings) {
-      expect(f.file.startsWith("e2e/new-debt")).toBe(true);
-    }
-  });
+  it(
+    "--scope changed attributes findings only to changed lines on a branch",
+    { timeout: 60_000 },
+    () => {
+      git(["init", "-b", "main"]);
+      git(["config", "user.email", "t@t"]);
+      git(["config", "user.name", "t"]);
+      writeSpec("clean.spec.ts", CLEAN);
+      writeFileSync(join(dir, "README.md"), "docs\n");
+      commitAll("clean base");
+      git(["checkout", "-b", "feat"]);
+      writeSpec("new-debt.spec.ts", DEBT);
+      commitAll("add debt");
 
-  it("degrades to full-file attribution when merge-base is unresolvable (detached HEAD)", () => {
-    git(["init", "-b", "main"]);
-    git(["config", "user.email", "t@t"]);
-    git(["config", "user.name", "t"]);
-    writeSpec("clean.spec.ts", CLEAN);
-    commitAll("base");
-    git(["checkout", "--detach", "HEAD"]);
-    // Leave no default branch behind: the merge-base becomes unresolvable.
-    git(["branch", "-D", "main"]);
-    const changed = runCli([dir, "--json", "--scope", "changed"]);
-    const result = JSON.parse(changed.stdout) as { scopeDegraded?: string };
-    expect(result.scopeDegraded).toBe("no-merge-base");
-  });
+      // --strict: the debt probe is a quarantine-tier rule (QA-TEST-001,
+      // demoted in Phase 2) — strict is the mode where it actually runs.
+      // The tier cap makes its findings advisory (info + E0), so the scan
+      // exits 0: visible, not gating.
+      const full = runCli([dir, "--json", "--strict"]);
+      const changed = runCli([dir, "--json", "--scope", "changed", "--strict"]);
+      expect(full.status).toBe(0);
+      expect(changed.status).toBe(0);
+      const fullResult = JSON.parse(full.stdout) as {
+        testDeclarationCount: number;
+        scope?: string;
+        findings: Array<{ ruleId: string; file: string }>;
+      };
+      expect(
+        fullResult.findings.some(
+          (f) =>
+            f.ruleId === "QA-TEST-001" && f.file.startsWith("e2e/new-debt"),
+        ),
+        "the debt probe must be detected under --strict",
+      ).toBe(true);
+      const changedResult = JSON.parse(changed.stdout) as {
+        testDeclarationCount: number;
+        scope?: string;
+        scopeDegraded?: string;
+        findings: Array<{ file: string }>;
+      };
+      expect(fullResult.scope).toBeUndefined(); // full scan: no scope field
+      expect(changedResult.scope).toBe("changed");
+      expect(changedResult.scopeDegraded).toBeUndefined();
+      // The changed set contains only the new spec (README has no tests).
+      expect(changedResult.testDeclarationCount).toBeLessThan(
+        fullResult.testDeclarationCount,
+      );
+      for (const f of changedResult.findings) {
+        expect(f.file.startsWith("e2e/new-debt")).toBe(true);
+      }
+    },
+  );
 
-  it("reports not-a-git-repo degradation for a plain directory", () => {
-    writeSpec("clean.spec.ts", CLEAN);
-    const changed = runCli([dir, "--json", "--scope", "changed"]);
-    const result = JSON.parse(changed.stdout) as { scopeDegraded?: string };
-    expect(result.scopeDegraded).toBe("not-a-git-repo");
-  });
+  it(
+    "degrades to full-file attribution when merge-base is unresolvable (detached HEAD)",
+    { timeout: 60_000 },
+    () => {
+      git(["init", "-b", "main"]);
+      git(["config", "user.email", "t@t"]);
+      git(["config", "user.name", "t"]);
+      writeSpec("clean.spec.ts", CLEAN);
+      commitAll("base");
+      git(["checkout", "--detach", "HEAD"]);
+      // Leave no default branch behind: the merge-base becomes unresolvable.
+      git(["branch", "-D", "main"]);
+      const changed = runCli([dir, "--json", "--scope", "changed", "--strict"]);
+      const result = JSON.parse(changed.stdout) as { scopeDegraded?: string };
+      expect(result.scopeDegraded).toBe("no-merge-base");
+    },
+  );
 
-  it("--base overrides the default base branch", () => {
+  it(
+    "reports not-a-git-repo degradation for a plain directory",
+    { timeout: 60_000 },
+    () => {
+      writeSpec("clean.spec.ts", CLEAN);
+      const changed = runCli([dir, "--json", "--scope", "changed"]);
+      const result = JSON.parse(changed.stdout) as { scopeDegraded?: string };
+      expect(result.scopeDegraded).toBe("not-a-git-repo");
+    },
+  );
+
+  it("--base overrides the default base branch", { timeout: 60_000 }, () => {
     git(["init", "-b", "develop"]);
     git(["config", "user.email", "t@t"]);
     git(["config", "user.name", "t"]);

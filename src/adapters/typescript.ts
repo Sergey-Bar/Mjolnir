@@ -31,13 +31,21 @@ import {
 const TEST_FILE_RE =
   /\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs)$|\.cy\.(?:js|jsx|ts|tsx)$/;
 const PW_CONFIG_RE = /^playwright\.config\.(?:ts|js|mjs|cts)$/;
+// Audit C4: configOnly rules may declare configFiles the ADAPTER must be
+// able to discover. QA-CYP-003 declared ^cypress\.config\.(?:js|ts|mjs)$
+// while ADAPTER_CONFIG_FILES only carried the playwright pattern — the
+// rule could never fire (a dead rule presenting as coverage). The
+// cypress glob joins the adapter's compile-time literal list, and the
+// registry reachability test (tests/audit) locks the invariant: every
+// configOnly rule's configFiles must be matchable by its adapter.
+const CYPRESS_CONFIG_RE_SOURCE = "^cypress\\.config\\.(?:js|ts|mjs)$";
 
 /**
  * Fallback config list for `configOnly` rules that do not declare
  * `configFiles` (the legacy playwright.config.* gating, preserved
  * byte-identically for the existing five config rules).
  */
-const ADAPTER_CONFIG_FILES = [PW_CONFIG_RE.source];
+const ADAPTER_CONFIG_FILES = [PW_CONFIG_RE.source, CYPRESS_CONFIG_RE_SOURCE];
 
 /** Import-path → framework tag (plan §15.1 vocabulary). */
 const IMPORT_TAG_RULES: Array<{ re: RegExp; tag: string }> = [
@@ -60,11 +68,14 @@ const IMPORT_TAG_RULES: Array<{ re: RegExp; tag: string }> = [
  */
 export function frameworkTagsFromImports(text: string): string[] {
   const tags = new Set<string>();
-  const importRe = /(?:import|require)\s*(?:\(\s*)?["']([^"']+)["']/g;
+  // `import … from "spec"`, `import "spec"`, `require("spec")` — the
+  // three real specifier forms (named-import braces skipped via [^"']*).
+  const importRe = /(?:\bimport\b|\brequire\b)[^"']*["']([^"']+)["']/g;
   let m: RegExpExecArray | null;
   while ((m = importRe.exec(text)) !== null) {
-    const specifier = m[1];
-    if (specifier === undefined) continue;
+    // The quoted-specifier capture is mandatory — always defined on a
+    // match (a quote-less import produces no match at all).
+    const specifier = m[1] as string;
     for (const { re, tag } of IMPORT_TAG_RULES) {
       if (re.test(specifier)) tags.add(tag);
     }
@@ -114,6 +125,8 @@ export const typescriptAdapter: LanguageAdapter = {
       isTestFile: (name) =>
         TEST_FILE_RE.test(name) || ADAPTER_CONFIG_RE.test(name),
       onTestFile: (f) => ctx.testFiles.push(f),
+      onIgnored: ctx.onIgnored,
+      onUnrecognized: ctx.onUnrecognized,
       isFull: () => ctx.testFiles.length >= ctx.maxFiles,
       fixtureDirMemo: new Map(),
     });
@@ -175,6 +188,8 @@ export const typescriptAdapter: LanguageAdapter = {
   },
 };
 
+// ADAPTER_CONFIG_FILES are compile-time literals joined into one pattern.
+// eslint-disable-next-line security/detect-non-literal-regexp
 const ADAPTER_CONFIG_RE = new RegExp(
   `^(?:${ADAPTER_CONFIG_FILES.map((re) => `(?:${re})`).join("|")})$`,
 );
@@ -185,8 +200,13 @@ function configGateMatches(
   base: string,
 ): boolean {
   if (rule.configFiles === undefined || rule.configFiles.length === 0) {
+    // Compile-time literal glob list.
+    // eslint-disable-next-line security/detect-non-literal-regexp
     return ADAPTER_CONFIG_FILES.some((re) => new RegExp(re).test(base));
   }
+  // configFiles come from the typed §09 rule contract — declared by rule
+  // authors (registry or plugin manifest), never extracted from scan input.
+  // eslint-disable-next-line security/detect-non-literal-regexp
   return rule.configFiles.some((re) => new RegExp(re).test(base));
 }
 

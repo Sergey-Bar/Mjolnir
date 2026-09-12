@@ -26,9 +26,70 @@ npm run typecheck        # tsc, twice: src/ (strict, ships in dist/),
 npm run lint              # eslint . && prettier --check .
 npm test                  # vitest run — full suite
 npm run test:coverage     # vitest run --coverage — floors enforced
+npx vitest run tests/rules          # one domain slice (path filter)
 npm run build              # tsdown src/cli.ts, then any workspace package
 npm run self-scan          # the tool scans its own repo — must add
                             # zero NEW error-severity findings
+```
+
+The spec suite is organized by domain, mirroring `src/`. Run one slice
+with a path filter (`npx vitest run tests/cli`); `npm test` always runs
+the whole suite and is what CI gates on:
+
+Newer targeted slices — run the ones your change actually touches:
+
+- `tests/false-green/` — the adversarial corpus; must stay green whenever
+  rules, fixtures, or scoring move (a scanner that can be fooled into a
+  clean verdict is the one bug this repo never ships)
+- `tests/blast-radius/` + `tests/contract/blast-radius.spec.ts` — the
+  machine-verified containment contract (engine, adapter, or scanner
+  surface changes)
+- `tests/contract/boundary-law.spec.ts` and the exit-code mutation proofs
+  (anything near exit codes, scope integrity, or the evidence chain)
+- `tests/**/*arms.spec.ts` — the adversarial arms suites (rule or command
+  behavior changes)
+- `npm run docs:regen` — every generated surface, byte-identical (rule
+  pages, FP-audit, capability matrix, census counts, machine contract,
+  brand tokens, golden lock, README SVGs, detector hashes)
+- `npm --prefix site run doctor` — the site gates, including emitted-HTML
+  link integrity (any `site/` change)
+
+## First five minutes (the quick loop)
+
+```bash
+npx vitest run tests/<your-domain>   # 1. iterate fast on one slice
+npm run self-scan                    # 2. scan your own change
+npm test                             # 3. full gate before the PR
+```
+
+Step 2 is the house specialty: `npm run self-scan` runs the built tool
+against this repo and must add **zero NEW error-severity findings**.
+A rule change that fires on its own codebase shows up here first —
+cheap, immediate, and honest (the same gate CI runs in the `self-scan`
+job). Re-scans during iteration get faster with `--cache`:
+
+```bash
+npm run build && node dist/cli.mjs . --cache --json
+```
+
+The cache is content-addressed (file bytes + rule set) and lives under
+`.mjolnir/cache/` — local-only, gitignored, never leaves the machine.
+
+```text
+tests/
+  cli/          CLI verbs, flags, arg parsing, error paths
+  engine/       adapters, masking, discovery, analysis, scoring
+  rules/        rule behavior, one subdir per family (ci/, playwright/, …)
+  reporters/    terminal/SARIF/mermaid output + score state
+  forensics/    run-data forensics, selector health, runtime evidence
+  integrations/ repo workflow specs, packaging, install
+  config/       config loading + suppressions
+  plugins/      plugin + local-rule loading
+  scope/        changed-scope computation
+  contract/     repo-level guards: docs consistency, hygiene, privacy
+  stress/       scale/perf floors, crash-proof fuzz
+  e2e/          full-CLI journeys (spawn dist/)
+  golden/ corpus/ fixtures/ helpers/   data + shared harness (unchanged)
 ```
 
 Additional gates that only apply when your change touches rules or
@@ -122,6 +183,77 @@ a worked example.
 
 Maintainers: see [`docs/PUBLISHING.md`](docs/PUBLISHING.md) for the
 release checklist and the npm-provenance publishing runbook.
+
+## Governance
+
+Mjölnir is maintained by a **solo maintainer** — decisions are not made
+by committee, and this section exists so contributors know how decisions
+get made, not who to lobby:
+
+- The maintainer has final say on scope, rules, APIs and roadmap.
+  Agreement with a well-argued PR is the normal path; a "no" is a
+  decision, not an opening bid.
+- **The two laws above govern all rule changes** — a PR that violates
+  either is declined regardless of merit, because the alternative is
+  the tool growing past what one maintainer can keep honest.
+- Decisions with lasting consequences are recorded, not just made:
+  product/strategy decisions live in `.planning/` (machine-local, not
+  committed) and engineering plans in `.kilo/plans/`; completed plans
+  are archived under `docs/archive/plans/` with their per-task audit
+  trail. If you want to know _why_ something is the way it is, the
+  answer is in one of those records or in the relevant spec's failure
+  message.
+- Support expectations, issue routing and the security process live in
+  [`SUPPORT.md`](SUPPORT.md); version/stability commitments live in
+  [`docs/VERSIONING.md`](docs/VERSIONING.md).
+
+**Bus-factor program (P9):** maintenance is deliberately operable beyond
+one person — the roles ladder, entry gates, and the path to
+co-maintainership live in [`docs/MAINTAINERS.md`](docs/MAINTAINERS.md);
+every owner-bound operation is inventoried (runbook or identity-bound,
+nothing silent) in [`docs/OWNER-RUNBOOK.md`](docs/OWNER-RUNBOOK.md); and
+verdict classification — the project's spine — is documented to the
+same standard in [`docs/ADJUDICATION-KIT.md`](docs/ADJUDICATION-KIT.md)
+so a second human adjudicates identically. A4 keeps adjudication human;
+these documents make it _any_ human.
+
+## Issue triage
+
+Every issue form pre-assigns its label — the four labels mirror the
+four issue templates exactly:
+
+| Label              | Template             | What happens next                                                                                                                             |
+| ------------------ | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bug`              | bug-report.yml       | Reproduced, fixed, and regression-locked by a spec                                                                                            |
+| `false-positive`   | false-positive.yml   | Hand-classified into the verdict corpus (`tests/corpus/verdicts/`) — measured FP rates and the FP-AUDIT table come from exactly these reports |
+| `rule-request`     | rule-request.yml     | Evaluated against the anti-creep law (equal-size removal) and the fixture firewall                                                            |
+| `language-request` | language-request.yml | Scoped against the adapter architecture (`src/adapters/`)                                                                                     |
+
+First response to a new issue is targeted within **7 days** — an honest
+solo-maintainer commitment, not an SLA with consequences (also stated
+in [`SUPPORT.md`](SUPPORT.md)).
+
+## Translations
+
+English [`README.md`](README.md) is canonical — the per-language files
+(`README.zh.md`, `README.de.md`, …) are machine-assisted translations
+carrying an explicit staleness marker, never authoritative docs.
+
+- Fix typos and logic in the English README first, then port the change
+  into the translations. A fix that lands only in a translation will be
+  lost at the next sync.
+- Translation PRs are welcome. Keep section order, tables and
+  `<details>` blocks identical to the English file (structure parity is
+  enforced by `tests/readme-translations.spec.ts`); keep rule IDs, code
+  blocks and link targets verbatim; recompute in-page anchors from the
+  translated headings; and bump the marker's `Last synced` date to the
+  date of the `README.md` commit you ported.
+- Run `npm run docs:translations` for an advisory staleness report. It
+  never blocks CI — drift is resolved by porting, not by a red build.
+- Terminology: choose one consistent term per language for the key
+  concepts ("worthiness score", "finding", "rule", "false-positive
+  rate", "flaky") and reuse it throughout the file; mention your
+  choices in the PR so later edits stay consistent.
 
 ## PR expectations
 

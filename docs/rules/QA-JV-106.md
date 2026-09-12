@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | warning                     |
 | Confidence                            | medium                      |
 | Tier                                  | quarantine                  |
-| Measured FP rate                      | not yet measured            |
+| Measured FP rate                      | 33% (n=12)                  |
 | Evidence level                        | E1                          |
 | QA impact                             | Test hygiene debt (HYGIENE) |
 | False-positive risk (author estimate) | medium                      |
@@ -27,7 +27,7 @@ XPath paths and structural CSS break on any markup refactor and silently select 
 Brittle selector (xpath= selector).
 ```
 
-Example from this rule's own must-fire fixture: `tests/fixtures/QA-JV-106/must-fire/SelectorTest.java`
+Example from this rule's own must-fire fixture: `tests/fixtures/QA-JV-106/must-fire/InventoryTest.java`
 
 ## The fix
 
@@ -44,6 +44,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | Repo                      | Occurrences |
 | ------------------------- | ----------- |
 | microsoft-playwright-java | 4           |
+| positive-fixtures         | 2           |
 
 ---
 

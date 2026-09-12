@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | warning                        |
 | Confidence                            | medium                         |
 | Tier                                  | quarantine                     |
-| Measured FP rate                      | 79% (n=34)                     |
+| Measured FP rate                      | not yet measured               |
 | Evidence level                        | E1                             |
 | QA impact                             | False-green risk (FALSE-GREEN) |
 | False-positive risk (author estimate) | medium                         |
@@ -45,12 +45,13 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | ------------------- | ----------- |
 | apache-airflow      | 1332        |
 | getsentry-sentry    | 1350        |
-| pallets-click       | 14          |
+| pallets-click       | 1           |
 | psf-requests        | 42          |
-| pytest-dev-pytest   | 164         |
-| reflex-dev-reflex   | 232         |
+| pyca-cryptography   | 1567        |
+| pytest-dev-pytest   | 11          |
+| reflex-dev-reflex   | 235         |
 | SeleniumHQ-selenium | 2           |
-| streamlit-streamlit | 488         |
+| streamlit-streamlit | 490         |
 
 ---
 

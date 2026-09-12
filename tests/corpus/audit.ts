@@ -25,6 +25,20 @@
  * counts but never classifies whether findings are TP or FP. That
  * classification lives in tests/corpus/verdicts/ (Phase 3).
  *
+ * D14 baseline policy (as amended by the owner, 2026-09-08 — two
+ * obligations, deliberately separated):
+ *   1. Re-baseline after every merged wave — BLOCKING. The committed
+ *      baselines must agree with the shipped rules before the wave's
+ *      evidence run is accepted.
+ *   2. PARTIAL scans are TRACKED DEBT, never baselines, and never an
+ *      exemption. A deadline-truncated scan is refused outright (see
+ *      the refusal below); the repos that stayed PARTIAL are recorded
+ *      as named debt until a quiet-machine re-run completes. Their
+ *      existence does NOT block certification — the only invariant
+ *      certification depends on is that NO PARTIAL scan was ever
+ *      recorded as a baseline. Zero-PARTIAL is the desired end state,
+ *      not a gate.
+ *
  * Not part of `npm test` — this clones real repos over the network and
  * is meant to run as its own (nightly) CI job, not on every PR.
  */
@@ -250,6 +264,30 @@ export const CORPUS: CorpusRepo[] = [
     note: "real TS app with e2e and CI — QA-CI-010 (PR-skipped test jobs) and QA-PW-115 surface.",
   },
 
+  // ── 2026-09-04 expansion — Stable 1.0 plan M2 (CI-family trust
+  //    repair): the dedicated GitHub-Actions workflow lane. Chosen so the
+  //    QA-CI-* rules are measured on DIVERSE real workflows (JVM, Yarn,
+  //    Python/multi-language CI), not starved samples: junit5 fires
+  //    QA-CI-005/008 on Maven-centric CI, yarn berry is the first real
+  //    QA-CI-009 surface (piped/sequenced test commands), pyca adds a
+  //    Python+Rust+OpenSSL CI surface. Scan durations verified non-
+  //    truncating against the 120s budget before adoption.
+  {
+    name: "junit-team-junit5",
+    url: "https://github.com/junit-team/junit5.git",
+    note: "real Java framework repo with Maven+Gradle CI workflows — QA-CI-005/008 on JVM CI plus a large QA-JV-103 consumer surface.",
+  },
+  {
+    name: "yarnpkg-berry",
+    url: "https://github.com/yarnpkg/berry.git",
+    note: "real Yarn monorepo with its own CI — the first real QA-CI-009 surface (piped/sequenced test commands in workflow run blocks) plus QA-TEST-003 at scale.",
+  },
+  {
+    name: "pyca-cryptography",
+    url: "https://github.com/pyca/cryptography.git",
+    note: "real Python+Rust crypto library with multi-language CI — QA-CI-005 surface plus QA-PY-007 at scale.",
+  },
+
   // ── §08 classes B/C — committed positive/negative fixture corpora.
   //    Class A (real OSS repos) is the preferred FP surface, but rules
   //    whose patterns are rare in the wild (deep frameLocator chains,
@@ -273,6 +311,17 @@ export const CORPUS: CorpusRepo[] = [
 interface BaselineEntry {
   countsByRule: Record<string, number>;
   totalFindings: number;
+  /**
+   * P2.4 calibration (plan 1788853205786): the normalization denominator
+   * runScan measured for this repo. Persisted so NORMALIZATION_K / the
+   * deduction-mass ceilings can be calibrated against REAL corpus data
+   * (docs/SCORING.md "not fitted" note) instead of the maintainer's
+   * intuition. Optional: baselines recorded before this field existed
+   * stay valid; the next reviewed --update fills it in. Not compared in
+   * the regression check — upstream repos change their suites, so the
+   * count is calibration CONTEXT, not a lock.
+   */
+  testDeclarationCount?: number;
   /**
    * Set by scanRepo from runScan's result — NOT persisted to the
    * baseline JSON (a partial scan never gets recorded; see the
@@ -337,12 +386,15 @@ async function scanRepo(dir: string): Promise<BaselineEntry> {
   const sortedCounts = Object.fromEntries(
     Object.entries(countsByRule).sort(([a], [b]) => a.localeCompare(b)),
   );
-  // TODO: Record testDeclarationCount in the baseline so that
-  // NORMALIZATION_K can be calibrated against real corpus data.
-  // Currently runScan returns this value but we don't persist it.
+  // P2.4 (plan 1788853205786): persist the normalization denominator so
+  // NORMALIZATION_K and the deduction-mass ceilings are calibratable
+  // against real corpus data (the TODO SCORING.md carried is closed).
   return {
     countsByRule: sortedCounts,
     totalFindings: result.findings.length,
+    ...(result.testDeclarationCount !== undefined
+      ? { testDeclarationCount: result.testDeclarationCount }
+      : {}),
     partial: result.partial,
   };
 }
@@ -350,7 +402,7 @@ async function scanRepo(dir: string): Promise<BaselineEntry> {
 function loadBaseline(name: string): BaselineEntry | undefined {
   const p = join(BASELINE_DIR, `${name}.json`);
   if (!existsSync(p)) return undefined;
-  return JSON.parse(readFileSync(p, "utf8"));
+  return JSON.parse(readFileSync(p, "utf8")) as BaselineEntry;
 }
 
 function writeBaseline(name: string, entry: BaselineEntry): void {

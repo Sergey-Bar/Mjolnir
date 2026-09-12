@@ -6,8 +6,8 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | ------------------------------------- | -------------------------------- |
 | Severity                              | warning                          |
 | Confidence                            | high                             |
-| Tier                                  | extended (PROVISIONAL)           |
-| Measured FP rate                      | not yet measured                 |
+| Tier                                  | extended                         |
+| Measured FP rate                      | 8% (n=12)                        |
 | Evidence level                        | E2                               |
 | QA impact                             | Flaky-test risk (FLAKY-RISK)     |
 | False-positive risk (author estimate) | low                              |
@@ -44,7 +44,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | Repo                        | Occurrences |
 | --------------------------- | ----------- |
 | microsoft-playwright-dotnet | 1           |
-| positive-fixtures           | 4           |
+| positive-fixtures           | 7           |
 
 ---
 

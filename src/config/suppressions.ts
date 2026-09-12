@@ -3,14 +3,14 @@
  * `mjolnir suppressions` — every suppression stays visible.
  */
 
-import { statSync } from "node:fs";
-
 import {
-  SUPPRESSION_DEFAULT_DAYS,
   isSuppressionActive,
   loadConfig,
   type IgnoreEntry,
 } from "../config/config.js";
+import { sectionHeader, plainContext } from "../reporter/ui.js";
+
+const ui = plainContext();
 
 export interface SuppressionReport {
   total: number;
@@ -27,16 +27,12 @@ export function loadSuppressions(root: string): SuppressionReport {
   // `mjolnir suppressions` printed "Full transparency maintained." while
   // the scan path failed loudly. Parse/validation errors now propagate
   // (ConfigValidationError → usage-error path in the CLI).
-  const { config, path } = loadConfig(root);
-  // Bug-audit QA-2026-08-30 QA-6: the 90-day default is anchored at the
-  // config file's mtime for hand-written entries without `expires` —
-  // otherwise such entries stayed active forever (README §Configuration
-  // promises a 90-day window). The `ignore` command writes explicit
-  // dates, so documented write-time behavior is unchanged.
-  const anchor = path ? statSync(path).mtime : undefined;
+  const { config } = loadConfig(root);
+  // Audit S4: no mtime anchor — expiry is the entry's explicit `expires`
+  // date alone. A config edit no longer resets suppression windows.
   const entries = (config.ignore ?? []).map((ign) => ({
     ...ign,
-    status: isSuppressionActive(ign, new Date(), anchor)
+    status: isSuppressionActive(ign, new Date())
       ? ("active" as const)
       : ("expired" as const),
   }));
@@ -54,7 +50,7 @@ export function renderSuppressions(report: SuppressionReport): string {
   }
   const lines = [
     "",
-    "▚▞ QUALITY GOVERNANCE",
+    sectionHeader("QUALITY GOVERNANCE", ui),
     "",
     `Suppressed findings: ${report.total}`,
     `Active:              ${report.active}`,
@@ -62,13 +58,12 @@ export function renderSuppressions(report: SuppressionReport): string {
     "",
   ];
   for (const e of report.entries) {
-    // QA-6: no-expiry entries are mtime-anchored at enforcement time —
-    // say so, instead of implying an indefinite suppression.
+    // Audit S4: no-expiry entries are active until they carry an
+    // explicit `expires` date — say so plainly, with the mtime anchor
+    // gone there is no default window to reference.
     const expiry = e.expires
       ? ` (expires ${e.expires})`
-      : e.status === "active"
-        ? ` (no expiry set — ${SUPPRESSION_DEFAULT_DAYS}-day default from config mtime)`
-        : ` (no expiry set — ${SUPPRESSION_DEFAULT_DAYS}-day default elapsed)`;
+      : " (no expiry set — active until an explicit expires date is added)";
     lines.push(
       `${e.status === "active" ? "●" : "○"} ${e.ruleId} — ${e.reason}${expiry}`,
     );

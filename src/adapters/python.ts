@@ -1,9 +1,14 @@
 /**
  * Python/pytest adapter (Upgrade-Plan-v2 R2).
  *
- * Pure regex adapter — no AST enrichment. The header comment previously
- * claimed tree-sitter usage; that was never true for this adapter.
- * tree-sitter-ast.ts exists for Java/C# but is async and not wired here.
+ * Regex layer with the tree-sitter parse stage wired since P6 (plan
+ * 1789009691197 R3): the async `parseAst` hook consumes
+ * `parsePythonAst` (tree-sitter WASM) and hands the tree to rules via
+ * `ParsedFile.ast`; rules stay synchronous. Parse failure or a missing
+ * grammar resolves `undefined` and rules fall back to the regex path —
+ * never fatal (the java/csharp §10 contract). The header previously
+ * claimed tree-sitter usage that did not exist (Sprint 8 finding); that
+ * claim is now TRUE and pinned by tests/contract/header-claims.spec.ts.
  *
  * Test discovery: test_*.py / *_test.py (pytest convention).
  * Frameworks (plan §15.1, D7): pytest (config files), unittest
@@ -18,10 +23,12 @@ import { join } from "node:path";
 
 import { sharedWalk } from "../discovery/shared-walk.js";
 import { computeCodeText } from "../engine/code-text.js";
+import { parsePythonAst } from "../engine/tree-sitter-ast.js";
 import {
   frameworkFilterApplies,
   type FrameworkInfo,
   type LanguageAdapter,
+  type ParsedAst,
   type ParsedFile,
   type ScanContext,
 } from "../engine/adapter.js";
@@ -42,7 +49,10 @@ export function pythonFileTags(file: ParsedFile): string[] {
   const importRe = /^[ \t]*(?:import\s+([\w.]+)|from\s+([\w.]+)\s+import)/gm;
   let m: RegExpExecArray | null;
   while ((m = importRe.exec(file.text)) !== null) {
-    const mod = m[1] ?? m[2] ?? "";
+    // Exactly one of the two alternatives captures; the other group is
+    // undefined. `import X` never captures group 2 and `from X import`
+    // always does — both arms are exercised by the import-form tests.
+    const mod = (m[1] ?? m[2]) as string;
     for (const { re, tag } of PY_IMPORT_TAGS) {
       if (re.test(mod)) tags.add(tag);
     }
@@ -118,6 +128,8 @@ export const pythonAdapter: LanguageAdapter = {
       skipDirs: ["venv", ".venv", "env", "__pycache__", "site-packages"],
       isTestFile: (name) => PYTHON_TEST_RE.test(name),
       onTestFile: (f) => ctx.testFiles.push(f),
+      onIgnored: ctx.onIgnored,
+      onUnrecognized: ctx.onUnrecognized,
       isFull: () => ctx.testFiles.length >= ctx.maxFiles,
       fixtureDirMemo: new Map(),
     });
@@ -159,6 +171,18 @@ export const pythonAdapter: LanguageAdapter = {
         onCrash?.(rule.id, error);
       }
     }
+  },
+
+  // P6 (plan 1789009691197 R3): the python adapter gains the same async
+  // parseAst hook the java/csharp adapters have (Phase 0.5 §10 pattern).
+  // The tree feeds the AST-substrate reworks (QA-PY-007); parse failure
+  // or a missing grammar resolves undefined and rules fall back to the
+  // regex path — never fatal. Header caveat "pure regex adapter, no AST"
+  // is superseded by this hook.
+  async parseAst(file: ParsedFile): Promise<ParsedAst | undefined> {
+    const tree = await parsePythonAst(file.text);
+    if (!tree) return undefined;
+    return { ast: tree, dispose: () => tree.delete() };
   },
 };
 

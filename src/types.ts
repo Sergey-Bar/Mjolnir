@@ -51,8 +51,52 @@ export const QA_IMPACT_LABELS: Record<QaImpact, string> = {
   HYGIENE: "Test hygiene debt",
 };
 
-/** Rule namespaces are frozen public API (§18.4). IDs are never reused. */
-export type RuleCategory = "QA-TEST" | "QA-TQUAL" | "QA-PW" | "QA-CI";
+/**
+ * The closed set of rule categories (plan §5.5, certification-audit D6).
+ * Declared FIRST as the single source of truth: the RuleCategory type is
+ * DERIVED from this list (compile-time exhaustiveness — a category added
+ * to the type without the value list, or vice versa, cannot compile).
+ * `--category` values are validated against this list — unknown
+ * categories are a usage error, not a silent no-op. Rule namespaces are
+ * frozen public API (§18.4): IDs are never reused.
+ */
+export const RULE_CATEGORIES = [
+  "QA-TEST",
+  "QA-TQUAL",
+  "QA-PW",
+  "QA-CI",
+  // Audit M3 (create-rule FAMILY table): per-family categories exist so
+  // a new rule is born reporting under its own dimension instead of
+  // aliasing QA-PW. Additive within schemaVersion 1.
+  "QA-PY",
+  "QA-ENV",
+  "QA-JV",
+  "QA-CS",
+  "QA-CYP",
+  "QA-SE",
+  "QA-WDIO",
+  "QA-PPTR",
+  "QA-APM",
+] as const;
+
+export type RuleCategory = (typeof RULE_CATEGORIES)[number];
+
+/**
+ * Category argument validation shared by every verb accepting
+ * `--category` (scan/why/handoff — certification-audit Phase 1.2): the
+ * three verbs must never disagree about what a valid category is. A
+ * missing value or an unknown value is a usage error (exit 10) at the
+ * caller — this helper returns the verdict, the caller renders the
+ * rejection.
+ */
+export function isValidCategory(
+  value: string | undefined,
+): value is RuleCategory {
+  return (
+    value !== undefined &&
+    (RULE_CATEGORIES as readonly string[]).includes(value)
+  );
+}
 
 /**
  * Trust levels (Verification Trust Evolution Plan §16): the OVERALL
@@ -84,8 +128,20 @@ export type TrustLevel = (typeof TRUST_ORDER)[number];
 export interface RuntimeCorroboration {
   /** Granularity of what the runtime report could vouch for. */
   level: "file" | "test" | "defect";
-  /** Report format the evidence came from. */
-  source: "playwright-json" | "junit-xml";
+  /**
+   * Report format the evidence came from. Widened additively in P4
+   * (plan 1788853205786) to mirror ForensicsReport's source union:
+   * Jest/Vitest JSON reports corroborate at file/test level exactly
+   * like Playwright's — their one-attempt-per-record shape only
+   * constrains TRUE-FLAKE derivation, which lives in the analysis, not
+   * in the provenance label.
+   */
+  source:
+    | "playwright-json"
+    | "junit-xml"
+    | "jest-json"
+    | "vitest-json"
+    | "playwright-trace";
   /** Number of tests executed in the finding's file (any level). */
   testsExecuted: number;
   /**
@@ -126,6 +182,15 @@ export interface Finding {
   /** Classified (TP+FP) verdicts behind `measuredFpRate`. */
   measuredFpN?: number;
   /**
+   * Detector revision of the rule that produced this finding, stamped
+   * from the registry at scan time (blueprint §13, G-16). Identity
+   * participates: "same ruleId, different detectorRevision" is formally
+   * a different detector for comparison purposes. Additive within
+   * schemaVersion 1; absent means the producer predates the field
+   * (revision-unknown).
+   */
+  detectorRevision?: number;
+  /**
    * Runtime corroboration from a real run report (plan §16), stamped
    * when a report was available and matched this finding's file/test.
    * Absent means "no runtime evidence" — the static evidence ladder
@@ -138,6 +203,17 @@ export interface Finding {
    * stamped with the corroboration pass. Additive within schemaVersion 1.
    */
   trustLevel?: TrustLevel;
+  /**
+   * Mutation evidence (master plan P5, plan 1788853205786): what a
+   * mutation-testing report says about the code this finding points at.
+   * PROVENANCE, not proof — a survived mutant is code the suite would
+   * not notice changing; matching findings consolidate E1→E2 BY
+   * DERIVATION (documented in docs/RULE-LIFECYCLE.md), and trustLevel
+   * never rises from mutation evidence alone (nothing ran). Absent
+   * means no mutation report was available or nothing matched — never
+   * fabricated. Additive within schemaVersion 1.
+   */
+  mutationEvidence?: MutationEvidence | undefined;
   /** Repo-relative path with forward slashes, regardless of OS. */
   file: string;
   /** 1-based. */
@@ -150,6 +226,21 @@ export interface Finding {
   /** How to fix — concrete action. */
   fix: string;
   docsUrl?: string;
+  /**
+   * Stable semantic identity of a remediation group: findings that can
+   * be reasoned about and potentially remediated as one root-cause unit
+   * (agent-handoff plan §5.1). This is intentionally a DIFFERENT
+   * concept from `ruleId` (which identifies the detector/rule).
+   *
+   * Current implementation strategy: fixGroupId = ruleId, because each
+   * rule currently represents one remediation group. Future rules may
+   * emit multiple findings belonging to one fix group, or multiple
+   * remediation groups. Consumers MUST NOT rely on
+   * fixGroupId === ruleId permanently.
+   *
+   * Additive within schemaVersion 1.
+   */
+  fixGroupId?: string;
 }
 
 /**
@@ -200,6 +291,35 @@ export const DEDUCTIONS: Record<Severity, number> = {
   info: 1,
 };
 
+/**
+ * Mutation evidence (master plan P5, plan 1788853205786 — flag 6,
+ * decision 8): provenance from a mutation-testing report
+ * (`mjolnir mutation <report>`), stamped on matching findings.
+ *
+ * PROVENANCE IS NOT TRUTH: a survived mutant is code the suite would
+ * not notice changing — evidence FOR a nearby finding, never a claim
+ * the finding is "proven real". The E1→E2 consolidation is BY
+ * DERIVATION and lives in src/mutation/derive.ts (documented in
+ * docs/RULE-LIFECYCLE.md + the machine-contract docs). trustLevel never
+ * rises from mutation evidence alone: nothing ran.
+ */
+export interface MutationEvidence {
+  /** Which mutation tool produced the report. */
+  source: "stryker" | "mutmut";
+  /** How many survived mutants matched this finding. */
+  matchedMutants: number;
+  /** The mutator names of the matched mutants (deduped, sorted). */
+  mutators: string[];
+  /**
+   * "line" = the mutant's span contains the finding's position
+   * (Stryker evidence); "file" = file-level match only (mutmut —
+   * its JUnit report carries no per-mutant lines — or an unplaceable
+   * Stryker span). Same prefer-claiming-less rule as the runtime
+   * corroboration's granularity fallback.
+   */
+  granularity: "line" | "file";
+}
+
 export interface DimensionScore {
   category: RuleCategory;
   score: number;
@@ -220,6 +340,14 @@ export interface ScanResult {
   /** Present when --scope changed was requested. */
   scope?: "all" | "changed";
   scopeDegraded?: string;
+  /**
+   * Present when --staged was requested (agent-handoff plan §5.7):
+   * the scan surface was restricted to git staged files, and `files`
+   * is how many survived the intersection. The score reflects THAT
+   * surface — never present it as a full-repo score. Additive within
+   * schemaVersion 1.
+   */
+  staged?: { files: number };
   /** Detected test frameworks (0.2). Empty + unknown=true when undetectable. */
   frameworks: string[];
   frameworkDetectionUnknown: boolean;
@@ -231,6 +359,15 @@ export interface ScanResult {
   testDeclarationCount?: number;
   /** Raw deduction total before normalization (Phase 5 — transparency). */
   rawDeductions?: number;
+  /**
+   * The evidence-discounted deduction mass the P2 anti-dilution ceiling
+   * caps against (equals rawDeductions today — E0 charges 0, E1 halves;
+   * the ceiling input is deliberately the full discount surface).
+   * Additive within schemaVersion 1; present so consumers recompute the
+   * ceiling from docs/SCORING.md formula v2 without re-deriving
+   * evidence levels.
+   */
+  effectiveDeductions?: number;
   /** Number of findings suppressed by active config entries (suppression transparency). */
   suppressionCount?: number;
   /**
@@ -276,4 +413,107 @@ export interface ScanResult {
      */
     rulesCrashed?: number;
   };
+  /**
+   * Scope Integrity block (product-gap master plan §7, R4c): the
+   * claimed-vs-analyzed accounting. `scopeVerdict` is PROVEN only when
+   * every discovered file was analyzed — no matcher exclusions, no
+   * unrecognized files, no parse failures, no truncation. Additive
+   * within schemaVersion 1.
+   */
+  scopeIntegrity?: {
+    /** Files discovery claimed for adapters. */
+    discovered: number;
+    /** Files that reached (and survived) the rule stage. */
+    analyzed: number;
+    /** Files excluded by the ignore matcher (counted at the walk). */
+    ignored: number;
+    /** Files the walk saw but no adapter claims. */
+    unrecognized: number;
+    /** Discovered files whose parse/analysis threw (counted, never fatal). */
+    parseFailed: number;
+    /** Named truncation events (deadline, file caps). */
+    truncated: number;
+    /** PROVEN only when analyzed ≡ claimed scope; else PARTIAL + reasons. */
+    scopeVerdict: "PROVEN" | "PARTIAL";
+    /** The named scope reasons, present only when PARTIAL. */
+    reasons?: string[];
+  };
+  /**
+   * Run Identity (R4c): the deterministic anchor binding verdict ←
+   * evidence ← execution ← scope ← source ← rule(rev). Present when the
+   * execution was machine-anchored; never fabricated.
+   */
+  runIdentity?: {
+    scanId: string;
+    inputFingerprint: string;
+    rulesDigest: string;
+    configFingerprint: string;
+    engineVersion: string;
+  };
+  /**
+   * Evidence Graph (R4c): the chain-law links (VERDICT ← EVIDENCE ←
+   * EXECUTION ← SCOPE ← SOURCE ← RULE(rev) ← FIXTURE ← REPRODUCTION).
+   * A link's `ref` is present only when its identity input exists — the
+   * CHAIN is always emitted so unbound links stay visible.
+   */
+  evidenceGraph?: {
+    chain: Array<{ link: string; ref?: string }>;
+    runId?: {
+      scanId: string;
+      inputFingerprint: string;
+      rulesDigest: string;
+      configFingerprint: string;
+      engineVersion: string;
+    };
+  };
+  /**
+   * Local incremental cache report (Beta-to-Stable plan, M5.2). Present
+   * only when the scan ran with `--cache`; additive within
+   * schemaVersion 1. The cache is content-addressed and local-only
+   * (plan A-2) — it never leaves the machine and never touches the
+   * network.
+   */
+  cache?: {
+    /** Files whose rule verdicts were reused from the cache. */
+    hits: number;
+    /** Files analyzed fresh this run (cache misses). */
+    misses: number;
+    /** Absolute path of the cache file — auditable, gitignored. */
+    file: string;
+  };
+  /**
+   * Scan-level trust summary (Mega MVP Master Plan v3.1 §26 WI-3, §6).
+   * A MEASUREMENT, not a contract: additive within schemaVersion 1,
+   * formulas published in docs/SCORING.md, hard incompleteness ceilings
+   * (a summary never claims more certainty than the scan that produced
+   * it). Present on every completed scan (absent only on scans whose
+   * producer predates this field). Built by
+   * src/engine/trust-summary.ts — the single definition site.
+   */
+  trustSummary?: TrustSummary;
+}
+
+/** Trust summary metric block (plan §6 — measurement, not contract). */
+export interface TrustSummary {
+  /** Best trust level any finding reached (L2 when none corroborated). */
+  level: TrustLevel;
+  /** Deterministic composite in [0,1], capped by the incompleteness ceiling. */
+  confidence: number;
+  /** evidenceBackedDeclarations / analyzedDeclarations. */
+  evidenceCoverage: number;
+  /** INCONCLUSIVE classifications + scan-level unknowns, over judged. */
+  inconclusiveRate: number;
+  /**
+   * Evidence-weighted measured FP rate over fired rules. Absent when no
+   * fired rule is measured OR the fired set mixes measured and
+   * unmeasured rules (a mixed average would hide the unknown) — see
+   * `provisionalRuleIds`.
+   */
+  measuredFpOfFiredRules?: number;
+  /** Fired rules without a valid measurement — the PROVISIONAL disclosure. */
+  provisionalRuleIds: string[];
+  /** The incompleteness ceiling that bound confidence (present when < 1). */
+  confidenceCeiling?: number;
+  /** Which incompleteness factors applied (audit trail for the cap). */
+  ceilingReasons: string[];
 }

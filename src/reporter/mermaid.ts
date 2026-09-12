@@ -15,6 +15,8 @@
  * the same ScanResult always produces byte-identical Mermaid source.
  */
 
+import { TINT, type DiagramTint } from "../brand/tokens.js";
+
 import type { DimensionScore, ScanResult, Severity } from "../types.js";
 
 function sanitizeId(raw: string): string {
@@ -26,6 +28,15 @@ function sanitizeId(raw: string): string {
 /** Escape characters that would break a Mermaid node label. */
 function escapeLabel(text: string): string {
   return text.replaceAll('"', "&quot;").replaceAll("\n", " ");
+}
+
+/**
+ * One Mermaid `classDef` line from one brand tint. Every colour this
+ * renderer emits comes from `src/brand/tokens.ts`; it names none of its
+ * own, and `brand-doctor` rule 6 fails if it starts to.
+ */
+function classDef(name: string, tint: DiagramTint): string {
+  return `  classDef ${name} fill:${tint.fill},stroke:${tint.stroke},color:${tint.text};`;
 }
 
 function dimensionStyleClass(dim: DimensionScore): string {
@@ -49,10 +60,14 @@ export function renderMermaid(result: ScanResult): string {
   if (result.score === null) {
     lines.push(`  ${rootId} --> NOTESTS["No test files detected"]`);
     lines.push("");
-    lines.push(
-      "  classDef critical fill:#fee2e2,stroke:#b91c1c,color:#7f1d1d;",
-    );
-    lines.push("  class NOTESTS critical;");
+    // NOT `critical`. This node says "no test files detected", which is
+    // the UNKNOWN state — a legitimate answer, and the one this product
+    // exists to be willing to give. Painting it in the failure tint said
+    // "this is broken" where the honest statement is "this was not
+    // measured", which is the same dishonesty as a CI gate reporting
+    // green without having run.
+    lines.push(classDef("unknown", TINT.neutral));
+    lines.push("  class NOTESTS unknown;");
     return lines.join("\n");
   }
 
@@ -118,10 +133,11 @@ export function renderMermaid(result: ScanResult): string {
   }
 
   lines.push("");
-  lines.push("  classDef healthy fill:#dcfce7,stroke:#15803d,color:#14532d;");
-  lines.push("  classDef warn fill:#fef9c3,stroke:#a16207,color:#713f12;");
-  lines.push("  classDef critical fill:#fee2e2,stroke:#b91c1c,color:#7f1d1d;");
-  lines.push("  classDef info fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a;");
+  lines.push(classDef("healthy", TINT.ok));
+  lines.push(classDef("warn", TINT.gold));
+  lines.push(classDef("critical", TINT.error));
+  lines.push(classDef("info", TINT.aurora));
+  lines.push(classDef("unknown", TINT.neutral));
   for (const { id, cls } of styleAssignments) {
     lines.push(`  class ${id} ${cls};`);
   }

@@ -23,6 +23,12 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
+          # F6 toolchain cache probe (Beta-to-Stable M5): npm-download
+          # cache keyed on the lockfile. Explicit save happens in
+          # setup-node's post step. Dogfooded here first; the generated
+          # template deliberately stays npx-only (no lockfile to key a
+          # cache on — the pinned @version is its own cache key).
+          cache: npm
       # Audit S-5: event data reaches the shell through env, never by
       # interpolation into the `run:` body — the pattern this repo's own
       # QA-CI rules enforce in other people's workflows.
@@ -40,6 +46,11 @@ jobs:
       # Dogfooding requires running the code being proposed.
       - run: npm ci && npm run build
       - run: node dist/cli.mjs . --scope changed --json > mjolnir.json
+      # Dogfooded template v2 (plan M4): annotations + Job Summary via the
+      # same `summary` command the generated workflow uses — one emitter.
+      - name: Annotations + Job Summary
+        if: always()
+        run: node dist/cli.mjs summary mjolnir.json
       # Advisory mode by design: this workflow reports findings, it never
       # blocks a PR. `diff` legitimately exits 1 when it finds new/worsened
       # debt — continue-on-error on THIS step only keeps that exit code
@@ -86,3 +97,27 @@ jobs:
                 body,
               });
             }
+
+  # P1 dogfood (plan 1788853205786): the repo's own action.yml runs on
+  # every PR that touches it — the Marketplace surface is exercised by
+  # the repository that ships it, not just described. Advisory (fail-on:
+  # none): this reports through the Job Summary and never blocks; the
+  # PR-blocking self-scan stays in ci.yml.
+  action-dogfood:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Run only when the action surface itself changes — a composite
+    # action bug must be caught before a release publishes it.
+    if: >-
+      github.event_name == 'pull_request' &&
+      !github.event.pull_request.head.repo.fork
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: ./
+        with:
+          scope: changed
+          format: terminal
+          fail-on: none
+          version: latest

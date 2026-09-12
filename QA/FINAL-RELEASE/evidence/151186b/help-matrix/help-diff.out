@@ -1,0 +1,8 @@
+  diff — compare a fresh scan against the baseline — new/worsened only
+
+  Usage:
+    mjolnir diff [path]
+
+  Examples:
+    $ mjolnir diff
+

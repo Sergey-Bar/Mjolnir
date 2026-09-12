@@ -1,0 +1,8 @@
+  badge — shields.io endpoint JSON + snippet from a scan
+
+  Usage:
+    mjolnir badge [path]
+
+  Examples:
+    $ mjolnir badge .
+

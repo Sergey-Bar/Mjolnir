@@ -5,67 +5,79 @@
  * 10 usage error · 20 internal error.
  */
 
-import {
-  existsSync,
-  readFileSync,
-  realpathSync,
-  statSync,
-  writeFileSync,
-} from "node:fs";
+import { existsSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { execFileSync } from "node:child_process";
-import { join, dirname, relative, resolve, sep } from "node:path";
+import { join, dirname, resolve } from "node:path";
 import process from "node:process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import {
-  compareFindings,
+  RULE_CATEGORIES,
   SCHEMA_VERSION,
   type Finding,
-  type ScanResult,
+  type RuleCategory,
   type Severity,
+  isAdvisoryFinding,
 } from "./types.js";
-import { discoverWorkspace, type Workspace } from "./discovery/workspace.js";
-import { detectFrameworks } from "./discovery/frameworks.js";
-import {
-  SCAN_ADAPTERS as ADAPTERS,
-  discoverAllTestFiles,
-} from "./discovery/scan-adapters.js";
-import { createIgnoreMatcher, LIMITS } from "./discovery/ignores.js";
-import { RULES } from "./rules/index.js";
-import { MEASURED_FP } from "./rules/measured-fp.generated.js";
-import {
-  computeDimensions,
-  computeTotal,
-  countTestDeclarations,
-  deductionFor,
-  stampEvidenceLevels,
-} from "./scorer/scorer.js";
+// M6 (blueprint §9.2): the canonical scan pipeline lives in
+// engine/scan-pipeline.ts — cli.ts is presentation + argument parsing.
+// The namespace import keeps the historical import surface working
+// (tests import runScan and friends from cli.js) while every scan
+// semantic is owned by the pipeline module.
+import * as pipeline from "./engine/scan-pipeline.js";
+export const {
+  runScan,
+  buildUniversalRules,
+  fallbackWorkspace,
+  pathMatchesGlob,
+  isValidFindingRecord,
+  discoverRuntimeReport,
+  KNOWN_RULE_IDS,
+  OVERLAP_META_BY_RULE_ID,
+  EVIDENCE_OVERRIDES,
+  SUITE_INVALIDATING_RULE_IDS,
+} = pipeline;
+export type { ScanHooks, CliArgs } from "./engine/scan-pipeline.js";
+import type { CliArgs } from "./engine/scan-pipeline.js";
+import { buildMachineContract } from "./engine/machine-contract.js";
+
 import { renderTerminal } from "./reporter/terminal.js";
+import { renderTrustReport } from "./reporter/trust-report.js";
 import { renderSarif } from "./reporter/sarif.js";
+import { renderCodeQuality } from "./reporter/codequality.js";
 import { renderMermaid } from "./reporter/mermaid.js";
-import { computeChangedScope, filterToChanged } from "./scope/changed.js";
-import { asUniversal } from "./engine/rule-runner.js";
-import { enforceTierPolicy, type Tier } from "./engine/tier-policy.js";
-import type { QADoctorRule } from "./rules/rule.js";
-import type { UniversalRule } from "./engine/adapter.js";
-import { stampRuntimeCorroboration } from "./engine/runtime-corroboration.js";
-import {
-  classifyProvenance,
-  computeAgenticProfile,
-} from "./engine/provenance.js";
-import type { ParsedAst, ParsedFile } from "./engine/adapter.js";
-import { releaseTreeSitterResources } from "./engine/tree-sitter-ast.js";
-import { applyOverlapDedup, type OverlapMeta } from "./engine/overlap-dedup.js";
-import { isAdvisoryFinding } from "./types.js";
-import { typescriptAdapter } from "./adapters/typescript.js";
-import { githubActionsAdapter } from "./adapters/github-actions.js";
-import { pythonAdapter } from "./adapters/python.js";
-import { javaAdapter } from "./adapters/java.js";
-import { csharpAdapter } from "./adapters/csharp.js";
+import { ProgressRenderer, shouldRenderProgress } from "./reporter/progress.js";
+import { runSummaryCommand } from "./commands/summary.js";
+import { runWhyCommand } from "./commands/why.js";
+import { explainVerdict, renderVerdictExplain } from "./commands/explain.js";
+import { runHandoffCommand } from "./commands/handoff.js";
+import { runInstallCommand } from "./commands/install-agents.js";
+import { runStdioTransport } from "./mcp/transport.js";
 import { ciInstall, type GateLevel } from "./integrations/ci-install.js";
 import { runForensics } from "./forensics/run.js";
-import { renderTriage, renderTriageMd } from "./forensics/triage.js";
+import {
+  renderTriage,
+  renderTriageMd,
+  renderTriageWorkflow,
+  renderTriageWorkflowJson,
+} from "./forensics/triage.js";
+import {
+  parseStrykerJson,
+  looksLikeStrykerJson,
+} from "./mutation/parse-stryker.js";
+import { looksLikeMutmutXml, parseMutmutXml } from "./mutation/parse-mutmut.js";
+import {
+  renderMutationSummary,
+  stampMutationEvidence,
+} from "./mutation/derive.js";
+import type { MutationReport } from "./mutation/types.js";
 import { renderBadgeSnippet, writeBadge } from "./commands/badge.js";
+import { runTrustReportCommand } from "./commands/trust-report.js";
+import {
+  renderRootHelp,
+  renderVerbHelp,
+  hasVerbHelp,
+} from "./commands/help.js";
 import { renderDebt } from "./commands/debt.js";
 import {
   createRuleScaffold,
@@ -81,6 +93,7 @@ import {
   renderBaselineSaved,
   saveBaseline,
 } from "./commands/baseline.js";
+import { buildVerifyDigest, renderVerifyDigest } from "./commands/verify.js";
 import {
   DEFAULT_STATS_PATH,
   loadStats,
@@ -94,17 +107,16 @@ import { renderPrComment } from "./commands/pr-comment.js";
 import { runInit, renderInit, tryReadPackageJson } from "./commands/init.js";
 import { renderPwRunSummary, summarizePwRun } from "./commands/pw-report.js";
 import { planAndApplyFixes, renderFixReport } from "./commands/fix.js";
-import { renderDoctorReport, runDoctorSelfAudit } from "./commands/doctor.js";
+import { runDoctorCommand } from "./commands/doctor-run.js";
+import { runReleaseTrustCommand } from "./commands/release-trust.js";
 import { buildCatalog, renderCatalogMd } from "./commands/rules-catalog.js";
 import { explainRule, renderExplain } from "./commands/explain.js";
 import { loadSuppressions, renderSuppressions } from "./config/suppressions.js";
-import {
-  loadConfig,
-  ConfigValidationError,
-  applySeverityOverrides,
-} from "./config/config.js";
-import { loadPlugins } from "./plugins/load.js";
-import { loadLocalRules, LOCAL_RULES_DIR } from "./plugins/local-rules.js";
+import { loadConfig, ConfigValidationError } from "./config/config.js";
+import { resolveGitPath } from "./scope/git-resolve.js";
+import { createIgnoreMatcher } from "./discovery/ignores.js";
+import { loadLocalRules } from "./plugins/local-rules.js";
+import { writeFileAtomic } from "./lib/fs-atomic.js";
 import {
   computeSelectorHealth,
   renderSelectorHealth,
@@ -118,136 +130,26 @@ import {
  * where the file happens to sit after install. This follows the same
  * discipline as SARIF's `driver.version` — kept in sync by
  * `scripts/sync-sarif-version.cjs` on release and guarded by
- * `tests/version-consistency.spec.ts` locally.
+ * `tests/version-consistency.spec.ts` locally. R4c moved the literal to
+ * src/engine/version.ts (a leaf module) so the scan pipeline's run
+ * identity can carry it without a cli.ts import cycle; this re-export
+ * keeps every existing consumer stable.
  */
-export const CLI_VERSION = "0.5.0";
+import { ENGINE_VERSION as CLI_VERSION } from "./engine/version.js";
+export { CLI_VERSION };
 
-const UNIVERSAL_RULES = RULES.map(asUniversal);
-
-/** Registered rule IDs — used to warn on unknown severityOverrides keys (M4). */
-const KNOWN_RULE_IDS: ReadonlySet<string> = new Set(RULES.map((r) => r.id));
-
-/**
- * R6 (Bug Map M-02): per-rule overlap metadata, built from RULES the
- * same way tierByRuleId is — `asUniversal` drops `overlapWith`, so the
- * dedup map must come from the registry directly.
- */
-const OVERLAP_META_BY_RULE_ID: ReadonlyMap<string, OverlapMeta> = new Map(
-  RULES.map((r, order) => {
-    const meta: OverlapMeta = {
-      ...(r.overlapWith ? { overlapWith: r.overlapWith } : {}),
-      ...(r.tier ? { tier: r.tier } : {}),
-      order,
-    };
-    return [r.id, meta] as const;
-  }),
-);
-
-// Plugin API (Phase 6): third-party rules are appended after core rules;
-// core findings always win dedup by running first.
-// Plan §18 (Local Extensibility): workspace-local `mjolnir-rules/` files
-// load alongside npm plugins — folder-based, zero network.
-export async function buildUniversalRules(
-  root: string,
-  strict?: boolean,
-): Promise<{
-  rules: UniversalRule[];
-  pluginErrors: string[];
-  tierByRuleId: Map<string, Tier>;
-  pluginMeta: Array<{ name: string; rules: number }>;
-  externalRules: QADoctorRule[];
-}> {
-  const { plugins, errors } = loadPlugins(root);
-  const local = await loadLocalRules(root);
-  const allErrors = [...errors, ...local.errors];
-  const externalRules = [
-    ...plugins.map((p) => ({ name: p.name, rules: p.rules })),
-    { name: LOCAL_RULES_DIR, rules: local.rules },
-  ].flatMap((p) => p.rules.map(asUniversal));
-  const tierByRuleId = new Map<string, Tier>();
-  for (const r of RULES) {
-    if (r.tier) tierByRuleId.set(r.id, r.tier);
-  }
-  for (const p of plugins) {
-    for (const r of p.rules) {
-      if (r.tier) tierByRuleId.set(r.id, r.tier);
-    }
-  }
-  for (const r of local.rules) {
-    if (r.tier) tierByRuleId.set(r.id, r.tier);
-  }
-  let rules = [...UNIVERSAL_RULES, ...externalRules];
-  // Phase 4 (Tempering): exclude quarantine-tier rules unless --strict.
-  // §18: the tier map covers EXTERNAL rules too — a workspace-local
-  // quarantine rule is excluded exactly like a core one.
-  if (!strict) {
-    rules = rules.filter((r) => tierByRuleId.get(r.id) !== "quarantine");
-  }
-  const pluginMeta = [
-    ...plugins.map((p) => ({
-      name: p.name,
-      rules: p.rules.length,
-    })),
-    ...(local.rules.length > 0
-      ? [
-          {
-            name: `${LOCAL_RULES_DIR}/ (workspace-local external rules)`,
-            rules: local.rules.length,
-          },
-        ]
-      : []),
-  ];
-  return {
-    rules,
-    pluginErrors: allErrors,
-    tierByRuleId,
-    pluginMeta,
-    externalRules: local.rules,
-  };
+/** A usage-error detail: the offending token, when one exists. */
+export interface UsageErrorDetail {
+  /** The unknown flag or rejected value (e.g. `--nope`, `loud`). */
+  token?: string | undefined;
+  /** The flag whose value was rejected (`--tone` for `--tone loud`). */
+  flag?: string | undefined;
 }
 
-/** Rule-declared evidence-level overrides (Honesty Core). */ const EVIDENCE_OVERRIDES: ReadonlyMap<
-  string,
-  string
-> = new Map(
-  RULES.filter((r) => r.evidenceLevel !== undefined).map((r) => [
-    r.id,
-    r.evidenceLevel as string,
-  ]),
-);
-
-/**
- * Rules whose findings void the suite's pass claim (RuleMeta.suiteInvalidating).
- * Built from the registry so the scorer never has to import it.
- */
-const SUITE_INVALIDATING_RULE_IDS: ReadonlySet<string> = new Set(
-  RULES.filter((r) => r.suiteInvalidating === true).map((r) => r.id),
-);
-
-interface CliArgs {
-  target: string;
-  json: boolean;
-  verbose: boolean;
-  maxDurationMs: number;
-  scopeChanged: boolean;
-  format: "terminal" | "json" | "sarif" | "mermaid";
-  /** --width override for terminal box/gauge wrapping (Sprint 5 Task 22). */
-  width?: number;
-  /** --ascii / --no-ascii override for shouldUseAscii()'s heuristic. */
-  ascii?: boolean;
-  /** --tone blunt: opt-in blunter messages (Sprint 9 Task 40). */
-  tone?: "blunt";
-  /** --strict: include quarantine-tier rules in the scan (Phase 4). */
-  strict?: boolean;
-  /** --base <ref>: base ref for --scope changed (audit H-10). */
-  base?: string;
-  /** --debug: print errors swallowed by crash isolation (audit R-9). */
-  debug?: boolean;
-  /** --record-milestones: let a scan write .mjolnir/stats.json (audit R-1). */
-  recordMilestones?: boolean;
-}
-
-export function parseArgs(argv: string[]): CliArgs | null {
+export function parseArgs(
+  argv: string[],
+  onError?: (detail: UsageErrorDetail) => void,
+): CliArgs | null {
   const args: CliArgs = {
     target: ".",
     json: false,
@@ -255,6 +157,10 @@ export function parseArgs(argv: string[]): CliArgs | null {
     maxDurationMs: Number.POSITIVE_INFINITY,
     scopeChanged: false,
     format: "terminal",
+  };
+  const reject = (detail: UsageErrorDetail): null => {
+    onError?.(detail);
+    return null;
   };
   for (let i = 0; i < argv.length; i++) {
     const a: string = argv[i] ?? "";
@@ -265,15 +171,19 @@ export function parseArgs(argv: string[]): CliArgs | null {
       const fmt = argv[++i];
       if (fmt === "sarif") args.format = "sarif";
       else if (fmt === "mermaid") args.format = "mermaid";
+      // P3a (plan 1788853205786): GitLab Code Quality report — the
+      // `codequality` CI artifact GitLab renders as MR widgets.
+      else if (fmt === "codequality") args.format = "codequality";
       else if (fmt === "json") {
         args.format = "json";
         args.json = true;
-      } else if (fmt !== "terminal") return null;
+      } else if (fmt !== "terminal")
+        return reject({ flag: "--format", token: fmt });
     } else if (a === "--verbose") args.verbose = true;
     else if (a === "--scope") {
       const mode = argv[++i];
       if (mode === "changed") args.scopeChanged = true;
-      else return null; // unknown scope = usage error
+      else return reject({ flag: "--scope", token: mode }); // unknown scope
     } else if (a === "--base") {
       const ref = argv[++i];
       if (!ref || ref.startsWith("-")) return null;
@@ -293,486 +203,166 @@ export function parseArgs(argv: string[]): CliArgs | null {
     } else if (a === "--tone") {
       const tone = argv[++i];
       if (tone === "blunt") args.tone = "blunt";
-      else return null; // unknown tone = usage error
+      else return reject({ flag: "--tone", token: tone }); // unknown tone
     } else if (a === "--strict") {
       args.strict = true;
     } else if (a === "--debug") {
       args.debug = true;
     } else if (a === "--record-milestones") {
       args.recordMilestones = true;
+    } else if (a === "--cache") {
+      args.cache = true;
+    } else if (a === "--no-progress") {
+      args.noProgress = true;
+    } else if (a === "--category") {
+      const cat = argv[++i];
+      const valid: readonly string[] = RULE_CATEGORIES;
+      if (cat === undefined || !valid.includes(cat)) {
+        return reject({ flag: "--category", token: cat });
+      }
+      args.categories = [...(args.categories ?? []), cat as RuleCategory];
+    } else if (a === "--score") {
+      args.scoreOnly = true;
+    } else if (a === "--staged") {
+      args.staged = true;
+    } else if (a === "--blocking") {
+      const level = argv[++i];
+      if (level === "error" || level === "warning" || level === "none") {
+        args.blocking = level;
+      } else {
+        return reject({ flag: "--blocking", token: level });
+      }
+    } else if (a === "--enable-plugins") {
+      // Audit C2: opt-in code execution for plugin/JS-module rule
+      // sources. Additive flag, accepted by every verb that loads rules.
+      args.enablePlugins = true;
+    } else if (a === "--classic") {
+      // WI-5: escape hatch from the Trust Report hero surface back to
+      // the classic terminal render. Rendering flag only.
+      args.classic = true;
     } else if (a === "--help" || a === "-h") {
       return null;
     } else if (!a.startsWith("-")) {
       args.target = a;
     } else {
-      return null; // unknown flag = usage error (exit 10)
+      return reject({ token: a }); // unknown flag = usage error (exit 10)
     }
   }
   return args;
 }
 
-export interface ScanHooks {
-  /** Invoked when a rule throws on a file (audit R-9). */
-  onRuleCrash?: (ruleId: string, file: string, error: unknown) => void;
-  /** Invoked for non-fatal config warnings (bug-audit M4). */
-  onConfigWarning?: (message: string) => void;
-}
+/** Scan flags that exist — the "did you mean" candidate pool. */
+const KNOWN_SCAN_FLAGS = [
+  "--json",
+  "--format",
+  "--verbose",
+  "--scope",
+  "--base",
+  "--max-duration",
+  "--width",
+  "--ascii",
+  "--no-ascii",
+  "--tone",
+  "--classic",
+  "--strict",
+  "--debug",
+  "--record-milestones",
+  "--cache",
+  "--help",
+  "-h",
+  "--version",
+  "-v",
+  "--dry-run",
+];
 
-/**
- * Workspace fallback for targets with no discoverable project root
- * (package.json-less repos, Python/Java/C# trees). Exported pure so the
- * root-path degenerate case (`C:\` → basename "") is testable without
- * scanning a filesystem root.
- */
-export function fallbackWorkspace(targetAbs: string): Workspace {
-  return {
-    root: targetAbs,
-    name: targetAbs.split(/[\\/]/).pop() || "repo",
-    packageJson: {},
-    workspaceGlobs: [],
-  };
-}
-
-/**
- * Testable default scan path core. `hooks` lets callers observe
- * normally-invisible events (swallowed rule crashes) without changing
- * the ScanResult contract beyond the rulesCrashed counter.
- *
- * Async since the Verification Trust Evolution Plan Phase 0.5 (§10): the
- * per-file loop awaits the adapter parse stage (WASM grammar load is
- * inherently async); `runRules` and every rule stay synchronous and
- * consume `ParsedFile.ast`. Callers await the returned promise.
- */
-export async function runScan(
-  args: CliArgs,
-  hooks: ScanHooks = {},
-): Promise<ScanResult> {
-  const started = Date.now();
-  const deadline = started + args.maxDurationMs;
-  // package.json workspace OR non-JS repo (Python etc.) — fall back to the
-  // target dir itself so language adapters can still discover their files.
-  const discovered = discoverWorkspace(args.target);
-  const targetAbs = resolve(args.target);
-  // Scope containment: when the user targets a subdirectory of the
-  // discovered project root (e.g. one package in a monorepo), scan ONLY
-  // that subtree — sibling packages were never pointed at.
-  const scanRoot =
-    discovered &&
-    discovered.root !== targetAbs &&
-    targetAbs.startsWith(discovered.root + sep)
-      ? { ...discovered, root: targetAbs }
-      : (discovered ?? fallbackWorkspace(targetAbs));
-  const workspace = scanRoot;
-  const findings: Finding[] = [];
-  let skippedFiles = 0;
-  let testFileCount = 0;
-  let testDeclarationCount = 0;
-  // Bug-audit L3: per-file declaration counts, so a changed-scope scan can
-  // score against the files it actually judged instead of the whole repo.
-  const declarationsByFile = new Map<string, number>();
-  let rulesCrashed = 0;
-  // Audits H-3/H-8: honest analysis status. Each phase reports what
-  // actually happened; truncation carries named reasons.
-  const truncationReasons = new Set<string>();
-  let discoveryTruncated = false;
-  let rulesPartial = false;
-
-  let tierByRuleId: Map<string, Tier>;
-  let pluginsLoaded: Array<{ name: string; rules: number }>;
-  // Plan §17.1: per-file provenance for the Agentic Trust Profile.
-  const fileProvenance: Array<{
-    path: string;
-    provenance: ReturnType<typeof classifyProvenance>;
-  }> = [];
-  // R1: dispatch through language adapters. Rules stay unchanged; the
-  // adapters own discovery, parsing, and rule application.
-  const {
-    rules: activeRules,
-    pluginErrors,
-    tierByRuleId: tiers,
-    pluginMeta,
-  } = await buildUniversalRules(workspace.root, args.strict);
-  tierByRuleId = tiers;
-  pluginsLoaded = pluginMeta;
-  for (const err of pluginErrors) {
-    findings.push({
-      ruleId: "QA-PLUGIN-000",
-      category: "QA-PW",
-      severity: "warning",
-      confidence: "high",
-      findingType: "deterministic-defect",
-      qaImpact: "HYGIENE",
-      evidenceLevel: "E2",
-      file: "mjolnir.config.json",
-      line: 1,
-      column: 1,
-      message: `Plugin problem: ${err}`,
-      why: "A configured plugin could not be loaded or declared invalid rules — its checks are silently missing from this scan.",
-      fix: "Fix or remove the plugin entry in mjolnir.config.json.",
-    });
-  }
-  const ctx = {
-    workspace,
-    testFiles: [] as string[],
-    deadline,
-    maxFiles: LIMITS.maxFilesPerAdapter,
-    ignoreMatcher: createIgnoreMatcher(workspace.root),
-    onSkippedFile: (reason?: string) => {
-      skippedFiles++;
-      if (reason) truncationReasons.add(reason);
-    },
-    onDiscoveryTruncated: (reason: string) => {
-      discoveryTruncated = true;
-      if (!truncationReasons.has(reason)) {
-        truncationReasons.add(reason);
-        skippedFiles++;
-      }
-    },
-    onRuleCrash: (ruleId: string, file: string, error: unknown) => {
-      rulesCrashed++;
-      hooks.onRuleCrash?.(ruleId, file, error);
-    },
-  };
-
-  // Phase 2 (Tempering): resolve ignore patterns from .mjolnirignore
-  // and config exclude into the scan's own matcher (audit R-8) before
-  // discovering test files.
-
-  // Audit H-8/P-2: each adapter discovers into its own capped bucket,
-  // via ONE shared tree walk — the pipeline no longer readdirSyncs
-  // every directory once per language.
-  const languageAdapters = ADAPTERS.filter((a) => a.id !== "github-actions");
-  const buckets = new Map<string, string[]>(
-    languageAdapters.map((a) => [a.id, [] as string[]]),
-  );
-  const fixtureDirMemo = new Map<string, boolean>();
-  discoverAllTestFiles(ctx, languageAdapters, buckets, fixtureDirMemo);
-  // Map preserves insertion order (= languageAdapters order), so the
-  // concat order is identical to the per-adapter lookup it replaces.
-  for (const bucket of buckets.values()) {
-    ctx.testFiles.push(...bucket);
-  }
-  const wfBucket: string[] = [];
-  githubActionsAdapter.discoverTestFiles({ ...ctx, testFiles: wfBucket });
-  ctx.testFiles.push(...wfBucket);
-
-  // Audit H-3: the deadline is checked per file here too — discovery
-  // alone no longer owns the budget.
-  let scanned = 0;
-  for (const path of ctx.testFiles) {
-    if (Date.now() > deadline) {
-      rulesPartial = true;
-      skippedFiles += ctx.testFiles.length - scanned;
-      truncationReasons.add("rule-loop-deadline");
-      break;
-    }
-    scanned++;
-    const isWorkflow = githubActionsAdapter.isTestFile(path);
-    const isPython = pythonAdapter.isTestFile(path);
-    const isJava = javaAdapter.isTestFile(path);
-    const isCs = csharpAdapter.isTestFile(path);
-    if (!isWorkflow) testFileCount++;
-    let text: string;
-    try {
-      // Normalize once at read time: strip BOM (breaks ^-anchored regexes)
-      // and unify CRLF → LF ($-anchored regexes miss every line on Windows
-      // checkouts otherwise). Rules can rely on LF-only text.
-      text = readFileSync(path, "utf8")
-        .replace(/^\uFEFF/, "")
-        .replace(/\r\n?/g, "\n");
-    } catch {
-      skippedFiles++;
-      continue;
-    }
-    // Exposure metric (Phase 5): count declarations, not files. Workflows
-    // declare no tests, so they are excluded from the denominator.
-    const relPath = relative(workspace.root, path).replaceAll("\\", "/");
-    if (!isWorkflow) {
-      const decls = countTestDeclarations(text);
-      testDeclarationCount += decls;
-      // Per-file accounting (bug-audit L3): in changed-scope mode the
-      // score must use a denominator from the files actually judged,
-      // not the whole repo.
-      declarationsByFile.set(relPath, decls);
-      // Plan §17.1: per-file provenance for the Agentic Trust Profile.
-      // Metadata only (§17.4) — it never affects rules or scoring.
-      fileProvenance.push({
-        path: relPath,
-        provenance: classifyProvenance({ text }),
-      });
-    }
-    const adapter = isWorkflow
-      ? githubActionsAdapter
-      : isPython
-        ? pythonAdapter
-        : isJava
-          ? javaAdapter
-          : isCs
-            ? csharpAdapter
-            : typescriptAdapter;
-    // Phase 0.5 parse stage (§10): discovery and rule execution stay
-    // where they were; the awaited parse sits between them. `runRules`
-    // and rules remain synchronous and consume `file.ast`. Every
-    // dispose path below runs in a finally-equivalent position — tree
-    // release must never depend on rules completing successfully
-    // (§10.3): normal completion, rule crash, per-file budget expiry,
-    // and adapter throw all pass through `finally`.
-    const parsedFile: ParsedFile = { path: relPath, text };
-    let parsed: ParsedAst | undefined;
-    try {
-      if (adapter.parseAst && Date.now() <= deadline) {
-        parsed = await adapter.parseAst(parsedFile);
-      }
-      const fileForRules: ParsedFile = parsed
-        ? { ...parsedFile, ast: parsed.ast }
-        : parsedFile;
-      adapter.runRules(
-        activeRules,
-        fileForRules,
-        (f, ruleId, category) => {
-          findings.push({ ...f, ruleId, category } as Finding);
-        },
-        // Audit R-9: rule crashes stay isolated but are counted and
-        // surfaced via hooks (--debug prints them).
-        (ruleId, error) => {
-          ctx.onRuleCrash?.(ruleId, relPath, error);
-        },
-        // Audit P-1: per-file analysis budget — one oversized file can
-        // no longer own the scan; the skip is counted and reported.
-        {
-          deadline: Math.min(deadline, Date.now() + LIMITS.maxFileAnalysisMs),
-          onExceeded: () => {
-            rulesPartial = true;
-            skippedFiles++;
-            truncationReasons.add("file-budget");
-          },
-        },
-      );
-    } catch {
-      // WorkflowParseSkipped and friends — counted, never fatal. A
-      // parse-stage throw (contract: never happens) lands here too: the
-      // file produced no analysis, so counting it as skipped is honest.
-      skippedFiles++;
-    } finally {
-      // §10.3: release the AST on every exit path, success or not.
-      parsed?.dispose();
-    }
-  }
-
-  // Changed-scope filtering (Sprint-Plan W6): report only findings on
-  // new/changed lines vs the merge base. Degraded git data → full files.
-  let scopeInfo: { scope: "all" | "changed"; degraded?: string | undefined } = {
-    scope: "all",
-  };
-  if (args.scopeChanged) {
-    const diff = computeChangedScope(workspace.root, args.base);
-    const filtered = filterToChanged(findings, diff);
-    findings.length = 0;
-    for (const f of filtered) findings.push(f);
-    scopeInfo = diff.degraded
-      ? { scope: "changed", degraded: diff.reason }
-      : { scope: "changed" };
-    // Bug-audit L3: restrict the scoring denominator to the changed files
-    // — repo-wide declarations + changed-lines-only deductions inflated
-    // the score and made it incomparable to a full-scan score.
-    if (!diff.degraded) {
-      testDeclarationCount = [...Object.keys(diff.changed)].reduce(
-        (sum, file) => sum + (declarationsByFile.get(file) ?? 0),
-        0,
-      );
-    }
-  }
-
-  // Framework detection (0.2): wire the previously-dead detector into the
-  // pipeline so output and rules can be framework-aware.
-  const frameworks = detectFrameworks(workspace);
-
-  // Suppression enforcement: active `ignore` entries in
-  // mjolnir.config.json remove findings from output, scoring, and exit
-  // codes. Expired entries suppress nothing (stale config hides nothing).
-  // An entry with `files` globs only suppresses findings under those paths.
-  let suppressionCount: number;
-  const { config, warnings } = loadConfig(workspace.root, {
-    knownRuleIds: KNOWN_RULE_IDS,
-  });
-  for (const w of warnings) hooks.onConfigWarning?.(w);
-  applySeverityOverrides(findings, config);
-  const suppressions = loadSuppressions(workspace.root);
-  const active = suppressions.entries.filter((e) => e.status === "active");
-  suppressionCount = active.length;
-  if (active.length > 0) {
-    const ruleOnly = new Set(
-      active.filter((e) => !e.files?.length).map((e) => e.ruleId),
+/** Hand-rolled Levenshtein distance (plan M2: no new dependencies). */
+export function levenshtein(a: string, b: string): number {
+  if (a === b) return 0;
+  if (a.length === 0) return b.length;
+  if (b.length === 0) return a.length;
+  // Memoized edit-distance walk. Map-based memo (not row arrays) keeps
+  // every access defined — no defensive ?? arms for the coverage gate.
+  const memo = new Map<string, number>();
+  const walk = (i: number, j: number): number => {
+    if (i === a.length) return b.length - j;
+    if (j === b.length) return a.length - i;
+    const key = `${i}:${j}`;
+    const hit = memo.get(key);
+    if (hit !== undefined) return hit;
+    const cost = a[i] === b[j] ? 0 : 1;
+    const best = Math.min(
+      walk(i + 1, j) + 1,
+      walk(i, j + 1) + 1,
+      walk(i + 1, j + 1) + cost,
     );
-    const kept = findings.filter((f) => {
-      if (ruleOnly.has(f.ruleId)) return false;
-      return !active.some(
-        (e) =>
-          e.files?.length &&
-          e.ruleId === f.ruleId &&
-          e.files.some((g) => pathMatchesGlob(f.file, g)),
-      );
-    });
-    findings.length = 0;
-    for (const f of kept) findings.push(f);
-  }
-
-  // R6 (Bug Map M-02): cross-rule overlap dedup. Runs AFTER changed-scope
-  // filtering and suppression (review fix): a user's ignore entry that
-  // suppresses a pair's survivor must leave the twin present, so the twin
-  // is then deduped only if its declarer actually survives suppression —
-  // pre-dedup placement silently erased the twin with no trace. Still
-  // before scoring/reporting, so the deduped set is what everyone sees.
-  const deduped = applyOverlapDedup(findings, OVERLAP_META_BY_RULE_ID);
-  findings.length = 0;
-  // Loop, not spread: `push(...arr)` throws RangeError above ~124k
-  // arguments (V8 call-stack limit) and the scan pipeline has no
-  // findings-count cap — large monorepos can exceed it.
-  for (const f of deduped) findings.push(f);
-
-  findings.sort(compareFindings);
-  // Honesty Core Phase 1: every finding carries its honest evidence level
-  // (rule override wins; otherwise derived from findingType+confidence).
-  stampEvidenceLevels(findings, EVIDENCE_OVERRIDES);
-  // Honesty Core: tag each finding with its rule's measured FP rate when
-  // one exists, so JSON consumers get the same signal the footer shows.
-  for (const f of findings) {
-    const m = MEASURED_FP[f.ruleId];
-    if (m) {
-      f.measuredFpRate = m.fpRate;
-      f.measuredFpN = m.n;
-    }
-  }
-  // Audit H-1: the tier is authoritative — a quarantine finding is
-  // advisory by construction (info + E0) no matter what its rule
-  // declares, so an unproven rule can never gate CI or deduct score.
-  enforceTierPolicy(findings, tierByRuleId);
-  // Plan §16 — Runtime Evidence: when a real run report sits next to
-  // the scan target (the same ingestion `mjolnir forensics` uses:
-  // `mjolnir.report.json` or a `test-results/` directory), findings get
-  // stamped with runtime corroboration + the L0–L5 trust ladder.
-  // Absent report → findings unchanged (honest "no runtime evidence").
-  const runtimeReportPath = discoverRuntimeReport(scanRoot.root);
-  if (runtimeReportPath) {
-    try {
-      const fr = await runForensics(runtimeReportPath, {
-        writeFlakyMd: false,
-      });
-      stampRuntimeCorroboration(findings, fr.report);
-    } catch {
-      // A hostile/corrupt report must not fail the scan — the run simply
-      // carries no runtime evidence (same degrade posture as forensics).
-    }
-  }
-  const dimensions = computeDimensions(findings);
-  const rawDeductions = findings.reduce((sum, f) => sum + deductionFor(f), 0);
-  const total = computeTotal(dimensions, findings, {
-    testDeclarations: testDeclarationCount,
-    testFileCount,
-    suiteInvalidatingRuleIds: SUITE_INVALIDATING_RULE_IDS,
-  });
-  const elapsed = Date.now() - started;
-
-  // R2 empty-state: score is null when no test files exist at all.
-  // A "100/100" on a repo with zero tests would be a false proof.
-  const hasTests = testFileCount > 0;
-
-  const result: ScanResult = {
-    schemaVersion: SCHEMA_VERSION,
-    partial: discoveryTruncated || rulesPartial || skippedFiles > 0,
-    score: hasTests ? total : null,
-    ...(hasTests ? {} : { reason: "no-tests-found" as const }),
-    frameworks: frameworks.frameworks,
-    frameworkDetectionUnknown: frameworks.unknown,
-    ...(args.scopeChanged
-      ? {
-          scope: scopeInfo.scope,
-          ...(scopeInfo.degraded ? { scopeDegraded: scopeInfo.degraded } : {}),
-        }
-      : {}),
-    dimensions,
-    // Honesty: the JSON/SARIF contract carries ALL findings — silent
-    // truncation would make machine consumers (Code Scanning, CI gates)
-    // act on incomplete evidence. The terminal reporter limits its own
-    // display (top 5 + "--verbose for all"); no data is dropped here.
-    findings,
-    testFileCount,
-    testDeclarationCount,
-    rawDeductions,
-    suppressionCount,
-    ...(pluginsLoaded.length > 0 ? { plugins: pluginsLoaded } : {}),
-    // Plan §17.2: Agentic Trust Profile — provenance metadata only.
-    agenticProfile: computeAgenticProfile(fileProvenance, findings),
-    analysisStatus: {
-      // Audits H-3/H-8: both fields derive from what actually happened.
-      discovery: discoveryTruncated ? "partial" : "complete",
-      rules: rulesPartial ? "partial" : "complete",
-      skippedFiles,
-      durationMs: elapsed,
-      // Audit R-9: crashes swallowed by per-rule isolation, visible.
-      rulesCrashed,
-      ...(truncationReasons.size > 0
-        ? { truncationReasons: [...truncationReasons].sort() }
-        : {}),
-    },
+    memo.set(key, best);
+    return best;
   };
-  // §10.3: every per-file tree was already disposed in the loop's
-  // finally; tearing the memoized parsers down here releases the
-  // grammar-level WASM state so a long-lived process (library consumer,
-  // test runner) doesn't pin it between scans. The next scan
-  // transparently re-creates them.
-  await releaseTreeSitterResources();
-  return result;
+  return walk(0, 0);
 }
 
-export type Output = (...parts: unknown[]) => void;
+/** Nearest known flags within distance ≤ 2, nearest first. */
+export function nearestFlags(flag: string, max = 3): string[] {
+  return KNOWN_SCAN_FLAGS.map((f) => ({ f, d: levenshtein(flag, f) }))
+    .filter((x) => x.d <= 2)
+    .sort((x, y) => x.d - y.d)
+    .slice(0, max)
+    .map((x) => x.f);
+}
 
-const out: Output = (line) => console.log(line);
-const err: Output = (line) => console.error(line);
-
-// Minimal glob match for suppression `files` patterns, with gitignore
-// `**` semantics (bug-audit M5). Supports:
-//   "tests/**"             — everything inside tests/
-//   "tests" + "/**/*.spec.ts" — any depth UNDER tests/ (including none) ending in .spec.ts
-//   "**" + "/*.spec.ts"    — any depth including root-level files
-//   "tests/foo.spec.ts"    — exact path
-//   "*" within a segment never crosses "/".
-//
-// Forward slashes only (findings always use normalized paths). `?`,
-// character classes and `!` negation are not metacharacters here — same
-// as before this rewrite.
-export function pathMatchesGlob(path: string, glob: string): boolean {
-  // Bug-audit QA-2026-08-30 QA-8: normalize BOTH sides to forward
-  // slashes. Finding paths are already normalized by the walker, but a
-  // suppression `files` pattern written on Windows ("e2e\\x.spec.ts")
-  // compiled to a literal-backslash regex that could never match any
-  // finding — the suppression silently never applied.
-  const p = path.replaceAll("\\", "/");
-  const segments = glob.replaceAll("\\", "/").split("/");
-  let re = "^";
-  for (const [i, segment] of segments.entries()) {
-    const last = i === segments.length - 1;
-    if (segment === "**") {
-      // A `**` segment matches ZERO or more whole path segments. The old
-      // split+join compiled it to `.*`, which (a) demanded ≥1 segment in
-      // `a/**/b`-shaped patterns and (b) made `tests/**/*.spec.ts` skip
-      // single-level paths — suppressions silently never matched.
-      if (last) {
-        // Trailing `**`: everything inside the prefix, never the prefix
-        // directory itself (gitignore semantics).
-        re += "(?:[^/]+/)*[^/]+";
-      } else {
-        re += "(?:[^/]+/)*";
-      }
-      continue;
-    }
-    re += segment
-      .replace(/[.+?^${}()|[\]\\]/g, "\\$&")
-      .replaceAll("*", "[^/]*");
-    if (!last) re += "/";
+/**
+ * Friendly usage error (plan M2, exit 10 preserved): nearest-flag
+ * suggestion, the valid neighbors, and the exact help command. Printed
+ * to stderr; findings/usage stay on their documented streams.
+ */
+export function usageErrorMessage(detail: UsageErrorDetail): string {
+  const lines: string[] = [];
+  if (detail.flag) {
+    lines.push(
+      `mjolnir: invalid value "${detail.token ?? ""}" for ${detail.flag}`,
+    );
+  } else {
+    lines.push(`mjolnir: unknown flag "${detail.token ?? ""}"`);
   }
-  return new RegExp(`${re}$`).test(p);
+  if (detail.token) {
+    const near = nearestFlags(detail.token);
+    if (near.length > 0) {
+      lines.push(`  Did you mean: ${near.join("  ")}`);
+    }
+  }
+  lines.push(`  Run mjolnir --help for the full flag list.`);
+  return lines.join("\n");
 }
+
+/**
+ * Shared parse-or-report path for scan-backed subcommands: friendly
+ * usage errors on stderr (exit 10), the full overview only for an
+ * explicit help flag. Returns null when the caller must exit 10.
+ */
+function parseArgsOrUsage(
+  argv: string[],
+  io: { out: Output; err: Output },
+): CliArgs | null {
+  let reported = false;
+  const args = parseArgs(argv, (detail) => {
+    reported = true;
+    io.err(usageErrorMessage(detail));
+  });
+  if (!args && !reported) printUsage(io.out);
+  return args;
+}
+
+import type { Output } from "./cli-io.js";
+export type { Output };
+
+// Audit C3: true variadic sinks. The one-arg signatures silently DROPPED
+// every argument after the first — `io.err("mjolnir internal error:", msg)`
+// printed only the prefix, losing the actual error. Join with spaces so
+// multi-arg calls render as one readable line on the default consoles.
+// Exported for contract tests (audit C3): the default sinks must stay
+// variadic — a narrowing back to one-arg signatures is a regression.
+import { internalErrorMessage, out, err } from "./cli-io.js";
+export { out, err, internalErrorMessage } from "./cli-io.js";
 
 /** Testable `ci install` handler. Returns the process exit code. */
 export function runCiInstall(
@@ -782,12 +372,18 @@ export function runCiInstall(
   let gateArg: string | undefined;
   let gateSeen = false;
   let force = false;
+  let noAction = false;
   const unknown: string[] = [];
   for (const arg of argv) {
     if (arg === "--gate") {
       gateSeen = true;
     } else if (arg === "--force") {
       force = true;
+    } else if (arg === "--no-action") {
+      // P1.3: opt out of the action-based workflow (the default) and
+      // keep the plain-npx template — for repos or runners where
+      // composite actions are unavailable.
+      noAction = true;
     } else if (gateSeen && gateArg === undefined && !arg.startsWith("--")) {
       gateArg = arg;
     } else {
@@ -811,6 +407,7 @@ export function runCiInstall(
   }
   const result = ciInstall(resolve("."), (gateArg as GateLevel) ?? "advisory", {
     force,
+    action: !noAction,
   });
   if (result.refused) {
     // H2(e): the existing workflow differs from anything Mjölnir generates
@@ -825,8 +422,15 @@ export function runCiInstall(
     return 10;
   }
   io.out(`${result.existed ? "Updated" : "Created"} ${result.written}`);
-  io.out("Default mode: advisory — findings reported, never blocking.");
+  io.out(
+    noAction
+      ? "Plain-npx template (—no-action). Default mode: advisory — findings reported, never blocking."
+      : "Action-based template: uses Sergey-Bar/Mjolnir@v1 (major moving tag).",
+  );
   io.out("Change with: mjolnir ci install --gate error|warning|advisory");
+  if (!noAction) {
+    io.out("Prefer the plain-npx workflow? Re-run with --no-action.");
+  }
   return 0;
 }
 
@@ -844,7 +448,13 @@ export function runSuppressions(
       (io.err ?? err)(e.message);
       return 10;
     }
-    throw e;
+    // Audit S8: any other throw is contained (catch-to-20) instead of
+    // escaping as an unhandled rejection with a misleading exit 1.
+    (io.err ?? err)(
+      "mjolnir internal error:",
+      e instanceof Error ? e.message : String(e),
+    );
+    return 20;
   }
 }
 
@@ -876,10 +486,7 @@ export function runForensicsCommand(
     // Exit 1 only when true flakes or failures exist.
     return report.flakyTests > 0 || report.failed > 0 ? 1 : 0;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
     return 20;
   }
 }
@@ -889,70 +496,56 @@ export async function runDoctorPlaywright(
   argv: string[],
   io: { out: Output; err?: Output } = { out },
 ): Promise<number> {
-  const targetArg = argv[1] && !argv[1].startsWith("-") ? argv[1] : ".";
-  const target = resolve(targetArg);
-  const invalid = validateScanTarget(target, io.err ?? err);
-  if (invalid !== null) return invalid;
-  // A resolved absolute path is never flag-like, so parseArgs([target])
-  // is exactly the defaults with target set — constructed directly, since
-  // a null-check here would be a dead branch v8 can never cover.
-  const args: CliArgs = {
-    target,
-    json: false,
-    verbose: false,
-    maxDurationMs: Number.POSITIVE_INFINITY,
-    scopeChanged: false,
-    format: "terminal",
-  };
-  const result = await runScan({ ...args, target });
-  const pwFindings = result.findings.filter((f) => f.category === "QA-PW");
-  io.out(
-    renderTerminal(
-      { ...result, findings: pwFindings },
-      { isTTY: process.stdout.isTTY ?? false, verbose: args.verbose },
-    ),
-  );
-
-  // Selector Health per spec — same ignore state as the scan (audit R-8).
-  const specs = computeSelectorHealth(target, createIgnoreMatcher(target));
-  io.out(renderSelectorHealth(specs));
-  return 0;
-}
-
-/** Testable `doctor` handler — self-audit of Mjölnir's own rule base. */
-export function runDoctorCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): number {
-  // Flag-parity with every other subcommand (flagged by the Open-Beta
-  // E2E exit-code sweep): `doctor` accepts only an optional repo-root
-  // positional, so a flag-shaped arg is a typo — silently ignoring it
-  // used to turn `doctor --bogus` into a surprise full scan of the CWD.
-  if (argv.some((a) => a.startsWith("-"))) {
-    io.err("Usage: mjolnir doctor [repo-root]");
-    return 10;
-  }
-  const targetArg = argv[0] ?? process.cwd();
   try {
-    // Fixtures live under <repo>/tests/fixtures relative to the target.
-    const fixturesRoot = resolve(join(targetArg, "tests", "fixtures"));
-    if (!existsSync(fixturesRoot)) {
-      io.err(
-        `No fixtures directory at ${fixturesRoot}. Run from the mjolnir repo root.`,
-      );
-      return 2;
+    const targetArg = argv[1] && !argv[1].startsWith("-") ? argv[1] : ".";
+    const target = resolve(targetArg);
+    const invalid = validateScanTarget(target, io.err ?? err);
+    if (invalid !== null) return invalid;
+    // A resolved absolute path is never flag-like, so parseArgs([target])
+    // is exactly the defaults with target set — constructed directly, since
+    // a null-check here would be a dead branch v8 can never cover.
+    const args: CliArgs = {
+      target,
+      json: false,
+      verbose: false,
+      maxDurationMs: Number.POSITIVE_INFINITY,
+      scopeChanged: false,
+      format: "terminal",
+      // Audit C2: this verb loads rules, so it honors the gate flag too.
+      enablePlugins: argv.includes("--enable-plugins"),
+    };
+    const result = await runScan({ ...args, target });
+    const pwFindings = result.findings.filter((f) => f.category === "QA-PW");
+    io.out(
+      renderTerminal(
+        { ...result, findings: pwFindings },
+        { isTTY: process.stdout.isTTY ?? false, verbose: args.verbose },
+      ),
+    );
+
+    // Selector Health per spec — same ignore state as the scan (audit R-8).
+    const specs = computeSelectorHealth(target, createIgnoreMatcher(target));
+    io.out(renderSelectorHealth(specs));
+    return 0;
+  } catch (e) {
+    // Audit S8: contained (catch-to-20) — never an unhandled rejection.
+    // ConfigValidationError keeps the fixable-message exit 10.
+    if (e instanceof ConfigValidationError) {
+      (io.err ?? err)(e.message);
+      return 10;
     }
-    const report = runDoctorSelfAudit(fixturesRoot);
-    io.out(renderDoctorReport(report));
-    return report.healthy ? 0 : 1;
-  } catch (err) {
-    io.err(
+    (io.err ?? err)(
       "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
+      e instanceof Error ? e.message : String(e),
     );
     return 20;
   }
 }
+
+// `doctor` moved to commands/doctor-run.ts (certification-audit Phase 5,
+// G6): the dispatch table re-exports the handler so the public import
+// surface (tests import runDoctorCommand from cli.ts) stays stable.
+export { runDoctorCommand } from "./commands/doctor-run.js";
 
 /** Testable `rules` handler — rule catalog with Trust Metadata. */
 export async function runRulesCommand(
@@ -997,52 +590,72 @@ export async function runRulesCommand(
  * (this repo checkout, or --fixtures-root), and honestly omitted
  * otherwise — never a fabricated example.
  */
-export function runExplainCommand(
+export async function runExplainCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
-): number {
-  const ruleId = argv.find((a) => !a.startsWith("-"));
-  if (!ruleId) {
-    io.err("Usage: mjolnir explain <RULE-ID>");
+): Promise<number> {
+  const subject = argv.find((a) => !a.startsWith("-"));
+  if (!subject) {
+    io.err(
+      "Usage: mjolnir explain <RULE-ID | file:line | verdict> [--json <mjolnir.json>]",
+    );
     return 10;
   }
+  // WI-7 (plan §8): `explain verdict` — explain a SAVED scan's overall
+  // verdict from its --json artifact. --json <path> supplies the file.
+  if (subject === "verdict") {
+    const jsonIdx = argv.indexOf("--json");
+    const jsonPath =
+      jsonIdx !== -1 ? argv[jsonIdx + 1] : join(process.cwd(), "mjolnir.json");
+    if (jsonPath === undefined || jsonPath.startsWith("--")) {
+      io.err("explain verdict requires a saved scan: --json <mjolnir.json>");
+      return 10;
+    }
+    try {
+      const r = explainVerdict(resolve(jsonPath));
+      io.out(renderVerdictExplain(r));
+      return r.ok ? 0 : 10;
+    } catch (err) {
+      internalErrorMessage(err, io.err, argv.includes("--debug"));
+      return 20;
+    }
+  }
+  // finding mode: file:line delegates to the `why` command — same
+  // evidence checklist, one implementation (plan §18 parity: no parallel
+  // implementations of the same semantics).
+  if (/^[^:]+\.\w+:\d+$/.test(subject)) {
+    return runWhyCommand([subject, ...argv.filter((a) => a !== subject)], io);
+  }
   const fixturesRootIdx = argv.indexOf("--fixtures-root");
+  // Audit S8: a dangling `--fixtures-root` is a usage error, not a
+  // silent fall back to the default fixtures directory.
+  if (
+    fixturesRootIdx !== -1 &&
+    (fixturesRootIdx + 1 >= argv.length ||
+      argv[fixturesRootIdx + 1]?.startsWith("--"))
+  ) {
+    io.err(
+      "--fixtures-root requires a value: mjolnir explain <RULE-ID> --fixtures-root <dir>",
+    );
+    return 10;
+  }
   const explicitRoot =
     fixturesRootIdx !== -1 ? argv[fixturesRootIdx + 1] : undefined;
   const fixturesRoot = resolve(
     explicitRoot ?? join(process.cwd(), "tests", "fixtures"),
   );
   try {
-    const result = explainRule(ruleId, fixturesRoot);
+    const result = explainRule(subject, fixturesRoot);
     io.out(renderExplain(result));
     if (!result.ok) return 10; // unknown rule ID is a usage error, not a crash
     return 0;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
     return 20;
   }
 }
 
 /**
- * Plan §16: locate a runtime run report next to the scan target, using
- * the exact conventions the forensics ingestion already accepts —
- * `mjolnir.report.json` (the packages/playwright-reporter default
- * output) or a `test-results/` directory. Returns the path for
- * `runForensics`, or undefined when neither convention is present
- * ("no runtime evidence" — never guessed).
- */
-function discoverRuntimeReport(scanRoot: string): string | undefined {
-  const reportFile = join(scanRoot, "mjolnir.report.json");
-  if (existsSync(reportFile)) return reportFile;
-  const resultsDir = join(scanRoot, "test-results");
-  if (existsSync(resultsDir) && statSync(resultsDir).isDirectory()) {
-    return resultsDir;
-  }
-  return undefined;
-}
 
 /** Testable default scan path. */
 /**
@@ -1067,9 +680,8 @@ export async function runScanCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
-  const args = parseArgs(argv);
+  const args = parseArgsOrUsage(argv, io);
   if (!args) {
-    printUsage(io.out);
     return 10;
   }
   const target = resolve(args.target);
@@ -1078,11 +690,27 @@ export async function runScanCommand(
   try {
     // Audit R-9: collect swallowed rule crashes; --debug prints them.
     const crashLog: string[] = [];
+    // Plan M3: live progress on stderr, event-driven. Auto-off when
+    // stderr is not a TTY, in machine formats, in CI, or via
+    // --no-progress — shouldRenderProgress owns the whole matrix.
+    const progress = new ProgressRenderer({
+      stream: process.stderr,
+      isTTY: shouldRenderProgress({
+        isTTY: (process.stderr as { isTTY?: boolean }).isTTY === true,
+        noProgress: args.noProgress === true,
+        machineFormat: args.format !== "terminal",
+        env: process.env,
+      }),
+    });
     // Bug-audit M4: non-fatal config warnings reach stderr in every mode.
     const result = await runScan(
       { ...args, target },
       {
         onConfigWarning: (message) => io.err(message),
+        onProgress: (e) => progress.onEvent(e),
+        // Audit C2: the gate notice rides the injected io so tests can
+        // capture it and it never pollutes stdout machine contracts.
+        onGateNotice: (notice) => io.err(notice),
         ...(args.debug
           ? {
               onRuleCrash: (ruleId: string, file: string, error: unknown) => {
@@ -1094,6 +722,7 @@ export async function runScanCommand(
           : {}),
       },
     );
+    progress.done();
     if (args.debug && crashLog.length > 0) {
       io.err(
         `debug: ${crashLog.length} rule crash(es) were swallowed by crash isolation:`,
@@ -1101,20 +730,72 @@ export async function runScanCommand(
       for (const line of crashLog.slice(0, 50)) io.err(`  ${line}`);
       if (crashLog.length > 50) io.err(`  … and ${crashLog.length - 50} more`);
     }
+    if (args.scoreOnly) {
+      // Plan §5.6: --score prints ONLY the numeric score (or `unknown`
+      // when the repo has no tests — never a fake 0, R2). Pure rendering
+      // flag: scan semantics and the exit code below are unchanged. A
+      // stderr note keeps stdout machine-clean when --json was also
+      // requested.
+      if (args.json) {
+        io.err("--score overrides --json; stdout is the bare score.");
+      }
+      const { config: scoreConfig } = loadConfig(target, {
+        knownRuleIds: KNOWN_RULE_IDS,
+      });
+      io.out(result.score === null ? "unknown" : String(result.score));
+      // Plan §5.8: --blocking (invocation) overrides config.gate —
+      // it changes exit status only, never detection or rendering.
+      // "none" maps to the existing advisory gate (exit 0 unless partial).
+      return exitForFindings(
+        result.findings,
+        args.blocking === "none"
+          ? "advisory"
+          : (args.blocking ?? scoreConfig.gate ?? "error"),
+      );
+    }
     if (args.format === "sarif") {
-      io.out(renderSarif(result));
+      // F5 (certification-audit remediation): the SRCROOT capability is
+      // implemented in sarif.ts (originalUriBaseIds + per-artifact
+      // uriBaseId) but was never wired at this production call site —
+      // shipped SARIF had no artifact base. `target` is resolved+validated
+      // above; pathToFileURL yields the file:/// base shape the unit
+      // contract pins (reporters.spec) and the encoder expects.
+      io.out(renderSarif(result, pathToFileURL(target).href));
     } else if (args.format === "mermaid") {
       io.out(renderMermaid(result));
+    } else if (args.format === "codequality") {
+      io.out(renderCodeQuality(result));
     } else if (args.json) {
-      io.out(JSON.stringify(result, null, 2));
-    } else {
+      // Blueprint §12: the machine contract rides the JSON output as an
+      // additive field (schemaVersion 1 + contractVersion 1). Derived
+      // deterministically from this exact result — no parallel model.
       io.out(
-        renderTerminal(result, {
+        JSON.stringify(
+          { ...result, contract: buildMachineContract(result) },
+          null,
+          2,
+        ),
+      );
+    } else {
+      // Plan §5.5: --category is a presentation filter. The renderer
+      // sees only the filtered list; the score/JSON/full contract are
+      // untouched, and the renderer prints the hidden-count note.
+      const categories = args.categories;
+      const visible =
+        categories && categories.length > 0
+          ? result.findings.filter((f) => categories.includes(f.category))
+          : result.findings;
+      io.out(
+        renderTrustReport(result, {
           isTTY: process.stdout.isTTY ?? false,
           verbose: args.verbose,
+          ...(categories && categories.length > 0
+            ? { visibleFindings: visible }
+            : {}),
           ...(args.width !== undefined ? { width: args.width } : {}),
           ...(args.ascii !== undefined ? { ascii: args.ascii } : {}),
           ...(args.tone !== undefined ? { tone: args.tone } : {}),
+          ...(args.classic ? { classic: true } : {}),
         }),
       );
       // First-run hint — terminal only, and only for the bare, full-repo
@@ -1138,8 +819,13 @@ export async function runScanCommand(
       // WRITE-ONLY under explicit opt-in (audit R-1): a read-only scan
       // must never dirty the scanned repo's working tree. Never printed
       // for --json/--format sarif/mermaid: those are machine contracts.
+      // Audit C5: a PARTIAL scan (truncated by --max-duration, a
+      // discovery cap, or skipped files) must never write the milestone
+      // — "clean so far" is not "clean", and a truncated scan's 100
+      // score proves nothing about the files it never analyzed.
       if (
         args.recordMilestones &&
+        !result.partial &&
         result.score === 100 &&
         result.findings.length === 0
       ) {
@@ -1169,7 +855,12 @@ export async function runScanCommand(
       knownRuleIds: KNOWN_RULE_IDS,
     });
     for (const w of warnings) io.err(w);
-    return exitForFindings(result.findings, config.gate ?? "error");
+    return exitForFindings(
+      result.findings,
+      args.blocking === "none"
+        ? "advisory"
+        : (args.blocking ?? config.gate ?? "error"),
+    );
   } catch (err) {
     // Bug-audit M4: a config typo is a user error with an actionable
     // message — usage exit 10, not "internal error" exit 20.
@@ -1177,10 +868,7 @@ export async function runScanCommand(
       io.err(err.message);
       return 10;
     }
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, args?.debug === true);
     return 20;
   }
 }
@@ -1211,17 +899,28 @@ export function runTriageCommand(
 ): number {
   const targetArg = argv.find((a) => !a.startsWith("-"));
   if (!targetArg) {
-    io.err("Usage: mjolnir triage <test-results-dir-or-report-file> [--no-md]");
+    io.err(
+      "Usage: mjolnir triage <test-results-dir-or-report-file> [--no-md] [--json] [--classic]",
+    );
     return 10;
   }
+  // WI-8 (plan §9): the guided workflow is the default triage surface;
+  // --classic keeps the legacy table. --json emits the structured twin.
+  const jsonMode = argv.includes("--json");
+  const classic = argv.includes("--classic");
   try {
     const { report } = runForensics(resolve(targetArg), {
       writeFlakyMd: false,
     });
-    io.out(renderTriage(report));
-    // Only write TRIAGE.md when there's something to triage AND the
+    if (jsonMode) {
+      io.out(renderTriageWorkflowJson(report));
+    } else if (classic) {
+      io.out(renderTriage(report));
+    } else {
+      io.out(renderTriageWorkflow(report));
+    } // Only write TRIAGE.md when there's something to triage AND the
     // target dir exists — a missing dir must degrade honestly, not crash.
-    if (!argv.includes("--no-md") && report.totalTests > 0) {
+    if (!argv.includes("--no-md") && !jsonMode && report.totalTests > 0) {
       // Bug-audit M1: the documented `mjolnir triage <report-file>` joined
       // the FILE path with "TRIAGE.md" → `<file>/TRIAGE.md` is not a
       // directory → writeFileSync threw → "internal error" exit 20 after
@@ -1230,7 +929,7 @@ export function runTriageCommand(
       const mdPath = statSync(absTarget).isDirectory()
         ? join(absTarget, "TRIAGE.md")
         : join(dirname(absTarget), "TRIAGE.md");
-      writeFileSync(mdPath, renderTriageMd(report));
+      writeFileAtomic(mdPath, renderTriageMd(report));
       io.out(`\nWrote ${mdPath}`);
     }
     // Nothing recognized (e.g. missing dir) → honest no-op, not a crash.
@@ -1242,10 +941,119 @@ export function runTriageCommand(
     }
     return 0;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
+    return 20;
+  }
+}
+
+/**
+ * Sniff + parse a mutation report: Stryker JSON, mutmut junitxml, else
+ * an empty report (the caller renders the honest "nothing recognized").
+ */
+function ingestMutationReport(text: string): MutationReport {
+  const trimmed = text.trimStart();
+  if (trimmed.startsWith("<?xml") || trimmed.startsWith("<testsuite")) {
+    return parseMutmutXml(text);
+  }
+  try {
+    const json: unknown = JSON.parse(text);
+    if (looksLikeStrykerJson(json)) return parseStrykerJson(json);
+  } catch {
+    /* not JSON — fall through */
+  }
+  if (looksLikeMutmutXml(text)) return parseMutmutXml(text);
+  return { tool: "stryker", survived: [], noCoverage: 0, killed: 0 };
+}
+
+/** Testable `mutation` handler (master plan P5, plan 1788853205786).
+ * Reads a mutation report (Stryker JSON / mutmut junitxml), renders the
+ * survived-mutant leaderboard, and — with `--scan <path>` — re-scans the
+ * target, stamps matching findings with `mutationEvidence` (E1→E2 by
+ * derivation) and renders the stamped findings. NEVER spawns mutation
+ * tools: it reads reports the user already produced. Exit 2 when
+ * nothing in the report is recognized — honest no-evidence, not an
+ * error. Exit 0 in every other case: the reader is report-only, never a
+ * gate. */
+export async function runMutationCommand(
+  argv: string[],
+  io: { out: Output; err: Output } = { out, err },
+): Promise<number> {
+  const targetArg = argv.find((a) => !a.startsWith("-"));
+  if (!targetArg) {
+    io.err("Usage: mjolnir mutation <mutation-report> [--scan <path>]");
+    return 10;
+  }
+  const scanIdx = argv.indexOf("--scan");
+  const scanArg = scanIdx !== -1 ? argv[scanIdx + 1] : undefined;
+  if (scanIdx !== -1 && (!scanArg || scanArg.startsWith("-"))) {
+    io.err("--scan requires a path argument");
+    return 10;
+  }
+  let report: MutationReport;
+  try {
+    const path = resolve(targetArg);
+    if (!existsSync(path)) {
+      io.err(`No such file: ${path}`);
+      return 2;
+    }
+    const text = readFileSync(path, "utf8");
+    report = ingestMutationReport(text);
+    if (
+      report.survived.length === 0 &&
+      report.killed === 0 &&
+      report.noCoverage === 0
+    ) {
+      io.err(
+        "No mutants recognized. Expected a Stryker JSON report (mutation-report.json) or a mutmut junitxml report.",
+      );
+      return 2;
+    }
+  } catch (err) {
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
+    return 20;
+  }
+  io.out(renderMutationSummary(report));
+
+  if (scanArg === undefined) return 0;
+  try {
+    const scanPath = resolve(scanArg);
+    const invalid = validateScanTarget(scanPath, io.err);
+    if (invalid !== null) return invalid;
+    const result = await runScan({
+      target: scanPath,
+      json: true,
+      verbose: true,
+      maxDurationMs: 120_000,
+      scopeChanged: false,
+      format: "json",
+    });
+    const stats = stampMutationEvidence(result.findings, report);
+    io.out("");
+    if (stats.stamped === 0) {
+      io.out(
+        "No findings intersect the survived-mutant surface — nothing to derive.",
+      );
+    } else {
+      io.out(
+        `${stats.stamped} finding(s) carry mutationEvidence (${stats.derived} consolidated E1→E2 by derivation — docs/RULE-LIFECYCLE.md):`,
+      );
+      for (const f of result.findings) {
+        if (!f.mutationEvidence) continue;
+        io.out(
+          `  ${f.ruleId} ${f.file}:${f.line} — ${f.evidenceLevel} · ` +
+            `${f.mutationEvidence.matchedMutants} mutant(s) @ ${f.mutationEvidence.granularity} granularity`,
+        );
+      }
+      io.out("");
+      io.out(
+        "Machine form: re-run with --json — mutationEvidence rides the findings additively.",
+      );
+    }
+    // Report-only, never a gate: survived mutants NEVER fail this
+    // command (decision 8). The exit code is 0 regardless.
+    return 0;
+  } catch (err) {
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
     return 20;
   }
 }
@@ -1255,9 +1063,8 @@ export async function runBadgeCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
-  const args = parseArgs(argv);
+  const args = parseArgsOrUsage(argv, io);
   if (!args) {
-    printUsage(io.out);
     return 10;
   }
   try {
@@ -1265,16 +1072,19 @@ export async function runBadgeCommand(
     const invalid = validateScanTarget(target, io.err);
     if (invalid !== null) return invalid;
     const result = await runScan({ ...args, target });
-    const outPath = writeBadge(result, { outDir: process.cwd() });
+    // Audit (badge): the badge belongs to the SCANNED repo — it stamps
+    // that repo's HEAD commit and lands in the scanned target, not in
+    // whatever directory the user happened to run from.
+    const outPath = writeBadge(result, {
+      outDir: target,
+      commit: currentCommit(target),
+    });
     io.out(`Wrote ${outPath}`);
     io.out("");
     io.out(renderBadgeSnippet(result));
     return 0;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, args?.debug === true);
     return 20;
   }
 }
@@ -1284,9 +1094,8 @@ export async function runDebtCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
-  const args = parseArgs(argv);
+  const args = parseArgsOrUsage(argv, io);
   if (!args) {
-    printUsage(io.out);
     return 10;
   }
   try {
@@ -1297,10 +1106,7 @@ export async function runDebtCommand(
     io.out(renderDebt(result));
     return 0;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, args?.debug === true);
     return 20;
   }
 }
@@ -1311,9 +1117,11 @@ export async function runFixCommand(
   io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
   const dryRun = argv.includes("--dry-run");
-  const args = parseArgs(argv.filter((a) => a !== "--dry-run"));
+  const args = parseArgsOrUsage(
+    argv.filter((a) => a !== "--dry-run"),
+    io,
+  );
   if (!args) {
-    printUsage(io.out);
     return 10;
   }
   try {
@@ -1330,10 +1138,7 @@ export async function runFixCommand(
     // Exit 1 when anything failed verification; applied/dry-run is fine.
     return fixes.some((f) => f.status === "failed") ? 1 : 0;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, args?.debug === true);
     return 20;
   }
 }
@@ -1356,20 +1161,23 @@ export function runCreateRuleCommand(
     io.out(renderScaffoldReport(result));
     return result.ok ? 0 : 1;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
     return 20;
   }
 }
 
 function currentCommit(root: string): string {
   try {
-    return execFileSync("git", ["-C", root, "rev-parse", "HEAD"], {
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
-    }).trim();
+    // Audit S1: absolute git path — never resolvable from the scanned
+    // repo's own directory.
+    return execFileSync(
+      resolveGitPath() ?? "git",
+      ["-C", root, "rev-parse", "HEAD"],
+      {
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "ignore"],
+      },
+    ).trim();
   } catch {
     return "unknown";
   }
@@ -1381,6 +1189,15 @@ export async function runImpactCommand(
   io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
   const sinceIdx = argv.indexOf("--since");
+  // Audit S8: a dangling `--since` (no value after it) is a usage error,
+  // not a silent "compare against the default base".
+  if (
+    sinceIdx !== -1 &&
+    (sinceIdx + 1 >= argv.length || argv[sinceIdx + 1]?.startsWith("--"))
+  ) {
+    io.err("--since requires a value: mjolnir impact [--since <ref>]");
+    return 10;
+  }
   const since = sinceIdx !== -1 ? argv[sinceIdx + 1] : undefined;
   const args = parseArgs(
     sinceIdx === -1
@@ -1388,7 +1205,6 @@ export async function runImpactCommand(
       : argv.filter((_a, i) => i !== sinceIdx && i !== sinceIdx + 1),
   );
   if (!args) {
-    printUsage(io.out);
     return 10;
   }
   try {
@@ -1402,10 +1218,7 @@ export async function runImpactCommand(
     io.out(renderImpact(report));
     return report.hasComparison ? 0 : 2;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, args?.debug === true);
     return 20;
   }
 }
@@ -1415,9 +1228,8 @@ export async function runBaselineCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
-  const args = parseArgs(argv);
+  const args = parseArgsOrUsage(argv, io);
   if (!args) {
-    printUsage(io.out);
     return 10;
   }
   try {
@@ -1426,7 +1238,21 @@ export async function runBaselineCommand(
     if (invalid !== null) return invalid;
     const result = await runScan({ ...args, target });
     const outPath = join(target, DEFAULT_BASELINE_PATH);
-    const saved = saveBaseline(result, currentCommit(target), outPath);
+    let saved: ReturnType<typeof saveBaseline>;
+    try {
+      saved = saveBaseline(result, currentCommit(target), outPath);
+    } catch (saveErr) {
+      // Honest-degrade: an unwritable path is the environment's fault,
+      // not a Mjölnir bug — the friendly exit-20 message would lie.
+      // The scan completed; the snapshot simply was not written.
+      io.err(
+        `baseline save FAILED — ${saveErr instanceof Error ? saveErr.message : String(saveErr)}`,
+      );
+      io.err(
+        "The scan completed; the snapshot was not written. Fix the path permissions and re-run `mjolnir baseline`.",
+      );
+      return 1;
+    }
     io.out(
       renderBaselineSaved(DEFAULT_BASELINE_PATH, result.findings.length, {
         ...(saved.backupPath !== undefined
@@ -1436,22 +1262,24 @@ export async function runBaselineCommand(
     );
     return 0;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, args?.debug === true);
     return 20;
   }
 }
 
 /** Testable `diff` handler (Sprint 6 Task 24) — new/worsened debt only. */
-export async function runDiffCommand(
+/** Testable `verify` handler — the agent-loop verb (master plan P7,
+ * plan 1788853205786). Scans the target and diffs against the committed
+ * baseline, rendering the before/after digest the agent loop consumes
+ * (resolved per §15 · new · unchanged by ruleId+location · score delta).
+ * Exit semantics are the frozen contract: 0 clean · 1 new error
+ * findings · 2 partial scan or no baseline · 20 internal. */
+export async function runVerifyCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
-  const args = parseArgs(argv);
+  const args = parseArgsOrUsage(argv, io);
   if (!args) {
-    printUsage(io.out);
     return 10;
   }
   try {
@@ -1460,9 +1288,42 @@ export async function runDiffCommand(
     if (invalid !== null) return invalid;
     const result = await runScan({ ...args, target });
     const baselinePath = join(target, DEFAULT_BASELINE_PATH);
-    const baseline = loadBaseline(baselinePath);
+    const baseline = loadBaseline(baselinePath, (w) => io.err(w));
+    const digest = buildVerifyDigest(result, baseline);
+    io.out(renderVerifyDigest(digest));
+    if (result.partial) return 2;
+    if (!digest.hasBaseline) return 2;
+    return digest.new.some((f) => f.severity === "error") ? 1 : 0;
+  } catch (err) {
+    internalErrorMessage(err, io.err, args?.debug === true);
+    return 20;
+  }
+}
+
+export async function runDiffCommand(
+  argv: string[],
+  io: { out: Output; err: Output } = { out, err },
+): Promise<number> {
+  const args = parseArgsOrUsage(argv, io);
+  if (!args) {
+    return 10;
+  }
+  try {
+    const target = resolve(args.target);
+    const invalid = validateScanTarget(target, io.err);
+    if (invalid !== null) return invalid;
+    const result = await runScan({ ...args, target });
+    const baselinePath = join(target, DEFAULT_BASELINE_PATH);
+    const baseline = loadBaseline(baselinePath, (w) => io.err(w));
     const diff = diffAgainstBaseline(result, baseline);
     io.out(renderBaselineDiff(diff));
+
+    // Audit C5: a PARTIAL (truncated) scan proves nothing about what was
+    // resolved — the head simply didn't analyze those files. It must not
+    // fold "resolved" findings into all-time stats, must not fire
+    // first-debt-reduction, and must return the partial exit code so CI
+    // never treats a truncated diff as a clean bill.
+    if (result.partial) return 2;
 
     // Fold resolved findings into all-time stats (Task 26) — only when a
     // real comparison happened; establishing a baseline records nothing.
@@ -1478,8 +1339,13 @@ export async function runDiffCommand(
       }
 
       // Milestones (Sprint 9 Task 39) — real event this command just
-      // witnessed (diff.resolvedFindings is non-empty), never a guess.
-      if (diff.resolvedFindings.length > 0) {
+      // witnessed (a VERIFIED-RESOLVED resolution), never a guess. §15:
+      // only verified resolutions prove first-debt-reduction.
+      if (
+        diff.resolvedFindings.some(
+          (f) => f.resolution.status === "VERIFIED-RESOLVED",
+        )
+      ) {
         const milestone = recordMilestones(stats, ["first-debt-reduction"]);
         if (milestone.newlyAnnounced.length > 0) {
           if (saveStats(milestone.stats, statsPath)) {
@@ -1497,10 +1363,7 @@ export async function runDiffCommand(
     if (!diff.hasBaseline) return 2;
     return diff.newFindings.some((f) => f.severity === "error") ? 1 : 0;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, args?.debug === true);
     return 20;
   }
 }
@@ -1510,9 +1373,8 @@ export async function runPrCommentCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
-  const args = parseArgs(argv);
+  const args = parseArgsOrUsage(argv, io);
   if (!args) {
-    printUsage(io.out);
     return 10;
   }
   try {
@@ -1520,15 +1382,19 @@ export async function runPrCommentCommand(
     const invalid = validateScanTarget(target, io.err);
     if (invalid !== null) return invalid;
     const result = await runScan({ ...args, target });
-    const baseline = loadBaseline(join(target, DEFAULT_BASELINE_PATH));
+    const baseline = loadBaseline(join(target, DEFAULT_BASELINE_PATH), (w) =>
+      io.err(w),
+    );
     const diff = baseline ? diffAgainstBaseline(result, baseline) : undefined;
-    io.out(renderPrComment(result, diff ? { diff } : {}));
+    io.out(
+      renderPrComment(result, {
+        ...(diff ? { diff } : {}),
+        version: CLI_VERSION,
+      }),
+    );
     return 0;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, args?.debug === true);
     return 20;
   }
 }
@@ -1545,10 +1411,7 @@ export function runStatsCommand(
     io.out(renderStats(stats));
     return 0;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
     return 20;
   }
 }
@@ -1558,9 +1421,8 @@ export async function runHandoverCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
-  const args = parseArgs(argv);
+  const args = parseArgsOrUsage(argv, io);
   if (!args) {
-    printUsage(io.out);
     return 10;
   }
   try {
@@ -1583,10 +1445,7 @@ export async function runHandoverCommand(
     io.out(renderHandover(buildHandover(result, forensics)));
     return 0;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, args?.debug === true);
     return 20;
   }
 }
@@ -1602,7 +1461,10 @@ export function runInitCommand(
     const workspace = pkg
       ? {
           root: rootDir,
-          name: String(pkg["name"] ?? "repo"),
+          // FW-BUG-02: a malformed package.json may carry a non-string
+          // `name` (number/object); only a real string is used as the
+          // badge label — everything else falls back to "repo".
+          name: typeof pkg["name"] === "string" ? pkg["name"] : "repo",
           packageJson: pkg,
           workspaceGlobs: [],
         }
@@ -1613,10 +1475,7 @@ export function runInitCommand(
     io.out(renderInit(result));
     return 0;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
     return 20;
   }
 }
@@ -1646,39 +1505,92 @@ export function runPwReportCommand(
     io.out(renderPwRunSummary(summarizePwRun(report)));
     return report.failed > 0 || report.flakyTests > 0 ? 1 : 0;
   } catch (err) {
-    io.err(
-      "mjolnir internal error:",
-      err instanceof Error ? err.message : String(err),
-    );
+    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
     return 20;
   }
 }
 
+/**
+ * Audit S8: the subcommand registry. Every verb name main() dispatches
+ * on lives here — a first token that is neither a registered subcommand
+ * nor an existing path is a TYPO, and a typo must not silently fall
+ * through to a scan of whatever the remaining arguments parse to (the
+ * classic `mjolnir sccan .` accident: exit 0, nothing checked, green
+ * badge).
+ */
+const SUBCOMMANDS: ReadonlySet<string> = new Set([
+  "scan",
+  "ci",
+  "suppressions",
+  "forensics",
+  "triage",
+  "badge",
+  "trust-report",
+  "debt",
+  "impact",
+  "baseline",
+  "diff",
+  "pr-comment",
+  "stats",
+  "fix",
+  "create-rule",
+  "handover",
+  "init",
+  "pw-report",
+  "doctor",
+  "rules",
+  "explain",
+  "release-trust",
+  "doctor:playwright",
+  "mcp",
+]);
+
 export async function main(
   argv: string[] = process.argv.slice(2),
+  io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
   // `--version` is the first thing most people type against an unfamiliar
   // CLI. Without this it fell through to the scan arg parser, which does
   // not know the flag, and printed the full help — technically not a
   // crash, but it answers a different question than the one asked.
   if (argv[0] === "--version" || argv[0] === "-v") {
-    out(`mjolnir-qa ${CLI_VERSION}\n`);
+    io.out(`mjolnir-qa ${CLI_VERSION}\n`);
     return 0;
   }
   // Subcommands (§69): ci install · suppressions · forensics · doctor:playwright
   // Scan-backed handlers are async since the Phase 0.5 parse stage (§10) —
   // returning their promise from this async dispatcher awaits it.
+  // `<verb> --help` / `<verb> -h` routes to the help registry (plan M2)
+  // before any handler parses flags.
+  if (argv.length >= 2 && (argv[1] === "--help" || argv[1] === "-h")) {
+    return runHelpCommand([argv[0] as string], io);
+  }
+  // Two-word verb: `ci install --help` (argv[1] is "install", so the
+  // single-word interception above does not fire).
+  if (
+    argv[0] === "ci" &&
+    argv.length >= 3 &&
+    (argv[2] === "--help" || argv[2] === "-h")
+  ) {
+    return runHelpCommand(["ci", "install"], io);
+  }
   if (argv[0] === "ci" && argv[1] === "install")
     return runCiInstall(argv.slice(2));
+  if (argv[0] === "scan") return runScanCommand(argv.slice(1), io);
   if (argv[0] === "suppressions") return runSuppressions();
   if (argv[0] === "forensics") return runForensicsCommand(argv.slice(1));
   if (argv[0] === "triage") return runTriageCommand(argv.slice(1));
+  if (argv[0] === "mutation") return runMutationCommand(argv.slice(1), io);
   if (argv[0] === "badge") return runBadgeCommand(argv.slice(1));
+  if (argv[0] === "trust-report")
+    return runTrustReportCommand(argv.slice(1), io);
   if (argv[0] === "debt") return runDebtCommand(argv.slice(1));
   if (argv[0] === "impact") return runImpactCommand(argv.slice(1));
   if (argv[0] === "baseline") return runBaselineCommand(argv.slice(1));
   if (argv[0] === "diff") return runDiffCommand(argv.slice(1));
+  if (argv[0] === "verify") return runVerifyCommand(argv.slice(1), io);
   if (argv[0] === "pr-comment") return runPrCommentCommand(argv.slice(1));
+  if (argv[0] === "summary") return runSummaryCommand(argv.slice(1), io);
   if (argv[0] === "stats") return runStatsCommand(argv.slice(1));
   if (argv[0] === "fix") return runFixCommand(argv.slice(1));
   if (argv[0] === "create-rule") return runCreateRuleCommand(argv.slice(1));
@@ -1686,86 +1598,98 @@ export async function main(
   if (argv[0] === "init") return runInitCommand(argv.slice(1));
   if (argv[0] === "pw-report") return runPwReportCommand(argv.slice(1));
   if (argv[0] === "doctor") return runDoctorCommand(argv.slice(1));
+  if (argv[0] === "release-trust") return runReleaseTrustCommand(argv.slice(1));
   if (argv[0] === "rules") return runRulesCommand(argv.slice(1));
   if (argv[0] === "explain") return runExplainCommand(argv.slice(1));
   if (argv[0] === "doctor:playwright") return runDoctorPlaywright(argv);
-  return runScanCommand(argv);
+  if (argv[0] === "why") return runWhyCommand(argv.slice(1), io);
+  if (argv[0] === "handoff") return runHandoffCommand(argv.slice(1), io);
+  if (argv[0] === "install") return runInstallCommand(argv.slice(1), io);
+  // `mcp` is a long-lived mode, not a one-shot verb: it runs the stdio
+  // JSON-RPC loop until the client closes stdin. Until this branch
+  // existed the transport shipped in the tarball (dist/mcp/stdio.mjs)
+  // with no way to reach it through the installed `mjolnir` binary, so
+  // an MCP client had to be pointed at a path inside node_modules.
+  //
+  // The import is STATIC on purpose. A dynamic `await import()` here is
+  // the obvious-looking choice — lazy-load a transport most invocations
+  // never use — and it silently breaks the whole CLI: rolldown responds
+  // by code-splitting, `dist/cli.mjs` becomes a re-export shim, and
+  // isEntryPoint()'s `import.meta.url === argv[1]` check then compares
+  // the chunk's URL against the shim's. main() never runs, every command
+  // exits 0 printing nothing. That is the exact failure isEntryPoint's
+  // own comment warns about. The transport shares nearly all of its
+  // graph with the scan engine the CLI already bundles, so loading it
+  // eagerly costs almost nothing.
+  //
+  // Nothing but JSON-RPC frames may reach stdout: this branch hands the
+  // stream to the transport and returns without printing.
+  if (argv[0] === "mcp") {
+    await runStdioTransport(process.stdin, process.stdout);
+    return 0;
+  }
+  // `help` must dispatch BEFORE the scan fall-through: an unknown verb
+  // becomes a scan target (mjolnir ./help scans a folder named help;
+  // bare `mjolnir help` used to scan the CWD as if it were a path).
+  if (argv[0] === "help") return runHelpCommand(argv.slice(1), io);
+  // Audit S8: a first token that LOOKS like a verb but is not one is a
+  // typo — reject with usage instead of scanning with the typo dropped.
+  // Bare non-verbs (paths, flags) still mean "scan this".
+  if (SUBCOMMANDS.has(argv[0] ?? "")) {
+    // A known subcommand stem that fell through (e.g. bare `ci` without
+    // `install`) is usage.
+    err(`mjolnir: incomplete or unknown subcommand "${argv[0]}".`);
+    printUsage(out);
+    return 10;
+  }
+  if (
+    argv[0] !== undefined &&
+    argv[0].length > 0 &&
+    !argv[0].startsWith("-") &&
+    !existsSync(argv[0]) &&
+    argv[0].match(/^[a-z][\w:-]*$/i) !== null
+  ) {
+    // Word-like token, not a path that exists, not a flag: the user
+    // almost certainly meant a subcommand. `mjolnir scna` must not scan.
+    err(`mjolnir: unknown subcommand "${argv[0]}".`);
+    err("Run `mjolnir --help` for the verb list, or pass a directory to scan.");
+    return 10;
+  }
+  return runScanCommand(argv, io);
+}
+
+/**
+ * `mjolnir help` / `mjolnir help <verb>` (plan M2). `--help`/`-h` and
+ * `<verb> --help` route here too. Exit 0 — help answers a question.
+ * Two-word verbs (`ci install`) are resolved first via the join of the
+ * leading non-flag tokens, then the single-word form.
+ */
+export function runHelpCommand(
+  argv: string[],
+  io: { out: Output; err: Output } = { out, err },
+): number {
+  const tokens = argv.filter((a) => !a.startsWith("-"));
+  if (tokens.length >= 2) {
+    const joined = `${tokens[0]} ${tokens[1]}`;
+    if (hasVerbHelp(joined)) {
+      io.out(renderVerbHelp(joined));
+      return 0;
+    }
+  }
+  if (tokens.length > 0) {
+    io.out(renderVerbHelp(tokens[0] as string));
+    return 0;
+  }
+  io.out(renderRootHelp(SCHEMA_VERSION));
+  return 0;
 }
 
 function printUsage(print: (s: string) => void): void {
-  print(`🔨 mjölnir — verification trust engine for test suites and CI pipelines
-
-Usage: mjolnir [path] [options] · mjolnir <subcommand> [args]
-
-The product is one command in CI:
-
-  mjolnir --scope changed        scan only what the branch touched; exit 1 on
-                                 new findings. \`mjolnir ci install\` writes the
-                                 workflow for you.
-
-Everything else is optional.
-
-  mjolnir [path]                 full-repo scan + WORTHINESS score
-  mjolnir explain <RULE-ID>      what/why/fix + measured FP rate for one rule
-  mjolnir rules --unmeasured     the rules running on assumption, not measurement
-
-Options:
-  --json                machine-readable output (schemaVersion ${SCHEMA_VERSION})
-  --format sarif        SARIF 2.1 output for GitHub Code Scanning
-  --format mermaid      test-architecture diagram (frameworks → rule
-                        categories → severity), pastes directly into a
-                        GitHub/GitLab markdown comment or a slide
-  --tone blunt          blunter, pattern-mocking messages (opt-in)
-  --verbose             show all findings
-  --scope changed       only findings on new/changed lines vs merge-base
-  --base <ref>          base ref for --scope changed (default: main, then
-                        master, then origin/HEAD); uncommitted local
-                        changes are always included
-  --max-duration <sec>  stop analysis after N seconds (partial results flagged)
-  --width <cols>        override terminal width for box/gauge wrapping
-                        (defaults to the detected terminal width, or 80)
-  --ascii               force plain-ASCII glyphs/box-drawing (auto-detected
-                        for cmd.exe/legacy consoles; use this to force it
-                        anywhere, e.g. an unrecognized CI log renderer)
-  --no-ascii            force Unicode box-drawing even where auto-detection
-                        would have chosen ASCII
-  --strict              include quarantine-tier rules (higher FP risk) in scan
-  --debug               print errors swallowed by rule crash isolation
-                        (display-only; exit codes unchanged)
-  --record-milestones   allow this scan to write .mjolnir/stats.json for
-                        milestone tracking (default: scans never write)
-  -v, --version         print the installed version and exit
-  -h, --help            show this help
-
-Subcommands — everyday:
-  ci install [--gate advisory|error|warning] [--force]
-                                   generate the PR workflow; --force overwrites
-                                   a hand-customized one (default: refuse)
-  explain <RULE-ID> [--fixtures-root <dir>]     what/why/fix + measured FP rate
-  rules [--md] [--unmeasured|--measured] [--external]   rule catalog with trust metadata
-  suppressions                                  list suppressed findings
-
-Subcommands — when something's flaky:
-  forensics <dir|file> [--no-flaky-md]          runtime evidence: retries, flakes
-  triage <dir|file> [--no-md]                   flaky-triage proposal + TRIAGE.md
-  pw-report <dir|file>                          Playwright run summary
-  doctor:playwright                             Playwright deep scan + Selector Health
-
-Subcommands — occasional / reporting:
-  fix [--dry-run]                               apply safe auto-fixes with proof
-  baseline / diff                               snapshot findings, then new/worsened only
-  impact [--since <ref>]                        what changed since a prior commit
-  debt                                          test-debt register with a cost model
-  handover                                      new-QA onboarding map of the suite
-  stats                                         all-time local counters of fixes seen
-  badge                                         shields.io endpoint JSON + snippet
-  pr-comment                                    render a scoped PR comment (Markdown)
-  init [--interactive]                          detect frameworks + setup checklist
-  create-rule <ID> --title "..."                scaffold a new rule + fixtures
-  doctor                                        self-audit of the rule base
-
-Exit codes: 0 clean · 1 errors found · 2 partial · 10 usage · 20 crash`);
+  print(renderRootHelp());
 }
+
+// internalErrorMessage moved to cli-io.ts (certification-audit Phase 5,
+// G6) — re-exported above. Tests pin /internal error/i via the re-export.
 
 // Run only when this module is the entry point (not when tests import it).
 // Comparing resolved real paths (not raw string equality on

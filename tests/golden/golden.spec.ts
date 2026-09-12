@@ -37,9 +37,9 @@ describe("golden repo score lock", () => {
   });
 
   it("findings match locked expectations exactly", () => {
-    const expected: ExpectedEntry = JSON.parse(
+    const expected = JSON.parse(
       readFileSync(EXPECTED_PATH, "utf8"),
-    );
+    ) as ExpectedEntry;
     const { expectations, crashed } = scanGolden(GOLDEN_ROOT);
     // Bug-audit G3: a crashing rule used to be swallowed on BOTH sides —
     // mutually consistent, therefore invisible. A crash is now a failure.

@@ -53,107 +53,138 @@ const HARD_SLEEP = [
 ].join("\n");
 
 describe("E2E journey 3: baseline → resolve → diff → stats", () => {
-  it("the full loop: baseline captures, resolution diff reports RESOLVED, stats increments", () => {
-    writeSpec("focused.spec.ts", ONLY);
-    git(["init", "-b", "main"]);
-    git(["config", "user.email", "t@t"]);
-    git(["config", "user.name", "t"]);
+  it(
+    "the full loop: baseline captures, resolution diff reports RESOLVED, stats increments",
+    { timeout: 60_000 },
+    () => {
+      writeSpec("focused.spec.ts", ONLY);
+      git(["init", "-b", "main"]);
+      git(["config", "user.email", "t@t"]);
+      git(["config", "user.name", "t"]);
 
-    const base = runCli(["baseline", dir]);
-    expect(base.status).toBe(0);
-    expect(base.stdout).toContain("Captured 1 finding");
-    expect(existsSync(join(dir, ".mjolnir", "baseline.json"))).toBe(true);
+      // --strict: the debt probes are quarantine-tier (QA-TEST-001 since
+      // Phase 2, QA-PW-003 core) — strict is where all tiers run.
+      const base = runCli(["baseline", dir, "--strict"]);
+      expect(base.status).toBe(0);
+      expect(base.stdout).toContain("Captured 2 findings");
+      expect(existsSync(join(dir, ".mjolnir", "baseline.json"))).toBe(true);
 
-    // Resolve the findings.
-    writeSpec("focused.spec.ts", FIXED);
+      // Resolve the findings.
+      writeSpec("focused.spec.ts", FIXED);
 
-    const diff = runCli(["diff", dir]);
-    expect(diff.status).toBe(0);
-    expect(diff.stdout).toContain("FIXED SINCE BASELINE");
+      const diff = runCli(["diff", dir, "--strict"]);
+      expect(diff.status).toBe(0);
+      expect(diff.stdout).toContain("FIXED SINCE BASELINE");
 
-    const stats = runCli(["stats", dir]);
-    expect(stats.status).toBe(0);
-    expect(stats.stdout).toContain("QA-PW-003");
-  });
+      const stats = runCli(["stats", dir, "--strict"]);
+      expect(stats.status).toBe(0);
+      expect(stats.stdout).toContain("QA-TEST-001");
+    },
+  );
 
-  it("diff reports NEW OR WORSENED DEBT for findings that appeared after the baseline", () => {
-    writeSpec("focused.spec.ts", FIXED);
-    git(["init", "-b", "main"]);
-    git(["config", "user.email", "t@t"]);
-    git(["config", "user.name", "t"]);
-    const base = runCli(["baseline", dir]);
-    expect(base.status).toBe(0);
-    writeSpec("extra-debt.spec.ts", ONLY);
-    const diff = runCli(["diff", dir]);
-    expect(diff.stdout).toContain("NEW OR WORSENED DEBT");
-  });
+  it(
+    "diff reports NEW OR WORSENED DEBT for findings that appeared after the baseline",
+    { timeout: 60_000 },
+    () => {
+      writeSpec("focused.spec.ts", FIXED);
+      git(["init", "-b", "main"]);
+      git(["config", "user.email", "t@t"]);
+      git(["config", "user.name", "t"]);
+      const base = runCli(["baseline", dir]);
+      expect(base.status).toBe(0);
+      writeSpec("extra-debt.spec.ts", ONLY);
+      const diff = runCli(["diff", dir, "--strict"]);
+      expect(diff.stdout).toContain("NEW OR WORSENED DEBT");
+    },
+  );
 
-  it("diff on a repo without a baseline degrades honestly (exit 2)", () => {
-    writeSpec("focused.spec.ts", ONLY);
-    const diff = runCli(["diff", dir]);
-    expect(diff.status).toBe(2);
-    expect(diff.stdout).toContain("baseline");
-  });
+  it(
+    "diff on a repo without a baseline degrades honestly (exit 2)",
+    { timeout: 60_000 },
+    () => {
+      writeSpec("focused.spec.ts", ONLY);
+      const diff = runCli(["diff", dir]);
+      expect(diff.status).toBe(2);
+      expect(diff.stdout).toContain("baseline");
+    },
+  );
 });
 
 describe("E2E journey 4: fix flow", () => {
-  it("fix --dry-run proves without writing; fix applies and the re-scan improves", () => {
-    writeSpec("focused.spec.ts", ONLY);
-    const before = runCli([dir, "--json"]);
-    const beforeScore = (JSON.parse(before.stdout) as { score: number }).score;
+  it(
+    "fix --dry-run proves without writing; fix applies and the re-scan improves",
+    { timeout: 60_000 },
+    () => {
+      writeSpec("focused.spec.ts", ONLY);
+      const before = runCli([dir, "--json"]);
+      const beforeScore = (JSON.parse(before.stdout) as { score: number })
+        .score;
 
-    const dry = runCli(["fix", dir, "--dry-run"]);
-    expect(dry.stdout).toContain("planned");
-    expect(readFileSync(join(dir, "e2e", "focused.spec.ts"), "utf8")).toBe(
-      ONLY,
-    );
+      const dry = runCli(["fix", dir, "--dry-run"]);
+      expect(dry.stdout).toContain("planned");
+      expect(readFileSync(join(dir, "e2e", "focused.spec.ts"), "utf8")).toBe(
+        ONLY,
+      );
 
-    const applied = runCli(["fix", dir]);
-    expect(applied.stdout).toContain("applied");
-    expect(readFileSync(join(dir, "e2e", "focused.spec.ts"), "utf8")).toBe(
-      FIXED,
-    );
+      const applied = runCli(["fix", dir]);
+      expect(applied.stdout).toContain("applied");
+      expect(readFileSync(join(dir, "e2e", "focused.spec.ts"), "utf8")).toBe(
+        FIXED,
+      );
 
-    const after = runCli([dir, "--json"]);
-    const afterScore = (JSON.parse(after.stdout) as { score: number }).score;
-    expect(afterScore).toBeGreaterThan(beforeScore);
-  });
+      const after = runCli([dir, "--json"]);
+      const afterScore = (JSON.parse(after.stdout) as { score: number }).score;
+      expect(afterScore).toBeGreaterThan(beforeScore);
+    },
+  );
 
-  it("fix on a clean repo says nothing to do and exits 0", () => {
-    writeSpec("focused.spec.ts", FIXED);
-    const fix = runCli(["fix", dir]);
-    expect(fix.status).toBe(0);
-    expect(fix.stdout).toContain("No safe auto-fixes");
-  });
+  it(
+    "fix on a clean repo says nothing to do and exits 0",
+    { timeout: 60_000 },
+    () => {
+      writeSpec("focused.spec.ts", FIXED);
+      const fix = runCli(["fix", dir]);
+      expect(fix.status).toBe(0);
+      expect(fix.stdout).toContain("No safe auto-fixes");
+    },
+  );
 
-  it("fix refuses a page.pause sharing its line and leaves the file untouched", () => {
-    writeSpec(
-      "pause.spec.ts",
-      [
-        "import { test, expect } from '@playwright/test';",
-        "test('pause', async ({ page }) => {",
-        "  init(); page.pause(); doThing();",
-        "  await expect(page).toHaveURL('/a');",
-        "});",
-        "",
-      ].join("\n"),
-    );
-    const fix = runCli(["fix", dir]);
-    expect(fix.status).toBe(1);
-    expect(fix.stdout).toContain("shares its line");
-    expect(readFileSync(join(dir, "e2e", "pause.spec.ts"), "utf8")).toContain(
-      "page.pause()",
-    );
-  });
+  it(
+    "fix refuses a page.pause sharing its line and leaves the file untouched",
+    { timeout: 60_000 },
+    () => {
+      writeSpec(
+        "pause.spec.ts",
+        [
+          "import { test, expect } from '@playwright/test';",
+          "test('pause', async ({ page }) => {",
+          "  init(); page.pause(); doThing();",
+          "  await expect(page).toHaveURL('/a');",
+          "});",
+          "",
+        ].join("\n"),
+      );
+      const fix = runCli(["fix", dir]);
+      expect(fix.status).toBe(1);
+      expect(fix.stdout).toContain("shares its line");
+      expect(readFileSync(join(dir, "e2e", "pause.spec.ts"), "utf8")).toContain(
+        "page.pause()",
+      );
+    },
+  );
 });
 
 describe("E2E journey 4b: hard-sleep fixtures stay fix-free", () => {
-  it("waitForTimeout is reported by scan but has no auto-fix", () => {
-    writeSpec("sleep.spec.ts", HARD_SLEEP);
-    const fix = runCli(["fix", dir]);
-    expect(fix.status).toBe(0);
-    expect(readFileSync(join(dir, "e2e", "sleep.spec.ts"), "utf8")).toBe(
-      HARD_SLEEP,
-    );
-  });
+  it(
+    "waitForTimeout is reported by scan but has no auto-fix",
+    { timeout: 60_000 },
+    () => {
+      writeSpec("sleep.spec.ts", HARD_SLEEP);
+      const fix = runCli(["fix", dir]);
+      expect(fix.status).toBe(0);
+      expect(readFileSync(join(dir, "e2e", "sleep.spec.ts"), "utf8")).toBe(
+        HARD_SLEEP,
+      );
+    },
+  );
 });

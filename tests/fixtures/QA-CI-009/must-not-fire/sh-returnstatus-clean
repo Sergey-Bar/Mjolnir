@@ -1,0 +1,19 @@
+// QA-CI-009 must-not-fire (Jenkinsfile) — returnStatus on non-gate probes
+// with the status genuinely handled, and the verification gate running
+// bare so its exit code fails the stage.
+pipeline {
+  agent any
+  stages {
+    stage('Verify') {
+      steps {
+        script {
+          def probe = sh script: 'docker inspect node:22', returnStatus: true
+          if (probe != 0) {
+            error('runtime image missing')
+          }
+          sh 'npm test'
+        }
+      }
+    }
+  }
+}

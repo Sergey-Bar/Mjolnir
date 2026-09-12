@@ -64,6 +64,8 @@ export interface LoadedExternalRules {
   rules: QADoctorRule[];
   /** Human-readable problems; surfaced as scan warnings, never fatal. */
   errors: string[];
+  /** JS/MJS modules skipped because the plugin gate was closed. */
+  skipped: string[];
 }
 
 const ALLOWED_CATEGORIES = new Set(["QA-TEST", "QA-TQUAL", "QA-PW", "QA-CI"]);
@@ -89,8 +91,9 @@ const ALLOWED_QA_IMPACTS = new Set([
  */
 export async function loadLocalRules(
   root: string,
+  gateOpen = true,
 ): Promise<LoadedExternalRules> {
-  const result: LoadedExternalRules = { rules: [], errors: [] };
+  const result: LoadedExternalRules = { rules: [], errors: [], skipped: [] };
   const dir = join(root, LOCAL_RULES_DIR);
   if (!existsSync(dir)) return result;
 
@@ -111,7 +114,11 @@ export async function loadLocalRules(
     if (entry.endsWith(".json")) {
       loadJsonRule(path, result);
     } else if (entry.endsWith(".mjs") || entry.endsWith(".js")) {
-      await loadModuleRules(path, result);
+      if (!gateOpen) {
+        result.skipped.push(`${LOCAL_RULES_DIR}/${entry}`);
+      } else {
+        await loadModuleRules(path, result);
+      }
     }
     // Other extensions (README, .ts sources needing a build step) are
     // ignored — silent, because a folder may carry docs next to rules.

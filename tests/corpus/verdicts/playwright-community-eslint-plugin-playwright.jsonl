@@ -1,5 +1,3 @@
 {"ruleId":"QA-TQUAL-011","file":"src/rules/no-duplicate-slow.test.ts","line":157,"verdict":"FP","note":"prose comment explaining rule semantics (test.slow() in different tests is valid) - documentation, not a disabled test"}
 {"ruleId":"QA-TQUAL-011","file":"src/rules/no-duplicate-slow.test.ts","line":225,"verdict":"FP","note":"prose comment explaining rule semantics (test.slow() in sibling describes) - documentation, not a disabled test"}
-{"ruleId":"QA-PW-120","file":"src/rules/no-useless-await.test.ts","line":1,"verdict":"FP","note":"engine-agnostic unit/mocha tests - the file-level engine heuristic overreaches"}
-{"ruleId":"QA-PW-107","file":"src/rules/prefer-native-locators.test.ts","line":86,"verdict":"FP","note":"toBeVisible inside lint-rule fixture STRINGS - test data, not browser assertions"}
-{"ruleId":"QA-PW-107","file":"src/rules/prefer-native-locators.test.ts","line":88,"verdict":"FP","note":"toBeVisible inside lint-rule fixture STRINGS - test data, not browser assertions"}
+{"ruleId":"QA-PW-102","file":"src/rules/no-wait-for-navigation.test.ts","line":285,"verdict":"FP","note":"eslint-plugin unit-test fixture: waitForLoadState listed as the rule's invalid examples — not a real test using the API (adjudicated individually).","classifiedBy":"ai-assisted (authorized by repo owner 2026-09-07, subject to human review)","classifiedAt":"2026-09-07"}

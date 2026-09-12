@@ -26,7 +26,10 @@ import {
   ansiLineToSpans,
   BG,
   CHAR_W,
+  CHROME_DOTS,
+  FONT_FAMILY,
   FONT_SIZE,
+  fontFaceCss,
   LINE_HEIGHT,
   PAD_BOTTOM,
   PAD_TOP,
@@ -59,7 +62,10 @@ function renderSvg(lines: string[]): string {
     .join("\n");
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', Menlo, monospace" font-size="${FONT_SIZE}">
+<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" font-family="${FONT_FAMILY}" font-size="${FONT_SIZE}">
+  <style>
+${fontFaceCss()}
+  </style>
   <defs>
     <clipPath id="winClip">
       <rect x="0" y="0" width="${width}" height="${height}" rx="8" ry="8"/>
@@ -69,10 +75,9 @@ function renderSvg(lines: string[]): string {
   <g clip-path="url(#winClip)">
     <rect x="0" y="0" width="${width}" height="${height}" fill="${BG}"/>
     <rect x="0" y="0" width="${width}" height="${TITLE_BAR}" fill="${TITLE_BAR_BG}"/>
-    <circle cx="20" cy="${TITLE_BAR / 2}" r="6" fill="#ff5f56"/>
-    <circle cx="40" cy="${TITLE_BAR / 2}" r="6" fill="#ffbd2e"/>
-    <circle cx="60" cy="${TITLE_BAR / 2}" r="6" fill="#27c93f"/>
-    <text x="${width / 2}" y="${TITLE_BAR / 2 + 4}" fill="#a0a0a0" font-size="12" text-anchor="middle">demo-repo &#8212; mjolnir</text>
+    <circle cx="20" cy="${TITLE_BAR / 2}" r="6" fill="${CHROME_DOTS[0]}"/>
+    <circle cx="40" cy="${TITLE_BAR / 2}" r="6" fill="${CHROME_DOTS[1]}"/>
+    <circle cx="60" cy="${TITLE_BAR / 2}" r="6" fill="${CHROME_DOTS[2]}"/>
 
 ${textLines}
   </g>
@@ -82,10 +87,17 @@ ${textLines}
 `;
 }
 
-async function main(): Promise<void> {
+/**
+ * Builds the hero SVG from a real scan and returns it — no writes.
+ *
+ * Exported so tests/contract/hero-asset-reproducibility.spec.ts can
+ * compare the committed file against a freshly built one. Importing this
+ * module must never write the asset: a spec that regenerates its own
+ * expected value cannot fail.
+ */
+export async function buildHeroSvg(): Promise<string> {
   if (!existsSync(DEMO_REPO)) {
-    console.error(`examples/demo-repo not found at ${DEMO_REPO}`);
-    process.exit(1);
+    throw new Error(`examples/demo-repo not found at ${DEMO_REPO}`);
   }
   const result = await runScan({
     target: DEMO_REPO,
@@ -103,27 +115,51 @@ async function main(): Promise<void> {
   // own stdout is likely piped — the SVG needs colors regardless of
   // whether THIS process's terminal happens to be interactive.
   const rendered = renderTerminal(result, { isTTY: true, ascii: false });
-  const lines = rendered.split("\n").map((l) => `$ ${l}`.replace("$ ", ""));
-  // Prepend the invocation line shown in the original hero asset.
-  const allLines = [
-    "\x1b[92m$ \x1b[0m\x1b[1mnpx mjolnir-qa@latest\x1b[0m",
-    ...lines,
-  ].map((line) =>
-    // The wall-clock duration on the "Analysis: complete · Nms" line is
-    // real but non-deterministic run-to-run — masking it here (only in
-    // this asset, never in the actual reporter) keeps regenerating the
-    // hero asset a no-op diff when nothing about the scan itself
-    // changed, instead of a spurious diff on every single run.
-    line.replace(/· \d+ms$/, "· a few ms"),
+  const renderedLines = rendered.split("\n");
+
+  // This asset answers ONE question for its README section: where the
+  // points actually went. It is deliberately an excerpt, cut at both ends:
+  //
+  //  - The hammer art above WORTHINESS is dropped. assets/readme/
+  //    score-gauge.svg already animates the hammer through every band, so
+  //    carrying it here too showed the same thing twice in one section
+  //    while costing 11 lines of height.
+  //  - Everything from FINDINGS down is dropped. The per-finding detail
+  //    lives in "One finding, up close" and in the full --verbose
+  //    demo.svg; repeating it here is what made a single illustrative
+  //    image ~3800px tall.
+  //
+  // What is left — the score line, the gauge, the category breakdown, the
+  // deduction box and FIX THIS FIRST — is contiguous, unedited reporter
+  // output, and it fits a fixed, compact frame.
+  const startIndex = renderedLines.findIndex((line) =>
+    stripAnsi(line).includes("WORTHINESS"),
+  );
+  const findingsHeaderIndex = renderedLines.findIndex(
+    (line) => stripAnsi(line).trim() === "▚ FINDINGS",
+  );
+  const breakdownLines = renderedLines.slice(
+    startIndex === -1 ? 0 : startIndex,
+    findingsHeaderIndex === -1 ? renderedLines.length : findingsHeaderIndex,
   );
 
-  const svg = renderSvg(allLines);
+  const allLines = [
+    "\x1b[92m$ \x1b[0m\x1b[1mnpx mjolnir-qa@latest\x1b[0m",
+    "",
+    ...breakdownLines,
+    // The wall-clock duration is real but non-deterministic run-to-run;
+    // masked here only, never in the reporter, so regenerating is a
+    // no-op diff when the scan itself is unchanged.
+  ].map((line) => line.replace(/· \d+ms$/, "· a few ms"));
+  return renderSvg(allLines);
+}
+
+async function main(): Promise<void> {
+  const svg = await buildHeroSvg();
   mkdirSync(dirname(OUT_PATH), { recursive: true });
   writeFileSync(OUT_PATH, svg);
   console.log(`Wrote ${OUT_PATH} from a real scan of ${DEMO_REPO}`);
-  console.log(
-    `(${allLines.length} lines, longest visible width ${Math.max(...allLines.map((l) => stripAnsi(l).length))})`,
-  );
 }
 
-await main();
+// Only when invoked as a script — see buildHeroSvg's note.
+if (process.argv[1]?.endsWith("generate-readme-hero.ts")) await main();

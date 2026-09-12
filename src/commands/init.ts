@@ -14,6 +14,9 @@ import { join } from "node:path";
 
 import { detectFrameworks } from "../discovery/frameworks.js";
 import type { Workspace } from "../discovery/workspace.js";
+import { nextStep, sectionHeader, plainContext } from "../reporter/ui.js";
+
+const ui = plainContext();
 
 export interface InitStep {
   name: string;
@@ -107,7 +110,7 @@ export function runInit(
 
 export function renderInit(result: InitResult): string {
   const lines: string[] = [];
-  lines.push("🔨 MJÖLNIR INIT");
+  lines.push(sectionHeader("MJÖLNIR INIT", ui));
   lines.push("");
   for (const s of result.steps) {
     const icon =
@@ -117,7 +120,7 @@ export function renderInit(result: InitResult): string {
   if (result.nextCommands.length > 0) {
     lines.push("");
     lines.push("Next commands:");
-    for (const c of result.nextCommands) lines.push(`  $ ${c}`);
+    for (const c of result.nextCommands) lines.push(nextStep(c, ui));
   }
   lines.push("");
   lines.push("Existing files are never overwritten — init is safe to re-run.");

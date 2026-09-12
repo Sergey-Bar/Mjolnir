@@ -25,12 +25,14 @@ export function collectTestNames(path: string, text: string): string[] {
   const names: string[] = [];
   if (path.endsWith(".py")) {
     let m: RegExpExecArray | null;
+    // eslint-disable-next-line security/detect-non-literal-regexp -- clone of a compile-time literal's .source for flag control — not scan input
     const re = new RegExp(PY_TEST_NAME_RE.source, "gm");
     while ((m = re.exec(text)) !== null) names.push(m[1] as string);
     return names;
   }
   if (/\.(?:spec|test)\.[tj]sx?$/.test(path)) {
     let m: RegExpExecArray | null;
+    // eslint-disable-next-line security/detect-non-literal-regexp -- clone of a compile-time literal's .source for flag control — not scan input
     const re = new RegExp(JS_TEST_NAME_RE.source, "g");
     // The capture group uses a + quantifier, so every match carries it.
     while ((m = re.exec(text)) !== null) names.push(m[1] as string);

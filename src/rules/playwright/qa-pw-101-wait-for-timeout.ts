@@ -28,6 +28,14 @@ export const pwWaitForTimeout = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "family-fallback-lockstep",
+    detail:
+      "the hard-sleep family's §13.2 structural path (AST hook) carries " +
+      "the depth where a tree is available; this lexical path is the " +
+      "mandatory deterministic fallback kept in lockstep — the family's " +
+      "depth is real, the regex is its degraded mode",
+  },
   introduced: "0.3.0",
   // R6 (Bug Map M-02): QA-TEST-004 (extended, warning) matches
   // `await page.waitForTimeout(` via its own patterns — co-fire proven

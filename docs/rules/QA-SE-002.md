@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | warning                                                                                                                      |
 | Confidence                            | medium                                                                                                                       |
 | Tier                                  | quarantine                                                                                                                   |
-| Measured FP rate                      | not yet measured                                                                                                             |
+| Measured FP rate                      | 8% (n=13)                                                                                                                    |
 | Evidence level                        | E2                                                                                                                           |
 | QA impact                             | Flaky-test risk (FLAKY-RISK)                                                                                                 |
 | False-positive risk (author estimate) | medium                                                                                                                       |
@@ -24,10 +24,10 @@ The sleep is standing in for an explicit wait: the element lookup after it still
 ## What gets flagged (real detector output)
 
 ```
-Hard sleep before an element lookup (sleep at line 17) — the explicit-wait substitute (QA-SE-002).
+Hard sleep before an element lookup (sleep at line 10) — the explicit-wait substitute (QA-SE-002).
 ```
 
-Example from this rule's own must-fire fixture: `tests/fixtures/QA-SE-002/must-fire/LoginFlowsTests.cs`
+Example from this rule's own must-fire fixture: `tests/fixtures/QA-SE-002/must-fire/InventoryTest.cs`
 
 ## The fix
 
@@ -43,6 +43,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo                | Occurrences |
 | ------------------- | ----------- |
+| positive-fixtures   | 2           |
 | SeleniumHQ-selenium | 4           |
 
 ---

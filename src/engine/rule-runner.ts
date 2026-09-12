@@ -24,7 +24,14 @@ import type { UniversalRule } from "./adapter.js";
  */
 export function legacyAppliesTo(value: string): string[] {
   if (value === "test-files") return ["typescript"];
-  if (value === "ci-workflows") return ["github-actions"];
+  // P3b/P3c: CI rules host on every workflow adapter — each parses its
+  // own surface (GitHub Actions YAML, azure-pipelines.yml, or the root
+  // Jenkinsfile as a text-target kind) and hands the rules the matching
+  // context through the ast slot (Jenkins rules are lexical over text;
+  // GitHub/Azure-shaped rules no-op on the absent doc).
+  if (value === "ci-workflows") {
+    return ["github-actions", "azure-pipelines", "jenkins"];
+  }
   return [value];
 }
 
@@ -35,12 +42,13 @@ export function asUniversal(rule: {
   appliesTo: string;
   configRule?: boolean;
   configFiles?: string[];
+  detectorRevision?: number;
   run: (file: {
     path: string;
     text: string;
     ast?: unknown;
   }) => Array<Record<string, unknown>>;
-}): UniversalRule & { legacy: true } {
+}): UniversalRule & { legacy: true; detectorRevision?: number } {
   return {
     id: rule.id,
     category: rule.category,
@@ -48,6 +56,9 @@ export function asUniversal(rule: {
     configOnly: rule.configRule === true,
     ...(rule.configFiles !== undefined
       ? { configFiles: [...rule.configFiles] }
+      : {}),
+    ...(rule.detectorRevision !== undefined
+      ? { detectorRevision: rule.detectorRevision }
       : {}),
     legacy: true,
     run(file) {

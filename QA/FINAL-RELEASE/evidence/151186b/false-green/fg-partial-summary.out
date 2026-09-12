@@ -1,0 +1,16 @@
+EXIT:1
+OUT:
+ERR:file:///C:/Users/User/AppData/Local/Temp/kilo/mjolnir-rc-151186b/dist/cli.mjs:13790
+	if (result.frameworks.length > 0) {
+	                      ^
+
+TypeError: Cannot read properties of undefined (reading 'length')
+    at renderStepSummary (file:///C:/Users/User/AppData/Local/Temp/kilo/mjolnir-rc-151186b/dist/cli.mjs:13790:24)
+    at runSummaryCommand (file:///C:/Users/User/AppData/Local/Temp/kilo/mjolnir-rc-151186b/dist/cli.mjs:13914:18)
+    at main (file:///C:/Users/User/AppData/Local/Temp/kilo/mjolnir-rc-151186b/dist/cli.mjs:19023:36)
+    at file:///C:/Users/User/AppData/Local/Temp/kilo/mjolnir-rc-151186b/dist/cli.mjs:19107:48
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:646:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v26.3.1

@@ -17,6 +17,9 @@ import type { LocatorClass, SelectorRisk } from "./selector-health-types.js";
 
 export type { LocatorClass, SelectorRisk } from "./selector-health-types.js";
 import { LOCATOR_RISK } from "./selector-health-types.js";
+import { sectionHeader, plainContext } from "../reporter/ui.js";
+
+const ui = plainContext();
 
 export interface SpecSelectorHealth {
   file: string;
@@ -27,7 +30,9 @@ export interface SpecSelectorHealth {
 
 export function classifyLocator(line: string): LocatorClass | null {
   if (!/locator|getBy|\$x/.test(line)) return null;
-  if (/getBy(Role|Text|Label|Placeholder|AltText|Title|TestId)\s*\(/.test(line))
+  if (
+    /getBy(?:Role|Text|Label|Placeholder|AltText|Title|TestId)\s*\(/.test(line)
+  )
     return "role-based";
   if (/locator\s*\(\s*['"`]\[data-testid/.test(line)) return "testid";
   if (/\$x\s*\(|locator\s*\(\s*['"`]xpath=/.test(line)) return "xpath";
@@ -50,7 +55,7 @@ export function scoreLocatorRisk(line: string): SelectorRisk {
   if (!cls) return { score: 0, reason: "not a locator" };
   let score = LOCATOR_RISK[cls];
   const reasons: string[] = [`${cls} base ${score}`];
-  if (/nth-(child|of-type)\s*\(/.test(line)) {
+  if (/nth-(?:child|of-type)\s*\(/.test(line)) {
     score += 25;
     reasons.push("nth-child positional coupling +25");
   }
@@ -126,7 +131,7 @@ export function computeSpecHealth(
 }
 
 export function renderSelectorHealth(specs: SpecSelectorHealth[]): string {
-  const lines: string[] = ["", "▚▞ SELECTOR HEALTH", ""];
+  const lines: string[] = ["", sectionHeader("SELECTOR HEALTH", ui), ""];
   for (const spec of specs) {
     const filled = Math.round(spec.score / 5);
     const bar = "█".repeat(filled) + "░".repeat(20 - filled);
@@ -180,4 +185,93 @@ export function computeSelectorHealth(
   return specs.sort(
     (a, b) => a.score - b.score || a.file.localeCompare(b.file),
   ); // weakest first
+}
+
+/**
+ * WI-19 — Selector Health v2: runtime correlation + safe next action.
+ * The v1 score (static, secondary) is NEVER weakened by runtime
+ * evidence (Contract H, roadmap §5). What v2 adds is the CLAIM gate:
+ * **no correlation ⇒ no claim.** `claim` is non-null only when runtime
+ * facts exist and coherently bear on the static signal; otherwise the
+ * pair reports insufficient/contradictory honestly and the safe action
+ * points at the evidence to collect — never at asserting selector
+ * health from a score alone.
+ */
+
+export type SelectorCorrelation =
+  "corroborates" | "contradicts" | "insufficient";
+
+export interface RuntimeSelectorFacts {
+  /** The executed outcome for this spec (Evidence Core / run facts). */
+  outcome: "passed" | "failed" | "timedOut" | "flaky";
+}
+
+export interface SelectorHealthCorrelation {
+  correlation: SelectorCorrelation;
+  /** Null unless the correlation supports a claim (no correlation ⇒ no claim). */
+  claim: { assertion: string; safeNextAction: string } | null;
+  /** The v1 static score — never altered here (Contract H). */
+  staticScore: number;
+}
+
+export function correlateSelectorHealth(
+  spec: SpecSelectorHealth,
+  runtime: RuntimeSelectorFacts | undefined,
+): SelectorHealthCorrelation {
+  const brittle = spec.counts["css-chain"] + spec.counts.xpath;
+  if (runtime === undefined) {
+    // No runtime facts: the honest answer is NO CLAIM, not "healthy".
+    return {
+      correlation: "insufficient",
+      claim: null,
+      staticScore: spec.score,
+    };
+  }
+  if (runtime.outcome === "passed") {
+    // One green run proves nothing about future brittleness and nothing
+    // about selector quality — INSUFFICIENT either way. Missing evidence
+    // ≠ negative evidence (roadmap §5).
+    return {
+      correlation: "insufficient",
+      claim: null,
+      staticScore: spec.score,
+    };
+  }
+  if (runtime.outcome === "flaky") {
+    return {
+      correlation: "corroborates",
+      claim: {
+        assertion:
+          brittle > 0 && spec.score >= 40
+            ? `retry-dependent execution corroborates the static brittleness signal (${brittle} brittle locator${brittle === 1 ? "" : "s"})`
+            : "retry-dependent execution shows instability the selector signal does not explain",
+        safeNextAction:
+          brittle > 0
+            ? `replace the brittle locators (weakest near line ${spec.weakestLine ?? "?"}) with role/testid anchors, then re-run with retries off`
+            : "collect trace evidence — retries point outside the selector surface",
+      },
+      staticScore: spec.score,
+    };
+  }
+  // failed / timedOut:
+  if (brittle > 0 && spec.weakestLine !== undefined) {
+    return {
+      correlation: "corroborates",
+      claim: {
+        assertion: `execution failed while ${brittle} brittle locator${brittle === 1 ? "" : "s"} are present — the static signal is corroborated`,
+        safeNextAction: `stabilize the locator near line ${spec.weakestLine} (prefer role/testid), then re-run`,
+      },
+      staticScore: spec.score,
+    };
+  }
+  return {
+    correlation: "contradicts",
+    claim: {
+      assertion:
+        "execution failed while the selector surface is not brittle by the static signal — blaming selector health is unsupported",
+      safeNextAction:
+        "investigate non-selector causes (assertions, environment, data) — do not rewrite selectors on score alone",
+    },
+    staticScore: spec.score,
+  };
 }

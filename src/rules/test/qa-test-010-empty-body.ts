@@ -23,6 +23,13 @@ export const emptyTestBody = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "empty test bodies are runner-outcome semantics; the detector " +
+      "matches the test-def plus empty-body shapes on the code-only text " +
+      "— the AST body-shape is the same predicate",
+  },
   introduced: "0.1.0",
 
   // Measured 2026-09-02 (corpus wave 5): tier set from the measured envelope (plan §11.2).
@@ -52,6 +59,7 @@ export const emptyTestBody = defineRule({
     // on a later line. Block comments are unaffected (`*/` is a real
     // terminator, so `it('x', () => { /* c */ })` still matches).
     const re =
+      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
       /\b(?:it|test)\s*\(\s*['"`][^'"`]*['"`]\s*,\s*(?:async\s*)?\([^)]*\)\s*=>\s*\{\s*(?:(?:\/\*[\s\S]*?\*\/|\/\/[^\n\r]*\r?\n)\s*)?\}\s*\)/g;
 
     let m: RegExpExecArray | null;

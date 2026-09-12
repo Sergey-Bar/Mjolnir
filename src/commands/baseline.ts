@@ -19,18 +19,33 @@
  * command does not make for them.
  */
 
-import {
-  copyFileSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  writeFileSync,
-} from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
+import { writeFileAtomic } from "../lib/fs-atomic.js";
 import { dirname, join } from "node:path";
 
 import type { Finding, ScanResult } from "../types.js";
+import {
+  resolve,
+  renderResolution,
+  type Resolution,
+} from "../engine/resolution.js";
+import { RULES } from "../rules/index.js";
+import { nextStep, sectionHeader, plainContext } from "../reporter/ui.js";
+
+const ui = plainContext();
 
 export const DEFAULT_BASELINE_PATH = join(".mjolnir", "baseline.json");
+
+/**
+ * Registry-declared detector revisions (§17): a baseline entry whose
+ * revision differs from today's registry is INCONCLUSIVE(revision-
+ * changed), never resolved. Omitted declarations mean revision 1 (the
+ * documented RuleMeta default for first-generation detectors); a
+ * ruleId ABSENT from this map means the rule is retired.
+ */
+const REGISTRY_REVISIONS: ReadonlyMap<string, number> = new Map(
+  RULES.map((r) => [r.id, r.detectorRevision ?? 1]),
+);
 
 export interface BaselineFile {
   schemaVersion: 1;
@@ -44,10 +59,26 @@ export interface BaselineFile {
    * (the PR comment's score-delta line degrades to no delta).
    */
   score?: number;
-  findings: Array<Pick<Finding, "ruleId" | "file" | "message" | "severity">>;
+  findings: Array<
+    Pick<Finding, "ruleId" | "file" | "message" | "severity"> & {
+      /** detectorRevision at capture time (§17); absent = legacy entry. */
+      detectorRevision?: number;
+    }
+  >;
 }
 
-function fingerprint(f: Pick<Finding, "ruleId" | "file" | "message">): string {
+/**
+ * Correlation identity for before/after comparison (agent-handoff plan
+ * §5.2): ruleId + file + message, deliberately EXCLUDING `line` — a
+ * source edit that shifts a finding still correlates. file:line is an
+ * occurrence location, not a durable identity; message rewording,
+ * file renames and rule-id changes correlate as resolved+new
+ * (documented limitation). Exported for the handoff verification
+ * contract — do not duplicate this algorithm.
+ */
+export function fingerprint(
+  f: Pick<Finding, "ruleId" | "file" | "message">,
+): string {
   return `${f.ruleId}\u0000${f.file}\u0000${f.message}`;
 }
 
@@ -68,6 +99,10 @@ export function buildBaseline(
       file: f.file,
       message: f.message,
       severity: f.severity,
+      // §17: revision-aware baseline entries — additive within v1.
+      ...(f.detectorRevision !== undefined
+        ? { detectorRevision: f.detectorRevision }
+        : {}),
     })),
   };
 }
@@ -99,7 +134,7 @@ export function saveBaseline(
     backupPath = `${outPath}.bak`;
     copyFileSync(outPath, backupPath);
   }
-  writeFileSync(
+  writeFileAtomic(
     outPath,
     JSON.stringify(buildBaseline(result, commit), null, 2) + "\n",
   );
@@ -110,7 +145,10 @@ export function saveBaseline(
   };
 }
 
-export function loadBaseline(path: string): BaselineFile | null {
+export function loadBaseline(
+  path: string,
+  onWarning?: (message: string) => void,
+): BaselineFile | null {
   if (!existsSync(path)) return null;
   try {
     const parsed: unknown = JSON.parse(readFileSync(path, "utf8"));
@@ -121,6 +159,22 @@ export function loadBaseline(path: string): BaselineFile | null {
       Array.isArray(parsed.findings)
     ) {
       const file = parsed as BaselineFile;
+      // Audit S7: the schemaVersion gate. A FUTURE version's file may
+      // carry shapes this build cannot interpret — diffing it as v1
+      // would produce confident nonsense. Missing version (legacy
+      // pre-versioning files) is tolerated with a warning; an unknown
+      // version degrades to "no baseline" with the reason printed.
+      const version = (parsed as { schemaVersion?: unknown }).schemaVersion;
+      if (version === undefined) {
+        onWarning?.(
+          "baseline file has no schemaVersion (pre-versioning format) — treated as v1.",
+        );
+      } else if (version !== 1) {
+        onWarning?.(
+          `baseline file declares schemaVersion ${JSON.stringify(version)}; this Mjölnir understands v1 — baseline ignored (upgrade Mjölnir to diff it).`,
+        );
+        return null;
+      }
       // Bug-audit QA-2026-08-30 QA-12 (totality, M3-style): the file is
       // arbitrary local JSON — a hostile or hand-edited baseline must not
       // be able to crash `diff` (a `null` element used to explode in
@@ -160,9 +214,17 @@ export interface BaselineDiff {
   baselineScore?: number;
   /** Findings in the current scan not present in the baseline. */
   newFindings: Finding[];
-  /** Findings in the baseline no longer present — real, evidenced fixes. */
+  /**
+   * Findings in the baseline no longer present — real, evidenced fixes.
+   * §15 (Contract E): this list carries the lifecycle RESOLUTION for
+   * each disappearance; only VERIFIED-RESOLVED entries render as
+   * "FIXED". Legacy-baseline entries (no detectorRevision) classify
+   * INCONCLUSIVE(legacy-baseline) — never a fix claim.
+   */
   resolvedFindings: Array<
-    Pick<Finding, "ruleId" | "file" | "message" | "severity">
+    Pick<Finding, "ruleId" | "file" | "message" | "severity"> & {
+      resolution: Resolution;
+    }
   >;
   /** Findings present in both — pre-existing debt, deliberately not reported as new. */
   unchangedCount: number;
@@ -201,10 +263,22 @@ export function diffAgainstBaseline(
   }
 
   const resolvedFindings: Array<
-    Pick<Finding, "ruleId" | "file" | "message" | "severity">
+    Pick<Finding, "ruleId" | "file" | "message" | "severity"> & {
+      resolution: Resolution;
+    }
   > = [];
   for (const [key, f] of baseSet) {
-    if (!headKeys.has(key)) resolvedFindings.push(f);
+    if (!headKeys.has(key)) {
+      // §15: every disappearance gets its lifecycle resolution via the
+      // ordered algorithm — first match wins, deterministic, pure.
+      const resolution = resolve({
+        entry: f,
+        baseline,
+        current: result,
+        registryRevisions: REGISTRY_REVISIONS,
+      });
+      resolvedFindings.push({ ...f, resolution });
+    }
   }
 
   return {
@@ -224,7 +298,7 @@ export function renderBaselineSaved(
   replaced?: { backupPath?: string },
 ): string {
   const lines = [
-    "▚▞ BASELINE SAVED",
+    sectionHeader("BASELINE SAVED", ui),
     "",
     `Captured ${count} finding${count === 1 ? "" : "s"} to ${path}.`,
   ];
@@ -235,20 +309,20 @@ export function renderBaselineSaved(
       `Replaced an existing baseline — the previous one was saved to ${replaced.backupPath}.`,
     );
   }
-  lines.push(
-    'Run "mjolnir diff" after future changes to see only what\'s new.',
-  );
+  lines.push(nextStep("mjolnir diff", ui) + " — see only what's new.");
   return lines.join("\n");
 }
 
 export function renderBaselineDiff(diff: BaselineDiff): string {
   const lines: string[] = [];
-  lines.push("▚▞ DIFF AGAINST BASELINE");
+  lines.push(sectionHeader("DIFF AGAINST BASELINE", ui));
   lines.push("");
 
   if (!diff.hasBaseline) {
     lines.push("UNKNOWN — no baseline found.");
-    lines.push('Run "mjolnir baseline" first to capture a comparison point.');
+    lines.push(
+      nextStep("mjolnir baseline", ui) + " to capture a comparison point.",
+    );
     return lines.join("\n");
   }
 
@@ -277,9 +351,32 @@ export function renderBaselineDiff(diff: BaselineDiff): string {
   lines.push("");
 
   if (diff.resolvedFindings.length > 0) {
-    lines.push(`FIXED SINCE BASELINE (${diff.resolvedFindings.length}):`);
-    for (const f of diff.resolvedFindings) {
-      lines.push(`  ✓ ${f.ruleId} (${f.severity}) · ${f.file} — ${f.message}`);
+    // §15 rendering law: "FIXED" appears only for VERIFIED-RESOLVED; all
+    // other outcomes render with their cause.
+    const verified = diff.resolvedFindings.filter(
+      (f) => f.resolution.status === "VERIFIED-RESOLVED",
+    );
+    const unresolved = diff.resolvedFindings.filter(
+      (f) => f.resolution.status !== "VERIFIED-RESOLVED",
+    );
+    if (verified.length > 0) {
+      lines.push(`FIXED SINCE BASELINE (${verified.length}):`);
+      for (const f of verified) {
+        lines.push(
+          `  ✓ ${f.ruleId} (${f.severity}) · ${f.file} — ${f.message}`,
+        );
+      }
+      lines.push("");
+    }
+    if (unresolved.length > 0) {
+      lines.push(
+        `DISAPPEARED — NOT CLASSIFIED AS FIXED (${unresolved.length}):`,
+      );
+      for (const f of unresolved) {
+        lines.push(
+          `  ${renderResolution(f.resolution)} · ${f.ruleId} (${f.severity}) · ${f.file} — ${f.message}`,
+        );
+      }
     }
   }
 

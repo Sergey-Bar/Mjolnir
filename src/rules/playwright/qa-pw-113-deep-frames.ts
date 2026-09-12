@@ -24,6 +24,13 @@ export const pwDeepFrameLocator = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "exact-key-match",
+    detail:
+      "frameLocator chaining depth is an exact Playwright token sequence; " +
+      "the detector matches the frameLocator call chains — the token " +
+      "sequence is closed and unique to the defect",
+  },
   introduced: "0.3.0",
 
   // Measured 2026-09-02 (corpus wave 5): FP ≤ 10% but n < 20 — measured-extended until the core DoD n ≥ 20 is met (plan §23).
@@ -33,6 +40,7 @@ export const pwDeepFrameLocator = defineRule({
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
 
     // Count consecutive .frameLocator( occurrences in one expression.
+    // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
     const re = /(?:\.frameLocator\s*\([^)]*\)\s*){3,}/g;
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {

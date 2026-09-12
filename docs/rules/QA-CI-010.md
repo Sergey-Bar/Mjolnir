@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | error                                              |
 | Confidence                            | medium                                             |
 | Tier                                  | quarantine                                         |
-| Measured FP rate                      | 40% (n=10)                                         |
+| Measured FP rate                      | 10% (n=10)                                         |
 | Evidence level                        | E2                                                 |
 | QA impact                             | False-green risk (FALSE-GREEN)                     |
 | False-positive risk (author estimate) | medium                                             |
@@ -41,13 +41,12 @@ Verified against `tests/fixtures/QA-CI-010/must-not-fire/clean.yml` — a legiti
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo                | Occurrences |
-| ------------------- | ----------- |
-| grafana-grafana     | 2           |
-| nocodb-nocodb       | 1           |
-| positive-fixtures   | 5           |
-| reflex-dev-reflex   | 1           |
-| streamlit-streamlit | 1           |
+| Repo                     | Occurrences |
+| ------------------------ | ----------- |
+| microsoft-playwright-mcp | 1           |
+| positive-fixtures        | 9           |
+| reflex-dev-reflex        | 1           |
+| streamlit-streamlit      | 1           |
 
 ---
 

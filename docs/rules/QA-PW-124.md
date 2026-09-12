@@ -2,20 +2,20 @@
 
 _Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
-| Field                                 | Value                       |
-| ------------------------------------- | --------------------------- |
-| Severity                              | info                        |
-| Confidence                            | high                        |
-| Tier                                  | extended (PROVISIONAL)      |
-| Measured FP rate                      | not yet measured            |
-| Evidence level                        | E1                          |
-| QA impact                             | Test hygiene debt (HYGIENE) |
-| False-positive risk (author estimate) | low                         |
-| Autofix available                     | no                          |
-| Languages                             | typescript, javascript      |
-| Frameworks                            | playwright                  |
-| Detection strategy                    | LEXICAL (regex heuristic)   |
-| Introduced in                         | v0.3.0                      |
+| Field                                 | Value                                                              |
+| ------------------------------------- | ------------------------------------------------------------------ |
+| Severity                              | info                                                               |
+| Confidence                            | high                                                               |
+| Tier                                  | core                                                               |
+| Measured FP rate                      | 7% (n=15)                                                          |
+| Evidence level                        | E1                                                                 |
+| QA impact                             | Test hygiene debt (HYGIENE)                                        |
+| False-positive risk (author estimate) | low                                                                |
+| Autofix available                     | no                                                                 |
+| Languages                             | typescript, javascript                                             |
+| Frameworks                            | playwright                                                         |
+| Detection strategy                    | LEXICAL (regex heuristic over playwright.config.* (adapter-gated)) |
+| Introduced in                         | v0.3.0                                                             |
 
 ## Why this fails in production
 
@@ -39,7 +39,18 @@ Verified against `tests/fixtures/QA-PW-124/must-not-fire/playwright.config.ts` �
 
 ## Corpus-measured false-positive risk
 
-UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked by `npm run corpus:regression` (see `docs/FP-AUDIT.md`). That is not the same as "never fires incorrectly" — it just means no occurrence, correct or not, has been observed there yet.
+Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
+
+| Repo                     | Occurrences |
+| ------------------------ | ----------- |
+| github-docs              | 1           |
+| grafana-grafana          | 1           |
+| hashicorp-vault          | 1           |
+| microsoft-playwright-mcp | 1           |
+| negative-fixtures        | 12          |
+| nextauthjs-next-auth     | 1           |
+| positive-fixtures        | 14          |
+| vitest-dev-vitest        | 1           |
 
 ---
 

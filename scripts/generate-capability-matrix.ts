@@ -117,7 +117,13 @@ export const DEFECT_LEDGER: readonly DefectLedgerEntry[] = [
 // ─── Detection-strategy enum (§09.6/§12.1 — enforced contract) ──────
 
 export type DetectionStrategyEnum =
-  "LEXICAL" | "AST" | "SEMANTIC" | "FRAMEWORK" | "RUNTIME" | "UNCLASSIFIED";
+  | "LEXICAL"
+  | "AST"
+  | "SEMANTIC"
+  | "QA_MODEL"
+  | "FRAMEWORK"
+  | "RUNTIME"
+  | "UNCLASSIFIED";
 
 /**
  * The declared `detectionStrategy` IS the §09.6 enum since the Phase 2
@@ -126,7 +132,7 @@ export type DetectionStrategyEnum =
  * defensive rendering: an undeclared strategy (or an out-of-contract
  * value smuggled in via a synthetic rule object) renders UNCLASSIFIED
  * instead of a fabricated claim. Every registry rule maps to its declared
- * enum value.
+ * enum value. Lane A (§10) adds QA_MODEL — the substrate strategy.
  */
 export function deriveDetectionStrategyEnum(
   declared: string | undefined,
@@ -136,6 +142,7 @@ export function deriveDetectionStrategyEnum(
     declared === "LEXICAL" ||
     declared === "AST" ||
     declared === "SEMANTIC" ||
+    declared === "QA_MODEL" ||
     declared === "FRAMEWORK" ||
     declared === "RUNTIME"
   ) {
@@ -147,6 +154,9 @@ export function deriveDetectionStrategyEnum(
 /**
  * Semantic depth (§04: Low/Medium/High) derived ONLY from the provisional
  * enum — no invented claims. UNCLASSIFIED enum → UNCLASSIFIED depth.
+ * QA_MODEL is High: it classifies over the normalized concept IR built on
+ * a real grammar parse (deeper than raw-AST walking, which has no concept
+ * classification).
  */
 export function deriveSemanticDepth(
   strategy: DetectionStrategyEnum,
@@ -154,7 +164,40 @@ export function deriveSemanticDepth(
   if (strategy === "LEXICAL") return "Low";
   if (strategy === "AST") return "Medium";
   if (strategy === "SEMANTIC") return "High";
+  if (strategy === "QA_MODEL") return "High";
   return "UNCLASSIFIED";
+}
+
+/**
+ * Master plan P8 (plan 1788853205786, decision 9): the depth verdict per
+ * rule, derived from the SAME registry contract the doctor enforces —
+ * no second truth.
+ */
+export function deriveStrategyJustification(rule: QADoctorRule): string {
+  if (rule.detectionStrategy !== "LEXICAL") return "not-applicable";
+  const j = rule.strategyJustification;
+  if (!j) return "MISSING";
+  return j.reasonCode;
+}
+
+/**
+ * Master plan P8: mutation-coverage status per rule, honest by class —
+ * - "measured": a P5 mutation-evidence run has covered this rule's
+ *   defect class (none yet — the registry starts not-yet-measured);
+ * - "not-applicable": the defect class is mutation-unreachable (runner
+ *   behavior: `.only` skips are enforced by the runner, not by
+ *   assertions over mutated code; config-key rules likewise);
+ * - "not-yet-measured": everything else — honest, never fabricated.
+ */
+const MUTATION_UNREACHABLE_PREFIXES = ["QA-TEST-001", "QA-TEST-002"];
+
+export function deriveMutationCoverage(
+  rule: QADoctorRule,
+): "measured" | "not-applicable" | "not-yet-measured" | "UNCLASSIFIED" {
+  if (MUTATION_UNREACHABLE_PREFIXES.some((p) => rule.id === p)) {
+    return "not-applicable";
+  }
+  return "not-yet-measured";
 }
 
 // ─── Verdict-derived corpus facts ────────────────────────────────────
@@ -212,11 +255,22 @@ export interface CapabilityRow {
   appliesTo: string;
   languages: string[] | "UNCLASSIFIED";
   frameworks: string[] | "UNCLASSIFIED";
-  /** Declared §09.6 enum (D6: enforced contract, never free text). */
-  detectionStrategy: string | "UNCLASSIFIED";
+  /** Declared §09.6 enum (D6: enforced contract, never free text).
+   *  UNCLASSIFIED only when a synthetic rule object smuggles in an
+   *  out-of-contract value (deriveDetectionStrategyEnum's defensive arm). */
+  detectionStrategy: DetectionStrategyEnum;
   /** Same value as `detectionStrategy` when declared; UNCLASSIFIED otherwise. */
   detectionStrategyEnum: DetectionStrategyEnum;
   semanticDepth: "Low" | "Medium" | "High" | "UNCLASSIFIED";
+  /**
+   * Master plan P8: the depth verdict for this rule's detector.
+   * - LEXICAL + justification → the rule's closed reason code
+   * - LEXICAL without → `MISSING` (a P8 registry violation the doctor
+   *   already fails on — the matrix surfaces it for the doc)
+   * - deeper strategy (AST/SEMANTIC/QA_MODEL) → "not-applicable"
+   * - UNCLASSIFIED enum → "UNCLASSIFIED"
+   */
+  strategyJustification: string;
   measured: boolean;
   /** FP / (TP + FP), 0..1 — from MEASURED_FP. UNCLASSIFIED when unmeasured. */
   fpRate: number | "UNCLASSIFIED";
@@ -228,7 +282,8 @@ export interface CapabilityRow {
   recall: "UNCLASSIFIED";
   corpusSize: number;
   corpusDiversity: number;
-  mutationCoverage: "UNCLASSIFIED";
+  mutationCoverage:
+    "measured" | "not-applicable" | "not-yet-measured" | "UNCLASSIFIED";
   /** Effective tier: declared tier, or the omitted-tier default. */
   tier: "core" | "extended" | "quarantine";
   /** false = tier omitted in the registry → measurement-dependent default (§11.2 Step 2). */
@@ -288,6 +343,7 @@ export function buildRows(
         detectionStrategy: rule.detectionStrategy ?? "UNCLASSIFIED",
         detectionStrategyEnum: strategy,
         semanticDepth: deriveSemanticDepth(strategy),
+        strategyJustification: deriveStrategyJustification(rule),
         measured: measuredFlag,
         fpRate: measuredFlag && validM ? validM.fpRate : "UNCLASSIFIED",
         n: measuredFlag && validM ? validM.n : "UNCLASSIFIED",
@@ -296,7 +352,7 @@ export function buildRows(
         recall: "UNCLASSIFIED",
         corpusSize: verdictStats?.classified ?? 0,
         corpusDiversity: verdictStats?.repos.size ?? 0,
-        mutationCoverage: "UNCLASSIFIED",
+        mutationCoverage: deriveMutationCoverage(rule),
         tier,
         tierDeclared: rule.tier !== undefined,
         status: statusFor(rule),
@@ -454,10 +510,10 @@ export function renderMatrixMd(data: MatrixData): string {
   lines.push("## Capability matrix");
   lines.push("");
   lines.push(
-    "| Rule ID | Name | Category | Languages | Frameworks | Detection strategy (enum) | Semantic depth | Measured | FP rate | n | Corpus size | Corpus diversity | Mutation coverage | Confidence | Tier | Status | Known limitations | Evidence requirements | Provenance |",
+    "| Rule ID | Name | Category | Languages | Frameworks | Detection strategy (enum) | Semantic depth | Depth verdict (P8) | Measured | FP rate | n | Corpus size | Corpus diversity | Mutation coverage | Confidence | Tier | Status | Known limitations | Evidence requirements | Provenance |",
   );
   lines.push(
-    "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
+    "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
   );
   for (const r of rows) {
     lines.push(
@@ -469,6 +525,7 @@ export function renderMatrixMd(data: MatrixData): string {
         Array.isArray(r.frameworks) ? r.frameworks.join(", ") : r.frameworks,
         r.detectionStrategy,
         r.semanticDepth,
+        r.strategyJustification,
         r.measured ? "yes" : "no",
         pctLabel(r),
         r.n,
@@ -492,13 +549,15 @@ export function renderMatrixMd(data: MatrixData): string {
   lines.push("");
   lines.push(
     "- **Detection strategy**: the enforced §09.6 enum (`LEXICAL | AST | SEMANTIC | FRAMEWORK | RUNTIME`) declared on the rule (D6 closed in Phase 2 — the registry ratchet makes omission or a bad value a CI failure). `UNCLASSIFIED` renders only for an undeclared value.",
-    "- **Semantic depth**: derived only from the enum (LEXICAL → Low, AST → Medium, SEMANTIC → High; FRAMEWORK/RUNTIME are decision-source labels, not depth grades).",
+    "- **Semantic depth**: derived only from the enum (LEXICAL → Low, AST → Medium, SEMANTIC/QA_MODEL → High).",
+    "- **Depth verdict (P8)**: the depth-adjudication record for LEXICAL rules — the closed reason code from `strategyJustification` (`not-applicable` for deeper strategies; `MISSING` renders only for a registry violation the doctor already fails). See docs/DEPTH-ADJUDICATION.md for the full derivation per rule.",
+    "- **Mutation coverage (P8)**: honest by defect class — `not-applicable` for runner-semantic rules whose defect is enforced by the runner, not by assertions over mutated code; `not-yet-measured` everywhere else (no P5 mutation-evidence run has covered the registry yet; `measured` renders only after a real mutation report is ingested). Never a fabricated claim.",
     "- **Why LEXICAL rules stay lexical (plan §12.1)**: migration to deeper analysis happens only where measurement shows value — a LEXICAL rule with a valid low-FP corpus measurement (`Measured = yes`, FP rate in its tier band) is empirically validated as-shipped, and its strategy declaration is the honest record of that: the corpus, not the detector's fashion, decides. LEXICAL rules whose measurement landed in quarantine went through the §12.2 triage (retune/retire) instead of an unmeasured AST rewrite.",
     "- **Measured**: a `MEASURED_FP` entry exists — n ≥ 10 hand-classified TP/FP verdicts (`tests/corpus/verdicts/*.jsonl`).",
     "- **Corpus size / diversity**: classified verdict rows / distinct repos behind them, from the verdict corpus.",
     "- **Tier**: effective tier — the declared tier, or the `rule.ts` omitted-tier default (`core`, the D3 policy hole).",
     "- **Status**: measurement-derived band (`MEASURED-CORE` ≤ 10% FP, `MEASURED-EXTENDED` ≤ 30%, `MEASURED-QUARANTINE` > 30%, `UNMEASURED`).",
-    "- **Recall / mutation coverage / known limitations / evidence requirements**: `UNCLASSIFIED` across the registry in v0 — the Phase 1/2 measurement infrastructure owns filling them.",
+    "- **Recall / known limitations / evidence requirements**: `UNCLASSIFIED` across the registry — the measurement infrastructure owns filling them; left honest rather than guessed.",
   );
   lines.push("");
 

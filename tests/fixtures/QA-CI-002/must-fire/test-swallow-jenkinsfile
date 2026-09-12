@@ -1,0 +1,14 @@
+// QA-CI-002 must-fire (Jenkinsfile) — `|| true` swallowing a verification
+// gate's exit code inside an `sh` string. The lexical detector reads the
+// same defect shape the GitHub run: block carries.
+pipeline {
+  agent any
+  stages {
+    stage('Verify') {
+      steps {
+        sh 'npm install'
+        sh 'npm test || true'
+      }
+    }
+  }
+}

@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | info                        |
 | Confidence                            | low                         |
 | Tier                                  | quarantine                  |
-| Measured FP rate                      | 100% (n=20)                 |
+| Measured FP rate                      | 29% (n=69)                  |
 | Evidence level                        | E1                          |
 | QA impact                             | Test hygiene debt (HYGIENE) |
 | False-positive risk (author estimate) | high                        |
@@ -41,25 +41,27 @@ Verified against `tests/fixtures/QA-PW-103/must-not-fire/with-budget.spec.ts` â€
 
 Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos â€” reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
-| Repo                 | Occurrences |
-| -------------------- | ----------- |
-| apache-airflow       | 2           |
-| calcom-cal           | 1           |
-| dubinc-dub           | 17          |
-| github-docs          | 90          |
-| grafana-grafana      | 82          |
-| hashicorp-vault      | 32          |
-| Humanizr-Humanizer   | 26          |
-| keycloak-keycloak    | 1           |
-| negative-fixtures    | 16          |
-| nextauthjs-next-auth | 4           |
-| positive-fixtures    | 49          |
-| puppeteer-puppeteer  | 97          |
-| sveltejs-kit         | 438         |
-| vercel-next-js       | 4           |
-| vitejs-vite          | 39          |
-| vitest-dev-vitest    | 1           |
-| withastro-astro      | 6           |
+| Repo                                          | Occurrences |
+| --------------------------------------------- | ----------- |
+| apache-airflow                                | 2           |
+| calcom-cal                                    | 1           |
+| dubinc-dub                                    | 17          |
+| github-docs                                   | 90          |
+| grafana-grafana                               | 82          |
+| hashicorp-vault                               | 32          |
+| Humanizr-Humanizer                            | 26          |
+| keycloak-keycloak                             | 1           |
+| microsoft-playwright-mcp                      | 2           |
+| negative-fixtures                             | 16          |
+| nextauthjs-next-auth                          | 4           |
+| playwright-community-eslint-plugin-playwright | 10          |
+| positive-fixtures                             | 54          |
+| puppeteer-puppeteer                           | 98          |
+| sveltejs-kit                                  | 438         |
+| vercel-next-js                                | 4           |
+| vitejs-vite                                   | 39          |
+| vitest-dev-vitest                             | 1           |
+| withastro-astro                               | 6           |
 
 ---
 

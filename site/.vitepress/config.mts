@@ -17,6 +17,7 @@ const SIDEBAR = [
       { text: "How the score works", link: "/guide/scoring" },
       { text: "Runtime forensics", link: "/guide/forensics" },
       { text: "CI integration", link: "/guide/ci" },
+      { text: "Agent integration", link: "/guide/agents" },
       { text: "Configuration", link: "/guide/configuration" },
     ],
   },
@@ -27,10 +28,13 @@ const SIDEBAR = [
   {
     text: "Reference",
     items: [
+      { text: "CLI reference", link: "/reference/cli" },
       { text: "Exit codes & contracts", link: "/reference/exit-codes" },
+      { text: "Terminology", link: "/reference/terminology" },
       { text: "False-positive audit", link: "/reference/fp-audit" },
       { text: "Rule lifecycle", link: "/reference/rule-lifecycle" },
       { text: "SARIF integration", link: "/reference/sarif" },
+      { text: "Roadmap", link: "/reference/roadmap" },
       { text: "Contributing", link: "/reference/contributing" },
     ],
   },
@@ -55,7 +59,11 @@ export default defineConfig({
   lang: "en-US",
   cleanUrls: true,
   lastUpdated: true,
-  appearance: "dark",
+  // Dark-only. "dark" merely defaulted to dark and still shipped a light
+  // ramp behind a toggle — a second theme nobody designed against, which
+  // is where the unreadable light-mode navbar wordmark came from (D12).
+  // "force-dark" also removes the appearance switch from the navbar.
+  appearance: "force-dark",
   sitemap: { hostname: SITE_URL },
   // Included docs (docs/*.md) carry links relative to the repo, not the
   // site; markdown.config below rewrites them, this silences the checker.
@@ -97,6 +105,14 @@ export default defineConfig({
     },
   },
   head: [
+    // Marks the document as "scripting is live", before the body paints.
+    // The landing page's reveal-on-scroll animation starts its elements at
+    // opacity 0, and only JS ever brought them back — so with scripting off
+    // every section below the hero was invisible (plan §2, D4). Gating that
+    // starting state on this class makes the animation an enhancement: no
+    // script, no class, nothing hidden. Inline and in <head> so there is no
+    // flash of the hidden state on the way in.
+    ["script", {}, `document.documentElement.classList.add("mj-anim")`],
     ["meta", { name: "theme-color", content: "#0b0f17" }],
     [
       "link",
@@ -117,18 +133,35 @@ export default defineConfig({
       },
     ],
     ["link", { rel: "apple-touch-icon", href: BASE + "apple-touch-icon.png" }],
-    ["link", { rel: "preconnect", href: "https://fonts.googleapis.com" }],
-    [
-      "link",
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" },
-    ],
-    [
-      "link",
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;450;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap",
-      },
-    ],
+    // Fonts are self-hosted from site/public/fonts (vendored by
+    // `npm run brand:fonts`, sha256-locked in fonts.lock.json). There is
+    // no preconnect and no third-party stylesheet: the page renders its
+    // own wordmark without asking anyone else, and the two cross-origin
+    // round-trips that used to sit on the critical path are gone.
+    //
+    // Preloading the three latin faces first paint needs — body, code
+    // and the display face the wordmark is set in — is what makes
+    // `font-display: swap` safe here. Dropping the Cinzel preload was
+    // measured and made no difference (mobile 93 vs 92, inside the
+    // run-to-run noise), so it stays: the hero renders in its own face
+    // from the first paint rather than swapping into it. The measured lesson
+    // this replaces: JetBrains Mono swapping in at ~900ms re-flowed all
+    // 91 rows of the rule catalog and was the whole of that page's CLS
+    // (0.088 against a 0.05 gate). A same-origin, preloaded, 23 KB face
+    // arrives before the paint that would have to shift.
+    ...["geist-400-latin", "geist-mono-400-latin", "cinzel-600-latin"].map(
+      (f) =>
+        [
+          "link",
+          {
+            rel: "preload",
+            as: "font",
+            type: "font/woff2",
+            href: `${BASE}fonts/${f}.woff2`,
+            crossorigin: "",
+          },
+        ] as [string, Record<string, string>],
+    ),
     // Link previews (Slack, X, LinkedIn, Discord) — without these a
     // shared link renders as a bare URL.
     ["meta", { property: "og:type", content: "website" }],
@@ -139,17 +172,18 @@ export default defineConfig({
     ],
     ["meta", { property: "og:description", content: TAGLINE }],
     ["meta", { property: "og:url", content: SITE_URL }],
-    ["meta", { property: "og:image", content: SITE_URL + "social-card.png" }],
+    ["meta", { property: "og:image", content: SITE_URL + "social-card.jpg" }],
     ["meta", { name: "twitter:card", content: "summary_large_image" }],
     [
       "meta",
       { name: "twitter:title", content: "Mjölnir — Verification Trust Engine" },
     ],
     ["meta", { name: "twitter:description", content: TAGLINE }],
-    ["meta", { name: "twitter:image", content: SITE_URL + "social-card.png" }],
+    ["meta", { name: "twitter:image", content: SITE_URL + "social-card.jpg" }],
   ],
   themeConfig: {
-    logo: "/apple-touch-icon.png",
+    // A 64px mark, not the 180x180 touch icon scaled down to ~24px.
+    logo: "/mark-64.png",
     nav: [
       { text: "Guide", link: "/guide/getting-started" },
       { text: "Rules", link: "/rules/", activeMatch: "^/rules/" },

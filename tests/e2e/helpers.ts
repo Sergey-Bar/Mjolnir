@@ -40,10 +40,26 @@ export interface CliResult {
   status: number;
 }
 
-/** Spawn the built binary. Findings exits are catchable, not throws. */
-export function runCli(args: string[], cwd?: string): CliResult {
+/** Spawn the built binary. Findings exits are catchable, not throws.
+ * `envOverrides` removes keys set to `undefined` and sets the rest —
+ * CI runners inject GITHUB_ACTIONS/GITHUB_STEP_SUMMARY/CI into every
+ * process, and tests that verify the "outside Actions" behavior must
+ * be able to neutralize them. */
+export function runCli(
+  args: string[],
+  cwd?: string,
+  envOverrides?: Record<string, string | undefined>,
+): CliResult {
   ensureDist();
   let last: CliResult | undefined;
+  const env: NodeJS.ProcessEnv = {
+    ...process.env,
+    MJOLNIR_ASCII: "1",
+    ...(envOverrides ?? {}),
+  };
+  for (const [key, value] of Object.entries(envOverrides ?? {})) {
+    if (value === undefined) delete env[key];
+  }
   // Up to 3 attempts: a concurrent tsdown clean can make a spawn fail
   // with "Cannot find module" mid-suite.
   for (let attempt = 1; attempt <= 3; attempt++) {
@@ -51,7 +67,7 @@ export function runCli(args: string[], cwd?: string): CliResult {
       const stdout = execFileSync("node", [DIST, ...args], {
         cwd,
         encoding: "utf8",
-        env: { ...process.env, MJOLNIR_ASCII: "1" },
+        env,
       });
       return { stdout, stderr: "", status: 0 };
     } catch (err) {

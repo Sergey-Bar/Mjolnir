@@ -24,6 +24,13 @@ export const pyPwNoAssertions = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "Playwright test bodies without assertions are runner-outcome " +
+      "semantics; the detector matches the test-def plus body shapes on " +
+      "the code-only text",
+  },
   detectionNotes: "regex heuristic",
   introduced: "0.3.8",
 
@@ -51,7 +58,7 @@ export const pyPwNoAssertions = defineRule({
     if (!ctx.path.endsWith(".py")) return findings;
     if (!/playwright/i.test(text)) return findings;
 
-    const fnRe = /^(\s*)def\s+(test_\w+)\s*\([^)]*\)\s*:/gm;
+    const fnRe = /^\s*def\s+(test_\w+)\s*\([^)]*\)\s*:/gm;
     let m: RegExpExecArray | null;
     while ((m = fnRe.exec(text)) !== null) {
       const body = extractBlock(text, m.index + m[0].length);
@@ -82,7 +89,7 @@ export const pyPwNoAssertions = defineRule({
           file: ctx.path,
           line: lineAt(text, m.index),
           column: colAt(text, m.index),
-          message: `Playwright test \`${m[2]}\` drives the UI but asserts nothing.`,
+          message: `Playwright test \`${m[1]}\` drives the UI but asserts nothing.`,
           why: "Clicking through pages without asserting outcomes proves navigation didn't crash — not that the feature works. Any regression short of a JS exception stays green.",
           fix: "Add outcome assertions: `expect(page).to_have_url(...)`, `expect(page.get_by_role('heading')).to_be_visible()`.",
         });
@@ -95,7 +102,7 @@ export const pyPwNoAssertions = defineRule({
 /** Extract an indented block starting after a `:` line; returns null if empty. */
 function extractBlock(text: string, afterColon: number): string | null {
   const rest = text.slice(afterColon).replace(/\r\n/g, "\n");
-  const firstContent = /(\S)/.exec(rest);
+  const firstContent = /\S/.exec(rest);
   if (!firstContent || firstContent.index === undefined) return null;
   const before = rest.slice(0, firstContent.index);
   if (before.includes("\n")) {

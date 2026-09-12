@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "partial": false,
+  "score": null,
+  "reason": "no-tests-found",
+  "frameworks": [],
+  "frameworkDetectionUnknown": true,
+  "dimensions": [
+    {
+      "category": "QA-CI",
+      "score": 92,
+      "errors": 1,
+      "warnings": 0,
+      "infos": 0
+    }
+  ],
+  "findings": [
+    {
+      "severity": "error",
+      "confidence": "high",
+      "findingType": "deterministic-defect",
+      "file": ".github/workflows/ci.yml",
+      "line": 7,
+      "column": 23,
+      "message": "Command exit code is swallowed with `|| true`.",
+      "why": "A failing step becomes a passing one — the workflow checkmark no longer reflects reality.",
+      "fix": "Remove `|| true`. If the step is genuinely optional, mark it clearly and use `continue-on-error` on that step only.",
+      "qaImpact": "FALSE-GREEN",
+      "ruleId": "QA-CI-002",
+      "category": "QA-CI",
+      "evidenceLevel": "E2",
+      "measuredFpRate": 0.111,
+      "measuredFpN": 18,
+      "detectorRevision": 2,
+      "fixGroupId": "QA-CI-002"
+    }
+  ],
+  "testFileCount": 0,
+  "testDeclarationCount": 0,
+  "rawDeductions": 8,
+  "suppressionCount": 0,
+  "agenticProfile": {
+    "testFiles": 0,
+    "generatedMarkedFiles": 0,
+    "codegenLikeFiles": 0,
+    "shareMarkedGenerated": 0,
+    "findingsInGeneratedFiles": 0,
+    "findingsInUnmarkedFiles": 1,
+    "note": "Static provenance markers only (generated-file headers, Playwright codegen default titles). Absence of a marker does not prove human authorship; healed and MCP-edited files without markers are indistinguishable from hand-written ones. Provenance never changes scoring or evidence — authorship is metadata, not trust."
+  },
+  "analysisStatus": {
+    "discovery": "complete",
+    "rules": "complete",
+    "skippedFiles": 0,
+    "durationMs": 12,
+    "rulesCrashed": 0
+  },
+  "contract": {
+    "contractVersion": 1,
+    "summary": {
+      "digest": "sha256:e0a492e36387a2b7343550d77390b125f85dc02dcef02a2cf48f04b8c073eb88",
+      "findings": 1,
+      "score": null,
+      "errors": 1,
+      "warnings": 0,
+      "infos": 0,
+      "advisory": 0
+    },
+    "annotations": [
+      {
+        "path": ".github/workflows/ci.yml",
+        "start_line": 7,
+        "annotation_level": "failure",
+        "message": "QA-CI-002: Command exit code is swallowed with `|| true`.",
+        "ruleId": "QA-CI-002",
+        "detectorRevision": 2,
+        "advisory": false
+      }
+    ],
+    "annotationsTruncated": false,
+    "completeness": {
+      "partial": false,
+      "discovery": "complete",
+      "rules": "complete",
+      "skippedFiles": 0,
+      "rulesCrashed": 0,
+      "truncationReasons": [],
+      "frameworkDetectionUnknown": true,
+      "durationMs": 12
+    }
+  }
+}

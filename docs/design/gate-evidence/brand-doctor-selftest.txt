@@ -1,0 +1,32 @@
+mjolnir brand doctor — failure-first self-test
+
+  baseline: exit 0 (expected 0)
+  Rule 1: PROVEN — a site variable drifts from the token
+           seeded site\.vitepress\theme\styles\vars.css → exit 1, named the finding
+  Rule 1 (retired face): PROVEN — a retired typeface creeps back into a stack
+           seeded site\.vitepress\theme\styles\vars.css → exit 1, named the finding
+  Rule 2: PROVEN — the terminal palette names a colour of its own
+           seeded src\reporter\theme.ts → exit 1, named the finding
+  Rule 3: PROVEN — the SVG chrome names a colour of its own
+           seeded scripts\readme-svg.ts → exit 1, named the finding
+  Rule 4: PROVEN — a committed SVG carries a colour that is in no token
+           seeded assets\readme\terminal-hero.svg → exit 1, named the finding
+  Rule 5: PROVEN — a design document states a value the code does not hold
+           seeded docs\design\BRAND-SYSTEM.md → exit 1, named the finding
+  Rule 6: PROVEN — an unapproved hex appears outside the token module
+           seeded src\reporter\ui.ts → exit 1, named the finding
+  Rule 7: PROVEN — a README badge uses a colour that is neither token nor known debt
+           seeded README.md → exit 1, named the finding
+  Rule 7 (generated badge): PROVEN — the badge the product emits reverts to a shields.io named colour
+           seeded src\commands\badge.ts → exit 1, named the finding
+  Rule 8: PROVEN — a declared pairing drops below WCAG AA
+           seeded assets\brand\tokens.json → exit 1, named the finding
+  Rule 9: PROVEN — a brand mark changes without anyone deciding to change it
+           seeded assets\brand\marks.lock.json → exit 1, named the finding
+  Rule ratchet: PROVEN — a known-open entry that no longer fires is reported as stale
+           seeded scripts\brand-doctor.mjs → exit 1, named the finding
+
+  restored: exit 0 (expected 0)
+
+  12 of 12 rules observed rejecting an invalid state
+

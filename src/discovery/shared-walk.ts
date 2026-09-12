@@ -19,7 +19,7 @@ export interface SharedWalkOptions {
   deadline: number;
   ignoreMatcher: IgnoreMatcher;
   /** Called for each counted skip (unreadable, oversized, …). */
-  onSkipped: (reason?: string) => void;
+  onSkipped: (reason: string) => void;
   onTruncated: (reason: string) => void;
   /** Directory names never entered (dependency/output dirs per adapter). */
   skipDirs: readonly string[];
@@ -32,37 +32,61 @@ export interface SharedWalkOptions {
   isFull: () => boolean;
   /** Memo map shared across every walk of one scan (audit P-2). */
   fixtureDirMemo: Map<string, boolean>;
+  /** R4c Scope Integrity: counted matcher exclusions. */
+  onIgnored?: (() => void) | undefined;
+  /** R4c Scope Integrity: counted files no adapter claims. */
+  onUnrecognized?: (() => void) | undefined;
 }
 
 export function sharedWalk(options: SharedWalkOptions): void {
   const walk = (dir: string): void => {
-    if (Date.now() > options.deadline) {
-      options.onTruncated("deadline");
-      return;
-    }
-    if (options.isFull()) {
-      options.onTruncated("file-cap");
-      return;
-    }
     let entries;
     try {
       entries = readdirSync(dir, { withFileTypes: true });
     } catch {
+      // Audit (shared-walk): an unreadable directory is a COUNTED skip,
+      // not a silent one — the scan must be able to say what it could
+      // not see.
+      options.onSkipped("dir-unreadable");
       return;
     }
     for (const entry of entries) {
+      // Audit (shared-walk): deadline and cap are checked INSIDE the
+      // entry loop, not only at directory entry — a directory with tens
+      // of thousands of entries could blow the budget between checks.
+      if (Date.now() > options.deadline) {
+        options.onTruncated("deadline");
+        return;
+      }
+      if (options.isFull()) {
+        options.onTruncated("file-cap");
+        return;
+      }
       const full = join(dir, entry.name);
       // Bug-audit L4: a hard `slice(root.length + 1)` breaks when the
       // scan root is a drive root ("C:\") or carries a trailing
       // separator — the relative path came out empty or mis-sliced.
       const rel = relative(options.root, full).replaceAll("\\", "/");
-      if (options.ignoreMatcher.isIgnored(rel)) continue;
+      if (options.ignoreMatcher.isIgnored(rel)) {
+        // R4c Scope Integrity: ignored files are COUNTED — the scope
+        // verdict must know how much of the tree the matcher excluded.
+        options.onIgnored?.();
+        continue;
+      }
       // Symlinks are never followed: a link can point outside the repo
       // (scanning files we have no business reading) or create cycles.
-      if (entry.isSymbolicLink()) continue;
+      // Audit (shared-walk): the skip is counted — discovery can state
+      // what was excluded and why.
+      if (entry.isSymbolicLink()) {
+        options.onSkipped("symlink-skipped");
+        continue;
+      }
       if (entry.isDirectory()) {
         if (options.skipDirs.includes(entry.name)) continue;
-        if (rel.split("/").length > LIMITS.maxDepth) continue;
+        if (rel.split("/").length > LIMITS.maxDepth) {
+          options.onSkipped("max-depth");
+          continue;
+        }
         let fixture = options.fixtureDirMemo.get(full);
         if (fixture === undefined) {
           fixture = isLintFixtureDir(full);
@@ -82,8 +106,13 @@ export function sharedWalk(options: SharedWalkOptions): void {
             options.onSkipped("file-size");
           }
         } catch {
-          options.onSkipped();
+          options.onSkipped("stat-failed");
         }
+      } else if (entry.isFile()) {
+        // R4c Scope Integrity: a file no adapter claims is COUNTED as
+        // unrecognized — the scan can state what it saw but did not
+        // analyze, instead of pretending the tree was fully covered.
+        options.onUnrecognized?.();
       }
     }
   };

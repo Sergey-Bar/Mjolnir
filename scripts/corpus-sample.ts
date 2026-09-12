@@ -13,6 +13,10 @@
  * Usage:
  *   npx tsx scripts/corpus-sample.ts           # generate review sheets
  *   npx tsx scripts/corpus-sample.ts --update  # re-scan and regenerate
+ *   npx tsx scripts/corpus-sample.ts --update --repo <name> [--repo <n>…]
+ *                                              # resumable: named repos only
+ *   … --budget 300000                          # raise per-repo scan budget
+ *                                              # (chronic truncation remedy)
  *
  * The review sheets are the INPUT to the manual classification process.
  * Once classified, verdicts go into the .jsonl files. The FP-rate
@@ -53,8 +57,27 @@ const CONTEXT_LINES = 5; // lines above and below the finding
  * rules without a valid measurement so classification effort goes to the
  * Phase 1 exit gate (unmeasured ≤ 20) instead of re-sampling rules that
  * are already measured at their quota.
+ *
+ * `--repo <name>` (repeatable): sample only the named corpus repos —
+ * resumability. The full-corpus run in one process hits V8 heap limits
+ * on the large monorepos (observed: OOM at sveltejs-kit / withastro-astro
+ * even at 12 GB); running repo-by-repo keeps each process small, and the
+ * append-only verdict writer makes partial runs safe to accumulate.
+ *
+ * `--budget <ms>`: override the per-repo scan budget (default 120_000).
+ * audit.ts's own guidance: if truncation is chronic for a repo, raise
+ * the budget rather than record a partial scan.
  */
 const UNMEASURED_ONLY = process.argv.includes("--unmeasured-only");
+
+const ONLY_REPOS = process.argv
+  .flatMap((a, i) => (a === "--repo" ? [process.argv[i + 1] ?? ""] : []))
+  .filter((n) => n.length > 0);
+const BUDGET_MS = (() => {
+  const idx = process.argv.indexOf("--budget");
+  const v = idx !== -1 ? Number(process.argv[idx + 1]) : NaN;
+  return Number.isFinite(v) && v > 0 ? v : 120_000;
+})();
 
 function ruleIsUnmeasured(ruleId: string): boolean {
   return MEASURED_FP[ruleId] === undefined;
@@ -116,6 +139,7 @@ async function scanAndSample(): Promise<Map<string, SampledFinding[]>> {
   const byRule = new Map<string, SampledFinding[]>();
 
   for (const repo of CORPUS) {
+    if (ONLY_REPOS.length > 0 && !ONLY_REPOS.includes(repo.name)) continue;
     console.log(`\n=== Scanning ${repo.name} ===`);
     let dir: string;
     try {
@@ -131,7 +155,7 @@ async function scanAndSample(): Promise<Map<string, SampledFinding[]>> {
       target: dir,
       json: true,
       verbose: true,
-      maxDurationMs: 120_000,
+      maxDurationMs: BUDGET_MS,
       scopeChanged: false,
       format: "json",
       // --strict: sample quarantine-tier rules too. Without this, every
@@ -139,6 +163,21 @@ async function scanAndSample(): Promise<Map<string, SampledFinding[]>> {
       // rules — the ones we most need to keep watching.
       strict: true,
     });
+
+    // D14/§19 discipline (same refusal as tests/corpus/audit.ts): a
+    // deadline-truncated scan is NOT evidence — sampling from it would
+    // record machine-speed-contaminated counts as review material. Fail
+    // the run loudly; re-run on a quiet machine, never classify from a
+    // partial scan.
+    if (result.partial) {
+      console.error(
+        `  FAIL: scan of ${repo.name} was PARTIAL (deadline/budget ` +
+          `truncation) — findings from a partial scan are not evidence. ` +
+          `Re-run on a quiet machine; do NOT classify from a partial scan.`,
+      );
+      process.exitCode = 1;
+      continue;
+    }
 
     for (const finding of result.findings) {
       if (UNMEASURED_ONLY && !ruleIsUnmeasured(finding.ruleId)) continue;
@@ -166,9 +205,19 @@ async function scanAndSample(): Promise<Map<string, SampledFinding[]>> {
 function writeReviewSheets(byRule: Map<string, SampledFinding[]>): void {
   mkdirSync(REVIEW_DIR, { recursive: true });
 
-  // Clear old review sheets
+  // Clear old review sheets — EXCEPT sheets whose rule was not sampled in
+  // this run. §19 review material is owner work-in-progress (pending
+  // verdict classifications); --repo resumability used to delete every
+  // sheet of a rule the current run did not visit, wiping 25 sheets /
+  // 191 pending classifications on a scoped run. Sheets are regenerated
+  // only when their rule is re-sampled (de-duped against existing
+  // verdict rows), so deleting a not-visited sheet loses owner work for
+  // nothing.
+  const sampledRules = new Set(byRule.keys());
   for (const f of readdirSync(REVIEW_DIR)) {
-    if (f.endsWith(".md")) rmSync(join(REVIEW_DIR, f));
+    if (f.endsWith(".md") && !sampledRules.has(f.replace(/\.md$/, ""))) {
+      rmSync(join(REVIEW_DIR, f));
+    }
   }
 
   for (const [ruleId, samples] of [...byRule.entries()].sort((a, b) =>

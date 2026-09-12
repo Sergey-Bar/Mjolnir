@@ -15,6 +15,11 @@ export default tseslint.config(
       "dist/",
       "coverage/",
       "node_modules/",
+      // Machine-local state (cache, bench fixtures, stats) — generated
+      // artifacts, never committed. The bench fixture tree carries
+      // generated *.spec.ts outside any tsconfig project, which would
+      // otherwise crash the typed parser.
+      ".mjolnir/**",
       // Local debug artifacts (gitignored — "never committed"); a dev's
       // throwaway probe scripts must never be able to redden `npm run lint`.
       "scratch/",
@@ -38,6 +43,14 @@ export default tseslint.config(
       // tests/fixtures: deliberately contain anti-patterns.
       "tests/corpus/positive-fixtures/**",
       "tests/corpus/negative-fixtures/**",
+      // Certification/QA evidence area (certification plan 1788804968910):
+      // raw captured output committed VERBATIM per the evidence protocol —
+      // its throwaway probe scripts and raw transcripts are DATA and must
+      // never be held to (or block) the source linter.
+      "QA/**",
+      // Machine-local state under .mjolnir/ (stats, bench fixture tree,
+      // machine-local timings) — generated scratch, matching .gitignore.
+      ".mjolnir/**",
       // Workspace build output and the deliberate out-of-project example
       // config (excluded from every tsconfig on purpose).
       "packages/*/dist/**",
@@ -46,22 +59,23 @@ export default tseslint.config(
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
-  // Bug-audit B4.25 (ratchet step 1 of 2): type-checked linting. The plan
-  // prescribes: enable as warnings + autofix sweep now, flip to errors in
-  // a follow-up once the sweep lands. (Step 2: change "warn" → "error"
-  // below and fix any residue.)
+  // Bug-audit B4.25 (ratchet step 2 of 2, lint-ratchet-sweep FW-LINT-02):
+  // type-checked rules run at "error". The warning-mode sweep landed and
+  // every finding was fixed (2026-09-04); nothing may downgrade these
+  // rules here — deliberate trust-boundary sites carry inline disables
+  // WITH a written reason instead. The map keeps the configs scoped to
+  // TS files (they must not reach eslint.config.js / .mjs, which are in
+  // no tsconfig project and would crash the typed parser).
   ...tseslint.configs.recommendedTypeChecked.map((c) => ({
     ...c,
-    files: ["**/*.{ts,tsx,mts,cts}"],
-    rules: Object.fromEntries(
-      Object.entries(c.rules ?? {}).map(([k, v]) => [
-        k,
-        typeof v === "string" ? (v === "error" ? "warn" : v) : v,
-      ]),
-    ),
+    // scripts/*.mts are one-shot measurement/adjudication tooling
+    // (WI-14, 2026-09-09): Node-runtime scripts outside every tsconfig
+    // project — the typed parser cannot resolve them. They run under
+    // the plain JS ruleset block below instead.
+    files: ["**/*.{ts,tsx,cts}"],
   })),
   {
-    files: ["**/*.{ts,tsx,mts,cts}"],
+    files: ["**/*.{ts,tsx,cts}"],
     languageOptions: {
       parserOptions: {
         // Explicit project list: the repo has two tsconfigs (src vs
@@ -90,29 +104,63 @@ export default tseslint.config(
     // trust-boundary sites are disabled inline WITH a reason, never here
     // (§21-24). A scanner CLI legitimately reads paths from argv/config
     // and runs git; that is the product, not an injection.
+    //
+    // FW-LINT-01 (lint-ratchet-sweep): two of these rules produce zero
+    // signal outside the trust boundary. `detect-object-injection` and
+    // `detect-non-literal-fs-filename` fire on every computed key and
+    // every non-literal path in src/ — but computed paths ARE the
+    // product (a scanner reads files it discovered at runtime), so these
+    // are turned off here and re-scoped at "warn" ONLY where untrusted
+    // input actually flows: src/plugins/** (JSON rule manifests supply
+    // compiled patterns and computed paths) and src/config/** (config
+    // files drive path resolution). See the block below.
     files: ["src/**/*.ts"],
     plugins: { security },
     rules: Object.fromEntries(
       Object.entries(security.configs.recommended.rules).map(([k]) => [
         k,
-        "warn",
+        k === "security/detect-object-injection" ||
+        k === "security/detect-non-literal-fs-filename"
+          ? "off" // zero-signal outside plugins/config — re-scoped below with rationale (FW-LINT-01)
+          : "warn",
       ]),
     ),
+  },
+  {
+    // FW-LINT-01: the only src/ surfaces where untrusted input actually
+    // flows into computed object keys or filesystem paths. JSON rule
+    // manifests (plugins) and config files (config/) supply compiled
+    // patterns and computed paths by design, so these two rules stay at
+    // "warn" here. Anything they still flag in this block gets an
+    // inline disable WITH a reason, not a config-level off — same
+    // convention as the security block above (§21-24).
+    files: ["src/plugins/**/*.ts", "src/config/**/*.ts"],
+    plugins: { security },
+    rules: {
+      "security/detect-object-injection": "warn",
+      "security/detect-non-literal-fs-filename": "warn",
+    },
   },
   {
     // Bug-audit B4.26: the regexp plugin catches catastrophic-backtracking
     // and misuse-prone regex patterns — the rule engine is regex-heavy,
     // so a ReDoS in one of these patterns is an availability bug in the
-    // product itself. Warnings for now (ratchet step 1, same as the
-    // type-checked config); ~50 auto-fixable findings were already fixed
-    // as part of this landing and the dedicated ReDoS audit
+    // product itself. Ratchet (lint-ratchet-sweep FW-RX-08): the
+    // backtracking rule is ERROR — every pattern in src/ and tests/ has
+    // been rewritten exchange-free (commit history: FW-RX-01..06), and a
+    // regression must fail the gate, not queue another sweep. The rest of
+    // the recommended set stays at warn; the dedicated ReDoS audit
     // (tests/redos-audit.spec.ts) stays authoritative for hot paths.
     files: ["src/**/*.ts", "tests/**/*.spec.ts"],
     plugins: { regexp },
     rules: Object.fromEntries(
       Object.entries(regexp.configs.recommended.rules).map(([k, v]) => [
         k,
-        v === "off" || k === "regexp/prefer-quantifier" ? "off" : "warn",
+        v === "off" || k === "regexp/prefer-quantifier"
+          ? "off"
+          : k === "regexp/no-super-linear-backtracking"
+            ? "error"
+            : "warn",
       ]),
     ),
   },
@@ -163,6 +211,23 @@ export default tseslint.config(
     },
     rules: {
       // The generators are data factories — unused helper args are fine.
+      "@typescript-eslint/no-unused-vars": "off",
+    },
+  },
+  {
+    // scripts/*.mts — one-shot measurement/adjudication tooling (WI-14
+    // verdict-harvest waves, 2026-09-09). Node-runtime scripts outside
+    // every tsconfig project: the typed parser cannot resolve them, so
+    // they run under the plain JS ruleset instead (typecheck owns the
+    // type guarantees for the sources they consume).
+    files: ["scripts/**/*.mts"],
+    languageOptions: {
+      globals: {
+        console: "readonly",
+        process: "readonly",
+      },
+    },
+    rules: {
       "@typescript-eslint/no-unused-vars": "off",
     },
   },

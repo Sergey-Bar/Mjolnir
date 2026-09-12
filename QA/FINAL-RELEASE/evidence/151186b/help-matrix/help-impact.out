@@ -1,0 +1,8 @@
+  impact — what a commit introduced vs resolved, since a prior commit
+
+  Usage:
+    mjolnir impact [path] [--since <ref>]
+
+  Examples:
+    $ mjolnir impact . --since HEAD~1
+

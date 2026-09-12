@@ -57,7 +57,13 @@ export function prioritize(findings: readonly Finding[]): PrioritizedFinding[] {
         return a.finding.file < b.finding.file ? -1 : 1;
       if (a.finding.line !== b.finding.line)
         return a.finding.line - b.finding.line;
-      return a.finding.ruleId < b.finding.ruleId ? -1 : 1;
+      if (a.finding.ruleId !== b.finding.ruleId)
+        return a.finding.ruleId < b.finding.ruleId ? -1 : 1;
+      // Audit M5: full tie → 0. The last chain link returned ±1 even
+      // for fully-identical keys, which under a non-stable sort
+      // dependency flipped equal elements; 0 keeps the sort total
+      // order honest (V8's sort is stable, so 0 preserves input order).
+      return 0;
     });
 }
 

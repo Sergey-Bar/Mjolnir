@@ -1,0 +1,93 @@
+EXIT:0
+{
+  "schemaVersion": 1,
+  "partial": false,
+  "score": null,
+  "reason": "no-tests-found",
+  "frameworks": [],
+  "frameworkDetectionUnknown": true,
+  "dimensions": [
+    {
+      "category": "QA-CI",
+      "score": 100,
+      "errors": 0,
+      "warnings": 0,
+      "infos": 1
+    }
+  ],
+  "findings": [
+    {
+      "severity": "info",
+      "confidence": "high",
+      "findingType": "deterministic-defect",
+      "qaImpact": "FALSE-GREEN",
+      "file": ".github/workflows/ci.yml",
+      "line": 5,
+      "column": 1,
+      "message": "Job `test` runs a verification gate under `continue-on-error: true`.",
+      "why": "This job can fail every day and CI will still show green. The checkmark on this workflow cannot be trusted.",
+      "fix": "Remove continue-on-error, or scope it to individual non-blocking steps only.",
+      "ruleId": "QA-CI-001",
+      "category": "QA-CI",
+      "evidenceLevel": "E0",
+      "measuredFpRate": 0.105,
+      "measuredFpN": 19,
+      "detectorRevision": 2,
+      "fixGroupId": "QA-CI-001"
+    }
+  ],
+  "testFileCount": 0,
+  "testDeclarationCount": 0,
+  "rawDeductions": 0,
+  "suppressionCount": 0,
+  "agenticProfile": {
+    "testFiles": 0,
+    "generatedMarkedFiles": 0,
+    "codegenLikeFiles": 0,
+    "shareMarkedGenerated": 0,
+    "findingsInGeneratedFiles": 0,
+    "findingsInUnmarkedFiles": 1,
+    "note": "Static provenance markers only (generated-file headers, Playwright codegen default titles). Absence of a marker does not prove human authorship; healed and MCP-edited files without markers are indistinguishable from hand-written ones. Provenance never changes scoring or evidence — authorship is metadata, not trust."
+  },
+  "analysisStatus": {
+    "discovery": "complete",
+    "rules": "complete",
+    "skippedFiles": 0,
+    "durationMs": 12,
+    "rulesCrashed": 0
+  },
+  "contract": {
+    "contractVersion": 1,
+    "summary": {
+      "digest": "sha256:983fe45353193972bd1927cab02a5e3a1e26dc86670e20ab8a0ea62b2e647884",
+      "findings": 1,
+      "score": null,
+      "errors": 0,
+      "warnings": 0,
+      "infos": 1,
+      "advisory": 1
+    },
+    "annotations": [
+      {
+        "path": ".github/workflows/ci.yml",
+        "start_line": 5,
+        "annotation_level": "notice",
+        "message": "QA-CI-001: Job `test` runs a verification gate under `continue-on-error: true`.",
+        "ruleId": "QA-CI-001",
+        "detectorRevision": 2,
+        "advisory": true
+      }
+    ],
+    "annotationsTruncated": false,
+    "completeness": {
+      "partial": false,
+      "discovery": "complete",
+      "rules": "complete",
+      "skippedFiles": 0,
+      "rulesCrashed": 0,
+      "truncationReasons": [],
+      "frameworkDetectionUnknown": true,
+      "durationMs": 12
+    }
+  }
+}

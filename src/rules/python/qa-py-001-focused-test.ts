@@ -24,6 +24,13 @@ export const pyFocusedTest = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "pytest.skip/xfail/parametrize marks are runner decorators and " +
+      "module-level calls; the detector matches those exact tokens on the " +
+      "code-only text — the semantics are runner skip state",
+  },
   introduced: "0.3.0",
   // Measured 2026-09-02 (corpus wave 5): FP ≤ 10% but n < 20 — measured-extended until the core DoD n ≥ 20 is met (plan §23).
   tier: "core",
@@ -40,7 +47,11 @@ export const pyFocusedTest = defineRule({
       // pytest.main([... "-k", ...]) — hardcoded subset selection.
       /pytest\.main\s*\(\s*\[[^\]]*['"]-k['"]/g,
       // Hardcoded node selection: pytest.main(["tests/test_x.py::test_y"]).
-      /pytest\.main\s*\(\s*\[[^\]]*['"][^'"]+::[^'"]+['"]/g,
+      // FW-RX-04: colon-exclusive segments — `seg(::seg)+` — so the two
+      // quantifiers can never exchange colon runs (class-level node ids
+      // like file.py::Class::test still match).
+      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
+      /pytest\.main\s*\(\s*\[[^\]]*['"][^'":]+(?:::[^'":]+)+['"]/g,
       // @pytest.mark.only — not built into pytest but common via plugins.
       /@pytest\.mark\.only\b/g,
     ];

@@ -24,6 +24,13 @@ export const envCoupling = defineRule({
   falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "absence-aggregate",
+    detail:
+      "environment-guard absence over the suite is an aggregate property; " +
+      "the detector aggregates the suite's guard shapes — the defect is " +
+      "what the suite lacks, not a node it has",
+  },
   detectionNotes: "regex heuristic",
   introduced: "0.2.0",
   tier: "quarantine",
@@ -35,9 +42,14 @@ export const envCoupling = defineRule({
   // assertion strings (`172.18.0.1:5173`), and `file.ts:10` line refs.
   // "Deliberate fixture endpoint" vs "machine coupling" is not
   // statically decidable from a host:port literal — the sub-pattern is
-  // DROPPED entirely. The OS-path, locale, and local-time-getter
-  // sub-patterns stay (no verdict evidence has ever contradicted them).
-  detectorRevision: 3,
+  // DROPPED entirely.
+  // detectorRevision 4 (P6 final attempt, plan 1789009691197 R3): the
+  // corpus verdicts for the OS-path sub-pattern are 20/20 FP for the
+  // same reason the host family died — /tmp is the OS-mandated socket
+  // location, and Windows paths are the SUBJECT of platform-detection
+  // tests. The sub-pattern is DROPPED; the locale and local-time-getter
+  // families stay (no verdict evidence has ever contradicted them).
+  detectorRevision: 4,
 
   run(ctx) {
     const text = ctx.text;
@@ -49,13 +61,6 @@ export const envCoupling = defineRule({
       why: string;
       fix: string;
     }> = [
-      {
-        // OS-specific absolute paths
-        re: /['"`](?:\/tmp\/|C:\\\\|D:\\\\)[^'"`]*['"`]/g,
-        kind: "OS path",
-        why: "Absolute OS paths make the test machine-dependent — it fails on any developer or CI runner with a different filesystem.",
-        fix: "Use os.tmpdir() / path.join with relative paths inside the test workspace.",
-      },
       {
         // Timezone/locale-sensitive formatting without explicit locale
         re: /\.toLocale(?:DateString|TimeString|String)\s*\(\s*\)/g,

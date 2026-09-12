@@ -6,8 +6,8 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | ------------------------------------- | ---------------------------- |
 | Severity                              | warning                      |
 | Confidence                            | medium                       |
-| Tier                                  | extended (PROVISIONAL)       |
-| Measured FP rate                      | not yet measured             |
+| Tier                                  | extended                     |
+| Measured FP rate                      | 0% (n=10)                    |
 | Evidence level                        | E1                           |
 | QA impact                             | Flaky-test risk (FLAKY-RISK) |
 | False-positive risk (author estimate) | medium                       |
@@ -43,7 +43,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo              | Occurrences |
 | ----------------- | ----------- |
-| positive-fixtures | 4           |
+| positive-fixtures | 6           |
 
 ---
 

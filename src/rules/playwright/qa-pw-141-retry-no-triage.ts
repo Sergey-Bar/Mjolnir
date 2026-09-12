@@ -28,6 +28,13 @@ export const pwRetryMaskingNoForensics = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "retry triage is the runner's retry loop interacting with the " +
+      "reporter config; the detector reads both config keys and the " +
+      "triage call shape — the semantics live in runner behavior",
+  },
   detectionNotes: "regex heuristic",
   introduced: "0.3.8",
 
@@ -37,7 +44,7 @@ export const pwRetryMaskingNoForensics = defineRule({
     const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     const base = ctx.path.split("/").pop() as string;
-    if (!/^playwright\.config\.(ts|js|mjs|cts)$/.test(base)) return findings;
+    if (!/^playwright\.config\.(?:ts|js|mjs|cts)$/.test(base)) return findings;
 
     const retriesRe =
       /retries\s*:\s*(?:process\.env\.[A-Za-z_]+\s*\?\s*(\d+)\s*:\s*\d+|(\d+))/g;

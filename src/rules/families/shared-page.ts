@@ -15,6 +15,14 @@ export const sharedPageFamily = definePatternFamily({
   why: "A shared Page/Browser leaks cookies, localStorage, and navigation state between tests — failures become order-dependent and impossible to reproduce in isolation.",
   falsePositiveRisk: "medium",
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "the shared-page family's variants (QA-JV-104/QA-CS-104/QA-PY-106): " +
+      "page/fixture reuse across tests is runner fixture-lifecycle " +
+      "semantics; the detector matches the consumption shapes against " +
+      "test boundaries",
+  },
   introduced: "0.4.0",
   useCodeText: true,
   variants: [
@@ -26,6 +34,7 @@ export const sharedPageFamily = definePatternFamily({
       frameworks: ["junit", "testng"],
       tier: "extended",
       patterns: [
+        // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
         /^\s*(?:(?:private|public|protected)\s*)?static\s+(?:final\s+)?(?:Page|Browser|BrowserContext|Playwright)\b/gm,
       ],
       message: "Static `$0` — browser state shared across tests.",
@@ -39,6 +48,7 @@ export const sharedPageFamily = definePatternFamily({
       frameworks: ["nunit", "xunit", "mstest", "playwright"],
       tier: "extended",
       patterns: [
+        // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
         /^\s*(?:(?:public|private|protected|internal)\s*)?static\s+(?:readonly\s+)?IPage\b/gm,
       ],
       message: "`static IPage` — browser state shared across tests.",

@@ -30,6 +30,10 @@ import { resolve as resolvePath, sep } from "node:path";
 
 import type { Finding, ScanResult } from "../types.js";
 import { computeCodeText } from "../engine/code-text.js";
+import { okIcon, sectionHeader, plainContext } from "../reporter/ui.js";
+import { sweepStaleTempFiles } from "../lib/fs-atomic.js";
+
+const ui = plainContext();
 
 export interface FixEdit {
   ruleId: string;
@@ -44,7 +48,7 @@ export interface FixEdit {
   apply: (text: string) => { text: string; changed: boolean; refused?: string };
 }
 
-export type FixStatus = "applied" | "failed" | "unchanged" | "planned";
+export type FixStatus = "applied" | "failed" | "planned";
 
 export interface FixResult {
   file: string;
@@ -140,6 +144,7 @@ function replaceInCode(
       refused: "code masking unavailable for this file — edit refused",
     };
   }
+  // eslint-disable-next-line security/detect-non-literal-regexp -- clone of a compile-time literal's .source for flag control — not scan input
   const global = new RegExp(re.source, re.flags);
   let out = "";
   let last = 0;
@@ -266,6 +271,7 @@ function removePagePause(
       refused: "code masking unavailable for this file — edit refused",
     };
   }
+  // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
   const PAUSE_ONLY = /^\s*(?:await\s+)?page\.pause\s*\(\s*\)\s*(?:;\s*)?$/;
   const PAUSE_CALL = /\bpage\.pause\s*\(\s*\)/;
   const lines = text.split("\n");
@@ -327,6 +333,10 @@ export function planAndApplyFixes(
   rootDir: string,
   options: { dryRun?: boolean } = {},
 ): FixResult[] {
+  // Audit (fix.ts): startup sweep of stale `.mjolnir-*.tmp` files left
+  // by a crashed writer — the temp dir must not accumulate cruft across
+  // runs. Advisory; a busy temp is left alone.
+  sweepStaleTempFiles(rootDir);
   const byFile = new Map<string, Finding[]>();
   for (const f of result.findings) {
     const list = byFile.get(f.file) ?? [];
@@ -365,7 +375,14 @@ export function planAndApplyFixes(
 
     let text: string;
     try {
-      text = readFileSync(abs, "utf8");
+      // Audit (fix.ts): the fix pass reads text exactly like the scan
+      // pipeline does — BOM stripped, CRLF unified to LF — so the
+      // finding-time line/anchor data lines up with what the edits
+      // apply to. Without this, a CRLF checkout anchored every edit at
+      // off-by-one lines vs the scan that produced the finding.
+      text = readFileSync(abs, "utf8")
+        .replace(/^\uFEFF/, "")
+        .replace(/\r\n?/g, "\n");
       // Bug-audit L6: the size guard used `text.length` (UTF-16 units,
       // not bytes — a BMP-only file is fine but astral chars skew it) and
       // skipped the file with NO FixResult, so `mjolnir fix` exited 0
@@ -479,7 +496,7 @@ export function planAndApplyFixes(
       // impossible.
       const tmp = `${abs}.mjolnir-${Date.now()}-${Math.random().toString(36).slice(2, 10)}.tmp`;
       try {
-        writeFileSync(tmp, text, { flag: "wx" });
+        writeFileSync(tmp, text, { flag: "wx", encoding: "utf8" });
         // Audit R-5: the temp file is created with default mode — restore
         // the original's (0600, executable bits) or the rename loses them.
         const st = statSync(abs);
@@ -538,9 +555,9 @@ function fixVerified(
   const masked = maskFor(fixedText, langForFile(edit.file));
   switch (edit.description) {
     case "Remove `.only` focus modifier":
-      return !/\b(test|it|describe|bench)\.only\s*\(/.test(masked);
+      return !/\b(?:test|it|describe|bench)\.only\s*\(/.test(masked);
     case "Rename fit/fdescribe to it/describe":
-      return !/(^|[^\w$.])(fit|fdescribe)\s*\(/m.test(masked);
+      return !/(?:^|[^\w$.])(?:fit|fdescribe)\s*\(/m.test(masked);
     default:
       break;
   }
@@ -556,7 +573,7 @@ function fixVerified(
 
 export function renderFixReport(results: FixResult[], dryRun: boolean): string {
   const lines: string[] = [];
-  lines.push(dryRun ? "▚▞ FIX PLAN (dry-run)" : "▚▞ FIX REPORT");
+  lines.push(sectionHeader(dryRun ? "FIX PLAN (dry-run)" : "FIX REPORT", ui));
   lines.push("");
   if (results.length === 0) {
     lines.push("No safe auto-fixes available for these findings.");
@@ -566,14 +583,11 @@ export function renderFixReport(results: FixResult[], dryRun: boolean): string {
     return lines.join("\n");
   }
   for (const r of results) {
+    // Audit (fix.ts): the dead "unchanged" status is gone — every
+    // FixResult is one of applied/planned/failed, so the renderer has no
+    // fallback arm for a status typo to hide behind.
     const icon =
-      r.status === "applied"
-        ? "✔"
-        : r.status === "planned"
-          ? "▸"
-          : r.status === "failed"
-            ? "✗"
-            : "·";
+      r.status === "applied" ? okIcon(ui) : r.status === "planned" ? "▸" : "✗";
     lines.push(`${icon} [${r.ruleId}] ${r.file}:${r.line} — ${r.description}`);
   }
   const applied = results.filter((r) => r.status === "applied").length;

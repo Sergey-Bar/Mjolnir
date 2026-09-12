@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | error                          |
 | Confidence                            | high                           |
 | Tier                                  | quarantine                     |
-| Measured FP rate                      | 79% (n=14)                     |
+| Measured FP rate                      | not yet measured               |
 | Evidence level                        | E2                             |
 | QA impact                             | False-green risk (FALSE-GREEN) |
 | False-positive risk (author estimate) | low                            |
@@ -45,7 +45,6 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | -------------------------------- | ----------- |
 | cypress-io-cypress-realworld-app | 10          |
 | cypress-io-kitchensink           | 6           |
-| cypress-realworld-app            | 10          |
 | grafana-grafana                  | 1           |
 | positive-fixtures                | 2           |
 | tanstack-query                   | 1           |

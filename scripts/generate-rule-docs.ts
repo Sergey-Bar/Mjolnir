@@ -19,6 +19,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { prettify } from "./lib/prettify.js";
+import { isMainModule } from "./lib/is-main-module.js";
 
 import { RULES } from "../src/rules/index.js";
 import {
@@ -74,4 +75,11 @@ async function main(): Promise<void> {
   console.log(`Wrote ${pages.size} rule page(s) + index to ${OUT_DIR}`);
 }
 
-main();
+// Write path runs only when this module IS the process entry point (the
+// npm script). Spec imports stay pure — importing this module must never
+// rewrite the generated docs as a side effect. Top-level await: a
+// rejection fails the npm script with a non-zero exit instead of
+// silently succeeding (FW-BUG-06, matches generate-capability-matrix.ts).
+if (isMainModule(import.meta.url)) {
+  await main();
+}

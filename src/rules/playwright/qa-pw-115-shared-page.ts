@@ -24,6 +24,13 @@ export const pwSharedPage = defineRule({
   falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "page reuse across tests is runner fixture-lifecycle semantics; the " +
+      "detector matches the page-consumption shapes against the test " +
+      "boundaries — the lifecycle is runner behavior",
+  },
   introduced: "0.3.0",
 
   // Measured 2026-09-02 (corpus wave 5): tier set from the measured envelope (plan §11.2).
@@ -31,12 +38,13 @@ export const pwSharedPage = defineRule({
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
-    if (!/\.(spec|test)\.[tj]sx?$/.test(ctx.path)) return findings;
+    if (!/\.(?:spec|test)\.[tj]sx?$/.test(ctx.path)) return findings;
 
     // Module-level declaration of page/browser/context — Playwright's
     // fixture-injected `page` is a test parameter; a module-level one is
     // shared mutable state across parallel workers.
     const re =
+      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
       /^(?:export\s+)?(?:let|var|const)\s+(?:page|browser|context|browserContext)\b/gm;
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {

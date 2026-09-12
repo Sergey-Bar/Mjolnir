@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | warning                                                                                                          |
 | Confidence                            | medium                                                                                                           |
 | Tier                                  | quarantine                                                                                                       |
-| Measured FP rate                      | not yet measured                                                                                                 |
+| Measured FP rate                      | 0% (n=11)                                                                                                        |
 | Evidence level                        | E2                                                                                                               |
 | QA impact                             | Flaky-test risk (FLAKY-RISK)                                                                                     |
 | False-positive risk (author estimate) | medium                                                                                                           |
@@ -35,11 +35,16 @@ Replace the sleep with an explicit wait: Java `new WebDriverWait(driver, Duratio
 
 ## Confirmed NOT to fire on the corresponding clean pattern
 
-Verified against `tests/fixtures/QA-SE-003/must-not-fire/test_inventory.py` — a legitimate, similar-looking pattern this rule correctly leaves alone.
+Verified against `tests/fixtures/QA-SE-003/must-not-fire/test_explicit_waits.py` — a legitimate, similar-looking pattern this rule correctly leaves alone.
 
 ## Corpus-measured false-positive risk
 
-UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked by `npm run corpus:regression` (see `docs/FP-AUDIT.md`). That is not the same as "never fires incorrectly" — it just means no occurrence, correct or not, has been observed there yet.
+Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
+
+| Repo              | Occurrences |
+| ----------------- | ----------- |
+| positive-fixtures | 7           |
+| reflex-dev-reflex | 3           |
 
 ---
 

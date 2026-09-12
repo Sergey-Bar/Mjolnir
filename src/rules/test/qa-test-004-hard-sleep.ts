@@ -21,6 +21,15 @@ export const hardSleep = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "hard-sleep is behavioral wait-shape matching (the wait call plus " +
+      "its interaction context), not a single node; the detector's " +
+      "pattern+wait-shape oracle is the recorded design (§12.1), and the " +
+      "hard-sleep family's structural path carries the depth where " +
+      "available",
+  },
   detectionNotes: "regex pattern + behavioral wait-shape matching",
   introduced: "0.1.0",
   tier: "extended",
@@ -47,6 +56,7 @@ export const hardSleep = defineRule({
       // not a wall-clock wait, so it is also excluded.
       /\bawait\s+(?:delay|sleep|wait|pause|timeout)\s*\(\s*[1-9]\d*\s*\)/g,
       // setTimeout wrapped in a Promise (with or without await / type args).
+      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
       /\b(?:await\s+)?new\s+Promise\s*(?:<[^>]*>\s*)?\(\s*(?:\(\s*)?\w+\s*(?:\)\s*)?=>\s*setTimeout\s*\(\s*\w+\s*,\s*\d+\s*\)\s*\)/g,
       // setTimeout-as-promise stored in a helper then awaited.
       /\bawait\s+\w*[Dd]elay\w*\s*\(\s*\d+\s*\)/g,

@@ -23,6 +23,13 @@ export const pwWaitForLoadEvent = defineRule({
   falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "exact-key-match",
+    detail:
+      "waitForLoadState('load') is an exact Playwright token plus a " +
+      "closed argument enum; the detector matches the call plus its " +
+      "argument — the AST re-derives the same call shape",
+  },
   introduced: "0.3.0",
   // Measured FP 100% (n=20, docs/FP-AUDIT.md 2026-08-31): real-world uses
   // pre-register the load promise around an edit as reload synchronization,
@@ -49,6 +56,7 @@ export const pwWaitForLoadEvent = defineRule({
     // Verification markers: any assertion-style consumption AFTER the wait
     // means the wait is synchronization, not a substitute for asserting.
     const verifyRe =
+      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
       /\b(?:await\s+)?expect\s*\(|\bassert\b|\bexpect\.poll\b|\btoHave[A-Z]|\btoBe[A-Z]/;
     // Promise-consumption marker: `expect(<wait chain>).rejects` — the
     // awaited wait's REJECTION is the assertion (no-reload check).

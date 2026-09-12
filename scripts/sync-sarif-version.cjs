@@ -2,7 +2,7 @@
  * Syncs every hardcoded version literal in src/ to package.json's
  * version — the single source of truth. Used by
  * .github/workflows/release.yml so a release can never ship a stale one.
- * (tests/version-consistency.spec.ts keeps the literals honest locally.)
+ * (tests/contract/version-consistency.spec.ts keeps the literals honest locally.)
  *
  * Two surfaces carry a literal, both deliberately: SARIF's
  * `driver.version` (what GitHub Code Scanning displays) and cli.ts's
@@ -24,10 +24,13 @@ const SURFACES = [
     label: "SARIF driver.version",
   },
   {
-    path: "/../src/cli.ts",
-    find: /export const CLI_VERSION = "[^"]+";/,
-    replace: `export const CLI_VERSION = "${v}";`,
-    label: "cli.ts CLI_VERSION",
+    // R4c: the literal moved to the leaf module (run-identity needs the
+    // engine version inside scan-pipeline without a cli.ts import cycle);
+    // cli.ts re-exports it as CLI_VERSION.
+    path: "/../src/engine/version.ts",
+    find: /export const ENGINE_VERSION = "[^"]+";/,
+    replace: `export const ENGINE_VERSION = "${v}";`,
+    label: "engine/version.ts ENGINE_VERSION",
   },
 ];
 

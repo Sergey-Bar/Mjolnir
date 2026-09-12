@@ -10,13 +10,14 @@
  * must-not-fire fixtures.
  *
  * Phase 2 quarantine-cluster triage: the JV/CS variants (QA-JV-108,
- * QA-CS-108) are RETIRED (docs/RULE-LIFECYCLE.md) — measured 100% FP
- * (n=20 each, docs/FP-AUDIT.md), zero TPs, FP causes scattered across
- * HAR replay, route mocks, and proxy-failure tests with no mechanically
- * discriminable shape. They downgrade to info/falsePositiveRisk high;
- * code + fixtures stay, the frozen IDs are never reused. The Python
- * variant (QA-PY-108) is unmeasured (n=4) and keeps the family's
- * warning severity until it gets its own triage evidence.
+ * QA-CS-108) measured 100% FP (n=20 each, docs/FP-AUDIT.md), zero TPs,
+ * FP causes scattered across HAR replay, route mocks, and proxy-failure
+ * tests with no mechanically discriminable shape. They were RETIRED
+ * (docs/RULE-LIFECYCLE.md) and — per the owner ruling of 2026-09-08
+ * (E-1: RETIRED_RULE_IDS is the canonical retirement record; retired
+ * rules never inflate the active census) — are no longer registered.
+ * The Python variant (QA-PY-108) is unmeasured (n=4) and keeps the
+ * family's warning severity until it gets its own triage evidence.
  */
 
 import { definePatternFamily } from "../shared/family.js";
@@ -31,43 +32,17 @@ export const hardcodedUrlFamily = definePatternFamily({
   why: "Absolute URLs break when environments change and can hit production by accident from a CI runner.",
   falsePositiveRisk: "low",
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "string-content-defect",
+    detail:
+      "the hardcoded-url family's variants " +
+      "(QA-JV-108/QA-CS-108/QA-PY-108): hardcoded URLs are string " +
+      "literals; the detector matches the http(s):// string shapes — the " +
+      "URL lives in the string, not the syntax tree",
+  },
   introduced: "0.4.0",
   useCodeText: false,
   variants: [
-    {
-      id: "QA-JV-108",
-      appliesTo: "java",
-      ext: ".java",
-      languages: ["java"],
-      frameworks: ["junit", "testng"],
-      tier: "quarantine",
-      // RETIRED (docs/RULE-LIFECYCLE.md — Phase 2 quarantine-cluster
-      // triage): measured 100% FP (n=20) with zero TPs; see the header.
-      severity: "info",
-      falsePositiveRisk: "high",
-      patterns: [
-        /\.navigate\s*\(\s*"https?:\/\/(?!localhost|127\.0\.0\.1)[^"]+"/g,
-      ],
-      message: "Hardcoded URL: `$0`.",
-      fix: "Use a configured baseURL from the test runner, or an environment variable.",
-    },
-    {
-      id: "QA-CS-108",
-      appliesTo: "csharp",
-      ext: ".cs",
-      languages: ["csharp"],
-      frameworks: ["nunit", "xunit", "mstest", "playwright"],
-      tier: "quarantine",
-      // RETIRED (docs/RULE-LIFECYCLE.md — Phase 2 quarantine-cluster
-      // triage): measured 100% FP (n=20) with zero TPs; see the header.
-      severity: "info",
-      falsePositiveRisk: "high",
-      patterns: [
-        /\.(?:GotoAsync|GetAsync|PostAsync)\s*\(\s*"https?:\/\/(?!localhost|127\.0\.0\.1)[^"]+"/g,
-      ],
-      message: "Hardcoded URL: `$0`.",
-      fix: "Use a configured BaseURL from the test context, or an environment variable.",
-    },
     {
       id: "QA-PY-108",
       appliesTo: "python",

@@ -37,7 +37,7 @@ const CS_TEST_RE = /(?:^|[\\/])\w+(?:Tests?|IT)\.cs$/;
 /** Package name → framework tag (.csproj PackageReference). */
 const CS_PACKAGE_TAGS: Array<{ re: RegExp; tag: string }> = [
   { re: /NUnit/i, tag: "nunit" },
-  { re: /xunit|Xunit/i, tag: "xunit" },
+  { re: /xunit/i, tag: "xunit" },
   { re: /MSTest|Microsoft\.NET\.Test\.Sdk/i, tag: "mstest" },
   { re: /Microsoft\.Playwright/i, tag: "playwright" },
   { re: /Selenium\.WebDriver/i, tag: "selenium" },
@@ -67,7 +67,8 @@ export const csharpAdapter: LanguageAdapter = {
           for (const m of text.matchAll(
             /<PackageReference\s+Include="([^"]+)"/g,
           )) {
-            const pkg = m[1] ?? "";
+            // The capture group is mandatory — always defined on a match.
+            const pkg = m[1] as string;
             for (const { re, tag } of CS_PACKAGE_TAGS) {
               if (re.test(pkg)) frameworks.add(tag);
             }
@@ -96,6 +97,8 @@ export const csharpAdapter: LanguageAdapter = {
       skipDirs: ["bin", "obj"],
       isTestFile: (name) => CS_TEST_RE.test(name),
       onTestFile: (f) => ctx.testFiles.push(f),
+      onIgnored: ctx.onIgnored,
+      onUnrecognized: ctx.onUnrecognized,
       isFull: () => ctx.testFiles.length >= ctx.maxFiles,
       fixtureDirMemo: new Map(),
     });
@@ -163,14 +166,17 @@ function csharpFileTags(file: ParsedFile): string[] {
   const root = (
     ast as {
       rootNode: {
-        descendantsOfType(t: string): Array<{ text?: string } | null>;
+        // Runtime truth: descendantsOfType yields Nodes (never null at
+        // runtime; the nullable typing is a defensive artifact).
+        descendantsOfType(t: string): Array<{ text: string } | null>;
       };
     }
   ).rootNode;
   const tags = new Set<string>();
   for (const using of root.descendantsOfType("using_directive")) {
-    if (!using) continue;
-    const t = using.text ?? "";
+    // A real using_directive always carries text (runtime truth); the
+    // nullable entry shape is a cast artifact, not a branch.
+    const t = (using as { text: string }).text;
     if (/NUnit/i.test(t)) tags.add("nunit");
     if (/Xunit/i.test(t)) tags.add("xunit");
     if (/MSTest|VisualStudio\.TestTools/i.test(t)) tags.add("mstest");

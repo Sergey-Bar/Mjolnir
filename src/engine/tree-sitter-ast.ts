@@ -58,8 +58,20 @@ import { fileURLToPath } from "node:url";
 import { Parser, Language, type Tree } from "web-tree-sitter";
 
 let parserInitPromise: Promise<void> | null = null;
-let javaParserPromise: Promise<Parser> | null = null;
-let csharpParserPromise: Promise<Parser> | null = null;
+
+/**
+ * Audit W3: counted degradation when a memoized parser creation fails
+ * twice. A rejected memoized promise used to stay cached forever, so the
+ * first transient WASM-load failure permanently disabled the AST path
+ * while every scan still looked "complete". On rejection the promise is
+ * nulled (next call retries); on a SECOND failure the retry is counted
+ * here so operators can see the degradation instead of guessing.
+ */
+let parserRetryDegradations = 0;
+
+export function parserRetryDegradationCount(): number {
+  return parserRetryDegradations;
+}
 
 /**
  * §10.3 concurrency cap. The current pipeline parses files sequentially
@@ -73,7 +85,11 @@ let activeParses = 0;
 const parseWaiters: Array<() => void> = [];
 
 async function withParseSlot<T>(fn: () => Promise<T>): Promise<T> {
-  if (activeParses >= MAX_CONCURRENT_PARSES) {
+  // Audit W2: re-check loop. The single `if` let two callers that both
+  // observed an open slot proceed together (activeParses could exceed
+  // the cap); a while-loop re-evaluates after EVERY wake-up, so the cap
+  // holds under concurrent fan-out.
+  while (activeParses >= MAX_CONCURRENT_PARSES) {
     await new Promise<void>((resolve) => parseWaiters.push(resolve));
   }
   activeParses++;
@@ -117,28 +133,81 @@ async function ensureParserInitialized(): Promise<void> {
   await parserInitPromise;
 }
 
+/**
+ * Audit W3: memoize the parser CREATION promise, not its failure. When
+ * creation rejects, the memoized entry is nulled so the NEXT call
+ * retries from scratch (a transient WASM-load hiccup used to disable
+ * the AST path for the rest of the process); once a failure has
+ * happened, every further failure increments the counted degradation
+ * (parserRetryDegradationCount) so persistent breakage is visible
+ * instead of silently absorbed by the regex fallback.
+ */
+function memoizeParser(
+  slot: { promise: Promise<Parser> | null; failedOnce: boolean },
+  create: () => Promise<Parser>,
+): Promise<Parser> {
+  if (slot.promise !== null) return slot.promise;
+  const attempt = create();
+  slot.promise = attempt;
+  attempt.then(
+    () => {
+      // Recovered — a later failure is a fresh transient, not a repeat.
+      slot.failedOnce = false;
+    },
+    () => {
+      // Attempts serialize through the memoized slot (a retry is created
+      // only after this handler has cleared the slot), so this callback
+      // always observes its own attempt as the live one. The first
+      // failure arms the counter; every further failure increments it.
+      slot.promise = null;
+      if (slot.failedOnce) parserRetryDegradations++;
+      slot.failedOnce = true;
+    },
+  );
+  return slot.promise;
+}
+
+interface ParserSlot {
+  promise: Promise<Parser> | null;
+  failedOnce: boolean;
+}
+
+const javaParserSlot: ParserSlot = { promise: null, failedOnce: false };
+const csharpParserSlot: ParserSlot = { promise: null, failedOnce: false };
+const pythonParserSlot: ParserSlot = { promise: null, failedOnce: false };
+
 async function getJavaParser(): Promise<Parser> {
   await ensureParserInitialized();
-  javaParserPromise ??= (async () => {
+  return memoizeParser(javaParserSlot, async () => {
     const language = await Language.load(grammarPath("tree-sitter-java.wasm"));
     const parser = new Parser();
     parser.setLanguage(language);
     return parser;
-  })();
-  return javaParserPromise;
+  });
 }
 
 async function getCSharpParser(): Promise<Parser> {
   await ensureParserInitialized();
-  csharpParserPromise ??= (async () => {
+  return memoizeParser(csharpParserSlot, async () => {
     const language = await Language.load(
       grammarPath("tree-sitter-c_sharp.wasm"),
     );
     const parser = new Parser();
     parser.setLanguage(language);
     return parser;
-  })();
-  return csharpParserPromise;
+  });
+}
+
+async function getPythonParser(): Promise<Parser> {
+  await ensureParserInitialized();
+  return memoizeParser(pythonParserSlot, async () => {
+    const language = await Language.load(
+      grammarPath("tree-sitter-python.wasm"),
+    );
+    const parser = new Parser();
+    parser.setLanguage(language);
+    return parser;
+  });
 }
 
 /**
@@ -174,6 +243,23 @@ export async function parseCSharpAst(text: string): Promise<Tree | undefined> {
 }
 
 /**
+ * Parses Python source into a tree-sitter Tree (product-gap master plan
+ * P6: the AST substrate for the QA-PY-007 rework — the python adapter was
+ * pure-regex until this wiring). Same fallback contract as parseJavaAst:
+ * returns undefined on any failure, never throws.
+ */
+export async function parsePythonAst(text: string): Promise<Tree | undefined> {
+  try {
+    return await withParseSlot(async () => {
+      const parser = await getPythonParser();
+      return parser.parse(text) ?? undefined;
+    });
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * Releases a parsed tree's WASM memory (`tree.delete()`, §10.3). Safe to
  * call on anything — non-trees, already-deleted trees, null — so the
  * pipeline's finally-path can never turn a cleanup into a crash.
@@ -196,10 +282,11 @@ export function disposeTree(tree: unknown): void {
  * parse after this re-creates the parser from scratch.
  */
 export async function releaseTreeSitterResources(): Promise<void> {
-  const parsers = [javaParserPromise, csharpParserPromise];
-  javaParserPromise = null;
-  csharpParserPromise = null;
-  for (const p of parsers) {
+  const slots = [javaParserSlot, csharpParserSlot, pythonParserSlot];
+  for (const slot of slots) {
+    const p = slot.promise;
+    slot.promise = null;
+    slot.failedOnce = false;
     if (!p) continue;
     try {
       const parser = await p;
@@ -217,6 +304,8 @@ export async function releaseTreeSitterResources(): Promise<void> {
  */
 export function _resetForTests(): void {
   parserInitPromise = null;
-  javaParserPromise = null;
-  csharpParserPromise = null;
+  for (const slot of [javaParserSlot, csharpParserSlot, pythonParserSlot]) {
+    slot.promise = null;
+    slot.failedOnce = false;
+  }
 }

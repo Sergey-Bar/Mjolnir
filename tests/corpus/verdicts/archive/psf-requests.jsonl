@@ -1,0 +1,2 @@
+{"ruleId":"QA-PY-008","file":"tests/test_requests.py","line":2208,"verdict":"FP","note":"Session.close() clearing proxy managers is verified via Mock managers - clear() being called IS the behavior under test"}
+{"ruleId":"QA-PY-008","file":"tests/test_utils.py","line":787,"verdict":"FP","note":"patched proxy_bypass records the hostname the real bypass logic computes - the recorded call is the observable contract (docstring states it)"}

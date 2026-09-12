@@ -23,6 +23,13 @@ export const csSkippedTest = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "exact-key-match",
+    detail:
+      "[Ignore]/[Fact(Skip=…)] are exact xUnit/NUnit/MSTest attribute " +
+      "tokens; the detector matches the attribute identifiers — closed " +
+      "token sets where lexical precision equals structural",
+  },
   introduced: "0.3.8",
 
   run(ctx) {
@@ -31,6 +38,7 @@ export const csSkippedTest = defineRule({
     if (!ctx.path.endsWith(".cs")) return findings;
 
     const patterns = [
+      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
       { re: /\[Ignore(?:\([^)]*\))?\]/g, label: "[Ignore]" },
       { re: /\[Skip\b[^\]]*\]/g, label: "[Skip]" },
       { re: /\[Fact\s*\(\s*Skip\s*=/g, label: "Fact(Skip=...)" },

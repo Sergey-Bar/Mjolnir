@@ -7,15 +7,11 @@
     "QA-JV-101": 316,
     "QA-JV-102": 28,
     "QA-JV-103": 249,
-    "QA-JV-110": 72,
     "QA-SE-002": 4,
-    "QA-PW-112": 22,
     "QA-TEST-003": 1,
     "QA-TEST-004": 2,
-    "QA-TQUAL-001": 3,
-    "QA-PY-007": 2,
-    "QA-JV-108": 1
+    "QA-PY-007": 2
   },
-  "totalFindings": 832,
+  "totalFindings": 734,
   "partial": false
 }

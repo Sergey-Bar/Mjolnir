@@ -6,6 +6,18 @@
 
 import { defineRule } from "../rule.js";
 import { VERIFICATION_GATE_RE } from "./verification-gate.js";
+import {
+  isAzurePipelineDoc,
+  jobRunsVerificationGate,
+  locateAzureJobKey,
+  locateAzureStepKey,
+  stepIsVerificationGate as stepIsAzureVerificationGate,
+} from "./azure-gates.js";
+import type {
+  AzureJob,
+  AzurePipelineDoc,
+  AzureStep,
+} from "../../discovery/azure-pipeline-parser.js";
 
 interface WorkflowDoc {
   jobs?: Record<string, JobNode>;
@@ -17,8 +29,10 @@ interface JobNode {
 }
 interface StepNode {
   name?: string;
+  id?: string;
   run?: string;
   uses?: string;
+  if?: string;
   "continue-on-error"?: boolean | string;
 }
 
@@ -38,6 +52,57 @@ function stepIsVerificationGate(step: StepNode): boolean {
   return false;
 }
 
+/**
+ * detectorRevision 2 (M2, 2026-09-04): legitimate continue-on-error shapes
+ * the rev-1 detector flagged. Each class was proven by adjudication
+ * (docs/FP-AUDIT.md notes, 2026-09-02):
+ * 1. Re-run idiom (appsmith ci-test-playwright.yml): the gate runs under
+ *    continue-on-error ONLY to convert attempt 1 into a non-failing
+ *    outcome so a follow-up step can re-run the SAME gate; the follow-up
+ *    runs unconditionally and its failure fails the job — the gate still
+ *    blocks.
+ * 2. Non-gate shapes that matched the rev-1 run-text regex: report
+ *    aggregation (`test --merge-reports`), test-ID collection, shard
+ *    rebalancing helpers — they execute no verification.
+ * 3. Steps whose `if:`/name explicitly mark them advisory/non-blocking
+ *    inside jobs that run the real gates (vault custom-linter,
+ *    github-docs sync-sdk-docs).
+ */
+const RERUN_OUTCOME_RE =
+  /steps\.[\w-]+\.outcome\s*==\s*['"]?failure['"]?|steps\.[\w-]+\.conclusion\s*==\s*['"]?failure['"]?/;
+
+function jobReRunsTheMaskedGate(
+  steps: StepNode[],
+  maskedIndex: number,
+): boolean {
+  return steps.some((s, i) => {
+    if (i === maskedIndex) return false;
+    const cond = typeof s?.if === "string" ? s.if : "";
+    if (!RERUN_OUTCOME_RE.test(cond)) return false;
+    // The follow-up must itself be a gate (same matcher, sans the masked
+    // step) or re-run the same command text.
+    return stepIsVerificationGate(s);
+  });
+}
+
+/** Explicit advisory/non-verification shapes in run text. */
+const NON_GATE_RUN_RE =
+  /--merge-reports\b|\bmerge-reports\b|\bcollect[- ]only\b|list[- ]tests\b|\brebalance\b/i;
+
+/**
+ * Steps whose own name declares the non-blocking intent (adjudicated FP:
+ * vault code-checker.yml "Check custom linters (non-blocking)" — the
+ * workflow's own vocabulary marks the advisory contract, so the green
+ * check hides nothing the author claimed would gate).
+ */
+const NON_BLOCKING_NAME_RE = /\(\s*non-?blocking\s*\)|\[.*non-?blocking.*\]/i;
+
+function stepIsGateExcludingNonVerification(step: StepNode): boolean {
+  if (step.name && NON_BLOCKING_NAME_RE.test(step.name)) return false;
+  if (step.run && NON_GATE_RUN_RE.test(step.run)) return false;
+  return stepIsVerificationGate(step);
+}
+
 export const continueOnError = defineRule({
   id: "QA-CI-001",
   category: "QA-CI",
@@ -49,23 +114,36 @@ export const continueOnError = defineRule({
   appliesTo: "ci-workflows",
   // Trust Metadata
   languages: ["yaml"],
-  frameworks: ["github-actions"],
+  // P3b: same mechanism on Azure DevOps (`continueOnError: true` on a
+  // verification step, or on a job whose steps include a gate).
+  frameworks: ["github-actions", "azure-pipelines"],
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "FRAMEWORK",
-  detectionNotes: "parsed YAML + test-command gate",
+  detectionNotes:
+    "parsed YAML + test-command gate (GitHub Actions + Azure DevOps)",
   introduced: "0.1.0",
 
-  // Measured 2026-09-02 (corpus wave 5): tier set from the measured envelope (plan §11.2).
+  // Measured (corpus wave 5): tier set from the measured envelope (plan §11.2).
+  // detectorRevision 2 (M2, 2026-09-04): re-run idiom + non-gate shapes
+  // excluded after adjudication. Rev-1 measurement invalidated per §07.
+  // detectorRevision 3 (P3b, 2026-09-10): Azure DevOps arm added
+  // (step/job-level continueOnError on verification gates) — additive
+  // platform detection; the GitHub detection paths are unchanged.
   tier: "quarantine",
+  detectorRevision: 3,
   run(ctx) {
     const findings: Omit<
       import("../../types.js").Finding,
       "ruleId" | "category"
     >[] = [];
 
-    const doc = ctx.ast as WorkflowDoc | undefined;
+    const doc = ctx.ast as WorkflowDoc | AzurePipelineDoc | undefined;
     if (!doc || typeof doc !== "object") return findings;
+    if (isAzurePipelineDoc(doc)) {
+      azureArm(ctx, doc, findings);
+      return findings;
+    }
 
     const jobs = doc.jobs ?? {};
     for (const [jobName, job] of Object.entries(jobs)) {
@@ -74,7 +152,7 @@ export const continueOnError = defineRule({
       // Job-level continue-on-error masks EVERY step in the job, so it only
       // constitutes a false-green if at least one of those steps is a gate.
       if (job && job["continue-on-error"] === true) {
-        if (steps.some(stepIsVerificationGate)) {
+        if (steps.some(stepIsGateExcludingNonVerification)) {
           findings.push({
             severity: "error",
             confidence: "high",
@@ -83,6 +161,7 @@ export const continueOnError = defineRule({
             file: ctx.path,
             line: findLine(
               ctx.text,
+              // eslint-disable-next-line security/detect-non-literal-regexp -- escapeRe-quoted workflow value — no regex metacharacters survive
               new RegExp(`^\\s{2,6}${escapeRe(jobName)}:`, "m"),
             ),
             column: 1,
@@ -99,7 +178,11 @@ export const continueOnError = defineRule({
         // best-effort engineering (artifact upload, badge generation,
         // advisory reports) — their failure loses information, it does not
         // hide a failed check.
-        if (!stepIsVerificationGate(step)) continue;
+        if (!stepIsGateExcludingNonVerification(step)) continue;
+        // Re-run idiom: the masked step is attempt 1 of a deliberate
+        // two-attempt pattern whose follow-up re-runs the gate and fails
+        // the job on failure — the gate still blocks (adjudicated FP).
+        if (jobReRunsTheMaskedGate(steps, i)) continue;
         findings.push({
           severity: "error",
           confidence: "high",
@@ -132,25 +215,52 @@ function describeStep(step: StepNode, index: number): string {
  * name/run/uses text and take the next `continue-on-error:` at or after it.
  * The previous implementation matched the first occurrence in the whole file,
  * which reported every step-level finding on the same line.
+ *
+ * Audit S5: the raw-literal match after the anchor is now null-checked —
+ * a `continue-on-error: true` whose textual form was already consumed by
+ * an EARLIER step's search window (or reformatted across lines) made
+ * `re.exec()` return null and the non-null assertion threw a TypeError,
+ * crashing the rule into crash-isolation: the finding was silently
+ * DROPPED. The fix: widen the backward window to the enclosing list item
+ * (the step block's `- ` marker), and when no raw literal follows the
+ * anchor, fall back to the anchor's own line — an approximate line on a
+ * reported finding beats a dropped finding.
  */
 function locateStepContinueOnError(text: string, step: StepNode): number {
   // Called only for gate steps (run or uses — see stepIsVerificationGate),
-  // so the anchor is always defined.
+  // so the anchor is always defined and never empty.
   const anchor = (step.name ?? step.uses ?? step.run?.split("\n")[0]) as string;
+  const anchorAt = text.indexOf(anchor.trim());
+  // Audit S5: the search window starts at THIS step's enclosing list
+  // item — the LAST `- ` marker (any indentation) before the anchor —
+  // so a preceding step's `continue-on-error:` can never be matched.
+  // A step's key may also be listed BEFORE its run/uses line (mapping
+  // keys are unordered in YAML), which the window now covers. An anchor
+  // that only occurs BEFORE any list marker (early comment) yields no
+  // marker and falls back to the default window start.
   let searchFrom = 0;
-  const at = text.indexOf(anchor.trim());
-  if (at !== -1) {
-    // Step list markers are always indented in workflow YAML, so a raw
-    // "\n- " boundary never exists; a bounded backwards window from the
-    // anchor is the practical step-block start.
-    searchFrom = Math.max(0, at - 200);
+  if (anchorAt !== -1) {
+    const windowStart = Math.max(0, anchorAt - 200);
+    const itemRe = /\n[ \t]*- /g;
+    const before = text.slice(0, anchorAt);
+    let blockStart = -1;
+    let mm: RegExpExecArray | null;
+    while ((mm = itemRe.exec(before)) !== null) {
+      blockStart = mm.index;
+    }
+    searchFrom = blockStart > windowStart ? blockStart : windowStart;
   }
   const re = /continue-on-error:\s*true/g;
   re.lastIndex = searchFrom;
-  // A parsed `true` (YAML 1.2 core schema only accepts lowercase `true`)
-  // always carries a raw `continue-on-error: true` match.
-  const m = re.exec(text) as RegExpExecArray;
-  return lineOf(text, m.index);
+  const m = re.exec(text);
+  if (m) return lineOf(text, m.index);
+  // Audit S5 fallback: no raw literal after the anchor — report on the
+  // anchor's own line instead of crashing and dropping the finding. An
+  // absent anchor (anchorAt === -1) means the raw scan above already
+  // covered the whole text from index 0, so a job-level re-scan here
+  // would be redundant — line 1 is the honest floor.
+  if (anchorAt !== -1) return lineOf(text, anchorAt);
+  return 1;
 }
 
 function findLine(text: string, re: RegExp): number {
@@ -167,4 +277,88 @@ function lineOf(text: string, index: number): number {
 
 function escapeRe(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+type FindingPart = Omit<
+  import("../../types.js").Finding,
+  "ruleId" | "category"
+>;
+
+/**
+ * Azure DevOps arm (detectorRevision 3, P3b): the SAME mechanism as the
+ * GitHub path — a verification gate running under `continueOnError: true`,
+ * at step level or job level. Gate-ness is decided by the shared
+ * VERIFICATION_GATE_RE over the step's inline script text plus its task
+ * `inputs:` string values (azure-gates.ts). Azure has no `steps.<id>.outcome`
+ * expression surface, so the GitHub re-run-idiom guard has no analog here:
+ * a step's outcome cannot be re-checked after a tolerated failure.
+ */
+function azureArm(
+  ctx: { path: string; text: string },
+  doc: AzurePipelineDoc,
+  findings: FindingPart[],
+): void {
+  const emitJob = (job: AzureJob): void => {
+    const steps = job.steps ?? [];
+    if (job.continueOnError === true && jobRunsVerificationGate(job)) {
+      findings.push({
+        severity: "error",
+        confidence: "high",
+        findingType: "deterministic-defect",
+        qaImpact: "FALSE-GREEN",
+        file: ctx.path,
+        line: locateAzureJobKey(ctx.text, job, "continueOnError"),
+        column: 1,
+        message: `Job \`${job.name ?? "?"}\` runs a verification gate under \`continueOnError: true\`.`,
+        why: "This job can fail every day and the pipeline will still show green. The checkmark on this pipeline cannot be trusted.",
+        fix: "Remove continueOnError, or scope it to individual non-blocking steps only.",
+      });
+    }
+    for (const step of steps) {
+      emitStep(job, step);
+    }
+  };
+
+  const emitStep = (job: AzureJob, step: AzureStep): void => {
+    if (!step || step.continueOnError !== true) return;
+    // A disabled gate cannot be masked by continueOnError — it never runs
+    // at all, which is QA-CI-013's never-runs finding, not this rule's.
+    if (step.enabled === false) return;
+    // Reporting/artifact tasks under continueOnError are ordinary
+    // best-effort engineering — their failure loses information, it does
+    // not hide a failed check. (Upload/comment/notify task names carry
+    // the same vocabulary the GitHub uses-arm excludes.)
+    if (step.task && /upload|publish|comment|notify|cache/i.test(step.task)) {
+      return;
+    }
+    if (!stepIsAzureVerificationGate(step)) return;
+    findings.push({
+      severity: "error",
+      confidence: "high",
+      findingType: "deterministic-defect",
+      qaImpact: "FALSE-GREEN",
+      file: ctx.path,
+      line: locateAzureStepKey(ctx.text, step, "continueOnError"),
+      column: 1,
+      message: `Verification step \`${describeAzureStep(step)}\` in \`${job.name ?? "?"}\` has \`continueOnError: true\`.`,
+      why: "A failing gate will not fail the job — the pipeline reports green while the check it was supposed to enforce did not pass.",
+      fix: "Remove continueOnError from the gate. If the check is genuinely unreliable, quarantine it explicitly instead of hiding the exit code.",
+    });
+  };
+
+  for (const stage of doc.stages ?? []) {
+    for (const job of stage.jobs ?? []) emitJob(job);
+  }
+  for (const job of doc.jobs ?? []) emitJob(job);
+  if (doc.steps?.length) {
+    emitJob({ name: "steps", kind: "job", steps: doc.steps });
+  }
+}
+
+function describeAzureStep(step: AzureStep): string {
+  if (step.name) return step.name;
+  const firstScriptLine = step.script?.split("\n")[0]?.trim();
+  if (firstScriptLine) return firstScriptLine.slice(0, 40);
+  if (step.task) return step.task;
+  return "step";
 }

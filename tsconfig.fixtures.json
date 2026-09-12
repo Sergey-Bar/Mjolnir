@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "noEmit": true,
+    "declaration": false,
+    "sourceMap": false,
+    "allowJs": true,
+    "checkJs": false,
+    "lib": ["ES2022", "DOM"]
+  },
+  "include": [
+    "tests/fixtures/**/*.ts",
+    "tests/corpus/positive-fixtures/**/*.ts"
+  ],
+  "exclude": ["node_modules", "dist"]
+}

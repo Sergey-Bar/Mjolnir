@@ -1,0 +1,37 @@
+{
+  "$comment": [
+    "The brand marks, pinned by sha256. `brand-doctor` rule 9 fails if any",
+    "of them changes.",
+    "",
+    "The logo is the source of truth for the whole visual system and the one",
+    "asset that is not derived from anything — the rest of the brand is",
+    "derived from IT. Everything else in this repository that carries a",
+    "colour is generated from a token module and locked byte-for-byte; these",
+    "eleven files were governed by a sentence in a document asking people",
+    "not to redraw the hammer.",
+    "",
+    "Two masters were provided and are archival. Nine files are downscales",
+    "or re-encodes of them, which is permitted — re-encoding is fine,",
+    "redrawing is not — so they are pinned too: a re-export at a different",
+    "quality is still a change to what a reader sees, and it should be a",
+    "decision rather than a diff nobody reads.",
+    "",
+    "To change one deliberately: replace the file, run",
+    "`npm run brand:marks:update`, and say why in the commit."
+  ],
+  "masters": {
+    "assets/brand/logo.png": "93631439982cd20fdab521d037098913970dbaced4fa412db361980c8e960c8f",
+    "assets/brand/mark.png": "e6cafb4ce012c8f298eb3fd405666a2d87f49cd262138941259ffeb96b9583ec"
+  },
+  "derived": {
+    "assets/brand/icon.png": "ee20615d264eac0319fcb976b432619aa363e86adeabf223c0e57a6352cb57ea",
+    "assets/readme/logo.png": "96486205eaad91d3247d349a93c025b21cf1aec4eab7addf1214f12d72619c38",
+    "assets/readme/logo.webp": "bd45b0105881cfb9952ea8a80798a9036d30c8dc3c282f031b870792728d7bbc",
+    "site/public/apple-touch-icon.png": "2ba966e042a6692dee036344850fa95bdc450e93209b85b67f0acfb06fb8b0f3",
+    "site/public/favicon-16.png": "5416b584f30bf0fda4e808c2bede1e6e8b8ebab8423acdbfb7abda3e951d8ff3",
+    "site/public/favicon-32.png": "9970e41fc41272c802f78a1604e68ff25e579bc13a6e30429579d6cf05876cdf",
+    "site/public/logo.webp": "00e8c11706b1c5568138a23286645dd227627a3154843e48ebfa9909d117be83",
+    "site/public/mark-64.png": "614b23375380bcf5918681d8fbb5ba20407a7693a8fabfd994145f7c1b490f01",
+    "site/public/social-card.jpg": "efc53f5853545d0b30f77489b56f7b2825d5d94e43f81281fe9ab403c2663336"
+  }
+}

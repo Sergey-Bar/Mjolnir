@@ -167,6 +167,37 @@ here so the follow-up is mechanical, not exploratory. The other three
 members of this wave — QA-JV-103, QA-CS-103, QA-CS-102 — were resolved
 by the Phase 3 L2 migration (below).
 
+## Retirement reconciliation — 2026-09-08 (owner ruling, E-1)
+
+The Phase 2 triage's 21 RETIRE decisions were originally executed as
+severity downgrades: the rules stayed registered in quarantine with their
+code, fixtures and verdict rows in place ("code + fixtures stay"). On
+2026-09-08 the owner resolved the ambiguity this created (MVP recon audit
+`.kilo/plans/1788891015969-mvp-recon-audit.md`, finding E-1) with a
+binding ruling:
+
+> RETIRED rules/variants are NOT part of the canonical census.
+> `RETIRED_RULE_IDS` is the canonical source of retirement.
+> Quarantine does not equal retirement. A rule explicitly marked RETIRED
+> must be reconciled into `RETIRED_RULE_IDS`; retired rules must not be
+> allowed to inflate the active rule count.
+
+Executed accordingly:
+
+- All 21 RETIRE-marked IDs are now listed in `RETIRED_RULE_IDS`
+  (`src/rules/index.ts`) with per-rule rationale, and were unregistered.
+- The active registry is **78 rules** (57 measured, 21 author-estimated);
+  the census (`measurementBlock`), the capability matrix, the rule docs,
+  the README sentinels and the count-lock baselines were regenerated from
+  the live registry.
+- Historical evidence is preserved in-tree: retired rule verdict rows
+  moved to `tests/corpus/verdicts/archive/`; fixture dirs stay on disk
+  (the doctor's fixture-integrity check discloses them instead of failing);
+  this document's tables above remain the root-cause record.
+- The measurement KPI for 1.0.0 certification is 100% of the ACTIVE
+  canonical registry (currently 78/78), never padded with retired IDs and
+  never shrunken by silent re-baselining.
+
 ## Phase 3 L2 migration (Verification Trust Evolution Plan §13)
 
 The three highest-ROI JV/CS rules from the deferred wave migrated to
@@ -191,3 +222,39 @@ one CS-102 TP trade-off (a sub-second artificial-timing delay inside a
 route delegate is no longer flagged; the structural boundary cannot
 read that intent). QA-JV-102 stays LEXICAL rev 1 — no migration for
 symmetry (plan §12.4).
+
+## Mutation-evidence derivation (master plan P5, plan 1788853205786)
+
+Findings may carry mutationEvidence provenance (additive within
+schemaVersion 1) when a mutation-testing report matched them
+(`mjolnir mutation <report>`, Stryker JSON / mutmut junitxml; the reader
+NEVER spawns mutation tools).
+
+**The E1→E2 consolidation is BY DERIVATION, not an upgrade claim:**
+an E1 finding's evidence was already pattern evidence. A survived
+mutant on that surface does not add a second, independent proof — it
+removes the standing excuse for the pattern ("the suite would catch it
+if it mattered"). The derivation is: the mutation report shows the
+suite does not constrain this code, so the pattern-level evidence
+consolidates to what a deterministic check on the same surface carries.
+
+The boundaries that keep this honest:
+
+- **E0 stays E0** — an observation gains nothing from a survived
+  mutant (an observation is not a risk claim; there is nothing to
+  consolidate).
+- **E2 stays E2** — deterministic evidence is already at the top of
+  the static ladder.
+- **trustLevel never rises from mutation evidence alone** — the L3+
+  rungs mean a real run executed this code; a mutation report is
+  evidence ABOUT runs, not a run. The provenance is stamped; the
+  ladder is untouched.
+- **Only Survived mutants count.** NoCoverage is a different fact
+  (never executed ≠ tested-and-passed-by-nothing) and is reported
+  separately; killed/timeout mutants are the suite working.
+- **mutmut evidence is file-granularity by construction** — its JUnit
+  report carries no per-mutant lines, so spans are the whole file and
+  the stamped granularity says exactly what the report supported.
+- **Provenance is not truth** — a survived mutant is code the suite
+  would not notice changing; it never proves the finding real. The
+  command is report-only and never gates (decision 8).

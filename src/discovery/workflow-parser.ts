@@ -1,23 +1,28 @@
 /**
  * Safe GitHub Actions workflow parser (Phase 0.3, W4-03 debt).
  *
- * Replaces the naive regex placeholder. Uses the `yaml` package with
- * hostile-input guards (R3): alias-count limits (YAML bombs), depth caps,
- * and object-prototype safety. Produces the doc model CI rules expect.
+ * Replaces the naive regex placeholder. Uses the `yaml` package through
+ * the shared hostile-input guards (src/discovery/yaml-guards.ts — R3):
+ * alias-count limits (YAML bombs), depth caps, and object-prototype
+ * safety. Produces the doc model CI rules expect. The same guards back
+ * the Azure DevOps pipeline parser (P3b), so both CI surfaces share one
+ * attack-surface defense.
  */
 
-import { parse as yamlParse } from "yaml";
+import { YamlParseError, parseYamlGuarded } from "./yaml-guards.js";
 
-/** Hard limits for hostile YAML (billion-laughs style attacks). */
-const LIMITS = {
-  maxAliases: 50,
-  maxDepth: 40,
-} as const;
+// The shared guards throw THIS class — re-exported so every consumer's
+// instanceof check (tests, adapter catch-sites) sees the same error type.
+export { YamlParseError };
 
 export interface WorkflowStep {
   name?: string;
+  /** Step id — consumed by rules that look for outcome-keyed follow-ups. */
+  id?: string;
   run?: string;
   uses?: string;
+  /** Raw `if:` condition text (consumed by rules that key on outcomes). */
+  if?: string;
   with?: Record<string, unknown>;
   "continue-on-error"?: boolean | string;
 }
@@ -33,33 +38,16 @@ export interface WorkflowDoc {
   jobs?: Record<string, WorkflowJob>;
 }
 
-export class YamlParseError extends Error {}
+const LABELS = {
+  invalidPrefix: "Invalid workflow YAML",
+  rootMessage: "Workflow root must be a mapping",
+  depthMessage: "Workflow nesting depth exceeds limit",
+} as const;
 
 export function parseWorkflow(text: string): WorkflowDoc {
-  // Alias-bomb guard BEFORE parse: the yaml package expands aliases during
-  // parsing, so a billion-laughs document would already have exploded by the
-  // time we could count aliases in the parsed doc. Count textually first.
-  const aliasMatches = text.match(/(?:^|[\s[{,])\*[^\s,\]}]+/g) ?? [];
-  if (aliasMatches.length > LIMITS.maxAliases) {
-    throw new YamlParseError(
-      `YAML alias count ${aliasMatches.length} exceeds limit ${LIMITS.maxAliases}`,
-    );
-  }
-
-  let doc: unknown;
-  try {
-    doc = yamlParse(text, { maxAliasCount: LIMITS.maxAliases });
-  } catch (err) {
-    // The yaml library throws Error subclasses, but it is third-party
-    // code — degrade non-Error throwables to String() rather than trust it.
-    const msg = err instanceof Error ? err.message : String(err);
-    throw new YamlParseError(`Invalid workflow YAML: ${msg}`);
-  }
+  const doc = parseYamlGuarded(text, LABELS);
 
   if (doc === null || doc === undefined) return {};
-  if (typeof doc !== "object")
-    throw new YamlParseError("Workflow root must be a mapping");
-
   const root = doc as Record<string, unknown>;
   const jobsRaw = root["jobs"];
   if (jobsRaw === undefined || jobsRaw === null) return {};
@@ -68,7 +56,15 @@ export function parseWorkflow(text: string): WorkflowDoc {
     throw new YamlParseError('"jobs" must be a mapping');
   }
 
-  const jobs: Record<string, WorkflowJob> = {};
+  // Audit (workflow-parser): null-prototype map for job names — a
+  // hostile workflow declaring `jobs: { __proto__: … }` must not reach
+  // the parsed object's prototype chain (the assignment used to be a
+  // silent prototype write, never an own property, and downstream
+  // Object.entries iterations saw phantom keys).
+  const jobs: Record<string, WorkflowJob> = Object.create(null) as Record<
+    string,
+    WorkflowJob
+  >;
   for (const [jobName, jobVal] of Object.entries(
     jobsRaw as Record<string, unknown>,
   )) {
@@ -94,12 +90,20 @@ export function parseWorkflow(text: string): WorkflowDoc {
         const step = s as Record<string, unknown>;
         return {
           ...(typeof step["name"] === "string" ? { name: step["name"] } : {}),
+          ...(typeof step["id"] === "string" ? { id: step["id"] } : {}),
           ...(typeof step["run"] === "string" ? { run: step["run"] } : {}),
           ...(typeof step["uses"] === "string" ? { uses: step["uses"] } : {}),
+          ...(typeof step["if"] === "string" ? { if: step["if"] } : {}),
           ...(step["with"] &&
           typeof step["with"] === "object" &&
           !Array.isArray(step["with"])
-            ? { with: step["with"] as Record<string, unknown> }
+            ? {
+                // Audit (workflow-parser): the parsed doc is shared by
+                // every CI rule for this file — `with` must be a copy,
+                // or one rule's mutation of a step input would leak
+                // into the other rules' view of the same workflow.
+                with: { ...(step["with"] as Record<string, unknown>) },
+              }
             : {}),
           ...(typeof step["continue-on-error"] === "boolean" ||
           typeof step["continue-on-error"] === "string"

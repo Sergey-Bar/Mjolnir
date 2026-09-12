@@ -1,4 +1,4 @@
-{"ruleId":"QA-PW-120","file":"tests/click.spec.ts","line":1,"verdict":"FP","note":"generic click test valid on all engines - no engine guard needed; file-level heuristic overreaches"}
 {"ruleId":"QA-PW-122","file":"playwright.config.ts","line":1,"verdict":"TP","note":"direct config with no trace capture - correct info-hygiene finding"}
 {"ruleId":"QA-PW-143","file":"playwright.config.ts","line":1,"verdict":"TP","note":"direct config with no screenshot/video capture - correct info-hygiene finding"}
 {"ruleId":"QA-PW-144","file":"playwright.config.ts","line":27,"verdict":"TP","note":"single chromium project - factually no cross-browser matrix (info hygiene)"}
+{"ruleId":"QA-PW-124","file":"playwright.config.ts","line":27,"verdict":"FP","note":"functional split exists: conditional chromium-docker project greps a browser-subset alongside the full chrome project - a subset project satisfies the tiering intent (adjudicated individually).","classifiedBy":"ai-assisted (authorized by repo owner 2026-09-07, subject to human review)","classifiedAt":"2026-09-09"}

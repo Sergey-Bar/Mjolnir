@@ -10,6 +10,9 @@
  */
 
 import type { ForensicsReport, TestVerdict } from "./types.js";
+import { FLAKE_GLYPH, sectionHeader, plainContext } from "../reporter/ui.js";
+
+const ui = plainContext();
 
 export interface TriageRow {
   file: string;
@@ -58,7 +61,7 @@ function suggestAction(v: TestVerdict): string {
 export function renderTriage(report: ForensicsReport): string {
   const rows = triageRows(report);
   const lines: string[] = [];
-  lines.push("▚▞ FLAKY TRIAGE — auto-generated, do not edit");
+  lines.push(sectionHeader("FLAKY TRIAGE — auto-generated, do not edit", ui));
   lines.push("");
   if (rows.length === 0) {
     lines.push("Nothing to triage — no failures or retries in this run.");
@@ -102,7 +105,7 @@ export function renderTriageMd(report: ForensicsReport): string {
     "|--------|------|------|----------|----------|------------------|-------------|",
   );
   for (const r of rows) {
-    const status = r.passedOnRetry ? "🔥 TRUE-FLAKE" : "❌ FAILING";
+    const status = r.passedOnRetry ? `${FLAKE_GLYPH} TRUE-FLAKE` : "❌ FAILING";
     lines.push(
       `| ${status} | \`${r.title}\` | \`${r.file}\` | ${r.attempts} | ${(r.totalDurationMs / 1000).toFixed(1)}s | ${r.suggestedAction} | ${r.proposedQuarantine ? "✅ propose" : "—"} |`,
     );
@@ -114,4 +117,178 @@ export function renderTriageMd(report: ForensicsReport): string {
   );
   lines.push("");
   return lines.join("\n");
+}
+
+// ---------------------------------------------------------------------------
+// triage v2 (Mega MVP Master Plan v3.1 §26 WI-8, §9): the GUIDED WORKFLOW.
+//
+// FAILED → CLASSIFY → COLLECT EVIDENCE → CORRELATE → TRUST VERDICT →
+// NEXT ACTION → FIX → RERUN → PROOF
+//
+// Deterministic, non-TTY-dependent, --json for agents. The acceptance
+// law: EVERY row ends with a concrete next action — a triage row
+// without one is a dump, not a workflow.
+// ---------------------------------------------------------------------------
+
+/**
+ * Forensic classification vocabulary (0.6.x, §9 CLASSIFY step). This is
+ * the triage-domain classification — deliberately NOT the 1.1.x
+ * forensic verdict taxonomy (WI-18: REAL/ENVIRONMENTAL/INFRASTRUCTURE/
+ * INCONCLUSIVE + contradiction handling). WI-18 will extend this map;
+ * the 0.6.x labels stay stable for artifact consumers.
+ */
+export type TriageClass =
+  | "RETRY-DEPENDENT" // failed then passed on retry — flake behavior
+  | "FAILING" // failed on the final attempt
+  | "TIMEOUT" // final attempt timed out
+  | "SKIPPED"; // skipped after retries (failed-then-skipped harness behavior)
+
+/** CLASSIFY — deterministic from the verdict's retry history. */
+export function classifyVerdict(v: TestVerdict): TriageClass {
+  if (v.passedOnRetry) return "RETRY-DEPENDENT";
+  if (v.finalStatus === "timedOut") return "TIMEOUT";
+  if (v.finalStatus === "failed") return "FAILING";
+  return "SKIPPED";
+}
+
+/** COLLECT EVIDENCE — the facts the classification stands on. */
+export function evidenceFor(v: TestVerdict): string[] {
+  const ev: string[] = [];
+  ev.push(`${v.attempts} attempt(s), final status ${v.finalStatus}`);
+  if (v.everFailed) ev.push("failed at least once");
+  if (v.passedOnRetry) ev.push("passed only on retry (attempt >= 2)");
+  ev.push(`total ${(v.totalDurationMs / 1000).toFixed(1)}s`);
+  return ev;
+}
+
+/**
+ * TRUST VERDICT — how much the run evidence alone supports acting on
+ * this row. Static-ladder semantics do NOT apply here (no findings
+ * involved); the run's own history is the evidence.
+ */
+export function trustVerdictFor(v: TestVerdict): string {
+  const c = classifyVerdict(v);
+  switch (c) {
+    case "RETRY-DEPENDENT":
+      return "HIGH — the run itself demonstrates the flake (failed, then passed)";
+    case "TIMEOUT":
+      return "MEDIUM — timeout is real; environmental slowness vs. real hang not distinguished yet";
+    case "FAILING":
+      return "HIGH — deterministic final failure";
+    case "SKIPPED":
+      return "LOW — skipped after retries; intent unclear";
+  }
+}
+
+/**
+ * NEXT ACTION — concrete, re-runnable, always present (the WI-8
+ * acceptance law). Trace collection advice is the 1.1.x hook (WI-17):
+ * today the honest command set is repeat/compare/inspect, not
+ * "collect a trace", because trace.zip is not yet ingested.
+ */
+export function nextActionFor(v: TestVerdict): string {
+  const c = classifyVerdict(v);
+  switch (c) {
+    case "RETRY-DEPENDENT":
+      return `repeat execution of this test (3+ runs) to confirm the flake rate, then quarantine + ticket: ${v.file}`;
+    case "TIMEOUT":
+      return `re-run in isolation to separate slowness from a hang: npx playwright test ${v.file} --timeout 60000`;
+    case "FAILING":
+      return `reproduce locally: npx playwright test ${v.file} -g "${v.title.replace(/"/g, '\\"')}" — then fix and re-run`;
+    case "SKIPPED":
+      return `inspect the skip condition in ${v.file} — a skip after a failure usually hides an environment problem`;
+  }
+}
+
+/** The full guided-workflow row for one verdict. */
+export interface TriageWorkflowRow {
+  test: string;
+  file: string;
+  classification: TriageClass;
+  evidence: string[];
+  trustVerdict: string;
+  nextAction: string;
+  proposedQuarantine: boolean;
+}
+
+/** Deterministic guided rows, worst first (same order law as triageRows). */
+export function workflowRows(report: ForensicsReport): TriageWorkflowRow[] {
+  return report.verdicts
+    .filter((v) => v.everFailed || v.passedOnRetry || v.skipped)
+    .sort((a, b) => {
+      if (a.passedOnRetry !== b.passedOnRetry) return a.passedOnRetry ? -1 : 1;
+      if (a.attempts !== b.attempts) return b.attempts - a.attempts;
+      return b.totalDurationMs - a.totalDurationMs;
+    })
+    .map((v) => {
+      const classification = classifyVerdict(v);
+      return {
+        test: v.title,
+        file: v.file,
+        classification,
+        evidence: evidenceFor(v),
+        trustVerdict: trustVerdictFor(v),
+        nextAction: nextActionFor(v),
+        proposedQuarantine:
+          v.attempts >= QUARANTINE_MIN_ATTEMPTS && v.everFailed,
+      };
+    });
+}
+
+/** Terminal rendering of the guided workflow. */
+export function renderTriageWorkflow(report: ForensicsReport): string {
+  const rows = workflowRows(report);
+  const lines: string[] = [];
+  lines.push(
+    sectionHeader("TRIAGE WORKFLOW — guided, one row = one next action", ui),
+  );
+  lines.push("");
+  if (rows.length === 0) {
+    lines.push(
+      "Nothing to triage — no failures, timeouts, or retries in this run.",
+    );
+    return lines.join("\n");
+  }
+  for (const r of rows) {
+    // Vocabulary continuity: TRUE-FLAKE/FAILING are the established
+    // forensic flags (forensics/analyze.ts) — the guided workflow's
+    // classification refines them, never renames them.
+    const flag =
+      r.classification === "RETRY-DEPENDENT"
+        ? "TRUE-FLAKE"
+        : r.classification === "FAILING"
+          ? "FAILING"
+          : undefined;
+    lines.push(
+      `[${r.classification}${flag ? ` · ${flag}` : ""}] ${r.test} (${r.file})`,
+    );
+    for (const e of r.evidence) lines.push(`    evidence: ${e}`);
+    lines.push(`    trust:    ${r.trustVerdict}`);
+    lines.push(`    next:     ${r.nextAction}`);
+    lines.push("");
+  }
+  const q = rows.filter((r) => r.proposedQuarantine).length;
+  lines.push(
+    `Auto-quarantine proposal: ${q} test(s) (retried ≥${QUARANTINE_MIN_ATTEMPTS} and failed at least once).`,
+  );
+  lines.push(
+    "Rerun after fixes: the SAME command re-runs the SAME suite — proof is the changed second report.",
+  );
+  return lines.join("\n");
+}
+
+/** --json twin of the guided workflow (agent-consumable). */
+export function renderTriageWorkflowJson(report: ForensicsReport): string {
+  return (
+    JSON.stringify(
+      {
+        artifact: "mjolnir-triage-workflow",
+        source: report.source,
+        totalTests: report.totalTests,
+        rows: workflowRows(report),
+      },
+      null,
+      2,
+    ) + "\n"
+  );
 }

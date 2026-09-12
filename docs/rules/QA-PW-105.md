@@ -50,7 +50,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | Humanizr-Humanizer | 9           |
 | keycloak-keycloak  | 1           |
 | sveltejs-kit       | 33          |
-| vitejs-vite        | 504         |
+| vitejs-vite        | 513         |
 | vitest-dev-vitest  | 69          |
 | withastro-astro    | 1           |
 

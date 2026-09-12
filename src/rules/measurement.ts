@@ -27,6 +27,7 @@
 
 import type { QADoctorRule } from "./rule.js";
 import { MEASURED_FP } from "./measured-fp.generated.js";
+import { RETIRED_RULE_IDS } from "./index.js";
 
 export type Tier = "core" | "extended" | "quarantine";
 
@@ -75,7 +76,8 @@ export function hasStaleMeasurement(rule: QADoctorRule): boolean {
  */
 export function effectiveTier(rule: QADoctorRule): Tier {
   if (rule.tier !== undefined) return rule.tier;
-  return hasValidMeasurement(rule) ? "core" : "extended";
+  if (hasValidMeasurement(rule)) return "core";
+  return "extended";
 }
 
 /**
@@ -99,4 +101,14 @@ export function ruleStatus(rule: QADoctorRule): RuleStatus {
 /** The §11.2 Step 2 PROVISIONAL display predicate. */
 export function isProvisional(rule: QADoctorRule): boolean {
   return effectiveTier(rule) === "extended" && !hasValidMeasurement(rule);
+}
+
+/**
+ * Owner ruling 2026-09-08 (E-1, MVP recon audit): RETIRED_RULE_IDS is
+ * the canonical source of retirement — quarantine does NOT equal
+ * retirement, and a retired rule never counts toward the active census
+ * or the measurement KPI.
+ */
+export function isRetiredRule(ruleId: string): boolean {
+  return RETIRED_RULE_IDS.includes(ruleId);
 }

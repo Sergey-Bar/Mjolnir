@@ -1,0 +1,13 @@
+name: Api
+
+on: [push]
+
+jobs:
+  api-coveralls:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: dotnet test --logger trx
+      - uses: coverallsapp/github-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,315 @@
+# Marketplace-grade composite action (product-gap-remediation master
+# plan P1.1, plan .kilo/plans/1788853205786). Lives at the repo ROOT
+# because GitHub Actions Marketplace requires it there — a conscious,
+# documented amendment to the repo's root contract
+# (tests/contract/repo-hygiene.spec.ts), never a silent one.
+#
+# Consumers pin a major tag (`uses: Sergey-Bar/Mjolnir@v1`); release.yml's
+# action-tags job keeps that tag moving to every stable release.
+# Scanning runs through the published npm package (`npx mjolnir-qa@…`),
+# never an `npm ci` of this repo — the action must work for consumers,
+# not contributors.
+#
+# SARIF upload: the optional `upload-sarif` input (default true) wires
+# `github/codeql-action/upload-sarif` after the scan, so findings land in
+# the Security tab. It requires `permissions: security-events: write` —
+# consumers grant that in their own workflow; a composite action cannot
+# escalate its caller's permissions by design.
+#
+# Event-data safety (audit S-5, the repo's own QA-CI rule): every input
+# reaches the shell through `env:`, never by interpolation into a `run:`
+# body.
+name: "Mjölnir — verification trust scan"
+description: >-
+  Scans your repository's test suites, Playwright configs and CI
+  workflows, and fails the job when findings at or above the gate are
+  present. Measured false-positive rates per rule; partial scans never
+  block (a scan that did not finish has not found nothing).
+
+branding:
+  icon: "shield"
+  color: "blue"
+
+inputs:
+  path:
+    description: "Repository path to scan"
+    required: false
+    default: "."
+  scope:
+    description: "'all' (default) or 'changed' — only what this branch touched"
+    required: false
+    default: "all"
+  strict:
+    description: "Include quarantine-tier rules in the scan (--strict)"
+    required: false
+    default: "false"
+  format:
+    description: "Output format: terminal, json, or sarif"
+    required: false
+    default: "terminal"
+  fail-on:
+    description: >-
+      Exit-status gate: error (block on error findings), warning (block
+      on warnings too), or none (report only, never block)
+    required: false
+    default: "error"
+  node-version:
+    description: "Node.js version to run the scan with"
+    required: false
+    default: "22"
+  version:
+    description: >-
+      mjolnir-qa npm spec to run. Default: latest. Pin an exact version
+      in your workflow for reproducible gates.
+    required: false
+    default: "latest"
+  upload-sarif:
+    description: >-
+      Upload SARIF to GitHub Code Scanning (requires security-events:
+      write permission). Ignored unless format is sarif.
+    required: false
+    default: "true"
+  annotations:
+    description: >-
+      Emit the scan's findings as GitHub annotations plus a step summary
+      (from the saved --json report). Runs a lightweight JSON capture
+      scan when the primary format is not json.
+    required: false
+    default: "true"
+  pr-comment:
+    description: >-
+      Post/update the Trust Report as a PR comment (pull_request events
+      only; one comment per PR — upserted by marker). Requires the
+      job to grant contents: read and pull-requests: write. Runs a
+      lightweight JSON capture scan when the primary format is not json.
+    required: false
+    default: "true"
+  trust-artifact:
+    description: >-
+      Upload the Trust Report (mjolnir-trust-report.md) and the raw
+      JSON report as workflow artifacts.
+    required: false
+    default: "true"
+
+outputs:
+  exit-code:
+    description: "The scan's exit code (0 clean · 1 findings at gate · 2 partial)"
+    value: ${{ steps.scan.outputs.exit }}
+  findings:
+    description: "Finding count from the JSON report (format: json only, else empty)"
+    value: ${{ steps.scan.outputs.findings }}
+  sarif-file:
+    description: "Path of the SARIF report when format is sarif, else empty"
+    value: ${{ steps.scan.outputs.sarif-file }}
+  trust-report-file:
+    description: "Path of the generated Trust Report (mjolnir-trust-report.md)"
+    value: ${{ steps.trust-report.outputs.file }}
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Validate inputs
+      shell: bash
+      env:
+        MJ_SCOPE: ${{ inputs.scope }}
+        MJ_FAIL_ON: ${{ inputs.fail-on }}
+        MJ_FORMAT: ${{ inputs.format }}
+        MJ_STRICT: ${{ inputs.strict }}
+        MJ_ANNOTATIONS: ${{ inputs.annotations }}
+        MJ_PR_COMMENT: ${{ inputs.pr-comment }}
+        MJ_TRUST_ARTIFACT: ${{ inputs.trust-artifact }}
+      run: |
+        case "$MJ_SCOPE" in
+          all|changed) ;;
+          *) echo "::error::scope must be 'all' or 'changed', got '$MJ_SCOPE'"; exit 10 ;;
+        esac
+        case "$MJ_FAIL_ON" in
+          error|warning|none) ;;
+          *) echo "::error::fail-on must be 'error', 'warning' or 'none', got '$MJ_FAIL_ON'"; exit 10 ;;
+        esac
+        case "$MJ_FORMAT" in
+          terminal|json|sarif) ;;
+          *) echo "::error::format must be 'terminal', 'json' or 'sarif', got '$MJ_FORMAT'"; exit 10 ;;
+        esac
+        case "$MJ_STRICT" in
+          true|false) ;;
+          *) echo "::error::strict must be 'true' or 'false', got '$MJ_STRICT'"; exit 10 ;;
+        esac
+        case "$MJ_ANNOTATIONS" in
+          true|false) ;;
+          *) echo "::error::annotations must be 'true' or 'false', got '$MJ_ANNOTATIONS'"; exit 10 ;;
+        esac
+        case "$MJ_PR_COMMENT" in
+          true|false) ;;
+          *) echo "::error::pr-comment must be 'true' or 'false', got '$MJ_PR_COMMENT'"; exit 10 ;;
+        esac
+        case "$MJ_TRUST_ARTIFACT" in
+          true|false) ;;
+          *) echo "::error::trust-artifact must be 'true' or 'false', got '$MJ_TRUST_ARTIFACT'"; exit 10 ;;
+        esac
+
+    - name: Scan
+      id: scan
+      shell: bash
+      env:
+        MJ_PATH: ${{ inputs.path }}
+        MJ_SCOPE: ${{ inputs.scope }}
+        MJ_STRICT: ${{ inputs.strict }}
+        MJ_FORMAT: ${{ inputs.format }}
+        MJ_FAIL_ON: ${{ inputs.fail-on }}
+        MJ_VERSION: ${{ inputs.version }}
+      run: |
+        ARGS=("$MJ_PATH")
+        if [ "$MJ_SCOPE" = "changed" ]; then ARGS+=(--scope changed); fi
+        if [ "$MJ_STRICT" = "true" ]; then ARGS+=(--strict); fi
+        case "$MJ_FORMAT" in
+          json)  ARGS+=(--json) ;;
+          sarif) ARGS+=(--format sarif) ;;
+        esac
+        case "$MJ_FAIL_ON" in
+          error)   ARGS+=(--blocking error) ;;
+          warning) ARGS+=(--blocking warning) ;;
+          none)    ARGS+=(--blocking none) ;;
+        esac
+        echo "Running: npx --yes mjolnir-qa@${MJ_VERSION} ${ARGS[*]}"
+        set +e
+        if [ "$MJ_FORMAT" = "json" ]; then
+          npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}" > mjolnir.json
+        elif [ "$MJ_FORMAT" = "sarif" ]; then
+          npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}" > mjolnir-report.sarif
+        else
+          npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}"
+        fi
+        EXIT=$?
+        set -e
+        echo "exit=$EXIT" >> "$GITHUB_OUTPUT"
+        # The frozen exit-code contract: 2 = partial scan, NEVER blocks —
+        # a scan that did not finish has not found nothing. Downgrade it
+        # to a loud warning so a truncated run cannot fail the job, while
+        # 1 (findings at gate) and 10/20 (usage/internal) still do.
+        if [ "$EXIT" = "2" ]; then
+          echo "::warning::Mjölnir scan was PARTIAL — some files were not analyzed; the gate is not enforced. Re-run on a quieter runner or raise --max-duration."
+          exit 0
+        fi
+        if [ "$MJ_FORMAT" = "sarif" ]; then
+          echo "sarif-file=mjolnir-report.sarif" >> "$GITHUB_OUTPUT"
+        else
+          echo "sarif-file=" >> "$GITHUB_OUTPUT"
+        fi
+        if [ "$MJ_FORMAT" = "json" ] && [ -s mjolnir.json ]; then
+          node -e '
+            const fs = require("fs");
+            try {
+              const r = JSON.parse(fs.readFileSync("mjolnir.json", "utf8"));
+              const findings = Array.isArray(r.findings) ? r.findings.length : 0;
+              fs.appendFileSync(process.env.GITHUB_OUTPUT,
+                "findings=" + findings + "\n");
+            } catch { fs.appendFileSync(process.env.GITHUB_OUTPUT, "findings=\n"); }
+          '
+        else
+          echo "findings=" >> "$GITHUB_OUTPUT"
+        fi
+        # Propagate the gate result (exit 2 partial already downgraded).
+        exit "$EXIT"
+
+    - name: Upload SARIF to GitHub Code Scanning
+      if: >-
+        inputs.format == 'sarif' && inputs.upload-sarif == 'true' &&
+        steps.scan.outputs.sarif-file != ''
+      uses: github/codeql-action/upload-sarif@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4
+      with:
+        sarif_file: ${{ steps.scan.outputs.sarif-file }}
+
+    # ── Trust Report consumption (WI-9, plan §13) ──────────────────────
+    # Zero trust semantics HERE: every number below is rendered by the
+    # published CLI from a saved canonical --json report (`trust-report
+    # --from`). The action only moves bytes. The capture scan uses
+    # --blocking none so reporting can never change the gate result.
+
+    - name: Capture JSON report for reporting
+      if: >-
+        (inputs.annotations == 'true' || inputs.pr-comment == 'true' ||
+        inputs.trust-artifact == 'true') && inputs.format != 'json'
+      id: capture
+      shell: bash
+      env:
+        MJ_PATH: ${{ inputs.path }}
+        MJ_VERSION: ${{ inputs.version }}
+      run: |
+        set +e
+        npx --yes "mjolnir-qa@${MJ_VERSION}" "$MJ_PATH" --json --blocking none > mjolnir.json
+        echo "exit=$?" >> "$GITHUB_OUTPUT"
+        exit 0
+
+    - name: Generate Trust Report
+      id: trust-report
+      if: >-
+        (inputs.annotations == 'true' || inputs.pr-comment == 'true' ||
+        inputs.trust-artifact == 'true')
+      shell: bash
+      env:
+        MJ_VERSION: ${{ inputs.version }}
+      run: |
+        set +e
+        npx --yes "mjolnir-qa@${MJ_VERSION}" trust-report --from mjolnir.json
+        echo "exit=$?" >> "$GITHUB_OUTPUT"
+        echo "file=mjolnir-trust-report.md" >> "$GITHUB_OUTPUT"
+        exit 0
+
+    - name: Emit annotations + step summary
+      if: inputs.annotations == 'true'
+      shell: bash
+      env:
+        MJ_VERSION: ${{ inputs.version }}
+      run: |
+        # summary streams findings as GitHub annotations to stdout (when
+        # GITHUB_ACTIONS=true) and the step summary to
+        # $GITHUB_STEP_SUMMARY — the CLI's own CI surface, zero action-
+        # side rendering logic.
+        npx --yes "mjolnir-qa@${MJ_VERSION}" summary mjolnir.json --stdout | tee "${GITHUB_STEP_SUMMARY:-/dev/null}" >/dev/null 2>&1 || true
+
+    - name: Post Trust Report as PR comment
+      if: >-
+        inputs.pr-comment == 'true' &&
+        github.event_name == 'pull_request'
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        MJ_PR_NUMBER: ${{ github.event.pull_request.number }}
+        MJ_REPO: ${{ github.repository }}
+      run: |
+        # Upsert by marker: one Trust Report comment per PR, updated in
+        # place on every push (no comment flood). Event data reaches gh
+        # through env only (audit S-5).
+        BODY_FILE="mjolnir-trust-report.md"
+        if [ ! -s "$BODY_FILE" ]; then
+          echo "::warning::Trust Report body missing — skipping PR comment"
+          exit 0
+        fi
+        MARKER='<!-- mjolnir-trust-report:v1 -->'
+        COMMENT_ID="$(gh api "repos/${MJ_REPO}/issues/${MJ_PR_NUMBER}/comments" \
+          --paginate --jq ".[] | select(.body | startswith(\"$MARKER\")) | .id" | head -n1)"
+        if [ -n "$COMMENT_ID" ]; then
+          gh api --method PATCH "repos/${MJ_REPO}/issues/comments/${COMMENT_ID}" \
+            -F body="@${BODY_FILE}" >/dev/null
+          echo "Updated Trust Report comment ${COMMENT_ID}"
+        else
+          gh api --method POST "repos/${MJ_REPO}/issues/${MJ_PR_NUMBER}/comments" \
+            -F body="@${BODY_FILE}" >/dev/null
+          echo "Posted Trust Report comment"
+        fi
+
+    - name: Upload Trust Report artifacts
+      if: inputs.trust-artifact == 'true'
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      with:
+        name: mjolnir-trust-report
+        path: |
+          mjolnir-trust-report.md
+          mjolnir.json
+        if-no-files-found: warn
+        retention-days: 30

@@ -3,11 +3,11 @@
  * Respects NO_COLOR and non-TTY via `palette(isTTY)` — every renderer
  * receives a palette and never touches process.env directly.
  *
- * Palette: a cold northern set — frost-steel, aurora teal, Yggdrasil
- * green — with amber for warnings (Mjölnir's lightning) and a
- * rune-red for errors. No magenta/pink. Emitted as 24-bit truecolor
- * SGR (`38;2;r;g;b`), which every modern terminal renders and which
- * `shouldColorize` already gates behind TTY + !NO_COLOR.
+ * Palette: resolved from `src/brand/tokens.ts`, the single source of
+ * brand truth — this file defines no colour of its own. Emitted as
+ * 24-bit truecolor SGR (`38;2;r;g;b`), which every modern terminal
+ * renders and which `shouldColorize` already gates behind
+ * TTY + !NO_COLOR.
  *
  * Symbols always accompany color (color-blind safe, R11).
  *
@@ -21,7 +21,19 @@
  * consoles that mangle box-drawing glyphs and emoji.
  */
 
+import { BRAND, SCORE, STATUS, TEXT } from "../brand/tokens.js";
+
 import { deriveScoreState, type ScoreBand } from "./score-state.js";
+
+/**
+ * `"#RRGGBB"` → the `[r, g, b]` triplet the SGR truecolor emitter needs.
+ * Lives here rather than in `src/brand/tokens.ts`, which is pure data:
+ * each surface converts the canonical hex into its own colour space.
+ */
+function fromHex(hex: string): readonly [number, number, number] {
+  const n = Number.parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 0xff, (n >> 8) & 0xff, n & 0xff] as const;
+}
 
 export interface Palette {
   /** Yggdrasil green — healthy / passing (non-score success contexts, e.g. "autofix applied"). */
@@ -42,17 +54,29 @@ export interface Palette {
   dim: (s: string) => string;
 }
 
-/** Norse-forge palette, 24-bit truecolor. */
+/**
+ * The terminal palette, 24-bit truecolor, resolved from
+ * `src/brand/tokens.ts` — the single source of brand truth. Nothing in
+ * this file may name a hex value of its own, and `brand-doctor` rule 2
+ * fails if it tries.
+ *
+ * Every role is now the canonical token. Six of them used to be the
+ * terminal's own: a frost-steel blue for headers, a teal for info, an
+ * amber for warnings, a rune-red for errors, a bone white for bold and a
+ * weathered stone for dim — a second palette for one product. The
+ * rune-red also failed WCAG AA at 4.36:1 on this terminal's own
+ * background; `STATUS.error` on the canonical ground is 6.20:1.
+ */
 export const NORSE = {
-  ok: [0x4f, 0xb4, 0x77], // Yggdrasil green
-  info: [0x3f, 0xb0, 0xa0], // aurora teal
-  accent: [0x8a, 0xb4, 0xd8], // frost-steel blue
-  warning: [0xe0, 0xa5, 0x26], // amber / lightning
-  error: [0xd0, 0x45, 0x3b], // rune-red
-  trusted: [0x5c, 0xc4, 0xe0], // aurora-cyan — trusted score band
-  forged: [0xf4, 0xdc, 0x9c], // forged white-gold — score 100
-  bold: [0xed, 0xe6, 0xd6], // bone white
-  dim: [0x7c, 0x85, 0x90], // weathered stone
+  ok: fromHex(STATUS.ok), // Yggdrasil green — non-score success only
+  info: fromHex(BRAND.aurora), // aurora — informational
+  accent: fromHex(BRAND.steel), // brushed steel — the hammer, headers
+  warning: fromHex(STATUS.warning), // forge gold
+  error: fromHex(STATUS.error), // 6.20:1 on the terminal ground
+  trusted: fromHex(SCORE.trusted), // aurora-cyan — trusted score band
+  forged: fromHex(SCORE.forged), // forged white-gold — score 100
+  bold: fromHex(TEXT.primary), // the one text ramp, brightest step
+  dim: fromHex(TEXT.muted), // the one text ramp, quietest step
 } as const;
 
 const on = {
@@ -77,12 +101,26 @@ const on = {
  * legitimate multi-line messages) before any data reaches a renderer.
  */
 export function sanitizeData(s: string): string {
-  return s
-    .replace(/\x1b\[[0-9;:?]*[ -/]*[@-~]/g, "") // CSI … final byte
-    .replace(/\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)?/g, "") // OSC … BEL/ST
-    .replace(/\x1b[@-Z\\-_]/g, "") // two-byte C1 feeders
-    .replace(/\x1b/g, "") // any residual escape
-    .replace(/[\x00-\x08\x0b-\x1f\x7f]/g, ""); // other C0 + DEL
+  return (
+    s
+      // ECMA-48 CSI: ESC [ params(0x30–0x3F) intermediates(0x20–0x2F) final(0x40–0x7E).
+      // The ` -/` and `@-~` ranges are the spec's intermediate/final byte classes.
+      // eslint-disable-next-line regexp/no-obscure-range, no-control-regex
+      .replace(/\x1b\[[0-9;:?]*[ -/]*[@-~]/g, "") // CSI … final byte
+      // ECMA-48 OSC: ESC ] … terminated by BEL(0x07) or ST(ESC \).
+      // eslint-disable-next-line no-control-regex
+      .replace(/\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)?/g, "") // OSC … BEL/ST
+      // Two-byte C1 feeders: ESC + final byte 0x40–0x5F (`@-Z`, `\-_`).
+      // eslint-disable-next-line regexp/no-obscure-range, no-control-regex
+      .replace(/\x1b[@-Z\\-_]/g, "") // two-byte C1 feeders
+      // Any residual ESC (0x1B) that the structural strips above missed.
+      // eslint-disable-next-line no-control-regex
+      .replace(/\x1b/g, "") // any residual escape
+      // Remaining C0 controls (0x00–0x08, 0x0B–0x1F) + DEL (0x7F); tab (0x09)
+      // and LF (0x0A) are deliberately preserved for multi-line messages.
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\x00-\x08\x0b-\x1f\x7f]/g, "")
+  ); // other C0 + DEL
 }
 
 const inertId = (s: string) => sanitizeData(s);
@@ -103,8 +141,19 @@ function rgb([r, g, b]: readonly [number, number, number]) {
   return (s: string) => `\x1b[38;2;${r};${g};${b}m${sanitizeData(s)}\x1b[0m`;
 }
 
-/** True when colors should be emitted for this render call. */
+/**
+ * True when colors should be emitted for this render call.
+ *
+ * Precedence (chalk convention): FORCE_COLOR wins over everything —
+ * `FORCE_COLOR=0` (or "false"/empty) forces plain output even on a TTY,
+ * any other value forces color even when piped. Without FORCE_COLOR,
+ * NO_COLOR disables color and the rest follows TTY-ness.
+ */
 export function shouldColorize(isTTY: boolean): boolean {
+  const forced = process.env["FORCE_COLOR"];
+  if (forced !== undefined) {
+    return forced !== "0" && forced !== "false" && forced !== "";
+  }
   return isTTY && !process.env["NO_COLOR"];
 }
 
@@ -258,21 +307,6 @@ export function gaugeColorForBand(
   return band === "warning" ? p.warning : p.error;
 }
 
-/** Severity glyph + label, themed. Falls back to plain ASCII glyphs
- * (X/!/i) when `ascii` is set — ✗/⚠/ℹ render as "?" boxes on some
- * legacy Windows consoles, and color already carries the same signal
- * (color-blind-safe symbols remain: the label text itself). */
-export function severityTag(
-  severity: "error" | "warning" | "info",
-  p: Palette,
-  ascii = false,
-): string {
-  const glyphs = ascii
-    ? { error: "X", warning: "!", info: "i" }
-    : { error: "✗", warning: "⚠", info: "ℹ" };
-  if (severity === "error")
-    return `${p.error(glyphs.error)} ${p.error("ERROR  ")}`;
-  if (severity === "warning")
-    return `${p.warning(glyphs.warning)} ${p.warning("WARN   ")}`;
-  return `${p.info(glyphs.info)} ${p.info("INFO   ")}`;
-}
+/* The severity glyph + label primitive lives in ui.ts (severityIcon) —
+ * the design-system module owns the severity vocabulary; theme.ts owns
+ * the palette and gauge math. */

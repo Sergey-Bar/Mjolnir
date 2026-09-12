@@ -25,6 +25,13 @@ export const retryAbuse = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "retry abuse is the runner's retry contract (jest.retries, vitest " +
+      "retry, playwright retries); the detector matches the runner's " +
+      "retry API tokens across runners — each an exact key",
+  },
   introduced: "0.1.0",
 
   // Measured 2026-09-02 (corpus wave 5): tier set from the measured envelope (plan §11.2).

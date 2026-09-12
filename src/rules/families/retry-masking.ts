@@ -22,6 +22,13 @@ export const retryMaskingFamily: QADoctorRule[] = [
     falsePositiveRisk: "medium",
     autofix: false,
     detectionStrategy: "LEXICAL",
+    strategyJustification: {
+      reasonCode: "runner-semantic",
+      detail:
+        "the retry-masking family's variants (QA-JV-109/QA-CS-109): retry " +
+        "masking is the runner's retry contract; the detector matches the " +
+        "runner's retry tokens on the code-only text",
+    },
     introduced: "0.4.0",
     tier: "core",
     run(ctx) {
@@ -79,6 +86,13 @@ export const retryMaskingFamily: QADoctorRule[] = [
     falsePositiveRisk: "medium",
     autofix: false,
     detectionStrategy: "LEXICAL",
+    strategyJustification: {
+      reasonCode: "runner-semantic",
+      detail:
+        "the retry-masking family's variants (QA-JV-109/QA-CS-109): retry " +
+        "masking is the runner's retry contract; the detector matches the " +
+        "runner's retry tokens on the code-only text",
+    },
     introduced: "0.4.0",
     tier: "extended",
     run(ctx) {
@@ -106,6 +120,7 @@ export const retryMaskingFamily: QADoctorRule[] = [
         });
       }
       // xUnit retry conventions
+      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
       const xunitRe = /\[Retry(?:Fact|Theory)(?:\([^)]*\))?\]/g;
       while ((m = xunitRe.exec(text)) !== null) {
         findings.push({

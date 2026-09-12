@@ -26,6 +26,13 @@ export const pwNoFailureArtifacts = defineRule({
   falsePositiveRisk: "low",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "absence-aggregate",
+    detail:
+      "artifact-capture absence (no trace/video/screenshot anywhere in " +
+      "the suite) is a directory-level aggregate; the detector aggregates " +
+      "over the suite's shapes — absence, not presence",
+  },
   detectionNotes: "regex heuristic",
   introduced: "0.3.8",
 
@@ -37,7 +44,7 @@ export const pwNoFailureArtifacts = defineRule({
     const text = ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     const base = ctx.path.split("/").pop() as string;
-    if (!/^playwright\.config\.(ts|js|mjs|cts)$/.test(base)) return findings;
+    if (!/^playwright\.config\.(?:ts|js|mjs|cts)$/.test(base)) return findings;
 
     const hasScreenshot =
       /screenshot\s*:\s*['"](?:on|only-on-failure)['"]/.test(text);

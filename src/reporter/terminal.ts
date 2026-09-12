@@ -10,24 +10,36 @@
 
 import type { Finding, ScanResult } from "../types.js";
 import { DEDUCTIONS, deriveEvidenceLevel } from "../types.js";
-import { computeDimensions, deductionFor } from "../scorer/scorer.js";
+import {
+  computeDimensions,
+  deductionFor,
+  massCeiling,
+} from "../scorer/scorer.js";
 import { topFixes } from "../scorer/prioritize.js";
 import {
   palette,
   shouldColorize,
   shouldUseAscii,
   scoreGauge,
-  severityTag,
   box,
+  measure,
   padTo,
   sanitizeData,
+  wrapText,
 } from "./theme.js";
+import {
+  buildFooter,
+  sectionHeader,
+  severityIcon,
+  nextStep,
+  panel,
+  type UiContext,
+} from "./ui.js";
 import { deriveScoreState, headlineFor } from "./score-state.js";
 import {
   LOGO,
   LOGO_ASCII,
   TROPHY,
-  DIVIDER,
   FORGED_WORDMARK,
   renderHammer,
 } from "./art.js";
@@ -59,6 +71,14 @@ export interface RenderTerminalOpts {
   ascii?: boolean;
   /** --tone blunt: blunter, pattern-mocking messages (Sprint 9 Task 40). */
   tone?: "blunt";
+  /**
+   * Pre-filtered finding list for `--category` (agent-handoff plan
+   * §5.5): the renderer displays ONLY these, and prints the dim
+   * `filtered view` note whenever the full list is larger. The score,
+   * dimensions and gauge in the same render ALWAYS reflect the full
+   * scan — --category is a presentation filter, never a scoring filter.
+   */
+  visibleFindings?: ScanResult["findings"];
 }
 
 export function renderTerminal(
@@ -71,6 +91,7 @@ export function renderTerminal(
     opts.width ?? process.stdout.columns ?? 80,
   );
   const ascii = opts.ascii ?? shouldUseAscii();
+  const ui: UiContext = { p, ascii, width };
   const lines: string[] = [];
 
   const logo = ascii ? LOGO_ASCII : LOGO;
@@ -78,7 +99,7 @@ export function renderTerminal(
   lines.push("");
 
   if (result.score === null) {
-    return renderNoTests(p, ascii);
+    return renderNoTests(ui);
   }
 
   const counts = countBySeverity(result);
@@ -92,24 +113,41 @@ export function renderTerminal(
     width,
     ascii,
   );
-  appendFrameworks(lines, result, p);
-  appendDimensions(lines, result, p, ascii);
-  appendDeductions(lines, result, counts, p, width, ascii);
-  appendFixThisFirst(lines, result, p);
-  appendFindings(
-    lines,
-    result,
-    counts,
-    opts.verbose === true,
-    p,
-    ascii,
-    width,
-    opts.tone,
-  );
+  appendFrameworks(lines, result, ui);
+  if (result.staged !== undefined) {
+    lines.push(
+      ui.p.dim(
+        `  staged surface: ${result.staged.files} file(s) scanned; score reflects that surface`,
+      ),
+    );
+    lines.push("");
+  }
+  appendDimensions(lines, result, ui);
+  appendDeductions(lines, result, counts, ui);
+  // --category (agent-handoff plan §5.5): presentation filter. The
+  // filtered list drives FIX THIS FIRST + FINDINGS; score/dimensions/
+  // deductions above always reflect the full scan. The dim note keeps
+  // the full-scan vs filtered-view distinction unambiguous.
+  const filtered = opts.visibleFindings;
+  const filtering =
+    filtered !== undefined && filtered.length < result.findings.length;
+  const display: ScanResult = filtering
+    ? { ...result, findings: filtered }
+    : result;
+  appendFixThisFirst(lines, display, ui);
+  if (filtering) {
+    lines.push(
+      ui.p.dim(
+        `  filtered view: ${filtered?.length} of ${result.findings.length} findings shown; score reflects the full scan`,
+      ),
+    );
+    lines.push("");
+  }
+  appendFindings(lines, display, counts, opts.verbose === true, ui, opts.tone);
   if (counts.total === 0 && result.score === 100) {
     appendForgedBlock(lines, p, ascii);
   }
-  appendFooter(lines, result, p);
+  appendFooter(lines, result, ui);
   return lines.join("\n");
 }
 
@@ -158,6 +196,21 @@ function appendScoreSection(
       `  ${p.dim(`(${result.rawDeductions} raw pts / ${result.testDeclarationCount} test declarations — normalized)`)}`,
     );
   }
+  // P2.3: when the deduction-mass ceiling binds (the score was capped by
+  // absolute mass, not density), say so — a reader comparing a padded
+  // suite's tiny rate with its low score must be able to see why.
+  if (result.effectiveDeductions !== undefined && result.score !== null) {
+    const ceiling = massCeiling(result.effectiveDeductions);
+    if (
+      ceiling !== null &&
+      result.score <= ceiling &&
+      result.rawDeductions !== undefined
+    ) {
+      lines.push(
+        `  ${p.dim(`(capped: deduction mass ${result.effectiveDeductions} pts — absolute ceiling ${ceiling})`)}`,
+      );
+    }
+  }
   if (result.suppressionCount && result.suppressionCount > 0) {
     lines.push(
       `  ${p.dim(`(${result.suppressionCount} finding(s) suppressed by config)`)}`,
@@ -180,8 +233,9 @@ function colorizeVerdict(
 function appendFrameworks(
   lines: string[],
   result: ScanResult,
-  p: ReturnType<typeof palette>,
+  ui: UiContext,
 ): void {
+  const { p } = ui;
   if (result.frameworks.length > 0) {
     const tags = result.frameworks.map((f) => `[${f}]`).join(" ");
     lines.push(`  ${p.dim("DETECTED")} ${p.info(tags)}`);
@@ -197,20 +251,21 @@ function appendFrameworks(
 function appendDimensions(
   lines: string[],
   result: ScanResult,
-  p: ReturnType<typeof palette>,
-  ascii: boolean,
+  ui: UiContext,
 ): void {
   const dims =
     result.dimensions.length > 0
       ? result.dimensions
       : computeDimensions(result.findings);
   if (dims.length === 0) return;
-  lines.push(`  ${p.accent("▚ DIAGNOSTICS BY CATEGORY")}`);
+  lines.push(sectionHeader("DIAGNOSTICS BY CATEGORY", ui));
   const width = Math.max(...dims.map((d) => d.category.length));
   for (const d of dims) {
     const label = padTo(d.category, width);
     const scoreText = String(d.score).padStart(3);
-    lines.push(`  ${label}  ${scoreGauge(d.score, p, 16, ascii)} ${scoreText}`);
+    lines.push(
+      `  ${label}  ${scoreGauge(d.score, ui.p, 16, ui.ascii)} ${scoreText}`,
+    );
   }
   lines.push("");
 }
@@ -219,12 +274,11 @@ function appendDeductions(
   lines: string[],
   result: ScanResult,
   counts: { error: number; warning: number; info: number; total: number },
-  p: ReturnType<typeof palette>,
-  width: number,
-  ascii: boolean,
+  ui: UiContext,
 ): void {
+  const { p } = ui;
   if (counts.total === 0) return;
-  lines.push(`  ${p.accent("▚ WHERE POINTS WERE LOST")}`);
+  lines.push(sectionHeader("WHERE POINTS WERE LOST", ui));
   // Honesty Core: the table must reconcile with the score. Deductions are
   // computed per finding via deductionFor — E0 costs 0, E1 costs half —
   // so count × base would silently lie whenever evidence levels apply.
@@ -248,26 +302,25 @@ function appendDeductions(
       `${s.n} × ${sev.padEnd(7)} −${String(s.ded).padStart(3)}${discounted ? p.dim(" (evidence-discounted)") : ""}`,
     );
   }
-  for (const row of box(rows, 1, { maxWidth: width - 2, ascii }))
-    lines.push(`  ${row}`);
+  for (const row of panel(rows, ui)) lines.push(row);
   lines.push("");
 }
 
 function appendFixThisFirst(
   lines: string[],
   result: ScanResult,
-  p: ReturnType<typeof palette>,
+  ui: UiContext,
 ): void {
   const fixes = topFixes(result.findings, 3);
   if (fixes.length === 0) return;
-  lines.push(`  ${p.accent("▚ FIX THIS FIRST")}`);
+  lines.push(sectionHeader("FIX THIS FIRST", ui));
   for (const { finding: f, scoreGain, autofixable } of fixes) {
     const gainText = `+${scoreGain} pt${scoreGain === 1 ? "" : "s"}`;
-    const autofixTag = autofixable ? p.ok(" [autofix available]") : "";
+    const autofixTag = autofixable ? ui.p.ok(" [autofix available]") : "";
     // QA-2026-08-30 QA-10: ruleId/file are data (plugin rule ids, hostile
     // filenames) — sanitize before raw interpolation outside the palette.
     const loc = `${sanitizeData(f.ruleId)} · ${sanitizeData(f.file)}:${f.line}`;
-    lines.push(`  ${p.bold(gainText)}  ${loc}${autofixTag}`);
+    lines.push(`  ${ui.p.bold(gainText)}  ${loc}${autofixTag}`);
   }
   lines.push("");
 }
@@ -276,7 +329,7 @@ interface FindingCard {
   severity: Finding["severity"];
   /** One-line location summary shown under the card title. */
   loc: string;
-  /** Problem = the (tone-adjusted) message. */
+  /** The finding itself = the (tone-adjusted) message. */
   problem: string;
   /** Evidence tag: [E2 · deterministic] / [E1 · heuristic · measured FP 14% · n=38]. */
   evidence: string;
@@ -306,7 +359,10 @@ function evidenceTag(f: Finding): string {
   if (f.trustLevel !== undefined) tag += ` · trust ${f.trustLevel}`;
   if (f.runtimeCorroboration !== undefined) {
     const c = f.runtimeCorroboration;
-    tag += ` · runtime: ${c.level === "defect" ? "defect corroborated" : c.level === "test" ? "test executed" : "file executed"}`;
+    let label = "file executed";
+    if (c.level === "defect") label = "defect corroborated";
+    else if (c.level === "test") label = "test executed";
+    tag += ` · runtime: ${label}`;
   }
   return `[${tag}]`;
 }
@@ -365,22 +421,27 @@ function wrapLines(text: string, width: number): string[] {
 const CARD_LABEL_PAD = 8;
 const CARD_GUTTER = "    ";
 
-function pushCard(
-  lines: string[],
-  card: FindingCard,
-  p: ReturnType<typeof palette>,
-  width: number,
-  ascii: boolean,
-): void {
+function pushCard(lines: string[], card: FindingCard, ui: UiContext): void {
+  const { p, width } = ui;
   const contentWidth = Math.max(
     20,
     width - 2 - CARD_GUTTER.length - CARD_LABEL_PAD,
   );
-  lines.push(
-    `  ${severityTag(card.severity, p, ascii)} ${p.bold(card.loc)}  ${p.dim(card.evidence)}`,
-  );
+  // The evidence bracket is the longest thing on a card header and it is
+  // one atomic unit — "[E2 · deterministic · measured FP 0% · n=20 · trust
+  // L3 · runtime: file executed]" is 78 columns on its own. Keeping it
+  // inline pushed the header past 128 columns and out of any default
+  // terminal. It drops to its own indented line when it does not fit,
+  // matching what the grouped "same fix applies" header already does.
+  const header = `  ${severityIcon(card.severity, ui)} ${p.bold(card.loc)}`;
+  if (measure(`${header}  ${card.evidence}`) <= width) {
+    lines.push(`${header}  ${p.dim(card.evidence)}`);
+  } else {
+    lines.push(header);
+    lines.push(`${CARD_GUTTER}${p.dim(card.evidence)}`);
+  }
   const fields: Array<{ label: string; text: string; dim: boolean }> = [
-    { label: "Problem", text: card.problem, dim: false },
+    { label: "Finding", text: card.problem, dim: false },
     { label: "Impact", text: card.impact, dim: false },
     { label: "Fix", text: card.fix, dim: false },
     { label: "Verify", text: card.verify, dim: true },
@@ -401,7 +462,7 @@ function pushCard(
 
 /**
  * The findings experience — EVIDENCE layer. Cards carry
- * severity → Problem → Impact → Fix → Verify; the evidence tag sits
+ * severity → Finding → Impact → Fix → Verify; the evidence tag sits
  * beside the title. >3 findings sharing a rule collapse under one
  * "same fix applies" header. Non-verbose shows MAX_CARDS cards plus an
  * overflow line; --verbose shows everything.
@@ -411,12 +472,22 @@ function appendFindings(
   result: ScanResult,
   counts: { total: number },
   verbose: boolean,
-  p: ReturnType<typeof palette>,
-  ascii: boolean,
-  width: number,
+  ui: UiContext,
   tone?: "blunt",
 ): void {
+  const { p, width } = ui;
   if (counts.total === 0) return;
+
+  // --category presentation filter: when nothing survives the filter,
+  // say so honestly instead of silently rendering an empty FINDINGS
+  // section (plan §5.5).
+  if (result.findings.length === 0) {
+    lines.push(
+      ui.p.dim("  filtered view: no findings in the selected category"),
+    );
+    lines.push("");
+    return;
+  }
 
   // Group by ruleId when >3 findings share a rule — one header, count,
   // "same fix applies", then one-liners. Groups keep first-appearance
@@ -463,7 +534,7 @@ function appendFindings(
   let hidden = 0;
   const hiddenRules = new Set<string>();
 
-  lines.push(`  ${p.accent("▚ FINDINGS")}`);
+  lines.push(sectionHeader("FINDINGS", ui));
   lines.push("");
   for (const unit of units) {
     if (unit.kind === "group") {
@@ -474,16 +545,43 @@ function appendFindings(
         hiddenRules.add(unit.ruleId);
         continue;
       }
-      lines.push(
-        `  ${severityTag(maxSeverity(unit.findings), p, ascii)} ${p.bold(sanitizeData(unit.ruleId))} ${p.dim(`× ${n} — same fix applies`)} ${p.dim(evidenceTag(first))}`,
+      // Same overflow rule as a single card: the evidence bracket moves to
+      // its own line rather than running the group header off the screen.
+      const groupHead = `  ${severityIcon(maxSeverity(unit.findings), ui)} ${p.bold(sanitizeData(unit.ruleId))} ${p.dim(`× ${n} — same fix applies`)}`;
+      const groupEvidence = evidenceTag(first);
+      if (measure(`${groupHead} ${groupEvidence}`) <= width) {
+        lines.push(`${groupHead} ${p.dim(groupEvidence)}`);
+      } else {
+        lines.push(groupHead);
+        lines.push(`${CARD_GUTTER}${p.dim(groupEvidence)}`);
+      }
+      // The shared fix is prose and wraps like every other card field; it
+      // was the one field pushed unwrapped, so a long fix ran ~140 columns.
+      const groupContentWidth = Math.max(
+        20,
+        width - 2 - CARD_GUTTER.length - CARD_LABEL_PAD,
       );
-      lines.push(
-        `${CARD_GUTTER}${p.accent("Fix".padEnd(CARD_LABEL_PAD))}${p.dim(sanitizeData(first.fix))}`,
+      wrapLines(sanitizeData(first.fix), groupContentWidth).forEach(
+        (seg, i) => {
+          const label =
+            i === 0
+              ? p.accent("Fix".padEnd(CARD_LABEL_PAD))
+              : " ".repeat(CARD_LABEL_PAD);
+          lines.push(`${CARD_GUTTER}${label}${p.dim(seg)}`);
+        },
       );
+      // The per-occurrence one-liners wrap too — a long rule message plus
+      // a deep path ran past 100 columns and was the last thing in the
+      // report that ignored the width budget.
       for (const f of unit.findings) {
-        lines.push(
-          `${CARD_GUTTER}${" ".repeat(CARD_LABEL_PAD)}${p.dim(`· ${sanitizeData(f.file)}:${f.line} — ${sanitizeData(f.message)}`)}`,
-        );
+        wrapLines(
+          `· ${sanitizeData(f.file)}:${f.line} — ${sanitizeData(f.message)}`,
+          groupContentWidth,
+        ).forEach((seg, i) => {
+          lines.push(
+            `${CARD_GUTTER}${" ".repeat(CARD_LABEL_PAD)}${p.dim(i === 0 ? seg : `  ${seg}`)}`,
+          );
+        });
       }
       lines.push("");
       shown++;
@@ -494,7 +592,7 @@ function appendFindings(
       hiddenRules.add(unit.finding.ruleId);
       continue;
     }
-    pushCard(lines, toCard(unit.finding, tone), p, width, ascii);
+    pushCard(lines, toCard(unit.finding, tone), ui);
     shown++;
   }
 
@@ -537,17 +635,39 @@ function appendForgedBlock(
   lines.push("");
 }
 
+/**
+ * Pushes dimmed prose that respects the terminal width.
+ *
+ * The honesty footer used to be pushed as single unbroken strings — the
+ * rule-coverage line alone is ~147 columns, so it overflowed every
+ * default 80- or 100-column terminal and ignored `--width` entirely.
+ * `wrapText` is the same helper the finding cards already use.
+ */
+function pushWrapped(
+  lines: string[],
+  p: ReturnType<typeof palette>,
+  text: string,
+  width: number,
+): void {
+  const indent = "  ";
+  for (const line of wrapText(text, Math.max(20, width - indent.length))) {
+    lines.push(p.dim(`${indent}${line}`));
+  }
+}
+
 function appendFooter(
   lines: string[],
   result: ScanResult,
-  p: ReturnType<typeof palette>,
+  ui: UiContext,
 ): void {
-  lines.push(p.dim(DIVIDER));
-  const status =
-    result.analysisStatus.discovery === "partial"
-      ? p.warning("PARTIAL — verdict may be incomplete")
-      : p.ok("complete");
-  lines.push(`  Analysis: ${status} · ${result.analysisStatus.durationMs}ms`);
+  const { p, width } = ui;
+  lines.push(
+    ...buildFooter({
+      ui,
+      complete: result.analysisStatus.discovery !== "partial",
+      durationMs: result.analysisStatus.durationMs,
+    }),
+  );
   // Honesty Core: advisory findings are visible but never cost points.
   const advisory = result.findings.filter(
     (f) =>
@@ -555,10 +675,11 @@ function appendFooter(
       "E0",
   ).length;
   if (advisory > 0) {
-    lines.push(
-      p.dim(
-        `  ${advisory} advisory finding${advisory === 1 ? "" : "s"} (E0 — observation only, no score impact)`,
-      ),
+    pushWrapped(
+      lines,
+      p,
+      `${advisory} advisory finding${advisory === 1 ? "" : "s"} (E0 — observation only, no score impact)`,
+      width,
     );
   }
 
@@ -570,13 +691,40 @@ function appendFooter(
     const measuredHere = [...firedRuleIds].filter(
       (id) => MEASURED_FP[id] !== undefined,
     ).length;
-    lines.push(
-      p.dim(
-        `  Rule coverage: ${measuredHere}/${firedRuleIds.size} rules that fired here have a measured` +
-          ` false-positive rate; the rest are heuristics.` +
-          ` \`mjolnir rules --unmeasured\` lists them.`,
-      ),
+    pushWrapped(
+      lines,
+      p,
+      `Rule coverage: ${measuredHere}/${firedRuleIds.size} rules that fired here have a measured` +
+        ` false-positive rate; the rest are heuristics.` +
+        ` \`mjolnir rules --unmeasured\` lists them.`,
+      width,
     );
+    // R4c Scope Integrity: "repository verified" is FORBIDDEN output
+    // unless scopeVerdict is PROVEN (plan §7). On PARTIAL, the scope
+    // block states the shortfall instead — the phrasing never claims
+    // more than the run analyzed. (A producer predating the block gets
+    // the honest PARTIAL rendering with the absent-block marker.)
+    const scope = result.scopeIntegrity;
+    if (scope?.scopeVerdict === "PROVEN") {
+      pushWrapped(
+        lines,
+        p,
+        `Scope: PROVEN — analyzed == claimed scope (${scope.analyzed}/${scope.discovered} discovered files; no exclusions, no parse failures).`,
+        width,
+      );
+    } else {
+      const reasons =
+        scope?.reasons?.join(", ") ??
+        (scope === undefined
+          ? "scope-integrity block absent (producer predates R4c)"
+          : "unspecified");
+      pushWrapped(
+        lines,
+        p,
+        `Scope: PARTIAL — ${reasons}; analyzed ${scope?.analyzed ?? 0} of ${scope?.discovered ?? 0} discovered files. No repository-verified claim applies to this scan.`,
+        width,
+      );
+    }
     // Plan §16: verified vs assumed — how many findings a real run
     // report corroborated. When no report was present, say so honestly
     // instead of implying the split is all-assumed by choice.
@@ -584,16 +732,18 @@ function appendFooter(
       (f) => f.runtimeCorroboration !== undefined,
     ).length;
     if (verified > 0) {
-      lines.push(
-        p.dim(
-          `  Runtime evidence: ${verified}/${result.findings.length} findings corroborated by a real run report (trust L3–L5); the rest are static-only.`,
-        ),
+      pushWrapped(
+        lines,
+        p,
+        `Runtime evidence: ${verified}/${result.findings.length} findings corroborated by a real run report (trust L3–L5); the rest are static-only.`,
+        width,
       );
     } else {
-      lines.push(
-        p.dim(
-          `  Runtime evidence: not available — no run report (mjolnir.report.json / test-results) next to the scan target; all findings are static-only (L0–L2).`,
-        ),
+      pushWrapped(
+        lines,
+        p,
+        `Runtime evidence: not available — no run report (mjolnir.report.json / test-results) next to the scan target; all findings are static-only (L0–L2).`,
+        width,
       );
     }
   }
@@ -640,7 +790,8 @@ function appendFooter(
   lines.push("");
 }
 
-function renderNoTests(p: ReturnType<typeof palette>, ascii: boolean): string {
+function renderNoTests(ui: UiContext): string {
+  const { p, ascii } = ui;
   const warnGlyph = ascii ? "!" : "⚠";
   // Audit H-6: say what was actually searched for, per adapter — the
   // tool ships five adapters, not three JavaScript frameworks.
@@ -661,7 +812,7 @@ function renderNoTests(p: ReturnType<typeof palette>, ascii: boolean): string {
       { ascii, maxWidth: 78 },
     ).map((l) => `  ${l}`),
     "",
-    "  If your tests live elsewhere: mjolnir <path-to-your-tests>",
+    nextStep("mjolnir <path-to-your-tests>", ui),
     "",
   ];
   return lines.join("\n");

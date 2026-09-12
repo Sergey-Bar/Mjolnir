@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | info                             |
 | Confidence                            | high                             |
 | Tier                                  | quarantine                       |
-| Measured FP rate                      | 100% (n=20)                      |
+| Measured FP rate                      | 87% (n=23)                       |
 | Evidence level                        | E2                               |
 | QA impact                             | Test hygiene debt (HYGIENE)      |
 | False-positive risk (author estimate) | high                             |
@@ -45,7 +45,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | --------------------------- | ----------- |
 | microsoft-playwright-dotnet | 26          |
 | negative-fixtures           | 2           |
-| positive-fixtures           | 3           |
+| positive-fixtures           | 11          |
 
 ---
 

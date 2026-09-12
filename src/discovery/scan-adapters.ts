@@ -14,6 +14,8 @@ import { pythonAdapter } from "../adapters/python.js";
 import { javaAdapter } from "../adapters/java.js";
 import { csharpAdapter } from "../adapters/csharp.js";
 import { githubActionsAdapter } from "../adapters/github-actions.js";
+import { azurePipelinesAdapter } from "../adapters/azure-pipelines.js";
+import { jenkinsAdapter } from "../adapters/jenkins.js";
 import type { LanguageAdapter } from "../engine/adapter.js";
 
 import { sharedWalk } from "./shared-walk.js";
@@ -26,6 +28,8 @@ export const SCAN_ADAPTERS: readonly LanguageAdapter[] = [
   javaAdapter,
   csharpAdapter,
   githubActionsAdapter,
+  azurePipelinesAdapter,
+  jenkinsAdapter,
 ];
 
 /**
@@ -63,8 +67,17 @@ export function discoverAllTestFiles(
     skipDirs: walkSkips,
     isTestFile: (name) => languageAdapters.some((a) => a.isTestFile(name)),
     onTestFile: (abs) => {
+      // Audit (scan-adapters): the claiming adapter's isTestFile may be
+      // a gate on the FULL PATH (regexes anchored to path segments,
+      // e.g. the workflow adapter's `\.github[\\/]workflows[\\/].+`),
+      // not just a basename — gate and claim must see the SAME string,
+      // so the gate here receives the walk-relative path, exactly what
+      // the scan pipeline feeds back. Gating on the walk-time basename
+      // only could admit a file whose relative shape the adapter's own
+      // discovery later rejects (latent drop), or vice versa.
+      const rel = relative(ctx.workspace.root, abs).replaceAll("\\", "/");
       for (const a of languageAdapters) {
-        if (!a.isTestFile(abs)) continue;
+        if (!a.isTestFile(rel)) continue;
         // The claiming adapter's own dirSkips decide here, per language.
         if (isInsideSkippedDir(ctx.workspace.root, abs, a.dirSkips)) continue;
         const bucket = buckets.get(a.id) ?? [];
@@ -86,6 +99,10 @@ export function discoverAllTestFiles(
         (a) => (buckets.get(a.id)?.length ?? 0) >= ctx.maxFiles,
       ),
     fixtureDirMemo,
+    // R4c Scope Integrity: the walk's exclusion accounting feeds the
+    // scope verdict (claimed scope ≡ analyzed scope).
+    onIgnored: ctx.onIgnored,
+    onUnrecognized: ctx.onUnrecognized,
   });
 }
 
@@ -140,5 +157,15 @@ export const SEARCHED_FOR: readonly SearchedForEntry[] = [
     id: "github-actions",
     label: "GitHub Actions workflows",
     globs: githubActionsAdapter.testFileGlobs,
+  },
+  {
+    id: "azure-pipelines",
+    label: "Azure DevOps pipelines",
+    globs: azurePipelinesAdapter.testFileGlobs,
+  },
+  {
+    id: "jenkins",
+    label: "Jenkinsfiles",
+    globs: jenkinsAdapter.testFileGlobs,
   },
 ];

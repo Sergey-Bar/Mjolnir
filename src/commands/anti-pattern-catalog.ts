@@ -103,6 +103,30 @@ export const ANTI_PATTERN_CONTENT: Record<string, string> = {
     '"neutral," which several branch-protection configurations treat as ' +
     "passing — the PR merges having never been tested at all.",
 
+  "QA-CI-013":
+    "A verification gate (Azure DevOps stage, job, or step) whose own " +
+    "condition or enablement guarantees it never executes on the pipeline " +
+    "path it is supposed to guard: `condition: failed()` turns the gate " +
+    "into a rescue step that only runs after something already failed, " +
+    "`condition: false` and `enabled: false` switch it off outright. On " +
+    "the green path the gate is skipped, so the pipeline passes with zero " +
+    "verification executed — the checkmark is green precisely because the " +
+    "check did not happen. (The sibling shape — a gate marked " +
+    "`succeededOrFailed()`/`always()`, which runs on failed pipelines too " +
+    "— is QA-CI-008's Azure arm.)",
+
+  "QA-CI-014":
+    "A Jenkinsfile `try` block that runs a verification gate and a `catch` " +
+    "that absorbs the failure without any failure marking — no rethrow, no " +
+    "`error(...)`, no `unstable(...)`, no `currentBuild.result` assignment. " +
+    "The stage completes, the build stays green, and the only trace of the " +
+    "failed tests is a log line. This is the Groovy spelling of the same " +
+    "defect QA-CI-002 catches in shell (`|| true`): the runner never sees " +
+    "the exit status it needs to fail the build. (A catch that downgrades " +
+    "to `unstable()` IS a failure marking — that rescue shape is " +
+    "QA-CI-008's Jenkins arm, and the two rules split the family without " +
+    "overlap.)",
+
   "QA-TEST-001":
     "`.only`/`test.only`/`it.only` restricts a test run to just the " +
     "marked test(s) — that's the entire point of the API, for local " +
@@ -189,18 +213,6 @@ export const ANTI_PATTERN_CONTENT: Record<string, string> = {
     "faster on average, because it proceeds the instant the condition is " +
     "true instead of always waiting the full fixed duration.",
 
-  "QA-PW-119":
-    "A test that writes to module-level mutable state which a LATER " +
-    "test reads creates a hidden dependency on execution order that " +
-    "nothing in either test's own code makes visible. It passes reliably " +
-    "as long as the test runner happens to execute them in the order " +
-    "the author had in mind. The moment anything reorders execution — " +
-    "test sharding across CI workers, a runner's parallelization " +
-    "strategy, someone reordering `describe` blocks, or simply upgrading " +
-    "the test runner to a version with a different default ordering — " +
-    "the dependent test starts failing with no code change to itself, " +
-    "and the actual cause is in a completely different file.",
-
   "QA-PY-001":
     'A hardcoded `pytest.main([..., "-k", ...])` call or `::`-scoped ' +
     "node selection committed into source, or an `@pytest.mark.only` " +
@@ -222,16 +234,6 @@ export const ANTI_PATTERN_CONTENT: Record<string, string> = {
     "keyword, which makes it easy to write a test that only calls the " +
     "function under test for its side effects and never checks the " +
     "result.",
-
-  "QA-PY-006":
-    "A pytest test function whose entire body is `pass` (optionally " +
-    "preceded by a comment) is Python's most literal form of \"empty " +
-    'test" — there is no simpler way to write a function that does ' +
-    "nothing and returns normally. pytest reports it as passed for the " +
-    "same reason QA-TEST-010 does in JS/TS: nothing raised, so nothing " +
-    "failed. It shows up most often as a stub left behind after " +
-    "`# TODO: implement` scaffolding never got filled in, quietly " +
-    "inflating the pass count in the meantime.",
 
   "QA-PY-012":
     "`assert True` and `assert x == x` are literal tautologies in " +

@@ -26,6 +26,13 @@ export const commentedOutTest = defineRule({
   falsePositiveRisk: "medium",
   autofix: false,
   detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "lexical-artifact",
+    detail:
+      "commented-out assertions are lexical artifacts — the " +
+      "comment-wrapped assertion text is the finding itself; the detector " +
+      "matches the shapes on the raw text",
+  },
   detectionNotes: "regex heuristic",
   introduced: "0.2.0",
 
@@ -76,6 +83,7 @@ export const commentedOutTest = defineRule({
  * the line. `await` is allowed because `// await test('x')` is still a
  * disabled test; a `.skip`/`.only` modifier is allowed for the same reason.
  */
+// eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
 const COMMENTED_TEST_RE = /^(?:await\s+)?(?:it|test)(?:\.\w+)?\s*\(/;
 
 /**
@@ -93,7 +101,8 @@ function stripCommentMarkers(line: string): {
 } {
   // <leading ws><marker><ws>  where marker is // , /**, /*, or a * gutter.
   // Every part is optional/zero-width, so exec always matches.
-  const m = /^(\s*)(\/{2,}|\/\*\*?|\*)?(\s*)/.exec(line) as RegExpExecArray;
+  // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
+  const m = /^\s*(?:\/{2,}|\/\*\*?|\*)?\s*/.exec(line) as RegExpExecArray;
   const consumed = m[0].length;
   return {
     text: line.slice(consumed),

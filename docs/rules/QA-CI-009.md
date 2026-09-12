@@ -2,20 +2,20 @@
 
 _Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
-| Field                                 | Value                                            |
-| ------------------------------------- | ------------------------------------------------ |
-| Severity                              | error                                            |
-| Confidence                            | high                                             |
-| Tier                                  | extended (PROVISIONAL)                           |
-| Measured FP rate                      | not yet measured                                 |
-| Evidence level                        | E2                                               |
-| QA impact                             | False-green risk (FALSE-GREEN)                   |
-| False-positive risk (author estimate) | low                                              |
-| Autofix available                     | no                                               |
-| Languages                             | yaml                                             |
-| Frameworks                            | github-actions                                   |
-| Detection strategy                    | FRAMEWORK (regex pattern on parsed workflow AST) |
-| Introduced in                         | v0.4.0                                           |
+| Field                                 | Value                                                                                                                |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Severity                              | error                                                                                                                |
+| Confidence                            | high                                                                                                                 |
+| Tier                                  | extended                                                                                                             |
+| Measured FP rate                      | 0% (n=10)                                                                                                            |
+| Evidence level                        | E2                                                                                                                   |
+| QA impact                             | False-green risk (FALSE-GREEN)                                                                                       |
+| False-positive risk (author estimate) | low                                                                                                                  |
+| Autofix available                     | no                                                                                                                   |
+| Languages                             | yaml, groovy                                                                                                         |
+| Frameworks                            | github-actions, jenkins                                                                                              |
+| Detection strategy                    | FRAMEWORK (regex pattern on parsed workflow AST (GitHub); lexical sh-segment scan on the Jenkinsfile text (Jenkins)) |
+| Introduced in                         | v0.4.0                                                                                                               |
 
 ## Why this fails in production
 
@@ -43,7 +43,7 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 | Repo              | Occurrences |
 | ----------------- | ----------- |
-| positive-fixtures | 5           |
+| positive-fixtures | 10          |
 
 ---
 

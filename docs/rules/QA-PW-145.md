@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | info                                             |
 | Confidence                            | low                                              |
 | Tier                                  | quarantine                                       |
-| Measured FP rate                      | 100% (n=20)                                      |
+| Measured FP rate                      | 50% (n=40)                                       |
 | Evidence level                        | E1                                               |
 | QA impact                             | Test hygiene debt (HYGIENE)                      |
 | False-positive risk (author estimate) | high                                             |
@@ -56,15 +56,16 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 | negative-fixtures    | 7           |
 | nextauthjs-next-auth | 3           |
 | nocodb-nocodb        | 1           |
-| positive-fixtures    | 20          |
+| positive-fixtures    | 25          |
 | puppeteer-puppeteer  | 58          |
 | streamlit-streamlit  | 4           |
 | sveltejs-kit         | 11          |
 | tanstack-query       | 3           |
 | vercel-next-js       | 20          |
-| vitejs-vite          | 38          |
+| vitejs-vite          | 39          |
 | vitest-dev-vitest    | 18          |
 | withastro-astro      | 48          |
+| yarnpkg-berry        | 1           |
 
 ---
 

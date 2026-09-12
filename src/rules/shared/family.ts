@@ -13,6 +13,7 @@ import {
   type AppliesTo,
   type AstQueryHook,
   type DetectionStrategy,
+  type StrategyJustification,
 } from "../rule.js";
 import type {
   Finding,
@@ -58,6 +59,12 @@ export interface LanguageVariant {
    * per-rule migration, never family-wide by symmetry).
    */
   detectionStrategy?: DetectionStrategy;
+  /**
+   * Depth-adjudication record (master plan P8) — variant-level override
+   * of the family default. REQUIRED when THIS variant ships LEXICAL
+   * (registry ratchet).
+   */
+  strategyJustification?: StrategyJustification;
   /** Legacy free-text detection-notes override (family-level default). */
   detectionNotes?: string;
   /**
@@ -94,6 +101,12 @@ export interface PatternFamilyOptions {
   falsePositiveRisk: "low" | "medium" | "high";
   /** Shared detection strategy enum value (defaults to LEXICAL). */
   detectionStrategy?: DetectionStrategy;
+  /**
+   * Shared depth-adjudication record (master plan P8) — family-level
+   * default; variants override. REQUIRED when the family ships LEXICAL
+   * (registry ratchet).
+   */
+  strategyJustification?: StrategyJustification;
   /** Shared legacy free-text detection notes, if any. */
   detectionNotes?: string;
   /** Shared detector-implementation revision (§07; variants override). */
@@ -143,14 +156,30 @@ export function definePatternFamily(
       autofix: opts.autofix ?? false,
       detectionStrategy:
         v.detectionStrategy ?? opts.detectionStrategy ?? "LEXICAL",
-      ...((v.detectionNotes ?? opts.detectionNotes)
-        ? { detectionNotes: v.detectionNotes ?? opts.detectionNotes }
+      ...((v.strategyJustification ?? opts.strategyJustification)
+        ? {
+            strategyJustification:
+              v.strategyJustification ?? opts.strategyJustification,
+          }
         : {}),
+      ...(v.detectionNotes !== undefined
+        ? { detectionNotes: v.detectionNotes }
+        : {
+            ...(opts.detectionNotes !== undefined
+              ? { detectionNotes: opts.detectionNotes }
+              : {}),
+          }),
       ...(opts.introduced ? { introduced: opts.introduced } : {}),
-      ...((v.tier ?? opts.tier) ? { tier: v.tier ?? opts.tier } : {}),
-      ...((v.detectorRevision ?? opts.detectorRevision)
-        ? { detectorRevision: v.detectorRevision ?? opts.detectorRevision }
-        : {}),
+      ...(v.tier !== undefined
+        ? { tier: v.tier }
+        : { ...(opts.tier !== undefined ? { tier: opts.tier } : {}) }),
+      ...(v.detectorRevision !== undefined
+        ? { detectorRevision: v.detectorRevision }
+        : {
+            ...(opts.detectorRevision !== undefined
+              ? { detectorRevision: opts.detectorRevision }
+              : {}),
+          }),
       ...((v.overlapWith ?? opts.overlapWith)
         ? { overlapWith: v.overlapWith ?? opts.overlapWith }
         : {}),
@@ -168,11 +197,22 @@ export function definePatternFamily(
         const astFindings = tryAstQuery(v.astQuery, ctx);
         if (astFindings !== undefined) return astFindings;
 
-        for (const re of v.patterns) {
+        // Audit M4: infinite-loop guard. A variant pattern WITHOUT the
+        // `g` flag never advances lastIndex — the exec loop below would
+        // spin forever on the first match, hanging the whole scan. A
+        // missing flag is a family-declaration bug; clone with `g` and
+        // let the registry test (tests/audit) name the offending variant.
+        const variantPatterns = v.patterns.map((p) =>
+          // eslint-disable-next-line security/detect-non-literal-regexp -- clone of a declared family pattern's own source/flags, not scan input
+          p.global ? p : new RegExp(p.source, `${p.flags}g`),
+        );
+
+        for (const re of variantPatterns) {
           // Reset lastIndex for global regexes reused across calls
           re.lastIndex = 0;
           let m: RegExpExecArray | null;
           while ((m = re.exec(text)) !== null) {
+            const matched: string = m[0];
             findings.push({
               severity,
               confidence: opts.confidence,
@@ -181,7 +221,12 @@ export function definePatternFamily(
               file: ctx.path,
               line: lineAt(text, m.index),
               column: colAt(text, m.index),
-              message: v.message.replace("$0", m[0].slice(0, 60)),
+              // Audit M4: the $0 substitution uses a FUNCTION replacer.
+              // A string replacer interprets `$&`/`` $` ``/`$'` inside
+              // the replacement — i.e. inside the MATCHED CODE — so a
+              // match containing `$&` produced mangled messages. A
+              // function replacer inserts the text literally.
+              message: v.message.replace("$0", () => matched.slice(0, 60)),
               why: opts.why,
               fix: v.fix,
             });
