@@ -9,6 +9,20 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [1.0.9] — 2026-09-12
+
+### Changes since 1
+
+- chore: add testTimeout: 30_000 to vitest.config.ts
+- test: MR-7A release-verification machinery contract (#84)
+- feat: SC-8 determinism verifier + SC-11 control-state record (MR-8.C/D) (#83)
+- feat: pack-audit gate wired before publish (SC-6, MR-8.B) (#82)
+- test: SC-3/SC-4/SC-7 supply-chain hygiene gates (MR-8.A) (#81)
+- docs: PR template + CONTRIBUTING targeted-slice ladder (MR-4, GC-2) (#80)
+- feat: docs:regen aggregate — one idempotent command for every generated surface (MR-5) (#79)
+- test(site): negative proof for the D-2 emitted-HTML link gate (MR-6) (#78)
+- fix(release): recognize the '(Merged PR #N)' squash subject so PR labels drive the bump (#77)
+
 ## [1.0.8] — 2026-09-11
 
 ### Changes since 1.0.7
