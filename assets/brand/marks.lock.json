@@ -3,35 +3,33 @@
     "The brand marks, pinned by sha256. `brand-doctor` rule 9 fails if any",
     "of them changes.",
     "",
-    "The logo is the source of truth for the whole visual system and the one",
-    "asset that is not derived from anything — the rest of the brand is",
-    "derived from IT. Everything else in this repository that carries a",
-    "colour is generated from a token module and locked byte-for-byte; these",
-    "eleven files were governed by a sentence in a document asking people",
-    "not to redraw the hammer.",
+    "All eleven files are rendered by `scripts/generate-brand-marks.ts` from",
+    "the same two vector sources — the Cinzel wordmark and the Mansaz rune —",
+    "each at its own native resolution, not resized from one bitmap master.",
+    "`masters` names the two large reference renders (the full wordmark",
+    "lockup and the square rune alone); `derived` is every size a real",
+    "surface consumes. The split is nominal now, not a resize lineage, but",
+    "the point of pinning both groups is unchanged: a regenerated file with",
+    "different numbers is still a change to what a reader sees, and it",
+    "should arrive as a decision, not a diff nobody reads.",
     "",
-    "Two masters were provided and are archival. Nine files are downscales",
-    "or re-encodes of them, which is permitted — re-encoding is fine,",
-    "redrawing is not — so they are pinned too: a re-export at a different",
-    "quality is still a change to what a reader sees, and it should be a",
-    "decision rather than a diff nobody reads.",
-    "",
-    "To change one deliberately: replace the file, run",
-    "`npm run brand:marks:update`, and say why in the commit."
+    "To change one deliberately: edit generate-brand-marks.ts (or its font",
+    "inputs), run `npm run brand:marks` then `npm run brand:marks:update`,",
+    "and say why in the commit."
   ],
   "masters": {
-    "assets/brand/logo.png": "93631439982cd20fdab521d037098913970dbaced4fa412db361980c8e960c8f",
-    "assets/brand/mark.png": "e6cafb4ce012c8f298eb3fd405666a2d87f49cd262138941259ffeb96b9583ec"
+    "assets/brand/logo.png": "d0ebe493234178eaf4c777602a41ca203aa6b461854d9333bfd776dc65a9be0d",
+    "assets/brand/mark.png": "0f61f2aaffb8e74a223ade4315c926815b4f968275bd794652c9acff3d7a45dd"
   },
   "derived": {
-    "assets/brand/icon.png": "ee20615d264eac0319fcb976b432619aa363e86adeabf223c0e57a6352cb57ea",
-    "assets/readme/logo.png": "96486205eaad91d3247d349a93c025b21cf1aec4eab7addf1214f12d72619c38",
-    "assets/readme/logo.webp": "bd45b0105881cfb9952ea8a80798a9036d30c8dc3c282f031b870792728d7bbc",
-    "site/public/apple-touch-icon.png": "2ba966e042a6692dee036344850fa95bdc450e93209b85b67f0acfb06fb8b0f3",
-    "site/public/favicon-16.png": "5416b584f30bf0fda4e808c2bede1e6e8b8ebab8423acdbfb7abda3e951d8ff3",
-    "site/public/favicon-32.png": "9970e41fc41272c802f78a1604e68ff25e579bc13a6e30429579d6cf05876cdf",
-    "site/public/logo.webp": "00e8c11706b1c5568138a23286645dd227627a3154843e48ebfa9909d117be83",
-    "site/public/mark-64.png": "614b23375380bcf5918681d8fbb5ba20407a7693a8fabfd994145f7c1b490f01",
-    "site/public/social-card.jpg": "efc53f5853545d0b30f77489b56f7b2825d5d94e43f81281fe9ab403c2663336"
+    "assets/brand/icon.png": "fb2071dfa216145e8ecd05b9ac2afbdfcc64b76335e63e02d9192bf5cf678f26",
+    "assets/readme/logo.png": "d458d67b217a9c9ed69492bca9089fca07fe0b5170457487a3897ef57f7b590b",
+    "assets/readme/logo.webp": "c9ca1415fe8227b4a19830049d87fd6825bbf58adf88a548f8f3d4fba7d435ba",
+    "site/public/apple-touch-icon.png": "03f24189591492b4096b7c59762989fa313116c0fea1dc0c9226075055482dbf",
+    "site/public/favicon-16.png": "9b35ba5180f35b01ec183d1be0842e33951143d8b3a05b264f0a5e40d93d3ee1",
+    "site/public/favicon-32.png": "93394dee8651b742ab08d7b589900cd203d9982fc9ab85978baca4dfc4cc3a2f",
+    "site/public/logo.webp": "c9ca1415fe8227b4a19830049d87fd6825bbf58adf88a548f8f3d4fba7d435ba",
+    "site/public/mark-64.png": "5ea522286cd795303e2f3ccdcb417d6cee8ddf4c469d55c2e15124ac07cf13a6",
+    "site/public/social-card.jpg": "645bdf9ca5dfb95d4e890b3123d3566fecd6f400986fec183662b094b4bcc32e"
   }
 }
