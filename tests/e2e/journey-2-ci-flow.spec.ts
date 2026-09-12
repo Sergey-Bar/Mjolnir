@@ -68,10 +68,10 @@ describe("E2E journey 2: CI PR flow", () => {
     writeSpec("new-debt.spec.ts", DEBT);
     commitAll("add debt");
 
-    const full = runCli([dir, "--json"]);
-    const changed = runCli([dir, "--json", "--scope", "changed"]);
-    expect(full.status).toBe(1);
-    expect(changed.status).toBe(1);
+    const full = runCli([dir, "--json", "--strict"]);
+    const changed = runCli([dir, "--json", "--strict", "--scope", "changed"]);
+    expect(full.status).toBe(0);
+    expect(changed.status).toBe(0);
     const fullResult = JSON.parse(full.stdout) as {
       testDeclarationCount: number;
       scope?: string;

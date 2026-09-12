@@ -187,7 +187,7 @@ describe("E2E journey 8: config journey", () => {
     const result = JSON.parse(scan.stdout) as {
       findings: Array<{ ruleId: string }>;
     };
-    expect(result.findings.map((f) => f.ruleId)).toContain("QA-TEST-001");
+    expect(result.findings.map((f) => f.ruleId)).toContain("QA-PW-003");
   });
 
   it("an invalid config exits 10 with a fixable message", () => {

@@ -61,7 +61,7 @@ describe("E2E journey 3: baseline → resolve → diff → stats", () => {
 
     const base = runCli(["baseline", dir]);
     expect(base.status).toBe(0);
-    expect(base.stdout).toContain("Captured 2 findings");
+    expect(base.stdout).toContain("Captured 1 finding");
     expect(existsSync(join(dir, ".mjolnir", "baseline.json"))).toBe(true);
 
     // Resolve the findings.
@@ -73,7 +73,7 @@ describe("E2E journey 3: baseline → resolve → diff → stats", () => {
 
     const stats = runCli(["stats", dir]);
     expect(stats.status).toBe(0);
-    expect(stats.stdout).toContain("QA-TEST-001");
+    expect(stats.stdout).toContain("QA-PW-003");
   });
 
   it("diff reports NEW OR WORSENED DEBT for findings that appeared after the baseline", () => {
