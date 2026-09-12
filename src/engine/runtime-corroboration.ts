@@ -25,37 +25,33 @@
  */
 
 import type { Finding, RuntimeCorroboration, TrustLevel } from "../types.js";
-import type { ForensicsReport } from "../forensics/types.js";
-import {
-  buildEvidenceRecords,
-  countTestsIn,
-  findTestAt,
-  type EvidenceRecord,
-} from "./evidence-core.js";
+import type { ForensicsReport, TestVerdict } from "../forensics/types.js";
 
 /**
  * Stamp runtime corroboration + trust levels onto findings (mutates in
  * place, the same contract as stampEvidenceLevels). Returns the number
  * of findings that gained runtime corroboration.
- *
- * WI-2 (Canonical Evidence Core): matching is delegated to the core —
- * `evidence` is the pipeline's normalized record set; when omitted, the
- * records are built from the report internally. Either way the stamped
- * output is identical (preservation suite pins this).
  */
 export function stampRuntimeCorroboration(
   findings: Finding[],
   report: ForensicsReport,
-  evidence?: EvidenceRecord[],
 ): number {
-  const records = evidence ?? buildEvidenceRecords(report, "runtime-report");
+  // Group verdicts per file once; verdicts keep report order, which for
+  // Playwright JSON is suite order (ascending-ish by file section).
+  const byFile = new Map<string, TestVerdict[]>();
+  for (const v of report.verdicts) {
+    const list = byFile.get(v.file) ?? [];
+    list.push(v);
+    byFile.set(v.file, list);
+  }
 
   let corroborated = 0;
   for (const f of findings) {
-    const testsExecuted = countTestsIn(records, f.file);
-    if (testsExecuted === 0) continue;
+    const verdicts = byFile.get(f.file);
+    if (!verdicts || verdicts.length === 0) continue;
 
-    const matched = findTestAt(records, f.file, f.line);
+    const testsExecuted = verdicts.length;
+    const matched = findContainingTest(verdicts, f.line);
     let corroboration: RuntimeCorroboration;
     if (matched) {
       corroboration = {
@@ -64,11 +60,11 @@ export function stampRuntimeCorroboration(
         testsExecuted,
         matchedTest: {
           title: matched.title,
-          finalStatus: matched.status.final,
+          finalStatus: matched.finalStatus,
           attempts: matched.attempts,
-          passedOnRetry: matched.status.passedOnRetry,
-          everFailed: matched.status.failed,
-          skipped: matched.status.skipped,
+          passedOnRetry: matched.passedOnRetry,
+          everFailed: matched.everFailed,
+          skipped: matched.skipped,
         },
       };
     } else {
@@ -83,10 +79,11 @@ export function stampRuntimeCorroboration(
     const flakeCorroborated =
       f.qaImpact === "FLAKY-RISK" &&
       matched !== undefined &&
-      (matched.status.passedOnRetry ||
-        matched.status.failed ||
-        matched.status.final === "timedOut");
+      (matched.passedOnRetry ||
+        matched.everFailed ||
+        matched.finalStatus === "timedOut");
     if (flakeCorroborated) corroboration.level = "defect";
+
     f.runtimeCorroboration = corroboration;
     f.trustLevel = deriveTrustLevel(f, corroboration);
     corroborated++;
@@ -95,12 +92,29 @@ export function stampRuntimeCorroboration(
 }
 
 /**
- * (Matching semantics live in the evidence core — `findTestAt`. The
- * doc comments below were the pre-core contract and are preserved
- * there; Audit W8's honesty rule is enforced by `findTestAt` verbatim:
- * a record without a declaration line can never produce a test-level
- * match.)
+ * The test whose declaration span contains `line`. Playwright JSON
+ * verdicts carry the spec's declaration line: the containing test is
+ * the one with the greatest declaration line ≤ the finding's line in
+ * the same file (specs are flat within a file). When the report cannot
+ * place lines (JUnit, or some verdicts lack them) the only HONEST
+ * claim is file-level corroboration — plus the unambiguous
+ * single-test-file case. Claiming a specific test without range
+ * knowledge would fabricate precision the report does not carry.
  */
+function findContainingTest(
+  verdicts: TestVerdict[],
+  line: number,
+): TestVerdict | undefined {
+  if (verdicts.length === 1) return verdicts[0];
+  if (verdicts.some((v) => v.line === undefined)) return undefined;
+  const sorted = [...verdicts].sort((a, b) => (a.line ?? 0) - (b.line ?? 0));
+  let match: TestVerdict | undefined;
+  for (const v of sorted) {
+    if ((v.line ?? 0) <= line) match = v;
+    else break;
+  }
+  return match;
+}
 
 /**
  * The deterministic L0–L5 derivation (see TRUST_ORDER). Static base
@@ -112,23 +126,17 @@ export function deriveTrustLevel(
   finding: Pick<Finding, "evidenceLevel" | "findingType" | "confidence">,
   corroboration?: RuntimeCorroboration,
 ): TrustLevel {
-  let level: "E0" | "E1" | "E2";
-  if (finding.evidenceLevel !== undefined) {
-    level = finding.evidenceLevel;
-  } else if (finding.findingType === "observation") {
-    level = "E0";
-  } else if (finding.findingType === "heuristic-risk") {
-    level = "E1";
-  } else if (finding.confidence === "low") {
-    level = "E1";
-  } else {
-    level = "E2";
-  }
-  if (!corroboration) {
-    if (level === "E0") return "L0";
-    if (level === "E1") return "L1";
-    return "L2";
-  }
+  const level =
+    finding.evidenceLevel ??
+    (finding.findingType === "observation"
+      ? "E0"
+      : finding.findingType === "heuristic-risk"
+        ? "E1"
+        : finding.confidence === "low"
+          ? "E1"
+          : "E2");
+  if (!corroboration)
+    return level === "E0" ? "L0" : level === "E1" ? "L1" : "L2";
   if (corroboration.level === "defect") return "L5";
   if (corroboration.level === "test") return "L4";
   return "L3";
@@ -148,8 +156,7 @@ export function splitByRuntimeEvidence(
   const runtimeVerified: Finding[] = [];
   const assumed: Finding[] = [];
   for (const f of findings) {
-    if (f.runtimeCorroboration !== undefined) runtimeVerified.push(f);
-    else assumed.push(f);
+    (f.runtimeCorroboration !== undefined ? runtimeVerified : assumed).push(f);
   }
   return { runtimeVerified, assumed };
 }

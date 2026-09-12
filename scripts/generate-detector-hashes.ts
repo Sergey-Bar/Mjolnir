@@ -20,7 +20,7 @@ import { writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { RULES } from "../src/rules/index.js";
+import { RULES, RETIRED_RULE_IDS } from "../src/rules/index.js";
 import {
   computeDetectorHashes,
   serializeManifest,
@@ -29,7 +29,11 @@ import {
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = join(ROOT, "tests", "corpus", "detector-hashes.json");
 
-const manifest = computeDetectorHashes(RULES, join(ROOT, "src", "rules"));
+const manifest = computeDetectorHashes(
+  RULES,
+  join(ROOT, "src", "rules"),
+  RETIRED_RULE_IDS,
+);
 writeFileSync(OUT, serializeManifest(manifest), "utf8");
 console.log(
   `Wrote ${OUT} — ${Object.keys(manifest).length} rules hashed (metadata ‖ token stream, sha256).`,

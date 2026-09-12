@@ -17,7 +17,7 @@ once shipped, so this file is the record of what changed between versions.
 - Merge origin/main into remediation/remote-first
 - chore: add testTimeout: 30_000 to vitest.config.ts
 - chore: sync smithery.yaml in the release cut step (the registry must match the package)
-- test: keep CI fixture scripts off the docs-consistency scanner (npm run e2e -> npx playwright test)
+- test: keep CI fixture scripts off the docs-consistency scanner (old `e2e` script -> `npx playwright test`)
 - test: arms-coverage wave for the R1-R10 train (CI gates, adapters, parser, trace, release-trust, trust surfaces)
 - docs: resync DEPTH-ADJUDICATION.md to the train's measured state (drift-lock)
 - chore: re-baseline coverage ratchet after the R1-R10 train landing

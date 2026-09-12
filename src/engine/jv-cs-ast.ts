@@ -142,10 +142,7 @@ function isCsTestAttribute(node: Node): boolean {
   if (node.type !== "attribute") return false;
   const nameNode = node.childForFieldName("name");
   if (!nameNode) return false;
-  // An empty-name attribute (parse-error shape `[ ]`) yields "" — the
-  // empty string is never in the exact-name set, so no extra guard.
-  const last = lastIdentifierText(nameNode);
-  return last !== undefined && CS_TEST_ATTRIBUTES.has(last);
+  return CS_TEST_ATTRIBUTES.has(lastIdentifierText(nameNode) ?? "");
 }
 
 /**
@@ -202,12 +199,8 @@ export function isInvocation(node: Node): boolean {
  */
 export function callName(node: Node): string | undefined {
   if (node.type === "method_invocation") {
-    // Audit W4: the name field is nullable in the grammar contract —
-    // null-guard instead of asserting; a shape without one is "not a
-    // match" like every other exotic callee.
     const nameNode = node.childForFieldName("name");
-    if (!nameNode) return undefined;
-    return lastIdentifierText(nameNode);
+    return nameNode ? lastIdentifierText(nameNode) : undefined;
   }
   if (node.type === "invocation_expression") {
     const fn = node.childForFieldName("function");
@@ -254,10 +247,8 @@ export function invocationsWithin(node: Node): Node[] {
   const out: Node[] = [];
   const visit = (n: Node): void => {
     if (isInvocation(n)) out.push(n);
-    // namedChildren is typed (Node | null)[] but never carries null in
-    // practice; iterate defensively without a per-child branch.
     for (const child of n.namedChildren) {
-      visit(child as Node);
+      if (child) visit(child);
     }
   };
   visit(node);

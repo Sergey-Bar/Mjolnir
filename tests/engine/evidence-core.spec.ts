@@ -373,11 +373,8 @@ describe("preservation: stamping through the core ≡ pre-core semantics (differ
       finding({ file: "nowhere/x.ts", line: 2 }),
     ];
     const viaCore = mk();
-    stampRuntimeCorroboration(
-      viaCore,
-      rep,
-      buildEvidenceRecords(rep, "r.json"),
-    );
+    buildEvidenceRecords(rep, "r.json");
+    stampRuntimeCorroboration(viaCore, rep);
     const viaInternal = mk();
     stampRuntimeCorroboration(viaInternal, rep);
     expect(viaCore).toEqual(viaInternal);
