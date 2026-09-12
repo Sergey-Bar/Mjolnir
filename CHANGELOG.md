@@ -9,6 +9,13 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [1.0.11] — 2026-09-12
+
+### Changes since 1.0.10
+
+- Merge pull request #34 from Sergey-Bar/dependabot/github_actions/actions/deploy-pages-5.0.1
+- chore(deps): bump actions/deploy-pages from 5.0.0 to 5.0.1
+
 ## [1.0.10] — 2026-09-12
 
 ### Changes since 1.0.9
