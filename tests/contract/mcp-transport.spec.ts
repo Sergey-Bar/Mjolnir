@@ -657,8 +657,10 @@ describe("handleMcpMessage — the full JSON-RPC surface (§21)", () => {
       structuredContent: unknown;
     };
     expect(result.content[0]?.type).toBe("text");
+    expect(typeof result.content[0]?.text).toBe("string");
     expect(result.structuredContent).toBeDefined();
-    expect(typeof JSON.parse(result.content[0]?.text ?? "{}")).toBe("object");
+    const text = result.content[0]?.text;
+    expect(typeof JSON.parse(text as string)).toBe("object");
   });
 
   it("tools/call errors propagate as JSON-RPC errors", async () => {

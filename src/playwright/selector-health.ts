@@ -38,7 +38,11 @@ export function classifyLocator(line: string): LocatorClass | null {
   if (/\$x\s*\(|locator\s*\(\s*['"`]xpath=/.test(line)) return "xpath";
   if (/locator\s*\(\s*['"`][^'"`]*['"`]/.test(line)) {
     // Any locator with a quoted selector that isn't testid/xpath = CSS.
-    const isStructural = /[.>#[]/.test(line);
+    // Extract the selector literal to avoid matching method syntax dots
+    // (e.g. page.locator contains a dot that would match /[.>#[]/)
+    const selMatch = line.match(/locator\s*\(\s*['"`]([^'"`]+)['"`]/);
+    const selector = selMatch?.[1] ?? line;
+    const isStructural = /[.>#[]/.test(selector);
     return isStructural ? "css-chain" : "plain-css";
   }
   return null;

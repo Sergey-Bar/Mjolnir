@@ -152,7 +152,23 @@ function isCollectedTestMethod(
     const lineIndent = (/^[ \t]*/.exec(line) as RegExpExecArray)[0];
     if (lineIndent.length >= indent.length) continue;
     const classM = /^[ \t]*class\s+(\w+)/.exec(line);
-    if (classM) return /^Test/.test(classM[1] as string);
+    if (classM) {
+      if (!/^Test/.test(classM[1] as string)) return false;
+      // pytest skips Test* classes that define __init__ — they are not
+      // collected, so assertion-less methods inside them are not a risk.
+      const classBody = lines.slice(i + 1).join("\n");
+      const classIndent = lineIndent;
+      if (
+        // eslint-disable-next-line security/detect-non-literal-regexp -- classIndent is whitespace extracted from the source
+        new RegExp(
+          `^${classIndent}(?:    |\t)\\s*def\\s+__init__\\s*\\(`,
+          "m",
+        ).test(classBody)
+      ) {
+        return false;
+      }
+      return true;
+    }
     // Any other smaller-indent line (def, assignment, code) encloses
     // the method in something that is not a collectable class.
     return false;

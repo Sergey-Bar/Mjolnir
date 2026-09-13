@@ -235,8 +235,12 @@ export function isSuppressionActive(
 
 /** UTC-midnight timestamp of an ISO date string (YYYY-MM-DD). */
 function utcMidnight(isoDate: string): number {
-  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(isoDate);
-  if (!m) return new Date(isoDate).getTime();
+  // Require strict YYYY-MM-DD format. Date-time strings like
+  // "2026-09-01T23:59:59Z" would be silently truncated to UTC midnight,
+  // causing the expiry to compare incorrectly against the calendar day.
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return NaN;
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate);
+  if (!m) return NaN;
   return Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
 }
 

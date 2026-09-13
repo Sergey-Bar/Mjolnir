@@ -165,11 +165,21 @@ export function computeChangedScope(
         const body = section.startsWith("diff --git ")
           ? section
           : `diff --git ${section}`;
-        const pathMatch =
-          /^diff --git (?:a\/"(.+?)"|a\/.+)b\/(?:"(.+?)"|(.+))\n/.exec(
-            `${body}\n`,
-          );
-        const file = pathMatch?.[1] ?? pathMatch?.[2] ?? pathMatch?.[3];
+        // Parse diff header: diff --git a/path b/path
+        // Canonical form for spaces: diff --git "a/path with spaces" "b/path with spaces"
+        // Legacy form: diff --git a/"path" b/"path"
+        // Select the decoded b/ (new) path for the file key.
+        const header = body.split("\n")[0] ?? "";
+        let file: string | undefined;
+        // Canonical quoted: "a/..." "b/..."
+        const canonM = /^diff --git "a\/.+?" "b\/(.+?)"/.exec(header);
+        if (canonM) {
+          file = canonM[1];
+        } else {
+          // Unquoted: a/path b/path — match up to whitespace separator
+          const simpleM = /^diff --git a\/\S+\s+b\/(\S+)/.exec(header);
+          if (simpleM) file = simpleM[1];
+        }
         if (file !== undefined) perFile.set(file, body);
       }
     }

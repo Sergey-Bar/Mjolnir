@@ -299,8 +299,23 @@ export async function handleToolCall(call: McpToolCall): Promise<McpResponse> {
 
     if (call.name === "explain") {
       const ruleId = call.args["ruleId"] as string;
+      const rawFixturesRoot = call.args["fixturesRoot"];
+      if (
+        rawFixturesRoot !== undefined &&
+        typeof rawFixturesRoot !== "string"
+      ) {
+        return {
+          jsonrpc: "2.0",
+          id: call.id,
+          error: {
+            code: MCP_ERRORS.INVALID_PARAMS,
+            message: "fixturesRoot must be a string",
+          },
+        };
+      }
       const fixturesRoot =
-        (call.args["fixturesRoot"] as string | undefined) ?? process.cwd();
+        (typeof rawFixturesRoot === "string" ? rawFixturesRoot : undefined) ??
+        process.cwd();
       const explanation = explainRule(ruleId, fixturesRoot);
       if (!explanation.ok) {
         return {

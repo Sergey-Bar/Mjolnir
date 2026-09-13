@@ -123,17 +123,19 @@ export function renderStepSummary(
   // bucket — it renders as its own honesty notice and is skipped from
   // the per-severity details.
   const unknownSeverity = new Set<string>();
+  let unknownSeverityFindingCount = 0;
   for (const f of result.findings) {
     const sev = f.severity as string;
     if (sev === "error" || sev === "warning" || sev === "info") {
       bySeverity[sev].push(f);
     } else {
       unknownSeverity.add(sev);
+      unknownSeverityFindingCount++;
     }
   }
   if (unknownSeverity.size > 0) {
     lines.push(
-      `> ⚠ ${unknownSeverity.size} finding(s) carried an unrecognized severity (${[...unknownSeverity].join(", ")}) — excluded from the per-severity breakdown; the full JSON artifact still holds them.`,
+      `> ⚠ ${unknownSeverityFindingCount} finding(s) carried an unrecognized severity (${[...unknownSeverity].join(", ")}) — excluded from the per-severity breakdown; the full JSON artifact still holds them.`,
     );
   }
   lines.push("");
