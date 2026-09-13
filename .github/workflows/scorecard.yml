@@ -17,7 +17,11 @@ on:
     branches: [main]
   workflow_dispatch:
 
-permissions: read-all
+# Least privilege at the top level (audit S-3/S-10, matches ci.yml): no
+# job in this workflow needs write access by default. Each job escalates
+# for itself in its own permissions block below.
+permissions:
+  contents: read
 
 jobs:
   analysis:
