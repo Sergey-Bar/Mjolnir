@@ -94,8 +94,8 @@ export const exitCodeNotPropagated = defineRule({
         const lines = run.split("\n");
         for (const line of lines) {
           if (!TEST_CMD.test(line)) continue;
-          // The guard above guarantees exec() matches here.
-          const m = TEST_CMD.exec(line) as RegExpExecArray;
+          const m = TEST_CMD.exec(line);
+          if (!m) continue;
           const afterCmd = line.slice(m.index + m[0].length);
           const piped = /^\s*\|(?!\|)/.exec(afterCmd);
           if (piped && !/\|\|\s|&&\s/.test(afterCmd)) {

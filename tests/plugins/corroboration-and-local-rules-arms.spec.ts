@@ -111,6 +111,9 @@ describe("runtime-corroboration round 3", () => {
           line: 1,
         }),
       ],
+      analysisComplete: true,
+      skippedReports: 0,
+      incompleteReasons: [] as string[],
     };
     stampRuntimeCorroboration([f], report);
     expect(f.runtimeCorroboration?.level).toBe("defect");
@@ -131,6 +134,9 @@ describe("runtime-corroboration round 3", () => {
         verdict({ title: "first", line: 10 }),
         verdict({ title: "second", line: 10 }),
       ],
+      analysisComplete: true,
+      skippedReports: 0,
+      incompleteReasons: [] as string[],
     };
     stampRuntimeCorroboration([f], report);
     // Same declaration line → the sort's equal branch runs; the match

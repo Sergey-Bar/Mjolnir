@@ -507,3 +507,19 @@ jobs:
           if (minutes > budget) line += " — OVER BUDGET (warning; hard gate only after 2 weeks of measured data, M3)";
           fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, line + "\n");
           '
+
+  fuzz-smoke:
+    name: Fuzz smoke (5 min)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@49933d53a40c3446e537b1f26e8c8a8f5e5e6b2a # v4.4.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Run fuzz smoke (5 min budget)
+        run: npx vitest run tests/fuzz/ --testTimeout=60000
+        timeout-minutes: 5

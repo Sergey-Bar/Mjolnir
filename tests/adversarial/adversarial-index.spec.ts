@@ -129,6 +129,9 @@ describe("adversarial: matching and triage stay deterministic under malformed ve
         ),
       ) as unknown as TestVerdict,
     ],
+    analysisComplete: true,
+    skippedReports: 0,
+    incompleteReasons: [],
   };
 
   it("evidence records normalize without NaN/Infinity leaking into decisions", () => {

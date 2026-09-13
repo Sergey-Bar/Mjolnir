@@ -173,6 +173,9 @@ describe("stampRuntimeCorroboration — matching + L5 defect corroboration", () 
       }),
       verdict({ file: "e2e/other.spec.ts", title: "other", line: 1 }),
     ],
+    analysisComplete: true,
+    skippedReports: 0,
+    incompleteReasons: [],
   };
 
   it("file-level: a finding in a file the report knows, no line placement", () => {
@@ -227,6 +230,9 @@ describe("stampRuntimeCorroboration — matching + L5 defect corroboration", () 
           everFailed: true,
         }),
       ],
+      analysisComplete: true,
+      skippedReports: 0,
+      incompleteReasons: [],
     };
     // Finding at line 12 sits between decl lines 3 and 20 → "first".
     const inFirst = finding({ qaImpact: "HYGIENE", line: 12 });

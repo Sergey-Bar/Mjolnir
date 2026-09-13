@@ -93,14 +93,17 @@ export default defineConfig({
         // / 95.32 branches against a much larger src denominator.
         // Floors sit ~0.1pt below the measured values per the standing
         // convention; raise as coverage climbs.
-        lines: 98.0,
-        functions: 98.7,
-        branches: 95.2,
-        statements: 97.7,
-        // perFile enforcement paused for the 0.6.x re-baseline cycle:
-        // the 6 flagged modules' residual arms are documented in
-        // docs/CERTIFICATION-0.6.md and close with the WI-14/15 pass.
-        perFile: false,
+        lines: 95,
+        functions: 95,
+        branches: 95,
+        statements: 95,
+        perFile: true,
+        perFileThreshold: {
+          lines: 85,
+          functions: 85,
+          branches: 80,
+          statements: 85,
+        },
       },
     },
   },

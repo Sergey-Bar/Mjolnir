@@ -93,4 +93,14 @@ export interface ForensicsReport {
   flakyTests: number;
   totalDurationMs: number;
   verdicts: TestVerdict[];
+  /**
+   * Whether all discovered report files were successfully ingested.
+   * FALSE when any files were skipped due to size limits, parse failures,
+   * or cumulative size cap.
+   */
+  analysisComplete: boolean;
+  /** Number of report files skipped (size limit, corrupt, unsupported). */
+  skippedReports: number;
+  /** Named reasons for incompleteness (e.g. "size-limit", "cumulative-size-limit", "parse-failure"). */
+  incompleteReasons: string[];
 }

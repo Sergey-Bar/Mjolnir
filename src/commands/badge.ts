@@ -5,7 +5,7 @@
  * score + date + commit. Anyone can click through and verify.
  */
 
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { writeFileAtomic } from "../lib/fs-atomic.js";
 import { join } from "node:path";
 
@@ -88,7 +88,7 @@ export function renderBadgeSnippet(
 ): string {
   let commit = "unknown";
   try {
-    commit = execSync("git rev-parse --short HEAD", {
+    commit = execFileSync("git", ["rev-parse", "--short", "HEAD"], {
       cwd: process.cwd(),
       encoding: "utf8",
       // Silence git's own "fatal: not a git repository" on stderr — the

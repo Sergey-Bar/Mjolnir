@@ -276,20 +276,6 @@ jobs:
           fi
           node scripts/pack-audit.mjs "${TGZLIST[0]}"
 
-      # SC-6 (master plan §6, MR-8.B): the packed tarball is audited
-      # BEFORE any registry write — entry allowlist (shippable product
-      # code + metadata only: no tests, no maps, no machine-local dirs)
-      # and a local-path/secret content scan. This is the same file the
-      # publish step uploads: audit → publish, never pack twice.
-      - name: Pack-audit the exact tarball (SC-6)
-        run: |
-          TGZLIST=(release-assets/mjolnir-qa-*.tgz)
-          if [ "${#TGZLIST[@]}" -ne 1 ]; then
-            echo "expected exactly one packed tarball, found ${#TGZLIST[@]}" >&2
-            exit 1
-          fi
-          node scripts/pack-audit.mjs "${TGZLIST[0]}"
-
       # Idempotency. A version already on the registry must not be a hard
       # failure: re-running a release for an existing tag (workflow_dispatch
       # above), or backfilling a tag for a version published earlier, is a
@@ -333,7 +319,7 @@ jobs:
       # separately-verified change, never via an implicit @latest drift.
       - name: Upgrade npm for OIDC trusted publishing
         if: vars.NPM_PUBLISH == 'true' && steps.registry.outputs.published != 'true'
-        run: npm install -g npm@11
+        run: npm install -g npm@11.9.1
 
       # setup-node writes an .npmrc containing `always-auth=true` and
       # `//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}`. With
@@ -420,6 +406,22 @@ jobs:
       # Publication honesty (Constitution §6): the verdict block is
       # appended to the Release body and the machine contract ships as an
       # asset — a missing proof renders UNPROVEN, never omitted.
+      - name: Generate SBOM (SPDX)
+        run: node scripts/generate-sbom.mjs release-assets/sbom.spdx.json
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@3454372f43399081ed03b604cb2d021dabca52bb # v3.8.2
+
+      - name: Sign release artifacts (keyless, OIDC)
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+        run: |
+          cosign sign-blob --yes --bundle release-assets/release-trust.json.bundle release-assets/release-trust.json
+          cosign sign-blob --yes --bundle release-assets/sbom.spdx.json.bundle release-assets/sbom.spdx.json
+          for tgz in release-assets/*.tgz; do
+            cosign sign-blob --yes --bundle "${tgz}.bundle" "${tgz}"
+          done
+
       - name: Build the release body with the verdict block
         run: |
           {
@@ -440,6 +442,8 @@ jobs:
           files: |
             release-assets/*.tgz
             release-assets/release-trust.json
+            release-assets/sbom.spdx.json
+            release-assets/*.bundle
           body_path: release-body.md
 
   # ── Job 3: action-tags — keep the action's major moving tag honest ──

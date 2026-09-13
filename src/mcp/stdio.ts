@@ -18,6 +18,11 @@
 
 import { runStdioTransport } from "./transport.js";
 
-void runStdioTransport(process.stdin, process.stdout).then(() =>
-  process.exit(0),
-);
+void runStdioTransport(process.stdin, process.stdout)
+  .then(() => process.exit(0))
+  .catch((err) => {
+    process.stderr.write(
+      `mjolnir mcp fatal: ${err instanceof Error ? err.message : err}\n`,
+    );
+    process.exit(20);
+  });

@@ -34,6 +34,7 @@ import {
 import { join } from "node:path";
 
 import type { Finding } from "../types.js";
+import { parseJsonFile, isRecord } from "../lib/safe-json.js";
 
 const CACHE_VERSION = 2;
 /** Entry cap: a monorepo-scale suite stays far below this; bounded file. */
@@ -211,14 +212,19 @@ export function createScanCache(root: string): ScanCache {
   let totalBytes = 0;
   try {
     if (existsSync(file)) {
-      const parsed = JSON.parse(readFileSync(file, "utf8")) as CacheFile;
-      if (parsed?.version === CACHE_VERSION && parsed.entries) {
-        entries = parsed.entries;
-        for (const [k, v] of Object.entries(entries)) {
-          const size = JSON.stringify(v).length + k.length + 4;
-          entryBytes.set(k, size);
-          totalBytes += size;
-        }
+      const parsed = parseJsonFile(
+        readFileSync(file, "utf8"),
+        file,
+        (v): v is CacheFile =>
+          isRecord(v) &&
+          v["version"] === CACHE_VERSION &&
+          isRecord(v["entries"]),
+      );
+      entries = parsed.entries;
+      for (const [k, v] of Object.entries(entries)) {
+        const size = JSON.stringify(v).length + k.length + 4;
+        entryBytes.set(k, size);
+        totalBytes += size;
       }
     }
   } catch {

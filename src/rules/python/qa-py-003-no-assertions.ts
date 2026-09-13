@@ -149,7 +149,9 @@ function isCollectedTestMethod(
   for (let i = lines.length - 1; i >= 0; i--) {
     const line = lines[i] as string;
     if (line.trim() === "") continue;
-    const lineIndent = (/^[ \t]*/.exec(line) as RegExpExecArray)[0];
+    const indentMatch = /^[ \t]*/.exec(line);
+    if (!indentMatch) continue;
+    const lineIndent = indentMatch[0];
     if (lineIndent.length >= indent.length) continue;
     const classM = /^[ \t]*class\s+(\w+)/.exec(line);
     if (classM) {
@@ -187,13 +189,11 @@ function extractBlock(text: string, afterColon: number): string | null {
   if (before.includes("\n")) {
     // Indented block: content is on a following line.
     const lines = rest.split("\n").slice(1);
-    // firstContent guarantees at least one non-blank line exists, and the
-    // zero-width pattern always matches.
-    const indent = (
-      /^[ \t]*/.exec(
-        lines.find((l) => l.trim() !== "") as string,
-      ) as RegExpExecArray
-    )[0];
+    const nonBlank = lines.find((l) => l.trim() !== "");
+    if (!nonBlank) return null;
+    const indentMatch = /^[ \t]*/.exec(nonBlank);
+    if (!indentMatch) return null;
+    const indent = indentMatch[0];
     if (!indent) return null;
     const collected: string[] = [];
     for (const line of lines) {

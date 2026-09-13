@@ -11,6 +11,19 @@
 
 import { createInterface } from "node:readline";
 import { handleMcpMessage } from "./server.js";
+import type { McpResponse } from "./server.js";
+import { errorMessage } from "../cli-io.js";
+
+/**
+ * Extract and validate a JSON-RPC request ID. Returns null if absent or
+ * invalid (JSON-RPC ID must be a string, number, or null — not an object).
+ */
+function normalizeJsonRpcId(msg: unknown): string | number | null {
+  if (typeof msg !== "object" || msg === null) return null;
+  const id = (msg as Record<string, unknown>)["id"];
+  if (typeof id === "string" || typeof id === "number") return id;
+  return null; // null, undefined, object, array, boolean → null
+}
 
 /**
  * Drive the transport over arbitrary streams (real stdio in the binary,
@@ -22,7 +35,21 @@ export async function runStdioTransport(
 ): Promise<void> {
   const rl = createInterface({ input });
   for await (const line of rl) {
-    await handleStdioLine(line, (s) => output.write(s));
+    try {
+      await handleStdioLine(line, (s) => output.write(s));
+    } catch {
+      try {
+        output.write(
+          JSON.stringify({
+            jsonrpc: "2.0",
+            id: null,
+            error: { code: -32603, message: "internal transport error" },
+          }) + "\n",
+        );
+      } catch {
+        break; // stdout closed
+      }
+    }
   }
 }
 
@@ -53,8 +80,17 @@ export async function handleStdioLine(
     );
     return;
   }
-  const response = await handleMcpMessage(parsed);
-  // handleMcpMessage always answers a request (notifications are not
-  // part of this transport — JSON-RPC over stdio is request/response).
+  let response: McpResponse | null;
+  try {
+    response = await handleMcpMessage(parsed);
+  } catch (err) {
+    response = {
+      jsonrpc: "2.0",
+      id: normalizeJsonRpcId(parsed),
+      error: { code: -32603, message: errorMessage(err) },
+    };
+  }
+  // response is always non-null here (handleMcpMessage always returns
+  // McpResponse, and the catch produces one). Serialize directly.
   write(`${JSON.stringify(response)}\n`);
 }

@@ -100,9 +100,9 @@ function stripCommentMarkers(line: string): {
   matched: boolean;
 } {
   // <leading ws><marker><ws>  where marker is // , /**, /*, or a * gutter.
-  // Every part is optional/zero-width, so exec always matches.
-  // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
-  const m = /^\s*(?:\/{2,}|\/\*\*?|\*)?\s*/.exec(line) as RegExpExecArray;
+  // eslint-disable-next-line security/detect-unsafe-regex -- anchored, bounded input, no catastrophic backtracking
+  const m = /^\s*(?:\/{2,}|\/\*\*?|\*)?\s*/.exec(line);
+  if (!m) return { text: line, consumed: 0, matched: false };
   const consumed = m[0].length;
   return {
     text: line.slice(consumed),
