@@ -232,31 +232,33 @@ describe("score instrument layout", () => {
     ...over,
   });
 
-  it("renders the hammer between the logo and the WORTHINESS line, with the headline beneath the gauge", () => {
+  it("puts the WORTHINESS line straight under the logo, with the headline beneath the gauge", () => {
     const out = renderTerminal(scan(), { isTTY: false, ascii: true });
     const lines = out.split("\n");
-    const hammerCaption = lines.findIndex((l) => l.includes("[STRAINED]"));
     const logoLine = lines.findIndex((l) => l.includes("M J O L N I R"));
     const worthiness = lines.findIndex((l) => l.includes("WORTHINESS"));
     const headline = lines.findIndex((l) =>
       l.includes("findings weigh it down"),
     );
     expect(logoLine).toBeGreaterThanOrEqual(0);
-    expect(hammerCaption).toBeGreaterThan(logoLine);
-    expect(hammerCaption).toBeLessThan(worthiness);
+    expect(worthiness).toBeGreaterThan(logoLine);
+    // Nothing drawn between them: the score is the first thing read.
+    expect(
+      lines.slice(logoLine + 1, worthiness).every((l) => l.trim() === ""),
+    ).toBe(true);
     expect(headline).toBeGreaterThan(worthiness);
+    expect(out).not.toContain("[STRAINED]");
   });
 
-  it("the hammer caption carries the band state without color in ASCII mode", () => {
-    expect(
-      renderTerminal(scan({ score: 20 }), { isTTY: false, ascii: true }),
-    ).toContain("[CRACKED]");
-    expect(
-      renderTerminal(scan({ score: 90 }), { isTTY: false, ascii: true }),
-    ).toContain("[CHARGED]");
-    expect(
-      renderTerminal(scan({ score: 100 }), { isTTY: false, ascii: true }),
-    ).toContain("[FORGED]");
+  it("the verdict word carries the band state without color in ASCII mode", () => {
+    const verdictLine = (score: number) =>
+      renderTerminal(scan({ score }), { isTTY: false, ascii: true })
+        .split("\n")
+        .find((l) => l.includes("WORTHINESS")) ?? "";
+    expect(verdictLine(20)).toContain("UNWORTHY");
+    expect(verdictLine(65)).toContain("NEEDS WORK");
+    expect(verdictLine(90)).toMatch(/\bWORTHY\b/);
+    expect(verdictLine(90)).not.toContain("UNWORTHY");
   });
 
   it("the 100-state FORGED block keeps the ASCII contract string and shows the trophy in unicode", () => {

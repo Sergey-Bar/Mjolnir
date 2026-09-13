@@ -3,7 +3,7 @@
  * Respects NO_COLOR and non-TTY (R11): plain text, no ANSI codes.
  * Symbols accompany color for color-blind users.
  *
- * Information architecture: SUMMARY (hammer instrument) → SIGNAL
+ * Information architecture: SUMMARY (score + verdict) → SIGNAL
  * (dimensions + deductions) → EVIDENCE (finding cards) → DETAILS
  * (verbose + honesty footer) → ACTION (fix-first + verify hints).
  */
@@ -37,13 +37,7 @@ import {
   type UiContext,
 } from "./ui.js";
 import { deriveScoreState, headlineFor } from "./score-state.js";
-import {
-  LOGO,
-  LOGO_ASCII,
-  TROPHY,
-  FORGED_WORDMARK,
-  renderHammer,
-} from "./art.js";
+import { LOGO, LOGO_ASCII, TROPHY, FORGED_WORDMARK } from "./art.js";
 import { bluntMessage } from "./tone-blunt.js";
 import { MEASURED_FP } from "../rules/measured-fp.generated.js";
 import { SEARCHED_FOR } from "../discovery/scan-adapters.js";
@@ -177,10 +171,8 @@ function appendScoreSection(
   const verdictColored = colorizeVerdict(verdict, state.band, p);
   const scoreText = String(result.score).padStart(3);
 
-  // The hammer is the instrument: the first thing the eye lands on,
-  // state-resolved, before any word is read.
-  lines.push("");
-  for (const l of renderHammer(state, p, ascii)) lines.push(`  ${l}`);
+  // The score is the first thing the eye lands on. The verdict word
+  // carries the band without colour (R11); no picture repeats it.
   lines.push("");
   lines.push(
     `  ${p.bold("WORTHINESS")} ${p.bold(scoreText)}${p.dim("/100")}  ${verdictColored}`,

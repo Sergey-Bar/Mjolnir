@@ -130,11 +130,12 @@ export function planFrames(script: VideoScript): Frame[] {
 }
 
 /**
- * The frame that best represents the video: the first beat at the moment
- * its review panel closes — the command, the wordmark, the score, the
- * gauge and the panel, filling the window. Chosen by content rather than
- * by a hardcoded index, so it stays correct when the report changes
- * length.
+ * The frame that best represents the video: the first scan at the moment
+ * its report fills the window — the command, the wordmark, the score and
+ * everything under it, up to the last row that fits, before anything has
+ * scrolled away. Chosen from the layout and the content rather than by a
+ * hardcoded index or a section name, so it stays correct when the report
+ * changes length or gains and loses sections.
  *
  * It used to be the first frame holding on the score line. With the
  * hammer gone from the report that line arrives four rows in, and the
@@ -143,16 +144,13 @@ export function planFrames(script: VideoScript): Frame[] {
 export function posterFrame(script: VideoScript): number {
   const pacing = pacingFor(script.id);
   const frames = planFrames(script);
-  const first = (script.beats[0]?.ansi ?? []).map(stripAnsi);
-  const panel = first.findIndex((l) => l.includes("REVIEW SURFACE"));
-  const closed =
-    panel === -1 ? -1 : first.findIndex((l, i) => i > panel && l.includes("╰"));
-  if (closed !== -1) {
-    let last = -1;
-    for (const [i, f] of frames.entries())
-      if (f.beat === 0 && f.lines === closed + 1) last = i;
-    if (last !== -1) return last;
-  }
+  const first = script.beats[0]?.ansi.length ?? 0;
+  // The typed command takes one row; the report fills the rest.
+  const fill = Math.min(first, layoutFor(script).visibleLines - 1);
+  let last = -1;
+  for (const [i, f] of frames.entries())
+    if (f.beat === 0 && f.lines === fill && f.patch === 0) last = i;
+  if (fill > 0 && last !== -1) return last;
   for (const [i, frame] of frames.entries()) {
     if (frame.lines === 0) continue;
     const beat = script.beats[frame.beat];
@@ -265,7 +263,12 @@ export function widestLine(script: VideoScript): number {
   return widest;
 }
 
-export function buildPage(script: VideoScript): string {
+/**
+ * The window's geometry for a script: type size, row height and how many
+ * rows fit. One function, so the page that renders the frames and the
+ * poster choice that reads them can never disagree about it.
+ */
+export function layoutFor(script: VideoScript) {
   const pacing = pacingFor(script.id);
   const [vw, vh] = pacing.viewport;
   // Window chrome. The terminal is inset from the frame edges so it reads
@@ -307,6 +310,36 @@ export function buildPage(script: VideoScript): string {
   const viewportAvail = vh - inset * 2 - barHeight - pad * 2;
   const visibleLines = Math.floor(viewportAvail / lineHeight);
   const viewportHeight = visibleLines * lineHeight;
+  return {
+    vw,
+    vh,
+    inset,
+    radius,
+    barHeight,
+    pad,
+    dpr,
+    fontSize,
+    lineHeight,
+    boxWidth,
+    visibleLines,
+    viewportHeight,
+  };
+}
+
+export function buildPage(script: VideoScript): string {
+  const {
+    vw,
+    vh,
+    inset,
+    radius,
+    barHeight,
+    pad,
+    dpr,
+    fontSize,
+    lineHeight,
+    boxWidth,
+    viewportHeight,
+  } = layoutFor(script);
 
   const beats = script.beats.map((beat) => ({
     command: beat.command,

@@ -7,7 +7,7 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 196 files, 40112 LOC
+## Inventory: 196 files, 40083 LOC
 
 | Area             | Files | LOC   |
 | ---------------- | ----- | ----- |
@@ -15,7 +15,7 @@ codes) must match this document exactly.
 | src/commands     | 28    | 8873  |
 | src/engine       | 22    | 6118  |
 | src/(root)       | 4     | 2636  |
-| src/reporter     | 12    | 2628  |
+| src/reporter     | 12    | 2599  |
 | src/forensics    | 10    | 1916  |
 | src/discovery    | 9     | 1461  |
 | src/adapters     | 7     | 1200  |
@@ -46,10 +46,10 @@ codes) must match this document exactly.
 | src/discovery/ignores               | 9         |
 | src/discovery/azure-pipeline-parser | 8         |
 | src/rules/measured-fp.generated     | 8         |
-| src/reporter/theme                  | 8         |
 | src/engine/code-text                | 7         |
-| src/reporter/score-state            | 7         |
+| src/reporter/theme                  | 7         |
 | src/engine/jv-cs-ast                | 7         |
+| src/lib/fs-atomic                   | 6         |
 
 ## External dependency allowlist (containment)
 
