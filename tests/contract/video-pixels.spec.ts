@@ -8,15 +8,17 @@
  * hand, once, and writing the number in a document. That is not
  * evidence, it is an anecdote with a hex value in it.
  *
- * So: decode the poster frame and read its ground.
+ * So: decode the poster frame and read its ground — inside the terminal
+ * window, which is what SURFACE.terminal names. The frame's corner used
+ * to be read instead; it stopped being ground on purpose when the page
+ * behind the window took the aurora wash the website's hero has.
  *
  * PURE NODE, NO FFMPEG. The media contract next door skips when ffprobe
  * is absent, which is correct for format checks but would make this one
  * useless — a colour check that only runs on the machine that just
  * rendered is the same non-rule as the size budget that used to measure
- * the wrong file. PNG's first scanline is cheap to decode without any
- * dependency: zlib is built in, and row 0's filters reference a
- * prior row of zeros, so it needs no other row.
+ * the wrong file. A PNG is cheap to decode without any dependency: zlib
+ * is built in, and the five row filters are a dozen lines.
  *
  * TOLERANCE IS PART OF THE MEASUREMENT. The poster is extracted from
  * H.264 at CRF 32 in yuv420p, so the ground is the canonical colour
@@ -33,6 +35,8 @@ import { inflateSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
 
 import { SURFACE } from "../../src/brand/tokens.js";
+import { pacingFor } from "../../scripts/video/pacing.js";
+import { WINDOW_INSET } from "../../scripts/video/terminal-page.js";
 
 const ROOT = join(import.meta.dirname, "..", "..");
 const POSTER = join(ROOT, "assets", "video", "mjolnir-demo-poster.png");
@@ -47,15 +51,15 @@ interface Rgb {
 }
 
 /**
- * The first pixel of a PNG's first scanline.
+ * One pixel of a PNG.
  *
  * Only the pieces this needs: IHDR for the geometry, the concatenated
- * IDAT stream, and one un-filtered row. Interlaced or palettised PNGs
- * would need more, and the renderer emits neither — so it throws rather
- * than guessing, because a decoder that quietly returns the wrong pixel
- * is worse than no decoder.
+ * IDAT stream, and the rows down to `y` un-filtered. Interlaced or
+ * palettised PNGs would need more, and the renderer emits neither — so
+ * it throws rather than guessing, because a decoder that quietly returns
+ * the wrong pixel is worse than no decoder.
  */
-export function firstPixel(png: Buffer): Rgb {
+export function pixelAt(png: Buffer, x: number, y: number): Rgb {
   if (png.readUInt32BE(0) !== 0x89504e47)
     throw new Error("not a PNG: bad signature");
 
@@ -88,20 +92,41 @@ export function firstPixel(png: Buffer): Rgb {
 
   const channels = colorType === 6 ? 4 : 3;
   const stride = width * channels;
-  // One row is all that is needed, and inflateSync gives the whole
-  // stream — the poster is ~170 KB, so this costs nothing worth saving.
+  if (x < 0 || x >= width) throw new Error(`x ${x} is outside the image`);
   const raw = inflateSync(Buffer.concat(idat));
 
-  const filter = raw[0];
-  const row = raw.subarray(1, 1 + stride);
-  // Row 0 only. Every filter's "previous row" term is zero here, so Sub
-  // and Paeth reduce to Sub and Up/Average reduce to identity — for the
-  // FIRST pixel of the row the left term is zero too, which makes all
-  // five filters agree on the first `channels` bytes.
-  if (filter === undefined || filter > 4)
-    throw new Error(`unknown PNG filter type ${String(filter)}`);
+  // Each row is filtered against the reconstructed row above it, so the
+  // rows before `y` have to be undone too. a = left, b = up, c = up-left.
+  let prev = Buffer.alloc(stride);
+  let cur = Buffer.alloc(stride);
+  for (let r = 0; r <= y; r++) {
+    const at = r * (stride + 1);
+    if (at + stride >= raw.length + 1)
+      throw new Error(`y ${y} is outside the image`);
+    const filter = raw[at];
+    for (let i = 0; i < stride; i++) {
+      const a = i >= channels ? (cur[i - channels] ?? 0) : 0;
+      const b = prev[i] ?? 0;
+      const c = i >= channels ? (prev[i - channels] ?? 0) : 0;
+      let v = raw[at + 1 + i] ?? 0;
+      if (filter === 1) v += a;
+      else if (filter === 2) v += b;
+      else if (filter === 3) v += Math.floor((a + b) / 2);
+      else if (filter === 4) {
+        const p = a + b - c;
+        const pa = Math.abs(p - a);
+        const pb = Math.abs(p - b);
+        const pc = Math.abs(p - c);
+        v += pa <= pb && pa <= pc ? a : pb <= pc ? b : c;
+      } else if (filter !== 0)
+        throw new Error(`unknown PNG filter type ${String(filter)}`);
+      cur[i] = v & 0xff;
+    }
+    [prev, cur] = [cur, prev];
+  }
 
-  return { r: row[0] ?? 0, g: row[1] ?? 0, b: row[2] ?? 0 };
+  const i = x * channels;
+  return { r: prev[i] ?? 0, g: prev[i + 1] ?? 0, b: prev[i + 2] ?? 0 };
 }
 
 function hexToRgb(hex: string): Rgb {
@@ -121,14 +146,20 @@ const TOLERANCE = 12;
 describe.skipIf(!existsSync(POSTER))(
   "the demo video's poster carries the brand ground",
   () => {
-    const pixel = firstPixel(readFileSync(POSTER));
+    // Inside the window's bottom-left padding: past the rounded corner,
+    // below the last text row, left of the first column. Nothing is ever
+    // drawn there but the window body.
+    const { viewport, deviceScaleFactor: dpr } = pacingFor("demo");
+    const x = Math.round((WINDOW_INSET + 20) * dpr);
+    const y = Math.round((viewport[1] - WINDOW_INSET - 16) * dpr);
+    const pixel = pixelAt(readFileSync(POSTER), x, y);
     const want = hexToRgb(SURFACE.terminal);
 
-    it("its corner is the canonical terminal ground", () => {
+    it("its window body is the canonical terminal ground", () => {
       const off = distance(pixel, want);
       expect(
         off,
-        `the poster's corner is rgb(${pixel.r}, ${pixel.g}, ${pixel.b}), ` +
+        `the poster's window body is rgb(${pixel.r}, ${pixel.g}, ${pixel.b}), ` +
           `${off.toFixed(1)} from SURFACE.terminal ${SURFACE.terminal}. ` +
           `Either the video was rendered before a palette change and needs ` +
           `\`npm run docs:video\`, or the terminal page stopped using the token.`,

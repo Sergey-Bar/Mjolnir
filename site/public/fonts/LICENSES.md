@@ -1,13 +1,12 @@
 # Vendored typefaces
 
-All three faces are licensed under the SIL Open Font License 1.1, which
+Both faces are licensed under the SIL Open Font License 1.1, which
 permits bundling and redistribution with this repository.
 
 | Family     | Files                | Upstream                                                  | Licence     |
 | ---------- | -------------------- | --------------------------------------------------------- | ----------- |
 | Geist      | `geist-*.woff2`      | [vercel/geist-font](https://github.com/vercel/geist-font) | SIL OFL 1.1 |
 | Geist Mono | `geist-mono-*.woff2` | [vercel/geist-font](https://github.com/vercel/geist-font) | SIL OFL 1.1 |
-| Cinzel     | `cinzel-*.woff2`     | [NDISCOVER/Cinzel](https://github.com/NDISCOVER/Cinzel)   | SIL OFL 1.1 |
 
 The `.woff2` files are the Latin and Latin-Extended subsets as served by
 Google Fonts, fetched by `npm run brand:fonts` and pinned by sha256 in

@@ -378,6 +378,15 @@ export interface ScanResult {
    */
   plugins?: Array<{ name: string; rules: number }>;
   /**
+   * Rules whose suiteInvalidating findings capped the score (e.g.
+   * QA-TEST-001 when `.only` is committed). Additive within
+   * schemaVersion 1; absent when no suite-invalidating rule fired.
+   * Present to explain why the score may be 49 even when all findings
+   * are advisory (E0/quarantine) — the factual state (suite did not
+   * fully execute) prevents a perfect score regardless of severity.
+   */
+  suiteInvalidatedBy?: string[];
+  /**
    * Agentic Trust Profile (plan §17): per-scan provenance metadata —
    * share of test files carrying detected generative markers and the
    * findings split across those surfaces. PROVENANCE IS NOT TRUST: the

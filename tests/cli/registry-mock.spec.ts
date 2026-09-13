@@ -157,7 +157,7 @@ describe("rule-crash isolation and --debug surfacing", () => {
     expect(err.join("\n")).toContain(
       "QA-TEST-951 crashed on a.spec.ts: boom-str",
     );
-    expect(code).toBe(0);
+    expect(code).toBe(2); // partial: rules crashed
   });
 
   it("truncates the crash list past 50 with an honest remainder line", async () => {
@@ -244,6 +244,7 @@ describe("quarantine tier under --strict", () => {
     expect(probe?.severity).toBe("info");
     expect(probe?.evidenceLevel).toBe("E0");
     // An error-declared quarantine finding must not produce exit 1.
-    expect(code).toBe(0);
+    // Exit 2 (partial) is expected because rules crashed during the scan.
+    expect(code).toBe(2);
   });
 });

@@ -40,6 +40,20 @@ const KNOWN_CONFIG_KEYS: ReadonlySet<string> = new Set([
 const CONFIG_NAMES = ["mjolnir.config.json", ".mjolnir.json"] as const;
 
 /**
+ * Returns the absolute path of the first config file found, or null.
+ * Shared by config loader, ignores, and plugin loading so all three
+ * respect the same config file name priority.
+ */
+export function findConfigPath(root: string): string | null {
+  for (const name of CONFIG_NAMES) {
+    const p = join(root, name);
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- CONFIG_NAMES is a compile-time constant
+    if (existsSync(p)) return p;
+  }
+  return null;
+}
+
+/**
  * Distinguished from other load failures so the CLI can exit 10 (usage)
  * instead of 20 (internal): a typo in the user's config is a user error
  * with a fixable message, not a tool malfunction (bug-audit M4).
@@ -206,7 +220,33 @@ export function isSuppressionActive(
   now = new Date(),
 ): boolean {
   if (!ign.expires) return true;
-  return new Date(ign.expires) > now;
+  // Bug-audit 3.9 (timezone sensitivity): the expires value is an ISO
+  // DATE (YYYY-MM-DD — validated as an ISO date at load time), which
+  // JS parses at UTC midnight, while `now` carries the local wall
+  // clock. In a UTC+3 locale, an entry expiring "2026-09-01" stayed
+  // active until 03:00 local on expiry day (Date comparison vs local
+  // now); in UTC-8 it expired at 16:00 the day BEFORE. Both drift
+  // against the documented "expires <date>" contract. Fixed by
+  // normalizing BOTH sides to UTC-day boundaries: the expiry date's
+  // UTC midnight vs the CURRENT UTC date's midnight — a pure calendar
+  // comparison that reads identically in every timezone.
+  return utcMidnight(ign.expires) > utcMidnightOf(now);
+}
+
+/** UTC-midnight timestamp of an ISO date string (YYYY-MM-DD). */
+function utcMidnight(isoDate: string): number {
+  // Require strict YYYY-MM-DD format. Date-time strings like
+  // "2026-09-01T23:59:59Z" would be silently truncated to UTC midnight,
+  // causing the expiry to compare incorrectly against the calendar day.
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return NaN;
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate);
+  if (!m) return NaN;
+  return Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+}
+
+/** UTC-midnight timestamp of a Date (calendar day, timezone-independent). */
+function utcMidnightOf(d: Date): number {
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
 }
 
 export function applySeverityOverrides(

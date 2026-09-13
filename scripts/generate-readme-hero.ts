@@ -24,9 +24,7 @@ import { runScan } from "../src/cli.js";
 import { renderTerminal } from "../src/reporter/terminal.js";
 import {
   ansiLineToSpans,
-  BG,
   CHAR_W,
-  CHROME_DOTS,
   FONT_FAMILY,
   FONT_SIZE,
   fontFaceCss,
@@ -34,9 +32,10 @@ import {
   PAD_BOTTOM,
   PAD_TOP,
   PAD_X,
+  PROMPT,
   stripAnsi,
-  TITLE_BAR,
-  TITLE_BAR_BG,
+  windowClose,
+  windowOpen,
 } from "./readme-svg.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -66,23 +65,9 @@ function renderSvg(lines: string[]): string {
   <style>
 ${fontFaceCss()}
   </style>
-  <defs>
-    <clipPath id="winClip">
-      <rect x="0" y="0" width="${width}" height="${height}" rx="8" ry="8"/>
-    </clipPath>
-  </defs>
-
-  <g clip-path="url(#winClip)">
-    <rect x="0" y="0" width="${width}" height="${height}" fill="${BG}"/>
-    <rect x="0" y="0" width="${width}" height="${TITLE_BAR}" fill="${TITLE_BAR_BG}"/>
-    <circle cx="20" cy="${TITLE_BAR / 2}" r="6" fill="${CHROME_DOTS[0]}"/>
-    <circle cx="40" cy="${TITLE_BAR / 2}" r="6" fill="${CHROME_DOTS[1]}"/>
-    <circle cx="60" cy="${TITLE_BAR / 2}" r="6" fill="${CHROME_DOTS[2]}"/>
-
+${windowOpen(width, height, "demo-repo")}
 ${textLines}
-  </g>
-
-  <rect x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" rx="7.5" ry="7.5" fill="none" stroke="#000000" stroke-opacity="0.5"/>
+${windowClose(width, height)}
 </svg>
 `;
 }
@@ -120,10 +105,8 @@ export async function buildHeroSvg(): Promise<string> {
   // This asset answers ONE question for its README section: where the
   // points actually went. It is deliberately an excerpt, cut at both ends:
   //
-  //  - The hammer art above WORTHINESS is dropped. assets/readme/
-  //    score-gauge.svg already animates the hammer through every band, so
-  //    carrying it here too showed the same thing twice in one section
-  //    while costing 11 lines of height.
+  //  - The wordmark banner above WORTHINESS is dropped: the window title
+  //    and the README around it already name the product.
   //  - Everything from FINDINGS down is dropped. The per-finding detail
   //    lives in "One finding, up close" and in the full --verbose
   //    demo.svg; repeating it here is what made a single illustrative
@@ -136,7 +119,7 @@ export async function buildHeroSvg(): Promise<string> {
     stripAnsi(line).includes("WORTHINESS"),
   );
   const findingsHeaderIndex = renderedLines.findIndex(
-    (line) => stripAnsi(line).trim() === "▚ FINDINGS",
+    (line) => stripAnsi(line).trim() === "▍ FINDINGS",
   );
   const breakdownLines = renderedLines.slice(
     startIndex === -1 ? 0 : startIndex,
@@ -144,7 +127,7 @@ export async function buildHeroSvg(): Promise<string> {
   );
 
   const allLines = [
-    "\x1b[92m$ \x1b[0m\x1b[1mnpx mjolnir-qa@latest\x1b[0m",
+    `${PROMPT}\x1b[1mnpx mjolnir-qa@latest\x1b[0m`,
     "",
     ...breakdownLines,
     // The wall-clock duration is real but non-deterministic run-to-run;

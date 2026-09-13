@@ -81,7 +81,7 @@ async function copyReport() {
       <span class="dots" aria-hidden="true"><i /><i /><i /></span>
       <code class="term-cmd">{{ report.command }}</code>
       <button class="term-copy" type="button" @click="copyReport">
-        {{ copied ? "copied ✓" : "copy" }}
+        {{ copied ? "Copied" : "Copy" }}
       </button>
     </figcaption>
 
@@ -259,7 +259,7 @@ async function copyReport() {
   width: 11px;
   height: 11px;
   border-radius: 50%;
-  background: rgba(215, 211, 200, 0.25);
+  background: var(--mj-ink-800);
 }
 .term-cmd {
   flex: 1;
@@ -279,7 +279,7 @@ async function copyReport() {
   font-size: 0.7rem;
   letter-spacing: 0.04em;
   color: var(--term-dim);
-  background: rgba(215, 211, 200, 0.07);
+  background: var(--vp-c-bg-soft);
   border: 1px solid var(--term-line);
   border-radius: 5px;
   padding: 0.22rem 0.55rem;
@@ -290,7 +290,7 @@ async function copyReport() {
 }
 .term-copy:hover {
   color: var(--term-fg);
-  border-color: rgba(215, 211, 200, 0.3);
+  border-color: var(--vp-c-text-3);
 }
 .term-copy:focus-visible {
   outline: 2px solid var(--mj-aurora);
@@ -321,7 +321,7 @@ async function copyReport() {
 }
 .tab.on {
   color: var(--term-fg);
-  border-bottom-color: var(--mj-gold-bright);
+  border-bottom-color: var(--mj-aurora-cyan);
 }
 .tab:focus-visible {
   outline: 2px solid var(--mj-aurora);
@@ -337,7 +337,7 @@ async function copyReport() {
   color: var(--term-dim);
 }
 .excerpt-note a {
-  color: var(--mj-gold-bright);
+  color: var(--vp-c-brand-1);
 }
 
 .term-body {

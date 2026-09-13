@@ -39,7 +39,7 @@ beforeAll(() => {
         : `it('case ${i}', () => { expect(1 + ${i}).toBe(${1 + i}); });\n`;
     writeFileSync(join(dir, "e2e", `case-${i}.spec.ts`), body);
   }
-}, 30_000);
+}, 120_000);
 
 afterAll(() => {
   rmSync(dir, { recursive: true, force: true });

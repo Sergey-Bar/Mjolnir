@@ -1,13 +1,12 @@
 /**
  * README score-gauge asset reproducibility.
  *
- * assets/readme/score-gauge.svg replaced the old static score/verdict
- * table with a real sweep of `deriveScoreState`/`renderHammer`/
- * `scoreGauge` across every score 0-100 — it's a rendering of the exact
- * pure functions the CLI calls for every scan, not hand-drawn art. This
- * spec is the drift lock: it regenerates the asset from the same code
- * path `npm run docs:gauge` uses and asserts the committed file matches,
- * the same guarantee hero-asset-reproducibility.spec.ts makes for
+ * assets/readme/score-gauge.svg is the worthiness scale with a marker
+ * sweeping every score 0-100, rendered from `deriveScoreState` — the
+ * pure function the CLI calls for every scan — not hand-drawn. This spec
+ * is the drift lock: it regenerates the asset from the same code path
+ * `npm run docs:gauge` uses and asserts the committed file matches, the
+ * same guarantee hero-asset-reproducibility.spec.ts makes for
  * terminal-hero.svg.
  */
 
@@ -16,6 +15,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { buildScoreGaugeSvg } from "../../scripts/generate-readme-score-gauge.js";
+import { deriveScoreState } from "../../src/reporter/score-state.js";
 
 const ROOT = join(import.meta.dirname, "..", "..");
 const SVG_PATH = join(ROOT, "assets", "readme", "score-gauge.svg");
@@ -24,8 +24,8 @@ describe("assets/readme/score-gauge.svg reproducibility", () => {
   it("the committed SVG is byte-identical to a freshly built one", () => {
     expect(
       buildScoreGaugeSvg(),
-      "the committed asset no longer matches deriveScoreState/renderHammer/" +
-        "scoreGauge — regenerate with `npm run docs:gauge` and commit the result.",
+      "the committed asset no longer matches deriveScoreState — regenerate " +
+        "with `npm run docs:gauge` and commit the result.",
     ).toBe(readFileSync(SVG_PATH, "utf8"));
   });
 
@@ -36,7 +36,7 @@ describe("assets/readme/score-gauge.svg reproducibility", () => {
 
   it("contains a frame for every integer score 0-100 (no gaps in the sweep)", () => {
     const svg = readFileSync(SVG_PATH, "utf8");
-    for (const score of [0, 1, 49, 50, 79, 80, 99, 100]) {
+    for (let score = 0; score <= 100; score++) {
       const padded = String(score).padStart(3);
       expect(
         svg,
@@ -45,11 +45,14 @@ describe("assets/readme/score-gauge.svg reproducibility", () => {
     }
   });
 
-  it("every real hammer band (critical/warning/trusted/forged) appears exactly once", () => {
+  it("draws every real band exactly once, named by the verdict it carries", () => {
     const svg = readFileSync(SVG_PATH, "utf8");
-    for (const band of ["critical", "warning", "trusted", "forged"]) {
-      const matches = svg.match(new RegExp(`class="hb hb-${band}"`, "g")) ?? [];
+    const sample = { critical: 0, warning: 50, trusted: 80, forged: 100 };
+    for (const [band, score] of Object.entries(sample)) {
+      const matches =
+        svg.match(new RegExp(`class="band band-${band}"`, "g")) ?? [];
       expect(matches.length).toBe(1);
+      expect(svg).toContain(`>${deriveScoreState(score).verdict}<`);
     }
   });
 

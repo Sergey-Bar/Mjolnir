@@ -54,7 +54,7 @@ const SAMPLE = `<?xml version="1.0" encoding="UTF-8"?>
     <text x="22" y="${y(7)}" xml:space="preserve"><tspan fill="#d7d3c8">  QA-CI    &#9608;&#9608;&#9619;&#9617;  76</tspan></text>
     <text x="22" y="${y(8)}" xml:space="preserve"><tspan fill="#d7d3c8">  &#9474; 4 &#215; error   &#8722; 32                        &#9474;</tspan></text>
     <text x="22" y="${y(9)}" xml:space="preserve"><tspan fill="#d7d3c8">  &#9474; 3 &#215; warning &#8722;  7 (evidence-discounted)  &#9474;</tspan></text>
-    <text x="22" y="${y(10)}" xml:space="preserve"><tspan fill="#d7d3c8">  &#9626; FINDINGS</tspan></text>
+    <text x="22" y="${y(10)}" xml:space="preserve"><tspan fill="#d7d3c8">  &#9613; FINDINGS</tspan></text>
     <text x="22" y="${y(11)}" xml:space="preserve"><tspan fill="#d7d3c8">  &#10007; ERROR   QA-CI-009</tspan></text>
     <text x="22" y="${y(12)}" xml:space="preserve"><tspan fill="#d7d3c8">${"─".repeat(12)}</tspan></text>
     <text x="22" y="${y(13)}" xml:space="preserve"><tspan fill="#d7d3c8">  Analysis: complete</tspan></text>
@@ -155,7 +155,7 @@ test("splitGroups drops the ASCII hammer but keeps the state chip", () => {
 
 test("splitGroups accepts a hero that stops before the findings", () => {
   // The shipped hero does exactly this: generate-readme-hero.ts drops
-  // everything from "▚ FINDINGS" down, because the hero is the score
+  // everything from "▍ FINDINGS" down, because the hero is the score
   // instrument and demo.svg is the full report. This used to throw, and
   // that throw took the site's prebuild — and so the pages deploy —
   // down with it. A missing findings block is a shape, not a defect.

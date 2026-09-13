@@ -25,6 +25,7 @@
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import { findConfigPath } from "../config/config.js";
 
 export const DEFAULT_IGNORES: readonly string[] = [
   // Bare names (no `/`) — gitignore semantics: the matcher compiles them
@@ -167,9 +168,9 @@ function loadExtraPatterns(root: string): string[] {
     }
   }
 
-  // Load exclude patterns from mjolnir.config.json
-  const configPath = join(root, "mjolnir.config.json");
-  if (existsSync(configPath)) {
+  // Load exclude patterns from mjolnir.config.json or .mjolnir.json
+  const configPath = findConfigPath(root);
+  if (configPath) {
     try {
       const cfg = JSON.parse(readFileSync(configPath, "utf8")) as {
         exclude?: string[];

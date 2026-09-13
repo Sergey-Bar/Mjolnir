@@ -31,18 +31,34 @@ import type { ForensicsReport, TestVerdict } from "../forensics/types.js";
  * Stamp runtime corroboration + trust levels onto findings (mutates in
  * place, the same contract as stampEvidenceLevels). Returns the number
  * of findings that gained runtime corroboration.
+ *
+ * @param scanRoot - when provided, report file paths are normalized to
+ *   repo-relative forward-slash form relative to this root, so Windows
+ *   absolute paths (C:\Users\...\src\foo.test.ts) match the pipeline's
+ *   normalized relative paths (src/foo.test.ts).
  */
 export function stampRuntimeCorroboration(
   findings: Finding[],
   report: ForensicsReport,
+  scanRoot?: string,
 ): number {
+  const normalize = (p: string): string => {
+    let n = p.replace(/\\/g, "/");
+    if (scanRoot) {
+      const root = scanRoot.replace(/\\/g, "/").replace(/\/?$/, "/");
+      if (n.startsWith(root)) n = n.slice(root.length);
+    }
+    return n.replace(/^\.\//, "").replace(/^\/+/, "");
+  };
+
   // Group verdicts per file once; verdicts keep report order, which for
   // Playwright JSON is suite order (ascending-ish by file section).
   const byFile = new Map<string, TestVerdict[]>();
   for (const v of report.verdicts) {
-    const list = byFile.get(v.file) ?? [];
+    const key = normalize(v.file);
+    const list = byFile.get(key) ?? [];
     list.push(v);
-    byFile.set(v.file, list);
+    byFile.set(key, list);
   }
 
   let corroborated = 0;
@@ -50,10 +66,22 @@ export function stampRuntimeCorroboration(
     const verdicts = byFile.get(f.file);
     if (!verdicts || verdicts.length === 0) continue;
 
-    const testsExecuted = verdicts.length;
+    // testsExecuted excludes skipped tests — a skipped test did not
+    // exercise any code path and claiming execution would be a false proof.
+    const testsExecuted = verdicts.filter((v) => !v.skipped).length;
     const matched = findContainingTest(verdicts, f.line);
     let corroboration: RuntimeCorroboration;
-    if (matched) {
+
+    // A matched test that was skipped cannot corroborate at test level.
+    // Per types.ts L3: "tests in that file executed" — skipped tests did
+    // not execute. When ALL tests in the file were skipped (testsExecuted
+    // === 0), there is no runtime evidence at all — skip corroboration
+    // entirely so the finding stays at its static trust level (L0/L1/L2).
+    if (testsExecuted === 0) {
+      continue;
+    }
+
+    if (matched && !matched.skipped) {
       corroboration = {
         level: "test",
         source: report.source,
@@ -64,7 +92,7 @@ export function stampRuntimeCorroboration(
           attempts: matched.attempts,
           passedOnRetry: matched.passedOnRetry,
           everFailed: matched.everFailed,
-          skipped: matched.skipped,
+          skipped: false,
         },
       };
     } else {
@@ -79,6 +107,7 @@ export function stampRuntimeCorroboration(
     const flakeCorroborated =
       f.qaImpact === "FLAKY-RISK" &&
       matched !== undefined &&
+      !matched.skipped &&
       (matched.passedOnRetry ||
         matched.everFailed ||
         matched.finalStatus === "timedOut");

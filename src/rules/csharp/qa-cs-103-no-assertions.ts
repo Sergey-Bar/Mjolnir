@@ -290,7 +290,21 @@ function matchBrace(text: string, open: number): number {
       else if (ch === inStr) inStr = null;
       continue;
     }
-    if (ch === '"') inStr = ch;
+    // Handle comments before treating quotes as string delimiters.
+    // An apostrophe in a comment (e.g. // don't) must not set inStr.
+    if (ch === "/" && text[i + 1] === "/") {
+      // Line comment: skip to end of line
+      const nl = text.indexOf("\n", i);
+      i = nl === -1 ? text.length - 1 : nl;
+      continue;
+    }
+    if (ch === "/" && text[i + 1] === "*") {
+      // Block comment: skip to closing */
+      const end = text.indexOf("*/", i + 2);
+      i = end === -1 ? text.length - 1 : end + 1;
+      continue;
+    }
+    if (ch === '"' || ch === "'") inStr = ch;
     else if (ch === "{") depth++;
     else if (ch === "}") {
       depth--;

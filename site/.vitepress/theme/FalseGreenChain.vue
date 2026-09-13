@@ -102,6 +102,9 @@ const masks = [
 }
 .fgc-stage {
   position: relative;
+  /* .vp-doc gives every li after the first an 8px top margin, which
+     dropped cards 2-4 below the first. */
+  margin: 0;
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
@@ -156,7 +159,7 @@ const masks = [
   margin-top: 1.1rem;
   padding: 0.9rem 1.1rem 1rem;
   border-radius: 10px;
-  border: 1px dashed rgba(224, 180, 67, 0.4);
+  border: 1px dashed var(--vp-c-border);
 }
 .fgc-masks-lead {
   margin: 0 0 0.6rem;

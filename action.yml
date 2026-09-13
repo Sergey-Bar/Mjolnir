@@ -90,6 +90,13 @@ inputs:
       JSON report as workflow artifacts.
     required: false
     default: "true"
+  fail-on-partial:
+    description: >-
+      Fail the job when the scan is partial (exit 2). Default: false
+      (partial scans produce a warning, not a failure). Set to true for
+      release gates that require a complete scan.
+    required: false
+    default: "false"
 
 outputs:
   exit-code:
@@ -122,6 +129,7 @@ runs:
         MJ_ANNOTATIONS: ${{ inputs.annotations }}
         MJ_PR_COMMENT: ${{ inputs.pr-comment }}
         MJ_TRUST_ARTIFACT: ${{ inputs.trust-artifact }}
+        MJ_FAIL_ON_PARTIAL: ${{ inputs.fail-on-partial }}
       run: |
         case "$MJ_SCOPE" in
           all|changed) ;;
@@ -150,6 +158,10 @@ runs:
         case "$MJ_TRUST_ARTIFACT" in
           true|false) ;;
           *) echo "::error::trust-artifact must be 'true' or 'false', got '$MJ_TRUST_ARTIFACT'"; exit 10 ;;
+        esac
+        case "$MJ_FAIL_ON_PARTIAL" in
+          true|false) ;;
+          *) echo "::error::fail-on-partial must be 'true' or 'false', got '$MJ_FAIL_ON_PARTIAL'"; exit 10 ;;
         esac
 
     - name: Scan
@@ -187,12 +199,17 @@ runs:
         EXIT=$?
         set -e
         echo "exit=$EXIT" >> "$GITHUB_OUTPUT"
-        # The frozen exit-code contract: 2 = partial scan, NEVER blocks —
-        # a scan that did not finish has not found nothing. Downgrade it
-        # to a loud warning so a truncated run cannot fail the job, while
-        # 1 (findings at gate) and 10/20 (usage/internal) still do.
+        # Exit-code contract: 2 = partial scan. By default, partial scans
+        # produce a warning (gate not enforced). When fail-on-partial is
+        # true, exit 2 fails the job — a release gate that requires a
+        # complete scan. Exit 1 (findings at gate) and 10/20 (usage/
+        # internal) always fail regardless of this setting.
         if [ "$EXIT" = "2" ]; then
-          echo "::warning::Mjölnir scan was PARTIAL — some files were not analyzed; the gate is not enforced. Re-run on a quieter runner or raise --max-duration."
+          echo "::warning::Mjölnir scan was PARTIAL — some files were not analyzed; the gate is not enforced."
+          if [ "$MJ_FAIL_ON_PARTIAL" = "true" ]; then
+            echo "::error::fail-on-partial is enabled — failing the job on partial scan"
+            exit 2
+          fi
           exit 0
         fi
         if [ "$MJ_FORMAT" = "sarif" ]; then
@@ -238,10 +255,15 @@ runs:
       shell: bash
       env:
         MJ_PATH: ${{ inputs.path }}
+        MJ_SCOPE: ${{ inputs.scope }}
+        MJ_STRICT: ${{ inputs.strict }}
         MJ_VERSION: ${{ inputs.version }}
       run: |
+        ARGS=("$MJ_PATH" --json --blocking none)
+        if [ "$MJ_SCOPE" = "changed" ]; then ARGS+=(--scope changed); fi
+        if [ "$MJ_STRICT" = "true" ]; then ARGS+=(--strict); fi
         set +e
-        npx --yes "mjolnir-qa@${MJ_VERSION}" "$MJ_PATH" --json --blocking none > mjolnir.json
+        npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}" > mjolnir.json
         echo "exit=$?" >> "$GITHUB_OUTPUT"
         exit 0
 

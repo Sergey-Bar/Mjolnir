@@ -1,4 +1,5 @@
-export type LocatorClass = "role-based" | "testid" | "css-chain" | "xpath";
+export type LocatorClass =
+  "role-based" | "testid" | "css-chain" | "xpath" | "plain-css";
 
 /**
  * Selector risk score for a single locator usage: 0 = safe, 100 = critical.
@@ -16,6 +17,7 @@ export interface SelectorRisk {
 export const LOCATOR_RISK: Record<LocatorClass, number> = {
   "role-based": 0,
   testid: 0,
+  "plain-css": 60,
   "css-chain": 60,
   xpath: 90,
 };

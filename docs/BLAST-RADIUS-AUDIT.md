@@ -7,28 +7,28 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 196 files, 39864 LOC
+## Inventory: 196 files, 40083 LOC
 
 | Area             | Files | LOC   |
 | ---------------- | ----- | ----- |
-| src/rules        | 79    | 10393 |
-| src/commands     | 28    | 8856  |
-| src/engine       | 22    | 5951  |
-| src/reporter     | 12    | 2833  |
-| src/(root)       | 4     | 2605  |
-| src/forensics    | 10    | 1896  |
-| src/discovery    | 9     | 1449  |
-| src/adapters     | 7     | 1187  |
-| src/mcp          | 3     | 701   |
-| src/plugins      | 4     | 655   |
-| src/brand        | 2     | 643   |
+| src/rules        | 79    | 10481 |
+| src/commands     | 28    | 8873  |
+| src/engine       | 22    | 6118  |
+| src/(root)       | 4     | 2636  |
+| src/reporter     | 12    | 2599  |
+| src/forensics    | 10    | 1916  |
+| src/discovery    | 9     | 1461  |
+| src/adapters     | 7     | 1200  |
+| src/mcp          | 3     | 722   |
+| src/brand        | 2     | 656   |
+| src/plugins      | 4     | 653   |
 | src/mutation     | 4     | 432   |
+| src/scope        | 2     | 421   |
 | src/integrations | 1     | 414   |
-| src/scope        | 2     | 402   |
 | src/scorer       | 2     | 387   |
+| src/config       | 2     | 341   |
 | src/bench        | 2     | 315   |
-| src/config       | 2     | 301   |
-| src/playwright   | 2     | 300   |
+| src/playwright   | 2     | 314   |
 | src/lib          | 1     | 144   |
 
 ## Internal fan-in — top 15 (change-blast candidates)
@@ -37,19 +37,19 @@ codes) must match this document exactly.
 | ----------------------------------- | --------- |
 | src/types                           | 106       |
 | src/rules/rule                      | 77        |
-| src/rules/shared/positions          | 57        |
+| src/rules/shared/positions          | 62        |
 | src/reporter/ui                     | 18        |
 | src/engine/adapter                  | 13        |
 | src/forensics/types                 | 13        |
+| src/engine/ts-ast                   | 10        |
 | src/rules/index                     | 10        |
 | src/discovery/ignores               | 9         |
-| src/engine/ts-ast                   | 9         |
 | src/discovery/azure-pipeline-parser | 8         |
 | src/rules/measured-fp.generated     | 8         |
-| src/reporter/theme                  | 8         |
 | src/engine/code-text                | 7         |
-| src/reporter/score-state            | 7         |
+| src/reporter/theme                  | 7         |
 | src/engine/jv-cs-ast                | 7         |
+| src/lib/fs-atomic                   | 6         |
 
 ## External dependency allowlist (containment)
 
@@ -57,7 +57,7 @@ codes) must match this document exactly.
 | ------------------ | ------------------ |
 | node:fs            | 46                 |
 | node:path          | 45                 |
-| node:crypto        | 8                  |
+| node:crypto        | 9                  |
 | node:child_process | 6                  |
 | ts-morph           | 6                  |
 | web-tree-sitter    | 4                  |

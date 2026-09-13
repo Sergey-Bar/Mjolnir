@@ -1,4 +1,5 @@
 import { defineConfig } from "vitepress";
+import { SURFACE } from "../../src/brand/tokens.js";
 
 // Project site served from https://sergey-bar.github.io/Mjolnir/
 const BASE = "/Mjolnir/";
@@ -113,7 +114,7 @@ export default defineConfig({
     // script, no class, nothing hidden. Inline and in <head> so there is no
     // flash of the hidden state on the way in.
     ["script", {}, `document.documentElement.classList.add("mj-anim")`],
-    ["meta", { name: "theme-color", content: "#0b0f17" }],
+    ["meta", { name: "theme-color", content: SURFACE.ink900 }],
     [
       "link",
       {
@@ -139,17 +140,14 @@ export default defineConfig({
     // own wordmark without asking anyone else, and the two cross-origin
     // round-trips that used to sit on the critical path are gone.
     //
-    // Preloading the three latin faces first paint needs — body, code
-    // and the display face the wordmark is set in — is what makes
-    // `font-display: swap` safe here. Dropping the Cinzel preload was
-    // measured and made no difference (mobile 93 vs 92, inside the
-    // run-to-run noise), so it stays: the hero renders in its own face
-    // from the first paint rather than swapping into it. The measured lesson
-    // this replaces: JetBrains Mono swapping in at ~900ms re-flowed all
-    // 91 rows of the rule catalog and was the whole of that page's CLS
+    // Preloading the latin faces first paint needs — body and code — is
+    // what makes `font-display: swap` safe here. Display is Geist too, so
+    // there is no third face to wait for. The measured lesson this
+    // replaces: JetBrains Mono swapping in at ~900ms re-flowed all 91
+    // rows of the rule catalog and was the whole of that page's CLS
     // (0.088 against a 0.05 gate). A same-origin, preloaded, 23 KB face
     // arrives before the paint that would have to shift.
-    ...["geist-400-latin", "geist-mono-400-latin", "cinzel-600-latin"].map(
+    ...["geist-400-latin", "geist-mono-400-latin"].map(
       (f) =>
         [
           "link",
@@ -182,13 +180,27 @@ export default defineConfig({
     ["meta", { name: "twitter:image", content: SITE_URL + "social-card.jpg" }],
   ],
   themeConfig: {
-    // A 64px mark, not the 180x180 touch icon scaled down to ~24px.
-    logo: "/mark-64.png",
     nav: [
-      { text: "Guide", link: "/guide/getting-started" },
+      {
+        text: "Features",
+        items: [
+          { text: "What it checks", link: "/guide/what-it-checks" },
+          { text: "Worthiness score", link: "/guide/scoring" },
+          { text: "CI integrity", link: "/guide/ci" },
+          { text: "Runtime forensics", link: "/guide/forensics" },
+          {
+            text: "Selector health",
+            link: "/guide/forensics#selector-health-score",
+          },
+          { text: "AI agents", link: "/guide/agents" },
+        ],
+      },
+      { text: "Docs", link: "/guide/getting-started", activeMatch: "^/guide/" },
       { text: "Rules", link: "/rules/", activeMatch: "^/rules/" },
-      { text: "Reference", link: "/reference/exit-codes" },
-      { text: "npm", link: "https://www.npmjs.com/package/mjolnir-qa" },
+      {
+        text: "Changelog",
+        link: "https://github.com/Sergey-Bar/Mjolnir/blob/main/CHANGELOG.md",
+      },
     ],
     // One sidebar for every docs section (the landing page opts out via
     // `sidebar: false` in its frontmatter).

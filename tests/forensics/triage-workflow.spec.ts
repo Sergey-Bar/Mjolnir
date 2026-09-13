@@ -110,10 +110,12 @@ describe("the acceptance law — every row ends with a concrete next action", ()
 
   it("every row carries all §9 fields", () => {
     for (const r of rows) {
-      expect(r.classification).toBeTruthy();
+      expect(["RETRY-DEPENDENT", "FAILING", "TIMEOUT", "SKIPPED"]).toContain(
+        r.classification,
+      );
       expect(r.evidence.length).toBeGreaterThan(0);
-      expect(r.trustVerdict).toBeTruthy();
-      expect(r.nextAction).toBeTruthy();
+      expect(r.trustVerdict.length).toBeGreaterThan(0);
+      expect(r.nextAction.length).toBeGreaterThan(0);
     }
   });
 

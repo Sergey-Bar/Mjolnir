@@ -2,41 +2,10 @@
    Mjölnir — global theme polish on top of VitePress defaults
    ============================================================ */
 
-/* ---- metrics-matched fallback for Inter --------------------------- */
-/* Inter arriving at ~1.2s lifted a long document by 4px and was the whole
-   of the rule catalog's CLS (0.088 against a 0.05 gate), traced to a text
-   node moving y:114->110 with a layout-shift observer.
-   
-   These numbers are MEASURED, not copied: the real Inter woff2 was loaded
-   through the FontFace API and compared with Arial on a canvas at 100px —
-   Inter w2092.04/asc97/desc24 vs Arial w2256.93/asc91/desc21. Hence
-   size-adjust 2092.04/2256.93 = 92.69%, and the overrides expressed
-   against that adjusted em: 97/0.9269 = 104.65%, 24/0.9269 = 25.89%.
-   Helvetica Neue and Liberation Sans are metric-compatible with Arial.
-   
-   Re-derive with: the measurement block in .planning/SITE-REDESIGN-PLAN.md §16. */
-/* Same treatment for the display face. Cinzel sets every heading, so its
-   swap moved headings and everything under them. Measured the same way:
-   Cinzel w1810.22/asc98/desc37 vs Georgia w2084.86/asc92/desc22 at 100px
-   — size-adjust 1810.22/2084.86 = 86.83%, overrides against that adjusted
-   em: 98/0.8683 = 112.87%, 37/0.8683 = 42.61%. */
-@font-face {
-  font-family: "Cinzel Fallback";
-  src: local("Georgia"), local("Times New Roman");
-  size-adjust: 86.83%;
-  ascent-override: 112.87%;
-  descent-override: 42.61%;
-  line-gap-override: 0%;
-}
-
-@font-face {
-  font-family: "Inter Fallback";
-  src: local("Arial"), local("Helvetica Neue"), local("Liberation Sans");
-  size-adjust: 92.69%;
-  ascent-override: 104.65%;
-  descent-override: 25.89%;
-  line-gap-override: 0%;
-}
+/* The metrics-matched "Inter Fallback" and "Cinzel Fallback" faces that
+   lived here were declared but named in no stack once both faces were
+   retired: dead weight. CLS is held by the preloaded same-origin Geist
+   instead (config.mts). */
 
 body {
   margin: 0;
@@ -65,77 +34,64 @@ body {
 }
 
 /* ---- brand wordmark in the navbar -------------------------- */
-/* The gradient-clip trick below only reads correctly over a DARK navbar —
-   --mj-steel and --mj-gold-bright are both light colours, so on a plain
-   light-mode doc page (light navbar) this would be a second invisible-text
-   bug of the same shape as the one it replaces. Scoped to the two contexts
-   where the navbar is actually dark: dark theme everywhere, and the
-   landing page's navbar, which .mj-landing forces dark in every theme
-   (see the "landing navbar" block below). Elsewhere the wordmark falls
-   through to the theme's own --vp-c-text-1 — correct on a light navbar. */
-.dark .VPNavBarTitle .title span,
-.mj-landing .VPNavBarTitle .title span {
-  font-family: var(--mj-display);
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  background: linear-gradient(120deg, var(--mj-steel), var(--mj-gold-bright));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-.VPNavBar .VPImage.logo {
-  filter: drop-shadow(0 2px 8px rgba(224, 180, 67, 0.35));
+.VPNavBarTitle .title span {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--vp-c-text-1);
 }
 
 /* ---- selection + focus ------------------------------------- */
 ::selection {
-  background: rgba(224, 180, 67, 0.28);
+  background: color-mix(in oklch, var(--mj-aurora-cyan) 30%, transparent);
 }
 
-/* ---- doc pages: a runic top rule + warmer prose ------------ */
-.vp-doc h1 {
-  font-family: var(--mj-display);
-  letter-spacing: 0.015em;
-}
-.vp-doc h2 {
-  font-family: var(--mj-display);
-  font-weight: 600;
-  padding-top: 1.6rem;
-  border-top: 1px solid var(--vp-c-divider);
-}
-.vp-doc h2::before {
-  /* The empty alt text after the slash keeps the rune decorative: CSS
-     generated content is announced by several screen readers, so without
-     it every heading on every docs page was read as "Tiwaz <heading>"
-     (plan §2, D8). Supported in current Chrome, Safari and Firefox;
-     older engines ignore the alt and fall back to today's behaviour. */
-  content: "ᛏ" / "";
-  font-family: var(--mj-display);
-  color: var(--vp-c-brand-1);
-  margin-right: 0.55rem;
-  font-size: 0.8em;
-  opacity: 0.8;
-  text-shadow: 0 0 12px rgba(224, 180, 67, 0.3);
-}
+/* ---- doc pages: one type family, quiet structure ----------- */
+/* The same Geist as the landing page, set tight. The Tiwaz rune that
+   used to precede every h2 is gone: BRAND-SYSTEM §5 keeps runes beside
+   a verdict, and a heading is not one. */
+.vp-doc h1,
+.vp-doc h2,
 .vp-doc h3 {
   font-family: var(--mj-display);
   font-weight: 600;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.vp-doc h1 {
+  font-size: clamp(2rem, 4.2vw, 2.6rem);
+  line-height: 1.12;
+}
+.vp-doc h2 {
+  padding-top: 1.8rem;
+  border-top: 1px solid var(--vp-c-divider);
+}
+.vp-doc h3 {
+  letter-spacing: -0.01em;
 }
 
 .vp-doc blockquote {
-  border-left: 2px solid var(--mj-ember);
-  background: linear-gradient(90deg, var(--vp-c-brand-soft), transparent 60%);
+  border-left: 2px solid var(--mj-aurora-cyan);
+  background: color-mix(in oklch, var(--mj-aurora-cyan) 5%, transparent);
   border-radius: 0 8px 8px 0;
 }
 
 .vp-doc a {
   text-underline-offset: 3px;
-  text-decoration-color: rgba(224, 180, 67, 0.4);
+  text-decoration-color: color-mix(
+    in oklch,
+    var(--mj-aurora-cyan) 45%,
+    transparent
+  );
 }
 
 .vp-doc :not(pre) > code {
-  background: var(--vp-c-brand-soft);
-  color: var(--vp-c-brand-1);
+  background: var(--vp-c-bg-soft);
+  color: var(--vp-c-text-1);
+}
+.vp-doc a > code {
+  color: inherit;
 }
 
 .vp-doc div[class*="language-"] {
@@ -143,37 +99,46 @@ body {
   border-radius: 10px;
 }
 .dark .vp-doc div[class*="language-"] {
-  background: var(--mj-forge-950);
+  background: var(--mj-ink-950);
 }
 
-/* ---- landing navbar sits over the dark forge hero --------- */
-.mj-landing .VPNavBar {
-  background-color: rgba(8, 11, 18, 0.55) !important;
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(198, 204, 214, 0.08);
+/* ---- docs chrome: the aurora marks where you are ---------- */
+.VPSidebarItem.is-active > .item > .indicator {
+  background: linear-gradient(
+    180deg,
+    var(--mj-aurora-green),
+    var(--mj-aurora-cyan) 50%,
+    var(--mj-aurora-violet)
+  );
 }
+.VPDocAsideOutline .outline-marker {
+  background: var(--mj-aurora-cyan);
+}
+
+/* ---- landing navbar: the page ground and one hairline ------ */
+.mj-landing .VPNavBar,
 .mj-landing .VPNavBar.top {
-  background-color: rgba(8, 11, 18, 0.2) !important;
+  background-color: var(--vp-c-bg) !important;
+  border-bottom: 1px solid var(--vp-c-divider);
 }
 .mj-landing .VPNavBar .VPNavBarMenuLink,
 .mj-landing .VPNavBar .VPNavBarExtraMenu .VPFlyout button,
-.mj-landing .VPNavBar .DocSearch-Button,
-.mj-landing .VPNavBar .VPSocialLink,
-.mj-landing .VPNavBar .VPSwitchAppearance {
-  color: var(--vp-c-text-1) !important;
+.mj-landing .VPNavBar .VPSocialLink {
+  color: var(--vp-c-text-2) !important;
 }
 .mj-landing .VPNavBar .DocSearch-Button {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--vp-c-bg-soft);
 }
 .mj-landing .VPNavBar .DocSearch-Button-Keys,
 .mj-landing .VPNavBar .DocSearch-Button-Placeholder {
   color: var(--vp-c-text-2) !important;
 }
-.mj-landing .VPNavBar .VPNavBarMenuLink:hover {
-  color: var(--mj-ember-hot) !important;
+.mj-landing .VPNavBar .VPNavBarMenuLink:hover,
+.mj-landing .VPNavBar .VPSocialLink:hover {
+  color: var(--vp-c-text-1) !important;
 }
 
-/* ---- links & buttons keep the ember accent ---------------- */
+/* ---- the one filled button: aurora, ink text ------------------ */
 .VPButton.brand {
   background-color: var(--vp-c-brand-1);
   color: var(--mj-on-gold);
@@ -203,10 +168,6 @@ summary:focus-visible,
   outline: 2px solid var(--mj-aurora);
   outline-offset: 2px;
   border-radius: 3px;
-}
-.mj-landing .VPNavBar :focus-visible,
-.hero :focus-visible {
-  outline-color: var(--mj-gold-bright);
 }
 
 /* ---- evidence badge (site UX plan G6) ---------------------------- */

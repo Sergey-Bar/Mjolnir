@@ -29,10 +29,11 @@
  */
 
 import { createRequire } from "node:module";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { RESERVED_PREFIXES, isReservedPrefix } from "./reserved-prefixes.js";
+import { findConfigPath } from "../config/config.js";
 
 export { RESERVED_PREFIXES };
 
@@ -84,11 +85,8 @@ function parseDecls(raw: unknown): PluginDecl[] {
 
 export function loadPlugins(root: string, gateOpen = false): PluginLoadResult {
   const result: PluginLoadResult = { plugins: [], errors: [], skipped: [] };
-  const cfgPath = join(root, "mjolnir.config.json");
-  // FW-LINT-01 residual: fixed config filename under the scan root —
-  // the operator's own repo, not discovered scan data.
-  // eslint-disable-next-line security/detect-non-literal-fs-filename
-  if (!existsSync(cfgPath)) return result;
+  const cfgPath = findConfigPath(root);
+  if (!cfgPath) return result;
 
   let raw: Record<string, unknown>;
   try {

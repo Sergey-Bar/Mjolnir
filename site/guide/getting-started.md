@@ -64,7 +64,7 @@ this for you (plain `npx` instead, with `--no-action`).
 ## One finding, up close
 
 ```text
-▚▞ QA-CI-001 — continue-on-error masks a failing verification gate
+▍▞ QA-CI-001 — continue-on-error masks a failing verification gate
 
 Severity:    error
 Confidence:  high

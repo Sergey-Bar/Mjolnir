@@ -36,7 +36,7 @@ const text = props.which === "forensics" ? sample : selector;
   overflow-x: auto;
   border: 1px solid var(--vp-c-border);
   border-radius: 10px;
-  background: var(--mj-forge-950);
+  background: var(--mj-ink-950);
   color: var(--vp-c-text-1);
 }
 </style>

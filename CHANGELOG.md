@@ -9,6 +9,35 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased] — Nordic brand pass
+
+### Changed
+
+- Terminal report: section headers are marked `▍ TITLE` instead of
+  `▚ TITLE` (the ASCII fallback `= TITLE` is unchanged). The quadrant
+  glyph read as a rendering glitch rather than a mark.
+- Terminal report: the score section no longer draws the four-state
+  block-art hammer above `WORTHINESS`. The verdict word already carries
+  the band without colour, the score is now the first thing on screen,
+  and the 100-state FORGED block is unchanged.
+- Brand: one type family. Cinzel is retired from the site, the tokens
+  and the vendored fonts; headings and the wordmark are Geist. The marks
+  are redrawn: a Geist wordmark, and the ᛗ monogram drawn as a path and
+  stroked in the aurora. Docs pages take the aurora accent instead of
+  gold, which stays reserved for FORGED. README badges use the deep
+  aurora that carries shields.io's white text at 5.8:1.
+- README rewritten. `score-gauge.svg` is now the worthiness scale with a
+  marker sweeping 0–100, drawn from `deriveScoreState`. The terminal
+  stills and the demo video share the website's terminal chrome. The
+  video is re-rendered (34 s), and its poster shows the report.
+
+### Fixed
+
+- Website: missing URLs showed VitePress's stock 404 page. The site's
+  own page, which points to the rule catalog, was registered under a
+  theme key the default layout never reads. It now renders through the
+  layout's `not-found` slot.
+
 ## [1.0.10] — 2026-09-12
 
 ### Changes since 1.0.9

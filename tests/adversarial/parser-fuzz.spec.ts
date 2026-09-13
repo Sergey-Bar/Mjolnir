@@ -38,6 +38,7 @@ describe("adversarial fuzz — XML ingesters (junit + mutmut)", () => {
     it(`junit contains: ${c.label}`, () => {
       const out = parseJunitXml(c.payload);
       expect(Array.isArray(out)).toBe(true);
+      expect(Object.getPrototypeOf(out)).toBe(Array.prototype);
     });
 
     it(`mutmut contains: ${c.label}`, () => {
@@ -84,18 +85,21 @@ describe("adversarial fuzz — JSON ingesters (jest + vitest + playwright)", () 
       if (!parseOk) return; // invalid JSON is the corpus of the raw-string cases
       const out = parseJestJson(parsed);
       expect(Array.isArray(out)).toBe(true);
+      expect(Object.getPrototypeOf(out)).toBe(Array.prototype);
     });
 
     it(`vitest contains: ${c.label}`, () => {
       if (!parseOk) return;
       const out = parseVitestJson(parsed);
       expect(Array.isArray(out)).toBe(true);
+      expect(Object.getPrototypeOf(out)).toBe(Array.prototype);
     });
 
     it(`playwright contains: ${c.label}`, () => {
       if (!parseOk) return;
       const out = parsePlaywrightJson(parsed);
       expect(Array.isArray(out)).toBe(true);
+      expect(Object.getPrototypeOf(out)).toBe(Array.prototype);
     });
   }
 
