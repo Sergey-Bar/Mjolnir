@@ -78,24 +78,24 @@ describe("assets/readme/terminal-hero.svg reproducibility", () => {
     // Every section header the real reporter renders for this scan must
     // appear in the SVG — this is exactly the check that would have
     // caught "FIX THIS FIRST" going missing after Sprint 5 shipped it.
-    // Matched narrowly on the literal header glyph prefix (`▚ ` unicode,
+    // Matched narrowly on the literal header glyph prefix (`▍ ` unicode,
     // `= ` the design system's ASCII fallback — not just any leading "#",
     // which also matches the ASCII score gauge's fill characters when
     // ascii:true is used for a stable, TTY-independent render).
     const sectionHeaders = rendered
       .split("\n")
       .map((l) => l.trim())
-      .filter((l) => /^[▚=] /.test(l))
+      .filter((l) => /^[▍=] /.test(l))
       // The hero is deliberately scoped to the score MECHANISM — it cuts
       // the render right before FINDINGS (see generate-readme-hero.ts's
       // buildHeroSvg) because the per-finding detail is already shown by
       // "One finding, up close" and the full --verbose demo.svg, and
       // repeating it here made a single illustrative image ~3800px tall.
       // This is the one section this check must not demand.
-      .filter((l) => !/^[▚=] FINDINGS$/.test(l));
+      .filter((l) => !/^[▍=] FINDINGS$/.test(l));
     expect(sectionHeaders.length).toBeGreaterThan(0);
     for (const header of sectionHeaders) {
-      const text = header.replace(/^[▚=]\s*/, "");
+      const text = header.replace(/^[▍=]\s*/, "");
       expect(
         svg,
         `hero asset is missing the "${text}" section that the current ` +

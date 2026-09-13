@@ -62,13 +62,18 @@ consistency depends on people remembering.
 
 ### The palette
 
-Brushed steel and forge gold under an aurora, over midnight iron —
-derived from the logo. See [`DESIGN-TOKENS.md`](DESIGN-TOKENS.md) for
-every value.
+Midnight iron under an aurora, with brushed steel for text and forge
+gold held back for what is earned. See
+[`DESIGN-TOKENS.md`](DESIGN-TOKENS.md) for every value.
+
+The aurora is the accent: links, focus, the active item, the one filled
+button, and the atmosphere of the landing page. Its outer curtains
+(green and violet) are for place and section identity only — never a
+verdict, never a status.
 
 | Group      | Role                                                            |
 | ---------- | --------------------------------------------------------------- |
-| `brand`    | gold (4 steps), aurora (3), steel (2)                           |
+| `brand`    | gold (4 steps), aurora (5), steel (2)                           |
 | `surface`  | the midnight-iron ramp, plus the terminal ground and its chrome |
 | `text`     | primary, secondary, muted, and the ink used on gold             |
 | `status`   | ok, info, warning, error — non-score status                     |
@@ -130,17 +135,23 @@ text (AA) and stroke (the 3:1 non-text minimum). All of it is
 
 ## 4. Typography
 
-| Role                                 | Face           | Weights     |
-| ------------------------------------ | -------------- | ----------- |
-| Display — `MJÖLNIR`, `FORGED`, marks | **Cinzel**     | 600         |
-| Body, UI                             | **Geist**      | 400/500/600 |
-| Code, terminal, scores, rule IDs     | **Geist Mono** | 400/500     |
-| Rune glyph fallback only             | FreeMono       | —           |
+| Role                                    | Face           | Weights     |
+| --------------------------------------- | -------------- | ----------- |
+| Display — headlines, `MJÖLNIR` wordmark | **Geist**      | 500/600     |
+| Body, UI                                | **Geist**      | 400/500/600 |
+| Code, terminal, scores, rule IDs        | **Geist Mono** | 400/500     |
+| Rune glyph fallback only (terminal)     | FreeMono       | —           |
 
 Two faces carry the whole product. Before this the website loaded Inter,
 JetBrains Mono and Cinzel while the README SVGs and the demo video
 embedded Geist and Geist Mono: **a README asset and a website page
 shared no letterform at all.**
+
+Display is not a third face. Cinzel held that role until the Nordic
+pass and was retired: a Roman inscriptional serif was the one letterform
+no other surface shared, and next to everything else it read as
+costume. Headlines are Geist set large and tight (−0.02em); the
+wordmark and small labels are Geist caps tracked out (0.18–0.3em).
 
 - **Self-hosted.** `npm run brand:fonts` vendors the latin and latin-ext
   woff2 subsets into `site/public/fonts` and pins each by sha256.
@@ -155,11 +166,10 @@ shared no letterform at all.**
   entry downloads nothing but it still renders, which is how a page ends
   up looking like two products on a machine that happens to have Inter.
   `brand-doctor` rule 1 fails on the name appearing anywhere in a stack.
-- **Never set body copy in the display face.** Display is caps or
-  title-case, tracked out 0.04–0.32em; body sits at line-height 1.7.
-- **Scores are always mono.** The digits never appear in the display
-  face; colour lands on the verdict word and the instrument, not the
-  number.
+- **Display is a size and a weight, not a costume.** Headlines run
+  tight; only caps labels are tracked out. Body sits at line-height 1.7.
+- **Scores are always mono.** The digits are set in Geist Mono; colour
+  lands on the verdict word and the instrument, not the number.
 
 ## 5. Symbols
 
@@ -231,11 +241,20 @@ right, is MJÖLNIR in Elder Futhark. That is a wordmark, not wallpaper.
 
 ### The mark
 
-The logo is `MJÖLNIR` set in Cinzel 600 — no illustration. Below the
-wordmark's legible width it falls back to a single rune, ᛗ (Mansaz) —
-the same "M" the hero runefield above already spells the name with, and
-deliberately not one of the five verdict runes in the table above, so
-the permanent mark can never read as a standing score.
+The logo is `MJÖLNIR` set in Geist 500, caps, tracked 0.3em, in primary
+text on ink — no illustration. Below the wordmark's legible width it
+falls back to a single rune, ᛗ (Mansaz): the same "M" the name is
+spelled with in Elder Futhark, and deliberately not one of the five
+verdict runes in the table above, so the permanent mark can never read
+as a standing score.
+
+The rune is drawn, not typeset: two staves on a 48×64 grid, each with a
+diagonal from its head to the middle of the other, stroked in the
+aurora (green at the foot, cyan through the crossing, violet at the
+head). Below 64px the stroke gets heavier and the heads are bevelled,
+so the favicon is a cut made for its size rather than a large mark
+shrunk until it blurs. The mark and the wordmark are never set side by
+side: next to `MJÖLNIR` a second M only stutters.
 
 `assets/brand/mark.png` and `logo.png` are the rendered source of truth
 (`scripts/generate-brand-marks.ts`, `npm run brand:marks`). Regenerating

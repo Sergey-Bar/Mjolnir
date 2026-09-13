@@ -8,17 +8,15 @@
  * fonts: a video that renders differently depending on what the machine
  * happens to have installed is not a reproducible artifact.
  *
- * Primary face is Geist Mono (Vercel, SIL OFL) — chosen to match the
- * reference the user pointed at (react.doctor's terminal), which ships
- * the same family. It covers box drawing, block elements and the
- * severity glyphs the reporter draws. It does NOT cover the Runic block,
- * ℹ, ⚠, ⚡ or ✗ — checked with check-glyphs.ts, not assumed — and
- * `src/reporter/art.ts` puts ᚦ and ᚹ on the hammer in every score state
- * above critical. GNU FreeMono supplies all nine. FreeMono is itself
- * monospace, so the fallback glyphs land on the same character grid as
- * everything around them; a proportional fallback would knock the hammer
- * art out of alignment. `check-glyphs.ts` proves this split rather than
- * assuming it; if either file changes, that script is what catches it.
+ * Primary face is Geist Mono (Vercel, SIL OFL), the same family the
+ * README stills and the website's terminal use. It covers box drawing
+ * and block elements. It does NOT cover ℹ, ⚠, ⚡, ✓ or ✗ — checked with
+ * check-glyphs.ts, not assumed — and GNU FreeMono supplies them.
+ * FreeMono is itself monospace, so the fallback glyphs land on the same
+ * character grid as everything around them; a proportional fallback
+ * would knock the report's columns out of alignment. `check-glyphs.ts`
+ * proves this split rather than assuming it; if either file changes,
+ * that script is what catches it.
  */
 
 import { readFileSync } from "node:fs";

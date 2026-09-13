@@ -123,7 +123,7 @@ shields.io takes hex without the `#`.
 
 | Token             | Value    |     |
 | ----------------- | -------- | --- |
-| `badge.primary`   | `C19A34` |     |
+| `badge.primary`   | `1F6F7C` |     |
 | `badge.label`     | `0A1119` |     |
 | `badge.secondary` | `37ABBD` |     |
 
@@ -131,13 +131,13 @@ shields.io takes hex without the `#`.
 
 | Role             | Family     | Weights       |
 | ---------------- | ---------- | ------------- |
-| display          | Cinzel     | 600           |
+| display          | Geist      | 500, 600      |
 | sans             | Geist      | 400, 500, 600 |
 | mono             | Geist Mono | 400, 500      |
 | runes (fallback) | FreeMono   | —             |
 
 Body line-height 1.7; display tracking
-0.04em–0.32em.
+-0.02em–0.3em.
 
 ## Motion
 

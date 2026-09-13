@@ -54,9 +54,14 @@ export const OK_GLYPH_UNICODE = "✓";
 export const OK_GLYPH_ASCII = "v";
 export const FLAKE_GLYPH = "🔥";
 
-/** Section header: `▚ TITLE` (ascii `= TITLE`). The one header style. */
+/**
+ * Section header: `▍ TITLE` (ascii `= TITLE`). The one header style.
+ * A thin accent bar, the terminal's version of the rule that opens each
+ * chapter on the website; it replaced a checkerboard quadrant (▚) that
+ * read as a rendering glitch rather than a mark.
+ */
 export function sectionHeader(title: string, ui: UiContext): string {
-  const glyph = ui.ascii ? "=" : "▚";
+  const glyph = ui.ascii ? "=" : "▍";
   return `  ${ui.p.accent(`${glyph} ${title}`)}`;
 }
 

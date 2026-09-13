@@ -14,6 +14,7 @@ import {
   computeDimensions,
   deductionFor,
   massCeiling,
+  SUITE_INVALIDATED_CEILING,
 } from "../scorer/scorer.js";
 import { topFixes } from "../scorer/prioritize.js";
 import {
@@ -214,6 +215,12 @@ function appendScoreSection(
   if (result.suppressionCount && result.suppressionCount > 0) {
     lines.push(
       `  ${p.dim(`(${result.suppressionCount} finding(s) suppressed by config)`)}`,
+    );
+  }
+  if (result.suiteInvalidatedBy && result.suiteInvalidatedBy.length > 0) {
+    const rules = result.suiteInvalidatedBy.join(", ");
+    lines.push(
+      `  ${p.dim(`(score capped at ${SUITE_INVALIDATED_CEILING}: suite invalidated by ${rules} — the suite did not fully execute)`)}`,
     );
   }
   lines.push("");

@@ -13,7 +13,8 @@
  * module moved. Re-exports in cli.ts keep the historical import surface.
  */
 
-import { readFileSync, statSync } from "node:fs";
+import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { relative, resolve, sep } from "node:path";
 
 import {
@@ -381,13 +382,22 @@ export function pathMatchesGlob(path: string, glob: string): boolean {
  * accepts. Zero-config search over conventional artifact names at
  * depth ≤ 2 (src/discovery/evidence-discovery.ts); the FIRST parsable
  * candidate wins (priority: mjolnir-report > playwright-json >
- * test-results-dir > junit-file). Returns the path for `runForensics`,
- * or undefined when no convention is present ("no runtime evidence" —
- * never guessed; the CLI surfaces the missing-evidence message).
+ * test-results-dir > junit-file). Validates each candidate by attempting
+ * to parse it and checking that it produces at least one test. Returns
+ * the parsed report alongside the path to avoid double-parsing.
  */
-export function discoverRuntimeReport(scanRoot: string): string | undefined {
+export function discoverAndParseRuntimeReport(
+  scanRoot: string,
+):
+  | { path: string; report: import("../forensics/types.js").ForensicsReport }
+  | undefined {
   for (const c of discoverEvidenceCandidates(scanRoot)) {
-    return c.path; // sorted candidates: highest-priority convention first per directory level
+    try {
+      const fr = runForensics(c.path, { writeFlakyMd: false });
+      if (fr.report.totalTests > 0) return { path: c.path, report: fr.report };
+    } catch {
+      // corrupt or unparsable → try next candidate
+    }
   }
   return undefined;
 }
@@ -938,25 +948,22 @@ export async function runScan(
   for (const f of findings) {
     f.fixGroupId = f.ruleId;
   }
-  // Plan §16 — Runtime Evidence: when a real run report sits next to
-  // the scan target (the same ingestion `mjolnir forensics` uses:
-  // `mjolnir.report.json` or a `test-results/` directory), findings get
-  // stamped with runtime corroboration + the L0–L5 trust ladder.
-  // Absent report → findings unchanged (honest "no runtime evidence").
-  // WI-2 (Canonical Evidence Core): the report is normalized into the
-  // evidence core first — one canonical record shape fans out from
-  // here; stamping semantics are byte-identical to pre-core behavior.
-  const runtimeReportPath = discoverRuntimeReport(scanRoot.root);
-  if (runtimeReportPath) {
+  // Plan §16 — Runtime Evidence: discover, validate, and parse the
+  // runtime report in one pass. Corrupt/unparsable candidates are
+  // skipped — the first candidate that produces tests wins.
+  const discoveredReport = discoverAndParseRuntimeReport(scanRoot.root);
+  const runtimeReportPath = discoveredReport?.path;
+  if (discoveredReport) {
     try {
-      const fr = runForensics(runtimeReportPath, {
-        writeFlakyMd: false,
-      });
       // WI-2 (Canonical Evidence Core): normalize the report into the
       // canonical record shape once, then fan the SAME records into
       // corroboration — one evidence path, byte-identical stamps.
-      buildEvidenceRecords(fr.report, runtimeReportPath);
-      stampRuntimeCorroboration(findings, fr.report);
+      buildEvidenceRecords(discoveredReport.report, discoveredReport.path);
+      stampRuntimeCorroboration(
+        findings,
+        discoveredReport.report,
+        workspace.root,
+      );
     } catch {
       // A hostile/corrupt report must not fail the scan — the run simply
       // carries no runtime evidence (same degrade posture as forensics).
@@ -1001,48 +1008,87 @@ export async function runScan(
     scopeVerdict: scopeReasons.length === 0 ? "PROVEN" : "PARTIAL",
     ...(scopeReasons.length > 0 ? { reasons: scopeReasons } : {}),
   } as const;
+  // Scope-coherence guard: a PARTIAL scope verdict means not all discovered
+  // files were analyzed. A perfect score on an incomplete surface is a false
+  // claim. Cap at 99 (the honesty guard — "something was not judged, so 100
+  // is a lie"). This is distinct from the trust-summary's incompleteness
+  // ceiling (which caps confidence, not score).
+  const scopeAdjustedTotal =
+    scopeReasons.length > 0 && total >= 100 ? 99 : total;
   // R4c (plan §7): the run identity — the deterministic anchor binding
   // verdict ← evidence ← execution ← scope ← source ← rule(rev). The
   // input snapshot is the DISCOVERED file set with byte sizes; the rule
-  // set is the active rules with their effective detector revisions. No
-  // fabrication: the config fingerprint is deliberately null here (the
-  // pipeline sees no config object — the field is omitted downstream
-  // when unavailable).
+  // set is the active rules with their effective detector revisions.
+  // Config fingerprint is included so config changes (exclusions,
+  // severity overrides, gate mode) change the scan identity.
   const inputSnapshot = ctx.testFiles.map((p) => {
+    const relPath = relative(workspace.root, p).replaceAll("\\", "/");
     try {
-      return {
-        path: relative(workspace.root, p).replaceAll("\\", "/"),
-        size: statSync(p).size,
-      };
+      const content = readFileSync(p);
+      const hash = createHash("sha256")
+        .update(content)
+        .digest("hex")
+        .slice(0, 16);
+      return { path: relPath, size: content.length, hash };
     } catch {
-      return {
-        path: relative(workspace.root, p).replaceAll("\\", "/"),
-        size: 0,
-      };
+      return { path: relPath, size: 0 };
     }
   });
+  // Include the runtime report in the identity so adding/removing/
+  // changing report.json changes scanId.
+  let reportDigest: string | undefined;
+  if (runtimeReportPath) {
+    try {
+      const reportBytes = readFileSync(runtimeReportPath);
+      reportDigest = createHash("sha256")
+        .update(reportBytes)
+        .digest("hex")
+        .slice(0, 16);
+    } catch {
+      /* unreadable → omit from identity */
+    }
+  }
   const runIdentity = buildRunIdentity({
     files: inputSnapshot,
     rules: [...REVISION_BY_RULE_ID.entries()].map(([id, detectorRevision]) => ({
       id,
       detectorRevision,
     })),
-    config: null,
+    config: config ?? null,
     engineVersion: ENGINE_VERSION,
+    reportDigest,
   });
   const evidenceGraph = buildEvidenceGraph({ runId: runIdentity });
 
-  // R2 empty-state: score is null when no test files exist at all.
-  // A "100/100" on a repo with zero tests would be a false proof.
-  const hasTests = testFileCount > 0;
+  // R2 empty-state: score is null when no test files exist at all, OR
+  // when every discovered test file contains zero test declarations
+  // (e.g. a *.spec.ts with only imports/types). A "100/100" on a repo
+  // with no actual test statements would be a false proof.
+  const hasTests = testFileCount > 0 && testDeclarationCount > 0;
+
+  // Suite-invalidation transparency: which suiteInvalidating rules
+  // actually fired findings. Surfaced in JSON + terminal so the score
+  // cap at 49 is explainable even when the findings are E0/advisory.
+  const suiteInvalidatedBy = [
+    ...new Set(
+      findings
+        .filter((f) => SUITE_INVALIDATING_RULE_IDS.has(f.ruleId))
+        .map((f) => f.ruleId),
+    ),
+  ].sort();
 
   const result: ScanResult = {
     schemaVersion: SCHEMA_VERSION,
-    partial: discoveryTruncated || rulesPartial || skippedFiles > 0,
+    partial:
+      discoveryTruncated ||
+      rulesPartial ||
+      skippedFiles > 0 ||
+      rulesCrashed > 0 ||
+      scopeInfo.degraded !== undefined,
     scopeIntegrity,
     runIdentity,
     evidenceGraph,
-    score: hasTests ? total : null,
+    score: hasTests ? scopeAdjustedTotal : null,
     ...(hasTests ? {} : { reason: "no-tests-found" as const }),
     frameworks: frameworks.frameworks,
     frameworkDetectionUnknown: frameworks.unknown,
@@ -1065,7 +1111,7 @@ export async function runScan(
     effectiveDeductions,
     suppressionCount,
     ...(pluginsLoaded.length > 0 ? { plugins: pluginsLoaded } : {}),
-    // Plan §17.2: Agentic Trust Profile — provenance metadata only.
+    ...(suiteInvalidatedBy.length > 0 ? { suiteInvalidatedBy } : {}),
     agenticProfile: computeAgenticProfile(fileProvenance, findings),
     // M5.2: present only under --cache. Hit/miss counts make the cache
     // auditable — a report must be able to say how much of its analysis

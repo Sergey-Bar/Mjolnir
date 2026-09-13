@@ -143,7 +143,7 @@ const NON_BRAND_HEX = new Map([
 
 /** Faces the brand no longer uses anywhere. Named, so a stack cannot
  * quietly reacquire one as a "harmless" fallback. */
-const RETIRED_FACES = ["Inter", "JetBrains Mono"];
+const RETIRED_FACES = ["Inter", "JetBrains Mono", "Cinzel"];
 
 /**
  * Known, planned findings. Each names the phase of work that closes it

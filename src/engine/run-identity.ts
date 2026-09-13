@@ -18,14 +18,16 @@
 import { createHash } from "node:crypto";
 
 export interface RunIdentityInput {
-  /** The discovered input snapshot: repo-relative path + byte size. */
-  files: Array<{ path: string; size: number }>;
+  /** The discovered input snapshot: repo-relative path + byte size + content hash. */
+  files: Array<{ path: string; size: number; hash?: string }>;
   /** The rule set that will run: id + declared detectorRevision. */
   rules: Array<{ id: string; detectorRevision: number }>;
   /** The loaded config (JSON-able) — null when no config was loaded. */
   config: unknown;
   /** The engine version (src/engine/version.ts). */
   engineVersion: string;
+  /** Content hash of the discovered runtime report, when present. */
+  reportDigest?: string | undefined;
 }
 
 export interface RunIdentity {
@@ -51,10 +53,11 @@ function canonical(value: unknown): string {
 export function buildRunIdentity(input: RunIdentityInput): RunIdentity {
   // Sorted, newline-joined line digests: order-insensitive inputs produce
   // order-stable identities (the same SET of files/rules is the same
-  // snapshot, whatever readdir returned).
+  // snapshot, whatever readdir returned). Content hashes (when available)
+  // detect edits that don't change file size.
   const inputFingerprint = sha256(
     [...input.files]
-      .map((f) => `${f.path}:${f.size}`)
+      .map((f) => (f.hash ? `${f.path}:${f.hash}` : `${f.path}:${f.size}`))
       .sort()
       .join("\n"),
   );
@@ -71,6 +74,7 @@ export function buildRunIdentity(input: RunIdentityInput): RunIdentity {
       rulesDigest,
       configFingerprint,
       engineVersion: input.engineVersion,
+      ...(input.reportDigest ? { reportDigest: input.reportDigest } : {}),
     }),
   );
   return {

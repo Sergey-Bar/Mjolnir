@@ -40,6 +40,20 @@ const KNOWN_CONFIG_KEYS: ReadonlySet<string> = new Set([
 const CONFIG_NAMES = ["mjolnir.config.json", ".mjolnir.json"] as const;
 
 /**
+ * Returns the absolute path of the first config file found, or null.
+ * Shared by config loader, ignores, and plugin loading so all three
+ * respect the same config file name priority.
+ */
+export function findConfigPath(root: string): string | null {
+  for (const name of CONFIG_NAMES) {
+    const p = join(root, name);
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- CONFIG_NAMES is a compile-time constant
+    if (existsSync(p)) return p;
+  }
+  return null;
+}
+
+/**
  * Distinguished from other load failures so the CLI can exit 10 (usage)
  * instead of 20 (internal): a typo in the user's config is a user error
  * with a fixable message, not a tool malfunction (bug-audit M4).

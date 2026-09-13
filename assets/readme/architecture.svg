@@ -6,7 +6,7 @@
     <marker id="arrow" markerWidth="8" markerHeight="8" refX="7.5" refY="4" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
       <path d="M0,0.5 L7.5,4 L0,7.5 Z" fill="var(--edge-lit)"/>
     </marker>
-    <marker id="arrow-gold" markerWidth="9" markerHeight="9" refX="8.5" refY="4.5" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <marker id="arrow-accent" markerWidth="9" markerHeight="9" refX="8.5" refY="4.5" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
       <path d="M0,0.5 L8.5,4.5 L0,8.5 Z" fill="var(--accent)"/>
     </marker>
   </defs>
@@ -17,8 +17,8 @@
       --bg:#0A1119; --surface:#0C1420; --engine:#0A1119; --chip:#111A29;
       --edge:#18243A; --edge-lit:#8B939D;
       --text:#EAEEF5; --muted:#8B939D; --quiet:#8B939D;
-      --accent:#C19A34; --accent-dim:#18243A;
-      --success:#4FB477; --warning:#C19A34;
+      --accent:#5CBDE0; --accent-dim:#18243A;
+      --success:#4FB477; --warning:#E6BD57;
     }
   </style>
   <rect x="0" y="0" width="1600" height="900" fill="var(--bg)"/>
@@ -92,7 +92,7 @@
     <line x1="324" y1="535" x2="352" y2="535" stroke="var(--edge-lit)" stroke-width="1.4"/>
     <line x1="500" y1="535" x2="524" y2="535" stroke="var(--accent)" stroke-width="1.4"/>
     <line x1="524" y1="295" x2="524" y2="535" stroke="var(--edge-lit)" stroke-width="1.4"/>
-    <line x1="524" y1="415" x2="548" y2="415" stroke="var(--accent)" stroke-width="1.4" marker-end="url(#arrow-gold)"/>
+    <line x1="524" y1="415" x2="548" y2="415" stroke="var(--accent)" stroke-width="1.4" marker-end="url(#arrow-accent)"/>
     <text x="382" y="283" font-size="9" fill="var(--quiet)" font-family="MjolnirSans" letter-spacing="1.6">STATIC</text>
     <text x="352" y="475" font-size="9" fill="var(--accent)" font-family="MjolnirSans" letter-spacing="1.6">RUNTIME</text>
   </g>
@@ -159,7 +159,7 @@
     <text x="856" y="655" font-size="9.5" fill="var(--quiet)" font-family="MjolnirMono" text-anchor="middle">signals in · evidence out · nothing executed</text>
   </g>
   <g id="outputs">
-    <line x1="1164" y1="415" x2="1194" y2="415" stroke="var(--accent)" stroke-width="1.4" marker-end="url(#arrow-gold)"/>
+    <line x1="1164" y1="415" x2="1194" y2="415" stroke="var(--accent)" stroke-width="1.4" marker-end="url(#arrow-accent)"/>
     <text x="1200" y="221" font-size="10" fill="var(--quiet)" font-family="MjolnirSans" letter-spacing="2.6">WHAT CAN BE TRUSTED</text>
     <rect x="1200" y="245" width="336" height="100" rx="12" fill="var(--surface)" stroke="var(--edge)" stroke-width="1"/>
     <text x="1218" y="271" font-size="10" fill="var(--quiet)" font-family="MjolnirSans" letter-spacing="2.6">FINDINGS</text>
@@ -216,7 +216,7 @@
     <line x1="1427" y1="774" x2="1439" y2="774" stroke="var(--edge-lit)" stroke-width="1.1" marker-end="url(#arrow)"/>
     <rect x="1440" y="758" width="96" height="32" rx="8" fill="var(--chip)" stroke="var(--accent-dim)" stroke-width="1"/>
     <text x="1488" y="778" font-size="9.5" fill="var(--accent)" font-family="MjolnirSans" text-anchor="middle" letter-spacing="1.3">PROOF</text>
-    <path d="M 1488 790 L 1488 812 L 856 812 L 856 690" fill="none" stroke="var(--accent-dim)" stroke-width="1.2" stroke-dasharray="3 4" marker-end="url(#arrow-gold)"/>
+    <path d="M 1488 790 L 1488 812 L 856 812 L 856 690" fill="none" stroke="var(--accent-dim)" stroke-width="1.2" stroke-dasharray="3 4" marker-end="url(#arrow-accent)"/>
     <text x="868" y="805" font-size="9.5" fill="var(--quiet)" font-family="MjolnirSans">re-verified by Mjölnir</text>
   </g>
   <g id="boundaries">

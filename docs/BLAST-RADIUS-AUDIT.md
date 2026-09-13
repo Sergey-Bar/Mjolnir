@@ -7,26 +7,26 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 196 files, 40198 LOC
+## Inventory: 196 files, 40035 LOC
 
 | Area             | Files | LOC   |
 | ---------------- | ----- | ----- |
-| src/rules        | 79    | 10536 |
+| src/rules        | 79    | 10439 |
 | src/commands     | 28    | 8871  |
-| src/engine       | 22    | 5999  |
-| src/reporter     | 12    | 2828  |
-| src/(root)       | 4     | 2627  |
-| src/forensics    | 10    | 1896  |
-| src/discovery    | 9     | 1460  |
+| src/engine       | 22    | 6118  |
+| src/(root)       | 4     | 2636  |
+| src/reporter     | 12    | 2628  |
+| src/forensics    | 10    | 1916  |
+| src/discovery    | 9     | 1461  |
 | src/adapters     | 7     | 1200  |
 | src/mcp          | 3     | 707   |
-| src/plugins      | 4     | 701   |
-| src/brand        | 2     | 643   |
+| src/brand        | 2     | 656   |
+| src/plugins      | 4     | 653   |
 | src/mutation     | 4     | 432   |
 | src/integrations | 1     | 414   |
-| src/scope        | 2     | 405   |
+| src/scope        | 2     | 411   |
 | src/scorer       | 2     | 387   |
-| src/config       | 2     | 323   |
+| src/config       | 2     | 337   |
 | src/bench        | 2     | 315   |
 | src/playwright   | 2     | 310   |
 | src/lib          | 1     | 144   |
@@ -41,7 +41,7 @@ codes) must match this document exactly.
 | src/reporter/ui                     | 18        |
 | src/engine/adapter                  | 13        |
 | src/forensics/types                 | 13        |
-| src/engine/ts-ast                   | 11        |
+| src/engine/ts-ast                   | 10        |
 | src/rules/index                     | 10        |
 | src/discovery/ignores               | 9         |
 | src/discovery/azure-pipeline-parser | 8         |
@@ -57,9 +57,9 @@ codes) must match this document exactly.
 | ------------------ | ------------------ |
 | node:fs            | 46                 |
 | node:path          | 45                 |
-| node:crypto        | 8                  |
-| ts-morph           | 7                  |
+| node:crypto        | 9                  |
 | node:child_process | 6                  |
+| ts-morph           | 6                  |
 | web-tree-sitter    | 4                  |
 | node:url           | 3                  |
 | node:os            | 2                  |

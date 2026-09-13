@@ -146,11 +146,14 @@ export async function buildVarsCss(): Promise<string> {
  */
 
 :root {
-  /* ---- brand accent: forge gold ---- */
-  --vp-c-brand-1: ${BRAND.goldBright.toLowerCase()};
-  --vp-c-brand-2: ${BRAND.gold.toLowerCase()};
-  --vp-c-brand-3: ${BRAND.goldDeep.toLowerCase()};
-  --vp-c-brand-soft: rgba(230, 189, 87, 0.15);
+  /* ---- brand accent: the aurora ----
+   * Links, the active sidebar item, focus and the primary button. Gold
+   * stays in the palette for what it means (FORGED) and is no longer
+   * the colour of every link on every docs page. */
+  --vp-c-brand-1: ${BRAND.auroraCyan.toLowerCase()};
+  --vp-c-brand-2: ${BRAND.auroraBright.toLowerCase()};
+  --vp-c-brand-3: ${BRAND.aurora.toLowerCase()};
+  --vp-c-brand-soft: color-mix(in oklch, ${BRAND.auroraCyan.toLowerCase()} 14%, transparent);
 
   /* ---- surface: midnight iron ---- */
   --vp-c-bg: ${SURFACE.ink900.toLowerCase()};
@@ -213,11 +216,11 @@ ${semantic}
     180deg,
     ${PENDING_SITE.heroNameTop} 6%,
     var(--mj-steel) 40%,
-    var(--mj-gold-bright) 92%
+    var(--mj-aurora-cyan) 92%
   );
 
-  --vp-c-brand-lighter: var(--mj-gold-hot);
-  --vp-c-brand-light: var(--mj-gold-bright);
+  --vp-c-brand-lighter: var(--mj-aurora-cyan);
+  --vp-c-brand-light: var(--mj-aurora-cyan);
   --vp-c-brand-dark: var(--vp-c-brand-2);
   --vp-c-brand-darker: var(--vp-c-brand-3);
 }

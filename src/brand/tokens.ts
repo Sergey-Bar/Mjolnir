@@ -57,6 +57,10 @@ export const BRAND = {
   aurora: "#37ABBD",
   auroraBright: "#45C1D4",
   auroraCyan: "#5CBDE0",
+  /** The aurora's outer curtains: atmosphere and section identity only,
+   * never a verdict or a status. */
+  auroraGreen: "#5FD6A4",
+  auroraViolet: "#9D8CF5",
   steel: "#C8CBCF",
   steelDim: "#8B939D",
 } as const;
@@ -194,26 +198,28 @@ export const TRUST_RUNTIME_BOUNDARY = 3;
 /* ── Typography ──────────────────────────────────────────────── */
 
 /**
- * Two faces carry the whole product, and a third appears only in display
- * moments. Before this, the site used Inter + JetBrains Mono + Cinzel
- * while the README SVGs and the video used Geist + Geist Mono — a README
- * asset and a website page shared no letterform at all.
+ * Two faces carry the whole product. Before this, the site used Inter +
+ * JetBrains Mono + Cinzel while the README SVGs and the video used Geist
+ * + Geist Mono — a README asset and a website page shared no letterform
+ * at all.
  *
  * Geist and Geist Mono are vendored (`assets/readme/fonts`,
  * `scripts/video/fonts.ts`) and embedded into the SVGs and the video, so
- * the same shapes render with no network at all. Cinzel is the one
- * display face and is self-hosted.
+ * the same shapes render with no network at all. Display is not a third
+ * face: it is Geist, set large, tight and quiet. Cinzel held that role
+ * and was retired — a Roman inscriptional serif was the one letterform
+ * that no other surface shared, and it read as costume beside the rest.
  *
  * Every stack ends in a real system fallback: the layout must stay
  * graceful when no webfont loads.
  */
 export const TYPOGRAPHY = {
   display: {
-    family: "Cinzel",
-    weights: [600],
-    stack: `"Cinzel", "Trajan Pro", "Iowan Old Style", Georgia, "Times New Roman", serif`,
-    /** Display type is caps or title-case, always tracked out. */
-    letterSpacing: { tight: "0.04em", wide: "0.18em", widest: "0.32em" },
+    family: "Geist",
+    weights: [500, 600],
+    stack: `"Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`,
+    /** Headlines run tight; the wordmark and labels are caps, tracked out. */
+    letterSpacing: { tight: "-0.02em", wide: "0.18em", widest: "0.3em" },
   },
   sans: {
     family: "Geist",
@@ -310,9 +316,14 @@ export const TINT: Record<
  * all of them. They previously carried `C9A227`/`0B0F17`/`2E8C7F`, a
  * palette retired in PR #20 and still shipping 92 times across the
  * translated set.
+ *
+ * `primary` is the deep aurora, not gold. Gold is held back for FORGED,
+ * and shields.io sets the message in white with no say in it: the light
+ * aurora steps measure under 3:1 there, while this one — the same step
+ * BADGE_BAND.trusted uses — carries white at 5.80:1.
  */
 export const BADGE = {
-  primary: "C19A34",
+  primary: "1F6F7C",
   label: "0A1119",
   secondary: "37ABBD",
 } as const;
@@ -409,6 +420,8 @@ export const CSS_TOKENS: readonly (readonly [
   ["--mj-aurora", BRAND.aurora, "secondary — verification energy"],
   ["--mj-aurora-bright", BRAND.auroraBright, "secondary on dark"],
   ["--mj-aurora-cyan", BRAND.auroraCyan, "informational"],
+  ["--mj-aurora-green", BRAND.auroraGreen, "aurora curtain, atmosphere only"],
+  ["--mj-aurora-violet", BRAND.auroraViolet, "aurora curtain, atmosphere only"],
 ] as const;
 
 /** Semantic score/verdict tokens, emitted after the palette. */

@@ -11,7 +11,8 @@
  * site saw two products.
  *
  * The faces are now Geist and Geist Mono, which the SVGs and the video
- * already carry as vendored TTFs, plus Cinzel for display. Same shapes
+ * already carry as vendored TTFs. Cinzel, the old display face, was
+ * retired with the Nordic pass: display is Geist set large. Same shapes
  * everywhere, no network at render time.
  *
  * DETERMINISM. This script is a vendoring TOOL, not a build step. It
@@ -26,8 +27,8 @@
  * Pulling Cyrillic, Greek and Vietnamese would triple the payload for
  * text that does not exist.
  *
- * LICENCES. Geist and Geist Mono are SIL OFL 1.1 (Vercel); Cinzel is SIL
- * OFL 1.1 (Natanael Gama). The OFL files are vendored beside the fonts.
+ * LICENCES. Geist and Geist Mono are SIL OFL 1.1 (Vercel). The OFL files
+ * are vendored beside the fonts.
  */
 
 import { createHash } from "node:crypto";
@@ -73,7 +74,6 @@ const FACES: Face[] = [
     query: "Geist+Mono:wght@400;500",
     slug: "geist-mono",
   },
-  { family: "Cinzel", query: "Cinzel:wght@600", slug: "cinzel" },
 ];
 
 interface Block {

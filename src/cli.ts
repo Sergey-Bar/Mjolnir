@@ -31,7 +31,7 @@ export const {
   fallbackWorkspace,
   pathMatchesGlob,
   isValidFindingRecord,
-  discoverRuntimeReport,
+  discoverAndParseRuntimeReport,
   KNOWN_RULE_IDS,
   OVERLAP_META_BY_RULE_ID,
   EVIDENCE_OVERRIDES,

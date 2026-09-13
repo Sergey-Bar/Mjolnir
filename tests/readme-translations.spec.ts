@@ -19,6 +19,7 @@
  *     punctuation/emoji stripped, spaces → hyphens).
  */
 
+import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -294,3 +295,53 @@ for (const [code] of TRANSLATIONS) {
     });
   });
 }
+
+/** README.md's last commit date, or null when not in a git checkout. */
+function readmeLastChangeDate(): string | null {
+  try {
+    const out = execFileSync(
+      "git",
+      ["log", "-1", "--format=%cs", "--", "README.md"],
+      { cwd: ROOT, encoding: "utf8" },
+    ).trim();
+    return /^\d{4}-\d{2}-\d{2}$/.test(out) ? out : null;
+  } catch {
+    return null;
+  }
+}
+
+const readmeDate = readmeLastChangeDate();
+
+describe("README.md translation freshness", () => {
+  it("all sync dates are no older than README.md's last commit", () => {
+    if (!readmeDate) return; // npm-packed tarballs have no git metadata
+
+    for (const [code] of TRANSLATIONS) {
+      const file = FILES.get(code);
+      if (!file) continue;
+
+      const fileLines = file.text.split("\n");
+      let markerIndex = -1;
+      for (let i = 0; i < fileLines.length; i++) {
+        if (STALENESS_MARKER_RE.test(fileLines[i] ?? "")) {
+          markerIndex = i;
+          break;
+        }
+      }
+      const m = STALENESS_MARKER_RE.exec(fileLines[markerIndex] ?? "");
+      expect(
+        m,
+        `${fileName(code)} must carry a parseable staleness marker`,
+      ).not.toBeNull();
+      const [, y, mo, d] = m ?? [];
+      const syncedDate = new Date(`${y}-${mo}-${d}T00:00:00Z`)
+        .toISOString()
+        .slice(0, 10);
+      const synced = `${y}-${mo}-${d}`;
+      expect(
+        new Date(syncedDate).getTime() >= new Date(readmeDate).getTime(),
+        `${fileName(code)} is stale (${synced} < ${readmeDate})`,
+      ).toBe(true);
+    }
+  });
+});

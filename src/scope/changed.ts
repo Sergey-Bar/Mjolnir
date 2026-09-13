@@ -80,16 +80,20 @@ export function computeChangedScope(
   root: string,
   baseBranch?: string,
 ): DiffResult {
-  if (!existsSync(join(root, ".git"))) {
+  // Resolve the git root: when scanning a subdirectory of a monorepo,
+  // .git lives at the repository root, not the scan target.
+  const toplevel = runGit(root, ["rev-parse", "--show-toplevel"])?.trim();
+  const gitRoot = toplevel ?? root;
+  if (!existsSync(join(gitRoot, ".git"))) {
     return { changed: {}, degraded: true, reason: "not-a-git-repo" };
   }
 
-  const mergeBase = resolveMergeBase(root, baseBranch);
+  const mergeBase = resolveMergeBase(gitRoot, baseBranch);
   if (!mergeBase) {
     return { changed: {}, degraded: true, reason: "no-merge-base" };
   }
 
-  const committed = runGit(root, [
+  const committed = runGit(gitRoot, [
     "diff",
     "--name-status",
     "-z",
@@ -104,7 +108,7 @@ export function computeChangedScope(
   // Working tree: staged + unstaged changes vs HEAD, plus untracked
   // files — a local run before `git add`/`git commit` must not report
   // nothing (H-10).
-  const workingTree = runGit(root, [
+  const workingTree = runGit(gitRoot, [
     "diff",
     "--name-status",
     "-z",
@@ -114,7 +118,7 @@ export function computeChangedScope(
   if (workingTree === null) {
     return { changed: {}, degraded: true, reason: "diff-failed" };
   }
-  const untracked = runGit(root, [
+  const untracked = runGit(gitRoot, [
     "ls-files",
     "-z",
     "--others",
@@ -152,7 +156,7 @@ export function computeChangedScope(
     const CHUNK = 200;
     for (let start = 0; start < files.length; start += CHUNK) {
       const chunk = files.slice(start, start + CHUNK);
-      const output = runGit(root, [...args, "--", ...chunk]);
+      const output = runGit(gitRoot, [...args, "--", ...chunk]);
       if (output === null) continue;
       // Split per `diff --git` header. parseChangedLines already resets
       // hunk state on headers, so feeding it whole sections is safe.
@@ -297,8 +301,10 @@ export function filterToChanged(
  * an honest stderr note). Empty list = genuinely nothing staged.
  */
 export function computeStagedFiles(root: string): string[] | null {
-  if (!existsSync(join(root, ".git"))) return null;
-  const raw = runGit(root, ["diff", "--cached", "--name-only", "-z"]);
+  const toplevel = runGit(root, ["rev-parse", "--show-toplevel"])?.trim();
+  const gitRoot = toplevel ?? root;
+  if (!existsSync(join(gitRoot, ".git"))) return null;
+  const raw = runGit(gitRoot, ["diff", "--cached", "--name-only", "-z"]);
   if (raw === null) return null;
   return raw.split("\0").filter((s) => s.length > 0);
 }

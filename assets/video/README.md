@@ -4,7 +4,7 @@ Two videos, both generated — never screen-recorded, never mocked up.
 
 | File                                    | What it is                                                     | Where it lives          |
 | --------------------------------------- | -------------------------------------------------------------- | ----------------------- |
-| `mjolnir-demo.mp4`                      | 42s hero loop: one false-green CI gate found, fixed, re-proved | committed (README hero) |
+| `mjolnir-demo.mp4`                      | 34s hero loop: one false-green CI gate found, fixed, re-proved | committed (README hero) |
 | `mjolnir-demo-poster.png`               | Poster frame for the hero                                      | committed               |
 | `mjolnir-tour.mp4`                      | 86s tour: scan → `explain` → `forensics`                       | GitHub Release asset    |
 | `script.demo.json` · `script.tour.json` | The committed evidence both are rendered from                  | committed               |
@@ -71,37 +71,33 @@ instructions. Playwright's bundled ffmpeg will not work: it is built
 
 `scripts/video/check-glyphs.ts` reads the vendored files' own character
 maps and fails before rendering if anything the reporter prints has no
-glyph — a tofu box where the hammer should be is the video misrepresenting
-the CLI.
+glyph — a tofu box in a frame is the video misrepresenting the CLI.
 
-**Geist Mono** (Vercel, SIL OFL) is the primary face — chosen to match
-react.doctor's terminal, the reference this pipeline's framing was built
-against. It covers 120 of the 129 required glyphs, including all box
-drawing and block elements. It does **not** cover the Runic block, `ℹ`
-U+2139, `⚠` U+26A0, `⚡` U+26A1 or `✗` U+2717 — verified with
-`check-glyphs.ts`, not assumed — and `src/reporter/art.ts` puts `ᚦ` and
-`ᚹ` on the hammer in every score state above critical. **GNU FreeMono**
-supplies all nine and is itself monospace, so the fallback glyphs land on
-the same character grid as everything around them.
+**Geist Mono** (Vercel, SIL OFL) is the primary face, the same one the
+README stills and the website's terminal use. It covers every box-drawing
+and block glyph the report draws, the `▍` section mark included. It does
+**not** cover `ℹ` U+2139, `⚠` U+26A0, `⚡` U+26A1, `✓` U+2713 or `✗`
+U+2717 — verified with `check-glyphs.ts`, not assumed. **GNU FreeMono**
+supplies them and is itself monospace, so the fallback glyphs land on the
+same character grid as everything around them. (It also carried the
+runes the old hammer art printed; the report no longer draws one.)
 
 Both faces are embedded as base64 data: URIs at render time. Nothing is
 fetched, and nothing is taken from whatever fonts the host has installed.
 
-Two things were deliberately copied from react.doctor's terminal, both
-pulled from the site's own shipped CSS rather than eyeballed: the
-near-black background (`#08090A`, their `.rn-terminal` rule) and Geist
-Mono. What was NOT copied: react.doctor's terminal shows syntax-
-highlighted source (Shiki, GitHub-dark tokens), so its text colors have
-no correspondence to a CLI report. Mjölnir's severity colors already
-carry real meaning tied to the score bands and the brand's verdict
-palette (`assets/brand/README.md`) — repainting them to match a syntax
-theme they do not correspond to would be inventing color, not reusing
-it.
+The frame is the website's terminal, rendered as video: one ink window
+with a 3px aurora line across the top, a hairline under the title bar,
+three neutral dots and a muted prompt, floating on the same green, cyan
+and violet wash as the site's hero. The text colours are the reporter's
+own — severity and score colours carry meaning tied to the score bands
+(`assets/brand/README.md`), so they are reused, never repainted.
 
 ## Note on GitHub playback
 
 GitHub does not play a repo-relative `.mp4` in a `<video>` tag — only files
-on its own user-content CDN. The README therefore links the poster to the
-file. For true inline playback, drag the MP4 into any issue comment, copy
-the `user-images.githubusercontent.com` URL it returns, and use that in a
-`<video>` tag. That is a manual workaround, not the artifact strategy.
+on its own user-content CDN. The README therefore shows the poster and
+links it to the file, which works on every renderer (github.com, npm,
+mirrors, offline clones). For true inline playback on github.com, drag the
+MP4 into any issue comment, copy the `user-attachments` URL it returns,
+and use that in a `<video>` tag. That is a manual step, not the artifact
+strategy.

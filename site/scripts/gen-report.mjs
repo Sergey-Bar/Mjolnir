@@ -166,7 +166,7 @@ export function splitGroups(lines) {
   // The per-finding detail is OPTIONAL, and this used to throw when it
   // was absent. `scripts/generate-readme-hero.ts` deliberately stops the
   // hero asset at the end of "FIX THIS FIRST" — everything from
-  // "▚ FINDINGS" down is dropped, because the hero is the score
+  // "▍ FINDINGS" down is dropped, because the hero is the score
   // instrument and the full report is demo.svg's job. When that landed,
   // the site's prebuild started throwing here, which took the whole
   // pages deploy down with it and went unnoticed because the site build
@@ -177,7 +177,7 @@ export function splitGroups(lines) {
   // boundaries that genuinely cannot be missing — the command and the
   // WORTHINESS line — still throw, because a wrong number here is
   // exactly the defect this script exists to prevent.
-  const foundFindings = lines.findIndex((l) => /▚\s*FINDINGS/.test(l.text));
+  const foundFindings = lines.findIndex((l) => /▍\s*FINDINGS/.test(l.text));
   const hasFindings = foundFindings >= 0;
   const footerIdx = lines.findIndex(
     (l, i) => i > worthinessIdx && /^\s*─{10,}\s*$/.test(l.text),

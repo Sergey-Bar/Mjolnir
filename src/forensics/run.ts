@@ -29,6 +29,8 @@ import { looksLikeVitestJson, parseVitestJson } from "./parse-vitest-json.js";
 import type { ForensicsReport, TestRecord } from "./types.js";
 
 const MAX_FILES = 500;
+const MAX_REPORT_FILE_BYTES = 1 * 1024 * 1024; // 1MB per file — structured data
+const MAX_CUMULATIVE_BYTES = 50 * 1024 * 1024; // 50MB total across directory walk
 
 export interface ForensicsOptions {
   /** Set false to skip writing FLAKY.md. */
@@ -59,6 +61,19 @@ export function runForensics(
 
   const stat = statSync(target);
   if (stat.isFile()) {
+    // Size guard: a multi-GB report file would exhaust memory on JSON.parse.
+    // 1MB is generous for structured test output; larger files are skipped.
+    if (stat.size > MAX_REPORT_FILE_BYTES) {
+      const report = analyze([], source);
+      return {
+        report,
+        output: [
+          renderLeaderboard(report),
+          "",
+          renderFlakyMdNotWritten(options),
+        ].join("\n"),
+      };
+    }
     // Bug-audit M3: directory mode wraps parseFile in a try/catch and
     // skips unreadable/corrupt files; the single-file path did not — a
     // corrupt report crashed with exit 20 instead of the honest exit 2.
@@ -111,9 +126,14 @@ export function runForensics(
     }
   } else {
     let count = 0;
+    let cumulativeBytes = 0;
     for (const full of listFiles(target)) {
       if (++count > MAX_FILES) break;
       try {
+        const fileStat = statSync(full);
+        if (fileStat.size > MAX_REPORT_FILE_BYTES) continue;
+        cumulativeBytes += fileStat.size;
+        if (cumulativeBytes > MAX_CUMULATIVE_BYTES) break;
         // R5: trace artifacts ride the byte path (see the single-file arm).
         if (/\.(?:zip|trace|ndjson)$/i.test(full)) {
           const bytes = readFileSync(full);

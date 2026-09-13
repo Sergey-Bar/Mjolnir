@@ -64,7 +64,7 @@ import {
   trustLadderSvg,
   TRUST_RUNGS,
 } from "../src/brand/symbols.js";
-import { BRAND, STATUS, SURFACE, TEXT } from "../src/brand/tokens.js";
+import { BRAND, SCORE, STATUS, SURFACE, TEXT } from "../src/brand/tokens.js";
 
 import { FONTS, fontPath } from "./video/fonts.js";
 
@@ -192,7 +192,7 @@ function line(
   x2: number,
   y2: number,
   o: {
-    m?: "arrow" | "arrow-gold" | null;
+    m?: "arrow" | "arrow-accent" | null;
     dash?: boolean;
     color?: string;
     sw?: number;
@@ -378,7 +378,7 @@ export function buildArchitectureSvg(): string {
   );
   g.push(
     line(BUS_X, busMid, ENG_X - 4, busMid, {
-      m: "arrow-gold",
+      m: "arrow-accent",
       color: "var(--accent)",
     }),
   );
@@ -584,7 +584,7 @@ export function buildArchitectureSvg(): string {
   g.push(`  <g id="outputs">`);
   g.push(
     line(ENG_X + ENG_W + 4, busMid, OUT_X - 6, busMid, {
-      m: "arrow-gold",
+      m: "arrow-accent",
       color: "var(--accent)",
     }),
   );
@@ -760,7 +760,7 @@ export function buildArchitectureSvg(): string {
   const px = RIGHT - LW / 2;
   const backY = loopY + 54;
   g.push(
-    `    <path d="M ${n(px)} ${n(loopY + 32)} L ${n(px)} ${n(backY)} L ${n(CX)} ${n(backY)} L ${n(CX)} ${n(MAIN_BOTTOM + 5)}" fill="none" stroke="var(--accent-dim)" stroke-width="1.2" stroke-dasharray="3 4" marker-end="url(#arrow-gold)"/>`,
+    `    <path d="M ${n(px)} ${n(loopY + 32)} L ${n(px)} ${n(backY)} L ${n(CX)} ${n(backY)} L ${n(CX)} ${n(MAIN_BOTTOM + 5)}" fill="none" stroke="var(--accent-dim)" stroke-width="1.2" stroke-dasharray="3 4" marker-end="url(#arrow-accent)"/>`,
   );
   g.push(
     text(CX + 12, backY - 7, "re-verified by Mjölnir", {
@@ -830,7 +830,7 @@ export function buildArchitectureSvg(): string {
     <marker id="arrow" markerWidth="8" markerHeight="8" refX="7.5" refY="4" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
       <path d="M0,0.5 L7.5,4 L0,7.5 Z" fill="var(--edge-lit)"/>
     </marker>
-    <marker id="arrow-gold" markerWidth="9" markerHeight="9" refX="8.5" refY="4.5" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <marker id="arrow-accent" markerWidth="9" markerHeight="9" refX="8.5" refY="4.5" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
       <path d="M0,0.5 L8.5,4.5 L0,8.5 Z" fill="var(--accent)"/>
     </marker>
   </defs>
@@ -840,8 +840,8 @@ ${fontFaceCss()}
       --bg:${SURFACE.terminal}; --surface:${SURFACE.ink900}; --engine:${SURFACE.ink950}; --chip:${SURFACE.ink850};
       --edge:${SURFACE.ink800}; --edge-lit:${BRAND.steelDim};
       --text:${TEXT.primary}; --muted:${BRAND.steelDim}; --quiet:${TEXT.muted};
-      --accent:${BRAND.gold}; --accent-dim:${SURFACE.ink800};
-      --success:${STATUS.ok}; --warning:${BRAND.gold};
+      --accent:${BRAND.auroraCyan}; --accent-dim:${SURFACE.ink800};
+      --success:${STATUS.ok}; --warning:${SCORE.warning};
     }
   </style>
   <rect x="0" y="0" width="${W}" height="${H}" fill="var(--bg)"/>

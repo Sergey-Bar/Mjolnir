@@ -14,9 +14,11 @@
  * regeneratable, not archival.
  *
  * THE TWO MARKS.
- *   - wordmark — "MJÖLNIR" set in Cinzel 600 (the display token), the
- *     full lockup for anywhere there is room to read a word.
- *   - monogram — a single rune, for the square/tiny contexts a wordmark
+ *   - wordmark — "MJÖLNIR" set in Geist 500 (the one text face), tracked
+ *     0.3em in primary text, the full lockup for anywhere there is room
+ *     to read a word.
+ *   - monogram — a single rune drawn as a path (`MONOGRAM_PATH`) and
+ *     stroked in the aurora, for the square/tiny contexts a wordmark
  *     cannot survive (favicons, the npm/social icon). The rune is ᛗ
  *     (Mansaz) — already the "M" of MJÖLNIR in the hero runefield's own
  *     Elder Futhark spelling of the name (ᛗ ᛃ ᛟ ᛚ ᚾ ᛁ ᚱ, see
@@ -62,80 +64,107 @@ import { fileURLToPath } from "node:url";
 
 import { chromium } from "playwright-core";
 
-import { BRAND, SURFACE } from "../src/brand/tokens.js";
+import { BRAND, SURFACE, TEXT } from "../src/brand/tokens.js";
 import { resolveChromium } from "./video/fonts.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-const CINZEL_PATH = join(
-  ROOT,
-  "site",
-  "public",
-  "fonts",
-  "cinzel-600-latin.woff2",
-);
-const FREEMONO_PATH = join(ROOT, "assets", "video", "fonts", "FreeMono.ttf");
+const fontPath = (weight: number) =>
+  join(ROOT, "site", "public", "fonts", `geist-${weight}-latin.woff2`);
+const FONT_PATHS = [fontPath(400), fontPath(500)];
 
 /** Mansaz — see file header for why this rune and not one of the score runes. */
 export const MONOGRAM_RUNE = "ᛗ";
 export const WORDMARK_TEXT = "MJÖLNIR";
 
-function fontFaceCss(): string {
-  const cinzel = readFileSync(CINZEL_PATH).toString("base64");
-  const freeMono = readFileSync(FREEMONO_PATH).toString("base64");
-  return `
-    @font-face{font-family:"MjolnirDisplay";font-weight:600;font-style:normal;
-      src:url(data:font/woff2;base64,${cinzel}) format("woff2")}
-    @font-face{font-family:"MjolnirRunes";font-weight:400;font-style:normal;
-      src:url(data:font/ttf;base64,${freeMono}) format("truetype")}
-  `;
+/**
+ * The rune, drawn rather than typeset: two staves, each with a diagonal
+ * from its head to the middle of the other. A font glyph was the old
+ * source, and its hairline stroke had to be fattened with text-stroke to
+ * survive 16px at all. On a 48×64 grid, the stroke is set per size, so
+ * the favicon gets a heavier cut instead of a blurrier one.
+ */
+export const MONOGRAM_PATH = "M11 60V14L37 36M37 60V14L11 36";
+
+/** The aurora across the rune: green at the foot, violet at the head. */
+function monogramSvg(px: number, stroke: number, join = "miter"): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 64"
+    width="${(px * 48) / 64}" height="${px}" aria-hidden="true">
+    <defs><linearGradient id="a" gradientUnits="userSpaceOnUse"
+      x1="7" y1="60" x2="41" y2="6">
+      <stop offset="0" stop-color="${BRAND.auroraGreen}"/>
+      <stop offset="0.5" stop-color="${BRAND.auroraCyan}"/>
+      <stop offset="1" stop-color="${BRAND.auroraViolet}"/>
+    </linearGradient></defs>
+    <path d="${MONOGRAM_PATH}" fill="none" stroke="url(#a)"
+      stroke-width="${stroke}" stroke-linejoin="${join}" stroke-miterlimit="4"/>
+  </svg>`;
 }
+
+function fontFaceCss(): string {
+  return [400, 500]
+    .map(
+      (w) => `@font-face{font-family:"MjolnirSans";font-weight:${w};
+      font-style:normal;src:url(data:font/woff2;base64,${readFileSync(
+        fontPath(w),
+      ).toString("base64")}) format("woff2")}`,
+    )
+    .join("\n");
+}
+
+const page = (w: number, h: number, ground: string, body: string) =>
+  `<!doctype html><html><head><meta charset="utf-8"><style>
+    ${fontFaceCss()}
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{width:${w}px;height:${h}px;background:${ground};overflow:hidden}
+    body{display:flex;flex-direction:column;align-items:center;
+      justify-content:center;font-family:"MjolnirSans",sans-serif}
+    .word{font-weight:500;letter-spacing:0.3em;color:${TEXT.primary};
+      padding-left:0.3em;line-height:1}
+    .line{font-weight:400;color:${TEXT.secondary};letter-spacing:0.01em}
+  </style></head><body>${body}</body></html>`;
 
 /** Full lockup: the wordmark alone, on its own ink card. */
 export function wordmarkHtml(w: number, h: number): string {
-  const fontSize = Math.round(h * 0.34);
-  return `<!doctype html><html><head><meta charset="utf-8"><style>
-    ${fontFaceCss()}
-    *{margin:0;padding:0;box-sizing:border-box}
-    html,body{width:${w}px;height:${h}px;background:${SURFACE.ink900};
-      display:flex;align-items:center;justify-content:center;overflow:hidden}
-    .word{font-family:"MjolnirDisplay",serif;font-weight:600;
-      font-size:${fontSize}px;letter-spacing:0.08em;color:${BRAND.goldBright};
-      padding-left:0.08em}
-  </style></head><body><div class="word">${WORDMARK_TEXT}</div></body></html>`;
+  return page(
+    w,
+    h,
+    SURFACE.ink900,
+    `<div class="word" style="font-size:${Math.round(h * 0.2)}px">${WORDMARK_TEXT}</div>`,
+  );
 }
 
-/** Square monogram: the rune fallback for contexts too small for the wordmark. */
+/** Square monogram: the rune for contexts too small for the wordmark. */
 export function monogramHtml(w: number, h: number): string {
   const size = Math.min(w, h);
-  const fontSize = Math.round(size * 0.78);
-  // A thin monospace stroke disappears under antialiasing at favicon
-  // sizes (16/32px). -webkit-text-stroke fattens the glyph without
-  // needing a bold weight of a font vendored only at regular.
-  const strokeW = Math.max(1, Math.round(size * 0.045));
-  return `<!doctype html><html><head><meta charset="utf-8"><style>
-    ${fontFaceCss()}
-    *{margin:0;padding:0;box-sizing:border-box}
-    html,body{width:${w}px;height:${h}px;background:${SURFACE.ink900};
-      display:flex;align-items:center;justify-content:center;overflow:hidden}
-    .rune{font-family:"MjolnirRunes",monospace;font-size:${fontSize}px;
-      line-height:1;color:${BRAND.goldBright};
-      -webkit-text-stroke:${strokeW}px ${BRAND.goldBright}}
-  </style></head><body><div class="rune">${MONOGRAM_RUNE}</div></body></html>`;
+  // Heavier at favicon sizes, where a hairline antialiases to nothing.
+  // Below 64px the mitred heads spike past the pixel grid, so the small
+  // cuts are bevelled: a flat head reads cleaner than a blurred point.
+  const stroke = size <= 16 ? 9 : size <= 32 ? 8 : size <= 64 ? 7 : 5;
+  const join = size < 64 ? "bevel" : "miter";
+  return page(
+    w,
+    h,
+    SURFACE.ink900,
+    monogramSvg(Math.round(size * (size <= 32 ? 0.8 : 0.74)), stroke, join),
+  );
 }
 
-/** Social card: the wordmark centered on the deepest ink, per the og:image spec. */
+/** Social card: rune over wordmark over one line, per the og:image spec. */
 export function socialCardHtml(w: number, h: number): string {
-  const fontSize = Math.round(h * 0.16);
-  return `<!doctype html><html><head><meta charset="utf-8"><style>
-    ${fontFaceCss()}
-    *{margin:0;padding:0;box-sizing:border-box}
-    html,body{width:${w}px;height:${h}px;background:${SURFACE.ink950};
-      display:flex;align-items:center;justify-content:center;overflow:hidden}
-    .word{font-family:"MjolnirDisplay",serif;font-weight:600;
-      font-size:${fontSize}px;letter-spacing:0.08em;color:${BRAND.goldBright};
-      padding-left:0.08em}
-  </style></head><body><div class="word">${WORDMARK_TEXT}</div></body></html>`;
+  const glow = (c: string, a: number) =>
+    `color-mix(in oklch, ${c} ${a}%, transparent)`;
+  return page(
+    w,
+    h,
+    `radial-gradient(60% 70% at 30% 0%, ${glow(BRAND.auroraGreen, 16)}, transparent 70%),
+     radial-gradient(55% 65% at 72% 0%, ${glow(BRAND.auroraViolet, 16)}, transparent 70%),
+     radial-gradient(40% 50% at 50% 0%, ${glow(BRAND.auroraCyan, 14)}, transparent 70%),
+     ${SURFACE.ink950}`,
+    `${monogramSvg(Math.round(h * 0.2), 5)}
+     <div class="word" style="font-size:${Math.round(h * 0.1)}px;margin-top:${Math.round(h * 0.075)}px">${WORDMARK_TEXT}</div>
+     <div class="line" style="font-size:${Math.round(h * 0.042)}px;margin-top:${Math.round(h * 0.06)}px">Checks whether your tests and CI can be trusted.</div>`,
+  );
 }
 
 interface Target {
@@ -238,7 +267,7 @@ async function main(): Promise<void> {
   }
 }
 
-if (existsSync(CINZEL_PATH) && existsSync(FREEMONO_PATH)) {
+if (FONT_PATHS.every((p) => existsSync(p))) {
   await main();
 } else {
   process.stderr.write(
