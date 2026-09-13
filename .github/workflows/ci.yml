@@ -173,6 +173,11 @@ jobs:
           name: coverage-report
           path: coverage/
           retention-days: 14
+      - name: Upload coverage reports to Codecov
+        if: matrix.os == 'ubuntu-latest'
+        uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac # v5.5.5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
       - name: Job time budget in summary (soft)
         if: always()
         run: |
