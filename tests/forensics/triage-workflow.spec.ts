@@ -52,6 +52,9 @@ function report(overrides: Partial<ForensicsReport> = {}): ForensicsReport {
     flakyTests: 1,
     totalDurationMs: 6000,
     verdicts: [],
+    analysisComplete: true,
+    skippedReports: 0,
+    incompleteReasons: [],
     ...overrides,
   };
 }

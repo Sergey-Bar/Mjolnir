@@ -73,6 +73,9 @@ function emptyForensicsReport(): ForensicsReport {
     flakyTests: 0,
     totalDurationMs: 0,
     verdicts: [],
+    analysisComplete: true,
+    skippedReports: 0,
+    incompleteReasons: [],
   };
 }
 

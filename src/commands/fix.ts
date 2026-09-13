@@ -323,20 +323,22 @@ function removePagePause(
   return { text, changed: false };
 }
 
+interface PlannedFile {
+  abs: string;
+  text: string;
+  planned: FixEdit[];
+}
+
 /**
- * Plan + apply + verify fixes over a scan result.
- * Verification: re-run the same rule against the fixed text — the
- * specific finding must be gone (line moved or count reduced).
+ * Group findings by file, plan edits, check path containment, read files,
+ * and check sizes.  Returns a map of file → planned edits (with file text
+ * already loaded) and an array of `FixResult` failures for files that
+ * could not be processed (unreadable, oversized, traversal attempt).
  */
-export function planAndApplyFixes(
+export function planFixes(
   result: ScanResult,
   rootDir: string,
-  options: { dryRun?: boolean } = {},
-): FixResult[] {
-  // Audit (fix.ts): startup sweep of stale `.mjolnir-*.tmp` files left
-  // by a crashed writer — the temp dir must not accumulate cruft across
-  // runs. Advisory; a busy temp is left alone.
-  sweepStaleTempFiles(rootDir);
+): { files: Map<string, PlannedFile>; failures: FixResult[] } {
   const byFile = new Map<string, Finding[]>();
   for (const f of result.findings) {
     const list = byFile.get(f.file) ?? [];
@@ -344,7 +346,8 @@ export function planAndApplyFixes(
     byFile.set(f.file, list);
   }
 
-  const results: FixResult[] = [];
+  const files = new Map<string, PlannedFile>();
+  const failures: FixResult[] = [];
 
   for (const [file, findings] of byFile) {
     const planned = findings
@@ -358,17 +361,14 @@ export function planAndApplyFixes(
     const abs = containedPath(rootDir, file);
     if (abs === null) {
       // Traversal attempt (e.g. plugin-supplied path) — refuse loudly.
-      results.push(
-        ...findings
-          .map(planFix)
-          .filter((e): e is FixEdit => e !== null)
-          .map((e) => ({
-            file,
-            ruleId: e.ruleId,
-            line: e.line,
-            status: "failed" as const,
-            description: `${e.description} — path escapes scan root, refused`,
-          })),
+      failures.push(
+        ...planned.map((e) => ({
+          file,
+          ruleId: e.ruleId,
+          line: e.line,
+          status: "failed" as const,
+          description: `${e.description} — path escapes scan root, refused`,
+        })),
       );
       continue;
     }
@@ -389,7 +389,7 @@ export function planAndApplyFixes(
       // while silently doing nothing. Emit an honest result instead.
       const sizeBytes = Buffer.byteLength(text, "utf8");
       if (sizeBytes > MAX_FILE_BYTES) {
-        results.push(
+        failures.push(
           ...planned.map((e) => ({
             file,
             ruleId: e.ruleId,
@@ -405,21 +405,44 @@ export function planAndApplyFixes(
     } catch {
       // Unreadable target (missing, EISDIR, permissions) — the finding
       // cannot be proven either way; report as failed, never silently.
-      results.push(
-        ...findings
-          .map(planFix)
-          .filter((e): e is FixEdit => e !== null)
-          .map((e) => ({
-            file,
-            ruleId: e.ruleId,
-            line: e.line,
-            status: "failed" as const,
-            description: `${e.description} — file unreadable`,
-          })),
+      failures.push(
+        ...planned.map((e) => ({
+          file,
+          ruleId: e.ruleId,
+          line: e.line,
+          status: "failed" as const,
+          description: `${e.description} — file unreadable`,
+        })),
       );
       continue;
     }
 
+    files.set(file, { abs, text, planned });
+  }
+
+  return { files, failures };
+}
+
+/**
+ * Plan + apply + verify fixes over a scan result.
+ * Verification: re-run the same rule against the fixed text — the
+ * specific finding must be gone (line moved or count reduced).
+ */
+export function planAndApplyFixes(
+  result: ScanResult,
+  rootDir: string,
+  options: { dryRun?: boolean } = {},
+): FixResult[] {
+  // Audit (fix.ts): startup sweep of stale `.mjolnir-*.tmp` files left
+  // by a crashed writer — the temp dir must not accumulate cruft across
+  // runs. Advisory; a busy temp is left alone.
+  sweepStaleTempFiles(rootDir);
+
+  const { files, failures } = planFixes(result, rootDir);
+  const results: FixResult[] = [...failures];
+
+  for (const [file, { abs, text: fileText, planned }] of files) {
+    let text = fileText;
     const original = text;
     const pending: Array<{ edit: FixEdit; before: string }> = [];
     for (const edit of planned) {

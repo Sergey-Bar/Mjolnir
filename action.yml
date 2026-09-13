@@ -44,7 +44,7 @@ inputs:
     required: false
     default: "false"
   format:
-    description: "Output format: terminal, json, or sarif"
+    description: "Output format: terminal, json, sarif, codequality, or mermaid"
     required: false
     default: "terminal"
   fail-on:
@@ -140,8 +140,8 @@ runs:
           *) echo "::error::fail-on must be 'error', 'warning' or 'none', got '$MJ_FAIL_ON'"; exit 10 ;;
         esac
         case "$MJ_FORMAT" in
-          terminal|json|sarif) ;;
-          *) echo "::error::format must be 'terminal', 'json' or 'sarif', got '$MJ_FORMAT'"; exit 10 ;;
+          terminal|json|sarif|codequality|mermaid) ;;
+          *) echo "::error::format must be 'terminal', 'json', 'sarif', 'codequality' or 'mermaid', got '$MJ_FORMAT'"; exit 10 ;;
         esac
         case "$MJ_STRICT" in
           true|false) ;;
@@ -179,8 +179,10 @@ runs:
         if [ "$MJ_SCOPE" = "changed" ]; then ARGS+=(--scope changed); fi
         if [ "$MJ_STRICT" = "true" ]; then ARGS+=(--strict); fi
         case "$MJ_FORMAT" in
-          json)  ARGS+=(--json) ;;
-          sarif) ARGS+=(--format sarif) ;;
+          json)         ARGS+=(--json) ;;
+          sarif)        ARGS+=(--format sarif) ;;
+          codequality)  ARGS+=(--format codequality) ;;
+          mermaid)      ARGS+=(--format mermaid) ;;
         esac
         case "$MJ_FAIL_ON" in
           error)   ARGS+=(--blocking error) ;;
@@ -193,6 +195,10 @@ runs:
           npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}" > mjolnir.json
         elif [ "$MJ_FORMAT" = "sarif" ]; then
           npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}" > mjolnir-report.sarif
+        elif [ "$MJ_FORMAT" = "codequality" ]; then
+          npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}" > mjolnir-codequality.json
+        elif [ "$MJ_FORMAT" = "mermaid" ]; then
+          npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}" > mjolnir-report.mmd
         else
           npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}"
         fi

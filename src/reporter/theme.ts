@@ -137,7 +137,9 @@ const off = {
   dim: inertId,
 };
 
-function rgb([r, g, b]: readonly [number, number, number]) {
+function rgb([r, g, b]: readonly [number, number, number]): (
+  s: string,
+) => string {
   return (s: string) => `\x1b[38;2;${r};${g};${b}m${sanitizeData(s)}\x1b[0m`;
 }
 

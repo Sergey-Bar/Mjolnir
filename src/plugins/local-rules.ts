@@ -168,7 +168,7 @@ function loadJsonRule(path: string, result: LoadedExternalRules): void {
   }
   let regexes: RegExp[];
   try {
-    regexes = patterns.map((p) => new RegExp(p as string, "g"));
+    regexes = (patterns as string[]).map((p) => new RegExp(p, "g"));
   } catch (err) {
     result.errors.push(
       `external rule ${id} declares an invalid regex: ${

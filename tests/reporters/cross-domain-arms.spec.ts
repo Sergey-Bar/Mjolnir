@@ -73,6 +73,9 @@ describe("triage renders failing rows", () => {
         proposedQuarantine: false,
       },
     ],
+    analysisComplete: true,
+    skippedReports: 0,
+    incompleteReasons: [] as string[],
   };
 
   it("renderTriage labels failures honestly", () => {

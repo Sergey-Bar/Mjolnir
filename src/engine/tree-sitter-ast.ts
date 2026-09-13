@@ -57,6 +57,8 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Parser, Language, type Tree } from "web-tree-sitter";
 
+const PARSE_TIMEOUT_MICROS = 30_000_000; // 30 seconds
+
 let parserInitPromise: Promise<void> | null = null;
 
 /**
@@ -220,7 +222,13 @@ export async function parseJavaAst(text: string): Promise<Tree | undefined> {
   try {
     return await withParseSlot(async () => {
       const parser = await getJavaParser();
-      return parser.parse(text) ?? undefined;
+      parser.setTimeoutMicros(PARSE_TIMEOUT_MICROS);
+      const tree = parser.parse(text);
+      if (tree === null) {
+        parser.reset();
+        return undefined;
+      }
+      return tree;
     });
   } catch {
     return undefined;
@@ -235,7 +243,13 @@ export async function parseCSharpAst(text: string): Promise<Tree | undefined> {
   try {
     return await withParseSlot(async () => {
       const parser = await getCSharpParser();
-      return parser.parse(text) ?? undefined;
+      parser.setTimeoutMicros(PARSE_TIMEOUT_MICROS);
+      const tree = parser.parse(text);
+      if (tree === null) {
+        parser.reset();
+        return undefined;
+      }
+      return tree;
     });
   } catch {
     return undefined;
@@ -252,7 +266,13 @@ export async function parsePythonAst(text: string): Promise<Tree | undefined> {
   try {
     return await withParseSlot(async () => {
       const parser = await getPythonParser();
-      return parser.parse(text) ?? undefined;
+      parser.setTimeoutMicros(PARSE_TIMEOUT_MICROS);
+      const tree = parser.parse(text);
+      if (tree === null) {
+        parser.reset();
+        return undefined;
+      }
+      return tree;
     });
   } catch {
     return undefined;

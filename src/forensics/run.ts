@@ -47,6 +47,8 @@ export function runForensics(
 } {
   const records: TestRecord[] = [];
   let source: ForensicsReport["source"] = "playwright-json";
+  let skippedReports = 0;
+  const incompleteReasons: string[] = [];
 
   // Missing target is a "nothing recognized" case, not a crash — the CLI
   // layer maps totalTests === 0 to exit 2 with an honest message.
@@ -64,7 +66,12 @@ export function runForensics(
     // Size guard: a multi-GB report file would exhaust memory on JSON.parse.
     // 1MB is generous for structured test output; larger files are skipped.
     if (stat.size > MAX_REPORT_FILE_BYTES) {
+      skippedReports = 1;
+      incompleteReasons.push("size-limit");
       const report = analyze([], source);
+      report.analysisComplete = false;
+      report.skippedReports = skippedReports;
+      report.incompleteReasons = incompleteReasons;
       return {
         report,
         output: [
@@ -123,17 +130,37 @@ export function runForensics(
       source = parsed.source;
     } catch {
       /* unreadable or corrupt — zero records → honest exit 2 upstream */
+      skippedReports = 1;
+      incompleteReasons.push("parse-failure");
     }
   } else {
     let count = 0;
     let cumulativeBytes = 0;
+    let hitFileLimit = false;
+    let hitCumulativeLimit = false;
     for (const full of listFiles(target)) {
-      if (++count > MAX_FILES) break;
+      if (++count > MAX_FILES) {
+        // eslint-disable-next-line no-useless-assignment -- read after loop at line ~185
+        hitFileLimit = true;
+        break;
+      }
       try {
         const fileStat = statSync(full);
-        if (fileStat.size > MAX_REPORT_FILE_BYTES) continue;
+        if (fileStat.size > MAX_REPORT_FILE_BYTES) {
+          skippedReports++;
+          if (!incompleteReasons.includes("size-limit")) {
+            incompleteReasons.push("size-limit");
+          }
+          continue;
+        }
         cumulativeBytes += fileStat.size;
-        if (cumulativeBytes > MAX_CUMULATIVE_BYTES) break;
+        if (cumulativeBytes > MAX_CUMULATIVE_BYTES) {
+          hitCumulativeLimit = true;
+          if (!incompleteReasons.includes("cumulative-size-limit")) {
+            incompleteReasons.push("cumulative-size-limit");
+          }
+          break;
+        }
         // R5: trace artifacts ride the byte path (see the single-file arm).
         if (/\.(?:zip|trace|ndjson)$/i.test(full)) {
           const bytes = readFileSync(full);
@@ -151,11 +178,29 @@ export function runForensics(
         records.push(...parsed.records);
       } catch {
         /* unreadable — skip */
+        skippedReports++;
+        if (!incompleteReasons.includes("parse-failure")) {
+          incompleteReasons.push("parse-failure");
+        }
+      }
+      if (hitFileLimit) {
+        skippedReports++;
+        if (!incompleteReasons.includes("file-count-limit")) {
+          incompleteReasons.push("file-count-limit");
+        }
+      }
+      if (hitCumulativeLimit) {
+        skippedReports++;
       }
     }
   }
 
   const report = analyze(records, source);
+  if (skippedReports > 0) {
+    report.analysisComplete = false;
+    report.skippedReports = skippedReports;
+    report.incompleteReasons = incompleteReasons;
+  }
 
   let flakyMdPath: string | undefined;
   if ((options.writeFlakyMd ?? true) && report.totalTests > 0) {

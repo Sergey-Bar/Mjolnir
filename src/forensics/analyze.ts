@@ -91,6 +91,9 @@ export function analyze(
     flakyTests: flaky,
     totalDurationMs: totalDuration,
     verdicts,
+    analysisComplete: true,
+    skippedReports: 0,
+    incompleteReasons: [],
   };
 }
 
@@ -127,6 +130,11 @@ export function renderLeaderboard(report: ForensicsReport): string {
   const top = leaderboard(report);
   if (top.length === 0) {
     lines.push("No failures or retries found — nothing suspicious this run.");
+    if (!report.analysisComplete) {
+      lines.push(
+        `⚠ Analysis is partial — ${report.skippedReports} report(s) skipped (${report.incompleteReasons.join(", ")}).`,
+      );
+    }
     return lines.join("\n");
   }
 
@@ -138,6 +146,12 @@ export function renderLeaderboard(report: ForensicsReport): string {
     lines.push(
       `${flag.padEnd(10)} ${v.title} (${v.file})`,
       `           ${bar(v.totalDurationMs, maxMs)} ${(v.totalDurationMs / 1000).toFixed(1)}s · ${v.attempts} attempt${v.attempts === 1 ? "" : "s"}`,
+    );
+  }
+  if (!report.analysisComplete) {
+    lines.push("");
+    lines.push(
+      `⚠ Analysis is partial — ${report.skippedReports} report(s) skipped (${report.incompleteReasons.join(", ")}).`,
     );
   }
   return lines.join("\n");
@@ -163,6 +177,12 @@ export function renderFlakyMd(report: ForensicsReport): string {
   const top = leaderboard(report);
   if (top.length === 0) {
     lines.push("_No flaky or failing tests detected in this run._");
+    if (!report.analysisComplete) {
+      lines.push("");
+      lines.push(
+        `> ⚠ Analysis is partial — ${report.skippedReports} report(s) skipped (${report.incompleteReasons.join(", ")}).`,
+      );
+    }
     return lines.join("\n");
   }
 
@@ -173,6 +193,12 @@ export function renderFlakyMd(report: ForensicsReport): string {
     const status = v.passedOnRetry ? `${FLAKE_GLYPH} TRUE-FLAKE` : "❌ failing";
     lines.push(
       `| ${status} | \`${v.title}\` | \`${v.file}\` | ${v.attempts} | ${(v.totalDurationMs / 1000).toFixed(1)}s |`,
+    );
+  }
+  if (!report.analysisComplete) {
+    lines.push("");
+    lines.push(
+      `> ⚠ Analysis is partial — ${report.skippedReports} report(s) skipped (${report.incompleteReasons.join(", ")}).`,
     );
   }
   lines.push("");

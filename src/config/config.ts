@@ -7,6 +7,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { SEVERITY_ORDER, type Severity } from "../types.js";
+import { parseJsonFile, isRecord } from "../lib/safe-json.js";
 
 export interface IgnoreEntry {
   ruleId: string;
@@ -82,8 +83,12 @@ export function loadConfig(
     // eslint-disable-next-line security/detect-non-literal-fs-filename
     if (!existsSync(p)) continue;
     try {
-      // eslint-disable-next-line security/detect-non-literal-fs-filename
-      const parsed = JSON.parse(readFileSync(p, "utf8")) as QADoctorConfig;
+      const parsed = parseJsonFile(
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        readFileSync(p, "utf8"),
+        p,
+        (v): v is QADoctorConfig => isRecord(v),
+      );
       const warnings = validate(parsed, options.knownRuleIds);
       return { config: parsed, path: p, warnings };
     } catch (err) {

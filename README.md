@@ -57,6 +57,13 @@ ran, or that they could have failed. Every one of these ships green:
 None of them turns the pipeline red, and each one looks deliberate in
 review. That is why they survive.
 
+**Strict mode.** The most aggressive detections — `.only`, `continue-on-error`,
+empty tests, retry abuse — live in the quarantine tier. They run only
+under `--strict` and are capped to `info` severity: they flag, they never
+gate. The default scan (`npx mjolnir-qa@latest` without `--strict`)
+covers core and extended rules only. Add `--strict` when you want the
+advisory layer too.
+
 Mjölnir reads the suite, the CI workflows and, when you have one, the
 report of a real run. It does not run your tests, install your
 dependencies, or execute the code it scans. And when it has no evidence,

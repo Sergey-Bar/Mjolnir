@@ -34,6 +34,7 @@ import { join } from "node:path";
 
 import { RESERVED_PREFIXES, isReservedPrefix } from "./reserved-prefixes.js";
 import { findConfigPath } from "../config/config.js";
+import { parseJsonFile, isRecord } from "../lib/safe-json.js";
 
 export { RESERVED_PREFIXES };
 
@@ -93,7 +94,7 @@ export function loadPlugins(root: string, gateOpen = false): PluginLoadResult {
     // FW-LINT-01 residual: fixed config filename under the scan root —
     // the operator's own repo, not discovered scan data.
     // eslint-disable-next-line security/detect-non-literal-fs-filename
-    raw = JSON.parse(readFileSync(cfgPath, "utf8")) as Record<string, unknown>;
+    raw = parseJsonFile(readFileSync(cfgPath, "utf8"), cfgPath, isRecord);
   } catch {
     // Malformed config is handled by the config loader with fail-fast;
     // here we just don't load plugins.

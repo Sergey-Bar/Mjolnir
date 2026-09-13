@@ -15,6 +15,7 @@
 
 import { getCodeOnlyText } from "./ts-ast.js";
 import type { ParsedFile } from "./adapter.js";
+import { ts } from "ts-morph";
 
 // ─── Public API ──────────────────────────────────────────────────────
 
@@ -429,6 +430,96 @@ function maskCSharp(text: string): string {
   }
 
   return chars.join("");
+}
+
+// ─── TypeScript basic masker (scanner-based, no AST) ─────────────────
+
+/**
+ * Blanks TypeScript/JavaScript string literals and comments to spaces
+ * using the TypeScript compiler scanner with `reScanTemplateToken`
+ * tracking for template interpolation boundaries. No AST required.
+ *
+ * This reuses the same pattern as `detector-hash.ts` (walkTokens) which
+ * already solves the exact same template-interpolation problem for hash
+ * computation. The phantom-comment edge case only occurs when
+ * `reScanTemplateToken` is NOT called — calling it closes the gap.
+ */
+export function maskTypeScriptBasic(text: string): string {
+  const chars = text.split("");
+  const scanner = ts.createScanner(
+    ts.ScriptTarget.ES2022,
+    false, // skipTrivia: false — we want trivia positions
+    ts.LanguageVariant.Standard,
+    text,
+  );
+
+  let templateDepth = 0;
+  let tok = scanner.scan();
+
+  while (tok !== ts.SyntaxKind.EndOfFileToken) {
+    // CloseBrace inside template continuation → re-scan as template token
+    if (tok === ts.SyntaxKind.CloseBraceToken && templateDepth > 0) {
+      tok = (
+        scanner as { reScanTemplateToken(isTagged: boolean): ts.SyntaxKind }
+      ).reScanTemplateToken(false);
+    }
+
+    const start = scanner.getTokenPos();
+    const end = scanner.getTextPos();
+
+    // Blank comments and string/template literals
+    if (
+      tok === ts.SyntaxKind.SingleLineCommentTrivia ||
+      tok === ts.SyntaxKind.MultiLineCommentTrivia ||
+      tok === ts.SyntaxKind.StringLiteral ||
+      tok === ts.SyntaxKind.NoSubstitutionTemplateLiteral ||
+      tok === ts.SyntaxKind.TemplateHead ||
+      tok === ts.SyntaxKind.TemplateMiddle ||
+      tok === ts.SyntaxKind.TemplateTail
+    ) {
+      for (let i = start; i < end && i < chars.length; i++) {
+        if (chars[i] !== "\n" && chars[i] !== "\r") chars[i] = " ";
+      }
+    }
+
+    // Template nesting: TemplateHead opens; TemplateMiddle ends an
+    // interpolation but keeps the template open; TemplateTail (LastTemplateToken)
+    // closes.
+    if (tok === ts.SyntaxKind.TemplateHead) {
+      templateDepth++;
+    } else if (tok === ts.SyntaxKind.LastTemplateToken) {
+      templateDepth = Math.max(0, templateDepth - 1);
+    }
+
+    tok = scanner.scan();
+  }
+
+  return chars.join("");
+}
+
+// ─── Code-text dispatcher for declaration counting ──────────────────
+
+/**
+ * Compute the code-only text for counting test declarations. Dispatches
+ * to the appropriate masker per language. Never falls back to raw text —
+ * always produces a masked view with comments/strings blanked.
+ *
+ * Used when `parsedFile.codeText` is not available (e.g., AST parse failed).
+ */
+export function getCodeTextForCounting(
+  text: string,
+  language: "typescript" | "python" | "java" | "csharp",
+): string {
+  switch (language) {
+    case "typescript":
+      return maskTypeScriptBasic(text);
+    case "python":
+      return maskPython(text);
+    case "java":
+      return maskJava(text);
+    case "csharp":
+      return maskCSharp(text);
+  }
 }
 
 // ─── Shared helpers ──────────────────────────────────────────────────

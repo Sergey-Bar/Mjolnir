@@ -7,35 +7,35 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 196 files, 40083 LOC
+## Inventory: 202 files, 40219 LOC
 
 | Area             | Files | LOC   |
 | ---------------- | ----- | ----- |
-| src/rules        | 79    | 10481 |
-| src/commands     | 28    | 8873  |
-| src/engine       | 22    | 6118  |
-| src/(root)       | 4     | 2636  |
-| src/reporter     | 12    | 2599  |
-| src/forensics    | 10    | 1916  |
-| src/discovery    | 9     | 1461  |
-| src/adapters     | 7     | 1200  |
-| src/mcp          | 3     | 722   |
-| src/brand        | 2     | 656   |
-| src/plugins      | 4     | 653   |
-| src/mutation     | 4     | 432   |
-| src/scope        | 2     | 421   |
-| src/integrations | 1     | 414   |
-| src/scorer       | 2     | 387   |
-| src/config       | 2     | 341   |
-| src/bench        | 2     | 315   |
-| src/playwright   | 2     | 314   |
-| src/lib          | 1     | 144   |
+| src/rules        | 79    | 10402 |
+| src/commands     | 28    | 8851  |
+| src/engine       | 22    | 6275  |
+| src/reporter     | 13    | 2602  |
+| src/(root)       | 6     | 2554  |
+| src/forensics    | 10    | 1989  |
+| src/discovery    | 9     | 1452  |
+| src/adapters     | 7     | 1193  |
+| src/mcp          | 3     | 760   |
+| src/brand        | 2     | 654   |
+| src/plugins      | 4     | 650   |
+| src/mutation     | 4     | 428   |
+| src/scope        | 2     | 419   |
+| src/integrations | 1     | 413   |
+| src/scorer       | 2     | 385   |
+| src/config       | 2     | 344   |
+| src/bench        | 2     | 313   |
+| src/playwright   | 2     | 312   |
+| src/lib          | 4     | 223   |
 
 ## Internal fan-in — top 15 (change-blast candidates)
 
 | Module                              | Importers |
 | ----------------------------------- | --------- |
-| src/types                           | 106       |
+| src/types                           | 107       |
 | src/rules/rule                      | 77        |
 | src/rules/shared/positions          | 62        |
 | src/reporter/ui                     | 18        |
@@ -45,25 +45,25 @@ codes) must match this document exactly.
 | src/rules/index                     | 10        |
 | src/discovery/ignores               | 9         |
 | src/discovery/azure-pipeline-parser | 8         |
+| src/engine/code-text                | 8         |
 | src/rules/measured-fp.generated     | 8         |
-| src/engine/code-text                | 7         |
+| src/lib/safe-json                   | 7         |
 | src/reporter/theme                  | 7         |
 | src/engine/jv-cs-ast                | 7         |
-| src/lib/fs-atomic                   | 6         |
 
 ## External dependency allowlist (containment)
 
 | Dependency         | Files importing it |
 | ------------------ | ------------------ |
-| node:fs            | 46                 |
-| node:path          | 45                 |
+| node:fs            | 47                 |
+| node:path          | 46                 |
 | node:crypto        | 9                  |
-| node:child_process | 6                  |
-| ts-morph           | 6                  |
+| ts-morph           | 7                  |
+| node:child_process | 5                  |
+| node:url           | 4                  |
 | web-tree-sitter    | 4                  |
-| node:url           | 3                  |
 | node:os            | 2                  |
-| node:process       | 1                  |
+| node:process       | 2                  |
 | yaml               | 1                  |
 | node:zlib          | 1                  |
 | node:buffer        | 1                  |

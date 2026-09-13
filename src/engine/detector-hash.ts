@@ -32,6 +32,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ts } from "ts-morph";
 import type { QADoctorRule } from "../rules/rule.js";
+import { parseJsonFile, isRecord } from "../lib/safe-json.js";
 
 /** Field order here IS the canonical serialization order (G5: explicit, not accidental). */
 export interface RuleHashMetadata {
@@ -345,7 +346,11 @@ export function serializeManifest(manifest: DetectorHashManifest): string {
 }
 
 export function loadManifest(path: string): DetectorHashManifest {
-  return JSON.parse(readFileSync(path, "utf8")) as DetectorHashManifest;
+  return parseJsonFile(
+    readFileSync(path, "utf8"),
+    path,
+    (v): v is DetectorHashManifest => isRecord(v),
+  );
 }
 
 /**

@@ -310,6 +310,9 @@ function singleVerdictReport(verdictLine: number) {
         line: verdictLine,
       },
     ],
+    analysisComplete: true,
+    skippedReports: 0,
+    incompleteReasons: [],
   };
 }
 
