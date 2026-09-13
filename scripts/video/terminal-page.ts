@@ -17,7 +17,13 @@
 
 import { ansiLineToSpans, DEFAULT_FG, stripAnsi } from "../readme-svg.js";
 import { fontFaceCss, FONT_STACK } from "./fonts.js";
-import { BRAND, STATUS, SURFACE, TEXT } from "../../src/brand/tokens.js";
+import {
+  BRAND,
+  HAIRLINE_RGB,
+  STATUS,
+  SURFACE,
+  TEXT,
+} from "../../src/brand/tokens.js";
 
 import { pacingFor } from "./pacing.js";
 import type { VideoScript } from "./script-types.js";
@@ -34,11 +40,11 @@ import type { VideoScript } from "./script-types.js";
  * hairline ring and an inset shadow — so INK_900 and CHROME share one
  * value here too.
  *
- * The gold/aurora wash is Mjölnir's own brand identity (assets/brand
- * /README.md), not something react.doctor has — their page is flat black
- * with no glow. Kept, but turned down to a whisper: enough to read as
- * this product's window and not react.doctor's, without competing with
- * the near-black base that was the actual thing borrowed.
+ * The aurora wash is Mjölnir's own: the same green, cyan and violet
+ * curtains that sit behind the website's hero, and the same 2px aurora
+ * line across the top of its terminal. It used to be a gold wash, from
+ * before gold was held back for FORGED; the frame now matches the page a
+ * reader arrives from.
  *
  * What was deliberately NOT copied: react.doctor's terminal shows a
  * syntax-highlighted code diff (Shiki, GitHub-dark tokens — blue/green
@@ -53,8 +59,14 @@ const INK_900 = SURFACE.terminal; // terminal body — same tone
 const CHROME = SURFACE.terminalBar; // title bar — the seam is shadow
 const CHROME_DOT = SURFACE.chromeDot;
 const STEEL_DIM = BRAND.steelDim;
-const GOLD = BRAND.gold;
-const AURORA = BRAND.aurora;
+const GREEN = BRAND.auroraGreen;
+const CYAN = BRAND.auroraCyan;
+const VIOLET = BRAND.auroraViolet;
+const HAIRLINE = (a: number) => `rgba(${HAIRLINE_RGB}, ${a})`;
+
+/** CSS px between the frame edge and the window, on every side. Exported
+ * so the pixel contract samples the window body, not the aurora around it. */
+export const WINDOW_INSET = 44;
 
 /** One rendered step of the timeline: what is on screen at frame n. */
 export interface Frame {
@@ -118,13 +130,27 @@ export function planFrames(script: VideoScript): Frame[] {
 }
 
 /**
- * The frame that best represents the video: the first one holding on a
- * lingered line (the score section). Chosen by content rather than by a
- * hardcoded index, so it stays correct when the report changes length.
+ * The frame that best represents the video: the first scan at the moment
+ * its report fills the window — the command, the wordmark, the score and
+ * everything under it, up to the last row that fits, before anything has
+ * scrolled away. Chosen from the layout and the content rather than by a
+ * hardcoded index or a section name, so it stays correct when the report
+ * changes length or gains and loses sections.
+ *
+ * It used to be the first frame holding on the score line. With the
+ * hammer gone from the report that line arrives four rows in, and the
+ * poster was one line of text in an empty window.
  */
 export function posterFrame(script: VideoScript): number {
   const pacing = pacingFor(script.id);
   const frames = planFrames(script);
+  const first = script.beats[0]?.ansi.length ?? 0;
+  // The typed command takes one row; the report fills the rest.
+  const fill = Math.min(first, layoutFor(script).visibleLines - 1);
+  let last = -1;
+  for (const [i, f] of frames.entries())
+    if (f.beat === 0 && f.lines === fill && f.patch === 0) last = i;
+  if (fill > 0 && last !== -1) return last;
   for (const [i, frame] of frames.entries()) {
     if (frame.lines === 0) continue;
     const beat = script.beats[frame.beat];
@@ -237,12 +263,17 @@ export function widestLine(script: VideoScript): number {
   return widest;
 }
 
-export function buildPage(script: VideoScript): string {
+/**
+ * The window's geometry for a script: type size, row height and how many
+ * rows fit. One function, so the page that renders the frames and the
+ * poster choice that reads them can never disagree about it.
+ */
+export function layoutFor(script: VideoScript) {
   const pacing = pacingFor(script.id);
   const [vw, vh] = pacing.viewport;
   // Window chrome. The terminal is inset from the frame edges so it reads
   // as a window on a surface rather than a maximised screenshot.
-  const inset = 44;
+  const inset = WINDOW_INSET;
   const radius = 20;
   const barHeight = 40;
   const pad = 30;
@@ -279,6 +310,36 @@ export function buildPage(script: VideoScript): string {
   const viewportAvail = vh - inset * 2 - barHeight - pad * 2;
   const visibleLines = Math.floor(viewportAvail / lineHeight);
   const viewportHeight = visibleLines * lineHeight;
+  return {
+    vw,
+    vh,
+    inset,
+    radius,
+    barHeight,
+    pad,
+    dpr,
+    fontSize,
+    lineHeight,
+    boxWidth,
+    visibleLines,
+    viewportHeight,
+  };
+}
+
+export function buildPage(script: VideoScript): string {
+  const {
+    vw,
+    vh,
+    inset,
+    radius,
+    barHeight,
+    pad,
+    dpr,
+    fontSize,
+    lineHeight,
+    boxWidth,
+    viewportHeight,
+  } = layoutFor(script);
 
   const beats = script.beats.map((beat) => ({
     command: beat.command,
@@ -302,16 +363,19 @@ html,body{width:${vw}px;height:${vh}px;overflow:hidden;background:${INK_950}}
    a soft brand glow behind a floating window, the way a product page
    presents a terminal rather than the way an OS does. */
 #page{position:absolute;inset:0;background:
-  radial-gradient(120% 90% at 50% -10%, ${GOLD}14 0%, transparent 55%),
-  radial-gradient(90% 70% at 8% 108%, ${AURORA}0D 0%, transparent 60%),
+  radial-gradient(52% 60% at 14% 0%, ${GREEN}26 0%, transparent 72%),
+  radial-gradient(44% 50% at 52% -6%, ${CYAN}1F 0%, transparent 72%),
+  radial-gradient(40% 56% at 90% 0%, ${VIOLET}26 0%, transparent 72%),
   ${INK_950}}
 #win{position:absolute;inset:${inset}px;display:flex;flex-direction:column;
   background:${INK_900};border-radius:${radius}px;overflow:hidden;
-  box-shadow:0 0 0 1px #FFFFFF14, 0 2px 4px #00000040,
+  box-shadow:0 0 0 1px ${HAIRLINE(0.14)}, 0 2px 4px #00000040,
     0 18px 48px -12px #00000080, 0 48px 96px -32px #000000A6}
+#win::before{content:"";position:absolute;inset:0 0 auto;height:3px;z-index:1;
+  background:linear-gradient(90deg, ${GREEN}, ${CYAN} 50%, ${VIOLET})}
 #bar{height:${barHeight}px;flex:0 0 ${barHeight}px;background:${CHROME};
   display:flex;align-items:center;padding:0 20px;gap:9px;
-  box-shadow:inset 0 -1px 0 #FFFFFF0D}
+  box-shadow:inset 0 -1px 0 ${HAIRLINE(0.1)}}
 .dot{width:12px;height:12px;border-radius:50%;background:${CHROME_DOT}}
 #title{flex:1;text-align:center;color:${STEEL_DIM};
   font:13px ${FONT_STACK};letter-spacing:.06em}
@@ -340,8 +404,8 @@ html,body{width:${vw}px;height:${vh}px;overflow:hidden;background:${INK_950}}
 /* Runes come from the lighter fallback face — see the .rune note in
    lineHtml. */
 #lines .rune{-webkit-text-stroke:${(1.1 / dpr).toFixed(3)}px currentColor}
-.caret{color:${GOLD}}
-.prompt{color:${STATUS.ok}}
+.caret{color:${TEXT.secondary}}
+.prompt{color:${TEXT.muted}}
 /* The command is what the viewer is meant to copy — the brightest text in
    the frame, in the reporter's own bone white. */
 .cmd{color:${TEXT.primary};font-weight:700}
@@ -355,7 +419,7 @@ html,body{width:${vw}px;height:${vh}px;overflow:hidden;background:${INK_950}}
       <span class="dot"></span>
       <span class="dot"></span>
       <span class="dot"></span>
-      <span id="title">mjolnir &#8212; demo-repo</span>
+      <span id="title">demo-repo</span>
     </div>
     <div id="screen"><div id="viewport"><div id="lines"></div></div></div>
   </div>

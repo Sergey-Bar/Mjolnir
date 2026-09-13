@@ -35,7 +35,7 @@
 
 import { readFileSync } from "node:fs";
 
-import { SURFACE, TEXT } from "../src/brand/tokens.js";
+import { BRAND, HAIRLINE_RGB, SURFACE, TEXT } from "../src/brand/tokens.js";
 
 import { FONTS, fontPath } from "./video/fonts.js";
 
@@ -95,6 +95,52 @@ export const CHROME_DOTS: readonly string[] = [
   SURFACE.chromeDot,
   SURFACE.chromeDot,
 ];
+
+/** The typed prompt: muted, so the command after it is what reads. */
+export const PROMPT = "\x1b[2m$\x1b[0m ";
+
+const RADIUS = 10;
+
+/**
+ * Opens the window every terminal still sits in — the website's
+ * StreamTerm, drawn in SVG: one ink tone, a 2px aurora line across the
+ * top, a hairline under the title bar, three neutral dots and a centred
+ * mono title. Close it with `windowClose`; content goes in between.
+ */
+export function windowOpen(
+  width: number,
+  height: number,
+  title: string,
+): string {
+  const mid = TITLE_BAR / 2;
+  const dots = CHROME_DOTS.map(
+    (c, i) => `<circle cx="${20 + i * 17}" cy="${mid}" r="5" fill="${c}"/>`,
+  ).join("");
+  return `  <defs>
+    <clipPath id="winClip">
+      <rect x="0" y="0" width="${width}" height="${height}" rx="${RADIUS}" ry="${RADIUS}"/>
+    </clipPath>
+    <linearGradient id="aurora" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="${BRAND.auroraGreen}"/>
+      <stop offset="0.5" stop-color="${BRAND.auroraCyan}"/>
+      <stop offset="1" stop-color="${BRAND.auroraViolet}"/>
+    </linearGradient>
+  </defs>
+
+  <g clip-path="url(#winClip)">
+    <rect x="0" y="0" width="${width}" height="${height}" fill="${BG}"/>
+    <rect x="0" y="0" width="${width}" height="2" fill="url(#aurora)"/>
+    <rect x="0" y="${TITLE_BAR}" width="${width}" height="1" fill="rgb(${HAIRLINE_RGB})" fill-opacity="0.1"/>
+    ${dots}
+    <text x="${width / 2}" y="${mid + 4}" text-anchor="middle" font-size="12" fill="${TEXT.muted}">${escapeXml(title)}</text>
+`;
+}
+
+export function windowClose(width: number, height: number): string {
+  return `  </g>
+
+  <rect x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" rx="${RADIUS - 0.5}" ry="${RADIUS - 0.5}" fill="none" stroke="rgb(${HAIRLINE_RGB})" stroke-opacity="0.14"/>`;
+}
 
 export interface Span {
   text: string;

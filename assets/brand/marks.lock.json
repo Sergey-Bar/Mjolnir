@@ -4,7 +4,7 @@
     "of them changes.",
     "",
     "All eleven files are rendered by `scripts/generate-brand-marks.ts` from",
-    "the same two vector sources — the Cinzel wordmark and the Mansaz rune —",
+    "the same two vector sources — the Geist wordmark and the drawn Mansaz rune —",
     "each at its own native resolution, not resized from one bitmap master.",
     "`masters` names the two large reference renders (the full wordmark",
     "lockup and the square rune alone); `derived` is every size a real",
@@ -18,18 +18,18 @@
     "and say why in the commit."
   ],
   "masters": {
-    "assets/brand/logo.png": "d0ebe493234178eaf4c777602a41ca203aa6b461854d9333bfd776dc65a9be0d",
-    "assets/brand/mark.png": "0f61f2aaffb8e74a223ade4315c926815b4f968275bd794652c9acff3d7a45dd"
+    "assets/brand/logo.png": "b9fcb85f53e9b34359a0e84b1cfd18c8b5e4acfcbf3bed7c362f33e725c4c346",
+    "assets/brand/mark.png": "175b79e36c99eac7015febf155a2394b390fca9f3e1461eee7dd1db928df5b54"
   },
   "derived": {
-    "assets/brand/icon.png": "fb2071dfa216145e8ecd05b9ac2afbdfcc64b76335e63e02d9192bf5cf678f26",
-    "assets/readme/logo.png": "d458d67b217a9c9ed69492bca9089fca07fe0b5170457487a3897ef57f7b590b",
-    "assets/readme/logo.webp": "c9ca1415fe8227b4a19830049d87fd6825bbf58adf88a548f8f3d4fba7d435ba",
-    "site/public/apple-touch-icon.png": "03f24189591492b4096b7c59762989fa313116c0fea1dc0c9226075055482dbf",
-    "site/public/favicon-16.png": "9b35ba5180f35b01ec183d1be0842e33951143d8b3a05b264f0a5e40d93d3ee1",
-    "site/public/favicon-32.png": "93394dee8651b742ab08d7b589900cd203d9982fc9ab85978baca4dfc4cc3a2f",
-    "site/public/logo.webp": "c9ca1415fe8227b4a19830049d87fd6825bbf58adf88a548f8f3d4fba7d435ba",
-    "site/public/mark-64.png": "5ea522286cd795303e2f3ccdcb417d6cee8ddf4c469d55c2e15124ac07cf13a6",
-    "site/public/social-card.jpg": "645bdf9ca5dfb95d4e890b3123d3566fecd6f400986fec183662b094b4bcc32e"
+    "assets/brand/icon.png": "fdd0753310ced9de78a9424ce728919775d628d370310726665af70f43634eaa",
+    "assets/readme/logo.png": "b395fe85dc7e6ec508d291ceaaba96e2d1c7f5524cf9f1703fc99062ad3a11e6",
+    "assets/readme/logo.webp": "10b2ff9f20f6d12bc9e28e86a3e7e288a55abf1fc52bb15660b5681ee1939225",
+    "site/public/apple-touch-icon.png": "cd7262d79c8e2d21a89f2d02efaac80e888b9555e5cb6a1b69ddf1458d8bad11",
+    "site/public/favicon-16.png": "11021c0f1d3f85cff68cac8de61608ff594149e4a7fa3c3fad2e27d65cea1593",
+    "site/public/favicon-32.png": "f1bb22719c595c82ec55219cb7c3d2ed650956e1727f2a9423b47552306c36ae",
+    "site/public/logo.webp": "10b2ff9f20f6d12bc9e28e86a3e7e288a55abf1fc52bb15660b5681ee1939225",
+    "site/public/mark-64.png": "2bee2e1190ee1cbb49bc302e74e5f98800eb5a02448e1d3861fa1dc627e51106",
+    "site/public/social-card.jpg": "ea3a586003187244addd89f26ad642b21b2f2261d699df0995fa77fd7abc2cbe"
   }
 }

@@ -41,10 +41,15 @@ describe("classifyLocator", () => {
     expect(classifyLocator("page.locator('#root .item')")).toBe("css-chain");
   });
 
-  it("classifies quoted locators as css-chain when line contains structural chars", () => {
-    // The structural check runs on the whole LINE — 'page.locator' itself
-    // contains a dot, so any quoted locator call classifies as css-chain.
+  it("classifies quoted locators based on selector content, not method syntax", () => {
+    // The structural check now runs on the extracted selector literal,
+    // not the whole line — 'page.locator' contains a dot but that's
+    // method syntax, not a CSS combinator.
     expect(classifyLocator("page.locator('plain-text-selector')")).toBe(
+      "plain-css",
+    );
+    // A selector with actual structural CSS chars = css-chain
+    expect(classifyLocator("page.locator('.my-class > button')")).toBe(
       "css-chain",
     );
   });
@@ -92,7 +97,13 @@ describe("renderSelectorHealth", () => {
       {
         file: "a.spec.ts",
         score: 50,
-        counts: { "role-based": 1, testid: 0, "css-chain": 0, xpath: 1 },
+        counts: {
+          "role-based": 1,
+          testid: 0,
+          "css-chain": 0,
+          xpath: 1,
+          "plain-css": 0,
+        },
       },
     ]);
     expect(out).toContain("SELECTOR HEALTH");

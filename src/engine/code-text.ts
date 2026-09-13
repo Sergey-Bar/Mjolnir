@@ -362,30 +362,37 @@ function maskCSharp(text: string): string {
       continue;
     }
 
-    // Raw string literal (C# 11): """..."""
-    if (
-      chars[i] === '"' &&
-      i + 2 < len &&
-      chars[i + 1] === '"' &&
-      chars[i + 2] === '"'
-    ) {
-      const start = i;
-      i += 3;
-      while (i < len) {
-        if (
-          chars[i] === '"' &&
-          i + 1 < len &&
-          chars[i + 1] === '"' &&
-          i + 2 < len &&
-          chars[i + 2] === '"'
-        ) {
-          i += 3;
-          break;
-        }
-        i++;
+    // Raw string literal (C# 11): """...""" (and """"..."""", etc.)
+    if (chars[i] === '"') {
+      let quoteCount = 0;
+      let j = i;
+      while (j < len && chars[j] === '"') {
+        quoteCount++;
+        j++;
       }
-      blankRange(chars, start, i);
-      continue;
+      if (quoteCount >= 3) {
+        const start = i;
+        i = j;
+        while (i < len) {
+          let closeCount = 0;
+          let k = i;
+          while (k < len && chars[k] === '"') {
+            closeCount++;
+            k++;
+          }
+          if (closeCount === quoteCount) {
+            i = k;
+            break;
+          }
+          if (closeCount > 0) {
+            i = k;
+            continue;
+          }
+          i++;
+        }
+        blankRange(chars, start, i);
+        continue;
+      }
     }
 
     // Regular string literal

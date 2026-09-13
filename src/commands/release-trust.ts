@@ -68,6 +68,8 @@ const PRECEDENCE: readonly Determination[] = [
   "INCONCLUSIVE",
   "UNPROVEN",
   "PARTIAL",
+  "UNSUPPORTED",
+  "PASS",
 ];
 
 export interface CanonicalDimension {

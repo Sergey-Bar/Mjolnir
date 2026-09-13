@@ -19,20 +19,20 @@ derived from it are the token module, not this page.
 
 Every file below is rendered by
 [`scripts/generate-brand-marks.ts`](../../scripts/generate-brand-marks.ts)
-(`npm run brand:marks`) from two vector sources — the Cinzel wordmark and
-the Mansaz rune — each shot at its own native pixel size, not resized
+(`npm run brand:marks`) from two vector sources — the Geist wordmark and
+the drawn Mansaz rune — each shot at its own native pixel size, not resized
 from a larger bitmap. `masters` in `marks.lock.json` names the two large
 reference renders below; everything else is a real surface's own size.
 
-| File                                                                        | Rendered as                                   | Use                                                                     |
-| --------------------------------------------------------------------------- | --------------------------------------------- | ----------------------------------------------------------------------- |
-| [`logo.png`](logo.png)                                                      | wordmark, 1800×504                            | full lockup — `MJÖLNIR` alone. Reference master.                        |
-| [`../readme/logo.png`](../readme/logo.png) · [`.webp`](../readme/logo.webp) | wordmark, 1000×280                            | README header and website hero.                                         |
-| [`mark.png`](mark.png)                                                      | monogram, 1235×1235                           | the rune alone — app / package / social icon source. Reference master.  |
-| [`icon.png`](icon.png)                                                      | monogram, 512×512                             | npm, GitHub social preview, tooling. Recognisable without the wordmark. |
-| `site/public/favicon-32.png` · `favicon-16.png`                             | monogram, native 32 / 16 px                   | browser tab icon.                                                       |
-| `site/public/apple-touch-icon.png` · `mark-64.png`                          | monogram, native 180 / 64 px                  | iOS home screen, site nav mark.                                         |
-| `site/public/social-card.jpg`                                               | wordmark centered on `--mj-ink-950`, 1200×630 | link previews (og:image / twitter:image).                               |
+| File                                                                        | Rendered as                                    | Use                                                                     |
+| --------------------------------------------------------------------------- | ---------------------------------------------- | ----------------------------------------------------------------------- |
+| [`logo.png`](logo.png)                                                      | wordmark, 1800×504                             | full lockup — `MJÖLNIR` alone. Reference master.                        |
+| [`../readme/logo.png`](../readme/logo.png) · [`.webp`](../readme/logo.webp) | wordmark, 1000×280                             | README header and website hero.                                         |
+| [`mark.png`](mark.png)                                                      | monogram, 1235×1235                            | the rune alone — app / package / social icon source. Reference master.  |
+| [`icon.png`](icon.png)                                                      | monogram, 512×512                              | npm, GitHub social preview, tooling. Recognisable without the wordmark. |
+| `site/public/favicon-32.png` · `favicon-16.png`                             | monogram, native 32 / 16 px                    | browser tab icon.                                                       |
+| `site/public/apple-touch-icon.png` · `mark-64.png`                          | monogram, native 180 / 64 px                   | iOS home screen, site nav mark.                                         |
+| `site/public/social-card.jpg`                                               | rune over wordmark on `--mj-ink-950`, 1200×630 | link previews (og:image / twitter:image).                               |
 
 Rendering each size natively, rather than downscaling one raster, is
 deliberate: a hammer illustration shrunk to 16px loses detail it cannot
@@ -41,14 +41,14 @@ because each one is its own render, not a resample of a bigger file.
 
 ## The motif
 
-`MJÖLNIR` set in Cinzel 600 — the display typeface this system already
-uses everywhere else (`TYPOGRAPHY.display`), tracked out. No
-illustration: the wordmark IS the logo.
+`MJÖLNIR` set in Geist 500 — the one text face this system uses
+everywhere else (`TYPOGRAPHY.display`) — caps, tracked 0.3em, in
+primary text. No illustration: the wordmark IS the logo.
 
 The square/tiny contexts a wordmark cannot survive (favicons, the
-npm/social icon) fall back to a single rune — ᛗ, Mansaz — set in the
-same vendored FreeMono face the terminal reporter already uses for Runic
-coverage. It is not a new choice: it is already the "M" of MJÖLNIR in
+npm/social icon) fall back to a single rune — ᛗ, Mansaz — drawn as a
+path (`MONOGRAM_PATH`) and stroked in the aurora, with a heavier,
+bevelled cut below 64px. It is not a new choice: it is already the "M" of MJÖLNIR in
 the hero runefield's own Elder Futhark spelling of the product's name
 (ᛗ ᛃ ᛟ ᛚ ᚾ ᛁ ᚱ — see [`BRAND-SYSTEM.md`](../../docs/design/BRAND-SYSTEM.md)).
 It is deliberately not one of the five runes `RUNES` in
@@ -83,7 +83,9 @@ value stated in a design document that the source does not hold.
 - Place either mark on `--mj-ink-900` or darker; both are rendered on
   that ground already and are not designed to sit on white.
 - Never recolour either mark, and never re-set the wordmark in a
-  different typeface or weight than Cinzel 600.
+  different typeface or weight than Geist 500.
+- Never set the rune beside the wordmark: next to `MJÖLNIR` a second M
+  only stutters. Use one or the other.
 - Below the wordmark's minimum legible width (~180 px), use the
   monogram alone.
 - No illustration, bolts, or additional Norse ornaments anywhere in

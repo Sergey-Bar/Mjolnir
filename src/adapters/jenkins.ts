@@ -23,8 +23,14 @@ export const jenkinsAdapter: LanguageAdapter = {
   dirSkips: [],
 
   isTestFile(path: string): boolean {
-    return (JENKINS_FILENAMES as readonly string[]).includes(
-      path.replaceAll("\\", "/"),
+    const normalized = path.replaceAll("\\", "/");
+    const basename = normalized.split("/").pop() ?? normalized;
+    if (!(JENKINS_FILENAMES as readonly string[]).includes(basename))
+      return false;
+    return (
+      normalized === basename ||
+      normalized.startsWith("/") ||
+      /^[A-Z]:/i.test(normalized)
     );
   },
 

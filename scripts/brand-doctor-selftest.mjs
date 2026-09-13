@@ -100,7 +100,7 @@ const SEEDS = [
     // directly went stale the moment they were removed and reported
     // itself as a broken seed — which is the self-test doing its job:
     // an anchor that stops matching is a check that stopped checking.
-    edit: (s) => s.replace('r="6" fill="#18243A"', 'r="6" fill="#ABCDEF"'),
+    edit: (s) => s.replace('r="5" fill="#18243A"', 'r="5" fill="#ABCDEF"'),
     expect: "assets/readme/terminal-hero.svg — colour #abcdef is in no token",
   },
   {
@@ -123,7 +123,7 @@ const SEEDS = [
     rule: 7,
     what: "a README badge uses a colour that is neither token nor known debt",
     file: p("README.md"),
-    edit: (s) => s.replace("color=C19A34", "color=ABCDEF"),
+    edit: (s) => s.replace("color=1F6F7C", "color=ABCDEF"),
     expect: "README.md — badge colour abcdef is not a brand token",
   },
   {

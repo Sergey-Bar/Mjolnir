@@ -25,9 +25,7 @@ import { runScan } from "../src/cli.js";
 import { renderTerminal } from "../src/reporter/terminal.js";
 import {
   ansiLineToSpans,
-  BG,
   CHAR_W,
-  CHROME_DOTS,
   FONT_FAMILY,
   FONT_SIZE,
   fontFaceCss,
@@ -35,9 +33,10 @@ import {
   PAD_BOTTOM,
   PAD_TOP,
   PAD_X,
+  PROMPT,
   stripAnsi,
-  TITLE_BAR,
-  TITLE_BAR_BG,
+  windowClose,
+  windowOpen,
 } from "./readme-svg.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -90,24 +89,10 @@ ${fontFaceCss()}
         .ln { opacity: 1; animation: none; }
       }
     </style>
-    <clipPath id="winClip">
-      <rect x="0" y="0" width="${width}" height="${height}" rx="8" ry="8"/>
-    </clipPath>
   </defs>
-
-  <g clip-path="url(#winClip)">
-    <rect x="0" y="0" width="${width}" height="${height}" fill="${BG}"/>
-    <rect x="0" y="0" width="${width}" height="${TITLE_BAR}" fill="${TITLE_BAR_BG}"/>
-    <circle cx="20" cy="${TITLE_BAR / 2}" r="6" fill="${CHROME_DOTS[0]}"/>
-    <circle cx="40" cy="${TITLE_BAR / 2}" r="6" fill="${CHROME_DOTS[1]}"/>
-    <circle cx="60" cy="${TITLE_BAR / 2}" r="6" fill="${CHROME_DOTS[2]}"/>
-
+${windowOpen(width, height, "demo-repo")}
 ${textLines}
-  </g>
-
-  <rect x="0.5" y="0.5" width="${width - 1}" height="${
-    height - 1
-  }" rx="7.5" ry="7.5" fill="none" stroke="#000000" stroke-opacity="0.5"/>
+${windowClose(width, height)}
 </svg>
 `;
 }
@@ -139,7 +124,7 @@ export async function buildDemoSvg(): Promise<string> {
     ascii: false,
   });
   const lines = [
-    "\x1b[92m$\x1b[0m \x1b[1mnpx mjolnir-qa@latest --verbose\x1b[0m",
+    `${PROMPT}\x1b[1mnpx mjolnir-qa@latest --verbose\x1b[0m`,
     ...rendered.split("\n"),
   ].map((line) => line.replace(/· \d+ms$/, "· a few ms"));
   return renderSvg(lines);

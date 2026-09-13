@@ -8,14 +8,14 @@
 পাইপলাইন অডিট করে, একটি নির্ভরযোগ্যতা স্কোর রিপোর্ট করে এবং ঠিক কোথায়
 আস্থা ভাঙছে তা দেখায়।
 
-[![npm](https://img.shields.io/npm/v/mjolnir-qa.svg?style=flat-square&color=C19A34&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
+[![npm](https://img.shields.io/npm/v/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
 [![ci](https://img.shields.io/github/actions/workflow/status/Sergey-Bar/Mjolnir/ci.yml?branch=main&style=flat-square&label=ci&labelColor=0A1119)](https://github.com/Sergey-Bar/Mjolnir/actions/workflows/ci.yml)
-[![license](https://img.shields.io/badge/license-MIT-C19A34.svg?style=flat-square&labelColor=0A1119)](LICENSE)
-[![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-37ABBD.svg?style=flat-square&labelColor=0A1119)](https://nodejs.org)
+[![license](https://img.shields.io/badge/license-MIT-1F6F7C.svg?style=flat-square&labelColor=0A1119)](LICENSE)
+[![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-1F6F7C.svg?style=flat-square&labelColor=0A1119)](https://nodejs.org)
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | বাংলা | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-08.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-13.
 
 ```bash
 npx mjolnir-qa@latest
@@ -62,7 +62,7 @@ npx mjolnir-qa@latest
 পাবেন:
 
 ```text
-▚ QA-CI-001 — continue-on-error masks a failing verification gate
+▍ QA-CI-001 — continue-on-error masks a failing verification gate
 
 Severity:    error
 Confidence:  high
@@ -362,7 +362,7 @@ finding কাঠামোগত প্রমাণ; E1 finding সঠিকভ�
 Playwright সুইটের হেডলাইন মেট্রিক — আপনার locator কতটা টেকসই:
 
 ```text
-▚ SELECTOR HEALTH — e2e/checkout.spec.ts
+▍ SELECTOR HEALTH — e2e/checkout.spec.ts
 
   [█████████████████░░░]  83 / 100
   role/text: 2 · testid: 1 · css-chains: 1 ⚠ · xpath: 0
@@ -384,7 +384,7 @@ mjolnir forensics ./test-results/
 ```
 
 ```text
-▚ FLAKINESS LEADERBOARD
+▍ FLAKINESS LEADERBOARD
 
 3 tests · 1 failed · 1 flaky · 1 retried
 

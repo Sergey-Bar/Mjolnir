@@ -1,3 +1,4 @@
+import { h } from "vue";
 import DefaultTheme from "vitepress/theme";
 import type { Theme } from "vitepress";
 import Home from "./Home.vue";
@@ -17,7 +18,11 @@ import "./styles/custom.css";
 
 export default {
   extends: DefaultTheme,
-  NotFound,
+  // Through the Layout's slot, not the theme's `NotFound` key: the
+  // default Layout draws its own 404 and never consults that key, so
+  // this page had been replaced by the stock one on every missing URL.
+  Layout: () =>
+    h(DefaultTheme.Layout, null, { "not-found": () => h(NotFound) }),
   enhanceApp({ app }) {
     app.component("Home", Home);
     app.component("RuneDivider", RuneDivider);

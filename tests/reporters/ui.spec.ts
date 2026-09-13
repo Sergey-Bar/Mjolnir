@@ -47,8 +47,8 @@ function withEnv(key: string, value: string | undefined): void {
 }
 
 describe("sectionHeader", () => {
-  it("renders `▚ TITLE` in unicode mode", () => {
-    expect(sectionHeader("FINDINGS", ui)).toBe("  ▚ FINDINGS");
+  it("renders `▍ TITLE` in unicode mode", () => {
+    expect(sectionHeader("FINDINGS", ui)).toBe("  ▍ FINDINGS");
   });
 
   it("degrades to `= TITLE` in ascii mode (cmd.exe-safe)", () => {

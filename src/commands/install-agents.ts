@@ -311,13 +311,6 @@ export function runInstallCommand(
     if (e.action === "no-op") continue;
   }
   const written = executeInstall(entries);
-  for (const e of entries) {
-    if (e.action !== "refuse" && e.action !== "no-op") {
-      io.out(
-        `  ${e.action}: ${e.surface} → ${e.file} (mjolnir-qa@${CLI_VERSION})`,
-      );
-    }
-  }
   if (stagedHook) {
     const hook = planHookInstall(cwd);
     const hookWritten = executeHookInstall(hook);

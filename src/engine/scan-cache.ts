@@ -24,7 +24,13 @@
  */
 
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  writeFileSync,
+} from "node:fs";
 import { join } from "node:path";
 
 import type { Finding } from "../types.js";
@@ -71,30 +77,88 @@ function sha256(text: string): string {
 
 /**
  * Digest of the active rule set: id + effective detectorRevision for
- * every rule (sorted for determinism), plus a source hash per rule's
- * `run` function. Any detector change — revision bump OR code edit —
- * produces a different digest, invalidating every cached entry. Takes a
- * structural subset on purpose: only these three fields feed the key.
+ * every rule (sorted for determinism), plus a content hash of all rule
+ * source files. The directory-tree hash catches changes to ANY file
+ * under src/rules/ — same-file helpers, cross-module imports, shared
+ * utilities — without needing to trace the import graph. This is the
+ * only reliable way to detect helper function changes in a bundled
+ * ESM codebase where String(fn) doesn't reveal transitive dependencies.
  */
 export function computeRulesDigest(
   rules: ReadonlyArray<{
     id: string;
     detectorRevision?: number;
     run: unknown;
+    modulePath?: string;
   }>,
 ): string {
-  const parts = rules
-    .map(
-      (r) =>
-        `${r.id}:${r.detectorRevision ?? 1}:${sha256(
-          // Function source is stable within a runtime; a rule whose
-          // detection code changed without a revision bump still
-          // invalidates (belt-and-braces on top of detectorRevision).
-          String(r.run),
-        ).slice(0, 12)}`,
-    )
-    .sort();
-  return sha256(parts.join("|"));
+  const parts = rules.map((r) => `${r.id}:${r.detectorRevision ?? 1}`).sort();
+
+  // Hash the rules source directory tree. Any change to any rule file,
+  // helper, or shared utility invalidates the cache. The cost is one
+  // directory traversal + sha256 per scan (not per file).
+  const rulesDirHash = hashRulesSourceTree(rules);
+
+  return sha256(parts.join("|") + "\0" + rulesDirHash);
+}
+
+/**
+ * Hash all .ts files under src/rules/ (when the first rule's modulePath
+ * reveals the project root). Falls back to per-rule function source
+ * hashing when the directory cannot be resolved.
+ */
+function hashRulesSourceTree(
+  rules: ReadonlyArray<{ run: unknown; modulePath?: string }>,
+): string {
+  // Derive the rules directory from the first rule's modulePath
+  const firstPath = rules.find((r) => r.modulePath)?.modulePath;
+  if (!firstPath) {
+    // Fallback: hash all String(run) sources
+    return sha256(rules.map((r) => String(r.run)).join("\0")).slice(0, 16);
+  }
+  // Walk up from the module path to find src/rules/
+  const marker = "/src/rules/";
+  const idx = firstPath.replace(/\\/g, "/").indexOf(marker);
+  if (idx < 0) {
+    return sha256(rules.map((r) => String(r.run)).join("\0")).slice(0, 16);
+  }
+  const rulesDir = firstPath.replace(/\\/g, "/").slice(0, idx + marker.length);
+  try {
+    const hash = createHash("sha256");
+    hashDir(rulesDir, hash, 0);
+    return hash.digest("hex").slice(0, 16);
+  } catch {
+    return sha256(rules.map((r) => String(r.run)).join("\0")).slice(0, 16);
+  }
+}
+
+function hashDir(
+  dir: string,
+  hash: ReturnType<typeof createHash>,
+  depth: number,
+): void {
+  if (depth > 8) return;
+  let entries;
+  try {
+    entries = readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return;
+  }
+  entries.sort((a, b) => a.name.localeCompare(b.name));
+  for (const entry of entries) {
+    if (entry.name === "node_modules" || entry.name === ".git") continue;
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      hashDir(full, hash, depth + 1);
+    } else if (entry.isFile() && /\.tsx?$/.test(entry.name)) {
+      try {
+        hash.update(entry.name);
+        hash.update(readFileSync(full));
+      } catch {
+        // unreadable → skip
+      }
+    }
+  }
 }
 
 /**

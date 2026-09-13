@@ -23,6 +23,7 @@ export default tseslint.config(
       // Local debug artifacts (gitignored — "never committed"); a dev's
       // throwaway probe scripts must never be able to redden `npm run lint`.
       "scratch/",
+      "debug-blast*.ts",
       // Agent-session state (plans, worktrees, scratch notes) — not repo
       // content, matching .gitignore/.prettierignore. A nested worktree
       // here carries its own tsconfig.json, which otherwise breaks the
