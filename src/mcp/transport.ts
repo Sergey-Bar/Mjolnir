@@ -83,6 +83,10 @@ export async function handleStdioLine(
   let response: McpResponse | null;
   try {
     response = await handleMcpMessage(parsed);
+    // JSON-RPC only permits string/number/null ids. handleMcpMessage echoes
+    // the request id verbatim, so an object/boolean id from a malformed
+    // frame must be coerced to null here too (not just on the error path).
+    if (response) response.id = normalizeJsonRpcId(parsed);
   } catch (err) {
     response = {
       jsonrpc: "2.0",

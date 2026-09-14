@@ -938,7 +938,8 @@ export async function runDoctorPlaywright(
   io: { out: Output; err?: Output } = { out },
 ): Promise<number> {
   try {
-    const targetArg = argv.find((a) => !a.startsWith("-")) ?? ".";
+    const targetArg =
+      argv.find((a) => !a.startsWith("-") && a !== "doctor:playwright") ?? ".";
     const target = resolve(targetArg);
     const invalid = validateScanTarget(target, io.err ?? err);
     if (invalid !== null) return invalid;

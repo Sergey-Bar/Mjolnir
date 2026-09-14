@@ -140,7 +140,6 @@ export function runForensics(
     let hitCumulativeLimit = false;
     for (const full of listFiles(target)) {
       if (++count > MAX_FILES) {
-        // eslint-disable-next-line no-useless-assignment -- read after loop at line ~185
         hitFileLimit = true;
         break;
       }
@@ -183,15 +182,22 @@ export function runForensics(
           incompleteReasons.push("parse-failure");
         }
       }
-      if (hitFileLimit) {
-        skippedReports++;
-        if (!incompleteReasons.includes("file-count-limit")) {
-          incompleteReasons.push("file-count-limit");
-        }
+    }
+    // Limit flags are set at the break site, so they are finalized here —
+    // not inside the loop, where the `break` would skip the handling.
+    // The reason may already be present (pushed at the break), so the
+    // increment is unconditional on the flag.
+    if (hitFileLimit) {
+      if (!incompleteReasons.includes("file-count-limit")) {
+        incompleteReasons.push("file-count-limit");
       }
-      if (hitCumulativeLimit) {
-        skippedReports++;
+      skippedReports++;
+    }
+    if (hitCumulativeLimit) {
+      if (!incompleteReasons.includes("cumulative-size-limit")) {
+        incompleteReasons.push("cumulative-size-limit");
       }
+      skippedReports++;
     }
   }
 

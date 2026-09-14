@@ -40,6 +40,11 @@ export const DEFAULT_IGNORES: readonly string[] = [
   // discovered; M5.2 adds .mjolnir/cache/). Its contents are machine
   // state, never test sources.
   ".mjolnir",
+  // Agent/editor tool-state directories (e.g. `.claude/`, which may hold
+  // generated worktrees whose test corpora contain deliberate anti-pattern
+  // fixtures). These are machine/tool state, never the project's own
+  // sources, so a self-scan must not score them.
+  ".claude",
   "dist",
   "build",
   "out",
