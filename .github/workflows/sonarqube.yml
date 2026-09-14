@@ -34,11 +34,12 @@ on:
   workflow_dispatch:
 
 permissions:
-  pull-requests: read # allows SonarQube to decorate PRs with analysis results
+  contents: read
 
 jobs:
   Analysis:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Analyze with SonarQube

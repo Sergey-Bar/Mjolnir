@@ -2,14 +2,18 @@ name: Greetings
 
 on: [pull_request_target, issues]
 
+permissions:
+  contents: read
+
 jobs:
   greeting:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       issues: write
       pull-requests: write
     steps:
-      - uses: actions/first-interaction@v1
+      - uses: actions/first-interaction@1db89c23c8e56993ef66720ea423f747a88c9ae7 # v1.3.0
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           issue-message: "Message that will be displayed on users' first issue"
