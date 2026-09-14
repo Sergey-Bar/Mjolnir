@@ -6,7 +6,9 @@ import regexp from "eslint-plugin-regexp";
 
 export default tseslint.config(
   {
-    // dist/ is build output; coverage/ is reports. The corpora under
+    // dist/ is build output; coverage/ is reports. Coverage-patch test
+    // scratch (`tests/coverage/`) is intentionally loosely typed and lives
+    // outside the strict `no-any`/`no-non-null` ratchet. The corpora under
     // tests/fixtures, tests/golden/repo and tests/corpus/.cache are DATA —
     // real OSS code and hand-written defect exhibits that must never be
     // held to (or block) the source linter (they deliberately contain the
@@ -14,6 +16,7 @@ export default tseslint.config(
     ignores: [
       "dist/",
       "coverage/",
+      "tests/coverage/",
       "node_modules/",
       // Machine-local state (cache, bench fixtures, stats) — generated
       // artifacts, never committed. The bench fixture tree carries
@@ -30,6 +33,11 @@ export default tseslint.config(
       // parser's tsconfigRootDir inference with "multiple candidate
       // TSConfigRootDirs".
       ".kilo/**",
+      // Same reasoning as .kilo/ above: agent worktrees (Claude Code,
+      // etc.) carry their own tsconfig.json/eslint.config.js, which makes
+      // the typed parser see multiple candidate TSConfigRootDirs and fail
+      // `npm run lint` on the host repo. Never repo content.
+      ".claude/**",
       // Demo/demo-repo content is exhibit data for the README, linted by
       // nobody's CI and not part of any tsconfig project.
       "examples/**",
