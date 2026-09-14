@@ -1,7 +1,6 @@
 # Security Policy
 
-[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/9999/badge)](https://www.bestpractices.dev/projects/9999)
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/Sergey-Bar/Mjolnir/badge)](https://securityscorecards.dev/viewer/?uri=github.com/Sergey-Bar/Mjolnir)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Sergey-Bar/Mjolnir/badge)](https://scorecard.dev/viewer/?uri=github.com/Sergey-Bar/Mjolnir)
 
 ## Supported Versions
 

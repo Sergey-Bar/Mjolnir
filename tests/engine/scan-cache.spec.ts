@@ -26,7 +26,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { main, runScan } from "../../src/cli.js";
 import {
@@ -35,6 +35,43 @@ import {
   disabledScanCache,
   fileCacheKey,
 } from "../../src/engine/scan-cache.js";
+
+const { readdirSyncThrowAfter, readdirSyncThrowCount, readdirSyncCorruptPath } =
+  vi.hoisted(() => {
+    return {
+      readdirSyncThrowAfter: { value: -1 },
+      readdirSyncThrowCount: { value: 0 },
+      readdirSyncCorruptPath: { value: "" },
+    };
+  });
+
+vi.mock("node:fs", async () => {
+  const actual = await vi.importActual<typeof import("node:fs")>("node:fs");
+  return {
+    ...actual,
+    readdirSync: (
+      ...args: Parameters<(typeof actual)["readdirSync"]>
+    ): ReturnType<(typeof actual)["readdirSync"]> => {
+      if (readdirSyncThrowAfter.value >= 0) {
+        readdirSyncThrowCount.value++;
+        if (readdirSyncThrowCount.value > readdirSyncThrowAfter.value) {
+          throw new Error("simulated readdirSync failure");
+        }
+      }
+      if (
+        readdirSyncCorruptPath.value &&
+        typeof args[0] === "string" &&
+        args[0]
+          .replace(/\\/g, "/")
+          .startsWith(readdirSyncCorruptPath.value.replace(/\\/g, "/"))
+      ) {
+        readdirSyncCorruptPath.value = "";
+        return null as unknown as ReturnType<(typeof actual)["readdirSync"]>;
+      }
+      return actual.readdirSync(...args);
+    },
+  };
+});
 
 let dir: string;
 let origCwd: string;
@@ -340,5 +377,164 @@ describe("--cache CLI plumbing", () => {
     expect(existsSync(join(dir, ".mjolnir", "cache"))).toBe(false);
     await runScan({ ...baseArgs, cache: true });
     expect(existsSync(join(dir, ".mjolnir", "cache"))).toBe(true);
+  });
+});
+
+describe("computeRulesDigest — hashRulesSourceTree paths", () => {
+  it("uses the rules source directory tree hash when modulePath contains /src/rules/", () => {
+    const rulesDir = join(dir, "src", "rules");
+    mkdirSync(join(rulesDir, "sub"), { recursive: true });
+    writeFileSync(join(rulesDir, "a.ts"), "export const a = 1;", "utf8");
+    writeFileSync(
+      join(rulesDir, "sub", "b.tsx"),
+      "export const b = 2;",
+      "utf8",
+    );
+
+    const modulePath = join(rulesDir, "sub", "b.tsx");
+    const digest = computeRulesDigest([
+      { id: "R1", run: () => [], modulePath },
+    ]);
+
+    expect(digest).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it("falls back to String(run) hashing when modulePath has no /src/rules/ marker", () => {
+    const digest = computeRulesDigest([
+      { id: "R1", run: () => [], modulePath: "/some/other/path/rule.ts" },
+    ]);
+    expect(digest).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it("falls back when hashDir throws (rulesDir does not exist on disk)", () => {
+    const digest = computeRulesDigest([
+      {
+        id: "R1",
+        run: () => [],
+        modulePath: "/nonexistent/src/rules/rule.ts",
+      },
+    ]);
+    expect(digest).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it("skips node_modules and .git in the rules directory hash", () => {
+    const rulesDir = join(dir, "src", "rules");
+    mkdirSync(join(rulesDir, "node_modules"), { recursive: true });
+    mkdirSync(join(rulesDir, ".git"), { recursive: true });
+    writeFileSync(join(rulesDir, "a.ts"), "const a = 1;", "utf8");
+    writeFileSync(
+      join(rulesDir, "node_modules", "ignored.ts"),
+      "const ignore = true;",
+      "utf8",
+    );
+    writeFileSync(
+      join(rulesDir, ".git", "ignored.ts"),
+      "const ignore = true;",
+      "utf8",
+    );
+
+    const modulePath = join(rulesDir, "a.ts");
+    const digest = computeRulesDigest([
+      { id: "R1", run: () => [], modulePath },
+    ]);
+    expect(digest).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it("recurses into subdirectories and hashes .tsx files", () => {
+    const rulesDir = join(dir, "src", "rules");
+    mkdirSync(join(rulesDir, "deep", "nested"), { recursive: true });
+    writeFileSync(join(rulesDir, "top.ts"), "const t = 1;", "utf8");
+    writeFileSync(join(rulesDir, "deep", "mid.tsx"), "const m = 2;", "utf8");
+    writeFileSync(
+      join(rulesDir, "deep", "nested", "leaf.ts"),
+      "const l = 3;",
+      "utf8",
+    );
+    writeFileSync(
+      join(rulesDir, "deep", "nested", "not-ts.js"),
+      "const ignored = true;",
+      "utf8",
+    );
+
+    const modulePath = join(rulesDir, "top.ts");
+    const digest = computeRulesDigest([
+      { id: "R1", run: () => [], modulePath },
+    ]);
+    expect(digest).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it("respects the depth-8 limit in hashDir", () => {
+    const rulesDir = join(dir, "src", "rules");
+    let deepPath = rulesDir;
+    for (let i = 0; i <= 10; i++) {
+      deepPath = join(deepPath, `level${i}`);
+    }
+    mkdirSync(deepPath, { recursive: true });
+    writeFileSync(join(rulesDir, "root.ts"), "const r = 0;", "utf8");
+    writeFileSync(join(deepPath, "too-deep.ts"), "const td = 1;", "utf8");
+
+    const modulePath = join(rulesDir, "root.ts");
+    const digest = computeRulesDigest([
+      { id: "R1", run: () => [], modulePath },
+    ]);
+    expect(digest).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it("changes digest when rules source directory tree content changes", () => {
+    const rulesDir = join(dir, "src", "rules");
+    mkdirSync(rulesDir, { recursive: true });
+    writeFileSync(join(rulesDir, "a.ts"), "const a = 1;", "utf8");
+
+    const modulePath = join(rulesDir, "a.ts");
+    const before = computeRulesDigest([
+      { id: "R1", run: () => [], modulePath },
+    ]);
+
+    writeFileSync(join(rulesDir, "a.ts"), "const a = 999;", "utf8");
+    const after = computeRulesDigest([{ id: "R1", run: () => [], modulePath }]);
+
+    expect(after).not.toBe(before);
+  });
+
+  it("uses window-style backslash paths in modulePath", () => {
+    const rulesDir = join(dir, "src", "rules");
+    mkdirSync(rulesDir, { recursive: true });
+    writeFileSync(join(rulesDir, "a.ts"), "const a = 1;", "utf8");
+
+    const backslashPath = rulesDir.replace(/\//g, "\\") + "\\a.ts";
+    const digest = computeRulesDigest([
+      { id: "R1", run: () => [], modulePath: backslashPath },
+    ]);
+    expect(digest).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it("falls back to String(run) when modulePath does not contain /src/rules/ (line 124)", () => {
+    const digest = computeRulesDigest([
+      { id: "R1", run: () => [], modulePath: "/some/other/path/a.js" },
+    ]);
+    // Falls back to per-rule function source hashing
+    expect(digest).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it("falls back to String(run) when hashDir throws internally (catch on line 131)", () => {
+    const rulesDir = join(dir, "src", "rules");
+    mkdirSync(rulesDir, { recursive: true });
+    writeFileSync(join(rulesDir, "a.ts"), "const a = 1;", "utf8");
+
+    const modulePath = join(rulesDir, "a.ts");
+
+    // Normal digest (no mock active)
+    const normal = computeRulesDigest([
+      { id: "R1", run: () => [], modulePath },
+    ]);
+
+    // Target the mock to corrupt readdirSync only for the rules dir path
+    readdirSyncCorruptPath.value = rulesDir;
+    const fallback = computeRulesDigest([
+      { id: "R1", run: () => [], modulePath },
+    ]);
+
+    expect(fallback).toMatch(/^[a-f0-9]{64}$/);
+    expect(fallback).not.toBe(normal);
   });
 });

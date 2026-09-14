@@ -253,7 +253,8 @@ export function renderUnifiedReport(
 
   // ─── Headline ───
   const state = deriveScoreState(result.score ?? 0);
-  lines.push(`**Headline:** ${headlineFor(state, result.findings.length)}`);
+  const headlineFindings = usingDiff ? findings.length : result.findings.length;
+  lines.push(`**Headline:** ${headlineFor(state, headlineFindings)}`);
   lines.push("");
   lines.push("---");
   lines.push("");
@@ -294,7 +295,7 @@ export function renderUnifiedReport(
       if (g.list.length === 0) continue;
       lines.push(`<details${g.open ? " open" : ""}>`);
       lines.push(
-        `<summary><b>${g.icon} ${g.list.length} ${g.label}</b>${g.list.length > 0 ? " — must fix before merge" : ""}</summary>`,
+        `<summary><b>${g.icon} ${g.list.length} ${g.label}</b>${g.open ? " — must fix before merge" : " — advisory"}</summary>`,
       );
       lines.push("");
       for (const f of g.list.slice(0, 25)) {
