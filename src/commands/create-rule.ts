@@ -102,9 +102,10 @@ export function createRuleScaffold(
   const ruleSrc = `/**
  * ${input.id} — ${input.title}.
  *
- * TODO(implement): replace the placeholder below. The rule currently
- * returns no findings on purpose so the fixture harness FAILS until
- * real detection logic lands (anti-creep law §18.1).
+ * Template placeholder — implement detection logic for your rule's
+ * patterns. The rule currently returns no findings on purpose so the
+ * fixture harness FAILS until real detection logic lands (anti-creep
+ * law §18.1).
  */
 
 import { defineRule } from "../rule.js";
@@ -121,7 +122,7 @@ export const ${camel(parsed.lower)} = defineRule({
   appliesTo: ${JSON.stringify(parsed.appliesTo)},
   run(ctx) {
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
-    void ctx; // TODO: implement detection over ctx.path / ctx.text
+    void ctx; // Template placeholder — implement detection over ctx.path / ctx.text
     return findings;
   },
 });

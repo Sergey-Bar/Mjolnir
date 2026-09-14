@@ -43,22 +43,7 @@ import { pathToFileURL } from "node:url";
 
 import type { QADoctorRule } from "../rules/rule.js";
 import type { Severity } from "../types.js";
-
-/** Core-owned ID prefixes an external rule may never claim (kept in
- * sync with src/plugins/load.ts — one spoofing-prevention law). */
-export const RESERVED_PREFIXES = [
-  "QA-TEST",
-  "QA-TQUAL",
-  "QA-PW",
-  "QA-CI",
-  "QA-PY",
-  "QA-ENV",
-  "QA-JV",
-  "QA-CS",
-  "QA-CYP",
-  "QA-SE",
-  "QA-PLUGIN",
-] as const;
+import { isReservedPrefix } from "./reserved-prefixes.js";
 
 export const LOCAL_RULES_DIR = "mjolnir-rules";
 
@@ -149,7 +134,7 @@ function loadJsonRule(path: string, result: LoadedExternalRules): void {
     result.errors.push(`external rule "${name}" is missing "id" — skipped.`);
     return;
   }
-  if (RESERVED_PREFIXES.some((p) => id.toUpperCase().startsWith(p))) {
+  if (isReservedPrefix(id)) {
     result.errors.push(
       `external rule ${id} uses a reserved core prefix — rejected. Use your own family (e.g. QA-<YOURTEAM>-001).`,
     );
@@ -332,7 +317,7 @@ async function loadModuleRules(
       continue;
     }
     const ruleId: string = r.id;
-    if (RESERVED_PREFIXES.some((p) => ruleId.toUpperCase().startsWith(p))) {
+    if (isReservedPrefix(ruleId)) {
       result.errors.push(
         `external rule module "${name}" rule ${ruleId} uses a reserved core prefix — rejected. Use your own family.`,
       );

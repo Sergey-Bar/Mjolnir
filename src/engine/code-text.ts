@@ -37,6 +37,8 @@ export function computeCodeText(
       return maskJava(file.text);
     case "csharp":
       return maskCSharp(file.text);
+    default:
+      return file.text;
   }
 }
 

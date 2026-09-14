@@ -6,7 +6,6 @@
  */
 
 import { existsSync, readFileSync, realpathSync, statSync } from "node:fs";
-import { execFileSync } from "node:child_process";
 import { join, dirname, resolve } from "node:path";
 import process from "node:process";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -113,10 +112,10 @@ import { buildCatalog, renderCatalogMd } from "./commands/rules-catalog.js";
 import { explainRule, renderExplain } from "./commands/explain.js";
 import { loadSuppressions, renderSuppressions } from "./config/suppressions.js";
 import { loadConfig, ConfigValidationError } from "./config/config.js";
-import { resolveGitPath } from "./scope/git-resolve.js";
 import { createIgnoreMatcher } from "./discovery/ignores.js";
 import { loadLocalRules } from "./plugins/local-rules.js";
 import { writeFileAtomic } from "./lib/fs-atomic.js";
+import { currentCommit as sharedCurrentCommit } from "./lib/git-utils.js";
 import {
   computeSelectorHealth,
   renderSelectorHealth,
@@ -1087,7 +1086,7 @@ export async function runBadgeCommand(
     // whatever directory the user happened to run from.
     const outPath = writeBadge(result, {
       outDir: target,
-      commit: currentCommit(target),
+      commit: sharedCurrentCommit(target) ?? "unknown",
     });
     io.out(`Wrote ${outPath}`);
     io.out("");
@@ -1176,23 +1175,6 @@ export function runCreateRuleCommand(
   }
 }
 
-function currentCommit(root: string): string {
-  try {
-    // Audit S1: absolute git path — never resolvable from the scanned
-    // repo's own directory.
-    return execFileSync(
-      resolveGitPath() ?? "git",
-      ["-C", root, "rev-parse", "HEAD"],
-      {
-        encoding: "utf8",
-        stdio: ["ignore", "pipe", "ignore"],
-      },
-    ).trim();
-  } catch {
-    return "unknown";
-  }
-}
-
 /** Testable `impact` handler (Sprint 6 Task 23). */
 export async function runImpactCommand(
   argv: string[],
@@ -1250,7 +1232,11 @@ export async function runBaselineCommand(
     const outPath = join(target, DEFAULT_BASELINE_PATH);
     let saved: ReturnType<typeof saveBaseline>;
     try {
-      saved = saveBaseline(result, currentCommit(target), outPath);
+      saved = saveBaseline(
+        result,
+        sharedCurrentCommit(target) ?? "unknown",
+        outPath,
+      );
     } catch (saveErr) {
       // Honest-degrade: an unwritable path is the environment's fault,
       // not a Mjölnir bug — the friendly exit-20 message would lie.
