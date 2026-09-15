@@ -9,7 +9,9 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
-## [Unreleased] — Nordic brand pass
+## [1.1.1] — 2026-09-15
+
+### Nordic brand pass
 
 ### Changed
 
