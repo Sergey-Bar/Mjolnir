@@ -28,10 +28,24 @@ export interface RunIdentityInput {
   engineVersion: string;
   /** Content hash of the discovered runtime report, when present. */
   reportDigest?: string | undefined;
+  /** Trust model version (src/engine/contract-versions.ts). */
+  trustModelVersion?: string;
+  /** Scoring model version (src/engine/contract-versions.ts). */
+  scoringModelVersion?: string;
+  /** Framework support matrix version (src/engine/contract-versions.ts). */
+  frameworkSupportMatrixVersion?: string;
+  /** Evidence schema version numbers in play for this run. */
+  evidenceSchemaVersions?: number[];
+  /** Hash of the active suppression ruleset. */
+  suppressionFingerprint?: string;
+  /** Hash of the loaded policy configuration. */
+  policyFingerprint?: string;
+  /** Hash of the historical evidence corpus. */
+  historicalEvidenceFingerprint?: string;
 }
 
 export interface RunIdentity {
-  /** sha256(input fingerprint + rules digest + config + engine version). */
+  /** sha256(input fingerprint + rules digest + config + engine version + verdict-affecting inputs). */
   scanId: string;
   /** sha256 of the sorted "path:size" lines — the input snapshot. */
   inputFingerprint: string;
@@ -40,6 +54,9 @@ export interface RunIdentity {
   /** sha256 of the canonical config JSON (absent → omitted upstream). */
   configFingerprint: string;
   engineVersion: string;
+  trustModelVersion?: string;
+  scoringModelVersion?: string;
+  frameworkSupportMatrixVersion?: string;
 }
 
 function sha256(text: string): string {
@@ -68,21 +85,57 @@ export function buildRunIdentity(input: RunIdentityInput): RunIdentity {
       .join("\n"),
   );
   const configFingerprint = sha256(canonical(input.config ?? null));
-  const scanId = sha256(
-    canonical({
-      inputFingerprint,
-      rulesDigest,
-      configFingerprint,
-      engineVersion: input.engineVersion,
-      ...(input.reportDigest ? { reportDigest: input.reportDigest } : {}),
-    }),
-  );
+  // Verdict-affecting inputs: every non-undefined field that can change
+  // the verdict for the same file set must be included in the scanId.
+  // Non-semantic metadata (e.g. timestamps, process PIDs) is excluded.
+  const verdictInputs: Record<string, unknown> = {
+    inputFingerprint,
+    rulesDigest,
+    configFingerprint,
+    engineVersion: input.engineVersion,
+  };
+  if (input.reportDigest) verdictInputs.reportDigest = input.reportDigest;
+  if (input.trustModelVersion !== undefined) {
+    verdictInputs.trustModelVersion = input.trustModelVersion;
+  }
+  if (input.scoringModelVersion !== undefined) {
+    verdictInputs.scoringModelVersion = input.scoringModelVersion;
+  }
+  if (input.frameworkSupportMatrixVersion !== undefined) {
+    verdictInputs.frameworkSupportMatrixVersion =
+      input.frameworkSupportMatrixVersion;
+  }
+  if (input.evidenceSchemaVersions !== undefined) {
+    verdictInputs.evidenceSchemaVersions = [
+      ...input.evidenceSchemaVersions,
+    ].sort((a, b) => a - b);
+  }
+  if (input.suppressionFingerprint !== undefined) {
+    verdictInputs.suppressionFingerprint = input.suppressionFingerprint;
+  }
+  if (input.policyFingerprint !== undefined) {
+    verdictInputs.policyFingerprint = input.policyFingerprint;
+  }
+  if (input.historicalEvidenceFingerprint !== undefined) {
+    verdictInputs.historicalEvidenceFingerprint =
+      input.historicalEvidenceFingerprint;
+  }
+  const scanId = sha256(canonical(verdictInputs));
   return {
     scanId,
     inputFingerprint,
     rulesDigest,
     configFingerprint,
     engineVersion: input.engineVersion,
+    ...(input.trustModelVersion !== undefined
+      ? { trustModelVersion: input.trustModelVersion }
+      : {}),
+    ...(input.scoringModelVersion !== undefined
+      ? { scoringModelVersion: input.scoringModelVersion }
+      : {}),
+    ...(input.frameworkSupportMatrixVersion !== undefined
+      ? { frameworkSupportMatrixVersion: input.frameworkSupportMatrixVersion }
+      : {}),
   };
 }
 

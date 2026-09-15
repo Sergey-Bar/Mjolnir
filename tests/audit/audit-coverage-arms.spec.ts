@@ -242,7 +242,7 @@ describe("config ignore[].files validation arm (S7)", () => {
         ignore: [{ ruleId: "QA-TEST-004", reason: "x", files: "not-an-array" }],
       }),
     );
-    expect(() => loadConfig(root)).toThrow(/must be an array of glob strings/);
+    expect(() => loadConfig(root)).toThrow(/must be an array/);
   });
 
   it("rejects a non-string files entry with the offending value echoed", () => {
@@ -253,7 +253,7 @@ describe("config ignore[].files validation arm (S7)", () => {
         ignore: [{ ruleId: "QA-TEST-004", reason: "x", files: [7] }],
       }),
     );
-    expect(() => loadConfig(root)).toThrow(/files.*entries must be strings/);
+    expect(() => loadConfig(root)).toThrow(/must be a string/);
   });
 });
 

@@ -154,6 +154,7 @@ describe("deriveTrustLevel — the L0–L5 ladder", () => {
 
 describe("stampRuntimeCorroboration — matching + L5 defect corroboration", () => {
   const report: ForensicsReport = {
+    forensicsSchemaVersion: 1,
     source: "playwright-json",
     totalTests: 2,
     failed: 1,
@@ -214,6 +215,7 @@ describe("stampRuntimeCorroboration — matching + L5 defect corroboration", () 
 
   it("multi-verdict file: line-span matching picks the containing test (no fabrication)", () => {
     const multi: ForensicsReport = {
+      forensicsSchemaVersion: 1,
       source: "playwright-json",
       totalTests: 2,
       failed: 0,

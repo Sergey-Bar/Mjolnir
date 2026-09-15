@@ -22,6 +22,14 @@ export const BENCH_HARNESS_VERSION = "1.0.0";
 export type BenchScenario =
   "cold-start" | "warm-start" | "cache-hit" | "cache-miss" | "startup-overhead";
 
+/** Benchmark class identifier for regression gating (ENGINE-009). */
+export type BenchmarkClassId =
+  | "cold-start-small"
+  | "warm-start-small"
+  | "cache-hit"
+  | "cache-miss"
+  | "startup-overhead";
+
 /** One measured scenario: median of runs, with every individual sample. */
 export interface BenchSample {
   scenario: BenchScenario;
@@ -31,6 +39,12 @@ export interface BenchSample {
   runs: number[];
   /** Median peak RSS delta across runs (bytes; where measurable). */
   rssDeltaBytes: number;
+  /**
+   * Peak memory usage during the scenario (bytes). When measurable,
+   * this is the maximum process.memoryUsage().heapUsed observed.
+   * Additive within schema version 1.
+   */
+  peakMemory?: number;
   /** State descriptor: cold/warm + cache hit/miss per §339. */
   state: {
     warm: boolean;

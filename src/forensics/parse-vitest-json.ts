@@ -19,12 +19,15 @@
  */
 
 import type { Attempt, RunStatus, TestRecord } from "./types.js";
+import { sanitizeErrorText } from "./evidence-hygiene.js";
 
 interface VitestAssertion {
   title?: string;
   status?: string;
   duration?: number;
   location?: { line?: number; column?: number };
+  failureMessages?: unknown[];
+  failureDetails?: unknown[];
 }
 
 interface VitestFileResult {
@@ -93,11 +96,35 @@ export function parseVitestJson(json: unknown): TestRecord[] {
         assertion.location.line > 0
           ? assertion.location.line
           : undefined;
+      const errors: string[] = [];
+      for (const msgs of [
+        assertion.failureMessages,
+        assertion.failureDetails,
+      ]) {
+        if (!Array.isArray(msgs)) continue;
+        for (const m of msgs) {
+          if (typeof m === "string" && m.length > 0) {
+            errors.push(sanitizeErrorText(m));
+          } else if (
+            m !== null &&
+            typeof m === "object" &&
+            "message" in (m as Record<string, unknown>) &&
+            typeof (m as Record<string, unknown>).message === "string"
+          ) {
+            errors.push(
+              sanitizeErrorText(
+                (m as Record<string, unknown>).message as string,
+              ),
+            );
+          }
+        }
+      }
       out.push({
         file,
         title: assertion.title ?? "(unnamed)",
         attempts: [attempt],
         ...(line !== undefined ? { line } : {}),
+        ...(errors.length > 0 ? { errors } : {}),
       });
     }
   }

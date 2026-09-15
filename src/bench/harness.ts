@@ -93,7 +93,7 @@ function rssNow(): number {
 async function timeOnce(
   root: string,
   opts: { cache: boolean },
-): Promise<{ durationMs: number; rssDelta: number }> {
+): Promise<{ durationMs: number; rssDelta: number; peakMemory: number }> {
   // Dynamic import: a "cold" run pays module-init cost; the loader caches
   // the module object, so "warm" runs measure pipeline work only. This
   // IS the distinction §339 asks for, honestly realized inside one
@@ -101,6 +101,10 @@ async function timeOnce(
   // measured by the startup-overhead scenario).
   const { runScan } = await import("../engine/scan-pipeline.js");
   const rssBefore = rssNow();
+  let peakHeap = process.memoryUsage().heapUsed;
+  const heapCheck = setInterval(() => {
+    peakHeap = Math.max(peakHeap, process.memoryUsage().heapUsed);
+  }, 50);
   const started = Date.now();
   await runScan({
     target: root,
@@ -111,8 +115,10 @@ async function timeOnce(
     format: "json",
     ...(opts.cache ? { cache: true } : {}),
   });
+  clearInterval(heapCheck);
+  peakHeap = Math.max(peakHeap, process.memoryUsage().heapUsed);
   const durationMs = Date.now() - started;
-  return { durationMs, rssDelta: rssNow() - rssBefore };
+  return { durationMs, rssDelta: rssNow() - rssBefore, peakMemory: peakHeap };
 }
 
 const RUNS_PER_SCENARIO = 3;
@@ -132,48 +138,57 @@ export async function runBenchmark(
   // fixture root, so a pre-scan wipe makes every run a miss).
   const missRuns: number[] = [];
   const missRss: number[] = [];
+  const missPeak: number[] = [];
   for (let i = 0; i < RUNS_PER_SCENARIO; i++) {
     const r = await timeOnce(fixtureRoot, { cache: false });
     missRuns.push(r.durationMs);
     missRss.push(r.rssDelta);
+    missPeak.push(r.peakMemory);
   }
   samples.push({
     scenario: "cache-miss",
     durationMs: median(missRuns),
     runs: missRuns,
     rssDeltaBytes: median(missRss),
+    peakMemory: median(missPeak),
     state: { warm: true, cache: "miss" },
   });
 
   // cache-hit: the miss runs already populated the cache.
   const hitRuns: number[] = [];
   const hitRss: number[] = [];
+  const hitPeak: number[] = [];
   for (let i = 0; i < RUNS_PER_SCENARIO; i++) {
     const r = await timeOnce(fixtureRoot, { cache: true });
     hitRuns.push(r.durationMs);
     hitRss.push(r.rssDelta);
+    hitPeak.push(r.peakMemory);
   }
   samples.push({
     scenario: "cache-hit",
     durationMs: median(hitRuns),
     runs: hitRuns,
     rssDeltaBytes: median(hitRss),
+    peakMemory: median(hitPeak),
     state: { warm: true, cache: "hit" },
   });
 
   // warm-start: cache off, module loader warm.
   const warmRuns: number[] = [];
   const warmRss: number[] = [];
+  const warmPeak: number[] = [];
   for (let i = 0; i < RUNS_PER_SCENARIO; i++) {
     const r = await timeOnce(fixtureRoot, { cache: false });
     warmRuns.push(r.durationMs);
     warmRss.push(r.rssDelta);
+    warmPeak.push(r.peakMemory);
   }
   samples.push({
     scenario: "warm-start",
     durationMs: median(warmRuns),
     runs: warmRuns,
     rssDeltaBytes: median(warmRss),
+    peakMemory: median(warmPeak),
     state: { warm: true, cache: "none" },
   });
 

@@ -65,6 +65,7 @@ function scanResult(over: Partial<ScanResult> = {}): ScanResult {
 
 function emptyForensicsReport(): ForensicsReport {
   return {
+    forensicsSchemaVersion: 1,
     source: "junit-xml",
     totalTests: 0,
     failed: 0,

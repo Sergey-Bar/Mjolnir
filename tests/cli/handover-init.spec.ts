@@ -89,6 +89,7 @@ function verdict(partial: Partial<TestVerdict> = {}): TestVerdict {
 
 function report(verdicts: TestVerdict[]): ForensicsReport {
   return {
+    forensicsSchemaVersion: 1,
     source: "junit-xml",
     totalTests: verdicts.length,
     failed: verdicts.filter((v) => v.everFailed && !v.passedOnRetry).length,

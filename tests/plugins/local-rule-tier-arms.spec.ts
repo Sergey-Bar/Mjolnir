@@ -503,6 +503,7 @@ describe("runtime-corroboration L114 — sort comparator ascending arm", () => {
   it("two verdicts on DIFFERENT lines sort (la < lb taken)", () => {
     const f = mk({ file: "e2e/a.spec.ts", line: 50 });
     const report = {
+      forensicsSchemaVersion: 1,
       source: "playwright-json" as const,
       totalTests: 2,
       failed: 0,
@@ -529,6 +530,7 @@ describe("runtime-corroboration L114 — sort comparator ascending arm", () => {
   it("a multi-verdict file where one verdict lacks a line → file-level only (L109 guard)", () => {
     const f = mk({ file: "e2e/a.spec.ts", line: 50 });
     const report = {
+      forensicsSchemaVersion: 1,
       source: "playwright-json" as const,
       totalTests: 2,
       failed: 0,

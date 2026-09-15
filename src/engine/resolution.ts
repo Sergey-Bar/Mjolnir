@@ -11,6 +11,7 @@
  */
 
 import type { ScanResult, Finding } from "../types.js";
+import { findingFingerprint } from "./finding-identity.js";
 
 /** Lifecycle states (§14) — additive metadata, no new verdict enums. */
 export type ResolutionStatus =
@@ -50,13 +51,7 @@ export interface BaselineEntry {
 }
 
 /** Correlation identity (v1-compatible): ruleId\0file\0message. */
-export function fingerprint(entry: {
-  ruleId: string;
-  file: string;
-  message: string;
-}): string {
-  return `${entry.ruleId}\u0000${entry.file}\u0000${entry.message}`;
-}
+export const fingerprint = findingFingerprint;
 
 export interface ResolveInput {
   entry: BaselineEntry;

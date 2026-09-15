@@ -264,7 +264,7 @@ describe("audit-S7: config validation", () => {
         ignore: [{ ruleId: "QA-PW-101", reason: "r", files: [1, 2] }],
       }),
     );
-    expect(() => loadConfig(dir)).toThrow(/files.*must be.*strings/);
+    expect(() => loadConfig(dir)).toThrow(/must be a string/);
   });
 
   it("unknown top-level config keys emit warnings, not silence", () => {

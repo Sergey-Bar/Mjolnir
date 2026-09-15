@@ -31,13 +31,13 @@ const GLYPH_SOURCES = [
 /** Strips SVG markup back to the terminal text it was rendered from. */
 function svgTextContent(svg: string): string {
   return (svg.match(/<text[^>]*>([\s\S]*?)<\/text>/g) ?? [])
-    .map((el) =>
-      el
-        .replace(/<[^>]+>/g, "")
+    .map((el) => {
+      const textContent = el.replace(/<[^>]+>/g, "");
+      return textContent
         .replaceAll("&lt;", "<")
         .replaceAll("&gt;", ">")
-        .replaceAll("&amp;", "&"),
-    )
+        .replaceAll("&amp;", "&");
+    })
     .join("");
 }
 

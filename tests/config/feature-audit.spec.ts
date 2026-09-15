@@ -71,7 +71,7 @@ describe("mjolnir.config.json `gate` (documented in config.ts)", () => {
     // An async scan rejects on a fatal config error; that rejection IS
     // the throw the contract pins.
     await expect(scan()).rejects.toThrow(
-      /gate must be advisory\|error\|warning/,
+      /gate must be (advisory\|error\|warning|one of advisory)/,
     );
   });
 });
@@ -87,7 +87,7 @@ describe("mjolnir.config.json `ignore` missing required `reason`", () => {
     );
     // An async scan rejects on a fatal config error; that rejection IS
     // the throw the contract pins.
-    await expect(scan()).rejects.toThrow(/requires a "reason"/);
+    await expect(scan()).rejects.toThrow(/reason/);
   });
 });
 

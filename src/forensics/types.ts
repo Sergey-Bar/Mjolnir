@@ -8,6 +8,8 @@
 
 import type { ForensicClassification } from "./classify.js";
 
+export const FORENSICS_SCHEMA_VERSION = 1 as const;
+
 export type RunStatus =
   "passed" | "failed" | "timedOut" | "skipped" | "interrupted";
 
@@ -71,6 +73,7 @@ export interface TestVerdict {
 }
 
 export interface ForensicsReport {
+  forensicsSchemaVersion: number;
   /**
    * Which report family the records came from. P4 (plan 1788853205786)
    * widens the union additively: `jest-json` and `vitest-json` ingest

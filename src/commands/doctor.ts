@@ -22,6 +22,7 @@ import { RETIRED_RULE_IDS, RULES } from "../rules/index.js";
 import { RULE_CATEGORIES } from "../types.js";
 import { MEASURED_FP } from "../rules/measured-fp.generated.js";
 import { isRecord } from "../lib/safe-json.js";
+import { validateAllRulesMetadata } from "../rules/rule-metadata-schema.js";
 
 /** The closed reason-code set (master plan P8) — mirrored from
  * src/rules/rule.ts's StrategyReasonCode union via a runtime set so the
@@ -811,6 +812,27 @@ export function checkMeasurementConsistency(
   return check("measurement-consistency", "pass", details);
 }
 
+/**
+ * Check 11 (ENGINE-008): rule metadata contract validation. Validates
+ * every registered rule's metadata against the RuleMetadataContract
+ * schema — well-formed IDs, valid categories, required trust fields.
+ */
+export function checkRuleMetadataContract(
+  rules: readonly QADoctorRule[] = RULES,
+): DoctorCheck {
+  const violations = validateAllRulesMetadata(rules);
+  if (violations.length === 0) {
+    return check("rule-metadata-contract", "pass", [
+      `${rules.length} rules validated against the metadata contract`,
+    ]);
+  }
+  return check(
+    "rule-metadata-contract",
+    "fail",
+    violations.map((v) => `${v.ruleId}: ${v.field} — ${v.message}`),
+  );
+}
+
 export function runDoctorSelfAudit(fixturesRoot: string): DoctorReport {
   const verdictsDir = join(fixturesRoot, "..", "corpus", "verdicts");
   const repoRoot = join(fixturesRoot, "..", "..");
@@ -829,6 +851,7 @@ export function runDoctorSelfAudit(fixturesRoot: string): DoctorReport {
       verdictsDir,
       join(repoRoot, "tests", "corpus", "detector-revisions.json"),
     ),
+    checkRuleMetadataContract(),
   ];
   return {
     checks,

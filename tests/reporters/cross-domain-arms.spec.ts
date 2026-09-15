@@ -40,6 +40,7 @@ afterEach(() => {
 
 describe("triage renders failing rows", () => {
   const report = {
+    forensicsSchemaVersion: 1,
     source: "playwright-json" as const,
     totalTests: 2,
     failed: 1,

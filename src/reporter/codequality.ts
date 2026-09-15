@@ -26,9 +26,10 @@
  * finding stays silent.
  */
 
-import { createHash } from "node:crypto";
-
 import type { Finding, ScanResult } from "../types.js";
+import { codeQualityFingerprint } from "../engine/finding-identity.js";
+
+export { codeQualityFingerprint };
 
 type CodeQualitySeverity = "major" | "minor" | "info";
 
@@ -38,20 +39,6 @@ function codeQualitySeverity(
   if (severity === "error") return "major";
   if (severity === "warning") return "minor";
   return "info";
-}
-
-/**
- * sha256 hex over the identifying tuple. Exported for the contract test:
- * the fingerprint MUST be stable across runs for an unchanged finding
- * (GitLab dedup contract) and MUST change when the finding's identity
- * changes (otherwise an MR could hide a moved-and-still-broken line).
- */
-export function codeQualityFingerprint(f: Finding): string {
-  return createHash("sha256")
-    .update(
-      `${f.ruleId}\u0000${f.file}\u0000${f.line}\u0000${f.column}\u0000${f.message}`,
-    )
-    .digest("hex");
 }
 
 export function renderCodeQuality(result: ScanResult): string {

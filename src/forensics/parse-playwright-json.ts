@@ -10,12 +10,15 @@
  */
 
 import type { Attempt, RunStatus, TestRecord } from "./types.js";
+import { sanitizeErrorText } from "./evidence-hygiene.js";
 
 const MAX_DEPTH = 32;
 
 interface PwResult {
   status?: string;
   duration?: number;
+  error?: unknown;
+  errors?: unknown[];
 }
 
 interface PwTest {
@@ -79,6 +82,7 @@ export function parsePlaywrightJson(json: unknown): TestRecord[] {
         const attempts: Attempt[] = [];
         let i = 0;
         const results = Array.isArray(test.results) ? test.results : [];
+        const collectedErrors: string[] = [];
         for (const r of results) {
           if (!r || typeof r !== "object") continue;
           attempts.push({
@@ -88,6 +92,30 @@ export function parsePlaywrightJson(json: unknown): TestRecord[] {
               ? Math.max(0, r.duration as number)
               : 0,
           });
+          if (r.error !== undefined && r.error !== null) {
+            const errObj = r.error as Record<string, unknown>;
+            if (
+              typeof errObj.message === "string" &&
+              errObj.message.length > 0
+            ) {
+              collectedErrors.push(sanitizeErrorText(errObj.message));
+            }
+          }
+          if (Array.isArray(r.errors)) {
+            for (const e of r.errors) {
+              if (e !== null && typeof e === "object") {
+                const eObj = e as Record<string, unknown>;
+                if (
+                  typeof eObj.message === "string" &&
+                  eObj.message.length > 0
+                ) {
+                  collectedErrors.push(sanitizeErrorText(eObj.message));
+                }
+              } else if (typeof e === "string" && e.length > 0) {
+                collectedErrors.push(sanitizeErrorText(e));
+              }
+            }
+          }
         }
         if (attempts.length === 0) continue;
         // Plan §16: carry the spec declaration line (Playwright emits a
@@ -102,6 +130,7 @@ export function parsePlaywrightJson(json: unknown): TestRecord[] {
           title: spec.title ?? "(unnamed)",
           attempts,
           ...(specLine !== undefined ? { line: specLine } : {}),
+          ...(collectedErrors.length > 0 ? { errors: collectedErrors } : {}),
         });
       }
     }

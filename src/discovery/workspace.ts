@@ -16,14 +16,24 @@ export interface Workspace {
   workspaceGlobs: string[];
 }
 
+const PROJECT_MARKERS = [
+  "package.json",
+  "pyproject.toml",
+  "pom.xml",
+  "build.gradle",
+  "build.gradle.kts",
+] as const;
+
 export function findProjectRoot(startDir: string): string | null {
   let dir = resolve(startDir);
 
-  // Walk upward until we find a package.json or hit the filesystem root.
+  // Walk upward until we find a project marker or hit the filesystem root.
   // The loop is guaranteed to terminate because path.dirname("C:\") === "C:\"
   // (and path.dirname("/") === "/"), so dir stops changing at the root.
   while (true) {
-    if (existsSync(join(dir, "package.json"))) return dir;
+    for (const marker of PROJECT_MARKERS) {
+      if (existsSync(join(dir, marker))) return dir;
+    }
     const parent = pathDirname(dir);
     if (parent === dir) return null; // reached the filesystem root
     dir = parent;
