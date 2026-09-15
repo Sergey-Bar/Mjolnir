@@ -310,4 +310,26 @@ describe("runStdioTransport", () => {
     expect(resp1.id).toBe(1);
     expect(resp2.id).toBe(2);
   });
+
+  it("stops processing on output error event (onOutputError path — lines 38-41)", async () => {
+    const input = new PassThrough();
+    const output = new PassThrough();
+
+    const chunks: string[] = [];
+    output.on("data", (d: Buffer) => chunks.push(d.toString()));
+
+    const transportDone = runStdioTransport(input, output);
+
+    output.emit("error", new Error("write failed"));
+    await new Promise((r) => setTimeout(r, 50));
+
+    input.write(
+      JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize" }) + "\n",
+    );
+    await new Promise((r) => setTimeout(r, 50));
+    input.end();
+    await transportDone;
+
+    expect(chunks.length).toBe(0);
+  });
 });

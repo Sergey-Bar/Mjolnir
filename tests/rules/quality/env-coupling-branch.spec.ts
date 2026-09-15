@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { envCoupling } from "../../../src/rules/quality/qa-env-001-env-coupling.js";
+import { computeCodeText } from "../../../src/engine/code-text.js";
 
 describe("QA-ENV-001 branch coverage gaps", () => {
   it("fires on .toLocaleTimeString() with no arguments (timezone branch)", () => {
@@ -67,15 +68,23 @@ describe("QA-ENV-001 branch coverage gaps", () => {
     expect(envCoupling.run({ path: "a.spec.ts", text })).toEqual([]);
   });
 
-  it("fires on .getHours() in embedded code is skipped (isInsideEmbeddedCode path — line 90)", () => {
-    // To exercise the isInsideEmbeddedCode branch, we need codeText matching text
-    // with a masked position. When codeText is absent, isInsideEmbeddedCode returns false.
+  it("skips env coupling inside embedded code (isInsideEmbeddedCode returns true — line 90)", () => {
+    const text = `test('data', () => {
+  const fixture = 'test("http://localhost:3000")';
+  expect(fixture).toBeDefined();
+});
+`;
+    const codeText = computeCodeText({ path: "a.spec.ts", text }, "typescript");
+    const findings = envCoupling.run({ path: "a.spec.ts", text, codeText });
+    expect(findings).toEqual([]);
+  });
+
+  it("fires on .getHours() when NOT inside embedded code", () => {
     const text = `test('hour', () => {
   const h = new Date().getHours();
   expect(h).toBeGreaterThanOrEqual(0);
 });
 `;
-    // Without codeText, isInsideEmbeddedCode always returns false (line 90 not taken)
     const findings = envCoupling.run({ path: "a.spec.ts", text });
     expect(findings.length).toBeGreaterThanOrEqual(1);
   });

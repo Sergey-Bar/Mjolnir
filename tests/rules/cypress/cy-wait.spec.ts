@@ -140,4 +140,11 @@ describe("QA-CYP-003 — cypress.config gate arms", () => {
     );
     expect(findings).toHaveLength(0);
   });
+
+  it("empty path → gate returns [] (pop() ?? '' fallback)", () => {
+    const findings = cypConfigSecurity.run(
+      ctx("", "const x = { chromeWebSecurity: false };\n"),
+    );
+    expect(findings).toHaveLength(0);
+  });
 });
