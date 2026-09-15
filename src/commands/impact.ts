@@ -29,6 +29,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 
 import type { Finding, ScanResult } from "../types.js";
+import { findingFingerprint } from "../engine/finding-identity.js";
 import { sectionHeader, plainContext } from "../reporter/ui.js";
 
 const ui = plainContext();
@@ -106,9 +107,7 @@ function gitBuffer(root: string, args: string[]): Buffer | null {
 }
 
 /** Fingerprint a finding for cross-commit matching (line numbers shift). */
-function fingerprint(f: Pick<Finding, "ruleId" | "file" | "message">): string {
-  return `${f.ruleId}\u0000${f.file}\u0000${f.message}`;
-}
+const fingerprint = findingFingerprint;
 
 export interface ComputeImpactOptions {
   /** Defaults to HEAD~1, falling back to the merge-base with baseBranch. */

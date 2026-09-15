@@ -7,46 +7,55 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 203 files, 40606 LOC
+## Inventory: 278 files, 52970 LOC
 
 | Area             | Files | LOC   |
 | ---------------- | ----- | ----- |
-| src/rules        | 79    | 10402 |
-| src/commands     | 28    | 8866  |
-| src/engine       | 22    | 6259  |
-| src/reporter     | 14    | 2950  |
-| src/(root)       | 6     | 2555  |
-| src/forensics    | 10    | 2000  |
-| src/discovery    | 9     | 1457  |
-| src/adapters     | 7     | 1193  |
-| src/mcp          | 3     | 777   |
-| src/brand        | 2     | 677   |
+| src/rules        | 87    | 11689 |
+| src/commands     | 28    | 8885  |
+| src/engine       | 36    | 8436  |
+| src/reporter     | 15    | 3152  |
+| src/(root)       | 6     | 2584  |
+| src/forensics    | 16    | 2584  |
+| src/frameworks   | 4     | 1981  |
+| src/adapters     | 11    | 1677  |
+| src/discovery    | 10    | 1643  |
+| src/integrations | 11    | 1541  |
+| src/gaps         | 2     | 1404  |
+| src/mcp          | 4     | 927   |
+| src/brand        | 3     | 784   |
+| src/release      | 5     | 638   |
 | src/plugins      | 4     | 635   |
-| src/mutation     | 4     | 428   |
+| src/bench        | 4     | 597   |
+| src/config       | 3     | 549   |
+| src/scorer       | 3     | 533   |
+| src/mutation     | 5     | 496   |
+| src/traceability | 2     | 441   |
 | src/scope        | 2     | 419   |
-| src/integrations | 1     | 413   |
-| src/scorer       | 2     | 385   |
-| src/config       | 2     | 344   |
-| src/bench        | 2     | 313   |
 | src/playwright   | 2     | 312   |
+| src/trust        | 2     | 228   |
 | src/lib          | 4     | 221   |
+| src/benchmark    | 2     | 174   |
+| src/anti-gaming  | 2     | 169   |
+| src/ecosystem    | 3     | 164   |
+| src/research     | 2     | 107   |
 
 ## Internal fan-in — top 15 (change-blast candidates)
 
 | Module                              | Importers |
 | ----------------------------------- | --------- |
-| src/types                           | 108       |
-| src/rules/rule                      | 77        |
+| src/types                           | 120       |
+| src/rules/rule                      | 79        |
 | src/rules/shared/positions          | 62        |
 | src/reporter/ui                     | 18        |
-| src/engine/adapter                  | 13        |
-| src/forensics/types                 | 13        |
+| src/forensics/types                 | 18        |
+| src/engine/adapter                  | 14        |
+| src/rules/index                     | 11        |
 | src/engine/ts-ast                   | 10        |
-| src/rules/index                     | 10        |
 | src/discovery/ignores               | 9         |
+| src/rules/measured-fp.generated     | 9         |
 | src/discovery/azure-pipeline-parser | 8         |
 | src/engine/code-text                | 8         |
-| src/rules/measured-fp.generated     | 8         |
 | src/reporter/theme                  | 8         |
 | src/reporter/score-state            | 7         |
 | src/lib/safe-json                   | 7         |
@@ -55,16 +64,16 @@ codes) must match this document exactly.
 
 | Dependency         | Files importing it |
 | ------------------ | ------------------ |
-| node:fs            | 47                 |
-| node:path          | 46                 |
-| node:crypto        | 9                  |
+| node:fs            | 54                 |
+| node:path          | 52                 |
+| node:crypto        | 13                 |
 | ts-morph           | 7                  |
 | node:child_process | 5                  |
 | node:url           | 4                  |
 | web-tree-sitter    | 4                  |
+| yaml               | 2                  |
 | node:os            | 2                  |
 | node:process       | 2                  |
-| yaml               | 1                  |
 | node:zlib          | 1                  |
 | node:buffer        | 1                  |
 | node:readline      | 1                  |

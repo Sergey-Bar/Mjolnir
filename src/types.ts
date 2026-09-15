@@ -241,6 +241,25 @@ export interface Finding {
    * Additive within schemaVersion 1.
    */
   fixGroupId?: string;
+  /**
+   * ENGINE-002: disambiguated finding identity (fingerprint + line +
+   * column). Unique per occurrence when the same rule fires multiple
+   * times in one file. Additive within schemaVersion 1.
+   */
+  findingId?: string;
+  /**
+   * ENGINE-002: root-cause identity — initially the same as the
+   * fingerprint (ruleId + file + message). Future rules may coarsen
+   * this to group findings by underlying cause. Additive within
+   * schemaVersion 1.
+   */
+  rootCauseId?: string;
+  /**
+   * ENGINE-002: deduplication group — initially the same as
+   * rootCauseId. Future rules may further coarsen this. Additive
+   * within schemaVersion 1.
+   */
+  deduplicationGroup?: string;
 }
 
 /**
@@ -423,6 +442,13 @@ export interface ScanResult {
     rulesCrashed?: number;
   };
   /**
+   * Scoring model version stamped into the result (ENGINE-001). Allows
+   * consumers to identify which scoring formula produced the score.
+   * Additive within schemaVersion 1; absent when the producer predates
+   * this field.
+   */
+  scoringModelVersion?: string;
+  /**
    * Scope Integrity block (product-gap master plan §7, R4c): the
    * claimed-vs-analyzed accounting. `scopeVerdict` is PROVEN only when
    * every discovered file was analyzed — no matcher exclusions, no
@@ -458,6 +484,9 @@ export interface ScanResult {
     rulesDigest: string;
     configFingerprint: string;
     engineVersion: string;
+    trustModelVersion?: string;
+    scoringModelVersion?: string;
+    frameworkSupportMatrixVersion?: string;
   };
   /**
    * Evidence Graph (R4c): the chain-law links (VERDICT ← EVIDENCE ←

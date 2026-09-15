@@ -215,7 +215,7 @@ describe("QA-4: config `exclude` type confusion exits 10, never 20", () => {
       JSON.stringify({ exclude: [1, {}, null] }),
     );
     expect(() => loadConfig(dir)).toThrow(ConfigValidationError);
-    expect(() => loadConfig(dir)).toThrow(/exclude entries must be strings/);
+    expect(() => loadConfig(dir)).toThrow(/exclude.*must be a string/);
   });
 
   it("rejects a non-array exclude the same way", () => {

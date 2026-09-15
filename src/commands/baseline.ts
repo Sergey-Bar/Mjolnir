@@ -24,6 +24,7 @@ import { writeFileAtomic } from "../lib/fs-atomic.js";
 import { dirname, join } from "node:path";
 
 import type { Finding, ScanResult } from "../types.js";
+import { findingFingerprint } from "../engine/finding-identity.js";
 import {
   resolve,
   renderResolution,
@@ -74,13 +75,9 @@ export interface BaselineFile {
  * occurrence location, not a durable identity; message rewording,
  * file renames and rule-id changes correlate as resolved+new
  * (documented limitation). Exported for the handoff verification
- * contract — do not duplicate this algorithm.
+ * contract — re-exported from engine/finding-identity.js (ENGINE-002).
  */
-export function fingerprint(
-  f: Pick<Finding, "ruleId" | "file" | "message">,
-): string {
-  return `${f.ruleId}\u0000${f.file}\u0000${f.message}`;
-}
+export const fingerprint = findingFingerprint;
 
 export function buildBaseline(
   result: ScanResult,

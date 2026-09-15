@@ -64,6 +64,7 @@ function verdict(
 
 function report(overrides: Partial<ForensicsReport> = {}): ForensicsReport {
   return {
+    forensicsSchemaVersion: 1,
     source: "playwright-json",
     totalTests: 2,
     failed: 0,

@@ -290,6 +290,7 @@ describe("runtime-corroboration guard arms (W8)", () => {
 
 function singleVerdictReport(verdictLine: number) {
   return {
+    forensicsSchemaVersion: 1,
     source: "playwright-json" as const,
     totalTests: 1,
     failed: 0,

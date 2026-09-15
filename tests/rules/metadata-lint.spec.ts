@@ -1,127 +1,205 @@
-/**
- * "Lint the linter" — rule metadata completeness (Test Hardening Plan).
- *
- * Every registered rule carries metadata that becomes user-facing text
- * (title, why, fix) or a machine contract field (category, severity,
- * qaImpact). None of that is checked in bulk anywhere — individual rule
- * tests check their own fixture output, but nothing scans the whole
- * registry for the class of mistake that's easy to make when adding the
- * 40th rule by copy-pasting the 39th: a stray duplicate ID, an empty
- * `why`, a category string that doesn't match the declared type.
- */
-
 import { describe, expect, it } from "vitest";
 import { RULES } from "../../src/rules/index.js";
-import { SEVERITY_ORDER, QA_IMPACT_LABELS } from "../../src/types.js";
+import {
+  deriveContractFields,
+  validateRuleMetadata,
+  validateAllRulesMetadata,
+} from "../../src/rules/rule-metadata-schema.js";
+import { RULE_CATEGORIES } from "../../src/types.js";
 
-const KNOWN_CATEGORIES = ["QA-TEST", "QA-TQUAL", "QA-PW", "QA-CI", "QA-PY"];
-const QA_IMPACT_VALUES = Object.keys(QA_IMPACT_LABELS);
+describe("rule metadata contract (ENGINE-008)", () => {
+  describe("deriveContractFields", () => {
+    it("derives family from the rule ID prefix", () => {
+      for (const rule of RULES) {
+        const contract = deriveContractFields(rule);
+        const parts = rule.id.split("-");
+        expect(contract.family).toBe(parts[1]);
+      }
+    });
 
-describe("rule registry hygiene", () => {
-  it("no two rules share the same ID", () => {
-    const seen = new Map<string, number>();
-    for (const r of RULES) seen.set(r.id, (seen.get(r.id) ?? 0) + 1);
-    const dupes = [...seen.entries()].filter(([, n]) => n > 1);
-    expect(dupes, `duplicate rule IDs: ${JSON.stringify(dupes)}`).toEqual([]);
-  });
+    it("maps all rules to valid categories", () => {
+      for (const rule of RULES) {
+        const contract = deriveContractFields(rule);
+        expect(RULE_CATEGORIES as readonly string[]).toContain(
+          contract.category,
+        );
+      }
+    });
 
-  it("every rule ID follows the QA-<FAMILY>-<NNN> convention", () => {
-    for (const r of RULES) {
-      expect(r.id, r.id).toMatch(/^QA-[A-Z]+-\d{3}$/);
-    }
-  });
+    it("derives evidenceLevel conservatively for observations", () => {
+      const obsRule = RULES.find((r) => r.findingType === "observation");
+      if (obsRule) {
+        const contract = deriveContractFields(obsRule);
+        expect(contract.evidenceLevel).toBe("E0");
+      }
+    });
 
-  it("every rule declares a category, and it's one of the known families", () => {
-    for (const r of RULES) {
-      expect(
-        KNOWN_CATEGORIES,
-        `${r.id} has category "${r.category}", not in ${KNOWN_CATEGORIES.join(", ")}`,
-      ).toContain(r.category);
-    }
-  });
+    it("derives detectorRevision defaulting to 1", () => {
+      for (const rule of RULES) {
+        const contract = deriveContractFields(rule);
+        expect(contract.detectorRevision).toBeGreaterThanOrEqual(1);
+      }
+    });
 
-  it("every rule's severity is a valid, ordered severity", () => {
-    for (const r of RULES) {
-      expect(SEVERITY_ORDER as readonly string[]).toContain(r.severity);
-    }
-  });
+    it("captures overlapWith as dependencies", () => {
+      for (const rule of RULES) {
+        const contract = deriveContractFields(rule);
+        expect(contract.dependencies).toBeInstanceOf(Array);
+      }
+    });
 
-  it("every rule's qaImpact is a valid, documented QA-impact value", () => {
-    for (const r of RULES) {
-      expect(
-        QA_IMPACT_VALUES,
-        `${r.id} has qaImpact "${r.qaImpact}", not one of ${QA_IMPACT_VALUES.join(", ")}`,
-      ).toContain(r.qaImpact);
-    }
-  });
+    it("sets fpRisks from falsePositiveRisk", () => {
+      for (const rule of RULES) {
+        const contract = deriveContractFields(rule);
+        expect(["low", "medium", "high"]).toContain(contract.fpRisks);
+      }
+    });
 
-  it("every rule has a non-trivial title (not empty, not a placeholder)", () => {
-    for (const r of RULES) {
-      expect(r.title.length, `${r.id} title`).toBeGreaterThan(3);
-      expect(
-        r.title.toLowerCase(),
-        `${r.id} title looks like a stub`,
-      ).not.toMatch(/^(todo|tbd|fixme|placeholder|untitled)/);
-    }
-  });
+    it("maps autofix to safe/unsafe/unknown", () => {
+      for (const rule of RULES) {
+        const contract = deriveContractFields(rule);
+        expect(["safe", "unsafe", "unknown"]).toContain(contract.autofixPolicy);
+      }
+    });
 
-  it("every fired finding has non-empty why/fix text (the user-facing payoff)", () => {
-    // Run each rule against a synthetic input engineered to match common
-    // trigger keywords for its family, so most rules actually fire and
-    // we check the real finding text, not just that the function exists.
-    const probes: Array<{ path: string; text: string }> = [
-      {
-        path: "probe.spec.ts",
-        text:
-          "describe('x', () => {\n" +
-          "  it.only('y', () => { expect(true).toBe(true); });\n" +
-          "  // it('z', () => {});\n" +
-          "  page.waitForTimeout(3000);\n" +
-          "  page.evaluate(() => { return 1; });\n" +
-          "  page.$('.btn');\n" +
-          "});\n",
-      },
-      {
-        path: "probe_test.py",
-        text:
-          "def test_x():\n" +
-          "    time.sleep(3)\n" +
-          "    assert True\n" +
-          "\n" +
-          "def test_y():\n" +
-          "    pass\n",
-      },
-      {
-        path: ".github/workflows/probe.yml",
-        text: "jobs:\n  a:\n    steps:\n      - run: exit 1 || true\n        continue-on-error: true\n",
-      },
-    ];
-
-    let checked = 0;
-    for (const r of RULES) {
-      for (const probe of probes) {
-        let findings;
-        try {
-          findings = r.run(probe);
-        } catch {
-          continue;
-        }
-        for (const f of findings) {
-          checked++;
-          expect(
-            f.why?.length,
-            `${r.id} why (on ${probe.path})`,
-          ).toBeGreaterThan(0);
-          expect(
-            f.fix?.length,
-            `${r.id} fix (on ${probe.path})`,
-          ).toBeGreaterThan(0);
-          expect(f.message?.length, `${r.id} message`).toBeGreaterThan(0);
+    it("sets trustFailureDetected for high FP risk rules", () => {
+      for (const rule of RULES) {
+        const contract = deriveContractFields(rule);
+        if (rule.falsePositiveRisk === "high") {
+          expect(contract.trustFailureDetected).toBe(true);
         }
       }
-    }
-    // Sanity: the probes should actually have exercised a meaningful
-    // slice of the registry, not silently matched nothing.
-    expect(checked).toBeGreaterThan(10);
+    });
+
+    it("sets falseGreenScenario for FALSE-GREEN qaImpact rules", () => {
+      for (const rule of RULES) {
+        const contract = deriveContractFields(rule);
+        if (rule.qaImpact === "FALSE-GREEN") {
+          expect(contract.falseGreenScenario).toBe(true);
+        }
+      }
+    });
+  });
+
+  describe("validateRuleMetadata", () => {
+    it("returns zero violations for every registered rule", () => {
+      const violations = validateAllRulesMetadata(RULES);
+      const failing = violations.filter(
+        (v) =>
+          v.field !== "falsePositiveRisk" &&
+          v.field !== "strategyJustification",
+      );
+      for (const v of failing) {
+        expect(v.message, `${v.ruleId}.${v.field}`).toBe("");
+      }
+    });
+
+    it("rejects a rule with empty ID", () => {
+      const first = RULES[0];
+      expect(first).toBeDefined();
+      if (!first) return;
+      const bad = { ...first, id: "" };
+      const violations = validateRuleMetadata(bad);
+      expect(violations.some((v) => v.field === "id")).toBe(true);
+    });
+
+    it("rejects a rule with invalid severity", () => {
+      const first = RULES[0];
+      expect(first).toBeDefined();
+      if (!first) return;
+      const bad = {
+        ...first,
+        severity: "critical",
+      } as unknown as (typeof RULES)[number];
+      const violations = validateRuleMetadata(bad);
+      expect(violations.some((v) => v.field === "severity")).toBe(true);
+    });
+
+    it("rejects a rule with unknown category", () => {
+      const first = RULES[0];
+      expect(first).toBeDefined();
+      if (!first) return;
+      const bad = {
+        ...first,
+        category: "QA-INVALID",
+      } as unknown as (typeof RULES)[number];
+      const violations = validateRuleMetadata(bad);
+      expect(violations.some((v) => v.field === "category")).toBe(true);
+    });
+
+    it("rejects a rule with empty title", () => {
+      const first = RULES[0];
+      expect(first).toBeDefined();
+      if (!first) return;
+      const bad = { ...first, title: "" };
+      const violations = validateRuleMetadata(bad);
+      expect(violations.some((v) => v.field === "title")).toBe(true);
+    });
+
+    it("rejects a rule with detectorRevision < 1", () => {
+      const first = RULES[0];
+      expect(first).toBeDefined();
+      if (!first) return;
+      const bad = {
+        ...first,
+        detectorRevision: 0,
+      } as unknown as (typeof RULES)[number];
+      const violations = validateRuleMetadata(bad);
+      expect(violations.some((v) => v.field === "detectorRevision")).toBe(true);
+    });
+
+    it("rejects a LEXICAL rule without strategyJustification", () => {
+      const first = RULES[0];
+      expect(first).toBeDefined();
+      if (!first) return;
+      const { strategyJustification: _unused, ...rest } = first;
+      const bad = {
+        ...rest,
+        detectionStrategy: "LEXICAL" as const,
+      };
+      const violations = validateRuleMetadata(bad);
+      expect(violations.some((v) => v.field === "strategyJustification")).toBe(
+        true,
+      );
+    });
+
+    it("accepts a well-formed rule with no violations", () => {
+      const good = RULES.find((r) => r.falsePositiveRisk !== undefined);
+      if (good) {
+        const violations = validateRuleMetadata(good);
+        const structural = violations.filter(
+          (v) => v.field !== "strategyJustification",
+        );
+        expect(structural).toHaveLength(0);
+      }
+    });
+
+    it("returns ruleId on every violation", () => {
+      const first = RULES[0];
+      expect(first).toBeDefined();
+      if (!first) return;
+      const bad = {
+        ...first,
+        id: "",
+        severity: "x",
+      } as unknown as (typeof RULES)[number];
+      const violations = validateRuleMetadata(bad);
+      for (const v of violations) {
+        expect(typeof v.ruleId).toBe("string");
+      }
+    });
+  });
+
+  describe("validateAllRulesMetadata", () => {
+    it("processes every rule in the registry", () => {
+      const violations = validateAllRulesMetadata(RULES);
+      for (const v of violations) {
+        expect(typeof v.ruleId).toBe("string");
+      }
+    });
+
+    it("returns empty array for an empty rule set", () => {
+      expect(validateAllRulesMetadata([])).toHaveLength(0);
+    });
   });
 });

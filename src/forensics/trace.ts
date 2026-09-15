@@ -30,6 +30,7 @@
 
 import { inflateRawSync } from "node:zlib";
 import type { Attempt, TestRecord } from "./types.js";
+import { sanitizeErrorText } from "./evidence-hygiene.js";
 
 export const LIMITS = {
   maxTraceLines: 50_000,
@@ -160,7 +161,7 @@ export function parseTraceNdjson(text: string): ParsedTraceStream {
       const msg = (ev.error as { message?: unknown }).message;
       action.error =
         typeof msg === "string"
-          ? { message: msg }
+          ? { message: sanitizeErrorText(msg) }
           : { message: "action failed" };
     }
     actions.set(ev.callId, action);
@@ -188,7 +189,7 @@ export function traceActionsToRecord(
     totalMs += a.durationMs;
     if (a.error !== undefined) {
       failed = true;
-      const msg = a.error.message ?? "action failed";
+      const msg = sanitizeErrorText(a.error.message ?? "action failed");
       errors.push(msg);
       // Playwright's timeout errors read "Test timeout of Xms exceeded."
       // (and some surfaces write "timed out") — both mark timedOut.

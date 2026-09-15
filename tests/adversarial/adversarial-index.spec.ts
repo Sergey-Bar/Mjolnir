@@ -112,6 +112,7 @@ describe("adversarial: matching and triage stay deterministic under malformed ve
     line: -3,
   };
   const rep: ForensicsReport = {
+    forensicsSchemaVersion: 1,
     source: "playwright-json",
     totalTests: -5,
     failed: -1,

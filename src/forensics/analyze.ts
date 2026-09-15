@@ -13,6 +13,7 @@ import type {
   TestRecord,
   TestVerdict,
 } from "./types.js";
+import { FORENSICS_SCHEMA_VERSION } from "./types.js";
 import { FLAKE_GLYPH, sectionHeader, plainContext } from "../reporter/ui.js";
 import { classifyForensicVerdict } from "./classify.js";
 
@@ -83,6 +84,7 @@ export function analyze(
   }
 
   return {
+    forensicsSchemaVersion: FORENSICS_SCHEMA_VERSION,
     source,
     totalTests: verdicts.length,
     failed,

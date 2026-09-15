@@ -97,6 +97,7 @@ describe("runtime-corroboration round 3", () => {
       line: 10,
     });
     const report = {
+      forensicsSchemaVersion: 1,
       source: "playwright-json" as const,
       totalTests: 1,
       failed: 0,
@@ -123,6 +124,7 @@ describe("runtime-corroboration round 3", () => {
   it("sort comparator equality arm: two tests declared on the SAME line", () => {
     const f = mk({ file: "e2e/a.spec.ts", line: 50 });
     const report = {
+      forensicsSchemaVersion: 1,
       source: "playwright-json" as const,
       totalTests: 2,
       failed: 0,

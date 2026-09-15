@@ -46,6 +46,7 @@ function verdict(o: VerdictOverrides = {}): TestVerdict {
 
 function report(verdicts: TestVerdict[]): ForensicsReport {
   return {
+    forensicsSchemaVersion: 1,
     source: "playwright-json",
     totalTests: verdicts.length,
     failed: 0,

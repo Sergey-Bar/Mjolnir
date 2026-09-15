@@ -8,6 +8,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { SEVERITY_ORDER, type Severity } from "../types.js";
 import { parseJsonFile, isRecord } from "../lib/safe-json.js";
+import { validateConfigSchema } from "./config-schema.js";
 
 export interface IgnoreEntry {
   ruleId: string;
@@ -111,6 +112,12 @@ function validate(
   knownRuleIds?: ReadonlySet<string>,
 ): string[] {
   const warnings: string[] = [];
+
+  const schemaResult = validateConfigSchema(cfg);
+  if (!schemaResult.valid) {
+    throw new Error(schemaResult.errors.join("; "));
+  }
+
   if (cfg.gate && !["advisory", "error", "warning"].includes(cfg.gate)) {
     throw new Error(`gate must be advisory|error|warning, got "${cfg.gate}"`);
   }
@@ -166,6 +173,15 @@ function validate(
     ) {
       throw new Error(
         `ignore for ${ign.ruleId}: "expires" must be an ISO date, got "${ign.expires}"`,
+      );
+    }
+    if (
+      ign.expires !== undefined &&
+      !Number.isNaN(new Date(ign.expires).getTime()) &&
+      new Date(ign.expires).getTime() < Date.now()
+    ) {
+      warnings.push(
+        `warning: ignore for ${ign.ruleId} has expired (expires "${ign.expires}") — the entry is kept but currently inactive.`,
       );
     }
   }

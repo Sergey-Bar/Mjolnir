@@ -27,6 +27,12 @@ import {
 import { buildTrustSummary } from "./trust-summary.js";
 import { buildEvidenceGraph, buildRunIdentity } from "./run-identity.js";
 import { ENGINE_VERSION } from "./version.js";
+import {
+  TRUST_MODEL_VERSION,
+  SCORING_MODEL_VERSION,
+  FRAMEWORK_SUPPORT_MATRIX_VERSION,
+  EVIDENCE_SCHEMA_VERSION,
+} from "./contract-versions.js";
 import { discoverEvidenceCandidates } from "../discovery/evidence-discovery.js";
 import { discoverWorkspace, type Workspace } from "../discovery/workspace.js";
 import { computeStagedFiles } from "../scope/changed.js";
@@ -905,6 +911,10 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
     config: o.config ?? null,
     engineVersion: ENGINE_VERSION,
     reportDigest,
+    trustModelVersion: TRUST_MODEL_VERSION,
+    scoringModelVersion: SCORING_MODEL_VERSION,
+    frameworkSupportMatrixVersion: FRAMEWORK_SUPPORT_MATRIX_VERSION,
+    evidenceSchemaVersions: [EVIDENCE_SCHEMA_VERSION],
   });
   const evidenceGraph = buildEvidenceGraph({ runId: runIdentity });
   const hasTests = o.testFileCount > 0 && o.testDeclarationCount > 0;
@@ -968,6 +978,7 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
         ? { truncationReasons: [...o.truncationReasons].sort() }
         : {}),
     },
+    scoringModelVersion: SCORING_MODEL_VERSION,
   };
   result.trustSummary = buildTrustSummary(result, o.declarationsByFile);
   o.cache.persist();

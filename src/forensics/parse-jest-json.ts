@@ -19,12 +19,15 @@
  */
 
 import type { Attempt, RunStatus, TestRecord } from "./types.js";
+import { sanitizeErrorText } from "./evidence-hygiene.js";
 
 interface JestAssertion {
   title?: string;
   status?: string;
   duration?: number;
   location?: { line?: number; column?: number };
+  failureMessages?: unknown[];
+  failureDetails?: unknown[];
 }
 
 interface JestTestResult {
@@ -104,6 +107,29 @@ export function parseJestJson(json: unknown): TestRecord[] {
           ? assertion.location.line
           : undefined;
       const title = assertion.title ?? "(unnamed)";
+      const errors: string[] = [];
+      for (const msgs of [
+        assertion.failureMessages,
+        assertion.failureDetails,
+      ]) {
+        if (!Array.isArray(msgs)) continue;
+        for (const m of msgs) {
+          if (typeof m === "string" && m.length > 0) {
+            errors.push(sanitizeErrorText(m));
+          } else if (
+            m !== null &&
+            typeof m === "object" &&
+            "message" in (m as Record<string, unknown>) &&
+            typeof (m as Record<string, unknown>).message === "string"
+          ) {
+            errors.push(
+              sanitizeErrorText(
+                (m as Record<string, unknown>).message as string,
+              ),
+            );
+          }
+        }
+      }
       // ancestorTitles are Jest's describe nesting — the record's title
       // stays the test's own name (the leaderboard renders file + title).
       out.push({
@@ -111,6 +137,7 @@ export function parseJestJson(json: unknown): TestRecord[] {
         title,
         attempts: [attempt],
         ...(line !== undefined ? { line } : {}),
+        ...(errors.length > 0 ? { errors } : {}),
       });
     }
   }

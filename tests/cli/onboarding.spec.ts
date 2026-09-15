@@ -85,6 +85,7 @@ describe("handover", () => {
 
   it("uses real run data for the flaky section when provided", () => {
     const forensics: ForensicsReport = {
+      forensicsSchemaVersion: 1,
       source: "junit-xml",
       totalTests: 2,
       failed: 0,
@@ -159,6 +160,7 @@ describe("init", () => {
 describe("pw-report", () => {
   it("summarizes a run with retries and flakes", () => {
     const report: ForensicsReport = {
+      forensicsSchemaVersion: 1,
       source: "playwright-json",
       totalTests: 3,
       failed: 1,
@@ -191,6 +193,7 @@ describe("pw-report", () => {
 
   it("clean run omits retry line entirely", () => {
     const s = summarizePwRun({
+      forensicsSchemaVersion: 1,
       source: "junit-xml",
       totalTests: 1,
       failed: 0,

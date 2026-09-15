@@ -12,6 +12,7 @@
  */
 
 import type { Attempt, TestRecord } from "./types.js";
+import { sanitizeErrorText } from "./evidence-hygiene.js";
 
 const MAX_INPUT = 20 * 1024 * 1024; // 20 MB safety bound
 
@@ -85,6 +86,32 @@ export function parseJunitXml(xml: string): TestRecord[] {
     const failed = /<(?:failure|error)\b/i.test(inner);
     const skipped = /<skipped\b/i.test(inner);
 
+    const errors: string[] = [];
+    if (failed) {
+      const failRe =
+        /<(?:failure|error)\b([^>]*)>([\s\S]*?)<\/(?:failure|error)\s*>/gi;
+      let failMatch: RegExpExecArray | null;
+      while ((failMatch = failRe.exec(inner)) !== null) {
+        const attrsStr = failMatch[1] ?? "";
+        const msgAttrMatch = /\smessage\s*=\s*"([^"]*)"/i.exec(attrsStr);
+        const msgAttr = msgAttrMatch?.[1];
+        if (msgAttr) errors.push(sanitizeErrorText(decodeEntities(msgAttr)));
+        const body = failMatch[2]?.trim();
+        if (body && body !== msgAttr) {
+          errors.push(sanitizeErrorText(decodeEntities(body)));
+        }
+      }
+      const selfCloseRe = /<(?:failure|error)\b([^>]*)\/>/gi;
+      let scMatch: RegExpExecArray | null;
+      while ((scMatch = selfCloseRe.exec(inner)) !== null) {
+        const scAttrs = scMatch[1] ?? "";
+        const scMsgMatch = /\smessage\s*=\s*"([^"]*)"/i.exec(scAttrs);
+        if (scMsgMatch?.[1]) {
+          errors.push(sanitizeErrorText(decodeEntities(scMsgMatch[1])));
+        }
+      }
+    }
+
     const status = skipped ? "skipped" : failed ? "failed" : "passed";
     const attempt: Attempt = {
       index: 1,
@@ -95,6 +122,7 @@ export function parseJunitXml(xml: string): TestRecord[] {
       file: classname || "unknown",
       title: name,
       attempts: [attempt],
+      ...(errors.length > 0 ? { errors } : {}),
     });
   }
   return out;
