@@ -32,11 +32,11 @@ const GLYPH_SOURCES = [
 function svgTextContent(svg: string): string {
   return (svg.match(/<text[^>]*>([\s\S]*?)<\/text>/g) ?? [])
     .map((el) => {
-      const textContent = el.replace(/<[^>]+>/g, "");
-      return textContent
+      const textContent = el
+        .replaceAll("&amp;", "&")
         .replaceAll("&lt;", "<")
-        .replaceAll("&gt;", ">")
-        .replaceAll("&amp;", "&");
+        .replaceAll("&gt;", ">");
+      return textContent.replace(/<[^>]+>/g, "");
     })
     .join("");
 }

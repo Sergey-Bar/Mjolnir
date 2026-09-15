@@ -48,7 +48,7 @@ function escapeMarkdownChars(text: string): string {
  * Strip HTML tags and entities to prevent injection.
  */
 function stripHtml(text: string): string {
-  return text.replace(HTML_INJECTION_RE, "").replace(HTML_ENTITY_RE, "");
+  return text.replace(HTML_ENTITY_RE, "").replace(HTML_INJECTION_RE, "");
 }
 
 /**
