@@ -96,7 +96,7 @@ describe("detectWorkflowBypasses", () => {
       jobs: {
         deploy: {
           needs: "test",
-          steps: [{ run: "npm run deploy" }],
+          steps: [{ run: "npm run build" }],
         },
         test: {
           steps: [{ run: "npm test" }],
