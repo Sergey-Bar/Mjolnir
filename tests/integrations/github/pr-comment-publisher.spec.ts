@@ -138,7 +138,7 @@ describe("publishOrUpdateComment", () => {
       createComment: () => Promise.reject(new Error("should not be called")),
       updateComment: (id, body) => {
         updated.push({ id, body });
-        return Promise.resolve({ id, body });
+        return Promise.resolve();
       },
     };
     const existing = [comment(99, `${PR_COMMENT_MARKER}\nold content`)];

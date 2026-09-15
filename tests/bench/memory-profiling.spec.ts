@@ -29,6 +29,15 @@ describe("memory-profiling (ECO-010)", () => {
       expect(profile.heapUsed).toBeGreaterThan(0);
       expect(profile.peakRss).toBeGreaterThan(0);
     });
+
+    it("captures peak memory via interval sampling", async () => {
+      const profile = await profileMemory(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 150));
+        const _arr = new Array(100_000).fill("y");
+      });
+      expect(profile.peakRss).toBeGreaterThan(0);
+      expect(profile.heapUsed).toBeGreaterThan(0);
+    });
   });
 
   describe("checkMemoryRegression", () => {
@@ -111,6 +120,109 @@ describe("memory-profiling (ECO-010)", () => {
       expect(checkMemoryRegression(current, baseline, 0.25).ok).toBe(true);
       // Fails at 1% threshold
       expect(checkMemoryRegression(current, baseline, 0.01).ok).toBe(false);
+    });
+
+    it("detects regression with exceeded threshold on single metric", () => {
+      const baseline = {
+        peakRss: 100_000_000,
+        heapUsed: 50_000_000,
+        heapTotal: 80_000_000,
+        external: 1_000_000,
+        arrayBuffers: 500_000,
+      };
+      const current = {
+        peakRss: 200_000_000,
+        heapUsed: 50_000_000,
+        heapTotal: 80_000_000,
+        external: 1_000_000,
+        arrayBuffers: 500_000,
+      };
+      const result = checkMemoryRegression(current, baseline, 0.25);
+      expect(result.ok).toBe(false);
+      expect(result.warnings).toHaveLength(1);
+      expect(result.warnings[0]).toContain("peakRss");
+      expect(result.warnings[0]).toContain("+100%");
+    });
+
+    it("uses default threshold of 25%", () => {
+      const baseline = {
+        peakRss: 100_000_000,
+        heapUsed: 50_000_000,
+        heapTotal: 80_000_000,
+        external: 1_000_000,
+        arrayBuffers: 500_000,
+      };
+      const current = {
+        peakRss: 200_000_000,
+        heapUsed: 200_000_000,
+        heapTotal: 200_000_000,
+        external: 2_000_000,
+        arrayBuffers: 1_000_000,
+      };
+      const result = checkMemoryRegression(current, baseline);
+      expect(result.ok).toBe(false);
+      expect(result.warnings.length).toBeGreaterThan(0);
+    });
+
+    it("formats bytes in KB range", () => {
+      const baseline = {
+        peakRss: 5_000,
+        heapUsed: 5_000,
+        heapTotal: 5_000,
+        external: 5_000,
+        arrayBuffers: 5_000,
+      };
+      const current = {
+        peakRss: 10_000,
+        heapUsed: 10_000,
+        heapTotal: 10_000,
+        external: 10_000,
+        arrayBuffers: 10_000,
+      };
+      const result = checkMemoryRegression(current, baseline, 0.25);
+      expect(result.ok).toBe(false);
+      expect(result.warnings[0]).toContain("KB");
+    });
+
+    it("formats bytes in MB range", () => {
+      const baseline = {
+        peakRss: 5_000_000,
+        heapUsed: 5_000_000,
+        heapTotal: 5_000_000,
+        external: 5_000_000,
+        arrayBuffers: 5_000_000,
+      };
+      const current = {
+        peakRss: 10_000_000,
+        heapUsed: 10_000_000,
+        heapTotal: 10_000_000,
+        external: 10_000_000,
+        arrayBuffers: 10_000_000,
+      };
+      const result = checkMemoryRegression(current, baseline, 0.25);
+      expect(result.ok).toBe(false);
+      expect(result.warnings[0]).toContain("MB");
+    });
+
+    it("formats bytes in B range", () => {
+      const baseline = {
+        peakRss: 500,
+        heapUsed: 500,
+        heapTotal: 500,
+        external: 500,
+        arrayBuffers: 500,
+      };
+      const current = {
+        peakRss: 1_000,
+        heapUsed: 1_000,
+        heapTotal: 1_000,
+        external: 1_000,
+        arrayBuffers: 1_000,
+      };
+      const result = checkMemoryRegression(current, baseline, 0.25);
+      expect(result.ok).toBe(false);
+      expect(result.warnings[0]).toContain("B");
+      expect(result.warnings[0]).not.toContain("KB");
     });
   });
 });

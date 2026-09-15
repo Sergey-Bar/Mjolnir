@@ -29,10 +29,16 @@ export interface GapEntry {
   readonly blockingScorecardDimensions: readonly string[];
 }
 
-const pwGaps: GapEntry[] = [
+function makeFrameworkGaps(
+  frameworkId: string,
+  gaps: Omit<GapEntry, "frameworkId">[],
+): GapEntry[] {
+  return gaps.map((g) => ({ ...g, frameworkId }));
+}
+
+const pwGaps = makeFrameworkGaps("playwright", [
   {
     gapId: "GAP-PW-001",
-    frameworkId: "playwright",
     gapType: "AST_ANALYSIS",
     priority: "P1",
     title: "Playwright AST-based usage analysis",
@@ -42,7 +48,6 @@ const pwGaps: GapEntry[] = [
   },
   {
     gapId: "GAP-PW-002",
-    frameworkId: "playwright",
     gapType: "FIXTURE_MODELING",
     priority: "P1",
     title: "Playwright fixture and lifecycle modeling",
@@ -52,7 +57,6 @@ const pwGaps: GapEntry[] = [
   },
   {
     gapId: "GAP-PW-003",
-    frameworkId: "playwright",
     gapType: "MOCKING_SEMANTICS",
     priority: "P2",
     title: "Playwright mocking semantics",
@@ -62,7 +66,6 @@ const pwGaps: GapEntry[] = [
   },
   {
     gapId: "GAP-PW-004",
-    frameworkId: "playwright",
     gapType: "PARALLELISM_SAFETY",
     priority: "P2",
     title: "Playwright shared state analysis",
@@ -72,7 +75,6 @@ const pwGaps: GapEntry[] = [
   },
   {
     gapId: "GAP-PW-005",
-    frameworkId: "playwright",
     gapType: "AST_ANALYSIS",
     priority: "P2",
     title: "Playwright parameterization analysis",
@@ -82,7 +84,6 @@ const pwGaps: GapEntry[] = [
   },
   {
     gapId: "GAP-PW-006",
-    frameworkId: "playwright",
     gapType: "PARALLELISM_SAFETY",
     priority: "P1",
     title: "Playwright worker safety analysis",
@@ -90,17 +91,9 @@ const pwGaps: GapEntry[] = [
       "Analyze Playwright's worker parallelism model for port conflicts, shared file locks, and resource contention.",
     blockingScorecardDimensions: ["parallelismWorkerSafety"],
   },
-];
+]);
 
-function makeFrameworkGaps(
-  frameworkId: string,
-  prefix: string,
-  gaps: Omit<GapEntry, "frameworkId">[],
-): GapEntry[] {
-  return gaps.map((g) => ({ ...g, frameworkId }));
-}
-
-const jestGaps = makeFrameworkGaps("jest", "JEST", [
+const jestGaps = makeFrameworkGaps("jest", [
   {
     gapId: "GAP-JEST-002",
     gapType: "SEMANTIC_UNDERSTANDING",
@@ -229,7 +222,7 @@ const jestGaps = makeFrameworkGaps("jest", "JEST", [
   },
 ]);
 
-const vitestGaps = makeFrameworkGaps("vitest", "VIT", [
+const vitestGaps = makeFrameworkGaps("vitest", [
   {
     gapId: "GAP-VIT-002",
     gapType: "SEMANTIC_UNDERSTANDING",
@@ -354,7 +347,7 @@ const vitestGaps = makeFrameworkGaps("vitest", "VIT", [
   },
 ]);
 
-const pytestGaps = makeFrameworkGaps("pytest", "PY", [
+const pytestGaps = makeFrameworkGaps("pytest", [
   {
     gapId: "GAP-PY-001",
     gapType: "AST_ANALYSIS",
@@ -480,7 +473,7 @@ const pytestGaps = makeFrameworkGaps("pytest", "PY", [
   },
 ]);
 
-const junitGaps = makeFrameworkGaps("junit", "JU", [
+const junitGaps = makeFrameworkGaps("junit", [
   {
     gapId: "GAP-JU-001",
     gapType: "AST_ANALYSIS",
@@ -605,7 +598,7 @@ const junitGaps = makeFrameworkGaps("junit", "JU", [
   },
 ]);
 
-const nunitGaps = makeFrameworkGaps("nunit", "NU", [
+const nunitGaps = makeFrameworkGaps("nunit", [
   {
     gapId: "GAP-NU-001",
     gapType: "AST_ANALYSIS",
@@ -729,7 +722,7 @@ const nunitGaps = makeFrameworkGaps("nunit", "NU", [
   },
 ]);
 
-const xunitGaps = makeFrameworkGaps("xunit", "XU", [
+const xunitGaps = makeFrameworkGaps("xunit", [
   {
     gapId: "GAP-XU-001",
     gapType: "AST_ANALYSIS",
@@ -853,7 +846,7 @@ const xunitGaps = makeFrameworkGaps("xunit", "XU", [
   },
 ]);
 
-const cypressGaps = makeFrameworkGaps("cypress", "CY", [
+const cypressGaps = makeFrameworkGaps("cypress", [
   {
     gapId: "GAP-CY-001",
     gapType: "AST_ANALYSIS",
@@ -971,7 +964,7 @@ const cypressGaps = makeFrameworkGaps("cypress", "CY", [
   },
 ]);
 
-const seleniumGaps = makeFrameworkGaps("selenium", "SE", [
+const seleniumGaps = makeFrameworkGaps("selenium", [
   {
     gapId: "GAP-SE-001",
     gapType: "TEST_DISCOVERY",
@@ -1088,7 +1081,7 @@ const seleniumGaps = makeFrameworkGaps("selenium", "SE", [
   },
 ]);
 
-const testngGaps = makeFrameworkGaps("testng", "TN", [
+const testngGaps = makeFrameworkGaps("testng", [
   {
     gapId: "GAP-TN-001",
     gapType: "TEST_DISCOVERY",
@@ -1213,7 +1206,7 @@ const testngGaps = makeFrameworkGaps("testng", "TN", [
   },
 ]);
 
-const gitlabCiGaps = makeFrameworkGaps("gitlab-ci", "GL", [
+const gitlabCiGaps = makeFrameworkGaps("gitlab-ci", [
   {
     gapId: "GAP-GL-001",
     gapType: "TEST_DISCOVERY",
@@ -1303,10 +1296,6 @@ const gitlabCiGaps = makeFrameworkGaps("gitlab-ci", "GL", [
   },
 ]);
 
-const githubActionsGaps: GapEntry[] = [];
-const azureDevopsGaps: GapEntry[] = [];
-const jenkinsGaps: GapEntry[] = [];
-
 export const GAP_REGISTRY: readonly GapEntry[] = [
   ...pwGaps,
   ...jestGaps,
@@ -1318,9 +1307,6 @@ export const GAP_REGISTRY: readonly GapEntry[] = [
   ...cypressGaps,
   ...seleniumGaps,
   ...testngGaps,
-  ...githubActionsGaps,
-  ...azureDevopsGaps,
-  ...jenkinsGaps,
   ...gitlabCiGaps,
 ] as const;
 

@@ -163,4 +163,117 @@ describe("validateRtm", () => {
     expect(result.valid).toBe(true);
     expect(result.errors).toEqual([]);
   });
+
+  it("catches missing backlogId on a requirement", async () => {
+    const mod = await import("../../src/traceability/rtm.js");
+    const { REQUIREMENT_MATRIX: matrix } = mod;
+    const original = (matrix[0] as { backlogId: string }).backlogId;
+    (matrix[0] as { backlogId: string }).backlogId = "";
+    try {
+      const result = validateRtm();
+      expect(result.valid).toBe(false);
+      expect(
+        result.errors.some((e) =>
+          e.includes("empty id, description, or backlogId"),
+        ),
+      ).toBe(true);
+    } finally {
+      (matrix[0] as { backlogId: string }).backlogId = original;
+    }
+  });
+
+  it("catches missing description on a requirement", async () => {
+    const mod = await import("../../src/traceability/rtm.js");
+    const { REQUIREMENT_MATRIX: matrix } = mod;
+    const original = (matrix[1] as { description: string }).description;
+    (matrix[1] as { description: string }).description = "";
+    try {
+      const result = validateRtm();
+      expect(result.valid).toBe(false);
+      expect(
+        result.errors.some((e) =>
+          e.includes("empty id, description, or backlogId"),
+        ),
+      ).toBe(true);
+    } finally {
+      (matrix[1] as { description: string }).description = original;
+    }
+  });
+
+  it("catches invalid id format", async () => {
+    const mod = await import("../../src/traceability/rtm.js");
+    const { REQUIREMENT_MATRIX: matrix } = mod;
+    const original = (matrix[2] as { id: string }).id;
+    (matrix[2] as { id: string }).id = "INVALID";
+    try {
+      const result = validateRtm();
+      expect(result.valid).toBe(false);
+      expect(
+        result.errors.some((e) => e.includes("id does not match R-NNN format")),
+      ).toBe(true);
+    } finally {
+      (matrix[2] as { id: string }).id = original;
+    }
+  });
+
+  it("catches duplicate requirement id", async () => {
+    const mod = await import("../../src/traceability/rtm.js");
+    const { REQUIREMENT_MATRIX: matrix } = mod;
+    const originalId = (matrix[matrix.length - 1] as { id: string }).id;
+    (matrix[matrix.length - 1] as { id: string }).id = "R-001";
+    try {
+      const result = validateRtm();
+      expect(result.valid).toBe(false);
+      expect(
+        result.errors.some((e) => e.includes("Duplicate requirement id")),
+      ).toBe(true);
+    } finally {
+      (matrix[matrix.length - 1] as { id: string }).id = originalId;
+    }
+  });
+
+  it("catches duplicate backlog id", async () => {
+    const mod = await import("../../src/traceability/rtm.js");
+    const { REQUIREMENT_MATRIX: matrix } = mod;
+    const originalBacklogId = (
+      matrix[matrix.length - 1] as { backlogId: string }
+    ).backlogId;
+    (matrix[matrix.length - 1] as { backlogId: string }).backlogId =
+      "ENGINE-011";
+    try {
+      const result = validateRtm();
+      expect(result.valid).toBe(false);
+      expect(
+        result.errors.some((e) => e.includes("Duplicate backlog id")),
+      ).toBe(true);
+    } finally {
+      (matrix[matrix.length - 1] as { backlogId: string }).backlogId =
+        originalBacklogId;
+    }
+  });
+
+  it("catches invalid dependency reference", async () => {
+    const mod = await import("../../src/traceability/rtm.js");
+    const { REQUIREMENT_MATRIX: matrix } = mod;
+    matrix.push({
+      id: "R-099",
+      description: "Test entry",
+      backlogId: "TEST-099",
+      priority: "P2",
+      quarter: "Q4",
+      classification: "HYGIENE",
+      dependencies: ["NONEXISTENT-DEP"],
+    });
+    try {
+      const result = validateRtm();
+      expect(result.valid).toBe(false);
+      expect(
+        result.errors.some((e) =>
+          e.includes("dependency NONEXISTENT-DEP not found"),
+        ),
+      ).toBe(true);
+    } finally {
+      matrix.pop();
+    }
+  });
 });

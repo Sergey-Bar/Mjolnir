@@ -8,6 +8,7 @@
 
 import type { Finding, ScanResult } from "../types.js";
 import { RULES } from "../rules/index.js";
+import { ENGINE_VERSION } from "../engine/version.js";
 
 /** Map our rule categories to SARIF taxonomies/properties. */
 function sarifLevel(
@@ -60,9 +61,8 @@ export function renderSarif(result: ScanResult, repoRootUri?: string): string {
       driver: {
         name: "Mjölnir",
         informationUri: "https://github.com/Sergey-Bar/Mjolnir",
-        // Tool version — MUST match package.json (enforced by
-        // tests/version-consistency.spec.ts). Bump on release.
-        version: "1.1.0",
+        // Tool version — sourced from ENGINE_VERSION to prevent drift.
+        version: ENGINE_VERSION,
         rules: [...rules.values()].map((r) => {
           // Trust Metadata passthrough when the rule declares it.
           const meta = RULES.find((x) => x.id === r.id);

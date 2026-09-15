@@ -1,4 +1,7 @@
 import { describe, expect, it } from "vitest";
+import * as fs from "node:fs";
+import * as os from "node:os";
+import * as path from "node:path";
 import {
   DependencyGraph,
   buildDependencyGraph,
@@ -38,14 +41,28 @@ describe("dependency-graph (ECO-005)", () => {
         expect(transitive).not.toContain("a");
       });
 
-      it("follows transitive chain", () => {
+      it("follows transitive chain A→B→C", () => {
         const graph = new DependencyGraph();
         graph.addNode({ path: "a", dependencies: ["b"] });
         graph.addNode({ path: "b", dependencies: ["c"] });
         graph.addNode({ path: "c", dependencies: [] });
         const transitive = graph.getTransitiveDependencies("a");
-        expect(transitive).toContain("b");
-        expect(transitive).toContain("c");
+        expect(transitive).toEqual(["b", "c"]);
+      });
+
+      it("handles diamond transitive dependencies", () => {
+        const graph = new DependencyGraph();
+        graph.addNode({ path: "a", dependencies: ["b", "c"] });
+        graph.addNode({ path: "b", dependencies: ["d"] });
+        graph.addNode({ path: "c", dependencies: ["d"] });
+        graph.addNode({ path: "d", dependencies: [] });
+        const transitive = graph.getTransitiveDependencies("a");
+        expect(transitive).toEqual(["b", "c", "d"]);
+      });
+
+      it("returns empty for unknown node", () => {
+        const graph = new DependencyGraph();
+        expect(graph.getTransitiveDependencies("nonexistent")).toEqual([]);
       });
 
       it("handles cycles without infinite loop", () => {
@@ -97,6 +114,92 @@ describe("dependency-graph (ECO-005)", () => {
     it("returns empty graph for nonexistent root", () => {
       const graph = buildDependencyGraph("/nonexistent/path/xyz");
       expect(graph.size).toBe(0);
+    });
+
+    it("parses package.json manifest", () => {
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "mjolnir-test-"));
+      try {
+        const pkg = {
+          name: "test-pkg",
+          dependencies: { lodash: "^4.0.0" },
+          devDependencies: { vitest: "^1.0.0" },
+        };
+        fs.writeFileSync(
+          path.join(tmpDir, "package.json"),
+          JSON.stringify(pkg),
+        );
+        const graph = buildDependencyGraph(tmpDir);
+        const allPaths = graph.allPaths;
+        expect(allPaths.length).toBeGreaterThanOrEqual(1);
+        for (const p of allPaths) {
+          const deps = graph.getDependencies(p);
+          expect(deps).toContain("lodash");
+          expect(deps).toContain("vitest");
+        }
+      } finally {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      }
+    });
+
+    it("scans packages/* subdirectories", () => {
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "mjolnir-test-"));
+      try {
+        const pkgDir = path.join(tmpDir, "packages", "my-lib");
+        fs.mkdirSync(pkgDir, { recursive: true });
+        const pkg = { name: "my-lib", dependencies: { express: "^4.0.0" } };
+        fs.writeFileSync(
+          path.join(pkgDir, "package.json"),
+          JSON.stringify(pkg),
+        );
+        const graph = buildDependencyGraph(tmpDir);
+        const allPaths = graph.allPaths;
+        expect(allPaths.length).toBeGreaterThanOrEqual(1);
+      } finally {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      }
+    });
+
+    it("parses pyproject.toml manifest", () => {
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "mjolnir-test-"));
+      try {
+        const content = `[project]\nname = "test"\ndependencies = [\n  "requests>=2.0",\n  "click>=8.0",\n]\n`;
+        fs.writeFileSync(path.join(tmpDir, "pyproject.toml"), content);
+        const graph = buildDependencyGraph(tmpDir);
+        const allPaths = graph.allPaths;
+        expect(allPaths.length).toBe(1);
+        const deps = graph.getDependencies(allPaths[0] as string);
+        expect(deps).toContain("requests");
+        expect(deps).toContain("click");
+      } finally {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      }
+    });
+
+    it("parses pom.xml manifest", () => {
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "mjolnir-test-"));
+      try {
+        const content = `<project><dependencies><dependency><artifactId>spring-core</artifactId></dependency><dependency><artifactId>junit</artifactId></dependency></dependencies></project>`;
+        fs.writeFileSync(path.join(tmpDir, "pom.xml"), content);
+        const graph = buildDependencyGraph(tmpDir);
+        const allPaths = graph.allPaths;
+        expect(allPaths.length).toBe(1);
+        const deps = graph.getDependencies(allPaths[0] as string);
+        expect(deps).toContain("spring-core");
+        expect(deps).toContain("junit");
+      } finally {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      }
+    });
+
+    it("returns empty graph for dir with no manifests", () => {
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "mjolnir-test-"));
+      try {
+        fs.writeFileSync(path.join(tmpDir, "readme.txt"), "hello");
+        const graph = buildDependencyGraph(tmpDir);
+        expect(graph.size).toBe(0);
+      } finally {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      }
     });
   });
 

@@ -86,4 +86,107 @@ describe("validateBrandContract", () => {
       expect.stringContaining('verdictLabels missing key "forged"'),
     );
   });
+
+  it("rejects contract with missing verdict icon", () => {
+    const { forged: _removed, ...rest } = PR_BRAND_CONTRACT.verdictIcons;
+    const result = validateBrandContract({
+      ...PR_BRAND_CONTRACT,
+      verdictIcons: rest,
+    });
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContainEqual(
+      expect.stringContaining('verdictIcons missing key "forged"'),
+    );
+  });
+
+  it("rejects contract with empty sectionOrder", () => {
+    const result = validateBrandContract({
+      ...PR_BRAND_CONTRACT,
+      sectionOrder: [],
+    });
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContainEqual(
+      expect.stringContaining("sectionOrder must be non-empty"),
+    );
+  });
+
+  it("rejects contract with wrong productDescriptor", () => {
+    const result = validateBrandContract({
+      ...PR_BRAND_CONTRACT,
+      productDescriptor: "Wrong" as "Verification Trust",
+    });
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContainEqual(
+      expect.stringContaining("productDescriptor"),
+    );
+  });
+
+  it("rejects contract with empty logoAsset.light", () => {
+    const result = validateBrandContract({
+      ...PR_BRAND_CONTRACT,
+      logoAsset: { ...PR_BRAND_CONTRACT.logoAsset, light: "" },
+    });
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContainEqual(
+      expect.stringContaining("logoAsset.light"),
+    );
+  });
+
+  it("rejects contract with empty logoAsset.dark", () => {
+    const result = validateBrandContract({
+      ...PR_BRAND_CONTRACT,
+      logoAsset: { ...PR_BRAND_CONTRACT.logoAsset, dark: "" },
+    });
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContainEqual(
+      expect.stringContaining("logoAsset.dark"),
+    );
+  });
+
+  it("rejects contract with wrong logoAsset.fallback", () => {
+    const result = validateBrandContract({
+      ...PR_BRAND_CONTRACT,
+      logoAsset: { ...PR_BRAND_CONTRACT.logoAsset, fallback: "Wrong" },
+    });
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContainEqual(
+      expect.stringContaining("logoAsset.fallback"),
+    );
+  });
+
+  it("rejects contract with wrong terminology", () => {
+    const result = validateBrandContract({
+      ...PR_BRAND_CONTRACT,
+      terminology: "wrong" as "trust-engine",
+    });
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContainEqual(
+      expect.stringContaining("terminology"),
+    );
+  });
+
+  it("rejects contract with wrong footerFormat", () => {
+    const result = validateBrandContract({
+      ...PR_BRAND_CONTRACT,
+      footerFormat: "wrong" as "scanId + generatedBy",
+    });
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContainEqual(
+      expect.stringContaining("footerFormat"),
+    );
+  });
+
+  it("collects multiple errors at once", () => {
+    const result = validateBrandContract({
+      ...PR_BRAND_CONTRACT,
+      productName: "Wrong" as "Mjolnir",
+      productDescriptor: "Wrong" as "Verification Trust",
+      sectionOrder: [],
+      terminology: "wrong" as "trust-engine",
+      footerFormat: "wrong" as "scanId + generatedBy",
+      logoAsset: { light: "", dark: "", fallback: "Wrong" },
+    });
+    expect(result.valid).toBe(false);
+    expect(result.errors.length).toBeGreaterThanOrEqual(6);
+  });
 });
