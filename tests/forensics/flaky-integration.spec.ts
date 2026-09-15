@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  integrateFlakyEvidence,
-} from "../../src/forensics/flaky-integration.js";
+import { integrateFlakyEvidence } from "../../src/forensics/flaky-integration.js";
 import type {
   ForensicsReport,
   TestVerdict,

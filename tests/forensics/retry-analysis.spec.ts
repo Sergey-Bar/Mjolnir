@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  detectRetryMasking,
-} from "../../src/forensics/retry-analysis.js";
+import { detectRetryMasking } from "../../src/forensics/retry-analysis.js";
 import type { Finding } from "../../src/types.js";
 import type { TestVerdict } from "../../src/forensics/types.js";
 

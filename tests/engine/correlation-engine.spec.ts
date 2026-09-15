@@ -6,9 +6,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import {
-  correlateFindings,
-} from "../../src/engine/correlation-engine.js";
+import { correlateFindings } from "../../src/engine/correlation-engine.js";
 import type { Finding } from "../../src/types.js";
 
 function finding(overrides: Partial<Finding> = {}): Finding {

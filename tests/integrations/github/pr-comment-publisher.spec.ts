@@ -119,14 +119,12 @@ describe("publishOrUpdateComment", () => {
   it("creates new comment when no existing", async () => {
     const created: { id: number; body: string }[] = [];
     const api: PrCommentPublisherApi = {
-      async createComment(body) {
+      createComment: (body) => {
         const result = { id: 42, body };
         created.push(result);
-        return result;
+        return Promise.resolve(result);
       },
-      async updateComment() {
-        throw new Error("should not be called");
-      },
+      updateComment: () => Promise.reject(new Error("should not be called")),
     };
     const result = await publishOrUpdateComment(model(), [], api);
     expect(result.action).toBe("created");
@@ -137,11 +135,10 @@ describe("publishOrUpdateComment", () => {
   it("updates existing comment when marker found", async () => {
     const updated: { id: number; body: string }[] = [];
     const api: PrCommentPublisherApi = {
-      async createComment() {
-        throw new Error("should not be called");
-      },
-      async updateComment(id, body) {
+      createComment: () => Promise.reject(new Error("should not be called")),
+      updateComment: (id, body) => {
         updated.push({ id, body });
+        return Promise.resolve({ id, body });
       },
     };
     const existing = [comment(99, `${PR_COMMENT_MARKER}\nold content`)];
