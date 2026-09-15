@@ -243,14 +243,21 @@ export const TYPOGRAPHY = {
 /* ── Motion ──────────────────────────────────────────────────── */
 
 /**
- * Deliberate, heavy, controlled. Motion in Mjölnir exists to show a
- * state changing — a scan resolving, a score settling, a finding
- * arriving — never to decorate.
+ * Two kinds of motion, and nothing else.
  *
- * The easing is asymmetric on purpose: quick to leave, slow to settle,
- * like something heavy coming to rest. Nothing loops, nothing pulses,
- * nothing glows. Every animation must be inert under
- * `prefers-reduced-motion: reduce`.
+ * STATE CHANGES carry the product: a scan resolving, a score settling, a
+ * finding arriving. Deliberate and heavy — quick to leave, slow to
+ * settle, like something with mass coming to rest. They play once.
+ *
+ * ATMOSPHERE is the aurora and what it lights: the drifting sky, a glow
+ * breathing under the closing line, the stack strip moving past. Slow,
+ * low in contrast, and it never carries meaning. It stops off-screen and
+ * in a hidden tab, and a page runs at most four endless animations
+ * (site-doctor Check 5).
+ *
+ * Both are inert under `prefers-reduced-motion: reduce`: every surface
+ * renders its final state at once. docs/design/MOTION-SYSTEM.md has the
+ * rules.
  */
 export const MOTION = {
   duration: {
@@ -258,14 +265,30 @@ export const MOTION = {
     quick: 120,
     base: 240,
     slow: 480,
+    /** A section or card arriving as it scrolls into view. */
+    reveal: 800,
     /** State-change moments only (a score resolving to its band). */
     forge: 900,
+    /** A number rolling to its value (the odometer score). */
+    roll: 1900,
+  },
+  /** Delay between siblings that arrive together. */
+  stagger: {
+    item: 80,
+    word: 65,
+  },
+  /** Periods for atmosphere only — never for a state change. */
+  ambient: {
+    breathe: 14000,
+    drift: 80000,
   },
   easing: {
     /** Default: leaves quickly, settles slowly. */
     settle: "cubic-bezier(0.2, 0, 0, 1)",
     /** Entrances. */
     enter: "cubic-bezier(0.16, 1, 0.3, 1)",
+    /** A marker landing on its value, with one small overshoot. */
+    spring: "cubic-bezier(0.34, 1.45, 0.64, 1)",
     linear: "linear",
   },
 } as const;

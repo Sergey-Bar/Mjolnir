@@ -194,7 +194,7 @@ export function nextActionFor(v: TestVerdict): string {
     case "TIMEOUT":
       return `re-run in isolation to separate slowness from a hang: npx playwright test ${v.file} --timeout 60000`;
     case "FAILING":
-      return `reproduce locally: npx playwright test ${v.file} -g "${v.title.replace(/"/g, '\\"')}" — then fix and re-run`;
+      return `reproduce locally: npx playwright test ${v.file} -g "${v.title.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}" — then fix and re-run`;
     case "SKIPPED":
       return `inspect the skip condition in ${v.file} — a skip after a failure usually hides an environment problem`;
   }

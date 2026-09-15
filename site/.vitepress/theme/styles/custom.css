@@ -115,11 +115,27 @@ body {
   background: var(--mj-aurora-cyan);
 }
 
-/* ---- landing navbar: the page ground and one hairline ------ */
-.mj-landing .VPNavBar,
-.mj-landing .VPNavBar.top {
-  background-color: var(--vp-c-bg) !important;
+/* ---- landing navbar: clear over the aurora, glass once scrolled ---- */
+.mj-landing .VPNavBar {
+  --vp-nav-bg-color: transparent;
+  background-color: color-mix(
+    in srgb,
+    var(--vp-c-bg) 76%,
+    transparent
+  ) !important;
+  backdrop-filter: blur(14px) saturate(1.2);
   border-bottom: 1px solid var(--vp-c-divider);
+  transition:
+    background-color 300ms cubic-bezier(0.2, 0, 0, 1),
+    border-color 300ms cubic-bezier(0.2, 0, 0, 1);
+}
+.mj-landing .VPNavBar.top {
+  background-color: transparent !important;
+  backdrop-filter: none;
+  border-bottom-color: transparent;
+}
+.mj-landing .VPNavBar .divider-line {
+  background-color: transparent;
 }
 .mj-landing .VPNavBar .VPNavBarMenuLink,
 .mj-landing .VPNavBar .VPNavBarExtraMenu .VPFlyout button,

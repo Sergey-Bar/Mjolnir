@@ -122,6 +122,12 @@ const MOTION_ROWS = (): string =>
     ...Object.entries(MOTION.duration).map(
       ([k, v]) => `| \`motion.duration.${k}\` | ${v}ms |`,
     ),
+    ...Object.entries(MOTION.stagger).map(
+      ([k, v]) => `| \`motion.stagger.${k}\` | ${v}ms |`,
+    ),
+    ...Object.entries(MOTION.ambient).map(
+      ([k, v]) => `| \`motion.ambient.${k}\` | ${v}ms |`,
+    ),
     ...Object.entries(MOTION.easing).map(
       ([k, v]) => `| \`motion.easing.${k}\` | \`${v}\` |`,
     ),

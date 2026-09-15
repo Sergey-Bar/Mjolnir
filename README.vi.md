@@ -1,391 +1,431 @@
 <div align="center">
 
-<img src="assets/readme/logo.png" alt="Mjölnir — Verification Trust Engine" width="800" />
+<img src="assets/readme/hero.svg" alt="Mjölnir. Test cho bạn biết cái gì đã qua. Mjölnir cho bạn biết cái gì đáng tin." width="100%" />
 
-### Các kiểm thử của bạn đang nói dối bạn. Chúng tôi chứng minh điều đó.
+<br />
 
-**Verification Trust Engine cho QA.** Mjölnir kiểm toán các suite kiểm
-thử và pipeline CI, báo cáo điểm độ đáng tin và chỉ ra chính xác nơi
-niềm tin gãy.
+Mjölnir tìm ra những test không thể thất bại và những pipeline không thể chuyển đỏ,<br />
+rồi chấm điểm mức độ đáng tin của kết quả, kèm bằng chứng cho từng điểm.
+
+<br />
 
 [![npm](https://img.shields.io/npm/v/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
+[![downloads](https://img.shields.io/npm/dm/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
 [![ci](https://img.shields.io/github/actions/workflow/status/Sergey-Bar/Mjolnir/ci.yml?branch=main&style=flat-square&label=ci&labelColor=0A1119)](https://github.com/Sergey-Bar/Mjolnir/actions/workflows/ci.yml)
+[![coverage](https://img.shields.io/codecov/c/github/Sergey-Bar/Mjolnir?style=flat-square&color=1F6F7C&labelColor=0A1119&label=coverage)](https://codecov.io/gh/Sergey-Bar/Mjolnir)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Sergey-Bar/Mjolnir/badge)](https://scorecard.dev/viewer/?uri=github.com/Sergey-Bar/Mjolnir)
 [![license](https://img.shields.io/badge/license-MIT-1F6F7C.svg?style=flat-square&labelColor=0A1119)](LICENSE)
 [![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-1F6F7C.svg?style=flat-square&labelColor=0A1119)](https://nodejs.org)
-
-[English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | Tiếng Việt | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
-
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-14.
 
 ```bash
 npx mjolnir-qa@latest
 ```
 
-**Các kiểm thử của bạn có đáng tin không?**
+[Xem cách hoạt động](#xem-cách-hoạt-động) · [Bắt đầu nhanh](#bắt-đầu-nhanh) · [Phát hiện gì](#mjölnir-phát-hiện-gì) · [Điểm](#điểm-đáng-tin) · [Bằng chứng](#mô-hình-bằng-chứng) · [Phân tích lần chạy](#phân-tích-pháp-chứng-lúc-chạy) · [CI](#tính-toàn-vẹn-ci) · [Tác tử](#tác-tử-ai) · [Bảo mật](#tin-cậy-và-bảo-mật) · [Giới hạn](#những-điều-mjölnir-không-thể-cho-bạn-biết) · [Tài liệu](#tài-liệu)
 
-[Xem nó hoạt động](#-xem-nó-hoạt-động) ·
-[Khởi động nhanh](#-khởi-động-nhanh) ·
-[Nó kiểm tra gì](#-mjölnir-kiểm-tra-gì) ·
-[Chấm điểm](#cách-thức-chấm-điểm) ·
-[CI](#-tích-hợp-ci) · [Cấu hình](#cấu-hình) ·
-[Tài liệu](#-tài-liệu)
+<details>
+<summary>Đọc bằng ngôn ngữ khác — 22 bản dịch</summary>
+
+[English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | Tiếng Việt | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
+
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-15.
+
+<!-- Source hash: 3541b09e8d04 -->
+
+</details>
 
 </div>
 
----
+<br />
 
-## 🎬 Xem nó hoạt động
+## Dấu tích xanh là một lời khẳng định, không phải bằng chứng
+
+Dấu tích xanh nghĩa là pipeline không thất bại. Nó không có nghĩa là test đã chạy, hay test đã có thể thất bại. Mỗi trường hợp dưới đây đều qua với màu xanh:
+
+- một `.only` bị commit khiến chỉ 3 test chạy thay vì 900
+- `continue-on-error: true` trên job lẽ ra phải chặn
+- `|| true` phía sau lệnh chạy test
+- một test không khẳng định gì, hoặc có thân rỗng
+- một lớp bọc thử lại biến thất bại thật thành lần qua may mắn
+- một báo cáo mà workflow tải lên nhưng chưa từng được tạo ra
+- một lệnh sleep cố định đang níu giữ một race condition
+
+Không cái nào khiến pipeline chuyển đỏ, và cái nào trông cũng có vẻ cố ý khi review. Đó là lý do chúng sống sót. Đây là Mjölnir đang đọc một ví dụ thật:
 
 <p align="center">
-  <img src="assets/readme/demo.svg" alt="Báo cáo --verbose đầy đủ của Mjölnir trên một repo demo: WORTHINESS 75/100 NEEDS WORK, phân loại chẩn đoán theo nhóm, danh sách FIX THIS FIRST và mỗi finding với rule ID cùng số dòng, trải rộng qua các quy tắc CI, Playwright, vệ sinh kiểm thử và Python" width="900" />
+  <img src="assets/readme/scan.svg" alt="Workflow CI của kho demo, đọc từng dòng. Mjölnir đánh dấu mỗi phát hiện tại dòng nó báo cáo, kèm quy tắc, điều sai, mức bằng chứng và tỷ lệ dương tính giả đã đo." width="800" />
 </p>
 
-<sub>Toàn bộ đầu ra `npx mjolnir-qa ./examples/demo-repo --verbose`,
-render từ reporter thật — không lược bỏ gì. Tạo lại bằng
-`npm run docs:demo`;
-[`tests/demo-asset-reproducibility.spec.ts`](tests/demo-asset-reproducibility.spec.ts)
-khiến CI fail nếu sản phẩm lệch khỏi những gì công cụ in ra.</sub>
+<sub>Mọi phát hiện mà lần quét demo báo cáo cho workflow này, tại dòng được báo cáo. Được tạo bởi `npm run docs:readme-brand` từ [`demo-report.json`](assets/readme/demo-report.json) và được khóa chống sai lệch trong CI.</sub>
 
-**Chuyện gì vừa xảy ra:**
+**Chế độ nghiêm ngặt.** Các phát hiện hung hăng nhất — `.only`, `continue-on-error`, kiểm tra trống, lạm dụng thử lại — nằm ở tầng cách ly. Chúng chỉ chạy với `--strict` và bị giới hạn ở mức nghiêm trọng `info`: chúng đánh dấu, không bao giờ chặn. Quét mặc định (`npx mjolnir-qa@latest` không có `--strict`) chỉ bao gồm các quy tắc cốt lõi và mở rộng. Thêm `--strict` khi bạn cũng muốn lớp tư vấn.
 
-1. Mjölnir phát hiện các spec Playwright, config của nó, CI workflow và
-   một file kiểm thử Python — bốn ngôn ngữ/định dạng, một lượt chạy.
-2. Nó tìm thấy bằng chứng làm suy giảm niềm tin vào suite — một
-   `continue-on-error` che giấu job, một `|| true` nuốt exit code,
-   sleep cứng, selector giòn, URL staging hardcode, chờ `networkidle`.
-3. Nó biến từng cái thành finding cụ thể với rule ID, vị trí và cách
-   sửa — và một điểm duy nhất để gate một PR.
+Mjölnir đọc bộ test, các workflow CI và, nếu bạn có, báo cáo của một lần chạy thật. Nó không chạy test của bạn, không cài dependency và không thực thi mã mà nó quét. Khi không có bằng chứng, nó nói thẳng như vậy thay vì bịa ra sự tự tin:
 
-### Một finding, nhìn gần
+| Tình huống                                                | Mjölnir báo cáo gì                                                            |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Không tìm thấy khai báo test                              | Điểm `null`, hiển thị là **UNKNOWN**. Không bao giờ là một con số 100 bịa ra. |
+| Không có baseline hay phiên bản để so sánh                | **UNKNOWN**, kèm lý do. Không bao giờ giả định là 0.                          |
+| Lần quét bị cắt ngang (hết thời gian, tệp không đọc được) | **PARTIAL**, mã thoát `2`. Không bao giờ được trình bày là sạch.              |
 
-Chạy `mjolnir explain QA-CI-001` trên finding đầu tiên ở trên và bạn nhận
-được:
+<p align="center">
+  <img src="assets/readme/how-it-works.svg" alt="Cách Mjölnir hoạt động. Nó đọc tĩnh bộ test và pipeline CI, cùng với báo cáo của một lần chạy thật khi có. Nó cân mỗi phát hiện theo mức bằng chứng và mức tin cậy, trong đó chỉ lần chạy thật mới đạt được L3 đến L5, rồi tạo ra các phát hiện, điểm đáng tin và một cổng CI dựa trên mã thoát đã đóng băng. Trong vòng lặp của tác tử, AI viết bản sửa và Mjölnir quét lại để chứng minh nó." width="880" />
+</p>
+
+<sub>Được dựng riêng cho trang này và hiển thị ở tỷ lệ 1:1. Được tạo bởi `npm run docs:readme-brand` và được khóa chống sai lệch trong CI; điểm, số đếm và ID quy tắc đến từ [`script.demo.json`](assets/video/script.demo.json), [`demo-report.json`](assets/readme/demo-report.json) và sổ đăng ký quy tắc, không bao giờ gõ tay. Cùng bức hình ở dạng poster: [`architecture.svg`](assets/readme/architecture.svg).</sub>
+
+<br />
+
+## Xem cách hoạt động
+
+Một lần quét thật trên [`examples/demo-repo`](examples/demo-repo), một bộ test Playwright nhỏ có workflow CI. Đây là nơi điểm của nó bị trừ:
+
+<p align="center">
+  <img src="assets/readme/terminal-hero.svg" alt="Bảng phân tích trừ điểm của Mjölnir: WORTHINESS 75/100 NEEDS WORK, điểm theo từng hạng mục, ô trừ điểm theo mức nghiêm trọng và danh sách FIX THIS FIRST" width="520" />
+</p>
+
+<sub>Được tạo bởi `npm run docs:hero` từ một lần quét thật và được khóa chống sai lệch trong CI. Báo cáo `--verbose` đầy đủ của cùng lần quét là [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
+
+<details>
+<summary><strong>Xem video</strong> — một lần quét, bản sửa mà nó in ra, và lần quét lại chứng minh bản sửa đó</summary>
+
+<br />
+
+<p align="center">
+  <a href="assets/video/mjolnir-demo.mp4">
+    <img src="assets/video/mjolnir-demo-poster.png" alt="Một khung hình từ bản ghi demo: npx mjolnir-qa@latest đang quét kho demo trong cửa sổ terminal" width="900" />
+  </a>
+</p>
+
+<sub>Được dựng từng khung hình từ một lần quét thật bằng `npm run docs:video`; không bao giờ quay màn hình. Chọn khung hình để mở [`mjolnir-demo.mp4`](assets/video/mjolnir-demo.mp4).</sub>
+
+</details>
+
+### Cận cảnh một phát hiện
+
+Mỗi phát hiện trả lời bốn câu hỏi: nó ở đâu, Mjölnir chắc chắn đến mức nào, quy tắc sai thường xuyên đến đâu, và cách sửa.
+
+<p align="center">
+  <img src="assets/readme/finding-anatomy.svg" alt="Phát hiện đầu tiên của lần quét demo, đúng như terminal in ra, với bốn phần được đánh dấu: ở đâu, chắc chắn đến mức nào, quy tắc sai thường xuyên đến đâu, và bản sửa." width="100%" />
+</p>
+
+`mjolnir explain QA-CI-001` in ra toàn bộ hồ sơ tin cậy của một quy tắc, gồm cả tỷ lệ dương tính giả đã đo và cấp mà tỷ lệ đó mang lại cho nó:
 
 ```text
-▍ QA-CI-001 — continue-on-error masks a failing verification gate
+  ▍ QA-CI-001 — continue-on-error masks a failing verification gate
 
 Severity:    error
 Confidence:  high
+Tier:        quarantine
 Evidence:    E2
-Measured FP: not yet measured — this rule ships on assumption (see docs/FP-AUDIT.md)
+QA impact:   False-green risk (FALSE-GREEN)
+Measured FP: 11% (19 hand-classified corpus verdicts)
+FP risk:     low (author estimate)
+Languages:   yaml
+Frameworks:  github-actions, azure-pipelines
 
 WHAT WAS FOUND (real detector output, not a mockup)
   Job `security-scan` runs a verification gate under `continue-on-error: true`.
 
 WHY IT MATTERS
-  This job can fail every day and CI will still show green. The checkmark
-  on this workflow cannot be trusted.
+  This job can fail every day and CI will still show green. The checkmark on
+  this workflow cannot be trusted.
 
 HOW TO FIX
   Remove continue-on-error, or scope it to individual non-blocking steps only.
+
+  Example from this rule's own must-fire fixture: QA-CI-001/must-fire/masked.yml
+
+WHAT WOULD CHANGE THE VERDICT
+  - a run report next to the scan target (mjolnir.report.json or test-results/)
+  corroborating this file lifts its findings to L3–L5
+  - a documented suppression (mjolnir.config.json) lowers the finding count
+  without claiming correctness
+  - quarantine findings run only under --strict and are advisory (E0) — they can
+  never gate CI
+
+NEXT ACTION
+  Fix the first occurrence, then re-run: `mjolnir --scope changed`. Every
+  occurrence of this rule is listed in the scan output.
+
+HOW TO VERIFY THE FIX
+  Re-run `mjolnir` on the changed file(s) — this finding should no longer
+  appear. `mjolnir --scope changed` scopes the check to just what you touched.
+
+Docs: mjolnir rules --md   (full catalog, this rule included)
 ```
 
-Đó là đơn vị giá trị: không phải lỗi phong cách, mà là một nơi CI của
-bạn nói rằng điều gì đó đã pass khi thực tế chưa pass.
+Đó là đơn vị giá trị: một chỗ mà CI báo cáo một lần qua mà nó không xứng đáng có.
 
----
+<br />
 
-## ⚡ Khởi động nhanh
-
-Chạy trên một repo để có báo cáo đầy đủ và điểm độ đáng tin:
+## Bắt đầu nhanh
 
 ```bash
 npx mjolnir-qa@latest
 ```
 
-**Trong CI, sản phẩm là một lệnh.** Nó chỉ quét những gì branch chạm tới
-và thoát khác 0 khi có vấn đề mới:
+Nó quét thư mục hiện tại và in ra Trust Report: nó tìm thấy gì, bạn có thể tin đến mức nào, vì sao, và bước tiếp theo là gì. Nó thoát với `0` khi không tìm thấy gì ở mức cổng hoặc cao hơn.
+
+Trong CI, chỉ quét những gì nhánh đưa vào, để một bộ test cũ không nhấn chìm pull request đầu tiên của bạn:
 
 ```bash
 npx mjolnir-qa@latest --scope changed
 ```
 
-Thả cái đó vào một check của PR — `mjolnir ci install` ghi workflow —
-và xong. Mọi thứ còn lại là tuỳ chọn.
+`mjolnir ci install` ghi điều đó thành một workflow GitHub Actions, dùng [action](https://github.com/Sergey-Bar/Mjolnir#readme) được ghim vào tag chính `v1` (hoặc `npx` thuần với `--no-action`). Nó chỉ mang tính tư vấn cho đến khi bạn quyết định nó nên chặn.
 
-| Lệnh                                | Nó làm gì                                                  |
-| ----------------------------------- | ---------------------------------------------------------- |
-| `mjolnir`                           | Quét toàn repo + điểm độ đáng tin                          |
-| `mjolnir --scope changed`           | Chỉ những gì branch bạn đưa vào — dạng CI                  |
-| `mjolnir ci install`                | Sinh workflow PR kiểu tư vấn                               |
-| `mjolnir explain QA-CI-001`         | Gì / tại sao / cách sửa + tỷ lệ FP đo được của một quy tắc |
-| `mjolnir rules --unmeasured`        | Các quy tắc chạy bằng giả định, không phải đo đạc          |
-| `mjolnir --json` / `--format sarif` | Đọc được bằng máy / GitHub Code Scanning                   |
-| `mjolnir --strict`                  | Chạy thêm các quy tắc tier quarantine (rủi ro FP cao hơn)  |
+| Lệnh                                | Chức năng                                              |
+| ----------------------------------- | ------------------------------------------------------ |
+| `mjolnir`                           | Trust Report: kết luận, độ tin, hành động tiếp theo    |
+| `mjolnir --scope changed`           | Chỉ những gì nhánh của bạn đưa vào (dạng dùng cho CI)  |
+| `mjolnir ci install`                | Tạo workflow PR mang tính tư vấn (dựa trên action)     |
+| `mjolnir explain QA-CI-001`         | Cái gì, vì sao và cách sửa, kèm tỷ lệ FP đã đo         |
+| `mjolnir why src/a.spec.ts:42`      | Vì sao chính dòng này bị đánh dấu. Không bao giờ chặn. |
+| `mjolnir forensics ./test-results/` | Bằng chứng runtime từ một lần chạy thật                |
+| `mjolnir trust-report`              | Trust Artifact độc lập (md + json)                     |
+| `mjolnir handoff`                   | Kế hoạch khắc phục cho tác tử lập trình                |
+| `mjolnir --json` / `--format sarif` | Đầu ra máy đọc được, GitHub Code Scanning              |
+| `mjolnir --format codequality`      | Báo cáo GitLab Code Quality (artifact cho widget MR)   |
+| `mjolnir --strict`                  | Chạy cả các quy tắc cấp quarantine (rủi ro FP cao hơn) |
 
 <details>
-<summary><strong>Khi có gì đó flaky</strong></summary>
+<summary><strong>Mọi lệnh khác</strong> — phân loại test chập chờn, báo cáo, quản trị</summary>
 
-| Lệnh                                | Nó làm gì                                               |
-| ----------------------------------- | ------------------------------------------------------- |
-| `mjolnir forensics ./test-results/` | Dữ liệu chạy thật → phán quyết `TRUE-FLAKE`, `FLAKY.md` |
-| `mjolnir triage ./test-results/`    | Đề xuất cách ly từ lịch sử thực thi                     |
-| `mjolnir pw-report ./test-results/` | Tóm tắt lần chạy Playwright — retry / flake / chậm nhất |
-| `mjolnir doctor:playwright`         | Quét sâu riêng Playwright + Selector Health Score       |
+<br />
+
+| Lệnh                                | Chức năng                                                                   |
+| ----------------------------------- | --------------------------------------------------------------------------- |
+| `mjolnir --classic`                 | Giao diện banner điểm từ trước khi có Trust Report                          |
+| `mjolnir explain verdict`           | Vì sao kết luận của lần quét đã lưu lại như vậy                             |
+| `mjolnir triage ./test-results/`    | Phân loại có hướng dẫn. Mỗi hàng kết thúc bằng một hành động tiếp theo.     |
+| `mjolnir pw-report ./test-results/` | Tóm tắt lần chạy Playwright: số lần thử lại, test chập chờn, test chậm nhất |
+| `mjolnir doctor:playwright`         | Quét sâu chỉ dành cho Playwright kèm Selector Health Score                  |
+| `mjolnir fix --dry-run` / `fix`     | Tự động sửa an toàn, mỗi bản sửa được quét lại để chứng minh nó có hiệu lực |
+| `mjolnir baseline` / `diff`         | Chụp nhanh các phát hiện, sau đó chỉ báo cáo cái mới hoặc tệ hơn            |
+| `mjolnir impact --since <ref>`      | Một commit đã đưa vào và giải quyết những gì                                |
+| `mjolnir summary`                   | Chú thích CI và tóm tắt step từ một báo cáo                                 |
+| `mjolnir pr-comment`                | Một bình luận PR có phạm vi, dạng Markdown                                  |
+| `mjolnir debt`                      | Sổ nợ test kèm mô hình chi phí                                              |
+| `mjolnir handover`                  | Bản đồ làm quen bộ test cho kỹ sư QA mới                                    |
+| `mjolnir init`                      | Phát hiện framework, in danh sách kiểm tra thiết lập                        |
+| `mjolnir suppressions`              | Liệt kê các phát hiện bị chặn, phục vụ quản trị                             |
+| `mjolnir rules --unmeasured`        | Những quy tắc chạy dựa trên giả định, không phải đo lường                   |
+| `mjolnir rules --md`                | Danh mục quy tắc đầy đủ (JSON hoặc Markdown)                                |
+| `mjolnir doctor`                    | Tự kiểm toán cơ sở quy tắc của chính Mjölnir                                |
+| `mjolnir create-rule <ID>`          | Tạo khung cho một quy tắc mới và các fixture của nó                         |
+| `mjolnir stats`                     | Bộ đếm cục bộ mọi bản sửa từng thấy                                         |
+| `mjolnir badge`                     | JSON cho endpoint shields.io và đoạn mã                                     |
+| `mjolnir --cache`                   | Quét lại tăng dần qua bộ đệm kết luận cục bộ                                |
+| `mjolnir --format mermaid`          | Sơ đồ kiến trúc test cho một bình luận PR                                   |
+
+`mjolnir help <command>` in cách dùng, ví dụ và bước tiếp theo cho bất kỳ lệnh nào.
 
 </details>
 
-<details>
-<summary><strong>Thỉnh thoảng / báo cáo</strong></summary>
+Yêu cầu **Node.js ≥ 22.18** trên Windows, macOS hoặc Linux. Muốn cài toàn cục? `npm i -g mjolnir-qa`. Mức tối thiểu này đến từ chuỗi công cụ build (tsdown nhắm tới nó và pipeline phát hành chạy smoke test trên nó); các dependency lúc chạy không cần gì hơn.
 
-| Lệnh                            | Nó làm gì                                             |
-| ------------------------------- | ----------------------------------------------------- |
-| `mjolnir fix --dry-run` / `fix` | Sửa tự động an toàn kèm bằng chứng                    |
-| `mjolnir baseline` / `diff`     | Chụp lại các finding, rồi chỉ báo cáo cái mới/xấu hơn |
-| `mjolnir impact --since <ref>`  | Những gì thay đổi kể từ commit trước đó               |
-| `mjolnir debt`                  | Sổ nợ kiểm thử với mô hình chi phí                    |
-| `mjolnir handover`              | Bản đồ onboarding suite cho QA mới                    |
-| `mjolnir stats`                 | Bộ đếm mọi thời đại cục bộ của các fix đã thấy        |
-| `mjolnir badge`                 | JSON endpoint shields.io + snippet                    |
-| `mjolnir rules --md`            | Danh mục quy tắc đầy đủ (JSON hoặc Markdown)          |
-| `mjolnir doctor`                | Tự kiểm toán chính cơ sở quy tắc của Mjölnir          |
-| `mjolnir create-rule <ID>`      | Scaffold quy tắc mới + fixtures                       |
-| `mjolnir --format mermaid`      | Sơ đồ kiến trúc kiểm thử cho comment PR               |
+<br />
 
-</details>
-
-Cài toàn cục thay vì `npx` nếu bạn thích: `npm i -g mjolnir-qa`.
-Yêu cầu Node.js ≥ 22.18. Chạy trên Windows, macOS và Linux.
-
----
-
-## 👥 Dành cho ai?
-
-- **QA / SDET** sở hữu suite e2e hoặc tích hợp, cần bằng chứng rằng
-  suite thực sự xứng đáng với dấu xanh nó tạo ra.
-- **Nhóm Platform / DevEx** chịu trách nhiệm về tính toàn vẹn CI và các
-  release gate — những người không muốn một `continue-on-error` lặng lẽ
-  tô đỏ thành xanh cho cả pipeline.
-- **Người duy trì OSS** muốn một gate kiểm chứng rẻ, luôn bật, chạy cả
-  cục bộ và trong CI với 0 lệnh gọi mạng.
-
----
-
-## 🔨 Mjölnir kiểm tra gì
-
-|     |                                                                                                                |
-| --- | -------------------------------------------------------------------------------------------------------------- |
-| ⚖️  | **Điểm độ đáng tin** — một con số, bảng trừ minh bạch, không hộp đen                                           |
-| 🎭  | **Selector Health Score** — chấm locator Playwright của bạn, không chỉ tỉ lệ pass                              |
-| 🔬  | **Pháp y runtime** — đọc dữ liệu chạy thật của Playwright/JUnit để bắt `TRUE-FLAKE`, không chỉ phỏng đoán tĩnh |
-| 🚨  | **Quy tắc toàn vẹn CI** — bắt `continue-on-error`, `\|\| true` và các mẹo xanh giả khác                        |
-| 🐍  | **Cả bốn binding Playwright** — TypeScript, Python, Java, C#/.NET — cộng pytest, JUnit/TestNG và CI workflows  |
-| 🔒  | **Local-first** — 0 lệnh gọi mạng khi quét, 0 telemetry, chạy trong vài giây                                   |
-
-### Các quy tắc
-
-Mọi quy tắc đều có fixture must-fire **và** must-not-fire. Quy tắc mà
-bắn vào chính fixture âm của nó thì không thể ship — đó là bức tường
-lửa false positive.
-
-<details>
-<summary><strong>Vệ sinh kiểm thử</strong></summary>
-
-| ID          | Quy tắc                                             | Severity |
-| ----------- | --------------------------------------------------- | -------- |
-| QA-TEST-001 | Kiểm thử tập trung bị commit (`.only`, `fit`)       | error    |
-| QA-TEST-002 | Kiểm thử bị bỏ qua mà không có lý do                | error    |
-| QA-TEST-002 | Kiểm thử bị bỏ qua có lý do được theo dõi           | warning  |
-| QA-TEST-003 | Kiểm thử không có assertion                         | error    |
-| QA-TEST-004 | Sleep cứng (`waitForTimeout`, `sleep()`, `delay()`) | warning  |
-| QA-TEST-006 | Lạm dụng retry che giấu flakiness                   | warning  |
-| QA-TEST-010 | Thân kiểm thử rỗng                                  | error    |
-
-</details>
-
-<details>
-<summary><strong>Chất lượng kiểm thử</strong></summary>
-
-| ID           | Quy tắc                                 | Severity |
-| ------------ | --------------------------------------- | -------- |
-| QA-TQUAL-002 | Assertion đồng nghĩa lặp (tautological) | error    |
-| QA-TQUAL-009 | Assertion của promise không await       | error    |
-| QA-TQUAL-011 | Kiểm thử bị comment                     | warning  |
-
-</details>
-
-<details>
-<summary><strong>Playwright 🎭</strong></summary>
-
-| ID        | Quy tắc                                  | Severity |
-| --------- | ---------------------------------------- | -------- |
-| QA-PW-002 | Assertion locator không await            | error    |
-| QA-PW-003 | `page.pause()` / `test.only()` bị commit | error    |
-| QA-PW-004 | Selector CSS/XPath giòn                  | warning  |
-| QA-PW-123 | URL môi trường hardcode                  | warning  |
-
-</details>
-
-<details>
-<summary><strong>Toàn vẹn CI</strong></summary>
-
-| ID        | Quy tắc                                                                   | Severity |
-| --------- | ------------------------------------------------------------------------- | -------- |
-| QA-CI-001 | `continue-on-error` che giấu thất bại                                     | error    |
-| QA-CI-002 | `\|\| true` nuốt exit code                                                | error    |
-| QA-CI-005 | Báo cáo được tiêu thụ nhưng không bao giờ sinh ra                         | error    |
-| QA-CI-007 | Wrapper retry quanh kiểm thử                                              | warning  |
-| QA-CI-008 | Step luôn thành công che giấu thất bại                                    | error    |
-| QA-CI-009 | Exit code của kiểm thử không được truyền (`\|` không pipefail, chuỗi `;`) | error    |
-| QA-CI-010 | Kiểm thử bị bỏ qua ở nơi phải chặn (guard skip-on-PR)                     | error    |
-
-</details>
-
-<details>
-<summary><strong>Python / pytest 🐍</strong></summary>
-
-| ID        | Quy tắc                                           | Severity |
-| --------- | ------------------------------------------------- | -------- |
-| QA-PY-002 | Kiểm thử bị bỏ qua (`skip`, `xfail` không nghiêm) | warning  |
-| QA-PY-003 | Hàm kiểm thử không có assertion                   | error    |
-| QA-PY-005 | `time.sleep()` trong kiểm thử                     | warning  |
-| QA-PY-012 | Assertion tautological                            | error    |
-
-Tổng cộng 20 quy tắc Python (QA-PY-001…012 vệ sinh pytest + QA-PY-101…108 Playwright-Python).
-
-</details>
-
-<details>
-<summary><strong>Java / JUnit · TestNG ☕</strong></summary>
-
-| ID        | Quy tắc                                  | Severity |
-| --------- | ---------------------------------------- | -------- |
-| QA-JV-101 | Kiểm thử bị tắt (`@Disabled`)            | warning  |
-| QA-JV-102 | Sleep cứng (`Thread.sleep()`)            | warning  |
-| QA-JV-103 | Phương thức kiểm thử không có assertion  | error    |
-| QA-JV-105 | Sleep cứng Playwright `waitForTimeout()` | warning  |
-| QA-JV-106 | Selector giòn thay vì role locator       | warning  |
-
-</details>
-
-<details>
-<summary><strong>C# / .NET — NUnit · xUnit · MSTest 🟣</strong></summary>
-
-| ID        | Quy tắc                                          | Severity |
-| --------- | ------------------------------------------------ | -------- |
-| QA-CS-101 | Kiểm thử bị bỏ qua (`[Ignore]`, `[Fact(Skip=)]`) | warning  |
-| QA-CS-102 | Sleep cứng (`Thread.Sleep` / `Task.Delay`)       | warning  |
-| QA-CS-103 | Phương thức kiểm thử không có assertion          | error    |
-| QA-CS-105 | Sleep cứng `WaitForTimeoutAsync()`               | warning  |
-| QA-CS-106 | Selector giòn thay vì role locator               | warning  |
-
-</details>
-
-> Danh mục sống đầy đủ — mọi quy tắc với tier, confidence, rủi ro false
-> positive và khả năng autofix — sinh từ registry:
->
-> ```bash
-> mjolnir rules --md
-> ```
->
-> Trang theo từng quy tắc nằm dưới [`docs/rules/`](docs/rules/).
-
-### Bao nhiêu đã được đo
-
-**78 trong 99 quy tắc mang tỷ lệ false positive được đo trên mã OSS
-thật** (≥ 10 finding được phân loại tay mỗi quy tắc; xem
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). 21 quy tắc còn lại ra mắt trên
-ước lượng của tác giả. Chân mỗi bản quét cho biết bao nhiêu quy tắc
-_đã bắn_ được đo; `mjolnir rules --unmeasured` liệt kê những quy tắc
-chưa đo; trang `mjolnir explain` của từng quy tắc nêu trạng thái. Chúng
-và bị cách ly vì thế. Mở rộng con số đó là công việc liên tục của
-dự án.
-
-### Tier quy tắc và độ trưởng thành theo ngôn ngữ
-
-Mỗi quy tắc là `core`, `extended` hoặc `quarantine`, phân theo tỷ lệ
-false positive **được đo**:
-
-| Tier         | Ý nghĩa                          | Quét mặc định | `--strict` |
-| ------------ | -------------------------------- | :-----------: | :--------: |
-| `core`       | ≤ 10 % FP đo được                |      ✅       |     ✅     |
-| `extended`   | ≤ 30 % FP đo được                |      ✅       |     ✅     |
-| `quarantine` | trên 30 %, hoặc chưa đo (n < 10) |      ❌       |     ✅     |
-
-| Ngôn ngữ        | Adapter          | Độ phủ hiện nay                                            |
-| --------------- | ---------------- | ---------------------------------------------------------- |
-| TypeScript / JS | AST bộ biên dịch | rộng nhất, đo nhiều nhất — chủ yếu `core`/`extended`       |
-| Python / pytest | Lớp regex        | rộng, đã kiểm toán trên corpus — chủ yếu `core`/`extended` |
-| Java            | Lớp regex        | mới hơn — chủ yếu `extended`/`quarantine`                  |
-| C# / .NET       | Lớp regex        | mới hơn — chủ yếu `extended`/`quarantine`                  |
-
-TypeScript và Python có độ phủ đo được rộng nhất. Java và C# đã ship,
-có tài liệu và ở ngoài con số tiêu đề cho đến khi một suite người dùng
-thật (không phải chính các kiểm thử của thư viện binding) được kiểm
-toán.
-
----
-
-## Cách thức chấm điểm
+## Mjölnir phát hiện gì
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Đầu ra terminal của Mjölnir — WORTHINESS 75/100 NEEDS WORK, phân loại chẩn đoán theo nhóm và danh sách FIX THIS FIRST" width="820" />
+  <img src="assets/readme/stack.svg" alt="Hoạt động với stack của bạn: các ngôn ngữ, framework test và hệ thống CI mà các quy tắc bao phủ, lấy từ sổ đăng ký quy tắc." width="100%" />
 </p>
 
-<sub>Tạo lại bằng `npm run docs:hero`;
-[`tests/hero-asset-reproducibility.spec.ts`](tests/hero-asset-reproducibility.spec.ts)
-khiến CI fail nếu sản phẩm lệch khỏi những gì reporter thực sự in ra.</sub>
+**79 quy tắc** trong bốn nhóm — vệ sinh test, chất lượng test, Playwright và tính toàn vẹn CI — cho TypeScript và JavaScript, Python, Java, C# và YAML của GitHub Actions. Chúng bao phủ Playwright ở cả bốn binding, cùng pytest, JUnit, TestNG, NUnit, xUnit, MSTest, Jest, Vitest và Mocha, với mức hỗ trợ ban đầu cho Cypress và Selenium. Chín quy tắc trong số đó, để bạn hình dung:
 
-Điểm số minh bạch: **error −8, warning −3, info −1**, sau đó chuẩn hoá
-theo độ phơi của suite (trừ trên mỗi khai báo kiểm thử). Các khoản trừ
-được cân theo bằng chứng nghĩa là tín hiệu yếu tốn ít hơn. Terminal
-hiện những con số đã chiết khấu chính mà điểm số dùng — không hộp đen.
-Phương pháp đầy đủ: [docs/SCORING.md](docs/SCORING.md).
+| ID           | Quy tắc                                                                    | Mức nghiêm trọng | Cấp        |
+| ------------ | -------------------------------------------------------------------------- | ---------------- | ---------- |
+| QA-CI-001    | `continue-on-error` che giấu một cổng xác minh đang thất bại               | error            | quarantine |
+| QA-CI-009    | Mã thoát của test không được truyền đi (`\|` không có pipefail, chuỗi `;`) | error            | extended   |
+| QA-TEST-001  | Commit test bị focus (`.only`, `fit`)                                      | error            | quarantine |
+| QA-TEST-003  | Test không có assertion                                                    | error            | quarantine |
+| QA-TQUAL-009 | Assertion trên promise không được await                                    | error            | quarantine |
+| QA-PW-002    | Assertion trên locator không được await                                    | error            | core       |
+| QA-PW-004    | Selector CSS/XPath dễ vỡ                                                   | warning          | quarantine |
+| QA-PY-002    | Test bị bỏ qua (`skip`, `xfail` không nghiêm ngặt)                         | warning          | core       |
+| QA-CS-103    | Phương thức test không có assertion                                        | error            | core       |
 
-**Phán quyết**
+Danh mục đầy đủ được tạo từ sổ đăng ký, không bao giờ duy trì thủ công: `mjolnir rules --md`, [`docs/rules/`](docs/rules/), hoặc [hướng dẫn về những gì nó kiểm tra](https://sergey-bar.github.io/Mjolnir/guide/what-it-checks).
 
-| Score   | Phán quyết       |
-| ------- | ---------------- |
-| ≥ 80    | ✓ **WORTHY**     |
-| 50 – 79 | ⚠ **NEEDS WORK** |
-| < 50    | ✖ **UNWORTHY**   |
+<details>
+<summary><strong>Mọi quy tắc được nhắc đến trong README này</strong>, trong một bảng</summary>
 
-**Mức bằng chứng** — mỗi finding mang một; nó đặt trọng số của finding
-trong điểm:
+<br />
 
-| Mức | Ý nghĩa                     | Tác động điểm    | Ví dụ                                                      |
-| --- | --------------------------- | ---------------- | ---------------------------------------------------------- |
-| E2  | Lỗi tất yếu (deterministic) | Trừ đủ           | `.only` bị commit — chứng minh được về cấu trúc            |
-| E1  | Mẫu heuristic               | Trừ nửa          | `sleep()` khớp regex — tín hiệu mạnh, chưa phải bằng chứng |
-| E0  | Quan sát                    | Không (chỉ info) | Được báo nhưng không bao giờ gate CI hay trừ               |
+> Quy tắc `quarantine` chỉ chạy khi có `--strict` và không bao giờ chặn (bị giới hạn ở info). Mức nghiêm trọng hiển thị là mức do tác giả đặt.
 
-Đa số quy tắc là **E1**. Khẩu hiệu «we prove it» ám chỉ hệ thống này:
-finding E2 là bằng chứng cấu trúc; finding E1 là cảnh báo được đặt đúng
-vị trí, không phải chứng minh hình thức.
+| ID           | Nhóm       | Quy tắc                                                            | Mức nghiêm trọng | Cấp        |
+| ------------ | ---------- | ------------------------------------------------------------------ | ---------------- | ---------- |
+| QA-TEST-001  | Vệ sinh    | Commit test bị focus (`.only`, `fit`)                              | error            | quarantine |
+| QA-TEST-002  | Vệ sinh    | Test bị bỏ qua. Nâng lên `error` nếu không có lý do được theo dõi. | warning          | quarantine |
+| QA-TEST-003  | Vệ sinh    | Test không có assertion                                            | error            | quarantine |
+| QA-TEST-004  | Vệ sinh    | Sleep cố định (`waitForTimeout`, `sleep()`, `delay()`)             | warning          | extended   |
+| QA-TEST-006  | Vệ sinh    | Lạm dụng thử lại để che giấu sự chập chờn                          | warning          | quarantine |
+| QA-TEST-010  | Vệ sinh    | Thân test rỗng                                                     | error            | quarantine |
+| QA-TQUAL-002 | Chất lượng | Assertion hằng đúng                                                | error            | quarantine |
+| QA-TQUAL-009 | Chất lượng | Assertion trên promise không được await                            | error            | quarantine |
+| QA-TQUAL-011 | Chất lượng | Test bị comment lại                                                | warning          | extended   |
+| QA-PW-002    | Playwright | Assertion trên locator không được await                            | error            | core       |
+| QA-PW-003    | Playwright | Commit `page.pause()` / `test.only()`                              | error            | core       |
+| QA-PW-004    | Playwright | Selector CSS/XPath dễ vỡ                                           | warning          | quarantine |
+| QA-PW-123    | Playwright | URL môi trường bị viết cứng                                        | warning          | quarantine |
+| QA-PW-140    | Playwright | Chụp màn hình không có `maxDiffPixelRatio`                         | warning          | core       |
+| QA-CI-001    | CI         | `continue-on-error` che giấu một cổng đang thất bại                | error            | quarantine |
+| QA-CI-002    | CI         | `\|\| true` nuốt mất mã thoát                                      | error            | extended   |
+| QA-CI-005    | CI         | Báo cáo được dùng nhưng chưa từng được tạo                         | error            | quarantine |
+| QA-CI-007    | CI         | Lớp bọc thử lại quanh test                                         | warning          | extended   |
+| QA-CI-008    | CI         | Step luôn thành công che giấu thất bại                             | error            | quarantine |
+| QA-CI-009    | CI         | Mã thoát không được truyền đi (`\|` không có pipefail, chuỗi `;`)  | error            | extended   |
+| QA-CI-010    | CI         | Test bị bỏ qua ở nơi chúng phải chặn                               | error            | quarantine |
+| QA-PY-002    | Python     | Test bị bỏ qua (`skip`, `xfail` không nghiêm ngặt)                 | warning          | core       |
+| QA-PY-003    | Python     | Hàm test không có assertion                                        | error            | quarantine |
+| QA-PY-005    | Python     | `time.sleep()` trong test                                          | warning          | extended   |
+| QA-PY-012    | Python     | Assertion hằng đúng                                                | error            | quarantine |
+| QA-JV-101    | Java       | Test bị vô hiệu hóa (`@Disabled`)                                  | warning          | core       |
+| QA-JV-102    | Java       | Sleep cố định (`Thread.sleep()`)                                   | warning          | extended   |
+| QA-JV-103    | Java       | Phương thức test không có assertion                                | error            | extended   |
+| QA-JV-105    | Java       | Sleep cố định bằng `waitForTimeout()` của Playwright               | warning          | core       |
+| QA-JV-106    | Java       | Selector dễ vỡ thay vì locator theo vai trò                        | warning          | quarantine |
+| QA-CS-101    | C#         | Test bị bỏ qua (`[Ignore]`, `[Fact(Skip=)]`)                       | warning          | core       |
+| QA-CS-102    | C#         | Sleep cố định (`Thread.Sleep` / `Task.Delay`)                      | warning          | core       |
+| QA-CS-103    | C#         | Phương thức test không có assertion                                | error            | core       |
+| QA-CS-105    | C#         | Sleep cố định bằng `WaitForTimeoutAsync()`                         | warning          | extended   |
+| QA-CS-106    | C#         | Selector dễ vỡ thay vì locator theo vai trò                        | warning          | quarantine |
 
-Repo rỗng chấm `null`, không bao giờ 100 giả — xem
-[Mô hình niềm tin](#mô-hình-niềm-tin).
+Python còn có QA-PY-001…012 (vệ sinh pytest) và QA-PY-101…108 (Playwright cho Python). Cypress và Selenium mỗi bên có một bộ khởi đầu gồm ba quy tắc.
 
----
+</details>
 
-## 🎭 Selector Health Score
+Mỗi quy tắc được phát hành cùng một fixture must-fire **và** một fixture must-not-fire, và quy tắc nào kích hoạt trên chính fixture âm của nó thì không thể phát hành. Đó là tường lửa chống dương tính giả; `mjolnir doctor` thực thi nó trong CI của chính kho này.
 
-Chỉ số tiêu đề cho suite Playwright — locator của bạn bền bao nhiêu:
+### Selector Health Score
+
+`mjolnir doctor:playwright` chấm điểm mỗi locator theo cách nó tìm phần tử: theo cách người dùng tìm (vai trò, nhãn, văn bản), qua một hợp đồng rõ ràng (`data-testid`), hay nhờ một sự tình cờ về cấu trúc (chuỗi CSS, XPath). Mỗi tệp nhận điểm từ 0 đến 100:
 
 ```text
-▍ SELECTOR HEALTH — e2e/checkout.spec.ts
+  ▍ SELECTOR HEALTH
 
-  [█████████████████░░░]  83 / 100
-  role/text: 2 · testid: 1 · css-chains: 1 ⚠ · xpath: 0
+e2e/login.spec.ts
+  [█████████████░░░░░░░]  65 / 100
+  role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
+
+e2e/checkout.spec.ts
+  [█████████████████░░░]  86 / 100
+  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 ```
 
-Locator dựa trên role nhận điểm tối đa. Chuỗi class CSS và XPath hạ điểm
-— chúng vỡ với mọi lần refactor DOM mà không nói cho bạn biết hành vi
-nào đã thoái trào.
+Điều này đo **độ bền, không phải độ đúng**. `.btn.btn-primary > div:nth-child(2)` qua hôm nay và sẽ tiếp tục qua cho đến khi ai đó động vào markup. Điểm thấp không bao giờ khẳng định test bị hỏng, chỉ nói rằng nó phụ thuộc vào markup mà không ai hứa giữ nguyên.
 
----
+<br />
 
-## 🔬 Bằng chứng runtime
+## Điểm đáng tin
 
-Phát hiện flakiness tĩnh là đoán mò. Mjölnir đọc **dữ liệu thực thi
-thật** — báo cáo JSON Playwright và XML JUnit từ runner bất kỳ:
+<p align="center">
+  <img src="assets/readme/score-gauge.svg" alt="Thang điểm đáng tin từ 0 đến 100, với một con trỏ quét qua mọi mức điểm: UNWORTHY dưới 50, NEEDS WORK từ 50 đến 79, WORTHY từ 80 đến 99, FORGED ở 100" width="720" />
+</p>
+
+<sub>Mọi mức điểm từ 0 đến 100, được đặt vị trí bởi `deriveScoreState` thật. Được tạo bởi `npm run docs:gauge` và được khóa chống sai lệch trong CI.</sub>
+
+| Điểm      | Kết luận                                  |
+| --------- | ----------------------------------------- |
+| `0 – 49`  | **UNWORTHY**                              |
+| `50 – 79` | **NEEDS WORK**                            |
+| `80 – 99` | **WORTHY**                                |
+| `100`     | **FORGED**                                |
+| `null`    | **UNKNOWN**: không tìm thấy khai báo test |
+
+**Cách tính.** Mức nghiêm trọng đặt ra mức trừ cơ bản (`error −8`, `warning −3`, `info −1`) và mức bằng chứng chiết khấu nó: E2 trừ đủ, E1 trừ một nửa (làm tròn xuống), E0 không trừ. Tổng được chuẩn hóa theo quy mô bộ test, tức là trừ theo từng khai báo test chứ không theo tệp. Terminal in ra đúng những con số đã chiết khấu mà điểm đã dùng; không có mô hình thứ hai nào ẩn giấu. Chi tiết: [docs/SCORING.md](docs/SCORING.md) và [hướng dẫn chấm điểm](https://sergey-bar.github.io/Mjolnir/guide/scoring).
+
+**Điều mà 100 không có nghĩa.** Nó không có nghĩa là phần mềm đúng, bộ test đầy đủ, hay sản phẩm không có lỗi. Nó chỉ có nghĩa một điều: **không quy tắc nào mà Mjölnir đánh giá tạo ra mức trừ điểm trong lần quét này và với mô hình bằng chứng này.**
+
+<br />
+
+## Mô hình bằng chứng
+
+Mỗi phát hiện mang hai nhãn: Mjölnir chắc chắn đến mức nào, và phát hiện đã được kiểm chứng đến đâu. Đó là khác biệt giữa một công cụ báo cáo mẫu và một công cụ bạn có thể dùng làm cổng cho một bản phát hành.
+
+**Chắc chắn đến mức nào — mức bằng chứng.**
+
+| Mức    | Tên                 | Ý nghĩa                                          | Trừ điểm |
+| ------ | ------------------- | ------------------------------------------------ | -------- |
+| **E2** | Chứng minh tất định | Lỗi hiện diện trong mã đúng như nó được viết     | Đủ       |
+| **E1** | Bằng chứng theo mẫu | Một mẫu gắn chặt với lỗi đã khớp                 | Một nửa  |
+| **E0** | Quan sát            | Đáng biết. Không phải khẳng định rằng có gì sai. | Không    |
+
+Độ tin trong một lần phát hiện không phải là sức mạnh của chứng minh. Một quy tắc có thể chắc chắn rằng nó đã khớp đúng thứ nó tìm mà vẫn chỉ đang nhìn vào một phép suy đoán. Phát hiện E1 là để đọc và cân nhắc, không bao giờ áp dụng mù quáng, và ranh giới đó được đóng dấu trên phát hiện trong terminal, trong JSON và trong phần bàn giao cho tác tử.
+
+**Đã kiểm chứng đến đâu — mức tin cậy.** Phần lớn phát hiện đến từ việc đọc mã của bạn. Đưa cho Mjölnir báo cáo của một lần chạy test thật và nó có thể xác nhận rằng mã thực sự đã chạy.
+
+<p align="center">
+  <img src="assets/readme/trust-ladder.svg" alt="Nấc thang tin cậy từ L0 đến L5. L0 đến L2 đến từ việc đọc mã; L3 đến L5 cần một báo cáo chạy thật, được đánh dấu bằng một chỗ đứt trên nấc thang." width="100%" />
+</p>
+
+| Mức    | Nói đơn giản           | Cần gì                                                    |
+| ------ | ---------------------- | --------------------------------------------------------- |
+| **L0** | Đã ghi nhận            | Đọc mã                                                    |
+| **L1** | Trông giống vấn đề     | Đọc mã: một mẫu đã khớp                                   |
+| **L2** | Đã chứng minh trong mã | Đọc mã: lỗi mang tính cấu trúc                            |
+| **L3** | Tệp đã chạy            | Báo cáo chạy cho thấy tệp của phát hiện đã được thực thi  |
+| **L4** | Test đã chạy           | Báo cáo chạy cho thấy test của phát hiện đã được thực thi |
+| **L5** | Lần chạy xác nhận      | Chính kết quả của lần chạy xác nhận loại lỗi              |
+
+Quét tĩnh dừng ở L2. Chỉ một báo cáo chạy thật (Playwright JSON, Jest hoặc Vitest JSON, JUnit XML) mới có thể nâng một phát hiện lên L3 hoặc cao hơn, nên một phát hiện chưa từng được thấy chạy sẽ không bao giờ có thể khẳng định là nó đã chạy. Định nghĩa: [docs/TERMINOLOGY.md](docs/TERMINOLOGY.md).
+
+### Bao nhiêu phần trong số này đã được đo
+
+**74 trên 79 quy tắc có tỷ lệ dương tính giả được đo trên mã OSS thật** (mỗi quy tắc ít nhất 10 phát hiện được phân loại thủ công; xem [docs/FP-AUDIT.md](docs/FP-AUDIT.md)). 5 quy tắc còn lại phát hành dựa trên ước tính của tác giả và nói rõ điều đó, từng quy tắc một, trong `mjolnir explain`. `mjolnir rules --unmeasured` liệt kê chúng, và phần chân của mỗi lần quét cho biết bao nhiêu quy tắc thực sự _đã kích hoạt_ đã được đo.
+
+Các tỷ lệ vẫn công khai kể cả khi chúng tệ. QA-TEST-001 (một `.only` bị commit) cho kết quả kiểm toán kém trên các kho thật và vì thế nằm trong quarantine. Con số hiện tại của mọi quy tắc, kể cả QA-PW-141, nằm trong báo cáo kiểm toán.
+
+### Cấp tin cậy của quy tắc
+
+Các cấp theo tỷ lệ dương tính giả đã đo, không theo ý kiến:
+
+| Cấp            | FP đã đo                         | Hành vi                                                 |
+| -------------- | -------------------------------- | ------------------------------------------------------- |
+| **core**       | ≤ 10%                            | Báo cáo mặc định, có chặn                               |
+| **extended**   | ≤ 30%                            | Báo cáo mặc định, độ tin thấp hơn                       |
+| **quarantine** | > 30% hoặc được khai báo rõ ràng | Chỉ với `--strict`, giới hạn ở info, không bao giờ chặn |
+| _chưa đo_      | n < 10                           | Không thể nâng lên core cho đến khi được đo             |
+
+Dải FP chỉ có thể hạ cấp một bậc — chúng không bao giờ nâng cấp một quy tắc ra khỏi `quarantine` nếu nó đã được khai báo rõ ràng ở đó. Một quy tắc bị quarantined rõ ràng vẫn ở quarantine bất kể tỷ lệ FP đã đo được.
+
+Nâng cấp, hạ cấp và độ trưởng thành theo ngôn ngữ: [vòng đời quy tắc](https://sergey-bar.github.io/Mjolnir/reference/rule-lifecycle).
+
+### Vì sao đây không phải một linter
+
+Linter cho bạn biết mã có tuân theo quy tắc hay không. Mjölnir cho bạn biết việc xác minh của bạn có đáng tin hay không.
+
+|                                                                  | Linter (ESLint, SonarQube) | Công cụ đo độ phủ | Review mã bằng AI |       **Mjölnir**       |
+| ---------------------------------------------------------------- | :------------------------: | :---------------: | :---------------: | :---------------------: |
+| Chấm điểm **hệ thống xác minh**, không phải mã sản phẩm          |           Không            |       Không       |       Không       |           Có            |
+| Tính toàn vẹn của workflow CI (`continue-on-error`, `\|\| true`) |           Không            |       Không       |   chỉ phần diff   |           Có            |
+| Chấm độ bền của locator Playwright (Selector Health)             |           Không            |       Không       |       Không       |           Có            |
+| Đọc dữ liệu chạy thật để đưa ra kết luận `TRUE-FLAKE`            |           Không            |       Không       |       Không       |           Có            |
+| Công bố tỷ lệ dương tính giả đã đo cho từng quy tắc              |           Không            |       Không       |       Không       |           Có            |
+| Đánh dấu test không có assertion                                 |            Có\*            |       Không       |      đôi khi      |           Có            |
+| Bắt các sleep cố định (`waitForTimeout`, `time.sleep`)           |            Có\*            |       Không       |      đôi khi      |           Có            |
+| Tất định (cùng đầu vào, cùng đầu ra)                             |             Có             |        Có         |       Không       |           Có            |
+| Chi phí mỗi lần quét                                             |          miễn phí          |     miễn phí      |       token       | **bằng không** (cục bộ) |
+
+<sub>\*Được bao phủ bởi `eslint-plugin-jest` và `eslint-plugin-playwright` (`expect-expect`, `no-wait-for-timeout`) và bởi các quy tắc assertion riêng của SonarQube. Các cột mô tả hành vi mặc định khi xác minh bộ test; plugin, gói trả phí và quy tắc tùy chỉnh sẽ làm thay đổi một số câu trả lời. Đây là bản tóm tắt định vị, không phải benchmark.</sub>
+
+Hãy dùng cả review bằng AI. Nó nắm bắt sắc thái, ý định và lỗi thiết kế mà không mẫu nào tìm được. Mjölnir bắt được những gì review bằng AI bỏ sót vì trông có vẻ cố ý: một `.only` bị commit, một mã thoát bị nuốt, một `continue-on-error` trên job test. Những thứ đó cần quét, không cần suy luận.
+
+<br />
+
+## Phân tích pháp chứng lúc chạy
+
+Phân tích tĩnh suy luận về mã chưa từng chạy. Phân tích pháp chứng đọc những gì thực sự đã xảy ra: Playwright JSON, Jest JSON, Vitest JSON và JUnit XML từ bất kỳ runner nào.
 
 ```bash
 mjolnir forensics ./test-results/
 ```
 
 ```text
-▍ FLAKINESS LEADERBOARD
+  ▍ FLAKINESS LEADERBOARD
 
 3 tests · 1 failed · 1 flaky · 1 retried
 
@@ -395,282 +435,184 @@ FAILING    declines an expired card (e2e/checkout.spec.ts)
            ████░░░░░░░░░░░░░░░░ 1.1s · 1 attempt
 ```
 
-Một kiểm thử chỉ pass từ lần thử ≥ 2 không phải kiểm thử pass — đó là
-kiểm thử may mắn. Nó bị gắn cờ `TRUE-FLAKE` bất kể dấu xanh cuối cùng.
+`TRUE-FLAKE` không có nghĩa là test đã được thử lại. Nó có nghĩa là test **đã thất bại ít nhất một lần thử rồi kết thúc với màu xanh**: một lần qua may mắn, bị đánh dấu bất kể dấu tích cuối cùng nói gì. `mjolnir triage` biến lịch sử đó thành một đề xuất cách ly, và `mjolnir pw-report` tóm tắt một lần chạy. Chính những báo cáo chạy này là thứ nâng phát hiện lên mức tin cậy L3 trở lên.
 
----
+<br />
 
-## ⚡ Mjölnir không phải một linter nữa
+## Tính toàn vẹn CI
 
-Linter cho bạn biết mã có tuân thủ quy tắc không. Mjölnir cho bạn biết
-sự kiểm chứng của bạn có thể được tin không.
+Một test có thể qua trong khi pipeline bao quanh nó không thể thất bại. Mjölnir cũng đọc các workflow: `continue-on-error`, `|| true`, mã thoát không bao giờ được truyền đi, step luôn thành công, báo cáo được dùng nhưng chưa từng được tạo, và cổng bị bỏ qua đúng ở những sự kiện lẽ ra phải chặn. Mỗi phát hiện nêu tên job, step và dòng, và mang mức bằng chứng riêng.
 
-|                                                         | ESLint / SonarQube | Công cụ coverage | Review thủ công | **Mjölnir** |
-| ------------------------------------------------------- | :----------------: | :--------------: | :-------------: | :---------: |
-| Toàn vẹn CI workflow (`continue-on-error`, `\|\| true`) |         ❌         |        ❌        |    hiếm khi     |     ✅      |
-| Đa ngôn ngữ (TS, Python, Java, C#) từ một công cụ       |         ❌         |        ❌        |       ❌        |     ✅      |
-| Chấm độ bền locator Playwright (Selector Health)        |         ❌         |        ❌        |    hiếm khi     |     ✅      |
-| Gắn cờ kiểm thử không có assertion thật                 |   ✅ (plugin)\*    |        ❌        |   thi thoảng    |     ✅      |
-| Bắt sleep cứng (`waitForTimeout`, `time.sleep`)         |   ✅ (plugin)\*    |        ❌        |   thi thoảng    |     ✅      |
-| Chạy trong vài giây, 0 lệnh gọi mạng khi quét           |         ✅         |        ✅        |        —        |     ✅      |
-
-\*`eslint-plugin-jest` (`expect-expect`) và `eslint-plugin-playwright`
-(`expect-expect`, `no-wait-for-timeout`) phủ các điểm đó cho framework
-tương ứng.
-
-**Phân tích runtime** là một hạng mục riêng ngoài linting tĩnh:
-
-|                                                   | Playwright retry reporter | Allure / ReportPortal | **Mjölnir forensics** |
-| ------------------------------------------------- | :-----------------------: | :-------------------: | :-------------------: |
-| Đọc dữ liệu chạy thật cho phán quyết `TRUE-FLAKE` |        một phần\*         |    một phần (tag)     |          ✅           |
-| Báo cáo triage flake từ lịch sử thực thi          |            ❌             |          ✅           |          ✅           |
-| Tích hợp với điểm độ đáng tin tĩnh                |            ❌             |          ❌           |          ✅           |
-
-\*Playwright theo dõi retry bên trong nhưng không tạo báo cáo flakiness
-độc lập với nhãn phán quyết.
-
----
-
-## 🤖 Tại sao không chỉ dùng AI code review?
-
-Vấn đề khác, tầng khác. AI review có thể phát hiện thay đổi kiểm thử
-nghi ngờ trong diff; nó không chứng minh hệ thống kiểm chứng như một
-toàn thể đáng tin — và nó chỉ thấy diff bạn cho nó xem.
-
-|                                     |   AI code review (Copilot v.v.)    |              **Mjölnir**              |
-| ----------------------------------- | :--------------------------------: | :-----------------------------------: |
-| Chi phí mỗi lần quét                | Token (scale theo kích thước diff) |       **Zero** (cục bộ, đã cài)       |
-| Thấy cả suite + mọi cấu hình CI     |      Chỉ diff PR bạn cho xem       |         **Mọi thứ, mỗi lần**          |
-| Tất định (cùng input → cùng output) |        ❌ (không tất định)         |                **✅**                 |
-| Bắt mẫu nằm im hàng tháng           |     Chỉ khi có trong ngữ cảnh      |        **✅** (quét mọi file)         |
-| Nhớ finding giữa các lần chạy       | ❌ (không trí nhớ giữa các phiên)  |       **✅** (baseline + diff)        |
-| Chạy không cần người kích hoạt      |         Cần PR hoặc prompt         | **✅** (hook CI, chạy trong vài giây) |
-
-**Dùng cả hai.** AI bắt được sắc thái, ý đồ và lỗi thiết kế không regex
-nào tìm ra. Mjölnir bắt các mẫu cấu trúc AI bỏ sót vì chúng trông
-«có chủ ý» — một `.only` bị commit, exit code bị nuốt, một
-`continue-on-error` trên job kiểm thử. Đó không phải bug cần suy luận;
-đó là sự thật cần quét.
-
----
-
-## 🤖 Tích hợp CI
-
-Một lệnh sinh PR workflow — tư vấn mặc định, không bao giờ chặn:
+Tạo workflow PR, mặc định mang tính tư vấn:
 
 ```bash
 mjolnir ci install
 ```
 
-Hoặc nối native vào GitHub Code Scanning qua SARIF:
+Hoặc thêm action trên Marketplace vào một workflow bạn đã có:
+
+```yaml
+- uses: Sergey-Bar/Mjolnir@v1
+  with:
+    scope: changed
+    fail-on: error
+```
+
+Ghim `@v1` để theo dòng phiên bản chính, hoặc một tag chính xác (`@v0.5.32`) để có cổng tái lập được. [docs/DISTRIBUTION-KIT.md](docs/DISTRIBUTION-KIT.md) đề cập đến Marketplace, Smithery và các sổ đăng ký MCP.
+
+Để đưa phát hiện vào GitHub Code Scanning, hãy tải lên SARIF (yêu cầu `security-events: write` ở phạm vi workflow hoặc job):
 
 ```yaml
 - run: npx mjolnir-qa@latest --format sarif > mjolnir.sarif
+  continue-on-error: true
 - uses: github/codeql-action/upload-sarif@v3
+  if: ${{ !cancelled() }}
   with:
     sarif_file: mjolnir.sarif
 ```
 
-Cấu hình trình soạn thảo và pipeline cho SARIF:
-[docs/SARIF-INTEGRATION.md](docs/SARIF-INTEGRATION.md).
+Trên GitLab, `--format codequality` ghi báo cáo Code Quality mà widget MR và chú thích diff đọc ([docs/GITLAB-CI.md](docs/GITLAB-CI.md)). Thiết lập trình soạn thảo và pipeline: [docs/SARIF-INTEGRATION.md](docs/SARIF-INTEGRATION.md).
 
-### Độ phủ phạm vi thay đổi
+### Quy trách nhiệm theo phạm vi thay đổi
 
-`--scope changed` gán finding cho các dòng được thêm vào branch của bạn
-so với merge-base với `main`. Nó phủ các file kiểm thử (`*.spec.*`,
-`*.test.*`) cùng file workflow GitHub và cấu hình Playwright trong
-diff. Khi không resolve được merge-base — shallow clone, detached HEAD,
-đích không phải git, branch mặc định khác — nó thoái tr honoured: finding
-quay về gán cho toàn file và báo cáo nói rõ. Ghi đè ref gốc bằng
-`--base <ref>`.
+```bash
+npx mjolnir-qa@latest --scope changed
+```
 
----
+Phát hiện được quy về các dòng mà nhánh của bạn đã thêm, đo so với **merge-base**. Phạm vi là cùng tập tệp mà một lần quét đầy đủ phát hiện (spec TS/JS và cấu hình adapter, `test_*.py`, `*Test.java`, `*Tests.cs`, `.github/workflows/*.yml`), cộng thêm các thay đổi chưa commit và chưa theo dõi, nên nó hoạt động cả trước khi bạn commit. Nhánh gốc được xác định theo thứ tự `main → master → origin/main → origin/master → origin/HEAD`; ghi đè bằng `--base <ref>`.
 
-## Cấu hình
+Khi không xác định được merge-base (clone nông, HEAD tách rời, mục tiêu nằm ngoài git), phát hiện sẽ quay về quy cho toàn bộ tệp **và báo cáo nói rõ điều đó.** Một sự quay về âm thầm sẽ chính là loại lỗi mà công cụ này tồn tại để bắt.
 
-Mjölnir là zero-config. Một `mjolnir.config.json` tuỳ chọn (hoặc
-`.mjolnir.json`) ở gốc repo tinh chỉnh severity, gating và scope —
-không bao giờ đổi ngữ nghĩa phát hiện.
+<br />
 
-| Key                 | Kiểu                                 | Tác dụng                                                                                                                                                 |
-| ------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `exclude`           | `string[]`                           | Glob bỏ qua bổ sung (tập con gitignore), chồng lên mặc định sẵn có                                                                                       |
-| `gate`              | `"advisory" \| "error" \| "warning"` | Severity nào thoát khác 0 (mặc định `error`; `advisory` không bao giờ chặn)                                                                              |
-| `severityOverrides` | `{ "<RULE-ID>": severity }`          | Xếp lại hạng finding của một quy tắc cho repo của bạn                                                                                                    |
-| `ignore`            | `IgnoreEntry[]`                      | Nuốt finding — **`reason` bắt buộc**; mục hết hạn sau 90 ngày (ngày `expires` tường minh, hoặc thời gian sửa lần cuối của file config cho mục không ghi) |
-| `plugins`           | `string[]`                           | Gói quy tắc bên thứ ba (xem [Mô hình niềm tin](#mô-hình-niềm-tin))                                                                                       |
+## Tác tử AI
+
+Phát hiện chỉ có giá trị nếu có thứ gì đó hành động dựa trên chúng.
+
+```text
+SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
+```
+
+**AI viết bản sửa. Mjölnir xác minh nó.** Bằng chứng đến từ lần quét lại, không bao giờ đến từ báo cáo thành công của chính tác tử.
+
+| Lệnh              | Tác tử nhận được gì                                                                                                                                                                 |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mjolnir mcp`     | Một máy chủ [MCP](https://modelcontextprotocol.io) qua stdio. `scan`, `explain` và `diff` trở thành công cụ có thể gọi.                                                             |
+| `mjolnir handoff` | Một báo cáo `--json` đã lưu trở thành một kế hoạch Markdown tất định: đã phát hiện gì, ranh giới bằng chứng của từng phát hiện, những gì **không** được thay đổi, và cách xác minh. |
+| `mjolnir install` | Ghi vào các vị trí dành cho tác tử mà kho của bạn đã có (`.claude/`, `.cursor/`, `.kilo/`, `AGENTS.md`) để tác tử quét lại trước khi khẳng định là đã xong.                         |
+
+Thêm vào một client có CLI riêng:
+
+```bash
+claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
+```
+
+Hoặc vào bất kỳ client nào nhận khối `mcpServers`:
 
 ```json
 {
-  "gate": "error",
-  "exclude": ["legacy/**"],
-  "severityOverrides": { "QA-PW-141": "warning" },
-  "ignore": [
-    {
-      "ruleId": "QA-TEST-004",
-      "files": ["e2e/legacy-login.spec.ts"],
-      "reason": "Third-party widget needs a settle delay; tracked in JIRA-4821",
-      "expires": "2026-12-31"
-    }
-  ]
+  "mcpServers": {
+    "mjolnir": { "command": "npx", "args": ["-y", "mjolnir-qa@latest", "mcp"] }
+  }
 }
 ```
 
-- **`.mjolnirignore`** — một file kiểu gitignore thuần cho loại trừ đường
-  dẫn, cùng ngữ pháp với `exclude`. Dùng nó cho nhiễu riêng máy; dùng
-  `exclude` khi danh sách thuộc version control cùng phần còn lại của
-  cấu hình.
-- **CLI overrides** — `--strict` (gồm quy tắc cách ly), `--width <cols>`
-  và `--ascii` / `--no-ascii` (render terminal), `--tone blunt`
-  (thông điệp khô hơn), `--max-duration <sec>` (quét một phần giới hạn).
-- Nuốt quy tắc và vòng đời deprecated: [docs/RULE-LIFECYCLE.md](docs/RULE-LIFECYCLE.md).
+**Lan can bảo vệ quan trọng hơn sự tiện lợi.** Mỗi phát hiện trong phần bàn giao mang ranh giới của nó. **E2** nói _tất định: kiểm tra vị trí và áp dụng bản sửa_. **E1** nói _CẦN XÁC NHẬN: chỉ riêng quan sát không chứng minh được lỗi_. Một tác tử sửa E1 một cách mù quáng, chặn một quy tắc, hoặc sửa một quy tắc để nâng điểm đang làm đúng điều mà công cụ này tồn tại để bắt, nên phần bàn giao nói rõ điều đó trong prompt, ngay cạnh phát hiện.
 
-Mục `ignore` cũng nuôi lệnh độc lập `mjolnir suppressions`, liệt kê thứ
-đang bị nuốt và từng mục hết hạn khi nào.
+<br />
 
----
+## Tin cậy và bảo mật
 
-## 📐 Mã thoát & hợp đồng
+**Ưu tiên cục bộ, không thu thập dữ liệu sử dụng.** Không có API nào có khả năng truy cập mạng (`fetch`, `http`, `https`, `net`, `dns`, `dgram`, WebSocket) tồn tại ở bất kỳ đâu trong `src/`, và [`privacy-network-isolation.spec.ts`](tests/contract/privacy-network-isolation.spec.ts) sẽ làm build thất bại nếu có một cái xuất hiện. Nó cũng cấm `eval` và `new Function`. Quét mã không đáng tin không bao giờ thực thi nó: phân tích tĩnh đọc văn bản nguồn, còn phân tích pháp chứng phân tích các tệp báo cáo đã có sẵn trên đĩa.
 
-Đóng băng — an toàn để xây logic CI trên đó:
+Hai lưu ý: bản thân `npx` tải gói xuống trước khi bất cứ thứ gì chạy, và cam kết này áp dụng cho `src/`, không bao gồm plugin của bên thứ ba.
 
-| Mã thoát | Ý nghĩa                                                                           |
-| -------- | --------------------------------------------------------------------------------- |
-| `0`      | Sạch — không finding ở hoặc trên gate                                             |
-| `1`      | Có finding ở hoặc trên gate                                                       |
-| `2`      | Quét một phần (hết ngân sách thời gian, file không đọc được) — không bao giờ chặn |
-| `10`     | Lỗi sử dụng (flag sai, thiếu đích)                                                |
-| `20`     | Lỗi nội bộ                                                                        |
+**Plugin không chạy trong sandbox.** Plugin JS (`mjolnir-rules/*.mjs`, hoặc các gói npm liệt kê dưới `"plugins"`) chạy với toàn quyền của Node, cùng mô hình tin cậy như plugin của ESLint hay Vitest. Việc tải chúng phải được bật **cho từng lần quét**: không có `--enable-plugins` (hoặc `MJOLNIR_ENABLE_PLUGINS=1`) thì mã nguồn của chúng không bao giờ được tải, và một thông báo trên stderr liệt kê những gì đã bị bỏ qua. Manifest quy tắc dạng JSON không thực thi mã, và các tiền tố ID của quy tắc core được giữ riêng để plugin không thể mạo danh chúng. Báo cáo lỗ hổng qua [SECURITY.md](SECURITY.md).
 
-Báo cáo JSON/SARIF là `schemaVersion: 1`. Rule ID (`QA-<FAMILY>-NNN`)
-bất biến sau khi ra mắt và không bao giờ tái sử dụng.
+**Nó tự chạy trên chính mình.** Một công cụ tin cậy xác minh chẳng có chỗ đứng nếu chính nó không thể được xác minh. Mỗi lần chạy CI đều quét kho này bằng bản build mà chính lần chạy đó tạo ra. Cổng thất bại với bất kỳ phát hiện nào ở mức error, và cả khi lần quét là **một phần** hoặc có **quy tắc bị sập**, vì một lần tự quét bị cắt cụt mà không báo cáo gì chính là màu xanh giả mà dự án này tồn tại để bắt. `mjolnir doctor` kiểm toán lại cơ sở quy tắc trong cùng lần chạy (tường lửa fixture, tính trung thực của các cấp, trần của cấp core), và một kiểm tra có kết quả INCONCLUSIVE sẽ thất bại y như một kiểm tra thất bại. Cả hai báo cáo được tải lên dưới dạng artifact của build.
 
----
+### Mã thoát và hợp đồng máy
 
-## Mô hình niềm tin
+Đã đóng băng, nên bạn có thể xây logic CI dựa trên chúng:
 
-- **Local-first** — 0 lệnh gọi mạng trong lúc quét. Bao giờ vậy. 0
-  telemetry.
-- **Không bằng chứng giả** — thà nói «chưa biết» hơn là «đã kiểm chứng».
-  Repo rỗng nhận `score: null`, không bao giờ 100 giả.
-- **Trung thực một phần** — nếu phân tích bị cắt ngắn, đầu ra nói vậy.
-  Không bao giờ «complete» khi chưa phải.
-- **Tường lửa FP** — phát hiện chạy trên cái nhìn mã không comment/
-  chuỗi (quy tắc TypeScript dùng AST bộ biên dịch): một mẫu trong comment
-  văn xuôi hoặc chuỗi ví dụ tài liệu là tài liệu, không phải finding.
-- **Đã đo, không phải khẳng định** — chỉ quy tắc có tỷ lệ false positive
-  từ mã OSS thật mới ra tier tiêu đề (xem
-  [Bao nhiêu đã được đo](#bao-nhiêu-đã-được-đo)); chân bản quét và
-  `mjolnir rules --unmeasured` cho biết cái nào là cái nào.
-- **Niềm tin plugin và cổng thực thi** — plugin là gói npm khai báo trong
-  `"plugins"`; module JS nằm trong `mjolnir-rules/*.mjs`.
-  **Không sandbox**: mã plugin chạy với đầy đủ đặc quyền Node, cùng mô
-  hình tin cậy như plugin ESLint hay Vitest. Vì vậy việc thực thi mã là
-  **opt-in trong mỗi lần quét**: truyền `--enable-plugins` (hoặc đặt
-  `MJOLNIR_ENABLE_PLUGINS=1`), nếu không nguồn sẽ KHÔNG được nạp — một
-  thông báo stderr rõ ràng liệt kê chính xác điều gì bị bỏ qua. Quét mã
-  không đáng tin cậy không bao giờ chạy nó. JSON rule manifest
-  (`mjolnir-rules/*.json`) không bị ảnh hưởng: khai báo regex pattern và
-  không thực thi mã theo thiết kế. Tiền tố rule ID core được
-  bảo lưu và từ chối khỏi plugin và quy tắc ngoài để chống giả danh.
-- **Quy tắc ngoài cục bộ theo workspace** (theo thư mục, 0 mạng) — một
-  thư mục `mjolnir-rules/` cạnh đích quét nạp quy tắc riêng: file JSON
-  khai báo mẫu regex (không chạy mã), module `.mjs`/`.js` export
-  `rules` (tin cậy Node đầy đủ, như plugin). Quy tắc ngoài mang cùng
-  metadata tin cậy với core; không bao giờ vào được tier core (core cần
-  tỷ lệ FP đo từ sidecar corpus — `tier: "core"` khai báo bị kẹp về
-  `extended`), tuân trần tier và được kiểm tra trôi: `mjolnir rules --md
---external` render danh mục từ các file đã nạp (nguồn gốc `external`),
-  và bộ sinh ma trận nhận `--external <root>`.
+| Mã thoát | Ý nghĩa                                                                |
+| -------- | ---------------------------------------------------------------------- |
+| `0`      | Sạch: không có phát hiện ở mức cổng hoặc cao hơn                       |
+| `1`      | Có phát hiện ở mức cổng hoặc cao hơn                                   |
+| `2`      | Quét một phần (hết thời gian, tệp không đọc được). Không bao giờ chặn. |
+| `10`     | Lỗi sử dụng (cờ sai, thiếu mục tiêu)                                   |
+| `20`     | Lỗi nội bộ                                                             |
 
----
+`2` được cố ý tách biệt khỏi `0`: một lần quét chưa hoàn tất không phải là "không tìm thấy gì". Nó chỉ chưa tìm xong.
 
-## 🏗️ Kiến trúc
+Mọi thứ mà máy tiêu thụ (kết quả công cụ MCP, `--json`, SARIF 2.1) đều đến từ một kết quả chuẩn duy nhất theo một schema có phiên bản và **chỉ mở rộng bằng cách bổ sung** (`schemaVersion: 1`, `contractVersion: 1`), nên không bên tiêu thụ nào phải dựng lại ý nghĩa từ văn bản đã hiển thị. Xem [hợp đồng máy](docs/machine-contract.md). ID quy tắc (`QA-<FAMILY>-NNN`) không thể thay đổi sau khi phát hành và không bao giờ được dùng lại.
 
-<details>
-<summary>Mở cây</summary>
+<br />
 
-```
-mjolnir/
-├── src/
-│   ├── engine/          # LanguageAdapter interface + rule runner
-│   ├── adapters/        # typescript · python · java · csharp · github-actions
-│   ├── rules/           # rules across 8 families + the measured-FP table
-│   ├── playwright/      # Selector Health Score engine
-│   ├── discovery/       # workspace, frameworks, ignore resolution
-│   ├── scope/           # git merge-base changed-scope engine
-│   ├── scorer/          # transparent deduction table + prioritization
-│   ├── reporter/        # terminal · JSON · SARIF 2.1 · Mermaid
-│   ├── forensics/       # run-data ingestion · flake verdicts · triage
-│   ├── config/          # mjolnir.config.json + suppressions
-│   ├── plugins/         # third-party rule loading (no sandbox)
-│   └── commands/        # every subcommand
-└── tests/
-    ├── fixtures/        # must-fire / must-not-fire per rule
-    └── golden/          # frozen score regression locks
-```
+## Những điều Mjölnir không thể cho bạn biết
 
-</details>
+- **Nó không chạy test của bạn.** Một lần quét sạch không phải là một bộ test đang qua.
+- **Nó không thể cho bạn biết một assertion là _sai_.** `expect(total).toBe(41)` trông vẫn khỏe mạnh. Mjölnir tìm những test _không thể thất bại_ và những pipeline _không thể chuyển đỏ_, không phải những test kiểm tra sai thứ.
+- **Nó không chứng minh tính đúng đắn nghiệp vụ.** Không có gì ở đây nói rằng sản phẩm của bạn làm đúng điều mà yêu cầu đặt ra.
+- **Điểm 100 không phải bằng chứng của một bộ test tốt.** Bộ test của bạn có bao phủ rủi ro thực tế hay không là một câu hỏi khác, và công cụ này không trả lời câu hỏi đó.
+- **5 trên 79 quy tắc phát hành dựa trên ước tính**, không phải tỷ lệ đã đo. Mỗi quy tắc đều nói rõ điều đó trên phát hiện của chính nó.
+- **E1 không phải E2.** Phát hiện theo suy đoán đáng để đọc, không đáng để áp dụng mù quáng.
+- **Một kho rỗng nhận điểm `null`, không bao giờ là 100.**
+- **Một tệp tên `*.spec.ts` không có khai báo test không được tính là độ phủ.** Một kho mà các tệp spec duy nhất chỉ chứa import hoặc kiểu (không có lời gọi `it`/`test` nào) nhận điểm `null`, không phải 100.
 
-- **Quy tắc là hàm thuần** — `(SourceFileContext) → Finding[]`, không
-  I/O, không biến toàn cục. Thêm một hệ sinh thái = một adapter + quy
-  tắc của nó.
-- **TypeScript/Playwright dùng AST bộ biên dịch** (ts-morph). Python,
-  Java và C# chạy trên lớp regex chung có che comment/chuỗi.
-- Lớp AST tree-sitter WASM cho Java và C# đã tồn tại và là bước chính
-  xác kế tiếp — chưa được cắm vào pipeline quét đồng bộ.
+<br />
 
----
+## Tài liệu
 
-## 📚 Tài liệu
+Trang tài liệu đầy đủ ở <https://sergey-bar.github.io/Mjolnir/>.
 
-| Tài liệu                                               | Có gì trong đó                             |
-| ------------------------------------------------------ | ------------------------------------------ |
-| [docs/SCORING.md](docs/SCORING.md)                     | Chuẩn hoá điểm + cân bằng chứng            |
-| [docs/FP-AUDIT.md](docs/FP-AUDIT.md)                   | Tỷ lệ false positive đo được + phương pháp |
-| [docs/RULE-LIFECYCLE.md](docs/RULE-LIFECYCLE.md)       | Trạng thái quy tắc, nuốt, deprecation      |
-| [docs/SARIF-INTEGRATION.md](docs/SARIF-INTEGRATION.md) | Đầu ra SARIF + cấu hình editor/CI          |
-| [docs/rules/](docs/rules/)                             | Danh mục sinh tự động theo quy tắc         |
-| [CONTRIBUTING.md](CONTRIBUTING.md)                     | Cài đặt dev + quy trình đóng góp           |
-| [CHANGELOG.md](CHANGELOG.md)                           | Lịch sử phát hành                          |
-| [SECURITY.md](SECURITY.md)                             | Báo cáo lỗ hổng                            |
+| Tài liệu                                               | Nội dung                                                    |
+| ------------------------------------------------------ | ----------------------------------------------------------- |
+| [docs/SCORING.md](docs/SCORING.md)                     | Chuẩn hóa điểm và trọng số bằng chứng                       |
+| [docs/TERMINOLOGY.md](docs/TERMINOLOGY.md)             | Bộ từ vựng chuẩn: một từ cho một khái niệm                  |
+| [docs/FP-AUDIT.md](docs/FP-AUDIT.md)                   | Tỷ lệ dương tính giả đã đo và phương pháp                   |
+| [docs/RULE-LIFECYCLE.md](docs/RULE-LIFECYCLE.md)       | Trạng thái quy tắc, cấp, chặn, ngừng hỗ trợ                 |
+| [docs/VERSIONING.md](docs/VERSIONING.md)               | Chính sách semver, giao diện đóng băng, chu kỳ ngừng hỗ trợ |
+| [docs/machine-contract.md](docs/machine-contract.md)   | Kết quả chuẩn mà máy đọc được                               |
+| [docs/SARIF-INTEGRATION.md](docs/SARIF-INTEGRATION.md) | Đầu ra SARIF và thiết lập trình soạn thảo hoặc CI           |
+| [docs/GITLAB-CI.md](docs/GITLAB-CI.md)                 | GitLab: báo cáo Code Quality, công thức cho MR, cổng        |
+| [docs/rules/](docs/rules/)                             | Danh mục được tạo cho từng quy tắc                          |
+| [CONTRIBUTING.md](CONTRIBUTING.md)                     | Thiết lập môi trường phát triển và quy trình đóng góp       |
+| [SUPPORT.md](SUPPORT.md)                               | Nơi hỏi, báo cáo và nhận trợ giúp                           |
+| [SECURITY.md](SECURITY.md)                             | Báo cáo lỗ hổng                                             |
+| [CHANGELOG.md](CHANGELOG.md)                           | Lịch sử phát hành                                           |
 
----
+### Trạng thái
 
-## 📈 Tình trạng
+**Phiên bản 1.** Schema JSON và mã thoát là những hợp đồng đã đóng băng. TypeScript và Python có độ phủ đã đo rộng nhất. Java và C# mới hơn; hãy đọc chúng qua [bảng độ trưởng thành](https://sergey-bar.github.io/Mjolnir/reference/rule-lifecycle). Những gì sắp tới, không có ngày tháng bịa đặt: [lộ trình công khai](https://sergey-bar.github.io/Mjolnir/reference/roadmap).
 
-**v0.5.x · beta mở.** JSON schema và mã thoát là hợp đồng đóng băng.
-TypeScript và Python có độ phủ đo được rộng nhất; Java và C# mới hơn —
-đọc qua
-[bảng tier](#tier-quy-tắc-và-độ-trưởng-thành-theo-ngôn-ngữ).
+### Đóng góp
 
----
-
-## 🤝 Đóng góp
-
-Quy tắc mới là đóng góp đầu tiên dễ nhất — một lệnh scaffold quy tắc
-cùng fixtures must-fire **và** must-not-fire (quy tắc sinh ra cố ý fail
-fixture cho đến khi bạn cài phát hiện thật — stub không thể ship):
+Quy tắc mới là đóng góp đầu tiên dễ nhất. Một lệnh duy nhất tạo khung cho quy tắc cùng các fixture must-fire **và** must-not-fire của nó. Quy tắc được tạo cố ý thất bại trên chính các fixture của nó cho đến khi logic phát hiện thật được viết, vì một bản nháp được phát hành là một quy tắc chưa ai đo:
 
 ```bash
 mjolnir create-rule QA-PW-140 --title "Screenshot without diff bound"
 ```
 
-Cài đặt dev đầy đủ, các lệnh standing gate và luật anti-creep / tường
-lửa fixture nằm trong [CONTRIBUTING.md](CONTRIBUTING.md).
+Thiết lập môi trường phát triển, các lệnh cổng thường trực, cùng các luật anti-creep và tường lửa fixture có trong [CONTRIBUTING.md](CONTRIBUTING.md).
 
----
+<br />
 
 <div align="center">
 
-**Ngừng ship kiểm thử mà bạn không thể tin.**
+<img src="assets/readme/closing.svg" alt="Chạy nó trên kho của bạn." width="100%" />
 
 ```bash
 npx mjolnir-qa@latest
 ```
 
-**Star ⭐ · Watch 👀 · Contribute 🤝**
+[Đọc hướng dẫn](https://sergey-bar.github.io/Mjolnir/guide/getting-started) · [Trang tài liệu](https://sergey-bar.github.io/Mjolnir/) · [npm](https://www.npmjs.com/package/mjolnir-qa)
 
-Xây bởi [Sergey Bar](https://www.linkedin.com/in/sergeybar/)
+<br />
+
+Đừng hỏi test có qua hay không.<br />
+Hãy hỏi bằng chứng có chứng minh rằng chúng xứng đáng được tin hay không.
+
+<sub>Được xây dựng bởi [Sergey Bar](https://www.linkedin.com/in/sergeybar/) · Giấy phép MIT</sub>
 
 </div>

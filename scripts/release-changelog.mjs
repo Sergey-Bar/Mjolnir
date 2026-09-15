@@ -56,10 +56,10 @@ export function applyChangelogRelease(
   const versionHeading = `## [${version}] — ${date}`;
   // Dots are literal in the heading text but regex metacharacters:
   // guard must not let `## [0.5.1]` match a `## [0.5.10]` heading.
-  const versionHeadingRe = new RegExp(
-    `^## \\[${version.replace(/\./g, "\\.")}\\]`,
-    "m",
-  );
+  const escaped = version
+    .replace(/\\/g, "\\\\")
+    .replace(/[.*+?^${}()|[\]]/g, "\\$&");
+  const versionHeadingRe = new RegExp(`^## \\[${escaped}\\]`, "m");
   if (versionHeadingRe.test(changelog)) {
     throw new Error(
       `CHANGELOG already has a [${version}] heading — refusing to run ` +
