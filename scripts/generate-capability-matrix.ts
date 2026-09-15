@@ -431,7 +431,10 @@ export function crossCheckDeclaredVsMeasured(
 // ─── Renderers ───────────────────────────────────────────────────────
 
 function cell(value: unknown): string {
-  return String(value).replace(/\|/g, "\\|").replace(/\r?\n/g, " ");
+  return String(value)
+    .replace(/\\/g, "\\\\")
+    .replace(/\|/g, "\\|")
+    .replace(/\r?\n/g, " ");
 }
 
 function pctLabel(row: CapabilityRow): string {

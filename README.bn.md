@@ -1,390 +1,431 @@
 <div align="center">
 
-<img src="assets/readme/logo.png" alt="Mjölnir — Verification Trust Engine" width="800" />
+<img src="assets/readme/hero.svg" alt="Mjölnir। টেস্ট বলে কী পাস করেছে। Mjölnir বলে কীসে আপনি ভরসা করতে পারেন।" width="100%" />
 
-### আপনার টেস্টগুলো আপনাকে মিথ্যা বলছে। আমরা তা প্রমাণ করি।
+<br />
 
-**QA-এর জন্য Verification Trust Engine।** Mjölnir টেস্ট সুইট ও CI
-পাইপলাইন অডিট করে, একটি নির্ভরযোগ্যতা স্কোর রিপোর্ট করে এবং ঠিক কোথায়
-আস্থা ভাঙছে তা দেখায়।
+Mjölnir এমন টেস্ট খুঁজে বের করে যেগুলো ব্যর্থ হতেই পারে না, আর এমন পাইপলাইন খুঁজে বের করে যেগুলো লাল হতেই পারে না,<br />
+তারপর ফলাফল কতটা বিশ্বাসযোগ্য তা স্কোর করে, প্রতিটি পয়েন্টের প্রমাণসহ।
+
+<br />
 
 [![npm](https://img.shields.io/npm/v/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
+[![downloads](https://img.shields.io/npm/dm/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
 [![ci](https://img.shields.io/github/actions/workflow/status/Sergey-Bar/Mjolnir/ci.yml?branch=main&style=flat-square&label=ci&labelColor=0A1119)](https://github.com/Sergey-Bar/Mjolnir/actions/workflows/ci.yml)
+[![coverage](https://img.shields.io/codecov/c/github/Sergey-Bar/Mjolnir?style=flat-square&color=1F6F7C&labelColor=0A1119&label=coverage)](https://codecov.io/gh/Sergey-Bar/Mjolnir)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Sergey-Bar/Mjolnir/badge)](https://scorecard.dev/viewer/?uri=github.com/Sergey-Bar/Mjolnir)
 [![license](https://img.shields.io/badge/license-MIT-1F6F7C.svg?style=flat-square&labelColor=0A1119)](LICENSE)
 [![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-1F6F7C.svg?style=flat-square&labelColor=0A1119)](https://nodejs.org)
-
-[English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | বাংলা | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
-
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-14.
 
 ```bash
 npx mjolnir-qa@latest
 ```
 
-**আপনার টেস্টগুলো কি আস্থার যোগ্য?**
+[এটি কাজ করতে দেখুন](#এটি-কাজ-করতে-দেখুন) · [দ্রুত শুরু](#দ্রুত-শুরু) · [এটি কী খুঁজে পায়](#mjölnir-কী-খুঁজে-পায়) · [স্কোর](#বিশ্বাসযোগ্যতা-স্কোর) · [প্রমাণ](#প্রমাণ-মডেল) · [রানটাইম ফরেনসিক্স](#রানটাইম-ফরেনসিক্স) · [CI](#ci-সততা) · [এজেন্ট](#ai-এজেন্ট) · [নিরাপত্তা](#বিশ্বাস-এবং-নিরাপত্তা) · [সীমাবদ্ধতা](#mjölnir-আপনাকে-যা-বলতে-পারে-না) · [নথি](#নথি)
 
-[কাজে দেখুন](#-কাজে-দেখুন) ·
-[দ্রুত শুরু](#-দ্রুত-শুরু) ·
-[কী পরীক্ষা করে](#-mjölnir-কী-পরীক্ষা-করে) ·
-[স্কোরিং](#স্কোর-কীভাবে-কাজ-করে) ·
-[CI](#-ci-ইন্টিগ্রেশন) · [কনফিগারেশন](#কনফিগারেশন) ·
-[ডকুমেন্টেশন](#-ডকুমেন্টেশন)
+<details>
+<summary>অন্য ভাষায় পড়ুন — ২২টি অনুবাদ</summary>
+
+[English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | বাংলা | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
+
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-15.
+
+<!-- Source hash: 3541b09e8d04 -->
+
+</details>
 
 </div>
 
----
+<br />
 
-## 🎬 কাজে দেখুন
+## সবুজ চেক একটি দাবি, প্রমাণ নয়
+
+সবুজ চেকের অর্থ হলো পাইপলাইন ব্যর্থ হয়নি। এর অর্থ এই নয় যে টেস্টগুলো চলেছিল, বা সেগুলো ব্যর্থ হতে পারত। এদের প্রতিটিই সবুজ হয়ে পাস করে:
+
+- কমিট করা `.only` যা ৯০০-এর বদলে ৩টি টেস্ট চালিয়েছে
+- যে job-টি গেট হওয়ার কথা ছিল তাতে `continue-on-error: true`
+- টেস্ট কমান্ডের পরে `|| true`
+- এমন টেস্ট যা কিছুই assert করে না, বা যার বডি খালি
+- একটি retry wrapper যা প্রকৃত ব্যর্থতাকে ভাগ্যক্রমে পাস হওয়ায় পরিণত করে
+- এমন একটি রিপোর্ট যা workflow আপলোড করে কিন্তু কখনো তৈরি করেনি
+- একটি race condition-কে ধরে রাখা একটি স্থির sleep
+
+এদের কোনোটিই পাইপলাইনকে লাল করে না, আর রিভিউতে প্রতিটিই ইচ্ছাকৃত মনে হয়। এই কারণেই এগুলো টিকে থাকে। এখানে Mjölnir একটি বাস্তব উদাহরণ পড়ছে:
 
 <p align="center">
-  <img src="assets/readme/demo.svg" alt="ডেমো রিপোর উপর Mjölnir-এর সম্পূর্ণ --verbose রিপোর্ট: WORTHINESS 75/100 NEEDS WORK, বিভাগভিত্তিক ডায়াগনস্টিক ভাঙানো, FIX THIS FIRST তালিকা এবং প্রতিটি finding-এ rule ID ও লাইন নম্বর — CI, Playwright, টেস্ট-হাইজিন ও Python রুল জুড়ে" width="900" />
+  <img src="assets/readme/scan.svg" alt="ডেমো রিপোজিটরির CI workflow, লাইন ধরে পড়া হয়েছে। Mjölnir প্রতিটি সন্ধান যে লাইনে রিপোর্ট করেছে সেখানেই চিহ্নিত করে, সাথে তার নিয়ম, কী ভুল, তার প্রমাণ স্তর এবং তার পরিমাপ করা false-positive হার।" width="800" />
 </p>
 
-<sub>`npx mjolnir-qa ./examples/demo-repo --verbose`-এর পূর্ণ আউটপুট,
-আসল reporter থেকে রেন্ডার করা — কিছুই কাটা নয়। `npm run docs:demo`
-দিয়ে আবার তৈরি হয়;
-[`tests/demo-asset-reproducibility.spec.ts`](tests/demo-asset-reproducibility.spec.ts)
-টেস্টটি টুল যা প্রিন্ট করে সে থেকে সরে গেলে CI ব্যর্থ করে।</sub>
+<sub>এই workflow-এর জন্য ডেমো স্ক্যান যত সন্ধান রিপোর্ট করেছে, সেগুলো যে লাইনে রিপোর্ট করা হয়েছে সেখানেই। `npm run docs:readme-brand` দ্বারা [`demo-report.json`](assets/readme/demo-report.json) থেকে তৈরি এবং CI-তে বিচ্যুতির বিরুদ্ধে লক করা।</sub>
 
-**এইমাত্র কী ঘটল:**
+**কঠোর মোড।** সবচেয়ে আক্রমণাত্মক সনাক্তকরণ — `.only`, `continue-on-error`, ফাঁকা পরীক্ষা, পুনরায় চেষ্টার অপব্যবহার — কোয়ারেন্টাইন স্তরে থাকে। এগুলো শুধু `--strict`-এ চলে এবং `info` তীব্রতায় সীমিত: এগুলো চিহ্নিত করে, কিন্তু কখনো গেট করে না। ডিফল্ট স্ক্যান (`npx mjolnir-qa@latest` ছাড়া `--strict`) শুধু কোর এবং বর্ধিত নিয়ম কভার করে। পরামর্শমূলক স্তরও চাইলে `--strict` যোগ করুন।
 
-1. Mjölnir Playwright spec-গুলো, তার কনফিগ, CI workflow ও একটি Python
-   টেস্ট ফাইল আবিষ্কার করল — চার ভাষা/ফরম্যাট, এক পাসে।
-2. সুইটের ওপর আস্থা দুর্বল করে এমন প্রমাণ পেল — একটি job ঢেকে রাখা
-   `continue-on-error`, একটি exit code গিলে ফেলা `|| true`, কড়া sleep,
-   ভঙ্গুর selector, hardcode করা staging URL, `networkidle` wait।
-3. প্রতিটিকে বানাল একটি সুনির্দিষ্ট finding — rule ID, অবস্থান ও ফিক্স
-   সহ — এবং একটি একক স্কোর, যার উপর আপনি PR gate করতে পারেন।
+Mjölnir স্যুট, CI workflow, এবং আপনার কাছে থাকলে একটি প্রকৃত রানের রিপোর্ট পড়ে। এটি আপনার টেস্ট চালায় না, আপনার dependency ইনস্টল করে না, বা এটি যে কোড স্ক্যান করে তা চালায় না। আর যখন এর কাছে প্রমাণ নেই, তখন এটি আস্থা বানিয়ে না নিয়ে সেটাই বলে দেয়:
 
-### একটি finding, কাছ থেকে
+| পরিস্থিতি                                             | Mjölnir যা রিপোর্ট করে                                             |
+| ----------------------------------------------------- | ------------------------------------------------------------------ |
+| কোনো টেস্ট ঘোষণা পাওয়া যায়নি                        | স্কোর `null`, **UNKNOWN** হিসেবে দেখানো হয়। কখনো বানানো ১০০ নয়।  |
+| কোনো baseline বা তুলনাযোগ্য রিভিশন নেই                | **UNKNOWN**, কারণসহ। কখনো ধরে নেওয়া ০ নয়।                        |
+| স্ক্যান মাঝপথে থেমে গেছে (সময় বাজেট, অপঠনযোগ্য ফাইল) | **PARTIAL**, এক্সিট `2`। কখনো পরিষ্কার হিসেবে উপস্থাপন করা হয় না। |
 
-উপরের প্রথম finding-এর জন্য `mjolnir explain QA-CI-001` চালান, এবং
-পাবেন:
+<p align="center">
+  <img src="assets/readme/how-it-works.svg" alt="Mjölnir কীভাবে কাজ করে। এটি টেস্ট স্যুট এবং CI পাইপলাইন স্ট্যাটিকভাবে পড়ে, এবং যখন থাকে তখন একটি প্রকৃত রানের রিপোর্টও পড়ে। এটি প্রতিটি সন্ধানকে তার প্রমাণ স্তর এবং আস্থা স্তর অনুযায়ী ওজন দেয়, যেখানে শুধু একটি প্রকৃত রান L3 থেকে L5 পর্যন্ত পৌঁছাতে পারে, এবং সন্ধান, একটি worthiness স্কোর, এবং হিমায়িত এক্সিট কোডের উপর একটি CI গেট তৈরি করে। এজেন্ট লুপে, AI ফিক্স লেখে এবং Mjölnir তা প্রমাণ করতে পুনরায় স্ক্যান করে।" width="880" />
+</p>
+
+<sub>এই পৃষ্ঠার জন্য তৈরি এবং ১:১ অনুপাতে দেখানো হয়েছে। `npm run docs:readme-brand` দ্বারা তৈরি এবং CI-তে বিচ্যুতির বিরুদ্ধে লক করা; স্কোর, সংখ্যা এবং নিয়ম ID [`script.demo.json`](assets/video/script.demo.json), [`demo-report.json`](assets/readme/demo-report.json) এবং নিয়ম রেজিস্ট্রি থেকে আসে, কখনো হাতে টাইপ করা হয় না। একই ছবি পোস্টার হিসেবে: [`architecture.svg`](assets/readme/architecture.svg)।</sub>
+
+<br />
+
+## এটি কাজ করতে দেখুন
+
+[`examples/demo-repo`](examples/demo-repo)-এর একটি প্রকৃত স্ক্যান, CI workflow সহ একটি ছোট Playwright স্যুট। এখানেই এর পয়েন্ট গেছে:
+
+<p align="center">
+  <img src="assets/readme/terminal-hero.svg" alt="Mjölnir-এর deduction breakdown: WORTHINESS 75/100 NEEDS WORK, বিভাগ অনুযায়ী স্কোর, severity অনুযায়ী deduction box, এবং একটি FIX THIS FIRST তালিকা" width="520" />
+</p>
+
+<sub>`npm run docs:hero` দ্বারা একটি প্রকৃত স্ক্যান থেকে তৈরি এবং CI-তে বিচ্যুতির বিরুদ্ধে লক করা। একই স্ক্যানের সম্পূর্ণ `--verbose` রিপোর্ট হলো [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`)।</sub>
+
+<details>
+<summary><strong>এটি দেখুন</strong> — একটি স্ক্যান, এটি যে ফিক্স প্রিন্ট করে, এবং পুনরায় স্ক্যান যা তা প্রমাণ করে</summary>
+
+<br />
+
+<p align="center">
+  <a href="assets/video/mjolnir-demo.mp4">
+    <img src="assets/video/mjolnir-demo-poster.png" alt="ডেমো রেকর্ডিংয়ের একটি ফ্রেম: একটি টার্মিনাল উইন্ডোতে ডেমো রিপোজিটরি স্ক্যান করছে npx mjolnir-qa@latest" width="900" />
+  </a>
+</p>
+
+<sub>`npm run docs:video` দ্বারা একটি প্রকৃত স্ক্যান থেকে ফ্রেম বাই ফ্রেম রেন্ডার করা হয়েছে; কখনো স্ক্রিন-রেকর্ড করা হয়নি। [`mjolnir-demo.mp4`](assets/video/mjolnir-demo.mp4) খুলতে ফ্রেমটি নির্বাচন করুন।</sub>
+
+</details>
+
+### একটি সন্ধান, কাছ থেকে
+
+প্রতিটি সন্ধান চারটি প্রশ্নের উত্তর দেয়: এটি কোথায়, Mjölnir কতটা নিশ্চিত, নিয়মটি কত প্রায়ই ভুল হয়, এবং কীভাবে ঠিক করতে হয়।
+
+<p align="center">
+  <img src="assets/readme/finding-anatomy.svg" alt="ডেমো স্ক্যানের প্রথম সন্ধান, ঠিক যেভাবে টার্মিনাল এটি প্রিন্ট করে, এর চারটি অংশ চিহ্নিত করা: কোথায়, কতটা নিশ্চিত, নিয়মটি কত প্রায়ই ভুল হয়, এবং ফিক্স।" width="100%" />
+</p>
+
+`mjolnir explain QA-CI-001` একটি নিয়মের সম্পূর্ণ আস্থার রেকর্ড প্রিন্ট করে, যার মধ্যে রয়েছে তার পরিমাপ করা false-positive হার এবং সেই হার যে tier অর্জন করেছে:
 
 ```text
-▍ QA-CI-001 — continue-on-error masks a failing verification gate
+  ▍ QA-CI-001 — continue-on-error masks a failing verification gate
 
 Severity:    error
 Confidence:  high
+Tier:        quarantine
 Evidence:    E2
-Measured FP: not yet measured — this rule ships on assumption (see docs/FP-AUDIT.md)
+QA impact:   False-green risk (FALSE-GREEN)
+Measured FP: 11% (19 hand-classified corpus verdicts)
+FP risk:     low (author estimate)
+Languages:   yaml
+Frameworks:  github-actions, azure-pipelines
 
 WHAT WAS FOUND (real detector output, not a mockup)
   Job `security-scan` runs a verification gate under `continue-on-error: true`.
 
 WHY IT MATTERS
-  This job can fail every day and CI will still show green. The checkmark
-  on this workflow cannot be trusted.
+  This job can fail every day and CI will still show green. The checkmark on
+  this workflow cannot be trusted.
 
 HOW TO FIX
   Remove continue-on-error, or scope it to individual non-blocking steps only.
+
+  Example from this rule's own must-fire fixture: QA-CI-001/must-fire/masked.yml
+
+WHAT WOULD CHANGE THE VERDICT
+  - a run report next to the scan target (mjolnir.report.json or test-results/)
+  corroborating this file lifts its findings to L3–L5
+  - a documented suppression (mjolnir.config.json) lowers the finding count
+  without claiming correctness
+  - quarantine findings run only under --strict and are advisory (E0) — they can
+  never gate CI
+
+NEXT ACTION
+  Fix the first occurrence, then re-run: `mjolnir --scope changed`. Every
+  occurrence of this rule is listed in the scan output.
+
+HOW TO VERIFY THE FIX
+  Re-run `mjolnir` on the changed file(s) — this finding should no longer
+  appear. `mjolnir --scope changed` scopes the check to just what you touched.
+
+Docs: mjolnir rules --md   (full catalog, this rule included)
 ```
 
-এটাই মূল্যের একক: স্টাইলের খোঁচা নয়, বরং সেই জায়গা যেখানে আপনার CI
-বলছে কিছু পাস হয়েছে — অথচ হয়নি।
+এটিই মূল্যের একক: একটি জায়গা যেখানে CI এমন একটি পাস রিপোর্ট করে যা এটি অর্জন করেনি।
 
----
+<br />
 
-## ⚡ দ্রুত শুরু
-
-একটি রিপোর বিরুদ্ধে চালান — সম্পূর্ণ রিপোর্ট ও নির্ভরযোগ্যতা স্কোরের
-জন্য:
+## দ্রুত শুরু
 
 ```bash
 npx mjolnir-qa@latest
 ```
 
-**CI-তে পণ্যটি একটি মাত্র কমান্ড।** শুধু branch যা স্পর্শ করেছে তা
-স্ক্যান করে এবং নতুন সমস্যায় অশূন্য কোডে বের হয়:
+এটি বর্তমান ডিরেক্টরি স্ক্যান করে এবং Trust Report প্রিন্ট করে: এটি কী পেয়েছে, আপনি কতটা বিশ্বাস করতে পারেন, কেন, এবং পরবর্তীতে কী করতে হবে। গেট বা তার উপরে কিছু না পাওয়া গেলে এটি `0` দিয়ে exit করে।
+
+CI-তে, শুধু ব্রাঞ্চ যা এনেছে তা স্ক্যান করুন, যাতে একটি পুরনো স্যুট আপনার প্রথম pull request-কে ডুবিয়ে না দেয়:
 
 ```bash
 npx mjolnir-qa@latest --scope changed
 ```
 
-এটি একটি PR check-এ ফেলে দিন — `mjolnir ci install` workflow লিখে দেয় —
-এবং শেষ। বাকি সব ঐচ্ছিক।
+`mjolnir ci install` এটিকে একটি GitHub Actions workflow হিসেবে লেখে, `v1` মেজর ট্যাগে পিন করা [action](https://github.com/Sergey-Bar/Mjolnir#readme) ব্যবহার করে (অথবা `--no-action` সহ সাধারণ `npx`)। এটি ততক্ষণ পরামর্শমূলক থাকে যতক্ষণ না আপনি সিদ্ধান্ত নেন এটি ব্লক করা উচিত।
 
-| কমান্ড                              | এটি কী করে                                          |
-| ----------------------------------- | --------------------------------------------------- |
-| `mjolnir`                           | পূর্ণ-রিপো স্ক্যান + নির্ভরযোগ্যতা স্কোর            |
-| `mjolnir --scope changed`           | শুধু আপনার branch যা আনল — CI রূপ                   |
-| `mjolnir ci install`                | উপদেশমূলক PR workflow তৈরি করে                      |
-| `mjolnir explain QA-CI-001`         | কী / কেন / ফিক্স + একটি রুলের জন্য পরিমাপকৃত FP হার |
-| `mjolnir rules --unmeasured`        | পরিমাপ নয়, অনুমানের ভিত্তিতে চলা রুলগুলো           |
-| `mjolnir --json` / `--format sarif` | মেশিন-পাঠযোগ্য / GitHub Code Scanning               |
-| `mjolnir --strict`                  | quarantine টিয়ারের রুলও চালায় (উচ্চতর FP ঝুঁকি)   |
+| কমান্ড                              | এটি কী করে                                             |
+| ----------------------------------- | ------------------------------------------------------ |
+| `mjolnir`                           | Trust Report: রায়, আস্থা, পরবর্তী পদক্ষেপ             |
+| `mjolnir --scope changed`           | শুধু আপনার ব্রাঞ্চ যা এনেছে (CI ফর্ম)                  |
+| `mjolnir ci install`                | পরামর্শমূলক PR workflow তৈরি করে (action-ভিত্তিক)      |
+| `mjolnir explain QA-CI-001`         | কী, কেন, এবং ফিক্স, প্লাস পরিমাপ করা FP হার            |
+| `mjolnir why src/a.spec.ts:42`      | ঠিক এই লাইনটি কেন ফ্ল্যাগ করা হয়েছে। কখনো গেট করে না। |
+| `mjolnir forensics ./test-results/` | একটি প্রকৃত রান থেকে রানটাইম প্রমাণ                    |
+| `mjolnir trust-report`              | স্বয়ংসম্পূর্ণ Trust Artifact (md + json)              |
+| `mjolnir handoff`                   | একটি কোডিং এজেন্টের জন্য প্রতিকার পরিকল্পনা            |
+| `mjolnir --json` / `--format sarif` | মেশিন-পাঠযোগ্য আউটপুট, GitHub Code Scanning            |
+| `mjolnir --format codequality`      | GitLab Code Quality রিপোর্ট (MR widget artifact)       |
+| `mjolnir --strict`                  | quarantine-tier নিয়মও চালায় (উচ্চতর FP ঝুঁকি)        |
 
 <details>
-<summary><strong>কিছু flaky হলে</strong></summary>
+<summary><strong>অন্য সব কমান্ড</strong> — flake triage, রিপোর্টিং, গভর্নেন্স</summary>
 
-| কমান্ড                              | এটি কী করে                                              |
-| ----------------------------------- | ------------------------------------------------------- |
-| `mjolnir forensics ./test-results/` | প্রকৃত রান-ডেটা → `TRUE-FLAKE` রায়, `FLAKY.md`         |
-| `mjolnir triage ./test-results/`    | এক্সিকিউশন ইতিহাস থেকে কোয়ারেন্টাইন প্রস্তাব           |
-| `mjolnir pw-report ./test-results/` | Playwright রান-সারসংক্ষেপ — retry / flake / সবচেয়ে ধীর |
-| `mjolnir doctor:playwright`         | শুধু-Playwright গভীর স্ক্যান + Selector Health Score    |
+<br />
+
+| কমান্ড                              | এটি কী করে                                                                       |
+| ----------------------------------- | -------------------------------------------------------------------------------- |
+| `mjolnir --classic`                 | Trust Report-পূর্ব স্কোর ব্যানার রেন্ডার                                         |
+| `mjolnir explain verdict`           | সংরক্ষিত স্ক্যানের রায় কেন এমন                                                  |
+| `mjolnir triage ./test-results/`    | গাইডেড triage। প্রতিটি সারি একটি পরবর্তী পদক্ষেপে শেষ হয়।                       |
+| `mjolnir pw-report ./test-results/` | Playwright রান সামারি: retry, flake, সবচেয়ে ধীর                                 |
+| `mjolnir doctor:playwright`         | শুধু Playwright-এর জন্য গভীর স্ক্যান প্লাস Selector Health Score                 |
+| `mjolnir fix --dry-run` / `fix`     | নিরাপদ auto-fix, প্রতিটি পুনরায় স্ক্যান করে প্রমাণ করা হয়েছে যে এটি ঠিক হয়েছে |
+| `mjolnir baseline` / `diff`         | সন্ধানের স্ন্যাপশট নেয়, তারপর শুধু নতুন বা খারাপ রিপোর্ট করে                    |
+| `mjolnir impact --since <ref>`      | একটি কমিট কী এনেছিল এবং সমাধান করেছিল                                            |
+| `mjolnir summary`                   | একটি রিপোর্ট থেকে CI annotation এবং step summary                                 |
+| `mjolnir pr-comment`                | একটি সীমিত-পরিসরের PR মন্তব্য, Markdown হিসেবে                                   |
+| `mjolnir debt`                      | একটি cost model সহ test-debt রেজিস্টার                                           |
+| `mjolnir handover`                  | একজন নতুন QA ইঞ্জিনিয়ারের জন্য স্যুটের onboarding map                           |
+| `mjolnir init`                      | framework detect করে, একটি সেটআপ checklist প্রিন্ট করে                           |
+| `mjolnir suppressions`              | গভর্নেন্সের জন্য দমন করা সন্ধানের তালিকা করে                                     |
+| `mjolnir rules --unmeasured`        | যে নিয়মগুলো অনুমানের উপর চলে, পরিমাপের উপর নয়                                  |
+| `mjolnir rules --md`                | সম্পূর্ণ নিয়ম ক্যাটালগ (JSON বা Markdown)                                       |
+| `mjolnir doctor`                    | Mjölnir-এর নিজের নিয়ম বেসের self-audit                                          |
+| `mjolnir create-rule <ID>`          | একটি নতুন নিয়ম এবং তার fixture-এর জন্য কাঠামো তৈরি করে                          |
+| `mjolnir stats`                     | এখন পর্যন্ত দেখা সব ফিক্সের স্থানীয় সর্বকালীন কাউন্টার                          |
+| `mjolnir badge`                     | shields.io endpoint JSON এবং snippet                                             |
+| `mjolnir --cache`                   | একটি স্থানীয় verdict cache-এর মাধ্যমে incremental re-scan                       |
+| `mjolnir --format mermaid`          | একটি PR মন্তব্যের জন্য test-architecture diagram                                 |
+
+`mjolnir help <command>` তাদের যেকোনো একটির জন্য ব্যবহার, উদাহরণ, এবং পরবর্তী পদক্ষেপ প্রিন্ট করে।
 
 </details>
 
-<details>
-<summary><strong>মাঝে মাঝে / রিপোর্ট</strong></summary>
+Windows, macOS, বা Linux-এ **Node.js ≥ 22.18** প্রয়োজন। গ্লোবাল ইনস্টল পছন্দ করেন? `npm i -g mjolnir-qa`। এই সর্বনিম্ন সীমা বিল্ড টুলচেইন থেকে আসে (tsdown এটিকে লক্ষ্য করে এবং রিলিজ পাইপলাইন এটির বিরুদ্ধে smoke-test করে); রানটাইম dependency-গুলোর এর চেয়ে বেশি কিছু প্রয়োজন হয় না।
 
-| কমান্ড                          | এটি কী করে                                           |
-| ------------------------------- | ---------------------------------------------------- |
-| `mjolnir fix --dry-run` / `fix` | প্রমাণসহ নিরাপদ অটো-ফিক্স                            |
-| `mjolnir baseline` / `diff`     | finding স্ন্যাপশট, পরে শুধু নতুন/নাজুক হওয়া রিপোর্ট |
-| `mjolnir impact --since <ref>`  | আগের কমিটের পর কী বদলেছে                             |
-| `mjolnir debt`                  | খরচের মডেলসহ টেস্ট-ঋণ রেজিস্টার                      |
-| `mjolnir handover`              | নতুন QA-র জন্য সুইটের অনবোর্ডিং ম্যাপ                |
-| `mjolnir stats`                 | দেখা ফিক্সগুলোর লোকাল সর্বকালের গণনা                 |
-| `mjolnir badge`                 | shields.io endpoint JSON + snippet                   |
-| `mjolnir rules --md`            | সম্পূর্ণ রুল ক্যাটালগ (JSON বা Markdown)             |
-| `mjolnir doctor`                | Mjölnir-এর নিজের রুল বেসের আত্ম-অডিট                 |
-| `mjolnir create-rule <ID>`      | নতুন রুল + ফিক্সচার স্কাফোল্ড                        |
-| `mjolnir --format mermaid`      | PR কমেন্টের জন্য টেস্ট-আর্কিটেকচার ডায়াগ্রাম        |
+<br />
 
-</details>
-
-চাইলে `npx`-এর বদলে গ্লোবালি ইনস্টল করুন: `npm i -g mjolnir-qa`।
-Node.js ≥ 22.18 প্রয়োজন। Windows, macOS ও Linux-এ চলে।
-
----
-
-## 👥 এটা কাদের জন্য?
-
-- **QA / SDET** — e2e বা ইন্টিগ্রেশন সুইটের মালিক, যাদের প্রমাণ দরকার
-  যে সুইট সত্যিই সেই সবুজ টিক দাগের যোগ্য, যা সে তৈরি করে।
-- **Platform / DevEx টিম** — CI অখণ্ডতা ও release gate-এর দায়িত্বে
-  থাকা মানুষ, যারা চান না `continue-on-error` কখনো চুপচাপ লাল
-  পাইপলাইনকে সবুজ করে ফেলুক।
-- **OSS maintainers** — যারা সস্তা, সবসময় চালু একটি যাচাই-গেট চান,
-  যা লোকালি ও CI-তে শূন্য নেটওয়ার্ক কলে চলে।
-
----
-
-## 🔨 Mjölnir কী পরীক্ষা করে
-
-|     |                                                                                                                  |
-| --- | ---------------------------------------------------------------------------------------------------------------- |
-| ⚖️  | **নির্ভরযোগ্যতা স্কোর** — একটি সংখ্যা, স্বচ্ছ বাদ টেবিল, কোনো কালো বাক্স নয়                                     |
-| 🎭  | **Selector Health Score** — শুধু আপনার পাস-রেট নয়, আপনার Playwright locator-এর গ্রেড দেয়                       |
-| 🔬  | **রানটাইম ফরেনসিক** — আসল Playwright/JUnit রান-ডেটা পড়ে `TRUE-FLAKE` ধরে, শুধু স্ট্যাটিক জল্পনা নয়             |
-| 🚨  | **CI-অখণ্ডতার রুল** — `continue-on-error`, `\|\| true` ও অন্যান্য মিথ্যা-সবুজ কৌশল ধরে                           |
-| 🐍  | **চারটি Playwright বাইন্ডিং-ই** — TypeScript, Python, Java, C#/.NET — এর সাথে pytest, JUnit/TestNG ও CI workflow |
-| 🔒  | **Local-first** — স্ক্যানের সময় শূন্য নেটওয়ার্ক কল, শূন্য টেলিমেট্রি, সেকেন্ডে চলে                             |
-
-### রুলগুলো
-
-প্রতিটি রুল must-fire **এবং** must-not-fire ফিক্সচারসহ আসে। যে রুল
-তার নিজের নেগেটিভ ফিক্সচারে ফায়ার করে সে শিপ করতে পারে না — এটাই
-false-positive ফায়ারওয়াল।
-
-<details>
-<summary><strong>টেস্ট হাইজিন</strong></summary>
-
-| ID          | রুল                                                 | Severity |
-| ----------- | --------------------------------------------------- | -------- |
-| QA-TEST-001 | ফোকাসড টেস্ট কমিট করা (`.only`, `fit`)              | error    |
-| QA-TEST-002 | কোনো কারণ ছাড়া বাদ দেওয়া টেস্ট                    | error    |
-| QA-TEST-002 | সংরক্ষিত কারণসহ বাদ দেওয়া টেস্ট                    | warning  |
-| QA-TEST-003 | assertion-বিহীন টেস্ট                               | error    |
-| QA-TEST-004 | কড়া sleep (`waitForTimeout`, `sleep()`, `delay()`) | warning  |
-| QA-TEST-006 | flakiness লুকানো retry-অপব্যবহার                    | warning  |
-| QA-TEST-010 | খালি টেস্ট বডি                                      | error    |
-
-</details>
-
-<details>
-<summary><strong>টেস্ট কোয়ালিটি</strong></summary>
-
-| ID           | রুল                           | Severity |
-| ------------ | ----------------------------- | -------- |
-| QA-TQUAL-002 | টাটলজিক্যাল assertion         | error    |
-| QA-TQUAL-009 | await-বিহীন promise assertion | error    |
-| QA-TQUAL-011 | কমেন্ট-আউট করা টেস্ট          | warning  |
-
-</details>
-
-<details>
-<summary><strong>Playwright 🎭</strong></summary>
-
-| ID        | রুল                                     | Severity |
-| --------- | --------------------------------------- | -------- |
-| QA-PW-002 | await-বিহীন locator assertion           | error    |
-| QA-PW-003 | কমিট করা `page.pause()` / `test.only()` | error    |
-| QA-PW-004 | ভঙ্গুর CSS/XPath selector               | warning  |
-| QA-PW-123 | hardcode করা পরিবেশ URL                 | warning  |
-
-</details>
-
-<details>
-<summary><strong>CI অখণ্ডতা</strong></summary>
-
-| ID        | রুল                                                                 | Severity |
-| --------- | ------------------------------------------------------------------- | -------- |
-| QA-CI-001 | `continue-on-error` ব্যর্থতা ঢেকে রাখে                              | error    |
-| QA-CI-002 | `\|\| true` exit code গিলে ফেলে                                     | error    |
-| QA-CI-005 | রিপোর্ট ব্যবহৃত হয় কিন্তু কখনো তৈরিই হয় না                        | error    |
-| QA-CI-007 | টেস্টের চারপাশে retry-র‍্যাপার                                      | warning  |
-| QA-CI-008 | সর্বদা-সফল step ব্যর্থতা ঢেকে রাখে                                  | error    |
-| QA-CI-009 | টেস্টের exit code প্রচারিত হয় না (`\|` pipefail ছাড়া, `;` চেইন)   | error    |
-| QA-CI-010 | যেখানে ব্লক করা চাই সেখানেই টেস্ট বাদ দেওয়া হয় (skip-on-PR guard) | error    |
-
-</details>
-
-<details>
-<summary><strong>Python / pytest 🐍</strong></summary>
-
-| ID        | রুল                                             | Severity |
-| --------- | ----------------------------------------------- | -------- |
-| QA-PY-002 | বাদ দেওয়া টেস্ট (`skip`, কঠোর-নয় এমন `xfail`) | warning  |
-| QA-PY-003 | assertion-বিহীন টেস্ট ফাংশন                     | error    |
-| QA-PY-005 | টেস্টে `time.sleep()`                           | warning  |
-| QA-PY-012 | টাটলজিক্যাল assertion                           | error    |
-
-মোট ২০টি Python রুল (QA-PY-001…012 pytest হাইজিন + QA-PY-101…108 Playwright-Python)।
-
-</details>
-
-<details>
-<summary><strong>Java / JUnit · TestNG ☕</strong></summary>
-
-| ID        | রুল                                      | Severity |
-| --------- | ---------------------------------------- | -------- |
-| QA-JV-101 | নিষ্ক্রিয় টেস্ট (`@Disabled`)           | warning  |
-| QA-JV-102 | কড়া sleep (`Thread.sleep()`)            | warning  |
-| QA-JV-103 | assertion-বিহীন টেস্ট মেথড               | error    |
-| QA-JV-105 | Playwright কড়া sleep `waitForTimeout()` | warning  |
-| QA-JV-106 | role locator-এর বদলে ভঙ্গুর selector     | warning  |
-
-</details>
-
-<details>
-<summary><strong>C# / .NET — NUnit · xUnit · MSTest 🟣</strong></summary>
-
-| ID        | রুল                                            | Severity |
-| --------- | ---------------------------------------------- | -------- |
-| QA-CS-101 | বাদ দেওয়া টেস্ট (`[Ignore]`, `[Fact(Skip=)]`) | warning  |
-| QA-CS-102 | কড়া sleep (`Thread.Sleep` / `Task.Delay`)     | warning  |
-| QA-CS-103 | assertion-বিহীন টেস্ট মেথড                     | error    |
-| QA-CS-105 | কড়া sleep `WaitForTimeoutAsync()`             | warning  |
-| QA-CS-106 | role locator-এর বদলে ভঙ্গুর selector           | warning  |
-
-</details>
-
-> সম্পূর্ণ লাইভ ক্যাটালগ — প্রতিটি রুল tier, confidence, false-positive
-> ঝুঁকি ও autofix উপলব্ধতাসহ — registry থেকে তৈরি হয়:
->
-> ```bash
-> mjolnir rules --md
-> ```
->
-> প্রতি-রুল পেজগুলো [`docs/rules/`](docs/rules/)-এর অধীনে।
-
-### এর মধ্যে কতটা পরিমাপ করা হয়েছে
-
-**৯৯টি রুলের ৭৮টি বাস্তব OSS কোডের বিরুদ্ধে পরিমাপকৃত false-positive
-হার বহন করে** (প্রতিটিতে ≥ ১০টি হাতে-শ্রেণিবদ্ধ finding; দেখুন
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md))। বাকি ২১টি লেখকের অনুমানে শিপ হয়।
-প্রতিটি স্ক্যানের ফুটার বলে দেয় _ফায়ার_ করা রুলগুলোর কতগুলো পরিমাপকৃত;
-`mjolnir rules --unmeasured` যেগুলো নয় তা তালিকাভুক্ত করে; প্রতিটি রুলের
-`mjolnir explain` পেজ তার অবস্থা জানায়। আমরা হারটি প্রকাশ করি — এমনকি
-সংখ্যা বাড়ানোই প্রজেক্টের চলমান কাজ।
-
-### রুল টিয়ার ও ভাষা-পরিপক্বতা
-
-প্রতিটি রুল `core`, `extended` বা `quarantine`, তার **পরিমাপকৃত**
-false-positive হার অনুযায়ী নির্ধারিত:
-
-| Tier         | অর্থ                                | ডিফল্ট স্ক্যান | `--strict` |
-| ------------ | ----------------------------------- | :------------: | :--------: |
-| `core`       | ≤ ১০ % পরিমাপকৃত FP                 |       ✅       |     ✅     |
-| `extended`   | ≤ ৩০ % পরিমাপকৃত FP                 |       ✅       |     ✅     |
-| `quarantine` | এর বেশি, বা এখনো অপরিমাপিত (n < ১০) |       ❌       |     ✅     |
-
-| ভাষা            | Adapter       | আজকের কভারেজ                                          |
-| --------------- | ------------- | ----------------------------------------------------- |
-| TypeScript / JS | কম্পাইলার AST | ব্যাপকতম, সর্বাধিক পরিমাপকৃত — মূলত `core`/`extended` |
-| Python / pytest | regex স্তর    | ব্যাপক, corpus-অডিটেড — মূলত `core`/`extended`        |
-| Java            | regex স্তর    | নতুন — মূলত `extended`/`quarantine`                   |
-| C# / .NET       | regex স্তর    | নতুন — মূলত `extended`/`quarantine`                   |
-
-TypeScript ও Python-এর পরিমাপকৃত কভারেজ সবচেয়ে ব্যাপক। Java ও C# শিপ
-হয়েছে, ডকুমেন্টেড, এবং আসল কনজিউমার সুইট (বাইন্ডিং লাইব্রেরির নিজের
-টেস্ট নয়) অডিট হওয়া পর্যন্ত হেডলাইন সংখ্যার বাইরে থাকে।
-
----
-
-## স্কোর কীভাবে কাজ করে
+## Mjölnir কী খুঁজে পায়
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Mjölnir-এর টার্মিনাল আউটপুট — WORTHINESS 75/100 NEEDS WORK, বিভাগভিত্তিক ডায়াগনস্টিক ভাঙানো ও FIX THIS FIRST তালিকা" width="820" />
+  <img src="assets/readme/stack.svg" alt="আপনার স্ট্যাকের সাথে কাজ করে: এর নিয়মগুলো যে ভাষা, টেস্ট ফ্রেমওয়ার্ক এবং CI সিস্টেম কভার করে, নিয়ম রেজিস্ট্রি থেকে।" width="100%" />
 </p>
 
-<sub>`npm run docs:hero` দিয়ে আবার তৈরি হয়;
-[`tests/hero-asset-reproducibility.spec.ts`](tests/hero-asset-reproducibility.spec.ts)
-টেস্টটি reporter যা সত্যিই প্রিন্ট করে সে থেকে সরে গেলে CI ব্যর্থ করে।</sub>
+চারটি পরিবারে **৭৯টি নিয়ম** — test hygiene, test quality, Playwright, এবং CI integrity — TypeScript এবং JavaScript, Python, Java, C#, এবং GitHub Actions YAML জুড়ে। এগুলো Playwright-কে এর চারটি binding-এই কভার করে, সাথে pytest, JUnit, TestNG, NUnit, xUnit, MSTest, Jest, Vitest, এবং Mocha, Cypress এবং Selenium-এর জন্য starter কভারেজসহ। তাদের মধ্যে নয়টি, আকৃতি দেখানোর জন্য:
 
-স্কোর স্বচ্ছ: **error −8, warning −3, info −1**, পরে সুইট-এক্সপোজার দিয়ে
-নরমালাইজ (প্রতি টেস্ট ডিক্লারেশনে বাদ)। প্রমাণ-ভিত্তিক বাদ মানে দুর্বল
-সিগন্যালের দাম কম। টার্মিনাল সেই একই ডিসকাউন্টেড সংখ্যা দেখায় যা স্কোর
-ব্যবহার করে — কোনো কালো বাক্স নয়। পূর্ণ পদ্ধতি:
-[docs/SCORING.md](docs/SCORING.md)।
+| ID           | নিয়ম                                                             | Severity | Tier       |
+| ------------ | ----------------------------------------------------------------- | -------- | ---------- |
+| QA-CI-001    | `continue-on-error` একটি ব্যর্থ verification gate-কে মুখোশ পরায়  | error    | quarantine |
+| QA-CI-009    | টেস্ট exit code propagate হয় না (pipefail ছাড়া `\|`, `;` chain) | error    | extended   |
+| QA-TEST-001  | ফোকাসড টেস্ট কমিট করা হয়েছে (`.only`, `fit`)                     | error    | quarantine |
+| QA-TEST-003  | assertion ছাড়া টেস্ট                                             | error    | quarantine |
+| QA-TQUAL-009 | await ছাড়া promise assertion                                     | error    | quarantine |
+| QA-PW-002    | await ছাড়া locator assertion                                     | error    | core       |
+| QA-PW-004    | Brittle CSS/XPath selector                                        | warning  | quarantine |
+| QA-PY-002    | স্কিপ করা টেস্ট (`skip`, non-strict `xfail`)                      | warning  | core       |
+| QA-CS-103    | assertion ছাড়া টেস্ট মেথড                                        | error    | core       |
 
-**রায়**
+সম্পূর্ণ ক্যাটালগ রেজিস্ট্রি থেকে তৈরি হয়, কখনো হাতে রক্ষণাবেক্ষণ করা হয় না: `mjolnir rules --md`, [`docs/rules/`](docs/rules/), অথবা [what-it-checks গাইড](https://sergey-bar.github.io/Mjolnir/guide/what-it-checks)।
 
-| Score   | রায়             |
-| ------- | ---------------- |
-| ≥ 80    | ✓ **WORTHY**     |
-| 50 – 79 | ⚠ **NEEDS WORK** |
-| < 50    | ✖ **UNWORTHY**   |
+<details>
+<summary><strong>এই README-এ উল্লেখিত প্রতিটি নিয়ম</strong>, একটি টেবিলে</summary>
 
-**প্রমাণ স্তর** — প্রতিটি finding একটি বহন করে; এটি স্কোরে finding-এর
-ওজন নির্ধারণ করে:
+<br />
 
-| স্তর | অর্থ                 | স্কোরে প্রভাব     | উদাহরণ                                                |
-| ---- | -------------------- | ----------------- | ----------------------------------------------------- |
-| E2   | নির্ধারণী ত্রুটি     | পূর্ণ বাদ         | কমিট করা `.only` — কাঠামোগতভাবে প্রমাণযোগ্য           |
-| E1   | হিউরিস্টিক প্যাটার্ন | অর্ধেক বাদ        | regex-এ ধরা `sleep()` — জোরালো সংকেত, প্রমাণ নয়      |
-| E0   | পর্যবেক্ষণ           | শূন্য (শুধু info) | রিপোর্ট হয় কিন্তু কখনো CI gate করে না বা বাদ দেয় না |
+> `quarantine` নিয়মগুলো শুধু `--strict`-এর অধীনে চলে এবং কখনো গেট করে না (এগুলো info-তে সীমাবদ্ধ)। দেখানো severity হলো লেখক-নির্ধারিত severity।
 
-বেশিরভাগ রুল **E1**। «we prove it» স্লোগানটি এই ব্যবস্থাকে বোঝায়: E2
-finding কাঠামোগত প্রমাণ; E1 finding সঠিকভাবে স্থাপিত সতর্কতা, আনুষ্ঠানিক
-প্রমাণ নয়।
+| ID           | পরিবার     | নিয়ম                                                                | Severity | Tier       |
+| ------------ | ---------- | -------------------------------------------------------------------- | -------- | ---------- |
+| QA-TEST-001  | Hygiene    | ফোকাসড টেস্ট কমিট করা হয়েছে (`.only`, `fit`)                        | error    | quarantine |
+| QA-TEST-002  | Hygiene    | স্কিপ করা টেস্ট। একটি ট্র্যাক করা কারণ ছাড়া `error`-এ escalate হয়। | warning  | quarantine |
+| QA-TEST-003  | Hygiene    | assertion ছাড়া টেস্ট                                                | error    | quarantine |
+| QA-TEST-004  | Hygiene    | স্থির sleep (`waitForTimeout`, `sleep()`, `delay()`)                 | warning  | extended   |
+| QA-TEST-006  | Hygiene    | অস্থিরতা লুকানো retry-এর অপব্যবহার                                   | warning  | quarantine |
+| QA-TEST-010  | Hygiene    | খালি টেস্ট বডি                                                       | error    | quarantine |
+| QA-TQUAL-002 | Quality    | Tautological assertion                                               | error    | quarantine |
+| QA-TQUAL-009 | Quality    | await ছাড়া promise assertion                                        | error    | quarantine |
+| QA-TQUAL-011 | Quality    | মন্তব্য করে রাখা টেস্ট                                               | warning  | extended   |
+| QA-PW-002    | Playwright | await ছাড়া locator assertion                                        | error    | core       |
+| QA-PW-003    | Playwright | `page.pause()` / `test.only()` কমিট করা হয়েছে                       | error    | core       |
+| QA-PW-004    | Playwright | Brittle CSS/XPath selector                                           | warning  | quarantine |
+| QA-PW-123    | Playwright | Hardcoded environment URL                                            | warning  | quarantine |
+| QA-PW-140    | Playwright | `maxDiffPixelRatio` ছাড়া স্ক্রিনশট                                  | warning  | core       |
+| QA-CI-001    | CI         | `continue-on-error` একটি ব্যর্থ gate-কে মুখোশ পরায়                  | error    | quarantine |
+| QA-CI-002    | CI         | `\|\| true` exit code গিলে ফেলে                                      | error    | extended   |
+| QA-CI-005    | CI         | রিপোর্ট ব্যবহৃত হয় কিন্তু কখনো তৈরি হয়নি                           | error    | quarantine |
+| QA-CI-007    | CI         | টেস্টের চারপাশে retry wrapper                                        | warning  | extended   |
+| QA-CI-008    | CI         | সবসময়-সফল step ব্যর্থতা মুখোশ পরায়                                 | error    | quarantine |
+| QA-CI-009    | CI         | Exit code propagate হয় না (pipefail ছাড়া `\|`, `;` chain)          | error    | extended   |
+| QA-CI-010    | CI         | যেখানে ব্লক করা উচিত সেখানে টেস্ট স্কিপ করা হয়েছে                   | error    | quarantine |
+| QA-PY-002    | Python     | স্কিপ করা টেস্ট (`skip`, non-strict `xfail`)                         | warning  | core       |
+| QA-PY-003    | Python     | assertion ছাড়া টেস্ট ফাংশন                                          | error    | quarantine |
+| QA-PY-005    | Python     | টেস্টে `time.sleep()`                                                | warning  | extended   |
+| QA-PY-012    | Python     | Tautological assertion                                               | error    | quarantine |
+| QA-JV-101    | Java       | নিষ্ক্রিয় টেস্ট (`@Disabled`)                                       | warning  | core       |
+| QA-JV-102    | Java       | স্থির sleep (`Thread.sleep()`)                                       | warning  | extended   |
+| QA-JV-103    | Java       | assertion ছাড়া টেস্ট মেথড                                           | error    | extended   |
+| QA-JV-105    | Java       | Playwright `waitForTimeout()` স্থির sleep                            | warning  | core       |
+| QA-JV-106    | Java       | role locator-এর বদলে brittle selector                                | warning  | quarantine |
+| QA-CS-101    | C#         | স্কিপ করা টেস্ট (`[Ignore]`, `[Fact(Skip=)]`)                        | warning  | core       |
+| QA-CS-102    | C#         | স্থির sleep (`Thread.Sleep` / `Task.Delay`)                          | warning  | core       |
+| QA-CS-103    | C#         | assertion ছাড়া টেস্ট মেথড                                           | error    | core       |
+| QA-CS-105    | C#         | `WaitForTimeoutAsync()` স্থির sleep                                  | warning  | extended   |
+| QA-CS-106    | C#         | role locator-এর বদলে brittle selector                                | warning  | quarantine |
 
-খালি রিপো `null` স্কোর পায়, কখনোই নকল ১০০ নয় — দেখুন
-[আস্থার মডেল](#আস্থার-মডেল)।
+Python-এ QA-PY-001…012 (pytest hygiene) এবং QA-PY-101…108 (Python-এর জন্য Playwright)ও রয়েছে। Cypress এবং Selenium-এর প্রতিটিতে তিনটি নিয়মের starter সেট রয়েছে।
 
----
+</details>
 
-## 🎭 Selector Health Score
+প্রতিটি নিয়ম একটি must-fire **এবং** একটি must-not-fire fixture সহ শিপ হয়, এবং একটি নিয়ম যা নিজের নেগেটিভ fixture-এ fire করে তা শিপ হতে পারে না। এটিই false-positive firewall; `mjolnir doctor` এই রিপোজিটরির নিজের CI-তে এটি প্রয়োগ করে।
 
-Playwright সুইটের হেডলাইন মেট্রিক — আপনার locator কতটা টেকসই:
+### Selector Health Score
+
+`mjolnir doctor:playwright` প্রতিটি locator-কে গ্রেড করে সে কীভাবে একটি এলিমেন্ট খুঁজে পায় তার ভিত্তিতে: একজন ব্যবহারকারী যেভাবে খুঁজবে (role, label, text), একটি explicit contract-এর মাধ্যমে (`data-testid`), অথবা একটি structural accident-এর মাধ্যমে (CSS chain, XPath)। প্রতিটি ফাইল ০ থেকে ১০০-এর একটি স্কোর পায়:
 
 ```text
-▍ SELECTOR HEALTH — e2e/checkout.spec.ts
+  ▍ SELECTOR HEALTH
 
-  [█████████████████░░░]  83 / 100
-  role/text: 2 · testid: 1 · css-chains: 1 ⚠ · xpath: 0
+e2e/login.spec.ts
+  [█████████████░░░░░░░]  65 / 100
+  role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
+
+e2e/checkout.spec.ts
+  [█████████████████░░░]  86 / 100
+  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 ```
 
-role-ভিত্তিক locator পূর্ণ স্কোর পায়। CSS class চেইন ও XPath স্কোর
-ডুবিয়ে দেয় — যেকোনো DOM refactor-এ ভেঙে পড়ে, বলে না কোন আচরণ
-নষ্ট হলো।
+এটি **resilience পরিমাপ করে, correctness নয়**। `.btn.btn-primary > div:nth-child(2)` আজ পাস করে এবং কেউ markup স্পর্শ না করা পর্যন্ত পাস হতে থাকে। একটি কম স্কোর কখনো দাবি করে না যে টেস্টটি ভাঙা, শুধু বলে যে এটি এমন markup-এর উপর নির্ভরশীল যা রাখার প্রতিশ্রুতি কেউ দেয়নি।
 
----
+<br />
 
-## 🔬 রানটাইম প্রমাণ
+## বিশ্বাসযোগ্যতা স্কোর
 
-স্ট্যাটিক flakiness সনাক্তকরণ হলো আন্দাজ। Mjölnir **প্রকৃত এক্সিকিউশন
-ডেটা** পড়ে — যেকোনো রানারের Playwright JSON রিপোর্ট ও JUnit XML:
+<p align="center">
+  <img src="assets/readme/score-gauge.svg" alt="০ থেকে ১০০ পর্যন্ত worthiness স্কেল, প্রতিটি স্কোর অতিক্রম করা একটি মার্কার সহ: ৫০-এর নিচে UNWORTHY, ৫০ থেকে ৭৯ NEEDS WORK, ৮০ থেকে ৯৯ WORTHY, ১০০-এ FORGED" width="720" />
+</p>
+
+<sub>০ থেকে ১০০ পর্যন্ত প্রতিটি স্কোর, প্রকৃত `deriveScoreState` দ্বারা স্থাপিত। `npm run docs:gauge` দ্বারা তৈরি এবং CI-তে বিচ্যুতির বিরুদ্ধে লক করা।</sub>
+
+| স্কোর     | রায়                                        |
+| --------- | ------------------------------------------- |
+| `0 – 49`  | **UNWORTHY**                                |
+| `50 – 79` | **NEEDS WORK**                              |
+| `80 – 99` | **WORTHY**                                  |
+| `100`     | **FORGED**                                  |
+| `null`    | **UNKNOWN**: কোনো টেস্ট ঘোষণা পাওয়া যায়নি |
+
+**এটি কীভাবে গণনা করা হয়।** Severity একটি base deduction নির্ধারণ করে (`error −8`, `warning −3`, `info −1`) এবং evidence level এতে ছাড় দেয়: E2 পুরো পরিশোধ করে, E1 অর্ধেক (নিচের দিকে রাউন্ড করা), E0 কিছুই না। মোট suite exposure দ্বারা normalize করা হয়, অর্থাৎ প্রতি ফাইলের বদলে প্রতি test declaration-এ deduction। টার্মিনাল একই discounted সংখ্যা প্রিন্ট করে যা স্কোর ব্যবহার করেছে; কোনো লুকানো দ্বিতীয় মডেল নেই। বিস্তারিত: [docs/SCORING.md](docs/SCORING.md) এবং [scoring গাইড](https://sergey-bar.github.io/Mjolnir/guide/scoring)।
+
+**১০০-এর অর্থ কী নয়।** এর অর্থ এই নয় যে সফটওয়্যারটি সঠিক, স্যুটটি পর্যাপ্ত, বা প্রোডাক্টটি ত্রুটিমুক্ত। এর অর্থ একটি জিনিস: **Mjölnir-এর মূল্যায়িত নিয়মগুলোর কোনোটিই এই স্ক্যান এবং এই evidence model-এর অধীনে কোনো deduction তৈরি করেনি।**
+
+<br />
+
+## প্রমাণ মডেল
+
+প্রতিটি সন্ধান দুটি লেবেল বহন করে: Mjölnir কতটা নিশ্চিত, এবং সন্ধানটি কতদূর পরীক্ষা করা হয়েছে। এটিই প্যাটার্ন রিপোর্ট করা একটি টুল এবং একটি রিলিজে যে টুলের উপর গেট করা যায় তার মধ্যে পার্থক্য।
+
+**কতটা নিশ্চিত — evidence level।**
+
+| Level  | Name                | অর্থ                                                     | Deduction |
+| ------ | ------------------- | -------------------------------------------------------- | --------- |
+| **E2** | Deterministic proof | ত্রুটিটি লেখা কোডে ঠিক সেভাবেই বিদ্যমান                  | Full      |
+| **E1** | Pattern evidence    | ত্রুটির সাথে দৃঢ়ভাবে সম্পর্কিত একটি প্যাটার্ন মিলে গেছে | Half      |
+| **E0** | Observation         | জানার মতো। কিছু ভুল আছে এমন দাবি নয়।                    | Zero      |
+
+একটি detection-এ আস্থা প্রমাণের শক্তি নয়। একটি নিয়ম নিশ্চিত হতে পারে যে এটি যা খুঁজছিল তার সাথে মিলেছে এবং তবুও একটি heuristic দেখছে। E1 সন্ধান পড়া এবং বিচার করার জন্য, কখনো অন্ধভাবে প্রয়োগ করার জন্য নয়, এবং এই সীমারেখা টার্মিনালে, JSON-এ, এবং এজেন্ট handoff-এ সন্ধানের উপর স্ট্যাম্প করা থাকে।
+
+**কতদূর পরীক্ষা করা হয়েছে — trust level।** বেশিরভাগ সন্ধান আপনার কোড পড়া থেকে আসে। Mjölnir-কে একটি প্রকৃত টেস্ট রানের রিপোর্ট দিন এবং এটি নিশ্চিত করতে পারে যে কোডটি আসলেই চলেছিল।
+
+<p align="center">
+  <img src="assets/readme/trust-ladder.svg" alt="L0 থেকে L5 পর্যন্ত trust ladder। L0 থেকে L2 কোড পড়া থেকে আসে; L3 থেকে L5-এর জন্য একটি প্রকৃত রান রিপোর্ট প্রয়োজন, যা ladder-এ একটি বিরতি দ্বারা চিহ্নিত।" width="100%" />
+</p>
+
+| Level  | সহজ ভাষায়           | এর জন্য যা প্রয়োজন                                          |
+| ------ | -------------------- | ------------------------------------------------------------ |
+| **L0** | Noted                | কোড পড়া                                                     |
+| **L1** | সমস্যার মতো দেখাচ্ছে | কোড পড়া: একটি প্যাটার্ন মিলেছে                              |
+| **L2** | কোডে প্রমাণিত        | কোড পড়া: ত্রুটিটি structural                                |
+| **L3** | ফাইলটি চলেছিল        | একটি রান রিপোর্ট দেখায় যে সন্ধানের ফাইলটি এক্সিকিউট হয়েছে  |
+| **L4** | টেস্টটি চলেছিল       | একটি রান রিপোর্ট দেখায় যে সন্ধানের টেস্টটি এক্সিকিউট হয়েছে |
+| **L5** | রানটি একমত           | রানের নিজস্ব ফলাফল ত্রুটির ক্লাস নিশ্চিত করে                 |
+
+একটি স্ট্যাটিক স্ক্যান L2-তে থেমে যায়। শুধুমাত্র একটি প্রকৃত রান রিপোর্ট (Playwright JSON, Jest বা Vitest JSON, JUnit XML) একটি সন্ধানকে L3 বা তার উপরে তুলতে পারে, তাই এমন একটি সন্ধান যা কখনো চলতে দেখা যায়নি তা কখনো দাবি করতে পারে না যে এটি চলেছিল। সংজ্ঞা: [docs/TERMINOLOGY.md](docs/TERMINOLOGY.md)।
+
+### এর কতটা পরিমাপ করা হয়েছে
+
+**৭৯টির মধ্যে ৭৪টি নিয়মের একটি false-positive হার রয়েছে যা প্রকৃত OSS কোডের বিরুদ্ধে পরিমাপ করা হয়েছে** (প্রতিটির জন্য অন্তত ১০টি হাতে-শ্রেণীবদ্ধ সন্ধান; দেখুন [docs/FP-AUDIT.md](docs/FP-AUDIT.md))। অন্য ৫টি লেখকের অনুমানের উপর শিপ হয় এবং `mjolnir explain`-এ, নিয়ম ধরে ধরে, তা বলে দেয়। `mjolnir rules --unmeasured` তাদের তালিকাভুক্ত করে, এবং প্রতিটি স্ক্যানের footer রিপোর্ট করে যে আসলে _fire_ হওয়া নিয়মগুলোর কতগুলো পরিমাপ করা হয়েছে।
+
+হারগুলো খারাপ হলেও পাবলিক থাকে। QA-TEST-001 (একটি কমিট করা `.only`) প্রকৃত রিপোজিটরিতে খারাপ অডিট করে এবং তার জন্য quarantine-এ বসে থাকে। QA-PW-141 সহ প্রতিটি নিয়মের লাইভ সংখ্যা audit-এ রয়েছে।
+
+### Trust tier
+
+Tier মতামত নয়, পরিমাপ করা false-positive হার অনুসরণ করে:
+
+| Tier           | Measured FP                 | Behavior                                           |
+| -------------- | --------------------------- | -------------------------------------------------- |
+| **core**       | ≤ 10%                       | ডিফল্ট রিপোর্ট, গেট করে                            |
+| **extended**   | ≤ 30%                       | ডিফল্ট রিপোর্ট, কম আস্থা                           |
+| **quarantine** | > 30% অথবা স্পষ্টভাবে ঘোষিত | শুধু `--strict`, info-তে সীমাবদ্ধ, কখনো গেট করে না |
+| _unmeasured_   | n < 10                      | পরিমাপ না হওয়া পর্যন্ত core-এ promote করা যায় না |
+
+FP band শুধুমাত্র একটি tier-কে demote করতে পারে — স্পষ্টভাবে ঘোষিত হলে `quarantine` থেকে কখনো কোনো নিয়ম promote করে না। স্পষ্টভাবে quarantine করা নিয়ম পরিমাপ করা FP হার নির্বিশেষে quarantine-এই থাকে।
+
+Promotion, demotion, এবং প্রতি-ভাষা maturity: [rule lifecycle](https://sergey-bar.github.io/Mjolnir/reference/rule-lifecycle)।
+
+### কেন এটি একটি linter নয়
+
+Linter আপনাকে বলে কোড নিয়ম মেনে চলে কিনা। Mjölnir আপনাকে বলে আপনার verification বিশ্বাস করা যায় কিনা।
+
+|                                                           | Linter (ESLint, SonarQube) | Coverage টুল | AI code review |   **Mjölnir**    |
+| --------------------------------------------------------- | :------------------------: | :----------: | :------------: | :--------------: |
+| প্রোডাক্ট কোড নয়, **verification system**-কে স্কোর করে   |             না             |      না      |       না       |      হ্যাঁ       |
+| CI workflow integrity (`continue-on-error`, `\|\| true`)  |             না             |      না      |   শুধু diff    |      হ্যাঁ       |
+| Playwright locator resilience গ্রেড করে (Selector Health) |             না             |      না      |       না       |      হ্যাঁ       |
+| `TRUE-FLAKE` রায়ের জন্য প্রকৃত রান ডেটা পড়ে             |             না             |      না      |       না       |      হ্যাঁ       |
+| প্রতি নিয়মে পরিমাপ করা false-positive হার প্রকাশ করে     |             না             |      না      |       না       |      হ্যাঁ       |
+| assertion ছাড়া টেস্ট ফ্ল্যাগ করে                         |          হ্যাঁ\*           |      না      |   কখনো কখনো    |      হ্যাঁ       |
+| স্থির sleep ধরে (`waitForTimeout`, `time.sleep`)          |          হ্যাঁ\*           |      না      |   কখনো কখনো    |      হ্যাঁ       |
+| Deterministic (একই input, একই output)                     |           হ্যাঁ            |    হ্যাঁ     |       না       |      হ্যাঁ       |
+| প্রতি স্ক্যানে খরচ                                        |            ফ্রি            |     ফ্রি     |     token      | **zero** (local) |
+
+<sub>\*`eslint-plugin-jest` এবং `eslint-plugin-playwright` (`expect-expect`, `no-wait-for-timeout`) এবং SonarQube-এর নিজস্ব assertion নিয়ম দ্বারা কভার করা। কলামগুলো test-suite verification-এর জন্য ডিফল্ট আচরণ বর্ণনা করে; plugin, paid tier, এবং custom নিয়ম কিছু উত্তর পরিবর্তন করে। এটি একটি positioning summary, benchmark নয়।</sub>
+
+AI রিভিউও ব্যবহার করুন। এটি nuance, intent, এবং design flaw ধরে যা কোনো প্যাটার্ন খুঁজে পায় না। Mjölnir তা ধরে যা AI রিভিউ উপেক্ষা করে কারণ এটি ইচ্ছাকৃত মনে হয়: একটি কমিট করা `.only`, একটি গিলে ফেলা exit code, একটি টেস্ট job-এ `continue-on-error`। এগুলোর জন্য reasoning নয়, scanning প্রয়োজন।
+
+<br />
+
+## রানটাইম ফরেনসিক্স
+
+Static analysis এমন কোড নিয়ে reasoning করে যা কখনো চলেনি। Forensics পড়ে আসলে কী ঘটেছিল: যেকোনো runner থেকে Playwright JSON, Jest JSON, Vitest JSON, এবং JUnit XML।
 
 ```bash
 mjolnir forensics ./test-results/
 ```
 
 ```text
-▍ FLAKINESS LEADERBOARD
+  ▍ FLAKINESS LEADERBOARD
 
 3 tests · 1 failed · 1 flaky · 1 retried
 
@@ -394,282 +435,184 @@ FAILING    declines an expired card (e2e/checkout.spec.ts)
            ████░░░░░░░░░░░░░░░░ 1.1s · 1 attempt
 ```
 
-প্রথম থেকে attempt ≥ 2-তে পাস করা টেস্ট পাস করা টেস্ট নয় — সেটি ভাগ্যবান
-টেস্ট। চূড়ান্ত সবুজ টিক নির্বিশেষে এটি `TRUE-FLAKE` চিহ্নিত হয়।
+`TRUE-FLAKE`-এর অর্থ এই নয় যে টেস্টটি retry হয়েছে। এর অর্থ টেস্টটি **অন্তত একবার ব্যর্থ হয়েছে এবং তারপর সবুজে শেষ হয়েছে**: একটি ভাগ্যবান পাস, শেষ চেকমার্ক যাই বলুক না কেন ফ্ল্যাগ করা হয়। `mjolnir triage` সেই ইতিহাসকে একটি quarantine প্রস্তাবে পরিণত করে, এবং `mjolnir pw-report` একটি রান সারসংক্ষেপ করে। একই রান রিপোর্টগুলোই সন্ধানকে trust level L3 এবং তার উপরে তোলে।
 
----
+<br />
 
-## ⚡ Mjölnir আরেকটি linter নয়
+## CI সততা
 
-Linter বলে কোড রুল মানে কি না। Mjölnir বলে আপনার যাচাই-ব্যবস্থার ওপর
-আস্থা রাখা যায় কি না।
+একটি টেস্ট পাস করতে পারে যখন এর চারপাশের পাইপলাইন ব্যর্থ হতে পারে না। Mjölnir workflow-ও পড়ে: `continue-on-error`, `|| true`, exit code যা কখনো propagate হয় না, সবসময়-সফল step, রিপোর্ট যা consume হয় কিন্তু কখনো তৈরি হয়নি, এবং যে ইভেন্টগুলোতে ব্লক করা উচিত সেখানে স্কিপ করা গেট। প্রতিটি সন্ধান job, step, এবং লাইনের নাম বলে, এবং নিজস্ব evidence level বহন করে।
 
-|                                                                  | ESLint / SonarQube | Coverage টুল | ম্যানুয়াল রিভিউ | **Mjölnir** |
-| ---------------------------------------------------------------- | :----------------: | :----------: | :--------------: | :---------: |
-| CI workflow অখণ্ডতা (`continue-on-error`, `\|\| true`)           |         ❌         |      ❌      |       বিরল       |     ✅      |
-| ক্রস-ভাষা (TS, Python, Java, C#) এক টুল থেকে                     |         ❌         |      ❌      |        ❌        |     ✅      |
-| Playwright locator-এর স্থিতিস্থাপকতা গ্রেড করে (Selector Health) |         ❌         |      ❌      |       বিরল       |     ✅      |
-| আসল assertion-বিহীন টেস্ট চিহ্নিত করে                            |   ✅ (প্লাগইন)\*   |      ❌      |    কখনো কখনো     |     ✅      |
-| কড়া sleep ধরে (`waitForTimeout`, `time.sleep`)                  |   ✅ (প্লাগইন)\*   |      ❌      |    কখনো কখনো     |     ✅      |
-| সেকেন্ডে চলে, স্ক্যানের সময় শূন্য নেটওয়ার্ক কল                 |         ✅         |      ✅      |        —         |     ✅      |
-
-\*`eslint-plugin-jest` (`expect-expect`) ও `eslint-plugin-playwright`
-(`expect-expect`, `no-wait-for-timeout`) নিজ নিজ ফ্রেমওয়ার্কের জন্য এগুলো
-কভার করে।
-
-**রানটাইম বিশ্লেষণ** স্ট্যাটিক লিন্টিং থেকে আলাদা বিভাগ:
-
-|                                               | Playwright retry reporter | Allure / ReportPortal | **Mjölnir forensics** |
-| --------------------------------------------- | :-----------------------: | :-------------------: | :-------------------: |
-| `TRUE-FLAKE` রায়ের জন্য আসল রান-ডেটা পড়ে    |          আংশিক\*          |      আংশিক (tag)      |          ✅           |
-| এক্সিকিউশন ইতিহাস থেকে flaky-ট্রায়াজ রিপোর্ট |            ❌             |          ✅           |          ✅           |
-| স্ট্যাটিক নির্ভরযোগ্যতা স্কোরের সাথে সংযুক্ত  |            ❌             |          ❌           |          ✅           |
-
-\*Playwright ভেতরে ভেতরে retry ট্র্যাক করে কিন্তু রায়-লেবেলসহ স্বতন্ত্র
-flakiness রিপোর্ট তৈরি করে না।
-
----
-
-## 🤖 শুধু AI কোড রিভিউ ব্যবহার করলেই তো হয়?
-
-ভিন্ন সমস্যা, ভিন্ন স্তর। AI রিভিউ diff-এ সন্দেহজনক টেস্ট-পরিবর্তন ধরতে
-পারে; এটি প্রমাণ করে না যে যাচাই-ব্যবস্থা সমগ্রভাবে আস্থার যোগ্য — এবং
-এটি কেবল আপনি দেখানো diff-ই দেখে।
-
-|                                    |  AI কোড রিভিউ (Copilot ইত্যাদি)  |          **Mjölnir**          |
-| ---------------------------------- | :------------------------------: | :---------------------------: |
-| প্রতি স্ক্যানে খরচ                 |   Token (diff-এর আকারে বাড়ে)    | **শূন্য** (লোকাল, ইনস্টল করা) |
-| পুরো সুইট + সব CI কনফিগ দেখে       |    শুধু আপনার দেখানো PR diff     |     **সবকিছু, প্রতিবার**      |
-| নির্ধারণী (একই ইনপুট → একই আউটপুট) |         ❌ (অনির্ধারণী)          |            **✅**             |
-| মাসের পর মাস সুপ্ত প্যাটার্ন ধরে   |       শুধু কনটেক্সটে থাকলে       | **✅** (সব ফাইল স্ক্যান করে)  |
-| রানের মাঝে finding মনে রাখে        | ❌ (সেশনের মাঝে কোনো স্মৃতি নেই) |   **✅** (baseline + diff)    |
-| মানুষের ট্রিগার ছাড়াই চলে         |        PR বা prompt দরকার        | **✅** (CI হুক, সেকেন্ডে চলে) |
-
-**দুটোই ব্যবহার করুন।** AI সূক্ষ্মতা, অভিপ্রায় ও এমন ডিজাইন-ত্রুটি ধরে
-যা কোনো regex খুঁজে পায় না। Mjölnir সেই কাঠামোগত প্যাটার্ন ধরে যা AI
-«ইচ্ছাকৃত» মনে হওয়ায় এড়িয়ে যায় — কমিট করা `.only`, গিলে ফেলা exit
-code, টেস্ট job-এ `continue-on-error`। এগুলো ভাবনার প্রয়োজন এমন বাগ
-নয়; স্ক্যানের প্রয়োজন এমন সত্য।
-
----
-
-## 🤖 CI ইন্টিগ্রেশন
-
-এক কমান্ডে PR workflow তৈরি হয় — ডিফল্টে উপদেশমূলক, কখনো ব্লক করে না:
+PR workflow তৈরি করুন, ডিফল্টরূপে পরামর্শমূলক:
 
 ```bash
 mjolnir ci install
 ```
 
-অথবা SARIF দিয়ে GitHub Code Scanning-এ নেটিভভাবে যুক্ত করুন:
+অথবা Marketplace action যোগ করুন একটি workflow-তে যা আপনার ইতিমধ্যে আছে:
+
+```yaml
+- uses: Sergey-Bar/Mjolnir@v1
+  with:
+    scope: changed
+    fail-on: error
+```
+
+মেজর লাইন অনুসরণ করতে `@v1` পিন করুন, অথবা একটি reproducible gate-এর জন্য একটি সঠিক ট্যাগ (`@v0.5.32`)। [docs/DISTRIBUTION-KIT.md](docs/DISTRIBUTION-KIT.md) Marketplace, Smithery, এবং MCP রেজিস্ট্রি কভার করে।
+
+GitHub Code Scanning-এ সন্ধান রাখতে, SARIF আপলোড করুন (workflow বা job scope-এ `security-events: write` প্রয়োজন):
 
 ```yaml
 - run: npx mjolnir-qa@latest --format sarif > mjolnir.sarif
+  continue-on-error: true
 - uses: github/codeql-action/upload-sarif@v3
+  if: ${{ !cancelled() }}
   with:
     sarif_file: mjolnir.sarif
 ```
 
-SARIF-এর জন্য এডিটর ও পাইপলাইন সেটআপ:
-[docs/SARIF-INTEGRATION.md](docs/SARIF-INTEGRATION.md)।
+GitLab-এ, `--format codequality` সেই Code Quality রিপোর্ট লেখে যা MR widget এবং diff annotation পড়ে ([docs/GITLAB-CI.md](docs/GITLAB-CI.md))। Editor এবং pipeline সেটআপ: [docs/SARIF-INTEGRATION.md](docs/SARIF-INTEGRATION.md)।
 
-### Changed-scope কভারেজ
+### Changed-scope attribution
 
-`--scope changed` finding-গুলোকে সেই লাইনগুলোতে দায়ী করে যা আপনার branch
-`main`-এর সাথে merge-base-এর বিপরীতে যোগ করেছে। এটি টেস্ট ফাইল
-(`*.spec.*`, `*.test.*`) এবং diff-এর GitHub workflow ফাইল ও Playwright
-কনফিগ কভার করে। merge-base সমাধান না হলে — shallow clone, detached HEAD,
-git-বিহীন টার্গেট, ভিন্ন ডিফল্ট branch — এটি সৎভাবে অবনমিত হয়: finding
-সম্পূর্ণ-ফাইল দায়ীত্বে ফিরে যায় এবং রিপোর্ট তা বলে। বেস ref
-`--base <ref>` দিয়ে ওভাররাইড করুন।
+```bash
+npx mjolnir-qa@latest --scope changed
+```
 
----
+সন্ধানগুলো আপনার ব্রাঞ্চ যোগ করা লাইনগুলোতে attribute করা হয়, **merge-base**-এর বিরুদ্ধে পরিমাপ করা। Scope-টি একই ফাইল সেট যা একটি full scan আবিষ্কার করে (TS/JS spec এবং adapter config, `test_*.py`, `*Test.java`, `*Tests.cs`, `.github/workflows/*.yml`), সাথে uncommitted এবং untracked পরিবর্তন, তাই এটি আপনি কমিট করার আগেই কাজ করে। Base resolve হয় `main → master → origin/main → origin/master → origin/HEAD`; `--base <ref>` দিয়ে override করুন।
 
-## কনফিগারেশন
+যখন merge-base resolve করা যায় না (একটি shallow clone, একটি detached HEAD, git-এর বাইরে একটি target), সন্ধানগুলো whole-file attribution-এ fall back করে **এবং রিপোর্ট তা বলে দেয়।** একটি নীরব fallback ঠিক সেই ধরনের ত্রুটি হবে যা এই টুলটি ধরার জন্য বিদ্যমান।
 
-Mjölnir zero-config। রিপো রুটে ঐচ্ছিক `mjolnir.config.json` (বা
-`.mjolnir.json`) severity, gating ও scope মেরামত করে — ডিটেকশন
-সেমান্টিক্স কখনো বদলায় না।
+<br />
 
-| Key                 | টাইপ                                 | প্রভাব                                                                                                                                             |
-| ------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `exclude`           | `string[]`                           | অতিরিক্ত ignore glob (gitignore উপসেট), বিল্ট-ইন ডিফল্টের উপরে                                                                                     |
-| `gate`              | `"advisory" \| "error" \| "warning"` | কোন severity অশূন্য কোডে বের হবে (ডিফল্ট `error`; `advisory` কখনো ব্লক করে না)                                                                     |
-| `severityOverrides` | `{ "<RULE-ID>": severity }`          | আপনার রিপোর জন্য একটি রুলের finding পুনঃস্থাপন করে                                                                                                 |
-| `ignore`            | `IgnoreEntry[]`                      | finding দমন করে — **`reason` আবশ্যক**; এন্ট্রি ৯০ দিন পরে মেয়াদোত্তীর্ণ হয় (স্পষ্ট `expires` তারিখ, বা না-থাকলে কনফিগ ফাইলের last-modified সময়) |
-| `plugins`           | `string[]`                           | তৃতীয় পক্ষের রুল প্যাকেজ (দেখুন [আস্থার মডেল](#আস্থার-মডেল))                                                                                      |
+## AI এজেন্ট
+
+সন্ধানের মূল্য তখনই যখন কিছু তার উপর কাজ করে।
+
+```text
+SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
+```
+
+**AI ফিক্স লেখে। Mjölnir তা যাচাই করে।** প্রমাণ আসে পুনরায় স্ক্যান থেকে, কখনো এজেন্টের নিজের সফলতার রিপোর্ট থেকে নয়।
+
+| কমান্ড            | এজেন্ট কী পায়                                                                                                                                                                             |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `mjolnir mcp`     | stdio-এর উপর একটি [MCP](https://modelcontextprotocol.io) সার্ভার। `scan`, `explain`, এবং `diff` callable টুলে পরিণত হয়।                                                                   |
+| `mjolnir handoff` | একটি সংরক্ষিত `--json` রিপোর্ট একটি deterministic Markdown পরিকল্পনায় পরিণত হয়: কী শনাক্ত হয়েছে, প্রতি সন্ধানের evidence boundary, কী **পরিবর্তন করা উচিত নয়**, কীভাবে যাচাই করতে হয়। |
+| `mjolnir install` | আপনার রিপোতে ইতিমধ্যে থাকা এজেন্ট সারফেসে লেখে (`.claude/`, `.cursor/`, `.kilo/`, `AGENTS.md`) যাতে এজেন্টটি শেষ হয়েছে দাবি করার আগে পুনরায় স্ক্যান করে।                                 |
+
+নিজস্ব CLI সহ একটি ক্লায়েন্টে যোগ করুন:
+
+```bash
+claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
+```
+
+অথবা একটি `mcpServers` ব্লক নেয় এমন যেকোনো ক্লায়েন্টে:
 
 ```json
 {
-  "gate": "error",
-  "exclude": ["legacy/**"],
-  "severityOverrides": { "QA-PW-141": "warning" },
-  "ignore": [
-    {
-      "ruleId": "QA-TEST-004",
-      "files": ["e2e/legacy-login.spec.ts"],
-      "reason": "Third-party widget needs a settle delay; tracked in JIRA-4821",
-      "expires": "2026-12-31"
-    }
-  ]
+  "mcpServers": {
+    "mjolnir": { "command": "npx", "args": ["-y", "mjolnir-qa@latest", "mcp"] }
+  }
 }
 ```
 
-- **`.mjolnirignore`** — পাথ বর্জনের জন্য সাধারণ gitignore-স্টাইল ফাইল,
-  `exclude`-এর একই ভাষা। মেশিন-ব্যাপী নয়েজের জন্য এটি; `exclude` ব্যবহার
-  করুন যখন তালিকাটি version control-এ, বাকি কনফিগের পাশে থাকবে।
-- **CLI ওভাররাইড** — `--strict` (quarantine রুল অন্তর্ভুক্ত),
-  `--width <cols>` ও `--ascii` / `--no-ascii` (টার্মিনাল রেন্ডারিং),
-  `--tone blunt` (আরও সোজাসাপ্টা বার্তা), `--max-duration <sec>`
-  (সীমিত আংশিক স্ক্যান)।
-- রুল দমন ও deprecation জীবনচক্র: [docs/RULE-LIFECYCLE.md](docs/RULE-LIFECYCLE.md)।
+**Guardrail সুবিধার চেয়ে বেশি গুরুত্বপূর্ণ।** একটি handoff-এর প্রতিটি সন্ধান তার সীমারেখা বহন করে। **E2** বলে _deterministic: অবস্থান চেক করুন এবং ফিক্স প্রয়োগ করুন_। **E1** বলে _REQUIRES CONFIRMATION: শুধু পর্যবেক্ষণ ত্রুটি প্রমাণ করে না_। একটি এজেন্ট যা E1 অন্ধভাবে ঠিক করে, একটি নিয়ম দমন করে, বা স্কোর বাড়াতে একটি নিয়ম সম্পাদনা করে ঠিক তাই করছে যা এই টুলটি ধরার জন্য বিদ্যমান, তাই handoff প্রম্পটে, সন্ধানের পাশে, তা বলে দেয়।
 
-`ignore` এন্ট্রি স্বতন্ত্র `mjolnir suppressions` কমান্ডকেও চালিত করে,
-যা বর্তমানে দমন করা বিষয়গুলো ও প্রতিটি এন্ট্রির মেয়াদ তালিকাভুক্ত করে।
+<br />
 
----
+## বিশ্বাস এবং নিরাপত্তা
 
-## 📐 এক্সিট কোড ও চুক্তি
+**Local-first, zero telemetry।** কোনো network-capable API (`fetch`, `http`, `https`, `net`, `dns`, `dgram`, WebSocket) `src/`-এর কোথাও বিদ্যমান নেই, এবং [`privacy-network-isolation.spec.ts`](tests/contract/privacy-network-isolation.spec.ts) যদি একটি দেখা যায় তাহলে বিল্ড ব্যর্থ করে। এটি `eval` এবং `new Function`-ও নিষিদ্ধ করে। অবিশ্বস্ত কোড স্ক্যান করা কখনো তা এক্সিকিউট করে না: static analysis সোর্স টেক্সট পড়ে, এবং forensics ইতিমধ্যে ডিস্কে থাকা রিপোর্ট ফাইল পার্স করে।
 
-ফ্রিজ করা — ওপরে CI লজিক বানানো নিরাপদ:
+দুটি সতর্কতা: `npx` নিজেই কিছু চালানোর আগে প্যাকেজ fetch করে, এবং গ্যারান্টি `src/` কভার করে, third-party plugin নয়।
 
-| এক্সিট কোড | অর্থ                                                              |
-| ---------- | ----------------------------------------------------------------- |
-| `0`        | পরিষ্কার — গেটে বা তার উপরে কোনো finding নেই                      |
-| `1`        | গেটে বা তার উপরে finding                                          |
-| `2`        | আংশিক স্ক্যান (সময়-বাজেট শেষ, অপঠনযোগ্য ফাইল) — কখনো ব্লক করে না |
-| `10`       | ব্যবহার-ত্রুটি (ভুল ফ্ল্যাগ, টার্গেট অনুপস্থিত)                   |
-| `20`       | অভ্যন্তরীণ ত্রুটি                                                 |
+**Plugin sandboxed নয়।** JS plugin (`mjolnir-rules/*.mjs`, অথবা `"plugins"`-এর অধীনে তালিকাভুক্ত npm প্যাকেজ) পূর্ণ Node privilege দিয়ে চলে, ESLint বা Vitest plugin-এর মতো একই trust model। এগুলো লোড করা **প্রতি স্ক্যানে** opt-in: `--enable-plugins` (অথবা `MJOLNIR_ENABLE_PLUGINS=1`) ছাড়া তাদের সোর্স কখনো লোড হয় না, এবং stderr-এ একটি নোটিশ কী স্কিপ হয়েছে তা তালিকাভুক্ত করে। JSON rule manifest কোনো কোড এক্সিকিউট করে না, এবং core rule-ID prefix সংরক্ষিত যাতে একটি plugin তাদের একটির ভান করতে না পারে। [SECURITY.md](SECURITY.md)-এর মাধ্যমে vulnerability রিপোর্ট করুন।
 
-JSON/SARIF রিপোর্ট `schemaVersion: 1`। রুল ID (`QA-<FAMILY>-NNN`)
-শিপ হওয়ার পর অপরিবর্তনীয় এবং কখনো পুনরায় ব্যবহার করা হয় না।
+**এটি নিজের উপরও চলে।** একটি verification trust engine-এর কোনো অবস্থান নেই যদি না এটি নিজেই verifiable হয়। প্রতিটি CI রান এই রিপোজিটরিকে সেই একই রান তৈরি করা বিল্ড দিয়ে স্ক্যান করে। Gate যেকোনো error-severity সন্ধানে ব্যর্থ হয়, এবং একটি **partial** স্ক্যান বা একটি **crashed rule**-এও, কারণ কিছু রিপোর্ট না করা একটি truncated self-scan হলো সেই false green যা এই প্রজেক্ট ধরার জন্য বিদ্যমান। `mjolnir doctor` একই রানে rule base পুনরায় audit করে (fixture firewall, tier honesty, core-tier cap), এবং একটি INCONCLUSIVE চেক ঠিক একটি ব্যর্থ চেকের মতোই ব্যর্থ হয়। উভয় রিপোর্ট build artifact হিসেবে আপলোড করা হয়।
 
----
+### Exit code এবং machine contract
 
-## আস্থার মডেল
+হিমায়িত, যাতে আপনি এগুলোর উপর CI logic তৈরি করতে পারেন:
 
-- **Local-first** — স্ক্যানের সময় শূন্য নেটওয়ার্ক কল। কখনোই নয়।
-  শূন্য টেলিমেট্রি।
-- **মিথ্যা প্রমাণ নেই** — «যাচাই হয়েছে» বলার চেয়ে «অজানা» বলা পছন্দ।
-  খালি রিপো `score: null` পায়, নকল ১০০ নয়।
-- **আংশিক সততা** — বিশ্লেষণ কাটা পড়লে আউটপুট তা বলে। সত্যি না হলে
-  কখনো «complete» নয়।
-- **FP ফায়ারওয়াল** — ডিটেকশন চলে কমেন্ট/স্ট্রিং-মুক্ত কোড-ভিউতে
-  (TypeScript রুল কম্পাইলার AST ব্যবহার করে): গদ্য কমেন্টের ভিতরের বা
-  ডক-উদাহরণ স্ট্রিংয়ের প্যাটার্ন ডকুমেন্টেশন, finding নয়।
-- **পরিমাপকৃত, দাবিকৃত নয়** — শুধু যে রুলের বাস্তব OSS কোড থেকে
-  false-positive হার আছে তা হেডলাইন টিয়ারে শিপ হয় (দেখুন
-  [এর মধ্যে কতটা পরিমাপ করা হয়েছে](#এর-মধ্যে-কতটা-পরিমাপ-করা-হয়েছে));
-  স্ক্যান ফুটার ও `mjolnir rules --unmeasured` কোনটি কী তা বলে।
-- **প্লাগইন-আস্থা এবং এক্সিকিউশন গেট** — প্লাগইন হলো `"plugins"`-এর
-  অধীনে ঘোষিত npm
-  প্যাকেজ; JS মডিউল থাকে `mjolnir-rules/*.mjs`-এ।
-  **কোনো sandbox নেই**: প্লাগইন কোড পূর্ণ Node বিশেষাধিকারে
-  চলে, ESLint বা Vitest প্লাগইনের একই আস্থার মডেল। এজন্যই কোড এক্সিকিউশন
-  **প্রতিটি স্ক্যানে opt-in**: `--enable-plugins` দিন (অথবা
-  `MJOLNIR_ENABLE_PLUGINS=1` সেট করুন), নইলে সোর্স লোড হয় না —
-  stderr-এ একটি স্পষ্ট বার্তা ঠিক কী বাদ পড়েছে তা তালিকাভুক্ত করে।
-  অবিশ্বস্ত কোড স্ক্যান করা কখনোই তা চালায় না। JSON রুল ম্যানিফেস্ট
-  (`mjolnir-rules/*.json`) প্রভাবিত হয় না: সেগুলো regex প্যাটার্ন
-  ঘোষণা করে এবং ডিজাইনগতভাবে কোনো কোড চালায় না। core রুল-ID প্রিফিক্স
-  সংরক্ষিত এবং জালিয়াতি রোধে প্লাগইন ও বাহ্যিক রুল থেকে প্রত্যাখ্যাত।
-- **Workspace-লোকাল বাহ্যিক রুল** (ফোল্ডার-ভিত্তিক, শূন্য নেটওয়ার্ক) —
-  স্ক্যান টার্গেটের পাশে একটি `mjolnir-rules/` ডিরেক্টরি কাস্টম রুল লোড
-  করে: JSON ফাইল regex প্যাটার্ন ঘোষণা করে (কোনো কোড চালানো হয় না),
-  `.mjs`/`.js` মডিউল `rules` export করে (পূর্ণ Node আস্থা, প্লাগইনের
-  মতো)। বাহ্যিক রুল core-এর একই trust মেটাডেটা বহন করে; কখনোই core
-  টিয়ারে শিপ হতে পারে না (core-এর জন্য corpus sidecar থেকে পরিমাপকৃত FP
-  হার দরকার — ঘোষিত `tier: "core"` `extended`-এ নিচু হয়ে যায়), tier
-  সীমা মানে এবং ড্রিফট-চেক হয়: `mjolnir rules --md --external` লোড
-  করা ফাইল থেকে ক্যাটালগ রেন্ডার করে (প্রোভেন্যান্স `external`), এবং
-  ম্যাট্রিক্স জেনারেটর `--external <root>` গ্রহণ করে।
+| Exit code | অর্থ                                                                 |
+| --------- | -------------------------------------------------------------------- |
+| `0`       | পরিষ্কার: gate বা তার উপরে কোনো সন্ধান নেই                           |
+| `1`       | Gate বা তার উপরে সন্ধান                                              |
+| `2`       | Partial স্ক্যান (time budget শেষ, অপঠনযোগ্য ফাইল)। কখনো ব্লক করে না। |
+| `10`      | ব্যবহারের ত্রুটি (খারাপ flag, target অনুপস্থিত)                      |
+| `20`      | অভ্যন্তরীণ ত্রুটি                                                    |
 
----
+`2` ইচ্ছাকৃতভাবে `0` থেকে পৃথক: একটি স্ক্যান যা শেষ হয়নি তা "কিছু পায়নি" এমন নয়। এটি এখনো খোঁজা শেষ করেনি।
 
-## 🏗️ আর্কিটেকচার
+একটি মেশিন যা কিছু consume করে (MCP tool result, `--json`, SARIF 2.1) তা একটি versioned, **additive-only** স্কিমা (`schemaVersion: 1`, `contractVersion: 1`)-এর অধীনে একটি canonical ফলাফল থেকে আসে, তাই কোনো consumer-কে rendered টেক্সট থেকে অর্থ পুনর্গঠন করতে হয় না। দেখুন [machine contract](docs/machine-contract.md)। নিয়ম ID (`QA-<FAMILY>-NNN`) একবার শিপ হলে immutable এবং কখনো পুনঃব্যবহার হয় না।
 
-<details>
-<summary>ট্রি প্রসারিত করুন</summary>
+<br />
 
-```
-mjolnir/
-├── src/
-│   ├── engine/          # LanguageAdapter interface + rule runner
-│   ├── adapters/        # typescript · python · java · csharp · github-actions
-│   ├── rules/           # rules across 8 families + the measured-FP table
-│   ├── playwright/      # Selector Health Score engine
-│   ├── discovery/       # workspace, frameworks, ignore resolution
-│   ├── scope/           # git merge-base changed-scope engine
-│   ├── scorer/          # transparent deduction table + prioritization
-│   ├── reporter/        # terminal · JSON · SARIF 2.1 · Mermaid
-│   ├── forensics/       # run-data ingestion · flake verdicts · triage
-│   ├── config/          # mjolnir.config.json + suppressions
-│   ├── plugins/         # third-party rule loading (no sandbox)
-│   └── commands/        # every subcommand
-└── tests/
-    ├── fixtures/        # must-fire / must-not-fire per rule
-    └── golden/          # frozen score regression locks
-```
+## Mjölnir আপনাকে যা বলতে পারে না
 
-</details>
+- **এটি আপনার টেস্ট চালায় না।** একটি পরিষ্কার স্ক্যান একটি পাসিং স্যুট নয়।
+- **এটি আপনাকে বলতে পারে না একটি assertion _ভুল_।** `expect(total).toBe(41)` স্বাস্থ্যকর দেখায়। Mjölnir এমন টেস্ট খুঁজে পায় যা _ব্যর্থ হতে পারে না_ এবং পাইপলাইন যা _লাল হতে পারে না_, ভুল জিনিস চেক করা টেস্ট নয়।
+- **এটি business correctness প্রমাণ করে না।** এখানে কিছুই বলে না যে আপনার প্রোডাক্ট requirement যা চেয়েছিল তা করে।
+- **১০০ একটি ভালো স্যুটের প্রমাণ নয়।** আপনার স্যুট আপনার প্রকৃত ঝুঁকি কভার করে কিনা তা ভিন্ন প্রশ্ন, এবং এই টুলটি তার উত্তর দেয় না।
+- **৭৯টির মধ্যে ৫টি নিয়ম একটি অনুমানের উপর শিপ হয়**, পরিমাপ করা হার নয়। প্রতিটি তার নিজের সন্ধানে তা বলে দেয়।
+- **E1 E2 নয়।** Heuristic সন্ধান পড়ার যোগ্য, অন্ধভাবে প্রয়োগ করার যোগ্য নয়।
+- **একটি খালি রিপো `null` স্কোর পায়, কখনো ১০০ নয়।**
+- **টেস্ট ঘোষণা ছাড়া `*.spec.ts` নামের একটি ফাইল coverage হিসেবে গণনা হয় না।** একটি রিপো যার একমাত্র spec ফাইলে import বা type থাকে (শূন্য `it`/`test` কল) `null` স্কোর পায়, ১০০ নয়।
 
-- **রুলগুলো বিশুদ্ধ ফাংশন** — `(SourceFileContext) → Finding[]`, I/O নেই,
-  গ্লোবাল নেই। নতুন ইকোসিস্টেম = এক অ্যাডাপ্টার + তার রুল।
-- **TypeScript/Playwright কম্পাইলার AST ব্যবহার করে** (ts-morph)।
-  Python, Java ও C# মাস্কড কমেন্ট/স্ট্রিং-সহ যৌথ regex স্তরে চলে।
-- Java ও C#-এর জন্য tree-sitter WASM AST স্তর বিদ্যমান এবং পরবর্তী
-  নির্ভুলতার পদক্ষেপ — এখনো সিনক্রোনাস স্ক্যান পাইপলাইনে যুক্ত নয়।
+<br />
 
----
+## নথি
 
-## 📚 ডকুমেন্টেশন
+সম্পূর্ণ ডকস সাইট রয়েছে <https://sergey-bar.github.io/Mjolnir/>-এ।
 
-| ডকুমেন্ট                                               | এর মধ্যে কী আছে                       |
-| ------------------------------------------------------ | ------------------------------------- |
-| [docs/SCORING.md](docs/SCORING.md)                     | স্কোর নরমালাইজেশন + প্রমাণ-ওয়েটিং    |
-| [docs/FP-AUDIT.md](docs/FP-AUDIT.md)                   | পরিমাপকৃত false-positive হার + পদ্ধতি |
-| [docs/RULE-LIFECYCLE.md](docs/RULE-LIFECYCLE.md)       | রুল অবস্থা, দমন, deprecation          |
-| [docs/SARIF-INTEGRATION.md](docs/SARIF-INTEGRATION.md) | SARIF আউটপুট + এডিটর/CI সেটআপ         |
-| [docs/rules/](docs/rules/)                             | তৈরি করা প্রতি-রুল ক্যাটালগ           |
-| [CONTRIBUTING.md](CONTRIBUTING.md)                     | ডেভ সেটআপ + অবদানের ধারা              |
-| [CHANGELOG.md](CHANGELOG.md)                           | রিলিজ ইতিহাস                          |
-| [SECURITY.md](SECURITY.md)                             | দুর্বলতা রিপোর্টিং                    |
+| Document                                               | এতে কী আছে                                                       |
+| ------------------------------------------------------ | ---------------------------------------------------------------- |
+| [docs/SCORING.md](docs/SCORING.md)                     | স্কোর normalization এবং evidence weighting                       |
+| [docs/TERMINOLOGY.md](docs/TERMINOLOGY.md)             | Canonical vocabulary: প্রতি concept-এ এক শব্দ                    |
+| [docs/FP-AUDIT.md](docs/FP-AUDIT.md)                   | পরিমাপ করা false-positive হার এবং পদ্ধতি                         |
+| [docs/RULE-LIFECYCLE.md](docs/RULE-LIFECYCLE.md)       | নিয়মের অবস্থা, tier, suppression, deprecation                   |
+| [docs/VERSIONING.md](docs/VERSIONING.md)               | Semver policy, হিমায়িত সারফেস, deprecation চক্র                 |
+| [docs/machine-contract.md](docs/machine-contract.md)   | Canonical মেশিন-পাঠযোগ্য ফলাফল                                   |
+| [docs/SARIF-INTEGRATION.md](docs/SARIF-INTEGRATION.md) | SARIF আউটপুট এবং editor বা CI সেটআপ                              |
+| [docs/GITLAB-CI.md](docs/GITLAB-CI.md)                 | GitLab: Code Quality রিপোর্ট, MR রেসিপি, gate                    |
+| [docs/rules/](docs/rules/)                             | প্রতি নিয়মে তৈরি ক্যাটালগ                                       |
+| [CONTRIBUTING.md](CONTRIBUTING.md)                     | Dev সেটআপ এবং contribution workflow                              |
+| [SUPPORT.md](SUPPORT.md)                               | কোথায় জিজ্ঞাসা করতে হবে, রিপোর্ট করতে হবে, এবং সাহায্য পেতে হবে |
+| [SECURITY.md](SECURITY.md)                             | Vulnerability রিপোর্টিং                                          |
+| [CHANGELOG.md](CHANGELOG.md)                           | রিলিজ ইতিহাস                                                     |
 
----
+### Status
 
-## 📈 অবস্থা
+**Version 1।** JSON স্কিমা এবং exit code হিমায়িত চুক্তি। TypeScript এবং Python-এর সবচেয়ে বিস্তৃত পরিমাপ করা কভারেজ রয়েছে। Java এবং C# নতুন; [maturity table](https://sergey-bar.github.io/Mjolnir/reference/rule-lifecycle)-এর মাধ্যমে তাদের পড়ুন। এরপর কী আসছে, কোনো বানানো তারিখ ছাড়া: [পাবলিক roadmap](https://sergey-bar.github.io/Mjolnir/reference/roadmap)।
 
-**v0.5.x · ওপেন বিটা।** JSON schema ও এক্সিট কোড হিমশীতল চুক্তি।
-TypeScript ও Python-এর পরিমাপকৃত কভারেজ ব্যাপকতম; Java ও C# নতুন —
-[টিয়ার টেবিল](#রুল-টিয়ার-ও-ভাষা-পরিপক্বতা) দিয়ে পড়ুন।
+### Contributing
 
----
-
-## 🤝 অবদান
-
-নতুন রুলই সবচেয়ে সহজ প্রথম অবদান — এক কমান্ডে রুল ও তার must-fire **এবং**
-must-not-fire ফিক্সচার স্কাফোল্ড হয় (তৈরি রুলটি ইচ্ছাকৃতভাবে ফিক্সচারে
-ব্যর্থ হয় যতক্ষণ না আপনি আসল ডিটেকশন লেখেন — stub শিপ হতে পারে না):
+নতুন নিয়ম সবচেয়ে সহজ প্রথম contribution। একটি কমান্ড must-fire **এবং** must-not-fire fixture সহ নিয়মের কাঠামো তৈরি করে। তৈরি হওয়া নিয়মটি ইচ্ছাকৃতভাবে নিজের fixture-এ ব্যর্থ হয় যতক্ষণ না প্রকৃত detection লেখা হয়, কারণ একটি stub যা শিপ হয় তা এমন একটি নিয়ম যা কেউ পরিমাপ করেনি:
 
 ```bash
 mjolnir create-rule QA-PW-140 --title "Screenshot without diff bound"
 ```
 
-সম্পূর্ণ ডেভ সেটআপ, standing-gate কমান্ড ও anti-creep / ফিক্সচার-ফায়ারওয়াল
-আইন [CONTRIBUTING.md](CONTRIBUTING.md)-এ।
+Dev সেটআপ, standing-gate কমান্ড, এবং anti-creep এবং fixture-firewall নিয়ম [CONTRIBUTING.md](CONTRIBUTING.md)-এ রয়েছে।
 
----
+<br />
 
 <div align="center">
 
-**যে টেস্টে আস্থা রাখতে পারেন না, সেগুলো শিপ করা বন্ধ করুন।**
+<img src="assets/readme/closing.svg" alt="আপনার রিপোতে এটি চালান।" width="100%" />
 
 ```bash
 npx mjolnir-qa@latest
 ```
 
-**Star ⭐ · Watch 👀 · Contribute 🤝**
+[গাইড পড়ুন](https://sergey-bar.github.io/Mjolnir/guide/getting-started) · [ডকস সাইট](https://sergey-bar.github.io/Mjolnir/) · [npm](https://www.npmjs.com/package/mjolnir-qa)
 
-নির্মাণ করেছেন [Sergey Bar](https://www.linkedin.com/in/sergeybar/)
+<br />
+
+টেস্ট পাস হয়েছে কিনা জিজ্ঞাসা করবেন না।<br />
+প্রমাণ কি প্রমাণ করে যে তারা বিশ্বাসের যোগ্য তা জিজ্ঞাসা করুন।
+
+<sub>নির্মিত [Sergey Bar](https://www.linkedin.com/in/sergeybar/) দ্বারা · MIT লাইসেন্সপ্রাপ্ত</sub>
 
 </div>

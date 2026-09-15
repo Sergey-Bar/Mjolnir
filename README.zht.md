@@ -1,379 +1,431 @@
 <div align="center">
 
-<img src="assets/readme/logo.png" alt="Mjölnir — Verification Trust Engine" width="800" />
+<img src="assets/readme/hero.svg" alt="Mjölnir。測試告訴你什麼通過了。Mjölnir 告訴你什麼值得信任。" width="100%" />
 
-### 你的測試在對你說謊。我們來證明它。
+<br />
 
-**為 QA 打造的 Verification Trust Engine。** Mjölnir 審計測試套件與 CI
-管線，給出可信度評分，並精確指出信任在哪裡斷裂。
+Mjölnir 找出不可能失敗的測試和不可能變紅的流水線，<br />
+再評估結果可信到什麼程度，每一分都附有證據。
+
+<br />
 
 [![npm](https://img.shields.io/npm/v/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
+[![downloads](https://img.shields.io/npm/dm/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
 [![ci](https://img.shields.io/github/actions/workflow/status/Sergey-Bar/Mjolnir/ci.yml?branch=main&style=flat-square&label=ci&labelColor=0A1119)](https://github.com/Sergey-Bar/Mjolnir/actions/workflows/ci.yml)
+[![coverage](https://img.shields.io/codecov/c/github/Sergey-Bar/Mjolnir?style=flat-square&color=1F6F7C&labelColor=0A1119&label=coverage)](https://codecov.io/gh/Sergey-Bar/Mjolnir)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Sergey-Bar/Mjolnir/badge)](https://scorecard.dev/viewer/?uri=github.com/Sergey-Bar/Mjolnir)
 [![license](https://img.shields.io/badge/license-MIT-1F6F7C.svg?style=flat-square&labelColor=0A1119)](LICENSE)
 [![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-1F6F7C.svg?style=flat-square&labelColor=0A1119)](https://nodejs.org)
-
-[English](README.md) | [简体中文](README.zh.md) | 繁體中文 | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
-
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-14.
 
 ```bash
 npx mjolnir-qa@latest
 ```
 
-**你的測試值得信任嗎？**
+[實際效果](#實際效果) · [快速開始](#快速開始) · [能發現什麼](#mjölnir-能發現什麼) · [評分](#可信度評分) · [證據](#證據模型) · [執行鑑識](#執行時鑑識) · [CI](#ci-完整性) · [代理](#ai-代理) · [安全](#信任與安全) · [局限](#mjölnir-無法告訴你的事) · [文件](#文件)
 
-[看它如何運作](#-看它如何運作) ·
-[快速上手](#-快速上手) ·
-[它檢查什麼](#-mjölnir-檢查什麼) ·
-[評分](#評分如何運作) ·
-[CI](#-ci-整合) · [設定](#設定) ·
-[文件](#-文件)
+<details>
+<summary>閱讀其他語言版本 — 22 種譯文</summary>
+
+[English](README.md) | [简体中文](README.zh.md) | 繁體中文 | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
+
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-15.
+
+<!-- Source hash: 3541b09e8d04 -->
+
+</details>
 
 </div>
 
----
+<br />
 
-## 🎬 看它如何運作
+## 綠色勾號是一種聲明，而不是證明
+
+綠色勾號只說明流水線沒有失敗。它並不說明測試真的執行了，也不說明它們有可能失敗。以下每一種情況都會顯示為綠色：
+
+- 提交進儲存庫的 `.only`，只執行了 3 個測試而不是 900 個
+- 本應攔截的 job 上寫著 `continue-on-error: true`
+- 測試指令後面的 `|| true`
+- 什麼都不斷言、或者測試本體為空的測試
+- 把真實失敗變成僥倖通過的重試包裝
+- workflow 上傳了、卻從未產生過的報告
+- 靠固定 sleep 勉強撐住的競態條件
+
+它們都不會讓流水線變紅，而且在審查中每一個看起來都像是刻意為之。所以它們才能存活下來。以下是 Mjölnir 讀取一個真實案例：
 
 <p align="center">
-  <img src="assets/readme/demo.svg" alt="Mjölnir 對示範倉庫的完整 --verbose 報告：WORTHINESS 75/100 NEEDS WORK，按類別拆解的診斷、FIX THIS FIRST 清單，以及每一項發現附帶的規則 ID 與行號——涵蓋 CI、Playwright、測試衛生與 Python 規則" width="900" />
+  <img src="assets/readme/scan.svg" alt="示範儲存庫的 CI workflow，逐行讀取。Mjölnir 在回報的那一行標出每一項發現，附上它的規則、問題所在、證據等級以及實測誤報率。" width="800" />
 </p>
 
-<sub>`npx mjolnir-qa ./examples/demo-repo --verbose` 的完整輸出，由真實
-reporter 渲染——毫無刪減。以 `npm run docs:demo` 重新產生；
-[`tests/demo-asset-reproducibility.spec.ts`](tests/demo-asset-reproducibility.spec.ts)
-會在產物與工具實際印出的內容發生偏移時讓 CI 失敗。</sub>
+<sub>示範掃描為此 workflow 回報的每一項發現，都標在回報的那一行。由 `npm run docs:readme-brand` 根據 [`demo-report.json`](assets/readme/demo-report.json) 產生，並在 CI 中鎖定以防漂移。</sub>
 
-**剛才發生了什麼：**
+**嚴格模式。** 最激進的偵測——`.only`、`continue-on-error`、空測試、濫用重試——位於隔離層。它們僅在 `--strict` 下執行，且限定為 `info` 嚴重性：只標記，從不攔截。預設掃描（不帶 `--strict` 的 `npx mjolnir-qa@latest`）僅涵蓋核心和擴充規則。需要諮詢層時，加上 `--strict`。
 
-1. Mjölnir 發現了 Playwright 規格檔、它的設定、CI 工作流程與一個
-   Python 測試檔——四種語言/格式，一趟掃描。
-2. 它找到了削弱對測試套件信任的證據——掩蓋工作失敗的
-   `continue-on-error`、吞掉結束碼的 `|| true`、硬式 sleep、脆弱的
-   選擇器、寫死的 staging URL、`networkidle` 等待。
-3. 它把每一項變成帶有規則 ID、位置與修復方式的具體發現——以及一個你
-   可以用來為 PR 設門檻的單一分數。
+Mjölnir 讀取測試套件、CI workflow，以及（如果有的話）一次真實執行的報告。它不會執行你的測試，不會安裝你的相依套件，也不會執行它掃描的程式碼。當它沒有證據時，它會直說，而不是捏造信心：
+
+| 情況                                       | Mjölnir 的回報                                        |
+| ------------------------------------------ | ----------------------------------------------------- |
+| 找不到測試宣告                             | 評分為 `null`，顯示為 **UNKNOWN**。絕不捏造一個 100。 |
+| 沒有基準線或可比較的版本                   | **UNKNOWN**，並寫明原因。絕不假定為 0。               |
+| 掃描中途終止（時間預算用盡、檔案無法讀取） | **PARTIAL**，結束碼 `2`。絕不呈現為乾淨結果。         |
+
+<p align="center">
+  <img src="assets/readme/how-it-works.svg" alt="Mjölnir 的運作方式。它以靜態方式讀取測試套件和 CI 流水線，在有真實執行報告時也會讀取該報告。它依證據等級和信任等級為每項發現加權，其中只有真實執行才能達到 L3 到 L5，最終產出發現、可信度評分，以及基於凍結結束碼的 CI 關卡。在代理循環中，AI 撰寫修正，Mjölnir 重新掃描來證明它。" width="880" />
+</p>
+
+<sub>為本頁面設計並以 1:1 顯示。由 `npm run docs:readme-brand` 產生，並在 CI 中鎖定以防漂移；評分、計數和規則 ID 來自 [`script.demo.json`](assets/video/script.demo.json)、[`demo-report.json`](assets/readme/demo-report.json) 和規則登錄表，從不手動輸入。同一張圖的海報版本：[`architecture.svg`](assets/readme/architecture.svg)。</sub>
+
+<br />
+
+## 實際效果
+
+對 [`examples/demo-repo`](examples/demo-repo) 的一次真實掃描，這是一個附帶 CI workflow 的小型 Playwright 套件。它的分數都扣在了這裡：
+
+<p align="center">
+  <img src="assets/readme/terminal-hero.svg" alt="Mjölnir 的扣分明細：WORTHINESS 75/100 NEEDS WORK、依類別的評分、依嚴重程度的扣分框，以及 FIX THIS FIRST 清單" width="520" />
+</p>
+
+<sub>由 `npm run docs:hero` 根據一次真實掃描產生，並在 CI 中鎖定以防漂移。同一次掃描的完整 `--verbose` 報告是 [`demo.svg`](assets/readme/demo.svg)（`npm run docs:demo`）。</sub>
+
+<details>
+<summary><strong>觀看示範</strong> — 一次掃描、它給出的修正，以及證明修正有效的重新掃描</summary>
+
+<br />
+
+<p align="center">
+  <a href="assets/video/mjolnir-demo.mp4">
+    <img src="assets/video/mjolnir-demo-poster.png" alt="示範錄影中的一格：npx mjolnir-qa@latest 在終端機視窗中掃描示範儲存庫" width="900" />
+  </a>
+</p>
+
+<sub>由 `npm run docs:video` 根據一次真實掃描逐格算繪；從不錄製螢幕。點選畫面即可開啟 [`mjolnir-demo.mp4`](assets/video/mjolnir-demo.mp4)。</sub>
+
+</details>
 
 ### 近看一項發現
 
-對上面第一項發現執行 `mjolnir explain QA-CI-001`，你會得到：
+每一項發現都回答四個問題：它在哪裡、Mjölnir 有多確定、這條規則多常出錯，以及如何修正。
+
+<p align="center">
+  <img src="assets/readme/finding-anatomy.svg" alt="示範掃描的第一項發現，與終端機印出的完全一致，並標出它的四個部分：位置、確定程度、規則的出錯頻率，以及修正方式。" width="100%" />
+</p>
+
+`mjolnir explain QA-CI-001` 會印出一條規則完整的信任檔案，包括它的實測誤報率，以及該誤報率為它贏得的等級：
 
 ```text
-▍ QA-CI-001 — continue-on-error masks a failing verification gate
+  ▍ QA-CI-001 — continue-on-error masks a failing verification gate
 
 Severity:    error
 Confidence:  high
+Tier:        quarantine
 Evidence:    E2
-Measured FP: not yet measured — this rule ships on assumption (see docs/FP-AUDIT.md)
+QA impact:   False-green risk (FALSE-GREEN)
+Measured FP: 11% (19 hand-classified corpus verdicts)
+FP risk:     low (author estimate)
+Languages:   yaml
+Frameworks:  github-actions, azure-pipelines
 
 WHAT WAS FOUND (real detector output, not a mockup)
   Job `security-scan` runs a verification gate under `continue-on-error: true`.
 
 WHY IT MATTERS
-  This job can fail every day and CI will still show green. The checkmark
-  on this workflow cannot be trusted.
+  This job can fail every day and CI will still show green. The checkmark on
+  this workflow cannot be trusted.
 
 HOW TO FIX
   Remove continue-on-error, or scope it to individual non-blocking steps only.
+
+  Example from this rule's own must-fire fixture: QA-CI-001/must-fire/masked.yml
+
+WHAT WOULD CHANGE THE VERDICT
+  - a run report next to the scan target (mjolnir.report.json or test-results/)
+  corroborating this file lifts its findings to L3–L5
+  - a documented suppression (mjolnir.config.json) lowers the finding count
+  without claiming correctness
+  - quarantine findings run only under --strict and are advisory (E0) — they can
+  never gate CI
+
+NEXT ACTION
+  Fix the first occurrence, then re-run: `mjolnir --scope changed`. Every
+  occurrence of this rule is listed in the scan output.
+
+HOW TO VERIFY THE FIX
+  Re-run `mjolnir` on the changed file(s) — this finding should no longer
+  appear. `mjolnir --scope changed` scopes the check to just what you touched.
+
+Docs: mjolnir rules --md   (full catalog, this rule included)
 ```
 
-這就是價值的單位：不是風格上的挑剔，而是你的 CI 聲稱某件事通過了、
-實際上卻沒通過的那個位置。
+這就是價值的基本單位：CI 回報了一次它並未贏得的通過。
 
----
+<br />
 
-## ⚡ 快速上手
-
-對一個儲存庫執行它，取得完整報告與可信度評分：
+## 快速開始
 
 ```bash
 npx mjolnir-qa@latest
 ```
 
-**在 CI 中，產品就是一條命令。** 它只掃描分支更動的內容，出現新問題時
-以非零碼結束：
+它掃描目前的目錄並印出 Trust Report：發現了什麼、你能在多大程度上信任它、原因，以及下一步該做什麼。當關卡及以上級別沒有任何發現時，它以 `0` 結束。
+
+在 CI 中，只掃描分支引入的內容，這樣舊有的測試套件就不會淹沒你的第一個 pull request：
 
 ```bash
 npx mjolnir-qa@latest --scope changed
 ```
 
-把它放進 PR 檢查——`mjolnir ci install` 會寫好工作流程——就完成了。
-其餘一切都是選用的。
+`mjolnir ci install` 會把它寫成一個 GitHub Actions workflow，使用固定在 `v1` 主版本標籤上的 [action](https://github.com/Sergey-Bar/Mjolnir#readme)（或使用 `--no-action` 改用一般的 `npx`）。在你決定讓它攔截之前，它始終只是建議性的。
 
-| 指令                                | 作用                                              |
-| ----------------------------------- | ------------------------------------------------- |
-| `mjolnir`                           | 全儲存庫掃描 + 可信度評分                         |
-| `mjolnir --scope changed`           | 只看你分支引入的內容——CI 形態                     |
-| `mjolnir ci install`                | 產生建議性的 PR 工作流程                          |
-| `mjolnir explain QA-CI-001`         | 是什麼 / 為什麼 / 如何修復 + 單一規則的實測 FP 率 |
-| `mjolnir rules --unmeasured`        | 列出按假設而非測量運作的規則                      |
-| `mjolnir --json` / `--format sarif` | 機器可讀 / GitHub Code Scanning                   |
-| `mjolnir --strict`                  | 同時執行隔離層（quarantine）規則（FP 風險較高）   |
+| 指令                                | 作用                                          |
+| ----------------------------------- | --------------------------------------------- |
+| `mjolnir`                           | Trust Report：結論、信心程度、下一步行動      |
+| `mjolnir --scope changed`           | 只檢查你的分支引入的內容（CI 用法）           |
+| `mjolnir ci install`                | 產生建議性的 PR workflow（基於 action）       |
+| `mjolnir explain QA-CI-001`         | 是什麼、為什麼、怎麼修，外加實測 FP 率        |
+| `mjolnir why src/a.spec.ts:42`      | 解釋這一行為什麼被標記。從不攔截。            |
+| `mjolnir forensics ./test-results/` | 來自真實執行的執行時證據                      |
+| `mjolnir trust-report`              | 自成一體的 Trust Artifact（md + json）        |
+| `mjolnir handoff`                   | 給程式代理的修正計畫                          |
+| `mjolnir --json` / `--format sarif` | 機器可讀的輸出，GitHub Code Scanning          |
+| `mjolnir --format codequality`      | GitLab Code Quality 報告（MR 元件使用的產物） |
+| `mjolnir --strict`                  | 同時執行 quarantine 等級的規則（FP 風險較高） |
 
 <details>
-<summary><strong>當某個測試不穩定時</strong></summary>
+<summary><strong>其他所有指令</strong> — 不穩定測試分類、報告、治理</summary>
 
-| 指令                                | 作用                                             |
-| ----------------------------------- | ------------------------------------------------ |
-| `mjolnir forensics ./test-results/` | 真實執行資料 → `TRUE-FLAKE` 判定，`FLAKY.md`     |
-| `mjolnir triage ./test-results/`    | 依執行歷史提出隔離建議                           |
-| `mjolnir pw-report ./test-results/` | Playwright 執行摘要——重試 / 不穩定 / 最慢        |
-| `mjolnir doctor:playwright`         | 僅 Playwright 的深度掃描 + Selector Health Score |
+<br />
+
+| 指令                                | 作用                                                     |
+| ----------------------------------- | -------------------------------------------------------- |
+| `mjolnir --classic`                 | Trust Report 之前的評分橫幅樣式                          |
+| `mjolnir explain verdict`           | 解釋已儲存掃描的結論為何如此                             |
+| `mjolnir triage ./test-results/`    | 引導式分類。每一列都以下一步行動作結。                   |
+| `mjolnir pw-report ./test-results/` | Playwright 執行摘要：重試、不穩定測試、最慢的測試        |
+| `mjolnir doctor:playwright`         | 僅針對 Playwright 的深度掃描，外加 Selector Health Score |
+| `mjolnir fix --dry-run` / `fix`     | 安全的自動修正，每一項都會重新掃描以證明修正生效         |
+| `mjolnir baseline` / `diff`         | 為發現建立快照，之後只回報新增或惡化的                   |
+| `mjolnir impact --since <ref>`      | 某次提交引入並解決了什麼                                 |
+| `mjolnir summary`                   | 根據報告產生 CI 註記和 step 摘要                         |
+| `mjolnir pr-comment`                | 限定範圍的 PR 留言，Markdown 格式                        |
+| `mjolnir debt`                      | 附成本模型的測試債務登記表                               |
+| `mjolnir handover`                  | 為新 QA 工程師準備的測試套件入門地圖                     |
+| `mjolnir init`                      | 偵測框架，印出設定檢查清單                               |
+| `mjolnir suppressions`              | 列出被抑制的發現，用於治理                               |
+| `mjolnir rules --unmeasured`        | 基於假設而非量測運作的規則                               |
+| `mjolnir rules --md`                | 完整規則目錄（JSON 或 Markdown）                         |
+| `mjolnir doctor`                    | 對 Mjölnir 自身規則庫的自我稽核                          |
+| `mjolnir create-rule <ID>`          | 為新規則及其 fixtures 產生骨架                           |
+| `mjolnir stats`                     | 本機記錄的歷來修正計數                                   |
+| `mjolnir badge`                     | shields.io 端點 JSON 與程式碼片段                        |
+| `mjolnir --cache`                   | 借助本機結論快取進行增量重新掃描                         |
+| `mjolnir --format mermaid`          | 用於 PR 留言的測試架構圖                                 |
+
+`mjolnir help <command>` 會印出其中任一指令的用法、範例和下一步。
 
 </details>
 
-<details>
-<summary><strong>偶爾使用 / 報告類</strong></summary>
+需要 Windows、macOS 或 Linux 上的 **Node.js ≥ 22.18**。想全域安裝？`npm i -g mjolnir-qa`。這個最低版本來自建置工具鏈（tsdown 以它為目標，發佈流水線也針對它做冒煙測試）；執行時相依套件對版本沒有更高要求。
 
-| 指令                            | 作用                                    |
-| ------------------------------- | --------------------------------------- |
-| `mjolnir fix --dry-run` / `fix` | 帶證據的安全自動修復                    |
-| `mjolnir baseline` / `diff`     | 先為發現拍照存證，之後只報告新增/惡化項 |
-| `mjolnir impact --since <ref>`  | 自某個先前的提交以來改變了什麼          |
-| `mjolnir debt`                  | 帶成本模型的測試債登記簿                |
-| `mjolnir handover`              | 為新 QA 提供的套件上手地圖              |
-| `mjolnir stats`                 | 本地統計所見過修復的累計計數            |
-| `mjolnir badge`                 | shields.io 端點 JSON + 程式碼片段       |
-| `mjolnir rules --md`            | 完整規則目錄（JSON 或 Markdown）        |
-| `mjolnir doctor`                | 對 Mjölnir 自身規則庫的自審             |
-| `mjolnir create-rule <ID>`      | 鷹架產生新規則 + 固定樣本               |
-| `mjolnir --format mermaid`      | 用於 PR 留言的測試架構圖                |
+<br />
 
-</details>
-
-如果你偏好，可以全域安裝而不是 `npx`：`npm i -g mjolnir-qa`。
-需要 Node.js ≥ 22.18。支援 Windows、macOS 與 Linux。
-
----
-
-## 👥 這是為誰而做？
-
-- **QA / SDET**——擁有 e2e 或整合測試套件，需要證據證明套件確實配得上
-  它產出的綠色勾勾。
-- **平台 / DevEx 團隊**——負責 CI 完整性與發布門檻；他們在乎
-  `continue-on-error` 絕不能悄悄把紅色管線塗成綠色。
-- **OSS 維護者**——想要一個便宜、常駐開啟、可在本機與 CI 執行且零
-  網路呼叫的驗證門檻。
-
----
-
-## 🔨 Mjölnir 檢查什麼
-
-|     |                                                                                                           |
-| --- | --------------------------------------------------------------------------------------------------------- |
-| ⚖️  | **可信度評分**——一個數字、透明的扣分表、沒有黑箱                                                          |
-| 🎭  | **Selector Health Score**——為你的 Playwright 定位器評級，而不只是通過率                                   |
-| 🔬  | **執行期鑑識**——讀取真實的 Playwright/JUnit 執行資料來捕捉 `TRUE-FLAKE`，而不只是靜態猜測                 |
-| 🚨  | **CI 完整性規則**——抓出 `continue-on-error`、`\|\| true` 等假綠花招                                       |
-| 🐍  | **全部四種 Playwright 綁定**——TypeScript、Python、Java、C#/.NET——外加 pytest、JUnit/TestNG 與 CI 工作流程 |
-| 🔒  | **本機優先**——掃描時零網路呼叫、零遙測、數秒內完成                                                        |
-
-### 規則
-
-每條規則都帶有必須觸發（must-fire）**與**必須不觸發（must-not-fire）的
-固定樣本。會觸發自身負樣本的規則不能發布——這就是假陽性防火牆。
-
-<details>
-<summary><strong>測試衛生</strong></summary>
-
-| ID          | 規則                                                 | Severity |
-| ----------- | ---------------------------------------------------- | -------- |
-| QA-TEST-001 | 提交了聚焦測試（`.only`、`fit`）                     | error    |
-| QA-TEST-002 | 無正當理由跳過的測試                                 | error    |
-| QA-TEST-002 | 有紀錄理由的跳過測試                                 | warning  |
-| QA-TEST-003 | 無斷言的測試                                         | error    |
-| QA-TEST-004 | 硬式 sleep（`waitForTimeout`、`sleep()`、`delay()`） | warning  |
-| QA-TEST-006 | 用重試掩蓋不穩定                                     | warning  |
-| QA-TEST-010 | 空測試主體                                           | error    |
-
-</details>
-
-<details>
-<summary><strong>測試品質</strong></summary>
-
-| ID           | 規則                     | Severity |
-| ------------ | ------------------------ | -------- |
-| QA-TQUAL-002 | 同義反覆的斷言           | error    |
-| QA-TQUAL-009 | 未 await 的 promise 斷言 | error    |
-| QA-TQUAL-011 | 被註解掉的測試           | warning  |
-
-</details>
-
-<details>
-<summary><strong>Playwright 🎭</strong></summary>
-
-| ID        | 規則                                  | Severity |
-| --------- | ------------------------------------- | -------- |
-| QA-PW-002 | 未 await 的 locator 斷言              | error    |
-| QA-PW-003 | 提交了 `page.pause()` / `test.only()` | error    |
-| QA-PW-004 | 脆弱的 CSS/XPath 選擇器               | warning  |
-| QA-PW-123 | 寫死的環境 URL                        | warning  |
-
-</details>
-
-<details>
-<summary><strong>CI 完整性</strong></summary>
-
-| ID        | 規則                                               | Severity |
-| --------- | -------------------------------------------------- | -------- |
-| QA-CI-001 | `continue-on-error` 掩蓋失敗                       | error    |
-| QA-CI-002 | `\|\| true` 吞掉結束碼                             | error    |
-| QA-CI-005 | 消費報告卻從不產生報告                             | error    |
-| QA-CI-007 | 包在測試外面的重試包裝                             | warning  |
-| QA-CI-008 | 永遠成功的步驟掩蓋失敗                             | error    |
-| QA-CI-009 | 測試結束碼未被傳遞（`\|` 沒有 pipefail、`;` 串接） | error    |
-| QA-CI-010 | 在必須攔截的地方跳過測試（skip-on-PR 防護）        | error    |
-
-</details>
-
-<details>
-<summary><strong>Python / pytest 🐍</strong></summary>
-
-| ID        | 規則                                 | Severity |
-| --------- | ------------------------------------ | -------- |
-| QA-PY-002 | 跳過的測試（`skip`、非嚴格 `xfail`） | warning  |
-| QA-PY-003 | 無斷言的測試函式                     | error    |
-| QA-PY-005 | 測試中的 `time.sleep()`              | warning  |
-| QA-PY-012 | 同義反覆的斷言                       | error    |
-
-共 20 條 Python 規則（QA-PY-001…012 pytest 衛生 + QA-PY-101…108 Playwright-Python）。
-
-</details>
-
-<details>
-<summary><strong>Java / JUnit · TestNG ☕</strong></summary>
-
-| ID        | 規則                                     | Severity |
-| --------- | ---------------------------------------- | -------- |
-| QA-JV-101 | 被停用的測試（`@Disabled`）              | warning  |
-| QA-JV-102 | 硬式 sleep（`Thread.sleep()`）           | warning  |
-| QA-JV-103 | 無斷言的測試方法                         | error    |
-| QA-JV-105 | Playwright 硬式 sleep `waitForTimeout()` | warning  |
-| QA-JV-106 | 脆弱選擇器取代 role 定位器               | warning  |
-
-</details>
-
-<details>
-<summary><strong>C# / .NET — NUnit · xUnit · MSTest 🟣</strong></summary>
-
-| ID        | 規則                                        | Severity |
-| --------- | ------------------------------------------- | -------- |
-| QA-CS-101 | 跳過的測試（`[Ignore]`、`[Fact(Skip=)]`）   | warning  |
-| QA-CS-102 | 硬式 sleep（`Thread.Sleep` / `Task.Delay`） | warning  |
-| QA-CS-103 | 無斷言的測試方法                            | error    |
-| QA-CS-105 | 硬式 sleep `WaitForTimeoutAsync()`          | warning  |
-| QA-CS-106 | 脆弱選擇器取代 role 定位器                  | warning  |
-
-</details>
-
-> 完整的即時目錄——每條規則的層級、信心度、假陽性風險與自動修復可用性——
-> 由註冊表產生：
->
-> ```bash
-> mjolnir rules --md
-> ```
->
-> 每條規則的頁面位於 [`docs/rules/`](docs/rules/)。
-
-### 這些規則中有多少經過測量
-
-**99 條規則中有 78 條攜帶在真實 OSS 程式碼上測得的假陽性率**（每條 ≥ 10 個
-人工分類的發現；見 [docs/FP-AUDIT.md](docs/FP-AUDIT.md)）。其餘 21 條按
-作者的估計發布。每次掃描的頁尾都會告訴你，_觸發過的_ 規則中有多少經過
-測量；`mjolnir rules --unmeasured` 列出未測量的；每條規則的
-`mjolnir explain` 頁面都聲明其狀態。即使數字難看我們也照樣公布——
-持續性工作。
-
-### 規則層級與語言成熟度
-
-每條規則都是 `core`、`extended` 或 `quarantine`，依據其**實測**假陽性率
-分配：
-
-| 層級         | 意義                           | 預設掃描 | `--strict` |
-| ------------ | ------------------------------ | :------: | :--------: |
-| `core`       | 實測 FP ≤ 10 %                 |    ✅    |     ✅     |
-| `extended`   | 實測 FP ≤ 30 %                 |    ✅    |     ✅     |
-| `quarantine` | 高於 30%，或尚未測量（n < 10） |    ❌    |     ✅     |
-
-| 語言            | 介接器       | 現行涵蓋                                     |
-| --------------- | ------------ | -------------------------------------------- |
-| TypeScript / JS | 編譯器 AST   | 最廣、測量最多——主要為 `core`/`extended`     |
-| Python / pytest | 正規表達式層 | 廣泛、經語料庫稽核——主要為 `core`/`extended` |
-| Java            | 正規表達式層 | 較新——主要為 `extended`/`quarantine`         |
-| C# / .NET       | 正規表達式層 | 較新——主要為 `extended`/`quarantine`         |
-
-TypeScript 與 Python 擁有最廣的實測涵蓋。Java 與 C# 已發布、有文件，
-但在真實的消費方套件（不是綁定函式庫自己的測試）接受稽核之前，不進入
-主打數字。
-
----
-
-## 評分如何運作
+## Mjölnir 能發現什麼
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Mjölnir 終端機輸出——WORTHINESS 75/100 NEEDS WORK，按類別拆解的診斷與 FIX THIS FIRST 清單" width="820" />
+  <img src="assets/readme/stack.svg" alt="適用你的技術堆疊：規則所涵蓋的語言、測試框架和 CI 系統，資料來自規則登錄表。" width="100%" />
 </p>
 
-<sub>以 `npm run docs:hero` 重新產生；
-[`tests/hero-asset-reproducibility.spec.ts`](tests/hero-asset-reproducibility.spec.ts)
-會在產物與 reporter 實際印出的內容發生偏移時讓 CI 失敗。</sub>
+**79 條規則**，分為四個類別：測試衛生、測試品質、Playwright 和 CI 完整性，涵蓋 TypeScript 與 JavaScript、Python、Java、C# 以及 GitHub Actions YAML。它們涵蓋 Playwright 的全部四種語言繫結，以及 pytest、JUnit、TestNG、NUnit、xUnit、MSTest、Jest、Vitest 和 Mocha，並為 Cypress 和 Selenium 提供入門級涵蓋。以下列出其中九條，以呈現大致樣貌：
 
-分數是透明的：**error −8、warning −3、info −1**，然後依套件暴露度
-（每筆測試宣告的扣分）正規化。按證據加權的扣分意味著弱訊號代價更低。
-終端機顯示的正是評分所用的同一批折後數字——沒有黑箱。完整方法：
-[docs/SCORING.md](docs/SCORING.md)。
+| ID           | 規則                                               | 嚴重程度 | 等級       |
+| ------------ | -------------------------------------------------- | -------- | ---------- |
+| QA-CI-001    | `continue-on-error` 掩蓋了失敗的驗證關卡           | error    | quarantine |
+| QA-CI-009    | 測試結束碼未傳遞（`\|` 未啟用 pipefail、`;` 串接） | error    | extended   |
+| QA-TEST-001  | 提交了聚焦測試（`.only`、`fit`）                   | error    | quarantine |
+| QA-TEST-003  | 沒有斷言的測試                                     | error    | quarantine |
+| QA-TQUAL-009 | 未 await 的 promise 斷言                           | error    | quarantine |
+| QA-PW-002    | 未 await 的 locator 斷言                           | error    | core       |
+| QA-PW-004    | 脆弱的 CSS/XPath 選擇器                            | warning  | quarantine |
+| QA-PY-002    | 被略過的測試（`skip`、非嚴格的 `xfail`）           | warning  | core       |
+| QA-CS-103    | 沒有斷言的測試方法                                 | error    | core       |
 
-**判定**
+完整目錄由登錄表自動產生，從不手動維護：`mjolnir rules --md`、[`docs/rules/`](docs/rules/)，或 [檢查項目指南](https://sergey-bar.github.io/Mjolnir/guide/what-it-checks)。
 
-| Score   | 判定             |
-| ------- | ---------------- |
-| ≥ 80    | ✓ **WORTHY**     |
-| 50 – 79 | ⚠ **NEEDS WORK** |
-| < 50    | ✖ **UNWORTHY**   |
+<details>
+<summary><strong>本 README 中提到的所有規則</strong>，彙整在一張表裡</summary>
 
-**證據等級**——每項發現攜帶一個；它決定該發現在分數中的權重：
+<br />
 
-| 等級 | 意義       | 對分數的影響 | 範例                                           |
-| ---- | ---------- | ------------ | ---------------------------------------------- |
-| E2   | 確定性缺陷 | 全額扣分     | 提交了 `.only`——結構上可證明                   |
-| E1   | 啟發式模式 | 一半扣分     | 正規表達式匹配到 `sleep()`——訊號強烈，但非證明 |
-| E0   | 觀察       | 零（僅提示） | 只報告，從不為 CI 設門檻，也不扣分             |
+> `quarantine` 規則只在 `--strict` 下執行，且從不攔截（其等級上限為 info）。表中顯示的是作者設定的嚴重程度。
 
-大多數規則是 **E1**。標語「we prove it」指的就是這套系統：E2 發現是
-結構性證明；E1 發現是位置恰當的警告，不是形式化證明。
+| ID           | 類別       | 規則                                             | 嚴重程度 | 等級       |
+| ------------ | ---------- | ------------------------------------------------ | -------- | ---------- |
+| QA-TEST-001  | 衛生       | 提交了聚焦測試（`.only`、`fit`）                 | error    | quarantine |
+| QA-TEST-002  | 衛生       | 被略過的測試。沒有可追蹤的原因時升級為 `error`。 | warning  | quarantine |
+| QA-TEST-003  | 衛生       | 沒有斷言的測試                                   | error    | quarantine |
+| QA-TEST-004  | 衛生       | 硬等待（`waitForTimeout`、`sleep()`、`delay()`） | warning  | extended   |
+| QA-TEST-006  | 衛生       | 濫用重試來掩蓋不穩定性                           | warning  | quarantine |
+| QA-TEST-010  | 衛生       | 空的測試本體                                     | error    | quarantine |
+| QA-TQUAL-002 | 品質       | 同義反覆的斷言                                   | error    | quarantine |
+| QA-TQUAL-009 | 品質       | 未 await 的 promise 斷言                         | error    | quarantine |
+| QA-TQUAL-011 | 品質       | 被註解掉的測試                                   | warning  | extended   |
+| QA-PW-002    | Playwright | 未 await 的 locator 斷言                         | error    | core       |
+| QA-PW-003    | Playwright | 提交了 `page.pause()` / `test.only()`            | error    | core       |
+| QA-PW-004    | Playwright | 脆弱的 CSS/XPath 選擇器                          | warning  | quarantine |
+| QA-PW-123    | Playwright | 寫死的環境 URL                                   | warning  | quarantine |
+| QA-PW-140    | Playwright | 未設定 `maxDiffPixelRatio` 的截圖                | warning  | core       |
+| QA-CI-001    | CI         | `continue-on-error` 掩蓋了失敗的關卡             | error    | quarantine |
+| QA-CI-002    | CI         | `\|\| true` 吞掉結束碼                           | error    | extended   |
+| QA-CI-005    | CI         | 報告被使用卻從未產生                             | error    | quarantine |
+| QA-CI-007    | CI         | 包住測試的重試包裝                               | warning  | extended   |
+| QA-CI-008    | CI         | 總是成功的 step 掩蓋了失敗                       | error    | quarantine |
+| QA-CI-009    | CI         | 結束碼未傳遞（`\|` 未啟用 pipefail、`;` 串接）   | error    | extended   |
+| QA-CI-010    | CI         | 在必須攔截的地方略過了測試                       | error    | quarantine |
+| QA-PY-002    | Python     | 被略過的測試（`skip`、非嚴格的 `xfail`）         | warning  | core       |
+| QA-PY-003    | Python     | 沒有斷言的測試函式                               | error    | quarantine |
+| QA-PY-005    | Python     | 測試中的 `time.sleep()`                          | warning  | extended   |
+| QA-PY-012    | Python     | 同義反覆的斷言                                   | error    | quarantine |
+| QA-JV-101    | Java       | 被停用的測試（`@Disabled`）                      | warning  | core       |
+| QA-JV-102    | Java       | 硬等待（`Thread.sleep()`）                       | warning  | extended   |
+| QA-JV-103    | Java       | 沒有斷言的測試方法                               | error    | extended   |
+| QA-JV-105    | Java       | Playwright `waitForTimeout()` 硬等待             | warning  | core       |
+| QA-JV-106    | Java       | 使用脆弱選擇器而非基於角色的 locator             | warning  | quarantine |
+| QA-CS-101    | C#         | 被略過的測試（`[Ignore]`、`[Fact(Skip=)]`）      | warning  | core       |
+| QA-CS-102    | C#         | 硬等待（`Thread.Sleep` / `Task.Delay`）          | warning  | core       |
+| QA-CS-103    | C#         | 沒有斷言的測試方法                               | error    | core       |
+| QA-CS-105    | C#         | `WaitForTimeoutAsync()` 硬等待                   | warning  | extended   |
+| QA-CS-106    | C#         | 使用脆弱選擇器而非基於角色的 locator             | warning  | quarantine |
 
-空儲存庫的分數是 `null`，絕不是虛假的 100——見
-[信任模型](#信任模型)。
+Python 另外提供 QA-PY-001…012（pytest 衛生）和 QA-PY-101…108（Python 版 Playwright）。Cypress 和 Selenium 各有一套三條規則的入門集。
 
----
+</details>
 
-## 🎭 Selector Health Score
+每條規則都附帶 must-fire **和** must-not-fire 兩類 fixture，在自己的負向 fixture 上觸發的規則不能發佈。這就是誤報防火牆；`mjolnir doctor` 在本儲存庫自己的 CI 中強制執行它。
 
-Playwright 套件的首要指標——你的定位器有多耐操：
+### Selector Health Score
+
+`mjolnir doctor:playwright` 依每個 locator 找到元素的方式為其評分：像使用者那樣尋找（角色、標籤、文字）、透過明確的契約（`data-testid`），還是仰賴結構上的偶然（CSS 串接、XPath）。每個檔案得到 0 到 100 的分數：
 
 ```text
-▍ SELECTOR HEALTH — e2e/checkout.spec.ts
+  ▍ SELECTOR HEALTH
 
-  [█████████████████░░░]  83 / 100
-  role/text: 2 · testid: 1 · css-chains: 1 ⚠ · xpath: 0
+e2e/login.spec.ts
+  [█████████████░░░░░░░]  65 / 100
+  role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
+
+e2e/checkout.spec.ts
+  [█████████████████░░░]  86 / 100
+  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 ```
 
-基於角色的定位器拿滿分。CSS 類別鏈與 XPath 會拖垮分數——它們在任何 DOM
-重構時都會斷，卻不會告訴你是哪個行為回歸了。
+這衡量的是**韌性，而非正確性**。`.btn.btn-primary > div:nth-child(2)` 今天能通過，並會一直通過，直到有人改動標記結構。低分從不聲稱測試壞了，只說明它依賴於沒有人承諾保留的標記結構。
 
----
+<br />
 
-## 🔬 執行期證據
+## 可信度評分
 
-靜態不穩定偵測只是猜測。Mjölnir 讀取**真實執行資料**——任何 runner
-產出的 Playwright JSON 報告與 JUnit XML：
+<p align="center">
+  <img src="assets/readme/score-gauge.svg" alt="0 到 100 的可信度刻度，指針掃過每一個分數：低於 50 為 UNWORTHY，50 到 79 為 NEEDS WORK，80 到 99 為 WORTHY，100 為 FORGED" width="720" />
+</p>
+
+<sub>0 到 100 的每一個分數，都由真實的 `deriveScoreState` 定位。由 `npm run docs:gauge` 產生，並在 CI 中鎖定以防漂移。</sub>
+
+| 評分      | 結論                        |
+| --------- | --------------------------- |
+| `0 – 49`  | **UNWORTHY**                |
+| `50 – 79` | **NEEDS WORK**              |
+| `80 – 99` | **WORTHY**                  |
+| `100`     | **FORGED**                  |
+| `null`    | **UNKNOWN**：找不到測試宣告 |
+
+**計算方式**。嚴重程度決定基礎扣分（`error −8`、`warning −3`、`info −1`），證據等級再對其打折：E2 全額扣分，E1 扣一半（無條件捨去），E0 不扣分。總扣分依套件規模正規化，也就是以每個測試宣告計算，而不是以檔案計算。終端機印出的就是評分所用的同一組折後數字；不存在隱藏的第二套模型。詳情：[docs/SCORING.md](docs/SCORING.md) 和 [評分指南](https://sergey-bar.github.io/Mjolnir/guide/scoring)。
+
+**100 分不代表什麼**。它不代表軟體是正確的，不代表測試套件是充分的，也不代表產品沒有缺陷。它只代表一件事：**在本次掃描和這套證據模型下，Mjölnir 評估的規則都沒有產生扣分。**
+
+<br />
+
+## 證據模型
+
+每一項發現都帶有兩個標籤：Mjölnir 有多確定，以及這項發現被查證到什麼程度。這正是只會回報模式的工具，與可以用來把關發佈的工具之間的差別。
+
+**有多確定 — 證據等級。**
+
+| 等級   | 名稱       | 含義                           | 扣分 |
+| ------ | ---------- | ------------------------------ | ---- |
+| **E2** | 確定性證明 | 缺陷就存在於程式碼現有的寫法中 | 全額 |
+| **E1** | 模式證據   | 比對到與缺陷高度相關的模式     | 一半 |
+| **E0** | 觀察       | 值得知道。並不聲稱有任何問題。 | 零   |
+
+偵測的信心程度不等於證明的強度。一條規則可以確定自己比對到了要找的東西，但它看到的仍可能只是啟發式結果。E1 發現是用來閱讀和判斷的，絕不能盲目套用；這條界線會標註在終端機、JSON 以及交給代理的交接內容中的每一項發現上。
+
+**查證到什麼程度 — 信任等級**。大多數發現來自閱讀你的程式碼。把一次真實測試執行的報告交給 Mjölnir，它就能確認程式碼確實執行過。
+
+<p align="center">
+  <img src="assets/readme/trust-ladder.svg" alt="從 L0 到 L5 的信任階梯。L0 到 L2 來自閱讀程式碼；L3 到 L5 需要真實的執行報告，階梯上的斷口標示了這一點。" width="100%" />
+</p>
+
+| 等級   | 白話解釋           | 所需條件                           |
+| ------ | ------------------ | ---------------------------------- |
+| **L0** | 已記錄             | 閱讀程式碼                         |
+| **L1** | 看起來像是問題     | 閱讀程式碼：比對到模式             |
+| **L2** | 在程式碼中得到證明 | 閱讀程式碼：缺陷是結構性的         |
+| **L3** | 檔案執行過         | 執行報告顯示發現所在的檔案被執行過 |
+| **L4** | 測試執行過         | 執行報告顯示發現所在的測試被執行過 |
+| **L5** | 執行結果吻合       | 執行本身的結果證實了該缺陷類別     |
+
+靜態掃描止步於 L2。只有真實的執行報告（Playwright JSON、Jest 或 Vitest JSON、JUnit XML）才能把發現提升到 L3 或更高，因此從未被觀察到執行過的發現，永遠不能聲稱它執行過。定義：[docs/TERMINOLOGY.md](docs/TERMINOLOGY.md)。
+
+### 其中有多少經過實測
+
+**79 條規則中有 74 條的誤報率是在真實開源程式碼上測得的**（每條至少 10 個人工分類的發現；見 [docs/FP-AUDIT.md](docs/FP-AUDIT.md)）。其餘 5 條基於作者的估計發佈，並在 `mjolnir explain` 中逐條註明。`mjolnir rules --unmeasured` 會列出它們，每次掃描的頁尾也會回報實際*觸發*的規則中有多少經過實測。
+
+即使誤報率很差也照樣公開。QA-TEST-001（提交進儲存庫的 `.only`）在真實儲存庫上的稽核結果很差，因此被放在 quarantine。每條規則（包括 QA-PW-141）的最新數字都在稽核報告裡。
+
+### 規則信任等級
+
+等級由實測誤報率決定，而不是憑主觀判斷：
+
+| 等級           | 實測 FP            | 行為                                          |
+| -------------- | ------------------ | --------------------------------------------- |
+| **core**       | ≤ 10%              | 預設報告，會攔截                              |
+| **extended**   | ≤ 30%              | 預設報告，信心較低                            |
+| **quarantine** | > 30% 或被明確宣告 | 僅在 `--strict` 下執行，上限為 info，從不攔截 |
+| _未實測_       | n < 10             | 實測之前不能晉升為 core                       |
+
+FP 帶只能降級一個層級 — 如果規則被明確宣告在 `quarantine` 中，它們永遠不會將其提升出去。被明確置於 quarantine 的規則無論其測量的 FP 率如何都保持在 quarantine 中。
+
+晉升、降級以及各語言的成熟度：[規則生命週期](https://sergey-bar.github.io/Mjolnir/reference/rule-lifecycle)。
+
+### 為什麼這不是 linter
+
+Linter 告訴你程式碼是否遵循規則。Mjölnir 告訴你你的驗證是否值得信任。
+
+|                                                        | Linter（ESLint、SonarQube） | 覆蓋率工具 | AI 程式碼審查 |    **Mjölnir**     |
+| ------------------------------------------------------ | :-------------------------: | :--------: | :-----------: | :----------------: |
+| 評估的是**驗證體系**，而不是產品程式碼                 |             否              |     否     |      否       |         是         |
+| CI workflow 完整性（`continue-on-error`、`\|\| true`） |             否              |     否     |   僅限 diff   |         是         |
+| 評估 Playwright locator 的韌性（Selector Health）      |             否              |     否     |      否       |         是         |
+| 讀取真實執行資料得出 `TRUE-FLAKE` 結論                 |             否              |     否     |      否       |         是         |
+| 公布每條規則的實測誤報率                               |             否              |     否     |      否       |         是         |
+| 標記沒有斷言的測試                                     |            是\*             |     否     |     有時      |         是         |
+| 捕捉硬等待（`waitForTimeout`、`time.sleep`）           |            是\*             |     否     |     有時      |         是         |
+| 確定性（相同輸入，相同輸出）                           |             是              |     是     |      否       |         是         |
+| 每次掃描的成本                                         |            免費             |    免費    |     token     | **零**（本機執行） |
+
+<sub>\*由 `eslint-plugin-jest` 和 `eslint-plugin-playwright`（`expect-expect`、`no-wait-for-timeout`）以及 SonarQube 內建的斷言規則涵蓋。各欄描述的是驗證測試套件時的預設行為；外掛、付費方案和自訂規則會改變其中部分答案。這是一份定位概覽，而不是基準測試。</sub>
+
+也請使用 AI 審查。它能捕捉到任何模式都發現不了的細微差異、意圖和設計缺陷。而 Mjölnir 能捕捉到 AI 審查因為看起來是刻意為之而忽略的東西：提交進儲存庫的 `.only`、被吞掉的結束碼、測試 job 上的 `continue-on-error`。這些需要的是掃描，而不是推理。
+
+<br />
+
+## 執行時鑑識
+
+靜態分析是對從未執行過的程式碼進行推理。鑑識讀取的是實際發生的事情：來自任何執行器的 Playwright JSON、Jest JSON、Vitest JSON 和 JUnit XML。
 
 ```bash
 mjolnir forensics ./test-results/
 ```
 
 ```text
-▍ FLAKINESS LEADERBOARD
+  ▍ FLAKINESS LEADERBOARD
 
 3 tests · 1 failed · 1 flaky · 1 retried
 
@@ -383,265 +435,184 @@ FAILING    declines an expired card (e2e/checkout.spec.ts)
            ████░░░░░░░░░░░░░░░░ 1.1s · 1 attempt
 ```
 
-只在第 ≥ 2 次嘗試才通過的測試不是通過的測試——那是碰運氣的測試。無論
-最終的綠勾如何，它都會被標記為 `TRUE-FLAKE`。
+`TRUE-FLAKE` 並不是說測試被重試過。它的意思是該測試**至少有一次嘗試失敗，隨後以綠色結束**：這是一次僥倖通過，無論最終的勾號怎麼顯示都會被標記出來。`mjolnir triage` 會把這段歷史轉換成隔離建議，`mjolnir pw-report` 則彙整一次執行。正是這些執行報告，把發現提升到 L3 及以上的信任等級。
 
----
+<br />
 
-## ⚡ Mjölnir 不是又一個 linter
+## CI 完整性
 
-Linter 告訴你程式碼是否守規矩。Mjölnir 告訴你你的驗證能不能被信任。
+測試可以通過，而包住它的流水線卻不可能失敗。Mjölnir 同樣讀取 workflow：`continue-on-error`、`|| true`、從不傳遞的結束碼、總是成功的 step、被使用卻從未產生的報告，以及恰恰在應當攔截的事件上被略過的關卡。每一項發現都會指明 job、step 和行號，並帶有自己的證據等級。
 
-|                                                       | ESLint / SonarQube | 涵蓋率工具 | 人工審查 | **Mjölnir** |
-| ----------------------------------------------------- | :----------------: | :--------: | :------: | :---------: |
-| CI 工作流程完整性（`continue-on-error`、`\|\| true`） |         ❌         |     ❌     |   罕見   |     ✅      |
-| 一個工具涵蓋多語言（TS、Python、Java、C#）            |         ❌         |     ❌     |    ❌    |     ✅      |
-| 為 Playwright 定位器的韌性評級（Selector Health）     |         ❌         |     ❌     |   罕見   |     ✅      |
-| 標出沒有真實斷言的測試                                |    ✅（外掛）\*    |     ❌     |   偶爾   |     ✅      |
-| 抓出硬式 sleep（`waitForTimeout`、`time.sleep`）      |    ✅（外掛）\*    |     ❌     |   偶爾   |     ✅      |
-| 數秒內執行、掃描時零網路呼叫                          |         ✅         |     ✅     |    —     |     ✅      |
-
-\*`eslint-plugin-jest`（`expect-expect`）與
-`eslint-plugin-playwright`（`expect-expect`、`no-wait-for-timeout`）
-為其各自框架涵蓋了這些。
-
-**執行期分析**是與靜態 lint 並列的獨立類別：
-
-|                                          | Playwright retry reporter | Allure / ReportPortal | **Mjölnir forensics** |
-| ---------------------------------------- | :-----------------------: | :-------------------: | :-------------------: |
-| 讀取真實執行資料以得出 `TRUE-FLAKE` 判定 |          部分\*           |     部分（標籤）      |          ✅           |
-| 基於執行歷史的不穩定分診報告             |            ❌             |          ✅           |          ✅           |
-| 與靜態可信度評分整合                     |            ❌             |          ❌           |          ✅           |
-
-\*Playwright 內部追蹤重試，但不會產出帶判定標籤的獨立不穩定報告。
-
----
-
-## 🤖 為什麼不直接用 AI 程式碼審查？
-
-問題不同、層面不同。AI 審查能在 diff 裡發現可疑的測試改動；但它無法
-證明整個驗證系統值得信任——而且它只看到你展示給它的 diff。
-
-|                               | AI 程式碼審查（Copilot 等） |            **Mjölnir**            |
-| ----------------------------- | :-------------------------: | :-------------------------------: |
-| 每次掃描成本                  |  Token（隨 diff 大小成長）  |      **零**（本機、已安裝）       |
-| 看到整個套件 + 所有 CI 設定   |    只有你展示的 PR diff     |         **每次都是全部**          |
-| 確定性（相同輸入 → 相同輸出） |       ❌（非確定性）        |              **✅**               |
-| 抓出沉睡數月的模式            |     只在其進入上下文時      |      **✅**（掃描所有檔案）       |
-| 跨執行記住發現                | ❌（工作階段之間沒有記憶）  |     **✅**（baseline + diff）     |
-| 無人觸發也能執行              |      需要 PR 或提示詞       | **✅**（CI 掛鉤，數秒內執行完成） |
-
-**兩者都用。** AI 能捕捉任何正規表達式都找不到的細微差異、意圖與設計
-缺陷。Mjölnir 捕捉 AI 因其看起來「像是有意為之」而放過的結構模式——提交
-進倉庫的 `.only`、被吞掉的結束碼、測試工作上的 `continue-on-error`。
-這些不是需要推理的 bug；它們是需要掃描的事實。
-
----
-
-## 🤖 CI 整合
-
-一條命令產生 PR 工作流程——預設建議性，絕不阻塞：
+產生 PR workflow，預設為建議性的：
 
 ```bash
 mjolnir ci install
 ```
 
-或者透過 SARIF 原生接上 GitHub Code Scanning：
+或者把 Marketplace 上的 action 加到你現有的 workflow 中：
+
+```yaml
+- uses: Sergey-Bar/Mjolnir@v1
+  with:
+    scope: changed
+    fail-on: error
+```
+
+固定 `@v1` 以跟隨主版本線，或固定一個確切的標籤（`@v0.5.32`）以獲得可重現的關卡。[docs/DISTRIBUTION-KIT.md](docs/DISTRIBUTION-KIT.md) 介紹了 Marketplace、Smithery 和各個 MCP 登錄表。
+
+要把發現送進 GitHub Code Scanning，上傳 SARIF（需要在 workflow 或 job 範圍內設定 `security-events: write`）：
 
 ```yaml
 - run: npx mjolnir-qa@latest --format sarif > mjolnir.sarif
+  continue-on-error: true
 - uses: github/codeql-action/upload-sarif@v3
+  if: ${{ !cancelled() }}
   with:
     sarif_file: mjolnir.sarif
 ```
 
-SARIF 的編輯器與管線設定：[docs/SARIF-INTEGRATION.md](docs/SARIF-INTEGRATION.md)。
+在 GitLab 上，`--format codequality` 會寫出 MR 元件和 diff 註記所讀取的 Code Quality 報告（[docs/GITLAB-CI.md](docs/GITLAB-CI.md)）。編輯器和流水線設定：[docs/SARIF-INTEGRATION.md](docs/SARIF-INTEGRATION.md)。
 
-### 變更範圍的涵蓋
+### 變更範圍歸因
 
-`--scope changed` 把發現歸因於你的分支相對 `main` 合併基新增的行。它
-涵蓋測試檔（`*.spec.*`、`*.test.*`），以及 diff 中的 GitHub 工作流程
-檔與 Playwright 設定。當合併基無法解析——淺層複製、detached HEAD、
-非 git 目標、預設分支不同——它會誠實地降級：發現回退到整檔歸因，
-報告會說明這一點。用 `--base <ref>` 覆寫基準參照。
+```bash
+npx mjolnir-qa@latest --scope changed
+```
 
----
+發現會歸因到你的分支新增的行，以 **merge-base** 為基準計算。範圍與完整掃描發現的檔案集合相同（TS/JS spec 和轉接器設定、`test_*.py`、`*Test.java`、`*Tests.cs`、`.github/workflows/*.yml`），再加上未提交和未追蹤的變更，所以在你提交之前就能使用。基準依 `main → master → origin/main → origin/master → origin/HEAD` 的順序解析；可以用 `--base <ref>` 覆寫。
 
-## 設定
+當無法解析 merge-base 時（淺層複製、分離的 HEAD、不在 git 中的目標），發現會退回到以整個檔案歸因，**而且報告會明確說明這一點**。無聲的退回正是這個工具要捕捉的那類缺陷。
 
-Mjölnir 是零設定的。儲存庫根目錄下選用的 `mjolnir.config.json`（或
-`.mjolnir.json`）可以微調嚴重度、門檻與範圍——它從不改變偵測語義。
+<br />
 
-| 鍵                  | 類型                                 | 作用                                                                                                         |
-| ------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
-| `exclude`           | `string[]`                           | 額外的忽略 glob（gitignore 子集），疊加在內建預設之上                                                        |
-| `gate`              | `"advisory" \| "error" \| "warning"` | 哪些嚴重度以非零碼結束（預設 `error`；`advisory` 絕不阻塞）                                                  |
-| `severityOverrides` | `{ "<RULE-ID>": severity }`          | 為你的儲存庫重新排列某條規則的發現                                                                           |
-| `ignore`            | `IgnoreEntry[]`                      | 壓制發現——**`reason` 必填**；條目 90 天後過期（明確的 `expires` 日期，或未註明時以設定檔的最後修改時間為準） |
-| `plugins`           | `string[]`                           | 第三方規則套件（見[信任模型](#信任模型)）                                                                    |
+## AI 代理
+
+只有當某個東西據此採取行動時，發現才有價值。
+
+```text
+SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
+```
+
+**AI 撰寫修正。Mjölnir 驗證它**。證明來自重新掃描，而絕不是代理自己回報的成功。
+
+| 指令              | 代理得到什麼                                                                                                                     |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `mjolnir mcp`     | 一個基於 stdio 的 [MCP](https://modelcontextprotocol.io) 伺服器。`scan`、`explain` 和 `diff` 都成為可呼叫的工具。                |
+| `mjolnir handoff` | 儲存下來的 `--json` 報告會變成一份確定性的 Markdown 計畫：偵測到了什麼、每項發現的證據界線、哪些東西**不能**改動，以及如何驗證。 |
+| `mjolnir install` | 寫入你的儲存庫中已有的代理設定位置（`.claude/`、`.cursor/`、`.kilo/`、`AGENTS.md`），這樣代理在聲稱完成之前會重新掃描。          |
+
+加入自帶 CLI 的用戶端：
+
+```bash
+claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
+```
+
+或者加入任何接受 `mcpServers` 設定區塊的用戶端：
 
 ```json
 {
-  "gate": "error",
-  "exclude": ["legacy/**"],
-  "severityOverrides": { "QA-PW-141": "warning" },
-  "ignore": [
-    {
-      "ruleId": "QA-TEST-004",
-      "files": ["e2e/legacy-login.spec.ts"],
-      "reason": "Third-party widget needs a settle delay; tracked in JIRA-4821",
-      "expires": "2026-12-31"
-    }
-  ]
+  "mcpServers": {
+    "mjolnir": { "command": "npx", "args": ["-y", "mjolnir-qa@latest", "mcp"] }
+  }
 }
 ```
 
-- **`.mjolnirignore`**——用於路徑排除的純 gitignore 風格檔案，與
-  `exclude` 同一語法。機器層級的雜訊用它；當清單應當與其餘設定一起進入
-  版本控制時用 `exclude`。
-- **CLI 覆寫**——`--strict`（包含隔離層規則）、`--width <cols>` 與
-  `--ascii` / `--no-ascii`（終端機渲染）、`--tone blunt`（更生硬的措辭）、
-  `--max-duration <sec>`（限時部分掃描）。
-- 規則壓制與棄用生命週期：[docs/RULE-LIFECYCLE.md](docs/RULE-LIFECYCLE.md)。
+**護欄比便利更重要**。交接中的每一項發現都帶有它的界線。**E2** 表示 _確定性：檢查位置並套用修正_。**E1** 表示 _需要確認：僅憑觀察不能證明缺陷_。一個盲目修正 E1、抑制規則或修改規則來拉高分數的代理，所做的正是這個工具要捕捉的事情，因此交接內容會在提示詞中、緊鄰這項發現寫明這一點。
 
-`ignore` 條目也為獨立命令 `mjolnir suppressions` 提供資料，該命令列出
-目前被壓制的項目以及每一條的過期時間。
+<br />
 
----
+## 信任與安全
 
-## 📐 結束碼與契約
+**本機優先，零遙測**。`src/` 中任何地方都不存在具備網路能力的 API（`fetch`、`http`、`https`、`net`、`dns`、`dgram`、WebSocket），一旦出現，[`privacy-network-isolation.spec.ts`](tests/contract/privacy-network-isolation.spec.ts) 就會讓建置失敗。它同樣禁止 `eval` 和 `new Function`。掃描不受信任的程式碼時從不執行它：靜態分析讀取原始碼文字，鑑識解析磁碟上已存在的報告檔案。
 
-凍結——可以放心在其上建構 CI 邏輯：
+兩點說明：`npx` 本身會在任何程式碼執行之前下載套件；而這項保證涵蓋的是 `src/`，不包括第三方外掛。
 
-| 結束碼 | 意義                                           |
-| ------ | ---------------------------------------------- |
-| `0`    | 乾淨——沒有達到或超過門檻的發現                 |
-| `1`    | 存在達到或超過門檻的發現                       |
-| `2`    | 部分掃描（時間預算用盡、檔案不可讀）——絕不阻塞 |
-| `10`   | 用法錯誤（錯誤的旗標、缺少目標）               |
-| `20`   | 內部錯誤                                       |
+**外掛不在沙箱中執行**。JS 外掛（`mjolnir-rules/*.mjs`，或在 `"plugins"` 下列出的 npm 套件）以完整的 Node 權限執行，與 ESLint 或 Vitest 外掛的信任模型相同。載入它們需要**在每次掃描時**明確啟用：沒有 `--enable-plugins`（或 `MJOLNIR_ENABLE_PLUGINS=1`）時，它們的原始碼永遠不會被載入，stderr 上的提示會列出被略過的內容。JSON 規則清單不執行任何程式碼，核心規則 ID 前綴是保留的，因此外掛無法冒充核心規則。請透過 [SECURITY.md](SECURITY.md) 回報漏洞。
 
-JSON/SARIF 報告為 `schemaVersion: 1`。規則 ID（`QA-<FAMILY>-NNN`）一經
-發布即不可變，且絕不重複使用。
+**它會檢查自己**。一個驗證信任引擎，只有自身可被驗證才站得住腳。每次 CI 執行都會用同一次執行產出的建置來掃描本儲存庫。只要出現任何 error 等級的發現，關卡就會失敗；遇到**部分**掃描或**當掉的規則**時同樣失敗，因為一次被截斷、什麼都沒回報的自我掃描，正是這個專案要捕捉的虛假綠燈。`mjolnir doctor` 會在同一次執行中重新稽核規則庫（fixture 防火牆、等級的誠實性、core 等級上限），結果為 INCONCLUSIVE 的檢查與失敗的檢查同樣判定為失敗。兩份報告都會作為建置產物上傳。
 
----
+### 結束碼與機器契約
 
-## 信任模型
+已凍結，你可以放心地在其上建立 CI 邏輯：
 
-- **本機優先**——掃描期間零網路呼叫。任何時候都是。零遙測。
-- **不做虛假證明**——我們寧可說「未知」也不說「已驗證」。空儲存庫得到
-  `score: null`，絕不是虛假的 100。
-- **部分誠實**——如果分析被截斷，輸出會說明。絕不會在未完成時聲稱
-  「complete」。
-- **假陽性防火牆**——偵測在去除註解/字串的程式碼視圖上運行
-  （TypeScript 規則使用編譯器 AST）：出現在散文註解或文件範例字串中的
-  模式是文件，不是發現。
-- **測量，而非斷言**——只有具有來自真實 OSS 程式碼的假陽性率的規則才
-  進入主打層級（見[這些規則中有多少經過測量](#這些規則中有多少經過測量)）；
-  掃描頁尾與 `mjolnir rules --unmeasured` 會告訴你哪條是哪條。
-- **外掛信任與執行閘門**——外掛是在 `"plugins"` 下宣告的 npm 套件；
-  JS 模組位於 `mjolnir-rules/*.mjs`。**沒有沙箱**：外掛程式碼以完整
-  Node 權限執行，與 ESLint 或 Vitest 外掛相同的信任模型。正因如此，
-  程式碼執行**在每次掃描時都是選擇性的**：傳入 `--enable-plugins`（或
-  設定 `MJOLNIR_ENABLE_PLUGINS=1`），否則這些來源不會被載入——一條
-  醒目的 stderr 提示會準確列出被跳過的內容。掃描不可信的程式碼絕不會
-  執行它。JSON 規則清單（`mjolnir-rules/*.json`）不受影響：它們宣告
-  正規表示式模式，按設計不執行任何程式碼。核心規則 ID 前綴是保留的，
-  外掛與外部規則若使用將被拒絕以防偽冒。
-- **工作區本機外部規則**（基於資料夾、零網路）——掃描目標旁的
-  `mjolnir-rules/` 目錄可載入自訂規則：JSON 檔宣告正規表達式模式（不執行
-  程式碼），`.mjs`/`.js` 模組匯出 `rules`（完整 Node 信任，同外掛）。外部
-  規則攜帶與核心相同的信任中繼資料；它們絕不能進入核心層級（核心要求
-  來自語料庫側檔的實測 FP 率——宣告的 `tier: "core"` 會被壓到
-  `extended`），遵守層級上限，並做漂移檢查：`mjolnir rules --md --external`
-  從載入的檔案渲染目錄（來源 `external`），矩陣產生器接受 `--external <root>`。
+| 結束碼 | 含義                                               |
+| ------ | -------------------------------------------------- |
+| `0`    | 乾淨：關卡及以上級別沒有發現                       |
+| `1`    | 關卡及以上級別存在發現                             |
+| `2`    | 部分掃描（時間預算用盡、檔案無法讀取）。從不攔截。 |
+| `10`   | 用法錯誤（參數錯誤、缺少目標）                     |
+| `20`   | 內部錯誤                                           |
 
----
+`2` 被刻意區別於 `0`：一次沒有完成的掃描並不是「什麼都沒發現」，它只是還沒找完。
 
-## 🏗️ 架構
+機器使用的一切（MCP 工具結果、`--json`、SARIF 2.1）都來自同一個標準結果，遵循帶版本號且**只做增量擴充**的 schema（`schemaVersion: 1`、`contractVersion: 1`），因此任何使用者都無需從算繪後的文字中重建含義。參見 [機器契約](docs/machine-contract.md)。規則 ID（`QA-<FAMILY>-NNN`）一經發佈即不可更改，也絕不重複使用。
 
-<details>
-<summary>展開目錄樹</summary>
+<br />
 
-```
-mjolnir/
-├── src/
-│   ├── engine/          # LanguageAdapter interface + rule runner
-│   ├── adapters/        # typescript · python · java · csharp · github-actions
-│   ├── rules/           # rules across 8 families + the measured-FP table
-│   ├── playwright/      # Selector Health Score engine
-│   ├── discovery/       # workspace, frameworks, ignore resolution
-│   ├── scope/           # git merge-base changed-scope engine
-│   ├── scorer/          # transparent deduction table + prioritization
-│   ├── reporter/        # terminal · JSON · SARIF 2.1 · Mermaid
-│   ├── forensics/       # run-data ingestion · flake verdicts · triage
-│   ├── config/          # mjolnir.config.json + suppressions
-│   ├── plugins/         # third-party rule loading (no sandbox)
-│   └── commands/        # every subcommand
-└── tests/
-    ├── fixtures/        # must-fire / must-not-fire per rule
-    └── golden/          # frozen score regression locks
-```
+## Mjölnir 無法告訴你的事
 
-</details>
+- **它不會執行你的測試**。掃描乾淨不等於測試套件通過。
+- **它無法告訴你某個斷言是*錯誤的***。`expect(total).toBe(41)` 看起來很健康。Mjölnir 找的是*不可能失敗*的測試和*不可能變紅*的流水線，而不是檢查了錯誤內容的測試。
+- **它不能證明業務正確性**。這裡沒有任何東西能說明你的產品做到了需求的要求。
+- **100 分不能證明測試套件好**。你的套件是否涵蓋了真實風險是另一個問題，這個工具不回答它。
+- **79 條規則中有 5 條基於估計發佈**，而不是實測的誤報率。每一條都會在自己的發現中註明。
+- **E1 不是 E2**。啟發式發現值得閱讀，但不值得盲目套用。
+- **空儲存庫的得分是 `null`，絕不是 100。**
+- **名為 `*.spec.ts` 卻沒有測試宣告的檔案不算涵蓋**。如果一個儲存庫僅有的 spec 檔案裡只有匯入或型別（`it`/`test` 呼叫為零），它的得分是 `null`，而不是 100。
 
-- **規則是純函式**——`(SourceFileContext) → Finding[]`，無 I/O，無
-  全域狀態。增加一個生態系 = 一個介接器 + 它的規則。
-- **TypeScript/Playwright 使用編譯器 AST**（ts-morph）。Python、Java 與
-  C# 執行在共用的、遮蔽註解/字串的正規表達式層上。
-- 針對 Java 與 C# 的 tree-sitter WASM AST 層已存在，是下一步的精度
-  提升——尚未接入同步掃描管線。
+<br />
 
----
+## 文件
 
-## 📚 文件
+完整的文件網站位於 <https://sergey-bar.github.io/Mjolnir/>。
 
-| 文件                                                   | 內容                        |
-| ------------------------------------------------------ | --------------------------- |
-| [docs/SCORING.md](docs/SCORING.md)                     | 分數正規化 + 證據加權       |
-| [docs/FP-AUDIT.md](docs/FP-AUDIT.md)                   | 實測假陽性率 + 方法         |
-| [docs/RULE-LIFECYCLE.md](docs/RULE-LIFECYCLE.md)       | 規則狀態、壓制、棄用        |
-| [docs/SARIF-INTEGRATION.md](docs/SARIF-INTEGRATION.md) | SARIF 輸出 + 編輯器/CI 設定 |
-| [docs/rules/](docs/rules/)                             | 產生的逐規則目錄            |
-| [CONTRIBUTING.md](CONTRIBUTING.md)                     | 開發環境 + 貢獻流程         |
-| [CHANGELOG.md](CHANGELOG.md)                           | 發布歷史                    |
-| [SECURITY.md](SECURITY.md)                             | 漏洞回報                    |
+| 文件                                                   | 內容                                         |
+| ------------------------------------------------------ | -------------------------------------------- |
+| [docs/SCORING.md](docs/SCORING.md)                     | 評分正規化與證據加權                         |
+| [docs/TERMINOLOGY.md](docs/TERMINOLOGY.md)             | 標準術語表：一個概念一個詞                   |
+| [docs/FP-AUDIT.md](docs/FP-AUDIT.md)                   | 實測誤報率及量測方法                         |
+| [docs/RULE-LIFECYCLE.md](docs/RULE-LIFECYCLE.md)       | 規則狀態、等級、抑制與淘汰                   |
+| [docs/VERSIONING.md](docs/VERSIONING.md)               | Semver 政策、凍結的介面、淘汰週期            |
+| [docs/machine-contract.md](docs/machine-contract.md)   | 標準的機器可讀結果                           |
+| [docs/SARIF-INTEGRATION.md](docs/SARIF-INTEGRATION.md) | SARIF 輸出以及編輯器或 CI 設定               |
+| [docs/GITLAB-CI.md](docs/GITLAB-CI.md)                 | GitLab：Code Quality 報告、MR 設定範例、關卡 |
+| [docs/rules/](docs/rules/)                             | 自動產生的逐條規則目錄                       |
+| [CONTRIBUTING.md](CONTRIBUTING.md)                     | 開發環境建置與貢獻流程                       |
+| [SUPPORT.md](SUPPORT.md)                               | 在哪裡提問、回報問題和取得協助               |
+| [SECURITY.md](SECURITY.md)                             | 漏洞回報                                     |
+| [CHANGELOG.md](CHANGELOG.md)                           | 版本歷史                                     |
 
----
+### 狀態
 
-## 📈 狀態
+**版本 1**。JSON schema 和結束碼是凍結的契約。TypeScript 和 Python 擁有最廣的實測涵蓋。Java 和 C# 較新；請參照 [成熟度表](https://sergey-bar.github.io/Mjolnir/reference/rule-lifecycle) 來理解它們。接下來的計畫，不捏造日期：[公開路線圖](https://sergey-bar.github.io/Mjolnir/reference/roadmap)。
 
-**v0.5.x · 公開測試。** JSON 結構與結束碼是凍結的契約。TypeScript 與
-Python 的實測涵蓋最廣；Java 與 C# 較新——請透過
-[層級表](#規則層級與語言成熟度)閱讀。
+### 參與貢獻
 
----
-
-## 🤝 貢獻
-
-新規則是最容易踏出的第一步——一條命令即可鷹架出規則及其必須觸發
-**和**必須不觸發的固定樣本（產生的規則會故意在樣本上失敗，直到你實作
-真正的偵測——佔位樁無法發布）：
+新規則是最容易上手的第一份貢獻。一條指令就能為規則產生骨架，連同它的 must-fire **和** must-not-fire fixture。產生的規則在寫出真正的偵測邏輯之前，會刻意在自己的 fixture 上失敗，因為一個被發佈出去的空殼，就是一條沒人量測過的規則：
 
 ```bash
 mjolnir create-rule QA-PW-140 --title "Screenshot without diff bound"
 ```
 
-完整的開發環境、常設門檻命令以及防蔓延 / 樣本防火牆法則都在
-[CONTRIBUTING.md](CONTRIBUTING.md)。
+開發環境建置、常駐關卡指令，以及 anti-creep 和 fixture 防火牆兩條法則，都在 [CONTRIBUTING.md](CONTRIBUTING.md) 中。
 
----
+<br />
 
 <div align="center">
 
-**別再發布你無法信任的測試了。**
+<img src="assets/readme/closing.svg" alt="在你的儲存庫上執行它。" width="100%" />
 
 ```bash
 npx mjolnir-qa@latest
 ```
 
-**Star ⭐ · Watch 👀 · Contribute 🤝**
+[閱讀指南](https://sergey-bar.github.io/Mjolnir/guide/getting-started) · [文件網站](https://sergey-bar.github.io/Mjolnir/) · [npm](https://www.npmjs.com/package/mjolnir-qa)
 
-由 [Sergey Bar](https://www.linkedin.com/in/sergeybar/) 建構
+<br />
+
+別問測試是否通過了。<br />
+要問證據能否證明它們值得信任。
+
+<sub>由 [Sergey Bar](https://www.linkedin.com/in/sergeybar/) 打造 · MIT 授權</sub>
 
 </div>

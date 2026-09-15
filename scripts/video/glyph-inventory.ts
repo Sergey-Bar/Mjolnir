@@ -34,9 +34,9 @@ function svgTextContent(svg: string): string {
     .map((el) =>
       el
         .replace(/<[^>]+>/g, "")
+        .replaceAll("&amp;", "&")
         .replaceAll("&lt;", "<")
-        .replaceAll("&gt;", ">")
-        .replaceAll("&amp;", "&"),
+        .replaceAll("&gt;", ">"),
     )
     .join("");
 }

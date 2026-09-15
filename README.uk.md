@@ -1,394 +1,431 @@
 <div align="center">
 
-<img src="assets/readme/logo.png" alt="Mjölnir — Verification Trust Engine" width="800" />
+<img src="assets/readme/hero.svg" alt="Mjölnir. Тести кажуть, що пройшло. Mjölnir каже, чому можна довіряти." width="100%" />
 
-### Ваші тести вам брешуть. Ми це доводимо.
+<br />
 
-**Verification Trust Engine для QA.** Mjölnir перевіряє тест-сьюти та
-CI-пайплайни, видає показник гідності й показує точно, де ламається
-довіра.
+Mjölnir знаходить тести, які не можуть впасти, і пайплайни, які не можуть почервоніти,<br />
+а потім оцінює, наскільки можна довіряти результату, з доказом для кожного пункту.
+
+<br />
 
 [![npm](https://img.shields.io/npm/v/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
+[![downloads](https://img.shields.io/npm/dm/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
 [![ci](https://img.shields.io/github/actions/workflow/status/Sergey-Bar/Mjolnir/ci.yml?branch=main&style=flat-square&label=ci&labelColor=0A1119)](https://github.com/Sergey-Bar/Mjolnir/actions/workflows/ci.yml)
+[![coverage](https://img.shields.io/codecov/c/github/Sergey-Bar/Mjolnir?style=flat-square&color=1F6F7C&labelColor=0A1119&label=coverage)](https://codecov.io/gh/Sergey-Bar/Mjolnir)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Sergey-Bar/Mjolnir/badge)](https://scorecard.dev/viewer/?uri=github.com/Sergey-Bar/Mjolnir)
 [![license](https://img.shields.io/badge/license-MIT-1F6F7C.svg?style=flat-square&labelColor=0A1119)](LICENSE)
 [![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-1F6F7C.svg?style=flat-square&labelColor=0A1119)](https://nodejs.org)
-
-[English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | Українська | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
-
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-14.
 
 ```bash
 npx mjolnir-qa@latest
 ```
 
-**Чи заслуговують довіри ваші тести?**
+[Подивитися в роботі](#подивитися-в-роботі) · [Швидкий старт](#швидкий-старт) · [Що знаходить](#що-знаходить-mjölnir) · [Оцінка](#оцінка-надійності) · [Докази](#модель-доказів) · [Аналіз прогонів](#аналіз-прогонів-тестів) · [CI](#цілісність-ci) · [Агенти](#ші-агенти) · [Безпека](#довіра-і-безпека) · [Обмеження](#чого-mjölnir-сказати-не-може) · [Документація](#документація)
 
-[Подивіться в дії](#-подивіться-в-дії) ·
-[Швидкий старт](#-швидкий-старт) ·
-[Що він перевіряє](#-що-перевіряє-mjölnir) ·
-[Скоринг](#як-працює-скор) ·
-[CI](#-інтеграція-ci) · [Конфігурація](#конфігурація) ·
-[Документація](#-документація)
+<details>
+<summary>Читати іншою мовою — 22 переклади</summary>
+
+[English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | Українська | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
+
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-15.
+
+<!-- Source hash: 3541b09e8d04 -->
+
+</details>
 
 </div>
 
----
+<br />
 
-## 🎬 Подивіться в дії
+## Зелена галочка — це заява, а не доказ
+
+Зелена галочка означає, що пайплайн не впав. Вона не означає, що тести запускалися або що вони могли впасти. Кожен із цих випадків проходить зеленим:
+
+- закомічений `.only`, через який запустилося 3 тести замість 900
+- `continue-on-error: true` на джобі, яка мала блокувати
+- `|| true` після команди запуску тестів
+- тест, який нічого не перевіряє або має порожнє тіло
+- обгортка з повторами, яка перетворює справжній провал на випадковий успіх
+- звіт, який workflow завантажує, але ніколи не створював
+- жорсткий sleep, на якому тримається стан гонитви
+
+Жоден із них не робить пайплайн червоним, і кожен на рев'ю виглядає навмисним. Саме тому вони виживають. Ось як Mjölnir читає реальний приклад:
 
 <p align="center">
-  <img src="assets/readme/demo.svg" alt="Повний --verbose-звіт Mjölnir по демо-репозиторію: WORTHINESS 75/100 NEEDS WORK, розбивка діагностик за категоріями, список FIX THIS FIRST і кожна знахідка з ID правила та номером рядка — CI, Playwright, тест-гігієна і Python-правила" width="900" />
+  <img src="assets/readme/scan.svg" alt="CI-workflow демонстраційного репозиторію, прочитаний рядок за рядком. Mjölnir позначає кожну знахідку на вказаному рядку: правило, що не так, рівень доказовості та виміряну частку хибних спрацювань." width="800" />
 </p>
 
-<sub>Повний вивід `npx mjolnir-qa ./examples/demo-repo --verbose`,
-відтворений справжнім репортером — нічого не обрізано. Перегенеровується
-командою `npm run docs:demo`;
-[`tests/demo-asset-reproducibility.spec.ts`](tests/demo-asset-reproducibility.spec.ts)
-валить CI, якщо артефакт розійшовся з тим, що друкує інструмент.</sub>
+<sub>Кожна знахідка, яку демонстраційне сканування видало для цього workflow, на вказаному рядку. Згенеровано командою `npm run docs:readme-brand` з [`demo-report.json`](assets/readme/demo-report.json) і захищено від розбіжностей у CI.</sub>
 
-**Що щойно сталося:**
+**Суворий режим.** Найагресивніші детекції — `.only`, `continue-on-error`, порожні тести, зловживання повторами — живуть у карантинному ярусі. Вони запускаються лише з `--strict` і обмежені серйозністю `info`: позначають, але ніколи не блокують. Сканування за замовчуванням (`npx mjolnir-qa@latest` без `--strict`) покриває лише основні та розширені правила. Додайте `--strict`, коли хочете і консультаційний шар.
 
-1. Mjölnir знайшов Playwright-спеки, свою конфігурацію, CI-workflow і
-   Python-тестовий файл — чотири мови/формати за один прохід.
-2. Він знайшов докази, що послаблюють довіру до сьюта —
-   `continue-on-error`, що маскує job, `|| true`, що ковтає exit-код,
-   жорсткі sleep'и, крихкий селектор, захардкоджені staging-URL,
-   очікування `networkidle`.
-3. Кожну він перетворив на конкретну знахідку з ID правила, місцем і
-   фіксом — і в єдиний скор, за яким можна гейтити PR.
+Mjölnir читає набір тестів, CI-workflow і, якщо він є, звіт реального прогону. Він не запускає ваші тести, не встановлює залежності й не виконує код, який сканує. А коли доказів немає, він так і каже, замість того щоб вигадувати впевненість:
+
+| Ситуація                                              | Що повідомляє Mjölnir                                                 |
+| ----------------------------------------------------- | --------------------------------------------------------------------- |
+| Оголошень тестів не знайдено                          | Оцінка `null`, відображається як **UNKNOWN**. Ніколи не вигадані 100. |
+| Немає базової лінії або порівнянної ревізії           | **UNKNOWN**, із зазначеною причиною. Ніколи не припущений 0.          |
+| Сканування перервано (ліміт часу, нечитабельні файли) | **PARTIAL**, код виходу `2`. Ніколи не видається за чистий результат. |
+
+<p align="center">
+  <img src="assets/readme/how-it-works.svg" alt="Як працює Mjölnir. Він статично читає набір тестів і CI-пайплайн, а також звіт реального прогону, якщо він є. Кожну знахідку він зважує за рівнем доказовості та рівнем довіри, причому лише реальний прогін може досягти L3–L5, і видає знахідки, оцінку надійності та CI-гейт із замороженими кодами виходу. У циклі агента ШІ пише виправлення, а Mjölnir сканує повторно, щоб його довести." width="880" />
+</p>
+
+<sub>Створено для цієї сторінки й показано в масштабі 1:1. Згенеровано командою `npm run docs:readme-brand` і захищено від розбіжностей у CI; оцінка, лічильники та ID правила беруться з [`script.demo.json`](assets/video/script.demo.json), [`demo-report.json`](assets/readme/demo-report.json) і реєстру правил, ніколи не вводяться вручну. Те саме зображення у вигляді постера: [`architecture.svg`](assets/readme/architecture.svg).</sub>
+
+<br />
+
+## Подивитися в роботі
+
+Реальне сканування [`examples/demo-repo`](examples/demo-repo), невеликого набору тестів Playwright із CI-workflow. Ось куди пішли його бали:
+
+<p align="center">
+  <img src="assets/readme/terminal-hero.svg" alt="Розбивка вирахувань Mjölnir: WORTHINESS 75/100 NEEDS WORK, оцінка за категоріями, блок вирахувань за серйозністю та список FIX THIS FIRST" width="520" />
+</p>
+
+<sub>Згенеровано командою `npm run docs:hero` з реального сканування і захищено від розбіжностей у CI. Повний звіт `--verbose` того самого сканування — [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
+
+<details>
+<summary><strong>Дивитися</strong> — сканування, виправлення, яке воно виводить, і повторне сканування, яке його доводить</summary>
+
+<br />
+
+<p align="center">
+  <a href="assets/video/mjolnir-demo.mp4">
+    <img src="assets/video/mjolnir-demo-poster.png" alt="Кадр демонстраційного запису: npx mjolnir-qa@latest сканує демонстраційний репозиторій у вікні термінала" width="900" />
+  </a>
+</p>
+
+<sub>Відрендерено кадр за кадром з реального сканування командою `npm run docs:video`; ніколи не записувалося з екрана. Виберіть кадр, щоб відкрити [`mjolnir-demo.mp4`](assets/video/mjolnir-demo.mp4).</sub>
+
+</details>
 
 ### Одна знахідка зблизька
 
-Запустіть `mjolnir explain QA-CI-001` на першій знахідці вище — і
-отримаєте:
+Кожна знахідка відповідає на чотири запитання: де вона, наскільки Mjölnir упевнений, як часто правило помиляється і як це виправити.
+
+<p align="center">
+  <img src="assets/readme/finding-anatomy.svg" alt="Перша знахідка демонстраційного сканування, саме так, як її виводить термінал, із позначеними чотирма частинами: де, наскільки впевнено, як часто правило помиляється, і виправлення." width="100%" />
+</p>
+
+`mjolnir explain QA-CI-001` виводить повне досьє довіри правила, зокрема виміряну частку хибних спрацювань і рівень, який ця частка йому забезпечила:
 
 ```text
-▍ QA-CI-001 — continue-on-error masks a failing verification gate
+  ▍ QA-CI-001 — continue-on-error masks a failing verification gate
 
 Severity:    error
 Confidence:  high
+Tier:        quarantine
 Evidence:    E2
-Measured FP: not yet measured — this rule ships on assumption (see docs/FP-AUDIT.md)
+QA impact:   False-green risk (FALSE-GREEN)
+Measured FP: 11% (19 hand-classified corpus verdicts)
+FP risk:     low (author estimate)
+Languages:   yaml
+Frameworks:  github-actions, azure-pipelines
 
 WHAT WAS FOUND (real detector output, not a mockup)
   Job `security-scan` runs a verification gate under `continue-on-error: true`.
 
 WHY IT MATTERS
-  This job can fail every day and CI will still show green. The checkmark
-  on this workflow cannot be trusted.
+  This job can fail every day and CI will still show green. The checkmark on
+  this workflow cannot be trusted.
 
 HOW TO FIX
   Remove continue-on-error, or scope it to individual non-blocking steps only.
+
+  Example from this rule's own must-fire fixture: QA-CI-001/must-fire/masked.yml
+
+WHAT WOULD CHANGE THE VERDICT
+  - a run report next to the scan target (mjolnir.report.json or test-results/)
+  corroborating this file lifts its findings to L3–L5
+  - a documented suppression (mjolnir.config.json) lowers the finding count
+  without claiming correctness
+  - quarantine findings run only under --strict and are advisory (E0) — they can
+  never gate CI
+
+NEXT ACTION
+  Fix the first occurrence, then re-run: `mjolnir --scope changed`. Every
+  occurrence of this rule is listed in the scan output.
+
+HOW TO VERIFY THE FIX
+  Re-run `mjolnir` on the changed file(s) — this finding should no longer
+  appear. `mjolnir --scope changed` scopes the check to just what you touched.
+
+Docs: mjolnir rules --md   (full catalog, this rule included)
 ```
 
-Ось одиниця цінності: не дрібниця стилю, а місце, де ваш CI каже, що
-щось пройшло, хоча воно не пройшло.
+Ось одиниця цінності: одне місце, де CI повідомляє про успіх, якого не заслужив.
 
----
+<br />
 
-## ⚡ Швидкий старт
-
-Запустіть на репозиторії — отримаєте повний звіт і показник гідності:
+## Швидкий старт
 
 ```bash
 npx mjolnir-qa@latest
 ```
 
-**У CI продукт — одна команда.** Вона сканує лише зачеплене гілкою та
-завершується з ненульовим кодом за нових проблем:
+Він сканує поточний каталог і виводить Trust Report: що знайдено, наскільки цьому можна довіряти, чому і що робити далі. Він завершується з кодом `0`, якщо на рівні гейта або вище нічого не знайдено.
+
+У CI скануйте лише те, що внесла гілка, щоб успадкований набір тестів не втопив ваш перший pull request:
 
 ```bash
 npx mjolnir-qa@latest --scope changed
 ```
 
-Вбудуйте це у PR-check — `mjolnir ci install` пише workflow — і готово.
-Все інше опціональне.
+`mjolnir ci install` записує це як workflow GitHub Actions з [action](https://github.com/Sergey-Bar/Mjolnir#readme), закріпленим на мажорному тезі `v1` (або просто `npx` з `--no-action`). Він залишається рекомендаційним, доки ви не вирішите, що він має блокувати.
 
-| Команда                             | Що робить                                                 |
-| ----------------------------------- | --------------------------------------------------------- |
-| `mjolnir`                           | Скан усього репо + показник гідності                      |
-| `mjolnir --scope changed`           | Лише те, що принесла ваша гілка — CI-режим                |
-| `mjolnir ci install`                | Генерує рекомендаційний PR-workflow                       |
-| `mjolnir explain QA-CI-001`         | Що / чому / фікс + виміряний FP-рейт для правила          |
-| `mjolnir rules --unmeasured`        | Правила, що працюють за припущенням, а не за вимірюванням |
-| `mjolnir --json` / `--format sarif` | Машинночитабельно / GitHub Code Scanning                  |
-| `mjolnir --strict`                  | Також правила tier-у quarantine (вищий ризик FP)          |
+| Команда                             | Що робить                                                  |
+| ----------------------------------- | ---------------------------------------------------------- |
+| `mjolnir`                           | Trust Report: вердикт, упевненість, наступна дія           |
+| `mjolnir --scope changed`           | Лише те, що внесла ваша гілка (варіант для CI)             |
+| `mjolnir ci install`                | Створює рекомендаційний workflow для PR (на основі action) |
+| `mjolnir explain QA-CI-001`         | Що, чому і як виправити, плюс виміряна частка FP           |
+| `mjolnir why src/a.spec.ts:42`      | Чому позначено саме цей рядок. Ніколи не блокує.           |
+| `mjolnir forensics ./test-results/` | Докази з реального прогону                                 |
+| `mjolnir trust-report`              | Самодостатній Trust Artifact (md + json)                   |
+| `mjolnir handoff`                   | План виправлень для агента-програміста                     |
+| `mjolnir --json` / `--format sarif` | Машинозчитуваний вивід, GitHub Code Scanning               |
+| `mjolnir --format codequality`      | Звіт GitLab Code Quality (артефакт віджета MR)             |
+| `mjolnir --strict`                  | Також запускає правила рівня quarantine (вищий ризик FP)   |
 
 <details>
-<summary><strong>Коли щось флає</strong></summary>
+<summary><strong>Усі інші команди</strong> — розбір нестабільних тестів, звіти, контроль</summary>
 
-| Команда                             | Що робить                                                     |
-| ----------------------------------- | ------------------------------------------------------------- |
-| `mjolnir forensics ./test-results/` | Реальні дані прогонів → вердикти `TRUE-FLAKE`, `FLAKY.md`     |
-| `mjolnir triage ./test-results/`    | Пропозиція карантину з історії виконання                      |
-| `mjolnir pw-report ./test-results/` | Зведення прогону Playwright — ретраї / флейки / найповільніші |
-| `mjolnir doctor:playwright`         | Глибокий скан лише Playwright + Selector Health Score         |
+<br />
+
+| Команда                             | Що робить                                                                       |
+| ----------------------------------- | ------------------------------------------------------------------------------- |
+| `mjolnir --classic`                 | Банер оцінки з часів до Trust Report                                            |
+| `mjolnir explain verdict`           | Чому вердикт збереженого сканування саме такий                                  |
+| `mjolnir triage ./test-results/`    | Покроковий розбір. Кожен рядок завершується наступною дією.                     |
+| `mjolnir pw-report ./test-results/` | Зведення прогону Playwright: повтори, нестабільні тести, найповільніші          |
+| `mjolnir doctor:playwright`         | Глибоке сканування лише для Playwright плюс Selector Health Score               |
+| `mjolnir fix --dry-run` / `fix`     | Безпечні автовиправлення, кожне пересканується, щоб довести, що воно спрацювало |
+| `mjolnir baseline` / `diff`         | Знімок знахідок, потім звіт лише про нові або погіршені                         |
+| `mjolnir impact --since <ref>`      | Що вніс і що виправив коміт                                                     |
+| `mjolnir summary`                   | Анотації CI і зведення кроку на основі звіту                                    |
+| `mjolnir pr-comment`                | Коментар до PR у межах змін, у форматі Markdown                                 |
+| `mjolnir debt`                      | Реєстр тестового боргу з моделлю витрат                                         |
+| `mjolnir handover`                  | Карта набору тестів для нового QA-інженера                                      |
+| `mjolnir init`                      | Визначає фреймворки, виводить чекліст налаштування                              |
+| `mjolnir suppressions`              | Список придушених знахідок для контролю                                         |
+| `mjolnir rules --unmeasured`        | Правила, що працюють на припущенні, а не на вимірюванні                         |
+| `mjolnir rules --md`                | Повний каталог правил (JSON або Markdown)                                       |
+| `mjolnir doctor`                    | Самоаудит власної бази правил Mjölnir                                           |
+| `mjolnir create-rule <ID>`          | Створює заготовку нового правила та його фікстур                                |
+| `mjolnir stats`                     | Локальні лічильники всіх помічених виправлень                                   |
+| `mjolnir badge`                     | JSON для ендпоінта shields.io і фрагмент коду                                   |
+| `mjolnir --cache`                   | Інкрементальні пересканування через локальний кеш вердиктів                     |
+| `mjolnir --format mermaid`          | Діаграма архітектури тестів для коментаря до PR                                 |
+
+`mjolnir help <command>` виводить використання, приклади та наступний крок для будь-якої з них.
 
 </details>
 
-<details>
-<summary><strong>Зрідка / звіти</strong></summary>
+Потрібен **Node.js ≥ 22.18** на Windows, macOS або Linux. Віддаєте перевагу глобальному встановленню? `npm i -g mjolnir-qa`. Мінімальна версія визначається інструментами збирання (tsdown орієнтований на неї, а пайплайн релізів проганяє на ній smoke-тести); залежностям часу виконання більшого не потрібно.
 
-| Команда                         | Що робить                                         |
-| ------------------------------- | ------------------------------------------------- |
-| `mjolnir fix --dry-run` / `fix` | Безпечні автофікси з доказом                      |
-| `mjolnir baseline` / `diff`     | Знімок знахідок, далі звіт лише нових/погіршених  |
-| `mjolnir impact --since <ref>`  | Що змінилося з моменту ранішого коміту            |
-| `mjolnir debt`                  | Реєстр тестового боргу з моделлю вартості         |
-| `mjolnir handover`              | Карта онбордингу сьюта для нового QA              |
-| `mjolnir stats`                 | Локальні накопичені лічильники побачених фіксів   |
-| `mjolnir badge`                 | JSON shields.io-ендпоінту + сніпет                |
-| `mjolnir rules --md`            | Повний каталог правил (JSON або Markdown)         |
-| `mjolnir doctor`                | Самоаудит власної бази правил Mjölnir             |
-| `mjolnir create-rule <ID>`      | Скаффолд нового правила + фікстур                 |
-| `mjolnir --format mermaid`      | Діаграма тестової архітектури для коментаря до PR |
+<br />
+
+## Що знаходить Mjölnir
+
+<p align="center">
+  <img src="assets/readme/stack.svg" alt="Працює з вашим стеком: мови, тестові фреймворки та CI-системи, які покривають його правила, за даними реєстру правил." width="100%" />
+</p>
+
+**79 правил** у чотирьох родинах — гігієна тестів, якість тестів, Playwright і цілісність CI — для TypeScript і JavaScript, Python, Java, C# та YAML GitHub Actions. Вони охоплюють Playwright у всіх чотирьох прив'язках, а також pytest, JUnit, TestNG, NUnit, xUnit, MSTest, Jest, Vitest і Mocha, з початковим покриттям Cypress і Selenium. Дев'ять із них, щоб показати загальний вигляд:
+
+| ID           | Правило                                                                 | Серйозність | Рівень     |
+| ------------ | ----------------------------------------------------------------------- | ----------- | ---------- |
+| QA-CI-001    | `continue-on-error` маскує гейт перевірки, що падає                     | error       | quarantine |
+| QA-CI-009    | Код виходу тестів не передається далі (`\|` без pipefail, ланцюжки `;`) | error       | extended   |
+| QA-TEST-001  | Закомічено сфокусований тест (`.only`, `fit`)                           | error       | quarantine |
+| QA-TEST-003  | Тест без тверджень                                                      | error       | quarantine |
+| QA-TQUAL-009 | Твердження на promise без await                                         | error       | quarantine |
+| QA-PW-002    | Твердження на локаторі без await                                        | error       | core       |
+| QA-PW-004    | Крихкі селектори CSS/XPath                                              | warning     | quarantine |
+| QA-PY-002    | Пропущений тест (`skip`, нестрогий `xfail`)                             | warning     | core       |
+| QA-CS-103    | Тестовий метод без тверджень                                            | error       | core       |
+
+Повний каталог генерується з реєстру й ніколи не ведеться вручну: `mjolnir rules --md`, [`docs/rules/`](docs/rules/) або [посібник про те, що він перевіряє](https://sergey-bar.github.io/Mjolnir/guide/what-it-checks).
+
+<details>
+<summary><strong>Усі правила, згадані в цьому README</strong>, в одній таблиці</summary>
+
+<br />
+
+> Правила `quarantine` запускаються лише з `--strict` і ніколи не блокують (їхній рівень обмежено info). Показано серйозність, задану автором.
+
+| ID           | Родина     | Правило                                                             | Серйозність | Рівень     |
+| ------------ | ---------- | ------------------------------------------------------------------- | ----------- | ---------- |
+| QA-TEST-001  | Гігієна    | Закомічено сфокусований тест (`.only`, `fit`)                       | error       | quarantine |
+| QA-TEST-002  | Гігієна    | Пропущений тест. Без відстежуваної причини підвищується до `error`. | warning     | quarantine |
+| QA-TEST-003  | Гігієна    | Тест без тверджень                                                  | error       | quarantine |
+| QA-TEST-004  | Гігієна    | Жорсткий sleep (`waitForTimeout`, `sleep()`, `delay()`)             | warning     | extended   |
+| QA-TEST-006  | Гігієна    | Зловживання повторами, що приховує нестабільність                   | warning     | quarantine |
+| QA-TEST-010  | Гігієна    | Порожнє тіло тесту                                                  | error       | quarantine |
+| QA-TQUAL-002 | Якість     | Тавтологічне твердження                                             | error       | quarantine |
+| QA-TQUAL-009 | Якість     | Твердження на promise без await                                     | error       | quarantine |
+| QA-TQUAL-011 | Якість     | Закоментовані тести                                                 | warning     | extended   |
+| QA-PW-002    | Playwright | Твердження на локаторі без await                                    | error       | core       |
+| QA-PW-003    | Playwright | Закомічено `page.pause()` / `test.only()`                           | error       | core       |
+| QA-PW-004    | Playwright | Крихкі селектори CSS/XPath                                          | warning     | quarantine |
+| QA-PW-123    | Playwright | Жорстко задані URL оточень                                          | warning     | quarantine |
+| QA-PW-140    | Playwright | Скриншот без `maxDiffPixelRatio`                                    | warning     | core       |
+| QA-CI-001    | CI         | `continue-on-error` маскує гейт, що падає                           | error       | quarantine |
+| QA-CI-002    | CI         | `\|\| true` ковтає коди виходу                                      | error       | extended   |
+| QA-CI-005    | CI         | Звіт використовується, але ніколи не створюється                    | error       | quarantine |
+| QA-CI-007    | CI         | Обгортки з повторами навколо тестів                                 | warning     | extended   |
+| QA-CI-008    | CI         | Завжди успішний крок маскує падіння                                 | error       | quarantine |
+| QA-CI-009    | CI         | Код виходу не передається далі (`\|` без pipefail, ланцюжки `;`)    | error       | extended   |
+| QA-CI-010    | CI         | Тести пропускаються там, де мають блокувати                         | error       | quarantine |
+| QA-PY-002    | Python     | Пропущений тест (`skip`, нестрогий `xfail`)                         | warning     | core       |
+| QA-PY-003    | Python     | Тестова функція без тверджень                                       | error       | quarantine |
+| QA-PY-005    | Python     | `time.sleep()` у тестах                                             | warning     | extended   |
+| QA-PY-012    | Python     | Тавтологічне твердження                                             | error       | quarantine |
+| QA-JV-101    | Java       | Вимкнений тест (`@Disabled`)                                        | warning     | core       |
+| QA-JV-102    | Java       | Жорсткий sleep (`Thread.sleep()`)                                   | warning     | extended   |
+| QA-JV-103    | Java       | Тестовий метод без тверджень                                        | error       | extended   |
+| QA-JV-105    | Java       | Жорсткий sleep через `waitForTimeout()` у Playwright                | warning     | core       |
+| QA-JV-106    | Java       | Крихкий селектор замість локатора за роллю                          | warning     | quarantine |
+| QA-CS-101    | C#         | Пропущений тест (`[Ignore]`, `[Fact(Skip=)]`)                       | warning     | core       |
+| QA-CS-102    | C#         | Жорсткий sleep (`Thread.Sleep` / `Task.Delay`)                      | warning     | core       |
+| QA-CS-103    | C#         | Тестовий метод без тверджень                                        | error       | core       |
+| QA-CS-105    | C#         | Жорсткий sleep через `WaitForTimeoutAsync()`                        | warning     | extended   |
+| QA-CS-106    | C#         | Крихкий селектор замість локатора за роллю                          | warning     | quarantine |
+
+Для Python також є QA-PY-001…012 (гігієна pytest) і QA-PY-101…108 (Playwright для Python). Cypress і Selenium мають стартові набори по три правила.
 
 </details>
 
-Установіть глобально замість `npx`, якщо так зручніше:
-`npm i -g mjolnir-qa`. Потребує Node.js ≥ 22.18. Працює на Windows,
-macOS і Linux.
+Кожне правило постачається з фікстурою must-fire **і** фікстурою must-not-fire, а правило, що спрацьовує на власній негативній фікстурі, не може бути випущене. Це захист від хибних спрацювань; `mjolnir doctor` забезпечує його у власному CI цього репозиторію.
 
----
+### Selector Health Score
 
-## 👥 Для кого це?
+`mjolnir doctor:playwright` оцінює кожен локатор за тим, як він знаходить елемент: так, як це зробив би користувач (роль, мітка, текст), через явний контракт (`data-testid`) або через структурну випадковість (ланцюжки CSS, XPath). Кожен файл отримує оцінку від 0 до 100:
 
-- **QA / SDET**, які володіють e2e- чи інтеграційним с'ютом і яким
-  потрібні докази, що с'ют справді заслуговує зелену галочку, яку він
-  видає.
-- **Платформові / DevEx-команди**, відповідальні за цілісність CI та
-  release-gates — ті, для кого `continue-on-error` ніколи не повинен
-  мовчки перефарбовувати червоний пайплайн у зелений.
-- **OSS-мейнтейнери**, яким потрібен дешевий, завжди увімкнений
-  верифікаційний гейт, що працює локально й у CI без мережевих
-  викликів.
+```text
+  ▍ SELECTOR HEALTH
 
----
+e2e/login.spec.ts
+  [█████████████░░░░░░░]  65 / 100
+  role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 
-## 🔨 Що перевіряє Mjölnir
+e2e/checkout.spec.ts
+  [█████████████████░░░]  86 / 100
+  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
+```
 
-|     |                                                                                                                              |
-| --- | ---------------------------------------------------------------------------------------------------------------------------- |
-| ⚖️  | **Показник гідності** — одне число, прозора таблиця відрахувань, жодного чорного ящика                                       |
-| 🎭  | **Selector Health Score** — оцінює ваші Playwright-локатори, а не лише pass-rate                                             |
-| 🔬  | **Runtime-криміналістика** — читає реальні дані прогонів Playwright/JUnit і ловить `TRUE-FLAKE`, а не лише статичні здогадки |
-| 🚨  | **Правила цілісності CI** — ловить `continue-on-error`, `\|\| true` та інші трюки з хибним зеленим                           |
-| 🐍  | **Усі чотири Playwright-бінінги** — TypeScript, Python, Java, C#/.NET — плюс pytest, JUnit/TestNG і CI-workflows             |
-| 🔒  | **Local-first** — нуль мережевих викликів під час сканування, нуль телеметрії, робота за секунди                             |
+Це вимірює **стійкість, а не коректність**. `.btn.btn-primary > div:nth-child(2)` проходить сьогодні й проходитиме, доки хтось не торкнеться розмітки. Низька оцінка ніколи не стверджує, що тест зламаний, — лише що він залежить від розмітки, яку ніхто не обіцяв зберігати.
 
-### Правила
+<br />
 
-Кожне правило постачається з must-fire- **та** must-not-fire-фікстурами.
-Правило, що спрацьовує на власній негативній фікстурі, не може вийти —
-це фаєрвол хибних спрацювань.
+## Оцінка надійності
 
-<details>
-<summary><strong>Тест-гігієна</strong></summary>
+<p align="center">
+  <img src="assets/readme/score-gauge.svg" alt="Шкала надійності від 0 до 100 з маркером, що проходить по кожній оцінці: UNWORTHY нижче 50, NEEDS WORK від 50 до 79, WORTHY від 80 до 99, FORGED при 100" width="720" />
+</p>
 
-| ID          | Правило                                                 | Severity |
-| ----------- | ------------------------------------------------------- | -------- |
-| QA-TEST-001 | Закомічено сфокусований тест (`.only`, `fit`)           | error    |
-| QA-TEST-002 | Пропущено тест без обґрунтування                        | error    |
-| QA-TEST-002 | Пропущено тест з облікованим обґрунтуванням             | warning  |
-| QA-TEST-003 | Тест без ассертів                                       | error    |
-| QA-TEST-004 | Жорсткий sleep (`waitForTimeout`, `sleep()`, `delay()`) | warning  |
-| QA-TEST-006 | Зловживання ретраями, що приховує флейкість             | warning  |
-| QA-TEST-010 | Порожнє тіло тесту                                      | error    |
+<sub>Кожна оцінка від 0 до 100, розміщена справжнім `deriveScoreState`. Згенеровано командою `npm run docs:gauge` і захищено від розбіжностей у CI.</sub>
 
-</details>
+| Оцінка    | Вердикт                                   |
+| --------- | ----------------------------------------- |
+| `0 – 49`  | **UNWORTHY**                              |
+| `50 – 79` | **NEEDS WORK**                            |
+| `80 – 99` | **WORTHY**                                |
+| `100`     | **FORGED**                                |
+| `null`    | **UNKNOWN**: оголошень тестів не знайдено |
 
-<details>
-<summary><strong>Якість тестів</strong></summary>
+**Як вона обчислюється.** Серйозність задає базове вирахування (`error −8`, `warning −3`, `info −1`), а рівень доказовості його зменшує: E2 враховується повністю, E1 наполовину (з округленням униз), E0 не враховується. Сума нормується за охопленням набору, тобто вирахування на одне оголошення тесту, а не на файл. Термінал виводить ті самі зменшені числа, які використала оцінка; прихованої другої моделі немає. Подробиці: [docs/SCORING.md](docs/SCORING.md) і [посібник з оцінки](https://sergey-bar.github.io/Mjolnir/guide/scoring).
 
-| ID           | Правило                       | Severity |
-| ------------ | ----------------------------- | -------- |
-| QA-TQUAL-002 | Тавтологічний ассерт          | error    |
-| QA-TQUAL-009 | Ассерт не-awaitнутого promise | error    |
-| QA-TQUAL-011 | Закоментовані тести           | warning  |
+**Чого не означає 100.** Це не означає, що програма коректна, набір тестів достатній або продукт вільний від дефектів. Це означає лише одне: **жодне з правил, перевірених Mjölnir, не дало вирахування в цьому скануванні та за цієї моделі доказів.**
 
-</details>
+<br />
 
-<details>
-<summary><strong>Playwright 🎭</strong></summary>
+## Модель доказів
 
-| ID        | Правило                                 | Severity |
-| --------- | --------------------------------------- | -------- |
-| QA-PW-002 | Ассерт локатора без await               | error    |
-| QA-PW-003 | `page.pause()` / `test.only()` у коміті | error    |
-| QA-PW-004 | Крихкі CSS/XPath-селектори              | warning  |
-| QA-PW-123 | Захардкоджені URL середовищ             | warning  |
+Кожна знахідка має дві мітки: наскільки впевнений Mjölnir і наскільки далеко знахідку перевірено. У цьому різниця між інструментом, що повідомляє про шаблони, та інструментом, від якого можна ставити в залежність реліз.
 
-</details>
+**Наскільки впевнено — рівень доказовості.**
 
-<details>
-<summary><strong>Цілісність CI</strong></summary>
+| Рівень | Назва                | Значення                                                 | Вирахування |
+| ------ | -------------------- | -------------------------------------------------------- | ----------- |
+| **E2** | Детермінований доказ | Дефект присутній у коді в тому вигляді, як він написаний | Повне       |
+| **E1** | Доказ за шаблоном    | Збігся шаблон, тісно пов'язаний із дефектом              | Половина    |
+| **E0** | Спостереження        | Варто знати. Не твердження, що щось не так.              | Нуль        |
 
-| ID        | Правило                                                          | Severity |
-| --------- | ---------------------------------------------------------------- | -------- |
-| QA-CI-001 | `continue-on-error` маскує падіння                               | error    |
-| QA-CI-002 | `\|\| true` ковтає exit-коди                                     | error    |
-| QA-CI-005 | Звіт споживається, але ніколи не генерується                     | error    |
-| QA-CI-007 | Retry-обгортки навколо тестів                                    | warning  |
-| QA-CI-008 | Завжди успішний крок маскує падіння                              | error    |
-| QA-CI-009 | Exit-код тесту не прокидається (`\|` без pipefail, ланцюжки `;`) | error    |
-| QA-CI-010 | Тести пропускаються там, де мають блокувати (skip-on-PR-гарди)   | error    |
+Упевненість у виявленні — це не сила доказу. Правило може бути впевнене, що знайшло те, що шукало, і все одно дивитися на евристику. Знахідки E1 призначені для того, щоб їх читали й оцінювали, а не застосовували наосліп, і ця межа позначена на знахідці в терміналі, у JSON і в передачі агенту.
 
-</details>
+**Наскільки далеко перевірено — рівень довіри.** Більшість знахідок отримано читанням вашого коду. Дайте Mjölnir звіт реального прогону тестів, і він зможе підтвердити, що код справді виконувався.
 
-<details>
-<summary><strong>Python / pytest 🐍</strong></summary>
+<p align="center">
+  <img src="assets/readme/trust-ladder.svg" alt="Драбина довіри від L0 до L5. L0–L2 отримуються читанням коду; для L3–L5 потрібен звіт реального прогону, що позначено розривом у драбині." width="100%" />
+</p>
 
-| ID        | Правило                                     | Severity |
-| --------- | ------------------------------------------- | -------- |
-| QA-PY-002 | Пропущений тест (`skip`, нестрогий `xfail`) | warning  |
-| QA-PY-003 | Тестова функція без ассертів                | error    |
-| QA-PY-005 | `time.sleep()` у тестах                     | warning  |
-| QA-PY-012 | Тавтологічний ассерт                        | error    |
+| Рівень | Простими словами   | Що для цього потрібно                              |
+| ------ | ------------------ | -------------------------------------------------- |
+| **L0** | Помічено           | Читання коду                                       |
+| **L1** | Схоже на проблему  | Читання коду: збігся шаблон                        |
+| **L2** | Доведено в коді    | Читання коду: дефект структурний                   |
+| **L3** | Файл виконувався   | Звіт прогону показує, що файл знахідки виконувався |
+| **L4** | Тест виконувався   | Звіт прогону показує, що тест знахідки виконувався |
+| **L5** | Прогін підтверджує | Власний результат прогону підтверджує клас дефекту |
 
-Усього 20 Python-правил (QA-PY-001…012 гігієна pytest + QA-PY-101…108 Playwright-Python).
-
-</details>
-
-<details>
-<summary><strong>Java / JUnit · TestNG ☕</strong></summary>
-
-| ID        | Правило                                      | Severity |
-| --------- | -------------------------------------------- | -------- |
-| QA-JV-101 | Вимкнений тест (`@Disabled`)                 | warning  |
-| QA-JV-102 | Жорсткий sleep (`Thread.sleep()`)            | warning  |
-| QA-JV-103 | Тестовий метод без ассертів                  | error    |
-| QA-JV-105 | Жорсткий sleep Playwright `waitForTimeout()` | warning  |
-| QA-JV-106 | Крихкий селектор замість role-локатора       | warning  |
-
-</details>
-
-<details>
-<summary><strong>C# / .NET — NUnit · xUnit · MSTest 🟣</strong></summary>
-
-| ID        | Правило                                        | Severity |
-| --------- | ---------------------------------------------- | -------- |
-| QA-CS-101 | Пропущений тест (`[Ignore]`, `[Fact(Skip=)]`)  | warning  |
-| QA-CS-102 | Жорсткий sleep (`Thread.Sleep` / `Task.Delay`) | warning  |
-| QA-CS-103 | Тестовий метод без ассертів                    | error    |
-| QA-CS-105 | Жорсткий sleep `WaitForTimeoutAsync()`         | warning  |
-| QA-CS-106 | Крихкий селектор замість role-локатора         | warning  |
-
-</details>
-
-> Повний живий каталог — кожне правило з tier, confidence, ризиком
-> хибних спрацювань і доступністю автофікса — генерується з реєстру:
->
-> ```bash
-> mjolnir rules --md
-> ```
->
-> Сторінки за правилами лежать у [`docs/rules/`](docs/rules/).
+Статичне сканування зупиняється на L2. Лише звіт реального прогону (Playwright JSON, Jest або Vitest JSON, JUnit XML) може підняти знахідку до L3 і вище, тож знахідка, яку жодного разу не бачили в роботі, ніколи не може стверджувати протилежне. Визначення: [docs/TERMINOLOGY.md](docs/TERMINOLOGY.md).
 
 ### Скільки з цього виміряно
 
-**78 з 99 правил несуть хибнопозитивну частоту, виміряну на реальному
-OSS-коді** (по ≥ 10 вручну класифікованих знахідок на правило; див.
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Інші 21 виходять на оцінці
-автора. Футер кожного скана каже, скільки із _спрацьованих_ правил
-виміряно; `mjolnir rules --unmeasured` перелічує невиміряні; сторінка
-`mjolnir explain` кожного правила вказує її статус. Ми публікуємо
-це відправлено в карантин. Збільшувати це число — постійна робота проєкту.
+**У 74 з 79 правил частку хибних спрацювань виміряно на реальному OSS-коді** (щонайменше 10 вручну класифікованих знахідок на кожне; див. [docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Решта 5 спираються на оцінку автора й прямо про це кажуть, правило за правилом, у `mjolnir explain`. `mjolnir rules --unmeasured` перелічує їх, а підвал кожного сканування повідомляє, скільки з правил, які справді _спрацювали_, виміряно.
 
-### Тіри правил і зрілість мов
+Показники залишаються публічними, навіть коли вони погані. QA-TEST-001 (закомічений `.only`) погано проходить аудит на реальних репозиторіях і тому перебуває в quarantine. Актуальне значення для кожного правила, зокрема QA-PW-141, є в аудиті.
 
-Кожне правило — `core`, `extended` чи `quarantine`, призначене за його
-**виміряною** частотою хибних спрацювань:
+### Рівні довіри правил
 
-| Tier         | Значення                               | Скан за замовчуванням | `--strict` |
-| ------------ | -------------------------------------- | :-------------------: | :--------: |
-| `core`       | ≤ 10 % виміряних FP                    |          ✅           |     ✅     |
-| `extended`   | ≤ 30 % виміряних FP                    |          ✅           |     ✅     |
-| `quarantine` | понад 30 % або ще не виміряно (n < 10) |          ❌           |     ✅     |
+Рівні визначаються виміряною часткою хибних спрацювань, а не думкою:
 
-| Мова            | Адаптер         | Охват сьогодні                                              |
-| --------------- | --------------- | ----------------------------------------------------------- |
-| TypeScript / JS | AST компілятора | найширший, найбільш виміряний — переважно `core`/`extended` |
-| Python / pytest | Regex-шар       | широкий, перевірений корпусом — переважно `core`/`extended` |
-| Java            | Regex-шар       | новіший — переважно `extended`/`quarantine`                 |
-| C# / .NET       | Regex-шар       | новіший — переважно `extended`/`quarantine`                 |
+| Рівень         | Виміряна FP              | Поведінка                                               |
+| -------------- | ------------------------ | ------------------------------------------------------- |
+| **core**       | ≤ 10%                    | Звіт за замовчуванням, блокує                           |
+| **extended**   | ≤ 30%                    | Звіт за замовчуванням, знижена впевненість              |
+| **quarantine** | > 30% або явно оголошене | Лише `--strict`, обмежено рівнем info, ніколи не блокує |
+| _не виміряно_  | n < 10                   | Не може бути підвищене до core, доки не виміряне        |
 
-У TypeScript і Python найширший виміряний охват. Java і C# вийшли,
-задокументовані й залишаються за межами головного числа, доки реальний
-с'ют-споживач (не власні тести біндинг-бібліотеки) не буде проаудовано.
+Смуги FP можуть лише понизити рівень — вони ніколи не підвищують правило з `quarantine`, якщо воно було туди явно оголошене. Явно поміщене в карантин правило залишається в quarantine незалежно від виміряного рівня FP.
 
----
+Підвищення, пониження і зрілість за мовами: [життєвий цикл правил](https://sergey-bar.github.io/Mjolnir/reference/rule-lifecycle).
 
-## Як працює скор
+### Чому це не лінтер
 
-<p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Термінальний вивід Mjölnir — WORTHINESS 75/100 NEEDS WORK, розбивка діагностик за категоріями і список FIX THIS FIRST" width="820" />
-</p>
+Лінтери кажуть, чи дотримується код правил. Mjölnir каже, чи можна довіряти вашій перевірці.
 
-<sub>Перегенеровується командою `npm run docs:hero`;
-[`tests/hero-asset-reproducibility.spec.ts`](tests/hero-asset-reproducibility.spec.ts)
-валить CI, якщо артефакт розійшовся з тим, що друкує репортер.</sub>
+|                                                                | Лінтери (ESLint, SonarQube) | Інструменти покриття | Код-рев'ю зі ШІ |     **Mjölnir**     |
+| -------------------------------------------------------------- | :-------------------------: | :------------------: | :-------------: | :-----------------: |
+| Оцінює **систему перевірки**, а не код продукту                |             Ні              |          Ні          |       Ні        |         Так         |
+| Цілісність CI-workflow (`continue-on-error`, `\|\| true`)      |             Ні              |          Ні          |    лише diff    |         Так         |
+| Оцінює стійкість локаторів Playwright (Selector Health)        |             Ні              |          Ні          |       Ні        |         Так         |
+| Читає реальні дані прогонів для вердиктів `TRUE-FLAKE`         |             Ні              |          Ні          |       Ні        |         Так         |
+| Публікує виміряну частку хибних спрацювань для кожного правила |             Ні              |          Ні          |       Ні        |         Так         |
+| Позначає тести без тверджень                                   |            Так\*            |          Ні          |      іноді      |         Так         |
+| Знаходить жорсткі sleep (`waitForTimeout`, `time.sleep`)       |            Так\*            |          Ні          |      іноді      |         Так         |
+| Детермінованість (однаковий вхід — однаковий вихід)            |             Так             |         Так          |       Ні        |         Так         |
+| Вартість сканування                                            |         безкоштовно         |     безкоштовно      |     токени      | **нуль** (локально) |
 
-Скор прозорий: **error −8, warning −3, info −1**, далі нормування на
-експозицію с'юта (відрахування на оголошення тесту). Відрахування,
-зважені за доказами, означають, що слабкі сигнали коштують дешевше.
-Термінал показує ті самі зі скидкою числа, що використовує скор —
-жодного чорного ящика. Повна методика: [docs/SCORING.md](docs/SCORING.md).
+<sub>\*Покривається `eslint-plugin-jest` і `eslint-plugin-playwright` (`expect-expect`, `no-wait-for-timeout`), а також власними правилами SonarQube для тверджень. Стовпці описують поведінку за замовчуванням під час перевірки наборів тестів; плагіни, платні тарифи й власні правила змінюють деякі відповіді. Це зведення позиціонування, а не бенчмарк.</sub>
 
-**Вердикти**
+Використовуйте й рев'ю зі ШІ. Воно вловлює нюанси, наміри та помилки проєктування, яких не знайде жоден шаблон. Mjölnir знаходить те, що рев'ю зі ШІ пропускає, бо це виглядає навмисним: закомічений `.only`, проковтнутий код виходу, `continue-on-error` на тестовій джобі. Тут потрібне сканування, а не міркування.
 
-| Score   | Вердикт          |
-| ------- | ---------------- |
-| ≥ 80    | ✓ **WORTHY**     |
-| 50 – 79 | ⚠ **NEEDS WORK** |
-| < 50    | ✖ **UNWORTHY**   |
+<br />
 
-**Рівні доказів** — кожна знахідка несе один; він задає вагу знахідки в
-скорі:
+## Аналіз прогонів тестів
 
-| Рівень | Значення              | Вплив на скор          | Приклад                                                 |
-| ------ | --------------------- | ---------------------- | ------------------------------------------------------- |
-| E2     | Детермінований дефект | Повне відрахування     | `.only` у коміті — структурно доказово                  |
-| E1     | Евристичний патерн    | Половинне відрахування | Знайдений regex'ом `sleep()` — сильний сигнал, не доказ |
-| E0     | Спостереження         | Нуль (тільки info)     | Репортиться, але ніколи не гейтить CI і не віднімає     |
-
-Більшість правил — **E1**. Слоган «we prove it» відсилає до цієї
-системи: знахідки E2 — структурне доказ; знахідки E1 — коректно
-позиційовані попередження, не формальні докази.
-
-Порожній репозиторій отримує `null`, ніколи фейкову сотню — див.
-[Модель довіри](#модель-довіри).
-
----
-
-## 🎭 Selector Health Score
-
-Головна метрика для Playwright-с'ютів — наскільки стійкі ваші локатори:
-
-```text
-▍ SELECTOR HEALTH — e2e/checkout.spec.ts
-
-  [█████████████████░░░]  83 / 100
-  role/text: 2 · testid: 1 · css-chains: 1 ⚠ · xpath: 0
-```
-
-Локатори на основі ролей отримують повний бал. Ланцюжки CSS-класів і
-XPath топлять скор — вони ламаються на будь-якому DOM-рефакторі, не
-повідомляючи, яку поведінку регресовано.
-
----
-
-## 🔬 Runtime-докази
-
-Статичне виявлення флейкості — гадання. Mjölnir читає **реальні дані
-виконання** — JSON-звіти Playwright та XML JUnit від будь-якого
-раннера:
+Статичний аналіз міркує про код, який ніколи не виконувався. Аналіз прогонів читає те, що сталося насправді: Playwright JSON, Jest JSON, Vitest JSON і JUnit XML від будь-якого ранера.
 
 ```bash
 mjolnir forensics ./test-results/
 ```
 
 ```text
-▍ FLAKINESS LEADERBOARD
+  ▍ FLAKINESS LEADERBOARD
 
 3 tests · 1 failed · 1 flaky · 1 retried
 
@@ -398,293 +435,184 @@ FAILING    declines an expired card (e2e/checkout.spec.ts)
            ████░░░░░░░░░░░░░░░░ 1.1s · 1 attempt
 ```
 
-Тест, що проходить лише з спроби ≥ 2, — не прохідний тест; це везучий
-тест. Він позначається `TRUE-FLAKE` незалежно від фінальної зеленої
-галочки.
+`TRUE-FLAKE` не означає, що тест перезапускався. Це означає, що тест **провалив щонайменше одну спробу, а потім завершився зеленим**: випадковий успіх, позначений незалежно від того, що показує підсумкова галочка. `mjolnir triage` перетворює цю історію на пропозицію карантину, а `mjolnir pw-report` підсумовує прогін. Саме ці звіти прогонів піднімають знахідки до рівнів довіри L3 і вище.
 
----
+<br />
 
-## ⚡ Mjölnir — не ще один лінтер
+## Цілісність CI
 
-Лінтери кажуть, чи відповідає код правилам. Mjölnir каже, чи можна
-довіряти вашій верифікації.
+Тест може проходити, поки навколишній пайплайн не здатен упасти. Mjölnir читає і workflow: `continue-on-error`, `|| true`, коди виходу, які ніколи не передаються далі, завжди успішні кроки, звіти, які використовуються, але ніколи не створюються, і гейти, що пропускаються саме в тих подіях, які мають блокувати. Кожна знахідка називає джобу, крок і рядок і має власний рівень доказовості.
 
-|                                                           | ESLint / SonarQube | Coverage-інструменти | Ручне рев'ю | **Mjölnir** |
-| --------------------------------------------------------- | :----------------: | :------------------: | :---------: | :---------: |
-| Цілісність CI-workflow (`continue-on-error`, `\|\| true`) |         ❌         |          ❌          |    рідко    |     ✅      |
-| Крос-мова (TS, Python, Java, C#) з одного інструменту     |         ❌         |          ❌          |     ❌      |     ✅      |
-| Оцінює стійкість Playwright-локаторів (Selector Health)   |         ❌         |          ❌          |    рідко    |     ✅      |
-| Позначає тести без справжніх ассертів                     |   ✅ (плагін)\*    |          ❌          |    іноді    |     ✅      |
-| Ловить жорсткі sleep'и (`waitForTimeout`, `time.sleep`)   |   ✅ (плагін)\*    |          ❌          |    іноді    |     ✅      |
-| Працює за секунди, нуль мережевих викликів під час скана  |         ✅         |          ✅          |      —      |     ✅      |
-
-\*`eslint-plugin-jest` (`expect-expect`) і `eslint-plugin-playwright`
-(`expect-expect`, `no-wait-for-timeout`) покривають це для своїх
-фреймворків.
-
-**Runtime-аналіз** — окрема категорія поруч зі статичним лінтингом:
-
-|                                                        | Playwright retry reporter | Allure / ReportPortal | **Mjölnir forensics** |
-| ------------------------------------------------------ | :-----------------------: | :-------------------: | :-------------------: |
-| Читає реальні дані прогонів для вердиктів `TRUE-FLAKE` |        частково\*         |    частково (тег)     |          ✅           |
-| Звіт флейк-тріажу з історії виконання                  |            ❌             |          ✅           |          ✅           |
-| Інтегрується зі статичним скором гідності              |            ❌             |          ❌           |          ✅           |
-
-\*Playwright відстежує ретраї всередині, але не видає самостійного
-звіту про флейкість з вердиктними мітками.
-
----
-
-## 🤖 Чому б не використати просто AI-код-рев'ю?
-
-Інша проблема, інший шар. AI-рев'ю може помітити підозрілу зміну тесту
-в дифі; воно не доводить, що система верифікації в цілому заслуговує
-довіри — і бачить лише показаний йому диф.
-
-|                                                   |   AI-код-рев'ю (Copilot тощо)    |               **Mjölnir**               |
-| ------------------------------------------------- | :------------------------------: | :-------------------------------------: |
-| Ціна за скан                                      | Токени (ростуть з розміром дифа) |    **Нуль** (локально, встановлений)    |
-| Бачить увесь с'ют + усі CI-конфіги                |   Лише PR-диф, показаний йому    |             **Все, щоразу**             |
-| Детермінований (той самий вхід → той самий вихід) |      ❌ (недетермінований)       |                 **✅**                  |
-| Ловить патерни, що дрімають місяцями              |      Лише якщо в контексті       |        **✅** (сканує всі файли)        |
-| Пам'ятає знахідки між запусками                   |  ❌ (немає пам'яті між сесіями)  |        **✅** (baseline + diff)         |
-| Запускається без людини                           |      Потрібен PR чи промпт       | **✅** (CI-хук, виконується за секунди) |
-
-**Використовуйте обидва.** AI ловить нюанс, задум і дизайнерські вади,
-яких не знайде жоден regex. Mjölnir ловить структурні патерни, які AI
-упускає, бо ті виглядають «наміреними» — закомічений `.only`,
-проковтнутий exit-код, `continue-on-error` на тестовому job. Це не
-баги, що потребують міркувань; це факти, що потребують сканування.
-
----
-
-## 🤖 Інтеграція CI
-
-Одна команда генерує PR-workflow — за замовчуванням рекомендаційний,
-ніколи блокувальний:
+Створіть workflow для PR, за замовчуванням рекомендаційний:
 
 ```bash
 mjolnir ci install
 ```
 
-Або підключіть нативно до GitHub Code Scanning через SARIF:
+Або додайте action із Marketplace до вже наявного workflow:
+
+```yaml
+- uses: Sergey-Bar/Mjolnir@v1
+  with:
+    scope: changed
+    fail-on: error
+```
+
+Закріпіть `@v1`, щоб слідувати мажорній лінії, або точний тег (`@v0.5.32`) для відтворюваного гейта. [docs/DISTRIBUTION-KIT.md](docs/DISTRIBUTION-KIT.md) описує Marketplace, Smithery та реєстри MCP.
+
+Щоб надіслати знахідки в GitHub Code Scanning, завантажте SARIF (потрібен `security-events: write` на рівні workflow або job):
 
 ```yaml
 - run: npx mjolnir-qa@latest --format sarif > mjolnir.sarif
+  continue-on-error: true
 - uses: github/codeql-action/upload-sarif@v3
+  if: ${{ !cancelled() }}
   with:
     sarif_file: mjolnir.sarif
 ```
 
-Налаштування редактора і пайплайну для SARIF:
-[docs/SARIF-INTEGRATION.md](docs/SARIF-INTEGRATION.md).
+У GitLab `--format codequality` записує звіт Code Quality, який читають віджет MR і анотації diff ([docs/GITLAB-CI.md](docs/GITLAB-CI.md)). Налаштування редактора й пайплайна: [docs/SARIF-INTEGRATION.md](docs/SARIF-INTEGRATION.md).
 
-### Охват за зміненим scope
+### Прив'язка до змін гілки
 
-`--scope changed` атрибуцію знахідок рядкам, доданим у вашій гілці
-відносно merge-base з `main`. Він покриває тестові файли
-(`*.spec.*`, `*.test.*`), плюс workflow-файли GitHub і конфігурації
-Playwright у дифі. Коли merge-base не розв'язується — shallow clone,
-detached HEAD, не-git-ціль, інша дефолтна гілка — він чесно деградує:
-знахідки повертаються до атрибуції на весь файл, і звіт про це каже.
-Перевизначте базову ref через `--base <ref>`.
+```bash
+npx mjolnir-qa@latest --scope changed
+```
 
----
+Знахідки прив'язуються до рядків, доданих вашою гілкою, відносно **merge-base**. Область — той самий набір файлів, що знаходить повне сканування (специфікації TS/JS і конфігурації адаптерів, `test_*.py`, `*Test.java`, `*Tests.cs`, `.github/workflows/*.yml`), плюс незакомічені й невідстежувані зміни, тож це працює ще до коміту. Базу визначають у порядку `main → master → origin/main → origin/master → origin/HEAD`; її можна перевизначити через `--base <ref>`.
 
-## Конфігурація
+Якщо merge-base визначити не вдається (неглибокий клон, від'єднаний HEAD, ціль поза git), знахідки відкочуються до прив'язки до всього файлу, **і звіт про це повідомляє.** Тихий відкат був би саме тим дефектом, заради пошуку якого існує цей інструмент.
 
-Mjölnir — zero-config. Опціональний `mjolnir.config.json` (або
-`.mjolnir.json`) у корені репо підлаштовує severity, гейтинг і scope —
-він ніколи не змінює семантику детекції.
+<br />
 
-| Key                 | Тип                                  | Дія                                                                                                                                                             |
-| ------------------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `exclude`           | `string[]`                           | Додаткові ignore-глоби (підмножина gitignore), поверх вбудованих дефолтів                                                                                       |
-| `gate`              | `"advisory" \| "error" \| "warning"` | Які severity завершують процес ненульовим кодом (за замовчуванням `error`; `advisory` ніколи не блокує)                                                         |
-| `severityOverrides` | `{ "<RULE-ID>": severity }`          | Переранговує знахідки правила для вашого репо                                                                                                                   |
-| `ignore`            | `IgnoreEntry[]`                      | Пригнічує знахідки — **`reason` обов'язковий**; записи спливають через 90 днів (явна дата `expires`, або час останньої зміни файлу конфіга для записів без неї) |
-| `plugins`           | `string[]`                           | Сторонні пакети правил (див. [Модель довіри](#модель-довіри))                                                                                                   |
+## ШІ-агенти
+
+Знахідки чогось варті, лише якщо на них хтось реагує.
+
+```text
+SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
+```
+
+**ШІ пише виправлення. Mjölnir його перевіряє.** Доказ дає повторне сканування, а не власний звіт агента про успіх.
+
+| Команда           | Що отримує агент                                                                                                                                                            |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mjolnir mcp`     | Сервер [MCP](https://modelcontextprotocol.io) через stdio. `scan`, `explain` і `diff` стають інструментами, які можна викликати.                                            |
+| `mjolnir handoff` | Збережений звіт `--json` перетворюється на детермінований план у Markdown: що виявлено, межа доказовості для кожної знахідки, що **не** має змінюватися і як це перевірити. |
+| `mjolnir install` | Записує в місця для агентів, які вже є у вашому репозиторії (`.claude/`, `.cursor/`, `.kilo/`, `AGENTS.md`), щоб агент пересканував код, перш ніж заявити, що закінчив.     |
+
+Додайте його до клієнта, який має власний CLI:
+
+```bash
+claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
+```
+
+Або до будь-якого клієнта, що приймає блок `mcpServers`:
 
 ```json
 {
-  "gate": "error",
-  "exclude": ["legacy/**"],
-  "severityOverrides": { "QA-PW-141": "warning" },
-  "ignore": [
-    {
-      "ruleId": "QA-TEST-004",
-      "files": ["e2e/legacy-login.spec.ts"],
-      "reason": "Third-party widget needs a settle delay; tracked in JIRA-4821",
-      "expires": "2026-12-31"
-    }
-  ]
+  "mcpServers": {
+    "mjolnir": { "command": "npx", "args": ["-y", "mjolnir-qa@latest", "mcp"] }
+  }
 }
 ```
 
-- **`.mjolnirignore`** — простий файл у стилі gitignore для винятків
-  шляхів, той самий діалект, що `exclude`. Використовуйте його для
-  машинного шуму; використовуйте `exclude`, коли список має жити у
-  версійному контролі разом з іншою конфігурацією.
-- **CLI-перевизначення** — `--strict` (увімкнути правила карантину),
-  `--width <cols>` і `--ascii` / `--no-ascii` (термінальний рендер),
-  `--tone blunt` (різкіші повідомлення), `--max-duration <sec>`
-  (обмежений частковий скан).
-- Пригнічення правил і життєвий цикл депрекації:
-  [docs/RULE-LIFECYCLE.md](docs/RULE-LIFECYCLE.md).
+**Обмежувач важливіший за зручність.** Кожна знахідка в передачі має свою межу. **E2** каже _детерміновано: перевірте місце і застосуйте виправлення_. **E1** каже _ПОТРІБНЕ ПІДТВЕРДЖЕННЯ: саме спостереження не доводить дефект_. Агент, який наосліп виправляє E1, придушує правило або редагує правило, щоб підняти оцінку, робить саме те, заради пошуку чого існує цей інструмент, тому передача каже про це прямо в промпті, поруч зі знахідкою.
 
-Записи `ignore` також живлять окрему команду `mjolnir suppressions`,
-яка перелічує поточні пригнічення та час спливання кожного запису.
+<br />
 
----
+## Довіра і безпека
 
-## 📐 Коди виходу та контракти
+**Локально, без телеметрії.** Ніде в `src/` немає жодного API з мережевими можливостями (`fetch`, `http`, `https`, `net`, `dns`, `dgram`, WebSocket), а [`privacy-network-isolation.spec.ts`](tests/contract/privacy-network-isolation.spec.ts) провалює збірку, якщо такий з'явиться. Він також забороняє `eval` і `new Function`. Сканування недовіреного коду ніколи його не виконує: статичний аналіз читає вихідний текст, а аналіз прогонів розбирає файли звітів, які вже є на диску.
 
-Заморожені — безпечно будувати на них CI-логіку:
+Два застереження: сам `npx` завантажує пакет до того, як щось запуститься, а гарантія поширюється на `src/`, але не на сторонні плагіни.
 
-| Код виходу | Значення                                                                      |
-| ---------- | ----------------------------------------------------------------------------- |
-| `0`        | Чисто — немає знахідок на рівні гейта або вище                                |
-| `1`        | Знахідки на рівні гейта або вище                                              |
-| `2`        | Частковий скан (вичерпано бюджет часу, нечитабельні файли) — ніколи не блокує |
-| `10`       | Помилка використання (поганий прапор, відсутня ціль)                          |
-| `20`       | Внутрішня помилка                                                             |
+**Плагіни не ізольовані в пісочниці.** JS-плагіни (`mjolnir-rules/*.mjs` або npm-пакети, перелічені в `"plugins"`) працюють із повними привілеями Node — та сама модель довіри, що й у плагінів ESLint чи Vitest. Їх завантаження вмикається явно **для кожного сканування**: без `--enable-plugins` (або `MJOLNIR_ENABLE_PLUGINS=1`) їхні вихідні файли ніколи не завантажуються, а повідомлення в stderr перелічує пропущене. JSON-маніфести правил не виконують код, а префікси ID core-правил зарезервовані, щоб плагін не міг видати себе за одне з них. Повідомляйте про вразливості через [SECURITY.md](SECURITY.md).
 
-JSON/SARIF-звіт — `schemaVersion: 1`. ID правил (`QA-<FAMILY>-NNN`)
-незмінні після виходу і ніколи не використовуються повторно.
+**Він перевіряє сам себе.** Рушій довіри до перевірок нічого не вартий, якщо його самого не можна перевірити. Кожен прогін CI сканує цей репозиторій збіркою, створеною тим самим прогоном. Гейт падає за будь-якої знахідки рівня error, а також за **часткового** сканування чи **правила, що впало**, бо обрізане самосканування, яке ні про що не повідомляє, — це і є хибний зелений, заради пошуку якого існує цей проєкт. `mjolnir doctor` у тому самому прогоні заново перевіряє базу правил (захист фікстур, чесність рівнів, ліміт рівня core), а перевірка з результатом INCONCLUSIVE падає так само, як провалена. Обидва звіти завантажуються як артефакти збірки.
 
----
+### Коди виходу та машинний контракт
 
-## Модель довіри
+Заморожені, щоб на них можна було будувати логіку CI:
 
-- **Local-first** — нуль мережевих викликів під час сканування. Ніколи.
-  Нуль телеметрії.
-- **Жодних хибних доказів** — ми радше скажемо «невідомо», ніж
-  «перевірено». Порожнє репо отримує `score: null`, ніколи фейкову
-  сотню.
-- **Часткова чесність** — якщо аналіз обірвано, вивід про це каже.
-  Ніколи «complete», коли це не так.
-- **FP-фаєрвол** — детекція працює на очищеному від коментарів і рядків
-  поданні коду (правила TypeScript використовують AST компілятора):
-  патерн усередині прозаїчного коментаря чи док-прикладу-рядка — це
-  документація, а не знахідка.
-- **Виміряно, а не заявлено** — у головні тіри виходять лише правила з
-  частотою хибних спрацювань з реального OSS-коду (див.
-  [Скільки з цього виміряно](#скільки-з-цього-виміряно)); футер скана і
-  `mjolnir rules --unmeasured` скажуть, які які.
-- **Довіра до плагінів і ворота виконання** — плагіни — це npm-пакети,
-  оголошені у
-  `"plugins"`; JS-модулі живуть у `mjolnir-rules/*.mjs`.
-  **Пісочниці немає**: код плагіна працює з повними
-  привілеями Node, та сама модель довіри, що в плагінів ESLint чи
-  Vitest. Саме тому виконання коду — **opt-in при кожному скані**:
-  передайте `--enable-plugins` (або задайте `MJOLNIR_ENABLE_PLUGINS=1`),
-  інакше джерела НЕ завантажуються — гучне повідомлення у stderr точно
-  перелічує пропущене. Сканування недовіреного коду ніколи його не
-  виконує. JSON-маніфести правил (`mjolnir-rules/*.json`) не зачеплені:
-  вони декларують regex-патерни й за конструкцією не виконують код.
-  Префікси ID основних правил зарезервовані й відкидаються від
-  плагінів і зовнішніх правил проти підміни.
-- **Workspace-локальні зовнішні правила** (фолдерні, нуль мережі) —
-  каталог `mjolnir-rules/` поруч із ціллю скана завантажує власні
-  правила: JSON-файли декларують regex-патерни (код не виконується),
-  модулі `.mjs`/`.js` експортують `rules` (повна довіра Node, як у
-  плагінів). Зовнішні правила несуть ті самі trust-метадані, що й
-  core; вони ніколи не можуть вийти в core-тирі (core вимагає
-  виміряної FP-частоти з corpus-сайдкара — заявлений `tier: "core"`
-  затискається до `extended`), дотримуються тирових лімітів і
-  перевіряються на дрейф: `mjolnir rules --md --external` рендерить
-  каталог із завантажених файлів (походження `external`), а генератор
-  матриці приймає `--external <root>`.
+| Код виходу | Значення                                                                          |
+| ---------- | --------------------------------------------------------------------------------- |
+| `0`        | Чисто: немає знахідок на рівні гейта або вище                                     |
+| `1`        | Є знахідки на рівні гейта або вище                                                |
+| `2`        | Часткове сканування (вичерпано ліміт часу, нечитабельні файли). Ніколи не блокує. |
+| `10`       | Помилка використання (неправильний прапорець, немає цілі)                         |
+| `20`       | Внутрішня помилка                                                                 |
 
----
+`2` навмисно відрізняється від `0`: сканування, яке не завершилося, не «нічого не знайшло». Воно просто не закінчило шукати.
 
-## 🏗️ Архітектура
+Усе, що споживає машина (результати інструментів MCP, `--json`, SARIF 2.1), береться з одного канонічного результату за версіонованою схемою, **що розширюється лише додаванням** (`schemaVersion: 1`, `contractVersion: 1`), тож жодному споживачеві не треба відновлювати зміст із відрендереного тексту. Див. [машинний контракт](docs/machine-contract.md). ID правил (`QA-<FAMILY>-NNN`) незмінні після випуску й ніколи не використовуються повторно.
 
-<details>
-<summary>Розгорнути дерево</summary>
+<br />
 
-```
-mjolnir/
-├── src/
-│   ├── engine/          # LanguageAdapter interface + rule runner
-│   ├── adapters/        # typescript · python · java · csharp · github-actions
-│   ├── rules/           # rules across 8 families + the measured-FP table
-│   ├── playwright/      # Selector Health Score engine
-│   ├── discovery/       # workspace, frameworks, ignore resolution
-│   ├── scope/           # git merge-base changed-scope engine
-│   ├── scorer/          # transparent deduction table + prioritization
-│   ├── reporter/        # terminal · JSON · SARIF 2.1 · Mermaid
-│   ├── forensics/       # run-data ingestion · flake verdicts · triage
-│   ├── config/          # mjolnir.config.json + suppressions
-│   ├── plugins/         # third-party rule loading (no sandbox)
-│   └── commands/        # every subcommand
-└── tests/
-    ├── fixtures/        # must-fire / must-not-fire per rule
-    └── golden/          # frozen score regression locks
-```
+## Чого Mjölnir сказати не може
 
-</details>
+- **Він не запускає ваші тести.** Чисте сканування — це не набір тестів, що проходить.
+- **Він не може сказати, що твердження _хибне_.** `expect(total).toBe(41)` виглядає здоровим. Mjölnir знаходить тести, які _не можуть упасти_, і пайплайни, які _не можуть почервоніти_, а не тести, що перевіряють не те.
+- **Він не доводить бізнес-коректність.** Ніщо тут не каже, що ваш продукт робить те, чого вимагала вимога.
+- **100 — не доказ хорошого набору тестів.** Чи покриває ваш набір реальні ризики — окреме питання, і цей інструмент на нього не відповідає.
+- **5 з 79 правил спираються на оцінку**, а не на виміряну частку. Кожне з них каже про це у своїй знахідці.
+- **E1 — це не E2.** Евристичні знахідки варто читати, але не варто застосовувати наосліп.
+- **Порожній репозиторій отримує `null`, ніколи не 100.**
+- **Файл з ім'ям `*.spec.ts` без оголошень тестів не вважається покриттям.** Репозиторій, де єдині spec-файли містять імпорти або типи (нуль викликів `it`/`test`), отримує `null`, а не 100.
 
-- **Правила — чисті функції** — `(SourceFileContext) → Finding[]`, без
-  I/O, без глобалів. Новий екосистем = один адаптер + його правила.
-- **TypeScript/Playwright використовує AST компілятора** (ts-morph).
-  Python, Java і C# працюють на спільному regex-шарі з маскуванням
-  коментарів і рядків.
-- Шар tree-sitter WASM AST для Java і C# існує і є наступним кроком
-  точності — він ще не підключений до синхронного скан-пайплайну.
+<br />
 
----
+## Документація
 
-## 📚 Документація
+Повний сайт документації розміщено за адресою <https://sergey-bar.github.io/Mjolnir/>.
 
-| Документ                                               | Що всередині                                  |
-| ------------------------------------------------------ | --------------------------------------------- |
-| [docs/SCORING.md](docs/SCORING.md)                     | Нормування скора + зважування за доказами     |
-| [docs/FP-AUDIT.md](docs/FP-AUDIT.md)                   | Виміряні частоти хибних спрацювань + методика |
-| [docs/RULE-LIFECYCLE.md](docs/RULE-LIFECYCLE.md)       | Стани правил, пригнічення, депрекація         |
-| [docs/SARIF-INTEGRATION.md](docs/SARIF-INTEGRATION.md) | SARIF-вивід + налаштування редактора/CI       |
-| [docs/rules/](docs/rules/)                             | Згенерований каталог за правилами             |
-| [CONTRIBUTING.md](CONTRIBUTING.md)                     | Dev-сетап + процес контрибуції                |
-| [CHANGELOG.md](CHANGELOG.md)                           | Історія релізів                               |
-| [SECURITY.md](SECURITY.md)                             | Повідомлення про вразливості                  |
+| Документ                                               | Що всередині                                                    |
+| ------------------------------------------------------ | --------------------------------------------------------------- |
+| [docs/SCORING.md](docs/SCORING.md)                     | Нормування оцінки та зважування доказів                         |
+| [docs/TERMINOLOGY.md](docs/TERMINOLOGY.md)             | Канонічний словник: одне слово на поняття                       |
+| [docs/FP-AUDIT.md](docs/FP-AUDIT.md)                   | Виміряні частки хибних спрацювань і методика                    |
+| [docs/RULE-LIFECYCLE.md](docs/RULE-LIFECYCLE.md)       | Стани правил, рівні, придушення, виведення з ужитку             |
+| [docs/VERSIONING.md](docs/VERSIONING.md)               | Політика semver, заморожені інтерфейси, цикл виведення з ужитку |
+| [docs/machine-contract.md](docs/machine-contract.md)   | Канонічний машинозчитуваний результат                           |
+| [docs/SARIF-INTEGRATION.md](docs/SARIF-INTEGRATION.md) | Вивід SARIF і налаштування редактора або CI                     |
+| [docs/GITLAB-CI.md](docs/GITLAB-CI.md)                 | GitLab: звіт Code Quality, рецепт для MR, гейт                  |
+| [docs/rules/](docs/rules/)                             | Згенерований каталог за правилами                               |
+| [CONTRIBUTING.md](CONTRIBUTING.md)                     | Середовище розробки та процес внесення змін                     |
+| [SUPPORT.md](SUPPORT.md)                               | Де запитати, повідомити про проблему й отримати допомогу        |
+| [SECURITY.md](SECURITY.md)                             | Повідомлення про вразливості                                    |
+| [CHANGELOG.md](CHANGELOG.md)                           | Історія релізів                                                 |
 
----
+### Статус
 
-## 📈 Статус
+**Версія 1.** JSON-схема та коди виходу — заморожені контракти. TypeScript і Python мають найширше виміряне покриття. Java і C# новіші; оцінюйте їх за [таблицею зрілості](https://sergey-bar.github.io/Mjolnir/reference/rule-lifecycle). Що буде далі, без вигаданих дат: [публічна дорожня карта](https://sergey-bar.github.io/Mjolnir/reference/roadmap).
 
-**v0.5.x · відкрита бета.** JSON-схема і коди виходу — заморожені
-контракти. TypeScript і Python мають найширший виміряний охват; Java і
-C# новіші — читайте про них у
-[таблиці тирів](#тіри-правил-і-зрілість-мов).
+### Участь у розробці
 
----
-
-## 🤝 Участь у проєкті
-
-Нові правила — найпростіший перший внесок: одна команда скаффолдить
-правило і його must-fire- **та** must-not-fire-фікстури (згенероване
-правило намірово падає на фікстурах, поки ви не реалізуєте реальну
-детекцію — стаб не може вийти):
+Нові правила — найпростіший перший внесок. Одна команда створює заготовку правила з фікстурами must-fire **і** must-not-fire. Згенероване правило навмисно провалює власні фікстури, доки не написано справжнє виявлення, бо випущена заглушка — це правило, яке ніхто не вимірював:
 
 ```bash
 mjolnir create-rule QA-PW-140 --title "Screenshot without diff bound"
 ```
 
-Повний dev-сетап, команди постійного гейта і закони anti-creep /
-фікстурного фаєрвола — у [CONTRIBUTING.md](CONTRIBUTING.md).
+Середовище розробки, команди постійних гейтів, а також закони anti-creep і захисту фікстур описано в [CONTRIBUTING.md](CONTRIBUTING.md).
 
----
+<br />
 
 <div align="center">
 
-**Перестаньте випускати тести, яким не можна довіряти.**
+<img src="assets/readme/closing.svg" alt="Запустіть його на своєму репозиторії." width="100%" />
 
 ```bash
 npx mjolnir-qa@latest
 ```
 
-**Star ⭐ · Watch 👀 · Contribute 🤝**
+[Читати посібник](https://sergey-bar.github.io/Mjolnir/guide/getting-started) · [Сайт документації](https://sergey-bar.github.io/Mjolnir/) · [npm](https://www.npmjs.com/package/mjolnir-qa)
 
-Створено [Сергієм Баром](https://www.linkedin.com/in/sergeybar/)
+<br />
+
+Не питайте, чи пройшли тести.<br />
+Запитайте, чи доводять докази, що вони заслуговують на довіру.
+
+<sub>Створив [Sergey Bar](https://www.linkedin.com/in/sergeybar/) · Ліцензія MIT</sub>
 
 </div>

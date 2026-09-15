@@ -47,6 +47,7 @@
     "docs:machine-contract": "tsx scripts/generate-machine-contract-doc.ts",
     "docs:hero": "tsx scripts/generate-readme-hero.ts",
     "docs:gauge": "tsx scripts/generate-readme-score-gauge.ts",
+    "docs:readme-brand": "tsx scripts/generate-readme-brand.ts",
     "docs:formats": "tsx scripts/generate-site-formats.ts",
     "docs:forensics-samples": "tsx scripts/generate-forensics-samples.ts",
     "site:doctor": "npm --prefix site run doctor",
@@ -71,7 +72,7 @@
     "brand:fonts:check": "tsx scripts/vendor-fonts.ts --check",
     "brand:marks": "tsx scripts/generate-brand-marks.ts",
     "brand:marks:update": "node scripts/update-mark-hashes.mjs",
-    "docs:regen": "npm run docs:rules && npm run fp-audit:generate && npm run docs:capability && npm run docs:counts && npm run docs:depth-adjudication && npm run docs:machine-contract && npm run brand:tokens && npm run golden:update && npm run docs:hero && npm run docs:demo && npm run detector-hashes:update"
+    "docs:regen": "npm run docs:rules && npm run fp-audit:generate && npm run docs:capability && npm run docs:counts && npm run docs:depth-adjudication && npm run docs:machine-contract && npm run brand:tokens && npm run golden:update && npm run docs:hero && npm run docs:demo && npm run docs:readme-brand && npm run detector-hashes:update"
   },
   "keywords": [
     "qa",

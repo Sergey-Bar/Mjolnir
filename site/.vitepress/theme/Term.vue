@@ -9,7 +9,8 @@ defineProps<{ lines: TermLine[]; title?: string }>();
     <figcaption v-if="title" class="term-title">{{ title }}</figcaption>
     <pre
       class="term-body"
-    ><span v-for="(l, i) in lines" :key="i" class="tl"><span v-for="(s, j) in l" :key="j" :class="{ tb: s.b }" :style="s.c ? { color: s.c } : undefined">{{ s.t }}</span></span></pre>
+      tabindex="0"
+    ><span v-for="(l, i) in lines" :key="i" class="tl" :style="{ '--i': i }"><span v-for="(s, j) in l" :key="j" :class="{ tb: s.b }" :style="s.c ? { color: s.c } : undefined">{{ s.t }}</span></span></pre>
   </figure>
 </template>
 

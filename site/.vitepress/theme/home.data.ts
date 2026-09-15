@@ -1,11 +1,15 @@
 import { readFileSync } from "node:fs";
 import { defineLoader } from "vitepress";
 import demo from "../../../assets/video/script.demo.json";
+import full from "../../../assets/readme/demo-report.json";
 import rules from "../../rules/rules.data.json";
 import report from "./generated/report.json";
+import { CI_SYSTEMS, NAMES, NOT_SHOWN } from "./stack";
 
 export type Span = { t: string; c?: string; b?: boolean };
 export type TermLine = Span[];
+export type Part = "where" | "sure" | "fp" | "fix";
+export type PartSpan = Span & { part?: Part };
 type Tone = "forged" | "trusted" | "warning" | "critical";
 
 interface RuleRow {
@@ -29,7 +33,18 @@ export interface HomeData {
     message: string;
     fix: string;
   };
-  findings: TermLine[];
+  scan: {
+    file: string;
+    lines: string[];
+    findings: {
+      line: number;
+      severity: string;
+      rule: string;
+      message: string;
+      stamp: string;
+    }[];
+  };
+  anatomy: PartSpan[][];
   legend: { where: string; evidence: string; fp: string };
   staticCard: TermLine[];
   runtimeCard: TermLine[];
@@ -77,7 +92,11 @@ function parseAnsi(line: string): TermLine {
         color = undefined;
         bold = false;
       } else if (codes[i] === 1) bold = true;
-      else if (codes[i] === 38 && codes[i + 1] === 2) {
+      else if (
+        codes[i] === 38 &&
+        codes[i + 1] === 2 &&
+        codes[i + 4] !== undefined
+      ) {
         color = `rgb(${codes[i + 2]}, ${codes[i + 3]}, ${codes[i + 4]})`;
         i += 4;
       }
@@ -104,6 +123,64 @@ function card(lines: TermLine[], needle: string, from: number): TermLine[] {
   return lines.slice(start, end);
 }
 
+/** Every printed finding card for one file, as plain text lines. */
+function cardsIn(lines: TermLine[], file: string, from: number): string[][] {
+  const out: string[][] = [];
+  for (let i = from; i < lines.length; i++) {
+    if (!text(lines[i]).includes(` · ${file}:`)) continue;
+    let end = i + 1;
+    while (end < lines.length && text(lines[end]).trim() !== "") end++;
+    out.push(lines.slice(i, end).map(text));
+    i = end;
+  }
+  return out;
+}
+
+/**
+ * The card with each answered question marked, colours untouched: the
+ * `needle` runs are split out of the spans they sit in, and every line
+ * from `fixAt` on belongs to the fix.
+ */
+function markParts(
+  lines: TermLine[],
+  needles: [Part, string][],
+  fixAt: number,
+): PartSpan[][] {
+  return lines.map((line, li) =>
+    line.flatMap((s): PartSpan[] => {
+      if (li >= fixAt) {
+        const [, pad, rest] = /^(\s*)([\s\S]*)$/.exec(s.t) ?? ["", "", s.t];
+        return [
+          ...(pad ? [{ ...s, t: pad }] : []),
+          ...(rest ? [{ ...s, t: rest, part: "fix" as const }] : []),
+        ];
+      }
+      let pieces: PartSpan[] = [{ ...s }];
+      for (const [part, needle] of needles) {
+        if (!needle) continue;
+        pieces = pieces.flatMap((p) => {
+          const k = p.part ? -1 : p.t.indexOf(needle);
+          if (k < 0) return [p];
+          return [
+            { ...p, t: p.t.slice(0, k) },
+            { ...p, t: needle, part },
+            { ...p, t: p.t.slice(k + needle.length) },
+          ].filter((x) => x.t !== "");
+        });
+      }
+      return pieces;
+    }),
+  );
+}
+
+interface ReportFinding {
+  file: string;
+  line: number;
+  severity: string;
+  ruleId: string;
+  message: string;
+}
+
 /** A generated sample, minus the trailer its generator's own flags add. */
 function sample(file: string): TermLine[] {
   return readFileSync(new URL(`./generated/${file}`, import.meta.url), "utf8")
@@ -114,30 +191,6 @@ function sample(file: string): TermLine[] {
     .map((l) => [{ t: l.replace(/\s+$/, "") }]);
 }
 
-const NAMES: Record<string, string> = {
-  typescript: "TypeScript",
-  javascript: "JavaScript",
-  python: "Python",
-  java: "Java",
-  csharp: "C#",
-  playwright: "Playwright",
-  cypress: "Cypress",
-  selenium: "Selenium",
-  jest: "Jest",
-  vitest: "Vitest",
-  mocha: "Mocha",
-  pytest: "pytest",
-  junit: "JUnit",
-  testng: "TestNG",
-  nunit: "NUnit",
-  xunit: "xUnit",
-  mstest: "MSTest",
-  "github-actions": "GitHub Actions",
-  "azure-pipelines": "Azure Pipelines",
-  jenkins: "Jenkins",
-};
-const CI_SYSTEMS = new Set(["github-actions", "azure-pipelines", "jenkins"]);
-const NOT_SHOWN = new Set(["yaml", "groovy", "pytest-playwright"]);
 const ORDER = Object.keys(NAMES);
 
 const MASKS = [
@@ -178,13 +231,17 @@ const TIERS: Record<string, string> = {
 
 const TONES: Tone[] = ["forged", "trusted", "warning", "critical"];
 const BANDS_DESC = [...report.scoring.bands].sort((a, b) => b.min - a.min);
-const toneOf = (score: number): Tone =>
-  TONES[
-    Math.max(
-      0,
-      BANDS_DESC.findIndex((b) => score >= b.min),
-    )
-  ] ?? "critical";
+const toneOf = (score: number): Tone => {
+  const clamped = Math.max(0, Math.min(100, score));
+  return (
+    TONES[
+      Math.max(
+        0,
+        BANDS_DESC.findIndex((b) => clamped >= b.min),
+      )
+    ] ?? "critical"
+  );
+};
 
 export default defineLoader({
   load(): HomeData {
@@ -215,6 +272,54 @@ export default defineLoader({
       message: first.message,
       fix: first.fix,
     };
+
+    // The scanned file line by line, with every finding the report holds
+    // for it. Each finding's stamp is taken verbatim from the card the
+    // demo scan printed, and the two sources must agree in order, rule
+    // and line — a mismatch fails the build instead of shipping a claim
+    // the terminal never made.
+    const scanFile = annotation.file;
+    const inFile = (full.findings as ReportFinding[]).filter(
+      (f) => f.file === scanFile,
+    );
+    const printed = cardsIn(scanLines, scanFile, findingsAt);
+    if (printed.length !== inFile.length)
+      throw new Error(
+        `home.data: the report has ${inFile.length} findings in ${scanFile}, the demo scan printed ${printed.length}`,
+      );
+    const fileLines = [...(demo.patch.before as string[])];
+    while (fileLines.length && fileLines[fileLines.length - 1] === "")
+      fileLines.pop();
+    const scanModel: HomeData["scan"] = {
+      file: scanFile,
+      lines: fileLines,
+      findings: inFile.map((f, i) => {
+        const [head, stampLine = ""] = printed[i];
+        if (!head.includes(`${f.ruleId} · ${scanFile}:${f.line}`))
+          throw new Error(
+            `home.data: finding ${i + 1} in ${scanFile} is ${f.ruleId}:${f.line} in the report but "${head.trim()}" in the demo scan`,
+          );
+        return {
+          line: f.line,
+          severity: f.severity,
+          rule: f.ruleId,
+          message: f.message,
+          stamp: /\[([^\]]+)\]/.exec(stampLine)?.[1] ?? "",
+        };
+      }),
+    };
+
+    const where = cardText[0].replace(/^\s*\S+\s+\S+\s+/, "");
+    const fixAt = cardText.findIndex((l) => l.trimStart().startsWith("Fix"));
+    const anatomy = markParts(
+      staticCard,
+      [
+        ["where", where],
+        ["sure", stamp?.[1] ?? ""],
+        ["fp", stamp?.[2] ?? ""],
+      ],
+      fixAt < 0 ? staticCard.length : fixAt,
+    );
 
     const { rawDeductions, declarations, constants } = report.scoring;
     const rate = rawDeductions / (declarations + constants.smoothing);
@@ -282,12 +387,10 @@ export default defineLoader({
         lines: [[], ...scanLines.slice(top, findingsAt - 1)],
       },
       annotation,
-      findings: scanLines.slice(
-        findingsAt,
-        find(scanLines, "… +", findingsAt) + 1,
-      ),
+      scan: scanModel,
+      anatomy,
       legend: {
-        where: cardText[0].replace(/^\s*\S+\s+\S+\s+/, ""),
+        where,
         evidence: stamp?.[1] ?? "",
         fp: stamp?.[2] ?? "",
       },
