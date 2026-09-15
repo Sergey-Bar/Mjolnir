@@ -24,6 +24,8 @@ import { TRUST_RUNGS } from "../brand/symbols.js";
 import { palette, shouldColorize, shouldUseAscii } from "./theme.js";
 import { sectionHeader, type UiContext } from "./ui.js";
 import { renderTerminal } from "./terminal.js";
+import { pct } from "../lib/format.js";
+import { evidenceTag } from "./evidence-tag.js";
 
 export interface RenderTrustReportOpts {
   isTTY: boolean;
@@ -61,10 +63,6 @@ const TRUST_LABELS: Record<string, string> = Object.fromEntries(
     `${r.level} · ${r.meaning}${r.runtime ? " · runtime" : ""}`,
   ]),
 );
-
-function pct(v: number): string {
-  return `${Math.round(v * 100)}%`;
-}
 
 /**
  * The human verdict line derived from the measurement. Deterministic
@@ -238,13 +236,7 @@ export function renderTrustReport(
     lines.push("  none — no non-advisory findings fired");
   } else {
     for (const f of risks) {
-      const ev = f.runtimeCorroboration
-        ? f.runtimeCorroboration.level === "defect"
-          ? "run corroborated"
-          : "run executed"
-        : (f.evidenceLevel ?? "E2") === "E2"
-          ? "deterministic"
-          : "pattern";
+      const ev = evidenceTag(f);
       lines.push(
         `  ${p.warning("•")} ${f.ruleId} ${f.file}:${f.line}  [${ev}]`,
       );

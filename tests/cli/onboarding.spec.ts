@@ -101,6 +101,9 @@ describe("handover", () => {
         }),
         verdict({ title: "solid" }),
       ],
+      analysisComplete: true,
+      skippedReports: 0,
+      incompleteReasons: [],
     };
     const map = buildHandover(scan(), forensics);
     const flakySection = map.sections.find((s) => s.heading.includes("flaky"));
@@ -173,6 +176,9 @@ describe("pw-report", () => {
         verdict({ title: "dead", finalStatus: "failed", everFailed: true }),
         verdict({ title: "ok" }),
       ],
+      analysisComplete: true,
+      skippedReports: 0,
+      incompleteReasons: [],
     };
     const s = summarizePwRun(report);
     expect(s.total).toBe(3);
@@ -193,6 +199,9 @@ describe("pw-report", () => {
       flakyTests: 0,
       totalDurationMs: 100,
       verdicts: [verdict({})],
+      analysisComplete: true,
+      skippedReports: 0,
+      incompleteReasons: [],
     });
     expect(renderPwRunSummary(s)).not.toContain("retried");
   });

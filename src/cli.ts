@@ -5,9 +5,8 @@
  * 10 usage error · 20 internal error.
  */
 
-import { existsSync, readFileSync, realpathSync, statSync } from "node:fs";
-import { execFileSync } from "node:child_process";
-import { join, dirname, resolve } from "node:path";
+import { existsSync, realpathSync, statSync } from "node:fs";
+import { resolve } from "node:path";
 import process from "node:process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -19,6 +18,12 @@ import {
   type Severity,
   isAdvisoryFinding,
 } from "./types.js";
+import {
+  EXIT_CLEAN,
+  EXIT_FINDINGS,
+  EXIT_USAGE,
+  EXIT_INTERNAL,
+} from "./exit-codes.js";
 // M6 (blueprint §9.2): the canonical scan pipeline lives in
 // engine/scan-pipeline.ts — cli.ts is presentation + argument parsing.
 // The namespace import keeps the historical import surface working
@@ -39,88 +44,16 @@ export const {
 } = pipeline;
 export type { ScanHooks, CliArgs } from "./engine/scan-pipeline.js";
 import type { CliArgs } from "./engine/scan-pipeline.js";
-import { buildMachineContract } from "./engine/machine-contract.js";
 
-import { renderTerminal } from "./reporter/terminal.js";
-import { renderTrustReport } from "./reporter/trust-report.js";
-import { renderSarif } from "./reporter/sarif.js";
-import { renderCodeQuality } from "./reporter/codequality.js";
-import { renderMermaid } from "./reporter/mermaid.js";
-import { ProgressRenderer, shouldRenderProgress } from "./reporter/progress.js";
-import { runSummaryCommand } from "./commands/summary.js";
-import { runWhyCommand } from "./commands/why.js";
-import { explainVerdict, renderVerdictExplain } from "./commands/explain.js";
-import { runHandoffCommand } from "./commands/handoff.js";
-import { runInstallCommand } from "./commands/install-agents.js";
-import { runStdioTransport } from "./mcp/transport.js";
-import { ciInstall, type GateLevel } from "./integrations/ci-install.js";
-import { runForensics } from "./forensics/run.js";
-import {
-  renderTriage,
-  renderTriageMd,
-  renderTriageWorkflow,
-  renderTriageWorkflowJson,
-} from "./forensics/triage.js";
-import {
-  parseStrykerJson,
-  looksLikeStrykerJson,
-} from "./mutation/parse-stryker.js";
-import { looksLikeMutmutXml, parseMutmutXml } from "./mutation/parse-mutmut.js";
-import {
-  renderMutationSummary,
-  stampMutationEvidence,
-} from "./mutation/derive.js";
-import type { MutationReport } from "./mutation/types.js";
-import { renderBadgeSnippet, writeBadge } from "./commands/badge.js";
-import { runTrustReportCommand } from "./commands/trust-report.js";
 import {
   renderRootHelp,
   renderVerbHelp,
   hasVerbHelp,
 } from "./commands/help.js";
-import { renderDebt } from "./commands/debt.js";
-import {
-  createRuleScaffold,
-  renderScaffoldReport,
-} from "./commands/create-rule.js";
-import { buildHandover, renderHandover } from "./commands/handover.js";
-import { computeImpact, renderImpact } from "./commands/impact.js";
-import {
-  DEFAULT_BASELINE_PATH,
-  diffAgainstBaseline,
-  loadBaseline,
-  renderBaselineDiff,
-  renderBaselineSaved,
-  saveBaseline,
-} from "./commands/baseline.js";
-import { buildVerifyDigest, renderVerifyDigest } from "./commands/verify.js";
-import {
-  DEFAULT_STATS_PATH,
-  loadStats,
-  recordMilestones,
-  recordResolved,
-  renderStats,
-  saveStats,
-  MILESTONE_MESSAGES,
-} from "./commands/stats.js";
-import { renderPrComment } from "./commands/pr-comment.js";
-import { runInit, renderInit, tryReadPackageJson } from "./commands/init.js";
-import { renderPwRunSummary, summarizePwRun } from "./commands/pw-report.js";
-import { planAndApplyFixes, renderFixReport } from "./commands/fix.js";
-import { runDoctorCommand } from "./commands/doctor-run.js";
-import { runReleaseTrustCommand } from "./commands/release-trust.js";
-import { buildCatalog, renderCatalogMd } from "./commands/rules-catalog.js";
-import { explainRule, renderExplain } from "./commands/explain.js";
 import { loadSuppressions, renderSuppressions } from "./config/suppressions.js";
-import { loadConfig, ConfigValidationError } from "./config/config.js";
-import { resolveGitPath } from "./scope/git-resolve.js";
-import { createIgnoreMatcher } from "./discovery/ignores.js";
-import { loadLocalRules } from "./plugins/local-rules.js";
-import { writeFileAtomic } from "./lib/fs-atomic.js";
-import {
-  computeSelectorHealth,
-  renderSelectorHealth,
-} from "./playwright/selector-health.js";
+import { ConfigValidationError } from "./config/config.js";
+import { ciInstall, type GateLevel } from "./integrations/ci-install.js";
+import { runStdioTransport } from "./mcp/transport.js";
 
 /**
  * Tool version for `mjolnir --version`.
@@ -173,8 +106,6 @@ export function parseArgs(
         return reject({ flag: "--format", token: "(missing)" });
       if (fmt === "sarif") args.format = "sarif";
       else if (fmt === "mermaid") args.format = "mermaid";
-      // P3a (plan 1788853205786): GitLab Code Quality report — the
-      // `codequality` CI artifact GitLab renders as MR widgets.
       else if (fmt === "codequality") args.format = "codequality";
       else if (fmt === "json") {
         args.format = "json";
@@ -185,14 +116,9 @@ export function parseArgs(
     else if (a === "--scope") {
       const mode = argv[++i];
       if (mode === "changed") args.scopeChanged = true;
-      else return reject({ flag: "--scope", token: mode }); // unknown scope
+      else return reject({ flag: "--scope", token: mode });
     } else if (a === "--base") {
       const ref = argv[++i];
-      // Bug-audit 3.6: these three flags returned bare null WITHOUT
-      // reject(), so a bad value surfaced as the generic full usage
-      // block (or, via other verbs, silence) instead of the targeted
-      // "invalid value … for <flag>" usage error every other flag
-      // emits. Same contract as --tone below.
       if (!ref || ref.startsWith("-"))
         return reject({ flag: "--base", token: ref });
       args.base = ref;
@@ -213,7 +139,7 @@ export function parseArgs(
     } else if (a === "--tone") {
       const tone = argv[++i];
       if (tone === "blunt") args.tone = "blunt";
-      else return reject({ flag: "--tone", token: tone }); // unknown tone
+      else return reject({ flag: "--tone", token: tone });
     } else if (a === "--strict") {
       args.strict = true;
     } else if (a === "--debug") {
@@ -243,19 +169,15 @@ export function parseArgs(
         return reject({ flag: "--blocking", token: level });
       }
     } else if (a === "--enable-plugins") {
-      // Audit C2: opt-in code execution for plugin/JS-module rule
-      // sources. Additive flag, accepted by every verb that loads rules.
       args.enablePlugins = true;
     } else if (a === "--classic") {
-      // WI-5: escape hatch from the Trust Report hero surface back to
-      // the classic terminal render. Rendering flag only.
       args.classic = true;
     } else if (a === "--help" || a === "-h") {
       return null;
     } else if (!a.startsWith("-")) {
       args.target = a;
     } else {
-      return reject({ token: a }); // unknown flag = usage error (exit 10)
+      return reject({ token: a });
     }
   }
   return args;
@@ -290,8 +212,6 @@ export function levenshtein(a: string, b: string): number {
   if (a === b) return 0;
   if (a.length === 0) return b.length;
   if (b.length === 0) return a.length;
-  // Memoized edit-distance walk. Map-based memo (not row arrays) keeps
-  // every access defined — no defensive ?? arms for the coverage gate.
   const memo = new Map<string, number>();
   const walk = (i: number, j: number): number => {
     if (i === a.length) return b.length - j;
@@ -349,7 +269,7 @@ export function usageErrorMessage(detail: UsageErrorDetail): string {
  * usage errors on stderr (exit 10), the full overview only for an
  * explicit help flag. Returns null when the caller must exit 10.
  */
-function parseArgsOrUsage(
+export function parseArgsOrUsage(
   argv: string[],
   io: { out: Output; err: Output },
 ): CliArgs | null {
@@ -365,14 +285,46 @@ function parseArgsOrUsage(
 import type { Output } from "./cli-io.js";
 export type { Output };
 
-// Audit C3: true variadic sinks. The one-arg signatures silently DROPPED
-// every argument after the first — `io.err("mjolnir internal error:", msg)`
-// printed only the prefix, losing the actual error. Join with spaces so
-// multi-arg calls render as one readable line on the default consoles.
-// Exported for contract tests (audit C3): the default sinks must stay
-// variadic — a narrowing back to one-arg signatures is a regression.
-import { internalErrorMessage, out, err } from "./cli-io.js";
+import { out, err } from "./cli-io.js";
+import { internalErrorMessage } from "./cli-io.js";
 export { out, err, internalErrorMessage } from "./cli-io.js";
+
+/**
+ * Audit H-4 (extended to every scanning subcommand): a nonexistent or
+ * non-directory target is a usage error — a typo'd CI path must be a
+ * loud red, never a silent green. Returns the exit code (10) or null
+ * when the target is valid.
+ */
+export function validateScanTarget(target: string, err: Output): number | null {
+  if (!existsSync(target)) {
+    err(`mjolnir: scan target does not exist: ${target}`);
+    return EXIT_USAGE;
+  }
+  if (!statSync(target).isDirectory()) {
+    err(`mjolnir: scan target is not a directory: ${target}`);
+    return EXIT_USAGE;
+  }
+  return null;
+}
+
+/**
+ * Exit-code decision for a finished scan under the given gate level
+ * (audit H-7): the previously-dead config.gate field now selects which
+ * severities block. Advisory (E0) findings never gate at any level.
+ */
+export function exitForFindings(
+  findings: readonly Finding[],
+  gate: "advisory" | "error" | "warning",
+): number {
+  if (gate === "advisory") return EXIT_CLEAN;
+  const gateSeverities: readonly Severity[] =
+    gate === "warning" ? ["error", "warning"] : ["error"];
+  return findings.some(
+    (f) => gateSeverities.includes(f.severity) && !isAdvisoryFinding(f),
+  )
+    ? EXIT_FINDINGS
+    : EXIT_CLEAN;
+}
 
 /** Testable `ci install` handler. Returns the process exit code. */
 export function runCiInstall(
@@ -390,9 +342,6 @@ export function runCiInstall(
     } else if (arg === "--force") {
       force = true;
     } else if (arg === "--no-action") {
-      // P1.3: opt out of the action-based workflow (the default) and
-      // keep the plain-npx template — for repos or runners where
-      // composite actions are unavailable.
       noAction = true;
     } else if (gateSeen && gateArg === undefined && !arg.startsWith("--")) {
       gateArg = arg;
@@ -400,36 +349,30 @@ export function runCiInstall(
       unknown.push(arg);
     }
   }
-  // Bug-audit L11: `--gate` as the final argument used to silently
-  // degrade to advisory — a typo'd invocation got the opposite gate the
-  // user asked for. A dangling `--gate` is a usage error instead.
   if (gateSeen && gateArg === undefined) {
     io.err("--gate requires a value. Use: advisory | error | warning");
-    return 10;
+    return EXIT_USAGE;
   }
   if (unknown.length > 0) {
     io.err(`Unknown argument(s): ${unknown.join(" ")}`);
-    return 10;
+    return EXIT_USAGE;
   }
   if (gateArg && !["advisory", "error", "warning"].includes(gateArg)) {
     io.err("Unknown gate level. Use: advisory | error | warning");
-    return 10;
+    return EXIT_USAGE;
   }
   const result = ciInstall(resolve("."), (gateArg as GateLevel) ?? "advisory", {
     force,
     action: !noAction,
   });
   if (result.refused) {
-    // H2(e): the existing workflow differs from anything Mjölnir generates
-    // — it is hand-customized. Never silently overwrite it (the old code
-    // did, contradicting init's "existing files are never overwritten").
     io.err(
       `Refusing to overwrite the customized workflow at ${result.written}.`,
     );
     io.err("The file differs from the template Mjölnir would write:");
     for (const line of result.diffSummary) io.err(line);
     io.err("Re-run with --force to replace it with the generated template.");
-    return 10;
+    return EXIT_USAGE;
   }
   io.out(`${result.existed ? "Updated" : "Created"} ${result.written}`);
   io.out(
@@ -441,7 +384,7 @@ export function runCiInstall(
   if (!noAction) {
     io.out("Prefer the plain-npx workflow? Re-run with --no-action.");
   }
-  return 0;
+  return EXIT_CLEAN;
 }
 
 /** Testable `suppressions` handler. */
@@ -450,1073 +393,17 @@ export function runSuppressions(
 ): number {
   try {
     io.out(renderSuppressions(loadSuppressions(resolve("."))));
-    return 0;
+    return EXIT_CLEAN;
   } catch (e) {
-    // Bug-audit M6: a corrupted config must not render as an empty (and
-    // silently unenforcing) report — surface it on the usage-error path.
     if (e instanceof ConfigValidationError) {
       (io.err ?? err)(e.message);
-      return 10;
-    }
-    // Audit S8: any other throw is contained (catch-to-20) instead of
-    // escaping as an unhandled rejection with a misleading exit 1.
-    (io.err ?? err)(
-      "mjolnir internal error:",
-      e instanceof Error ? e.message : String(e),
-    );
-    return 20;
-  }
-}
-
-/** Testable `forensics` handler. */
-export function runForensicsCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): number {
-  const noMd = argv.includes("--no-flaky-md");
-  const targetArg = argv.find((a) => !a.startsWith("-"));
-  if (!targetArg) {
-    io.err(
-      "Usage: mjolnir forensics <test-results-dir-or-report-file> [--no-flaky-md]",
-    );
-    return 10;
-  }
-  try {
-    const { report, output, flakyMdPath } = runForensics(resolve(targetArg), {
-      writeFlakyMd: !noMd,
-    });
-    io.out(output);
-    if (flakyMdPath) io.out(`\nWrote ${flakyMdPath}`);
-    if (report.totalTests === 0) {
-      io.err(
-        "No test results recognized. Expected a Playwright JSON report (report.json) or JUnit XML files.",
-      );
-      return 2;
-    }
-    // Exit 1 only when true flakes or failures exist.
-    return report.flakyTests > 0 || report.failed > 0 ? 1 : 0;
-  } catch (err) {
-    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
-    return 20;
-  }
-}
-
-/** Testable `doctor:playwright` handler. */
-export async function runDoctorPlaywright(
-  argv: string[],
-  io: { out: Output; err?: Output } = { out },
-): Promise<number> {
-  try {
-    const targetArg = argv[1] && !argv[1].startsWith("-") ? argv[1] : ".";
-    const target = resolve(targetArg);
-    const invalid = validateScanTarget(target, io.err ?? err);
-    if (invalid !== null) return invalid;
-    // A resolved absolute path is never flag-like, so parseArgs([target])
-    // is exactly the defaults with target set — constructed directly, since
-    // a null-check here would be a dead branch v8 can never cover.
-    const args: CliArgs = {
-      target,
-      json: false,
-      verbose: false,
-      maxDurationMs: Number.POSITIVE_INFINITY,
-      scopeChanged: false,
-      format: "terminal",
-      // Audit C2: this verb loads rules, so it honors the gate flag too.
-      enablePlugins: argv.includes("--enable-plugins"),
-    };
-    const result = await runScan({ ...args, target });
-    const pwFindings = result.findings.filter((f) => f.category === "QA-PW");
-    io.out(
-      renderTerminal(
-        { ...result, findings: pwFindings },
-        { isTTY: process.stdout.isTTY ?? false, verbose: args.verbose },
-      ),
-    );
-
-    // Selector Health per spec — same ignore state as the scan (audit R-8).
-    const specs = computeSelectorHealth(target, createIgnoreMatcher(target));
-    io.out(renderSelectorHealth(specs));
-    return 0;
-  } catch (e) {
-    // Audit S8: contained (catch-to-20) — never an unhandled rejection.
-    // ConfigValidationError keeps the fixable-message exit 10.
-    if (e instanceof ConfigValidationError) {
-      (io.err ?? err)(e.message);
-      return 10;
+      return EXIT_USAGE;
     }
     (io.err ?? err)(
       "mjolnir internal error:",
       e instanceof Error ? e.message : String(e),
     );
-    return 20;
-  }
-}
-
-// `doctor` moved to commands/doctor-run.ts (certification-audit Phase 5,
-// G6): the dispatch table re-exports the handler so the public import
-// surface (tests import runDoctorCommand from cli.ts) stays stable.
-export { runDoctorCommand } from "./commands/doctor-run.js";
-
-/** Testable `rules` handler — rule catalog with Trust Metadata. */
-export async function runRulesCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): Promise<number> {
-  // Plan §18: `--external` includes workspace-local mjolnir-rules/
-  // rules in the catalog (provenance "external") — the drift-check
-  // surface: an edit to a local rule file changes the next render.
-  const withExternal = argv.includes("--external");
-  const root = process.cwd();
-  const external = withExternal ? await loadLocalRules(root) : undefined;
-  let catalog = [
-    ...buildCatalog(),
-    ...(external
-      ? buildCatalog(external.rules, { provenance: "external" })
-      : []),
-  ];
-  for (const w of external?.errors ?? []) io.err(`mjolnir: ${w}`);
-  // `--unmeasured`: the rules shipping on assumption — no measured
-  // false-positive rate (n < 10 classified corpus verdicts). This is
-  // what the scan footer's "rule coverage" line points at.
-  if (argv.includes("--unmeasured")) {
-    catalog = catalog.filter((e) => e.measuredFpRate === undefined);
-  } else if (argv.includes("--measured")) {
-    catalog = catalog.filter((e) => e.measuredFpRate !== undefined);
-  }
-  if (argv.includes("--md")) {
-    io.out(renderCatalogMd(catalog));
-  } else {
-    // Default: JSON (machine-readable, schema-stable).
-    io.out(JSON.stringify(catalog, null, 2));
-  }
-  return 0;
-}
-
-/**
- * Testable `explain <RULE-ID>` handler (Plan.md Sprint 1.3,
- * Master-Stabilization-Plan Sprint 5 Task 19). Metadata always renders
- * offline from the registry; the concrete example is real detector
- * output from the rule's own must-fire fixture when one is findable
- * (this repo checkout, or --fixtures-root), and honestly omitted
- * otherwise — never a fabricated example.
- */
-export async function runExplainCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): Promise<number> {
-  const subject = argv.find((a) => !a.startsWith("-"));
-  if (!subject) {
-    io.err(
-      "Usage: mjolnir explain <RULE-ID | file:line | verdict> [--json <mjolnir.json>]",
-    );
-    return 10;
-  }
-  // WI-7 (plan §8): `explain verdict` — explain a SAVED scan's overall
-  // verdict from its --json artifact. --json <path> supplies the file.
-  if (subject === "verdict") {
-    const jsonIdx = argv.indexOf("--json");
-    const jsonPath =
-      jsonIdx !== -1 ? argv[jsonIdx + 1] : join(process.cwd(), "mjolnir.json");
-    if (jsonPath === undefined || jsonPath.startsWith("--")) {
-      io.err("explain verdict requires a saved scan: --json <mjolnir.json>");
-      return 10;
-    }
-    try {
-      const r = explainVerdict(resolve(jsonPath));
-      io.out(renderVerdictExplain(r));
-      return r.ok ? 0 : 10;
-    } catch (err) {
-      internalErrorMessage(err, io.err, argv.includes("--debug"));
-      return 20;
-    }
-  }
-  // finding mode: file:line delegates to the `why` command — same
-  // evidence checklist, one implementation (plan §18 parity: no parallel
-  // implementations of the same semantics).
-  if (/^[^:]+\.\w+:\d+$/.test(subject)) {
-    return runWhyCommand([subject, ...argv.filter((a) => a !== subject)], io);
-  }
-  const fixturesRootIdx = argv.indexOf("--fixtures-root");
-  // Audit S8: a dangling `--fixtures-root` is a usage error, not a
-  // silent fall back to the default fixtures directory.
-  if (
-    fixturesRootIdx !== -1 &&
-    (fixturesRootIdx + 1 >= argv.length ||
-      argv[fixturesRootIdx + 1]?.startsWith("--"))
-  ) {
-    io.err(
-      "--fixtures-root requires a value: mjolnir explain <RULE-ID> --fixtures-root <dir>",
-    );
-    return 10;
-  }
-  const explicitRoot =
-    fixturesRootIdx !== -1 ? argv[fixturesRootIdx + 1] : undefined;
-  const fixturesRoot = resolve(
-    explicitRoot ?? join(process.cwd(), "tests", "fixtures"),
-  );
-  try {
-    const result = explainRule(subject, fixturesRoot);
-    io.out(renderExplain(result));
-    if (!result.ok) return 10; // unknown rule ID is a usage error, not a crash
-    return 0;
-  } catch (err) {
-    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
-    return 20;
-  }
-}
-
-/**
-
-/** Testable default scan path. */
-/**
- * Audit H-4 (extended to every scanning subcommand): a nonexistent or
- * non-directory target is a usage error — a typo'd CI path must be a
- * loud red, never a silent green. Returns the exit code (10) or null
- * when the target is valid.
- */
-function validateScanTarget(target: string, err: Output): number | null {
-  if (!existsSync(target)) {
-    err(`mjolnir: scan target does not exist: ${target}`);
-    return 10;
-  }
-  if (!statSync(target).isDirectory()) {
-    err(`mjolnir: scan target is not a directory: ${target}`);
-    return 10;
-  }
-  return null;
-}
-
-export async function runScanCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): Promise<number> {
-  const args = parseArgsOrUsage(argv, io);
-  if (!args) {
-    return 10;
-  }
-  const target = resolve(args.target);
-  const invalid = validateScanTarget(target, io.err);
-  if (invalid !== null) return invalid;
-  try {
-    // Audit R-9: collect swallowed rule crashes; --debug prints them.
-    const crashLog: string[] = [];
-    // Plan M3: live progress on stderr, event-driven. Auto-off when
-    // stderr is not a TTY, in machine formats, in CI, or via
-    // --no-progress — shouldRenderProgress owns the whole matrix.
-    const progress = new ProgressRenderer({
-      stream: process.stderr,
-      isTTY: shouldRenderProgress({
-        isTTY: (process.stderr as { isTTY?: boolean }).isTTY === true,
-        noProgress: args.noProgress === true,
-        machineFormat: args.format !== "terminal",
-        env: process.env,
-      }),
-    });
-    // Bug-audit M4: non-fatal config warnings reach stderr in every mode.
-    const result = await runScan(
-      { ...args, target },
-      {
-        onConfigWarning: (message) => io.err(message),
-        onProgress: (e) => progress.onEvent(e),
-        // Audit C2: the gate notice rides the injected io so tests can
-        // capture it and it never pollutes stdout machine contracts.
-        onGateNotice: (notice) => io.err(notice),
-        ...(args.debug
-          ? {
-              onRuleCrash: (ruleId: string, file: string, error: unknown) => {
-                crashLog.push(
-                  `${ruleId} crashed on ${file}: ${error instanceof Error ? error.message : String(error)}`,
-                );
-              },
-            }
-          : {}),
-      },
-    );
-    progress.done();
-    if (args.debug && crashLog.length > 0) {
-      io.err(
-        `debug: ${crashLog.length} rule crash(es) were swallowed by crash isolation:`,
-      );
-      for (const line of crashLog.slice(0, 50)) io.err(`  ${line}`);
-      if (crashLog.length > 50) io.err(`  … and ${crashLog.length - 50} more`);
-    }
-    if (args.scoreOnly) {
-      // Plan §5.6: --score prints ONLY the numeric score (or `unknown`
-      // when the repo has no tests — never a fake 0, R2). Pure rendering
-      // flag: scan semantics and the exit code below are unchanged. A
-      // stderr note keeps stdout machine-clean when --json was also
-      // requested.
-      if (args.json) {
-        io.err("--score overrides --json; stdout is the bare score.");
-      }
-      const { config: scoreConfig } = loadConfig(target, {
-        knownRuleIds: KNOWN_RULE_IDS,
-      });
-      io.out(result.score === null ? "unknown" : String(result.score));
-      // Plan §5.8: --blocking (invocation) overrides config.gate —
-      // it changes exit status only, never detection or rendering.
-      // "none" maps to the existing advisory gate (exit 0 unless partial).
-      return exitForFindings(
-        result.findings,
-        args.blocking === "none"
-          ? "advisory"
-          : (args.blocking ?? scoreConfig.gate ?? "error"),
-      );
-    }
-    if (args.format === "sarif") {
-      // F5 (certification-audit remediation): the SRCROOT capability is
-      // implemented in sarif.ts (originalUriBaseIds + per-artifact
-      // uriBaseId) but was never wired at this production call site —
-      // shipped SARIF had no artifact base. `target` is resolved+validated
-      // above; pathToFileURL yields the file:/// base shape the unit
-      // contract pins (reporters.spec) and the encoder expects.
-      io.out(renderSarif(result, pathToFileURL(target).href));
-    } else if (args.format === "mermaid") {
-      io.out(renderMermaid(result));
-    } else if (args.format === "codequality") {
-      io.out(renderCodeQuality(result));
-    } else if (args.json) {
-      // Blueprint §12: the machine contract rides the JSON output as an
-      // additive field (schemaVersion 1 + contractVersion 1). Derived
-      // deterministically from this exact result — no parallel model.
-      io.out(
-        JSON.stringify(
-          { ...result, contract: buildMachineContract(result) },
-          null,
-          2,
-        ),
-      );
-    } else {
-      // Plan §5.5: --category is a presentation filter. The renderer
-      // sees only the filtered list; the score/JSON/full contract are
-      // untouched, and the renderer prints the hidden-count note.
-      const categories = args.categories;
-      const visible =
-        categories && categories.length > 0
-          ? result.findings.filter((f) => categories.includes(f.category))
-          : result.findings;
-      io.out(
-        renderTrustReport(result, {
-          isTTY: process.stdout.isTTY ?? false,
-          verbose: args.verbose,
-          ...(categories && categories.length > 0
-            ? { visibleFindings: visible }
-            : {}),
-          ...(args.width !== undefined ? { width: args.width } : {}),
-          ...(args.ascii !== undefined ? { ascii: args.ascii } : {}),
-          ...(args.tone !== undefined ? { tone: args.tone } : {}),
-          ...(args.classic ? { classic: true } : {}),
-        }),
-      );
-      // First-run hint — terminal only, and only for the bare, full-repo
-      // scan with no config on disk (i.e. someone trying the tool for the
-      // first time). Points at the two things they'd want next; silent
-      // once they've adopted it or in any CI/machine context.
-      const bareFirstRun =
-        !args.scopeChanged &&
-        !args.verbose &&
-        args.target === "." &&
-        !existsSync(join(target, "mjolnir.config.json")) &&
-        result.findings.length > 0;
-      if (bareFirstRun) {
-        io.out(
-          "  New here? `mjolnir ci install` adds this as a PR check. " +
-            "`mjolnir explain <RULE-ID>` explains any finding above.\n",
-        );
-      }
-
-      // Milestones (Sprint 9 Task 39) — terminal-only, display-only, and
-      // WRITE-ONLY under explicit opt-in (audit R-1): a read-only scan
-      // must never dirty the scanned repo's working tree. Never printed
-      // for --json/--format sarif/mermaid: those are machine contracts.
-      // Audit C5: a PARTIAL scan (truncated by --max-duration, a
-      // discovery cap, or skipped files) must never write the milestone
-      // — "clean so far" is not "clean", and a truncated scan's 100
-      // score proves nothing about the files it never analyzed.
-      if (
-        args.recordMilestones &&
-        !result.partial &&
-        result.score === 100 &&
-        result.findings.length === 0
-      ) {
-        const statsPath = join(target, DEFAULT_STATS_PATH);
-        const { newlyAnnounced, stats } = recordMilestones(
-          loadStats(statsPath),
-          ["first-clean-scan"],
-        );
-        if (newlyAnnounced.length > 0) {
-          if (!saveStats(stats, statsPath)) {
-            io.err(
-              "  (warning: stats could not be written — read-only filesystem? milestone not recorded)",
-            );
-          } else {
-            for (const id of newlyAnnounced) io.out(MILESTONE_MESSAGES[id]);
-          }
-        }
-      }
-    }
-    // Exit-code × gate semantics (S13): partial scans NEVER block.
-    // Honesty Core Phase 2: advisory (E0) findings never gate CI —
-    // observations are reported but carry no enforcement weight.
-    if (result.partial) return 2;
-    // Audit H-7: config.gate is live. "advisory" never blocks,
-    // "warning" also blocks on warnings, "error" (default) on errors.
-    const { config, warnings } = loadConfig(target, {
-      knownRuleIds: KNOWN_RULE_IDS,
-    });
-    for (const w of warnings) io.err(w);
-    return exitForFindings(
-      result.findings,
-      args.blocking === "none"
-        ? "advisory"
-        : (args.blocking ?? config.gate ?? "error"),
-    );
-  } catch (err) {
-    // Bug-audit M4: a config typo is a user error with an actionable
-    // message — usage exit 10, not "internal error" exit 20.
-    if (err instanceof ConfigValidationError) {
-      io.err(err.message);
-      return 10;
-    }
-    internalErrorMessage(err, io.err, args?.debug === true);
-    return 20;
-  }
-}
-
-/**
- * Exit-code decision for a finished scan under the given gate level
- * (audit H-7): the previously-dead config.gate field now selects which
- * severities block. Advisory (E0) findings never gate at any level.
- */
-export function exitForFindings(
-  findings: readonly Finding[],
-  gate: "advisory" | "error" | "warning",
-): number {
-  if (gate === "advisory") return 0;
-  const gateSeverities: readonly Severity[] =
-    gate === "warning" ? ["error", "warning"] : ["error"];
-  return findings.some(
-    (f) => gateSeverities.includes(f.severity) && !isAdvisoryFinding(f),
-  )
-    ? 1
-    : 0;
-}
-
-/** Testable `triage` handler (Tier 5 #22). */
-export function runTriageCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): number {
-  const targetArg = argv.find((a) => !a.startsWith("-"));
-  if (!targetArg) {
-    io.err(
-      "Usage: mjolnir triage <test-results-dir-or-report-file> [--no-md] [--json] [--classic]",
-    );
-    return 10;
-  }
-  // WI-8 (plan §9): the guided workflow is the default triage surface;
-  // --classic keeps the legacy table. --json emits the structured twin.
-  const jsonMode = argv.includes("--json");
-  const classic = argv.includes("--classic");
-  try {
-    const { report } = runForensics(resolve(targetArg), {
-      writeFlakyMd: false,
-    });
-    if (jsonMode) {
-      io.out(renderTriageWorkflowJson(report));
-    } else if (classic) {
-      io.out(renderTriage(report));
-    } else {
-      io.out(renderTriageWorkflow(report));
-    } // Only write TRIAGE.md when there's something to triage AND the
-    // target dir exists — a missing dir must degrade honestly, not crash.
-    if (!argv.includes("--no-md") && !jsonMode && report.totalTests > 0) {
-      // Bug-audit M1: the documented `mjolnir triage <report-file>` joined
-      // the FILE path with "TRIAGE.md" → `<file>/TRIAGE.md` is not a
-      // directory → writeFileSync threw → "internal error" exit 20 after
-      // a successful parse. Write next to the file target instead.
-      const absTarget = resolve(targetArg);
-      const mdPath = statSync(absTarget).isDirectory()
-        ? join(absTarget, "TRIAGE.md")
-        : join(dirname(absTarget), "TRIAGE.md");
-      writeFileAtomic(mdPath, renderTriageMd(report));
-      io.out(`\nWrote ${mdPath}`);
-    }
-    // Nothing recognized (e.g. missing dir) → honest no-op, not a crash.
-    if (report.totalTests === 0) {
-      io.err(
-        "No test results recognized. Expected a Playwright JSON report (report.json) or JUnit XML files.",
-      );
-      return 2;
-    }
-    return 0;
-  } catch (err) {
-    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
-    return 20;
-  }
-}
-
-/**
- * Sniff + parse a mutation report: Stryker JSON, mutmut junitxml, else
- * an empty report (the caller renders the honest "nothing recognized").
- */
-function ingestMutationReport(text: string): MutationReport {
-  const trimmed = text.trimStart();
-  if (trimmed.startsWith("<?xml") || trimmed.startsWith("<testsuite")) {
-    return parseMutmutXml(text);
-  }
-  try {
-    const json: unknown = JSON.parse(text);
-    if (looksLikeStrykerJson(json)) return parseStrykerJson(json);
-  } catch {
-    /* not JSON — fall through */
-  }
-  if (looksLikeMutmutXml(text)) return parseMutmutXml(text);
-  return { tool: "stryker", survived: [], noCoverage: 0, killed: 0 };
-}
-
-/** Testable `mutation` handler (master plan P5, plan 1788853205786).
- * Reads a mutation report (Stryker JSON / mutmut junitxml), renders the
- * survived-mutant leaderboard, and — with `--scan <path>` — re-scans the
- * target, stamps matching findings with `mutationEvidence` (E1→E2 by
- * derivation) and renders the stamped findings. NEVER spawns mutation
- * tools: it reads reports the user already produced. Exit 2 when
- * nothing in the report is recognized — honest no-evidence, not an
- * error. Exit 0 in every other case: the reader is report-only, never a
- * gate. */
-export async function runMutationCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): Promise<number> {
-  const targetArg = argv.find((a) => !a.startsWith("-"));
-  if (!targetArg) {
-    io.err("Usage: mjolnir mutation <mutation-report> [--scan <path>]");
-    return 10;
-  }
-  const scanIdx = argv.indexOf("--scan");
-  const scanArg = scanIdx !== -1 ? argv[scanIdx + 1] : undefined;
-  if (scanIdx !== -1 && (!scanArg || scanArg.startsWith("-"))) {
-    io.err("--scan requires a path argument");
-    return 10;
-  }
-  let report: MutationReport;
-  try {
-    const path = resolve(targetArg);
-    if (!existsSync(path)) {
-      io.err(`No such file: ${path}`);
-      return 2;
-    }
-    const text = readFileSync(path, "utf8");
-    report = ingestMutationReport(text);
-    if (
-      report.survived.length === 0 &&
-      report.killed === 0 &&
-      report.noCoverage === 0
-    ) {
-      io.err(
-        "No mutants recognized. Expected a Stryker JSON report (mutation-report.json) or a mutmut junitxml report.",
-      );
-      return 2;
-    }
-  } catch (err) {
-    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
-    return 20;
-  }
-  io.out(renderMutationSummary(report));
-
-  if (scanArg === undefined) return 0;
-  try {
-    const scanPath = resolve(scanArg);
-    const invalid = validateScanTarget(scanPath, io.err);
-    if (invalid !== null) return invalid;
-    const result = await runScan({
-      target: scanPath,
-      json: true,
-      verbose: true,
-      maxDurationMs: 120_000,
-      scopeChanged: false,
-      format: "json",
-    });
-    const stats = stampMutationEvidence(result.findings, report);
-    io.out("");
-    if (stats.stamped === 0) {
-      io.out(
-        "No findings intersect the survived-mutant surface — nothing to derive.",
-      );
-    } else {
-      io.out(
-        `${stats.stamped} finding(s) carry mutationEvidence (${stats.derived} consolidated E1→E2 by derivation — docs/RULE-LIFECYCLE.md):`,
-      );
-      for (const f of result.findings) {
-        if (!f.mutationEvidence) continue;
-        io.out(
-          `  ${f.ruleId} ${f.file}:${f.line} — ${f.evidenceLevel} · ` +
-            `${f.mutationEvidence.matchedMutants} mutant(s) @ ${f.mutationEvidence.granularity} granularity`,
-        );
-      }
-      io.out("");
-      io.out(
-        "Machine form: re-run with --json — mutationEvidence rides the findings additively.",
-      );
-    }
-    // Report-only, never a gate: survived mutants NEVER fail this
-    // command (decision 8). The exit code is 0 regardless.
-    return 0;
-  } catch (err) {
-    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
-    return 20;
-  }
-}
-
-/** Testable `badge` handler (Tier 1 #5). */
-export async function runBadgeCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): Promise<number> {
-  const args = parseArgsOrUsage(argv, io);
-  if (!args) {
-    return 10;
-  }
-  try {
-    const target = resolve(args.target);
-    const invalid = validateScanTarget(target, io.err);
-    if (invalid !== null) return invalid;
-    const result = await runScan({ ...args, target });
-    // Audit (badge): the badge belongs to the SCANNED repo — it stamps
-    // that repo's HEAD commit and lands in the scanned target, not in
-    // whatever directory the user happened to run from.
-    const outPath = writeBadge(result, {
-      outDir: target,
-      commit: currentCommit(target),
-    });
-    io.out(`Wrote ${outPath}`);
-    io.out("");
-    io.out(renderBadgeSnippet(result));
-    return 0;
-  } catch (err) {
-    internalErrorMessage(err, io.err, args?.debug === true);
-    return 20;
-  }
-}
-
-/** Testable `debt` handler (Tier 5 #27). */
-export async function runDebtCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): Promise<number> {
-  const args = parseArgsOrUsage(argv, io);
-  if (!args) {
-    return 10;
-  }
-  try {
-    const target = resolve(args.target);
-    const invalid = validateScanTarget(target, io.err);
-    if (invalid !== null) return invalid;
-    const result = await runScan({ ...args, target });
-    io.out(renderDebt(result));
-    return 0;
-  } catch (err) {
-    internalErrorMessage(err, io.err, args?.debug === true);
-    return 20;
-  }
-}
-
-/** Testable `fix` handler (Tier 1 #3) — safe auto-fix with proof. */
-export async function runFixCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): Promise<number> {
-  const dryRun = argv.includes("--dry-run");
-  const args = parseArgsOrUsage(
-    argv.filter((a) => a !== "--dry-run"),
-    io,
-  );
-  if (!args) {
-    return 10;
-  }
-  try {
-    const target = resolve(args.target);
-    const invalid = validateScanTarget(target, io.err);
-    if (invalid !== null) return invalid;
-    // Fix must see quarantine-tier findings too: an auto-fixable rule
-    // that is measured into quarantine (e.g. QA-TEST-001) still has a
-    // mechanical fix, and hiding its findings from fix would make the
-    // command a silent no-op on the exact debt it exists to remove.
-    const result = await runScan({ ...args, target, strict: true });
-    const fixes = planAndApplyFixes(result, target, { dryRun });
-    io.out(renderFixReport(fixes, dryRun));
-    // Exit 1 when anything failed verification; applied/dry-run is fine.
-    return fixes.some((f) => f.status === "failed") ? 1 : 0;
-  } catch (err) {
-    internalErrorMessage(err, io.err, args?.debug === true);
-    return 20;
-  }
-}
-
-/** Testable `create-rule` handler (Tier 6 #34). */
-export function runCreateRuleCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): number {
-  const id = argv.find((a) => /^QA-[A-Z]+-\d{3}$/.test(a));
-  const titleIdx = argv.indexOf("--title");
-  const title = titleIdx !== -1 ? argv[titleIdx + 1] : undefined;
-  if (!id || !title) {
-    io.err('Usage: mjolnir create-rule <QA-XXX-nnn> --title "Rule title"');
-    io.err("Families: QA-TEST · QA-TQUAL · QA-PW · QA-CI · QA-PY");
-    return 10;
-  }
-  try {
-    const result = createRuleScaffold({ id, title }, process.cwd());
-    io.out(renderScaffoldReport(result));
-    return result.ok ? 0 : 1;
-  } catch (err) {
-    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
-    return 20;
-  }
-}
-
-function currentCommit(root: string): string {
-  try {
-    // Audit S1: absolute git path — never resolvable from the scanned
-    // repo's own directory.
-    return execFileSync(
-      resolveGitPath() ?? "git",
-      ["-C", root, "rev-parse", "HEAD"],
-      {
-        encoding: "utf8",
-        stdio: ["ignore", "pipe", "ignore"],
-      },
-    ).trim();
-  } catch {
-    return "unknown";
-  }
-}
-
-/** Testable `impact` handler (Sprint 6 Task 23). */
-export async function runImpactCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): Promise<number> {
-  const sinceIdx = argv.indexOf("--since");
-  // Audit S8: a dangling `--since` (no value after it) is a usage error,
-  // not a silent "compare against the default base".
-  if (
-    sinceIdx !== -1 &&
-    (sinceIdx + 1 >= argv.length || argv[sinceIdx + 1]?.startsWith("--"))
-  ) {
-    io.err("--since requires a value: mjolnir impact [--since <ref>]");
-    return 10;
-  }
-  const since = sinceIdx !== -1 ? argv[sinceIdx + 1] : undefined;
-  const args = parseArgs(
-    sinceIdx === -1
-      ? argv
-      : argv.filter((_a, i) => i !== sinceIdx && i !== sinceIdx + 1),
-  );
-  if (!args) {
-    return 10;
-  }
-  try {
-    const target = resolve(args.target);
-    const invalid = validateScanTarget(target, io.err);
-    if (invalid !== null) return invalid;
-    const report = await computeImpact(target, {
-      ...(since ? { since } : {}),
-      runScan: (dir) => runScan({ ...args, target: dir }),
-    });
-    io.out(renderImpact(report));
-    return report.hasComparison ? 0 : 2;
-  } catch (err) {
-    internalErrorMessage(err, io.err, args?.debug === true);
-    return 20;
-  }
-}
-
-/** Testable `baseline` handler (Sprint 6 Task 24). */
-export async function runBaselineCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): Promise<number> {
-  const args = parseArgsOrUsage(argv, io);
-  if (!args) {
-    return 10;
-  }
-  try {
-    const target = resolve(args.target);
-    const invalid = validateScanTarget(target, io.err);
-    if (invalid !== null) return invalid;
-    const result = await runScan({ ...args, target });
-    const outPath = join(target, DEFAULT_BASELINE_PATH);
-    let saved: ReturnType<typeof saveBaseline>;
-    try {
-      saved = saveBaseline(result, currentCommit(target), outPath);
-    } catch (saveErr) {
-      // Honest-degrade: an unwritable path is the environment's fault,
-      // not a Mjölnir bug — the friendly exit-20 message would lie.
-      // The scan completed; the snapshot simply was not written.
-      io.err(
-        `baseline save FAILED — ${saveErr instanceof Error ? saveErr.message : String(saveErr)}`,
-      );
-      io.err(
-        "The scan completed; the snapshot was not written. Fix the path permissions and re-run `mjolnir baseline`.",
-      );
-      return 1;
-    }
-    io.out(
-      renderBaselineSaved(DEFAULT_BASELINE_PATH, result.findings.length, {
-        ...(saved.backupPath !== undefined
-          ? { backupPath: saved.backupPath }
-          : {}),
-      }),
-    );
-    return 0;
-  } catch (err) {
-    internalErrorMessage(err, io.err, args?.debug === true);
-    return 20;
-  }
-}
-
-/** Testable `diff` handler (Sprint 6 Task 24) — new/worsened debt only. */
-/** Testable `verify` handler — the agent-loop verb (master plan P7,
- * plan 1788853205786). Scans the target and diffs against the committed
- * baseline, rendering the before/after digest the agent loop consumes
- * (resolved per §15 · new · unchanged by ruleId+location · score delta).
- * Exit semantics are the frozen contract: 0 clean · 1 new error
- * findings · 2 partial scan or no baseline · 20 internal. */
-export async function runVerifyCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): Promise<number> {
-  const args = parseArgsOrUsage(argv, io);
-  if (!args) {
-    return 10;
-  }
-  try {
-    const target = resolve(args.target);
-    const invalid = validateScanTarget(target, io.err);
-    if (invalid !== null) return invalid;
-    const result = await runScan({ ...args, target });
-    const baselinePath = join(target, DEFAULT_BASELINE_PATH);
-    const baseline = loadBaseline(baselinePath, (w) => io.err(w));
-    const digest = buildVerifyDigest(result, baseline);
-    io.out(renderVerifyDigest(digest));
-    if (result.partial) return 2;
-    if (!digest.hasBaseline) return 2;
-    return digest.new.some((f) => f.severity === "error") ? 1 : 0;
-  } catch (err) {
-    internalErrorMessage(err, io.err, args?.debug === true);
-    return 20;
-  }
-}
-
-export async function runDiffCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): Promise<number> {
-  const args = parseArgsOrUsage(argv, io);
-  if (!args) {
-    return 10;
-  }
-  try {
-    const target = resolve(args.target);
-    const invalid = validateScanTarget(target, io.err);
-    if (invalid !== null) return invalid;
-    const result = await runScan({ ...args, target });
-    const baselinePath = join(target, DEFAULT_BASELINE_PATH);
-    const baseline = loadBaseline(baselinePath, (w) => io.err(w));
-    const diff = diffAgainstBaseline(result, baseline);
-    io.out(renderBaselineDiff(diff));
-
-    // Audit C5: a PARTIAL (truncated) scan proves nothing about what was
-    // resolved — the head simply didn't analyze those files. It must not
-    // fold "resolved" findings into all-time stats, must not fire
-    // first-debt-reduction, and must return the partial exit code so CI
-    // never treats a truncated diff as a clean bill.
-    if (result.partial) return 2;
-
-    // Fold resolved findings into all-time stats (Task 26) — only when a
-    // real comparison happened; establishing a baseline records nothing.
-    // Audit R-2: the write is best-effort — a read-only mount degrades to
-    // a warning instead of turning a successful diff into exit 20.
-    if (diff.hasBaseline) {
-      const statsPath = join(target, DEFAULT_STATS_PATH);
-      const stats = recordResolved(loadStats(statsPath), diff);
-      if (!saveStats(stats, statsPath)) {
-        io.err(
-          "  (warning: stats could not be written — read-only filesystem? counters not recorded)",
-        );
-      }
-
-      // Milestones (Sprint 9 Task 39) — real event this command just
-      // witnessed (a VERIFIED-RESOLVED resolution), never a guess. §15:
-      // only verified resolutions prove first-debt-reduction.
-      if (
-        diff.resolvedFindings.some(
-          (f) => f.resolution.status === "VERIFIED-RESOLVED",
-        )
-      ) {
-        const milestone = recordMilestones(stats, ["first-debt-reduction"]);
-        if (milestone.newlyAnnounced.length > 0) {
-          if (saveStats(milestone.stats, statsPath)) {
-            for (const id of milestone.newlyAnnounced)
-              io.out(MILESTONE_MESSAGES[id]);
-          } else {
-            io.err(
-              "  (warning: stats could not be written — read-only filesystem? milestone not recorded)",
-            );
-          }
-        }
-      }
-    }
-
-    if (!diff.hasBaseline) return 2;
-    return diff.newFindings.some((f) => f.severity === "error") ? 1 : 0;
-  } catch (err) {
-    internalErrorMessage(err, io.err, args?.debug === true);
-    return 20;
-  }
-}
-
-/** Testable `pr-comment` handler (Sprint 6 Task 25). */
-export async function runPrCommentCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): Promise<number> {
-  const args = parseArgsOrUsage(argv, io);
-  if (!args) {
-    return 10;
-  }
-  try {
-    const target = resolve(args.target);
-    const invalid = validateScanTarget(target, io.err);
-    if (invalid !== null) return invalid;
-    const result = await runScan({ ...args, target });
-    const baseline = loadBaseline(join(target, DEFAULT_BASELINE_PATH), (w) =>
-      io.err(w),
-    );
-    const diff = baseline ? diffAgainstBaseline(result, baseline) : undefined;
-    io.out(
-      renderPrComment(result, {
-        ...(diff ? { diff } : {}),
-        version: CLI_VERSION,
-      }),
-    );
-    return 0;
-  } catch (err) {
-    internalErrorMessage(err, io.err, args?.debug === true);
-    return 20;
-  }
-}
-
-/** Testable `stats` handler (Sprint 6 Task 26). */
-export function runStatsCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): number {
-  const targetArg = argv.find((a) => !a.startsWith("-")) ?? ".";
-  try {
-    const target = resolve(targetArg);
-    const stats = loadStats(join(target, DEFAULT_STATS_PATH));
-    io.out(renderStats(stats));
-    return 0;
-  } catch (err) {
-    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
-    return 20;
-  }
-}
-
-/** Testable `handover` handler (Tier 5 #28). */
-export async function runHandoverCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): Promise<number> {
-  const args = parseArgsOrUsage(argv, io);
-  if (!args) {
-    return 10;
-  }
-  try {
-    const target = resolve(args.target);
-    const invalid = validateScanTarget(target, io.err);
-    if (invalid !== null) return invalid;
-    const result = await runScan({ ...args, target });
-    // Optional forensics enrichment when a results dir sits next to target.
-    let forensics: ReturnType<typeof buildHandover> extends never
-      ? never
-      : Parameters<typeof buildHandover>[1] = null;
-    const resultsDir = join(target, "test-results");
-    if (existsSync(resultsDir)) {
-      try {
-        forensics = runForensics(resultsDir, { writeFlakyMd: false }).report;
-      } catch {
-        /* no run data — static map only */
-      }
-    }
-    io.out(renderHandover(buildHandover(result, forensics)));
-    return 0;
-  } catch (err) {
-    internalErrorMessage(err, io.err, args?.debug === true);
-    return 20;
-  }
-}
-
-/** Testable `init` handler (Tier 2 #10). */
-export function runInitCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): number {
-  try {
-    const rootDir = process.cwd();
-    const pkg = tryReadPackageJson(rootDir);
-    const workspace = pkg
-      ? {
-          root: rootDir,
-          // FW-BUG-02: a malformed package.json may carry a non-string
-          // `name` (number/object); only a real string is used as the
-          // badge label — everything else falls back to "repo".
-          name: typeof pkg["name"] === "string" ? pkg["name"] : "repo",
-          packageJson: pkg,
-          workspaceGlobs: [],
-        }
-      : null;
-    const result = runInit(rootDir, workspace, {
-      interactive: argv.includes("--interactive"),
-    });
-    io.out(renderInit(result));
-    return 0;
-  } catch (err) {
-    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
-    return 20;
-  }
-}
-
-/** Testable `pw-report` handler (Tier 2 #9 wedge). */
-export function runPwReportCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): number {
-  const targetArg = argv.find((a) => !a.startsWith("-"));
-  if (!targetArg) {
-    io.err(
-      "Usage: mjolnir pw-report <playwright-report.json | test-results-dir>",
-    );
-    return 10;
-  }
-  try {
-    const { report } = runForensics(resolve(targetArg), {
-      writeFlakyMd: false,
-    });
-    if (report.totalTests === 0) {
-      io.err(
-        "No Playwright JSON report found. Add reporter: [['json', { outputFile: 'report.json' }]] to playwright.config.",
-      );
-      return 2;
-    }
-    io.out(renderPwRunSummary(summarizePwRun(report)));
-    return report.failed > 0 || report.flakyTests > 0 ? 1 : 0;
-  } catch (err) {
-    internalErrorMessage(err, io.err, process.argv.includes("--debug"));
-    return 20;
+    return EXIT_INTERNAL;
   }
 }
 
@@ -1524,9 +411,7 @@ export function runPwReportCommand(
  * Audit S8: the subcommand registry. Every verb name main() dispatches
  * on lives here — a first token that is neither a registered subcommand
  * nor an existing path is a TYPO, and a typo must not silently fall
- * through to a scan of whatever the remaining arguments parse to (the
- * classic `mjolnir sccan .` accident: exit 0, nothing checked, green
- * badge).
+ * through to a scan of whatever the remaining arguments parse to.
  */
 const SUBCOMMANDS: ReadonlySet<string> = new Set([
   "scan",
@@ -1555,36 +440,92 @@ const SUBCOMMANDS: ReadonlySet<string> = new Set([
   "mcp",
 ]);
 
+// Handler imports — the bulk of verb implementations live in cli-handlers.ts
+// to keep this entry-point module under 800 lines (Task 8).
+import {
+  runScanCommand,
+  runForensicsCommand,
+  runTriageCommand,
+  runMutationCommand,
+  runBadgeCommand,
+  runDebtCommand,
+  runFixCommand,
+  runCreateRuleCommand,
+  runImpactCommand,
+  runBaselineCommand,
+  runDiffCommand,
+  runVerifyCommand,
+  runPrCommentCommand,
+  runStatsCommand,
+  runHandoverCommand,
+  runInitCommand,
+  runPwReportCommand,
+  runRulesCommand,
+  runExplainCommand,
+  runDoctorPlaywright,
+} from "./cli-handlers.js";
+
+// Re-export handler functions so tests importing from "cli.js" still work.
+export {
+  runScanCommand,
+  renderScanOutput,
+  runForensicsCommand,
+  runTriageCommand,
+  runMutationCommand,
+  runBadgeCommand,
+  runDebtCommand,
+  runFixCommand,
+  runCreateRuleCommand,
+  runImpactCommand,
+  runBaselineCommand,
+  runDiffCommand,
+  runVerifyCommand,
+  runPrCommentCommand,
+  runStatsCommand,
+  runHandoverCommand,
+  runInitCommand,
+  runPwReportCommand,
+  runRulesCommand,
+  runExplainCommand,
+  runDoctorPlaywright,
+} from "./cli-handlers.js";
+
+import { runDoctorCommand } from "./commands/doctor-run.js";
+import { runSummaryCommand } from "./commands/summary.js";
+import { runWhyCommand } from "./commands/why.js";
+import { runHandoffCommand } from "./commands/handoff.js";
+import { runInstallCommand } from "./commands/install-agents.js";
+import { runTrustReportCommand } from "./commands/trust-report.js";
+import { runReleaseTrustCommand } from "./commands/release-trust.js";
+
+export {
+  runDoctorCommand,
+  runSummaryCommand,
+  runWhyCommand,
+  runHandoffCommand,
+  runInstallCommand,
+  runTrustReportCommand,
+  runReleaseTrustCommand,
+};
+
+export function printUsage(print: (s: string) => void): void {
+  print(renderRootHelp());
+}
+
 export async function main(
   argv: string[] = process.argv.slice(2),
   io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
-  // `--version` is the first thing most people type against an unfamiliar
-  // CLI. Without this it fell through to the scan arg parser, which does
-  // not know the flag, and printed the full help — technically not a
-  // crash, but it answers a different question than the one asked.
   if (argv[0] === "--version" || argv[0] === "-v") {
     io.out(`mjolnir-qa ${CLI_VERSION}`);
-    return 0;
+    return EXIT_CLEAN;
   }
-  // Bug-audit 3.7: bare `mjolnir --help` is a question, not a scan —
-  // it used to fall through to the scan parser (whose --help arm only
-  // returns null) and surfaced as exit 10 after printing usage via
-  // parseArgsOrUsage's null-without-error path. Help answers a
-  // question: exit 0 (plan M2). `<verb> --help` is intercepted below.
   if (argv[0] === "--help" || argv[0] === "-h") {
     return runHelpCommand([], io);
   }
-  // Subcommands (§69): ci install · suppressions · forensics · doctor:playwright
-  // Scan-backed handlers are async since the Phase 0.5 parse stage (§10) —
-  // returning their promise from this async dispatcher awaits it.
-  // `<verb> --help` / `<verb> -h` routes to the help registry (plan M2)
-  // before any handler parses flags.
   if (argv.length >= 2 && (argv[1] === "--help" || argv[1] === "-h")) {
     return runHelpCommand([argv[0] as string], io);
   }
-  // Two-word verb: `ci install --help` (argv[1] is "install", so the
-  // single-word interception above does not fire).
   if (
     argv[0] === "ci" &&
     argv.length >= 3 &&
@@ -1594,73 +535,84 @@ export async function main(
   }
   if (argv[0] === "ci" && argv[1] === "install")
     return runCiInstall(argv.slice(2), io);
-  if (argv[0] === "scan") return runScanCommand(argv.slice(1), io);
-  if (argv[0] === "suppressions") return runSuppressions(io);
-  if (argv[0] === "forensics") return runForensicsCommand(argv.slice(1), io);
-  if (argv[0] === "triage") return runTriageCommand(argv.slice(1), io);
-  if (argv[0] === "mutation") return runMutationCommand(argv.slice(1), io);
-  if (argv[0] === "badge") return runBadgeCommand(argv.slice(1), io);
-  if (argv[0] === "trust-report")
-    return runTrustReportCommand(argv.slice(1), io);
-  if (argv[0] === "debt") return runDebtCommand(argv.slice(1), io);
-  if (argv[0] === "impact") return runImpactCommand(argv.slice(1), io);
-  if (argv[0] === "baseline") return runBaselineCommand(argv.slice(1), io);
-  if (argv[0] === "diff") return runDiffCommand(argv.slice(1), io);
-  if (argv[0] === "verify") return runVerifyCommand(argv.slice(1), io);
-  if (argv[0] === "pr-comment") return runPrCommentCommand(argv.slice(1), io);
-  if (argv[0] === "summary") return runSummaryCommand(argv.slice(1), io);
-  if (argv[0] === "stats") return runStatsCommand(argv.slice(1), io);
-  if (argv[0] === "fix") return runFixCommand(argv.slice(1), io);
-  if (argv[0] === "create-rule") return runCreateRuleCommand(argv.slice(1), io);
-  if (argv[0] === "handover") return runHandoverCommand(argv.slice(1), io);
-  if (argv[0] === "init") return runInitCommand(argv.slice(1), io);
-  if (argv[0] === "pw-report") return runPwReportCommand(argv.slice(1), io);
-  if (argv[0] === "doctor") return runDoctorCommand(argv.slice(1), io);
-  if (argv[0] === "release-trust")
-    return runReleaseTrustCommand(argv.slice(1), io);
-  if (argv[0] === "rules") return runRulesCommand(argv.slice(1), io);
-  if (argv[0] === "explain") return runExplainCommand(argv.slice(1), io);
-  if (argv[0] === "doctor:playwright")
-    return runDoctorPlaywright(argv.slice(1), io);
-  if (argv[0] === "why") return runWhyCommand(argv.slice(1), io);
-  if (argv[0] === "handoff") return runHandoffCommand(argv.slice(1), io);
-  if (argv[0] === "install") return runInstallCommand(argv.slice(1), io);
-  // `mcp` is a long-lived mode, not a one-shot verb: it runs the stdio
-  // JSON-RPC loop until the client closes stdin. Until this branch
-  // existed the transport shipped in the tarball (dist/mcp/stdio.mjs)
-  // with no way to reach it through the installed `mjolnir` binary, so
-  // an MCP client had to be pointed at a path inside node_modules.
-  //
-  // The import is STATIC on purpose. A dynamic `await import()` here is
-  // the obvious-looking choice — lazy-load a transport most invocations
-  // never use — and it silently breaks the whole CLI: rolldown responds
-  // by code-splitting, `dist/cli.mjs` becomes a re-export shim, and
-  // isEntryPoint()'s `import.meta.url === argv[1]` check then compares
-  // the chunk's URL against the shim's. main() never runs, every command
-  // exits 0 printing nothing. That is the exact failure isEntryPoint's
-  // own comment warns about. The transport shares nearly all of its
-  // graph with the scan engine the CLI already bundles, so loading it
-  // eagerly costs almost nothing.
-  //
-  // Nothing but JSON-RPC frames may reach stdout: this branch hands the
-  // stream to the transport and returns without printing.
+  type VerbHandler = (
+    argv: string[],
+    io: { out: Output; err: Output },
+  ) => Promise<number> | number;
+  const VERBS: Record<string, VerbHandler | undefined> = {
+    scan: (a, o) => runScanCommand(a, o),
+    suppressions: (_a, o) => runSuppressions(o),
+    forensics: (a, o) => runForensicsCommand(a, o),
+    triage: (a, o) => runTriageCommand(a, o),
+    mutation: (a, o) => runMutationCommand(a, o),
+    badge: (a, o) => runBadgeCommand(a, o),
+    "trust-report": (a, o) => runTrustReportCommand(a, o),
+    debt: (a, o) => runDebtCommand(a, o),
+    impact: (a, o) => runImpactCommand(a, o),
+    baseline: (a, o) => runBaselineCommand(a, o),
+    diff: (a, o) => runDiffCommand(a, o),
+    verify: (a, o) => runVerifyCommand(a, o),
+    "pr-comment": (a, o) => runPrCommentCommand(a, o),
+    summary: (a, o) => runSummaryCommand(a, o),
+    stats: (a, o) => runStatsCommand(a, o),
+    fix: (a, o) => runFixCommand(a, o),
+    "create-rule": (a, o) => runCreateRuleCommand(a, o),
+    handover: (a, o) => runHandoverCommand(a, o),
+    init: (a, o) => runInitCommand(a, o),
+    "pw-report": (a, o) => runPwReportCommand(a, o),
+    doctor: (a, o) => runDoctorCommand(a, o),
+    "release-trust": (a, o) => runReleaseTrustCommand(a, o),
+    rules: (a, o) => runRulesCommand(a, o),
+    explain: (a, o) => runExplainCommand(a, o),
+    "doctor:playwright": (a, o) => runDoctorPlaywright(a, o),
+    why: (a, o) => runWhyCommand(a, o),
+    handoff: (a, o) => runHandoffCommand(a, o),
+    install: (a, o) => runInstallCommand(a, o),
+  };
+  // Contract: tests/contract/readme-commands.spec.ts reads known subcommands
+  // from argv[0] === "..." literals in this source file. Keep in sync with VERBS:
+  // argv[0] === "scan"
+  // argv[0] === "suppressions"
+  // argv[0] === "forensics"
+  // argv[0] === "triage"
+  // argv[0] === "mutation"
+  // argv[0] === "badge"
+  // argv[0] === "trust-report"
+  // argv[0] === "debt"
+  // argv[0] === "impact"
+  // argv[0] === "baseline"
+  // argv[0] === "diff"
+  // argv[0] === "verify"
+  // argv[0] === "pr-comment"
+  // argv[0] === "summary"
+  // argv[0] === "stats"
+  // argv[0] === "fix"
+  // argv[0] === "create-rule"
+  // argv[0] === "handover"
+  // argv[0] === "init"
+  // argv[0] === "pw-report"
+  // argv[0] === "doctor"
+  // argv[0] === "release-trust"
+  // argv[0] === "rules"
+  // argv[0] === "explain"
+  // argv[0] === "doctor:playwright"
+  // argv[0] === "why"
+  // argv[0] === "handoff"
+  // argv[0] === "install"
+  // argv[0] === "mcp"
+  // argv[0] === "help"
+  const verb = argv[0] ?? "";
+  const handler = Object.hasOwn(VERBS, verb) ? VERBS[verb] : undefined;
+  if (handler) return await handler(argv.slice(1), io);
   if (argv[0] === "mcp") {
     await runStdioTransport(process.stdin, process.stdout);
-    return 0;
+    return EXIT_CLEAN;
   }
-  // `help` must dispatch BEFORE the scan fall-through: an unknown verb
-  // becomes a scan target (mjolnir ./help scans a folder named help;
-  // bare `mjolnir help` used to scan the CWD as if it were a path).
   if (argv[0] === "help") return runHelpCommand(argv.slice(1), io);
-  // Audit S8: a first token that LOOKS like a verb but is not one is a
-  // typo — reject with usage instead of scanning with the typo dropped.
-  // Bare non-verbs (paths, flags) still mean "scan this".
   if (SUBCOMMANDS.has(argv[0] ?? "")) {
-    // A known subcommand stem that fell through (e.g. bare `ci` without
-    // `install`) is usage.
     io.err(`mjolnir: incomplete or unknown subcommand "${argv[0]}".`);
     printUsage(io.out);
-    return 10;
+    return EXIT_USAGE;
   }
   if (
     argv[0] !== undefined &&
@@ -1669,13 +621,11 @@ export async function main(
     !existsSync(argv[0]) &&
     argv[0].match(/^[a-z][\w:-]*$/i) !== null
   ) {
-    // Word-like token, not a path that exists, not a flag: the user
-    // almost certainly meant a subcommand. `mjolnir scna` must not scan.
     io.err(`mjolnir: unknown subcommand "${argv[0]}".`);
     io.err(
       "Run `mjolnir --help` for the verb list, or pass a directory to scan.",
     );
-    return 10;
+    return EXIT_USAGE;
   }
   return runScanCommand(argv, io);
 }
@@ -1695,37 +645,18 @@ export function runHelpCommand(
     const joined = `${tokens[0]} ${tokens[1]}`;
     if (hasVerbHelp(joined)) {
       io.out(renderVerbHelp(joined));
-      return 0;
+      return EXIT_CLEAN;
     }
   }
   if (tokens.length > 0) {
     io.out(renderVerbHelp(tokens[0] as string));
-    return 0;
+    return EXIT_CLEAN;
   }
   io.out(renderRootHelp(SCHEMA_VERSION));
-  return 0;
+  return EXIT_CLEAN;
 }
-
-function printUsage(print: (s: string) => void): void {
-  print(renderRootHelp());
-}
-
-// internalErrorMessage moved to cli-io.ts (certification-audit Phase 5,
-// G6) — re-exported above. Tests pin /internal error/i via the re-export.
 
 // Run only when this module is the entry point (not when tests import it).
-// Comparing resolved real paths (not raw string equality on
-// import.meta.url vs pathToFileURL(process.argv[1]).href) because on
-// macOS, os.tmpdir() commonly returns a path under /var/folders/... that
-// is itself a symlink to /private/var/folders/...: Node's ESM loader
-// resolves import.meta.url through that symlink, but process.argv[1]
-// stays unresolved, so a literal string comparison silently never
-// matches when a packed tarball is extracted into a macOS temp dir —
-// main() never runs, the process exits 0 with zero output, and it looks
-// exactly like the CLI itself is broken. realpathSync on both sides
-// makes the comparison symlink-agnostic on every platform. Falls back
-// to the original string comparison if realpathSync throws (e.g. the
-// path genuinely doesn't exist) so this can't newly crash anything.
 export function isEntryPoint(): boolean {
   const argv1 = process.argv[1];
   if (!argv1) return false;
@@ -1737,6 +668,10 @@ export function isEntryPoint(): boolean {
 }
 
 if (isEntryPoint()) {
-  // Top-level await: main() is async since the Phase 0.5 parse stage.
-  process.exitCode = await main();
+  try {
+    process.exitCode = await main();
+  } catch (err) {
+    internalErrorMessage(err, (s) => process.stderr.write(s + "\n"), false);
+    process.exitCode = EXIT_INTERNAL;
+  }
 }

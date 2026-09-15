@@ -97,6 +97,9 @@ function report(verdicts: TestVerdict[]): ForensicsReport {
     flakyTests: verdicts.filter((v) => v.passedOnRetry).length,
     totalDurationMs: verdicts.reduce((s, v) => s + v.totalDurationMs, 0),
     verdicts,
+    analysisComplete: true,
+    skippedReports: 0,
+    incompleteReasons: [],
   };
 }
 

@@ -69,9 +69,11 @@ function walkSrc(dir: string, acc: SrcFile[] = []): SrcFile[] {
     }
     if (!name.endsWith(".ts")) continue;
     const text = readFileSync(p, "utf8");
+    const lines = text.split("\n");
+    const loc = lines.at(-1) === "" ? lines.length - 1 : lines.length;
     acc.push({
       rel: relative(SRC, p).replaceAll("\\", "/"),
-      loc: text.split("\n").length,
+      loc,
       imports: extractImportSpecifiers(text),
     });
   }

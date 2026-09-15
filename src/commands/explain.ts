@@ -29,6 +29,7 @@ import {
 import { computeCodeText } from "../engine/code-text.js";
 import { firstFixtureFile } from "./fixture-example.js";
 import { sectionHeader, plainContext } from "../reporter/ui.js";
+import { parseJsonFile, isRecord } from "../lib/safe-json.js";
 
 const ui = plainContext();
 
@@ -308,10 +309,17 @@ export interface VerdictExplainResult {
 /** Structural validation of the loaded JSON (hostile-input safe). */
 function parseScanJson(raw: string): ScanResult | undefined {
   try {
-    const j = JSON.parse(raw) as Partial<ScanResult>;
-    if (j.schemaVersion !== 1 || !Array.isArray(j.findings)) return undefined;
-    if (!j.analysisStatus || typeof j.partial !== "boolean") return undefined;
-    return j as ScanResult;
+    const j = parseJsonFile(
+      raw,
+      "scan result",
+      (v): v is ScanResult =>
+        isRecord(v) &&
+        (v as Partial<ScanResult>).schemaVersion === 1 &&
+        Array.isArray((v as Partial<ScanResult>).findings) &&
+        Boolean((v as Partial<ScanResult>).analysisStatus) &&
+        typeof (v as Partial<ScanResult>).partial === "boolean",
+    );
+    return j;
   } catch {
     return undefined;
   }

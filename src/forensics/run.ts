@@ -47,6 +47,8 @@ export function runForensics(
 } {
   const records: TestRecord[] = [];
   let source: ForensicsReport["source"] = "playwright-json";
+  let skippedReports = 0;
+  const incompleteReasons: string[] = [];
 
   // Missing target is a "nothing recognized" case, not a crash — the CLI
   // layer maps totalTests === 0 to exit 2 with an honest message.
@@ -64,7 +66,12 @@ export function runForensics(
     // Size guard: a multi-GB report file would exhaust memory on JSON.parse.
     // 1MB is generous for structured test output; larger files are skipped.
     if (stat.size > MAX_REPORT_FILE_BYTES) {
+      skippedReports = 1;
+      incompleteReasons.push("size-limit");
       const report = analyze([], source);
+      report.analysisComplete = false;
+      report.skippedReports = skippedReports;
+      report.incompleteReasons = incompleteReasons;
       return {
         report,
         output: [
@@ -104,8 +111,11 @@ export function runForensics(
           ),
         };
       } catch {
-        /* hostile trace → zero records → honest exit 2 upstream */
+        /* hostile trace → mark partial and return honest empty report */
         const report = analyze([], "playwright-trace");
+        report.analysisComplete = false;
+        report.skippedReports = 1;
+        report.incompleteReasons = ["parse-failure"];
         return {
           report,
           output: [
@@ -123,17 +133,37 @@ export function runForensics(
       source = parsed.source;
     } catch {
       /* unreadable or corrupt — zero records → honest exit 2 upstream */
+      skippedReports = 1;
+      incompleteReasons.push("parse-failure");
     }
   } else {
     let count = 0;
     let cumulativeBytes = 0;
-    for (const full of listFiles(target)) {
-      if (++count > MAX_FILES) break;
+    let hitFileLimit = false;
+    let hitCumulativeLimit = false;
+    const allFiles = listFiles(target);
+    for (const full of allFiles) {
+      if (++count > MAX_FILES) {
+        hitFileLimit = true;
+        break;
+      }
       try {
         const fileStat = statSync(full);
-        if (fileStat.size > MAX_REPORT_FILE_BYTES) continue;
+        if (fileStat.size > MAX_REPORT_FILE_BYTES) {
+          skippedReports++;
+          if (!incompleteReasons.includes("size-limit")) {
+            incompleteReasons.push("size-limit");
+          }
+          continue;
+        }
         cumulativeBytes += fileStat.size;
-        if (cumulativeBytes > MAX_CUMULATIVE_BYTES) break;
+        if (cumulativeBytes > MAX_CUMULATIVE_BYTES) {
+          hitCumulativeLimit = true;
+          if (!incompleteReasons.includes("cumulative-size-limit")) {
+            incompleteReasons.push("cumulative-size-limit");
+          }
+          break;
+        }
         // R5: trace artifacts ride the byte path (see the single-file arm).
         if (/\.(?:zip|trace|ndjson)$/i.test(full)) {
           const bytes = readFileSync(full);
@@ -151,11 +181,36 @@ export function runForensics(
         records.push(...parsed.records);
       } catch {
         /* unreadable — skip */
+        skippedReports++;
+        if (!incompleteReasons.includes("parse-failure")) {
+          incompleteReasons.push("parse-failure");
+        }
       }
+    }
+    // Limit flags are set at the break site, so they are finalized here —
+    // not inside the loop, where the `break` would skip the handling.
+    // The reason may already be present (pushed at the break), so the
+    // increment is unconditional on the flag.
+    if (hitFileLimit) {
+      if (!incompleteReasons.includes("file-count-limit")) {
+        incompleteReasons.push("file-count-limit");
+      }
+      skippedReports += allFiles.length - count + 1;
+    }
+    if (hitCumulativeLimit) {
+      if (!incompleteReasons.includes("cumulative-size-limit")) {
+        incompleteReasons.push("cumulative-size-limit");
+      }
+      skippedReports += allFiles.length - count + 1;
     }
   }
 
   const report = analyze(records, source);
+  if (skippedReports > 0) {
+    report.analysisComplete = false;
+    report.skippedReports = skippedReports;
+    report.incompleteReasons = incompleteReasons;
+  }
 
   let flakyMdPath: string | undefined;
   if ((options.writeFlakyMd ?? true) && report.totalTests > 0) {

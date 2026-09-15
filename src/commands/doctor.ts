@@ -21,6 +21,7 @@ import type { QADoctorRule, StrategyReasonCode } from "../rules/rule.js";
 import { RETIRED_RULE_IDS, RULES } from "../rules/index.js";
 import { RULE_CATEGORIES } from "../types.js";
 import { MEASURED_FP } from "../rules/measured-fp.generated.js";
+import { isRecord } from "../lib/safe-json.js";
 
 /** The closed reason-code set (master plan P8) — mirrored from
  * src/rules/rule.ts's StrategyReasonCode union via a runtime set so the
@@ -332,15 +333,13 @@ export function checkTierEnforcement(
         .filter((l) => l.trim().length > 0);
       for (const line of lines) {
         try {
-          const entry = JSON.parse(line) as {
-            verdict?: unknown;
-            ruleId?: unknown;
-          };
+          const parsed: unknown = JSON.parse(line);
+          if (!isRecord(parsed)) continue;
+          const entry = parsed as { verdict?: unknown; ruleId?: unknown };
           if (entry.verdict === "TP" || entry.verdict === "FP") {
-            live.set(
-              entry.ruleId as string,
-              (live.get(entry.ruleId as string) ?? 0) + 1,
-            );
+            if (typeof entry.ruleId === "string") {
+              live.set(entry.ruleId, (live.get(entry.ruleId) ?? 0) + 1);
+            }
           }
         } catch {
           // Unparseable rows are FAILed by checkMeasurementConsistency,
@@ -527,12 +526,13 @@ export function checkFixtureIntegrity(
   const allowlistPath = join(fixturesRoot, "typecheck-allowlist.json");
   if (existsSync(allowlistPath)) {
     try {
-      const parsed = JSON.parse(readFileSync(allowlistPath, "utf8")) as {
-        entries?: unknown[];
-      };
-      if (Array.isArray(parsed.entries)) {
+      const raw: unknown = JSON.parse(readFileSync(allowlistPath, "utf8"));
+      if (!isRecord(raw)) {
+        ok = false;
+        details.push("typecheck-allowlist.json is not an object");
+      } else if (Array.isArray(raw.entries)) {
         details.push(
-          `Layer A typecheck allowlist: ${parsed.entries.length} justified entr(ies)`,
+          `Layer A typecheck allowlist: ${raw.entries.length} justified entr(ies)`,
         );
       } else {
         ok = false;
@@ -715,7 +715,12 @@ export function checkMeasurementConsistency(
         if (trimmed.length === 0) continue;
         let row: { ruleId?: string; verdict?: string };
         try {
-          row = JSON.parse(trimmed) as { ruleId?: string; verdict?: string };
+          const parsed: unknown = JSON.parse(trimmed);
+          if (!isRecord(parsed)) {
+            failures.push(`${f}: unparseable verdict row (corpus integrity)`);
+            continue;
+          }
+          row = parsed;
         } catch {
           failures.push(`${f}: unparseable verdict row (corpus integrity)`);
           continue;
@@ -735,10 +740,14 @@ export function checkMeasurementConsistency(
   let sidecar: Record<string, { detectorRevision?: number }> = {};
   if (existsSync(sidecarPath)) {
     try {
-      sidecar = JSON.parse(readFileSync(sidecarPath, "utf8")) as Record<
-        string,
-        { detectorRevision?: number }
-      >;
+      const parsed: unknown = JSON.parse(readFileSync(sidecarPath, "utf8"));
+      if (!isRecord(parsed)) {
+        failures.push(
+          "sidecar is not a valid object — regenerate the measurement artifacts",
+        );
+      } else {
+        sidecar = parsed as Record<string, { detectorRevision?: number }>;
+      }
     } catch (e) {
       failures.push(
         `sidecar unreadable/malformed: ${errorText(e)} — regenerate the measurement artifacts`,
@@ -932,7 +941,7 @@ export function stripNonDeterministicFields<T extends object>(
   fields: readonly string[] = NON_DETERMINISTIC_FIELDS,
 ): T {
   for (const field of fields) {
-    delete (json as unknown as Record<string, unknown>)[field];
+    delete (json as Record<string, unknown>)[field];
   }
   return json;
 }

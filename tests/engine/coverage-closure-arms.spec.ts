@@ -54,6 +54,9 @@ function report(verdicts: TestVerdict[]): ForensicsReport {
     flakyTests: 0,
     totalDurationMs: 1,
     verdicts,
+    analysisComplete: true,
+    skippedReports: 0,
+    incompleteReasons: [],
   };
 }
 

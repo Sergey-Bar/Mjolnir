@@ -516,6 +516,9 @@ describe("runtime-corroboration L114 — sort comparator ascending arm", () => {
         verdict({ title: "later", line: 40 }),
         verdict({ title: "earlier", line: 10 }),
       ],
+      analysisComplete: true,
+      skippedReports: 0,
+      incompleteReasons: [] as string[],
     };
     stampRuntimeCorroboration([f], report);
     // The containing test for line 50 is the last declaration ≤ 50.
@@ -537,6 +540,9 @@ describe("runtime-corroboration L114 — sort comparator ascending arm", () => {
         verdict({ title: "placed", line: 10 }),
         verdict({ title: "unplaced" }), // line undefined (JUnit-style)
       ],
+      analysisComplete: true,
+      skippedReports: 0,
+      incompleteReasons: [] as string[],
     };
     stampRuntimeCorroboration([f], report);
     // No per-test placement claim without ranges — file-level.

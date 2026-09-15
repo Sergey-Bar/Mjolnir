@@ -15,6 +15,7 @@ import { join } from "node:path";
 import { detectFrameworks } from "../discovery/frameworks.js";
 import type { Workspace } from "../discovery/workspace.js";
 import { nextStep, sectionHeader, plainContext } from "../reporter/ui.js";
+import { parseJsonFile, isRecord } from "../lib/safe-json.js";
 
 const ui = plainContext();
 
@@ -134,7 +135,7 @@ export function tryReadPackageJson(
   const p = join(rootDir, "package.json");
   if (!existsSync(p)) return null;
   try {
-    return JSON.parse(readFileSync(p, "utf8")) as Record<string, unknown>;
+    return parseJsonFile(readFileSync(p, "utf8"), p, isRecord);
   } catch {
     return null;
   }

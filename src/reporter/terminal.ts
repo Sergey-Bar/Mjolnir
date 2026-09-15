@@ -812,7 +812,12 @@ function renderNoTests(ui: UiContext): string {
   return lines.join("\n");
 }
 
-function countBySeverity(result: ScanResult) {
+function countBySeverity(result: ScanResult): {
+  error: number;
+  warning: number;
+  info: number;
+  total: number;
+} {
   const counts = { error: 0, warning: 0, info: 0, total: 0 };
   for (const f of result.findings) {
     counts[f.severity]++;

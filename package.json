@@ -24,6 +24,7 @@
     "mcp": "node dist/mcp/stdio.mjs",
     "test": "vitest run",
     "bench:scan": "tsx scripts/bench-scan.ts .mjolnir --files 300",
+    "test:stress": "vitest run --config vitest.stress.config.ts",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "lint": "eslint . --max-warnings=0 && prettier --check .",

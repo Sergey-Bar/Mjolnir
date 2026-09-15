@@ -49,13 +49,20 @@ import { computeChangedScope, filterToChanged } from "../scope/changed.js";
 import { asUniversal } from "./rule-runner.js";
 import { enforceTierPolicy, type Tier } from "./tier-policy.js";
 import type { QADoctorRule } from "../rules/rule.js";
-import type { UniversalRule, ParsedAst, ParsedFile } from "./adapter.js";
+import type {
+  UniversalRule,
+  ParsedAst,
+  ParsedFile,
+  ScanContext,
+  LanguageAdapter,
+} from "./adapter.js";
 import { stampRuntimeCorroboration } from "./runtime-corroboration.js";
 import { buildEvidenceRecords } from "./evidence-core.js";
 import { classifyProvenance, computeAgenticProfile } from "./provenance.js";
 import { releaseTreeSitterResources } from "./tree-sitter-ast.js";
 import { resetTsMorphProject } from "./ts-ast.js";
 import { applyOverlapDedup, type OverlapMeta } from "./overlap-dedup.js";
+import { getCodeTextForCounting } from "./code-text.js";
 import {
   computeRulesDigest,
   createScanCache,
@@ -438,6 +445,536 @@ export function isValidFindingRecord(
 }
 
 /**
+ * Replace 7-way nested ternary with a linear probe.
+ * Returns the adapter whose `isTestFile` matches the path, falling
+ * back to the TypeScript adapter (the default language).
+ */
+export function selectAdapter(path: string): LanguageAdapter {
+  if (githubActionsAdapter.isTestFile(path)) return githubActionsAdapter;
+  if (azurePipelinesAdapter.isTestFile(path)) return azurePipelinesAdapter;
+  if (jenkinsAdapter.isTestFile(path)) return jenkinsAdapter;
+  if (pythonAdapter.isTestFile(path)) return pythonAdapter;
+  if (javaAdapter.isTestFile(path)) return javaAdapter;
+  if (csharpAdapter.isTestFile(path)) return csharpAdapter;
+  return typescriptAdapter;
+}
+
+export interface DiscoveryResult {
+  testFiles: string[];
+  stagedSurface: boolean;
+}
+
+export function discoverTestFilesPhase(
+  workspace: Workspace,
+  args: CliArgs,
+  hooks: ScanHooks,
+  scanRoot: Workspace,
+  ctx: ScanContext,
+): DiscoveryResult {
+  const languageAdapters = ADAPTERS.filter(
+    (a) =>
+      a.id !== "github-actions" &&
+      a.id !== "azure-pipelines" &&
+      a.id !== "jenkins",
+  );
+  const buckets = new Map<string, string[]>(
+    languageAdapters.map((a) => [a.id, [] as string[]]),
+  );
+  const fixtureDirMemo = new Map<string, boolean>();
+  discoverAllTestFiles(ctx, languageAdapters, buckets, fixtureDirMemo);
+  for (const bucket of buckets.values()) {
+    ctx.testFiles.push(...bucket);
+  }
+  const wfBucket: string[] = [];
+  githubActionsAdapter.discoverTestFiles({ ...ctx, testFiles: wfBucket });
+  ctx.testFiles.push(...wfBucket);
+  const azBucket: string[] = [];
+  azurePipelinesAdapter.discoverTestFiles({ ...ctx, testFiles: azBucket });
+  ctx.testFiles.push(...azBucket);
+  const jfBucket: string[] = [];
+  jenkinsAdapter.discoverTestFiles({ ...ctx, testFiles: jfBucket });
+  ctx.testFiles.push(...jfBucket);
+  let stagedSurface = false;
+  if (args.staged) {
+    const staged = computeStagedFiles(scanRoot.root);
+    if (staged === null) {
+      hooks.onConfigWarning?.(
+        "mjolnir: --staged ignored — not a git repository (scanning the full surface).",
+      );
+    } else {
+      const stagedSet = new Set(staged.map((s) => s.replace(/\\/g, "/")));
+      ctx.testFiles = ctx.testFiles.filter((f) =>
+        stagedSet.has(relative(scanRoot.root, f).replace(/\\/g, "/")),
+      );
+      stagedSurface = true;
+      if (ctx.testFiles.length === 0) {
+        hooks.onConfigWarning?.(
+          "mjolnir: --staged — no staged files match the scan surface.",
+        );
+      }
+    }
+  }
+  hooks.onProgress?.({
+    phase: "discover",
+    done: ctx.testFiles.length,
+    total: ctx.testFiles.length,
+  });
+  return { testFiles: ctx.testFiles, stagedSurface };
+}
+
+export interface FileAnalysisResult {
+  skippedFiles: number;
+  testFileCount: number;
+  testDeclarationCount: number;
+  rulesPartial: boolean;
+  parseFailed: number;
+  scanned: number;
+}
+
+export async function runFileAnalysisPhase(
+  findings: Finding[],
+  testFiles: string[],
+  workspace: Workspace,
+  activeRules: UniversalRule[],
+  hooks: ScanHooks,
+  cache: ScanCache,
+  rulesDigest: string,
+  deadline: number,
+  truncationReasons: Set<string>,
+  declarationsByFile: Map<string, number>,
+  fileProvenance: Array<{
+    path: string;
+    provenance: ReturnType<typeof classifyProvenance>;
+  }>,
+  onRuleCrash: (ruleId: string, file: string, error: unknown) => void,
+): Promise<FileAnalysisResult> {
+  let skippedFiles = 0;
+  let testFileCount = 0;
+  let testDeclarationCount = 0;
+  let rulesPartial = false;
+  let parseFailed = 0;
+  let scanned = 0;
+
+  for (const path of testFiles) {
+    if (Date.now() > deadline) {
+      rulesPartial = true;
+      skippedFiles += testFiles.length - scanned;
+      truncationReasons.add("rule-loop-deadline");
+      break;
+    }
+    scanned++;
+    const adapter = selectAdapter(path);
+    const isCiAdapter =
+      adapter.id === "github-actions" ||
+      adapter.id === "azure-pipelines" ||
+      adapter.id === "jenkins";
+    if (!isCiAdapter) testFileCount++;
+    let text: string;
+    try {
+      text = readFileSync(path, "utf8")
+        .replace(/^\uFEFF/, "")
+        .replace(/\r\n?/g, "\n");
+    } catch {
+      // intentional: unreadable file between discovery and analysis — skip, counted
+      skippedFiles++;
+      continue;
+    }
+    let fileBudgetExceeded = false;
+    const relPath = relative(workspace.root, path).replaceAll("\\", "/");
+    if (!isCiAdapter) {
+      const langMap: Record<
+        string,
+        "typescript" | "python" | "java" | "csharp"
+      > = {
+        typescript: "typescript",
+        python: "python",
+        java: "java",
+        csharp: "csharp",
+      };
+      const lang = langMap[adapter.id] ?? "typescript";
+      const codeView = getCodeTextForCounting(text, lang);
+      const decls = countTestDeclarations(text, codeView);
+      testDeclarationCount += decls;
+      declarationsByFile.set(relPath, decls);
+      fileProvenance.push({
+        path: relPath,
+        provenance: classifyProvenance({ text }),
+      });
+    }
+    const wantsAst = adapter.parseAst !== undefined && Date.now() <= deadline;
+    const identity = (mode: "ast" | "regex") => ({
+      relPath,
+      adapterId: adapter.id,
+      parseMode: mode,
+    });
+    let cacheKey = fileCacheKey(
+      rulesDigest,
+      text,
+      identity(wantsAst ? "ast" : "regex"),
+    );
+    const cachedFindings = cache.lookup(cacheKey);
+    if (cachedFindings) {
+      for (const f of cachedFindings) findings.push(f);
+      continue;
+    }
+    hooks.onProgress?.({
+      phase: "parse",
+      done: scanned,
+      total: testFiles.length,
+      detail: relPath,
+    });
+    const parsedFile: ParsedFile = { path: relPath, text };
+    let parsed: ParsedAst | undefined;
+    const findingsStart = findings.length;
+    try {
+      if (adapter.parseAst && wantsAst) {
+        hooks.onProgress?.({
+          phase: "rules",
+          done: scanned,
+          total: testFiles.length,
+          detail: relPath,
+        });
+        parsed = await adapter.parseAst(parsedFile);
+      }
+      const actualMode: "ast" | "regex" = parsed ? "ast" : "regex";
+      if (wantsAst && actualMode === "regex") {
+        cacheKey = fileCacheKey(rulesDigest, text, identity(actualMode));
+        const fallbackFindings = cache.lookup(cacheKey);
+        if (fallbackFindings) {
+          for (const f of fallbackFindings) findings.push(f);
+          continue;
+        }
+      }
+      const fileForRules: ParsedFile = parsed
+        ? { ...parsedFile, ast: parsed.ast }
+        : parsedFile;
+      adapter.runRules(
+        activeRules,
+        fileForRules,
+        (f, ruleId, category) => {
+          if (!isValidFindingRecord(f)) {
+            onRuleCrash?.(
+              ruleId,
+              relPath,
+              new Error(
+                `malformed finding record rejected (severity/line/message must be present, severity ∈ error|warning|info): ${JSON.stringify(f)}`,
+              ),
+            );
+            return;
+          }
+          findings.push({ ...f, ruleId, category } as Finding);
+        },
+        (ruleId, error) => {
+          onRuleCrash?.(ruleId, relPath, error);
+        },
+        {
+          deadline: Math.min(deadline, Date.now() + LIMITS.maxFileAnalysisMs),
+          onExceeded: () => {
+            rulesPartial = true;
+            skippedFiles++;
+            truncationReasons.add("file-budget");
+            fileBudgetExceeded = true;
+          },
+        },
+      );
+      cache.store(cacheKey, findings.slice(findingsStart), fileBudgetExceeded);
+    } catch {
+      // intentional: parse/analysis failure — counted via skippedFiles/parseFailed, never fatal
+      skippedFiles++;
+      parseFailed++;
+    } finally {
+      parsed?.dispose();
+    }
+  }
+
+  return {
+    skippedFiles,
+    testFileCount,
+    testDeclarationCount,
+    rulesPartial,
+    parseFailed,
+    scanned,
+  };
+}
+
+export interface PostScanResult {
+  testDeclarationCount: number;
+  scopeInfo: { scope: "all" | "changed"; degraded?: string | undefined };
+  suppressionCount: number;
+  frameworks: ReturnType<typeof detectFrameworks>;
+  runtimeReportPath: string | undefined;
+  config: ReturnType<typeof loadConfig>["config"];
+}
+
+export function applyPostScanProcessing(
+  findings: Finding[],
+  workspace: Workspace,
+  args: CliArgs,
+  hooks: ScanHooks,
+  scanRoot: Workspace,
+  declarationsByFile: Map<string, number>,
+  testDeclarationCount: number,
+  tierByRuleId: Map<string, Tier>,
+  REVISION_BY_RULE_ID: Map<string, number>,
+): PostScanResult {
+  let scopeInfo: {
+    scope: "all" | "changed";
+    degraded?: string | undefined;
+  } = { scope: "all" };
+  if (args.scopeChanged) {
+    const diff = computeChangedScope(workspace.root, args.base);
+    const filtered = filterToChanged(findings, diff);
+    findings.length = 0;
+    for (const f of filtered) findings.push(f);
+    scopeInfo = diff.degraded
+      ? { scope: "changed", degraded: diff.reason }
+      : { scope: "changed" };
+    if (!diff.degraded) {
+      testDeclarationCount = [...Object.keys(diff.changed)].reduce(
+        (sum, file) => sum + (declarationsByFile.get(file) ?? 0),
+        0,
+      );
+    }
+  }
+  const frameworks = detectFrameworks(workspace);
+  const { config, warnings } = loadConfig(workspace.root, {
+    knownRuleIds: KNOWN_RULE_IDS,
+  });
+  for (const w of warnings) hooks.onConfigWarning?.(w);
+  applySeverityOverrides(findings, config);
+  const suppressions = loadSuppressions(workspace.root);
+  const active = suppressions.entries.filter((e) => e.status === "active");
+  const suppressionCount = active.length;
+  if (active.length > 0) {
+    const ruleOnly = new Set(
+      active.filter((e) => !e.files?.length).map((e) => e.ruleId),
+    );
+    const kept = findings.filter((f) => {
+      if (ruleOnly.has(f.ruleId)) return false;
+      return !active.some(
+        (e) =>
+          e.files?.length &&
+          e.ruleId === f.ruleId &&
+          e.files.some((g) => pathMatchesGlob(f.file, g)),
+      );
+    });
+    findings.length = 0;
+    for (const f of kept) findings.push(f);
+  }
+  const deduped = applyOverlapDedup(findings, OVERLAP_META_BY_RULE_ID);
+  findings.length = 0;
+  for (const f of deduped) findings.push(f);
+  findings.sort(compareFindings);
+  stampEvidenceLevels(findings, EVIDENCE_OVERRIDES);
+  for (const f of findings) {
+    const m = MEASURED_FP[f.ruleId];
+    if (m) {
+      f.measuredFpRate = m.fpRate;
+      f.measuredFpN = m.n;
+    }
+  }
+  for (const f of findings) {
+    const rev = REVISION_BY_RULE_ID.get(f.ruleId);
+    if (rev !== undefined) f.detectorRevision = rev;
+  }
+  enforceTierPolicy(findings, tierByRuleId);
+  for (const f of findings) {
+    f.fixGroupId = f.ruleId;
+  }
+  const discoveredReport = discoverAndParseRuntimeReport(scanRoot.root);
+  const runtimeReportPath = discoveredReport?.path;
+  if (discoveredReport) {
+    try {
+      buildEvidenceRecords(discoveredReport.report, discoveredReport.path);
+      stampRuntimeCorroboration(
+        findings,
+        discoveredReport.report,
+        workspace.root,
+      );
+    } catch {
+      /* corrupt report — no runtime evidence */
+    }
+  }
+  return {
+    testDeclarationCount,
+    scopeInfo,
+    suppressionCount,
+    frameworks,
+    runtimeReportPath,
+    config,
+  };
+}
+
+export interface AssembleScanResultInput {
+  findings: Finding[];
+  testFileCount: number;
+  testDeclarationCount: number;
+  declarationsByFile: Map<string, number>;
+  skippedFiles: number;
+  rulesCrashed: number;
+  truncationReasons: Set<string>;
+  discoveryTruncated: boolean;
+  rulesPartial: boolean;
+  scopeIgnored: number;
+  scopeUnrecognized: number;
+  parseFailed: number;
+  scanned: number;
+  testFiles: string[];
+  workspace: Workspace;
+  scanRoot: Workspace;
+  args: CliArgs;
+  hooks: ScanHooks;
+  cache: ScanCache;
+  REVISION_BY_RULE_ID: Map<string, number>;
+  pluginsLoaded: Array<{ name: string; rules: number }>;
+  scopeInfo: { scope: "all" | "changed"; degraded?: string | undefined };
+  suppressionCount: number;
+  frameworks: ReturnType<typeof detectFrameworks>;
+  runtimeReportPath: string | undefined;
+  config: ReturnType<typeof loadConfig>["config"];
+  fileProvenance: Array<{
+    path: string;
+    provenance: ReturnType<typeof classifyProvenance>;
+  }>;
+  started: number;
+  stagedSurface: boolean;
+}
+
+export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
+  o.hooks.onProgress?.({ phase: "score", done: o.findings.length });
+  const dimensions = computeDimensions(o.findings);
+  const rawDeductions = o.findings.reduce((sum, f) => sum + deductionFor(f), 0);
+  const effectiveDeductions = rawDeductions;
+  const total = computeTotal(dimensions, o.findings, {
+    testDeclarations: o.testDeclarationCount,
+    testFileCount: o.testFileCount,
+    suiteInvalidatingRuleIds: SUITE_INVALIDATING_RULE_IDS,
+  });
+  const elapsed = Date.now() - o.started;
+  const scopeReasons: string[] = [];
+  if (o.scopeIgnored > 0) scopeReasons.push(`ignored:${o.scopeIgnored}`);
+  if (o.scopeUnrecognized > 0) {
+    scopeReasons.push(`unrecognized:${o.scopeUnrecognized}`);
+  }
+  if (o.parseFailed > 0) scopeReasons.push(`parseFailed:${o.parseFailed}`);
+  for (const reason of o.truncationReasons)
+    scopeReasons.push(`truncated:${reason}`);
+  const scopeIntegrity = {
+    discovered: o.testFiles.length,
+    analyzed: Math.max(0, o.scanned),
+    ignored: o.scopeIgnored,
+    unrecognized: o.scopeUnrecognized,
+    parseFailed: o.parseFailed,
+    truncated: o.truncationReasons.size,
+    scopeVerdict: scopeReasons.length === 0 ? "PROVEN" : "PARTIAL",
+    ...(scopeReasons.length > 0 ? { reasons: scopeReasons } : {}),
+  } as const;
+  const scopeAdjustedTotal =
+    scopeReasons.length > 0 && total >= 100 ? 99 : total;
+  const inputSnapshot = o.testFiles.map((p) => {
+    const relPath = relative(o.workspace.root, p).replaceAll("\\", "/");
+    try {
+      const content = readFileSync(p);
+      const hash = createHash("sha256")
+        .update(content)
+        .digest("hex")
+        .slice(0, 16);
+      return { path: relPath, size: content.length, hash };
+    } catch {
+      // intentional: file vanished between discovery and hashing — honest fallback (size: 0)
+      return { path: relPath, size: 0 };
+    }
+  });
+  let reportDigest: string | undefined;
+  if (o.runtimeReportPath) {
+    try {
+      const reportBytes = readFileSync(o.runtimeReportPath);
+      reportDigest = createHash("sha256")
+        .update(reportBytes)
+        .digest("hex")
+        .slice(0, 16);
+    } catch {
+      /* unreadable → omit from identity */
+    }
+  }
+  const runIdentity = buildRunIdentity({
+    files: inputSnapshot,
+    rules: [...o.REVISION_BY_RULE_ID.entries()].map(
+      ([id, detectorRevision]) => ({ id, detectorRevision }),
+    ),
+    config: o.config ?? null,
+    engineVersion: ENGINE_VERSION,
+    reportDigest,
+  });
+  const evidenceGraph = buildEvidenceGraph({ runId: runIdentity });
+  const hasTests = o.testFileCount > 0 && o.testDeclarationCount > 0;
+  const suiteInvalidatedBy = [
+    ...new Set(
+      o.findings
+        .filter((f) => SUITE_INVALIDATING_RULE_IDS.has(f.ruleId))
+        .map((f) => f.ruleId),
+    ),
+  ].sort();
+  const result: ScanResult = {
+    schemaVersion: SCHEMA_VERSION,
+    partial:
+      o.discoveryTruncated ||
+      o.rulesPartial ||
+      o.skippedFiles > 0 ||
+      o.rulesCrashed > 0 ||
+      o.scopeInfo.degraded !== undefined,
+    scopeIntegrity,
+    runIdentity,
+    evidenceGraph,
+    score: hasTests ? scopeAdjustedTotal : null,
+    ...(hasTests ? {} : { reason: "no-tests-found" as const }),
+    frameworks: o.frameworks.frameworks,
+    frameworkDetectionUnknown: o.frameworks.unknown,
+    ...(o.args.scopeChanged
+      ? {
+          scope: o.scopeInfo.scope,
+          ...(o.scopeInfo.degraded
+            ? { scopeDegraded: o.scopeInfo.degraded }
+            : {}),
+        }
+      : {}),
+    ...(o.stagedSurface ? { staged: { files: o.testFileCount } } : {}),
+    dimensions,
+    findings: o.findings,
+    testFileCount: o.testFileCount,
+    testDeclarationCount: o.testDeclarationCount,
+    rawDeductions,
+    effectiveDeductions,
+    suppressionCount: o.suppressionCount,
+    ...(o.pluginsLoaded.length > 0 ? { plugins: o.pluginsLoaded } : {}),
+    ...(suiteInvalidatedBy.length > 0 ? { suiteInvalidatedBy } : {}),
+    agenticProfile: computeAgenticProfile(o.fileProvenance, o.findings),
+    ...(o.args.cache
+      ? {
+          cache: {
+            hits: o.cache.stats.hits,
+            misses: o.cache.stats.misses,
+            file: o.cache.stats.file,
+          },
+        }
+      : {}),
+    analysisStatus: {
+      discovery: o.discoveryTruncated ? "partial" : "complete",
+      rules: o.rulesPartial ? "partial" : "complete",
+      skippedFiles: o.skippedFiles,
+      durationMs: elapsed,
+      rulesCrashed: o.rulesCrashed,
+      ...(o.truncationReasons.size > 0
+        ? { truncationReasons: [...o.truncationReasons].sort() }
+        : {}),
+    },
+  };
+  result.trustSummary = buildTrustSummary(result, o.declarationsByFile);
+  o.cache.persist();
+  return result;
+}
+
+/**
  * Testable default scan path core. `hooks` lets callers observe
  * normally-invisible events (swallowed rule crashes) without changing
  * the ScanResult contract beyond the rulesCrashed counter.
@@ -482,7 +1019,9 @@ export async function runScan(
   }
   const findings: Finding[] = [];
   let skippedFiles = 0;
+  // eslint-disable-next-line no-useless-assignment -- initial values are read if analysis phase is skipped
   let testFileCount = 0;
+  // eslint-disable-next-line no-useless-assignment -- initial values are read if analysis phase is skipped
   let testDeclarationCount = 0;
   // Bug-audit L3: per-file declaration counts, so a changed-scope scan can
   // score against the files it actually judged instead of the whole repo.
@@ -492,12 +1031,14 @@ export async function runScan(
   // actually happened; truncation carries named reasons.
   const truncationReasons = new Set<string>();
   let discoveryTruncated = false;
+  // eslint-disable-next-line no-useless-assignment -- initial value is read if analysis phase is skipped
   let rulesPartial = false;
   // R4c Scope Integrity: the claimed-vs-analyzed accounting — the walk's
   // matcher exclusions, files no adapter claims, and files whose
   // parse/analysis threw (each counted at its own site).
   let scopeIgnored = 0;
   let scopeUnrecognized = 0;
+  // eslint-disable-next-line no-useless-assignment -- initial value is read if analysis phase is skipped
   let parseFailed = 0;
 
   // Plan §17.1: per-file provenance for the Agentic Trust Profile.
@@ -591,567 +1132,83 @@ export async function runScan(
     },
   };
 
-  // Phase 2 (Tempering): resolve ignore patterns from .mjolnirignore
-  // and config exclude into the scan's own matcher (audit R-8) before
-  // discovering test files.
-
-  // Audit H-8/P-2: each adapter discovers into its own capped bucket,
-  // via ONE shared tree walk — the pipeline no longer readdirSyncs
-  // every directory once per language.
-  const languageAdapters = ADAPTERS.filter(
-    (a) =>
-      a.id !== "github-actions" &&
-      a.id !== "azure-pipelines" &&
-      a.id !== "jenkins",
+  const { testFiles, stagedSurface } = discoverTestFilesPhase(
+    workspace,
+    args,
+    hooks,
+    scanRoot,
+    ctx,
   );
-  const buckets = new Map<string, string[]>(
-    languageAdapters.map((a) => [a.id, [] as string[]]),
+
+  const analysis = await runFileAnalysisPhase(
+    findings,
+    testFiles,
+    workspace,
+    activeRules,
+    hooks,
+    cache,
+    rulesDigest,
+    deadline,
+    truncationReasons,
+    declarationsByFile,
+    fileProvenance,
+    (ruleId, file, error) => {
+      rulesCrashed++;
+      hooks.onRuleCrash?.(ruleId, file, error);
+    },
   );
-  const fixtureDirMemo = new Map<string, boolean>();
-  discoverAllTestFiles(ctx, languageAdapters, buckets, fixtureDirMemo);
-  // Map preserves insertion order (= languageAdapters order), so the
-  // concat order is identical to the per-adapter lookup it replaces.
-  for (const bucket of buckets.values()) {
-    ctx.testFiles.push(...bucket);
-  }
-  const wfBucket: string[] = [];
-  githubActionsAdapter.discoverTestFiles({ ...ctx, testFiles: wfBucket });
-  ctx.testFiles.push(...wfBucket);
-  const azBucket: string[] = [];
-  azurePipelinesAdapter.discoverTestFiles({ ...ctx, testFiles: azBucket });
-  ctx.testFiles.push(...azBucket);
-  const jfBucket: string[] = [];
-  jenkinsAdapter.discoverTestFiles({ ...ctx, testFiles: jfBucket });
-  ctx.testFiles.push(...jfBucket);
-  // --staged (agent-handoff plan §5.7): scan-surface restriction. The
-  // discovered set is intersected with the staged file list. Degraded
-  // (no git) → fall back to the full surface + an honest stderr note
-  // (hooked through onConfigWarning); findings are never silently
-  // dropped by a broken git call.
-  let stagedSurface = false;
-  if (args.staged) {
-    const staged = computeStagedFiles(scanRoot.root);
-    if (staged === null) {
-      hooks.onConfigWarning?.(
-        "mjolnir: --staged ignored — not a git repository (scanning the full surface).",
-      );
-    } else {
-      const stagedSet = new Set(staged.map((s) => s.replace(/\\/g, "/")));
-      // relative() normalizes absolute discovered paths to staged-name
-      // form; both sides are POSIX-slashed before comparison.
-      ctx.testFiles = ctx.testFiles.filter((f) =>
-        stagedSet.has(relative(scanRoot.root, f).replace(/\\/g, "/")),
-      );
-      stagedSurface = true;
-      if (ctx.testFiles.length === 0) {
-        hooks.onConfigWarning?.(
-          "mjolnir: --staged — no staged files match the scan surface.",
-        );
-      }
-    }
-  }
-  hooks.onProgress?.({
-    phase: "discover",
-    done: ctx.testFiles.length,
-    total: ctx.testFiles.length,
-  });
+  skippedFiles += analysis.skippedFiles;
+  testFileCount = analysis.testFileCount;
+  testDeclarationCount = analysis.testDeclarationCount;
+  rulesPartial = analysis.rulesPartial;
+  parseFailed = analysis.parseFailed;
+  const scanned = analysis.scanned;
 
-  // Audit H-3: the deadline is checked per file here too — discovery
-  // alone no longer owns the budget.
-  let scanned = 0;
-  for (const path of ctx.testFiles) {
-    if (Date.now() > deadline) {
-      rulesPartial = true;
-      skippedFiles += ctx.testFiles.length - scanned;
-      truncationReasons.add("rule-loop-deadline");
-      break;
-    }
-    scanned++;
-    const isWorkflow = githubActionsAdapter.isTestFile(path);
-    const isAzurePipeline = azurePipelinesAdapter.isTestFile(path);
-    const isJenkinsfile = jenkinsAdapter.isTestFile(path);
-    const isPython = pythonAdapter.isTestFile(path);
-    const isJava = javaAdapter.isTestFile(path);
-    const isCs = csharpAdapter.isTestFile(path);
-    if (!isWorkflow && !isAzurePipeline && !isJenkinsfile) testFileCount++;
-    let text: string;
-    try {
-      // Normalize once at read time: strip BOM (breaks ^-anchored regexes)
-      // and unify CRLF → LF ($-anchored regexes miss every line on Windows
-      // checkouts otherwise). Rules can rely on LF-only text.
-      text = readFileSync(path, "utf8")
-        .replace(/^\uFEFF/, "")
-        .replace(/\r\n?/g, "\n");
-    } catch {
-      skippedFiles++;
-      continue;
-    }
-    let fileBudgetExceeded = false;
-    // Exposure metric (Phase 5): count declarations, not files. Workflows
-    // declare no tests, so they are excluded from the denominator.
-    const relPath = relative(workspace.root, path).replaceAll("\\", "/");
-    if (!isWorkflow && !isAzurePipeline && !isJenkinsfile) {
-      const decls = countTestDeclarations(text);
-      testDeclarationCount += decls;
-      // Per-file accounting (bug-audit L3): in changed-scope mode the
-      // score must use a denominator from the files actually judged,
-      // not the whole repo.
-      declarationsByFile.set(relPath, decls);
-      // Plan §17.1: per-file provenance for the Agentic Trust Profile.
-      // Metadata only (§17.4) — it never affects rules or scoring.
-      fileProvenance.push({
-        path: relPath,
-        provenance: classifyProvenance({ text }),
-      });
-    }
-    // M5.2: content-addressed cache lookup — the key covers the file's
-    // exact post-normalization bytes, the active rule set (ids +
-    // detectorRevisions + run-source hashes), and the file's own
-    // identity (rel path + adapter id + parse mode — audit C1/W9), so a
-    // hit reproduces the rule-loop output for THIS file byte-for-byte
-    // and a regex-fallback verdict can never be served as an AST one.
-    // Denominators and provenance above stay live: a cached scan must
-    // count identically to a fresh one.
-    const adapter = isWorkflow
-      ? githubActionsAdapter
-      : isAzurePipeline
-        ? azurePipelinesAdapter
-        : isJenkinsfile
-          ? jenkinsAdapter
-          : isPython
-            ? pythonAdapter
-            : isJava
-              ? javaAdapter
-              : isCs
-                ? csharpAdapter
-                : typescriptAdapter;
-    // Parse-mode token, decided BEFORE the lookup from what this scan
-    // intends: AST when the adapter has a parse hook and the deadline
-    // allows it, regex otherwise. After the parse below, the ACTUAL mode
-    // is re-derived — a fallback (parse returned nothing) re-keys the
-    // lookup/store so fallback verdicts land under the fallback token.
-    const wantsAst = adapter.parseAst !== undefined && Date.now() <= deadline;
-    const identity = (mode: "ast" | "regex") => ({
-      relPath,
-      adapterId: adapter.id,
-      parseMode: mode,
-    });
-    let cacheKey = fileCacheKey(
-      rulesDigest,
-      text,
-      identity(wantsAst ? "ast" : "regex"),
-    );
-    const cachedFindings = cache.lookup(cacheKey);
-    if (cachedFindings) {
-      for (const f of cachedFindings) findings.push(f);
-      continue;
-    }
-    hooks.onProgress?.({
-      phase: "parse",
-      done: scanned,
-      total: ctx.testFiles.length,
-      detail: relPath,
-    });
-    // Phase 0.5 parse stage (§10): discovery and rule execution stay
-    // where they were; the awaited parse sits between them. `runRules`
-    // and rules remain synchronous and consume `file.ast`. Every
-    // dispose path below runs in a finally-equivalent position — tree
-    // release must never depend on rules completing successfully
-    // (§10.3): normal completion, rule crash, per-file budget expiry,
-    // and adapter throw all pass through `finally`.
-    const parsedFile: ParsedFile = { path: relPath, text };
-    let parsed: ParsedAst | undefined;
-    const findingsStart = findings.length;
-    try {
-      if (adapter.parseAst && wantsAst) {
-        hooks.onProgress?.({
-          phase: "rules",
-          done: scanned,
-          total: ctx.testFiles.length,
-          detail: relPath,
-        });
-        parsed = await adapter.parseAst(parsedFile);
-      }
-      // Audit W9: the actual mode — a parse hook that returned nothing
-      // (grammar unavailable, parser declined) means the rules ran on
-      // the regex path, and the verdicts must be stored/looked-up as
-      // such, never merged with AST-mode entries.
-      const actualMode: "ast" | "regex" = parsed ? "ast" : "regex";
-      if (wantsAst && actualMode === "regex") {
-        cacheKey = fileCacheKey(rulesDigest, text, identity(actualMode));
-        const fallbackFindings = cache.lookup(cacheKey);
-        if (fallbackFindings) {
-          for (const f of fallbackFindings) findings.push(f);
-          continue;
-        }
-      }
-      const fileForRules: ParsedFile = parsed
-        ? { ...parsedFile, ast: parsed.ast }
-        : parsedFile;
-      adapter.runRules(
-        activeRules,
-        fileForRules,
-        (f, ruleId, category) => {
-          // Audit W10: the rule→Finding boundary is validated at
-          // runtime. Internal rules are typed, but plugin/JSON-manifest
-          // rules are external data — a malformed record (missing
-          // severity/line/message, or a severity outside the enum) is
-          // routed to the crash channel with a diagnostic instead of
-          // being silently scored.
-          if (!isValidFindingRecord(f)) {
-            ctx.onRuleCrash?.(
-              ruleId,
-              relPath,
-              new Error(
-                `malformed finding record rejected (severity/line/message must be present, severity ∈ error|warning|info): ${JSON.stringify(f)}`,
-              ),
-            );
-            return;
-          }
-          findings.push({ ...f, ruleId, category } as Finding);
-        },
-        // Audit R-9: rule crashes stay isolated but are counted and
-        // surfaced via hooks (--debug prints them).
-        (ruleId, error) => {
-          ctx.onRuleCrash?.(ruleId, relPath, error);
-        },
-        // Audit P-1: per-file analysis budget — one oversized file can
-        // no longer own the scan; the skip is counted and reported.
-        {
-          deadline: Math.min(deadline, Date.now() + LIMITS.maxFileAnalysisMs),
-          onExceeded: () => {
-            rulesPartial = true;
-            skippedFiles++;
-            truncationReasons.add("file-budget");
-            fileBudgetExceeded = true;
-          },
-        },
-      );
-      // M5.2: cache the file's raw rule-loop output (the slice produced
-      // by THIS file). A truncated analysis is never cached — see
-      // store()'s guard and the fileBudgetExceeded flag above.
-      cache.store(cacheKey, findings.slice(findingsStart), fileBudgetExceeded);
-    } catch {
-      // WorkflowParseSkipped and friends — counted, never fatal. A
-      // parse-stage throw (contract: never happens) lands here too: the
-      // file produced no analysis, so counting it as skipped is honest.
-      skippedFiles++;
-      // R4c Scope Integrity: this is the parseFailed class — the file was
-      // DISCOVERED but its parse/analysis threw (distinct from unreadable
-      // or oversized, which never reach this stage).
-      parseFailed++;
-    } finally {
-      // §10.3: release the AST on every exit path, success or not.
-      parsed?.dispose();
-    }
-  }
+  const postScan = applyPostScanProcessing(
+    findings,
+    workspace,
+    args,
+    hooks,
+    scanRoot,
+    declarationsByFile,
+    testDeclarationCount,
+    tierByRuleId,
+    REVISION_BY_RULE_ID,
+  );
+  testDeclarationCount = postScan.testDeclarationCount;
 
-  // Changed-scope filtering (Sprint-Plan W6): report only findings on
-  // new/changed lines vs the merge base. Degraded git data → full files.
-  let scopeInfo: { scope: "all" | "changed"; degraded?: string | undefined } = {
-    scope: "all",
-  };
-  if (args.scopeChanged) {
-    const diff = computeChangedScope(workspace.root, args.base);
-    const filtered = filterToChanged(findings, diff);
-    findings.length = 0;
-    for (const f of filtered) findings.push(f);
-    scopeInfo = diff.degraded
-      ? { scope: "changed", degraded: diff.reason }
-      : { scope: "changed" };
-    // Bug-audit L3: restrict the scoring denominator to the changed files
-    // — repo-wide declarations + changed-lines-only deductions inflated
-    // the score and made it incomparable to a full-scan score.
-    if (!diff.degraded) {
-      testDeclarationCount = [...Object.keys(diff.changed)].reduce(
-        (sum, file) => sum + (declarationsByFile.get(file) ?? 0),
-        0,
-      );
-    }
-  }
-
-  // Framework detection (0.2): wire the previously-dead detector into the
-  // pipeline so output and rules can be framework-aware.
-  const frameworks = detectFrameworks(workspace);
-
-  // Suppression enforcement: active `ignore` entries in
-  // mjolnir.config.json remove findings from output, scoring, and exit
-  // codes. Expired entries suppress nothing (stale config hides nothing).
-  // An entry with `files` globs only suppresses findings under those paths.
-  const { config, warnings } = loadConfig(workspace.root, {
-    knownRuleIds: KNOWN_RULE_IDS,
-  });
-  for (const w of warnings) hooks.onConfigWarning?.(w);
-  applySeverityOverrides(findings, config);
-  const suppressions = loadSuppressions(workspace.root);
-  const active = suppressions.entries.filter((e) => e.status === "active");
-  const suppressionCount = active.length;
-  if (active.length > 0) {
-    const ruleOnly = new Set(
-      active.filter((e) => !e.files?.length).map((e) => e.ruleId),
-    );
-    const kept = findings.filter((f) => {
-      if (ruleOnly.has(f.ruleId)) return false;
-      return !active.some(
-        (e) =>
-          e.files?.length &&
-          e.ruleId === f.ruleId &&
-          e.files.some((g) => pathMatchesGlob(f.file, g)),
-      );
-    });
-    findings.length = 0;
-    for (const f of kept) findings.push(f);
-  }
-
-  // R6 (Bug Map M-02): cross-rule overlap dedup. Runs AFTER changed-scope
-  // filtering and suppression (review fix): a user's ignore entry that
-  // suppresses a pair's survivor must leave the twin present, so the twin
-  // is then deduped only if its declarer actually survives suppression —
-  // pre-dedup placement silently erased the twin with no trace. Still
-  // before scoring/reporting, so the deduped set is what everyone sees.
-  const deduped = applyOverlapDedup(findings, OVERLAP_META_BY_RULE_ID);
-  findings.length = 0;
-  // Loop, not spread: `push(...arr)` throws RangeError above ~124k
-  // arguments (V8 call-stack limit) and the scan pipeline has no
-  // findings-count cap — large monorepos can exceed it.
-  for (const f of deduped) findings.push(f);
-
-  findings.sort(compareFindings);
-  // Honesty Core Phase 1: every finding carries its honest evidence level
-  // (rule override wins; otherwise derived from findingType+confidence).
-  stampEvidenceLevels(findings, EVIDENCE_OVERRIDES);
-  // Honesty Core: tag each finding with its rule's measured FP rate when
-  // one exists, so JSON consumers get the same signal the footer shows.
-  for (const f of findings) {
-    const m = MEASURED_FP[f.ruleId];
-    if (m) {
-      f.measuredFpRate = m.fpRate;
-      f.measuredFpN = m.n;
-    }
-  }
-  // Blueprint §13 (G-16): stamp each finding with its rule's detector
-  // revision — identity-relevant metadata, additive within
-  // schemaVersion 1. Rules without a declared revision stay unstamped
-  // (revision-unknown).
-  for (const f of findings) {
-    const rev = REVISION_BY_RULE_ID.get(f.ruleId);
-    if (rev !== undefined) f.detectorRevision = rev;
-  }
-  // Audit H-1: the tier is authoritative — a quarantine finding is
-  // advisory by construction (info + E0) no matter what its rule
-  // declares, so an unproven rule can never gate CI or deduct score.
-  enforceTierPolicy(findings, tierByRuleId);
-  // Agent-handoff plan §5.1: every emitted finding carries a remediation
-  // group id. Current strategy: one rule = one remediation group, so
-  // fixGroupId = ruleId — an implementation choice, NOT a semantic
-  // promise (consumers must not rely on the equality permanently).
-  for (const f of findings) {
-    f.fixGroupId = f.ruleId;
-  }
-  // Plan §16 — Runtime Evidence: discover, validate, and parse the
-  // runtime report in one pass. Corrupt/unparsable candidates are
-  // skipped — the first candidate that produces tests wins.
-  const discoveredReport = discoverAndParseRuntimeReport(scanRoot.root);
-  const runtimeReportPath = discoveredReport?.path;
-  if (discoveredReport) {
-    try {
-      // WI-2 (Canonical Evidence Core): normalize the report into the
-      // canonical record shape once, then fan the SAME records into
-      // corroboration — one evidence path, byte-identical stamps.
-      buildEvidenceRecords(discoveredReport.report, discoveredReport.path);
-      stampRuntimeCorroboration(
-        findings,
-        discoveredReport.report,
-        workspace.root,
-      );
-    } catch {
-      // A hostile/corrupt report must not fail the scan — the run simply
-      // carries no runtime evidence (same degrade posture as forensics).
-    }
-  }
-  hooks.onProgress?.({ phase: "score", done: findings.length });
-  const dimensions = computeDimensions(findings);
-  const rawDeductions = findings.reduce((sum, f) => sum + deductionFor(f), 0);
-  // P2.3 (plan 1788853205786): effectiveDeductions is the mass-ceiling
-  // input — the SAME evidence-discounted sum computeTotal caps against.
-  // Additive JSON field so consumers can recompute the ceiling
-  // (docs/SCORING.md formula v2) without re-deriving evidence levels.
-  const effectiveDeductions = rawDeductions;
-  const total = computeTotal(dimensions, findings, {
-    testDeclarations: testDeclarationCount,
-    testFileCount,
-    suiteInvalidatingRuleIds: SUITE_INVALIDATING_RULE_IDS,
-  });
-  const elapsed = Date.now() - started;
-
-  // R4c (plan §7): Scope Integrity — claimed scope ≡ analyzed scope,
-  // as an additive machine block. The verdict is PROVEN only when every
-  // discovered file was analyzed: no matcher exclusions, no unrecognized
-  // files, no parse failures, no truncation. Otherwise PARTIAL with the
-  // named reasons — a "repository verified" claim is forbidden output
-  // unless this verdict is PROVEN.
-  const scopeReasons: string[] = [];
-  if (scopeIgnored > 0) scopeReasons.push(`ignored:${scopeIgnored}`);
-  if (scopeUnrecognized > 0) {
-    scopeReasons.push(`unrecognized:${scopeUnrecognized}`);
-  }
-  if (parseFailed > 0) scopeReasons.push(`parseFailed:${parseFailed}`);
-  for (const reason of truncationReasons)
-    scopeReasons.push(`truncated:${reason}`);
-  const scopeIntegrity = {
-    discovered: ctx.testFiles.length,
-    analyzed: Math.max(0, scanned),
-    ignored: scopeIgnored,
-    unrecognized: scopeUnrecognized,
-    parseFailed,
-    truncated: truncationReasons.size,
-    scopeVerdict: scopeReasons.length === 0 ? "PROVEN" : "PARTIAL",
-    ...(scopeReasons.length > 0 ? { reasons: scopeReasons } : {}),
-  } as const;
-  // Scope-coherence guard: a PARTIAL scope verdict means not all discovered
-  // files were analyzed. A perfect score on an incomplete surface is a false
-  // claim. Cap at 99 (the honesty guard — "something was not judged, so 100
-  // is a lie"). This is distinct from the trust-summary's incompleteness
-  // ceiling (which caps confidence, not score).
-  const scopeAdjustedTotal =
-    scopeReasons.length > 0 && total >= 100 ? 99 : total;
-  // R4c (plan §7): the run identity — the deterministic anchor binding
-  // verdict ← evidence ← execution ← scope ← source ← rule(rev). The
-  // input snapshot is the DISCOVERED file set with byte sizes; the rule
-  // set is the active rules with their effective detector revisions.
-  // Config fingerprint is included so config changes (exclusions,
-  // severity overrides, gate mode) change the scan identity.
-  const inputSnapshot = ctx.testFiles.map((p) => {
-    const relPath = relative(workspace.root, p).replaceAll("\\", "/");
-    try {
-      const content = readFileSync(p);
-      const hash = createHash("sha256")
-        .update(content)
-        .digest("hex")
-        .slice(0, 16);
-      return { path: relPath, size: content.length, hash };
-    } catch {
-      return { path: relPath, size: 0 };
-    }
-  });
-  // Include the runtime report in the identity so adding/removing/
-  // changing report.json changes scanId.
-  let reportDigest: string | undefined;
-  if (runtimeReportPath) {
-    try {
-      const reportBytes = readFileSync(runtimeReportPath);
-      reportDigest = createHash("sha256")
-        .update(reportBytes)
-        .digest("hex")
-        .slice(0, 16);
-    } catch {
-      /* unreadable → omit from identity */
-    }
-  }
-  const runIdentity = buildRunIdentity({
-    files: inputSnapshot,
-    rules: [...REVISION_BY_RULE_ID.entries()].map(([id, detectorRevision]) => ({
-      id,
-      detectorRevision,
-    })),
-    config: config ?? null,
-    engineVersion: ENGINE_VERSION,
-    reportDigest,
-  });
-  const evidenceGraph = buildEvidenceGraph({ runId: runIdentity });
-
-  // R2 empty-state: score is null when no test files exist at all, OR
-  // when every discovered test file contains zero test declarations
-  // (e.g. a *.spec.ts with only imports/types). A "100/100" on a repo
-  // with no actual test statements would be a false proof.
-  const hasTests = testFileCount > 0 && testDeclarationCount > 0;
-
-  // Suite-invalidation transparency: which suiteInvalidating rules
-  // actually fired findings. Surfaced in JSON + terminal so the score
-  // cap at 49 is explainable even when the findings are E0/advisory.
-  const suiteInvalidatedBy = [
-    ...new Set(
-      findings
-        .filter((f) => SUITE_INVALIDATING_RULE_IDS.has(f.ruleId))
-        .map((f) => f.ruleId),
-    ),
-  ].sort();
-
-  const result: ScanResult = {
-    schemaVersion: SCHEMA_VERSION,
-    partial:
-      discoveryTruncated ||
-      rulesPartial ||
-      skippedFiles > 0 ||
-      rulesCrashed > 0 ||
-      scopeInfo.degraded !== undefined,
-    scopeIntegrity,
-    runIdentity,
-    evidenceGraph,
-    score: hasTests ? scopeAdjustedTotal : null,
-    ...(hasTests ? {} : { reason: "no-tests-found" as const }),
-    frameworks: frameworks.frameworks,
-    frameworkDetectionUnknown: frameworks.unknown,
-    ...(args.scopeChanged
-      ? {
-          scope: scopeInfo.scope,
-          ...(scopeInfo.degraded ? { scopeDegraded: scopeInfo.degraded } : {}),
-        }
-      : {}),
-    ...(stagedSurface ? { staged: { files: testFileCount } } : {}),
-    dimensions,
-    // Honesty: the JSON/SARIF contract carries ALL findings — silent
-    // truncation would make machine consumers (Code Scanning, CI gates)
-    // act on incomplete evidence. The terminal reporter limits its own
-    // display (top 5 + "--verbose for all"); no data is dropped here.
+  const result = assembleScanResult({
     findings,
     testFileCount,
     testDeclarationCount,
-    rawDeductions,
-    effectiveDeductions,
-    suppressionCount,
-    ...(pluginsLoaded.length > 0 ? { plugins: pluginsLoaded } : {}),
-    ...(suiteInvalidatedBy.length > 0 ? { suiteInvalidatedBy } : {}),
-    agenticProfile: computeAgenticProfile(fileProvenance, findings),
-    // M5.2: present only under --cache. Hit/miss counts make the cache
-    // auditable — a report must be able to say how much of its analysis
-    // was reused (additive JSON field, within the v1 additive-only policy).
-    ...(args.cache
-      ? {
-          cache: {
-            hits: cache.stats.hits,
-            misses: cache.stats.misses,
-            file: cache.stats.file,
-          },
-        }
-      : {}),
-    analysisStatus: {
-      // Audits H-3/H-8: both fields derive from what actually happened.
-      discovery: discoveryTruncated ? "partial" : "complete",
-      rules: rulesPartial ? "partial" : "complete",
-      skippedFiles,
-      durationMs: elapsed,
-      // Audit R-9: crashes swallowed by per-rule isolation, visible.
-      rulesCrashed,
-      ...(truncationReasons.size > 0
-        ? { truncationReasons: [...truncationReasons].sort() }
-        : {}),
-    },
-  };
-  // WI-3 (plan §6): scan-level trust summary — a measurement, not a
-  // contract. Built here (single definition site: engine/trust-summary);
-  // formulas published in docs/SCORING.md. The per-file declaration
-  // census is passed through — evidence-backed declarations are counted
-  // inside the summary module (advisory-aware).
-  result.trustSummary = buildTrustSummary(result, declarationsByFile);
-  // M5.2: flush new verdicts to the local cache before reporting. Never
-  // fatal — a persist failure degrades to a cold cache next run.
-  cache.persist();
-  // §10.3: every per-file tree was already disposed in the loop's
-  // finally; tearing the memoized parsers down here releases the
-  // grammar-level WASM state so a long-lived process (library consumer,
-  // test runner) doesn't pin it between scans. The next scan
-  // transparently re-creates them.
+    declarationsByFile,
+    skippedFiles,
+    rulesCrashed,
+    truncationReasons,
+    discoveryTruncated,
+    rulesPartial,
+    scopeIgnored,
+    scopeUnrecognized,
+    parseFailed,
+    scanned,
+    testFiles,
+    workspace,
+    scanRoot,
+    args,
+    hooks,
+    cache,
+    REVISION_BY_RULE_ID,
+    pluginsLoaded,
+    scopeInfo: postScan.scopeInfo,
+    suppressionCount: postScan.suppressionCount,
+    frameworks: postScan.frameworks,
+    runtimeReportPath: postScan.runtimeReportPath,
+    config: postScan.config,
+    fileProvenance,
+    started,
+    stagedSurface,
+  });
+
   await releaseTreeSitterResources();
   resetTsMorphProject();
   return result;

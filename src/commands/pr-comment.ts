@@ -21,8 +21,15 @@ import type { BaselineDiff } from "./baseline.js";
 import { sanitizeData } from "../reporter/theme.js";
 import { deriveScoreState, headlineFor } from "../reporter/score-state.js";
 import { verdictFor } from "../reporter/terminal.js";
+import {
+  renderUnifiedReport as _renderUnifiedReport,
+  UNIFIED_MARKER as _UNIFIED_MARKER,
+  LEGACY_PR_MARKER,
+  LEGACY_TRUST_MARKER as _LEGACY_TRUST_MARKER,
+  type UnifiedReportOptions as _UnifiedReportOptions,
+} from "../reporter/pr-report-shared.js";
 
-const MARKER = "<!-- mjolnir-pr-comment -->";
+const MARKER = LEGACY_PR_MARKER;
 
 /**
  * Bug-audit QA-2026-08-30 QA-10: finding metadata rendered into the PR
@@ -240,4 +247,12 @@ export function renderPrComment(
   return lines.join("\n");
 }
 
-export { MARKER as PR_COMMENT_MARKER, escapeMarkdown };
+export {
+  MARKER as PR_COMMENT_MARKER,
+  escapeMarkdown,
+  _renderUnifiedReport as renderUnifiedReport,
+  _UNIFIED_MARKER as UNIFIED_MARKER,
+  LEGACY_PR_MARKER,
+  _LEGACY_TRUST_MARKER as LEGACY_TRUST_MARKER,
+  type _UnifiedReportOptions as UnifiedReportOptions,
+};

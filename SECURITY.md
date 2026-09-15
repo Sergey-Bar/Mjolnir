@@ -1,5 +1,7 @@
 # Security Policy
 
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Sergey-Bar/Mjolnir/badge)](https://scorecard.dev/viewer/?uri=github.com/Sergey-Bar/Mjolnir)
+
 ## Supported Versions
 
 | Version | Supported |

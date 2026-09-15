@@ -24,29 +24,26 @@
  */
 
 import { writeFileSync, statSync, readFileSync } from "node:fs";
-import { execFileSync } from "node:child_process";
 import { dirname, join, resolve } from "node:path";
 
 import type { ScanResult, TrustSummary } from "../types.js";
 import { isAdvisoryFinding } from "../types.js";
 import { runScan } from "../engine/scan-pipeline.js";
-import { resolveGitPath } from "../scope/git-resolve.js";
 import {
   nextAction,
   topTrustRisks,
   trustHeadline,
 } from "../reporter/trust-report.js";
 import { errorMessage, type Output } from "../cli-io.js";
+import { pct } from "../lib/format.js";
+import { evidenceTag } from "../reporter/evidence-tag.js";
+import { currentCommit } from "../lib/git-utils.js";
 
 export const TRUST_REPORT_MD = "mjolnir-trust-report.md";
 export const TRUST_REPORT_JSON = "mjolnir-trust-report.json";
 export const TRUST_REPORT_HTML = "mjolnir-trust-report.html";
 /** Upsert marker line for PR-comment posting (GitHub Action, WI-9). */
 export const TRUST_REPORT_MARKER = "<!-- mjolnir-trust-report:v1 -->";
-
-function pct(v: number): string {
-  return `${Math.round(v * 100)}%`;
-}
 
 function fallbackSummary(result: ScanResult): TrustSummary {
   return (
@@ -267,13 +264,7 @@ export function renderTrustReportMarkdown(
     lines.push(`| Rule | Location | Evidence | Message |`);
     lines.push(`| ---- | -------- | -------- | ------- |`);
     for (const f of risks) {
-      const ev = f.runtimeCorroboration
-        ? f.runtimeCorroboration.level === "defect"
-          ? "run corroborated"
-          : "run executed"
-        : (f.evidenceLevel ?? "E2") === "E2"
-          ? "deterministic"
-          : "pattern";
+      const ev = evidenceTag(f);
       lines.push(
         `| ${f.ruleId} | ${f.file}:${f.line} | ${ev} | ${f.message.replaceAll("|", "\\|")} |`,
       );
@@ -417,13 +408,7 @@ export function renderTrustReportHtml(
           <tbody>
           ${risks
             .map((f) => {
-              const ev = f.runtimeCorroboration
-                ? f.runtimeCorroboration.level === "defect"
-                  ? "run corroborated"
-                  : "run executed"
-                : (f.evidenceLevel ?? "E2") === "E2"
-                  ? "deterministic"
-                  : "pattern";
+              const ev = evidenceTag(f);
               return `<tr><td>${esc(f.ruleId)}</td><td>${esc(f.file)}:${f.line}</td><td>${esc(ev)}</td><td>${esc(f.message)}</td></tr>`;
             })
             .join("\n          ")}
@@ -510,23 +495,6 @@ export function renderTrustReportHtml(
     .join("\n");
 }
 
-/**
- * The execution's HEAD commit for the identity binding — resolved
- * OFFLINE via the git binary (the same posture as `mjolnir baseline`);
- * unresolvable ⇒ null (recorded unbound, never fabricated).
- */
-function targetCommit(root: string): string | null {
-  try {
-    return execFileSync(
-      resolveGitPath() ?? "git",
-      ["-C", root, "rev-parse", "HEAD"],
-      { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] },
-    ).trim();
-  } catch {
-    return null;
-  }
-}
-
 export async function runTrustReportCommand(
   argv: string[],
   io: { out: Output; err: Output },
@@ -584,11 +552,8 @@ export async function runTrustReportCommand(
       );
       return 10;
     }
-    const { contract: _contract, ...result } = parsed as Record<
-      string,
-      unknown
-    >;
-    const scan = result as unknown as ScanResult;
+    const { contract: _contract, ...rest } = parsed as Record<string, unknown>;
+    const scan: ScanResult = rest as unknown as ScanResult;
     const md = renderTrustReportMarkdown(scan, fromPath, commitArg ?? null);
     if (argv.includes("--stdout")) {
       io.out(md);
@@ -635,7 +600,7 @@ export async function runTrustReportCommand(
     // R9: bind the artifact identity to the executing run — the target's
     // HEAD commit (offline git read, null when unresolvable) + the
     // machine anchor from the scan's runIdentity.
-    const commit = targetCommit(target);
+    const commit = currentCommit(target, { nullable: true });
     const md = renderTrustReportMarkdown(result, targetArg, commit);
     const json = renderTrustReportJson(result, commit);
     const html = renderTrustReportHtml(result, targetArg, commit);
