@@ -60,7 +60,8 @@ function findingLineMd(f: Finding): string {
     f.severity === "error" ? "🔴" : f.severity === "warning" ? "🟡" : "🔵";
   const fix = escMd(f.fix);
   const fixBody = looksLikeCode(f.fix) ? `\`${fix}\`` : `_${fix}_`;
-  return `${icon} **${escMd(f.ruleId)}** \`${escMd(f.file)}:${f.line}\` — ${escMd(f.message)} ${escMd(`[${evidenceTagLine(f)}]`)}\n  Fix: ${fixBody}`;
+  const safePath = escMd(f.file).replace(/[\r\n]+/g, " ");
+  return `${icon} **${escMd(f.ruleId)}** <code>${safePath}:${f.line}</code> — ${escMd(f.message)} ${escMd(`[${evidenceTagLine(f)}]`)}\n  Fix: ${fixBody}`;
 }
 
 /** Score cell with color-coded emoji and optional delta. */
@@ -252,7 +253,7 @@ export function renderUnifiedReport(
   lines.push("");
 
   // ─── Headline ───
-  const state = deriveScoreState(result.score ?? 0);
+  const state = deriveScoreState(result.score);
   const headlineFindings = usingDiff ? findings.length : result.findings.length;
   lines.push(`**Headline:** ${headlineFor(state, headlineFindings)}`);
   lines.push("");

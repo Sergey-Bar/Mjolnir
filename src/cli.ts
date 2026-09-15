@@ -602,7 +602,7 @@ export async function main(
   // argv[0] === "mcp"
   // argv[0] === "help"
   const verb = argv[0] ?? "";
-  const handler = VERBS[verb];
+  const handler = Object.hasOwn(VERBS, verb) ? VERBS[verb] : undefined;
   if (handler) return await handler(argv.slice(1), io);
   if (argv[0] === "mcp") {
     await runStdioTransport(process.stdin, process.stdout);

@@ -27,8 +27,13 @@ function tryNativeSbom() {
       stdio: ["pipe", "pipe", "pipe"],
     });
     return output;
-  } catch {
-    return null;
+  } catch (err) {
+    const msg = String(err?.stderr ?? err?.message ?? err);
+    if (msg.includes("sbom") || msg.includes("Unknown command")) {
+      return null;
+    }
+    console.error(`npm sbom failed unexpectedly: ${msg}`);
+    process.exit(1);
   }
 }
 

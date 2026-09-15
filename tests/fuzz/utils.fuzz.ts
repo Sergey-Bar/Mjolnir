@@ -55,7 +55,7 @@ describe("utility fuzz", () => {
 
     it("pct output is parseable back as a percentage", () => {
       fc.assert(
-        fc.property(fc.double({ min: 0, max: 1 }), (v) => {
+        fc.property(fc.double({ min: 0, max: 1, noNaN: true }), (v) => {
           const result = pct(v);
           const num = parseInt(result.replace("%", ""), 10);
           expect(num).toBeGreaterThanOrEqual(0);

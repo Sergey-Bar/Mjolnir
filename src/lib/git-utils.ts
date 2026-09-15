@@ -17,14 +17,12 @@ export function currentCommit(
   opts: { nullable?: boolean } = {},
 ): string | null {
   try {
-    return execFileSync(
-      resolveGitPath() ?? "git",
-      ["-C", root, "rev-parse", "HEAD"],
-      {
-        encoding: "utf8",
-        stdio: ["ignore", "pipe", "ignore"],
-      },
-    ).trim();
+    const gitPath = resolveGitPath();
+    if (!gitPath) return opts.nullable ? null : "unknown";
+    return execFileSync(gitPath, ["-C", root, "rev-parse", "HEAD"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
   } catch {
     return opts.nullable ? null : "unknown";
   }

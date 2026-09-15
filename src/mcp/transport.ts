@@ -34,22 +34,35 @@ export async function runStdioTransport(
   output: NodeJS.WritableStream,
 ): Promise<void> {
   const rl = createInterface({ input });
-  for await (const line of rl) {
-    try {
-      await handleStdioLine(line, (s) => output.write(s));
-    } catch {
+  let outputFailed = false;
+  const onOutputError = () => {
+    outputFailed = true;
+    rl.close();
+  };
+  output.once("error", onOutputError);
+  try {
+    for await (const line of rl) {
+      if (outputFailed) break;
       try {
-        output.write(
-          JSON.stringify({
-            jsonrpc: "2.0",
-            id: null,
-            error: { code: -32603, message: "internal transport error" },
-          }) + "\n",
-        );
+        await handleStdioLine(line, (s) => {
+          if (!outputFailed) output.write(s);
+        });
       } catch {
-        break; // stdout closed
+        try {
+          output.write(
+            JSON.stringify({
+              jsonrpc: "2.0",
+              id: null,
+              error: { code: -32603, message: "internal transport error" },
+            }) + "\n",
+          );
+        } catch {
+          break; // stdout closed
+        }
       }
     }
+  } finally {
+    output.removeListener("error", onOutputError);
   }
 }
 

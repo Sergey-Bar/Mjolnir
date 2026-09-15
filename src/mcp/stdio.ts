@@ -24,5 +24,5 @@ void runStdioTransport(process.stdin, process.stdout)
     process.stderr.write(
       `mjolnir mcp fatal: ${err instanceof Error ? err.message : err}\n`,
     );
-    process.exit(20);
+    process.exitCode = 20;
   });

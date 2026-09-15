@@ -111,8 +111,11 @@ export function runForensics(
           ),
         };
       } catch {
-        /* hostile trace → zero records → honest exit 2 upstream */
+        /* hostile trace → mark partial and return honest empty report */
         const report = analyze([], "playwright-trace");
+        report.analysisComplete = false;
+        report.skippedReports = 1;
+        report.incompleteReasons = ["parse-failure"];
         return {
           report,
           output: [
@@ -138,7 +141,8 @@ export function runForensics(
     let cumulativeBytes = 0;
     let hitFileLimit = false;
     let hitCumulativeLimit = false;
-    for (const full of listFiles(target)) {
+    const allFiles = listFiles(target);
+    for (const full of allFiles) {
       if (++count > MAX_FILES) {
         hitFileLimit = true;
         break;
@@ -191,13 +195,13 @@ export function runForensics(
       if (!incompleteReasons.includes("file-count-limit")) {
         incompleteReasons.push("file-count-limit");
       }
-      skippedReports++;
+      skippedReports += allFiles.length - count + 1;
     }
     if (hitCumulativeLimit) {
       if (!incompleteReasons.includes("cumulative-size-limit")) {
         incompleteReasons.push("cumulative-size-limit");
       }
-      skippedReports++;
+      skippedReports += allFiles.length - count + 1;
     }
   }
 

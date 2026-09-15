@@ -7,19 +7,19 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 203 files, 40567 LOC
+## Inventory: 203 files, 40587 LOC
 
 | Area             | Files | LOC   |
 | ---------------- | ----- | ----- |
 | src/rules        | 79    | 10402 |
 | src/commands     | 28    | 8866  |
 | src/engine       | 22    | 6259  |
-| src/reporter     | 14    | 2949  |
+| src/reporter     | 14    | 2950  |
 | src/(root)       | 6     | 2555  |
-| src/forensics    | 10    | 1996  |
+| src/forensics    | 10    | 2000  |
 | src/discovery    | 9     | 1457  |
 | src/adapters     | 7     | 1193  |
-| src/mcp          | 3     | 764   |
+| src/mcp          | 3     | 777   |
 | src/brand        | 2     | 654   |
 | src/plugins      | 4     | 635   |
 | src/mutation     | 4     | 428   |
@@ -29,7 +29,7 @@ codes) must match this document exactly.
 | src/config       | 2     | 344   |
 | src/bench        | 2     | 313   |
 | src/playwright   | 2     | 312   |
-| src/lib          | 4     | 223   |
+| src/lib          | 4     | 225   |
 
 ## Internal fan-in — top 15 (change-blast candidates)
 
