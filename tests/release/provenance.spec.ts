@@ -64,6 +64,126 @@ describe("provenance (SUPPLY-001)", () => {
       );
       expect(info.attestations[0]?.sigstore).toBe(true);
     });
+    it("handles corrupt provenance.json gracefully", () => {
+      const pkgDir = createTempPkg("corrupt-prov", "1.0.0");
+      const npmDir = join(pkgDir, ".npm");
+      mkdirSync(npmDir, { recursive: true });
+      writeFileSync(join(npmDir, "provenance.json"), "NOT JSON");
+      const info = verifyProvenance(pkgDir);
+      expect(info.attestations).toHaveLength(0);
+    });
+
+    it("handles corrupt package-lock.json gracefully", () => {
+      const pkgDir = createTempPkg("lock-corrupt", "1.0.0");
+      const lockDir = join(pkgDir, "..", "..");
+      writeFileSync(join(lockDir, ".package-lock.json"), "NOT JSON");
+      const info = verifyProvenance(pkgDir);
+      expect(info.signatures).toHaveLength(0);
+    });
+
+    it("returns attestations with no predicateType as skipped", () => {
+      const pkgDir = createTempPkg("no-pred", "1.0.0");
+      const npmDir = join(pkgDir, ".npm");
+      mkdirSync(npmDir, { recursive: true });
+      writeFileSync(
+        join(npmDir, "provenance.json"),
+        JSON.stringify({ someOtherField: "value" }),
+      );
+      const info = verifyProvenance(pkgDir);
+      expect(info.attestations).toHaveLength(0);
+    });
+
+    it("reads signatures from .package-lock.json", () => {
+      const pkgDir = createTempPkg("sig-pkg", "1.0.0");
+      const lockDir = join(pkgDir, "..", "..");
+      writeFileSync(
+        join(lockDir, ".package-lock.json"),
+        JSON.stringify({
+          packages: {
+            "node_modules/sig-pkg": {
+              signatures: [{ keyid: "key-1", sig: "abc123" }],
+              resolved: "https://registry.npmjs.org/sig-pkg",
+            },
+          },
+        }),
+      );
+      const info = verifyProvenance(pkgDir);
+      expect(info.signatures).toHaveLength(1);
+      expect(info.signatures[0]?.keyid).toBe("key-1");
+      expect(info.registry).toBe("registry.npmjs.org");
+    });
+
+    it("reads provenance.json with optional fields undefined", () => {
+      const pkgDir = createTempPkg("opt-fields", "1.0.0");
+      const npmDir = join(pkgDir, ".npm");
+      mkdirSync(npmDir, { recursive: true });
+      writeFileSync(
+        join(npmDir, "provenance.json"),
+        JSON.stringify({ predicateType: "test-type" }),
+      );
+      const info = verifyProvenance(pkgDir);
+      expect(info.attestations).toHaveLength(1);
+      expect(info.attestations[0]?.predicateBuilderId).toBeUndefined();
+      expect(info.attestations[0]?.sigstore).toBe(false);
+    });
+
+    it("returns empty registry for invalid URL in resolved field", () => {
+      const pkgDir = createTempPkg("bad-url", "1.0.0");
+      const lockDir = join(pkgDir, "..", "..");
+      writeFileSync(
+        join(lockDir, ".package-lock.json"),
+        JSON.stringify({
+          packages: {
+            "node_modules/bad-url": {
+              resolved: "not a url",
+            },
+          },
+        }),
+      );
+      const info = verifyProvenance(pkgDir);
+      expect(info.registry).toBe("");
+    });
+
+    it("handles missing packages key in lock file", () => {
+      const pkgDir = createTempPkg("no-pkgs", "1.0.0");
+      const lockDir = join(pkgDir, "..", "..");
+      writeFileSync(
+        join(lockDir, ".package-lock.json"),
+        JSON.stringify({ lockfileVersion: 3 }),
+      );
+      const info = verifyProvenance(pkgDir);
+      expect(info.signatures).toHaveLength(0);
+    });
+
+    it("handles package.json with corrupt JSON", () => {
+      const dir = mkdtempSync(join(tmpdir(), "prov-corrupt-pkg-"));
+      const pkgDir = join(dir, "node_modules", "bad-pkg");
+      mkdirSync(pkgDir, { recursive: true });
+      writeFileSync(join(pkgDir, "package.json"), "NOT JSON");
+      const info = verifyProvenance(pkgDir);
+      expect(info.packageName).toBe("");
+      expect(info.version).toBe("");
+    });
+
+    it("handles package.json with missing name and version", () => {
+      const dir = mkdtempSync(join(tmpdir(), "prov-noname-"));
+      const pkgDir = join(dir, "node_modules", "noname");
+      mkdirSync(pkgDir, { recursive: true });
+      writeFileSync(
+        join(pkgDir, "package.json"),
+        JSON.stringify({ description: "no name" }),
+      );
+      const info = verifyProvenance(pkgDir);
+      expect(info.packageName).toBe("");
+      expect(info.version).toBe("");
+    });
+
+    it("handles missing package-lock.json gracefully", () => {
+      const pkgDir = createTempPkg("no-lock", "1.0.0");
+      const info = verifyProvenance(pkgDir);
+      expect(info.signatures).toHaveLength(0);
+      expect(info.registry).toBe("");
+    });
   });
 
   describe("hasProvenance", () => {
@@ -80,6 +200,27 @@ describe("provenance (SUPPLY-001)", () => {
         join(npmDir, "provenance.json"),
         JSON.stringify({
           predicateType: "https://slsa.dev/provenance/v0.2",
+        }),
+      );
+      expect(hasProvenance(pkgDir)).toBe(true);
+    });
+
+    it("returns false when no provenance file exists", () => {
+      const dir = mkdtempSync(join(tmpdir(), "prov-nofile-"));
+      expect(hasProvenance(dir)).toBe(false);
+    });
+
+    it("returns true when package has signatures but no attestations", () => {
+      const pkgDir = createTempPkg("sig-only", "1.0.0");
+      const lockDir = join(pkgDir, "..", "..");
+      writeFileSync(
+        join(lockDir, ".package-lock.json"),
+        JSON.stringify({
+          packages: {
+            "node_modules/sig-only": {
+              signatures: [{ keyid: "key-1", sig: "abc" }],
+            },
+          },
         }),
       );
       expect(hasProvenance(pkgDir)).toBe(true);
