@@ -9,6 +9,120 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased]
+
+## [1.1.0] — 2026-09-15
+
+### Year-1 Roadmap Implementation — All 60 Tickets (Q1-Q4)
+
+Complete implementation of the Mjolnir Master Engineering Roadmap & Product Specification v3.1. 178 files changed, ~22,500 lines added across 93 new source and test files.
+
+### Added
+
+#### Q1 — Trust Core Correctness
+
+- **Trust Invariant Registry** (`src/trust/invariants.ts`): Machine-readable registry of TI-001 through TI-020 with scope, status, quarter, and verification test references. CI enforcement gate for REQUIRED invariants.
+- **Versioned Contract Registry** (`src/engine/contract-versions.ts`): 8 versioned contracts (engine, schema, contract, trustModel, scoringModel, evidenceSchema, forensicsSchema, frameworkSupportMatrix) with compatibility policies.
+- **Expanded Semantic Run Identity** (`src/engine/run-identity.ts`): 7 new verdict-affecting fields (trustModelVersion, scoringModelVersion, frameworkSupportMatrixVersion, evidenceSchemaVersions, policyFingerprint, suppressionFingerprint, historicalEvidenceFingerprint). TI-015 and TI-017 enforced.
+- **Scoring Validation** (`src/scorer/scoring-validation.ts`): Stage A validation against trust benchmark dataset. Score discrimination, severity preservation, E0 exclusion checks.
+- **Finding Identity** (`src/engine/finding-identity.ts`): Unified fingerprint with `findingId`, `rootCauseId`, `deduplicationGroup`. Consolidated 4 scattered fingerprint implementations.
+- **Evidence Level Enforcement** (`src/engine/evidence-enforcement.ts`): `deriveEvidenceLevel()` as sole authority. E0 gaming prevention. `detectEvidenceLevelGaming()` for manual override detection.
+- **Config Validation** (`src/config/config-schema.ts`): JSON Schema draft-07 for `mjolnir.config.json`. Structural validation before semantic validation.
+- **Rule Metadata Validation** (`src/rules/rule-metadata-schema.ts`): `RuleMetadataContract` interface. All 79 rules validated against contract. Doctor check 11 added.
+- **Error Text Extraction**: All 5 parsers (Jest, JUnit, Playwright JSON, Vitest, Playwright Trace) now extract error text into `TestRecord.errors[]`.
+- **Evidence Hygiene** (`src/forensics/evidence-hgiene.ts`): Secret redaction (AWS, GitHub, JWT, Bearer, API keys, passwords, private keys), control-character sanitization, bounded text ingestion (10KB cap).
+- **Forensics Schema Versioning** (`src/forensics/schema-validation.ts`): `FORENSICS_SCHEMA_VERSION = 1` stamped on all reports.
+- **Framework Support Inventory** (`src/frameworks/framework-inventory.ts`): 14 frameworks with F0-F5 maturity, support status, entity type, capabilities.
+- **Framework Scorecards** (`src/frameworks/scorecard.ts`): 27 dimensions × 14 frameworks. Every MISSING/WEAK cell maps to a GAP-* ID.
+- **Gap Registry** (`src/gaps/gap-registry.ts`): ~100 gaps registered with type, priority, status, cross-referenced against scorecards.
+- **Requirement Traceability Matrix** (`src/traceability/rtm.ts`): 35 requirements (R-001 through R-035) with CI validation invariants.
+- **Suppression Integrity** (`src/engine/suppression-integrity.ts`): Fingerprint (order-independent sha256), mass-suppression detection (50% threshold), unknown-rule detection, expired-suppression detection.
+- **Performance Baselines** (`src/bench/regression-gates.ts`): 4 benchmark classes (small/medium/large/monorepo), 8 GOVERNANCE_POLICY regression gates, `peakMemory` tracking.
+- **Trust Benchmark Schema** (`src/benchmark/trust-benchmark-schema.ts`): Dataset schema with 11 verification dimensions, blind evaluation protocol.
+- **Measurement Status** (`src/rules/measurement-status.ts`): All 79 rules classified as MEASURED, PROVISIONAL, QUARANTINE, CORE, or EXTENDED.
+- **Release Artifact Integrity** (`src/release/pack-audit.ts`, `src/release/version-consistency.ts`): Tarball hash verification, provenance attestation, version consistency checks.
+- **Shared Adapter RunRules** (`src/engine/shared-run-rules.ts`): Formalized rule execution contract shared across all 7 adapters.
+- **Workspace Discovery** (`src/discovery/ecosystem-detection.ts`): Multi-ecosystem detection (Node, Python, Java, .NET). Workspace structure detection for npm, lerna, nx, turbo, maven, gradle, .sln.
+- **Pipeline Decomposition** (`src/engine/pipeline-stages.ts`): 6 explicit stages (Discovery → Parse → Rules → Correlation → PostProcess → Score) with typed interfaces and diagnostics.
+
+#### Q2 — Framework & Semantic Intelligence
+
+- **QA Semantic Model API** (`src/engine/semantic-model-api.ts`): 14 concepts (test, suite, assertion, action, navigation, wait, retry, locator, lifecycle, fixture, mock, parameterization, shared-state, async).
+- **Assertion Quality** (`src/rules/families/assertion-quality.ts`): Anti-patterns: tautological, type-only, mock-return, truthy-only, length-only.
+- **Test Independence** (`src/rules/families/test-independence.ts`): Anti-patterns: shared-mutable-state, order-dependency, fixture-leak, global-mutation, fs-side-effect.
+- **Flaky-Pattern Detection** (`src/rules/families/flaky-patterns.ts`): 4 families: UNAWAITED_ASYNC, NONDETERMINISTIC_INPUT, UNMOCKED_EXTERNAL_DEPENDENCY, HARD_SLEEP.
+- **Cross-Rule Evidence Correlation** (`src/engine/correlation-engine.ts`): CONVERGENT, CORROBORATED, AMPLIFIED conclusions. TI-009 enforced (E1+E1+E1 ≠ E2). Deterministic Map iteration.
+- **Mutation Resilience** (`src/mutation/mutation-resilience.ts`): Corrected kill rate formula: `killed / (killed + survived)`.
+- **Cross-Language No-Assertions** (`src/rules/families/no-assertions.ts`): Assertion vocabularies for Jest, Vitest, pytest, JUnit, NUnit, xUnit, TestNG.
+- **Marker Registry** (`src/rules/families/marker-registry.ts`): Extensible registry with 9 frameworks × 6 semantics (skip, focus, retry, parameterize, fixture, category).
+- **MCP Forensics Tools** (`src/mcp/tools/forensics-tools.ts`): Tool definitions for forensics-analyze, forensics-triage, error-text-extract.
+- **Anti-Gaming Corpus** (`src/anti-gaming/corpus.ts`): 7 scenarios (AG-001 through AG-007) covering meaningless assertions, superficial coverage, finding splitting, rule suppression, test renaming, empty mocks, CI manipulation.
+- **Framework Compatibility CI** (`src/frameworks/compat-ci.ts`): MINIMUM_SUPPORTED, REPRESENTATIVE_STABLE, LATEST_VALIDATED lanes for Playwright, Jest, pytest.
+- **PR Comment Data Contract** (`src/integrations/github/pr-comment-contract.ts`): `PrCommentModelV1` with verdict-completeness state matrix enforcement.
+- **Deterministic Markdown Renderer** (`src/integrations/github/pr-comment-renderer.ts`): TI-018 enforced (same model → byte-identical output). Information architecture: Answer → Evidence → Action.
+- **Finding Prioritization** (`src/integrations/github/finding-prioritization.ts`): Sort by trust impact → false-green → severity → evidence strength. 3-5 expanded, rest collapsed.
+- **Branding Contract** (`src/brand/pr-brand-contract.ts`): Product name, descriptor, verdict labels/icons, section order, terminology.
+- **Completeness & Framework-Limitation UX** (`src/integrations/github/completeness-ux.ts`): Partial analysis warnings, framework limitation display.
+- **Evidence Sanitization** (`src/integrations/github/evidence-sanitization.ts`): Markdown escaping, HTML injection prevention, link sanitization, RTL handling, text capping.
+
+#### Q3 — Runtime & CI Evidence
+
+- **Evidence Artifact Architecture** (`src/engine/evidence-artifacts.ts`): Versioned artifact schema with provider, fingerprint, completeness, provenance.
+- **Runtime-Static Correlation** (`src/engine/runtime-static-correlation.ts`): Identity matching (EXACT/STRONG/APPROXIMATE/AMBIGUOUS), trust-level mapping. TI-016 enforced.
+- **Flaky-Test Integration** (`src/forensics/flaky-integration.ts`): FlakinessLevel (NONE/SUSPECTED/CONFIRMED), retry evidence extraction.
+- **Coverage Ingestion** (`src/engine/coverage-ingestion.ts`): Istanbul JSON and LCOV parsing. Contextual only — no automatic trust upgrade.
+- **GitLab CI Adapter** (`src/adapters/gitlab-ci.ts`): Discovery, parsing, 3 CI verification risk rules (allow_failure, empty test stage, exit code suppression).
+- **Retry/Quarantine Analysis** (`src/forensics/retry-analysis.ts`): Retry-only-pass detection, quarantine pattern analysis.
+- **Workflow Bypass Detection** (`src/adapters/workflow-bypass.ts`): Path filter bypasses, conditional test execution, missing status checks.
+- **Exit-Code Integrity** (`src/adapters/exit-code-integrity.ts`): `|| true`, `2>/dev/null`, continue-on-error, allow_failure detection.
+- **Safe Output** (`src/forensics/safe-output.ts`): URL sanitization (javascript: prevention), path traversal detection, safe Markdown link construction.
+- **Sticky Comment Publisher** (`src/integrations/github/pr-comment-publisher.ts`): `<!-- mjolnir-pr-comment:v1 -->` marker. Idempotent update, no duplicates.
+- **GitHub Permissions** (`src/integrations/github/github-permissions.ts`): Permission validation, fork PR detection. Zero-network boundary preserved (fetchFn injected).
+- **Job Summary Fallback** (`src/integrations/github/job-summary-fallback.ts`): GitHub Actions job summary when PR comment fails.
+- **PR Comment Golden Suite** (`tests/integrations/github/pr-comment-golden.spec.ts`): Snapshot tests for all verdict+completeness combos.
+- **Stale Guard** (`src/integrations/github/stale-guard.ts`): TI-020 enforced — stale artifacts cannot overwrite newer PR head.
+
+#### Q4 — Scale & Production Hardening
+
+- **Monorepo Analysis** (`src/engine/monorepo-analysis.ts`): Per-package trust with worst-package, average, configurable weighting strategies.
+- **Incremental Analysis** (`src/engine/incremental-analysis.ts`): Content-hash change detection. TI-005 contract (incremental/full equivalence).
+- **SARIF Compliance** (`src/reporter/sarif-compliance.ts`): v2.1.0 validation, finding/rule mapping.
+- **Dependency Graph** (`src/engine/dependency-graph.ts`): Transitive dependency resolution for package.json, pyproject.toml, pom.xml.
+- **Memory Profiling** (`src/bench/memory-profiling.ts`): Async memory measurement with advisory regression checks.
+- **Package Provenance** (`src/release/provenance.ts`): npm provenance attestation verification.
+- **SBOM Generation** (`src/release/sbom.ts`): SPDX and CycloneDX format support.
+- **Reproducibility** (`src/release/reproducibility.ts`): Build reproducibility analysis (timestamps, random IDs, unpinned deps).
+- **Conditional Stubs**: Rule SDK, Adapter SDK, Policy Packs (gated on adoption metrics).
+- **Research Stubs**: CFG Research, Parallel Rules (gated on prerequisites).
+
+### Fixed
+
+- **Greetings Workflow**: Updated `actions/first-interaction` to v1.3.1 with correct input names (`repo_token`, `issue_message`, `pr_message`).
+- **ReDoS**: Bounded quantifiers in `evidence-sanitization.ts` and `test-independence.ts` regex patterns.
+- **XSS**: Sanitized content in `pr-comment-publisher.ts` before rendering.
+- **Determinism**: Sorted Map iteration in `correlation-engine.ts` for consistent output order.
+- **Zero-Network Boundary**: `github-permissions.ts` uses injected `fetchFn` instead of global `fetch`.
+- **Config Validation Error Messages**: Schema-first validation produces consistent error messages. Updated 5 test files to match.
+
+### Security
+
+- Secret redaction in all error text extraction (AWS keys, GitHub tokens, JWT, Bearer, API keys, passwords, private keys).
+- Control-character sanitization (NUL, BEL, BS, VT, FF, SO, SI, ESC, DEL, C1).
+- Bounded text ingestion (10KB per error text).
+- Evidence sanitization for PR comments (Markdown escaping, HTML injection prevention).
+- Fork PR safety for comment publishing.
+- Stale artifact concurrency guard (TI-020).
+
+### Changed
+
+- `Finding` type extended with optional `findingId`, `rootCauseId`, `deduplicationGroup` fields (additive within schemaVersion 1).
+- `ScanResult` extended with optional `scoringModelVersion` field.
+- `RunIdentity` extended with `trustModelVersion`, `scoringModelVersion`, `frameworkSupportMatrixVersion`.
+- `ForensicsReport` includes `forensicsSchemaVersion` field.
+- `src/config/config.ts` `validate()` now calls `validateConfigSchema()` first.
+- `src/commands/doctor.ts` gains check 11 (rule metadata contract validation).
+- 4 fingerprint implementations consolidated into `src/engine/finding-identity.ts`.
+
 ## [Unreleased] — Nordic brand pass
 
 ### Changed
