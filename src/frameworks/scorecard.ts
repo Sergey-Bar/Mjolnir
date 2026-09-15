@@ -61,1539 +61,875 @@ export interface FrameworkScorecard {
   readonly entries: readonly ScorecardEntry[];
 }
 
-function na(dimensions: readonly ScorecardDimension[]): ScorecardEntry[] {
-  return dimensions.map((d) => ({
-    dimension: d,
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  }));
-}
+type EntryOverride = Partial<Omit<ScorecardEntry, "dimension">>;
 
-const COMMON_MATURE: ScorecardEntry[] = [
-  {
-    dimension: "reportingQuality",
-    current: "GOOD",
-    target: "EXCELLENT",
-    gapId: null,
-  },
-  {
-    dimension: "configDiscovery",
-    current: "GOOD",
-    target: "EXCELLENT",
-    gapId: null,
-  },
-  {
-    dimension: "dependencyGraph",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: null,
-  },
-  {
-    dimension: "versionCompatibility",
-    current: "GOOD",
-    target: "EXCELLENT",
-    gapId: null,
-  },
-  {
-    dimension: "documentationCoverage",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: null,
-  },
-  {
-    dimension: "migrationGuidance",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: null,
-  },
-  {
-    dimension: "performanceProfiling",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: null,
-  },
-  {
-    dimension: "securityAuditing",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: null,
-  },
-  {
-    dimension: "crossFrameworkInterop",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: null,
-  },
-];
-
-const COMMON_CI: ScorecardEntry[] = [
-  {
-    dimension: "discovery",
-    current: "EXCELLENT",
-    target: "EXCELLENT",
-    gapId: null,
-  },
-  {
-    dimension: "astUsage",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "semanticUnderstanding",
-    current: "GOOD",
-    target: "EXCELLENT",
-    gapId: null,
-  },
-  {
-    dimension: "assertionUnderstanding",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "lifecycleModeling",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "asyncSemantics",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "fixtureModeling",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "mockingSemantics",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "sharedStateAnalysis",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "errorClassification",
-    current: "GOOD",
-    target: "EXCELLENT",
-    gapId: null,
-  },
-  {
-    dimension: "retrySemantics",
-    current: "GOOD",
-    target: "EXCELLENT",
-    gapId: null,
-  },
-  {
-    dimension: "parameterization",
-    current: "GOOD",
-    target: "EXCELLENT",
-    gapId: null,
-  },
-  {
-    dimension: "snapshotSemantics",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "parallelismWorkerSafety",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "runtimeEvidence",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: null,
-  },
-  {
-    dimension: "adversarialCorpus",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: null,
-  },
-  {
-    dimension: "knownLimitationCoverage",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: null,
-  },
-  {
-    dimension: "ciIntegration",
-    current: "EXCELLENT",
-    target: "EXCELLENT",
-    gapId: null,
-  },
-  {
-    dimension: "reportingQuality",
-    current: "GOOD",
-    target: "EXCELLENT",
-    gapId: null,
-  },
-  {
-    dimension: "configDiscovery",
-    current: "EXCELLENT",
-    target: "EXCELLENT",
-    gapId: null,
-  },
-  {
-    dimension: "dependencyGraph",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "versionCompatibility",
-    current: "GOOD",
-    target: "EXCELLENT",
-    gapId: null,
-  },
-  {
-    dimension: "documentationCoverage",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: null,
-  },
-  {
-    dimension: "migrationGuidance",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: null,
-  },
-  {
-    dimension: "performanceProfiling",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: null,
-  },
-  {
-    dimension: "securityAuditing",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: null,
-  },
-  {
-    dimension: "crossFrameworkInterop",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: null,
-  },
-];
-
-function merge(
-  base: ScorecardEntry[],
-  overrides: Partial<Record<ScorecardDimension, Partial<ScorecardEntry>>>,
-): ScorecardEntry[] {
-  return base.map((entry) => {
-    const ov = overrides[entry.dimension];
-    if (!ov) return entry;
-    return { ...entry, ...ov };
-  });
-}
-
-const playwrightEntries: ScorecardEntry[] = merge(
-  [
-    {
-      dimension: "discovery",
-      current: "EXCELLENT",
-      target: "EXCELLENT",
+function makeScorecard(
+  frameworkId: string,
+  overrides: Partial<Record<ScorecardDimension, EntryOverride>>,
+): FrameworkScorecard {
+  const entries: ScorecardEntry[] = SCORECARD_DIMENSIONS.map((dim) => {
+    const base: ScorecardEntry = {
+      dimension: dim,
+      current: "NOT_APPLICABLE",
+      target: "NOT_APPLICABLE",
       gapId: null,
-    },
-    {
-      dimension: "astUsage",
-      current: "PARTIAL",
-      target: "EXCELLENT",
-      gapId: "GAP-PW-001",
-    },
-    ...na([
-      "semanticUnderstanding",
-      "assertionUnderstanding",
-      "asyncSemantics",
-      "errorClassification",
-    ]),
-    {
-      dimension: "lifecycleModeling",
+    };
+    const ov = overrides[dim];
+    return ov ? { ...base, ...ov } : base;
+  });
+  return { frameworkId, entries };
+}
+
+const COMMON_MATURE_OVERRIDES: Partial<
+  Record<ScorecardDimension, EntryOverride>
+> = {
+  reportingQuality: { current: "GOOD", target: "EXCELLENT" },
+  configDiscovery: { current: "GOOD", target: "EXCELLENT" },
+  dependencyGraph: { current: "PARTIAL", target: "GOOD" },
+  versionCompatibility: { current: "GOOD", target: "EXCELLENT" },
+  documentationCoverage: { current: "PARTIAL", target: "GOOD" },
+  migrationGuidance: { current: "PARTIAL", target: "GOOD" },
+  performanceProfiling: { current: "MISSING", target: "PARTIAL" },
+  securityAuditing: { current: "MISSING", target: "PARTIAL" },
+  crossFrameworkInterop: { current: "PARTIAL", target: "GOOD" },
+};
+
+const COMMON_CI_OVERRIDES: Partial<Record<ScorecardDimension, EntryOverride>> =
+  {
+    discovery: { current: "EXCELLENT", target: "EXCELLENT" },
+    semanticUnderstanding: { current: "GOOD", target: "EXCELLENT" },
+    errorClassification: { current: "GOOD", target: "EXCELLENT" },
+    retrySemantics: { current: "GOOD", target: "EXCELLENT" },
+    parameterization: { current: "GOOD", target: "EXCELLENT" },
+    runtimeEvidence: { current: "PARTIAL", target: "GOOD" },
+    adversarialCorpus: { current: "PARTIAL", target: "GOOD" },
+    knownLimitationCoverage: { current: "PARTIAL", target: "GOOD" },
+    ciIntegration: { current: "EXCELLENT", target: "EXCELLENT" },
+    reportingQuality: { current: "GOOD", target: "EXCELLENT" },
+    configDiscovery: { current: "EXCELLENT", target: "EXCELLENT" },
+    versionCompatibility: { current: "GOOD", target: "EXCELLENT" },
+    documentationCoverage: { current: "PARTIAL", target: "GOOD" },
+    migrationGuidance: { current: "PARTIAL", target: "GOOD" },
+    performanceProfiling: { current: "MISSING", target: "PARTIAL" },
+    securityAuditing: { current: "MISSING", target: "PARTIAL" },
+    crossFrameworkInterop: { current: "PARTIAL", target: "GOOD" },
+  };
+
+function withCommonMature(
+  overrides: Partial<Record<ScorecardDimension, EntryOverride>>,
+): Partial<Record<ScorecardDimension, EntryOverride>> {
+  return { ...COMMON_MATURE_OVERRIDES, ...overrides };
+}
+
+type FrameworkId =
+  | "playwright"
+  | "jest"
+  | "vitest"
+  | "pytest"
+  | "junit"
+  | "nunit"
+  | "xunit"
+  | "cypress"
+  | "selenium"
+  | "testng"
+  | "github-actions"
+  | "azure-devops"
+  | "jenkins"
+  | "gitlab-ci";
+
+type Overrides = Partial<Record<ScorecardDimension, EntryOverride>>;
+
+const FRAMEWORK_OVERRIDES: Record<FrameworkId, Overrides> = {
+  playwright: withCommonMature({
+    discovery: { current: "EXCELLENT", target: "EXCELLENT" },
+    astUsage: { current: "PARTIAL", target: "EXCELLENT", gapId: "GAP-PW-001" },
+    lifecycleModeling: {
       current: "PARTIAL",
       target: "GOOD",
       gapId: "GAP-PW-002",
     },
-    {
-      dimension: "fixtureModeling",
+    fixtureModeling: {
       current: "PARTIAL",
       target: "GOOD",
       gapId: "GAP-PW-002",
     },
-    {
-      dimension: "mockingSemantics",
+    mockingSemantics: {
       current: "MISSING",
       target: "PARTIAL",
       gapId: "GAP-PW-003",
     },
-    {
-      dimension: "sharedStateAnalysis",
+    sharedStateAnalysis: {
       current: "MISSING",
       target: "PARTIAL",
       gapId: "GAP-PW-004",
     },
-    {
-      dimension: "retrySemantics",
-      current: "GOOD",
-      target: "EXCELLENT",
-      gapId: null,
-    },
-    {
-      dimension: "parameterization",
+    retrySemantics: { current: "GOOD", target: "EXCELLENT" },
+    parameterization: {
       current: "PARTIAL",
       target: "GOOD",
       gapId: "GAP-PW-005",
     },
-    {
-      dimension: "snapshotSemantics",
-      current: "NOT_APPLICABLE",
-      target: "NOT_APPLICABLE",
-      gapId: null,
-    },
-    {
-      dimension: "parallelismWorkerSafety",
+    snapshotSemantics: { current: "NOT_APPLICABLE", target: "NOT_APPLICABLE" },
+    parallelismWorkerSafety: {
       current: "MISSING",
       target: "PARTIAL",
       gapId: "GAP-PW-006",
     },
-    {
-      dimension: "runtimeEvidence",
-      current: "GOOD",
-      target: "EXCELLENT",
-      gapId: null,
+    runtimeEvidence: { current: "GOOD", target: "EXCELLENT" },
+    adversarialCorpus: { current: "PARTIAL", target: "GOOD" },
+    knownLimitationCoverage: { current: "PARTIAL", target: "GOOD" },
+    ciIntegration: { current: "GOOD", target: "EXCELLENT" },
+  }),
+
+  jest: withCommonMature({
+    discovery: { current: "EXCELLENT", target: "EXCELLENT" },
+    astUsage: { current: "GOOD", target: "EXCELLENT" },
+    semanticUnderstanding: {
+      current: "WEAK",
+      target: "GOOD",
+      gapId: "GAP-JEST-002",
     },
-    {
-      dimension: "adversarialCorpus",
+    assertionUnderstanding: {
+      current: "WEAK",
+      target: "GOOD",
+      gapId: "GAP-JEST-003",
+    },
+    lifecycleModeling: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-JEST-004",
+    },
+    asyncSemantics: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-JEST-005",
+    },
+    fixtureModeling: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-JEST-006",
+    },
+    mockingSemantics: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-JEST-007",
+    },
+    sharedStateAnalysis: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-JEST-008",
+    },
+    errorClassification: { current: "PARTIAL", target: "GOOD" },
+    retrySemantics: {
       current: "PARTIAL",
       target: "GOOD",
-      gapId: null,
+      gapId: "GAP-JEST-009",
     },
-    {
-      dimension: "knownLimitationCoverage",
+    parameterization: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-JEST-010",
+    },
+    snapshotSemantics: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-JEST-011",
+    },
+    parallelismWorkerSafety: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-JEST-012",
+    },
+    runtimeEvidence: {
       current: "PARTIAL",
       target: "GOOD",
-      gapId: null,
+      gapId: "GAP-JEST-013",
     },
-    {
-      dimension: "ciIntegration",
-      current: "GOOD",
-      target: "EXCELLENT",
-      gapId: null,
+    adversarialCorpus: {
+      current: "PARTIAL",
+      target: "GOOD",
+      gapId: "GAP-JEST-014",
     },
-    ...COMMON_MATURE,
-  ],
-  {},
-);
+    knownLimitationCoverage: {
+      current: "PARTIAL",
+      target: "GOOD",
+      gapId: "GAP-JEST-015",
+    },
+    ciIntegration: { current: "GOOD", target: "EXCELLENT" },
+  }),
 
-const jestEntries: ScorecardEntry[] = [
-  {
-    dimension: "discovery",
-    current: "EXCELLENT",
-    target: "EXCELLENT",
-    gapId: null,
-  },
-  {
-    dimension: "astUsage",
-    current: "GOOD",
-    target: "EXCELLENT",
-    gapId: null,
-  },
-  {
-    dimension: "semanticUnderstanding",
-    current: "WEAK",
-    target: "GOOD",
-    gapId: "GAP-JEST-002",
-  },
-  {
-    dimension: "assertionUnderstanding",
-    current: "WEAK",
-    target: "GOOD",
-    gapId: "GAP-JEST-003",
-  },
-  {
-    dimension: "lifecycleModeling",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-JEST-004",
-  },
-  {
-    dimension: "asyncSemantics",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-JEST-005",
-  },
-  {
-    dimension: "fixtureModeling",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-JEST-006",
-  },
-  {
-    dimension: "mockingSemantics",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-JEST-007",
-  },
-  {
-    dimension: "sharedStateAnalysis",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-JEST-008",
-  },
-  {
-    dimension: "errorClassification",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: null,
-  },
-  {
-    dimension: "retrySemantics",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: "GAP-JEST-009",
-  },
-  {
-    dimension: "parameterization",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-JEST-010",
-  },
-  {
-    dimension: "snapshotSemantics",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-JEST-011",
-  },
-  {
-    dimension: "parallelismWorkerSafety",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-JEST-012",
-  },
-  {
-    dimension: "runtimeEvidence",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: "GAP-JEST-013",
-  },
-  {
-    dimension: "adversarialCorpus",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: "GAP-JEST-014",
-  },
-  {
-    dimension: "knownLimitationCoverage",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: "GAP-JEST-015",
-  },
-  {
-    dimension: "ciIntegration",
-    current: "GOOD",
-    target: "EXCELLENT",
-    gapId: null,
-  },
-  ...COMMON_MATURE,
-];
+  vitest: withCommonMature({
+    discovery: { current: "EXCELLENT", target: "EXCELLENT" },
+    astUsage: { current: "GOOD", target: "EXCELLENT" },
+    semanticUnderstanding: {
+      current: "WEAK",
+      target: "GOOD",
+      gapId: "GAP-VIT-002",
+    },
+    assertionUnderstanding: {
+      current: "WEAK",
+      target: "GOOD",
+      gapId: "GAP-VIT-003",
+    },
+    lifecycleModeling: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-VIT-004",
+    },
+    asyncSemantics: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-VIT-005",
+    },
+    fixtureModeling: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-VIT-006",
+    },
+    mockingSemantics: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-VIT-007",
+    },
+    sharedStateAnalysis: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-VIT-008",
+    },
+    errorClassification: { current: "PARTIAL", target: "GOOD" },
+    retrySemantics: {
+      current: "PARTIAL",
+      target: "GOOD",
+      gapId: "GAP-VIT-009",
+    },
+    parameterization: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-VIT-010",
+    },
+    snapshotSemantics: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-VIT-011",
+    },
+    parallelismWorkerSafety: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-VIT-012",
+    },
+    runtimeEvidence: {
+      current: "PARTIAL",
+      target: "GOOD",
+      gapId: "GAP-VIT-013",
+    },
+    adversarialCorpus: {
+      current: "PARTIAL",
+      target: "GOOD",
+      gapId: "GAP-VIT-014",
+    },
+    knownLimitationCoverage: {
+      current: "PARTIAL",
+      target: "GOOD",
+      gapId: "GAP-VIT-015",
+    },
+    ciIntegration: { current: "GOOD", target: "EXCELLENT" },
+  }),
 
-const vitestEntries: ScorecardEntry[] = [
-  {
-    dimension: "discovery",
-    current: "EXCELLENT",
-    target: "EXCELLENT",
-    gapId: null,
-  },
-  {
-    dimension: "astUsage",
-    current: "GOOD",
-    target: "EXCELLENT",
-    gapId: null,
-  },
-  {
-    dimension: "semanticUnderstanding",
-    current: "WEAK",
-    target: "GOOD",
-    gapId: "GAP-VIT-002",
-  },
-  {
-    dimension: "assertionUnderstanding",
-    current: "WEAK",
-    target: "GOOD",
-    gapId: "GAP-VIT-003",
-  },
-  {
-    dimension: "lifecycleModeling",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-VIT-004",
-  },
-  {
-    dimension: "asyncSemantics",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-VIT-005",
-  },
-  {
-    dimension: "fixtureModeling",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-VIT-006",
-  },
-  {
-    dimension: "mockingSemantics",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-VIT-007",
-  },
-  {
-    dimension: "sharedStateAnalysis",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-VIT-008",
-  },
-  {
-    dimension: "errorClassification",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: null,
-  },
-  {
-    dimension: "retrySemantics",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: "GAP-VIT-009",
-  },
-  {
-    dimension: "parameterization",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-VIT-010",
-  },
-  {
-    dimension: "snapshotSemantics",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-VIT-011",
-  },
-  {
-    dimension: "parallelismWorkerSafety",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-VIT-012",
-  },
-  {
-    dimension: "runtimeEvidence",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: "GAP-VIT-013",
-  },
-  {
-    dimension: "adversarialCorpus",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: "GAP-VIT-014",
-  },
-  {
-    dimension: "knownLimitationCoverage",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: "GAP-VIT-015",
-  },
-  {
-    dimension: "ciIntegration",
-    current: "GOOD",
-    target: "EXCELLENT",
-    gapId: null,
-  },
-  ...COMMON_MATURE,
-];
+  pytest: withCommonMature({
+    discovery: { current: "GOOD", target: "EXCELLENT" },
+    astUsage: { current: "PARTIAL", target: "GOOD", gapId: "GAP-PY-001" },
+    semanticUnderstanding: {
+      current: "WEAK",
+      target: "PARTIAL",
+      gapId: "GAP-PY-002",
+    },
+    assertionUnderstanding: {
+      current: "WEAK",
+      target: "PARTIAL",
+      gapId: "GAP-PY-003",
+    },
+    lifecycleModeling: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-PY-004",
+    },
+    asyncSemantics: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-PY-005",
+    },
+    fixtureModeling: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-PY-006",
+    },
+    mockingSemantics: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-PY-007",
+    },
+    sharedStateAnalysis: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-PY-008",
+    },
+    errorClassification: { current: "PARTIAL", target: "GOOD" },
+    retrySemantics: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-PY-009",
+    },
+    parameterization: {
+      current: "PARTIAL",
+      target: "GOOD",
+      gapId: "GAP-PY-010",
+    },
+    snapshotSemantics: { current: "NOT_APPLICABLE", target: "NOT_APPLICABLE" },
+    parallelismWorkerSafety: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-PY-011",
+    },
+    runtimeEvidence: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-PY-012",
+    },
+    adversarialCorpus: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-PY-013",
+    },
+    knownLimitationCoverage: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-PY-014",
+    },
+    ciIntegration: { current: "PARTIAL", target: "GOOD" },
+  }),
 
-const pytestEntries: ScorecardEntry[] = [
-  {
-    dimension: "discovery",
-    current: "GOOD",
-    target: "EXCELLENT",
-    gapId: null,
-  },
-  {
-    dimension: "astUsage",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: "GAP-PY-001",
-  },
-  {
-    dimension: "semanticUnderstanding",
-    current: "WEAK",
-    target: "PARTIAL",
-    gapId: "GAP-PY-002",
-  },
-  {
-    dimension: "assertionUnderstanding",
-    current: "WEAK",
-    target: "PARTIAL",
-    gapId: "GAP-PY-003",
-  },
-  {
-    dimension: "lifecycleModeling",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-PY-004",
-  },
-  {
-    dimension: "asyncSemantics",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-PY-005",
-  },
-  {
-    dimension: "fixtureModeling",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-PY-006",
-  },
-  {
-    dimension: "mockingSemantics",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-PY-007",
-  },
-  {
-    dimension: "sharedStateAnalysis",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-PY-008",
-  },
-  {
-    dimension: "errorClassification",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: null,
-  },
-  {
-    dimension: "retrySemantics",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-PY-009",
-  },
-  {
-    dimension: "parameterization",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: "GAP-PY-010",
-  },
-  {
-    dimension: "snapshotSemantics",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "parallelismWorkerSafety",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-PY-011",
-  },
-  {
-    dimension: "runtimeEvidence",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-PY-012",
-  },
-  {
-    dimension: "adversarialCorpus",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-PY-013",
-  },
-  {
-    dimension: "knownLimitationCoverage",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-PY-014",
-  },
-  {
-    dimension: "ciIntegration",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: null,
-  },
-  ...COMMON_MATURE,
-];
+  junit: withCommonMature({
+    discovery: { current: "GOOD", target: "EXCELLENT" },
+    astUsage: { current: "PARTIAL", target: "GOOD", gapId: "GAP-JU-001" },
+    semanticUnderstanding: {
+      current: "WEAK",
+      target: "PARTIAL",
+      gapId: "GAP-JU-002",
+    },
+    assertionUnderstanding: {
+      current: "WEAK",
+      target: "PARTIAL",
+      gapId: "GAP-JU-003",
+    },
+    lifecycleModeling: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-JU-004",
+    },
+    asyncSemantics: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-JU-005",
+    },
+    fixtureModeling: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-JU-006",
+    },
+    mockingSemantics: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-JU-007",
+    },
+    sharedStateAnalysis: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-JU-008",
+    },
+    errorClassification: { current: "PARTIAL", target: "GOOD" },
+    retrySemantics: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-JU-009",
+    },
+    parameterization: {
+      current: "PARTIAL",
+      target: "GOOD",
+      gapId: "GAP-JU-010",
+    },
+    snapshotSemantics: { current: "NOT_APPLICABLE", target: "NOT_APPLICABLE" },
+    parallelismWorkerSafety: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-JU-011",
+    },
+    runtimeEvidence: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-JU-012",
+    },
+    adversarialCorpus: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-JU-013",
+    },
+    knownLimitationCoverage: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-JU-014",
+    },
+    ciIntegration: { current: "PARTIAL", target: "GOOD" },
+  }),
 
-const junitEntries: ScorecardEntry[] = [
-  {
-    dimension: "discovery",
-    current: "GOOD",
-    target: "EXCELLENT",
-    gapId: null,
-  },
-  {
-    dimension: "astUsage",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: "GAP-JU-001",
-  },
-  {
-    dimension: "semanticUnderstanding",
-    current: "WEAK",
-    target: "PARTIAL",
-    gapId: "GAP-JU-002",
-  },
-  {
-    dimension: "assertionUnderstanding",
-    current: "WEAK",
-    target: "PARTIAL",
-    gapId: "GAP-JU-003",
-  },
-  {
-    dimension: "lifecycleModeling",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-JU-004",
-  },
-  {
-    dimension: "asyncSemantics",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-JU-005",
-  },
-  {
-    dimension: "fixtureModeling",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-JU-006",
-  },
-  {
-    dimension: "mockingSemantics",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-JU-007",
-  },
-  {
-    dimension: "sharedStateAnalysis",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-JU-008",
-  },
-  {
-    dimension: "errorClassification",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: null,
-  },
-  {
-    dimension: "retrySemantics",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-JU-009",
-  },
-  {
-    dimension: "parameterization",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: "GAP-JU-010",
-  },
-  {
-    dimension: "snapshotSemantics",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "parallelismWorkerSafety",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-JU-011",
-  },
-  {
-    dimension: "runtimeEvidence",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-JU-012",
-  },
-  {
-    dimension: "adversarialCorpus",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-JU-013",
-  },
-  {
-    dimension: "knownLimitationCoverage",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-JU-014",
-  },
-  {
-    dimension: "ciIntegration",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: null,
-  },
-  ...COMMON_MATURE,
-];
+  nunit: withCommonMature({
+    discovery: { current: "GOOD", target: "EXCELLENT" },
+    astUsage: { current: "PARTIAL", target: "GOOD", gapId: "GAP-NU-001" },
+    semanticUnderstanding: {
+      current: "WEAK",
+      target: "PARTIAL",
+      gapId: "GAP-NU-002",
+    },
+    assertionUnderstanding: {
+      current: "WEAK",
+      target: "PARTIAL",
+      gapId: "GAP-NU-003",
+    },
+    lifecycleModeling: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-NU-004",
+    },
+    asyncSemantics: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-NU-005",
+    },
+    fixtureModeling: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-NU-006",
+    },
+    mockingSemantics: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-NU-007",
+    },
+    sharedStateAnalysis: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-NU-008",
+    },
+    errorClassification: { current: "PARTIAL", target: "GOOD" },
+    retrySemantics: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-NU-009",
+    },
+    parameterization: {
+      current: "PARTIAL",
+      target: "GOOD",
+      gapId: "GAP-NU-010",
+    },
+    snapshotSemantics: { current: "NOT_APPLICABLE", target: "NOT_APPLICABLE" },
+    parallelismWorkerSafety: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-NU-011",
+    },
+    runtimeEvidence: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-NU-012",
+    },
+    adversarialCorpus: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-NU-013",
+    },
+    knownLimitationCoverage: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-NU-014",
+    },
+    ciIntegration: { current: "PARTIAL", target: "GOOD" },
+  }),
 
-const nunitEntries: ScorecardEntry[] = [
-  {
-    dimension: "discovery",
-    current: "GOOD",
-    target: "EXCELLENT",
-    gapId: null,
-  },
-  {
-    dimension: "astUsage",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: "GAP-NU-001",
-  },
-  {
-    dimension: "semanticUnderstanding",
-    current: "WEAK",
-    target: "PARTIAL",
-    gapId: "GAP-NU-002",
-  },
-  {
-    dimension: "assertionUnderstanding",
-    current: "WEAK",
-    target: "PARTIAL",
-    gapId: "GAP-NU-003",
-  },
-  {
-    dimension: "lifecycleModeling",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-NU-004",
-  },
-  {
-    dimension: "asyncSemantics",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-NU-005",
-  },
-  {
-    dimension: "fixtureModeling",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-NU-006",
-  },
-  {
-    dimension: "mockingSemantics",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-NU-007",
-  },
-  {
-    dimension: "sharedStateAnalysis",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-NU-008",
-  },
-  {
-    dimension: "errorClassification",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: null,
-  },
-  {
-    dimension: "retrySemantics",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-NU-009",
-  },
-  {
-    dimension: "parameterization",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: "GAP-NU-010",
-  },
-  {
-    dimension: "snapshotSemantics",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "parallelismWorkerSafety",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-NU-011",
-  },
-  {
-    dimension: "runtimeEvidence",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-NU-012",
-  },
-  {
-    dimension: "adversarialCorpus",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-NU-013",
-  },
-  {
-    dimension: "knownLimitationCoverage",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-NU-014",
-  },
-  {
-    dimension: "ciIntegration",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: null,
-  },
-  ...COMMON_MATURE,
-];
+  xunit: withCommonMature({
+    discovery: { current: "GOOD", target: "EXCELLENT" },
+    astUsage: { current: "PARTIAL", target: "GOOD", gapId: "GAP-XU-001" },
+    semanticUnderstanding: {
+      current: "WEAK",
+      target: "PARTIAL",
+      gapId: "GAP-XU-002",
+    },
+    assertionUnderstanding: {
+      current: "WEAK",
+      target: "PARTIAL",
+      gapId: "GAP-XU-003",
+    },
+    lifecycleModeling: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-XU-004",
+    },
+    asyncSemantics: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-XU-005",
+    },
+    fixtureModeling: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-XU-006",
+    },
+    mockingSemantics: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-XU-007",
+    },
+    sharedStateAnalysis: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-XU-008",
+    },
+    errorClassification: { current: "PARTIAL", target: "GOOD" },
+    retrySemantics: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-XU-009",
+    },
+    parameterization: {
+      current: "PARTIAL",
+      target: "GOOD",
+      gapId: "GAP-XU-010",
+    },
+    snapshotSemantics: { current: "NOT_APPLICABLE", target: "NOT_APPLICABLE" },
+    parallelismWorkerSafety: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-XU-011",
+    },
+    runtimeEvidence: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-XU-012",
+    },
+    adversarialCorpus: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-XU-013",
+    },
+    knownLimitationCoverage: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-XU-014",
+    },
+    ciIntegration: { current: "PARTIAL", target: "GOOD" },
+  }),
 
-const xunitEntries: ScorecardEntry[] = [
-  {
-    dimension: "discovery",
-    current: "GOOD",
-    target: "EXCELLENT",
-    gapId: null,
-  },
-  {
-    dimension: "astUsage",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: "GAP-XU-001",
-  },
-  {
-    dimension: "semanticUnderstanding",
-    current: "WEAK",
-    target: "PARTIAL",
-    gapId: "GAP-XU-002",
-  },
-  {
-    dimension: "assertionUnderstanding",
-    current: "WEAK",
-    target: "PARTIAL",
-    gapId: "GAP-XU-003",
-  },
-  {
-    dimension: "lifecycleModeling",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-XU-004",
-  },
-  {
-    dimension: "asyncSemantics",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-XU-005",
-  },
-  {
-    dimension: "fixtureModeling",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-XU-006",
-  },
-  {
-    dimension: "mockingSemantics",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-XU-007",
-  },
-  {
-    dimension: "sharedStateAnalysis",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-XU-008",
-  },
-  {
-    dimension: "errorClassification",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: null,
-  },
-  {
-    dimension: "retrySemantics",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-XU-009",
-  },
-  {
-    dimension: "parameterization",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: "GAP-XU-010",
-  },
-  {
-    dimension: "snapshotSemantics",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "parallelismWorkerSafety",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-XU-011",
-  },
-  {
-    dimension: "runtimeEvidence",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-XU-012",
-  },
-  {
-    dimension: "adversarialCorpus",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-XU-013",
-  },
-  {
-    dimension: "knownLimitationCoverage",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-XU-014",
-  },
-  {
-    dimension: "ciIntegration",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: null,
-  },
-  ...COMMON_MATURE,
-];
+  cypress: withCommonMature({
+    discovery: { current: "GOOD", target: "EXCELLENT" },
+    astUsage: { current: "PARTIAL", target: "GOOD", gapId: "GAP-CY-001" },
+    semanticUnderstanding: {
+      current: "WEAK",
+      target: "PARTIAL",
+      gapId: "GAP-CY-002",
+    },
+    assertionUnderstanding: {
+      current: "WEAK",
+      target: "PARTIAL",
+      gapId: "GAP-CY-003",
+    },
+    lifecycleModeling: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-CY-004",
+    },
+    asyncSemantics: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-CY-005",
+    },
+    fixtureModeling: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-CY-006",
+    },
+    mockingSemantics: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-CY-007",
+    },
+    sharedStateAnalysis: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-CY-008",
+    },
+    errorClassification: { current: "PARTIAL", target: "GOOD" },
+    retrySemantics: { current: "PARTIAL", target: "GOOD" },
+    parameterization: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-CY-009",
+    },
+    snapshotSemantics: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-CY-010",
+    },
+    parallelismWorkerSafety: {
+      current: "NOT_APPLICABLE",
+      target: "NOT_APPLICABLE",
+    },
+    runtimeEvidence: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-CY-011",
+    },
+    adversarialCorpus: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-CY-012",
+    },
+    knownLimitationCoverage: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-CY-013",
+    },
+    ciIntegration: { current: "PARTIAL", target: "GOOD" },
+  }),
 
-const cypressEntries: ScorecardEntry[] = [
-  {
-    dimension: "discovery",
-    current: "GOOD",
-    target: "EXCELLENT",
-    gapId: null,
-  },
-  {
-    dimension: "astUsage",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: "GAP-CY-001",
-  },
-  {
-    dimension: "semanticUnderstanding",
-    current: "WEAK",
-    target: "PARTIAL",
-    gapId: "GAP-CY-002",
-  },
-  {
-    dimension: "assertionUnderstanding",
-    current: "WEAK",
-    target: "PARTIAL",
-    gapId: "GAP-CY-003",
-  },
-  {
-    dimension: "lifecycleModeling",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-CY-004",
-  },
-  {
-    dimension: "asyncSemantics",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-CY-005",
-  },
-  {
-    dimension: "fixtureModeling",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-CY-006",
-  },
-  {
-    dimension: "mockingSemantics",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-CY-007",
-  },
-  {
-    dimension: "sharedStateAnalysis",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-CY-008",
-  },
-  {
-    dimension: "errorClassification",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: null,
-  },
-  {
-    dimension: "retrySemantics",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: null,
-  },
-  {
-    dimension: "parameterization",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-CY-009",
-  },
-  {
-    dimension: "snapshotSemantics",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-CY-010",
-  },
-  {
-    dimension: "parallelismWorkerSafety",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "runtimeEvidence",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-CY-011",
-  },
-  {
-    dimension: "adversarialCorpus",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-CY-012",
-  },
-  {
-    dimension: "knownLimitationCoverage",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-CY-013",
-  },
-  {
-    dimension: "ciIntegration",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: null,
-  },
-  ...COMMON_MATURE,
-];
+  selenium: withCommonMature({
+    discovery: {
+      current: "PARTIAL",
+      target: "GOOD",
+      gapId: "GAP-SE-001",
+    },
+    astUsage: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-SE-002",
+    },
+    semanticUnderstanding: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-SE-003",
+    },
+    assertionUnderstanding: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-SE-004",
+    },
+    lifecycleModeling: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-SE-005",
+    },
+    asyncSemantics: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-SE-006",
+    },
+    fixtureModeling: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-SE-007",
+    },
+    mockingSemantics: { current: "NOT_APPLICABLE", target: "NOT_APPLICABLE" },
+    sharedStateAnalysis: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-SE-008",
+    },
+    errorClassification: { current: "MISSING", target: "WEAK" },
+    retrySemantics: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-SE-009",
+    },
+    parameterization: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-SE-010",
+    },
+    snapshotSemantics: { current: "NOT_APPLICABLE", target: "NOT_APPLICABLE" },
+    parallelismWorkerSafety: {
+      current: "NOT_APPLICABLE",
+      target: "NOT_APPLICABLE",
+    },
+    runtimeEvidence: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-SE-011",
+    },
+    adversarialCorpus: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-SE-012",
+    },
+    knownLimitationCoverage: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-SE-013",
+    },
+    ciIntegration: { current: "MISSING", target: "PARTIAL" },
+  }),
 
-const seleniumEntries: ScorecardEntry[] = [
-  {
-    dimension: "discovery",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: "GAP-SE-001",
-  },
-  {
-    dimension: "astUsage",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-SE-002",
-  },
-  {
-    dimension: "semanticUnderstanding",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-SE-003",
-  },
-  {
-    dimension: "assertionUnderstanding",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-SE-004",
-  },
-  {
-    dimension: "lifecycleModeling",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-SE-005",
-  },
-  {
-    dimension: "asyncSemantics",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-SE-006",
-  },
-  {
-    dimension: "fixtureModeling",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-SE-007",
-  },
-  {
-    dimension: "mockingSemantics",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "sharedStateAnalysis",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-SE-008",
-  },
-  {
-    dimension: "errorClassification",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: null,
-  },
-  {
-    dimension: "retrySemantics",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-SE-009",
-  },
-  {
-    dimension: "parameterization",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-SE-010",
-  },
-  {
-    dimension: "snapshotSemantics",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "parallelismWorkerSafety",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "runtimeEvidence",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-SE-011",
-  },
-  {
-    dimension: "adversarialCorpus",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-SE-012",
-  },
-  {
-    dimension: "knownLimitationCoverage",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-SE-013",
-  },
-  {
-    dimension: "ciIntegration",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: null,
-  },
-  ...COMMON_MATURE,
-];
+  testng: withCommonMature({
+    discovery: {
+      current: "PARTIAL",
+      target: "GOOD",
+      gapId: "GAP-TN-001",
+    },
+    astUsage: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-TN-002",
+    },
+    semanticUnderstanding: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-TN-003",
+    },
+    assertionUnderstanding: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-TN-004",
+    },
+    lifecycleModeling: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-TN-005",
+    },
+    asyncSemantics: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-TN-006",
+    },
+    fixtureModeling: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-TN-007",
+    },
+    mockingSemantics: { current: "NOT_APPLICABLE", target: "NOT_APPLICABLE" },
+    sharedStateAnalysis: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-TN-008",
+    },
+    errorClassification: { current: "MISSING", target: "WEAK" },
+    retrySemantics: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-TN-009",
+    },
+    parameterization: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-TN-010",
+    },
+    snapshotSemantics: { current: "NOT_APPLICABLE", target: "NOT_APPLICABLE" },
+    parallelismWorkerSafety: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-TN-011",
+    },
+    runtimeEvidence: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-TN-012",
+    },
+    adversarialCorpus: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-TN-013",
+    },
+    knownLimitationCoverage: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-TN-014",
+    },
+    ciIntegration: { current: "MISSING", target: "PARTIAL" },
+  }),
 
-const testngEntries: ScorecardEntry[] = [
-  {
-    dimension: "discovery",
-    current: "PARTIAL",
-    target: "GOOD",
-    gapId: "GAP-TN-001",
-  },
-  {
-    dimension: "astUsage",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-TN-002",
-  },
-  {
-    dimension: "semanticUnderstanding",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-TN-003",
-  },
-  {
-    dimension: "assertionUnderstanding",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-TN-004",
-  },
-  {
-    dimension: "lifecycleModeling",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-TN-005",
-  },
-  {
-    dimension: "asyncSemantics",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-TN-006",
-  },
-  {
-    dimension: "fixtureModeling",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-TN-007",
-  },
-  {
-    dimension: "mockingSemantics",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "sharedStateAnalysis",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-TN-008",
-  },
-  {
-    dimension: "errorClassification",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: null,
-  },
-  {
-    dimension: "retrySemantics",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-TN-009",
-  },
-  {
-    dimension: "parameterization",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-TN-010",
-  },
-  {
-    dimension: "snapshotSemantics",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "parallelismWorkerSafety",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-TN-011",
-  },
-  {
-    dimension: "runtimeEvidence",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-TN-012",
-  },
-  {
-    dimension: "adversarialCorpus",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-TN-013",
-  },
-  {
-    dimension: "knownLimitationCoverage",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-TN-014",
-  },
-  {
-    dimension: "ciIntegration",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: null,
-  },
-  ...COMMON_MATURE,
-];
+  "github-actions": COMMON_CI_OVERRIDES,
+  "azure-devops": COMMON_CI_OVERRIDES,
+  jenkins: COMMON_CI_OVERRIDES,
 
-const githubActionsEntries: ScorecardEntry[] = [...COMMON_CI];
-
-const azureDevopsEntries: ScorecardEntry[] = [...COMMON_CI];
-
-const jenkinsEntries: ScorecardEntry[] = [...COMMON_CI];
-
-const gitlabCiEntries: ScorecardEntry[] = [
-  {
-    dimension: "discovery",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-GL-001",
+  "gitlab-ci": {
+    discovery: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-GL-001",
+    },
+    semanticUnderstanding: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-GL-002",
+    },
+    errorClassification: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-GL-003",
+    },
+    retrySemantics: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-GL-004",
+    },
+    parameterization: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-GL-005",
+    },
+    runtimeEvidence: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-GL-006",
+    },
+    adversarialCorpus: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-GL-007",
+    },
+    knownLimitationCoverage: {
+      current: "MISSING",
+      target: "WEAK",
+      gapId: "GAP-GL-008",
+    },
+    ciIntegration: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-GL-009",
+    },
+    reportingQuality: { current: "MISSING", target: "PARTIAL" },
+    configDiscovery: {
+      current: "MISSING",
+      target: "PARTIAL",
+      gapId: "GAP-GL-010",
+    },
+    versionCompatibility: { current: "MISSING", target: "PARTIAL" },
+    documentationCoverage: { current: "MISSING", target: "PARTIAL" },
+    migrationGuidance: { current: "MISSING", target: "PARTIAL" },
+    crossFrameworkInterop: { current: "MISSING", target: "PARTIAL" },
   },
-  {
-    dimension: "astUsage",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "semanticUnderstanding",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-GL-002",
-  },
-  {
-    dimension: "assertionUnderstanding",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "lifecycleModeling",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "asyncSemantics",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "fixtureModeling",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "mockingSemantics",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "sharedStateAnalysis",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "errorClassification",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-GL-003",
-  },
-  {
-    dimension: "retrySemantics",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-GL-004",
-  },
-  {
-    dimension: "parameterization",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-GL-005",
-  },
-  {
-    dimension: "snapshotSemantics",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "parallelismWorkerSafety",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "runtimeEvidence",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-GL-006",
-  },
-  {
-    dimension: "adversarialCorpus",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-GL-007",
-  },
-  {
-    dimension: "knownLimitationCoverage",
-    current: "MISSING",
-    target: "WEAK",
-    gapId: "GAP-GL-008",
-  },
-  {
-    dimension: "ciIntegration",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-GL-009",
-  },
-  {
-    dimension: "reportingQuality",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: null,
-  },
-  {
-    dimension: "configDiscovery",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: "GAP-GL-010",
-  },
-  {
-    dimension: "dependencyGraph",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "versionCompatibility",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: null,
-  },
-  {
-    dimension: "documentationCoverage",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: null,
-  },
-  {
-    dimension: "migrationGuidance",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: null,
-  },
-  {
-    dimension: "performanceProfiling",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "securityAuditing",
-    current: "NOT_APPLICABLE",
-    target: "NOT_APPLICABLE",
-    gapId: null,
-  },
-  {
-    dimension: "crossFrameworkInterop",
-    current: "MISSING",
-    target: "PARTIAL",
-    gapId: null,
-  },
-];
+};
 
 export const FRAMEWORK_SCORECARDS = [
-  { frameworkId: "playwright", entries: playwrightEntries },
-  { frameworkId: "jest", entries: jestEntries },
-  { frameworkId: "vitest", entries: vitestEntries },
-  { frameworkId: "pytest", entries: pytestEntries },
-  { frameworkId: "junit", entries: junitEntries },
-  { frameworkId: "nunit", entries: nunitEntries },
-  { frameworkId: "xunit", entries: xunitEntries },
-  { frameworkId: "cypress", entries: cypressEntries },
-  { frameworkId: "selenium", entries: seleniumEntries },
-  { frameworkId: "testng", entries: testngEntries },
-  { frameworkId: "github-actions", entries: githubActionsEntries },
-  { frameworkId: "azure-devops", entries: azureDevopsEntries },
-  { frameworkId: "jenkins", entries: jenkinsEntries },
-  { frameworkId: "gitlab-ci", entries: gitlabCiEntries },
+  makeScorecard("playwright", FRAMEWORK_OVERRIDES["playwright"]),
+  makeScorecard("jest", FRAMEWORK_OVERRIDES["jest"]),
+  makeScorecard("vitest", FRAMEWORK_OVERRIDES["vitest"]),
+  makeScorecard("pytest", FRAMEWORK_OVERRIDES["pytest"]),
+  makeScorecard("junit", FRAMEWORK_OVERRIDES["junit"]),
+  makeScorecard("nunit", FRAMEWORK_OVERRIDES["nunit"]),
+  makeScorecard("xunit", FRAMEWORK_OVERRIDES["xunit"]),
+  makeScorecard("cypress", FRAMEWORK_OVERRIDES["cypress"]),
+  makeScorecard("selenium", FRAMEWORK_OVERRIDES["selenium"]),
+  makeScorecard("testng", FRAMEWORK_OVERRIDES["testng"]),
+  makeScorecard("github-actions", FRAMEWORK_OVERRIDES["github-actions"]),
+  makeScorecard("azure-devops", FRAMEWORK_OVERRIDES["azure-devops"]),
+  makeScorecard("jenkins", FRAMEWORK_OVERRIDES["jenkins"]),
+  makeScorecard("gitlab-ci", FRAMEWORK_OVERRIDES["gitlab-ci"]),
 ] as const satisfies readonly FrameworkScorecard[];
 
 export function getAllGapIds(): readonly string[] {
@@ -1629,7 +965,9 @@ export interface ScorecardValidationResult {
 
 export function validateScorecard(): ScorecardValidationResult {
   const errors: string[] = [];
-  const inventoryIds = new Set(FRAMEWORK_INVENTORY.map((f) => f.frameworkId));
+  const inventoryIds = new Set<string>(
+    FRAMEWORK_INVENTORY.map((f) => f.frameworkId),
+  );
 
   for (const scorecard of FRAMEWORK_SCORECARDS) {
     if (!inventoryIds.has(scorecard.frameworkId)) {
@@ -1657,7 +995,9 @@ export function validateScorecard(): ScorecardValidationResult {
     }
   }
 
-  const scorecardIds = new Set(FRAMEWORK_SCORECARDS.map((s) => s.frameworkId));
+  const scorecardIds = new Set<string>(
+    FRAMEWORK_SCORECARDS.map((s) => s.frameworkId),
+  );
   for (const invId of inventoryIds) {
     if (!scorecardIds.has(invId)) {
       errors.push(`Framework "${invId}" in inventory missing scorecard`);

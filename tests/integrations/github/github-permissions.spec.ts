@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
+  checkPermissions,
   isForkPr,
   validatePublishingContext,
   type PrContext,
@@ -17,6 +18,99 @@ function prContext(overrides: Partial<PrContext> = {}): PrContext {
     ...overrides,
   };
 }
+
+describe("checkPermissions", () => {
+  it("returns hasPermission=true with repo scope", async () => {
+    const fetchFn = vi.fn().mockResolvedValue({
+      ok: true,
+      headers: {
+        get: (name: string) => (name === "x-oauth-scopes" ? "repo,user" : null),
+      },
+    });
+    const result = await checkPermissions("ghp_xxx", fetchFn);
+    expect(result.hasPermission).toBe(true);
+    expect(result.permissions["repo"]).toBe("granted");
+    expect(result.missingPermissions).toEqual([]);
+  });
+
+  it("returns hasPermission=true with public_repo scope", async () => {
+    const fetchFn = vi.fn().mockResolvedValue({
+      ok: true,
+      headers: {
+        get: (name: string) =>
+          name === "x-oauth-scopes" ? "public_repo" : null,
+      },
+    });
+    const result = await checkPermissions("ghp_xxx", fetchFn);
+    expect(result.hasPermission).toBe(true);
+  });
+
+  it("returns hasPermission=false when repo scope missing", async () => {
+    const fetchFn = vi.fn().mockResolvedValue({
+      ok: true,
+      headers: {
+        get: (name: string) =>
+          name === "x-oauth-scopes" ? "user,read:org" : null,
+      },
+    });
+    const result = await checkPermissions("ghp_xxx", fetchFn);
+    expect(result.hasPermission).toBe(false);
+    expect(result.missingPermissions[0]).toContain("repo");
+  });
+
+  it("returns API error when fetch returns !ok", async () => {
+    const fetchFn = vi.fn().mockResolvedValue({
+      ok: false,
+      headers: { get: () => null },
+    });
+    const result = await checkPermissions("ghp_xxx", fetchFn);
+    expect(result.hasPermission).toBe(false);
+    expect(result.missingPermissions[0]).toContain("API error");
+  });
+
+  it("returns network error when fetch throws", async () => {
+    const fetchFn = vi.fn().mockRejectedValue(new Error("network down"));
+    const result = await checkPermissions("ghp_xxx", fetchFn);
+    expect(result.hasPermission).toBe(false);
+    expect(result.missingPermissions[0]).toContain("network error");
+  });
+
+  it("handles empty x-oauth-scopes header", async () => {
+    const fetchFn = vi.fn().mockResolvedValue({
+      ok: true,
+      headers: {
+        get: (name: string) => (name === "x-oauth-scopes" ? "" : null),
+      },
+    });
+    const result = await checkPermissions("ghp_xxx", fetchFn);
+    expect(result.hasPermission).toBe(false);
+  });
+
+  it("handles null x-oauth-scopes header", async () => {
+    const fetchFn = vi.fn().mockResolvedValue({
+      ok: true,
+      headers: { get: () => null },
+    });
+    const result = await checkPermissions("ghp_xxx", fetchFn);
+    expect(result.hasPermission).toBe(false);
+  });
+
+  it("calls fetchFn with correct URL and headers", async () => {
+    const fetchFn = vi.fn().mockResolvedValue({
+      ok: true,
+      headers: { get: () => "repo" },
+    });
+    await checkPermissions("ghp_token", fetchFn, "https://custom.api.com");
+    expect(fetchFn).toHaveBeenCalledWith(
+      "https://custom.api.com/user",
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: "Bearer ghp_token",
+        }) as unknown,
+      }) as unknown,
+    );
+  });
+});
 
 describe("isForkPr", () => {
   it("returns true when isFork flag is set", () => {

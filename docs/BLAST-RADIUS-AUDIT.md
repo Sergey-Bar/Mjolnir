@@ -7,7 +7,7 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 278 files, 52993 LOC
+## Inventory: 273 files, 52040 LOC
 
 | Area             | Files | LOC   |
 | ---------------- | ----- | ----- |
@@ -17,16 +17,16 @@ codes) must match this document exactly.
 | src/reporter     | 15    | 3152  |
 | src/(root)       | 6     | 2584  |
 | src/forensics    | 16    | 2584  |
-| src/frameworks   | 4     | 1981  |
 | src/adapters     | 11    | 1677  |
 | src/discovery    | 10    | 1643  |
 | src/integrations | 11    | 1541  |
-| src/gaps         | 2     | 1404  |
+| src/gaps         | 2     | 1390  |
+| src/frameworks   | 4     | 1321  |
 | src/mcp          | 4     | 927   |
 | src/brand        | 3     | 807   |
 | src/release      | 5     | 638   |
 | src/plugins      | 4     | 635   |
-| src/bench        | 4     | 597   |
+| src/bench        | 4     | 589   |
 | src/config       | 3     | 549   |
 | src/scorer       | 3     | 533   |
 | src/mutation     | 5     | 496   |
@@ -37,8 +37,6 @@ codes) must match this document exactly.
 | src/lib          | 4     | 221   |
 | src/benchmark    | 2     | 174   |
 | src/anti-gaming  | 2     | 169   |
-| src/ecosystem    | 3     | 164   |
-| src/research     | 2     | 107   |
 
 ## Internal fan-in — top 15 (change-blast candidates)
 

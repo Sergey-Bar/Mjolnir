@@ -17,24 +17,22 @@ const packageJson = JSON.parse(
 ) as { version: string };
 
 describe("version string consistency", () => {
-  it("SARIF driver.version matches package.json version", () => {
+  it("SARIF driver.version uses ENGINE_VERSION (no hardcoded literal)", () => {
     const sarifSource = readFileSync(
       join(ROOT, "src", "reporter", "sarif.ts"),
       "utf8",
     );
-    const match = sarifSource.match(/version:\s*"([^"]+)"/);
+    // Verify sarif.ts imports ENGINE_VERSION and uses it (not a hardcoded string)
+    expect(sarifSource).toContain(
+      'import { ENGINE_VERSION } from "../engine/version.js"',
+    );
+    expect(sarifSource).toContain("version: ENGINE_VERSION");
+    // Verify no hardcoded version literal remains
+    const hardcodedMatch = sarifSource.match(/version:\s*"\d+\.\d+\.\d+"/);
     expect(
-      match,
-      "could not find a literal version string in sarif.ts to check",
-    ).not.toBeNull();
-    const sarifVersion = match?.[1];
-    expect(
-      sarifVersion,
-      `sarif.ts hardcodes driver.version "${sarifVersion}" but ` +
-        `package.json is at "${packageJson.version}" — GitHub Code ` +
-        `Scanning and any other SARIF consumer sees a stale tool version ` +
-        `on every release until this literal is updated by hand.`,
-    ).toBe(packageJson.version);
+      hardcodedMatch,
+      "sarif.ts should not hardcode a version string — use ENGINE_VERSION instead",
+    ).toBeNull();
   });
 
   it("src/engine/version.ts ENGINE_VERSION matches package.json version (R4c: the literal moved from cli.ts)", () => {

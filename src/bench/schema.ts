@@ -22,14 +22,6 @@ export const BENCH_HARNESS_VERSION = "1.0.0";
 export type BenchScenario =
   "cold-start" | "warm-start" | "cache-hit" | "cache-miss" | "startup-overhead";
 
-/** Benchmark class identifier for regression gating (ENGINE-009). */
-export type BenchmarkClassId =
-  | "cold-start-small"
-  | "warm-start-small"
-  | "cache-hit"
-  | "cache-miss"
-  | "startup-overhead";
-
 /** One measured scenario: median of runs, with every individual sample. */
 export interface BenchSample {
   scenario: BenchScenario;
