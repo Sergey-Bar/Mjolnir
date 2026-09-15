@@ -141,16 +141,23 @@ Body line-height 1.7; display tracking
 
 ## Motion
 
-| Token                     | Value                           |
-| ------------------------- | ------------------------------- |
-| `motion.duration.instant` | 0ms                             |
-| `motion.duration.quick`   | 120ms                           |
-| `motion.duration.base`    | 240ms                           |
-| `motion.duration.slow`    | 480ms                           |
-| `motion.duration.forge`   | 900ms                           |
-| `motion.easing.settle`    | `cubic-bezier(0.2, 0, 0, 1)`    |
-| `motion.easing.enter`     | `cubic-bezier(0.16, 1, 0.3, 1)` |
-| `motion.easing.linear`    | `linear`                        |
+| Token                     | Value                               |
+| ------------------------- | ----------------------------------- |
+| `motion.duration.instant` | 0ms                                 |
+| `motion.duration.quick`   | 120ms                               |
+| `motion.duration.base`    | 240ms                               |
+| `motion.duration.slow`    | 480ms                               |
+| `motion.duration.reveal`  | 800ms                               |
+| `motion.duration.forge`   | 900ms                               |
+| `motion.duration.roll`    | 1900ms                              |
+| `motion.stagger.item`     | 80ms                                |
+| `motion.stagger.word`     | 65ms                                |
+| `motion.ambient.breathe`  | 14000ms                             |
+| `motion.ambient.drift`    | 80000ms                             |
+| `motion.easing.settle`    | `cubic-bezier(0.2, 0, 0, 1)`        |
+| `motion.easing.enter`     | `cubic-bezier(0.16, 1, 0.3, 1)`     |
+| `motion.easing.spring`    | `cubic-bezier(0.34, 1.45, 0.64, 1)` |
+| `motion.easing.linear`    | `linear`                            |
 
 See [`MOTION-SYSTEM.md`](MOTION-SYSTEM.md) for when each is used, and for
 the rule that every one of them is inert under

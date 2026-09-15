@@ -10,6 +10,7 @@ const props = defineProps<{
 
 // Server-rendered complete, so the output reads with no script at all;
 // the replay only starts once a client is there to run it.
+const isBar = (t: string) => /^[█▓]+$/.test(t);
 const typed = ref(props.command.length);
 const shown = ref(props.lines.length);
 const playing = ref(false);
@@ -77,7 +78,8 @@ onBeforeUnmount(() => {
     <pre
       ref="body"
       class="st-body"
-    ><span class="tl"><span class="st-prompt">$ </span>{{ command.slice(0, typed) }}<span v-if="typed < command.length" class="st-caret" aria-hidden="true" /></span><span v-for="(l, i) in lines.slice(0, shown)" :key="i" class="tl"><span v-for="(s, j) in l" :key="j" :class="{ tb: s.b }" :style="s.c ? { color: s.c } : undefined">{{ s.t }}</span></span></pre>
+      tabindex="0"
+    ><span class="tl"><span class="st-prompt">$ </span>{{ command.slice(0, typed) }}<span v-if="typed < command.length" class="st-caret" aria-hidden="true" /></span><span v-for="(l, i) in lines.slice(0, shown)" :key="i" class="tl"><span v-for="(s, j) in l" :key="j" :class="{ tb: s.b, bar: isBar(s.t) }" :style="s.c ? { color: s.c } : undefined">{{ s.t }}</span></span></pre>
   </figure>
 </template>
 
@@ -164,6 +166,22 @@ onBeforeUnmount(() => {
 .tl {
   display: block;
   min-height: 1.55em;
+  animation: line-in 260ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+.bar {
+  display: inline-block;
+  animation: wipe 700ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+@keyframes line-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+@keyframes wipe {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
 }
 .tb {
   font-weight: 700;
@@ -187,6 +205,10 @@ onBeforeUnmount(() => {
 @media (prefers-reduced-motion: reduce) {
   .st-replay {
     transition: none;
+  }
+  .tl,
+  .bar {
+    animation: none;
   }
 }
 </style>

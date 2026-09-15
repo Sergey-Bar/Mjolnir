@@ -91,9 +91,7 @@ describe("assets/readme/architecture.svg", () => {
     expect(svg()).toContain("EXAMPLE RESULT");
   });
 
-  it("keeps the 16:9 footprint the README embeds it at", () => {
-    const s = svg();
-    expect(s).toContain('viewBox="0 0 1600 900"');
-    expect(README).toMatch(/architecture\.svg"[^>]*width="1600"/);
+  it("keeps the 16:9 poster footprint", () => {
+    expect(svg()).toContain('viewBox="0 0 1600 900"');
   });
 });

@@ -438,11 +438,7 @@ for (const [i, name] of [
   "inventory-count",
   "user-list",
 ] as const) {
-  const dir = join(
-    ROOT,
-    "QA-SE-002",
-    `${name.replace("-", "-")}-sleep-${i + 3}`,
-  );
+  const dir = join(ROOT, "QA-SE-002", `${name}-sleep-${i + 3}`);
   mkdirSync(dir, { recursive: true });
   w(
     join(dir, `${name}.spec.js`),
