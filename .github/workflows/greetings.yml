@@ -13,8 +13,14 @@ jobs:
       issues: write
       pull-requests: write
     steps:
-      - uses: actions/first-interaction@1db89c23c8e56993ef66720ea423f747a88c9ae7 # v1.3.0
+      - uses: actions/first-interaction@1c4688942c71f71d4f5502a26ea67c331730fa4d # v3.1.0
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          issue-message: "Message that will be displayed on users' first issue"
-          pr-message: "Message that will be displayed on users' first pull request"
+          issue-message: >
+            Thanks for opening your first issue! We appreciate the feedback and
+            will take a look as soon as we can. If you have steps to reproduce,
+            please include them — it speeds things up a lot.
+          pr-message: >
+            Thanks for your first pull request! A maintainer will review it
+            shortly. Please make sure the CI checks pass and that you have
+            signed the CLA if required.
