@@ -68,6 +68,9 @@ import { classifyProvenance, computeAgenticProfile } from "./provenance.js";
 import { releaseTreeSitterResources } from "./tree-sitter-ast.js";
 import { resetTsMorphProject } from "./ts-ast.js";
 import { applyOverlapDedup, type OverlapMeta } from "./overlap-dedup.js";
+import { correlateFindings } from "./correlation-engine.js";
+import { buildDependencyGraph } from "./dependency-graph.js";
+import { analyzeMonorepo, type MonorepoConfig } from "./monorepo-analysis.js";
 import { getCodeTextForCounting } from "./code-text.js";
 import {
   computeRulesDigest,
@@ -297,6 +300,13 @@ export interface CliArgs {
    * Report is the hero output.
    */
   classic?: boolean;
+  /**
+   * --monorepo: per-package trust analysis (ECO-003). When enabled, the
+   * scan discovers packages and computes per-package scores with
+   * configurable aggregation. Additive flag; absent means "single-project
+   * mode" (no monorepo analysis).
+   */
+  monorepo?: boolean;
 }
 
 export interface ScanHooks {
@@ -981,6 +991,11 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
     scoringModelVersion: SCORING_MODEL_VERSION,
   };
   result.trustSummary = buildTrustSummary(result, o.declarationsByFile);
+  // INTEL-005: Cross-Rule Evidence Correlation. Pure, deterministic,
+  // non-mutating — runs on the final findings array after all processing.
+  if (o.findings.length > 0) {
+    result.correlationConclusions = correlateFindings(o.findings);
+  }
   o.cache.persist();
   return result;
 }
@@ -1094,6 +1109,11 @@ export async function runScan(
   const cache: ScanCache = args.cache
     ? createScanCache(workspace.root)
     : disabledScanCache;
+  // ECO-005: Build dependency graph once per scan. Used for:
+  // 1. Dependency-aware cache invalidation (--cache mode)
+  // 2. Monorepo analysis (--monorepo mode)
+  // 3. Dependency graph metadata in ScanResult
+  const depGraph = buildDependencyGraph(workspace.root);
   const rulesDigest = computeRulesDigest(activeRules);
   for (const perr of pluginErrors) {
     findings.push({

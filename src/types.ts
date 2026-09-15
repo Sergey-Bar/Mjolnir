@@ -529,6 +529,53 @@ export interface ScanResult {
    * src/engine/trust-summary.ts — the single definition site.
    */
   trustSummary?: TrustSummary;
+  /**
+   * Cross-Rule Evidence Correlation Engine (INTEL-005) conclusions.
+   * Produced by `correlateFindings()` after scoring; purely additive —
+   * findings are never modified. Present on every completed scan with
+   * ≥ 1 finding. Additive within schemaVersion 1.
+   */
+  correlationConclusions?: Array<{
+    conclusionType:
+      | "CONVERGENT"
+      | "CORROBORATED"
+      | "CONTRADICTED"
+      | "AMPLIFIED"
+      | "INDEPENDENT";
+    certainty: "NONE" | "SUPPORTING" | "STRONG";
+    corroboration: string;
+    sourceCount: number;
+    findingIds: string[];
+  }>;
+  /**
+   * Dependency graph metadata (ECO-005). Present when a dependency
+   * manifest (package.json, pyproject.toml, pom.xml) was found.
+   * Additive within schemaVersion 1.
+   */
+  dependencyGraph?: {
+    /** Number of nodes in the dependency graph. */
+    nodes: number;
+    /** Number of edges (total dependency references). */
+    edges: number;
+  };
+  /**
+   * Monorepo analysis results (ECO-003). Present when --monorepo was
+   * requested and multiple packages were found. Additive within
+   * schemaVersion 1.
+   */
+  monorepoAnalysis?: {
+    packages: Array<{
+      packageName: string;
+      path: string;
+      findings: number;
+      score: number | null;
+      verdict: "pass" | "warn" | "fail";
+    }>;
+    overallScore: number | null;
+    overallVerdict: "pass" | "warn" | "fail";
+    strategy: "worst-package" | "average" | "configurable";
+    blockerPackage?: string;
+  };
 }
 
 /** Trust summary metric block (plan §6 — measurement, not contract). */
