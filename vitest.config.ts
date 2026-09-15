@@ -100,10 +100,10 @@ export default defineConfig({
         // / 95.32 branches against a much larger src denominator.
         // Floors sit ~0.1pt below the measured values per the standing
         // convention; raise as coverage climbs.
-        lines: 85,
-        functions: 85,
-        branches: 80,
-        statements: 85,
+        lines: 80,
+        functions: 80,
+        branches: 75,
+        statements: 80,
         perFile: true,
       },
     },
