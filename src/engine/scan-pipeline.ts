@@ -70,7 +70,8 @@ import { resetTsMorphProject } from "./ts-ast.js";
 import { applyOverlapDedup, type OverlapMeta } from "./overlap-dedup.js";
 import { correlateFindings } from "./correlation-engine.js";
 import { buildDependencyGraph } from "./dependency-graph.js";
-import { analyzeMonorepo, type MonorepoConfig } from "./monorepo-analysis.js";
+import { isIncrementalSafe } from "./incremental-analysis.js";
+import { analyzeMonorepo } from "./monorepo-analysis.js";
 import { getCodeTextForCounting } from "./code-text.js";
 import {
   computeRulesDigest,
@@ -854,6 +855,83 @@ export interface AssembleScanResultInput {
   }>;
   started: number;
   stagedSurface: boolean;
+  /** ECO-005: dependency graph built from project manifests. */
+  dependencyGraph?: import("./dependency-graph.js").DependencyGraph;
+}
+
+/**
+ * ECO-003: Partition findings by package for monorepo analysis.
+ * Uses the dependency graph to assign findings to their nearest package
+ * manifest, falling back to the workspace root.
+ */
+function partitionFindingsByPackage(
+  findings: readonly Finding[],
+  depGraph: import("./dependency-graph.js").DependencyGraph,
+  workspaceRoot: string,
+): Array<{
+  packageName: string;
+  path: string;
+  findings: Finding[];
+  score: number | null;
+}> {
+  const packagePaths = depGraph.allPaths;
+  if (packagePaths.length === 0) return [];
+
+  const normalizedRoot = workspaceRoot.replaceAll("\\", "/");
+  const packageMap = new Map<
+    string,
+    { packageName: string; path: string; findings: Finding[] }
+  >();
+
+  for (const manifestPath of packagePaths) {
+    const normalizedManifest = manifestPath.replaceAll("\\", "/");
+    const relPath = normalizedManifest
+      .replace(normalizedRoot, "")
+      .replace(/^\//, "");
+    const pathSegments = relPath.split("/");
+    const packageName =
+      pathSegments.length > 1 ? (pathSegments[1] ?? "root") : "root";
+    packageMap.set(manifestPath, {
+      packageName,
+      path: relPath
+        .replace("/package.json", "")
+        .replace("/pyproject.toml", "")
+        .replace("/pom.xml", ""),
+      findings: [],
+    });
+  }
+
+  for (const f of findings) {
+    const normalizedFile = f.file.replaceAll("\\", "/");
+    let bestMatch: string | undefined;
+    let bestLen = 0;
+    for (const manifestPath of packagePaths) {
+      const normalizedManifest = manifestPath.replaceAll("\\", "/");
+      const manifestDir = normalizedManifest.replace(/[/\\][^/\\]+$/, "");
+      const relToRoot = manifestDir
+        .replace(normalizedRoot, "")
+        .replace(/^\//, "");
+      if (relToRoot && normalizedFile.startsWith(relToRoot + "/")) {
+        if (relToRoot.length > bestLen) {
+          bestLen = relToRoot.length;
+          bestMatch = manifestPath;
+        }
+      }
+    }
+    const target = bestMatch
+      ? packageMap.get(bestMatch)
+      : packageMap.values().next().value;
+    if (target) {
+      target.findings.push(f);
+    }
+  }
+
+  return [...packageMap.values()].map((p) => ({
+    packageName: p.packageName,
+    path: p.path,
+    findings: p.findings,
+    score: p.findings.length === 0 ? 100 : null,
+  }));
 }
 
 export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
@@ -996,6 +1074,47 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
   if (o.findings.length > 0) {
     result.correlationConclusions = correlateFindings(o.findings);
   }
+  // ECO-005: Dependency graph metadata (additive within schemaVersion 1).
+  if (o.dependencyGraph && o.dependencyGraph.size > 0) {
+    let edges = 0;
+    for (const p of o.dependencyGraph.allPaths) {
+      edges += o.dependencyGraph.getDependencies(p).length;
+    }
+    result.dependencyGraph = {
+      nodes: o.dependencyGraph.size,
+      edges,
+    };
+  }
+  // ECO-003: Monorepo analysis (additive within schemaVersion 1).
+  // When --monorepo is requested, partition findings by package and
+  // compute per-package trust scores.
+  if (o.args.monorepo && o.dependencyGraph && o.dependencyGraph.size > 1) {
+    const packages = partitionFindingsByPackage(
+      o.findings,
+      o.dependencyGraph,
+      o.workspace.root,
+    );
+    if (packages.length > 1) {
+      const monorepoResult = analyzeMonorepo(packages, {
+        weightingStrategy: "worst-package",
+      });
+      result.monorepoAnalysis = {
+        packages: monorepoResult.packages.map((p) => ({
+          packageName: p.packageName,
+          path: p.path,
+          findings: p.findings.length,
+          score: p.score,
+          verdict: p.verdict,
+        })),
+        overallScore: monorepoResult.overallScore,
+        overallVerdict: monorepoResult.overallVerdict,
+        strategy: monorepoResult.strategy,
+        ...(monorepoResult.blockerPackage
+          ? { blockerPackage: monorepoResult.blockerPackage }
+          : {}),
+      };
+    }
+  }
   o.cache.persist();
   return result;
 }
@@ -1115,6 +1234,17 @@ export async function runScan(
   // 3. Dependency graph metadata in ScanResult
   const depGraph = buildDependencyGraph(workspace.root);
   const rulesDigest = computeRulesDigest(activeRules);
+  // ECO-004: When --cache is active, log incremental safety status.
+  // The dependency graph's presence signals that dependency-aware
+  // invalidation is possible — cache keys already include rulesDigest
+  // which covers detector changes. Config/package changes trigger
+  // the SEMANTIC_INPUT_PATTERNS check in `isIncrementalSafe`.
+  if (args.cache && args.verbose) {
+    const safety = isIncrementalSafe([]);
+    if (!safety.safe) {
+      hooks.onConfigWarning?.(`incremental: ${safety.reasons.join("; ")}`);
+    }
+  }
   for (const perr of pluginErrors) {
     findings.push({
       ruleId: "QA-PLUGIN-000",
@@ -1238,6 +1368,7 @@ export async function runScan(
     fileProvenance,
     started,
     stagedSurface,
+    dependencyGraph: depGraph,
   });
 
   await releaseTreeSitterResources();

@@ -172,6 +172,8 @@ export function parseArgs(
       args.enablePlugins = true;
     } else if (a === "--classic") {
       args.classic = true;
+    } else if (a === "--monorepo") {
+      args.monorepo = true;
     } else if (a === "--help" || a === "-h") {
       return null;
     } else if (!a.startsWith("-")) {
@@ -200,6 +202,7 @@ const KNOWN_SCAN_FLAGS = [
   "--debug",
   "--record-milestones",
   "--cache",
+  "--monorepo",
   "--help",
   "-h",
   "--version",

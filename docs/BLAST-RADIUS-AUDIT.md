@@ -7,15 +7,15 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 273 files, 52040 LOC
+## Inventory: 273 files, 52240 LOC
 
 | Area             | Files | LOC   |
 | ---------------- | ----- | ----- |
 | src/rules        | 87    | 11689 |
 | src/commands     | 28    | 8885  |
-| src/engine       | 36    | 8436  |
+| src/engine       | 36    | 8586  |
 | src/reporter     | 15    | 3152  |
-| src/(root)       | 6     | 2584  |
+| src/(root)       | 6     | 2634  |
 | src/forensics    | 16    | 2584  |
 | src/adapters     | 11    | 1677  |
 | src/discovery    | 10    | 1643  |
@@ -81,6 +81,6 @@ codes) must match this document exactly.
 
 - **Adapters** (7): typescript, python, java, csharp, github-actions, azure-pipelines, jenkins
 - **Rules registry**: 79 live, 22 retired, 74 measured
-- **CLI flags**: "--ascii" "--base" "--blocking" "--cache" "--category" "--classic" "--debug" "--enable-plugins" "--format" "--help" "--json" "--max-duration" "--no-ascii" "--no-progress" "--record-milestones" "--scope" "--score" "--staged" "--strict" "--tone" "--verbose" "--width" "-h"
+- **CLI flags**: "--ascii" "--base" "--blocking" "--cache" "--category" "--classic" "--debug" "--enable-plugins" "--format" "--help" "--json" "--max-duration" "--monorepo" "--no-ascii" "--no-progress" "--record-milestones" "--scope" "--score" "--staged" "--strict" "--tone" "--verbose" "--width" "-h"
 - **Report formats**: codequality, json, mermaid, sarif, terminal
 - **Exit codes** (frozen): 0 clean · 1 findings at/above gate · 2 partial (never blocks) · 10 usage error · 20 internal error (frozen, docs/VERSIONING.md)
