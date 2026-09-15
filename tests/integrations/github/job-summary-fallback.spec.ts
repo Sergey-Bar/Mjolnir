@@ -73,25 +73,22 @@ describe("renderJobSummary", () => {
 describe("publishWithFallback", () => {
   it("uses publisher when it succeeds", async () => {
     const publisher: PrCommentPublisher = {
-      async publish() {
-        return { id: 1, action: "created" as const };
-      },
+      publish: () => Promise.resolve({ id: 1, action: "created" as const }),
     };
+    const writeFn = vi.fn();
     const summaryWriter: SummaryWriter = {
-      write: vi.fn(),
+      write: writeFn,
     };
     const result = await publishWithFallback(model(), publisher, summaryWriter);
     expect(result.surface).toBe("pr-comment");
     expect(result.id).toBe(1);
     expect(result.action).toBe("created");
-    expect(summaryWriter.write).not.toHaveBeenCalled();
+    expect(writeFn).not.toHaveBeenCalled();
   });
 
   it("falls back to job summary when publisher throws", async () => {
     const publisher: PrCommentPublisher = {
-      async publish() {
-        throw new Error("permission denied");
-      },
+      publish: () => Promise.reject(new Error("permission denied")),
     };
     const written: string[] = [];
     const summaryWriter: SummaryWriter = {

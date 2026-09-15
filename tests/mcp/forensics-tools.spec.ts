@@ -136,7 +136,7 @@ describe("handleForensicsTool", () => {
       expect(response.jsonrpc).toBe("2.0");
       expect(response.result).toBeDefined();
       const serialized: string = JSON.stringify(response.result);
-      expect(() => JSON.parse(serialized)).not.toThrow();
+      expect(() => JSON.parse(serialized) as unknown).not.toThrow();
     }
   });
 });

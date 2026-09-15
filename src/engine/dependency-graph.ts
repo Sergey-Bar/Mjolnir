@@ -94,7 +94,7 @@ function parsePyprojectToml(filePath: string): DependencyNode | undefined {
     if (depSection?.[1]) {
       const lines = depSection[1].split("\n");
       for (const line of lines) {
-        const match = line.match(/^\s*"([a-zA-Z0-9_-]+)/);
+        const match = line.match(/^\s*"([\w-]+)/);
         if (match?.[1]) deps.push(match[1]);
       }
     }

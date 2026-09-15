@@ -58,14 +58,14 @@ describe("PR Comment Golden Suite (TI-018)", () => {
 
 describe("Byte-identity rendering (TI-018)", () => {
   it("same model produces byte-identical PR comment", () => {
-    const m = buildModel("pass", COMPLETENESS_LEVELS[0]!);
+    const m = buildModel("pass", COMPLETENESS_LEVELS[0] ?? "complete");
     const a = renderCommentBody(m);
     const b = renderCommentBody(m);
     expect(a).toBe(b);
   });
 
   it("same model produces byte-identical job summary", () => {
-    const m = buildModel("fail", COMPLETENESS_LEVELS[3]!);
+    const m = buildModel("fail", COMPLETENESS_LEVELS[3] ?? "error");
     const a = renderJobSummary(m);
     const b = renderJobSummary(m);
     expect(a).toBe(b);
@@ -74,7 +74,7 @@ describe("Byte-identity rendering (TI-018)", () => {
   it("marker is always first line of PR comment", () => {
     for (const verdict of VERDICTS) {
       const body = renderCommentBody(
-        buildModel(verdict, COMPLETENESS_LEVELS[0]!),
+        buildModel(verdict, COMPLETENESS_LEVELS[0] ?? "complete"),
       );
       expect(body.startsWith(PR_COMMENT_MARKER + "\n")).toBe(true);
     }
@@ -83,7 +83,7 @@ describe("Byte-identity rendering (TI-018)", () => {
   it("job summary never contains the PR comment marker", () => {
     for (const verdict of VERDICTS) {
       const summary = renderJobSummary(
-        buildModel(verdict, COMPLETENESS_LEVELS[0]!),
+        buildModel(verdict, COMPLETENESS_LEVELS[0] ?? "complete"),
       );
       expect(summary).not.toContain(PR_COMMENT_MARKER);
     }
@@ -92,7 +92,7 @@ describe("Byte-identity rendering (TI-018)", () => {
   it("verdict label matches model", () => {
     for (const verdict of VERDICTS) {
       const body = renderCommentBody(
-        buildModel(verdict, COMPLETENESS_LEVELS[0]!),
+        buildModel(verdict, COMPLETENESS_LEVELS[0] ?? "complete"),
       );
       const expected =
         verdict === "pass" ? "PASS" : verdict === "warn" ? "WARN" : "FAIL";

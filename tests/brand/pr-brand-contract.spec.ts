@@ -79,7 +79,7 @@ describe("validateBrandContract", () => {
     const { forged: _removed, ...rest } = PR_BRAND_CONTRACT.verdictLabels;
     const result = validateBrandContract({
       ...PR_BRAND_CONTRACT,
-      verdictLabels: rest as typeof PR_BRAND_CONTRACT.verdictLabels,
+      verdictLabels: rest,
     });
     expect(result.valid).toBe(false);
     expect(result.errors).toContainEqual(

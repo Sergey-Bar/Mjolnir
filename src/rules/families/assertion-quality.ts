@@ -45,7 +45,7 @@ export const ASSERTION_ANTI_PATTERNS: readonly AssertionAntiPattern[] = [
     id: "AQ-004",
     description:
       "Truthy-only assertion — verifies existence without behavioral contract",
-    // eslint-disable-next-line security/detect-unsafe-regex -- bounded by word boundaries and no overlapping alternation
+    // eslint-disable-next-line security/detect-unsafe-regex -- bounded alternation, no catastrophic backtracking
     pattern: /expect\s*\(\s*\w+(?:\.\w+)*\s*\)\s*\.\s*toBeTruthy\s*\(\s*\)/g,
     severity: "warning",
     frameworks: ["jest", "vitest", "playwright"],
@@ -54,8 +54,8 @@ export const ASSERTION_ANTI_PATTERNS: readonly AssertionAntiPattern[] = [
     id: "AQ-005",
     description:
       "Length-only assertion — checks array/string length without verifying contents",
-    // eslint-disable-next-line security/detect-unsafe-regex -- bounded by word boundaries and no overlapping alternation
     pattern:
+      // eslint-disable-next-line security/detect-unsafe-regex -- bounded alternation, no catastrophic backtracking
       /expect\s*\(\s*\w+(?:\.\w+)*\s*\.\s*length\s*\)\s*\.\s*(?:toBe|toEqual|toBeGreaterThan|toBeGreaterThanOrEqual|toBeLessThan|toBeLessThanOrEqual)\s*\(/g,
     severity: "warning",
     frameworks: ["jest", "vitest"],
