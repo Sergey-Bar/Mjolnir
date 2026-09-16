@@ -11,6 +11,12 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+## [1.1.1] — 2026-09-16
+
+### Fixed
+
+- **Config type for exactOptionalPropertyTypes in test** — wire standalone modules into scan pipeline integration test fixture uses `{}` instead of `undefined` for the config field, fixing type compatibility with strict TypeScript settings.
+
 ## [1.1.0] — 2026-09-15
 
 ### Year-1 Roadmap Implementation — All 60 Tickets (Q1-Q4)

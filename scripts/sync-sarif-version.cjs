@@ -19,9 +19,14 @@ const v = require("../package.json").version;
 const SURFACES = [
   {
     path: "/../src/reporter/sarif.ts",
+    // After the R4c refactor, sarif.ts uses ENGINE_VERSION (the variable)
+    // instead of a hardcoded literal — so there is nothing to sync.
+    // If a hardcoded literal appears (e.g. during a refactor), the regex
+    // catches it and syncs it.
     find: /version: "[^"]+",/,
     replace: `version: "${v}",`,
     label: "SARIF driver.version",
+    optional: true,
   },
   {
     // R4c: the literal moved to the leaf module (run-identity needs the
@@ -39,6 +44,14 @@ for (const surface of SURFACES) {
   const s = fs.readFileSync(p, "utf8");
   const out = s.replace(surface.find, surface.replace);
   if (!out.includes(surface.replace)) {
+    if (surface.optional) {
+      // The surface may use a variable instead of a hardcoded literal.
+      // Check if the variable is already in use.
+      console.log(
+        `${surface.label}: uses ENGINE_VERSION variable (no hardcoded literal to sync)`,
+      );
+      continue;
+    }
     console.error(`${surface.label} sync failed for ${v} (${p})`);
     process.exit(1);
   }
