@@ -85,7 +85,7 @@ function minimalInput(
     suppressionCount: 0,
     frameworks: { frameworks: [], unknown: false },
     runtimeReportPath: undefined,
-    config: undefined,
+    config: {},
     fileProvenance: [],
     started: Date.now() - 100,
     stagedSurface: false,
