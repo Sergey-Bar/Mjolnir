@@ -11,10 +11,34 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { assembleScanResult } from "../../src/engine/scan-pipeline.js";
+import {
+  assembleScanResult,
+  summarizeForensicVerdicts,
+} from "../../src/engine/scan-pipeline.js";
 import { DependencyGraph } from "../../src/engine/dependency-graph.js";
 import type { Finding } from "../../src/types.js";
+import type { ForensicsReport } from "../../src/forensics/types.js";
 import { disabledScanCache } from "../../src/engine/scan-cache.js";
+
+function makeForensicsReport(
+  overrides: Partial<ForensicsReport> = {},
+): ForensicsReport {
+  return {
+    forensicsSchemaVersion: 1,
+    source: "playwright-json",
+    totalTests: 0,
+    failed: 0,
+    skipped: 0,
+    retriedTests: 0,
+    flakyTests: 0,
+    totalDurationMs: 0,
+    verdicts: [],
+    analysisComplete: true,
+    skippedReports: 0,
+    incompleteReasons: [],
+    ...overrides,
+  };
+}
 
 function makeFinding(overrides: Partial<Finding> = {}): Finding {
   return {
@@ -85,6 +109,7 @@ function minimalInput(
     suppressionCount: 0,
     frameworks: { frameworks: [], unknown: false },
     runtimeReportPath: undefined,
+    forensicVerdicts: undefined,
     config: {},
     fileProvenance: [],
     started: Date.now() - 100,
@@ -279,6 +304,126 @@ describe("assembleScanResult — standalone module wiring", () => {
         }),
       );
       expect(result.monorepoAnalysis).toBeUndefined();
+    });
+  });
+
+  describe("WAVE 5: forensicVerdicts", () => {
+    it("includes forensicVerdicts when provided", () => {
+      const result = assembleScanResult(
+        minimalInput({
+          forensicVerdicts: {
+            classifications: 3,
+            byVerdict: { flaky: 1, inconclusive: 2 },
+            inconclusive: 2,
+          },
+        }),
+      );
+      expect(result.forensicVerdicts).toEqual({
+        classifications: 3,
+        byVerdict: { flaky: 1, inconclusive: 2 },
+        inconclusive: 2,
+      });
+    });
+
+    it("omits forensicVerdicts when undefined", () => {
+      const result = assembleScanResult(minimalInput());
+      expect(result.forensicVerdicts).toBeUndefined();
+    });
+
+    it("does not interfere with scoring or other fields", () => {
+      const result = assembleScanResult(
+        minimalInput({
+          forensicVerdicts: {
+            classifications: 1,
+            byVerdict: { "likely-real-defect": 1 },
+            inconclusive: 0,
+          },
+        }),
+      );
+      expect(result.score).toBeDefined();
+      expect(result.trustSummary).toBeDefined();
+    });
+  });
+
+  describe("summarizeForensicVerdicts", () => {
+    it("returns undefined for an empty report", () => {
+      expect(summarizeForensicVerdicts(makeForensicsReport())).toBeUndefined();
+    });
+
+    it("returns undefined when no verdict carries a classification", () => {
+      const report = makeForensicsReport({
+        verdicts: [
+          {
+            file: "a.spec.ts",
+            title: "t",
+            attempts: 1,
+            finalStatus: "passed",
+            totalDurationMs: 1,
+            passedOnRetry: false,
+            everFailed: false,
+            skipped: false,
+          },
+        ],
+      });
+      expect(summarizeForensicVerdicts(report)).toBeUndefined();
+    });
+
+    it("aggregates classifications and counts inconclusive", () => {
+      const report = makeForensicsReport({
+        verdicts: [
+          {
+            file: "a.spec.ts",
+            title: "a",
+            attempts: 2,
+            finalStatus: "passed",
+            totalDurationMs: 10,
+            passedOnRetry: true,
+            everFailed: true,
+            skipped: false,
+            forensic: {
+              verdict: "flaky",
+              evidenceState: "exists",
+              signals: { environmental: 0, infrastructure: 0, construction: 0 },
+            },
+          },
+          {
+            file: "b.spec.ts",
+            title: "b",
+            attempts: 1,
+            finalStatus: "failed",
+            totalDurationMs: 10,
+            passedOnRetry: false,
+            everFailed: true,
+            skipped: false,
+            forensic: {
+              verdict: "likely-real-defect",
+              evidenceState: "exists",
+              signals: { environmental: 0, infrastructure: 0, construction: 0 },
+            },
+          },
+          {
+            file: "c.spec.ts",
+            title: "c",
+            attempts: 1,
+            finalStatus: "skipped",
+            totalDurationMs: 0,
+            passedOnRetry: false,
+            everFailed: false,
+            skipped: true,
+            forensic: {
+              verdict: "inconclusive",
+              evidenceState: "insufficient",
+              signals: { environmental: 0, infrastructure: 0, construction: 0 },
+            },
+          },
+        ],
+      });
+      const summary = summarizeForensicVerdicts(report);
+      expect(summary).toEqual({
+        classifications: 3,
+        byVerdict: { flaky: 1, "likely-real-defect": 1, inconclusive: 1 },
+        inconclusive: 1,
+      });
     });
   });
 
