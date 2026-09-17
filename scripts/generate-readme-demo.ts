@@ -126,7 +126,9 @@ export async function buildDemoSvg(): Promise<string> {
   const lines = [
     `${PROMPT}\x1b[1mnpx mjolnir-qa@latest --verbose\x1b[0m`,
     ...rendered.split("\n"),
-  ].map((line) => line.replace(/· (?:\d+ms|\d+(?:\.\d+)?s)$/, "· a few ms"));
+  ].map((line) =>
+    line.replace(/· (?:\d+ms|[1-9]\d*(?:\.\d+)?s)$/, "· a few ms"),
+  );
   return renderSvg(lines);
 }
 
