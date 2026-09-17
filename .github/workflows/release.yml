@@ -322,6 +322,7 @@ jobs:
         run: |
           NPM_VERSION="11.19.1"
           TARBALL="/tmp/npm-${NPM_VERSION}.tgz"
+          export TARBALL
           npm pack "npm@${NPM_VERSION}" --pack-destination /tmp
           # Verify SHA-512 SRI before install (CodeRabbit security fix)
           EXPECTED_INTEGRITY=$(npm view "npm@${NPM_VERSION}" dist.integrity)
