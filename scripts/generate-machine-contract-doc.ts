@@ -166,10 +166,14 @@ reconstruct semantics.
   files). It is metadata only — it must never gate, score, or filter
   (§17.4: provenance is not trust). Optional; absent when no profile
   was computed.
-- \`forensicVerdicts\` is RESERVED and unpopulated in 0.6.x — the
-  forensic classification taxonomy arrives in 1.1.x (WI-18). Machines
-  must treat its absence as "no forensic classifications", not "no
-  failures".
+- \`forensicVerdicts\` aggregates the forensic classifications from the
+  ingested runtime report (likely-real-defect / environmental-failure /
+  infrastructure-failure / flaky / retry-dependent /
+  unstable-construction / inconclusive). It is present only when a
+  runtime report was discovered and produced ≥ 1 classified verdict —
+  absence means "no forensic classifications were derived", never "no
+  failures". \`inconclusive\` is a first-class outcome (insufficient
+  evidence), not a failure.
 
 ## What a machine MUST NEVER infer
 

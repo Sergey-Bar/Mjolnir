@@ -88,7 +88,8 @@ export interface ForensicsReport {
     | "junit-xml"
     | "jest-json"
     | "vitest-json"
-    | "playwright-trace";
+    | "playwright-trace"
+    | "har";
   totalTests: number;
   failed: number;
   skipped: number;

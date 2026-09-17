@@ -26,6 +26,7 @@ import { looksLikeJestJson, parseJestJson } from "./parse-jest-json.js";
 import { parseJunitXml } from "./parse-junit.js";
 import { parsePlaywrightJson } from "./parse-playwright-json.js";
 import { looksLikeVitestJson, parseVitestJson } from "./parse-vitest-json.js";
+import { looksLikeHarJson, parseHarJson } from "./parse-har.js";
 import type { ForensicsReport, TestRecord } from "./types.js";
 
 const MAX_FILES = 500;
@@ -286,6 +287,12 @@ function parseFile(
   // so the sniffers run BEFORE the Playwright parser would otherwise
   // misread them (Playwright's walk finds no suites and returns zero
   // records, silently dropping the report).
+  // WAVE 5 (GAP-RUNTIME-004): HAR network evidence rides the JSON path —
+  // its shape ({log:{entries}}) cannot collide with the test-result
+  // shapes (testResults/suites), so the discriminator order is stable.
+  if (looksLikeHarJson(json)) {
+    return { records: parseHarJson(json), source: "har" };
+  }
   if (looksLikeJestJson(json)) {
     return { records: parseJestJson(json), source: "jest-json" };
   }
@@ -317,7 +324,7 @@ function listFiles(dir: string): string[] {
         walk(full, depth + 1);
       } else if (
         e.isFile() &&
-        /\.(?:json|xml|zip|trace|ndjson)$/i.test(e.name)
+        /\.(?:json|xml|zip|trace|ndjson|har)$/i.test(e.name)
       ) {
         out.push(full);
       }

@@ -21,6 +21,7 @@ import {
   compareFindings,
   SCHEMA_VERSION,
   type Finding,
+  type ForensicVerdictSummary,
   type RuleCategory,
   type ScanResult,
 } from "../types.js";
@@ -720,7 +721,32 @@ export interface PostScanResult {
   suppressionCount: number;
   frameworks: ReturnType<typeof detectFrameworks>;
   runtimeReportPath: string | undefined;
+  /** Aggregate forensic classifications from the ingested runtime report. */
+  forensicVerdicts: ForensicVerdictSummary | undefined;
   config: ReturnType<typeof loadConfig>["config"];
+}
+
+/**
+ * Summarize forensic classifications from an ingested runtime report
+ * (plan §10.4, WAVE 5). Returns undefined when no verdict carries a
+ * classification — the machine contract slot stays absent rather than
+ * reporting all-zero counts.
+ */
+export function summarizeForensicVerdicts(
+  report: import("../forensics/types.js").ForensicsReport,
+): ForensicVerdictSummary | undefined {
+  const byVerdict: Record<string, number> = {};
+  let classifications = 0;
+  let inconclusive = 0;
+  for (const v of report.verdicts) {
+    if (!v.forensic) continue;
+    classifications++;
+    const label = v.forensic.verdict;
+    byVerdict[label] = (byVerdict[label] ?? 0) + 1;
+    if (label === "inconclusive") inconclusive++;
+  }
+  if (classifications === 0) return undefined;
+  return { classifications, byVerdict, inconclusive };
 }
 
 export function applyPostScanProcessing(
@@ -800,6 +826,7 @@ export function applyPostScanProcessing(
   }
   const discoveredReport = discoverAndParseRuntimeReport(scanRoot.root);
   const runtimeReportPath = discoveredReport?.path;
+  let forensicVerdicts: ForensicVerdictSummary | undefined;
   if (discoveredReport) {
     try {
       buildEvidenceRecords(discoveredReport.report, discoveredReport.path);
@@ -808,6 +835,7 @@ export function applyPostScanProcessing(
         discoveredReport.report,
         workspace.root,
       );
+      forensicVerdicts = summarizeForensicVerdicts(discoveredReport.report);
     } catch {
       /* corrupt report — no runtime evidence */
     }
@@ -818,6 +846,7 @@ export function applyPostScanProcessing(
     suppressionCount,
     frameworks,
     runtimeReportPath,
+    forensicVerdicts,
     config,
   };
 }
@@ -848,6 +877,7 @@ export interface AssembleScanResultInput {
   suppressionCount: number;
   frameworks: ReturnType<typeof detectFrameworks>;
   runtimeReportPath: string | undefined;
+  forensicVerdicts: ForensicVerdictSummary | undefined;
   config: ReturnType<typeof loadConfig>["config"];
   fileProvenance: Array<{
     path: string;
@@ -1047,6 +1077,9 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
     ...(o.pluginsLoaded.length > 0 ? { plugins: o.pluginsLoaded } : {}),
     ...(suiteInvalidatedBy.length > 0 ? { suiteInvalidatedBy } : {}),
     agenticProfile: computeAgenticProfile(o.fileProvenance, o.findings),
+    ...(o.forensicVerdicts !== undefined
+      ? { forensicVerdicts: o.forensicVerdicts }
+      : {}),
     ...(o.args.cache
       ? {
           cache: {
@@ -1364,6 +1397,7 @@ export async function runScan(
     suppressionCount: postScan.suppressionCount,
     frameworks: postScan.frameworks,
     runtimeReportPath: postScan.runtimeReportPath,
+    forensicVerdicts: postScan.forensicVerdicts,
     config: postScan.config,
     fileProvenance,
     started,

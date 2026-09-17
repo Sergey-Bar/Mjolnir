@@ -79,6 +79,11 @@ import { runInit, renderInit, tryReadPackageJson } from "./commands/init.js";
 import { renderPwRunSummary, summarizePwRun } from "./commands/pw-report.js";
 import { planAndApplyFixes, renderFixReport } from "./commands/fix.js";
 import { buildCatalog, renderCatalogMd } from "./commands/rules-catalog.js";
+import {
+  buildRuleHealth,
+  renderRuleStats,
+  renderRuleHealth,
+} from "./commands/rule-health.js";
 import { explainRule, renderExplain } from "./commands/explain.js";
 import { loadConfig, ConfigValidationError } from "./config/config.js";
 import { createIgnoreMatcher } from "./discovery/ignores.js";
@@ -853,6 +858,24 @@ export async function runRulesCommand(
   io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
   const withExternal = argv.includes("--external");
+
+  if (argv.includes("--stats")) {
+    io.out(renderRuleStats(buildRuleHealth()));
+    return EXIT_CLEAN;
+  }
+  if (argv.includes("--health")) {
+    const limitArg = argv.find((a) => a.startsWith("--limit="));
+    const parsed = limitArg
+      ? Number.parseInt(limitArg.slice("--limit=".length), 10)
+      : undefined;
+    const limit =
+      parsed !== undefined && Number.isFinite(parsed) && parsed > 0
+        ? parsed
+        : undefined;
+    io.out(renderRuleHealth(buildRuleHealth(), limit));
+    return EXIT_CLEAN;
+  }
+
   const root = process.cwd();
   const external = withExternal ? await loadLocalRules(root) : undefined;
   let catalog = [
