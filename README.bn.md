@@ -81,7 +81,7 @@ Mjölnir স্যুট, CI workflow, এবং আপনার কাছে �
 [`examples/demo-repo`](examples/demo-repo)-এর একটি প্রকৃত স্ক্যান, CI workflow সহ একটি ছোট Playwright স্যুট। এখানেই এর পয়েন্ট গেছে:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Mjölnir-এর deduction breakdown: WORTHINESS 75/100 NEEDS WORK, বিভাগ অনুযায়ী স্কোর, severity অনুযায়ী deduction box, এবং একটি FIX THIS FIRST তালিকা" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="Mjölnir-এর deduction breakdown: WORTHINESS 80/100 WORTHY, বিভাগ অনুযায়ী স্কোর, severity অনুযায়ী deduction box, এবং একটি FIX THIS FIRST তালিকা" width="520" />
 </p>
 
 <sub>`npm run docs:hero` দ্বারা একটি প্রকৃত স্ক্যান থেকে তৈরি এবং CI-তে বিচ্যুতির বিরুদ্ধে লক করা। একই স্ক্যানের সম্পূর্ণ `--verbose` রিপোর্ট হলো [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`)।</sub>
@@ -312,8 +312,8 @@ e2e/login.spec.ts
   role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 
 e2e/checkout.spec.ts
-  [█████████████████░░░]  86 / 100
-  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
+  [██████████████████░░]  88 / 100
+  role/text: 4 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 ```
 
 এটি **resilience পরিমাপ করে, correctness নয়**। `.btn.btn-primary > div:nth-child(2)` আজ পাস করে এবং কেউ markup স্পর্শ না করা পর্যন্ত পাস হতে থাকে। একটি কম স্কোর কখনো দাবি করে না যে টেস্টটি ভাঙা, শুধু বলে যে এটি এমন markup-এর উপর নির্ভরশীল যা রাখার প্রতিশ্রুতি কেউ দেয়নি।

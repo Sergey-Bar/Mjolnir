@@ -7,6 +7,14 @@
 
 import { describe, expect, it } from "vitest";
 import { join } from "node:path";
+import {
+  cpSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
 
 import {
   computeSpecHealth,
@@ -272,7 +280,7 @@ describe("three verdict bands are reachable for their documented reasons", () =>
     expect(verdictFor(scan.score as number)).toBe("WORTHY");
   });
 
-  it("demo repo is NEEDS WORK (50-79)", { timeout: 60_000 }, async () => {
+  it("demo repo is WORTHY (80)", { timeout: 60_000 }, async () => {
     const scan = await runScan({
       target: join(REPO_ROOT, "examples", "demo-repo"),
       json: false,
@@ -282,11 +290,46 @@ describe("three verdict bands are reachable for their documented reasons", () =>
       format: "terminal",
       strict: true,
     });
-    expect(scan.score).not.toBeNull();
-    const score = scan.score as number;
-    expect(score).toBeGreaterThanOrEqual(50);
-    expect(score).toBeLessThanOrEqual(79);
-    expect(verdictFor(score)).toBe("NEEDS WORK");
+    expect(scan.score).toBe(80);
+    expect(verdictFor(scan.score as number)).toBe("WORTHY");
+  });
+
+  it("demo with a hard wait is NEEDS WORK (50-79)", async () => {
+    const target = mkdtempSync(join(tmpdir(), "mjolnir-needs-work-"));
+    try {
+      cpSync(join(REPO_ROOT, "examples", "demo-repo"), target, {
+        recursive: true,
+      });
+      const checkout = join(target, "e2e", "checkout.spec.ts");
+      const source = readFileSync(checkout, "utf8");
+      const wait =
+        'await page.getByText("Order confirmed").waitFor({ timeout: 5000 });';
+      expect(source).toContain(wait);
+      writeFileSync(
+        checkout,
+        source.replace(wait, "await page.waitForTimeout(3000);"),
+      );
+      const scan = await runScan({
+        target,
+        json: false,
+        verbose: false,
+        maxDurationMs: Number.POSITIVE_INFINITY,
+        scopeChanged: false,
+        format: "terminal",
+        strict: true,
+      });
+      expect(scan.partial).toBe(false);
+      expect(scan.score).not.toBeNull();
+      const score = scan.score as number;
+      expect(score).toBeGreaterThanOrEqual(50);
+      expect(score).toBeLessThanOrEqual(79);
+      expect(verdictFor(score)).toBe("NEEDS WORK");
+      expect(
+        scan.findings.some((finding) => finding.ruleId === "QA-PW-101"),
+      ).toBe(true);
+    } finally {
+      rmSync(target, { recursive: true, force: true });
+    }
   });
 
   it(

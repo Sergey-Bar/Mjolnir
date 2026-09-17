@@ -240,16 +240,22 @@ describe("assembleScanResult — standalone module wiring", () => {
       const findings = [
         makeFinding({
           findingId: "f1",
+          ruleId: "QA-PW-102",
           file: "packages/a/src/foo.spec.ts",
         }),
         makeFinding({
           findingId: "f2",
+          ruleId: "QA-PW-102",
           file: "packages/b/src/bar.spec.ts",
         }),
       ];
       const result = assembleScanResult(
         minimalInput({
           findings,
+          declarationsByFile: new Map([
+            ["packages/a/src/foo.spec.ts", 1],
+            ["packages/b/src/bar.spec.ts", 9],
+          ]),
           dependencyGraph: graph,
           args: {
             target: "/test",
@@ -264,10 +270,126 @@ describe("assembleScanResult — standalone module wiring", () => {
       );
       expect(result.monorepoAnalysis).toBeDefined();
       expect(result.monorepoAnalysis?.packages.length).toBe(2);
-      expect(typeof result.monorepoAnalysis?.overallVerdict).toBe("string");
-      expect(["number", "object"]).toContain(
-        typeof result.monorepoAnalysis?.overallScore,
-      );
+      expect(result.monorepoAnalysis?.packages.map((p) => p.score)).toEqual([
+        93, 99,
+      ]);
+      expect(result.monorepoAnalysis?.overallScore).toBe(93);
+      expect(result.monorepoAnalysis?.overallVerdict).toBe("pass");
+    });
+
+    it("keeps clean untested packages unknown and assigns root findings to root", () => {
+      const graph = new DependencyGraph();
+      for (const path of [
+        "/test/pyproject.toml",
+        "/test/packages/a/package.json",
+        "/test/packages/b/package.json",
+      ]) {
+        graph.addNode({ path, dependencies: [] });
+      }
+      const input = minimalInput({
+        dependencyGraph: graph,
+        findings: [
+          makeFinding({ ruleId: "QA-PW-102", file: "tests/root.spec.ts" }),
+        ],
+        declarationsByFile: new Map([
+          ["tests/root.spec.ts", 1],
+          ["packages/a/a.spec.ts", 2],
+          ["packages/b/empty.spec.ts", 0],
+        ]),
+      });
+      input.args.monorepo = true;
+      const result = assembleScanResult(input).monorepoAnalysis;
+      expect(result?.packages.find((p) => p.path === ".")).toMatchObject({
+        findings: 1,
+        score: 93,
+      });
+      expect(
+        result?.packages.find((p) => p.path === "packages/a"),
+      ).toMatchObject({ findings: 0, score: 100 });
+      expect(
+        result?.packages.find((p) => p.path === "packages/b"),
+      ).toMatchObject({ findings: 0, score: null });
+      expect(result?.overallScore).toBeNull();
+      expect(result?.overallVerdict).toBe("fail");
+    });
+
+    it.each([
+      { rulesCrashed: 1 },
+      { skippedFiles: 1 },
+      { discoveryTruncated: true },
+      { rulesPartial: true },
+      { parseFailed: 1 },
+      { scopeIgnored: 1 },
+    ])(
+      "does not publish complete package scores from incomplete analysis %j",
+      (status) => {
+        const graph = new DependencyGraph();
+        graph.addNode({ path: "/test/package.json", dependencies: [] });
+        graph.addNode({
+          path: "/test/packages/a/package.json",
+          dependencies: [],
+        });
+        const input = minimalInput({
+          ...status,
+          dependencyGraph: graph,
+          declarationsByFile: new Map([
+            ["root.spec.ts", 1],
+            ["packages/a/a.spec.ts", 1],
+          ]),
+        });
+        input.args.monorepo = true;
+        expect(
+          assembleScanResult(input).monorepoAnalysis?.packages.map(
+            (p) => p.score,
+          ),
+        ).toEqual([null, null]);
+      },
+    );
+
+    it("keeps changed-scope package scores unknown instead of mixing denominators", () => {
+      const graph = new DependencyGraph();
+      graph.addNode({ path: "/test/package.json", dependencies: [] });
+      graph.addNode({
+        path: "/test/packages/a/package.json",
+        dependencies: [],
+      });
+      const input = minimalInput({ dependencyGraph: graph });
+      input.args.monorepo = true;
+      input.args.scopeChanged = true;
+      expect(
+        assembleScanResult(input).monorepoAnalysis?.packages.every(
+          (p) => p.score === null,
+        ),
+      ).toBe(true);
+    });
+
+    it("applies suite-invalidating scoring within its owning package", () => {
+      const graph = new DependencyGraph();
+      graph.addNode({ path: "/test/package.json", dependencies: [] });
+      graph.addNode({
+        path: "/test/packages/a/package.json",
+        dependencies: [],
+      });
+      const input = minimalInput({
+        dependencyGraph: graph,
+        declarationsByFile: new Map([
+          ["root.spec.ts", 100],
+          ["packages/a/a.spec.ts", 100],
+        ]),
+        findings: [
+          makeFinding({
+            ruleId: "QA-TEST-001",
+            file: "packages/a/a.spec.ts",
+            severity: "error",
+          }),
+        ],
+      });
+      input.args.monorepo = true;
+      const result = assembleScanResult(input).monorepoAnalysis;
+      expect(
+        result?.packages.find((p) => p.path === "packages/a")?.score,
+      ).toBeLessThanOrEqual(49);
+      expect(result?.overallVerdict).toBe("fail");
     });
 
     it("omits monorepoAnalysis when --monorepo is not set", () => {

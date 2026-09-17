@@ -266,6 +266,10 @@ function loadJsonRule(path: string, result: LoadedExternalRules): void {
         const run = new RegExp(re.source, "g");
         let m: RegExpExecArray | null;
         while ((m = run.exec(view)) !== null) {
+          if (findings.length >= 10_000) {
+            throw new Error(`External rule ${id} exceeded its match limit`);
+          }
+          if (m[0].length === 0) run.lastIndex = m.index + 1;
           findings.push({
             severity: severity as Severity,
             confidence,

@@ -81,7 +81,7 @@ npx mjolnir-qa@latest
 Μια πραγματική σάρωση του [`examples/demo-repo`](examples/demo-repo), μιας μικρής σουίτας Playwright με CI workflow. Εδώ πήγαν οι πόντοι της:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Η ανάλυση αφαιρέσεων του Mjölnir: WORTHINESS 75/100 NEEDS WORK, η βαθμολογία ανά κατηγορία, το πλαίσιο αφαιρέσεων ανά σοβαρότητα και μια λίστα FIX THIS FIRST" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="Η ανάλυση αφαιρέσεων του Mjölnir: WORTHINESS 80/100 WORTHY, η βαθμολογία ανά κατηγορία, το πλαίσιο αφαιρέσεων ανά σοβαρότητα και μια λίστα FIX THIS FIRST" width="520" />
 </p>
 
 <sub>Δημιουργείται με `npm run docs:hero` από πραγματική σάρωση και κλειδώνεται έναντι αποκλίσεων στο CI. Η πλήρης αναφορά `--verbose` της ίδιας σάρωσης είναι το [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
@@ -312,8 +312,8 @@ e2e/login.spec.ts
   role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 
 e2e/checkout.spec.ts
-  [█████████████████░░░]  86 / 100
-  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
+  [██████████████████░░]  88 / 100
+  role/text: 4 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 ```
 
 Αυτό μετρά **ανθεκτικότητα, όχι ορθότητα**. Το `.btn.btn-primary > div:nth-child(2)` περνά σήμερα και θα συνεχίσει να περνά μέχρι κάποιος να αγγίξει το markup. Μια χαμηλή βαθμολογία δεν ισχυρίζεται ποτέ ότι το τεστ είναι χαλασμένο, μόνο ότι εξαρτάται από markup που κανείς δεν υποσχέθηκε να διατηρήσει.

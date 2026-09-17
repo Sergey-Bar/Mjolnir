@@ -5,10 +5,13 @@
  */
 
 import {
+  existsSync,
+  mkdirSync,
   mkdtempSync,
   readdirSync,
   readFileSync,
   rmSync,
+  utimesSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -58,7 +61,11 @@ vi.mock("node:fs", async (importOriginal) => {
   return { ...actual, renameSync, unlinkSync };
 });
 
-import { writeFileAtomic } from "../../src/lib/fs-atomic.js";
+import {
+  atomicTempPath,
+  sweepStaleTempFiles,
+  writeFileAtomic,
+} from "../../src/lib/fs-atomic.js";
 
 let dir: string;
 
@@ -75,6 +82,65 @@ beforeEach(() => {
 
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
+});
+
+describe("stale temp ownership", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  function temp(name: string, modified: number): string {
+    const path = join(dir, name);
+    writeFileSync(path, "preserved");
+    utimesSync(path, new Date(modified), new Date(modified));
+    return path;
+  }
+
+  it("generates pid-tagged temp names", () => {
+    const path = atomicTempPath(join(dir, "out.json"));
+    expect(path).toContain(`out.json.mjolnir-${process.pid}-`);
+    expect(path).toMatch(/-\d{13}-[0-9a-f]{8}\.tmp$/);
+  });
+
+  it("removes only old owned files whose process is verifiably dead", () => {
+    const now = Date.now();
+    const old = now - 48 * 60 * 60 * 1000;
+    const stale = temp(`out.mjolnir-12345-${old}-01234567.tmp`, old);
+    const preserved = [
+      temp("notes.mjolnir-backup.tmp", old),
+      temp(`legacy.mjolnir-${old}-01234567.tmp`, old),
+      temp(`fresh.mjolnir-12345-${now}-01234567.tmp`, now),
+      temp(`updated.mjolnir-12345-${old}-01234567.tmp`, now),
+      temp(`backdated.mjolnir-12345-${now}-01234567.tmp`, old),
+      temp(`current.mjolnir-${process.pid}-${old}-01234567.tmp`, old),
+    ];
+    const directory = join(dir, `dir.mjolnir-12345-${old}-01234567.tmp`);
+    mkdirSync(directory);
+    const kill = vi.spyOn(process, "kill").mockImplementation(() => {
+      throw Object.assign(new Error("no owner"), { code: "ESRCH" });
+    });
+
+    expect(sweepStaleTempFiles(dir)).toBe(1);
+    expect(existsSync(stale)).toBe(false);
+    for (const path of preserved)
+      expect(readFileSync(path, "utf8")).toBe("preserved");
+    expect(existsSync(directory)).toBe(true);
+    expect(kill).toHaveBeenCalledExactlyOnceWith(12345, 0);
+  });
+
+  it.each(["alive", "EPERM", "EACCES"])(
+    "preserves old temps when owner is %s",
+    (status) => {
+      const old = Date.now() - 48 * 60 * 60 * 1000;
+      const path = temp(`out.mjolnir-12345-${old}-01234567.tmp`, old);
+      vi.spyOn(process, "kill").mockImplementation(() => {
+        if (status === "alive") return true;
+        throw Object.assign(new Error("unknown owner"), { code: status });
+      });
+      expect(sweepStaleTempFiles(dir)).toBe(0);
+      expect(readFileSync(path, "utf8")).toBe("preserved");
+    },
+  );
 });
 
 describe("Windows EBUSY/EPERM retry loop", () => {

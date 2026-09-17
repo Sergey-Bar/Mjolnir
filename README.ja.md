@@ -81,7 +81,7 @@ Mjölnir は、テストスイート、CI workflow、そして手元にあれば
 CI workflow を持つ小さな Playwright スイート、[`examples/demo-repo`](examples/demo-repo) の実際のスキャンです。点数がどこで失われたかはこちら：
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Mjölnir の減点内訳：WORTHINESS 75/100 NEEDS WORK、カテゴリ別スコア、重大度別の減点ボックス、そして FIX THIS FIRST リスト" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="Mjölnir の減点内訳：WORTHINESS 80/100 WORTHY、カテゴリ別スコア、重大度別の減点ボックス、そして FIX THIS FIRST リスト" width="520" />
 </p>
 
 <sub>`npm run docs:hero` により実際のスキャンから生成され、CI でずれがないよう固定されています。同じスキャンの完全な `--verbose` レポートは [`demo.svg`](assets/readme/demo.svg)（`npm run docs:demo`）です。</sub>
@@ -312,8 +312,8 @@ e2e/login.spec.ts
   role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 
 e2e/checkout.spec.ts
-  [█████████████████░░░]  86 / 100
-  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
+  [██████████████████░░]  88 / 100
+  role/text: 4 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 ```
 
 これが測るのは**正しさではなく耐久性**です。`.btn.btn-primary > div:nth-child(2)` は今日は通り、誰かがマークアップに触れるまで通り続けます。低いスコアはテストが壊れていると主張するものではなく、誰も維持を約束していないマークアップに依存していることを示すだけです。

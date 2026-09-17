@@ -32,6 +32,9 @@ jobs:
           - os: macos-latest
             node: 24
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
     # Audit S-7: a hung npm ci or scan must not sit for the 6-hour default.
     timeout-minutes: 20
     # M3: per-job wall-clock minutes go into the job summary. Soft
@@ -170,7 +173,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: coverage-report
+          name: coverage-report-node-${{ matrix.node }}
           path: coverage/
           retention-days: 14
       - name: Upload coverage reports to Codecov

@@ -31,6 +31,7 @@ export {
 export type { SchemaValidationResult } from "./schema-validation.js";
 export type {
   ForensicsReport,
+  NetworkObservation,
   TestRecord,
   TestVerdict,
   Attempt,

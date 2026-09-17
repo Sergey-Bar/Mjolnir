@@ -43,7 +43,7 @@ export const swallowedVerificationFailure = defineRule({
   detectionStrategy: "FRAMEWORK",
   detectionNotes:
     "Groovy try/catch block scan (string-aware brace matching) over the Jenkinsfile text",
-  introduced: "2.0.0",
+  introduced: "1.1.1",
 
   // BORN QUARANTINE (§15.5): ships opt-in via --strict until the corpus
   // measurement proves its FP envelope. Never silent-core.

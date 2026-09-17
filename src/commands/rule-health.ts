@@ -57,7 +57,7 @@ export interface RuleStats {
   };
   /** Rules with a valid measurement (status MEASURED). */
   measured: number;
-  /** Rules a caller must still measure (UNMEASURED + STALE). */
+  /** Rules a caller must still measure (UNMEASURED + STALE + PROVISIONAL). */
   needingMeasurement: number;
   /** Measured / total, 0..1. Total excludes retired rules. */
   coverage: number;
@@ -123,7 +123,8 @@ export function computeRuleStats(rows: readonly RuleHealthRow[]): RuleStats {
     byTier,
     byStatus,
     measured,
-    needingMeasurement: byStatus.UNMEASURED + byStatus.STALE,
+    needingMeasurement:
+      byStatus.UNMEASURED + byStatus.STALE + byStatus.PROVISIONAL,
     coverage: total === 0 ? 0 : measured / total,
   };
 }
@@ -178,7 +179,7 @@ export function renderRuleStats(rows: readonly RuleHealthRow[]): string {
   if (s.needingMeasurement > 0) {
     lines.push(
       "",
-      "Unmeasured/stale rules ship on assumption (LAW-T03: no silent gaps).",
+      "Unmeasured/stale/provisional rules ship on assumption (LAW-T03: no silent gaps).",
       "Run `mjolnir rules health` for the worst-first work queue.",
     );
   } else {

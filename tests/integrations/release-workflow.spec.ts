@@ -27,6 +27,7 @@ interface WorkflowStep {
   uses?: string;
   if?: boolean | string;
   with?: Record<string, unknown>;
+  env?: Record<string, string>;
 }
 
 interface WorkflowJob {
@@ -95,6 +96,29 @@ describe("release.yml", () => {
     const steps = wf.jobs.release?.steps ?? [];
     const publishStep = steps.find((s) => s.run?.includes("npm publish"));
     expect(publishStep?.run).toContain("--provenance");
+  });
+
+  it("publishes the persisted audited tarball without lifecycle rebuilds", () => {
+    const steps = loadReleaseWorkflow().jobs.release?.steps ?? [];
+    const auditAt = steps.findIndex((s) =>
+      s.run?.includes("scripts/pack-audit.mjs"),
+    );
+    const publishAt = steps.findIndex((s) => s.run?.includes("npm publish"));
+    const audit = steps[auditAt]?.run ?? "";
+    expect(auditAt).toBeGreaterThanOrEqual(0);
+    expect(publishAt).toBeGreaterThan(auditAt);
+    expect(audit).toContain('node scripts/pack-audit.mjs "$TARBALL"');
+    expect(audit).toContain('echo "TARBALL=$TARBALL" >> "$GITHUB_ENV"');
+    expect(steps[publishAt]?.run).toContain('npm publish "$TARBALL"');
+    expect(steps[publishAt]?.run).toContain("--ignore-scripts");
+    const install = steps.find((s) =>
+      s.run?.includes("tests/integrations/registry-install.spec.ts"),
+    );
+    expect(install?.env?.REGISTRY_INSTALL_TARBALL).toBe("${{ env.TARBALL }}");
+    for (const step of steps.slice(auditAt + 1, publishAt)) {
+      expect(step.run ?? "").not.toMatch(/^\s*(?:export\s+)?TARBALL=/m);
+      expect(step.run ?? "").not.toContain("npm run build");
+    }
   });
 
   it("declares id-token: write for future OIDC provenance publishing", () => {

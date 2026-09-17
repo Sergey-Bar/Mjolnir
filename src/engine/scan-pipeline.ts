@@ -15,7 +15,7 @@
 
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
-import { relative, resolve, sep } from "node:path";
+import { basename, dirname, relative, resolve, sep } from "node:path";
 
 import {
   compareFindings,
@@ -598,6 +598,7 @@ export async function runFileAnalysisPhase(
       continue;
     }
     let fileBudgetExceeded = false;
+    let fileRuleFailed = false;
     const relPath = relative(workspace.root, path).replaceAll("\\", "/");
     if (!isCiAdapter) {
       const langMap: Record<
@@ -671,6 +672,7 @@ export async function runFileAnalysisPhase(
         fileForRules,
         (f, ruleId, category) => {
           if (!isValidFindingRecord(f)) {
+            fileRuleFailed = true;
             onRuleCrash?.(
               ruleId,
               relPath,
@@ -683,6 +685,7 @@ export async function runFileAnalysisPhase(
           findings.push({ ...f, ruleId, category } as Finding);
         },
         (ruleId, error) => {
+          fileRuleFailed = true;
           onRuleCrash?.(ruleId, relPath, error);
         },
         {
@@ -695,7 +698,13 @@ export async function runFileAnalysisPhase(
           },
         },
       );
-      cache.store(cacheKey, findings.slice(findingsStart), fileBudgetExceeded);
+      if (!fileRuleFailed) {
+        cache.store(
+          cacheKey,
+          findings.slice(findingsStart),
+          fileBudgetExceeded,
+        );
+      }
     } catch {
       // intentional: parse/analysis failure — counted via skippedFiles/parseFailed, never fatal
       skippedFiles++;
@@ -898,69 +907,74 @@ function partitionFindingsByPackage(
   findings: readonly Finding[],
   depGraph: import("./dependency-graph.js").DependencyGraph,
   workspaceRoot: string,
+  declarationsByFile: ReadonlyMap<string, number>,
+  analysisComplete: boolean,
 ): Array<{
   packageName: string;
   path: string;
   findings: Finding[];
   score: number | null;
 }> {
-  const packagePaths = depGraph.allPaths;
-  if (packagePaths.length === 0) return [];
-
-  const normalizedRoot = workspaceRoot.replaceAll("\\", "/");
   const packageMap = new Map<
     string,
-    { packageName: string; path: string; findings: Finding[] }
+    {
+      packageName: string;
+      path: string;
+      findings: Finding[];
+      testDeclarations: number;
+      testFileCount: number;
+    }
   >();
-
-  for (const manifestPath of packagePaths) {
-    const normalizedManifest = manifestPath.replaceAll("\\", "/");
-    const relPath = normalizedManifest
-      .replace(normalizedRoot, "")
-      .replace(/^\//, "");
-    const pathSegments = relPath.split("/");
-    const packageName =
-      pathSegments.length > 1 ? (pathSegments[1] ?? "root") : "root";
-    packageMap.set(manifestPath, {
-      packageName,
-      path: relPath
-        .replace("/package.json", "")
-        .replace("/pyproject.toml", "")
-        .replace("/pom.xml", ""),
-      findings: [],
-    });
+  const addPackage = (path: string) => {
+    const entry = {
+      packageName: path === "" ? "root" : basename(path),
+      path: path || ".",
+      findings: [] as Finding[],
+      testDeclarations: 0,
+      testFileCount: 0,
+    };
+    packageMap.set(path, entry);
+    return entry;
+  };
+  for (const manifestPath of depGraph.allPaths) {
+    const path = relative(workspaceRoot, dirname(manifestPath)).replaceAll(
+      "\\",
+      "/",
+    );
+    if (path === ".." || path.startsWith("../")) continue;
+    if (!packageMap.has(path)) addPackage(path);
   }
-
-  for (const f of findings) {
-    const normalizedFile = f.file.replaceAll("\\", "/");
-    let bestMatch: string | undefined;
-    let bestLen = 0;
-    for (const manifestPath of packagePaths) {
-      const normalizedManifest = manifestPath.replaceAll("\\", "/");
-      const manifestDir = normalizedManifest.replace(/[/\\][^/\\]+$/, "");
-      const relToRoot = manifestDir
-        .replace(normalizedRoot, "")
-        .replace(/^\//, "");
-      if (relToRoot && normalizedFile.startsWith(relToRoot + "/")) {
-        if (relToRoot.length > bestLen) {
-          bestLen = relToRoot.length;
-          bestMatch = manifestPath;
-        }
+  const packageForFile = (file: string) => {
+    const normalizedFile = file.replaceAll("\\", "/");
+    let bestPath = "";
+    for (const path of packageMap.keys()) {
+      if (
+        path.length > bestPath.length &&
+        normalizedFile.startsWith(path + "/")
+      ) {
+        bestPath = path;
       }
     }
-    const target = bestMatch
-      ? packageMap.get(bestMatch)
-      : packageMap.values().next().value;
-    if (target) {
-      target.findings.push(f);
-    }
+    return packageMap.get(bestPath) ?? addPackage("");
+  };
+  for (const f of findings) packageForFile(f.file).findings.push(f);
+  for (const [file, declarations] of declarationsByFile) {
+    const target = packageForFile(file);
+    target.testDeclarations += declarations;
+    target.testFileCount++;
   }
-
   return [...packageMap.values()].map((p) => ({
     packageName: p.packageName,
     path: p.path,
     findings: p.findings,
-    score: p.findings.length === 0 ? 100 : null,
+    score:
+      analysisComplete && p.testDeclarations > 0 && p.testFileCount > 0
+        ? computeTotal(computeDimensions(p.findings), p.findings, {
+            testDeclarations: p.testDeclarations,
+            testFileCount: p.testFileCount,
+            suiteInvalidatingRuleIds: SUITE_INVALIDATING_RULE_IDS,
+          })
+        : null,
   }));
 }
 
@@ -1126,6 +1140,8 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
       o.findings,
       o.dependencyGraph,
       o.workspace.root,
+      o.declarationsByFile,
+      !result.partial && scopeReasons.length === 0 && !o.args.scopeChanged,
     );
     if (packages.length > 1) {
       const monorepoResult = analyzeMonorepo(packages, {
@@ -1266,7 +1282,7 @@ export async function runScan(
   // 2. Monorepo analysis (--monorepo mode)
   // 3. Dependency graph metadata in ScanResult
   const depGraph = buildDependencyGraph(workspace.root);
-  const rulesDigest = computeRulesDigest(activeRules);
+  const rulesDigest = `complete-file-v1:${computeRulesDigest(activeRules)}`;
   // ECO-004: When --cache is active, log incremental safety status.
   // The dependency graph's presence signals that dependency-aware
   // invalidation is possible — cache keys already include rulesDigest

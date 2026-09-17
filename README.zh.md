@@ -81,7 +81,7 @@ Mjölnir 读取测试套件、CI workflow，以及（如果有的话）一次真
 对 [`examples/demo-repo`](examples/demo-repo) 的一次真实扫描，这是一个带 CI workflow 的小型 Playwright 套件。它的分数都扣在了这里：
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Mjölnir 的扣分明细：WORTHINESS 75/100 NEEDS WORK、按类别的评分、按严重级别的扣分框，以及 FIX THIS FIRST 列表" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="Mjölnir 的扣分明细：WORTHINESS 80/100 WORTHY、按类别的评分、按严重级别的扣分框，以及 FIX THIS FIRST 列表" width="520" />
 </p>
 
 <sub>由 `npm run docs:hero` 根据一次真实扫描生成，并在 CI 中锁定以防漂移。同一次扫描的完整 `--verbose` 报告是 [`demo.svg`](assets/readme/demo.svg)（`npm run docs:demo`）。</sub>
@@ -312,8 +312,8 @@ e2e/login.spec.ts
   role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 
 e2e/checkout.spec.ts
-  [█████████████████░░░]  86 / 100
-  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
+  [██████████████████░░]  88 / 100
+  role/text: 4 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 ```
 
 这衡量的是**韧性，而非正确性**。`.btn.btn-primary > div:nth-child(2)` 今天能通过，并会一直通过，直到有人改动标记结构。低分从不声称测试坏了，只说明它依赖于没有人承诺保留的标记结构。

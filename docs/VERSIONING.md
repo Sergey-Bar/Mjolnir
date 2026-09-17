@@ -13,17 +13,17 @@ governance section of [CONTRIBUTING.md](../CONTRIBUTING.md).
 
 At **1.0.0 and every later release**, these surfaces are frozen:
 
-| Surface                             | Commitment                                                                                                                                                             |
-| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| JSON report                         | `schemaVersion: 1` is frozen; changes within v1 are **additive-only** (new optional fields). Removing or renaming a field requires a `schemaVersion: 2` major release. |
-| Exit codes                          | `0` clean · `1` findings at/above gate · `2` partial scan (never blocks) · `10` usage error · `20` internal error — semantics frozen.                                  |
-| CLI verbs & flags                   | No removal or rename without the deprecation cycle below. New verbs/flags are additive.                                                                                |
-| Config keys (`mjolnir.config.json`) | Removal or rename = breaking (major). Additions = minor.                                                                                                               |
-| Plugin & local-rule manifests       | The shape of `QADoctorRule` and JSON rule manifests is frozen; additive fields only.                                                                                   |
-| Rule IDs (`QA-<FAMILY>-NNN`)        | **Immutable and never reused**, once shipped.                                                                                                                          |
-| Tiering                             | A detector behavior change requires a `detectorRevision` bump and re-measurement before a tier change — never silent (see [RULE-LIFECYCLE.md](RULE-LIFECYCLE.md)).     |
-| Support matrix                      | Node 22 + 24 on ubuntu-latest, windows-latest, macos-latest. The CI matrix is the proof; if CI drops a combination, this document changes in the same PR.              |
-| Privacy                             | Scanning is zero-network. Telemetry decisions are governed separately and always opt-in.                                                                               |
+| Surface                             | Commitment                                                                                                                                                                     |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| JSON report                         | `schemaVersion: 1` is frozen; changes within v1 are **additive-only** (new optional fields). Removing or renaming a field requires a `schemaVersion: 2` major release.         |
+| Exit codes                          | `0` clean · `1` findings at/above gate · `2` partial scan (never blocks) · `10` usage error · `20` internal error — semantics frozen.                                          |
+| CLI verbs & flags                   | No removal or rename without the deprecation cycle below. New verbs/flags are additive.                                                                                        |
+| Config keys (`mjolnir.config.json`) | Removal or rename = breaking (major). Additions = minor.                                                                                                                       |
+| Plugin & local-rule manifests       | The shape of `QADoctorRule` and JSON rule manifests is frozen; additive fields only.                                                                                           |
+| Rule IDs (`QA-<FAMILY>-NNN`)        | **Immutable and never reused**, once shipped.                                                                                                                                  |
+| Tiering                             | A detector behavior change requires a `detectorRevision` bump and re-measurement before a tier change — never silent (see [RULE-LIFECYCLE.md](RULE-LIFECYCLE.md)).             |
+| Support matrix                      | Node 22 on ubuntu-latest, windows-latest, macos-latest; Node 24 on ubuntu-latest. The CI matrix is the proof; if CI drops a combination, this document changes in the same PR. |
+| Privacy                             | Scanning is zero-network. Telemetry decisions are governed separately and always opt-in.                                                                                       |
 
 ## What counts as breaking (major bump)
 
@@ -81,10 +81,10 @@ changes are recorded in the CHANGELOG.
 
 ## Support matrix
 
-| Component       | Supported                                                              |
+| Component       | Tested combinations                                                    |
 | --------------- | ---------------------------------------------------------------------- |
-| Node.js         | 22.x, 24.x                                                             |
-| OS              | ubuntu-latest, windows-latest, macos-latest                            |
+| Node.js 22.x    | ubuntu-latest, windows-latest, macos-latest                            |
+| Node.js 24.x    | ubuntu-latest                                                          |
 | Python scanning | 3.x via `tree-sitter` grammars (best-effort, unmeasured rules flagged) |
 
 The GitHub Actions CI matrix (`.github/workflows/ci.yml`) encodes this

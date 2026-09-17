@@ -500,7 +500,7 @@ describe("qa-model measured arms", () => {
 // ─── runtime-corroboration.ts L114 — comparator less-than arm ────────
 
 describe("runtime-corroboration L114 — sort comparator ascending arm", () => {
-  it("two verdicts on DIFFERENT lines sort (la < lb taken)", () => {
+  it("does not extend the last declaration beyond its known location", () => {
     const f = mk({ file: "e2e/a.spec.ts", line: 50 });
     const report = {
       forensicsSchemaVersion: 1,
@@ -522,9 +522,8 @@ describe("runtime-corroboration L114 — sort comparator ascending arm", () => {
       incompleteReasons: [] as string[],
     };
     stampRuntimeCorroboration([f], report);
-    // The containing test for line 50 is the last declaration ≤ 50.
-    expect(f.runtimeCorroboration?.matchedTest?.title).toBe("later");
-    expect(f.trustLevel).toBe("L4");
+    expect(f.runtimeCorroboration?.matchedTest).toBeUndefined();
+    expect(f.trustLevel).toBe("L3");
   });
 
   it("a multi-verdict file where one verdict lacks a line → file-level only (L109 guard)", () => {

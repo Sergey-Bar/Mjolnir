@@ -9,6 +9,7 @@ import {
   readdirSync,
   rmSync,
   symlinkSync,
+  utimesSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -130,6 +131,42 @@ describe("planAndApplyFixes", () => {
     // Audit R-6: a successful dry run is a plan, not a failure.
     expect(results[0]?.status).toBe("planned");
   });
+
+  it.each([true, false])(
+    "dry-run preserves normal and temporary files with findings=%s",
+    (hasFindings) => {
+      const old = Date.now() - 48 * 60 * 60 * 1000;
+      const contents = new Map([
+        ["dry.spec.ts", "test.only('x', () => {});\n"],
+        ["notes.mjolnir-backup.tmp", "user data"],
+        [
+          `fresh.mjolnir-${process.pid}-${Date.now()}-01234567.tmp`,
+          "active write",
+        ],
+        [`stale.mjolnir-2147483647-${old}-01234567.tmp`, "stale write"],
+      ]);
+      for (const [name, text] of contents) writeFileSync(join(dir, name), text);
+      const stale = join(dir, `stale.mjolnir-2147483647-${old}-01234567.tmp`);
+      utimesSync(stale, new Date(old), new Date(old));
+      const before = readdirSync(dir).sort();
+
+      const results = planAndApplyFixes(
+        scan(
+          hasFindings ? [finding("QA-TEST-001", "dry.spec.ts", "`.only`")] : [],
+        ),
+        dir,
+        { dryRun: true },
+      );
+
+      expect(readdirSync(dir).sort()).toEqual(before);
+      for (const [name, text] of contents) {
+        expect(readFileSync(join(dir, name), "utf8")).toBe(text);
+      }
+      expect(results.map((result) => result.status)).toEqual(
+        hasFindings ? ["planned"] : [],
+      );
+    },
+  );
 
   it("never rewrites .only inside strings or comments (audit R-4)", () => {
     const file = "masked.spec.ts";

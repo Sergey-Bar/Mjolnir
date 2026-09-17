@@ -840,11 +840,16 @@ export function runForensicsCommand(
     }
     if (report.totalTests === 0) {
       io.err(
-        "No test results recognized. Expected a Playwright JSON report (report.json) or JUnit XML files.",
+        (report.totalNetworkObservations ?? 0) > 0
+          ? "Network observations recognized, but HAR does not establish test outcomes. Test verification is unavailable."
+          : "No test results recognized. Expected a Playwright JSON report (report.json) or JUnit XML files.",
       );
       return EXIT_PARTIAL;
     }
-    return report.flakyTests > 0 || report.failed > 0
+    if (!report.analysisComplete) return EXIT_PARTIAL;
+    return report.flakyTests > 0 ||
+      report.failed > 0 ||
+      (report.failedNetworkObservations ?? 0) > 0
       ? EXIT_FINDINGS
       : EXIT_CLEAN;
   } catch (err) {
@@ -865,14 +870,17 @@ export async function runRulesCommand(
   }
   if (argv.includes("--health")) {
     const limitArg = argv.find((a) => a.startsWith("--limit="));
-    const parsed = limitArg
-      ? Number.parseInt(limitArg.slice("--limit=".length), 10)
-      : undefined;
-    const limit =
-      parsed !== undefined && Number.isFinite(parsed) && parsed > 0
-        ? parsed
-        : undefined;
-    io.out(renderRuleHealth(buildRuleHealth(), limit));
+    if (limitArg !== undefined) {
+      const rawLimit = limitArg.slice("--limit=".length);
+      const parsed = /^\d+$/.test(rawLimit) ? Number(rawLimit) : Number.NaN;
+      if (!Number.isSafeInteger(parsed) || parsed <= 0) {
+        io.err("Usage: mjolnir rules --health [--limit=<positive-integer>]");
+        return EXIT_USAGE;
+      }
+      io.out(renderRuleHealth(buildRuleHealth(), parsed));
+      return EXIT_CLEAN;
+    }
+    io.out(renderRuleHealth(buildRuleHealth()));
     return EXIT_CLEAN;
   }
 

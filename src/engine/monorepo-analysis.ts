@@ -65,7 +65,7 @@ export function analyzeMonorepo(
 ): MonorepoAnalysisResult {
   const results: PackageResult[] = packages.map((p) => ({
     ...p,
-    verdict: verdictOf(p.score),
+    verdict: hasBlocker(p.findings) ? "fail" : verdictOf(p.score),
   }));
 
   if (results.length === 0) {

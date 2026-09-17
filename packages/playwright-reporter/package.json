@@ -4,10 +4,10 @@
   "description": "Official Playwright JSON reporter for Mjölnir — emits the machine-readable report that `mjolnir forensics`, `triage`, and `pw-report` ingest.",
   "type": "module",
   "main": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs"
     }
   },

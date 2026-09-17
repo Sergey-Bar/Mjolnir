@@ -81,7 +81,7 @@ Mjölnir는 테스트 스위트와 CI workflow, 그리고 있다면 실제 실�
 CI workflow가 있는 작은 Playwright 스위트인 [`examples/demo-repo`](examples/demo-repo)를 실제로 스캔한 결과입니다. 점수는 여기서 깎였습니다.
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Mjölnir의 감점 내역: WORTHINESS 75/100 NEEDS WORK, 카테고리별 점수, 심각도별 감점 상자, 그리고 FIX THIS FIRST 목록" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="Mjölnir의 감점 내역: WORTHINESS 80/100 WORTHY, 카테고리별 점수, 심각도별 감점 상자, 그리고 FIX THIS FIRST 목록" width="520" />
 </p>
 
 <sub>`npm run docs:hero`가 실제 스캔으로 생성하며 CI에서 변경되지 않도록 고정됩니다. 같은 스캔의 전체 `--verbose` 리포트는 [`demo.svg`](assets/readme/demo.svg)입니다 (`npm run docs:demo`).</sub>
@@ -312,8 +312,8 @@ e2e/login.spec.ts
   role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 
 e2e/checkout.spec.ts
-  [█████████████████░░░]  86 / 100
-  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
+  [██████████████████░░]  88 / 100
+  role/text: 4 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 ```
 
 이 점수는 **정확성이 아니라 복원력**을 측정합니다. `.btn.btn-primary > div:nth-child(2)`는 오늘 통과하고, 누군가 마크업을 건드리기 전까지 계속 통과합니다. 낮은 점수는 테스트가 망가졌다고 주장하지 않으며, 아무도 유지하겠다고 약속하지 않은 마크업에 의존한다는 뜻일 뿐입니다.

@@ -81,7 +81,7 @@ Mjölnir liest die Testsuite, die CI-Workflows und, falls vorhanden, den Report 
 Ein echter Scan von [`examples/demo-repo`](examples/demo-repo), einer kleinen Playwright-Suite mit CI-Workflow. Hier sind seine Punkte geblieben:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Mjölnirs Abzugsaufschlüsselung: WORTHINESS 75/100 NEEDS WORK, der Score nach Kategorie, die Abzugsbox nach Schweregrad und eine FIX THIS FIRST-Liste" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="Mjölnirs Abzugsaufschlüsselung: WORTHINESS 80/100 WORTHY, der Score nach Kategorie, die Abzugsbox nach Schweregrad und eine FIX THIS FIRST-Liste" width="520" />
 </p>
 
 <sub>Erzeugt mit `npm run docs:hero` aus einem echten Scan und in der CI gegen Abweichungen gesichert. Der vollständige `--verbose`-Report desselben Scans ist [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
@@ -312,8 +312,8 @@ e2e/login.spec.ts
   role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 
 e2e/checkout.spec.ts
-  [█████████████████░░░]  86 / 100
-  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
+  [██████████████████░░]  88 / 100
+  role/text: 4 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 ```
 
 Das misst **Robustheit, nicht Korrektheit**. `.btn.btn-primary > div:nth-child(2)` besteht heute und besteht weiter, bis jemand das Markup anfasst. Ein niedriger Score behauptet nie, der Test sei kaputt, nur dass er von Markup abhängt, dessen Erhalt niemand versprochen hat.
