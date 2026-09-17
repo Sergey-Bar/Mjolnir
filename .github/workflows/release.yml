@@ -320,9 +320,9 @@ jobs:
       - name: Upgrade npm for OIDC trusted publishing
         if: vars.NPM_PUBLISH == 'true' && steps.registry.outputs.published != 'true'
         run: |
-          npm install -g npm@11.9.1 --no-fund --no-audit
+          npm install -g npm@11.19.1 --no-fund --no-audit
           hash -r
-          npm --version | grep -Fx 11.9.1
+          npm --version | grep -Fx 11.19.1
 
       # setup-node writes an .npmrc containing `always-auth=true` and
       # `//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}`. With
