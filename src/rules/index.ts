@@ -172,6 +172,10 @@ export const RULES: readonly QADoctorRule[] = [
   sePythonSleepLookup,
 ];
 
+/**
+ * Look up a rule by its ID in the active registry.
+ * Returns undefined if the ID is not found (including retired IDs).
+ */
 export function getRule(id: string): QADoctorRule | undefined {
   return RULES.find((r) => r.id === id);
 }

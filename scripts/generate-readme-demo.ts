@@ -48,6 +48,7 @@ const OUT_PATH = join(ROOT, "assets", "readme", "demo.svg");
 const LINE_DELAY_S = 0.05;
 const HOLD_S = 8;
 
+/** Render terminal lines as an SVG with per-line reveal animation. */
 function renderSvg(lines: string[]): string {
   const longest = Math.max(...lines.map((l) => stripAnsi(l).length));
   const width = Math.ceil(PAD_X * 2 + longest * CHAR_W);
@@ -132,6 +133,7 @@ export async function buildDemoSvg(): Promise<string> {
   return renderSvg(lines);
 }
 
+/** Entry point — builds the demo SVG from a real scan and writes it to disk. */
 async function main(): Promise<void> {
   const svg = await buildDemoSvg();
   mkdirSync(dirname(OUT_PATH), { recursive: true });

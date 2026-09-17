@@ -321,12 +321,12 @@ describe("runStdioTransport", () => {
     const transportDone = runStdioTransport(input, output);
 
     output.emit("error", new Error("write failed"));
-    await new Promise((r) => setTimeout(r, 50));
+    await new Promise((r) => setTimeout(r, 0));
 
     input.write(
       JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize" }) + "\n",
     );
-    await new Promise((r) => setTimeout(r, 50));
+    await new Promise((r) => setImmediate(r));
     input.end();
     await transportDone;
 
