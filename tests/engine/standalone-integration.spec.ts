@@ -41,7 +41,7 @@ function makeFinding(overrides: Partial<Finding> = {}): Finding {
   };
 }
 
-describe("standalone module integration (Release 1.1.1)", () => {
+describe("standalone module integration (Release 2.0.0)", () => {
   describe("correlation engine wired into pipeline", () => {
     it("correlateFindings produces conclusions for multi-finding input", () => {
       const findings = [

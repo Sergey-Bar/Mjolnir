@@ -9,6 +9,16 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [2.0.0] — 2026-09-17
+
+### Fixed
+
+- **NPM publishing pipeline** — fixed npm upgrade syntax (`npm@11.19.1` instead of invalid `npm@11.9.1`), removed Windows local path leak from runtime docs that triggered pack-audit, enabling OIDC trusted publishing for NPM release.
+
+### Changed
+
+- **Version bump** — bumped package version from 1.1.1 to 2.0.0 across all surfaces (package.json, ENGINE_VERSION, smithery.yaml, rule metadata, docs).
+
 ## [Unreleased]
 
 ## [1.1.1] — 2026-09-16

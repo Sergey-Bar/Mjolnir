@@ -112,7 +112,7 @@ export const RULES: readonly QADoctorRule[] = [
   // quarantine (§15.5) until measured. Introduced 1.1.0.
   canNeverFailGate,
   // P3c: Jenkins try/catch verification swallow — born quarantine (§15.5).
-  // Introduced 1.1.1.
+  // Introduced 2.0.0.
   swallowedVerificationFailure,
   pyNoAssertions,
   pyHardSleep,
