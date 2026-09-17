@@ -95,6 +95,11 @@ const fixture: ScanResult = {
     provisionalRuleIds: [],
     ceilingReasons: [],
   },
+  forensicVerdicts: {
+    classifications: 2,
+    byVerdict: { flaky: 1, inconclusive: 1 },
+    inconclusive: 1,
+  },
   agenticProfile: {
     testFiles: 1,
     generatedMarkedFiles: 0,

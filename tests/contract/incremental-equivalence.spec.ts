@@ -12,7 +12,10 @@
  * - The safety check is order-independent.
  */
 
-import { describe, expect, it } from "vitest";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { afterEach, describe, expect, it } from "vitest";
+import { runScan } from "../../src/engine/scan-pipeline.js";
 
 import {
   computeContentHash,
@@ -21,7 +24,71 @@ import {
   type FileSnapshot,
 } from "../../src/engine/incremental-analysis.js";
 
+const directories: string[] = [];
+
+afterEach(() => {
+  for (const directory of directories.splice(0)) {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 describe("TI-005: incremental/full equivalence", () => {
+  it("cached source edits, additions and deletions match a fresh full scan", async () => {
+    const directory = mkdtempSync(join(process.cwd(), ".ti005-"));
+    directories.push(directory);
+    const bad = `import { test, expect } from '@playwright/test';\ntest('checkout', async ({ page }) => {\n  await page.waitForTimeout(3000);\n  expect(true).toBe(true);\n});\n`;
+    const clean = `import { test, expect } from '@playwright/test';\ntest('checkout', async ({ page }) => {\n  await expect(page.getByRole('heading')).toBeVisible();\n});\n`;
+    writeFileSync(join(directory, "stable.spec.ts"), bad);
+    writeFileSync(join(directory, "edited.spec.ts"), bad);
+    writeFileSync(join(directory, "deleted.spec.ts"), bad);
+    const args = {
+      target: directory,
+      maxDurationMs: Number.POSITIVE_INFINITY,
+      json: true,
+      verbose: false,
+      scopeChanged: false,
+      format: "json" as const,
+    };
+    const before = await runScan({ ...args, cache: true });
+    expect(before.findings.some((f) => f.file === "deleted.spec.ts")).toBe(
+      true,
+    );
+    writeFileSync(join(directory, "edited.spec.ts"), clean);
+    writeFileSync(join(directory, "added.spec.ts"), bad);
+    rmSync(join(directory, "deleted.spec.ts"));
+    const incremental = await runScan({ ...args, cache: true });
+    const full = await runScan({ ...args, cache: false });
+    expect(incremental.cache?.hits).toBe(1);
+    expect(incremental.cache?.misses).toBe(2);
+    expect(incremental.findings.some((f) => f.file === "added.spec.ts")).toBe(
+      true,
+    );
+    expect(incremental.findings.some((f) => f.file === "deleted.spec.ts")).toBe(
+      false,
+    );
+    expect(
+      incremental.findings.some(
+        (f) => f.file === "edited.spec.ts" && f.ruleId === "QA-PW-101",
+      ),
+    ).toBe(false);
+    expect(incremental.findings).toEqual(full.findings);
+    expect(incremental.findings).not.toEqual(before.findings);
+    expect(incremental.runIdentity).toEqual(full.runIdentity);
+    expect(incremental.score).toBe(full.score);
+    expect(incremental.dimensions).toEqual(full.dimensions);
+    expect(incremental.rawDeductions).toBe(full.rawDeductions);
+    expect(incremental.effectiveDeductions).toBe(full.effectiveDeductions);
+    expect(incremental.trustSummary).toEqual(full.trustSummary);
+    expect(incremental.scopeIntegrity).toEqual(full.scopeIntegrity);
+    expect({ ...incremental.analysisStatus, durationMs: undefined }).toEqual({
+      ...full.analysisStatus,
+      durationMs: undefined,
+    });
+    expect(incremental.testDeclarationCount).toBe(full.testDeclarationCount);
+    expect(incremental.testFileCount).toBe(full.testFileCount);
+    expect(incremental.partial).toBe(false);
+    expect(full.partial).toBe(false);
+  });
   describe("computeContentHash", () => {
     it("produces a stable sha256 hex digest", () => {
       const hash = computeContentHash("const x = 1;\n");

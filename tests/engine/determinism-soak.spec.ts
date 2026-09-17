@@ -6,7 +6,11 @@
  * construction with adversarial inputs to verify determinism.
  */
 
-import { describe, expect, it } from "vitest";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { afterEach, describe, expect, it } from "vitest";
+import { runScan } from "../../src/engine/scan-pipeline.js";
+import type { ScanResult } from "../../src/types.js";
 
 import {
   buildRunIdentity,
@@ -14,7 +18,85 @@ import {
   type RunIdentityInput,
 } from "../../src/engine/run-identity.js";
 
+const directories: string[] = [];
+
+afterEach(() => {
+  for (const directory of directories.splice(0)) {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+function trustResult(result: ScanResult) {
+  return {
+    findings: result.findings,
+    score: result.score,
+    dimensions: result.dimensions,
+    rawDeductions: result.rawDeductions,
+    effectiveDeductions: result.effectiveDeductions,
+    trustSummary: result.trustSummary,
+    scopeIntegrity: result.scopeIntegrity,
+    analysisStatus: { ...result.analysisStatus, durationMs: undefined },
+    partial: result.partial,
+    testFileCount: result.testFileCount,
+    testDeclarationCount: result.testDeclarationCount,
+  };
+}
+
 describe("TI-015: determinism soak", () => {
+  it("repeated real scans with identical identity produce identical trust results", async () => {
+    const directory = mkdtempSync(join(process.cwd(), ".ti015-"));
+    directories.push(directory);
+    writeFileSync(
+      join(directory, "checkout.spec.ts"),
+      `import { test, expect } from '@playwright/test';\ntest('checkout', async ({ page }) => {\n  await page.waitForTimeout(3000);\n  expect(true).toBe(true);\n});\n`,
+    );
+    writeFileSync(
+      join(directory, "mjolnir.report.json"),
+      JSON.stringify({
+        suites: [
+          {
+            specs: [
+              {
+                title: "checkout",
+                file: "checkout.spec.ts",
+                line: 2,
+                tests: [
+                  {
+                    results: [
+                      { status: "failed", duration: 10 },
+                      { status: "passed", duration: 10 },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      }),
+    );
+    const args = {
+      target: directory,
+      maxDurationMs: Number.POSITIVE_INFINITY,
+      json: true,
+      verbose: false,
+      scopeChanged: false,
+      format: "json" as const,
+      cache: false,
+    };
+    const baseline = await runScan(args);
+    expect(baseline.partial).toBe(false);
+    expect(baseline.runIdentity?.scanId).toMatch(/^[a-f0-9]{64}$/);
+    expect(baseline.findings.some((f) => f.ruleId === "QA-PW-101")).toBe(true);
+    expect(
+      baseline.findings.some((f) => f.runtimeCorroboration !== undefined),
+    ).toBe(true);
+    expect(baseline.trustSummary).toBeDefined();
+    for (let i = 0; i < 5; i++) {
+      const result = await runScan(args);
+      expect(result.runIdentity).toEqual(baseline.runIdentity);
+      expect(trustResult(result)).toEqual(trustResult(baseline));
+    }
+  });
   describe("adversarial file ordering", () => {
     it("different readdir order produces same identity", () => {
       const files = Array.from({ length: 50 }, (_, i) => ({

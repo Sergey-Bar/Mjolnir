@@ -260,5 +260,8 @@ export function buildMachineContract(result: ScanResult): MachineContract {
     ...(result.agenticProfile !== undefined
       ? { provenance: result.agenticProfile }
       : {}),
+    ...(result.forensicVerdicts !== undefined
+      ? { forensicVerdicts: result.forensicVerdicts }
+      : {}),
   };
 }

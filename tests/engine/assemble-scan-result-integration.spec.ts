@@ -546,6 +546,13 @@ describe("assembleScanResult — standalone module wiring", () => {
         byVerdict: { flaky: 1, "likely-real-defect": 1, inconclusive: 1 },
         inconclusive: 1,
       });
+      expect(
+        summarizeForensicVerdicts({
+          ...report,
+          analysisComplete: false,
+          incompleteReasons: ["record-count-limit"],
+        }),
+      ).toBeUndefined();
     });
   });
 

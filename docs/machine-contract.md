@@ -93,6 +93,12 @@ contract (object):
     - `findingsInGeneratedFiles` (number)
     - `findingsInUnmarkedFiles` (number)
     - `note` (string (enum'd))
+  - `forensicVerdicts` (object):
+    - `classifications` (number)
+    - `byVerdict` (object):
+      - `flaky` (number)
+      - `inconclusive` (number)
+    - `inconclusive` (number)
 ```
 
 ## Annotation limits

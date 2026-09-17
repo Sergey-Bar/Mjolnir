@@ -834,8 +834,12 @@ export function runForensicsCommand(
     io.out(output);
     if (flakyMdPath) io.out(`\nWrote ${flakyMdPath}`);
     if (!report.analysisComplete) {
+      const skipped =
+        report.skippedReports > 0
+          ? `${report.skippedReports} report(s) skipped; `
+          : "";
       io.err(
-        `forensics: ${report.skippedReports} report(s) skipped (${report.incompleteReasons.join(", ")}) — analysis is partial`,
+        `forensics: ${skipped}${report.incompleteReasons.join(", ")} — analysis is partial`,
       );
     }
     if (report.totalTests === 0) {

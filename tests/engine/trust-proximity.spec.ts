@@ -9,11 +9,93 @@
 
 import { describe, expect, it } from "vitest";
 
-import { deriveTrustLevel } from "../../src/engine/runtime-corroboration.js";
-import type { RuntimeCorroboration } from "../../src/types.js";
+import {
+  deriveTrustLevel,
+  stampRuntimeCorroboration,
+} from "../../src/engine/runtime-corroboration.js";
+import type { Finding, RuntimeCorroboration } from "../../src/types.js";
+import type { ForensicsReport } from "../../src/forensics/types.js";
 
 describe("TI-016: runtime proximity ≠ automatic promotion", () => {
+  it.each([
+    ["E0", "L4", "test"],
+    ["E1", "L5", "defect"],
+    ["E2", "L5", "defect"],
+  ] as const)(
+    "stamps %s with retry evidence as %s and %s corroboration",
+    (evidenceLevel, trustLevel, corroborationLevel) => {
+      const finding: Finding = {
+        ruleId: "QA-PW-101",
+        category: "QA-PW",
+        severity: "warning",
+        confidence: "high",
+        findingType: "deterministic-defect",
+        qaImpact: "FLAKY-RISK",
+        evidenceLevel,
+        file: "checkout.spec.ts",
+        line: 2,
+        column: 1,
+        message: "hard wait",
+        why: "timing dependency",
+        fix: "wait for state",
+      };
+      const report: ForensicsReport = {
+        forensicsSchemaVersion: 1,
+        source: "playwright-json",
+        totalTests: 1,
+        failed: 0,
+        skipped: 0,
+        retriedTests: 1,
+        flakyTests: 1,
+        totalDurationMs: 20,
+        analysisComplete: true,
+        skippedReports: 0,
+        incompleteReasons: [],
+        verdicts: [
+          {
+            file: finding.file,
+            line: finding.line,
+            title: "checkout",
+            attempts: 2,
+            finalStatus: "passed",
+            totalDurationMs: 20,
+            passedOnRetry: true,
+            everFailed: true,
+            skipped: false,
+          },
+        ],
+      };
+      expect(stampRuntimeCorroboration([finding], report)).toBe(1);
+      expect(finding.trustLevel).toBe(trustLevel);
+      expect(finding.runtimeCorroboration?.level).toBe(corroborationLevel);
+      expect(finding.runtimeCorroboration?.matchedTest?.passedOnRetry).toBe(
+        true,
+      );
+    },
+  );
+
   describe("deriveTrustLevel", () => {
+    it("inferred E0 with defect corroboration remains L4", () => {
+      expect(
+        deriveTrustLevel(
+          { findingType: "observation", confidence: "high" },
+          { level: "defect", source: "playwright-json", testsExecuted: 1 },
+        ),
+      ).toBe("L4");
+    });
+
+    it("E1 with defect corroboration reaches L5", () => {
+      expect(
+        deriveTrustLevel(
+          {
+            evidenceLevel: "E1",
+            findingType: "heuristic-risk",
+            confidence: "medium",
+          },
+          { level: "defect", source: "playwright-json", testsExecuted: 1 },
+        ),
+      ).toBe("L5");
+    });
     it("E0 without corroboration → L0", () => {
       const level = deriveTrustLevel({
         evidenceLevel: "E0",
@@ -67,7 +149,7 @@ describe("TI-016: runtime proximity ≠ automatic promotion", () => {
       expect(level).toBe("L4");
     });
 
-    it("E0 with defect-level corroboration → L5 (runtime upgrades regardless of static level)", () => {
+    it("E0 with defect-level corroboration → L4, never L5", () => {
       const corroboration: RuntimeCorroboration = {
         level: "defect",
         source: "playwright-json",
@@ -77,10 +159,7 @@ describe("TI-016: runtime proximity ≠ automatic promotion", () => {
         { evidenceLevel: "E0", findingType: "observation", confidence: "low" },
         corroboration,
       );
-      // Current implementation: defect-level corroboration → L5 regardless
-      // of static evidence level. TI-016 tests that this requires runtime
-      // evidence — without corroboration, E0 stays at L0.
-      expect(level).toBe("L5");
+      expect(level).toBe("L4");
     });
 
     it("E2 with defect-level corroboration → L5", () => {

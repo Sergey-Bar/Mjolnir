@@ -128,6 +128,30 @@ describe("stale temp ownership", () => {
     expect(kill).toHaveBeenCalledExactlyOnceWith(12345, 0);
   });
 
+  it("preserves a stale temp when advisory cleanup cannot unlink it", () => {
+    const old = Date.now() - 48 * 60 * 60 * 1000;
+    const path = temp(`out.mjolnir-12345-${old}-01234567.tmp`, old);
+    const kill = vi.spyOn(process, "kill").mockImplementation(() => {
+      throw Object.assign(new Error("no owner"), { code: "ESRCH" });
+    });
+    state.unlinkThrows = true;
+    expect(sweepStaleTempFiles(dir)).toBe(0);
+    expect(kill).toHaveBeenCalledExactlyOnceWith(12345, 0);
+    expect(readFileSync(path, "utf8")).toBe("preserved");
+    state.unlinkThrows = false;
+    expect(sweepStaleTempFiles(dir)).toBe(1);
+    expect(existsSync(path)).toBe(false);
+  });
+
+  it("does not probe or remove files with out-of-range owner pids", () => {
+    const old = Date.now() - 48 * 60 * 60 * 1000;
+    const path = temp(`out.mjolnir-9999999999-${old}-01234567.tmp`, old);
+    const kill = vi.spyOn(process, "kill");
+    expect(sweepStaleTempFiles(dir)).toBe(0);
+    expect(kill).not.toHaveBeenCalled();
+    expect(readFileSync(path, "utf8")).toBe("preserved");
+  });
+
   it.each(["alive", "EPERM", "EACCES"])(
     "preserves old temps when owner is %s",
     (status) => {

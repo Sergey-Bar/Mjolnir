@@ -6,6 +6,9 @@
  * structural property that every CURRENT invariant has no quarter.
  */
 
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import ts from "typescript";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -69,19 +72,55 @@ describe("TRUST_INVARIANTS registry", () => {
     }
   });
 
-  it("CURRENT invariants have no quarter", () => {
+  it("CURRENT invariants map to explicit executable test cases", () => {
     for (const inv of TRUST_INVARIANTS) {
-      if (inv.status === "CURRENT") {
-        expect(inv.quarter).toBeUndefined();
+      if (inv.status !== "CURRENT") continue;
+      expect(inv.verificationTest).toMatch(/^tests\/.+\.spec\.ts$/);
+      expect(inv.verificationCase).toBeTruthy();
+      expect(inv.verificationGap).toBeUndefined();
+      const path = fileURLToPath(
+        new URL(`../../${inv.verificationTest}`, import.meta.url),
+      );
+      const source = ts.createSourceFile(
+        path,
+        readFileSync(path, "utf8"),
+        ts.ScriptTarget.Latest,
+        true,
+      );
+      const cases: string[] = [];
+      function visit(node: ts.Node): void {
+        if (
+          ts.isCallExpression(node) &&
+          ts.isIdentifier(node.expression) &&
+          ["it", "test"].includes(node.expression.text)
+        ) {
+          const title = node.arguments[0];
+          const callback = node.arguments[node.arguments.length - 1];
+          if (
+            title &&
+            ts.isStringLiteral(title) &&
+            callback &&
+            (ts.isArrowFunction(callback) ||
+              ts.isFunctionExpression(callback)) &&
+            ts.isBlock(callback.body) &&
+            callback.body.statements.length > 0
+          ) {
+            cases.push(title.text);
+          }
+        }
+        ts.forEachChild(node, visit);
       }
+      visit(source);
+      expect(cases, inv.id).toContain(inv.verificationCase);
     }
   });
 
-  it("all 20 invariants are CURRENT (zero REQUIRED)", () => {
-    const required = TRUST_INVARIANTS.filter(
-      (inv) => inv.status === "REQUIRED",
-    );
-    expect(required).toHaveLength(0);
+  it("REQUIRED invariants disclose the missing behavior verifier", () => {
+    for (const inv of TRUST_INVARIANTS) {
+      if (inv.status !== "REQUIRED") continue;
+      expect(inv.verificationGap, inv.id).toBeTruthy();
+      expect(inv.verificationCase, inv.id).toBeUndefined();
+    }
   });
 
   it("TI-001 is CURRENT with scope Scan", () => {
@@ -91,10 +130,10 @@ describe("TRUST_INVARIANTS registry", () => {
     expect(inv?.scope).toBe("Scan");
   });
 
-  it("TI-005 is CURRENT with scope Scan", () => {
+  it("TI-005 remains REQUIRED until dependency-aware incremental scanning is verified", () => {
     const inv = getInvariantById("TI-005");
     expect(inv).toBeDefined();
-    expect(inv?.status).toBe("CURRENT");
+    expect(inv?.status).toBe("REQUIRED");
     expect(inv?.quarter).toBeUndefined();
     expect(inv?.scope).toBe("Scan");
   });
@@ -115,10 +154,13 @@ describe("getInvariantById", () => {
 });
 
 describe("getRequiredForQuarter", () => {
-  it("all quarters return empty (all invariants are CURRENT)", () => {
+  it("returns only REQUIRED invariants targeted at the requested quarter", () => {
     for (const q of ["Q1", "Q2", "Q3", "Q4"] as const) {
-      const result = getRequiredForQuarter(q);
-      expect(result).toHaveLength(0);
+      expect(getRequiredForQuarter(q)).toEqual(
+        TRUST_INVARIANTS.filter(
+          (inv) => inv.status === "REQUIRED" && inv.quarter === q,
+        ),
+      );
     }
   });
 });

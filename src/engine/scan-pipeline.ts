@@ -744,6 +744,7 @@ export interface PostScanResult {
 export function summarizeForensicVerdicts(
   report: import("../forensics/types.js").ForensicsReport,
 ): ForensicVerdictSummary | undefined {
+  if (report.analysisComplete !== true) return undefined;
   const byVerdict: Record<string, number> = {};
   let classifications = 0;
   let inconclusive = 0;

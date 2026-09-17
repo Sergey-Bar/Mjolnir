@@ -27,7 +27,7 @@ import {
   renderLeaderboard,
 } from "../../src/forensics/analyze.js";
 import { runForensicsCommand } from "../../src/cli-handlers.js";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -113,6 +113,152 @@ describe("parseHarJson", () => {
 });
 
 describe("network observation contracts", () => {
+  it("strips query and fragment data from relative request identities", () => {
+    const records = parseHarJson({
+      log: {
+        entries: [
+          {
+            request: { url: "/users?token=secret#private" },
+            response: { status: 200 },
+          },
+        ],
+      },
+    });
+    expect(records[0]?.title).toBe("GET /users");
+    expect(JSON.stringify(records)).not.toContain("secret");
+    expect(JSON.stringify(records)).not.toContain("private");
+  });
+
+  it.each([
+    [{ code: "ECONNRESET" }, '{"code":"ECONNRESET"}'],
+    [false, "false"],
+    [Symbol("transport unavailable"), "Symbol(transport unavailable)"],
+    [1n, "[unserializable transport error]"],
+  ])(
+    "retains non-string transport failures as failed network evidence (%s)",
+    (error, expected) => {
+      const records = parseHarJson({
+        log: {
+          entries: [
+            { request: { url: "https://example.com" }, response: { error } },
+          ],
+        },
+      });
+      expect(records).toHaveLength(1);
+      expect(records[0]?.attempts).toEqual([
+        { index: 1, status: "failed", durationMs: 0 },
+      ]);
+      expect(records[0]?.errors).toEqual([expected]);
+      const report = analyze(records, "har");
+      expect(report.totalTests).toBe(0);
+      expect(report.failedNetworkObservations).toBe(1);
+    },
+  );
+
+  it("keeps missing and skipped network outcomes unknown rather than fabricating failures", () => {
+    const report = analyze(
+      [
+        {
+          file: "har",
+          title: "missing",
+          evidenceKind: "network-observation",
+          attempts: [],
+        },
+        {
+          file: "har",
+          title: "skipped",
+          evidenceKind: "network-observation",
+          attempts: [{ index: 1, status: "skipped", durationMs: 0 }],
+        },
+      ],
+      "har",
+    );
+    expect(
+      report.networkObservations?.map((observation) => observation.outcome),
+    ).toEqual(["unknown", "unknown"]);
+    expect(report.failedNetworkObservations).toBe(0);
+    expect(report.totalTests).toBe(0);
+    expect(report.verdicts).toEqual([]);
+    expect(renderFlakyMd(report)).toContain(
+      "_No test outcomes available from network observations._",
+    );
+    expect(renderFlakyMd(report)).not.toContain(
+      "No flaky or failing tests detected",
+    );
+  });
+
+  it("does not write or claim a test artifact for network-only evidence", () => {
+    const dir = mkdtempSync(join(tmpdir(), "mjolnir-har-no-artifact-"));
+    try {
+      const path = join(dir, "network.har");
+      writeFileSync(path, JSON.stringify(HAR));
+      const result = runForensics(path);
+      expect(result.report.totalNetworkObservations).toBe(3);
+      expect(result.flakyMdPath).toBeUndefined();
+      expect(existsSync(join(dir, "FLAKY.md"))).toBe(false);
+      expect(result.output).toContain(
+        "FLAKY.md was not written — network observations do not establish test outcomes.",
+      );
+      expect(result.output).not.toContain("Full details in FLAKY.md");
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("propagates a single HAR entry cap and preserves partial status alongside valid tests", () => {
+    const dir = mkdtempSync(join(tmpdir(), "mjolnir-har-single-limit-"));
+    try {
+      const path = join(dir, "network.har");
+      writeFileSync(
+        path,
+        JSON.stringify({
+          log: {
+            entries: [
+              HAR.log.entries[0],
+              ...Array.from({ length: 20_000 }, () => null),
+            ],
+          },
+        }),
+      );
+      const { report } = runForensics(path, { writeFlakyMd: false });
+      expect(report.totalNetworkObservations).toBe(1);
+      expect(report.analysisComplete).toBe(false);
+      expect(report.skippedReports).toBe(0);
+      expect(report.incompleteReasons).toEqual(["entry-count-limit"]);
+      writeFileSync(
+        join(dir, "valid.xml"),
+        '<testsuite><testcase name="ok"/></testsuite>',
+      );
+      const errors: string[] = [];
+      expect(
+        runForensicsCommand([dir, "--no-flaky-md"], {
+          out: () => {},
+          err: (s) => errors.push(String(s)),
+        }),
+      ).toBe(2);
+      expect(errors.join("\n")).toContain("analysis is partial");
+      expect(errors.join("\n")).toContain("entry-count-limit");
+      expect(errors.join("\n")).not.toContain("0 report(s) skipped");
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("marks structurally invalid HAR partial instead of treating it as an unrelated JSON config", () => {
+    const dir = mkdtempSync(join(tmpdir(), "mjolnir-har-shape-"));
+    try {
+      const path = join(dir, "network.har");
+      writeFileSync(path, JSON.stringify({ log: { entries: "unavailable" } }));
+      const { report } = runForensics(path, { writeFlakyMd: false });
+      expect(report.source).toBe("har");
+      expect(report.totalTests).toBe(0);
+      expect(report.analysisComplete).toBe(false);
+      expect(report.skippedReports).toBe(1);
+      expect(report.incompleteReasons).toEqual(["parse-failure"]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
   it.each([-1, -1000, Number.NaN, Number.POSITIVE_INFINITY])(
     "normalizes unavailable duration %s",
     (time) => {

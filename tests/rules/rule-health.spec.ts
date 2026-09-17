@@ -54,6 +54,29 @@ describe("buildRuleHealth", () => {
     }
   });
 
+  it("omits absent metadata and excludes retired rules supplied explicitly", () => {
+    const minimal = {
+      id: "QA-ACME-001",
+      title: "Minimal rule",
+      category: "QA-TEST" as const,
+      severity: "info" as const,
+      confidence: "low" as const,
+      findingType: "observation" as const,
+      qaImpact: "HYGIENE" as const,
+      appliesTo: "test-files" as const,
+      run: () => [],
+    };
+    const retiredId = RETIRED_RULE_IDS[0];
+    if (!retiredId) throw new Error("expected a retired rule in the registry");
+    const rows = buildRuleHealth([minimal, { ...minimal, id: retiredId }]);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ ruleId: minimal.id, status: "UNMEASURED" });
+    expect(rows[0]).not.toHaveProperty("falsePositiveRisk");
+    expect(rows[0]).not.toHaveProperty("measuredFpRate");
+    expect(rows[0]).not.toHaveProperty("measuredFpN");
+    expect(rows[0]).not.toHaveProperty("measuredDetectorRevision");
+  });
+
   it("is deterministic (two builds are byte-identical)", () => {
     expect(JSON.stringify(buildRuleHealth())).toBe(
       JSON.stringify(buildRuleHealth()),
@@ -146,6 +169,19 @@ describe("sortHealthQueue", () => {
     expect(sorted.map((r) => r.ruleId)).toEqual(["QA-A-001", "QA-Z-001"]);
   });
 
+  it("uses zero for absent measured rates and preserves equal-id duplicates", () => {
+    const first = mk({ title: "first" });
+    const second = mk({ title: "second" });
+    const zero = mk({ ruleId: "QA-ZZ-001", measuredFpRate: 0 });
+    const worse = mk({ ruleId: "QA-AA-001", measuredFpRate: 0.2 });
+    expect(sortHealthQueue([zero, first, worse, second])).toEqual([
+      worse,
+      first,
+      second,
+      zero,
+    ]);
+  });
+
   it("does not mutate the input array", () => {
     const input = [
       mk({ ruleId: "QA-B-001", status: "UNMEASURED" }),
@@ -158,6 +194,57 @@ describe("sortHealthQueue", () => {
 });
 
 describe("renderers", () => {
+  it("reports full measurement coverage without an assumption warning", () => {
+    const row: RuleHealthRow = {
+      ruleId: "QA-ACME-001",
+      title: "Measured rule",
+      category: "QA-TEST",
+      tier: "core",
+      status: "MEASURED",
+      detectorRevision: 2,
+      measuredDetectorRevision: 2,
+      measuredFpRate: 0.04,
+      measuredFpN: 25,
+    };
+    const text = renderRuleStats([row]);
+    expect(text).toContain("Measured coverage: 100% (1/1)");
+    expect(text).toContain("Needing measurement: 0");
+    expect(text).toContain("Every active rule carries a valid measurement.");
+    expect(text).not.toContain("ship on assumption");
+  });
+
+  it("renders measured rates, sample sizes and stale detector revisions distinctly", () => {
+    const measured: RuleHealthRow = {
+      ruleId: "QA-ACME-001",
+      title: "Measured rule",
+      category: "QA-TEST",
+      tier: "core",
+      status: "MEASURED",
+      detectorRevision: 2,
+      measuredDetectorRevision: 2,
+      measuredFpRate: 0.04,
+      measuredFpN: 25,
+    };
+    const stale: RuleHealthRow = {
+      ...measured,
+      ruleId: "QA-ACME-002",
+      title: "Stale rule",
+      status: "STALE",
+      detectorRevision: 3,
+    };
+    const text = renderRuleHealth([measured, stale]);
+    expect(text).toMatch(
+      /STALE\s+QA-ACME-002\s+core\s+4%\s+25\s+3<-2\s+Stale rule/,
+    );
+    expect(text).toMatch(
+      /MEASURED\s+QA-ACME-001\s+core\s+4%\s+25\s+2\s+Measured rule/,
+    );
+    expect(text.indexOf(stale.ruleId)).toBeLessThan(
+      text.indexOf(measured.ruleId),
+    );
+    expect(text).not.toContain("more (raise --limit");
+  });
+
   it("renderRuleStats states coverage against the full registry", () => {
     const rows = buildRuleHealth();
     const text = renderRuleStats(rows);

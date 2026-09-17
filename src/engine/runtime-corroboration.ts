@@ -101,7 +101,12 @@ export function stampRuntimeCorroboration(
       matched !== undefined &&
       !matched.skipped &&
       (matched.passedOnRetry || matched.finalStatus === "timedOut");
-    if (flakeCorroborated) corroboration.level = "defect";
+    if (
+      flakeCorroborated &&
+      deriveTrustLevel(f, { ...corroboration, level: "defect" }) === "L5"
+    ) {
+      corroboration.level = "defect";
+    }
 
     f.runtimeCorroboration = corroboration;
     f.trustLevel = deriveTrustLevel(f, corroboration);
@@ -141,7 +146,7 @@ export function deriveTrustLevel(
           : "E2");
   if (!corroboration)
     return level === "E0" ? "L0" : level === "E1" ? "L1" : "L2";
-  if (corroboration.level === "defect") return "L5";
+  if (corroboration.level === "defect") return level === "E0" ? "L4" : "L5";
   if (corroboration.level === "test") return "L4";
   return "L3";
 }

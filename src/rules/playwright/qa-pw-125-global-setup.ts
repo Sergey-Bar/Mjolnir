@@ -8,6 +8,7 @@
 import { defineRule } from "../rule.js";
 import type { Finding } from "../../types.js";
 import { lineAt, colAt } from "../shared/positions.js";
+import { isMasked } from "../shared/masking.js";
 
 export const pwGlobalSetupSharedState = defineRule({
   id: "QA-PW-125",
@@ -38,6 +39,7 @@ export const pwGlobalSetupSharedState = defineRule({
   },
   detectionNotes: "regex heuristic",
   introduced: "0.3.0",
+  detectorRevision: 2,
 
   run(ctx) {
     const text = ctx.text;
@@ -54,6 +56,7 @@ export const pwGlobalSetupSharedState = defineRule({
       /(?:execSync|exec|spawn|query|request)\s*\(\s*[`'"][^`'"]*(?:migrate|migration|seed|TRUNCATE|DROP\s+(?:TABLE|DATABASE)|DELETE\s+FROM)[^`'"]*[`'"]/gi;
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {
+      if (isMasked(ctx, m.index)) continue;
       // Ephemeral/local targets are fine — check the surrounding statement
       // AND the preceding comment line (where intent is usually documented).
       const lineStart = text.lastIndexOf("\n", m.index) + 1;
