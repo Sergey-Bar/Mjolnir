@@ -29,7 +29,14 @@ function makeTar(entries: Record<string, string>): {
     writeFileSync(file, content);
   }
   const tgz = join(dir, "test.tgz");
-  execFileSync("tar", ["-czf", tgz, "-C", dir, "package"]);
+  try {
+    execFileSync("tar", ["-czf", tgz, "-C", dir, "package"]);
+  } catch {
+    // GNU tar parses "C:\..." as a remote host spec; --force-local keeps
+    // the Windows runner (Git-bash GNU tar) on the same code path as
+    // bsdtar, which accepts the drive-letter path natively.
+    execFileSync("tar", ["--force-local", "-czf", tgz, "-C", dir, "package"]);
+  }
   return { dir, tgz };
 }
 
