@@ -22,6 +22,11 @@ import { MEASURED_FP } from "../rules/measured-fp.generated.js";
 import { isRetiredRule } from "../rules/measurement.js";
 
 /** Health row: the measurement entry plus the registry facts a caller needs. */
+/**
+ * Per-rule health summary for the stats and health views.
+ * Status values come from the SHIPPED measurement registry —
+ * not re-derived at runtime.
+ */
 export interface RuleHealthRow {
   ruleId: string;
   title: string;

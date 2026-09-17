@@ -38,6 +38,16 @@ export interface ForensicsOptions {
   writeFlakyMd?: boolean;
 }
 
+/**
+ * Run forensics analysis on test result artifacts.
+ *
+ * Parses test result files (Playwright JSON, JUnit XML, HAR, etc.),
+ * analyzes them for flakiness, determinism, and trust signals, and
+ * returns a structured report plus rendered output strings.
+ *
+ * @param target - path to the test result artifact or directory
+ * @param options - writeFlakyMd (default true) controls FLAKY.md output
+ */
 export function runForensics(
   target: string,
   options: ForensicsOptions = {},
