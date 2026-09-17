@@ -33,8 +33,8 @@ import type { ForensicsReport, TestVerdict } from "../forensics/types.js";
  * of findings that gained runtime corroboration.
  *
  * @param scanRoot - when provided, report file paths are normalized to
- *   repo-relative forward-slash form relative to this root, so Windows
- *   absolute paths (C:\Users\...\src\foo.test.ts) match the pipeline's
+ *   repo-relative forward-slash form relative to this root, so platform
+ *   absolute paths from runtime reports match the pipeline's
  *   normalized relative paths (src/foo.test.ts).
  */
 export function stampRuntimeCorroboration(
