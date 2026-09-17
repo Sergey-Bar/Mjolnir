@@ -19,7 +19,7 @@ once shipped, so this file is the record of what changed between versions.
 
 - **Version bump** — bumped package version from 1.1.1 to 2.0.0 across all surfaces (package.json, ENGINE_VERSION, smithery.yaml, rule metadata, docs).
 
-## [Unreleased]
+## [2.0.1] — 2026-09-17
 
 ## [1.1.1] — 2026-09-16
 
@@ -139,7 +139,7 @@ Complete implementation of the Mjolnir Master Engineering Roadmap & Product Spec
 - `src/commands/doctor.ts` gains check 11 (rule metadata contract validation).
 - 4 fingerprint implementations consolidated into `src/engine/finding-identity.ts`.
 
-## [Unreleased] — Nordic brand pass
+### Nordic brand pass
 
 ### Changed
 
