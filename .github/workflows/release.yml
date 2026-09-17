@@ -319,7 +319,30 @@ jobs:
       # separately-verified change, never via an implicit @latest drift.
       - name: Upgrade npm for OIDC trusted publishing
         if: vars.NPM_PUBLISH == 'true' && steps.registry.outputs.published != 'true'
-        run: npm install -g npm@11.9.1 --no-fund --no-audit --hash=sha512
+        run: |
+          NPM_VERSION="11.19.1"
+          TARBALL="/tmp/npm-${NPM_VERSION}.tgz"
+          export TARBALL
+          npm pack "npm@${NPM_VERSION}" --pack-destination /tmp
+          # Verify SHA-512 SRI before install (CodeRabbit security fix)
+          EXPECTED_INTEGRITY=$(npm view "npm@${NPM_VERSION}" dist.integrity)
+          export EXPECTED_INTEGRITY
+          node -e "
+            const crypto = require('crypto');
+            const fs = require('fs');
+            const expected = process.env.EXPECTED_INTEGRITY;
+            const hash = crypto.createHash('sha512');
+            hash.update(fs.readFileSync(process.env.TARBALL));
+            const actual = 'sha512-' + hash.digest('base64');
+            if (expected !== actual) {
+              console.error('Checksum mismatch: expected ' + expected + ', got ' + actual);
+              process.exit(1);
+            }
+            console.log('Checksum verified: ' + actual);
+          "
+          npm install -g "$TARBALL" --no-fund --no-audit --ignore-scripts
+          hash -r
+          npm --version | grep -Fx 11.19.1
 
       # setup-node writes an .npmrc containing `always-auth=true` and
       # `//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}`. With
