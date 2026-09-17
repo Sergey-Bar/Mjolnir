@@ -324,6 +324,7 @@ jobs:
           TARBALL="/tmp/npm-${NPM_VERSION}.tgz"
           npm pack "npm@${NPM_VERSION}" --pack-destination /tmp
           # Verify SHA-512 SRI before install (CodeRabbit security fix)
+          EXPECTED_INTEGRITY=$(npm view "npm@${NPM_VERSION}" dist.integrity)
           export EXPECTED_INTEGRITY
           node -e "
             const crypto = require('crypto');
