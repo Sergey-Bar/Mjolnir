@@ -285,9 +285,9 @@ describe("fixture firewall, both directions — the platforms must not cross-fir
 });
 
 describe("QA-CI-014 metadata — born-quarantine contract", () => {
-  it("ships quarantine tier, no measurement, introduced 1.1.1", () => {
+  it("ships quarantine tier, no measurement, introduced 2.0.0", () => {
     expect(swallowedVerificationFailure.tier).toBe("quarantine");
     expect(swallowedVerificationFailure.detectorRevision).toBeUndefined();
-    expect(swallowedVerificationFailure.introduced).toBe("1.1.1");
+    expect(swallowedVerificationFailure.introduced).toBe("2.0.0");
   });
 });
