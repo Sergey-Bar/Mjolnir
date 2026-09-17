@@ -320,7 +320,7 @@ jobs:
       - name: Upgrade npm for OIDC trusted publishing
         if: vars.NPM_PUBLISH == 'true' && steps.registry.outputs.published != 'true'
         run: |
-          npm install -g npm@11.19.1 --no-fund --no-audit
+          npm install -g npm@11.19.1 --no-fund --no-audit --ignore-scripts
           hash -r
           npm --version | grep -Fx 11.19.1
 
