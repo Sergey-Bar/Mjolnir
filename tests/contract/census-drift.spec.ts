@@ -184,7 +184,7 @@ describe("measurement census is the single source for the measured count", () =>
             expect(
               n,
               `${name} claims "${m[0]}" — the census field "${field}" ` +
-                `is ${census[field]} per \`mjolnir doctor --json\` ` +
+                `is ${census[field]} per \`qa-doctor doctor --json\` ` +
                 `(docs/CERTIFICATION-POLICY.md §2: the census is the ` +
                 `reproducible answer). Stamp it with sentinels and run ` +
                 `\`npm run docs:counts\`, or fix the number`,

@@ -13,7 +13,7 @@ import {
 function tmpDir(): string {
   const dir = join(
     tmpdir(),
-    `mjolnir-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    `qa-doctor-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
   );
   mkdirSync(dir, { recursive: true });
   return dir;
@@ -30,7 +30,7 @@ function validArtifact(): EvidenceArtifact {
     completeness: true,
     provenance: {
       source: "test-results/report.json",
-      ingestedBy: "mjolnir.forensics",
+      ingestedBy: "qa-doctor.forensics",
     },
   };
 }

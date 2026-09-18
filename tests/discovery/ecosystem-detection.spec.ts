@@ -8,7 +8,7 @@ import {
 } from "../../src/discovery/ecosystem-detection.js";
 
 function makeTmpDir(name: string): string {
-  const dir = join(tmpdir(), `mjolnir-eco-${name}-${Date.now()}`);
+  const dir = join(tmpdir(), `qa-doctor-eco-${name}-${Date.now()}`);
   mkdirSync(dir, { recursive: true });
   return dir;
 }

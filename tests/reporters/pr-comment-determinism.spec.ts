@@ -52,7 +52,7 @@ function makeModel(
       details: "Strong static evidence",
     },
     reportArtifactReference: { url: "", format: "json" },
-    generatedBy: { tool: "mjolnir", version: "1.1.1" },
+    generatedBy: { tool: "qa-doctor", version: "1.1.1" },
     producedAt: "2026-09-16T00:00:00Z",
     ...overrides,
   } as PrCommentModelV1;
@@ -82,7 +82,7 @@ describe("TI-018: PR comment rendering determinism", () => {
 
   it("output contains expected structural markers", () => {
     const output = renderPrComment(makeModel());
-    expect(output).toContain("<!-- mjolnir-pr-comment -->");
+    expect(output).toContain("<!-- qa-doctor-pr-comment -->");
     expect(output).toContain("QA Doctor Verification Trust Report");
     expect(output).toContain("WORTHY");
   });

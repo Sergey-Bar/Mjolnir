@@ -30,7 +30,7 @@
 ✓ Finds fake-green CI setups ✓ Kills flaky-test meetings
 ✓ Speaks Jest/Vitest/Playwright ✓ Zero config, local-first
 
-npx mjolnir@latest
+npx qa-doctor@latest
 ```
 
 Requirements:
@@ -76,7 +76,7 @@ GitHub Trending formula ≈ stars/day velocity + unique stargazers:
 - **Never buy stars** — detectable, community-destroying
 - DO concentrate launches into 24–48h windows (velocity matters)
 - DO add "Star this repo if..." CTA in CLI output (one line, tasteful):
-  `★ Found this useful? github.com/mjolnir/mjolnir`
+  `★ Found this useful? github.com/qa-doctor/qa-doctor`
 - DO create star-worthy MOMENTS: the 10k-star celebration commit,
   contributor wall, milestone changelogs
 - Weekly release cadence = weekly reason to reappear in feeds/releases
@@ -86,7 +86,7 @@ GitHub Trending formula ≈ stars/day velocity + unique stargazers:
 Stars follow contributors; contributors follow easy entry:
 
 - `good-first-issue` labels ALWAYS stocked (rule ideas = perfect first PRs)
-- `mjolnir create-rule` scaffold → adding a rule is a 30-min PR
+- `qa-doctor create-rule` scaffold → adding a rule is a 30-min PR
 - CONTRIBUTING.md with a 5-minute quickstart for the dev environment
 - Publicly credit every contributor (all-contributors spec)
 - Monthly "Rule of the Month" — community votes, we implement together

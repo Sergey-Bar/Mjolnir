@@ -64,7 +64,7 @@ function runTypecheck(): Diagnostic[] {
   // The tsc binary normally comes from this repo's node_modules; synthetic-
   // tree invocations (the anti-false-green tests) redirect it explicitly.
   const nodeModules =
-    process.env.MJOLNIR_TYPECHECK_NODE_MODULES ?? join(ROOT, "node_modules");
+    process.env.QA_DOCTOR_TYPECHECK_NODE_MODULES ?? join(ROOT, "node_modules");
   const res = spawnSync(
     process.execPath,
     [

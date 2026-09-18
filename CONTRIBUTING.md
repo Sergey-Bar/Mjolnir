@@ -7,8 +7,8 @@ to propose a rule or plugin, and what a PR needs before review.
 ## Dev setup
 
 ```bash
-git clone https://github.com/Sergey-Bar/Mjolnir
-cd QA Doctor
+git clone https://github.com/Sergey-Bar/qa-doctor
+cd qa-doctor
 npm ci
 ```
 
@@ -73,7 +73,7 @@ npm run build && node dist/cli.mjs . --cache --json
 ```
 
 The cache is content-addressed (file bytes + rule set) and lives under
-`.mjolnir/cache/` — local-only, gitignored, never leaves the machine.
+`.qa-doctor/cache/` — local-only, gitignored, never leaves the machine.
 
 ```text
 tests/
@@ -135,7 +135,7 @@ your change is close to either line.
 
 ## Proposing a new rule
 
-1. Run `mjolnir create-rule <ID> --title "..."` (e.g.
+1. Run `qa-doctor create-rule <ID> --title "..."` (e.g.
    `QA-PW-150`). This scaffolds the rule file and both fixture
    directories.
 2. **The generated rule is deliberately broken.** It returns zero
@@ -161,7 +161,7 @@ your change is close to either line.
 ## Proposing a plugin
 
 Third-party rule packages are declared in a consuming project's
-`mjolnir.config.json` (`"plugins": [...]`) and loaded via
+`qa-doctor.config.json` (`"plugins": [...]`) and loaded via
 `src/plugins/load.ts`. Security model: **no sandbox** — a plugin runs
 with the same trust level as an ESLint or Vitest plugin in your own
 project. Core rule-ID prefixes (`QA-TEST`, `QA-TQUAL`, `QA-PW`, `QA-CI`,
@@ -261,7 +261,7 @@ carrying an explicit staleness marker, never authoritative docs.
   refactor belong in separate PRs.
 - Include the standing-gate output (or note which gate you couldn't run
   and why) in the PR description.
-- If your change touches `mjolnir.config.json`'s suppressions, explain
+- If your change touches `qa-doctor.config.json`'s suppressions, explain
   what would otherwise have false-positived and why the suppression is
   scoped correctly (see the existing entries for the expected level of
   justification).

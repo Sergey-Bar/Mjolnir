@@ -38,7 +38,7 @@ const fixtureRoot = join(outDir, ".bench-fixture");
 mkdirSync(fixtureRoot, { recursive: true });
 const fixture = generateFixture(fixtureRoot, { fileCount });
 const artifact = await runBenchmark(fixtureRoot, fixture, {
-  mjolnirVersion: CLI_VERSION,
+  qaDoctorVersion: CLI_VERSION,
   commit: currentCommit(),
 });
 const outPath = join(outDir, "bench-artifact.json");
@@ -52,10 +52,10 @@ for (const s of artifact.samples) {
 
 // Advisory compare (§340): never blocks — a missing baseline is a loud
 // warning, and a regression is a fail-noisy warning.
-const baselinePath = join(process.cwd(), ".mjolnir", "bench-baseline.json");
+const baselinePath = join(process.cwd(), ".qa-doctor", "bench-baseline.json");
 if (!existsSync(baselinePath)) {
   console.warn(
-    "WARNING: no pinned baseline at .mjolnir/bench-baseline.json — " +
+    "WARNING: no pinned baseline at .qa-doctor/bench-baseline.json — " +
       "regressions cannot be detected. Commit one from a trusted revision.",
   );
 } else {

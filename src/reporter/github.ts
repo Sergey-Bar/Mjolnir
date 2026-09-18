@@ -2,7 +2,7 @@
  * GitHub annotation emitter (Terminal + CI UX Overhaul plan, M4).
  *
  * ONE emitter, ONE code path: annotations are produced only by
- * `mjolnir summary` reading a saved report JSON — never by the scan
+ * `qa-doctor summary` reading a saved report JSON — never by the scan
  * itself. The command prints `::error|warning|notice` workflow commands
  * to stdout when GITHUB_ACTIONS=true; everywhere else they are plain
  * lines any CI log renderer can ignore.

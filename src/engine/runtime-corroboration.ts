@@ -13,7 +13,7 @@
  *
  * Pure functions only — the CLI decides WHEN to call this (a report
  * next to the scan target, the same auto-discovery convention as
- * `mjolnir forensics`: `mjolnir.report.json` / `test-results/`).
+ * `qa-doctor forensics`: `qa-doctor.report.json` / `test-results/`).
  */
 
 import type { Finding, RuntimeCorroboration, TrustLevel } from "../types.js";

@@ -31,7 +31,7 @@ import { runCiInstall } from "../../src/cli.js";
 
 const createdDirs: string[] = [];
 function tmpRepo(prefix: string): string {
-  const d = mkdtempSync(join(tmpdir(), `mjolnir-arms8-${prefix}-`));
+  const d = mkdtempSync(join(tmpdir(), `qa-doctor-arms8-${prefix}-`));
   createdDirs.push(d);
   return d;
 }

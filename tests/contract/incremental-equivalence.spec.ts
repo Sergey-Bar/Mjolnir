@@ -111,9 +111,9 @@ describe("TI-005: incremental/full equivalence", () => {
       expect(result.reasons).toHaveLength(0);
     });
 
-    it("blocks on mjolnir.config change", () => {
+    it("blocks on qa-doctor.config change", () => {
       const changed = [
-        { path: "mjolnir.config.json", state: "modified" as const },
+        { path: "qa-doctor.config.json", state: "modified" as const },
       ];
       const result = isIncrementalSafe(changed);
       expect(result.safe).toBe(false);
@@ -140,8 +140,10 @@ describe("TI-005: incremental/full equivalence", () => {
       expect(result.safe).toBe(false);
     });
 
-    it("blocks on .mjolnirignore change", () => {
-      const changed = [{ path: ".mjolnirignore", state: "modified" as const }];
+    it("blocks on .qa-doctorignore change", () => {
+      const changed = [
+        { path: ".qa-doctorignore", state: "modified" as const },
+      ];
       const result = isIncrementalSafe(changed);
       expect(result.safe).toBe(false);
     });
@@ -160,7 +162,7 @@ describe("TI-005: incremental/full equivalence", () => {
     it("normalizes backslashes in paths", () => {
       const changed = [
         {
-          path: "src\\mjolnir.config.json",
+          path: "src\\qa-doctor.config.json",
           state: "modified" as const,
         },
       ];

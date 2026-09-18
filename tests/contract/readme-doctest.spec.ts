@@ -10,7 +10,7 @@
  *  1. every `QA-*` rule ID mentioned in the README's rule tables is
  *     actually registered — catches exactly the kind of drift the plan-
  *     file audit found in the planning docs, but for user-facing docs.
- *  2. every `npx mjolnir-qa ...` command shown in the README actually
+ *  2. every `npx qa-doctor-cli ...` command shown in the README actually
  *     runs against a small fixture repo without hitting a usage error
  *     (exit 10) or crashing (exit 20) — a lightweight doctest, not full
  *     output matching.
@@ -62,7 +62,7 @@ let dir: string;
 let origCwd: string;
 
 beforeEach(async () => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-readme-doctest-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-readme-doctest-"));
   mkdirSync(join(dir, "e2e"), { recursive: true });
   writeFileSync(
     join(dir, "e2e", "checkout.spec.ts"),
@@ -77,7 +77,7 @@ beforeEach(async () => {
   // Report-consuming verbs (`summary`, `handoff`, `diff`, `pr-comment`)
   // exit 10 with no saved report, which would make the README's rows for
   // them permanently un-doctestable. Give the fixture the same
-  // `mjolnir --json > mjolnir.json` a reader would have run first, so
+  // `qa-doctor --json > qa-doctor.json` a reader would have run first, so
   // those rows are actually exercised instead of excluded. Captured from
   // the real CLI, so it can't drift from the schema those verbs parse.
   let captured = "";
@@ -87,7 +87,7 @@ beforeEach(async () => {
     },
     err: () => {},
   });
-  writeFileSync(join(dir, "mjolnir.json"), captured);
+  writeFileSync(join(dir, "qa-doctor.json"), captured);
 });
 
 afterEach(() => {
@@ -99,11 +99,11 @@ function extractReadmeCommands(): string[] {
   const lines = README.split("\n");
   const commands: string[] = [];
   for (const line of lines) {
-    // Only match table-cell commands: `mjolnir ...` or `npx mjolnir-qa ...`
+    // Only match table-cell commands: `qa-doctor ...` or `npx qa-doctor-cli ...`
     // wrapped in backticks inside a markdown table row (starts with |).
     // FW-RX-07: args start at a non-space token — no \s+/[^`]* exchange.
     const cellMatch =
-      /\|\s*`(?:npx mjolnir-qa(?:@latest)?|mjolnir)[ \t]+([^\s`][^`]*)`/.exec(
+      /\|\s*`(?:npx qa-doctor-cli(?:@latest)?|qa-doctor)[ \t]+([^\s`][^`]*)`/.exec(
         line,
       );
     if (!cellMatch) continue;
@@ -124,7 +124,7 @@ function extractReadmeCommands(): string[] {
   return [...new Set(commands)];
 }
 
-describe("every `mjolnir` command in the README actually runs", () => {
+describe("every `qa-doctor` command in the README actually runs", () => {
   const commands = extractReadmeCommands();
 
   it("found at least one command in the README (sanity check on parsing)", () => {
@@ -132,7 +132,7 @@ describe("every `mjolnir` command in the README actually runs", () => {
   });
 
   for (const cmdline of commands) {
-    it(`"mjolnir ${cmdline}" does not hit a usage error or crash`, async () => {
+    it(`"qa-doctor ${cmdline}" does not hit a usage error or crash`, async () => {
       const argv = cmdline.split(/\s+/).filter(Boolean);
       // `./test-results/` doesn't exist in the fixture — that's fine,
       // those commands document their own "no report found" exit (2).
@@ -142,12 +142,12 @@ describe("every `mjolnir` command in the README actually runs", () => {
       const code = await main(argv);
       expect(
         code,
-        `"mjolnir ${cmdline}" returned exit 10 (usage error) — the ` +
-          `README shows an example that mjolnir's own arg parser rejects.`,
+        `"qa-doctor ${cmdline}" returned exit 10 (usage error) — the ` +
+          `README shows an example that qa-doctor's own arg parser rejects.`,
       ).not.toBe(10);
       expect(
         code,
-        `"mjolnir ${cmdline}" returned exit 20 (internal crash).`,
+        `"qa-doctor ${cmdline}" returned exit 20 (internal crash).`,
       ).not.toBe(20);
     });
   }
@@ -155,7 +155,7 @@ describe("every `mjolnir` command in the README actually runs", () => {
 
 describe("the README's `explain` sample is the real thing", () => {
   /**
-   * The README prints a full `mjolnir explain QA-CI-001` transcript under
+   * The README prints a full `qa-doctor explain QA-CI-001` transcript under
    * the heading "One finding, up close", directly below a line calling
    * detector output "real … not a mockup". Nothing checked it, and it had
    * rotted: it claimed the rule was "not yet measured — this rule ships on
@@ -163,7 +163,7 @@ describe("the README's `explain` sample is the real thing", () => {
    * quarantined it for that. A stale sample in the honesty section is the
    * worst place in the document for one.
    */
-  it("matches what `mjolnir explain QA-CI-001` actually prints", () => {
+  it("matches what `qa-doctor explain QA-CI-001` actually prints", () => {
     const block = /```text\n( *▍ QA-CI-001[\s\S]*?)```/.exec(README);
     expect(
       block,
@@ -176,7 +176,7 @@ describe("the README's `explain` sample is the real thing", () => {
     expect(
       (block?.[1] ?? "").trimEnd(),
       "the README's explain sample no longer matches the real command — " +
-        "re-run `mjolnir explain QA-CI-001` and paste the current output",
+        "re-run `qa-doctor explain QA-CI-001` and paste the current output",
     ).toBe(actual.trimEnd());
   });
 });

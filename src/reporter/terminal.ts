@@ -373,15 +373,15 @@ function verifyHint(f: Finding): string {
   const pts = deductionFor(f);
   if (f.severity === "error") {
     return pts > 0
-      ? `Re-run mjolnir after the change — the gate should stop failing and the score should recover by ${pts}.`
-      : "Re-run mjolnir after the change — the finding should no longer appear.";
+      ? `Re-run qa-doctor after the change — the gate should stop failing and the score should recover by ${pts}.`
+      : "Re-run qa-doctor after the change — the finding should no longer appear.";
   }
   if (f.severity === "warning") {
     return pts > 0
-      ? `Re-run mjolnir after the change — deduction should drop by ${pts}.`
-      : "Re-run mjolnir after the change — the finding should no longer appear.";
+      ? `Re-run qa-doctor after the change — deduction should drop by ${pts}.`
+      : "Re-run qa-doctor after the change — the finding should no longer appear.";
   }
-  return "Re-run mjolnir after the change — the finding should no longer appear.";
+  return "Re-run qa-doctor after the change — the finding should no longer appear.";
 }
 
 function toCard(f: Finding, tone?: "blunt"): FindingCard {
@@ -690,7 +690,7 @@ function appendFooter(
       p,
       `Rule coverage: ${measuredHere}/${firedRuleIds.size} rules that fired here have a measured` +
         ` false-positive rate; the rest are heuristics.` +
-        ` \`mjolnir rules --unmeasured\` lists them.`,
+        ` \`qa-doctor rules --unmeasured\` lists them.`,
       width,
     );
     // R4c Scope Integrity: "repository verified" is FORBIDDEN output
@@ -736,7 +736,7 @@ function appendFooter(
       pushWrapped(
         lines,
         p,
-        `Runtime evidence: not available — no run report (mjolnir.report.json / test-results) next to the scan target; all findings are static-only (L0–L2).`,
+        `Runtime evidence: not available — no run report (qa-doctor.report.json / test-results) next to the scan target; all findings are static-only (L0–L2).`,
         width,
       );
     }
@@ -806,7 +806,7 @@ function renderNoTests(ui: UiContext): string {
       { ascii, maxWidth: 78 },
     ).map((l) => `  ${l}`),
     "",
-    nextStep("mjolnir <path-to-your-tests>", ui),
+    nextStep("qa-doctor <path-to-your-tests>", ui),
     "",
   ];
   return lines.join("\n");

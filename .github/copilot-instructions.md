@@ -2,7 +2,7 @@
 
 ## Project
 
-QA Doctor is a verification trust engine (TypeScript, ESM, Node >= 22.18). `npx mjolnir-qa` → worthiness score + findings → `--scope changed` → `ci install`.
+QA Doctor is a verification trust engine (TypeScript, ESM, Node >= 22.18). `npx qa-doctor-cli` → worthiness score + findings → `--scope changed` → `ci install`.
 
 ## Frozen contracts — NEVER change without explicit user approval
 

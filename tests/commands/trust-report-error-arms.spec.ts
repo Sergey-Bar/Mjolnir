@@ -84,7 +84,7 @@ describe('trust-report hostile-error arms (String(err) + ?? ".")', () => {
 
   it("readFileSync throwing a non-Error → String(err) arm renders the raw value", async () => {
     mockState.readThrowKind = "nonerror";
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-tr-arms-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-tr-arms-"));
     const p = join(dir, "read-nonerror.json");
     // The mocked readFileSync throws before any content is read.
     const code = await runTrustReportCommand(["--from", p], io);
@@ -94,7 +94,7 @@ describe('trust-report hostile-error arms (String(err) + ?? ".")', () => {
   });
 
   it("JSON.parse catch: a plain Error still renders err.message", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-tr-arms-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-tr-arms-"));
     writeFileSync(join(dir, "read-nonerror.json"), "{not json");
     mockState.readThrowKind = "none";
     const code = await runTrustReportCommand(
@@ -108,7 +108,7 @@ describe('trust-report hostile-error arms (String(err) + ?? ".")', () => {
 
   it("runScan throwing a non-Error → rescan catch String(err) arm (exit 20)", async () => {
     mockState.scanThrowKind = "nonerror";
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-tr-arms-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-tr-arms-"));
     const code = await runTrustReportCommand([dir], io);
     expect(code).toBe(20);
     expect(captured.err.join("\n")).toContain("a hostile non-Error string");
@@ -117,7 +117,7 @@ describe('trust-report hostile-error arms (String(err) + ?? ".")', () => {
 
   it("runScan throwing a plain Error → rescan catch err.message arm (exit 20)", async () => {
     mockState.scanThrowKind = "error";
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-tr-arms-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-tr-arms-"));
     const code = await runTrustReportCommand([dir], io);
     expect(code).toBe(20);
     expect(captured.err.join("\n")).toContain("a plain Error");
@@ -126,7 +126,7 @@ describe('trust-report hostile-error arms (String(err) + ?? ".")', () => {
 
   it("no positional argument → the ?? '.' default-target arm (scans cwd)", async () => {
     const orig = process.cwd();
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-tr-arms-cwd-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-tr-arms-cwd-"));
     try {
       process.chdir(dir);
       const code = await runTrustReportCommand([], io);

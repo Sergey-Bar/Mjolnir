@@ -3,7 +3,7 @@
  *
  * Code execution is opt-in: npm-plugin and JS-module rule loading happens
  * ONLY when the operator passes `--enable-plugins` on the CLI or sets
- * `MJOLNIR_ENABLE_PLUGINS=1` in the environment. Default OFF — scanning an
+ * `QA_DOCTOR_ENABLE_PLUGINS=1` in the environment. Default OFF — scanning an
  * untrusted repo must never execute code it finds there.
  *
  * JSON rule manifests stay declarative-safe and load WITHOUT the gate:
@@ -21,7 +21,9 @@
  * CLI flag value for THIS scan; the env var applies process-wide.
  */
 export function pluginsGateOpen(argsEnabled: boolean | undefined): boolean {
-  return argsEnabled === true || process.env["MJOLNIR_ENABLE_PLUGINS"] === "1";
+  return (
+    argsEnabled === true || process.env["QA_DOCTOR_ENABLE_PLUGINS"] === "1"
+  );
 }
 
 export interface SkippedRuleSource {
@@ -38,7 +40,7 @@ export function renderGateNotice(
   skipped: readonly SkippedRuleSource[],
 ): string {
   const lines = [
-    "mjolnir: plugin code execution is DISABLED (default). The following rule sources were NOT loaded:",
+    "qa-doctor: plugin code execution is DISABLED (default). The following rule sources were NOT loaded:",
   ];
   for (const s of skipped) {
     lines.push(
@@ -48,8 +50,8 @@ export function renderGateNotice(
     );
   }
   lines.push(
-    "To run them, re-run with --enable-plugins (or set MJOLNIR_ENABLE_PLUGINS=1).",
-    "Declarative JSON rule manifests (mjolnir-rules/*.json) are unaffected — they execute no code.",
+    "To run them, re-run with --enable-plugins (or set QA_DOCTOR_ENABLE_PLUGINS=1).",
+    "Declarative JSON rule manifests (qa-doctor-rules/*.json) are unaffected — they execute no code.",
   );
   return lines.join("\n");
 }

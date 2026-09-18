@@ -1,7 +1,7 @@
 # Final Certification — QA Doctor 2.0 Blueprint Execution
 
 **Date:** 2026-09-06 · **Report:** QA/reports/remediation/final-certification-2026-09-06.md
-**Plan:** `.kilo/plans/1788597687393-mjolnir-2-0-strategic-blueprint.md` (hardened v3)
+**Plan:** `.kilo/plans/1788597687393-qa-doctor-2-0-strategic-blueprint.md` (hardened v3)
 **Machine:** Windows (local execution) · CI: GitHub Actions ubuntu/macos/windows × node 22/24
 
 ---

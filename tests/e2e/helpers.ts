@@ -54,7 +54,7 @@ export function runCli(
   let last: CliResult | undefined;
   const env: NodeJS.ProcessEnv = {
     ...process.env,
-    MJOLNIR_ASCII: "1",
+    QA_DOCTOR_ASCII: "1",
     ...(envOverrides ?? {}),
   };
   for (const [key, value] of Object.entries(envOverrides ?? {})) {

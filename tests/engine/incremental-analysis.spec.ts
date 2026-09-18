@@ -111,7 +111,7 @@ describe("incremental-analysis (ECO-004)", () => {
     it("returns unsafe for config changes", () => {
       const result = isIncrementalSafe([
         {
-          path: "mjolnir.config.json",
+          path: "qa-doctor.config.json",
           state: "modified",
           currentHash: "a",
           previousHash: "b",
@@ -133,10 +133,10 @@ describe("incremental-analysis (ECO-004)", () => {
       expect(result.safe).toBe(false);
     });
 
-    it("returns unsafe for .mjolnirignore changes", () => {
+    it("returns unsafe for .qa-doctorignore changes", () => {
       const result = isIncrementalSafe([
         {
-          path: ".mjolnirignore",
+          path: ".qa-doctorignore",
           state: "modified",
           currentHash: "a",
           previousHash: "b",
@@ -152,7 +152,7 @@ describe("incremental-analysis (ECO-004)", () => {
     it("handles Windows backslash paths", () => {
       const result = isIncrementalSafe([
         {
-          path: "src\\mjolnir.config.ts",
+          path: "src\\qa-doctor.config.ts",
           state: "modified",
           currentHash: "a",
           previousHash: "b",

@@ -2,9 +2,9 @@
  * Local Extensibility specs (Verification Trust Evolution Plan §18).
  *
  * Exit gate under test: an external rule LOADS from the workspace
- * (`mjolnir-rules/`, zero network), RUNS in a real scan, OBEYS tier
+ * (`qa-doctor-rules/`, zero network), RUNS in a real scan, OBEYS tier
  * caps (quarantine cap + the core-clamp), and is DRIFT-CHECKED (the
- * `mjolnir rules` catalog is generated from the loaded rules, so an
+ * `qa-doctor rules` catalog is generated from the loaded rules, so an
  * on-disk edit changes the next render — it can never drift from what
  * actually ships).
  */
@@ -37,15 +37,15 @@ afterEach(() => {
 });
 
 function workspace(): string {
-  const d = mkdtempSync(join(tmpdir(), "mjolnir-ext-"));
+  const d = mkdtempSync(join(tmpdir(), "qa-doctor-ext-"));
   dirs.push(d);
   return d;
 }
 
 function writeRule(dir: string, name: string, json: unknown): void {
-  mkdirSync(join(dir, "mjolnir-rules"), { recursive: true });
+  mkdirSync(join(dir, "qa-doctor-rules"), { recursive: true });
   writeFileSync(
-    join(dir, "mjolnir-rules", name),
+    join(dir, "qa-doctor-rules", name),
     typeof json === "string" ? json : JSON.stringify(json, null, 2),
   );
 }
@@ -91,9 +91,9 @@ describe("loadLocalRules — the folder contract (zero network)", () => {
 
   it("a JS module exporting rules loads like an npm plugin", async () => {
     const dir = workspace();
-    mkdirSync(join(dir, "mjolnir-rules"), { recursive: true });
+    mkdirSync(join(dir, "qa-doctor-rules"), { recursive: true });
     writeFileSync(
-      join(dir, "mjolnir-rules", "acme.mjs"),
+      join(dir, "qa-doctor-rules", "acme.mjs"),
       `export const rules = [{ id: "QA-ACME-002", title: "Module rule", category: "QA-TEST", severity: "info", confidence: "medium", findingType: "deterministic-defect", qaImpact: "HYGIENE", appliesTo: "test-files", tier: "quarantine", run: () => [] }];`,
     );
     const { rules, errors } = await loadLocalRules(dir, true);
@@ -111,9 +111,9 @@ describe("loadLocalRules — the folder contract (zero network)", () => {
 
   it("declared tier core is CLAMPED to extended with a warning (§18 measurement requirement)", async () => {
     const dir = workspace();
-    mkdirSync(join(dir, "mjolnir-rules"), { recursive: true });
+    mkdirSync(join(dir, "qa-doctor-rules"), { recursive: true });
     writeFileSync(
-      join(dir, "mjolnir-rules", "core.mjs"),
+      join(dir, "qa-doctor-rules", "core.mjs"),
       `export const rules = [{ id: "QA-ACME-003", title: "Wants core", category: "QA-TEST", severity: "error", confidence: "high", findingType: "deterministic-defect", qaImpact: "BLOCKS-RELEASE", appliesTo: "test-files", tier: "core", run: () => [] }];`,
     );
     const { rules, errors } = await loadLocalRules(dir, true);
@@ -138,7 +138,7 @@ describe("loadLocalRules — the folder contract (zero network)", () => {
     expect(errors).toHaveLength(2);
   });
 
-  it("no mjolnir-rules directory → empty result, not an error", async () => {
+  it("no qa-doctor-rules directory → empty result, not an error", async () => {
     const dir = workspace();
     expect(await loadLocalRules(dir, true)).toEqual({
       rules: [],
@@ -188,9 +188,9 @@ describe("exit gate: an external rule loads, runs, obeys tier caps, and is drift
     expect(plain.findings.some((f) => f.ruleId === "QA-ACME-001")).toBe(false);
 
     // Disclosure: the plugin block names the external surface (audit S-8).
-    expect(strict.plugins?.some((p) => p.name.includes("mjolnir-rules"))).toBe(
-      true,
-    );
+    expect(
+      strict.plugins?.some((p) => p.name.includes("qa-doctor-rules")),
+    ).toBe(true);
   });
 
   it("buildUniversalRules surfaces load errors as warning findings, never a crash", async () => {
@@ -300,7 +300,7 @@ describe("exit gate: an external rule loads, runs, obeys tier caps, and is drift
     const round = JSON.parse(JSON.stringify(result)) as typeof result;
     expect(round.schemaVersion).toBe(result.schemaVersion);
     expect(
-      readFileSync(join(dir, "mjolnir-rules", "acme.json"), "utf8"),
+      readFileSync(join(dir, "qa-doctor-rules", "acme.json"), "utf8"),
     ).toContain("QA-ACME-001");
   });
 });

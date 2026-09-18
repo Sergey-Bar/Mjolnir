@@ -34,7 +34,7 @@ afterEach(() => {
 });
 
 function tmp(): string {
-  const d = mkdtempSync(join(tmpdir(), "mjolnir-rt-"));
+  const d = mkdtempSync(join(tmpdir(), "qa-doctor-rt-"));
   dirs.push(d);
   return d;
 }
@@ -290,7 +290,7 @@ describe("scan integration — a report next to the target corroborates findings
     );
     // The real run report: the containing test flaked (passed on retry).
     writeFileSync(
-      join(dir, "mjolnir.report.json"),
+      join(dir, "qa-doctor.report.json"),
       JSON.stringify({
         suites: [
           {

@@ -86,7 +86,7 @@ describe("checkMeasurementConsistency (D7)", () => {
     verdictsDir: string;
     sidecarPath: string;
   } {
-    const root = mkdtempSync(join(tmpdir(), "mjolnir-meascons-"));
+    const root = mkdtempSync(join(tmpdir(), "qa-doctor-meascons-"));
     tmpDirs.push(root);
     const verdictsDir = join(root, "tests", "corpus", "verdicts");
     mkdirSync(verdictsDir, { recursive: true });
@@ -107,7 +107,7 @@ describe("checkMeasurementConsistency (D7)", () => {
   }
 
   it("INCONCLUSIVE (never pass) when the verdicts directory is missing", () => {
-    const root = mkdtempSync(join(tmpdir(), "mjolnir-meascons-"));
+    const root = mkdtempSync(join(tmpdir(), "qa-doctor-meascons-"));
     tmpDirs.push(root);
     const result = checkMeasurementConsistency(
       join(root, "tests", "corpus", "verdicts"),
@@ -167,7 +167,7 @@ describe("checkMeasurementConsistency (D7)", () => {
   });
 
   it("FAILS on an unparseable verdict row (corpus integrity arm)", () => {
-    const root = mkdtempSync(join(tmpdir(), "mjolnir-meascons-"));
+    const root = mkdtempSync(join(tmpdir(), "qa-doctor-meascons-"));
     tmpDirs.push(root);
     const verdictsDir = join(root, "tests", "corpus", "verdicts");
     mkdirSync(verdictsDir, { recursive: true });
@@ -260,7 +260,7 @@ describe("checkMeasurementConsistency (D7)", () => {
   });
 
   it("skips non-jsonl files and rows without ruleId when counting (robustness arms)", () => {
-    const root = mkdtempSync(join(tmpdir(), "mjolnir-meascons-"));
+    const root = mkdtempSync(join(tmpdir(), "qa-doctor-meascons-"));
     tmpDirs.push(root);
     const verdictsDir = join(root, "tests", "corpus", "verdicts");
     mkdirSync(verdictsDir, { recursive: true });

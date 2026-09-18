@@ -1,11 +1,11 @@
 /**
- * mjolnir.yml review (Master-Stabilization-Plan Sprint 6, Task 25).
+ * qa-doctor.yml review (Master-Stabilization-Plan Sprint 6, Task 25).
  *
  * Task 25 requires auditing the existing PR workflow before building on
  * it. The audit found real dead code: an annotate step that referenced
  * `github.rest.checks` without ever calling it (a no-op), and no
  * connection at all to baseline/diff (Task 24) or a real posted PR
- * comment — findings only ever landed in mjolnir.json, a file nobody
+ * comment — findings only ever landed in qa-doctor.json, a file nobody
  * on a PR ever opens. This locks in the fix so a future edit can't
  * silently reintroduce dead code or drop the comment step.
  */
@@ -34,13 +34,13 @@ interface Workflow {
 
 function loadPrWorkflow(): Workflow {
   const text = readFileSync(
-    join(ROOT, ".github", "workflows", "mjolnir.yml"),
+    join(ROOT, ".github", "workflows", "qa-doctor.yml"),
     "utf8",
   );
   return parse(text) as Workflow;
 }
 
-describe("mjolnir.yml (the PR feedback loop workflow)", () => {
+describe("qa-doctor.yml (the PR feedback loop workflow)", () => {
   it("parses as valid YAML", () => {
     expect(() => loadPrWorkflow()).not.toThrow();
   });
@@ -72,23 +72,23 @@ describe("mjolnir.yml (the PR feedback loop workflow)", () => {
     }
   });
 
-  it("runs mjolnir diff so only new/worsened debt is what gets surfaced (Task 24 integration)", () => {
+  it("runs qa-doctor diff so only new/worsened debt is what gets surfaced (Task 24 integration)", () => {
     const wf = loadPrWorkflow();
     const steps = wf.jobs.scan?.steps ?? [];
     expect(
       steps.some((s) =>
-        /(?:mjolnir-qa@latest|dist\/cli\.mjs)\s+diff\b/.test(s.run ?? ""),
+        /(?:qa-doctor-cli@latest|dist\/cli\.mjs)\s+diff\b/.test(s.run ?? ""),
       ),
     ).toBe(true);
   });
 
-  it("runs mjolnir pr-comment and actually posts/updates a PR comment via the GitHub API", () => {
+  it("runs qa-doctor pr-comment and actually posts/updates a PR comment via the GitHub API", () => {
     const wf = loadPrWorkflow();
     const steps = wf.jobs.scan?.steps ?? [];
     expect(steps.some((s) => s.run?.includes("pr-comment"))).toBe(true);
     const commentStep = steps.find((s) =>
       (s.with as { script?: string } | undefined)?.script?.includes(
-        "mjolnir-pr-comment",
+        "qa-doctor-pr-comment",
       ),
     );
     expect(
@@ -114,7 +114,7 @@ describe("mjolnir.yml (the PR feedback loop workflow)", () => {
     const wf = loadPrWorkflow();
     const steps = wf.jobs.scan?.steps ?? [];
     const diffStep = steps.find((s) =>
-      /(?:mjolnir-qa@latest|dist\/cli\.mjs)\s+diff\b/.test(s.run ?? ""),
+      /(?:qa-doctor-cli@latest|dist\/cli\.mjs)\s+diff\b/.test(s.run ?? ""),
     );
     // diff's exit code can be 1 on new errors — must be tolerated via
     // continue-on-error on this specific step, never a blanket `|| true`

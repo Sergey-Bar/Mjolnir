@@ -38,10 +38,10 @@
 | --------------------------------------------------------------------------------------------------------------- | -------------------------- | ------------------------------------------------------------------------------- |
 | Workflow YAML parsed; `\|\| true` → QA-CI-002 (error, exit 1)                                                   | VERIFIED DEEPLY            | `false-green/fg-gh-true.out`, `deep-path/deep-yaml.json`                        |
 | `continue-on-error` masked job → QA-CI-001 fires under `--strict` (quarantine cap info/E0; default scan silent) | PARTIAL (F4)               | `false-green/fg2-gh-coe-*.out`                                                  |
-| Corrupt saved `mjolnir.json` → `summary`/`diff` exit 2 with documented message                                  | VERIFIED                   | `exit-codes/exit-summary-corrupt-report.out`, `false-green/fg-corrupt-diff.out` |
+| Corrupt saved `qa-doctor.json` → `summary`/`diff` exit 2 with documented message                                | VERIFIED                   | `exit-codes/exit-summary-corrupt-report.out`, `false-green/fg-corrupt-diff.out` |
 | Schema-incomplete report → `summary` crashes uncaught (exit 1, raw stack)                                       | BROKEN-input edge (F1, P2) | `false-green/fg-partial-summary.out`                                            |
 
-### Tier D — plugin extensibility: **plugin API (`local-rules`, `mjolnir-rules/*.json`)**
+### Tier D — plugin extensibility: **plugin API (`local-rules`, `qa-doctor-rules/*.json`)**
 
 | Claim                                                                                                                                                  | Status                       | Evidence                                                                           |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------- | ---------------------------------------------------------------------------------- |

@@ -13,7 +13,7 @@ import { checkFixtureIntegrity } from "../../src/commands/doctor.js";
 
 const createdDirs: string[] = [];
 function tmpRoot(prefix: string): string {
-  const d = mkdtempSync(join(tmpdir(), `mjolnir-fixint-${prefix}-`));
+  const d = mkdtempSync(join(tmpdir(), `qa-doctor-fixint-${prefix}-`));
   createdDirs.push(d);
   return d;
 }

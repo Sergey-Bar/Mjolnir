@@ -1,5 +1,5 @@
 /**
- * `mjolnir rules` catalog — registry-derived docs can never drift.
+ * `qa-doctor rules` catalog — registry-derived docs can never drift.
  */
 
 import { describe, expect, it } from "vitest";

@@ -16,7 +16,7 @@ hide it.
 
 | Operation                            | Status         | Notes                                                                                                   |
 | ------------------------------------ | -------------- | ------------------------------------------------------------------------------------------------------- |
-| npm publish (`mjolnir-qa`)           | identity-bound | 2FA + provenance OIDC bind to the owner's npm account; release role runs everything up to `npm publish` |
+| npm publish (`qa-doctor-cli`)        | identity-bound | 2FA + provenance OIDC bind to the owner's npm account; release role runs everything up to `npm publish` |
 | npm dist-tags (`next`, `latest`)     | runbooked      | docs/PUBLISHING.md §dist-tags; delegable with npm collaborator grant                                    |
 | GitHub Release publish               | runbooked      | release.yml automates; the human step is reviewing generated notes                                      |
 | Marketplace listing publish          | identity-bound | GitHub binds publishing to account admin; draft + screenshots are prepared in DISTRIBUTION-KIT.md       |
@@ -46,14 +46,14 @@ hide it.
 | Operation                           | Status         | Notes                                                                                           |
 | ----------------------------------- | -------------- | ----------------------------------------------------------------------------------------------- |
 | SECURITY.md private-key responses   | identity-bound | Security reporter trust; see SUPPORT.md routing — triage may acknowledge, only owner may assess |
-| Suppression overrides (owner tiers) | identity-bound | mjolnir.config.json's 90-day expiry is the guardrail; owner override is a deliberate act        |
+| Suppression overrides (owner tiers) | identity-bound | qa-doctor.config.json's 90-day expiry is the guardrail; owner override is a deliberate act      |
 | Signing keys / provenance           | identity-bound | npm OIDC + GitHub release signing bind to the owner account                                     |
 
 ## Handover section (for the eventual co-maintainer)
 
 1. GitHub: add collaborator with **maintain** permission; CODEOWNERS
    already names the file owners — extend it, never bypass it.
-2. npm: `npm owner add <handle> mjolnir-qa` — publishing becomes
+2. npm: `npm owner add <handle> qa-doctor-cli` — publishing becomes
    delegable the day this runs; until then it stays identity-bound.
 3. Walk the new maintainer through MAINTAINERS.md's ladder entry gates —
    the grant is the LAST step, not the first.

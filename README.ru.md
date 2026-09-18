@@ -9,19 +9,19 @@ QA Doctor находит тесты, которые не могут упасть
 
 <br />
 
-[![npm](https://img.shields.io/npm/v/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
-[![downloads](https://img.shields.io/npm/dm/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
-[![ci](https://img.shields.io/github/actions/workflow/status/Sergey-Bar/Mjolnir/ci.yml?branch=main&style=flat-square&label=ci&labelColor=0A1119)](https://github.com/Sergey-Bar/Mjolnir/actions/workflows/ci.yml)
-[![coverage](https://img.shields.io/codecov/c/github/Sergey-Bar/Mjolnir?style=flat-square&color=1F6F7C&labelColor=0A1119&label=coverage)](https://codecov.io/gh/Sergey-Bar/Mjolnir)
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Sergey-Bar/Mjolnir/badge)](https://scorecard.dev/viewer/?uri=github.com/Sergey-Bar/Mjolnir)
+[![npm](https://img.shields.io/npm/v/qa-doctor-cli.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/qa-doctor-cli)
+[![downloads](https://img.shields.io/npm/dm/qa-doctor-cli.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/qa-doctor-cli)
+[![ci](https://img.shields.io/github/actions/workflow/status/Sergey-Bar/qa-doctor/ci.yml?branch=main&style=flat-square&label=ci&labelColor=0A1119)](https://github.com/Sergey-Bar/qa-doctor/actions/workflows/ci.yml)
+[![coverage](https://img.shields.io/codecov/c/github/Sergey-Bar/qa-doctor?style=flat-square&color=1F6F7C&labelColor=0A1119&label=coverage)](https://codecov.io/gh/Sergey-Bar/qa-doctor)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Sergey-Bar/qa-doctor/badge)](https://scorecard.dev/viewer/?uri=github.com/Sergey-Bar/qa-doctor)
 [![license](https://img.shields.io/badge/license-MIT-1F6F7C.svg?style=flat-square&labelColor=0A1119)](LICENSE)
 [![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-1F6F7C.svg?style=flat-square&labelColor=0A1119)](https://nodejs.org)
 
 ```bash
-npx mjolnir-qa@latest
+npx qa-doctor-cli@latest
 ```
 
-[Посмотреть в работе](#посмотреть-в-работе) · [Быстрый старт](#быстрый-старт) · [Что находит](#что-находит-mjölnir) · [Оценка](#оценка-надёжности) · [Доказательства](#модель-доказательств) · [Анализ прогонов](#анализ-прогонов-тестов) · [CI](#целостность-ci) · [Агенты](#ии-агенты) · [Безопасность](#доверие-и-безопасность) · [Ограничения](#чего-mjölnir-сказать-не-может) · [Документация](#документация)
+[Посмотреть в работе](#посмотреть-в-работе) · [Быстрый старт](#быстрый-старт) · [Что находит](#что-находит-qa-doctor) · [Оценка](#оценка-надёжности) · [Доказательства](#модель-доказательств) · [Анализ прогонов](#анализ-прогонов-тестов) · [CI](#целостность-ci) · [Агенты](#ии-агенты) · [Безопасность](#доверие-и-безопасность) · [Ограничения](#чего-qa-doctor-сказать-не-может) · [Документация](#документация)
 
 <details>
 <summary>Читать на другом языке — 22 перевода</summary>
@@ -58,7 +58,7 @@ npx mjolnir-qa@latest
 
 <sub>Каждая находка, которую демонстрационное сканирование выдало для этого workflow, на указанной строке. Сгенерировано командой `npm run docs:readme-brand` из [`demo-report.json`](assets/readme/demo-report.json) и защищено от расхождений в CI.</sub>
 
-**Строгий режим.** Самые агрессивные детекции — `.only`, `continue-on-error`, пустые тесты, злоупотребление повторами — живут в карантинном ярусе. Они запускаются только с `--strict` и ограничены серьёзностью `info`: помечают, но никогда не блокируют. Сканирование по умолчанию (`npx mjolnir-qa@latest` без `--strict`) покрывает только основные и расширенные правила. Добавьте `--strict`, когда хотите и консультативный слой.
+**Строгий режим.** Самые агрессивные детекции — `.only`, `continue-on-error`, пустые тесты, злоупотребление повторами — живут в карантинном ярусе. Они запускаются только с `--strict` и ограничены серьёзностью `info`: помечают, но никогда не блокируют. Сканирование по умолчанию (`npx qa-doctor-cli@latest` без `--strict`) покрывает только основные и расширенные правила. Добавьте `--strict`, когда хотите и консультативный слой.
 
 QA Doctor читает набор тестов, CI-workflow и, если он есть, отчёт реального прогона. Он не запускает ваши тесты, не устанавливает зависимости и не выполняет сканируемый код. А когда доказательств нет, он так и говорит, вместо того чтобы выдумывать уверенность:
 
@@ -92,12 +92,12 @@ QA Doctor читает набор тестов, CI-workflow и, если он е
 <br />
 
 <p align="center">
-  <a href="assets/video/mjolnir-demo.mp4">
-    <img src="assets/video/mjolnir-demo-poster.png" alt="Кадр демонстрационной записи: npx mjolnir-qa@latest сканирует демонстрационный репозиторий в окне терминала" width="900" />
+  <a href="assets/video/qa-doctor-demo.mp4">
+    <img src="assets/video/qa-doctor-demo-poster.png" alt="Кадр демонстрационной записи: npx qa-doctor-cli@latest сканирует демонстрационный репозиторий в окне терминала" width="900" />
   </a>
 </p>
 
-<sub>Отрисовано кадр за кадром из реального сканирования командой `npm run docs:video`; никогда не записывалось с экрана. Выберите кадр, чтобы открыть [`mjolnir-demo.mp4`](assets/video/mjolnir-demo.mp4).</sub>
+<sub>Отрисовано кадр за кадром из реального сканирования командой `npm run docs:video`; никогда не записывалось с экрана. Выберите кадр, чтобы открыть [`qa-doctor-demo.mp4`](assets/video/qa-doctor-demo.mp4).</sub>
 
 </details>
 
@@ -109,7 +109,7 @@ QA Doctor читает набор тестов, CI-workflow и, если он е
   <img src="assets/readme/finding-anatomy.svg" alt="Первая находка демонстрационного сканирования, ровно так, как её выводит терминал, с отмеченными четырьмя частями: где, насколько уверенно, как часто правило ошибается, и исправление." width="100%" />
 </p>
 
-`mjolnir explain QA-CI-001` выводит полное досье доверия правила, включая измеренную долю ложных срабатываний и уровень, который эта доля ему обеспечила:
+`qa-doctor explain QA-CI-001` выводит полное досье доверия правила, включая измеренную долю ложных срабатываний и уровень, который эта доля ему обеспечила:
 
 ```text
   ▍ QA-CI-001 — continue-on-error masks a failing verification gate
@@ -137,22 +137,22 @@ HOW TO FIX
   Example from this rule's own must-fire fixture: QA-CI-001/must-fire/masked.yml
 
 WHAT WOULD CHANGE THE VERDICT
-  - a run report next to the scan target (mjolnir.report.json or test-results/)
+  - a run report next to the scan target (qa-doctor.report.json or test-results/)
   corroborating this file lifts its findings to L3–L5
-  - a documented suppression (mjolnir.config.json) lowers the finding count
+  - a documented suppression (qa-doctor.config.json) lowers the finding count
   without claiming correctness
   - quarantine findings run only under --strict and are advisory (E0) — they can
   never gate CI
 
 NEXT ACTION
-  Fix the first occurrence, then re-run: `mjolnir --scope changed`. Every
+  Fix the first occurrence, then re-run: `qa-doctor --scope changed`. Every
   occurrence of this rule is listed in the scan output.
 
 HOW TO VERIFY THE FIX
-  Re-run `mjolnir` on the changed file(s) — this finding should no longer
-  appear. `mjolnir --scope changed` scopes the check to just what you touched.
+  Re-run `qa-doctor` on the changed file(s) — this finding should no longer
+  appear. `qa-doctor --scope changed` scopes the check to just what you touched.
 
-Docs: mjolnir rules --md   (full catalog, this rule included)
+Docs: qa-doctor rules --md   (full catalog, this rule included)
 ```
 
 Вот единица ценности: одно место, где CI сообщает об успехе, которого он не заслужил.
@@ -162,7 +162,7 @@ Docs: mjolnir rules --md   (full catalog, this rule included)
 ## Быстрый старт
 
 ```bash
-npx mjolnir-qa@latest
+npx qa-doctor-cli@latest
 ```
 
 Он сканирует текущий каталог и выводит Trust Report: что найдено, насколько этому можно доверять, почему и что делать дальше. Он завершается с кодом `0`, если на уровне гейта или выше ничего не найдено.
@@ -170,60 +170,60 @@ npx mjolnir-qa@latest
 В CI сканируйте только то, что внесла ветка, чтобы унаследованный набор тестов не утопил ваш первый pull request:
 
 ```bash
-npx mjolnir-qa@latest --scope changed
+npx qa-doctor-cli@latest --scope changed
 ```
 
-`mjolnir ci install` записывает это как workflow GitHub Actions с [action](https://github.com/Sergey-Bar/Mjolnir#readme), закреплённым на мажорном теге `v1` (или просто `npx` с `--no-action`). Он остаётся рекомендательным, пока вы не решите, что он должен блокировать.
+`qa-doctor ci install` записывает это как workflow GitHub Actions с [action](https://github.com/Sergey-Bar/qa-doctor#readme), закреплённым на мажорном теге `v1` (или просто `npx` с `--no-action`). Он остаётся рекомендательным, пока вы не решите, что он должен блокировать.
 
-| Команда                             | Что делает                                                  |
-| ----------------------------------- | ----------------------------------------------------------- |
-| `mjolnir`                           | Trust Report: вердикт, уверенность, следующее действие      |
-| `mjolnir --scope changed`           | Только то, что внесла ваша ветка (вариант для CI)           |
-| `mjolnir ci install`                | Создаёт рекомендательный workflow для PR (на основе action) |
-| `mjolnir explain QA-CI-001`         | Что, почему и как исправить, плюс измеренная доля FP        |
-| `mjolnir why src/a.spec.ts:42`      | Почему отмечена именно эта строка. Никогда не блокирует.    |
-| `mjolnir forensics ./test-results/` | Доказательства из реального прогона                         |
-| `mjolnir trust-report`              | Самодостаточный Trust Artifact (md + json)                  |
-| `mjolnir handoff`                   | План исправлений для агента-программиста                    |
-| `mjolnir --json` / `--format sarif` | Машиночитаемый вывод, GitHub Code Scanning                  |
-| `mjolnir --format codequality`      | Отчёт GitLab Code Quality (артефакт виджета MR)             |
-| `mjolnir --strict`                  | Также запускает правила уровня quarantine (выше риск FP)    |
+| Команда                               | Что делает                                                  |
+| ------------------------------------- | ----------------------------------------------------------- |
+| `qa-doctor`                           | Trust Report: вердикт, уверенность, следующее действие      |
+| `qa-doctor --scope changed`           | Только то, что внесла ваша ветка (вариант для CI)           |
+| `qa-doctor ci install`                | Создаёт рекомендательный workflow для PR (на основе action) |
+| `qa-doctor explain QA-CI-001`         | Что, почему и как исправить, плюс измеренная доля FP        |
+| `qa-doctor why src/a.spec.ts:42`      | Почему отмечена именно эта строка. Никогда не блокирует.    |
+| `qa-doctor forensics ./test-results/` | Доказательства из реального прогона                         |
+| `qa-doctor trust-report`              | Самодостаточный Trust Artifact (md + json)                  |
+| `qa-doctor handoff`                   | План исправлений для агента-программиста                    |
+| `qa-doctor --json` / `--format sarif` | Машиночитаемый вывод, GitHub Code Scanning                  |
+| `qa-doctor --format codequality`      | Отчёт GitLab Code Quality (артефакт виджета MR)             |
+| `qa-doctor --strict`                  | Также запускает правила уровня quarantine (выше риск FP)    |
 
 <details>
 <summary><strong>Все остальные команды</strong> — разбор нестабильных тестов, отчёты, контроль</summary>
 
 <br />
 
-| Команда                             | Что делает                                                                            |
-| ----------------------------------- | ------------------------------------------------------------------------------------- |
-| `mjolnir --classic`                 | Баннер оценки из времён до Trust Report                                               |
-| `mjolnir explain verdict`           | Почему вердикт сохранённого сканирования именно такой                                 |
-| `mjolnir triage ./test-results/`    | Пошаговый разбор. Каждая строка заканчивается следующим действием.                    |
-| `mjolnir pw-report ./test-results/` | Сводка прогона Playwright: повторы, нестабильные тесты, самые медленные               |
-| `mjolnir doctor:playwright`         | Глубокое сканирование только для Playwright плюс Selector Health Score                |
-| `mjolnir fix --dry-run` / `fix`     | Безопасные автоисправления, каждое пересканируется, чтобы доказать, что оно сработало |
-| `mjolnir baseline` / `diff`         | Снимок находок, затем отчёт только о новых или ухудшившихся                           |
-| `mjolnir impact --since <ref>`      | Что внёс и что исправил коммит                                                        |
-| `mjolnir summary`                   | Аннотации CI и сводка шага на основе отчёта                                           |
-| `mjolnir pr-comment`                | Комментарий к PR в пределах изменений, в формате Markdown                             |
-| `mjolnir debt`                      | Реестр тестового долга с моделью затрат                                               |
-| `mjolnir handover`                  | Карта набора тестов для нового QA-инженера                                            |
-| `mjolnir init`                      | Определяет фреймворки, выводит чек-лист настройки                                     |
-| `mjolnir suppressions`              | Список подавленных находок для контроля                                               |
-| `mjolnir rules --unmeasured`        | Правила, работающие на допущении, а не на измерении                                   |
-| `mjolnir rules --md`                | Полный каталог правил (JSON или Markdown)                                             |
-| `mjolnir doctor`                    | Самоаудит собственной базы правил QA Doctor                                           |
-| `mjolnir create-rule <ID>`          | Создаёт заготовку нового правила и его фикстур                                        |
-| `mjolnir stats`                     | Локальные счётчики всех замеченных исправлений                                        |
-| `mjolnir badge`                     | JSON для эндпоинта shields.io и фрагмент кода                                         |
-| `mjolnir --cache`                   | Инкрементальные пересканирования через локальный кэш вердиктов                        |
-| `mjolnir --format mermaid`          | Диаграмма архитектуры тестов для комментария к PR                                     |
+| Команда                               | Что делает                                                                            |
+| ------------------------------------- | ------------------------------------------------------------------------------------- |
+| `qa-doctor --classic`                 | Баннер оценки из времён до Trust Report                                               |
+| `qa-doctor explain verdict`           | Почему вердикт сохранённого сканирования именно такой                                 |
+| `qa-doctor triage ./test-results/`    | Пошаговый разбор. Каждая строка заканчивается следующим действием.                    |
+| `qa-doctor pw-report ./test-results/` | Сводка прогона Playwright: повторы, нестабильные тесты, самые медленные               |
+| `qa-doctor doctor:playwright`         | Глубокое сканирование только для Playwright плюс Selector Health Score                |
+| `qa-doctor fix --dry-run` / `fix`     | Безопасные автоисправления, каждое пересканируется, чтобы доказать, что оно сработало |
+| `qa-doctor baseline` / `diff`         | Снимок находок, затем отчёт только о новых или ухудшившихся                           |
+| `qa-doctor impact --since <ref>`      | Что внёс и что исправил коммит                                                        |
+| `qa-doctor summary`                   | Аннотации CI и сводка шага на основе отчёта                                           |
+| `qa-doctor pr-comment`                | Комментарий к PR в пределах изменений, в формате Markdown                             |
+| `qa-doctor debt`                      | Реестр тестового долга с моделью затрат                                               |
+| `qa-doctor handover`                  | Карта набора тестов для нового QA-инженера                                            |
+| `qa-doctor init`                      | Определяет фреймворки, выводит чек-лист настройки                                     |
+| `qa-doctor suppressions`              | Список подавленных находок для контроля                                               |
+| `qa-doctor rules --unmeasured`        | Правила, работающие на допущении, а не на измерении                                   |
+| `qa-doctor rules --md`                | Полный каталог правил (JSON или Markdown)                                             |
+| `qa-doctor doctor`                    | Самоаудит собственной базы правил QA Doctor                                           |
+| `qa-doctor create-rule <ID>`          | Создаёт заготовку нового правила и его фикстур                                        |
+| `qa-doctor stats`                     | Локальные счётчики всех замеченных исправлений                                        |
+| `qa-doctor badge`                     | JSON для эндпоинта shields.io и фрагмент кода                                         |
+| `qa-doctor --cache`                   | Инкрементальные пересканирования через локальный кэш вердиктов                        |
+| `qa-doctor --format mermaid`          | Диаграмма архитектуры тестов для комментария к PR                                     |
 
-`mjolnir help <command>` выводит использование, примеры и следующий шаг для любой из них.
+`qa-doctor help <command>` выводит использование, примеры и следующий шаг для любой из них.
 
 </details>
 
-Требуется **Node.js ≥ 22.18** на Windows, macOS или Linux. Предпочитаете глобальную установку? `npm i -g mjolnir-qa`. Минимальная версия задаётся инструментами сборки (tsdown ориентирован на неё, а пайплайн релизов прогоняет на ней smoke-тесты); зависимостям времени выполнения большего не нужно.
+Требуется **Node.js ≥ 22.18** на Windows, macOS или Linux. Предпочитаете глобальную установку? `npm i -g qa-doctor-cli`. Минимальная версия задаётся инструментами сборки (tsdown ориентирован на неё, а пайплайн релизов прогоняет на ней smoke-тесты); зависимостям времени выполнения большего не нужно.
 
 <br />
 
@@ -247,7 +247,7 @@ npx mjolnir-qa@latest --scope changed
 | QA-PY-002    | Пропущенный тест (`skip`, нестрогий `xfail`)                            | warning     | core       |
 | QA-CS-103    | Тестовый метод без утверждений                                          | error       | core       |
 
-Полный каталог генерируется из реестра и никогда не ведётся вручную: `mjolnir rules --md`, [`docs/rules/`](docs/rules/) или [руководство о том, что он проверяет](https://sergey-bar.github.io/Mjolnir/guide/what-it-checks).
+Полный каталог генерируется из реестра и никогда не ведётся вручную: `qa-doctor rules --md`, [`docs/rules/`](docs/rules/) или [руководство о том, что он проверяет](https://sergey-bar.github.io/qa-doctor/guide/what-it-checks).
 
 <details>
 <summary><strong>Все правила, упомянутые в этом README</strong>, в одной таблице</summary>
@@ -298,11 +298,11 @@ npx mjolnir-qa@latest --scope changed
 
 </details>
 
-Каждое правило поставляется с фикстурой must-fire **и** фикстурой must-not-fire, а правило, срабатывающее на собственной негативной фикстуре, не может быть выпущено. Это защита от ложных срабатываний; `mjolnir doctor` обеспечивает её в собственном CI этого репозитория.
+Каждое правило поставляется с фикстурой must-fire **и** фикстурой must-not-fire, а правило, срабатывающее на собственной негативной фикстуре, не может быть выпущено. Это защита от ложных срабатываний; `qa-doctor doctor` обеспечивает её в собственном CI этого репозитория.
 
 ### Selector Health Score
 
-`mjolnir doctor:playwright` оценивает каждый локатор по тому, как он находит элемент: так, как это сделал бы пользователь (роль, метка, текст), через явный контракт (`data-testid`) или по структурной случайности (цепочки CSS, XPath). Каждый файл получает оценку от 0 до 100:
+`qa-doctor doctor:playwright` оценивает каждый локатор по тому, как он находит элемент: так, как это сделал бы пользователь (роль, метка, текст), через явный контракт (`data-testid`) или по структурной случайности (цепочки CSS, XPath). Каждый файл получает оценку от 0 до 100:
 
 ```text
   ▍ SELECTOR HEALTH
@@ -336,7 +336,7 @@ e2e/checkout.spec.ts
 | `100`     | **FORGED**                                |
 | `null`    | **UNKNOWN**: объявления тестов не найдены |
 
-**Как она вычисляется.** Серьёзность задаёт базовый вычет (`error −8`, `warning −3`, `info −1`), а уровень доказательности его уменьшает: E2 учитывается полностью, E1 наполовину (с округлением вниз), E0 не учитывается. Сумма нормируется по охвату набора, то есть вычеты на одно объявление теста, а не на файл. Терминал выводит те же уменьшенные числа, что использовала оценка; скрытой второй модели нет. Подробности: [docs/SCORING.md](docs/SCORING.md) и [руководство по оценке](https://sergey-bar.github.io/Mjolnir/guide/scoring).
+**Как она вычисляется.** Серьёзность задаёт базовый вычет (`error −8`, `warning −3`, `info −1`), а уровень доказательности его уменьшает: E2 учитывается полностью, E1 наполовину (с округлением вниз), E0 не учитывается. Сумма нормируется по охвату набора, то есть вычеты на одно объявление теста, а не на файл. Терминал выводит те же уменьшенные числа, что использовала оценка; скрытой второй модели нет. Подробности: [docs/SCORING.md](docs/SCORING.md) и [руководство по оценке](https://sergey-bar.github.io/qa-doctor/guide/scoring).
 
 **Чего не означает 100.** Это не значит, что программа корректна, набор тестов достаточен или продукт свободен от дефектов. Это значит только одно: **ни одно из правил, проверенных QA Doctor, не дало вычета в этом сканировании и при этой модели доказательств.**
 
@@ -375,7 +375,7 @@ e2e/checkout.spec.ts
 
 ### Сколько из этого измерено
 
-**У 74 из 79 правил доля ложных срабатываний измерена на реальном OSS-коде** (не менее 10 вручную классифицированных находок на каждое; см. [docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Остальные 5 опираются на оценку автора и прямо говорят об этом, правило за правилом, в `mjolnir explain`. `mjolnir rules --unmeasured` перечисляет их, а подвал каждого сканирования сообщает, сколько из действительно _сработавших_ правил измерено.
+**У 74 из 79 правил доля ложных срабатываний измерена на реальном OSS-коде** (не менее 10 вручную классифицированных находок на каждое; см. [docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Остальные 5 опираются на оценку автора и прямо говорят об этом, правило за правилом, в `qa-doctor explain`. `qa-doctor rules --unmeasured` перечисляет их, а подвал каждого сканирования сообщает, сколько из действительно _сработавших_ правил измерено.
 
 Показатели остаются публичными, даже когда они плохие. QA-TEST-001 (закоммиченный `.only`) плохо проходит аудит на реальных репозиториях и поэтому находится в quarantine. Актуальное значение для каждого правила, включая QA-PW-141, есть в аудите.
 
@@ -392,7 +392,7 @@ e2e/checkout.spec.ts
 
 Полосы FP могут только понизить уровень — они никогда не повышают правило из `quarantine`, если оно было туда явно объявлено. Явно помещённое в карантин правило остаётся в quarantine независимо от измеренного уровня FP.
 
-Повышение, понижение и зрелость по языкам: [жизненный цикл правил](https://sergey-bar.github.io/Mjolnir/reference/rule-lifecycle).
+Повышение, понижение и зрелость по языкам: [жизненный цикл правил](https://sergey-bar.github.io/qa-doctor/reference/rule-lifecycle).
 
 ### Почему это не линтер
 
@@ -421,7 +421,7 @@ e2e/checkout.spec.ts
 Статический анализ рассуждает о коде, который никогда не выполнялся. Анализ прогонов читает то, что произошло на самом деле: Playwright JSON, Jest JSON, Vitest JSON и JUnit XML от любого раннера.
 
 ```bash
-mjolnir forensics ./test-results/
+qa-doctor forensics ./test-results/
 ```
 
 ```text
@@ -435,7 +435,7 @@ FAILING    declines an expired card (e2e/checkout.spec.ts)
            ████░░░░░░░░░░░░░░░░ 1.1s · 1 attempt
 ```
 
-`TRUE-FLAKE` не означает, что тест перезапускался. Это означает, что тест **провалил хотя бы одну попытку, а затем завершился зелёным**: случайный успех, отмеченный независимо от того, что показывает итоговая галочка. `mjolnir triage` превращает эту историю в предложение карантина, а `mjolnir pw-report` подводит итоги прогона. Именно эти отчёты прогонов поднимают находки до уровней доверия L3 и выше.
+`TRUE-FLAKE` не означает, что тест перезапускался. Это означает, что тест **провалил хотя бы одну попытку, а затем завершился зелёным**: случайный успех, отмеченный независимо от того, что показывает итоговая галочка. `qa-doctor triage` превращает эту историю в предложение карантина, а `qa-doctor pw-report` подводит итоги прогона. Именно эти отчёты прогонов поднимают находки до уровней доверия L3 и выше.
 
 <br />
 
@@ -446,13 +446,13 @@ FAILING    declines an expired card (e2e/checkout.spec.ts)
 Создайте workflow для PR, по умолчанию рекомендательный:
 
 ```bash
-mjolnir ci install
+qa-doctor ci install
 ```
 
 Или добавьте action из Marketplace в уже существующий workflow:
 
 ```yaml
-- uses: Sergey-Bar/Mjolnir@v1
+- uses: Sergey-Bar/qa-doctor@v1
   with:
     scope: changed
     fail-on: error
@@ -463,12 +463,12 @@ mjolnir ci install
 Чтобы отправить находки в GitHub Code Scanning, загрузите SARIF (требуется `security-events: write` на уровне workflow или job):
 
 ```yaml
-- run: npx mjolnir-qa@latest --format sarif > mjolnir.sarif
+- run: npx qa-doctor-cli@latest --format sarif > qa-doctor.sarif
   continue-on-error: true
 - uses: github/codeql-action/upload-sarif@v3
   if: ${{ !cancelled() }}
   with:
-    sarif_file: mjolnir.sarif
+    sarif_file: qa-doctor.sarif
 ```
 
 В GitLab `--format codequality` записывает отчёт Code Quality, который читают виджет MR и аннотации diff ([docs/GITLAB-CI.md](docs/GITLAB-CI.md)). Настройка редактора и пайплайна: [docs/SARIF-INTEGRATION.md](docs/SARIF-INTEGRATION.md).
@@ -476,7 +476,7 @@ mjolnir ci install
 ### Привязка к изменениям ветки
 
 ```bash
-npx mjolnir-qa@latest --scope changed
+npx qa-doctor-cli@latest --scope changed
 ```
 
 Находки привязываются к строкам, добавленным вашей веткой, относительно **merge-base**. Область — тот же набор файлов, что находит полное сканирование (спецификации TS/JS и конфигурации адаптеров, `test_*.py`, `*Test.java`, `*Tests.cs`, `.github/workflows/*.yml`), плюс незакоммиченные и неотслеживаемые изменения, поэтому это работает ещё до коммита. База определяется в порядке `main → master → origin/main → origin/master → origin/HEAD`; её можно переопределить через `--base <ref>`.
@@ -495,16 +495,16 @@ SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
 
 **ИИ пишет исправление. QA Doctor его проверяет.** Доказательство даёт повторное сканирование, а не собственный отчёт агента об успехе.
 
-| Команда           | Что получает агент                                                                                                                                                                       |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `mjolnir mcp`     | Сервер [MCP](https://modelcontextprotocol.io) через stdio. `scan`, `explain` и `diff` становятся вызываемыми инструментами.                                                              |
-| `mjolnir handoff` | Сохранённый отчёт `--json` превращается в детерминированный план в Markdown: что обнаружено, граница доказательности для каждой находки, что **не** должно меняться и как это проверить. |
-| `mjolnir install` | Записывает в места для агентов, которые уже есть в вашем репозитории (`.claude/`, `.cursor/`, `.kilo/`, `AGENTS.md`), чтобы агент пересканировал код, прежде чем заявить, что закончил.  |
+| Команда             | Что получает агент                                                                                                                                                                       |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `qa-doctor mcp`     | Сервер [MCP](https://modelcontextprotocol.io) через stdio. `scan`, `explain` и `diff` становятся вызываемыми инструментами.                                                              |
+| `qa-doctor handoff` | Сохранённый отчёт `--json` превращается в детерминированный план в Markdown: что обнаружено, граница доказательности для каждой находки, что **не** должно меняться и как это проверить. |
+| `qa-doctor install` | Записывает в места для агентов, которые уже есть в вашем репозитории (`.claude/`, `.cursor/`, `.kilo/`, `AGENTS.md`), чтобы агент пересканировал код, прежде чем заявить, что закончил.  |
 
 Добавьте его в клиент, у которого есть собственный CLI:
 
 ```bash
-claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
+claude mcp add qa-doctor -- npx -y qa-doctor-cli@latest mcp
 ```
 
 Или в любой клиент, принимающий блок `mcpServers`:
@@ -512,7 +512,10 @@ claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
 ```json
 {
   "mcpServers": {
-    "mjolnir": { "command": "npx", "args": ["-y", "mjolnir-qa@latest", "mcp"] }
+    "qa-doctor": {
+      "command": "npx",
+      "args": ["-y", "qa-doctor-cli@latest", "mcp"]
+    }
   }
 }
 ```
@@ -527,9 +530,9 @@ claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
 
 Две оговорки: сам `npx` скачивает пакет до того, как что-либо запустится, а гарантия распространяется на `src/`, но не на сторонние плагины.
 
-**Плагины не изолированы в песочнице.** JS-плагины (`mjolnir-rules/*.mjs` или npm-пакеты, перечисленные в `"plugins"`) работают с полными привилегиями Node — та же модель доверия, что и у плагинов ESLint или Vitest. Их загрузка включается явно **для каждого сканирования**: без `--enable-plugins` (или `MJOLNIR_ENABLE_PLUGINS=1`) их исходники никогда не загружаются, а сообщение в stderr перечисляет пропущенное. JSON-манифесты правил не выполняют код, а префиксы ID core-правил зарезервированы, чтобы плагин не мог выдать себя за одно из них. Сообщайте об уязвимостях через [SECURITY.md](SECURITY.md).
+**Плагины не изолированы в песочнице.** JS-плагины (`qa-doctor-rules/*.mjs` или npm-пакеты, перечисленные в `"plugins"`) работают с полными привилегиями Node — та же модель доверия, что и у плагинов ESLint или Vitest. Их загрузка включается явно **для каждого сканирования**: без `--enable-plugins` (или `QA_DOCTOR_ENABLE_PLUGINS=1`) их исходники никогда не загружаются, а сообщение в stderr перечисляет пропущенное. JSON-манифесты правил не выполняют код, а префиксы ID core-правил зарезервированы, чтобы плагин не мог выдать себя за одно из них. Сообщайте об уязвимостях через [SECURITY.md](SECURITY.md).
 
-**Он проверяет сам себя.** Движок доверия к проверкам ничего не стоит, если он сам не поддаётся проверке. Каждый прогон CI сканирует этот репозиторий сборкой, созданной тем же прогоном. Гейт падает при любой находке уровня error, а также при **частичном** сканировании или **упавшем правиле**, потому что обрезанное самосканирование, которое ни о чём не сообщает, — это и есть ложный зелёный, ради поиска которого существует этот проект. `mjolnir doctor` в том же прогоне заново проверяет базу правил (защита фикстур, честность уровней, лимит уровня core), а проверка с результатом INCONCLUSIVE падает точно так же, как проваленная. Оба отчёта загружаются как артефакты сборки.
+**Он проверяет сам себя.** Движок доверия к проверкам ничего не стоит, если он сам не поддаётся проверке. Каждый прогон CI сканирует этот репозиторий сборкой, созданной тем же прогоном. Гейт падает при любой находке уровня error, а также при **частичном** сканировании или **упавшем правиле**, потому что обрезанное самосканирование, которое ни о чём не сообщает, — это и есть ложный зелёный, ради поиска которого существует этот проект. `qa-doctor doctor` в том же прогоне заново проверяет базу правил (защита фикстур, честность уровней, лимит уровня core), а проверка с результатом INCONCLUSIVE падает точно так же, как проваленная. Оба отчёта загружаются как артефакты сборки.
 
 ### Коды выхода и машинный контракт
 
@@ -564,7 +567,7 @@ claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
 
 ## Документация
 
-Полный сайт документации находится по адресу <https://sergey-bar.github.io/Mjolnir/>.
+Полный сайт документации находится по адресу <https://sergey-bar.github.io/qa-doctor/>.
 
 | Документ                                               | Что внутри                                                            |
 | ------------------------------------------------------ | --------------------------------------------------------------------- |
@@ -584,14 +587,14 @@ claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
 
 ### Статус
 
-**Версия 1.** JSON-схема и коды выхода — замороженные контракты. У TypeScript и Python самое широкое измеренное покрытие. Java и C# новее; оценивайте их по [таблице зрелости](https://sergey-bar.github.io/Mjolnir/reference/rule-lifecycle). Что будет дальше, без выдуманных дат: [публичная дорожная карта](https://sergey-bar.github.io/Mjolnir/reference/roadmap).
+**Версия 1.** JSON-схема и коды выхода — замороженные контракты. У TypeScript и Python самое широкое измеренное покрытие. Java и C# новее; оценивайте их по [таблице зрелости](https://sergey-bar.github.io/qa-doctor/reference/rule-lifecycle). Что будет дальше, без выдуманных дат: [публичная дорожная карта](https://sergey-bar.github.io/qa-doctor/reference/roadmap).
 
 ### Участие в разработке
 
 Новые правила — самый простой первый вклад. Одна команда создаёт заготовку правила с фикстурами must-fire **и** must-not-fire. Сгенерированное правило намеренно проваливает собственные фикстуры, пока не написано настоящее обнаружение, потому что выпущенная заглушка — это правило, которое никто не измерял:
 
 ```bash
-mjolnir create-rule QA-PW-140 --title "Screenshot without diff bound"
+qa-doctor create-rule QA-PW-140 --title "Screenshot without diff bound"
 ```
 
 Среда разработки, команды постоянных гейтов, а также законы anti-creep и защиты фикстур описаны в [CONTRIBUTING.md](CONTRIBUTING.md).
@@ -603,10 +606,10 @@ mjolnir create-rule QA-PW-140 --title "Screenshot without diff bound"
 <img src="assets/readme/closing.svg" alt="Запустите его на своём репозитории." width="100%" />
 
 ```bash
-npx mjolnir-qa@latest
+npx qa-doctor-cli@latest
 ```
 
-[Читать руководство](https://sergey-bar.github.io/Mjolnir/guide/getting-started) · [Сайт документации](https://sergey-bar.github.io/Mjolnir/) · [npm](https://www.npmjs.com/package/mjolnir-qa)
+[Читать руководство](https://sergey-bar.github.io/qa-doctor/guide/getting-started) · [Сайт документации](https://sergey-bar.github.io/qa-doctor/) · [npm](https://www.npmjs.com/package/qa-doctor-cli)
 
 <br />
 

@@ -62,7 +62,7 @@ interface Workflow {
  */
 const TOP_LEVEL_BASELINE: Record<string, readonly string[]> = {
   contents: ["read", "none"],
-  // mjolnir.yml posts PR comments — write is required at the level the
+  // qa-doctor.yml posts PR comments — write is required at the level the
   // GITHUB_TOKEN is shared across its steps.
   "pull-requests": ["write"],
   // osv-scanner.yml uploads SARIF to the Security tab and calls reusable
@@ -89,7 +89,7 @@ describe("every GitHub workflow satisfies the repo's own audit conventions", () 
     expect(files).toEqual(
       expect.arrayContaining([
         "ci.yml",
-        "mjolnir.yml",
+        "qa-doctor.yml",
         "release.yml",
         "release-smoke.yml",
         "corpus-audit.yml",

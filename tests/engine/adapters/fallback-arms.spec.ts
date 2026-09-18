@@ -69,7 +69,7 @@ import type { ScanContext } from "../../../src/engine/adapter.js";
 
 let root: string;
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), "mjolnir-engine-arms-"));
+  root = mkdtempSync(join(tmpdir(), "qa-doctor-engine-arms-"));
 });
 afterEach(() => {
   rmSync(root, { recursive: true, force: true });

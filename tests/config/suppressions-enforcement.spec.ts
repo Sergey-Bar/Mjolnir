@@ -3,12 +3,12 @@
  * not just infra hardening).
  *
  * `src/config/suppressions.ts`'s own header comment calls this
- * "Suppression governance" and `mjolnir suppressions` reports what's
+ * "Suppression governance" and `qa-doctor suppressions` reports what's
  * configured — but nothing in `runScan` / `src/cli.ts` ever calls
  * `loadSuppressions` or `isSuppressionActive` to actually filter the
  * findings a scan produces. A user who configures
  * `{ "ignore": [{ "ruleId": "QA-TEST-001", "reason": "..." }] }` in
- * `mjolnir.config.json` still gets that finding in every output
+ * `qa-doctor.config.json` still gets that finding in every output
  * format, still gets scored down for it, and still gets exit code 1.
  * The suppression command shows the config; it just never gets wired
  * into the thing that config exists to control.
@@ -25,7 +25,7 @@ import { ConfigValidationError } from "../../src/config/config.js";
 let dir: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-suppress-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-suppress-"));
   mkdirSync(join(dir, "e2e"), { recursive: true });
   writeFileSync(
     join(dir, "e2e", "checkout.spec.ts"),
@@ -50,7 +50,7 @@ async function scan() {
   });
 }
 
-describe("mjolnir.config.json `ignore` entries", () => {
+describe("qa-doctor.config.json `ignore` entries", () => {
   it("baseline: QA-TEST-001 fires without any suppression config", async () => {
     const result = await scan();
     expect(result.findings.map((f) => f.ruleId)).toContain("QA-TEST-001");
@@ -58,7 +58,7 @@ describe("mjolnir.config.json `ignore` entries", () => {
 
   it("a configured, active suppression removes the finding from scan output", async () => {
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
+      join(dir, "qa-doctor.config.json"),
       JSON.stringify({
         ignore: [
           {
@@ -72,9 +72,9 @@ describe("mjolnir.config.json `ignore` entries", () => {
     const result = await scan();
     expect(
       result.findings.map((f) => f.ruleId),
-      "QA-TEST-001 is configured as suppressed in mjolnir.config.json " +
+      "QA-TEST-001 is configured as suppressed in qa-doctor.config.json " +
         "but still appears in scan output — suppressions are reported " +
-        "by `mjolnir suppressions` but never actually enforced during " +
+        "by `qa-doctor suppressions` but never actually enforced during " +
         "a scan. A user who suppresses a finding still gets flagged for " +
         "it, still gets scored down for it, and CI still exits 1 for it.",
     ).not.toContain("QA-TEST-001");
@@ -82,7 +82,7 @@ describe("mjolnir.config.json `ignore` entries", () => {
 
   it("an expired suppression does NOT suppress (stale config doesn't hide new debt)", async () => {
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
+      join(dir, "qa-doctor.config.json"),
       JSON.stringify({
         ignore: [
           {
@@ -105,7 +105,7 @@ describe("mjolnir.config.json `ignore` entries", () => {
 describe("scan behavior with a broken config (bug-audit M4)", () => {
   it("a typo'd severityOverrides value fails the scan loudly — never a NaN score or silent un-gating", async () => {
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
+      join(dir, "qa-doctor.config.json"),
       JSON.stringify({ severityOverrides: { "QA-TEST-001": "eror" } }),
     );
     // runScan propagates the config validation error; the CLI layer maps

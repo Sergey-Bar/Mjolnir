@@ -61,7 +61,7 @@ import { runScan, type ScanHooks } from "../../src/cli.js";
 
 const createdDirs: string[] = [];
 function tmpRepo(prefix: string): string {
-  const d = mkdtempSync(join(tmpdir(), `mjolnir-arms6-${prefix}-`));
+  const d = mkdtempSync(join(tmpdir(), `qa-doctor-arms6-${prefix}-`));
   createdDirs.push(d);
   return d;
 }
@@ -117,9 +117,9 @@ describe("W10 malformed external-rule records", () => {
       "import { test, expect } from '@playwright/test';\n" +
         "test('t', async () => {});\n",
     );
-    mkdirSync(join(dir, "mjolnir-rules"), { recursive: true });
+    mkdirSync(join(dir, "qa-doctor-rules"), { recursive: true });
     writeFileSync(
-      join(dir, "mjolnir-rules", "broken.mjs"),
+      join(dir, "qa-doctor-rules", "broken.mjs"),
       [
         "export const rules = [{",
         "  id: 'QA-ZZ-950',",
@@ -156,9 +156,9 @@ describe("C2 gate notice arms", () => {
       join(dir, "a.spec.ts"),
       "import { test } from '@playwright/test';\n" + "test('t', () => {});\n",
     );
-    mkdirSync(join(dir, "mjolnir-rules"), { recursive: true });
+    mkdirSync(join(dir, "qa-doctor-rules"), { recursive: true });
     writeFileSync(
-      join(dir, "mjolnir-rules", "gated.mjs"),
+      join(dir, "qa-doctor-rules", "gated.mjs"),
       [
         "export const rules = [{",
         "  id: 'QA-ZZ-951',",
@@ -184,9 +184,9 @@ describe("C2 gate notice arms", () => {
       join(dir, "a.spec.ts"),
       "import { test } from '@playwright/test';\n" + "test('t', () => {});\n",
     );
-    mkdirSync(join(dir, "mjolnir-rules"), { recursive: true });
+    mkdirSync(join(dir, "qa-doctor-rules"), { recursive: true });
     writeFileSync(
-      join(dir, "mjolnir-rules", "gated2.mjs"),
+      join(dir, "qa-doctor-rules", "gated2.mjs"),
       [
         "export const rules = [{",
         "  id: 'QA-ZZ-952',",

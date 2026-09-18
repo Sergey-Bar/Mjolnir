@@ -40,8 +40,8 @@ const PAD = 32;
 const IN = W - PAD * 2;
 const GAP = 16;
 const COL = (IN - GAP * 2) / 3;
-const SANS = "MjolnirSans";
-const MONO = "MjolnirMono";
+const SANS = "QaDoctorSans";
+const MONO = "QaDoctorMono";
 const ADV = 0.6;
 const HAIR = `rgb(${HAIRLINE_RGB})`;
 const SETTLE = MOTION.easing.settle;
@@ -391,7 +391,7 @@ export function buildHowItWorksSvg(): string {
       accent: "url(#aurora)",
       r: 14,
     }) +
-      tx(W / 2 + 4.5, engineY + 58, "MJÖLNIR", {
+      tx(W / 2 + 4.5, engineY + 58, "QA DOCTOR", {
         size: 30,
         fill: TEXT.primary,
         anchor: "middle",
@@ -680,7 +680,7 @@ export function buildHowItWorksSvg(): string {
   section(
     6,
     `<rect x="${PAD}" y="${s5}" width="${IN}" height="1" fill="${HAIR}" fill-opacity="0.12"/>` +
-      mono(PAD, s5 + 34, "MJÖLNIR NEVER", 11, TEXT.muted, 2.2) +
+      mono(PAD, s5 + 34, "QA DOCTOR NEVER", 11, TEXT.muted, 2.2) +
       mono(
         PAD,
         s5 + 58,

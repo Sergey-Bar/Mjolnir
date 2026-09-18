@@ -1,9 +1,9 @@
   summary — CI annotations + step summary from a saved --json report
 
   Usage:
-    mjolnir summary [mjolnir.json] [--stdout] [--path-prefix <dir>]
+    qa-doctor summary [qa-doctor.json] [--stdout] [--path-prefix <dir>]
 
   Examples:
-    $ mjolnir --json > mjolnir.json && mjolnir summary mjolnir.json
-    $ mjolnir summary mjolnir.json --stdout
+    $ qa-doctor --json > qa-doctor.json && qa-doctor summary qa-doctor.json
+    $ qa-doctor summary qa-doctor.json --stdout
 

@@ -1,8 +1,8 @@
   handover — new-QA onboarding map of the suite
 
   Usage:
-    mjolnir handover [path]
+    qa-doctor handover [path]
 
   Examples:
-    $ mjolnir handover
+    $ qa-doctor handover
 

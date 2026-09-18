@@ -1,5 +1,5 @@
 /**
- * `mjolnir impact` (Master-Stabilization-Plan Sprint 6, Task 23).
+ * `qa-doctor impact` (Master-Stabilization-Plan Sprint 6, Task 23).
  *
  * The plan's own bar: "reports UNKNOWN when data is absent — never zero,
  * never a guess. The single most important test in this sprint." Every
@@ -43,7 +43,7 @@ function writeSpec(dir: string, name: string, contents: string): void {
 
 /** Builds a real, throwaway git repo with a deterministic 2-commit history. */
 function makeFixtureRepo(): string {
-  const dir = mkdtempSync(join(tmpdir(), "mjolnir-impact-fixture-"));
+  const dir = mkdtempSync(join(tmpdir(), "qa-doctor-impact-fixture-"));
   repoDirs.push(dir);
   git(dir, ["init", "-q", "-b", "main"]);
   git(dir, ["config", "user.email", "test@example.com"]);
@@ -97,7 +97,7 @@ describe("computeImpact — reports UNKNOWN when data is absent (the most import
     "reports hasComparison:false with an honest reason when the target is not a git repo",
     { timeout: 60_000 },
     async () => {
-      const dir = mkdtempSync(join(tmpdir(), "mjolnir-impact-nogit-"));
+      const dir = mkdtempSync(join(tmpdir(), "qa-doctor-impact-nogit-"));
       repoDirs.push(dir);
       writeSpec(dir, "a.spec.ts", "test('x', () => {});\n");
 
@@ -120,7 +120,7 @@ describe("computeImpact — reports UNKNOWN when data is absent (the most import
     "reports hasComparison:false with an honest reason for a repo with a single commit (no prior history)",
     { timeout: 60_000 },
     async () => {
-      const dir = mkdtempSync(join(tmpdir(), "mjolnir-impact-onecommit-"));
+      const dir = mkdtempSync(join(tmpdir(), "qa-doctor-impact-onecommit-"));
       repoDirs.push(dir);
       git(dir, ["init", "-q", "-b", "main"]);
       git(dir, ["config", "user.email", "test@example.com"]);

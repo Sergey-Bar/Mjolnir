@@ -3,7 +3,7 @@
  * Transforms scan findings into SARIF so results appear natively in
  * GitHub Code Scanning — free distribution inside existing governance.
  *
- * Usage: mjolnir --format sarif > mjolnir.sarif
+ * Usage: qa-doctor --format sarif > qa-doctor.sarif
  */
 
 import type { Finding, ScanResult } from "../types.js";
@@ -60,7 +60,7 @@ export function renderSarif(result: ScanResult, repoRootUri?: string): string {
     tool: {
       driver: {
         name: "QA Doctor",
-        informationUri: "https://github.com/Sergey-Bar/Mjolnir",
+        informationUri: "https://github.com/Sergey-Bar/qa-doctor",
         // Tool version — sourced from ENGINE_VERSION to prevent drift.
         version: ENGINE_VERSION,
         rules: [...rules.values()].map((r) => {

@@ -4,7 +4,7 @@
  * Locks: byte-identical reproducibility (same ScanResult → same bytes),
  * hostile inputs degrade honestly, the JSON twin mirrors the MD, the
  * artifact is self-contained (no timestamps, no machine paths beyond
- * the scanned surface label), and `mjolnir triage`-style consumption
+ * the scanned surface label), and `qa-doctor triage`-style consumption
  * stays possible (structured, not prose).
  */
 
@@ -122,7 +122,7 @@ describe("content locks", () => {
       };
       topTrustRisks: Array<{ ruleId: string; message: string }>;
     };
-    expect(j.artifact).toBe("mjolnir-trust-report");
+    expect(j.artifact).toBe("qa-doctor-trust-report");
     expect(j.trust.level).toBe("L2");
     expect(j.trust.confidence).toBe(0.7);
     expect(j.trust.measuredFpOfFiredRules).toBe(0.429);
@@ -170,7 +170,7 @@ describe("hostile inputs degrade honestly", () => {
 
 describe("artifact naming", () => {
   it("fixed filenames per §18 (PR-attachable, Pages-publishable)", () => {
-    expect(TRUST_REPORT_MD).toBe("mjolnir-trust-report.md");
-    expect(TRUST_REPORT_JSON).toBe("mjolnir-trust-report.json");
+    expect(TRUST_REPORT_MD).toBe("qa-doctor-trust-report.md");
+    expect(TRUST_REPORT_JSON).toBe("qa-doctor-trust-report.json");
   });
 });

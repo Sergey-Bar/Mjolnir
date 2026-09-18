@@ -36,7 +36,7 @@ import { CONTRACT_VERSION } from "../../src/engine/machine-contract.js";
 
 const createdDirs: string[] = [];
 function tmpRepo(): string {
-  const d = mkdtempSync(join(tmpdir(), "mjolnir-release-trust-arms-"));
+  const d = mkdtempSync(join(tmpdir(), "qa-doctor-release-trust-arms-"));
   createdDirs.push(d);
   return d;
 }
@@ -368,7 +368,7 @@ describe("structural check arms against degraded contexts", () => {
 describe("rendering arms", () => {
   it("renderReleaseTrust marks non-applicable dimensions and prints the full verdict", () => {
     const report: ReleaseTrustReport = {
-      schema: "mjolnir.release-trust@1",
+      schema: "qa-doctor.release-trust@1",
       release: "9.9.9",
       dimensions: [
         dim(),
@@ -389,7 +389,7 @@ describe("rendering arms", () => {
       },
     };
     const text = renderReleaseTrust(report);
-    expect(text).toContain("MJÖLNIR — RELEASE TRUST VERDICT");
+    expect(text).toContain("QA DOCTOR — RELEASE TRUST VERDICT");
     expect(text).toContain("Future Surface (not yet applicable)");
     expect(text).toContain("RELEASE-TRUST: PASS");
     expect(text).toContain("provenance=UNSUPPORTED");
@@ -398,7 +398,7 @@ describe("rendering arms", () => {
       contract: string;
       dimensions: Array<{ id: string; evidenceRefs: string[] }>;
     };
-    expect(json.contract).toBe("mjolnir.release-trust@1");
+    expect(json.contract).toBe("qa-doctor.release-trust@1");
     expect(json.dimensions.map((d) => d.id)).toEqual([
       "engine-integrity",
       "future",
@@ -415,11 +415,11 @@ describe("CLI verb arms (frozen exit contract)", () => {
     });
     expect(code).toBe(10);
     expect(errs.map(String).join(" ")).toContain(
-      "Usage: mjolnir release-trust",
+      "Usage: qa-doctor release-trust",
     );
   });
 
-  it("a non-mjolnir directory ⇒ honest BLOCKED exit 2", () => {
+  it("a non-qa-doctor directory ⇒ honest BLOCKED exit 2", () => {
     const errs: unknown[] = [];
     const code = runReleaseTrustCommand([tmpRepo()], {
       out: () => {},
@@ -449,7 +449,7 @@ describe("CLI verb arms (frozen exit contract)", () => {
     const parsed = JSON.parse(jsonOuts.map(String).join("\n")) as {
       contract: string;
     };
-    expect(parsed.contract).toBe("mjolnir.release-trust@1");
+    expect(parsed.contract).toBe("qa-doctor.release-trust@1");
   });
 
   it("a hostile fixtures root degrades to an honest non-PASS exit, never a crash", () => {

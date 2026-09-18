@@ -18,7 +18,7 @@ import { runCli } from "./helpers.js";
 
 let dir: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-e2e-flow-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-e2e-flow-"));
 });
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
@@ -154,7 +154,7 @@ describe("E2E journey 8: config journey", () => {
         "test.only('a', () => { expect(1 + 1).toBe(2); });\n",
       );
       writeFileSync(
-        join(dir, "mjolnir.config.json"),
+        join(dir, "qa-doctor.config.json"),
         JSON.stringify({
           gate: "advisory",
           ignore: [
@@ -194,7 +194,7 @@ describe("E2E journey 8: config journey", () => {
         "test.only('a', () => { expect(1 + 1).toBe(2); });\n",
       );
       writeFileSync(
-        join(dir, "mjolnir.config.json"),
+        join(dir, "qa-doctor.config.json"),
         JSON.stringify({
           ignore: [
             {
@@ -218,10 +218,10 @@ describe("E2E journey 8: config journey", () => {
     "an invalid config exits 10 with a fixable message",
     { timeout: 60_000 },
     () => {
-      writeFileSync(join(dir, "mjolnir.config.json"), "{ not json");
+      writeFileSync(join(dir, "qa-doctor.config.json"), "{ not json");
       const scan = runCli([dir, "--json"]);
       expect(scan.status).toBe(10);
-      expect(scan.stderr).toContain("Invalid mjolnir config");
+      expect(scan.stderr).toContain("Invalid qa-doctor config");
     },
   );
 });

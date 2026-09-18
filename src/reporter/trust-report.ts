@@ -2,7 +2,7 @@
  * Trust Report — the hero product surface (Mega MVP Master Plan v3.1
  * §26 WI-5, §7).
  *
- * Default `mjolnir` output. Answers the five questions in order, from
+ * Default `qa-doctor` output. Answers the five questions in order, from
  * the canonical result + machine contract ONLY (presentation-only
  * surface — one semantic truth, plan §18; every number rendered here
  * exists in --json):
@@ -156,9 +156,9 @@ export function nextAction(result: ScanResult): string {
   if (risks.length === 0) {
     return result.testDeclarationCount === 0
       ? "add tests — a repo without test declarations has nothing to verify"
-      : "nothing to triage — keep the gate green with `mjolnir ci install`";
+      : "nothing to triage — keep the gate green with `qa-doctor ci install`";
   }
-  return `mjolnir explain ${risks[0]?.ruleId ?? ""} — then fix the top risk first`;
+  return `qa-doctor explain ${risks[0]?.ruleId ?? ""} — then fix the top risk first`;
 }
 
 /**

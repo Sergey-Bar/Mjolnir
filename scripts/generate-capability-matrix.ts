@@ -624,7 +624,7 @@ export function buildMatrixJson(data: MatrixData): MatrixJson {
 
 async function main(): Promise<void> {
   // Plan §18: `--external <workspace-root>` renders the Capability
-  // Matrix for a workspace's LOCAL external rules (mjolnir-rules/)
+  // Matrix for a workspace's LOCAL external rules (qa-doctor-rules/)
   // instead of the core registry — the drift-check artifact for a
   // consumer repo. The default (no flag) stays byte-stable core-only.
   const extIdx = process.argv.indexOf("--external");
@@ -640,7 +640,7 @@ async function main(): Promise<void> {
       rows: buildRows(local.rules, MEASURED_FP, { provenance: "external" }),
       ...crossCheckDeclaredVsMeasured(),
     };
-    const mdPath = join(extRoot, "MJOLNIR-RULES-MATRIX.md");
+    const mdPath = join(extRoot, "QA_DOCTOR-RULES-MATRIX.md");
     writeFileSync(mdPath, renderMatrixMd(data) + "\n");
     await prettify(mdPath);
     console.log(

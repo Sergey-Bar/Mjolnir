@@ -45,7 +45,7 @@ function buildMinimalSpdx(pkg) {
       dataLicense: "CC0-1.0",
       SPDXID: "SPDXRef-DOCUMENT",
       name: `${pkg.name}-${pkg.version}`,
-      documentNamespace: `https://github.com/Sergey-Bar/Mjolnir/releases/${pkg.version}`,
+      documentNamespace: `https://github.com/Sergey-Bar/qa-doctor/releases/${pkg.version}`,
       creationInfo: {
         created: now,
         creators: ["Tool: npm sbom"],

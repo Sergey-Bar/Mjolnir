@@ -39,7 +39,7 @@ Per-feature verdicts (C1 statuses). Evidence: `evidence/151186b/**`.
 | `install` (agents/hooks)                             | VERIFIED (F3 stamp drift residual) | CLI + suite                        | managed surfaces                                                                  |
 | `--version`                                          | VERIFIED                           | CLI + package                      | 0.5.18 both                                                                       |
 | Plugin API (`--enable-plugins`, JSON manifests)      | VERIFIED DEEPLY                    | security battery + code            | default-off loud skip                                                             |
-| Config `.mjolnirignore` excludes-everything          | VERIFIED                           | suite + hostile variants           | honest completeness                                                               |
+| Config `.qa-doctorignore` excludes-everything        | VERIFIED                           | suite + hostile variants           | honest completeness                                                               |
 
 Denominator: the 27-verb surface actually registered/dispatchable in the RC
 (`SUBCOMMANDS` 22 + summary/why/handoff/install/help dispatch + two-word `ci

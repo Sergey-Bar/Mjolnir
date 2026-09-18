@@ -46,7 +46,7 @@ let dir: string;
 let origCwd: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-mutation-catch-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-mutation-catch-"));
   origCwd = process.cwd();
   process.chdir(dir);
 });

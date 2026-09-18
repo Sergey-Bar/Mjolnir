@@ -1,5 +1,5 @@
 /**
- * `mjolnir help` / `mjolnir <verb> --help` — the help registry (M2).
+ * `qa-doctor help` / `qa-doctor <verb> --help` — the help registry (M2).
  *
  * One grouped overview (printUsage stays the canonical entry point in
  * cli.ts) plus per-verb entries: name, summary, usage line, a few
@@ -9,7 +9,7 @@
  */
 
 export interface HelpEntry {
-  /** Canonical verb as typed (`mjolnir <verb>`). */
+  /** Canonical verb as typed (`qa-doctor <verb>`). */
   verb: string;
   /** One-line description. */
   summary: string;
@@ -28,209 +28,214 @@ export const HELP_ENTRIES: HelpEntry[] = [
     summary:
       "generate the PR workflow (action-based by default; scan + annotations + gate)",
     usage:
-      "mjolnir ci install [--gate advisory|error|warning] [--no-action] [--force]",
+      "qa-doctor ci install [--gate advisory|error|warning] [--no-action] [--force]",
     examples: [
-      "mjolnir ci install",
-      "mjolnir ci install --gate error",
-      "mjolnir ci install --no-action --gate error --force",
+      "qa-doctor ci install",
+      "qa-doctor ci install --gate error",
+      "qa-doctor ci install --no-action --gate error --force",
     ],
-    next: "mjolnir --scope changed",
+    next: "qa-doctor --scope changed",
   },
   {
     verb: "pr-comment",
     summary: "render a scoped PR comment (Markdown)",
-    usage: "mjolnir pr-comment [path] [--base <ref>]",
+    usage: "qa-doctor pr-comment [path] [--base <ref>]",
     examples: [
-      "mjolnir pr-comment .",
-      "mjolnir pr-comment . --base origin/main",
+      "qa-doctor pr-comment .",
+      "qa-doctor pr-comment . --base origin/main",
     ],
   },
   {
     verb: "summary",
     summary: "CI annotations + step summary from a saved --json report",
-    usage: "mjolnir summary [mjolnir.json] [--stdout] [--path-prefix <dir>]",
+    usage:
+      "qa-doctor summary [qa-doctor.json] [--stdout] [--path-prefix <dir>]",
     examples: [
-      "mjolnir --json > mjolnir.json && mjolnir summary mjolnir.json",
-      "mjolnir summary mjolnir.json --stdout",
+      "qa-doctor --json > qa-doctor.json && qa-doctor summary qa-doctor.json",
+      "qa-doctor summary qa-doctor.json --stdout",
     ],
   },
   {
     verb: "forensics",
     summary: "runtime evidence from a real run: retries, flakes, durations",
     usage:
-      "mjolnir forensics <test-results-dir-or-report-file> [--no-flaky-md]",
-    examples: ["mjolnir forensics test-results"],
+      "qa-doctor forensics <test-results-dir-or-report-file> [--no-flaky-md]",
+    examples: ["qa-doctor forensics test-results"],
   },
   {
     verb: "triage",
     summary: "flaky-triage proposal + TRIAGE.md meeting artifact",
-    usage: "mjolnir triage <test-results-dir-or-report-file> [--no-md]",
-    examples: ["mjolnir triage test-results --no-md"],
+    usage: "qa-doctor triage <test-results-dir-or-report-file> [--no-md]",
+    examples: ["qa-doctor triage test-results --no-md"],
   },
   {
     verb: "mutation",
     summary:
       "mutation-evidence reader: survived-mutant leaderboard + E1→E2 derivation",
-    usage: "mjolnir mutation <mutation-report> [--scan .]",
+    usage: "qa-doctor mutation <mutation-report> [--scan .]",
     examples: [
-      "mjolnir mutation reports/mutation-report.json",
-      "mjolnir mutation reports/… --scan .",
+      "qa-doctor mutation reports/mutation-report.json",
+      "qa-doctor mutation reports/… --scan .",
     ],
   },
   {
     verb: "pw-report",
     summary: "Playwright run summary (counts, true flakes, slowest tests)",
-    usage: "mjolnir pw-report <playwright-report.json | test-results-dir>",
-    examples: ["mjolnir pw-report test-results"],
+    usage: "qa-doctor pw-report <playwright-report.json | test-results-dir>",
+    examples: ["qa-doctor pw-report test-results"],
   },
   {
     verb: "doctor:playwright",
     summary: "Playwright deep scan + Selector Health report",
-    usage: "mjolnir doctor:playwright [path]",
-    examples: ["mjolnir doctor:playwright e2e"],
+    usage: "qa-doctor doctor:playwright [path]",
+    examples: ["qa-doctor doctor:playwright e2e"],
   },
   {
     verb: "fix",
     summary: "apply safe auto-fixes with proof (re-scan verifies each)",
-    usage: "mjolnir fix [path] [--dry-run]",
-    examples: ["mjolnir fix --dry-run", "mjolnir fix ."],
+    usage: "qa-doctor fix [path] [--dry-run]",
+    examples: ["qa-doctor fix --dry-run", "qa-doctor fix ."],
   },
   {
     verb: "baseline",
     summary: "snapshot the current finding set as the comparison point",
-    usage: "mjolnir baseline [path]",
-    examples: ["mjolnir baseline", "mjolnir diff"],
-    next: "mjolnir diff",
+    usage: "qa-doctor baseline [path]",
+    examples: ["qa-doctor baseline", "qa-doctor diff"],
+    next: "qa-doctor diff",
   },
   {
     verb: "diff",
     summary: "lifecycle diff vs the committed baseline",
-    usage: "mjolnir diff [path] [--json] [scan flags]",
-    examples: ["mjolnir diff"],
+    usage: "qa-doctor diff [path] [--json] [scan flags]",
+    examples: ["qa-doctor diff"],
   },
   {
     verb: "verify",
     summary:
       "agent-loop digest: resolved/new/unchanged vs baseline + score delta",
-    usage: "mjolnir verify [path] [--json] [scan flags]",
-    examples: ["mjolnir verify"],
+    usage: "qa-doctor verify [path] [--json] [scan flags]",
+    examples: ["qa-doctor verify"],
   },
   {
     verb: "impact",
     summary: "what a commit introduced vs resolved, since a prior commit",
-    usage: "mjolnir impact [path] [--since <ref>]",
-    examples: ["mjolnir impact . --since HEAD~1"],
+    usage: "qa-doctor impact [path] [--since <ref>]",
+    examples: ["qa-doctor impact . --since HEAD~1"],
   },
   {
     verb: "debt",
     summary: "test-debt register with an estimated quarterly cost",
-    usage: "mjolnir debt [path]",
-    examples: ["mjolnir debt"],
+    usage: "qa-doctor debt [path]",
+    examples: ["qa-doctor debt"],
   },
   {
     verb: "handover",
     summary: "new-QA onboarding map of the suite",
-    usage: "mjolnir handover [path]",
-    examples: ["mjolnir handover"],
+    usage: "qa-doctor handover [path]",
+    examples: ["qa-doctor handover"],
   },
   {
     verb: "stats",
     summary: "all-time local counters of fixes seen via diff",
-    usage: "mjolnir stats",
-    examples: ["mjolnir stats"],
+    usage: "qa-doctor stats",
+    examples: ["qa-doctor stats"],
   },
   {
     verb: "badge",
     summary: "shields.io endpoint JSON + snippet from a scan",
-    usage: "mjolnir badge [path]",
-    examples: ["mjolnir badge ."],
+    usage: "qa-doctor badge [path]",
+    examples: ["qa-doctor badge ."],
   },
   {
     verb: "trust-report",
     summary: "deterministic, self-contained Trust Artifact (md + json)",
-    usage: "mjolnir trust-report [path]",
-    examples: ["mjolnir trust-report ."],
+    usage: "qa-doctor trust-report [path]",
+    examples: ["qa-doctor trust-report ."],
   },
   {
     verb: "init",
     summary: "detect frameworks + setup checklist (never overwrites)",
-    usage: "mjolnir init [--interactive]",
-    examples: ["mjolnir init"],
+    usage: "qa-doctor init [--interactive]",
+    examples: ["qa-doctor init"],
   },
   {
     verb: "why",
     summary:
       "why did QA Doctor flag <file>:<line>? evidence + fix (not a gate)",
-    usage: "mjolnir why <file>:<line> [path] [--json <mjolnir.json>]",
+    usage: "qa-doctor why <file>:<line> [path] [--json <qa-doctor.json>]",
     examples: [
-      "mjolnir why e2e/a.spec.ts:3",
-      "mjolnir why e2e/a.spec.ts:3 --json mjolnir.json",
+      "qa-doctor why e2e/a.spec.ts:3",
+      "qa-doctor why e2e/a.spec.ts:3 --json qa-doctor.json",
     ],
   },
   {
     verb: "handoff",
     summary: "deterministic fix-handoff artifact from a saved --json report",
-    usage: "mjolnir handoff [mjolnir.json] [--category <cat>] [--rules <ids>]",
+    usage:
+      "qa-doctor handoff [qa-doctor.json] [--category <cat>] [--rules <ids>]",
     examples: [
-      "mjolnir --json > mjolnir.json && mjolnir handoff mjolnir.json",
-      "mjolnir handoff mjolnir.json --category QA-PW",
+      "qa-doctor --json > qa-doctor.json && qa-doctor handoff qa-doctor.json",
+      "qa-doctor handoff qa-doctor.json --category QA-PW",
     ],
   },
   {
     verb: "explain",
     summary: "what/why/fix + measured FP rate for one rule",
-    usage: "mjolnir explain <RULE-ID> [--fixtures-root <dir>]",
-    examples: ["mjolnir explain QA-TEST-001", "mjolnir rules --unmeasured"],
+    usage: "qa-doctor explain <RULE-ID> [--fixtures-root <dir>]",
+    examples: ["qa-doctor explain QA-TEST-001", "qa-doctor rules --unmeasured"],
   },
   {
     verb: "rules",
     summary:
       "rule catalog + empirical-measurement stats/health (md/json/stats/health)",
     usage:
-      "mjolnir rules [--md] [--unmeasured|--measured] [--external] | [--stats] | [--health] [--limit=N]",
+      "qa-doctor rules [--md] [--unmeasured|--measured] [--external] | [--stats] | [--health] [--limit=N]",
     examples: [
-      "mjolnir rules --md --unmeasured",
-      "mjolnir rules --stats",
-      "mjolnir rules --health --limit=20",
+      "qa-doctor rules --md --unmeasured",
+      "qa-doctor rules --stats",
+      "qa-doctor rules --health --limit=20",
     ],
   },
   {
     verb: "suppressions",
     summary: "list suppressed findings (governance transparency)",
-    usage: "mjolnir suppressions",
-    examples: ["mjolnir suppressions"],
+    usage: "qa-doctor suppressions",
+    examples: ["qa-doctor suppressions"],
   },
   {
     verb: "create-rule",
     summary: "scaffold a new rule + fixtures (must-fire, must-not-fire)",
-    usage: 'mjolnir create-rule <QA-XXX-nnn> --title "Rule title"',
-    examples: ['mjolnir create-rule QA-PW-131 --title "No request waits"'],
+    usage: 'qa-doctor create-rule <QA-XXX-nnn> --title "Rule title"',
+    examples: ['qa-doctor create-rule QA-PW-131 --title "No request waits"'],
   },
   {
     verb: "doctor",
     summary: "self-audit of the rule base (fixture firewall, tiers, caps)",
-    usage: "mjolnir doctor [repo-root]",
-    examples: ["mjolnir doctor"],
+    usage: "qa-doctor doctor [repo-root]",
+    examples: ["qa-doctor doctor"],
   },
   {
     verb: "release-trust",
     summary:
       "Release Trust Verdict over the canonical 12 dimensions (docs/RELEASE-TRUST-CONTRACT.md)",
-    usage: "mjolnir release-trust [--json] [repo-root]",
-    examples: ["mjolnir release-trust", "mjolnir release-trust --json"],
+    usage: "qa-doctor release-trust [--json] [repo-root]",
+    examples: ["qa-doctor release-trust", "qa-doctor release-trust --json"],
   },
   {
     verb: "install",
     summary: "install the agent instruction surfaces + optional staged hook",
-    usage: "mjolnir install [--staged-hook] [--dry-run] [--force]",
-    examples: ["mjolnir install --dry-run", "mjolnir install --staged-hook"],
+    usage: "qa-doctor install [--staged-hook] [--dry-run] [--force]",
+    examples: [
+      "qa-doctor install --dry-run",
+      "qa-doctor install --staged-hook",
+    ],
   },
   {
     verb: "mcp",
     summary:
       "run as an MCP server over stdio (scan / explain / diff / verify tools)",
-    usage: "mjolnir mcp",
-    examples: ["mjolnir mcp"],
+    usage: "qa-doctor mcp",
+    examples: ["qa-doctor mcp"],
   },
 ];
 
@@ -281,7 +286,7 @@ function findEntry(verb: string): HelpEntry | undefined {
   return HELP_ENTRIES.find((e) => e.verb === verb);
 }
 
-/** True when `mjolnir help <verb>` has a detailed page. */
+/** True when `qa-doctor help <verb>` has a detailed page. */
 export function hasVerbHelp(verb: string): boolean {
   return findEntry(verb) !== undefined;
 }
@@ -289,7 +294,7 @@ export function hasVerbHelp(verb: string): boolean {
 /**
  * Verbs whose detailed help IS the root help (certification P3):
  * `scan` is the product's one command — the registry has no separate
- * scan page, so `mjolnir scan --help` / `mjolnir help scan` must render
+ * scan page, so `qa-doctor scan --help` / `qa-doctor help scan` must render
  * the overview (which carries the scan usage lines), not the "no
  * detailed help" stub. `ci` (the bare stem) and `help` are the same
  * shape: real verbs, no dedicated page.
@@ -306,7 +311,7 @@ export function renderVerbHelp(verb: string): string {
     return [
       `  No detailed help for "${verb}".`,
       "",
-      "  $ mjolnir --help",
+      "  $ qa-doctor --help",
       "",
     ].join("\n");
   }
@@ -327,7 +332,7 @@ export function renderVerbHelp(verb: string): string {
   return lines.join("\n");
 }
 
-const DOCS_URL = "https://github.com/Sergey-Bar/Mjolnir#readme";
+const DOCS_URL = "https://github.com/Sergey-Bar/qa-doctor#readme";
 
 /** The overview's grouped one-line sections, in display order. */
 const GROUPS: Array<{ title: string; verbs: string[] }> = [
@@ -375,7 +380,7 @@ const GROUPS: Array<{ title: string; verbs: string[] }> = [
 ];
 
 const SCAN_SUMMARY_LINES: string[] = [
-  "mjolnir [path]                 full-repo scan + WORTHINESS score",
+  "qa-doctor [path]                 full-repo scan + WORTHINESS score",
 ];
 
 /**
@@ -389,20 +394,20 @@ export function renderRootHelp(schemaVersion = 1): string {
   const byVerb = new Map(HELP_ENTRIES.map((e) => [e.verb, e]));
   const lines: string[] = [];
   lines.push(
-    "🔨 mjölnir — verification trust engine for test suites and CI pipelines",
+    "🔨 qa-doctor — verification trust engine for test suites and CI pipelines",
   );
   lines.push("");
   lines.push(
-    "Usage: mjolnir [path] [options] · mjolnir <subcommand> [args] · mjolnir help <verb>",
+    "Usage: qa-doctor [path] [options] · qa-doctor <subcommand> [args] · qa-doctor help <verb>",
   );
   lines.push("");
   lines.push("The product is one command in CI:");
   lines.push("");
   lines.push(
-    "  mjolnir --scope changed        scan only what the branch touched; exit 1 on",
+    "  qa-doctor --scope changed        scan only what the branch touched; exit 1 on",
   );
   lines.push(
-    "                                 new findings. `mjolnir ci install` writes the",
+    "                                 new findings. `qa-doctor ci install` writes the",
   );
   lines.push("                                 workflow for you.");
   lines.push("");
@@ -410,10 +415,10 @@ export function renderRootHelp(schemaVersion = 1): string {
   lines.push("");
   lines.push("  " + SCAN_SUMMARY_LINES[0]);
   lines.push(
-    "  mjolnir explain <RULE-ID>      what/why/fix + measured FP rate for one rule",
+    "  qa-doctor explain <RULE-ID>      what/why/fix + measured FP rate for one rule",
   );
   lines.push(
-    "  mjolnir rules --unmeasured     the rules running on assumption, not measurement",
+    "  qa-doctor rules --unmeasured     the rules running on assumption, not measurement",
   );
   lines.push("");
   lines.push("Options:");
@@ -429,22 +434,24 @@ export function renderRootHelp(schemaVersion = 1): string {
     for (const verb of g.verbs) {
       const e = byVerb.get(verb);
       if (!e) continue;
-      const usage = e.usage.replace(/^mjolnir /, "").padEnd(46);
+      const usage = e.usage.replace(/^qa-doctor /, "").padEnd(46);
       lines.push(`  ${usage}${e.summary}`);
     }
     lines.push("");
   }
   lines.push("Copy-paste starts:");
   lines.push(
-    "  $ mjolnir                         score this repo's test suite",
+    "  $ qa-doctor                         score this repo's test suite",
   );
   lines.push(
-    "  $ mjolnir --scope changed         CI gate: only what the branch touched",
+    "  $ qa-doctor --scope changed         CI gate: only what the branch touched",
   );
-  lines.push("  $ mjolnir ci install              write the PR workflow");
-  lines.push("  $ mjolnir forensics test-results  where the flakes hide");
+  lines.push("  $ qa-doctor ci install              write the PR workflow");
+  lines.push("  $ qa-doctor forensics test-results  where the flakes hide");
   lines.push("");
-  lines.push("Per-command help: mjolnir help <verb>   (e.g. mjolnir help fix)");
+  lines.push(
+    "Per-command help: qa-doctor help <verb>   (e.g. qa-doctor help fix)",
+  );
   lines.push("");
   lines.push(`Exit codes: ${EXIT_CODE_TABLE.map(([c]) => c).join(" · ")}`);
   for (const [code, meaning] of EXIT_CODE_TABLE) {

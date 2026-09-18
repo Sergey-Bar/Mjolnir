@@ -49,7 +49,7 @@ const VERDICT_LABEL: Record<PrCommentVerdict, string> = {
 };
 
 function header(model: PrCommentModelV1): string {
-  return `<!-- mjolnir-pr-comment -->
+  return `<!-- qa-doctor-pr-comment -->
 ## QA Doctor Verification Trust Report
 
 **${sanitizeForMarkdown(model.repository)}** · PR #${model.pullRequest.number}`;

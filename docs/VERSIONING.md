@@ -4,7 +4,7 @@ QA Doctor follows [semver](https://semver.org/). This document defines what
 each part of the tool promises across version bumps, what counts as a
 breaking change, and how deprecations are announced. It is the contract
 behind the "frozen surfaces" language used in the README and the
-[exit codes & contracts](https://sergey-bar.github.io/Mjolnir/reference/exit-codes)
+[exit codes & contracts](https://sergey-bar.github.io/qa-doctor/reference/exit-codes)
 reference. Support and issue routing live in
 [SUPPORT.md](../SUPPORT.md); the maintainer decision model lives in the
 governance section of [CONTRIBUTING.md](../CONTRIBUTING.md).
@@ -13,17 +13,17 @@ governance section of [CONTRIBUTING.md](../CONTRIBUTING.md).
 
 At **1.0.0 and every later release**, these surfaces are frozen:
 
-| Surface                             | Commitment                                                                                                                                                                     |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| JSON report                         | `schemaVersion: 1` is frozen; changes within v1 are **additive-only** (new optional fields). Removing or renaming a field requires a `schemaVersion: 2` major release.         |
-| Exit codes                          | `0` clean · `1` findings at/above gate · `2` partial scan (never blocks) · `10` usage error · `20` internal error — semantics frozen.                                          |
-| CLI verbs & flags                   | No removal or rename without the deprecation cycle below. New verbs/flags are additive.                                                                                        |
-| Config keys (`mjolnir.config.json`) | Removal or rename = breaking (major). Additions = minor.                                                                                                                       |
-| Plugin & local-rule manifests       | The shape of `QADoctorRule` and JSON rule manifests is frozen; additive fields only.                                                                                           |
-| Rule IDs (`QA-<FAMILY>-NNN`)        | **Immutable and never reused**, once shipped.                                                                                                                                  |
-| Tiering                             | A detector behavior change requires a `detectorRevision` bump and re-measurement before a tier change — never silent (see [RULE-LIFECYCLE.md](RULE-LIFECYCLE.md)).             |
-| Support matrix                      | Node 22 on ubuntu-latest, windows-latest, macos-latest; Node 24 on ubuntu-latest. The CI matrix is the proof; if CI drops a combination, this document changes in the same PR. |
-| Privacy                             | Scanning is zero-network. Telemetry decisions are governed separately and always opt-in.                                                                                       |
+| Surface                               | Commitment                                                                                                                                                                     |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| JSON report                           | `schemaVersion: 1` is frozen; changes within v1 are **additive-only** (new optional fields). Removing or renaming a field requires a `schemaVersion: 2` major release.         |
+| Exit codes                            | `0` clean · `1` findings at/above gate · `2` partial scan (never blocks) · `10` usage error · `20` internal error — semantics frozen.                                          |
+| CLI verbs & flags                     | No removal or rename without the deprecation cycle below. New verbs/flags are additive.                                                                                        |
+| Config keys (`qa-doctor.config.json`) | Removal or rename = breaking (major). Additions = minor.                                                                                                                       |
+| Plugin & local-rule manifests         | The shape of `QADoctorRule` and JSON rule manifests is frozen; additive fields only.                                                                                           |
+| Rule IDs (`QA-<FAMILY>-NNN`)          | **Immutable and never reused**, once shipped.                                                                                                                                  |
+| Tiering                               | A detector behavior change requires a `detectorRevision` bump and re-measurement before a tier change — never silent (see [RULE-LIFECYCLE.md](RULE-LIFECYCLE.md)).             |
+| Support matrix                        | Node 22 on ubuntu-latest, windows-latest, macos-latest; Node 24 on ubuntu-latest. The CI matrix is the proof; if CI drops a combination, this document changes in the same PR. |
+| Privacy                               | Scanning is zero-network. Telemetry decisions are governed separately and always opt-in.                                                                                       |
 
 ## What counts as breaking (major bump)
 
@@ -32,7 +32,7 @@ At **1.0.0 and every later release**, these surfaces are frozen:
 - Changing the meaning of an exit code, or removing one.
 - Removing or renaming a CLI verb, subcommand verb (e.g. `forensics`,
   `triage`, `doctor:playwright`), or flag.
-- Removing or renaming a `mjolnir.config.json` key, or changing what an
+- Removing or renaming a `qa-doctor.config.json` key, or changing what an
   existing key does incompatibly.
 - Changing the plugin/local-rule manifest shape incompatibly.
 - Dropping a Node major version or a support-matrix OS.
@@ -49,13 +49,13 @@ contract).
 ## Plugin execution gate (pre-1.0 clarification)
 
 As of the audit-remediation 1.0 close-out, npm plugins and JS-module
-external rules (`mjolnir-rules/*.mjs`) load and execute only behind the
+external rules (`qa-doctor-rules/*.mjs`) load and execute only behind the
 plugin trust gate: `--enable-plugins` on any verb that loads rules, or
-`MJOLNIR_ENABLE_PLUGINS=1` in the environment. The default is OFF.
+`QA_DOCTOR_ENABLE_PLUGINS=1` in the environment. The default is OFF.
 Declaring a plugin in config without the gate prints a loud stderr
 notice listing the skipped sources — it never changes the exit code or
 the JSON contract (the `plugins` field appears only when sources actually
-loaded). JSON rule manifests (`mjolnir-rules/*.json`) never execute code
+loaded). JSON rule manifests (`qa-doctor-rules/*.json`) never execute code
 and load without the gate. This is a behavior change to the pre-1.0
 "always load" posture, shipped before the freeze per the versioning
 contract; the gate's existence and both spellings of the opt-in are

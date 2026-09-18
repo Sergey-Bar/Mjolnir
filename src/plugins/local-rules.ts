@@ -4,12 +4,12 @@
  * Local plugin/rule contract (Verification Trust Evolution Plan §18 —
  * Local Extensibility).
  *
- * Folder-based custom rules: a workspace can carry a `mjolnir-rules/`
+ * Folder-based custom rules: a workspace can carry a `qa-doctor-rules/`
  * directory whose files load as rules with the SAME trust contract as
  * npm plugins — zero network, no node_modules resolution, loaded from
  * the workspace itself:
  *
- *   mjolnir-rules/
+ *   qa-doctor-rules/
  *     my-rule.json      ← declarative: regex patterns, no code executed
  *     acme-suite.mjs    ← code module: exports `rules: QADoctorRule[]`
  *                         (same shape as an npm plugin's export)
@@ -31,7 +31,7 @@
  *   - Load failures degrade honestly: warning entries, never a crash;
  *     exit codes stay frozen.
  *
- * Drift-check: the `mjolnir rules --md` catalog is generated from the
+ * Drift-check: the `qa-doctor rules --md` catalog is generated from the
  * LOADED rules (core + external), so the catalog can never drift from
  * what actually ships — an edit to a local rule file changes the very
  * next catalog render (locked by tests/local-rules.spec.ts).
@@ -45,7 +45,7 @@ import type { QADoctorRule } from "../rules/rule.js";
 import type { Severity } from "../types.js";
 import { isReservedPrefix } from "./reserved-prefixes.js";
 
-export const LOCAL_RULES_DIR = "mjolnir-rules";
+export const LOCAL_RULES_DIR = "qa-doctor-rules";
 
 export interface LoadedExternalRules {
   rules: QADoctorRule[];
@@ -70,7 +70,7 @@ const ALLOWED_QA_IMPACTS = new Set([
 ]);
 
 /**
- * Discover + load external rules from `<root>/mjolnir-rules/`.
+ * Discover + load external rules from `<root>/qa-doctor-rules/`.
  * Missing directory → empty result (not an error — most workspaces
  * carry none).
  */
@@ -308,7 +308,7 @@ async function loadModuleRules(
   const rules = (mod as { rules?: unknown })?.rules;
   if (!Array.isArray(rules)) {
     result.errors.push(
-      `external rule module "${name}" exports no \`rules\` array — not a mjolnir external rule.`,
+      `external rule module "${name}" exports no \`rules\` array — not a qa-doctor external rule.`,
     );
     return;
   }

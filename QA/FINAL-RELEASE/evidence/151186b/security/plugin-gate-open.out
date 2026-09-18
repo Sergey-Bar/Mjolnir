@@ -23,12 +23,12 @@ STDOUT:{
       "findingType": "deterministic-defect",
       "qaImpact": "HYGIENE",
       "evidenceLevel": "E2",
-      "file": "mjolnir.config.json",
+      "file": "qa-doctor.config.json",
       "line": 1,
       "column": 1,
-      "message": "Plugin problem: plugin \"C:/Users/User/AppData/Local/Temp/mjolnir-plug-xoSd3M/evil-plugin.mjs\" exports no `rules` array — not a mjolnir plugin.",
+      "message": "Plugin problem: plugin \"C:/Users/User/AppData/Local/Temp/qa-doctor-plug-xoSd3M/evil-plugin.mjs\" exports no `rules` array — not a qa-doctor plugin.",
       "why": "A configured plugin could not be loaded or declared invalid rules — its checks are silently missing from this scan.",
-      "fix": "Fix or remove the plugin entry in mjolnir.config.json.",
+      "fix": "Fix or remove the plugin entry in qa-doctor.config.json.",
       "fixGroupId": "QA-PLUGIN-000"
     }
   ],
@@ -65,10 +65,10 @@ STDOUT:{
     },
     "annotations": [
       {
-        "path": "mjolnir.config.json",
+        "path": "qa-doctor.config.json",
         "start_line": 1,
         "annotation_level": "warning",
-        "message": "QA-PLUGIN-000: Plugin problem: plugin \"C:/Users/User/AppData/Local/Temp/mjolnir-plug-xoSd3M/evil-plugin.mjs\" exports no `rules` array — not a mjolnir plugin.",
+        "message": "QA-PLUGIN-000: Plugin problem: plugin \"C:/Users/User/AppData/Local/Temp/qa-doctor-plug-xoSd3M/evil-plugin.mjs\" exports no `rules` array — not a qa-doctor plugin.",
         "ruleId": "QA-PLUGIN-000",
         "advisory": false
       }

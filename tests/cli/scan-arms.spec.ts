@@ -15,7 +15,7 @@ import type { ScanResult } from "../../src/types.js";
 
 let dir: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-cli-scan-arms-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-cli-scan-arms-"));
 });
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
@@ -82,7 +82,7 @@ describe("plugin tier enforcement", () => {
   it("caps quarantine-tier plugin findings to info/E0 even at severity error (--strict; non-strict excludes plugin quarantine rules exactly like core ones — §18 unified the filter)", async () => {
     writePlugin("good-plugin", ACME_TIERED_RULE);
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
+      join(dir, "qa-doctor.config.json"),
       JSON.stringify({ plugins: ["./good-plugin"] }),
     );
     mkdirSync(join(dir, "e2e"), { recursive: true });
@@ -112,7 +112,7 @@ describe("plugin tier enforcement", () => {
 
   it("surfaces unloadable plugins as QA-PLUGIN-000 findings", async () => {
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
+      join(dir, "qa-doctor.config.json"),
       JSON.stringify({ plugins: ["./missing-plugin"] }),
     );
     mkdirSync(join(dir, "e2e"), { recursive: true });
@@ -135,7 +135,7 @@ describe("plugin tier enforcement", () => {
 describe("files-scoped suppressions", () => {
   it("suppresses only rule+glob matches and keeps other findings", async () => {
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
+      join(dir, "qa-doctor.config.json"),
       JSON.stringify({
         ignore: [
           {
@@ -184,7 +184,7 @@ describe("files-scoped suppressions", () => {
 describe("runScan config-warning hook", () => {
   it("delivers non-fatal config warnings to the hook", async () => {
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
+      join(dir, "qa-doctor.config.json"),
       JSON.stringify({ severityOverrides: { "QA-NOPE-001": "warning" } }),
     );
     mkdirSync(join(dir, "e2e"), { recursive: true });

@@ -4,7 +4,7 @@
  *
  * The README's command table is a set of promises: each row implies the
  * command exists and does roughly what its description says. This test
- * extracts every `npx mjolnir-qa...` invocation from the table and
+ * extracts every `npx qa-doctor-cli...` invocation from the table and
  * asserts the subcommand portion is one `main()` actually dispatches —
  * docs cannot promise a command that does not exist.
  */
@@ -18,14 +18,14 @@ const README = readFileSync(join(ROOT, "README.md"), "utf8");
 const CLI_SOURCE = readFileSync(join(ROOT, "src", "cli.ts"), "utf8");
 
 /** Extracts the subcommand token (or none, for the bare scan path) from
- * each `npx mjolnir-qa...`/`mjolnir ...` invocation in the
+ * each `npx qa-doctor-cli...`/`qa-doctor ...` invocation in the
  * README's command table. */
 function extractReadmeCommands(markdown: string): string[] {
   // FW-RX-07: `(?:[ \t]+(args)|(?=`))` — the arg capture starts at a
   // non-space token so the space-run and the [^`]* scan can never
-  // exchange characters; bare `mjolnir` spans yield an undefined group.
+  // exchange characters; bare `qa-doctor` spans yield an undefined group.
   const re =
-    /`(?:npx mjolnir-qa(?:@latest)?|mjolnir)(?:[ \t]+([^\s`][^`]*)|(?=`))/g;
+    /`(?:npx qa-doctor-cli(?:@latest)?|qa-doctor)(?:[ \t]+([^\s`][^`]*)|(?=`))/g;
   const commands: string[] = [];
   for (const m of markdown.matchAll(re)) {
     const rest = (m[1] ?? "").trim();
@@ -75,18 +75,21 @@ describe("README command table", () => {
     expect(KNOWN_SUBCOMMANDS.length).toBeGreaterThan(5);
   });
 
-  it.each(commands)("`mjolnir %s` is a real, dispatchable command", (rest) => {
-    const sub = firstSubcommandToken(rest);
-    if (sub === null) {
-      // No subcommand token (e.g. bare `--json`, or a target path) —
-      // this is the default scan path, which always exists.
-      return;
-    }
-    expect(
-      KNOWN_SUBCOMMANDS.includes(sub),
-      `README documents "mjolnir ${rest}", but "${sub}" is not ` +
-        `a subcommand src/cli.ts's main() dispatches on — the README ` +
-        `is promising a command that does not exist.`,
-    ).toBe(true);
-  });
+  it.each(commands)(
+    "`qa-doctor %s` is a real, dispatchable command",
+    (rest) => {
+      const sub = firstSubcommandToken(rest);
+      if (sub === null) {
+        // No subcommand token (e.g. bare `--json`, or a target path) —
+        // this is the default scan path, which always exists.
+        return;
+      }
+      expect(
+        KNOWN_SUBCOMMANDS.includes(sub),
+        `README documents "qa-doctor ${rest}", but "${sub}" is not ` +
+          `a subcommand src/cli.ts's main() dispatches on — the README ` +
+          `is promising a command that does not exist.`,
+      ).toBe(true);
+    },
+  );
 });

@@ -1,4 +1,4 @@
-  M J Ö L N I R  ·  VERIFICATION TRUST ENGINE
+  Q A  D O C T O R  ·  VERIFICATION TRUST ENGINE
 
 
      ᛏ  ᚹ  ᛗ  ᚨ
@@ -42,7 +42,7 @@
             damage happens before any test runs.
     Fix     Target an ephemeral per-run environment (testcontainers, branch
             DB) instead of shared infrastructure.
-    Verify  Re-run mjolnir after the change — deduction should drop by 1.
+    Verify  Re-run qa-doctor after the change — deduction should drop by 1.
 
   ⚠ WARN    QA-PW-125 · tests/rules/rule-arm-completion.spec.ts:86
     [E1 · heuristic]
@@ -52,14 +52,14 @@
             damage happens before any test runs.
     Fix     Target an ephemeral per-run environment (testcontainers, branch
             DB) instead of shared infrastructure.
-    Verify  Re-run mjolnir after the change — deduction should drop by 1.
+    Verify  Re-run qa-doctor after the change — deduction should drop by 1.
 
 
 ──────────────────────────────────────────────────────────
   Analysis: complete · 2.8s
   Rule coverage: 0/1 rules that fired here have a measured false-positive rate;
-  the rest are heuristics. `mjolnir rules --unmeasured` lists them.
-  Runtime evidence: not available — no run report (mjolnir.report.json /
+  the rest are heuristics. `qa-doctor rules --unmeasured` lists them.
+  Runtime evidence: not available — no run report (qa-doctor.report.json /
   test-results) next to the scan target; all findings are static-only (L0–L2).
   Agentic provenance: 1 codegen-like file of 224 test files (static markers only — provenance is metadata, not trust).
 

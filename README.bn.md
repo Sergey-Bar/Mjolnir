@@ -9,19 +9,19 @@ QA Doctor এমন টেস্ট খুঁজে বের করে যে�
 
 <br />
 
-[![npm](https://img.shields.io/npm/v/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
-[![downloads](https://img.shields.io/npm/dm/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
-[![ci](https://img.shields.io/github/actions/workflow/status/Sergey-Bar/Mjolnir/ci.yml?branch=main&style=flat-square&label=ci&labelColor=0A1119)](https://github.com/Sergey-Bar/Mjolnir/actions/workflows/ci.yml)
-[![coverage](https://img.shields.io/codecov/c/github/Sergey-Bar/Mjolnir?style=flat-square&color=1F6F7C&labelColor=0A1119&label=coverage)](https://codecov.io/gh/Sergey-Bar/Mjolnir)
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Sergey-Bar/Mjolnir/badge)](https://scorecard.dev/viewer/?uri=github.com/Sergey-Bar/Mjolnir)
+[![npm](https://img.shields.io/npm/v/qa-doctor-cli.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/qa-doctor-cli)
+[![downloads](https://img.shields.io/npm/dm/qa-doctor-cli.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/qa-doctor-cli)
+[![ci](https://img.shields.io/github/actions/workflow/status/Sergey-Bar/qa-doctor/ci.yml?branch=main&style=flat-square&label=ci&labelColor=0A1119)](https://github.com/Sergey-Bar/qa-doctor/actions/workflows/ci.yml)
+[![coverage](https://img.shields.io/codecov/c/github/Sergey-Bar/qa-doctor?style=flat-square&color=1F6F7C&labelColor=0A1119&label=coverage)](https://codecov.io/gh/Sergey-Bar/qa-doctor)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Sergey-Bar/qa-doctor/badge)](https://scorecard.dev/viewer/?uri=github.com/Sergey-Bar/qa-doctor)
 [![license](https://img.shields.io/badge/license-MIT-1F6F7C.svg?style=flat-square&labelColor=0A1119)](LICENSE)
 [![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-1F6F7C.svg?style=flat-square&labelColor=0A1119)](https://nodejs.org)
 
 ```bash
-npx mjolnir-qa@latest
+npx qa-doctor-cli@latest
 ```
 
-[এটি কাজ করতে দেখুন](#এটি-কাজ-করতে-দেখুন) · [দ্রুত শুরু](#দ্রুত-শুরু) · [এটি কী খুঁজে পায়](#mjölnir-কী-খুঁজে-পায়) · [স্কোর](#বিশ্বাসযোগ্যতা-স্কোর) · [প্রমাণ](#প্রমাণ-মডেল) · [রানটাইম ফরেনসিক্স](#রানটাইম-ফরেনসিক্স) · [CI](#ci-সততা) · [এজেন্ট](#ai-এজেন্ট) · [নিরাপত্তা](#বিশ্বাস-এবং-নিরাপত্তা) · [সীমাবদ্ধতা](#mjölnir-আপনাকে-যা-বলতে-পারে-না) · [নথি](#নথি)
+[এটি কাজ করতে দেখুন](#এটি-কাজ-করতে-দেখুন) · [দ্রুত শুরু](#দ্রুত-শুরু) · [এটি কী খুঁজে পায়](#qa-doctor-কী-খুঁজে-পায়) · [স্কোর](#বিশ্বাসযোগ্যতা-স্কোর) · [প্রমাণ](#প্রমাণ-মডেল) · [রানটাইম ফরেনসিক্স](#রানটাইম-ফরেনসিক্স) · [CI](#ci-সততা) · [এজেন্ট](#ai-এজেন্ট) · [নিরাপত্তা](#বিশ্বাস-এবং-নিরাপত্তা) · [সীমাবদ্ধতা](#qa-doctor-আপনাকে-যা-বলতে-পারে-না) · [নথি](#নথি)
 
 <details>
 <summary>অন্য ভাষায় পড়ুন — ২২টি অনুবাদ</summary>
@@ -58,7 +58,7 @@ npx mjolnir-qa@latest
 
 <sub>এই workflow-এর জন্য ডেমো স্ক্যান যত সন্ধান রিপোর্ট করেছে, সেগুলো যে লাইনে রিপোর্ট করা হয়েছে সেখানেই। `npm run docs:readme-brand` দ্বারা [`demo-report.json`](assets/readme/demo-report.json) থেকে তৈরি এবং CI-তে বিচ্যুতির বিরুদ্ধে লক করা।</sub>
 
-**কঠোর মোড।** সবচেয়ে আক্রমণাত্মক সনাক্তকরণ — `.only`, `continue-on-error`, ফাঁকা পরীক্ষা, পুনরায় চেষ্টার অপব্যবহার — কোয়ারেন্টাইন স্তরে থাকে। এগুলো শুধু `--strict`-এ চলে এবং `info` তীব্রতায় সীমিত: এগুলো চিহ্নিত করে, কিন্তু কখনো গেট করে না। ডিফল্ট স্ক্যান (`npx mjolnir-qa@latest` ছাড়া `--strict`) শুধু কোর এবং বর্ধিত নিয়ম কভার করে। পরামর্শমূলক স্তরও চাইলে `--strict` যোগ করুন।
+**কঠোর মোড।** সবচেয়ে আক্রমণাত্মক সনাক্তকরণ — `.only`, `continue-on-error`, ফাঁকা পরীক্ষা, পুনরায় চেষ্টার অপব্যবহার — কোয়ারেন্টাইন স্তরে থাকে। এগুলো শুধু `--strict`-এ চলে এবং `info` তীব্রতায় সীমিত: এগুলো চিহ্নিত করে, কিন্তু কখনো গেট করে না। ডিফল্ট স্ক্যান (`npx qa-doctor-cli@latest` ছাড়া `--strict`) শুধু কোর এবং বর্ধিত নিয়ম কভার করে। পরামর্শমূলক স্তরও চাইলে `--strict` যোগ করুন।
 
 QA Doctor স্যুট, CI workflow, এবং আপনার কাছে থাকলে একটি প্রকৃত রানের রিপোর্ট পড়ে। এটি আপনার টেস্ট চালায় না, আপনার dependency ইনস্টল করে না, বা এটি যে কোড স্ক্যান করে তা চালায় না। আর যখন এর কাছে প্রমাণ নেই, তখন এটি আস্থা বানিয়ে না নিয়ে সেটাই বলে দেয়:
 
@@ -92,12 +92,12 @@ QA Doctor স্যুট, CI workflow, এবং আপনার কাছে �
 <br />
 
 <p align="center">
-  <a href="assets/video/mjolnir-demo.mp4">
-    <img src="assets/video/mjolnir-demo-poster.png" alt="ডেমো রেকর্ডিংয়ের একটি ফ্রেম: একটি টার্মিনাল উইন্ডোতে ডেমো রিপোজিটরি স্ক্যান করছে npx mjolnir-qa@latest" width="900" />
+  <a href="assets/video/qa-doctor-demo.mp4">
+    <img src="assets/video/qa-doctor-demo-poster.png" alt="ডেমো রেকর্ডিংয়ের একটি ফ্রেম: একটি টার্মিনাল উইন্ডোতে ডেমো রিপোজিটরি স্ক্যান করছে npx qa-doctor-cli@latest" width="900" />
   </a>
 </p>
 
-<sub>`npm run docs:video` দ্বারা একটি প্রকৃত স্ক্যান থেকে ফ্রেম বাই ফ্রেম রেন্ডার করা হয়েছে; কখনো স্ক্রিন-রেকর্ড করা হয়নি। [`mjolnir-demo.mp4`](assets/video/mjolnir-demo.mp4) খুলতে ফ্রেমটি নির্বাচন করুন।</sub>
+<sub>`npm run docs:video` দ্বারা একটি প্রকৃত স্ক্যান থেকে ফ্রেম বাই ফ্রেম রেন্ডার করা হয়েছে; কখনো স্ক্রিন-রেকর্ড করা হয়নি। [`qa-doctor-demo.mp4`](assets/video/qa-doctor-demo.mp4) খুলতে ফ্রেমটি নির্বাচন করুন।</sub>
 
 </details>
 
@@ -109,7 +109,7 @@ QA Doctor স্যুট, CI workflow, এবং আপনার কাছে �
   <img src="assets/readme/finding-anatomy.svg" alt="ডেমো স্ক্যানের প্রথম সন্ধান, ঠিক যেভাবে টার্মিনাল এটি প্রিন্ট করে, এর চারটি অংশ চিহ্নিত করা: কোথায়, কতটা নিশ্চিত, নিয়মটি কত প্রায়ই ভুল হয়, এবং ফিক্স।" width="100%" />
 </p>
 
-`mjolnir explain QA-CI-001` একটি নিয়মের সম্পূর্ণ আস্থার রেকর্ড প্রিন্ট করে, যার মধ্যে রয়েছে তার পরিমাপ করা false-positive হার এবং সেই হার যে tier অর্জন করেছে:
+`qa-doctor explain QA-CI-001` একটি নিয়মের সম্পূর্ণ আস্থার রেকর্ড প্রিন্ট করে, যার মধ্যে রয়েছে তার পরিমাপ করা false-positive হার এবং সেই হার যে tier অর্জন করেছে:
 
 ```text
   ▍ QA-CI-001 — continue-on-error masks a failing verification gate
@@ -137,22 +137,22 @@ HOW TO FIX
   Example from this rule's own must-fire fixture: QA-CI-001/must-fire/masked.yml
 
 WHAT WOULD CHANGE THE VERDICT
-  - a run report next to the scan target (mjolnir.report.json or test-results/)
+  - a run report next to the scan target (qa-doctor.report.json or test-results/)
   corroborating this file lifts its findings to L3–L5
-  - a documented suppression (mjolnir.config.json) lowers the finding count
+  - a documented suppression (qa-doctor.config.json) lowers the finding count
   without claiming correctness
   - quarantine findings run only under --strict and are advisory (E0) — they can
   never gate CI
 
 NEXT ACTION
-  Fix the first occurrence, then re-run: `mjolnir --scope changed`. Every
+  Fix the first occurrence, then re-run: `qa-doctor --scope changed`. Every
   occurrence of this rule is listed in the scan output.
 
 HOW TO VERIFY THE FIX
-  Re-run `mjolnir` on the changed file(s) — this finding should no longer
-  appear. `mjolnir --scope changed` scopes the check to just what you touched.
+  Re-run `qa-doctor` on the changed file(s) — this finding should no longer
+  appear. `qa-doctor --scope changed` scopes the check to just what you touched.
 
-Docs: mjolnir rules --md   (full catalog, this rule included)
+Docs: qa-doctor rules --md   (full catalog, this rule included)
 ```
 
 এটিই মূল্যের একক: একটি জায়গা যেখানে CI এমন একটি পাস রিপোর্ট করে যা এটি অর্জন করেনি।
@@ -162,7 +162,7 @@ Docs: mjolnir rules --md   (full catalog, this rule included)
 ## দ্রুত শুরু
 
 ```bash
-npx mjolnir-qa@latest
+npx qa-doctor-cli@latest
 ```
 
 এটি বর্তমান ডিরেক্টরি স্ক্যান করে এবং Trust Report প্রিন্ট করে: এটি কী পেয়েছে, আপনি কতটা বিশ্বাস করতে পারেন, কেন, এবং পরবর্তীতে কী করতে হবে। গেট বা তার উপরে কিছু না পাওয়া গেলে এটি `0` দিয়ে exit করে।
@@ -170,60 +170,60 @@ npx mjolnir-qa@latest
 CI-তে, শুধু ব্রাঞ্চ যা এনেছে তা স্ক্যান করুন, যাতে একটি পুরনো স্যুট আপনার প্রথম pull request-কে ডুবিয়ে না দেয়:
 
 ```bash
-npx mjolnir-qa@latest --scope changed
+npx qa-doctor-cli@latest --scope changed
 ```
 
-`mjolnir ci install` এটিকে একটি GitHub Actions workflow হিসেবে লেখে, `v1` মেজর ট্যাগে পিন করা [action](https://github.com/Sergey-Bar/Mjolnir#readme) ব্যবহার করে (অথবা `--no-action` সহ সাধারণ `npx`)। এটি ততক্ষণ পরামর্শমূলক থাকে যতক্ষণ না আপনি সিদ্ধান্ত নেন এটি ব্লক করা উচিত।
+`qa-doctor ci install` এটিকে একটি GitHub Actions workflow হিসেবে লেখে, `v1` মেজর ট্যাগে পিন করা [action](https://github.com/Sergey-Bar/qa-doctor#readme) ব্যবহার করে (অথবা `--no-action` সহ সাধারণ `npx`)। এটি ততক্ষণ পরামর্শমূলক থাকে যতক্ষণ না আপনি সিদ্ধান্ত নেন এটি ব্লক করা উচিত।
 
-| কমান্ড                              | এটি কী করে                                             |
-| ----------------------------------- | ------------------------------------------------------ |
-| `mjolnir`                           | Trust Report: রায়, আস্থা, পরবর্তী পদক্ষেপ             |
-| `mjolnir --scope changed`           | শুধু আপনার ব্রাঞ্চ যা এনেছে (CI ফর্ম)                  |
-| `mjolnir ci install`                | পরামর্শমূলক PR workflow তৈরি করে (action-ভিত্তিক)      |
-| `mjolnir explain QA-CI-001`         | কী, কেন, এবং ফিক্স, প্লাস পরিমাপ করা FP হার            |
-| `mjolnir why src/a.spec.ts:42`      | ঠিক এই লাইনটি কেন ফ্ল্যাগ করা হয়েছে। কখনো গেট করে না। |
-| `mjolnir forensics ./test-results/` | একটি প্রকৃত রান থেকে রানটাইম প্রমাণ                    |
-| `mjolnir trust-report`              | স্বয়ংসম্পূর্ণ Trust Artifact (md + json)              |
-| `mjolnir handoff`                   | একটি কোডিং এজেন্টের জন্য প্রতিকার পরিকল্পনা            |
-| `mjolnir --json` / `--format sarif` | মেশিন-পাঠযোগ্য আউটপুট, GitHub Code Scanning            |
-| `mjolnir --format codequality`      | GitLab Code Quality রিপোর্ট (MR widget artifact)       |
-| `mjolnir --strict`                  | quarantine-tier নিয়মও চালায় (উচ্চতর FP ঝুঁকি)        |
+| কমান্ড                                | এটি কী করে                                             |
+| ------------------------------------- | ------------------------------------------------------ |
+| `qa-doctor`                           | Trust Report: রায়, আস্থা, পরবর্তী পদক্ষেপ             |
+| `qa-doctor --scope changed`           | শুধু আপনার ব্রাঞ্চ যা এনেছে (CI ফর্ম)                  |
+| `qa-doctor ci install`                | পরামর্শমূলক PR workflow তৈরি করে (action-ভিত্তিক)      |
+| `qa-doctor explain QA-CI-001`         | কী, কেন, এবং ফিক্স, প্লাস পরিমাপ করা FP হার            |
+| `qa-doctor why src/a.spec.ts:42`      | ঠিক এই লাইনটি কেন ফ্ল্যাগ করা হয়েছে। কখনো গেট করে না। |
+| `qa-doctor forensics ./test-results/` | একটি প্রকৃত রান থেকে রানটাইম প্রমাণ                    |
+| `qa-doctor trust-report`              | স্বয়ংসম্পূর্ণ Trust Artifact (md + json)              |
+| `qa-doctor handoff`                   | একটি কোডিং এজেন্টের জন্য প্রতিকার পরিকল্পনা            |
+| `qa-doctor --json` / `--format sarif` | মেশিন-পাঠযোগ্য আউটপুট, GitHub Code Scanning            |
+| `qa-doctor --format codequality`      | GitLab Code Quality রিপোর্ট (MR widget artifact)       |
+| `qa-doctor --strict`                  | quarantine-tier নিয়মও চালায় (উচ্চতর FP ঝুঁকি)        |
 
 <details>
 <summary><strong>অন্য সব কমান্ড</strong> — flake triage, রিপোর্টিং, গভর্নেন্স</summary>
 
 <br />
 
-| কমান্ড                              | এটি কী করে                                                                       |
-| ----------------------------------- | -------------------------------------------------------------------------------- |
-| `mjolnir --classic`                 | Trust Report-পূর্ব স্কোর ব্যানার রেন্ডার                                         |
-| `mjolnir explain verdict`           | সংরক্ষিত স্ক্যানের রায় কেন এমন                                                  |
-| `mjolnir triage ./test-results/`    | গাইডেড triage। প্রতিটি সারি একটি পরবর্তী পদক্ষেপে শেষ হয়।                       |
-| `mjolnir pw-report ./test-results/` | Playwright রান সামারি: retry, flake, সবচেয়ে ধীর                                 |
-| `mjolnir doctor:playwright`         | শুধু Playwright-এর জন্য গভীর স্ক্যান প্লাস Selector Health Score                 |
-| `mjolnir fix --dry-run` / `fix`     | নিরাপদ auto-fix, প্রতিটি পুনরায় স্ক্যান করে প্রমাণ করা হয়েছে যে এটি ঠিক হয়েছে |
-| `mjolnir baseline` / `diff`         | সন্ধানের স্ন্যাপশট নেয়, তারপর শুধু নতুন বা খারাপ রিপোর্ট করে                    |
-| `mjolnir impact --since <ref>`      | একটি কমিট কী এনেছিল এবং সমাধান করেছিল                                            |
-| `mjolnir summary`                   | একটি রিপোর্ট থেকে CI annotation এবং step summary                                 |
-| `mjolnir pr-comment`                | একটি সীমিত-পরিসরের PR মন্তব্য, Markdown হিসেবে                                   |
-| `mjolnir debt`                      | একটি cost model সহ test-debt রেজিস্টার                                           |
-| `mjolnir handover`                  | একজন নতুন QA ইঞ্জিনিয়ারের জন্য স্যুটের onboarding map                           |
-| `mjolnir init`                      | framework detect করে, একটি সেটআপ checklist প্রিন্ট করে                           |
-| `mjolnir suppressions`              | গভর্নেন্সের জন্য দমন করা সন্ধানের তালিকা করে                                     |
-| `mjolnir rules --unmeasured`        | যে নিয়মগুলো অনুমানের উপর চলে, পরিমাপের উপর নয়                                  |
-| `mjolnir rules --md`                | সম্পূর্ণ নিয়ম ক্যাটালগ (JSON বা Markdown)                                       |
-| `mjolnir doctor`                    | QA Doctor-এর নিজের নিয়ম বেসের self-audit                                        |
-| `mjolnir create-rule <ID>`          | একটি নতুন নিয়ম এবং তার fixture-এর জন্য কাঠামো তৈরি করে                          |
-| `mjolnir stats`                     | এখন পর্যন্ত দেখা সব ফিক্সের স্থানীয় সর্বকালীন কাউন্টার                          |
-| `mjolnir badge`                     | shields.io endpoint JSON এবং snippet                                             |
-| `mjolnir --cache`                   | একটি স্থানীয় verdict cache-এর মাধ্যমে incremental re-scan                       |
-| `mjolnir --format mermaid`          | একটি PR মন্তব্যের জন্য test-architecture diagram                                 |
+| কমান্ড                                | এটি কী করে                                                                       |
+| ------------------------------------- | -------------------------------------------------------------------------------- |
+| `qa-doctor --classic`                 | Trust Report-পূর্ব স্কোর ব্যানার রেন্ডার                                         |
+| `qa-doctor explain verdict`           | সংরক্ষিত স্ক্যানের রায় কেন এমন                                                  |
+| `qa-doctor triage ./test-results/`    | গাইডেড triage। প্রতিটি সারি একটি পরবর্তী পদক্ষেপে শেষ হয়।                       |
+| `qa-doctor pw-report ./test-results/` | Playwright রান সামারি: retry, flake, সবচেয়ে ধীর                                 |
+| `qa-doctor doctor:playwright`         | শুধু Playwright-এর জন্য গভীর স্ক্যান প্লাস Selector Health Score                 |
+| `qa-doctor fix --dry-run` / `fix`     | নিরাপদ auto-fix, প্রতিটি পুনরায় স্ক্যান করে প্রমাণ করা হয়েছে যে এটি ঠিক হয়েছে |
+| `qa-doctor baseline` / `diff`         | সন্ধানের স্ন্যাপশট নেয়, তারপর শুধু নতুন বা খারাপ রিপোর্ট করে                    |
+| `qa-doctor impact --since <ref>`      | একটি কমিট কী এনেছিল এবং সমাধান করেছিল                                            |
+| `qa-doctor summary`                   | একটি রিপোর্ট থেকে CI annotation এবং step summary                                 |
+| `qa-doctor pr-comment`                | একটি সীমিত-পরিসরের PR মন্তব্য, Markdown হিসেবে                                   |
+| `qa-doctor debt`                      | একটি cost model সহ test-debt রেজিস্টার                                           |
+| `qa-doctor handover`                  | একজন নতুন QA ইঞ্জিনিয়ারের জন্য স্যুটের onboarding map                           |
+| `qa-doctor init`                      | framework detect করে, একটি সেটআপ checklist প্রিন্ট করে                           |
+| `qa-doctor suppressions`              | গভর্নেন্সের জন্য দমন করা সন্ধানের তালিকা করে                                     |
+| `qa-doctor rules --unmeasured`        | যে নিয়মগুলো অনুমানের উপর চলে, পরিমাপের উপর নয়                                  |
+| `qa-doctor rules --md`                | সম্পূর্ণ নিয়ম ক্যাটালগ (JSON বা Markdown)                                       |
+| `qa-doctor doctor`                    | QA Doctor-এর নিজের নিয়ম বেসের self-audit                                        |
+| `qa-doctor create-rule <ID>`          | একটি নতুন নিয়ম এবং তার fixture-এর জন্য কাঠামো তৈরি করে                          |
+| `qa-doctor stats`                     | এখন পর্যন্ত দেখা সব ফিক্সের স্থানীয় সর্বকালীন কাউন্টার                          |
+| `qa-doctor badge`                     | shields.io endpoint JSON এবং snippet                                             |
+| `qa-doctor --cache`                   | একটি স্থানীয় verdict cache-এর মাধ্যমে incremental re-scan                       |
+| `qa-doctor --format mermaid`          | একটি PR মন্তব্যের জন্য test-architecture diagram                                 |
 
-`mjolnir help <command>` তাদের যেকোনো একটির জন্য ব্যবহার, উদাহরণ, এবং পরবর্তী পদক্ষেপ প্রিন্ট করে।
+`qa-doctor help <command>` তাদের যেকোনো একটির জন্য ব্যবহার, উদাহরণ, এবং পরবর্তী পদক্ষেপ প্রিন্ট করে।
 
 </details>
 
-Windows, macOS, বা Linux-এ **Node.js ≥ 22.18** প্রয়োজন। গ্লোবাল ইনস্টল পছন্দ করেন? `npm i -g mjolnir-qa`। এই সর্বনিম্ন সীমা বিল্ড টুলচেইন থেকে আসে (tsdown এটিকে লক্ষ্য করে এবং রিলিজ পাইপলাইন এটির বিরুদ্ধে smoke-test করে); রানটাইম dependency-গুলোর এর চেয়ে বেশি কিছু প্রয়োজন হয় না।
+Windows, macOS, বা Linux-এ **Node.js ≥ 22.18** প্রয়োজন। গ্লোবাল ইনস্টল পছন্দ করেন? `npm i -g qa-doctor-cli`। এই সর্বনিম্ন সীমা বিল্ড টুলচেইন থেকে আসে (tsdown এটিকে লক্ষ্য করে এবং রিলিজ পাইপলাইন এটির বিরুদ্ধে smoke-test করে); রানটাইম dependency-গুলোর এর চেয়ে বেশি কিছু প্রয়োজন হয় না।
 
 <br />
 
@@ -247,7 +247,7 @@ Windows, macOS, বা Linux-এ **Node.js ≥ 22.18** প্রয়োজন�
 | QA-PY-002    | স্কিপ করা টেস্ট (`skip`, non-strict `xfail`)                      | warning  | core       |
 | QA-CS-103    | assertion ছাড়া টেস্ট মেথড                                        | error    | core       |
 
-সম্পূর্ণ ক্যাটালগ রেজিস্ট্রি থেকে তৈরি হয়, কখনো হাতে রক্ষণাবেক্ষণ করা হয় না: `mjolnir rules --md`, [`docs/rules/`](docs/rules/), অথবা [what-it-checks গাইড](https://sergey-bar.github.io/Mjolnir/guide/what-it-checks)।
+সম্পূর্ণ ক্যাটালগ রেজিস্ট্রি থেকে তৈরি হয়, কখনো হাতে রক্ষণাবেক্ষণ করা হয় না: `qa-doctor rules --md`, [`docs/rules/`](docs/rules/), অথবা [what-it-checks গাইড](https://sergey-bar.github.io/qa-doctor/guide/what-it-checks)।
 
 <details>
 <summary><strong>এই README-এ উল্লেখিত প্রতিটি নিয়ম</strong>, একটি টেবিলে</summary>
@@ -298,11 +298,11 @@ Python-এ QA-PY-001…012 (pytest hygiene) এবং QA-PY-101…108 (Python-�
 
 </details>
 
-প্রতিটি নিয়ম একটি must-fire **এবং** একটি must-not-fire fixture সহ শিপ হয়, এবং একটি নিয়ম যা নিজের নেগেটিভ fixture-এ fire করে তা শিপ হতে পারে না। এটিই false-positive firewall; `mjolnir doctor` এই রিপোজিটরির নিজের CI-তে এটি প্রয়োগ করে।
+প্রতিটি নিয়ম একটি must-fire **এবং** একটি must-not-fire fixture সহ শিপ হয়, এবং একটি নিয়ম যা নিজের নেগেটিভ fixture-এ fire করে তা শিপ হতে পারে না। এটিই false-positive firewall; `qa-doctor doctor` এই রিপোজিটরির নিজের CI-তে এটি প্রয়োগ করে।
 
 ### Selector Health Score
 
-`mjolnir doctor:playwright` প্রতিটি locator-কে গ্রেড করে সে কীভাবে একটি এলিমেন্ট খুঁজে পায় তার ভিত্তিতে: একজন ব্যবহারকারী যেভাবে খুঁজবে (role, label, text), একটি explicit contract-এর মাধ্যমে (`data-testid`), অথবা একটি structural accident-এর মাধ্যমে (CSS chain, XPath)। প্রতিটি ফাইল ০ থেকে ১০০-এর একটি স্কোর পায়:
+`qa-doctor doctor:playwright` প্রতিটি locator-কে গ্রেড করে সে কীভাবে একটি এলিমেন্ট খুঁজে পায় তার ভিত্তিতে: একজন ব্যবহারকারী যেভাবে খুঁজবে (role, label, text), একটি explicit contract-এর মাধ্যমে (`data-testid`), অথবা একটি structural accident-এর মাধ্যমে (CSS chain, XPath)। প্রতিটি ফাইল ০ থেকে ১০০-এর একটি স্কোর পায়:
 
 ```text
   ▍ SELECTOR HEALTH
@@ -336,7 +336,7 @@ e2e/checkout.spec.ts
 | `100`     | **FORGED**                                  |
 | `null`    | **UNKNOWN**: কোনো টেস্ট ঘোষণা পাওয়া যায়নি |
 
-**এটি কীভাবে গণনা করা হয়।** Severity একটি base deduction নির্ধারণ করে (`error −8`, `warning −3`, `info −1`) এবং evidence level এতে ছাড় দেয়: E2 পুরো পরিশোধ করে, E1 অর্ধেক (নিচের দিকে রাউন্ড করা), E0 কিছুই না। মোট suite exposure দ্বারা normalize করা হয়, অর্থাৎ প্রতি ফাইলের বদলে প্রতি test declaration-এ deduction। টার্মিনাল একই discounted সংখ্যা প্রিন্ট করে যা স্কোর ব্যবহার করেছে; কোনো লুকানো দ্বিতীয় মডেল নেই। বিস্তারিত: [docs/SCORING.md](docs/SCORING.md) এবং [scoring গাইড](https://sergey-bar.github.io/Mjolnir/guide/scoring)।
+**এটি কীভাবে গণনা করা হয়।** Severity একটি base deduction নির্ধারণ করে (`error −8`, `warning −3`, `info −1`) এবং evidence level এতে ছাড় দেয়: E2 পুরো পরিশোধ করে, E1 অর্ধেক (নিচের দিকে রাউন্ড করা), E0 কিছুই না। মোট suite exposure দ্বারা normalize করা হয়, অর্থাৎ প্রতি ফাইলের বদলে প্রতি test declaration-এ deduction। টার্মিনাল একই discounted সংখ্যা প্রিন্ট করে যা স্কোর ব্যবহার করেছে; কোনো লুকানো দ্বিতীয় মডেল নেই। বিস্তারিত: [docs/SCORING.md](docs/SCORING.md) এবং [scoring গাইড](https://sergey-bar.github.io/qa-doctor/guide/scoring)।
 
 **১০০-এর অর্থ কী নয়।** এর অর্থ এই নয় যে সফটওয়্যারটি সঠিক, স্যুটটি পর্যাপ্ত, বা প্রোডাক্টটি ত্রুটিমুক্ত। এর অর্থ একটি জিনিস: **QA Doctor-এর মূল্যায়িত নিয়মগুলোর কোনোটিই এই স্ক্যান এবং এই evidence model-এর অধীনে কোনো deduction তৈরি করেনি।**
 
@@ -375,7 +375,7 @@ e2e/checkout.spec.ts
 
 ### এর কতটা পরিমাপ করা হয়েছে
 
-**৭৯টির মধ্যে ৭৪টি নিয়মের একটি false-positive হার রয়েছে যা প্রকৃত OSS কোডের বিরুদ্ধে পরিমাপ করা হয়েছে** (প্রতিটির জন্য অন্তত ১০টি হাতে-শ্রেণীবদ্ধ সন্ধান; দেখুন [docs/FP-AUDIT.md](docs/FP-AUDIT.md))। অন্য ৫টি লেখকের অনুমানের উপর শিপ হয় এবং `mjolnir explain`-এ, নিয়ম ধরে ধরে, তা বলে দেয়। `mjolnir rules --unmeasured` তাদের তালিকাভুক্ত করে, এবং প্রতিটি স্ক্যানের footer রিপোর্ট করে যে আসলে _fire_ হওয়া নিয়মগুলোর কতগুলো পরিমাপ করা হয়েছে।
+**৭৯টির মধ্যে ৭৪টি নিয়মের একটি false-positive হার রয়েছে যা প্রকৃত OSS কোডের বিরুদ্ধে পরিমাপ করা হয়েছে** (প্রতিটির জন্য অন্তত ১০টি হাতে-শ্রেণীবদ্ধ সন্ধান; দেখুন [docs/FP-AUDIT.md](docs/FP-AUDIT.md))। অন্য ৫টি লেখকের অনুমানের উপর শিপ হয় এবং `qa-doctor explain`-এ, নিয়ম ধরে ধরে, তা বলে দেয়। `qa-doctor rules --unmeasured` তাদের তালিকাভুক্ত করে, এবং প্রতিটি স্ক্যানের footer রিপোর্ট করে যে আসলে _fire_ হওয়া নিয়মগুলোর কতগুলো পরিমাপ করা হয়েছে।
 
 হারগুলো খারাপ হলেও পাবলিক থাকে। QA-TEST-001 (একটি কমিট করা `.only`) প্রকৃত রিপোজিটরিতে খারাপ অডিট করে এবং তার জন্য quarantine-এ বসে থাকে। QA-PW-141 সহ প্রতিটি নিয়মের লাইভ সংখ্যা audit-এ রয়েছে।
 
@@ -392,7 +392,7 @@ Tier মতামত নয়, পরিমাপ করা false-positive হ�
 
 FP band শুধুমাত্র একটি tier-কে demote করতে পারে — স্পষ্টভাবে ঘোষিত হলে `quarantine` থেকে কখনো কোনো নিয়ম promote করে না। স্পষ্টভাবে quarantine করা নিয়ম পরিমাপ করা FP হার নির্বিশেষে quarantine-এই থাকে।
 
-Promotion, demotion, এবং প্রতি-ভাষা maturity: [rule lifecycle](https://sergey-bar.github.io/Mjolnir/reference/rule-lifecycle)।
+Promotion, demotion, এবং প্রতি-ভাষা maturity: [rule lifecycle](https://sergey-bar.github.io/qa-doctor/reference/rule-lifecycle)।
 
 ### কেন এটি একটি linter নয়
 
@@ -421,7 +421,7 @@ AI রিভিউও ব্যবহার করুন। এটি nuance, in
 Static analysis এমন কোড নিয়ে reasoning করে যা কখনো চলেনি। Forensics পড়ে আসলে কী ঘটেছিল: যেকোনো runner থেকে Playwright JSON, Jest JSON, Vitest JSON, এবং JUnit XML।
 
 ```bash
-mjolnir forensics ./test-results/
+qa-doctor forensics ./test-results/
 ```
 
 ```text
@@ -435,7 +435,7 @@ FAILING    declines an expired card (e2e/checkout.spec.ts)
            ████░░░░░░░░░░░░░░░░ 1.1s · 1 attempt
 ```
 
-`TRUE-FLAKE`-এর অর্থ এই নয় যে টেস্টটি retry হয়েছে। এর অর্থ টেস্টটি **অন্তত একবার ব্যর্থ হয়েছে এবং তারপর সবুজে শেষ হয়েছে**: একটি ভাগ্যবান পাস, শেষ চেকমার্ক যাই বলুক না কেন ফ্ল্যাগ করা হয়। `mjolnir triage` সেই ইতিহাসকে একটি quarantine প্রস্তাবে পরিণত করে, এবং `mjolnir pw-report` একটি রান সারসংক্ষেপ করে। একই রান রিপোর্টগুলোই সন্ধানকে trust level L3 এবং তার উপরে তোলে।
+`TRUE-FLAKE`-এর অর্থ এই নয় যে টেস্টটি retry হয়েছে। এর অর্থ টেস্টটি **অন্তত একবার ব্যর্থ হয়েছে এবং তারপর সবুজে শেষ হয়েছে**: একটি ভাগ্যবান পাস, শেষ চেকমার্ক যাই বলুক না কেন ফ্ল্যাগ করা হয়। `qa-doctor triage` সেই ইতিহাসকে একটি quarantine প্রস্তাবে পরিণত করে, এবং `qa-doctor pw-report` একটি রান সারসংক্ষেপ করে। একই রান রিপোর্টগুলোই সন্ধানকে trust level L3 এবং তার উপরে তোলে।
 
 <br />
 
@@ -446,13 +446,13 @@ FAILING    declines an expired card (e2e/checkout.spec.ts)
 PR workflow তৈরি করুন, ডিফল্টরূপে পরামর্শমূলক:
 
 ```bash
-mjolnir ci install
+qa-doctor ci install
 ```
 
 অথবা Marketplace action যোগ করুন একটি workflow-তে যা আপনার ইতিমধ্যে আছে:
 
 ```yaml
-- uses: Sergey-Bar/Mjolnir@v1
+- uses: Sergey-Bar/qa-doctor@v1
   with:
     scope: changed
     fail-on: error
@@ -463,12 +463,12 @@ mjolnir ci install
 GitHub Code Scanning-এ সন্ধান রাখতে, SARIF আপলোড করুন (workflow বা job scope-এ `security-events: write` প্রয়োজন):
 
 ```yaml
-- run: npx mjolnir-qa@latest --format sarif > mjolnir.sarif
+- run: npx qa-doctor-cli@latest --format sarif > qa-doctor.sarif
   continue-on-error: true
 - uses: github/codeql-action/upload-sarif@v3
   if: ${{ !cancelled() }}
   with:
-    sarif_file: mjolnir.sarif
+    sarif_file: qa-doctor.sarif
 ```
 
 GitLab-এ, `--format codequality` সেই Code Quality রিপোর্ট লেখে যা MR widget এবং diff annotation পড়ে ([docs/GITLAB-CI.md](docs/GITLAB-CI.md))। Editor এবং pipeline সেটআপ: [docs/SARIF-INTEGRATION.md](docs/SARIF-INTEGRATION.md)।
@@ -476,7 +476,7 @@ GitLab-এ, `--format codequality` সেই Code Quality রিপোর্ট 
 ### Changed-scope attribution
 
 ```bash
-npx mjolnir-qa@latest --scope changed
+npx qa-doctor-cli@latest --scope changed
 ```
 
 সন্ধানগুলো আপনার ব্রাঞ্চ যোগ করা লাইনগুলোতে attribute করা হয়, **merge-base**-এর বিরুদ্ধে পরিমাপ করা। Scope-টি একই ফাইল সেট যা একটি full scan আবিষ্কার করে (TS/JS spec এবং adapter config, `test_*.py`, `*Test.java`, `*Tests.cs`, `.github/workflows/*.yml`), সাথে uncommitted এবং untracked পরিবর্তন, তাই এটি আপনি কমিট করার আগেই কাজ করে। Base resolve হয় `main → master → origin/main → origin/master → origin/HEAD`; `--base <ref>` দিয়ে override করুন।
@@ -495,16 +495,16 @@ SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
 
 **AI ফিক্স লেখে। QA Doctor তা যাচাই করে।** প্রমাণ আসে পুনরায় স্ক্যান থেকে, কখনো এজেন্টের নিজের সফলতার রিপোর্ট থেকে নয়।
 
-| কমান্ড            | এজেন্ট কী পায়                                                                                                                                                                             |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `mjolnir mcp`     | stdio-এর উপর একটি [MCP](https://modelcontextprotocol.io) সার্ভার। `scan`, `explain`, এবং `diff` callable টুলে পরিণত হয়।                                                                   |
-| `mjolnir handoff` | একটি সংরক্ষিত `--json` রিপোর্ট একটি deterministic Markdown পরিকল্পনায় পরিণত হয়: কী শনাক্ত হয়েছে, প্রতি সন্ধানের evidence boundary, কী **পরিবর্তন করা উচিত নয়**, কীভাবে যাচাই করতে হয়। |
-| `mjolnir install` | আপনার রিপোতে ইতিমধ্যে থাকা এজেন্ট সারফেসে লেখে (`.claude/`, `.cursor/`, `.kilo/`, `AGENTS.md`) যাতে এজেন্টটি শেষ হয়েছে দাবি করার আগে পুনরায় স্ক্যান করে।                                 |
+| কমান্ড              | এজেন্ট কী পায়                                                                                                                                                                             |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `qa-doctor mcp`     | stdio-এর উপর একটি [MCP](https://modelcontextprotocol.io) সার্ভার। `scan`, `explain`, এবং `diff` callable টুলে পরিণত হয়।                                                                   |
+| `qa-doctor handoff` | একটি সংরক্ষিত `--json` রিপোর্ট একটি deterministic Markdown পরিকল্পনায় পরিণত হয়: কী শনাক্ত হয়েছে, প্রতি সন্ধানের evidence boundary, কী **পরিবর্তন করা উচিত নয়**, কীভাবে যাচাই করতে হয়। |
+| `qa-doctor install` | আপনার রিপোতে ইতিমধ্যে থাকা এজেন্ট সারফেসে লেখে (`.claude/`, `.cursor/`, `.kilo/`, `AGENTS.md`) যাতে এজেন্টটি শেষ হয়েছে দাবি করার আগে পুনরায় স্ক্যান করে।                                 |
 
 নিজস্ব CLI সহ একটি ক্লায়েন্টে যোগ করুন:
 
 ```bash
-claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
+claude mcp add qa-doctor -- npx -y qa-doctor-cli@latest mcp
 ```
 
 অথবা একটি `mcpServers` ব্লক নেয় এমন যেকোনো ক্লায়েন্টে:
@@ -512,7 +512,10 @@ claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
 ```json
 {
   "mcpServers": {
-    "mjolnir": { "command": "npx", "args": ["-y", "mjolnir-qa@latest", "mcp"] }
+    "qa-doctor": {
+      "command": "npx",
+      "args": ["-y", "qa-doctor-cli@latest", "mcp"]
+    }
   }
 }
 ```
@@ -527,9 +530,9 @@ claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
 
 দুটি সতর্কতা: `npx` নিজেই কিছু চালানোর আগে প্যাকেজ fetch করে, এবং গ্যারান্টি `src/` কভার করে, third-party plugin নয়।
 
-**Plugin sandboxed নয়।** JS plugin (`mjolnir-rules/*.mjs`, অথবা `"plugins"`-এর অধীনে তালিকাভুক্ত npm প্যাকেজ) পূর্ণ Node privilege দিয়ে চলে, ESLint বা Vitest plugin-এর মতো একই trust model। এগুলো লোড করা **প্রতি স্ক্যানে** opt-in: `--enable-plugins` (অথবা `MJOLNIR_ENABLE_PLUGINS=1`) ছাড়া তাদের সোর্স কখনো লোড হয় না, এবং stderr-এ একটি নোটিশ কী স্কিপ হয়েছে তা তালিকাভুক্ত করে। JSON rule manifest কোনো কোড এক্সিকিউট করে না, এবং core rule-ID prefix সংরক্ষিত যাতে একটি plugin তাদের একটির ভান করতে না পারে। [SECURITY.md](SECURITY.md)-এর মাধ্যমে vulnerability রিপোর্ট করুন।
+**Plugin sandboxed নয়।** JS plugin (`qa-doctor-rules/*.mjs`, অথবা `"plugins"`-এর অধীনে তালিকাভুক্ত npm প্যাকেজ) পূর্ণ Node privilege দিয়ে চলে, ESLint বা Vitest plugin-এর মতো একই trust model। এগুলো লোড করা **প্রতি স্ক্যানে** opt-in: `--enable-plugins` (অথবা `QA_DOCTOR_ENABLE_PLUGINS=1`) ছাড়া তাদের সোর্স কখনো লোড হয় না, এবং stderr-এ একটি নোটিশ কী স্কিপ হয়েছে তা তালিকাভুক্ত করে। JSON rule manifest কোনো কোড এক্সিকিউট করে না, এবং core rule-ID prefix সংরক্ষিত যাতে একটি plugin তাদের একটির ভান করতে না পারে। [SECURITY.md](SECURITY.md)-এর মাধ্যমে vulnerability রিপোর্ট করুন।
 
-**এটি নিজের উপরও চলে।** একটি verification trust engine-এর কোনো অবস্থান নেই যদি না এটি নিজেই verifiable হয়। প্রতিটি CI রান এই রিপোজিটরিকে সেই একই রান তৈরি করা বিল্ড দিয়ে স্ক্যান করে। Gate যেকোনো error-severity সন্ধানে ব্যর্থ হয়, এবং একটি **partial** স্ক্যান বা একটি **crashed rule**-এও, কারণ কিছু রিপোর্ট না করা একটি truncated self-scan হলো সেই false green যা এই প্রজেক্ট ধরার জন্য বিদ্যমান। `mjolnir doctor` একই রানে rule base পুনরায় audit করে (fixture firewall, tier honesty, core-tier cap), এবং একটি INCONCLUSIVE চেক ঠিক একটি ব্যর্থ চেকের মতোই ব্যর্থ হয়। উভয় রিপোর্ট build artifact হিসেবে আপলোড করা হয়।
+**এটি নিজের উপরও চলে।** একটি verification trust engine-এর কোনো অবস্থান নেই যদি না এটি নিজেই verifiable হয়। প্রতিটি CI রান এই রিপোজিটরিকে সেই একই রান তৈরি করা বিল্ড দিয়ে স্ক্যান করে। Gate যেকোনো error-severity সন্ধানে ব্যর্থ হয়, এবং একটি **partial** স্ক্যান বা একটি **crashed rule**-এও, কারণ কিছু রিপোর্ট না করা একটি truncated self-scan হলো সেই false green যা এই প্রজেক্ট ধরার জন্য বিদ্যমান। `qa-doctor doctor` একই রানে rule base পুনরায় audit করে (fixture firewall, tier honesty, core-tier cap), এবং একটি INCONCLUSIVE চেক ঠিক একটি ব্যর্থ চেকের মতোই ব্যর্থ হয়। উভয় রিপোর্ট build artifact হিসেবে আপলোড করা হয়।
 
 ### Exit code এবং machine contract
 
@@ -564,7 +567,7 @@ claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
 
 ## নথি
 
-সম্পূর্ণ ডকস সাইট রয়েছে <https://sergey-bar.github.io/Mjolnir/>-এ।
+সম্পূর্ণ ডকস সাইট রয়েছে <https://sergey-bar.github.io/qa-doctor/>-এ।
 
 | Document                                               | এতে কী আছে                                                       |
 | ------------------------------------------------------ | ---------------------------------------------------------------- |
@@ -584,14 +587,14 @@ claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
 
 ### Status
 
-**Version 1।** JSON স্কিমা এবং exit code হিমায়িত চুক্তি। TypeScript এবং Python-এর সবচেয়ে বিস্তৃত পরিমাপ করা কভারেজ রয়েছে। Java এবং C# নতুন; [maturity table](https://sergey-bar.github.io/Mjolnir/reference/rule-lifecycle)-এর মাধ্যমে তাদের পড়ুন। এরপর কী আসছে, কোনো বানানো তারিখ ছাড়া: [পাবলিক roadmap](https://sergey-bar.github.io/Mjolnir/reference/roadmap)।
+**Version 1।** JSON স্কিমা এবং exit code হিমায়িত চুক্তি। TypeScript এবং Python-এর সবচেয়ে বিস্তৃত পরিমাপ করা কভারেজ রয়েছে। Java এবং C# নতুন; [maturity table](https://sergey-bar.github.io/qa-doctor/reference/rule-lifecycle)-এর মাধ্যমে তাদের পড়ুন। এরপর কী আসছে, কোনো বানানো তারিখ ছাড়া: [পাবলিক roadmap](https://sergey-bar.github.io/qa-doctor/reference/roadmap)।
 
 ### Contributing
 
 নতুন নিয়ম সবচেয়ে সহজ প্রথম contribution। একটি কমান্ড must-fire **এবং** must-not-fire fixture সহ নিয়মের কাঠামো তৈরি করে। তৈরি হওয়া নিয়মটি ইচ্ছাকৃতভাবে নিজের fixture-এ ব্যর্থ হয় যতক্ষণ না প্রকৃত detection লেখা হয়, কারণ একটি stub যা শিপ হয় তা এমন একটি নিয়ম যা কেউ পরিমাপ করেনি:
 
 ```bash
-mjolnir create-rule QA-PW-140 --title "Screenshot without diff bound"
+qa-doctor create-rule QA-PW-140 --title "Screenshot without diff bound"
 ```
 
 Dev সেটআপ, standing-gate কমান্ড, এবং anti-creep এবং fixture-firewall নিয়ম [CONTRIBUTING.md](CONTRIBUTING.md)-এ রয়েছে।
@@ -603,10 +606,10 @@ Dev সেটআপ, standing-gate কমান্ড, এবং anti-creep এ�
 <img src="assets/readme/closing.svg" alt="আপনার রিপোতে এটি চালান।" width="100%" />
 
 ```bash
-npx mjolnir-qa@latest
+npx qa-doctor-cli@latest
 ```
 
-[গাইড পড়ুন](https://sergey-bar.github.io/Mjolnir/guide/getting-started) · [ডকস সাইট](https://sergey-bar.github.io/Mjolnir/) · [npm](https://www.npmjs.com/package/mjolnir-qa)
+[গাইড পড়ুন](https://sergey-bar.github.io/qa-doctor/guide/getting-started) · [ডকস সাইট](https://sergey-bar.github.io/qa-doctor/) · [npm](https://www.npmjs.com/package/qa-doctor-cli)
 
 <br />
 

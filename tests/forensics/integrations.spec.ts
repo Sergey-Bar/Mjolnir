@@ -15,7 +15,7 @@ import { runForensics } from "../../src/forensics/run.js";
 let dir: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-int-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-int-"));
 });
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
@@ -29,7 +29,7 @@ describe("ciInstall", () => {
     const text = readFileSync(res.written, "utf8");
     expect(text).toContain("name: QA Doctor");
     // Action-based by default (P1): the root action.yml, fail-on none.
-    expect(text).toContain("Sergey-Bar/Mjolnir@v1");
+    expect(text).toContain("Sergey-Bar/qa-doctor@v1");
     expect(text).toContain("fail-on: none");
     expect(text).toContain(
       "Advisory mode — findings reported, never blocking.",
@@ -47,7 +47,7 @@ describe("ciInstall", () => {
     // standalone gate script (defense-in-depth read) is still exercised
     // by generated-artifacts-validity's executed-gate cases.
     expect(text).toContain("fail-on: error");
-    expect(text).toContain("Sergey-Bar/Mjolnir@v1");
+    expect(text).toContain("Sergey-Bar/qa-doctor@v1");
   });
 
   it("renders warning gate (action template)", () => {
@@ -60,9 +60,9 @@ describe("ciInstall", () => {
     const text = readFileSync(res.written, "utf8");
     expect(text).toContain("Gate (error)");
     // the enforcing gate reads the scan result and exits non-zero on errors
-    expect(text).toContain('readFileSync("mjolnir.json"');
+    expect(text).toContain('readFileSync("qa-doctor.json"');
     expect(text).toContain("process.exit(1)");
-    expect(text).not.toContain("Sergey-Bar/Mjolnir@v1");
+    expect(text).not.toContain("Sergey-Bar/qa-doctor@v1");
   });
 });
 

@@ -14,6 +14,6 @@ so the rules that ship in the headline tiers carry a false-positive rate
 
 The table below is regenerated from `tests/corpus/verdicts/*.jsonl`; the
 raw source is on
-[GitHub](https://github.com/Sergey-Bar/Mjolnir/blob/main/docs/FP-AUDIT.md).
+[GitHub](https://github.com/Sergey-Bar/qa-doctor/blob/main/docs/FP-AUDIT.md).
 
 <!--@include: ../../docs/FP-AUDIT.md{5,}-->

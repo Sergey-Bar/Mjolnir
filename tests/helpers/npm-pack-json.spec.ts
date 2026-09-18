@@ -15,55 +15,61 @@ import { parseNpmPackJson } from "./npm-pack-json.js";
 
 const NPM11_ARRAY = `[
   {
-    "id": "mjolnir-qa@0.5.0",
-    "name": "mjolnir-qa",
+    "id": "qa-doctor-cli@0.5.0",
+    "name": "qa-doctor-cli",
     "version": "0.5.0",
-    "filename": "mjolnir-qa-0.5.0.tgz"
+    "filename": "qa-doctor-cli-0.5.0.tgz"
   }
 ]`;
 
 const NPM12_OBJECT = `{
-  "mjolnir-qa": {
-    "id": "mjolnir-qa@0.5.1",
-    "name": "mjolnir-qa",
+  "qa-doctor-cli": {
+    "id": "qa-doctor-cli@0.5.1",
+    "name": "qa-doctor-cli",
     "version": "0.5.1",
-    "filename": "mjolnir-qa-0.5.1.tgz"
+    "filename": "qa-doctor-cli-0.5.1.tgz"
   }
 }`;
 
 describe("parseNpmPackJson", () => {
   it("parses the npm ≤ 11 array shape", () => {
     expect(parseNpmPackJson(NPM11_ARRAY)?.filename).toBe(
-      "mjolnir-qa-0.5.0.tgz",
+      "qa-doctor-cli-0.5.0.tgz",
     );
   });
 
   it("parses the npm ≥ 12 object-keyed shape", () => {
     expect(parseNpmPackJson(NPM12_OBJECT)?.filename).toBe(
-      "mjolnir-qa-0.5.1.tgz",
+      "qa-doctor-cli-0.5.1.tgz",
     );
   });
 
   it("tolerates lifecycle chatter before the JSON (prepare > husky)", () => {
-    const polluted = `npm notice run mjolnir-qa@0.5.1 prepare\nnpm notice run husky\n${NPM12_OBJECT}`;
-    expect(parseNpmPackJson(polluted)?.filename).toBe("mjolnir-qa-0.5.1.tgz");
+    const polluted = `npm notice run qa-doctor-cli@0.5.1 prepare\nnpm notice run husky\n${NPM12_OBJECT}`;
+    expect(parseNpmPackJson(polluted)?.filename).toBe(
+      "qa-doctor-cli-0.5.1.tgz",
+    );
   });
 
   it("tolerates notice lines with braces/brackets inside strings", () => {
     const polluted = `npm warn config Use --json=false {weird} [0]\n${NPM11_ARRAY}\nnpm notice integrity sha512-abc[def]{ghi}`;
-    expect(parseNpmPackJson(polluted)?.filename).toBe("mjolnir-qa-0.5.0.tgz");
+    expect(parseNpmPackJson(polluted)?.filename).toBe(
+      "qa-doctor-cli-0.5.0.tgz",
+    );
   });
 
   it("skips unparseable candidates and keeps scanning", () => {
     const polluted = `notice: {not json at all\n${NPM12_OBJECT}`;
-    expect(parseNpmPackJson(polluted)?.filename).toBe("mjolnir-qa-0.5.1.tgz");
+    expect(parseNpmPackJson(polluted)?.filename).toBe(
+      "qa-doctor-cli-0.5.1.tgz",
+    );
   });
 
   it("returns undefined when no entry has a filename", () => {
     expect(parseNpmPackJson("{}")).toBeUndefined();
     expect(parseNpmPackJson("npm notice nothing here")).toBeUndefined();
     expect(
-      parseNpmPackJson('[{"name": "mjolnir-qa", "version": "0.5.0"}]'),
+      parseNpmPackJson('[{"name": "qa-doctor-cli", "version": "0.5.0"}]'),
     ).toBeUndefined();
   });
 });

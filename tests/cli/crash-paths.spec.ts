@@ -112,7 +112,7 @@ describe("command handlers report a crash (exit 20) instead of throwing, when th
   let origCwd: string;
 
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), "mjolnir-crash-path-"));
+    dir = mkdtempSync(join(tmpdir(), "qa-doctor-crash-path-"));
     mkdirSync(join(dir, "e2e"), { recursive: true });
     writeFileSync(
       join(dir, "e2e", "checkout.spec.ts"),
@@ -171,7 +171,7 @@ describe("command handlers report a crash (exit 20) instead of throwing, when th
     expect(code).toBe(20);
   });
 
-  it("`baseline` degrades honestly (exit 1) when .mjolnir/ can't be written", async () => {
+  it("`baseline` degrades honestly (exit 1) when .qa-doctor/ can't be written", async () => {
     // Contract change (audit-remediation branch): an unwritable path is
     // an environment fault, not a QA Doctor bug — the friendly exit-20
     // "this is a bug in QA Doctor" message would lie. The command now
@@ -192,7 +192,7 @@ describe("`forensics` reports exit 20 instead of throwing when the target FILE (
   let target: string;
 
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), "mjolnir-forensics-crash-"));
+    dir = mkdtempSync(join(tmpdir(), "qa-doctor-forensics-crash-"));
     target = join(dir, "report.json");
     writeFileSync(target, "{}");
   });
@@ -230,7 +230,7 @@ describe("`debt` and `handover` still return a documented exit code against an e
   let dir: string;
 
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), "mjolnir-debt-handover-"));
+    dir = mkdtempSync(join(tmpdir(), "qa-doctor-debt-handover-"));
   });
 
   afterEach(() => {

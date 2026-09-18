@@ -14,7 +14,7 @@
  * omits trailer lines that belong to the generator's own invocation —
  * `forensics-sample.txt` ends with "FLAKY.md not written (--no-flaky-md)"
  * because the generator passes that flag, while the README documents the
- * plain `mjolnir forensics ./test-results/` form, which does write it.
+ * plain `qa-doctor forensics ./test-results/` form, which does write it.
  * Every line the README does show must match the generated file exactly,
  * indentation included.
  */

@@ -2,7 +2,7 @@
  * Agent skill-surface contract (remediation plan §9 R8 / growth roadmap
  * WI-22, plan §17).
  *
- * `mjolnir install` writes the SAME deterministic brief to every
+ * `qa-doctor install` writes the SAME deterministic brief to every
  * detected instruction surface (.claude/, .cursor/, .kilo/, AGENTS.md).
  * The contract: every surface carries the full agent loop (baseline →
  * fix → verify digest) AND the §17 safety wording — agents may not
@@ -35,7 +35,7 @@ import {
 
 const createdDirs: string[] = [];
 function tmpSkillRepo(): string {
-  const d = mkdtempSync(join(tmpdir(), "mjolnir-skill-surface-"));
+  const d = mkdtempSync(join(tmpdir(), "qa-doctor-skill-surface-"));
   createdDirs.push(d);
   return d;
 }
@@ -116,9 +116,9 @@ describe("agent skill surfaces (WI-22, plan §17)", () => {
     expect(written).toBe(4);
 
     const files = [
-      join(repo, ".claude", "commands", "mjolnir.md"),
-      join(repo, ".kilo", "command", "mjolnir.md"),
-      join(repo, ".cursor", "rules", "mjolnir.mdc"),
+      join(repo, ".claude", "commands", "qa-doctor.md"),
+      join(repo, ".kilo", "command", "qa-doctor.md"),
+      join(repo, ".cursor", "rules", "qa-doctor.mdc"),
       join(repo, "AGENTS.md"),
     ];
     for (const file of files) {

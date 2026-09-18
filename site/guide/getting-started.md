@@ -1,6 +1,6 @@
 # Getting started
 
-QA Doctor (`mjolnir-qa` on npm) audits your test suite and CI pipelines, then
+QA Doctor (`qa-doctor-cli` on npm) audits your test suite and CI pipelines, then
 reports a single worthiness score plus prioritized findings — each with a
 rule ID, a location, and a fix.
 
@@ -9,13 +9,13 @@ rule ID, a location, and a fix.
 Run it with no install:
 
 ```bash
-npx mjolnir-qa@latest
+npx qa-doctor-cli@latest
 ```
 
 Or install globally:
 
 ```bash
-npm i -g mjolnir-qa
+npm i -g qa-doctor-cli
 ```
 
 Requires Node.js ≥ 22.18. Works on Windows, macOS, and Linux.
@@ -30,36 +30,36 @@ have no such requirement.
 The Marketplace action runs the same scan from any workflow:
 
 ```yaml
-- uses: Sergey-Bar/Mjolnir@v1
+- uses: Sergey-Bar/qa-doctor@v1
   with:
     scope: changed
     fail-on: error
 ```
 
 Pin `@v1` to follow the major line, or an exact tag (`@v0.5.32`) for a
-reproducible gate; `mjolnir ci install` writes a workflow that does
+reproducible gate; `qa-doctor ci install` writes a workflow that does
 this for you (plain `npx` instead, with `--no-action`).
 
 ## Core commands
 
-| Command                             | What it does                                     |
-| ----------------------------------- | ------------------------------------------------ |
-| `mjolnir`                           | Full-repo scan + worthiness score                |
-| `mjolnir --scope changed`           | Only what your branch introduced — the CI form   |
-| `mjolnir ci install`                | Generate the advisory PR workflow                |
-| `mjolnir explain QA-CI-001`         | What / why / fix + measured FP rate for one rule |
-| `mjolnir rules --unmeasured`        | The rules running on assumption, not measurement |
-| `mjolnir --json` / `--format sarif` | Machine-readable / GitHub Code Scanning          |
-| `mjolnir --strict`                  | Also run quarantine-tier rules (higher FP risk)  |
+| Command                               | What it does                                     |
+| ------------------------------------- | ------------------------------------------------ |
+| `qa-doctor`                           | Full-repo scan + worthiness score                |
+| `qa-doctor --scope changed`           | Only what your branch introduced — the CI form   |
+| `qa-doctor ci install`                | Generate the advisory PR workflow                |
+| `qa-doctor explain QA-CI-001`         | What / why / fix + measured FP rate for one rule |
+| `qa-doctor rules --unmeasured`        | The rules running on assumption, not measurement |
+| `qa-doctor --json` / `--format sarif` | Machine-readable / GitHub Code Scanning          |
+| `qa-doctor --strict`                  | Also run quarantine-tier rules (higher FP risk)  |
 
 ### When something's flaky
 
-| Command                             | What it does                                        |
-| ----------------------------------- | --------------------------------------------------- |
-| `mjolnir forensics ./test-results/` | Real run data → `TRUE-FLAKE` verdicts, `FLAKY.md`   |
-| `mjolnir triage ./test-results/`    | Quarantine proposal from execution history          |
-| `mjolnir pw-report ./test-results/` | Playwright run summary — retries / flakes / slowest |
-| `mjolnir doctor:playwright`         | Playwright-only deep scan + Selector Health Score   |
+| Command                               | What it does                                        |
+| ------------------------------------- | --------------------------------------------------- |
+| `qa-doctor forensics ./test-results/` | Real run data → `TRUE-FLAKE` verdicts, `FLAKY.md`   |
+| `qa-doctor triage ./test-results/`    | Quarantine proposal from execution history          |
+| `qa-doctor pw-report ./test-results/` | Playwright run summary — retries / flakes / slowest |
+| `qa-doctor doctor:playwright`         | Playwright-only deep scan + Selector Health Score   |
 
 ## One finding, up close
 

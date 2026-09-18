@@ -1,8 +1,8 @@
   badge — shields.io endpoint JSON + snippet from a scan
 
   Usage:
-    mjolnir badge [path]
+    qa-doctor badge [path]
 
   Examples:
-    $ mjolnir badge .
+    $ qa-doctor badge .
 

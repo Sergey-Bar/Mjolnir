@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "harnessVersion": "1.0.0",
-  "mjolnirVersion": "0.5.34",
+  "qaDoctorVersion": "0.5.34",
   "nodeVersion": "v26.3.1",
   "os": "win32",
   "cpu": "13th Gen Intel(R) Core(TM) i7-13650HX",

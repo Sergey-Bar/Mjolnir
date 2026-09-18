@@ -27,7 +27,10 @@ vi.mock("node:fs", async (importOriginal) => {
     ...actual,
     writeFileSync: (...args: Parameters<typeof actual.writeFileSync>) => {
       const target = String(args[0]);
-      if (target.endsWith("mjolnir-trust-report.md") && writeFailHolder.fail) {
+      if (
+        target.endsWith("qa-doctor-trust-report.md") &&
+        writeFailHolder.fail
+      ) {
         throw new Error("ENOSPC: no space left on device");
       }
       return actual.writeFileSync(...args);
@@ -66,7 +69,7 @@ const result = (overrides: Partial<ScanResult> = {}): ScanResult => ({
 });
 
 describe("trust-report write-failure arm (exit 20, honest)", () => {
-  const dir = mkdtempSync(join(tmpdir(), "mjolnir-tr-wfail-"));
+  const dir = mkdtempSync(join(tmpdir(), "qa-doctor-tr-wfail-"));
   const captured: { out: string[]; err: string[] } = { out: [], err: [] };
   const io = {
     out: (...parts: unknown[]) => {

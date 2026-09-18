@@ -9,7 +9,7 @@ import type { ScanContext } from "../../../src/engine/adapter.js";
 const tmpRoots: string[] = [];
 
 function makeRoot(files: Record<string, string>): string {
-  const root = mkdtempSync(join(tmpdir(), "mjolnir-jf-branch-"));
+  const root = mkdtempSync(join(tmpdir(), "qa-doctor-jf-branch-"));
   tmpRoots.push(root);
   for (const [name, body] of Object.entries(files)) {
     const p = join(root, name);

@@ -1,6 +1,6 @@
 /**
  * Scan-artifact determinism gate (certification F2, remediation plan
- * 1788806598818): two identical `mjolnir <target> --json` scans must
+ * 1788806598818): two identical `qa-doctor <target> --json` scans must
  * produce byte-identical artifacts after stripping ONLY the two
  * documented wall-clock fields:
  *

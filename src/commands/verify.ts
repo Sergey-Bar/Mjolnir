@@ -1,11 +1,11 @@
 /**
- * `mjolnir verify` — the agent-loop digest (product-gap-remediation
+ * `qa-doctor verify` — the agent-loop digest (product-gap-remediation
  * master plan P7, plan 1788853205786 — flag agent, decision 6).
  *
- * An agent fixes findings, then runs `mjolnir verify` against the
- * committed baseline (established once with `mjolnir baseline`). The
+ * An agent fixes findings, then runs `qa-doctor verify` against the
+ * committed baseline (established once with `qa-doctor baseline`). The
  * digest answers exactly the loop's questions, derived from the SAME
- * §15 comparison machinery as `mjolnir diff` (no second truth):
+ * §15 comparison machinery as `qa-doctor diff` (no second truth):
  *
  *   - RESOLVED — baseline findings no longer present, each with its
  *     lifecycle resolution (only VERIFIED-RESOLVED is a fix claim);
@@ -124,9 +124,9 @@ export function renderVerifyDigest(digest: VerifyDigest): string {
     return [
       "VERIFY — no baseline",
       "",
-      "No committed baseline at .mjolnir/baseline.json — nothing to verify",
-      "against. Establish the before-state once with `mjolnir baseline`,",
-      "then re-run `mjolnir verify` after the fix.",
+      "No committed baseline at .qa-doctor/baseline.json — nothing to verify",
+      "against. Establish the before-state once with `qa-doctor baseline`,",
+      "then re-run `qa-doctor verify` after the fix.",
     ].join("\n");
   }
 

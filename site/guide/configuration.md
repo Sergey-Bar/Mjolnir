@@ -1,7 +1,7 @@
 # Configuration
 
-QA Doctor is zero-config. An optional `mjolnir.config.json` (or
-`.mjolnir.json`) at the repo root tunes severity, gating and scope — it
+QA Doctor is zero-config. An optional `qa-doctor.config.json` (or
+`.qa-doctor.json`) at the repo root tunes severity, gating and scope — it
 never changes detection semantics.
 
 | Key                 | Type                                 | Effect                                                                    |
@@ -28,12 +28,12 @@ never changes detection semantics.
 }
 ```
 
-- **`.mjolnirignore`** — a plain gitignore-style file for path exclusions,
+- **`.qa-doctorignore`** — a plain gitignore-style file for path exclusions,
   same dialect as `exclude`.
 - **CLI overrides** — `--strict` (include quarantine rules), `--width <cols>`
   and `--ascii` / `--no-ascii` (terminal rendering), `--tone blunt`
   (blunter messages), `--max-duration <sec>` (bounded partial scan).
 - Rule suppression and deprecation lifecycle: [Rule lifecycle](/reference/rule-lifecycle).
 
-`ignore` entries also power the standalone `mjolnir suppressions` command,
+`ignore` entries also power the standalone `qa-doctor suppressions` command,
 which lists what's currently suppressed and when each entry expires.

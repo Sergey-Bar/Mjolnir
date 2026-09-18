@@ -37,7 +37,7 @@ function ffprobe(): string | null {
   let candidate: string;
   try {
     candidate =
-      process.env["MJOLNIR_FFPROBE"] ??
+      process.env["QA_DOCTOR_FFPROBE"] ??
       execFileSync("sh", ["-c", "command -v ffprobe"], {
         encoding: "utf8",
       }).trim();
@@ -177,7 +177,7 @@ describe.skipIf(reason !== null)(
         // repository could reproduce.
         expect(
           statSync(publishedVideoPath()).size,
-          "assets/video/mjolnir-demo.mp4 differs from the render — " +
+          "assets/video/qa-doctor-demo.mp4 differs from the render — " +
             "re-run `npm run docs:video` and commit the result.",
         ).toBe(statSync(videoPath("demo")).size);
       },
@@ -189,7 +189,7 @@ describe.skipIf(reason !== null)(
  * The committed artifact, checked on every checkout.
  *
  * These need no ffprobe, no Chromium and no render — assets/video/
- * mjolnir-demo.mp4 is in the repository, which is the whole reason it
+ * qa-doctor-demo.mp4 is in the repository, which is the whole reason it
  * has a budget. It was previously checked by nothing: the size
  * assertion lived inside the skipped block above and measured the
  * gitignored render output, so it ran only on a machine that had just

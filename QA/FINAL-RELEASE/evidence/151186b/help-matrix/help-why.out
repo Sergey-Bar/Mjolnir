@@ -1,9 +1,9 @@
   why — why did QA Doctor flag <file>:<line>? evidence + fix (not a gate)
 
   Usage:
-    mjolnir why <file>:<line> [path] [--json <mjolnir.json>]
+    qa-doctor why <file>:<line> [path] [--json <qa-doctor.json>]
 
   Examples:
-    $ mjolnir why e2e/a.spec.ts:3
-    $ mjolnir why e2e/a.spec.ts:3 --json mjolnir.json
+    $ qa-doctor why e2e/a.spec.ts:3
+    $ qa-doctor why e2e/a.spec.ts:3 --json qa-doctor.json
 

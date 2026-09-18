@@ -35,7 +35,7 @@ let dir: string;
 let origCwd: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-mutation-cmd-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-mutation-cmd-"));
   origCwd = process.cwd();
   process.chdir(dir);
 });
@@ -60,7 +60,7 @@ describe("runMutationCommand usage errors (exit 10)", () => {
   it(`no arguments → usage line`, async () => {
     const cap = io();
     expect(await runMutationCommand([], cap)).toBe(10);
-    expect(cap.errors()).toContain("Usage: mjolnir mutation");
+    expect(cap.errors()).toContain("Usage: qa-doctor mutation");
   });
 
   it(`--scan without a value → usage error`, async () => {
@@ -131,7 +131,7 @@ describe("runMutationCommand report-only contract (exit 0)", () => {
 });
 
 describe("main() dispatches mutation", () => {
-  it("routes mjolnir mutation <report> through the same handler", async () => {
+  it("routes qa-doctor mutation <report> through the same handler", async () => {
     writeFileSync(join(dir, "m.json"), JSON.stringify(STRYKER));
     const out: string[] = [];
     const code = await main(["mutation", join(dir, "m.json")], {
@@ -196,7 +196,7 @@ describe("runMutationCommand --scan in-process (coverage of the stamp path)", ()
     // !targetArg guard fires.
     const cap = io();
     expect(await runMutationCommand(["--json"], cap)).toBe(10);
-    expect(cap.errors()).toContain("Usage: mjolnir mutation");
+    expect(cap.errors()).toContain("Usage: qa-doctor mutation");
   });
 
   it("a mixed scan (stamped + unstamped findings) exercises the render skip", async () => {

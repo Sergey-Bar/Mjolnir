@@ -157,7 +157,7 @@ function bandRange(min: number): string {
       A repo with no tests scores <em>nothing</em> — <code>null</code>, never a
       fake 100. Full derivation in
       <a
-        href="https://github.com/Sergey-Bar/Mjolnir/blob/main/docs/SCORING.md"
+        href="https://github.com/Sergey-Bar/qa-doctor/blob/main/docs/SCORING.md"
         target="_blank"
         rel="noreferrer"
         >docs/SCORING.md</a

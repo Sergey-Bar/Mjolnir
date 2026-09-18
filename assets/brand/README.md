@@ -26,7 +26,7 @@ reference renders below; everything else is a real surface's own size.
 
 | File                                                                        | Rendered as                                    | Use                                                                     |
 | --------------------------------------------------------------------------- | ---------------------------------------------- | ----------------------------------------------------------------------- |
-| [`logo.png`](logo.png)                                                      | wordmark, 1800×504                             | full lockup — `MJÖLNIR` alone. Reference master.                        |
+| [`logo.png`](logo.png)                                                      | wordmark, 1800×504                             | full lockup — `QA DOCTOR` alone. Reference master.                      |
 | [`../readme/logo.png`](../readme/logo.png) · [`.webp`](../readme/logo.webp) | wordmark, 1000×280                             | README header and website hero.                                         |
 | [`mark.png`](mark.png)                                                      | monogram, 1235×1235                            | the rune alone — app / package / social icon source. Reference master.  |
 | [`icon.png`](icon.png)                                                      | monogram, 512×512                              | npm, GitHub social preview, tooling. Recognisable without the wordmark. |
@@ -41,14 +41,14 @@ because each one is its own render, not a resample of a bigger file.
 
 ## The motif
 
-`MJÖLNIR` set in Geist 500 — the one text face this system uses
+`QA DOCTOR` set in Geist 500 — the one text face this system uses
 everywhere else (`TYPOGRAPHY.display`) — caps, tracked 0.3em, in
 primary text. No illustration: the wordmark IS the logo.
 
 The square/tiny contexts a wordmark cannot survive (favicons, the
 npm/social icon) fall back to a single rune — ᛗ, Mansaz — drawn as a
 path (`MONOGRAM_PATH`) and stroked in the aurora, with a heavier,
-bevelled cut below 64px. It is not a new choice: it is already the "M" of MJÖLNIR in
+bevelled cut below 64px. It is not a new choice: it is already the "M" of QA DOCTOR in
 the hero runefield's own Elder Futhark spelling of the product's name
 (ᛗ ᛃ ᛟ ᛚ ᚾ ᛁ ᚱ — see [`BRAND-SYSTEM.md`](../../docs/design/BRAND-SYSTEM.md)).
 It is deliberately not one of the five runes `RUNES` in
@@ -84,7 +84,7 @@ value stated in a design document that the source does not hold.
   that ground already and are not designed to sit on white.
 - Never recolour either mark, and never re-set the wordmark in a
   different typeface or weight than Geist 500.
-- Never set the rune beside the wordmark: next to `MJÖLNIR` a second M
+- Never set the rune beside the wordmark: next to `QA DOCTOR` a second M
   only stutters. Use one or the other.
 - Below the wordmark's minimum legible width (~180 px), use the
   monogram alone.

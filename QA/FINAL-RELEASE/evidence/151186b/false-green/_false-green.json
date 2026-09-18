@@ -54,6 +54,6 @@
   {
     "name": "partial-report-summary",
     "exit": 1,
-    "firstErr": "file:///C:/Users/User/AppData/Local/Temp/kilo/mjolnir-rc-151186b/dist/cli.mjs:13790\r"
+    "firstErr": "file:///C:/Users/User/AppData/Local/Temp/kilo/qa-doctor-rc-151186b/dist/cli.mjs:13790\r"
   }
 ]

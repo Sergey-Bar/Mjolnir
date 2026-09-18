@@ -1,9 +1,9 @@
 /**
- * `mjolnir trust-report` — the Trust Artifact (Mega MVP Master Plan
+ * `qa-doctor trust-report` — the Trust Artifact (Mega MVP Master Plan
  * v3.1 §26 WI-6, §18; integrity binding + HTML completion R9/WI-23).
  *
  * Emits deterministic, self-contained
- * `mjolnir-trust-report.{md,json,html}`: no cloud/account/telemetry/
+ * `qa-doctor-trust-report.{md,json,html}`: no cloud/account/telemetry/
  * server; PR-attachable, Pages-publishable, README-embeddable,
  * agent-consumable.
  *
@@ -39,11 +39,11 @@ import { pct } from "../lib/format.js";
 import { evidenceTag } from "../reporter/evidence-tag.js";
 import { currentCommit } from "../lib/git-utils.js";
 
-export const TRUST_REPORT_MD = "mjolnir-trust-report.md";
-export const TRUST_REPORT_JSON = "mjolnir-trust-report.json";
-export const TRUST_REPORT_HTML = "mjolnir-trust-report.html";
+export const TRUST_REPORT_MD = "qa-doctor-trust-report.md";
+export const TRUST_REPORT_JSON = "qa-doctor-trust-report.json";
+export const TRUST_REPORT_HTML = "qa-doctor-trust-report.html";
 /** Upsert marker line for PR-comment posting (GitHub Action, WI-9). */
-export const TRUST_REPORT_MARKER = "<!-- mjolnir-trust-report:v1 -->";
+export const TRUST_REPORT_MARKER = "<!-- qa-doctor-trust-report:v1 -->";
 
 function fallbackSummary(result: ScanResult): TrustSummary {
   return (
@@ -215,7 +215,7 @@ export function renderTrustReportMarkdown(
 
   // Upsert marker: the GitHub Action posts/updates the PR comment by
   // searching for this line — one comment per PR, never a flood.
-  lines.push(`<!-- mjolnir-trust-report:v1 -->`);
+  lines.push(`<!-- qa-doctor-trust-report:v1 -->`);
   lines.push("");
   lines.push(`# QA Doctor Trust Report — ${label}`);
   lines.push("");
@@ -293,7 +293,7 @@ export function renderTrustReportMarkdown(
   lines.push(`---`);
   lines.push("");
   lines.push(
-    `Generated locally by QA Doctor — no cloud, no telemetry. Semantics: \`mjolnir <target> --json\` (machine contract \`contractVersion: 1\`).`,
+    `Generated locally by QA Doctor — no cloud, no telemetry. Semantics: \`qa-doctor <target> --json\` (machine contract \`contractVersion: 1\`).`,
   );
   lines.push("");
   return lines.join("\n");
@@ -309,7 +309,7 @@ export function renderTrustReportJson(
     JSON.stringify(
       {
         schemaVersion: 1,
-        artifact: "mjolnir-trust-report",
+        artifact: "qa-doctor-trust-report",
         label: undefined,
         identity: buildArtifactIdentity(result, commit),
         trust: {
@@ -486,7 +486,7 @@ export function renderTrustReportHtml(
     `<dt>Evidence inventory</dt><dd>${identity.evidenceInventory.totalFindings} finding(s), ${identity.evidenceInventory.corroborated} runtime-corroborated, by level ${levels}.</dd>`,
     `</dl>`,
     `</section>`,
-    `<footer><p>Generated locally by QA Doctor — no cloud, no telemetry. Semantics: <code>mjolnir &lt;target&gt; --json</code> (machine contract <code>contractVersion: 1</code>).</p></footer>`,
+    `<footer><p>Generated locally by QA Doctor — no cloud, no telemetry. Semantics: <code>qa-doctor &lt;target&gt; --json</code> (machine contract <code>contractVersion: 1</code>).</p></footer>`,
     `</main>`,
     `</body>`,
     `</html>`,
@@ -499,7 +499,7 @@ export async function runTrustReportCommand(
   argv: string[],
   io: { out: Output; err: Output },
 ): Promise<number> {
-  // WI-9 (plan §13): `trust-report --from <mjolnir.json> [--stdout]` —
+  // WI-9 (plan §13): `trust-report --from <qa-doctor.json> [--stdout]` —
   // render the artifact from a SAVED canonical scan result instead of
   // re-scanning. The GitHub Action uses this: it already produced the
   // --json report, so the comment/annotation step must derive from that
@@ -512,7 +512,7 @@ export async function runTrustReportCommand(
     const fromPath = argv[fromIdx + 1];
     if (!fromPath || fromPath.startsWith("-")) {
       io.err(
-        "error: --from requires a saved report path (mjolnir <target> --json)",
+        "error: --from requires a saved report path (qa-doctor <target> --json)",
       );
       return 10;
     }
@@ -548,7 +548,7 @@ export async function runTrustReportCommand(
       (parsed as { schemaVersion?: number }).schemaVersion !== 1
     ) {
       io.err(
-        `error: ${fromPath} is not a canonical mjolnir scan result (schemaVersion 1)`,
+        `error: ${fromPath} is not a canonical qa-doctor scan result (schemaVersion 1)`,
       );
       return 10;
     }

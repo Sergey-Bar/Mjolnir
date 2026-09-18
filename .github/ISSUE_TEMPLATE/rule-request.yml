@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         See `CONTRIBUTING.md`'s "Proposing a new rule" section if you'd
-        like to implement this yourself — `mjolnir create-rule` scaffolds
+        like to implement this yourself — `qa-doctor create-rule` scaffolds
         the fixture pairs for you. This template is for proposing the idea
         even if you can't implement it.
 

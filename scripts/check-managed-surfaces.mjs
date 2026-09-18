@@ -1,11 +1,11 @@
 /**
  * Managed-surface stamp check (certification F3, remediation plan
  * 1788806598818): every QA Doctor-managed instruction surface on disk
- * must match what `mjolnir install` would write for the running
+ * must match what `qa-doctor install` would write for the running
  * CLI_VERSION.
  *
  * Audit evidence (QA/FINAL-RELEASE drift-gate run): the committed
- * `.claude/commands/mjolnir.md` carried stamp `mjolnir:managed
+ * `.claude/commands/qa-doctor.md` carried stamp `qa-doctor:managed
  * v0.5.15` while `planInstall` planned `v0.5.18` — the
  * generated-docs-drift CI job never regenerated agent surfaces, so the
  * stale stamp shipped silently. This check closes that hole: it is
@@ -13,7 +13,7 @@
  * timestamps) and CI-blocking.
  *
  * Mechanism: reuses the exported, pure `planInstall()` — the SAME plan
- * `mjolnir install` executes — so the check can never drift from the
+ * `qa-doctor install` executes — so the check can never drift from the
  * installer (one implementation, no second source of truth).
  *
  * Exit codes: 0 = every detected surface matches the install plan;
@@ -22,7 +22,7 @@
  * (commit it); `refuse` = the on-disk file differs from the planned
  * content — on a fresh CI checkout that is EXACTLY the stale-stamp
  * drift F3 shipped silently, so it fails (fix: run
- * `npx mjolnir-qa install --force` and commit the resync).
+ * `npx qa-doctor-cli install --force` and commit the resync).
  *
  * Usage: node scripts/check-managed-surfaces.mjs [repoRoot]
  */
@@ -74,7 +74,7 @@ for (const e of entries) {
 
 if (drifted.length > 0) {
   console.error(
-    "managed-surfaces: STALE managed surfaces — run `npx mjolnir-qa install` and commit the resync:",
+    "managed-surfaces: STALE managed surfaces — run `npx qa-doctor-cli install` and commit the resync:",
   );
   for (const d of drifted) {
     console.error(`  ${d.action}: ${d.file}`);

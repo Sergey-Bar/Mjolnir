@@ -35,7 +35,7 @@ These settings maximize the OpenSSF Scorecard [Branch-Protection](https://securi
 After applying these settings, run:
 
 ```bash
-gh api repos/Sergey-Bar/Mjolnir/branches/main/protection --jq '.required_status_checks.contexts'
+gh api repos/Sergey-Bar/qa-doctor/branches/main/protection --jq '.required_status_checks.contexts'
 ```
 
-Or check the live scorecard: https://api.securityscorecards.dev/projects/github.com/Sergey-Bar/Mjolnir
+Or check the live scorecard: https://api.securityscorecards.dev/projects/github.com/Sergey-Bar/qa-doctor

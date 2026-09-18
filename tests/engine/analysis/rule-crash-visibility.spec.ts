@@ -4,7 +4,7 @@
  *
  * R-1 scan never writes state (covered in milestones.spec.ts)
  * R-2 saveStats best-effort (covered in stats.spec.ts)
- * R-3 .mjolnir state tracking decision (here)
+ * R-3 .qa-doctor state tracking decision (here)
  * R-4/R-5/R-6/R-7 fix-command safety (covered in fix.spec.ts)
  * R-8 ignore matcher isolation (covered in ignores-resolution.spec.ts)
  * R-9 rulesCrashed counter + --debug surfacing (here)
@@ -49,7 +49,7 @@ import type { Workspace } from "../../../src/discovery/workspace.js";
 let dir: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-r-fixes-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-r-fixes-"));
 });
 
 afterEach(() => {
@@ -108,7 +108,7 @@ describe("R-9: swallowed rule crashes become visible", () => {
       JSON.stringify({ name: "repro", private: true }),
     );
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
+      join(dir, "qa-doctor.config.json"),
       JSON.stringify({ plugins: ["crashing-plugin"] }),
     );
     mkdirSync(join(dir, "e2e"), { recursive: true });
@@ -156,7 +156,7 @@ describe("R-9: swallowed rule crashes become visible", () => {
       JSON.stringify({ name: "repro", private: true }),
     );
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
+      join(dir, "qa-doctor.config.json"),
       JSON.stringify({ plugins: ["crashing-plugin"] }),
     );
     writeFileSync(join(dir, "a.spec.ts"), "it('a', () => {});\n");
@@ -195,18 +195,18 @@ describe("R-9: swallowed rule crashes become visible", () => {
   });
 });
 
-// ─── R-3: the .mjolnir state-tracking decision is encoded ─────────────
+// ─── R-3: the .qa-doctor state-tracking decision is encoded ─────────────
 
-describe("R-3: .mjolnir state files are tracked deliberately", () => {
+describe("R-3: .qa-doctor state files are tracked deliberately", () => {
   it("stats.json is gitignored (machine-local); baseline.json is not", () => {
     const gitignore = readFileSync(join(process.cwd(), ".gitignore"), "utf8");
     const activePatterns = gitignore
       .split("\n")
       .map((l) => l.trim())
       .filter((l) => l.length > 0 && !l.startsWith("#"));
-    expect(activePatterns).toContain(".mjolnir/stats.json");
+    expect(activePatterns).toContain(".qa-doctor/stats.json");
     expect(
-      activePatterns.some((p) => p.includes(".mjolnir/baseline.json")),
+      activePatterns.some((p) => p.includes(".qa-doctor/baseline.json")),
     ).toBe(false);
   });
 });
@@ -232,7 +232,7 @@ describe("H-4 (extended): target validation in all scanning commands", () => {
     ["diff", (a) => runDiffCommand(a, { out: () => {}, err: () => {} })],
   ];
   for (const [name, run] of cases) {
-    it(`mjolnir ${name} on a nonexistent target exits 10`, async () => {
+    it(`qa-doctor ${name} on a nonexistent target exits 10`, async () => {
       const missing = join(dir, "does-not-exist");
       expect(await run([missing])).toBe(10);
     });

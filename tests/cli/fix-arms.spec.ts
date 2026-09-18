@@ -24,7 +24,7 @@ const state = vi.hoisted(() => ({ failTmpWrites: false }));
 vi.mock("node:fs", async (importOriginal) => {
   const actual = await importOriginal<typeof import("node:fs")>();
   const writeFileSync = ((path: string, data: string, options?: unknown) => {
-    if (state.failTmpWrites && String(path).includes(".mjolnir-")) {
+    if (state.failTmpWrites && String(path).includes(".qa-doctor-")) {
       throw new Error("ENOSPC (simulated)");
     }
     return (actual.writeFileSync as unknown as (...a: unknown[]) => void)(
@@ -49,7 +49,7 @@ import type { Finding, ScanResult } from "../../src/types.js";
 /** Set by the tmp-write failure test; consulted by the fs mock above. */
 let root: string;
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), "mjolnir-fix-arms-"));
+  root = mkdtempSync(join(tmpdir(), "qa-doctor-fix-arms-"));
   state.failTmpWrites = false;
 });
 afterEach(() => {
@@ -277,7 +277,7 @@ describe("atomic-write failure paths", () => {
     expect(results[0]?.description).toBe("write failed — file left untouched");
     expect(readFileSync(file, "utf8")).toContain("test.only");
     const siblings = readdirSync(root);
-    expect(siblings.every((n) => !n.includes(".mjolnir-"))).toBe(true);
+    expect(siblings.every((n) => !n.includes(".qa-doctor-"))).toBe(true);
   });
 
   it("refuses up-front when the target file is not writable", () => {

@@ -82,7 +82,7 @@ describe("canonical dimension set (docs/RELEASE-TRUST-CONTRACT.md)", () => {
       if (documentedUnwired.has(d.id)) continue;
       expect(
         d.evidence === "UNSUPPORTED" && d.applicability.required === false,
-        `${d.id} rendered UNSUPPORTED in the mjolnir checkout — a binding must be typo'd`,
+        `${d.id} rendered UNSUPPORTED in the qa-doctor checkout — a binding must be typo'd`,
       ).toBe(false);
     }
   });
@@ -181,7 +181,7 @@ describe("status algebra (Constitution §2) — derivation table + terminality",
     expect(v.strictestState).toBe("INCONCLUSIVE");
   });
 
-  it("provenance is BOUND in the mjolnir checkout (R4c identity chain + R9 artifact binding proven)", () => {
+  it("provenance is BOUND in the qa-doctor checkout (R4c identity chain + R9 artifact binding proven)", () => {
     // Plan §5.2 activation: provenance = PROVEN exactly when the
     // scope-integrity dimension (runIdentity + evidence graph) AND the
     // artifact-integrity dimension (artifact scanId binding) both prove
@@ -217,7 +217,7 @@ describe("status algebra (Constitution §2) — derivation table + terminality",
   });
 });
 
-describe("machine document (mjolnir.release-trust@1) — Law 7 model", () => {
+describe("machine document (qa-doctor.release-trust@1) — Law 7 model", () => {
   it("byte-deterministic: serializing one report twice is byte-identical", () => {
     const a = releaseTrustJson(REPORT);
     const b = releaseTrustJson(REPORT);
@@ -265,7 +265,7 @@ describe("exit contract + applicability comparator", () => {
     expect(compareSemver("1.1.3", "1.1.4")).toBeLessThan(0);
   });
 
-  it("the shipped report exits PASS in the mjolnir checkout (doctor healthy)", () => {
+  it("the shipped report exits PASS in the qa-doctor checkout (doctor healthy)", () => {
     expect(REPORT.verdict.releaseTrust).toBe("PASS");
     expect(REPORT.verdict.passedCount).toBe(REPORT.verdict.requiredCount);
   });

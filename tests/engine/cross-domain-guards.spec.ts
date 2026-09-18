@@ -103,7 +103,7 @@ describe("CLI guard branches — badge/debt/triage usage errors", () => {
     expect(code).toBe(10);
     // Plan M2 contract: friendly did-you-mean on stderr; stdout stays
     // findings-only (no usage wall after the error).
-    expect(errs.join("\n")).toContain('mjolnir: unknown flag "--bogus"');
+    expect(errs.join("\n")).toContain('qa-doctor: unknown flag "--bogus"');
     expect(out.join("\n")).not.toContain("Usage:");
   });
 
@@ -115,7 +115,7 @@ describe("CLI guard branches — badge/debt/triage usage errors", () => {
       err: (s: unknown) => errs.push(String(s)),
     });
     expect(code).toBe(10);
-    expect(errs.join("\n")).toContain('mjolnir: unknown flag "--bogus"');
+    expect(errs.join("\n")).toContain('qa-doctor: unknown flag "--bogus"');
     expect(out.join("\n")).not.toContain("Usage:");
   });
 
@@ -126,12 +126,12 @@ describe("CLI guard branches — badge/debt/triage usage errors", () => {
       err: (s: unknown) => err.push(String(s)),
     });
     expect(code).toBe(10);
-    expect(err.join("\n")).toContain("Usage: mjolnir triage");
+    expect(err.join("\n")).toContain("Usage: qa-doctor triage");
   });
 
   it("runBadgeCommand on a nonexistent target → exit 10 (validateScanTarget)", async () => {
     const err: string[] = [];
-    const code = await runBadgeCommand([join(tmpdir(), "mjolnir-nope-zz")], {
+    const code = await runBadgeCommand([join(tmpdir(), "qa-doctor-nope-zz")], {
       out: () => {},
       err: (s: unknown) => err.push(String(s)),
     });
@@ -141,7 +141,7 @@ describe("CLI guard branches — badge/debt/triage usage errors", () => {
 
   it("runDebtCommand on a nonexistent target → exit 10", async () => {
     const err: string[] = [];
-    const code = await runDebtCommand([join(tmpdir(), "mjolnir-nope-zz")], {
+    const code = await runDebtCommand([join(tmpdir(), "qa-doctor-nope-zz")], {
       out: () => {},
       err: (s: unknown) => err.push(String(s)),
     });
@@ -150,7 +150,7 @@ describe("CLI guard branches — badge/debt/triage usage errors", () => {
   });
 
   it("runTriageCommand on a directory with no reports degrades to exit 2 (usage-shaped)", () => {
-    const d = mkdtempSync(join(tmpdir(), "mjolnir-triage-"));
+    const d = mkdtempSync(join(tmpdir(), "qa-doctor-triage-"));
     dirs.push(d);
     const err: string[] = [];
     const code = runTriageCommand([d], {
@@ -170,11 +170,11 @@ describe("runRulesCommand --external (loaded-catalog branch)", () => {
     // Imported lazily to avoid a CLI ↔ command cycle at module init.
     const { runRulesCommand } = await import("../../src/cli.js");
     const { loadLocalRules } = await import("../../src/plugins/local-rules.js");
-    const d = mkdtempSync(join(tmpdir(), "mjolnir-extcat-"));
+    const d = mkdtempSync(join(tmpdir(), "qa-doctor-extcat-"));
     dirs.push(d);
-    mkdirSync(join(d, "mjolnir-rules"), { recursive: true });
+    mkdirSync(join(d, "qa-doctor-rules"), { recursive: true });
     writeFileSync(
-      join(d, "mjolnir-rules", "acme.json"),
+      join(d, "qa-doctor-rules", "acme.json"),
       JSON.stringify({
         id: "QA-ACME-200",
         title: "Ext",
@@ -188,7 +188,7 @@ describe("runRulesCommand --external (loaded-catalog branch)", () => {
     );
     // Reserved-prefix file → load error → stderr warning path (L974).
     writeFileSync(
-      join(d, "mjolnir-rules", "spoof.json"),
+      join(d, "qa-doctor-rules", "spoof.json"),
       JSON.stringify({
         id: "qa-pw-000",
         severity: "info",

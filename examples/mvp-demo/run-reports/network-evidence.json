@@ -1,6 +1,6 @@
 {
   "format": "playwright-json-attachment (array of {request: {url, method}, response: {status, durationMs}})",
-  "note": "CASE: network-evidence (awaiting ingestion — WI-18, 1.1.x). Committed corpus data; nothing in 0.6.x reads this file. The sample mirrors the flake story in mjolnir.report.json: the session endpoint 503'd (attempt 1-2) then succeeded, and the double charge shows as 200 followed by 402.",
+  "note": "CASE: network-evidence (awaiting ingestion — WI-18, 1.1.x). Committed corpus data; nothing in 0.6.x reads this file. The sample mirrors the flake story in qa-doctor.report.json: the session endpoint 503'd (attempt 1-2) then succeeded, and the double charge shows as 200 followed by 402.",
   "entries": [
     {
       "request": {

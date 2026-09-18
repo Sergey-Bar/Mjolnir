@@ -17,7 +17,7 @@
 | S7  | Site claims (`site/.vitepress/theme/Home.vue`: "Zero network calls while scanning. Zero telemetry.")                                                                                              | `site/phase-0-1-truth` worktree | brand/audit claims                                                                                   |
 | S8  | Owner-approved **merged** plans (2.0 blueprint phases; certification-audit Wave 1 merged PRs #50/#51/#53; product-experience plan PR #44)                                                         | per PR merge SHAs               | release-scope for 1.0.0                                                                              |
 | S9  | Owner-approved **unmerged** work (certification-audit Wave-1 PRs 3/5–5/5, Wave-2, §19 close-out)                                                                                                  | plan `1788771091931`            | release-scope requirements currently open ⇒ enter matrix as MISSING/PARTIAL/UNKNOWN per C4           |
-| S10 | `mjolnir.config.json`/`.mjolnirignore` semantics; MCP surface (`src/mcp/stdio.ts`, `src/mcp/server.ts`)                                                                                           | `151186b`                       | config + MCP contract                                                                                |
+| S10 | `qa-doctor.config.json`/`.qa-doctorignore` semantics; MCP surface (`src/mcp/stdio.ts`, `src/mcp/server.ts`)                                                                                       | `151186b`                       | config + MCP contract                                                                                |
 
 **Charter frozen before status assignment; no source may be added/removed after
 the first status was written. Translations of README are CI-locked, not promise
@@ -32,7 +32,7 @@ Legend: status vocabulary per C1. Multi-surface = minimum across surfaces (§5).
 
 | ID   | Requirement                                                                                                                             | Status                                            | Channels               | Evidence                                                                                                     |
 | ---- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------ |
-| C-01 | `--version` short-circuit prints `mjolnir-qa 0.5.18`, exit 0                                                                            | VERIFIED                                          | CLI+parse              | help-matrix + packaging `_package.json`                                                                      |
+| C-01 | `--version` short-circuit prints `qa-doctor-cli 0.5.18`, exit 0                                                                         | VERIFIED                                          | CLI+parse              | help-matrix + packaging `_package.json`                                                                      |
 | C-02 | Every registered verb answers `--help` exit 0                                                                                           | VERIFIED                                          | CLI                    | `evidence/151186b/help-matrix/_matrix.json` (27 verbs incl. summary/why/handoff/install/help/mcp)            |
 | C-03 | Unknown flag → exit 10 + "did you mean"-class usage                                                                                     | VERIFIED                                          | CLI                    | `help-matrix/probe-scan-unknown-flag.out`                                                                    |
 | C-04 | Unknown verb (`scna`) → exit 10                                                                                                         | VERIFIED                                          | CLI                    | `help-matrix/probe-unknown-verb.out`                                                                         |
@@ -97,11 +97,11 @@ Tier A VERIFIED DEEPLY; B/C/D VERIFIED with one P2 honesty residual (F4).
 
 ### L7 — Docs/UX spot rows
 
-| ID   | Requirement                                           | Status                                               | Evidence                         |
-| ---- | ----------------------------------------------------- | ---------------------------------------------------- | -------------------------------- |
-| D-01 | Help registry covers verb surface                     | VERIFIED (scan/ci/help defer to root help — P3 note) | help-matrix                      |
-| D-02 | README translations CI-locked (`docs:translations`)   | VERIFIED (suite+CI)                                  | package scripts + contract suite |
-| D-03 | `.claude/commands/mjolnir.md` managed stamp freshness | PARTIAL (F3)                                         | drift capture                    |
+| ID   | Requirement                                             | Status                                               | Evidence                         |
+| ---- | ------------------------------------------------------- | ---------------------------------------------------- | -------------------------------- |
+| D-01 | Help registry covers verb surface                       | VERIFIED (scan/ci/help defer to root help — P3 note) | help-matrix                      |
+| D-02 | README translations CI-locked (`docs:translations`)     | VERIFIED (suite+CI)                                  | package scripts + contract suite |
+| D-03 | `.claude/commands/qa-doctor.md` managed stamp freshness | PARTIAL (F3)                                         | drift capture                    |
 
 ## Status tally (cycle 0)
 

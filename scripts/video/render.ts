@@ -39,10 +39,10 @@ import { stripAnsi } from "../readme-svg.js";
 export const OUT_DIR = join(SCRIPT_DIR, "out");
 
 export function videoPath(id: VideoScript["id"]): string {
-  return join(OUT_DIR, `mjolnir-${id}.mp4`);
+  return join(OUT_DIR, `qa-doctor-${id}.mp4`);
 }
 export function posterPath(id: VideoScript["id"]): string {
-  return join(OUT_DIR, `mjolnir-${id}-poster.png`);
+  return join(OUT_DIR, `qa-doctor-${id}-poster.png`);
 }
 
 /**
@@ -52,7 +52,7 @@ export function posterPath(id: VideoScript["id"]): string {
  * of a render.
  *
  * Before this it was not. `docs:video` wrote to assets/video/out/ and
- * stopped, while assets/video/mjolnir-demo.mp4 was put there by a step
+ * stopped, while assets/video/qa-doctor-demo.mp4 was put there by a step
  * that existed in nobody's repository: the shipping artifact had no
  * reproducible provenance, the media contract checked the render output
  * instead of the file readers download, and the two could disagree
@@ -62,10 +62,10 @@ export function posterPath(id: VideoScript["id"]): string {
  * artifact, not a committed asset.
  */
 export function publishedVideoPath(): string {
-  return join(SCRIPT_DIR, "mjolnir-demo.mp4");
+  return join(SCRIPT_DIR, "qa-doctor-demo.mp4");
 }
 export function publishedPosterPath(): string {
-  return join(SCRIPT_DIR, "mjolnir-demo-poster.png");
+  return join(SCRIPT_DIR, "qa-doctor-demo-poster.png");
 }
 
 /** Copies the freshly rendered demo over the committed asset. */

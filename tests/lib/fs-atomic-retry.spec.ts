@@ -70,7 +70,7 @@ import {
 let dir: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-fsretry-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-fsretry-"));
   writeFileSync(join(dir, "out.json"), "original\n");
   state.mode = "pass";
   state.attempts = 0;
@@ -98,23 +98,23 @@ describe("stale temp ownership", () => {
 
   it("generates pid-tagged temp names", () => {
     const path = atomicTempPath(join(dir, "out.json"));
-    expect(path).toContain(`out.json.mjolnir-${process.pid}-`);
+    expect(path).toContain(`out.json.qa-doctor-${process.pid}-`);
     expect(path).toMatch(/-\d{13}-[0-9a-f]{8}\.tmp$/);
   });
 
   it("removes only old owned files whose process is verifiably dead", () => {
     const now = Date.now();
     const old = now - 48 * 60 * 60 * 1000;
-    const stale = temp(`out.mjolnir-12345-${old}-01234567.tmp`, old);
+    const stale = temp(`out.qa-doctor-12345-${old}-01234567.tmp`, old);
     const preserved = [
-      temp("notes.mjolnir-backup.tmp", old),
-      temp(`legacy.mjolnir-${old}-01234567.tmp`, old),
-      temp(`fresh.mjolnir-12345-${now}-01234567.tmp`, now),
-      temp(`updated.mjolnir-12345-${old}-01234567.tmp`, now),
-      temp(`backdated.mjolnir-12345-${now}-01234567.tmp`, old),
-      temp(`current.mjolnir-${process.pid}-${old}-01234567.tmp`, old),
+      temp("notes.qa-doctor-backup.tmp", old),
+      temp(`legacy.qa-doctor-${old}-01234567.tmp`, old),
+      temp(`fresh.qa-doctor-12345-${now}-01234567.tmp`, now),
+      temp(`updated.qa-doctor-12345-${old}-01234567.tmp`, now),
+      temp(`backdated.qa-doctor-12345-${now}-01234567.tmp`, old),
+      temp(`current.qa-doctor-${process.pid}-${old}-01234567.tmp`, old),
     ];
-    const directory = join(dir, `dir.mjolnir-12345-${old}-01234567.tmp`);
+    const directory = join(dir, `dir.qa-doctor-12345-${old}-01234567.tmp`);
     mkdirSync(directory);
     const kill = vi.spyOn(process, "kill").mockImplementation(() => {
       throw Object.assign(new Error("no owner"), { code: "ESRCH" });
@@ -132,7 +132,7 @@ describe("stale temp ownership", () => {
     "preserves old temps when owner is %s",
     (status) => {
       const old = Date.now() - 48 * 60 * 60 * 1000;
-      const path = temp(`out.mjolnir-12345-${old}-01234567.tmp`, old);
+      const path = temp(`out.qa-doctor-12345-${old}-01234567.tmp`, old);
       vi.spyOn(process, "kill").mockImplementation(() => {
         if (status === "alive") return true;
         throw Object.assign(new Error("unknown owner"), { code: status });

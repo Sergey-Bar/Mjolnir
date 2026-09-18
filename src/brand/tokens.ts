@@ -229,13 +229,13 @@ export const TYPOGRAPHY = {
   mono: {
     family: "Geist Mono",
     weights: [400, 500],
-    /** `MjolnirMono` is the embedded @font-face name used inside SVG and
+    /** `QaDoctorMono` is the embedded @font-face name used inside SVG and
      * the video render page; the web stack names the real family. */
-    embeddedFamily: "MjolnirMono",
+    embeddedFamily: "QaDoctorMono",
     stack: `"Geist Mono", ui-monospace, "SFMono-Regular", "Cascadia Mono", Consolas, monospace`,
   },
   /** Rune glyph fallback only — never a text face. */
-  runes: { family: "FreeMono", embeddedFamily: "MjolnirRunes" },
+  runes: { family: "FreeMono", embeddedFamily: "QaDoctorRunes" },
   /** Body copy sits at 1.7; the display face never sets body copy. */
   lineHeight: { body: 1.7, tight: 1.35 },
 } as const;
@@ -298,7 +298,7 @@ export const MOTION = {
 /**
  * The one place QA Doctor draws on someone else's ground.
  *
- * `mjolnir --mermaid` emits a flowchart that GitHub renders inside a
+ * `qa-doctor --mermaid` emits a flowchart that GitHub renders inside a
  * README, on a background this palette does not control and cannot
  * predict — light or dark, depending on the reader's theme. So these
  * nodes carry explicit light fills with dark text: legible on white,

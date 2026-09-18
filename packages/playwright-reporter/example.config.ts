@@ -1,6 +1,6 @@
 import { defineConfig } from "@playwright/test";
-import { mjolnirReporter } from "mjolnir-qa-playwright-reporter";
+import { qaDoctorReporter } from "qa-doctor-playwright-reporter";
 
 export default defineConfig({
-  reporter: [mjolnirReporter()],
+  reporter: [qaDoctorReporter()],
 });

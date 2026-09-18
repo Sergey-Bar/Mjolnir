@@ -1,7 +1,7 @@
 /**
  * Zero-config evidence discovery (Mega MVP Master Plan v3.1 §26 WI-11).
  *
- * Locks: every conventional layout variant is discovered (mjolnir
+ * Locks: every conventional layout variant is discovered (qa-doctor
  * report, PW JSON names, test-results dir, JUnit XML — at root and one
  * level deep); unknown names are NEVER vacuumed; candidates are
  * deterministic; discovery stays bounded (no node_modules walks); and
@@ -23,7 +23,7 @@ function makeRepo(files: Record<string, string>): {
   root: string;
   cleanup: () => void;
 } {
-  const root = mkdtempSync(join(tmpdir(), "mjolnir-evdisc-"));
+  const root = mkdtempSync(join(tmpdir(), "qa-doctor-evdisc-"));
   for (const [rel, content] of Object.entries(files)) {
     const p = join(root, rel);
     mkdirSync(join(p, ".."), { recursive: true });
@@ -53,14 +53,14 @@ const JUNIT_XML =
   '<?xml version="1.0"?><testsuites><testsuite name="s" tests="1"><testcase name="t" classname="c"/></testsuite></testsuites>';
 
 describe("layout variants (WI-11 layout-variant fixtures)", () => {
-  it("discovers the mjolnir.report.json convention at root", () => {
+  it("discovers the qa-doctor.report.json convention at root", () => {
     const { root, cleanup } = makeRepo({
-      "mjolnir.report.json": PW_JSON,
+      "qa-doctor.report.json": PW_JSON,
       "e2e/a.spec.ts": "test('t', () => {});",
     });
     try {
       const c = discoverEvidenceCandidates(root);
-      expect(c[0]?.convention).toBe("mjolnir-report");
+      expect(c[0]?.convention).toBe("qa-doctor-report");
     } finally {
       cleanup();
     }
@@ -155,14 +155,14 @@ describe("layout variants (WI-11 layout-variant fixtures)", () => {
   it("the missing-evidence message names the conventions and the honest ceiling", () => {
     const msg = missingEvidenceMessage("/some/repo");
     expect(msg).toContain("no runtime evidence");
-    expect(msg).toContain("mjolnir.report.json");
+    expect(msg).toContain("qa-doctor.report.json");
     expect(msg).toContain("caps at L2");
   });
 });
 
 describe("listDirs hostile fallback (P8 coverage)", () => {
   it("a FILE passed as the scan root degrades to zero candidates — no crash", () => {
-    const root = mkdtempSync(join(tmpdir(), "mjolnir-evdisc-"));
+    const root = mkdtempSync(join(tmpdir(), "qa-doctor-evdisc-"));
     try {
       const fileAsDir = join(root, "not-a-dir.txt");
       writeFileSync(fileAsDir, "x");

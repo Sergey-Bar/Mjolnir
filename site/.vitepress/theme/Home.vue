@@ -17,11 +17,12 @@ import { LOGOS } from "./logos";
 import { data } from "./home.data";
 import { MONOGRAM } from "./stack";
 
-const COMMAND = "npx mjolnir-qa@latest";
+const COMMAND = "npx qa-doctor-cli@latest";
 const CI_COMMAND = `${COMMAND} --scope changed`;
-const MCP_COMMAND = "claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp";
+const MCP_COMMAND =
+  "claude mcp add qa-doctor -- npx -y qa-doctor-cli@latest mcp";
 const ACTION = [
-  "- uses: Sergey-Bar/Mjolnir@v1",
+  "- uses: Sergey-Bar/qa-doctor@v1",
   "  with:",
   "    scope: changed",
   "    fail-on: error",
@@ -493,8 +494,8 @@ onBeforeUnmount(() => {
         <div class="hero-grid">
           <div>
             <p class="lede">
-              QA Doctor finds tests that cannot fail and pipelines that cannot go
-              red, then scores how far you can trust the result.
+              QA Doctor finds tests that cannot fail and pipelines that cannot
+              go red, then scores how far you can trust the result.
             </p>
             <div class="actions">
               <CopyKey :command="COMMAND" />
@@ -713,7 +714,7 @@ onBeforeUnmount(() => {
         Above: every finding the demo repo scan reported for
         <code class="ic">{{ SCAN.file }}</code
         >, at the line it reported. With SARIF upload or
-        <code class="ic">mjolnir summary</code>, this is how they show up in a
+        <code class="ic">qa-doctor summary</code>, this is how they show up in a
         pull request.
       </p>
     </div>
@@ -913,8 +914,8 @@ onBeforeUnmount(() => {
           Knows the difference between reading code and seeing it run.
         </h2>
         <p>
-          Most findings come from reading your code. Give QA Doctor the report of
-          a real test run and it can confirm the code actually ran.
+          Most findings come from reading your code. Give QA Doctor the report
+          of a real test run and it can confirm the code actually ran.
         </p>
         <a class="more" :href="withBase('/reference/terminology')"
           >Read the definitions</a
@@ -988,15 +989,15 @@ onBeforeUnmount(() => {
         <div class="streams" data-reveal>
           <Term
             :lines="data.forensics"
-            title="mjolnir forensics ./test-results/"
+            title="qa-doctor forensics ./test-results/"
           />
           <p class="fine">
-            TRUE-FLAKE means the test failed at least once and then passed.
-            QA Doctor flags it even though the final check was green.
+            TRUE-FLAKE means the test failed at least once and then passed. QA
+            Doctor flags it even though the final check was green.
           </p>
         </div>
         <div class="streams" data-reveal>
-          <Term :lines="data.selectors" title="mjolnir doctor:playwright" />
+          <Term :lines="data.selectors" title="qa-doctor doctor:playwright" />
           <p class="fine">
             Selector health grades how each locator finds its element. It
             measures resilience, not correctness.
@@ -1156,10 +1157,10 @@ onBeforeUnmount(() => {
           <a class="more" :href="withBase('/guide/getting-started')"
             >Read the guide</a
           >
-          <a class="more" href="https://github.com/Sergey-Bar/Mjolnir"
+          <a class="more" href="https://github.com/Sergey-Bar/qa-doctor"
             >View on GitHub</a
           >
-          <a class="more" href="https://www.npmjs.com/package/mjolnir-qa"
+          <a class="more" href="https://www.npmjs.com/package/qa-doctor-cli"
             >View on npm</a
           >
         </div>

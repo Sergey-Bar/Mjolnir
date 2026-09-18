@@ -42,7 +42,7 @@ const JSON_SRC = join(ASSETS, "demo-report.json");
 const SARIF_SRC = join(ASSETS, "demo-report.sarif");
 const MODEL_SRC = join(REPO, "src", "reporter", "score-state.ts");
 const SCORER_SRC = join(REPO, "src", "scorer", "scorer.ts");
-const BLOB = "https://github.com/Sergey-Bar/Mjolnir/blob/main/assets/readme/";
+const BLOB = "https://github.com/Sergey-Bar/qa-doctor/blob/main/assets/readme/";
 const OUT_DIR = join(SITE, ".vitepress", "theme", "generated");
 const OUT = join(OUT_DIR, "report.json");
 
@@ -161,7 +161,7 @@ export function splitGroups(lines) {
     return i;
   };
 
-  const commandIdx = idx(/npx mjolnir/, "command");
+  const commandIdx = idx(/npx qa-doctor/, "command");
   const worthinessIdx = idx(/\bWORTHINESS\b/, "WORTHINESS");
   // The per-finding detail is OPTIONAL, and this used to throw when it
   // was absent. `scripts/generate-readme-hero.ts` deliberately stops the

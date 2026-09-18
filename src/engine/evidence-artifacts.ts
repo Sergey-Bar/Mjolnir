@@ -125,7 +125,7 @@ export function ingestArtifact(path: string, now?: string): EvidenceArtifact {
     provenance:
       typeof obj["provenance"] === "object" && obj["provenance"] !== null
         ? (obj["provenance"] as EvidenceArtifact["provenance"])
-        : { source: path, ingestedBy: "mjolnir.evidence-artifacts" },
+        : { source: path, ingestedBy: "qa-doctor.evidence-artifacts" },
   };
 
   const validation = validateArtifact(artifact);

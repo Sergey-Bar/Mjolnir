@@ -127,13 +127,18 @@ export async function buildHeroSvg(): Promise<string> {
   );
 
   const allLines = [
-    `${PROMPT}\x1b[1mnpx mjolnir-qa@latest\x1b[0m`,
+    `${PROMPT}\x1b[1mnpx qa-doctor-cli@latest\x1b[0m`,
     "",
     ...breakdownLines,
     // The wall-clock duration is real but non-deterministic run-to-run;
     // masked here only, never in the reporter, so regenerating is a
     // no-op diff when the scan itself is unchanged.
-  ].map((line) => line.replace(/· \d+ms$/, "· a few ms"));
+  ].map((line) =>
+    line.replace(
+      /· (?:\d+ms|(?:0\.\d*[1-9]\d*|[1-9]\d*(?:\.\d+)?)s)$/,
+      "· a few ms",
+    ),
+  );
   return renderSvg(allLines);
 }
 

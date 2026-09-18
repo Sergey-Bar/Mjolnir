@@ -54,7 +54,7 @@ afterEach(() => {
 });
 
 function tmp(): string {
-  const d = mkdtempSync(join(tmpdir(), "mjolnir-r3-"));
+  const d = mkdtempSync(join(tmpdir(), "qa-doctor-r3-"));
   dirs.push(d);
   return d;
 }
@@ -171,9 +171,9 @@ describe("runtime-corroboration round 3", () => {
 describe("local-rules round 3", () => {
   it("a module that throws a non-Error → String(err) arm of errorMessage", async () => {
     const d = tmp();
-    mkdirSync(join(d, "mjolnir-rules"), { recursive: true });
+    mkdirSync(join(d, "qa-doctor-rules"), { recursive: true });
     writeFileSync(
-      join(d, "mjolnir-rules", "throw-string.mjs"),
+      join(d, "qa-doctor-rules", "throw-string.mjs"),
       "throw 'a string error';\n",
     );
     const { errors } = await loadLocalRules(d, true);
@@ -183,9 +183,9 @@ describe("local-rules round 3", () => {
 
   it("confidence low arm persists into the compiled rule", async () => {
     const d = tmp();
-    mkdirSync(join(d, "mjolnir-rules"), { recursive: true });
+    mkdirSync(join(d, "qa-doctor-rules"), { recursive: true });
     writeFileSync(
-      join(d, "mjolnir-rules", "lowconf.json"),
+      join(d, "qa-doctor-rules", "lowconf.json"),
       JSON.stringify({
         id: "QA-ACME-210",
         severity: "info",
@@ -200,7 +200,7 @@ describe("local-rules round 3", () => {
     expect(rules[0]?.confidence).toBe("low");
     // And the .mjs arm of the loader loop: a JS module next to the JSON.
     writeFileSync(
-      join(d, "mjolnir-rules", "m.js"),
+      join(d, "qa-doctor-rules", "m.js"),
       "export const rules = [{ id: 'QA-ACME-211', title: 'Js', category: 'QA-TEST', severity: 'info', confidence: 'high', findingType: 'deterministic-defect', qaImpact: 'HYGIENE', appliesTo: 'test-files', run: () => [] }];\n",
     );
     const again = await loadLocalRules(d, true);

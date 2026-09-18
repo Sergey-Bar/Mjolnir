@@ -53,7 +53,7 @@ const HOSTILE_JUNIT_BODIES = [
 describe("adversarial: run-report ingestion never crashes and never invents", () => {
   for (const body of HOSTILE_JSON_BODIES) {
     it(`hostile PW JSON: ${body.slice(0, 60)}`, () => {
-      const dir = mkdtempSync(join(tmpdir(), "mjolnir-adv-"));
+      const dir = mkdtempSync(join(tmpdir(), "qa-doctor-adv-"));
       try {
         writeFileSync(join(dir, "report.json"), body);
         const fr = runForensics(dir, { writeFlakyMd: false });
@@ -73,7 +73,7 @@ describe("adversarial: run-report ingestion never crashes and never invents", ()
 
   for (const body of HOSTILE_JUNIT_BODIES) {
     it(`hostile JUnit XML: ${body.slice(0, 40)}`, () => {
-      const dir = mkdtempSync(join(tmpdir(), "mjolnir-adv-"));
+      const dir = mkdtempSync(join(tmpdir(), "qa-doctor-adv-"));
       try {
         writeFileSync(join(dir, "junit-report.xml"), body);
         const fr = runForensics(dir, { writeFlakyMd: false });
@@ -89,7 +89,7 @@ describe("adversarial: run-report ingestion never crashes and never invents", ()
     // errors — locked at the discovery boundary in scan-pipeline
     // (try/catch around runForensics). Here: the ingestion itself must
     // not throw for any of the hostile bodies.
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-adv-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-adv-"));
     try {
       writeFileSync(join(dir, "report.json"), '{"suites": 7}');
       expect(() => runForensics(dir, { writeFlakyMd: false })).not.toThrow();

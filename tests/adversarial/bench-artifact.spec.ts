@@ -23,7 +23,7 @@ const ARTIFACT = join(
 interface BenchArtifact {
   schemaVersion: number;
   harnessVersion: string;
-  mjolnirVersion: string;
+  qaDoctorVersion: string;
   nodeVersion: string;
   os: string;
   cpu: string;
@@ -47,7 +47,7 @@ describe("benchmark artifact (WI-15, plan §20)", () => {
   it("valid schema: env facts + fixture identity + all scenarios", () => {
     const a = JSON.parse(readFileSync(ARTIFACT, "utf8")) as BenchArtifact;
     expect(a.schemaVersion).toBe(1);
-    expect(a.mjolnirVersion).toMatch(/^\d+\.\d+\.\d+/);
+    expect(a.qaDoctorVersion).toMatch(/^\d+\.\d+\.\d+/);
     expect(a.nodeVersion).toMatch(/^v\d+/);
     expect(["linux", "win32", "darwin"]).toContain(a.os);
     expect(a.fixture.generator).toBe("synthetic-repo");

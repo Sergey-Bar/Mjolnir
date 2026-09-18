@@ -58,7 +58,7 @@ const JUNIT_XML = `<?xml version="1.0" encoding="UTF-8"?>
 </testsuite>`;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-wi15-soak-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-wi15-soak-"));
   origCwd = process.cwd();
   process.chdir(dir);
   mkdirSync(join(dir, "test-results"), { recursive: true });
@@ -155,7 +155,7 @@ describe("zero fabricated evidence at pipeline level (WI-15)", () => {
   });
 
   it("an empty corpus dir → zero records, honest exit-2 state (no defaults invented)", () => {
-    const empty = mkdtempSync(join(tmpdir(), "mjolnir-wi15-empty-"));
+    const empty = mkdtempSync(join(tmpdir(), "qa-doctor-wi15-empty-"));
     try {
       const { report } = runForensics(empty, { writeFlakyMd: false });
       expect(report.totalTests).toBe(0);

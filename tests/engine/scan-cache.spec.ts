@@ -12,7 +12,7 @@
  *     changing an external rule's code produces a fresh analysis (a
  *     stale cache entry must never survive);
  *  3. PRIVACY — the cache never leaves the machine: the module imports
- *     no network-capable API and lives under .mjolnir/cache/ (gitignored).
+ *     no network-capable API and lives under .qa-doctor/cache/ (gitignored).
  */
 
 import { execFileSync } from "node:child_process";
@@ -85,7 +85,7 @@ const SPEC_TEXT =
   `});\n`;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-scan-cache-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-scan-cache-"));
   mkdirSync(join(dir, "e2e"), { recursive: true });
   writeFileSync(join(dir, "e2e", "checkout.spec.ts"), SPEC_TEXT, "utf8");
   origCwd = process.cwd();
@@ -238,7 +238,7 @@ describe("--cache invalidation (A-2: stale entries can never survive)", () => {
 
   it("a corrupt cache file degrades to a cold cache, never fails the scan", async () => {
     await runScan({ ...baseArgs, cache: true });
-    const cacheFile = join(dir, ".mjolnir", "cache", "scan-v2.json");
+    const cacheFile = join(dir, ".qa-doctor", "cache", "scan-v2.json");
     expect(existsSync(cacheFile)).toBe(true);
     writeFileSync(cacheFile, "{not json at all", "utf8");
     const third = await runScan({ ...baseArgs, cache: true });
@@ -248,9 +248,9 @@ describe("--cache invalidation (A-2: stale entries can never survive)", () => {
   });
 
   it("a future-versioned cache file is ignored, not trusted", async () => {
-    mkdirSync(join(dir, ".mjolnir", "cache"), { recursive: true });
+    mkdirSync(join(dir, ".qa-doctor", "cache"), { recursive: true });
     writeFileSync(
-      join(dir, ".mjolnir", "cache", "scan-v2.json"),
+      join(dir, ".qa-doctor", "cache", "scan-v2.json"),
       JSON.stringify({ version: 999, entries: { bogus: { findings: [] } } }),
       "utf8",
     );
@@ -329,17 +329,17 @@ describe("--cache privacy posture (local-only, never network)", () => {
     expect(source).toContain("node:fs");
   });
 
-  it("the cache lives under .mjolnir/cache/ and is gitignored", () => {
+  it("the cache lives under .qa-doctor/cache/ and is gitignored", () => {
     const gitignore = readFileSync(
       join(import.meta.dirname, "..", "..", ".gitignore"),
       "utf8",
     );
-    expect(gitignore).toContain(".mjolnir/cache/");
+    expect(gitignore).toContain(".qa-doctor/cache/");
   });
 
   it("the JSON report names the cache file so consumers can audit it", async () => {
     const result = await runScan({ ...baseArgs, cache: true });
-    expect(result.cache?.file).toContain(join(".mjolnir", "cache"));
+    expect(result.cache?.file).toContain(join(".qa-doctor", "cache"));
   });
 
   it("the tracked repo never contains the cache dir (machine state, not content)", () => {
@@ -348,7 +348,7 @@ describe("--cache privacy posture (local-only, never network)", () => {
     } catch {
       return; // not a git checkout — nothing to assert
     }
-    const tracked = execFileSync("git", ["ls-files", ".mjolnir/cache/"], {
+    const tracked = execFileSync("git", ["ls-files", ".qa-doctor/cache/"], {
       cwd: join(import.meta.dirname, "..", ".."),
       encoding: "utf8",
     }).trim();
@@ -418,9 +418,9 @@ describe("--cache CLI plumbing", () => {
   });
 
   it("the cache dir is created lazily on first cached run, never before", async () => {
-    expect(existsSync(join(dir, ".mjolnir", "cache"))).toBe(false);
+    expect(existsSync(join(dir, ".qa-doctor", "cache"))).toBe(false);
     await runScan({ ...baseArgs, cache: true });
-    expect(existsSync(join(dir, ".mjolnir", "cache"))).toBe(true);
+    expect(existsSync(join(dir, ".qa-doctor", "cache"))).toBe(true);
   });
 });
 

@@ -1,6 +1,6 @@
 /**
  * Unit tests for discovery/ignores.ts — the ignore-pattern resolution
- * chain (defaults → .mjolnirignore → mjolnir.config.json exclude) and
+ * chain (defaults → .qa-doctorignore → qa-doctor.config.json exclude) and
  * the minimal glob matcher, plus the Phase 2 lint-fixture auto-detection.
  *
  * These paths were previously reached only indirectly through full
@@ -70,12 +70,12 @@ describe("createIgnoreMatcher — defaults", () => {
   });
 });
 
-describe("createIgnoreMatcher — .mjolnirignore and config exclude", () => {
-  it("honors .mjolnirignore patterns, ignoring blanks and # comments", () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-ignores-"));
+describe("createIgnoreMatcher — .qa-doctorignore and config exclude", () => {
+  it("honors .qa-doctorignore patterns, ignoring blanks and # comments", () => {
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-ignores-"));
     try {
       writeFileSync(
-        join(dir, ".mjolnirignore"),
+        join(dir, ".qa-doctorignore"),
         "# a comment\n\n   \nlegacy/**\n",
       );
       const matcher = createIgnoreMatcher(dir);
@@ -86,11 +86,11 @@ describe("createIgnoreMatcher — .mjolnirignore and config exclude", () => {
     }
   });
 
-  it("honors mjolnir.config.json `exclude` patterns", () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-ignores-"));
+  it("honors qa-doctor.config.json `exclude` patterns", () => {
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-ignores-"));
     try {
       writeFileSync(
-        join(dir, "mjolnir.config.json"),
+        join(dir, "qa-doctor.config.json"),
         JSON.stringify({ exclude: ["examples/**"] }),
       );
       const matcher = createIgnoreMatcher(dir);
@@ -101,9 +101,9 @@ describe("createIgnoreMatcher — .mjolnirignore and config exclude", () => {
   });
 
   it("survives a malformed config without throwing and keeps the defaults", () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-ignores-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-ignores-"));
     try {
-      writeFileSync(join(dir, "mjolnir.config.json"), "{ not valid json");
+      writeFileSync(join(dir, "qa-doctor.config.json"), "{ not valid json");
       const matcher = createIgnoreMatcher(dir);
       expect(matcher.isIgnored("node_modules/x.js")).toBe(true);
     } finally {
@@ -112,10 +112,10 @@ describe("createIgnoreMatcher — .mjolnirignore and config exclude", () => {
   });
 
   it("ignores a non-array `exclude` value", () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-ignores-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-ignores-"));
     try {
       writeFileSync(
-        join(dir, "mjolnir.config.json"),
+        join(dir, "qa-doctor.config.json"),
         JSON.stringify({ exclude: "examples/**" }),
       );
       const matcher = createIgnoreMatcher(dir);
@@ -126,14 +126,14 @@ describe("createIgnoreMatcher — .mjolnirignore and config exclude", () => {
   });
 
   it("re-resolves on every call — no cross-root state leakage (audit R-8)", () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-ignores-"));
-    const other = mkdtempSync(join(tmpdir(), "mjolnir-ignores-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-ignores-"));
+    const other = mkdtempSync(join(tmpdir(), "qa-doctor-ignores-"));
     try {
-      writeFileSync(join(dir, ".mjolnirignore"), "first/**\n");
+      writeFileSync(join(dir, ".qa-doctorignore"), "first/**\n");
       const first = createIgnoreMatcher(dir);
       const second = createIgnoreMatcher(other);
       expect(first.isIgnored("first/x.ts")).toBe(true);
-      // The other root has no .mjolnirignore — the first root's patterns
+      // The other root has no .qa-doctorignore — the first root's patterns
       // must not leak into it (the old module-global cache did exactly that).
       expect(second.isIgnored("first/x.ts")).toBe(false);
     } finally {
@@ -144,12 +144,12 @@ describe("createIgnoreMatcher — .mjolnirignore and config exclude", () => {
 });
 
 describe("gitignore behaviors (audit R-10)", () => {
-  const dir = () => mkdtempSync(join(tmpdir(), "mjolnir-ignores-git-"));
+  const dir = () => mkdtempSync(join(tmpdir(), "qa-doctor-ignores-git-"));
 
   it("a bare name matches at any depth, like gitignore", () => {
     const d = dir();
     try {
-      writeFileSync(join(d, ".mjolnirignore"), "node_modules\n");
+      writeFileSync(join(d, ".qa-doctorignore"), "node_modules\n");
       const matcher = createIgnoreMatcher(d);
       expect(matcher.isIgnored("node_modules")).toBe(true);
       expect(matcher.isIgnored("node_modules/foo/index.js")).toBe(true);
@@ -165,7 +165,7 @@ describe("gitignore behaviors (audit R-10)", () => {
     const d = dir();
     try {
       writeFileSync(
-        join(d, ".mjolnirignore"),
+        join(d, ".qa-doctorignore"),
         "vendor/**\n!vendor/keep/**\nvendor/keep/drop/**\n",
       );
       const matcher = createIgnoreMatcher(d);
@@ -181,7 +181,7 @@ describe("gitignore behaviors (audit R-10)", () => {
   it("a negated pattern can un-ignore a built-in default", () => {
     const d = dir();
     try {
-      writeFileSync(join(d, ".mjolnirignore"), "!coverage/**\n");
+      writeFileSync(join(d, ".qa-doctorignore"), "!coverage/**\n");
       const matcher = createIgnoreMatcher(d);
       expect(matcher.isIgnored("coverage/lcov.info")).toBe(false);
     } finally {
@@ -277,7 +277,7 @@ describe("isDefaultIgnored (defaults-only convenience)", () => {
 
 describe("isLintFixtureDir", () => {
   it("is true for a directory holding both must-fire/ and must-not-fire/", () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-ignores-fixture-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-ignores-fixture-"));
     try {
       mkdirSync(join(dir, "QA-XX-001", "must-fire"), { recursive: true });
       mkdirSync(join(dir, "QA-XX-001", "must-not-fire"), { recursive: true });
@@ -288,7 +288,7 @@ describe("isLintFixtureDir", () => {
   });
 
   it("is false when only one of the two sibling dirs is present", () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-ignores-fixture-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-ignores-fixture-"));
     try {
       mkdirSync(join(dir, "half", "must-fire"), { recursive: true });
       expect(isLintFixtureDir(join(dir, "half"))).toBe(false);

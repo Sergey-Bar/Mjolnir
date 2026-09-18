@@ -1,5 +1,5 @@
 /**
- * Agent-handoff plan M4 — `mjolnir install`.
+ * Agent-handoff plan M4 — `qa-doctor install`.
  *
  * Safety contract (plan §17): directory probes detect instruction
  * surfaces (deterministic, offline); all detected surfaces are written;
@@ -33,7 +33,7 @@ import {
 
 let dir: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-install-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-install-"));
 });
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
@@ -87,7 +87,7 @@ describe("planInstall + executeInstall", () => {
     if (created.action !== "create") throw new Error("expected create");
     expect(created.surface).toBe("Claude Code command surface");
     expect(created.content).toContain(
-      `npx mjolnir-qa@${CLI_VERSION} . --scope changed`,
+      `npx qa-doctor-cli@${CLI_VERSION} . --scope changed`,
     );
     // Version-pinned, never @latest.
     expect(created.content).not.toContain("@latest");
@@ -100,7 +100,7 @@ describe("planInstall + executeInstall", () => {
     expect(written).toBe(1);
     const after = readFileSync(join(dir, "AGENTS.md"), "utf8");
     expect(after.startsWith("repo instructions\n")).toBe(true);
-    expect(after).toContain("mjolnir:managed");
+    expect(after).toContain("qa-doctor:managed");
     expect(after).toContain("verification trust loop");
   });
 
@@ -110,28 +110,28 @@ describe("planInstall + executeInstall", () => {
     expect(runInstallCommand([], cap.io, dir)).toBe(0);
     const after = readFileSync(join(dir, "AGENTS.md"), "utf8");
     expect(after.startsWith("no trailing newline\n\n")).toBe(true);
-    expect(after).toContain("mjolnir:managed");
+    expect(after).toContain("qa-doctor:managed");
   });
 
   it("is idempotent: second run is a no-op with no writes", () => {
     mkdirSync(join(dir, ".claude"), { recursive: true });
     executeInstall(planInstall(dir).entries);
     const before = readFileSync(
-      join(dir, ".claude", "commands", "mjolnir.md"),
+      join(dir, ".claude", "commands", "qa-doctor.md"),
       "utf8",
     );
     const { entries } = planInstall(dir);
     expect(entries.every((e) => e.action === "no-op")).toBe(true);
     expect(executeInstall(entries)).toBe(0);
     expect(
-      readFileSync(join(dir, ".claude", "commands", "mjolnir.md"), "utf8"),
+      readFileSync(join(dir, ".claude", "commands", "qa-doctor.md"), "utf8"),
     ).toBe(before);
   });
 
   it("refuses (exit 10) to overwrite a non-QA Doctor file, with --force semantics", () => {
     mkdirSync(join(dir, ".claude", "commands"), { recursive: true });
     writeFileSync(
-      join(dir, ".claude", "commands", "mjolnir.md"),
+      join(dir, ".claude", "commands", "qa-doctor.md"),
       "my custom command\n",
     );
     const { entries } = planInstall(dir);
@@ -143,7 +143,7 @@ describe("planInstall + executeInstall", () => {
     expect(f0.action).toBe("refuse");
     expect(executeInstall(forced.entries)).toBe(0);
     expect(
-      readFileSync(join(dir, ".claude", "commands", "mjolnir.md"), "utf8"),
+      readFileSync(join(dir, ".claude", "commands", "qa-doctor.md"), "utf8"),
     ).toBe("my custom command\n");
   });
 
@@ -152,11 +152,11 @@ describe("planInstall + executeInstall", () => {
     const { entries } = planInstall(dir);
     executeInstall(entries);
     const original = readFileSync(
-      join(dir, ".claude", "commands", "mjolnir.md"),
+      join(dir, ".claude", "commands", "qa-doctor.md"),
       "utf8",
     );
     // Simulate local edits INSIDE the managed block.
-    const file = join(dir, ".claude", "commands", "mjolnir.md");
+    const file = join(dir, ".claude", "commands", "qa-doctor.md");
     const edited = readFileSync(file, "utf8").replace(
       "--scope changed",
       "--scope full",
@@ -188,7 +188,7 @@ describe("planInstall + executeInstall", () => {
   it("planInstall performs zero writes", () => {
     mkdirSync(join(dir, ".claude"), { recursive: true });
     planInstall(dir);
-    expect(existsSync(join(dir, ".claude", "commands", "mjolnir.md"))).toBe(
+    expect(existsSync(join(dir, ".claude", "commands", "qa-doctor.md"))).toBe(
       false,
     );
   });
@@ -222,13 +222,13 @@ describe("runInstallCommand — CLI contract", () => {
 
   it("dry-run prints REFUSE lines for user-owned files", () => {
     mkdirSync(join(dir, ".claude", "commands"), { recursive: true });
-    writeFileSync(join(dir, ".claude", "commands", "mjolnir.md"), "mine\n");
+    writeFileSync(join(dir, ".claude", "commands", "qa-doctor.md"), "mine\n");
     const cap = capture();
     expect(runInstallCommand(["--dry-run"], cap.io, dir)).toBe(0);
     expect(cap.errText()).toContain("REFUSE");
     expect(cap.errText()).toContain("not QA Doctor-managed");
     expect(
-      readFileSync(join(dir, ".claude", "commands", "mjolnir.md"), "utf8"),
+      readFileSync(join(dir, ".claude", "commands", "qa-doctor.md"), "utf8"),
     ).toBe("mine\n");
   });
 
@@ -240,7 +240,7 @@ describe("runInstallCommand — CLI contract", () => {
       // Unknown flag exercises the default-io stderr arm (exit 10).
       expect(runInstallCommand(["--nope"])).toBe(10);
       // Refusal arm also flows through the default io.
-      writeFileSync(join(dir, ".claude", "commands", "mjolnir.md"), "mine\n");
+      writeFileSync(join(dir, ".claude", "commands", "qa-doctor.md"), "mine\n");
       expect(runInstallCommand([], undefined, dir)).toBe(10);
     } finally {
       logSpy.mockRestore();
@@ -251,7 +251,7 @@ describe("runInstallCommand — CLI contract", () => {
   it("an already-up-to-date install reports no-ops and writes nothing", () => {
     mkdirSync(join(dir, ".claude"), { recursive: true });
     executeInstall(planInstall(dir).entries);
-    const file = join(dir, ".claude", "commands", "mjolnir.md");
+    const file = join(dir, ".claude", "commands", "qa-doctor.md");
     const before = readFileSync(file, "utf8");
     const cap = capture();
     expect(runInstallCommand([], cap.io, dir)).toBe(0);
@@ -264,19 +264,19 @@ describe("runInstallCommand — CLI contract", () => {
     const cap = capture();
     expect(runInstallCommand(["--dry-run"], cap.io, dir)).toBe(0);
     expect(cap.text()).toContain("dry run");
-    expect(existsSync(join(dir, ".claude", "commands", "mjolnir.md"))).toBe(
+    expect(existsSync(join(dir, ".claude", "commands", "qa-doctor.md"))).toBe(
       false,
     );
   });
 
   it("refusal → exit 10 with the offending path", () => {
     mkdirSync(join(dir, ".claude", "commands"), { recursive: true });
-    writeFileSync(join(dir, ".claude", "commands", "mjolnir.md"), "mine\n");
+    writeFileSync(join(dir, ".claude", "commands", "qa-doctor.md"), "mine\n");
     const cap = capture();
     expect(runInstallCommand([], cap.io, dir)).toBe(10);
     expect(cap.errText()).toContain("not QA Doctor-managed");
     expect(
-      readFileSync(join(dir, ".claude", "commands", "mjolnir.md"), "utf8"),
+      readFileSync(join(dir, ".claude", "commands", "qa-doctor.md"), "utf8"),
     ).toBe("mine\n");
   });
 });

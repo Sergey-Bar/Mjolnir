@@ -4,9 +4,9 @@ Two videos, both generated — never screen-recorded, never mocked up.
 
 | File                                    | What it is                                                     | Where it lives          |
 | --------------------------------------- | -------------------------------------------------------------- | ----------------------- |
-| `mjolnir-demo.mp4`                      | 34s hero loop: one false-green CI gate found, fixed, re-proved | committed (README hero) |
-| `mjolnir-demo-poster.png`               | Poster frame for the hero                                      | committed               |
-| `mjolnir-tour.mp4`                      | 86s tour: scan → `explain` → `forensics`                       | GitHub Release asset    |
+| `qa-doctor-demo.mp4`                    | 34s hero loop: one false-green CI gate found, fixed, re-proved | committed (README hero) |
+| `qa-doctor-demo-poster.png`             | Poster frame for the hero                                      | committed               |
+| `qa-doctor-tour.mp4`                    | 86s tour: scan → `explain` → `forensics`                       | GitHub Release asset    |
 | `script.demo.json` · `script.tour.json` | The committed evidence both are rendered from                  | committed               |
 | `fixtures/ci.fixed.yml`                 | The workflow after the fix the tool prints                     | committed               |
 | `fonts/`                                | The vendored render stack, with licenses                       | committed               |
@@ -61,7 +61,7 @@ npx tsx scripts/video/render.ts demo --preview=140   # one frame, no encode
 
 `ffmpeg` is not a dependency of this repo — an ~80MB binary in
 devDependencies would tax every `npm ci` to serve one opt-in script. It is
-resolved from `$MJOLNIR_FFMPEG` or `PATH`, and its absence is reported with
+resolved from `$QA_DOCTOR_FFMPEG` or `PATH`, and its absence is reported with
 instructions. Playwright's bundled ffmpeg will not work: it is built
 `--disable-everything` with VP8/WebM only, no H.264 and no MP4 muxer.
 

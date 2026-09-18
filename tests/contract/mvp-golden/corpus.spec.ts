@@ -78,7 +78,7 @@ describe("manifest completeness (the 12 canonical case classes)", () => {
 });
 
 describe("active classes demonstrable against the committed data", () => {
-  const fr = runForensics(join(ROOT, "mjolnir.report.json"), {
+  const fr = runForensics(join(ROOT, "qa-doctor.report.json"), {
     writeFlakyMd: false,
   });
 
@@ -106,7 +106,7 @@ describe("active classes demonstrable against the committed data", () => {
   });
 
   it("correlated-runtime-evidence: flake-risk findings in login.spec.ts rise above file-level", () => {
-    const recs = buildEvidenceRecords(fr.report, "mjolnir.report.json");
+    const recs = buildEvidenceRecords(fr.report, "qa-doctor.report.json");
     const login = recs.filter((r) => r.file === "e2e/login.spec.ts");
     expect(login.length).toBeGreaterThanOrEqual(2);
     const flaky = login.find((r) => r.status.passedOnRetry);
@@ -114,7 +114,7 @@ describe("active classes demonstrable against the committed data", () => {
   });
 
   it("insufficient-evidence: export.spec.ts appears in no report (honest absence)", () => {
-    const recs = buildEvidenceRecords(fr.report, "mjolnir.report.json");
+    const recs = buildEvidenceRecords(fr.report, "qa-doctor.report.json");
     expect(recs.some((r) => r.file === "e2e/export.spec.ts")).toBe(false);
   });
 });
@@ -132,7 +132,7 @@ describe("junit-evidence parses through the same forensics path", () => {
 describe("the honesty law for awaiting-ingestion classes", () => {
   it("no 0.6.x surface reads the console/network/trace corpus files", () => {
     // The scan pipeline's runtime discovery (discoverRuntimeReport)
-    // looks for mjolnir.report.json / test-results/ only. Assert the
+    // looks for qa-doctor.report.json / test-results/ only. Assert the
     // corpus-only files are not among the discovered shapes: the
     // forensics run over the run-reports DIR must recognize the JUnit
     // XML but must NOT report console/network JSON as test verdicts

@@ -2,7 +2,7 @@
  * Help + error UX (Terminal + CI UX Overhaul plan, M2).
  *
  * The help verb must dispatch BEFORE the scan fall-through (unknown
- * verbs are scan targets — `mjolnir help` used to scan the CWD).
+ * verbs are scan targets — `qa-doctor help` used to scan the CWD).
  * Usage errors keep exit 10 but explain themselves: nearest-flag
  * suggestion (Levenshtein ≤ 2, hand-rolled) + the help command.
  * `help`/`<verb> --help` answer a question → exit 0.
@@ -59,14 +59,14 @@ describe("root help", () => {
 
   it("carries copy-pasteable examples, the exit-code table and the docs link", () => {
     const text = renderRootHelp();
-    expect(text).toMatch(/\$ mjolnir --scope changed/);
-    expect(text).toMatch(/\$ mjolnir ci install/);
-    expect(text).toMatch(/\$ mjolnir forensics test-results/);
+    expect(text).toMatch(/\$ qa-doctor --scope changed/);
+    expect(text).toMatch(/\$ qa-doctor ci install/);
+    expect(text).toMatch(/\$ qa-doctor forensics test-results/);
     for (const [code] of EXIT_CODE_TABLE) {
       expect(text).toContain(`  ${code} `);
     }
-    expect(text).toContain("https://github.com/Sergey-Bar/Mjolnir");
-    expect(text).toContain("mjolnir help <verb>");
+    expect(text).toContain("https://github.com/Sergey-Bar/qa-doctor");
+    expect(text).toContain("qa-doctor help <verb>");
   });
 
   it("shows the frozen exit-code line verbatim", () => {
@@ -92,19 +92,19 @@ describe("per-verb help", () => {
     const text = renderVerbHelp("fix");
     expect(text).toContain("fix — ");
     expect(text).toContain("Usage:");
-    expect(text).toMatch(/\$ mjolnir fix --dry-run/);
+    expect(text).toMatch(/\$ qa-doctor fix --dry-run/);
   });
 
   it("renders the Next step block when an entry declares one", () => {
     const text = renderVerbHelp("baseline");
     expect(text).toContain("Next step:");
-    expect(text).toContain("$ mjolnir diff");
+    expect(text).toContain("$ qa-doctor diff");
   });
 
   it("never fabricates a page for an unknown verb", () => {
     const text = renderVerbHelp("teleport");
     expect(text).toContain('No detailed help for "teleport"');
-    expect(text).toContain("$ mjolnir --help");
+    expect(text).toContain("$ qa-doctor --help");
   });
 
   it("hasVerbHelp is exact-match only", () => {
@@ -115,20 +115,20 @@ describe("per-verb help", () => {
 
   it("every registered entry has usage + at least one example", () => {
     for (const e of HELP_ENTRIES) {
-      expect(e.usage.startsWith("mjolnir "), e.verb).toBe(true);
+      expect(e.usage.startsWith("qa-doctor "), e.verb).toBe(true);
       expect(e.examples.length, e.verb).toBeGreaterThan(0);
     }
   });
 });
 
 describe("help dispatch", () => {
-  it("`mjolnir help` prints the overview and exits 0", () => {
+  it("`qa-doctor help` prints the overview and exits 0", () => {
     const cap = capture();
     expect(runHelpCommand([], cap.io)).toBe(0);
-    expect(cap.text()).toContain("Usage: mjolnir");
+    expect(cap.text()).toContain("Usage: qa-doctor");
   });
 
-  it("`mjolnir help <verb>` prints the verb page and exits 0 (default io)", () => {
+  it("`qa-doctor help <verb>` prints the verb page and exits 0 (default io)", () => {
     // Omitting io exercises the console fallback wiring directly.
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
     try {
@@ -140,13 +140,13 @@ describe("help dispatch", () => {
     }
   });
 
-  it("`mjolnir help <unknown>` is honest and still exits 0", () => {
+  it("`qa-doctor help <unknown>` is honest and still exits 0", () => {
     const cap = capture();
     expect(runHelpCommand(["teleport"], cap.io)).toBe(0);
     expect(cap.text()).toContain('No detailed help for "teleport"');
   });
 
-  it("`mjolnir help ci install` resolves the two-word verb page", () => {
+  it("`qa-doctor help ci install` resolves the two-word verb page", () => {
     const cap = capture();
     expect(runHelpCommand(["ci", "install"], cap.io)).toBe(0);
     expect(cap.text()).toContain("ci install — ");
@@ -157,7 +157,7 @@ describe("help dispatch", () => {
     expect(cap2.text()).toContain('No detailed help for "no"');
   });
 
-  it("`mjolnir <verb> --help` routes to the verb page before the handler", () => {
+  it("`qa-doctor <verb> --help` routes to the verb page before the handler", () => {
     const cap = capture();
     // `fix --help` would otherwise scan the CWD (exit 1 path); help
     // intercepts it with a page and exits 0.
@@ -207,13 +207,13 @@ describe("friendly usage errors", () => {
     const msg = usageErrorMessage({ token: "--jso" });
     expect(msg).toContain('unknown flag "--jso"');
     expect(msg).toContain("Did you mean: --json");
-    expect(msg).toContain("Run mjolnir --help");
+    expect(msg).toContain("Run qa-doctor --help");
   });
 
   it("a rejected value names the flag it belongs to", () => {
     const msg = usageErrorMessage({ flag: "--tone", token: "loud" });
     expect(msg).toContain('invalid value "loud" for --tone');
-    expect(msg).toContain("Run mjolnir --help");
+    expect(msg).toContain("Run qa-doctor --help");
   });
 
   it('a missing value renders empty quotes (?? "" fallback)', () => {
@@ -273,25 +273,25 @@ describe("friendly usage errors", () => {
 });
 
 describe("main() dispatch to help (plan M2)", () => {
-  it("`mjolnir <verb> --help` routes through main() to the verb page (exit 0)", async () => {
+  it("`qa-doctor <verb> --help` routes through main() to the verb page (exit 0)", async () => {
     const cap = capture();
     await expect(main(["fix", "--help"], cap.io)).resolves.toBe(0);
     expect(cap.text()).toContain("fix — ");
   });
 
-  it("`mjolnir <verb> -h` routes through main() too", async () => {
+  it("`qa-doctor <verb> -h` routes through main() too", async () => {
     const cap = capture();
     await expect(main(["rules", "-h"], cap.io)).resolves.toBe(0);
     expect(cap.text()).toContain("rules — ");
   });
 
-  it("`mjolnir ci install --help` reaches the two-word page (exit 0)", async () => {
+  it("`qa-doctor ci install --help` reaches the two-word page (exit 0)", async () => {
     const cap = capture();
     await expect(main(["ci", "install", "--help"], cap.io)).resolves.toBe(0);
     expect(cap.text()).toContain("ci install — ");
   });
 
-  it("`mjolnir ci install -h` reaches the page via the short flag", async () => {
+  it("`qa-doctor ci install -h` reaches the page via the short flag", async () => {
     const cap = capture();
     await expect(main(["ci", "install", "-h"], cap.io)).resolves.toBe(0);
     expect(cap.text()).toContain("ci install — ");
@@ -305,8 +305,8 @@ describe("main() dispatch to help (plan M2)", () => {
 
   it("scan/ci/help render the ROOT help, not the no-page stub (certification P3)", () => {
     // Registry design: scan's help IS the root help — the overview
-    // carries the scan usage lines, so `mjolnir scan --help`,
-    // `mjolnir ci --help` and `mjolnir help --help` must render it
+    // carries the scan usage lines, so `qa-doctor scan --help`,
+    // `qa-doctor ci --help` and `qa-doctor help --help` must render it
     // instead of the "No detailed help for X" stub (audit help-matrix:
     // all three rendered the stub at exit 0).
     const root = renderRootHelp();
@@ -319,7 +319,7 @@ describe("main() dispatch to help (plan M2)", () => {
     // The page render (which `--help` routes through) agrees.
     expect(renderVerbHelp("scan")).toBe(root);
     // ...and the root help actually carries scan's usage line.
-    expect(root).toContain("mjolnir [path]");
+    expect(root).toContain("qa-doctor [path]");
     // Unknown verbs keep the honest stub.
     const stub = capture();
     expect(runHelpCommand(["teleport"], stub.io)).toBe(0);
@@ -332,13 +332,13 @@ describe("main() dispatch to help (plan M2)", () => {
     expect(cap.text()).toContain('No detailed help for "teleport"');
   });
 
-  it("`mjolnir help` dispatches as a verb, never as a scan target", async () => {
+  it("`qa-doctor help` dispatches as a verb, never as a scan target", async () => {
     const cap = capture();
     await expect(main(["help"], cap.io)).resolves.toBe(0);
-    expect(cap.text()).toContain("Usage: mjolnir");
+    expect(cap.text()).toContain("Usage: qa-doctor");
   });
 
-  it("`mjolnir summary` dispatches to the summary command", async () => {
+  it("`qa-doctor summary` dispatches to the summary command", async () => {
     // Not-found path: exit 10, nothing written to stdout (no scan ran).
     const cap = capture();
     await expect(main(["summary"], cap.io)).resolves.toBe(10);

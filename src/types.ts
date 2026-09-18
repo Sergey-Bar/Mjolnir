@@ -314,7 +314,7 @@ export const DEDUCTIONS: Record<Severity, number> = {
 /**
  * Mutation evidence (master plan P5, plan 1788853205786 — flag 6,
  * decision 8): provenance from a mutation-testing report
- * (`mjolnir mutation <report>`), stamped on matching findings.
+ * (`qa-doctor mutation <report>`), stamped on matching findings.
  *
  * PROVENANCE IS NOT TRUTH: a survived mutant is code the suite would
  * not notice changing — evidence FOR a nearby finding, never a claim

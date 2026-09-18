@@ -357,7 +357,7 @@ function cloneRepo(repo: CorpusRepo): string {
   );
   // The corpus is someone else's live git history — never let our own
   // git-aware code (--scope changed, discovery) treat it as part of
-  // mjolnir's own repo.
+  // qa-doctor's own repo.
   rmSync(join(dest, ".git"), { recursive: true, force: true });
   return dest;
 }

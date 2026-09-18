@@ -1,5 +1,5 @@
 /**
- * Tests for `mjolnir fix` — safe auto-fix with proof (Tier 1 #3).
+ * Tests for `qa-doctor fix` — safe auto-fix with proof (Tier 1 #3).
  */
 
 import {
@@ -138,15 +138,15 @@ describe("planAndApplyFixes", () => {
       const old = Date.now() - 48 * 60 * 60 * 1000;
       const contents = new Map([
         ["dry.spec.ts", "test.only('x', () => {});\n"],
-        ["notes.mjolnir-backup.tmp", "user data"],
+        ["notes.qa-doctor-backup.tmp", "user data"],
         [
-          `fresh.mjolnir-${process.pid}-${Date.now()}-01234567.tmp`,
+          `fresh.qa-doctor-${process.pid}-${Date.now()}-01234567.tmp`,
           "active write",
         ],
-        [`stale.mjolnir-2147483647-${old}-01234567.tmp`, "stale write"],
+        [`stale.qa-doctor-2147483647-${old}-01234567.tmp`, "stale write"],
       ]);
       for (const [name, text] of contents) writeFileSync(join(dir, name), text);
-      const stale = join(dir, `stale.mjolnir-2147483647-${old}-01234567.tmp`);
+      const stale = join(dir, `stale.qa-doctor-2147483647-${old}-01234567.tmp`);
       utimesSync(stale, new Date(old), new Date(old));
       const before = readdirSync(dir).sort();
 
@@ -216,7 +216,7 @@ describe("planAndApplyFixes", () => {
     );
     expect(results[0]?.status).toBe("applied");
     const leftovers = readdirSync(dir).filter((f) =>
-      f.endsWith(".mjolnir-tmp"),
+      f.endsWith(".qa-doctor-tmp"),
     );
     expect(leftovers).toEqual([]);
   });
@@ -316,7 +316,7 @@ describe("planAndApplyFixes", () => {
       scan([finding("QA-TEST-001", file, "`.only` focus modifier committed.")]),
       dir,
     );
-    // The old code skipped the file with NO result entry — `mjolnir fix`
+    // The old code skipped the file with NO result entry — `qa-doctor fix`
     // exited 0 while silently doing nothing. It now reports the skip.
     expect(results).toHaveLength(1);
     expect(results[0]?.status).toBe("failed");

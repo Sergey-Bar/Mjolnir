@@ -6,7 +6,7 @@
       "tool": {
         "driver": {
           "name": "QA Doctor",
-          "informationUri": "https://github.com/Sergey-Bar/Mjolnir",
+          "informationUri": "https://github.com/Sergey-Bar/qa-doctor",
           "version": "0.5.18",
           "rules": []
         }

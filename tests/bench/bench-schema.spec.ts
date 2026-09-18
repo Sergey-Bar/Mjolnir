@@ -27,7 +27,7 @@ import {
 
 const createdDirs: string[] = [];
 function tmpRepo(prefix: string): string {
-  const d = mkdtempSync(join(tmpdir(), `mjolnir-bench-${prefix}-`));
+  const d = mkdtempSync(join(tmpdir(), `qa-doctor-bench-${prefix}-`));
   createdDirs.push(d);
   return d;
 }
@@ -64,12 +64,12 @@ describe("artifact schema", () => {
       const root = tmpRepo("schema");
       const fixture = generateFixture(root, { fileCount: 24 });
       const artifact = await runBenchmark(root, fixture, {
-        mjolnirVersion: "0.0.0-test",
+        qaDoctorVersion: "0.0.0-test",
         commit: "deadbeef",
       });
       expect(artifact.schemaVersion).toBe(BENCH_SCHEMA_VERSION);
       expect(artifact.harnessVersion).toBe(BENCH_HARNESS_VERSION);
-      expect(artifact.mjolnirVersion).toBe("0.0.0-test");
+      expect(artifact.qaDoctorVersion).toBe("0.0.0-test");
       expect(artifact.nodeVersion).toMatch(/^v\d+/);
       expect(typeof artifact.os).toBe("string");
       expect(artifact.commit).toBe("deadbeef");
@@ -100,7 +100,7 @@ describe("artifact schema", () => {
     const root = tmpRepo("roundtrip");
     const fixture = generateFixture(root, { fileCount: 12 });
     const artifact = await runBenchmark(root, fixture, {
-      mjolnirVersion: "0.0.0-test",
+      qaDoctorVersion: "0.0.0-test",
       commit: "",
     });
     const json = JSON.parse(JSON.stringify(artifact)) as BenchArtifact;
@@ -120,7 +120,7 @@ describe("advisory compare policy (§340)", () => {
   const base: BenchArtifact = {
     schemaVersion: BENCH_SCHEMA_VERSION,
     harnessVersion: BENCH_HARNESS_VERSION,
-    mjolnirVersion: "0.0.0",
+    qaDoctorVersion: "0.0.0",
     nodeVersion: "v0",
     os: "test",
     cpu: "",

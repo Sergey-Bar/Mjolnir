@@ -14,13 +14,13 @@
  * regeneratable, not archival.
  *
  * THE TWO MARKS.
- *   - wordmark — "MJÖLNIR" set in Geist 500 (the one text face), tracked
+ *   - wordmark — "QA DOCTOR" set in Geist 500 (the one text face), tracked
  *     0.3em in primary text, the full lockup for anywhere there is room
  *     to read a word.
  *   - monogram — a single rune drawn as a path (`MONOGRAM_PATH`) and
  *     stroked in the aurora, for the square/tiny contexts a wordmark
  *     cannot survive (favicons, the npm/social icon). The rune is ᛗ
- *     (Mansaz) — already the "M" of MJÖLNIR in the hero runefield's own
+ *     (Mansaz) — already the "M" of QA DOCTOR in the hero runefield's own
  *     Elder Futhark spelling of the name (ᛗ ᛃ ᛟ ᛚ ᚾ ᛁ ᚱ, see
  *     docs/design/BRAND-SYSTEM.md), so the monogram is not a new choice,
  *     it is the initial the brand already spells itself with. It is
@@ -35,7 +35,7 @@
  *     its own.
  *
  * RENDERING. Both marks are laid out as HTML/CSS and shot with the same
- * Chromium the demo video uses (`resolveChromium`, `MJOLNIR_CHROMIUM`),
+ * Chromium the demo video uses (`resolveChromium`, `QA_DOCTOR_CHROMIUM`),
  * so no new dependency and no network at render time. Each output size
  * is rendered natively at its own target resolution rather than
  * downscaled from one raster — the old mark.png->favicon-16.png path
@@ -46,7 +46,7 @@
  * the same Chromium build. There is deliberately no CI test that
  * re-invokes Chromium to prove that byte-for-byte — the video pipeline
  * already carries the cost of Chromium-path resolution differing between
- * platforms (see `MJOLNIR_CHROMIUM` in scripts/video/fonts.ts), and
+ * platforms (see `QA_DOCTOR_CHROMIUM` in scripts/video/fonts.ts), and
  * duplicating that fragility into the normal test run for a check rule 9
  * already makes unnecessary — sha256, checked below — is not a trade
  * worth making.
@@ -75,7 +75,7 @@ const FONT_PATHS = [fontPath(400), fontPath(500)];
 
 /** Mansaz — see file header for why this rune and not one of the score runes. */
 export const MONOGRAM_RUNE = "ᛗ";
-export const WORDMARK_TEXT = "MJÖLNIR";
+export const WORDMARK_TEXT = "QA DOCTOR";
 
 /**
  * The rune, drawn rather than typeset: two staves, each with a diagonal
@@ -104,7 +104,7 @@ function monogramSvg(px: number, stroke: number, join = "miter"): string {
 function fontFaceCss(): string {
   return [400, 500]
     .map(
-      (w) => `@font-face{font-family:"MjolnirSans";font-weight:${w};
+      (w) => `@font-face{font-family:"QaDoctorSans";font-weight:${w};
       font-style:normal;src:url(data:font/woff2;base64,${readFileSync(
         fontPath(w),
       ).toString("base64")}) format("woff2")}`,
@@ -118,7 +118,7 @@ const page = (w: number, h: number, ground: string, body: string) =>
     *{margin:0;padding:0;box-sizing:border-box}
     html,body{width:${w}px;height:${h}px;background:${ground};overflow:hidden}
     body{display:flex;flex-direction:column;align-items:center;
-      justify-content:center;font-family:"MjolnirSans",sans-serif}
+      justify-content:center;font-family:"QaDoctorSans",sans-serif}
     .word{font-weight:500;letter-spacing:0.3em;color:${TEXT.primary};
       padding-left:0.3em;line-height:1}
     .line{font-weight:400;color:${TEXT.secondary};letter-spacing:0.01em}

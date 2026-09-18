@@ -68,14 +68,14 @@ describe("renderTrustReportJson — nextAction + evidence arms", () => {
         }),
       ),
     ) as { nextAction: string };
-    expect(j.nextAction).toContain("mjolnir explain QA-PW-004");
+    expect(j.nextAction).toContain("qa-doctor explain QA-PW-004");
   });
 
   it("clean scan without findings → the ci-install arm", () => {
     const j = JSON.parse(renderTrustReportJson(result())) as {
       nextAction: string;
     };
-    expect(j.nextAction).toContain("mjolnir ci install");
+    expect(j.nextAction).toContain("qa-doctor ci install");
   });
 
   it("corroborated finding → evidence carries the corroboration level", () => {

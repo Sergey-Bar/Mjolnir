@@ -130,7 +130,7 @@ describe("golden harness stage 1 — same evidence, same verdict", () => {
         }
       }
       if (anchor.kind === "triage-test") {
-        const fr = runForensics(join(ROOT, "mjolnir.report.json"), {
+        const fr = runForensics(join(ROOT, "qa-doctor.report.json"), {
           writeFlakyMd: false,
         });
         const row = workflowRows(fr.report).find((r) =>

@@ -34,7 +34,7 @@ import { _resetForTests } from "../../src/engine/tree-sitter-ast.js";
 
 const createdDirs: string[] = [];
 function tmpRepo(label: string): string {
-  const d = mkdtempSync(join(tmpdir(), `mjolnir-m1-${label}-`));
+  const d = mkdtempSync(join(tmpdir(), `qa-doctor-m1-${label}-`));
   createdDirs.push(d);
   return d;
 }
@@ -142,9 +142,9 @@ describe("audit-C5: partial honesty", () => {
         "  await expect(page).toHaveTitle('t');\n" +
         "});\n",
     );
-    mkdirSync(join(dir, ".mjolnir"), { recursive: true });
+    mkdirSync(join(dir, ".qa-doctor"), { recursive: true });
     writeFileSync(
-      join(dir, ".mjolnir", "baseline.json"),
+      join(dir, ".qa-doctor", "baseline.json"),
       JSON.stringify({
         schemaVersion: 1,
         capturedAt: "2020-01-01T00:00:00.000Z",

@@ -9,7 +9,7 @@ a scan that did not finish.**
 ## The report: `--format codequality`
 
 ```bash
-npx mjolnir-qa@<version> . --format codequality > gl-code-quality-report.json
+npx qa-doctor-cli@<version> . --format codequality > gl-code-quality-report.json
 ```
 
 Emits the [Code Quality report
@@ -34,13 +34,13 @@ truth; this format is a projection of it.
 
 ```yaml
 # .gitlab-ci.yml
-mjolnir:
+qa-doctor:
   stage: test
   image: node:22
   variables:
     GIT_DEPTH: "0" # --scope changed needs the merge-base
   script:
-    - npx --yes mjolnir-qa@<version> . --scope changed --format codequality
+    - npx --yes qa-doctor-cli@<version> . --scope changed --format codequality
       > gl-code-quality-report.json
   artifacts:
     when: always # findings or gate failure — the widget shows it
@@ -57,13 +57,13 @@ surfaces findings without failing the MR. To gate, append a blocking
 scan step — and gate on findings, never on the scan's `partial` flag:
 
 ```yaml
-mjolnir-gate:
+qa-doctor-gate:
   stage: test
   image: node:22
   variables:
     GIT_DEPTH: "0"
   script:
-    - npx --yes mjolnir-qa@<version> . --scope changed --blocking error
+    - npx --yes qa-doctor-cli@<version> . --scope changed --blocking error
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 ```
@@ -84,11 +84,11 @@ The MR flow is changed-scope by design; a scheduled full-repo scan keeps
 the debt picture honest:
 
 ```yaml
-mjolnir-audit:
+qa-doctor-audit:
   stage: test
   image: node:22
   script:
-    - npx --yes mjolnir-qa@<version> . --format codequality
+    - npx --yes qa-doctor-cli@<version> . --format codequality
       > gl-code-quality-report.json
   artifacts:
     reports:

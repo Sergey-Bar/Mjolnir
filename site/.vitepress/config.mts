@@ -1,11 +1,11 @@
 import { defineConfig } from "vitepress";
 import { SURFACE } from "../../src/brand/tokens.js";
 
-// Project site served from https://sergey-bar.github.io/Mjolnir/
-const BASE = "/Mjolnir/";
+// Project site served from https://sergey-bar.github.io/qa-doctor/
+const BASE = "/qa-doctor/";
 const ORIGIN = "https://sergey-bar.github.io";
 const SITE_URL = ORIGIN + BASE;
-const REPO_BLOB = "https://github.com/Sergey-Bar/Mjolnir/blob/main/";
+const REPO_BLOB = "https://github.com/Sergey-Bar/qa-doctor/blob/main/";
 const TAGLINE =
   "Verification Trust Engine for QA — audits test suites and CI pipelines, reports a worthiness score and prioritized findings.";
 
@@ -166,7 +166,10 @@ export default defineConfig({
     ["meta", { property: "og:site_name", content: "QA Doctor" }],
     [
       "meta",
-      { property: "og:title", content: "QA Doctor — Verification Trust Engine" },
+      {
+        property: "og:title",
+        content: "QA Doctor — Verification Trust Engine",
+      },
     ],
     ["meta", { property: "og:description", content: TAGLINE }],
     ["meta", { property: "og:url", content: SITE_URL }],
@@ -174,7 +177,10 @@ export default defineConfig({
     ["meta", { name: "twitter:card", content: "summary_large_image" }],
     [
       "meta",
-      { name: "twitter:title", content: "QA Doctor — Verification Trust Engine" },
+      {
+        name: "twitter:title",
+        content: "QA Doctor — Verification Trust Engine",
+      },
     ],
     ["meta", { name: "twitter:description", content: TAGLINE }],
     ["meta", { name: "twitter:image", content: SITE_URL + "social-card.jpg" }],
@@ -199,7 +205,7 @@ export default defineConfig({
       { text: "Rules", link: "/rules/", activeMatch: "^/rules/" },
       {
         text: "Changelog",
-        link: "https://github.com/Sergey-Bar/Mjolnir/blob/main/CHANGELOG.md",
+        link: "https://github.com/Sergey-Bar/qa-doctor/blob/main/CHANGELOG.md",
       },
     ],
     // One sidebar for every docs section (the landing page opts out via
@@ -210,8 +216,8 @@ export default defineConfig({
       "/rules/": SIDEBAR,
     },
     socialLinks: [
-      { icon: "github", link: "https://github.com/Sergey-Bar/Mjolnir" },
-      { icon: "npm", link: "https://www.npmjs.com/package/mjolnir-qa" },
+      { icon: "github", link: "https://github.com/Sergey-Bar/qa-doctor" },
+      { icon: "npm", link: "https://www.npmjs.com/package/qa-doctor-cli" },
     ],
     search: { provider: "local" },
     // A few Reference pages are mostly `@include`d from ../../docs — send
@@ -223,7 +229,7 @@ export default defineConfig({
     // declared inside the body on purpose.
     editLink: {
       pattern: ({ filePath }: { filePath: string }) => {
-        const edit = "https://github.com/Sergey-Bar/Mjolnir/edit/main/";
+        const edit = "https://github.com/Sergey-Bar/qa-doctor/edit/main/";
         const includedFrom: Record<string, string> = {
           "reference/rule-lifecycle.md": "docs/RULE-LIFECYCLE.md",
           "reference/sarif.md": "docs/SARIF-INTEGRATION.md",

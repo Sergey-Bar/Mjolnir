@@ -29,7 +29,7 @@ workflow file would fail OIDC with `ENEEDAUTH`):
      `### Changes since vX` list is generated from merged PR titles —
      a version bump with no changelog record remains forbidden.
    - The job commits `chore(release): vX.Y.Z` as
-     `mjolnir-release-bot`, tags it, and pushes both; the `release`
+     `qa-doctor-release-bot`, tags it, and pushes both; the `release`
      job then publishes from that tag.
 2. **`release`** — the existing publish pipeline, byte-identical:
    full gate → registry duplicate check → fresh-install gate → publish
@@ -51,7 +51,7 @@ So the default contribution flow is: **add a label → merge → done.**
 Verify from the registry, not the green tick:
 
 ```bash
-npm view mjolnir-qa version      # must print the new version
+npm view qa-doctor-cli version      # must print the new version
 npm audit signatures             # provenance attestation present
 ```
 
@@ -114,7 +114,7 @@ v0.5.0 shipped a public `v0.5.0 · Latest` GitHub Release for a version
 npm never received. The gh-release step ran first and succeeded; the
 publish step then failed on registry auth. The result was a Release page
 telling people to install something that did not exist, while
-`npx mjolnir-qa@latest` kept serving the broken 0.4.0.
+`npx qa-doctor-cli@latest` kept serving the broken 0.4.0.
 
 A GitHub Release is a promise that `npm i` works. It must not be made
 before that is true. Hence the ordering above and the verification step
@@ -124,7 +124,7 @@ version nobody can install.
 ## rc channels (Beta-to-Stable 1.0 plan, M4)
 
 Prerelease versions (`vX.Y.Z-rc.N` tags) publish under the **`next`
-dist-tag, never `latest`** — nobody running `npx mjolnir-qa@latest`
+dist-tag, never `latest`** — nobody running `npx qa-doctor-cli@latest`
 should receive a release candidate by accident. The final (non-rc) tag
 publishes under `latest` as usual; that is the promotion step.
 
@@ -135,7 +135,7 @@ enough to dogfood first:
    e.g. `1.0.0-rc.1`), update the CHANGELOG, tag `v1.0.0-rc.1`,
    `git push --follow-tags`.
 2. The workflow runs the full gate and publishes under `next`:
-   `npm i mjolnir-qa@next` / `npx mjolnir-qa@next` for the feedback
+   `npm i qa-doctor-cli@next` / `npx qa-doctor-cli@next` for the feedback
    window.
 3. Fix whatever the window surfaces; cut `v1.0.0-rc.2` the same way if
    the changes are non-trivial.
@@ -145,7 +145,7 @@ enough to dogfood first:
 
 Rollback policy: **deprecate, never unpublish** (see `docs/VERSIONING.md`
 — a published version must stay resolvable for pinners). If an rc is
-abandoned, `npm deprecate mjolnir-qa@1.0.0-rc.1 "superseded by …"`.
+abandoned, `npm deprecate qa-doctor-cli@1.0.0-rc.1 "superseded by …"`.
 
 ## Failure-mode runbook
 
@@ -154,7 +154,7 @@ Symptoms seen from outside, causes, and the fix for each:
 | Symptom                                                                           | Cause                                                                                                                                                                                                         | Fix                                                                                                                                                                                                                                                                                          |
 | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `OIDC token exchange error - package not found` / `ENEEDAUTH` on publish          | npmjs.com trusted-publisher config does not match this run's OIDC claims (case-sensitive org, workflow filename, non-empty Environment)                                                                       | Correct the Trusted Publisher per "One-time setup" below; re-run via `gh workflow run release.yml -f tag=vX.Y.Z`                                                                                                                                                                             |
-| Publish succeeded but the poll step fails for the full 60s                        | Registry read lag beyond the poll window, or the version landed under an unexpected dist-tag                                                                                                                  | Check `npm view mjolnir-qa@<version>` and `npm view mjolnir-qa dist-tags`; if it is live, re-run the workflow — the duplicate publish is skipped and the poll re-verifies. If it never appears, treat as a failed publish and re-tag                                                         |
+| Publish succeeded but the poll step fails for the full 60s                        | Registry read lag beyond the poll window, or the version landed under an unexpected dist-tag                                                                                                                  | Check `npm view qa-doctor-cli@<version>` and `npm view qa-doctor-cli dist-tags`; if it is live, re-run the workflow — the duplicate publish is skipped and the poll re-verifies. If it never appears, treat as a failed publish and re-tag                                                   |
 | GitHub Release exists but `npm i` 404s                                            | Should be impossible since the 2026-08-30 ordering fix (publish → poll → Release). If seen: the Release lies                                                                                                  | Follow the rollback policy below and open a tracking issue — this is a P0 against the release pipeline itself                                                                                                                                                                                |
 | `E403` "cannot publish over the previously published version" on a re-run         | The version is already live — expected on workflow_dispatch re-runs                                                                                                                                           | Nothing to fix; the job skips publish and proceeds to verification                                                                                                                                                                                                                           |
 | Fresh-install gate fails (`tests/integrations/registry-install.spec.ts`)          | The packed tarball is broken (missing files, bad bin) — the gate ran before anything was published                                                                                                            | Do NOT publish. Fix the packaging issue, cut a new tag                                                                                                                                                                                                                                       |
@@ -165,11 +165,11 @@ Symptoms seen from outside, causes, and the fix for each:
 npm unpublishing breaks every `package-lock.json` pinning the version
 and every mirror that resolved it. The rollback path for a bad release:
 
-1. `npm deprecate mjolnir-qa@<version> "<reason>; use <fixed version>"`
+1. `npm deprecate qa-doctor-cli@<version> "<reason>; use <fixed version>"`
 2. Cut and publish the fixed version immediately (tag → workflow).
 3. If `latest` must move back (bad stable release), publish the
    corrected version — a re-point of the `latest` dist-tag without a new
-   version (`npm dist-tag add mjolnir-qa@<older> latest`) is the
+   version (`npm dist-tag add qa-doctor-cli@<older> latest`) is the
    emergency brake, used only when no fixed version can ship quickly,
    and always with a CHANGELOG entry explaining it.
 
@@ -190,8 +190,8 @@ still verifies and completes.
 
 ## Current state
 
-**Automated publishing is live.** `mjolnir-qa` on npmjs.com, with
-`bin: { "mjolnir": ... }`, so the CLI command a user types is `mjolnir`.
+**Automated publishing is live.** `qa-doctor-cli` on npmjs.com, with
+`bin: { "qa-doctor": ... }`, so the CLI command a user types is `qa-doctor`.
 `latest` is **0.5.0**, published by CI on 2026-08-30 via OIDC trusted
 publishing with a SLSA provenance attestation (`npm audit signatures`).
 
@@ -213,7 +213,7 @@ publishing with a SLSA provenance attestation (`npm audit signatures`).
 The publish step failed on every tag with:
 
 ```
-npm http fetch POST 404 .../oidc/token/exchange/package/mjolnir-qa
+npm http fetch POST 404 .../oidc/token/exchange/package/qa-doctor-cli
 npm verbose oidc  OIDC token exchange error - package not found
 npm error code ENEEDAUTH
 ```
@@ -221,7 +221,7 @@ npm error code ENEEDAUTH
 That message does **not** mean the package is missing. It means npm found
 no trusted-publisher entry matching the workflow's OIDC claims. Root
 cause: the npmjs.com Trusted Publisher had the owner as `Sergey-bar`
-while GitHub's `repository` claim is `Sergey-Bar/Mjolnir` — npm matches
+while GitHub's `repository` claim is `Sergey-Bar/qa-doctor` — npm matches
 it **case-sensitively**. Corrected on npmjs.com, then re-run against the
 existing `v0.5.0` tag with `gh workflow run release.yml -f tag=v0.5.0`.
 
@@ -231,14 +231,14 @@ Neither can be automated from inside this repository.
 
 **1. Configure the npmjs.com Trusted Publisher (account-level, on npmjs.com).**
 ✅ **DONE — 2026-08-30.**
-On `mjolnir-qa`'s package page → **Settings** → **Publishing access** →
+On `qa-doctor-cli`'s package page → **Settings** → **Publishing access** →
 add a **Trusted Publisher**:
 
 | Field         | Value                     |
 | ------------- | ------------------------- |
 | Publisher     | GitHub Actions            |
 | Organization  | `Sergey-Bar` (exact case) |
-| Repository    | `Mjolnir`                 |
+| Repository    | `QA Doctor`               |
 | Workflow file | `release.yml`             |
 | Environment   | _(leave blank)_           |
 
@@ -277,7 +277,7 @@ Confirm the outcome from outside CI — the job's own green tick is not the
 proof, the registry is:
 
 ```bash
-npm view mjolnir-qa version      # must print the version just tagged
+npm view qa-doctor-cli version      # must print the version just tagged
 npm audit signatures             # provenance attestation present
 ```
 
@@ -324,7 +324,7 @@ both tarballs.
 
 Recorded run (2026-09-11, tree @ `a000aa2`, Windows 11 · Node 26 ·
 npm 11): **dist byte-identical (4 files) · tarballs byte-identical**
-(`mjolnir-qa-1.0.8.tgz`, sha256 prefix `d10243d8018988f8`).
+(`qa-doctor-cli-1.0.8.tgz`, sha256 prefix `d10243d8018988f8`).
 
 The honest claim this supports: **same-input clean-build determinism
 under the pinned project toolchain**. It is deliberately NOT a

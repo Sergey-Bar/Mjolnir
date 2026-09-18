@@ -298,7 +298,7 @@ describe("correlateSelectorHealth — claim arms", () => {
 
 describe("CI adapter framework detection (CI is not a framework)", () => {
   it("both CI adapters detect nothing, honestly", () => {
-    const root = mkdtempSync(join(tmpdir(), "mjolnir-ci-fw-"));
+    const root = mkdtempSync(join(tmpdir(), "qa-doctor-ci-fw-"));
     createdDirs.push(root);
     expect(azurePipelinesAdapter.detectFrameworks(root)).toEqual({
       frameworks: [],

@@ -187,7 +187,7 @@ describe("no doc claims a gap that source contradicts", () => {
     // catching exactly the class of bug found while writing this doc: an
     // invented flag (--output) that doesn't exist in parseArgs.
     const flags = new Set(
-      [...sarifDoc.matchAll(/mjolnir[^\n`]*?(--[a-z-]+)/g)].map((m) => m[1]),
+      [...sarifDoc.matchAll(/qa-doctor[^\n`]*?(--[a-z-]+)/g)].map((m) => m[1]),
     );
     const knownFlags = new Set([
       "--json",
@@ -204,7 +204,7 @@ describe("no doc claims a gap that source contradicts", () => {
     for (const flag of flags) {
       expect(
         knownFlags.has(flag as string),
-        `docs/SARIF-INTEGRATION.md references "${flag}" as a mjolnir ` +
+        `docs/SARIF-INTEGRATION.md references "${flag}" as a qa-doctor ` +
           `flag, but it is not in this test's known-flags list (kept in ` +
           `sync with parseArgs in src/cli.ts) — either it's a real flag ` +
           `this list needs to learn about, or it's an invented flag the ` +
@@ -358,11 +358,13 @@ describe("README Node version matches package.json engines", () => {
 
 describe("README does not reference the unrelated npm package 'qa-doctor' (unscoped)", () => {
   it("no npmjs.com/package/qa-doctor link (that's someone else's software)", () => {
-    expect(README).not.toMatch(/npmjs\.com\/package\/qa-doctor(?!\/)/);
+    expect(README).not.toMatch(/npmjs\.com\/package\/qa-doctor(?=$|[/?#)])/);
   });
 
   it("no shields.io badge querying the unscoped 'qa-doctor' npm package", () => {
-    expect(README).not.toMatch(/img\.shields\.io\/npm\/[vd]\/qa-doctor\b/);
+    expect(README).not.toMatch(
+      /img\.shields\.io\/npm\/[vd]\/qa-doctor(?=\.|$|[/?#)])/,
+    );
   });
 });
 
@@ -394,7 +396,7 @@ describe("every documented `npm run` command actually exists", () => {
   // Corpus review sheets embed real-world source verbatim (bug-audit
   // 2026-08-31): a scanned repo's own build+preview script line lands in
   // the sheet as quoted evidence — data, never an instruction to a
-  // mjolnir reader. (This comment deliberately does not spell the
+  // qa-doctor reader. (This comment deliberately does not spell the
   // preview command out as a literal `npm run …`, or this test would
   // flag its own source — same trap as the sibling comment above.)
   const EXCLUDED = [
@@ -404,7 +406,7 @@ describe("every documented `npm run` command actually exists", () => {
     // §08 classes B/C committed corpora are realistic-world TEST DATA:
     // a fixture's webServer command legitimately references an invented
     // script name exactly because a real repo's config would. Data,
-    // never an instruction to a mjolnir reader. (The script name is
+    // never an instruction to a qa-doctor reader. (The script name is
     // deliberately not spelled out here, or this test would flag its
     // own source — same trap as the sibling comment above.)
     "tests/corpus/positive-fixtures/",
@@ -815,7 +817,9 @@ describe("community files exist and cross-link (Beta-to-Stable M6)", () => {
       "no invented dates, ever",
     );
     expect(roadmap).toContain("never contain");
-    expect(README).toContain("sergey-bar.github.io/Mjolnir/reference/roadmap");
+    expect(README).toContain(
+      "sergey-bar.github.io/qa-doctor/reference/roadmap",
+    );
   });
 
   it("the site sidebar lists the roadmap page", () => {

@@ -1,5 +1,5 @@
 /**
- * `mjolnir summary` — CI annotations + step summary (plan M4).
+ * `qa-doctor summary` — CI annotations + step summary (plan M4).
  *
  * Contract pins: ONE annotation emitter (github.ts), annotations only
  * under GITHUB_ACTIONS, step summary to $GITHUB_STEP_SUMMARY (or stdout
@@ -37,7 +37,7 @@ import type { Output } from "../../src/cli.js";
 
 let dir: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-summary-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-summary-"));
 });
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
@@ -241,14 +241,14 @@ describe("runSummaryCommand exit codes", () => {
     const code = runSummaryCommand([join(dir, "nope.json")], cap.io);
     expect(code).toBe(10);
     expect(cap.errText()).toContain("not found");
-    expect(cap.errText()).toContain("mjolnir --json");
+    expect(cap.errText()).toContain("qa-doctor --json");
   });
 
-  it("defaults to mjolnir.json when no positional given", () => {
+  it("defaults to qa-doctor.json when no positional given", () => {
     const cap = capture();
     const code = runSummaryCommand([], cap.io);
     expect(code).toBe(10);
-    expect(cap.errText()).toContain("mjolnir.json");
+    expect(cap.errText()).toContain("qa-doctor.json");
   });
 
   it("exit 2 on invalid JSON — a data problem, not a crash", () => {

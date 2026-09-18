@@ -30,5 +30,5 @@ reason the final verdict is not (and must not be claimed as) 🟢.
 ## Environment constraints of this audit
 
 - Windows host, Node v26.3.1 (above engines floor — packaging replay confirms engines claim separately), disposable worktree + temp scratch only.
-- `QA/FINAL-RELEASE/**` is the only in-repo write surface; adversarial fixtures lived in `%TEMP%`; count-lock/goldens/`.mjolnir/` never touched by probes (regen drift was produced in the disposable worktree and reverted there).
+- `QA/FINAL-RELEASE/**` is the only in-repo write surface; adversarial fixtures lived in `%TEMP%`; count-lock/goldens/`.qa-doctor/` never touched by probes (regen drift was produced in the disposable worktree and reverted there).
 - No network scanning/telemetry probes were run against third parties; plugin pwned-markers wrote only to the audit scratch dir.

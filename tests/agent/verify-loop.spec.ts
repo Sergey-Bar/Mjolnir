@@ -3,7 +3,7 @@
  * 1788853205786 — flag agent, decision 6).
  *
  * Locks:
- *  - the digest derives from the SAME §15 comparison as `mjolnir diff`
+ *  - the digest derives from the SAME §15 comparison as `qa-doctor diff`
  *    (no second truth): resolved carry lifecycle resolutions, only
  *    VERIFIED-RESOLVED is a fix claim;
  *  - unchanged debt groups by ruleId + location (the agent's working
@@ -137,7 +137,7 @@ describe("buildVerifyDigest (P7)", () => {
     expect(d.hasBaseline).toBe(false);
     const out = renderVerifyDigest(d);
     expect(out).toContain("No committed baseline");
-    expect(out).toContain("mjolnir baseline");
+    expect(out).toContain("qa-doctor baseline");
   });
 
   it("a scoreless scan (empty target) degrades the delta — never fabricates", () => {
@@ -154,7 +154,7 @@ describe("buildVerifyDigest (P7)", () => {
   });
 });
 
-describe("`mjolnir verify` verb (frozen exit contract)", () => {
+describe("`qa-doctor verify` verb (frozen exit contract)", () => {
   let dir: string;
   let origCwd: string;
   const run = (args: string[]): { code: number; out: string } => {
@@ -178,7 +178,7 @@ describe("`mjolnir verify` verb (frozen exit contract)", () => {
   };
 
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), "mjolnir-p7-verify-"));
+    dir = mkdtempSync(join(tmpdir(), "qa-doctor-p7-verify-"));
     origCwd = process.cwd();
     process.chdir(dir);
   });
@@ -203,13 +203,13 @@ describe("`mjolnir verify` verb (frozen exit contract)", () => {
     { timeout: 120_000 },
     () => {
       // Clean spec (no findings), baseline empty.
-      mkdirSync(join(dir, ".mjolnir"), { recursive: true });
+      mkdirSync(join(dir, ".qa-doctor"), { recursive: true });
       writeFileSync(
         join(dir, "ok.spec.ts"),
         "test('y', () => { expect(1).toBe(1); });\n",
       );
       writeFileSync(
-        join(dir, ".mjolnir", "baseline.json"),
+        join(dir, ".qa-doctor", "baseline.json"),
         JSON.stringify({
           schemaVersion: 1,
           capturedAt: "2026-09-09T00:00:00.000Z",
@@ -229,14 +229,14 @@ describe("`mjolnir verify` verb (frozen exit contract)", () => {
     "a new ERROR finding vs the baseline → exit 1",
     { timeout: 120_000 },
     () => {
-      mkdirSync(join(dir, ".mjolnir"), { recursive: true });
+      mkdirSync(join(dir, ".qa-doctor"), { recursive: true });
       // QA-PW-101 is core error-tier — fires without --strict.
       writeFileSync(
         join(dir, "bad.spec.ts"),
         "test('z', () => { page.waitForTimeout(500); });\n",
       );
       writeFileSync(
-        join(dir, ".mjolnir", "baseline.json"),
+        join(dir, ".qa-doctor", "baseline.json"),
         JSON.stringify({
           schemaVersion: 1,
           capturedAt: "2026-09-09T00:00:00.000Z",
@@ -262,13 +262,13 @@ describe("`mjolnir verify` verb (frozen exit contract)", () => {
       // The baseline carries TWO entries: one that still fires exactly
       // (UNCHANGED — same ruleId+file+message fingerprint) and one that
       // no longer fires (RESOLVED via the §15 lifecycle).
-      mkdirSync(join(dir, ".mjolnir"), { recursive: true });
+      mkdirSync(join(dir, ".qa-doctor"), { recursive: true });
       writeFileSync(
         join(dir, "hard.spec.ts"),
         "test('y', () => { page.waitForTimeout(100); });\n",
       );
       writeFileSync(
-        join(dir, ".mjolnir", "baseline.json"),
+        join(dir, ".qa-doctor", "baseline.json"),
         JSON.stringify({
           schemaVersion: 1,
           capturedAt: "2026-09-09T00:00:00.000Z",

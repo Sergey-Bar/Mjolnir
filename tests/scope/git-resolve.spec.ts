@@ -27,7 +27,7 @@ const createdDirs: string[] = [];
 const envSnapshot: Record<string, string | undefined> = {};
 
 function tmpDir(prefix: string): string {
-  const d = mkdtempSync(join(tmpdir(), `mjolnir-gitresolve-${prefix}-`));
+  const d = mkdtempSync(join(tmpdir(), `qa-doctor-gitresolve-${prefix}-`));
   createdDirs.push(d);
   return d;
 }

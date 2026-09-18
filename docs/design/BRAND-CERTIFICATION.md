@@ -12,7 +12,7 @@ measured it says **NOT MEASURED**, never "pass".
 ## 1. Executive verdict
 
 ```
-MJÖLNIR BRAND SYSTEM — NOT YET 10/10
+QA DOCTOR BRAND SYSTEM — NOT YET 10/10
 ```
 
 The system is built, enforced and green: one token source, one gate with
@@ -207,9 +207,9 @@ during the work.
 | `site/.vitepress/theme/styles/vars.css` | same spec                                                                      |
 | `docs/design/DESIGN-TOKENS.md`          | same spec                                                                      |
 | the four `assets/readme/*.svg`          | four asset-reproducibility specs                                               |
-| `assets/video/mjolnir-demo.mp4`         | `video-media.spec.ts` — format, frames, size, and equality with a fresh render |
+| `assets/video/qa-doctor-demo.mp4`       | `video-media.spec.ts` — format, frames, size, and equality with a fresh render |
 | the vendored webfonts                   | `fonts.lock.json`, sha256, verified offline in CI                              |
-| `.claude/commands/mjolnir.md`           | `check-managed-surfaces.mjs`                                                   |
+| `.claude/commands/qa-doctor.md`         | `check-managed-surfaces.mjs`                                                   |
 
 Determinism is asserted, not assumed: the token generator is called
 twice in one test and required to produce identical bytes.
@@ -276,7 +276,7 @@ Three things the merge settled:
   the merge landed. That is the token system paying for itself.
 
 And a second site-build breakage found on main, of the same class as
-D15: `docs/RULE-LIFECYCLE.md` wrote `mjolnir mutation <report>` as prose,
+D15: `docs/RULE-LIFECYCLE.md` wrote `qa-doctor mutation <report>` as prose,
 Vue's template compiler read `<report>` as an element, and the build
 failed. Both times the cause was the same — **nothing runs the site
 build except the Pages workflow**, and a deploy that fails after merge is
@@ -287,7 +287,7 @@ locally — and both are now fixed for good: see §8c.
 
 This branch surfaced four pre-existing breakages just by running the
 gates: the site build broken twice (`gen-report.mjs` requiring a heading
-the hero asset had dropped; `mjolnir mutation <report>` in a doc read by
+the hero asset had dropped; `qa-doctor mutation <report>` in a doc read by
 Vue's compiler as an element), a `prettier --check` failure on a
 CHANGELOG blank line, and `<<<<<<<` conflict markers committed in
 `package-lock.json` on main since v1.0.0 — a file npm parses as JSON, so
@@ -416,7 +416,7 @@ honest edges of the work as it stands.
    was to preserve it.
 8. **`security/snyk`** — a dashboard triage item, not a code defect;
    see §8d.
-9. **The primary worktree** (`C:\Work\Mjolnir-QA\Mjolnir`) was left on
+9. **The primary worktree** (`C:\Work\QA Doctor-QA\QA Doctor`) was left on
    this branch's Phase-0 fork with another session's uncommitted files.
    Those files were verified to be entirely superseded by `origin/main`
    (the census work landed via the P8 / WI-14 PRs); they are preserved
@@ -425,7 +425,7 @@ honest edges of the work as it stands.
 ## 12. Final verdict
 
 ```
-MJÖLNIR BRAND SYSTEM — NOT YET 10/10
+QA DOCTOR BRAND SYSTEM — NOT YET 10/10
 ```
 
 Overall coherence **9.6/10**. The three checks this document first
@@ -446,7 +446,7 @@ is the only ending this particular product could honestly have.
 ## 13. The wordmark rework (2026-09-12)
 
 Requested directly: replace the illustrated hammer mark with a plain
-`MJÖLNIR` wordmark, Cinzel 600, display-only, with a rune as the only
+`QA DOCTOR` wordmark, Cinzel 600, display-only, with a rune as the only
 fallback for contexts too small to read a word.
 
 **What changed.** `scripts/generate-brand-marks.ts` is new: it renders

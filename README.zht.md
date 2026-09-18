@@ -9,19 +9,19 @@ QA Doctor 找出不可能失敗的測試和不可能變紅的流水線，<br />
 
 <br />
 
-[![npm](https://img.shields.io/npm/v/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
-[![downloads](https://img.shields.io/npm/dm/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
-[![ci](https://img.shields.io/github/actions/workflow/status/Sergey-Bar/Mjolnir/ci.yml?branch=main&style=flat-square&label=ci&labelColor=0A1119)](https://github.com/Sergey-Bar/Mjolnir/actions/workflows/ci.yml)
-[![coverage](https://img.shields.io/codecov/c/github/Sergey-Bar/Mjolnir?style=flat-square&color=1F6F7C&labelColor=0A1119&label=coverage)](https://codecov.io/gh/Sergey-Bar/Mjolnir)
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Sergey-Bar/Mjolnir/badge)](https://scorecard.dev/viewer/?uri=github.com/Sergey-Bar/Mjolnir)
+[![npm](https://img.shields.io/npm/v/qa-doctor-cli.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/qa-doctor-cli)
+[![downloads](https://img.shields.io/npm/dm/qa-doctor-cli.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/qa-doctor-cli)
+[![ci](https://img.shields.io/github/actions/workflow/status/Sergey-Bar/qa-doctor/ci.yml?branch=main&style=flat-square&label=ci&labelColor=0A1119)](https://github.com/Sergey-Bar/qa-doctor/actions/workflows/ci.yml)
+[![coverage](https://img.shields.io/codecov/c/github/Sergey-Bar/qa-doctor?style=flat-square&color=1F6F7C&labelColor=0A1119&label=coverage)](https://codecov.io/gh/Sergey-Bar/qa-doctor)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Sergey-Bar/qa-doctor/badge)](https://scorecard.dev/viewer/?uri=github.com/Sergey-Bar/qa-doctor)
 [![license](https://img.shields.io/badge/license-MIT-1F6F7C.svg?style=flat-square&labelColor=0A1119)](LICENSE)
 [![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-1F6F7C.svg?style=flat-square&labelColor=0A1119)](https://nodejs.org)
 
 ```bash
-npx mjolnir-qa@latest
+npx qa-doctor-cli@latest
 ```
 
-[實際效果](#實際效果) · [快速開始](#快速開始) · [能發現什麼](#mjölnir-能發現什麼) · [評分](#可信度評分) · [證據](#證據模型) · [執行鑑識](#執行時鑑識) · [CI](#ci-完整性) · [代理](#ai-代理) · [安全](#信任與安全) · [局限](#mjölnir-無法告訴你的事) · [文件](#文件)
+[實際效果](#實際效果) · [快速開始](#快速開始) · [能發現什麼](#qa-doctor-能發現什麼) · [評分](#可信度評分) · [證據](#證據模型) · [執行鑑識](#執行時鑑識) · [CI](#ci-完整性) · [代理](#ai-代理) · [安全](#信任與安全) · [局限](#qa-doctor-無法告訴你的事) · [文件](#文件)
 
 <details>
 <summary>閱讀其他語言版本 — 22 種譯文</summary>
@@ -58,7 +58,7 @@ npx mjolnir-qa@latest
 
 <sub>示範掃描為此 workflow 回報的每一項發現，都標在回報的那一行。由 `npm run docs:readme-brand` 根據 [`demo-report.json`](assets/readme/demo-report.json) 產生，並在 CI 中鎖定以防漂移。</sub>
 
-**嚴格模式。** 最激進的偵測——`.only`、`continue-on-error`、空測試、濫用重試——位於隔離層。它們僅在 `--strict` 下執行，且限定為 `info` 嚴重性：只標記，從不攔截。預設掃描（不帶 `--strict` 的 `npx mjolnir-qa@latest`）僅涵蓋核心和擴充規則。需要諮詢層時，加上 `--strict`。
+**嚴格模式。** 最激進的偵測——`.only`、`continue-on-error`、空測試、濫用重試——位於隔離層。它們僅在 `--strict` 下執行，且限定為 `info` 嚴重性：只標記，從不攔截。預設掃描（不帶 `--strict` 的 `npx qa-doctor-cli@latest`）僅涵蓋核心和擴充規則。需要諮詢層時，加上 `--strict`。
 
 QA Doctor 讀取測試套件、CI workflow，以及（如果有的話）一次真實執行的報告。它不會執行你的測試，不會安裝你的相依套件，也不會執行它掃描的程式碼。當它沒有證據時，它會直說，而不是捏造信心：
 
@@ -92,12 +92,12 @@ QA Doctor 讀取測試套件、CI workflow，以及（如果有的話）一次�
 <br />
 
 <p align="center">
-  <a href="assets/video/mjolnir-demo.mp4">
-    <img src="assets/video/mjolnir-demo-poster.png" alt="示範錄影中的一格：npx mjolnir-qa@latest 在終端機視窗中掃描示範儲存庫" width="900" />
+  <a href="assets/video/qa-doctor-demo.mp4">
+    <img src="assets/video/qa-doctor-demo-poster.png" alt="示範錄影中的一格：npx qa-doctor-cli@latest 在終端機視窗中掃描示範儲存庫" width="900" />
   </a>
 </p>
 
-<sub>由 `npm run docs:video` 根據一次真實掃描逐格算繪；從不錄製螢幕。點選畫面即可開啟 [`mjolnir-demo.mp4`](assets/video/mjolnir-demo.mp4)。</sub>
+<sub>由 `npm run docs:video` 根據一次真實掃描逐格算繪；從不錄製螢幕。點選畫面即可開啟 [`qa-doctor-demo.mp4`](assets/video/qa-doctor-demo.mp4)。</sub>
 
 </details>
 
@@ -109,7 +109,7 @@ QA Doctor 讀取測試套件、CI workflow，以及（如果有的話）一次�
   <img src="assets/readme/finding-anatomy.svg" alt="示範掃描的第一項發現，與終端機印出的完全一致，並標出它的四個部分：位置、確定程度、規則的出錯頻率，以及修正方式。" width="100%" />
 </p>
 
-`mjolnir explain QA-CI-001` 會印出一條規則完整的信任檔案，包括它的實測誤報率，以及該誤報率為它贏得的等級：
+`qa-doctor explain QA-CI-001` 會印出一條規則完整的信任檔案，包括它的實測誤報率，以及該誤報率為它贏得的等級：
 
 ```text
   ▍ QA-CI-001 — continue-on-error masks a failing verification gate
@@ -137,22 +137,22 @@ HOW TO FIX
   Example from this rule's own must-fire fixture: QA-CI-001/must-fire/masked.yml
 
 WHAT WOULD CHANGE THE VERDICT
-  - a run report next to the scan target (mjolnir.report.json or test-results/)
+  - a run report next to the scan target (qa-doctor.report.json or test-results/)
   corroborating this file lifts its findings to L3–L5
-  - a documented suppression (mjolnir.config.json) lowers the finding count
+  - a documented suppression (qa-doctor.config.json) lowers the finding count
   without claiming correctness
   - quarantine findings run only under --strict and are advisory (E0) — they can
   never gate CI
 
 NEXT ACTION
-  Fix the first occurrence, then re-run: `mjolnir --scope changed`. Every
+  Fix the first occurrence, then re-run: `qa-doctor --scope changed`. Every
   occurrence of this rule is listed in the scan output.
 
 HOW TO VERIFY THE FIX
-  Re-run `mjolnir` on the changed file(s) — this finding should no longer
-  appear. `mjolnir --scope changed` scopes the check to just what you touched.
+  Re-run `qa-doctor` on the changed file(s) — this finding should no longer
+  appear. `qa-doctor --scope changed` scopes the check to just what you touched.
 
-Docs: mjolnir rules --md   (full catalog, this rule included)
+Docs: qa-doctor rules --md   (full catalog, this rule included)
 ```
 
 這就是價值的基本單位：CI 回報了一次它並未贏得的通過。
@@ -162,7 +162,7 @@ Docs: mjolnir rules --md   (full catalog, this rule included)
 ## 快速開始
 
 ```bash
-npx mjolnir-qa@latest
+npx qa-doctor-cli@latest
 ```
 
 它掃描目前的目錄並印出 Trust Report：發現了什麼、你能在多大程度上信任它、原因，以及下一步該做什麼。當關卡及以上級別沒有任何發現時，它以 `0` 結束。
@@ -170,60 +170,60 @@ npx mjolnir-qa@latest
 在 CI 中，只掃描分支引入的內容，這樣舊有的測試套件就不會淹沒你的第一個 pull request：
 
 ```bash
-npx mjolnir-qa@latest --scope changed
+npx qa-doctor-cli@latest --scope changed
 ```
 
-`mjolnir ci install` 會把它寫成一個 GitHub Actions workflow，使用固定在 `v1` 主版本標籤上的 [action](https://github.com/Sergey-Bar/Mjolnir#readme)（或使用 `--no-action` 改用一般的 `npx`）。在你決定讓它攔截之前，它始終只是建議性的。
+`qa-doctor ci install` 會把它寫成一個 GitHub Actions workflow，使用固定在 `v1` 主版本標籤上的 [action](https://github.com/Sergey-Bar/qa-doctor#readme)（或使用 `--no-action` 改用一般的 `npx`）。在你決定讓它攔截之前，它始終只是建議性的。
 
-| 指令                                | 作用                                          |
-| ----------------------------------- | --------------------------------------------- |
-| `mjolnir`                           | Trust Report：結論、信心程度、下一步行動      |
-| `mjolnir --scope changed`           | 只檢查你的分支引入的內容（CI 用法）           |
-| `mjolnir ci install`                | 產生建議性的 PR workflow（基於 action）       |
-| `mjolnir explain QA-CI-001`         | 是什麼、為什麼、怎麼修，外加實測 FP 率        |
-| `mjolnir why src/a.spec.ts:42`      | 解釋這一行為什麼被標記。從不攔截。            |
-| `mjolnir forensics ./test-results/` | 來自真實執行的執行時證據                      |
-| `mjolnir trust-report`              | 自成一體的 Trust Artifact（md + json）        |
-| `mjolnir handoff`                   | 給程式代理的修正計畫                          |
-| `mjolnir --json` / `--format sarif` | 機器可讀的輸出，GitHub Code Scanning          |
-| `mjolnir --format codequality`      | GitLab Code Quality 報告（MR 元件使用的產物） |
-| `mjolnir --strict`                  | 同時執行 quarantine 等級的規則（FP 風險較高） |
+| 指令                                  | 作用                                          |
+| ------------------------------------- | --------------------------------------------- |
+| `qa-doctor`                           | Trust Report：結論、信心程度、下一步行動      |
+| `qa-doctor --scope changed`           | 只檢查你的分支引入的內容（CI 用法）           |
+| `qa-doctor ci install`                | 產生建議性的 PR workflow（基於 action）       |
+| `qa-doctor explain QA-CI-001`         | 是什麼、為什麼、怎麼修，外加實測 FP 率        |
+| `qa-doctor why src/a.spec.ts:42`      | 解釋這一行為什麼被標記。從不攔截。            |
+| `qa-doctor forensics ./test-results/` | 來自真實執行的執行時證據                      |
+| `qa-doctor trust-report`              | 自成一體的 Trust Artifact（md + json）        |
+| `qa-doctor handoff`                   | 給程式代理的修正計畫                          |
+| `qa-doctor --json` / `--format sarif` | 機器可讀的輸出，GitHub Code Scanning          |
+| `qa-doctor --format codequality`      | GitLab Code Quality 報告（MR 元件使用的產物） |
+| `qa-doctor --strict`                  | 同時執行 quarantine 等級的規則（FP 風險較高） |
 
 <details>
 <summary><strong>其他所有指令</strong> — 不穩定測試分類、報告、治理</summary>
 
 <br />
 
-| 指令                                | 作用                                                     |
-| ----------------------------------- | -------------------------------------------------------- |
-| `mjolnir --classic`                 | Trust Report 之前的評分橫幅樣式                          |
-| `mjolnir explain verdict`           | 解釋已儲存掃描的結論為何如此                             |
-| `mjolnir triage ./test-results/`    | 引導式分類。每一列都以下一步行動作結。                   |
-| `mjolnir pw-report ./test-results/` | Playwright 執行摘要：重試、不穩定測試、最慢的測試        |
-| `mjolnir doctor:playwright`         | 僅針對 Playwright 的深度掃描，外加 Selector Health Score |
-| `mjolnir fix --dry-run` / `fix`     | 安全的自動修正，每一項都會重新掃描以證明修正生效         |
-| `mjolnir baseline` / `diff`         | 為發現建立快照，之後只回報新增或惡化的                   |
-| `mjolnir impact --since <ref>`      | 某次提交引入並解決了什麼                                 |
-| `mjolnir summary`                   | 根據報告產生 CI 註記和 step 摘要                         |
-| `mjolnir pr-comment`                | 限定範圍的 PR 留言，Markdown 格式                        |
-| `mjolnir debt`                      | 附成本模型的測試債務登記表                               |
-| `mjolnir handover`                  | 為新 QA 工程師準備的測試套件入門地圖                     |
-| `mjolnir init`                      | 偵測框架，印出設定檢查清單                               |
-| `mjolnir suppressions`              | 列出被抑制的發現，用於治理                               |
-| `mjolnir rules --unmeasured`        | 基於假設而非量測運作的規則                               |
-| `mjolnir rules --md`                | 完整規則目錄（JSON 或 Markdown）                         |
-| `mjolnir doctor`                    | 對 QA Doctor 自身規則庫的自我稽核                        |
-| `mjolnir create-rule <ID>`          | 為新規則及其 fixtures 產生骨架                           |
-| `mjolnir stats`                     | 本機記錄的歷來修正計數                                   |
-| `mjolnir badge`                     | shields.io 端點 JSON 與程式碼片段                        |
-| `mjolnir --cache`                   | 借助本機結論快取進行增量重新掃描                         |
-| `mjolnir --format mermaid`          | 用於 PR 留言的測試架構圖                                 |
+| 指令                                  | 作用                                                     |
+| ------------------------------------- | -------------------------------------------------------- |
+| `qa-doctor --classic`                 | Trust Report 之前的評分橫幅樣式                          |
+| `qa-doctor explain verdict`           | 解釋已儲存掃描的結論為何如此                             |
+| `qa-doctor triage ./test-results/`    | 引導式分類。每一列都以下一步行動作結。                   |
+| `qa-doctor pw-report ./test-results/` | Playwright 執行摘要：重試、不穩定測試、最慢的測試        |
+| `qa-doctor doctor:playwright`         | 僅針對 Playwright 的深度掃描，外加 Selector Health Score |
+| `qa-doctor fix --dry-run` / `fix`     | 安全的自動修正，每一項都會重新掃描以證明修正生效         |
+| `qa-doctor baseline` / `diff`         | 為發現建立快照，之後只回報新增或惡化的                   |
+| `qa-doctor impact --since <ref>`      | 某次提交引入並解決了什麼                                 |
+| `qa-doctor summary`                   | 根據報告產生 CI 註記和 step 摘要                         |
+| `qa-doctor pr-comment`                | 限定範圍的 PR 留言，Markdown 格式                        |
+| `qa-doctor debt`                      | 附成本模型的測試債務登記表                               |
+| `qa-doctor handover`                  | 為新 QA 工程師準備的測試套件入門地圖                     |
+| `qa-doctor init`                      | 偵測框架，印出設定檢查清單                               |
+| `qa-doctor suppressions`              | 列出被抑制的發現，用於治理                               |
+| `qa-doctor rules --unmeasured`        | 基於假設而非量測運作的規則                               |
+| `qa-doctor rules --md`                | 完整規則目錄（JSON 或 Markdown）                         |
+| `qa-doctor doctor`                    | 對 QA Doctor 自身規則庫的自我稽核                        |
+| `qa-doctor create-rule <ID>`          | 為新規則及其 fixtures 產生骨架                           |
+| `qa-doctor stats`                     | 本機記錄的歷來修正計數                                   |
+| `qa-doctor badge`                     | shields.io 端點 JSON 與程式碼片段                        |
+| `qa-doctor --cache`                   | 借助本機結論快取進行增量重新掃描                         |
+| `qa-doctor --format mermaid`          | 用於 PR 留言的測試架構圖                                 |
 
-`mjolnir help <command>` 會印出其中任一指令的用法、範例和下一步。
+`qa-doctor help <command>` 會印出其中任一指令的用法、範例和下一步。
 
 </details>
 
-需要 Windows、macOS 或 Linux 上的 **Node.js ≥ 22.18**。想全域安裝？`npm i -g mjolnir-qa`。這個最低版本來自建置工具鏈（tsdown 以它為目標，發佈流水線也針對它做冒煙測試）；執行時相依套件對版本沒有更高要求。
+需要 Windows、macOS 或 Linux 上的 **Node.js ≥ 22.18**。想全域安裝？`npm i -g qa-doctor-cli`。這個最低版本來自建置工具鏈（tsdown 以它為目標，發佈流水線也針對它做冒煙測試）；執行時相依套件對版本沒有更高要求。
 
 <br />
 
@@ -247,7 +247,7 @@ npx mjolnir-qa@latest --scope changed
 | QA-PY-002    | 被略過的測試（`skip`、非嚴格的 `xfail`）           | warning  | core       |
 | QA-CS-103    | 沒有斷言的測試方法                                 | error    | core       |
 
-完整目錄由登錄表自動產生，從不手動維護：`mjolnir rules --md`、[`docs/rules/`](docs/rules/)，或 [檢查項目指南](https://sergey-bar.github.io/Mjolnir/guide/what-it-checks)。
+完整目錄由登錄表自動產生，從不手動維護：`qa-doctor rules --md`、[`docs/rules/`](docs/rules/)，或 [檢查項目指南](https://sergey-bar.github.io/qa-doctor/guide/what-it-checks)。
 
 <details>
 <summary><strong>本 README 中提到的所有規則</strong>，彙整在一張表裡</summary>
@@ -298,11 +298,11 @@ Python 另外提供 QA-PY-001…012（pytest 衛生）和 QA-PY-101…108（Pyth
 
 </details>
 
-每條規則都附帶 must-fire **和** must-not-fire 兩類 fixture，在自己的負向 fixture 上觸發的規則不能發佈。這就是誤報防火牆；`mjolnir doctor` 在本儲存庫自己的 CI 中強制執行它。
+每條規則都附帶 must-fire **和** must-not-fire 兩類 fixture，在自己的負向 fixture 上觸發的規則不能發佈。這就是誤報防火牆；`qa-doctor doctor` 在本儲存庫自己的 CI 中強制執行它。
 
 ### Selector Health Score
 
-`mjolnir doctor:playwright` 依每個 locator 找到元素的方式為其評分：像使用者那樣尋找（角色、標籤、文字）、透過明確的契約（`data-testid`），還是仰賴結構上的偶然（CSS 串接、XPath）。每個檔案得到 0 到 100 的分數：
+`qa-doctor doctor:playwright` 依每個 locator 找到元素的方式為其評分：像使用者那樣尋找（角色、標籤、文字）、透過明確的契約（`data-testid`），還是仰賴結構上的偶然（CSS 串接、XPath）。每個檔案得到 0 到 100 的分數：
 
 ```text
   ▍ SELECTOR HEALTH
@@ -336,7 +336,7 @@ e2e/checkout.spec.ts
 | `100`     | **FORGED**                  |
 | `null`    | **UNKNOWN**：找不到測試宣告 |
 
-**計算方式**。嚴重程度決定基礎扣分（`error −8`、`warning −3`、`info −1`），證據等級再對其打折：E2 全額扣分，E1 扣一半（無條件捨去），E0 不扣分。總扣分依套件規模正規化，也就是以每個測試宣告計算，而不是以檔案計算。終端機印出的就是評分所用的同一組折後數字；不存在隱藏的第二套模型。詳情：[docs/SCORING.md](docs/SCORING.md) 和 [評分指南](https://sergey-bar.github.io/Mjolnir/guide/scoring)。
+**計算方式**。嚴重程度決定基礎扣分（`error −8`、`warning −3`、`info −1`），證據等級再對其打折：E2 全額扣分，E1 扣一半（無條件捨去），E0 不扣分。總扣分依套件規模正規化，也就是以每個測試宣告計算，而不是以檔案計算。終端機印出的就是評分所用的同一組折後數字；不存在隱藏的第二套模型。詳情：[docs/SCORING.md](docs/SCORING.md) 和 [評分指南](https://sergey-bar.github.io/qa-doctor/guide/scoring)。
 
 **100 分不代表什麼**。它不代表軟體是正確的，不代表測試套件是充分的，也不代表產品沒有缺陷。它只代表一件事：**在本次掃描和這套證據模型下，QA Doctor 評估的規則都沒有產生扣分。**
 
@@ -375,7 +375,7 @@ e2e/checkout.spec.ts
 
 ### 其中有多少經過實測
 
-**79 條規則中有 74 條的誤報率是在真實開源程式碼上測得的**（每條至少 10 個人工分類的發現；見 [docs/FP-AUDIT.md](docs/FP-AUDIT.md)）。其餘 5 條基於作者的估計發佈，並在 `mjolnir explain` 中逐條註明。`mjolnir rules --unmeasured` 會列出它們，每次掃描的頁尾也會回報實際*觸發*的規則中有多少經過實測。
+**79 條規則中有 74 條的誤報率是在真實開源程式碼上測得的**（每條至少 10 個人工分類的發現；見 [docs/FP-AUDIT.md](docs/FP-AUDIT.md)）。其餘 5 條基於作者的估計發佈，並在 `qa-doctor explain` 中逐條註明。`qa-doctor rules --unmeasured` 會列出它們，每次掃描的頁尾也會回報實際*觸發*的規則中有多少經過實測。
 
 即使誤報率很差也照樣公開。QA-TEST-001（提交進儲存庫的 `.only`）在真實儲存庫上的稽核結果很差，因此被放在 quarantine。每條規則（包括 QA-PW-141）的最新數字都在稽核報告裡。
 
@@ -392,7 +392,7 @@ e2e/checkout.spec.ts
 
 FP 帶只能降級一個層級 — 如果規則被明確宣告在 `quarantine` 中，它們永遠不會將其提升出去。被明確置於 quarantine 的規則無論其測量的 FP 率如何都保持在 quarantine 中。
 
-晉升、降級以及各語言的成熟度：[規則生命週期](https://sergey-bar.github.io/Mjolnir/reference/rule-lifecycle)。
+晉升、降級以及各語言的成熟度：[規則生命週期](https://sergey-bar.github.io/qa-doctor/reference/rule-lifecycle)。
 
 ### 為什麼這不是 linter
 
@@ -421,7 +421,7 @@ Linter 告訴你程式碼是否遵循規則。QA Doctor 告訴你你的驗證是
 靜態分析是對從未執行過的程式碼進行推理。鑑識讀取的是實際發生的事情：來自任何執行器的 Playwright JSON、Jest JSON、Vitest JSON 和 JUnit XML。
 
 ```bash
-mjolnir forensics ./test-results/
+qa-doctor forensics ./test-results/
 ```
 
 ```text
@@ -435,7 +435,7 @@ FAILING    declines an expired card (e2e/checkout.spec.ts)
            ████░░░░░░░░░░░░░░░░ 1.1s · 1 attempt
 ```
 
-`TRUE-FLAKE` 並不是說測試被重試過。它的意思是該測試**至少有一次嘗試失敗，隨後以綠色結束**：這是一次僥倖通過，無論最終的勾號怎麼顯示都會被標記出來。`mjolnir triage` 會把這段歷史轉換成隔離建議，`mjolnir pw-report` 則彙整一次執行。正是這些執行報告，把發現提升到 L3 及以上的信任等級。
+`TRUE-FLAKE` 並不是說測試被重試過。它的意思是該測試**至少有一次嘗試失敗，隨後以綠色結束**：這是一次僥倖通過，無論最終的勾號怎麼顯示都會被標記出來。`qa-doctor triage` 會把這段歷史轉換成隔離建議，`qa-doctor pw-report` 則彙整一次執行。正是這些執行報告，把發現提升到 L3 及以上的信任等級。
 
 <br />
 
@@ -446,13 +446,13 @@ FAILING    declines an expired card (e2e/checkout.spec.ts)
 產生 PR workflow，預設為建議性的：
 
 ```bash
-mjolnir ci install
+qa-doctor ci install
 ```
 
 或者把 Marketplace 上的 action 加到你現有的 workflow 中：
 
 ```yaml
-- uses: Sergey-Bar/Mjolnir@v1
+- uses: Sergey-Bar/qa-doctor@v1
   with:
     scope: changed
     fail-on: error
@@ -463,12 +463,12 @@ mjolnir ci install
 要把發現送進 GitHub Code Scanning，上傳 SARIF（需要在 workflow 或 job 範圍內設定 `security-events: write`）：
 
 ```yaml
-- run: npx mjolnir-qa@latest --format sarif > mjolnir.sarif
+- run: npx qa-doctor-cli@latest --format sarif > qa-doctor.sarif
   continue-on-error: true
 - uses: github/codeql-action/upload-sarif@v3
   if: ${{ !cancelled() }}
   with:
-    sarif_file: mjolnir.sarif
+    sarif_file: qa-doctor.sarif
 ```
 
 在 GitLab 上，`--format codequality` 會寫出 MR 元件和 diff 註記所讀取的 Code Quality 報告（[docs/GITLAB-CI.md](docs/GITLAB-CI.md)）。編輯器和流水線設定：[docs/SARIF-INTEGRATION.md](docs/SARIF-INTEGRATION.md)。
@@ -476,7 +476,7 @@ mjolnir ci install
 ### 變更範圍歸因
 
 ```bash
-npx mjolnir-qa@latest --scope changed
+npx qa-doctor-cli@latest --scope changed
 ```
 
 發現會歸因到你的分支新增的行，以 **merge-base** 為基準計算。範圍與完整掃描發現的檔案集合相同（TS/JS spec 和轉接器設定、`test_*.py`、`*Test.java`、`*Tests.cs`、`.github/workflows/*.yml`），再加上未提交和未追蹤的變更，所以在你提交之前就能使用。基準依 `main → master → origin/main → origin/master → origin/HEAD` 的順序解析；可以用 `--base <ref>` 覆寫。
@@ -495,16 +495,16 @@ SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
 
 **AI 撰寫修正。QA Doctor 驗證它**。證明來自重新掃描，而絕不是代理自己回報的成功。
 
-| 指令              | 代理得到什麼                                                                                                                     |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `mjolnir mcp`     | 一個基於 stdio 的 [MCP](https://modelcontextprotocol.io) 伺服器。`scan`、`explain` 和 `diff` 都成為可呼叫的工具。                |
-| `mjolnir handoff` | 儲存下來的 `--json` 報告會變成一份確定性的 Markdown 計畫：偵測到了什麼、每項發現的證據界線、哪些東西**不能**改動，以及如何驗證。 |
-| `mjolnir install` | 寫入你的儲存庫中已有的代理設定位置（`.claude/`、`.cursor/`、`.kilo/`、`AGENTS.md`），這樣代理在聲稱完成之前會重新掃描。          |
+| 指令                | 代理得到什麼                                                                                                                     |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `qa-doctor mcp`     | 一個基於 stdio 的 [MCP](https://modelcontextprotocol.io) 伺服器。`scan`、`explain` 和 `diff` 都成為可呼叫的工具。                |
+| `qa-doctor handoff` | 儲存下來的 `--json` 報告會變成一份確定性的 Markdown 計畫：偵測到了什麼、每項發現的證據界線、哪些東西**不能**改動，以及如何驗證。 |
+| `qa-doctor install` | 寫入你的儲存庫中已有的代理設定位置（`.claude/`、`.cursor/`、`.kilo/`、`AGENTS.md`），這樣代理在聲稱完成之前會重新掃描。          |
 
 加入自帶 CLI 的用戶端：
 
 ```bash
-claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
+claude mcp add qa-doctor -- npx -y qa-doctor-cli@latest mcp
 ```
 
 或者加入任何接受 `mcpServers` 設定區塊的用戶端：
@@ -512,7 +512,10 @@ claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
 ```json
 {
   "mcpServers": {
-    "mjolnir": { "command": "npx", "args": ["-y", "mjolnir-qa@latest", "mcp"] }
+    "qa-doctor": {
+      "command": "npx",
+      "args": ["-y", "qa-doctor-cli@latest", "mcp"]
+    }
   }
 }
 ```
@@ -527,9 +530,9 @@ claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
 
 兩點說明：`npx` 本身會在任何程式碼執行之前下載套件；而這項保證涵蓋的是 `src/`，不包括第三方外掛。
 
-**外掛不在沙箱中執行**。JS 外掛（`mjolnir-rules/*.mjs`，或在 `"plugins"` 下列出的 npm 套件）以完整的 Node 權限執行，與 ESLint 或 Vitest 外掛的信任模型相同。載入它們需要**在每次掃描時**明確啟用：沒有 `--enable-plugins`（或 `MJOLNIR_ENABLE_PLUGINS=1`）時，它們的原始碼永遠不會被載入，stderr 上的提示會列出被略過的內容。JSON 規則清單不執行任何程式碼，核心規則 ID 前綴是保留的，因此外掛無法冒充核心規則。請透過 [SECURITY.md](SECURITY.md) 回報漏洞。
+**外掛不在沙箱中執行**。JS 外掛（`qa-doctor-rules/*.mjs`，或在 `"plugins"` 下列出的 npm 套件）以完整的 Node 權限執行，與 ESLint 或 Vitest 外掛的信任模型相同。載入它們需要**在每次掃描時**明確啟用：沒有 `--enable-plugins`（或 `QA_DOCTOR_ENABLE_PLUGINS=1`）時，它們的原始碼永遠不會被載入，stderr 上的提示會列出被略過的內容。JSON 規則清單不執行任何程式碼，核心規則 ID 前綴是保留的，因此外掛無法冒充核心規則。請透過 [SECURITY.md](SECURITY.md) 回報漏洞。
 
-**它會檢查自己**。一個驗證信任引擎，只有自身可被驗證才站得住腳。每次 CI 執行都會用同一次執行產出的建置來掃描本儲存庫。只要出現任何 error 等級的發現，關卡就會失敗；遇到**部分**掃描或**當掉的規則**時同樣失敗，因為一次被截斷、什麼都沒回報的自我掃描，正是這個專案要捕捉的虛假綠燈。`mjolnir doctor` 會在同一次執行中重新稽核規則庫（fixture 防火牆、等級的誠實性、core 等級上限），結果為 INCONCLUSIVE 的檢查與失敗的檢查同樣判定為失敗。兩份報告都會作為建置產物上傳。
+**它會檢查自己**。一個驗證信任引擎，只有自身可被驗證才站得住腳。每次 CI 執行都會用同一次執行產出的建置來掃描本儲存庫。只要出現任何 error 等級的發現，關卡就會失敗；遇到**部分**掃描或**當掉的規則**時同樣失敗，因為一次被截斷、什麼都沒回報的自我掃描，正是這個專案要捕捉的虛假綠燈。`qa-doctor doctor` 會在同一次執行中重新稽核規則庫（fixture 防火牆、等級的誠實性、core 等級上限），結果為 INCONCLUSIVE 的檢查與失敗的檢查同樣判定為失敗。兩份報告都會作為建置產物上傳。
 
 ### 結束碼與機器契約
 
@@ -564,7 +567,7 @@ claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
 
 ## 文件
 
-完整的文件網站位於 <https://sergey-bar.github.io/Mjolnir/>。
+完整的文件網站位於 <https://sergey-bar.github.io/qa-doctor/>。
 
 | 文件                                                   | 內容                                         |
 | ------------------------------------------------------ | -------------------------------------------- |
@@ -584,14 +587,14 @@ claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
 
 ### 狀態
 
-**版本 1**。JSON schema 和結束碼是凍結的契約。TypeScript 和 Python 擁有最廣的實測涵蓋。Java 和 C# 較新；請參照 [成熟度表](https://sergey-bar.github.io/Mjolnir/reference/rule-lifecycle) 來理解它們。接下來的計畫，不捏造日期：[公開路線圖](https://sergey-bar.github.io/Mjolnir/reference/roadmap)。
+**版本 1**。JSON schema 和結束碼是凍結的契約。TypeScript 和 Python 擁有最廣的實測涵蓋。Java 和 C# 較新；請參照 [成熟度表](https://sergey-bar.github.io/qa-doctor/reference/rule-lifecycle) 來理解它們。接下來的計畫，不捏造日期：[公開路線圖](https://sergey-bar.github.io/qa-doctor/reference/roadmap)。
 
 ### 參與貢獻
 
 新規則是最容易上手的第一份貢獻。一條指令就能為規則產生骨架，連同它的 must-fire **和** must-not-fire fixture。產生的規則在寫出真正的偵測邏輯之前，會刻意在自己的 fixture 上失敗，因為一個被發佈出去的空殼，就是一條沒人量測過的規則：
 
 ```bash
-mjolnir create-rule QA-PW-140 --title "Screenshot without diff bound"
+qa-doctor create-rule QA-PW-140 --title "Screenshot without diff bound"
 ```
 
 開發環境建置、常駐關卡指令，以及 anti-creep 和 fixture 防火牆兩條法則，都在 [CONTRIBUTING.md](CONTRIBUTING.md) 中。
@@ -603,10 +606,10 @@ mjolnir create-rule QA-PW-140 --title "Screenshot without diff bound"
 <img src="assets/readme/closing.svg" alt="在你的儲存庫上執行它。" width="100%" />
 
 ```bash
-npx mjolnir-qa@latest
+npx qa-doctor-cli@latest
 ```
 
-[閱讀指南](https://sergey-bar.github.io/Mjolnir/guide/getting-started) · [文件網站](https://sergey-bar.github.io/Mjolnir/) · [npm](https://www.npmjs.com/package/mjolnir-qa)
+[閱讀指南](https://sergey-bar.github.io/qa-doctor/guide/getting-started) · [文件網站](https://sergey-bar.github.io/qa-doctor/) · [npm](https://www.npmjs.com/package/qa-doctor-cli)
 
 <br />
 

@@ -19,7 +19,7 @@ import type { ForensicsReport } from "../../src/forensics/types.js";
 
 const createdDirs: string[] = [];
 function tmpRepo(): string {
-  const d = mkdtempSync(join(tmpdir(), "mjolnir-forensics-arms-"));
+  const d = mkdtempSync(join(tmpdir(), "qa-doctor-forensics-arms-"));
   createdDirs.push(d);
   return d;
 }

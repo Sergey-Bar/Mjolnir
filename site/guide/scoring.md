@@ -99,5 +99,5 @@ point but is **not yet fitted** against the OSS corpus — that needs the
 corpus audit to persist per-repo declaration counts first. When the fit
 lands, `K` changes and the CHANGELOG records it as a behavioral break.
 The full calibration history and the reasoning behind every constant is
-in [`docs/SCORING.md`](https://github.com/Sergey-Bar/Mjolnir/blob/main/docs/SCORING.md).
+in [`docs/SCORING.md`](https://github.com/Sergey-Bar/qa-doctor/blob/main/docs/SCORING.md).
 :::

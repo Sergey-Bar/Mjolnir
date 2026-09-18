@@ -18,7 +18,7 @@ jobs:
 
       - name: Advisory diff (may exit 1 on new debt by design)
         continue-on-error: true
-        run: npx --yes mjolnir-qa@latest diff . > diff.txt
+        run: npx --yes qa-doctor-cli@latest diff . > diff.txt
 
       - name: Upload results
         continue-on-error: true

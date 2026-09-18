@@ -117,7 +117,7 @@ describe("dependency-graph (ECO-005)", () => {
     });
 
     it("parses package.json manifest", () => {
-      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "mjolnir-test-"));
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "qa-doctor-test-"));
       try {
         const pkg = {
           name: "test-pkg",
@@ -142,7 +142,7 @@ describe("dependency-graph (ECO-005)", () => {
     });
 
     it("scans packages/* subdirectories", () => {
-      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "mjolnir-test-"));
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "qa-doctor-test-"));
       try {
         const pkgDir = path.join(tmpDir, "packages", "my-lib");
         fs.mkdirSync(pkgDir, { recursive: true });
@@ -160,7 +160,7 @@ describe("dependency-graph (ECO-005)", () => {
     });
 
     it("parses pyproject.toml manifest", () => {
-      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "mjolnir-test-"));
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "qa-doctor-test-"));
       try {
         const content = `[project]\nname = "test"\ndependencies = [\n  "requests>=2.0",\n  "click>=8.0",\n]\n`;
         fs.writeFileSync(path.join(tmpDir, "pyproject.toml"), content);
@@ -176,7 +176,7 @@ describe("dependency-graph (ECO-005)", () => {
     });
 
     it("parses pom.xml manifest", () => {
-      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "mjolnir-test-"));
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "qa-doctor-test-"));
       try {
         const content = `<project><dependencies><dependency><artifactId>spring-core</artifactId></dependency><dependency><artifactId>junit</artifactId></dependency></dependencies></project>`;
         fs.writeFileSync(path.join(tmpDir, "pom.xml"), content);
@@ -192,7 +192,7 @@ describe("dependency-graph (ECO-005)", () => {
     });
 
     it("returns empty graph for dir with no manifests", () => {
-      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "mjolnir-test-"));
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "qa-doctor-test-"));
       try {
         fs.writeFileSync(path.join(tmpDir, "readme.txt"), "hello");
         const graph = buildDependencyGraph(tmpDir);

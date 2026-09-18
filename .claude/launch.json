@@ -2,7 +2,7 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "mjolnir-site",
+      "name": "qa-doctor-site",
       "runtimeExecutable": "C:/Work/QA Doctor-QA/QA Doctor-site-wt/site/node_modules/.bin/vitepress.cmd",
       "runtimeArgs": [
         "preview",

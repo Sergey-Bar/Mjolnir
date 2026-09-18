@@ -34,7 +34,7 @@ import type { UniversalRule } from "../../../src/engine/adapter.js";
 
 let root: string;
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), "mjolnir-gha-arms-"));
+  root = mkdtempSync(join(tmpdir(), "qa-doctor-gha-arms-"));
 });
 afterEach(() => {
   rmSync(root, { recursive: true, force: true });
@@ -101,7 +101,7 @@ describe("discoverTestFiles guard rails", () => {
   });
 
   it("honors the ignore matcher", () => {
-    writeFileSync(join(root, ".mjolnirignore"), ".github/**\n");
+    writeFileSync(join(root, ".qa-doctorignore"), ".github/**\n");
     writeWorkflow("ci.yml");
     const ctx = makeCtx({
       ignoreMatcher: createIgnoreMatcher(root),

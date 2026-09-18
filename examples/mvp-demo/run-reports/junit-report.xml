@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- CASE: junit-evidence (ACTIVE through `mjolnir forensics`) — the same
-     suite as mjolnir.report.json rendered as JUnit XML: retry history is
+<!-- CASE: junit-evidence (ACTIVE through `qa-doctor forensics`) — the same
+     suite as qa-doctor.report.json rendered as JUnit XML: retry history is
      reported as one testcases element with a failure child (JUnit cannot
      express per-attempt detail, so corroboration honestly caps at file
      level). -->

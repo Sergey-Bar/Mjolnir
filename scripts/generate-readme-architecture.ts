@@ -72,8 +72,8 @@ const ROOT = join(fileURLToPath(new URL(".", import.meta.url)), "..");
 const OUT = join(ROOT, "assets", "readme", "architecture.svg");
 const SANS_TTF = join(ROOT, "assets", "readme", "fonts", "Geist-SemiBold.ttf");
 
-const SANS = "MjolnirSans";
-const MONO = "MjolnirMono";
+const SANS = "QaDoctorSans";
+const MONO = "QaDoctorMono";
 const ADV = 0.6; // Geist Mono advance ratio
 
 const W = 1600;
@@ -230,7 +230,7 @@ function chain(
 
 function fontFaceCss(): string {
   const mono = FONTS.find(
-    (f) => f.family === "MjolnirMono" && f.weight === 400,
+    (f) => f.family === "QaDoctorMono" && f.weight === 400,
   );
   if (!mono) throw new Error("Geist Mono Regular is no longer vendored");
   const face = (fam: string, p: string): string =>
@@ -302,7 +302,7 @@ export function buildArchitectureSvg(): string {
     ["run", "var(--muted)"],
     ["artifacts", "var(--muted)"],
     ["evidence", "var(--muted)"],
-    ["MJÖLNIR", "var(--accent)"],
+    ["QA DOCTOR", "var(--accent)"],
     ["trust", "var(--text)"],
   ]);
   g.push(withM.svg);
@@ -398,7 +398,7 @@ export function buildArchitectureSvg(): string {
   );
   g.push(`  </g>`);
 
-  /* ═══════════ mjolnir core ═══════════ */
+  /* ═══════════ qa-doctor core ═══════════ */
   const CX = ENG_X + ENG_W / 2;
   const PL = ENG_X + 28; // left gutter
   const PR = ENG_X + 330; // right column
@@ -417,7 +417,7 @@ export function buildArchitectureSvg(): string {
   const Y_TL_TICK = 626;
   const Y_TL_NOTE = 655;
 
-  g.push(`  <g id="mjolnir-core">`);
+  g.push(`  <g id="qa-doctor-core">`);
   g.push(
     rect(ENG_X, MAIN_TOP, ENG_W, MAIN_BOTTOM - MAIN_TOP, {
       r: 18,
@@ -427,7 +427,7 @@ export function buildArchitectureSvg(): string {
     }),
   );
   g.push(
-    text(CX, Y_NAME, "MJÖLNIR", { size: 38, anchor: "middle", spacing: 4 }),
+    text(CX, Y_NAME, "QA DOCTOR", { size: 38, anchor: "middle", spacing: 4 }),
   );
   g.push(
     text(CX, Y_SUB, "VERIFICATION TRUST ENGINE", {
@@ -777,7 +777,7 @@ export function buildArchitectureSvg(): string {
 
   /* ═══════════ boundaries + self-verification ═══════════ */
   g.push(`  <g id="boundaries">`);
-  g.push(eyebrow(IN_X, FOOT_Y, "MJÖLNIR", "var(--muted)"));
+  g.push(eyebrow(IN_X, FOOT_Y, "QA DOCTOR", "var(--muted)"));
   g.push(
     text(
       IN_X + 92,

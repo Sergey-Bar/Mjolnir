@@ -81,7 +81,7 @@ function runGateIn(syntheticRoot: string): { status: number; output: string } {
           ...process.env,
           // Synthetic trees have no node_modules — borrow the real repo's
           // TypeScript through the gate's declared seam.
-          MJOLNIR_TYPECHECK_NODE_MODULES: join(ROOT, "node_modules"),
+          QA_DOCTOR_TYPECHECK_NODE_MODULES: join(ROOT, "node_modules"),
         },
       },
     );
@@ -139,7 +139,7 @@ describe("fixture typecheck gate wiring (F1 closure)", () => {
 
 describe("the gate catches the QA-PW-125 rot class (missing executable import)", () => {
   it("a fixture with a known-missing import FAILS the gate with a TS2304 diagnostic", () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-fx-gate-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-fx-gate-"));
     tmpDirs.push(dir);
     // Minimal synthetic tree: the fixtures project + allowlist + one broken
     // fixture that mirrors the historical QA-PW-125 execSync rot.
@@ -188,7 +188,7 @@ describe("the gate catches the QA-PW-125 rot class (missing executable import)",
   });
 
   it("a stale allowlist entry (fixture fixed, row left) FAILS the gate", () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-fx-gate-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-fx-gate-"));
     tmpDirs.push(dir);
     mkdirSync(join(dir, "tests", "fixtures"), { recursive: true });
     writeFileSync(
@@ -235,7 +235,7 @@ describe("the gate catches the QA-PW-125 rot class (missing executable import)",
   });
 
   it("a clean tree with an empty allowlist PASSES the gate", () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-fx-gate-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-fx-gate-"));
     tmpDirs.push(dir);
     mkdirSync(join(dir, "tests", "fixtures"), { recursive: true });
     writeFileSync(

@@ -1,7 +1,7 @@
 /**
  * File-target forensics/triage (bug-audit M1, M2, M3).
  *
- *  - M1: the documented `mjolnir triage <report-file>` joined the FILE
+ *  - M1: the documented `qa-doctor triage <report-file>` joined the FILE
  *    path with "TRIAGE.md" → `<file>/TRIAGE.md` is not a directory →
  *    writeFileSync threw → "internal error" exit 20 after a successful
  *    parse. The md artifact now lands next to the file.
@@ -40,7 +40,7 @@ let dir: string;
 let origCwd: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-file-target-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-file-target-"));
   origCwd = process.cwd();
   process.chdir(dir);
 });

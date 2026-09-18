@@ -149,7 +149,7 @@ describe("network observation contracts", () => {
   });
 
   it("propagates the HAR entry cap even when most entries are unreadable", () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-har-limit-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-har-limit-"));
     try {
       const entries = [
         HAR.log.entries[0],
@@ -220,7 +220,7 @@ describe("network observation contracts", () => {
   it.each([false, true])(
     "preserves mixed-directory test counts regardless of HAR discovery order (%s)",
     (harFirst) => {
-      const dir = mkdtempSync(join(tmpdir(), "mjolnir-har-mixed-"));
+      const dir = mkdtempSync(join(tmpdir(), "qa-doctor-har-mixed-"));
       try {
         writeFileSync(
           join(dir, harFirst ? "a.har" : "z.har"),
@@ -249,7 +249,7 @@ describe("network observation contracts", () => {
   );
 
   it("reports network-only evidence as insufficient for test verification", () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-har-cli-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-har-cli-"));
     try {
       const path = join(dir, "network.har");
       writeFileSync(path, JSON.stringify(HAR));
@@ -287,7 +287,7 @@ describe("parseHar (text entry point)", () => {
 
 describe("runForensics HAR discovery (end-to-end)", () => {
   it("ingests a .har file and reports source=har", () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-har-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-har-"));
     try {
       writeFileSync(join(dir, "network.har"), JSON.stringify(HAR));
       const { report } = runForensics(dir, { writeFlakyMd: false });
@@ -304,7 +304,7 @@ describe("runForensics HAR discovery (end-to-end)", () => {
   });
 
   it("a corrupt .har degrades to zero records, never a crash", () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-har-bad-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-har-bad-"));
     try {
       writeFileSync(join(dir, "broken.har"), "{not json");
       const { report } = runForensics(dir, { writeFlakyMd: false });

@@ -1,5 +1,5 @@
 /**
- * `mjolnir rules` — machine-readable rule catalog with Trust Metadata.
+ * `qa-doctor rules` — machine-readable rule catalog with Trust Metadata.
  *
  * Renders every registered rule as a docs table (markdown) or JSON.
  * This is the "Trust Metadata as product infrastructure" piece: the
@@ -45,7 +45,7 @@ export interface RuleCatalogEntry {
   introduced?: string;
   /**
    * Rule provenance (plan §18): "core" for the built-in registry,
-   * "external" for workspace-local `mjolnir-rules/` rules. External
+   * "external" for workspace-local `qa-doctor-rules/` rules. External
    * rules carry the same trust metadata; they can never ship in core
    * (no corpus measurement) and are drift-checked by catalog
    * regeneration.
@@ -99,7 +99,7 @@ export function renderCatalogMd(entries: RuleCatalogEntry[]): string {
   const lines: string[] = [
     "# QA Doctor — Rule Catalog",
     "",
-    "Generated from the rule registry by `mjolnir rules --md`. Do not edit by hand.",
+    "Generated from the rule registry by `qa-doctor rules --md`. Do not edit by hand.",
     "",
     `| ID | Title | Severity | Tier | FP (measured) | Confidence | Evidence | FP Risk | Autofix | Since${provenanceCol} |`,
     `|---|---|---|---|---|---|---|---|---|---${provenanceSep}|`,

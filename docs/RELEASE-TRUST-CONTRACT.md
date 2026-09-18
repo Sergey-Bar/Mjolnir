@@ -1,12 +1,12 @@
 # Release Trust Contract
 
-The machine contract for `mjolnir release-trust` — the Release Trust Verdict
+The machine contract for `qa-doctor release-trust` — the Release Trust Verdict
 (product-gap master plan §5, plan 1789009691197 R4a). Law lives in
 `docs/TRUST-CONSTITUTION.md`; this document fixes the **canonical dimension
 set, order, and bindings** the verb evaluates, plus the exit contract and
 publication rules.
 
-Contract surface: `mjolnir.release-trust@1` — frozen key order, byte-
+Contract surface: `qa-doctor.release-trust@1` — frozen key order, byte-
 deterministic, zero absolute paths, no timestamps (Law 7 model). The same
 tree state produces byte-identical output; `tests/contract/release-trust-
 contract.spec.ts` drift-locks the set, the order, the algebra, and the
@@ -63,7 +63,7 @@ PASS ⇒ RELEASE-TRUST ≠ PASS, rendered as the strictest state present with
 precedence **FAILED > BLOCKED > INCONCLUSIVE > UNPROVEN > PARTIAL**. **No
 waiver path** (decision 5).
 
-## Machine document shape (`mjolnir.release-trust@1`)
+## Machine document shape (`qa-doctor.release-trust@1`)
 
 Top-level keys, in order: `contract` · `release` · `dimensions[]` ·
 `invariant` · `verdict`. Each dimension carries `id`, `title`,
@@ -79,7 +79,7 @@ names — zero absolute paths.
 | ---- | ----------------------------------------------------------------------------- |
 | `0`  | verdict PASS                                                                  |
 | `1`  | verdict non-PASS (FAILED / UNPROVEN / PARTIAL — the verdict block says which) |
-| `2`  | no fixtures root at the target (not an mjolnir checkout — BLOCKED context)    |
+| `2`  | no fixtures root at the target (not an qa-doctor checkout — BLOCKED context)  |
 | `10` | usage error                                                                   |
 | `20` | internal error                                                                |
 

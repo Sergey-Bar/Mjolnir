@@ -210,7 +210,7 @@ describe("terminal reporter ranking and label arms", () => {
       testFileCount: 1,
       findings: [mk("QA-PW-009", undefined, "E2")],
     });
-    expect(nextAction(withRisk)).toContain("mjolnir explain QA-PW-009");
+    expect(nextAction(withRisk)).toContain("qa-doctor explain QA-PW-009");
   });
 
   it("renderTrustReport: bare result ⇒ L2 fallback label, none-fired arm, zero counts", () => {

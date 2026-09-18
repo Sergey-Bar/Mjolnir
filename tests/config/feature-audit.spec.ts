@@ -18,7 +18,7 @@ import { runScan, runScanCommand, parseArgs } from "../../src/cli.js";
 let dir: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-config-audit-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-config-audit-"));
   mkdirSync(join(dir, "e2e"), { recursive: true });
   writeFileSync(
     join(dir, "e2e", "checkout.spec.ts"),
@@ -42,10 +42,10 @@ function scan() {
   });
 }
 
-describe("mjolnir.config.json `severityOverrides` (documented in config.ts)", () => {
+describe("qa-doctor.config.json `severityOverrides` (documented in config.ts)", () => {
   it("downgrading QA-TEST-001 to info in config has no effect on scan output", async () => {
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
+      join(dir, "qa-doctor.config.json"),
       JSON.stringify({ severityOverrides: { "QA-TEST-001": "info" } }),
     );
     const result = await scan();
@@ -53,19 +53,19 @@ describe("mjolnir.config.json `severityOverrides` (documented in config.ts)", ()
     expect(
       finding?.severity,
       "config.ts's applySeverityOverrides is never called from the scan " +
-        "path — severityOverrides in mjolnir.config.json is silently " +
+        "path — severityOverrides in qa-doctor.config.json is silently " +
         "ignored, same root cause as the `ignore` (suppressions) gap.",
     ).toBe("info");
   });
 });
 
-describe("mjolnir.config.json `gate` (documented in config.ts)", () => {
+describe("qa-doctor.config.json `gate` (documented in config.ts)", () => {
   it("a malformed gate value fails fast with a clear config error", async () => {
     // Now that the scan path actually reads the config, an invalid value
     // surfaces loudly instead of being silently ignored — a typo'd gate
     // level must never quietly change gating behavior.
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
+      join(dir, "qa-doctor.config.json"),
       JSON.stringify({ gate: "not-a-real-gate-level" }),
     );
     // An async scan rejects on a fatal config error; that rejection IS
@@ -76,13 +76,13 @@ describe("mjolnir.config.json `gate` (documented in config.ts)", () => {
   });
 });
 
-describe("mjolnir.config.json `ignore` missing required `reason`", () => {
+describe("qa-doctor.config.json `ignore` missing required `reason`", () => {
   it("an ignore entry without a reason fails fast with a clear config error", async () => {
     // §27 requires every suppression to carry a reason; now that the
     // scan path validates the config, the requirement is actually
     // enforced instead of silently skipped.
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
+      join(dir, "qa-doctor.config.json"),
       JSON.stringify({ ignore: [{ ruleId: "QA-TEST-001" }] }),
     );
     // An async scan rejects on a fatal config error; that rejection IS
@@ -94,9 +94,9 @@ describe("mjolnir.config.json `ignore` missing required `reason`", () => {
 describe("the empty-state message suggests only real invocations (H-5)", () => {
   it("the empty-state hint references no flag that parseArgs rejects", () => {
     // Regression guard for the audit finding: terminal.ts used to tell
-    // users to run `mjolnir --tests-dir <path>`, a flag parseArgs never
+    // users to run `qa-doctor --tests-dir <path>`, a flag parseArgs never
     // recognized — following the tool's own suggestion produced exit 10.
-    // The hint is now `mjolnir <path-to-your-tests>`; the phantom flag
+    // The hint is now `qa-doctor <path-to-your-tests>`; the phantom flag
     // must stay rejected so the docs-consistency net catches any
     // re-appearance of an invented suggestion.
     expect(parseArgs(["--tests-dir", "somewhere"])).toBeNull();

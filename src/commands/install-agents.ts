@@ -1,5 +1,5 @@
 /**
- * `mjolnir install` — instruction-surface installer (agent-handoff
+ * `qa-doctor install` — instruction-surface installer (agent-handoff
  * plan M4).
  *
  * Directory probes detect INSTRUCTION SURFACES, not agents: the probe
@@ -27,8 +27,8 @@ import { join } from "node:path";
 import type { Output } from "../cli.js";
 import { CLI_VERSION } from "../cli.js";
 
-export const MARKER_OPEN = "<!-- mjolnir:managed";
-export const MARKER_CLOSE = "<!-- /mjolnir:managed -->";
+export const MARKER_OPEN = "<!-- qa-doctor:managed";
+export const MARKER_CLOSE = "<!-- /qa-doctor:managed -->";
 
 export interface InstructionSurface {
   /** Human-readable surface name (plan §8 wording). */
@@ -49,13 +49,13 @@ function agentBrief(surface: string, cwdNote: string): string {
     "",
     `${MARKER_OPEN} v${CLI_VERSION} -->`,
     "",
-    `Run \`${cwdNote}npx mjolnir-qa@${CLI_VERSION} . --scope changed\` before finishing any task that touched test code.`,
+    `Run \`${cwdNote}npx qa-doctor-cli@${CLI_VERSION} . --scope changed\` before finishing any task that touched test code.`,
     "",
     "- Exit 0 = clean. Exit 1 = new findings on changed lines: fix them (smallest behavior-preserving change) or justify them to the user.",
-    `- npx mjolnir-qa@${CLI_VERSION} why <file>:<line> explains any finding (evidence level, measured FP rate, fix).`,
-    `- npx mjolnir-qa@${CLI_VERSION} handoff renders a full remediation plan from a saved --json report.`,
-    `- Agent loop: establish the before-state once with npx mjolnir-qa@${CLI_VERSION} baseline (commits .mjolnir/baseline.json); after fixing, npx mjolnir-qa@${CLI_VERSION} verify prints the before/after digest — resolved (per §15 lifecycle) / new / unchanged by ruleId+location, and the score delta. Exit 0 clean, 1 new errors, 2 partial or no baseline.`,
-    "- NEVER suppress a finding merely to obtain a green scan (suppressions live in mjolnir.config.json, require a reason, and expire after 90 days).",
+    `- npx qa-doctor-cli@${CLI_VERSION} why <file>:<line> explains any finding (evidence level, measured FP rate, fix).`,
+    `- npx qa-doctor-cli@${CLI_VERSION} handoff renders a full remediation plan from a saved --json report.`,
+    `- Agent loop: establish the before-state once with npx qa-doctor-cli@${CLI_VERSION} baseline (commits .qa-doctor/baseline.json); after fixing, npx qa-doctor-cli@${CLI_VERSION} verify prints the before/after digest — resolved (per §15 lifecycle) / new / unchanged by ruleId+location, and the score delta. Exit 0 clean, 1 new errors, 2 partial or no baseline.`,
+    "- NEVER suppress a finding merely to obtain a green scan (suppressions live in qa-doctor.config.json, require a reason, and expire after 90 days).",
     "- After fixing: re-run the scan, report files changed, report checks not run, report unresolved findings honestly.",
     "",
     "## Agent safety contract (non-negotiable)",
@@ -67,7 +67,7 @@ function agentBrief(surface: string, cwdNote: string): string {
     '- Loop preconditions: FIX requires a proven actionable defect; RESCAN requires changed-scope identification; PROOF requires fresh post-fix execution evidence. A "fixed" claim without rescan evidence is a contract violation.',
     "- All agent actions stay auditable: report the commands you ran and their outputs; never summarize an unrun check as run.",
     "",
-    `<!-- /mjolnir:managed -->`,
+    `<!-- /qa-doctor:managed -->`,
     "",
   ].join("\n");
 }
@@ -79,7 +79,7 @@ export function detectSurfaces(cwd: string): InstructionSurface[] {
     surfaces.push({
       name: "Claude Code command surface",
       dir: join(cwd, ".claude", "commands"),
-      file: join(cwd, ".claude", "commands", "mjolnir.md"),
+      file: join(cwd, ".claude", "commands", "qa-doctor.md"),
       content: agentBrief("Claude Code command", "/"),
       mode: "whole-file",
     });
@@ -88,7 +88,7 @@ export function detectSurfaces(cwd: string): InstructionSurface[] {
     surfaces.push({
       name: "Kilo command surface",
       dir: join(cwd, ".kilo", "command"),
-      file: join(cwd, ".kilo", "command", "mjolnir.md"),
+      file: join(cwd, ".kilo", "command", "qa-doctor.md"),
       content: agentBrief("Kilo command", ""),
       mode: "whole-file",
     });
@@ -97,7 +97,7 @@ export function detectSurfaces(cwd: string): InstructionSurface[] {
     surfaces.push({
       name: "Cursor rule surface",
       dir: join(cwd, ".cursor", "rules"),
-      file: join(cwd, ".cursor", "rules", "mjolnir.mdc"),
+      file: join(cwd, ".cursor", "rules", "qa-doctor.mdc"),
       content: agentBrief("Cursor rule", ""),
       mode: "whole-file",
     });
@@ -128,7 +128,7 @@ export type InstallPlanEntry =
       reason: string;
     };
 
-function hasMjolnirMarker(content: string): boolean {
+function hasQaDoctorMarker(content: string): boolean {
   return content.includes(MARKER_OPEN) && content.includes(MARKER_CLOSE);
 }
 
@@ -163,7 +163,7 @@ export function planInstall(
       // AGENTS.md append mode: the surface is only detected when the
       // file exists, so this arm always merges into existing content.
       const existing = readFileSync(s.file, "utf8");
-      if (hasMjolnirMarker(existing)) {
+      if (hasQaDoctorMarker(existing)) {
         const merged = mergedBlock(existing, s.content);
         entries.push(
           merged === existing
@@ -203,7 +203,7 @@ export function planInstall(
         });
         continue;
       }
-      if (!hasMjolnirMarker(existing)) {
+      if (!hasQaDoctorMarker(existing)) {
         entries.push({
           action: "refuse",
           surface: s.name,
@@ -256,7 +256,7 @@ export function executeInstall(entries: InstallPlanEntry[]): number {
 
 /**
  * Testable install command core. Returns the process exit code.
- * `mjolnir install [--dry-run] [--force]` — probes the given cwd
+ * `qa-doctor install [--dry-run] [--force]` — probes the given cwd
  * (production default: process.cwd()).
  */
 export function runInstallCommand(
@@ -304,7 +304,7 @@ export function runInstallCommand(
   let refused = false;
   for (const e of entries) {
     if (e.action === "refuse") {
-      io.err(`mjolnir install: refusing ${e.file} — ${e.reason}`);
+      io.err(`qa-doctor install: refusing ${e.file} — ${e.reason}`);
       refused = true;
       continue;
     }
@@ -315,14 +315,14 @@ export function runInstallCommand(
     const hook = planHookInstall(cwd);
     const hookWritten = executeHookInstall(hook);
     io.out(
-      `  ${hook.action}: non-blocking pre-commit hook → ${hook.file} (mjolnir-qa@${CLI_VERSION} --staged --blocking warning)`,
+      `  ${hook.action}: non-blocking pre-commit hook → ${hook.file} (qa-doctor-cli@${CLI_VERSION} --staged --blocking warning)`,
     );
     void hookWritten;
   }
   for (const e of entries) {
     if (e.action !== "refuse" && e.action !== "no-op") {
       io.out(
-        `  ${e.action}: ${e.surface} → ${e.file} (mjolnir-qa@${CLI_VERSION})`,
+        `  ${e.action}: ${e.surface} → ${e.file} (qa-doctor-cli@${CLI_VERSION})`,
       );
     }
   }
@@ -339,17 +339,17 @@ export function runInstallCommand(
 }
 
 function usageMessageFor(token: string): string {
-  return `mjolnir install: unknown argument "${token}" — supported: --dry-run, --force`;
+  return `qa-doctor install: unknown argument "${token}" — supported: --dry-run, --force`;
 }
 
-const HOOK_MARKER_OPEN = "# mjolnir:managed pre-commit (non-blocking)";
-const HOOK_MARKER_CLOSE = "# /mjolnir:managed pre-commit";
+const HOOK_MARKER_OPEN = "# qa-doctor:managed pre-commit (non-blocking)";
+const HOOK_MARKER_CLOSE = "# /qa-doctor:managed pre-commit";
 
 function hookBlock(version: string): string {
   return [
     `${HOOK_MARKER_OPEN} v${version}`,
     `# Advisory: surfaces staged-file findings without blocking the commit.`,
-    `mjolnir --staged --blocking warning || true`,
+    `qa-doctor --staged --blocking warning || true`,
     HOOK_MARKER_CLOSE,
   ].join("\n");
 }

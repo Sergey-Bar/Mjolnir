@@ -1,5 +1,5 @@
 /**
- * Agent-handoff plan M2 — `mjolnir why <file>:<line>`.
+ * Agent-handoff plan M2 — `qa-doctor why <file>:<line>`.
  *
  * Contracts (plan §9.2, §12): informational evidence/explanation query,
  * NOT a gate — works regardless of verdict/tier, exact file+line
@@ -22,7 +22,7 @@ import type { Finding } from "../../src/types.js";
 
 let dir: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-why-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-why-"));
 });
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
@@ -198,13 +198,13 @@ describe("renderWhy", () => {
   it("renders the honest no-match state with a pointer to re-scanning", () => {
     const text = renderWhy(explainAt([], "e2e/a.spec.ts", 3));
     expect(text).toContain("No finding at e2e/a.spec.ts:3");
-    expect(text).toContain("re-run mjolnir to refresh locations");
+    expect(text).toContain("re-run qa-doctor to refresh locations");
   });
 });
 
 describe("runWhyCommand — saved-report mode (authoritative)", () => {
   it("matches a finding in the saved report and exits 0", async () => {
-    const report = join(dir, "mjolnir.json");
+    const report = join(dir, "qa-doctor.json");
     writeFileSync(
       report,
       JSON.stringify({
@@ -233,7 +233,7 @@ describe("runWhyCommand — saved-report mode (authoritative)", () => {
   });
 
   it("exits 1 (not 10/20) when the location has no finding", async () => {
-    const report = join(dir, "mjolnir.json");
+    const report = join(dir, "qa-doctor.json");
     writeFileSync(
       report,
       JSON.stringify({
@@ -268,7 +268,7 @@ describe("runWhyCommand — saved-report mode (authoritative)", () => {
       ),
     ).toBe(10);
     expect(cap.errText()).toContain("not found");
-    expect(cap.errText()).toContain("mjolnir --json");
+    expect(cap.errText()).toContain("qa-doctor --json");
   });
 
   it("exit 2 on invalid JSON — a data problem", async () => {
@@ -290,6 +290,6 @@ describe("runWhyCommand — saved-report mode (authoritative)", () => {
   it("exit 10 with usage when no location is given", async () => {
     const cap = capture();
     expect(await runWhyCommand([], cap.io)).toBe(10);
-    expect(cap.errText()).toContain("Usage: mjolnir why");
+    expect(cap.errText()).toContain("Usage: qa-doctor why");
   });
 });

@@ -9,7 +9,7 @@ describe("doctor-run branch coverage (line 37 — unknown flags)", () => {
     const code = runDoctorCommand(["--bogus"], { out, err });
     expect(code).toBe(10);
     expect(err).toHaveBeenCalledWith(
-      expect.stringContaining("Usage: mjolnir doctor"),
+      expect.stringContaining("Usage: qa-doctor doctor"),
     );
   });
 

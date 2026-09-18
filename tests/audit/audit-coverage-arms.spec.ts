@@ -45,7 +45,7 @@ import { createScanCache, fileCacheKey } from "../../src/engine/scan-cache.js";
 
 const createdDirs: string[] = [];
 function tmpRepo(prefix: string): string {
-  const d = mkdtempSync(join(tmpdir(), `mjolnir-arms-${prefix}-`));
+  const d = mkdtempSync(join(tmpdir(), `qa-doctor-arms-${prefix}-`));
   createdDirs.push(d);
   return d;
 }
@@ -93,7 +93,7 @@ describe("fs-atomic arms", () => {
     mkdirSync(target);
     writeFileSync(join(target, "occupied.txt"), "keep me");
     expect(() => writeFileAtomic(target, "x")).toThrow();
-    // The failed write cleaned up its temp — no .mjolnir-*.tmp litter.
+    // The failed write cleaned up its temp — no .qa-doctor-*.tmp litter.
     expect(sweepStaleTempFiles(root)).toBe(0);
     // The occupied destination keeps its previous (complete) contents.
     expect(readFileSync(join(target, "occupied.txt"), "utf8")).toBe("keep me");
@@ -102,7 +102,7 @@ describe("fs-atomic arms", () => {
   it("sweeps stale temp files left by a crashed writer (and survives an unlinkable one)", () => {
     const root = tmpRepo("sweep");
     const old = Date.now() - 48 * 60 * 60 * 1000;
-    const stale = join(root, `a.mjolnir-2147483647-${old}-01234567.tmp`);
+    const stale = join(root, `a.qa-doctor-2147483647-${old}-01234567.tmp`);
     writeFileSync(stale, "x");
     utimesSync(stale, new Date(old), new Date(old));
     vi.spyOn(process, "kill").mockImplementation(() => {
@@ -111,7 +111,7 @@ describe("fs-atomic arms", () => {
     writeFileSync(join(root, "keep.txt"), "keep");
     // A DIRECTORY named like a temp cannot be unlinkSync'd — the sweep's
     // per-entry catch arm keeps the loop alive and counts only successes.
-    mkdirSync(join(root, "b.mjolnir-456-ef01.tmp"));
+    mkdirSync(join(root, "b.qa-doctor-456-ef01.tmp"));
     const swept = sweepStaleTempFiles(root);
     expect(swept).toBe(1);
     expect(readFileSync(join(root, "keep.txt"), "utf8")).toBe("keep");
@@ -244,7 +244,7 @@ describe("config ignore[].files validation arm (S7)", () => {
   it("rejects a non-array files value with a fixable message", () => {
     const root = tmpRepo("cfg");
     writeFileSync(
-      join(root, "mjolnir.config.json"),
+      join(root, "qa-doctor.config.json"),
       JSON.stringify({
         ignore: [{ ruleId: "QA-TEST-004", reason: "x", files: "not-an-array" }],
       }),
@@ -255,7 +255,7 @@ describe("config ignore[].files validation arm (S7)", () => {
   it("rejects a non-string files entry with the offending value echoed", () => {
     const root = tmpRepo("cfg2");
     writeFileSync(
-      join(root, "mjolnir.config.json"),
+      join(root, "qa-doctor.config.json"),
       JSON.stringify({
         ignore: [{ ruleId: "QA-TEST-004", reason: "x", files: [7] }],
       }),

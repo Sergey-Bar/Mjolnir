@@ -14,12 +14,12 @@
 
 /** The report's wordmark: the name, spaced, and what it is. */
 export const LOGO = `
-  M J Ö L N I R  ·  VERIFICATION TRUST ENGINE
+  Q A  D O C T O R  ·  VERIFICATION TRUST ENGINE
 `;
 
 /** Plain-ASCII fallback for cmd.exe/legacy consoles. */
 export const LOGO_ASCII = `
-  M J O L N I R  -  VERIFICATION TRUST ENGINE
+  Q A  D O C T O R  -  VERIFICATION TRUST ENGINE
 `;
 
 export const TROPHY = String.raw`

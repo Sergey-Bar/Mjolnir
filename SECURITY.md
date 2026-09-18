@@ -1,6 +1,6 @@
 # Security Policy
 
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Sergey-Bar/Mjolnir/badge)](https://scorecard.dev/viewer/?uri=github.com/Sergey-Bar/Mjolnir)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Sergey-Bar/qa-doctor/badge)](https://scorecard.dev/viewer/?uri=github.com/Sergey-Bar/qa-doctor)
 
 ## Supported Versions
 
@@ -13,7 +13,7 @@
 **Do NOT open a public issue for security vulnerabilities.**
 
 Use GitHub's private vulnerability reporting:
-https://github.com/Sergey-Bar/Mjolnir/security/advisories/new
+https://github.com/Sergey-Bar/qa-doctor/security/advisories/new
 
 We commit to:
 
@@ -41,7 +41,7 @@ itself runs. Concrete guarantees:
   target are parsed and pattern-matched only.
 - **Plugin gate.** npm plugins and JS-module external rules execute only
   behind the explicit trust gate: `--enable-plugins` or
-  `MJOLNIR_ENABLE_PLUGINS=1` (default OFF). Declared-but-gated sources
+  `QA_DOCTOR_ENABLE_PLUGINS=1` (default OFF). Declared-but-gated sources
   are listed on stderr; they are never imported.
 - **Git resolved from PATH only.** QA Doctor's git invocations use an
   absolute binary path resolved from PATH (never the scanned CWD), so a
@@ -49,6 +49,6 @@ itself runs. Concrete guarantees:
 - **Bounded regex.** Ignore patterns and external JSON-rule regexes are
   length/wildcard-capped at compile time; the sync matchers stay
   interruptible-safe by construction.
-- **Config anchored at the scan target.** `mjolnir.config.json`,
-  `.mjolnirignore`, and `mjolnir-rules/` are read from the explicit scan
+- **Config anchored at the scan target.** `qa-doctor.config.json`,
+  `.qa-doctorignore`, and `qa-doctor-rules/` are read from the explicit scan
   target's project — never from an unrelated ancestor of the CWD.

@@ -57,7 +57,7 @@ afterEach(() => {
 });
 
 function tmp(): string {
-  const d: string = mkdtempSync(join(tmpdir(), "mjolnir-r4-"));
+  const d: string = mkdtempSync(join(tmpdir(), "qa-doctor-r4-"));
   dirs.push(d);
   return d;
 }
@@ -99,9 +99,9 @@ describe("buildUniversalRules — local rule tier lands in tierByRuleId", () => 
     async () => {
       const { buildUniversalRules } = await import("../../src/cli.js");
       const d = tmp();
-      mkdirSync(join(d, "mjolnir-rules"), { recursive: true });
+      mkdirSync(join(d, "qa-doctor-rules"), { recursive: true });
       writeFileSync(
-        join(d, "mjolnir-rules", "tiered.mjs"),
+        join(d, "qa-doctor-rules", "tiered.mjs"),
         "export const rules = [{ id: 'QA-ACME-301', title: 'T', category: 'QA-TEST', severity: 'info', confidence: 'high', findingType: 'deterministic-defect', qaImpact: 'HYGIENE', appliesTo: 'test-files', tier: 'extended', run: () => [] }];\n",
       );
       const result = await buildUniversalRules(d, undefined, {
@@ -122,9 +122,9 @@ describe("buildUniversalRules — local rule tier lands in tierByRuleId", () => 
     async () => {
       const { buildUniversalRules } = await import("../../src/cli.js");
       const d = tmp();
-      mkdirSync(join(d, "mjolnir-rules"), { recursive: true });
+      mkdirSync(join(d, "qa-doctor-rules"), { recursive: true });
       writeFileSync(
-        join(d, "mjolnir-rules", "quar.mjs"),
+        join(d, "qa-doctor-rules", "quar.mjs"),
         "export const rules = [{ id: 'QA-ACME-302', title: 'Q', category: 'QA-TEST', severity: 'info', confidence: 'high', findingType: 'deterministic-defect', qaImpact: 'HYGIENE', appliesTo: 'test-files', tier: 'quarantine', run: () => [] }];\n",
       );
       const result = await buildUniversalRules(d, undefined, {
@@ -143,9 +143,9 @@ describe("buildUniversalRules — local rule tier lands in tierByRuleId", () => 
   it("a local module rule WITHOUT a tier takes the L177 false arm (tier stays unset)", async () => {
     const { buildUniversalRules } = await import("../../src/cli.js");
     const d = tmp();
-    mkdirSync(join(d, "mjolnir-rules"), { recursive: true });
+    mkdirSync(join(d, "qa-doctor-rules"), { recursive: true });
     writeFileSync(
-      join(d, "mjolnir-rules", "notier.mjs"),
+      join(d, "qa-doctor-rules", "notier.mjs"),
       "export const rules = [{ id: 'QA-ACME-303', title: 'N', category: 'QA-TEST', severity: 'info', confidence: 'high', findingType: 'deterministic-defect', qaImpact: 'HYGIENE', appliesTo: 'test-files', run: () => [] }];\n",
     );
     const result = await buildUniversalRules(d, undefined, {
@@ -627,9 +627,9 @@ describe("runtime-corroboration L114 — sort comparator ascending arm", () => {
 describe("local-rules L119 — the module-file branch of the loader loop", () => {
   it("a folder carrying ONLY a .mjs module takes the else-if arm", async () => {
     const d = tmp();
-    mkdirSync(join(d, "mjolnir-rules"), { recursive: true });
+    mkdirSync(join(d, "qa-doctor-rules"), { recursive: true });
     writeFileSync(
-      join(d, "mjolnir-rules", "only.mjs"),
+      join(d, "qa-doctor-rules", "only.mjs"),
       "export const rules = [{ id: 'QA-ACME-401', title: 'M', category: 'QA-TEST', severity: 'info', confidence: 'high', findingType: 'deterministic-defect', qaImpact: 'HYGIENE', appliesTo: 'test-files', run: () => [] }];\n",
     );
     const { rules } = await loadLocalRules(d, true);
@@ -638,13 +638,13 @@ describe("local-rules L119 — the module-file branch of the loader loop", () =>
 
   it("a folder carrying a .js module alongside ignored extensions", async () => {
     const d = tmp();
-    mkdirSync(join(d, "mjolnir-rules"), { recursive: true });
+    mkdirSync(join(d, "qa-doctor-rules"), { recursive: true });
     writeFileSync(
-      join(d, "mjolnir-rules", "mod.js"),
+      join(d, "qa-doctor-rules", "mod.js"),
       "export const rules = [{ id: 'QA-ACME-402', title: 'J', category: 'QA-TEST', severity: 'info', confidence: 'high', findingType: 'deterministic-defect', qaImpact: 'HYGIENE', appliesTo: 'test-files', run: () => [] }];\n",
     );
     // README.md takes neither branch of the loader loop.
-    writeFileSync(join(d, "mjolnir-rules", "README.md"), "docs\n");
+    writeFileSync(join(d, "qa-doctor-rules", "README.md"), "docs\n");
     const { rules } = await loadLocalRules(d, true);
     expect(rules.map((r) => r.id)).toContain("QA-ACME-402");
   });

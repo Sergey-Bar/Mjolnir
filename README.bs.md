@@ -9,19 +9,19 @@ a zatim ocjenjuje koliko se rezultatu može vjerovati, uz dokaz za svaki bod.
 
 <br />
 
-[![npm](https://img.shields.io/npm/v/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
-[![downloads](https://img.shields.io/npm/dm/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
-[![ci](https://img.shields.io/github/actions/workflow/status/Sergey-Bar/Mjolnir/ci.yml?branch=main&style=flat-square&label=ci&labelColor=0A1119)](https://github.com/Sergey-Bar/Mjolnir/actions/workflows/ci.yml)
-[![coverage](https://img.shields.io/codecov/c/github/Sergey-Bar/Mjolnir?style=flat-square&color=1F6F7C&labelColor=0A1119&label=coverage)](https://codecov.io/gh/Sergey-Bar/Mjolnir)
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Sergey-Bar/Mjolnir/badge)](https://scorecard.dev/viewer/?uri=github.com/Sergey-Bar/Mjolnir)
+[![npm](https://img.shields.io/npm/v/qa-doctor-cli.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/qa-doctor-cli)
+[![downloads](https://img.shields.io/npm/dm/qa-doctor-cli.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/qa-doctor-cli)
+[![ci](https://img.shields.io/github/actions/workflow/status/Sergey-Bar/qa-doctor/ci.yml?branch=main&style=flat-square&label=ci&labelColor=0A1119)](https://github.com/Sergey-Bar/qa-doctor/actions/workflows/ci.yml)
+[![coverage](https://img.shields.io/codecov/c/github/Sergey-Bar/qa-doctor?style=flat-square&color=1F6F7C&labelColor=0A1119&label=coverage)](https://codecov.io/gh/Sergey-Bar/qa-doctor)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Sergey-Bar/qa-doctor/badge)](https://scorecard.dev/viewer/?uri=github.com/Sergey-Bar/qa-doctor)
 [![license](https://img.shields.io/badge/license-MIT-1F6F7C.svg?style=flat-square&labelColor=0A1119)](LICENSE)
 [![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-1F6F7C.svg?style=flat-square&labelColor=0A1119)](https://nodejs.org)
 
 ```bash
-npx mjolnir-qa@latest
+npx qa-doctor-cli@latest
 ```
 
-[Pogledajte kako radi](#pogledajte-kako-radi) · [Brzi početak](#brzi-početak) · [Šta pronalazi](#šta-mjölnir-pronalazi) · [Ocjena](#ocjena-vrijednosti) · [Dokazi](#model-dokaza) · [Analiza pokretanja](#analiza-pokretanja-testova) · [CI](#integritet-ci-ja) · [Agenti](#ai-agenti) · [Sigurnost](#povjerenje-i-sigurnost) · [Ograničenja](#šta-vam-mjölnir-ne-može-reći) · [Dokumentacija](#dokumentacija)
+[Pogledajte kako radi](#pogledajte-kako-radi) · [Brzi početak](#brzi-početak) · [Šta pronalazi](#šta-qa-doctor-pronalazi) · [Ocjena](#ocjena-vrijednosti) · [Dokazi](#model-dokaza) · [Analiza pokretanja](#analiza-pokretanja-testova) · [CI](#integritet-ci-ja) · [Agenti](#ai-agenti) · [Sigurnost](#povjerenje-i-sigurnost) · [Ograničenja](#šta-vam-qa-doctor-ne-može-reći) · [Dokumentacija](#dokumentacija)
 
 <details>
 <summary>Čitajte na drugom jeziku — 22 prijevoda</summary>
@@ -58,7 +58,7 @@ Nijedan od njih ne boji pipeline u crveno, a svaki na reviewu izgleda namjerno. 
 
 <sub>Svaki nalaz koji je demo skeniranje prijavilo za ovaj workflow, u redu u kojem je prijavljen. Generisano naredbom `npm run docs:readme-brand` iz [`demo-report.json`](assets/readme/demo-report.json) i zaključano protiv odstupanja u CI-ju.</sub>
 
-**Strogi režim.** Najagresivnija otkrivanja — `.only`, `continue-on-error`, prazni testovi, zloupotreba ponavljanja — žive u karantinskom nivou. Rade samo pod `--strict` i ograničena su na `info` ozbiljnost: označavaju, ali nikada ne blokiraju. Podrazumijevano skeniranje (`npx mjolnir-qa@latest` bez `--strict`) pokriva samo osnovna i proširena pravila. Dodajte `--strict` kada želite i savjetodavni sloj.
+**Strogi režim.** Najagresivnija otkrivanja — `.only`, `continue-on-error`, prazni testovi, zloupotreba ponavljanja — žive u karantinskom nivou. Rade samo pod `--strict` i ograničena su na `info` ozbiljnost: označavaju, ali nikada ne blokiraju. Podrazumijevano skeniranje (`npx qa-doctor-cli@latest` bez `--strict`) pokriva samo osnovna i proširena pravila. Dodajte `--strict` kada želite i savjetodavni sloj.
 
 QA Doctor čita skup testova, CI workflowe i, ako ga imate, izvještaj stvarnog pokretanja. Ne pokreće vaše testove, ne instalira vaše zavisnosti i ne izvršava kod koji skenira. A kada nema dokaza, to i kaže umjesto da izmišlja pouzdanost:
 
@@ -81,7 +81,7 @@ QA Doctor čita skup testova, CI workflowe i, ako ga imate, izvještaj stvarnog 
 Stvarno skeniranje [`examples/demo-repo`](examples/demo-repo), malog Playwright skupa testova s CI workflowom. Evo gdje su otišli njegovi bodovi:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Mjölnirov pregled odbitaka: WORTHINESS 80/100 WORTHY, ocjena po kategoriji, okvir odbitaka po ozbiljnosti i lista FIX THIS FIRST" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="QA Doctor pregled odbitaka: WORTHINESS 80/100 WORTHY, ocjena po kategoriji, okvir odbitaka po ozbiljnosti i lista FIX THIS FIRST" width="520" />
 </p>
 
 <sub>Generisano naredbom `npm run docs:hero` iz stvarnog skeniranja i zaključano protiv odstupanja u CI-ju. Puni `--verbose` izvještaj istog skeniranja je [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
@@ -92,12 +92,12 @@ Stvarno skeniranje [`examples/demo-repo`](examples/demo-repo), malog Playwright 
 <br />
 
 <p align="center">
-  <a href="assets/video/mjolnir-demo.mp4">
-    <img src="assets/video/mjolnir-demo-poster.png" alt="Kadar demo snimka: npx mjolnir-qa@latest skenira demo repozitorij u prozoru terminala" width="900" />
+  <a href="assets/video/qa-doctor-demo.mp4">
+    <img src="assets/video/qa-doctor-demo-poster.png" alt="Kadar demo snimka: npx qa-doctor-cli@latest skenira demo repozitorij u prozoru terminala" width="900" />
   </a>
 </p>
 
-<sub>Renderovano kadar po kadar iz stvarnog skeniranja naredbom `npm run docs:video`; nikad snimljeno sa ekrana. Odaberite kadar da otvorite [`mjolnir-demo.mp4`](assets/video/mjolnir-demo.mp4).</sub>
+<sub>Renderovano kadar po kadar iz stvarnog skeniranja naredbom `npm run docs:video`; nikad snimljeno sa ekrana. Odaberite kadar da otvorite [`qa-doctor-demo.mp4`](assets/video/qa-doctor-demo.mp4).</sub>
 
 </details>
 
@@ -109,7 +109,7 @@ Svaki nalaz odgovara na četiri pitanja: gdje je, koliko je QA Doctor siguran, k
   <img src="assets/readme/finding-anatomy.svg" alt="Prvi nalaz demo skeniranja, tačno onako kako ga terminal ispisuje, s označena četiri dijela: gdje, koliko sigurno, koliko često pravilo griješi, i ispravka." width="100%" />
 </p>
 
-`mjolnir explain QA-CI-001` ispisuje cijeli zapis povjerenja pravila, uključujući izmjerenu stopu lažno pozitivnih rezultata i nivo koji mu je ta stopa donijela:
+`qa-doctor explain QA-CI-001` ispisuje cijeli zapis povjerenja pravila, uključujući izmjerenu stopu lažno pozitivnih rezultata i nivo koji mu je ta stopa donijela:
 
 ```text
   ▍ QA-CI-001 — continue-on-error masks a failing verification gate
@@ -137,22 +137,22 @@ HOW TO FIX
   Example from this rule's own must-fire fixture: QA-CI-001/must-fire/masked.yml
 
 WHAT WOULD CHANGE THE VERDICT
-  - a run report next to the scan target (mjolnir.report.json or test-results/)
+  - a run report next to the scan target (qa-doctor.report.json or test-results/)
   corroborating this file lifts its findings to L3–L5
-  - a documented suppression (mjolnir.config.json) lowers the finding count
+  - a documented suppression (qa-doctor.config.json) lowers the finding count
   without claiming correctness
   - quarantine findings run only under --strict and are advisory (E0) — they can
   never gate CI
 
 NEXT ACTION
-  Fix the first occurrence, then re-run: `mjolnir --scope changed`. Every
+  Fix the first occurrence, then re-run: `qa-doctor --scope changed`. Every
   occurrence of this rule is listed in the scan output.
 
 HOW TO VERIFY THE FIX
-  Re-run `mjolnir` on the changed file(s) — this finding should no longer
-  appear. `mjolnir --scope changed` scopes the check to just what you touched.
+  Re-run `qa-doctor` on the changed file(s) — this finding should no longer
+  appear. `qa-doctor --scope changed` scopes the check to just what you touched.
 
-Docs: mjolnir rules --md   (full catalog, this rule included)
+Docs: qa-doctor rules --md   (full catalog, this rule included)
 ```
 
 To je jedinica vrijednosti: jedno mjesto na kojem CI prijavljuje prolaz koji nije zaslužio.
@@ -162,7 +162,7 @@ To je jedinica vrijednosti: jedno mjesto na kojem CI prijavljuje prolaz koji nij
 ## Brzi početak
 
 ```bash
-npx mjolnir-qa@latest
+npx qa-doctor-cli@latest
 ```
 
 Skenira trenutni direktorij i ispisuje Trust Report: šta je pronašao, koliko mu možete vjerovati, zašto i šta dalje uraditi. Završava s `0` kada ništa na nivou kapije ili iznad nije pronađeno.
@@ -170,60 +170,60 @@ Skenira trenutni direktorij i ispisuje Trust Report: šta je pronašao, koliko m
 U CI-ju skenirajte samo ono što je grana uvela, kako stari skup testova ne bi potopio vaš prvi pull request:
 
 ```bash
-npx mjolnir-qa@latest --scope changed
+npx qa-doctor-cli@latest --scope changed
 ```
 
-`mjolnir ci install` to zapisuje kao GitHub Actions workflow, koristeći [action](https://github.com/Sergey-Bar/Mjolnir#readme) prikovan za glavni tag `v1` (ili obični `npx` s `--no-action`). Ostaje savjetodavan dok ne odlučite da treba blokirati.
+`qa-doctor ci install` to zapisuje kao GitHub Actions workflow, koristeći [action](https://github.com/Sergey-Bar/qa-doctor#readme) prikovan za glavni tag `v1` (ili obični `npx` s `--no-action`). Ostaje savjetodavan dok ne odlučite da treba blokirati.
 
-| Naredba                             | Šta radi                                                |
-| ----------------------------------- | ------------------------------------------------------- |
-| `mjolnir`                           | Trust Report: presuda, pouzdanost, sljedeći korak       |
-| `mjolnir --scope changed`           | Samo ono što je vaša grana uvela (CI oblik)             |
-| `mjolnir ci install`                | Generiše savjetodavni PR workflow (zasnovan na actionu) |
-| `mjolnir explain QA-CI-001`         | Šta, zašto i ispravka, plus izmjerena FP stopa          |
-| `mjolnir why src/a.spec.ts:42`      | Zašto je baš ovaj red označen. Nikad ne blokira.        |
-| `mjolnir forensics ./test-results/` | Dokazi iz stvarnog pokretanja                           |
-| `mjolnir trust-report`              | Samostalni Trust Artifact (md + json)                   |
-| `mjolnir handoff`                   | Plan sanacije za agenta za kodiranje                    |
-| `mjolnir --json` / `--format sarif` | Mašinski čitljiv izlaz, GitHub Code Scanning            |
-| `mjolnir --format codequality`      | GitLab Code Quality izvještaj (artefakt MR widgeta)     |
-| `mjolnir --strict`                  | Pokreće i pravila nivoa quarantine (veći FP rizik)      |
+| Naredba                               | Šta radi                                                |
+| ------------------------------------- | ------------------------------------------------------- |
+| `qa-doctor`                           | Trust Report: presuda, pouzdanost, sljedeći korak       |
+| `qa-doctor --scope changed`           | Samo ono što je vaša grana uvela (CI oblik)             |
+| `qa-doctor ci install`                | Generiše savjetodavni PR workflow (zasnovan na actionu) |
+| `qa-doctor explain QA-CI-001`         | Šta, zašto i ispravka, plus izmjerena FP stopa          |
+| `qa-doctor why src/a.spec.ts:42`      | Zašto je baš ovaj red označen. Nikad ne blokira.        |
+| `qa-doctor forensics ./test-results/` | Dokazi iz stvarnog pokretanja                           |
+| `qa-doctor trust-report`              | Samostalni Trust Artifact (md + json)                   |
+| `qa-doctor handoff`                   | Plan sanacije za agenta za kodiranje                    |
+| `qa-doctor --json` / `--format sarif` | Mašinski čitljiv izlaz, GitHub Code Scanning            |
+| `qa-doctor --format codequality`      | GitLab Code Quality izvještaj (artefakt MR widgeta)     |
+| `qa-doctor --strict`                  | Pokreće i pravila nivoa quarantine (veći FP rizik)      |
 
 <details>
 <summary><strong>Sve ostale naredbe</strong> — trijaža nestabilnih testova, izvještavanje, upravljanje</summary>
 
 <br />
 
-| Naredba                             | Šta radi                                                                       |
-| ----------------------------------- | ------------------------------------------------------------------------------ |
-| `mjolnir --classic`                 | Baner ocjene iz vremena prije Trust Reporta                                    |
-| `mjolnir explain verdict`           | Zašto je presuda sačuvanog skeniranja takva kakva jeste                        |
-| `mjolnir triage ./test-results/`    | Vođena trijaža. Svaki red završava sljedećim korakom.                          |
-| `mjolnir pw-report ./test-results/` | Sažetak Playwright pokretanja: ponavljanja, nestabilni testovi, najsporiji     |
-| `mjolnir doctor:playwright`         | Dubinsko skeniranje samo za Playwright plus Selector Health Score              |
-| `mjolnir fix --dry-run` / `fix`     | Sigurne automatske ispravke, svaka ponovo skenirana da se dokaže da je uspjela |
-| `mjolnir baseline` / `diff`         | Snimak nalaza, a zatim prijava samo novih ili gorih                            |
-| `mjolnir impact --since <ref>`      | Šta je commit uveo i riješio                                                   |
-| `mjolnir summary`                   | CI anotacije i sažetak koraka iz izvještaja                                    |
-| `mjolnir pr-comment`                | Ciljani PR komentar, u Markdownu                                               |
-| `mjolnir debt`                      | Registar testnog duga s modelom troškova                                       |
-| `mjolnir handover`                  | Mapa skupa testova za novog QA inženjera                                       |
-| `mjolnir init`                      | Otkriva frameworke, ispisuje listu za podešavanje                              |
-| `mjolnir suppressions`              | Prikazuje utišane nalaze, radi upravljanja                                     |
-| `mjolnir rules --unmeasured`        | Pravila koja rade na pretpostavci, a ne na mjerenju                            |
-| `mjolnir rules --md`                | Kompletan katalog pravila (JSON ili Markdown)                                  |
-| `mjolnir doctor`                    | Samorevizija Mjölnirove vlastite baze pravila                                  |
-| `mjolnir create-rule <ID>`          | Pravi kostur novog pravila i njegovih fixturea                                 |
-| `mjolnir stats`                     | Lokalni brojači svih viđenih ispravki                                          |
-| `mjolnir badge`                     | JSON za shields.io endpoint i isječak koda                                     |
-| `mjolnir --cache`                   | Inkrementalna ponovna skeniranja preko lokalnog keša presuda                   |
-| `mjolnir --format mermaid`          | Dijagram arhitekture testova za PR komentar                                    |
+| Naredba                               | Šta radi                                                                       |
+| ------------------------------------- | ------------------------------------------------------------------------------ |
+| `qa-doctor --classic`                 | Baner ocjene iz vremena prije Trust Reporta                                    |
+| `qa-doctor explain verdict`           | Zašto je presuda sačuvanog skeniranja takva kakva jeste                        |
+| `qa-doctor triage ./test-results/`    | Vođena trijaža. Svaki red završava sljedećim korakom.                          |
+| `qa-doctor pw-report ./test-results/` | Sažetak Playwright pokretanja: ponavljanja, nestabilni testovi, najsporiji     |
+| `qa-doctor doctor:playwright`         | Dubinsko skeniranje samo za Playwright plus Selector Health Score              |
+| `qa-doctor fix --dry-run` / `fix`     | Sigurne automatske ispravke, svaka ponovo skenirana da se dokaže da je uspjela |
+| `qa-doctor baseline` / `diff`         | Snimak nalaza, a zatim prijava samo novih ili gorih                            |
+| `qa-doctor impact --since <ref>`      | Šta je commit uveo i riješio                                                   |
+| `qa-doctor summary`                   | CI anotacije i sažetak koraka iz izvještaja                                    |
+| `qa-doctor pr-comment`                | Ciljani PR komentar, u Markdownu                                               |
+| `qa-doctor debt`                      | Registar testnog duga s modelom troškova                                       |
+| `qa-doctor handover`                  | Mapa skupa testova za novog QA inženjera                                       |
+| `qa-doctor init`                      | Otkriva frameworke, ispisuje listu za podešavanje                              |
+| `qa-doctor suppressions`              | Prikazuje utišane nalaze, radi upravljanja                                     |
+| `qa-doctor rules --unmeasured`        | Pravila koja rade na pretpostavci, a ne na mjerenju                            |
+| `qa-doctor rules --md`                | Kompletan katalog pravila (JSON ili Markdown)                                  |
+| `qa-doctor doctor`                    | Samorevizija QA Doctor vlastite baze pravila                                   |
+| `qa-doctor create-rule <ID>`          | Pravi kostur novog pravila i njegovih fixturea                                 |
+| `qa-doctor stats`                     | Lokalni brojači svih viđenih ispravki                                          |
+| `qa-doctor badge`                     | JSON za shields.io endpoint i isječak koda                                     |
+| `qa-doctor --cache`                   | Inkrementalna ponovna skeniranja preko lokalnog keša presuda                   |
+| `qa-doctor --format mermaid`          | Dijagram arhitekture testova za PR komentar                                    |
 
-`mjolnir help <command>` ispisuje upotrebu, primjere i sljedeći korak za svaku od njih.
+`qa-doctor help <command>` ispisuje upotrebu, primjere i sljedeći korak za svaku od njih.
 
 </details>
 
-Zahtijeva **Node.js ≥ 22.18** na Windowsu, macOS-u ili Linuxu. Više volite globalnu instalaciju? `npm i -g mjolnir-qa`. Minimum dolazi iz lanca alata za build (tsdown cilja na njega, a pipeline izdanja radi smoke testove na njemu); zavisnostima za izvršavanje ne treba više od toga.
+Zahtijeva **Node.js ≥ 22.18** na Windowsu, macOS-u ili Linuxu. Više volite globalnu instalaciju? `npm i -g qa-doctor-cli`. Minimum dolazi iz lanca alata za build (tsdown cilja na njega, a pipeline izdanja radi smoke testove na njemu); zavisnostima za izvršavanje ne treba više od toga.
 
 <br />
 
@@ -247,7 +247,7 @@ Zahtijeva **Node.js ≥ 22.18** na Windowsu, macOS-u ili Linuxu. Više volite gl
 | QA-PY-002    | Preskočen test (`skip`, nestriktni `xfail`)                          | warning    | core       |
 | QA-CS-103    | Testna metoda bez asercija                                           | error      | core       |
 
-Kompletan katalog se generiše iz registra, nikad se ne održava ručno: `mjolnir rules --md`, [`docs/rules/`](docs/rules/) ili [vodič o tome šta provjerava](https://sergey-bar.github.io/Mjolnir/guide/what-it-checks).
+Kompletan katalog se generiše iz registra, nikad se ne održava ručno: `qa-doctor rules --md`, [`docs/rules/`](docs/rules/) ili [vodič o tome šta provjerava](https://sergey-bar.github.io/qa-doctor/guide/what-it-checks).
 
 <details>
 <summary><strong>Svako pravilo navedeno u ovom README-u</strong>, u jednoj tabeli</summary>
@@ -298,11 +298,11 @@ Python dolazi i s pravilima QA-PY-001…012 (higijena pytesta) i QA-PY-101…108
 
 </details>
 
-Svako pravilo se isporučuje s must-fire **i** must-not-fire fixtureom, a pravilo koje se okine na vlastitom negativnom fixtureu ne može biti isporučeno. To je zaštitni zid od lažno pozitivnih rezultata; `mjolnir doctor` ga provodi u vlastitom CI-ju ovog repozitorija.
+Svako pravilo se isporučuje s must-fire **i** must-not-fire fixtureom, a pravilo koje se okine na vlastitom negativnom fixtureu ne može biti isporučeno. To je zaštitni zid od lažno pozitivnih rezultata; `qa-doctor doctor` ga provodi u vlastitom CI-ju ovog repozitorija.
 
 ### Selector Health Score
 
-`mjolnir doctor:playwright` ocjenjuje svaki lokator prema tome kako pronalazi element: onako kako bi to uradio korisnik (uloga, oznaka, tekst), preko eksplicitnog ugovora (`data-testid`) ili strukturnom slučajnošću (CSS lanci, XPath). Svaka datoteka dobija ocjenu od 0 do 100:
+`qa-doctor doctor:playwright` ocjenjuje svaki lokator prema tome kako pronalazi element: onako kako bi to uradio korisnik (uloga, oznaka, tekst), preko eksplicitnog ugovora (`data-testid`) ili strukturnom slučajnošću (CSS lanci, XPath). Svaka datoteka dobija ocjenu od 0 do 100:
 
 ```text
   ▍ SELECTOR HEALTH
@@ -336,7 +336,7 @@ Ovo mjeri **otpornost, a ne ispravnost**. `.btn.btn-primary > div:nth-child(2)` 
 | `100`     | **FORGED**                                      |
 | `null`    | **UNKNOWN**: nisu pronađene deklaracije testova |
 
-**Kako se računa.** Ozbiljnost određuje osnovni odbitak (`error −8`, `warning −3`, `info −1`), a nivo dokaza ga umanjuje: E2 se računa u potpunosti, E1 upola (zaokruženo nadolje), E0 nikako. Zbir se normalizuje prema izloženosti skupa testova, odnosno odbici po deklaraciji testa umjesto po datoteci. Terminal ispisuje iste umanjene brojeve koje je ocjena koristila; nema skrivenog drugog modela. Detalji: [docs/SCORING.md](docs/SCORING.md) i [vodič za ocjenjivanje](https://sergey-bar.github.io/Mjolnir/guide/scoring).
+**Kako se računa.** Ozbiljnost određuje osnovni odbitak (`error −8`, `warning −3`, `info −1`), a nivo dokaza ga umanjuje: E2 se računa u potpunosti, E1 upola (zaokruženo nadolje), E0 nikako. Zbir se normalizuje prema izloženosti skupa testova, odnosno odbici po deklaraciji testa umjesto po datoteci. Terminal ispisuje iste umanjene brojeve koje je ocjena koristila; nema skrivenog drugog modela. Detalji: [docs/SCORING.md](docs/SCORING.md) i [vodič za ocjenjivanje](https://sergey-bar.github.io/qa-doctor/guide/scoring).
 
 **Šta 100 ne znači.** Ne znači da je softver ispravan, da je skup testova dovoljan ili da je proizvod bez grešaka. Znači jednu stvar: **nijedno od pravila koja je QA Doctor procijenio nije proizvelo odbitak u ovom skeniranju i ovom modelu dokaza.**
 
@@ -356,7 +356,7 @@ Svaki nalaz nosi dvije oznake: koliko je QA Doctor siguran i koliko je daleko na
 
 Pouzdanost detekcije nije snaga dokaza. Pravilo može biti sigurno da je pronašlo ono što je tražilo, a ipak gledati heuristiku. E1 nalazi su tu da se čitaju i procjenjuju, nikad da se primjenjuju naslijepo, i ta granica je utisnuta na nalaz u terminalu, u JSON-u i u predaji agentu.
 
-**Koliko daleko je provjereno — nivo povjerenja.** Većina nalaza dolazi iz čitanja vašeg koda. Dajte Mjölniru izvještaj stvarnog pokretanja testova i on može potvrditi da se kod zaista izvršio.
+**Koliko daleko je provjereno — nivo povjerenja.** Većina nalaza dolazi iz čitanja vašeg koda. Dajte QA Doctor izvještaj stvarnog pokretanja testova i on može potvrditi da se kod zaista izvršio.
 
 <p align="center">
   <img src="assets/readme/trust-ladder.svg" alt="Ljestvica povjerenja od L0 do L5. L0 do L2 dolaze iz čitanja koda; L3 do L5 zahtijevaju izvještaj stvarnog pokretanja, što je označeno prekidom na ljestvici." width="100%" />
@@ -375,7 +375,7 @@ Statičko skeniranje staje na L2. Samo izvještaj stvarnog pokretanja (Playwrigh
 
 ### Koliko je od ovoga izmjereno
 
-**74 od 79 pravila imaju stopu lažno pozitivnih rezultata izmjerenu na stvarnom OSS kodu** (najmanje 10 ručno klasifikovanih nalaza za svako; pogledajte [docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Ostalih 5 se isporučuje na autorovoj procjeni i to kaže, pravilo po pravilo, u `mjolnir explain`. `mjolnir rules --unmeasured` ih navodi, a podnožje svakog skeniranja prijavljuje koliko je izmjereno od pravila koja su se zaista _okinula_.
+**74 od 79 pravila imaju stopu lažno pozitivnih rezultata izmjerenu na stvarnom OSS kodu** (najmanje 10 ručno klasifikovanih nalaza za svako; pogledajte [docs/FP-AUDIT.md](docs/FP-AUDIT.md)). Ostalih 5 se isporučuje na autorovoj procjeni i to kaže, pravilo po pravilo, u `qa-doctor explain`. `qa-doctor rules --unmeasured` ih navodi, a podnožje svakog skeniranja prijavljuje koliko je izmjereno od pravila koja su se zaista _okinula_.
 
 Stope ostaju javne i kada su loše. QA-TEST-001 (commitovani `.only`) loše prolazi reviziju na stvarnim repozitorijima i zato je u quarantine. Aktuelni broj za svako pravilo, uključujući QA-PW-141, nalazi se u reviziji.
 
@@ -392,7 +392,7 @@ Nivoi prate izmjerenu stopu lažno pozitivnih rezultata, a ne mišljenje:
 
 FP opsezi mogu samo degradirati nivo — nikad ne unapređuju pravilo iz `quarantine` ako je tamo eksplicitno deklarisano. Eksplicitno karantinirano pravilo ostaje u quarantine bez obzira na izmjerenu FP stopu.
 
-Unapređenje, degradacija i zrelost po jeziku: [životni ciklus pravila](https://sergey-bar.github.io/Mjolnir/reference/rule-lifecycle).
+Unapređenje, degradacija i zrelost po jeziku: [životni ciklus pravila](https://sergey-bar.github.io/qa-doctor/reference/rule-lifecycle).
 
 ### Zašto ovo nije linter
 
@@ -421,7 +421,7 @@ Koristite i AI pregled. Hvata nijanse, namjeru i greške u dizajnu koje nijedan 
 Statička analiza rasuđuje o kodu koji se nikad nije izvršio. Analiza pokretanja čita šta se zaista dogodilo: Playwright JSON, Jest JSON, Vitest JSON i JUnit XML iz bilo kojeg runnera.
 
 ```bash
-mjolnir forensics ./test-results/
+qa-doctor forensics ./test-results/
 ```
 
 ```text
@@ -435,7 +435,7 @@ FAILING    declines an expired card (e2e/checkout.spec.ts)
            ████░░░░░░░░░░░░░░░░ 1.1s · 1 attempt
 ```
 
-`TRUE-FLAKE` ne znači da je test ponovljen. Znači da je test **pao barem u jednom pokušaju, a zatim završio zeleno**: sretan prolaz, označen bez obzira na to šta kaže konačna kvačica. `mjolnir triage` tu historiju pretvara u prijedlog karantina, a `mjolnir pw-report` sažima pokretanje. Upravo ti izvještaji pokretanja podižu nalaze na nivoe povjerenja L3 i više.
+`TRUE-FLAKE` ne znači da je test ponovljen. Znači da je test **pao barem u jednom pokušaju, a zatim završio zeleno**: sretan prolaz, označen bez obzira na to šta kaže konačna kvačica. `qa-doctor triage` tu historiju pretvara u prijedlog karantina, a `qa-doctor pw-report` sažima pokretanje. Upravo ti izvještaji pokretanja podižu nalaze na nivoe povjerenja L3 i više.
 
 <br />
 
@@ -446,13 +446,13 @@ Test može prolaziti dok pipeline oko njega ne može pasti. QA Doctor čita i wo
 Generišite PR workflow, zadano savjetodavan:
 
 ```bash
-mjolnir ci install
+qa-doctor ci install
 ```
 
 Ili dodajte Marketplace action u workflow koji već imate:
 
 ```yaml
-- uses: Sergey-Bar/Mjolnir@v1
+- uses: Sergey-Bar/qa-doctor@v1
   with:
     scope: changed
     fail-on: error
@@ -463,12 +463,12 @@ Prikujte `@v1` da pratite glavnu liniju, ili tačan tag (`@v0.5.32`) za ponovlji
 Da nalaze stavite u GitHub Code Scanning, otpremite SARIF (potrebno `security-events: write` na nivou workflowa ili joba):
 
 ```yaml
-- run: npx mjolnir-qa@latest --format sarif > mjolnir.sarif
+- run: npx qa-doctor-cli@latest --format sarif > qa-doctor.sarif
   continue-on-error: true
 - uses: github/codeql-action/upload-sarif@v3
   if: ${{ !cancelled() }}
   with:
-    sarif_file: mjolnir.sarif
+    sarif_file: qa-doctor.sarif
 ```
 
 Na GitLabu, `--format codequality` zapisuje Code Quality izvještaj koji čitaju MR widget i diff anotacije ([docs/GITLAB-CI.md](docs/GITLAB-CI.md)). Podešavanje editora i pipelinea: [docs/SARIF-INTEGRATION.md](docs/SARIF-INTEGRATION.md).
@@ -476,7 +476,7 @@ Na GitLabu, `--format codequality` zapisuje Code Quality izvještaj koji čitaju
 ### Pripisivanje u opsegu promjena
 
 ```bash
-npx mjolnir-qa@latest --scope changed
+npx qa-doctor-cli@latest --scope changed
 ```
 
 Nalazi se pripisuju redovima koje je vaša grana dodala, mjereno u odnosu na **merge-base**. Opseg je isti skup datoteka koji otkriva puno skeniranje (TS/JS specifikacije i konfiguracije adaptera, `test_*.py`, `*Test.java`, `*Tests.cs`, `.github/workflows/*.yml`), plus necommitovane i nepraćene promjene, pa radi i prije commita. Baza se razrješava redom `main → master → origin/main → origin/master → origin/HEAD`; zamijenite je s `--base <ref>`.
@@ -495,16 +495,16 @@ SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
 
 **AI piše ispravku. QA Doctor je verifikuje.** Dokaz dolazi iz ponovnog skeniranja, nikad iz agentovog vlastitog izvještaja o uspjehu.
 
-| Naredba           | Šta agent dobija                                                                                                                                                         |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `mjolnir mcp`     | [MCP](https://modelcontextprotocol.io) server preko stdio. `scan`, `explain` i `diff` postaju alati koji se mogu pozvati.                                                |
-| `mjolnir handoff` | Sačuvani `--json` izvještaj postaje deterministički Markdown plan: šta je otkriveno, granica dokaza za svaki nalaz, šta se **ne** smije promijeniti i kako verifikovati. |
-| `mjolnir install` | Upisuje u agentske površine koje vaš repozitorij već ima (`.claude/`, `.cursor/`, `.kilo/`, `AGENTS.md`) kako bi agent ponovo skenirao prije nego što tvrdi da je gotov. |
+| Naredba             | Šta agent dobija                                                                                                                                                         |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `qa-doctor mcp`     | [MCP](https://modelcontextprotocol.io) server preko stdio. `scan`, `explain` i `diff` postaju alati koji se mogu pozvati.                                                |
+| `qa-doctor handoff` | Sačuvani `--json` izvještaj postaje deterministički Markdown plan: šta je otkriveno, granica dokaza za svaki nalaz, šta se **ne** smije promijeniti i kako verifikovati. |
+| `qa-doctor install` | Upisuje u agentske površine koje vaš repozitorij već ima (`.claude/`, `.cursor/`, `.kilo/`, `AGENTS.md`) kako bi agent ponovo skenirao prije nego što tvrdi da je gotov. |
 
 Dodajte ga klijentu koji ima vlastiti CLI:
 
 ```bash
-claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
+claude mcp add qa-doctor -- npx -y qa-doctor-cli@latest mcp
 ```
 
 Ili bilo kojem klijentu koji prima `mcpServers` blok:
@@ -512,7 +512,10 @@ Ili bilo kojem klijentu koji prima `mcpServers` blok:
 ```json
 {
   "mcpServers": {
-    "mjolnir": { "command": "npx", "args": ["-y", "mjolnir-qa@latest", "mcp"] }
+    "qa-doctor": {
+      "command": "npx",
+      "args": ["-y", "qa-doctor-cli@latest", "mcp"]
+    }
   }
 }
 ```
@@ -527,9 +530,9 @@ Ili bilo kojem klijentu koji prima `mcpServers` blok:
 
 Dvije napomene: sam `npx` preuzima paket prije nego što se išta pokrene, a garancija pokriva `src/`, ne dodatke trećih strana.
 
-**Dodaci nisu u sandboxu.** JS dodaci (`mjolnir-rules/*.mjs` ili npm paketi navedeni pod `"plugins"`) rade s punim Node privilegijama, istim modelom povjerenja kao ESLint ili Vitest dodaci. Njihovo učitavanje je izričit izbor **po skeniranju**: bez `--enable-plugins` (ili `MJOLNIR_ENABLE_PLUGINS=1`) njihovi izvori se nikad ne učitavaju, a obavještenje na stderr navodi šta je preskočeno. JSON manifesti pravila ne izvršavaju kod, a prefiksi ID-jeva core pravila su rezervisani kako se nijedan dodatak ne bi mogao lažno predstaviti kao neko od njih. Ranjivosti prijavite preko [SECURITY.md](SECURITY.md).
+**Dodaci nisu u sandboxu.** JS dodaci (`qa-doctor-rules/*.mjs` ili npm paketi navedeni pod `"plugins"`) rade s punim Node privilegijama, istim modelom povjerenja kao ESLint ili Vitest dodaci. Njihovo učitavanje je izričit izbor **po skeniranju**: bez `--enable-plugins` (ili `QA_DOCTOR_ENABLE_PLUGINS=1`) njihovi izvori se nikad ne učitavaju, a obavještenje na stderr navodi šta je preskočeno. JSON manifesti pravila ne izvršavaju kod, a prefiksi ID-jeva core pravila su rezervisani kako se nijedan dodatak ne bi mogao lažno predstaviti kao neko od njih. Ranjivosti prijavite preko [SECURITY.md](SECURITY.md).
 
-**Radi na samom sebi.** Motor povjerenja u verifikaciju nema kredibilitet ako sam nije provjerljiv. Svako CI pokretanje skenira ovaj repozitorij buildom koji je proizvelo to isto pokretanje. Kapija pada na svakom nalazu ozbiljnosti error, kao i na **djelimičnom** skeniranju ili **pravilu koje se srušilo**, jer skraćeno samoskeniranje koje ništa ne prijavljuje jeste upravo lažna zelena boja zbog koje ovaj projekat postoji. `mjolnir doctor` u istom pokretanju ponovo revidira bazu pravila (zaštitni zid fixturea, poštenje nivoa, gornja granica nivoa core), a provjera s rezultatom INCONCLUSIVE pada potpuno isto kao neuspjela. Oba izvještaja se otpremaju kao artefakti builda.
+**Radi na samom sebi.** Motor povjerenja u verifikaciju nema kredibilitet ako sam nije provjerljiv. Svako CI pokretanje skenira ovaj repozitorij buildom koji je proizvelo to isto pokretanje. Kapija pada na svakom nalazu ozbiljnosti error, kao i na **djelimičnom** skeniranju ili **pravilu koje se srušilo**, jer skraćeno samoskeniranje koje ništa ne prijavljuje jeste upravo lažna zelena boja zbog koje ovaj projekat postoji. `qa-doctor doctor` u istom pokretanju ponovo revidira bazu pravila (zaštitni zid fixturea, poštenje nivoa, gornja granica nivoa core), a provjera s rezultatom INCONCLUSIVE pada potpuno isto kao neuspjela. Oba izvještaja se otpremaju kao artefakti builda.
 
 ### Izlazni kodovi i mašinski ugovor
 
@@ -564,7 +567,7 @@ Sve što mašina troši (rezultati MCP alata, `--json`, SARIF 2.1) dolazi iz jed
 
 ## Dokumentacija
 
-Kompletna stranica dokumentacije nalazi se na <https://sergey-bar.github.io/Mjolnir/>.
+Kompletna stranica dokumentacije nalazi se na <https://sergey-bar.github.io/qa-doctor/>.
 
 | Dokument                                               | Šta sadrži                                             |
 | ------------------------------------------------------ | ------------------------------------------------------ |
@@ -584,14 +587,14 @@ Kompletna stranica dokumentacije nalazi se na <https://sergey-bar.github.io/Mjol
 
 ### Status
 
-**Verzija 1.** JSON shema i izlazni kodovi su zamrznuti ugovori. TypeScript i Python imaju najširu izmjerenu pokrivenost. Java i C# su noviji; čitajte ih kroz [tabelu zrelosti](https://sergey-bar.github.io/Mjolnir/reference/rule-lifecycle). Šta slijedi, bez izmišljenih datuma: [javna mapa puta](https://sergey-bar.github.io/Mjolnir/reference/roadmap).
+**Verzija 1.** JSON shema i izlazni kodovi su zamrznuti ugovori. TypeScript i Python imaju najširu izmjerenu pokrivenost. Java i C# su noviji; čitajte ih kroz [tabelu zrelosti](https://sergey-bar.github.io/qa-doctor/reference/rule-lifecycle). Šta slijedi, bez izmišljenih datuma: [javna mapa puta](https://sergey-bar.github.io/qa-doctor/reference/roadmap).
 
 ### Doprinos
 
 Nova pravila su najlakši prvi doprinos. Jedna naredba pravi kostur pravila s njegovim must-fire **i** must-not-fire fixtureima. Generisano pravilo namjerno pada na vlastitim fixtureima dok se ne napiše stvarna detekcija, jer isporučeni kostur jeste pravilo koje niko nije izmjerio:
 
 ```bash
-mjolnir create-rule QA-PW-140 --title "Screenshot without diff bound"
+qa-doctor create-rule QA-PW-140 --title "Screenshot without diff bound"
 ```
 
 Razvojno okruženje, naredbe stalnih kapija te zakoni anti-creep i zaštitnog zida fixturea nalaze se u [CONTRIBUTING.md](CONTRIBUTING.md).
@@ -603,10 +606,10 @@ Razvojno okruženje, naredbe stalnih kapija te zakoni anti-creep i zaštitnog zi
 <img src="assets/readme/closing.svg" alt="Pokrenite ga na svom repozitoriju." width="100%" />
 
 ```bash
-npx mjolnir-qa@latest
+npx qa-doctor-cli@latest
 ```
 
-[Pročitajte vodič](https://sergey-bar.github.io/Mjolnir/guide/getting-started) · [Stranica dokumentacije](https://sergey-bar.github.io/Mjolnir/) · [npm](https://www.npmjs.com/package/mjolnir-qa)
+[Pročitajte vodič](https://sergey-bar.github.io/qa-doctor/guide/getting-started) · [Stranica dokumentacije](https://sergey-bar.github.io/qa-doctor/) · [npm](https://www.npmjs.com/package/qa-doctor-cli)
 
 <br />
 

@@ -21,7 +21,7 @@ export interface EvidenceCandidate {
   path: string;
   /** What convention produced it. */
   convention:
-    | "mjolnir-report" // packages/playwright-reporter default output
+    | "qa-doctor-report" // packages/playwright-reporter default output
     | "playwright-json" // PW JSON reporter outputs
     | "test-results-dir" // PW test-results directory
     | "junit-file"; // JUnit XML outputs
@@ -40,9 +40,9 @@ export const EVIDENCE_CONVENTIONS: readonly {
   names: readonly string[];
 }[] = [
   {
-    convention: "mjolnir-report",
+    convention: "qa-doctor-report",
     kind: "file",
-    names: ["mjolnir.report.json"],
+    names: ["qa-doctor.report.json"],
   },
   {
     convention: "playwright-json",
@@ -70,7 +70,7 @@ const SEARCH_DEPTH = 2;
 const SKIP_DIRS = new Set([
   "node_modules",
   ".git",
-  ".mjolnir",
+  ".qa-doctor",
   "dist",
   "coverage",
 ]);

@@ -57,16 +57,21 @@ const WORKFLOW_REL = join(".github", "workflows", "ci.yml");
  * re-capture is a no-op diff when the scan itself is unchanged. Same
  * treatment as generate-readme-demo.ts.
  */
-export const NORMALIZATION = ["/· \\d+ms$/ → '· a few ms'"];
+export const NORMALIZATION = [
+  "/· (?:\\d+ms|(?:0\\.\\d*[1-9]\\d*|[1-9]\\d*(?:\\.\\d+)?)s)$/ → '· a few ms'",
+];
 const normalize = (line: string): string =>
-  line.replace(/· \d+ms$/, "· a few ms");
+  line.replace(
+    /· (?:\d+ms|(?:0\.\d*[1-9]\d*|[1-9]\d*(?:\.\d+)?)s)$/,
+    "· a few ms",
+  );
 
 /**
  * A scan beat: the command line shown on screen and the output beneath it
  * are built from ONE set of flags, so they cannot disagree.
  *
  * This is not a stylistic preference. The first version of this file
- * displayed `npx mjolnir-qa@latest` while capturing `--verbose` output —
+ * displayed `npx qa-doctor-cli@latest` while capturing `--verbose` output —
  * a video showing 246 lines of findings under a command that does not
  * produce them. Deriving the command string from the flags makes that
  * class of lie unrepresentable rather than merely tested for.
@@ -76,7 +81,7 @@ interface ScanFlags {
 }
 
 function scanCommand(flags: ScanFlags): string {
-  return `npx mjolnir-qa@latest${flags.verbose ? " --verbose" : ""}`;
+  return `npx qa-doctor-cli@latest${flags.verbose ? " --verbose" : ""}`;
 }
 
 async function scan(target: string, flags: ScanFlags): Promise<ScanResult> {
@@ -145,7 +150,7 @@ function captureOut(
 export async function withFixedWorkflow<T>(
   use: (dir: string) => Promise<T>,
 ): Promise<T> {
-  const dir = mkdtempSync(join(tmpdir(), "mjolnir-video-"));
+  const dir = mkdtempSync(join(tmpdir(), "qa-doctor-video-"));
   try {
     const target = join(dir, "demo-repo");
     cpSync(DEMO_REPO, target, { recursive: true });
@@ -249,7 +254,7 @@ export async function captureTourScript(): Promise<VideoScript> {
       narrative:
         "One rule, up close — what it found, why it matters, how to fix it, and whether its false-positive rate has been measured.",
       source: "tests/fixtures",
-      command: `mjolnir explain ${explainId}`,
+      command: `qa-doctor explain ${explainId}`,
       ansi: captureOut((io) => runExplainCommand([explainId], io)),
     },
     {
@@ -259,7 +264,7 @@ export async function captureTourScript(): Promise<VideoScript> {
       source: "examples/demo-repo/test-results",
       // --no-flaky-md: the command writes FLAKY.md as a side effect, and a
       // capture must not leave files behind in the repo it read.
-      command: "mjolnir forensics ./test-results/",
+      command: "qa-doctor forensics ./test-results/",
       ansi: captureOut((io) =>
         runForensicsCommand(
           [join(DEMO_REPO, "test-results"), "--no-flaky-md"],

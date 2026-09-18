@@ -1,7 +1,7 @@
 # RULE_CERTIFICATION.md — Cycle 0 · RC `151186b`
 
 Per-rule (99) certification table. Generated from the live catalog captured at
-the RC (`evidence/151186b/rules-catalog.json` — command: `mjolnir rules --json`),
+the RC (`evidence/151186b/rules-catalog.json` — command: `qa-doctor rules --json`),
 cross-checked against `docs/RULE-CAPABILITY-MATRIX.md` (99 rows, drift-locked)
 and doctor (0/19 core unmeasured; 54 quarantine capped info/E0).
 

@@ -42,19 +42,19 @@ export function fontPath(f: VendoredFont): string {
 
 export const FONTS: VendoredFont[] = [
   {
-    family: "MjolnirMono",
+    family: "QaDoctorMono",
     file: "GeistMono-Regular.ttf",
     weight: 400,
     mime: "font/ttf",
   },
   {
-    family: "MjolnirMono",
+    family: "QaDoctorMono",
     file: "GeistMono-Bold.ttf",
     weight: 700,
     mime: "font/ttf",
   },
   {
-    family: "MjolnirRunes",
+    family: "QaDoctorRunes",
     file: "FreeMono.ttf",
     weight: 400,
     mime: "font/ttf",
@@ -63,7 +63,7 @@ export const FONTS: VendoredFont[] = [
 
 /** The CSS font stack. Order matters: the nine glyphs Geist Mono lacks
  * (runes, ℹ, ⚠, ⚡, ✗) fall through to FreeMono. */
-export const FONT_STACK = `"MjolnirMono", "MjolnirRunes", monospace`;
+export const FONT_STACK = `"QaDoctorMono", "QaDoctorRunes", monospace`;
 
 /** `@font-face` rules with the files inlined — no network, no system fonts. */
 export function fontFaceCss(): string {
@@ -78,7 +78,7 @@ export function fontFaceCss(): string {
  * Playwright browser pool the container already provides; never downloads.
  */
 export function resolveChromium(): string {
-  const explicit = process.env["MJOLNIR_CHROMIUM"];
+  const explicit = process.env["QA_DOCTOR_CHROMIUM"];
   if (explicit) return explicit;
   const pool = process.env["PLAYWRIGHT_BROWSERS_PATH"] ?? "/opt/pw-browsers";
   return join(pool, "chromium-1194", "chrome-linux", "chrome");

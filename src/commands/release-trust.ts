@@ -1,5 +1,5 @@
 /**
- * `mjolnir release-trust` — the Release Trust Verdict (product-gap
+ * `qa-doctor release-trust` — the Release Trust Verdict (product-gap
  * master plan §5, plan 1789009691197 R4a).
  *
  * Pure aggregation of already-shipped signals — NO new authority: the
@@ -9,7 +9,7 @@
  * (docs/RELEASE-TRUST-CONTRACT.md — fixed set, fixed order, governance-
  * locked; a drift-lock fails CI when the emitted set deviates).
  *
- * Machine surface: `mjolnir.release-trust@1` — frozen key order, byte-
+ * Machine surface: `qa-doctor.release-trust@1` — frozen key order, byte-
  * deterministic (no timestamps, no absolute paths — Law 7 model), the
  * SAME document every run produces for the same tree state.
  *
@@ -42,7 +42,7 @@ import { parseTsFile } from "../engine/ts-ast.js";
 import ts from "ts-morph";
 import { out as stdoutOut, err as stderrOut, type Output } from "../cli-io.js";
 
-export const RELEASE_TRUST_SCHEMA = "mjolnir.release-trust@1";
+export const RELEASE_TRUST_SCHEMA = "qa-doctor.release-trust@1";
 
 export type EvidenceState =
   | "PROVEN"
@@ -578,7 +578,7 @@ export function checkAgentSafety(root: string): {
     {
       ok:
         !/enablePlugins\s*:\s*true/.test(server) &&
-        !/process\.env(?:\.|\[\s*["'])MJOLNIR_ENABLE_PLUGINS/.test(server),
+        !/process\.env(?:\.|\[\s*["'])QA_DOCTOR_ENABLE_PLUGINS/.test(server),
       what: "the MCP tool surface never opens the plugin trust gate",
     },
     {
@@ -973,7 +973,7 @@ export function releaseTrustJson(report: ReleaseTrustReport): string {
 /** Human verdict block (publication honesty: nothing omitted). */
 export function renderReleaseTrust(report: ReleaseTrustReport): string {
   const lines: string[] = [];
-  lines.push("MJÖLNIR — RELEASE TRUST VERDICT");
+  lines.push("QA DOCTOR — RELEASE TRUST VERDICT");
   lines.push(`release: ${report.release}  contract: ${report.schema}`);
   lines.push("");
   for (const d of report.dimensions) {
@@ -992,9 +992,9 @@ export function renderReleaseTrust(report: ReleaseTrustReport): string {
 }
 
 /**
- * CLI verb: `mjolnir release-trust [--json] [repo-root]`.
+ * CLI verb: `qa-doctor release-trust [--json] [repo-root]`.
  * Exit contract (frozen set): 0 verdict PASS · 1 verdict non-PASS ·
- * 2 no fixtures root (not an mjolnir checkout — BLOCKED context) ·
+ * 2 no fixtures root (not an qa-doctor checkout — BLOCKED context) ·
  * 10 usage error · 20 internal error.
  */
 export function runReleaseTrustCommand(
@@ -1004,7 +1004,7 @@ export function runReleaseTrustCommand(
   const json = argv.includes("--json");
   const unknownFlags = argv.filter((a) => a.startsWith("-") && a !== "--json");
   if (unknownFlags.length > 0) {
-    io.err("Usage: mjolnir release-trust [--json] [repo-root]");
+    io.err("Usage: qa-doctor release-trust [--json] [repo-root]");
     return 10;
   }
   const targetArg = argv.find((a) => !a.startsWith("-")) ?? process.cwd();
@@ -1012,7 +1012,7 @@ export function runReleaseTrustCommand(
     const fixturesRoot = join(targetArg, "tests", "fixtures");
     if (!existsSync(fixturesRoot)) {
       io.err(
-        `No fixtures directory at ${fixturesRoot}. Run from the mjolnir repo root.`,
+        `No fixtures directory at ${fixturesRoot}. Run from the qa-doctor repo root.`,
       );
       return 2;
     }

@@ -1,15 +1,16 @@
 {
   "$schema": "https://smithery.ai/server.config.schema.json",
-  "name": "mjolnir-qa",
+  "name": "qa-doctor-cli",
   "displayName": "QA Doctor — verification trust scan",
   "description": "Scans test suites, Playwright configs and CI workflows, grades the verification system (not the product code), and publishes a measured false-positive rate per rule. MCP tools: scan, explain, diff, verify, forensics, triage, pw-report.",
   "version": "2.0.0",
   "server":
     {
       "type": "stdio",
-      "command": { "type": "npx", "args": ["-y", "mjolnir-qa@latest", "mcp"] },
+      "command":
+        { "type": "npx", "args": ["-y", "qa-doctor-cli@latest", "mcp"] },
     },
-  "repository": "https://github.com/Sergey-Bar/Mjolnir",
+  "repository": "https://github.com/Sergey-Bar/qa-doctor",
   "license": "MIT",
   "keywords":
     ["testing", "qa", "ci", "playwright", "mcp", "model-context-protocol"],

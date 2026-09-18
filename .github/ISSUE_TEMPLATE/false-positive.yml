@@ -40,7 +40,7 @@ body:
     id: version
     attributes:
       label: QA Doctor version
-      description: Output of `npx mjolnir-qa@latest --version` or your package.json's pinned version.
+      description: Output of `npx qa-doctor-cli@latest --version` or your package.json's pinned version.
     validations:
       required: true
   - type: dropdown

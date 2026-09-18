@@ -1,7 +1,7 @@
 /**
  * `npm run site:doctor` (from the repo root) — the site's own gate.
  *
- * The product is governed by executable laws (`mjolnir doctor`,
+ * The product is governed by executable laws (`qa-doctor doctor`,
  * CLAUDE.md). The site was not: `pages.yml` ran the catalog generator's
  * unit tests and `vitepress build`, and nothing else. That is how the
  * landing page came to display a hand-typed 70/100 next to a generated
@@ -316,7 +316,7 @@ const DIST = join(SITE, ".vitepress", "dist");
 
 /** Windows gives back "guide\ci.html"; every href in the HTML uses "/". */
 const toPosix = (p) => p.split(sep).join("/");
-const BASE = "/Mjolnir/";
+const BASE = "/qa-doctor/";
 
 function distPages() {
   if (!existsSync(DIST)) return null;
@@ -552,7 +552,7 @@ function main() {
   const checks = all.filter((c) => !c.gap);
   const gaps = all.filter((c) => c.gap);
 
-  console.log("\nmjolnir site doctor\n");
+  console.log("\nqa-doctor site doctor\n");
   let failed = 0;
   for (const c of checks) {
     const ok = c.failures.length === 0;

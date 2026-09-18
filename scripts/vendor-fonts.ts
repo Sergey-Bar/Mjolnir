@@ -133,7 +133,7 @@ export async function buildFontsCss(
      flash swap risks is shorter than the wrong-typeface render optional
      would leave in place for a reader's whole first visit. */
   font-display: swap;
-  src: url("/Mjolnir/fonts/${e.file}") format("woff2");
+  src: url("/qa-doctor/fonts/${e.file}") format("woff2");
   unicode-range: ${e.range};
 }`,
     )

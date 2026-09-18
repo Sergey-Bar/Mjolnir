@@ -20,7 +20,7 @@ import { runCli } from "./helpers.js";
 
 let dir: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-e2e-ci-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-e2e-ci-"));
 });
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
@@ -53,14 +53,14 @@ describe("E2E journey 2: CI PR flow", () => {
     const { stdout, status } = runCli(["ci", "install"], dir);
     expect(status).toBe(0);
     expect(stdout).toContain("ci");
-    const wf = join(dir, ".github", "workflows", "mjolnir.yml");
+    const wf = join(dir, ".github", "workflows", "qa-doctor.yml");
     expect(existsSync(wf)).toBe(true);
     const text = readFileSync(wf, "utf8");
     expect(text).toContain("jobs:");
     expect(text).toContain("on:");
-    // Template v2: the summary step is the `mjolnir summary` command,
+    // Template v2: the summary step is the `qa-doctor summary` command,
     // not an inline script (plan M4 — one emitter, one code path).
-    expect(text).toContain("summary mjolnir.json");
+    expect(text).toContain("summary qa-doctor.json");
   });
 
   it(
@@ -71,12 +71,12 @@ describe("E2E journey 2: CI PR flow", () => {
       writeSpec("debt.spec.ts", DEBT);
       const scan = runCli([dir, "--json", "--strict"]);
       expect(scan.status).toBe(0);
-      const reportPath = join(dir, "mjolnir.json");
+      const reportPath = join(dir, "qa-doctor.json");
       writeFileSync(reportPath, scan.stdout);
       // Neutralize the Actions-runner env: this test pins the documented
       // "outside GitHub Actions" behavior (summary on stdout, no
       // annotations); the annotations flow is covered in summary.spec.
-      const { stdout, status } = runCli(["summary", "mjolnir.json"], dir, {
+      const { stdout, status } = runCli(["summary", "qa-doctor.json"], dir, {
         GITHUB_ACTIONS: undefined,
         GITHUB_STEP_SUMMARY: undefined,
       });

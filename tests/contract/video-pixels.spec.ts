@@ -39,7 +39,7 @@ import { pacingFor } from "../../scripts/video/pacing.js";
 import { WINDOW_INSET } from "../../scripts/video/terminal-page.js";
 
 const ROOT = join(import.meta.dirname, "..", "..");
-const POSTER = join(ROOT, "assets", "video", "mjolnir-demo-poster.png");
+const POSTER = join(ROOT, "assets", "video", "qa-doctor-demo-poster.png");
 
 /** The pre-unification terminal ground, for the contrast below. */
 const RETIRED_GROUND = "#08090A";

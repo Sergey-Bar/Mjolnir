@@ -1,44 +1,44 @@
 import { describe, expect, it } from "vitest";
 import {
   validateConfigSchema,
-  MJOLNIR_CONFIG_SCHEMA,
+  QA_DOCTOR_CONFIG_SCHEMA,
 } from "../../src/config/config-schema.js";
 
-describe("MJOLNIR_CONFIG_SCHEMA", () => {
+describe("QA_DOCTOR_CONFIG_SCHEMA", () => {
   it("exports a valid JSON Schema object", () => {
-    expect(MJOLNIR_CONFIG_SCHEMA).toBeDefined();
-    expect(MJOLNIR_CONFIG_SCHEMA.$schema).toBe(
+    expect(QA_DOCTOR_CONFIG_SCHEMA).toBeDefined();
+    expect(QA_DOCTOR_CONFIG_SCHEMA.$schema).toBe(
       "http://json-schema.org/draft-07/schema#",
     );
   });
 
   it("defines gate enum", () => {
-    const gate = MJOLNIR_CONFIG_SCHEMA.properties.gate;
+    const gate = QA_DOCTOR_CONFIG_SCHEMA.properties.gate;
     expect(gate.type).toBe("string");
     expect(gate.enum).toEqual(["advisory", "error", "warning"]);
   });
 
   it("defines exclude as string array", () => {
-    const exclude = MJOLNIR_CONFIG_SCHEMA.properties.exclude;
+    const exclude = QA_DOCTOR_CONFIG_SCHEMA.properties.exclude;
     expect(exclude.type).toBe("array");
     expect(exclude.items.type).toBe("string");
   });
 
   it("defines severityOverrides as object with severity values", () => {
-    const so = MJOLNIR_CONFIG_SCHEMA.properties.severityOverrides;
+    const so = QA_DOCTOR_CONFIG_SCHEMA.properties.severityOverrides;
     expect(so.type).toBe("object");
     expect(so.additionalProperties.enum).toEqual(["error", "warning", "info"]);
   });
 
   it("defines ignore array with required ruleId and reason", () => {
-    const ignore = MJOLNIR_CONFIG_SCHEMA.properties.ignore;
+    const ignore = QA_DOCTOR_CONFIG_SCHEMA.properties.ignore;
     expect(ignore.type).toBe("array");
     expect(ignore.items.required).toContain("ruleId");
     expect(ignore.items.required).toContain("reason");
   });
 
   it("defines plugins object", () => {
-    const plugins = MJOLNIR_CONFIG_SCHEMA.properties.plugins;
+    const plugins = QA_DOCTOR_CONFIG_SCHEMA.properties.plugins;
     expect(plugins.type).toBe("object");
   });
 });

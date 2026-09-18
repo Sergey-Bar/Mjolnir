@@ -52,7 +52,7 @@ import {
 
 const createdDirs: string[] = [];
 function tmpRepo(prefix: string): string {
-  const d = mkdtempSync(join(tmpdir(), `mjolnir-arms9-${prefix}-`));
+  const d = mkdtempSync(join(tmpdir(), `qa-doctor-arms9-${prefix}-`));
   createdDirs.push(d);
   return d;
 }

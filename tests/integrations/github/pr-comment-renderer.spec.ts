@@ -57,7 +57,7 @@ function baseModel(
       url: "https://ci.example.com/report",
       format: "json",
     },
-    generatedBy: { tool: "mjolnir-qa", version: "1.0.10" },
+    generatedBy: { tool: "qa-doctor-cli", version: "1.0.10" },
     ...overrides,
   };
 }
@@ -113,7 +113,7 @@ describe("renderPrComment", () => {
   describe("information architecture", () => {
     it("includes header with repository and PR number", () => {
       const output = renderPrComment(baseModel());
-      expect(output).toContain("<!-- mjolnir-pr-comment -->");
+      expect(output).toContain("<!-- qa-doctor-pr-comment -->");
       expect(output).toContain("my-org/my-repo");
       expect(output).toContain("PR #100");
     });
@@ -150,7 +150,7 @@ describe("renderPrComment", () => {
 
     it("includes footer with generated-by info", () => {
       const output = renderPrComment(baseModel());
-      expect(output).toContain("mjolnir-qa");
+      expect(output).toContain("qa-doctor-cli");
       expect(output).toContain("v1.0.10");
     });
 

@@ -42,7 +42,7 @@ import type { Finding, ScanResult } from "../../src/types.js";
 
 let dir: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-cov2-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-cov2-"));
 });
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
@@ -83,19 +83,19 @@ function capture() {
 }
 
 describe("main() dispatch to the new verbs (plan §9 wiring)", () => {
-  it("`mjolnir why` dispatches with the caller's io (exit 10 no args)", async () => {
+  it("`qa-doctor why` dispatches with the caller's io (exit 10 no args)", async () => {
     const cap = capture();
     await expect(main(["why"], cap.io)).resolves.toBe(10);
-    expect(cap.errText()).toContain("Usage: mjolnir why");
+    expect(cap.errText()).toContain("Usage: qa-doctor why");
   });
 
-  it("`mjolnir handoff` dispatches with the caller's io", async () => {
+  it("`qa-doctor handoff` dispatches with the caller's io", async () => {
     const cap = capture();
     await expect(main(["handoff"], cap.io)).resolves.toBe(10);
     expect(cap.errText()).toContain("report file not found");
   });
 
-  it("`mjolnir install` dispatches with the caller's io", async () => {
+  it("`qa-doctor install` dispatches with the caller's io", async () => {
     const cap = capture();
     // The worktree itself has instruction surfaces (.kilo); --force makes
     // the run idempotent regardless of prior local edits. Whether files
@@ -104,7 +104,7 @@ describe("main() dispatch to the new verbs (plan §9 wiring)", () => {
     await expect(main(["install", "--force"], cap.io)).resolves.toBe(0);
     expect(cap.text()).toContain("Installed on");
     // Cleanup: do not leave test artifacts in the worktree.
-    rmSync(join(process.cwd(), ".kilo", "command", "mjolnir.md"), {
+    rmSync(join(process.cwd(), ".kilo", "command", "qa-doctor.md"), {
       force: true,
     });
   });
@@ -157,7 +157,7 @@ describe("install — remaining arms", () => {
     expect(runInstallCommand([], cap.io, dir)).toBe(0);
     const after = readFileSync(join(dir, "AGENTS.md"), "utf8");
     expect(after.startsWith("no trailing newline\n")).toBe(true);
-    expect(after).toContain("mjolnir:managed");
+    expect(after).toContain("qa-doctor:managed");
   });
 
   it("core.hooksPath is honored by the hook planner through install", () => {
@@ -250,7 +250,7 @@ describe("scan flags — score/category/staged arms via runScanCommand", () => {
         `});`,
       ].join("\n"),
     );
-    return { target: dir, report: join(dir, "mjolnir.json") };
+    return { target: dir, report: join(dir, "qa-doctor.json") };
   }
 
   it("--blocking none forces exit 0 even with error findings (score path)", async () => {

@@ -1,5 +1,5 @@
 /**
- * `mjolnir why <file>:<line>` — occurrence-level evidence/explanation
+ * `qa-doctor why <file>:<line>` — occurrence-level evidence/explanation
  * query (agent-handoff plan M2).
  *
  * Role: an INFORMATIONAL query, not a gate. It works regardless of
@@ -10,7 +10,7 @@
  * before/after correlation instead).
  *
  * Two modes:
- * - `--json <mjolnir.json>`: the saved report is AUTHORITATIVE — the
+ * - `--json <qa-doctor.json>`: the saved report is AUTHORITATIVE — the
  *   query runs against exactly what the saved scan found (deterministic,
  *   offline).
  * - live (default): runs a fresh scan of the target.
@@ -107,7 +107,7 @@ function evidenceLines(f: Finding, ui: UiContext): string[] {
 }
 
 const SUPPRESSION_HINT =
-  "Suppression (only with cause): an `ignore` entry in mjolnir.config.json — reason REQUIRED, expires after 90 days. Prefer fixing the root cause.";
+  "Suppression (only with cause): an `ignore` entry in qa-doctor.config.json — reason REQUIRED, expires after 90 days. Prefer fixing the root cause.";
 
 /** Render the why answer. Pure over (match, ui). */
 export function renderWhy(
@@ -122,7 +122,7 @@ export function renderWhy(
       `  No finding at ${match.file}:${match.line} in this report.`,
       "",
       p.dim("  Locations are exact (file + line as reported). If the code"),
-      p.dim("  moved since the scan, re-run mjolnir to refresh locations."),
+      p.dim("  moved since the scan, re-run qa-doctor to refresh locations."),
       "",
     ];
     return lines.join("\n");
@@ -144,7 +144,7 @@ export function renderWhy(
     lines.push("");
   }
   lines.push(
-    nextStep("mjolnir explain <RULE-ID>", ui) + " — full rule context.",
+    nextStep("qa-doctor explain <RULE-ID>", ui) + " — full rule context.",
   );
   return lines.join("\n");
 }
@@ -172,7 +172,7 @@ export async function runWhyCommand(
     const value = argv[i];
     if (!isValidCategory(value)) {
       io.err(
-        `mjolnir why: unknown --category: ${value === undefined ? "(missing value)" : value}`,
+        `qa-doctor why: unknown --category: ${value === undefined ? "(missing value)" : value}`,
       );
       io.err(`  Valid categories: ${RULE_CATEGORIES.join(", ")}`);
       return 10;
@@ -182,13 +182,13 @@ export async function runWhyCommand(
 
   const locationToken = argv.find((a) => !a.startsWith("-"));
   if (!locationToken) {
-    io.err("Usage: mjolnir why <file>:<line> [--json <mjolnir.json>]");
+    io.err("Usage: qa-doctor why <file>:<line> [--json <qa-doctor.json>]");
     return 10;
   }
   const location = parseFileLine(locationToken);
   if (!location) {
     io.err(
-      `mjolnir why: cannot parse location "${locationToken}" — expected <file>:<line>`,
+      `qa-doctor why: cannot parse location "${locationToken}" — expected <file>:<line>`,
     );
     return 10;
   }
@@ -209,14 +209,16 @@ export async function runWhyCommand(
   if (reportPath !== undefined) {
     // Saved-report mode: the report is authoritative.
     if (!reportExists(reportPath)) {
-      io.err(`mjolnir why: report file not found: ${reportPath}`);
-      io.err("  Run the scan with --json first: mjolnir --json > mjolnir.json");
+      io.err(`qa-doctor why: report file not found: ${reportPath}`);
+      io.err(
+        "  Run the scan with --json first: qa-doctor --json > qa-doctor.json",
+      );
       return 10;
     }
     try {
       result = loadSavedReport(reportPath);
     } catch (err) {
-      io.err(`mjolnir why: cannot read ${reportPath}: ${errorText(err)}`);
+      io.err(`qa-doctor why: cannot read ${reportPath}: ${errorText(err)}`);
       return 2;
     }
   } else {
@@ -224,7 +226,7 @@ export async function runWhyCommand(
     // A nonexistent/non-directory target is a usage error (audit H-4
     // posture), not a silent empty scan.
     if (!existsSync(target)) {
-      io.err(`mjolnir why: scan target does not exist: ${target}`);
+      io.err(`qa-doctor why: scan target does not exist: ${target}`);
       return 10;
     }
     try {
@@ -238,7 +240,7 @@ export async function runWhyCommand(
         strict: argv.includes("--strict"),
       });
     } catch (err) {
-      io.err(`mjolnir why: scan failed: ${errorText(err)}`);
+      io.err(`qa-doctor why: scan failed: ${errorText(err)}`);
       return 20;
     }
   }

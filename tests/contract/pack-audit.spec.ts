@@ -33,7 +33,7 @@ function makeTar(entries: Record<string, string>): {
   return { dir, tgz };
 }
 
-const PKG = JSON.stringify({ name: "mjolnir-qa", version: "0.0.0-test" });
+const PKG = JSON.stringify({ name: "qa-doctor-cli", version: "0.0.0-test" });
 const VALID = {
   "package.json": PKG,
   "dist/cli.mjs": "export {};",
@@ -83,7 +83,7 @@ describe("pack-audit (SC-6)", () => {
   });
 
   it("machine-local agent dirs FIRES", () => {
-    withTar({ ...VALID, ".claude/commands/mjolnir.md": "x" }, (tgz) => {
+    withTar({ ...VALID, ".claude/commands/qa-doctor.md": "x" }, (tgz) => {
       expect(run(tgz).code).toBe(1);
     });
   });

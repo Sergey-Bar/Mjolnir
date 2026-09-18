@@ -4,9 +4,9 @@
 # documented amendment to the repo's root contract
 # (tests/contract/repo-hygiene.spec.ts), never a silent one.
 #
-# Consumers pin a major tag (`uses: Sergey-Bar/Mjolnir@v1`); release.yml's
+# Consumers pin a major tag (`uses: Sergey-Bar/qa-doctor@v1`); release.yml's
 # action-tags job keeps that tag moving to every stable release.
-# Scanning runs through the published npm package (`npx mjolnir-qa@…`),
+# Scanning runs through the published npm package (`npx qa-doctor-cli@…`),
 # never an `npm ci` of this repo — the action must work for consumers,
 # not contributors.
 #
@@ -60,7 +60,7 @@ inputs:
     default: "22"
   version:
     description: >-
-      mjolnir-qa npm spec to run. Default: latest. Pin an exact version
+      qa-doctor-cli npm spec to run. Default: latest. Pin an exact version
       in your workflow for reproducible gates.
     required: false
     default: "latest"
@@ -87,7 +87,7 @@ inputs:
     default: "true"
   trust-artifact:
     description: >-
-      Upload the Trust Report (mjolnir-trust-report.md) and the raw
+      Upload the Trust Report (qa-doctor-trust-report.md) and the raw
       JSON report as workflow artifacts.
     required: false
     default: "true"
@@ -110,7 +110,7 @@ outputs:
     description: "Path of the SARIF report when format is sarif, else empty"
     value: ${{ steps.scan.outputs.sarif-file }}
   trust-report-file:
-    description: "Path of the generated Trust Report (mjolnir-trust-report.md)"
+    description: "Path of the generated Trust Report (qa-doctor-trust-report.md)"
     value: ${{ steps.trust-report.outputs.file }}
 
 runs:
@@ -191,18 +191,18 @@ runs:
           warning) ARGS+=(--blocking warning) ;;
           none)    ARGS+=(--blocking none) ;;
         esac
-        echo "Running: npx --yes mjolnir-qa@${MJ_VERSION} ${ARGS[*]}"
+        echo "Running: npx --yes qa-doctor-cli@${MJ_VERSION} ${ARGS[*]}"
         set +e
         if [ "$MJ_FORMAT" = "json" ]; then
-          npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}" > mjolnir.json
+          npx --yes "qa-doctor-cli@${MJ_VERSION}" "${ARGS[@]}" > qa-doctor.json
         elif [ "$MJ_FORMAT" = "sarif" ]; then
-          npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}" > mjolnir-report.sarif
+          npx --yes "qa-doctor-cli@${MJ_VERSION}" "${ARGS[@]}" > qa-doctor-report.sarif
         elif [ "$MJ_FORMAT" = "codequality" ]; then
-          npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}" > mjolnir-codequality.json
+          npx --yes "qa-doctor-cli@${MJ_VERSION}" "${ARGS[@]}" > qa-doctor-codequality.json
         elif [ "$MJ_FORMAT" = "mermaid" ]; then
-          npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}" > mjolnir-report.mmd
+          npx --yes "qa-doctor-cli@${MJ_VERSION}" "${ARGS[@]}" > qa-doctor-report.mmd
         else
-          npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}"
+          npx --yes "qa-doctor-cli@${MJ_VERSION}" "${ARGS[@]}"
         fi
         EXIT=$?
         set -e
@@ -221,15 +221,15 @@ runs:
           exit 0
         fi
         if [ "$MJ_FORMAT" = "sarif" ]; then
-          echo "sarif-file=mjolnir-report.sarif" >> "$GITHUB_OUTPUT"
+          echo "sarif-file=qa-doctor-report.sarif" >> "$GITHUB_OUTPUT"
         else
           echo "sarif-file=" >> "$GITHUB_OUTPUT"
         fi
-        if [ "$MJ_FORMAT" = "json" ] && [ -s mjolnir.json ]; then
+        if [ "$MJ_FORMAT" = "json" ] && [ -s qa-doctor.json ]; then
           node -e '
             const fs = require("fs");
             try {
-              const r = JSON.parse(fs.readFileSync("mjolnir.json", "utf8"));
+              const r = JSON.parse(fs.readFileSync("qa-doctor.json", "utf8"));
               const findings = Array.isArray(r.findings) ? r.findings.length : 0;
               fs.appendFileSync(process.env.GITHUB_OUTPUT,
                 "findings=" + findings + "\n");
@@ -271,7 +271,7 @@ runs:
         if [ "$MJ_SCOPE" = "changed" ]; then ARGS+=(--scope changed); fi
         if [ "$MJ_STRICT" = "true" ]; then ARGS+=(--strict); fi
         set +e
-        npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}" > mjolnir.json
+        npx --yes "qa-doctor-cli@${MJ_VERSION}" "${ARGS[@]}" > qa-doctor.json
         echo "exit=$?" >> "$GITHUB_OUTPUT"
         exit 0
 
@@ -285,9 +285,9 @@ runs:
         MJ_VERSION: ${{ inputs.version }}
       run: |
         set +e
-        npx --yes "mjolnir-qa@${MJ_VERSION}" trust-report --from mjolnir.json
+        npx --yes "qa-doctor-cli@${MJ_VERSION}" trust-report --from qa-doctor.json
         echo "exit=$?" >> "$GITHUB_OUTPUT"
-        echo "file=mjolnir-trust-report.md" >> "$GITHUB_OUTPUT"
+        echo "file=qa-doctor-trust-report.md" >> "$GITHUB_OUTPUT"
         exit 0
 
     - name: Emit annotations + step summary
@@ -300,7 +300,7 @@ runs:
         # GITHUB_ACTIONS=true) and the step summary to
         # $GITHUB_STEP_SUMMARY — the CLI's own CI surface, zero action-
         # side rendering logic.
-        npx --yes "mjolnir-qa@${MJ_VERSION}" summary mjolnir.json --stdout | tee "${GITHUB_STEP_SUMMARY:-/dev/null}" >/dev/null 2>&1 || true
+        npx --yes "qa-doctor-cli@${MJ_VERSION}" summary qa-doctor.json --stdout | tee "${GITHUB_STEP_SUMMARY:-/dev/null}" >/dev/null 2>&1 || true
 
     - name: Post Trust Report as PR comment
       if: >-
@@ -315,12 +315,12 @@ runs:
         # Upsert by marker: one Trust Report comment per PR, updated in
         # place on every push (no comment flood). Event data reaches gh
         # through env only (audit S-5).
-        BODY_FILE="mjolnir-trust-report.md"
+        BODY_FILE="qa-doctor-trust-report.md"
         if [ ! -s "$BODY_FILE" ]; then
           echo "::warning::Trust Report body missing — skipping PR comment"
           exit 0
         fi
-        MARKER='<!-- mjolnir-trust-report:v1 -->'
+        MARKER='<!-- qa-doctor-trust-report:v1 -->'
         COMMENT_ID="$(gh api "repos/${MJ_REPO}/issues/${MJ_PR_NUMBER}/comments" \
           --paginate --jq ".[] | select(.body | startswith(\"$MARKER\")) | .id" | head -n1)"
         if [ -n "$COMMENT_ID" ]; then
@@ -337,9 +337,9 @@ runs:
       if: inputs.trust-artifact == 'true'
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
-        name: mjolnir-trust-report
+        name: qa-doctor-trust-report
         path: |
-          mjolnir-trust-report.md
-          mjolnir.json
+          qa-doctor-trust-report.md
+          qa-doctor.json
         if-no-files-found: warn
         retention-days: 30

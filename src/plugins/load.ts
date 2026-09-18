@@ -12,15 +12,15 @@
  * Audit C2 (locked decision, remediation plan): code execution is also
  * OPT-IN at the scan level. `require()`ing a plugin package happens only
  * behind the plugin trust gate (`--enable-plugins` /
- * MJOLNIR_ENABLE_PLUGINS=1, default OFF). A scan of an untrusted repo
+ * QA_DOCTOR_ENABLE_PLUGINS=1, default OFF). A scan of an untrusted repo
  * must never execute the repo's own plugin declarations. When the gate
  * is closed and plugins ARE declared, the declarations are reported as
  * skipped (loud stderr notice upstream) — never silently ignored and
  * never executed.
  *
  * Contract:
- * - Plugins are declared in mjolnir.config.json under "plugins":
- *   ["mjolnir-plugin-acme", ...] or [{ "package": "...", "prefix": "ACME" }]
+ * - Plugins are declared in qa-doctor.config.json under "plugins":
+ *   ["qa-doctor-plugin-acme", ...] or [{ "package": "...", "prefix": "ACME" }]
  * - Each package must export `rules: QADoctorRule[]` (same shape as core).
  * - Rule IDs MUST use a plugin-specific prefix (e.g. QA-ACME-001) — core
  *   prefixes (shared RESERVED_PREFIXES law) are rejected to prevent spoofing.
@@ -117,7 +117,7 @@ export function loadPlugins(root: string, gateOpen = false): PluginLoadResult {
     let mod: unknown;
     try {
       // FW-LINT-01 residual: plugin package names come from
-      // mjolnir.config.json — operator-declared (§21); a hostile or
+      // qa-doctor.config.json — operator-declared (§21); a hostile or
       // missing package degrades to a plugin error below, never a crash.
       // eslint-disable-next-line security/detect-non-literal-require
       mod = require(decl.package);
@@ -133,7 +133,7 @@ export function loadPlugins(root: string, gateOpen = false): PluginLoadResult {
     const rules = (mod as { rules?: unknown })?.rules;
     if (!Array.isArray(rules)) {
       result.errors.push(
-        `plugin "${decl.package}" exports no \`rules\` array — not a mjolnir plugin.`,
+        `plugin "${decl.package}" exports no \`rules\` array — not a qa-doctor plugin.`,
       );
       continue;
     }

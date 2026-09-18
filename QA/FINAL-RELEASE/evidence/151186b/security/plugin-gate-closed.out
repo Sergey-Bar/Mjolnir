@@ -53,7 +53,7 @@ STDOUT:{
   }
 }
 
-STDERR:mjolnir: plugin code execution is DISABLED (default). The following rule sources were NOT loaded:
-  - npm plugin: C:/Users/User/AppData/Local/Temp/mjolnir-plug-xoSd3M/evil-plugin.mjs
-To run them, re-run with --enable-plugins (or set MJOLNIR_ENABLE_PLUGINS=1).
-Declarative JSON rule manifests (mjolnir-rules/*.json) are unaffected — they execute no code.
+STDERR:qa-doctor: plugin code execution is DISABLED (default). The following rule sources were NOT loaded:
+  - npm plugin: C:/Users/User/AppData/Local/Temp/qa-doctor-plug-xoSd3M/evil-plugin.mjs
+To run them, re-run with --enable-plugins (or set QA_DOCTOR_ENABLE_PLUGINS=1).
+Declarative JSON rule manifests (qa-doctor-rules/*.json) are unaffected — they execute no code.

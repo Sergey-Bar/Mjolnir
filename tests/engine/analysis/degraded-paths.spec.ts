@@ -9,7 +9,7 @@ vi.mock("node:os", async (importOriginal) => {
     ...actual,
     tmpdir: () =>
       osState.breakTmp
-        ? join(actual.tmpdir(), "mjolnir-missing-root")
+        ? join(actual.tmpdir(), "qa-doctor-missing-root")
         : actual.tmpdir(),
   };
 });
@@ -116,7 +116,7 @@ describe("impact degraded paths", () => {
 });
 
 function realGitRepo(exec: typeof execFileSync): string {
-  const dir = mkdtempSync(join(tmpdir(), "mjolnir-impact-degraded-"));
+  const dir = mkdtempSync(join(tmpdir(), "qa-doctor-impact-degraded-"));
   const git = (args: string[]) =>
     exec("git", ["-C", dir, ...args], { stdio: "ignore" });
   git(["init", "-b", "main"]);

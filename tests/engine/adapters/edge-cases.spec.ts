@@ -24,7 +24,7 @@ import { runScan } from "../../../src/cli.js";
 let dir: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-adapter-edge-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-adapter-edge-"));
 });
 
 afterEach(() => {

@@ -28,7 +28,7 @@ import type { ScanResult } from "../../src/types.js";
 
 let dir: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-phase4-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-phase4-"));
 });
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
@@ -150,7 +150,7 @@ describe("plugin flow integration", () => {
       ].join("\n"),
     );
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
+      join(dir, "qa-doctor.config.json"),
       JSON.stringify({ plugins: ["./good-plugin"] }),
     );
     writeFileSync(
@@ -195,7 +195,7 @@ describe("plugin flow integration", () => {
       }];`,
     );
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
+      join(dir, "qa-doctor.config.json"),
       JSON.stringify({ plugins: ["./bad-plugin"] }),
     );
     writeFileSync(join(dir, "a.spec.ts"), "it('a', () => {});\n");
@@ -346,7 +346,7 @@ describe("upgrade/compat sioke: baseline forward compatmbmlmty", () => {
       err: () => {},
     });
     expect(baseCode).toBe(0);
-    const baselinePath = join(dir, ".mjolnir", "baseline.json");
+    const baselinePath = join(dir, ".qa-doctor", "baseline.json");
     const before = readFileSync(baselinePath, "utf8");
     expect(
       (JSON.parse(before) as { schemaVersion: number }).schemaVersion,

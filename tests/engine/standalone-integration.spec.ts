@@ -97,7 +97,7 @@ describe("standalone module integration (Release 2.0.0)", () => {
 
   describe("dependency graph wired into pipeline", () => {
     it("buildDependencyGraph parses package.json and returns metadata", () => {
-      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "mjolnir-integ-"));
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "qa-doctor-integ-"));
       try {
         const pkg = {
           name: "test-pkg",
@@ -178,7 +178,7 @@ describe("standalone module integration (Release 2.0.0)", () => {
     it("isIncrementalSafe detects semantic config changes", () => {
       const result = isIncrementalSafe([
         {
-          path: "mjolnir.config.json",
+          path: "qa-doctor.config.json",
           state: "modified",
           currentHash: "a",
           previousHash: "b",
@@ -286,7 +286,7 @@ describe("standalone module integration (Release 2.0.0)", () => {
 
   describe("cross-module: dependency graph + monorepo", () => {
     it("partition logic assigns findings to correct packages", () => {
-      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "mjolnir-integ-"));
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "qa-doctor-integ-"));
       try {
         const pkgDir = path.join(tmpDir, "packages", "my-lib");
         fs.mkdirSync(pkgDir, { recursive: true });

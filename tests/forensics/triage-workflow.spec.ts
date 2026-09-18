@@ -164,7 +164,7 @@ describe("--json twin mirrors the workflow", () => {
       artifact: string;
       rows: Array<{ classification: string; nextAction: string }>;
     };
-    expect(j.artifact).toBe("mjolnir-triage-workflow");
+    expect(j.artifact).toBe("qa-doctor-triage-workflow");
     expect(j.rows).toHaveLength(1);
     expect(j.rows[0]?.classification).toBe("RETRY-DEPENDENT");
     expect(j.rows[0]?.nextAction).toContain("quarantine + ticket");
@@ -299,7 +299,7 @@ describe("CLI mode arms (P8 rebase — coverage of the triage command flags)", (
   let dir = "";
   let origCwd = "";
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), "mjolnir-triage-cmd-"));
+    dir = mkdtempSync(join(tmpdir(), "qa-doctor-triage-cmd-"));
     origCwd = process.cwd();
     process.chdir(dir);
   });
@@ -358,6 +358,6 @@ describe("CLI mode arms (P8 rebase — coverage of the triage command flags)", (
       cap.io,
     );
     expect(code).toBe(0);
-    expect(cap.text()).toContain('"artifact": "mjolnir-triage-workflow"');
+    expect(cap.text()).toContain('"artifact": "qa-doctor-triage-workflow"');
   });
 });

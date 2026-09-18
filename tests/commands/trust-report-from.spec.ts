@@ -65,7 +65,7 @@ function resetCaptured(): void {
 }
 
 describe("trust-report --from (WI-9 consumption path)", () => {
-  const dir = mkdtempSync(join(tmpdir(), "mjolnir-tr-from-"));
+  const dir = mkdtempSync(join(tmpdir(), "qa-doctor-tr-from-"));
 
   it("--from without a value exits 10 with usage", async () => {
     resetCaptured();
@@ -103,7 +103,7 @@ describe("trust-report --from (WI-9 consumption path)", () => {
   });
 
   it("a saved scan renders the MD next to the report file", async () => {
-    const p = join(dir, "mjolnir.json");
+    const p = join(dir, "qa-doctor.json");
     // The Action saves {...result, contract} — the contract rides along.
     writeFileSync(
       p,
@@ -113,27 +113,27 @@ describe("trust-report --from (WI-9 consumption path)", () => {
     const code = await runTrustReportCommand(["--from", p], io);
     expect(code).toBe(0);
     expect(captured.out.join("\n")).toContain("trust report written");
-    const mdPath = join(dir, "mjolnir-trust-report.md");
+    const mdPath = join(dir, "qa-doctor-trust-report.md");
     expect(existsSync(mdPath)).toBe(true);
     expect(readFileSync(mdPath, "utf8")).toContain("QA Doctor Trust Report");
   });
 
   it("--stdout prints the report without writing a file", async () => {
-    const p = join(dir, "mjolnir2.json");
+    const p = join(dir, "qa-doctor2.json");
     writeFileSync(p, JSON.stringify(result()));
     resetCaptured();
     // The --stdout mode writes no file: the earlier test's MD was
-    // written next to mjolnir.json (same dir), so this run must leave
+    // written next to qa-doctor.json (same dir), so this run must leave
     // that file untouched — assert its content is the OLD label, not a
     // second write. Simplest: point --stdout at a FRESH directory.
-    const outDir = mkdtempSync(join(tmpdir(), "mjolnir-tr-stdout-"));
+    const outDir = mkdtempSync(join(tmpdir(), "qa-doctor-tr-stdout-"));
     try {
-      const p2 = join(outDir, "mjolnir.json");
+      const p2 = join(outDir, "qa-doctor.json");
       writeFileSync(p2, JSON.stringify(result()));
       const code = await runTrustReportCommand(["--from", p2, "--stdout"], io);
       expect(code).toBe(0);
       expect(captured.out.join("\n")).toContain("# QA Doctor Trust Report");
-      expect(existsSync(join(outDir, "mjolnir-trust-report.md"))).toBe(false);
+      expect(existsSync(join(outDir, "qa-doctor-trust-report.md"))).toBe(false);
     } finally {
       rmSync(outDir, { recursive: true, force: true });
     }
@@ -150,7 +150,7 @@ describe("trust-report --from (WI-9 consumption path)", () => {
         // committed demo artifacts mid-suite is exactly the drift the
         // standing trap warns about — it poisoned sibling tests that
         // assert on the real repo's state.
-        const corpusCopy = mkdtempSync(join(tmpdir(), "mjolnir-tr-rescan-"));
+        const corpusCopy = mkdtempSync(join(tmpdir(), "qa-doctor-tr-rescan-"));
         try {
           cpSync(
             join(import.meta.dirname, "..", "..", "examples", "mvp-demo"),
@@ -159,13 +159,13 @@ describe("trust-report --from (WI-9 consumption path)", () => {
           );
           const code = await runTrustReportCommand([corpusCopy], io);
           expect(code).toBe(0);
-          const md = join(corpusCopy, "mjolnir-trust-report.md");
+          const md = join(corpusCopy, "qa-doctor-trust-report.md");
           expect(existsSync(md)).toBe(true);
           expect(readFileSync(md, "utf8")).toContain(
             "# QA Doctor Trust Report",
           );
           expect(
-            existsSync(join(corpusCopy, "mjolnir-trust-report.json")),
+            existsSync(join(corpusCopy, "qa-doctor-trust-report.json")),
           ).toBe(true);
         } finally {
           rmSync(corpusCopy, { recursive: true, force: true });
@@ -216,12 +216,12 @@ describe("trust-report --from (WI-9 consumption path)", () => {
     });
 
     it("a scan that throws internally exits 20 via the rescan catch", async () => {
-      // A directory whose mjolnir.config.json makes the config loader
+      // A directory whose qa-doctor.config.json makes the config loader
       // throw → runScan throws → the verb's catch returns 20.
-      const work = mkdtempSync(join(tmpdir(), "mjolnir-tr-int-"));
+      const work = mkdtempSync(join(tmpdir(), "qa-doctor-tr-int-"));
       try {
         writeFileSync(
-          join(work, "mjolnir.config.json"),
+          join(work, "qa-doctor.config.json"),
           '{"severityOverrides": ["not-an-object"]}',
         );
         const code = await runTrustReportCommand([work], io);
@@ -238,9 +238,9 @@ describe("trust-report --from (WI-9 consumption path)", () => {
       resetCaptured();
       await runTrustReportCommand(["--from", pC, "--stdout"], io);
       const clean = captured.out.join("\n");
-      expect(clean).toContain("mjolnir ci install");
+      expect(clean).toContain("qa-doctor ci install");
 
-      // (b) findings + partial=false + measured rules → "mjolnir explain"
+      // (b) findings + partial=false + measured rules → "qa-doctor explain"
       const pB = join(dir, "mixed.json");
       writeFileSync(
         pB,
@@ -268,7 +268,7 @@ describe("trust-report --from (WI-9 consumption path)", () => {
       );
       resetCaptured();
       await runTrustReportCommand(["--from", pB, "--stdout"], io);
-      expect(captured.out.join("\n")).toContain("mjolnir explain");
+      expect(captured.out.join("\n")).toContain("qa-doctor explain");
 
       // (c) JSON twin with corroboration evidence branch (level defect)
       const pD = join(dir, "corroborated.json");
@@ -366,7 +366,7 @@ describe("trust-report --from (WI-9 consumption path)", () => {
       writeFileSync(pG, JSON.stringify(result()));
       resetCaptured();
       await runTrustReportCommand(["--from", pG, "--stdout"], io);
-      expect(captured.out.join("\n")).toContain("mjolnir ci install");
+      expect(captured.out.join("\n")).toContain("qa-doctor ci install");
 
       // corroborated finding at "test" level (not defect) → "run executed"
       const pH = join(dir, "test-corroborated.json");
@@ -625,17 +625,17 @@ describe("trust-report --from (WI-9 consumption path)", () => {
       expect(code).toBe(0);
       const out = captured.out.join("\n");
       expect(out).toContain("run executed");
-      expect(out).toContain("mjolnir explain QA-PW-004");
+      expect(out).toContain("qa-doctor explain QA-PW-004");
     });
 
     it("an internal scan failure exits 20 (runScan throws)", async () => {
       // A directory whose scan fails internally (hostile config) — the
       // verb must degrade honestly (10 usage / 20 internal), never a
       // fabricated success (0).
-      const work = mkdtempSync(join(tmpdir(), "mjolnir-tr-int-"));
+      const work = mkdtempSync(join(tmpdir(), "qa-doctor-tr-int-"));
       try {
         writeFileSync(
-          join(work, "mjolnir.config.json"),
+          join(work, "qa-doctor.config.json"),
           '{"severityOverrides": ["not-an-object"]}',
         );
         const code = await runTrustReportCommand([work], io);
@@ -655,7 +655,7 @@ describe("trust-report --from (WI-9 consumption path)", () => {
 
     it("a non-directory target exits 10", async () => {
       resetCaptured();
-      const p = join(tmpdir(), "mjolnir-tr-notadir.txt");
+      const p = join(tmpdir(), "qa-doctor-tr-notadir.txt");
       writeFileSync(p, "x");
       const code = await runTrustReportCommand([p], io);
       expect(code).toBe(10);

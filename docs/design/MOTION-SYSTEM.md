@@ -132,7 +132,7 @@ a result the scan did not produce.
 ## 5. Encoding
 
 `npm run docs:video` renders and publishes in one step; the committed
-`assets/video/mjolnir-demo.mp4` is what it produces, and
+`assets/video/qa-doctor-demo.mp4` is what it produces, and
 `video-media.spec.ts` checks the committed file on every checkout. CRF
 is calibrated to the 12 MB budget by measurement — 31.2 MB at 18,
 18.7 MB at 24, 9.9 MB at 32 — not chosen by feel.

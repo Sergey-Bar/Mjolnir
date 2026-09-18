@@ -1,5 +1,5 @@
 
-mjolnir brand doctor
+qa-doctor brand doctor
 
   PASS  Rule 1 · Site variables match the tokens — 71 declarations in vars.css
   PASS  Rule 2 · Terminal palette matches the tokens — 9 token references in src/reporter/theme.ts, 0 hex literals

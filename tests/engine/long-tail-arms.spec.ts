@@ -67,7 +67,7 @@ import type { DimensionScore, Finding, ScanResult } from "../../src/types.js";
 let dir: string;
 let origCwd: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-longtail-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-longtail-"));
   origCwd = process.cwd();
 });
 afterEach(() => {
@@ -487,7 +487,7 @@ describe("forensics parse and render edges", () => {
 describe("ignores defense and shared-walk memo", () => {
   it("skips blank, non-string, and negation-only patterns without crashing", () => {
     writeFileSync(
-      join(dir, ".mjolnirignore"),
+      join(dir, ".qa-doctorignore"),
       "\n   \n!\n! \nnode_modules/**\n",
     );
     const matcher = createIgnoreMatcher(dir);

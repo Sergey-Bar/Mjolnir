@@ -41,7 +41,7 @@ import type { Finding, ScanResult } from "../../src/types.js";
 let dir: string;
 let repo: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-m5-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-m5-"));
   writeFileSync(join(dir, "vitest.config.ts"), "export default {};\n");
   writeFileSync(
     join(dir, "package.json"),
@@ -67,7 +67,7 @@ beforeEach(() => {
       `});`,
     ].join("\n"),
   );
-  repo = mkdtempSync(join(tmpdir(), "mjolnir-m5-repo-"));
+  repo = mkdtempSync(join(tmpdir(), "qa-doctor-m5-repo-"));
   execFileSync("git", ["-C", repo, "init"], { stdio: "ignore" });
   execFileSync("git", ["-C", repo, "config", "user.email", "t@t"], {
     stdio: "ignore",
@@ -304,7 +304,7 @@ describe("staged hook install", () => {
     const hookPath = join(repo, ".git", "hooks", "pre-commit");
     expect(existsSync(hookPath)).toBe(true);
     const content = readFileSync(hookPath, "utf8");
-    expect(content).toContain("# mjolnir:managed pre-commit");
+    expect(content).toContain("# qa-doctor:managed pre-commit");
     expect(content).toContain("--staged --blocking warning");
     expect(content).not.toContain("@latest");
   });
@@ -323,7 +323,7 @@ describe("staged hook install", () => {
       join(repo, ".git", "hooks", "pre-commit"),
       "utf8",
     );
-    expect(after.split("# mjolnir:managed pre-commit").length - 1).toBe(1);
+    expect(after.split("# qa-doctor:managed pre-commit").length - 1).toBe(1);
     expect(after).toBe(before);
   });
 
@@ -337,7 +337,7 @@ describe("staged hook install", () => {
     const after = readFileSync(join(repo, ".husky", "pre-commit"), "utf8");
     // Existing hook content preserved; block appended after it.
     expect(after.startsWith("npm test\n")).toBe(true);
-    expect(after).toContain("# mjolnir:managed pre-commit");
+    expect(after).toContain("# qa-doctor:managed pre-commit");
   });
 
   it("husky append into a hook without a trailing newline (sep arm)", () => {
@@ -347,7 +347,7 @@ describe("staged hook install", () => {
     executeHookInstall(hook);
     const after = readFileSync(join(repo, ".husky", "pre-commit"), "utf8");
     expect(after.startsWith("npm test\n\n")).toBe(true);
-    expect(after).toContain("# mjolnir:managed pre-commit");
+    expect(after).toContain("# qa-doctor:managed pre-commit");
   });
 
   it("reuses core.hooksPath when configured", () => {
@@ -375,7 +375,7 @@ describe("staged hook install", () => {
     writeFileSync(
       hookPath,
       readFileSync(hookPath, "utf8").replace(
-        "# /mjolnir:managed pre-commit",
+        "# /qa-doctor:managed pre-commit",
         "",
       ),
     );
@@ -383,7 +383,7 @@ describe("staged hook install", () => {
     expect(second.action).toBe("update");
     expect(executeHookInstall(second)).toBe(true);
     const after = readFileSync(hookPath, "utf8");
-    expect(after).toContain("# /mjolnir:managed pre-commit");
+    expect(after).toContain("# /qa-doctor:managed pre-commit");
   });
 
   it("update on a hook file without a trailing newline (update-sep arm)", () => {
@@ -397,14 +397,14 @@ describe("staged hook install", () => {
     expect(second.action).toBe("update");
     expect(executeHookInstall(second)).toBe(true);
     expect(readFileSync(hookPath, "utf8")).toContain(
-      "# /mjolnir:managed pre-commit",
+      "# /qa-doctor:managed pre-commit",
     );
   });
 
   it("an unreadable existing hook refuses honestly (exit 10 shape)", () => {
     // Create a hook FILE where a directory is expected: existsSync true,
     // readFileSync throws → planHookInstall returns refuse.
-    const weird = mkdtempSync(join(tmpdir(), "mjolnir-hook-"));
+    const weird = mkdtempSync(join(tmpdir(), "qa-doctor-hook-"));
     try {
       const hooksPath = join(weird, "githooks", "pre-commit");
       mkdirSync(hooksPath, { recursive: true });

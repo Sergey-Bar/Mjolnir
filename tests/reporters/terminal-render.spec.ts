@@ -235,7 +235,7 @@ describe("score instrument layout", () => {
   it("puts the WORTHINESS line straight under the logo, with the headline beneath the gauge", () => {
     const out = renderTerminal(scan(), { isTTY: false, ascii: true });
     const lines = out.split("\n");
-    const logoLine = lines.findIndex((l) => l.includes("M J O L N I R"));
+    const logoLine = lines.findIndex((l) => l.includes("Q A  D O C T O R"));
     const worthiness = lines.findIndex((l) => l.includes("WORTHINESS"));
     const headline = lines.findIndex((l) =>
       l.includes("findings weigh it down"),
@@ -438,25 +438,25 @@ describe("findings cards", () => {
 });
 
 describe("shouldUseAscii()", () => {
-  it("MJOLNIR_ASCII=1 forces ASCII regardless of other env vars", () => {
-    const prev = process.env["MJOLNIR_ASCII"];
-    process.env["MJOLNIR_ASCII"] = "1";
+  it("QA_DOCTOR_ASCII=1 forces ASCII regardless of other env vars", () => {
+    const prev = process.env["QA_DOCTOR_ASCII"];
+    process.env["QA_DOCTOR_ASCII"] = "1";
     try {
       expect(shouldUseAscii()).toBe(true);
     } finally {
-      if (prev === undefined) delete process.env["MJOLNIR_ASCII"];
-      else process.env["MJOLNIR_ASCII"] = prev;
+      if (prev === undefined) delete process.env["QA_DOCTOR_ASCII"];
+      else process.env["QA_DOCTOR_ASCII"] = prev;
     }
   });
 
-  it("MJOLNIR_ASCII=0 forces Unicode regardless of other env vars", () => {
-    const prev = process.env["MJOLNIR_ASCII"];
-    process.env["MJOLNIR_ASCII"] = "0";
+  it("QA_DOCTOR_ASCII=0 forces Unicode regardless of other env vars", () => {
+    const prev = process.env["QA_DOCTOR_ASCII"];
+    process.env["QA_DOCTOR_ASCII"] = "0";
     try {
       expect(shouldUseAscii()).toBe(false);
     } finally {
-      if (prev === undefined) delete process.env["MJOLNIR_ASCII"];
-      else process.env["MJOLNIR_ASCII"] = prev;
+      if (prev === undefined) delete process.env["QA_DOCTOR_ASCII"];
+      else process.env["QA_DOCTOR_ASCII"] = prev;
     }
   });
 
@@ -471,7 +471,7 @@ describe("shouldUseAscii()", () => {
       WT: process.env["WT_SESSION"],
       TP: process.env["TERM_PROGRAM"],
       CE: process.env["ConEmuANSI"],
-      ASCII: process.env["MJOLNIR_ASCII"],
+      ASCII: process.env["QA_DOCTOR_ASCII"],
     };
     Object.defineProperty(process, "platform", {
       value: "win32",
@@ -481,7 +481,7 @@ describe("shouldUseAscii()", () => {
     delete process.env["WT_SESSION"];
     delete process.env["TERM_PROGRAM"];
     delete process.env["ConEmuANSI"];
-    delete process.env["MJOLNIR_ASCII"];
+    delete process.env["QA_DOCTOR_ASCII"];
     try {
       expect(shouldUseAscii()).toBe(true);
       process.env["TERM"] = "xterm-256color";
@@ -494,7 +494,7 @@ describe("shouldUseAscii()", () => {
         ["WT_SESSION", saved.WT],
         ["TERM_PROGRAM", saved.TP],
         ["ConEmuANSI", saved.CE],
-        ["MJOLNIR_ASCII", saved.ASCII],
+        ["QA_DOCTOR_ASCII", saved.ASCII],
       ] as const) {
         if (v === undefined) delete process.env[k];
         else process.env[k] = v;

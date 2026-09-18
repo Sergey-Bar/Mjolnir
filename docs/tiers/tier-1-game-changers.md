@@ -10,7 +10,7 @@ The #1 reason people install linters once and never again: they don't SEE
 the value. Fix:
 
 ```text
-mjolnir impact
+qa-doctor impact
 ```
 
 Parses the repo's git history + CI logs (local) and answers:
@@ -34,7 +34,7 @@ Static flakiness detection is guessing. Playwright already produces
 `trace.zip` + `test-results/`. Also: JUnit XML from any runner.
 
 ```text
-mjolnir forensics ./test-results/
+qa-doctor forensics ./test-results/
 ```
 
 - Parses retry data: which tests pass only on attempt ≥2
@@ -44,13 +44,13 @@ mjolnir forensics ./test-results/
   This alone makes QA Doctor mandatory for every serious Playwright shop.
   (Already planned as Layer 3 — PROMOTE IT. It's the killer feature.)
 
-## 3. `mjolnir fix` — Safe Auto-Fix with Proof 🔥🔥 ✅ DONE — `src/commands/fix.ts`, `--dry-run` + fixture-locked verification
+## 3. `qa-doctor fix` — Safe Auto-Fix with Proof 🔥🔥 ✅ DONE — `src/commands/fix.ts`, `--dry-run` + fixture-locked verification
 
 Not just suggestions. Apply fixes AND prove they're safe:
 
 ```text
-mjolnir fix --dry-run       # show diffs
-mjolnir fix                 # apply safe subset
+qa-doctor fix --dry-run       # show diffs
+qa-doctor fix                 # apply safe subset
 ```
 
 Safe set: remove `.only`/`.skip`, add missing `await`, replace
@@ -78,7 +78,7 @@ Current badges are vanity. Make ours evidentiary:
 ```
 
 - Badge shows score AND date AND commit — click through to full report
-- `mjolnir badge` generates static JSON for shields.io (no server!)
+- `qa-doctor badge` generates static JSON for shields.io (no server!)
 - Optional: "0 errors · verified at commit 8f4c91a" — falsifiable claims
 
 ---

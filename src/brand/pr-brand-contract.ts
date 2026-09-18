@@ -40,8 +40,8 @@ export const PR_BRAND_CONTRACT: PrCommentBrandContract = {
   productDescriptor: "Verification Trust",
   logoAsset: {
     light:
-      "https://raw.githubusercontent.com/Sergey-Bar/Mjolnir/main/assets/brand/logo-light.svg",
-    dark: "https://raw.githubusercontent.com/Sergey-Bar/Mjolnir/main/assets/brand/logo-dark.svg",
+      "https://raw.githubusercontent.com/Sergey-Bar/qa-doctor/main/assets/brand/logo-light.svg",
+    dark: "https://raw.githubusercontent.com/Sergey-Bar/qa-doctor/main/assets/brand/logo-dark.svg",
     fallback: "QA Doctor",
   },
   verdictLabels: {

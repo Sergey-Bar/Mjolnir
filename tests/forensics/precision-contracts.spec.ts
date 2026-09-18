@@ -295,7 +295,7 @@ describe("three verdict bands are reachable for their documented reasons", () =>
   });
 
   it("demo with a hard wait is NEEDS WORK (50-79)", async () => {
-    const target = mkdtempSync(join(tmpdir(), "mjolnir-needs-work-"));
+    const target = mkdtempSync(join(tmpdir(), "qa-doctor-needs-work-"));
     try {
       cpSync(join(REPO_ROOT, "examples", "demo-repo"), target, {
         recursive: true,

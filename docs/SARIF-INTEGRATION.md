@@ -7,11 +7,11 @@ exact file and line — no dashboard server, no GUI app, no new UI to
 build or maintain.
 
 This is a documentation-only integration: nothing here changes what
-`mjolnir` does. It only wires the existing `--format sarif` output
+`qa-doctor` does. It only wires the existing `--format sarif` output
 into tools engineers already have installed.
 
 ```bash
-mjolnir . --format sarif > mjolnir.sarif
+qa-doctor . --format sarif > qa-doctor.sarif
 ```
 
 Every result carries `ruleId`, `level` (`error`/`warning`/`note`),
@@ -46,7 +46,7 @@ Minimal `.vscode/tasks.json` entry:
 {
   "label": "QA Doctor scan",
   "type": "shell",
-  "command": "npx mjolnir-qa . --format sarif > mjolnir.sarif",
+  "command": "npx qa-doctor-cli . --format sarif > qa-doctor.sarif",
   "problemMatcher": []
 }
 ```
@@ -64,13 +64,13 @@ External Tools**) that runs:
 
 ```
 Program: npx
-Arguments: mjolnir-qa . --format sarif
+Arguments: qa-doctor-cli . --format sarif
 Working directory: $ProjectFileDir$
 ```
 
 Redirect its output to a file (JetBrains External Tools support output
 redirection via the tool's "Output filters"/shell wrapper, or simply
-wrap it: `Arguments: -c "mjolnir-qa . --format sarif > mjolnir.sarif"`
+wrap it: `Arguments: -c "qa-doctor-cli . --format sarif > qa-doctor.sarif"`
 with `Program: sh`/`bash` on macOS/Linux, or a `.cmd` wrapper on
 Windows), then open the resulting file via the SARIF viewer described
 above.
@@ -82,16 +82,16 @@ claim otherwise. To enable it in any repo with `code-scanning` write
 access, add a step like this after generating the SARIF file:
 
 ```yaml
-- run: npx mjolnir-qa . --format sarif > mjolnir.sarif
+- run: npx qa-doctor-cli . --format sarif > qa-doctor.sarif
 - uses: github/codeql-action/upload-sarif@v3
   with:
-    sarif_file: mjolnir.sarif
+    sarif_file: qa-doctor.sarif
 ```
 
 Findings then appear as annotations directly on the relevant lines in a
 PR diff via GitHub's native Code Scanning UI, with no extra
 configuration beyond those two steps. This repository's own
-`.github/workflows/mjolnir.yml` currently posts a scoped PR comment
+`.github/workflows/qa-doctor.yml` currently posts a scoped PR comment
 instead — Code Scanning upload is documented here as an option you can
 add, not a step this repo's own CI runs today.
 

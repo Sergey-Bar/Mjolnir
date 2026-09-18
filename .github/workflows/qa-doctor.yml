@@ -4,7 +4,7 @@ on:
   pull_request:
 
 concurrency:
-  group: mjolnir-${{ github.ref }}
+  group: qa-doctor-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -37,20 +37,20 @@ jobs:
           BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
           git fetch origin "$BASE_REF" --depth=1
-          git checkout "origin/$BASE_REF" -- .mjolnir/baseline.json 2>/dev/null || echo "No committed baseline on base branch — diff will report UNKNOWN, not a fabricated zero."
+          git checkout "origin/$BASE_REF" -- .qa-doctor/baseline.json 2>/dev/null || echo "No committed baseline on base branch — diff will report UNKNOWN, not a fabricated zero."
       # Build and run the CLI *from this PR's source*, not `npx
-      # mjolnir-qa@latest`. Scanning a PR with the last published release
+      # qa-doctor-cli@latest`. Scanning a PR with the last published release
       # means the tool never reviews the change under review: a rule fixed
       # in the PR still fires, a rule added in the PR never runs, and the
       # workflow cannot function at all while a published build is broken.
       # Dogfooding requires running the code being proposed.
       - run: npm ci && npm run build
-      - run: node dist/cli.mjs . --scope changed --json > mjolnir.json
+      - run: node dist/cli.mjs . --scope changed --json > qa-doctor.json
       # Dogfooded template v2 (plan M4): annotations + Job Summary via the
       # same `summary` command the generated workflow uses — one emitter.
       - name: Annotations + Job Summary
         if: always()
-        run: node dist/cli.mjs summary mjolnir.json
+        run: node dist/cli.mjs summary qa-doctor.json
       # Advisory mode by design: this workflow reports findings, it never
       # blocks a PR. `diff` legitimately exits 1 when it finds new/worsened
       # debt — continue-on-error on THIS step only keeps that exit code
@@ -58,8 +58,8 @@ jobs:
       - name: Diff against baseline (advisory — may exit 1 on new debt)
         id: diff
         continue-on-error: true
-        run: node dist/cli.mjs diff . > mjolnir-diff.txt
-      - run: node dist/cli.mjs pr-comment . > mjolnir-comment.md
+        run: node dist/cli.mjs diff . > qa-doctor-diff.txt
+      - run: node dist/cli.mjs pr-comment . > qa-doctor-comment.md
       # Audit S-6: on a pull_request event from a fork the GITHUB_TOKEN is
       # read-only and the comment step will 403 for every external
       # contributor. The comment is best-effort; the Job Summary below is
@@ -67,15 +67,15 @@ jobs:
       # the token but is a code-execution risk — deliberately NOT used.)
       - name: Append findings to the Job Summary (works on fork PRs)
         if: always()
-        run: cat mjolnir-comment.md >> "$GITHUB_STEP_SUMMARY"
+        run: cat qa-doctor-comment.md >> "$GITHUB_STEP_SUMMARY"
       - name: Post or update PR comment
         continue-on-error: true
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const fs = require('fs');
-            const body = fs.readFileSync('mjolnir-comment.md', 'utf8');
-            const marker = '<!-- mjolnir-pr-comment -->';
+            const body = fs.readFileSync('qa-doctor-comment.md', 'utf8');
+            const marker = '<!-- qa-doctor-pr-comment -->';
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,

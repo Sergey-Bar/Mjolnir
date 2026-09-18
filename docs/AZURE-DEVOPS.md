@@ -38,7 +38,7 @@ steps:
   - checkout: self
     fetchDepth: 0 # --scope changed needs the merge-base
 
-  - script: npx --yes mjolnir-qa@<version> . --scope changed --format sarif
+  - script: npx --yes qa-doctor-cli@<version> . --scope changed --format sarif
     displayName: QA Doctor scan
 ```
 

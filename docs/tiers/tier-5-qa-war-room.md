@@ -41,7 +41,7 @@ Every QA team has a weekly "flaky test meeting". It's miserable and it's
 where QA engineers burn out. Build the artifact that ends it:
 
 ```text
-mjolnir triage
+qa-doctor triage
 ```
 
 Generates `TRIAGE.md` for the meeting:
@@ -55,7 +55,7 @@ THIS WEEK'S FLAKY TRIAGE — auto-generated, do not edit
 | login.spec:12 | 12% | 1h ago | #3 | @omri | fix selector drift |
 
 Auto-quarantine proposal: 2 tests (fail-rate > 30%, > 5 occurrences)
-Run `mjolnir quarantine --apply` to move them to quarantine suite.
+Run `qa-doctor quarantine --apply` to move them to quarantine suite.
 ```
 
 - Quarantine isn't deletion — quarantined tests run nightly, not per-PR
@@ -70,7 +70,7 @@ The moment of maximum QA pain: the release go/no-go call. Give QAs the
 artifact they must present to management:
 
 ```text
-mjolnir release-report --since v2.3.0
+qa-doctor release-report --since v2.3.0
 ```
 
 ```text
@@ -110,7 +110,7 @@ QAs get asked "what's your coverage?" by managers constantly. Raw %
 is a lie they're forced to tell. Replace it:
 
 ```text
-mjolnir coverage-honesty
+qa-doctor coverage-honesty
 ```
 
 ```text
@@ -134,7 +134,7 @@ a standalone command that plugs into existing coverage reports.
 QA engineers' hidden nightmare: framework upgrades break hundreds of tests.
 Be the tool that carries them across:
 
-- `mjolnir migrate jest→vitest` — mechanical transforms + report of
+- `qa-doctor migrate jest→vitest` — mechanical transforms + report of
   manual work remaining (Jest globals, mock semantics differences)
 - Playwright major-version upgrade advisor: deprecated APIs in use,
   breaking-change checklist against their config
@@ -149,7 +149,7 @@ QA knows the debt; nobody above them sees it. Make it a first-class,
 exportable artifact:
 
 ```text
-mjolnir debt
+qa-doctor debt
 ```
 
 ```text
@@ -173,7 +173,7 @@ Every QA joining a team spends week one discovering where the bodies are
 buried. One command generates the map:
 
 ```text
-mjolnir handover
+qa-doctor handover
 ```
 
 ```text
@@ -218,7 +218,7 @@ QUICK WINS (< 1 week each, huge resonance):
   └─ Tone audit pass (#30)               ← copywriting day
 
 NEXT QUARTER:
-  ├─ mjolnir triage + TRIGAGE.md       ← needs forensics data (R4)
+  ├─ qa-doctor triage + TRIGAGE.md       ← needs forensics data (R4)
   ├─ coverage-honesty command            ← consumes existing reports
   └─ debt register export                ← trivial over current findings
 

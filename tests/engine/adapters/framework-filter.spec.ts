@@ -63,7 +63,7 @@ afterEach(() => {
 });
 
 function tmpDir(): string {
-  const d = mkdtempSync(join(tmpdir(), "mjolnir-cov-"));
+  const d = mkdtempSync(join(tmpdir(), "qa-doctor-cov-"));
   dirs.push(d);
   return d;
 }
@@ -648,7 +648,7 @@ describe("qa-model — TS parse-failure path + extractor guards", () => {
 
 function localDir(): string {
   const d = tmpDir();
-  mkdirSync(join(d, "mjolnir-rules"), { recursive: true });
+  mkdirSync(join(d, "qa-doctor-rules"), { recursive: true });
   return d;
 }
 const GOOD_RULE = {
@@ -666,21 +666,21 @@ describe("loadLocalRules — validation branches", () => {
   it("unreadable directory degrades to an error entry", async () => {
     // Simulated via a file where the dir should be: readdirSync throws.
     const d = tmpDir();
-    writeFileSync(join(d, "mjolnir-rules"), "not a dir");
+    writeFileSync(join(d, "qa-doctor-rules"), "not a dir");
     const { errors } = await loadLocalRules(d, true);
     expect(errors[0]).toContain("could not be read");
   });
 
   it("invalid JSON → error entry", async () => {
     const d = localDir();
-    writeFileSync(join(d, "mjolnir-rules", "bad.json"), "{ not json");
+    writeFileSync(join(d, "qa-doctor-rules", "bad.json"), "{ not json");
     const { errors } = await loadLocalRules(d, true);
     expect(errors[0]).toContain("is not valid JSON");
   });
 
   it("non-object JSON (array) → error entry", async () => {
     const d = localDir();
-    writeFileSync(join(d, "mjolnir-rules", "arr.json"), "[]");
+    writeFileSync(join(d, "qa-doctor-rules", "arr.json"), "[]");
     const { errors } = await loadLocalRules(d, true);
     expect(errors[0]).toContain("must be a JSON object");
   });
@@ -688,7 +688,7 @@ describe("loadLocalRules — validation branches", () => {
   it("missing id → error entry", async () => {
     const d = localDir();
     writeFileSync(
-      join(d, "mjolnir-rules", "noid.json"),
+      join(d, "qa-doctor-rules", "noid.json"),
       JSON.stringify({ severity: "info" }),
     );
     const { errors } = await loadLocalRules(d, true);
@@ -698,7 +698,7 @@ describe("loadLocalRules — validation branches", () => {
   it("empty id → error entry", async () => {
     const d = localDir();
     writeFileSync(
-      join(d, "mjolnir-rules", "emptyid.json"),
+      join(d, "qa-doctor-rules", "emptyid.json"),
       JSON.stringify({ ...GOOD_RULE, id: "" }),
     );
     const { errors } = await loadLocalRules(d, true);
@@ -708,11 +708,11 @@ describe("loadLocalRules — validation branches", () => {
   it("missing/empty/non-string patterns → error entry", async () => {
     const d = localDir();
     writeFileSync(
-      join(d, "mjolnir-rules", "nopat.json"),
+      join(d, "qa-doctor-rules", "nopat.json"),
       JSON.stringify({ ...GOOD_RULE, patterns: [] }),
     );
     writeFileSync(
-      join(d, "mjolnir-rules", "badpat.json"),
+      join(d, "qa-doctor-rules", "badpat.json"),
       JSON.stringify({ ...GOOD_RULE, id: "QA-ACME-101", patterns: [42] }),
     );
     const { errors } = await loadLocalRules(d, true);
@@ -723,7 +723,7 @@ describe("loadLocalRules — validation branches", () => {
   it("invalid regex → error entry", async () => {
     const d = localDir();
     writeFileSync(
-      join(d, "mjolnir-rules", "badregex.json"),
+      join(d, "qa-doctor-rules", "badregex.json"),
       JSON.stringify({
         ...GOOD_RULE,
         id: "QA-ACME-102",
@@ -742,7 +742,7 @@ describe("loadLocalRules — validation branches", () => {
   ] as const)("invalid %s → error entry", async (field, value) => {
     const d = localDir();
     writeFileSync(
-      join(d, "mjolnir-rules", `${field}.json`),
+      join(d, "qa-doctor-rules", `${field}.json`),
       JSON.stringify({ ...GOOD_RULE, id: `QA-ACME-${field}`, [field]: value }),
     );
     const { errors } = await loadLocalRules(d, true);
@@ -757,7 +757,7 @@ describe("loadLocalRules — validation branches", () => {
   it("defaults: no title/why/fix/confidence → sensible fallbacks, rule loads", async () => {
     const d = localDir();
     writeFileSync(
-      join(d, "mjolnir-rules", "min.json"),
+      join(d, "qa-doctor-rules", "min.json"),
       JSON.stringify({
         id: "QA-ACME-110",
         severity: "info",
@@ -784,7 +784,7 @@ describe("loadLocalRules — validation branches", () => {
   it("module: import failure → error entry", async () => {
     const d = localDir();
     writeFileSync(
-      join(d, "mjolnir-rules", "throw.mjs"),
+      join(d, "qa-doctor-rules", "throw.mjs"),
       "throw new Error('module boom');\n",
     );
     const { errors } = await loadLocalRules(d, true);
@@ -794,7 +794,7 @@ describe("loadLocalRules — validation branches", () => {
   it("module without rules export → error entry", async () => {
     const d = localDir();
     writeFileSync(
-      join(d, "mjolnir-rules", "empty.mjs"),
+      join(d, "qa-doctor-rules", "empty.mjs"),
       "export const x = 1;\n",
     );
     const { errors } = await loadLocalRules(d, true);
@@ -804,7 +804,7 @@ describe("loadLocalRules — validation branches", () => {
   it("module with a malformed rule (no run) → error entry", async () => {
     const d = localDir();
     writeFileSync(
-      join(d, "mjolnir-rules", "malformed.mjs"),
+      join(d, "qa-doctor-rules", "malformed.mjs"),
       "export const rules = [{ id: 'QA-ACME-120' }];\n",
     );
     const { errors } = await loadLocalRules(d, true);
@@ -814,7 +814,7 @@ describe("loadLocalRules — validation branches", () => {
   it("module with a reserved prefix → rejected", async () => {
     const d = localDir();
     writeFileSync(
-      join(d, "mjolnir-rules", "spoof.mjs"),
+      join(d, "qa-doctor-rules", "spoof.mjs"),
       "export const rules = [{ id: 'qa-cs-777', run: () => [] }];\n",
     );
     const { errors } = await loadLocalRules(d, true);
@@ -824,7 +824,7 @@ describe("loadLocalRules — validation branches", () => {
   it("module declaring core tier → clamped with a warning", async () => {
     const d = localDir();
     writeFileSync(
-      join(d, "mjolnir-rules", "core.mjs"),
+      join(d, "qa-doctor-rules", "core.mjs"),
       "export const rules = [{ id: 'QA-ACME-130', title: 'T', category: 'QA-TEST', severity: 'info', confidence: 'high', findingType: 'deterministic-defect', qaImpact: 'HYGIENE', appliesTo: 'test-files', tier: 'core', run: () => [] }];\n",
     );
     const { rules, errors } = await loadLocalRules(d, true);

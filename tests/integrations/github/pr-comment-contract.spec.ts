@@ -58,7 +58,7 @@ function validModel(
       url: "https://example.com/report",
       format: "json",
     },
-    generatedBy: { tool: "mjolnir-qa", version: "1.0.10" },
+    generatedBy: { tool: "qa-doctor-cli", version: "1.0.10" },
     ...overrides,
   };
 }

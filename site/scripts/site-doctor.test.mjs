@@ -6,7 +6,7 @@
  *
  * Runs against the exported pure core (`linkFailures`), never the live
  * dist, so it needs no build. BASE is the GitHub Pages project path
- * ("/Mjolnir/") exactly as in site-doctor.mjs.
+ * ("/qa-doctor/") exactly as in site-doctor.mjs.
  */
 
 import assert from "node:assert/strict";
@@ -14,7 +14,7 @@ import { test } from "node:test";
 
 import { linkFailures } from "./site-doctor.mjs";
 
-const BASE = "/Mjolnir/";
+const BASE = "/qa-doctor/";
 const HAVE = new Set([
   "index.html",
   "guide/ci.html",

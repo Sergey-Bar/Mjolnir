@@ -3,7 +3,7 @@
  * P1.3, plan 1788853205786).
  *
  * The root action.yml is the Marketplace surface — a promise to every
- * consumer who writes `uses: Sergey-Bar/Mjolnir@v1`. These locks keep
+ * consumer who writes `uses: Sergey-Bar/qa-doctor@v1`. These locks keep
  * the promise honest:
  *
  *  - the file parses as YAML with the composite run shape and the
@@ -255,7 +255,7 @@ describe("ci-install action template agrees with the real action.yml", () => {
     }
   });
 
-  it("the enforcing template pins an exact mjolnir-qa version (never floating)", () => {
+  it("the enforcing template pins an exact qa-doctor-cli version (never floating)", () => {
     for (const gate of ["error", "warning"] as GateLevel[]) {
       const text = ACTION_TEMPLATE(gate);
       expect(text).toMatch(/version: \d+\.\d+\.\d+/);

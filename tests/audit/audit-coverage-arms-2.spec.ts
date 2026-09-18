@@ -27,7 +27,7 @@ import type { Finding } from "../../src/types.js";
 
 const createdDirs: string[] = [];
 function tmpRepo(prefix: string): string {
-  const d = mkdtempSync(join(tmpdir(), `mjolnir-arms2-${prefix}-`));
+  const d = mkdtempSync(join(tmpdir(), `qa-doctor-arms2-${prefix}-`));
   createdDirs.push(d);
   return d;
 }
@@ -140,7 +140,7 @@ describe("scan-cache eviction-while-cap branch (M5.2)", () => {
 describe("loadLocalRules module-validation error arms (C2/S7)", () => {
   it("reports malformed modules: no rules array, bad rule shape, reserved prefix, bad severity/category/appliesTo/qaImpact, core clamp", async () => {
     const root = tmpRepo("moderrors");
-    const rulesDir = join(root, "mjolnir-rules");
+    const rulesDir = join(root, "qa-doctor-rules");
     mkdirSync(rulesDir, { recursive: true });
     // no rules array
     writeFileSync(

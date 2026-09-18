@@ -1,8 +1,8 @@
   diff — compare a fresh scan against the baseline — new/worsened only
 
   Usage:
-    mjolnir diff [path]
+    qa-doctor diff [path]
 
   Examples:
-    $ mjolnir diff
+    $ qa-doctor diff
 

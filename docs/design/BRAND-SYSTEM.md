@@ -135,12 +135,12 @@ text (AA) and stroke (the 3:1 non-text minimum). All of it is
 
 ## 4. Typography
 
-| Role                                    | Face           | Weights     |
-| --------------------------------------- | -------------- | ----------- |
-| Display — headlines, `MJÖLNIR` wordmark | **Geist**      | 500/600     |
-| Body, UI                                | **Geist**      | 400/500/600 |
-| Code, terminal, scores, rule IDs        | **Geist Mono** | 400/500     |
-| Rune glyph fallback only (terminal)     | FreeMono       | —           |
+| Role                                      | Face           | Weights     |
+| ----------------------------------------- | -------------- | ----------- |
+| Display — headlines, `QA DOCTOR` wordmark | **Geist**      | 500/600     |
+| Body, UI                                  | **Geist**      | 400/500/600 |
+| Code, terminal, scores, rule IDs          | **Geist Mono** | 400/500     |
+| Rune glyph fallback only (terminal)       | FreeMono       | —           |
 
 Two faces carry the whole product. Before this the website loaded Inter,
 JetBrains Mono and Cinzel while the README SVGs and the demo video
@@ -237,11 +237,11 @@ horizontal rule, or used as a list bullet is a finding — all three were
 real, and all three are gone.
 
 The one exception is the hero runefield: ᛗ ᛃ ᛟ ᛚ ᚾ ᛁ ᚱ, read left to
-right, is MJÖLNIR in Elder Futhark. That is a wordmark, not wallpaper.
+right, is QA DOCTOR in Elder Futhark. That is a wordmark, not wallpaper.
 
 ### The mark
 
-The logo is `MJÖLNIR` set in Geist 500, caps, tracked 0.3em, in primary
+The logo is `QA DOCTOR` set in Geist 500, caps, tracked 0.3em, in primary
 text on ink — no illustration. Below the wordmark's legible width it
 falls back to a single rune, ᛗ (Mansaz): the same "M" the name is
 spelled with in Elder Futhark, and deliberately not one of the five
@@ -254,7 +254,7 @@ aurora (green at the foot, cyan through the crossing, violet at the
 head). Below 64px the stroke gets heavier and the heads are bevelled,
 so the favicon is a cut made for its size rather than a large mark
 shrunk until it blurs. The mark and the wordmark are never set side by
-side: next to `MJÖLNIR` a second M only stutters.
+side: next to `QA DOCTOR` a second M only stutters.
 
 `assets/brand/mark.png` and `logo.png` are the rendered source of truth
 (`scripts/generate-brand-marks.ts`, `npm run brand:marks`). Regenerating

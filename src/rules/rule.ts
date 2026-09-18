@@ -110,7 +110,7 @@ export interface RuleMeta {
    * should not be enforced.
    */
   falsePositiveRisk?: "low" | "medium" | "high";
-  /** Whether `mjolnir fix` (or a future autofix) can safely repair it. */
+  /** Whether `qa-doctor fix` (or a future autofix) can safely repair it. */
   autofix?: boolean;
   /**
    * How detection works, as an enforced enum (plan §09.6/§12.1 — D6

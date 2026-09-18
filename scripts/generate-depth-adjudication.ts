@@ -176,7 +176,7 @@ export function renderDepthAdjudication(): string {
   );
   lines.push(
     "- `measured`: renders only after a mutation report is ingested via",
-    "  `mjolnir mutation` and cross-referenced (P5). Today: none.",
+    "  `qa-doctor mutation` and cross-referenced (P5). Today: none.",
   );
   lines.push("");
 

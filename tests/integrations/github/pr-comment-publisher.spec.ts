@@ -26,7 +26,7 @@ function comment(id: number, body: string): ExistingComment {
 
 describe("PR_COMMENT_MARKER", () => {
   it("contains the v1 marker", () => {
-    expect(PR_COMMENT_MARKER).toBe("<!-- mjolnir-pr-comment:v1 -->");
+    expect(PR_COMMENT_MARKER).toBe("<!-- qa-doctor-pr-comment:v1 -->");
   });
 });
 

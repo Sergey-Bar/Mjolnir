@@ -6,7 +6,7 @@
       "tool": {
         "driver": {
           "name": "QA Doctor",
-          "informationUri": "https://github.com/Sergey-Bar/Mjolnir",
+          "informationUri": "https://github.com/Sergey-Bar/qa-doctor",
           "version": "2.0.0",
           "rules": [
             {
@@ -518,7 +518,7 @@
           "ruleId": "QA-PW-141",
           "level": "warning",
           "message": {
-            "text": "retries: undefined with no visible flake-triage loop. — Retries convert intermittent failures into silent passes. Without a forensics/triage step consuming retry data, flaky tests pass forever and real regressions hide behind lucky reruns. Fix: Keep retries <= 2 and feed retry outcomes into `mjolnir forensics`/`triage`, or add a reporter so flaky passes are reviewed."
+            "text": "retries: undefined with no visible flake-triage loop. — Retries convert intermittent failures into silent passes. Without a forensics/triage step consuming retry data, flaky tests pass forever and real regressions hide behind lucky reruns. Fix: Keep retries <= 2 and feed retry outcomes into `qa-doctor forensics`/`triage`, or add a reporter so flaky passes are reviewed."
           },
           "locations": [
             {

@@ -53,7 +53,7 @@ const state = vi.hoisted(() => ({ simulateBaseTree: false }));
 
 let dir: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-impact-arms-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-impact-arms-"));
   state.simulateBaseTree = false;
 });
 afterEach(() => {

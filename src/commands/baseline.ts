@@ -1,5 +1,5 @@
 /**
- * `mjolnir baseline` / `mjolnir diff` — Sprint 6 Task 24
+ * `qa-doctor baseline` / `qa-doctor diff` — Sprint 6 Task 24
  * (Master-Stabilization-Plan.md).
  *
  * Implements Plan.md Phase 10 / §24's key insight: existing debt should
@@ -13,8 +13,8 @@
  * "new" debt and miss genuinely new findings that happen to land on a
  * previously-flagged line.
  *
- * Storage: .mjolnir/baseline.json (local; not gitignored — only
- * .mjolnir/logs/ is, see .gitignore). A team CAN commit this
+ * Storage: .qa-doctor/baseline.json (local; not gitignored — only
+ * .qa-doctor/logs/ is, see .gitignore). A team CAN commit this
  * file if they want a shared baseline; that's a deliberate choice this
  * command does not make for them.
  */
@@ -35,7 +35,7 @@ import { nextStep, sectionHeader, plainContext } from "../reporter/ui.js";
 
 const ui = plainContext();
 
-export const DEFAULT_BASELINE_PATH = join(".mjolnir", "baseline.json");
+export const DEFAULT_BASELINE_PATH = join(".qa-doctor", "baseline.json");
 
 /**
  * Registry-declared detector revisions (§17): a baseline entry whose
@@ -306,7 +306,7 @@ export function renderBaselineSaved(
       `Replaced an existing baseline — the previous one was saved to ${replaced.backupPath}.`,
     );
   }
-  lines.push(nextStep("mjolnir diff", ui) + " — see only what's new.");
+  lines.push(nextStep("qa-doctor diff", ui) + " — see only what's new.");
   return lines.join("\n");
 }
 
@@ -318,7 +318,7 @@ export function renderBaselineDiff(diff: BaselineDiff): string {
   if (!diff.hasBaseline) {
     lines.push("UNKNOWN — no baseline found.");
     lines.push(
-      nextStep("mjolnir baseline", ui) + " to capture a comparison point.",
+      nextStep("qa-doctor baseline", ui) + " to capture a comparison point.",
     );
     return lines.join("\n");
   }

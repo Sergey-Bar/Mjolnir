@@ -37,7 +37,7 @@ Promote from deferred ledger NOW. One transform over existing JSON:
 Lightweight version now, full Evidence Graph later:
 
 ```text
-mjolnir attest   # signed, commit-bound report artifact
+qa-doctor attest   # signed, commit-bound report artifact
 ```
 
 Commit-bound, tool-version-bound, timestamped. Foundation for the
@@ -48,9 +48,9 @@ future "release confidence" story — and enterprises LOVE audit trails.
 The tool whose identity is "no false claims" can win AI-assisted QA:
 
 ```text
-mjolnir suggest tests        # P0 test plan from evidence gaps (planned)
-mjolnir explain              # natural-language finding explanations
-mjolnir generate --spec x    # draft tests marked GENERATED-NOT-EVIDENCE
+qa-doctor suggest tests        # P0 test plan from evidence gaps (planned)
+qa-doctor explain              # natural-language finding explanations
+qa-doctor generate --spec x    # draft tests marked GENERATED-NOT-EVIDENCE
 ```
 
 Iron rule from Product.txt §49 stays: AI output is never evidence until

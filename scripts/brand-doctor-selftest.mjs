@@ -187,7 +187,7 @@ function main() {
     console.log(line);
   };
 
-  say("mjolnir brand doctor — failure-first self-test\n");
+  say("qa-doctor brand doctor — failure-first self-test\n");
 
   const before = runDoctor();
   say(`  baseline: exit ${before.code} (expected 0)`);

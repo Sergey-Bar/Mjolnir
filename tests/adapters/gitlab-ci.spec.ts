@@ -12,7 +12,7 @@ import {
 function tmpDir(): string {
   const dir = join(
     tmpdir(),
-    `mjolnir-gitlab-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    `qa-doctor-gitlab-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
   );
   mkdirSync(dir, { recursive: true });
   return dir;

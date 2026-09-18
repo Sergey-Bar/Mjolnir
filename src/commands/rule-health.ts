@@ -1,6 +1,6 @@
 /**
  * Rule-health metrics (WAVE 2 — Empirical Measurement, product-completion
- * plan §WAVE 2). Renders `mjolnir rules stats` and `mjolnir rules health`
+ * plan §WAVE 2). Renders `qa-doctor rules stats` and `qa-doctor rules health`
  * from the SHIPPED measurement registry: the RULES array + the
  * MEASURED_FP map. No re-derivation, no second source of truth — these
  * views project the same facts `getMeasurementStatus` already derives,
@@ -161,7 +161,7 @@ export function sortHealthQueue(
 
 const pct = (n: number): string => `${(n * 100).toFixed(0)}%`;
 
-/** The `mjolnir rules stats` view — registry-level measurement coverage. */
+/** The `qa-doctor rules stats` view — registry-level measurement coverage. */
 export function renderRuleStats(rows: readonly RuleHealthRow[]): string {
   const s = computeRuleStats(rows);
   const lines: string[] = [
@@ -180,7 +180,7 @@ export function renderRuleStats(rows: readonly RuleHealthRow[]): string {
     lines.push(
       "",
       "Unmeasured/stale/provisional rules ship on assumption (LAW-T03: no silent gaps).",
-      "Run `mjolnir rules health` for the worst-first work queue.",
+      "Run `qa-doctor rules health` for the worst-first work queue.",
     );
   } else {
     lines.push("", "Every active rule carries a valid measurement.");
@@ -188,7 +188,7 @@ export function renderRuleStats(rows: readonly RuleHealthRow[]): string {
   return lines.join("\n");
 }
 
-/** The `mjolnir rules health` view — worst-first honest-work queue. */
+/** The `qa-doctor rules health` view — worst-first honest-work queue. */
 export function renderRuleHealth(
   rows: readonly RuleHealthRow[],
   limit?: number,

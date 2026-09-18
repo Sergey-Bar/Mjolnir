@@ -37,7 +37,7 @@ function scanDemo(): { stdout: string; status: number } {
     const stdout = execFileSync(
       "node",
       [DIST, join(ROOT, "examples", "demo-repo"), "--json"],
-      { encoding: "utf8", env: { ...process.env, MJOLNIR_ASCII: "1" } },
+      { encoding: "utf8", env: { ...process.env, QA_DOCTOR_ASCII: "1" } },
     );
     return { stdout, status: 0 };
   } catch (err) {

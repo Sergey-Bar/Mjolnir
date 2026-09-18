@@ -65,7 +65,7 @@ const state = vi.hoisted(() => ({ simulateUntrackedFailure: false }));
 
 let dir: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-last-sweep-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-last-sweep-"));
   state.simulateUntrackedFailure = false;
 });
 afterEach(() => {
@@ -179,7 +179,7 @@ describe("selector-health classify arms", () => {
 describe("forensics listing edge", () => {
   it("skips whitespace-only config exclude patterns", () => {
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
+      join(dir, "qa-doctor.config.json"),
       JSON.stringify({ exclude: ["   ", "node_modules/**"] }),
     );
     const matcher = createIgnoreMatcher(dir);
@@ -198,7 +198,7 @@ describe("forensics listing edge", () => {
       "exports.rules = [];",
     );
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
+      join(dir, "qa-doctor.config.json"),
       JSON.stringify({
         plugins: [{ package: "./prefix-plugin", prefix: 123 }],
       }),
@@ -222,7 +222,7 @@ describe("forensics listing edge", () => {
     );
     writeFileSync(join(dir, "boom-plugin", "index.js"), 'throw "boom-str";');
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
+      join(dir, "qa-doctor.config.json"),
       JSON.stringify({ plugins: ["./boom-plugin"] }),
     );
     mkdirSync(join(dir, "e2e"), { recursive: true });

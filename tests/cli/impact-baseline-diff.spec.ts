@@ -66,7 +66,7 @@ function git(cwd: string, args: string[]): void {
 }
 
 function makeGitRepoWithHistory(): string {
-  const d = mkdtempSync(join(tmpdir(), "mjolnir-sprint6-cli-"));
+  const d = mkdtempSync(join(tmpdir(), "qa-doctor-sprint6-cli-"));
   createdDirs.push(d);
   git(d, ["init", "-q", "-b", "main"]);
   git(d, ["config", "user.email", "test@example.com"]);
@@ -105,7 +105,7 @@ describe("runImpactCommand", () => {
   });
 
   it("returns 2 (no comparison possible) for a non-git target, never crashing", async () => {
-    const dir = makeEmptyDir("mjolnir-sprint6-nogit-");
+    const dir = makeEmptyDir("qa-doctor-sprint6-nogit-");
     mkdirSync(join(dir, "e2e"), { recursive: true });
     writeFileSync(join(dir, "e2e", "a.spec.ts"), "test('x', () => {});\n");
     const cap = capture();
@@ -143,7 +143,7 @@ describe("runBaselineCommand + runDiffCommand — round trip via CLI", () => {
     const dir = makeGitRepoWithHistory();
     const saveCode = await runBaselineCommand([dir], capture().io);
     expect(saveCode).toBe(0);
-    expect(existsSync(join(dir, ".mjolnir", "baseline.json"))).toBe(true);
+    expect(existsSync(join(dir, ".qa-doctor", "baseline.json"))).toBe(true);
 
     const cap = capture();
     const diffCode = await runDiffCommand([dir], cap.io);
@@ -184,7 +184,7 @@ describe("runBaselineCommand + runDiffCommand — round trip via CLI", () => {
     git(dir, ["checkout", "-q", "main"]);
 
     await runDiffCommand([dir], capture().io);
-    expect(existsSync(join(dir, ".mjolnir", "stats.json"))).toBe(true);
+    expect(existsSync(join(dir, ".qa-doctor", "stats.json"))).toBe(true);
   });
 });
 
@@ -214,7 +214,7 @@ describe("runPrCommentCommand", () => {
 
 describe("runStatsCommand", () => {
   it("never throws and returns 0 even with no history recorded", () => {
-    const dir = makeEmptyDir("mjolnir-sprint6-stats-");
+    const dir = makeEmptyDir("qa-doctor-sprint6-stats-");
     const cap = capture();
     let code: number | undefined;
     expect(() => {

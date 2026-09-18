@@ -8,27 +8,27 @@ this release; the breaking set it describes is inventoried in
 
 ## BS-1 — Suppression expiry default (blueprint §18)
 
-**What changes.** Suppression entries in `mjolnir.config.json` created or
+**What changes.** Suppression entries in `qa-doctor.config.json` created or
 edited after 2.0.0 receive a **90-day default expiry** measured from entry
 creation. To keep a suppression forever, opt out explicitly with
 `expires: false`.
 
 **What does NOT change.** Hand-written entries that predate 2.0.0 and carry
 neither `expires` nor `expires: false` keep their current (non-expiring)
-behavior until you edit them — no silent retroactive expiry. `mjolnir init`'s
+behavior until you edit them — no silent retroactive expiry. `qa-doctor init`'s
 config check will surface each such entry with a migration suggestion.
 
 **Migration steps.**
 
-1. Run `mjolnir init` (post-2.0.0) — the config check lists every
+1. Run `qa-doctor init` (post-2.0.0) — the config check lists every
    suppression entry missing both `expires` and `expires: false`.
 2. For each listed entry, choose deliberately:
    - `expires: "<ISO date>"` — keep the suppression for a bounded period
      (recommended: this is the 90-day default behavior, made explicit).
    - `expires: false` — the explicit never-expire opt-out.
-3. Re-run `mjolnir scan` / `mjolnir verify`. Expired entries suppress
+3. Re-run `qa-doctor scan` / `qa-doctor verify`. Expired entries suppress
    nothing and are listed (with `expired` status) by
-   `mjolnir suppressions` and verbose scan output; `suppressionCount`
+   `qa-doctor suppressions` and verbose scan output; `suppressionCount`
    counts active entries only.
 4. Renewal = editing the entry (authorship + reason are already required
    by the config schema). CI and local behave identically.
@@ -46,11 +46,11 @@ release. Retired rule IDs never fire again and are never reused.
 
 1. Read the retired-rule list in the 2.0.0 CHANGELOG entry (published with
    the release, per the measurement ledger).
-2. Remove `mjolnir.config.json` suppressions and CI gate references that
+2. Remove `qa-doctor.config.json` suppressions and CI gate references that
    name retired rules — suppressing a rule that can no longer fire is dead
    config, and the config check flags it.
-3. Re-run `mjolnir scan` and compare against your baseline:
-   `mjolnir verify` resolves disappeared findings with an explicit cause —
+3. Re-run `qa-doctor scan` and compare against your baseline:
+   `qa-doctor verify` resolves disappeared findings with an explicit cause —
    a finding disappearing because its rule was retired is visible as such,
    never as a verified fix (§15 lifecycle honesty).
 4. If a finding the retired rule covered still matters, track it through

@@ -20,7 +20,7 @@ import { jenkinsAdapter } from "../../../src/adapters/jenkins.js";
 
 const tmpRoots: string[] = [];
 function makeRoot(files: Record<string, string>): string {
-  const root = mkdtempSync(join(tmpdir(), "mjolnir-ci-adapter-arms-"));
+  const root = mkdtempSync(join(tmpdir(), "qa-doctor-ci-adapter-arms-"));
   tmpRoots.push(root);
   for (const [name, body] of Object.entries(files)) {
     const p = join(root, name);

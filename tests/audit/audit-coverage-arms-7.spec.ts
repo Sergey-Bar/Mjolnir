@@ -34,7 +34,7 @@ import {
 
 const createdDirs: string[] = [];
 function tmpRepo(prefix: string): string {
-  const d = mkdtempSync(join(tmpdir(), `mjolnir-arms7-${prefix}-`));
+  const d = mkdtempSync(join(tmpdir(), `qa-doctor-arms7-${prefix}-`));
   createdDirs.push(d);
   return d;
 }
@@ -73,20 +73,20 @@ describe("doctor:playwright catch arms (S8)", () => {
   it("a corrupt config in the scan target exits 10 via the ConfigValidationError arm", async () => {
     const dir = tmpRepo("dpcve");
     specWithTest(dir);
-    writeFileSync(join(dir, "mjolnir.config.json"), "{ not json");
+    writeFileSync(join(dir, "qa-doctor.config.json"), "{ not json");
     const cap = capture();
     const code = await runDoctorPlaywright(["doctor:playwright", dir], {
       out: cap.io.out,
       err: cap.io.err,
     });
     expect(code).toBe(10);
-    expect(cap.errText()).toContain("Invalid mjolnir config");
+    expect(cap.errText()).toContain("Invalid qa-doctor config");
   });
 
   it("the same corrupt config with NO injected err falls back to the module sink", async () => {
     const dir = tmpRepo("dpcve2");
     specWithTest(dir);
-    writeFileSync(join(dir, "mjolnir.config.json"), "{ not json");
+    writeFileSync(join(dir, "qa-doctor.config.json"), "{ not json");
     const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
       const code = await runDoctorPlaywright(["doctor:playwright", dir], {
@@ -118,7 +118,7 @@ describe("doctor:playwright catch arms (S8)", () => {
 });
 
 describe("scan verb through main() dispatch", () => {
-  it("mjolnir scan <dir> dispatches to the scan command", async () => {
+  it("qa-doctor scan <dir> dispatches to the scan command", async () => {
     const dir = tmpRepo("scanverb");
     writeFileSync(
       join(dir, "a.spec.ts"),
@@ -139,9 +139,9 @@ describe("pr-comment baseline warning arm", () => {
   it("a pre-versioning baseline (no schemaVersion) warns through the command's io", async () => {
     const dir = tmpRepo("novers");
     specWithTest(dir);
-    mkdirSync(join(dir, ".mjolnir"), { recursive: true });
+    mkdirSync(join(dir, ".qa-doctor"), { recursive: true });
     writeFileSync(
-      join(dir, ".mjolnir", "baseline.json"),
+      join(dir, ".qa-doctor", "baseline.json"),
       JSON.stringify({ findings: [] }),
     );
     const cap = capture();
@@ -156,7 +156,7 @@ describe("runSuppressions sink fallback arms", () => {
   it("a crash with NO injected err falls back to the module sink (exit 20)", () => {
     const prevCwd = process.cwd();
     const root = tmpRepo("supp-ok");
-    writeFileSync(join(root, "mjolnir.config.json"), JSON.stringify({}));
+    writeFileSync(join(root, "qa-doctor.config.json"), JSON.stringify({}));
     process.chdir(root);
     const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
@@ -176,7 +176,7 @@ describe("runSuppressions sink fallback arms", () => {
   it("a non-Error thrown value renders via String(e) (no err sink)", () => {
     const prevCwd = process.cwd();
     const root = tmpRepo("supp-str");
-    writeFileSync(join(root, "mjolnir.config.json"), JSON.stringify({}));
+    writeFileSync(join(root, "qa-doctor.config.json"), JSON.stringify({}));
     process.chdir(root);
     const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
@@ -189,7 +189,7 @@ describe("runSuppressions sink fallback arms", () => {
       expect(code).toBe(20);
       expect(
         errSpy.mock.calls.map((c) => c.map(String).join(" ")).join("\n"),
-      ).toContain("mjolnir internal error: a string, not an Error");
+      ).toContain("qa-doctor internal error: a string, not an Error");
     } finally {
       process.chdir(prevCwd);
       errSpy.mockRestore();
@@ -210,7 +210,7 @@ describe("runSuppressions sink fallback arms", () => {
       expect(code).toBe(20);
       expect(
         errSpy.mock.calls.map((c) => c.map(String).join(" ")).join("\n"),
-      ).toContain("mjolnir internal error: 42");
+      ).toContain("qa-doctor internal error: 42");
     } finally {
       errSpy.mockRestore();
     }
@@ -387,7 +387,7 @@ describe("git unavailable: baseline save degrades (S1 lineage)", () => {
       const code = await runBaselineCommand([dir], cap.io);
       expect(code).toBe(0);
       const saved = JSON.parse(
-        readFileSync(join(dir, ".mjolnir", "baseline.json"), "utf8"),
+        readFileSync(join(dir, ".qa-doctor", "baseline.json"), "utf8"),
       ) as { commit?: string };
       expect(saved.commit).toBe("unknown");
     } finally {

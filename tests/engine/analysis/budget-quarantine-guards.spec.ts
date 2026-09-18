@@ -46,7 +46,7 @@ import type { Workspace } from "../../../src/discovery/workspace.js";
 let dir: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-h-fixes-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-h-fixes-"));
 });
 
 afterEach(() => {
@@ -178,7 +178,7 @@ describe("H-7: config.gate drives the exit code", () => {
   });
 
   const writeConfig = (cfg: Record<string, unknown>) =>
-    writeFileSync(join(dir, "mjolnir.config.json"), JSON.stringify(cfg));
+    writeFileSync(join(dir, "qa-doctor.config.json"), JSON.stringify(cfg));
 
   const scan = async () =>
     runScanCommand([dir, "--json", "--strict"], {

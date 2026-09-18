@@ -1,5 +1,5 @@
 /**
- * `mjolnir impact` — Sprint 6 Task 23 (Master-Stabilization-Plan.md).
+ * `qa-doctor impact` — Sprint 6 Task 23 (Master-Stabilization-Plan.md).
  *
  * Answers "what would have burned you": compares the current scan against
  * an earlier point in this repo's own git history and reports anti-patterns
@@ -181,7 +181,7 @@ export async function computeImpact(
   // reimplementing the engine against raw blobs.
   let tmpDir: string;
   try {
-    tmpDir = mkdtempSync(join(tmpdir(), "mjolnir-impact-"));
+    tmpDir = mkdtempSync(join(tmpdir(), "qa-doctor-impact-"));
   } catch {
     return {
       hasComparison: false,
@@ -300,7 +300,7 @@ export function renderImpact(report: ImpactReport): string {
       `UNKNOWN — no comparison could be made (${report.unknownReason ?? "unknown reason"}).`,
     );
     lines.push(
-      "This is reported as UNKNOWN rather than a fabricated zero: mjolnir",
+      "This is reported as UNKNOWN rather than a fabricated zero: qa-doctor",
     );
     lines.push("never invents a number it cannot prove.");
     lines.push("");

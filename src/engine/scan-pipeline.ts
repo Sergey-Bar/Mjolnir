@@ -125,11 +125,11 @@ export const OVERLAP_META_BY_RULE_ID: ReadonlyMap<string, OverlapMeta> =
 
 // Plugin API (Phase 6): third-party rules are appended after core rules;
 // core findings always win dedup by running first.
-// Plan §18 (Local Extensibility): workspace-local `mjolnir-rules/` files
+// Plan §18 (Local Extensibility): workspace-local `qa-doctor-rules/` files
 // load alongside npm plugins — folder-based, zero network.
 // Audit C2 (locked decision): code-executing rule sources (npm plugins,
 // JS modules) load ONLY behind the plugin trust gate (--enable-plugins /
-// MJOLNIR_ENABLE_PLUGINS=1, default OFF). JSON manifests stay
+// QA_DOCTOR_ENABLE_PLUGINS=1, default OFF). JSON manifests stay
 // declarative-safe and load without the gate.
 export async function buildUniversalRules(
   root: string,
@@ -246,7 +246,7 @@ export interface CliArgs {
   base?: string;
   /** --debug: print errors swallowed by crash isolation (audit R-9). */
   debug?: boolean;
-  /** --record-milestones: let a scan write .mjolnir/stats.json (audit R-1). */
+  /** --record-milestones: let a scan write .qa-doctor/stats.json (audit R-1). */
   recordMilestones?: boolean;
   /**
    * --cache: reuse per-file rule verdicts from the local content-addressed
@@ -291,7 +291,7 @@ export interface CliArgs {
   /**
    * Audit C2: --enable-plugins opens the plugin trust gate for THIS
    * invocation — npm-plugin and JS-module rule sources may load (and
-   * execute). Default OFF; MJOLNIR_ENABLE_PLUGINS=1 is the env
+   * execute). Default OFF; QA_DOCTOR_ENABLE_PLUGINS=1 is the env
    * equivalent. JSON rule manifests are unaffected (no code by design).
    */
   enablePlugins?: boolean;
@@ -406,7 +406,7 @@ export function pathMatchesGlob(path: string, glob: string): boolean {
  * target, using the exact conventions the forensics ingestion already
  * accepts. Zero-config search over conventional artifact names at
  * depth ≤ 2 (src/discovery/evidence-discovery.ts); the FIRST parsable
- * candidate wins (priority: mjolnir-report > playwright-json >
+ * candidate wins (priority: qa-doctor-report > playwright-json >
  * test-results-dir > junit-file). Validates each candidate by attempting
  * to parse it and checking that it produces at least one test. Returns
  * the parsed report alongside the path to avoid double-parsing.
@@ -517,7 +517,7 @@ export function discoverTestFilesPhase(
     const staged = computeStagedFiles(scanRoot.root);
     if (staged === null) {
       hooks.onConfigWarning?.(
-        "mjolnir: --staged ignored — not a git repository (scanning the full surface).",
+        "qa-doctor: --staged ignored — not a git repository (scanning the full surface).",
       );
     } else {
       const stagedSet = new Set(staged.map((s) => s.replace(/\\/g, "/")));
@@ -527,7 +527,7 @@ export function discoverTestFilesPhase(
       stagedSurface = true;
       if (ctx.testFiles.length === 0) {
         hooks.onConfigWarning?.(
-          "mjolnir: --staged — no staged files match the scan surface.",
+          "qa-doctor: --staged — no staged files match the scan surface.",
         );
       }
     }
@@ -1187,11 +1187,11 @@ export async function runScan(
   // package.json workspace OR non-JS repo (Python etc.) — fall back to the
   // target dir itself so language adapters can still discover their files.
   // Audit S3: the explicit scan target is the anchor. Config,
-  // .mjolnirignore, plugins, and local rules resolve from the target or
+  // .qa-doctorignore, plugins, and local rules resolve from the target or
   // ABOVE the target only when the target sits inside the discovered
   // project — never from an unrelated ancestor of the CWD. Concretely:
-  // `mjolnir scan C:\other\repo` while CWD is a hostile checkout of our
-  // own monorepo must not read the hostile repo's mjolnir.config.json.
+  // `qa-doctor scan C:\other\repo` while CWD is a hostile checkout of our
+  // own monorepo must not read the hostile repo's qa-doctor.config.json.
   const discovered = discoverWorkspace(args.target);
   const targetAbs = resolve(args.target);
   // Scope containment: when the user targets a subdirectory of the
@@ -1303,12 +1303,12 @@ export async function runScan(
       findingType: "deterministic-defect",
       qaImpact: "HYGIENE",
       evidenceLevel: "E2",
-      file: "mjolnir.config.json",
+      file: "qa-doctor.config.json",
       line: 1,
       column: 1,
       message: `Plugin problem: ${perr}`,
       why: "A configured plugin could not be loaded or declared invalid rules — its checks are silently missing from this scan.",
-      fix: "Fix or remove the plugin entry in mjolnir.config.json.",
+      fix: "Fix or remove the plugin entry in qa-doctor.config.json.",
     });
   }
   const ctx = {

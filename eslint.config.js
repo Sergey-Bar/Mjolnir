@@ -22,7 +22,7 @@ export default tseslint.config(
       // artifacts, never committed. The bench fixture tree carries
       // generated *.spec.ts outside any tsconfig project, which would
       // otherwise crash the typed parser.
-      ".mjolnir/**",
+      ".qa-doctor/**",
       // Local debug artifacts (gitignored — "never committed"); a dev's
       // throwaway probe scripts must never be able to redden `npm run lint`.
       "scratch/",
@@ -57,9 +57,9 @@ export default tseslint.config(
       // its throwaway probe scripts and raw transcripts are DATA and must
       // never be held to (or block) the source linter.
       "QA/**",
-      // Machine-local state under .mjolnir/ (stats, bench fixture tree,
+      // Machine-local state under .qa-doctor/ (stats, bench fixture tree,
       // machine-local timings) — generated scratch, matching .gitignore.
-      ".mjolnir/**",
+      ".qa-doctor/**",
       // Workspace build output and the deliberate out-of-project example
       // config (excluded from every tsconfig on purpose).
       "packages/*/dist/**",

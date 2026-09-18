@@ -1,4 +1,4 @@
-<!-- mjolnir-trust-report:v1 -->
+<!-- qa-doctor-trust-report:v1 -->
 
 # QA Doctor Trust Report — C:\Work\QA Doctor-QA\QA Doctor\examples\mvp-demo
 
@@ -32,8 +32,8 @@
 
 ## Next action
 
-mjolnir explain QA-PW-101 — then fix the top risk first
+qa-doctor explain QA-PW-101 — then fix the top risk first
 
 ---
 
-Generated locally by QA Doctor — no cloud, no telemetry. Semantics: `mjolnir <target> --json` (machine contract `contractVersion: 1`).
+Generated locally by QA Doctor — no cloud, no telemetry. Semantics: `qa-doctor <target> --json` (machine contract `contractVersion: 1`).

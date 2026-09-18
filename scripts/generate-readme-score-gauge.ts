@@ -9,7 +9,7 @@
  * (docs/design/BRAND-SYSTEM.md), and that the reporter no longer prints.
  *
  * Nothing on it is typed by hand. Every number, verdict and band comes
- * from `deriveScoreState`, the pure function `mjolnir` calls for every
+ * from `deriveScoreState`, the pure function `qa-doctor` calls for every
  * real scan, evaluated across the whole 0–100 domain; the band edges on
  * the scale are wherever that function changes its answer, found by
  * walking it, not copied from a table.
@@ -93,14 +93,14 @@ function pctAfter(seconds: number): string {
 
 function fontFaceCss(): string {
   const mono = FONTS.find(
-    (f) => f.family === "MjolnirMono" && f.weight === 400,
+    (f) => f.family === "QaDoctorMono" && f.weight === 400,
   );
   if (!mono) throw new Error("Geist Mono Regular is no longer vendored");
   const face = (fam: string, p: string): string =>
     `@font-face{font-family:"${fam}";font-style:normal;src:url(data:font/ttf;base64,${readFileSync(p).toString("base64")}) format("truetype")}`;
   return [
-    face("MjolnirMono", fontPath(mono)),
-    face("MjolnirSans", SANS_TTF),
+    face("QaDoctorMono", fontPath(mono)),
+    face("QaDoctorSans", SANS_TTF),
   ].join("\n");
 }
 
@@ -174,12 +174,12 @@ export function buildScoreGaugeSvg(): string {
   <title id="gaugeTitle">The worthiness scale: UNWORTHY from ${ranges.critical.from} to ${ranges.critical.to}, NEEDS WORK from ${ranges.warning.from} to ${ranges.warning.to}, WORTHY from ${ranges.trusted.from} to ${ranges.trusted.to}, FORGED at ${ranges.forged.from}</title>
   <style>
 ${fontFaceCss()}
-    .eyebrow, .name { font-family: MjolnirSans, sans-serif; font-size: 11px; letter-spacing: 0.18em; }
+    .eyebrow, .name { font-family: QaDoctorSans, sans-serif; font-size: 11px; letter-spacing: 0.18em; }
     .eyebrow { fill: ${TEXT.muted}; }
-    .num { font-family: MjolnirMono, monospace; font-size: 56px; fill: ${TEXT.primary}; }
-    .of { font-family: MjolnirMono, monospace; font-size: 22px; fill: ${TEXT.muted}; }
-    .verdict { font-family: MjolnirSans, sans-serif; font-size: 15px; letter-spacing: 0.16em; }
-    .tick { font-family: MjolnirMono, monospace; font-size: 11px; fill: ${TEXT.muted}; }
+    .num { font-family: QaDoctorMono, monospace; font-size: 56px; fill: ${TEXT.primary}; }
+    .of { font-family: QaDoctorMono, monospace; font-size: 22px; fill: ${TEXT.muted}; }
+    .verdict { font-family: QaDoctorSans, sans-serif; font-size: 15px; letter-spacing: 0.16em; }
+    .tick { font-family: QaDoctorMono, monospace; font-size: 11px; fill: ${TEXT.muted}; }
     .fr { opacity: 0; animation: mj-tick ${LOOP_SECONDS}s steps(1, end) infinite; }
     .fr-100 { animation: mj-hold ${LOOP_SECONDS}s steps(1, end) infinite; }
     @keyframes mj-tick { 0% { opacity: 0; } 0.001% { opacity: 1; } ${tick}% { opacity: 1; } ${tickAfter}% { opacity: 0; } 100% { opacity: 0; } }

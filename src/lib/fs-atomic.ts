@@ -31,7 +31,7 @@ import { dirname, join } from "node:path";
 import { randomBytes } from "node:crypto";
 
 export function atomicTempPath(path: string): string {
-  return `${path}.mjolnir-${process.pid}-${Date.now()}-${randomBytes(4).toString("hex")}.tmp`;
+  return `${path}.qa-doctor-${process.pid}-${Date.now()}-${randomBytes(4).toString("hex")}.tmp`;
 }
 
 export interface WriteFileAtomicOptions {
@@ -125,7 +125,7 @@ function renameWithWindowsRetry(from: string, to: string): void {
 }
 
 const STALE_TEMP_AGE_MS = 24 * 60 * 60 * 1000;
-const TEMP_PID_RE = /^.+\.mjolnir-([1-9]\d{0,9})-(\d{13})-[0-9a-f]{8}\.tmp$/;
+const TEMP_PID_RE = /^.+\.qa-doctor-([1-9]\d{0,9})-(\d{13})-[0-9a-f]{8}\.tmp$/;
 
 export function sweepStaleTempFiles(dir: string): number {
   let swept = 0;

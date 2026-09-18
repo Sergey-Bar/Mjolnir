@@ -67,7 +67,7 @@ export interface EvidenceRecord {
   /** Where the record came from and under which normalization contract. */
   provenance: {
     core: typeof EVIDENCE_CORE_VERSION;
-    ingest: "mjolnir.forensics";
+    ingest: "qa-doctor.forensics";
   };
 }
 
@@ -111,7 +111,7 @@ function normalizeOne(
     attachments: [],
     provenance: {
       core: EVIDENCE_CORE_VERSION,
-      ingest: "mjolnir.forensics",
+      ingest: "qa-doctor.forensics",
     },
   };
 }

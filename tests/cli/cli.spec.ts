@@ -90,7 +90,7 @@ function capture() {
 let dir: string;
 let origCwd: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-cli-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-cli-"));
   origCwd = process.cwd();
 });
 afterEach(() => {
@@ -107,9 +107,9 @@ describe("runCiInstall", () => {
     expect(cap.text()).toContain("Created");
     expect(cap.text()).toContain("Action-based template");
     expect(
-      readFileSync(join(dir, ".github", "workflows", "mjolnir.yml"), "utf8"),
-    ).toContain("Sergey-Bar/Mjolnir@v1");
-    expect(existsSync(join(dir, ".github", "workflows", "mjolnir.yml"))).toBe(
+      readFileSync(join(dir, ".github", "workflows", "qa-doctor.yml"), "utf8"),
+    ).toContain("Sergey-Bar/qa-doctor@v1");
+    expect(existsSync(join(dir, ".github", "workflows", "qa-doctor.yml"))).toBe(
       true,
     );
   });
@@ -120,8 +120,8 @@ describe("runCiInstall", () => {
     expect(runCiInstall(["--no-action"], cap.io)).toBe(0);
     expect(cap.text()).toContain("Plain-npx template");
     expect(
-      readFileSync(join(dir, ".github", "workflows", "mjolnir.yml"), "utf8"),
-    ).not.toContain("Sergey-Bar/Mjolnir@v1");
+      readFileSync(join(dir, ".github", "workflows", "qa-doctor.yml"), "utf8"),
+    ).not.toContain("Sergey-Bar/qa-doctor@v1");
   });
 
   it("--no-action --gate error writes the enforcing npx template", () => {
@@ -129,7 +129,7 @@ describe("runCiInstall", () => {
     const cap = capture();
     expect(runCiInstall(["--no-action", "--gate", "error"], cap.io)).toBe(0);
     expect(
-      readFileSync(join(dir, ".github", "workflows", "mjolnir.yml"), "utf8"),
+      readFileSync(join(dir, ".github", "workflows", "qa-doctor.yml"), "utf8"),
     ).toContain("Gate (error)");
   });
 
@@ -162,7 +162,7 @@ describe("runCiInstall", () => {
   it("refuses to overwrite a hand-customized workflow with exit 10 and preserves it, then --force replaces it", () => {
     process.chdir(dir);
     expect(runCiInstall([], capture().io)).toBe(0);
-    const wfPath = join(dir, ".github", "workflows", "mjolnir.yml");
+    const wfPath = join(dir, ".github", "workflows", "qa-doctor.yml");
     const customized = readFileSync(wfPath, "utf8") + "\n# my tweak\n";
     writeFileSync(wfPath, customized);
 
@@ -188,16 +188,16 @@ describe("runSuppressions", () => {
 
   it("surfaces a corrupted config on the usage-error path instead of an empty report (bug-audit M6)", () => {
     process.chdir(dir);
-    writeFileSync(join(dir, "mjolnir.config.json"), "{ broken");
+    writeFileSync(join(dir, "qa-doctor.config.json"), "{ broken");
     const cap = capture();
     expect(runSuppressions({ out: cap.out, err: cap.err })).toBe(10);
-    expect(cap.errText()).toContain("Invalid mjolnir config");
+    expect(cap.errText()).toContain("Invalid qa-doctor config");
   });
 
-  it("reads suppressions from the alternate .mjolnir.json config name (bug-audit M6)", () => {
+  it("reads suppressions from the alternate .qa-doctor.json config name (bug-audit M6)", () => {
     process.chdir(dir);
     writeFileSync(
-      join(dir, ".mjolnir.json"),
+      join(dir, ".qa-doctor.json"),
       JSON.stringify({
         ignore: [{ ruleId: "QA-X", reason: "tracked" }],
       }),
@@ -294,8 +294,8 @@ describe("runScanCommand / main dispatch", () => {
     const cap = capture();
     expect(await runScanCommand(["--bogus"], cap.io)).toBe(10);
     // The friendly error is an error → stderr; stdout stays findings-only.
-    expect(cap.errText()).toContain('mjolnir: unknown flag "--bogus"');
-    expect(cap.errText()).toContain("Run mjolnir --help");
+    expect(cap.errText()).toContain('qa-doctor: unknown flag "--bogus"');
+    expect(cap.errText()).toContain("Run qa-doctor --help");
   });
 
   it("emits JSON output with schemaVersion", async () => {

@@ -45,8 +45,8 @@ const y = (i) => PAD_TOP + i * LINE_HEIGHT;
 const SAMPLE = `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="600" height="300" xmlns="http://www.w3.org/2000/svg">
   <g clip-path="url(#winClip)">
-    <text x="300" y="22" fill="#a0a0a0" font-size="12" text-anchor="middle">demo-repo &#8212; mjolnir</text>
-    <text x="22" y="${y(0)}" xml:space="preserve"><tspan fill="rgb(0,255,0)">$ </tspan><tspan fill="#ede6d6">npx mjolnir-qa@latest</tspan></text>
+    <text x="300" y="22" fill="#a0a0a0" font-size="12" text-anchor="middle">demo-repo &#8212; qa-doctor</text>
+    <text x="22" y="${y(0)}" xml:space="preserve"><tspan fill="rgb(0,255,0)">$ </tspan><tspan fill="#ede6d6">npx qa-doctor-cli@latest</tspan></text>
     <text x="22" y="${y(1)}" xml:space="preserve"><tspan fill="#d7d3c8">  &#9556;&#9552;&#9559;</tspan></text>
     <text x="22" y="${y(3)}" xml:space="preserve"><tspan fill="#d7d3c8">  &#5798; [STRAINED]</tspan></text>
     <text x="22" y="${y(5)}" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,180,67)">WORTHINESS</tspan><tspan fill="#d7d3c8">  75/100  NEEDS WORK</tspan></text>
@@ -75,16 +75,16 @@ test("normalizeColor folds the two forms the SVG emits", () => {
 
 test("svgToLines joins the tspans of each line and keeps their colours", () => {
   const lines = svgToLines(SAMPLE);
-  assert.equal(lines[0].text, "$ npx mjolnir-qa@latest");
+  assert.equal(lines[0].text, "$ npx qa-doctor-cli@latest");
   assert.deepEqual(lines[0].spans, [
     { t: "$ ", c: "#00ff00" },
-    { t: "npx mjolnir-qa@latest", c: "#ede6d6" },
+    { t: "npx qa-doctor-cli@latest", c: "#ede6d6" },
   ]);
 });
 
 test("svgToLines separates the chrome title from report line 0", () => {
   const lines = svgToLines(SAMPLE);
-  assert.equal(lines.title, "demo-repo — mjolnir");
+  assert.equal(lines.title, "demo-repo — qa-doctor");
   assert.ok(
     !lines.some((l) => l.text.includes("demo-repo")),
     "title must not become a line",
@@ -135,7 +135,7 @@ test("parseSummary throws rather than guessing when the format changes", () => {
 
 test("splitGroups drops the ASCII hammer but keeps the state chip", () => {
   const g = splitGroups(svgToLines(SAMPLE));
-  assert.equal(g.command, "$ npx mjolnir-qa@latest");
+  assert.equal(g.command, "$ npx qa-doctor-cli@latest");
   assert.ok(
     !g.verdictLines.some((l) => l.text.includes("╔")),
     "the ASCII hammer must not reach the web report",
@@ -174,7 +174,7 @@ test("splitGroups still throws when a real boundary is missing", () => {
   const noScore = svgToLines(SAMPLE).filter((l) => !/WORTHINESS/.test(l.text));
   assert.throws(() => splitGroups(noScore), /WORTHINESS/);
   const noCommand = svgToLines(SAMPLE).filter(
-    (l) => !/npx mjolnir/.test(l.text),
+    (l) => !/npx qa-doctor/.test(l.text),
   );
   assert.throws(() => splitGroups(noCommand), /command/);
 });
@@ -302,7 +302,7 @@ test("buildScoring: report without transparency fields yields no scoring block",
 
 test("buildScoring: the real demo report yields the reconciled strip payload", () => {
   const r = buildReport(
-    SAMPLE,
+    readFileSync(HERO, "utf8"),
     readFileSync(
       join(HERE, "..", "..", "assets", "readme", "demo-report.json"),
       "utf8",

@@ -21,7 +21,7 @@ discarded:
 | Pre-existing work                                                                                      | Belongs to this mission?                             | Disposition                                                                                                          |
 | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | 3 unclassified corpus verdict stubs (`tests/corpus/verdicts/*.jsonl`)                                  | No — corpus classification work                      | Committed on `p0/repo-state-truth-drift` as `40f2cb5`. **Deliberately not carried** onto `brand/system-unification`. |
-| `.claude/commands/mjolnir.md` stamped `v0.5.30` after the `v0.5.31` release                            | No — repo hygiene                                    | Committed as `0791a76` on `p0/…`, cherry-picked to `c488e31` here so the drift gate is green on this branch.         |
+| `.claude/commands/qa-doctor.md` stamped `v0.5.30` after the `v0.5.31` release                          | No — repo hygiene                                    | Committed as `0791a76` on `p0/…`, cherry-picked to `c488e31` here so the drift gate is green on this branch.         |
 | Geist Mono embedding + terminal chrome unification + `flow.svg` removal + README "See it work" rewrite | **Yes** — it is the first half of the plan's Phase 3 | Committed as `8bd5899`.                                                                                              |
 
 Raw captures: [`git-status.before.txt`](git-status.before.txt),
@@ -48,7 +48,7 @@ silently fixed (mission rule §2).
 
 ## 3. Live deployed site — measured, not assumed
 
-Read from **the deployed page** `https://sergey-bar.github.io/Mjolnir/`,
+Read from **the deployed page** `https://sergey-bar.github.io/qa-doctor/`,
 not a local build.
 
 ### Typefaces actually loaded

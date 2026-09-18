@@ -14,8 +14,8 @@ import { runCli } from "./helpers.js";
 let dir: string;
 let cleanDir: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-e2e-sweep-"));
-  cleanDir = mkdtempSync(join(tmpdir(), "mjolnir-e2e-sweep-clean-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-e2e-sweep-"));
+  cleanDir = mkdtempSync(join(tmpdir(), "qa-doctor-e2e-sweep-clean-"));
 });
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
@@ -48,7 +48,7 @@ describe("E2E journey 9: exit-code contract sweep", () => {
       expect(runCli(["scan", cleanDir, "--json"]).status).toBe(0);
       writeFinding();
       expect(runCli(["scan", dir, "--json"]).status).toBe(1);
-      writeFileSync(join(dir, "mjolnir.config.json"), "{ broken");
+      writeFileSync(join(dir, "qa-doctor.config.json"), "{ broken");
       expect(runCli(["scan", dir, "--json"]).status).toBe(10);
     },
   );

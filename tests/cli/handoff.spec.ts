@@ -1,5 +1,5 @@
 /**
- * Agent-handoff plan M3 — `mjolnir handoff`.
+ * Agent-handoff plan M3 — `qa-doctor handoff`.
  *
  * Contracts (plan §5.1–§5.4, §9.3, §10, §11, §12):
  * - Deterministic artifact: byte-identical output for identical input.
@@ -30,7 +30,7 @@ import type { Output } from "../../src/cli.js";
 
 let dir: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-handoff-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-handoff-"));
 });
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
@@ -273,7 +273,7 @@ describe("renderHandoff — verification contract (plan §5.3)", () => {
 
   it("pins the verification command version and never @latest", () => {
     const md = renderHandoff(report(), {}, "0.5.4");
-    expect(md).toContain("npx mjolnir-qa@0.5.4 . --scope changed");
+    expect(md).toContain("npx qa-doctor-cli@0.5.4 . --scope changed");
     expect(md).not.toContain("@latest");
   });
 
@@ -329,7 +329,7 @@ describe("handoff copy block (plan §11)", () => {
     expect(block).toContain("What should change:");
     expect(block).toContain("Constraints:");
     expect(block).toContain("Occurrences (validate each):");
-    expect(block).toContain("npx mjolnir-qa@0.5.4 . --scope changed");
+    expect(block).toContain("npx qa-doctor-cli@0.5.4 . --scope changed");
     expect(block).toContain(
       "Do NOT disable the rule or suppress matching code",
     );
@@ -456,7 +456,7 @@ describe("determinism", () => {
     const md = renderHandoff(report());
     expect(md).not.toMatch(/\d{4}-\d{2}-\d{2}T/);
     expect(md).not.toContain(process.cwd());
-    expect(md).not.toContain("mjolnir-handoff-");
+    expect(md).not.toContain("qa-doctor-handoff-");
   });
 });
 
@@ -472,13 +472,13 @@ describe("runHandoffCommand — CLI contract", () => {
     const cap = capture();
     expect(runHandoffCommand([join(dir, "nope.json")], cap.io)).toBe(10);
     expect(cap.errText()).toContain("not found");
-    expect(cap.errText()).toContain("mjolnir --json");
+    expect(cap.errText()).toContain("qa-doctor --json");
   });
 
-  it("defaults to mjolnir.json", () => {
+  it("defaults to qa-doctor.json", () => {
     const cap = capture();
     expect(runHandoffCommand([], cap.io)).toBe(10);
-    expect(cap.errText()).toContain("mjolnir.json");
+    expect(cap.errText()).toContain("qa-doctor.json");
   });
 
   it("exit 2 on invalid JSON / foreign schema / non-report JSON", () => {
@@ -527,7 +527,7 @@ describe("runHandoffCommand — CLI contract", () => {
 describe("verificationBlock (exported for reuse)", () => {
   it("carries all four outcomes + the caveat + the reporting duties", () => {
     const block = verificationBlock("0.5.4").join("\n");
-    expect(block).toContain("npx mjolnir-qa@0.5.4 . --scope changed");
+    expect(block).toContain("npx qa-doctor-cli@0.5.4 . --scope changed");
     expect(block).toContain("TARGET_RESOLVED");
     expect(block).toContain("TARGET_REMAINS");
     expect(block).toContain("NEW_FINDINGS_INTRODUCED");

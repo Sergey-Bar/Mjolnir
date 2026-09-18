@@ -1,26 +1,26 @@
-# mjolnir-qa-playwright-reporter
+# qa-doctor-playwright-reporter
 
-Official Playwright reporter for [QA Doctor](https://github.com/Sergey-Bar/Mjolnir) —
-emits the JSON report that `mjolnir forensics`, `triage`, and `pw-report`
+Official Playwright reporter for [QA Doctor](https://github.com/Sergey-Bar/qa-doctor) —
+emits the JSON report that `qa-doctor forensics`, `triage`, and `pw-report`
 ingest for flake detection, retry analysis, and runtime evidence.
 
 ## Install
 
 > **This package is source-only.** It is _not_ published to npm —
-> `npm install mjolnir-qa-playwright-reporter` and
-> `npm view mjolnir-qa-playwright-reporter` both fail by design. It ships
+> `npm install qa-doctor-playwright-reporter` and
+> `npm view qa-doctor-playwright-reporter` both fail by design. It ships
 > as a workspace member of the QA Doctor repo, and this repo is its only
 > distribution channel. To use it, build from source:
 >
 > ```bash
-> git clone https://github.com/Sergey-Bar/Mjolnir
-> cd Mjolnir/packages/playwright-reporter
+> git clone https://github.com/Sergey-Bar/qa-doctor
+> cd qa-doctor/packages/playwright-reporter
 > npm install && npm run build
 > ```
 >
 > Then reference it from your project via a local file path
-> (`"mjolnir-qa-playwright-reporter": "file:../Mjolnir/packages/playwright-reporter"`)
-> or `npm link`. The `mjolnir-qa-playwright-reporter` import in the
+> (`"qa-doctor-playwright-reporter": "file:../qa-doctor/packages/playwright-reporter"`)
+> or `npm link`. The `qa-doctor-playwright-reporter` import in the
 > snippet below resolves through that path or link, not through npm.
 
 ## Use
@@ -28,23 +28,23 @@ ingest for flake detection, retry analysis, and runtime evidence.
 ```ts
 // playwright.config.ts
 import { defineConfig } from "@playwright/test";
-import { mjolnirReporter } from "mjolnir-qa-playwright-reporter";
+import { qaDoctorReporter } from "qa-doctor-playwright-reporter";
 
 export default defineConfig({
-  reporter: [mjolnirReporter()],
+  reporter: [qaDoctorReporter()],
 });
 ```
 
-By default the report is written to `mjolnir.report.json`. Pass a custom
-path with `mjolnirReporter({ outputFile: "my-report.json" })`.
+By default the report is written to `qa-doctor.report.json`. Pass a custom
+path with `qaDoctorReporter({ outputFile: "my-report.json" })`.
 
 ## Run forensics
 
 ```bash
 npx playwright test
-mjolnir forensics mjolnir.report.json   # flake verdicts + FLAKY.md
-mjolnir triage .                        # TRIAGE.md + quarantine proposal
-mjolnir pw-report mjolnir.report.json   # quick run summary
+qa-doctor forensics qa-doctor.report.json   # flake verdicts + FLAKY.md
+qa-doctor triage .                        # TRIAGE.md + quarantine proposal
+qa-doctor pw-report qa-doctor.report.json   # quick run summary
 ```
 
 ## Why not just `[['json', ...]]`?

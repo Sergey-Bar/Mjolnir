@@ -1,7 +1,7 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`PR Comment Golden Suite (TI-018) > renderCommentBody: fail + errors-only 1`] = `
-"<!-- mjolnir-pr-comment:v1 -->
+"<!-- qa-doctor-pr-comment:v1 -->
 ## :x: QA Doctor — FAIL
 
 **Score:** 35/100
@@ -17,7 +17,7 @@ Critical issues found.
 `;
 
 exports[`PR Comment Golden Suite (TI-018) > renderCommentBody: fail + full 1`] = `
-"<!-- mjolnir-pr-comment:v1 -->
+"<!-- qa-doctor-pr-comment:v1 -->
 ## :x: QA Doctor — FAIL
 
 **Score:** 35/100
@@ -29,7 +29,7 @@ Critical issues found.
 `;
 
 exports[`PR Comment Golden Suite (TI-018) > renderCommentBody: fail + infos-only 1`] = `
-"<!-- mjolnir-pr-comment:v1 -->
+"<!-- qa-doctor-pr-comment:v1 -->
 ## :x: QA Doctor — FAIL
 
 **Score:** 35/100
@@ -41,7 +41,7 @@ Critical issues found.
 `;
 
 exports[`PR Comment Golden Suite (TI-018) > renderCommentBody: fail + mixed 1`] = `
-"<!-- mjolnir-pr-comment:v1 -->
+"<!-- qa-doctor-pr-comment:v1 -->
 ## :x: QA Doctor — FAIL
 
 **Score:** 35/100
@@ -59,7 +59,7 @@ Critical issues found.
 `;
 
 exports[`PR Comment Golden Suite (TI-018) > renderCommentBody: fail + warnings-only 1`] = `
-"<!-- mjolnir-pr-comment:v1 -->
+"<!-- qa-doctor-pr-comment:v1 -->
 ## :x: QA Doctor — FAIL
 
 **Score:** 35/100
@@ -75,7 +75,7 @@ Critical issues found.
 `;
 
 exports[`PR Comment Golden Suite (TI-018) > renderCommentBody: pass + errors-only 1`] = `
-"<!-- mjolnir-pr-comment:v1 -->
+"<!-- qa-doctor-pr-comment:v1 -->
 ## :white_check_mark: QA Doctor — PASS
 
 **Score:** 95/100
@@ -91,7 +91,7 @@ All checks passed.
 `;
 
 exports[`PR Comment Golden Suite (TI-018) > renderCommentBody: pass + full 1`] = `
-"<!-- mjolnir-pr-comment:v1 -->
+"<!-- qa-doctor-pr-comment:v1 -->
 ## :white_check_mark: QA Doctor — PASS
 
 **Score:** 95/100
@@ -103,7 +103,7 @@ All checks passed.
 `;
 
 exports[`PR Comment Golden Suite (TI-018) > renderCommentBody: pass + infos-only 1`] = `
-"<!-- mjolnir-pr-comment:v1 -->
+"<!-- qa-doctor-pr-comment:v1 -->
 ## :white_check_mark: QA Doctor — PASS
 
 **Score:** 95/100
@@ -115,7 +115,7 @@ All checks passed.
 `;
 
 exports[`PR Comment Golden Suite (TI-018) > renderCommentBody: pass + mixed 1`] = `
-"<!-- mjolnir-pr-comment:v1 -->
+"<!-- qa-doctor-pr-comment:v1 -->
 ## :white_check_mark: QA Doctor — PASS
 
 **Score:** 95/100
@@ -133,7 +133,7 @@ All checks passed.
 `;
 
 exports[`PR Comment Golden Suite (TI-018) > renderCommentBody: pass + warnings-only 1`] = `
-"<!-- mjolnir-pr-comment:v1 -->
+"<!-- qa-doctor-pr-comment:v1 -->
 ## :white_check_mark: QA Doctor — PASS
 
 **Score:** 95/100
@@ -149,7 +149,7 @@ All checks passed.
 `;
 
 exports[`PR Comment Golden Suite (TI-018) > renderCommentBody: warn + errors-only 1`] = `
-"<!-- mjolnir-pr-comment:v1 -->
+"<!-- qa-doctor-pr-comment:v1 -->
 ## :warning: QA Doctor — WARN
 
 **Score:** 72/100
@@ -165,7 +165,7 @@ Some warnings found.
 `;
 
 exports[`PR Comment Golden Suite (TI-018) > renderCommentBody: warn + full 1`] = `
-"<!-- mjolnir-pr-comment:v1 -->
+"<!-- qa-doctor-pr-comment:v1 -->
 ## :warning: QA Doctor — WARN
 
 **Score:** 72/100
@@ -177,7 +177,7 @@ Some warnings found.
 `;
 
 exports[`PR Comment Golden Suite (TI-018) > renderCommentBody: warn + infos-only 1`] = `
-"<!-- mjolnir-pr-comment:v1 -->
+"<!-- qa-doctor-pr-comment:v1 -->
 ## :warning: QA Doctor — WARN
 
 **Score:** 72/100
@@ -189,7 +189,7 @@ Some warnings found.
 `;
 
 exports[`PR Comment Golden Suite (TI-018) > renderCommentBody: warn + mixed 1`] = `
-"<!-- mjolnir-pr-comment:v1 -->
+"<!-- qa-doctor-pr-comment:v1 -->
 ## :warning: QA Doctor — WARN
 
 **Score:** 72/100
@@ -207,7 +207,7 @@ Some warnings found.
 `;
 
 exports[`PR Comment Golden Suite (TI-018) > renderCommentBody: warn + warnings-only 1`] = `
-"<!-- mjolnir-pr-comment:v1 -->
+"<!-- qa-doctor-pr-comment:v1 -->
 ## :warning: QA Doctor — WARN
 
 **Score:** 72/100

@@ -1,12 +1,12 @@
 /**
  * Generated-artifact validity (Test Hardening Plan — product-quality
- * gap: mjolnir writes files into a user's repo that other systems
+ * gap: qa-doctor writes files into a user's repo that other systems
  * then consume; nothing verified those files are actually well-formed).
  *
- *  - `mjolnir ci install` writes a GitHub Actions workflow — if it's
+ *  - `qa-doctor ci install` writes a GitHub Actions workflow — if it's
  *    not valid YAML, the user's CI silently never runs (or GitHub shows
  *    a cryptic parse error the user didn't cause).
- *  - `mjolnir badge` writes a shields.io endpoint JSON — if it doesn't
+ *  - `qa-doctor badge` writes a shields.io endpoint JSON — if it doesn't
  *    match shields.io's schema, the badge silently renders as an error
  *    icon on the user's README forever.
  */
@@ -35,7 +35,7 @@ describe("`ci install` output is valid, parseable YAML", () => {
 
   for (const gate of gates) {
     it(`gate="${gate}" produces a workflow that parses as YAML`, () => {
-      const dir = mkdtempSync(join(tmpdir(), "mjolnir-ci-yaml-"));
+      const dir = mkdtempSync(join(tmpdir(), "qa-doctor-ci-yaml-"));
       try {
         const { written } = ciInstall(dir, gate);
         const text = readFileSync(written, "utf8");
@@ -61,7 +61,7 @@ describe("`ci install` output is valid, parseable YAML", () => {
   }
 
   it("the embedded JS gate-check snippet has balanced braces/quotes (sanity check on template interpolation)", () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-ci-yaml-balance-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-ci-yaml-balance-"));
     try {
       const { written } = ciInstall(dir, "error");
       const text = readFileSync(written, "utf8");
@@ -82,7 +82,7 @@ describe("`ci install` gate script semantics (bug-audit H2b/H2c — executed, no
    * fixture scan results, asserting the exact contract:
    *   clean → 0 · errors → 1 · warnings-only → 1 iff gate=warning ·
    *   partial → always 0 (a truncated scan must never block) ·
-   *   missing mjolnir.json → 1 (a crashed scan must never pass).
+   *   missing qa-doctor.json → 1 (a crashed scan must never pass).
    */
   const GATE_CASES: Array<{
     name: string;
@@ -134,9 +134,9 @@ describe("`ci install` gate script semantics (bug-audit H2b/H2c — executed, no
   for (const tc of GATE_CASES) {
     for (const gate of ["error", "warning"] as EnforcingGate[]) {
       it(`${tc.name} — gate=${gate} exits ${tc.expected[gate]}`, () => {
-        const dir = mkdtempSync(join(tmpdir(), "mjolnir-gate-fixture-"));
+        const dir = mkdtempSync(join(tmpdir(), "qa-doctor-gate-fixture-"));
         try {
-          writeFileSync(join(dir, "mjolnir.json"), JSON.stringify(tc.result));
+          writeFileSync(join(dir, "qa-doctor.json"), JSON.stringify(tc.result));
           let status: number | null = 0;
           let stdout = "";
           try {
@@ -159,8 +159,8 @@ describe("`ci install` gate script semantics (bug-audit H2b/H2c — executed, no
     }
   }
 
-  it("a missing/corrupt mjolnir.json fails the gate (a crashed scan must not pass silently)", () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-gate-missing-"));
+  it("a missing/corrupt qa-doctor.json fails the gate (a crashed scan must not pass silently)", () => {
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-gate-missing-"));
     try {
       let status: number | null = 0;
       try {
@@ -181,7 +181,7 @@ describe("`ci install` gate script semantics (bug-audit H2b/H2c — executed, no
 
 describe("`ci install` never silently overwrites a customized workflow (bug-audit H2e)", () => {
   it("refuses when the file is hand-customized and preserves it verbatim", () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-ci-refuse-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-ci-refuse-"));
     try {
       const first = ciInstall(dir, "advisory");
       const customized =
@@ -199,7 +199,7 @@ describe("`ci install` never silently overwrites a customized workflow (bug-audi
   });
 
   it("--force replaces the customized file with the template (default: action-based)", () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-ci-force-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-ci-force-"));
     try {
       const first = ciInstall(dir, "advisory");
       writeFileSync(first.written, "name: mine\n");
@@ -214,7 +214,7 @@ describe("`ci install` never silently overwrites a customized workflow (bug-audi
   });
 
   it("--force with { action: false } writes the plain-npx template", () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-ci-force-npx-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-ci-force-npx-"));
     try {
       const forced = ciInstall(dir, "advisory", { force: true, action: false });
       expect(forced.refused).toBe(false);
@@ -225,7 +225,7 @@ describe("`ci install` never silently overwrites a customized workflow (bug-audi
   });
 
   it("re-running the same template (idempotent) and switching gates both stay allowed", () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-ci-idempotent-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-ci-idempotent-"));
     try {
       expect(ciInstall(dir, "advisory").refused).toBe(false);
       // identical content → not customized

@@ -38,7 +38,7 @@ const procs = children.map((i) => {
       [join(ROOT, "dist", "cli.mjs"), TARGET, "--json"],
       {
         encoding: "utf8",
-        env: { ...process.env, MJOLNIR_ASCII: "1" },
+        env: { ...process.env, QA_DOCTOR_ASCII: "1" },
       },
     );
     return { code: 0, sig: normalize(stdout) };

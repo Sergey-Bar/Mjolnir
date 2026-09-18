@@ -1,8 +1,8 @@
   pw-report — Playwright run summary (counts, true flakes, slowest tests)
 
   Usage:
-    mjolnir pw-report <playwright-report.json | test-results-dir>
+    qa-doctor pw-report <playwright-report.json | test-results-dir>
 
   Examples:
-    $ mjolnir pw-report test-results
+    $ qa-doctor pw-report test-results
 

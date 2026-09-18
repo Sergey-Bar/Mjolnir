@@ -1,4 +1,4 @@
-CMD: mjolnir C:\Users\User\AppData\Local\Temp\mjolnir-exit-YjXQpm\clean --json
+CMD: qa-doctor C:\Users\User\AppData\Local\Temp\qa-doctor-exit-YjXQpm\clean --json
 EXPECTED: 0
 EXIT: 0
 --- STDOUT ---
