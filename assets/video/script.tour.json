@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "tour",
   "normalization": [
-    "/· \\d+ms$/ → '· a few ms'"
+    "/· (?:\\d+ms|(?:0\\.\\d*[1-9]\\d*|[1-9]\\d*(?:\\.\\d+)?)s)$/ → '· a few ms'"
   ],
   "environment": {
     "reporterWidth": 92,
