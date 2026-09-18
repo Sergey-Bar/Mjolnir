@@ -18,18 +18,18 @@
     "and say why in the commit."
   ],
   "masters": {
-    "assets/brand/logo.png": "b9fcb85f53e9b34359a0e84b1cfd18c8b5e4acfcbf3bed7c362f33e725c4c346",
+    "assets/brand/logo.png": "bac42c287a631a1ad5790ffa32ad32fae6adc3a49a7be7a535aaa1b760075cbb",
     "assets/brand/mark.png": "175b79e36c99eac7015febf155a2394b390fca9f3e1461eee7dd1db928df5b54"
   },
   "derived": {
     "assets/brand/icon.png": "fdd0753310ced9de78a9424ce728919775d628d370310726665af70f43634eaa",
-    "assets/readme/logo.png": "b395fe85dc7e6ec508d291ceaaba96e2d1c7f5524cf9f1703fc99062ad3a11e6",
-    "assets/readme/logo.webp": "10b2ff9f20f6d12bc9e28e86a3e7e288a55abf1fc52bb15660b5681ee1939225",
+    "assets/readme/logo.png": "c44c1c2330ee98de1576539a4b2b94c7cd60c5273d27549be576205dbb4f5557",
+    "assets/readme/logo.webp": "47998230b60d2fa226d60089087f1764d45eb876e049594d802082ad173523e4",
     "site/public/apple-touch-icon.png": "cd7262d79c8e2d21a89f2d02efaac80e888b9555e5cb6a1b69ddf1458d8bad11",
     "site/public/favicon-16.png": "11021c0f1d3f85cff68cac8de61608ff594149e4a7fa3c3fad2e27d65cea1593",
     "site/public/favicon-32.png": "f1bb22719c595c82ec55219cb7c3d2ed650956e1727f2a9423b47552306c36ae",
-    "site/public/logo.webp": "10b2ff9f20f6d12bc9e28e86a3e7e288a55abf1fc52bb15660b5681ee1939225",
+    "site/public/logo.webp": "47998230b60d2fa226d60089087f1764d45eb876e049594d802082ad173523e4",
     "site/public/mark-64.png": "2bee2e1190ee1cbb49bc302e74e5f98800eb5a02448e1d3861fa1dc627e51106",
-    "site/public/social-card.jpg": "ea3a586003187244addd89f26ad642b21b2f2261d699df0995fa77fd7abc2cbe"
+    "site/public/social-card.jpg": "0e158d89f81acc9e21a25436113e870607df8341baf9f316a1183a16ad1eaab2"
   }
 }

@@ -36,10 +36,10 @@
     <rect class="part" style="animation-delay:2.1s" x="221.8" y="59" width="169.8" height="19" rx="3" fill="#9D8CF5" fill-opacity="0.16" stroke="#9D8CF5" stroke-opacity="0.6"/>
     <rect class="part" style="animation-delay:2.9s" x="50.2" y="97" width="669" height="19" rx="3" fill="#C8CBCF" fill-opacity="0.16" stroke="#C8CBCF" stroke-opacity="0.6"/>
     <rect class="part" style="animation-delay:2.9s" x="112.6" y="116" width="263.4" height="19" rx="3" fill="#C8CBCF" fill-opacity="0.16" stroke="#C8CBCF" stroke-opacity="0.6"/>
-    <text x="22" y="54" xml:space="preserve"><tspan fill="#ABB6C6">  </tspan><tspan fill="rgb(236,107,102)">✗</tspan><tspan fill="#ABB6C6"> </tspan><tspan fill="rgb(236,107,102)">ERROR  </tspan><tspan fill="#ABB6C6"> </tspan><tspan fill="rgb(234,238,245)">QA-CI-009 · .github/workflows/ci.yml:10</tspan></text>
-    <text x="22" y="73" xml:space="preserve"><tspan fill="#ABB6C6">    </tspan><tspan fill="rgb(139,147,157)">[E2 · deterministic · measured FP 0% · n=10]</tspan></text>
-    <text x="22" y="92" xml:space="preserve"><tspan fill="#ABB6C6">    </tspan><tspan fill="rgb(200,203,207)">Finding </tspan><tspan fill="#ABB6C6">Job `test` pipes the test command into another tool without `set -o pipefail`.</tspan></text>
-    <text x="22" y="111" xml:space="preserve"><tspan fill="#ABB6C6">    </tspan><tspan fill="rgb(200,203,207)">Fix     </tspan><tspan fill="#ABB6C6">Add `shell: bash` with `set -o pipefail`, or split into two steps so the test</tspan></text>
+    <text x="22" y="54" xml:space="preserve"><tspan fill="#ABB6C6">  ✗ ERROR   QA-CI-009 · .github/workflows/ci.yml:10</tspan></text>
+    <text x="22" y="73" xml:space="preserve"><tspan fill="#ABB6C6">    [E2 · deterministic · measured FP 0% · n=10]</tspan></text>
+    <text x="22" y="92" xml:space="preserve"><tspan fill="#ABB6C6">    Finding Job `test` pipes the test command into another tool without `set -o pipefail`.</tspan></text>
+    <text x="22" y="111" xml:space="preserve"><tspan fill="#ABB6C6">    Fix     Add `shell: bash` with `set -o pipefail`, or split into two steps so the test</tspan></text>
     <text x="22" y="130" xml:space="preserve"><tspan fill="#ABB6C6">            command's exit code is preserved.</tspan></text>
   </g>
 

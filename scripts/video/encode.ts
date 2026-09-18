@@ -14,8 +14,9 @@ export function resolveFfmpeg(bin: "ffmpeg" | "ffprobe" = "ffmpeg"): string {
   const override =
     process.env[bin === "ffmpeg" ? "QA_DOCTOR_FFMPEG" : "QA_DOCTOR_FFPROBE"];
   if (override) return override;
-  const found = spawnSync("which", [bin], { encoding: "utf8" });
-  const path = found.stdout.trim();
+  const finder = process.platform === "win32" ? "where.exe" : "which";
+  const found = spawnSync(finder, [bin], { encoding: "utf8" });
+  const path = (found.stdout ?? "").split(/\r?\n/)[0]?.trim();
   if (path) return path;
   throw new Error(
     `${bin} not found. The demo-video renderer needs an ffmpeg build with ` +
