@@ -178,8 +178,7 @@ describe("E2E journey 1: first run from the packed tarball", () => {
       ]);
       expect(status).toBe(1);
       expect(stdout).toContain("WORTHINESS");
-      expect(stdout).toMatch(/WORTHY|NEEDS WORK|UNWORTHY/);
-      expect(stdout).toMatch(/\bWORTHY\b/);
+      expect(stdout).toMatch(/WORTHINESS\s+80\/100\s+WORTHY\b/);
       expect(stdout).not.toContain("NEEDS WORK");
     },
   );
