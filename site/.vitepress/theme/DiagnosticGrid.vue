@@ -6,10 +6,13 @@ defineProps<{
 </script>
 
 <template>
-  <div class="diagnostic-grid" aria-hidden="true">
-    <div class="grid-lines">
-      <i v-for="n in 12" :key="`v-${n}`" class="v" :style="{ '--pos': n }" />
-      <i v-for="n in 7" :key="`h-${n}`" class="h" :style="{ '--pos': n }" />
+  <div class="signal-field" aria-hidden="true">
+    <div class="signal-noise" />
+    <div class="signal-traces">
+      <i v-for="n in 4" :key="`trace-${n}`" :style="{ '--trace': n }" />
+    </div>
+    <div class="signal-points">
+      <i v-for="n in 14" :key="`point-${n}`" :style="{ '--point': n }" />
     </div>
     <div class="scan-line" />
     <div class="readout score-readout">
@@ -34,35 +37,115 @@ defineProps<{
 </template>
 
 <style scoped>
-.diagnostic-grid {
+.signal-field {
   position: absolute;
   inset: 0;
   z-index: -1;
   overflow: hidden;
   pointer-events: none;
-  color: var(--qa-info);
-  opacity: 0.72;
+  color: var(--qa-steel);
+  opacity: 0.84;
 }
-.grid-lines,
-.grid-lines i {
+.signal-noise,
+.signal-traces,
+.signal-points,
+.signal-traces i,
+.signal-points i {
   position: absolute;
   inset: 0;
 }
-.grid-lines i {
+.signal-noise {
+  opacity: 0.23;
+  background-image: radial-gradient(
+    circle,
+    rgba(234, 238, 245, 0.46) 0 0.7px,
+    transparent 0.9px
+  );
+  background-size: 19px 19px;
+  mask-image: radial-gradient(ellipse at 78% 38%, #000, transparent 64%);
+}
+.signal-traces i {
   display: block;
-  opacity: 0.28;
-}
-.grid-lines .v {
-  left: calc((100% / 13) * var(--pos));
-  right: auto;
-  width: 1px;
-  background: currentColor;
-}
-.grid-lines .h {
-  top: calc((100% / 8) * var(--pos));
+  top: calc(13% + var(--trace) * 19%);
+  right: calc(-8% + var(--trace) * 5%);
   bottom: auto;
+  left: auto;
+  width: clamp(180px, 30vw, 460px);
   height: 1px;
-  background: currentColor;
+  opacity: calc(0.08 + var(--trace) * 0.035);
+  background: linear-gradient(90deg, transparent, var(--qa-steel), transparent);
+  transform: rotate(calc(-9deg + var(--trace) * 4deg));
+  transform-origin: right;
+}
+.signal-points i {
+  top: 16%;
+  left: 63%;
+  right: auto;
+  bottom: auto;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--qa-steel);
+  box-shadow: 0 0 9px color-mix(in srgb, var(--qa-steel) 42%, transparent);
+  opacity: 0.34;
+}
+.signal-points i:nth-child(2n) {
+  opacity: 0.52;
+}
+.signal-points i:nth-child(3n) {
+  opacity: 0.2;
+}
+.signal-points i:nth-child(2) {
+  top: 28%;
+  left: 78%;
+}
+.signal-points i:nth-child(3) {
+  top: 42%;
+  left: 58%;
+}
+.signal-points i:nth-child(4) {
+  top: 66%;
+  left: 70%;
+}
+.signal-points i:nth-child(5) {
+  top: 81%;
+  left: 85%;
+}
+.signal-points i:nth-child(6) {
+  top: 18%;
+  left: 91%;
+}
+.signal-points i:nth-child(7) {
+  top: 37%;
+  left: 88%;
+}
+.signal-points i:nth-child(8) {
+  top: 55%;
+  left: 79%;
+}
+.signal-points i:nth-child(9) {
+  top: 74%;
+  left: 62%;
+}
+.signal-points i:nth-child(10) {
+  top: 88%;
+  left: 74%;
+}
+.signal-points i:nth-child(11) {
+  top: 12%;
+  left: 71%;
+}
+.signal-points i:nth-child(12) {
+  top: 48%;
+  left: 95%;
+}
+.signal-points i:nth-child(13) {
+  top: 71%;
+  left: 92%;
+}
+.signal-points i:nth-child(14) {
+  top: 31%;
+  left: 68%;
 }
 .scan-line {
   position: absolute;

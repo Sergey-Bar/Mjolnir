@@ -1434,10 +1434,12 @@ onBeforeUnmount(() => {
   place-content: center;
   gap: 18px;
   background:
-    linear-gradient(rgba(198, 204, 214, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(198, 204, 214, 0.045) 1px, transparent 1px),
+    radial-gradient(
+      ellipse at 50% 44%,
+      color-mix(in oklch, var(--qa-gold) 9%, transparent),
+      transparent 46%
+    ),
     var(--qa-ink-950);
-  background-size: 32px 32px;
   color: var(--t1);
 }
 .boot-mark {
@@ -1517,20 +1519,19 @@ onBeforeUnmount(() => {
   position: absolute;
   inset: 0;
   z-index: -1;
-  opacity: 0.34;
+  opacity: 0.42;
   background:
     radial-gradient(
-      circle at 81% 18%,
-      color-mix(in oklch, var(--qa-gold) 12%, transparent) 0 1px,
-      transparent 1.5px
+      ellipse at 92% 29%,
+      color-mix(in oklch, var(--qa-steel) 10%, transparent),
+      transparent 34%
     ),
-    linear-gradient(90deg, rgba(198, 204, 214, 0.055) 1px, transparent 1px),
-    linear-gradient(rgba(198, 204, 214, 0.055) 1px, transparent 1px);
-  background-size:
-    96px 96px,
-    48px 48px,
-    48px 48px;
-  mask-image: linear-gradient(180deg, #000, transparent 90%);
+    radial-gradient(
+      ellipse at 74% 64%,
+      color-mix(in oklch, var(--qa-gold) 7%, transparent),
+      transparent 28%
+    );
+  mask-image: radial-gradient(ellipse at 75% 45%, #000, transparent 75%);
 }
 .hero {
   padding-top: calc(var(--vp-nav-height) + clamp(48px, 7vw, 104px));
