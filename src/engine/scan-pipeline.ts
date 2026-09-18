@@ -845,7 +845,9 @@ export function applyPostScanProcessing(
         discoveredReport.report,
         workspace.root,
       );
-      forensicVerdicts = summarizeForensicVerdicts(discoveredReport.report);
+      if (discoveredReport.report.analysisComplete === true) {
+        forensicVerdicts = summarizeForensicVerdicts(discoveredReport.report);
+      }
     } catch {
       /* corrupt report — no runtime evidence */
     }

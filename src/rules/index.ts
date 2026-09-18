@@ -111,7 +111,7 @@ export const RULES: readonly QADoctorRule[] = [
   // P3b (plan 1789009691197): Azure DevOps can-never-fail gates — born
   // quarantine (§15.5) until measured. Introduced 1.1.0.
   canNeverFailGate,
-  // P3c: Jenkins try/catch verification swallow — born quarantine (§15.5).
+  // P3c: Jenkins try/catch verification swallow — born quarantine (§15.5). Introduced 1.1.1.
   swallowedVerificationFailure,
   pyNoAssertions,
   pyHardSleep,

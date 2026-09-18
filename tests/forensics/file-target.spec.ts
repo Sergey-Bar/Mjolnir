@@ -27,7 +27,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { runTriageCommand } from "../../src/cli.js";
 import { runForensicsCommand } from "../../src/cli-handlers.js";
-import { analyze } from "../../src/forensics/analyze.js";
+import { analyze, renderLeaderboard } from "../../src/forensics/analyze.js";
 import type { TestRecord } from "../../src/forensics/types.js";
 import { runForensics } from "../../src/forensics/run.js";
 import { parsePlaywrightJson } from "../../src/forensics/parse-playwright-json.js";
@@ -171,6 +171,9 @@ describe("forensics completeness regressions", () => {
     expect(report.analysisComplete).toBe(false);
     expect(report.skippedReports).toBe(0);
     expect(report.incompleteReasons).toContain("record-count-limit");
+    const output = renderLeaderboard(report);
+    expect(output).toContain("record count limit reached; analysis is partial");
+    expect(output).not.toContain("0 report(s) skipped");
     expect(analyze([record], "playwright-json").analysisComplete).toBe(true);
   });
 
@@ -211,6 +214,12 @@ describe("forensics completeness regressions", () => {
     expect(report.skippedReports).toBe(1);
     expect(report.incompleteReasons).toEqual(
       expect.arrayContaining(["record-count-limit", "parse-failure"]),
+    );
+    const output = renderLeaderboard(report);
+    expect(output).toContain("1 report(s) skipped (parse-failure)");
+    expect(output).toContain("record count limit reached");
+    expect(output).not.toContain(
+      "1 report(s) skipped (record-count-limit, parse-failure)",
     );
   });
 

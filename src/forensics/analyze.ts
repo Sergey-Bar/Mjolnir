@@ -164,6 +164,27 @@ function renderNetworkObservations(report: ForensicsReport): string[] {
   ];
 }
 
+function partialAnalysisMessage(report: ForensicsReport): string {
+  const skippedReasons = report.incompleteReasons.filter(
+    (reason) => reason !== "record-count-limit",
+  );
+  const partialReasons = report.incompleteReasons
+    .filter((reason) => reason === "record-count-limit")
+    .map(() => "record count limit reached");
+  if (report.skippedReports > 0) {
+    const skippedReasonText =
+      skippedReasons.length > 0 ? ` (${skippedReasons.join(", ")})` : "";
+    const suffix =
+      partialReasons.length > 0 ? `; ${partialReasons.join(", ")}.` : ".";
+    return `Analysis is partial — ${report.skippedReports} report(s) skipped${skippedReasonText}${suffix}`;
+  }
+  const reasonText =
+    partialReasons.length > 0
+      ? partialReasons.join(", ")
+      : report.incompleteReasons.join(", ");
+  return `${reasonText}; analysis is partial.`;
+}
+
 export function renderLeaderboard(report: ForensicsReport): string {
   const lines: string[] = [];
   lines.push(sectionHeader("FLAKINESS LEADERBOARD", ui));
@@ -184,9 +205,7 @@ export function renderLeaderboard(report: ForensicsReport): string {
           : "No failures or retries found — nothing suspicious this run.",
     );
     if (!report.analysisComplete) {
-      lines.push(
-        `⚠ Analysis is partial — ${report.skippedReports} report(s) skipped (${report.incompleteReasons.join(", ")}).`,
-      );
+      lines.push(`⚠ ${partialAnalysisMessage(report)}`);
     }
     return lines.join("\n");
   }
@@ -203,9 +222,7 @@ export function renderLeaderboard(report: ForensicsReport): string {
   }
   if (!report.analysisComplete) {
     lines.push("");
-    lines.push(
-      `⚠ Analysis is partial — ${report.skippedReports} report(s) skipped (${report.incompleteReasons.join(", ")}).`,
-    );
+    lines.push(`⚠ ${partialAnalysisMessage(report)}`);
   }
   return lines.join("\n");
 }
@@ -237,9 +254,7 @@ export function renderFlakyMd(report: ForensicsReport): string {
     );
     if (!report.analysisComplete) {
       lines.push("");
-      lines.push(
-        `> ⚠ Analysis is partial — ${report.skippedReports} report(s) skipped (${report.incompleteReasons.join(", ")}).`,
-      );
+      lines.push(`> ⚠ ${partialAnalysisMessage(report)}`);
     }
     return lines.join("\n");
   }
@@ -255,9 +270,7 @@ export function renderFlakyMd(report: ForensicsReport): string {
   }
   if (!report.analysisComplete) {
     lines.push("");
-    lines.push(
-      `> ⚠ Analysis is partial — ${report.skippedReports} report(s) skipped (${report.incompleteReasons.join(", ")}).`,
-    );
+    lines.push(`> ⚠ ${partialAnalysisMessage(report)}`);
   }
   lines.push("");
   return lines.join("\n");
