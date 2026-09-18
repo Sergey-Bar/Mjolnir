@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="assets/readme/hero.svg" alt="Mjölnir。測試告訴你什麼通過了。Mjölnir 告訴你什麼值得信任。" width="100%" />
+<img src="assets/readme/hero.svg" alt="QA Doctor。測試告訴你什麼通過了。QA Doctor 告訴你什麼值得信任。" width="100%" />
 
 <br />
 
-Mjölnir 找出不可能失敗的測試和不可能變紅的流水線，<br />
+QA Doctor 找出不可能失敗的測試和不可能變紅的流水線，<br />
 再評估結果可信到什麼程度，每一分都附有證據。
 
 <br />
@@ -50,26 +50,26 @@ npx mjolnir-qa@latest
 - workflow 上傳了、卻從未產生過的報告
 - 靠固定 sleep 勉強撐住的競態條件
 
-它們都不會讓流水線變紅，而且在審查中每一個看起來都像是刻意為之。所以它們才能存活下來。以下是 Mjölnir 讀取一個真實案例：
+它們都不會讓流水線變紅，而且在審查中每一個看起來都像是刻意為之。所以它們才能存活下來。以下是 QA Doctor 讀取一個真實案例：
 
 <p align="center">
-  <img src="assets/readme/scan.svg" alt="示範儲存庫的 CI workflow，逐行讀取。Mjölnir 在回報的那一行標出每一項發現，附上它的規則、問題所在、證據等級以及實測誤報率。" width="800" />
+  <img src="assets/readme/scan.svg" alt="示範儲存庫的 CI workflow，逐行讀取。QA Doctor 在回報的那一行標出每一項發現，附上它的規則、問題所在、證據等級以及實測誤報率。" width="800" />
 </p>
 
 <sub>示範掃描為此 workflow 回報的每一項發現，都標在回報的那一行。由 `npm run docs:readme-brand` 根據 [`demo-report.json`](assets/readme/demo-report.json) 產生，並在 CI 中鎖定以防漂移。</sub>
 
 **嚴格模式。** 最激進的偵測——`.only`、`continue-on-error`、空測試、濫用重試——位於隔離層。它們僅在 `--strict` 下執行，且限定為 `info` 嚴重性：只標記，從不攔截。預設掃描（不帶 `--strict` 的 `npx mjolnir-qa@latest`）僅涵蓋核心和擴充規則。需要諮詢層時，加上 `--strict`。
 
-Mjölnir 讀取測試套件、CI workflow，以及（如果有的話）一次真實執行的報告。它不會執行你的測試，不會安裝你的相依套件，也不會執行它掃描的程式碼。當它沒有證據時，它會直說，而不是捏造信心：
+QA Doctor 讀取測試套件、CI workflow，以及（如果有的話）一次真實執行的報告。它不會執行你的測試，不會安裝你的相依套件，也不會執行它掃描的程式碼。當它沒有證據時，它會直說，而不是捏造信心：
 
-| 情況                                       | Mjölnir 的回報                                        |
+| 情況                                       | QA Doctor 的回報                                      |
 | ------------------------------------------ | ----------------------------------------------------- |
 | 找不到測試宣告                             | 評分為 `null`，顯示為 **UNKNOWN**。絕不捏造一個 100。 |
 | 沒有基準線或可比較的版本                   | **UNKNOWN**，並寫明原因。絕不假定為 0。               |
 | 掃描中途終止（時間預算用盡、檔案無法讀取） | **PARTIAL**，結束碼 `2`。絕不呈現為乾淨結果。         |
 
 <p align="center">
-  <img src="assets/readme/how-it-works.svg" alt="Mjölnir 的運作方式。它以靜態方式讀取測試套件和 CI 流水線，在有真實執行報告時也會讀取該報告。它依證據等級和信任等級為每項發現加權，其中只有真實執行才能達到 L3 到 L5，最終產出發現、可信度評分，以及基於凍結結束碼的 CI 關卡。在代理循環中，AI 撰寫修正，Mjölnir 重新掃描來證明它。" width="880" />
+  <img src="assets/readme/how-it-works.svg" alt="QA Doctor 的運作方式。它以靜態方式讀取測試套件和 CI 流水線，在有真實執行報告時也會讀取該報告。它依證據等級和信任等級為每項發現加權，其中只有真實執行才能達到 L3 到 L5，最終產出發現、可信度評分，以及基於凍結結束碼的 CI 關卡。在代理循環中，AI 撰寫修正，QA Doctor 重新掃描來證明它。" width="880" />
 </p>
 
 <sub>為本頁面設計並以 1:1 顯示。由 `npm run docs:readme-brand` 產生，並在 CI 中鎖定以防漂移；評分、計數和規則 ID 來自 [`script.demo.json`](assets/video/script.demo.json)、[`demo-report.json`](assets/readme/demo-report.json) 和規則登錄表，從不手動輸入。同一張圖的海報版本：[`architecture.svg`](assets/readme/architecture.svg)。</sub>
@@ -81,7 +81,7 @@ Mjölnir 讀取測試套件、CI workflow，以及（如果有的話）一次真
 對 [`examples/demo-repo`](examples/demo-repo) 的一次真實掃描，這是一個附帶 CI workflow 的小型 Playwright 套件。它的分數都扣在了這裡：
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Mjölnir 的扣分明細：WORTHINESS 75/100 NEEDS WORK、依類別的評分、依嚴重程度的扣分框，以及 FIX THIS FIRST 清單" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="QA Doctor 的扣分明細：WORTHINESS 80/100 WORTHY、依類別的評分、依嚴重程度的扣分框，以及 FIX THIS FIRST 清單" width="520" />
 </p>
 
 <sub>由 `npm run docs:hero` 根據一次真實掃描產生，並在 CI 中鎖定以防漂移。同一次掃描的完整 `--verbose` 報告是 [`demo.svg`](assets/readme/demo.svg)（`npm run docs:demo`）。</sub>
@@ -103,7 +103,7 @@ Mjölnir 讀取測試套件、CI workflow，以及（如果有的話）一次真
 
 ### 近看一項發現
 
-每一項發現都回答四個問題：它在哪裡、Mjölnir 有多確定、這條規則多常出錯，以及如何修正。
+每一項發現都回答四個問題：它在哪裡、QA Doctor 有多確定、這條規則多常出錯，以及如何修正。
 
 <p align="center">
   <img src="assets/readme/finding-anatomy.svg" alt="示範掃描的第一項發現，與終端機印出的完全一致，並標出它的四個部分：位置、確定程度、規則的出錯頻率，以及修正方式。" width="100%" />
@@ -212,7 +212,7 @@ npx mjolnir-qa@latest --scope changed
 | `mjolnir suppressions`              | 列出被抑制的發現，用於治理                               |
 | `mjolnir rules --unmeasured`        | 基於假設而非量測運作的規則                               |
 | `mjolnir rules --md`                | 完整規則目錄（JSON 或 Markdown）                         |
-| `mjolnir doctor`                    | 對 Mjölnir 自身規則庫的自我稽核                          |
+| `mjolnir doctor`                    | 對 QA Doctor 自身規則庫的自我稽核                        |
 | `mjolnir create-rule <ID>`          | 為新規則及其 fixtures 產生骨架                           |
 | `mjolnir stats`                     | 本機記錄的歷來修正計數                                   |
 | `mjolnir badge`                     | shields.io 端點 JSON 與程式碼片段                        |
@@ -227,7 +227,7 @@ npx mjolnir-qa@latest --scope changed
 
 <br />
 
-## Mjölnir 能發現什麼
+## QA Doctor 能發現什麼
 
 <p align="center">
   <img src="assets/readme/stack.svg" alt="適用你的技術堆疊：規則所涵蓋的語言、測試框架和 CI 系統，資料來自規則登錄表。" width="100%" />
@@ -312,8 +312,8 @@ e2e/login.spec.ts
   role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 
 e2e/checkout.spec.ts
-  [█████████████████░░░]  86 / 100
-  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
+  [██████████████████░░]  88 / 100
+  role/text: 4 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 ```
 
 這衡量的是**韌性，而非正確性**。`.btn.btn-primary > div:nth-child(2)` 今天能通過，並會一直通過，直到有人改動標記結構。低分從不聲稱測試壞了，只說明它依賴於沒有人承諾保留的標記結構。
@@ -338,13 +338,13 @@ e2e/checkout.spec.ts
 
 **計算方式**。嚴重程度決定基礎扣分（`error −8`、`warning −3`、`info −1`），證據等級再對其打折：E2 全額扣分，E1 扣一半（無條件捨去），E0 不扣分。總扣分依套件規模正規化，也就是以每個測試宣告計算，而不是以檔案計算。終端機印出的就是評分所用的同一組折後數字；不存在隱藏的第二套模型。詳情：[docs/SCORING.md](docs/SCORING.md) 和 [評分指南](https://sergey-bar.github.io/Mjolnir/guide/scoring)。
 
-**100 分不代表什麼**。它不代表軟體是正確的，不代表測試套件是充分的，也不代表產品沒有缺陷。它只代表一件事：**在本次掃描和這套證據模型下，Mjölnir 評估的規則都沒有產生扣分。**
+**100 分不代表什麼**。它不代表軟體是正確的，不代表測試套件是充分的，也不代表產品沒有缺陷。它只代表一件事：**在本次掃描和這套證據模型下，QA Doctor 評估的規則都沒有產生扣分。**
 
 <br />
 
 ## 證據模型
 
-每一項發現都帶有兩個標籤：Mjölnir 有多確定，以及這項發現被查證到什麼程度。這正是只會回報模式的工具，與可以用來把關發佈的工具之間的差別。
+每一項發現都帶有兩個標籤：QA Doctor 有多確定，以及這項發現被查證到什麼程度。這正是只會回報模式的工具，與可以用來把關發佈的工具之間的差別。
 
 **有多確定 — 證據等級。**
 
@@ -356,7 +356,7 @@ e2e/checkout.spec.ts
 
 偵測的信心程度不等於證明的強度。一條規則可以確定自己比對到了要找的東西，但它看到的仍可能只是啟發式結果。E1 發現是用來閱讀和判斷的，絕不能盲目套用；這條界線會標註在終端機、JSON 以及交給代理的交接內容中的每一項發現上。
 
-**查證到什麼程度 — 信任等級**。大多數發現來自閱讀你的程式碼。把一次真實測試執行的報告交給 Mjölnir，它就能確認程式碼確實執行過。
+**查證到什麼程度 — 信任等級**。大多數發現來自閱讀你的程式碼。把一次真實測試執行的報告交給 QA Doctor，它就能確認程式碼確實執行過。
 
 <p align="center">
   <img src="assets/readme/trust-ladder.svg" alt="從 L0 到 L5 的信任階梯。L0 到 L2 來自閱讀程式碼；L3 到 L5 需要真實的執行報告，階梯上的斷口標示了這一點。" width="100%" />
@@ -396,9 +396,9 @@ FP 帶只能降級一個層級 — 如果規則被明確宣告在 `quarantine` �
 
 ### 為什麼這不是 linter
 
-Linter 告訴你程式碼是否遵循規則。Mjölnir 告訴你你的驗證是否值得信任。
+Linter 告訴你程式碼是否遵循規則。QA Doctor 告訴你你的驗證是否值得信任。
 
-|                                                        | Linter（ESLint、SonarQube） | 覆蓋率工具 | AI 程式碼審查 |    **Mjölnir**     |
+|                                                        | Linter（ESLint、SonarQube） | 覆蓋率工具 | AI 程式碼審查 |   **QA Doctor**    |
 | ------------------------------------------------------ | :-------------------------: | :--------: | :-----------: | :----------------: |
 | 評估的是**驗證體系**，而不是產品程式碼                 |             否              |     否     |      否       |         是         |
 | CI workflow 完整性（`continue-on-error`、`\|\| true`） |             否              |     否     |   僅限 diff   |         是         |
@@ -412,7 +412,7 @@ Linter 告訴你程式碼是否遵循規則。Mjölnir 告訴你你的驗證是�
 
 <sub>\*由 `eslint-plugin-jest` 和 `eslint-plugin-playwright`（`expect-expect`、`no-wait-for-timeout`）以及 SonarQube 內建的斷言規則涵蓋。各欄描述的是驗證測試套件時的預設行為；外掛、付費方案和自訂規則會改變其中部分答案。這是一份定位概覽，而不是基準測試。</sub>
 
-也請使用 AI 審查。它能捕捉到任何模式都發現不了的細微差異、意圖和設計缺陷。而 Mjölnir 能捕捉到 AI 審查因為看起來是刻意為之而忽略的東西：提交進儲存庫的 `.only`、被吞掉的結束碼、測試 job 上的 `continue-on-error`。這些需要的是掃描，而不是推理。
+也請使用 AI 審查。它能捕捉到任何模式都發現不了的細微差異、意圖和設計缺陷。而 QA Doctor 能捕捉到 AI 審查因為看起來是刻意為之而忽略的東西：提交進儲存庫的 `.only`、被吞掉的結束碼、測試 job 上的 `continue-on-error`。這些需要的是掃描，而不是推理。
 
 <br />
 
@@ -441,7 +441,7 @@ FAILING    declines an expired card (e2e/checkout.spec.ts)
 
 ## CI 完整性
 
-測試可以通過，而包住它的流水線卻不可能失敗。Mjölnir 同樣讀取 workflow：`continue-on-error`、`|| true`、從不傳遞的結束碼、總是成功的 step、被使用卻從未產生的報告，以及恰恰在應當攔截的事件上被略過的關卡。每一項發現都會指明 job、step 和行號，並帶有自己的證據等級。
+測試可以通過，而包住它的流水線卻不可能失敗。QA Doctor 同樣讀取 workflow：`continue-on-error`、`|| true`、從不傳遞的結束碼、總是成功的 step、被使用卻從未產生的報告，以及恰恰在應當攔截的事件上被略過的關卡。每一項發現都會指明 job、step 和行號，並帶有自己的證據等級。
 
 產生 PR workflow，預設為建議性的：
 
@@ -493,7 +493,7 @@ npx mjolnir-qa@latest --scope changed
 SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
 ```
 
-**AI 撰寫修正。Mjölnir 驗證它**。證明來自重新掃描，而絕不是代理自己回報的成功。
+**AI 撰寫修正。QA Doctor 驗證它**。證明來自重新掃描，而絕不是代理自己回報的成功。
 
 | 指令              | 代理得到什麼                                                                                                                     |
 | ----------------- | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -549,10 +549,10 @@ claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
 
 <br />
 
-## Mjölnir 無法告訴你的事
+## QA Doctor 無法告訴你的事
 
 - **它不會執行你的測試**。掃描乾淨不等於測試套件通過。
-- **它無法告訴你某個斷言是*錯誤的***。`expect(total).toBe(41)` 看起來很健康。Mjölnir 找的是*不可能失敗*的測試和*不可能變紅*的流水線，而不是檢查了錯誤內容的測試。
+- **它無法告訴你某個斷言是*錯誤的***。`expect(total).toBe(41)` 看起來很健康。QA Doctor 找的是*不可能失敗*的測試和*不可能變紅*的流水線，而不是檢查了錯誤內容的測試。
 - **它不能證明業務正確性**。這裡沒有任何東西能說明你的產品做到了需求的要求。
 - **100 分不能證明測試套件好**。你的套件是否涵蓋了真實風險是另一個問題，這個工具不回答它。
 - **79 條規則中有 5 條基於估計發佈**，而不是實測的誤報率。每一條都會在自己的發現中註明。

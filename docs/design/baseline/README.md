@@ -86,7 +86,7 @@ Your tests are lying to you. We prove it.
 The canonical tagline, in `README.md` and `assets/brand/README.md`, is:
 
 ```
-Tests tell you what passed. Mjölnir tells you what you can trust.
+Tests tell you what passed. QA Doctor tells you what you can trust.
 ```
 
 Two different primary claims, in two different voices — the site's is

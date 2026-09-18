@@ -115,7 +115,7 @@ describe("trust-report --from (WI-9 consumption path)", () => {
     expect(captured.out.join("\n")).toContain("trust report written");
     const mdPath = join(dir, "mjolnir-trust-report.md");
     expect(existsSync(mdPath)).toBe(true);
-    expect(readFileSync(mdPath, "utf8")).toContain("Mjölnir Trust Report");
+    expect(readFileSync(mdPath, "utf8")).toContain("QA Doctor Trust Report");
   });
 
   it("--stdout prints the report without writing a file", async () => {
@@ -132,7 +132,7 @@ describe("trust-report --from (WI-9 consumption path)", () => {
       writeFileSync(p2, JSON.stringify(result()));
       const code = await runTrustReportCommand(["--from", p2, "--stdout"], io);
       expect(code).toBe(0);
-      expect(captured.out.join("\n")).toContain("# Mjölnir Trust Report");
+      expect(captured.out.join("\n")).toContain("# QA Doctor Trust Report");
       expect(existsSync(join(outDir, "mjolnir-trust-report.md"))).toBe(false);
     } finally {
       rmSync(outDir, { recursive: true, force: true });
@@ -161,7 +161,9 @@ describe("trust-report --from (WI-9 consumption path)", () => {
           expect(code).toBe(0);
           const md = join(corpusCopy, "mjolnir-trust-report.md");
           expect(existsSync(md)).toBe(true);
-          expect(readFileSync(md, "utf8")).toContain("# Mjölnir Trust Report");
+          expect(readFileSync(md, "utf8")).toContain(
+            "# QA Doctor Trust Report",
+          );
           expect(
             existsSync(join(corpusCopy, "mjolnir-trust-report.json")),
           ).toBe(true);

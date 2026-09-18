@@ -5,7 +5,7 @@
  * could would itself be the kind of false proof this project exists to
  * catch. So the lock sits one layer down: the committed scripts under
  * assets/video/ are the only thing the renderer may draw, and this spec
- * re-runs the same real Mjolnir executions and fails when either script
+ * re-runs the same real QA Doctor executions and fails when either script
  * stops matching what the CLI now prints.
  *
  * Two distinct classes of claim are checked here.

@@ -19,7 +19,7 @@
 # Event-data safety (audit S-5, the repo's own QA-CI rule): every input
 # reaches the shell through `env:`, never by interpolation into a `run:`
 # body.
-name: "Mjölnir — verification trust scan"
+name: "QA Doctor — verification trust scan"
 description: >-
   Scan your test suites, Playwright configs, and CI workflows for tests
   that cannot fail and pipelines that cannot go red. Produces a trust
@@ -174,6 +174,7 @@ runs:
         MJ_STRICT: ${{ inputs.strict }}
         MJ_FORMAT: ${{ inputs.format }}
         MJ_FAIL_ON: ${{ inputs.fail-on }}
+        MJ_FAIL_ON_PARTIAL: ${{ inputs.fail-on-partial }}
         MJ_VERSION: ${{ inputs.version }}
       run: |
         ARGS=("$MJ_PATH")
@@ -212,7 +213,7 @@ runs:
         # complete scan. Exit 1 (findings at gate) and 10/20 (usage/
         # internal) always fail regardless of this setting.
         if [ "$EXIT" = "2" ]; then
-          echo "::warning::Mjölnir scan was PARTIAL — some files were not analyzed; the gate is not enforced."
+          echo "::warning::QA Doctor scan was PARTIAL — some files were not analyzed; the gate is not enforced."
           if [ "$MJ_FAIL_ON_PARTIAL" = "true" ]; then
             echo "::error::fail-on-partial is enabled — failing the job on partial scan"
             exit 2

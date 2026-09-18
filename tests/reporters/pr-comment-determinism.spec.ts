@@ -83,7 +83,7 @@ describe("TI-018: PR comment rendering determinism", () => {
   it("output contains expected structural markers", () => {
     const output = renderPrComment(makeModel());
     expect(output).toContain("<!-- mjolnir-pr-comment -->");
-    expect(output).toContain("Mjölnir Verification Trust Report");
+    expect(output).toContain("QA Doctor Verification Trust Report");
     expect(output).toContain("WORTHY");
   });
 

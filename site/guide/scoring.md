@@ -1,6 +1,6 @@
 # How the score works
 
-Mjölnir reports one number — **WORTHINESS**, 0–100 — and it is fully
+QA Doctor reports one number — **WORTHINESS**, 0–100 — and it is fully
 transparent: a deduction table, a normalization step, and three ceilings.
 No model, no weights you can't see.
 
@@ -58,7 +58,7 @@ stricter: whether anything was ever observed to run.
 The two are related but not the same. A finding can be E2 — deterministic,
 structurally provable — and still sit at L2, because proving a defect
 exists in the source is not the same as watching it happen. Nothing
-Mjölnir derives from source text alone can climb past L2; L3 and above
+QA Doctor derives from source text alone can climb past L2; L3 and above
 need the artifacts of a run that already finished.
 
 ## Three ceilings, applied in order

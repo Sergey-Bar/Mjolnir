@@ -1,10 +1,10 @@
 /**
  * ANTI-GAME-001 — Anti-Gaming Scenario Corpus.
  *
- * Scenarios that describe adversarial gaming attempts against the Mjolnir
+ * Scenarios that describe adversarial gaming attempts against the QA Doctor
  * scoring and detection engine. Each scenario documents a specific gaming
  * vector, the expected detection response, and the corrected behavior that
- * Mjolnir must enforce to maintain score integrity.
+ * QA Doctor must enforce to maintain score integrity.
  */
 
 export interface AntiGamingScenario {

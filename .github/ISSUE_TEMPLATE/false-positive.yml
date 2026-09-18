@@ -39,7 +39,7 @@ body:
   - type: input
     id: version
     attributes:
-      label: Mjölnir version
+      label: QA Doctor version
       description: Output of `npx mjolnir-qa@latest --version` or your package.json's pinned version.
     validations:
       required: true

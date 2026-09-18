@@ -16,7 +16,7 @@ These settings maximize the OpenSSF Scorecard [Branch-Protection](https://securi
 - **Require status checks to pass before merging**: ✅ Enabled
 - **Required checks**:
   - `build-test (ubuntu-latest, 22)` — CI matrix
-  - `self-scan` — Mjölnir self-scan gate
+  - `self-scan` — QA Doctor self-scan gate
   - `certification` — Doctor + determinism verify
 - **Require branches to be up to date before merging**: ✅ Enabled
 

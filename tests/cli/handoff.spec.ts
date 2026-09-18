@@ -102,7 +102,7 @@ function writeReport(over: Partial<ScanResult> = {}): string {
 describe("renderHandoff — structure", () => {
   it("headers the artifact and carries the score + verdict", () => {
     const md = renderHandoff(report());
-    expect(md).toContain("### 🔨 Mjölnir — Fix Handoff");
+    expect(md).toContain("### 🔨 QA Doctor — Fix Handoff");
     expect(md).toContain("Score: **72/100**");
     expect(md).toContain("72/100");
   });
@@ -110,7 +110,7 @@ describe("renderHandoff — structure", () => {
   it("one rule section answers the seven questions", () => {
     const md = renderHandoff(report());
     expect(md).toContain("**What is wrong:**");
-    expect(md).toContain("**Why Mjölnir believes it:**");
+    expect(md).toContain("**Why QA Doctor believes it:**");
     expect(md).toContain("**How trustworthy (evidence boundary):**");
     expect(md).toContain("**Occurrences (1):**");
     expect(md).toContain("**What should change:**");

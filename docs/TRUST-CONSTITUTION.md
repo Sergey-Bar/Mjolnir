@@ -1,4 +1,4 @@
-# Mjölnir Trust Constitution
+# QA Doctor Trust Constitution
 
 Canonical law for every trust claim this project makes. CERTIFICATION-POLICY's
 A1–A4 are adopted as §1; Laws 1–22 live in `docs/CERTIFICATION-POLICY.md` and

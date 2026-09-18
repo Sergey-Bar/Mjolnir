@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="assets/readme/hero.svg" alt="Mjölnir. Testy mówią ci, co przeszło. Mjölnir mówi ci, czemu możesz zaufać." width="100%" />
+<img src="assets/readme/hero.svg" alt="QA Doctor. Testy mówią ci, co przeszło. QA Doctor mówi ci, czemu możesz zaufać." width="100%" />
 
 <br />
 
-Mjölnir znajduje testy, które nie mogą zawieść, i pipeline'y, które nie mogą zrobić się czerwone,<br />
+QA Doctor znajduje testy, które nie mogą zawieść, i pipeline'y, które nie mogą zrobić się czerwone,<br />
 a potem ocenia, na ile można ufać wynikowi, podając dowód dla każdego punktu.
 
 <br />
@@ -50,26 +50,26 @@ Zielony znacznik oznacza, że pipeline nie zawiódł. Nie oznacza, że testy si�
 - raport, który workflow wysyła, choć nigdy go nie wygenerował
 - sztywny sleep, który podtrzymuje wyścig
 
-Żaden z nich nie zmienia koloru pipeline'u na czerwony, a każdy w review wygląda na zamierzony. Właśnie dlatego przetrwają. Oto Mjölnir czytający prawdziwy przypadek:
+Żaden z nich nie zmienia koloru pipeline'u na czerwony, a każdy w review wygląda na zamierzony. Właśnie dlatego przetrwają. Oto QA Doctor czytający prawdziwy przypadek:
 
 <p align="center">
-  <img src="assets/readme/scan.svg" alt="Workflow CI repozytorium demonstracyjnego, czytany wiersz po wierszu. Mjölnir oznacza każde znalezisko w zgłoszonym wierszu, z jego regułą, opisem problemu, poziomem dowodu i zmierzonym odsetkiem fałszywych alarmów." width="800" />
+  <img src="assets/readme/scan.svg" alt="Workflow CI repozytorium demonstracyjnego, czytany wiersz po wierszu. QA Doctor oznacza każde znalezisko w zgłoszonym wierszu, z jego regułą, opisem problemu, poziomem dowodu i zmierzonym odsetkiem fałszywych alarmów." width="800" />
 </p>
 
 <sub>Każde znalezisko, które skan demonstracyjny zgłosił dla tego workflow, w zgłoszonym wierszu. Wygenerowane przez `npm run docs:readme-brand` z [`demo-report.json`](assets/readme/demo-report.json) i zabezpieczone w CI przed rozjazdem.</sub>
 
 **Tryb ścisły.** Najbardziej agresywne wykrycia — `.only`, `continue-on-error`, puste testy, nadużywanie ponownych prób — żyją w poziomie kwarantanny. Działają tylko z `--strict` i są ograniczone do ważności `info`: oznaczają, ale nigdy nie blokują. Domyślne skanowanie (`npx mjolnir-qa@latest` bez `--strict`) obejmuje tylko reguły rdzeniowe i rozszerzone. Dodaj `--strict`, gdy chcesz też warstwę doradczą.
 
-Mjölnir czyta zestaw testów, workflow CI oraz, jeśli go masz, raport z prawdziwego przebiegu. Nie uruchamia twoich testów, nie instaluje zależności ani nie wykonuje skanowanego kodu. A gdy nie ma dowodów, mówi to wprost, zamiast wymyślać pewność:
+QA Doctor czyta zestaw testów, workflow CI oraz, jeśli go masz, raport z prawdziwego przebiegu. Nie uruchamia twoich testów, nie instaluje zależności ani nie wykonuje skanowanego kodu. A gdy nie ma dowodów, mówi to wprost, zamiast wymyślać pewność:
 
-| Sytuacja                                        | Co zgłasza Mjölnir                                                 |
+| Sytuacja                                        | Co zgłasza QA Doctor                                               |
 | ----------------------------------------------- | ------------------------------------------------------------------ |
 | Nie znaleziono deklaracji testów                | Wynik `null`, wyświetlany jako **UNKNOWN**. Nigdy zmyślone 100.    |
 | Brak baseline'u lub porównywalnej rewizji       | **UNKNOWN**, z podanym powodem. Nigdy założone 0.                  |
 | Skan przerwany (limit czasu, nieczytelne pliki) | **PARTIAL**, kod wyjścia `2`. Nigdy nie przedstawiany jako czysty. |
 
 <p align="center">
-  <img src="assets/readme/how-it-works.svg" alt="Jak działa Mjölnir. Czyta statycznie zestaw testów i pipeline CI, a także raport z prawdziwego przebiegu, jeśli istnieje. Waży każde znalezisko według poziomu dowodu i poziomu zaufania, przy czym tylko prawdziwy przebieg może osiągnąć L3–L5, i zwraca znaleziska, wynik wiarygodności oraz bramkę CI z zamrożonymi kodami wyjścia. W pętli agenta AI pisze poprawkę, a Mjölnir skanuje ponownie, aby ją udowodnić." width="880" />
+  <img src="assets/readme/how-it-works.svg" alt="Jak działa QA Doctor. Czyta statycznie zestaw testów i pipeline CI, a także raport z prawdziwego przebiegu, jeśli istnieje. Waży każde znalezisko według poziomu dowodu i poziomu zaufania, przy czym tylko prawdziwy przebieg może osiągnąć L3–L5, i zwraca znaleziska, wynik wiarygodności oraz bramkę CI z zamrożonymi kodami wyjścia. W pętli agenta AI pisze poprawkę, a QA Doctor skanuje ponownie, aby ją udowodnić." width="880" />
 </p>
 
 <sub>Przygotowane dla tej strony i pokazane w skali 1:1. Wygenerowane przez `npm run docs:readme-brand` i zabezpieczone w CI przed rozjazdem; wynik, liczby i ID reguły pochodzą z [`script.demo.json`](assets/video/script.demo.json), [`demo-report.json`](assets/readme/demo-report.json) i rejestru reguł, nigdy nie są wpisywane ręcznie. Ten sam obraz jako plakat: [`architecture.svg`](assets/readme/architecture.svg).</sub>
@@ -81,7 +81,7 @@ Mjölnir czyta zestaw testów, workflow CI oraz, jeśli go masz, raport z prawdz
 Prawdziwy skan [`examples/demo-repo`](examples/demo-repo), małego zestawu Playwright z workflow CI. Oto, gdzie poszły jego punkty:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Rozbicie potrąceń Mjölnira: WORTHINESS 75/100 NEEDS WORK, wynik według kategorii, ramka potrąceń według ważności i lista FIX THIS FIRST" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="Rozbicie potrąceń Mjölnira: WORTHINESS 80/100 WORTHY, wynik według kategorii, ramka potrąceń według ważności i lista FIX THIS FIRST" width="520" />
 </p>
 
 <sub>Wygenerowane przez `npm run docs:hero` z prawdziwego skanu i zabezpieczone w CI przed rozjazdem. Pełny raport `--verbose` z tego samego skanu to [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
@@ -103,7 +103,7 @@ Prawdziwy skan [`examples/demo-repo`](examples/demo-repo), małego zestawu Playw
 
 ### Jedno znalezisko z bliska
 
-Każde znalezisko odpowiada na cztery pytania: gdzie jest, jak pewny jest Mjölnir, jak często reguła się myli i jak to naprawić.
+Każde znalezisko odpowiada na cztery pytania: gdzie jest, jak pewny jest QA Doctor, jak często reguła się myli i jak to naprawić.
 
 <p align="center">
   <img src="assets/readme/finding-anatomy.svg" alt="Pierwsze znalezisko ze skanu demonstracyjnego, dokładnie tak, jak wypisuje je terminal, z oznaczonymi czterema częściami: gdzie, jak pewne, jak często reguła się myli, oraz poprawka." width="100%" />
@@ -227,7 +227,7 @@ Wymaga **Node.js ≥ 22.18** w systemie Windows, macOS lub Linux. Wolisz instala
 
 <br />
 
-## Co znajduje Mjölnir
+## Co znajduje QA Doctor
 
 <p align="center">
   <img src="assets/readme/stack.svg" alt="Działa z twoim stosem: języki, frameworki testowe i systemy CI objęte jego regułami, według rejestru reguł." width="100%" />
@@ -312,8 +312,8 @@ e2e/login.spec.ts
   role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 
 e2e/checkout.spec.ts
-  [█████████████████░░░]  86 / 100
-  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
+  [██████████████████░░]  88 / 100
+  role/text: 4 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 ```
 
 To mierzy **odporność, a nie poprawność**. `.btn.btn-primary > div:nth-child(2)` przechodzi dziś i będzie przechodzić, dopóki ktoś nie ruszy znaczników. Niski wynik nigdy nie twierdzi, że test jest zepsuty, tylko że zależy od znaczników, których nikt nie obiecał zachować.
@@ -344,7 +344,7 @@ To mierzy **odporność, a nie poprawność**. `.btn.btn-primary > div:nth-child
 
 ## Model dowodów
 
-Każde znalezisko ma dwie etykiety: jak pewny jest Mjölnir i jak daleko znalezisko zostało sprawdzone. To różnica między narzędziem, które zgłasza wzorce, a narzędziem, od którego możesz uzależnić wydanie.
+Każde znalezisko ma dwie etykiety: jak pewny jest QA Doctor i jak daleko znalezisko zostało sprawdzone. To różnica między narzędziem, które zgłasza wzorce, a narzędziem, od którego możesz uzależnić wydanie.
 
 **Jak pewne — poziom dowodu.**
 
@@ -396,9 +396,9 @@ Awans, degradacja i dojrzałość według języka: [cykl życia reguł](https://
 
 ### Dlaczego to nie jest linter
 
-Lintery mówią ci, czy kod przestrzega reguł. Mjölnir mówi ci, czy twojej weryfikacji można ufać.
+Lintery mówią ci, czy kod przestrzega reguł. QA Doctor mówi ci, czy twojej weryfikacji można ufać.
 
-|                                                                  | Lintery (ESLint, SonarQube) | Narzędzia pokrycia | Code review z AI |     **Mjölnir**     |
+|                                                                  | Lintery (ESLint, SonarQube) | Narzędzia pokrycia | Code review z AI |    **QA Doctor**    |
 | ---------------------------------------------------------------- | :-------------------------: | :----------------: | :--------------: | :-----------------: |
 | Ocenia **system weryfikacji**, a nie kod produktu                |             Nie             |        Nie         |       Nie        |         Tak         |
 | Integralność workflow CI (`continue-on-error`, `\|\| true`)      |             Nie             |        Nie         |    tylko diff    |         Tak         |
@@ -412,7 +412,7 @@ Lintery mówią ci, czy kod przestrzega reguł. Mjölnir mówi ci, czy twojej we
 
 <sub>\*Pokryte przez `eslint-plugin-jest` i `eslint-plugin-playwright` (`expect-expect`, `no-wait-for-timeout`) oraz przez własne reguły asercji SonarQube. Kolumny opisują domyślne zachowanie przy weryfikacji zestawów testów; wtyczki, płatne plany i własne reguły zmieniają niektóre odpowiedzi. To podsumowanie pozycjonowania, a nie benchmark.</sub>
 
-Korzystaj też z review z AI. Wychwytuje niuanse, intencje i wady projektowe, których żaden wzorzec nie znajdzie. Mjölnir wychwytuje to, co review z AI przeoczy, bo wygląda na zamierzone: zacommitowane `.only`, połknięty kod wyjścia, `continue-on-error` na jobie testowym. To wymaga skanowania, nie rozumowania.
+Korzystaj też z review z AI. Wychwytuje niuanse, intencje i wady projektowe, których żaden wzorzec nie znajdzie. QA Doctor wychwytuje to, co review z AI przeoczy, bo wygląda na zamierzone: zacommitowane `.only`, połknięty kod wyjścia, `continue-on-error` na jobie testowym. To wymaga skanowania, nie rozumowania.
 
 <br />
 
@@ -441,7 +441,7 @@ FAILING    declines an expired card (e2e/checkout.spec.ts)
 
 ## Integralność CI
 
-Test może przechodzić, podczas gdy pipeline wokół niego nie może zawieść. Mjölnir czyta też workflow: `continue-on-error`, `|| true`, kody wyjścia, które nigdy się nie propagują, kroki zawsze kończące się sukcesem, raporty używane, ale nigdy niegenerowane, oraz bramki pomijane przy zdarzeniach, które powinny blokować. Każde znalezisko wskazuje job, krok i wiersz oraz ma własny poziom dowodu.
+Test może przechodzić, podczas gdy pipeline wokół niego nie może zawieść. QA Doctor czyta też workflow: `continue-on-error`, `|| true`, kody wyjścia, które nigdy się nie propagują, kroki zawsze kończące się sukcesem, raporty używane, ale nigdy niegenerowane, oraz bramki pomijane przy zdarzeniach, które powinny blokować. Każde znalezisko wskazuje job, krok i wiersz oraz ma własny poziom dowodu.
 
 Wygeneruj workflow dla PR, domyślnie doradczy:
 
@@ -493,7 +493,7 @@ Znaleziska są coś warte tylko wtedy, gdy coś na nie reaguje.
 SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
 ```
 
-**AI pisze poprawkę. Mjölnir ją weryfikuje.** Dowód pochodzi z ponownego skanu, nigdy z własnego raportu agenta o sukcesie.
+**AI pisze poprawkę. QA Doctor ją weryfikuje.** Dowód pochodzi z ponownego skanu, nigdy z własnego raportu agenta o sukcesie.
 
 | Polecenie         | Co dostaje agent                                                                                                                                                             |
 | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -549,10 +549,10 @@ Wszystko, co konsumuje maszyna (wyniki narzędzi MCP, `--json`, SARIF 2.1), poch
 
 <br />
 
-## Czego Mjölnir nie może ci powiedzieć
+## Czego QA Doctor nie może ci powiedzieć
 
 - **Nie uruchamia twoich testów.** Czysty skan to nie przechodzący zestaw testów.
-- **Nie powie ci, że asercja jest _błędna_.** `expect(total).toBe(41)` wygląda zdrowo. Mjölnir znajduje testy, które _nie mogą zawieść_, i pipeline'y, które _nie mogą zrobić się czerwone_, a nie testy, które sprawdzają niewłaściwą rzecz.
+- **Nie powie ci, że asercja jest _błędna_.** `expect(total).toBe(41)` wygląda zdrowo. QA Doctor znajduje testy, które _nie mogą zawieść_, i pipeline'y, które _nie mogą zrobić się czerwone_, a nie testy, które sprawdzają niewłaściwą rzecz.
 - **Nie dowodzi poprawności biznesowej.** Nic tutaj nie mówi, że twój produkt robi to, czego wymagało wymaganie.
 - **100 nie jest dowodem dobrego zestawu testów.** To, czy twój zestaw pokrywa realne ryzyko, to inne pytanie, a to narzędzie na nie nie odpowiada.
 - **5 z 79 reguł opiera się na szacunku**, a nie na zmierzonym odsetku. Każda z nich mówi to na własnym znalezisku.

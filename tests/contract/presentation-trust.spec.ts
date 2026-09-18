@@ -104,16 +104,18 @@ describe("TI-019: presentation cannot affect trust", () => {
       evidenceLevel: "E1",
       confidence: "low",
     });
-    const infoHighConfidence = makeFinding({
+    const infoLowConfidence = makeFinding({
       severity: "info",
-      evidenceLevel: "E2",
-      confidence: "high",
+      evidenceLevel: "E1",
+      confidence: "low",
     });
 
-    // Severity and confidence are separate concepts
-    expect(criticalLowConfidence.severity).toBe("error");
-    expect(criticalLowConfidence.evidenceLevel).toBe("E1");
-    expect(infoHighConfidence.severity).toBe("info");
-    expect(infoHighConfidence.evidenceLevel).toBe("E2");
+    expect(deriveTrustLevel(criticalLowConfidence)).toBe(
+      deriveTrustLevel(infoLowConfidence),
+    );
+    expect(criticalLowConfidence.severity).not.toBe(infoLowConfidence.severity);
+    expect(criticalLowConfidence.evidenceLevel).toBe(
+      infoLowConfidence.evidenceLevel,
+    );
   });
 });

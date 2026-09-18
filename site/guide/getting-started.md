@@ -1,6 +1,6 @@
 # Getting started
 
-Mjölnir (`mjolnir-qa` on npm) audits your test suite and CI pipelines, then
+QA Doctor (`mjolnir-qa` on npm) audits your test suite and CI pipelines, then
 reports a single worthiness score plus prioritized findings — each with a
 rule ID, a location, and a fix.
 

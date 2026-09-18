@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="assets/readme/hero.svg" alt="Mjölnir. Tests fortæller dig, hvad der bestod. Mjölnir fortæller dig, hvad du kan stole på." width="100%" />
+<img src="assets/readme/hero.svg" alt="QA Doctor. Tests fortæller dig, hvad der bestod. QA Doctor fortæller dig, hvad du kan stole på." width="100%" />
 
 <br />
 
-Mjölnir finder tests, der ikke kan fejle, og pipelines, der ikke kan blive røde,<br />
+QA Doctor finder tests, der ikke kan fejle, og pipelines, der ikke kan blive røde,<br />
 og vurderer derefter, hvor langt resultatet er til at stole på, med beviset for hvert point.
 
 <br />
@@ -50,26 +50,26 @@ Et grønt flueben betyder, at pipelinen ikke fejlede. Det betyder ikke, at teste
 - en rapport, som workflowet uploader, men aldrig har genereret
 - et fast sleep, der holder sammen på en race condition
 
-Ingen af dem gør pipelinen rød, og hver af dem ser tilsigtet ud i review. Det er derfor, de overlever. Her læser Mjölnir et rigtigt eksempel:
+Ingen af dem gør pipelinen rød, og hver af dem ser tilsigtet ud i review. Det er derfor, de overlever. Her læser QA Doctor et rigtigt eksempel:
 
 <p align="center">
-  <img src="assets/readme/scan.svg" alt="Demo-repositoriets CI-workflow, læst linje for linje. Mjölnir markerer hvert fund på den rapporterede linje, med dets regel, hvad der er galt, dets evidensniveau og dets målte falsk-positiv-rate." width="800" />
+  <img src="assets/readme/scan.svg" alt="Demo-repositoriets CI-workflow, læst linje for linje. QA Doctor markerer hvert fund på den rapporterede linje, med dets regel, hvad der er galt, dets evidensniveau og dets målte falsk-positiv-rate." width="800" />
 </p>
 
 <sub>Hvert fund, som demo-scannet rapporterede for dette workflow, på den rapporterede linje. Genereret af `npm run docs:readme-brand` ud fra [`demo-report.json`](assets/readme/demo-report.json) og låst mod afvigelser i CI.</sub>
 
 **Streng tilstand.** De mest aggressive registreringer — `.only`, `continue-on-error`, tomme tests, misbrug af genkørsler — lever i karantænelaget. De kører kun med `--strict` og er begrænset til `info`-alvorlighed: de flagger, de blokerer aldrig. Standardscanningen (`npx mjolnir-qa@latest` uden `--strict`) dækker kun kerne- og udvidede regler. Tilføj `--strict` når du også vil have rådgivningslaget.
 
-Mjölnir læser testsuiten, CI-workflowene og, hvis du har en, rapporten fra en rigtig kørsel. Det kører ikke dine tests, installerer ikke dine afhængigheder og udfører ikke den kode, det scanner. Og når det ikke har evidens, siger det det i stedet for at opfinde tillid:
+QA Doctor læser testsuiten, CI-workflowene og, hvis du har en, rapporten fra en rigtig kørsel. Det kører ikke dine tests, installerer ikke dine afhængigheder og udfører ikke den kode, det scanner. Og når det ikke har evidens, siger det det i stedet for at opfinde tillid:
 
-| Situation                                    | Hvad Mjölnir rapporterer                                    |
+| Situation                                    | Hvad QA Doctor rapporterer                                  |
 | -------------------------------------------- | ----------------------------------------------------------- |
 | Ingen testdeklarationer fundet               | Score `null`, vist som **UNKNOWN**. Aldrig et opdigtet 100. |
 | Ingen baseline eller sammenlignelig revision | **UNKNOWN**, med årsagen angivet. Aldrig et antaget 0.      |
 | Scan afbrudt (tidsbudget, ulæselige filer)   | **PARTIAL**, exit `2`. Aldrig præsenteret som rent.         |
 
 <p align="center">
-  <img src="assets/readme/how-it-works.svg" alt="Sådan virker Mjölnir. Det læser testsuiten og CI-pipelinen statisk, og rapporten fra en rigtig kørsel, når der er en. Det vægter hvert fund efter dets evidensniveau og tillidsniveau, hvor kun en rigtig kørsel kan nå L3 til L5, og leverer fund, en worthiness-score og en CI-gate med fastfrosne exitkoder. I agent-loopet skriver AI rettelsen, og Mjölnir scanner igen for at bevise den." width="880" />
+  <img src="assets/readme/how-it-works.svg" alt="Sådan virker QA Doctor. Det læser testsuiten og CI-pipelinen statisk, og rapporten fra en rigtig kørsel, når der er en. Det vægter hvert fund efter dets evidensniveau og tillidsniveau, hvor kun en rigtig kørsel kan nå L3 til L5, og leverer fund, en worthiness-score og en CI-gate med fastfrosne exitkoder. I agent-loopet skriver AI rettelsen, og QA Doctor scanner igen for at bevise den." width="880" />
 </p>
 
 <sub>Komponeret til denne side og vist i 1:1. Genereret af `npm run docs:readme-brand` og låst mod afvigelser i CI; score, antal og regel-ID kommer fra [`script.demo.json`](assets/video/script.demo.json), [`demo-report.json`](assets/readme/demo-report.json) og regelregistret, aldrig tastet ind i hånden. Samme billede som plakat: [`architecture.svg`](assets/readme/architecture.svg).</sub>
@@ -81,7 +81,7 @@ Mjölnir læser testsuiten, CI-workflowene og, hvis du har en, rapporten fra en 
 Et rigtigt scan af [`examples/demo-repo`](examples/demo-repo), en lille Playwright-suite med et CI-workflow. Her er, hvor dens point forsvandt hen:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Mjölnirs opgørelse af fradrag: WORTHINESS 75/100 NEEDS WORK, scoren pr. kategori, fradragsboksen pr. alvorlighed og en FIX THIS FIRST-liste" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="Mjölnirs opgørelse af fradrag: WORTHINESS 80/100 WORTHY, scoren pr. kategori, fradragsboksen pr. alvorlighed og en FIX THIS FIRST-liste" width="520" />
 </p>
 
 <sub>Genereret af `npm run docs:hero` ud fra et rigtigt scan og låst mod afvigelser i CI. Den fulde `--verbose`-rapport fra samme scan er [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
@@ -103,7 +103,7 @@ Et rigtigt scan af [`examples/demo-repo`](examples/demo-repo), en lille Playwrig
 
 ### Ét fund helt tæt på
 
-Hvert fund besvarer fire spørgsmål: hvor det er, hvor sikker Mjölnir er, hvor ofte reglen tager fejl, og hvordan det rettes.
+Hvert fund besvarer fire spørgsmål: hvor det er, hvor sikker QA Doctor er, hvor ofte reglen tager fejl, og hvordan det rettes.
 
 <p align="center">
   <img src="assets/readme/finding-anatomy.svg" alt="Det første fund fra demo-scannet, præcis som terminalen udskriver det, med dets fire dele markeret: hvor, hvor sikkert, hvor ofte reglen tager fejl, og rettelsen." width="100%" />
@@ -227,7 +227,7 @@ Kræver **Node.js ≥ 22.18** på Windows, macOS eller Linux. Foretrækker du en
 
 <br />
 
-## Hvad Mjölnir finder
+## Hvad QA Doctor finder
 
 <p align="center">
   <img src="assets/readme/stack.svg" alt="Virker med din stack: de sprog, testframeworks og CI-systemer, som reglerne dækker, fra regelregistret." width="100%" />
@@ -312,8 +312,8 @@ e2e/login.spec.ts
   role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 
 e2e/checkout.spec.ts
-  [█████████████████░░░]  86 / 100
-  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
+  [██████████████████░░]  88 / 100
+  role/text: 4 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 ```
 
 Det måler **robusthed, ikke korrekthed**. `.btn.btn-primary > div:nth-child(2)` består i dag og bliver ved med at bestå, indtil nogen rører ved markuppen. En lav score påstår aldrig, at testen er i stykker, kun at den afhænger af markup, som ingen har lovet at bevare.
@@ -344,7 +344,7 @@ Det måler **robusthed, ikke korrekthed**. `.btn.btn-primary > div:nth-child(2)`
 
 ## Evidensmodellen
 
-Hvert fund har to etiketter: hvor sikker Mjölnir er, og hvor langt fundet er blevet tjekket. Det er forskellen på et værktøj, der rapporterer mønstre, og et værktøj, du kan lade en release afhænge af.
+Hvert fund har to etiketter: hvor sikker QA Doctor er, og hvor langt fundet er blevet tjekket. Det er forskellen på et værktøj, der rapporterer mønstre, og et værktøj, du kan lade en release afhænge af.
 
 **Hvor sikkert — evidensniveauet.**
 
@@ -356,7 +356,7 @@ Hvert fund har to etiketter: hvor sikker Mjölnir er, og hvor langt fundet er bl
 
 Sikkerhed i en detektion er ikke styrken af beviset. En regel kan være sikker på, at den fandt det, den ledte efter, og stadig kigge på en heuristik. E1-fund er der for at blive læst og vurderet, aldrig anvendt i blinde, og den grænse står på fundet i terminalen, i JSON'en og i overdragelsen til agenten.
 
-**Hvor langt det er tjekket — tillidsniveauet.** De fleste fund kommer fra at læse din kode. Giv Mjölnir rapporten fra en rigtig testkørsel, så kan det bekræfte, at koden faktisk kørte.
+**Hvor langt det er tjekket — tillidsniveauet.** De fleste fund kommer fra at læse din kode. Giv QA Doctor rapporten fra en rigtig testkørsel, så kan det bekræfte, at koden faktisk kørte.
 
 <p align="center">
   <img src="assets/readme/trust-ladder.svg" alt="Tillidsstigen fra L0 til L5. L0 til L2 kommer fra at læse koden; L3 til L5 kræver en rigtig kørselsrapport, markeret med et brud i stigen." width="100%" />
@@ -396,9 +396,9 @@ Forfremmelse, degradering og modenhed pr. sprog: [reglernes livscyklus](https://
 
 ### Hvorfor det ikke er en linter
 
-Linters fortæller dig, om koden følger regler. Mjölnir fortæller dig, om din verifikation er til at stole på.
+Linters fortæller dig, om koden følger regler. QA Doctor fortæller dig, om din verifikation er til at stole på.
 
-|                                                               | Linters (ESLint, SonarQube) | Coverage-værktøjer | AI-kodereview |   **Mjölnir**    |
+|                                                               | Linters (ESLint, SonarQube) | Coverage-værktøjer | AI-kodereview |  **QA Doctor**   |
 | ------------------------------------------------------------- | :-------------------------: | :----------------: | :-----------: | :--------------: |
 | Scorer **verifikationssystemet**, ikke produktkoden           |             Nej             |        Nej         |      Nej      |        Ja        |
 | CI-workflowintegritet (`continue-on-error`, `\|\| true`)      |             Nej             |        Nej         |  kun diffen   |        Ja        |
@@ -412,7 +412,7 @@ Linters fortæller dig, om koden følger regler. Mjölnir fortæller dig, om din
 
 <sub>\*Dækket af `eslint-plugin-jest` og `eslint-plugin-playwright` (`expect-expect`, `no-wait-for-timeout`) og af SonarQubes egne assertion-regler. Kolonnerne beskriver standardadfærden for verifikation af testsuiter; plugins, betalte planer og egne regler ændrer nogle svar. Dette er en positioneringsoversigt, ikke en benchmark.</sub>
 
-Brug også AI-review. Det fanger nuancer, hensigt og designfejl, som intet mønster kan finde. Mjölnir fanger det, AI-review overser, fordi det ser tilsigtet ud: en committet `.only`, en slugt exitkode, en `continue-on-error` på et testjob. Det kræver scanning, ikke ræsonnement.
+Brug også AI-review. Det fanger nuancer, hensigt og designfejl, som intet mønster kan finde. QA Doctor fanger det, AI-review overser, fordi det ser tilsigtet ud: en committet `.only`, en slugt exitkode, en `continue-on-error` på et testjob. Det kræver scanning, ikke ræsonnement.
 
 <br />
 
@@ -441,7 +441,7 @@ FAILING    declines an expired card (e2e/checkout.spec.ts)
 
 ## CI-integritet
 
-En test kan bestå, mens pipelinen omkring den ikke kan fejle. Mjölnir læser også workflowene: `continue-on-error`, `|| true`, exitkoder, der aldrig videregives, steps, der altid lykkes, rapporter, der bruges, men aldrig genereres, og gates, der springes over ved netop de hændelser, der burde blokere. Hvert fund angiver job, step og linje og har sit eget evidensniveau.
+En test kan bestå, mens pipelinen omkring den ikke kan fejle. QA Doctor læser også workflowene: `continue-on-error`, `|| true`, exitkoder, der aldrig videregives, steps, der altid lykkes, rapporter, der bruges, men aldrig genereres, og gates, der springes over ved netop de hændelser, der burde blokere. Hvert fund angiver job, step og linje og har sit eget evidensniveau.
 
 Generér PR-workflowet, rådgivende som standard:
 
@@ -493,7 +493,7 @@ Fund er kun noget værd, hvis noget handler på dem.
 SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
 ```
 
-**AI skriver rettelsen. Mjölnir verificerer den.** Beviset kommer fra det nye scan, aldrig fra agentens egen melding om succes.
+**AI skriver rettelsen. QA Doctor verificerer den.** Beviset kommer fra det nye scan, aldrig fra agentens egen melding om succes.
 
 | Kommando          | Hvad agenten får                                                                                                                                                                   |
 | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -549,10 +549,10 @@ Alt, hvad en maskine forbruger (MCP-værktøjsresultater, `--json`, SARIF 2.1), 
 
 <br />
 
-## Hvad Mjölnir ikke kan fortælle dig
+## Hvad QA Doctor ikke kan fortælle dig
 
 - **Det kører ikke dine tests.** Et rent scan er ikke en bestået suite.
-- **Det kan ikke fortælle dig, at en assertion er _forkert_.** `expect(total).toBe(41)` ser sund ud. Mjölnir finder tests, der _ikke kan fejle_, og pipelines, der _ikke kan blive røde_, ikke tests, der tjekker det forkerte.
+- **Det kan ikke fortælle dig, at en assertion er _forkert_.** `expect(total).toBe(41)` ser sund ud. QA Doctor finder tests, der _ikke kan fejle_, og pipelines, der _ikke kan blive røde_, ikke tests, der tjekker det forkerte.
 - **Det beviser ikke forretningsmæssig korrekthed.** Intet her siger, at dit produkt gør, hvad kravet bad om.
 - **100 er ikke bevis for en god suite.** Om din suite dækker din reelle risiko, er et andet spørgsmål, og det besvarer dette værktøj ikke.
 - **5 af 79 regler bygger på et skøn**, ikke en målt rate. Hver af dem siger det på sit eget fund.

@@ -1,4 +1,4 @@
-# Mjölnir ignore file — paths excluded from scanning at discovery time.
+# QA Doctor ignore file — paths excluded from scanning at discovery time.
 # Supported syntax (a gitignore subset): **, *, ? wildcards; a pattern
 # containing "/" is anchored to the repo root; a bare name (no "/")
 # matches at any depth, like gitignore; "!pattern" negates, and the last

@@ -29,7 +29,7 @@ const ACTION = [
 
 const TITLE = [
   "Tests tell you what passed.",
-  "Mjölnir tells you what you can trust.",
+  "QA Doctor tells you what you can trust.",
 ].map((l) => l.split(" "));
 const OFF = [0, TITLE[0].length];
 
@@ -493,7 +493,7 @@ onBeforeUnmount(() => {
         <div class="hero-grid">
           <div>
             <p class="lede">
-              Mjölnir finds tests that cannot fail and pipelines that cannot go
+              QA Doctor finds tests that cannot fail and pipelines that cannot go
               red, then scores how far you can trust the result.
             </p>
             <div class="actions">
@@ -599,7 +599,7 @@ onBeforeUnmount(() => {
             Catches the CI tricks that keep a failed run green.
           </h2>
           <p class="scan-lede">
-            Each of these lines looks deliberate in review. Mjölnir reads the
+            Each of these lines looks deliberate in review. QA Doctor reads the
             workflow and flags each one with its rule and a fix.
           </p>
           <div class="tally">
@@ -913,7 +913,7 @@ onBeforeUnmount(() => {
           Knows the difference between reading code and seeing it run.
         </h2>
         <p>
-          Most findings come from reading your code. Give Mjölnir the report of
+          Most findings come from reading your code. Give QA Doctor the report of
           a real test run and it can confirm the code actually ran.
         </p>
         <a class="more" :href="withBase('/reference/terminology')"
@@ -924,7 +924,7 @@ onBeforeUnmount(() => {
         <div data-reveal>
           <Term :lines="data.staticCard" title="Read from the code" />
           <p class="fine">
-            Mjölnir read the workflow file. Nothing ran, so this finding stays
+            QA Doctor read the workflow file. Nothing ran, so this finding stays
             at L2, proven in code.
           </p>
         </div>
@@ -992,7 +992,7 @@ onBeforeUnmount(() => {
           />
           <p class="fine">
             TRUE-FLAKE means the test failed at least once and then passed.
-            Mjölnir flags it even though the final check was green.
+            QA Doctor flags it even though the final check was green.
           </p>
         </div>
         <div class="streams" data-reveal>
@@ -1112,7 +1112,7 @@ onBeforeUnmount(() => {
           <div class="flow" data-reveal>
             <h3>With an AI agent</h3>
             <p>
-              The agent writes the fix and Mjölnir re-scans to prove it. Each
+              The agent writes the fix and QA Doctor re-scans to prove it. Each
               finding in the handoff says whether it is safe to apply or needs a
               person to confirm.
             </p>

@@ -1,4 +1,4 @@
-# Mjölnir — Certification Policy (Consolidated & Owner-Ratified)
+# QA Doctor — Certification Policy (Consolidated & Owner-Ratified)
 
 > **Status: BINDING.** This document consolidates the certification-audit
 > plan (`.kilo/plans/1788771091931`, Wave-1 execution + owner chat

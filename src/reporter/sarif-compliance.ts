@@ -2,7 +2,7 @@
  * SARIF v2.1.0 Compliance (ECO-008).
  *
  * Validation and mapping utilities for SARIF v2.1.0 output compliance.
- * Ensures Mjolnir's SARIF output conforms to the specification structure.
+ * Ensures QA Doctor's SARIF output conforms to the specification structure.
  *
  * @see https://json.schemastore.org/sarif-2.1.0.json
  */
@@ -163,7 +163,7 @@ export function validateSarifOutput(
 }
 
 /**
- * Map a Mjolnir Finding to a SARIF result object.
+ * Map a QA Doctor Finding to a SARIF result object.
  */
 export function toSarifResult(finding: Finding): SarifResult {
   const level = sarifLevel(finding.severity);

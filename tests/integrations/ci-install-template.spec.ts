@@ -180,7 +180,7 @@ describe("ci-install template (all gates)", () => {
 describe("v1 template recognition (upgrade path)", () => {
   it("recognizes a real v1-generated workflow: the script embedded with indentBlock(…, 10)", () => {
     const v1File = [
-      "name: Mjölnir",
+      "name: QA Doctor",
       "",
       "on:",
       "  pull_request:",

@@ -2,7 +2,7 @@
  * The committed intermediate the demo videos are rendered from.
  *
  * This file is the evidence layer. Every line of terminal output in a
- * video comes from here, and everything here came from a real Mjölnir
+ * video comes from here, and everything here came from a real QA Doctor
  * execution — the renderer may only draw what a validated script
  * contains and never invents CLI content.
  *

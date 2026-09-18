@@ -1,4 +1,4 @@
-# Contributing to Mjölnir
+# Contributing to QA Doctor
 
 Thanks for considering a contribution. This document covers dev setup,
 every quality gate command, the two laws that govern rule changes, how
@@ -8,7 +8,7 @@ to propose a rule or plugin, and what a PR needs before review.
 
 ```bash
 git clone https://github.com/Sergey-Bar/Mjolnir
-cd Mjolnir
+cd QA Doctor
 npm ci
 ```
 
@@ -186,7 +186,7 @@ release checklist and the npm-provenance publishing runbook.
 
 ## Governance
 
-Mjölnir is maintained by a **solo maintainer** — decisions are not made
+QA Doctor is maintained by a **solo maintainer** — decisions are not made
 by committee, and this section exists so contributors know how decisions
 get made, not who to lobby:
 

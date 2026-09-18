@@ -59,7 +59,7 @@ export function renderSarif(result: ScanResult, repoRootUri?: string): string {
   const run = {
     tool: {
       driver: {
-        name: "Mjölnir",
+        name: "QA Doctor",
         informationUri: "https://github.com/Sergey-Bar/Mjolnir",
         // Tool version — sourced from ENGINE_VERSION to prevent drift.
         version: ENGINE_VERSION,

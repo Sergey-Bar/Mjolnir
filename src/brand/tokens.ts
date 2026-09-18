@@ -1,7 +1,7 @@
 /**
  * The single source of brand truth.
  *
- * Every colour, typeface and motion constant Mjölnir shows a human —
+ * Every colour, typeface and motion constant QA Doctor shows a human —
  * terminal, README SVGs, demo video, website, docs, badges — resolves to
  * a value in this file. Nothing else may define one.
  *
@@ -296,7 +296,7 @@ export const MOTION = {
 /* ── Diagram tints ───────────────────────────────────────────── */
 
 /**
- * The one place Mjölnir draws on someone else's ground.
+ * The one place QA Doctor draws on someone else's ground.
  *
  * `mjolnir --mermaid` emits a flowchart that GitHub renders inside a
  * README, on a background this palette does not control and cannot
@@ -352,7 +352,7 @@ export const BADGE = {
 } as const;
 
 /**
- * The score bands as the badge Mjölnir itself generates renders them.
+ * The score bands as the badge QA Doctor itself generates renders them.
  *
  * These are DEEPER than the score tokens on purpose, and it is not a
  * style preference: shields.io sets the message text in white and gives

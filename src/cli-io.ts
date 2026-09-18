@@ -24,7 +24,7 @@ export function internalErrorMessage(
   debug: boolean,
 ): void {
   const message = err instanceof Error ? err.message : String(err);
-  emit("mjolnir internal error — this is a bug in Mjölnir, not your repo:");
+  emit("mjolnir internal error — this is a bug in QA Doctor, not your repo:");
   emit(`  ${message}`);
   if (debug && err instanceof Error && err.stack) {
     emit(err.stack);

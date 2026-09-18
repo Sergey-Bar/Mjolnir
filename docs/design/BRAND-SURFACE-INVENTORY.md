@@ -1,4 +1,4 @@
-# Mjölnir — brand surface inventory
+# QA Doctor — brand surface inventory
 
 Every surface that shows a human a colour, a typeface or a mark: what
 it is, where its values come from, and what stops it drifting.

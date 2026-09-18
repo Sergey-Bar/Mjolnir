@@ -40,7 +40,7 @@ import type { VideoScript } from "./script-types.js";
  * hairline ring and an inset shadow — so INK_900 and CHROME share one
  * value here too.
  *
- * The aurora wash is Mjölnir's own: the same green, cyan and violet
+ * The aurora wash is QA Doctor's own: the same green, cyan and violet
  * curtains that sit behind the website's hero, and the same 2px aurora
  * line across the top of its terminal. It used to be a gold wash, from
  * before gold was held back for FORGED; the frame now matches the page a
@@ -48,7 +48,7 @@ import type { VideoScript } from "./script-types.js";
  *
  * What was deliberately NOT copied: react.doctor's terminal shows a
  * syntax-highlighted code diff (Shiki, GitHub-dark tokens — blue/green
- * /purple/red for keywords, strings, JSX). Mjölnir's terminal shows a CLI
+ * /purple/red for keywords, strings, JSX). QA Doctor's terminal shows a CLI
  * report, not source code, and its severity colors already carry real
  * meaning tied to the score bands and the brand's verdict palette.
  * Repainting them to match a syntax theme they have no correspondence to

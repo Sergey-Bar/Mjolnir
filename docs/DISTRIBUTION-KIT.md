@@ -46,10 +46,10 @@ job guarantees it after the first stable release following this merge).
 
 Listing content (paste verbatim into the marketplace draft):
 
-- **Name:** Mjölnir — verification trust scan
+- **Name:** QA Doctor — verification trust scan
 - **Tagline:** Fail your PR when a test suite or CI workflow cannot go
   red. Measured false-positive rates per rule.
-- **Description (short):** Mjölnir audits the verification _system_ —
+- **Description (short):** QA Doctor audits the verification _system_ —
   tests, Playwright configs, CI workflows — for gates that cannot fail:
   skipped tests, swallowed exit codes, always-success steps, retries
   that mask flakiness. 99 rules over TS/JS, Python, Java, C#, GitHub
@@ -77,7 +77,7 @@ Checklist (tick with dates, states in the table header):
 ## Awesome-list PRs (P1.6)
 
 All three lists are curated; read their CONTRIBUTING before opening.
-Draft PR body (shared): "Adds Mjölnir (mjolnir-qa on npm) — a CI tool
+Draft PR body (shared): "Adds QA Doctor (mjolnir-qa on npm) — a CI tool
 that audits the verification system itself: test suites, Playwright
 configs and CI workflows, for gates that cannot go red. 99 rules;
 per-rule measured FP rates against real OSS code; GitHub Action
@@ -100,27 +100,27 @@ since v0.5.37).
 
 ## MCP registries (P1.6)
 
-| Channel                      | Artifact                                                                                                                                                                                                                         | State   |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| modelcontextprotocol/servers | PR adding Mjölnir to the community servers README (line: `- [mjolnir-qa](…) — verification trust scanning: fails CI on tests that cannot fail; stdio MCP server with scan/explain/diff/verify/forensics/triage/pw-report tools`) | pending |
-| Smithery                     | `/smithery.yaml` ships with the repo; submit via smithery.ai "Add server" pointing at the repo                                                                                                                                   | pending |
-| PulseMCP                     | Directory entry form (owner: requires Sergey-Bar identity): name, description from smithery.yaml, stdio transport, install `npx -y mjolnir-qa@latest mcp`                                                                        | pending |
-| mcp.so                       | Entry form with the same payload as PulseMCP                                                                                                                                                                                     | pending |
+| Channel                      | Artifact                                                                                                                                                                                                                           | State   |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| modelcontextprotocol/servers | PR adding QA Doctor to the community servers README (line: `- [mjolnir-qa](…) — verification trust scanning: fails CI on tests that cannot fail; stdio MCP server with scan/explain/diff/verify/forensics/triage/pw-report tools`) | pending |
+| Smithery                     | `/smithery.yaml` ships with the repo; submit via smithery.ai "Add server" pointing at the repo                                                                                                                                     | pending |
+| PulseMCP                     | Directory entry form (owner: requires Sergey-Bar identity): name, description from smithery.yaml, stdio transport, install `npx -y mjolnir-qa@latest mcp`                                                                          | pending |
+| mcp.so                       | Entry form with the same payload as PulseMCP                                                                                                                                                                                       | pending |
 
 ## Ministry of Testing (P1.6)
 
-Tool page (owner: account-bound): title "Mjölnir", category
+Tool page (owner: account-bound): title "QA Doctor", category
 "Test automation — CI/verification tooling", body = the marketplace
 description plus the measured-FP paragraph from README ("How much of
 this is measured"). Link `sergey-bar.github.io/Mjolnir`.
 
 ## Announcement post draft (P1.6)
 
-Title: **Mjölnir: fail CI when your tests cannot go red**
+Title: **QA Doctor: fail CI when your tests cannot go red**
 
 Body (HN/Reddit/LinkedIn variants — same facts, different tone):
 
-> Mjölnir is a CLI (and now a GitHub Action + MCP server) that audits
+> QA Doctor is a CLI (and now a GitHub Action + MCP server) that audits
 > the verification system itself. It scans test suites, Playwright
 > configs and CI workflows for the patterns that make a green gate
 > meaningless: focused tests committed, assertions removed, exit codes

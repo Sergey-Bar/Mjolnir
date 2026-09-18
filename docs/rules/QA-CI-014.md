@@ -15,7 +15,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Languages                             | groovy                                                                                          |
 | Frameworks                            | jenkins                                                                                         |
 | Detection strategy                    | FRAMEWORK (Groovy try/catch block scan (string-aware brace matching) over the Jenkinsfile text) |
-| Introduced in                         | v2.0.0                                                                                          |
+| Introduced in                         | v1.1.1                                                                                          |
 
 ## Why this fails in production
 

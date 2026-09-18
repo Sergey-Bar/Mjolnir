@@ -100,6 +100,6 @@ describe("publishWithFallback", () => {
     expect(result.surface).toBe("job-summary");
     expect(result.id).toBeUndefined();
     expect(written).toHaveLength(1);
-    expect(written[0]).toContain("Mjolnir QA");
+    expect(written[0]).toContain("QA Doctor");
   });
 });

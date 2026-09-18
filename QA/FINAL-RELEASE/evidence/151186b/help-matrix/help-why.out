@@ -1,4 +1,4 @@
-  why — why did Mjölnir flag <file>:<line>? evidence + fix (not a gate)
+  why — why did QA Doctor flag <file>:<line>? evidence + fix (not a gate)
 
   Usage:
     mjolnir why <file>:<line> [path] [--json <mjolnir.json>]

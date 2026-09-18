@@ -217,10 +217,10 @@ export function renderTrustReportMarkdown(
   // searching for this line — one comment per PR, never a flood.
   lines.push(`<!-- mjolnir-trust-report:v1 -->`);
   lines.push("");
-  lines.push(`# Mjölnir Trust Report — ${label}`);
+  lines.push(`# QA Doctor Trust Report — ${label}`);
   lines.push("");
   lines.push(
-    `> Tests tell you what passed. Mjölnir tells you what you can trust.`,
+    `> Tests tell you what passed. QA Doctor tells you what you can trust.`,
   );
   lines.push("");
   lines.push(`## Trust verdict`);
@@ -293,7 +293,7 @@ export function renderTrustReportMarkdown(
   lines.push(`---`);
   lines.push("");
   lines.push(
-    `Generated locally by Mjölnir — no cloud, no telemetry. Semantics: \`mjolnir <target> --json\` (machine contract \`contractVersion: 1\`).`,
+    `Generated locally by QA Doctor — no cloud, no telemetry. Semantics: \`mjolnir <target> --json\` (machine contract \`contractVersion: 1\`).`,
   );
   lines.push("");
   return lines.join("\n");
@@ -434,7 +434,7 @@ export function renderTrustReportHtml(
     `<head>`,
     `<meta charset="utf-8">`,
     `<meta name="viewport" content="width=device-width, initial-scale=1">`,
-    `<title>Mjölnir Trust Report — ${esc(label)}</title>`,
+    `<title>QA Doctor Trust Report — ${esc(label)}</title>`,
     `<style>`,
     `:root { color-scheme: light dark; font-family: system-ui, sans-serif; }`,
     `body { margin: 0 auto; max-width: 56rem; padding: 1.5rem; line-height: 1.5; }`,
@@ -448,8 +448,8 @@ export function renderTrustReportHtml(
     `</head>`,
     `<body>`,
     `<main>`,
-    `<h1>Mjölnir Trust Report — ${esc(label)}</h1>`,
-    `<blockquote><p>Tests tell you what passed. Mjölnir tells you what you can trust.</p></blockquote>`,
+    `<h1>QA Doctor Trust Report — ${esc(label)}</h1>`,
+    `<blockquote><p>Tests tell you what passed. QA Doctor tells you what you can trust.</p></blockquote>`,
     `<section id="trust-verdict">`,
     `<h2>Trust verdict</h2>`,
     `<p><strong>Level</strong>: ${esc(s.level)} — ${esc(trustHeadline(s))}</p>`,
@@ -486,7 +486,7 @@ export function renderTrustReportHtml(
     `<dt>Evidence inventory</dt><dd>${identity.evidenceInventory.totalFindings} finding(s), ${identity.evidenceInventory.corroborated} runtime-corroborated, by level ${levels}.</dd>`,
     `</dl>`,
     `</section>`,
-    `<footer><p>Generated locally by Mjölnir — no cloud, no telemetry. Semantics: <code>mjolnir &lt;target&gt; --json</code> (machine contract <code>contractVersion: 1</code>).</p></footer>`,
+    `<footer><p>Generated locally by QA Doctor — no cloud, no telemetry. Semantics: <code>mjolnir &lt;target&gt; --json</code> (machine contract <code>contractVersion: 1</code>).</p></footer>`,
     `</main>`,
     `</body>`,
     `</html>`,

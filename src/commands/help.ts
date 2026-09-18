@@ -159,7 +159,8 @@ export const HELP_ENTRIES: HelpEntry[] = [
   },
   {
     verb: "why",
-    summary: "why did Mjölnir flag <file>:<line>? evidence + fix (not a gate)",
+    summary:
+      "why did QA Doctor flag <file>:<line>? evidence + fix (not a gate)",
     usage: "mjolnir why <file>:<line> [path] [--json <mjolnir.json>]",
     examples: [
       "mjolnir why e2e/a.spec.ts:3",

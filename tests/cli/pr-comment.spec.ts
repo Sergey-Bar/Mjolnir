@@ -313,7 +313,7 @@ describe("renderPrComment — rendering against fixture scan results", () => {
 describe("renderPrComment — redesign structure (plan M5)", () => {
   it("headers the redesigned comment and carries a verdict headline", () => {
     const body = renderPrComment(scanResult([finding({})]));
-    expect(body).toContain("### 🔨 Mjölnir — Verification Trust");
+    expect(body).toContain("### 🔨 QA Doctor — Verification Trust");
     expect(body).toContain("88/100");
     expect(body).toContain("WORTHY");
     expect(body).toMatch(/score is|hammer|findings/); // headline line present

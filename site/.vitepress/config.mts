@@ -14,7 +14,7 @@ const SIDEBAR = [
     text: "Guide",
     items: [
       { text: "Getting started", link: "/guide/getting-started" },
-      { text: "What Mjölnir checks", link: "/guide/what-it-checks" },
+      { text: "What QA Doctor checks", link: "/guide/what-it-checks" },
       { text: "How the score works", link: "/guide/scoring" },
       { text: "Runtime forensics", link: "/guide/forensics" },
       { text: "CI integration", link: "/guide/ci" },
@@ -53,8 +53,8 @@ const DOC_ROUTES: Record<string, string> = {
 };
 
 export default defineConfig({
-  title: "Mjölnir",
-  titleTemplate: ":title · Mjölnir",
+  title: "QA Doctor",
+  titleTemplate: ":title · QA Doctor",
   description: TAGLINE,
   base: BASE,
   lang: "en-US",
@@ -163,10 +163,10 @@ export default defineConfig({
     // Link previews (Slack, X, LinkedIn, Discord) — without these a
     // shared link renders as a bare URL.
     ["meta", { property: "og:type", content: "website" }],
-    ["meta", { property: "og:site_name", content: "Mjölnir" }],
+    ["meta", { property: "og:site_name", content: "QA Doctor" }],
     [
       "meta",
-      { property: "og:title", content: "Mjölnir — Verification Trust Engine" },
+      { property: "og:title", content: "QA Doctor — Verification Trust Engine" },
     ],
     ["meta", { property: "og:description", content: TAGLINE }],
     ["meta", { property: "og:url", content: SITE_URL }],
@@ -174,7 +174,7 @@ export default defineConfig({
     ["meta", { name: "twitter:card", content: "summary_large_image" }],
     [
       "meta",
-      { name: "twitter:title", content: "Mjölnir — Verification Trust Engine" },
+      { name: "twitter:title", content: "QA Doctor — Verification Trust Engine" },
     ],
     ["meta", { name: "twitter:description", content: TAGLINE }],
     ["meta", { name: "twitter:image", content: SITE_URL + "social-card.jpg" }],

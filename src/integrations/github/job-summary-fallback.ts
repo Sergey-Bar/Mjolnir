@@ -34,7 +34,7 @@ export function renderJobSummary(model: PrCommentModelV1): string {
         ? "WARN"
         : "FAIL";
 
-  let summary = `## :${icon}: Mjolnir QA — ${verdictLabel}\n\n`;
+  let summary = `## :${icon}: QA Doctor — ${verdictLabel}\n\n`;
   summary += `**Score:** ${model.score}/100\n\n`;
 
   if (model.findings.errors > 0 || model.findings.warnings > 0) {

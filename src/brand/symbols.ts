@@ -1,5 +1,5 @@
 /**
- * The Mjölnir symbol vocabulary.
+ * The QA Doctor symbol vocabulary.
  *
  * Three marks carry the product's epistemics, and before this each one
  * looked different on every surface it appeared on: evidence level was a

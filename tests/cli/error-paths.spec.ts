@@ -244,7 +244,7 @@ describe("exit-20 mapping: Error payload carries the message", () => {
 
   it("baseline: a saveBaseline throw is the honest-degrade exit 1, not exit 20", async () => {
     // An unwritable baseline path is the environment's fault — the
-    // friendly "this is a bug in Mjölnir" exit-20 message would lie. The
+    // friendly "this is a bug in QA Doctor" exit-20 message would lie. The
     // command degrades to exit 1 with the actionable reason instead.
     throwOnce(saveBaseline, ERR);
     const cap = capture();

@@ -11,6 +11,7 @@ import {
   mkdirSync,
   readFileSync,
   rmSync,
+  utimesSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -100,7 +101,13 @@ describe("fs-atomic arms", () => {
 
   it("sweeps stale temp files left by a crashed writer (and survives an unlinkable one)", () => {
     const root = tmpRepo("sweep");
-    writeFileSync(join(root, "a.mjolnir-123-abcd.tmp"), "x");
+    const old = Date.now() - 48 * 60 * 60 * 1000;
+    const stale = join(root, `a.mjolnir-2147483647-${old}-01234567.tmp`);
+    writeFileSync(stale, "x");
+    utimesSync(stale, new Date(old), new Date(old));
+    vi.spyOn(process, "kill").mockImplementation(() => {
+      throw Object.assign(new Error("dead owner"), { code: "ESRCH" });
+    });
     writeFileSync(join(root, "keep.txt"), "keep");
     // A DIRECTORY named like a temp cannot be unlinkSync'd — the sweep's
     // per-entry catch arm keeps the loop alive and counts only successes.

@@ -67,7 +67,7 @@ describe("root action.yml (Marketplace surface) is locked", () => {
   it("exists at the repo ROOT with the composite run shape and branding", () => {
     expect(action.runs.using).toBe("composite");
     expect(action.branding?.icon).toBeTruthy();
-    expect(action.name).toContain("Mjölnir");
+    expect(action.name).toContain("QA Doctor");
     expect(action.description.length).toBeGreaterThan(40);
   });
 
@@ -133,6 +133,7 @@ describe("root action.yml (Marketplace surface) is locked", () => {
       "strict",
       "format",
       "fail-on",
+      "fail-on-partial",
       "version",
     ]) {
       // `${{ inputs.X }}` may only appear in env: values (or step `with:`),
@@ -149,6 +150,7 @@ describe("root action.yml (Marketplace surface) is locked", () => {
       "strict",
       "format",
       "fail-on",
+      "fail-on-partial",
       "version",
     ]) {
       expect(
@@ -158,7 +160,16 @@ describe("root action.yml (Marketplace surface) is locked", () => {
     }
   });
 
-  it("a partial scan never blocks (exit 2 downgrades to a warning — frozen exit-code contract)", () => {
+  it("partial scans warn by default and fail only when opted in", () => {
+    const scan = action.runs.steps.find((s) => s.id === "scan");
+    expect(action.inputs["fail-on-partial"]?.default).toBe("false");
+    expect(scan?.env?.MJ_FAIL_ON_PARTIAL).toBe("${{ inputs.fail-on-partial }}");
+    expect(scan?.run).toMatch(
+      /if \[ "\$MJ_FAIL_ON_PARTIAL" = "true" \]; then[\s\S]*?exit 2[\s\S]*?fi\s+exit 0/,
+    );
+  });
+
+  it("a partial scan downgrade precedes the final exit", () => {
     const scan = action.runs.steps.find((s) => s.id === "scan");
     const run = scan?.run ?? "";
     expect(run).toContain('"$EXIT" = "2"');

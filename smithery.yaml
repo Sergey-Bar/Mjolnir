@@ -1,7 +1,7 @@
 {
   "$schema": "https://smithery.ai/server.config.schema.json",
   "name": "mjolnir-qa",
-  "displayName": "Mjölnir — verification trust scan",
+  "displayName": "QA Doctor — verification trust scan",
   "description": "Scans test suites, Playwright configs and CI workflows, grades the verification system (not the product code), and publishes a measured false-positive rate per rule. MCP tools: scan, explain, diff, verify, forensics, triage, pw-report.",
   "version": "2.0.0",
   "server":

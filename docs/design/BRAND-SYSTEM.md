@@ -1,4 +1,4 @@
-# Mjölnir — the brand system
+# QA Doctor — the brand system
 
 One palette, two typefaces, three marks, and a gate that will not let
 them drift apart again.
@@ -21,7 +21,7 @@ from [`src/brand/tokens.ts`](../../src/brand/tokens.ts).
 
 ## 1. The one rule
 
-**Every colour, typeface and motion constant Mjölnir shows a human
+**Every colour, typeface and motion constant QA Doctor shows a human
 resolves to a value in `src/brand/tokens.ts`. Nothing else may define
 one.**
 

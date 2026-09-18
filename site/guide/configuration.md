@@ -1,6 +1,6 @@
 # Configuration
 
-Mjölnir is zero-config. An optional `mjolnir.config.json` (or
+QA Doctor is zero-config. An optional `mjolnir.config.json` (or
 `.mjolnir.json`) at the repo root tunes severity, gating and scope — it
 never changes detection semantics.
 

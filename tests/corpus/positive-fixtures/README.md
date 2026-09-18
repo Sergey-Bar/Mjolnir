@@ -9,6 +9,6 @@ These exist because class-A OSS repos under-represent rare patterns
 are measurement-grade surfaces, not a substitute for class A: precision
 evidence still comes from real repos and the negative corpus.
 
-Files are excluded from Mjölnir's own self-scan via mjolnir.config.json
+Files are excluded from QA Doctor's own self-scan via mjolnir.config.json
 (`tests/**` fixture coverage) and from vitest via the test exclude list —
 they are DATA.

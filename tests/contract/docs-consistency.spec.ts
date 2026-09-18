@@ -581,7 +581,7 @@ describe("README alt text matches the verdict the SVG assets actually render", (
 });
 
 describe("product surfaces use the canonical vocabulary (docs/TERMINOLOGY.md)", () => {
-  // Product-Experience Master Plan Phase 2: Mjölnir's surfaces must speak
+  // Product-Experience Master Plan Phase 2: QA Doctor's surfaces must speak
   // one vocabulary — "finding", "worthiness score", the locked verdict
   // words. The spec-era synonyms ("trust score", "bug score", findings
   // called "issues") erode trust exactly like any other cross-surface
@@ -640,7 +640,7 @@ describe("product surfaces use the canonical vocabulary (docs/TERMINOLOGY.md)", 
     "%s: findings are never called issues (tracker senses allowed)",
     (name, text) => {
       // The finding-vocabulary senses of "issue" — the words a reader
-      // would read as "what Mjölnir detected" — are forbidden. The
+      // would read as "what QA Doctor detected" — are forbidden. The
       // GitHub-tracker senses (open/track/file an issue, issue
       // tracker/form/template/routing/triage, good-first-issue, the
       // issues URL) are legitimate and stay.
@@ -649,7 +649,7 @@ describe("product surfaces use the canonical vocabulary (docs/TERMINOLOGY.md)", 
       const hits = [...text.matchAll(new RegExp(findingSense.source, "gi"))];
       expect(
         hits.map((m) => m[0]),
-        `${name} uses "issue" for what Mjölnir detects — call it a ` +
+        `${name} uses "issue" for what QA Doctor detects — call it a ` +
           `finding (docs/TERMINOLOGY.md anti-vocabulary)`,
       ).toEqual([]);
     },
@@ -679,14 +679,13 @@ describe("stability-policy docs exist and link each other (Beta-to-Stable M1)", 
     }
   });
 
-  it("docs/VERSIONING.md names the frozen support matrix (Node 22 + 24, 3 OSes)", () => {
-    expect(VERSIONING).toMatch(/\|\s*Node\.js\s*\|\s*22\.x, 24\.x\s*\|/);
-    for (const os of ["ubuntu-latest", "windows-latest", "macos-latest"]) {
-      expect(
-        VERSIONING,
-        `docs/VERSIONING.md support matrix dropped ${os}`,
-      ).toContain(os);
-    }
+  it("docs/VERSIONING.md names the tested support matrix (Node 22 on 3 OSes, Node 24 on Ubuntu)", () => {
+    expect(VERSIONING).toMatch(
+      /^\|\s*Node\.js 22\.x\s*\|\s*ubuntu-latest, windows-latest, macos-latest\s*\|\s*$/m,
+    );
+    expect(VERSIONING).toMatch(
+      /^\|\s*Node\.js 24\.x\s*\|\s*ubuntu-latest\s*\|\s*$/m,
+    );
   });
 
   it("SUPPORT.md exists, routes security to SECURITY.md, and links the governance section", () => {

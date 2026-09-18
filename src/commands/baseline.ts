@@ -168,7 +168,7 @@ export function loadBaseline(
         );
       } else if (version !== 1) {
         onWarning?.(
-          `baseline file declares schemaVersion ${JSON.stringify(version)}; this Mjölnir understands v1 — baseline ignored (upgrade Mjölnir to diff it).`,
+          `baseline file declares schemaVersion ${JSON.stringify(version)}; this QA Doctor understands v1 — baseline ignored (upgrade QA Doctor to diff it).`,
         );
         return null;
       }

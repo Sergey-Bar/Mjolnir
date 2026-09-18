@@ -2,7 +2,7 @@
  * mjolnir-qa-playwright-reporter
  *
  * Thin wrapper around Playwright's built-in JSON reporter that documents
- * and pins the exact output contract Mjölnir's forensics pipeline
+ * and pins the exact output contract QA Doctor's forensics pipeline
  * ingests (`mjolnir forensics`, `triage`, `pw-report`).
  *
  * Usage in playwright.config.ts:
@@ -28,7 +28,7 @@ export interface MjolnirReporterOptions {
   outputFile?: string;
 }
 
-/** The output file name Mjölnir's CLI auto-discovers by default. */
+/** The output file name QA Doctor's CLI auto-discovers by default. */
 export const MJOLNIR_REPORT_FILE = "mjolnir.report.json";
 
 export function mjolnirReporter(

@@ -5,9 +5,9 @@
     {
       "tool": {
         "driver": {
-          "name": "Mjölnir",
+          "name": "QA Doctor",
           "informationUri": "https://github.com/Sergey-Bar/Mjolnir",
-          "version": "0.5.34",
+          "version": "2.0.0",
           "rules": [
             {
               "id": "QA-CI-009",
@@ -52,15 +52,6 @@
               },
               "properties": {
                 "falsePositiveRisk": "medium"
-              }
-            },
-            {
-              "id": "QA-PW-101",
-              "shortDescription": {
-                "text": "Hard sleep via waitForTimeout"
-              },
-              "properties": {
-                "falsePositiveRisk": "low"
               }
             },
             {
@@ -321,38 +312,6 @@
             "confidence": "medium",
             "qaImpact": "HYGIENE",
             "evidenceLevel": "E0",
-            "trustLevel": "L3",
-            "runtimeCorroboration": {
-              "level": "file",
-              "source": "playwright-json",
-              "testsExecuted": 3
-            }
-          }
-        },
-        {
-          "ruleId": "QA-PW-101",
-          "level": "error",
-          "message": {
-            "text": "`waitForTimeout()` hard sleep. — Fixed waits either wait too long (slow suite) or too little (flaky on slow machines). They encode hope, not synchronization. Fix: Replace with a web-first assertion (`await expect(locator).toBeVisible()`) or `locator.waitFor()`."
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "e2e/checkout.spec.ts"
-                },
-                "region": {
-                  "startLine": 6,
-                  "startColumn": 14
-                }
-              }
-            }
-          ],
-          "properties": {
-            "severity": "error",
-            "confidence": "high",
-            "qaImpact": "FLAKY-RISK",
-            "evidenceLevel": "E2",
             "trustLevel": "L3",
             "runtimeCorroboration": {
               "level": "file",

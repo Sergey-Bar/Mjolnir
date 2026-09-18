@@ -4,7 +4,7 @@
   `scripts/brand-doctor.mjs` fails CI if this file drifts from it.
 -->
 
-# Mjölnir — design tokens
+# QA Doctor — design tokens
 
 The generated reference. The source is
 [`src/brand/tokens.ts`](../../src/brand/tokens.ts); the machine surface

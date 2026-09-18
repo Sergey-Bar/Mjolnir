@@ -60,7 +60,7 @@ export interface ExplainResult {
  * Runs the rule against its own must-fire fixture to get one real,
  * concrete example finding. `fixturesRoot` defaults to this repo's own
  * `tests/fixtures` — explain only has real examples to show when run
- * from (or pointed at) a Mjolnir checkout; degrades honestly
+ * from (or pointed at) a QA Doctor checkout; degrades honestly
  * (exampleFinding left undefined) otherwise, same as `doctor`.
  */
 export function explainRule(

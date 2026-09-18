@@ -53,7 +53,7 @@ export function renderCommentBody(model: PrCommentModelV1): string {
         : "FAIL";
 
   let body = PR_COMMENT_MARKER + "\n";
-  body += `## :${icon}: Mjolnir QA — ${verdictLabel}\n\n`;
+  body += `## :${icon}: QA Doctor — ${verdictLabel}\n\n`;
   body += `**Score:** ${model.score}/100\n\n`;
 
   if (model.findings.errors > 0 || model.findings.warnings > 0) {

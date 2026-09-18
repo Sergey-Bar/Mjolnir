@@ -171,7 +171,7 @@ describe("runVerifyCommand — partial scan, warning callback, gate arms", () =>
 describe("the handler catch (exit 20) — audit-red's probe pattern", () => {
   it("an io throw inside the try block is contained: exit 20, not a crash", async () => {
     // The render (io.out) sits inside the try — a throwing out surfaces
-    // the same containment contract every Mjölnir handler carries.
+    // the same containment contract every QA Doctor handler carries.
     writeFileSync(
       join(dir, "x.spec.ts"),
       "test('y', () => { expect(1).toBe(1); });\n",

@@ -163,12 +163,12 @@ export function buildHeroSvg(): string {
   ${s.body}
   <text class="mark" x="96" y="104">MJÖLNIR</text>
   <text class="head was" x="96" y="318">Tests tell you what passed.</text>
-  <text class="head now" x="96" y="404">Mjölnir tells you what you can trust.</text>
+  <text class="head now" x="96" y="404">QA Doctor tells you what you can trust.</text>
   </g>`;
   return svg(
     w,
     h,
-    "Mjölnir. Tests tell you what passed. Mjölnir tells you what you can trust.",
+    "QA Doctor. Tests tell you what passed. QA Doctor tells you what you can trust.",
     [sansFaceCss()],
     css,
     still,
@@ -367,7 +367,7 @@ ${out.join("\n")}
     </g>
 ${windowClose(w, h)}`;
   const label =
-    `Mjölnir reading ${SCAN_FILE} from the demo repository line by line, ` +
+    `QA Doctor reading ${SCAN_FILE} from the demo repository line by line, ` +
     `and flagging ${count} at the lines it reported: ` +
     findings
       .map((x) => `line ${x.line}, ${x.severity}, ${x.ruleId}: ${x.message}`)

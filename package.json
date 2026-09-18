@@ -1,7 +1,7 @@
 {
   "name": "mjolnir-qa",
   "version": "2.0.0",
-  "description": "Mjölnir — the Verification Trust Engine for QA. Audits test suites and CI pipelines, reports a worthiness score and prioritized findings.",
+  "description": "QA Doctor — the Verification Trust Engine for QA. Audits test suites and CI pipelines, reports a worthiness score and prioritized findings.",
   "type": "module",
   "engines": {
     "node": ">=22.18"
@@ -86,7 +86,7 @@
     "linter",
     "static-analysis"
   ],
-  "author": "Mjölnir Team",
+  "author": "QA Doctor Team",
   "license": "MIT",
   "repository": {
     "type": "git",

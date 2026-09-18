@@ -1,6 +1,6 @@
 name: SARIF Code Scanning
 
-# Bug-audit B4.28: Mjölnir's own self-scan, published as SARIF into
+# Bug-audit B4.28: QA Doctor's own self-scan, published as SARIF into
 # GitHub Code Scanning. Findings become visible in the Security tab with
 # PR annotations instead of living only in a job log nobody opens.
 # Weekly + on demand: the PR self-scan gate (ci.yml) stays the fast

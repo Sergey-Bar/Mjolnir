@@ -7,7 +7,7 @@
  * whose whole argument is that you should not trust what you have not
  * verified, and — the reason that actually mattered — a completely
  * different typeface from the one the README SVGs and the demo video
- * embed. A reader who found Mjölnir through GitHub and then opened the
+ * embed. A reader who found QA Doctor through GitHub and then opened the
  * site saw two products.
  *
  * The faces are now Geist and Geist Mono, which the SVGs and the video
@@ -22,10 +22,9 @@
  * manifest without touching the network, and that is what CI runs. The
  * build itself never fetches anything.
  *
- * SUBSETS. Latin and latin-ext only. The site is English and its one
- * non-ASCII glyph of consequence is the ö in Mjölnir (U+00F6, latin).
- * Pulling Cyrillic, Greek and Vietnamese would triple the payload for
- * text that does not exist.
+ * SUBSETS. Latin and latin-ext only. The site is English, and pulling
+ * Cyrillic, Greek and Vietnamese would triple the payload for text that
+ * does not exist.
  *
  * LICENCES. Geist and Geist Mono are SIL OFL 1.1 (Vercel). The OFL files
  * are vendored beside the fonts.

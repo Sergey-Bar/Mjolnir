@@ -46,7 +46,7 @@ afterEach(() => {
   }
 });
 
-/** The frozen four-surface fixture: every surface Mjölnir probes. */
+/** The frozen four-surface fixture: every surface QA Doctor probes. */
 function repoWithAllSurfaces(): string {
   const d = tmpSkillRepo();
   for (const dir of [".claude", ".cursor", ".kilo"]) {

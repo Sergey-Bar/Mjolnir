@@ -1,6 +1,6 @@
-# What Mjölnir checks
+# What QA Doctor checks
 
-Mjölnir looks for evidence that your verification cannot be trusted. Not
+QA Doctor looks for evidence that your verification cannot be trusted. Not
 style, not formatting — the specific places where a test suite or a
 pipeline reports success it hasn't earned.
 

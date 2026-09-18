@@ -1,6 +1,6 @@
 # mjolnir-qa-playwright-reporter
 
-Official Playwright reporter for [Mjölnir](https://github.com/Sergey-Bar/Mjolnir) —
+Official Playwright reporter for [QA Doctor](https://github.com/Sergey-Bar/Mjolnir) —
 emits the JSON report that `mjolnir forensics`, `triage`, and `pw-report`
 ingest for flake detection, retry analysis, and runtime evidence.
 
@@ -9,7 +9,7 @@ ingest for flake detection, retry analysis, and runtime evidence.
 > **This package is source-only.** It is _not_ published to npm —
 > `npm install mjolnir-qa-playwright-reporter` and
 > `npm view mjolnir-qa-playwright-reporter` both fail by design. It ships
-> as a workspace member of the Mjölnir repo, and this repo is its only
+> as a workspace member of the QA Doctor repo, and this repo is its only
 > distribution channel. To use it, build from source:
 >
 > ```bash
@@ -51,7 +51,7 @@ mjolnir pw-report mjolnir.report.json   # quick run summary
 
 You can — this package is a thin, documented wrapper that:
 
-- pins the output contract Mjölnir parses (so Playwright shape changes
+- pins the output contract QA Doctor parses (so Playwright shape changes
   are absorbed here, not in your config),
 - establishes the default filename the CLI auto-discovers,
 - gives the integration a versioned home.

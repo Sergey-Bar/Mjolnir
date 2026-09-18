@@ -194,7 +194,7 @@ Management speaks money. Flaky tests and hard sleeps burn CI minutes:
 
 - Estimate cost per finding: `~340 CI min/month wasted on retries of X`
 - Optional: connect GitHub API (opt-in!) for real billing data
-- ROI framing in the Impact Report: "Mjölnir pays for its attention"
+- ROI framing in the Impact Report: "QA Doctor pays for its attention"
 
 ## 30. Emotional Design: Respect the QA, Don't Shame Them 🔥 ⬜ UNVERIFIABLE FROM CODE — copy/tone audit, no roast mode exists to check against (see Tier 4 #16)
 

@@ -1,10 +1,10 @@
-# Mjölnir — the motion system
+# QA Doctor — the motion system
 
 Motion shows a state changing, or it is the aurora. Nothing else moves.
 
 Before this document, motion was **constrained but never defined**:
 `scripts/video/pacing.ts` pinned the video's timing, `site-doctor`
-Check 5 capped infinite animations, and nothing said what a Mjölnir
+Check 5 capped infinite animations, and nothing said what a QA Doctor
 transition is. Those two mechanisms stay; this writes down the language
 they were already enforcing.
 

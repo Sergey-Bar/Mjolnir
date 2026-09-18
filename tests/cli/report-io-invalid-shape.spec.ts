@@ -72,7 +72,7 @@ describe("F1 — schema-incomplete report (no frameworks array) is an honest exi
     const cap = capture();
     expect(runSummaryCommand([p], cap.io)).toBe(2);
     expect(cap.errText()).toContain('missing a "frameworks" array');
-    expect(cap.errText()).toContain("complete Mjölnir --json report");
+    expect(cap.errText()).toContain("complete QA Doctor --json report");
     expect(cap.errText()).not.toMatch(/TypeError|at \S+:\d+/);
   });
 

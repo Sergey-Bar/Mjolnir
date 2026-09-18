@@ -1,4 +1,4 @@
-# Mjölnir — Documentation
+# QA Doctor — Documentation
 
 ## What the product is
 
@@ -23,7 +23,7 @@ they are kept for their audit trail, not as instructions.
 **Every plan in the table below is complete or superseded.** They live
 in `docs/archive/plans/` and are kept for their per-task audit trail,
 not as instructions. `Master-Stabilization-Plan.md`'s sprints 0–9 are
-all done; the "Tempering Mjölnir" plan that followed it (phases 1–8:
+all done; the "Tempering QA Doctor" plan that followed it (phases 1–8:
 string masking, fixture exclusion, the measured FP audit, the tier
 system, score normalization, rule families, executable laws, docs truth
 pass) is also complete — see the

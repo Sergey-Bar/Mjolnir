@@ -59,6 +59,45 @@ function report(overrides: Partial<ForensicsReport> = {}): ForensicsReport {
 }
 
 describe("runtime-corroboration branch coverage (line 81 — testsExecuted === 0)", () => {
+  it.each([undefined, 40, 10])(
+    "does not infer containment from one reported test at %s",
+    (line) => {
+      const f = finding({ line: 12 });
+      const v = verdict();
+      if (line !== undefined) v.line = line;
+      stampRuntimeCorroboration([f], report({ verdicts: [v] }));
+      expect(f.trustLevel).toBe("L3");
+      expect(f.runtimeCorroboration?.matchedTest).toBeUndefined();
+    },
+  );
+
+  it("does not promote a deterministic failure to flake evidence", () => {
+    const f = finding({ line: 10 });
+    stampRuntimeCorroboration(
+      [f],
+      report({
+        verdicts: [
+          verdict({ line: 10, finalStatus: "failed", everFailed: true }),
+        ],
+      }),
+    );
+    expect(f.trustLevel).toBe("L4");
+    expect(f.runtimeCorroboration?.level).toBe("test");
+  });
+
+  it("does not choose between tests on the same declaration line", () => {
+    const f = finding({ line: 10 });
+    stampRuntimeCorroboration(
+      [f],
+      report({
+        verdicts: [
+          verdict({ line: 10 }),
+          verdict({ line: 10, title: "other" }),
+        ],
+      }),
+    );
+    expect(f.trustLevel).toBe("L3");
+  });
   it("skips corroboration entirely when ALL tests in the file were skipped (testsExecuted === 0)", () => {
     const findings = [finding({ file: "e2e/shop.spec.ts", line: 12 })];
     const r = report({
@@ -74,7 +113,7 @@ describe("runtime-corroboration branch coverage (line 81 — testsExecuted === 0
   });
 
   it("file-level corroboration when matched test is skipped but others executed", () => {
-    const findings = [finding({ file: "e2e/shop.spec.ts", line: 12 })];
+    const findings = [finding({ file: "e2e/shop.spec.ts", line: 20 })];
     const r = report({
       verdicts: [
         verdict({ file: "e2e/shop.spec.ts", line: 10, skipped: false }),
@@ -88,13 +127,11 @@ describe("runtime-corroboration branch coverage (line 81 — testsExecuted === 0
     });
     const count = stampRuntimeCorroboration(findings, r);
     expect(count).toBe(1);
-    // With two verdicts, the one at line 10 (not skipped) is the containing test
-    // because findContainingTest matches by greatest line ≤ finding's line
-    expect(findings[0]?.runtimeCorroboration?.level).toBe("test");
+    expect(findings[0]?.runtimeCorroboration?.level).toBe("file");
   });
 
   it("test-level corroboration when matched test is not skipped", () => {
-    const findings = [finding({ file: "e2e/shop.spec.ts", line: 12 })];
+    const findings = [finding({ file: "e2e/shop.spec.ts", line: 10 })];
     const r = report({
       verdicts: [
         verdict({ file: "e2e/shop.spec.ts", line: 10, skipped: false }),
@@ -107,7 +144,7 @@ describe("runtime-corroboration branch coverage (line 81 — testsExecuted === 0
 
   it("defect-level corroboration when FLAKY-RISK finding matches a flaky test", () => {
     const findings = [
-      finding({ file: "e2e/shop.spec.ts", line: 12, qaImpact: "FLAKY-RISK" }),
+      finding({ file: "e2e/shop.spec.ts", line: 10, qaImpact: "FLAKY-RISK" }),
     ];
     const r = report({
       verdicts: [
@@ -131,14 +168,14 @@ describe("runtime-corroboration branch coverage (line 81 — testsExecuted === 0
     expect(count).toBe(0);
   });
 
-  it("single-test file always matches (verdicts.length === 1 path)", () => {
+  it("does not extend the last reported test to the end of the file", () => {
     const findings = [finding({ file: "e2e/shop.spec.ts", line: 50 })];
     const r = report({
       verdicts: [verdict({ file: "e2e/shop.spec.ts", line: 10 })],
     });
     const count = stampRuntimeCorroboration(findings, r);
     expect(count).toBe(1);
-    expect(findings[0]?.runtimeCorroboration?.level).toBe("test");
+    expect(findings[0]?.runtimeCorroboration?.level).toBe("file");
   });
 
   it("multiple verdicts with undefined lines falls back to file-level", () => {

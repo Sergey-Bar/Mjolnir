@@ -1,4 +1,4 @@
-# Mjölnir 1.0.0 — Core Certification Report (WI-16)
+# QA Doctor 1.0.0 — Core Certification Report (WI-16)
 
 > Certification run per `docs/CERTIFICATION-POLICY.md` verifying every
 > §37 Core-Certification-Gate requirement with evidence links. Verified

@@ -31,7 +31,7 @@ once shipped, so this file is the record of what changed between versions.
 
 ### Year-1 Roadmap Implementation — All 60 Tickets (Q1-Q4)
 
-Complete implementation of the Mjolnir Master Engineering Roadmap & Product Specification v3.1. 178 files changed, ~22,500 lines added across 93 new source and test files.
+Complete implementation of the QA Doctor Master Engineering Roadmap & Product Specification v3.1. 178 files changed, ~22,500 lines added across 93 new source and test files.
 
 ### Added
 
@@ -1099,14 +1099,14 @@ Azure DevOps support: guarded azure-pipelines.yml parsing, the QA-CI Azure arms,
   authoritative; live scan runs otherwise. Exit 0 match / 1 no match.
 - **`mjolnir handoff [mjolnir.json]`** — the deterministic fix-handoff
   artifact: per-rule remediation sections (what is wrong / why
-  Mjölnir believes it / evidence boundary by level / occurrences
+  QA Doctor believes it / evidence boundary by level / occurrences
   capped at 25 / fix / constraints / occurrences list), a per-rule
   fenced copy block and a one-shot handoff prompt, and the formal
   verification contract (TARGET_RESOLVED / TARGET_REMAINS /
   NEW_FINDINGS_INTRODUCED / VERIFICATION_NOT_RUN, correlated by the
   fingerprint ruleId+file+message; the standing caveat that a clean
   `--scope changed` run verifies the changed surface only). Generated
-  solely from Mjölnir's own rule metadata — offline, deterministic,
+  solely from QA Doctor's own rule metadata — offline, deterministic,
   escapeMarkdown'd. Zero findings → exit 0, non-actionable clean
   artifact with no prompt. `--category`/`--rules` are presentation
   filters.
@@ -1119,7 +1119,7 @@ Azure DevOps support: guarded azure-pipelines.yml parsing, the QA-CI Azure arms,
   (`mjolnir --staged --blocking warning`, reusing `.husky`/
   `core.hooksPath` when present). Marker-based idempotency;
   `--dry-run` writes nothing; refusal (exit 10) before overwriting
-  any non-Mjölnir file; `--force` overwrites only Mjölnir-marked
+  any non-QA Doctor file; `--force` overwrites only QA Doctor-marked
   files; never @latest.
 - **`--score`** — prints only the numeric score (`unknown` when no
   tests exist — never a fake 0); pure rendering flag, exit code
@@ -1316,7 +1316,7 @@ scan`. Unknown categories are a usage error (exit 10).
 ### Hardened — trust boundary (audits S1/S2/S3/S7)
 
 - **S1**: git resolves to an absolute path from PATH (never the scanned
-  CWD) — a planted `git.exe`/`git.bat` cannot hijack Mjölnir's git
+  CWD) — a planted `git.exe`/`git.bat` cannot hijack QA Doctor's git
   calls on Windows.
 - **S2**: ignore/glob patterns and external JSON-rule regexes are
   length/wildcard-capped at compile time; `**/` compiles segment-aware.
@@ -1356,7 +1356,7 @@ scan`. Unknown categories are a usage error (exit 10).
   themselves on stderr, suggest up to three nearest real flags
   (hand-rolled Levenshtein ≤ 2 — no new dependencies), and point at
   `mjolnir --help`. The exit-20 crash path says "this is a bug in
-  Mjölnir, not your repo", carries the message, and prints the stack
+  QA Doctor, not your repo", carries the message, and prints the stack
   trace only under `--debug`.
 - **Live scan progress** (`src/reporter/progress.ts`): an event-driven
   stderr line (`Discovering files… → Parsing frameworks… → Running
@@ -1384,7 +1384,7 @@ rules… → Scoring…`) fed by the new additive `ScanHooks.onProgress`.
   dogfooded `.github/workflows/mjolnir.yml` and `ci.yml` self-scan use
   the same command.
 - **PR comment redesign** (`pr-comment`): header
-  `### 🔨 Mjölnir — Verification Trust` with score + band + verdict
+  `### 🔨 QA Doctor — Verification Trust` with score + band + verdict
   headline, dimensions mini-table, findings grouped in collapsible
   `<details>` (errors open, warnings/infos collapsed) with explicit
   `Fix:` lines and evidence tags, a "what to run next" footer with the
@@ -2624,7 +2624,7 @@ by a `must-not-fire` fixture so the class cannot return silently.
   detection (`src/engine/cross-file.ts`).
 - Upgrade-Plan-v3 Phase 0.2: new `mjolnir-qa-playwright-reporter` package
   (`packages/playwright-reporter/`) — official Playwright JSON reporter
-  wrapper for Mjölnir's forensics pipeline; default output
+  wrapper for QA Doctor's forensics pipeline; default output
   `mjolnir.report.json` is the CLI's auto-discovery convention.
 - Upgrade-Plan-v3 Phase 3: ts-morph AST precision layer behind the `ast`
   seam (`src/engine/ts-ast.ts`). QA-PW-002 and QA-PW-005 migrated from
@@ -2715,13 +2715,13 @@ doctor` reports this and will fail once a majority is classified.
 
 ### Changed
 
-- **BREAKING: Rebranded from QA Doctor to Mjölnir.** Package name is now
+- **BREAKING: Rebranded from QA Doctor to QA Doctor.** Package name is now
   `mjolnir-qa` (bin: `mjolnir`). Config file: `mjolnir.config.json`.
   Data directory: `.mjolnir/`. Badge: `mjolnir-badge.json`.
 - Score label: "SCORE" → "WORTHINESS".
 - Verdicts: "HEALTHY" → "WORTHY", "CRITICAL" → "UNWORTHY".
 - Environment variable: `QA_DOCTOR_ASCII` → `MJOLNIR_ASCII`.
-- SARIF tool.driver.name: "Mjölnir".
+- SARIF tool.driver.name: "QA Doctor".
 - Repository: `github.com/Sergey-Bar/Mjolnir`.
 - CLI: all help text, error messages, usage strings reference `mjolnir`.
 - Generated workflows: `mjolnir.yml`, `npx mjolnir-qa@latest`.

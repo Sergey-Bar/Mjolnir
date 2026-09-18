@@ -158,7 +158,7 @@
     "exit": 0,
     "stdoutLen": 245,
     "stderrLen": 0,
-    "firstLine": "why — why did Mjölnir flag <file>:<line>? evidence + fix (not a gate)"
+    "firstLine": "why — why did QA Doctor flag <file>:<line>? evidence + fix (not a gate)"
   },
   {
     "verb": "handoff",

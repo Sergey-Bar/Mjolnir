@@ -105,7 +105,7 @@ export function renderBadgeSnippet(
     "[![MJÖLNIR](https://img.shields.io/endpoint?url=<your-badge-json-url>)](" +
       repoUrl +
       ")",
-    "<!-- Mjölnir verified at commit " +
+    "<!-- QA Doctor verified at commit " +
       commit +
       " on " +
       date +

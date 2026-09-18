@@ -6,7 +6,7 @@ works from; when planning changes, this page changes with it. Nothing on
 this page is a promise with a deadline; each item is a direction with an
 entry condition.
 
-## Where Mjölnir is now
+## Where QA Doctor is now
 
 - **v1.0.x — stable.** Published on npm and GitHub Releases, with
   <!-- census:total-rules -->79 rules<!-- /census:total-rules -->,

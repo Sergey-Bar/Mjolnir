@@ -52,12 +52,12 @@ export function validateReportJson(text: string): ScanResult {
   }
   if (!Array.isArray(doc.findings)) {
     throw new Error(
-      'missing a "findings" array — is this a Mjölnir --json report?',
+      'missing a "findings" array — is this a QA Doctor --json report?',
     );
   }
   if (!Array.isArray(doc.frameworks)) {
     throw new Error(
-      'missing a "frameworks" array — is this a complete Mjölnir --json report?',
+      'missing a "frameworks" array — is this a complete QA Doctor --json report?',
     );
   }
   return parsed as ScanResult;

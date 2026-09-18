@@ -52,6 +52,43 @@ interface HarRoot {
   log?: HarLog;
 }
 
+interface HarParseResult {
+  records: TestRecord[];
+  truncated: boolean;
+}
+
+function sanitizeTitleUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    parsed.username = "";
+    parsed.password = "";
+    parsed.search = "";
+    parsed.hash = "";
+    return `${parsed.protocol}//${parsed.host}${parsed.pathname}`;
+  } catch {
+    return url.split(/[?#]/, 1)[0] ?? url;
+  }
+}
+
+function serializeTransportError(value: unknown): string {
+  if (typeof value === "string") return value;
+  try {
+    const serialized = JSON.stringify(value);
+    return serialized === undefined ? String(value) : serialized;
+  } catch {
+    return "[unserializable transport error]";
+  }
+}
+
+function isValidHttpStatus(status: unknown): status is number {
+  return (
+    typeof status === "number" &&
+    Number.isInteger(status) &&
+    status >= 100 &&
+    status <= 599
+  );
+}
+
 /**
  * Sniff: a HAR root is `{ log: { entries: [...] } }` — distinct from
  * every other JSON shape the forensics layer accepts (Playwright/Jest/
@@ -71,10 +108,16 @@ export function looksLikeHarJson(json: unknown): boolean {
  * are skipped honestly — never invented.
  */
 export function parseHarJson(json: unknown): TestRecord[] {
-  if (!json || typeof json !== "object") return [];
+  return parseHarJsonDetailed(json).records;
+}
+
+export function parseHarJsonDetailed(json: unknown): HarParseResult {
+  if (!json || typeof json !== "object")
+    return { records: [], truncated: false };
   const entries = (json as HarRoot).log?.entries;
-  if (!Array.isArray(entries)) return [];
+  if (!Array.isArray(entries)) return { records: [], truncated: false };
   const out: TestRecord[] = [];
+  const truncated = entries.length > MAX_ENTRIES;
   for (const entry of entries.slice(0, MAX_ENTRIES)) {
     if (!entry || typeof entry !== "object") continue;
     const method =
@@ -90,16 +133,12 @@ export function parseHarJson(json: unknown): TestRecord[] {
       entry.response?._error ?? entry.response?.error ?? undefined;
     const hasTransportError =
       transportError !== undefined && transportError !== null;
-    const httpFailed = status !== undefined && status >= 400;
+    const hasValidStatus = isValidHttpStatus(status);
+    if (!hasValidStatus && !hasTransportError) continue;
+    const httpFailed = hasValidStatus && status >= 400;
     const errors: string[] = [];
     if (hasTransportError) {
-      errors.push(
-        sanitizeErrorText(
-          typeof transportError === "string"
-            ? transportError
-            : JSON.stringify(transportError),
-        ),
-      );
+      errors.push(sanitizeErrorText(serializeTransportError(transportError)));
     }
     if (httpFailed) {
       const text =
@@ -111,7 +150,7 @@ export function parseHarJson(json: unknown): TestRecord[] {
     }
     const durationMs =
       typeof entry.time === "number" && Number.isFinite(entry.time)
-        ? Math.round(entry.time)
+        ? Math.max(0, Math.round(entry.time))
         : 0;
     const attempt: Attempt = {
       index: 1,
@@ -120,12 +159,13 @@ export function parseHarJson(json: unknown): TestRecord[] {
     };
     out.push({
       file: "har",
-      title: `${method} ${url}`,
+      evidenceKind: "network-observation",
+      title: `${method} ${sanitizeTitleUrl(url)}`,
       attempts: [attempt],
       ...(errors.length > 0 ? { errors } : {}),
     });
   }
-  return out;
+  return { records: out, truncated };
 }
 
 /** Text entry point — the same containment as every other parser arm. */

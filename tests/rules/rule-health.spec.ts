@@ -81,7 +81,9 @@ describe("computeRuleStats", () => {
     const rows = buildRuleHealth();
     const s = computeRuleStats(rows);
     expect(s.measured).toBe(s.byStatus.MEASURED);
-    expect(s.needingMeasurement).toBe(s.byStatus.UNMEASURED + s.byStatus.STALE);
+    expect(s.needingMeasurement).toBe(
+      s.byStatus.UNMEASURED + s.byStatus.STALE + s.byStatus.PROVISIONAL,
+    );
     expect(s.coverage).toBeCloseTo(s.measured / s.total, 10);
   });
 

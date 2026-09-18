@@ -240,7 +240,7 @@ function main() {
 function indexPage() {
   return `---
 title: Rule catalog
-description: Every Mjölnir rule — severity, tier, measured false-positive rate, and the languages it runs on.
+description: Every QA Doctor rule — severity, tier, measured false-positive rate, and the languages it runs on.
 aside: false
 outline: false
 editLink: false

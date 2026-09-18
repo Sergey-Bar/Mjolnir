@@ -66,7 +66,7 @@ export function renderStepSummary(
   options: SummaryOptions = {},
 ): string {
   const lines: string[] = [];
-  lines.push("### 🔨 Mjölnir — Verification Trust");
+  lines.push("### 🔨 QA Doctor — Verification Trust");
   lines.push("");
 
   if (result.score === null) {

@@ -173,8 +173,8 @@ describe("command handlers report a crash (exit 20) instead of throwing, when th
 
   it("`baseline` degrades honestly (exit 1) when .mjolnir/ can't be written", async () => {
     // Contract change (audit-remediation branch): an unwritable path is
-    // an environment fault, not a Mjölnir bug — the friendly exit-20
-    // "this is a bug in Mjölnir" message would lie. The command now
+    // an environment fault, not a QA Doctor bug — the friendly exit-20
+    // "this is a bug in QA Doctor" message would lie. The command now
     // reports `baseline save FAILED — <reason>` and exits 1.
     if (!locked()) return;
     const errs: string[] = [];

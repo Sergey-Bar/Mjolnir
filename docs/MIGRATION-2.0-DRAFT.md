@@ -1,4 +1,4 @@
-# Mjölnir 2.0 — Migration Guide (DRAFT)
+# QA Doctor 2.0 — Migration Guide (DRAFT)
 
 **Status: DRAFT — the working draft of the 2.0.0 migration guide.** The
 published guide lands in the CHANGELOG + site with the 2.0.0 release itself

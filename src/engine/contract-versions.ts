@@ -27,7 +27,7 @@ export const CONTRACT_REGISTRY: readonly VersionedContract[] = [
   {
     identifier: "engineVersion",
     version: ENGINE_VERSION,
-    description: "Mjolnir engine release version",
+    description: "QA Doctor engine release version",
     compatibilityPolicy: "semver",
   },
   {

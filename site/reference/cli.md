@@ -72,7 +72,7 @@ stays byte-identical in every mode.
 
 ## The remediation loop (why / handoff / install)
 
-Mjölnir provides evidence and verification. The agent (or human) remains
+QA Doctor provides evidence and verification. The agent (or human) remains
 responsible for every change.
 
 ```
@@ -117,7 +117,7 @@ pinned, never @latest. `--staged-hook` adds a NON-BLOCKING pre-commit
 hook (`mjolnir --staged --blocking warning`), reusing `.husky` or
 `core.hooksPath` when present. Marker-based idempotency; `--dry-run`
 writes nothing; refuses (exit 10) before overwriting anything not
-Mjölnir-marked.
+QA Doctor-marked.
 
 ### `--score`, `--category`, `--staged`, `--blocking`
 

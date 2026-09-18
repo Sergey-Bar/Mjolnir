@@ -140,7 +140,7 @@ export function buildTokensDoc(banner: readonly string[]): string {
   ${banner[2]}
 -->
 
-# Mjölnir — design tokens
+# QA Doctor — design tokens
 
 The generated reference. The source is
 [\`src/brand/tokens.ts\`](../../src/brand/tokens.ts); the machine surface

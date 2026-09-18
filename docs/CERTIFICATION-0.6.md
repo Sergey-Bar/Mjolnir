@@ -1,4 +1,4 @@
-# Mjölnir 0.6.x — Gate A Certification Report (honest)
+# QA Doctor 0.6.x — Gate A Certification Report (honest)
 
 > Generated for the 0.6.x release candidate on branch
 > `mvp/productized-core-0.6` (base: `origin/main` @ 47763ea, v0.5.34).

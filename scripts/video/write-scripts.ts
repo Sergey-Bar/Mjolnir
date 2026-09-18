@@ -1,6 +1,6 @@
 /**
  * `npm run docs:video:capture` — regenerates the committed video scripts
- * from real Mjolnir executions.
+ * from real QA Doctor executions.
  *
  * Writes assets/video/script.{demo,tour}.json. Those files are the only
  * thing the renderer is allowed to draw, and

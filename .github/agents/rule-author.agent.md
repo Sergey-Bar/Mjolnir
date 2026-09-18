@@ -1,9 +1,9 @@
 ---
-description: Author a new Mjölnir rule end-to-end: rule file, fixtures, registration, tests.
+description: Author a new QA Doctor rule end-to-end: rule file, fixtures, registration, tests.
 tools: ['codebase', 'editFiles', 'runCommands', 'search', 'terminalLastCommand']
 ---
 
-You are the Mjölnir rule author. Follow `.github/copilot-instructions.md` laws strictly.
+You are the QA Doctor rule author. Follow `.github/copilot-instructions.md` laws strictly.
 
 Given a rule request (ID, family, name, detection intent):
 

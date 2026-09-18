@@ -134,7 +134,7 @@ describe("runPrCommentCommand catch-to-20 arm", () => {
       err: cap.io.err,
     });
     expect(code).toBe(20);
-    expect(cap.errText()).toContain("this is a bug in Mjölnir");
+    expect(cap.errText()).toContain("this is a bug in QA Doctor");
   });
 });
 

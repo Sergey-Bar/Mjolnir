@@ -7,7 +7,7 @@
  * before it, the palette lived in six independent copies and exactly one
  * pair of them was checked, which is how the terminal, the architecture
  * diagram and the README badges each ended up with a different idea of
- * what "Mjölnir gold" is.
+ * what "QA Doctor gold" is.
  *
  * Emits:
  *   assets/brand/tokens.json                    machine surface (any consumer)
@@ -133,7 +133,7 @@ export async function buildVarsCss(): Promise<string> {
  * ${BANNER[1]}
  * ${BANNER[2]}
  *
- * Mjölnir palette — storm-forged. Brushed steel and forge gold under an
+ * QA Doctor palette — storm-forged. Brushed steel and forge gold under an
  * aurora, over midnight iron. Derived from the logo; see
  * assets/brand/README.md.
  *

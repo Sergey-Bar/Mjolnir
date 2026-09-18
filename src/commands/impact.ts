@@ -69,7 +69,7 @@ export interface ImpactReport {
 
 // Audit S1: git resolves to an ABSOLUTE path from PATH only — a
 // checked-in git.exe/bat/cmd in a scanned (untrusted) repo must never
-// hijack Mjölnir's own git invocations.
+// hijack QA Doctor's own git invocations.
 import { resolveGitPath } from "../scope/git-resolve.js";
 
 /** The S1-resolved absolute git binary, or the bare name to fail on. */

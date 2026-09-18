@@ -27,6 +27,7 @@ export interface TestRecord {
   file: string;
   title: string;
   attempts: Attempt[];
+  evidenceKind?: "test" | "network-observation";
   /**
    * 1-based spec declaration line when the report format carries it
    * (Playwright JSON spec.location). Plan §16: enables test-level
@@ -72,6 +73,14 @@ export interface TestVerdict {
   forensic?: ForensicClassification;
 }
 
+export interface NetworkObservation {
+  file: string;
+  title: string;
+  outcome: "succeeded" | "failed" | "unknown";
+  durationMs: number;
+  errors?: string[];
+}
+
 export interface ForensicsReport {
   forensicsSchemaVersion: number;
   /**
@@ -97,6 +106,9 @@ export interface ForensicsReport {
   flakyTests: number;
   totalDurationMs: number;
   verdicts: TestVerdict[];
+  totalNetworkObservations?: number;
+  failedNetworkObservations?: number;
+  networkObservations?: NetworkObservation[];
   /**
    * Whether all discovered report files were successfully ingested.
    * FALSE when any files were skipped due to size limits, parse failures,

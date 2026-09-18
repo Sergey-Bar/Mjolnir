@@ -1,4 +1,4 @@
-# Mjölnir — voice
+# QA Doctor — voice
 
 How the product sounds. What the words _mean_ is
 [`docs/TERMINOLOGY.md`](../TERMINOLOGY.md), which is the canonical
@@ -12,7 +12,7 @@ this file does not repeat a single definition from it.
 Precise. Confident. Restrained. Technical. Honest. Slightly mythic, and
 only slightly.
 
-Mjölnir's strongest marketing advantage is that it does not oversell.
+QA Doctor's strongest marketing advantage is that it does not oversell.
 The voice has to earn that every sentence: a tool whose entire argument
 is "a green pipeline is a claim, not a proof" cannot itself make claims
 it has not proved.
@@ -39,7 +39,7 @@ untrue or unkind.
   real scan or it does not ship — that is the site law, and
   `site-doctor` Check 2 enforces it.
 - **Name a limit before someone finds it.** The README has a "What
-  Mjölnir cannot tell you" section on purpose. It is not a disclaimer,
+  QA Doctor cannot tell you" section on purpose. It is not a disclaimer,
   it is the argument.
 - **Never round silence up.** `UNKNOWN`, `PARTIAL`, "not measured" and
   "no baseline" are answers. Writing around them to sound more
@@ -53,8 +53,8 @@ untrue or unkind.
 Two, and they are the same everywhere:
 
 ```
-Mjölnir — Verification Trust Engine
-Tests tell you what passed. Mjölnir tells you what you can trust.
+QA Doctor — Verification Trust Engine
+Tests tell you what passed. QA Doctor tells you what you can trust.
 ```
 
 The site hero once said "Your tests are lying to you. We prove it."
@@ -97,4 +97,4 @@ Finding metadata — file paths, plugin rule messages — is data from
 somewhere else and reaches a terminal or a PR comment. `sanitizeData()`
 strips ANSI escapes and C0 controls before any renderer sees it. A
 hostile filename must not be able to forge output that looks like
-Mjölnir speaking.
+QA Doctor speaking.

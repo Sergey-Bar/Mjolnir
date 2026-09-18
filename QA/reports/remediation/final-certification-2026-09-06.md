@@ -1,4 +1,4 @@
-# Final Certification — Mjölnir 2.0 Blueprint Execution
+# Final Certification — QA Doctor 2.0 Blueprint Execution
 
 **Date:** 2026-09-06 · **Report:** QA/reports/remediation/final-certification-2026-09-06.md
 **Plan:** `.kilo/plans/1788597687393-mjolnir-2-0-strategic-blueprint.md` (hardened v3)
@@ -48,7 +48,7 @@ Also merged pre-blueprint (this session): PR #38 agent-handoff+reporting (v0.5.4
 
 **Not applicable to this repository.** The RDS/Oracle authorization
 (`Sergey_local` / BIST) was evaluated and found to belong to a different
-project — this repo (Mjölnir) contains no Oracle/JDBC surface, no
+project — this repo (QA Doctor) contains no Oracle/JDBC surface, no
 datasource configuration, and no database-dependent tests. No database
 operation was executed (the §1/§13 safety rules were applied and the
 mismatch was surfaced before any mutation).

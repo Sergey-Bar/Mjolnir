@@ -230,7 +230,7 @@ describe("`ci install` never silently overwrites a customized workflow (bug-audi
       expect(ciInstall(dir, "advisory").refused).toBe(false);
       // identical content → not customized
       expect(ciInstall(dir, "advisory").refused).toBe(false);
-      // a different gate is still a Mjölnir-generated shape → allowed
+      // a different gate is still a QA Doctor-generated shape → allowed
       const switched = ciInstall(dir, "warning");
       expect(switched.refused).toBe(false);
       expect(readFileSync(switched.written, "utf8")).toContain(

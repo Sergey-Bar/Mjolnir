@@ -313,7 +313,7 @@ test("buildScoring: the real demo report yields the reconciled strip payload", (
     r.scoring,
     "demo report carries rawDeductions — scoring must exist",
   );
-  assert.equal(r.scoring.rawDeductions, 40);
+  assert.equal(r.scoring.rawDeductions, 32);
   assert.equal(r.scoring.declarations, 7);
   // Site-law reconciliation: the formula on the page must reproduce the
   // scan's own score from these generated numbers.

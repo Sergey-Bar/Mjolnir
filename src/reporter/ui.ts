@@ -1,5 +1,5 @@
 /**
- * Mjölnir design-system core. Single source of truth for the visual
+ * QA Doctor design-system core. Single source of truth for the visual
  * language every renderer shares: section headers, panels, severity
  * icons, key-value rows, bullets, dividers, next-step affordances and
  * footers.

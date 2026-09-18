@@ -2,7 +2,7 @@
 
 Product-gap-remediation master plan P3b (plan 1788853205786 — decision 3:
 GitLab + Azure DevOps + Jenkins all in scope; executed per plan
-1789009691197 R1). The Mjölnir contract on Azure DevOps is the same as
+1789009691197 R1). The QA Doctor contract on Azure DevOps is the same as
 everywhere: **measure, report, gate on findings — never block on a scan
 that did not finish.**
 
@@ -39,7 +39,7 @@ steps:
     fetchDepth: 0 # --scope changed needs the merge-base
 
   - script: npx --yes mjolnir-qa@<version> . --scope changed --format sarif
-    displayName: Mjölnir scan
+    displayName: QA Doctor scan
 ```
 
 Exit codes are the frozen contract: `0` clean · `1` findings at the

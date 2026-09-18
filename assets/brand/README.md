@@ -1,4 +1,4 @@
-# Mjölnir — brand assets
+# QA Doctor — brand assets
 
 Every file here is rendered, not drawn by hand. This file is about the
 FILES; the system that uses them lives in

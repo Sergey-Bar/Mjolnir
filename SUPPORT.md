@@ -1,6 +1,6 @@
 # Support
 
-Mjölnir is an open-source tool maintained by a solo maintainer. GitHub
+QA Doctor is an open-source tool maintained by a solo maintainer. GitHub
 issues are for the product, not for personal support:
 
 - **Bug reports** → [open a bug report](https://github.com/Sergey-Bar/Mjolnir/issues/new?template=bug-report.yml)

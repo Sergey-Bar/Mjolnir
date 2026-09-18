@@ -34,7 +34,7 @@ describe("findExistingComment", () => {
   it("finds comment with the marker", () => {
     const comments = [
       comment(1, "some other comment"),
-      comment(2, `${PR_COMMENT_MARKER}\n## Mjolnir QA`),
+      comment(2, `${PR_COMMENT_MARKER}\n## QA Doctor`),
       comment(3, "another comment"),
     ];
     expect(findExistingComment(comments)).toBe(comments[1]);

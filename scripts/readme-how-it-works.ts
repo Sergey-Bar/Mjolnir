@@ -269,7 +269,7 @@ export function buildHowItWorksSvg(): string {
         fill: TEXT.muted,
         ls: -0.6,
       }),
-      tx(PAD, 140, "Here is how Mjölnir checks it.", {
+      tx(PAD, 140, "Here is how QA Doctor checks it.", {
         size: 30,
         fill: TEXT.primary,
         ls: -0.6,
@@ -642,7 +642,7 @@ export function buildHowItWorksSvg(): string {
   section(
     5,
     chapter(s4, "04", "AGENT LOOP", BRAND.auroraViolet) +
-      tx(PAD, s4 + 70, "AI writes the fix. Mjölnir verifies the fix.", {
+      tx(PAD, s4 + 70, "AI writes the fix. QA Doctor verifies the fix.", {
         size: 20,
         fill: TEXT.primary,
         ls: -0.3,
@@ -699,12 +699,12 @@ ${monoFaceCss()}
     @keyframes rise { from { opacity: 0; transform: translateY(12px); } }
     @keyframes grow { from { transform: scaleY(0); } }`;
   const label =
-    "How Mjölnir works. It reads the test suite and the CI pipeline statically, and the report of a real run when there is one. " +
+    "How QA Doctor works. It reads the test suite and the CI pipeline statically, and the report of a real run when there is one. " +
     "It discovers, analyzes, correlates, weighs evidence and measures across four evidence streams: test quality, CI integrity, runtime forensics and selector health. " +
     "Every finding carries an evidence level — E0 observation, E1 pattern evidence, E2 deterministic proof, weighted none, half and full — " +
     `and a trust level from L0 to L${lastRung}; L${RUNTIME_BOUNDARY} and above need a real run. ` +
     `What can be trusted: findings such as ${f.rule}, a worthiness score (example result ${f.score} of 100, ${state.verdict}), and a CI gate on the frozen exit codes 0, 1, 2, 10 and 20. ` +
-    "In the agent loop, AI writes the fix and Mjölnir re-scans to prove it. Mjölnir never runs your tests, executes your code, replaces your framework or proves business correctness.";
+    "In the agent loop, AI writes the fix and QA Doctor re-scans to prove it. QA Doctor never runs your tests, executes your code, replaces your framework or proves business correctness.";
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(label).replaceAll('"', "&quot;")}">
   <style>

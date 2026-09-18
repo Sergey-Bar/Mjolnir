@@ -1,4 +1,4 @@
-# Mjölnir — verification trust loop (Claude Code command)
+# QA Doctor — verification trust loop (Claude Code command)
 
 <!-- mjolnir:managed v2.0.0 -->
 
@@ -14,7 +14,7 @@ Run `/npx mjolnir-qa@2.0.0 . --scope changed` before finishing any task that tou
 ## Agent safety contract (non-negotiable)
 
 - NEVER declare trustworthiness without evidence. AGENT CLAIM ≠ VERIFICATION: a claim you did not verify with a fresh scan is not a result, it is a guess.
-- NEVER manufacture, edit, or synthesize evidence. Evidence exists only as Mjölnir's own deterministic output (scan / verify / triage / forensics / trust-report).
+- NEVER manufacture, edit, or synthesize evidence. Evidence exists only as QA Doctor's own deterministic output (scan / verify / triage / forensics / trust-report).
 - NEVER convert INCONCLUSIVE to pass. INCONCLUSIVE is integrity — insufficient evidence is recorded honestly, never laundered into success.
 - NEVER suppress findings or weaken rules to get green. A green scan obtained by suppression is a false-green, not a fix.
 - Loop preconditions: FIX requires a proven actionable defect; RESCAN requires changed-scope identification; PROOF requires fresh post-fix execution evidence. A "fixed" claim without rescan evidence is a contract violation.

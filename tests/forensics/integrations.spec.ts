@@ -27,7 +27,7 @@ describe("ciInstall", () => {
     expect(res.existed).toBe(false);
     expect(existsSync(res.written)).toBe(true);
     const text = readFileSync(res.written, "utf8");
-    expect(text).toContain("name: Mjölnir");
+    expect(text).toContain("name: QA Doctor");
     // Action-based by default (P1): the root action.yml, fail-on none.
     expect(text).toContain("Sergey-Bar/Mjolnir@v1");
     expect(text).toContain("fail-on: none");

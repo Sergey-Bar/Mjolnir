@@ -2,7 +2,7 @@
 
 Product-gap-remediation master plan P3a (plan 1788853205786 — flag 2,
 decision 2: GitLab is the in-plan second platform; Jenkins/Azure stay on
-the roadmap, explicitly deferred). The Mjölnir contract on GitLab is the
+the roadmap, explicitly deferred). The QA Doctor contract on GitLab is the
 same as everywhere: **measure, report, gate on findings — never block on
 a scan that did not finish.**
 
@@ -17,11 +17,11 @@ schema](https://docs.gitlab.com/ee/ci/testing/code_quality.html) — the
 artifact GitLab renders as the **Code Quality MR widget** and inline MR
 diff annotations. Severity mapping:
 
-| Mjölnir severity | Code Quality severity |
-| ---------------- | --------------------- |
-| error            | major                 |
-| warning          | minor                 |
-| info             | info                  |
+| QA Doctor severity | Code Quality severity |
+| ------------------ | --------------------- |
+| error              | major                 |
+| warning            | minor                 |
+| info               | info                  |
 
 Findings are deduplicated across pipeline runs by a stable sha256
 fingerprint over `ruleId + path + line + column + message` — an
@@ -101,6 +101,6 @@ mjolnir-audit:
 
 Code Quality artifacts and the MR widget work the same on
 gitlab.com and self-managed instances (the feature is instance-side).
-The runner only needs network access to the npm registry; no Mjölnir
+The runner only needs network access to the npm registry; no QA Doctor
 account, token, or service exists — nothing to configure beyond the
 recipes above.

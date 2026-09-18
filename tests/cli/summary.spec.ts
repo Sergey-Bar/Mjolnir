@@ -267,7 +267,7 @@ describe("runSummaryCommand exit codes", () => {
     expect(cap.errText()).toContain("schemaVersion");
   });
 
-  it("exit 2 on valid JSON that is not a Mjölnir report (no findings array)", () => {
+  it("exit 2 on valid JSON that is not a QA Doctor report (no findings array)", () => {
     const p = join(dir, "other.json");
     writeFileSync(p, JSON.stringify({ schemaVersion: 1 }));
     expect(runSummaryCommand([p], capture().io)).toBe(2);

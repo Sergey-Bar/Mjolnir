@@ -3,8 +3,8 @@
  *
  * Safety contract (plan §17): directory probes detect instruction
  * surfaces (deterministic, offline); all detected surfaces are written;
- * marker-based idempotency; refusal without --force on non-Mjölnir
- * files; --force overwrites ONLY Mjölnir-marked files; --dry-run
+ * marker-based idempotency; refusal without --force on non-QA Doctor
+ * files; --force overwrites ONLY QA Doctor-marked files; --dry-run
  * performs zero writes; content is deterministic and version-pinned
  * (never @latest). No hook generation here — hooks land in M5 after
  * --staged/--blocking exist.
@@ -128,7 +128,7 @@ describe("planInstall + executeInstall", () => {
     ).toBe(before);
   });
 
-  it("refuses (exit 10) to overwrite a non-Mjölnir file, with --force semantics", () => {
+  it("refuses (exit 10) to overwrite a non-QA Doctor file, with --force semantics", () => {
     mkdirSync(join(dir, ".claude", "commands"), { recursive: true });
     writeFileSync(
       join(dir, ".claude", "commands", "mjolnir.md"),
@@ -147,7 +147,7 @@ describe("planInstall + executeInstall", () => {
     ).toBe("my custom command\n");
   });
 
-  it("--force overwrites a Mjölnir-marked file that was locally edited", () => {
+  it("--force overwrites a QA Doctor-marked file that was locally edited", () => {
     mkdirSync(join(dir, ".claude", "commands"), { recursive: true });
     const { entries } = planInstall(dir);
     executeInstall(entries);
@@ -226,7 +226,7 @@ describe("runInstallCommand — CLI contract", () => {
     const cap = capture();
     expect(runInstallCommand(["--dry-run"], cap.io, dir)).toBe(0);
     expect(cap.errText()).toContain("REFUSE");
-    expect(cap.errText()).toContain("not Mjölnir-managed");
+    expect(cap.errText()).toContain("not QA Doctor-managed");
     expect(
       readFileSync(join(dir, ".claude", "commands", "mjolnir.md"), "utf8"),
     ).toBe("mine\n");
@@ -274,7 +274,7 @@ describe("runInstallCommand — CLI contract", () => {
     writeFileSync(join(dir, ".claude", "commands", "mjolnir.md"), "mine\n");
     const cap = capture();
     expect(runInstallCommand([], cap.io, dir)).toBe(10);
-    expect(cap.errText()).toContain("not Mjölnir-managed");
+    expect(cap.errText()).toContain("not QA Doctor-managed");
     expect(
       readFileSync(join(dir, ".claude", "commands", "mjolnir.md"), "utf8"),
     ).toBe("mine\n");

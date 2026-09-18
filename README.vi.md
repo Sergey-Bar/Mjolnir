@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="assets/readme/hero.svg" alt="Mjölnir. Test cho bạn biết cái gì đã qua. Mjölnir cho bạn biết cái gì đáng tin." width="100%" />
+<img src="assets/readme/hero.svg" alt="QA Doctor. Test cho bạn biết cái gì đã qua. QA Doctor cho bạn biết cái gì đáng tin." width="100%" />
 
 <br />
 
-Mjölnir tìm ra những test không thể thất bại và những pipeline không thể chuyển đỏ,<br />
+QA Doctor tìm ra những test không thể thất bại và những pipeline không thể chuyển đỏ,<br />
 rồi chấm điểm mức độ đáng tin của kết quả, kèm bằng chứng cho từng điểm.
 
 <br />
@@ -50,26 +50,26 @@ Dấu tích xanh nghĩa là pipeline không thất bại. Nó không có nghĩa 
 - một báo cáo mà workflow tải lên nhưng chưa từng được tạo ra
 - một lệnh sleep cố định đang níu giữ một race condition
 
-Không cái nào khiến pipeline chuyển đỏ, và cái nào trông cũng có vẻ cố ý khi review. Đó là lý do chúng sống sót. Đây là Mjölnir đang đọc một ví dụ thật:
+Không cái nào khiến pipeline chuyển đỏ, và cái nào trông cũng có vẻ cố ý khi review. Đó là lý do chúng sống sót. Đây là QA Doctor đang đọc một ví dụ thật:
 
 <p align="center">
-  <img src="assets/readme/scan.svg" alt="Workflow CI của kho demo, đọc từng dòng. Mjölnir đánh dấu mỗi phát hiện tại dòng nó báo cáo, kèm quy tắc, điều sai, mức bằng chứng và tỷ lệ dương tính giả đã đo." width="800" />
+  <img src="assets/readme/scan.svg" alt="Workflow CI của kho demo, đọc từng dòng. QA Doctor đánh dấu mỗi phát hiện tại dòng nó báo cáo, kèm quy tắc, điều sai, mức bằng chứng và tỷ lệ dương tính giả đã đo." width="800" />
 </p>
 
 <sub>Mọi phát hiện mà lần quét demo báo cáo cho workflow này, tại dòng được báo cáo. Được tạo bởi `npm run docs:readme-brand` từ [`demo-report.json`](assets/readme/demo-report.json) và được khóa chống sai lệch trong CI.</sub>
 
 **Chế độ nghiêm ngặt.** Các phát hiện hung hăng nhất — `.only`, `continue-on-error`, kiểm tra trống, lạm dụng thử lại — nằm ở tầng cách ly. Chúng chỉ chạy với `--strict` và bị giới hạn ở mức nghiêm trọng `info`: chúng đánh dấu, không bao giờ chặn. Quét mặc định (`npx mjolnir-qa@latest` không có `--strict`) chỉ bao gồm các quy tắc cốt lõi và mở rộng. Thêm `--strict` khi bạn cũng muốn lớp tư vấn.
 
-Mjölnir đọc bộ test, các workflow CI và, nếu bạn có, báo cáo của một lần chạy thật. Nó không chạy test của bạn, không cài dependency và không thực thi mã mà nó quét. Khi không có bằng chứng, nó nói thẳng như vậy thay vì bịa ra sự tự tin:
+QA Doctor đọc bộ test, các workflow CI và, nếu bạn có, báo cáo của một lần chạy thật. Nó không chạy test của bạn, không cài dependency và không thực thi mã mà nó quét. Khi không có bằng chứng, nó nói thẳng như vậy thay vì bịa ra sự tự tin:
 
-| Tình huống                                                | Mjölnir báo cáo gì                                                            |
+| Tình huống                                                | QA Doctor báo cáo gì                                                          |
 | --------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | Không tìm thấy khai báo test                              | Điểm `null`, hiển thị là **UNKNOWN**. Không bao giờ là một con số 100 bịa ra. |
 | Không có baseline hay phiên bản để so sánh                | **UNKNOWN**, kèm lý do. Không bao giờ giả định là 0.                          |
 | Lần quét bị cắt ngang (hết thời gian, tệp không đọc được) | **PARTIAL**, mã thoát `2`. Không bao giờ được trình bày là sạch.              |
 
 <p align="center">
-  <img src="assets/readme/how-it-works.svg" alt="Cách Mjölnir hoạt động. Nó đọc tĩnh bộ test và pipeline CI, cùng với báo cáo của một lần chạy thật khi có. Nó cân mỗi phát hiện theo mức bằng chứng và mức tin cậy, trong đó chỉ lần chạy thật mới đạt được L3 đến L5, rồi tạo ra các phát hiện, điểm đáng tin và một cổng CI dựa trên mã thoát đã đóng băng. Trong vòng lặp của tác tử, AI viết bản sửa và Mjölnir quét lại để chứng minh nó." width="880" />
+  <img src="assets/readme/how-it-works.svg" alt="Cách QA Doctor hoạt động. Nó đọc tĩnh bộ test và pipeline CI, cùng với báo cáo của một lần chạy thật khi có. Nó cân mỗi phát hiện theo mức bằng chứng và mức tin cậy, trong đó chỉ lần chạy thật mới đạt được L3 đến L5, rồi tạo ra các phát hiện, điểm đáng tin và một cổng CI dựa trên mã thoát đã đóng băng. Trong vòng lặp của tác tử, AI viết bản sửa và QA Doctor quét lại để chứng minh nó." width="880" />
 </p>
 
 <sub>Được dựng riêng cho trang này và hiển thị ở tỷ lệ 1:1. Được tạo bởi `npm run docs:readme-brand` và được khóa chống sai lệch trong CI; điểm, số đếm và ID quy tắc đến từ [`script.demo.json`](assets/video/script.demo.json), [`demo-report.json`](assets/readme/demo-report.json) và sổ đăng ký quy tắc, không bao giờ gõ tay. Cùng bức hình ở dạng poster: [`architecture.svg`](assets/readme/architecture.svg).</sub>
@@ -81,7 +81,7 @@ Mjölnir đọc bộ test, các workflow CI và, nếu bạn có, báo cáo củ
 Một lần quét thật trên [`examples/demo-repo`](examples/demo-repo), một bộ test Playwright nhỏ có workflow CI. Đây là nơi điểm của nó bị trừ:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Bảng phân tích trừ điểm của Mjölnir: WORTHINESS 75/100 NEEDS WORK, điểm theo từng hạng mục, ô trừ điểm theo mức nghiêm trọng và danh sách FIX THIS FIRST" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="Bảng phân tích trừ điểm của QA Doctor: WORTHINESS 80/100 WORTHY, điểm theo từng hạng mục, ô trừ điểm theo mức nghiêm trọng và danh sách FIX THIS FIRST" width="520" />
 </p>
 
 <sub>Được tạo bởi `npm run docs:hero` từ một lần quét thật và được khóa chống sai lệch trong CI. Báo cáo `--verbose` đầy đủ của cùng lần quét là [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
@@ -103,7 +103,7 @@ Một lần quét thật trên [`examples/demo-repo`](examples/demo-repo), một
 
 ### Cận cảnh một phát hiện
 
-Mỗi phát hiện trả lời bốn câu hỏi: nó ở đâu, Mjölnir chắc chắn đến mức nào, quy tắc sai thường xuyên đến đâu, và cách sửa.
+Mỗi phát hiện trả lời bốn câu hỏi: nó ở đâu, QA Doctor chắc chắn đến mức nào, quy tắc sai thường xuyên đến đâu, và cách sửa.
 
 <p align="center">
   <img src="assets/readme/finding-anatomy.svg" alt="Phát hiện đầu tiên của lần quét demo, đúng như terminal in ra, với bốn phần được đánh dấu: ở đâu, chắc chắn đến mức nào, quy tắc sai thường xuyên đến đâu, và bản sửa." width="100%" />
@@ -212,7 +212,7 @@ npx mjolnir-qa@latest --scope changed
 | `mjolnir suppressions`              | Liệt kê các phát hiện bị chặn, phục vụ quản trị                             |
 | `mjolnir rules --unmeasured`        | Những quy tắc chạy dựa trên giả định, không phải đo lường                   |
 | `mjolnir rules --md`                | Danh mục quy tắc đầy đủ (JSON hoặc Markdown)                                |
-| `mjolnir doctor`                    | Tự kiểm toán cơ sở quy tắc của chính Mjölnir                                |
+| `mjolnir doctor`                    | Tự kiểm toán cơ sở quy tắc của chính QA Doctor                              |
 | `mjolnir create-rule <ID>`          | Tạo khung cho một quy tắc mới và các fixture của nó                         |
 | `mjolnir stats`                     | Bộ đếm cục bộ mọi bản sửa từng thấy                                         |
 | `mjolnir badge`                     | JSON cho endpoint shields.io và đoạn mã                                     |
@@ -227,7 +227,7 @@ Yêu cầu **Node.js ≥ 22.18** trên Windows, macOS hoặc Linux. Muốn cài 
 
 <br />
 
-## Mjölnir phát hiện gì
+## QA Doctor phát hiện gì
 
 <p align="center">
   <img src="assets/readme/stack.svg" alt="Hoạt động với stack của bạn: các ngôn ngữ, framework test và hệ thống CI mà các quy tắc bao phủ, lấy từ sổ đăng ký quy tắc." width="100%" />
@@ -312,8 +312,8 @@ e2e/login.spec.ts
   role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 
 e2e/checkout.spec.ts
-  [█████████████████░░░]  86 / 100
-  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
+  [██████████████████░░]  88 / 100
+  role/text: 4 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 ```
 
 Điều này đo **độ bền, không phải độ đúng**. `.btn.btn-primary > div:nth-child(2)` qua hôm nay và sẽ tiếp tục qua cho đến khi ai đó động vào markup. Điểm thấp không bao giờ khẳng định test bị hỏng, chỉ nói rằng nó phụ thuộc vào markup mà không ai hứa giữ nguyên.
@@ -338,13 +338,13 @@ e2e/checkout.spec.ts
 
 **Cách tính.** Mức nghiêm trọng đặt ra mức trừ cơ bản (`error −8`, `warning −3`, `info −1`) và mức bằng chứng chiết khấu nó: E2 trừ đủ, E1 trừ một nửa (làm tròn xuống), E0 không trừ. Tổng được chuẩn hóa theo quy mô bộ test, tức là trừ theo từng khai báo test chứ không theo tệp. Terminal in ra đúng những con số đã chiết khấu mà điểm đã dùng; không có mô hình thứ hai nào ẩn giấu. Chi tiết: [docs/SCORING.md](docs/SCORING.md) và [hướng dẫn chấm điểm](https://sergey-bar.github.io/Mjolnir/guide/scoring).
 
-**Điều mà 100 không có nghĩa.** Nó không có nghĩa là phần mềm đúng, bộ test đầy đủ, hay sản phẩm không có lỗi. Nó chỉ có nghĩa một điều: **không quy tắc nào mà Mjölnir đánh giá tạo ra mức trừ điểm trong lần quét này và với mô hình bằng chứng này.**
+**Điều mà 100 không có nghĩa.** Nó không có nghĩa là phần mềm đúng, bộ test đầy đủ, hay sản phẩm không có lỗi. Nó chỉ có nghĩa một điều: **không quy tắc nào mà QA Doctor đánh giá tạo ra mức trừ điểm trong lần quét này và với mô hình bằng chứng này.**
 
 <br />
 
 ## Mô hình bằng chứng
 
-Mỗi phát hiện mang hai nhãn: Mjölnir chắc chắn đến mức nào, và phát hiện đã được kiểm chứng đến đâu. Đó là khác biệt giữa một công cụ báo cáo mẫu và một công cụ bạn có thể dùng làm cổng cho một bản phát hành.
+Mỗi phát hiện mang hai nhãn: QA Doctor chắc chắn đến mức nào, và phát hiện đã được kiểm chứng đến đâu. Đó là khác biệt giữa một công cụ báo cáo mẫu và một công cụ bạn có thể dùng làm cổng cho một bản phát hành.
 
 **Chắc chắn đến mức nào — mức bằng chứng.**
 
@@ -356,7 +356,7 @@ Mỗi phát hiện mang hai nhãn: Mjölnir chắc chắn đến mức nào, và
 
 Độ tin trong một lần phát hiện không phải là sức mạnh của chứng minh. Một quy tắc có thể chắc chắn rằng nó đã khớp đúng thứ nó tìm mà vẫn chỉ đang nhìn vào một phép suy đoán. Phát hiện E1 là để đọc và cân nhắc, không bao giờ áp dụng mù quáng, và ranh giới đó được đóng dấu trên phát hiện trong terminal, trong JSON và trong phần bàn giao cho tác tử.
 
-**Đã kiểm chứng đến đâu — mức tin cậy.** Phần lớn phát hiện đến từ việc đọc mã của bạn. Đưa cho Mjölnir báo cáo của một lần chạy test thật và nó có thể xác nhận rằng mã thực sự đã chạy.
+**Đã kiểm chứng đến đâu — mức tin cậy.** Phần lớn phát hiện đến từ việc đọc mã của bạn. Đưa cho QA Doctor báo cáo của một lần chạy test thật và nó có thể xác nhận rằng mã thực sự đã chạy.
 
 <p align="center">
   <img src="assets/readme/trust-ladder.svg" alt="Nấc thang tin cậy từ L0 đến L5. L0 đến L2 đến từ việc đọc mã; L3 đến L5 cần một báo cáo chạy thật, được đánh dấu bằng một chỗ đứt trên nấc thang." width="100%" />
@@ -396,9 +396,9 @@ Nâng cấp, hạ cấp và độ trưởng thành theo ngôn ngữ: [vòng đ�
 
 ### Vì sao đây không phải một linter
 
-Linter cho bạn biết mã có tuân theo quy tắc hay không. Mjölnir cho bạn biết việc xác minh của bạn có đáng tin hay không.
+Linter cho bạn biết mã có tuân theo quy tắc hay không. QA Doctor cho bạn biết việc xác minh của bạn có đáng tin hay không.
 
-|                                                                  | Linter (ESLint, SonarQube) | Công cụ đo độ phủ | Review mã bằng AI |       **Mjölnir**       |
+|                                                                  | Linter (ESLint, SonarQube) | Công cụ đo độ phủ | Review mã bằng AI |      **QA Doctor**      |
 | ---------------------------------------------------------------- | :------------------------: | :---------------: | :---------------: | :---------------------: |
 | Chấm điểm **hệ thống xác minh**, không phải mã sản phẩm          |           Không            |       Không       |       Không       |           Có            |
 | Tính toàn vẹn của workflow CI (`continue-on-error`, `\|\| true`) |           Không            |       Không       |   chỉ phần diff   |           Có            |
@@ -412,7 +412,7 @@ Linter cho bạn biết mã có tuân theo quy tắc hay không. Mjölnir cho b�
 
 <sub>\*Được bao phủ bởi `eslint-plugin-jest` và `eslint-plugin-playwright` (`expect-expect`, `no-wait-for-timeout`) và bởi các quy tắc assertion riêng của SonarQube. Các cột mô tả hành vi mặc định khi xác minh bộ test; plugin, gói trả phí và quy tắc tùy chỉnh sẽ làm thay đổi một số câu trả lời. Đây là bản tóm tắt định vị, không phải benchmark.</sub>
 
-Hãy dùng cả review bằng AI. Nó nắm bắt sắc thái, ý định và lỗi thiết kế mà không mẫu nào tìm được. Mjölnir bắt được những gì review bằng AI bỏ sót vì trông có vẻ cố ý: một `.only` bị commit, một mã thoát bị nuốt, một `continue-on-error` trên job test. Những thứ đó cần quét, không cần suy luận.
+Hãy dùng cả review bằng AI. Nó nắm bắt sắc thái, ý định và lỗi thiết kế mà không mẫu nào tìm được. QA Doctor bắt được những gì review bằng AI bỏ sót vì trông có vẻ cố ý: một `.only` bị commit, một mã thoát bị nuốt, một `continue-on-error` trên job test. Những thứ đó cần quét, không cần suy luận.
 
 <br />
 
@@ -441,7 +441,7 @@ FAILING    declines an expired card (e2e/checkout.spec.ts)
 
 ## Tính toàn vẹn CI
 
-Một test có thể qua trong khi pipeline bao quanh nó không thể thất bại. Mjölnir cũng đọc các workflow: `continue-on-error`, `|| true`, mã thoát không bao giờ được truyền đi, step luôn thành công, báo cáo được dùng nhưng chưa từng được tạo, và cổng bị bỏ qua đúng ở những sự kiện lẽ ra phải chặn. Mỗi phát hiện nêu tên job, step và dòng, và mang mức bằng chứng riêng.
+Một test có thể qua trong khi pipeline bao quanh nó không thể thất bại. QA Doctor cũng đọc các workflow: `continue-on-error`, `|| true`, mã thoát không bao giờ được truyền đi, step luôn thành công, báo cáo được dùng nhưng chưa từng được tạo, và cổng bị bỏ qua đúng ở những sự kiện lẽ ra phải chặn. Mỗi phát hiện nêu tên job, step và dòng, và mang mức bằng chứng riêng.
 
 Tạo workflow PR, mặc định mang tính tư vấn:
 
@@ -493,7 +493,7 @@ Phát hiện chỉ có giá trị nếu có thứ gì đó hành động dựa t
 SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
 ```
 
-**AI viết bản sửa. Mjölnir xác minh nó.** Bằng chứng đến từ lần quét lại, không bao giờ đến từ báo cáo thành công của chính tác tử.
+**AI viết bản sửa. QA Doctor xác minh nó.** Bằng chứng đến từ lần quét lại, không bao giờ đến từ báo cáo thành công của chính tác tử.
 
 | Lệnh              | Tác tử nhận được gì                                                                                                                                                                 |
 | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -549,10 +549,10 @@ Mọi thứ mà máy tiêu thụ (kết quả công cụ MCP, `--json`, SARIF 2.
 
 <br />
 
-## Những điều Mjölnir không thể cho bạn biết
+## Những điều QA Doctor không thể cho bạn biết
 
 - **Nó không chạy test của bạn.** Một lần quét sạch không phải là một bộ test đang qua.
-- **Nó không thể cho bạn biết một assertion là _sai_.** `expect(total).toBe(41)` trông vẫn khỏe mạnh. Mjölnir tìm những test _không thể thất bại_ và những pipeline _không thể chuyển đỏ_, không phải những test kiểm tra sai thứ.
+- **Nó không thể cho bạn biết một assertion là _sai_.** `expect(total).toBe(41)` trông vẫn khỏe mạnh. QA Doctor tìm những test _không thể thất bại_ và những pipeline _không thể chuyển đỏ_, không phải những test kiểm tra sai thứ.
 - **Nó không chứng minh tính đúng đắn nghiệp vụ.** Không có gì ở đây nói rằng sản phẩm của bạn làm đúng điều mà yêu cầu đặt ra.
 - **Điểm 100 không phải bằng chứng của một bộ test tốt.** Bộ test của bạn có bao phủ rủi ro thực tế hay không là một câu hỏi khác, và công cụ này không trả lời câu hỏi đó.
 - **5 trên 79 quy tắc phát hành dựa trên ước tính**, không phải tỷ lệ đã đo. Mỗi quy tắc đều nói rõ điều đó trên phát hiện của chính nó.

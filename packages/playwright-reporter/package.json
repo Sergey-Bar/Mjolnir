@@ -1,13 +1,13 @@
 {
   "name": "mjolnir-qa-playwright-reporter",
   "version": "0.1.0",
-  "description": "Official Playwright JSON reporter for Mjölnir — emits the machine-readable report that `mjolnir forensics`, `triage`, and `pw-report` ingest.",
+  "description": "Official Playwright JSON reporter for QA Doctor — emits the machine-readable report that `mjolnir forensics`, `triage`, and `pw-report` ingest.",
   "type": "module",
   "main": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs"
     }
   },

@@ -42,7 +42,7 @@ export interface Palette {
   info: (s: string) => string;
   /** Frost-steel blue — the hammer, section headers. */
   accent: (s: string) => string;
-  /** Amber — warnings (Mjölnir's lightning). */
+  /** Amber — warnings (QA Doctor's lightning). */
   warning: (s: string) => string;
   /** Rune-red — errors. */
   error: (s: string) => string;

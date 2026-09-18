@@ -53,8 +53,8 @@ export function renderMermaid(result: ScanResult): string {
   const rootId = "SCAN";
   const rootLabel =
     result.score === null
-      ? "Mjölnir scan (no tests found)"
-      : `Mjölnir scan (${result.score}/100)`;
+      ? "QA Doctor scan (no tests found)"
+      : `QA Doctor scan (${result.score}/100)`;
   lines.push(`  ${rootId}["${escapeLabel(rootLabel)}"]`);
 
   if (result.score === null) {

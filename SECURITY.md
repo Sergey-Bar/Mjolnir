@@ -23,7 +23,7 @@ We commit to:
 
 ## Scope
 
-Mjölnir parses untrusted repository content. Areas of special interest:
+QA Doctor parses untrusted repository content. Areas of special interest:
 
 - Path traversal via crafted filenames or symlinks
 - YAML bombs / alias expansion in workflow parsing
@@ -33,7 +33,7 @@ Mjölnir parses untrusted repository content. Areas of special interest:
 ## Trust model (audit-remediation close-out)
 
 **Everything a scan reads is untrusted.** The scanned tree is DATA: it
-must never execute, and it must never influence which code Mjölnir
+must never execute, and it must never influence which code QA Doctor
 itself runs. Concrete guarantees:
 
 - **No code execution from scanned content.** Workflow YAML, test
@@ -43,7 +43,7 @@ itself runs. Concrete guarantees:
   behind the explicit trust gate: `--enable-plugins` or
   `MJOLNIR_ENABLE_PLUGINS=1` (default OFF). Declared-but-gated sources
   are listed on stderr; they are never imported.
-- **Git resolved from PATH only.** Mjölnir's git invocations use an
+- **Git resolved from PATH only.** QA Doctor's git invocations use an
   absolute binary path resolved from PATH (never the scanned CWD), so a
   planted `git.exe`/`git.bat` cannot hijack the tool.
 - **Bounded regex.** Ignore patterns and external JSON-rule regexes are

@@ -9,10 +9,10 @@
  * Safety contract (plan §17):
  * - Writes are planned by a pure `planInstall()` and executed by
  *   `executeInstall()`; `--dry-run` never executes.
- * - A target file that exists WITHOUT a Mjölnir marker is user-owned →
+ * - A target file that exists WITHOUT a QA Doctor marker is user-owned →
  *   refusal (exit 10). `--force` overwrites ONLY marker-identified
- *   Mjölnir-owned files.
- * - Re-running rewrites Mjölnir-owned regions idempotently; identical
+ *   QA Doctor-owned files.
+ * - Re-running rewrites QA Doctor-owned regions idempotently; identical
  *   content → no write at all.
  * - Content is deterministic (no timestamps) and version-pinned to the
  *   running CLI_VERSION — never @latest.
@@ -37,7 +37,7 @@ export interface InstructionSurface {
   dir: string;
   /** File path the instruction content is written to. */
   file: string;
-  /** The exact content Mjölnir writes (deterministic, version-pinned). */
+  /** The exact content QA Doctor writes (deterministic, version-pinned). */
   content: string;
   /** AGENTS.md gets an appended marker block; others get whole files. */
   mode: "whole-file" | "append-block";
@@ -45,7 +45,7 @@ export interface InstructionSurface {
 
 function agentBrief(surface: string, cwdNote: string): string {
   return [
-    `# Mjölnir — verification trust loop (${surface})`,
+    `# QA Doctor — verification trust loop (${surface})`,
     "",
     `${MARKER_OPEN} v${CLI_VERSION} -->`,
     "",
@@ -61,7 +61,7 @@ function agentBrief(surface: string, cwdNote: string): string {
     "## Agent safety contract (non-negotiable)",
     "",
     "- NEVER declare trustworthiness without evidence. AGENT CLAIM ≠ VERIFICATION: a claim you did not verify with a fresh scan is not a result, it is a guess.",
-    "- NEVER manufacture, edit, or synthesize evidence. Evidence exists only as Mjölnir's own deterministic output (scan / verify / triage / forensics / trust-report).",
+    "- NEVER manufacture, edit, or synthesize evidence. Evidence exists only as QA Doctor's own deterministic output (scan / verify / triage / forensics / trust-report).",
     "- NEVER convert INCONCLUSIVE to pass. INCONCLUSIVE is integrity — insufficient evidence is recorded honestly, never laundered into success.",
     "- NEVER suppress findings or weaken rules to get green. A green scan obtained by suppression is a false-green, not a fix.",
     '- Loop preconditions: FIX requires a proven actionable defect; RESCAN requires changed-scope identification; PROOF requires fresh post-fix execution evidence. A "fixed" claim without rescan evidence is a contract violation.',
@@ -133,7 +133,7 @@ function hasMjolnirMarker(content: string): boolean {
 }
 
 function mergedBlock(existing: string, content: string): string {
-  // Replace an existing Mjölnir-managed block in place; otherwise append.
+  // Replace an existing QA Doctor-managed block in place; otherwise append.
   const openIdx = existing.indexOf(MARKER_OPEN);
   const closeIdx = existing.indexOf(MARKER_CLOSE);
   if (openIdx !== -1 && closeIdx !== -1 && closeIdx > openIdx) {
@@ -209,7 +209,7 @@ export function planInstall(
           surface: s.name,
           file: s.file,
           reason:
-            "existing file is not Mjölnir-managed (no marker) — pass --force ONLY after reviewing it",
+            "existing file is not QA Doctor-managed (no marker) — pass --force ONLY after reviewing it",
         });
         continue;
       }
@@ -219,7 +219,7 @@ export function planInstall(
           surface: s.name,
           file: s.file,
           reason:
-            "Mjölnir-managed file has local edits — pass --force to overwrite",
+            "QA Doctor-managed file has local edits — pass --force to overwrite",
         });
         continue;
       }

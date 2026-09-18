@@ -1,6 +1,6 @@
 /**
  * Managed-surface stamp check (certification F3, remediation plan
- * 1788806598818): every Mjölnir-managed instruction surface on disk
+ * 1788806598818): every QA Doctor-managed instruction surface on disk
  * must match what `mjolnir install` would write for the running
  * CLI_VERSION.
  *

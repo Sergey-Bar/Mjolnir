@@ -1,6 +1,6 @@
 # Editor integration via SARIF
 
-Mjölnir can emit [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html)
+QA Doctor can emit [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html)
 (`--format sarif`), the format GitHub Code Scanning, VS Code, and every
 major JetBrains IDE already know how to render as inline problems at the
 exact file and line — no dashboard server, no GUI app, no new UI to
@@ -44,7 +44,7 @@ Minimal `.vscode/tasks.json` entry:
 
 ```json
 {
-  "label": "Mjölnir scan",
+  "label": "QA Doctor scan",
   "type": "shell",
   "command": "npx mjolnir-qa . --format sarif > mjolnir.sarif",
   "problemMatcher": []

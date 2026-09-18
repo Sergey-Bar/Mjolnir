@@ -597,7 +597,7 @@ export function rule8() {
         `text.onGold on brand.${gold} — ${ratio.toFixed(2)}:1 (AA needs 4.5)`,
       );
   }
-  // The diagram tints are the one place Mjölnir paints on a ground it
+  // The diagram tints are the one place QA Doctor paints on a ground it
   // does not own, so both their text and their boundary are checked: AA
   // for the label, and the 3:1 non-text minimum for the stroke.
   for (const [name, t] of Object.entries(T.tint)) {

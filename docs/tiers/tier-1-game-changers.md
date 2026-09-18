@@ -20,12 +20,12 @@ IMPACT REPORT — last 90 days
 
 Tests that failed in CI but were skipped in code:     14
 continue-on-error jobs that actually failed:           3  ← would have been caught
-Hard sleeps removed after Mjölnir flagged them:      9
+Hard sleeps removed after QA Doctor flagged them:      9
 Estimated CI minutes saved by flagged waits:        2,340 min
 Flaky tests that blocked merges this quarter:          7
 ```
 
-**"Here's what Mjölnir caught that would have burned you."**
+**"Here's what QA Doctor caught that would have burned you."**
 No competitor has this. It converts skepticism into loyalty.
 
 ## 2. Flakiness Forensics from Real Execution Data 🔥🔥🔥 🟡 PARTIAL — `forensics`/`triage`/FLAKY.md shipped (`src/forensics/`), but parses JUnit/Playwright-JSON, not `trace.zip`; no network-event correlation
@@ -41,7 +41,7 @@ mjolnir forensics ./test-results/
 - Correlates failures with network events in traces
 - **Flakiness Leaderboard**: ranked by "merge-blocking cost"
 - Output: `FLAKY.md` committed to repo, updated per run
-  This alone makes Mjölnir mandatory for every serious Playwright shop.
+  This alone makes QA Doctor mandatory for every serious Playwright shop.
   (Already planned as Layer 3 — PROMOTE IT. It's the killer feature.)
 
 ## 3. `mjolnir fix` — Safe Auto-Fix with Proof 🔥🔥 ✅ DONE — `src/commands/fix.ts`, `--dry-run` + fixture-locked verification
@@ -74,7 +74,7 @@ real executed example (already planned) PLUS:
 Current badges are vanity. Make ours evidentiary:
 
 ```markdown
-[![Mjölnir](https://img.shields.io/endpoint?url=...)](...)
+[![QA Doctor](https://img.shields.io/endpoint?url=...)](...)
 ```
 
 - Badge shows score AND date AND commit — click through to full report

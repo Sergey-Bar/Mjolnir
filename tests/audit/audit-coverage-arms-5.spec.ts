@@ -132,7 +132,7 @@ describe("baseline-aware command arms", () => {
     const cap = capture();
     const code = await runPrCommentCommand([dir], cap.io);
     expect(code).toBe(0);
-    expect(cap.text()).toContain("Mjölnir");
+    expect(cap.text()).toContain("QA Doctor");
   });
 
   it("pr-comment with a v1 baseline folds the diff into the render", async () => {
@@ -187,7 +187,7 @@ describe("bench collectEnvironment fallback arm", () => {
 
   it("a scan-target crash OUTSIDE the save (before saveBaseline) still exits 20", async () => {
     // The remaining catch-to-20 arm of runBaselineCommand: a crash in
-    // runScan itself (a Mjölnir-scope failure) is the friendly exit 20.
+    // runScan itself (a QA Doctor-scope failure) is the friendly exit 20.
     const dir = tmpRepo("scan20");
     specWithTest(dir);
     const cap = capture();

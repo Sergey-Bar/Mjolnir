@@ -1,4 +1,4 @@
-# Mjölnir — Laws
+# QA Doctor — Laws
 
 The governing laws of this repository. Where a law is executable, the
 enforcement lives in `mjolnir doctor` (`src/commands/doctor.ts`); where

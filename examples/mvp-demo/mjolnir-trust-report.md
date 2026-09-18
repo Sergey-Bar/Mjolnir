@@ -1,8 +1,8 @@
 <!-- mjolnir-trust-report:v1 -->
 
-# Mjölnir Trust Report — C:\Work\Mjolnir-QA\Mjolnir\examples\mvp-demo
+# QA Doctor Trust Report — C:\Work\QA Doctor-QA\QA Doctor\examples\mvp-demo
 
-> Tests tell you what passed. Mjölnir tells you what you can trust.
+> Tests tell you what passed. QA Doctor tells you what you can trust.
 
 ## Trust verdict
 
@@ -36,4 +36,4 @@ mjolnir explain QA-PW-101 — then fix the top risk first
 
 ---
 
-Generated locally by Mjölnir — no cloud, no telemetry. Semantics: `mjolnir <target> --json` (machine contract `contractVersion: 1`).
+Generated locally by QA Doctor — no cloud, no telemetry. Semantics: `mjolnir <target> --json` (machine contract `contractVersion: 1`).

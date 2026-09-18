@@ -17,7 +17,7 @@ mjolnir forensics ./test-results/
 ## The TRUE-FLAKE verdict
 
 A test that passes only on attempt ≥ 2 is not a passing test — it's a
-lucky test. Mjölnir flags it `TRUE-FLAKE` regardless of the final green
+lucky test. QA Doctor flags it `TRUE-FLAKE` regardless of the final green
 checkmark the runner reported.
 
 This is the difference between the two halves of the tool:

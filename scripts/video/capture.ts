@@ -1,5 +1,5 @@
 /**
- * The evidence layer of the demo-video pipeline: runs Mjölnir for real
+ * The evidence layer of the demo-video pipeline: runs QA Doctor for real
  * and writes down exactly what it printed.
  *
  * Same discipline as `scripts/generate-readme-demo.ts`, which this

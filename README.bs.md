@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="assets/readme/hero.svg" alt="Mjölnir. Testovi vam govore šta je prošlo. Mjölnir vam govori čemu možete vjerovati." width="100%" />
+<img src="assets/readme/hero.svg" alt="QA Doctor. Testovi vam govore šta je prošlo. QA Doctor vam govori čemu možete vjerovati." width="100%" />
 
 <br />
 
-Mjölnir pronalazi testove koji ne mogu pasti i pipelineove koji ne mogu postati crveni,<br />
+QA Doctor pronalazi testove koji ne mogu pasti i pipelineove koji ne mogu postati crveni,<br />
 a zatim ocjenjuje koliko se rezultatu može vjerovati, uz dokaz za svaki bod.
 
 <br />
@@ -50,26 +50,26 @@ Zelena kvačica znači da pipeline nije pao. Ne znači da su se testovi izvršil
 - izvještaj koji workflow otprema, a nikad ga nije generisao
 - fiksni sleep koji drži na okupu race condition
 
-Nijedan od njih ne boji pipeline u crveno, a svaki na reviewu izgleda namjerno. Zato i opstaju. Evo kako Mjölnir čita stvaran primjer:
+Nijedan od njih ne boji pipeline u crveno, a svaki na reviewu izgleda namjerno. Zato i opstaju. Evo kako QA Doctor čita stvaran primjer:
 
 <p align="center">
-  <img src="assets/readme/scan.svg" alt="CI workflow demo repozitorija, pročitan red po red. Mjölnir označava svaki nalaz u redu u kojem ga je prijavio, s pravilom, onim što nije u redu, nivoom dokaza i izmjerenom stopom lažno pozitivnih rezultata." width="800" />
+  <img src="assets/readme/scan.svg" alt="CI workflow demo repozitorija, pročitan red po red. QA Doctor označava svaki nalaz u redu u kojem ga je prijavio, s pravilom, onim što nije u redu, nivoom dokaza i izmjerenom stopom lažno pozitivnih rezultata." width="800" />
 </p>
 
 <sub>Svaki nalaz koji je demo skeniranje prijavilo za ovaj workflow, u redu u kojem je prijavljen. Generisano naredbom `npm run docs:readme-brand` iz [`demo-report.json`](assets/readme/demo-report.json) i zaključano protiv odstupanja u CI-ju.</sub>
 
 **Strogi režim.** Najagresivnija otkrivanja — `.only`, `continue-on-error`, prazni testovi, zloupotreba ponavljanja — žive u karantinskom nivou. Rade samo pod `--strict` i ograničena su na `info` ozbiljnost: označavaju, ali nikada ne blokiraju. Podrazumijevano skeniranje (`npx mjolnir-qa@latest` bez `--strict`) pokriva samo osnovna i proširena pravila. Dodajte `--strict` kada želite i savjetodavni sloj.
 
-Mjölnir čita skup testova, CI workflowe i, ako ga imate, izvještaj stvarnog pokretanja. Ne pokreće vaše testove, ne instalira vaše zavisnosti i ne izvršava kod koji skenira. A kada nema dokaza, to i kaže umjesto da izmišlja pouzdanost:
+QA Doctor čita skup testova, CI workflowe i, ako ga imate, izvještaj stvarnog pokretanja. Ne pokreće vaše testove, ne instalira vaše zavisnosti i ne izvršava kod koji skenira. A kada nema dokaza, to i kaže umjesto da izmišlja pouzdanost:
 
-| Situacija                                                    | Šta Mjölnir prijavljuje                                          |
+| Situacija                                                    | Šta QA Doctor prijavljuje                                        |
 | ------------------------------------------------------------ | ---------------------------------------------------------------- |
 | Nisu pronađene deklaracije testova                           | Ocjena `null`, prikazana kao **UNKNOWN**. Nikad izmišljenih 100. |
 | Nema baselinea ni uporedive revizije                         | **UNKNOWN**, uz naveden razlog. Nikad pretpostavljena 0.         |
 | Skeniranje prekinuto (vremenski budžet, nečitljive datoteke) | **PARTIAL**, izlaz `2`. Nikad se ne prikazuje kao čisto.         |
 
 <p align="center">
-  <img src="assets/readme/how-it-works.svg" alt="Kako Mjölnir radi. Statički čita skup testova i CI pipeline, kao i izvještaj stvarnog pokretanja kada postoji. Svaki nalaz vaga prema nivou dokaza i nivou povjerenja, pri čemu samo stvarno pokretanje može dosegnuti L3 do L5, i daje nalaze, ocjenu vrijednosti i CI kapiju sa zamrznutim izlaznim kodovima. U petlji agenta, AI piše ispravku, a Mjölnir ponovo skenira da je dokaže." width="880" />
+  <img src="assets/readme/how-it-works.svg" alt="Kako QA Doctor radi. Statički čita skup testova i CI pipeline, kao i izvještaj stvarnog pokretanja kada postoji. Svaki nalaz vaga prema nivou dokaza i nivou povjerenja, pri čemu samo stvarno pokretanje može dosegnuti L3 do L5, i daje nalaze, ocjenu vrijednosti i CI kapiju sa zamrznutim izlaznim kodovima. U petlji agenta, AI piše ispravku, a QA Doctor ponovo skenira da je dokaže." width="880" />
 </p>
 
 <sub>Napravljeno za ovu stranicu i prikazano u omjeru 1:1. Generisano naredbom `npm run docs:readme-brand` i zaključano protiv odstupanja u CI-ju; ocjena, brojevi i ID pravila dolaze iz [`script.demo.json`](assets/video/script.demo.json), [`demo-report.json`](assets/readme/demo-report.json) i registra pravila, nikad se ne kucaju ručno. Ista slika kao poster: [`architecture.svg`](assets/readme/architecture.svg).</sub>
@@ -81,7 +81,7 @@ Mjölnir čita skup testova, CI workflowe i, ako ga imate, izvještaj stvarnog p
 Stvarno skeniranje [`examples/demo-repo`](examples/demo-repo), malog Playwright skupa testova s CI workflowom. Evo gdje su otišli njegovi bodovi:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Mjölnirov pregled odbitaka: WORTHINESS 75/100 NEEDS WORK, ocjena po kategoriji, okvir odbitaka po ozbiljnosti i lista FIX THIS FIRST" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="Mjölnirov pregled odbitaka: WORTHINESS 80/100 WORTHY, ocjena po kategoriji, okvir odbitaka po ozbiljnosti i lista FIX THIS FIRST" width="520" />
 </p>
 
 <sub>Generisano naredbom `npm run docs:hero` iz stvarnog skeniranja i zaključano protiv odstupanja u CI-ju. Puni `--verbose` izvještaj istog skeniranja je [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
@@ -103,7 +103,7 @@ Stvarno skeniranje [`examples/demo-repo`](examples/demo-repo), malog Playwright 
 
 ### Jedan nalaz izbliza
 
-Svaki nalaz odgovara na četiri pitanja: gdje je, koliko je Mjölnir siguran, koliko često pravilo griješi i kako ga ispraviti.
+Svaki nalaz odgovara na četiri pitanja: gdje je, koliko je QA Doctor siguran, koliko često pravilo griješi i kako ga ispraviti.
 
 <p align="center">
   <img src="assets/readme/finding-anatomy.svg" alt="Prvi nalaz demo skeniranja, tačno onako kako ga terminal ispisuje, s označena četiri dijela: gdje, koliko sigurno, koliko često pravilo griješi, i ispravka." width="100%" />
@@ -227,7 +227,7 @@ Zahtijeva **Node.js ≥ 22.18** na Windowsu, macOS-u ili Linuxu. Više volite gl
 
 <br />
 
-## Šta Mjölnir pronalazi
+## Šta QA Doctor pronalazi
 
 <p align="center">
   <img src="assets/readme/stack.svg" alt="Radi s vašim stackom: jezici, test frameworci i CI sistemi koje pokrivaju njegova pravila, prema registru pravila." width="100%" />
@@ -312,8 +312,8 @@ e2e/login.spec.ts
   role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 
 e2e/checkout.spec.ts
-  [█████████████████░░░]  86 / 100
-  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
+  [██████████████████░░]  88 / 100
+  role/text: 4 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 ```
 
 Ovo mjeri **otpornost, a ne ispravnost**. `.btn.btn-primary > div:nth-child(2)` prolazi danas i nastavlja prolaziti dok neko ne dirne markup. Niska ocjena nikad ne tvrdi da je test pokvaren, samo da zavisi od markupa koji niko nije obećao sačuvati.
@@ -338,13 +338,13 @@ Ovo mjeri **otpornost, a ne ispravnost**. `.btn.btn-primary > div:nth-child(2)` 
 
 **Kako se računa.** Ozbiljnost određuje osnovni odbitak (`error −8`, `warning −3`, `info −1`), a nivo dokaza ga umanjuje: E2 se računa u potpunosti, E1 upola (zaokruženo nadolje), E0 nikako. Zbir se normalizuje prema izloženosti skupa testova, odnosno odbici po deklaraciji testa umjesto po datoteci. Terminal ispisuje iste umanjene brojeve koje je ocjena koristila; nema skrivenog drugog modela. Detalji: [docs/SCORING.md](docs/SCORING.md) i [vodič za ocjenjivanje](https://sergey-bar.github.io/Mjolnir/guide/scoring).
 
-**Šta 100 ne znači.** Ne znači da je softver ispravan, da je skup testova dovoljan ili da je proizvod bez grešaka. Znači jednu stvar: **nijedno od pravila koja je Mjölnir procijenio nije proizvelo odbitak u ovom skeniranju i ovom modelu dokaza.**
+**Šta 100 ne znači.** Ne znači da je softver ispravan, da je skup testova dovoljan ili da je proizvod bez grešaka. Znači jednu stvar: **nijedno od pravila koja je QA Doctor procijenio nije proizvelo odbitak u ovom skeniranju i ovom modelu dokaza.**
 
 <br />
 
 ## Model dokaza
 
-Svaki nalaz nosi dvije oznake: koliko je Mjölnir siguran i koliko je daleko nalaz provjeren. To je razlika između alata koji prijavljuje obrasce i alata od kojeg možete uslovljavati izdanje.
+Svaki nalaz nosi dvije oznake: koliko je QA Doctor siguran i koliko je daleko nalaz provjeren. To je razlika između alata koji prijavljuje obrasce i alata od kojeg možete uslovljavati izdanje.
 
 **Koliko sigurno — nivo dokaza.**
 
@@ -396,9 +396,9 @@ Unapređenje, degradacija i zrelost po jeziku: [životni ciklus pravila](https:/
 
 ### Zašto ovo nije linter
 
-Linteri vam govore da li kod poštuje pravila. Mjölnir vam govori može li se vjerovati vašoj verifikaciji.
+Linteri vam govore da li kod poštuje pravila. QA Doctor vam govori može li se vjerovati vašoj verifikaciji.
 
-|                                                                  | Linteri (ESLint, SonarQube) | Alati za pokrivenost | AI pregled koda |    **Mjölnir**     |
+|                                                                  | Linteri (ESLint, SonarQube) | Alati za pokrivenost | AI pregled koda |   **QA Doctor**    |
 | ---------------------------------------------------------------- | :-------------------------: | :------------------: | :-------------: | :----------------: |
 | Ocjenjuje **sistem verifikacije**, a ne kod proizvoda            |             Ne              |          Ne          |       Ne        |         Da         |
 | Integritet CI workflowa (`continue-on-error`, `\|\| true`)       |             Ne              |          Ne          |    samo diff    |         Da         |
@@ -412,7 +412,7 @@ Linteri vam govore da li kod poštuje pravila. Mjölnir vam govori može li se v
 
 <sub>\*Pokriveno s `eslint-plugin-jest` i `eslint-plugin-playwright` (`expect-expect`, `no-wait-for-timeout`) te vlastitim pravilima za asercije u SonarQubeu. Kolone opisuju zadano ponašanje za verifikaciju skupova testova; dodaci, plaćeni paketi i prilagođena pravila mijenjaju neke odgovore. Ovo je sažetak pozicioniranja, a ne benchmark.</sub>
 
-Koristite i AI pregled. Hvata nijanse, namjeru i greške u dizajnu koje nijedan obrazac ne može pronaći. Mjölnir hvata ono što AI pregled previdi jer izgleda namjerno: commitovani `.only`, progutan izlazni kod, `continue-on-error` na test jobu. Za to treba skeniranje, a ne rasuđivanje.
+Koristite i AI pregled. Hvata nijanse, namjeru i greške u dizajnu koje nijedan obrazac ne može pronaći. QA Doctor hvata ono što AI pregled previdi jer izgleda namjerno: commitovani `.only`, progutan izlazni kod, `continue-on-error` na test jobu. Za to treba skeniranje, a ne rasuđivanje.
 
 <br />
 
@@ -441,7 +441,7 @@ FAILING    declines an expired card (e2e/checkout.spec.ts)
 
 ## Integritet CI-ja
 
-Test može prolaziti dok pipeline oko njega ne može pasti. Mjölnir čita i workflowe: `continue-on-error`, `|| true`, izlazne kodove koji se nikad ne prosljeđuju, korake koji uvijek uspijevaju, izvještaje koji se koriste, a nikad ne generišu, i kapije preskočene baš na događajima koji bi trebali blokirati. Svaki nalaz navodi job, korak i red, i nosi vlastiti nivo dokaza.
+Test može prolaziti dok pipeline oko njega ne može pasti. QA Doctor čita i workflowe: `continue-on-error`, `|| true`, izlazne kodove koji se nikad ne prosljeđuju, korake koji uvijek uspijevaju, izvještaje koji se koriste, a nikad ne generišu, i kapije preskočene baš na događajima koji bi trebali blokirati. Svaki nalaz navodi job, korak i red, i nosi vlastiti nivo dokaza.
 
 Generišite PR workflow, zadano savjetodavan:
 
@@ -493,7 +493,7 @@ Nalazi vrijede samo ako nešto na osnovu njih djeluje.
 SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
 ```
 
-**AI piše ispravku. Mjölnir je verifikuje.** Dokaz dolazi iz ponovnog skeniranja, nikad iz agentovog vlastitog izvještaja o uspjehu.
+**AI piše ispravku. QA Doctor je verifikuje.** Dokaz dolazi iz ponovnog skeniranja, nikad iz agentovog vlastitog izvještaja o uspjehu.
 
 | Naredba           | Šta agent dobija                                                                                                                                                         |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -549,10 +549,10 @@ Sve što mašina troši (rezultati MCP alata, `--json`, SARIF 2.1) dolazi iz jed
 
 <br />
 
-## Šta vam Mjölnir ne može reći
+## Šta vam QA Doctor ne može reći
 
 - **Ne pokreće vaše testove.** Čisto skeniranje nije skup testova koji prolazi.
-- **Ne može vam reći da je asercija _pogrešna_.** `expect(total).toBe(41)` izgleda zdravo. Mjölnir pronalazi testove koji _ne mogu pasti_ i pipelineove koji _ne mogu postati crveni_, a ne testove koji provjeravaju pogrešnu stvar.
+- **Ne može vam reći da je asercija _pogrešna_.** `expect(total).toBe(41)` izgleda zdravo. QA Doctor pronalazi testove koji _ne mogu pasti_ i pipelineove koji _ne mogu postati crveni_, a ne testove koji provjeravaju pogrešnu stvar.
 - **Ne dokazuje poslovnu ispravnost.** Ništa ovdje ne kaže da vaš proizvod radi ono što je zahtjev tražio.
 - **100 nije dokaz dobrog skupa testova.** Da li vaš skup pokriva vaš stvarni rizik je drugo pitanje, a ovaj alat na njega ne odgovara.
 - **5 od 79 pravila se isporučuje na procjeni**, a ne na izmjerenoj stopi. Svako od njih to kaže na vlastitom nalazu.

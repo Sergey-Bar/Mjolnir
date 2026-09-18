@@ -1,5 +1,5 @@
 /**
- * ASCII art assets for the Mjölnir terminal experience.
+ * ASCII art assets for the QA Doctor terminal experience.
  * Minimal Nordic / engineering aesthetic — professional, not fantasy.
  * All art must render identically with and without colors (NO_COLOR safety).
  *

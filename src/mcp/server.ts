@@ -14,7 +14,7 @@
  *   structured errors and the process STAYS ALIVE.
  * - parameter size caps; ONE scan in flight (serialized queue) reusing
  *   the pipeline's own budgets; zero network (no fetches anywhere); no
- *   shell execution beyond Mjölnir's own verbs.
+ *   shell execution beyond QA Doctor's own verbs.
  * - filesystem boundary = scan target + `.mjolnir/` (same as CLI).
  * - the plugin trust gate applies unchanged (--enable-plugins is NOT
  *   exposed over MCP: tools run with the gate CLOSED unless the server
@@ -71,7 +71,7 @@ export const MCP_TOOLS = [
   {
     name: "scan",
     description:
-      "Run the Mjölnir verification scan on a directory and return the canonical machine contract (findings with ruleId/detectorRevision/evidence/trust, completeness fields, deterministic digest). One scan in flight; zero network; plugin gate applies unchanged.",
+      "Run the QA Doctor verification scan on a directory and return the canonical machine contract (findings with ruleId/detectorRevision/evidence/trust, completeness fields, deterministic digest). One scan in flight; zero network; plugin gate applies unchanged.",
     inputSchema: {
       type: "object",
       properties: {

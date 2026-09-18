@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="assets/readme/hero.svg" alt="Mjölnir. Testler neyin geçtiğini söyler. Mjölnir neye güvenebileceğinizi söyler." width="100%" />
+<img src="assets/readme/hero.svg" alt="QA Doctor. Testler neyin geçtiğini söyler. QA Doctor neye güvenebileceğinizi söyler." width="100%" />
 
 <br />
 
-Mjölnir başarısız olamayan testleri ve kırmızıya dönemeyen pipeline'ları bulur,<br />
+QA Doctor başarısız olamayan testleri ve kırmızıya dönemeyen pipeline'ları bulur,<br />
 ardından sonuca ne kadar güvenilebileceğini, her puanın kanıtıyla birlikte puanlar.
 
 <br />
@@ -50,26 +50,26 @@ Yeşil onay işareti pipeline'ın başarısız olmadığı anlamına gelir. Test
 - workflow'un yüklediği ama hiç üretmediği bir rapor
 - bir yarış durumunu ayakta tutan sabit bir sleep
 
-Hiçbiri pipeline'ı kırmızıya çevirmez ve her biri incelemede kasıtlı görünür. Bu yüzden hayatta kalırlar. İşte Mjölnir'in gerçek bir örneği okuması:
+Hiçbiri pipeline'ı kırmızıya çevirmez ve her biri incelemede kasıtlı görünür. Bu yüzden hayatta kalırlar. İşte QA Doctor'in gerçek bir örneği okuması:
 
 <p align="center">
-  <img src="assets/readme/scan.svg" alt="Demo deposunun CI workflow'u, satır satır okunmuş hâli. Mjölnir her bulguyu raporladığı satırda işaretler; kuralını, neyin yanlış olduğunu, kanıt düzeyini ve ölçülmüş yanlış pozitif oranını gösterir." width="800" />
+  <img src="assets/readme/scan.svg" alt="Demo deposunun CI workflow'u, satır satır okunmuş hâli. QA Doctor her bulguyu raporladığı satırda işaretler; kuralını, neyin yanlış olduğunu, kanıt düzeyini ve ölçülmüş yanlış pozitif oranını gösterir." width="800" />
 </p>
 
 <sub>Demo taramasının bu workflow için raporladığı her bulgu, raporlandığı satırda. `npm run docs:readme-brand` ile [`demo-report.json`](assets/readme/demo-report.json) kaynağından üretilir ve CI'da sapmaya karşı kilitlenir.</sub>
 
 **Katı mod.** En agresif tespitler — `.only`, `continue-on-error`, boş testler, tekrar kötüye kullanımı — karantina katında yaşar. Yalnızca `--strict` altında çalışır ve `info` şiddetindedir: işaretlerler, asla engellemezler. Varsayılan tarama (`--strict` olmayan `npx mjolnir-qa@latest`) yalnızca çekirdek ve genişletilmiş kuralları kapsar. Danışmanlık katmanını da istediğinizde `--strict` ekleyin.
 
-Mjölnir test paketini, CI workflow'larını ve varsa gerçek bir çalıştırmanın raporunu okur. Testlerinizi çalıştırmaz, bağımlılıklarınızı kurmaz ve taradığı kodu yürütmez. Kanıtı olmadığında da güven uydurmak yerine bunu açıkça söyler:
+QA Doctor test paketini, CI workflow'larını ve varsa gerçek bir çalıştırmanın raporunu okur. Testlerinizi çalıştırmaz, bağımlılıklarınızı kurmaz ve taradığı kodu yürütmez. Kanıtı olmadığında da güven uydurmak yerine bunu açıkça söyler:
 
-| Durum                                                      | Mjölnir'in raporladığı                                                  |
+| Durum                                                      | QA Doctor'in raporladığı                                                |
 | ---------------------------------------------------------- | ----------------------------------------------------------------------- |
 | Test bildirimi bulunamadı                                  | Puan `null`, **UNKNOWN** olarak gösterilir. Asla uydurma bir 100 değil. |
 | Baseline ya da karşılaştırılabilir revizyon yok            | **UNKNOWN**, nedeni belirtilerek. Asla varsayılmış bir 0 değil.         |
 | Tarama yarıda kesildi (zaman bütçesi, okunamayan dosyalar) | **PARTIAL**, çıkış `2`. Asla temiz olarak sunulmaz.                     |
 
 <p align="center">
-  <img src="assets/readme/how-it-works.svg" alt="Mjölnir nasıl çalışır. Test paketini ve CI pipeline'ını statik olarak, varsa gerçek bir çalıştırmanın raporunu da okur. Her bulguyu kanıt düzeyine ve güven düzeyine göre ağırlıklandırır; L3 ile L5 arasına yalnızca gerçek bir çalıştırma ulaşabilir. Sonuç olarak bulgular, bir güvenilirlik puanı ve donmuş çıkış kodlarıyla bir CI kapısı üretir. Ajan döngüsünde yapay zekâ düzeltmeyi yazar, Mjölnir de kanıtlamak için yeniden tarar." width="880" />
+  <img src="assets/readme/how-it-works.svg" alt="QA Doctor nasıl çalışır. Test paketini ve CI pipeline'ını statik olarak, varsa gerçek bir çalıştırmanın raporunu da okur. Her bulguyu kanıt düzeyine ve güven düzeyine göre ağırlıklandırır; L3 ile L5 arasına yalnızca gerçek bir çalıştırma ulaşabilir. Sonuç olarak bulgular, bir güvenilirlik puanı ve donmuş çıkış kodlarıyla bir CI kapısı üretir. Ajan döngüsünde yapay zekâ düzeltmeyi yazar, QA Doctor de kanıtlamak için yeniden tarar." width="880" />
 </p>
 
 <sub>Bu sayfa için tasarlandı ve 1:1 gösteriliyor. `npm run docs:readme-brand` ile üretilir ve CI'da sapmaya karşı kilitlenir; puan, sayılar ve kural kimliği [`script.demo.json`](assets/video/script.demo.json), [`demo-report.json`](assets/readme/demo-report.json) ve kural kaydından gelir, asla elle yazılmaz. Aynı görselin poster hâli: [`architecture.svg`](assets/readme/architecture.svg).</sub>
@@ -81,7 +81,7 @@ Mjölnir test paketini, CI workflow'larını ve varsa gerçek bir çalıştırma
 CI workflow'u olan küçük bir Playwright paketi olan [`examples/demo-repo`](examples/demo-repo) üzerinde gerçek bir tarama. Puanlarının nereye gittiği burada:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Mjölnir'in kesinti dökümü: WORTHINESS 75/100 NEEDS WORK, kategoriye göre puan, önem derecesine göre kesinti kutusu ve bir FIX THIS FIRST listesi" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="QA Doctor'in kesinti dökümü: WORTHINESS 80/100 WORTHY, kategoriye göre puan, önem derecesine göre kesinti kutusu ve bir FIX THIS FIRST listesi" width="520" />
 </p>
 
 <sub>`npm run docs:hero` ile gerçek bir taramadan üretilir ve CI'da sapmaya karşı kilitlenir. Aynı taramanın tam `--verbose` raporu [`demo.svg`](assets/readme/demo.svg) dosyasıdır (`npm run docs:demo`).</sub>
@@ -103,7 +103,7 @@ CI workflow'u olan küçük bir Playwright paketi olan [`examples/demo-repo`](ex
 
 ### Tek bir bulguya yakından bakış
 
-Her bulgu dört soruyu yanıtlar: nerede olduğu, Mjölnir'in ne kadar emin olduğu, kuralın ne sıklıkla yanıldığı ve nasıl düzeltileceği.
+Her bulgu dört soruyu yanıtlar: nerede olduğu, QA Doctor'in ne kadar emin olduğu, kuralın ne sıklıkla yanıldığı ve nasıl düzeltileceği.
 
 <p align="center">
   <img src="assets/readme/finding-anatomy.svg" alt="Demo taramasının ilk bulgusu, terminalin yazdırdığı hâliyle birebir, dört bölümü işaretlenmiş olarak: nerede, ne kadar emin, kural ne sıklıkla yanılıyor ve düzeltme." width="100%" />
@@ -212,7 +212,7 @@ npx mjolnir-qa@latest --scope changed
 | `mjolnir suppressions`              | Bastırılmış bulguları listeler, yönetişim için                                      |
 | `mjolnir rules --unmeasured`        | Ölçüme değil varsayıma dayanarak çalışan kurallar                                   |
 | `mjolnir rules --md`                | Tam kural kataloğu (JSON veya Markdown)                                             |
-| `mjolnir doctor`                    | Mjölnir'in kendi kural tabanının öz denetimi                                        |
+| `mjolnir doctor`                    | QA Doctor'in kendi kural tabanının öz denetimi                                      |
 | `mjolnir create-rule <ID>`          | Yeni bir kural ve fixture'ları için iskelet oluşturur                               |
 | `mjolnir stats`                     | Görülen düzeltmelerin yerel, tüm zamanlar sayaçları                                 |
 | `mjolnir badge`                     | shields.io uç noktası JSON'u ve kod parçası                                         |
@@ -227,7 +227,7 @@ Windows, macOS veya Linux üzerinde **Node.js ≥ 22.18** gerektirir. Global kur
 
 <br />
 
-## Mjölnir neler bulur
+## QA Doctor neler bulur
 
 <p align="center">
   <img src="assets/readme/stack.svg" alt="Yığınınızla çalışır: kurallarının kapsadığı diller, test framework'leri ve CI sistemleri, kural kaydından." width="100%" />
@@ -312,8 +312,8 @@ e2e/login.spec.ts
   role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 
 e2e/checkout.spec.ts
-  [█████████████████░░░]  86 / 100
-  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
+  [██████████████████░░]  88 / 100
+  role/text: 4 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 ```
 
 Bu, **doğruluğu değil dayanıklılığı** ölçer. `.btn.btn-primary > div:nth-child(2)` bugün geçer ve biri işaretlemeye dokunana kadar geçmeye devam eder. Düşük bir puan asla testin bozuk olduğunu iddia etmez; yalnızca kimsenin korumayı vaat etmediği işaretlemeye bağlı olduğunu söyler.
@@ -338,13 +338,13 @@ Bu, **doğruluğu değil dayanıklılığı** ölçer. `.btn.btn-primary > div:n
 
 **Nasıl hesaplanır.** Önem bir temel kesinti belirler (`error −8`, `warning −3`, `info −1`) ve kanıt düzeyi bunu indirir: E2 tam, E1 yarım (aşağı yuvarlanarak), E0 hiç sayılmaz. Toplam, paketin maruziyetine göre normalleştirilir; yani dosya başına değil test bildirimi başına kesinti. Terminal, puanın kullandığı indirilmiş sayıların aynısını yazdırır; gizli ikinci bir model yoktur. Ayrıntılar: [docs/SCORING.md](docs/SCORING.md) ve [puanlama rehberi](https://sergey-bar.github.io/Mjolnir/guide/scoring).
 
-**100'ün anlamadığı şey.** Yazılımın doğru, paketin yeterli ya da ürünün hatasız olduğu anlamına gelmez. Tek bir anlamı vardır: **Mjölnir'in değerlendirdiği kuralların hiçbiri bu taramada ve bu kanıt modelinde kesinti üretmedi.**
+**100'ün anlamadığı şey.** Yazılımın doğru, paketin yeterli ya da ürünün hatasız olduğu anlamına gelmez. Tek bir anlamı vardır: **QA Doctor'in değerlendirdiği kuralların hiçbiri bu taramada ve bu kanıt modelinde kesinti üretmedi.**
 
 <br />
 
 ## Kanıt modeli
 
-Her bulgu iki etiket taşır: Mjölnir'in ne kadar emin olduğu ve bulgunun ne kadar denetlendiği. Kalıp raporlayan bir araçla bir sürümü kapıya bağlayabileceğiniz bir araç arasındaki fark budur.
+Her bulgu iki etiket taşır: QA Doctor'in ne kadar emin olduğu ve bulgunun ne kadar denetlendiği. Kalıp raporlayan bir araçla bir sürümü kapıya bağlayabileceğiniz bir araç arasındaki fark budur.
 
 **Ne kadar emin — kanıt düzeyi.**
 
@@ -356,7 +356,7 @@ Her bulgu iki etiket taşır: Mjölnir'in ne kadar emin olduğu ve bulgunun ne k
 
 Bir tespitteki güven, kanıtın gücü değildir. Bir kural aradığını bulduğundan emin olabilir ve yine de bir sezgisel yönteme bakıyor olabilir. E1 bulguları okunmak ve değerlendirilmek içindir, asla körü körüne uygulanmak için değil; bu sınır bulgunun üzerinde terminalde, JSON'da ve ajana devirde işaretlidir.
 
-**Ne kadar denetlendi — güven düzeyi.** Bulguların çoğu kodunuzu okumaktan gelir. Mjölnir'e gerçek bir test çalıştırmasının raporunu verin, kodun gerçekten çalıştığını doğrulayabilsin.
+**Ne kadar denetlendi — güven düzeyi.** Bulguların çoğu kodunuzu okumaktan gelir. QA Doctor'e gerçek bir test çalıştırmasının raporunu verin, kodun gerçekten çalıştığını doğrulayabilsin.
 
 <p align="center">
   <img src="assets/readme/trust-ladder.svg" alt="L0'dan L5'e güven merdiveni. L0–L2 kodu okumaktan gelir; L3–L5 gerçek bir çalıştırma raporu gerektirir, bu da merdivendeki bir kırılmayla işaretlenir." width="100%" />
@@ -396,9 +396,9 @@ Yükseltme, düşürme ve dil bazında olgunluk: [kural yaşam döngüsü](https
 
 ### Bu neden bir linter değil
 
-Linter'lar kodun kurallara uyup uymadığını söyler. Mjölnir doğrulamanıza güvenilip güvenilemeyeceğini söyler.
+Linter'lar kodun kurallara uyup uymadığını söyler. QA Doctor doğrulamanıza güvenilip güvenilemeyeceğini söyler.
 
-|                                                                     | Linter'lar (ESLint, SonarQube) | Kapsam araçları | Yapay zekâ ile kod incelemesi |    **Mjölnir**    |
+|                                                                     | Linter'lar (ESLint, SonarQube) | Kapsam araçları | Yapay zekâ ile kod incelemesi |   **QA Doctor**   |
 | ------------------------------------------------------------------- | :----------------------------: | :-------------: | :---------------------------: | :---------------: |
 | Ürün kodunu değil, **doğrulama sistemini** puanlar                  |             Hayır              |      Hayır      |             Hayır             |       Evet        |
 | CI workflow bütünlüğü (`continue-on-error`, `\|\| true`)            |             Hayır              |      Hayır      |         yalnızca diff         |       Evet        |
@@ -412,7 +412,7 @@ Linter'lar kodun kurallara uyup uymadığını söyler. Mjölnir doğrulamanıza
 
 <sub>\*`eslint-plugin-jest` ve `eslint-plugin-playwright` (`expect-expect`, `no-wait-for-timeout`) ile SonarQube'un kendi doğrulama kuralları tarafından kapsanır. Sütunlar, test paketi doğrulaması için varsayılan davranışı tanımlar; eklentiler, ücretli planlar ve özel kurallar bazı yanıtları değiştirir. Bu bir konumlandırma özetidir, kıyaslama değil.</sub>
 
-Yapay zekâ incelemesini de kullanın. Hiçbir kalıbın bulamayacağı nüansları, niyeti ve tasarım kusurlarını yakalar. Mjölnir ise kasıtlı göründüğü için yapay zekâ incelemesinin gözden kaçırdığını yakalar: commit edilmiş bir `.only`, yutulmuş bir çıkış kodu, bir test job'undaki `continue-on-error`. Bunlar akıl yürütme değil tarama gerektirir.
+Yapay zekâ incelemesini de kullanın. Hiçbir kalıbın bulamayacağı nüansları, niyeti ve tasarım kusurlarını yakalar. QA Doctor ise kasıtlı göründüğü için yapay zekâ incelemesinin gözden kaçırdığını yakalar: commit edilmiş bir `.only`, yutulmuş bir çıkış kodu, bir test job'undaki `continue-on-error`. Bunlar akıl yürütme değil tarama gerektirir.
 
 <br />
 
@@ -441,7 +441,7 @@ FAILING    declines an expired card (e2e/checkout.spec.ts)
 
 ## CI bütünlüğü
 
-Bir test geçerken çevresindeki pipeline başarısız olamayabilir. Mjölnir workflow'ları da okur: `continue-on-error`, `|| true`, hiç aktarılmayan çıkış kodları, her zaman başarılı olan step'ler, kullanılan ama hiç üretilmeyen raporlar ve engellemesi gereken olaylarda atlanan kapılar. Her bulgu job'u, step'i ve satırı belirtir ve kendi kanıt düzeyini taşır.
+Bir test geçerken çevresindeki pipeline başarısız olamayabilir. QA Doctor workflow'ları da okur: `continue-on-error`, `|| true`, hiç aktarılmayan çıkış kodları, her zaman başarılı olan step'ler, kullanılan ama hiç üretilmeyen raporlar ve engellemesi gereken olaylarda atlanan kapılar. Her bulgu job'u, step'i ve satırı belirtir ve kendi kanıt düzeyini taşır.
 
 PR workflow'unu üretin, varsayılan olarak tavsiye niteliğindedir:
 
@@ -493,7 +493,7 @@ Bulgular ancak bir şey onlara göre harekete geçerse bir değer taşır.
 SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
 ```
 
-**Düzeltmeyi yapay zekâ yazar. Mjölnir onu doğrular.** Kanıt yeniden taramadan gelir, asla ajanın kendi başarı raporundan değil.
+**Düzeltmeyi yapay zekâ yazar. QA Doctor onu doğrular.** Kanıt yeniden taramadan gelir, asla ajanın kendi başarı raporundan değil.
 
 | Komut             | Ajanın aldığı                                                                                                                                                                         |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -549,10 +549,10 @@ Bir makinenin tükettiği her şey (MCP araç sonuçları, `--json`, SARIF 2.1),
 
 <br />
 
-## Mjölnir'in size söyleyemedikleri
+## QA Doctor'in size söyleyemedikleri
 
 - **Testlerinizi çalıştırmaz.** Temiz bir tarama, geçen bir test paketi demek değildir.
-- **Bir doğrulamanın _yanlış_ olduğunu söyleyemez.** `expect(total).toBe(41)` sağlıklı görünür. Mjölnir yanlış şeyi denetleyen testleri değil, _başarısız olamayan_ testleri ve _kırmızıya dönemeyen_ pipeline'ları bulur.
+- **Bir doğrulamanın _yanlış_ olduğunu söyleyemez.** `expect(total).toBe(41)` sağlıklı görünür. QA Doctor yanlış şeyi denetleyen testleri değil, _başarısız olamayan_ testleri ve _kırmızıya dönemeyen_ pipeline'ları bulur.
 - **İş doğruluğunu kanıtlamaz.** Buradaki hiçbir şey ürününüzün gereksinimin istediğini yaptığını söylemez.
 - **100, iyi bir test paketinin kanıtı değildir.** Paketinizin gerçek riskinizi kapsayıp kapsamadığı ayrı bir sorudur ve bu araç onu yanıtlamaz.
 - **79 kuraldan 5'i ölçülmüş bir orana değil, bir tahmine dayanır.** Her biri bunu kendi bulgusunda söyler.

@@ -32,7 +32,7 @@ export default defineRule({
   accuracy metrics_. Nobody does this. It's the ultimate trust move for a
   tool whose brand is honesty.
 
-## 8. The Mjölnir Challenge 🎯 ⬜ NOT BUILT — marketing stunt, no code involved, not launched
+## 8. The QA Doctor Challenge 🎯 ⬜ NOT BUILT — marketing stunt, no code involved, not launched
 
 Launch stunt: "Run it on your repo. If it finds nothing real, we donate
 $50 to OSS in your name." Screenshot culture does the marketing.
@@ -48,7 +48,7 @@ Cheaper than ads, generates proof-of-value artifacts publicly.
 | Allure/ReportPortal export                                | 1 wk   | Test-management shops                 |
 | Slack/Teams PR digest bot                                 | 1 wk   | Lead visibility                       |
 
-The Playwright reporter integration deserves emphasis: it puts Mjölnir
+The Playwright reporter integration deserves emphasis: it puts QA Doctor
 INSIDE every Playwright run without changing any workflow.
 
 ## 10. `mjolnir init --interactive` Onboarding Wizard ✅ DONE — `src/commands/init.ts`

@@ -19,7 +19,7 @@ the same standard as every other generated asset here: real execution in,
 rendered pixels out, with a contract in between.
 
 ```
-real Mjölnir execution
+real QA Doctor execution
         │  scripts/video/capture.ts        ← evidence
         ▼
 script.{demo,tour}.json
@@ -53,7 +53,7 @@ and nothing here claims it does.
 
 ```bash
 npm run docs:video:glyphs    # every glyph resolves in a vendored face
-npm run docs:video:capture   # re-run Mjölnir, rewrite the scripts
+npm run docs:video:capture   # re-run QA Doctor, rewrite the scripts
 npm run docs:video:render    # scripts → MP4 + poster  (needs ffmpeg + Chromium)
 npm run docs:video           # capture then render
 npx tsx scripts/video/render.ts demo --preview=140   # one frame, no encode

@@ -1,4 +1,4 @@
-# Mjölnir — brand certification
+# QA Doctor — brand certification
 
 The close-out of the brand-unification work, on branch
 `brand/unification`. The plan it executed is a local working document

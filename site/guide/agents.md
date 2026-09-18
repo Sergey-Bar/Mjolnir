@@ -1,6 +1,6 @@
 # Agent integration
 
-Mjölnir is built to sit inside an agent's fix loop — the same loop a
+QA Doctor is built to sit inside an agent's fix loop — the same loop a
 human maintainer runs, made mechanical. One rule governs the surface:
 **the agent gets derived facts, never trust claims.**
 

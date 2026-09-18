@@ -1,6 +1,6 @@
 ---
 title: False-positive audit
-description: Measured false-positive rates for Mjölnir's rules, hand-classified against real OSS code.
+description: Measured false-positive rates for QA Doctor's rules, hand-classified against real OSS code.
 editLink: false
 lastUpdated: false
 ---

@@ -97,7 +97,7 @@ export function renderCatalogMd(entries: RuleCatalogEntry[]): string {
   const provenanceCol = hasExternal ? " | Provenance" : "";
   const provenanceSep = hasExternal ? "|---" : "";
   const lines: string[] = [
-    "# Mjölnir — Rule Catalog",
+    "# QA Doctor — Rule Catalog",
     "",
     "Generated from the rule registry by `mjolnir rules --md`. Do not edit by hand.",
     "",

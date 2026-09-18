@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="assets/readme/hero.svg" alt="Mjölnir. Os testes dizem o que passou. O Mjölnir diz em que você pode confiar." width="100%" />
+<img src="assets/readme/hero.svg" alt="QA Doctor. Os testes dizem o que passou. O QA Doctor diz em que você pode confiar." width="100%" />
 
 <br />
 
-O Mjölnir encontra testes que não podem falhar e pipelines que não podem ficar vermelhos,<br />
+O QA Doctor encontra testes que não podem falhar e pipelines que não podem ficar vermelhos,<br />
 e depois pontua até onde o resultado merece confiança, com a evidência de cada ponto.
 
 <br />
@@ -50,26 +50,26 @@ Um check verde significa que o pipeline não falhou. Não significa que os teste
 - um relatório que o workflow envia, mas que nunca foi gerado
 - um sleep fixo segurando uma condição de corrida
 
-Nenhum deles deixa o pipeline vermelho, e todos parecem intencionais na revisão. É por isso que sobrevivem. Aqui está o Mjölnir lendo um caso real:
+Nenhum deles deixa o pipeline vermelho, e todos parecem intencionais na revisão. É por isso que sobrevivem. Aqui está o QA Doctor lendo um caso real:
 
 <p align="center">
-  <img src="assets/readme/scan.svg" alt="O workflow de CI do repositório de demonstração, lido linha por linha. O Mjölnir aponta cada achado na linha reportada, com sua regra, o que está errado, seu nível de evidência e sua taxa de falsos positivos medida." width="800" />
+  <img src="assets/readme/scan.svg" alt="O workflow de CI do repositório de demonstração, lido linha por linha. O QA Doctor aponta cada achado na linha reportada, com sua regra, o que está errado, seu nível de evidência e sua taxa de falsos positivos medida." width="800" />
 </p>
 
 <sub>Cada achado que o scan de demonstração reportou para este workflow, na linha reportada. Gerado por `npm run docs:readme-brand` a partir de [`demo-report.json`](assets/readme/demo-report.json) e travado contra desvios na CI.</sub>
 
 **Modo estrito.** As detecções mais agressivas — `.only`, `continue-on-error`, testes vazios, abuso de retry — ficam na quarentena. Só rodam com `--strict` e são limitadas a severidade `info`: elas sinalizam, nunca bloqueiam. O scan padrão (`npx mjolnir-qa@latest` sem `--strict`) cobre apenas regras core e extended. Adicione `--strict` quando quiser a camada de consultoria também.
 
-O Mjölnir lê a suíte, os workflows de CI e, se você tiver, o relatório de uma execução real. Ele não roda seus testes, não instala suas dependências e não executa o código que analisa. E quando não tem evidência, ele diz isso em vez de inventar confiança:
+O QA Doctor lê a suíte, os workflows de CI e, se você tiver, o relatório de uma execução real. Ele não roda seus testes, não instala suas dependências e não executa o código que analisa. E quando não tem evidência, ele diz isso em vez de inventar confiança:
 
-| Situação                                                   | O que o Mjölnir reporta                                             |
+| Situação                                                   | O que o QA Doctor reporta                                           |
 | ---------------------------------------------------------- | ------------------------------------------------------------------- |
 | Nenhuma declaração de teste encontrada                     | Pontuação `null`, exibida como **UNKNOWN**. Nunca um 100 inventado. |
 | Nenhuma baseline ou revisão comparável                     | **UNKNOWN**, com o motivo informado. Nunca um 0 presumido.          |
 | Scan interrompido (orçamento de tempo, arquivos ilegíveis) | **PARTIAL**, saída `2`. Nunca apresentado como limpo.               |
 
 <p align="center">
-  <img src="assets/readme/how-it-works.svg" alt="Como o Mjölnir funciona. Ele lê a suíte de testes e o pipeline de CI de forma estática, e o relatório de uma execução real quando existe um. Ele pondera cada achado pelo nível de evidência e pelo nível de confiança, em que só uma execução real alcança L3 a L5, e produz achados, uma pontuação de confiabilidade e um gate de CI com códigos de saída congelados. No ciclo do agente, a IA escreve a correção e o Mjölnir refaz o scan para prová-la." width="880" />
+  <img src="assets/readme/how-it-works.svg" alt="Como o QA Doctor funciona. Ele lê a suíte de testes e o pipeline de CI de forma estática, e o relatório de uma execução real quando existe um. Ele pondera cada achado pelo nível de evidência e pelo nível de confiança, em que só uma execução real alcança L3 a L5, e produz achados, uma pontuação de confiabilidade e um gate de CI com códigos de saída congelados. No ciclo do agente, a IA escreve a correção e o QA Doctor refaz o scan para prová-la." width="880" />
 </p>
 
 <sub>Composto para esta página e exibido em 1:1. Gerado por `npm run docs:readme-brand` e travado contra desvios na CI; a pontuação, as contagens e o ID da regra vêm de [`script.demo.json`](assets/video/script.demo.json), [`demo-report.json`](assets/readme/demo-report.json) e do registro de regras, nunca digitados à mão. A mesma imagem como pôster: [`architecture.svg`](assets/readme/architecture.svg).</sub>
@@ -81,7 +81,7 @@ O Mjölnir lê a suíte, os workflows de CI e, se você tiver, o relatório de u
 Um scan real de [`examples/demo-repo`](examples/demo-repo), uma pequena suíte Playwright com um workflow de CI. Foi para cá que os pontos dela foram:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="O detalhamento das deduções do Mjölnir: WORTHINESS 75/100 NEEDS WORK, a pontuação por categoria, o quadro de deduções por severidade e uma lista FIX THIS FIRST" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="O detalhamento das deduções do QA Doctor: WORTHINESS 80/100 WORTHY, a pontuação por categoria, o quadro de deduções por severidade e uma lista FIX THIS FIRST" width="520" />
 </p>
 
 <sub>Gerado por `npm run docs:hero` a partir de um scan real e travado contra desvios na CI. O relatório `--verbose` completo do mesmo scan é [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
@@ -103,7 +103,7 @@ Um scan real de [`examples/demo-repo`](examples/demo-repo), uma pequena suíte P
 
 ### Um achado, de perto
 
-Todo achado responde a quatro perguntas: onde está, quão seguro o Mjölnir está, com que frequência a regra erra e como corrigir.
+Todo achado responde a quatro perguntas: onde está, quão seguro o QA Doctor está, com que frequência a regra erra e como corrigir.
 
 <p align="center">
   <img src="assets/readme/finding-anatomy.svg" alt="O primeiro achado do scan de demonstração, exatamente como o terminal o imprime, com suas quatro partes destacadas: onde, quão seguro, com que frequência a regra erra, e a correção." width="100%" />
@@ -212,7 +212,7 @@ npx mjolnir-qa@latest --scope changed
 | `mjolnir suppressions`              | Lista os achados suprimidos, para governança                                  |
 | `mjolnir rules --unmeasured`        | As regras que rodam por suposição, não por medição                            |
 | `mjolnir rules --md`                | Catálogo completo de regras (JSON ou Markdown)                                |
-| `mjolnir doctor`                    | Autoauditoria da base de regras do próprio Mjölnir                            |
+| `mjolnir doctor`                    | Autoauditoria da base de regras do próprio QA Doctor                          |
 | `mjolnir create-rule <ID>`          | Cria o esqueleto de uma nova regra e suas fixtures                            |
 | `mjolnir stats`                     | Contadores locais de todas as correções já vistas                             |
 | `mjolnir badge`                     | JSON de endpoint do shields.io e snippet                                      |
@@ -227,7 +227,7 @@ Requer **Node.js ≥ 22.18** no Windows, macOS ou Linux. Prefere uma instalaçã
 
 <br />
 
-## O que o Mjölnir encontra
+## O que o QA Doctor encontra
 
 <p align="center">
   <img src="assets/readme/stack.svg" alt="Funciona com a sua stack: as linguagens, frameworks de teste e sistemas de CI cobertos pelas regras, a partir do registro de regras." width="100%" />
@@ -312,8 +312,8 @@ e2e/login.spec.ts
   role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 
 e2e/checkout.spec.ts
-  [█████████████████░░░]  86 / 100
-  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
+  [██████████████████░░]  88 / 100
+  role/text: 4 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 ```
 
 Isso mede **resiliência, não correção**. `.btn.btn-primary > div:nth-child(2)` passa hoje e continua passando até alguém mexer no markup. Uma pontuação baixa nunca afirma que o teste está quebrado, só que ele depende de um markup que ninguém prometeu manter.
@@ -338,13 +338,13 @@ Isso mede **resiliência, não correção**. `.btn.btn-primary > div:nth-child(2
 
 **Como é calculada.** A severidade define uma dedução base (`error −8`, `warning −3`, `info −1`) e o nível de evidência a desconta: E2 conta integralmente, E1 pela metade (arredondado para baixo), E0 nada. O total é normalizado pela exposição da suíte, ou seja, deduções por declaração de teste, e não por arquivo. O terminal imprime os mesmos números descontados que a pontuação usou; não há um segundo modelo escondido. Detalhes: [docs/SCORING.md](docs/SCORING.md) e o [guia de pontuação](https://sergey-bar.github.io/Mjolnir/guide/scoring).
 
-**O que 100 não significa.** Não significa que o software está correto, que a suíte é adequada ou que o produto está livre de defeitos. Significa uma única coisa: **nenhuma das regras avaliadas pelo Mjölnir produziu uma dedução neste scan e neste modelo de evidência.**
+**O que 100 não significa.** Não significa que o software está correto, que a suíte é adequada ou que o produto está livre de defeitos. Significa uma única coisa: **nenhuma das regras avaliadas pelo QA Doctor produziu uma dedução neste scan e neste modelo de evidência.**
 
 <br />
 
 ## O modelo de evidência
 
-Todo achado carrega dois rótulos: quão seguro o Mjölnir está e até onde o achado foi verificado. Essa é a diferença entre uma ferramenta que reporta padrões e uma ferramenta em que você pode condicionar um release.
+Todo achado carrega dois rótulos: quão seguro o QA Doctor está e até onde o achado foi verificado. Essa é a diferença entre uma ferramenta que reporta padrões e uma ferramenta em que você pode condicionar um release.
 
 **Quão seguro — o nível de evidência.**
 
@@ -356,7 +356,7 @@ Todo achado carrega dois rótulos: quão seguro o Mjölnir está e até onde o a
 
 A confiança em uma detecção não é a força da prova. Uma regra pode ter certeza de que encontrou o que procurava e ainda assim estar olhando para uma heurística. Achados E1 existem para ser lidos e julgados, nunca aplicados às cegas, e esse limite fica marcado no achado no terminal, no JSON e na passagem para o agente.
 
-**Até onde foi verificado — o nível de confiança.** A maioria dos achados vem da leitura do seu código. Dê ao Mjölnir o relatório de uma execução real de testes e ele poderá confirmar que o código de fato rodou.
+**Até onde foi verificado — o nível de confiança.** A maioria dos achados vem da leitura do seu código. Dê ao QA Doctor o relatório de uma execução real de testes e ele poderá confirmar que o código de fato rodou.
 
 <p align="center">
   <img src="assets/readme/trust-ladder.svg" alt="A escada de confiança de L0 a L5. L0 a L2 vêm da leitura do código; L3 a L5 precisam do relatório de uma execução real, marcado por uma quebra na escada." width="100%" />
@@ -396,9 +396,9 @@ Promoção, rebaixamento e maturidade por linguagem: [ciclo de vida das regras](
 
 ### Por que isto não é um linter
 
-Linters dizem se o código segue regras. O Mjölnir diz se a sua verificação merece confiança.
+Linters dizem se o código segue regras. O QA Doctor diz se a sua verificação merece confiança.
 
-|                                                                    | Linters (ESLint, SonarQube) | Ferramentas de cobertura | Revisão de código com IA |   **Mjölnir**    |
+|                                                                    | Linters (ESLint, SonarQube) | Ferramentas de cobertura | Revisão de código com IA |  **QA Doctor**   |
 | ------------------------------------------------------------------ | :-------------------------: | :----------------------: | :----------------------: | :--------------: |
 | Pontua o **sistema de verificação**, não o código do produto       |             Não             |           Não            |           Não            |       Sim        |
 | Integridade dos workflows de CI (`continue-on-error`, `\|\| true`) |             Não             |           Não            |        só o diff         |       Sim        |
@@ -412,7 +412,7 @@ Linters dizem se o código segue regras. O Mjölnir diz se a sua verificação m
 
 <sub>\*Coberto por `eslint-plugin-jest` e `eslint-plugin-playwright` (`expect-expect`, `no-wait-for-timeout`) e pelas próprias regras de asserção do SonarQube. As colunas descrevem o comportamento padrão para verificação de suítes de teste; plugins, planos pagos e regras personalizadas mudam algumas respostas. Este é um resumo de posicionamento, não um benchmark.</sub>
 
-Use revisão com IA também. Ela percebe nuances, intenção e falhas de design que nenhum padrão encontra. O Mjölnir pega o que a revisão com IA deixa passar porque parece intencional: um `.only` commitado, um código de saída engolido, um `continue-on-error` em um job de testes. Isso exige scan, não raciocínio.
+Use revisão com IA também. Ela percebe nuances, intenção e falhas de design que nenhum padrão encontra. O QA Doctor pega o que a revisão com IA deixa passar porque parece intencional: um `.only` commitado, um código de saída engolido, um `continue-on-error` em um job de testes. Isso exige scan, não raciocínio.
 
 <br />
 
@@ -441,7 +441,7 @@ FAILING    declines an expired card (e2e/checkout.spec.ts)
 
 ## Integridade de CI
 
-Um teste pode passar enquanto o pipeline ao redor dele não consegue falhar. O Mjölnir também lê os workflows: `continue-on-error`, `|| true`, códigos de saída que nunca se propagam, steps que sempre passam, relatórios consumidos mas nunca gerados e gates pulados justamente nos eventos que deveriam bloquear. Cada achado nomeia o job, o step e a linha, e carrega seu próprio nível de evidência.
+Um teste pode passar enquanto o pipeline ao redor dele não consegue falhar. O QA Doctor também lê os workflows: `continue-on-error`, `|| true`, códigos de saída que nunca se propagam, steps que sempre passam, relatórios consumidos mas nunca gerados e gates pulados justamente nos eventos que deveriam bloquear. Cada achado nomeia o job, o step e a linha, e carrega seu próprio nível de evidência.
 
 Gere o workflow de PR, consultivo por padrão:
 
@@ -493,7 +493,7 @@ Achados só valem alguma coisa se algo agir sobre eles.
 SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
 ```
 
-**A IA escreve a correção. O Mjölnir a verifica.** A prova vem do novo scan, nunca do próprio relato de sucesso do agente.
+**A IA escreve a correção. O QA Doctor a verifica.** A prova vem do novo scan, nunca do próprio relato de sucesso do agente.
 
 | Comando           | O que o agente recebe                                                                                                                                                      |
 | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -549,10 +549,10 @@ Tudo o que uma máquina consome (resultados das ferramentas MCP, `--json`, SARIF
 
 <br />
 
-## O que o Mjölnir não pode dizer
+## O que o QA Doctor não pode dizer
 
 - **Ele não roda seus testes.** Um scan limpo não é uma suíte aprovada.
-- **Ele não pode dizer que uma asserção está _errada_.** `expect(total).toBe(41)` parece saudável. O Mjölnir encontra testes que _não podem falhar_ e pipelines que _não podem ficar vermelhos_, não testes que verificam a coisa errada.
+- **Ele não pode dizer que uma asserção está _errada_.** `expect(total).toBe(41)` parece saudável. O QA Doctor encontra testes que _não podem falhar_ e pipelines que _não podem ficar vermelhos_, não testes que verificam a coisa errada.
 - **Ele não prova a correção de negócio.** Nada aqui diz que o seu produto faz o que o requisito pediu.
 - **Um 100 não é prova de uma boa suíte.** Se a sua suíte cobre o seu risco real é outra questão, e esta ferramenta não a responde.
 - **5 de 79 regras são lançadas com uma estimativa**, não com uma taxa medida. Cada uma diz isso no próprio achado.

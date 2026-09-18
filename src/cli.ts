@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Mjölnir CLI entry point (W1-02).
+ * QA Doctor CLI entry point (W1-02).
  * Exit codes (§24.1, frozen): 0 clean · 1 findings ≥ gate · 2 partial ·
  * 10 usage error · 20 internal error.
  */
@@ -372,7 +372,7 @@ export function runCiInstall(
     io.err(
       `Refusing to overwrite the customized workflow at ${result.written}.`,
     );
-    io.err("The file differs from the template Mjölnir would write:");
+    io.err("The file differs from the template QA Doctor would write:");
     for (const line of result.diffSummary) io.err(line);
     io.err("Re-run with --force to replace it with the generated template.");
     return EXIT_USAGE;
