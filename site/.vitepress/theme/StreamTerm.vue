@@ -55,6 +55,9 @@ function play() {
 }
 
 onMounted(() => {
+  // The hero is proof, not a loading state: show its complete report on
+  // first paint. Replay remains available for the slower walkthrough.
+  if (props.full) return;
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   typed.value = 0;
   shown.value = 0;

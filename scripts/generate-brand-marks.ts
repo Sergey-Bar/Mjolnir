@@ -67,17 +67,11 @@ export const WORDMARK_TEXT = "QA DOCTOR";
 export const MONOGRAM_PATH =
   "M32 8a24 24 0 1 0 0 48a24 24 0 1 0 0-48M42 42l7 7 11-15";
 
-/** The diagnostic aurora runs from the inspection ring into the check. */
+/** A single high-contrast diagnostic blue survives at favicon scale. */
 function monogramSvg(px: number, stroke: number, join = "miter"): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
     width="${px}" height="${px}" aria-label="${MONOGRAM_DESCRIPTION}" role="img">
-    <defs><linearGradient id="a" gradientUnits="userSpaceOnUse"
-      x1="7" y1="60" x2="41" y2="6">
-      <stop offset="0" stop-color="${BRAND.auroraGreen}"/>
-      <stop offset="0.5" stop-color="${BRAND.auroraCyan}"/>
-      <stop offset="1" stop-color="${BRAND.auroraViolet}"/>
-    </linearGradient></defs>
-    <path d="${MONOGRAM_PATH}" fill="none" stroke="url(#a)"
+    <path d="${MONOGRAM_PATH}" fill="none" stroke="${BRAND.auroraCyan}"
       stroke-width="${stroke}" stroke-linecap="round" stroke-linejoin="${join}" stroke-miterlimit="4"/>
   </svg>`;
 }

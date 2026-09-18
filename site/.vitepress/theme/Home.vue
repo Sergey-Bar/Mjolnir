@@ -377,7 +377,7 @@ onMounted(async () => {
     () => {
       booted.value = true;
     },
-    motion ? 620 : 0,
+    motion ? 1050 : 0,
   );
 
   let tick = 0;
@@ -474,12 +474,19 @@ onBeforeUnmount(() => {
   <main ref="root" class="qa">
     <Transition name="boot">
       <div v-if="!booted" class="boot-screen" aria-hidden="true">
-        <div class="boot-mark">Q</div>
-        <div class="boot-copy">
-          <span>QA DOCTOR</span>
-          <i />
-          <small>PREPARING DIAGNOSTICS</small>
+        <div class="boot-sequence">
+          <span class="boot-corner tl" /><span class="boot-corner tr" />
+          <span class="boot-corner bl" /><span class="boot-corner br" />
+          <svg class="boot-mark" viewBox="0 0 64 64" fill="none">
+            <path
+              class="boot-ring"
+              d="M32 8a24 24 0 1 0 0 48a24 24 0 1 0 0-48"
+            />
+            <path class="boot-check" d="M42 42l7 7 11-15" />
+          </svg>
+          <i class="boot-scan" />
         </div>
+        <p class="boot-wordmark">QA DOCTOR</p>
       </div>
     </Transition>
     <div ref="progEl" class="progress" aria-hidden="true" />
@@ -1390,47 +1397,95 @@ onBeforeUnmount(() => {
   position: fixed;
   inset: 0;
   z-index: 100;
-  display: grid;
-  place-content: center;
-  gap: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
   background: color-mix(in srgb, var(--qa-ink-950) 86%, black);
   color: var(--t1);
 }
-.boot-mark {
+.boot-sequence {
+  position: relative;
   display: grid;
   place-items: center;
-  width: 58px;
-  height: 58px;
-  margin-inline: auto;
-  border: 1px solid var(--qa-info);
-  border-radius: 50%;
-  box-shadow: inset 0 0 0 7px
-    color-mix(in oklch, var(--qa-info) 10%, transparent);
-  font-size: 30px;
-  font-weight: 600;
-  color: var(--qa-healthy-bright);
-  animation: boot-mark 650ms var(--settle) infinite alternate;
+  width: 112px;
+  height: 112px;
 }
-.boot-copy {
-  display: grid;
-  grid-template-columns: auto 78px;
-  gap: 8px 12px;
-  align-items: center;
-  font-family: var(--vp-font-family-mono);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
+.boot-mark {
+  width: 64px;
+  height: 64px;
+  overflow: visible;
 }
-.boot-copy small {
-  grid-column: 1 / -1;
-  font-size: 9px;
-  letter-spacing: 0.09em;
-  color: var(--t3);
+.boot-ring,
+.boot-check {
+  stroke: var(--qa-info);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 160;
+  stroke-dashoffset: 160;
+  animation: boot-draw 560ms var(--settle) forwards;
 }
-.boot-copy i {
+.boot-check {
+  stroke: var(--qa-healthy-bright);
+  stroke-dasharray: 34;
+  stroke-dashoffset: 34;
+  animation-delay: 370ms;
+}
+.boot-corner {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: color-mix(in srgb, var(--qa-info) 72%, transparent);
+  opacity: 0;
+  animation: boot-corners 360ms var(--settle) 140ms forwards;
+}
+.boot-corner.tl {
+  top: 6px;
+  left: 6px;
+  border-top: 1px solid;
+  border-left: 1px solid;
+}
+.boot-corner.tr {
+  top: 6px;
+  right: 6px;
+  border-top: 1px solid;
+  border-right: 1px solid;
+}
+.boot-corner.bl {
+  bottom: 6px;
+  left: 6px;
+  border-bottom: 1px solid;
+  border-left: 1px solid;
+}
+.boot-corner.br {
+  right: 6px;
+  bottom: 6px;
+  border-right: 1px solid;
+  border-bottom: 1px solid;
+}
+.boot-scan {
+  position: absolute;
+  top: 18px;
+  right: 16px;
+  left: 16px;
   height: 1px;
-  background: var(--qa-info);
-  animation: boot-line 650ms var(--settle) infinite alternate;
+  background: var(--qa-healthy-bright);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--qa-info) 70%, transparent);
+  opacity: 0;
+  animation: boot-scan 500ms linear 440ms forwards;
+}
+.boot-wordmark {
+  margin: 0;
+  font-family: var(--vp-font-family-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  color: var(--t2);
+  opacity: 0;
+  transform: translateY(4px);
+  animation: boot-wordmark 320ms var(--settle) 520ms forwards;
 }
 .boot-enter-active,
 .boot-leave-active {
@@ -1439,16 +1494,33 @@ onBeforeUnmount(() => {
 .boot-leave-to {
   opacity: 0;
 }
-@keyframes boot-mark {
+@keyframes boot-draw {
   to {
-    box-shadow: inset 0 0 0 13px
-      color-mix(in oklch, var(--qa-info) 7%, transparent);
+    stroke-dashoffset: 0;
   }
 }
-@keyframes boot-line {
+@keyframes boot-corners {
   to {
-    transform: scaleX(0.3);
-    transform-origin: right;
+    opacity: 1;
+  }
+}
+@keyframes boot-scan {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(76px);
+  }
+}
+@keyframes boot-wordmark {
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -3000,8 +3072,11 @@ onBeforeUnmount(() => {
   .ladder[data-in] .rung.run .bar::after {
     animation: none;
   }
-  .boot-mark,
-  .boot-copy i {
+  .boot-ring,
+  .boot-check,
+  .boot-corner,
+  .boot-scan,
+  .boot-wordmark {
     animation: none;
   }
 }
