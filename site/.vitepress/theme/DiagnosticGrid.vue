@@ -6,8 +6,8 @@ let frame = 0;
 
 type Particle = {
   x: number;
-  y: number;
-  drift: number;
+  lane: number;
+  phase: number;
   speed: number;
   size: number;
 };
@@ -24,13 +24,13 @@ function render(time: number) {
     el.width = width;
     el.height = height;
     particles = Array.from(
-      { length: Math.max(150, Math.floor(rect.width / 4)) },
+      { length: Math.max(260, Math.floor(rect.width / 2.6)) },
       (_, i) => ({
         x: (i * 71) % width,
-        y: (i * 137) % height,
-        drift: 0.3 + ((i * 17) % 70) / 100,
-        speed: 10 + ((i * 23) % 36),
-        size: i % 9 === 0 ? 1.5 : 0.75,
+        lane: i % 4,
+        phase: ((i * 137) % 628) / 100,
+        speed: 12 + ((i * 23) % 42),
+        size: i % 11 === 0 ? 1.6 : 0.7,
       }),
     );
   }
@@ -38,12 +38,34 @@ function render(time: number) {
   if (!ctx) return;
   ctx.clearRect(0, 0, width, height);
   const t = time / 1000;
+
+  for (let lane = 0; lane < 4; lane++) {
+    ctx.beginPath();
+    for (let x = -20; x <= width + 20; x += 20) {
+      const p = x / width;
+      const y =
+        height * (0.17 + lane * 0.2) +
+        Math.sin(p * 8 + t * (0.35 + lane * 0.08) + lane) * height * 0.065 +
+        (p - 0.5) * height * 0.12;
+      if (x === -20) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = `rgba(91, 189, 224, ${0.025 + lane * 0.008})`;
+    ctx.lineWidth = scale;
+    ctx.stroke();
+  }
+
   for (const particle of particles) {
     const x = (particle.x + t * particle.speed * scale) % width;
     const y =
-      particle.y +
-      Math.sin(t * particle.drift + particle.x * 0.012) * height * 0.08;
-    const alpha = 0.08 + (Math.sin(t * 0.8 + particle.y) + 1) * 0.09;
+      height * (0.17 + particle.lane * 0.2) +
+      Math.sin(
+        (x / width) * 8 + t * (0.35 + particle.lane * 0.08) + particle.phase,
+      ) *
+        height *
+        0.065 +
+      (x / width - 0.5) * height * 0.12;
+    const alpha = 0.09 + (Math.sin(t * 0.9 + particle.phase) + 1) * 0.085;
     ctx.fillStyle = `rgba(91, 189, 224, ${alpha})`;
     ctx.fillRect(x, y, particle.size * scale, particle.size * scale);
   }
@@ -81,7 +103,5 @@ canvas {
   width: 100%;
   height: 100%;
   display: block;
-}
-@media (max-width: 720px) {
 }
 </style>

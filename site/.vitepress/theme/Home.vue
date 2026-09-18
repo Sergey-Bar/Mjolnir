@@ -197,8 +197,6 @@ const marker = `${((s.demo.score + 0.5) / (s.outOf + 1)) * 100}%`;
 const demoTone =
   s.bands.find((b) => s.demo.score >= b.min && s.demo.score <= b.max)?.tone ??
   "warning";
-const odoArmed = ref(false);
-const odoRolled = ref(false);
 
 /* ---- 04: trust ---- */
 const PLAIN: Record<string, { name: string; body: string }> = {
@@ -269,7 +267,6 @@ const viewEl = ref<HTMLElement>();
 const innerEl = ref<HTMLElement>();
 const beamEl = ref<HTMLElement>();
 const anatEl = ref<HTMLElement>();
-const scoreEl = ref<HTMLElement>();
 const counts = reactive<Record<string, number>>({});
 const shown = (k: string, v: number) => counts[k] ?? v;
 const cleanups: (() => void)[] = [];
@@ -296,7 +293,6 @@ function onReveal(el: HTMLElement) {
   el.setAttribute("data-in", "");
   for (const c of el.querySelectorAll<HTMLElement>("[data-ck]"))
     countUp(c.dataset.ck ?? "", Number(c.dataset.to));
-  if (scoreEl.value && el.contains(scoreEl.value)) odoRolled.value = true;
 }
 
 /** Spotlight: every card in the grid tracks the pointer, not just the hovered one. */
@@ -399,7 +395,6 @@ onMounted(async () => {
     for (const c of el.querySelectorAll<HTMLElement>("[data-ck]"))
       if (Number.isInteger(Number(c.dataset.to)))
         counts[c.dataset.ck ?? ""] = 0;
-    odoArmed.value = true;
   }
   if (!motion || !("IntersectionObserver" in window)) {
     targets.forEach(onReveal);
@@ -836,35 +831,18 @@ onBeforeUnmount(() => {
           <span>{{ chapter("ch-score").n }}</span
           >{{ chapter("ch-score").title }}
         </p>
-        <h2 id="qa-score">One score, with the arithmetic shown.</h2>
+        <h2 id="qa-score">One signal for the health of your test suite.</h2>
         <p>
-          The score measures the test suite, not your product. Every point it
-          takes off is listed, and the formula has no hidden second model.
+          See the result at a glance, then open the findings that explain what
+          lowered it. The score measures the test suite, not your product.
         </p>
         <a class="more" :href="withBase('/guide/scoring')"
           >Read how the score works</a
         >
       </header>
       <div class="ch-main">
-        <div ref="scoreEl" class="score-top" data-reveal>
-          <p class="odo">
-            <span class="sr">{{ s.demo.score }}</span
-            ><span
-              v-for="(d, i) in String(s.demo.score)"
-              :key="i"
-              class="odo-d"
-              aria-hidden="true"
-              ><span
-                class="odo-col"
-                :class="{ roll: odoRolled }"
-                :style="{
-                  transform: `translateY(-${odoArmed && !odoRolled ? 0 : 10 + Number(d)}em)`,
-                  transitionDelay: `${i * 160}ms`,
-                }"
-                ><span v-for="k in 20" :key="k">{{ (k - 1) % 10 }}</span></span
-              ></span
-            >
-          </p>
+        <div class="score-top" data-reveal>
+          <p class="odo">{{ s.demo.score }}</p>
           <p class="score-meta">
             <span class="outof">/{{ s.outOf }}</span
             ><span class="verdict" :class="`tone-${demoTone}`">{{
@@ -887,12 +865,7 @@ onBeforeUnmount(() => {
             </span>
           </div>
           <div class="scale-legend">
-            <span
-              v-for="b in s.bands"
-              :key="b.min"
-              class="scale-key"
-              :style="{ width: span(b) }"
-            >
+            <span v-for="b in s.bands" :key="b.min" class="scale-key">
               <span class="scale-verdict" :class="`tone-${b.tone}`">{{
                 b.verdict
               }}</span>
@@ -902,50 +875,6 @@ onBeforeUnmount(() => {
             </span>
           </div>
         </figure>
-
-        <div class="math" data-reveal :style="{ '--i': 2 }">
-          <p class="math-title">Step by step</p>
-          <dl>
-            <div>
-              <dt>Deductions</dt>
-              <dd>
-                <b data-ck="raw" :data-to="s.demo.raw">{{
-                  shown("raw", s.demo.raw)
-                }}</b>
-                points across
-                <b data-ck="decl" :data-to="s.demo.declarations">{{
-                  shown("decl", s.demo.declarations)
-                }}</b>
-                test declarations
-              </dd>
-            </div>
-            <div>
-              <dt>Rate</dt>
-              <dd>
-                {{ s.demo.raw }} ÷ ({{ s.demo.declarations }} +
-                {{ s.demo.smoothing }}) = <b>{{ s.demo.rate }}</b>
-              </dd>
-            </div>
-            <div>
-              <dt>Score</dt>
-              <dd>
-                {{ s.outOf }} − min({{ s.outOf }}, {{ s.demo.rate }} ×
-                {{ s.demo.k }}) =
-                <b data-ck="final" :data-to="s.outOf - s.demo.cut">{{
-                  shown("final", s.outOf - s.demo.cut)
-                }}</b>
-                <span class="verdict-inline" :class="`tone-${demoTone}`">{{
-                  s.demo.verdict
-                }}</span>
-              </dd>
-            </div>
-          </dl>
-          <p class="fine">
-            Dividing by test declarations means adding empty spec files cannot
-            raise the score. Three ceilings then cap it, and the scoring guide
-            lists them.
-          </p>
-        </div>
       </div>
     </section>
 
@@ -1224,7 +1153,9 @@ onBeforeUnmount(() => {
 <style scoped>
 .qa {
   --edge: clamp(20px, 5vw, 48px);
-  --well: var(--qa-ink-950);
+  --glass: color-mix(in srgb, var(--qa-ink-850) 58%, transparent);
+  --glass-strong: color-mix(in srgb, var(--qa-ink-850) 78%, transparent);
+  --well: var(--glass);
   --line: var(--vp-c-divider);
   --line-2: var(--vp-c-border);
   --t1: var(--vp-c-text-1);
@@ -1234,6 +1165,7 @@ onBeforeUnmount(() => {
   --spring: cubic-bezier(0.34, 1.45, 0.64, 1);
   --sheen: var(--qa-steel);
   color: var(--t1);
+  background: color-mix(in srgb, var(--qa-ink-950) 86%, black);
   font-family: var(--vp-font-family-base);
   line-height: 1.7;
   overflow-x: clip;
@@ -1246,6 +1178,9 @@ onBeforeUnmount(() => {
   border: 0;
   font-family: var(--vp-font-family-base);
   text-wrap: balance;
+}
+.qa h2 {
+  color: var(--qa-info);
 }
 .qa h2::before {
   content: none;
@@ -1563,6 +1498,9 @@ onBeforeUnmount(() => {
 .title .line {
   display: block;
 }
+.title .line:not(.was) {
+  color: var(--qa-info);
+}
 .title .was {
   color: var(--t3);
   animation: dim 1400ms var(--settle) 1600ms both;
@@ -1687,7 +1625,9 @@ onBeforeUnmount(() => {
   gap: 28px;
   padding: 24px;
   border: 1px solid var(--line-2);
-  background: color-mix(in srgb, var(--qa-ink-900) 96%, transparent);
+  background: var(--glass);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 5%, transparent);
+  backdrop-filter: blur(18px) saturate(1.15);
 }
 .stack-group > span {
   display: block;
@@ -1882,7 +1822,7 @@ onBeforeUnmount(() => {
   font-weight: 500;
   line-height: 1.16;
   letter-spacing: -0.03em;
-  color: var(--t1);
+  color: var(--qa-info);
 }
 .ch-side > p:not(.ch-tag),
 .scan-lede {
@@ -2021,7 +1961,8 @@ onBeforeUnmount(() => {
   border: 1px solid var(--line-2);
   border-top: 2px solid var(--ch);
   border-radius: 10px;
-  background: var(--well);
+  background: var(--glass-strong);
+  backdrop-filter: blur(18px) saturate(1.15);
   overflow: hidden;
   box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.7);
 }
@@ -2234,7 +2175,9 @@ onBeforeUnmount(() => {
   padding: 22px 22px 24px;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: var(--vp-c-bg-alt);
+  background: var(--glass);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 4%, transparent);
+  backdrop-filter: blur(18px) saturate(1.15);
   overflow: hidden;
   --mx: -600px;
   --my: -600px;
@@ -2364,21 +2307,6 @@ onBeforeUnmount(() => {
   font-variant-numeric: tabular-nums;
   color: var(--t1);
 }
-.odo-d {
-  display: inline-block;
-  height: 1em;
-  overflow: hidden;
-}
-.odo-col {
-  display: block;
-}
-.odo-col.roll {
-  transition: transform 1900ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-.odo-col > span {
-  display: block;
-  height: 1em;
-}
 .score-meta {
   display: grid;
   gap: 4px;
@@ -2400,7 +2328,9 @@ onBeforeUnmount(() => {
   border: 1px solid var(--line-2);
   border-top: 2px solid var(--ch);
   border-radius: 10px;
-  background: var(--well);
+  background: var(--glass);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 4%, transparent);
+  backdrop-filter: blur(18px) saturate(1.15);
 }
 .scale-bar {
   position: relative;
@@ -2458,80 +2388,28 @@ onBeforeUnmount(() => {
   color: var(--t1);
 }
 .scale-legend {
-  position: relative;
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
   margin-top: 14px;
 }
 .scale-key {
   display: grid;
   gap: 2px;
-  min-width: 6px;
-  padding-right: 8px;
-}
-.scale-key + .scale-key {
-  margin-left: 2px;
-}
-.scale-key:last-child {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: auto !important;
-  justify-items: end;
-  padding-right: 0;
+  min-width: 0;
 }
 .scale-verdict {
-  font-size: 12px;
+  font-size: clamp(9px, 1vw, 12px);
   font-weight: 600;
   letter-spacing: 0.12em;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .scale-range {
   font-family: var(--vp-font-family-mono);
   font-size: 12.5px;
   color: var(--t3);
 }
-.math {
-  margin-top: 28px;
-}
-.math-title {
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--t1);
-}
-.math dl {
-  display: grid;
-  margin-top: 12px;
-  border-top: 1px solid var(--line);
-}
-.math dl > div {
-  display: grid;
-  grid-template-columns: 8rem minmax(0, 1fr);
-  gap: 16px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--line);
-}
-.math dt {
-  font-size: 14px;
-  color: var(--t3);
-}
-.math dd {
-  font-family: var(--vp-font-family-mono);
-  font-size: 14px;
-  font-variant-numeric: tabular-nums;
-  color: var(--t2);
-}
-.math b {
-  font-weight: 500;
-  color: var(--t1);
-}
-.verdict-inline {
-  margin-left: 10px;
-  font-family: var(--vp-font-family-base);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-}
-
 /* 04 ---- trust ---- */
 .stamps {
   display: grid;
@@ -2546,7 +2424,9 @@ onBeforeUnmount(() => {
   padding: 28px 24px 24px;
   border: 1px solid var(--line-2);
   border-radius: 10px;
-  background: var(--well);
+  background: var(--glass);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, white 4%, transparent);
+  backdrop-filter: blur(18px) saturate(1.15);
 }
 .rung {
   display: grid;
