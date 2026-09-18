@@ -290,8 +290,10 @@ describe("three verdict bands are reachable for their documented reasons", () =>
       format: "terminal",
       strict: true,
     });
-    expect(scan.score).toBe(80);
-    expect(verdictFor(scan.score as number)).toBe("WORTHY");
+    expect(scan.score).not.toBeNull();
+    const score = scan.score as number;
+    expect(score).toBe(80);
+    expect(verdictFor(score)).toBe("WORTHY");
   });
 
   it("demo with a hard wait is NEEDS WORK (50-79)", async () => {

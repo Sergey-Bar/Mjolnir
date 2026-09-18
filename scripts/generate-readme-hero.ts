@@ -133,7 +133,7 @@ export async function buildHeroSvg(): Promise<string> {
     // The wall-clock duration is real but non-deterministic run-to-run;
     // masked here only, never in the reporter, so regenerating is a
     // no-op diff when the scan itself is unchanged.
-  ].map((line) => line.replace(/· \d+ms$/, "· a few ms"));
+  ].map((line) => line.replace(/· \d+(?:\.\d+)?(?:ms|s)$/, "· a few ms"));
   return renderSvg(allLines);
 }
 
