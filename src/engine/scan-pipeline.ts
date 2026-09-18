@@ -837,7 +837,7 @@ export function applyPostScanProcessing(
   const discoveredReport = discoverAndParseRuntimeReport(scanRoot.root);
   const runtimeReportPath = discoveredReport?.path;
   let forensicVerdicts: ForensicVerdictSummary | undefined;
-  if (discoveredReport) {
+  if (discoveredReport && discoveredReport.report.analysisComplete === true) {
     try {
       buildEvidenceRecords(discoveredReport.report, discoveredReport.path);
       stampRuntimeCorroboration(
@@ -845,9 +845,7 @@ export function applyPostScanProcessing(
         discoveredReport.report,
         workspace.root,
       );
-      if (discoveredReport.report.analysisComplete === true) {
-        forensicVerdicts = summarizeForensicVerdicts(discoveredReport.report);
-      }
+      forensicVerdicts = summarizeForensicVerdicts(discoveredReport.report);
     } catch {
       /* corrupt report — no runtime evidence */
     }
