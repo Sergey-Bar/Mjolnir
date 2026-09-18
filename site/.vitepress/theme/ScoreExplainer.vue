@@ -220,10 +220,10 @@ function bandRange(min: number): string {
   color: var(--vp-c-brand-1);
 }
 .sx-step.s-score {
-  border-color: color-mix(in oklch, var(--qa-aurora-cyan) 50%, transparent);
+  border-color: color-mix(in oklch, var(--qa-info) 50%, transparent);
   background: linear-gradient(
     180deg,
-    color-mix(in oklch, var(--qa-aurora-cyan) 10%, transparent),
+    color-mix(in oklch, var(--qa-info) 10%, transparent),
     transparent 75%
   );
 }

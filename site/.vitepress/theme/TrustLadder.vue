@@ -14,7 +14,7 @@
  * the ladder here are the same ladder.
  *
  * THE BREAK IS NOT DECORATION. L0-L2 are the neutral steel ramp: static
- * evidence, brightening to the static ceiling. L3-L5 are aurora: they
+ * evidence, brightening to the static ceiling. L3-L5 are diagnostic: they
  * require a real run report. Between them sits a gap and a rule, because
  * this is a change of KIND, not of degree — a gradient would say "more
  * of the same", and the honest statement is that a static-only finding
@@ -127,7 +127,7 @@ const boundary = RUNTIME_BOUNDARY;
   color: var(--vp-c-text-3);
 }
 .qa-rung.is-runtime .qa-rung-kind {
-  color: var(--qa-aurora-bright);
+  color: var(--qa-healthy-bright);
 }
 .qa-ladder-note {
   margin: 1.2rem 0 0;

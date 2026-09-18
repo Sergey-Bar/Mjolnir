@@ -181,9 +181,6 @@ export function rule1() {
   expect("--qa-gold", T.brand.gold);
   expect("--qa-gold-bright", T.brand.goldBright);
   expect("--qa-gold-hot", T.brand.goldHot);
-  expect("--qa-aurora", T.brand.aurora);
-  expect("--qa-aurora-bright", T.brand.auroraBright);
-  expect("--qa-aurora-cyan", T.brand.auroraCyan);
   expect("--qa-healthy", T.score.trusted);
   expect("--qa-attention", T.score.warning);
   expect("--qa-critical", T.score.critical);

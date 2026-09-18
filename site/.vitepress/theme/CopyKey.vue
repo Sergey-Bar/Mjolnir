@@ -67,9 +67,9 @@ function rest(e: PointerEvent) {
     border-color 380ms cubic-bezier(0.2, 0, 0, 1);
 }
 .key:hover {
-  border-color: color-mix(in srgb, var(--qa-aurora-cyan) 40%, transparent);
+  border-color: color-mix(in srgb, var(--qa-info) 40%, transparent);
   box-shadow: 0 10px 40px -12px
-    color-mix(in srgb, var(--qa-aurora-cyan) 45%, transparent);
+    color-mix(in srgb, var(--qa-info) 45%, transparent);
 }
 .key code {
   padding: 13px 16px;
@@ -110,7 +110,7 @@ function rest(e: PointerEvent) {
   transform: scale(0.97);
 }
 .key button.done {
-  background: var(--qa-aurora-green);
+  background: var(--qa-healthy);
 }
 .key button svg {
   width: 14px;

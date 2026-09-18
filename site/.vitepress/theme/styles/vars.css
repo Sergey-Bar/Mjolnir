@@ -3,8 +3,8 @@
  * Do not edit: change the token module and regenerate.
  * `scripts/brand-doctor.mjs` fails CI if this file drifts from it.
  *
- * QA Doctor palette — storm-excellent. Brushed steel and forge gold under an
- * aurora, over midnight iron. Derived from the logo; see
+ * QA Doctor palette — diagnostic steel and forge gold over midnight iron.
+ * Derived from the logo; see
  * assets/brand/README.md.
  *
  * ONE palette. The site is dark-only (config.mts `appearance:
@@ -16,14 +16,11 @@
  */
 
 :root {
-  /* ---- brand accent: the aurora ----
-   * Links, the active sidebar item, focus and the primary button. Gold
-   * stays in the palette for what it means (EXCELLENT) and is no longer
-   * the colour of every link on every docs page. */
-  --vp-c-brand-1: #5cbde0;
-  --vp-c-brand-2: #45c1d4;
-  --vp-c-brand-3: #37abbd;
-  --vp-c-brand-soft: color-mix(in oklch, #5cbde0 14%, transparent);
+  /* ---- navigation: neutral steel, never a verdict colour ---- */
+  --vp-c-brand-1: #abb6c6;
+  --vp-c-brand-2: #c8cbcf;
+  --vp-c-brand-3: #8b939d;
+  --vp-c-brand-soft: color-mix(in oklch, #c8cbcf 12%, transparent);
 
   /* ---- surface: midnight iron ---- */
   --vp-c-bg: #0c1420;
@@ -58,18 +55,13 @@
   --qa-gold: #c19a34; /* primary brand — scarce */
   --qa-gold-bright: #e6bd57; /* primary on dark */
   --qa-gold-hot: #f4dc9c; /* highlight, excellent */
-  --qa-aurora: #37abbd; /* secondary — verification energy */
-  --qa-aurora-bright: #45c1d4; /* secondary on dark */
-  --qa-aurora-cyan: #5cbde0; /* informational */
-  --qa-aurora-green: #5fd6a4; /* aurora curtain, atmosphere only */
-  --qa-aurora-violet: #9d8cf5; /* aurora curtain, atmosphere only */
 
   /* ---- semantic: verdict, evidence, trust ----
    * Score colors follow the ScoreState model (src/reporter/score-state.ts):
    * critical 0-49 / needs attention 50-79 / healthy 80-99 / excellent 100. Green is
    * not a score color; --qa-ok survives for non-score success only.
    * Trust L0-L2 are static (steel ramp) and L3-L5 require a real run
-   * (aurora ramp) — the hue break at L2|L3 is the runtime boundary and
+   * (measured ramp) — the hue break at L2|L3 is the runtime boundary and
    * every surface that draws the ladder must draw it. */
   --qa-healthy: #5cc4e0; /* healthy test health, score band 80–99 */
   --qa-healthy-bright: #7fd4ea; /* healthy, hover */
@@ -101,11 +93,11 @@
     180deg,
     #dfe4ec 6%,
     var(--qa-steel) 40%,
-    var(--qa-aurora-cyan) 92%
+    var(--qa-steel) 92%
   );
 
-  --vp-c-brand-lighter: var(--qa-aurora-cyan);
-  --vp-c-brand-light: var(--qa-aurora-cyan);
+  --vp-c-brand-lighter: var(--qa-steel);
+  --vp-c-brand-light: var(--qa-steel);
   --vp-c-brand-dark: var(--vp-c-brand-2);
   --vp-c-brand-darker: var(--vp-c-brand-3);
 }

@@ -440,11 +440,6 @@ export const CSS_TOKENS: readonly (readonly [
   ["--qa-gold", BRAND.gold, "primary brand — scarce"],
   ["--qa-gold-bright", BRAND.goldBright, "primary on dark"],
   ["--qa-gold-hot", BRAND.goldHot, "highlight, excellent"],
-  ["--qa-aurora", BRAND.aurora, "secondary — verification energy"],
-  ["--qa-aurora-bright", BRAND.auroraBright, "secondary on dark"],
-  ["--qa-aurora-cyan", BRAND.auroraCyan, "informational"],
-  ["--qa-aurora-green", BRAND.auroraGreen, "aurora curtain, atmosphere only"],
-  ["--qa-aurora-violet", BRAND.auroraViolet, "aurora curtain, atmosphere only"],
 ] as const;
 
 /** Semantic score/verdict tokens, emitted after the palette. */

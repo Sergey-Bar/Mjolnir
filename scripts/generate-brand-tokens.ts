@@ -133,8 +133,8 @@ export async function buildVarsCss(): Promise<string> {
  * ${BANNER[1]}
  * ${BANNER[2]}
  *
- * QA Doctor palette — storm-excellent. Brushed steel and forge gold under an
- * aurora, over midnight iron. Derived from the logo; see
+ * QA Doctor palette — diagnostic steel and forge gold over midnight iron.
+ * Derived from the logo; see
  * assets/brand/README.md.
  *
  * ONE palette. The site is dark-only (config.mts \`appearance:
@@ -146,14 +146,11 @@ export async function buildVarsCss(): Promise<string> {
  */
 
 :root {
-  /* ---- brand accent: the aurora ----
-   * Links, the active sidebar item, focus and the primary button. Gold
-   * stays in the palette for what it means (EXCELLENT) and is no longer
-   * the colour of every link on every docs page. */
-  --vp-c-brand-1: ${BRAND.auroraCyan.toLowerCase()};
-  --vp-c-brand-2: ${BRAND.auroraBright.toLowerCase()};
-  --vp-c-brand-3: ${BRAND.aurora.toLowerCase()};
-  --vp-c-brand-soft: color-mix(in oklch, ${BRAND.auroraCyan.toLowerCase()} 14%, transparent);
+  /* ---- navigation: neutral steel, never a verdict colour ---- */
+  --vp-c-brand-1: ${TEXT.secondary.toLowerCase()};
+  --vp-c-brand-2: ${BRAND.steel.toLowerCase()};
+  --vp-c-brand-3: ${TEXT.muted.toLowerCase()};
+  --vp-c-brand-soft: color-mix(in oklch, ${BRAND.steel.toLowerCase()} 12%, transparent);
 
   /* ---- surface: midnight iron ---- */
   --vp-c-bg: ${SURFACE.ink900.toLowerCase()};
@@ -180,7 +177,7 @@ ${palette}
    * critical 0-49 / needs attention 50-79 / healthy 80-99 / excellent 100. Green is
    * not a score color; --qa-ok survives for non-score success only.
    * Trust L0-L2 are static (steel ramp) and L3-L5 require a real run
-   * (aurora ramp) — the hue break at L2|L3 is the runtime boundary and
+   * (measured ramp) — the hue break at L2|L3 is the runtime boundary and
    * every surface that draws the ladder must draw it. */
 ${semantic}
   --qa-excellent: linear-gradient(
@@ -200,11 +197,11 @@ ${semantic}
     180deg,
     ${PENDING_SITE.heroNameTop} 6%,
     var(--qa-steel) 40%,
-    var(--qa-aurora-cyan) 92%
+    var(--qa-steel) 92%
   );
 
-  --vp-c-brand-lighter: var(--qa-aurora-cyan);
-  --vp-c-brand-light: var(--qa-aurora-cyan);
+  --vp-c-brand-lighter: var(--qa-steel);
+  --vp-c-brand-light: var(--qa-steel);
   --vp-c-brand-dark: var(--vp-c-brand-2);
   --vp-c-brand-darker: var(--vp-c-brand-3);
 }

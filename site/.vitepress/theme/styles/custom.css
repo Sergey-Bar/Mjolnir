@@ -44,7 +44,7 @@ body {
 
 /* ---- selection + focus ------------------------------------- */
 ::selection {
-  background: color-mix(in oklch, var(--qa-aurora-cyan) 30%, transparent);
+  background: color-mix(in oklch, var(--qa-info) 30%, transparent);
 }
 
 /* ---- doc pages: one type family, quiet structure ----------- */
@@ -72,18 +72,14 @@ body {
 }
 
 .vp-doc blockquote {
-  border-left: 2px solid var(--qa-aurora-cyan);
-  background: color-mix(in oklch, var(--qa-aurora-cyan) 5%, transparent);
+  border-left: 2px solid var(--qa-info);
+  background: color-mix(in oklch, var(--qa-info) 5%, transparent);
   border-radius: 0 8px 8px 0;
 }
 
 .vp-doc a {
   text-underline-offset: 3px;
-  text-decoration-color: color-mix(
-    in oklch,
-    var(--qa-aurora-cyan) 45%,
-    transparent
-  );
+  text-decoration-color: color-mix(in oklch, var(--qa-info) 45%, transparent);
 }
 
 .vp-doc :not(pre) > code {
@@ -102,20 +98,15 @@ body {
   background: var(--qa-ink-950);
 }
 
-/* ---- docs chrome: the aurora marks where you are ---------- */
+/* ---- docs chrome: a calm position marker ----------------------- */
 .VPSidebarItem.is-active > .item > .indicator {
-  background: linear-gradient(
-    180deg,
-    var(--qa-aurora-green),
-    var(--qa-aurora-cyan) 50%,
-    var(--qa-aurora-violet)
-  );
+  background: var(--qa-steel);
 }
 .VPDocAsideOutline .outline-marker {
-  background: var(--qa-aurora-cyan);
+  background: var(--qa-info);
 }
 
-/* ---- landing navbar: clear over the aurora, glass once scrolled ---- */
+/* ---- landing navbar: clear at top, glass once scrolled ---- */
 .qa-landing .VPNavBar {
   --vp-nav-bg-color: transparent;
   background-color: color-mix(
@@ -154,7 +145,7 @@ body {
   color: var(--vp-c-text-1) !important;
 }
 
-/* ---- the one filled button: aurora, ink text ------------------ */
+/* ---- the one filled button: neutral steel, ink text ---------------- */
 .VPButton.brand {
   background-color: var(--vp-c-brand-1);
   color: var(--qa-on-gold);
@@ -181,7 +172,7 @@ select:focus-visible,
 textarea:focus-visible,
 summary:focus-visible,
 [tabindex]:focus-visible {
-  outline: 2px solid var(--qa-aurora);
+  outline: 2px solid var(--qa-info);
   outline-offset: 2px;
   border-radius: 3px;
 }

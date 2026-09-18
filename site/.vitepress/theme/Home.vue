@@ -33,6 +33,7 @@ const TITLE = [
   "QA Doctor tells you what you can trust.",
 ].map((l) => l.split(" "));
 const OFF = [0, TITLE[0].length];
+const booted = ref(false);
 
 /** Tools Simple Icons has no mark for get their initials, never a fake logo. */
 const monogram = (name: string) => MONOGRAM[name] ?? name.slice(0, 2);
@@ -42,6 +43,7 @@ const STACK = data.stack.flatMap((g) => [
   { key: `g-${g.label}`, label: g.label, name: "" },
   ...g.items.map((name) => ({ key: `i-${g.label}-${name}`, label: "", name })),
 ]);
+const STACK_GROUPS = data.stack;
 
 const CHAPTERS = [
   {
@@ -376,6 +378,12 @@ onMounted(async () => {
   const el = root.value;
   if (!el) return;
   motion = !matchMedia("(prefers-reduced-motion: reduce)").matches;
+  window.setTimeout(
+    () => {
+      booted.value = true;
+    },
+    motion ? 620 : 0,
+  );
 
   let tick = 0;
   const paint = () => {
@@ -469,6 +477,16 @@ onBeforeUnmount(() => {
 
 <template>
   <main ref="root" class="qa">
+    <Transition name="boot">
+      <div v-if="!booted" class="boot-screen" aria-hidden="true">
+        <div class="boot-mark">Q</div>
+        <div class="boot-copy">
+          <span>QA DOCTOR</span>
+          <i />
+          <small>PREPARING DIAGNOSTICS</small>
+        </div>
+      </div>
+    </Transition>
     <div ref="progEl" class="progress" aria-hidden="true" />
 
     <!-- ============ HERO ============ -->
@@ -514,6 +532,49 @@ onBeforeUnmount(() => {
       </div>
     </section>
 
+    <!-- ============ QUICK START ============ -->
+    <section class="quick-start wrap" aria-labelledby="qa-quick-start">
+      <header>
+        <p class="section-label">QUICK START</p>
+        <h2 id="qa-quick-start">From first command to evidence.</h2>
+        <p>
+          Start in the repository you already have. QA Doctor explains every
+          finding before asking your CI to enforce it.
+        </p>
+      </header>
+      <ol class="quick-steps">
+        <li>
+          <span class="quick-n">01</span>
+          <div>
+            <h3>Run a baseline</h3>
+            <p>Scan the repository and establish its current test health.</p>
+            <CopyKey :command="COMMAND" />
+          </div>
+        </li>
+        <li>
+          <span class="quick-n">02</span>
+          <div>
+            <h3>Read the diagnosis</h3>
+            <p>Open the exact rule, line, evidence level, and suggested fix.</p>
+            <a class="more" :href="withBase('/guide/getting-started')"
+              >See a sample report</a
+            >
+          </div>
+        </li>
+        <li>
+          <span class="quick-n">03</span>
+          <div>
+            <h3>Protect the next change</h3>
+            <p>
+              Scan only changed files and make new high-confidence failures
+              block the pull request.
+            </p>
+            <CopyKey :command="CI_COMMAND" />
+          </div>
+        </li>
+      </ol>
+    </section>
+
     <!-- ============ WORKS WITH ============ -->
     <section class="wrap" aria-labelledby="qa-stack">
       <div class="stack">
@@ -545,6 +606,31 @@ onBeforeUnmount(() => {
               </li>
             </template>
           </ul>
+        </div>
+        <div class="stack-detail" aria-label="Supported technologies">
+          <div
+            v-for="group in STACK_GROUPS"
+            :key="group.label"
+            class="stack-group"
+          >
+            <span>{{ group.label }}</span>
+            <ul>
+              <li v-for="name in group.items" :key="name">
+                <svg
+                  v-if="LOGOS[name]"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path :d="LOGOS[name]" fill="currentColor" />
+                </svg>
+                <b v-else class="mono" aria-hidden="true">{{
+                  monogram(name)
+                }}</b>
+                {{ name }}
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </section>
@@ -1339,6 +1425,77 @@ onBeforeUnmount(() => {
   pointer-events: none;
 }
 
+/* ---- boot: short diagnostic handshake, never a blocking splash screen ---- */
+.boot-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-content: center;
+  gap: 18px;
+  background:
+    linear-gradient(rgba(198, 204, 214, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(198, 204, 214, 0.045) 1px, transparent 1px),
+    var(--qa-ink-950);
+  background-size: 32px 32px;
+  color: var(--t1);
+}
+.boot-mark {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  margin-inline: auto;
+  border: 1px solid var(--qa-gold-bright);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 7px
+    color-mix(in oklch, var(--qa-gold) 10%, transparent);
+  font-size: 30px;
+  font-weight: 600;
+  color: var(--qa-gold-hot);
+  animation: boot-mark 650ms var(--settle) infinite alternate;
+}
+.boot-copy {
+  display: grid;
+  grid-template-columns: auto 78px;
+  gap: 8px 12px;
+  align-items: center;
+  font-family: var(--vp-font-family-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+.boot-copy small {
+  grid-column: 1 / -1;
+  font-size: 9px;
+  letter-spacing: 0.09em;
+  color: var(--t3);
+}
+.boot-copy i {
+  height: 1px;
+  background: linear-gradient(90deg, var(--qa-gold), var(--qa-steel));
+  animation: boot-line 650ms var(--settle) infinite alternate;
+}
+.boot-enter-active,
+.boot-leave-active {
+  transition: opacity 220ms var(--settle);
+}
+.boot-leave-to {
+  opacity: 0;
+}
+@keyframes boot-mark {
+  to {
+    box-shadow: inset 0 0 0 13px
+      color-mix(in oklch, var(--qa-gold) 7%, transparent);
+  }
+}
+@keyframes boot-line {
+  to {
+    transform: scaleX(0.3);
+    transform-origin: right;
+  }
+}
+
 /* ---- hero ---- */
 .hero-band {
   position: relative;
@@ -1354,6 +1511,26 @@ onBeforeUnmount(() => {
   height: 1px;
   background: var(--qa-healthy);
   opacity: 0.52;
+}
+.hero-band::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.34;
+  background:
+    radial-gradient(
+      circle at 81% 18%,
+      color-mix(in oklch, var(--qa-gold) 12%, transparent) 0 1px,
+      transparent 1.5px
+    ),
+    linear-gradient(90deg, rgba(198, 204, 214, 0.055) 1px, transparent 1px),
+    linear-gradient(rgba(198, 204, 214, 0.055) 1px, transparent 1px);
+  background-size:
+    96px 96px,
+    48px 48px,
+    48px 48px;
+  mask-image: linear-gradient(180deg, #000, transparent 90%);
 }
 .hero {
   padding-top: calc(var(--vp-nav-height) + clamp(48px, 7vw, 104px));
@@ -1433,13 +1610,136 @@ onBeforeUnmount(() => {
   margin-top: 32px;
 }
 
-/* ---- works with: one strip, drifting ---- */
+/* ---- quick start: actionable before the deep product tour ---- */
+.quick-start {
+  display: grid;
+  grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
+  gap: clamp(32px, 7vw, 96px);
+  padding-block: clamp(64px, 9vw, 112px);
+  border-bottom: 1px solid var(--line);
+}
+.section-label {
+  margin-bottom: 14px;
+  font-family: var(--vp-font-family-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--qa-gold-bright);
+}
+.quick-start header h2 {
+  max-width: 13ch;
+  font-size: clamp(28px, 3.2vw, 42px);
+  font-weight: 500;
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+}
+.quick-start header > p:last-child {
+  max-width: 34ch;
+  margin-top: 18px;
+  color: var(--t2);
+}
+.quick-steps {
+  border-top: 1px solid var(--line);
+}
+.quick-steps li {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 18px;
+  padding: 22px 0 24px;
+  border-bottom: 1px solid var(--line);
+  transition:
+    padding-left 180ms var(--settle),
+    background-color 180ms var(--settle);
+}
+.quick-steps li:hover {
+  padding-left: 12px;
+  background: color-mix(in oklch, var(--qa-steel) 4%, transparent);
+}
+.quick-n {
+  padding-top: 2px;
+  font-family: var(--vp-font-family-mono);
+  font-size: 11px;
+  color: var(--qa-gold-bright);
+}
+.quick-steps h3 {
+  font-size: 17px;
+}
+.quick-steps p {
+  max-width: 46ch;
+  margin-top: 4px;
+  margin-bottom: 14px;
+  font-size: 14px;
+  color: var(--t2);
+}
+
+/* ---- works with: a quiet strip that expands into an index on hover ---- */
 .stack {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 32px;
   padding-block: 28px;
   border-bottom: 1px solid var(--line);
+}
+.stack-detail {
+  position: absolute;
+  z-index: 4;
+  top: calc(100% - 1px);
+  left: 0;
+  right: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px;
+  padding: 24px;
+  border: 1px solid var(--line-2);
+  background: color-mix(in srgb, var(--qa-ink-900) 96%, transparent);
+  box-shadow: 0 20px 36px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  pointer-events: none;
+  transition:
+    opacity 180ms var(--settle),
+    transform 180ms var(--settle),
+    visibility 180ms;
+}
+.stack:hover .stack-detail,
+.stack:focus-within .stack-detail {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.stack-group > span {
+  display: block;
+  margin-bottom: 12px;
+  font-family: var(--vp-font-family-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--qa-gold-bright);
+}
+.stack-group ul {
+  display: grid;
+  gap: 8px;
+}
+.stack-group li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--t2);
+}
+.stack-group svg {
+  width: 17px;
+  height: 17px;
+  color: var(--qa-steel);
+}
+.stack-group .mono {
+  width: 17px;
+  height: 17px;
+  font-size: 7px;
 }
 .qa .stack-title {
   flex: none;
@@ -2796,7 +3096,8 @@ onBeforeUnmount(() => {
   .hero-grid,
   .toc,
   .flows,
-  .limits {
+  .limits,
+  .quick-start {
     grid-template-columns: minmax(0, 1fr);
   }
   .codes {
@@ -2814,6 +3115,24 @@ onBeforeUnmount(() => {
   }
   .marquee {
     width: 100%;
+  }
+  .marquee {
+    display: none;
+  }
+  .stack-detail {
+    position: static;
+    display: grid;
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+    padding: 0 0 20px;
+    border: 0;
+    box-shadow: none;
+    background: none;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    pointer-events: auto;
   }
   .anatomy,
   .masks {
@@ -2862,6 +3181,10 @@ onBeforeUnmount(() => {
   }
   .marquee {
     mask-image: none;
+  }
+  .boot-mark,
+  .boot-copy i {
+    animation: none;
   }
 }
 </style>

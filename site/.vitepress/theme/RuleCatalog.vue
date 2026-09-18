@@ -408,7 +408,7 @@ tbody tr:hover {
 }
 .measured {
   /* retargeted with the score-token rework: this is a trust chip, not a
-   * score — aurora-cyan (the trusted family), no longer green. */
+   * score — diagnostic-cyan (the trusted family), no longer green. */
   color: var(--qa-trusted);
   background: rgba(92, 196, 224, 0.12);
   border-color: rgba(92, 196, 224, 0.3);

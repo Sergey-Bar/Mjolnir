@@ -293,7 +293,7 @@ async function copyReport() {
   border-color: var(--vp-c-text-3);
 }
 .term-copy:focus-visible {
-  outline: 2px solid var(--qa-aurora);
+  outline: 2px solid var(--qa-info);
   outline-offset: 2px;
 }
 
@@ -321,10 +321,10 @@ async function copyReport() {
 }
 .tab.on {
   color: var(--term-fg);
-  border-bottom-color: var(--qa-aurora-cyan);
+  border-bottom-color: var(--qa-info);
 }
 .tab:focus-visible {
-  outline: 2px solid var(--qa-aurora);
+  outline: 2px solid var(--qa-info);
   outline-offset: -3px;
 }
 
@@ -388,7 +388,7 @@ async function copyReport() {
   color: var(--term-fg);
 }
 .more > summary:focus-visible {
-  outline: 2px solid var(--qa-aurora);
+  outline: 2px solid var(--qa-info);
   outline-offset: -2px;
 }
 .chev {
