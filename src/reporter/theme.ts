@@ -1,5 +1,5 @@
 /**
- * Norse-forge theme system. Pure string-in → string-out helpers.
+ * diagnostic theme system. Pure string-in → string-out helpers.
  * Respects NO_COLOR and non-TTY via `palette(isTTY)` — every renderer
  * receives a palette and never touches process.env directly.
  *
@@ -36,20 +36,20 @@ function fromHex(hex: string): readonly [number, number, number] {
 }
 
 export interface Palette {
-  /** Yggdrasil green — healthy / passing (non-score success contexts, e.g. "autofix applied"). */
+  /** Status green for non-score success contexts, e.g. "autofix applied". */
   ok: (s: string) => string;
   /** Aurora teal — info / detected frameworks. */
   info: (s: string) => string;
-  /** Frost-steel blue — the hammer, section headers. */
+  /** Neutral steel — the score graphic, section headers. */
   accent: (s: string) => string;
-  /** Amber — warnings (QA Doctor's lightning). */
+  /** Amber — needs-attention findings. */
   warning: (s: string) => string;
-  /** Rune-red — errors. */
+  /** Coral — errors. */
   error: (s: string) => string;
   /** Aurora-cyan — the trusted score band (80–99). Score contexts only. */
   trusted: (s: string) => string;
-  /** Forged white-gold — the forged score state (100). */
-  forged: (s: string) => string;
+  /** Excellent white-gold — the excellent score state (100). */
+  excellent: (s: string) => string;
   bold: (s: string) => string;
   dim: (s: string) => string;
 }
@@ -62,34 +62,34 @@ export interface Palette {
  *
  * Every role is now the canonical token. Six of them used to be the
  * terminal's own: a frost-steel blue for headers, a teal for info, an
- * amber for warnings, a rune-red for errors, a bone white for bold and a
+ * amber for warnings, a indicator-red for errors, a bone white for bold and a
  * weathered stone for dim — a second palette for one product. The
- * rune-red also failed WCAG AA at 4.36:1 on this terminal's own
+ * indicator-red also failed WCAG AA at 4.36:1 on this terminal's own
  * background; `STATUS.error` on the canonical ground is 6.20:1.
  */
-export const NORSE = {
-  ok: fromHex(STATUS.ok), // Yggdrasil green — non-score success only
+export const TERMINAL_COLORS = {
+  ok: fromHex(STATUS.ok), // status green — non-score success only
   info: fromHex(BRAND.aurora), // aurora — informational
-  accent: fromHex(BRAND.steel), // brushed steel — the hammer, headers
-  warning: fromHex(STATUS.warning), // forge gold
+  accent: fromHex(BRAND.steel), // brushed steel — the score graphic, headers
+  warning: fromHex(STATUS.warning), // amber — needs attention
   error: fromHex(STATUS.error), // 6.20:1 on the terminal ground
   trusted: fromHex(SCORE.trusted), // aurora-cyan — trusted score band
-  forged: fromHex(SCORE.forged), // forged white-gold — score 100
+  excellent: fromHex(SCORE.excellent), // excellent white-gold — score 100
   bold: fromHex(TEXT.primary), // the one text ramp, brightest step
   dim: fromHex(TEXT.muted), // the one text ramp, quietest step
 } as const;
 
 const on = {
-  ok: rgb(NORSE.ok),
-  info: rgb(NORSE.info),
-  accent: rgb(NORSE.accent),
-  warning: rgb(NORSE.warning),
-  error: rgb(NORSE.error),
-  trusted: rgb(NORSE.trusted),
-  forged: rgb(NORSE.forged),
+  ok: rgb(TERMINAL_COLORS.ok),
+  info: rgb(TERMINAL_COLORS.info),
+  accent: rgb(TERMINAL_COLORS.accent),
+  warning: rgb(TERMINAL_COLORS.warning),
+  error: rgb(TERMINAL_COLORS.error),
+  trusted: rgb(TERMINAL_COLORS.trusted),
+  excellent: rgb(TERMINAL_COLORS.excellent),
   // bold keeps the SGR bold-intensity attribute as well as the tint.
-  bold: (s: string) => `\x1b[1m${rgb(NORSE.bold)(s)}`,
-  dim: rgb(NORSE.dim),
+  bold: (s: string) => `\x1b[1m${rgb(TERMINAL_COLORS.bold)(s)}`,
+  dim: rgb(TERMINAL_COLORS.dim),
 };
 
 /**
@@ -132,7 +132,7 @@ const off = {
   warning: inertId,
   error: inertId,
   trusted: inertId,
-  forged: inertId,
+  excellent: inertId,
   bold: inertId,
   dim: inertId,
 };
@@ -256,7 +256,7 @@ export function padTo(s: string, width: number): string {
 /**
  * Score gauge: colored block bar with gradient segments.
  * Color by ScoreState band: red <50, amber 50–79, aurora-cyan 80–99,
- * forged white-gold 100 — one mapping shared with verdict/badge.
+ * excellent white-gold 100 — one mapping shared with verdict/badge.
  * Falls back to `#`/`.` blocks when `ascii` is set (block-drawing
  * characters `█`/`▓`/`░` render as "?" on some legacy Windows consoles).
  */
@@ -303,7 +303,7 @@ export function gaugeColorForBand(
   band: ScoreBand | "unmeasured",
   p: Palette,
 ): (s: string) => string {
-  if (band === "forged") return p.forged;
+  if (band === "excellent") return p.excellent;
   if (band === "trusted") return p.trusted;
   if (band === "unmeasured") return p.dim;
   return band === "warning" ? p.warning : p.error;

@@ -81,7 +81,7 @@ QA Doctor читает набор тестов, CI-workflow и, если он е
 Реальное сканирование [`examples/demo-repo`](examples/demo-repo), небольшого набора тестов Playwright с CI-workflow. Вот куда ушли его баллы:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Разбивка вычетов QA Doctor: WORTHINESS 80/100 WORTHY, оценка по категориям, блок вычетов по серьёзности и список FIX THIS FIRST" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="Разбивка вычетов QA Doctor: TEST HEALTH 80/100 HEALTHY, оценка по категориям, блок вычетов по серьёзности и список FIX THIS FIRST" width="520" />
 </p>
 
 <sub>Сгенерировано командой `npm run docs:hero` из реального сканирования и защищено от расхождений в CI. Полный отчёт `--verbose` того же сканирования — [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
@@ -323,17 +323,17 @@ e2e/checkout.spec.ts
 ## Оценка надёжности
 
 <p align="center">
-  <img src="assets/readme/score-gauge.svg" alt="Шкала надёжности от 0 до 100 с маркером, проходящим по каждой оценке: UNWORTHY ниже 50, NEEDS WORK от 50 до 79, WORTHY от 80 до 99, FORGED при 100" width="720" />
+  <img src="assets/readme/score-gauge.svg" alt="Шкала надёжности от 0 до 100 с маркером, проходящим по каждой оценке: CRITICAL ниже 50, NEEDS ATTENTION от 50 до 79, HEALTHY от 80 до 99, EXCELLENT при 100" width="720" />
 </p>
 
 <sub>Каждая оценка от 0 до 100, размещённая настоящим `deriveScoreState`. Сгенерировано командой `npm run docs:gauge` и защищено от расхождений в CI.</sub>
 
 | Оценка    | Вердикт                                   |
 | --------- | ----------------------------------------- |
-| `0 – 49`  | **UNWORTHY**                              |
-| `50 – 79` | **NEEDS WORK**                            |
-| `80 – 99` | **WORTHY**                                |
-| `100`     | **FORGED**                                |
+| `0 – 49`  | **CRITICAL**                              |
+| `50 – 79` | **NEEDS ATTENTION**                       |
+| `80 – 99` | **HEALTHY**                               |
+| `100`     | **EXCELLENT**                             |
 | `null`    | **UNKNOWN**: объявления тестов не найдены |
 
 **Как она вычисляется.** Серьёзность задаёт базовый вычет (`error −8`, `warning −3`, `info −1`), а уровень доказательности его уменьшает: E2 учитывается полностью, E1 наполовину (с округлением вниз), E0 не учитывается. Сумма нормируется по охвату набора, то есть вычеты на одно объявление теста, а не на файл. Терминал выводит те же уменьшенные числа, что использовала оценка; скрытой второй модели нет. Подробности: [docs/SCORING.md](docs/SCORING.md) и [руководство по оценке](https://sergey-bar.github.io/qa-doctor/guide/scoring).

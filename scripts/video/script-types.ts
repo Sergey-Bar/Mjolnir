@@ -18,7 +18,7 @@ export interface BeatAssertions {
   requiredFindings?: string[];
   /** Rule IDs that MUST NOT appear — the fix-and-re-run proof. */
   absentFindings?: string[];
-  /** Worthiness score, discovered from the scan and never hand-written. */
+  /** Test Health score, discovered from the scan and never hand-written. */
   score?: number | null;
   /** Findings at severity=error, discovered from the scan. */
   errorCount?: number;

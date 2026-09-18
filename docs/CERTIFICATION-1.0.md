@@ -43,7 +43,7 @@ so it could never fire). History: `docs/MEASUREMENT-CLOSEOUT.md`.
 - Full suite: **7,054 passed** + full-coverage ratchet
   (99.8/99.37/99.81/99.82 — per-file paused, documented in
   `vitest.config.ts`)
-- Doctor self-audit: **WORTHY** — 77 measured / 0 unmeasured / 32
+- Doctor self-audit: **HEALTHY** — 77 measured / 0 unmeasured / 32
   quarantine, `healthy: true`, byte-identical JSON across runs
 - Determinism replay: byte-identical minus the durationMs allowlist
 - Release pipeline: proven green end-to-end (v0.6.13 publish → npm

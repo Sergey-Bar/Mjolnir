@@ -77,7 +77,7 @@ GitHub Trending formula ≈ stars/day velocity + unique stargazers:
 - DO concentrate launches into 24–48h windows (velocity matters)
 - DO add "Star this repo if..." CTA in CLI output (one line, tasteful):
   `★ Found this useful? github.com/qa-doctor/qa-doctor`
-- DO create star-worthy MOMENTS: the 10k-star celebration commit,
+- DO create star-healthy MOMENTS: the 10k-star celebration commit,
   contributor wall, milestone changelogs
 - Weekly release cadence = weekly reason to reappear in feeds/releases
 

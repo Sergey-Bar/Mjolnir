@@ -10,7 +10,7 @@ export type Span = { t: string; c?: string; b?: boolean };
 export type TermLine = Span[];
 export type Part = "where" | "sure" | "fp" | "fix";
 export type PartSpan = Span & { part?: Part };
-type Tone = "forged" | "trusted" | "warning" | "critical";
+type Tone = "excellent" | "healthy" | "warning" | "critical";
 
 interface RuleRow {
   id: string;
@@ -229,7 +229,7 @@ const TIERS: Record<string, string> = {
   quarantine: "Quarantine",
 };
 
-const TONES: Tone[] = ["forged", "trusted", "warning", "critical"];
+const TONES: Tone[] = ["excellent", "healthy", "warning", "critical"];
 const BANDS_DESC = [...report.scoring.bands].sort((a, b) => b.min - a.min);
 const toneOf = (score: number): Tone => {
   const clamped = Math.max(0, Math.min(100, score));
@@ -250,7 +250,7 @@ export default defineLoader({
     const scanLines = (scan.ansi as string[]).map(parseAnsi);
     const rescanLines = (beat("hero-rescan").ansi as string[]).map(parseAnsi);
 
-    const top = find(scanLines, "WORTHINESS");
+    const top = find(scanLines, "TEST HEALTH");
     const findingsAt = find(scanLines, "▍ FINDINGS");
     const staticCard = card(scanLines, "QA-CI-009", findingsAt + 1);
     const cardText = staticCard.map(text);

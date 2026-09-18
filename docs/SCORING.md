@@ -1,4 +1,4 @@
-# Scoring — How WORTHINESS Is Computed
+# Scoring — How TEST HEALTH Is Computed
 
 > **Status (post-P2, 2026-09-08):** `NORMALIZATION_K = 5` still produces the
 > documented verdicts on the measured data points (see the re-measured table
@@ -42,7 +42,7 @@ Then the categorical overrides, in order:
    this is the ≥ 8 mass band seen from the other side — kept as a named guard
    so the law stays visible and the two cannot drift apart.
 4. **Categorical override** — if any finding is suite-invalidating, the score is
-   capped at `SUITE_INVALIDATED_CEILING` (49), placing it in UNWORTHY. Applied
+   capped at `SUITE_INVALIDATED_CEILING` (49), placing it in CRITICAL. Applied
    last, unchanged.
 
 | Constant                    | Value                      | Fitted?                                                                            |
@@ -154,12 +154,12 @@ disclosure; the KPI itself closes at WI-14).
 
 ## Verdict Bands
 
-| Score   | Verdict    |
-| ------- | ---------- |
-| 100     | FORGED     |
-| ≥ 80    | WORTHY     |
-| 50 – 79 | NEEDS WORK |
-| < 50    | UNWORTHY   |
+| Score   | Verdict         |
+| ------- | --------------- |
+| 100     | EXCELLENT       |
+| ≥ 80    | HEALTHY         |
+| 50 – 79 | NEEDS ATTENTION |
+| < 50    | CRITICAL        |
 
 ## Why the denominator counts declarations, not files
 
@@ -186,7 +186,7 @@ A green result is then not evidence about the rest of the suite — and no
 denominator should be able to average that away. A two-test repo with `.only`
 is as compromised as a two-thousand-test one.
 
-Rules declaring `suiteInvalidating: true` cap the score into UNWORTHY:
+Rules declaring `suiteInvalidating: true` cap the score into CRITICAL:
 
 | Rule        | Mechanism                                   |
 | ----------- | ------------------------------------------- |
@@ -231,11 +231,11 @@ real findings now read ≤ 75 at any suite size, where v1 read 99.
 Measured at the Phase-5 constants (still current): `NORMALIZATION_K = 5`,
 `SMOOTHING_C = 1`, and — since v2 — the mass ceilings:
 
-| Repo                 | Declarations | Raw pts | Score | Verdict    | Driver                  |
-| -------------------- | ------------ | ------- | ----- | ---------- | ----------------------- |
-| this repo            | 1126         | 0       | 100   | WORTHY     | zero deductions         |
-| `tests/golden/repo`  | 4            | 40      | 49    | UNWORTHY   | `it.only` (categorical) |
-| `examples/demo-repo` | 2            | 20      | 67    | NEEDS WORK | density                 |
+| Repo                 | Declarations | Raw pts | Score | Verdict         | Driver                  |
+| -------------------- | ------------ | ------- | ----- | --------------- | ----------------------- |
+| this repo            | 1126         | 0       | 100   | HEALTHY         | zero deductions         |
+| `tests/golden/repo`  | 4            | 40      | 49    | CRITICAL        | `it.only` (categorical) |
+| `examples/demo-repo` | 2            | 20      | 67    | NEEDS ATTENTION | density                 |
 
 All three verdict bands are reachable, and each is reached for a different and
 stated reason rather than by an arithmetic accident. The v2 mass ceiling
@@ -247,11 +247,11 @@ driver unchanged). The known data points hold without tuning the boundaries.
 the corpus and the registry grew since the Phase-5 table, and the numbers moved
 with the tree, not with the formula:
 
-| Repo                 | Declarations | Raw pts       | Score | Verdict    | Driver                                |
-| -------------------- | ------------ | ------------- | ----- | ---------- | ------------------------------------- |
-| this repo            | 3480         | 2             | 99    | WORTHY     | honesty guard (2 new QA-PW-125 fires) |
-| `tests/golden/repo`  | 4            | 16 (--strict) | 49    | UNWORTHY   | `it.only` (categorical — unchanged)   |
-| `examples/demo-repo` | 7            | 40            | 75    | NEEDS WORK | density (85 ceiling does not bind)    |
+| Repo                 | Declarations | Raw pts       | Score | Verdict         | Driver                                |
+| -------------------- | ------------ | ------------- | ----- | --------------- | ------------------------------------- |
+| this repo            | 3480         | 2             | 99    | HEALTHY         | honesty guard (2 new QA-PW-125 fires) |
+| `tests/golden/repo`  | 4            | 16 (--strict) | 49    | CRITICAL        | `it.only` (categorical — unchanged)   |
+| `examples/demo-repo` | 7            | 40            | 75    | NEEDS ATTENTION | density (85 ceiling does not bind)    |
 
 The drifted rows are re-measured evidence, not regressions: scores are
 identical with and without the v2 ceiling at these masses (2 pts and 40 pts
@@ -282,7 +282,7 @@ document exists to avoid repeating.
 Terminal output shows the numerator and denominator next to the gauge:
 
 ```
-WORTHINESS  100/100  WORTHY
+TEST HEALTH  100/100  HEALTHY
 ##############################
 ```
 

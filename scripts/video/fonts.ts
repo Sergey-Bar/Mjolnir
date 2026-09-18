@@ -54,7 +54,7 @@ export const FONTS: VendoredFont[] = [
     mime: "font/ttf",
   },
   {
-    family: "QaDoctorRunes",
+    family: "QaDoctorSymbols",
     file: "FreeMono.ttf",
     weight: 400,
     mime: "font/ttf",
@@ -62,8 +62,8 @@ export const FONTS: VendoredFont[] = [
 ];
 
 /** The CSS font stack. Order matters: the nine glyphs Geist Mono lacks
- * (runes, ℹ, ⚠, ⚡, ✗) fall through to FreeMono. */
-export const FONT_STACK = `"QaDoctorMono", "QaDoctorRunes", monospace`;
+ * (indicators, ℹ, ⚠, ⚡, ✗) fall through to FreeMono. */
+export const FONT_STACK = `"QaDoctorMono", "QaDoctorSymbols", monospace`;
 
 /** `@font-face` rules with the files inlined — no network, no system fonts. */
 export function fontFaceCss(): string {

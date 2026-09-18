@@ -81,7 +81,7 @@ QA Doctor קורא את חבילת הבדיקות, את ה-workflows של ה-CI,
 סריקה אמיתית של [`examples/demo-repo`](examples/demo-repo), חבילת Playwright קטנה עם workflow של CI. לכאן הלכו הנקודות שלה:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="פירוט הניכויים של QA Doctor: WORTHINESS 80/100 WORTHY, הציון לפי קטגוריה, תיבת הניכויים לפי חומרה ורשימת FIX THIS FIRST" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="פירוט הניכויים של QA Doctor: TEST HEALTH 80/100 HEALTHY, הציון לפי קטגוריה, תיבת הניכויים לפי חומרה ורשימת FIX THIS FIRST" width="520" />
 </p>
 
 <sub>נוצר על ידי `npm run docs:hero` מסריקה אמיתית ונעול מפני סטייה ב-CI. דוח ה-`--verbose` המלא של אותה סריקה הוא [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
@@ -323,17 +323,17 @@ e2e/checkout.spec.ts
 ## ציון הראוּיוּת
 
 <p align="center">
-  <img src="assets/readme/score-gauge.svg" alt="סולם הראוּיוּת מ-0 עד 100, עם סמן שעובר על כל ציון: UNWORTHY מתחת ל-50, NEEDS WORK מ-50 עד 79, WORTHY מ-80 עד 99, FORGED ב-100" width="720" />
+  <img src="assets/readme/score-gauge.svg" alt="סולם הראוּיוּת מ-0 עד 100, עם סמן שעובר על כל ציון: CRITICAL מתחת ל-50, NEEDS ATTENTION מ-50 עד 79, HEALTHY מ-80 עד 99, EXCELLENT ב-100" width="720" />
 </p>
 
 <sub>כל ציון מ-0 עד 100, ממוקם על ידי `deriveScoreState` האמיתי. נוצר על ידי `npm run docs:gauge` ונעול מפני סטייה ב-CI.</sub>
 
 | ציון      | פסק דין                            |
 | --------- | ---------------------------------- |
-| `0 – 49`  | **UNWORTHY**                       |
-| `50 – 79` | **NEEDS WORK**                     |
-| `80 – 99` | **WORTHY**                         |
-| `100`     | **FORGED**                         |
+| `0 – 49`  | **CRITICAL**                       |
+| `50 – 79` | **NEEDS ATTENTION**                |
+| `80 – 99` | **HEALTHY**                        |
+| `100`     | **EXCELLENT**                      |
 | `null`    | **UNKNOWN**: לא נמצאו הצהרות בדיקה |
 
 **איך הוא מחושב.** החומרה קובעת ניכוי בסיס (`error −8`, `warning −3`, `info −1`) ורמת הראיה מקטינה אותו: E2 נספר במלואו, E1 בחצי (מעוגל כלפי מטה), E0 בכלל לא. הסכום מנורמל לפי החשיפה של החבילה, כלומר ניכויים לכל הצהרת בדיקה ולא לכל קובץ. הטרמינל מדפיס את אותם מספרים מוקטנים שהציון השתמש בהם; אין מודל שני נסתר. פרטים: [docs/SCORING.md](docs/SCORING.md) ו[מדריך הציון](https://sergey-bar.github.io/qa-doctor/guide/scoring).

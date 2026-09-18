@@ -185,7 +185,7 @@ export async function captureDemoScript(): Promise<VideoScript> {
     {
       id: "hero-scan",
       narrative:
-        "A real suite scores 75/100 NEEDS WORK, with the CI gate itself among the findings.",
+        "A real suite scores 75/100 NEEDS ATTENTION, with the CI gate itself among the findings.",
       source: "examples/demo-repo",
       command,
       ansi: renderScan(before, flags),

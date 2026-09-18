@@ -1,7 +1,7 @@
 /**
  * README score-gauge asset reproducibility.
  *
- * assets/readme/score-gauge.svg is the worthiness scale with a marker
+ * assets/readme/score-gauge.svg is the test health scale with a marker
  * sweeping every score 0-100, rendered from `deriveScoreState` — the
  * pure function the CLI calls for every scan — not hand-drawn. This spec
  * is the drift lock: it regenerates the asset from the same code path
@@ -47,7 +47,7 @@ describe("assets/readme/score-gauge.svg reproducibility", () => {
 
   it("draws every real band exactly once, named by the verdict it carries", () => {
     const svg = readFileSync(SVG_PATH, "utf8");
-    const sample = { critical: 0, warning: 50, trusted: 80, forged: 100 };
+    const sample = { critical: 0, warning: 50, trusted: 80, excellent: 100 };
     for (const [band, score] of Object.entries(sample)) {
       const matches =
         svg.match(new RegExp(`class="band band-${band}"`, "g")) ?? [];

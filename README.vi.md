@@ -81,7 +81,7 @@ QA Doctor đọc bộ test, các workflow CI và, nếu bạn có, báo cáo c�
 Một lần quét thật trên [`examples/demo-repo`](examples/demo-repo), một bộ test Playwright nhỏ có workflow CI. Đây là nơi điểm của nó bị trừ:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Bảng phân tích trừ điểm của QA Doctor: WORTHINESS 80/100 WORTHY, điểm theo từng hạng mục, ô trừ điểm theo mức nghiêm trọng và danh sách FIX THIS FIRST" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="Bảng phân tích trừ điểm của QA Doctor: TEST HEALTH 80/100 HEALTHY, điểm theo từng hạng mục, ô trừ điểm theo mức nghiêm trọng và danh sách FIX THIS FIRST" width="520" />
 </p>
 
 <sub>Được tạo bởi `npm run docs:hero` từ một lần quét thật và được khóa chống sai lệch trong CI. Báo cáo `--verbose` đầy đủ của cùng lần quét là [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
@@ -323,17 +323,17 @@ e2e/checkout.spec.ts
 ## Điểm đáng tin
 
 <p align="center">
-  <img src="assets/readme/score-gauge.svg" alt="Thang điểm đáng tin từ 0 đến 100, với một con trỏ quét qua mọi mức điểm: UNWORTHY dưới 50, NEEDS WORK từ 50 đến 79, WORTHY từ 80 đến 99, FORGED ở 100" width="720" />
+  <img src="assets/readme/score-gauge.svg" alt="Thang điểm đáng tin từ 0 đến 100, với một con trỏ quét qua mọi mức điểm: CRITICAL dưới 50, NEEDS ATTENTION từ 50 đến 79, HEALTHY từ 80 đến 99, EXCELLENT ở 100" width="720" />
 </p>
 
 <sub>Mọi mức điểm từ 0 đến 100, được đặt vị trí bởi `deriveScoreState` thật. Được tạo bởi `npm run docs:gauge` và được khóa chống sai lệch trong CI.</sub>
 
 | Điểm      | Kết luận                                  |
 | --------- | ----------------------------------------- |
-| `0 – 49`  | **UNWORTHY**                              |
-| `50 – 79` | **NEEDS WORK**                            |
-| `80 – 99` | **WORTHY**                                |
-| `100`     | **FORGED**                                |
+| `0 – 49`  | **CRITICAL**                              |
+| `50 – 79` | **NEEDS ATTENTION**                       |
+| `80 – 99` | **HEALTHY**                               |
+| `100`     | **EXCELLENT**                             |
 | `null`    | **UNKNOWN**: không tìm thấy khai báo test |
 
 **Cách tính.** Mức nghiêm trọng đặt ra mức trừ cơ bản (`error −8`, `warning −3`, `info −1`) và mức bằng chứng chiết khấu nó: E2 trừ đủ, E1 trừ một nửa (làm tròn xuống), E0 không trừ. Tổng được chuẩn hóa theo quy mô bộ test, tức là trừ theo từng khai báo test chứ không theo tệp. Terminal in ra đúng những con số đã chiết khấu mà điểm đã dùng; không có mô hình thứ hai nào ẩn giấu. Chi tiết: [docs/SCORING.md](docs/SCORING.md) và [hướng dẫn chấm điểm](https://sergey-bar.github.io/qa-doctor/guide/scoring).

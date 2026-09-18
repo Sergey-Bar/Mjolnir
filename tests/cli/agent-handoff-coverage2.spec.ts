@@ -266,7 +266,7 @@ describe("scan flags — score/category/staged arms via runScanCommand", () => {
     const cap = capture();
     const code = await main(["--blocking", "none", "--classic", dir], cap.io);
     expect(code).toBe(0);
-    expect(cap.text()).toContain("WORTHINESS");
+    expect(cap.text()).toContain("TEST HEALTH");
     expect(cap.text()).toContain("QA-PW-003");
   });
 

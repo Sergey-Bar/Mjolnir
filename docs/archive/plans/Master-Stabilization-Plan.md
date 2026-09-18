@@ -703,7 +703,7 @@ people already use. Build only on demonstrated demand.
 
 ---
 
-## 4. DEFINITION OF DONE — stabilized and trustworthy
+## 4. DEFINITION OF DONE — stabilized and reliable
 
 - Every gate (typecheck, lint, test, coverage, build, self-scan, corpus audit,
   package smoke) green on Linux, macOS and Windows, with recorded real numbers.

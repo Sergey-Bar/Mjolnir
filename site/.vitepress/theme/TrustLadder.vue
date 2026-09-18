@@ -31,35 +31,35 @@ const boundary = RUNTIME_BOUNDARY;
 </script>
 
 <template>
-  <figure class="mj-ladder">
-    <figcaption class="mj-ladder-cap">
+  <figure class="qa-ladder">
+    <figcaption class="qa-ladder-cap">
       Trust level — how far a finding can climb
     </figcaption>
 
-    <ol class="mj-ladder-rungs">
+    <ol class="qa-ladder-rungs">
       <li
         v-for="(r, i) in rungs"
         :key="r.level"
-        class="mj-rung"
+        class="qa-rung"
         :class="{ 'is-runtime': r.runtime, 'is-first-runtime': i === boundary }"
       >
         <span
-          class="mj-rung-bar"
+          class="qa-rung-bar"
           :style="{
             height: 12 + i * 9 + 'px',
             background: r.color,
           }"
           aria-hidden="true"
         />
-        <span class="mj-rung-level">{{ r.level }}</span>
-        <span class="mj-rung-meaning">{{ r.meaning }}</span>
-        <span class="mj-rung-kind">{{
+        <span class="qa-rung-level">{{ r.level }}</span>
+        <span class="qa-rung-meaning">{{ r.meaning }}</span>
+        <span class="qa-rung-kind">{{
           r.runtime ? "needs a real run" : "static"
         }}</span>
       </li>
     </ol>
 
-    <p class="mj-ladder-note">
+    <p class="qa-ladder-note">
       <strong>L3 and above require runtime evidence.</strong> Static analysis
       can never claim them, however certain it is — that is what the gap in the
       ladder is.
@@ -68,22 +68,22 @@ const boundary = RUNTIME_BOUNDARY;
 </template>
 
 <style scoped>
-.mj-ladder {
+.qa-ladder {
   margin: 2rem 0;
   padding: 1.4rem 1.5rem 1.2rem;
   border: 1px solid var(--vp-c-border);
   border-radius: 12px;
   background: var(--vp-c-bg-alt);
 }
-.mj-ladder-cap {
-  font-family: var(--mj-display);
+.qa-ladder-cap {
+  font-family: var(--qa-display);
   font-size: 0.76rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--vp-c-text-3);
   margin-bottom: 1.1rem;
 }
-.mj-ladder-rungs {
+.qa-ladder-rungs {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 0.5rem;
@@ -92,7 +92,7 @@ const boundary = RUNTIME_BOUNDARY;
   padding: 0;
   list-style: none;
 }
-.mj-rung {
+.qa-rung {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
@@ -100,54 +100,54 @@ const boundary = RUNTIME_BOUNDARY;
 }
 /* The break. A whole empty column would cost too much width on a phone,
    so it is a real gap plus a rule — never a colour change alone. */
-.mj-rung.is-first-runtime {
+.qa-rung.is-first-runtime {
   margin-left: 0.9rem;
   border-left: 1px dashed var(--vp-c-border);
   padding-left: 0.9rem;
 }
-.mj-rung-bar {
+.qa-rung-bar {
   display: block;
   width: 100%;
   border-radius: 3px;
 }
-.mj-rung-level {
+.qa-rung-level {
   font-family: var(--vp-font-family-mono);
   font-size: 0.85rem;
   color: var(--vp-c-text-1);
 }
-.mj-rung-meaning {
+.qa-rung-meaning {
   font-size: 0.76rem;
   line-height: 1.35;
   color: var(--vp-c-text-2);
 }
-.mj-rung-kind {
+.qa-rung-kind {
   font-size: 0.7rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--vp-c-text-3);
 }
-.mj-rung.is-runtime .mj-rung-kind {
-  color: var(--mj-aurora-bright);
+.qa-rung.is-runtime .qa-rung-kind {
+  color: var(--qa-aurora-bright);
 }
-.mj-ladder-note {
+.qa-ladder-note {
   margin: 1.2rem 0 0;
   font-size: 0.86rem;
   line-height: 1.6;
   color: var(--vp-c-text-2);
 }
-.mj-ladder-note strong {
+.qa-ladder-note strong {
   color: var(--vp-c-text-1);
 }
 
 @media (max-width: 720px) {
-  .mj-ladder-rungs {
+  .qa-ladder-rungs {
     grid-template-columns: repeat(3, 1fr);
     row-gap: 1.1rem;
   }
   /* At three columns the boundary falls at the start of a row, where a
      left rule would read as a margin. Move it to the top edge so the
      break stays visible instead of quietly disappearing. */
-  .mj-rung.is-first-runtime {
+  .qa-rung.is-first-runtime {
     margin-left: 0;
     padding-left: 0;
     border-left: 0;

@@ -2,7 +2,7 @@
 
 Every surface below is additive to the frozen 1.0 contract: JSON
 `schemaVersion: 1`, exit codes `0 · 1 · 2 · 10 · 20`, and the verdict
-vocabulary (`WORTHY` / `NEEDS WORK` / `UNWORTHY`) are unchanged.
+vocabulary (`HEALTHY` / `NEEDS ATTENTION` / `CRITICAL`) are unchanged.
 
 ## Help
 

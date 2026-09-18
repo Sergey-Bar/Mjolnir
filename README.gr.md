@@ -81,7 +81,7 @@ npx qa-doctor-cli@latest
 Μια πραγματική σάρωση του [`examples/demo-repo`](examples/demo-repo), μιας μικρής σουίτας Playwright με CI workflow. Εδώ πήγαν οι πόντοι της:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Η ανάλυση αφαιρέσεων του QA Doctor: WORTHINESS 80/100 WORTHY, η βαθμολογία ανά κατηγορία, το πλαίσιο αφαιρέσεων ανά σοβαρότητα και μια λίστα FIX THIS FIRST" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="Η ανάλυση αφαιρέσεων του QA Doctor: TEST HEALTH 80/100 HEALTHY, η βαθμολογία ανά κατηγορία, το πλαίσιο αφαιρέσεων ανά σοβαρότητα και μια λίστα FIX THIS FIRST" width="520" />
 </p>
 
 <sub>Δημιουργείται με `npm run docs:hero` από πραγματική σάρωση και κλειδώνεται έναντι αποκλίσεων στο CI. Η πλήρης αναφορά `--verbose` της ίδιας σάρωσης είναι το [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
@@ -323,17 +323,17 @@ e2e/checkout.spec.ts
 ## Η βαθμολογία αξιοπιστίας
 
 <p align="center">
-  <img src="assets/readme/score-gauge.svg" alt="Η κλίμακα αξιοπιστίας από 0 έως 100, με έναν δείκτη που διατρέχει κάθε βαθμολογία: UNWORTHY κάτω από 50, NEEDS WORK από 50 έως 79, WORTHY από 80 έως 99, FORGED στο 100" width="720" />
+  <img src="assets/readme/score-gauge.svg" alt="Η κλίμακα αξιοπιστίας από 0 έως 100, με έναν δείκτη που διατρέχει κάθε βαθμολογία: CRITICAL κάτω από 50, NEEDS ATTENTION από 50 έως 79, HEALTHY από 80 έως 99, EXCELLENT στο 100" width="720" />
 </p>
 
 <sub>Κάθε βαθμολογία από 0 έως 100, τοποθετημένη από το πραγματικό `deriveScoreState`. Δημιουργείται με `npm run docs:gauge` και κλειδώνεται έναντι αποκλίσεων στο CI.</sub>
 
 | Βαθμολογία | Ετυμηγορία                              |
 | ---------- | --------------------------------------- |
-| `0 – 49`   | **UNWORTHY**                            |
-| `50 – 79`  | **NEEDS WORK**                          |
-| `80 – 99`  | **WORTHY**                              |
-| `100`      | **FORGED**                              |
+| `0 – 49`   | **CRITICAL**                            |
+| `50 – 79`  | **NEEDS ATTENTION**                     |
+| `80 – 99`  | **HEALTHY**                             |
+| `100`      | **EXCELLENT**                           |
 | `null`     | **UNKNOWN**: δεν βρέθηκαν δηλώσεις τεστ |
 
 **Πώς υπολογίζεται.** Η σοβαρότητα ορίζει μια βασική αφαίρεση (`error −8`, `warning −3`, `info −1`) και το επίπεδο τεκμηρίωσης τη μειώνει: το E2 μετρά πλήρως, το E1 κατά το ήμισυ (με στρογγυλοποίηση προς τα κάτω), το E0 καθόλου. Το σύνολο κανονικοποιείται με βάση την έκθεση της σουίτας, δηλαδή αφαιρέσεις ανά δήλωση τεστ αντί ανά αρχείο. Το τερματικό τυπώνει τους ίδιους μειωμένους αριθμούς που χρησιμοποίησε η βαθμολογία· δεν υπάρχει κρυφό δεύτερο μοντέλο. Λεπτομέρειες: [docs/SCORING.md](docs/SCORING.md) και ο [οδηγός βαθμολόγησης](https://sergey-bar.github.io/qa-doctor/guide/scoring).

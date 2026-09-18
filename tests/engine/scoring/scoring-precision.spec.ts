@@ -139,8 +139,8 @@ describe("computeTotal exact-value table", () => {
     expect(score).toBe(99);
   });
 
-  it("boundary: 80↔75 (WORTHY vs NEEDS WORK) at 0 declarations", () => {
-    // declarations=0 → score = 100 − 5·d. d=4 → 80 WORTHY, d=5 → 75.
+  it("boundary: 80↔75 (HEALTHY vs NEEDS ATTENTION) at 0 declarations", () => {
+    // declarations=0 → score = 100 − 5·d. d=4 → 80 HEALTHY, d=5 → 75.
     const exposure = { testDeclarations: 0, testFileCount: 0 };
     const info = (ruleId: string, line: number) =>
       finding({ severity: "info", ruleId, line, file: "a.spec.ts" });
@@ -244,12 +244,12 @@ describe("computeTotal exact-value table", () => {
 
 describe("verdict bands are total and exhaustive", () => {
   it.each([
-    [100, "WORTHY"],
-    [80, "WORTHY"],
-    [79, "NEEDS WORK"],
-    [50, "NEEDS WORK"],
-    [49, "UNWORTHY"],
-    [0, "UNWORTHY"],
+    [100, "HEALTHY"],
+    [80, "HEALTHY"],
+    [79, "NEEDS ATTENTION"],
+    [50, "NEEDS ATTENTION"],
+    [49, "CRITICAL"],
+    [0, "CRITICAL"],
   ] as const)("verdictFor(%i) = %s", (score, expected) => {
     expect(verdictFor(score)).toBe(expected);
   });
@@ -258,10 +258,10 @@ describe("verdict bands are total and exhaustive", () => {
     fc.assert(
       fc.property(fc.integer({ min: 0, max: 100 }), (score) => {
         const v = verdictFor(score);
-        expect(["WORTHY", "NEEDS WORK", "UNWORTHY"]).toContain(v);
-        if (score >= 80) expect(v).toBe("WORTHY");
-        else if (score >= 50) expect(v).toBe("NEEDS WORK");
-        else expect(v).toBe("UNWORTHY");
+        expect(["HEALTHY", "NEEDS ATTENTION", "CRITICAL"]).toContain(v);
+        if (score >= 80) expect(v).toBe("HEALTHY");
+        else if (score >= 50) expect(v).toBe("NEEDS ATTENTION");
+        else expect(v).toBe("CRITICAL");
       }),
       { numRuns: 101 },
     );

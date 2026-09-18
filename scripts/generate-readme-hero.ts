@@ -105,7 +105,7 @@ export async function buildHeroSvg(): Promise<string> {
   // This asset answers ONE question for its README section: where the
   // points actually went. It is deliberately an excerpt, cut at both ends:
   //
-  //  - The wordmark banner above WORTHINESS is dropped: the window title
+  //  - The wordmark banner above TEST HEALTH is dropped: the window title
   //    and the README around it already name the product.
   //  - Everything from FINDINGS down is dropped. The per-finding detail
   //    lives in "One finding, up close" and in the full --verbose
@@ -116,7 +116,7 @@ export async function buildHeroSvg(): Promise<string> {
   // deduction box and FIX THIS FIRST — is contiguous, unedited reporter
   // output, and it fits a fixed, compact frame.
   const startIndex = renderedLines.findIndex((line) =>
-    stripAnsi(line).includes("WORTHINESS"),
+    stripAnsi(line).includes("TEST HEALTH"),
   );
   const findingsHeaderIndex = renderedLines.findIndex(
     (line) => stripAnsi(line).trim() === "▍ FINDINGS",

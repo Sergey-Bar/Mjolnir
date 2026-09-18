@@ -172,26 +172,26 @@ export function rule1() {
       );
   };
 
-  expect("--mj-ink-950", T.surface.ink950);
-  expect("--mj-ink-900", T.surface.ink900);
-  expect("--mj-ink-850", T.surface.ink850);
-  expect("--mj-ink-800", T.surface.ink800);
-  expect("--mj-steel", T.brand.steel);
-  expect("--mj-steel-dim", T.brand.steelDim);
-  expect("--mj-gold", T.brand.gold);
-  expect("--mj-gold-bright", T.brand.goldBright);
-  expect("--mj-gold-hot", T.brand.goldHot);
-  expect("--mj-aurora", T.brand.aurora);
-  expect("--mj-aurora-bright", T.brand.auroraBright);
-  expect("--mj-aurora-cyan", T.brand.auroraCyan);
-  expect("--mj-trusted", T.score.trusted);
-  expect("--mj-needswork", T.score.warning);
-  expect("--mj-unworthy", T.score.critical);
-  expect("--mj-forged-hot", T.score.forged);
-  expect("--mj-ok", T.status.ok);
-  for (const k of ["e0", "e1", "e2"]) expect(`--mj-${k}`, T.evidence[k]);
+  expect("--qa-ink-950", T.surface.ink950);
+  expect("--qa-ink-900", T.surface.ink900);
+  expect("--qa-ink-850", T.surface.ink850);
+  expect("--qa-ink-800", T.surface.ink800);
+  expect("--qa-steel", T.brand.steel);
+  expect("--qa-steel-dim", T.brand.steelDim);
+  expect("--qa-gold", T.brand.gold);
+  expect("--qa-gold-bright", T.brand.goldBright);
+  expect("--qa-gold-hot", T.brand.goldHot);
+  expect("--qa-aurora", T.brand.aurora);
+  expect("--qa-aurora-bright", T.brand.auroraBright);
+  expect("--qa-aurora-cyan", T.brand.auroraCyan);
+  expect("--qa-healthy", T.score.trusted);
+  expect("--qa-attention", T.score.warning);
+  expect("--qa-critical", T.score.critical);
+  expect("--qa-excellent-hot", T.score.excellent);
+  expect("--qa-ok", T.status.ok);
+  for (const k of ["e0", "e1", "e2"]) expect(`--qa-${k}`, T.evidence[k]);
   for (const k of ["l0", "l1", "l2", "l3", "l4", "l5"])
-    expect(`--mj-${k}`, T.trust[k]);
+    expect(`--qa-${k}`, T.trust[k]);
 
   // Typography. The site leads with the token faces, and names no
   // retired one anywhere in a stack — a fallback entry still downloads
@@ -200,7 +200,7 @@ export function rule1() {
   const lead = {
     "--vp-font-family-base": T.typography.sans.family,
     "--vp-font-family-mono": T.typography.mono.family,
-    "--mj-display": T.typography.display.family,
+    "--qa-display": T.typography.display.family,
   };
   for (const [v, want] of Object.entries(lead)) {
     const stack = shipped[v] ?? "";
@@ -226,7 +226,7 @@ export function rule1() {
 
 /* ══ Rule 2 — the terminal palette matches the tokens ═══════════ */
 
-/** Which `tokens.json` leaf a `NORSE`/chrome reference resolves to. */
+/** Which `tokens.json` leaf a `TERMINAL_COLORS`/chrome reference resolves to. */
 function resolveRef(ref) {
   const [group, key] = ref.split(".");
   const map = {

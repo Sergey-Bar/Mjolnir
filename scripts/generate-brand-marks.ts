@@ -3,36 +3,19 @@
  * `npm run brand:marks` — renders the brand marks from vector source
  * instead of shipping hand-provided PNG masters.
  *
- * WHY THIS REPLACES THE PROVIDED ARTWORK. The prior masters
- * (`assets/brand/logo.png`, `mark.png`) were an illustrated war-hammer —
- * the one asset in the whole system exempted from `brand-doctor`'s "no
- * unapproved ornament" rule (see the old `assets/brand/README.md`: "the
- * master mark's own engraving is grandfathered"). Replacing it with a
- * typographic wordmark removes that exemption instead of relying on it:
- * the logo is now made of the same two things everything else in this
- * system is made of — a token colour and a vendored typeface — so it is
- * regeneratable, not archival.
+ * The mark is generated from the same token palette and vendored typeface
+ * as every other product surface. Its monogram is a Q with a check-shaped
+ * tail: inspect, then verify. That meaning survives from a social card down
+ * to a 16px favicon without borrowing visual language from another brand.
  *
  * THE TWO MARKS.
  *   - wordmark — "QA DOCTOR" set in Geist 500 (the one text face), tracked
  *     0.3em in primary text, the full lockup for anywhere there is room
  *     to read a word.
- *   - monogram — a single rune drawn as a path (`MONOGRAM_PATH`) and
- *     stroked in the aurora, for the square/tiny contexts a wordmark
- *     cannot survive (favicons, the npm/social icon). The rune is ᛗ
- *     (Mansaz) — already the "M" of QA DOCTOR in the hero runefield's own
- *     Elder Futhark spelling of the name (ᛗ ᛃ ᛟ ᛚ ᚾ ᛁ ᚱ, see
- *     docs/design/BRAND-SYSTEM.md), so the monogram is not a new choice,
- *     it is the initial the brand already spells itself with. It is
- *     deliberately NOT one of `RUNES` in src/reporter/score-state.ts (ᚲ
- *     ᚦ ᛏ ᛟ ᛁ) — the single glyph placed beside an actual verdict.
- *     Reusing one of those on the permanent logo would make the brand
- *     mark itself look like a standing verdict ("this product is always
- *     FORGED"), which is exactly the epistemic-honesty failure the
- *     scoring system exists to avoid. ᛗ only ever appears as ambient
- *     four-rune flourish decoration in src/reporter/art.ts, never as a
- *     single-glyph state indicator, so it carries no score meaning on
- *     its own.
+ *   - monogram — a Q and check drawn as a path (`MONOGRAM_PATH`) for the
+ *     square/tiny contexts a wordmark cannot survive (favicons, the
+ *     npm/social icon). It is a compact expression of the product's job:
+ *     inspect the test surface, then verify the result.
  *
  * RENDERING. Both marks are laid out as HTML/CSS and shot with the same
  * Chromium the demo video uses (`resolveChromium`, `QA_DOCTOR_CHROMIUM`),
@@ -73,23 +56,21 @@ const fontPath = (weight: number) =>
   join(ROOT, "site", "public", "fonts", `geist-${weight}-latin.woff2`);
 const FONT_PATHS = [fontPath(400), fontPath(500)];
 
-/** Mansaz — see file header for why this rune and not one of the score runes. */
-export const MONOGRAM_RUNE = "ᛗ";
+/** Human-readable description for accessibility and asset audits. */
+export const MONOGRAM_DESCRIPTION = "Q inspection mark with verification check";
 export const WORDMARK_TEXT = "QA DOCTOR";
 
 /**
- * The rune, drawn rather than typeset: two staves, each with a diagonal
- * from its head to the middle of the other. A font glyph was the old
- * source, and its hairline stroke had to be fattened with text-stroke to
- * survive 16px at all. On a 48×64 grid, the stroke is set per size, so
- * the favicon gets a heavier cut instead of a blurrier one.
+ * Q inspection ring with a check-shaped tail, drawn rather than typeset so
+ * its silhouette remains stable at favicon sizes.
  */
-export const MONOGRAM_PATH = "M11 60V14L37 36M37 60V14L11 36";
+export const MONOGRAM_PATH =
+  "M32 8a24 24 0 1 0 0 48a24 24 0 1 0 0-48M42 42l7 7 11-15";
 
-/** The aurora across the rune: green at the foot, violet at the head. */
+/** The diagnostic aurora runs from the inspection ring into the check. */
 function monogramSvg(px: number, stroke: number, join = "miter"): string {
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 64"
-    width="${(px * 48) / 64}" height="${px}" aria-hidden="true">
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
+    width="${px}" height="${px}" aria-label="${MONOGRAM_DESCRIPTION}" role="img">
     <defs><linearGradient id="a" gradientUnits="userSpaceOnUse"
       x1="7" y1="60" x2="41" y2="6">
       <stop offset="0" stop-color="${BRAND.auroraGreen}"/>
@@ -97,7 +78,7 @@ function monogramSvg(px: number, stroke: number, join = "miter"): string {
       <stop offset="1" stop-color="${BRAND.auroraViolet}"/>
     </linearGradient></defs>
     <path d="${MONOGRAM_PATH}" fill="none" stroke="url(#a)"
-      stroke-width="${stroke}" stroke-linejoin="${join}" stroke-miterlimit="4"/>
+      stroke-width="${stroke}" stroke-linecap="round" stroke-linejoin="${join}" stroke-miterlimit="4"/>
   </svg>`;
 }
 
@@ -134,7 +115,7 @@ export function wordmarkHtml(w: number, h: number): string {
   );
 }
 
-/** Square monogram: the rune for contexts too small for the wordmark. */
+/** Square monogram for contexts too small for the wordmark. */
 export function monogramHtml(w: number, h: number): string {
   const size = Math.min(w, h);
   // Heavier at favicon sizes, where a hairline antialiases to nothing.
@@ -150,7 +131,7 @@ export function monogramHtml(w: number, h: number): string {
   );
 }
 
-/** Social card: rune over wordmark over one line, per the og:image spec. */
+/** Social card: monogram over wordmark over one line, per the og:image spec. */
 export function socialCardHtml(w: number, h: number): string {
   const glow = (c: string, a: number) =>
     `color-mix(in oklch, ${c} ${a}%, transparent)`;

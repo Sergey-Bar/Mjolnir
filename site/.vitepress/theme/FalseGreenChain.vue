@@ -129,13 +129,13 @@ const masks = [
   color: var(--vp-c-brand-1);
 }
 .fgc-name {
-  font-family: var(--mj-display);
+  font-family: var(--qa-display);
   font-weight: 600;
   font-size: 0.98rem;
   color: var(--vp-c-text-1);
 }
 .fgc-stage:last-child .fgc-name {
-  color: var(--mj-unworthy);
+  color: var(--qa-critical);
 }
 .fgc-desc {
   font-size: 0.8rem;
@@ -152,7 +152,7 @@ const masks = [
   z-index: 1;
 }
 .fgc-stage:last-child .fgc-arrow {
-  color: var(--mj-unworthy);
+  color: var(--qa-critical);
 }
 
 .fgc-masks {

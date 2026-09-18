@@ -69,7 +69,7 @@ QA Doctor স্যুট, CI workflow, এবং আপনার কাছে �
 | স্ক্যান মাঝপথে থেমে গেছে (সময় বাজেট, অপঠনযোগ্য ফাইল) | **PARTIAL**, এক্সিট `2`। কখনো পরিষ্কার হিসেবে উপস্থাপন করা হয় না। |
 
 <p align="center">
-  <img src="assets/readme/how-it-works.svg" alt="QA Doctor কীভাবে কাজ করে। এটি টেস্ট স্যুট এবং CI পাইপলাইন স্ট্যাটিকভাবে পড়ে, এবং যখন থাকে তখন একটি প্রকৃত রানের রিপোর্টও পড়ে। এটি প্রতিটি সন্ধানকে তার প্রমাণ স্তর এবং আস্থা স্তর অনুযায়ী ওজন দেয়, যেখানে শুধু একটি প্রকৃত রান L3 থেকে L5 পর্যন্ত পৌঁছাতে পারে, এবং সন্ধান, একটি worthiness স্কোর, এবং হিমায়িত এক্সিট কোডের উপর একটি CI গেট তৈরি করে। এজেন্ট লুপে, AI ফিক্স লেখে এবং QA Doctor তা প্রমাণ করতে পুনরায় স্ক্যান করে।" width="880" />
+  <img src="assets/readme/how-it-works.svg" alt="QA Doctor কীভাবে কাজ করে। এটি টেস্ট স্যুট এবং CI পাইপলাইন স্ট্যাটিকভাবে পড়ে, এবং যখন থাকে তখন একটি প্রকৃত রানের রিপোর্টও পড়ে। এটি প্রতিটি সন্ধানকে তার প্রমাণ স্তর এবং আস্থা স্তর অনুযায়ী ওজন দেয়, যেখানে শুধু একটি প্রকৃত রান L3 থেকে L5 পর্যন্ত পৌঁছাতে পারে, এবং সন্ধান, একটি test health স্কোর, এবং হিমায়িত এক্সিট কোডের উপর একটি CI গেট তৈরি করে। এজেন্ট লুপে, AI ফিক্স লেখে এবং QA Doctor তা প্রমাণ করতে পুনরায় স্ক্যান করে।" width="880" />
 </p>
 
 <sub>এই পৃষ্ঠার জন্য তৈরি এবং ১:১ অনুপাতে দেখানো হয়েছে। `npm run docs:readme-brand` দ্বারা তৈরি এবং CI-তে বিচ্যুতির বিরুদ্ধে লক করা; স্কোর, সংখ্যা এবং নিয়ম ID [`script.demo.json`](assets/video/script.demo.json), [`demo-report.json`](assets/readme/demo-report.json) এবং নিয়ম রেজিস্ট্রি থেকে আসে, কখনো হাতে টাইপ করা হয় না। একই ছবি পোস্টার হিসেবে: [`architecture.svg`](assets/readme/architecture.svg)।</sub>
@@ -81,7 +81,7 @@ QA Doctor স্যুট, CI workflow, এবং আপনার কাছে �
 [`examples/demo-repo`](examples/demo-repo)-এর একটি প্রকৃত স্ক্যান, CI workflow সহ একটি ছোট Playwright স্যুট। এখানেই এর পয়েন্ট গেছে:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="QA Doctor-এর deduction breakdown: WORTHINESS 80/100 WORTHY, বিভাগ অনুযায়ী স্কোর, severity অনুযায়ী deduction box, এবং একটি FIX THIS FIRST তালিকা" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="QA Doctor-এর deduction breakdown: TEST HEALTH 80/100 HEALTHY, বিভাগ অনুযায়ী স্কোর, severity অনুযায়ী deduction box, এবং একটি FIX THIS FIRST তালিকা" width="520" />
 </p>
 
 <sub>`npm run docs:hero` দ্বারা একটি প্রকৃত স্ক্যান থেকে তৈরি এবং CI-তে বিচ্যুতির বিরুদ্ধে লক করা। একই স্ক্যানের সম্পূর্ণ `--verbose` রিপোর্ট হলো [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`)।</sub>
@@ -323,17 +323,17 @@ e2e/checkout.spec.ts
 ## বিশ্বাসযোগ্যতা স্কোর
 
 <p align="center">
-  <img src="assets/readme/score-gauge.svg" alt="০ থেকে ১০০ পর্যন্ত worthiness স্কেল, প্রতিটি স্কোর অতিক্রম করা একটি মার্কার সহ: ৫০-এর নিচে UNWORTHY, ৫০ থেকে ৭৯ NEEDS WORK, ৮০ থেকে ৯৯ WORTHY, ১০০-এ FORGED" width="720" />
+  <img src="assets/readme/score-gauge.svg" alt="০ থেকে ১০০ পর্যন্ত test health স্কেল, প্রতিটি স্কোর অতিক্রম করা একটি মার্কার সহ: ৫০-এর নিচে CRITICAL, ৫০ থেকে ৭৯ NEEDS ATTENTION, ৮০ থেকে ৯৯ HEALTHY, ১০০-এ EXCELLENT" width="720" />
 </p>
 
 <sub>০ থেকে ১০০ পর্যন্ত প্রতিটি স্কোর, প্রকৃত `deriveScoreState` দ্বারা স্থাপিত। `npm run docs:gauge` দ্বারা তৈরি এবং CI-তে বিচ্যুতির বিরুদ্ধে লক করা।</sub>
 
 | স্কোর     | রায়                                        |
 | --------- | ------------------------------------------- |
-| `0 – 49`  | **UNWORTHY**                                |
-| `50 – 79` | **NEEDS WORK**                              |
-| `80 – 99` | **WORTHY**                                  |
-| `100`     | **FORGED**                                  |
+| `0 – 49`  | **CRITICAL**                                |
+| `50 – 79` | **NEEDS ATTENTION**                         |
+| `80 – 99` | **HEALTHY**                                 |
+| `100`     | **EXCELLENT**                               |
 | `null`    | **UNKNOWN**: কোনো টেস্ট ঘোষণা পাওয়া যায়নি |
 
 **এটি কীভাবে গণনা করা হয়।** Severity একটি base deduction নির্ধারণ করে (`error −8`, `warning −3`, `info −1`) এবং evidence level এতে ছাড় দেয়: E2 পুরো পরিশোধ করে, E1 অর্ধেক (নিচের দিকে রাউন্ড করা), E0 কিছুই না। মোট suite exposure দ্বারা normalize করা হয়, অর্থাৎ প্রতি ফাইলের বদলে প্রতি test declaration-এ deduction। টার্মিনাল একই discounted সংখ্যা প্রিন্ট করে যা স্কোর ব্যবহার করেছে; কোনো লুকানো দ্বিতীয় মডেল নেই। বিস্তারিত: [docs/SCORING.md](docs/SCORING.md) এবং [scoring গাইড](https://sergey-bar.github.io/qa-doctor/guide/scoring)।

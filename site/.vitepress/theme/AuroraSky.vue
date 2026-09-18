@@ -57,9 +57,9 @@ function start(cv: HTMLCanvasElement, still: boolean): (() => void) | null {
     powerPreference: "low-power",
   });
   const colors = [
-    "--mj-aurora-green",
-    "--mj-aurora-cyan",
-    "--mj-aurora-violet",
+    "--qa-aurora-green",
+    "--qa-aurora-cyan",
+    "--qa-aurora-violet",
   ].map(token);
   if (!gl || !host || colors.some((c) => !c)) {
     if (gl) gl.getExtension("WEBGL_lose_context")?.loseContext();

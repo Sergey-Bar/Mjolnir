@@ -45,17 +45,17 @@ export const PR_BRAND_CONTRACT: PrCommentBrandContract = {
     fallback: "QA Doctor",
   },
   verdictLabels: {
-    forged: "Forged",
+    excellent: "Excellent",
     trusted: "Trusted",
-    needsWork: "Needs Work",
-    unworthy: "Unworthy",
+    needsWork: "Needs Attention",
+    critical: "Critical",
     unmeasured: "Unmeasured",
   },
   verdictIcons: {
-    forged: ":hammer:",
+    excellent: ":white_check_mark:",
     trusted: ":white_check_mark:",
     needsWork: ":warning:",
-    unworthy: ":x:",
+    critical: ":x:",
     unmeasured: ":grey_question:",
   },
   sectionOrder: [...SECTION_ORDER],
@@ -93,10 +93,10 @@ export function validateBrandContract(contract: PrCommentBrandContract): {
   }
 
   const requiredVerdicts = [
-    "forged",
+    "excellent",
     "trusted",
     "needsWork",
-    "unworthy",
+    "critical",
     "unmeasured",
   ];
   for (const v of requiredVerdicts) {

@@ -81,7 +81,7 @@ QA Doctor čita skup testova, CI workflowe i, ako ga imate, izvještaj stvarnog 
 Stvarno skeniranje [`examples/demo-repo`](examples/demo-repo), malog Playwright skupa testova s CI workflowom. Evo gdje su otišli njegovi bodovi:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="QA Doctor pregled odbitaka: WORTHINESS 80/100 WORTHY, ocjena po kategoriji, okvir odbitaka po ozbiljnosti i lista FIX THIS FIRST" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="QA Doctor pregled odbitaka: TEST HEALTH 80/100 HEALTHY, ocjena po kategoriji, okvir odbitaka po ozbiljnosti i lista FIX THIS FIRST" width="520" />
 </p>
 
 <sub>Generisano naredbom `npm run docs:hero` iz stvarnog skeniranja i zaključano protiv odstupanja u CI-ju. Puni `--verbose` izvještaj istog skeniranja je [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
@@ -323,17 +323,17 @@ Ovo mjeri **otpornost, a ne ispravnost**. `.btn.btn-primary > div:nth-child(2)` 
 ## Ocjena vrijednosti
 
 <p align="center">
-  <img src="assets/readme/score-gauge.svg" alt="Skala vrijednosti od 0 do 100, s markerom koji prelazi svaku ocjenu: UNWORTHY ispod 50, NEEDS WORK od 50 do 79, WORTHY od 80 do 99, FORGED na 100" width="720" />
+  <img src="assets/readme/score-gauge.svg" alt="Skala vrijednosti od 0 do 100, s markerom koji prelazi svaku ocjenu: CRITICAL ispod 50, NEEDS ATTENTION od 50 do 79, HEALTHY od 80 do 99, EXCELLENT na 100" width="720" />
 </p>
 
 <sub>Svaka ocjena od 0 do 100, postavljena stvarnim `deriveScoreState`. Generisano naredbom `npm run docs:gauge` i zaključano protiv odstupanja u CI-ju.</sub>
 
 | Ocjena    | Presuda                                         |
 | --------- | ----------------------------------------------- |
-| `0 – 49`  | **UNWORTHY**                                    |
-| `50 – 79` | **NEEDS WORK**                                  |
-| `80 – 99` | **WORTHY**                                      |
-| `100`     | **FORGED**                                      |
+| `0 – 49`  | **CRITICAL**                                    |
+| `50 – 79` | **NEEDS ATTENTION**                             |
+| `80 – 99` | **HEALTHY**                                     |
+| `100`     | **EXCELLENT**                                   |
 | `null`    | **UNKNOWN**: nisu pronađene deklaracije testova |
 
 **Kako se računa.** Ozbiljnost određuje osnovni odbitak (`error −8`, `warning −3`, `info −1`), a nivo dokaza ga umanjuje: E2 se računa u potpunosti, E1 upola (zaokruženo nadolje), E0 nikako. Zbir se normalizuje prema izloženosti skupa testova, odnosno odbici po deklaraciji testa umjesto po datoteci. Terminal ispisuje iste umanjene brojeve koje je ocjena koristila; nema skrivenog drugog modela. Detalji: [docs/SCORING.md](docs/SCORING.md) i [vodič za ocjenjivanje](https://sergey-bar.github.io/qa-doctor/guide/scoring).

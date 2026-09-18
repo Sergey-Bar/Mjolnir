@@ -81,7 +81,7 @@ export function trustHeadline(s: TrustSummary): string {
       : "Files executed, evidence is thin — treat findings as leads.";
   }
   if (s.confidence >= 0.75) {
-    return "Deterministic static analysis — trustworthy, uncorroborated by a run.";
+    return "Deterministic static analysis — reliable, uncorroborated by a run.";
   }
   return "Static signal only, incomplete analysis — treat as leads, not verdicts.";
 }

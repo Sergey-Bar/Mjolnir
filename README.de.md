@@ -21,7 +21,7 @@ und bewertet dann, wie weit dem Ergebnis zu trauen ist – mit der Evidenz für 
 npx qa-doctor-cli@latest
 ```
 
-[So sieht es aus](#so-sieht-es-aus) · [Schnellstart](#schnellstart) · [Was es findet](#was-qa-doctor-findet) · [Score](#der-worthiness-score) · [Evidenz](#das-evidenzmodell) · [Forensik](#laufzeit-forensik) · [CI](#ci-integrität) · [Agenten](#ki-agenten) · [Sicherheit](#vertrauen-und-sicherheit) · [Grenzen](#was-qa-doctor-dir-nicht-sagen-kann) · [Doku](#dokumentation)
+[So sieht es aus](#so-sieht-es-aus) · [Schnellstart](#schnellstart) · [Was es findet](#was-qa-doctor-findet) · [Score](#der-test health-score) · [Evidenz](#das-evidenzmodell) · [Forensik](#laufzeit-forensik) · [CI](#ci-integrität) · [Agenten](#ki-agenten) · [Sicherheit](#vertrauen-und-sicherheit) · [Grenzen](#was-qa-doctor-dir-nicht-sagen-kann) · [Doku](#dokumentation)
 
 <details>
 <summary>In einer anderen Sprache lesen – 22 Übersetzungen</summary>
@@ -69,7 +69,7 @@ QA Doctor liest die Testsuite, die CI-Workflows und, falls vorhanden, den Report
 | Scan abgebrochen (Zeitbudget, unlesbare Dateien) | **PARTIAL**, Exit `2`. Nie als sauber dargestellt.               |
 
 <p align="center">
-  <img src="assets/readme/how-it-works.svg" alt="So funktioniert QA Doctor. Es liest die Testsuite und die CI-Pipeline statisch sowie den Report eines echten Laufs, wenn es einen gibt. Es gewichtet jeden Befund nach Evidenzlevel und Vertrauensstufe, wobei nur ein echter Lauf L3 bis L5 erreichen kann, und liefert Befunde, einen Worthiness-Score und ein CI-Gate mit eingefrorenen Exit-Codes. In der Agentenschleife schreibt die KI den Fix und QA Doctor scannt erneut, um ihn zu beweisen." width="880" />
+  <img src="assets/readme/how-it-works.svg" alt="So funktioniert QA Doctor. Es liest die Testsuite und die CI-Pipeline statisch sowie den Report eines echten Laufs, wenn es einen gibt. Es gewichtet jeden Befund nach Evidenzlevel und Vertrauensstufe, wobei nur ein echter Lauf L3 bis L5 erreichen kann, und liefert Befunde, einen Test Health-Score und ein CI-Gate mit eingefrorenen Exit-Codes. In der Agentenschleife schreibt die KI den Fix und QA Doctor scannt erneut, um ihn zu beweisen." width="880" />
 </p>
 
 <sub>Für diese Seite gestaltet und in 1:1 gezeigt. Erzeugt mit `npm run docs:readme-brand` und in der CI gegen Abweichungen gesichert; Score, Zahlen und Regel-ID stammen aus [`script.demo.json`](assets/video/script.demo.json), [`demo-report.json`](assets/readme/demo-report.json) und der Regel-Registry, nie von Hand getippt. Dasselbe Bild als Poster: [`architecture.svg`](assets/readme/architecture.svg).</sub>
@@ -81,7 +81,7 @@ QA Doctor liest die Testsuite, die CI-Workflows und, falls vorhanden, den Report
 Ein echter Scan von [`examples/demo-repo`](examples/demo-repo), einer kleinen Playwright-Suite mit CI-Workflow. Hier sind seine Punkte geblieben:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="QA Doctor Abzugsaufschlüsselung: WORTHINESS 80/100 WORTHY, der Score nach Kategorie, die Abzugsbox nach Schweregrad und eine FIX THIS FIRST-Liste" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="QA Doctor Abzugsaufschlüsselung: TEST HEALTH 80/100 HEALTHY, der Score nach Kategorie, die Abzugsbox nach Schweregrad und eine FIX THIS FIRST-Liste" width="520" />
 </p>
 
 <sub>Erzeugt mit `npm run docs:hero` aus einem echten Scan und in der CI gegen Abweichungen gesichert. Der vollständige `--verbose`-Report desselben Scans ist [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
@@ -320,20 +320,20 @@ Das misst **Robustheit, nicht Korrektheit**. `.btn.btn-primary > div:nth-child(2
 
 <br />
 
-## Der Worthiness-Score
+## Der Test Health-Score
 
 <p align="center">
-  <img src="assets/readme/score-gauge.svg" alt="Die Worthiness-Skala von 0 bis 100, mit einer Markierung, die jeden Score durchläuft: UNWORTHY unter 50, NEEDS WORK von 50 bis 79, WORTHY von 80 bis 99, FORGED bei 100" width="720" />
+  <img src="assets/readme/score-gauge.svg" alt="Die Test Health-Skala von 0 bis 100, mit einer Markierung, die jeden Score durchläuft: CRITICAL unter 50, NEEDS ATTENTION von 50 bis 79, HEALTHY von 80 bis 99, EXCELLENT bei 100" width="720" />
 </p>
 
 <sub>Jeder Score von 0 bis 100, platziert vom echten `deriveScoreState`. Erzeugt mit `npm run docs:gauge` und in der CI gegen Abweichungen gesichert.</sub>
 
 | Score     | Urteil                                        |
 | --------- | --------------------------------------------- |
-| `0 – 49`  | **UNWORTHY**                                  |
-| `50 – 79` | **NEEDS WORK**                                |
-| `80 – 99` | **WORTHY**                                    |
-| `100`     | **FORGED**                                    |
+| `0 – 49`  | **CRITICAL**                                  |
+| `50 – 79` | **NEEDS ATTENTION**                           |
+| `80 – 99` | **HEALTHY**                                   |
+| `100`     | **EXCELLENT**                                 |
 | `null`    | **UNKNOWN**: keine Testdeklarationen gefunden |
 
 **Wie er berechnet wird.** Der Schweregrad legt einen Grundabzug fest (`error −8`, `warning −3`, `info −1`), und das Evidenzlevel rabattiert ihn: E2 zählt voll, E1 halb (abgerundet), E0 gar nicht. Die Summe wird nach der Exposition der Suite normalisiert, also Abzüge pro Testdeklaration statt pro Datei. Das Terminal gibt dieselben rabattierten Zahlen aus, die der Score verwendet hat; es gibt kein verstecktes zweites Modell. Details: [docs/SCORING.md](docs/SCORING.md) und der [Scoring-Leitfaden](https://sergey-bar.github.io/qa-doctor/guide/scoring).

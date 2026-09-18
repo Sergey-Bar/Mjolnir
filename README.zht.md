@@ -81,7 +81,7 @@ QA Doctor 讀取測試套件、CI workflow，以及（如果有的話）一次�
 對 [`examples/demo-repo`](examples/demo-repo) 的一次真實掃描，這是一個附帶 CI workflow 的小型 Playwright 套件。它的分數都扣在了這裡：
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="QA Doctor 的扣分明細：WORTHINESS 80/100 WORTHY、依類別的評分、依嚴重程度的扣分框，以及 FIX THIS FIRST 清單" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="QA Doctor 的扣分明細：TEST HEALTH 80/100 HEALTHY、依類別的評分、依嚴重程度的扣分框，以及 FIX THIS FIRST 清單" width="520" />
 </p>
 
 <sub>由 `npm run docs:hero` 根據一次真實掃描產生，並在 CI 中鎖定以防漂移。同一次掃描的完整 `--verbose` 報告是 [`demo.svg`](assets/readme/demo.svg)（`npm run docs:demo`）。</sub>
@@ -323,17 +323,17 @@ e2e/checkout.spec.ts
 ## 可信度評分
 
 <p align="center">
-  <img src="assets/readme/score-gauge.svg" alt="0 到 100 的可信度刻度，指針掃過每一個分數：低於 50 為 UNWORTHY，50 到 79 為 NEEDS WORK，80 到 99 為 WORTHY，100 為 FORGED" width="720" />
+  <img src="assets/readme/score-gauge.svg" alt="0 到 100 的可信度刻度，指針掃過每一個分數：低於 50 為 CRITICAL，50 到 79 為 NEEDS ATTENTION，80 到 99 為 HEALTHY，100 為 EXCELLENT" width="720" />
 </p>
 
 <sub>0 到 100 的每一個分數，都由真實的 `deriveScoreState` 定位。由 `npm run docs:gauge` 產生，並在 CI 中鎖定以防漂移。</sub>
 
 | 評分      | 結論                        |
 | --------- | --------------------------- |
-| `0 – 49`  | **UNWORTHY**                |
-| `50 – 79` | **NEEDS WORK**              |
-| `80 – 99` | **WORTHY**                  |
-| `100`     | **FORGED**                  |
+| `0 – 49`  | **CRITICAL**                |
+| `50 – 79` | **NEEDS ATTENTION**         |
+| `80 – 99` | **HEALTHY**                 |
+| `100`     | **EXCELLENT**               |
 | `null`    | **UNKNOWN**：找不到測試宣告 |
 
 **計算方式**。嚴重程度決定基礎扣分（`error −8`、`warning −3`、`info −1`），證據等級再對其打折：E2 全額扣分，E1 扣一半（無條件捨去），E0 不扣分。總扣分依套件規模正規化，也就是以每個測試宣告計算，而不是以檔案計算。終端機印出的就是評分所用的同一組折後數字；不存在隱藏的第二套模型。詳情：[docs/SCORING.md](docs/SCORING.md) 和 [評分指南](https://sergey-bar.github.io/qa-doctor/guide/scoring)。

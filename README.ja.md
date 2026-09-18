@@ -81,7 +81,7 @@ QA Doctor は、テストスイート、CI workflow、そして手元にあれ�
 CI workflow を持つ小さな Playwright スイート、[`examples/demo-repo`](examples/demo-repo) の実際のスキャンです。点数がどこで失われたかはこちら：
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="QA Doctor の減点内訳：WORTHINESS 80/100 WORTHY、カテゴリ別スコア、重大度別の減点ボックス、そして FIX THIS FIRST リスト" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="QA Doctor の減点内訳：TEST HEALTH 80/100 HEALTHY、カテゴリ別スコア、重大度別の減点ボックス、そして FIX THIS FIRST リスト" width="520" />
 </p>
 
 <sub>`npm run docs:hero` により実際のスキャンから生成され、CI でずれがないよう固定されています。同じスキャンの完全な `--verbose` レポートは [`demo.svg`](assets/readme/demo.svg)（`npm run docs:demo`）です。</sub>
@@ -323,17 +323,17 @@ e2e/checkout.spec.ts
 ## 信頼度スコア
 
 <p align="center">
-  <img src="assets/readme/score-gauge.svg" alt="0 から 100 までの信頼度スケール。マーカーがすべてのスコアを走査します：50 未満は UNWORTHY、50〜79 は NEEDS WORK、80〜99 は WORTHY、100 は FORGED" width="720" />
+  <img src="assets/readme/score-gauge.svg" alt="0 から 100 までの信頼度スケール。マーカーがすべてのスコアを走査します：50 未満は CRITICAL、50〜79 は NEEDS ATTENTION、80〜99 は HEALTHY、100 は EXCELLENT" width="720" />
 </p>
 
 <sub>0 から 100 までのすべてのスコアを、実際の `deriveScoreState` で配置したもの。`npm run docs:gauge` で生成され、CI でずれがないよう固定されています。</sub>
 
 | スコア    | 判定                                  |
 | --------- | ------------------------------------- |
-| `0 – 49`  | **UNWORTHY**                          |
-| `50 – 79` | **NEEDS WORK**                        |
-| `80 – 99` | **WORTHY**                            |
-| `100`     | **FORGED**                            |
+| `0 – 49`  | **CRITICAL**                          |
+| `50 – 79` | **NEEDS ATTENTION**                   |
+| `80 – 99` | **HEALTHY**                           |
+| `100`     | **EXCELLENT**                         |
 | `null`    | **UNKNOWN**：テスト宣言が見つからない |
 
 **計算方法**。重大度が基本の減点を決め（`error −8`、`warning −3`、`info −1`）、証拠レベルがそれを割り引きます。E2 は満額、E1 は半分（切り捨て）、E0 はゼロです。合計はスイートの規模で正規化され、ファイル単位ではなくテスト宣言あたりの減点になります。ターミナルに表示されるのは、スコアが使ったのと同じ割引後の数値です。隠れた第二のモデルはありません。詳細：[docs/SCORING.md](docs/SCORING.md) と [スコアリングガイド](https://sergey-bar.github.io/qa-doctor/guide/scoring)。

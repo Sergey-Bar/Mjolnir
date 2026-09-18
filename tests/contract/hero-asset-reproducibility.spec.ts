@@ -29,7 +29,7 @@ describe("assets/readme/terminal-hero.svg reproducibility", () => {
   it("the committed SVG is byte-identical to a freshly built one", async () => {
     // The real reproducibility lock. Everything above is a sanity check;
     // until this existed the suite passed with a committed asset showing
-    // an eight-row ASCII hammer the reporter had stopped printing, because
+    // an eight-row ASCII score graphic the reporter had stopped printing, because
     // nothing compared the rendered output to the file. The README claimed
     // this test "fails CI if it drifts from what the reporter actually
     // prints" — now it does.

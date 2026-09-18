@@ -3,7 +3,7 @@
  *
  * One pure model derives every score-derived presentation decision:
  * band, verdict label, palette key, power level, headline template and
- * state rune. Terminal, badge and (P2) web all consume this mapping so
+ * state indicator. Terminal, badge and (P2) web all consume this mapping so
  * the ≥80/≥50 thresholds can never drift between surfaces again
  * (they previously disagreed 3×: terminal ≥80/≥50, badge ≥90/≥75/≥50).
  *
@@ -11,21 +11,21 @@
  * golden-testable.
  *
  * Verdict vocabulary is contract-stable output (property-locked in
- * tests/scoring-precision.spec.ts): UNWORTHY / NEEDS WORK / WORTHY.
- * FORGED is added as the 100-state with premium treatment; verdictFor()
- * in the terminal keeps returning WORTHY for 100 to preserve the
+ * tests/scoring-precision.spec.ts): CRITICAL / NEEDS ATTENTION / HEALTHY.
+ * EXCELLENT is added as the 100-state with premium treatment; verdictFor()
+ * in the terminal keeps returning HEALTHY for 100 to preserve the
  * three-band public contract.
  */
 
-export type ScoreBand = "critical" | "warning" | "trusted" | "forged";
+export type ScoreBand = "critical" | "warning" | "trusted" | "excellent";
 
 export interface ScoreState {
   /** null → "no tests" state (R2: never fake 100). */
   score: number | null;
   band: ScoreBand | "unmeasured";
-  verdict: "UNWORTHY" | "NEEDS WORK" | "WORTHY" | "FORGED";
+  verdict: "CRITICAL" | "NEEDS ATTENTION" | "HEALTHY" | "EXCELLENT";
   /** Palette key — resolved by each surface to its own color system. */
-  color: "error" | "warning" | "trusted" | "forged" | "dim";
+  color: "error" | "warning" | "trusted" | "excellent" | "dim";
   /** 0–100, mechanical: the score itself; null → 0. */
   powerLevel: number;
   /**
@@ -34,81 +34,81 @@ export interface ScoreState {
    * model itself stays a pure function of score alone.
    */
   headline: string;
-  /** State rune glyph — the symbol that accompanies the color (R11). */
-  rune: string;
+  /** State indicator — a text-safe cue that accompanies the color (R11). */
+  indicator: string;
 }
 
 const HEADLINES: Record<ScoreBand | "unmeasured", string> = {
-  critical: "The hammer is cracked — {n} findings break its edge.",
-  warning: "The hammer holds — but {n} findings weigh it down.",
-  trusted: "Held in worthy hands — {n} findings remain.",
-  forged: "Forged complete. Zero findings. The suite is clean.",
-  unmeasured: "No tests found — the hammer cannot be weighed.",
+  critical: "Critical test health: {n} findings need attention.",
+  warning: "Needs attention: {n} findings remain.",
+  trusted: "Healthy test health: {n} findings remain.",
+  excellent: "Excellent test health. Zero findings. The suite is clean.",
+  unmeasured: "No tests found — test health is not measured.",
 };
 
-const RUNES: Record<ScoreBand | "unmeasured", string> = {
-  critical: "ᚲ", // Kaunan — the torch that burns
-  warning: "ᚦ", // Thurisaz — the giant at the gate
-  trusted: "ᛏ", // Tiwaz — victory in worthy hands
-  forged: "ᛟ", // Othala — the completed, inherited work
-  unmeasured: "ᛁ", // Isa — stillness; nothing was measured
+const INDICATORS: Record<ScoreBand | "unmeasured", string> = {
+  critical: "[!]",
+  warning: "[~]",
+  trusted: "[+]",
+  excellent: "[OK]",
+  unmeasured: "[?]",
 };
 
 /** Band mapping (the one mapping, three consumers): <50 critical, 50–79
- * warning, 80–99 trusted, 100 forged, null unmeasured. */
+ * warning, 80–99 trusted, 100 excellent, null unmeasured. */
 export function deriveScoreState(score: number | null): ScoreState {
   if (score === null) {
     return {
       score: null,
       band: "unmeasured",
-      verdict: "UNWORTHY",
+      verdict: "CRITICAL",
       color: "dim",
       powerLevel: 0,
       headline: HEADLINES.unmeasured,
-      rune: RUNES.unmeasured,
+      indicator: INDICATORS.unmeasured,
     };
   }
   if (score >= 100) {
     return {
       score,
-      band: "forged",
-      verdict: "FORGED",
-      color: "forged",
+      band: "excellent",
+      verdict: "EXCELLENT",
+      color: "excellent",
       powerLevel: score,
-      headline: HEADLINES.forged,
-      rune: RUNES.forged,
+      headline: HEADLINES.excellent,
+      indicator: INDICATORS.excellent,
     };
   }
   if (score >= 80) {
     return {
       score,
       band: "trusted",
-      verdict: "WORTHY",
+      verdict: "HEALTHY",
       color: "trusted",
       powerLevel: score,
       headline: HEADLINES.trusted,
-      rune: RUNES.trusted,
+      indicator: INDICATORS.trusted,
     };
   }
   if (score >= 50) {
     return {
       score,
       band: "warning",
-      verdict: "NEEDS WORK",
+      verdict: "NEEDS ATTENTION",
       color: "warning",
       powerLevel: score,
       headline: HEADLINES.warning,
-      rune: RUNES.warning,
+      indicator: INDICATORS.warning,
     };
   }
   return {
     score,
     band: "critical",
-    verdict: "UNWORTHY",
+    verdict: "CRITICAL",
     color: "error",
     powerLevel: score,
     headline: HEADLINES.critical,
-    rune: RUNES.critical,
+    indicator: INDICATORS.critical,
   };
 }
 

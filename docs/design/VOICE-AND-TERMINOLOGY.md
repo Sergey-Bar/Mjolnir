@@ -17,9 +17,9 @@ The voice has to earn that every sentence: a tool whose entire argument
 is "a green pipeline is a claim, not a proof" cannot itself make claims
 it has not proved.
 
-The mythology is in the vocabulary the product already owns — worthy,
-forged, evidence, trust — not in adjectives. Write like an engineer who
-respects the reader, and let the Norse register sit in the nouns.
+The mythology is in the vocabulary the product already owns — healthy,
+excellent, evidence, trust — not in adjectives. Write like an engineer who
+respects the reader, and let the terminal register sit in the nouns.
 
 ## 2. Words we do not use
 
@@ -68,12 +68,12 @@ The verdict words are contract-stable output, property-locked in
 `tests/scoring-precision.spec.ts`. They are not adjustable for tone:
 
 ```
-UNWORTHY · NEEDS WORK · WORTHY · FORGED · UNKNOWN · PARTIAL
+CRITICAL · NEEDS ATTENTION · HEALTHY · EXCELLENT · UNKNOWN · PARTIAL
 ```
 
-`FORGED` is the 100 state and reads as a certification, not as a
+`EXCELLENT` is the 100 state and reads as a certification, not as a
 superlative. It means zero findings — never "your software is correct".
-`verdictFor()` still returns `WORTHY` at 100 to preserve the three-band
+`verdictFor()` still returns `HEALTHY` at 100 to preserve the three-band
 public contract.
 
 ## 6. In the terminal
@@ -86,9 +86,9 @@ The reporter speaks in the same voice, with less room:
   `[E1 · heuristic · measured FP 14% · n=38]`. A measured false-positive
   rate is quoted where one exists and omitted where none does. Never
   estimated.
-- The headline per band is a statement about the hammer, not about the
-  reader: "The hammer holds — but 27 findings weigh it down."
-- Colour never carries a state alone. A rune, a glyph or a word always
+- The headline per band is a statement about the score graphic, not about the
+  reader: "The score graphic holds — but 27 findings weigh it down."
+- Colour never carries a state alone. A indicator, a glyph or a word always
   accompanies it, and `--ascii` and `NO_COLOR` must stay meaningful.
 
 ## 7. Untrusted text

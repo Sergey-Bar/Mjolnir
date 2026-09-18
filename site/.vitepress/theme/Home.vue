@@ -56,7 +56,7 @@ const CHAPTERS = [
   },
   {
     id: "ch-score",
-    title: "Worthiness score",
+    title: "Test Health score",
     body: "One number, with the arithmetic shown.",
   },
   {
@@ -84,9 +84,9 @@ const num = (i: number) => String(i + 1).padStart(2, "0");
 
 /** The page walks the aurora top to bottom: green, then cyan, then violet. */
 const STOPS = [
-  "var(--mj-aurora-green)",
-  "var(--mj-aurora-cyan)",
-  "var(--mj-aurora-violet)",
+  "var(--qa-aurora-green)",
+  "var(--qa-aurora-cyan)",
+  "var(--qa-aurora-violet)",
 ];
 function chColor(i: number) {
   const t = i / (CHAPTERS.length - 1);
@@ -108,9 +108,9 @@ const chapter = (id: string) => {
 const SCAN = data.scan;
 const N = SCAN.lines.length;
 const SEV_COLOR: Record<string, string> = {
-  error: "var(--mj-unworthy)",
-  warning: "var(--mj-needswork)",
-  info: "var(--mj-info)",
+  error: "var(--qa-critical)",
+  warning: "var(--qa-attention)",
+  info: "var(--qa-info)",
 };
 function yaml(src: string): { t: string; k?: boolean }[] {
   const m = /^(\s*)(- )?([\w.-]+)(:)(.*)$/.exec(src);
@@ -473,15 +473,15 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <main ref="root" class="mj">
+  <main ref="root" class="qa">
     <div ref="progEl" class="progress" aria-hidden="true" />
 
     <!-- ============ HERO ============ -->
-    <section class="hero-band" :class="{ gl: glOn }" aria-labelledby="mj-title">
+    <section class="hero-band" :class="{ gl: glOn }" aria-labelledby="qa-title">
       <div class="sky" aria-hidden="true" />
       <AuroraSky @ready="glOn = true" />
       <div class="hero wrap">
-        <h1 id="mj-title" class="title">
+        <h1 id="qa-title" class="title">
           <template v-for="(line, li) in TITLE" :key="li"
             ><span class="line" :class="{ was: li === 0 }"
               ><template v-for="(w, wi) in line" :key="wi"
@@ -517,9 +517,9 @@ onBeforeUnmount(() => {
     </section>
 
     <!-- ============ WORKS WITH ============ -->
-    <section class="wrap" aria-labelledby="mj-stack">
+    <section class="wrap" aria-labelledby="qa-stack">
       <div class="stack">
-        <h2 id="mj-stack" class="stack-title">Works with your stack</h2>
+        <h2 id="qa-stack" class="stack-title">Works with your stack</h2>
         <div class="marquee">
           <ul class="track">
             <template v-for="copy in 2" :key="copy">
@@ -552,8 +552,8 @@ onBeforeUnmount(() => {
     </section>
 
     <!-- ============ OVERVIEW ============ -->
-    <section class="wrap overview" aria-labelledby="mj-overview">
-      <h2 id="mj-overview" class="overview-title" data-reveal>
+    <section class="wrap overview" aria-labelledby="qa-overview">
+      <h2 id="qa-overview" class="overview-title" data-reveal>
         What a scan covers
       </h2>
       <ol class="toc" data-reveal>
@@ -588,7 +588,7 @@ onBeforeUnmount(() => {
       class="scan"
       :class="{ live: scanLive }"
       :style="chStyle('ch-ci')"
-      aria-labelledby="mj-ci"
+      aria-labelledby="qa-ci"
     >
       <div class="wrap scan-sticky">
         <div class="scan-copy">
@@ -596,7 +596,7 @@ onBeforeUnmount(() => {
             <span>{{ chapter("ch-ci").n }}</span
             >{{ chapter("ch-ci").title }}
           </p>
-          <h2 id="mj-ci">
+          <h2 id="qa-ci">
             Catches the CI tricks that keep a failed run green.
           </h2>
           <p class="scan-lede">
@@ -724,14 +724,14 @@ onBeforeUnmount(() => {
       id="ch-findings"
       class="chapter stacked wrap"
       :style="chStyle('ch-findings')"
-      aria-labelledby="mj-findings"
+      aria-labelledby="qa-findings"
     >
       <header class="ch-side" data-reveal>
         <p class="ch-tag">
           <span>{{ chapter("ch-findings").n }}</span
           >{{ chapter("ch-findings").title }}
         </p>
-        <h2 id="mj-findings">
+        <h2 id="qa-findings">
           Every finding says where, how sure, and how to fix it.
         </h2>
         <p>
@@ -778,14 +778,14 @@ onBeforeUnmount(() => {
       id="ch-score"
       class="chapter wrap"
       :style="chStyle('ch-score')"
-      aria-labelledby="mj-score"
+      aria-labelledby="qa-score"
     >
       <header class="ch-side" data-reveal>
         <p class="ch-tag">
           <span>{{ chapter("ch-score").n }}</span
           >{{ chapter("ch-score").title }}
         </p>
-        <h2 id="mj-score">One score, with the arithmetic shown.</h2>
+        <h2 id="qa-score">One score, with the arithmetic shown.</h2>
         <p>
           The score measures the test suite, not your product. Every point it
           takes off is listed, and the formula has no hidden second model.
@@ -903,14 +903,14 @@ onBeforeUnmount(() => {
       id="ch-trust"
       class="chapter stacked wrap"
       :style="chStyle('ch-trust')"
-      aria-labelledby="mj-trust"
+      aria-labelledby="qa-trust"
     >
       <header class="ch-side" data-reveal>
         <p class="ch-tag">
           <span>{{ chapter("ch-trust").n }}</span
           >{{ chapter("ch-trust").title }}
         </p>
-        <h2 id="mj-trust">
+        <h2 id="qa-trust">
           Knows the difference between reading code and seeing it run.
         </h2>
         <p>
@@ -969,14 +969,14 @@ onBeforeUnmount(() => {
       id="ch-runtime"
       class="chapter wrap"
       :style="chStyle('ch-runtime')"
-      aria-labelledby="mj-runtime"
+      aria-labelledby="qa-runtime"
     >
       <header class="ch-side" data-reveal>
         <p class="ch-tag">
           <span>{{ chapter("ch-runtime").n }}</span
           >{{ chapter("ch-runtime").title }}
         </p>
-        <h2 id="mj-runtime">Reads what actually ran.</h2>
+        <h2 id="qa-runtime">Reads what actually ran.</h2>
         <p>
           Point it at a folder of test results. Playwright JSON, Jest and Vitest
           JSON, and JUnit XML from any runner all work.
@@ -1011,14 +1011,14 @@ onBeforeUnmount(() => {
       id="ch-rules"
       class="chapter wrap"
       :style="chStyle('ch-rules')"
-      aria-labelledby="mj-rules"
+      aria-labelledby="qa-rules"
     >
       <header class="ch-side" data-reveal>
         <p class="ch-tag">
           <span>{{ chapter("ch-rules").n }}</span
           >{{ chapter("ch-rules").title }}
         </p>
-        <h2 id="mj-rules">
+        <h2 id="qa-rules">
           A published <span class="nowrap">false-positive</span> rate for each
           rule.
         </h2>
@@ -1084,14 +1084,14 @@ onBeforeUnmount(() => {
       id="ch-ship"
       class="chapter wrap"
       :style="chStyle('ch-ship')"
-      aria-labelledby="mj-ship"
+      aria-labelledby="qa-ship"
     >
       <header class="ch-side" data-reveal>
         <p class="ch-tag">
           <span>{{ chapter("ch-ship").n }}</span
           >{{ chapter("ch-ship").title }}
         </p>
-        <h2 id="mj-ship">Gates the pull request, and checks the agent.</h2>
+        <h2 id="qa-ship">Gates the pull request, and checks the agent.</h2>
         <p>
           Scan only what a branch touched, or hand the findings to an AI agent
           and let the re-scan prove the fix.
@@ -1133,9 +1133,9 @@ onBeforeUnmount(() => {
     </section>
 
     <!-- ============ LIMITS ============ -->
-    <section class="wrap limits-band" aria-labelledby="mj-limits">
+    <section class="wrap limits-band" aria-labelledby="qa-limits">
       <div class="limits-box" data-reveal>
-        <h2 id="mj-limits">Where the score stops</h2>
+        <h2 id="qa-limits">Where the score stops</h2>
         <ul class="limits">
           <li v-for="l in LIMITS" :key="l.claim">
             {{ l.claim }}
@@ -1149,9 +1149,9 @@ onBeforeUnmount(() => {
     </section>
 
     <!-- ============ CLOSE ============ -->
-    <section class="closing" data-reveal aria-labelledby="mj-run">
+    <section class="closing" data-reveal aria-labelledby="qa-run">
       <div class="wrap">
-        <h2 id="mj-run" class="huge">Run it on your repo.</h2>
+        <h2 id="qa-run" class="huge">Run it on your repo.</h2>
         <CopyKey class="close-key" :command="COMMAND" />
         <div class="close-links">
           <a class="more" :href="withBase('/guide/getting-started')"
@@ -1171,9 +1171,9 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.mj {
+.qa {
   --edge: clamp(20px, 5vw, 48px);
-  --well: var(--mj-ink-950);
+  --well: var(--qa-ink-950);
   --line: var(--vp-c-divider);
   --line-2: var(--vp-c-border);
   --t1: var(--vp-c-text-1);
@@ -1183,9 +1183,9 @@ onBeforeUnmount(() => {
   --spring: cubic-bezier(0.34, 1.45, 0.64, 1);
   --sheen: linear-gradient(
     90deg,
-    var(--mj-aurora-green),
-    var(--mj-aurora-cyan) 50%,
-    var(--mj-aurora-violet)
+    var(--qa-aurora-green),
+    var(--qa-aurora-cyan) 50%,
+    var(--qa-aurora-violet)
   );
   color: var(--t1);
   font-family: var(--vp-font-family-base);
@@ -1194,29 +1194,29 @@ onBeforeUnmount(() => {
 }
 
 /* The page sits inside .vp-doc; take back its prose defaults. */
-.mj :is(h1, h2, h3) {
+.qa :is(h1, h2, h3) {
   margin: 0;
   padding: 0;
   border: 0;
   font-family: var(--vp-font-family-base);
   text-wrap: balance;
 }
-.mj h2::before {
+.qa h2::before {
   content: none;
 }
 /* :where keeps this at class weight, so each component's own margins win. */
-.mj :where(p, ul, ol, dl, dd, figure) {
+.qa :where(p, ul, ol, dl, dd, figure) {
   margin: 0;
   line-height: inherit;
 }
-.mj :is(ul, ol) {
+.qa :is(ul, ol) {
   padding: 0;
   list-style: none;
 }
-.mj li + li {
+.qa li + li {
   margin-top: 0;
 }
-.mj a {
+.qa a {
   color: inherit;
   font-weight: inherit;
   text-decoration: underline;
@@ -1227,10 +1227,10 @@ onBeforeUnmount(() => {
     text-decoration-color 120ms var(--settle),
     color 120ms var(--settle);
 }
-.mj a:hover {
+.qa a:hover {
   text-decoration-color: var(--t1);
 }
-.mj code {
+.qa code {
   padding: 0;
   border-radius: 0;
   background: none;
@@ -1238,7 +1238,7 @@ onBeforeUnmount(() => {
   font-family: var(--vp-font-family-mono);
   font-size: inherit;
 }
-.mj .ic {
+.qa .ic {
   padding: 1px 5px;
   border-radius: 4px;
   background: var(--vp-c-bg-soft);
@@ -1276,7 +1276,7 @@ onBeforeUnmount(() => {
   line-height: 1.6;
   color: var(--t3);
 }
-.mj .more {
+.qa .more {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -1284,17 +1284,17 @@ onBeforeUnmount(() => {
   color: var(--t2);
   text-decoration: none;
 }
-.mj .more::after {
+.qa .more::after {
   content: "→";
   transition: transform 240ms var(--settle);
 }
-.mj .more:hover {
+.qa .more:hover {
   color: var(--t1);
 }
-.mj .more:hover::after {
+.qa .more:hover::after {
   transform: translateX(4px);
 }
-.mj h3 {
+.qa h3 {
   font-size: 17px;
   font-weight: 500;
   letter-spacing: -0.01em;
@@ -1302,20 +1302,20 @@ onBeforeUnmount(() => {
 }
 
 .tone-critical {
-  color: var(--mj-unworthy);
+  color: var(--qa-critical);
 }
 .tone-warning {
-  color: var(--mj-needswork);
+  color: var(--qa-attention);
 }
-.tone-trusted {
-  color: var(--mj-trusted);
+.tone-healthy {
+  color: var(--qa-healthy);
 }
-.tone-forged {
-  color: var(--mj-forged-hot);
+.tone-excellent {
+  color: var(--qa-excellent-hot);
 }
 
 /* ---- reveal: an enhancement, gated on the class the head script sets ---- */
-.mj-anim [data-reveal] {
+.qa-anim [data-reveal] {
   transition:
     opacity 800ms var(--settle),
     transform 800ms var(--settle),
@@ -1326,7 +1326,7 @@ onBeforeUnmount(() => {
     calc(var(--i, 0) * 80ms), calc(var(--i, 0) * 80ms),
     calc(var(--i, 0) * 80ms), 0s, 0s;
 }
-.mj-anim [data-reveal]:not([data-in]) {
+.qa-anim [data-reveal]:not([data-in]) {
   opacity: 0;
   transform: translateY(20px);
   filter: blur(6px);
@@ -1361,17 +1361,17 @@ onBeforeUnmount(() => {
   background:
     radial-gradient(
       52% 40% at 14% 14%,
-      color-mix(in srgb, var(--mj-aurora-green) 30%, transparent),
+      color-mix(in srgb, var(--qa-aurora-green) 30%, transparent),
       transparent 72%
     ),
     radial-gradient(
       44% 34% at 52% 10%,
-      color-mix(in srgb, var(--mj-aurora-cyan) 24%, transparent),
+      color-mix(in srgb, var(--qa-aurora-cyan) 24%, transparent),
       transparent 72%
     ),
     radial-gradient(
       40% 38% at 90% 14%,
-      color-mix(in srgb, var(--mj-aurora-violet) 30%, transparent),
+      color-mix(in srgb, var(--qa-aurora-violet) 30%, transparent),
       transparent 72%
     );
   transition: opacity 1.6s var(--settle);
@@ -1388,14 +1388,14 @@ onBeforeUnmount(() => {
   background: linear-gradient(
     90deg,
     transparent,
-    var(--mj-aurora-green) 18%,
-    var(--mj-aurora-cyan) 50%,
-    var(--mj-aurora-violet) 82%,
+    var(--qa-aurora-green) 18%,
+    var(--qa-aurora-cyan) 50%,
+    var(--qa-aurora-violet) 82%,
     transparent
   );
   opacity: 0.75;
   box-shadow: 0 0 28px 3px
-    color-mix(in srgb, var(--mj-aurora-cyan) 30%, transparent);
+    color-mix(in srgb, var(--qa-aurora-cyan) 30%, transparent);
 }
 .hero {
   padding-top: calc(var(--vp-nav-height) + clamp(48px, 7vw, 104px));
@@ -1466,7 +1466,7 @@ onBeforeUnmount(() => {
   padding-block: 28px;
   border-bottom: 1px solid var(--line);
 }
-.mj .stack-title {
+.qa .stack-title {
   flex: none;
   width: 10rem;
   font-size: 15px;
@@ -1486,7 +1486,7 @@ onBeforeUnmount(() => {
     transparent
   );
 }
-.mj .track {
+.qa .track {
   display: flex;
   align-items: center;
   width: max-content;
@@ -1560,9 +1560,9 @@ onBeforeUnmount(() => {
 }
 .logo:hover svg {
   opacity: 1;
-  color: var(--mj-aurora-bright);
+  color: var(--qa-aurora-bright);
   filter: drop-shadow(
-    0 0 8px color-mix(in srgb, var(--mj-aurora-bright) 55%, transparent)
+    0 0 8px color-mix(in srgb, var(--qa-aurora-bright) 55%, transparent)
   );
 }
 
@@ -1570,7 +1570,7 @@ onBeforeUnmount(() => {
 .overview {
   padding-block: clamp(56px, 7vw, 88px) clamp(24px, 3vw, 40px);
 }
-.mj .overview-title {
+.qa .overview-title {
   font-size: clamp(24px, 2.6vw, 30px);
   font-weight: 500;
   letter-spacing: -0.02em;
@@ -1588,11 +1588,11 @@ onBeforeUnmount(() => {
     transform 600ms var(--settle);
   transition-delay: calc(var(--i) * 60ms);
 }
-.mj-anim .toc[data-reveal]:not([data-in]) li {
+.qa-anim .toc[data-reveal]:not([data-in]) li {
   opacity: 0;
   transform: translateY(10px);
 }
-.mj .toc a {
+.qa .toc a {
   display: grid;
   grid-template-columns: 3ch minmax(0, 1fr) 16px;
   gap: 16px;
@@ -1629,7 +1629,7 @@ onBeforeUnmount(() => {
     transform 200ms var(--settle),
     color 200ms var(--settle);
 }
-.mj .toc a:hover .toc-go {
+.qa .toc a:hover .toc-go {
   color: var(--ch);
   transform: translateY(3px);
 }
@@ -1687,7 +1687,7 @@ onBeforeUnmount(() => {
   font-weight: 400;
   color: var(--ch);
 }
-.mj :is(.ch-side, .scan-copy) h2 {
+.qa :is(.ch-side, .scan-copy) h2 {
   margin-top: 14px;
   font-size: clamp(24px, 2.5vw, 32px);
   font-weight: 500;
@@ -1707,8 +1707,8 @@ onBeforeUnmount(() => {
 .scan-copy .more {
   margin-top: 22px;
 }
-.mj .ch-side .more,
-.mj .scan-copy .more {
+.qa .ch-side .more,
+.qa .scan-copy .more {
   text-decoration-color: color-mix(in srgb, var(--ch) 70%, transparent);
 }
 .ch-main {
@@ -1770,13 +1770,13 @@ onBeforeUnmount(() => {
   color: var(--t1);
 }
 .tally .t-err b {
-  color: var(--mj-unworthy);
+  color: var(--qa-critical);
 }
 .tally .t-warn b {
-  color: var(--mj-needswork);
+  color: var(--qa-attention);
 }
 .tally .t-info b {
-  color: var(--mj-info);
+  color: var(--qa-info);
 }
 .found {
   display: grid;
@@ -1815,16 +1815,16 @@ onBeforeUnmount(() => {
   letter-spacing: 0.08em;
 }
 .sev.error {
-  color: var(--mj-unworthy);
-  background: color-mix(in srgb, var(--mj-unworthy) 14%, transparent);
+  color: var(--qa-critical);
+  background: color-mix(in srgb, var(--qa-critical) 14%, transparent);
 }
 .sev.warning {
-  color: var(--mj-needswork);
-  background: color-mix(in srgb, var(--mj-needswork) 14%, transparent);
+  color: var(--qa-attention);
+  background: color-mix(in srgb, var(--qa-attention) 14%, transparent);
 }
 .sev.info {
-  color: var(--mj-info);
-  background: color-mix(in srgb, var(--mj-info) 12%, transparent);
+  color: var(--qa-info);
+  background: color-mix(in srgb, var(--qa-info) 12%, transparent);
 }
 .file {
   position: relative;
@@ -1890,28 +1890,28 @@ onBeforeUnmount(() => {
   color: var(--t2);
 }
 .ln.done .k {
-  color: var(--mj-steel);
+  color: var(--qa-steel);
 }
 .ln.hit {
   color: var(--t1);
 }
 .ln.hit.error {
-  background: color-mix(in srgb, var(--mj-unworthy) 13%, transparent);
+  background: color-mix(in srgb, var(--qa-critical) 13%, transparent);
 }
 .ln.hit.error .n {
-  color: var(--mj-unworthy);
+  color: var(--qa-critical);
 }
 .ln.hit.warning {
-  background: color-mix(in srgb, var(--mj-needswork) 11%, transparent);
+  background: color-mix(in srgb, var(--qa-attention) 11%, transparent);
 }
 .ln.hit.warning .n {
-  color: var(--mj-needswork);
+  color: var(--qa-attention);
 }
 .ln.hit.info {
-  background: color-mix(in srgb, var(--mj-info) 9%, transparent);
+  background: color-mix(in srgb, var(--qa-info) 9%, transparent);
 }
 .ln.hit.info .n {
-  color: var(--mj-info);
+  color: var(--qa-info);
 }
 .chip {
   display: grid;
@@ -1970,13 +1970,13 @@ onBeforeUnmount(() => {
   background: linear-gradient(
     90deg,
     transparent,
-    var(--mj-aurora-green) 12%,
-    var(--mj-aurora-cyan) 50%,
-    var(--mj-aurora-violet) 88%,
+    var(--qa-aurora-green) 12%,
+    var(--qa-aurora-cyan) 50%,
+    var(--qa-aurora-violet) 88%,
     transparent
   );
   box-shadow: 0 0 20px 2px
-    color-mix(in srgb, var(--mj-aurora-cyan) 50%, transparent);
+    color-mix(in srgb, var(--qa-aurora-cyan) 50%, transparent);
   pointer-events: none;
 }
 .beam::before {
@@ -1988,7 +1988,7 @@ onBeforeUnmount(() => {
   height: 64px;
   background: linear-gradient(
     to top,
-    color-mix(in srgb, var(--mj-aurora-cyan) 11%, transparent),
+    color-mix(in srgb, var(--qa-aurora-cyan) 11%, transparent),
     transparent
   );
 }
@@ -2012,7 +2012,7 @@ onBeforeUnmount(() => {
   gap: 8px;
   align-content: start;
 }
-.mj .snip {
+.qa .snip {
   display: block;
   padding: 11px 14px;
   border: 1px solid var(--line);
@@ -2060,7 +2060,7 @@ onBeforeUnmount(() => {
   border-radius: inherit;
   background: radial-gradient(
     300px circle at var(--mx) var(--my),
-    color-mix(in srgb, var(--mj-aurora-cyan) 75%, transparent),
+    color-mix(in srgb, var(--qa-aurora-cyan) 75%, transparent),
     transparent 45%
   );
   mask:
@@ -2074,7 +2074,7 @@ onBeforeUnmount(() => {
   inset: 0;
   background: radial-gradient(
     420px circle at var(--mx) var(--my),
-    color-mix(in srgb, var(--mj-aurora-cyan) 7%, transparent),
+    color-mix(in srgb, var(--qa-aurora-cyan) 7%, transparent),
     transparent 55%
   );
   pointer-events: none;
@@ -2088,7 +2088,7 @@ onBeforeUnmount(() => {
   translate: 0 -3px;
 }
 .card.lit {
-  border-color: color-mix(in srgb, var(--mj-aurora-cyan) 45%, transparent);
+  border-color: color-mix(in srgb, var(--qa-aurora-cyan) 45%, transparent);
 }
 .card.wide {
   grid-column: 1 / -1;
@@ -2098,7 +2098,7 @@ onBeforeUnmount(() => {
 .card.wide:hover {
   translate: none;
 }
-.mj .card-k {
+.qa .card-k {
   font-size: 15px;
   font-weight: 500;
 }
@@ -2108,7 +2108,7 @@ onBeforeUnmount(() => {
   line-height: 1.6;
   color: var(--t2);
 }
-.mj .tok {
+.qa .tok {
   display: block;
   width: fit-content;
   max-width: 100%;
@@ -2125,8 +2125,8 @@ onBeforeUnmount(() => {
     background-color 350ms var(--settle);
 }
 .card.lit .tok {
-  border-color: color-mix(in srgb, var(--mj-aurora-cyan) 55%, transparent);
-  background: color-mix(in srgb, var(--mj-aurora-cyan) 10%, transparent);
+  border-color: color-mix(in srgb, var(--qa-aurora-cyan) 55%, transparent);
+  background: color-mix(in srgb, var(--qa-aurora-cyan) 10%, transparent);
 }
 /* A system monospace on purpose: the Geist Mono web subset has no
    box-drawing glyphs, and this card must match the terminal exactly. */
@@ -2156,9 +2156,9 @@ onBeforeUnmount(() => {
     box-shadow 350ms var(--settle);
 }
 .anat-term .lit {
-  background: color-mix(in srgb, var(--mj-aurora-cyan) 16%, transparent);
+  background: color-mix(in srgb, var(--qa-aurora-cyan) 16%, transparent);
   box-shadow: 0 0 0 1px
-    color-mix(in srgb, var(--mj-aurora-cyan) 50%, transparent);
+    color-mix(in srgb, var(--qa-aurora-cyan) 50%, transparent);
 }
 
 /* 03 ---- score ---- */
@@ -2238,7 +2238,7 @@ onBeforeUnmount(() => {
 .scale-seg:nth-child(4) {
   transition-delay: 360ms;
 }
-.mj-anim .scale[data-reveal]:not([data-in]) .scale-seg {
+.qa-anim .scale[data-reveal]:not([data-in]) .scale-seg {
   transform: scaleX(0);
 }
 .scale-seg + .scale-seg {
@@ -2250,7 +2250,7 @@ onBeforeUnmount(() => {
   transform: translateX(-50%);
   transition: left 1500ms var(--spring) 600ms;
 }
-.mj-anim .scale[data-reveal]:not([data-in]) .scale-mark {
+.qa-anim .scale[data-reveal]:not([data-in]) .scale-mark {
   left: 0 !important;
 }
 .scale-pin {
@@ -2351,7 +2351,7 @@ onBeforeUnmount(() => {
   grid-template-columns: minmax(0, 1fr);
   gap: 24px;
 }
-.mj .ladder {
+.qa .ladder {
   position: relative;
   display: grid;
   grid-template-columns: repeat(var(--n), minmax(0, 1fr));
@@ -2386,7 +2386,7 @@ onBeforeUnmount(() => {
   transition: transform 900ms var(--settle);
   transition-delay: calc(var(--i) * 110ms + 150ms);
 }
-.mj-anim .ladder[data-reveal]:not([data-in]) .bar {
+.qa-anim .ladder[data-reveal]:not([data-in]) .bar {
   transform: scaleY(0);
 }
 /* One pass of light up the rungs a real run reaches. Once, never looped. */
@@ -2436,7 +2436,7 @@ onBeforeUnmount(() => {
   top: 18px;
   bottom: 18px;
   left: calc(24px + var(--b) * (100% - 48px + 14px) / var(--n) - 7px);
-  border-left: 1px dashed color-mix(in srgb, var(--mj-aurora) 70%, transparent);
+  border-left: 1px dashed color-mix(in srgb, var(--qa-aurora) 70%, transparent);
 }
 .runline span {
   position: absolute;
@@ -2444,7 +2444,7 @@ onBeforeUnmount(() => {
   left: 10px;
   font-size: 12px;
   white-space: nowrap;
-  color: var(--mj-aurora-bright);
+  color: var(--qa-aurora-bright);
 }
 
 /* 05 ---- runtime: the output streams in ---- */
@@ -2452,7 +2452,7 @@ onBeforeUnmount(() => {
   transition: opacity 320ms var(--settle);
   transition-delay: calc(var(--i) * 35ms);
 }
-.mj-anim .streams[data-reveal]:not([data-in]) :deep(.tl) {
+.qa-anim .streams[data-reveal]:not([data-in]) :deep(.tl) {
   opacity: 0;
 }
 
@@ -2480,7 +2480,7 @@ onBeforeUnmount(() => {
   margin-top: 32px;
   overflow-x: auto;
 }
-.mj .rules {
+.qa .rules {
   display: table;
   width: 100%;
   min-width: 560px;
@@ -2488,7 +2488,7 @@ onBeforeUnmount(() => {
   border-collapse: collapse;
   font-size: 15px;
 }
-.mj .rules :is(tr, th, td) {
+.qa .rules :is(tr, th, td) {
   border: 0;
   background: none;
 }
@@ -2517,10 +2517,10 @@ onBeforeUnmount(() => {
   vertical-align: middle;
   color: var(--t2);
 }
-.mj .rules tr.row {
+.qa .rules tr.row {
   transition: background-color 160ms var(--settle);
 }
-.mj .rules tr.row:hover {
+.qa .rules tr.row:hover {
   background: var(--vp-c-bg-alt);
 }
 .rules td:first-child {
@@ -2561,17 +2561,17 @@ onBeforeUnmount(() => {
   background: currentColor;
   transition: width 1100ms var(--settle) 300ms;
 }
-.mj-anim .table-wrap[data-reveal]:not([data-in]) .fp-fill {
+.qa-anim .table-wrap[data-reveal]:not([data-in]) .fp-fill {
   width: 0;
 }
 .fp-zero {
   color: var(--t1);
 }
 .fp-mid {
-  color: var(--mj-needswork);
+  color: var(--qa-attention);
 }
 .fp-high {
-  color: var(--mj-unworthy);
+  color: var(--qa-critical);
 }
 .rules td.sample {
   padding-right: 0;
@@ -2629,7 +2629,7 @@ onBeforeUnmount(() => {
     transform 600ms var(--settle);
   transition-delay: calc(var(--i) * 90ms + 150ms);
 }
-.mj-anim .codes[data-reveal]:not([data-in]) > div {
+.qa-anim .codes[data-reveal]:not([data-in]) > div {
   opacity: 0;
   transform: translateY(12px);
 }
@@ -2660,7 +2660,7 @@ onBeforeUnmount(() => {
   right: var(--edge);
   border-top: 1px solid var(--line);
 }
-.mj .limits-box h2 {
+.qa .limits-box h2 {
   font-size: clamp(24px, 2.5vw, 30px);
   font-weight: 500;
   letter-spacing: -0.02em;
@@ -2700,17 +2700,17 @@ onBeforeUnmount(() => {
   background:
     radial-gradient(
       38% 70% at 22% 100%,
-      color-mix(in srgb, var(--mj-aurora-green) 30%, transparent),
+      color-mix(in srgb, var(--qa-aurora-green) 30%, transparent),
       transparent 70%
     ),
     radial-gradient(
       38% 70% at 50% 100%,
-      color-mix(in srgb, var(--mj-aurora-cyan) 26%, transparent),
+      color-mix(in srgb, var(--qa-aurora-cyan) 26%, transparent),
       transparent 70%
     ),
     radial-gradient(
       38% 70% at 78% 100%,
-      color-mix(in srgb, var(--mj-aurora-violet) 30%, transparent),
+      color-mix(in srgb, var(--qa-aurora-violet) 30%, transparent),
       transparent 70%
     );
   animation: breathe 14s ease-in-out infinite alternate;
@@ -2725,7 +2725,7 @@ onBeforeUnmount(() => {
     transform: none;
   }
 }
-.mj .huge {
+.qa .huge {
   font-size: clamp(44px, 7.4vw, 104px);
   font-weight: 500;
   line-height: 1;
@@ -2748,16 +2748,16 @@ onBeforeUnmount(() => {
   background: linear-gradient(
     90deg,
     transparent,
-    var(--mj-aurora-green) 18%,
-    var(--mj-aurora-cyan) 50%,
-    var(--mj-aurora-violet) 82%,
+    var(--qa-aurora-green) 18%,
+    var(--qa-aurora-cyan) 50%,
+    var(--qa-aurora-violet) 82%,
     transparent
   );
   box-shadow: 0 0 28px 3px
-    color-mix(in srgb, var(--mj-aurora-cyan) 26%, transparent);
+    color-mix(in srgb, var(--qa-aurora-cyan) 26%, transparent);
   transition: transform 1600ms var(--settle) 300ms;
 }
-.mj-anim .closing[data-reveal]:not([data-in]) .draw {
+.qa-anim .closing[data-reveal]:not([data-in]) .draw {
   transform: scaleX(0);
 }
 
@@ -2773,7 +2773,7 @@ onBeforeUnmount(() => {
   .masks {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .mj .ladder {
+  .qa .ladder {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     row-gap: 28px;
   }
@@ -2792,7 +2792,7 @@ onBeforeUnmount(() => {
   .scan.live :is(.scan-lede, .found, .more) {
     display: none;
   }
-  .mj .scan.live .scan-copy h2 {
+  .qa .scan.live .scan-copy h2 {
     font-size: 22px;
   }
   .scan.live .tally {
@@ -2839,7 +2839,7 @@ onBeforeUnmount(() => {
     align-items: flex-start;
     gap: 14px;
   }
-  .mj .stack-title {
+  .qa .stack-title {
     width: auto;
   }
   .marquee {
@@ -2849,7 +2849,7 @@ onBeforeUnmount(() => {
   .masks {
     grid-template-columns: minmax(0, 1fr);
   }
-  .mj .ladder {
+  .qa .ladder {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .rung {
@@ -2862,7 +2862,7 @@ onBeforeUnmount(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .mj a,
+  .qa a,
   .logo,
   .logo svg,
   .toc-go,
@@ -2871,7 +2871,7 @@ onBeforeUnmount(() => {
   .chip-card,
   .ln,
   .ln .n,
-  .mj .rules tr.row {
+  .qa .rules tr.row {
     transition: none;
   }
   .title .w,
@@ -2881,7 +2881,7 @@ onBeforeUnmount(() => {
   .ladder[data-in] .rung.run .bar::after {
     animation: none;
   }
-  .mj .track {
+  .qa .track {
     flex-wrap: wrap;
     width: auto;
     row-gap: 8px;

@@ -44,7 +44,7 @@ const NO_UNRELEASED = `${HEADER}## [0.5.0] — 2026-08-30
 
 ### Added
 
-- the hammer is the gauge.
+- the score graphic is the gauge.
 `;
 
 describe("applyChangelogRelease", () => {
@@ -99,7 +99,7 @@ describe("applyChangelogRelease", () => {
       "0.5.0",
     ).text;
     expect(text).toContain("## [0.5.0] — 2026-08-30");
-    expect(text).toContain("- the hammer is the gauge.");
+    expect(text).toContain("- the score graphic is the gauge.");
     // Version heading goes above Unreleased, not above the released
     // section: it must precede [0.5.0], which stays where it was.
     expect(text.indexOf("## [0.5.1]")).toBeLessThan(text.indexOf("## [0.5.0]"));
@@ -123,7 +123,7 @@ describe("applyChangelogRelease", () => {
     expect(text).toContain("- lint-ratchet sweep: 495 warnings to zero (#26)");
     // The generated block lands above the previous release heading.
     expect(text.indexOf("## [0.6.0]")).toBeLessThan(text.indexOf("## [0.5.0]"));
-    expect(text).toContain("- the hammer is the gauge.");
+    expect(text).toContain("- the score graphic is the gauge.");
   });
 
   it("refuses to run when the version heading already exists (idempotency)", () => {

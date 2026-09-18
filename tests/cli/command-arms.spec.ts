@@ -202,7 +202,7 @@ describe("runDoctorCommand", () => {
   it("exits 0 on a healthy self-audit of this repo", () => {
     const cap = capture();
     expect(runDoctorCommand([REPO_ROOT], cap.io)).toBe(0);
-    expect(cap.text()).toContain("WORTHY");
+    expect(cap.text()).toContain("HEALTHY");
   });
 });
 

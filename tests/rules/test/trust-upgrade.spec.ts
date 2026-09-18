@@ -264,7 +264,7 @@ describe("qa-doctor doctor self-audit", () => {
       measurement: { measured: 0, unmeasured: 0, total: 0, quarantine: 0 },
     });
     expect(text).toContain(`✓ registry-sanity`);
-    expect(text).toContain("WORTHY");
+    expect(text).toContain("HEALTHY");
   });
 
   it("renderDoctorReport renders violations, truncating past 20 details", () => {

@@ -146,7 +146,7 @@ export function svgToLines(svg) {
  * grows or shrinks still splits correctly; a missing boundary throws
  * rather than silently producing a mis-sliced report.
  *
- * The 15-line ASCII hammer between the command and the verdict is
+ * The 15-line ASCII score graphic between the command and the verdict is
  * dropped for the web: it sits ~900px below the real logo lockup, so on
  * this page it is redundant. It stays in the README, where it is the
  * only logo there is.
@@ -162,7 +162,7 @@ export function splitGroups(lines) {
   };
 
   const commandIdx = idx(/npx qa-doctor/, "command");
-  const worthinessIdx = idx(/\bWORTHINESS\b/, "WORTHINESS");
+  const testHealthIdx = idx(/\bTEST HEALTH\b/, "TEST HEALTH");
   // The per-finding detail is OPTIONAL, and this used to throw when it
   // was absent. `scripts/generate-readme-hero.ts` deliberately stops the
   // hero asset at the end of "FIX THIS FIRST" — everything from
@@ -175,22 +175,22 @@ export function splitGroups(lines) {
   // So a missing FINDINGS heading is a shape, not a format error: the
   // verdict block runs to the footer and there are no finding lines. The
   // boundaries that genuinely cannot be missing — the command and the
-  // WORTHINESS line — still throw, because a wrong number here is
+  // TEST HEALTH line — still throw, because a wrong number here is
   // exactly the defect this script exists to prevent.
   const foundFindings = lines.findIndex((l) => /▍\s*FINDINGS/.test(l.text));
   const hasFindings = foundFindings >= 0;
   const footerIdx = lines.findIndex(
-    (l, i) => i > worthinessIdx && /^\s*─{10,}\s*$/.test(l.text),
+    (l, i) => i > testHealthIdx && /^\s*─{10,}\s*$/.test(l.text),
   );
   const blockEnd = footerIdx < 0 ? lines.length : footerIdx;
   const findingsIdx = hasFindings ? foundFindings : blockEnd;
 
   // The state chip ("ᚦ [STRAINED]") sits just above the score, with a
-  // blank line or two between it and the ASCII hammer. Anchor on the chip
+  // blank line or two between it and the ASCII score graphic. Anchor on the chip
   // itself rather than an offset, so restoring blank lines (or the
   // reporter adding one) cannot slice it off the top of the verdict.
-  let verdictStart = worthinessIdx;
-  for (let i = worthinessIdx - 1; i >= 0 && i >= worthinessIdx - 4; i--) {
+  let verdictStart = testHealthIdx;
+  for (let i = testHealthIdx - 1; i >= 0 && i >= testHealthIdx - 4; i--) {
     if (/\[[A-Z][A-Z ]*\]/.test(lines[i].text)) {
       verdictStart = i;
       break;
@@ -218,16 +218,16 @@ export function splitGroups(lines) {
  */
 export function parseSummary(lines) {
   const text = lines.map((l) => l.text);
-  const scoreLine = text.find((l) => /\bWORTHINESS\b/.test(l));
+  const scoreLine = text.find((l) => /\bTEST HEALTH\b/.test(l));
   if (!scoreLine) {
     throw new Error(
-      "no WORTHINESS line in the hero asset — report format changed?",
+      "no TEST HEALTH line in the hero asset — report format changed?",
     );
   }
-  const m = /WORTHINESS\s+(\d+)\/(\d+)\s+(\S.*?)\s*$/.exec(scoreLine);
+  const m = /TEST HEALTH\s+(\d+)\/(\d+)\s+(\S.*?)\s*$/.exec(scoreLine);
   if (!m) {
     throw new Error(
-      `could not parse the WORTHINESS line: ${JSON.stringify(scoreLine)}`,
+      `could not parse the TEST HEALTH line: ${JSON.stringify(scoreLine)}`,
     );
   }
 

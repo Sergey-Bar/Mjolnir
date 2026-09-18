@@ -1,7 +1,7 @@
 # Getting started
 
 QA Doctor (`qa-doctor-cli` on npm) audits your test suite and CI pipelines, then
-reports a single worthiness score plus prioritized findings — each with a
+reports a single test health score plus prioritized findings — each with a
 rule ID, a location, and a fix.
 
 ## Install
@@ -44,7 +44,7 @@ this for you (plain `npx` instead, with `--no-action`).
 
 | Command                               | What it does                                     |
 | ------------------------------------- | ------------------------------------------------ |
-| `qa-doctor`                           | Full-repo scan + worthiness score                |
+| `qa-doctor`                           | Full-repo scan + test health score               |
 | `qa-doctor --scope changed`           | Only what your branch introduced — the CI form   |
 | `qa-doctor ci install`                | Generate the advisory PR workflow                |
 | `qa-doctor explain QA-CI-001`         | What / why / fix + measured FP rate for one rule |

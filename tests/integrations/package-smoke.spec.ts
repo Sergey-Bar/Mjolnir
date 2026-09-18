@@ -350,8 +350,8 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
           }
 
           // WI-5: the default surface is the Trust Report; accept either
-          // the classic WORTHINESS banner or the Trust Report verdict.
-          expect(result).toMatch(/WORTHINESS|TRUST VERDICT|score/);
+          // the classic TEST HEALTH banner or the Trust Report verdict.
+          expect(result).toMatch(/TEST HEALTH|TRUST VERDICT|score/);
         } finally {
           rmSync(fixtureDir, { recursive: true, force: true });
         }

@@ -81,7 +81,7 @@ QA Doctor lit la suite, les workflows CI et, si vous en avez un, le rapport d'un
 Un vrai scan de [`examples/demo-repo`](examples/demo-repo), une petite suite Playwright avec un workflow CI. Voici où sont partis ses points :
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Le détail des déductions de QA Doctor : WORTHINESS 80/100 WORTHY, le score par catégorie, l'encadré des déductions par sévérité et une liste FIX THIS FIRST" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="Le détail des déductions de QA Doctor : TEST HEALTH 80/100 HEALTHY, le score par catégorie, l'encadré des déductions par sévérité et une liste FIX THIS FIRST" width="520" />
 </p>
 
 <sub>Généré par `npm run docs:hero` à partir d'un vrai scan et verrouillé contre toute dérive en CI. Le rapport `--verbose` complet du même scan est [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
@@ -323,17 +323,17 @@ Cela mesure la **robustesse, pas l'exactitude**. `.btn.btn-primary > div:nth-chi
 ## Le score de fiabilité
 
 <p align="center">
-  <img src="assets/readme/score-gauge.svg" alt="L'échelle de fiabilité de 0 à 100, avec un marqueur qui parcourt chaque score : UNWORTHY sous 50, NEEDS WORK de 50 à 79, WORTHY de 80 à 99, FORGED à 100" width="720" />
+  <img src="assets/readme/score-gauge.svg" alt="L'échelle de fiabilité de 0 à 100, avec un marqueur qui parcourt chaque score : CRITICAL sous 50, NEEDS ATTENTION de 50 à 79, HEALTHY de 80 à 99, EXCELLENT à 100" width="720" />
 </p>
 
 <sub>Chaque score de 0 à 100, placé par le vrai `deriveScoreState`. Généré par `npm run docs:gauge` et verrouillé contre toute dérive en CI.</sub>
 
 | Score     | Verdict                                          |
 | --------- | ------------------------------------------------ |
-| `0 – 49`  | **UNWORTHY**                                     |
-| `50 – 79` | **NEEDS WORK**                                   |
-| `80 – 99` | **WORTHY**                                       |
-| `100`     | **FORGED**                                       |
+| `0 – 49`  | **CRITICAL**                                     |
+| `50 – 79` | **NEEDS ATTENTION**                              |
+| `80 – 99` | **HEALTHY**                                      |
+| `100`     | **EXCELLENT**                                    |
 | `null`    | **UNKNOWN** : aucune déclaration de test trouvée |
 
 **Comment il est calculé.** La sévérité fixe une déduction de base (`error −8`, `warning −3`, `info −1`) et le niveau de preuve la réduit : E2 compte en entier, E1 à moitié (arrondi à l'inférieur), E0 pas du tout. Le total est normalisé par l'exposition de la suite, c'est-à-dire en déductions par déclaration de test plutôt que par fichier. Le terminal affiche les mêmes nombres réduits que ceux utilisés par le score ; il n'y a pas de second modèle caché. Détails : [docs/SCORING.md](docs/SCORING.md) et le [guide du score](https://sergey-bar.github.io/qa-doctor/guide/scoring).

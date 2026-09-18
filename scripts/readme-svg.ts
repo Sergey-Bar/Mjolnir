@@ -67,7 +67,7 @@ export function fontFaceCss(): string {
 }
 
 /**
- * The reporter (src/reporter/theme.ts) emits its Norse-forge palette as
+ * The reporter (src/reporter/theme.ts) emits its diagnostic palette as
  * 24-bit truecolor (`38;2;r;g;b`) — parsed directly in ansiLineToSpans —
  * plus the bare SGR codes 1 (bold) and 2 (dim), mapped here as fallbacks.
  */

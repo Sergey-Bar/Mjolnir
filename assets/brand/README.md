@@ -20,23 +20,23 @@ derived from it are the token module, not this page.
 Every file below is rendered by
 [`scripts/generate-brand-marks.ts`](../../scripts/generate-brand-marks.ts)
 (`npm run brand:marks`) from two vector sources — the Geist wordmark and
-the drawn Mansaz rune — each shot at its own native pixel size, not resized
+the drawn Q inspection mark — each shot at its own native pixel size, not resized
 from a larger bitmap. `masters` in `marks.lock.json` names the two large
 reference renders below; everything else is a real surface's own size.
 
-| File                                                                        | Rendered as                                    | Use                                                                     |
-| --------------------------------------------------------------------------- | ---------------------------------------------- | ----------------------------------------------------------------------- |
-| [`logo.png`](logo.png)                                                      | wordmark, 1800×504                             | full lockup — `QA DOCTOR` alone. Reference master.                      |
-| [`../readme/logo.png`](../readme/logo.png) · [`.webp`](../readme/logo.webp) | wordmark, 1000×280                             | README header and website hero.                                         |
-| [`mark.png`](mark.png)                                                      | monogram, 1235×1235                            | the rune alone — app / package / social icon source. Reference master.  |
-| [`icon.png`](icon.png)                                                      | monogram, 512×512                              | npm, GitHub social preview, tooling. Recognisable without the wordmark. |
-| `site/public/favicon-32.png` · `favicon-16.png`                             | monogram, native 32 / 16 px                    | browser tab icon.                                                       |
-| `site/public/apple-touch-icon.png` · `mark-64.png`                          | monogram, native 180 / 64 px                   | iOS home screen, site nav mark.                                         |
-| `site/public/social-card.jpg`                                               | rune over wordmark on `--mj-ink-950`, 1200×630 | link previews (og:image / twitter:image).                               |
+| File                                                                        | Rendered as                                               | Use                                                                     |
+| --------------------------------------------------------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------- |
+| [`logo.png`](logo.png)                                                      | wordmark, 1800×504                                        | full lockup — `QA DOCTOR` alone. Reference master.                      |
+| [`../readme/logo.png`](../readme/logo.png) · [`.webp`](../readme/logo.webp) | wordmark, 1000×280                                        | README header and website hero.                                         |
+| [`mark.png`](mark.png)                                                      | Q inspection mark, 1235×1235                              | app / package / social icon source. Reference master.                   |
+| [`icon.png`](icon.png)                                                      | Q inspection mark, 512×512                                | npm, GitHub social preview, tooling. Recognisable without the wordmark. |
+| `site/public/favicon-32.png` · `favicon-16.png`                             | Q inspection mark, native 32 / 16 px                      | browser tab icon.                                                       |
+| `site/public/apple-touch-icon.png` · `mark-64.png`                          | Q inspection mark, native 180 / 64 px                     | iOS home screen, site nav mark.                                         |
+| `site/public/social-card.jpg`                                               | inspection mark over wordmark on `--qa-ink-950`, 1200×630 | link previews (og:image / twitter:image).                               |
 
 Rendering each size natively, rather than downscaling one raster, is
-deliberate: a hammer illustration shrunk to 16px loses detail it cannot
-regain, but a vector wordmark and a single rune stay legible at any size
+deliberate: a score graphic illustration shrunk to 16px loses detail it cannot
+regain, but a vector wordmark and a single inspection mark stay legible at any size
 because each one is its own render, not a resample of a bigger file.
 
 ## The motif
@@ -46,21 +46,14 @@ everywhere else (`TYPOGRAPHY.display`) — caps, tracked 0.3em, in
 primary text. No illustration: the wordmark IS the logo.
 
 The square/tiny contexts a wordmark cannot survive (favicons, the
-npm/social icon) fall back to a single rune — ᛗ, Mansaz — drawn as a
-path (`MONOGRAM_PATH`) and stroked in the aurora, with a heavier,
-bevelled cut below 64px. It is not a new choice: it is already the "M" of QA DOCTOR in
-the hero runefield's own Elder Futhark spelling of the product's name
-(ᛗ ᛃ ᛟ ᛚ ᚾ ᛁ ᚱ — see [`BRAND-SYSTEM.md`](../../docs/design/BRAND-SYSTEM.md)).
-It is deliberately not one of the five runes `RUNES` in
-[`score-state.ts`](../../src/reporter/score-state.ts) places beside an
-actual verdict (ᚲ ᚦ ᛏ ᛟ ᛁ) — the permanent brand mark must never look
-like a standing verdict ("this product is always FORGED"). ᛗ appears
-elsewhere only as ambient four-rune flourish decoration in
-[`art.ts`](../../src/reporter/art.ts), never as a single-glyph state
-indicator, so it carries no score meaning on its own.
+npm/social icon) use the Q inspection mark — an open `Q` ring with an
+integrated verification check, drawn as `MONOGRAM_PATH`. It is deliberately
+separate from the status indicators in
+[`score-state.ts`](../../src/reporter/score-state.ts), so the permanent
+brand mark never looks like a standing verdict.
 
 Use one mark, calmly. Do not add ornament, illustration, or additional
-Norse motifs to either mark in product surfaces.
+terminal motifs to either mark in product surfaces.
 
 ## Colour and type
 
@@ -80,18 +73,16 @@ value stated in a design document that the source does not hold.
 ## Usage rules
 
 - Clear space around the wordmark ≥ the cap-height of the letters.
-- Place either mark on `--mj-ink-900` or darker; both are rendered on
+- Place either mark on `--qa-ink-900` or darker; both are rendered on
   that ground already and are not designed to sit on white.
 - Never recolour either mark, and never re-set the wordmark in a
   different typeface or weight than Geist 500.
-- Never set the rune beside the wordmark: next to `QA DOCTOR` a second M
-  only stutters. Use one or the other.
+- Never set the inspection mark beside the wordmark. Use one or the other.
 - Below the wordmark's minimum legible width (~180 px), use the
-  monogram alone.
-- No illustration, bolts, or additional Norse ornaments anywhere in
-  product surfaces (site, README, terminal, reports) — the aurora, forge
-  glow and ordered runefield in generated hero art are the only hero
-  atmosphere, and the terminal state runes are functional (non-colour
+  inspection mark alone.
+- No illustration, bolts, or additional terminal ornaments anywhere in
+  product surfaces (site, README, terminal, reports). The terminal status
+  indicators are functional (non-colour
   state communication), not decoration.
-- The terminal NORSE palette names (`trusted`, `forged`, …) are internal
-  token names for the ScoreState bands, not user-facing Norse theming.
+- The terminal TERMINAL_COLORS palette names (`trusted`, `excellent`, …) are internal
+  token names for the ScoreState bands, not user-facing terminal theming.

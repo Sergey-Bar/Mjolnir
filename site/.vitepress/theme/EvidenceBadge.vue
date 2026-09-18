@@ -11,16 +11,16 @@
  *
  * Where a location needs only the chip with no behavior (generated rule
  * pages, which are static HTML from gen-rules.mjs), that generator
- * emits the plain-HTML form with the same `mj-ev` classes instead of
+ * emits the plain-HTML form with the same `qa-ev` classes instead of
  * mounting Vue — the styles live globally in styles/custom.css for
  * exactly that reason, and the two forms must keep the same classes
  * and text.
  *
  * THE RING, AND WHY THE COLOURS CHANGED. The chip used to paint E2 in
- * the unworthy red, E1 in the needs-work gold and E0 in the trusted
+ * the critical red, E1 in the needs-work gold and E0 in the trusted
  * blue, reasoning from what each level COSTS the score. Those are the
- * score-band colours, so the same blue meant "WORTHY" in the gauge and
- * "observation" here, and the same red meant "UNWORTHY" and
+ * score-band colours, so the same blue meant "HEALTHY" in the gauge and
+ * "observation" here, and the same red meant "CRITICAL" and
  * "deterministic proof" — one palette carrying two unrelated axes.
  *
  * Evidence level is a certainty axis, not a severity one. It now uses
@@ -57,10 +57,10 @@ const meta = LEVELS[props.level] ?? null;
 </script>
 
 <template>
-  <span v-if="meta" class="mj-ev" :class="'mj-ev-' + level.toLowerCase()">
+  <span v-if="meta" class="qa-ev" :class="'qa-ev-' + level.toLowerCase()">
     <svg
       v-if="mark"
-      class="mj-ev-mark"
+      class="qa-ev-mark"
       viewBox="0 0 16 16"
       width="10"
       height="10"
@@ -81,12 +81,12 @@ const meta = LEVELS[props.level] ?? null;
         fill="currentColor"
       />
     </svg>
-    <span class="mj-ev-lvl">{{ level }}</span>
-    <span class="mj-ev-name">{{ meta.name }}</span>
-    <span class="mj-ev-weight">{{ meta.weight }}</span>
+    <span class="qa-ev-lvl">{{ level }}</span>
+    <span class="qa-ev-name">{{ meta.name }}</span>
+    <span class="qa-ev-weight">{{ meta.weight }}</span>
   </span>
-  <span v-else class="mj-ev mj-ev-e1">
-    <span class="mj-ev-lvl">{{ level }}</span>
-    <span class="mj-ev-name">evidence level</span>
+  <span v-else class="qa-ev qa-ev-e1">
+    <span class="qa-ev-lvl">{{ level }}</span>
+    <span class="qa-ev-name">evidence level</span>
   </span>
 </template>

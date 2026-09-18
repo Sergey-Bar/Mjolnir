@@ -81,7 +81,7 @@ npx qa-doctor-cli@latest
 فحص حقيقي لـ [`examples/demo-repo`](examples/demo-repo)، وهي مجموعة Playwright صغيرة مع workflow لـ CI. هنا ذهبت نقاطها:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="تفصيل الخصومات في QA Doctor: WORTHINESS 80/100 WORTHY، والدرجة حسب الفئة، ومربع الخصومات حسب الخطورة، وقائمة FIX THIS FIRST" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="تفصيل الخصومات في QA Doctor: TEST HEALTH 80/100 HEALTHY، والدرجة حسب الفئة، ومربع الخصومات حسب الخطورة، وقائمة FIX THIS FIRST" width="520" />
 </p>
 
 <sub>مولَّد بواسطة `npm run docs:hero` من فحص حقيقي ومقفل ضد الانحراف في CI. تقرير `--verbose` الكامل للفحص نفسه هو [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
@@ -323,17 +323,17 @@ e2e/checkout.spec.ts
 ## درجة الجدارة
 
 <p align="center">
-  <img src="assets/readme/score-gauge.svg" alt="مقياس الجدارة من 0 إلى 100، مع مؤشر يمر على كل درجة: UNWORTHY تحت 50، وNEEDS WORK من 50 إلى 79، وWORTHY من 80 إلى 99، وFORGED عند 100" width="720" />
+  <img src="assets/readme/score-gauge.svg" alt="مقياس الجدارة من 0 إلى 100، مع مؤشر يمر على كل درجة: CRITICAL تحت 50، وNEEDS ATTENTION من 50 إلى 79، وHEALTHY من 80 إلى 99، وEXCELLENT عند 100" width="720" />
 </p>
 
 <sub>كل درجة من 0 إلى 100، موضوعة بواسطة `deriveScoreState` الحقيقي. مولَّد بواسطة `npm run docs:gauge` ومقفل ضد الانحراف في CI.</sub>
 
 | الدرجة    | الحكم                                       |
 | --------- | ------------------------------------------- |
-| `0 – 49`  | **UNWORTHY**                                |
-| `50 – 79` | **NEEDS WORK**                              |
-| `80 – 99` | **WORTHY**                                  |
-| `100`     | **FORGED**                                  |
+| `0 – 49`  | **CRITICAL**                                |
+| `50 – 79` | **NEEDS ATTENTION**                         |
+| `80 – 99` | **HEALTHY**                                 |
+| `100`     | **EXCELLENT**                               |
 | `null`    | ‏**UNKNOWN**: لم يُعثر على تعريفات اختبارات |
 
 **كيف تُحسب.** تحدد الخطورة خصمًا أساسيًا (`error −8`، `warning −3`، `info −1`) ويخفّضه مستوى الدليل: E2 يُحتسب كاملًا، وE1 نصفه (مقرّبًا للأسفل)، وE0 لا شيء. يُطبَّع المجموع حسب تعرّض مجموعة الاختبارات، أي الخصومات لكل تعريف اختبار لا لكل ملف. تطبع الطرفية الأرقام المخفّضة نفسها التي استخدمتها الدرجة؛ ولا يوجد نموذج ثانٍ مخفي. التفاصيل: [docs/SCORING.md](docs/SCORING.md) و[دليل الدرجة](https://sergey-bar.github.io/qa-doctor/guide/scoring).

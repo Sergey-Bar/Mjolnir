@@ -357,7 +357,7 @@ jobs:
           const fs = require("fs");
           const r = JSON.parse(fs.readFileSync("doctor-report.json", "utf8"));
           if (r.schema !== "qa-doctor.doctor-report@1") { console.error("unknown schema", r.schema); process.exit(1); }
-          const verdict = r.healthy ? "WORTHY" : "VIOLATIONS";
+          const verdict = r.healthy ? "HEALTHY" : "VIOLATIONS";
           const line = "doctor: " + r.summary.pass + " pass · " + r.summary.fail + " fail · " + r.summary.inconclusive + " inconclusive → " + verdict;
           fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, line + "\n");
           console.log(line);

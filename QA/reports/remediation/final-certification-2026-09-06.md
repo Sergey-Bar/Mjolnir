@@ -36,7 +36,7 @@ Also merged pre-blueprint (this session): PR #38 agent-handoff+reporting (v0.5.4
 - 6,121+ tests green on every merged PR; coverage floor 100% per-file on
   all four axes (istanbul, per-file enforcement) — 0 violations at merge.
 - typecheck · lint · build (dual entry: dist/cli.mjs + dist/mcp/stdio.mjs)
-  · self-scan 99/100 WORTHY · generated-docs-drift green.
+  · self-scan 99/100 HEALTHY · generated-docs-drift green.
 - §25 semantic-integrity suite: identity stability, table-driven
   resolution fixtures (one per disappearance cause), contract parity,
   revision inconclusiveness, epistemic no-upgrade.
@@ -58,7 +58,7 @@ mismatch was surfaced before any mutation).
 - build-test × 4 platforms × 2 node versions: PASS on every merged PR.
 - generated-docs-drift: PASS (docs/rules/*, capability matrix, machine
   contract doc, count-lock, FP-AUDIT all regenerated and drift-locked).
-- self-scan (the product scanning itself): 99/100 WORTHY, exit 0.
+- self-scan (the product scanning itself): 99/100 HEALTHY, exit 0.
 - security lanes: CodeQL, Socket, OSV, Snyk, workflow-lint: PASS.
 
 ### BLOCKED BY EXTERNAL ENVIRONMENT

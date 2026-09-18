@@ -189,7 +189,7 @@ onBeforeUnmount(() => {
       </table>
 
       <p v-if="!shown.length" class="empty">
-        <span class="rune" aria-hidden="true">ᛉ</span>
+        <span class="indicator" aria-hidden="true">ᛉ</span>
         No rule matches that filter.
         <button class="reset" @click="reset">Clear filters</button>
       </p>
@@ -218,7 +218,7 @@ onBeforeUnmount(() => {
 }
 .stat strong {
   display: block;
-  font-family: var(--mj-display);
+  font-family: var(--qa-display);
   font-size: 1.9rem;
   line-height: 1.1;
   color: var(--vp-c-brand-1);
@@ -317,7 +317,7 @@ table {
 th {
   text-align: left;
   padding: 0.7rem 0.9rem;
-  font-family: var(--mj-display);
+  font-family: var(--qa-display);
   font-weight: 600;
   font-size: 0.8rem;
   letter-spacing: 0.05em;
@@ -370,17 +370,17 @@ tbody tr:hover {
   border: 1px solid transparent;
 }
 .sev-error {
-  color: var(--mj-unworthy);
+  color: var(--qa-critical);
   background: rgba(193, 59, 55, 0.12);
   border-color: rgba(193, 59, 55, 0.32);
 }
 .sev-warning {
-  color: var(--mj-needswork);
+  color: var(--qa-needswork);
   background: rgba(201, 162, 39, 0.14);
   border-color: rgba(201, 162, 39, 0.32);
 }
 .sev-info {
-  color: var(--mj-info);
+  color: var(--qa-info);
   background: rgba(43, 127, 168, 0.12);
   border-color: rgba(43, 127, 168, 0.32);
 }
@@ -396,7 +396,7 @@ tbody tr:hover {
   border-color: var(--vp-c-border);
 }
 .tier-quarantine {
-  color: var(--mj-needswork);
+  color: var(--qa-needswork);
   background: repeating-linear-gradient(
     45deg,
     rgba(201, 162, 39, 0.1),
@@ -409,7 +409,7 @@ tbody tr:hover {
 .measured {
   /* retargeted with the score-token rework: this is a trust chip, not a
    * score — aurora-cyan (the trusted family), no longer green. */
-  color: var(--mj-trusted);
+  color: var(--qa-trusted);
   background: rgba(92, 196, 224, 0.12);
   border-color: rgba(92, 196, 224, 0.3);
   font-family: var(--vp-font-family-mono);
@@ -420,9 +420,9 @@ tbody tr:hover {
   text-align: center;
   color: var(--vp-c-text-3);
 }
-.empty .rune {
+.empty .indicator {
   display: block;
-  font-family: var(--mj-display);
+  font-family: var(--qa-display);
   font-size: 1.8rem;
   color: var(--vp-c-brand-1);
   opacity: 0.6;

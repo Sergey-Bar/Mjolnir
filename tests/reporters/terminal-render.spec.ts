@@ -64,7 +64,7 @@ describe.each([40, 80, 120])("renders legibly at %d columns", (width) => {
     // The score gauge and deduction box specifically respect width —
     // free-text lines (messages, file paths) are allowed to overflow,
     // same as any real terminal wraps or truncates those naturally.
-    const gaugeLine = out.split("\n").find((l) => l.includes("WORTHINESS"));
+    const gaugeLine = out.split("\n").find((l) => l.includes("TEST HEALTH"));
     expect(gaugeLine).toBeDefined();
   });
 
@@ -79,14 +79,14 @@ describe("--width override", () => {
   it("a narrower width produces a narrower score gauge than a wider one", () => {
     // Formula: max(10, min(30, width - 4)) — differs across 20 vs 40,
     // both clamp differently below the 30-wide cap. Must select the
-    // WORTHINESS gauge line specifically (immediately after the "WORTHINESS" line)
+    // TEST HEALTH gauge line specifically (immediately after the "TEST HEALTH" line)
     // — the per-category DIAGNOSTICS gauges below it render at a fixed
     // width regardless of the overall terminal width and also match
     // /[█#]/, so a naive "first gauge-looking line" search can silently
     // pick the wrong line and compare a constant against itself.
     const scoreGaugeLine = (s: string): string => {
       const lines = s.split("\n");
-      const scoreIdx = lines.findIndex((l) => l.includes("WORTHINESS"));
+      const scoreIdx = lines.findIndex((l) => l.includes("TEST HEALTH"));
       return lines[scoreIdx + 1] ?? "";
     };
     const narrow = renderTerminal(result(), { isTTY: false, width: 20 });
@@ -123,7 +123,7 @@ describe("non-TTY (CI logs)", () => {
     const out = renderTerminal(result(), { isTTY: false });
     // eslint-disable-next-line no-control-regex
     expect(/\x1b\[[0-9;]*m/.test(out)).toBe(false);
-    expect(out).toContain("WORTHINESS");
+    expect(out).toContain("TEST HEALTH");
     expect(out).toContain("QA-TEST-001");
   });
 });
@@ -175,7 +175,7 @@ describe("ASCII-only fallback (cmd.exe / legacy consoles)", () => {
 });
 
 describe("verdict labels", () => {
-  it("shows NEEDS WORK for a mid-range score", () => {
+  it("shows NEEDS ATTENTION for a mid-range score", () => {
     const mid: ScanResult = {
       schemaVersion: 1,
       partial: false,
@@ -191,10 +191,10 @@ describe("verdict labels", () => {
         durationMs: 1,
       },
     };
-    expect(renderTerminal(mid, { isTTY: false })).toContain("NEEDS WORK");
+    expect(renderTerminal(mid, { isTTY: false })).toContain("NEEDS ATTENTION");
   });
 
-  it("shows UNWORTHY for a low score", () => {
+  it("shows CRITICAL for a low score", () => {
     const low: ScanResult = {
       schemaVersion: 1,
       partial: false,
@@ -210,7 +210,7 @@ describe("verdict labels", () => {
         durationMs: 1,
       },
     };
-    expect(renderTerminal(low, { isTTY: false })).toContain("UNWORTHY");
+    expect(renderTerminal(low, { isTTY: false })).toContain("CRITICAL");
   });
 });
 
@@ -232,21 +232,19 @@ describe("score instrument layout", () => {
     ...over,
   });
 
-  it("puts the WORTHINESS line straight under the logo, with the headline beneath the gauge", () => {
+  it("puts the TEST HEALTH line straight under the logo, with the headline beneath the gauge", () => {
     const out = renderTerminal(scan(), { isTTY: false, ascii: true });
     const lines = out.split("\n");
     const logoLine = lines.findIndex((l) => l.includes("Q A  D O C T O R"));
-    const worthiness = lines.findIndex((l) => l.includes("WORTHINESS"));
-    const headline = lines.findIndex((l) =>
-      l.includes("findings weigh it down"),
-    );
+    const testHealth = lines.findIndex((l) => l.includes("TEST HEALTH"));
+    const headline = lines.findIndex((l) => l.includes("Needs attention"));
     expect(logoLine).toBeGreaterThanOrEqual(0);
-    expect(worthiness).toBeGreaterThan(logoLine);
+    expect(testHealth).toBeGreaterThan(logoLine);
     // Nothing drawn between them: the score is the first thing read.
     expect(
-      lines.slice(logoLine + 1, worthiness).every((l) => l.trim() === ""),
+      lines.slice(logoLine + 1, testHealth).every((l) => l.trim() === ""),
     ).toBe(true);
-    expect(headline).toBeGreaterThan(worthiness);
+    expect(headline).toBeGreaterThan(testHealth);
     expect(out).not.toContain("[STRAINED]");
   });
 
@@ -254,33 +252,32 @@ describe("score instrument layout", () => {
     const verdictLine = (score: number) =>
       renderTerminal(scan({ score }), { isTTY: false, ascii: true })
         .split("\n")
-        .find((l) => l.includes("WORTHINESS")) ?? "";
-    expect(verdictLine(20)).toContain("UNWORTHY");
-    expect(verdictLine(65)).toContain("NEEDS WORK");
-    expect(verdictLine(90)).toMatch(/\bWORTHY\b/);
-    expect(verdictLine(90)).not.toContain("UNWORTHY");
+        .find((l) => l.includes("TEST HEALTH")) ?? "";
+    expect(verdictLine(20)).toContain("CRITICAL");
+    expect(verdictLine(65)).toContain("NEEDS ATTENTION");
+    expect(verdictLine(90)).toMatch(/\bHEALTHY\b/);
+    expect(verdictLine(90)).not.toContain("CRITICAL");
   });
 
-  it("the 100-state FORGED block keeps the ASCII contract string and shows the trophy in unicode", () => {
+  it("the 100-state EXCELLENT block is concise in ASCII and Unicode", () => {
     const ascii = renderTerminal(scan({ score: 100 }), {
       isTTY: false,
       ascii: true,
     });
-    expect(ascii).toContain("*** FLAWLESS VICTORY ***");
+    expect(ascii).toContain("*** ALL CLEAR ***");
     expect(ascii).toContain("zero findings");
     const unicode = renderTerminal(scan({ score: 100 }), {
       isTTY: false,
       ascii: false,
     });
-    expect(unicode).toContain("F O R G E D");
-    expect(unicode).toContain("'._==_==_=_.'");
+    expect(unicode).toContain("E X C E L L E N T");
     expect(unicode).toContain("zero findings");
-    expect(unicode).not.toContain("*** FLAWLESS VICTORY ***");
+    expect(unicode).not.toContain("*** ALL CLEAR ***");
   });
 
-  it("the forged headline is the deterministic zero-findings template", () => {
+  it("the excellent headline is the deterministic zero-findings template", () => {
     const out = renderTerminal(scan({ score: 100 }), { isTTY: false });
-    expect(out).toContain("Forged complete. Zero findings.");
+    expect(out).toContain("Excellent test health. Zero findings.");
   });
 });
 

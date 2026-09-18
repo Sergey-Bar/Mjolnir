@@ -147,16 +147,16 @@ Complete implementation of the QA Doctor Master Engineering Roadmap & Product Sp
   `▚ TITLE` (the ASCII fallback `= TITLE` is unchanged). The quadrant
   glyph read as a rendering glitch rather than a mark.
 - Terminal report: the score section no longer draws the four-state
-  block-art hammer above `WORTHINESS`. The verdict word already carries
+  block-art score graphic above `TEST HEALTH`. The verdict word already carries
   the band without colour, the score is now the first thing on screen,
-  and the 100-state FORGED block is unchanged.
+  and the 100-state EXCELLENT block is unchanged.
 - Brand: one type family. Cinzel is retired from the site, the tokens
   and the vendored fonts; headings and the wordmark are Geist. The marks
   are redrawn: a Geist wordmark, and the ᛗ monogram drawn as a path and
   stroked in the aurora. Docs pages take the aurora accent instead of
-  gold, which stays reserved for FORGED. README badges use the deep
+  gold, which stays reserved for EXCELLENT. README badges use the deep
   aurora that carries shields.io's white text at 5.8:1.
-- README rewritten. `score-gauge.svg` is now the worthiness scale with a
+- README rewritten. `score-gauge.svg` is now the test health scale with a
   marker sweeping 0–100, drawn from `deriveScoreState`. The terminal
   stills and the demo video share the website's terminal chrome. The
   video is re-rendered (34 s), and its poster shows the report.
@@ -370,7 +370,7 @@ The MCP transport learns the runtime-evidence tools, and every installed agent s
 - **Agent brief inherits the Constitution** (`src/commands/install-agents.ts`,
   WI-22): every installed instruction surface (.claude/, .cursor/, .kilo/,
   AGENTS.md) now carries the non-negotiable agent-safety contract — NEVER
-  declare trustworthiness without evidence · AGENT CLAIM ≠ VERIFICATION ·
+  declare test health without evidence · AGENT CLAIM ≠ VERIFICATION ·
   NEVER manufacture, edit, or synthesize evidence · NEVER convert INCONCLUSIVE
   to pass · NEVER suppress findings or weaken rules to get green — plus the
   loop preconditions (FIX requires a proven actionable defect; RESCAN requires
@@ -751,7 +751,7 @@ Azure DevOps support: guarded azure-pipelines.yml parsing, the QA-CI Azure arms,
   class-B fixture corpus and closed the census; QA-PY-102 was retired
   as a structural dead duplicate (its measured sibling QA-PY-005
   declares overlapWith, so it could never fire). Certification report:
-  docs/CERTIFICATION-1.0.md. Evidence chain: doctor self-audit WORTHY
+  docs/CERTIFICATION-1.0.md. Evidence chain: doctor self-audit HEALTHY
   (77/77), full suite 7,054 green, determinism replay byte-identical,
   adversarial + benchmark suites green, CHANGELOG integrity gate
   active.
@@ -1166,7 +1166,7 @@ scan`. Unknown categories are a usage error (exit 10).
 - See it work: embed the real demo video inline
 - Rework See it work and the score section: real video, fixed-size cards
 - Replace the See it work poster+MP4 and shorten the score hero image
-- Replace the score/verdict table with an animated hammer sweep
+- Replace the score/verdict table with an animated score graphic sweep
 
 ## [0.5.13] — 2026-09-07
 
@@ -1185,7 +1185,7 @@ scan`. Unknown categories are a usage error (exit 10).
 - video: fix invisible command text, and guard the whole class
 - video: present the terminal as a window, not a maximised screenshot
 - video: re-render both demos against the fixed reporter
-- report: one hammer, and output that fits the terminal it prints to
+- report: one score graphic, and output that fits the terminal it prints to
 - video: add the manual render workflow and document the pipeline
 - docs: restructure the README around the demo, and lead with the video
 - video: add the media-format contract, and ship the hero MP4
@@ -2225,19 +2225,19 @@ detectorRevision, FP ≤ 10%, n ≥ 10`), on any detectorRevision mismatch
   Java fixture detecting QA-JV-102. `web-tree-sitter` stays pinned to
   exactly `0.25.6` (§10.5, documented 0.26.x breakage).
 
-### Added — score instrument redesign (hammer states)
+### Added — score instrument redesign (score graphic states)
 
 - **ScoreState model** (`src/reporter/score-state.ts`): one pure source of
   truth for band / verdict / color / headline per score — critical 0–49,
-  warning 50–79, trusted 80–99, forged 100. `verdictFor`, the terminal
+  warning 50–79, trusted 80–99, excellent 100. `verdictFor`, the terminal
   gauge and the badge all delegate to it.
-- **The hammer is now the score instrument** (terminal): a state-colored
-  hammer block renders above the WORTHINESS line — cracked (0–49),
-  strained with partial runes (50–79), charged with energy arcs (80–99),
+- **The score graphic is now the score instrument** (terminal): a state-colored
+  score graphic block renders above the TEST HEALTH line — cracked (0–49),
+  strained with partial indicators (50–79), charged with energy arcs (80–99),
   halo + lightning at 100. A plain-text caption (`[CRACKED]` /
-  `[STRAINED]` / `[CHARGED]` / `[FORGED]`) carries the state without
+  `[STRAINED]` / `[CHARGED]` / `[EXCELLENT]`) carries the state without
   color; ASCII fallback included.
-- **Trusted is aurora-cyan, forged is white-gold** on every surface
+- **Trusted is aurora-cyan, excellent is white-gold** on every surface
   (terminal palette, web tokens, brand README). Green is no longer a
   score color — it survives for non-score success contexts only.
 - **Findings render as cards** (terminal): Problem → Impact → Fix →
@@ -2245,15 +2245,14 @@ detectorRevision, FP ≤ 10%, n ≥ 10`), on any detectorRevision mismatch
   rules with >3 findings collapse under one "same fix applies" header;
   non-verbose shows 10 cards with an overflow line, `--verbose` shows
   everything.
-- **FORGED block at 100** replaces the bare FLAWLESS VICTORY line in
-  unicode mode (trophy retained inside; the `*** FLAWLESS VICTORY ***`
-  ASCII contract string is preserved).
+- **EXCELLENT block at 100** presents an all-clear confirmation in both
+  terminal modes, with a readable text fallback.
 - **PR comments show score drift** (`Score: 72/100 (+5 since baseline
 <sha>)`) using the new additive `score` field in the baseline JSON, and
   carry per-finding evidence tags.
 - **Badge thresholds aligned** with the reporter: ≥80 / ≥50 / 100
   (was ≥90 / ≥75 / ≥50), colors `red` / `yellow` / `important` /
-  `success`; the message at 100 reads `100/100 · forged`.
+  `success`; the message at 100 reads `100/100 · excellent`.
 
 ### Fixed — security & detection-regression audit (`.planning/AUDIT-2026-08-30-QA.md`)
 
@@ -2347,7 +2346,7 @@ detectorRevision, FP ≤ 10%, n ≥ 10`), on any detectorRevision mismatch
   monotonicity, order-symmetry), Selector Health exact score vectors,
   hand-computed forensics math, terminal-footer/JSON deduction
   consistency, Mermaid well-formedness, and a three-verdict-band proof
-  (WORTHY / NEEDS WORK / UNWORTHY each reached for its stated reason).
+  (HEALTHY / NEEDS ATTENTION / CRITICAL each reached for its stated reason).
 - **Regression & integration:** adapter→reporter matrix (one finding
   asserted on terminal, JSON, SARIF, and Mermaid), plugin flow
   integration (valid plugin + reserved-prefix rejection), cross-file
@@ -2559,7 +2558,7 @@ by a `must-not-fire` fixture so the class cannot return silently.
 - **`SMOOTHING_C` is 1 (Laplace), was 5.** At 5 it tripled the denominator of a
   two-declaration repo, diluting real density away.
 - **Findings may declare `suiteInvalidating: true`**, capping the score at 49
-  (UNWORTHY) regardless of exposure. Density can express how much of a suite is
+  (CRITICAL) regardless of exposure. Density can express how much of a suite is
   questionable; it cannot express whether the suite ran at all. Applied to
   QA-TEST-001 and QA-PY-001. Deliberately not applied to QA-PW-003, which
   detects both `test.only()` and `page.pause()` — the flag is per-rule.
@@ -2718,8 +2717,8 @@ doctor` reports this and will fail once a majority is classified.
 - **BREAKING: Rebranded from QA Doctor to QA Doctor.** Package name is now
   `qa-doctor-cli` (bin: `qa-doctor`). Config file: `qa-doctor.config.json`.
   Data directory: `.qa-doctor/`. Badge: `qa-doctor-badge.json`.
-- Score label: "SCORE" → "WORTHINESS".
-- Verdicts: "HEALTHY" → "WORTHY", "CRITICAL" → "UNWORTHY".
+- Score label: "SCORE" → "TEST HEALTH".
+- Verdicts: "HEALTHY" → "HEALTHY", "CRITICAL" → "CRITICAL".
 - Environment variable: `QA_DOCTOR_ASCII` → `QA_DOCTOR_ASCII`.
 - SARIF tool.driver.name: "QA Doctor".
 - Repository: `github.com/Sergey-Bar/qa-doctor`.
@@ -2731,7 +2730,7 @@ doctor` reports this and will fail once a majority is classified.
 - `--format mermaid` — test-architecture diagram (Sprint 9).
 - `--tone blunt` — opt-in blunter messages (Sprint 9).
 - Milestones — first flawless scan / first debt reduction announced once.
-- New QA DOCTOR ASCII art logo (minimal Nordic hammer).
+- New QA DOCTOR ASCII art logo (minimal Nordic score graphic).
 
 ## [0.3.x] — prior releases
 

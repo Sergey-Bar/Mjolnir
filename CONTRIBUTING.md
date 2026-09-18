@@ -251,7 +251,7 @@ carrying an explicit staleness marker, never authoritative docs.
 - Run `npm run docs:translations` for an advisory staleness report. It
   never blocks CI — drift is resolved by porting, not by a red build.
 - Terminology: choose one consistent term per language for the key
-  concepts ("worthiness score", "finding", "rule", "false-positive
+  concepts ("test health score", "finding", "rule", "false-positive
   rate", "flaky") and reuse it throughout the file; mention your
   choices in the PR so later edits stay consistent.
 

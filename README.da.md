@@ -21,7 +21,7 @@ og vurderer derefter, hvor langt resultatet er til at stole på, med beviset for
 npx qa-doctor-cli@latest
 ```
 
-[Se det i aktion](#se-det-i-aktion) · [Kom hurtigt i gang](#kom-hurtigt-i-gang) · [Hvad det finder](#hvad-qa-doctor-finder) · [Score](#worthiness-scoren) · [Evidens](#evidensmodellen) · [Kørselsanalyse](#kørselsanalyse) · [CI](#ci-integritet) · [Agenter](#ai-agenter) · [Sikkerhed](#tillid-og-sikkerhed) · [Grænser](#hvad-qa-doctor-ikke-kan-fortælle-dig) · [Dokumentation](#dokumentation)
+[Se det i aktion](#se-det-i-aktion) · [Kom hurtigt i gang](#kom-hurtigt-i-gang) · [Hvad det finder](#hvad-qa-doctor-finder) · [Score](#test health-scoren) · [Evidens](#evidensmodellen) · [Kørselsanalyse](#kørselsanalyse) · [CI](#ci-integritet) · [Agenter](#ai-agenter) · [Sikkerhed](#tillid-og-sikkerhed) · [Grænser](#hvad-qa-doctor-ikke-kan-fortælle-dig) · [Dokumentation](#dokumentation)
 
 <details>
 <summary>Læs på et andet sprog — 22 oversættelser</summary>
@@ -69,7 +69,7 @@ QA Doctor læser testsuiten, CI-workflowene og, hvis du har en, rapporten fra en
 | Scan afbrudt (tidsbudget, ulæselige filer)   | **PARTIAL**, exit `2`. Aldrig præsenteret som rent.         |
 
 <p align="center">
-  <img src="assets/readme/how-it-works.svg" alt="Sådan virker QA Doctor. Det læser testsuiten og CI-pipelinen statisk, og rapporten fra en rigtig kørsel, når der er en. Det vægter hvert fund efter dets evidensniveau og tillidsniveau, hvor kun en rigtig kørsel kan nå L3 til L5, og leverer fund, en worthiness-score og en CI-gate med fastfrosne exitkoder. I agent-loopet skriver AI rettelsen, og QA Doctor scanner igen for at bevise den." width="880" />
+  <img src="assets/readme/how-it-works.svg" alt="Sådan virker QA Doctor. Det læser testsuiten og CI-pipelinen statisk, og rapporten fra en rigtig kørsel, når der er en. Det vægter hvert fund efter dets evidensniveau og tillidsniveau, hvor kun en rigtig kørsel kan nå L3 til L5, og leverer fund, en test health-score og en CI-gate med fastfrosne exitkoder. I agent-loopet skriver AI rettelsen, og QA Doctor scanner igen for at bevise den." width="880" />
 </p>
 
 <sub>Komponeret til denne side og vist i 1:1. Genereret af `npm run docs:readme-brand` og låst mod afvigelser i CI; score, antal og regel-ID kommer fra [`script.demo.json`](assets/video/script.demo.json), [`demo-report.json`](assets/readme/demo-report.json) og regelregistret, aldrig tastet ind i hånden. Samme billede som plakat: [`architecture.svg`](assets/readme/architecture.svg).</sub>
@@ -81,7 +81,7 @@ QA Doctor læser testsuiten, CI-workflowene og, hvis du har en, rapporten fra en
 Et rigtigt scan af [`examples/demo-repo`](examples/demo-repo), en lille Playwright-suite med et CI-workflow. Her er, hvor dens point forsvandt hen:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="QA Doctor opgørelse af fradrag: WORTHINESS 80/100 WORTHY, scoren pr. kategori, fradragsboksen pr. alvorlighed og en FIX THIS FIRST-liste" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="QA Doctor opgørelse af fradrag: TEST HEALTH 80/100 HEALTHY, scoren pr. kategori, fradragsboksen pr. alvorlighed og en FIX THIS FIRST-liste" width="520" />
 </p>
 
 <sub>Genereret af `npm run docs:hero` ud fra et rigtigt scan og låst mod afvigelser i CI. Den fulde `--verbose`-rapport fra samme scan er [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
@@ -320,20 +320,20 @@ Det måler **robusthed, ikke korrekthed**. `.btn.btn-primary > div:nth-child(2)`
 
 <br />
 
-## Worthiness-scoren
+## Test Health-scoren
 
 <p align="center">
-  <img src="assets/readme/score-gauge.svg" alt="Worthiness-skalaen fra 0 til 100, med en markør, der gennemløber hver score: UNWORTHY under 50, NEEDS WORK fra 50 til 79, WORTHY fra 80 til 99, FORGED ved 100" width="720" />
+  <img src="assets/readme/score-gauge.svg" alt="Test Health-skalaen fra 0 til 100, med en markør, der gennemløber hver score: CRITICAL under 50, NEEDS ATTENTION fra 50 til 79, HEALTHY fra 80 til 99, EXCELLENT ved 100" width="720" />
 </p>
 
 <sub>Hver score fra 0 til 100, placeret af den rigtige `deriveScoreState`. Genereret af `npm run docs:gauge` og låst mod afvigelser i CI.</sub>
 
 | Score     | Dom                                         |
 | --------- | ------------------------------------------- |
-| `0 – 49`  | **UNWORTHY**                                |
-| `50 – 79` | **NEEDS WORK**                              |
-| `80 – 99` | **WORTHY**                                  |
-| `100`     | **FORGED**                                  |
+| `0 – 49`  | **CRITICAL**                                |
+| `50 – 79` | **NEEDS ATTENTION**                         |
+| `80 – 99` | **HEALTHY**                                 |
+| `100`     | **EXCELLENT**                               |
 | `null`    | **UNKNOWN**: ingen testdeklarationer fundet |
 
 **Sådan beregnes den.** Alvorligheden fastsætter et grundfradrag (`error −8`, `warning −3`, `info −1`), og evidensniveauet nedskriver det: E2 tæller fuldt, E1 halvt (rundet ned), E0 slet ikke. Summen normaliseres efter suitens eksponering, altså fradrag pr. testdeklaration i stedet for pr. fil. Terminalen udskriver de samme nedskrevne tal, som scoren brugte; der er ingen skjult anden model. Detaljer: [docs/SCORING.md](docs/SCORING.md) og [scoringsguiden](https://sergey-bar.github.io/qa-doctor/guide/scoring).

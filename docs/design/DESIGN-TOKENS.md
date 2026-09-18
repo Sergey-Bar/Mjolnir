@@ -24,7 +24,7 @@ The two brand hues and the neutral they sit on.
 | -------------------- | --------- | ------------------------------- |
 | `brand.gold`         | `#C19A34` | primary — scarce                |
 | `brand.goldBright`   | `#E6BD57` | primary on dark                 |
-| `brand.goldHot`      | `#F4DC9C` | highlight, FORGED               |
+| `brand.goldHot`      | `#F4DC9C` | highlight, EXCELLENT            |
 | `brand.goldDeep`     | `#A5811C` | pressed; background only        |
 | `brand.aurora`       | `#37ABBD` | secondary — verification energy |
 | `brand.auroraBright` | `#45C1D4` | secondary on dark               |
@@ -72,15 +72,15 @@ Non-score status. `ok` is never a score colour.
 
 ### score
 
-The ScoreState bands. Thresholds and runes live in `src/reporter/score-state.ts`.
+The ScoreState bands. Thresholds and indicators live in `src/reporter/score-state.ts`.
 
-| Token              | Value     |                         |
-| ------------------ | --------- | ----------------------- |
-| `score.critical`   | `#EC6B66` | 0–49 · UNWORTHY · ᚲ     |
-| `score.warning`    | `#E6BD57` | 50–79 · NEEDS WORK · ᚦ  |
-| `score.trusted`    | `#5CC4E0` | 80–99 · WORTHY · ᛏ      |
-| `score.forged`     | `#F4DC9C` | 100 · FORGED · ᛟ        |
-| `score.unmeasured` | `#8B939D` | UNKNOWN · ᛁ — never red |
+| Token              | Value     |                             |
+| ------------------ | --------- | --------------------------- |
+| `score.critical`   | `#EC6B66` | 0–49 · CRITICAL · ᚲ         |
+| `score.warning`    | `#E6BD57` | 50–79 · NEEDS ATTENTION · ᚦ |
+| `score.trusted`    | `#5CC4E0` | 80–99 · HEALTHY · ᛏ         |
+| `score.excellent`  | `#F4DC9C` | 100 · EXCELLENT · ᛟ         |
+| `score.unmeasured` | `#8B939D` | UNKNOWN · ᛁ — never red     |
 
 ### evidence
 
@@ -129,12 +129,12 @@ shields.io takes hex without the `#`.
 
 ## Typography
 
-| Role             | Family     | Weights       |
-| ---------------- | ---------- | ------------- |
-| display          | Geist      | 500, 600      |
-| sans             | Geist      | 400, 500, 600 |
-| mono             | Geist Mono | 400, 500      |
-| runes (fallback) | FreeMono   | —             |
+| Role                  | Family     | Weights       |
+| --------------------- | ---------- | ------------- |
+| display               | Geist      | 500, 600      |
+| sans                  | Geist      | 400, 500, 600 |
+| mono                  | Geist Mono | 400, 500      |
+| indicators (fallback) | FreeMono   | —             |
 
 Body line-height 1.7; display tracking
 -0.02em–0.3em.

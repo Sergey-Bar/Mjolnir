@@ -81,7 +81,7 @@ QA Doctor czyta zestaw testów, workflow CI oraz, jeśli go masz, raport z prawd
 Prawdziwy skan [`examples/demo-repo`](examples/demo-repo), małego zestawu Playwright z workflow CI. Oto, gdzie poszły jego punkty:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Rozbicie potrąceń QA Doctor: WORTHINESS 80/100 WORTHY, wynik według kategorii, ramka potrąceń według ważności i lista FIX THIS FIRST" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="Rozbicie potrąceń QA Doctor: TEST HEALTH 80/100 HEALTHY, wynik według kategorii, ramka potrąceń według ważności i lista FIX THIS FIRST" width="520" />
 </p>
 
 <sub>Wygenerowane przez `npm run docs:hero` z prawdziwego skanu i zabezpieczone w CI przed rozjazdem. Pełny raport `--verbose` z tego samego skanu to [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
@@ -323,17 +323,17 @@ To mierzy **odporność, a nie poprawność**. `.btn.btn-primary > div:nth-child
 ## Wynik wiarygodności
 
 <p align="center">
-  <img src="assets/readme/score-gauge.svg" alt="Skala wiarygodności od 0 do 100, ze znacznikiem przechodzącym przez każdy wynik: UNWORTHY poniżej 50, NEEDS WORK od 50 do 79, WORTHY od 80 do 99, FORGED przy 100" width="720" />
+  <img src="assets/readme/score-gauge.svg" alt="Skala wiarygodności od 0 do 100, ze znacznikiem przechodzącym przez każdy wynik: CRITICAL poniżej 50, NEEDS ATTENTION od 50 do 79, HEALTHY od 80 do 99, EXCELLENT przy 100" width="720" />
 </p>
 
 <sub>Każdy wynik od 0 do 100, umieszczony przez prawdziwe `deriveScoreState`. Wygenerowane przez `npm run docs:gauge` i zabezpieczone w CI przed rozjazdem.</sub>
 
 | Wynik     | Werdykt                                       |
 | --------- | --------------------------------------------- |
-| `0 – 49`  | **UNWORTHY**                                  |
-| `50 – 79` | **NEEDS WORK**                                |
-| `80 – 99` | **WORTHY**                                    |
-| `100`     | **FORGED**                                    |
+| `0 – 49`  | **CRITICAL**                                  |
+| `50 – 79` | **NEEDS ATTENTION**                           |
+| `80 – 99` | **HEALTHY**                                   |
+| `100`     | **EXCELLENT**                                 |
 | `null`    | **UNKNOWN**: nie znaleziono deklaracji testów |
 
 **Jak jest liczony.** Ważność ustala potrącenie bazowe (`error −8`, `warning −3`, `info −1`), a poziom dowodu je obniża: E2 liczy się w całości, E1 w połowie (zaokrąglając w dół), E0 wcale. Suma jest normalizowana względem ekspozycji zestawu, czyli potrąceń na deklarację testu, a nie na plik. Terminal wypisuje te same obniżone liczby, których użył wynik; nie ma ukrytego drugiego modelu. Szczegóły: [docs/SCORING.md](docs/SCORING.md) i [przewodnik po wyniku](https://sergey-bar.github.io/qa-doctor/guide/scoring).

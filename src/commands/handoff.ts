@@ -212,7 +212,7 @@ export function renderHandoff(
     lines.push("");
     if (result.partial) {
       lines.push(
-        "> The scan was partial — the absence of findings is only as trustworthy as the scan's coverage.",
+        "> The scan was partial — the absence of findings is only as reliable as the scan's coverage.",
       );
       lines.push("");
     }
@@ -305,7 +305,7 @@ export function renderHandoff(
     lines.push("");
     lines.push(`**Why QA Doctor believes it:** ${escapeMarkdown(first.why)}`);
     lines.push("");
-    lines.push(`**How trustworthy (evidence boundary):**`);
+    lines.push(`**How to verify (evidence boundary):**`);
     lines.push("");
     lines.push(evidenceBoundary(first));
     lines.push("");

@@ -6,7 +6,7 @@
  * commit that carries the new hash is where you say why.
  *
  * Deliberately dumb: it re-hashes whatever is on disk. It cannot tell a
- * legitimate re-encode from a redrawn hammer, and it is not trying to.
+ * legitimate re-encode from a redrawn score graphic, and it is not trying to.
  * The point is that the change stops being silent.
  */
 

@@ -111,7 +111,7 @@ describe("renderHandoff — structure", () => {
     const md = renderHandoff(report());
     expect(md).toContain("**What is wrong:**");
     expect(md).toContain("**Why QA Doctor believes it:**");
-    expect(md).toContain("**How trustworthy (evidence boundary):**");
+    expect(md).toContain("**How to verify (evidence boundary):**");
     expect(md).toContain("**Occurrences (1):**");
     expect(md).toContain("**What should change:**");
     expect(md).toContain("**What must NOT change:**");
@@ -442,7 +442,7 @@ describe("zero-finding handoff (plan §5.9-equivalent)", () => {
       }),
     );
     expect(md).toContain("Zero findings — nothing to fix.");
-    expect(md).toContain("only as trustworthy as the scan's coverage");
+    expect(md).toContain("only as reliable as the scan's coverage");
   });
 });
 

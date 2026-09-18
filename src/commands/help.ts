@@ -380,7 +380,7 @@ const GROUPS: Array<{ title: string; verbs: string[] }> = [
 ];
 
 const SCAN_SUMMARY_LINES: string[] = [
-  "qa-doctor [path]                 full-repo scan + WORTHINESS score",
+  "qa-doctor [path]                 full-repo scan + TEST HEALTH score",
 ];
 
 /**

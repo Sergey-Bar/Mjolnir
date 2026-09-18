@@ -40,14 +40,14 @@ export interface BadgeJson {
 
 /**
  * Badge colors follow the SAME ScoreState bands as the terminal
- * (≥80 trusted / ≥50 warning / <50 critical / 100 forged) — this
+ * (≥80 trusted / ≥50 warning / <50 critical / 100 excellent) — this
  * retarget fixes the historical threshold drift (the badge used
  * ≥90/≥75/≥50 with four bands while the reporter used ≥80/≥50).
  *
  * They are brand values now, from `BADGE_BAND`, not shields.io's named
  * colors. That mapping was documented as "trusted → `important`
  * (blue-family, closest to aurora-cyan)" and was simply untrue:
- * `important` resolves to #ea7233, which is orange. Every WORTHY badge
+ * `important` resolves to #ea7233, which is orange. Every HEALTHY badge
  * rendered the trusted band in a warning colour, and `success` — the
  * 100 state — rendered green, which is not a score colour here.
  *
@@ -67,7 +67,7 @@ export function buildBadge(result: ScanResult, commit?: string): BadgeJson {
     score === null
       ? "no tests found"
       : score === 100 && errors === 0
-        ? "100/100 · forged"
+        ? "100/100 · excellent"
         : `${score}/100 · ${errors} error${errors === 1 ? "" : "s"}`;
   return {
     schemaVersion: 1,

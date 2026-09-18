@@ -6,7 +6,7 @@
  * a value in this file. Nothing else may define one.
  *
  * WHY THIS EXISTS. Before it, the palette existed in six independent
- * copies: `site/.vitepress/theme/styles/vars.css`, `NORSE` in
+ * copies: `site/.vitepress/theme/styles/vars.css`, `TERMINAL_COLORS` in
  * `src/reporter/theme.ts`, `scripts/readme-svg.ts`,
  * `scripts/video/terminal-page.ts`, `scripts/generate-readme-architecture.ts`
  * and the table in `assets/brand/README.md`. Exactly one pair of those
@@ -40,8 +40,8 @@
 /**
  * The two brand hues plus the neutral they sit on.
  *
- * GOLD IS SCARCE. It means forged / certified / earned / decisive — the
- * primary mark, the FORGED state, one call to action. It is not a paint
+ * GOLD IS SCARCE. It means excellent / certified / earned / decisive — the
+ * primary mark, the EXCELLENT state, one call to action. It is not a paint
  * bucket: gold as default text, default border or default heading is a
  * brand-doctor finding, not a style choice.
  *
@@ -105,7 +105,7 @@ export const TEXT = {
   primary: "#EAEEF5",
   secondary: "#ABB6C6",
   muted: "#8B939D",
-  /** Ink for text set ON gold (buttons, the FORGED chip). 7.17:1 on `gold`. */
+  /** Ink for text set ON gold (buttons, the EXCELLENT chip). 7.17:1 on `gold`. */
   onGold: "#0A1119",
 } as const;
 
@@ -113,7 +113,7 @@ export const TEXT = {
 
 /**
  * Non-score status. `ok` is the one green in the system and it is NOT a
- * score colour — it survives only for contexts with no worthiness
+ * score colour — it survives only for contexts with no test health
  * meaning ("autofix applied", "analysis complete"). A green score would
  * say "your software is fine", which is the exact claim this product
  * refuses to make.
@@ -129,7 +129,7 @@ export const STATUS = {
 
 /**
  * The four ScoreState bands plus the unmeasured state. Band thresholds
- * and runes live in `src/reporter/score-state.ts`, which stays free of
+ * and indicators live in `src/reporter/score-state.ts`, which stays free of
  * colour — it emits a palette KEY and each surface resolves it here.
  *
  * `unmeasured` is steel-dim on purpose. UNKNOWN is a legitimate answer,
@@ -141,7 +141,7 @@ export const SCORE = {
   critical: "#EC6B66",
   warning: "#E6BD57",
   trusted: "#5CC4E0",
-  forged: "#F4DC9C",
+  excellent: "#F4DC9C",
   unmeasured: "#8B939D",
 } as const;
 
@@ -234,8 +234,8 @@ export const TYPOGRAPHY = {
     embeddedFamily: "QaDoctorMono",
     stack: `"Geist Mono", ui-monospace, "SFMono-Regular", "Cascadia Mono", Consolas, monospace`,
   },
-  /** Rune glyph fallback only — never a text face. */
-  runes: { family: "FreeMono", embeddedFamily: "QaDoctorRunes" },
+  /** Indicator glyph fallback only — never a text face. */
+  indicators: { family: "FreeMono", embeddedFamily: "QaDoctorSymbols" },
   /** Body copy sits at 1.7; the display face never sets body copy. */
   lineHeight: { body: 1.7, tight: 1.35 },
 } as const;
@@ -340,7 +340,7 @@ export const TINT: Record<
  * palette retired in PR #20 and still shipping 92 times across the
  * translated set.
  *
- * `primary` is the deep aurora, not gold. Gold is held back for FORGED,
+ * `primary` is the deep aurora, not gold. Gold is held back for EXCELLENT,
  * and shields.io sets the message in white with no say in it: the light
  * aurora steps measure under 3:1 there, while this one — the same step
  * BADGE_BAND.trusted uses — carries white at 5.80:1.
@@ -356,7 +356,7 @@ export const BADGE = {
  *
  * These are DEEPER than the score tokens on purpose, and it is not a
  * style preference: shields.io sets the message text in white and gives
- * you no say in it. `score.forged` (#F4DC9C) under white text measures
+ * you no say in it. `score.excellent` (#F4DC9C) under white text measures
  * 1.35:1 — an unreadable badge, shipped to look on-brand. The brand's
  * own deep steps put every band between 4.9 and 6.3:1.
  *
@@ -374,7 +374,7 @@ export const BADGE = {
  * green is not a score colour here — a 100 badge said "your software is
  * fine", which is the one claim this product refuses to make. And
  * `important` is ORANGE, not the blue-family colour the code's own
- * comment claimed for eight releases: every WORTHY badge ever rendered
+ * comment claimed for eight releases: every HEALTHY badge ever rendered
  * showed the trusted band in a warning colour. Nobody had resolved a
  * shields name to a value and looked.
  *
@@ -382,13 +382,13 @@ export const BADGE = {
  * `A83A35`, `7A5F16`, `1F6F7C` and `5C646E` are the `TINT` strokes —
  * the same deep steps the mermaid diagrams use, for the same reason.
  * `8A6D1E` is the gold the brand document already named as the light
- * FORGED gradient's start.
+ * EXCELLENT gradient's start.
  */
 export const BADGE_BAND = {
   critical: "A83A35",
   warning: "7A5F16",
   trusted: "1F6F7C",
-  forged: "8A6D1E",
+  excellent: "8A6D1E",
   unmeasured: "5C646E",
 } as const;
 
@@ -417,7 +417,7 @@ export const PENDING_SITE = {
 /* ── CSS emission ────────────────────────────────────────────── */
 
 /**
- * The `--mj-*` spelling of the tokens above, in emission order. The
+ * The `--qa-*` spelling of the tokens above, in emission order. The
  * generator (`npm run brand:tokens`) writes
  * `site/.vitepress/theme/styles/vars.css` from this list, so the site
  * cannot hold a value this file does not.
@@ -431,20 +431,20 @@ export const CSS_TOKENS: readonly (readonly [
   value: string,
   comment?: string,
 ])[] = [
-  ["--mj-ink-950", SURFACE.ink950, "deepest background (hero, terminal)"],
-  ["--mj-ink-900", SURFACE.ink900, "page background"],
-  ["--mj-ink-850", SURFACE.ink850, "surface"],
-  ["--mj-ink-800", SURFACE.ink800, "raised surface"],
-  ["--mj-steel", BRAND.steel, "neutral bright — headings on ink"],
-  ["--mj-steel-dim", BRAND.steelDim, "muted text on ink"],
-  ["--mj-gold", BRAND.gold, "primary brand — scarce"],
-  ["--mj-gold-bright", BRAND.goldBright, "primary on dark"],
-  ["--mj-gold-hot", BRAND.goldHot, "highlight, forged"],
-  ["--mj-aurora", BRAND.aurora, "secondary — verification energy"],
-  ["--mj-aurora-bright", BRAND.auroraBright, "secondary on dark"],
-  ["--mj-aurora-cyan", BRAND.auroraCyan, "informational"],
-  ["--mj-aurora-green", BRAND.auroraGreen, "aurora curtain, atmosphere only"],
-  ["--mj-aurora-violet", BRAND.auroraViolet, "aurora curtain, atmosphere only"],
+  ["--qa-ink-950", SURFACE.ink950, "deepest background (hero, terminal)"],
+  ["--qa-ink-900", SURFACE.ink900, "page background"],
+  ["--qa-ink-850", SURFACE.ink850, "surface"],
+  ["--qa-ink-800", SURFACE.ink800, "raised surface"],
+  ["--qa-steel", BRAND.steel, "neutral bright — headings on ink"],
+  ["--qa-steel-dim", BRAND.steelDim, "muted text on ink"],
+  ["--qa-gold", BRAND.gold, "primary brand — scarce"],
+  ["--qa-gold-bright", BRAND.goldBright, "primary on dark"],
+  ["--qa-gold-hot", BRAND.goldHot, "highlight, excellent"],
+  ["--qa-aurora", BRAND.aurora, "secondary — verification energy"],
+  ["--qa-aurora-bright", BRAND.auroraBright, "secondary on dark"],
+  ["--qa-aurora-cyan", BRAND.auroraCyan, "informational"],
+  ["--qa-aurora-green", BRAND.auroraGreen, "aurora curtain, atmosphere only"],
+  ["--qa-aurora-violet", BRAND.auroraViolet, "aurora curtain, atmosphere only"],
 ] as const;
 
 /** Semantic score/verdict tokens, emitted after the palette. */
@@ -453,21 +453,21 @@ export const CSS_SEMANTIC: readonly (readonly [
   value: string,
   comment?: string,
 ])[] = [
-  ["--mj-trusted", SCORE.trusted, "score band 80–99"],
-  ["--mj-trusted-bright", "#7FD4EA", "trusted, hover"],
-  ["--mj-forged-hot", SCORE.forged, "score 100"],
-  ["--mj-needswork", SCORE.warning, "score band 50–79"],
-  ["--mj-unworthy", SCORE.critical, "score band 0–49"],
-  ["--mj-info", STATUS.info, "informational"],
-  ["--mj-on-gold", TEXT.onGold, "ink for text set ON gold"],
-  ["--mj-ok", STATUS.ok, "non-score success only — never a score colour"],
-  ["--mj-e0", EVIDENCE.e0, "observation"],
-  ["--mj-e1", EVIDENCE.e1, "pattern evidence"],
-  ["--mj-e2", EVIDENCE.e2, "deterministic proof"],
-  ["--mj-l0", TRUST.l0, "trust L0 — static"],
-  ["--mj-l1", TRUST.l1, "trust L1 — static"],
-  ["--mj-l2", TRUST.l2, "trust L2 — static ceiling"],
-  ["--mj-l3", TRUST.l3, "trust L3 — runtime begins"],
-  ["--mj-l4", TRUST.l4, "trust L4 — runtime"],
-  ["--mj-l5", TRUST.l5, "trust L5 — runtime verdict"],
+  ["--qa-healthy", SCORE.trusted, "healthy test health, score band 80–99"],
+  ["--qa-healthy-bright", "#7FD4EA", "healthy, hover"],
+  ["--qa-excellent-hot", SCORE.excellent, "score 100"],
+  ["--qa-attention", SCORE.warning, "needs attention, score band 50–79"],
+  ["--qa-critical", SCORE.critical, "score band 0–49"],
+  ["--qa-info", STATUS.info, "informational"],
+  ["--qa-on-gold", TEXT.onGold, "ink for text set ON gold"],
+  ["--qa-ok", STATUS.ok, "non-score success only — never a score colour"],
+  ["--qa-e0", EVIDENCE.e0, "observation"],
+  ["--qa-e1", EVIDENCE.e1, "pattern evidence"],
+  ["--qa-e2", EVIDENCE.e2, "deterministic proof"],
+  ["--qa-l0", TRUST.l0, "trust L0 — static"],
+  ["--qa-l1", TRUST.l1, "trust L1 — static"],
+  ["--qa-l2", TRUST.l2, "trust L2 — static ceiling"],
+  ["--qa-l3", TRUST.l3, "trust L3 — runtime begins"],
+  ["--qa-l4", TRUST.l4, "trust L4 — runtime"],
+  ["--qa-l5", TRUST.l5, "trust L5 — runtime verdict"],
 ] as const;

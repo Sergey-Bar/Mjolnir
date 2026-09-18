@@ -123,7 +123,7 @@ describe("renderScoreBadge", () => {
     const out = renderScoreBadge(85);
     expect(out).toContain("### Score");
     expect(out).toContain("**85**/100");
-    expect(out).toContain("WORTHY");
+    expect(out).toContain("HEALTHY");
     expect(out).not.toContain("(");
   });
 
@@ -145,19 +145,19 @@ describe("renderScoreBadge", () => {
     expect(out).not.toContain("(");
   });
 
-  it("renders critical (UNWORTHY) score", () => {
+  it("renders critical (CRITICAL) score", () => {
     const out = renderScoreBadge(30);
-    expect(out).toContain("UNWORTHY");
+    expect(out).toContain("CRITICAL");
   });
 
-  it("renders warning (NEEDS WORK) score", () => {
+  it("renders warning (NEEDS ATTENTION) score", () => {
     const out = renderScoreBadge(60);
-    expect(out).toContain("NEEDS WORK");
+    expect(out).toContain("NEEDS ATTENTION");
   });
 
-  it("renders forged score as WORTHY", () => {
+  it("renders excellent score as HEALTHY", () => {
     const out = renderScoreBadge(100);
-    expect(out).toContain("WORTHY");
+    expect(out).toContain("HEALTHY");
   });
 });
 

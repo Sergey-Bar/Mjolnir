@@ -37,7 +37,7 @@ import {
   type UiContext,
 } from "./ui.js";
 import { deriveScoreState, headlineFor } from "./score-state.js";
-import { LOGO, LOGO_ASCII, TROPHY, FORGED_WORDMARK } from "./art.js";
+import { LOGO, LOGO_ASCII, EXCELLENT_WORDMARK } from "./art.js";
 import { bluntMessage } from "./tone-blunt.js";
 import { MEASURED_FP } from "../rules/measured-fp.generated.js";
 import { SEARCHED_FOR } from "../discovery/scan-adapters.js";
@@ -140,7 +140,7 @@ export function renderTerminal(
   }
   appendFindings(lines, display, counts, opts.verbose === true, ui, opts.tone);
   if (counts.total === 0 && result.score === 100) {
-    appendForgedBlock(lines, p, ascii);
+    appendExcellentBlock(lines, p, ascii);
   }
   appendFooter(lines, result, ui);
   return lines.join("\n");
@@ -149,14 +149,14 @@ export function renderTerminal(
 /**
  * Contract-stable three-band verdict (property-locked in
  * tests/scoring-precision.spec.ts). Delegates to the ScoreState model —
- * 100 keeps returning WORTHY here; the FORGED premium treatment lives
+ * 100 keeps returning HEALTHY here; the EXCELLENT premium treatment lives
  * in the dedicated block, not in this public mapping.
  */
 export function verdictFor(
   score: number,
-): "WORTHY" | "NEEDS WORK" | "UNWORTHY" {
+): "HEALTHY" | "NEEDS ATTENTION" | "CRITICAL" {
   const verdict = deriveScoreState(score).verdict;
-  return verdict === "FORGED" ? "WORTHY" : verdict;
+  return verdict === "EXCELLENT" ? "HEALTHY" : verdict;
 }
 
 function appendScoreSection(
@@ -175,7 +175,7 @@ function appendScoreSection(
   // carries the band without colour (R11); no picture repeats it.
   lines.push("");
   lines.push(
-    `  ${p.bold("WORTHINESS")} ${p.bold(scoreText)}${p.dim("/100")}  ${verdictColored}`,
+    `  ${p.bold("TEST HEALTH")} ${p.bold(scoreText)}${p.dim("/100")}  ${verdictColored}`,
   );
   // Gauge width tracks the terminal so it never wraps awkwardly on a
   // narrow window; floors at 10 blocks so the gauge stays legible.
@@ -223,7 +223,7 @@ function colorizeVerdict(
   band: ReturnType<typeof deriveScoreState>["band"],
   p: ReturnType<typeof palette>,
 ): string {
-  if (band === "forged") return p.forged(verdict);
+  if (band === "excellent") return p.excellent(verdict);
   if (band === "trusted") return p.trusted(verdict);
   if (band === "warning") return p.warning(verdict);
   return p.error(verdict);
@@ -605,27 +605,21 @@ function maxSeverity(findings: Finding[]): Finding["severity"] {
 }
 
 /**
- * FORGED — the 100-state premium block. Replaces the bare FLAWLESS
- * VICTORY line: wordmark + the trophy retained inside, all in the
- * forged gold-white pair. The halo hammer itself is the score
- * instrument above — one mark, calmly (brand usage rule); ASCII mode
- * keeps the `*** FLAWLESS VICTORY ***` contract string (test-locked in
- * empty-states/long-tail-arms).
+ * EXCELLENT — the zero-findings state. A short, explicit conclusion is
+ * calmer and more useful than an illustration or a victory flourish.
  */
-function appendForgedBlock(
+function appendExcellentBlock(
   lines: string[],
   p: ReturnType<typeof palette>,
   ascii: boolean,
 ): void {
   lines.push("");
   if (ascii) {
-    lines.push(p.forged("*** FLAWLESS VICTORY ***"));
+    lines.push(p.excellent("*** ALL CLEAR ***"));
   } else {
-    lines.push(`  ${p.forged(FORGED_WORDMARK)}`);
+    lines.push(`  ${p.excellent(EXCELLENT_WORDMARK)}`);
   }
-  lines.push(p.forged("  FORGED — zero findings. The suite is clean."));
-  lines.push("");
-  lines.push(p.forged(TROPHY));
+  lines.push(p.excellent("  EXCELLENT — zero findings. The suite is clean."));
   lines.push("");
 }
 

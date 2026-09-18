@@ -3,7 +3,7 @@
  *
  * Same law as the hero, demo, gauge and flow assets: a committed picture
  * that nothing regenerates is a claim nobody checks. This one states a
- * worthiness score, finding counts, a rule ID, the evidence weights and
+ * test health score, finding counts, a rule ID, the evidence weights and
  * the frozen exit codes — if any of those drift, the README's "how it
  * works" section starts explaining a product that no longer exists.
  */

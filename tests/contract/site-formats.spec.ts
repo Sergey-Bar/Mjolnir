@@ -34,8 +34,8 @@ function scoreFromSvg(svg: string): number {
   const text = [...svg.matchAll(/<text\b[^>]*>([\s\S]*?)<\/text>/g)]
     .map((m) => stripTags(m[1] ?? ""))
     .join("\n");
-  const m = /WORTHINESS\s+(\d+)\/100/.exec(text);
-  if (!m?.[1]) throw new Error("no WORTHINESS line in terminal-hero.svg");
+  const m = /TEST HEALTH\s+(\d+)\/100/.exec(text);
+  if (!m?.[1]) throw new Error("no TEST HEALTH line in terminal-hero.svg");
   return Number(m[1]);
 }
 

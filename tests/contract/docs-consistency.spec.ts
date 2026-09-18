@@ -513,7 +513,7 @@ describe("the north-star law is committed, not just cited", () => {
 
 describe("README alt text matches the verdict the SVG assets actually render", () => {
   // D1-class drift, second occurrence: the README alt text said
-  // "WORTHINESS 70/100" beside regenerated SVGs reading 75/100 — the same
+  // "TEST HEALTH 70/100" beside regenerated SVGs reading 75/100 — the same
   // hand-typed-number defect the landing page once shipped. The SVGs are
   // generated and drift-locked by hero-asset-reproducibility.spec.ts;
   // this keeps the prose describing them honest too. The score lives in
@@ -533,19 +533,19 @@ describe("README alt text matches the verdict the SVG assets actually render", (
     .filter((f) => f.endsWith(".svg"))
     // score-gauge.svg is not a scan of any one repo — it sweeps every
     // score 0-100 through the real deriveScoreState model, so it
-    // legitimately carries every WORTHINESS
+    // legitimately carries every TEST HEALTH
     // number and would trip the "agree on one score" check below for a
     // reason that isn't drift. Its own reproducibility lock is
     // score-gauge-asset-reproducibility.spec.ts.
     .filter((f) => f !== "score-gauge.svg")
     .map((f) => {
-      const m = /WORTHINESS\s+(\d+)\s*\/\s*\d+/.exec(
+      const m = /TEST HEALTH\s+(\d+)\s*\/\s*\d+/.exec(
         stripTags(readFileSync(join(svgDir, f), "utf8")),
       );
       return { file: f, score: m ? Number(m[1]) : null };
     });
 
-  it("at least one generated SVG carries a parseable WORTHINESS line (sanity)", () => {
+  it("at least one generated SVG carries a parseable TEST HEALTH line (sanity)", () => {
     expect(svgScores.some((s) => s.score !== null)).toBe(true);
   });
 
@@ -556,27 +556,27 @@ describe("README alt text matches the verdict the SVG assets actually render", (
     expect(scores.size).toBe(1);
   });
 
-  it("every README alt= that mentions WORTHINESS states the SVG's number", () => {
+  it("every README alt= that mentions TEST HEALTH states the SVG's number", () => {
     const found = svgScores.find((s) => s.score !== null);
     const expected = found?.score;
-    const alts = [...README.matchAll(/alt="([^"]*WORTHINESS[^"]*)"/g)].map(
+    const alts = [...README.matchAll(/alt="([^"]*TEST HEALTH[^"]*)"/g)].map(
       (m) => m[1],
     );
     expect(alts.length).toBeGreaterThan(0);
     expect(
       expected,
-      "no generated SVG carries a parseable WORTHINESS score",
+      "no generated SVG carries a parseable TEST HEALTH score",
     ).toBeDefined();
     for (const alt of alts) {
-      const m = /WORTHINESS\s+(\d+)\s*\/\s*\d+/.exec(alt ?? "");
+      const m = /TEST HEALTH\s+(\d+)\s*\/\s*\d+/.exec(alt ?? "");
       expect(
         m,
-        `alt text carries no parseable WORTHINESS score: "${alt}"`,
+        `alt text carries no parseable TEST HEALTH score: "${alt}"`,
       ).not.toBeNull();
       const rendered = m?.[1];
       expect(
         Number(rendered),
-        `README alt says WORTHINESS ${rendered}/100 but the generated assets render ${expected}/100`,
+        `README alt says TEST HEALTH ${rendered}/100 but the generated assets render ${expected}/100`,
       ).toBe(expected);
     }
   });
@@ -584,7 +584,7 @@ describe("README alt text matches the verdict the SVG assets actually render", (
 
 describe("product surfaces use the canonical vocabulary (docs/TERMINOLOGY.md)", () => {
   // Product-Experience Master Plan Phase 2: QA Doctor's surfaces must speak
-  // one vocabulary — "finding", "worthiness score", the locked verdict
+  // one vocabulary — "finding", "test health score", the locked verdict
   // words. The spec-era synonyms ("trust score", "bug score", findings
   // called "issues") erode trust exactly like any other cross-surface
   // drift: a reader comparing the README, the site and the terminal

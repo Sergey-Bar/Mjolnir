@@ -107,11 +107,10 @@ const CONTRAST_PAIRS = [
   ["--vp-c-text-1", "primary prose"],
   ["--vp-c-text-2", "secondary prose"],
   ["--vp-c-text-3", "captions and metadata"],
-  ["--mj-worthy", "score verdict — trusted"],
-  ["--mj-needswork", "score verdict — needs work"],
-  ["--mj-unworthy", "score verdict — unworthy"],
-  ["--mj-trusted", "score band 80-99"],
-  ["--mj-info", "informational findings"],
+  ["--qa-healthy", "score verdict — healthy"],
+  ["--qa-attention", "score verdict — needs attention"],
+  ["--qa-critical", "score verdict — critical"],
+  ["--qa-info", "informational findings"],
 ];
 
 /** Surfaces text is set on, per theme. */
@@ -172,7 +171,7 @@ function checkContrast() {
  * The numbers must come from generated/report.json.
  * ------------------------------------------------------------------ */
 
-const VERDICTS = /\b(WORTHY|NEEDS WORK|UNWORTHY|FORGED)\b/;
+const VERDICTS = /\b(HEALTHY|NEEDS ATTENTION|CRITICAL|EXCELLENT)\b/;
 const SCORE_LITERAL = /\b\d{1,3}\s*\/\s*100\b/;
 
 function walk(dir, out = []) {
@@ -251,7 +250,7 @@ function checkAssetBudget() {
  * Check 4 — no-JS
  *
  * Static, so it needs no browser: the reveal animation's hidden starting
- * state must be scoped to the .mj-anim class that the inline head script
+ * state must be scoped to the .qa-anim class that the inline head script
  * sets, so that with scripting off nothing is hidden.
  * ------------------------------------------------------------------ */
 
@@ -262,13 +261,13 @@ function checkNoJs() {
 
   for (const m of home.matchAll(/^([^\n{]*\[data-reveal\][^\n{]*)\{/gm)) {
     const selector = m[1].trim();
-    if (!selector.includes(".mj-anim")) {
-      failures.push(`Home.vue — "${selector}" is not scoped to .mj-anim`);
+    if (!selector.includes(".qa-anim")) {
+      failures.push(`Home.vue — "${selector}" is not scoped to .qa-anim`);
     }
   }
-  if (!/classList\.add\("mj-anim"\)/.test(config)) {
+  if (!/classList\.add\("qa-anim"\)/.test(config)) {
     failures.push(
-      "config.mts — the inline head script that sets .mj-anim is missing",
+      "config.mts — the inline head script that sets .qa-anim is missing",
     );
   }
   return {
@@ -334,7 +333,7 @@ function distPages() {
  * NOT a full audit: this is the subset provable from the built HTML
  * without a browser or an engine (axe-core is not a dependency here, and
  * site/ deliberately has none). It catches the defects that actually
- * shipped on this site — a rune announced on every heading, controls with
+ * shipped on this site — a indicator announced on every heading, controls with
  * no accessible name — and says plainly what it does not cover.
  * ------------------------------------------------------------------ */
 
@@ -510,7 +509,7 @@ function checkLinks() {
  * Check 8 — brand palette, delegated to the repository-wide gate
  *
  * assets/brand/README.md calls the logo "the source of truth" and then
- * prints tables of token values. Every one of its twelve --mj-* rows had
+ * prints tables of token values. Every one of its twelve --qa-* rows had
  * drifted from vars.css — the gold was off by dE 8.2, well past the
  * point a designer would notice. Same defect class as D1: a document
  * asserting numbers the code does not hold, with nothing watching.

@@ -81,7 +81,7 @@ O QA Doctor lê a suíte, os workflows de CI e, se você tiver, o relatório de 
 Um scan real de [`examples/demo-repo`](examples/demo-repo), uma pequena suíte Playwright com um workflow de CI. Foi para cá que os pontos dela foram:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="O detalhamento das deduções do QA Doctor: WORTHINESS 80/100 WORTHY, a pontuação por categoria, o quadro de deduções por severidade e uma lista FIX THIS FIRST" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="O detalhamento das deduções do QA Doctor: TEST HEALTH 80/100 HEALTHY, a pontuação por categoria, o quadro de deduções por severidade e uma lista FIX THIS FIRST" width="520" />
 </p>
 
 <sub>Gerado por `npm run docs:hero` a partir de um scan real e travado contra desvios na CI. O relatório `--verbose` completo do mesmo scan é [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
@@ -323,17 +323,17 @@ Isso mede **resiliência, não correção**. `.btn.btn-primary > div:nth-child(2
 ## A pontuação de confiabilidade
 
 <p align="center">
-  <img src="assets/readme/score-gauge.svg" alt="A escala de confiabilidade de 0 a 100, com um marcador que percorre cada pontuação: UNWORTHY abaixo de 50, NEEDS WORK de 50 a 79, WORTHY de 80 a 99, FORGED em 100" width="720" />
+  <img src="assets/readme/score-gauge.svg" alt="A escala de confiabilidade de 0 a 100, com um marcador que percorre cada pontuação: CRITICAL abaixo de 50, NEEDS ATTENTION de 50 a 79, HEALTHY de 80 a 99, EXCELLENT em 100" width="720" />
 </p>
 
 <sub>Cada pontuação de 0 a 100, posicionada pelo `deriveScoreState` real. Gerado por `npm run docs:gauge` e travado contra desvios na CI.</sub>
 
 | Pontuação | Veredito                                            |
 | --------- | --------------------------------------------------- |
-| `0 – 49`  | **UNWORTHY**                                        |
-| `50 – 79` | **NEEDS WORK**                                      |
-| `80 – 99` | **WORTHY**                                          |
-| `100`     | **FORGED**                                          |
+| `0 – 49`  | **CRITICAL**                                        |
+| `50 – 79` | **NEEDS ATTENTION**                                 |
+| `80 – 99` | **HEALTHY**                                         |
+| `100`     | **EXCELLENT**                                       |
 | `null`    | **UNKNOWN**: nenhuma declaração de teste encontrada |
 
 **Como é calculada.** A severidade define uma dedução base (`error −8`, `warning −3`, `info −1`) e o nível de evidência a desconta: E2 conta integralmente, E1 pela metade (arredondado para baixo), E0 nada. O total é normalizado pela exposição da suíte, ou seja, deduções por declaração de teste, e não por arquivo. O terminal imprime os mesmos números descontados que a pontuação usou; não há um segundo modelo escondido. Detalhes: [docs/SCORING.md](docs/SCORING.md) e o [guia de pontuação](https://sergey-bar.github.io/qa-doctor/guide/scoring).

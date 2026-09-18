@@ -65,7 +65,7 @@ const steps = computed(() => {
     },
     {
       label: `= ${Math.round(score)}`,
-      note: "the worthiness score",
+      note: "the test health score",
       cls: "s-score",
     },
   ];
@@ -98,10 +98,10 @@ if (hasArithmetic) {
  */
 const bands = scoring?.bands ?? [];
 const bandColor: Record<number, string> = {
-  100: "var(--mj-forged-hot)",
-  80: "var(--mj-trusted)",
-  50: "var(--mj-needswork)",
-  0: "var(--mj-unworthy)",
+  100: "var(--qa-excellent-hot)",
+  80: "var(--qa-trusted)",
+  50: "var(--qa-needswork)",
+  0: "var(--qa-critical)",
 };
 /** Span text from the real thresholds: e.g. 80 -> "80 – 99" under 100. */
 function bandRange(min: number): string {
@@ -220,10 +220,10 @@ function bandRange(min: number): string {
   color: var(--vp-c-brand-1);
 }
 .sx-step.s-score {
-  border-color: color-mix(in oklch, var(--mj-aurora-cyan) 50%, transparent);
+  border-color: color-mix(in oklch, var(--qa-aurora-cyan) 50%, transparent);
   background: linear-gradient(
     180deg,
-    color-mix(in oklch, var(--mj-aurora-cyan) 10%, transparent),
+    color-mix(in oklch, var(--qa-aurora-cyan) 10%, transparent),
     transparent 75%
   );
 }
@@ -270,7 +270,7 @@ function bandRange(min: number): string {
   white-space: nowrap;
 }
 .sx-band-name {
-  font-family: var(--mj-display);
+  font-family: var(--qa-display);
   font-size: 0.82rem;
   font-weight: 600;
   letter-spacing: 0.05em;

@@ -4,7 +4,7 @@
  * file is a dispatch table, not a business-logic home.
  *
  * Exit-code contract (stable, e2e-locked):
- *   0  — WORTHY (every check pass)
+ *   0  — HEALTHY (every check pass)
  *   1  — VIOLATIONS FOUND (any fail OR inconclusive — G2: an
  *        INCONCLUSIVE check never renders as pass, in text or JSON, and
  *        never exits 0)

@@ -40,7 +40,7 @@ const COLOUR_SECTIONS = (): string =>
     table("brand", "The two brand hues and the neutral they sit on.", [
       ["brand.gold", BRAND.gold, "primary — scarce"],
       ["brand.goldBright", BRAND.goldBright, "primary on dark"],
-      ["brand.goldHot", BRAND.goldHot, "highlight, FORGED"],
+      ["brand.goldHot", BRAND.goldHot, "highlight, EXCELLENT"],
       ["brand.goldDeep", BRAND.goldDeep, "pressed; background only"],
       ["brand.aurora", BRAND.aurora, "secondary — verification energy"],
       ["brand.auroraBright", BRAND.auroraBright, "secondary on dark"],
@@ -73,12 +73,12 @@ const COLOUR_SECTIONS = (): string =>
     ]),
     table(
       "score",
-      "The ScoreState bands. Thresholds and runes live in `src/reporter/score-state.ts`.",
+      "The ScoreState bands. Thresholds and indicators live in `src/reporter/score-state.ts`.",
       [
-        ["score.critical", SCORE.critical, "0–49 · UNWORTHY · ᚲ"],
-        ["score.warning", SCORE.warning, "50–79 · NEEDS WORK · ᚦ"],
-        ["score.trusted", SCORE.trusted, "80–99 · WORTHY · ᛏ"],
-        ["score.forged", SCORE.forged, "100 · FORGED · ᛟ"],
+        ["score.critical", SCORE.critical, "0–49 · CRITICAL · ᚲ"],
+        ["score.warning", SCORE.warning, "50–79 · NEEDS ATTENTION · ᚦ"],
+        ["score.trusted", SCORE.trusted, "80–99 · HEALTHY · ᛏ"],
+        ["score.excellent", SCORE.excellent, "100 · EXCELLENT · ᛟ"],
         ["score.unmeasured", SCORE.unmeasured, "UNKNOWN · ᛁ — never red"],
       ],
     ),
@@ -160,7 +160,7 @@ ${COLOUR_SECTIONS()}
 | display | ${TYPOGRAPHY.display.family} | ${TYPOGRAPHY.display.weights.join(", ")} |
 | sans | ${TYPOGRAPHY.sans.family} | ${TYPOGRAPHY.sans.weights.join(", ")} |
 | mono | ${TYPOGRAPHY.mono.family} | ${TYPOGRAPHY.mono.weights.join(", ")} |
-| runes (fallback) | ${TYPOGRAPHY.runes.family} | — |
+| indicators (fallback) | ${TYPOGRAPHY.indicators.family} | — |
 
 Body line-height ${TYPOGRAPHY.lineHeight.body}; display tracking
 ${TYPOGRAPHY.display.letterSpacing.tight}–${TYPOGRAPHY.display.letterSpacing.widest}.

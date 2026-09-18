@@ -117,7 +117,7 @@ function runQaDoctor(
 
 describe("E2E journey 1: first run from the packed tarball", () => {
   it(
-    "scans examples/demo-repo: WORTHY score band, failing error gate, well-formed findings",
+    "scans examples/demo-repo: HEALTHY score band, failing error gate, well-formed findings",
     { timeout: 60_000 },
     () => {
       const { stdout, stderr, status } = runQaDoctor([
@@ -166,21 +166,21 @@ describe("E2E journey 1: first run from the packed tarball", () => {
   );
 
   it(
-    "terminal output names the WORTHINESS verdict and measured-rule count (--classic)",
+    "terminal output names the TEST HEALTH verdict and measured-rule count (--classic)",
     { timeout: 60_000 },
     () => {
       const { stdout, status } = runQaDoctor([
         join(ROOT, "examples", "demo-repo"),
         "--ascii",
         // WI-5: the default hero surface is now the Trust Report; the
-        // WORTHINESS banner lives on the --classic escape hatch.
+        // TEST HEALTH banner lives on the --classic escape hatch.
         "--classic",
       ]);
       expect(status).toBe(1);
-      expect(stdout).toContain("WORTHINESS");
-      expect(stdout).toMatch(/WORTHY|NEEDS WORK|UNWORTHY/);
-      expect(stdout).toMatch(/\bWORTHY\b/);
-      expect(stdout).not.toContain("NEEDS WORK");
+      expect(stdout).toContain("TEST HEALTH");
+      expect(stdout).toMatch(/HEALTHY|NEEDS ATTENTION|CRITICAL/);
+      expect(stdout).toMatch(/\bHEALTHY\b/);
+      expect(stdout).not.toContain("NEEDS ATTENTION");
     },
   );
 

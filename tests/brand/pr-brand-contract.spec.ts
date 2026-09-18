@@ -19,10 +19,10 @@ describe("PR_BRAND_CONTRACT", () => {
 
   it("has all 5 verdicts labeled", () => {
     const labels = PR_BRAND_CONTRACT.verdictLabels;
-    expect(labels["forged"]).toBe("Forged");
+    expect(labels["excellent"]).toBe("Excellent");
     expect(labels["trusted"]).toBe("Trusted");
-    expect(labels["needsWork"]).toBe("Needs Work");
-    expect(labels["unworthy"]).toBe("Unworthy");
+    expect(labels["needsWork"]).toBe("Needs Attention");
+    expect(labels["critical"]).toBe("Critical");
     expect(labels["unmeasured"]).toBe("Unmeasured");
   });
 
@@ -76,26 +76,26 @@ describe("validateBrandContract", () => {
   });
 
   it("rejects contract with missing verdict label", () => {
-    const { forged: _removed, ...rest } = PR_BRAND_CONTRACT.verdictLabels;
+    const { excellent: _removed, ...rest } = PR_BRAND_CONTRACT.verdictLabels;
     const result = validateBrandContract({
       ...PR_BRAND_CONTRACT,
       verdictLabels: rest,
     });
     expect(result.valid).toBe(false);
     expect(result.errors).toContainEqual(
-      expect.stringContaining('verdictLabels missing key "forged"'),
+      expect.stringContaining('verdictLabels missing key "excellent"'),
     );
   });
 
   it("rejects contract with missing verdict icon", () => {
-    const { forged: _removed, ...rest } = PR_BRAND_CONTRACT.verdictIcons;
+    const { excellent: _removed, ...rest } = PR_BRAND_CONTRACT.verdictIcons;
     const result = validateBrandContract({
       ...PR_BRAND_CONTRACT,
       verdictIcons: rest,
     });
     expect(result.valid).toBe(false);
     expect(result.errors).toContainEqual(
-      expect.stringContaining('verdictIcons missing key "forged"'),
+      expect.stringContaining('verdictIcons missing key "excellent"'),
     );
   });
 

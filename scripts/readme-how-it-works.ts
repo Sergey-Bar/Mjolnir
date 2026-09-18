@@ -230,7 +230,7 @@ const SCORE_TONE: Record<string, string> = {
   error: SCORE.critical,
   warning: SCORE.warning,
   trusted: SCORE.trusted,
-  forged: SCORE.forged,
+  excellent: SCORE.excellent,
   dim: SCORE.unmeasured,
 };
 
@@ -583,7 +583,7 @@ export function buildHowItWorksSvg(): string {
       ) +
       /* score */
       card(c2, oy, COL, oh) +
-      mono(c2 + 18, oy + 32, "WORTHINESS SCORE", 11, TEXT.muted, 2.2) +
+      mono(c2 + 18, oy + 32, "TEST HEALTH SCORE", 11, TEXT.muted, 2.2) +
       mono(c2 + 18, oy + 52, "EXAMPLE RESULT", 10, BRAND.auroraBright, 1.6) +
       tx(c2 + 16, oy + 128, String(f.score), {
         size: 64,
@@ -703,7 +703,7 @@ ${monoFaceCss()}
     "It discovers, analyzes, correlates, weighs evidence and measures across four evidence streams: test quality, CI integrity, runtime forensics and selector health. " +
     "Every finding carries an evidence level — E0 observation, E1 pattern evidence, E2 deterministic proof, weighted none, half and full — " +
     `and a trust level from L0 to L${lastRung}; L${RUNTIME_BOUNDARY} and above need a real run. ` +
-    `What can be trusted: findings such as ${f.rule}, a worthiness score (example result ${f.score} of 100, ${state.verdict}), and a CI gate on the frozen exit codes 0, 1, 2, 10 and 20. ` +
+    `What can be trusted: findings such as ${f.rule}, a test health score (example result ${f.score} of 100, ${state.verdict}), and a CI gate on the frozen exit codes 0, 1, 2, 10 and 20. ` +
     "In the agent loop, AI writes the fix and QA Doctor re-scans to prove it. QA Doctor never runs your tests, executes your code, replaces your framework or proves business correctness.";
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${escapeXml(label).replaceAll('"', "&quot;")}">

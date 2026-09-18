@@ -68,13 +68,13 @@ letterform.
 ### Tokens resolved on the live page
 
 ```
---mj-gold          #c19a34
---mj-gold-bright   #e6bd57
---mj-aurora        #37abbd
---mj-ink-900       #0c1420
---mj-steel         #c8cbcf
---mj-trusted       #5cc4e0
---mj-unworthy      #ec6b66
+--qa-gold          #c19a34
+--qa-gold-bright   #e6bd57
+--qa-aurora        #37abbd
+--qa-ink-900       #0c1420
+--qa-steel         #c8cbcf
+--qa-trusted       #5cc4e0
+--qa-critical      #ec6b66
 ```
 
 ### Hero copy (verbatim)
@@ -93,17 +93,17 @@ Two different primary claims, in two different voices — the site's is
 accusatory, the README's is restrained. Recorded as new defect **D13**
 (voice/terminology divergence); it was not in the original plan's D1–D12.
 
-### Runes on the homepage
+### Indicators on the homepage
 
-20 rune-bearing elements. Classified:
+20 indicator-bearing elements. Classified:
 
-| Class                        | Glyphs                            | Semantic?                                                   |
-| ---------------------------- | --------------------------------- | ----------------------------------------------------------- |
-| `.rune` (hero background)    | ᛗ ᛃ ᛟ ᛚ ᚾ ᛁ ᚱ                     | **No** — decorative wallpaper                               |
-| `.feat-rune` (feature cards) | ᛏ ᛗ ᚦ ᚨ ᛟ ᛉ                       | **No** — decorative                                         |
-| `.glyph` / verdict           | `ᚦ [STRAINED]` and the hammer art | **Yes** — the `score-state.ts` band rune beside its verdict |
+| Class                             | Glyphs                                   | Semantic?                                                        |
+| --------------------------------- | ---------------------------------------- | ---------------------------------------------------------------- |
+| `.indicator` (hero background)    | ᛗ ᛃ ᛟ ᛚ ᚾ ᛁ ᚱ                            | **No** — decorative wallpaper                                    |
+| `.feat-indicator` (feature cards) | ᛏ ᛗ ᚦ ᚨ ᛟ ᛉ                              | **No** — decorative                                              |
+| `.glyph` / verdict                | `ᚦ [STRAINED]` and the score graphic art | **Yes** — the `score-state.ts` band indicator beside its verdict |
 
-Decision D-D states the rune belongs beside the verdict/state and "must
+Decision D-D states the indicator belongs beside the verdict/state and "must
 never become decorative wallpaper". The live site currently violates
 that in two places. Recorded as new defect **D14**.
 
@@ -111,7 +111,7 @@ that in two places. Recorded as new defect **D14**.
 
 [`cli-scan.before.txt`](cli-scan.before.txt) — a real
 `tsx src/cli.ts .` run against this repository, `FORCE_COLOR=0`,
-exit `0`, score `99/100 WORTHY`, rune `ᛏ [CHARGED]`.
+exit `0`, score `99/100 HEALTHY`, indicator `ᛏ [CHARGED]`.
 
 Reproduce with:
 
@@ -133,7 +133,7 @@ WCAG 2.1 relative luminance, terminal palette on its own background
 | role       | hex           | ratio    | AA       |
 | ---------- | ------------- | -------- | -------- |
 | bold       | `#EDE6D6`     | 16.03    | pass     |
-| forged     | `#F4DC9C`     | 14.77    | pass     |
+| excellent  | `#F4DC9C`     | 14.77    | pass     |
 | default fg | `#D7D3C8`     | 13.32    | pass     |
 | trusted    | `#5CC4E0`     | 9.90     | pass     |
 | accent     | `#8AB4D8`     | 9.11     | pass     |
@@ -143,7 +143,7 @@ WCAG 2.1 relative luminance, terminal palette on its own background
 | dim        | `#7C8590`     | 5.33     | pass     |
 | **error**  | **`#D0453B`** | **4.36** | **FAIL** |
 
-Site palette on `#0C1420`: lowest is `--mj-steel-dim` / `--vp-c-text-3`
+Site palette on `#0C1420`: lowest is `--qa-steel-dim` / `--vp-c-text-3`
 at 5.95 — all pass.
 
 ## 7. Lighthouse / axe — the numbers Phase 3 and Phase 8 must not regress
@@ -203,12 +203,12 @@ these exact numbers or better.
 | D4 third neutral ramp                                    | confirmed, `generate-readme-architecture.ts`                                                                                                                                                                           |
 | D5 macOS traffic lights                                  | confirmed in the **three README SVG generators**. Correction to the plan: `scripts/video/terminal-page.ts` is **already clean** (neutral `#323232` dots) — the video is the precedent to converge on, not an offender. |
 | D6 terminal `error` fails AA                             | confirmed, 4.36:1 (§6)                                                                                                                                                                                                 |
-| D7 six palette copies, one guarded edge                  | confirmed; additionally the brand doc's **verdict** table (`#E5544E` for UNWORTHY) disagrees with `vars.css` (`#ec6b66`) and escapes Check 8, which only parses `--mj-*` palette rows                                  |
+| D7 six palette copies, one guarded edge                  | confirmed; additionally the brand doc's **verdict** table (`#E5544E` for CRITICAL) disagrees with `vars.css` (`#ec6b66`) and escapes Check 8, which only parses `--qa-*` palette rows                                  |
 | D8 trust ladder unrepresented                            | confirmed                                                                                                                                                                                                              |
 | D9 evidence marks unshared                               | confirmed                                                                                                                                                                                                              |
-| D10 runes under-deployed                                 | **partially wrong**: the runes are _over_-deployed on the site, decoratively (D14), and under-deployed semantically in the README                                                                                      |
+| D10 indicators under-deployed                            | **partially wrong**: the indicators are _over_-deployed on the site, decoratively (D14), and under-deployed semantically in the README                                                                                 |
 | D11 no `docs/design/`                                    | being fixed by this directory                                                                                                                                                                                          |
 | D12 no motion language                                   | confirmed                                                                                                                                                                                                              |
 | **D13** voice divergence: site hero vs canonical tagline | new, found at baseline                                                                                                                                                                                                 |
-| **D14** decorative rune wallpaper on the homepage        | new, found at baseline                                                                                                                                                                                                 |
+| **D14** decorative indicator wallpaper on the homepage   | new, found at baseline                                                                                                                                                                                                 |
 | **D15** the site build has been broken since `9f59bc5`   | new, found in Phase 3 when a real build was first attempted; see the correction in §7                                                                                                                                  |

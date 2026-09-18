@@ -20,7 +20,7 @@ defineProps<{ lines: TermLine[]; title?: string }>();
   min-width: 0;
   border: 1px solid var(--vp-c-border);
   border-radius: 8px;
-  background: var(--mj-ink-950);
+  background: var(--qa-ink-950);
   overflow: hidden;
 }
 .term-title {

@@ -873,7 +873,7 @@ export function renderDoctorReport(report: DoctorReport): string {
   lines.push("");
   lines.push(
     report.healthy
-      ? "QA Doctor self-audit: WORTHY"
+      ? "QA Doctor self-audit: HEALTHY"
       : "QA Doctor self-audit: VIOLATIONS FOUND",
   );
   return lines.join("\n");

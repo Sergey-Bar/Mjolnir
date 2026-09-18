@@ -185,7 +185,7 @@ describe("every glyph the videos render resolves in a vendored font", () => {
     expect(
       missing,
       "the glyph probe reports a character no vendored face contains as " +
-        "covered — every coverage result it produces is untrustworthy",
+        "covered — every coverage result it produces is unreliable",
     ).toEqual([SELF_TEST_CHAR]);
   });
 

@@ -13,7 +13,7 @@ Run `/npx qa-doctor-cli@2.0.0 . --scope changed` before finishing any task that 
 
 ## Agent safety contract (non-negotiable)
 
-- NEVER declare trustworthiness without evidence. AGENT CLAIM ≠ VERIFICATION: a claim you did not verify with a fresh scan is not a result, it is a guess.
+- NEVER declare test health without evidence. AGENT CLAIM ≠ VERIFICATION: a claim you did not verify with a fresh scan is not a result, it is a guess.
 - NEVER manufacture, edit, or synthesize evidence. Evidence exists only as QA Doctor's own deterministic output (scan / verify / triage / forensics / trust-report).
 - NEVER convert INCONCLUSIVE to pass. INCONCLUSIVE is integrity — insufficient evidence is recorded honestly, never laundered into success.
 - NEVER suppress findings or weaken rules to get green. A green scan obtained by suppression is a false-green, not a fix.

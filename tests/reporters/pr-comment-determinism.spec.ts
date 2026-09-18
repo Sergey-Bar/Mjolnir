@@ -19,7 +19,7 @@ function makeModel(
     scanId: "abc123",
     repository: "org/repo",
     pullRequest: { number: 42, headSha: "abc123def456", baseRef: "main" },
-    verdict: "WORTHY",
+    verdict: "HEALTHY",
     score: 85,
     scoreAvailability: "available",
     analysisCompleteness: "COMPLETE",
@@ -75,8 +75,8 @@ describe("TI-018: PR comment rendering determinism", () => {
   });
 
   it("different models produce different output", () => {
-    const a = renderPrComment(makeModel({ verdict: "WORTHY" }));
-    const b = renderPrComment(makeModel({ verdict: "UNWORTHY" }));
+    const a = renderPrComment(makeModel({ verdict: "HEALTHY" }));
+    const b = renderPrComment(makeModel({ verdict: "CRITICAL" }));
     expect(a).not.toBe(b);
   });
 
@@ -84,7 +84,7 @@ describe("TI-018: PR comment rendering determinism", () => {
     const output = renderPrComment(makeModel());
     expect(output).toContain("<!-- qa-doctor-pr-comment -->");
     expect(output).toContain("QA Doctor Verification Trust Report");
-    expect(output).toContain("WORTHY");
+    expect(output).toContain("HEALTHY");
   });
 
   it("different scores produce different output", () => {

@@ -81,7 +81,7 @@ QA Doctor는 테스트 스위트와 CI workflow, 그리고 있다면 실제 실�
 CI workflow가 있는 작은 Playwright 스위트인 [`examples/demo-repo`](examples/demo-repo)를 실제로 스캔한 결과입니다. 점수는 여기서 깎였습니다.
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="QA Doctor의 감점 내역: WORTHINESS 80/100 WORTHY, 카테고리별 점수, 심각도별 감점 상자, 그리고 FIX THIS FIRST 목록" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="QA Doctor의 감점 내역: TEST HEALTH 80/100 HEALTHY, 카테고리별 점수, 심각도별 감점 상자, 그리고 FIX THIS FIRST 목록" width="520" />
 </p>
 
 <sub>`npm run docs:hero`가 실제 스캔으로 생성하며 CI에서 변경되지 않도록 고정됩니다. 같은 스캔의 전체 `--verbose` 리포트는 [`demo.svg`](assets/readme/demo.svg)입니다 (`npm run docs:demo`).</sub>
@@ -323,17 +323,17 @@ e2e/checkout.spec.ts
 ## 신뢰도 점수
 
 <p align="center">
-  <img src="assets/readme/score-gauge.svg" alt="0부터 100까지의 신뢰도 척도와 모든 점수를 훑는 표시기: 50 미만 UNWORTHY, 50~79 NEEDS WORK, 80~99 WORTHY, 100 FORGED" width="720" />
+  <img src="assets/readme/score-gauge.svg" alt="0부터 100까지의 신뢰도 척도와 모든 점수를 훑는 표시기: 50 미만 CRITICAL, 50~79 NEEDS ATTENTION, 80~99 HEALTHY, 100 EXCELLENT" width="720" />
 </p>
 
 <sub>0부터 100까지의 모든 점수를 실제 `deriveScoreState`로 배치했습니다. `npm run docs:gauge`로 생성되며 CI에서 변경되지 않도록 고정됩니다.</sub>
 
 | 점수      | 판정                                    |
 | --------- | --------------------------------------- |
-| `0 – 49`  | **UNWORTHY**                            |
-| `50 – 79` | **NEEDS WORK**                          |
-| `80 – 99` | **WORTHY**                              |
-| `100`     | **FORGED**                              |
+| `0 – 49`  | **CRITICAL**                            |
+| `50 – 79` | **NEEDS ATTENTION**                     |
+| `80 – 99` | **HEALTHY**                             |
+| `100`     | **EXCELLENT**                           |
 | `null`    | **UNKNOWN**: 테스트 선언을 찾을 수 없음 |
 
 **계산 방식.** 심각도가 기본 감점을 정하고 (`error −8`, `warning −3`, `info −1`) 증거 수준이 이를 할인합니다. E2는 전액, E1은 절반 (내림), E0는 감점 없음. 합계는 스위트 규모로 정규화되며, 파일당이 아니라 테스트 선언당 감점입니다. 터미널은 점수에 쓰인 것과 같은 할인된 숫자를 출력하며, 숨겨진 두 번째 모델은 없습니다. 자세한 내용: [docs/SCORING.md](docs/SCORING.md)와 [점수 가이드](https://sergey-bar.github.io/qa-doctor/guide/scoring).

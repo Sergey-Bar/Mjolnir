@@ -81,7 +81,7 @@ QA Doctor อ่านชุดเทสต์ CI workflow และรายง
 การสแกนจริงของ [`examples/demo-repo`](examples/demo-repo) ซึ่งเป็นชุดเทสต์ Playwright ขนาดเล็กที่มี CI workflow คะแนนของมันหายไปตรงนี้:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="รายละเอียดการหักคะแนนของ QA Doctor: WORTHINESS 80/100 WORTHY คะแนนแยกตามหมวดหมู่ กล่องการหักคะแนนตามความรุนแรง และรายการ FIX THIS FIRST" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="รายละเอียดการหักคะแนนของ QA Doctor: TEST HEALTH 80/100 HEALTHY คะแนนแยกตามหมวดหมู่ กล่องการหักคะแนนตามความรุนแรง และรายการ FIX THIS FIRST" width="520" />
 </p>
 
 <sub>สร้างโดย `npm run docs:hero` จากการสแกนจริง และถูกล็อกไม่ให้คลาดเคลื่อนใน CI รายงาน `--verbose` ฉบับเต็มของการสแกนเดียวกันคือ [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`)</sub>
@@ -323,17 +323,17 @@ e2e/checkout.spec.ts
 ## คะแนนความน่าเชื่อถือ
 
 <p align="center">
-  <img src="assets/readme/score-gauge.svg" alt="สเกลความน่าเชื่อถือจาก 0 ถึง 100 พร้อมตัวชี้ที่กวาดผ่านทุกคะแนน: UNWORTHY ต่ำกว่า 50, NEEDS WORK ตั้งแต่ 50 ถึง 79, WORTHY ตั้งแต่ 80 ถึง 99, FORGED ที่ 100" width="720" />
+  <img src="assets/readme/score-gauge.svg" alt="สเกลความน่าเชื่อถือจาก 0 ถึง 100 พร้อมตัวชี้ที่กวาดผ่านทุกคะแนน: CRITICAL ต่ำกว่า 50, NEEDS ATTENTION ตั้งแต่ 50 ถึง 79, HEALTHY ตั้งแต่ 80 ถึง 99, EXCELLENT ที่ 100" width="720" />
 </p>
 
 <sub>ทุกคะแนนตั้งแต่ 0 ถึง 100 วางตำแหน่งโดย `deriveScoreState` ตัวจริง สร้างโดย `npm run docs:gauge` และถูกล็อกไม่ให้คลาดเคลื่อนใน CI</sub>
 
 | คะแนน     | คำตัดสิน                         |
 | --------- | -------------------------------- |
-| `0 – 49`  | **UNWORTHY**                     |
-| `50 – 79` | **NEEDS WORK**                   |
-| `80 – 99` | **WORTHY**                       |
-| `100`     | **FORGED**                       |
+| `0 – 49`  | **CRITICAL**                     |
+| `50 – 79` | **NEEDS ATTENTION**              |
+| `80 – 99` | **HEALTHY**                      |
+| `100`     | **EXCELLENT**                    |
 | `null`    | **UNKNOWN**: ไม่พบการประกาศเทสต์ |
 
 **วิธีคำนวณ** ความรุนแรงกำหนดการหักคะแนนพื้นฐาน (`error −8`, `warning −3`, `info −1`) และระดับหลักฐานจะลดทอนมันลง: E2 หักเต็ม E1 หักครึ่ง (ปัดลง) E0 ไม่หักเลย ผลรวมถูกปรับให้เป็นมาตรฐานตามขนาดของชุดเทสต์ คือหักต่อการประกาศเทสต์แต่ละรายการ ไม่ใช่ต่อไฟล์ เทอร์มินัลพิมพ์ตัวเลขที่ลดทอนแล้วชุดเดียวกับที่คะแนนใช้ ไม่มีแบบจำลองที่สองซ่อนอยู่ รายละเอียด: [docs/SCORING.md](docs/SCORING.md) และ [คู่มือการให้คะแนน](https://sergey-bar.github.io/qa-doctor/guide/scoring)

@@ -81,7 +81,7 @@ QA Doctor test paketini, CI workflow'larını ve varsa gerçek bir çalıştırm
 CI workflow'u olan küçük bir Playwright paketi olan [`examples/demo-repo`](examples/demo-repo) üzerinde gerçek bir tarama. Puanlarının nereye gittiği burada:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="QA Doctor'in kesinti dökümü: WORTHINESS 80/100 WORTHY, kategoriye göre puan, önem derecesine göre kesinti kutusu ve bir FIX THIS FIRST listesi" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="QA Doctor'in kesinti dökümü: TEST HEALTH 80/100 HEALTHY, kategoriye göre puan, önem derecesine göre kesinti kutusu ve bir FIX THIS FIRST listesi" width="520" />
 </p>
 
 <sub>`npm run docs:hero` ile gerçek bir taramadan üretilir ve CI'da sapmaya karşı kilitlenir. Aynı taramanın tam `--verbose` raporu [`demo.svg`](assets/readme/demo.svg) dosyasıdır (`npm run docs:demo`).</sub>
@@ -323,17 +323,17 @@ Bu, **doğruluğu değil dayanıklılığı** ölçer. `.btn.btn-primary > div:n
 ## Güvenilirlik puanı
 
 <p align="center">
-  <img src="assets/readme/score-gauge.svg" alt="0'dan 100'e güvenilirlik ölçeği, her puanı dolaşan bir işaretçiyle: 50'nin altı UNWORTHY, 50–79 NEEDS WORK, 80–99 WORTHY, 100 FORGED" width="720" />
+  <img src="assets/readme/score-gauge.svg" alt="0'dan 100'e güvenilirlik ölçeği, her puanı dolaşan bir işaretçiyle: 50'nin altı CRITICAL, 50–79 NEEDS ATTENTION, 80–99 HEALTHY, 100 EXCELLENT" width="720" />
 </p>
 
 <sub>0'dan 100'e her puan, gerçek `deriveScoreState` tarafından yerleştirildi. `npm run docs:gauge` ile üretilir ve CI'da sapmaya karşı kilitlenir.</sub>
 
 | Puan      | Karar                                  |
 | --------- | -------------------------------------- |
-| `0 – 49`  | **UNWORTHY**                           |
-| `50 – 79` | **NEEDS WORK**                         |
-| `80 – 99` | **WORTHY**                             |
-| `100`     | **FORGED**                             |
+| `0 – 49`  | **CRITICAL**                           |
+| `50 – 79` | **NEEDS ATTENTION**                    |
+| `80 – 99` | **HEALTHY**                            |
+| `100`     | **EXCELLENT**                          |
 | `null`    | **UNKNOWN**: test bildirimi bulunamadı |
 
 **Nasıl hesaplanır.** Önem bir temel kesinti belirler (`error −8`, `warning −3`, `info −1`) ve kanıt düzeyi bunu indirir: E2 tam, E1 yarım (aşağı yuvarlanarak), E0 hiç sayılmaz. Toplam, paketin maruziyetine göre normalleştirilir; yani dosya başına değil test bildirimi başına kesinti. Terminal, puanın kullandığı indirilmiş sayıların aynısını yazdırır; gizli ikinci bir model yoktur. Ayrıntılar: [docs/SCORING.md](docs/SCORING.md) ve [puanlama rehberi](https://sergey-bar.github.io/qa-doctor/guide/scoring).

@@ -59,25 +59,25 @@ subset lacks the box-drawing glyphs the reporter prints.
 Scored against §34 of the mission. A 10 means the surface takes every
 value from the token module **and** something fails CI when it stops.
 
-|                           |  Before |   After |                                                                                                  |
-| ------------------------- | ------: | ------: | ------------------------------------------------------------------------------------------------ |
-| Brand distinctiveness     |       7 |       9 | logo, runes and verdict vocabulary were already distinct; the marks now carry the epistemics too |
-| Nordic sophistication     |       8 |       9 | decorative runes removed, `art.ts` still the benchmark                                           |
-| Typography                |       4 |      10 | three disjoint systems → two shared faces, self-hosted, retired faces blocked by rule 1          |
-| Colour system             |       6 |      10 | one palette, one source, eight rules                                                             |
-| Logo integration          |       8 |      10 | rule 9 — sha256 on 2 masters + 9 derived                                                         |
-| Iconography               |       5 |       9 | one geometry source; no icon set beyond the three marks                                          |
-| Symbol language           |       5 |      10 | evidence ring, trust ladder, band runes — one definition each                                    |
-| Website consistency       |       8 |      10 | tokenised, symbol-driven, measured                                                               |
-| README consistency        |       6 |       9 | badges and assets converged; the prose was already strong and was not rewritten                  |
-| SVG consistency           |       6 |      10 | rule 4 checks every committed SVG                                                                |
-| MP4 consistency           |       7 |      10 | reproducible, checked, and its ground measured in pure Node                                      |
-| CLI consistency           |       6 |      10 | 0 hex literals, AA fixed, mermaid honest                                                         |
-| Documentation consistency |       7 |       9 | five documents, one generated; prose can still drift                                             |
-| Motion language           |       6 |       8 | defined and partly enforced; durations unchecked                                                 |
-| Terminology consistency   |       9 |      10 | the site now leads with the canonical tagline                                                    |
-| Accessibility             |       7 |      10 | AA computed everywhere, axe 0, 187 focus rings                                                   |
-| **Overall coherence**     | **6.5** | **9.6** |                                                                                                  |
+|                           |  Before |   After |                                                                                                       |
+| ------------------------- | ------: | ------: | ----------------------------------------------------------------------------------------------------- |
+| Brand distinctiveness     |       7 |       9 | logo, indicators and verdict vocabulary were already distinct; the marks now carry the epistemics too |
+| Nordic sophistication     |       8 |       9 | decorative indicators removed, `art.ts` still the benchmark                                           |
+| Typography                |       4 |      10 | three disjoint systems → two shared faces, self-hosted, retired faces blocked by rule 1               |
+| Colour system             |       6 |      10 | one palette, one source, eight rules                                                                  |
+| Logo integration          |       8 |      10 | rule 9 — sha256 on 2 masters + 9 derived                                                              |
+| Iconography               |       5 |       9 | one geometry source; no icon set beyond the three marks                                               |
+| Symbol language           |       5 |      10 | evidence ring, trust ladder, band indicators — one definition each                                    |
+| Website consistency       |       8 |      10 | tokenised, symbol-driven, measured                                                                    |
+| README consistency        |       6 |       9 | badges and assets converged; the prose was already strong and was not rewritten                       |
+| SVG consistency           |       6 |      10 | rule 4 checks every committed SVG                                                                     |
+| MP4 consistency           |       7 |      10 | reproducible, checked, and its ground measured in pure Node                                           |
+| CLI consistency           |       6 |      10 | 0 hex literals, AA fixed, mermaid honest                                                              |
+| Documentation consistency |       7 |       9 | five documents, one generated; prose can still drift                                                  |
+| Motion language           |       6 |       8 | defined and partly enforced; durations unchecked                                                      |
+| Terminology consistency   |       9 |      10 | the site now leads with the canonical tagline                                                         |
+| Accessibility             |       7 |      10 | AA computed everywhere, axe 0, 187 focus rings                                                        |
+| **Overall coherence**     | **6.5** | **9.6** |                                                                                                       |
 
 ## 3. The defects
 
@@ -92,18 +92,18 @@ value from the token module **and** something fails CI when it stops.
 | D7  | six palette copies, one guarded edge              | **closed** — one source, eight rules, all edges                                                         |
 | D8  | the trust ladder had no visual treatment          | **closed** — `TrustLadder.vue` + the architecture diagram, from one geometry                            |
 | D9  | evidence marks unshared across surfaces           | **closed** — one ring, three media                                                                      |
-| D10 | runes under-deployed                              | **corrected and closed** — they were _over_-deployed decoratively; see D14                              |
+| D10 | indicators under-deployed                         | **corrected and closed** — they were _over_-deployed decoratively; see D14                              |
 | D11 | no `docs/design/`                                 | **closed** — five documents, one generated                                                              |
 | D12 | no documented motion language                     | **closed** — `MOTION-SYSTEM.md`                                                                         |
 | D13 | site hero contradicted the canonical tagline      | **closed** — found at baseline, not in the plan                                                         |
-| D14 | decorative rune ornament on the site              | **closed** — found at baseline; the hero runefield is a wordmark and stays                              |
+| D14 | decorative mark ornament on the site              | **closed** — product marks remain functional and restrained                                             |
 | D15 | the site build broken since `9f59bc5`             | **closed** — found in Phase 3; the Pages deploy had been failing for a day                              |
 
 | D16 | the generated badge sent shields.io named colours | **closed** — found when Sergey asked whether CI was covered; it was not |
 
 D16 is worth its own line because two of those names were wrong, not
 merely off-brand. `success` is GREEN, so a 100 badge said "your software
-is fine". `important` is ORANGE, so every WORTHY badge rendered the
+is fine". `important` is ORANGE, so every HEALTHY badge rendered the
 trusted band in a warning hue — for eight releases, behind a code
 comment asserting it was "blue-family, closest to aurora-cyan". The test
 guarding it checked that each value was a name shields RECOGNISES, which
@@ -170,7 +170,7 @@ Beyond the browser:
   weakest legal pairing is 5.00:1.
 - **Nothing is colour-only.** Evidence level is a ring whose fill carries
   the weight; trust rungs are labelled "static" / "needs a real run";
-  score bands carry a rune; `--ascii` and `NO_COLOR` remain meaningful.
+  score bands carry a indicator; `--ascii` and `NO_COLOR` remain meaningful.
 - **`prefers-reduced-motion`** is honoured on every animated surface, and
   the generated SVGs carry their own reduce block.
 
@@ -217,7 +217,7 @@ twice in one test and required to produce identical bytes.
 Phase 1's whole claim was **zero visual change**, and it was proved
 rather than asserted: all four SVGs regenerated byte-identical, and
 `vars.css` was compared declaration by declaration — one changed
-(`--mj-parchment: #c8cbcf` → `var(--mj-steel)`, the same value), none
+(`--qa-parchment: #c8cbcf` → `var(--qa-steel)`, the same value), none
 removed, ten added that nothing referenced yet.
 
 ## 8. Cross-surface evidence
@@ -226,7 +226,7 @@ removed, ten added that nothing referenced yet.
 size for every generated asset, matching the Phase-0 capture's format.
 
 [`after/cli-scan.after.txt`](after/cli-scan.after.txt) — a real
-`tsx src/cli.ts .` run: exit 0, 99/100 WORTHY, rune `ᛏ [CHARGED]`. The
+`tsx src/cli.ts .` run: exit 0, 99/100 HEALTHY, indicator `ᛏ [CHARGED]`. The
 product's own behaviour is unchanged, which is the point.
 
 ### The blind test
@@ -443,46 +443,15 @@ truth, enforced by a gate that has been watched rejecting every kind of
 violation it claims to catch. What it is not is finished — and saying so
 is the only ending this particular product could honestly have.
 
-## 13. The wordmark rework (2026-09-12)
+## 13. The QA Doctor mark update (2026-09-18)
 
-Requested directly: replace the illustrated hammer mark with a plain
-`QA DOCTOR` wordmark, Cinzel 600, display-only, with a rune as the only
-fallback for contexts too small to read a word.
+The QA Doctor identity uses a plain `QA DOCTOR` wordmark and a compact Q
+inspection mark with a verification check for icon-sized contexts. The marks
+are rendered at their native sizes by `scripts/generate-brand-marks.ts` and
+pinned by `assets/brand/marks.lock.json`; the update is covered by the normal
+mark reproducibility checks.
 
-**What changed.** `scripts/generate-brand-marks.ts` is new: it renders
-both marks as HTML/CSS shot with the same Chromium the demo video uses,
-from `src/brand/tokens.ts` and the already-vendored Cinzel and FreeMono
-files — no new dependency, no illustration. The wordmark is the full
-lockup everywhere there is room to read a word; the fallback is a single
-rune, ᛗ (Mansaz), for favicons and the npm/social icon. All eleven files
-rule 9 already pinned were regenerated and re-locked through the normal
-`npm run brand:marks:update` flow.
-
-**Why ᛗ and not a new rune.** The hero runefield already spells the
-product's own name in Elder Futhark (ᛗ ᛃ ᛟ ᛚ ᚾ ᛁ ᚱ, §5 above) — ᛗ is
-already the brand's own "M". It is deliberately not one of the five
-runes `RUNES` in `score-state.ts` places beside an actual verdict (ᚲ ᚦ
-ᛏ ᛟ ᛁ): a permanent logo built from a verdict rune would make the brand
-itself look like a standing score, which is the one thing this whole
-system exists to prevent the reporter from doing anywhere.
-
-**Why native rendering, not downscaling.** The prior nine derived files
-were downscales of two provided raster masters; a hammer illustration
-shrunk to 16px had already lost detail it could not regain. Every size
-here is its own render from the same vector source instead, so a 16px
-favicon is not a resample of a 1800px file — it is its own shot at 16px.
-
-**What this did NOT touch.** Score/rule logic, exit codes, schema
-version, and every non-mark token are untouched — brand:doctor's other
-eight rules and the reproducibility specs all still pass unchanged.
-
-**What I have not verified beyond the gate.** This is a design change
-delivered on the maintainer's direct sign-off ("do what you think is
-right"), not a re-run of the accessibility/performance measurement pass
-in §§5–6 — those numbers were about SVG chrome and page weight, neither
-of which this touches, but I have not re-measured them to confirm that
-belief rather than assume it. The certification score above (9.6) was
-set before this section existed and is not re-scored here; a change of
-this kind — replacing the one asset every other rule was built to
-protect — is exactly the kind of decision this document exists to make
-visible, not to grade itself on.
+The status vocabulary is clinical and actionable: **Critical**, **Needs
+Attention**, **Healthy**, and **Excellent**. It replaces mythology and
+celebration imagery with clear test-health language while leaving scoring,
+rule logic, exit codes, and schema contracts untouched.

@@ -43,7 +43,7 @@ import type { VideoScript } from "./script-types.js";
  * The aurora wash is QA Doctor's own: the same green, cyan and violet
  * curtains that sit behind the website's hero, and the same 2px aurora
  * line across the top of its terminal. It used to be a gold wash, from
- * before gold was held back for FORGED; the frame now matches the page a
+ * before gold was held back for EXCELLENT; the frame now matches the page a
  * reader arrives from.
  *
  * What was deliberately NOT copied: react.doctor's terminal shows a
@@ -138,7 +138,7 @@ export function planFrames(script: VideoScript): Frame[] {
  * changes length or gains and loses sections.
  *
  * It used to be the first frame holding on the score line. With the
- * hammer gone from the report that line arrives four rows in, and the
+ * score graphic gone from the report that line arrives four rows in, and the
  * poster was one line of text in an empty window.
  */
 export function posterFrame(script: VideoScript): number {
@@ -216,7 +216,7 @@ const SOLID_BLOCK_RUN = /^[\u2580\u2584\u2588\u258C\u2590\u2596-\u259F\s]+$/;
  * Runic characters, which come from the fallback face.
  *
  * FreeMono is a noticeably lighter design than the primary face (Geist
- * Mono), so the runes on the hammer rendered as thin specks beside the
+ * Mono), so the indicators on the score graphic rendered as thin specks beside the
  * bold blocks they sit on. A stroke brings their weight into line with
  * the rest of the frame; without it the one detail unique to this tool's
  * output is also the least legible thing in it.
@@ -231,11 +231,11 @@ function lineHtml(line: string): string {
   return spans
     .map((s) => {
       const cls = SOLID_BLOCK_RUN.test(s.text) ? ' class="blocks"' : "";
-      // Runes are wrapped individually so only they get the weight
+      // Indicators are wrapped individually so only they get the weight
       // correction — the surrounding text is already the right face.
       const text = s.text.replace(
         RUNIC,
-        (ch) => `<span class="rune">${ch}</span>`,
+        (ch) => `<span class="indicator">${ch}</span>`,
       );
       return `<span${cls} style="color:${s.color}">${text}</span>`;
     })
@@ -285,10 +285,10 @@ export function layoutFor(script: VideoScript) {
   // look soft.
   //
   // Both metrics are then snapped so that one character cell is a WHOLE
-  // number of device pixels. Block-drawing glyphs (the hammer, the score
+  // number of device pixels. Block-drawing glyphs (the score graphic, the score
   // gauge) tile edge to edge, and at a fractional advance each cell lands
   // on a different sub-pixel offset — antialiasing then draws a seam
-  // between every pair of blocks and the hammer reads as a brick wall.
+  // between every pair of blocks and the score graphic reads as a brick wall.
   const dpr = pacing.deviceScaleFactor;
   const maxFont = Math.min(24, (vw - inset * 2 - pad * 2) / (cols * 0.6));
   const advance = Math.floor(maxFont * 0.6 * dpr) / dpr;
@@ -392,7 +392,7 @@ html,body{width:${vw}px;height:${vh}px;overflow:hidden;background:${INK_950}}
   text-rendering:geometricPrecision}
 #lines div{height:${lineHeight}px}
 /* The primary face's block glyphs do not span their full advance, so
-   tiled runs — the hammer, the score gauge, the meters — show a hairline
+   tiled runs — the score graphic, the score gauge, the meters — show a hairline
    seam between every pair even at whole-pixel positions. Confirmed on
    both fonts tried here (JetBrains Mono, then Geist Mono): removing the
    stroke reintroduces the seam on Geist Mono too, so this is a property
@@ -401,9 +401,9 @@ html,body{width:${vw}px;height:${vh}px;overflow:hidden;background:${INK_950}}
    are excluded: they are dither patterns, and stroking them turns the
    gauge's empty track into noise. */
 #lines .blocks{-webkit-text-stroke:${(0.75 / dpr).toFixed(3)}px currentColor}
-/* Runes come from the lighter fallback face — see the .rune note in
+/* Indicators come from the lighter fallback face — see the .indicator note in
    lineHtml. */
-#lines .rune{-webkit-text-stroke:${(1.1 / dpr).toFixed(3)}px currentColor}
+#lines .indicator{-webkit-text-stroke:${(1.1 / dpr).toFixed(3)}px currentColor}
 .caret{color:${TEXT.secondary}}
 .prompt{color:${TEXT.muted}}
 /* The command is what the viewer is meant to copy — the brightest text in

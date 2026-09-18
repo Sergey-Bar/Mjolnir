@@ -68,7 +68,7 @@ export function probeGlyphs(chars: string[]): GlyphCoverage {
     throw new Error(
       `glyph probe is not discriminating: it reports ${describe(SELF_TEST_CHAR)} ` +
         `as covered by "${selfTest}", which no vendored text face contains. ` +
-        `Every "covered" result from this run is untrustworthy — fix the ` +
+        `Every "covered" result from this run is unreliable — fix the ` +
         `probe before trusting its coverage report.`,
     );
   }

@@ -7,7 +7,7 @@ const ORIGIN = "https://sergey-bar.github.io";
 const SITE_URL = ORIGIN + BASE;
 const REPO_BLOB = "https://github.com/Sergey-Bar/qa-doctor/blob/main/";
 const TAGLINE =
-  "Verification Trust Engine for QA — audits test suites and CI pipelines, reports a worthiness score and prioritized findings.";
+  "Verification Trust Engine for QA — audits test suites and CI pipelines, reports a test health score and prioritized findings.";
 
 const SIDEBAR = [
   {
@@ -113,7 +113,7 @@ export default defineConfig({
     // starting state on this class makes the animation an enhancement: no
     // script, no class, nothing hidden. Inline and in <head> so there is no
     // flash of the hidden state on the way in.
-    ["script", {}, `document.documentElement.classList.add("mj-anim")`],
+    ["script", {}, `document.documentElement.classList.add("qa-anim")`],
     ["meta", { name: "theme-color", content: SURFACE.ink900 }],
     [
       "link",
@@ -191,7 +191,7 @@ export default defineConfig({
         text: "Features",
         items: [
           { text: "What it checks", link: "/guide/what-it-checks" },
-          { text: "Worthiness score", link: "/guide/scoring" },
+          { text: "Test Health score", link: "/guide/scoring" },
           { text: "CI integrity", link: "/guide/ci" },
           { text: "Runtime forensics", link: "/guide/forensics" },
           {

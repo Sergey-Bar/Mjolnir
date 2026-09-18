@@ -3,7 +3,7 @@
  *
  * The canonical shape that every PR comment renderer consumes.
  * Validation enforces the verdict-completeness state matrix (§51.2):
- *   COMPLETE → WORTHY | NEEDS_WORK | UNWORTHY
+ *   COMPLETE → HEALTHY | NEEDS_WORK | CRITICAL
  *   PARTIAL  → INCOMPLETE only
  *   ERROR    → ANALYSIS_ERROR only
  *
@@ -11,7 +11,7 @@
  */
 
 export type PrCommentVerdict =
-  "WORTHY" | "NEEDS_WORK" | "UNWORTHY" | "INCOMPLETE" | "ANALYSIS_ERROR";
+  "HEALTHY" | "NEEDS_WORK" | "CRITICAL" | "INCOMPLETE" | "ANALYSIS_ERROR";
 
 export type AnalysisCompleteness = "COMPLETE" | "PARTIAL" | "ERROR";
 
@@ -129,7 +129,7 @@ export interface PrCommentValidationError {
 
 /**
  * The verdict-completeness state matrix (§51.2):
- *   COMPLETE → WORTHY | NEEDS_WORK | UNWORTHY
+ *   COMPLETE → HEALTHY | NEEDS_WORK | CRITICAL
  *   PARTIAL  → INCOMPLETE only
  *   ERROR    → ANALYSIS_ERROR only
  */
@@ -137,7 +137,10 @@ const VALID_COMBINATIONS: ReadonlyMap<
   AnalysisCompleteness,
   ReadonlySet<PrCommentVerdict>
 > = new Map<AnalysisCompleteness, ReadonlySet<PrCommentVerdict>>([
-  ["COMPLETE", new Set<PrCommentVerdict>(["WORTHY", "NEEDS_WORK", "UNWORTHY"])],
+  [
+    "COMPLETE",
+    new Set<PrCommentVerdict>(["HEALTHY", "NEEDS_WORK", "CRITICAL"]),
+  ],
   ["PARTIAL", new Set<PrCommentVerdict>(["INCOMPLETE"])],
   ["ERROR", new Set<PrCommentVerdict>(["ANALYSIS_ERROR"])],
 ]);

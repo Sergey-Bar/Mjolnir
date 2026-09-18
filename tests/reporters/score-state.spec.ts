@@ -15,14 +15,14 @@ import {
 
 describe("band boundaries are total and exhaustive", () => {
   it.each([
-    [null, "unmeasured", "UNWORTHY"],
-    [0, "critical", "UNWORTHY"],
-    [49, "critical", "UNWORTHY"],
-    [50, "warning", "NEEDS WORK"],
-    [79, "warning", "NEEDS WORK"],
-    [80, "trusted", "WORTHY"],
-    [99, "trusted", "WORTHY"],
-    [100, "forged", "FORGED"],
+    [null, "unmeasured", "CRITICAL"],
+    [0, "critical", "CRITICAL"],
+    [49, "critical", "CRITICAL"],
+    [50, "warning", "NEEDS ATTENTION"],
+    [79, "warning", "NEEDS ATTENTION"],
+    [80, "trusted", "HEALTHY"],
+    [99, "trusted", "HEALTHY"],
+    [100, "excellent", "EXCELLENT"],
   ] as const)(
     "deriveScoreState(%p) → band %s / verdict %s",
     (score, band, verdict) => {
@@ -37,8 +37,8 @@ describe("band boundaries are total and exhaustive", () => {
       fc.property(fc.integer({ min: 0, max: 100 }), (score) => {
         const s = deriveScoreState(score);
         if (score >= 100) {
-          expect(s.band).toBe("forged");
-          expect(s.color).toBe("forged");
+          expect(s.band).toBe("excellent");
+          expect(s.color).toBe("excellent");
         } else if (score >= 80) {
           expect(s.band).toBe("trusted");
           expect(s.color).toBe("trusted");
@@ -55,12 +55,12 @@ describe("band boundaries are total and exhaustive", () => {
     );
   });
 
-  it("out-of-range scores still resolve (defensive totality): <0 → critical, >100 → forged", () => {
+  it("out-of-range scores still resolve (defensive totality): <0 → critical, >100 → excellent", () => {
     expect(deriveScoreState(-1).band).toBe("critical");
-    expect(deriveScoreState(101).band).toBe("forged");
+    expect(deriveScoreState(101).band).toBe("excellent");
   });
 
-  it("null is the honest unmeasured state: UNWORTHY verdict, dim color, zero power", () => {
+  it("null is the honest unmeasured state: CRITICAL verdict, dim color, zero power", () => {
     const s = deriveScoreState(null);
     expect(s.band).toBe("unmeasured");
     expect(s.color).toBe("dim");
@@ -96,12 +96,12 @@ describe("headline templates are deterministic and self-consistent", () => {
     const trusted = deriveScoreState(85);
     expect(trusted.headline).toContain("{n}");
     expect(headlineFor(trusted, 14)).toBe(
-      "Held in worthy hands — 14 findings remain.",
+      "Healthy test health: 14 findings remain.",
     );
-    // The forged headline has no placeholder — it already says zero.
-    const forged = deriveScoreState(100);
-    expect(headlineFor(forged, 0)).toBe(
-      "Forged complete. Zero findings. The suite is clean.",
+    // The excellent headline has no placeholder — it already says zero.
+    const excellent = deriveScoreState(100);
+    expect(headlineFor(excellent, 0)).toBe(
+      "Excellent test health. Zero findings. The suite is clean.",
     );
   });
 });
@@ -116,16 +116,17 @@ describe("powerLevel is the mechanical score passthrough", () => {
   });
 });
 
-describe("each band carries a distinct rune (symbols accompany color)", () => {
+describe("each band carries a distinct indicator (symbols accompany color)", () => {
   it("the four score bands plus unmeasured have unique, non-empty glyphs", () => {
-    const runes = [
-      deriveScoreState(10).rune,
-      deriveScoreState(60).rune,
-      deriveScoreState(90).rune,
-      deriveScoreState(100).rune,
-      deriveScoreState(null).rune,
+    const indicators = [
+      deriveScoreState(10).indicator,
+      deriveScoreState(60).indicator,
+      deriveScoreState(90).indicator,
+      deriveScoreState(100).indicator,
+      deriveScoreState(null).indicator,
     ];
-    for (const r of runes) expect(r.length).toBeGreaterThan(0);
-    expect(new Set(runes).size).toBe(runes.length);
+    for (const indicator of indicators)
+      expect(indicator.length).toBeGreaterThan(0);
+    expect(new Set(indicators).size).toBe(indicators.length);
   });
 });

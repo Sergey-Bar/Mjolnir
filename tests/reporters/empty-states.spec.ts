@@ -104,7 +104,7 @@ describe("dead end: no tests found", () => {
 
   it("score stays null, never a fake 0 (frozen contract: score is honest)", () => {
     const out = renderTerminal(scanResult(), { isTTY: false });
-    expect(out).not.toMatch(/WORTHINESS\s+0\/100/);
+    expect(out).not.toMatch(/TEST HEALTH\s+0\/100/);
   });
 });
 
@@ -168,12 +168,12 @@ describe("dead end: no report for pw-report", () => {
   });
 });
 
-describe("dead end: zero findings (flawless victory)", () => {
+describe("dead end: zero findings (all clear)", () => {
   it("renders a positive, explanatory state rather than silence", () => {
     const out = renderTerminal(scanResult({ score: 100, findings: [] }), {
       isTTY: false,
     });
-    expect(out).toMatch(/FLAWLESS VICTORY|zero findings/i);
+    expect(out).toMatch(/ALL CLEAR|zero findings/i);
   });
 });
 

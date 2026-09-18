@@ -80,7 +80,7 @@ and block glyph the report draws, the `▍` section mark included. It does
 U+2717 — verified with `check-glyphs.ts`, not assumed. **GNU FreeMono**
 supplies them and is itself monospace, so the fallback glyphs land on the
 same character grid as everything around them. (It also carried the
-runes the old hammer art printed; the report no longer draws one.)
+indicators the old score graphic art printed; the report no longer draws one.)
 
 Both faces are embedded as base64 data: URIs at render time. Nothing is
 fetched, and nothing is taken from whatever fonts the host has installed.

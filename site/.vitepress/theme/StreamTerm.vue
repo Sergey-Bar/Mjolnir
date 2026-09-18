@@ -90,7 +90,7 @@ onBeforeUnmount(() => {
   min-width: 0;
   border: 1px solid var(--vp-c-border);
   border-radius: 10px;
-  background: var(--mj-ink-950);
+  background: var(--qa-ink-950);
   overflow: hidden;
 }
 .st::before {
@@ -100,9 +100,9 @@ onBeforeUnmount(() => {
   height: 2px;
   background: linear-gradient(
     90deg,
-    var(--mj-aurora-green),
-    var(--mj-aurora-cyan) 50%,
-    var(--mj-aurora-violet)
+    var(--qa-aurora-green),
+    var(--qa-aurora-cyan) 50%,
+    var(--qa-aurora-violet)
   );
 }
 .st-bar {
@@ -120,7 +120,7 @@ onBeforeUnmount(() => {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: var(--mj-ink-800);
+  background: var(--qa-ink-800);
 }
 .st-title {
   flex: 1;

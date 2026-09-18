@@ -112,7 +112,7 @@ repeatable.
 | final hold             |   90 |  120 |
 | linger                 |   75 |   90 |
 
-`lingerOn` is content-derived: a revealed line containing `WORTHINESS`
+`lingerOn` is content-derived: a revealed line containing `TEST HEALTH`
 earns an extra pause, because the score is the point of the report and
 otherwise scrolls out of view within two seconds. Content-derived means
 deterministic — the same capture pauses in the same places.

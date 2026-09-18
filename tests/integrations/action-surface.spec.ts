@@ -140,7 +140,7 @@ describe("root action.yml (Marketplace surface) is locked", () => {
       // never in the run: body itself.
       expect(
         (scan?.run ?? "").includes(`inputs.${input}}`),
-        `scan step interpolates inputs.${input} directly into the shell — use the MJ_ env indirection`,
+        `scan step interpolates inputs.${input} directly into the shell — use the QA_DOCTOR_ env indirection`,
       ).toBe(false);
     }
     const scanEnv = Object.keys(scan?.env ?? {});
@@ -155,7 +155,7 @@ describe("root action.yml (Marketplace surface) is locked", () => {
     ]) {
       expect(
         scanEnv.some((k) => scan?.env?.[k] === `\${{ inputs.${input} }}`),
-        `scan step env: must map inputs.${input} to an MJ_* variable (audit S-5 indirection)`,
+        `scan step env: must map inputs.${input} to an QA_DOCTOR_* variable (audit S-5 indirection)`,
       ).toBe(true);
     }
   });
@@ -163,9 +163,11 @@ describe("root action.yml (Marketplace surface) is locked", () => {
   it("partial scans warn by default and fail only when opted in", () => {
     const scan = action.runs.steps.find((s) => s.id === "scan");
     expect(action.inputs["fail-on-partial"]?.default).toBe("false");
-    expect(scan?.env?.MJ_FAIL_ON_PARTIAL).toBe("${{ inputs.fail-on-partial }}");
+    expect(scan?.env?.QA_DOCTOR_FAIL_ON_PARTIAL).toBe(
+      "${{ inputs.fail-on-partial }}",
+    );
     expect(scan?.run).toMatch(
-      /if \[ "\$MJ_FAIL_ON_PARTIAL" = "true" \]; then[\s\S]*?exit 2[\s\S]*?fi\s+exit 0/,
+      /if \[ "\$QA_DOCTOR_FAIL_ON_PARTIAL" = "true" \]; then[\s\S]*?exit 2[\s\S]*?fi\s+exit 0/,
     );
   });
 

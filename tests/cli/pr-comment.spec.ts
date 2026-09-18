@@ -315,8 +315,8 @@ describe("renderPrComment — redesign structure (plan M5)", () => {
     const body = renderPrComment(scanResult([finding({})]));
     expect(body).toContain("### 🔨 QA Doctor — Verification Trust");
     expect(body).toContain("88/100");
-    expect(body).toContain("WORTHY");
-    expect(body).toMatch(/score is|hammer|findings/); // headline line present
+    expect(body).toContain("HEALTHY");
+    expect(body).toMatch(/score is|score graphic|findings/); // headline line present
   });
 
   it("renders the dimensions mini-table when the scan has them", () => {

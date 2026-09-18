@@ -613,10 +613,10 @@ export function buildArchitectureSvg(): string {
     ),
   );
 
-  /* worthiness — explicitly an example */
+  /* test health — explicitly an example */
   const WY = 365;
   g.push(rect(OUT_X, WY, OUT_W, 135, { r: 12, stroke: "var(--edge)" }));
-  g.push(eyebrow(OUT_X + 18, WY + 26, "WORTHINESS SCORE"));
+  g.push(eyebrow(OUT_X + 18, WY + 26, "TEST HEALTH SCORE"));
   g.push(
     text(OUT_X + OUT_W - 18, WY + 26, "EXAMPLE RESULT", {
       size: 8.5,
@@ -627,7 +627,7 @@ export function buildArchitectureSvg(): string {
   );
   g.push(text(OUT_X + 18, WY + 92, String(score), { size: 52, spacing: -1 }));
   g.push(
-    text(OUT_X + 100, WY + 72, "NEEDS WORK", {
+    text(OUT_X + 100, WY + 72, "NEEDS ATTENTION", {
       size: 11,
       fill: "var(--warning)",
       spacing: 2,
@@ -830,7 +830,7 @@ export function buildArchitectureSvg(): string {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-labelledby="archTitle archDesc">
   <title id="archTitle">QA Doctor — Verification Trust Engine: how it works</title>
-  <desc id="archDesc">Without QA Doctor a pipeline goes tests, pass, looks green. With QA Doctor it goes tests, run, artifacts, evidence, QA Doctor, trust. QA Doctor reads three signals: the test suite and the CI pipeline statically, and the artifacts of a run that already finished — Playwright JSON and JUnit XML — which are the only real run evidence it ingests. It discovers, analyzes, correlates, weighs evidence and measures, across four evidence streams: test quality, CI integrity, runtime forensics and selector health. Every finding is stamped E0 observation, E1 pattern evidence, or E2 deterministic proof, weighted none, half and full; evidence level is earned, not assumed. A trust ladder from L0 to L5 shows the top three rungs require a real run, so static analysis can never claim them. QA Doctor never runs your tests, executes your code, replaces your framework, or proves business correctness. Out come findings such as ${rule}, Test command does not propagate exit code, at evidence level E2; an example worthiness score from examples/demo-repo of ${score} out of 100 labelled NEEDS WORK, from ${findingCount} findings and ${errorCount} errors; and a CI gate mapping the frozen exit codes to a trust decision: 0 clean is pass, 1 findings at or above the gate is block, 2 partial scan is investigate, 10 usage error, 20 internal error. That is verification trust, not business correctness. An agent loop runs scan, evidence, handoff, AI agent, re-scan, proof, and the proof returns to QA Doctor for re-verification: AI writes the fix, QA Doctor verifies the fix.</desc>
+  <desc id="archDesc">Without QA Doctor a pipeline goes tests, pass, looks green. With QA Doctor it goes tests, run, artifacts, evidence, QA Doctor, trust. QA Doctor reads three signals: the test suite and the CI pipeline statically, and the artifacts of a run that already finished — Playwright JSON and JUnit XML — which are the only real run evidence it ingests. It discovers, analyzes, correlates, weighs evidence and measures, across four evidence streams: test quality, CI integrity, runtime forensics and selector health. Every finding is stamped E0 observation, E1 pattern evidence, or E2 deterministic proof, weighted none, half and full; evidence level is earned, not assumed. A trust ladder from L0 to L5 shows the top three rungs require a real run, so static analysis can never claim them. QA Doctor never runs your tests, executes your code, replaces your framework, or proves business correctness. Out come findings such as ${rule}, Test command does not propagate exit code, at evidence level E2; an example test health score from examples/demo-repo of ${score} out of 100 labelled NEEDS ATTENTION, from ${findingCount} findings and ${errorCount} errors; and a CI gate mapping the frozen exit codes to a trust decision: 0 clean is pass, 1 findings at or above the gate is block, 2 partial scan is investigate, 10 usage error, 20 internal error. That is verification trust, not business correctness. An agent loop runs scan, evidence, handoff, AI agent, re-scan, proof, and the proof returns to QA Doctor for re-verification: AI writes the fix, QA Doctor verifies the fix.</desc>
   <defs>
     <marker id="arrow" markerWidth="8" markerHeight="8" refX="7.5" refY="4" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
       <path d="M0,0.5 L7.5,4 L0,7.5 Z" fill="var(--edge-lit)"/>

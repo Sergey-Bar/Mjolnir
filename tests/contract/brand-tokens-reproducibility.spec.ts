@@ -109,7 +109,7 @@ describe("brand token surfaces", () => {
 describe("brand token semantics", () => {
   it("every foreground token clears WCAG AA on every surface it may sit on", () => {
     // The check that would have caught the one real accessibility defect
-    // in the palette: the terminal's rune-red at 4.36:1 on its own
+    // in the palette: the terminal's indicator-red at 4.36:1 on its own
     // background. Computed, never estimated — see brand-doctor rule 8,
     // which runs the same arithmetic over the whole repository.
     const surfaces = [

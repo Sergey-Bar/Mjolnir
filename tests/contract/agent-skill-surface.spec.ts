@@ -7,7 +7,7 @@
  * The contract: every surface carries the full agent loop (baseline →
  * fix → verify digest) AND the §17 safety wording — agents may not
  * manufacture evidence, convert INCONCLUSIVE to pass, silently
- * suppress, or declare trustworthiness without evidence; AGENT CLAIM
+ * suppress, or declare test health without evidence; AGENT CLAIM
  * ≠ VERIFICATION. Frozen surfaces only; content is version-pinned and
  * byte-deterministic.
  */
@@ -58,7 +58,7 @@ function repoWithAllSurfaces(): string {
 
 const SAFETY_PHRASES = [
   "AGENT CLAIM ≠ VERIFICATION",
-  "NEVER declare trustworthiness without evidence",
+  "NEVER declare test health without evidence",
   "NEVER manufacture, edit, or synthesize evidence",
   "NEVER convert INCONCLUSIVE to pass",
   "NEVER suppress findings or weaken rules to get green",

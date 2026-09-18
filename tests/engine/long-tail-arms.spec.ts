@@ -215,17 +215,17 @@ describe("reporter renderers", () => {
     expect(out).not.toContain("SCORE");
   });
 
-  it("renders the trophy in ASCII mode and the unicode trophy otherwise", () => {
+  it("renders an all-clear state in ASCII mode and a check wordmark otherwise", () => {
     expect(
       renderTerminal(baseScan, { width: 80, ascii: true, isTTY: true }),
-    ).toContain("*** FLAWLESS VICTORY ***");
+    ).toContain("*** ALL CLEAR ***");
     const unicode = renderTerminal(baseScan, {
       width: 80,
       ascii: false,
       isTTY: true,
     });
-    expect(unicode).toContain("._==_==_=_.'");
-    expect(unicode).not.toContain("*** FLAWLESS VICTORY ***");
+    expect(unicode).toContain("E X C E L L E N T");
+    expect(unicode).not.toContain("*** ALL CLEAR ***");
   });
 
   it("pluralizes the advisory note and lists plugins with rule counts", () => {

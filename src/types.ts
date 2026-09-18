@@ -40,7 +40,7 @@ export type EvidenceLevel = (typeof EVIDENCE_ORDER)[number];
 export type QaImpact =
   | "BLOCKS-RELEASE" // can hide broken behavior from a release decision
   | "FLAKY-RISK" // will cause intermittent failures / wasted triage
-  | "FALSE-GREEN" // makes CI checkmarks untrustworthy
+  | "FALSE-GREEN" // makes CI checkmarks unreliable
   | "HYGIENE"; // maintenance drag, no immediate release risk
 
 /** Default QA impact per rule category+severity heuristic. */
