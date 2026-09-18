@@ -98,6 +98,7 @@ defineProps<{
 .score-readout {
   top: 18%;
   right: 13%;
+  color: var(--qa-healthy);
 }
 .scan-readout {
   right: 7%;

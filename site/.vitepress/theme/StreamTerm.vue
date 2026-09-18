@@ -11,6 +11,14 @@ const props = defineProps<{
 // Server-rendered complete, so the output reads with no script at all;
 // the replay only starts once a client is there to run it.
 const isBar = (t: string) => /^[█▓]+$/.test(t);
+const verdictTone = (line: TermLine[]) => {
+  const text = line.map((span) => span.t).join("");
+  return text.includes("TEST HEALTH") ||
+    text.includes("Healthy test health") ||
+    /^\s*[█▓]/.test(text)
+    ? "health"
+    : "";
+};
 const typed = ref(props.command.length);
 const shown = ref(props.lines.length);
 const playing = ref(false);
@@ -79,7 +87,7 @@ onBeforeUnmount(() => {
       ref="body"
       class="st-body"
       tabindex="0"
-    ><span class="tl"><span class="st-prompt">$ </span>{{ command.slice(0, typed) }}<span v-if="typed < command.length" class="st-caret" aria-hidden="true" /></span><span v-for="(l, i) in lines.slice(0, shown)" :key="i" class="tl"><span v-for="(s, j) in l" :key="j" :class="{ tb: s.b, bar: isBar(s.t) }" :style="s.c ? { color: s.c } : undefined">{{ s.t }}</span></span></pre>
+    ><span class="tl"><span class="st-prompt">$ </span>{{ command.slice(0, typed) }}<span v-if="typed < command.length" class="st-caret" aria-hidden="true" /></span><span v-for="(l, i) in lines.slice(0, shown)" :key="i" :class="['tl', verdictTone(l)]"><span v-for="(s, j) in l" :key="j" :class="{ tb: s.b, bar: isBar(s.t) }" :style="s.c ? { color: s.c } : undefined">{{ s.t }}</span></span></pre>
   </figure>
 </template>
 
@@ -98,12 +106,7 @@ onBeforeUnmount(() => {
   position: absolute;
   inset: 0 0 auto;
   height: 2px;
-  background: linear-gradient(
-    90deg,
-    var(--qa-aurora-green),
-    var(--qa-aurora-cyan) 50%,
-    var(--qa-aurora-violet)
-  );
+  background: var(--qa-steel);
 }
 .st-bar {
   display: flex;
@@ -185,6 +188,9 @@ onBeforeUnmount(() => {
 }
 .tb {
   font-weight: 700;
+}
+.health > span {
+  color: var(--qa-healthy) !important;
 }
 .st-prompt {
   color: var(--vp-c-text-3);

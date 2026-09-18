@@ -83,11 +83,7 @@ const CHAPTERS = [
 const num = (i: number) => String(i + 1).padStart(2, "0");
 
 /** Sections move from risk, through review, to a healthy test suite. */
-const STOPS = [
-  "var(--qa-critical)",
-  "var(--qa-attention)",
-  "var(--qa-healthy)",
-];
+const STOPS = ["var(--qa-info)", "var(--qa-steel)", "var(--qa-healthy)"];
 function chColor(i: number) {
   const t = i / (CHAPTERS.length - 1);
   const [from, to, local] =
@@ -480,7 +476,6 @@ onBeforeUnmount(() => {
       <DiagnosticGrid :findings="SCAN.findings" :score="s.demo.score" />
       <div class="hero wrap">
         <p class="hero-kicker">
-          <span class="pulse" aria-hidden="true" />
           QA DOCTOR / TEST DIAGNOSTICS
           <span>{{ SCAN.findings.length }} signals analyzed</span>
         </p>
@@ -1184,7 +1179,7 @@ onBeforeUnmount(() => {
   --t3: var(--vp-c-text-3);
   --settle: cubic-bezier(0.2, 0, 0, 1);
   --spring: cubic-bezier(0.34, 1.45, 0.64, 1);
-  --sheen: var(--qa-healthy);
+  --sheen: var(--qa-steel);
   color: var(--t1);
   font-family: var(--vp-font-family-base);
   line-height: 1.7;
@@ -1381,20 +1376,12 @@ onBeforeUnmount(() => {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
-  color: var(--qa-info);
+  color: var(--t3);
 }
 .hero-kicker > span:last-child {
   padding-left: 9px;
   border-left: 1px solid var(--line-2);
   color: var(--t3);
-}
-.pulse {
-  width: 7px;
-  height: 7px;
-  flex: none;
-  border-radius: 50%;
-  background: var(--qa-healthy);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--qa-healthy) 16%, transparent);
 }
 .title .line {
   display: block;
@@ -1548,10 +1535,8 @@ onBeforeUnmount(() => {
 }
 .logo:hover svg {
   opacity: 1;
-  color: var(--qa-aurora-bright);
-  filter: drop-shadow(
-    0 0 8px color-mix(in srgb, var(--qa-aurora-bright) 55%, transparent)
-  );
+  color: var(--qa-healthy);
+  filter: none;
 }
 
 /* ---- overview ---- */
@@ -1958,13 +1943,12 @@ onBeforeUnmount(() => {
   background: linear-gradient(
     90deg,
     transparent,
-    var(--qa-aurora-green) 12%,
-    var(--qa-aurora-cyan) 50%,
-    var(--qa-aurora-violet) 88%,
+    var(--qa-info) 12%,
+    var(--qa-steel) 50%,
+    var(--qa-healthy) 88%,
     transparent
   );
-  box-shadow: 0 0 20px 2px
-    color-mix(in srgb, var(--qa-aurora-cyan) 50%, transparent);
+  box-shadow: 0 0 20px 2px color-mix(in srgb, var(--qa-info) 34%, transparent);
   pointer-events: none;
 }
 .beam::before {
@@ -1976,7 +1960,7 @@ onBeforeUnmount(() => {
   height: 64px;
   background: linear-gradient(
     to top,
-    color-mix(in srgb, var(--qa-aurora-cyan) 11%, transparent),
+    color-mix(in srgb, var(--qa-info) 8%, transparent),
     transparent
   );
 }
@@ -2048,7 +2032,7 @@ onBeforeUnmount(() => {
   border-radius: inherit;
   background: radial-gradient(
     300px circle at var(--mx) var(--my),
-    color-mix(in srgb, var(--qa-aurora-cyan) 75%, transparent),
+    color-mix(in srgb, var(--qa-info) 62%, transparent),
     transparent 45%
   );
   mask:
@@ -2062,7 +2046,7 @@ onBeforeUnmount(() => {
   inset: 0;
   background: radial-gradient(
     420px circle at var(--mx) var(--my),
-    color-mix(in srgb, var(--qa-aurora-cyan) 7%, transparent),
+    color-mix(in srgb, var(--qa-info) 5%, transparent),
     transparent 55%
   );
   pointer-events: none;
@@ -2076,7 +2060,7 @@ onBeforeUnmount(() => {
   translate: 0 -3px;
 }
 .card.lit {
-  border-color: color-mix(in srgb, var(--qa-aurora-cyan) 45%, transparent);
+  border-color: color-mix(in srgb, var(--qa-info) 38%, transparent);
 }
 .card.wide {
   grid-column: 1 / -1;
@@ -2113,8 +2097,8 @@ onBeforeUnmount(() => {
     background-color 350ms var(--settle);
 }
 .card.lit .tok {
-  border-color: color-mix(in srgb, var(--qa-aurora-cyan) 55%, transparent);
-  background: color-mix(in srgb, var(--qa-aurora-cyan) 10%, transparent);
+  border-color: color-mix(in srgb, var(--qa-info) 45%, transparent);
+  background: color-mix(in srgb, var(--qa-info) 8%, transparent);
 }
 /* A system monospace on purpose: the Geist Mono web subset has no
    box-drawing glyphs, and this card must match the terminal exactly. */
@@ -2144,9 +2128,8 @@ onBeforeUnmount(() => {
     box-shadow 350ms var(--settle);
 }
 .anat-term .lit {
-  background: color-mix(in srgb, var(--qa-aurora-cyan) 16%, transparent);
-  box-shadow: 0 0 0 1px
-    color-mix(in srgb, var(--qa-aurora-cyan) 50%, transparent);
+  background: color-mix(in srgb, var(--qa-info) 12%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--qa-info) 40%, transparent);
 }
 
 /* 03 ---- score ---- */
@@ -2424,7 +2407,7 @@ onBeforeUnmount(() => {
   top: 18px;
   bottom: 18px;
   left: calc(24px + var(--b) * (100% - 48px + 14px) / var(--n) - 7px);
-  border-left: 1px dashed color-mix(in srgb, var(--qa-aurora) 70%, transparent);
+  border-left: 1px dashed color-mix(in srgb, var(--qa-info) 55%, transparent);
 }
 .runline span {
   position: absolute;
@@ -2432,7 +2415,7 @@ onBeforeUnmount(() => {
   left: 10px;
   font-size: 12px;
   white-space: nowrap;
-  color: var(--qa-aurora-bright);
+  color: var(--qa-healthy-bright);
 }
 
 /* 05 ---- runtime: the output streams in ---- */
@@ -2688,17 +2671,17 @@ onBeforeUnmount(() => {
   background:
     radial-gradient(
       38% 70% at 22% 100%,
-      color-mix(in srgb, var(--qa-aurora-green) 30%, transparent),
+      color-mix(in srgb, var(--qa-healthy) 18%, transparent),
       transparent 70%
     ),
     radial-gradient(
       38% 70% at 50% 100%,
-      color-mix(in srgb, var(--qa-aurora-cyan) 26%, transparent),
+      color-mix(in srgb, var(--qa-info) 12%, transparent),
       transparent 70%
     ),
     radial-gradient(
       38% 70% at 78% 100%,
-      color-mix(in srgb, var(--qa-aurora-violet) 30%, transparent),
+      color-mix(in srgb, var(--qa-steel) 10%, transparent),
       transparent 70%
     );
   animation: breathe 14s ease-in-out infinite alternate;
@@ -2736,13 +2719,12 @@ onBeforeUnmount(() => {
   background: linear-gradient(
     90deg,
     transparent,
-    var(--qa-aurora-green) 18%,
-    var(--qa-aurora-cyan) 50%,
-    var(--qa-aurora-violet) 82%,
+    var(--qa-info) 18%,
+    var(--qa-steel) 50%,
+    var(--qa-healthy) 82%,
     transparent
   );
-  box-shadow: 0 0 28px 3px
-    color-mix(in srgb, var(--qa-aurora-cyan) 26%, transparent);
+  box-shadow: 0 0 28px 3px color-mix(in srgb, var(--qa-info) 20%, transparent);
   transition: transform 1600ms var(--settle) 300ms;
 }
 .qa-anim .closing[data-reveal]:not([data-in]) .draw {
