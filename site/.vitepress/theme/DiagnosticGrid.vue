@@ -9,12 +9,31 @@ defineProps<{
   <div class="signal-field" aria-hidden="true">
     <div class="signal-noise" />
     <div class="signal-traces">
-      <i v-for="n in 4" :key="`trace-${n}`" :style="{ '--trace': n }" />
+      <i
+        v-for="n in 4"
+        :key="`trace-${n}`"
+        :style="{
+          top: `${13 + n * 19}%`,
+          right: `${-8 + n * 5}%`,
+          opacity: `${0.08 + n * 0.035}`,
+          transform: `rotate(${-9 + n * 4}deg)`,
+        }"
+      />
+    </div>
+    <div class="signal-ribbons">
+      <i
+        v-for="n in 3"
+        :key="`ribbon-${n}`"
+        :style="{
+          top: `${18 + n * 24}%`,
+          opacity: `${0.16 + n * 0.08}`,
+          animationDuration: `${8 + n * 2}s`,
+        }"
+      />
     </div>
     <div class="signal-points">
       <i v-for="n in 14" :key="`point-${n}`" :style="{ '--point': n }" />
     </div>
-    <div class="scan-line" />
     <div class="readout score-readout">
       <span>TEST HEALTH</span>
       <strong>{{ score }}/100</strong>
@@ -48,8 +67,10 @@ defineProps<{
 }
 .signal-noise,
 .signal-traces,
+.signal-ribbons,
 .signal-points,
 .signal-traces i,
+.signal-ribbons i,
 .signal-points i {
   position: absolute;
   inset: 0;
@@ -66,16 +87,35 @@ defineProps<{
 }
 .signal-traces i {
   display: block;
-  top: calc(13% + var(--trace) * 19%);
-  right: calc(-8% + var(--trace) * 5%);
   bottom: auto;
   left: auto;
   width: clamp(180px, 30vw, 460px);
   height: 1px;
-  opacity: calc(0.08 + var(--trace) * 0.035);
   background: linear-gradient(90deg, transparent, var(--qa-steel), transparent);
-  transform: rotate(calc(-9deg + var(--trace) * 4deg));
   transform-origin: right;
+}
+.signal-ribbons {
+  inset: -12% -8%;
+  opacity: 0.85;
+  transform: rotate(-13deg);
+}
+.signal-ribbons i {
+  left: -20%;
+  right: auto;
+  bottom: auto;
+  width: 78%;
+  height: clamp(36px, 6vw, 76px);
+  border-top: 1px solid
+    color-mix(in srgb, var(--qa-gold-bright) 48%, transparent);
+  border-radius: 50%;
+  background: linear-gradient(
+    90deg,
+    transparent 8%,
+    color-mix(in oklch, var(--qa-gold) 6%, transparent) 46%,
+    transparent 82%
+  );
+  filter: blur(0.1px);
+  animation: ribbon-flow ease-in-out infinite;
 }
 .signal-points i {
   top: 16%;
@@ -147,16 +187,6 @@ defineProps<{
   top: 31%;
   left: 68%;
 }
-.scan-line {
-  position: absolute;
-  top: 34%;
-  left: 0;
-  width: 100%;
-  height: 1px;
-  background: var(--qa-healthy);
-  box-shadow: 0 0 10px color-mix(in srgb, var(--qa-healthy) 42%, transparent);
-  animation: scan 7s linear infinite;
-}
 .readout,
 .finding-node {
   position: absolute;
@@ -207,15 +237,13 @@ defineProps<{
   border-radius: 50%;
   background: currentColor;
 }
-@keyframes scan {
+@keyframes ribbon-flow {
   0%,
   100% {
-    transform: translateY(-20px);
-    opacity: 0.3;
+    transform: translateX(-8%) scaleX(0.86);
   }
   50% {
-    transform: translateY(110px);
-    opacity: 0.9;
+    transform: translateX(72%) scaleX(1.08);
   }
 }
 @media (max-width: 720px) {
@@ -225,7 +253,7 @@ defineProps<{
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .scan-line {
+  .signal-ribbons i {
     animation: none;
   }
 }
