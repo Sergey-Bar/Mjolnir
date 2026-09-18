@@ -9,8 +9,8 @@ import {
 } from "vue";
 import { withBase } from "vitepress";
 import { TRUST_RUNGS } from "../../../src/brand/symbols";
-import AuroraSky from "./AuroraSky.vue";
 import CopyKey from "./CopyKey.vue";
+import DiagnosticGrid from "./DiagnosticGrid.vue";
 import StreamTerm from "./StreamTerm.vue";
 import Term from "./Term.vue";
 import { LOGOS } from "./logos";
@@ -82,11 +82,11 @@ const CHAPTERS = [
 ];
 const num = (i: number) => String(i + 1).padStart(2, "0");
 
-/** The page walks the aurora top to bottom: green, then cyan, then violet. */
+/** Sections move from risk, through review, to a healthy test suite. */
 const STOPS = [
-  "var(--qa-aurora-green)",
-  "var(--qa-aurora-cyan)",
-  "var(--qa-aurora-violet)",
+  "var(--qa-critical)",
+  "var(--qa-attention)",
+  "var(--qa-healthy)",
 ];
 function chColor(i: number) {
   const t = i / (CHAPTERS.length - 1);
@@ -277,7 +277,6 @@ const innerEl = ref<HTMLElement>();
 const beamEl = ref<HTMLElement>();
 const anatEl = ref<HTMLElement>();
 const scoreEl = ref<HTMLElement>();
-const glOn = ref(false);
 const counts = reactive<Record<string, number>>({});
 const shown = (k: string, v: number) => counts[k] ?? v;
 const cleanups: (() => void)[] = [];
@@ -477,10 +476,14 @@ onBeforeUnmount(() => {
     <div ref="progEl" class="progress" aria-hidden="true" />
 
     <!-- ============ HERO ============ -->
-    <section class="hero-band" :class="{ gl: glOn }" aria-labelledby="qa-title">
-      <div class="sky" aria-hidden="true" />
-      <AuroraSky @ready="glOn = true" />
+    <section class="hero-band" aria-labelledby="qa-title">
+      <DiagnosticGrid :findings="SCAN.findings" :score="s.demo.score" />
       <div class="hero wrap">
+        <p class="hero-kicker">
+          <span class="pulse" aria-hidden="true" />
+          QA DOCTOR / TEST DIAGNOSTICS
+          <span>{{ SCAN.findings.length }} signals analyzed</span>
+        </p>
         <h1 id="qa-title" class="title">
           <template v-for="(line, li) in TITLE" :key="li"
             ><span class="line" :class="{ was: li === 0 }"
@@ -1181,12 +1184,7 @@ onBeforeUnmount(() => {
   --t3: var(--vp-c-text-3);
   --settle: cubic-bezier(0.2, 0, 0, 1);
   --spring: cubic-bezier(0.34, 1.45, 0.64, 1);
-  --sheen: linear-gradient(
-    90deg,
-    var(--qa-aurora-green),
-    var(--qa-aurora-cyan) 50%,
-    var(--qa-aurora-violet)
-  );
+  --sheen: var(--qa-healthy);
   color: var(--t1);
   font-family: var(--vp-font-family-base);
   line-height: 1.7;
@@ -1351,51 +1349,16 @@ onBeforeUnmount(() => {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background: var(--vp-c-bg);
+  background: var(--qa-ink-950);
+  border-bottom: 1px solid var(--line);
 }
-.sky {
-  position: absolute;
-  inset: 0;
-  z-index: -2;
-  pointer-events: none;
-  background:
-    radial-gradient(
-      52% 40% at 14% 14%,
-      color-mix(in srgb, var(--qa-aurora-green) 30%, transparent),
-      transparent 72%
-    ),
-    radial-gradient(
-      44% 34% at 52% 10%,
-      color-mix(in srgb, var(--qa-aurora-cyan) 24%, transparent),
-      transparent 72%
-    ),
-    radial-gradient(
-      40% 38% at 90% 14%,
-      color-mix(in srgb, var(--qa-aurora-violet) 30%, transparent),
-      transparent 72%
-    );
-  transition: opacity 1.6s var(--settle);
-}
-.hero-band.gl .sky {
-  opacity: 0.35;
-}
-/* The horizon: one lit hairline where the sky meets the page. */
-.sky::after {
+.hero-band::after {
   content: "";
   position: absolute;
   inset: auto 0 0;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--qa-aurora-green) 18%,
-    var(--qa-aurora-cyan) 50%,
-    var(--qa-aurora-violet) 82%,
-    transparent
-  );
-  opacity: 0.75;
-  box-shadow: 0 0 28px 3px
-    color-mix(in srgb, var(--qa-aurora-cyan) 30%, transparent);
+  background: var(--qa-healthy);
+  opacity: 0.52;
 }
 .hero {
   padding-top: calc(var(--vp-nav-height) + clamp(48px, 7vw, 104px));
@@ -1407,6 +1370,31 @@ onBeforeUnmount(() => {
   line-height: 1.04;
   letter-spacing: -0.045em;
   color: var(--t1);
+}
+.hero-kicker {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-bottom: 20px;
+  font-family: var(--vp-font-family-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--qa-info);
+}
+.hero-kicker > span:last-child {
+  padding-left: 9px;
+  border-left: 1px solid var(--line-2);
+  color: var(--t3);
+}
+.pulse {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--qa-healthy);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--qa-healthy) 16%, transparent);
 }
 .title .line {
   display: block;
