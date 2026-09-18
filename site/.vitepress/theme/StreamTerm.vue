@@ -6,6 +6,7 @@ const props = defineProps<{
   command: string;
   lines: TermLine[];
   title?: string;
+  full?: boolean;
 }>();
 
 // Server-rendered complete, so the output reads with no script at all;
@@ -75,7 +76,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <figure class="st">
+  <figure class="st" :class="{ full }">
     <figcaption class="st-bar">
       <span class="st-dots" aria-hidden="true"><i /><i /><i /></span>
       <span class="st-title">{{ title }}</span>
@@ -98,7 +99,9 @@ onBeforeUnmount(() => {
   min-width: 0;
   border: 1px solid var(--vp-c-border);
   border-radius: 10px;
-  background: var(--qa-ink-950);
+  background: color-mix(in srgb, var(--qa-ink-850) 64%, transparent);
+  box-shadow: 0 20px 70px color-mix(in srgb, black 52%, transparent);
+  backdrop-filter: blur(20px) saturate(1.2);
   overflow: hidden;
 }
 .st::before {
@@ -106,14 +109,15 @@ onBeforeUnmount(() => {
   position: absolute;
   inset: 0 0 auto;
   height: 2px;
-  background: var(--qa-steel);
+  background: var(--qa-info);
 }
 .st-bar {
   display: flex;
   align-items: center;
   gap: 14px;
   padding: 8px 10px 8px 16px;
-  border-bottom: 1px solid var(--vp-c-divider);
+  border-bottom: 1px solid color-mix(in srgb, var(--qa-info) 16%, transparent);
+  background: color-mix(in srgb, var(--qa-ink-950) 52%, transparent);
 }
 .st-dots {
   display: flex;
@@ -165,6 +169,11 @@ onBeforeUnmount(() => {
   color: var(--vp-c-text-2);
   white-space: pre;
   overflow: auto;
+}
+.st.full .st-body {
+  height: auto;
+  min-height: 490px;
+  overflow: visible;
 }
 .tl {
   display: block;

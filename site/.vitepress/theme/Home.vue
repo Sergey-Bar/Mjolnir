@@ -486,12 +486,8 @@ onBeforeUnmount(() => {
 
     <!-- ============ HERO ============ -->
     <section class="hero-band" aria-labelledby="qa-title">
-      <DiagnosticGrid :findings="SCAN.findings" :score="s.demo.score" />
+      <DiagnosticGrid />
       <div class="hero wrap">
-        <p class="hero-kicker">
-          QA DOCTOR / TEST DIAGNOSTICS
-          <span>{{ SCAN.findings.length }} signals analyzed</span>
-        </p>
         <h1 id="qa-title" class="title">
           <template v-for="(line, li) in TITLE" :key="li"
             ><span class="line" :class="{ was: li === 0 }"
@@ -510,9 +506,6 @@ onBeforeUnmount(() => {
             </p>
             <div class="actions">
               <CopyKey :command="COMMAND" />
-              <a class="more" :href="withBase('/guide/getting-started')"
-                >Read the guide</a
-              >
             </div>
           </div>
           <div>
@@ -520,8 +513,8 @@ onBeforeUnmount(() => {
               :command="data.stream.command"
               :lines="data.stream.lines"
               title="demo-repo"
+              full
             />
-            <p class="fine">A real scan of the demo repo, replayed.</p>
           </div>
         </div>
       </div>
@@ -1400,13 +1393,7 @@ onBeforeUnmount(() => {
   display: grid;
   place-content: center;
   gap: 18px;
-  background:
-    radial-gradient(
-      ellipse at 50% 44%,
-      color-mix(in oklch, var(--qa-gold) 9%, transparent),
-      transparent 46%
-    ),
-    var(--qa-ink-950);
+  background: color-mix(in srgb, var(--qa-ink-950) 86%, black);
   color: var(--t1);
 }
 .boot-mark {
@@ -1415,13 +1402,13 @@ onBeforeUnmount(() => {
   width: 58px;
   height: 58px;
   margin-inline: auto;
-  border: 1px solid var(--qa-gold-bright);
+  border: 1px solid var(--qa-info);
   border-radius: 50%;
   box-shadow: inset 0 0 0 7px
-    color-mix(in oklch, var(--qa-gold) 10%, transparent);
+    color-mix(in oklch, var(--qa-info) 10%, transparent);
   font-size: 30px;
   font-weight: 600;
-  color: var(--qa-gold-hot);
+  color: var(--qa-healthy-bright);
   animation: boot-mark 650ms var(--settle) infinite alternate;
 }
 .boot-copy {
@@ -1442,7 +1429,7 @@ onBeforeUnmount(() => {
 }
 .boot-copy i {
   height: 1px;
-  background: linear-gradient(90deg, var(--qa-gold), var(--qa-steel));
+  background: var(--qa-info);
   animation: boot-line 650ms var(--settle) infinite alternate;
 }
 .boot-enter-active,
@@ -1455,7 +1442,7 @@ onBeforeUnmount(() => {
 @keyframes boot-mark {
   to {
     box-shadow: inset 0 0 0 13px
-      color-mix(in oklch, var(--qa-gold) 7%, transparent);
+      color-mix(in oklch, var(--qa-info) 7%, transparent);
   }
 }
 @keyframes boot-line {
@@ -1470,7 +1457,7 @@ onBeforeUnmount(() => {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background: var(--qa-ink-950);
+  background: color-mix(in srgb, var(--qa-ink-950) 86%, black);
   border-bottom: 1px solid var(--line);
 }
 .hero-band::after {
@@ -1478,27 +1465,17 @@ onBeforeUnmount(() => {
   position: absolute;
   inset: auto 0 0;
   height: 1px;
-  background: var(--qa-healthy);
-  opacity: 0.52;
+  background: var(--qa-info);
+  opacity: 0.44;
 }
 .hero-band::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: -1;
-  opacity: 0.42;
-  background:
-    radial-gradient(
-      ellipse at 92% 29%,
-      color-mix(in oklch, var(--qa-steel) 10%, transparent),
-      transparent 34%
-    ),
-    radial-gradient(
-      ellipse at 74% 64%,
-      color-mix(in oklch, var(--qa-gold) 7%, transparent),
-      transparent 28%
-    );
-  mask-image: radial-gradient(ellipse at 75% 45%, #000, transparent 75%);
+  opacity: 0.28;
+  background: color-mix(in srgb, var(--qa-info) 8%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 55%, transparent);
 }
 .hero {
   padding-top: calc(var(--vp-nav-height) + clamp(48px, 7vw, 104px));
@@ -1510,23 +1487,6 @@ onBeforeUnmount(() => {
   line-height: 1.04;
   letter-spacing: -0.045em;
   color: var(--t1);
-}
-.hero-kicker {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 9px;
-  margin-bottom: 20px;
-  font-family: var(--vp-font-family-mono);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: var(--t3);
-}
-.hero-kicker > span:last-child {
-  padding-left: 9px;
-  border-left: 1px solid var(--line-2);
-  color: var(--t3);
 }
 .title .line {
   display: block;
@@ -1574,7 +1534,7 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 20px;
+  gap: 0;
   margin-top: 32px;
 }
 
@@ -1592,7 +1552,7 @@ onBeforeUnmount(() => {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.1em;
-  color: var(--qa-gold-bright);
+  color: var(--qa-info);
 }
 .quick-start header h2 {
   max-width: 13ch;
@@ -1627,7 +1587,7 @@ onBeforeUnmount(() => {
   padding-top: 2px;
   font-family: var(--vp-font-family-mono);
   font-size: 11px;
-  color: var(--qa-gold-bright);
+  color: var(--qa-info);
 }
 .quick-steps h3 {
   font-size: 17px;
@@ -1665,7 +1625,7 @@ onBeforeUnmount(() => {
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--qa-gold-bright);
+  color: var(--qa-info);
 }
 .stack-group ul {
   display: grid;

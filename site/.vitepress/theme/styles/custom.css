@@ -9,11 +9,13 @@
 
 body {
   margin: 0;
+  background: black;
 }
 
 /* ---- landing page: let <Home> go full-bleed ---------------- */
 .qa-landing .VPContent {
   padding: 0 !important;
+  background: black;
 }
 .qa-landing .VPPage {
   margin: 0;
