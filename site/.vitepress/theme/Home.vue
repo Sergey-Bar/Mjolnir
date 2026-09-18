@@ -38,11 +38,6 @@ const booted = ref(false);
 /** Tools Simple Icons has no mark for get their initials, never a fake logo. */
 const monogram = (name: string) => MONOGRAM[name] ?? name.slice(0, 2);
 
-/** One strip, group labels inline, so the marquee keeps the grouping. */
-const STACK = data.stack.flatMap((g) => [
-  { key: `g-${g.label}`, label: g.label, name: "" },
-  ...g.items.map((name) => ({ key: `i-${g.label}-${name}`, label: "", name })),
-]);
 const STACK_GROUPS = data.stack;
 
 const CHAPTERS = [
@@ -579,34 +574,6 @@ onBeforeUnmount(() => {
     <section class="wrap" aria-labelledby="qa-stack">
       <div class="stack">
         <h2 id="qa-stack" class="stack-title">Works with your stack</h2>
-        <div class="marquee">
-          <ul class="track">
-            <template v-for="copy in 2" :key="copy">
-              <li
-                v-for="item in STACK"
-                :key="`${copy}-${item.key}`"
-                :class="[item.label ? 'group' : 'logo', { dup: copy === 2 }]"
-                :aria-hidden="copy === 2 ? 'true' : undefined"
-              >
-                <template v-if="item.label">{{ item.label }}</template>
-                <template v-else>
-                  <svg
-                    v-if="LOGOS[item.name]"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                    focusable="false"
-                  >
-                    <path :d="LOGOS[item.name]" fill="currentColor" />
-                  </svg>
-                  <span v-else class="mono" aria-hidden="true">{{
-                    monogram(item.name)
-                  }}</span>
-                  <span>{{ item.name }}</span>
-                </template>
-              </li>
-            </template>
-          </ul>
-        </div>
         <div class="stack-detail" aria-label="Supported technologies">
           <div
             v-for="group in STACK_GROUPS"
@@ -1673,43 +1640,22 @@ onBeforeUnmount(() => {
   color: var(--t2);
 }
 
-/* ---- works with: a quiet strip that expands into an index on hover ---- */
+/* ---- works with: compatibility should be visible at a glance ---- */
 .stack {
-  position: relative;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 32px;
   padding-block: 28px;
   border-bottom: 1px solid var(--line);
 }
 .stack-detail {
-  position: absolute;
-  z-index: 4;
-  top: calc(100% - 1px);
-  left: 0;
-  right: 0;
+  flex: 1;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 28px;
   padding: 24px;
   border: 1px solid var(--line-2);
   background: color-mix(in srgb, var(--qa-ink-900) 96%, transparent);
-  box-shadow: 0 20px 36px rgba(0, 0, 0, 0.3);
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-8px);
-  pointer-events: none;
-  transition:
-    opacity 180ms var(--settle),
-    transform 180ms var(--settle),
-    visibility 180ms;
-}
-.stack:hover .stack-detail,
-.stack:focus-within .stack-detail {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-  pointer-events: auto;
 }
 .stack-group > span {
   display: block;
@@ -1749,69 +1695,6 @@ onBeforeUnmount(() => {
   font-weight: 500;
   line-height: 1.4;
   color: var(--t2);
-}
-.marquee {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  mask-image: linear-gradient(
-    90deg,
-    transparent,
-    #000 8%,
-    #000 92%,
-    transparent
-  );
-}
-.qa .track {
-  display: flex;
-  align-items: center;
-  width: max-content;
-  animation: marquee 80s linear infinite;
-}
-.marquee:hover .track {
-  animation-play-state: paused;
-}
-@keyframes marquee {
-  to {
-    transform: translateX(-50%);
-  }
-}
-.group {
-  margin-right: 14px;
-  padding-left: 22px;
-  border-left: 1px solid var(--line-2);
-  font-size: 11.5px;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  color: var(--t3);
-}
-.logo {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  margin-right: 12px;
-  padding: 6px 12px 6px 8px;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  font-size: 14px;
-  white-space: nowrap;
-  color: var(--t3);
-  transition:
-    color 200ms var(--settle),
-    border-color 200ms var(--settle),
-    background-color 200ms var(--settle);
-}
-.logo svg {
-  width: 20px;
-  height: 20px;
-  flex: none;
-  opacity: 0.7;
-  transition:
-    opacity 200ms var(--settle),
-    filter 200ms var(--settle),
-    color 200ms var(--settle);
 }
 .mono {
   display: grid;
@@ -3114,26 +2997,14 @@ onBeforeUnmount(() => {
   .qa .stack-title {
     width: auto;
   }
-  .marquee {
-    width: 100%;
-  }
-  .marquee {
-    display: none;
-  }
   .stack-detail {
-    position: static;
     display: grid;
     width: 100%;
     grid-template-columns: minmax(0, 1fr);
     gap: 18px;
     padding: 0 0 20px;
     border: 0;
-    box-shadow: none;
     background: none;
-    opacity: 1;
-    visibility: visible;
-    transform: none;
-    pointer-events: auto;
   }
   .anatomy,
   .masks {
@@ -3153,8 +3024,6 @@ onBeforeUnmount(() => {
 
 @media (prefers-reduced-motion: reduce) {
   .qa a,
-  .logo,
-  .logo svg,
   .toc-go,
   .card,
   .chip,
@@ -3170,18 +3039,6 @@ onBeforeUnmount(() => {
   .closing::before,
   .ladder[data-in] .rung.run .bar::after {
     animation: none;
-  }
-  .qa .track {
-    flex-wrap: wrap;
-    width: auto;
-    row-gap: 8px;
-    animation: none;
-  }
-  .dup {
-    display: none;
-  }
-  .marquee {
-    mask-image: none;
   }
   .boot-mark,
   .boot-copy i {
