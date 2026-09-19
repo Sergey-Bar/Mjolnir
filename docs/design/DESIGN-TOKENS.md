@@ -139,6 +139,22 @@ shields.io takes hex without the `#`.
 Body line-height 1.7; display tracking
 0–0.24em.
 
+## Material
+
+Glass levels increase only with interaction priority. Inner wells use
+`material.well` and remain opaque, so glass is never nested inside glass.
+
+| Level                     | Background                                     | Blur   | Border                                                       |
+| ------------------------- | ---------------------------------------------- | ------ | ------------------------------------------------------------ |
+| `material.glass.subtle`   | `color-mix(in srgb, #0D1117 34%, transparent)` | `8px`  | `rgba(255, 255, 255, 0.07)`                                  |
+| `material.glass.default`  | `color-mix(in srgb, #0D1117 54%, transparent)` | `14px` | `rgba(255, 255, 255, 0.1)`                                   |
+| `material.glass.elevated` | `color-mix(in srgb, #0D1117 68%, transparent)` | `18px` | `rgba(255, 255, 255, 0.13)`                                  |
+| `material.glass.focus`    | `color-mix(in srgb, #0D1117 78%, transparent)` | `22px` | `color-mix(in srgb, #7E8FE3 36%, rgba(255, 255, 255, 0.12))` |
+| `material.glass.floating` | `color-mix(in srgb, #161B22 88%, transparent)` | `26px` | `rgba(255, 255, 255, 0.16)`                                  |
+
+Panel radii: control 6px, panel 8px,
+focus 10px.
+
 ## Motion
 
 | Token                     | Value                               |

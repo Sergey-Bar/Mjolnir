@@ -219,8 +219,8 @@ async function copyReport() {
     ui-monospace, "SF Mono", "Cascadia Code", "Cascadia Mono", Consolas,
     "DejaVu Sans Mono", Menlo, monospace;
 
-  --term-bg: var(--qa-ink-950);
-  --term-bar: var(--qa-ink-950);
+  --term-bg: var(--qa-glass-focus-bg);
+  --term-bar: var(--qa-surface-well);
   --term-fg: var(--vp-c-text-2);
   /* The reporter's dim used to be #7c8590, which axe-core measured at
      4.16:1 on the title bar — below AA — so this was raised by hand.
@@ -231,15 +231,16 @@ async function copyReport() {
      disclosure); the report's colours still come from report.json, so
      the rendering stays faithful to what the tool actually printed. */
   --term-dim: var(--qa-steel-dim);
-  --term-line: var(--vp-c-border);
+  --term-line: var(--qa-glass-focus-border);
 
   margin: 2.6rem 0 0;
-  border-radius: 14px;
+  border-radius: var(--qa-radius-focus);
   overflow: hidden;
   border: 1px solid var(--term-line);
   background: var(--term-bg);
   color: var(--term-fg);
-  box-shadow: 0 40px 80px -40px rgba(0, 0, 0, 0.7);
+  box-shadow: var(--qa-glass-focus-shadow);
+  backdrop-filter: blur(var(--qa-glass-focus-blur)) saturate(1.15);
 }
 
 .term-bar {

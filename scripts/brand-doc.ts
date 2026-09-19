@@ -16,6 +16,7 @@ import {
   BADGE,
   BRAND,
   EVIDENCE,
+  MATERIAL,
   MOTION,
   SCORE,
   STATUS,
@@ -133,6 +134,14 @@ const MOTION_ROWS = (): string =>
     ),
   ].join("\n");
 
+const MATERIAL_ROWS = (): string =>
+  Object.entries(MATERIAL.glass)
+    .map(
+      ([level, glass]) =>
+        `| \`material.glass.${level}\` | \`${glass.background}\` | \`${glass.blur}\` | \`${glass.border}\` |`,
+    )
+    .join("\n");
+
 export function buildTokensDoc(banner: readonly string[]): string {
   return `<!--
   ${banner[0]}
@@ -164,6 +173,18 @@ ${COLOUR_SECTIONS()}
 
 Body line-height ${TYPOGRAPHY.lineHeight.body}; display tracking
 ${TYPOGRAPHY.display.letterSpacing.tight}–${TYPOGRAPHY.display.letterSpacing.widest}.
+
+## Material
+
+Glass levels increase only with interaction priority. Inner wells use
+\`material.well\` and remain opaque, so glass is never nested inside glass.
+
+| Level | Background | Blur | Border |
+| --- | --- | --- | --- |
+${MATERIAL_ROWS()}
+
+Panel radii: control ${MATERIAL.radius.control}, panel ${MATERIAL.radius.panel},
+focus ${MATERIAL.radius.focus}.
 
 ## Motion
 

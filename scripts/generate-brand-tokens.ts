@@ -36,10 +36,12 @@ import {
   BADGE,
   BADGE_BAND,
   BRAND,
+  CSS_MATERIAL,
   CSS_SEMANTIC,
   CSS_TOKENS,
   EVIDENCE,
   HAIRLINE_RGB,
+  MATERIAL,
   MOTION,
   PENDING_SITE,
   SCORE,
@@ -89,6 +91,7 @@ export async function buildTokensJson(): Promise<string> {
     $generated: BANNER,
     brand: BRAND,
     surface: SURFACE,
+    material: MATERIAL,
     text: TEXT,
     status: STATUS,
     score: SCORE,
@@ -125,6 +128,7 @@ function decl([name, value, comment]: readonly [
 
 export async function buildVarsCss(): Promise<string> {
   const palette = CSS_TOKENS.map(decl).join("\n");
+  const material = CSS_MATERIAL.map(decl).join("\n");
   const semantic = CSS_SEMANTIC.map(decl).join("\n");
   return formatted(
     VARS_CSS,
@@ -171,6 +175,9 @@ export async function buildVarsCss(): Promise<string> {
 
   /* ---- palette ---- */
 ${palette}
+
+  /* ---- material: semantic glass hierarchy ---- */
+${material}
 
   /* ---- semantic: verdict, evidence, trust ----
    * Score colors follow the ScoreState model (src/reporter/score-state.ts):

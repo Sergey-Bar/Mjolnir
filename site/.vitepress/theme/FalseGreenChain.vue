@@ -109,9 +109,11 @@ const masks = [
   flex-direction: column;
   gap: 0.35rem;
   padding: 0.9rem 1rem 1rem;
-  border-radius: 10px;
-  border: 1px solid var(--vp-c-border);
-  background: var(--vp-c-bg-alt);
+  border-radius: var(--qa-radius-panel);
+  border: 1px solid var(--qa-glass-default-border);
+  background: var(--qa-glass-default-bg);
+  box-shadow: var(--qa-glass-default-shadow);
+  backdrop-filter: blur(var(--qa-glass-default-blur));
   min-width: 0;
 }
 .fgc-stage:last-child {
@@ -158,8 +160,9 @@ const masks = [
 .fgc-masks {
   margin-top: 1.1rem;
   padding: 0.9rem 1.1rem 1rem;
-  border-radius: 10px;
-  border: 1px dashed var(--vp-c-border);
+  border-radius: var(--qa-radius-panel);
+  border: 1px dashed var(--qa-glass-subtle-border);
+  background: var(--qa-glass-subtle-bg);
 }
 .fgc-masks-lead {
   margin: 0 0 0.6rem;

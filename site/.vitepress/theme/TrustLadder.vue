@@ -71,9 +71,11 @@ const boundary = RUNTIME_BOUNDARY;
 .qa-ladder {
   margin: 2rem 0;
   padding: 1.4rem 1.5rem 1.2rem;
-  border: 1px solid var(--vp-c-border);
-  border-radius: 12px;
-  background: var(--vp-c-bg-alt);
+  border: 1px solid var(--qa-glass-elevated-border);
+  border-radius: var(--qa-radius-panel);
+  background: var(--qa-glass-elevated-bg);
+  box-shadow: var(--qa-glass-elevated-shadow);
+  backdrop-filter: blur(var(--qa-glass-elevated-blur));
 }
 .qa-ladder-cap {
   font-family: var(--qa-display);

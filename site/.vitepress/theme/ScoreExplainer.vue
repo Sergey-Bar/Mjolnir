@@ -185,9 +185,11 @@ function bandRange(min: number): string {
   align-items: stretch;
   gap: 0.5rem;
   padding: 1rem 1.1rem;
-  border: 1px solid var(--vp-c-border);
-  border-radius: 12px;
-  background: var(--vp-c-bg-alt);
+  border: 1px solid var(--qa-glass-elevated-border);
+  border-radius: var(--qa-radius-panel);
+  background: var(--qa-glass-elevated-bg);
+  box-shadow: var(--qa-glass-elevated-shadow);
+  backdrop-filter: blur(var(--qa-glass-elevated-blur));
 }
 .sx-step {
   display: flex;
@@ -195,9 +197,9 @@ function bandRange(min: number): string {
   justify-content: center;
   gap: 0.25rem;
   padding: 0.55rem 0.8rem;
-  border-radius: 8px;
-  background: var(--vp-c-bg-soft);
-  border: 1px solid var(--vp-c-border);
+  border-radius: var(--qa-radius-control);
+  background: var(--qa-surface-well);
+  border: 1px solid var(--qa-glass-subtle-border);
   min-width: 0;
 }
 .sx-val {
@@ -296,11 +298,24 @@ function bandRange(min: number): string {
     transform: rotate(90deg);
     padding-left: 0.4rem;
   }
+  .sx-ruler {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .sx-band {
+    border-left: 1px solid var(--band-c);
+  }
+  .sx-band:nth-child(odd) {
+    border-left: 0;
+  }
+  .sx-band:nth-child(n + 3) {
+    border-top: 1px solid var(--band-c);
+  }
   .sx-band-name {
-    font-size: 0.68rem;
+    font-size: 0.72rem;
   }
   .sx-band-range {
-    font-size: 0.6rem;
+    font-size: 0.65rem;
   }
 }
 </style>

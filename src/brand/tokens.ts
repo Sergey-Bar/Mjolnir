@@ -93,13 +93,60 @@ export const SURFACE = {
   chromeDot: "#1F2937",
 } as const;
 
+/** One neutral RGB triple for borders, dividers and internal highlights. */
+export const HAIRLINE_RGB = "255, 255, 255";
+
+/* ── Material ───────────────────────────────────────────────── */
+
+/**
+ * Glass is a hierarchy, not a single effect. Background signal remains
+ * visible through every level, while opacity and elevation increase with
+ * interaction priority. Inner wells stay opaque and recessed so nested
+ * glass never turns into visual fog.
+ */
+export const MATERIAL = {
+  glass: {
+    subtle: {
+      background: `color-mix(in srgb, ${SURFACE.ink850} 34%, transparent)`,
+      blur: "8px",
+      border: `rgba(${HAIRLINE_RGB}, 0.07)`,
+      shadow: `inset 0 1px 0 rgba(${HAIRLINE_RGB}, 0.025)`,
+    },
+    default: {
+      background: `color-mix(in srgb, ${SURFACE.ink850} 54%, transparent)`,
+      blur: "14px",
+      border: `rgba(${HAIRLINE_RGB}, 0.1)`,
+      shadow: `inset 0 1px 0 rgba(${HAIRLINE_RGB}, 0.04)`,
+    },
+    elevated: {
+      background: `color-mix(in srgb, ${SURFACE.ink850} 68%, transparent)`,
+      blur: "18px",
+      border: `rgba(${HAIRLINE_RGB}, 0.13)`,
+      shadow: `inset 0 1px 0 rgba(${HAIRLINE_RGB}, 0.055), 0 24px 64px -36px rgba(0, 0, 0, 0.72)`,
+    },
+    focus: {
+      background: `color-mix(in srgb, ${SURFACE.ink850} 78%, transparent)`,
+      blur: "22px",
+      border: `color-mix(in srgb, ${BRAND.aurora} 36%, rgba(${HAIRLINE_RGB}, 0.12))`,
+      shadow: `inset 0 1px 0 rgba(${HAIRLINE_RGB}, 0.07), 0 34px 84px -40px rgba(0, 0, 0, 0.82)`,
+    },
+    floating: {
+      background: `color-mix(in srgb, ${SURFACE.ink800} 88%, transparent)`,
+      blur: "26px",
+      border: `rgba(${HAIRLINE_RGB}, 0.16)`,
+      shadow: `inset 0 1px 0 rgba(${HAIRLINE_RGB}, 0.08), 0 28px 72px -28px rgba(0, 0, 0, 0.86)`,
+    },
+  },
+  reflection: `color-mix(in srgb, ${BRAND.aurora} 8%, transparent)`,
+  well: SURFACE.terminal,
+  radius: { control: "6px", panel: "8px", focus: "10px" },
+} as const;
+
 /**
  * The hairline. One neutral, expressed as an RGB triple so the site can
  * set divider, border and gutter as three alphas of the same colour
  * instead of three unrelated greys.
  */
-export const HAIRLINE_RGB = "255, 255, 255";
-
 /* ── Text ────────────────────────────────────────────────────── */
 
 export const TEXT = {
@@ -438,6 +485,37 @@ export const CSS_TOKENS: readonly (readonly [
   ["--qa-gold", BRAND.gold, "primary brand — scarce"],
   ["--qa-gold-bright", BRAND.goldBright, "primary on dark"],
   ["--qa-gold-hot", BRAND.goldHot, "highlight, excellent"],
+] as const;
+
+/** Semantic material tokens, emitted beside the palette. */
+export const CSS_MATERIAL: readonly (readonly [
+  name: string,
+  value: string,
+  comment?: string,
+])[] = [
+  ...Object.entries(MATERIAL.glass).flatMap(([level, glass]) => [
+    [
+      `--qa-glass-${level}-bg`,
+      glass.background,
+      `${level} glass background`,
+    ] as const,
+    [`--qa-glass-${level}-blur`, glass.blur, `${level} glass blur`] as const,
+    [
+      `--qa-glass-${level}-border`,
+      glass.border,
+      `${level} glass border`,
+    ] as const,
+    [
+      `--qa-glass-${level}-shadow`,
+      glass.shadow,
+      `${level} glass elevation`,
+    ] as const,
+  ]),
+  ["--qa-glass-reflection", MATERIAL.reflection, "blue signal reflection"],
+  ["--qa-surface-well", MATERIAL.well, "recessed inner surface"],
+  ["--qa-radius-control", MATERIAL.radius.control, "controls"],
+  ["--qa-radius-panel", MATERIAL.radius.panel, "panels"],
+  ["--qa-radius-focus", MATERIAL.radius.focus, "focus surfaces"],
 ] as const;
 
 /** Semantic score/verdict tokens, emitted after the palette. */

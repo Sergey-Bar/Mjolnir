@@ -212,9 +212,11 @@ onBeforeUnmount(() => {
 .stat {
   flex: 1 1 130px;
   padding: 0.9rem 1.1rem;
-  border-radius: 12px;
-  background: var(--vp-c-bg-alt);
-  border: 1px solid var(--vp-c-border);
+  border-radius: var(--qa-radius-panel);
+  background: var(--qa-glass-default-bg);
+  border: 1px solid var(--qa-glass-default-border);
+  box-shadow: var(--qa-glass-default-shadow);
+  backdrop-filter: blur(var(--qa-glass-default-blur));
 }
 .stat strong {
   display: block;
@@ -240,9 +242,9 @@ onBeforeUnmount(() => {
 .search {
   width: 100%;
   padding: 0.7rem 0.9rem;
-  border-radius: 9px;
+  border-radius: var(--qa-radius-control);
   border: 1px solid var(--vp-c-border);
-  background: var(--vp-c-bg);
+  background: var(--qa-surface-well);
   color: var(--vp-c-text-1);
   font-size: 0.95rem;
 }
@@ -266,9 +268,9 @@ onBeforeUnmount(() => {
 }
 .selects select {
   padding: 0.35rem 0.5rem;
-  border-radius: 7px;
+  border-radius: var(--qa-radius-control);
   border: 1px solid var(--vp-c-border);
-  background: var(--vp-c-bg);
+  background: var(--qa-surface-well);
   color: var(--vp-c-text-1);
   font-size: 0.85rem;
 }
@@ -304,8 +306,11 @@ onBeforeUnmount(() => {
 /* ---- table ---- */
 .table-wrap {
   overflow-x: auto;
-  border: 1px solid var(--vp-c-border);
-  border-radius: 12px;
+  border: 1px solid var(--qa-glass-elevated-border);
+  border-radius: var(--qa-radius-panel);
+  background: var(--qa-glass-elevated-bg);
+  box-shadow: var(--qa-glass-elevated-shadow);
+  backdrop-filter: blur(var(--qa-glass-elevated-blur));
 }
 table {
   width: 100%;
@@ -323,7 +328,7 @@ th {
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--vp-c-text-3);
-  background: var(--vp-c-bg-alt);
+  background: color-mix(in srgb, var(--qa-surface-well) 82%, transparent);
   border-bottom: 1px solid var(--vp-c-border);
   white-space: nowrap;
 }
@@ -335,8 +340,11 @@ td {
 tbody tr:last-child td {
   border-bottom: 0;
 }
+tbody tr:nth-child(2n) {
+  background: color-mix(in srgb, var(--qa-info) 3%, transparent);
+}
 tbody tr:hover {
-  background: var(--vp-c-brand-soft);
+  background: color-mix(in srgb, var(--qa-info) 7%, transparent);
 }
 .rid {
   display: block;

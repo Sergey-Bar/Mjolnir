@@ -139,9 +139,11 @@ const measuredCount = computed(() => all.filter((r) => r.measured).length);
 
 .cp-table {
   overflow-x: auto;
-  border: 1px solid var(--vp-c-border);
-  border-radius: 12px;
-  background: var(--vp-c-bg-alt);
+  border: 1px solid var(--qa-glass-elevated-border);
+  border-radius: var(--qa-radius-panel);
+  background: var(--qa-glass-elevated-bg);
+  box-shadow: var(--qa-glass-elevated-shadow);
+  backdrop-filter: blur(var(--qa-glass-elevated-blur));
 }
 table {
   width: 100%;

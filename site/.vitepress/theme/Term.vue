@@ -18,9 +18,11 @@ defineProps<{ lines: TermLine[]; title?: string }>();
 .term {
   margin: 0;
   min-width: 0;
-  border: 1px solid var(--vp-c-border);
-  border-radius: 8px;
-  background: var(--qa-ink-950);
+  border: 1px solid var(--qa-glass-elevated-border);
+  border-radius: var(--qa-radius-panel);
+  background: var(--qa-glass-elevated-bg);
+  box-shadow: var(--qa-glass-elevated-shadow);
+  backdrop-filter: blur(var(--qa-glass-elevated-blur)) saturate(1.1);
   overflow: hidden;
 }
 .term-title {

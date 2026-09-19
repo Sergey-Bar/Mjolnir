@@ -1161,9 +1161,9 @@ onBeforeUnmount(() => {
 <style scoped>
 .qa {
   --edge: clamp(20px, 5vw, 48px);
-  --glass: color-mix(in srgb, var(--qa-ink-850) 58%, transparent);
-  --glass-strong: color-mix(in srgb, var(--qa-ink-850) 78%, transparent);
-  --well: var(--glass);
+  --glass: var(--qa-glass-default-bg);
+  --glass-strong: var(--qa-glass-focus-bg);
+  --well: var(--qa-surface-well);
   --line: var(--vp-c-divider);
   --line-2: var(--vp-c-border);
   --t1: var(--vp-c-text-1);
@@ -1705,10 +1705,11 @@ onBeforeUnmount(() => {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 28px;
   padding: 24px;
-  border: 1px solid var(--line-2);
+  border: 1px solid var(--qa-glass-default-border);
+  border-radius: var(--qa-radius-panel);
   background: var(--glass);
-  box-shadow: inset 0 1px 0 color-mix(in srgb, white 5%, transparent);
-  backdrop-filter: blur(18px) saturate(1.15);
+  box-shadow: var(--qa-glass-default-shadow);
+  backdrop-filter: blur(var(--qa-glass-default-blur)) saturate(1.15);
 }
 .stack-group > span {
   display: block;
@@ -2045,13 +2046,13 @@ onBeforeUnmount(() => {
 .file {
   position: relative;
   min-width: 0;
-  border: 1px solid var(--line-2);
+  border: 1px solid var(--qa-glass-focus-border);
   border-top: 2px solid var(--ch);
-  border-radius: 10px;
+  border-radius: var(--qa-radius-focus);
   background: var(--glass-strong);
-  backdrop-filter: blur(18px) saturate(1.15);
+  backdrop-filter: blur(var(--qa-glass-focus-blur)) saturate(1.15);
   overflow: hidden;
-  box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.7);
+  box-shadow: var(--qa-glass-focus-shadow);
 }
 .file-head {
   display: flex;
@@ -2256,11 +2257,11 @@ onBeforeUnmount(() => {
 .card {
   position: relative;
   padding: 22px 22px 24px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
+  border: 1px solid var(--qa-glass-default-border);
+  border-radius: var(--qa-radius-panel);
   background: var(--glass);
-  box-shadow: inset 0 1px 0 color-mix(in srgb, white 4%, transparent);
-  backdrop-filter: blur(18px) saturate(1.15);
+  box-shadow: var(--qa-glass-default-shadow);
+  backdrop-filter: blur(var(--qa-glass-default-blur)) saturate(1.15);
   overflow: hidden;
   --mx: -600px;
   --my: -600px;
@@ -2408,11 +2409,11 @@ onBeforeUnmount(() => {
 .scale {
   margin-top: 32px;
   padding: 24px;
-  border: 1px solid var(--line-2);
-  border-radius: 8px;
-  background: var(--glass);
-  box-shadow: inset 0 1px 0 color-mix(in srgb, white 4%, transparent);
-  backdrop-filter: blur(18px) saturate(1.15);
+  border: 1px solid var(--qa-glass-elevated-border);
+  border-radius: var(--qa-radius-panel);
+  background: var(--qa-glass-elevated-bg);
+  box-shadow: var(--qa-glass-elevated-shadow);
+  backdrop-filter: blur(var(--qa-glass-elevated-blur)) saturate(1.15);
 }
 .meter-head {
   display: flex;
@@ -2556,11 +2557,11 @@ onBeforeUnmount(() => {
   grid-template-columns: repeat(var(--n), minmax(0, 1fr));
   gap: 14px;
   padding: 28px 24px 24px;
-  border: 1px solid var(--line-2);
-  border-radius: 10px;
-  background: var(--glass);
-  box-shadow: inset 0 1px 0 color-mix(in srgb, white 4%, transparent);
-  backdrop-filter: blur(18px) saturate(1.15);
+  border: 1px solid var(--qa-glass-elevated-border);
+  border-radius: var(--qa-radius-panel);
+  background: var(--qa-glass-elevated-bg);
+  box-shadow: var(--qa-glass-elevated-shadow);
+  backdrop-filter: blur(var(--qa-glass-elevated-blur)) saturate(1.15);
 }
 .rung {
   display: grid;

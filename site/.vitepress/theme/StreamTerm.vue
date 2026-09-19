@@ -100,11 +100,11 @@ onBeforeUnmount(() => {
   position: relative;
   margin: 0;
   min-width: 0;
-  border: 1px solid var(--vp-c-border);
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--qa-ink-850) 64%, transparent);
-  box-shadow: 0 20px 70px color-mix(in srgb, black 52%, transparent);
-  backdrop-filter: blur(20px) saturate(1.2);
+  border: 1px solid var(--qa-glass-focus-border);
+  border-radius: var(--qa-radius-focus);
+  background: var(--qa-glass-focus-bg);
+  box-shadow: var(--qa-glass-focus-shadow);
+  backdrop-filter: blur(var(--qa-glass-focus-blur)) saturate(1.2);
   overflow: hidden;
 }
 .st::before {
