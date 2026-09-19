@@ -133,8 +133,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0   # needed for --scope changed merge-base
-      # Scan with the pinned version. npx resolves the local install
-      # (same name/version) when run from this repo.
+      # Scan with the pinned version. No subcommand: npx resolves
+      # the package bin directly; passing mjolnir as an arg causes
+      # npm 10+ npx to invoke it twice (unknown subcommand).
       - name: Scan changed code (exit 1/2 is data — the gate step decides)
         continue-on-error: true
         run: npx --yes mjolnir-qa@${CLI_VERSION} . --scope changed --json > mjolnir.json
