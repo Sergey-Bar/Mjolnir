@@ -1,6 +1,8 @@
 {
-  "total": 0,
-  "byRule": {},
-  "recordedAt": "2026-09-11T05:31:10.432Z",
+  "total": 2,
+  "byRule": {
+    "QA-NOPE-999": 2
+  },
+  "recordedAt": "2026-09-19T08:40:00.000Z",
   "note": "Committed ratchet ceiling (plan §11.5): the generator fails when UNSURE verdict rows exceed these counts. Documented adjudication (tests/corpus/verdicts/README.md) lowers them; --update re-records after review."
 }

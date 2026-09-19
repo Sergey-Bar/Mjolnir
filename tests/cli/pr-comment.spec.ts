@@ -10,6 +10,10 @@ import { describe, expect, it } from "vitest";
 import {
   renderPrComment,
   PR_COMMENT_MARKER,
+  escapeMarkdown,
+  looksLikeCode,
+  evidenceTag,
+  findingLine,
 } from "../../src/commands/pr-comment.js";
 import {
   diffAgainstBaseline,
@@ -386,5 +390,68 @@ describe("renderPrComment — redesign structure (plan M5)", () => {
     expect(body).toContain("...and 5 more errors.");
     expect(body).toContain("...and 5 more warnings.");
     expect(body).toContain("...and 10 more overall");
+  });
+});
+
+describe("renderPrComment — utility exports coverage", () => {
+  it("escapeMarkdown escapes markdown-significant characters", () => {
+    expect(escapeMarkdown("# heading")).toBe("\\# heading");
+    expect(escapeMarkdown("*emphasis*")).toBe("\\*emphasis\\*");
+    expect(escapeMarkdown("`code`")).toBe("\\`code\\`");
+    expect(escapeMarkdown("plain text")).toBe("plain text");
+  });
+
+  it("looksLikeCode detects code vs prose", () => {
+    expect(looksLikeCode("await expect(locator).toBeVisible()")).toBe(true);
+    expect(looksLikeCode("Just a prose fix.")).toBe(false);
+    expect(looksLikeCode("x = {")).toBe(true);
+    expect(looksLikeCode("no code here")).toBe(false);
+  });
+
+  it("evidenceTag renders deterministic E2 findings", () => {
+    const body = evidenceTag({
+      ruleId: "QA-TEST-001",
+      evidenceLevel: "E2",
+      findingType: "deterministic-defect",
+      confidence: "high",
+    });
+    expect(body).toContain("E2 · deterministic");
+  });
+
+  it("evidenceTag renders heuristic E1 findings with measured FP", () => {
+    const body = evidenceTag({
+      ruleId: "QA-PW-102",
+      evidenceLevel: "E1",
+      findingType: "heuristic-risk",
+      confidence: "medium",
+      measuredFpRate: 0.25,
+      measuredFpN: 40,
+    });
+    expect(body).toContain("E1 · heuristic");
+    expect(body).toContain("measured FP 25%");
+    expect(body).toContain("n=40");
+  });
+
+  it("findingLine renders error severity with icon and fix", () => {
+    const line = findingLine(finding({}));
+    expect(line).toContain("🔴");
+    expect(line).toContain("QA-PW-101");
+    expect(line).toContain("e2e/a.spec.ts:4");
+    expect(line).toContain("Fix:");
+  });
+
+  it("findingLine renders info severity differently from error", () => {
+    const line = findingLine(
+      finding({ severity: "info", ruleId: "QA-PW-145" }),
+    );
+    expect(line).toContain("🔵");
+    expect(line).not.toContain("🔴");
+  });
+
+  it("renders the repoUrl option when provided", () => {
+    const body = renderPrComment(scanResult([]), {
+      repoUrl: "https://example.com/repo",
+    });
+    expect(body).toContain("https://example.com/repo");
   });
 });
