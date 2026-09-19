@@ -133,9 +133,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0   # needed for --scope changed merge-base
-      # Scan with the published mjolnir-qa package. Use latest
-      # because npx resolves the local install (same name/version)
-      # when run from this repo — pinned action via ACTION_REF.
+      # Scan with the pinned version. npx resolves the local install
+      # (same name/version) when run from this repo.
       - name: Scan changed code (exit 1/2 is data — the gate step decides)
         continue-on-error: true
         run: npx --yes mjolnir-qa@${CLI_VERSION} . --scope changed --json > mjolnir.json
@@ -272,7 +271,7 @@ jobs:
           scope: changed
           format: json
           fail-on: ${gate === "advisory" ? "none" : gate}
-          version: latest
+          version: ${CLI_VERSION}
       # Reporting, not gating: runs even when the scan/gate failed, from
       # the same mjolnir.json the action wrote.
       - name: Annotations + Job Summary
