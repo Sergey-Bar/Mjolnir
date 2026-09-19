@@ -94,6 +94,24 @@ describe("runBusinessCaseCommand", () => {
     expect(mockRunScan).toHaveBeenCalled();
   });
 
+  it("renders E0 with measured FP rate → savings n/a", async () => {
+    mockRunScan.mockResolvedValue(
+      scanResult([
+        finding({
+          ruleId: "QA-PW-104",
+          measuredFpRate: 0.3,
+          evidenceLevel: "E0",
+        }),
+      ]),
+    );
+
+    const out = vi.fn();
+    await runBusinessCaseCommand(["."], { out });
+    expect(mockRunScan).toHaveBeenCalled();
+    const allOutput = out.mock.calls.flat().join("\n");
+    expect(allOutput).toContain("n/a");
+  });
+
   it("returns EXIT_INTERNAL on scan failure", async () => {
     mockRunScan.mockRejectedValue(new Error("scan crashed"));
 

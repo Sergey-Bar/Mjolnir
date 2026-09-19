@@ -374,7 +374,7 @@ function summarizeContentDiff(existing: string, incoming: string): string[] {
 
 export function ciInstall(
   root: string,
-  gate: GateLevel = "error",
+  gate: GateLevel,
   options: { force?: boolean; action?: boolean } = {},
 ): CiInstallResult {
   const wfDir = join(root, ".github", "workflows");
