@@ -502,6 +502,11 @@ onBeforeUnmount(() => {
                 >View on GitHub</a
               >
             </div>
+            <a class="scroll-invite" href="#qa-quick-start">
+              <span>Next</span>
+              <strong>Quick start</strong>
+              <i aria-hidden="true" />
+            </a>
           </div>
           <div>
             <StreamTerm
@@ -1488,11 +1493,11 @@ onBeforeUnmount(() => {
   mask-image: linear-gradient(90deg, transparent, #000 55%, transparent);
 }
 .hero {
-  padding-top: calc(var(--vp-nav-height) + clamp(48px, 7vw, 104px));
-  padding-bottom: clamp(72px, 9vw, 128px);
+  padding-top: calc(var(--vp-nav-height) + clamp(40px, 4.5vw, 56px));
+  padding-bottom: 24px;
 }
 .title {
-  font-size: clamp(36px, 4.9vw, 64px);
+  font-size: clamp(36px, 4.5vw, 58px);
   font-weight: 500;
   line-height: 1.04;
   letter-spacing: 0;
@@ -1526,7 +1531,7 @@ onBeforeUnmount(() => {
   grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
   gap: clamp(32px, 5vw, 64px);
   align-items: start;
-  margin-top: clamp(36px, 5vw, 56px);
+  margin-top: clamp(28px, 3.5vw, 40px);
 }
 .lede {
   max-width: 34ch;
@@ -1561,13 +1566,75 @@ onBeforeUnmount(() => {
   color: var(--qa-ink-950);
   transform: translateY(-1px);
 }
+.qa .scroll-invite {
+  display: grid;
+  grid-template-columns: auto 18px;
+  width: max-content;
+  margin-top: 34px;
+  color: var(--t3);
+  font-family: var(--vp-font-family-mono);
+  text-decoration: none;
+}
+.scroll-invite span,
+.scroll-invite strong {
+  grid-column: 1;
+}
+.scroll-invite span {
+  font-size: 9px;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.scroll-invite strong {
+  margin-top: 5px;
+  color: var(--t2);
+  font-size: 12px;
+  font-weight: 500;
+}
+.scroll-invite i {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  position: relative;
+  width: 1px;
+  height: 31px;
+  margin-left: 9px;
+  background: var(--line-2);
+  overflow: visible;
+}
+.scroll-invite i::after {
+  content: "";
+  position: absolute;
+  right: -3px;
+  bottom: 1px;
+  width: 7px;
+  height: 7px;
+  border-right: 1px solid var(--qa-info);
+  border-bottom: 1px solid var(--qa-info);
+  transform: rotate(45deg);
+  animation: scroll-cue 1800ms var(--settle) infinite;
+}
+.qa .scroll-invite:hover strong {
+  color: var(--t1);
+}
+@keyframes scroll-cue {
+  0%,
+  100% {
+    opacity: 0.35;
+    translate: 0 -5px;
+  }
+  50% {
+    opacity: 1;
+    translate: 0 1px;
+  }
+}
 
 /* ---- quick start: actionable before the deep product tour ---- */
 .quick-start {
   display: grid;
   grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
   gap: clamp(32px, 7vw, 96px);
-  padding-block: clamp(64px, 9vw, 112px);
+  padding-top: clamp(24px, 2vw, 32px);
+  padding-bottom: clamp(64px, 9vw, 112px);
   border-bottom: 1px solid var(--line);
 }
 .section-label {
@@ -3027,7 +3094,8 @@ onBeforeUnmount(() => {
   .boot-check,
   .boot-corner,
   .boot-scan,
-  .boot-wordmark {
+  .boot-wordmark,
+  .scroll-invite i::after {
     animation: none;
   }
 }
