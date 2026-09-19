@@ -34,7 +34,7 @@ jobs:
         id: mjolnir
         if: always()
         continue-on-error: false
-        uses: Sergey-Bar/Mjolnir@fa8c82636ddc4365e47fe4012952780284e8a87d
+        uses: Sergey-Bar/Mjolnir@a7f3138773b4b4dd338839acce6171f45e753267
         with:
           scope: changed
           format: json
