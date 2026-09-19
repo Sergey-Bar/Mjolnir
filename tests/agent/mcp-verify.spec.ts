@@ -1,5 +1,5 @@
 /**
- * P7: the MCP `verify` tool — 1:1 with the `mjolnir verify` verb (master
+ * P7: the MCP `verify` tool — 1:1 with the `qa-doctor verify` verb (master
  * plan plan 1788853205786, flag agent, decision 6). Same digest, same
  * transport guardrails: parameter validation, the serialized scan queue,
  * filesystem boundary, and §14 honesty (partial never masquerades as
@@ -15,7 +15,7 @@ import { handleToolCall, MCP_TOOLS } from "../../src/mcp/server.js";
 
 let dir: string;
 const mkDir = () => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-p7-mcp-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-p7-mcp-"));
   return dir;
 };
 const clean = () => rmSync(dir, { recursive: true, force: true });
@@ -35,7 +35,7 @@ describe("MCP verify tool (P7)", () => {
     const res = await handleToolCall({
       id: 2,
       name: "verify",
-      args: { path: join(tmpdir(), "mjolnir-p7-missing-dir") },
+      args: { path: join(tmpdir(), "qa-doctor-p7-missing-dir") },
     });
     expect(res.error?.code).toBe(-32602);
     expect(res.error?.message).toContain("does not exist");
@@ -58,7 +58,7 @@ describe("MCP verify tool (P7)", () => {
         hasBaseline: false,
       });
       expect((res.result as { note: string }).note).toContain(
-        "mjolnir baseline",
+        "qa-doctor baseline",
       );
     } finally {
       clean();
@@ -67,13 +67,13 @@ describe("MCP verify tool (P7)", () => {
 
   it("with a baseline: the digest matches the CLI verb's data (resolved/new/unchanged/delta)", async () => {
     const target = mkDir();
-    mkdirSync(join(target, ".mjolnir"), { recursive: true });
+    mkdirSync(join(target, ".qa-doctor"), { recursive: true });
     writeFileSync(
       join(target, "hard.spec.ts"),
       "test('y', () => { page.waitForTimeout(100); });\n",
     );
     writeFileSync(
-      join(target, ".mjolnir", "baseline.json"),
+      join(target, ".qa-doctor", "baseline.json"),
       JSON.stringify({
         schemaVersion: 1,
         capturedAt: "2026-09-09T00:00:00.000Z",

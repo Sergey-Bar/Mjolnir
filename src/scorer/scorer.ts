@@ -125,8 +125,8 @@ export const SMOOTHING_C = 1;
  *
  * Density normalization answers "how much of this suite is questionable". It
  * cannot answer "did the suite run at all" — and when `.only` is committed, it
- * did not. One point below the NEEDS WORK floor, so such a repo lands in
- * UNWORTHY on the categorical fact rather than on an averaged rate.
+ * did not. One point below the NEEDS ATTENTION floor, so such a repo lands in
+ * CRITICAL on the categorical fact rather than on an averaged rate.
  */
 export const SUITE_INVALIDATED_CEILING = 49;
 
@@ -136,7 +136,7 @@ export const SUITE_INVALIDATED_CEILING = 49;
  * If any error-level finding with a non-zero deduction exists, the score is
  * capped at this value regardless of how large the denominator grows. Errors
  * are categorical defects — a 10,000-test repo with a committed `.only` is
- * not 99% worthy; it is fundamentally compromised on that axis.
+ * not 99% healthy; it is fundamentally compromised on that axis.
  */
 export const ERROR_SEVERITY_CEILING = 95;
 
@@ -242,7 +242,7 @@ export function computeTotal(
 
   // Error-severity floor: if any error-level finding exists, cap at 95.
   // Errors are categorical defects — a 10,000-test repo with a committed
-  // .only is not 99% worthy, it's fundamentally compromised on that axis.
+  // .only is not 99% healthy, it's fundamentally compromised on that axis.
   // (P2: subsumed by the ≥ 8 mass band — 1 error ≥ 8 pts — kept as the
   // named guard so the law stays visible and the two cannot drift.)
   const hasErrors = findings.some(
@@ -251,7 +251,7 @@ export function computeTotal(
   if (hasErrors && score > ERROR_SEVERITY_CEILING)
     score = ERROR_SEVERITY_CEILING;
 
-  // Categorical override: a suite that did not fully run cannot be WORTHY, and
+  // Categorical override: a suite that did not fully run cannot be HEALTHY, and
   // a large denominator must not be able to average that fact away.
   return suiteVoided ? Math.min(score, SUITE_INVALIDATED_CEILING) : score;
 }

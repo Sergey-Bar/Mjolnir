@@ -24,7 +24,7 @@ import { parsePlaywrightJson } from "../../src/forensics/parse-playwright-json.j
 let dir: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-hostile-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-hostile-"));
 });
 
 afterEach(() => {
@@ -190,7 +190,7 @@ describe("hostile repo: malformed ingestion inputs", () => {
       "on: push\njobs:\n  a:\n    steps:\n      - run: echo hi\n",
     );
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
+      join(dir, "qa-doctor.config.json"),
       JSON.stringify({ exclude: [1, null, {}] }),
     );
     // loadConfig throws ConfigValidationError → usage error path (10).

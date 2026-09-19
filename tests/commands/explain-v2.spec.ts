@@ -138,7 +138,7 @@ describe("verdict mode — §8 checklist", () => {
 });
 
 describe("verdict mode — hostile inputs fail safely", () => {
-  const dir = mkdtempSync(join(tmpdir(), "mjolnir-explain-v2-"));
+  const dir = mkdtempSync(join(tmpdir(), "qa-doctor-explain-v2-"));
 
   it("invalid JSON → honest error, exit-safe", () => {
     const p = join(dir, "garbage.json");
@@ -154,7 +154,7 @@ describe("verdict mode — hostile inputs fail safely", () => {
     const r = explainVerdict(p);
     expect(r.ok).toBe(false);
     expect(r.error).toContain("schemaVersion 1");
-    expect(r.error).toContain("mjolnir <target> --json");
+    expect(r.error).toContain("qa-doctor <target> --json");
   });
 
   it("missing file → honest error", () => {
@@ -212,7 +212,7 @@ describe("rule mode — WI-7 additions keep the original explanation intact", ()
 describe("explain verdict — CLI-handler arms (P8 coverage)", () => {
   let dir2 = "";
   beforeEach(() => {
-    dir2 = mkdtempSync(join(tmpdir(), "mjolnir-p8-explain-cli-"));
+    dir2 = mkdtempSync(join(tmpdir(), "qa-doctor-p8-explain-cli-"));
   });
   afterEach(() => rmSync(dir2, { recursive: true, force: true }));
 

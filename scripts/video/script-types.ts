@@ -2,7 +2,7 @@
  * The committed intermediate the demo videos are rendered from.
  *
  * This file is the evidence layer. Every line of terminal output in a
- * video comes from here, and everything here came from a real Mjölnir
+ * video comes from here, and everything here came from a real QA Doctor
  * execution — the renderer may only draw what a validated script
  * contains and never invents CLI content.
  *
@@ -18,7 +18,7 @@ export interface BeatAssertions {
   requiredFindings?: string[];
   /** Rule IDs that MUST NOT appear — the fix-and-re-run proof. */
   absentFindings?: string[];
-  /** Worthiness score, discovered from the scan and never hand-written. */
+  /** Test Health score, discovered from the scan and never hand-written. */
   score?: number | null;
   /** Findings at severity=error, discovered from the scan. */
   errorCount?: number;

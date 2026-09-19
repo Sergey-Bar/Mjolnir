@@ -12,7 +12,7 @@ registered rule ID or an in-repo artifact — and the generator is
 fail-closed: a claim never renders on a dangling pointer.
 
 The `to agents` column is backed by the foundational Agent Skill
-that shipped with R8 (1.3.0, growth roadmap WI-22): `mjolnir install`
+that shipped with R8 (1.3.0, growth roadmap WI-22): `qa-doctor install`
 writes the SCAN → EVIDENCE → FORENSICS → TRIAGE → FIX → RESCAN →
 PROOF loop — §17 safety wording included — onto every detected
 instruction surface, so each capability above flows to agents through

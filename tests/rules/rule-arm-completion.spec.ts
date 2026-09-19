@@ -20,7 +20,7 @@ import { explainRule } from "../../src/commands/explain.js";
 
 let root: string;
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), "mjolnir-sweep3-"));
+  root = mkdtempSync(join(tmpdir(), "qa-doctor-sweep3-"));
 });
 afterEach(() => {
   rmSync(root, { recursive: true, force: true });

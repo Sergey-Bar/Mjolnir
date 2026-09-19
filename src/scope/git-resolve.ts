@@ -5,7 +5,7 @@
  * Windows (CreateProcess searches the current directory before PATH for
  * extension-less names depending on NoDefaultCurrentDirectoryInExePath).
  * Scanning an UNTRUSTED repo therefore let a checked-in `git.exe` (or
- * `git.bat`/`git.cmd`) hijack Mjölnir's own git invocations: the attacker
+ * `git.bat`/`git.cmd`) hijack QA Doctor's own git invocations: the attacker
  * controls the diff output, the merge-base decision, and
  * `--scope changed`'s "what is new" answer — the exact data CI gates on.
  *
@@ -26,7 +26,7 @@ let resolvedGit: string | null | undefined = undefined;
 let resolutionError: string | undefined;
 
 /**
- * The absolute path of the git binary Mjölnir will invoke, or null when
+ * The absolute path of the git binary QA Doctor will invoke, or null when
  * PATH carries no executable `git` at all (S1 degradation: callers fall
  * back to the bare name and their own try/catch — same honest degrade
  * as before, minus the CWD-hijack surface).

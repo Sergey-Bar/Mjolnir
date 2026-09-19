@@ -48,6 +48,7 @@ const OUT_PATH = join(ROOT, "assets", "readme", "demo.svg");
 const LINE_DELAY_S = 0.05;
 const HOLD_S = 8;
 
+/** Render terminal lines as an SVG with per-line reveal animation. */
 function renderSvg(lines: string[]): string {
   const longest = Math.max(...lines.map((l) => stripAnsi(l).length));
   const width = Math.ceil(PAD_X * 2 + longest * CHAR_W);
@@ -78,8 +79,8 @@ ${fontFaceCss()}
   </style>
   <defs>
     <style>
-      .ln { opacity: 0; animation: mjolnir-reveal ${cycle}s steps(1, end) infinite; }
-      @keyframes mjolnir-reveal {
+      .ln { opacity: 0; animation: qa-doctor-reveal ${cycle}s steps(1, end) infinite; }
+      @keyframes qa-doctor-reveal {
         0% { opacity: 0; }
         ${revealPct}% { opacity: 1; }
         96% { opacity: 1; }
@@ -124,14 +125,18 @@ export async function buildDemoSvg(): Promise<string> {
     ascii: false,
   });
   const lines = [
-    `${PROMPT}\x1b[1mnpx mjolnir-qa@latest --verbose\x1b[0m`,
+    `${PROMPT}\x1b[1mnpx qa-doctor-cli@latest --verbose\x1b[0m`,
     ...rendered.split("\n"),
   ].map((line) =>
-    line.replace(/· (?:\d+ms|[1-9]\d*(?:\.\d+)?s)$/, "· a few ms"),
+    line.replace(
+      /· (?:\d+ms|(?:0\.\d*[1-9]\d*|[1-9]\d*(?:\.\d+)?)s)$/,
+      "· a few ms",
+    ),
   );
   return renderSvg(lines);
 }
 
+/** Entry point — builds the demo SVG from a real scan and writes it to disk. */
 async function main(): Promise<void> {
   const svg = await buildDemoSvg();
   mkdirSync(dirname(OUT_PATH), { recursive: true });

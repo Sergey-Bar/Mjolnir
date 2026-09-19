@@ -32,6 +32,9 @@ jobs:
           - os: macos-latest
             node: 24
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
     # Audit S-7: a hung npm ci or scan must not sit for the 6-hour default.
     timeout-minutes: 20
     # M3: per-job wall-clock minutes go into the job summary. Soft
@@ -103,7 +106,7 @@ jobs:
           # are non-hidden entries the fixture-harness/docs-generator read
           # as fixture files, which would silence the QA-PY rules in every
           # later step (the ubuntu-only coverage run caught exactly that).
-          PYTHONPYCACHEPREFIX: /tmp/mjolnir-pycache
+          PYTHONPYCACHEPREFIX: /tmp/qa-doctor-pycache
         run: |
           if find tests/fixtures tests/corpus/positive-fixtures -name "*.py" | grep -q .; then
             python3 -m compileall -q tests/fixtures tests/corpus/positive-fixtures
@@ -170,7 +173,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: coverage-report
+          name: coverage-report-node-${{ matrix.node }}
           path: coverage/
           retention-days: 14
       - name: Upload coverage reports to Codecov
@@ -199,7 +202,7 @@ jobs:
   # The site build only ran on push-to-main (pages.yml), so a commit that
   # broke it passed every PR check and failed the deploy after merge —
   # twice: gen-report.mjs requiring a heading the hero asset had dropped,
-  # and `mjolnir mutation <report>` in a doc read by Vue's compiler as an
+  # and `qa-doctor mutation <report>` in a doc read by Vue's compiler as an
   # element. This runs the same build + gate pages.yml does, on the PR,
   # where it can still be fixed.
   site-build:
@@ -292,7 +295,7 @@ jobs:
           name: self-scan-result
           path: |
             self-scan.json
-            mjolnir-badge.json
+            qa-doctor-badge.json
           retention-days: 90
       - name: Job time budget in summary (soft)
         if: always()
@@ -353,8 +356,8 @@ jobs:
           node -e '
           const fs = require("fs");
           const r = JSON.parse(fs.readFileSync("doctor-report.json", "utf8"));
-          if (r.schema !== "mjolnir.doctor-report@1") { console.error("unknown schema", r.schema); process.exit(1); }
-          const verdict = r.healthy ? "WORTHY" : "VIOLATIONS";
+          if (r.schema !== "qa-doctor.doctor-report@1") { console.error("unknown schema", r.schema); process.exit(1); }
+          const verdict = r.healthy ? "HEALTHY" : "VIOLATIONS";
           const line = "doctor: " + r.summary.pass + " pass · " + r.summary.fail + " fail · " + r.summary.inconclusive + " inconclusive → " + verdict;
           fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, line + "\n");
           console.log(line);
@@ -455,7 +458,7 @@ jobs:
           '
 
   # WI-15 (plan 1788882429145 §20/§25): benchmark artifact + advisory perf
-  # compare against the pinned baseline (.mjolnir/bench-baseline.json,
+  # compare against the pinned baseline (.qa-doctor/bench-baseline.json,
   # committed). Fresh timings are environment-dependent and are NEVER
   # asserted — the advisory compare only WARNS on a >25% regression vs
   # the pinned median (§340: "advisory gate → blocking after proven

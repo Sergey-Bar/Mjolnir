@@ -158,7 +158,7 @@
     "exit": 0,
     "stdoutLen": 245,
     "stderrLen": 0,
-    "firstLine": "why — why did Mjölnir flag <file>:<line>? evidence + fix (not a gate)"
+    "firstLine": "why — why did QA Doctor flag <file>:<line>? evidence + fix (not a gate)"
   },
   {
     "verb": "handoff",
@@ -191,21 +191,21 @@
   {
     "verb": "scan-unknown-flag",
     "exit": 10,
-    "firstLine": "mjolnir: unknown flag \"--bogus-flag\""
+    "firstLine": "qa-doctor: unknown flag \"--bogus-flag\""
   },
   {
     "verb": "unknown-verb",
     "exit": 10,
-    "firstLine": "mjolnir: unknown subcommand \"scna\"."
+    "firstLine": "qa-doctor: unknown subcommand \"scna\"."
   },
   {
     "verb": "bare-known-stem",
     "exit": 10,
-    "firstLine": "mjolnir: incomplete or unknown subcommand \"ci\"."
+    "firstLine": "qa-doctor: incomplete or unknown subcommand \"ci\"."
   },
   {
     "verb": "dangling-value",
     "exit": 10,
-    "firstLine": "mjolnir: invalid value \"\" for --format"
+    "firstLine": "qa-doctor: invalid value \"\" for --format"
   }
 ]

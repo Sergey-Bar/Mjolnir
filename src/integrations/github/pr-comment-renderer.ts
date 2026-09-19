@@ -8,7 +8,7 @@
  * Findings → Frameworks → Details → Action → Footer.
  *
  * Verdict vocabulary per §51.3:
- *   ✅ WORTHY, ⚠️ NEEDS_WORK, ❌ UNWORTHY,
+ *   ✅ HEALTHY, ⚠️ NEEDS_WORK, ❌ CRITICAL,
  *   ◐ INCOMPLETE, ◐ ANALYSIS_ERROR
  *
  * No trust reasoning — pure templating.
@@ -33,24 +33,24 @@ import {
 } from "./finding-prioritization.js";
 
 const VERDICT_ICON: Record<PrCommentVerdict, string> = {
-  WORTHY: "✅",
+  HEALTHY: "✅",
   NEEDS_WORK: "⚠️",
-  UNWORTHY: "❌",
+  CRITICAL: "❌",
   INCOMPLETE: "◐",
   ANALYSIS_ERROR: "◐",
 };
 
 const VERDICT_LABEL: Record<PrCommentVerdict, string> = {
-  WORTHY: "WORTHY",
+  HEALTHY: "HEALTHY",
   NEEDS_WORK: "NEEDS_WORK",
-  UNWORTHY: "UNWORTHY",
+  CRITICAL: "CRITICAL",
   INCOMPLETE: "INCOMPLETE",
   ANALYSIS_ERROR: "ANALYSIS_ERROR",
 };
 
 function header(model: PrCommentModelV1): string {
-  return `<!-- mjolnir-pr-comment -->
-## Mjölnir Verification Trust Report
+  return `<!-- qa-doctor-pr-comment -->
+## QA Doctor Verification Trust Report
 
 **${sanitizeForMarkdown(model.repository)}** · PR #${model.pullRequest.number}`;
 }

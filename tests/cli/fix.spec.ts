@@ -1,5 +1,5 @@
 /**
- * Tests for `mjolnir fix` — safe auto-fix with proof (Tier 1 #3).
+ * Tests for `qa-doctor fix` — safe auto-fix with proof (Tier 1 #3).
  */
 
 import {
@@ -9,6 +9,7 @@ import {
   readdirSync,
   rmSync,
   symlinkSync,
+  utimesSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -131,6 +132,42 @@ describe("planAndApplyFixes", () => {
     expect(results[0]?.status).toBe("planned");
   });
 
+  it.each([true, false])(
+    "dry-run preserves normal and temporary files with findings=%s",
+    (hasFindings) => {
+      const old = Date.now() - 48 * 60 * 60 * 1000;
+      const contents = new Map([
+        ["dry.spec.ts", "test.only('x', () => {});\n"],
+        ["notes.qa-doctor-backup.tmp", "user data"],
+        [
+          `fresh.qa-doctor-${process.pid}-${Date.now()}-01234567.tmp`,
+          "active write",
+        ],
+        [`stale.qa-doctor-2147483647-${old}-01234567.tmp`, "stale write"],
+      ]);
+      for (const [name, text] of contents) writeFileSync(join(dir, name), text);
+      const stale = join(dir, `stale.qa-doctor-2147483647-${old}-01234567.tmp`);
+      utimesSync(stale, new Date(old), new Date(old));
+      const before = readdirSync(dir).sort();
+
+      const results = planAndApplyFixes(
+        scan(
+          hasFindings ? [finding("QA-TEST-001", "dry.spec.ts", "`.only`")] : [],
+        ),
+        dir,
+        { dryRun: true },
+      );
+
+      expect(readdirSync(dir).sort()).toEqual(before);
+      for (const [name, text] of contents) {
+        expect(readFileSync(join(dir, name), "utf8")).toBe(text);
+      }
+      expect(results.map((result) => result.status)).toEqual(
+        hasFindings ? ["planned"] : [],
+      );
+    },
+  );
+
   it("never rewrites .only inside strings or comments (audit R-4)", () => {
     const file = "masked.spec.ts";
     writeFileSync(
@@ -179,7 +216,7 @@ describe("planAndApplyFixes", () => {
     );
     expect(results[0]?.status).toBe("applied");
     const leftovers = readdirSync(dir).filter((f) =>
-      f.endsWith(".mjolnir-tmp"),
+      f.endsWith(".qa-doctor-tmp"),
     );
     expect(leftovers).toEqual([]);
   });
@@ -279,7 +316,7 @@ describe("planAndApplyFixes", () => {
       scan([finding("QA-TEST-001", file, "`.only` focus modifier committed.")]),
       dir,
     );
-    // The old code skipped the file with NO result entry — `mjolnir fix`
+    // The old code skipped the file with NO result entry — `qa-doctor fix`
     // exited 0 while silently doing nothing. It now reports the skip.
     expect(results).toHaveLength(1);
     expect(results[0]?.status).toBe("failed");

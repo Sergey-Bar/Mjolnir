@@ -2,7 +2,7 @@
  * GAP-001 — Framework Support Inventory.
  *
  * Single source of truth for every test framework, E2E framework,
- * automation library, and CI provider Mjolnir tracks.
+ * automation library, and CI provider QA Doctor tracks.
  */
 
 export type EntityType =

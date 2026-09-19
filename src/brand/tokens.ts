@@ -1,12 +1,12 @@
 /**
  * The single source of brand truth.
  *
- * Every colour, typeface and motion constant Mjölnir shows a human —
+ * Every colour, typeface and motion constant QA Doctor shows a human —
  * terminal, README SVGs, demo video, website, docs, badges — resolves to
  * a value in this file. Nothing else may define one.
  *
  * WHY THIS EXISTS. Before it, the palette existed in six independent
- * copies: `site/.vitepress/theme/styles/vars.css`, `NORSE` in
+ * copies: `site/.vitepress/theme/styles/vars.css`, `TERMINAL_COLORS` in
  * `src/reporter/theme.ts`, `scripts/readme-svg.ts`,
  * `scripts/video/terminal-page.ts`, `scripts/generate-readme-architecture.ts`
  * and the table in `assets/brand/README.md`. Exactly one pair of those
@@ -24,8 +24,9 @@
  * it costs a few hundred bytes and replaces values the package already
  * carried anyway.
  *
- * DERIVATION. The palette is the one derived from the logo in PR #20
- * (brushed steel and forge gold under an aurora, over midnight iron).
+ * DERIVATION. The palette is diagnostic steel and restrained clinical blue
+ * over neutral graphite. Semantic amber and red are reserved for attention
+ * and failure rather than used as brand decoration.
  * Where the terminal disagreed with it, the terminal converges — see
  * `PENDING_TERMINAL` below. Full rationale: `assets/brand/README.md`.
  *
@@ -40,8 +41,8 @@
 /**
  * The two brand hues plus the neutral they sit on.
  *
- * GOLD IS SCARCE. It means forged / certified / earned / decisive — the
- * primary mark, the FORGED state, one call to action. It is not a paint
+ * GOLD IS SCARCE. It means excellent / certified / earned / decisive — the
+ * primary mark, the EXCELLENT state, one call to action. It is not a paint
  * bucket: gold as default text, default border or default heading is a
  * brand-doctor finding, not a style choice.
  *
@@ -54,15 +55,15 @@ export const BRAND = {
   goldHot: "#F4DC9C",
   /** Pressed / deepest gold — the only step dark enough to carry white. */
   goldDeep: "#A5811C",
-  aurora: "#37ABBD",
-  auroraBright: "#45C1D4",
-  auroraCyan: "#5CBDE0",
+  aurora: "#7E8FE3",
+  auroraBright: "#8494EA",
+  auroraCyan: "#91A1F5",
   /** The aurora's outer curtains: atmosphere and section identity only,
    * never a verdict or a status. */
-  auroraGreen: "#5FD6A4",
-  auroraViolet: "#9D8CF5",
-  steel: "#C8CBCF",
-  steelDim: "#8B939D",
+  auroraGreen: "#7C86FF",
+  auroraViolet: "#A0A8FF",
+  steel: "#D1D5DB",
+  steelDim: "#9CA3AF",
 } as const;
 
 /* ── Surfaces ────────────────────────────────────────────────── */
@@ -76,20 +77,69 @@ export const BRAND = {
  * `PENDING_TERMINAL.chromeDots` for why they are no longer red/amber/green.
  */
 export const SURFACE = {
-  ink950: "#0A1119",
-  ink900: "#0C1420",
-  ink850: "#111A29",
-  ink800: "#18243A",
+  ink950: "#000000",
+  ink900: "#07090C",
+  ink850: "#0D1117",
+  ink800: "#161B22",
   /** Raised panel (cards, elevated surfaces). */
-  panel: "#141F33",
+  panel: "#11151B",
   /** Soft fill (inline code, quiet chips). */
-  soft: "#1A2740",
+  soft: "#1B212A",
   /** Terminal body — the deepest tone, so a terminal reads as recessed. */
-  terminal: "#0A1119",
+  terminal: "#0A0D11",
   /** Terminal title bar — the same tone; the seam is shadow, not colour. */
-  terminalBar: "#0A1119",
+  terminalBar: "#0A0D11",
   /** The three window dots. One neutral, not a traffic light. */
-  chromeDot: "#18243A",
+  chromeDot: "#1F2937",
+} as const;
+
+/** One neutral RGB triple for borders, dividers and internal highlights. */
+export const HAIRLINE_RGB = "255, 255, 255";
+
+/* ── Material ───────────────────────────────────────────────── */
+
+/**
+ * Glass is a hierarchy, not a single effect. Background signal remains
+ * visible through every level, while opacity and elevation increase with
+ * interaction priority. Inner wells stay opaque and recessed so nested
+ * glass never turns into visual fog.
+ */
+export const MATERIAL = {
+  glass: {
+    subtle: {
+      background: `color-mix(in srgb, ${SURFACE.ink850} 34%, transparent)`,
+      blur: "8px",
+      border: `rgba(${HAIRLINE_RGB}, 0.07)`,
+      shadow: `inset 0 1px 0 rgba(${HAIRLINE_RGB}, 0.025)`,
+    },
+    default: {
+      background: `color-mix(in srgb, ${SURFACE.ink850} 54%, transparent)`,
+      blur: "14px",
+      border: `rgba(${HAIRLINE_RGB}, 0.1)`,
+      shadow: `inset 0 1px 0 rgba(${HAIRLINE_RGB}, 0.04)`,
+    },
+    elevated: {
+      background: `color-mix(in srgb, ${SURFACE.ink850} 68%, transparent)`,
+      blur: "18px",
+      border: `rgba(${HAIRLINE_RGB}, 0.13)`,
+      shadow: `inset 0 1px 0 rgba(${HAIRLINE_RGB}, 0.055), 0 24px 64px -36px rgba(0, 0, 0, 0.72)`,
+    },
+    focus: {
+      background: `color-mix(in srgb, ${SURFACE.ink850} 78%, transparent)`,
+      blur: "22px",
+      border: `color-mix(in srgb, ${BRAND.aurora} 36%, rgba(${HAIRLINE_RGB}, 0.12))`,
+      shadow: `inset 0 1px 0 rgba(${HAIRLINE_RGB}, 0.07), 0 34px 84px -40px rgba(0, 0, 0, 0.82)`,
+    },
+    floating: {
+      background: `color-mix(in srgb, ${SURFACE.ink800} 88%, transparent)`,
+      blur: "26px",
+      border: `rgba(${HAIRLINE_RGB}, 0.16)`,
+      shadow: `inset 0 1px 0 rgba(${HAIRLINE_RGB}, 0.08), 0 28px 72px -28px rgba(0, 0, 0, 0.86)`,
+    },
+  },
+  reflection: `color-mix(in srgb, ${BRAND.aurora} 8%, transparent)`,
+  well: SURFACE.terminal,
+  radius: { control: "6px", panel: "8px", focus: "10px" },
 } as const;
 
 /**
@@ -97,30 +147,28 @@ export const SURFACE = {
  * set divider, border and gutter as three alphas of the same colour
  * instead of three unrelated greys.
  */
-export const HAIRLINE_RGB = "198, 204, 214";
-
 /* ── Text ────────────────────────────────────────────────────── */
 
 export const TEXT = {
-  primary: "#EAEEF5",
-  secondary: "#ABB6C6",
-  muted: "#8B939D",
-  /** Ink for text set ON gold (buttons, the FORGED chip). 7.17:1 on `gold`. */
-  onGold: "#0A1119",
+  primary: "#FFFFFF",
+  secondary: "#E5E7EB",
+  muted: "#9CA3AF",
+  /** Ink for text set ON gold (buttons, the EXCELLENT chip). 7.17:1 on `gold`. */
+  onGold: "#000000",
 } as const;
 
 /* ── Status ──────────────────────────────────────────────────── */
 
 /**
  * Non-score status. `ok` is the one green in the system and it is NOT a
- * score colour — it survives only for contexts with no worthiness
+ * score colour — it survives only for contexts with no test health
  * meaning ("autofix applied", "analysis complete"). A green score would
  * say "your software is fine", which is the exact claim this product
  * refuses to make.
  */
 export const STATUS = {
   ok: "#4FB477",
-  info: "#5CC4E0",
+  info: "#879FE0",
   warning: "#E6BD57",
   error: "#EC6B66",
 } as const;
@@ -129,7 +177,7 @@ export const STATUS = {
 
 /**
  * The four ScoreState bands plus the unmeasured state. Band thresholds
- * and runes live in `src/reporter/score-state.ts`, which stays free of
+ * and indicators live in `src/reporter/score-state.ts`, which stays free of
  * colour — it emits a palette KEY and each surface resolves it here.
  *
  * `unmeasured` is steel-dim on purpose. UNKNOWN is a legitimate answer,
@@ -140,9 +188,9 @@ export const STATUS = {
 export const SCORE = {
   critical: "#EC6B66",
   warning: "#E6BD57",
-  trusted: "#5CC4E0",
-  forged: "#F4DC9C",
-  unmeasured: "#8B939D",
+  trusted: "#79B5D8",
+  excellent: "#E2E8F0",
+  unmeasured: "#9CA3AF",
 } as const;
 
 /* ── Evidence levels ─────────────────────────────────────────── */
@@ -163,9 +211,9 @@ export const SCORE = {
  * survives `--ascii`, `NO_COLOR` and monochrome print.
  */
 export const EVIDENCE = {
-  e0: "#8B939D",
-  e1: "#ABB6C6",
-  e2: "#EAEEF5",
+  e0: "#9CA3AF",
+  e1: "#E5E7EB",
+  e2: "#FFFFFF",
 } as const;
 
 /* ── Trust ladder ────────────────────────────────────────────── */
@@ -182,12 +230,12 @@ export const EVIDENCE = {
  * Every surface that draws the ladder must draw that break.
  */
 export const TRUST = {
-  l0: "#8B939D",
-  l1: "#ABB6C6",
-  l2: "#C8CBCF",
-  l3: "#37ABBD",
-  l4: "#45C1D4",
-  l5: "#5CC4E0",
+  l0: "#9CA3AF",
+  l1: "#E5E7EB",
+  l2: "#D1D5DB",
+  l3: "#7E8FE3",
+  l4: "#8494EA",
+  l5: "#91A1F5",
 } as const;
 
 /** Where the ladder stops being static. Rungs at or above this index
@@ -203,39 +251,36 @@ export const TRUST_RUNTIME_BOUNDARY = 3;
  * + Geist Mono — a README asset and a website page shared no letterform
  * at all.
  *
- * Geist and Geist Mono are vendored (`assets/readme/fonts`,
- * `scripts/video/fonts.ts`) and embedded into the SVGs and the video, so
- * the same shapes render with no network at all. Display is not a third
- * face: it is Geist, set large, tight and quiet. Cinzel held that role
- * and was retired — a Roman inscriptional serif was the one letterform
- * that no other surface shared, and it read as costume beside the rest.
+ * The website uses the native system stack and Menlo-style monospace of
+ * serious developer tools: fast, familiar and free of display-font theatre.
+ * Generated media keeps the vendored Geist files as a deterministic fallback
+ * because screenshots and videos cannot depend on the host operating system.
  *
  * Every stack ends in a real system fallback: the layout must stay
  * graceful when no webfont loads.
  */
 export const TYPOGRAPHY = {
   display: {
-    family: "Geist",
+    family: "Segoe UI",
     weights: [500, 600],
-    stack: `"Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`,
-    /** Headlines run tight; the wordmark and labels are caps, tracked out. */
-    letterSpacing: { tight: "-0.02em", wide: "0.18em", widest: "0.3em" },
+    stack: `-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`,
+    letterSpacing: { tight: "0", wide: "0.12em", widest: "0.24em" },
   },
   sans: {
-    family: "Geist",
+    family: "Segoe UI",
     weights: [400, 500, 600],
-    stack: `"Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`,
+    stack: `-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`,
   },
   mono: {
-    family: "Geist Mono",
+    family: "Menlo",
     weights: [400, 500],
-    /** `MjolnirMono` is the embedded @font-face name used inside SVG and
+    /** `QaDoctorMono` is the embedded @font-face name used inside SVG and
      * the video render page; the web stack names the real family. */
-    embeddedFamily: "MjolnirMono",
-    stack: `"Geist Mono", ui-monospace, "SFMono-Regular", "Cascadia Mono", Consolas, monospace`,
+    embeddedFamily: "QaDoctorMono",
+    stack: `"Menlo", "SFMono-Regular", "Cascadia Mono", Consolas, monospace`,
   },
-  /** Rune glyph fallback only — never a text face. */
-  runes: { family: "FreeMono", embeddedFamily: "MjolnirRunes" },
+  /** Indicator glyph fallback only — never a text face. */
+  indicators: { family: "FreeMono", embeddedFamily: "QaDoctorSymbols" },
   /** Body copy sits at 1.7; the display face never sets body copy. */
   lineHeight: { body: 1.7, tight: 1.35 },
 } as const;
@@ -296,9 +341,9 @@ export const MOTION = {
 /* ── Diagram tints ───────────────────────────────────────────── */
 
 /**
- * The one place Mjölnir draws on someone else's ground.
+ * The one place QA Doctor draws on someone else's ground.
  *
- * `mjolnir --mermaid` emits a flowchart that GitHub renders inside a
+ * `qa-doctor --mermaid` emits a flowchart that GitHub renders inside a
  * README, on a background this palette does not control and cannot
  * predict — light or dark, depending on the reader's theme. So these
  * nodes carry explicit light fills with dark text: legible on white,
@@ -340,7 +385,7 @@ export const TINT: Record<
  * palette retired in PR #20 and still shipping 92 times across the
  * translated set.
  *
- * `primary` is the deep aurora, not gold. Gold is held back for FORGED,
+ * `primary` is the deep aurora, not gold. Gold is held back for EXCELLENT,
  * and shields.io sets the message in white with no say in it: the light
  * aurora steps measure under 3:1 there, while this one — the same step
  * BADGE_BAND.trusted uses — carries white at 5.80:1.
@@ -352,11 +397,11 @@ export const BADGE = {
 } as const;
 
 /**
- * The score bands as the badge Mjölnir itself generates renders them.
+ * The score bands as the badge QA Doctor itself generates renders them.
  *
  * These are DEEPER than the score tokens on purpose, and it is not a
  * style preference: shields.io sets the message text in white and gives
- * you no say in it. `score.forged` (#F4DC9C) under white text measures
+ * you no say in it. `score.excellent` (#F4DC9C) under white text measures
  * 1.35:1 — an unreadable badge, shipped to look on-brand. The brand's
  * own deep steps put every band between 4.9 and 6.3:1.
  *
@@ -374,7 +419,7 @@ export const BADGE = {
  * green is not a score colour here — a 100 badge said "your software is
  * fine", which is the one claim this product refuses to make. And
  * `important` is ORANGE, not the blue-family colour the code's own
- * comment claimed for eight releases: every WORTHY badge ever rendered
+ * comment claimed for eight releases: every HEALTHY badge ever rendered
  * showed the trusted band in a warning colour. Nobody had resolved a
  * shields name to a value and looked.
  *
@@ -382,13 +427,13 @@ export const BADGE = {
  * `A83A35`, `7A5F16`, `1F6F7C` and `5C646E` are the `TINT` strokes —
  * the same deep steps the mermaid diagrams use, for the same reason.
  * `8A6D1E` is the gold the brand document already named as the light
- * FORGED gradient's start.
+ * EXCELLENT gradient's start.
  */
 export const BADGE_BAND = {
   critical: "A83A35",
   warning: "7A5F16",
   trusted: "1F6F7C",
-  forged: "8A6D1E",
+  excellent: "8A6D1E",
   unmeasured: "5C646E",
 } as const;
 
@@ -417,7 +462,7 @@ export const PENDING_SITE = {
 /* ── CSS emission ────────────────────────────────────────────── */
 
 /**
- * The `--mj-*` spelling of the tokens above, in emission order. The
+ * The `--qa-*` spelling of the tokens above, in emission order. The
  * generator (`npm run brand:tokens`) writes
  * `site/.vitepress/theme/styles/vars.css` from this list, so the site
  * cannot hold a value this file does not.
@@ -431,20 +476,46 @@ export const CSS_TOKENS: readonly (readonly [
   value: string,
   comment?: string,
 ])[] = [
-  ["--mj-ink-950", SURFACE.ink950, "deepest background (hero, terminal)"],
-  ["--mj-ink-900", SURFACE.ink900, "page background"],
-  ["--mj-ink-850", SURFACE.ink850, "surface"],
-  ["--mj-ink-800", SURFACE.ink800, "raised surface"],
-  ["--mj-steel", BRAND.steel, "neutral bright — headings on ink"],
-  ["--mj-steel-dim", BRAND.steelDim, "muted text on ink"],
-  ["--mj-gold", BRAND.gold, "primary brand — scarce"],
-  ["--mj-gold-bright", BRAND.goldBright, "primary on dark"],
-  ["--mj-gold-hot", BRAND.goldHot, "highlight, forged"],
-  ["--mj-aurora", BRAND.aurora, "secondary — verification energy"],
-  ["--mj-aurora-bright", BRAND.auroraBright, "secondary on dark"],
-  ["--mj-aurora-cyan", BRAND.auroraCyan, "informational"],
-  ["--mj-aurora-green", BRAND.auroraGreen, "aurora curtain, atmosphere only"],
-  ["--mj-aurora-violet", BRAND.auroraViolet, "aurora curtain, atmosphere only"],
+  ["--qa-ink-950", SURFACE.ink950, "deepest background (hero, terminal)"],
+  ["--qa-ink-900", SURFACE.ink900, "page background"],
+  ["--qa-ink-850", SURFACE.ink850, "surface"],
+  ["--qa-ink-800", SURFACE.ink800, "raised surface"],
+  ["--qa-steel", BRAND.steel, "neutral bright — headings on ink"],
+  ["--qa-steel-dim", BRAND.steelDim, "muted text on ink"],
+  ["--qa-gold", BRAND.gold, "primary brand — scarce"],
+  ["--qa-gold-bright", BRAND.goldBright, "primary on dark"],
+  ["--qa-gold-hot", BRAND.goldHot, "highlight, excellent"],
+] as const;
+
+/** Semantic material tokens, emitted beside the palette. */
+export const CSS_MATERIAL: readonly (readonly [
+  name: string,
+  value: string,
+  comment?: string,
+])[] = [
+  ...Object.entries(MATERIAL.glass).flatMap(([level, glass]) => [
+    [
+      `--qa-glass-${level}-bg`,
+      glass.background,
+      `${level} glass background`,
+    ] as const,
+    [`--qa-glass-${level}-blur`, glass.blur, `${level} glass blur`] as const,
+    [
+      `--qa-glass-${level}-border`,
+      glass.border,
+      `${level} glass border`,
+    ] as const,
+    [
+      `--qa-glass-${level}-shadow`,
+      glass.shadow,
+      `${level} glass elevation`,
+    ] as const,
+  ]),
+  ["--qa-glass-reflection", MATERIAL.reflection, "blue signal reflection"],
+  ["--qa-surface-well", MATERIAL.well, "recessed inner surface"],
+  ["--qa-radius-control", MATERIAL.radius.control, "controls"],
+  ["--qa-radius-panel", MATERIAL.radius.panel, "panels"],
+  ["--qa-radius-focus", MATERIAL.radius.focus, "focus surfaces"],
 ] as const;
 
 /** Semantic score/verdict tokens, emitted after the palette. */
@@ -453,21 +524,21 @@ export const CSS_SEMANTIC: readonly (readonly [
   value: string,
   comment?: string,
 ])[] = [
-  ["--mj-trusted", SCORE.trusted, "score band 80–99"],
-  ["--mj-trusted-bright", "#7FD4EA", "trusted, hover"],
-  ["--mj-forged-hot", SCORE.forged, "score 100"],
-  ["--mj-needswork", SCORE.warning, "score band 50–79"],
-  ["--mj-unworthy", SCORE.critical, "score band 0–49"],
-  ["--mj-info", STATUS.info, "informational"],
-  ["--mj-on-gold", TEXT.onGold, "ink for text set ON gold"],
-  ["--mj-ok", STATUS.ok, "non-score success only — never a score colour"],
-  ["--mj-e0", EVIDENCE.e0, "observation"],
-  ["--mj-e1", EVIDENCE.e1, "pattern evidence"],
-  ["--mj-e2", EVIDENCE.e2, "deterministic proof"],
-  ["--mj-l0", TRUST.l0, "trust L0 — static"],
-  ["--mj-l1", TRUST.l1, "trust L1 — static"],
-  ["--mj-l2", TRUST.l2, "trust L2 — static ceiling"],
-  ["--mj-l3", TRUST.l3, "trust L3 — runtime begins"],
-  ["--mj-l4", TRUST.l4, "trust L4 — runtime"],
-  ["--mj-l5", TRUST.l5, "trust L5 — runtime verdict"],
+  ["--qa-healthy", SCORE.trusted, "healthy test health, score band 80–99"],
+  ["--qa-healthy-bright", "#9BC8E4", "healthy, hover"],
+  ["--qa-excellent-hot", SCORE.excellent, "score 100"],
+  ["--qa-attention", SCORE.warning, "needs attention, score band 50–79"],
+  ["--qa-critical", SCORE.critical, "score band 0–49"],
+  ["--qa-info", STATUS.info, "informational"],
+  ["--qa-on-gold", TEXT.onGold, "ink for text set ON gold"],
+  ["--qa-ok", STATUS.ok, "non-score success only — never a score colour"],
+  ["--qa-e0", EVIDENCE.e0, "observation"],
+  ["--qa-e1", EVIDENCE.e1, "pattern evidence"],
+  ["--qa-e2", EVIDENCE.e2, "deterministic proof"],
+  ["--qa-l0", TRUST.l0, "trust L0 — static"],
+  ["--qa-l1", TRUST.l1, "trust L1 — static"],
+  ["--qa-l2", TRUST.l2, "trust L2 — static ceiling"],
+  ["--qa-l3", TRUST.l3, "trust L3 — runtime begins"],
+  ["--qa-l4", TRUST.l4, "trust L4 — runtime"],
+  ["--qa-l5", TRUST.l5, "trust L5 — runtime verdict"],
 ] as const;

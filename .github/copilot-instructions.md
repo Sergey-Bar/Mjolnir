@@ -1,8 +1,8 @@
-# Mjölnir — Copilot Instructions
+# QA Doctor — Copilot Instructions
 
 ## Project
 
-Mjölnir is a verification trust engine (TypeScript, ESM, Node >= 22.18). `npx mjolnir-qa` → worthiness score + findings → `--scope changed` → `ci install`.
+QA Doctor is a verification trust engine (TypeScript, ESM, Node >= 22.18). `npx qa-doctor-cli` → test health score + findings → `--scope changed` → `ci install`.
 
 ## Frozen contracts — NEVER change without explicit user approval
 

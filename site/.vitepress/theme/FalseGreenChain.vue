@@ -109,9 +109,11 @@ const masks = [
   flex-direction: column;
   gap: 0.35rem;
   padding: 0.9rem 1rem 1rem;
-  border-radius: 10px;
-  border: 1px solid var(--vp-c-border);
-  background: var(--vp-c-bg-alt);
+  border-radius: var(--qa-radius-panel);
+  border: 1px solid var(--qa-glass-default-border);
+  background: var(--qa-glass-default-bg);
+  box-shadow: var(--qa-glass-default-shadow);
+  backdrop-filter: blur(var(--qa-glass-default-blur));
   min-width: 0;
 }
 .fgc-stage:last-child {
@@ -129,13 +131,13 @@ const masks = [
   color: var(--vp-c-brand-1);
 }
 .fgc-name {
-  font-family: var(--mj-display);
+  font-family: var(--qa-display);
   font-weight: 600;
   font-size: 0.98rem;
   color: var(--vp-c-text-1);
 }
 .fgc-stage:last-child .fgc-name {
-  color: var(--mj-unworthy);
+  color: var(--qa-critical);
 }
 .fgc-desc {
   font-size: 0.8rem;
@@ -152,14 +154,15 @@ const masks = [
   z-index: 1;
 }
 .fgc-stage:last-child .fgc-arrow {
-  color: var(--mj-unworthy);
+  color: var(--qa-critical);
 }
 
 .fgc-masks {
   margin-top: 1.1rem;
   padding: 0.9rem 1.1rem 1rem;
-  border-radius: 10px;
-  border: 1px dashed var(--vp-c-border);
+  border-radius: var(--qa-radius-panel);
+  border: 1px dashed var(--qa-glass-subtle-border);
+  background: var(--qa-glass-subtle-bg);
 }
 .fgc-masks-lead {
   margin: 0 0 0.6rem;

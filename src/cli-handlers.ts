@@ -1,5 +1,5 @@
 /**
- * Handler functions for every Mjolnir CLI verb.
+ * Handler functions for every QA Doctor CLI verb.
  *
  * Extracted from cli.ts to keep the entry-point module under 800 lines
  * (Task 8) and to isolate the rendering dispatch for runScanCommand
@@ -79,6 +79,11 @@ import { runInit, renderInit, tryReadPackageJson } from "./commands/init.js";
 import { renderPwRunSummary, summarizePwRun } from "./commands/pw-report.js";
 import { planAndApplyFixes, renderFixReport } from "./commands/fix.js";
 import { buildCatalog, renderCatalogMd } from "./commands/rules-catalog.js";
+import {
+  buildRuleHealth,
+  renderRuleStats,
+  renderRuleHealth,
+} from "./commands/rule-health.js";
 import { explainRule, renderExplain } from "./commands/explain.js";
 import { loadConfig, ConfigValidationError } from "./config/config.js";
 import { createIgnoreMatcher } from "./discovery/ignores.js";
@@ -219,12 +224,12 @@ export async function runScanCommand(
         !args.scopeChanged &&
         !args.verbose &&
         args.target === "." &&
-        !existsSync(join(target, "mjolnir.config.json")) &&
+        !existsSync(join(target, "qa-doctor.config.json")) &&
         result.findings.length > 0;
       if (bareFirstRun) {
         io.out(
-          "  New here? `mjolnir ci install` adds this as a PR check. " +
-            "`mjolnir explain <RULE-ID>` explains any finding above.\n",
+          "  New here? `qa-doctor ci install` adds this as a PR check. " +
+            "`qa-doctor explain <RULE-ID>` explains any finding above.\n",
         );
       }
 
@@ -279,7 +284,7 @@ export function runTriageCommand(
   const targetArg = argv.find((a) => !a.startsWith("-"));
   if (!targetArg) {
     io.err(
-      "Usage: mjolnir triage <test-results-dir-or-report-file> [--no-md] [--json] [--classic]",
+      "Usage: qa-doctor triage <test-results-dir-or-report-file> [--no-md] [--json] [--classic]",
     );
     return EXIT_USAGE;
   }
@@ -338,7 +343,7 @@ export async function runMutationCommand(
 ): Promise<number> {
   const targetArg = argv.find((a) => !a.startsWith("-"));
   if (!targetArg) {
-    io.err("Usage: mjolnir mutation <mutation-report> [--scan <path>]");
+    io.err("Usage: qa-doctor mutation <mutation-report> [--scan <path>]");
     return EXIT_USAGE;
   }
   const scanIdx = argv.indexOf("--scan");
@@ -498,7 +503,7 @@ export function runCreateRuleCommand(
   const titleIdx = argv.indexOf("--title");
   const title = titleIdx !== -1 ? argv[titleIdx + 1] : undefined;
   if (!id || !title) {
-    io.err('Usage: mjolnir create-rule <QA-XXX-nnn> --title "Rule title"');
+    io.err('Usage: qa-doctor create-rule <QA-XXX-nnn> --title "Rule title"');
     io.err("Families: QA-TEST · QA-TQUAL · QA-PW · QA-CI · QA-PY");
     return EXIT_USAGE;
   }
@@ -521,7 +526,7 @@ export async function runImpactCommand(
     sinceIdx !== -1 &&
     (sinceIdx + 1 >= argv.length || argv[sinceIdx + 1]?.startsWith("--"))
   ) {
-    io.err("--since requires a value: mjolnir impact [--since <ref>]");
+    io.err("--since requires a value: qa-doctor impact [--since <ref>]");
     return EXIT_USAGE;
   }
   const since = sinceIdx !== -1 ? argv[sinceIdx + 1] : undefined;
@@ -571,7 +576,7 @@ export async function runBaselineCommand(
         `baseline save FAILED — ${saveErr instanceof Error ? saveErr.message : String(saveErr)}`,
       );
       io.err(
-        "The scan completed; the snapshot was not written. Fix the path permissions and re-run `mjolnir baseline`.",
+        "The scan completed; the snapshot was not written. Fix the path permissions and re-run `qa-doctor baseline`.",
       );
       return EXIT_FINDINGS;
     }
@@ -786,7 +791,7 @@ export function runPwReportCommand(
   const targetArg = argv.find((a) => !a.startsWith("-"));
   if (!targetArg) {
     io.err(
-      "Usage: mjolnir pw-report <playwright-report.json | test-results-dir>",
+      "Usage: qa-doctor pw-report <playwright-report.json | test-results-dir>",
     );
     return EXIT_USAGE;
   }
@@ -818,7 +823,7 @@ export function runForensicsCommand(
   const targetArg = argv.find((a) => !a.startsWith("-"));
   if (!targetArg) {
     io.err(
-      "Usage: mjolnir forensics <test-results-dir-or-report-file> [--no-flaky-md]",
+      "Usage: qa-doctor forensics <test-results-dir-or-report-file> [--no-flaky-md]",
     );
     return EXIT_USAGE;
   }
@@ -835,11 +840,16 @@ export function runForensicsCommand(
     }
     if (report.totalTests === 0) {
       io.err(
-        "No test results recognized. Expected a Playwright JSON report (report.json) or JUnit XML files.",
+        (report.totalNetworkObservations ?? 0) > 0
+          ? "Network observations recognized, but HAR does not establish test outcomes. Test verification is unavailable."
+          : "No test results recognized. Expected a Playwright JSON report (report.json) or JUnit XML files.",
       );
       return EXIT_PARTIAL;
     }
-    return report.flakyTests > 0 || report.failed > 0
+    if (!report.analysisComplete) return EXIT_PARTIAL;
+    return report.flakyTests > 0 ||
+      report.failed > 0 ||
+      (report.failedNetworkObservations ?? 0) > 0
       ? EXIT_FINDINGS
       : EXIT_CLEAN;
   } catch (err) {
@@ -853,6 +863,27 @@ export async function runRulesCommand(
   io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
   const withExternal = argv.includes("--external");
+
+  if (argv.includes("--stats")) {
+    io.out(renderRuleStats(buildRuleHealth()));
+    return EXIT_CLEAN;
+  }
+  if (argv.includes("--health")) {
+    const limitArg = argv.find((a) => a.startsWith("--limit="));
+    if (limitArg !== undefined) {
+      const rawLimit = limitArg.slice("--limit=".length);
+      const parsed = /^\d+$/.test(rawLimit) ? Number(rawLimit) : Number.NaN;
+      if (!Number.isSafeInteger(parsed) || parsed <= 0) {
+        io.err("Usage: qa-doctor rules --health [--limit=<positive-integer>]");
+        return EXIT_USAGE;
+      }
+      io.out(renderRuleHealth(buildRuleHealth(), parsed));
+      return EXIT_CLEAN;
+    }
+    io.out(renderRuleHealth(buildRuleHealth()));
+    return EXIT_CLEAN;
+  }
+
   const root = process.cwd();
   const external = withExternal ? await loadLocalRules(root) : undefined;
   let catalog = [
@@ -861,7 +892,7 @@ export async function runRulesCommand(
       ? buildCatalog(external.rules, { provenance: "external" })
       : []),
   ];
-  for (const w of external?.errors ?? []) io.err(`mjolnir: ${w}`);
+  for (const w of external?.errors ?? []) io.err(`qa-doctor: ${w}`);
   if (argv.includes("--unmeasured")) {
     catalog = catalog.filter((e) => e.measuredFpRate === undefined);
   } else if (argv.includes("--measured")) {
@@ -882,16 +913,18 @@ export async function runExplainCommand(
   const subject = argv.find((a) => !a.startsWith("-"));
   if (!subject) {
     io.err(
-      "Usage: mjolnir explain <RULE-ID | file:line | verdict> [--json <mjolnir.json>]",
+      "Usage: qa-doctor explain <RULE-ID | file:line | verdict> [--json <qa-doctor.json>]",
     );
     return EXIT_USAGE;
   }
   if (subject === "verdict") {
     const jsonIdx = argv.indexOf("--json");
     const jsonPath =
-      jsonIdx !== -1 ? argv[jsonIdx + 1] : join(process.cwd(), "mjolnir.json");
+      jsonIdx !== -1
+        ? argv[jsonIdx + 1]
+        : join(process.cwd(), "qa-doctor.json");
     if (jsonPath === undefined || jsonPath.startsWith("--")) {
-      io.err("explain verdict requires a saved scan: --json <mjolnir.json>");
+      io.err("explain verdict requires a saved scan: --json <qa-doctor.json>");
       return EXIT_USAGE;
     }
     try {
@@ -913,7 +946,7 @@ export async function runExplainCommand(
       argv[fixturesRootIdx + 1]?.startsWith("--"))
   ) {
     io.err(
-      "--fixtures-root requires a value: mjolnir explain <RULE-ID> --fixtures-root <dir>",
+      "--fixtures-root requires a value: qa-doctor explain <RULE-ID> --fixtures-root <dir>",
     );
     return EXIT_USAGE;
   }
@@ -970,7 +1003,7 @@ export async function runDoctorPlaywright(
       return EXIT_USAGE;
     }
     (io.err ?? err)(
-      "mjolnir internal error:",
+      "qa-doctor internal error:",
       e instanceof Error ? e.message : String(e),
     );
     return EXIT_INTERNAL;

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Mjölnir CLI entry point (W1-02).
+ * QA Doctor CLI entry point (W1-02).
  * Exit codes (§24.1, frozen): 0 clean · 1 findings ≥ gate · 2 partial ·
  * 10 usage error · 20 internal error.
  */
@@ -56,7 +56,7 @@ import { ciInstall, type GateLevel } from "./integrations/ci-install.js";
 import { runStdioTransport } from "./mcp/transport.js";
 
 /**
- * Tool version for `mjolnir --version`.
+ * Tool version for `qa-doctor --version`.
  *
  * A literal, not a package.json read: the shipped artifact is a single
  * bundled `dist/cli.mjs`, so resolving package.json at runtime depends on
@@ -252,10 +252,10 @@ export function usageErrorMessage(detail: UsageErrorDetail): string {
   const lines: string[] = [];
   if (detail.flag) {
     lines.push(
-      `mjolnir: invalid value "${detail.token ?? ""}" for ${detail.flag}`,
+      `qa-doctor: invalid value "${detail.token ?? ""}" for ${detail.flag}`,
     );
   } else {
-    lines.push(`mjolnir: unknown flag "${detail.token ?? ""}"`);
+    lines.push(`qa-doctor: unknown flag "${detail.token ?? ""}"`);
   }
   if (detail.token) {
     const near = nearestFlags(detail.token);
@@ -263,7 +263,7 @@ export function usageErrorMessage(detail: UsageErrorDetail): string {
       lines.push(`  Did you mean: ${near.join("  ")}`);
     }
   }
-  lines.push(`  Run mjolnir --help for the full flag list.`);
+  lines.push(`  Run qa-doctor --help for the full flag list.`);
   return lines.join("\n");
 }
 
@@ -300,11 +300,11 @@ export { out, err, internalErrorMessage } from "./cli-io.js";
  */
 export function validateScanTarget(target: string, err: Output): number | null {
   if (!existsSync(target)) {
-    err(`mjolnir: scan target does not exist: ${target}`);
+    err(`qa-doctor: scan target does not exist: ${target}`);
     return EXIT_USAGE;
   }
   if (!statSync(target).isDirectory()) {
-    err(`mjolnir: scan target is not a directory: ${target}`);
+    err(`qa-doctor: scan target is not a directory: ${target}`);
     return EXIT_USAGE;
   }
   return null;
@@ -372,7 +372,7 @@ export function runCiInstall(
     io.err(
       `Refusing to overwrite the customized workflow at ${result.written}.`,
     );
-    io.err("The file differs from the template Mjölnir would write:");
+    io.err("The file differs from the template QA Doctor would write:");
     for (const line of result.diffSummary) io.err(line);
     io.err("Re-run with --force to replace it with the generated template.");
     return EXIT_USAGE;
@@ -381,9 +381,9 @@ export function runCiInstall(
   io.out(
     noAction
       ? "Plain-npx template (—no-action). Default mode: advisory — findings reported, never blocking."
-      : "Action-based template: uses Sergey-Bar/Mjolnir@v1 (major moving tag).",
+      : "Action-based template: uses Sergey-Bar/qa-doctor@v1 (major moving tag).",
   );
-  io.out("Change with: mjolnir ci install --gate error|warning|advisory");
+  io.out("Change with: qa-doctor ci install --gate error|warning|advisory");
   if (!noAction) {
     io.out("Prefer the plain-npx workflow? Re-run with --no-action.");
   }
@@ -403,7 +403,7 @@ export function runSuppressions(
       return EXIT_USAGE;
     }
     (io.err ?? err)(
-      "mjolnir internal error:",
+      "qa-doctor internal error:",
       e instanceof Error ? e.message : String(e),
     );
     return EXIT_INTERNAL;
@@ -520,7 +520,7 @@ export async function main(
   io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
   if (argv[0] === "--version" || argv[0] === "-v") {
-    io.out(`mjolnir-qa ${CLI_VERSION}`);
+    io.out(`qa-doctor-cli ${CLI_VERSION}`);
     return EXIT_CLEAN;
   }
   if (argv[0] === "--help" || argv[0] === "-h") {
@@ -613,7 +613,7 @@ export async function main(
   }
   if (argv[0] === "help") return runHelpCommand(argv.slice(1), io);
   if (SUBCOMMANDS.has(argv[0] ?? "")) {
-    io.err(`mjolnir: incomplete or unknown subcommand "${argv[0]}".`);
+    io.err(`qa-doctor: incomplete or unknown subcommand "${argv[0]}".`);
     printUsage(io.out);
     return EXIT_USAGE;
   }
@@ -624,9 +624,9 @@ export async function main(
     !existsSync(argv[0]) &&
     argv[0].match(/^[a-z][\w:-]*$/i) !== null
   ) {
-    io.err(`mjolnir: unknown subcommand "${argv[0]}".`);
+    io.err(`qa-doctor: unknown subcommand "${argv[0]}".`);
     io.err(
-      "Run `mjolnir --help` for the verb list, or pass a directory to scan.",
+      "Run `qa-doctor --help` for the verb list, or pass a directory to scan.",
     );
     return EXIT_USAGE;
   }
@@ -634,7 +634,7 @@ export async function main(
 }
 
 /**
- * `mjolnir help` / `mjolnir help <verb>` (plan M2). `--help`/`-h` and
+ * `qa-doctor help` / `qa-doctor help <verb>` (plan M2). `--help`/`-h` and
  * `<verb> --help` route here too. Exit 0 — help answers a question.
  * Two-word verbs (`ci install`) are resolved first via the join of the
  * leading non-flag tokens, then the single-word form.

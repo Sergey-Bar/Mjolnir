@@ -68,7 +68,7 @@ describe("checkEvidenceHonesty", () => {
 
 describe("checkTierEnforcement", () => {
   it("falls back to the shipped MEASURED_FP when live verdicts yield nothing", () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-doctor-verdicts-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-doctor-verdicts-"));
     try {
       // A .jsonl with only malformed lines: the live reader stays empty,
       // so the ratchet must fall back to the baked-in baseline.
@@ -118,7 +118,7 @@ describe("checkQuarantineEnforcement", () => {
 
 describe("checkFixtureIntegrity (certification-audit Phase 2.5)", () => {
   function makeFixturesTree(): string {
-    return mkdtempSync(join(tmpdir(), "mjolnir-doctor-fxint-"));
+    return mkdtempSync(join(tmpdir(), "qa-doctor-doctor-fxint-"));
   }
 
   it("passes a healthy tree with registered rule dirs and populated fire/no-fire fixtures", () => {

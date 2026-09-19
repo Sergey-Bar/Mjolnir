@@ -1,6 +1,6 @@
 # QA-CI-014 — try/catch swallows a verification-stage failure
 
-_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+_Generated from the live rule registry and this rule's own committed fixtures by `qa-doctor`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
 | Field                                 | Value                                                                                           |
 | ------------------------------------- | ----------------------------------------------------------------------------------------------- |
@@ -15,7 +15,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Languages                             | groovy                                                                                          |
 | Frameworks                            | jenkins                                                                                         |
 | Detection strategy                    | FRAMEWORK (Groovy try/catch block scan (string-aware brace matching) over the Jenkinsfile text) |
-| Introduced in                         | v2.0.0                                                                                          |
+| Introduced in                         | v1.1.1                                                                                          |
 
 ## Why this fails in production
 
@@ -43,4 +43,4 @@ UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked b
 
 ---
 
-Full catalog: `mjolnir rules --md` · Live explanation: `mjolnir explain QA-CI-014`
+Full catalog: `qa-doctor rules --md` · Live explanation: `qa-doctor explain QA-CI-014`

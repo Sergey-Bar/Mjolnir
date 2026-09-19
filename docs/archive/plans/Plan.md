@@ -389,7 +389,7 @@ Trust Regression: HIGH
 
 The tool should answer:
 
-> **"Did this PR make our verification less trustworthy?"**
+> **"Did this PR reduce our verification confidence?"**
 
 This becomes a major CI feature.
 

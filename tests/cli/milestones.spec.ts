@@ -4,7 +4,7 @@
  * A milestone is a real event `runScanCommand`/`runDiffCommand` already
  * witnesses (a flawless scan, a fix recorded by `diff`) — never a guess,
  * never fabricated. Announced exactly once per repo+machine via the same
- * `.mjolnir/stats.json` file Sprint 6 introduced. Display-only: must
+ * `.qa-doctor/stats.json` file Sprint 6 introduced. Display-only: must
  * never appear in `--json`/`--format sarif`/`--format mermaid` (machine
  * contracts) and must never change score or exit code.
  */
@@ -50,7 +50,7 @@ function capture() {
 }
 
 function makeCleanRepo(): string {
-  const d = mkdtempSync(join(tmpdir(), "mjolnir-milestones-clean-"));
+  const d = mkdtempSync(join(tmpdir(), "qa-doctor-milestones-clean-"));
   createdDirs.push(d);
   mkdirSync(join(d, "test"), { recursive: true });
   // A genuinely clean unit test: no UI interaction (so accessibility/
@@ -74,7 +74,7 @@ function git(cwd: string, args: string[]): void {
 }
 
 function makeGitRepoWithRealFix(): string {
-  const d = mkdtempSync(join(tmpdir(), "mjolnir-milestones-fix-"));
+  const d = mkdtempSync(join(tmpdir(), "qa-doctor-milestones-fix-"));
   createdDirs.push(d);
   git(d, ["init", "-q", "-b", "main"]);
   git(d, ["config", "user.email", "test@example.com"]);
@@ -106,7 +106,7 @@ function makeGitRepoWithRealFix(): string {
 
 function readStats(dir: string): StatsFile {
   return JSON.parse(
-    readFileSync(join(dir, ".mjolnir", "stats.json"), "utf8"),
+    readFileSync(join(dir, ".qa-doctor", "stats.json"), "utf8"),
   ) as StatsFile;
 }
 
@@ -117,7 +117,7 @@ describe("first-clean-scan milestone", () => {
     const code = await runScanCommand([dir], cap.io);
     expect(code).toBe(0);
     expect(cap.text()).not.toContain("MILESTONE");
-    expect(existsSync(join(dir, ".mjolnir", "stats.json"))).toBe(false);
+    expect(existsSync(join(dir, ".qa-doctor", "stats.json"))).toBe(false);
   });
 
   it("announces the milestone on a genuinely flawless scan with --record-milestones", async () => {
@@ -126,7 +126,7 @@ describe("first-clean-scan milestone", () => {
     const code = await runScanCommand([dir, "--record-milestones"], cap.io);
     expect(code).toBe(0);
     expect(cap.text()).toContain("MILESTONE: first flawless scan");
-    expect(existsSync(join(dir, ".mjolnir", "stats.json"))).toBe(true);
+    expect(existsSync(join(dir, ".qa-doctor", "stats.json"))).toBe(true);
     expect(readStats(dir).milestonesAnnounced).toEqual(["first-clean-scan"]);
   });
 

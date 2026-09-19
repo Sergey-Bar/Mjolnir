@@ -17,8 +17,8 @@
  * rule is treated as unmeasured → provisional → re-measure (§07). This
  * blocks the path Regex → AST → "old measurement says Core" → Core.
  *
- * Consumers: `mjolnir explain`, the rules catalog, the generated rule
- * docs, `mjolnir doctor`'s tier ratchets, and the capability matrix.
+ * Consumers: `qa-doctor explain`, the rules catalog, the generated rule
+ * docs, `qa-doctor doctor`'s tier ratchets, and the capability matrix.
  * NOT a consumer: scan behavior — quarantine is the only tier the
  * pipeline enforces (severity/info + E0 caps, `--strict` filter), and
  * every quarantine rule declares its tier explicitly, so this module

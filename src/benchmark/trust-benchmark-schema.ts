@@ -4,7 +4,7 @@
  * Defines the trust classification dimensions and benchmark dataset
  * schema used to validate rule trust metadata against a curated
  * benchmark corpus. Each entry captures 11 boolean trust dimensions
- * that together characterize the trustworthiness of a finding/rule
+ * that together characterize the test health of a finding/rule
  * combination.
  */
 

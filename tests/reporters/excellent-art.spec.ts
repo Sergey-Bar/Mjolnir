@@ -1,12 +1,12 @@
 /**
- * Score-state art (art.ts). The four-state hammer that used to live here
+ * Score-state art (art.ts). The four-state score graphic that used to live here
  * was removed from the report — the verdict word carries the state
  * without colour (R11) — so what remains to lock is the band colour
- * mapping, the unmeasured state, and the FORGED wordmark.
+ * mapping, the unmeasured state, and the EXCELLENT wordmark.
  */
 
 import { describe, expect, it } from "vitest";
-import { FORGED_WORDMARK } from "../../src/reporter/art.js";
+import { EXCELLENT_WORDMARK } from "../../src/reporter/art.js";
 import { gaugeColorForBand, palette } from "../../src/reporter/theme.js";
 import { deriveScoreState } from "../../src/reporter/score-state.js";
 
@@ -19,7 +19,7 @@ describe("unmeasured state", () => {
 
   it("gaugeColorForBand resolves every band, unmeasured to dim", () => {
     const p = palette(true);
-    expect(gaugeColorForBand("forged", p)("x")).toBe(p.forged("x"));
+    expect(gaugeColorForBand("excellent", p)("x")).toBe(p.excellent("x"));
     expect(gaugeColorForBand("trusted", p)("x")).toBe(p.trusted("x"));
     expect(gaugeColorForBand("warning", p)("x")).toBe(p.warning("x"));
     expect(gaugeColorForBand("critical", p)("x")).toBe(p.error("x"));
@@ -27,8 +27,8 @@ describe("unmeasured state", () => {
   });
 });
 
-describe("FORGED_WORDMARK", () => {
+describe("EXCELLENT_WORDMARK", () => {
   it("is the spaced 100-state wordmark", () => {
-    expect(FORGED_WORDMARK).toContain("F O R G E D");
+    expect(EXCELLENT_WORDMARK).toContain("E X C E L L E N T");
   });
 });

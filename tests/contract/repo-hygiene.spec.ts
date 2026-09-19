@@ -86,7 +86,7 @@ describe(".gitignore hygiene", () => {
 // probe-*.mts scripts at the repo root — contributor-hostile clutter
 // that `git status` hid because *.log was already ignored. The guard is
 // non-recursive (the root only): legit logs exist under site/, coverage/
-// and .mjolnir/logs/, all already ignored and all subdirectories.
+// and .qa-doctor/logs/, all already ignored and all subdirectories.
 describe("root directory cleanliness", () => {
   const rootEntries = readdirSync(ROOT);
   const strayLogs = rootEntries.filter((name) => name.endsWith(".log"));
@@ -140,7 +140,7 @@ describe("root directory cleanliness", () => {
       ".claude",
       ".husky",
       ".kilo",
-      ".mjolnir",
+      ".qa-doctor",
       ".planning",
       ".vitepress",
       ".vscode",
@@ -149,7 +149,7 @@ describe("root directory cleanliness", () => {
       "coverage",
       "scratch",
       "release-assets",
-      ".mjolnir",
+      ".qa-doctor",
     ]);
     const untracked = execFileSync(
       "git",

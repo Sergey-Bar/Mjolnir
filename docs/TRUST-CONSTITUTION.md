@@ -1,4 +1,4 @@
-# Mjölnir Trust Constitution
+# QA Doctor Trust Constitution
 
 Canonical law for every trust claim this project makes. CERTIFICATION-POLICY's
 A1–A4 are adopted as §1; Laws 1–22 live in `docs/CERTIFICATION-POLICY.md` and
@@ -58,7 +58,7 @@ performed and satisfied per dimension.
 **Record shape:** every dimension carries BOTH fields — `evidence` and
 `determination` — so the causal link is explicit and auditable. Evidence that
 a violation occurred is still PROVEN evidence; the determination is FAILED,
-never hidden. Machine surface: `mjolnir.release-trust` (`mjolnir.release-trust@1`).
+never hidden. Machine surface: `qa-doctor.release-trust` (`qa-doctor.release-trust@1`).
 
 **Mapping law:** existing frozen vocabulary maps onto the algebra
 (`analysisStatus` complete/partial; E0/E1/E2; forensic verdicts incl.
@@ -114,7 +114,7 @@ A release MUST NOT be Trust-PASS when any of these holds (owner list, verbatim):
 
 Each condition maps to a dimension determination via the release-trust
 contract (`docs/RELEASE-TRUST-CONTRACT.md`) — machine-enforced, no separate
-hand-run artifact exists. Verify: `mjolnir release-trust` + the release gate
+hand-run artifact exists. Verify: `qa-doctor release-trust` + the release gate
 (`.github/workflows/release.yml`).
 
 ## §5. Per-dimension applicability

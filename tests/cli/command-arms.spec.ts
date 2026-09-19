@@ -57,7 +57,7 @@ const REPO_ROOT = join(import.meta.dirname, "..", "..");
 let dir: string;
 let origCwd: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-cli-arms-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-cli-arms-"));
   origCwd = process.cwd();
 });
 afterEach(() => {
@@ -140,19 +140,19 @@ describe("scan-target validation across subcommands (audit H-4)", () => {
   it("diff prints a friendly usage error and exits 10 on an unknown flag", async () => {
     const cap = capture();
     expect(await runDiffCommand(["--bogus"], cap.io)).toBe(10);
-    expect(cap.errText()).toContain('mjolnir: unknown flag "--bogus"');
+    expect(cap.errText()).toContain('qa-doctor: unknown flag "--bogus"');
   });
 });
 
 describe("runSuppressions", () => {
   it("surfaces a corrupted config on the usage path even without io.err", () => {
     process.chdir(dir);
-    writeFileSync(join(dir, "mjolnir.config.json"), "{ not json");
+    writeFileSync(join(dir, "qa-doctor.config.json"), "{ not json");
     const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     // io has no err — the module fallback (console.error) must carry it.
     const code = runSuppressions({ out: () => {} });
     expect(code).toBe(10);
-    expect(errSpy.mock.calls.join("\n")).toContain("Invalid mjolnir config");
+    expect(errSpy.mock.calls.join("\n")).toContain("Invalid qa-doctor config");
   });
 });
 
@@ -188,7 +188,7 @@ describe("runDoctorCommand", () => {
     // used to ignore the flag and scan the CWD as a surprise full run.
     const cap = capture();
     expect(runDoctorCommand(["--bogus"], cap.io)).toBe(10);
-    expect(cap.errText()).toContain("Usage: mjolnir doctor");
+    expect(cap.errText()).toContain("Usage: qa-doctor doctor");
   });
 
   it("exits 1 when the fixture firewall fails (empty fixtures dir)", () => {
@@ -202,7 +202,7 @@ describe("runDoctorCommand", () => {
   it("exits 0 on a healthy self-audit of this repo", () => {
     const cap = capture();
     expect(runDoctorCommand([REPO_ROOT], cap.io)).toBe(0);
-    expect(cap.text()).toContain("WORTHY");
+    expect(cap.text()).toContain("HEALTHY");
   });
 });
 
@@ -301,7 +301,7 @@ describe("runBaselineCommand", () => {
     expect(await runBaselineCommand([dir], cap2.io)).toBe(0);
     expect(cap2.text()).toContain("Replaced an existing baseline");
     expect(
-      readFileSync(join(dir, ".mjolnir", "baseline.json"), "utf8"),
+      readFileSync(join(dir, ".qa-doctor", "baseline.json"), "utf8"),
     ).toContain("QA-PW-101");
   });
 });
@@ -402,16 +402,16 @@ describe("runScanCommand output options", () => {
 
   it("maps a corrupted config to usage exit 10", async () => {
     writeCleanSpec();
-    writeFileSync(join(dir, "mjolnir.config.json"), "{ broken");
+    writeFileSync(join(dir, "qa-doctor.config.json"), "{ broken");
     const cap = capture();
     expect(await runScanCommand([dir, "--json"], cap.io)).toBe(10);
-    expect(cap.errText()).toContain("Invalid mjolnir config");
+    expect(cap.errText()).toContain("Invalid qa-doctor config");
   });
 
   it("warns on stderr when severityOverrides names an unknown rule", async () => {
     writeCleanSpec();
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
+      join(dir, "qa-doctor.config.json"),
       JSON.stringify({ severityOverrides: { "QA-NOPE-001": "warning" } }),
     );
     const cap = capture();
@@ -424,7 +424,7 @@ describe("runScanCommand output options", () => {
     // A directory where the stats FILE belongs: every write fails (EISDIR).
     // On Windows, mkdirSync may succeed but the write error message differs.
     // Use a read-only parent directory instead for cross-platform reliability.
-    const statsDir = join(dir, ".mjolnir");
+    const statsDir = join(dir, ".qa-doctor");
     mkdirSync(statsDir, { recursive: true });
     try {
       // Try to make the directory read-only (works on Unix, partial on Windows)
@@ -609,7 +609,7 @@ describe("diff stats recording", () => {
     writeFileSync(join(dir, "e2e", "one.spec.ts"), fixedContent());
     // stats.json as a directory: both the resolved-counter write and the
     // milestone write must fail into warnings, not crash the diff.
-    mkdirSync(join(dir, ".mjolnir", "stats.json"), { recursive: true });
+    mkdirSync(join(dir, ".qa-doctor", "stats.json"), { recursive: true });
     const cap = capture();
     expect(await runDiffCommand([dir], cap.io)).toBe(0);
     expect(cap.errText()).toContain("counters not recorded");

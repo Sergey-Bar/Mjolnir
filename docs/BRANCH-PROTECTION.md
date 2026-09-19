@@ -16,7 +16,7 @@ These settings maximize the OpenSSF Scorecard [Branch-Protection](https://securi
 - **Require status checks to pass before merging**: ✅ Enabled
 - **Required checks**:
   - `build-test (ubuntu-latest, 22)` — CI matrix
-  - `self-scan` — Mjölnir self-scan gate
+  - `self-scan` — QA Doctor self-scan gate
   - `certification` — Doctor + determinism verify
 - **Require branches to be up to date before merging**: ✅ Enabled
 
@@ -35,7 +35,7 @@ These settings maximize the OpenSSF Scorecard [Branch-Protection](https://securi
 After applying these settings, run:
 
 ```bash
-gh api repos/Sergey-Bar/Mjolnir/branches/main/protection --jq '.required_status_checks.contexts'
+gh api repos/Sergey-Bar/qa-doctor/branches/main/protection --jq '.required_status_checks.contexts'
 ```
 
-Or check the live scorecard: https://api.securityscorecards.dev/projects/github.com/Sergey-Bar/Mjolnir
+Or check the live scorecard: https://api.securityscorecards.dev/projects/github.com/Sergey-Bar/qa-doctor

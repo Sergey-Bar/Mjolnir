@@ -61,17 +61,17 @@ describe("badge", () => {
     expect(badge.message).toBe("82/100 · 1 error");
     // ScoreState bands: 82 is the trusted band. The colour is the brand's
     // deep aurora, not shields' `important` — which resolves to #ea7233,
-    // an ORANGE, so every WORTHY badge used to render in a warning hue.
+    // an ORANGE, so every HEALTHY badge used to render in a warning hue.
     expect(badge.color).toBe(BADGE_BAND.trusted);
     expect(badge.schemaVersion).toBe(1);
   });
 
-  it("the forged state reads 100/100 · forged", () => {
+  it("the excellent state reads 100/100 · excellent", () => {
     const badge = buildBadge(fakeScan({ score: 100 }));
-    expect(badge.message).toBe("100/100 · forged");
+    expect(badge.message).toBe("100/100 · excellent");
     // Not shields' `success`, which is green (#4b0). Green is not a
     // score colour here: a green 100 badge says "your software is fine".
-    expect(badge.color).toBe(BADGE_BAND.forged);
+    expect(badge.color).toBe(BADGE_BAND.excellent);
     expect(badge.color).not.toBe("success");
   });
 

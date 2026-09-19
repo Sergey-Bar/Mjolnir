@@ -1,13 +1,13 @@
 # Support
 
-Mjölnir is an open-source tool maintained by a solo maintainer. GitHub
+QA Doctor is an open-source tool maintained by a solo maintainer. GitHub
 issues are for the product, not for personal support:
 
-- **Bug reports** → [open a bug report](https://github.com/Sergey-Bar/Mjolnir/issues/new?template=bug-report.yml)
-- **False positives / false negatives** → [report a false-positive](https://github.com/Sergey-Bar/Mjolnir/issues/new?template=false-positive.yml) — measured verdicts from these reports feed the false-positive audit ([docs/FP-AUDIT.md](docs/FP-AUDIT.md))
-- **Rule requests** → [request a rule](https://github.com/Sergey-Bar/Mjolnir/issues/new?template=rule-request.yml)
-- **Language requests** → [request a language](https://github.com/Sergey-Bar/Mjolnir/issues/new?template=language-request.yml)
-- **Usage questions** → start a [GitHub Discussion](https://github.com/Sergey-Bar/Mjolnir/discussions) rather than an issue
+- **Bug reports** → [open a bug report](https://github.com/Sergey-Bar/qa-doctor/issues/new?template=bug-report.yml)
+- **False positives / false negatives** → [report a false-positive](https://github.com/Sergey-Bar/qa-doctor/issues/new?template=false-positive.yml) — measured verdicts from these reports feed the false-positive audit ([docs/FP-AUDIT.md](docs/FP-AUDIT.md))
+- **Rule requests** → [request a rule](https://github.com/Sergey-Bar/qa-doctor/issues/new?template=rule-request.yml)
+- **Language requests** → [request a language](https://github.com/Sergey-Bar/qa-doctor/issues/new?template=language-request.yml)
+- **Usage questions** → start a [GitHub Discussion](https://github.com/Sergey-Bar/qa-doctor/discussions) rather than an issue
 
 ## Not support
 

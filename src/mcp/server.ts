@@ -14,11 +14,11 @@
  *   structured errors and the process STAYS ALIVE.
  * - parameter size caps; ONE scan in flight (serialized queue) reusing
  *   the pipeline's own budgets; zero network (no fetches anywhere); no
- *   shell execution beyond Mjölnir's own verbs.
- * - filesystem boundary = scan target + `.mjolnir/` (same as CLI).
+ *   shell execution beyond QA Doctor's own verbs.
+ * - filesystem boundary = scan target + `.qa-doctor/` (same as CLI).
  * - the plugin trust gate applies unchanged (--enable-plugins is NOT
  *   exposed over MCP: tools run with the gate CLOSED unless the server
- *   was started with MJOLNIR_ENABLE_PLUGINS=1 in its own environment).
+ *   was started with QA_DOCTOR_ENABLE_PLUGINS=1 in its own environment).
  */
 
 import { Buffer } from "node:buffer";
@@ -71,7 +71,7 @@ export const MCP_TOOLS = [
   {
     name: "scan",
     description:
-      "Run the Mjölnir verification scan on a directory and return the canonical machine contract (findings with ruleId/detectorRevision/evidence/trust, completeness fields, deterministic digest). One scan in flight; zero network; plugin gate applies unchanged.",
+      "Run the QA Doctor verification scan on a directory and return the canonical machine contract (findings with ruleId/detectorRevision/evidence/trust, completeness fields, deterministic digest). One scan in flight; zero network; plugin gate applies unchanged.",
     inputSchema: {
       type: "object",
       properties: {
@@ -107,7 +107,7 @@ export const MCP_TOOLS = [
   {
     name: "diff",
     description:
-      "Compare a completed scan result against the target's committed baseline (.mjolnir/baseline.json) using the §15 lifecycle resolution. Returns new findings and per-disappearance resolutions (VERIFIED-RESOLVED / INCONCLUSIVE(cause) / SUPPRESSED / DISAPPEARED-NON-FIX). Read-only.",
+      "Compare a completed scan result against the target's committed baseline (.qa-doctor/baseline.json) using the §15 lifecycle resolution. Returns new findings and per-disappearance resolutions (VERIFIED-RESOLVED / INCONCLUSIVE(cause) / SUPPRESSED / DISAPPEARED-NON-FIX). Read-only.",
     inputSchema: {
       type: "object",
       properties: {
@@ -124,7 +124,7 @@ export const MCP_TOOLS = [
   {
     name: "verify",
     description:
-      "Agent-loop digest (1:1 with `mjolnir verify`): scan the target and diff against the committed baseline. Returns resolved (per §15 lifecycle), new, unchanged (grouped by ruleId + location), and the score delta. Read-only; the same transport guardrails as every other tool.",
+      "Agent-loop digest (1:1 with `qa-doctor verify`): scan the target and diff against the committed baseline. Returns resolved (per §15 lifecycle), new, unchanged (grouped by ruleId + location), and the score delta. Read-only; the same transport guardrails as every other tool.",
     inputSchema: {
       type: "object",
       properties: {
@@ -136,7 +136,7 @@ export const MCP_TOOLS = [
   {
     name: "forensics",
     description:
-      "Runtime-evidence report (1:1 with the forensics engine behind `mjolnir pw-report`): ingest a run report (Playwright JSON, JUnit XML, Jest/Vitest JSON, or a Playwright trace artifact) and return the ForensicsReport — per-test verdicts, retries, TRUE-FLAKE, durations. Hostile reports degrade to zero records (never a fabricated clean run). Read-only.",
+      "Runtime-evidence report (1:1 with the forensics engine behind `qa-doctor pw-report`): ingest a run report (Playwright JSON, JUnit XML, Jest/Vitest JSON, or a Playwright trace artifact) and return the ForensicsReport — per-test verdicts, retries, TRUE-FLAKE, durations. Hostile reports degrade to zero records (never a fabricated clean run). Read-only.",
     inputSchema: {
       type: "object",
       properties: {
@@ -164,7 +164,7 @@ export const MCP_TOOLS = [
   {
     name: "pw-report",
     description:
-      "Playwright run summary (1:1 with `mjolnir pw-report`): ingest a run report and return both the ForensicsReport and the rendered run summary. Read-only.",
+      "Playwright run summary (1:1 with `qa-doctor pw-report`): ingest a run report and return both the ForensicsReport and the rendered run summary. Read-only.",
     inputSchema: {
       type: "object",
       properties: {
@@ -285,7 +285,7 @@ export async function handleToolCall(call: McpToolCall): Promise<McpResponse> {
           scopeChanged: false,
           format: "json",
           // §21: the plugin gate applies unchanged — the tool surface
-          // never opens it (MJOLNIR_ENABLE_PLUGINS env only).
+          // never opens it (QA_DOCTOR_ENABLE_PLUGINS env only).
         }),
       );
       // The machine contract rides the transport exactly as it rides the
@@ -341,7 +341,7 @@ export async function handleToolCall(call: McpToolCall): Promise<McpResponse> {
           id: call.id,
           result: {
             hasBaseline: false,
-            note: "no committed baseline at .mjolnir/baseline.json — nothing to resolve against",
+            note: "no committed baseline at .qa-doctor/baseline.json — nothing to resolve against",
           },
         };
       }
@@ -395,7 +395,7 @@ export async function handleToolCall(call: McpToolCall): Promise<McpResponse> {
           id: call.id,
           result: {
             hasBaseline: false,
-            note: "no committed baseline at .mjolnir/baseline.json — establish the before-state with `mjolnir baseline` first",
+            note: "no committed baseline at .qa-doctor/baseline.json — establish the before-state with `qa-doctor baseline` first",
           },
         };
       }
@@ -561,7 +561,7 @@ export async function handleMcpMessage(
         protocolVersion: PROTOCOL_VERSION,
         capabilities: { tools: {} },
         serverInfo: {
-          name: "mjolnir-qa",
+          name: "qa-doctor-cli",
           version: CLI_VERSION,
         },
       },

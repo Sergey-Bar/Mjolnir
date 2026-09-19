@@ -3,25 +3,25 @@
 One command generates a PR workflow — advisory by default, never blocking:
 
 ```bash
-mjolnir ci install
+qa-doctor ci install
 ```
 
 Or wire it into GitHub Code Scanning natively via SARIF:
 
 ```yaml
-- run: npx mjolnir-qa@latest --format sarif > mjolnir.sarif
+- run: npx qa-doctor-cli@latest --format sarif > qa-doctor.sarif
 - uses: github/codeql-action/upload-sarif@v3
   with:
-    sarif_file: mjolnir.sarif
+    sarif_file: qa-doctor.sarif
 ```
 
 On GitLab, the Code Quality report renders as the MR widget and inline
 diff annotations:
 
 ```yaml
-mjolnir:
+qa-doctor:
   image: node:22
-  script: npx --yes mjolnir-qa@latest . --scope changed --format codequality
+  script: npx --yes qa-doctor-cli@latest . --scope changed --format codequality
     > gl-code-quality-report.json
   artifacts:
     reports:
@@ -29,7 +29,7 @@ mjolnir:
 ```
 
 Full recipe (gate step, scheduled audit, self-hosted notes):
-[GitLab CI](https://github.com/Sergey-Bar/Mjolnir/blob/main/docs/GITLAB-CI.md).
+[GitLab CI](https://github.com/Sergey-Bar/qa-doctor/blob/main/docs/GITLAB-CI.md).
 Editor and pipeline setup for SARIF: [SARIF integration](/reference/sarif).
 
 <FalseGreenChain />
@@ -51,9 +51,9 @@ blocks. That is the right starting point — a gate that fails on day one gets
 disabled on day two.
 
 ```bash
-mjolnir ci install --gate advisory   # report only (default)
-mjolnir ci install --gate warning    # fail on warnings and errors
-mjolnir ci install --gate error      # fail on errors only
+qa-doctor ci install --gate advisory   # report only (default)
+qa-doctor ci install --gate warning    # fail on warnings and errors
+qa-doctor ci install --gate error      # fail on errors only
 ```
 
 Pass `--force` to overwrite a workflow you have already customised; without
@@ -80,8 +80,8 @@ A first scan of a mature suite will find plenty. Rather than fixing all of it
 before the gate goes on, snapshot what exists and gate only on what is new:
 
 ```bash
-mjolnir baseline          # snapshot today's findings
-mjolnir diff              # from now on: new or worsened findings only
+qa-doctor baseline          # snapshot today's findings
+qa-doctor diff              # from now on: new or worsened findings only
 ```
 
 `--scope changed` does the same job per-branch, and the two compose: the
@@ -90,8 +90,8 @@ baseline holds the line on the repo, `--scope changed` holds it on the diff.
 ## Reporting into the pull request
 
 ```bash
-mjolnir pr-comment                 # a scoped PR comment, as Markdown
-mjolnir impact --since origin/main # what this branch changed about the score
+qa-doctor pr-comment                 # a scoped PR comment, as Markdown
+qa-doctor impact --since origin/main # what this branch changed about the score
 ```
 
 Both write Markdown to stdout, so posting them is your CI's job — pipe the

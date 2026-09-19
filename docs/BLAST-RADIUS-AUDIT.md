@@ -7,25 +7,25 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 273 files, 52241 LOC
+## Inventory: 274 files, 52758 LOC
 
 | Area             | Files | LOC   |
 | ---------------- | ----- | ----- |
-| src/rules        | 87    | 11689 |
-| src/commands     | 28    | 8885  |
-| src/engine       | 36    | 8587  |
-| src/reporter     | 15    | 3152  |
-| src/(root)       | 6     | 2634  |
-| src/forensics    | 16    | 2584  |
+| src/rules        | 87    | 11693 |
+| src/commands     | 29    | 9144  |
+| src/engine       | 36    | 8608  |
+| src/reporter     | 15    | 3135  |
+| src/forensics    | 17    | 2915  |
+| src/(root)       | 6     | 2691  |
 | src/adapters     | 11    | 1677  |
 | src/discovery    | 10    | 1643  |
-| src/integrations | 11    | 1541  |
+| src/integrations | 11    | 1544  |
 | src/gaps         | 2     | 1390  |
 | src/frameworks   | 4     | 1321  |
-| src/mcp          | 4     | 927   |
-| src/brand        | 3     | 807   |
+| src/brand        | 3     | 800   |
+| src/mcp          | 3     | 777   |
+| src/plugins      | 4     | 641   |
 | src/release      | 5     | 638   |
-| src/plugins      | 4     | 635   |
 | src/bench        | 4     | 589   |
 | src/config       | 3     | 549   |
 | src/scorer       | 3     | 533   |
@@ -33,8 +33,8 @@ codes) must match this document exactly.
 | src/traceability | 2     | 441   |
 | src/scope        | 2     | 419   |
 | src/playwright   | 2     | 312   |
-| src/trust        | 2     | 228   |
-| src/lib          | 4     | 221   |
+| src/lib          | 4     | 243   |
+| src/trust        | 2     | 216   |
 | src/benchmark    | 2     | 174   |
 | src/anti-gaming  | 2     | 169   |
 
@@ -43,20 +43,20 @@ codes) must match this document exactly.
 | Module                              | Importers |
 | ----------------------------------- | --------- |
 | src/types                           | 120       |
-| src/rules/rule                      | 79        |
+| src/rules/rule                      | 80        |
 | src/rules/shared/positions          | 62        |
+| src/forensics/types                 | 19        |
 | src/reporter/ui                     | 18        |
-| src/forensics/types                 | 18        |
 | src/engine/adapter                  | 14        |
-| src/rules/index                     | 11        |
+| src/rules/index                     | 12        |
 | src/engine/ts-ast                   | 10        |
+| src/rules/measured-fp.generated     | 10        |
 | src/discovery/ignores               | 9         |
-| src/rules/measured-fp.generated     | 9         |
 | src/discovery/azure-pipeline-parser | 8         |
 | src/engine/code-text                | 8         |
 | src/reporter/theme                  | 8         |
+| src/forensics/evidence-hygiene      | 8         |
 | src/reporter/score-state            | 7         |
-| src/lib/safe-json                   | 7         |
 
 ## External dependency allowlist (containment)
 

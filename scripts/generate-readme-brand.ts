@@ -55,8 +55,8 @@ import {
 
 const ROOT = join(fileURLToPath(new URL(".", import.meta.url)), "..");
 const OUT_DIR = join(ROOT, "assets", "readme");
-const SANS = "MjolnirSans";
-const MONO = "MjolnirMono";
+const SANS = "QaDoctorSans";
+const MONO = "QaDoctorMono";
 const SETTLE = MOTION.easing.settle;
 const ENTER = MOTION.easing.enter;
 const HAIR = `rgb(${HAIRLINE_RGB})`;
@@ -161,14 +161,14 @@ export function buildHeroSvg(): string {
   <g clip-path="url(#frame)">
   <rect class="ground" width="${w}" height="${h}"/>
   ${s.body}
-  <text class="mark" x="96" y="104">MJÖLNIR</text>
+  <text class="mark" x="96" y="104">QA DOCTOR</text>
   <text class="head was" x="96" y="318">Tests tell you what passed.</text>
-  <text class="head now" x="96" y="404">Mjölnir tells you what you can trust.</text>
+  <text class="head now" x="96" y="404">QA Doctor tells you what you can trust.</text>
   </g>`;
   return svg(
     w,
     h,
-    "Mjölnir. Tests tell you what passed. Mjölnir tells you what you can trust.",
+    "QA Doctor. Tests tell you what passed. QA Doctor tells you what you can trust.",
     [sansFaceCss()],
     css,
     still,
@@ -367,7 +367,7 @@ ${out.join("\n")}
     </g>
 ${windowClose(w, h)}`;
   const label =
-    `Mjölnir reading ${SCAN_FILE} from the demo repository line by line, ` +
+    `QA Doctor reading ${SCAN_FILE} from the demo repository line by line, ` +
     `and flagging ${count} at the lines it reported: ` +
     findings
       .map((x) => `line ${x.line}, ${x.severity}, ${x.ruleId}: ${x.message}`)

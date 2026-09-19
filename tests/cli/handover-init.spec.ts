@@ -32,7 +32,7 @@ import type {
 
 let dir: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-new-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-new-"));
 });
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
@@ -159,11 +159,11 @@ describe("runInit", () => {
   it("reports advice steps and next commands on a bare repo (L10: init writes nothing)", () => {
     const res = runInit(dir, null);
     expect(res.detectionUnknown).toBe(true);
-    expect(res.nextCommands).toContain("mjolnir ci install");
-    expect(res.nextCommands).toContain("mjolnir badge");
+    expect(res.nextCommands).toContain("qa-doctor ci install");
+    expect(res.nextCommands).toContain("qa-doctor badge");
     const wf = res.steps.find((s) => s.name === "ci-workflow");
     expect(wf?.status).toBe("advice");
-    expect(renderInit(res)).toContain("MJÖLNIR INIT");
+    expect(renderInit(res)).toContain("QA DOCTOR INIT");
     expect(renderInit(res)).toContain("[-] framework-detection");
     // The advice glyph, not the "+" that claims a file was created.
     expect(renderInit(res)).toContain("[·] ci-workflow");
@@ -171,9 +171,12 @@ describe("runInit", () => {
 
   it("reports existing files without overwriting", () => {
     mkdirSync(join(dir, ".github", "workflows"), { recursive: true });
-    writeFileSync(join(dir, ".github", "workflows", "mjolnir.yml"), "on: push");
-    writeFileSync(join(dir, "mjolnir-badge.json"), "{}");
-    writeFileSync(join(dir, "mjolnir.config.json"), "{}");
+    writeFileSync(
+      join(dir, ".github", "workflows", "qa-doctor.yml"),
+      "on: push",
+    );
+    writeFileSync(join(dir, "qa-doctor-badge.json"), "{}");
+    writeFileSync(join(dir, "qa-doctor.config.json"), "{}");
     const res = runInit(dir, null);
     expect(res.steps.find((s) => s.name === "ci-workflow")?.status).toBe(
       "exists",
@@ -181,7 +184,7 @@ describe("runInit", () => {
     expect(res.steps.find((s) => s.name === "badge")?.status).toBe("exists");
     expect(res.steps.find((s) => s.name === "config")?.status).toBe("exists");
     expect(res.nextCommands).toHaveLength(0);
-    expect(existsSync(join(dir, ".github", "workflows", "mjolnir.yml"))).toBe(
+    expect(existsSync(join(dir, ".github", "workflows", "qa-doctor.yml"))).toBe(
       true,
     );
   });

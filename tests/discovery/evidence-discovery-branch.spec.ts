@@ -9,7 +9,7 @@ function makeRepo(files: Record<string, string>): {
   root: string;
   cleanup: () => void;
 } {
-  const root = mkdtempSync(join(tmpdir(), "mjolnir-evdisc-branch-"));
+  const root = mkdtempSync(join(tmpdir(), "qa-doctor-evdisc-branch-"));
   for (const [rel, content] of Object.entries(files)) {
     const p = join(root, rel);
     mkdirSync(join(p, ".."), { recursive: true });

@@ -1,4 +1,4 @@
-# FINAL_CERTIFICATION.md — Mjölnir Final-Release Certification · Cycle 0
+# FINAL_CERTIFICATION.md — QA Doctor Final-Release Certification · Cycle 0
 
 > Independent Certification Authority report. Authority: plan
 > `1788804968910` (C1–C7); implementation authority remains plan
@@ -90,7 +90,7 @@ requested; none needed for a 🔴 cycle-0 determination.
 
 ---
 
-> ### 📦 The Ultimate Question — "If I publish the current Mjölnir package today (v0.5.18), is there any known reason I should NOT trust it?"
+> ### 📦 The Ultimate Question — "If I publish the current QA Doctor package today (v0.5.18), is there any known reason I should NOT trust it?"
 >
 > **v0.5.18 is already on npm; this answer is evidence-bound, not an
 > endorsement of further publishing.**

@@ -112,7 +112,7 @@ import type { ScanContext } from "../../../src/engine/adapter.js";
 
 let dir: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-final-sweep-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-final-sweep-"));
   procState.failLsFiles = false;
   procState.statFailFor = "";
 });

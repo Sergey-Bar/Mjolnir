@@ -1,5 +1,5 @@
 /**
- * `mjolnir fix` — Safe Auto-Fix with Proof (Tier 1 #3).
+ * `qa-doctor fix` — Safe Auto-Fix with Proof (Tier 1 #3).
  *
  * Applies a deliberately tiny safe set of mechanical transforms and
  * proves each one: after rewriting, the file is re-scanned with the
@@ -31,7 +31,7 @@ import { resolve as resolvePath, sep } from "node:path";
 import type { Finding, ScanResult } from "../types.js";
 import { computeCodeText } from "../engine/code-text.js";
 import { okIcon, sectionHeader, plainContext } from "../reporter/ui.js";
-import { sweepStaleTempFiles } from "../lib/fs-atomic.js";
+import { atomicTempPath, sweepStaleTempFiles } from "../lib/fs-atomic.js";
 
 const ui = plainContext();
 
@@ -385,7 +385,7 @@ export function planFixes(
         .replace(/\r\n?/g, "\n");
       // Bug-audit L6: the size guard used `text.length` (UTF-16 units,
       // not bytes — a BMP-only file is fine but astral chars skew it) and
-      // skipped the file with NO FixResult, so `mjolnir fix` exited 0
+      // skipped the file with NO FixResult, so `qa-doctor fix` exited 0
       // while silently doing nothing. Emit an honest result instead.
       const sizeBytes = Buffer.byteLength(text, "utf8");
       if (sizeBytes > MAX_FILE_BYTES) {
@@ -433,10 +433,10 @@ export function planAndApplyFixes(
   rootDir: string,
   options: { dryRun?: boolean } = {},
 ): FixResult[] {
-  // Audit (fix.ts): startup sweep of stale `.mjolnir-*.tmp` files left
+  // Audit (fix.ts): startup sweep of stale `.qa-doctor-*.tmp` files left
   // by a crashed writer — the temp dir must not accumulate cruft across
   // runs. Advisory; a busy temp is left alone.
-  sweepStaleTempFiles(rootDir);
+  if (!options.dryRun) sweepStaleTempFiles(rootDir);
 
   const { files, failures } = planFixes(result, rootDir);
   const results: FixResult[] = [...failures];
@@ -512,12 +512,12 @@ export function planAndApplyFixes(
       accessSync(abs, constants.W_OK);
       // Atomic write: temp file + rename, so a killed process can never
       // leave the user's test file truncated mid-write. Bug-audit L6:
-      // the temp name was the predictable `${abs}.mjolnir-tmp` written
+      // the temp name was the predictable `${abs}.qa-doctor-tmp` written
       // with plain writeFileSync — it would overwrite a pre-existing
       // user file of that exact name, and two concurrent fixes raced on
       // the same path. Random suffix + O_EXCL (`wx`) makes both
       // impossible.
-      const tmp = `${abs}.mjolnir-${Date.now()}-${Math.random().toString(36).slice(2, 10)}.tmp`;
+      const tmp = atomicTempPath(abs);
       try {
         writeFileSync(tmp, text, { flag: "wx", encoding: "utf8" });
         // Audit R-5: the temp file is created with default mode — restore
@@ -526,7 +526,7 @@ export function planAndApplyFixes(
         chmodSync(tmp, st.mode & 0o777);
         renameSync(tmp, abs);
       } catch (writeErr) {
-        // Audit R-5: never leak <file>.mjolnir-tmp into the user's tree.
+        // Audit R-5: never leak <file>.qa-doctor-tmp into the user's tree.
         try {
           unlinkSync(tmp);
         } catch {

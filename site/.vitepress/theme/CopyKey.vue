@@ -60,16 +60,16 @@ function rest(e: PointerEvent) {
   max-width: 100%;
   border: 1px solid var(--vp-c-border);
   border-radius: 8px;
-  background: var(--mj-ink-950);
+  background: var(--qa-ink-950);
   transition:
     transform 380ms cubic-bezier(0.2, 0, 0, 1),
     box-shadow 380ms cubic-bezier(0.2, 0, 0, 1),
     border-color 380ms cubic-bezier(0.2, 0, 0, 1);
 }
 .key:hover {
-  border-color: color-mix(in srgb, var(--mj-aurora-cyan) 40%, transparent);
+  border-color: color-mix(in srgb, var(--qa-info) 40%, transparent);
   box-shadow: 0 10px 40px -12px
-    color-mix(in srgb, var(--mj-aurora-cyan) 45%, transparent);
+    color-mix(in srgb, var(--qa-info) 45%, transparent);
 }
 .key code {
   padding: 13px 16px;
@@ -98,7 +98,7 @@ function rest(e: PointerEvent) {
   border-left: 1px solid var(--vp-c-border);
   border-radius: 0 7px 7px 0;
   background: var(--vp-c-text-1);
-  color: var(--mj-ink-950);
+  color: var(--qa-ink-950);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -110,7 +110,7 @@ function rest(e: PointerEvent) {
   transform: scale(0.97);
 }
 .key button.done {
-  background: var(--mj-aurora-green);
+  background: var(--qa-healthy);
 }
 .key button svg {
   width: 14px;

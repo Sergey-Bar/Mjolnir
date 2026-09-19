@@ -2,12 +2,12 @@
  * Agent skill-surface contract (remediation plan §9 R8 / growth roadmap
  * WI-22, plan §17).
  *
- * `mjolnir install` writes the SAME deterministic brief to every
+ * `qa-doctor install` writes the SAME deterministic brief to every
  * detected instruction surface (.claude/, .cursor/, .kilo/, AGENTS.md).
  * The contract: every surface carries the full agent loop (baseline →
  * fix → verify digest) AND the §17 safety wording — agents may not
  * manufacture evidence, convert INCONCLUSIVE to pass, silently
- * suppress, or declare trustworthiness without evidence; AGENT CLAIM
+ * suppress, or declare test health without evidence; AGENT CLAIM
  * ≠ VERIFICATION. Frozen surfaces only; content is version-pinned and
  * byte-deterministic.
  */
@@ -35,7 +35,7 @@ import {
 
 const createdDirs: string[] = [];
 function tmpSkillRepo(): string {
-  const d = mkdtempSync(join(tmpdir(), "mjolnir-skill-surface-"));
+  const d = mkdtempSync(join(tmpdir(), "qa-doctor-skill-surface-"));
   createdDirs.push(d);
   return d;
 }
@@ -46,7 +46,7 @@ afterEach(() => {
   }
 });
 
-/** The frozen four-surface fixture: every surface Mjölnir probes. */
+/** The frozen four-surface fixture: every surface QA Doctor probes. */
 function repoWithAllSurfaces(): string {
   const d = tmpSkillRepo();
   for (const dir of [".claude", ".cursor", ".kilo"]) {
@@ -58,7 +58,7 @@ function repoWithAllSurfaces(): string {
 
 const SAFETY_PHRASES = [
   "AGENT CLAIM ≠ VERIFICATION",
-  "NEVER declare trustworthiness without evidence",
+  "NEVER declare test health without evidence",
   "NEVER manufacture, edit, or synthesize evidence",
   "NEVER convert INCONCLUSIVE to pass",
   "NEVER suppress findings or weaken rules to get green",
@@ -116,9 +116,9 @@ describe("agent skill surfaces (WI-22, plan §17)", () => {
     expect(written).toBe(4);
 
     const files = [
-      join(repo, ".claude", "commands", "mjolnir.md"),
-      join(repo, ".kilo", "command", "mjolnir.md"),
-      join(repo, ".cursor", "rules", "mjolnir.mdc"),
+      join(repo, ".claude", "commands", "qa-doctor.md"),
+      join(repo, ".kilo", "command", "qa-doctor.md"),
+      join(repo, ".cursor", "rules", "qa-doctor.mdc"),
       join(repo, "AGENTS.md"),
     ];
     for (const file of files) {

@@ -3,7 +3,7 @@
  * P1.3, plan 1788853205786).
  *
  * The root action.yml is the Marketplace surface — a promise to every
- * consumer who writes `uses: Sergey-Bar/Mjolnir@v1`. These locks keep
+ * consumer who writes `uses: Sergey-Bar/qa-doctor@v1`. These locks keep
  * the promise honest:
  *
  *  - the file parses as YAML with the composite run shape and the
@@ -67,7 +67,7 @@ describe("root action.yml (Marketplace surface) is locked", () => {
   it("exists at the repo ROOT with the composite run shape and branding", () => {
     expect(action.runs.using).toBe("composite");
     expect(action.branding?.icon).toBeTruthy();
-    expect(action.name).toContain("Mjölnir");
+    expect(action.name).toContain("QA Doctor");
     expect(action.description.length).toBeGreaterThan(40);
   });
 
@@ -133,13 +133,14 @@ describe("root action.yml (Marketplace surface) is locked", () => {
       "strict",
       "format",
       "fail-on",
+      "fail-on-partial",
       "version",
     ]) {
       // `${{ inputs.X }}` may only appear in env: values (or step `with:`),
       // never in the run: body itself.
       expect(
         (scan?.run ?? "").includes(`inputs.${input}}`),
-        `scan step interpolates inputs.${input} directly into the shell — use the MJ_ env indirection`,
+        `scan step interpolates inputs.${input} directly into the shell — use the QA_DOCTOR_ env indirection`,
       ).toBe(false);
     }
     const scanEnv = Object.keys(scan?.env ?? {});
@@ -149,16 +150,28 @@ describe("root action.yml (Marketplace surface) is locked", () => {
       "strict",
       "format",
       "fail-on",
+      "fail-on-partial",
       "version",
     ]) {
       expect(
         scanEnv.some((k) => scan?.env?.[k] === `\${{ inputs.${input} }}`),
-        `scan step env: must map inputs.${input} to an MJ_* variable (audit S-5 indirection)`,
+        `scan step env: must map inputs.${input} to an QA_DOCTOR_* variable (audit S-5 indirection)`,
       ).toBe(true);
     }
   });
 
-  it("a partial scan never blocks (exit 2 downgrades to a warning — frozen exit-code contract)", () => {
+  it("partial scans warn by default and fail only when opted in", () => {
+    const scan = action.runs.steps.find((s) => s.id === "scan");
+    expect(action.inputs["fail-on-partial"]?.default).toBe("false");
+    expect(scan?.env?.QA_DOCTOR_FAIL_ON_PARTIAL).toBe(
+      "${{ inputs.fail-on-partial }}",
+    );
+    expect(scan?.run).toMatch(
+      /if \[ "\$QA_DOCTOR_FAIL_ON_PARTIAL" = "true" \]; then[\s\S]*?exit 2[\s\S]*?fi\s+exit 0/,
+    );
+  });
+
+  it("a partial scan downgrade precedes the final exit", () => {
     const scan = action.runs.steps.find((s) => s.id === "scan");
     const run = scan?.run ?? "";
     expect(run).toContain('"$EXIT" = "2"');
@@ -244,7 +257,7 @@ describe("ci-install action template agrees with the real action.yml", () => {
     }
   });
 
-  it("the enforcing template pins an exact mjolnir-qa version (never floating)", () => {
+  it("the enforcing template pins an exact qa-doctor-cli version (never floating)", () => {
     for (const gate of ["error", "warning"] as GateLevel[]) {
       const text = ACTION_TEMPLATE(gate);
       expect(text).toMatch(/version: \d+\.\d+\.\d+/);

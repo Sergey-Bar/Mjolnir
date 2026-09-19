@@ -50,7 +50,7 @@ export const PAD_TOP = TITLE_BAR + 18;
 export const PAD_BOTTOM = 18;
 
 /** The embedded family name, and the attribute every generator sets. */
-export const FONT_FAMILY = "MjolnirMono, monospace";
+export const FONT_FAMILY = "QaDoctorMono, monospace";
 
 /**
  * `@font-face` for Geist Mono Regular, inlined as a data URI. Regular
@@ -59,15 +59,15 @@ export const FONT_FAMILY = "MjolnirMono, monospace";
  */
 export function fontFaceCss(): string {
   const mono = FONTS.find(
-    (f) => f.family === "MjolnirMono" && f.weight === 400,
+    (f) => f.family === "QaDoctorMono" && f.weight === 400,
   );
   if (!mono) throw new Error("Geist Mono Regular is no longer vendored");
   const b64 = readFileSync(fontPath(mono)).toString("base64");
-  return `@font-face{font-family:"MjolnirMono";font-style:normal;src:url(data:font/ttf;base64,${b64}) format("truetype")}`;
+  return `@font-face{font-family:"QaDoctorMono";font-style:normal;src:url(data:font/ttf;base64,${b64}) format("truetype")}`;
 }
 
 /**
- * The reporter (src/reporter/theme.ts) emits its Norse-forge palette as
+ * The reporter (src/reporter/theme.ts) emits its diagnostic palette as
  * 24-bit truecolor (`38;2;r;g;b`) — parsed directly in ansiLineToSpans —
  * plus the bare SGR codes 1 (bold) and 2 (dim), mapped here as fallbacks.
  */

@@ -187,7 +187,7 @@ describe("no doc claims a gap that source contradicts", () => {
     // catching exactly the class of bug found while writing this doc: an
     // invented flag (--output) that doesn't exist in parseArgs.
     const flags = new Set(
-      [...sarifDoc.matchAll(/mjolnir[^\n`]*?(--[a-z-]+)/g)].map((m) => m[1]),
+      [...sarifDoc.matchAll(/qa-doctor[^\n`]*?(--[a-z-]+)/g)].map((m) => m[1]),
     );
     const knownFlags = new Set([
       "--json",
@@ -204,7 +204,7 @@ describe("no doc claims a gap that source contradicts", () => {
     for (const flag of flags) {
       expect(
         knownFlags.has(flag as string),
-        `docs/SARIF-INTEGRATION.md references "${flag}" as a mjolnir ` +
+        `docs/SARIF-INTEGRATION.md references "${flag}" as a qa-doctor ` +
           `flag, but it is not in this test's known-flags list (kept in ` +
           `sync with parseArgs in src/cli.ts) — either it's a real flag ` +
           `this list needs to learn about, or it's an invented flag the ` +
@@ -358,11 +358,13 @@ describe("README Node version matches package.json engines", () => {
 
 describe("README does not reference the unrelated npm package 'qa-doctor' (unscoped)", () => {
   it("no npmjs.com/package/qa-doctor link (that's someone else's software)", () => {
-    expect(README).not.toMatch(/npmjs\.com\/package\/qa-doctor(?!\/)/);
+    expect(README).not.toMatch(/npmjs\.com\/package\/qa-doctor(?=$|[/?#)])/);
   });
 
   it("no shields.io badge querying the unscoped 'qa-doctor' npm package", () => {
-    expect(README).not.toMatch(/img\.shields\.io\/npm\/[vd]\/qa-doctor\b/);
+    expect(README).not.toMatch(
+      /img\.shields\.io\/npm\/[vd]\/qa-doctor(?=\.|$|[/?#)])/,
+    );
   });
 });
 
@@ -394,7 +396,7 @@ describe("every documented `npm run` command actually exists", () => {
   // Corpus review sheets embed real-world source verbatim (bug-audit
   // 2026-08-31): a scanned repo's own build+preview script line lands in
   // the sheet as quoted evidence — data, never an instruction to a
-  // mjolnir reader. (This comment deliberately does not spell the
+  // qa-doctor reader. (This comment deliberately does not spell the
   // preview command out as a literal `npm run …`, or this test would
   // flag its own source — same trap as the sibling comment above.)
   const EXCLUDED = [
@@ -404,7 +406,7 @@ describe("every documented `npm run` command actually exists", () => {
     // §08 classes B/C committed corpora are realistic-world TEST DATA:
     // a fixture's webServer command legitimately references an invented
     // script name exactly because a real repo's config would. Data,
-    // never an instruction to a mjolnir reader. (The script name is
+    // never an instruction to a qa-doctor reader. (The script name is
     // deliberately not spelled out here, or this test would flag its
     // own source — same trap as the sibling comment above.)
     "tests/corpus/positive-fixtures/",
@@ -511,7 +513,7 @@ describe("the north-star law is committed, not just cited", () => {
 
 describe("README alt text matches the verdict the SVG assets actually render", () => {
   // D1-class drift, second occurrence: the README alt text said
-  // "WORTHINESS 70/100" beside regenerated SVGs reading 75/100 — the same
+  // "TEST HEALTH 70/100" beside regenerated SVGs reading 75/100 — the same
   // hand-typed-number defect the landing page once shipped. The SVGs are
   // generated and drift-locked by hero-asset-reproducibility.spec.ts;
   // this keeps the prose describing them honest too. The score lives in
@@ -531,19 +533,19 @@ describe("README alt text matches the verdict the SVG assets actually render", (
     .filter((f) => f.endsWith(".svg"))
     // score-gauge.svg is not a scan of any one repo — it sweeps every
     // score 0-100 through the real deriveScoreState model, so it
-    // legitimately carries every WORTHINESS
+    // legitimately carries every TEST HEALTH
     // number and would trip the "agree on one score" check below for a
     // reason that isn't drift. Its own reproducibility lock is
     // score-gauge-asset-reproducibility.spec.ts.
     .filter((f) => f !== "score-gauge.svg")
     .map((f) => {
-      const m = /WORTHINESS\s+(\d+)\s*\/\s*\d+/.exec(
+      const m = /TEST HEALTH\s+(\d+)\s*\/\s*\d+/.exec(
         stripTags(readFileSync(join(svgDir, f), "utf8")),
       );
       return { file: f, score: m ? Number(m[1]) : null };
     });
 
-  it("at least one generated SVG carries a parseable WORTHINESS line (sanity)", () => {
+  it("at least one generated SVG carries a parseable TEST HEALTH line (sanity)", () => {
     expect(svgScores.some((s) => s.score !== null)).toBe(true);
   });
 
@@ -554,35 +556,35 @@ describe("README alt text matches the verdict the SVG assets actually render", (
     expect(scores.size).toBe(1);
   });
 
-  it("every README alt= that mentions WORTHINESS states the SVG's number", () => {
+  it("every README alt= that mentions TEST HEALTH states the SVG's number", () => {
     const found = svgScores.find((s) => s.score !== null);
     const expected = found?.score;
-    const alts = [...README.matchAll(/alt="([^"]*WORTHINESS[^"]*)"/g)].map(
+    const alts = [...README.matchAll(/alt="([^"]*TEST HEALTH[^"]*)"/g)].map(
       (m) => m[1],
     );
     expect(alts.length).toBeGreaterThan(0);
     expect(
       expected,
-      "no generated SVG carries a parseable WORTHINESS score",
+      "no generated SVG carries a parseable TEST HEALTH score",
     ).toBeDefined();
     for (const alt of alts) {
-      const m = /WORTHINESS\s+(\d+)\s*\/\s*\d+/.exec(alt ?? "");
+      const m = /TEST HEALTH\s+(\d+)\s*\/\s*\d+/.exec(alt ?? "");
       expect(
         m,
-        `alt text carries no parseable WORTHINESS score: "${alt}"`,
+        `alt text carries no parseable TEST HEALTH score: "${alt}"`,
       ).not.toBeNull();
       const rendered = m?.[1];
       expect(
         Number(rendered),
-        `README alt says WORTHINESS ${rendered}/100 but the generated assets render ${expected}/100`,
+        `README alt says TEST HEALTH ${rendered}/100 but the generated assets render ${expected}/100`,
       ).toBe(expected);
     }
   });
 });
 
 describe("product surfaces use the canonical vocabulary (docs/TERMINOLOGY.md)", () => {
-  // Product-Experience Master Plan Phase 2: Mjölnir's surfaces must speak
-  // one vocabulary — "finding", "worthiness score", the locked verdict
+  // Product-Experience Master Plan Phase 2: QA Doctor's surfaces must speak
+  // one vocabulary — "finding", "test health score", the locked verdict
   // words. The spec-era synonyms ("trust score", "bug score", findings
   // called "issues") erode trust exactly like any other cross-surface
   // drift: a reader comparing the README, the site and the terminal
@@ -640,7 +642,7 @@ describe("product surfaces use the canonical vocabulary (docs/TERMINOLOGY.md)", 
     "%s: findings are never called issues (tracker senses allowed)",
     (name, text) => {
       // The finding-vocabulary senses of "issue" — the words a reader
-      // would read as "what Mjölnir detected" — are forbidden. The
+      // would read as "what QA Doctor detected" — are forbidden. The
       // GitHub-tracker senses (open/track/file an issue, issue
       // tracker/form/template/routing/triage, good-first-issue, the
       // issues URL) are legitimate and stay.
@@ -649,7 +651,7 @@ describe("product surfaces use the canonical vocabulary (docs/TERMINOLOGY.md)", 
       const hits = [...text.matchAll(new RegExp(findingSense.source, "gi"))];
       expect(
         hits.map((m) => m[0]),
-        `${name} uses "issue" for what Mjölnir detects — call it a ` +
+        `${name} uses "issue" for what QA Doctor detects — call it a ` +
           `finding (docs/TERMINOLOGY.md anti-vocabulary)`,
       ).toEqual([]);
     },
@@ -679,14 +681,13 @@ describe("stability-policy docs exist and link each other (Beta-to-Stable M1)", 
     }
   });
 
-  it("docs/VERSIONING.md names the frozen support matrix (Node 22 + 24, 3 OSes)", () => {
-    expect(VERSIONING).toMatch(/\|\s*Node\.js\s*\|\s*22\.x, 24\.x\s*\|/);
-    for (const os of ["ubuntu-latest", "windows-latest", "macos-latest"]) {
-      expect(
-        VERSIONING,
-        `docs/VERSIONING.md support matrix dropped ${os}`,
-      ).toContain(os);
-    }
+  it("docs/VERSIONING.md names the tested support matrix (Node 22 on 3 OSes, Node 24 on Ubuntu)", () => {
+    expect(VERSIONING).toMatch(
+      /^\|\s*Node\.js 22\.x\s*\|\s*ubuntu-latest, windows-latest, macos-latest\s*\|\s*$/m,
+    );
+    expect(VERSIONING).toMatch(
+      /^\|\s*Node\.js 24\.x\s*\|\s*ubuntu-latest\s*\|\s*$/m,
+    );
   });
 
   it("SUPPORT.md exists, routes security to SECURITY.md, and links the governance section", () => {
@@ -816,7 +817,9 @@ describe("community files exist and cross-link (Beta-to-Stable M6)", () => {
       "no invented dates, ever",
     );
     expect(roadmap).toContain("never contain");
-    expect(README).toContain("sergey-bar.github.io/Mjolnir/reference/roadmap");
+    expect(README).toContain(
+      "sergey-bar.github.io/qa-doctor/reference/roadmap",
+    );
   });
 
   it("the site sidebar lists the roadmap page", () => {

@@ -7,7 +7,7 @@
  * before it, the palette lived in six independent copies and exactly one
  * pair of them was checked, which is how the terminal, the architecture
  * diagram and the README badges each ended up with a different idea of
- * what "Mjölnir gold" is.
+ * what "QA Doctor gold" is.
  *
  * Emits:
  *   assets/brand/tokens.json                    machine surface (any consumer)
@@ -36,10 +36,12 @@ import {
   BADGE,
   BADGE_BAND,
   BRAND,
+  CSS_MATERIAL,
   CSS_SEMANTIC,
   CSS_TOKENS,
   EVIDENCE,
   HAIRLINE_RGB,
+  MATERIAL,
   MOTION,
   PENDING_SITE,
   SCORE,
@@ -89,6 +91,7 @@ export async function buildTokensJson(): Promise<string> {
     $generated: BANNER,
     brand: BRAND,
     surface: SURFACE,
+    material: MATERIAL,
     text: TEXT,
     status: STATUS,
     score: SCORE,
@@ -125,6 +128,7 @@ function decl([name, value, comment]: readonly [
 
 export async function buildVarsCss(): Promise<string> {
   const palette = CSS_TOKENS.map(decl).join("\n");
+  const material = CSS_MATERIAL.map(decl).join("\n");
   const semantic = CSS_SEMANTIC.map(decl).join("\n");
   return formatted(
     VARS_CSS,
@@ -133,8 +137,8 @@ export async function buildVarsCss(): Promise<string> {
  * ${BANNER[1]}
  * ${BANNER[2]}
  *
- * Mjölnir palette — storm-forged. Brushed steel and forge gold under an
- * aurora, over midnight iron. Derived from the logo; see
+ * QA Doctor palette — diagnostic steel and forge gold over midnight iron.
+ * Derived from the logo; see
  * assets/brand/README.md.
  *
  * ONE palette. The site is dark-only (config.mts \`appearance:
@@ -146,14 +150,11 @@ export async function buildVarsCss(): Promise<string> {
  */
 
 :root {
-  /* ---- brand accent: the aurora ----
-   * Links, the active sidebar item, focus and the primary button. Gold
-   * stays in the palette for what it means (FORGED) and is no longer
-   * the colour of every link on every docs page. */
-  --vp-c-brand-1: ${BRAND.auroraCyan.toLowerCase()};
-  --vp-c-brand-2: ${BRAND.auroraBright.toLowerCase()};
-  --vp-c-brand-3: ${BRAND.aurora.toLowerCase()};
-  --vp-c-brand-soft: color-mix(in oklch, ${BRAND.auroraCyan.toLowerCase()} 14%, transparent);
+  /* ---- navigation: neutral steel, never a verdict colour ---- */
+  --vp-c-brand-1: ${TEXT.secondary.toLowerCase()};
+  --vp-c-brand-2: ${BRAND.steel.toLowerCase()};
+  --vp-c-brand-3: ${TEXT.muted.toLowerCase()};
+  --vp-c-brand-soft: color-mix(in oklch, ${BRAND.steel.toLowerCase()} 12%, transparent);
 
   /* ---- surface: midnight iron ---- */
   --vp-c-bg: ${SURFACE.ink900.toLowerCase()};
@@ -170,57 +171,44 @@ export async function buildVarsCss(): Promise<string> {
   /* ---- type ---- */
   --vp-font-family-base: ${TYPOGRAPHY.sans.stack};
   --vp-font-family-mono: ${TYPOGRAPHY.mono.stack};
-  --mj-display: ${TYPOGRAPHY.display.stack};
+  --qa-display: ${TYPOGRAPHY.display.stack};
 
   /* ---- palette ---- */
 ${palette}
 
+  /* ---- material: semantic glass hierarchy ---- */
+${material}
+
   /* ---- semantic: verdict, evidence, trust ----
    * Score colors follow the ScoreState model (src/reporter/score-state.ts):
-   * critical 0-49 / warning 50-79 / trusted 80-99 / forged 100. Green is
-   * not a score color; --mj-ok survives for non-score success only.
+   * critical 0-49 / needs attention 50-79 / healthy 80-99 / excellent 100. Green is
+   * not a score color; --qa-ok survives for non-score success only.
    * Trust L0-L2 are static (steel ramp) and L3-L5 require a real run
-   * (aurora ramp) — the hue break at L2|L3 is the runtime boundary and
+   * (measured ramp) — the hue break at L2|L3 is the runtime boundary and
    * every surface that draws the ladder must draw it. */
 ${semantic}
-  --mj-critical: var(--mj-unworthy);
-  --mj-warning: var(--mj-needswork);
-  --mj-worthy: var(--mj-trusted);
-  --mj-forged: linear-gradient(
+  --qa-excellent: linear-gradient(
     90deg,
-    ${SCORE.forged.toLowerCase()},
+    ${SCORE.excellent.toLowerCase()},
     ${BRAND.goldBright.toLowerCase()}
   );
 
-  /* ---- legacy aliases (kept so existing rules keep resolving) ---- */
-  --mj-ember: var(--mj-gold);
-  --mj-ember-bright: var(--mj-gold-bright);
-  --mj-ember-hot: var(--mj-gold-hot);
-  --mj-spark: var(--mj-aurora);
-  --mj-spark-bright: var(--mj-aurora-bright);
-  --mj-forge-950: var(--mj-ink-950);
-  --mj-forge-900: var(--mj-ink-900);
-  --mj-forge-850: var(--mj-ink-850);
-  --mj-forge-800: var(--mj-ink-800);
-  --mj-parchment: var(--mj-steel);
-  --mj-iron: var(--mj-steel-dim);
-
   /* ---- hero ---- */
-  --mj-hero-ink: ${PENDING_SITE.heroInk};
-  --mj-hero-text: ${TEXT.primary.toLowerCase()};
-  --mj-hero-muted: ${PENDING_SITE.heroMuted};
-  --mj-hero-line: rgba(${HAIRLINE_RGB}, 0.14);
+  --qa-hero-ink: ${PENDING_SITE.heroInk};
+  --qa-hero-text: ${TEXT.primary.toLowerCase()};
+  --qa-hero-muted: ${PENDING_SITE.heroMuted};
+  --qa-hero-line: rgba(${HAIRLINE_RGB}, 0.14);
 
   --vp-home-hero-name-color: transparent;
   --vp-home-hero-name-background: linear-gradient(
     180deg,
     ${PENDING_SITE.heroNameTop} 6%,
-    var(--mj-steel) 40%,
-    var(--mj-aurora-cyan) 92%
+    var(--qa-steel) 40%,
+    var(--qa-steel) 92%
   );
 
-  --vp-c-brand-lighter: var(--mj-aurora-cyan);
-  --vp-c-brand-light: var(--mj-aurora-cyan);
+  --vp-c-brand-lighter: var(--qa-steel);
+  --vp-c-brand-light: var(--qa-steel);
   --vp-c-brand-dark: var(--vp-c-brand-2);
   --vp-c-brand-darker: var(--vp-c-brand-3);
 }

@@ -27,7 +27,7 @@ import type { Finding } from "../../src/types.js";
 
 const createdDirs: string[] = [];
 function tmpRepo(prefix: string): string {
-  const d = mkdtempSync(join(tmpdir(), `mjolnir-arms2-${prefix}-`));
+  const d = mkdtempSync(join(tmpdir(), `qa-doctor-arms2-${prefix}-`));
   createdDirs.push(d);
   return d;
 }
@@ -140,7 +140,7 @@ describe("scan-cache eviction-while-cap branch (M5.2)", () => {
 describe("loadLocalRules module-validation error arms (C2/S7)", () => {
   it("reports malformed modules: no rules array, bad rule shape, reserved prefix, bad severity/category/appliesTo/qaImpact, core clamp", async () => {
     const root = tmpRepo("moderrors");
-    const rulesDir = join(root, "mjolnir-rules");
+    const rulesDir = join(root, "qa-doctor-rules");
     mkdirSync(rulesDir, { recursive: true });
     // no rules array
     writeFileSync(
@@ -266,19 +266,16 @@ describe("tree-sitter parser-retry degradation arms (W3)", () => {
 });
 
 describe("runtime-corroboration guard arms (W8)", () => {
-  it("a single verdict declared after the finding's line still corroborates (single-test file is unambiguous)", () => {
+  it("a single verdict declared after the finding corroborates only its file", () => {
     const finding = mkFinding("tests/a.spec.ts", 5);
     const count = stampRuntimeCorroboration([finding], singleVerdictReport(40));
-    // Single-verdict file: the unambiguous case — file/test-level
-    // corroboration fires regardless of span ordering (W8 honest
-    // ceiling: never claim span containment it cannot know).
     expect(count).toBe(1);
-    expect(finding.runtimeCorroboration?.level).toBe("test");
-    expect(finding.runtimeCorroboration?.matchedTest).toBeDefined();
+    expect(finding.runtimeCorroboration?.level).toBe("file");
+    expect(finding.runtimeCorroboration?.matchedTest).toBeUndefined();
   });
 
-  it("a single verdict declared before the finding's line matches at test level", () => {
-    const finding = mkFinding("tests/a.spec.ts", 9);
+  it("a single verdict on the finding's declaration line matches at test level", () => {
+    const finding = mkFinding("tests/a.spec.ts", 1);
     const count = stampRuntimeCorroboration([finding], singleVerdictReport(1));
     expect(count).toBe(1);
     expect(finding.runtimeCorroboration?.level).toBe("test");

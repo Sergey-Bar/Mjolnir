@@ -9,7 +9,7 @@
  * release job packs once, audits, then publishes that same file — no
  * second pack, no "equivalent source").
  *
- * Usage: node scripts/pack-audit.mjs <mjolnir-qa-<version>.tgz>
+ * Usage: node scripts/pack-audit.mjs <qa-doctor-cli-<version>.tgz>
  * Exit codes: 0 = clean, 1 = violations (blocks the release).
  */
 
@@ -29,7 +29,7 @@ const tgz = process.argv[2];
 
 if (!tgz || !existsSync(tgz) || !statSync(tgz).isFile()) {
   console.error(
-    `pack-audit: usage: node scripts/pack-audit.mjs <mjolnir-qa-<version>.tgz>`,
+    `pack-audit: usage: node scripts/pack-audit.mjs <qa-doctor-cli-<version>.tgz>`,
   );
   process.exit(1);
 }
@@ -74,7 +74,7 @@ for (const raw of listing) {
   }
   if (
     /\.map$/.test(entry) ||
-    /(^|\/)(tests?|coverage|scratch|\.mjolnir|\.claude|\.agents|\.git|\.github)(\/|$)/.test(
+    /(^|\/)(tests?|coverage|scratch|\.qa-doctor|\.claude|\.agents|\.git|\.github)(\/|$)/.test(
       entry,
     ) ||
     /\.env($|\.)/.test(entry)
@@ -101,7 +101,7 @@ for (const required of [
 }
 
 // Content audit: extract and scan every file (bounded at 1 MB each).
-const tmp = mkdtempSync(join(tmpdir(), "mjolnir-pack-audit-"));
+const tmp = mkdtempSync(join(tmpdir(), "qa-doctor-pack-audit-"));
 try {
   execFileSync("tar", ["-xzf", tgz, "-C", tmp]);
   const scan = (dir) => {

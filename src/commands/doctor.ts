@@ -1,8 +1,8 @@
 /**
- * `mjolnir doctor` — self-audit of Mjolnir's own rule base.
+ * `qa-doctor doctor` — self-audit of QA Doctor's own rule base.
  *
  * The product must be able to fail because of a bug in the product.
- * This command checks, against the repo it runs in (the Mjolnir source
+ * This command checks, against the repo it runs in (the QA Doctor source
  * tree when dogfooding):
  *   1. Fixture firewall — every registered rule has must-fire AND
  *      must-not-fire fixtures (the project's own law).
@@ -567,7 +567,7 @@ export function checkFixtureIntegrity(
  *             (G2); Phase 5's status migration carries the same rule.
  *
  * Where the check runs: the doctor self-audits THIS repo, so `repoRoot`
- * must be the Mjölnir checkout (src/ present). On an installed package
+ * must be the QA Doctor checkout (src/ present). On an installed package
  * the src tree does not exist → honest INCONCLUSIVE, same as above.
  */
 export function checkRevisionIntegrity(
@@ -861,7 +861,7 @@ export function runDoctorSelfAudit(fixturesRoot: string): DoctorReport {
 }
 
 export function renderDoctorReport(report: DoctorReport): string {
-  const lines: string[] = ["", sectionHeader("MJÖLNIR — SELF-AUDIT", ui), ""];
+  const lines: string[] = ["", sectionHeader("QA DOCTOR — SELF-AUDIT", ui), ""];
   for (const c of report.checks) {
     const mark =
       c.status === "pass" ? "✓" : c.status === "fail" ? "✗" : "? INCONCLUSIVE";
@@ -873,14 +873,14 @@ export function renderDoctorReport(report: DoctorReport): string {
   lines.push("");
   lines.push(
     report.healthy
-      ? "Mjölnir self-audit: WORTHY"
-      : "Mjölnir self-audit: VIOLATIONS FOUND",
+      ? "QA Doctor self-audit: HEALTHY"
+      : "QA Doctor self-audit: VIOLATIONS FOUND",
   );
   return lines.join("\n");
 }
 
 /** Versioned JSON schema name for `doctor --json` (G5). */
-export const DOCTOR_REPORT_SCHEMA = "mjolnir.doctor-report@1";
+export const DOCTOR_REPORT_SCHEMA = "qa-doctor.doctor-report@1";
 
 /**
  * G5 determinism allowlist: names of doctor --json fields whose values

@@ -26,7 +26,7 @@ import {
 
 const createdDirs: string[] = [];
 function tmpRepo(prefix: string): string {
-  const d = mkdtempSync(join(tmpdir(), `mjolnir-mcp-parity-${prefix}-`));
+  const d = mkdtempSync(join(tmpdir(), `qa-doctor-mcp-parity-${prefix}-`));
   createdDirs.push(d);
   return d;
 }

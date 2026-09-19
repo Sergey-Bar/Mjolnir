@@ -32,12 +32,12 @@ export interface MonorepoAnalysisResult {
   blockerPackage?: string;
 }
 
-const WORTHY_THRESHOLD = 80;
+const HEALTHY_THRESHOLD = 80;
 const NEEDS_WORK_THRESHOLD = 50;
 
 function verdictOf(score: number | null): "pass" | "warn" | "fail" {
   if (score === null) return "fail";
-  if (score >= WORTHY_THRESHOLD) return "pass";
+  if (score >= HEALTHY_THRESHOLD) return "pass";
   if (score >= NEEDS_WORK_THRESHOLD) return "warn";
   return "fail";
 }
@@ -65,7 +65,7 @@ export function analyzeMonorepo(
 ): MonorepoAnalysisResult {
   const results: PackageResult[] = packages.map((p) => ({
     ...p,
-    verdict: verdictOf(p.score),
+    verdict: hasBlocker(p.findings) ? "fail" : verdictOf(p.score),
   }));
 
   if (results.length === 0) {

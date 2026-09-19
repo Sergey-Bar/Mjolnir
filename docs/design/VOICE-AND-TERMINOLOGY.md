@@ -1,4 +1,4 @@
-# Mjölnir — voice
+# QA Doctor — voice
 
 How the product sounds. What the words _mean_ is
 [`docs/TERMINOLOGY.md`](../TERMINOLOGY.md), which is the canonical
@@ -12,14 +12,14 @@ this file does not repeat a single definition from it.
 Precise. Confident. Restrained. Technical. Honest. Slightly mythic, and
 only slightly.
 
-Mjölnir's strongest marketing advantage is that it does not oversell.
+QA Doctor's strongest marketing advantage is that it does not oversell.
 The voice has to earn that every sentence: a tool whose entire argument
 is "a green pipeline is a claim, not a proof" cannot itself make claims
 it has not proved.
 
-The mythology is in the vocabulary the product already owns — worthy,
-forged, evidence, trust — not in adjectives. Write like an engineer who
-respects the reader, and let the Norse register sit in the nouns.
+The mythology is in the vocabulary the product already owns — healthy,
+excellent, evidence, trust — not in adjectives. Write like an engineer who
+respects the reader, and let the terminal register sit in the nouns.
 
 ## 2. Words we do not use
 
@@ -39,7 +39,7 @@ untrue or unkind.
   real scan or it does not ship — that is the site law, and
   `site-doctor` Check 2 enforces it.
 - **Name a limit before someone finds it.** The README has a "What
-  Mjölnir cannot tell you" section on purpose. It is not a disclaimer,
+  QA Doctor cannot tell you" section on purpose. It is not a disclaimer,
   it is the argument.
 - **Never round silence up.** `UNKNOWN`, `PARTIAL`, "not measured" and
   "no baseline" are answers. Writing around them to sound more
@@ -53,8 +53,8 @@ untrue or unkind.
 Two, and they are the same everywhere:
 
 ```
-Mjölnir — Verification Trust Engine
-Tests tell you what passed. Mjölnir tells you what you can trust.
+QA Doctor — Verification Trust Engine
+Tests tell you what passed. QA Doctor tells you what you can trust.
 ```
 
 The site hero once said "Your tests are lying to you. We prove it."
@@ -68,12 +68,12 @@ The verdict words are contract-stable output, property-locked in
 `tests/scoring-precision.spec.ts`. They are not adjustable for tone:
 
 ```
-UNWORTHY · NEEDS WORK · WORTHY · FORGED · UNKNOWN · PARTIAL
+CRITICAL · NEEDS ATTENTION · HEALTHY · EXCELLENT · UNKNOWN · PARTIAL
 ```
 
-`FORGED` is the 100 state and reads as a certification, not as a
+`EXCELLENT` is the 100 state and reads as a certification, not as a
 superlative. It means zero findings — never "your software is correct".
-`verdictFor()` still returns `WORTHY` at 100 to preserve the three-band
+`verdictFor()` still returns `HEALTHY` at 100 to preserve the three-band
 public contract.
 
 ## 6. In the terminal
@@ -86,9 +86,9 @@ The reporter speaks in the same voice, with less room:
   `[E1 · heuristic · measured FP 14% · n=38]`. A measured false-positive
   rate is quoted where one exists and omitted where none does. Never
   estimated.
-- The headline per band is a statement about the hammer, not about the
-  reader: "The hammer holds — but 27 findings weigh it down."
-- Colour never carries a state alone. A rune, a glyph or a word always
+- The headline per band is a statement about the score graphic, not about the
+  reader: "The score graphic holds — but 27 findings weigh it down."
+- Colour never carries a state alone. A indicator, a glyph or a word always
   accompanies it, and `--ascii` and `NO_COLOR` must stay meaningful.
 
 ## 7. Untrusted text
@@ -97,4 +97,4 @@ Finding metadata — file paths, plugin rule messages — is data from
 somewhere else and reaches a terminal or a PR comment. `sanitizeData()`
 strips ANSI escapes and C0 controls before any renderer sees it. A
 hostile filename must not be able to forge output that looks like
-Mjölnir speaking.
+QA Doctor speaking.

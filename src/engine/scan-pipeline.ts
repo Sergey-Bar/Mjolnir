@@ -15,12 +15,13 @@
 
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
-import { relative, resolve, sep } from "node:path";
+import { basename, dirname, relative, resolve, sep } from "node:path";
 
 import {
   compareFindings,
   SCHEMA_VERSION,
   type Finding,
+  type ForensicVerdictSummary,
   type RuleCategory,
   type ScanResult,
 } from "../types.js";
@@ -124,11 +125,11 @@ export const OVERLAP_META_BY_RULE_ID: ReadonlyMap<string, OverlapMeta> =
 
 // Plugin API (Phase 6): third-party rules are appended after core rules;
 // core findings always win dedup by running first.
-// Plan §18 (Local Extensibility): workspace-local `mjolnir-rules/` files
+// Plan §18 (Local Extensibility): workspace-local `qa-doctor-rules/` files
 // load alongside npm plugins — folder-based, zero network.
 // Audit C2 (locked decision): code-executing rule sources (npm plugins,
 // JS modules) load ONLY behind the plugin trust gate (--enable-plugins /
-// MJOLNIR_ENABLE_PLUGINS=1, default OFF). JSON manifests stay
+// QA_DOCTOR_ENABLE_PLUGINS=1, default OFF). JSON manifests stay
 // declarative-safe and load without the gate.
 export async function buildUniversalRules(
   root: string,
@@ -245,7 +246,7 @@ export interface CliArgs {
   base?: string;
   /** --debug: print errors swallowed by crash isolation (audit R-9). */
   debug?: boolean;
-  /** --record-milestones: let a scan write .mjolnir/stats.json (audit R-1). */
+  /** --record-milestones: let a scan write .qa-doctor/stats.json (audit R-1). */
   recordMilestones?: boolean;
   /**
    * --cache: reuse per-file rule verdicts from the local content-addressed
@@ -290,7 +291,7 @@ export interface CliArgs {
   /**
    * Audit C2: --enable-plugins opens the plugin trust gate for THIS
    * invocation — npm-plugin and JS-module rule sources may load (and
-   * execute). Default OFF; MJOLNIR_ENABLE_PLUGINS=1 is the env
+   * execute). Default OFF; QA_DOCTOR_ENABLE_PLUGINS=1 is the env
    * equivalent. JSON rule manifests are unaffected (no code by design).
    */
   enablePlugins?: boolean;
@@ -405,7 +406,7 @@ export function pathMatchesGlob(path: string, glob: string): boolean {
  * target, using the exact conventions the forensics ingestion already
  * accepts. Zero-config search over conventional artifact names at
  * depth ≤ 2 (src/discovery/evidence-discovery.ts); the FIRST parsable
- * candidate wins (priority: mjolnir-report > playwright-json >
+ * candidate wins (priority: qa-doctor-report > playwright-json >
  * test-results-dir > junit-file). Validates each candidate by attempting
  * to parse it and checking that it produces at least one test. Returns
  * the parsed report alongside the path to avoid double-parsing.
@@ -516,7 +517,7 @@ export function discoverTestFilesPhase(
     const staged = computeStagedFiles(scanRoot.root);
     if (staged === null) {
       hooks.onConfigWarning?.(
-        "mjolnir: --staged ignored — not a git repository (scanning the full surface).",
+        "qa-doctor: --staged ignored — not a git repository (scanning the full surface).",
       );
     } else {
       const stagedSet = new Set(staged.map((s) => s.replace(/\\/g, "/")));
@@ -526,7 +527,7 @@ export function discoverTestFilesPhase(
       stagedSurface = true;
       if (ctx.testFiles.length === 0) {
         hooks.onConfigWarning?.(
-          "mjolnir: --staged — no staged files match the scan surface.",
+          "qa-doctor: --staged — no staged files match the scan surface.",
         );
       }
     }
@@ -597,6 +598,7 @@ export async function runFileAnalysisPhase(
       continue;
     }
     let fileBudgetExceeded = false;
+    let fileRuleFailed = false;
     const relPath = relative(workspace.root, path).replaceAll("\\", "/");
     if (!isCiAdapter) {
       const langMap: Record<
@@ -670,6 +672,7 @@ export async function runFileAnalysisPhase(
         fileForRules,
         (f, ruleId, category) => {
           if (!isValidFindingRecord(f)) {
+            fileRuleFailed = true;
             onRuleCrash?.(
               ruleId,
               relPath,
@@ -682,6 +685,7 @@ export async function runFileAnalysisPhase(
           findings.push({ ...f, ruleId, category } as Finding);
         },
         (ruleId, error) => {
+          fileRuleFailed = true;
           onRuleCrash?.(ruleId, relPath, error);
         },
         {
@@ -694,7 +698,13 @@ export async function runFileAnalysisPhase(
           },
         },
       );
-      cache.store(cacheKey, findings.slice(findingsStart), fileBudgetExceeded);
+      if (!fileRuleFailed) {
+        cache.store(
+          cacheKey,
+          findings.slice(findingsStart),
+          fileBudgetExceeded,
+        );
+      }
     } catch {
       // intentional: parse/analysis failure — counted via skippedFiles/parseFailed, never fatal
       skippedFiles++;
@@ -720,7 +730,32 @@ export interface PostScanResult {
   suppressionCount: number;
   frameworks: ReturnType<typeof detectFrameworks>;
   runtimeReportPath: string | undefined;
+  /** Aggregate forensic classifications from the ingested runtime report. */
+  forensicVerdicts: ForensicVerdictSummary | undefined;
   config: ReturnType<typeof loadConfig>["config"];
+}
+
+/**
+ * Summarize forensic classifications from an ingested runtime report
+ * (plan §10.4, WAVE 5). Returns undefined when no verdict carries a
+ * classification — the machine contract slot stays absent rather than
+ * reporting all-zero counts.
+ */
+export function summarizeForensicVerdicts(
+  report: import("../forensics/types.js").ForensicsReport,
+): ForensicVerdictSummary | undefined {
+  const byVerdict: Record<string, number> = {};
+  let classifications = 0;
+  let inconclusive = 0;
+  for (const v of report.verdicts) {
+    if (!v.forensic) continue;
+    classifications++;
+    const label = v.forensic.verdict;
+    byVerdict[label] = (byVerdict[label] ?? 0) + 1;
+    if (label === "inconclusive") inconclusive++;
+  }
+  if (classifications === 0) return undefined;
+  return { classifications, byVerdict, inconclusive };
 }
 
 export function applyPostScanProcessing(
@@ -800,6 +835,7 @@ export function applyPostScanProcessing(
   }
   const discoveredReport = discoverAndParseRuntimeReport(scanRoot.root);
   const runtimeReportPath = discoveredReport?.path;
+  let forensicVerdicts: ForensicVerdictSummary | undefined;
   if (discoveredReport) {
     try {
       buildEvidenceRecords(discoveredReport.report, discoveredReport.path);
@@ -808,6 +844,7 @@ export function applyPostScanProcessing(
         discoveredReport.report,
         workspace.root,
       );
+      forensicVerdicts = summarizeForensicVerdicts(discoveredReport.report);
     } catch {
       /* corrupt report — no runtime evidence */
     }
@@ -818,6 +855,7 @@ export function applyPostScanProcessing(
     suppressionCount,
     frameworks,
     runtimeReportPath,
+    forensicVerdicts,
     config,
   };
 }
@@ -848,6 +886,7 @@ export interface AssembleScanResultInput {
   suppressionCount: number;
   frameworks: ReturnType<typeof detectFrameworks>;
   runtimeReportPath: string | undefined;
+  forensicVerdicts: ForensicVerdictSummary | undefined;
   config: ReturnType<typeof loadConfig>["config"];
   fileProvenance: Array<{
     path: string;
@@ -868,69 +907,74 @@ function partitionFindingsByPackage(
   findings: readonly Finding[],
   depGraph: import("./dependency-graph.js").DependencyGraph,
   workspaceRoot: string,
+  declarationsByFile: ReadonlyMap<string, number>,
+  analysisComplete: boolean,
 ): Array<{
   packageName: string;
   path: string;
   findings: Finding[];
   score: number | null;
 }> {
-  const packagePaths = depGraph.allPaths;
-  if (packagePaths.length === 0) return [];
-
-  const normalizedRoot = workspaceRoot.replaceAll("\\", "/");
   const packageMap = new Map<
     string,
-    { packageName: string; path: string; findings: Finding[] }
+    {
+      packageName: string;
+      path: string;
+      findings: Finding[];
+      testDeclarations: number;
+      testFileCount: number;
+    }
   >();
-
-  for (const manifestPath of packagePaths) {
-    const normalizedManifest = manifestPath.replaceAll("\\", "/");
-    const relPath = normalizedManifest
-      .replace(normalizedRoot, "")
-      .replace(/^\//, "");
-    const pathSegments = relPath.split("/");
-    const packageName =
-      pathSegments.length > 1 ? (pathSegments[1] ?? "root") : "root";
-    packageMap.set(manifestPath, {
-      packageName,
-      path: relPath
-        .replace("/package.json", "")
-        .replace("/pyproject.toml", "")
-        .replace("/pom.xml", ""),
-      findings: [],
-    });
+  const addPackage = (path: string) => {
+    const entry = {
+      packageName: path === "" ? "root" : basename(path),
+      path: path || ".",
+      findings: [] as Finding[],
+      testDeclarations: 0,
+      testFileCount: 0,
+    };
+    packageMap.set(path, entry);
+    return entry;
+  };
+  for (const manifestPath of depGraph.allPaths) {
+    const path = relative(workspaceRoot, dirname(manifestPath)).replaceAll(
+      "\\",
+      "/",
+    );
+    if (path === ".." || path.startsWith("../")) continue;
+    if (!packageMap.has(path)) addPackage(path);
   }
-
-  for (const f of findings) {
-    const normalizedFile = f.file.replaceAll("\\", "/");
-    let bestMatch: string | undefined;
-    let bestLen = 0;
-    for (const manifestPath of packagePaths) {
-      const normalizedManifest = manifestPath.replaceAll("\\", "/");
-      const manifestDir = normalizedManifest.replace(/[/\\][^/\\]+$/, "");
-      const relToRoot = manifestDir
-        .replace(normalizedRoot, "")
-        .replace(/^\//, "");
-      if (relToRoot && normalizedFile.startsWith(relToRoot + "/")) {
-        if (relToRoot.length > bestLen) {
-          bestLen = relToRoot.length;
-          bestMatch = manifestPath;
-        }
+  const packageForFile = (file: string) => {
+    const normalizedFile = file.replaceAll("\\", "/");
+    let bestPath = "";
+    for (const path of packageMap.keys()) {
+      if (
+        path.length > bestPath.length &&
+        normalizedFile.startsWith(path + "/")
+      ) {
+        bestPath = path;
       }
     }
-    const target = bestMatch
-      ? packageMap.get(bestMatch)
-      : packageMap.values().next().value;
-    if (target) {
-      target.findings.push(f);
-    }
+    return packageMap.get(bestPath) ?? addPackage("");
+  };
+  for (const f of findings) packageForFile(f.file).findings.push(f);
+  for (const [file, declarations] of declarationsByFile) {
+    const target = packageForFile(file);
+    target.testDeclarations += declarations;
+    target.testFileCount++;
   }
-
   return [...packageMap.values()].map((p) => ({
     packageName: p.packageName,
     path: p.path,
     findings: p.findings,
-    score: p.findings.length === 0 ? 100 : null,
+    score:
+      analysisComplete && p.testDeclarations > 0 && p.testFileCount > 0
+        ? computeTotal(computeDimensions(p.findings), p.findings, {
+            testDeclarations: p.testDeclarations,
+            testFileCount: p.testFileCount,
+            suiteInvalidatingRuleIds: SUITE_INVALIDATING_RULE_IDS,
+          })
+        : null,
   }));
 }
 
@@ -1047,6 +1091,9 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
     ...(o.pluginsLoaded.length > 0 ? { plugins: o.pluginsLoaded } : {}),
     ...(suiteInvalidatedBy.length > 0 ? { suiteInvalidatedBy } : {}),
     agenticProfile: computeAgenticProfile(o.fileProvenance, o.findings),
+    ...(o.forensicVerdicts !== undefined
+      ? { forensicVerdicts: o.forensicVerdicts }
+      : {}),
     ...(o.args.cache
       ? {
           cache: {
@@ -1093,6 +1140,8 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
       o.findings,
       o.dependencyGraph,
       o.workspace.root,
+      o.declarationsByFile,
+      !result.partial && scopeReasons.length === 0 && !o.args.scopeChanged,
     );
     if (packages.length > 1) {
       const monorepoResult = analyzeMonorepo(packages, {
@@ -1138,11 +1187,11 @@ export async function runScan(
   // package.json workspace OR non-JS repo (Python etc.) — fall back to the
   // target dir itself so language adapters can still discover their files.
   // Audit S3: the explicit scan target is the anchor. Config,
-  // .mjolnirignore, plugins, and local rules resolve from the target or
+  // .qa-doctorignore, plugins, and local rules resolve from the target or
   // ABOVE the target only when the target sits inside the discovered
   // project — never from an unrelated ancestor of the CWD. Concretely:
-  // `mjolnir scan C:\other\repo` while CWD is a hostile checkout of our
-  // own monorepo must not read the hostile repo's mjolnir.config.json.
+  // `qa-doctor scan C:\other\repo` while CWD is a hostile checkout of our
+  // own monorepo must not read the hostile repo's qa-doctor.config.json.
   const discovered = discoverWorkspace(args.target);
   const targetAbs = resolve(args.target);
   // Scope containment: when the user targets a subdirectory of the
@@ -1233,7 +1282,7 @@ export async function runScan(
   // 2. Monorepo analysis (--monorepo mode)
   // 3. Dependency graph metadata in ScanResult
   const depGraph = buildDependencyGraph(workspace.root);
-  const rulesDigest = computeRulesDigest(activeRules);
+  const rulesDigest = `complete-file-v1:${computeRulesDigest(activeRules)}`;
   // ECO-004: When --cache is active, log incremental safety status.
   // The dependency graph's presence signals that dependency-aware
   // invalidation is possible — cache keys already include rulesDigest
@@ -1254,12 +1303,12 @@ export async function runScan(
       findingType: "deterministic-defect",
       qaImpact: "HYGIENE",
       evidenceLevel: "E2",
-      file: "mjolnir.config.json",
+      file: "qa-doctor.config.json",
       line: 1,
       column: 1,
       message: `Plugin problem: ${perr}`,
       why: "A configured plugin could not be loaded or declared invalid rules — its checks are silently missing from this scan.",
-      fix: "Fix or remove the plugin entry in mjolnir.config.json.",
+      fix: "Fix or remove the plugin entry in qa-doctor.config.json.",
     });
   }
   const ctx = {
@@ -1364,6 +1413,7 @@ export async function runScan(
     suppressionCount: postScan.suppressionCount,
     frameworks: postScan.frameworks,
     runtimeReportPath: postScan.runtimeReportPath,
+    forensicVerdicts: postScan.forensicVerdicts,
     config: postScan.config,
     fileProvenance,
     started,

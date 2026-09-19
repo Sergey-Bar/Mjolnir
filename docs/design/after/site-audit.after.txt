@@ -1,9 +1,9 @@
 
-> mjolnir-qa@0.5.31 site:audit
+> qa-doctor-cli@0.5.31 site:audit
 > node site/scripts/audit-live.mjs
 
 
-mjolnir site audit  (axe-core + keyboard + web vitals)
+qa-doctor site audit  (axe-core + keyboard + web vitals)
 
   PASS  / (landing)
           axe: 0 violation(s) · keyboard: 30 stops, 0 without a focus ring · CLS 0 (<=0.05) · LCP 0ms

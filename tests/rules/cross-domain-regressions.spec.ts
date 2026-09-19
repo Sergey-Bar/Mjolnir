@@ -56,7 +56,7 @@ import { computeChangedScope } from "../../src/scope/changed.js";
 let dir: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-qa0830-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-cli0830-"));
 });
 
 afterEach(() => {
@@ -211,7 +211,7 @@ describe("QA-4: config `exclude` type confusion exits 10, never 20", () => {
   it("loadConfig rejects non-string exclude entries with a fixable message", () => {
     mkdirSync(dir, { recursive: true });
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
+      join(dir, "qa-doctor.config.json"),
       JSON.stringify({ exclude: [1, {}, null] }),
     );
     expect(() => loadConfig(dir)).toThrow(ConfigValidationError);
@@ -221,7 +221,7 @@ describe("QA-4: config `exclude` type confusion exits 10, never 20", () => {
   it("rejects a non-array exclude the same way", () => {
     mkdirSync(dir, { recursive: true });
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
+      join(dir, "qa-doctor.config.json"),
       JSON.stringify({ exclude: "legacy/**" }),
     );
     expect(() => loadConfig(dir)).toThrow(/exclude must be an array/);
@@ -235,7 +235,7 @@ describe("QA-4: config `exclude` type confusion exits 10, never 20", () => {
   it("must-not-fire: a valid string exclude still works end-to-end", () => {
     mkdirSync(join(dir, "legacy"), { recursive: true });
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
+      join(dir, "qa-doctor.config.json"),
       JSON.stringify({ exclude: ["legacy/**"] }),
     );
     writeFileSync(
@@ -256,7 +256,7 @@ describe("QA-5: unparseable suppression `expires` is a usage error, not NaN sile
   it("loadConfig rejects garbage dates with a fixable message", () => {
     mkdirSync(dir, { recursive: true });
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
+      join(dir, "qa-doctor.config.json"),
       JSON.stringify({
         ignore: [
           { ruleId: "QA-TEST-004", reason: "r", expires: "next tuesday" },
@@ -270,7 +270,7 @@ describe("QA-5: unparseable suppression `expires` is a usage error, not NaN sile
 describe("QA-6: the documented 90-day suppression default is enforced", () => {
   it("a no-expiry entry is active regardless of config mtime (audit S4: mtime anchor dropped)", () => {
     mkdirSync(dir, { recursive: true });
-    const configPath = join(dir, "mjolnir.config.json");
+    const configPath = join(dir, "qa-doctor.config.json");
     writeFileSync(
       configPath,
       JSON.stringify({ ignore: [{ ruleId: "QA-TEST-004", reason: "r" }] }),
@@ -291,7 +291,7 @@ describe("QA-6: the documented 90-day suppression default is enforced", () => {
   it("must-not-fire: explicit `expires` dates keep their write-time semantics", () => {
     mkdirSync(dir, { recursive: true });
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
+      join(dir, "qa-doctor.config.json"),
       JSON.stringify({
         ignore: [{ ruleId: "QA-TEST-004", reason: "r", expires: "2200-01-01" }],
       }),
@@ -304,7 +304,7 @@ describe("QA-6: the documented 90-day suppression default is enforced", () => {
 
 describe("QA-7: plugin reserved-prefix rejection is case-insensitive", () => {
   it("rejects a lowercase-spoofed core rule id", () => {
-    const root = mkdtempSync(join(tmpdir(), "mjolnir-qa0830-plugin-"));
+    const root = mkdtempSync(join(tmpdir(), "qa-doctor-cli0830-plugin-"));
     try {
       const pluginDir = join(root, "spoof-plugin");
       mkdirSync(pluginDir, { recursive: true });
@@ -317,7 +317,7 @@ describe("QA-7: plugin reserved-prefix rejection is case-insensitive", () => {
         `exports.rules = [{ id: "qa-test-001", run: () => [] }];`,
       );
       writeFileSync(
-        join(root, "mjolnir.config.json"),
+        join(root, "qa-doctor.config.json"),
         JSON.stringify({ plugins: ["./spoof-plugin"] }),
       );
       const result = loadPlugins(root, true);
@@ -623,7 +623,7 @@ describe("QA-14: discovery survives adversarial repo shapes", () => {
   });
 
   it("never follows a junction/symlinked directory out of the scan root", () => {
-    const outside = mkdtempSync(join(tmpdir(), "mjolnir-qa0830-outside-"));
+    const outside = mkdtempSync(join(tmpdir(), "qa-doctor-cli0830-outside-"));
     try {
       mkdirSync(join(dir, "link-me-target"), { recursive: true });
       writeFileSync(

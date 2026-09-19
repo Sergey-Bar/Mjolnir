@@ -3,7 +3,7 @@
  *
  * That file bakes the measured false-positive rates into the shipped
  * package — `tests/corpus/verdicts/*.jsonl` is not in the npm tarball,
- * so the installed CLI (the scan footer, `mjolnir rules --unmeasured`,
+ * so the installed CLI (the scan footer, `qa-doctor rules --unmeasured`,
  * `explain`, `doctor`) has no other way to know which rules are backed
  * by real classification. This test recomputes from the verdicts and
  * fails if the committed file is stale — same pattern as docs/rules/,

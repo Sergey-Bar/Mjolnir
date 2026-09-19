@@ -360,12 +360,12 @@ describe("§25.3 parity — machine contract agrees with the canonical result", 
 describe("§25.4 revision — bump ⇒ INCONCLUSIVE, never resolved (e2e)", () => {
   it("runScan stamps detectorRevision from the registry onto findings", async () => {
     const dir = await import("node:fs").then((fs) =>
-      fs.mkdtempSync("mjolnir-semint-"),
+      fs.mkdtempSync("qa-doctor-semint-"),
     );
     const { writeFileSync, rmSync } = await import("node:fs");
     const { tmpdir } = await import("node:os");
     const { join } = await import("node:path");
-    const real = join(tmpdir(), "mjolnir-semint-real");
+    const real = join(tmpdir(), "qa-doctor-semint-real");
     rmSync(dir, { force: true, recursive: true });
     const fs = await import("node:fs");
     fs.mkdirSync(real, { recursive: true });

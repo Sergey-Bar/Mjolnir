@@ -1,5 +1,5 @@
 /**
- * `mjolnir explain` (Master-Stabilization-Plan Sprint 5, Task 19).
+ * `qa-doctor explain` (Master-Stabilization-Plan Sprint 5, Task 19).
  *
  * The plan's own bar: "explain returns real content for 100% of
  * registered rule IDs — no rule can ship unexplainable." This is
@@ -59,7 +59,7 @@ describe("explainRule — error handling", () => {
     const result = explainRule("QA-NOPE-999", FIXTURES_ROOT);
     expect(result.ok).toBe(false);
     expect(result.error).toContain("QA-NOPE-999");
-    expect(result.error).toContain("mjolnir rules");
+    expect(result.error).toContain("qa-doctor rules");
   });
 
   it("degrades honestly (metadata only, no fabricated example) when the fixtures root doesn't exist", () => {
@@ -178,7 +178,7 @@ describe("runExplainCommand (CLI handler)", () => {
 
   it("defaults to <cwd>/tests/fixtures when --fixtures-root is omitted", async () => {
     // Run from this repo's own root implicitly via process.cwd() — the
-    // test runner's cwd during `npm test` is the mjolnir repo root.
+    // test runner's cwd during `npm test` is the qa-doctor repo root.
     let out = "";
     const code = await runExplainCommand(["QA-TEST-004"], {
       out: (s) => {

@@ -219,27 +219,28 @@ async function copyReport() {
     ui-monospace, "SF Mono", "Cascadia Code", "Cascadia Mono", Consolas,
     "DejaVu Sans Mono", Menlo, monospace;
 
-  --term-bg: var(--mj-ink-950);
-  --term-bar: var(--mj-ink-950);
+  --term-bg: var(--qa-glass-focus-bg);
+  --term-bar: var(--qa-surface-well);
   --term-fg: var(--vp-c-text-2);
   /* The reporter's dim used to be #7c8590, which axe-core measured at
      4.16:1 on the title bar — below AA — so this was raised by hand.
      Both now resolve to the same token: the palette convergence moved
-     the terminal itself onto --mj-steel-dim, which clears AA, so the
+     the terminal itself onto --qa-steel-dim, which clears AA, so the
      local override and the tool agree instead of diverging. This token
      paints only the terminal's own chrome (command line, copy button,
      disclosure); the report's colours still come from report.json, so
      the rendering stays faithful to what the tool actually printed. */
-  --term-dim: var(--mj-steel-dim);
-  --term-line: var(--vp-c-border);
+  --term-dim: var(--qa-steel-dim);
+  --term-line: var(--qa-glass-focus-border);
 
   margin: 2.6rem 0 0;
-  border-radius: 14px;
+  border-radius: var(--qa-radius-focus);
   overflow: hidden;
   border: 1px solid var(--term-line);
   background: var(--term-bg);
   color: var(--term-fg);
-  box-shadow: 0 40px 80px -40px rgba(0, 0, 0, 0.7);
+  box-shadow: var(--qa-glass-focus-shadow);
+  backdrop-filter: blur(var(--qa-glass-focus-blur)) saturate(1.15);
 }
 
 .term-bar {
@@ -259,7 +260,7 @@ async function copyReport() {
   width: 11px;
   height: 11px;
   border-radius: 50%;
-  background: var(--mj-ink-800);
+  background: var(--qa-ink-800);
 }
 .term-cmd {
   flex: 1;
@@ -293,7 +294,7 @@ async function copyReport() {
   border-color: var(--vp-c-text-3);
 }
 .term-copy:focus-visible {
-  outline: 2px solid var(--mj-aurora);
+  outline: 2px solid var(--qa-info);
   outline-offset: 2px;
 }
 
@@ -321,10 +322,10 @@ async function copyReport() {
 }
 .tab.on {
   color: var(--term-fg);
-  border-bottom-color: var(--mj-aurora-cyan);
+  border-bottom-color: var(--qa-info);
 }
 .tab:focus-visible {
-  outline: 2px solid var(--mj-aurora);
+  outline: 2px solid var(--qa-info);
   outline-offset: -3px;
 }
 
@@ -388,7 +389,7 @@ async function copyReport() {
   color: var(--term-fg);
 }
 .more > summary:focus-visible {
-  outline: 2px solid var(--mj-aurora);
+  outline: 2px solid var(--qa-info);
   outline-offset: -2px;
 }
 .chev {
@@ -402,7 +403,7 @@ async function copyReport() {
   /* A dimmer colour, not opacity. `opacity: 0.7` blended --term-dim
      toward the background and dropped this line back under AA — axe
      caught it on the line-count hint after the first contrast fix. */
-  color: var(--mj-steel-dim);
+  color: var(--qa-steel-dim);
 }
 
 .foot {

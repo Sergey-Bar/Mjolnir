@@ -32,7 +32,7 @@ import type { ScanResult } from "../../src/types.js";
 
 let dir: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-sweep2-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-sweep2-"));
 });
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });

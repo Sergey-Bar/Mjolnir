@@ -1,7 +1,7 @@
 /**
  * Generates the site's rule catalog from `docs/rules/*.md`.
  *
- * The chain of truth is: rule registry -> `mjolnir rules` doc generator ->
+ * The chain of truth is: rule registry -> `qa-doctor rules` doc generator ->
  * `docs/rules/` (committed) -> this script -> `site/rules/` (build output,
  * gitignored). Nothing here is hand-maintained, so the catalog cannot
  * drift from the registry the way a copied table would.
@@ -31,7 +31,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const SITE = join(HERE, "..");
 const SRC = join(SITE, "..", "docs", "rules");
 const OUT = join(SITE, "rules");
-const BLOB = "https://github.com/Sergey-Bar/Mjolnir/blob/main/";
+const BLOB = "https://github.com/Sergey-Bar/qa-doctor/blob/main/";
 
 /** Rows in the per-rule metadata table we surface in the catalog index. */
 export const FIELDS = {
@@ -101,7 +101,7 @@ export function siteBody(id, md) {
   // 1. Drop the generator preamble - it is a note to repo readers.
   out = out.replace(/^_Generated from the live rule registry.*_\n\n?/m, "");
 
-  // 2. Drop the CLI-only footer ("Full catalog: `mjolnir rules --md` ...").
+  // 2. Drop the CLI-only footer ("Full catalog: `qa-doctor rules --md` ...").
   out = out.replace(/\n+---\n+Full catalog:.*$/s, "\n");
 
   // 3. Cross-doc links.
@@ -130,7 +130,7 @@ export function siteBody(id, md) {
     (h) =>
       `${h}\n\n[← Back to the rule catalog](/rules/)\n\n` +
       `> Generated from the rule registry. Get the same detail from the ` +
-      `CLI with \`mjolnir explain ${id}\`.\n`,
+      `CLI with \`qa-doctor explain ${id}\`.\n`,
   );
 
   return out;
@@ -139,7 +139,7 @@ export function siteBody(id, md) {
 function main() {
   if (!existsSync(SRC)) {
     console.error(
-      `[gen-rules] missing ${SRC} — run \`mjolnir\`'s doc generator`,
+      `[gen-rules] missing ${SRC} — run \`qa-doctor\`'s doc generator`,
     );
     process.exit(1);
   }
@@ -240,7 +240,7 @@ function main() {
 function indexPage() {
   return `---
 title: Rule catalog
-description: Every Mjölnir rule — severity, tier, measured false-positive rate, and the languages it runs on.
+description: Every QA Doctor rule — severity, tier, measured false-positive rate, and the languages it runs on.
 aside: false
 outline: false
 editLink: false
@@ -259,8 +259,8 @@ pattern it correctly leaves alone.
 
 ::: tip Generated, not written
 This catalog is generated from the live rule registry — it cannot drift.
-Get the same data locally with \`mjolnir rules --md\`, or one rule at a
-time with \`mjolnir explain <RULE-ID>\`.
+Get the same data locally with \`qa-doctor rules --md\`, or one rule at a
+time with \`qa-doctor explain <RULE-ID>\`.
 :::
 `;
 }

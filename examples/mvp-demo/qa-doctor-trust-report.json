@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "artifact": "mjolnir-trust-report",
+  "artifact": "qa-doctor-trust-report",
   "trust": {
     "level": "L5",
     "confidence": 1,
@@ -33,5 +33,5 @@
       "message": "`waitForTimeout()` hard sleep."
     }
   ],
-  "nextAction": "mjolnir explain QA-PW-101 — then fix the top risk first"
+  "nextAction": "qa-doctor explain QA-PW-101 — then fix the top risk first"
 }

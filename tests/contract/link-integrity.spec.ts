@@ -91,14 +91,14 @@ describe("package.json identity fields", () => {
   };
 
   it("repository.url points at the real remote", () => {
-    expect(pkg.repository?.url).toMatch(/github\.com\/Sergey-Bar\/Mjolnir/);
+    expect(pkg.repository?.url).toMatch(/github\.com\/Sergey-Bar\/qa-doctor/);
   });
 
   it("bugs.url points at the real remote", () => {
-    expect(pkg.bugs?.url).toMatch(/github\.com\/Sergey-Bar\/Mjolnir/);
+    expect(pkg.bugs?.url).toMatch(/github\.com\/Sergey-Bar\/qa-doctor/);
   });
 
   it("homepage points at the real remote", () => {
-    expect(pkg.homepage).toMatch(/github\.com\/Sergey-Bar\/Mjolnir/);
+    expect(pkg.homepage).toMatch(/github\.com\/Sergey-Bar\/qa-doctor/);
   });
 });

@@ -1,7 +1,68 @@
 {
   "schemaVersion": 1,
   "partial": false,
-  "score": 75,
+  "scopeIntegrity": {
+    "discovered": 5,
+    "analyzed": 5,
+    "ignored": 0,
+    "unrecognized": 2,
+    "parseFailed": 0,
+    "truncated": 0,
+    "scopeVerdict": "PARTIAL",
+    "reasons": ["unrecognized:2"]
+  },
+  "runIdentity": {
+    "scanId": "5c84d9acfe120338549a2c08d79a022f49b856a1b57cf589f5a43f96311136bb",
+    "inputFingerprint": "36b59bf50fd288ee6ac14189b34b4053ee4388bdf8e6b8e68204918b27973159",
+    "rulesDigest": "be8f71ffd3fa3dfb5720de093594d5a8ecfbb1dbd67eb7d773f534f19d788a7c",
+    "configFingerprint": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "engineVersion": "2.0.0",
+    "trustModelVersion": "1.0.0",
+    "scoringModelVersion": "1.0.0",
+    "frameworkSupportMatrixVersion": "1.0.0"
+  },
+  "evidenceGraph": {
+    "chain": [
+      {
+        "link": "verdict"
+      },
+      {
+        "link": "evidence"
+      },
+      {
+        "link": "execution",
+        "ref": "5c84d9acfe120338549a2c08d79a022f49b856a1b57cf589f5a43f96311136bb"
+      },
+      {
+        "link": "scope",
+        "ref": "36b59bf50fd288ee6ac14189b34b4053ee4388bdf8e6b8e68204918b27973159"
+      },
+      {
+        "link": "source"
+      },
+      {
+        "link": "rule",
+        "ref": "be8f71ffd3fa3dfb5720de093594d5a8ecfbb1dbd67eb7d773f534f19d788a7c"
+      },
+      {
+        "link": "fixture"
+      },
+      {
+        "link": "reproduction"
+      }
+    ],
+    "runId": {
+      "scanId": "5c84d9acfe120338549a2c08d79a022f49b856a1b57cf589f5a43f96311136bb",
+      "inputFingerprint": "36b59bf50fd288ee6ac14189b34b4053ee4388bdf8e6b8e68204918b27973159",
+      "rulesDigest": "be8f71ffd3fa3dfb5720de093594d5a8ecfbb1dbd67eb7d773f534f19d788a7c",
+      "configFingerprint": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "engineVersion": "2.0.0",
+      "trustModelVersion": "1.0.0",
+      "scoringModelVersion": "1.0.0",
+      "frameworkSupportMatrixVersion": "1.0.0"
+    }
+  },
+  "score": 80,
   "frameworks": ["playwright"],
   "frameworkDetectionUnknown": false,
   "dimensions": [
@@ -14,8 +75,8 @@
     },
     {
       "category": "QA-PW",
-      "score": 87,
-      "errors": 1,
+      "score": 95,
+      "errors": 0,
       "warnings": 2,
       "infos": 7
     },
@@ -44,7 +105,7 @@
       "evidenceLevel": "E2",
       "measuredFpRate": 0,
       "measuredFpN": 10,
-      "detectorRevision": 2,
+      "detectorRevision": 3,
       "fixGroupId": "QA-CI-009"
     },
     {
@@ -63,7 +124,7 @@
       "evidenceLevel": "E2",
       "measuredFpRate": 0,
       "measuredFpN": 10,
-      "detectorRevision": 2,
+      "detectorRevision": 3,
       "fixGroupId": "QA-CI-009"
     },
     {
@@ -101,7 +162,7 @@
       "evidenceLevel": "E2",
       "measuredFpRate": 0,
       "measuredFpN": 10,
-      "detectorRevision": 2,
+      "detectorRevision": 3,
       "fixGroupId": "QA-CI-009"
     },
     {
@@ -120,7 +181,7 @@
       "evidenceLevel": "E0",
       "measuredFpRate": 0.105,
       "measuredFpN": 19,
-      "detectorRevision": 2,
+      "detectorRevision": 3,
       "fixGroupId": "QA-CI-001"
     },
     {
@@ -164,33 +225,8 @@
       "evidenceLevel": "E0",
       "measuredFpRate": 0.429,
       "measuredFpN": 14,
-      "detectorRevision": 1,
+      "detectorRevision": 2,
       "fixGroupId": "QA-PW-004",
-      "runtimeCorroboration": {
-        "level": "file",
-        "source": "playwright-json",
-        "testsExecuted": 3
-      },
-      "trustLevel": "L3"
-    },
-    {
-      "severity": "error",
-      "confidence": "high",
-      "findingType": "deterministic-defect",
-      "qaImpact": "FLAKY-RISK",
-      "file": "e2e/checkout.spec.ts",
-      "line": 6,
-      "column": 14,
-      "message": "`waitForTimeout()` hard sleep.",
-      "why": "Fixed waits either wait too long (slow suite) or too little (flaky on slow machines). They encode hope, not synchronization.",
-      "fix": "Replace with a web-first assertion (`await expect(locator).toBeVisible()`) or `locator.waitFor()`.",
-      "ruleId": "QA-PW-101",
-      "category": "QA-PW",
-      "evidenceLevel": "E2",
-      "measuredFpRate": 0,
-      "measuredFpN": 20,
-      "detectorRevision": 1,
-      "fixGroupId": "QA-PW-101",
       "runtimeCorroboration": {
         "level": "file",
         "source": "playwright-json",
@@ -353,7 +389,7 @@
       "column": 3,
       "message": "retries: undefined with no visible flake-triage loop.",
       "why": "Retries convert intermittent failures into silent passes. Without a forensics/triage step consuming retry data, flaky tests pass forever and real regressions hide behind lucky reruns.",
-      "fix": "Keep retries <= 2 and feed retry outcomes into `mjolnir forensics`/`triage`, or add a reporter so flaky passes are reviewed.",
+      "fix": "Keep retries <= 2 and feed retry outcomes into `qa-doctor forensics`/`triage`, or add a reporter so flaky passes are reviewed.",
       "ruleId": "QA-PW-141",
       "category": "QA-PW",
       "evidenceLevel": "E1",
@@ -378,7 +414,7 @@
       "evidenceLevel": "E0",
       "measuredFpRate": 0.467,
       "measuredFpN": 30,
-      "detectorRevision": 3,
+      "detectorRevision": 4,
       "fixGroupId": "QA-PY-003"
     },
     {
@@ -416,14 +452,14 @@
       "evidenceLevel": "E0",
       "measuredFpRate": 0.467,
       "measuredFpN": 30,
-      "detectorRevision": 3,
+      "detectorRevision": 4,
       "fixGroupId": "QA-PY-003"
     }
   ],
   "testFileCount": 4,
   "testDeclarationCount": 7,
-  "rawDeductions": 40,
-  "effectiveDeductions": 40,
+  "rawDeductions": 32,
+  "effectiveDeductions": 32,
   "suppressionCount": 0,
   "agenticProfile": {
     "testFiles": 4,
@@ -431,8 +467,16 @@
     "codegenLikeFiles": 0,
     "shareMarkedGenerated": 0,
     "findingsInGeneratedFiles": 0,
-    "findingsInUnmarkedFiles": 19,
+    "findingsInUnmarkedFiles": 18,
     "note": "Static provenance markers only (generated-file headers, Playwright codegen default titles). Absence of a marker does not prove human authorship; healed and MCP-edited files without markers are indistinguishable from hand-written ones. Provenance never changes scoring or evidence — authorship is metadata, not trust."
+  },
+  "forensicVerdicts": {
+    "classifications": 3,
+    "byVerdict": {
+      "flaky": 1,
+      "inconclusive": 2
+    },
+    "inconclusive": 2
   },
   "analysisStatus": {
     "discovery": "complete",
@@ -440,5 +484,73 @@
     "skippedFiles": 0,
     "durationMs": 0,
     "rulesCrashed": 0
-  }
+  },
+  "scoringModelVersion": "1.0.0",
+  "trustSummary": {
+    "level": "L3",
+    "confidence": 0.32,
+    "evidenceCoverage": 0.29,
+    "inconclusiveRate": 0,
+    "measuredFpOfFiredRules": 0.046,
+    "provisionalRuleIds": [],
+    "ceilingReasons": []
+  },
+  "correlationConclusions": [
+    {
+      "conclusionType": "CONVERGENT",
+      "certainty": "STRONG",
+      "corroboration": "3 findings share root cause QA-CI-009",
+      "sourceCount": 3,
+      "findingIds": ["QA-CI-009", "QA-CI-009", "QA-CI-009"]
+    },
+    {
+      "conclusionType": "CONVERGENT",
+      "certainty": "NONE",
+      "corroboration": "2 findings share root cause QA-PW-123",
+      "sourceCount": 2,
+      "findingIds": ["QA-PW-123", "QA-PW-123"]
+    },
+    {
+      "conclusionType": "CONVERGENT",
+      "certainty": "STRONG",
+      "corroboration": "3 findings share root cause QA-PW-146",
+      "sourceCount": 3,
+      "findingIds": ["QA-PW-146", "QA-PW-146", "QA-PW-146"]
+    },
+    {
+      "conclusionType": "CONVERGENT",
+      "certainty": "NONE",
+      "corroboration": "2 findings share root cause QA-PY-003",
+      "sourceCount": 2,
+      "findingIds": ["QA-PY-003", "QA-PY-003"]
+    },
+    {
+      "conclusionType": "AMPLIFIED",
+      "certainty": "NONE",
+      "corroboration": "2 findings in .github/workflows/ci.yml",
+      "sourceCount": 2,
+      "findingIds": ["QA-CI-010", "QA-CI-001"]
+    },
+    {
+      "conclusionType": "AMPLIFIED",
+      "certainty": "STRONG",
+      "corroboration": "2 findings in e2e/checkout.spec.ts",
+      "sourceCount": 2,
+      "findingIds": ["QA-PW-004", "QA-TEST-002"]
+    },
+    {
+      "conclusionType": "AMPLIFIED",
+      "certainty": "STRONG",
+      "corroboration": "3 findings in playwright.config.ts",
+      "sourceCount": 3,
+      "findingIds": ["QA-PW-122", "QA-PW-143", "QA-PW-141"]
+    },
+    {
+      "conclusionType": "CORROBORATED",
+      "certainty": "STRONG",
+      "corroboration": "4 finding(s) with runtime corroboration",
+      "sourceCount": 4,
+      "findingIds": ["QA-PW-146", "QA-PW-004", "QA-PW-146", "QA-TEST-002"]
+    }
+  ]
 }

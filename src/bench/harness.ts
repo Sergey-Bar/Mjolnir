@@ -124,17 +124,17 @@ async function timeOnce(
 const RUNS_PER_SCENARIO = 3;
 
 /**
- * Measure every scenario and produce the artifact. `mjolnirVersion` and
+ * Measure every scenario and produce the artifact. `qaDoctorVersion` and
  * `commit` come from the caller (package.json / git).
  */
 export async function runBenchmark(
   fixtureRoot: string,
   fixture: BenchFixture,
-  meta: { mjolnirVersion: string; commit: string },
+  meta: { qaDoctorVersion: string; commit: string },
 ): Promise<BenchArtifact> {
   const samples: BenchSample[] = [];
 
-  // cache-miss: fresh cache dir each run (the .mjolnir dir lives in the
+  // cache-miss: fresh cache dir each run (the .qa-doctor dir lives in the
   // fixture root, so a pre-scan wipe makes every run a miss).
   const missRuns: number[] = [];
   const missRss: number[] = [];
@@ -209,7 +209,7 @@ export async function runBenchmark(
   return {
     schemaVersion: BENCH_SCHEMA_VERSION,
     harnessVersion: BENCH_HARNESS_VERSION,
-    mjolnirVersion: meta.mjolnirVersion,
+    qaDoctorVersion: meta.qaDoctorVersion,
     ...collectEnvironment(),
     measuredAt: new Date().toISOString(),
     commit: meta.commit,

@@ -140,7 +140,7 @@ evidence supported it:
   in principle measure — no P5 mutation-evidence run has covered the
   registry yet. Honest until a real mutation report is ingested.
 - `measured`: renders only after a mutation report is ingested via
-  `mjolnir mutation` and cross-referenced (P5). Today: none.
+  `qa-doctor mutation` and cross-referenced (P5). Today: none.
 
 | Rule         | Mutation coverage | Reason                                                        |
 | ------------ | ----------------- | ------------------------------------------------------------- |

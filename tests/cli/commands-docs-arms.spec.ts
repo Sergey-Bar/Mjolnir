@@ -21,7 +21,7 @@ import type { QADoctorRule } from "../../src/rules/rule.js";
 let root: string;
 let fixturesRoot: string;
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), "mjolnir-docs-arms-"));
+  root = mkdtempSync(join(tmpdir(), "qa-doctor-docs-arms-"));
   fixturesRoot = join(root, "tests", "fixtures");
 });
 afterEach(() => {

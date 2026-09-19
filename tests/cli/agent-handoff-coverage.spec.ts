@@ -32,7 +32,7 @@ import type { Finding, ScanResult } from "../../src/types.js";
 
 let dir: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-cov-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-cov-"));
 });
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
@@ -266,10 +266,10 @@ describe("why — command arms", () => {
   it("live scan crash (a config file that fails validation) → exit 20", async () => {
     writeFileSync(join(dir, "vitest.config.ts"), "export default {};\n");
     writeFileSync(join(dir, "a.spec.ts"), `test("x", () => {});\n`);
-    // mjolnir.config.json with a broken gate value → ConfigValidationError
+    // qa-doctor.config.json with a broken gate value → ConfigValidationError
     // inside runScan → the why command's crash path (exit 20).
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
+      join(dir, "qa-doctor.config.json"),
       JSON.stringify({ gate: "mega" }),
     );
     const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
@@ -485,7 +485,7 @@ describe("changed.ts — computeStagedFiles degraded arm", () => {
   it("git failure (corrupted repo) degrades to null, never throws", () => {
     // A .git DIRECTORY that is not a real repo makes `git diff` fail
     // inside computeStagedFiles — the function returns null instead.
-    const broken = mkdtempSync(join(tmpdir(), "mjolnir-broken-git-"));
+    const broken = mkdtempSync(join(tmpdir(), "qa-doctor-broken-git-"));
     mkdirSync(join(broken, ".git", "objects"), { recursive: true });
     try {
       expect(computeStagedFiles(broken)).toBeNull();

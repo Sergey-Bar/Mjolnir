@@ -18,9 +18,11 @@ defineProps<{ lines: TermLine[]; title?: string }>();
 .term {
   margin: 0;
   min-width: 0;
-  border: 1px solid var(--vp-c-border);
-  border-radius: 8px;
-  background: var(--mj-ink-950);
+  border: 1px solid var(--qa-glass-elevated-border);
+  border-radius: var(--qa-radius-panel);
+  background: var(--qa-glass-elevated-bg);
+  box-shadow: var(--qa-glass-elevated-shadow);
+  backdrop-filter: blur(var(--qa-glass-elevated-blur)) saturate(1.1);
   overflow: hidden;
 }
 .term-title {
@@ -34,14 +36,11 @@ defineProps<{ lines: TermLine[]; title?: string }>();
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* A system monospace on purpose: the Geist Mono web subset has no
-   box-drawing or block glyphs, and mixing faces breaks the columns. */
+/* Menlo leads the shared terminal stack and includes the block glyphs. */
 .term-body {
   margin: 0;
   padding: 18px 20px;
-  font-family:
-    ui-monospace, "SF Mono", "Cascadia Code", "Cascadia Mono", Consolas,
-    "DejaVu Sans Mono", Menlo, monospace;
+  font-family: var(--vp-font-family-mono);
   font-size: clamp(10px, 2.6vw, 13px);
   line-height: 1.55;
   color: var(--vp-c-text-2);

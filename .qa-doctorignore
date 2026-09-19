@@ -1,12 +1,12 @@
-# Mjölnir ignore file — paths excluded from scanning at discovery time.
+# QA Doctor ignore file — paths excluded from scanning at discovery time.
 # Supported syntax (a gitignore subset): **, *, ? wildcards; a pattern
 # containing "/" is anchored to the repo root; a bare name (no "/")
 # matches at any depth, like gitignore; "!pattern" negates, and the last
 # matching pattern wins. (Trailing-"/" directory markers are not supported.)
 #
 # This repo's fixtures, golden corpus, and demo repo are excluded via
-# the "exclude" field in mjolnir.config.json. This file demonstrates
-# the .mjolnirignore mechanism for repos that prefer file-based config.
+# the "exclude" field in qa-doctor.config.json. This file demonstrates
+# the .qa-doctorignore mechanism for repos that prefer file-based config.
 
 # Machine-local agent tooling (50f847d class — never repo content): the
 # walker visits the filesystem, not git, so on machines where the skill

@@ -65,7 +65,7 @@ const steps = computed(() => {
     },
     {
       label: `= ${Math.round(score)}`,
-      note: "the worthiness score",
+      note: "the test health score",
       cls: "s-score",
     },
   ];
@@ -98,10 +98,10 @@ if (hasArithmetic) {
  */
 const bands = scoring?.bands ?? [];
 const bandColor: Record<number, string> = {
-  100: "var(--mj-forged-hot)",
-  80: "var(--mj-trusted)",
-  50: "var(--mj-needswork)",
-  0: "var(--mj-unworthy)",
+  100: "var(--qa-excellent-hot)",
+  80: "var(--qa-trusted)",
+  50: "var(--qa-needswork)",
+  0: "var(--qa-critical)",
 };
 /** Span text from the real thresholds: e.g. 80 -> "80 – 99" under 100. */
 function bandRange(min: number): string {
@@ -157,7 +157,7 @@ function bandRange(min: number): string {
       A repo with no tests scores <em>nothing</em> — <code>null</code>, never a
       fake 100. Full derivation in
       <a
-        href="https://github.com/Sergey-Bar/Mjolnir/blob/main/docs/SCORING.md"
+        href="https://github.com/Sergey-Bar/qa-doctor/blob/main/docs/SCORING.md"
         target="_blank"
         rel="noreferrer"
         >docs/SCORING.md</a
@@ -185,9 +185,11 @@ function bandRange(min: number): string {
   align-items: stretch;
   gap: 0.5rem;
   padding: 1rem 1.1rem;
-  border: 1px solid var(--vp-c-border);
-  border-radius: 12px;
-  background: var(--vp-c-bg-alt);
+  border: 1px solid var(--qa-glass-elevated-border);
+  border-radius: var(--qa-radius-panel);
+  background: var(--qa-glass-elevated-bg);
+  box-shadow: var(--qa-glass-elevated-shadow);
+  backdrop-filter: blur(var(--qa-glass-elevated-blur));
 }
 .sx-step {
   display: flex;
@@ -195,9 +197,9 @@ function bandRange(min: number): string {
   justify-content: center;
   gap: 0.25rem;
   padding: 0.55rem 0.8rem;
-  border-radius: 8px;
-  background: var(--vp-c-bg-soft);
-  border: 1px solid var(--vp-c-border);
+  border-radius: var(--qa-radius-control);
+  background: var(--qa-surface-well);
+  border: 1px solid var(--qa-glass-subtle-border);
   min-width: 0;
 }
 .sx-val {
@@ -220,10 +222,10 @@ function bandRange(min: number): string {
   color: var(--vp-c-brand-1);
 }
 .sx-step.s-score {
-  border-color: color-mix(in oklch, var(--mj-aurora-cyan) 50%, transparent);
+  border-color: color-mix(in oklch, var(--qa-info) 50%, transparent);
   background: linear-gradient(
     180deg,
-    color-mix(in oklch, var(--mj-aurora-cyan) 10%, transparent),
+    color-mix(in oklch, var(--qa-info) 10%, transparent),
     transparent 75%
   );
 }
@@ -270,7 +272,7 @@ function bandRange(min: number): string {
   white-space: nowrap;
 }
 .sx-band-name {
-  font-family: var(--mj-display);
+  font-family: var(--qa-display);
   font-size: 0.82rem;
   font-weight: 600;
   letter-spacing: 0.05em;
@@ -296,11 +298,24 @@ function bandRange(min: number): string {
     transform: rotate(90deg);
     padding-left: 0.4rem;
   }
+  .sx-ruler {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .sx-band {
+    border-left: 1px solid var(--band-c);
+  }
+  .sx-band:nth-child(odd) {
+    border-left: 0;
+  }
+  .sx-band:nth-child(n + 3) {
+    border-top: 1px solid var(--band-c);
+  }
   .sx-band-name {
-    font-size: 0.68rem;
+    font-size: 0.72rem;
   }
   .sx-band-range {
-    font-size: 0.6rem;
+    font-size: 0.65rem;
   }
 }
 </style>

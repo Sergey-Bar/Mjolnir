@@ -5,7 +5,7 @@
  * package-smoke.spec.ts packs the tarball and symlinks this repo's own
  * node_modules into place to avoid a network dependency in the default
  * suite. That's fast and fine for every-PR coverage, but it is NOT the
- * same thing as `npm install mjolnir-qa` — it can't catch a genuinely
+ * same thing as `npm install qa-doctor-cli` — it can't catch a genuinely
  * broken transitive dependency resolution, a dependency that's
  * unpublishable, or a registry-specific packaging issue, because the
  * symlinked node_modules is this dev environment's already-working
@@ -48,37 +48,43 @@ let entryPath: string;
 
 beforeAll(() => {
   if (!RUN) return;
-  execSync("npm run build", { cwd: ROOT, stdio: "pipe" });
-
-  workDir = mkdtempSync(join(tmpdir(), "mjolnir-registry-pack-"));
-  const packOut = execSync(`npm pack --pack-destination "${workDir}" --json`, {
-    cwd: ROOT,
-  }).toString();
-  // Shape-tolerant: npm ≤ 11 emits an array, npm ≥ 12 an object keyed
-  // by package name (the change that stopped the v0.5.1 publish).
-  const packResult = parseNpmPackJson(packOut);
-  if (!packResult) {
-    throw new Error(
-      `npm pack --json produced no entry with a filename. Raw output:\n${packOut}`,
-    );
+  let tarball = process.env["REGISTRY_INSTALL_TARBALL"];
+  if (tarball) {
+    tarball = resolve(ROOT, tarball);
+    if (!existsSync(tarball))
+      throw new Error(`Tarball does not exist: ${tarball}`);
+  } else {
+    execSync("npm run build", { cwd: ROOT, stdio: "pipe" });
+    workDir = mkdtempSync(join(tmpdir(), "qa-doctor-registry-pack-"));
+    const packOut = execSync(
+      `npm pack --pack-destination "${workDir}" --json`,
+      {
+        cwd: ROOT,
+      },
+    ).toString();
+    const packResult = parseNpmPackJson(packOut);
+    if (!packResult) {
+      throw new Error(
+        `npm pack --json produced no entry with a filename. Raw output:\n${packOut}`,
+      );
+    }
+    tarball = join(workDir, packResult.filename);
   }
-  const { filename } = packResult;
-  const tarball = join(workDir, filename);
 
-  installDir = mkdtempSync(join(tmpdir(), "mjolnir-registry-install-"));
+  installDir = mkdtempSync(join(tmpdir(), "qa-doctor-registry-install-"));
   mkdirSync(join(installDir, "node_modules"), { recursive: true });
 
   // The real thing: let npm resolve `dependencies` from the registry
   // into a directory that never had this repo's node_modules in it.
   execSync(`npm install "${tarball}"`, { cwd: installDir, stdio: "pipe" });
 
-  const installedPkgDir = join(installDir, "node_modules", "mjolnir-qa");
+  const installedPkgDir = join(installDir, "node_modules", "qa-doctor-cli");
   const installedPkgJson = JSON.parse(
     readFileSync(join(installedPkgDir, "package.json"), "utf8"),
   ) as { bin?: string | Record<string, string | undefined> };
   const binField = installedPkgJson.bin;
   const binRel =
-    typeof binField === "string" ? binField : (binField?.["mjolnir"] ?? "");
+    typeof binField === "string" ? binField : (binField?.["qa-doctor"] ?? "");
   entryPath = join(installedPkgDir, binRel);
 }, 120_000);
 
@@ -99,7 +105,7 @@ describe.runIf(RUN)(
 
     it("the installed binary runs against a real fixture repo", () => {
       const fixtureDir = mkdtempSync(
-        join(tmpdir(), "mjolnir-registry-fixture-"),
+        join(tmpdir(), "qa-doctor-registry-fixture-"),
       );
       try {
         mkdirSync(join(fixtureDir, "e2e"), { recursive: true });

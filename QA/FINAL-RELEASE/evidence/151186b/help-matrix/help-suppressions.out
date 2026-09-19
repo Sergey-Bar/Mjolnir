@@ -1,8 +1,8 @@
   suppressions — list suppressed findings (governance transparency)
 
   Usage:
-    mjolnir suppressions
+    qa-doctor suppressions
 
   Examples:
-    $ mjolnir suppressions
+    $ qa-doctor suppressions
 

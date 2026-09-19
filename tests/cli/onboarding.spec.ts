@@ -136,7 +136,7 @@ describe("init", () => {
     expect(wfStep?.status).toBe("advice");
     expect(wfStep?.detail).toContain("ci install");
     // And it must not have written anything to the (nonexistent) root.
-    expect(result.nextCommands).toContain("mjolnir ci install");
+    expect(result.nextCommands).toContain("qa-doctor ci install");
   });
 
   it("reports unknown frameworks honestly", () => {
@@ -148,7 +148,7 @@ describe("init", () => {
 
   it("renders next commands when files are missing", () => {
     const text = renderInit(runInit("/nonexistent-root", null, {}));
-    expect(text).toContain("$ mjolnir ci install");
+    expect(text).toContain("$ qa-doctor ci install");
     expect(text).toContain("safe to re-run");
   });
 

@@ -34,7 +34,7 @@ function runGate(
   changelog: string,
   args: string[] = ["--expect-version", "0.6.0"],
 ): { code: number; out: string } {
-  const dir = mkdtempSync(join(tmpdir(), "mjolnir-changelog-gate-"));
+  const dir = mkdtempSync(join(tmpdir(), "qa-doctor-changelog-gate-"));
   try {
     writeFileSync(join(dir, "CHANGELOG.md"), changelog);
     const r = spawnSync(process.execPath, [TSX_CLI, GATE, ...args], {

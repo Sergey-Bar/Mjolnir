@@ -28,7 +28,7 @@
  * Known L2 boundary (documented, honest): an assertion executed via a
  * helper method, LINQ-side collection check, or framework callback the
  * oracle does not model still fires (rev-1 FP row ConventionTests.cs:12).
- * Deep-diffing those requires symbol semantics Mjölnir deliberately does
+ * Deep-diffing those requires symbol semantics QA Doctor deliberately does
  * not promise for C# (plan §13.4).
  */
 

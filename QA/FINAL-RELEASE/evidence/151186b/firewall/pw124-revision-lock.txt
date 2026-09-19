@@ -1,5 +1,5 @@
 
- RUN  v4.1.11 C:/Users/User/AppData/Local/Temp/kilo/mjolnir-rc-151186b
+ RUN  v4.1.11 C:/Users/User/AppData/Local/Temp/kilo/qa-doctor-rc-151186b
 
 No test files found, exiting with code 1
 

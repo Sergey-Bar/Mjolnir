@@ -1,4 +1,4 @@
-# Mjölnir — the brand system
+# QA Doctor — the brand system
 
 One palette, two typefaces, three marks, and a gate that will not let
 them drift apart again.
@@ -21,7 +21,7 @@ from [`src/brand/tokens.ts`](../../src/brand/tokens.ts).
 
 ## 1. The one rule
 
-**Every colour, typeface and motion constant Mjölnir shows a human
+**Every colour, typeface and motion constant QA Doctor shows a human
 resolves to a value in `src/brand/tokens.ts`. Nothing else may define
 one.**
 
@@ -40,7 +40,7 @@ The transcript is committed at
 ## 2. Why this exists
 
 The palette used to live in six independent copies: the site's
-`vars.css`, `NORSE` in the terminal reporter, the README SVG helpers,
+`vars.css`, `TERMINAL_COLORS` in the terminal reporter, the README SVG helpers,
 the video's render page, the architecture generator, and a table in the
 brand document. Exactly one pair of those was checked.
 
@@ -84,7 +84,7 @@ verdict, never a status.
 
 ### Gold is scarce
 
-Gold means **forged, certified, earned, decisive**: the mark, the FORGED
+Gold means **excellent, certified, earned, decisive**: the mark, the EXCELLENT
 state, one call to action. It is not a paint bucket. Gold as default
 text, default border, default heading, or as ornament on a horizontal
 rule is a finding, not a style choice — that last one was real, and the
@@ -93,9 +93,9 @@ section dividers now carry a neutral lozenge instead.
 ### Green is not a score colour
 
 `status.ok` is the one green, and it appears only where there is no
-worthiness meaning: "autofix applied", "analysis complete". A green
+test health meaning: "autofix applied", "analysis complete". A green
 score would say "your software is fine", which is the exact claim this
-product refuses to make. `WORTHY` renders in aurora-cyan.
+product refuses to make. `HEALTHY` renders in aurora-cyan.
 
 ### The badge is peripheral, but not unchecked
 
@@ -103,13 +103,13 @@ product refuses to make. `WORTHY` renders in aurora-cyan.
 That was already documented — and it was being used as cover. The badge
 sent shields.io's **named** colours, and two of them did not mean what
 the code's comment said they meant: `important` resolves to `#ea7233`,
-an orange, so every `WORTHY` badge rendered the trusted band in a
+an orange, so every `HEALTHY` badge rendered the trusted band in a
 warning hue; `success` resolves to green, so a 100 said "your software
 is fine".
 
 It now sends `BADGE_BAND` hex. Those values are deeper than the score
 tokens for a reason that is not taste: shields sets the message text in
-white and gives you no say in it, so `score.forged` under white measures
+white and gives you no say in it, so `score.excellent` under white measures
 1.35:1 — an unreadable badge, shipped to look on-brand. The deep steps
 put every band between 4.9 and 6.3:1, where the named colours it
 replaced ranged 1.95 to 4.24.
@@ -135,12 +135,12 @@ text (AA) and stroke (the 3:1 non-text minimum). All of it is
 
 ## 4. Typography
 
-| Role                                    | Face           | Weights     |
-| --------------------------------------- | -------------- | ----------- |
-| Display — headlines, `MJÖLNIR` wordmark | **Geist**      | 500/600     |
-| Body, UI                                | **Geist**      | 400/500/600 |
-| Code, terminal, scores, rule IDs        | **Geist Mono** | 400/500     |
-| Rune glyph fallback only (terminal)     | FreeMono       | —           |
+| Role                                      | Face           | Weights     |
+| ----------------------------------------- | -------------- | ----------- |
+| Display — headlines, `QA DOCTOR` wordmark | **Geist**      | 500/600     |
+| Body, UI                                  | **Geist**      | 400/500/600 |
+| Code, terminal, scores, rule IDs          | **Geist Mono** | 400/500     |
+| Indicator glyph fallback only (terminal)  | FreeMono       | —           |
 
 Two faces carry the whole product. Before this the website loaded Inter,
 JetBrains Mono and Cinzel while the README SVGs and the demo video
@@ -217,44 +217,35 @@ A gradient would say "more of the same". The break says what is true:
 surface drawing this ladder must draw the break, which is why
 `RUNTIME_BOUNDARY` is exported rather than each drawing hardcoding 3.
 
-### Runes — beside a state, never as ornament
+### Status indicators — beside a state, never as ornament
 
-The band runes come from
+The status indicators come from
 [`score-state.ts`](../../src/reporter/score-state.ts) and belong beside
 the verdict they name:
 
-| Band       | Rune |                                        |
-| ---------- | ---- | -------------------------------------- |
-| critical   | ᚲ    | Kaunan — the torch that burns          |
-| warning    | ᚦ    | Thurisaz — the giant at the gate       |
-| trusted    | ᛏ    | Tiwaz — victory in worthy hands        |
-| forged     | ᛟ    | Othala — the completed, inherited work |
-| unmeasured | ᛁ    | Isa — stillness; nothing was measured  |
+| Band       | Indicator | Meaning                    |
+| ---------- | --------- | -------------------------- |
+| critical   | `[!]`     | findings require attention |
+| warning    | `[~]`     | work remains               |
+| trusted    | `[+]`     | test health is healthy     |
+| excellent  | `[OK]`    | zero findings              |
+| unmeasured | `[?]`     | no measurement yet         |
 
 They are functional: a non-colour signal accompanying a state (R11).
-They are **not** decoration. A rune on a feature card, centring a
-horizontal rule, or used as a list bullet is a finding — all three were
-real, and all three are gone.
-
-The one exception is the hero runefield: ᛗ ᛃ ᛟ ᛚ ᚾ ᛁ ᚱ, read left to
-right, is MJÖLNIR in Elder Futhark. That is a wordmark, not wallpaper.
+They are **not** decoration. A status indicator on a feature card,
+centring a horizontal rule, or used as a list bullet is a finding.
 
 ### The mark
 
-The logo is `MJÖLNIR` set in Geist 500, caps, tracked 0.3em, in primary
+The logo is `QA DOCTOR` set in Geist 500, caps, tracked 0.3em, in primary
 text on ink — no illustration. Below the wordmark's legible width it
-falls back to a single rune, ᛗ (Mansaz): the same "M" the name is
-spelled with in Elder Futhark, and deliberately not one of the five
-verdict runes in the table above, so the permanent mark can never read
-as a standing score.
+falls back to a `Q` inspection mark with an integrated verification check,
+so the permanent mark reads as product identity, never as a score.
 
-The rune is drawn, not typeset: two staves on a 48×64 grid, each with a
-diagonal from its head to the middle of the other, stroked in the
-aurora (green at the foot, cyan through the crossing, violet at the
-head). Below 64px the stroke gets heavier and the heads are bevelled,
-so the favicon is a cut made for its size rather than a large mark
-shrunk until it blurs. The mark and the wordmark are never set side by
-side: next to `MJÖLNIR` a second M only stutters.
+The mark is drawn, not typeset: an open `Q` ring on a 64×64 grid, finished
+with a check. Below 64px its stroke gets heavier so the favicon remains
+clear at its native size. The mark and the wordmark are never set side by
+side: next to `QA DOCTOR` a second mark adds noise.
 
 `assets/brand/mark.png` and `logo.png` are the rendered source of truth
 (`scripts/generate-brand-marks.ts`, `npm run brand:marks`). Regenerating

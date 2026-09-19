@@ -34,7 +34,7 @@ import { fileURLToPath } from "node:url";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SITE = join(HERE, "..");
 const DIST = join(SITE, ".vitepress", "dist");
-const BASE = "/Mjolnir/";
+const BASE = "/qa-doctor/";
 // guide/scoring carries the trust ladder and the evidence weighting —
 // the two components that state the product's epistemics. A visual
 // treatment nothing ever audits is a visual treatment nobody has
@@ -77,7 +77,7 @@ function serve(port) {
     for (const t of tries) {
       // Look the request up in a manifest enumerated from dist/ at startup,
       // rather than building a filesystem path out of it. The request is
-      // attacker-controlled in principle (`GET /Mjolnir/../../etc/passwd`),
+      // attacker-controlled in principle (`GET /qa-doctor/../../etc/passwd`),
       // and "it only runs locally" is the excuse that keeps this bug alive.
       // Nothing outside dist/ is reachable because nothing outside dist/ is
       // in the map.
@@ -164,7 +164,7 @@ async function main() {
   await browser.close();
   server.close();
 
-  console.log("\nmjolnir site lighthouse  (local static server, gzip on)\n");
+  console.log("\nqa-doctor site lighthouse  (local static server, gzip on)\n");
   let failed = 0;
   let shown = "";
   for (const r of rows) {

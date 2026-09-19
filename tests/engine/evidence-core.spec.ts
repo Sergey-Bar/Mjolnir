@@ -122,11 +122,11 @@ describe("buildEvidenceRecords — normalization fidelity (WI-2 field contract)"
         }),
       ],
     });
-    const recs = buildEvidenceRecords(rep, "mjolnir.report.json");
+    const recs = buildEvidenceRecords(rep, "qa-doctor.report.json");
     expect(recs).toHaveLength(2);
     const flaky = recs[0] as EvidenceRecord;
     expect(flaky.source).toBe("playwright-json");
-    expect(flaky.artifact).toBe("mjolnir.report.json");
+    expect(flaky.artifact).toBe("qa-doctor.report.json");
     expect(flaky.file).toBe("e2e/a.spec.ts");
     expect(flaky.title).toBe("flaky checkout");
     expect(flaky.line).toBe(10);
@@ -144,7 +144,7 @@ describe("buildEvidenceRecords — normalization fidelity (WI-2 field contract)"
     expect(flaky.attachments).toEqual([]);
     expect(flaky.provenance).toEqual({
       core: EVIDENCE_CORE_VERSION,
-      ingest: "mjolnir.forensics",
+      ingest: "qa-doctor.forensics",
     });
     const skipped = recs[1] as EvidenceRecord;
     expect(skipped.status.skipped).toBe(true);
@@ -372,8 +372,8 @@ describe("preservation: stamping through the core ≡ pre-core semantics (differ
       ],
     });
     const mk = (): Finding[] => [
-      finding({ file: "e2e/shop.spec.ts", line: 10 }),
-      finding({ file: "e2e/shop.spec.ts", line: 45 }),
+      finding({ file: "e2e/shop.spec.ts", line: 1 }),
+      finding({ file: "e2e/shop.spec.ts", line: 40 }),
       finding({ file: "nowhere/x.ts", line: 2 }),
     ];
     const viaCore = mk();

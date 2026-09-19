@@ -12,7 +12,7 @@
  * frozen ESM namespace objects in this toolchain, so monkey-patching
  * `http.request` etc. at runtime throws ("Cannot assign to property...
  * of [object Module]") rather than reliably intercepting anything — a
- * fragile foundation for a test whose whole job is to be trustworthy.
+ * fragile foundation for a test whose whole job is to be reliable.
  * A grep over `src/` for every network-capable API is simpler, doesn't
  * depend on this scan's specific code paths happening to exercise every
  * network-capable branch, and catches the violation at the same

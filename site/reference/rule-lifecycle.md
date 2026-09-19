@@ -1,6 +1,6 @@
 ---
 title: Rule lifecycle
-description: How Mjölnir deprecates or removes a shipped rule whose premise turned out to be wrong.
+description: How QA Doctor deprecates or removes a shipped rule whose premise turned out to be wrong.
 lastUpdated: false
 ---
 

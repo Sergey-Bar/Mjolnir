@@ -24,7 +24,7 @@ function git(args: string[], opts: { cwd?: string } = {}): void {
 }
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-scope-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-scope-"));
   git(["init", "-b", "main"]);
   git(["config", "user.email", "t@t"]);
   git(["config", "user.name", "t"]);
@@ -48,7 +48,7 @@ function commit(files: Record<string, string>, message: string): void {
 
 describe("computeChangedScope", () => {
   it("degrades honestly outside a git repo", () => {
-    const plain = mkdtempSync(join(tmpdir(), "mjolnir-nogit-"));
+    const plain = mkdtempSync(join(tmpdir(), "qa-doctor-nogit-"));
     try {
       expect(computeChangedScope(plain)).toEqual({
         changed: {},

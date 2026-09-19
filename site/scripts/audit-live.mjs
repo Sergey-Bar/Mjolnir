@@ -31,7 +31,7 @@ import { fileURLToPath } from "node:url";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SITE = join(HERE, "..");
 const DIST = join(SITE, ".vitepress", "dist");
-const BASE = "/Mjolnir/";
+const BASE = "/qa-doctor/";
 
 /** Pages worth auditing: the landing page, a doc page, and the catalog. */
 // guide/scoring carries the trust ladder and the evidence weighting —
@@ -76,7 +76,7 @@ function serve(port) {
     for (const t of tries) {
       // Look the request up in a manifest enumerated from dist/ at startup,
       // rather than building a filesystem path out of it. The request is
-      // attacker-controlled in principle (`GET /Mjolnir/../../etc/passwd`),
+      // attacker-controlled in principle (`GET /qa-doctor/../../etc/passwd`),
       // and "it only runs locally" is the excuse that keeps this bug alive.
       // Nothing outside dist/ is reachable because nothing outside dist/ is
       // in the map.
@@ -224,7 +224,7 @@ async function main() {
   server.close();
 
   /* ---------------- report ---------------- */
-  console.log("\nmjolnir site audit  (axe-core + keyboard + web vitals)\n");
+  console.log("\nqa-doctor site audit  (axe-core + keyboard + web vitals)\n");
   let failed = 0;
 
   for (const r of results) {

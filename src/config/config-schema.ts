@@ -2,7 +2,7 @@
 /**
  * Config schema validation (ENGINE-007).
  *
- * Lightweight recursive validator for mjolnir.config.json against
+ * Lightweight recursive validator for qa-doctor.config.json against
  * a structural schema. No external schema library — just the shapes
  * the engine actually consumes, validated deterministically.
  */
@@ -16,11 +16,11 @@ const VALID_GATES = new Set(["advisory", "error", "warning"]);
 const VALID_SEVERITIES = new Set(["error", "warning", "info"]);
 
 /**
- * JSON Schema draft-07 for mjolnir.config.json. Kept as a reference
+ * JSON Schema draft-07 for qa-doctor.config.json. Kept as a reference
  * structure for documentation; the actual validation is done by
  * `validateConfigSchema` below which is type-aware and recursive.
  */
-export const MJOLNIR_CONFIG_SCHEMA = {
+export const QA_DOCTOR_CONFIG_SCHEMA = {
   $schema: "http://json-schema.org/draft-07/schema#",
   type: "object" as const,
   properties: {

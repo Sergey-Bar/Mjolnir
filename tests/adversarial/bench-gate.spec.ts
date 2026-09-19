@@ -33,7 +33,7 @@ function artifact(samples: BenchArtifact["samples"]): BenchArtifact {
   return {
     schemaVersion: 1,
     harnessVersion: "test",
-    mjolnirVersion: "test",
+    qaDoctorVersion: "test",
     nodeVersion: "test",
     os: "test",
     cpu: "test",
@@ -69,7 +69,7 @@ describe("bench artifact schema gate (WI-15)", () => {
           import.meta.dirname,
           "..",
           "..",
-          ".mjolnir",
+          ".qa-doctor",
           "bench-baseline.json",
         ),
         "utf8",
@@ -152,7 +152,7 @@ describe("bench artifact schema gate (WI-15)", () => {
     "end-to-end: runBenchmark regenerates a schema-valid artifact on a temp dir",
     { timeout: 120_000 },
     async () => {
-      const out = mkdtempSync(join(tmpdir(), "mjolnir-bench-"));
+      const out = mkdtempSync(join(tmpdir(), "qa-doctor-bench-"));
       try {
         const { runBenchmark, generateFixture } =
           await import("../../src/bench/harness.js");
@@ -160,7 +160,7 @@ describe("bench artifact schema gate (WI-15)", () => {
         mkdirSync(fixtureRoot, { recursive: true });
         const fixture = generateFixture(fixtureRoot, { fileCount: 20 });
         const b = await runBenchmark(fixtureRoot, fixture, {
-          mjolnirVersion: "test",
+          qaDoctorVersion: "test",
           commit: "test",
         });
         writeFileSync(

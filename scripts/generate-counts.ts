@@ -1,7 +1,7 @@
 /**
  * `npm run docs:counts` — rewrites the census numbers embedded in the
  * live hand-written surfaces from the single source: the measurement
- * census (`measurementBlock()` — the exact block `mjolnir doctor --json`
+ * census (`measurementBlock()` — the exact block `qa-doctor doctor --json`
  * emits as `measurement`, which docs/CERTIFICATION-POLICY.md §2 names
  * "the reproducible answer to how many rules are measured").
  *

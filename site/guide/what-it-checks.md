@@ -1,6 +1,6 @@
-# What Mjölnir checks
+# What QA Doctor checks
 
-Mjölnir looks for evidence that your verification cannot be trusted. Not
+QA Doctor looks for evidence that your verification cannot be trusted. Not
 style, not formatting — the specific places where a test suite or a
 pipeline reports success it hasn't earned.
 
@@ -28,7 +28,7 @@ Each family name links into the [rule catalog](/rules/), pre-filtered.
 
 Every rule ships with must-fire **and** must-not-fire fixtures. A rule
 that fires on its own negative fixture cannot ship — that is the firewall,
-and it is enforced by `mjolnir doctor`, not by convention.
+and it is enforced by `qa-doctor doctor`, not by convention.
 
 Detection also runs on a comment- and string-free view of the source
 (TypeScript rules use the compiler AST). A pattern inside a prose comment
@@ -55,8 +55,8 @@ real OSS code, and the tool says so rather than implying otherwise:
   audited set.
 - Every scan footer reports how many of the rules that _fired_ are
   measured.
-- `mjolnir rules --unmeasured` lists the ones that aren't.
-- Every rule's `mjolnir explain` page states its status.
+- `qa-doctor rules --unmeasured` lists the ones that aren't.
+- Every rule's `qa-doctor explain` page states its status.
 
 Rates are published even when they're unflattering — a rule that audits
 badly gets quarantined for it. Method and the full table:
@@ -78,7 +78,7 @@ consumer suite — not a binding library's own tests — has been audited.
 ## Getting the catalog locally
 
 ```bash
-mjolnir rules --md          # full catalog as Markdown
-mjolnir rules --unmeasured  # only the rules running on assumption
-mjolnir explain QA-CI-001   # what / why / fix + FP status for one rule
+qa-doctor rules --md          # full catalog as Markdown
+qa-doctor rules --unmeasured  # only the rules running on assumption
+qa-doctor explain QA-CI-001   # what / why / fix + FP status for one rule
 ```

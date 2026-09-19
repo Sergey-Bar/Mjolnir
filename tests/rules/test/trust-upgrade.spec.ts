@@ -1,6 +1,6 @@
 /**
  * Trust upgrade wave — behavior-based sleep detection, selector risk
- * scoring, and the `mjolnir doctor` self-audit command.
+ * scoring, and the `qa-doctor doctor` self-audit command.
  */
 
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
@@ -87,7 +87,7 @@ describe("selector risk scoring", () => {
   });
 });
 
-describe("mjolnir doctor self-audit", () => {
+describe("qa-doctor doctor self-audit", () => {
   it("registry sanity passes on the real registry", () => {
     const check = checkRegistry();
     expect(check.ok).toBe(true);
@@ -264,7 +264,7 @@ describe("mjolnir doctor self-audit", () => {
       measurement: { measured: 0, unmeasured: 0, total: 0, quarantine: 0 },
     });
     expect(text).toContain(`✓ registry-sanity`);
-    expect(text).toContain("WORTHY");
+    expect(text).toContain("HEALTHY");
   });
 
   it("renderDoctorReport renders violations, truncating past 20 details", () => {
@@ -303,7 +303,7 @@ describe("mjolnir doctor self-audit", () => {
   });
 });
 
-describe("mjolnir doctor — anti-creep and tier-enforcement checks", () => {
+describe("qa-doctor doctor — anti-creep and tier-enforcement checks", () => {
   const fakeRule = (id: string, tier?: "core" | "extended"): QADoctorRule =>
     ({
       id,
@@ -397,7 +397,7 @@ describe("mjolnir doctor — anti-creep and tier-enforcement checks", () => {
     // Live verdicts: an EMPTY corpus dir (exists, zero rows) — evidence
     // exists and says "not measured", so this is an honest FAIL (n=0),
     // not INCONCLUSIVE.
-    const empty = mkdtempSync(join(tmpdir(), "mjolnir-tier-empty-"));
+    const empty = mkdtempSync(join(tmpdir(), "qa-doctor-tier-empty-"));
     mkdirSync(join(empty, "verdicts"), { recursive: true });
     const rules = [fakeRule("QA-TEST-700", "core")];
     const check = checkTierEnforcement(join(empty, "verdicts"), rules);
@@ -408,7 +408,7 @@ describe("mjolnir doctor — anti-creep and tier-enforcement checks", () => {
   it("checkTierEnforcement is INCONCLUSIVE when the live verdicts path is unreadable (present but invalid)", () => {
     // L4 ruling, per-failure-type: the evidence EXISTS but cannot be
     // read (a file passed as a directory) → INCONCLUSIVE, never pass.
-    const probe = mkdtempSync(join(tmpdir(), "mjolnir-tier-file-"));
+    const probe = mkdtempSync(join(tmpdir(), "qa-doctor-tier-file-"));
     const asFile = join(probe, "not-a-dir");
     writeFileSync(asFile, "not a directory\n");
     const check = checkTierEnforcement(asFile, [

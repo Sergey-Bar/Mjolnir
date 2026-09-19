@@ -55,7 +55,7 @@ describe("action.yml Trust Report consumption (WI-9, plan §13)", () => {
     const gen = ACTION.runs.steps.find(
       (s) => s.name === "Generate Trust Report",
     );
-    expect(gen?.run).toContain("trust-report --from mjolnir.json");
+    expect(gen?.run).toContain("trust-report --from qa-doctor.json");
     expect(gen?.if).toContain(
       "inputs.annotations == 'true' || inputs.pr-comment == 'true' ||",
     );
@@ -73,7 +73,7 @@ describe("action.yml Trust Report consumption (WI-9, plan §13)", () => {
     const step = ACTION.runs.steps.find(
       (s) => s.name === "Emit annotations + step summary",
     );
-    expect(step?.run).toContain("summary mjolnir.json");
+    expect(step?.run).toContain("summary qa-doctor.json");
   });
 
   it("PR comment upserts by marker, only on pull_request events", () => {
@@ -93,7 +93,7 @@ describe("action.yml Trust Report consumption (WI-9, plan §13)", () => {
       s.name?.startsWith("Upload Trust Report"),
     );
     expect(step?.uses).toMatch(/^actions\/upload-artifact@[0-9a-f]{40}/);
-    expect(step?.with?.path).toContain("mjolnir-trust-report.md");
+    expect(step?.with?.path).toContain("qa-doctor-trust-report.md");
   });
 
   it("the MD artifact begins with the upsert marker", () => {
@@ -131,12 +131,12 @@ describe("reporter version-sync gate (WI-10, plan §14)", () => {
     );
   });
 
-  it("the reporter keeps the ingestion contract: default output is mjolnir.report.json", () => {
+  it("the reporter keeps the ingestion contract: default output is qa-doctor.report.json", () => {
     const src = readFileSync(
       join(ROOT, "packages", "playwright-reporter", "src", "index.ts"),
       "utf8",
     );
-    expect(src).toContain("mjolnir.report.json");
+    expect(src).toContain("qa-doctor.report.json");
   });
 
   it("advisory mode: a trailing reporter version still exits 0", () => {
@@ -156,7 +156,7 @@ describe("reporter version-sync gate (WI-10, plan §14)", () => {
   });
 
   it("hard drift: a reporter version AHEAD of the root package exits 1 even in advisory mode", () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-ver-sync-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-ver-sync-"));
     try {
       // Synthetic repo: real root package.json, reporter 9.9.9 — a
       // leading independent line is drift no matter the mode.
@@ -180,7 +180,7 @@ describe("reporter version-sync gate (WI-10, plan §14)", () => {
       );
       writeFileSync(
         join(dir, "packages", "playwright-reporter", "src", "index.ts"),
-        'export const out = "mjolnir.report.json";',
+        'export const out = "qa-doctor.report.json";',
       );
       const r = spawnSync(
         process.execPath,
@@ -199,7 +199,7 @@ describe("reporter version-sync gate (WI-10, plan §14)", () => {
   });
 
   it("hard drift: breaking the ingestion contract exits 1 even in advisory mode", () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-ver-sync2-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-ver-sync2-"));
     try {
       mkdirSync(join(dir, "packages", "playwright-reporter", "src"), {
         recursive: true,

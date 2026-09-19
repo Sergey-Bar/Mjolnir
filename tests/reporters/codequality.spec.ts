@@ -156,7 +156,7 @@ describe("GitLab Code Quality reporter (P3a)", () => {
     "CLI end-to-end: --format codequality emits the report; the file GitLab expects",
     { timeout: 60_000 },
     () => {
-      const dir = mkdtempSync(join(tmpdir(), "mjolnir-cq-"));
+      const dir = mkdtempSync(join(tmpdir(), "qa-doctor-cq-"));
       try {
         writeFileSync(
           join(dir, "a.spec.ts"),

@@ -631,7 +631,7 @@ export interface RuleStats {
  * Per-rule TP/FP tallies from the hand-classified corpus verdicts.
  * The single source of truth for "how measured is this rule" — used by
  * the FP-audit page, the shipped `src/rules/measured-fp.generated.ts`,
- * and (via that file) the scan footer, `mjolnir rules`, `explain`, and
+ * and (via that file) the scan footer, `qa-doctor rules`, `explain`, and
  * `doctor`'s tier-enforcement check.
  */
 export function computeRuleStats(verdicts: Verdict[]): RuleStats[] {

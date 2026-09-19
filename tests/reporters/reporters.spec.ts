@@ -381,7 +381,7 @@ describe("renderTerminal", () => {
       { isTTY: false },
     );
     expect(out).toContain("NO TESTS DETECTED");
-    expect(out).toContain("mjolnir <path-to-your-tests>");
+    expect(out).toContain("qa-doctor <path-to-your-tests>");
   });
 
   it("renders score bar and severity counts", () => {
@@ -394,7 +394,7 @@ describe("renderTerminal", () => {
       }),
       { isTTY: false },
     );
-    expect(out).toContain("WORTHINESS");
+    expect(out).toContain("TEST HEALTH");
     expect(out).toContain("72/100");
     expect(out).toContain("DETECTED [vitest]");
     expect(out).toContain("FINDINGS");
@@ -440,7 +440,7 @@ describe("renderTerminal", () => {
       const out = renderTerminal(makeResult({ findings: [makeFinding()] }), {
         isTTY: true,
       });
-      expect(out).toContain("\x1b[38;2;"); // 24-bit truecolor SGR (Norse palette)
+      expect(out).toContain("\x1b[38;2;"); // 24-bit truecolor SGR (terminal palette)
     } finally {
       if (prev !== undefined) process.env["NO_COLOR"] = prev;
     }

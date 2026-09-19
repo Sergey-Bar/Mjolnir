@@ -1,5 +1,5 @@
 /**
- * `mjolnir mcp` — the CLI route into the MCP stdio transport.
+ * `qa-doctor mcp` — the CLI route into the MCP stdio transport.
  *
  * tests/contract/mcp-transport.spec.ts covers the transport itself by
  * spawning the standalone binary. This covers the thing that binary does
@@ -57,7 +57,7 @@ async function runWithStdio(
   }
 }
 
-describe("mjolnir mcp (CLI dispatch)", () => {
+describe("qa-doctor mcp (CLI dispatch)", () => {
   it("serves a JSON-RPC response and exits 0 when the client closes stdin", async () => {
     const { code, stdout } = await runWithStdio(
       ["mcp"],
@@ -83,7 +83,7 @@ describe("mjolnir mcp (CLI dispatch)", () => {
     expect(reply["error"]).toBeUndefined();
     const result = reply["result"] as Record<string, unknown>;
     expect(result["protocolVersion"]).toEqual(expect.any(String));
-    expect(result["serverInfo"]).toMatchObject({ name: "mjolnir-qa" });
+    expect(result["serverInfo"]).toMatchObject({ name: "qa-doctor-cli" });
   });
 
   it("exposes the full MCP tool catalog through the same route", async () => {

@@ -1,7 +1,7 @@
 /**
  * Ignore resolution (Product-MVP.txt R1 — Tier-1 launch blocker).
  *
- * Resolution order: defaults → .mjolnirignore → user config exclude.
+ * Resolution order: defaults → .qa-doctorignore → user config exclude.
  *
  * Pattern syntax — the supported gitignore subset, stated honestly:
  *   - `**`, `*`, `?` wildcards
@@ -19,7 +19,7 @@
  * scan resolves one immutable IgnoreMatcher for its root and threads it
  * through ScanContext, so scanning two roots in one process (library
  * use, the corpus audit, a future watch mode) can never apply the first
- * root's .mjolnirignore to the second. Patterns are also compiled once
+ * root's .qa-doctorignore to the second. Patterns are also compiled once
  * per matcher instead of once per pattern per walked path.
  */
 
@@ -37,9 +37,9 @@ export const DEFAULT_IGNORES: readonly string[] = [
   "node_modules",
   ".git",
   // The tool's own state directory (baseline.json is read directly, not
-  // discovered; M5.2 adds .mjolnir/cache/). Its contents are machine
+  // discovered; M5.2 adds .qa-doctor/cache/). Its contents are machine
   // state, never test sources.
-  ".mjolnir",
+  ".qa-doctor",
   // Agent/editor tool-state directories (e.g. `.claude/`, which may hold
   // generated worktrees whose test corpora contain deliberate anti-pattern
   // fixtures). These are machine/tool state, never the project's own
@@ -104,7 +104,7 @@ export const LIMITS = {
   maxFileAnalysisMs: 5_000,
   /**
    * Audit S2: ignore/glob pattern caps. A pattern (operator config or
-   * hostile-repo .mjolnirignore) longer than this, or with more
+   * hostile-repo .qa-doctorignore) longer than this, or with more
    * wildcards than this, is rejected at compile time — regex
    * construction cost and match cost are bounded by the pattern, so the
    * caps bound both. Note: the compiled regexes run SYNCHRONOUSLY in
@@ -127,7 +127,7 @@ interface CompiledPattern {
 
 /**
  * Resolve the full ignore chain for one root: DEFAULT_IGNORES plus
- * .mjolnirignore plus mjolnir.config.json `exclude`. Malformed or
+ * .qa-doctorignore plus qa-doctor.config.json `exclude`. Malformed or
  * unreadable sources degrade to the defaults, never throw.
  */
 export function createIgnoreMatcher(root: string): IgnoreMatcher {
@@ -158,8 +158,8 @@ export function createMatcherFromPatterns(
 function loadExtraPatterns(root: string): string[] {
   const extra: string[] = [];
 
-  // Load .mjolnirignore (same supported dialect as DEFAULT_IGNORES)
-  const ignorePath = join(root, ".mjolnirignore");
+  // Load .qa-doctorignore (same supported dialect as DEFAULT_IGNORES)
+  const ignorePath = join(root, ".qa-doctorignore");
   if (existsSync(ignorePath)) {
     try {
       const content = readFileSync(ignorePath, "utf8");
@@ -173,7 +173,7 @@ function loadExtraPatterns(root: string): string[] {
     }
   }
 
-  // Load exclude patterns from mjolnir.config.json or .mjolnir.json
+  // Load exclude patterns from qa-doctor.config.json or .qa-doctor.json
   const configPath = findConfigPath(root);
   if (configPath) {
     try {
@@ -212,17 +212,17 @@ function compilePattern(raw: string): CompiledPattern | null {
   // Audit S2: pattern caps — length and wildcard count bound both regex
   // construction cost and per-path match cost. A pattern over the cap is
   // rejected at compile (never at match time); a hostile
-  // .mjolnirignore with a megabyte of `*a*a*a*…` cannot own the scan.
+  // .qa-doctorignore with a megabyte of `*a*a*a*…` cannot own the scan.
   if (pattern.length > LIMITS.maxPatternLength) return null;
   const wildcards = (pattern.match(/[*?]/g) ?? []).length;
   if (wildcards > LIMITS.maxPatternWildcards) return null;
   const re = pattern.includes("/")
-    ? // eslint-disable-next-line security/detect-non-literal-regexp -- glob compiled from mjolnir.config.json exclude — operator-owned config (§21 trust boundary)
+    ? // eslint-disable-next-line security/detect-non-literal-regexp -- glob compiled from qa-doctor.config.json exclude — operator-owned config (§21 trust boundary)
       new RegExp(`^${globBody(pattern)}$`)
     : // Bare name: gitignore semantics — matches a file or directory
       // with this name at ANY depth (a directory match ignores its
       // contents, since every file path inside contains the segment).
-      // eslint-disable-next-line security/detect-non-literal-regexp -- glob compiled from mjolnir.config.json exclude — operator-owned config (§21 trust boundary)
+      // eslint-disable-next-line security/detect-non-literal-regexp -- glob compiled from qa-doctor.config.json exclude — operator-owned config (§21 trust boundary)
       new RegExp(`(?:^|/)${globBody(pattern)}(?:/|$)`);
   return { negated, re };
 }
@@ -263,7 +263,7 @@ function globBody(glob: string): string {
 
 /** Anchored full-path glob — the primitive the matcher builds on. */
 export function globToRegExp(glob: string): RegExp {
-  // eslint-disable-next-line security/detect-non-literal-regexp -- glob compiled from mjolnir.config.json exclude — operator-owned config (§21 trust boundary)
+  // eslint-disable-next-line security/detect-non-literal-regexp -- glob compiled from qa-doctor.config.json exclude — operator-owned config (§21 trust boundary)
   return new RegExp(`^${globBody(glob)}$`);
 }
 

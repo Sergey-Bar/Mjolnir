@@ -35,7 +35,7 @@ import type { ForensicsReport } from "../../src/forensics/types.js";
 
 let dir: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-empty-states-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-empty-states-"));
 });
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
@@ -98,13 +98,13 @@ describe("dead end: no tests found", () => {
     }
     // "what to do next" — and the suggestion is a real invocation, not a
     // phantom flag (H-5): no `--flag` token appears in the empty state.
-    expect(out).toContain("mjolnir <path-to-your-tests>");
-    expect(out).not.toMatch(/mjolnir --[a-z-]+/);
+    expect(out).toContain("qa-doctor <path-to-your-tests>");
+    expect(out).not.toMatch(/qa-doctor --[a-z-]+/);
   });
 
   it("score stays null, never a fake 0 (frozen contract: score is honest)", () => {
     const out = renderTerminal(scanResult(), { isTTY: false });
-    expect(out).not.toMatch(/WORTHINESS\s+0\/100/);
+    expect(out).not.toMatch(/TEST HEALTH\s+0\/100/);
   });
 });
 
@@ -168,12 +168,12 @@ describe("dead end: no report for pw-report", () => {
   });
 });
 
-describe("dead end: zero findings (flawless victory)", () => {
+describe("dead end: zero findings (all clear)", () => {
   it("renders a positive, explanatory state rather than silence", () => {
     const out = renderTerminal(scanResult({ score: 100, findings: [] }), {
       isTTY: false,
     });
-    expect(out).toMatch(/FLAWLESS VICTORY|zero findings/i);
+    expect(out).toMatch(/ALL CLEAR|zero findings/i);
   });
 });
 
@@ -219,19 +219,19 @@ describe("subcommand dead ends carry a $ next-step command", () => {
     );
     const text = renderBaselineDiff(diff);
     expect(text).toContain("UNKNOWN — no baseline found.");
-    expect(text).toMatch(/^\s*\$ mjolnir baseline\b/m);
+    expect(text).toMatch(/^\s*\$ qa-doctor baseline\b/m);
   });
 
   it("baseline saved points at diff", () => {
-    const text = renderBaselineSaved(".mjolnir/baseline.json", 2);
-    expect(text).toMatch(/^\s*\$ mjolnir diff\b/m);
+    const text = renderBaselineSaved(".qa-doctor/baseline.json", 2);
+    expect(text).toMatch(/^\s*\$ qa-doctor diff\b/m);
   });
 
   it("stats with no recorded fixes points at the baseline→diff loop", () => {
     const text = renderStats(null);
     expect(text).toContain("No fixes recorded yet");
-    expect(text).toMatch(/^\s*\$ mjolnir baseline$/m);
-    expect(text).toMatch(/^\s*\$ mjolnir diff$/m);
+    expect(text).toMatch(/^\s*\$ qa-doctor baseline$/m);
+    expect(text).toMatch(/^\s*\$ qa-doctor diff$/m);
   });
 
   it("init prints next commands as $ lines", () => {

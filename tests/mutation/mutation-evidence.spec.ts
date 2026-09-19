@@ -356,12 +356,12 @@ describe("derivation (E1→E2 by derivation, never claimed)", () => {
   });
 });
 
-describe("mjolnir mutation command end-to-end (report-only, never a gate)", () => {
+describe("qa-doctor mutation command end-to-end (report-only, never a gate)", () => {
   it(
     "renders the leaderboard and exits 0 even with survived mutants",
     { timeout: 60_000 },
     () => {
-      const dir = mkdtempSync(join(tmpdir(), "mjolnir-p5-"));
+      const dir = mkdtempSync(join(tmpdir(), "qa-doctor-p5-"));
       try {
         writeFileSync(
           join(dir, "mutation-report.json"),
@@ -392,7 +392,7 @@ describe("mjolnir mutation command end-to-end (report-only, never a gate)", () =
     "--scan stamps the scan's findings; exit stays 0 (never a gate)",
     { timeout: 120_000 },
     () => {
-      const dir = mkdtempSync(join(tmpdir(), "mjolnir-p5-scan-"));
+      const dir = mkdtempSync(join(tmpdir(), "qa-doctor-p5-scan-"));
       try {
         writeFileSync(
           join(dir, "mutation-report.json"),
@@ -445,7 +445,7 @@ describe("mjolnir mutation command end-to-end (report-only, never a gate)", () =
     "an unrecognized report exits 2 (honest no-evidence)",
     { timeout: 60_000 },
     () => {
-      const dir = mkdtempSync(join(tmpdir(), "mjolnir-p5-bad-"));
+      const dir = mkdtempSync(join(tmpdir(), "qa-doctor-p5-bad-"));
       try {
         writeFileSync(join(dir, "mutation-report.json"), "not a report");
         let status = 0;

@@ -127,7 +127,7 @@ describe("the five questions (WI-5 acceptance)", () => {
 
   it("5. what next — NEXT ACTION names a concrete command", () => {
     expect(out).toContain("NEXT ACTION");
-    expect(out).toContain("mjolnir explain QA-PW-141");
+    expect(out).toContain("qa-doctor explain QA-PW-141");
   });
 });
 
@@ -238,7 +238,7 @@ describe("derived facts — deterministic, canonical-derived", () => {
     expect(nextAction(result({}))).toContain("ci install");
     expect(
       nextAction(result({ findings: [finding({ ruleId: "QA-PW-101" })] })),
-    ).toContain("mjolnir explain QA-PW-101");
+    ).toContain("qa-doctor explain QA-PW-101");
   });
 
   it("trustReasons: ceiling + provisional + unknown disclosures", () => {

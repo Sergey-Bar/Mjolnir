@@ -10,7 +10,7 @@
  *    byte-identical text share one verdict entry and the first file's
  *    findings get attributed to the second file on cache hit.
  *  - audit-C3  (M1): the default `err` sink must emit ALL parts
- *    (currently only the first — e.g. "mjolnir internal error:" prints
+ *    (currently only the first — e.g. "qa-doctor internal error:" prints
  *    without the actual error message).
  *  - audit-C5  (M1): a partial (truncated) scan must not write the
  *    first-clean-scan milestone, and `diff` on a partial scan must not
@@ -49,7 +49,7 @@ afterEach(() => {
 });
 
 function tmpRepo(label: string): string {
-  const d = mkdtempSync(join(tmpdir(), `mjolnir-audit-${label}-`));
+  const d = mkdtempSync(join(tmpdir(), `qa-doctor-audit-${label}-`));
   createdDirs.push(d);
   return d;
 }
@@ -124,13 +124,13 @@ describe("audit-C3: default io sinks are variadic", () => {
     // Read calls BEFORE restore — mockRestore() clears the call log.
     const calls = errSpy.mock.calls.map((c) => c.map(String).join(" "));
     errSpy.mockRestore();
-    const internal = calls.find((c) => c.includes("mjolnir internal error"));
+    const internal = calls.find((c) => c.includes("qa-doctor internal error"));
     expect(internal).toBeDefined();
     expect(
       calls.some(
         (c) =>
           c.trim().length > 0 &&
-          !c.includes("mjolnir internal error") &&
+          !c.includes("qa-doctor internal error") &&
           c !== "undefined",
       ),
     ).toBe(true);
@@ -169,9 +169,9 @@ describe("audit-C5: partial scans never write milestones or fold stats", () => {
     writeFileSync(join(dir, "test", "flaky.spec.ts"), PW_HARD_SLEEP("flaky"));
     // Baseline captured when the file still had the hard sleep; a
     // truncated scan that happens to miss the file must not "resolve" it.
-    mkdirSync(join(dir, ".mjolnir"), { recursive: true });
+    mkdirSync(join(dir, ".qa-doctor"), { recursive: true });
     writeFileSync(
-      join(dir, ".mjolnir", "baseline.json"),
+      join(dir, ".qa-doctor", "baseline.json"),
       JSON.stringify({
         schemaVersion: 1,
         capturedAt: "2020-01-01T00:00:00.000Z",

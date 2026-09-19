@@ -23,7 +23,7 @@ function validModel(
     repository: "org/repo",
     pullRequest: { number: 42, headSha: "abc123", baseRef: "main" },
     scope: { type: "changed", description: "Changed files in PR" },
-    verdict: "WORTHY",
+    verdict: "HEALTHY",
     score: 85,
     scoreAvailability: "available",
     analysisCompleteness: "COMPLETE",
@@ -58,13 +58,13 @@ function validModel(
       url: "https://example.com/report",
       format: "json",
     },
-    generatedBy: { tool: "mjolnir-qa", version: "1.0.10" },
+    generatedBy: { tool: "qa-doctor-cli", version: "1.0.10" },
     ...overrides,
   };
 }
 
 describe("validatePrCommentModel", () => {
-  it("accepts a valid COMPLETE/WORTHY model", () => {
+  it("accepts a valid COMPLETE/HEALTHY model", () => {
     const model = validModel();
     expect(validatePrCommentModel(model)).toEqual([]);
   });
@@ -74,8 +74,8 @@ describe("validatePrCommentModel", () => {
     expect(validatePrCommentModel(model)).toEqual([]);
   });
 
-  it("accepts COMPLETE/UNWORTHY", () => {
-    const model = validModel({ verdict: "UNWORTHY" });
+  it("accepts COMPLETE/CRITICAL", () => {
+    const model = validModel({ verdict: "CRITICAL" });
     expect(validatePrCommentModel(model)).toEqual([]);
   });
 
@@ -95,10 +95,10 @@ describe("validatePrCommentModel", () => {
     expect(validatePrCommentModel(model)).toEqual([]);
   });
 
-  it("rejects PARTIAL/WORTHY", () => {
+  it("rejects PARTIAL/HEALTHY", () => {
     const model = validModel({
       analysisCompleteness: "PARTIAL",
-      verdict: "WORTHY",
+      verdict: "HEALTHY",
     });
     const errors = validatePrCommentModel(model);
     expect(errors.length).toBeGreaterThan(0);
@@ -114,19 +114,19 @@ describe("validatePrCommentModel", () => {
     expect(errors.length).toBeGreaterThan(0);
   });
 
-  it("rejects PARTIAL/UNWORTHY", () => {
+  it("rejects PARTIAL/CRITICAL", () => {
     const model = validModel({
       analysisCompleteness: "PARTIAL",
-      verdict: "UNWORTHY",
+      verdict: "CRITICAL",
     });
     const errors = validatePrCommentModel(model);
     expect(errors.length).toBeGreaterThan(0);
   });
 
-  it("rejects ERROR/WORTHY", () => {
+  it("rejects ERROR/HEALTHY", () => {
     const model = validModel({
       analysisCompleteness: "ERROR",
-      verdict: "WORTHY",
+      verdict: "HEALTHY",
     });
     const errors = validatePrCommentModel(model);
     expect(errors.length).toBeGreaterThan(0);
@@ -150,10 +150,10 @@ describe("validatePrCommentModel", () => {
     expect(errors.length).toBeGreaterThan(0);
   });
 
-  it("rejects ERROR/WORTHY", () => {
+  it("rejects ERROR/HEALTHY", () => {
     const model = validModel({
       analysisCompleteness: "ERROR",
-      verdict: "WORTHY",
+      verdict: "HEALTHY",
     });
     const errors = validatePrCommentModel(model);
     expect(errors.length).toBeGreaterThan(0);
@@ -168,10 +168,10 @@ describe("validatePrCommentModel", () => {
     expect(errors.length).toBeGreaterThan(0);
   });
 
-  it("rejects ERROR/UNWORTHY", () => {
+  it("rejects ERROR/CRITICAL", () => {
     const model = validModel({
       analysisCompleteness: "ERROR",
-      verdict: "UNWORTHY",
+      verdict: "CRITICAL",
     });
     const errors = validatePrCommentModel(model);
     expect(errors.length).toBeGreaterThan(0);
@@ -205,7 +205,7 @@ describe("validatePrCommentModel", () => {
     const model = validModel({
       schemaVersion: 2 as 1,
       analysisCompleteness: "PARTIAL",
-      verdict: "WORTHY",
+      verdict: "HEALTHY",
     });
     const errors = validatePrCommentModel(model);
     expect(errors.length).toBeGreaterThanOrEqual(2);
@@ -218,17 +218,17 @@ describe("validatePrCommentModel", () => {
       "ERROR",
     ];
     const verdictValues: PrCommentVerdict[] = [
-      "WORTHY",
+      "HEALTHY",
       "NEEDS_WORK",
-      "UNWORTHY",
+      "CRITICAL",
       "INCOMPLETE",
       "ANALYSIS_ERROR",
     ];
 
     const validCombinations: Array<[AnalysisCompleteness, PrCommentVerdict]> = [
-      ["COMPLETE", "WORTHY"],
+      ["COMPLETE", "HEALTHY"],
       ["COMPLETE", "NEEDS_WORK"],
-      ["COMPLETE", "UNWORTHY"],
+      ["COMPLETE", "CRITICAL"],
       ["PARTIAL", "INCOMPLETE"],
       ["ERROR", "ANALYSIS_ERROR"],
     ];

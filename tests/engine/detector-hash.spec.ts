@@ -229,7 +229,7 @@ describe("computeDetectorHashes — registry ↔ tree reconciliation", () => {
   ].join("\n");
 
   function makeTree(): string {
-    const root = mkdtempSync(join(tmpdir(), "mjolnir-cdh-"));
+    const root = mkdtempSync(join(tmpdir(), "qa-doctor-cdh-"));
     tmpDirs.push(root);
     mkdirSync(join(root, "src", "rules"), { recursive: true });
     writeFileSync(join(root, "src", "rules", "synthetic.ts"), SYNTHETIC);
@@ -335,7 +335,7 @@ describe("checkRevisionIntegrity (doctor check, blocking)", () => {
     manifest: DetectorHashManifest,
     moduleText: string,
   ): string {
-    const root = mkdtempSync(join(tmpdir(), "mjolnir-revint-"));
+    const root = mkdtempSync(join(tmpdir(), "qa-doctor-revint-"));
     tmpDirs.push(root);
     mkdirSync(join(root, "tests", "corpus"), { recursive: true });
     mkdirSync(join(root, "src", "rules"), { recursive: true });
@@ -354,7 +354,7 @@ describe("checkRevisionIntegrity (doctor check, blocking)", () => {
   }
 
   it("FAILS when the manifest is missing (INCONCLUSIVE must not render as pass)", () => {
-    const root = mkdtempSync(join(tmpdir(), "mjolnir-revint-"));
+    const root = mkdtempSync(join(tmpdir(), "qa-doctor-revint-"));
     tmpDirs.push(root);
     const result = checkRevisionIntegrity(root, [minimalRules.one()]);
     expect(result.ok).toBe(false);
@@ -362,7 +362,7 @@ describe("checkRevisionIntegrity (doctor check, blocking)", () => {
   });
 
   it("FAILS when the manifest is unreadable", () => {
-    const root = mkdtempSync(join(tmpdir(), "mjolnir-revint-"));
+    const root = mkdtempSync(join(tmpdir(), "qa-doctor-revint-"));
     tmpDirs.push(root);
     mkdirSync(join(root, "tests", "corpus"), { recursive: true });
     mkdirSync(join(root, "src", "rules"), { recursive: true });
@@ -376,7 +376,7 @@ describe("checkRevisionIntegrity (doctor check, blocking)", () => {
   });
 
   it("FAILS (INCONCLUSIVE) when the computation fails: a registered rule has no module", () => {
-    const root = mkdtempSync(join(tmpdir(), "mjolnir-revint-"));
+    const root = mkdtempSync(join(tmpdir(), "qa-doctor-revint-"));
     tmpDirs.push(root);
     mkdirSync(join(root, "tests", "corpus"), { recursive: true });
     mkdirSync(join(root, "src", "rules"), { recursive: true }); // exists but EMPTY
@@ -454,7 +454,7 @@ describe("checkRevisionIntegrity (doctor check, blocking)", () => {
   });
 
   it("FAILS when src/rules is absent (installed package — honest INCONCLUSIVE)", () => {
-    const root = mkdtempSync(join(tmpdir(), "mjolnir-revint-"));
+    const root = mkdtempSync(join(tmpdir(), "qa-doctor-revint-"));
     tmpDirs.push(root);
     mkdirSync(join(root, "tests", "corpus"), { recursive: true });
     writeFileSync(

@@ -22,7 +22,7 @@ function baseModel(
     repository: "my-org/my-repo",
     pullRequest: { number: 100, headSha: "deadbeef", baseRef: "main" },
     scope: { type: "changed", description: "Changed files in PR" },
-    verdict: "WORTHY",
+    verdict: "HEALTHY",
     score: 92,
     scoreAvailability: "available",
     analysisCompleteness: "COMPLETE",
@@ -57,7 +57,7 @@ function baseModel(
       url: "https://ci.example.com/report",
       format: "json",
     },
-    generatedBy: { tool: "mjolnir-qa", version: "1.0.10" },
+    generatedBy: { tool: "qa-doctor-cli", version: "1.0.10" },
     ...overrides,
   };
 }
@@ -86,9 +86,9 @@ describe("renderPrComment", () => {
       icon: string;
       label: string;
     }> = [
-      { verdict: "WORTHY", icon: "✅", label: "WORTHY" },
+      { verdict: "HEALTHY", icon: "✅", label: "HEALTHY" },
       { verdict: "NEEDS_WORK", icon: "⚠️", label: "NEEDS_WORK" },
-      { verdict: "UNWORTHY", icon: "❌", label: "UNWORTHY" },
+      { verdict: "CRITICAL", icon: "❌", label: "CRITICAL" },
       { verdict: "INCOMPLETE", icon: "◐", label: "INCOMPLETE" },
       { verdict: "ANALYSIS_ERROR", icon: "◐", label: "ANALYSIS_ERROR" },
     ];
@@ -113,7 +113,7 @@ describe("renderPrComment", () => {
   describe("information architecture", () => {
     it("includes header with repository and PR number", () => {
       const output = renderPrComment(baseModel());
-      expect(output).toContain("<!-- mjolnir-pr-comment -->");
+      expect(output).toContain("<!-- qa-doctor-pr-comment -->");
       expect(output).toContain("my-org/my-repo");
       expect(output).toContain("PR #100");
     });
@@ -150,7 +150,7 @@ describe("renderPrComment", () => {
 
     it("includes footer with generated-by info", () => {
       const output = renderPrComment(baseModel());
-      expect(output).toContain("mjolnir-qa");
+      expect(output).toContain("qa-doctor-cli");
       expect(output).toContain("v1.0.10");
     });
 

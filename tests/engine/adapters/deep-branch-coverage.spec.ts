@@ -29,7 +29,7 @@ import { createIgnoreMatcher, LIMITS } from "../../../src/discovery/ignores.js";
 let dir: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-adapter-deep-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-adapter-deep-"));
 });
 
 afterEach(() => {

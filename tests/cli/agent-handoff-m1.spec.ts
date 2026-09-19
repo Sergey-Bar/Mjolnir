@@ -23,7 +23,7 @@ import type { ScanResult } from "../../src/types.js";
 
 let dir: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-m1-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-m1-"));
   // Vitest config: the strongest framework signal (frameworks.ts:34-39) —
   // without it the adapter skips .spec.ts discovery entirely.
   writeFileSync(join(dir, "vitest.config.ts"), "export default {};\n");
@@ -242,7 +242,7 @@ describe("--score end-to-end", () => {
   });
 
   it("prints unknown when no tests exist (never a fake 0)", async () => {
-    const empty = mkdtempSync(join(tmpdir(), "mjolnir-m1-empty-"));
+    const empty = mkdtempSync(join(tmpdir(), "qa-doctor-m1-empty-"));
     try {
       const cap = capture();
       const code = await runScanCommand([empty, "--score"], cap.io);

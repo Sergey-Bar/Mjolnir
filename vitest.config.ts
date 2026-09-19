@@ -63,7 +63,7 @@ export default defineConfig({
         // Ratchet: enforced floor, set just below current measured
         // coverage so any regression trips CI. Raise as coverage climbs.
         //
-        // Re-baselined 2026-08-29 after the "Tempering Mjölnir" refactor
+        // Re-baselined 2026-08-29 after the "Tempering QA Doctor" refactor
         // (Phase 1 code-text maskers, Phase 4 tier system, Phase 6 rule
         // families) landed a large block of new source. That session also
         // added ~120 targeted unit tests, recovering lines/functions to

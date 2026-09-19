@@ -45,12 +45,12 @@ const y = (i) => PAD_TOP + i * LINE_HEIGHT;
 const SAMPLE = `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="600" height="300" xmlns="http://www.w3.org/2000/svg">
   <g clip-path="url(#winClip)">
-    <text x="300" y="22" fill="#a0a0a0" font-size="12" text-anchor="middle">demo-repo &#8212; mjolnir</text>
-    <text x="22" y="${y(0)}" xml:space="preserve"><tspan fill="rgb(0,255,0)">$ </tspan><tspan fill="#ede6d6">npx mjolnir-qa@latest</tspan></text>
+    <text x="300" y="22" fill="#a0a0a0" font-size="12" text-anchor="middle">demo-repo &#8212; qa-doctor</text>
+    <text x="22" y="${y(0)}" xml:space="preserve"><tspan fill="rgb(0,255,0)">$ </tspan><tspan fill="#ede6d6">npx qa-doctor-cli@latest</tspan></text>
     <text x="22" y="${y(1)}" xml:space="preserve"><tspan fill="#d7d3c8">  &#9556;&#9552;&#9559;</tspan></text>
     <text x="22" y="${y(3)}" xml:space="preserve"><tspan fill="#d7d3c8">  &#5798; [STRAINED]</tspan></text>
-    <text x="22" y="${y(5)}" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,180,67)">WORTHINESS</tspan><tspan fill="#d7d3c8">  75/100  NEEDS WORK</tspan></text>
-    <text x="22" y="${y(6)}" xml:space="preserve"><tspan fill="#d7d3c8">  The hammer holds &#8212; but 24 findings weigh it down.</tspan></text>
+    <text x="22" y="${y(5)}" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,180,67)">TEST HEALTH</tspan><tspan fill="#d7d3c8">  75/100  NEEDS ATTENTION</tspan></text>
+    <text x="22" y="${y(6)}" xml:space="preserve"><tspan fill="#d7d3c8">  The score graphic holds &#8212; but 24 findings weigh it down.</tspan></text>
     <text x="22" y="${y(7)}" xml:space="preserve"><tspan fill="#d7d3c8">  QA-CI    &#9608;&#9608;&#9619;&#9617;  76</tspan></text>
     <text x="22" y="${y(8)}" xml:space="preserve"><tspan fill="#d7d3c8">  &#9474; 4 &#215; error   &#8722; 32                        &#9474;</tspan></text>
     <text x="22" y="${y(9)}" xml:space="preserve"><tspan fill="#d7d3c8">  &#9474; 3 &#215; warning &#8722;  7 (evidence-discounted)  &#9474;</tspan></text>
@@ -75,16 +75,16 @@ test("normalizeColor folds the two forms the SVG emits", () => {
 
 test("svgToLines joins the tspans of each line and keeps their colours", () => {
   const lines = svgToLines(SAMPLE);
-  assert.equal(lines[0].text, "$ npx mjolnir-qa@latest");
+  assert.equal(lines[0].text, "$ npx qa-doctor-cli@latest");
   assert.deepEqual(lines[0].spans, [
     { t: "$ ", c: "#00ff00" },
-    { t: "npx mjolnir-qa@latest", c: "#ede6d6" },
+    { t: "npx qa-doctor-cli@latest", c: "#ede6d6" },
   ]);
 });
 
 test("svgToLines separates the chrome title from report line 0", () => {
   const lines = svgToLines(SAMPLE);
-  assert.equal(lines.title, "demo-repo — mjolnir");
+  assert.equal(lines.title, "demo-repo — qa-doctor");
   assert.ok(
     !lines.some((l) => l.text.includes("demo-repo")),
     "title must not become a line",
@@ -106,14 +106,14 @@ test("svgToLines restores blank lines from the y coordinates", () => {
     "gap at index 4 must come back as a blank line",
   );
   assert.equal(lines[3].text, "  ᚦ [STRAINED]");
-  assert.match(lines[5].text, /WORTHINESS/);
+  assert.match(lines[5].text, /TEST HEALTH/);
 });
 
 test("parseSummary reads the verdict off the reporter's own output", () => {
   const s = parseSummary(svgToLines(SAMPLE));
   assert.equal(s.score, 75);
   assert.equal(s.outOf, 100);
-  assert.equal(s.verdict, "NEEDS WORK");
+  assert.equal(s.verdict, "NEEDS ATTENTION");
   assert.equal(s.findings, 24);
   assert.deepEqual(s.categories, [{ family: "QA-CI", score: 76 }]);
   assert.deepEqual(s.deductions, [
@@ -125,20 +125,20 @@ test("parseSummary reads the verdict off the reporter's own output", () => {
 test("parseSummary throws rather than guessing when the format changes", () => {
   assert.throws(
     () => parseSummary([{ text: "nothing here" }]),
-    /no WORTHINESS line/,
+    /no TEST HEALTH line/,
   );
   assert.throws(
-    () => parseSummary([{ text: "  WORTHINESS ???" }]),
+    () => parseSummary([{ text: "  TEST HEALTH ???" }]),
     /could not parse/,
   );
 });
 
-test("splitGroups drops the ASCII hammer but keeps the state chip", () => {
+test("splitGroups drops the ASCII score graphic but keeps the state chip", () => {
   const g = splitGroups(svgToLines(SAMPLE));
-  assert.equal(g.command, "$ npx mjolnir-qa@latest");
+  assert.equal(g.command, "$ npx qa-doctor-cli@latest");
   assert.ok(
     !g.verdictLines.some((l) => l.text.includes("╔")),
-    "the ASCII hammer must not reach the web report",
+    "the ASCII score graphic must not reach the web report",
   );
   assert.match(
     g.verdictLines[0].text,
@@ -171,10 +171,10 @@ test("splitGroups accepts a hero that stops before the findings", () => {
 test("splitGroups still throws when a real boundary is missing", () => {
   // The boundaries that cannot be absent still fail loudly: a wrong
   // number on this page is the defect the whole script exists to stop.
-  const noScore = svgToLines(SAMPLE).filter((l) => !/WORTHINESS/.test(l.text));
-  assert.throws(() => splitGroups(noScore), /WORTHINESS/);
+  const noScore = svgToLines(SAMPLE).filter((l) => !/TEST HEALTH/.test(l.text));
+  assert.throws(() => splitGroups(noScore), /TEST HEALTH/);
   const noCommand = svgToLines(SAMPLE).filter(
-    (l) => !/npx mjolnir/.test(l.text),
+    (l) => !/npx qa-doctor/.test(l.text),
   );
   assert.throws(() => splitGroups(noCommand), /command/);
 });
@@ -202,7 +202,7 @@ test(
       `score ${r.score}`,
     );
     assert.equal(r.outOf, 100);
-    assert.match(r.verdict, /^(WORTHY|NEEDS WORK|UNWORTHY|FORGED)$/);
+    assert.match(r.verdict, /^(HEALTHY|NEEDS ATTENTION|CRITICAL|EXCELLENT)$/);
     assert.ok(r.categories.length > 0, "expected at least one category row");
     assert.ok(r.deductions.length > 0, "expected a deduction table");
     // The verdict block always has content. The finding lines are
@@ -273,10 +273,10 @@ test("extractBands parses the real score-state.ts into the four bands", () => {
   );
   const bands = extractBands(src);
   assert.deepEqual(bands, [
-    { min: 100, verdict: "FORGED" },
-    { min: 80, verdict: "WORTHY" },
-    { min: 50, verdict: "NEEDS WORK" },
-    { min: 0, verdict: "UNWORTHY" },
+    { min: 100, verdict: "EXCELLENT" },
+    { min: 80, verdict: "HEALTHY" },
+    { min: 50, verdict: "NEEDS ATTENTION" },
+    { min: 0, verdict: "CRITICAL" },
   ]);
 });
 
@@ -302,7 +302,7 @@ test("buildScoring: report without transparency fields yields no scoring block",
 
 test("buildScoring: the real demo report yields the reconciled strip payload", () => {
   const r = buildReport(
-    SAMPLE,
+    readFileSync(HERO, "utf8"),
     readFileSync(
       join(HERE, "..", "..", "assets", "readme", "demo-report.json"),
       "utf8",
@@ -313,7 +313,7 @@ test("buildScoring: the real demo report yields the reconciled strip payload", (
     r.scoring,
     "demo report carries rawDeductions — scoring must exist",
   );
-  assert.equal(r.scoring.rawDeductions, 40);
+  assert.equal(r.scoring.rawDeductions, 32);
   assert.equal(r.scoring.declarations, 7);
   // Site-law reconciliation: the formula on the page must reproduce the
   // scan's own score from these generated numbers.

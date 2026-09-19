@@ -26,7 +26,7 @@ let dir: string;
 let origCwd: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-cli2-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-cli2-"));
   origCwd = process.cwd();
 });
 afterEach(() => {
@@ -140,7 +140,7 @@ describe("runInitCommand", () => {
     process.chdir(dir);
     const cap = capture();
     expect(runInitCommand([], cap.io)).toBe(0);
-    expect(cap.text()).toContain("MJÖLNIR INIT");
+    expect(cap.text()).toContain("QA DOCTOR INIT");
   });
 
   it("FW-BUG-02: falls back to 'repo' when package.json has a non-string name", () => {
@@ -154,7 +154,7 @@ describe("runInitCommand", () => {
     const cap = capture();
     expect(runInitCommand([], cap.io)).toBe(0);
     expect(cap.text()).not.toContain("[object Object]");
-    expect(cap.text()).toContain("MJÖLNIR INIT");
+    expect(cap.text()).toContain("QA DOCTOR INIT");
   });
 });
 
@@ -162,7 +162,7 @@ describe("runPwReportCommand", () => {
   it("returns usage error without target", () => {
     const cap = capture();
     expect(runPwReportCommand([], cap.io)).toBe(10);
-    expect(cap.errText()).toContain("Usage: mjolnir pw-report");
+    expect(cap.errText()).toContain("Usage: qa-doctor pw-report");
   });
 
   it("summarizes a Playwright report and exits 0 for clean runs", () => {

@@ -5,16 +5,16 @@
  * the promises the old template broke:
  *  - no floating `@latest` (a new release must never change a user's gate
  *    semantics without a commit of theirs — the dogfooding conclusion in
- *    .github/workflows/mjolnir.yml);
+ *    .github/workflows/qa-doctor.yml);
  *  - no `github.rest.checks` no-op (the exact dead code this repo's own
- *    audit removed from mjolnir.yml once shipped in the template);
+ *    audit removed from qa-doctor.yml once shipped in the template);
  *  - reporting steps run with `if: always()` and the scan step is
  *    continue-on-error, so a scan exit 1/2 can no longer kill the job
  *    before annotate/summary/gate run;
- *  - the gate step is real: it reads mjolnir.json, never blocks on a
+ *  - the gate step is real: it reads qa-doctor.json, never blocks on a
  *    partial scan, and sits LAST so it owns the job's exit code;
  *  - template actions stay SHA-pinned in parity with the dogfooded
- *    mjolnir.yml (B2.6 — one place to bump, both move together).
+ *    qa-doctor.yml (B2.6 — one place to bump, both move together).
  */
 
 import { readFileSync } from "node:fs";
@@ -82,9 +82,9 @@ describe("ci-install template (all gates)", () => {
     for (const gate of GATES) {
       const { wf } = renderParsed(gate);
       const scan = (wf.jobs.scan?.steps ?? []).find((s) =>
-        (s.run ?? "").includes("--json > mjolnir.json"),
+        (s.run ?? "").includes("--json > qa-doctor.json"),
       );
-      expect(scan, "no scan step writing mjolnir.json").toBeDefined();
+      expect(scan, "no scan step writing qa-doctor.json").toBeDefined();
       expect(
         scan?.["continue-on-error"],
         "the scan step must be continue-on-error: with --gate error a scan exit 1 " +
@@ -107,7 +107,7 @@ describe("ci-install template (all gates)", () => {
     }
   });
 
-  it("has a real gate step, last, that reads mjolnir.json and never blocks partial scans", () => {
+  it("has a real gate step, last, that reads qa-doctor.json and never blocks partial scans", () => {
     for (const gate of GATES) {
       const { wf } = renderParsed(gate);
       const steps = wf.jobs.scan?.steps ?? [];
@@ -121,8 +121,8 @@ describe("ci-install template (all gates)", () => {
       if (gate !== "advisory") {
         expect(
           run,
-          "gate must read mjolnir.json, not re-derive findings",
-        ).toContain("mjolnir.json");
+          "gate must read qa-doctor.json, not re-derive findings",
+        ).toContain("qa-doctor.json");
         expect(run).toContain("partial");
         expect(gateScript(gate)).toContain("process.exit(");
       } else {
@@ -180,7 +180,7 @@ describe("ci-install template (all gates)", () => {
 describe("v1 template recognition (upgrade path)", () => {
   it("recognizes a real v1-generated workflow: the script embedded with indentBlock(…, 10)", () => {
     const v1File = [
-      "name: Mjölnir",
+      "name: QA Doctor",
       "",
       "on:",
       "  pull_request:",
@@ -191,7 +191,7 @@ describe("v1 template recognition (upgrade path)", () => {
       "    steps:",
       "      - name: Scan changed code",
       "        continue-on-error: true",
-      "        run: npx --yes mjolnir-qa@0.4.0 . --scope changed --json > mjolnir.json",
+      "        run: npx --yes qa-doctor-cli@0.4.0 . --scope changed --json > qa-doctor.json",
       "      - name: Append findings to the Job Summary",
       "        if: always()",
       "        run: |",
@@ -212,9 +212,9 @@ describe("v1 template recognition (upgrade path)", () => {
   });
 });
 
-describe("template parity with the dogfooded .github/workflows/mjolnir.yml (B2.6)", () => {
+describe("template parity with the dogfooded .github/workflows/qa-doctor.yml (B2.6)", () => {
   const dogfood: Workflow = parse(
-    readFileSync(join(ROOT, ".github", "workflows", "mjolnir.yml"), "utf8"),
+    readFileSync(join(ROOT, ".github", "workflows", "qa-doctor.yml"), "utf8"),
   ) as Workflow;
 
   function actionsOf(wf: Workflow): Map<string, string> {
@@ -237,12 +237,12 @@ describe("template parity with the dogfooded .github/workflows/mjolnir.yml (B2.6
         const expected = dogfoodActions.get(action);
         expect(
           expected,
-          `template uses "${action}" but the dogfooded mjolnir.yml does not — ` +
+          `template uses "${action}" but the dogfooded qa-doctor.yml does not — ` +
             "the template and the dogfooded workflow must stay in sync",
         ).toBeDefined();
         expect(
           uses,
-          `template pins ${action} differently than mjolnir.yml — bump both together`,
+          `template pins ${action} differently than qa-doctor.yml — bump both together`,
         ).toBe(expected);
       }
     }
@@ -263,7 +263,7 @@ describe("template parity with the dogfooded .github/workflows/mjolnir.yml (B2.6
         )?.with as { script?: string } | undefined
       )?.script ?? "";
     for (const fragment of [
-      "<!-- mjolnir-pr-comment -->",
+      "<!-- qa-doctor-pr-comment -->",
       "listComments(",
       "updateComment(",
       "createComment(",

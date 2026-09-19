@@ -1,5 +1,5 @@
 /* ============================================================
-   Mjölnir — global theme polish on top of VitePress defaults
+   QA Doctor — global theme polish on top of VitePress defaults
    ============================================================ */
 
 /* The metrics-matched "Inter Fallback" and "Cinzel Fallback" faces that
@@ -9,24 +9,26 @@
 
 body {
   margin: 0;
+  background: black;
 }
 
 /* ---- landing page: let <Home> go full-bleed ---------------- */
-.mj-landing .VPContent {
+.qa-landing .VPContent {
   padding: 0 !important;
+  background: black;
 }
-.mj-landing .VPPage {
+.qa-landing .VPPage {
   margin: 0;
   max-width: none;
   padding: 0;
 }
-.mj-landing .VPPage > div,
-.mj-landing .VPPage .vp-doc {
+.qa-landing .VPPage > div,
+.qa-landing .VPPage .vp-doc {
   max-width: none;
   padding: 0;
   margin: 0;
 }
-.mj-landing .VPFooter {
+.qa-landing .VPFooter {
   margin-top: 0;
 }
 .mj {
@@ -44,19 +46,19 @@ body {
 
 /* ---- selection + focus ------------------------------------- */
 ::selection {
-  background: color-mix(in oklch, var(--mj-aurora-cyan) 30%, transparent);
+  background: color-mix(in oklch, var(--qa-info) 30%, transparent);
 }
 
 /* ---- doc pages: one type family, quiet structure ----------- */
-/* The same Geist as the landing page, set tight. The Tiwaz rune that
-   used to precede every h2 is gone: BRAND-SYSTEM §5 keeps runes beside
+/* The same Geist as the landing page, set tight. The Tiwaz indicator that
+   used to precede every h2 is gone: BRAND-SYSTEM §5 keeps indicators beside
    a verdict, and a heading is not one. */
 .vp-doc h1,
 .vp-doc h2,
 .vp-doc h3 {
-  font-family: var(--mj-display);
+  font-family: var(--qa-display);
   font-weight: 600;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
   text-wrap: balance;
 }
 .vp-doc h1 {
@@ -68,22 +70,18 @@ body {
   border-top: 1px solid var(--vp-c-divider);
 }
 .vp-doc h3 {
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
 }
 
 .vp-doc blockquote {
-  border-left: 2px solid var(--mj-aurora-cyan);
-  background: color-mix(in oklch, var(--mj-aurora-cyan) 5%, transparent);
+  border-left: 2px solid var(--qa-info);
+  background: color-mix(in oklch, var(--qa-info) 5%, transparent);
   border-radius: 0 8px 8px 0;
 }
 
 .vp-doc a {
   text-underline-offset: 3px;
-  text-decoration-color: color-mix(
-    in oklch,
-    var(--mj-aurora-cyan) 45%,
-    transparent
-  );
+  text-decoration-color: color-mix(in oklch, var(--qa-info) 45%, transparent);
 }
 
 .vp-doc :not(pre) > code {
@@ -99,65 +97,64 @@ body {
   border-radius: 10px;
 }
 .dark .vp-doc div[class*="language-"] {
-  background: var(--mj-ink-950);
+  background: var(--qa-ink-950);
 }
 
-/* ---- docs chrome: the aurora marks where you are ---------- */
+/* ---- docs chrome: a calm position marker ----------------------- */
 .VPSidebarItem.is-active > .item > .indicator {
-  background: linear-gradient(
-    180deg,
-    var(--mj-aurora-green),
-    var(--mj-aurora-cyan) 50%,
-    var(--mj-aurora-violet)
-  );
+  background: var(--qa-steel);
 }
 .VPDocAsideOutline .outline-marker {
-  background: var(--mj-aurora-cyan);
+  background: var(--qa-info);
 }
 
-/* ---- landing navbar: clear over the aurora, glass once scrolled ---- */
-.mj-landing .VPNavBar {
+/* ---- navigation: floating glass; landing stays clear at the top ---- */
+.VPNavBar {
   --vp-nav-bg-color: transparent;
-  background-color: color-mix(
-    in srgb,
-    var(--vp-c-bg) 76%,
-    transparent
-  ) !important;
-  backdrop-filter: blur(14px) saturate(1.2);
-  border-bottom: 1px solid var(--vp-c-divider);
+  background-color: var(--qa-glass-floating-bg) !important;
+  backdrop-filter: blur(var(--qa-glass-floating-blur)) saturate(1.2);
+  border-bottom: 1px solid var(--qa-glass-floating-border);
+  box-shadow: var(--qa-glass-subtle-shadow);
   transition:
     background-color 300ms cubic-bezier(0.2, 0, 0, 1),
     border-color 300ms cubic-bezier(0.2, 0, 0, 1);
 }
-.mj-landing .VPNavBar.top {
+.qa-landing .VPNavBar.top {
   background-color: transparent !important;
   backdrop-filter: none;
   border-bottom-color: transparent;
+  box-shadow: none;
 }
-.mj-landing .VPNavBar .divider-line {
+.qa-landing .VPNavBar .divider-line {
   background-color: transparent;
 }
-.mj-landing .VPNavBar .VPNavBarMenuLink,
-.mj-landing .VPNavBar .VPNavBarExtraMenu .VPFlyout button,
-.mj-landing .VPNavBar .VPSocialLink {
+.qa-landing .VPNavBar .VPNavBarMenuLink,
+.qa-landing .VPNavBar .VPNavBarExtraMenu .VPFlyout button,
+.qa-landing .VPNavBar .VPSocialLink {
   color: var(--vp-c-text-2) !important;
 }
-.mj-landing .VPNavBar .DocSearch-Button {
+.qa-landing .VPNavBar .DocSearch-Button {
   background: var(--vp-c-bg-soft);
 }
-.mj-landing .VPNavBar .DocSearch-Button-Keys,
-.mj-landing .VPNavBar .DocSearch-Button-Placeholder {
+.qa-landing .VPNavBar .DocSearch-Button-Keys,
+.qa-landing .VPNavBar .DocSearch-Button-Placeholder {
   color: var(--vp-c-text-2) !important;
 }
-.mj-landing .VPNavBar .VPNavBarMenuLink:hover,
-.mj-landing .VPNavBar .VPSocialLink:hover {
+.qa-landing .VPNavBar .VPNavBarMenuLink:hover,
+.qa-landing .VPNavBar .VPSocialLink:hover {
   color: var(--vp-c-text-1) !important;
 }
 
-/* ---- the one filled button: aurora, ink text ------------------ */
+.VPSidebar {
+  background-color: var(--qa-glass-subtle-bg) !important;
+  border-right: 1px solid var(--qa-glass-subtle-border);
+  backdrop-filter: blur(var(--qa-glass-subtle-blur));
+}
+
+/* ---- the one filled button: neutral steel, ink text ---------------- */
 .VPButton.brand {
   background-color: var(--vp-c-brand-1);
-  color: var(--mj-on-gold);
+  color: var(--qa-on-gold);
 }
 
 /* ---- footer ---------------------------------------------- */
@@ -181,7 +178,7 @@ select:focus-visible,
 textarea:focus-visible,
 summary:focus-visible,
 [tabindex]:focus-visible {
-  outline: 2px solid var(--mj-aurora);
+  outline: 2px solid var(--qa-info);
   outline-offset: 2px;
   border-radius: 3px;
 }
@@ -194,10 +191,10 @@ summary:focus-visible,
    gen-rules.mjs — those never mount Vue, so the styles must be here,
    not scoped to the component. Weights are in the visible text: the
    level is never color-only. E2 is a deterministic defect (full
-   deduction) so it takes the unworthy red; E1 heuristic (half) takes
+   deduction) so it takes the critical red; E1 heuristic (half) takes
    the needs-work gold; E0 observation (zero, never gates) takes the
    trusted/info blue. */
-.mj-ev {
+.qa-ev {
   display: inline-flex;
   align-items: baseline;
   gap: 0.4em;
@@ -209,31 +206,31 @@ summary:focus-visible,
   border: 1px solid currentColor;
   white-space: nowrap;
 }
-.mj-ev-lvl {
+.qa-ev-lvl {
   font-weight: 700;
   letter-spacing: 0.04em;
 }
-.mj-ev-name {
+.qa-ev-name {
   color: var(--vp-c-text-2);
 }
-.mj-ev-mark {
+.qa-ev-mark {
   align-self: center;
   flex: none;
 }
 /* A certainty ramp, not a severity one: brightness rises with how sure
    the analysis is, and the ring's fill carries the deduction weight.
-   These were the score-band colours (unworthy red / needs-work gold /
+   These were the score-band colours (critical red / needs-work gold /
    trusted blue), which made one palette carry two unrelated axes — the
-   same blue meaning WORTHY in the gauge and "observation" here. */
-.mj-ev-e2 {
-  color: var(--mj-e2);
+   same blue meaning HEALTHY in the gauge and "observation" here. */
+.qa-ev-e2 {
+  color: var(--qa-e2);
   background: rgba(234, 238, 245, 0.07);
 }
-.mj-ev-e1 {
-  color: var(--mj-e1);
+.qa-ev-e1 {
+  color: var(--qa-e1);
   background: rgba(171, 182, 198, 0.07);
 }
-.mj-ev-e0 {
-  color: var(--mj-e0);
+.qa-ev-e0 {
+  color: var(--qa-e0);
   background: rgba(139, 147, 157, 0.07);
 }

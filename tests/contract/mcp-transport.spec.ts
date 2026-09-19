@@ -25,7 +25,7 @@ import type { ScanResult } from "../../src/types.js";
 
 const createdDirs: string[] = [];
 function tmpRepo(prefix: string): string {
-  const d = mkdtempSync(join(tmpdir(), `mjolnir-mcp-${prefix}-`));
+  const d = mkdtempSync(join(tmpdir(), `qa-doctor-mcp-${prefix}-`));
   createdDirs.push(d);
   return d;
 }
@@ -182,7 +182,7 @@ describe("scan tool — canonical semantics through the transport", () => {
   });
 
   it("a hostile target path cannot escape the filesystem boundary shape", async () => {
-    // §21: filesystem boundary = scan target + .mjolnir/. The tool
+    // §21: filesystem boundary = scan target + .qa-doctor/. The tool
     // resolves the path as given (the parent MCP client is the trust
     // boundary for WHICH paths to scan) but never executes anything.
     const res = await handleToolCall({
@@ -198,9 +198,9 @@ describe("scan tool — canonical semantics through the transport", () => {
     // A valid baseline so the diff actually runs against the malformed
     // scan result — resolve() then throws reading the missing
     // analysisStatus, and the transport converts it to INTERNAL.
-    mkdirSync(join(dir, ".mjolnir"), { recursive: true });
+    mkdirSync(join(dir, ".qa-doctor"), { recursive: true });
     writeFileSync(
-      join(dir, ".mjolnir", "baseline.json"),
+      join(dir, ".qa-doctor", "baseline.json"),
       JSON.stringify({
         schemaVersion: 1,
         capturedAt: "2026-09-06T00:00:00.000Z",
@@ -271,11 +271,11 @@ describe("diff tool — lifecycle states are data (§14)", () => {
 
   it("a legacy baseline resolves INCONCLUSIVE(legacy-baseline) — never a fix", async () => {
     const dir = tmpRepo("legacy");
-    mkdirSync(join(dir, ".mjolnir"), { recursive: true });
+    mkdirSync(join(dir, ".qa-doctor"), { recursive: true });
     // A v1 baseline entry WITHOUT detectorRevision; the current scan no
     // longer sees the finding — its disappearance must NOT read "fixed".
     writeFileSync(
-      join(dir, ".mjolnir", "baseline.json"),
+      join(dir, ".qa-doctor", "baseline.json"),
       JSON.stringify({
         schemaVersion: 1,
         capturedAt: "2026-09-06T00:00:00.000Z",
@@ -312,9 +312,9 @@ describe("diff tool — lifecycle states are data (§14)", () => {
     // finding lifecycle `resolution` metadata attaches to DISAPPEARANCES
     // (the §15 algorithm classifies absence). Presence needs no cause.
     const dir = tmpRepo("present");
-    mkdirSync(join(dir, ".mjolnir"), { recursive: true });
+    mkdirSync(join(dir, ".qa-doctor"), { recursive: true });
     writeFileSync(
-      join(dir, ".mjolnir", "baseline.json"),
+      join(dir, ".qa-doctor", "baseline.json"),
       JSON.stringify({
         schemaVersion: 1,
         capturedAt: "2026-09-06T00:00:00.000Z",
@@ -429,7 +429,7 @@ describe("stdio loop — newline-delimited JSON-RPC framing (§21)", () => {
     const init = JSON.parse(out[0] ?? "{}") as {
       result?: { serverInfo?: { name?: string } };
     };
-    expect(init.result?.serverInfo?.name).toBe("mjolnir-qa");
+    expect(init.result?.serverInfo?.name).toBe("qa-doctor-cli");
     const call = JSON.parse(out[2] ?? "{}") as {
       result?: { structuredContent?: { ok?: boolean } };
     };
@@ -439,7 +439,7 @@ describe("stdio loop — newline-delimited JSON-RPC framing (§21)", () => {
 
 describe("stdio binary — the spawned transport (§21)", () => {
   it(
-    "spawns mjolnir mcp, serves a session over real stdio, exits on EOF",
+    "spawns qa-doctor mcp, serves a session over real stdio, exits on EOF",
     { timeout: 60_000 },
     async () => {
       const { spawn } = await import("node:child_process");
@@ -553,7 +553,7 @@ describe("handleMcpMessage — the full JSON-RPC surface (§21)", () => {
       serverInfo: { name: string; version: string };
     };
     expect(result.protocolVersion).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    expect(result.serverInfo.name).toBe("mjolnir-qa");
+    expect(result.serverInfo.name).toBe("qa-doctor-cli");
     expect(result.serverInfo.version).toMatch(/^\d+\.\d+\.\d+/);
   });
 
@@ -737,8 +737,8 @@ describe("param-validator arms (§21 strict shape validation)", () => {
 describe("diff tool — degraded baseline arms", () => {
   it("a baseline that fails to parse yields hasBaseline:false + note (transport stays alive)", async () => {
     const dir = tmpRepo("badbase");
-    mkdirSync(join(dir, ".mjolnir"), { recursive: true });
-    writeFileSync(join(dir, ".mjolnir", "baseline.json"), "{ not json");
+    mkdirSync(join(dir, ".qa-doctor"), { recursive: true });
+    writeFileSync(join(dir, ".qa-doctor", "baseline.json"), "{ not json");
     const res = await handleToolCall({
       id: 25,
       name: "diff",
@@ -751,8 +751,8 @@ describe("diff tool — degraded baseline arms", () => {
 
   it("a baseline that fails to parse yields hasBaseline:false (async)", async () => {
     const dir = tmpRepo("badbase2");
-    mkdirSync(join(dir, ".mjolnir"), { recursive: true });
-    writeFileSync(join(dir, ".mjolnir", "baseline.json"), "{ not json");
+    mkdirSync(join(dir, ".qa-doctor"), { recursive: true });
+    writeFileSync(join(dir, ".qa-doctor", "baseline.json"), "{ not json");
     const res = await handleToolCall({
       id: 26,
       name: "diff",

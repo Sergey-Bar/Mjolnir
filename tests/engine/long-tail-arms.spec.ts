@@ -67,7 +67,7 @@ import type { DimensionScore, Finding, ScanResult } from "../../src/types.js";
 let dir: string;
 let origCwd: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-longtail-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-longtail-"));
   origCwd = process.cwd();
 });
 afterEach(() => {
@@ -215,17 +215,17 @@ describe("reporter renderers", () => {
     expect(out).not.toContain("SCORE");
   });
 
-  it("renders the trophy in ASCII mode and the unicode trophy otherwise", () => {
+  it("renders an all-clear state in ASCII mode and a check wordmark otherwise", () => {
     expect(
       renderTerminal(baseScan, { width: 80, ascii: true, isTTY: true }),
-    ).toContain("*** FLAWLESS VICTORY ***");
+    ).toContain("*** ALL CLEAR ***");
     const unicode = renderTerminal(baseScan, {
       width: 80,
       ascii: false,
       isTTY: true,
     });
-    expect(unicode).toContain("._==_==_=_.'");
-    expect(unicode).not.toContain("*** FLAWLESS VICTORY ***");
+    expect(unicode).toContain("E X C E L L E N T");
+    expect(unicode).not.toContain("*** ALL CLEAR ***");
   });
 
   it("pluralizes the advisory note and lists plugins with rule counts", () => {
@@ -487,7 +487,7 @@ describe("forensics parse and render edges", () => {
 describe("ignores defense and shared-walk memo", () => {
   it("skips blank, non-string, and negation-only patterns without crashing", () => {
     writeFileSync(
-      join(dir, ".mjolnirignore"),
+      join(dir, ".qa-doctorignore"),
       "\n   \n!\n! \nnode_modules/**\n",
     );
     const matcher = createIgnoreMatcher(dir);

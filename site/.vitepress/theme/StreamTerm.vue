@@ -6,11 +6,20 @@ const props = defineProps<{
   command: string;
   lines: TermLine[];
   title?: string;
+  full?: boolean;
 }>();
 
 // Server-rendered complete, so the output reads with no script at all;
 // the replay only starts once a client is there to run it.
 const isBar = (t: string) => /^[█▓]+$/.test(t);
+const verdictTone = (line: TermLine[]) => {
+  const text = line.map((span) => span.t).join("");
+  return text.includes("TEST HEALTH") ||
+    text.includes("Healthy test health") ||
+    /^\s*[█▓]/.test(text)
+    ? "health"
+    : "";
+};
 const typed = ref(props.command.length);
 const shown = ref(props.lines.length);
 const playing = ref(false);
@@ -46,6 +55,9 @@ function play() {
 }
 
 onMounted(() => {
+  // The hero is proof, not a loading state: show its complete report on
+  // first paint. Replay remains available for the slower walkthrough.
+  if (props.full) return;
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   typed.value = 0;
   shown.value = 0;
@@ -67,7 +79,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <figure class="st">
+  <figure class="st" :class="{ full }">
     <figcaption class="st-bar">
       <span class="st-dots" aria-hidden="true"><i /><i /><i /></span>
       <span class="st-title">{{ title }}</span>
@@ -79,7 +91,7 @@ onBeforeUnmount(() => {
       ref="body"
       class="st-body"
       tabindex="0"
-    ><span class="tl"><span class="st-prompt">$ </span>{{ command.slice(0, typed) }}<span v-if="typed < command.length" class="st-caret" aria-hidden="true" /></span><span v-for="(l, i) in lines.slice(0, shown)" :key="i" class="tl"><span v-for="(s, j) in l" :key="j" :class="{ tb: s.b, bar: isBar(s.t) }" :style="s.c ? { color: s.c } : undefined">{{ s.t }}</span></span></pre>
+    ><span class="tl"><span class="st-prompt">$ </span>{{ command.slice(0, typed) }}<span v-if="typed < command.length" class="st-caret" aria-hidden="true" /></span><span v-for="(l, i) in lines.slice(0, shown)" :key="i" :class="['tl', verdictTone(l)]"><span v-for="(s, j) in l" :key="j" :class="{ tb: s.b, bar: isBar(s.t) }" :style="s.c ? { color: s.c } : undefined">{{ s.t }}</span></span></pre>
   </figure>
 </template>
 
@@ -88,9 +100,11 @@ onBeforeUnmount(() => {
   position: relative;
   margin: 0;
   min-width: 0;
-  border: 1px solid var(--vp-c-border);
-  border-radius: 10px;
-  background: var(--mj-ink-950);
+  border: 1px solid var(--qa-glass-focus-border);
+  border-radius: var(--qa-radius-focus);
+  background: var(--qa-glass-focus-bg);
+  box-shadow: var(--qa-glass-focus-shadow);
+  backdrop-filter: blur(var(--qa-glass-focus-blur)) saturate(1.2);
   overflow: hidden;
 }
 .st::before {
@@ -98,19 +112,15 @@ onBeforeUnmount(() => {
   position: absolute;
   inset: 0 0 auto;
   height: 2px;
-  background: linear-gradient(
-    90deg,
-    var(--mj-aurora-green),
-    var(--mj-aurora-cyan) 50%,
-    var(--mj-aurora-violet)
-  );
+  background: var(--qa-info);
 }
 .st-bar {
   display: flex;
   align-items: center;
   gap: 14px;
   padding: 8px 10px 8px 16px;
-  border-bottom: 1px solid var(--vp-c-divider);
+  border-bottom: 1px solid color-mix(in srgb, var(--qa-info) 16%, transparent);
+  background: color-mix(in srgb, var(--qa-ink-950) 52%, transparent);
 }
 .st-dots {
   display: flex;
@@ -120,7 +130,7 @@ onBeforeUnmount(() => {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: var(--mj-ink-800);
+  background: var(--qa-ink-800);
 }
 .st-title {
   flex: 1;
@@ -148,20 +158,22 @@ onBeforeUnmount(() => {
   opacity: 0.45;
   cursor: default;
 }
-/* A system monospace on purpose: the Geist Mono web subset has no
-   box-drawing or block glyphs, and mixing faces breaks the columns. */
+/* Menlo leads the shared terminal stack and includes the block glyphs. */
 .st-body {
   height: 400px;
   margin: 0;
   padding: 18px 20px;
-  font-family:
-    ui-monospace, "SF Mono", "Cascadia Code", "Cascadia Mono", Consolas,
-    "DejaVu Sans Mono", Menlo, monospace;
+  font-family: var(--vp-font-family-mono);
   font-size: clamp(10px, 2.6vw, 13px);
   line-height: 1.55;
   color: var(--vp-c-text-2);
   white-space: pre;
   overflow: auto;
+}
+.st.full .st-body {
+  height: auto;
+  min-height: 490px;
+  overflow: visible;
 }
 .tl {
   display: block;
@@ -185,6 +197,9 @@ onBeforeUnmount(() => {
 }
 .tb {
   font-weight: 700;
+}
+.health > span {
+  color: var(--qa-healthy) !important;
 }
 .st-prompt {
   color: var(--vp-c-text-3);

@@ -1,8 +1,8 @@
   rules — rule catalog with trust metadata (md/json/unmeasured)
 
   Usage:
-    mjolnir rules [--md] [--unmeasured|--measured] [--external]
+    qa-doctor rules [--md] [--unmeasured|--measured] [--external]
 
   Examples:
-    $ mjolnir rules --md --unmeasured
+    $ qa-doctor rules --md --unmeasured
 

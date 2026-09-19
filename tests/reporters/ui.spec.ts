@@ -72,8 +72,8 @@ describe("severityIcon", () => {
 
 describe("nextStep", () => {
   it("renders the dim `$ command` affordance", () => {
-    expect(nextStep("mjolnir fix --dry-run", ui)).toBe(
-      "  $ mjolnir fix --dry-run",
+    expect(nextStep("qa-doctor fix --dry-run", ui)).toBe(
+      "  $ qa-doctor fix --dry-run",
     );
   });
 });
@@ -165,9 +165,9 @@ describe("buildFooter", () => {
       ui,
       complete: true,
       durationMs: 1,
-      next: "mjolnir fix",
+      next: "qa-doctor fix",
     });
-    expect(lines[lines.length - 1]).toBe("  $ mjolnir fix");
+    expect(lines[lines.length - 1]).toBe("  $ qa-doctor fix");
   });
 });
 

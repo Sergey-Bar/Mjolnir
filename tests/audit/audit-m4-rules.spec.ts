@@ -75,7 +75,7 @@ describe("audit-C4: registry reachability — no dead config rules", () => {
   });
 
   it("QA-CYP-003 fires end-to-end on a cypress-only repo with --strict", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-c4-e2e-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-c4-e2e-"));
     try {
       mkdirSync(join(dir, "test"), { recursive: true });
       writeFileSync(

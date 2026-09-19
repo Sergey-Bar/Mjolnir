@@ -17,7 +17,7 @@ const RULES_DIR = join(HERE, "..", "..", "docs", "rules");
 
 const SAMPLE = `# QA-JV-103 — Test without assertions
 
-_Generated from the live rule registry and this rule's own committed fixtures by \`mjolnir\`'s doc generator — do not edit by hand. Regenerate with \`npm run docs:rules\`._
+_Generated from the live rule registry and this rule's own committed fixtures by \`qa-doctor\`'s doc generator — do not edit by hand. Regenerate with \`npm run docs:rules\`._
 
 | Field            | Value            |
 | ---------------- | ---------------- |
@@ -40,7 +40,7 @@ Real occurrence counts (see \`docs/FP-AUDIT.md\`):
 
 ---
 
-Full catalog: \`mjolnir rules --md\` · Live explanation: \`mjolnir explain QA-JV-103\`
+Full catalog: \`qa-doctor rules --md\` · Live explanation: \`qa-doctor explain QA-JV-103\`
 `;
 
 test("parseRule extracts title and metadata", () => {
@@ -68,14 +68,17 @@ test("siteBody strips the generator preamble and CLI footer", () => {
   const out = siteBody("QA-JV-103", SAMPLE);
   assert.ok(!out.includes("do not edit by hand"), "preamble removed");
   assert.ok(!out.includes("Regenerate with"), "regenerate note removed");
-  assert.ok(!/Full catalog: `mjolnir rules --md`/.test(out), "footer removed");
+  assert.ok(
+    !/Full catalog: `qa-doctor rules --md`/.test(out),
+    "footer removed",
+  );
 });
 
 test("siteBody links repo paths instead of leaving dead text", () => {
   const out = siteBody("QA-JV-103", SAMPLE);
   assert.ok(
     out.includes(
-      "[`tests/fixtures/QA-JV-103/must-fire/CheckoutTest.java`](https://github.com/Sergey-Bar/Mjolnir/blob/main/tests/fixtures/QA-JV-103/must-fire/CheckoutTest.java)",
+      "[`tests/fixtures/QA-JV-103/must-fire/CheckoutTest.java`](https://github.com/Sergey-Bar/qa-doctor/blob/main/tests/fixtures/QA-JV-103/must-fire/CheckoutTest.java)",
     ),
     "fixture path is a GitHub link",
   );
@@ -89,7 +92,7 @@ test("siteBody links repo paths instead of leaving dead text", () => {
 test("siteBody adds a back-link and provenance note", () => {
   const out = siteBody("QA-JV-103", SAMPLE);
   assert.ok(out.includes("[← Back to the rule catalog](/rules/)"));
-  assert.ok(out.includes("mjolnir explain QA-JV-103"));
+  assert.ok(out.includes("qa-doctor explain QA-JV-103"));
 });
 
 test("every real docs/rules/*.md parses with a title and known family", () => {

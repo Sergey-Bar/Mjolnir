@@ -3,11 +3,11 @@
  *
  * Publishes or updates a sticky PR comment using an HTML marker
  * for idempotent updates. The comment is identified by the marker
- * <!-- mjolnir-pr-comment:v1 --> — existing comments with this
+ * <!-- qa-doctor-pr-comment:v1 --> — existing comments with this
  * marker are updated, never duplicated.
  */
 
-export const PR_COMMENT_MARKER = "<!-- mjolnir-pr-comment:v1 -->";
+export const PR_COMMENT_MARKER = "<!-- qa-doctor-pr-comment:v1 -->";
 
 import { sanitizeForMarkdown } from "./evidence-sanitization.js";
 
@@ -53,7 +53,7 @@ export function renderCommentBody(model: PrCommentModelV1): string {
         : "FAIL";
 
   let body = PR_COMMENT_MARKER + "\n";
-  body += `## :${icon}: Mjolnir QA — ${verdictLabel}\n\n`;
+  body += `## :${icon}: QA Doctor — ${verdictLabel}\n\n`;
   body += `**Score:** ${model.score}/100\n\n`;
 
   if (model.findings.errors > 0 || model.findings.warnings > 0) {

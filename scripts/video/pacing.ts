@@ -60,7 +60,7 @@ const DEMO: Pacing = {
   framesPerPatchLine: 4,
   holdFrames: 70,
   finalHoldFrames: 90,
-  lingerOn: ["WORTHINESS"],
+  lingerOn: ["TEST HEALTH"],
   lingerFrames: 75,
 };
 
@@ -76,7 +76,7 @@ const TOUR: Pacing = {
   framesPerPatchLine: 6,
   holdFrames: 110,
   finalHoldFrames: 120,
-  lingerOn: ["WORTHINESS", "FIX THIS FIRST", "FLAKINESS LEADERBOARD"],
+  lingerOn: ["TEST HEALTH", "FIX THIS FIRST", "FLAKINESS LEADERBOARD"],
   lingerFrames: 90,
 };
 

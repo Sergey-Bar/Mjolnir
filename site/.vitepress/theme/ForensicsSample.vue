@@ -23,20 +23,21 @@ const text = props.which === "forensics" ? sample : selector;
 </script>
 
 <template>
-  <pre class="mj-sample">{{ text }}</pre>
+  <pre class="qa-sample">{{ text }}</pre>
 </template>
 
 <style scoped>
-.mj-sample {
+.qa-sample {
   font-family: var(--vp-font-family-mono);
   font-size: 0.8rem;
   line-height: 1.55;
   padding: 0.9rem 1.1rem;
   margin: 0.8rem 0 1.4rem;
   overflow-x: auto;
-  border: 1px solid var(--vp-c-border);
-  border-radius: 10px;
-  background: var(--mj-ink-950);
+  border: 1px solid var(--qa-glass-focus-border);
+  border-radius: var(--qa-radius-focus);
+  background: var(--qa-surface-well);
+  box-shadow: var(--qa-glass-elevated-shadow);
   color: var(--vp-c-text-1);
 }
 </style>

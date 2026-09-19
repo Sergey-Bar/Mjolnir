@@ -12,7 +12,7 @@
  * proven capability.
  *
  * Agents column: the foundational Agent Skill shipped with R8 (1.3.0,
- * WI-22) — `mjolnir install` writes the SCAN → EVIDENCE → FORENSICS →
+ * WI-22) — `qa-doctor install` writes the SCAN → EVIDENCE → FORENSICS →
  * TRIAGE → FIX → RESCAN → PROOF loop onto every detected instruction
  * surface (§17 safety wording contract-locked), so every capability the
  * CLI/MCP surfaces flows to agents through that loop.

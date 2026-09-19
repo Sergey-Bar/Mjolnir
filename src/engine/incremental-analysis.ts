@@ -89,8 +89,8 @@ export function computeChangedFiles(
  * is required for equivalence (TI-005).
  */
 const SEMANTIC_INPUT_PATTERNS = [
-  "mjolnir.config",
-  ".mjolnirignore",
+  "qa-doctor.config",
+  ".qa-doctorignore",
   "package.json",
   "tsconfig",
   "vitest.config",

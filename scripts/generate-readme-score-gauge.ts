@@ -1,15 +1,15 @@
 /**
  * `npm run docs:gauge` — regenerates assets/readme/score-gauge.svg: the
- * worthiness scale, with a marker sweeping every score from 0 to 100 and
- * holding on FORGED.
+ * test health scale, with a marker sweeping every score from 0 to 100 and
+ * holding on EXCELLENT.
  *
  * It is the website's score chapter drawn as one image — a band scale,
- * not a picture. It replaced a four-state block-art hammer that was the
+ * not a picture. It replaced a four-state block-art score graphic that was the
  * last illustration in a system whose rule is no illustration
  * (docs/design/BRAND-SYSTEM.md), and that the reporter no longer prints.
  *
  * Nothing on it is typed by hand. Every number, verdict and band comes
- * from `deriveScoreState`, the pure function `mjolnir` calls for every
+ * from `deriveScoreState`, the pure function `qa-doctor` calls for every
  * real scan, evaluated across the whole 0–100 domain; the band edges on
  * the scale are wherever that function changes its answer, found by
  * walking it, not copied from a table.
@@ -40,7 +40,7 @@ const ROOT = join(HERE, "..");
 const OUT_PATH = join(ROOT, "assets", "readme", "score-gauge.svg");
 const SANS_TTF = join(ROOT, "assets", "readme", "fonts", "Geist-SemiBold.ttf");
 
-/** The sweep runs for SWEEP_SECONDS, then FORGED holds until the loop restarts. */
+/** The sweep runs for SWEEP_SECONDS, then EXCELLENT holds until the loop restarts. */
 const LOOP_SECONDS = 10;
 const SWEEP_SECONDS = 8;
 const STEP_SECONDS = SWEEP_SECONDS / 100;
@@ -53,12 +53,12 @@ const TRACK_Y = 158;
 const GAP = 3;
 
 type Band = Exclude<ScoreBand, "unmeasured">;
-const BANDS: Band[] = ["critical", "warning", "trusted", "forged"];
+const BANDS: Band[] = ["critical", "warning", "trusted", "excellent"];
 const BAND_COLOR: Record<Band, string> = {
   critical: SCORE.critical,
   warning: SCORE.warning,
   trusted: SCORE.trusted,
-  forged: SCORE.forged,
+  excellent: SCORE.excellent,
 };
 
 /** Each band's [first, last] score, by walking deriveScoreState 0–100. */
@@ -74,10 +74,10 @@ function bandRanges(): Record<Band, { from: number; to: number }> {
 }
 
 /** Horizontal position of a score. 100 gets its own short segment at the end. */
-const FORGED_W = 8;
-const SPAN = X1 - X0 - FORGED_W - GAP;
+const EXCELLENT_W = 8;
+const SPAN = X1 - X0 - EXCELLENT_W - GAP;
 function xOf(score: number): number {
-  return score >= 100 ? X1 - FORGED_W / 2 : X0 + (score / 100) * SPAN;
+  return score >= 100 ? X1 - EXCELLENT_W / 2 : X0 + (score / 100) * SPAN;
 }
 
 const n = (v: number): string => v.toFixed(1);
@@ -93,14 +93,14 @@ function pctAfter(seconds: number): string {
 
 function fontFaceCss(): string {
   const mono = FONTS.find(
-    (f) => f.family === "MjolnirMono" && f.weight === 400,
+    (f) => f.family === "QaDoctorMono" && f.weight === 400,
   );
   if (!mono) throw new Error("Geist Mono Regular is no longer vendored");
   const face = (fam: string, p: string): string =>
     `@font-face{font-family:"${fam}";font-style:normal;src:url(data:font/ttf;base64,${readFileSync(p).toString("base64")}) format("truetype")}`;
   return [
-    face("MjolnirMono", fontPath(mono)),
-    face("MjolnirSans", SANS_TTF),
+    face("QaDoctorMono", fontPath(mono)),
+    face("QaDoctorSans", SANS_TTF),
   ].join("\n");
 }
 
@@ -133,15 +133,15 @@ export function buildScoreGaugeSvg(): string {
 
   const segments = BANDS.map((band) => {
     const { from, to } = ranges[band];
-    const left = band === "forged" ? X1 - FORGED_W : xOf(from);
-    const right = band === "forged" ? X1 : xOf(to + 1) - GAP;
-    // FORGED is one score wide, so its name cannot sit under its own
-    // segment without running into WORTHY's; it labels the pip from
+    const left = band === "excellent" ? X1 - EXCELLENT_W : xOf(from);
+    const right = band === "excellent" ? X1 : xOf(to + 1) - GAP;
+    // EXCELLENT is one score wide, so its name cannot sit under its own
+    // segment without running into HEALTHY's; it labels the pip from
     // above instead, right-aligned to the end of the scale.
-    const forged = band === "forged";
-    const mid = forged ? X1 : (left + right) / 2;
-    const anchor = forged ? "end" : "middle";
-    const nameY = forged ? TRACK_Y - 16 : 214;
+    const excellent = band === "excellent";
+    const mid = excellent ? X1 : (left + right) / 2;
+    const anchor = excellent ? "end" : "middle";
+    const nameY = excellent ? TRACK_Y - 16 : 214;
     const verdict = deriveScoreState(from).verdict;
     return `    <g class="band band-${band}">
       <rect x="${n(left)}" y="${TRACK_Y}" width="${n(right - left)}" height="6" rx="3" fill="${BAND_COLOR[band]}" fill-opacity="0.32"/>
@@ -153,7 +153,7 @@ export function buildScoreGaugeSvg(): string {
     [ranges.critical.from, X0, "start"],
     [ranges.warning.from, xOf(ranges.warning.from) - GAP / 2, "middle"],
     [ranges.trusted.from, xOf(ranges.trusted.from) - GAP / 2, "middle"],
-    [ranges.forged.from, X1, "end"],
+    [ranges.excellent.from, X1, "end"],
   ] as const;
   const tickText = ticks
     .map(
@@ -171,19 +171,19 @@ export function buildScoreGaugeSvg(): string {
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="gaugeTitle">
-  <title id="gaugeTitle">The worthiness scale: UNWORTHY from ${ranges.critical.from} to ${ranges.critical.to}, NEEDS WORK from ${ranges.warning.from} to ${ranges.warning.to}, WORTHY from ${ranges.trusted.from} to ${ranges.trusted.to}, FORGED at ${ranges.forged.from}</title>
+  <title id="gaugeTitle">The test health scale: CRITICAL from ${ranges.critical.from} to ${ranges.critical.to}, NEEDS ATTENTION from ${ranges.warning.from} to ${ranges.warning.to}, HEALTHY from ${ranges.trusted.from} to ${ranges.trusted.to}, EXCELLENT at ${ranges.excellent.from}</title>
   <style>
 ${fontFaceCss()}
-    .eyebrow, .name { font-family: MjolnirSans, sans-serif; font-size: 11px; letter-spacing: 0.18em; }
+    .eyebrow, .name { font-family: QaDoctorSans, sans-serif; font-size: 11px; letter-spacing: 0.18em; }
     .eyebrow { fill: ${TEXT.muted}; }
-    .num { font-family: MjolnirMono, monospace; font-size: 56px; fill: ${TEXT.primary}; }
-    .of { font-family: MjolnirMono, monospace; font-size: 22px; fill: ${TEXT.muted}; }
-    .verdict { font-family: MjolnirSans, sans-serif; font-size: 15px; letter-spacing: 0.16em; }
-    .tick { font-family: MjolnirMono, monospace; font-size: 11px; fill: ${TEXT.muted}; }
-    .fr { opacity: 0; animation: mj-tick ${LOOP_SECONDS}s steps(1, end) infinite; }
-    .fr-100 { animation: mj-hold ${LOOP_SECONDS}s steps(1, end) infinite; }
-    @keyframes mj-tick { 0% { opacity: 0; } 0.001% { opacity: 1; } ${tick}% { opacity: 1; } ${tickAfter}% { opacity: 0; } 100% { opacity: 0; } }
-    @keyframes mj-hold { 0% { opacity: 0; } ${hold}% { opacity: 0; } ${holdAfter}% { opacity: 1; } 100% { opacity: 1; } }
+    .num { font-family: QaDoctorMono, monospace; font-size: 56px; fill: ${TEXT.primary}; }
+    .of { font-family: QaDoctorMono, monospace; font-size: 22px; fill: ${TEXT.muted}; }
+    .verdict { font-family: QaDoctorSans, sans-serif; font-size: 15px; letter-spacing: 0.16em; }
+    .tick { font-family: QaDoctorMono, monospace; font-size: 11px; fill: ${TEXT.muted}; }
+    .fr { opacity: 0; animation: qa-tick ${LOOP_SECONDS}s steps(1, end) infinite; }
+    .fr-100 { animation: qa-hold ${LOOP_SECONDS}s steps(1, end) infinite; }
+    @keyframes qa-tick { 0% { opacity: 0; } 0.001% { opacity: 1; } ${tick}% { opacity: 1; } ${tickAfter}% { opacity: 0; } 100% { opacity: 0; } }
+    @keyframes qa-hold { 0% { opacity: 0; } ${hold}% { opacity: 0; } ${holdAfter}% { opacity: 1; } 100% { opacity: 1; } }
     @media (prefers-reduced-motion: reduce) {
       .fr { animation: none; opacity: 0; }
       .fr-100 { opacity: 1; }
@@ -203,7 +203,7 @@ ${fontFaceCss()}
   <g clip-path="url(#cardClip)">
     <rect x="0" y="0" width="${W}" height="${H}" fill="${SURFACE.ink950}"/>
     <rect x="0" y="0" width="${W}" height="2" fill="url(#aurora)"/>
-    <text class="eyebrow" x="${X0}" y="52">WORTHINESS</text>
+    <text class="eyebrow" x="${X0}" y="52">TEST HEALTH</text>
     <text class="of" x="${X0 + 106}" y="112">/100</text>
 ${segments}
 ${tickText}

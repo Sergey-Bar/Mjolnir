@@ -2,7 +2,7 @@
  * Evidence Artifact Architecture (CI-001).
  *
  * Canonical artifact shape for runtime evidence provenance:
- * every piece of runtime evidence ingested by Mjolnir MUST carry
+ * every piece of runtime evidence ingested by QA Doctor MUST carry
  * an artifact envelope — schema version, provider identity,
  * acquisition timestamp, content fingerprint, completeness flag,
  * and provenance chain. No network calls; local-only ingestion.
@@ -125,7 +125,7 @@ export function ingestArtifact(path: string, now?: string): EvidenceArtifact {
     provenance:
       typeof obj["provenance"] === "object" && obj["provenance"] !== null
         ? (obj["provenance"] as EvidenceArtifact["provenance"])
-        : { source: path, ingestedBy: "mjolnir.evidence-artifacts" },
+        : { source: path, ingestedBy: "qa-doctor.evidence-artifacts" },
   };
 
   const validation = validateArtifact(artifact);

@@ -1,5 +1,5 @@
 /**
- * `mjolnir explain <RULE-ID>` — implements Plan.md Sprint 1.3
+ * `qa-doctor explain <RULE-ID>` — implements Plan.md Sprint 1.3
  * (Master-Stabilization-Plan Sprint 5, Task 19).
  *
  * For any registered rule, renders what is wrong, why it matters, the
@@ -60,7 +60,7 @@ export interface ExplainResult {
  * Runs the rule against its own must-fire fixture to get one real,
  * concrete example finding. `fixturesRoot` defaults to this repo's own
  * `tests/fixtures` — explain only has real examples to show when run
- * from (or pointed at) a Mjolnir checkout; degrades honestly
+ * from (or pointed at) a QA Doctor checkout; degrades honestly
  * (exampleFinding left undefined) otherwise, same as `doctor`.
  */
 export function explainRule(
@@ -71,7 +71,7 @@ export function explainRule(
   if (!rule) {
     return {
       ok: false,
-      error: `Unknown rule ID "${ruleId}". Run \`mjolnir rules\` for the full catalog.`,
+      error: `Unknown rule ID "${ruleId}". Run \`qa-doctor rules\` for the full catalog.`,
     };
   }
 
@@ -82,7 +82,7 @@ export function explainRule(
 
   let text: string;
   try {
-    // Normalize CRLF so `mjolnir explain` output matches the committed
+    // Normalize CRLF so `qa-doctor explain` output matches the committed
     // docs/rules page regardless of the checkout's line-ending config.
     text = readFileSync(fixturePath, "utf8").replace(/\r\n/g, "\n");
   } catch {
@@ -237,7 +237,7 @@ export function renderExplain(
     );
   } else {
     for (const seg of wrapText(
-      "No example available — run this command from a mjolnir checkout " +
+      "No example available — run this command from a qa-doctor checkout " +
         "(or pass --fixtures-root) so the fixture that proves this rule " +
         "works can be shown as a real example.",
       width,
@@ -253,18 +253,18 @@ export function renderExplain(
   lines.push("");
   lines.push("NEXT ACTION");
   pushBody(
-    "Fix the first occurrence, then re-run: `mjolnir --scope changed`. " +
+    "Fix the first occurrence, then re-run: `qa-doctor --scope changed`. " +
       "Every occurrence of this rule is listed in the scan output.",
   );
   lines.push("");
   lines.push("HOW TO VERIFY THE FIX");
   pushBody(
-    "Re-run `mjolnir` on the changed file(s) — this finding should " +
-      "no longer appear. `mjolnir --scope changed` scopes the check " +
+    "Re-run `qa-doctor` on the changed file(s) — this finding should " +
+      "no longer appear. `qa-doctor --scope changed` scopes the check " +
       "to just what you touched.",
   );
   lines.push("");
-  lines.push(`Docs: mjolnir rules --md   (full catalog, this rule included)`);
+  lines.push(`Docs: qa-doctor rules --md   (full catalog, this rule included)`);
   return lines.join("\n");
 }
 
@@ -277,7 +277,7 @@ export function renderExplain(
 export function whatWouldChangeTheVerdict(r: QADoctorRule): string[] {
   const changes: string[] = [];
   changes.push(
-    "a run report next to the scan target (mjolnir.report.json or test-results/) corroborating this file lifts its findings to L3–L5",
+    "a run report next to the scan target (qa-doctor.report.json or test-results/) corroborating this file lifts its findings to L3–L5",
   );
   if (!MEASURED_FP[r.id]) {
     changes.push(
@@ -285,7 +285,7 @@ export function whatWouldChangeTheVerdict(r: QADoctorRule): string[] {
     );
   }
   changes.push(
-    "a documented suppression (mjolnir.config.json) lowers the finding count without claiming correctness",
+    "a documented suppression (qa-doctor.config.json) lowers the finding count without claiming correctness",
   );
   if (effectiveTier(r) === "quarantine") {
     changes.push(
@@ -337,7 +337,7 @@ export function explainVerdict(jsonPath: string): VerdictExplainResult {
     return {
       ok: false,
       error:
-        "not a canonical mjolnir scan result (schemaVersion 1) — generate one with `mjolnir <target> --json`",
+        "not a canonical qa-doctor scan result (schemaVersion 1) — generate one with `qa-doctor <target> --json`",
     };
   }
   return { ok: true, scan };
@@ -407,7 +407,7 @@ export function verdictWhatWouldChange(scan: ScanResult): string[] {
     );
   }
   changes.push(
-    "fixing the top trust risks (mjolnir explain <RULE-ID>) moves the score and the verdict band",
+    "fixing the top trust risks (qa-doctor explain <RULE-ID>) moves the score and the verdict band",
   );
   return changes;
 }
@@ -480,8 +480,8 @@ export function renderVerdictExplain(
     scan.partial
       ? "re-run with a higher --max-duration to close the truncated surface"
       : errors > 0
-        ? "mjolnir triage <test-results-dir-or-report> — then fix the top trust risk"
-        : "keep the gate green (mjolnir ci install)",
+        ? "qa-doctor triage <test-results-dir-or-report> — then fix the top trust risk"
+        : "keep the gate green (qa-doctor ci install)",
   );
   lines.push("");
   return lines.join("\n");

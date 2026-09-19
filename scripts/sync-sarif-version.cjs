@@ -6,7 +6,7 @@
  *
  * Two surfaces carry a literal, both deliberately: SARIF's
  * `driver.version` (what GitHub Code Scanning displays) and cli.ts's
- * `CLI_VERSION` (what `mjolnir --version` prints). Neither can read
+ * `CLI_VERSION` (what `qa-doctor --version` prints). Neither can read
  * package.json at runtime — the shipped artifact is a single bundled
  * dist/cli.mjs whose position relative to package.json depends on how
  * the consumer installed it.

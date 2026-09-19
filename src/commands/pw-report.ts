@@ -1,9 +1,9 @@
 /**
- * `mjolnir pw-report` — Playwright run summary (Tier 2 #9 wedge).
+ * `qa-doctor pw-report` — Playwright run summary (Tier 2 #9 wedge).
  *
  * Consumes a Playwright JSON report (the same ingestion as forensics)
  * and prints the QA-Doctor view of a real run: retries, true flakes,
- * slowest tests. This is the data the npm `mjolnir-qa-playwright-reporter`
+ * slowest tests. This is the data the npm `qa-doctor-playwright-reporter`
  * package will emit inline in every Playwright run.
  *
  * The standalone npm package wraps this renderer; keeping the logic here
@@ -50,7 +50,7 @@ export function summarizePwRun(report: ForensicsReport): PwRunSummary {
 
 export function renderPwRunSummary(s: PwRunSummary): string {
   const lines: string[] = [];
-  lines.push(sectionHeader("MJÖLNIR — RUN SUMMARY", ui));
+  lines.push(sectionHeader("QA DOCTOR — RUN SUMMARY", ui));
   lines.push("");
   lines.push(
     `${s.total} tests · ${s.passed} passed · ${s.failed} failed · ${s.skipped} skipped`,

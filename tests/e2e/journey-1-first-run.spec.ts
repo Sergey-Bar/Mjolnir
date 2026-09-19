@@ -4,7 +4,7 @@
  * This is the one test class that has ever caught macOS-only CLI
  * breakage (the isEntryPoint symlink bug produced zero output, exit 0).
  * The tarball invocation is exactly what a stranger gets from
- * `npm install mjolnir-qa`; every assertion here runs the REAL installed
+ * `npm install qa-doctor-cli`; every assertion here runs the REAL installed
  * binary as a child process with UTF-8 decoding and pinned ascii output.
  *
  * The expected score/verdict come from tests/golden (never hardcoded).
@@ -42,7 +42,7 @@ beforeAll(() => {
   let attempt = 0;
   for (;;) {
     attempt++;
-    workDir = mkdtempSync(join(tmpdir(), "mjolnir-e2e-tarball-"));
+    workDir = mkdtempSync(join(tmpdir(), "qa-doctor-e2e-tarball-"));
     const packOut = execSync(
       `npm pack --pack-destination "${workDir}" --json`,
       {
@@ -66,13 +66,13 @@ beforeAll(() => {
     });
     const pkg = JSON.parse(
       readFileSync(
-        join(installDir, "node_modules", "mjolnir-qa", "package.json"),
+        join(installDir, "node_modules", "qa-doctor-cli", "package.json"),
         "utf8",
       ),
     ) as { bin: string | Record<string, string> };
     const binRel =
-      typeof pkg.bin === "string" ? pkg.bin : (pkg.bin["mjolnir"] ?? "");
-    entryPath = join(installDir, "node_modules", "mjolnir-qa", binRel);
+      typeof pkg.bin === "string" ? pkg.bin : (pkg.bin["qa-doctor"] ?? "");
+    entryPath = join(installDir, "node_modules", "qa-doctor-cli", binRel);
     if (existsSync(entryPath)) break;
     // dist was mid-rebuild during the pack (parallel worker's tsdown
     // clean phase) — discard this attempt and retry with a fresh pack.
@@ -90,7 +90,7 @@ afterAll(() => {
   rmSync(workDir, { recursive: true, force: true });
 });
 
-function runMjolnir(
+function runQaDoctor(
   args: string[],
   cwd?: string,
 ): {
@@ -102,7 +102,7 @@ function runMjolnir(
     const stdout = execFileSync("node", [entryPath, ...args], {
       cwd,
       encoding: "utf8",
-      env: { ...process.env, MJOLNIR_ASCII: "1" },
+      env: { ...process.env, QA_DOCTOR_ASCII: "1" },
     });
     return { stdout, stderr: "", status: 0 };
   } catch (err) {
@@ -117,10 +117,10 @@ function runMjolnir(
 
 describe("E2E journey 1: first run from the packed tarball", () => {
   it(
-    "scans examples/demo-repo: NEEDS WORK verdict, all JSON fields, well-formed findings",
+    "scans examples/demo-repo: HEALTHY score band, failing error gate, well-formed findings",
     { timeout: 60_000 },
     () => {
-      const { stdout, stderr, status } = runMjolnir([
+      const { stdout, stderr, status } = runQaDoctor([
         join(ROOT, "examples", "demo-repo"),
         "--json",
       ]);
@@ -143,8 +143,7 @@ describe("E2E journey 1: first run from the packed tarball", () => {
       };
       expect(result.schemaVersion).toBe(1);
       expect(result.partial).toBe(false);
-      expect(result.score).toBeGreaterThanOrEqual(50);
-      expect(result.score).toBeLessThanOrEqual(79); // NEEDS WORK band
+      expect(result.score).toBe(80);
       expect(result.testFileCount).toBeGreaterThan(0);
       expect(result.testDeclarationCount).toBeGreaterThan(0);
       expect(result.rawDeductions).toBeGreaterThan(0);
@@ -167,20 +166,21 @@ describe("E2E journey 1: first run from the packed tarball", () => {
   );
 
   it(
-    "terminal output names the WORTHINESS verdict and measured-rule count (--classic)",
+    "terminal output names the TEST HEALTH verdict and measured-rule count (--classic)",
     { timeout: 60_000 },
     () => {
-      const { stdout, status } = runMjolnir([
+      const { stdout, status } = runQaDoctor([
         join(ROOT, "examples", "demo-repo"),
         "--ascii",
         // WI-5: the default hero surface is now the Trust Report; the
-        // WORTHINESS banner lives on the --classic escape hatch.
+        // TEST HEALTH banner lives on the --classic escape hatch.
         "--classic",
       ]);
       expect(status).toBe(1);
-      expect(stdout).toContain("WORTHINESS");
-      expect(stdout).toMatch(/WORTHY|NEEDS WORK|UNWORTHY/);
-      expect(stdout).toContain("NEEDS WORK");
+      expect(stdout).toContain("TEST HEALTH");
+      expect(stdout).toMatch(/HEALTHY|NEEDS ATTENTION|CRITICAL/);
+      expect(stdout).toMatch(/\bHEALTHY\b/);
+      expect(stdout).not.toContain("NEEDS ATTENTION");
     },
   );
 
@@ -188,7 +188,7 @@ describe("E2E journey 1: first run from the packed tarball", () => {
     "default terminal output is the Trust Report answering the five questions",
     { timeout: 60_000 },
     () => {
-      const { stdout, status } = runMjolnir([
+      const { stdout, status } = runQaDoctor([
         join(ROOT, "examples", "demo-repo"),
         "--ascii",
       ]);
@@ -202,7 +202,7 @@ describe("E2E journey 1: first run from the packed tarball", () => {
       ]) {
         expect(stdout).toContain(section);
       }
-      expect(stdout).toContain("mjolnir explain");
+      expect(stdout).toContain("qa-doctor explain");
     },
   );
 
@@ -210,8 +210,11 @@ describe("E2E journey 1: first run from the packed tarball", () => {
     "--verbose adds the transparency section without changing the verdict",
     { timeout: 60_000 },
     () => {
-      const quiet = runMjolnir([join(ROOT, "examples", "demo-repo"), "--json"]);
-      const verbose = runMjolnir([
+      const quiet = runQaDoctor([
+        join(ROOT, "examples", "demo-repo"),
+        "--json",
+      ]);
+      const verbose = runQaDoctor([
         join(ROOT, "examples", "demo-repo"),
         "--json",
         "--verbose",
@@ -226,9 +229,9 @@ describe("E2E journey 1: first run from the packed tarball", () => {
     "--help prints the usage banner (pinned contract: exit 0, stdout)",
     { timeout: 60_000 },
     () => {
-      const { stdout, status } = runMjolnir(["--help"]);
+      const { stdout, status } = runQaDoctor(["--help"]);
       expect(status).toBe(0); // the CLI's frozen usage contract
-      expect(stdout).toContain("Usage: mjolnir");
+      expect(stdout).toContain("Usage: qa-doctor");
       expect(stdout).toContain("scan");
     },
   );
@@ -237,16 +240,16 @@ describe("E2E journey 1: first run from the packed tarball", () => {
     "an unknown flag exits 10 with a friendly usage error",
     { timeout: 60_000 },
     () => {
-      const { stdout, stderr, status } = runMjolnir([
+      const { stdout, stderr, status } = runQaDoctor([
         "--this-flag-does-not-exist",
       ]);
       expect(status).toBe(10);
       // Plan M2: the friendly error names the flag, suggests neighbors and
       // points at the help command (stderr; stdout stays findings-only).
       expect(stdout + stderr).toContain(
-        'mjolnir: unknown flag "--this-flag-does-not-exist"',
+        'qa-doctor: unknown flag "--this-flag-does-not-exist"',
       );
-      expect(stdout + stderr).toContain("Run mjolnir --help");
+      expect(stdout + stderr).toContain("Run qa-doctor --help");
     },
   );
 });

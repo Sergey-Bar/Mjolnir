@@ -1,7 +1,7 @@
-# Mjölnir — Laws
+# QA Doctor — Laws
 
 The governing laws of this repository. Where a law is executable, the
-enforcement lives in `mjolnir doctor` (`src/commands/doctor.ts`); where
+enforcement lives in `qa-doctor doctor` (`src/commands/doctor.ts`); where
 it is not yet executable, the gap is a defect to fix, not a rule to
 ignore.
 

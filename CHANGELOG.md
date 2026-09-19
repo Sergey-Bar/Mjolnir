@@ -31,7 +31,7 @@ once shipped, so this file is the record of what changed between versions.
 
 ### Year-1 Roadmap Implementation — All 60 Tickets (Q1-Q4)
 
-Complete implementation of the Mjolnir Master Engineering Roadmap & Product Specification v3.1. 178 files changed, ~22,500 lines added across 93 new source and test files.
+Complete implementation of the QA Doctor Master Engineering Roadmap & Product Specification v3.1. 178 files changed, ~22,500 lines added across 93 new source and test files.
 
 ### Added
 
@@ -43,7 +43,7 @@ Complete implementation of the Mjolnir Master Engineering Roadmap & Product Spec
 - **Scoring Validation** (`src/scorer/scoring-validation.ts`): Stage A validation against trust benchmark dataset. Score discrimination, severity preservation, E0 exclusion checks.
 - **Finding Identity** (`src/engine/finding-identity.ts`): Unified fingerprint with `findingId`, `rootCauseId`, `deduplicationGroup`. Consolidated 4 scattered fingerprint implementations.
 - **Evidence Level Enforcement** (`src/engine/evidence-enforcement.ts`): `deriveEvidenceLevel()` as sole authority. E0 gaming prevention. `detectEvidenceLevelGaming()` for manual override detection.
-- **Config Validation** (`src/config/config-schema.ts`): JSON Schema draft-07 for `mjolnir.config.json`. Structural validation before semantic validation.
+- **Config Validation** (`src/config/config-schema.ts`): JSON Schema draft-07 for `qa-doctor.config.json`. Structural validation before semantic validation.
 - **Rule Metadata Validation** (`src/rules/rule-metadata-schema.ts`): `RuleMetadataContract` interface. All 79 rules validated against contract. Doctor check 11 added.
 - **Error Text Extraction**: All 5 parsers (Jest, JUnit, Playwright JSON, Vitest, Playwright Trace) now extract error text into `TestRecord.errors[]`.
 - **Evidence Hygiene** (`src/forensics/evidence-hgiene.ts`): Secret redaction (AWS, GitHub, JWT, Bearer, API keys, passwords, private keys), control-character sanitization, bounded text ingestion (10KB cap).
@@ -92,7 +92,7 @@ Complete implementation of the Mjolnir Master Engineering Roadmap & Product Spec
 - **Workflow Bypass Detection** (`src/adapters/workflow-bypass.ts`): Path filter bypasses, conditional test execution, missing status checks.
 - **Exit-Code Integrity** (`src/adapters/exit-code-integrity.ts`): `|| true`, `2>/dev/null`, continue-on-error, allow_failure detection.
 - **Safe Output** (`src/forensics/safe-output.ts`): URL sanitization (javascript: prevention), path traversal detection, safe Markdown link construction.
-- **Sticky Comment Publisher** (`src/integrations/github/pr-comment-publisher.ts`): `<!-- mjolnir-pr-comment:v1 -->` marker. Idempotent update, no duplicates.
+- **Sticky Comment Publisher** (`src/integrations/github/pr-comment-publisher.ts`): `<!-- qa-doctor-pr-comment:v1 -->` marker. Idempotent update, no duplicates.
 - **GitHub Permissions** (`src/integrations/github/github-permissions.ts`): Permission validation, fork PR detection. Zero-network boundary preserved (fetchFn injected).
 - **Job Summary Fallback** (`src/integrations/github/job-summary-fallback.ts`): GitHub Actions job summary when PR comment fails.
 - **PR Comment Golden Suite** (`tests/integrations/github/pr-comment-golden.spec.ts`): Snapshot tests for all verdict+completeness combos.
@@ -147,16 +147,16 @@ Complete implementation of the Mjolnir Master Engineering Roadmap & Product Spec
   `▚ TITLE` (the ASCII fallback `= TITLE` is unchanged). The quadrant
   glyph read as a rendering glitch rather than a mark.
 - Terminal report: the score section no longer draws the four-state
-  block-art hammer above `WORTHINESS`. The verdict word already carries
+  block-art score graphic above `TEST HEALTH`. The verdict word already carries
   the band without colour, the score is now the first thing on screen,
-  and the 100-state FORGED block is unchanged.
+  and the 100-state EXCELLENT block is unchanged.
 - Brand: one type family. Cinzel is retired from the site, the tokens
   and the vendored fonts; headings and the wordmark are Geist. The marks
   are redrawn: a Geist wordmark, and the ᛗ monogram drawn as a path and
   stroked in the aurora. Docs pages take the aurora accent instead of
-  gold, which stays reserved for FORGED. README badges use the deep
+  gold, which stays reserved for EXCELLENT. README badges use the deep
   aurora that carries shields.io's white text at 5.8:1.
-- README rewritten. `score-gauge.svg` is now the worthiness scale with a
+- README rewritten. `score-gauge.svg` is now the test health scale with a
   marker sweeping 0–100, drawn from `deriveScoreState`. The terminal
   stills and the demo video share the website's terminal chrome. The
   video is re-rendered (34 s), and its poster shows the report.
@@ -180,7 +180,7 @@ Complete implementation of the Mjolnir Master Engineering Roadmap & Product Spec
 - test: arms-coverage wave for the R1-R10 train (CI gates, adapters, parser, trace, release-trust, trust surfaces)
 - docs: resync DEPTH-ADJUDICATION.md to the train's measured state (drift-lock)
 - chore: re-baseline coverage ratchet after the R1-R10 train landing
-- chore: exclude machine-local agent dirs via .mjolnirignore (self-scan honesty)
+- chore: exclude machine-local agent dirs via .qa-doctorignore (self-scan honesty)
 - chore: untrack machine-local skill symlinks (leaked in R3 1044461)
 - Master-plan M0 docs truth (M0.2/M0.4/M0.5)
 - chore: gitignore machine-local agent tool dirs (same class as .kilo/)
@@ -325,7 +325,7 @@ Trust Artifacts gain machine-anchored identity and a deterministic HTML surface;
   artifacts** (pre-R9 producers) via `checkArtifactFreshness` — an unbound or
   stale artifact is RECORDED, never assumed current.
 - **HTML Trust Artifact** (WI-23 completion, §18): deterministic,
-  self-contained `mjolnir-trust-report.html` — inline CSS only, zero external
+  self-contained `qa-doctor-trust-report.html` — inline CSS only, zero external
   resources, hostile interpolations escaped, byte-identical regen (same
   ScanResult + label + commit → same bytes), the same five-question structure
   as the MD. The command writes all three formats; `--from` gains an optional
@@ -370,7 +370,7 @@ The MCP transport learns the runtime-evidence tools, and every installed agent s
 - **Agent brief inherits the Constitution** (`src/commands/install-agents.ts`,
   WI-22): every installed instruction surface (.claude/, .cursor/, .kilo/,
   AGENTS.md) now carries the non-negotiable agent-safety contract — NEVER
-  declare trustworthiness without evidence · AGENT CLAIM ≠ VERIFICATION ·
+  declare test health without evidence · AGENT CLAIM ≠ VERIFICATION ·
   NEVER manufacture, edit, or synthesize evidence · NEVER convert INCONCLUSIVE
   to pass · NEVER suppress findings or weaken rules to get green — plus the
   loop preconditions (FIX requires a proven actionable defect; RESCAN requires
@@ -545,7 +545,7 @@ evidence`); per-dimension applicability (UNSUPPORTED surfaces are recorded,
   Containment, Corpus Integrity, Contract Compatibility, Determinism, Scope
   Integrity (ships R4c), Reproducibility, Zero-Network Compliance, Agent Safety
   (R8), Artifact Integrity (R9).
-- New verb **`mjolnir release-trust`** emitting `mjolnir.release-trust@1` —
+- New verb **`qa-doctor release-trust`** emitting `qa-doctor.release-trust@1` —
   byte-deterministic (frozen key order, no timestamps, zero absolute paths),
   per-dimension `evidence` + `determination` via the status algebra, verdict =
   contract satisfaction (never a PROVEN count) with the binding system
@@ -751,7 +751,7 @@ Azure DevOps support: guarded azure-pipelines.yml parsing, the QA-CI Azure arms,
   class-B fixture corpus and closed the census; QA-PY-102 was retired
   as a structural dead duplicate (its measured sibling QA-PY-005
   declares overlapWith, so it could never fire). Certification report:
-  docs/CERTIFICATION-1.0.md. Evidence chain: doctor self-audit WORTHY
+  docs/CERTIFICATION-1.0.md. Evidence chain: doctor self-audit HEALTHY
   (77/77), full suite 7,054 green, determinism replay byte-identical,
   adversarial + benchmark suites green, CHANGELOG integrity gate
   active.
@@ -819,7 +819,7 @@ Azure DevOps support: guarded azure-pipelines.yml parsing, the QA-CI Azure arms,
 
 ### Added
 
-- `trust-report --from <mjolnir.json> [--stdout]` (WI-9): the Trust
+- `trust-report --from <qa-doctor.json> [--stdout]` (WI-9): the Trust
   Artifact rendered from a SAVED canonical scan result — the GitHub
   Action's comment/annotation steps derive from the exact saved report
   (one semantic truth, no second scan). Includes honest error paths:
@@ -862,7 +862,7 @@ Azure DevOps support: guarded azure-pipelines.yml parsing, the QA-CI Azure arms,
 
 ### Added
 
-- **Trust Report — the hero product surface (WI-5).** `mjolnir` now leads
+- **Trust Report — the hero product surface (WI-5).** `qa-doctor` now leads
   with the five questions — TRUST VERDICT (trust level + headline),
   CONFIDENCE (confidence, evidence coverage, inconclusive rate, measured-FP
   of fired rules, tests analyzed), WHY THIS VERDICT (evidence-backed
@@ -870,8 +870,8 @@ Azure DevOps support: guarded azure-pipelines.yml parsing, the QA-CI Azure arms,
   command) — all rendered from the canonical scan result only (every
   number exists in `--json`). `--classic` escapes to the previous render;
   rendering flag only, semantics and exit codes unchanged.
-- **`mjolnir trust-report` (WI-6).** Emits deterministic, self-contained
-  `mjolnir-trust-report.{md,json}` — no cloud/telemetry; PR-attachable,
+- **`qa-doctor trust-report` (WI-6).** Emits deterministic, self-contained
+  `qa-doctor-trust-report.{md,json}` — no cloud/telemetry; PR-attachable,
   agent-consumable; byte-identical for the same scan.
 - **`trustSummary` on the scan JSON (WI-3, plan §6).** Scan-level trust
   measurement: level, ceiling-capped confidence (partial 0.5 /
@@ -887,16 +887,16 @@ Azure DevOps support: guarded azure-pipelines.yml parsing, the QA-CI Azure arms,
   normalized `EvidenceRecord` shape with deterministic ordering; the scan
   pipeline fans all runtime evidence through it; stamping semantics
   preserved byte-identically (differential preservation suite).
-- **Explain v2 (WI-7).** `mjolnir explain` gains verdict mode
-  (`mjolnir explain verdict --json <mjolnir.json>`) and finding mode
-  (file:line delegates to `mjolnir why`); every mode now answers the §8
+- **Explain v2 (WI-7).** `qa-doctor explain` gains verdict mode
+  (`qa-doctor explain verdict --json <qa-doctor.json>`) and finding mode
+  (file:line delegates to `qa-doctor why`); every mode now answers the §8
   checklist including WHAT WOULD CHANGE THE VERDICT and NEXT ACTION.
-- **Triage v2 (WI-8).** `mjolnir triage` now runs the §9 guided workflow —
+- **Triage v2 (WI-8).** `qa-doctor triage` now runs the §9 guided workflow —
   CLASSIFY → EVIDENCE → TRUST VERDICT → NEXT ACTION per row, every row
   ending in a concrete command; `--classic` keeps the table, `--json`
   emits the structured twin.
 - **Zero-config evidence discovery (WI-11).** The scan auto-discovers
-  run evidence from conventional layouts (mjolnir.report.json, PW JSON
+  run evidence from conventional layouts (qa-doctor.report.json, PW JSON
   reporter names, test-results/, JUnit XML) at depth ≤ 2; scans without
   evidence state exactly what is missing and the honest trust ceiling.
 - **Canonical MVP evidence corpus + golden harness stage 1 (WI-13A/B).**
@@ -946,7 +946,7 @@ Azure DevOps support: guarded azure-pipelines.yml parsing, the QA-CI Azure arms,
 
 ### Changes since 0
 
-- P7: agent loop — mjolnir verify + MCP verify tool + install surfaces (#68)
+- P7: agent loop — qa-doctor verify + MCP verify tool + install surfaces (#68)
 
 ## [0.5.37] — 2026-09-08
 
@@ -1025,7 +1025,7 @@ Azure DevOps support: guarded azure-pipelines.yml parsing, the QA-CI Azure arms,
 
 ### Changes since 0.5.24
 
-- docs: CERTIFICATION-POLICY.md — consolidated owner-ratified lawbook (1-22 + L1-L6), contradiction pass, verdict semantics; eslint/prettier ignore machine-local .mjolnir scratch (#59)
+- docs: CERTIFICATION-POLICY.md — consolidated owner-ratified lawbook (1-22 + L1-L6), contradiction pass, verdict semantics; eslint/prettier ignore machine-local .qa-doctor scratch (#59)
 
 ## [0.5.24] — 2026-09-08
 
@@ -1090,36 +1090,36 @@ Azure DevOps support: guarded azure-pipelines.yml parsing, the QA-CI Azure arms,
 
 ### Added
 
-- **`mjolnir why <file>:<line>`** — occurrence-level evidence query
+- **`qa-doctor why <file>:<line>`** — occurrence-level evidence query
   (informational, NOT a gate): exact file+line match, severity icon,
   message/why/fix, evidence level, trust level, measured FP rate
   (or the honest "ships on assumption"), runtime corroboration when
   present, and the suppression contract (reason required, 90-day
-  expiry). Saved-report mode (`--json <mjolnir.json>`) is
+  expiry). Saved-report mode (`--json <qa-doctor.json>`) is
   authoritative; live scan runs otherwise. Exit 0 match / 1 no match.
-- **`mjolnir handoff [mjolnir.json]`** — the deterministic fix-handoff
+- **`qa-doctor handoff [qa-doctor.json]`** — the deterministic fix-handoff
   artifact: per-rule remediation sections (what is wrong / why
-  Mjölnir believes it / evidence boundary by level / occurrences
+  QA Doctor believes it / evidence boundary by level / occurrences
   capped at 25 / fix / constraints / occurrences list), a per-rule
   fenced copy block and a one-shot handoff prompt, and the formal
   verification contract (TARGET_RESOLVED / TARGET_REMAINS /
   NEW_FINDINGS_INTRODUCED / VERIFICATION_NOT_RUN, correlated by the
   fingerprint ruleId+file+message; the standing caveat that a clean
   `--scope changed` run verifies the changed surface only). Generated
-  solely from Mjölnir's own rule metadata — offline, deterministic,
+  solely from QA Doctor's own rule metadata — offline, deterministic,
   escapeMarkdown'd. Zero findings → exit 0, non-actionable clean
   artifact with no prompt. `--category`/`--rules` are presentation
   filters.
-- **`mjolnir install`** — installs the agent instruction surfaces
-  (`.claude/commands/mjolnir.md`, `.kilo/command/mjolnir.md`,
-  `.cursor/rules/mjolnir.mdc`, marker-appended `AGENTS.md`): the
+- **`qa-doctor install`** — installs the agent instruction surfaces
+  (`.claude/commands/qa-doctor.md`, `.kilo/command/qa-doctor.md`,
+  `.cursor/rules/qa-doctor.mdc`, marker-appended `AGENTS.md`): the
   version-pinned trust loop brief (scan `--scope changed` before
   finishing, never suppress to green, report files changed and checks
   not run). `--staged-hook` adds a NON-BLOCKING pre-commit hook
-  (`mjolnir --staged --blocking warning`, reusing `.husky`/
+  (`qa-doctor --staged --blocking warning`, reusing `.husky`/
   `core.hooksPath` when present). Marker-based idempotency;
   `--dry-run` writes nothing; refusal (exit 10) before overwriting
-  any non-Mjölnir file; `--force` overwrites only Mjölnir-marked
+  any non-QA Doctor file; `--force` overwrites only QA Doctor-marked
   files; never @latest.
 - **`--score`** — prints only the numeric score (`unknown` when no
   tests exist — never a fake 0); pure rendering flag, exit code
@@ -1160,13 +1160,13 @@ scan`. Unknown categories are a usage error (exit 10).
 ### Changes since 0.5.13
 
 - Merge pull request #47 from Sergey-Bar/claude/readme-demo-video-4rzxij
-- Cover the mjolnir mcp dispatch branch — CI's 100% ratchet caught it
+- Cover the qa-doctor mcp dispatch branch — CI's 100% ratchet caught it
 - README: define Selector Health, state the limits, lock the samples
 - Expose the MCP server, and document the agent surface in the README
 - See it work: embed the real demo video inline
 - Rework See it work and the score section: real video, fixed-size cards
 - Replace the See it work poster+MP4 and shorten the score hero image
-- Replace the score/verdict table with an animated hammer sweep
+- Replace the score/verdict table with an animated score graphic sweep
 
 ## [0.5.13] — 2026-09-07
 
@@ -1185,7 +1185,7 @@ scan`. Unknown categories are a usage error (exit 10).
 - video: fix invisible command text, and guard the whole class
 - video: present the terminal as a window, not a maximised screenshot
 - video: re-render both demos against the fixed reporter
-- report: one hammer, and output that fits the terminal it prints to
+- report: one score graphic, and output that fits the terminal it prints to
 - video: add the manual render workflow and document the pipeline
 - docs: restructure the README around the demo, and lead with the video
 - video: add the media-format contract, and ship the hero MP4
@@ -1256,8 +1256,8 @@ scan`. Unknown categories are a usage error (exit 10).
 
 ### Changed — plugin execution gate (audit C2, contract-visible, pre-1.0)
 
-- **`--enable-plugins` / `MJOLNIR_ENABLE_PLUGINS=1`** — npm plugins and
-  JS-module external rules (`mjolnir-rules/*.mjs`) now load and execute
+- **`--enable-plugins` / `QA_DOCTOR_ENABLE_PLUGINS=1`** — npm plugins and
+  JS-module external rules (`qa-doctor-rules/*.mjs`) now load and execute
   only behind an explicit opt-in (default OFF). Declared-but-gated
   sources are listed on a loud stderr notice; they are never imported.
   JSON rule manifests execute no code and load without the gate. See
@@ -1271,10 +1271,10 @@ scan`. Unknown categories are a usage error (exit 10).
   regex-fallback verdicts are never served as AST ones. `CACHE_VERSION`
   bumped to 2: one-time invalidation, first post-upgrade scan cold.
 - **C3**: the default console sinks are variadic —
-  "mjolnir internal error:" now carries the actual cause (the message
+  "qa-doctor internal error:" now carries the actual cause (the message
   used to be dropped).
 - **C5**: a partial (truncated) scan never writes the
-  first-clean-scan milestone; `mjolnir diff` on a truncated head
+  first-clean-scan milestone; `qa-doctor diff` on a truncated head
   returns exit 2 and folds no resolved findings into stats.
 - **W1**: the Java/C# maskers keep code after a closed block comment
   live (`/*x*/y` used to blank `y`).
@@ -1311,12 +1311,12 @@ scan`. Unknown categories are a usage error (exit 10).
   anchored at the config file's mtime — any config edit used to reset
   every suppression window. Expiry is the entry's explicit `expires`
   date; entries without one stay active and are labeled accordingly in
-  `mjolnir suppressions`.
+  `qa-doctor suppressions`.
 
 ### Hardened — trust boundary (audits S1/S2/S3/S7)
 
 - **S1**: git resolves to an absolute path from PATH (never the scanned
-  CWD) — a planted `git.exe`/`git.bat` cannot hijack Mjölnir's git
+  CWD) — a planted `git.exe`/`git.bat` cannot hijack QA Doctor's git
   calls on Windows.
 - **S2**: ignore/glob patterns and external JSON-rule regexes are
   length/wildcard-capped at compile time; `**/` compiles segment-aware.
@@ -1343,20 +1343,20 @@ scan`. Unknown categories are a usage error (exit 10).
   headers and `╞══╡` tables are gone. `FORCE_COLOR` is honored
   (chalk convention: `0`/`false`/empty = plain, other values force
   color even piped, winning over `NO_COLOR`).
-- **`mjolnir help` + per-command help** (`src/commands/help.ts`): the
+- **`qa-doctor help` + per-command help** (`src/commands/help.ts`): the
   grouped overview (Scan · CI & PRs · Forensics · Maintenance · Meta,
   copy-pasteable starts, exit-code table, docs link) and
-  `mjolnir help <verb>` / `mjolnir <verb> --help` pages for every
+  `qa-doctor help <verb>` / `qa-doctor <verb> --help` pages for every
   registered verb. **Behavior call-out:** `help` now dispatches as a
-  verb BEFORE the scan fall-through — bare `mjolnir help` no longer
+  verb BEFORE the scan fall-through — bare `qa-doctor help` no longer
   scans the CWD (it never was a documented behavior); a folder named
-  `help/` is still scanned via `mjolnir ./help`. `--help`/`-h` on the
+  `help/` is still scanned via `qa-doctor ./help`. `--help`/`-h` on the
   root scan still print usage and exit 10 (frozen contract).
 - **Friendly usage errors** (exit 10 preserved): unknown flags name
   themselves on stderr, suggest up to three nearest real flags
   (hand-rolled Levenshtein ≤ 2 — no new dependencies), and point at
-  `mjolnir --help`. The exit-20 crash path says "this is a bug in
-  Mjölnir, not your repo", carries the message, and prints the stack
+  `qa-doctor --help`. The exit-20 crash path says "this is a bug in
+  QA Doctor, not your repo", carries the message, and prints the stack
   trace only under `--debug`.
 - **Live scan progress** (`src/reporter/progress.ts`): an event-driven
   stderr line (`Discovering files… → Parsing frameworks… → Running
@@ -1366,7 +1366,7 @@ rules… → Scoring…`) fed by the new additive `ScanHooks.onProgress`.
   `GITHUB_ACTIONS=true`/`CI=true`, or with the new additive
   `--no-progress` flag. stdout purity and `--json` byte-identity are
   unchanged.
-- **`mjolnir summary [mjolnir.json]`** (`src/commands/summary.ts` +
+- **`qa-doctor summary [qa-doctor.json]`** (`src/commands/summary.ts` +
   `src/reporter/github.ts`): reads a saved `--json` report and emits
   GitHub annotations (only when `GITHUB_ACTIONS=true`, per-finding
   `::error|warning|notice` with spec-exact `%25/%0D/%0A/%3A/%2C`
@@ -1378,17 +1378,17 @@ rules… → Scoring…`) fed by the new additive `ScanHooks.onProgress`.
   scans. Exit `0` on success — the gate step decides; `10` missing
   file; `2` invalid JSON.
 - **CI template v2** (`ci install`): the inline `SUMMARY_SCRIPT` step
-  is replaced by `mjolnir summary mjolnir.json`; the gate script is
+  is replaced by `qa-doctor summary qa-doctor.json`; the gate script is
   unchanged. v1-generated workflows are still recognized on
   overwrite-refusal, so `ci install` upgrades stay frictionless. The
-  dogfooded `.github/workflows/mjolnir.yml` and `ci.yml` self-scan use
+  dogfooded `.github/workflows/qa-doctor.yml` and `ci.yml` self-scan use
   the same command.
 - **PR comment redesign** (`pr-comment`): header
-  `### 🔨 Mjölnir — Verification Trust` with score + band + verdict
+  `### 🔨 QA Doctor — Verification Trust` with score + band + verdict
   headline, dimensions mini-table, findings grouped in collapsible
   `<details>` (errors open, warnings/infos collapsed) with explicit
   `Fix:` lines and evidence tags, a "what to run next" footer with the
-  pinned `npx mjolnir-qa@<ver>` commands, and the
+  pinned `npx qa-doctor-cli@<ver>` commands, and the
   `✨ N pre-existing findings fixed in this PR` callout. Same
   idempotency marker; same markdown escaping.
 - **Site**: new `site/reference/cli.md` (help, usage errors, summary,
@@ -1421,7 +1421,7 @@ rules… → Scoring…`) fed by the new additive `ScanHooks.onProgress`.
   hand-customized files are still refused.
 - **Advisory template stays green on a crashed scan:** the generated
   "Annotations + Job Summary" step is now `continue-on-error: true` —
-  a crashed scan leaves `mjolnir.json` empty and `summary` exits 2,
+  a crashed scan leaves `qa-doctor.json` empty and `summary` exits 2,
   which must not turn the advisory job red (v1's inline script never
   did). The gate step still owns the verdict.
 - **Step summary escapes hostile finding metadata:** `ruleId`, `file`,
@@ -1440,10 +1440,10 @@ rules… → Scoring…`) fed by the new additive `ScanHooks.onProgress`.
 - **Usage-error contract completed:** the 8 scan-backed subcommands
   (badge, debt, fix, impact, baseline, diff, pr-comment, handover) no
   longer print the full usage wall after the friendly stderr error;
-  `mjolnir summary` rejects unknown flags with the shared
+  `qa-doctor summary` rejects unknown flags with the shared
   did-you-mean machinery (exit 10) instead of silently swallowing a
-  typo'd `--stdout`; `mjolnir ci --help` / `mjolnir help ci install` /
-  `mjolnir ci install --help` now reach the `ci install` help page
+  typo'd `--stdout`; `qa-doctor ci --help` / `qa-doctor help ci install` /
+  `qa-doctor ci install --help` now reach the `ci install` help page
   (two-word verb lookup).
 - **Dead surface removed:** `theme.severityTag` (byte-identical twin of
   `ui.severityIcon`, test-only) deleted with the two plugin specs
@@ -1478,7 +1478,7 @@ rules… → Scoring…`) fed by the new additive `ScanHooks.onProgress`.
 
 ### Added — folder-based external rules, zero network
 
-- **`mjolnir-rules/` contract** (`src/plugins/local-rules.ts`): a
+- **`qa-doctor-rules/` contract** (`src/plugins/local-rules.ts`): a
   workspace directory loaded from the scan target root alongside npm
   plugins. Two file kinds: **JSON rule manifests** (declarative regex
   patterns — NO code executed; id/title/severity/category/appliesTo/
@@ -1500,12 +1500,12 @@ rules… → Scoring…`) fed by the new additive `ScanHooks.onProgress`.
   unified filter excludes them from non-strict scans exactly like core
   (post-scan cap still observable under `--strict`; the cli-scan-arms
   test updated to cover both sides).
-- **Drift-checked:** `mjolnir rules --md --external` renders the
+- **Drift-checked:** `qa-doctor rules --md --external` renders the
   catalog from the LOADED external rules with a provenance column
   (`core`/`external`) — an on-disk edit changes the next render; the
   catalog can never drift from what actually ships.
   `scripts/generate-capability-matrix.ts --external <root>` writes a
-  workspace-local `MJOLNIR-RULES-MATRIX.md` with provenance "external"
+  workspace-local `QA_DOCTOR-RULES-MATRIX.md` with provenance "external"
   (unmeasured by definition — outside the corpus sidecar). The
   committed matrix stays core-registry-only and byte-stable.
 - **S-8 disclosure:** external rule surfaces appear in the scan's
@@ -1563,7 +1563,7 @@ regenerated.
 ### Added — runtime corroboration + the honest L0–L5 trust ladder
 
 Built on the existing forensics ingestion (no greenfield):
-`packages/playwright-reporter` → `mjolnir.report.json` → the
+`packages/playwright-reporter` → `qa-doctor.report.json` → the
 `ForensicsReport` pipeline that `forensics`/`triage`/`pw-report`
 already consume. Findings gain two additive, optional fields
 (schemaVersion 1 unchanged):
@@ -1591,7 +1591,7 @@ already consume. Findings gain two additive, optional fields
   get NOTHING (no fabricated evidence). JUnit XML has no locations:
   file-level only.
 - **Scan wiring:** `runScan` auto-discovers a run report next to the
-  scan target (`mjolnir.report.json` — the reporter package's default
+  scan target (`qa-doctor.report.json` — the reporter package's default
   output — or a `test-results/` directory), runs the existing
   forensics ingestion, and stamps findings. No report → findings
   unchanged (honest "runtime evidence: not available"). A hostile
@@ -1797,7 +1797,7 @@ on real-world code. Per the lifecycle policy the severity is downgraded to
 the code and fixtures stay in the repo, the frozen ID is never reused, and
 any salvageable detection idea ships under a NEW rule ID. If you gated CI
 on these findings, they no longer block at `info` severity; add an explicit
-`severityOverrides` entry in `mjolnir.config.json` to restore blocking.
+`severityOverrides` entry in `qa-doctor.config.json` to restore blocking.
 
 - **QA-PW-005** (business logic in `page.evaluate()`): in test files,
   branching inside evaluate is the only way to reach browser state — every
@@ -2045,7 +2045,7 @@ SEMANTIC | FRAMEWORK | RUNTIME`) instead of free text: `src/rules/rule.ts`
 
 ### Changed — scan-behavior fallout of the measured demotions (explained)
 
-- `mjolnir fix` now scans with `--strict`: an auto-fixable rule that is
+- `qa-doctor fix` now scans with `--strict`: an auto-fixable rule that is
   measured into quarantine (QA-TEST-001's `.only` fix) must still be
   fixable — hiding it would make `fix` a no-op on its own target debt.
 - The demo repo's CI workflow gained genuine CI-009 exhibits (piped and
@@ -2125,10 +2125,10 @@ detectorRevision, FP ≤ 10%, n ≥ 10`), on any detectorRevision mismatch
   rule that fires nowhere in the corpus baselines. §20.1 evidence-state
   monotonicity: the measured ratio may only improve without a
   machine-detectable `MEASUREMENT-EXCEPTION` marker in this CHANGELOG.
-- **`mjolnir doctor`**: `MAX_UNMEASURED_CORE` lowered 40 → **0** (Phase 1
+- **`qa-doctor doctor`**: `MAX_UNMEASURED_CORE` lowered 40 → **0** (Phase 1
   exit gate: 0 unmeasured in effective core, now enforced); tier checks
   consume `effectiveTier` + stale-measurement logic. Display surfaces
-  (`mjolnir explain`, `mjolnir rules`, generated rule docs, capability
+  (`qa-doctor explain`, `qa-doctor rules`, generated rule docs, capability
   matrix) render the PROVISIONAL status honestly.
 
 ### Verification Trust Evolution, Phase 0 + Phase 1 prep
@@ -2170,7 +2170,7 @@ detectorRevision, FP ≤ 10%, n ≥ 10`), on any detectorRevision mismatch
 - **`tree-sitter-wasms` and `web-tree-sitter` moved to `dependencies`**
   (web-tree-sitter keeps its exact `0.25.6` pin — 0.26.x cannot load the
   prebuilt grammar files). The published CLI's dependency tree now
-  carries the tree-sitter Java/C# grammars, so `npm install mjolnir-qa`
+  carries the tree-sitter Java/C# grammars, so `npm install qa-doctor-cli`
   can load them offline once the Phase 0.5 parse-stage wiring consumes
   them. Removed the misleading `!dist/**/*.wasm` files exclusion (the
   grammars ship via the dependency, not the bundle).
@@ -2221,23 +2221,23 @@ detectorRevision, FP ≤ 10%, n ≥ 10`), on any detectorRevision mismatch
   (3/3), corpus count-lock unaffected (no JV/CS rule reads the AST),
   capability-matrix + FP-AUDIT generated docs byte-identical, pack smoke
   re-proven manually: `npm pack` → clean `npm install` → offline grammar
-  load + parse of real Java and C# source → offline `mjolnir` scan of a
+  load + parse of real Java and C# source → offline `qa-doctor` scan of a
   Java fixture detecting QA-JV-102. `web-tree-sitter` stays pinned to
   exactly `0.25.6` (§10.5, documented 0.26.x breakage).
 
-### Added — score instrument redesign (hammer states)
+### Added — score instrument redesign (score graphic states)
 
 - **ScoreState model** (`src/reporter/score-state.ts`): one pure source of
   truth for band / verdict / color / headline per score — critical 0–49,
-  warning 50–79, trusted 80–99, forged 100. `verdictFor`, the terminal
+  warning 50–79, trusted 80–99, excellent 100. `verdictFor`, the terminal
   gauge and the badge all delegate to it.
-- **The hammer is now the score instrument** (terminal): a state-colored
-  hammer block renders above the WORTHINESS line — cracked (0–49),
-  strained with partial runes (50–79), charged with energy arcs (80–99),
+- **The score graphic is now the score instrument** (terminal): a state-colored
+  score graphic block renders above the TEST HEALTH line — cracked (0–49),
+  strained with partial indicators (50–79), charged with energy arcs (80–99),
   halo + lightning at 100. A plain-text caption (`[CRACKED]` /
-  `[STRAINED]` / `[CHARGED]` / `[FORGED]`) carries the state without
+  `[STRAINED]` / `[CHARGED]` / `[EXCELLENT]`) carries the state without
   color; ASCII fallback included.
-- **Trusted is aurora-cyan, forged is white-gold** on every surface
+- **Trusted is aurora-cyan, excellent is white-gold** on every surface
   (terminal palette, web tokens, brand README). Green is no longer a
   score color — it survives for non-score success contexts only.
 - **Findings render as cards** (terminal): Problem → Impact → Fix →
@@ -2245,15 +2245,14 @@ detectorRevision, FP ≤ 10%, n ≥ 10`), on any detectorRevision mismatch
   rules with >3 findings collapse under one "same fix applies" header;
   non-verbose shows 10 cards with an overflow line, `--verbose` shows
   everything.
-- **FORGED block at 100** replaces the bare FLAWLESS VICTORY line in
-  unicode mode (trophy retained inside; the `*** FLAWLESS VICTORY ***`
-  ASCII contract string is preserved).
+- **EXCELLENT block at 100** presents an all-clear confirmation in both
+  terminal modes, with a readable text fallback.
 - **PR comments show score drift** (`Score: 72/100 (+5 since baseline
 <sha>)`) using the new additive `score` field in the baseline JSON, and
   carry per-finding evidence tags.
 - **Badge thresholds aligned** with the reporter: ≥80 / ≥50 / 100
   (was ≥90 / ≥75 / ≥50), colors `red` / `yellow` / `important` /
-  `success`; the message at 100 reads `100/100 · forged`.
+  `success`; the message at 100 reads `100/100 · excellent`.
 
 ### Fixed — security & detection-regression audit (`.planning/AUDIT-2026-08-30-QA.md`)
 
@@ -2281,7 +2280,7 @@ detectorRevision, FP ≤ 10%, n ≥ 10`), on any detectorRevision mismatch
   policy was only applied at write time by the `ignore` command —
   hand-written entries without `expires` stayed active forever. The
   default is now enforced at enforcement time, anchored at the config
-  file's mtime; `mjolnir suppressions` labels the default explicitly.
+  file's mtime; `qa-doctor suppressions` labels the default explicitly.
 - **QA-7 (P1):** plugin reserved-prefix spoof rejection was
   case-sensitive — `"qa-test-001"` walked straight past it. Matching is
   now case-insensitive.
@@ -2347,7 +2346,7 @@ detectorRevision, FP ≤ 10%, n ≥ 10`), on any detectorRevision mismatch
   monotonicity, order-symmetry), Selector Health exact score vectors,
   hand-computed forensics math, terminal-footer/JSON deduction
   consistency, Mermaid well-formedness, and a three-verdict-band proof
-  (WORTHY / NEEDS WORK / UNWORTHY each reached for its stated reason).
+  (HEALTHY / NEEDS ATTENTION / CRITICAL each reached for its stated reason).
 - **Regression & integration:** adapter→reporter matrix (one finding
   asserted on terminal, JSON, SARIF, and Mermaid), plugin flow
   integration (valid plugin + reserved-prefix rejection), cross-file
@@ -2385,17 +2384,17 @@ detectorRevision, FP ≤ 10%, n ≥ 10`), on any detectorRevision mismatch
 
 - Only 15 of 91 rules carry a false-positive rate measured against real OSS
   code; that fact previously lived only in `docs/FP-AUDIT.md` and
-  `mjolnir doctor`. Now surfaced everywhere a user looks:
+  `qa-doctor doctor`. Now surfaced everywhere a user looks:
   - The scan footer reports how many of the rules that _fired_ are measured.
-  - `mjolnir rules --unmeasured` / `--measured` filter the catalog; a new
+  - `qa-doctor rules --unmeasured` / `--measured` filter the catalog; a new
     "FP (measured)" column in `rules --md`; a "Measured FP rate" row on every
-    `docs/rules/` page and in `mjolnir explain`.
+    `docs/rules/` page and in `qa-doctor explain`.
   - JSON findings carry `measuredFpRate` and `measuredFpN` (additive —
     `schemaVersion` is still 1).
 - `src/rules/measured-fp.generated.ts` bakes the rates into the shipped
   package (the raw verdicts are not packed); regenerated by
   `npm run fp-audit:generate`, drift-locked by a test, and now the single
-  source `mjolnir doctor` reads.
+  source `qa-doctor doctor` reads.
 - Scoring is unchanged — this is visibility only.
 - **Corpus expanded 6 → 13 repos** so the previously-silent rule families
   (QA-TEST, QA-TQUAL, most QA-PW, QA-CI-001) fire on real consumer code:
@@ -2410,8 +2409,8 @@ detectorRevision, FP ≤ 10%, n ≥ 10`), on any detectorRevision mismatch
 
 ### Changed — help and README lead with the one command
 
-- `mjolnir --help` and the README quickstart now open with
-  `mjolnir --scope changed` as _the_ product, and group the other subcommands
+- `qa-doctor --help` and the README quickstart now open with
+  `qa-doctor --scope changed` as _the_ product, and group the other subcommands
   into Everyday / When-something's-flaky / Occasional instead of a flat list
   of 16 equals. A one-line first-run hint appears after a bare full-repo scan
   with no config. No subcommand removed or renamed.
@@ -2503,7 +2502,7 @@ test` (install first, test last) was flagged even though the test's exit
 - **JSON/SARIF truncation removed**: results were silently capped at 50
   findings, including machine consumers. The full finding set is now in
   JSON/SARIF; only terminal display is capped (with an honest count).
-- **`mjolnir fix` path containment**: plugin-supplied finding paths can
+- **`qa-doctor fix` path containment**: plugin-supplied finding paths can
   no longer write outside the scan root (`../` traversal refused).
 - **Symlinks are no longer followed** during test-file discovery in any
   adapter — prevents scanning outside the repo and link cycles.
@@ -2537,7 +2536,7 @@ by a `must-not-fire` fixture so the class cannot return silently.
   Locks: `tests/fixtures/QA-ENV-001/must-not-fire/code-as-test-data.spec.ts`.
 - **QA-CI-001** fired on `continue-on-error` regardless of what the step did.
   Confirmed on this repo's own workflows: `ci.yml:48` (badge artifact
-  generation) and `mjolnir.yml:35` (advisory diff, which carries a comment
+  generation) and `qa-doctor.yml:35` (advisory diff, which carries a comment
   explaining that exit 1 is expected there). Now gated on an allowlist of
   verification commands. Locks:
   `tests/fixtures/QA-CI-001/must-not-fire/reporting-steps.yml`.
@@ -2559,7 +2558,7 @@ by a `must-not-fire` fixture so the class cannot return silently.
 - **`SMOOTHING_C` is 1 (Laplace), was 5.** At 5 it tripled the denominator of a
   two-declaration repo, diluting real density away.
 - **Findings may declare `suiteInvalidating: true`**, capping the score at 49
-  (UNWORTHY) regardless of exposure. Density can express how much of a suite is
+  (CRITICAL) regardless of exposure. Density can express how much of a suite is
   questionable; it cannot express whether the suite ran at all. Applied to
   QA-TEST-001 and QA-PY-001. Deliberately not applied to QA-PW-003, which
   detects both `test.only()` and `page.pause()` — the flag is per-rule.
@@ -2617,15 +2616,15 @@ by a `must-not-fire` fixture so the class cannot return silently.
   assertions), QA-PY-106 (shared page/context across tests), QA-PY-107
   (`networkidle` wait), QA-PY-108 (hardcoded environment URLs).
 - Upgrade-Plan-v3 Phase 6: Plugin API — declare third-party rule packages
-  in `mjolnir.config.json` (`"plugins": [...]`). Security model: no
+  in `qa-doctor.config.json` (`"plugins": [...]`). Security model: no
   sandbox (same trust as ESLint/Vitest plugins); reserved core rule-ID
   prefixes rejected; load failures degrade honestly as QA-PLUGIN-000
   warnings without affecting exit codes. Plus cross-file duplicate-test-name
   detection (`src/engine/cross-file.ts`).
-- Upgrade-Plan-v3 Phase 0.2: new `mjolnir-qa-playwright-reporter` package
+- Upgrade-Plan-v3 Phase 0.2: new `qa-doctor-playwright-reporter` package
   (`packages/playwright-reporter/`) — official Playwright JSON reporter
-  wrapper for Mjölnir's forensics pipeline; default output
-  `mjolnir.report.json` is the CLI's auto-discovery convention.
+  wrapper for QA Doctor's forensics pipeline; default output
+  `qa-doctor.report.json` is the CLI's auto-discovery convention.
 - Upgrade-Plan-v3 Phase 3: ts-morph AST precision layer behind the `ast`
   seam (`src/engine/ts-ast.ts`). QA-PW-002 and QA-PW-005 migrated from
   regex to syntax-tree detection (legacy regex kept as fallback). No
@@ -2647,7 +2646,7 @@ by a `must-not-fire` fixture so the class cannot return silently.
   Promoted to core: QA-CS-101 (0% FP, n=20), QA-JV-105 (10% FP, n=20).
   Quarantined rules still ship and are still documented — they are opt-in via
   `--strict` rather than shaping the default report.
-- `mjolnir rules` (`--json` and `--md`) now exposes each rule's `tier`, and
+- `qa-doctor rules` (`--json` and `--md`) now exposes each rule's `tier`, and
   every generated page under `docs/rules/` shows it in the metadata table.
 
 ### Fixed — documentation claims a `grep` disproved
@@ -2670,11 +2669,11 @@ by a `must-not-fire` fixture so the class cannot return silently.
 - `docs/README.md` described a `docs/plans/` directory that no longer exists
   and called a completed plan "current work".
 - Residual `qa-doctor` naming removed from user-facing CLI output
-  (`mjolnir explain`, `mjolnir stats`), from comments that contradicted the
+  (`qa-doctor explain`, `qa-doctor stats`), from comments that contradicted the
   code they described (`baseline.ts` cited `.qa-doctor/` while writing
-  `.mjolnir/`), and from this changelog's own unreleased section.
+  `.qa-doctor/`), and from this changelog's own unreleased section.
 - The Playwright reporter package is renamed throughout:
-  `mjolnirReporter` / `MJOLNIR_REPORT_FILE` / `mjolnir.report.json`. The
+  `qaDoctorReporter` / `QA_DOCTOR_REPORT_FILE` / `qa-doctor.report.json`. The
   package is unpublished, so no consumer breaks.
 
 ### Added — guards
@@ -2705,7 +2704,7 @@ by a `must-not-fire` fixture so the class cannot return silently.
 ### Known gaps
 
 - **19 of 91 rules carry a measured FP rate** (n ≥ 10, from 381 hand-classified
-  corpus verdicts). The other 72 ship on an unverified assumption; `mjolnir
+  corpus verdicts). The other 72 ship on an unverified assumption; `qa-doctor
 doctor` reports this and will fail once a majority is classified.
 - `NORMALIZATION_K` is unfitted.
 - Statements/branches coverage sits at 94.8%/87.7% against a 95/88 aspiration;
@@ -2715,23 +2714,23 @@ doctor` reports this and will fail once a majority is classified.
 
 ### Changed
 
-- **BREAKING: Rebranded from QA Doctor to Mjölnir.** Package name is now
-  `mjolnir-qa` (bin: `mjolnir`). Config file: `mjolnir.config.json`.
-  Data directory: `.mjolnir/`. Badge: `mjolnir-badge.json`.
-- Score label: "SCORE" → "WORTHINESS".
-- Verdicts: "HEALTHY" → "WORTHY", "CRITICAL" → "UNWORTHY".
-- Environment variable: `QA_DOCTOR_ASCII` → `MJOLNIR_ASCII`.
-- SARIF tool.driver.name: "Mjölnir".
-- Repository: `github.com/Sergey-Bar/Mjolnir`.
-- CLI: all help text, error messages, usage strings reference `mjolnir`.
-- Generated workflows: `mjolnir.yml`, `npx mjolnir-qa@latest`.
+- **BREAKING: Rebranded from QA Doctor to QA Doctor.** Package name is now
+  `qa-doctor-cli` (bin: `qa-doctor`). Config file: `qa-doctor.config.json`.
+  Data directory: `.qa-doctor/`. Badge: `qa-doctor-badge.json`.
+- Score label: "SCORE" → "TEST HEALTH".
+- Verdicts: "HEALTHY" → "HEALTHY", "CRITICAL" → "CRITICAL".
+- Environment variable: `QA_DOCTOR_ASCII` → `QA_DOCTOR_ASCII`.
+- SARIF tool.driver.name: "QA Doctor".
+- Repository: `github.com/Sergey-Bar/qa-doctor`.
+- CLI: all help text, error messages, usage strings reference `qa-doctor`.
+- Generated workflows: `qa-doctor.yml`, `npx qa-doctor-cli@latest`.
 
 ### Added
 
 - `--format mermaid` — test-architecture diagram (Sprint 9).
 - `--tone blunt` — opt-in blunter messages (Sprint 9).
 - Milestones — first flawless scan / first debt reduction announced once.
-- New MJÖLNIR ASCII art logo (minimal Nordic hammer).
+- New QA DOCTOR ASCII art logo (minimal Nordic score graphic).
 
 ## [0.3.x] — prior releases
 

@@ -39,7 +39,7 @@ const KNOWN_CONFIG_KEYS: ReadonlySet<string> = new Set([
   "plugins",
 ]);
 
-const CONFIG_NAMES = ["mjolnir.config.json", ".mjolnir.json"] as const;
+const CONFIG_NAMES = ["qa-doctor.config.json", ".qa-doctor.json"] as const;
 
 /**
  * Returns the absolute path of the first config file found, or null.
@@ -97,7 +97,7 @@ export function loadConfig(
       // message is always readable; the cast documents that invariant.
       const msg = (err as Error).message;
       throw new ConfigValidationError(
-        `Invalid mjolnir config at ${p}: ${msg}`,
+        `Invalid qa-doctor config at ${p}: ${msg}`,
         {
           cause: err,
         },
@@ -191,7 +191,7 @@ function validate(
   for (const key of Object.keys(cfg)) {
     if (!KNOWN_CONFIG_KEYS.has(key)) {
       warnings.push(
-        `warning: mjolnir.config.json has an unknown top-level key "${key}" — ignored (typo? see README §Configuration).`,
+        `warning: qa-doctor.config.json has an unknown top-level key "${key}" — ignored (typo? see README §Configuration).`,
       );
     }
   }
@@ -228,7 +228,7 @@ export const SUPPRESSION_DEFAULT_DAYS = 90;
  *
  * Audit S4 (remediation plan): the config-file MTIME is no longer an
  * expiry anchor. Anchoring the 90-day default at mtime meant ANY edit to
- * mjolnir.config.json — a reformat, an unrelated key, a `touch` — reset
+ * qa-doctor.config.json — a reformat, an unrelated key, a `touch` — reset
  * the 90-day window for EVERY hand-authored entry: suppressions could be
  * extended indefinitely without touching their own fields. The expiry is
  * now the entry's explicit `expires` date alone; an entry without one

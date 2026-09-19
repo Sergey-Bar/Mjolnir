@@ -1,6 +1,6 @@
 name: SARIF Code Scanning
 
-# Bug-audit B4.28: Mjölnir's own self-scan, published as SARIF into
+# Bug-audit B4.28: QA Doctor's own self-scan, published as SARIF into
 # GitHub Code Scanning. Findings become visible in the Security tab with
 # PR annotations instead of living only in a job log nobody opens.
 # Weekly + on demand: the PR self-scan gate (ci.yml) stays the fast
@@ -30,8 +30,8 @@ jobs:
           cache: npm
       - run: npm ci && npm run build
       - name: Scan this repo (SARIF)
-        run: node dist/cli.mjs . --format sarif > mjolnir.sarif
+        run: node dist/cli.mjs . --format sarif > qa-doctor.sarif
       - name: Upload SARIF to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4
         with:
-          sarif_file: mjolnir.sarif
+          sarif_file: qa-doctor.sarif

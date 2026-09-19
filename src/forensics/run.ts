@@ -1,5 +1,5 @@
 /**
- * `mjolnir forensics <dir-or-file>` — runtime evidence entry point (R4).
+ * `qa-doctor forensics <dir-or-file>` — runtime evidence entry point (R4).
  *
  * Accepts either a single report file or a directory. In a directory it
  * looks for, in priority order:
@@ -26,6 +26,7 @@ import { looksLikeJestJson, parseJestJson } from "./parse-jest-json.js";
 import { parseJunitXml } from "./parse-junit.js";
 import { parsePlaywrightJson } from "./parse-playwright-json.js";
 import { looksLikeVitestJson, parseVitestJson } from "./parse-vitest-json.js";
+import { looksLikeHarJson, parseHarJsonDetailed } from "./parse-har.js";
 import type { ForensicsReport, TestRecord } from "./types.js";
 
 const MAX_FILES = 500;
@@ -37,6 +38,16 @@ export interface ForensicsOptions {
   writeFlakyMd?: boolean;
 }
 
+/**
+ * Run forensics analysis on test result artifacts.
+ *
+ * Parses test result files (Playwright JSON, JUnit XML, HAR, etc.),
+ * analyzes them for flakiness, determinism, and trust signals, and
+ * returns a structured report plus rendered output strings.
+ *
+ * @param target - path to the test result artifact or directory
+ * @param options - writeFlakyMd (default true) controls FLAKY.md output
+ */
 export function runForensics(
   target: string,
   options: ForensicsOptions = {},
@@ -57,7 +68,11 @@ export function runForensics(
     const report = analyze(records, source);
     return {
       report,
-      output: [renderLeaderboard(report), "", renderFlakyMdHint()].join("\n"),
+      output: [
+        renderLeaderboard(report),
+        "",
+        renderFlakyMdNotWritten(options),
+      ].join("\n"),
     };
   }
 
@@ -103,13 +118,8 @@ export function runForensics(
             ].join("\n"),
           };
         }
-        const report = analyze([record], "playwright-trace");
-        return {
-          report,
-          output: [renderLeaderboard(report), "", renderFlakyMdHint()].join(
-            "\n",
-          ),
-        };
+        records.push(record);
+        source = "playwright-trace";
       } catch {
         /* hostile trace → mark partial and return honest empty report */
         const report = analyze([], "playwright-trace");
@@ -125,16 +135,27 @@ export function runForensics(
           ].join("\n"),
         };
       }
-    }
-    try {
-      const text = readFileSync(target, "utf8");
-      const parsed = parseFile(target, text);
-      records.push(...parsed.records);
-      source = parsed.source;
-    } catch {
-      /* unreadable or corrupt — zero records → honest exit 2 upstream */
-      skippedReports = 1;
-      incompleteReasons.push("parse-failure");
+    } else {
+      try {
+        const text = readFileSync(target, "utf8");
+        const parsed = parseFile(target, text);
+        records.push(...parsed.records);
+        source = parsed.source;
+        if (parsed.parseFailed) {
+          skippedReports = 1;
+          incompleteReasons.push("parse-failure");
+        }
+        if (
+          parsed.truncated &&
+          !incompleteReasons.includes("entry-count-limit")
+        ) {
+          incompleteReasons.push("entry-count-limit");
+        }
+      } catch {
+        /* unreadable or corrupt — zero records → honest exit 2 upstream */
+        skippedReports = 1;
+        incompleteReasons.push("parse-failure");
+      }
     }
   } else {
     let count = 0;
@@ -169,15 +190,31 @@ export function runForensics(
           const bytes = readFileSync(full);
           const record = parseTraceArtifact(bytes, traceArtifactName(full));
           if (record === undefined) continue;
-          if (records.length === 0) source = "playwright-trace";
+          if (records.length === 0 || source === "har")
+            source = "playwright-trace";
           records.push(record);
           continue;
         }
         const text = readFileSync(full, "utf8");
         const parsed = parseFile(full, text);
+        if (parsed.parseFailed) {
+          skippedReports++;
+          if (!incompleteReasons.includes("parse-failure")) {
+            incompleteReasons.push("parse-failure");
+          }
+        }
+        if (
+          parsed.truncated &&
+          !incompleteReasons.includes("entry-count-limit")
+        ) {
+          incompleteReasons.push("entry-count-limit");
+        }
         if (parsed.records.length === 0) continue;
-        // First recognized file decides the source label.
-        if (records.length === 0) source = parsed.source;
+        if (
+          records.length === 0 ||
+          (source === "har" && parsed.source !== "har")
+        )
+          source = parsed.source;
         records.push(...parsed.records);
       } catch {
         /* unreadable — skip */
@@ -206,10 +243,12 @@ export function runForensics(
   }
 
   const report = analyze(records, source);
-  if (skippedReports > 0) {
+  if (skippedReports > 0 || incompleteReasons.length > 0) {
     report.analysisComplete = false;
     report.skippedReports = skippedReports;
-    report.incompleteReasons = incompleteReasons;
+    report.incompleteReasons = [
+      ...new Set([...report.incompleteReasons, ...incompleteReasons]),
+    ];
   }
 
   let flakyMdPath: string | undefined;
@@ -232,7 +271,11 @@ export function runForensics(
     "",
     flakyMdPath !== undefined
       ? renderFlakyMdHint()
-      : renderFlakyMdNotWritten(options),
+      : report.totalTests === 0 &&
+          (report.totalNetworkObservations ?? 0) > 0 &&
+          options.writeFlakyMd !== false
+        ? "FLAKY.md was not written — network observations do not establish test outcomes."
+        : renderFlakyMdNotWritten(options),
   ].join("\n");
 
   return { report, output, flakyMdPath };
@@ -268,7 +311,12 @@ function traceArtifactName(fullPath: string): string {
 function parseFile(
   path: string,
   text: string,
-): { records: TestRecord[]; source: ForensicsReport["source"] } {
+): {
+  records: TestRecord[];
+  source: ForensicsReport["source"];
+  parseFailed?: boolean;
+  truncated?: boolean;
+} {
   if (
     /\.xml$/i.test(path) ||
     /^\s*<\?xml|<testsuite\b/i.test(text.slice(0, 200))
@@ -276,16 +324,47 @@ function parseFile(
     return { records: parseJunitXml(text), source: "junit-xml" };
   }
   let json: unknown;
+  const isHarFile = /\.har$/i.test(path);
   try {
     json = JSON.parse(text);
   } catch {
-    return { records: [], source: "playwright-json" };
+    return {
+      records: [],
+      source: isHarFile ? "har" : "playwright-json",
+      parseFailed: true,
+    };
   }
   // P4 (plan 1788853205786): Jest/Vitest JSON reports. Discovery order
   // matters — Jest and Vitest share the top-level `testResults` key —
   // so the sniffers run BEFORE the Playwright parser would otherwise
   // misread them (Playwright's walk finds no suites and returns zero
   // records, silently dropping the report).
+  // WAVE 5 (GAP-RUNTIME-004): HAR network evidence rides the JSON path —
+  // its shape ({log:{entries}}) cannot collide with the test-result
+  // shapes (testResults/suites), so the discriminator order is stable.
+  if (looksLikeHarJson(json)) {
+    const parsed = parseHarJsonDetailed(json);
+    return {
+      records: parsed.records,
+      source: "har",
+      truncated: parsed.truncated,
+    };
+  }
+  if (
+    isHarFile ||
+    (json !== null &&
+      typeof json === "object" &&
+      ["suites", "specs", "testResults"].some(
+        (key) =>
+          key in json && !Array.isArray((json as Record<string, unknown>)[key]),
+      ))
+  ) {
+    return {
+      records: [],
+      source: isHarFile ? "har" : "playwright-json",
+      parseFailed: true,
+    };
+  }
   if (looksLikeJestJson(json)) {
     return { records: parseJestJson(json), source: "jest-json" };
   }
@@ -317,7 +396,7 @@ function listFiles(dir: string): string[] {
         walk(full, depth + 1);
       } else if (
         e.isFile() &&
-        /\.(?:json|xml|zip|trace|ndjson)$/i.test(e.name)
+        /\.(?:json|xml|zip|trace|ndjson|har)$/i.test(e.name)
       ) {
         out.push(full);
       }

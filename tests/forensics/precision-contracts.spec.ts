@@ -2,11 +2,19 @@
  * Phase 2 — precision & output contracts: Selector Health exact score
  * vectors, hand-computed forensics math, terminal-footer/JSON deduction
  * consistency, Mermaid well-formedness, and the three-verdict-band proof
- * (WORTHY / NEEDS WORK / UNWORTHY each reached for its documented reason).
+ * (HEALTHY / NEEDS ATTENTION / CRITICAL each reached for its documented reason).
  */
 
 import { describe, expect, it } from "vitest";
 import { join } from "node:path";
+import {
+  cpSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
 
 import {
   computeSpecHealth,
@@ -257,7 +265,7 @@ describe("mermaid output is structurally well-formed", () => {
 });
 
 describe("three verdict bands are reachable for their documented reasons", () => {
-  it("self-scan is WORTHY (>= 80)", { timeout: 120_000 }, async () => {
+  it("self-scan is HEALTHY (>= 80)", { timeout: 120_000 }, async () => {
     const scan = await runScan({
       target: REPO_ROOT,
       json: false,
@@ -269,10 +277,10 @@ describe("three verdict bands are reachable for their documented reasons", () =>
     });
     expect(scan.score).not.toBeNull();
     expect(scan.score as number).toBeGreaterThanOrEqual(80);
-    expect(verdictFor(scan.score as number)).toBe("WORTHY");
+    expect(verdictFor(scan.score as number)).toBe("HEALTHY");
   });
 
-  it("demo repo is NEEDS WORK (50-79)", { timeout: 60_000 }, async () => {
+  it("demo repo is HEALTHY (80)", { timeout: 60_000 }, async () => {
     const scan = await runScan({
       target: join(REPO_ROOT, "examples", "demo-repo"),
       json: false,
@@ -282,15 +290,50 @@ describe("three verdict bands are reachable for their documented reasons", () =>
       format: "terminal",
       strict: true,
     });
-    expect(scan.score).not.toBeNull();
-    const score = scan.score as number;
-    expect(score).toBeGreaterThanOrEqual(50);
-    expect(score).toBeLessThanOrEqual(79);
-    expect(verdictFor(score)).toBe("NEEDS WORK");
+    expect(scan.score).toBe(80);
+    expect(verdictFor(scan.score as number)).toBe("HEALTHY");
+  });
+
+  it("demo with a hard wait is NEEDS ATTENTION (50-79)", async () => {
+    const target = mkdtempSync(join(tmpdir(), "qa-doctor-needs-work-"));
+    try {
+      cpSync(join(REPO_ROOT, "examples", "demo-repo"), target, {
+        recursive: true,
+      });
+      const checkout = join(target, "e2e", "checkout.spec.ts");
+      const source = readFileSync(checkout, "utf8");
+      const wait =
+        'await page.getByText("Order confirmed").waitFor({ timeout: 5000 });';
+      expect(source).toContain(wait);
+      writeFileSync(
+        checkout,
+        source.replace(wait, "await page.waitForTimeout(3000);"),
+      );
+      const scan = await runScan({
+        target,
+        json: false,
+        verbose: false,
+        maxDurationMs: Number.POSITIVE_INFINITY,
+        scopeChanged: false,
+        format: "terminal",
+        strict: true,
+      });
+      expect(scan.partial).toBe(false);
+      expect(scan.score).not.toBeNull();
+      const score = scan.score as number;
+      expect(score).toBeGreaterThanOrEqual(50);
+      expect(score).toBeLessThanOrEqual(79);
+      expect(verdictFor(score)).toBe("NEEDS ATTENTION");
+      expect(
+        scan.findings.some((finding) => finding.ruleId === "QA-PW-101"),
+      ).toBe(true);
+    } finally {
+      rmSync(target, { recursive: true, force: true });
+    }
   });
 
   it(
-    "golden repo is UNWORTHY by the categorical suite-invalidating fact",
+    "golden repo is CRITICAL by the categorical suite-invalidating fact",
     { timeout: 60_000 },
     async () => {
       const scan = await runScan({
@@ -305,7 +348,7 @@ describe("three verdict bands are reachable for their documented reasons", () =>
       expect(scan.score).not.toBeNull();
       const score = scan.score as number;
       expect(score).toBeLessThanOrEqual(49);
-      expect(verdictFor(score)).toBe("UNWORTHY");
+      expect(verdictFor(score)).toBe("CRITICAL");
       // The stated reason: a suite-invalidating finding (committed .only).
       expect(scan.findings.some((f) => f.ruleId === "QA-TEST-001")).toBe(true);
     },

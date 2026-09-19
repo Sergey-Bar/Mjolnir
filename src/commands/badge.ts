@@ -1,5 +1,5 @@
 /**
- * `mjolnir badge` — evidentiary shields.io endpoint JSON (Tier 1 #5).
+ * `qa-doctor badge` — evidentiary shields.io endpoint JSON (Tier 1 #5).
  *
  * Static JSON, no server. The badge makes falsifiable claims:
  * score + date + commit. Anyone can click through and verify.
@@ -14,7 +14,7 @@ import type { ScanResult } from "../types.js";
 import { deriveScoreState } from "../reporter/score-state.js";
 
 export interface BadgeOptions {
-  /** Where to write mjolnir-badge.json. */
+  /** Where to write qa-doctor-badge.json. */
   outDir: string;
   /**
    * Audit (badge): HEAD commit of the scanned repo ("unknown" outside a
@@ -40,14 +40,14 @@ export interface BadgeJson {
 
 /**
  * Badge colors follow the SAME ScoreState bands as the terminal
- * (≥80 trusted / ≥50 warning / <50 critical / 100 forged) — this
+ * (≥80 trusted / ≥50 warning / <50 critical / 100 excellent) — this
  * retarget fixes the historical threshold drift (the badge used
  * ≥90/≥75/≥50 with four bands while the reporter used ≥80/≥50).
  *
  * They are brand values now, from `BADGE_BAND`, not shields.io's named
  * colors. That mapping was documented as "trusted → `important`
  * (blue-family, closest to aurora-cyan)" and was simply untrue:
- * `important` resolves to #ea7233, which is orange. Every WORTHY badge
+ * `important` resolves to #ea7233, which is orange. Every HEALTHY badge
  * rendered the trusted band in a warning colour, and `success` — the
  * 100 state — rendered green, which is not a score colour here.
  *
@@ -67,11 +67,11 @@ export function buildBadge(result: ScanResult, commit?: string): BadgeJson {
     score === null
       ? "no tests found"
       : score === 100 && errors === 0
-        ? "100/100 · forged"
+        ? "100/100 · excellent"
         : `${score}/100 · ${errors} error${errors === 1 ? "" : "s"}`;
   return {
     schemaVersion: 1,
-    label: "MJÖLNIR",
+    label: "QA DOCTOR",
     message,
     color: colorFor(score),
     ...(commit !== undefined ? { commit } : {}),
@@ -84,7 +84,7 @@ export function buildBadge(result: ScanResult, commit?: string): BadgeJson {
  */
 export function renderBadgeSnippet(
   result: ScanResult,
-  repoUrl = "https://github.com/Sergey-Bar/Mjolnir",
+  repoUrl = "https://github.com/Sergey-Bar/qa-doctor",
 ): string {
   let commit = "unknown";
   try {
@@ -102,10 +102,10 @@ export function renderBadgeSnippet(
   const errors = result.findings.filter((f) => f.severity === "error").length;
   const lines = [
     "```markdown",
-    "[![MJÖLNIR](https://img.shields.io/endpoint?url=<your-badge-json-url>)](" +
+    "[![QA DOCTOR](https://img.shields.io/endpoint?url=<your-badge-json-url>)](" +
       repoUrl +
       ")",
-    "<!-- Mjölnir verified at commit " +
+    "<!-- QA Doctor verified at commit " +
       commit +
       " on " +
       date +
@@ -120,7 +120,7 @@ export function renderBadgeSnippet(
 }
 
 export function writeBadge(result: ScanResult, options: BadgeOptions): string {
-  const path = join(options.outDir, "mjolnir-badge.json");
+  const path = join(options.outDir, "qa-doctor-badge.json");
   writeFileAtomic(
     path,
     JSON.stringify(buildBadge(result, options.commit), null, 2),

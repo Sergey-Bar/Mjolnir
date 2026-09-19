@@ -7,9 +7,9 @@
 16. **`--roast` mode** — humorous severity commentary (opt-in). Community
     tools with personality get shared. (React Doctor's roast bot was
     publicly praised by CTOs.)
-17. **ASCII art milestones** — first clean scan: a small trophy. Silly,
+17. **ASCII art milestones** — first clean scan: a compact all-clear mark. Silly,
     screenshot-able, free virality.
-18. **`mjolnir stats`** — personal/global fun counters: "you've removed
+18. **`qa-doctor stats`** — personal/global fun counters: "you've removed
     47 hard sleeps all-time".
 19. **Terminal UX polish** — interactive finding navigation (j/k), inline
     diff preview on hover-style reveal.

@@ -1,10 +1,10 @@
 /**
- * Shared example-fixture selection for `mjolnir explain` (explain.ts)
+ * Shared example-fixture selection for `qa-doctor explain` (explain.ts)
  * and the generated rule docs (rule-docs.ts) — one chooser so both
  * surfaces always show the same example for the same rule. Extracted
  * after the same bug-audit L9 fix had to be applied to both verbatim
  * copies: duplicated fixture selection drifts, and a drift means
- * `mjolnir explain <ID>` contradicts docs/rules/<ID>.md.
+ * `qa-doctor explain <ID>` contradicts docs/rules/<ID>.md.
  */
 
 import { existsSync, readdirSync } from "node:fs";

@@ -9,7 +9,7 @@ JSON (`--json --outputFile`), Vitest JSON (`--reporter=json`) and JUnit
 XML from any runner.
 
 ```bash
-mjolnir forensics ./test-results/
+qa-doctor forensics ./test-results/
 ```
 
 <ForensicsSample which="forensics" />
@@ -17,7 +17,7 @@ mjolnir forensics ./test-results/
 ## The TRUE-FLAKE verdict
 
 A test that passes only on attempt ≥ 2 is not a passing test — it's a
-lucky test. Mjölnir flags it `TRUE-FLAKE` regardless of the final green
+lucky test. QA Doctor flags it `TRUE-FLAKE` regardless of the final green
 checkmark the runner reported.
 
 This is the difference between the two halves of the tool:
@@ -29,11 +29,11 @@ This is the difference between the two halves of the tool:
 
 ## Commands
 
-| Command                             | What it does                                        |
-| ----------------------------------- | --------------------------------------------------- |
-| `mjolnir forensics ./test-results/` | Flakiness leaderboard + writes `FLAKY.md`           |
-| `mjolnir triage ./test-results/`    | Quarantine proposal from execution history          |
-| `mjolnir pw-report ./test-results/` | Playwright run summary — retries / flakes / slowest |
+| Command                               | What it does                                        |
+| ------------------------------------- | --------------------------------------------------- |
+| `qa-doctor forensics ./test-results/` | Flakiness leaderboard + writes `FLAKY.md`           |
+| `qa-doctor triage ./test-results/`    | Quarantine proposal from execution history          |
+| `qa-doctor pw-report ./test-results/` | Playwright run summary — retries / flakes / slowest |
 
 All three accept a directory or a single report file. They read
 Playwright's JSON reporter output, Jest's and Vitest's JSON reports, and
@@ -58,7 +58,7 @@ artifacts after the test step — including when it failed:
 
 - name: Flakiness forensics
   if: always()
-  run: npx mjolnir-qa@latest forensics ./test-results/
+  run: npx qa-doctor-cli@latest forensics ./test-results/
 ```
 
 `if: always()` matters: the runs worth analysing are exactly the ones
@@ -70,7 +70,7 @@ The headline static metric for Playwright suites — how resilient your
 locators are to a DOM refactor:
 
 ```bash
-mjolnir doctor:playwright
+qa-doctor doctor:playwright
 ```
 
 <ForensicsSample which="selector-health" />

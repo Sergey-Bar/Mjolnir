@@ -52,7 +52,7 @@ export interface MutationFixture {
 export interface FalseGreenCase {
   id: string;
   className: FalseGreenClass;
-  /** The Mjölnir surface under attack (e.g. "forensics/parse-jest-json"). */
+  /** The QA Doctor surface under attack (e.g. "forensics/parse-jest-json"). */
   surface: string;
   /** INPUT — the hostile input, concretely. */
   input: string;

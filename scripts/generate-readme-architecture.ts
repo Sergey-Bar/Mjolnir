@@ -1,7 +1,7 @@
 /**
  * README / docs architecture asset (assets/readme/architecture.svg).
  *
- * The "how it works" picture, 1600×900: what Mjölnir reads, what it does
+ * The "how it works" picture, 1600×900: what QA Doctor reads, what it does
  * with it, and what can actually be trusted. The README's "see it work"
  * section carries the demo recording of one real run instead.
  *
@@ -72,8 +72,8 @@ const ROOT = join(fileURLToPath(new URL(".", import.meta.url)), "..");
 const OUT = join(ROOT, "assets", "readme", "architecture.svg");
 const SANS_TTF = join(ROOT, "assets", "readme", "fonts", "Geist-SemiBold.ttf");
 
-const SANS = "MjolnirSans";
-const MONO = "MjolnirMono";
+const SANS = "QaDoctorSans";
+const MONO = "QaDoctorMono";
 const ADV = 0.6; // Geist Mono advance ratio
 
 const W = 1600;
@@ -230,7 +230,7 @@ function chain(
 
 function fontFaceCss(): string {
   const mono = FONTS.find(
-    (f) => f.family === "MjolnirMono" && f.weight === 400,
+    (f) => f.family === "QaDoctorMono" && f.weight === 400,
   );
   if (!mono) throw new Error("Geist Mono Regular is no longer vendored");
   const face = (fam: string, p: string): string =>
@@ -265,7 +265,7 @@ export function buildArchitectureSvg(): string {
     }),
   );
   g.push(
-    text(IN_X, 110, "Mjölnir tells you what you can trust.", { size: 31 }),
+    text(IN_X, 110, "QA Doctor tells you what you can trust.", { size: 31 }),
   );
   g.push(
     text(RIGHT, 72, "NO EVIDENCE.  NO PROOF.", {
@@ -302,7 +302,7 @@ export function buildArchitectureSvg(): string {
     ["run", "var(--muted)"],
     ["artifacts", "var(--muted)"],
     ["evidence", "var(--muted)"],
-    ["MJÖLNIR", "var(--accent)"],
+    ["QA DOCTOR", "var(--accent)"],
     ["trust", "var(--text)"],
   ]);
   g.push(withM.svg);
@@ -398,7 +398,7 @@ export function buildArchitectureSvg(): string {
   );
   g.push(`  </g>`);
 
-  /* ═══════════ mjolnir core ═══════════ */
+  /* ═══════════ qa-doctor core ═══════════ */
   const CX = ENG_X + ENG_W / 2;
   const PL = ENG_X + 28; // left gutter
   const PR = ENG_X + 330; // right column
@@ -417,7 +417,7 @@ export function buildArchitectureSvg(): string {
   const Y_TL_TICK = 626;
   const Y_TL_NOTE = 655;
 
-  g.push(`  <g id="mjolnir-core">`);
+  g.push(`  <g id="qa-doctor-core">`);
   g.push(
     rect(ENG_X, MAIN_TOP, ENG_W, MAIN_BOTTOM - MAIN_TOP, {
       r: 18,
@@ -427,7 +427,7 @@ export function buildArchitectureSvg(): string {
     }),
   );
   g.push(
-    text(CX, Y_NAME, "MJÖLNIR", { size: 38, anchor: "middle", spacing: 4 }),
+    text(CX, Y_NAME, "QA DOCTOR", { size: 38, anchor: "middle", spacing: 4 }),
   );
   g.push(
     text(CX, Y_SUB, "VERIFICATION TRUST ENGINE", {
@@ -613,10 +613,10 @@ export function buildArchitectureSvg(): string {
     ),
   );
 
-  /* worthiness — explicitly an example */
+  /* test health — explicitly an example */
   const WY = 365;
   g.push(rect(OUT_X, WY, OUT_W, 135, { r: 12, stroke: "var(--edge)" }));
-  g.push(eyebrow(OUT_X + 18, WY + 26, "WORTHINESS SCORE"));
+  g.push(eyebrow(OUT_X + 18, WY + 26, "TEST HEALTH SCORE"));
   g.push(
     text(OUT_X + OUT_W - 18, WY + 26, "EXAMPLE RESULT", {
       size: 8.5,
@@ -627,7 +627,7 @@ export function buildArchitectureSvg(): string {
   );
   g.push(text(OUT_X + 18, WY + 92, String(score), { size: 52, spacing: -1 }));
   g.push(
-    text(OUT_X + 100, WY + 72, "NEEDS WORK", {
+    text(OUT_X + 100, WY + 72, "NEEDS ATTENTION", {
       size: 11,
       fill: "var(--warning)",
       spacing: 2,
@@ -708,9 +708,14 @@ export function buildArchitectureSvg(): string {
   );
   g.push(eyebrow(IN_X, LOOP_RULE + 34, "AGENT LOOP"));
   g.push(
-    text(IN_X, LOOP_RULE + 62, "AI writes the fix. Mjölnir verifies the fix.", {
-      size: 15,
-    }),
+    text(
+      IN_X,
+      LOOP_RULE + 62,
+      "AI writes the fix. QA Doctor verifies the fix.",
+      {
+        size: 15,
+      },
+    ),
   );
   g.push(
     text(
@@ -753,9 +758,9 @@ export function buildArchitectureSvg(): string {
       );
     lx += LW + LG;
   });
-  /* PROOF returns to the engine — the loop closes on Mjölnir, not on the
+  /* PROOF returns to the engine — the loop closes on QA Doctor, not on the
    * agent. The path runs below the loop row, then rises into the bottom
-   * edge of the Mjölnir panel, so the arrowhead lands on the hero rather
+   * edge of the QA Doctor panel, so the arrowhead lands on the hero rather
    * than in empty space. */
   const px = RIGHT - LW / 2;
   const backY = loopY + 54;
@@ -763,7 +768,7 @@ export function buildArchitectureSvg(): string {
     `    <path d="M ${n(px)} ${n(loopY + 32)} L ${n(px)} ${n(backY)} L ${n(CX)} ${n(backY)} L ${n(CX)} ${n(MAIN_BOTTOM + 5)}" fill="none" stroke="var(--accent-dim)" stroke-width="1.2" stroke-dasharray="3 4" marker-end="url(#arrow-accent)"/>`,
   );
   g.push(
-    text(CX + 12, backY - 7, "re-verified by Mjölnir", {
+    text(CX + 12, backY - 7, "re-verified by QA Doctor", {
       size: 9.5,
       fill: "var(--quiet)",
     }),
@@ -772,7 +777,7 @@ export function buildArchitectureSvg(): string {
 
   /* ═══════════ boundaries + self-verification ═══════════ */
   g.push(`  <g id="boundaries">`);
-  g.push(eyebrow(IN_X, FOOT_Y, "MJÖLNIR", "var(--muted)"));
+  g.push(eyebrow(IN_X, FOOT_Y, "QA DOCTOR", "var(--muted)"));
   g.push(
     text(
       IN_X + 92,
@@ -802,7 +807,7 @@ export function buildArchitectureSvg(): string {
 
   g.push(`  <g id="self-verification">`);
   g.push(
-    text(RIGHT, FOOT_Y, "Mjölnir scans Mjölnir in its own CI.", {
+    text(RIGHT, FOOT_Y, "QA Doctor scans QA Doctor in its own CI.", {
       size: 11.5,
       fill: "var(--muted)",
       anchor: "end",
@@ -824,8 +829,8 @@ export function buildArchitectureSvg(): string {
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-labelledby="archTitle archDesc">
-  <title id="archTitle">Mjölnir — Verification Trust Engine: how it works</title>
-  <desc id="archDesc">Without Mjölnir a pipeline goes tests, pass, looks green. With Mjölnir it goes tests, run, artifacts, evidence, Mjölnir, trust. Mjölnir reads three signals: the test suite and the CI pipeline statically, and the artifacts of a run that already finished — Playwright JSON and JUnit XML — which are the only real run evidence it ingests. It discovers, analyzes, correlates, weighs evidence and measures, across four evidence streams: test quality, CI integrity, runtime forensics and selector health. Every finding is stamped E0 observation, E1 pattern evidence, or E2 deterministic proof, weighted none, half and full; evidence level is earned, not assumed. A trust ladder from L0 to L5 shows the top three rungs require a real run, so static analysis can never claim them. Mjölnir never runs your tests, executes your code, replaces your framework, or proves business correctness. Out come findings such as ${rule}, Test command does not propagate exit code, at evidence level E2; an example worthiness score from examples/demo-repo of ${score} out of 100 labelled NEEDS WORK, from ${findingCount} findings and ${errorCount} errors; and a CI gate mapping the frozen exit codes to a trust decision: 0 clean is pass, 1 findings at or above the gate is block, 2 partial scan is investigate, 10 usage error, 20 internal error. That is verification trust, not business correctness. An agent loop runs scan, evidence, handoff, AI agent, re-scan, proof, and the proof returns to Mjölnir for re-verification: AI writes the fix, Mjölnir verifies the fix.</desc>
+  <title id="archTitle">QA Doctor — Verification Trust Engine: how it works</title>
+  <desc id="archDesc">Without QA Doctor a pipeline goes tests, pass, looks green. With QA Doctor it goes tests, run, artifacts, evidence, QA Doctor, trust. QA Doctor reads three signals: the test suite and the CI pipeline statically, and the artifacts of a run that already finished — Playwright JSON and JUnit XML — which are the only real run evidence it ingests. It discovers, analyzes, correlates, weighs evidence and measures, across four evidence streams: test quality, CI integrity, runtime forensics and selector health. Every finding is stamped E0 observation, E1 pattern evidence, or E2 deterministic proof, weighted none, half and full; evidence level is earned, not assumed. A trust ladder from L0 to L5 shows the top three rungs require a real run, so static analysis can never claim them. QA Doctor never runs your tests, executes your code, replaces your framework, or proves business correctness. Out come findings such as ${rule}, Test command does not propagate exit code, at evidence level E2; an example test health score from examples/demo-repo of ${score} out of 100 labelled NEEDS ATTENTION, from ${findingCount} findings and ${errorCount} errors; and a CI gate mapping the frozen exit codes to a trust decision: 0 clean is pass, 1 findings at or above the gate is block, 2 partial scan is investigate, 10 usage error, 20 internal error. That is verification trust, not business correctness. An agent loop runs scan, evidence, handoff, AI agent, re-scan, proof, and the proof returns to QA Doctor for re-verification: AI writes the fix, QA Doctor verifies the fix.</desc>
   <defs>
     <marker id="arrow" markerWidth="8" markerHeight="8" refX="7.5" refY="4" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
       <path d="M0,0.5 L7.5,4 L0,7.5 Z" fill="var(--edge-lit)"/>

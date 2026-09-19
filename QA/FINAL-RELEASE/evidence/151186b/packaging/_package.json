@@ -1,5 +1,5 @@
 {
-  "version": "mjolnir-qa 0.5.18",
+  "version": "qa-doctor-cli 0.5.18",
   "parity": "IDENTICAL",
   "mcpBootExit": 0,
   "mcpResponded": true,

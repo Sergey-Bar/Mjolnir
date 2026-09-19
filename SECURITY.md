@@ -1,6 +1,6 @@
 # Security Policy
 
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Sergey-Bar/Mjolnir/badge)](https://scorecard.dev/viewer/?uri=github.com/Sergey-Bar/Mjolnir)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Sergey-Bar/qa-doctor/badge)](https://scorecard.dev/viewer/?uri=github.com/Sergey-Bar/qa-doctor)
 
 ## Supported Versions
 
@@ -13,7 +13,7 @@
 **Do NOT open a public issue for security vulnerabilities.**
 
 Use GitHub's private vulnerability reporting:
-https://github.com/Sergey-Bar/Mjolnir/security/advisories/new
+https://github.com/Sergey-Bar/qa-doctor/security/advisories/new
 
 We commit to:
 
@@ -23,7 +23,7 @@ We commit to:
 
 ## Scope
 
-Mjölnir parses untrusted repository content. Areas of special interest:
+QA Doctor parses untrusted repository content. Areas of special interest:
 
 - Path traversal via crafted filenames or symlinks
 - YAML bombs / alias expansion in workflow parsing
@@ -33,7 +33,7 @@ Mjölnir parses untrusted repository content. Areas of special interest:
 ## Trust model (audit-remediation close-out)
 
 **Everything a scan reads is untrusted.** The scanned tree is DATA: it
-must never execute, and it must never influence which code Mjölnir
+must never execute, and it must never influence which code QA Doctor
 itself runs. Concrete guarantees:
 
 - **No code execution from scanned content.** Workflow YAML, test
@@ -41,14 +41,14 @@ itself runs. Concrete guarantees:
   target are parsed and pattern-matched only.
 - **Plugin gate.** npm plugins and JS-module external rules execute only
   behind the explicit trust gate: `--enable-plugins` or
-  `MJOLNIR_ENABLE_PLUGINS=1` (default OFF). Declared-but-gated sources
+  `QA_DOCTOR_ENABLE_PLUGINS=1` (default OFF). Declared-but-gated sources
   are listed on stderr; they are never imported.
-- **Git resolved from PATH only.** Mjölnir's git invocations use an
+- **Git resolved from PATH only.** QA Doctor's git invocations use an
   absolute binary path resolved from PATH (never the scanned CWD), so a
   planted `git.exe`/`git.bat` cannot hijack the tool.
 - **Bounded regex.** Ignore patterns and external JSON-rule regexes are
   length/wildcard-capped at compile time; the sync matchers stay
   interruptible-safe by construction.
-- **Config anchored at the scan target.** `mjolnir.config.json`,
-  `.mjolnirignore`, and `mjolnir-rules/` are read from the explicit scan
+- **Config anchored at the scan target.** `qa-doctor.config.json`,
+  `.qa-doctorignore`, and `qa-doctor-rules/` are read from the explicit scan
   target's project — never from an unrelated ancestor of the CWD.

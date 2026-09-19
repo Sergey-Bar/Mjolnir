@@ -41,7 +41,7 @@ function scan(overrides: Partial<ScanResult>): ScanResult {
 describe("explain verdict — uncovered 0.6.x arms (P8 completion)", () => {
   let dir = "";
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), "mjolnir-p8-explain-"));
+    dir = mkdtempSync(join(tmpdir(), "qa-doctor-p8-explain-"));
   });
   afterEach(() => rmSync(dir, { recursive: true, force: true }));
 

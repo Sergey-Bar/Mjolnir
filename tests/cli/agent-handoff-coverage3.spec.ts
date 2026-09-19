@@ -27,7 +27,7 @@ import type { Output } from "../../src/cli.js";
 
 let dir: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-cov3-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-cov3-"));
 });
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
@@ -148,7 +148,7 @@ function scanResult(findings: Finding[]): ScanResult {
 describe("install hook update with drifted managed block (441 arms)", () => {
   let repo: string;
   beforeEach(() => {
-    repo = mkdtempSync(join(tmpdir(), "mjolnir-cov3-repo-"));
+    repo = mkdtempSync(join(tmpdir(), "qa-doctor-cov3-repo-"));
     execFileSync("git", ["-C", repo, "init"], { stdio: "ignore" });
   });
   afterEach(() => {
@@ -162,7 +162,7 @@ describe("install hook update with drifted managed block (441 arms)", () => {
     writeFileSync(
       hookPath,
       readFileSync(hookPath, "utf8").replace(
-        "# /mjolnir:managed pre-commit",
+        "# /qa-doctor:managed pre-commit",
         "",
       ),
     );
@@ -178,7 +178,7 @@ describe("install hook update with drifted managed block (441 arms)", () => {
     writeFileSync(
       hookPath,
       readFileSync(hookPath, "utf8")
-        .replace("# /mjolnir:managed pre-commit", "")
+        .replace("# /qa-doctor:managed pre-commit", "")
         .trimEnd(),
     );
     const second = planHookInstall(repo);
@@ -188,4 +188,4 @@ describe("install hook update with drifted managed block (441 arms)", () => {
   });
 });
 
-const HOOK_CLOSE = "# /mjolnir:managed pre-commit";
+const HOOK_CLOSE = "# /qa-doctor:managed pre-commit";

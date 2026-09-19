@@ -9,38 +9,24 @@ import {
 } from "vue";
 import { withBase } from "vitepress";
 import { TRUST_RUNGS } from "../../../src/brand/symbols";
-import AuroraSky from "./AuroraSky.vue";
-import CopyKey from "./CopyKey.vue";
+import DiagnosticGrid from "./DiagnosticGrid.vue";
 import StreamTerm from "./StreamTerm.vue";
 import Term from "./Term.vue";
 import { LOGOS } from "./logos";
 import { data } from "./home.data";
 import { MONOGRAM } from "./stack";
 
-const COMMAND = "npx mjolnir-qa@latest";
-const CI_COMMAND = `${COMMAND} --scope changed`;
-const MCP_COMMAND = "claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp";
-const ACTION = [
-  "- uses: Sergey-Bar/Mjolnir@v1",
-  "  with:",
-  "    scope: changed",
-  "    fail-on: error",
-].join("\n");
-
 const TITLE = [
   "Tests tell you what passed.",
-  "Mjölnir tells you what you can trust.",
+  "QA Doctor tells you what you can trust.",
 ].map((l) => l.split(" "));
 const OFF = [0, TITLE[0].length];
+const booted = ref(false);
 
 /** Tools Simple Icons has no mark for get their initials, never a fake logo. */
 const monogram = (name: string) => MONOGRAM[name] ?? name.slice(0, 2);
 
-/** One strip, group labels inline, so the marquee keeps the grouping. */
-const STACK = data.stack.flatMap((g) => [
-  { key: `g-${g.label}`, label: g.label, name: "" },
-  ...g.items.map((name) => ({ key: `i-${g.label}-${name}`, label: "", name })),
-]);
+const STACK_GROUPS = data.stack;
 
 const CHAPTERS = [
   {
@@ -55,7 +41,7 @@ const CHAPTERS = [
   },
   {
     id: "ch-score",
-    title: "Worthiness score",
+    title: "Test Health score",
     body: "One number, with the arithmetic shown.",
   },
   {
@@ -81,12 +67,8 @@ const CHAPTERS = [
 ];
 const num = (i: number) => String(i + 1).padStart(2, "0");
 
-/** The page walks the aurora top to bottom: green, then cyan, then violet. */
-const STOPS = [
-  "var(--mj-aurora-green)",
-  "var(--mj-aurora-cyan)",
-  "var(--mj-aurora-violet)",
-];
+/** Sections move from risk, through review, to a healthy test suite. */
+const STOPS = ["var(--qa-info)", "var(--qa-steel)", "var(--qa-healthy)"];
 function chColor(i: number) {
   const t = i / (CHAPTERS.length - 1);
   const [from, to, local] =
@@ -107,9 +89,9 @@ const chapter = (id: string) => {
 const SCAN = data.scan;
 const N = SCAN.lines.length;
 const SEV_COLOR: Record<string, string> = {
-  error: "var(--mj-unworthy)",
-  warning: "var(--mj-needswork)",
-  info: "var(--mj-info)",
+  error: "var(--qa-critical)",
+  warning: "var(--qa-attention)",
+  info: "var(--qa-info)",
 };
 function yaml(src: string): { t: string; k?: boolean }[] {
   const m = /^(\s*)(- )?([\w.-]+)(:)(.*)$/.exec(src);
@@ -197,14 +179,10 @@ const release = () => {
 
 /* ---- 03: the score ---- */
 const s = data.score;
-const span = (b: { min: number; max: number }) =>
-  `${((b.max - b.min + 1) / (s.outOf + 1)) * 100}%`;
-const marker = `${((s.demo.score + 0.5) / (s.outOf + 1)) * 100}%`;
+const marker = `${(s.demo.score / s.outOf) * 100}%`;
 const demoTone =
   s.bands.find((b) => s.demo.score >= b.min && s.demo.score <= b.max)?.tone ??
   "warning";
-const odoArmed = ref(false);
-const odoRolled = ref(false);
 
 /* ---- 04: trust ---- */
 const PLAIN: Record<string, { name: string; body: string }> = {
@@ -275,8 +253,6 @@ const viewEl = ref<HTMLElement>();
 const innerEl = ref<HTMLElement>();
 const beamEl = ref<HTMLElement>();
 const anatEl = ref<HTMLElement>();
-const scoreEl = ref<HTMLElement>();
-const glOn = ref(false);
 const counts = reactive<Record<string, number>>({});
 const shown = (k: string, v: number) => counts[k] ?? v;
 const cleanups: (() => void)[] = [];
@@ -303,7 +279,6 @@ function onReveal(el: HTMLElement) {
   el.setAttribute("data-in", "");
   for (const c of el.querySelectorAll<HTMLElement>("[data-ck]"))
     countUp(c.dataset.ck ?? "", Number(c.dataset.to));
-  if (scoreEl.value && el.contains(scoreEl.value)) odoRolled.value = true;
 }
 
 /** Spotlight: every card in the grid tracks the pointer, not just the hovered one. */
@@ -380,6 +355,12 @@ onMounted(async () => {
   const el = root.value;
   if (!el) return;
   motion = !matchMedia("(prefers-reduced-motion: reduce)").matches;
+  window.setTimeout(
+    () => {
+      booted.value = true;
+    },
+    motion ? 1050 : 0,
+  );
 
   let tick = 0;
   const paint = () => {
@@ -400,7 +381,6 @@ onMounted(async () => {
     for (const c of el.querySelectorAll<HTMLElement>("[data-ck]"))
       if (Number.isInteger(Number(c.dataset.to)))
         counts[c.dataset.ck ?? ""] = 0;
-    odoArmed.value = true;
   }
   if (!motion || !("IntersectionObserver" in window)) {
     targets.forEach(onReveal);
@@ -472,15 +452,31 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <main ref="root" class="mj">
+  <main ref="root" class="qa">
+    <Transition name="boot">
+      <div v-if="!booted" class="boot-screen" aria-hidden="true">
+        <div class="boot-sequence">
+          <span class="boot-corner tl" /><span class="boot-corner tr" />
+          <span class="boot-corner bl" /><span class="boot-corner br" />
+          <svg class="boot-mark" viewBox="0 0 64 64" fill="none">
+            <path
+              class="boot-ring"
+              d="M32 8a24 24 0 1 0 0 48a24 24 0 1 0 0-48"
+            />
+            <path class="boot-check" d="M42 42l7 7 11-15" />
+          </svg>
+          <i class="boot-scan" />
+        </div>
+        <p class="boot-wordmark">QA DOCTOR</p>
+      </div>
+    </Transition>
     <div ref="progEl" class="progress" aria-hidden="true" />
 
     <!-- ============ HERO ============ -->
-    <section class="hero-band" :class="{ gl: glOn }" aria-labelledby="mj-title">
-      <div class="sky" aria-hidden="true" />
-      <AuroraSky @ready="glOn = true" />
+    <section class="hero-band" aria-labelledby="qa-title">
+      <DiagnosticGrid />
       <div class="hero wrap">
-        <h1 id="mj-title" class="title">
+        <h1 id="qa-title" class="title">
           <template v-for="(line, li) in TITLE" :key="li"
             ><span class="line" :class="{ was: li === 0 }"
               ><template v-for="(w, wi) in line" :key="wi"
@@ -493,66 +489,117 @@ onBeforeUnmount(() => {
         <div class="hero-grid">
           <div>
             <p class="lede">
-              Mjölnir finds tests that cannot fail and pipelines that cannot go
-              red, then scores how far you can trust the result.
+              QA Doctor finds tests that cannot fail and pipelines that cannot
+              go red, then scores how far you can trust the result.
             </p>
             <div class="actions">
-              <CopyKey :command="COMMAND" />
-              <a class="more" :href="withBase('/guide/getting-started')"
-                >Read the guide</a
+              <a class="hero-action" href="#ch-ci">Explore the diagnosis</a>
+              <a
+                class="more"
+                href="https://github.com/Sergey-Bar/qa-doctor"
+                target="_blank"
+                rel="noreferrer"
+                >View on GitHub</a
               >
             </div>
+            <a class="scroll-invite" href="#qa-quick-start">
+              <span>Next</span>
+              <strong>Quick start</strong>
+              <i aria-hidden="true" />
+            </a>
           </div>
           <div>
             <StreamTerm
-              :command="data.stream.command"
+              command="qa-doctor ."
               :lines="data.stream.lines"
               title="demo-repo"
+              full
             />
-            <p class="fine">A real scan of the demo repo, replayed.</p>
           </div>
         </div>
       </div>
     </section>
 
+    <!-- ============ QUICK START ============ -->
+    <section class="quick-start wrap" aria-labelledby="qa-quick-start">
+      <header>
+        <p class="section-label">QUICK START</p>
+        <h2 id="qa-quick-start">From first scan to evidence.</h2>
+        <p>
+          Start in the repository you already have. QA Doctor explains every
+          finding before asking your CI to enforce it.
+        </p>
+      </header>
+      <ol class="quick-steps">
+        <li>
+          <span class="quick-n">01</span>
+          <div>
+            <h3>Run a baseline</h3>
+            <p>Scan the repository and establish its current test health.</p>
+            <a class="more" href="#ch-ci">Explore the live report</a>
+          </div>
+        </li>
+        <li>
+          <span class="quick-n">02</span>
+          <div>
+            <h3>Read the diagnosis</h3>
+            <p>Open the exact rule, line, evidence level, and suggested fix.</p>
+            <a class="more" :href="withBase('/guide/getting-started')"
+              >See a sample report</a
+            >
+          </div>
+        </li>
+        <li>
+          <span class="quick-n">03</span>
+          <div>
+            <h3>Protect the next change</h3>
+            <p>
+              Scan only changed files and make new high-confidence failures
+              block the pull request.
+            </p>
+            <a class="more" :href="withBase('/guide/ci')"
+              >Review the CI workflow</a
+            >
+          </div>
+        </li>
+      </ol>
+    </section>
+
     <!-- ============ WORKS WITH ============ -->
-    <section class="wrap" aria-labelledby="mj-stack">
+    <section class="wrap" aria-labelledby="qa-stack">
       <div class="stack">
-        <h2 id="mj-stack" class="stack-title">Works with your stack</h2>
-        <div class="marquee">
-          <ul class="track">
-            <template v-for="copy in 2" :key="copy">
-              <li
-                v-for="item in STACK"
-                :key="`${copy}-${item.key}`"
-                :class="[item.label ? 'group' : 'logo', { dup: copy === 2 }]"
-                :aria-hidden="copy === 2 ? 'true' : undefined"
-              >
-                <template v-if="item.label">{{ item.label }}</template>
-                <template v-else>
-                  <svg
-                    v-if="LOGOS[item.name]"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                    focusable="false"
-                  >
-                    <path :d="LOGOS[item.name]" fill="currentColor" />
-                  </svg>
-                  <span v-else class="mono" aria-hidden="true">{{
-                    monogram(item.name)
-                  }}</span>
-                  <span>{{ item.name }}</span>
-                </template>
+        <h2 id="qa-stack" class="stack-title">Works with your stack</h2>
+        <div class="stack-detail" aria-label="Supported technologies">
+          <div
+            v-for="group in STACK_GROUPS"
+            :key="group.label"
+            class="stack-group"
+          >
+            <span>{{ group.label }}</span>
+            <ul>
+              <li v-for="name in group.items" :key="name">
+                <svg
+                  v-if="LOGOS[name]"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path :d="LOGOS[name]" fill="currentColor" />
+                </svg>
+                <b v-else class="mono" aria-hidden="true">{{
+                  monogram(name)
+                }}</b>
+                {{ name }}
               </li>
-            </template>
-          </ul>
+            </ul>
+          </div>
         </div>
       </div>
     </section>
 
     <!-- ============ OVERVIEW ============ -->
-    <section class="wrap overview" aria-labelledby="mj-overview">
-      <h2 id="mj-overview" class="overview-title" data-reveal>
+    <section class="wrap overview" aria-labelledby="qa-overview">
+      <h2 id="qa-overview" class="overview-title" data-reveal>
         What a scan covers
       </h2>
       <ol class="toc" data-reveal>
@@ -587,7 +634,7 @@ onBeforeUnmount(() => {
       class="scan"
       :class="{ live: scanLive }"
       :style="chStyle('ch-ci')"
-      aria-labelledby="mj-ci"
+      aria-labelledby="qa-ci"
     >
       <div class="wrap scan-sticky">
         <div class="scan-copy">
@@ -595,11 +642,11 @@ onBeforeUnmount(() => {
             <span>{{ chapter("ch-ci").n }}</span
             >{{ chapter("ch-ci").title }}
           </p>
-          <h2 id="mj-ci">
+          <h2 id="qa-ci">
             Catches the CI tricks that keep a failed run green.
           </h2>
           <p class="scan-lede">
-            Each of these lines looks deliberate in review. Mjölnir reads the
+            Each of these lines looks deliberate in review. QA Doctor reads the
             workflow and flags each one with its rule and a fix.
           </p>
           <div class="tally">
@@ -623,8 +670,8 @@ onBeforeUnmount(() => {
           <ul class="found">
             <li
               v-for="(f, i) in SCAN.findings"
-              v-show="f.line <= scanned"
               :key="i"
+              :class="{ shown: f.line <= scanned }"
             >
               <span class="sev" :class="f.severity">{{
                 f.severity.toUpperCase()
@@ -713,7 +760,7 @@ onBeforeUnmount(() => {
         Above: every finding the demo repo scan reported for
         <code class="ic">{{ SCAN.file }}</code
         >, at the line it reported. With SARIF upload or
-        <code class="ic">mjolnir summary</code>, this is how they show up in a
+        <code class="ic">qa-doctor summary</code>, this is how they show up in a
         pull request.
       </p>
     </div>
@@ -723,14 +770,14 @@ onBeforeUnmount(() => {
       id="ch-findings"
       class="chapter stacked wrap"
       :style="chStyle('ch-findings')"
-      aria-labelledby="mj-findings"
+      aria-labelledby="qa-findings"
     >
       <header class="ch-side" data-reveal>
         <p class="ch-tag">
           <span>{{ chapter("ch-findings").n }}</span
           >{{ chapter("ch-findings").title }}
         </p>
-        <h2 id="mj-findings">
+        <h2 id="qa-findings">
           Every finding says where, how sure, and how to fix it.
         </h2>
         <p>
@@ -777,42 +824,25 @@ onBeforeUnmount(() => {
       id="ch-score"
       class="chapter wrap"
       :style="chStyle('ch-score')"
-      aria-labelledby="mj-score"
+      aria-labelledby="qa-score"
     >
       <header class="ch-side" data-reveal>
         <p class="ch-tag">
           <span>{{ chapter("ch-score").n }}</span
           >{{ chapter("ch-score").title }}
         </p>
-        <h2 id="mj-score">One score, with the arithmetic shown.</h2>
+        <h2 id="qa-score">One signal for the health of your test suite.</h2>
         <p>
-          The score measures the test suite, not your product. Every point it
-          takes off is listed, and the formula has no hidden second model.
+          See the result at a glance, then open the findings that explain what
+          lowered it. The score measures the test suite, not your product.
         </p>
         <a class="more" :href="withBase('/guide/scoring')"
           >Read how the score works</a
         >
       </header>
       <div class="ch-main">
-        <div ref="scoreEl" class="score-top" data-reveal>
-          <p class="odo">
-            <span class="sr">{{ s.demo.score }}</span
-            ><span
-              v-for="(d, i) in String(s.demo.score)"
-              :key="i"
-              class="odo-d"
-              aria-hidden="true"
-              ><span
-                class="odo-col"
-                :class="{ roll: odoRolled }"
-                :style="{
-                  transform: `translateY(-${odoArmed && !odoRolled ? 0 : 10 + Number(d)}em)`,
-                  transitionDelay: `${i * 160}ms`,
-                }"
-                ><span v-for="k in 20" :key="k">{{ (k - 1) % 10 }}</span></span
-              ></span
-            >
-          </p>
+        <div class="score-top" data-reveal>
+          <p class="odo">{{ s.demo.score }}</p>
           <p class="score-meta">
             <span class="outof">/{{ s.outOf }}</span
             ><span class="verdict" :class="`tone-${demoTone}`">{{
@@ -821,79 +851,42 @@ onBeforeUnmount(() => {
           </p>
         </div>
         <figure class="scale" data-reveal :style="{ '--i': 1 }">
-          <div class="scale-bar">
-            <span
-              v-for="b in s.bands"
-              :key="b.min"
-              class="scale-seg"
-              :class="`tone-${b.tone}`"
-              :style="{ width: span(b) }"
-            />
+          <div class="meter-head">
+            <span>TEST HEALTH</span>
+            <span :class="`tone-${demoTone}`"
+              >{{ s.demo.verdict }} · {{ s.demo.score }}/{{ s.outOf }}</span
+            >
+          </div>
+          <div
+            class="scale-bar"
+            role="meter"
+            aria-label="Test health score"
+            aria-valuemin="0"
+            :aria-valuemax="s.outOf"
+            :aria-valuenow="s.demo.score"
+          >
+            <span class="meter-fill" :style="{ width: marker }" />
+            <span class="scale-threshold at-50" />
+            <span class="scale-threshold at-80" />
             <span class="scale-mark" :style="{ left: marker }">
-              <span class="scale-pin" />
               <span class="scale-read">{{ s.demo.score }}</span>
             </span>
           </div>
-          <div class="scale-legend">
-            <span
-              v-for="b in s.bands"
-              :key="b.min"
-              class="scale-key"
-              :style="{ width: span(b) }"
-            >
-              <span class="scale-verdict" :class="`tone-${b.tone}`">{{
-                b.verdict
-              }}</span>
-              <span class="scale-range">{{
-                b.min === b.max ? b.min : `${b.min}–${b.max}`
-              }}</span>
-            </span>
+          <div class="meter-axis" aria-hidden="true">
+            <span>0</span><span>50</span><span>80</span><span>100</span>
           </div>
+          <figcaption class="scale-legend">
+            <span v-for="b in s.bands" :key="b.min" class="scale-key">
+              <i :class="`tone-${b.tone}`" />
+              <span>
+                <b>{{ b.verdict }}</b>
+                <small>{{
+                  b.min === b.max ? b.min : `${b.min}–${b.max}`
+                }}</small>
+              </span>
+            </span>
+          </figcaption>
         </figure>
-
-        <div class="math" data-reveal :style="{ '--i': 2 }">
-          <p class="math-title">Step by step</p>
-          <dl>
-            <div>
-              <dt>Deductions</dt>
-              <dd>
-                <b data-ck="raw" :data-to="s.demo.raw">{{
-                  shown("raw", s.demo.raw)
-                }}</b>
-                points across
-                <b data-ck="decl" :data-to="s.demo.declarations">{{
-                  shown("decl", s.demo.declarations)
-                }}</b>
-                test declarations
-              </dd>
-            </div>
-            <div>
-              <dt>Rate</dt>
-              <dd>
-                {{ s.demo.raw }} ÷ ({{ s.demo.declarations }} +
-                {{ s.demo.smoothing }}) = <b>{{ s.demo.rate }}</b>
-              </dd>
-            </div>
-            <div>
-              <dt>Score</dt>
-              <dd>
-                {{ s.outOf }} − min({{ s.outOf }}, {{ s.demo.rate }} ×
-                {{ s.demo.k }}) =
-                <b data-ck="final" :data-to="s.outOf - s.demo.cut">{{
-                  shown("final", s.outOf - s.demo.cut)
-                }}</b>
-                <span class="verdict-inline" :class="`tone-${demoTone}`">{{
-                  s.demo.verdict
-                }}</span>
-              </dd>
-            </div>
-          </dl>
-          <p class="fine">
-            Dividing by test declarations means adding empty spec files cannot
-            raise the score. Three ceilings then cap it, and the scoring guide
-            lists them.
-          </p>
-        </div>
       </div>
     </section>
 
@@ -902,19 +895,19 @@ onBeforeUnmount(() => {
       id="ch-trust"
       class="chapter stacked wrap"
       :style="chStyle('ch-trust')"
-      aria-labelledby="mj-trust"
+      aria-labelledby="qa-trust"
     >
       <header class="ch-side" data-reveal>
         <p class="ch-tag">
           <span>{{ chapter("ch-trust").n }}</span
           >{{ chapter("ch-trust").title }}
         </p>
-        <h2 id="mj-trust">
+        <h2 id="qa-trust">
           Knows the difference between reading code and seeing it run.
         </h2>
         <p>
-          Most findings come from reading your code. Give Mjölnir the report of
-          a real test run and it can confirm the code actually ran.
+          Most findings come from reading your code. Give QA Doctor the report
+          of a real test run and it can confirm the code actually ran.
         </p>
         <a class="more" :href="withBase('/reference/terminology')"
           >Read the definitions</a
@@ -924,7 +917,7 @@ onBeforeUnmount(() => {
         <div data-reveal>
           <Term :lines="data.staticCard" title="Read from the code" />
           <p class="fine">
-            Mjölnir read the workflow file. Nothing ran, so this finding stays
+            QA Doctor read the workflow file. Nothing ran, so this finding stays
             at L2, proven in code.
           </p>
         </div>
@@ -968,14 +961,14 @@ onBeforeUnmount(() => {
       id="ch-runtime"
       class="chapter wrap"
       :style="chStyle('ch-runtime')"
-      aria-labelledby="mj-runtime"
+      aria-labelledby="qa-runtime"
     >
       <header class="ch-side" data-reveal>
         <p class="ch-tag">
           <span>{{ chapter("ch-runtime").n }}</span
           >{{ chapter("ch-runtime").title }}
         </p>
-        <h2 id="mj-runtime">Reads what actually ran.</h2>
+        <h2 id="qa-runtime">Reads what actually ran.</h2>
         <p>
           Point it at a folder of test results. Playwright JSON, Jest and Vitest
           JSON, and JUnit XML from any runner all work.
@@ -988,15 +981,15 @@ onBeforeUnmount(() => {
         <div class="streams" data-reveal>
           <Term
             :lines="data.forensics"
-            title="mjolnir forensics ./test-results/"
+            title="qa-doctor forensics ./test-results/"
           />
           <p class="fine">
-            TRUE-FLAKE means the test failed at least once and then passed.
-            Mjölnir flags it even though the final check was green.
+            TRUE-FLAKE means the test failed at least once and then passed. QA
+            Doctor flags it even though the final check was green.
           </p>
         </div>
         <div class="streams" data-reveal>
-          <Term :lines="data.selectors" title="mjolnir doctor:playwright" />
+          <Term :lines="data.selectors" title="qa-doctor doctor:playwright" />
           <p class="fine">
             Selector health grades how each locator finds its element. It
             measures resilience, not correctness.
@@ -1010,14 +1003,14 @@ onBeforeUnmount(() => {
       id="ch-rules"
       class="chapter wrap"
       :style="chStyle('ch-rules')"
-      aria-labelledby="mj-rules"
+      aria-labelledby="qa-rules"
     >
       <header class="ch-side" data-reveal>
         <p class="ch-tag">
           <span>{{ chapter("ch-rules").n }}</span
           >{{ chapter("ch-rules").title }}
         </p>
-        <h2 id="mj-rules">
+        <h2 id="qa-rules">
           A published <span class="nowrap">false-positive</span> rate for each
           rule.
         </h2>
@@ -1083,14 +1076,14 @@ onBeforeUnmount(() => {
       id="ch-ship"
       class="chapter wrap"
       :style="chStyle('ch-ship')"
-      aria-labelledby="mj-ship"
+      aria-labelledby="qa-ship"
     >
       <header class="ch-side" data-reveal>
         <p class="ch-tag">
           <span>{{ chapter("ch-ship").n }}</span
           >{{ chapter("ch-ship").title }}
         </p>
-        <h2 id="mj-ship">Gates the pull request, and checks the agent.</h2>
+        <h2 id="qa-ship">Gates the pull request, and checks the agent.</h2>
         <p>
           Scan only what a branch touched, or hand the findings to an AI agent
           and let the re-scan prove the fix.
@@ -1105,18 +1098,20 @@ onBeforeUnmount(() => {
               With <code class="ic">--scope changed</code> it scans the files
               the branch touched and exits non-zero on new findings.
             </p>
-            <CopyKey :command="CI_COMMAND" />
-            <p class="fine">Or add the GitHub Action:</p>
-            <pre class="snippet"><code>{{ ACTION }}</code></pre>
+            <a class="more" :href="withBase('/guide/ci')"
+              >Review the CI workflow</a
+            >
           </div>
           <div class="flow" data-reveal>
             <h3>With an AI agent</h3>
             <p>
-              The agent writes the fix and Mjölnir re-scans to prove it. Each
+              The agent writes the fix and QA Doctor re-scans to prove it. Each
               finding in the handoff says whether it is safe to apply or needs a
               person to confirm.
             </p>
-            <CopyKey :command="MCP_COMMAND" />
+            <a class="more" :href="withBase('/guide/agents')"
+              >Connect an agent</a
+            >
           </div>
         </div>
         <dl class="codes" data-reveal>
@@ -1132,9 +1127,9 @@ onBeforeUnmount(() => {
     </section>
 
     <!-- ============ LIMITS ============ -->
-    <section class="wrap limits-band" aria-labelledby="mj-limits">
+    <section class="wrap limits-band" aria-labelledby="qa-limits">
       <div class="limits-box" data-reveal>
-        <h2 id="mj-limits">Where the score stops</h2>
+        <h2 id="qa-limits">Where the score stops</h2>
         <ul class="limits">
           <li v-for="l in LIMITS" :key="l.claim">
             {{ l.claim }}
@@ -1148,19 +1143,13 @@ onBeforeUnmount(() => {
     </section>
 
     <!-- ============ CLOSE ============ -->
-    <section class="closing" data-reveal aria-labelledby="mj-run">
+    <section class="closing" data-reveal aria-labelledby="qa-run">
       <div class="wrap">
-        <h2 id="mj-run" class="huge">Run it on your repo.</h2>
-        <CopyKey class="close-key" :command="COMMAND" />
+        <h2 id="qa-run" class="huge">Run it on your repo.</h2>
         <div class="close-links">
-          <a class="more" :href="withBase('/guide/getting-started')"
-            >Read the guide</a
-          >
-          <a class="more" href="https://github.com/Sergey-Bar/Mjolnir"
+          <a class="more" href="#ch-ci">Explore the diagnosis</a>
+          <a class="more" href="https://github.com/Sergey-Bar/qa-doctor"
             >View on GitHub</a
-          >
-          <a class="more" href="https://www.npmjs.com/package/mjolnir-qa"
-            >View on npm</a
           >
         </div>
       </div>
@@ -1170,9 +1159,11 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.mj {
+.qa {
   --edge: clamp(20px, 5vw, 48px);
-  --well: var(--mj-ink-950);
+  --glass: var(--qa-glass-default-bg);
+  --glass-strong: var(--qa-glass-focus-bg);
+  --well: var(--qa-surface-well);
   --line: var(--vp-c-divider);
   --line-2: var(--vp-c-border);
   --t1: var(--vp-c-text-1);
@@ -1180,42 +1171,41 @@ onBeforeUnmount(() => {
   --t3: var(--vp-c-text-3);
   --settle: cubic-bezier(0.2, 0, 0, 1);
   --spring: cubic-bezier(0.34, 1.45, 0.64, 1);
-  --sheen: linear-gradient(
-    90deg,
-    var(--mj-aurora-green),
-    var(--mj-aurora-cyan) 50%,
-    var(--mj-aurora-violet)
-  );
+  --sheen: var(--qa-steel);
   color: var(--t1);
+  background: color-mix(in srgb, var(--qa-ink-950) 86%, black);
   font-family: var(--vp-font-family-base);
   line-height: 1.7;
   overflow-x: clip;
 }
 
 /* The page sits inside .vp-doc; take back its prose defaults. */
-.mj :is(h1, h2, h3) {
+.qa :is(h1, h2, h3) {
   margin: 0;
   padding: 0;
   border: 0;
   font-family: var(--vp-font-family-base);
   text-wrap: balance;
 }
-.mj h2::before {
+.qa h2 {
+  color: var(--qa-info);
+}
+.qa h2::before {
   content: none;
 }
 /* :where keeps this at class weight, so each component's own margins win. */
-.mj :where(p, ul, ol, dl, dd, figure) {
+.qa :where(p, ul, ol, dl, dd, figure) {
   margin: 0;
   line-height: inherit;
 }
-.mj :is(ul, ol) {
+.qa :is(ul, ol) {
   padding: 0;
   list-style: none;
 }
-.mj li + li {
+.qa li + li {
   margin-top: 0;
 }
-.mj a {
+.qa a {
   color: inherit;
   font-weight: inherit;
   text-decoration: underline;
@@ -1226,10 +1216,10 @@ onBeforeUnmount(() => {
     text-decoration-color 120ms var(--settle),
     color 120ms var(--settle);
 }
-.mj a:hover {
+.qa a:hover {
   text-decoration-color: var(--t1);
 }
-.mj code {
+.qa code {
   padding: 0;
   border-radius: 0;
   background: none;
@@ -1237,7 +1227,7 @@ onBeforeUnmount(() => {
   font-family: var(--vp-font-family-mono);
   font-size: inherit;
 }
-.mj .ic {
+.qa .ic {
   padding: 1px 5px;
   border-radius: 4px;
   background: var(--vp-c-bg-soft);
@@ -1275,7 +1265,7 @@ onBeforeUnmount(() => {
   line-height: 1.6;
   color: var(--t3);
 }
-.mj .more {
+.qa .more {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -1283,38 +1273,38 @@ onBeforeUnmount(() => {
   color: var(--t2);
   text-decoration: none;
 }
-.mj .more::after {
+.qa .more::after {
   content: "→";
   transition: transform 240ms var(--settle);
 }
-.mj .more:hover {
+.qa .more:hover {
   color: var(--t1);
 }
-.mj .more:hover::after {
+.qa .more:hover::after {
   transform: translateX(4px);
 }
-.mj h3 {
+.qa h3 {
   font-size: 17px;
   font-weight: 500;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
   color: var(--t1);
 }
 
 .tone-critical {
-  color: var(--mj-unworthy);
+  color: var(--qa-critical);
 }
 .tone-warning {
-  color: var(--mj-needswork);
+  color: var(--qa-attention);
 }
-.tone-trusted {
-  color: var(--mj-trusted);
+.tone-healthy {
+  color: var(--qa-healthy);
 }
-.tone-forged {
-  color: var(--mj-forged-hot);
+.tone-excellent {
+  color: var(--qa-excellent-hot);
 }
 
 /* ---- reveal: an enhancement, gated on the class the head script sets ---- */
-.mj-anim [data-reveal] {
+.qa-anim [data-reveal] {
   transition:
     opacity 800ms var(--settle),
     transform 800ms var(--settle),
@@ -1325,7 +1315,7 @@ onBeforeUnmount(() => {
     calc(var(--i, 0) * 80ms), calc(var(--i, 0) * 80ms),
     calc(var(--i, 0) * 80ms), 0s, 0s;
 }
-.mj-anim [data-reveal]:not([data-in]) {
+.qa-anim [data-reveal]:not([data-in]) {
   opacity: 0;
   transform: translateY(20px);
   filter: blur(6px);
@@ -1345,74 +1335,182 @@ onBeforeUnmount(() => {
   pointer-events: none;
 }
 
+/* ---- boot: short diagnostic handshake, never a blocking splash screen ---- */
+.boot-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: color-mix(in srgb, var(--qa-ink-950) 86%, black);
+  color: var(--t1);
+}
+.boot-sequence {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 112px;
+  height: 112px;
+}
+.boot-mark {
+  width: 64px;
+  height: 64px;
+  overflow: visible;
+}
+.boot-ring,
+.boot-check {
+  stroke: var(--qa-info);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 160;
+  stroke-dashoffset: 160;
+  animation: boot-draw 560ms var(--settle) forwards;
+}
+.boot-check {
+  stroke: var(--qa-healthy-bright);
+  stroke-dasharray: 34;
+  stroke-dashoffset: 34;
+  animation-delay: 370ms;
+}
+.boot-corner {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: color-mix(in srgb, var(--qa-info) 72%, transparent);
+  opacity: 0;
+  animation: boot-corners 360ms var(--settle) 140ms forwards;
+}
+.boot-corner.tl {
+  top: 6px;
+  left: 6px;
+  border-top: 1px solid;
+  border-left: 1px solid;
+}
+.boot-corner.tr {
+  top: 6px;
+  right: 6px;
+  border-top: 1px solid;
+  border-right: 1px solid;
+}
+.boot-corner.bl {
+  bottom: 6px;
+  left: 6px;
+  border-bottom: 1px solid;
+  border-left: 1px solid;
+}
+.boot-corner.br {
+  right: 6px;
+  bottom: 6px;
+  border-right: 1px solid;
+  border-bottom: 1px solid;
+}
+.boot-scan {
+  position: absolute;
+  top: 18px;
+  right: 16px;
+  left: 16px;
+  height: 1px;
+  background: var(--qa-healthy-bright);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--qa-info) 70%, transparent);
+  opacity: 0;
+  animation: boot-scan 500ms linear 440ms forwards;
+}
+.boot-wordmark {
+  margin: 0;
+  font-family: var(--vp-font-family-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  color: var(--t2);
+  opacity: 0;
+  transform: translateY(4px);
+  animation: boot-wordmark 320ms var(--settle) 520ms forwards;
+}
+.boot-enter-active,
+.boot-leave-active {
+  transition: opacity 220ms var(--settle);
+}
+.boot-leave-to {
+  opacity: 0;
+}
+@keyframes boot-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes boot-corners {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes boot-scan {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(76px);
+  }
+}
+@keyframes boot-wordmark {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* ---- hero ---- */
 .hero-band {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background: var(--vp-c-bg);
+  background: color-mix(in srgb, var(--qa-ink-950) 86%, black);
+  border-bottom: 1px solid var(--line);
 }
-.sky {
-  position: absolute;
-  inset: 0;
-  z-index: -2;
-  pointer-events: none;
-  background:
-    radial-gradient(
-      52% 40% at 14% 14%,
-      color-mix(in srgb, var(--mj-aurora-green) 30%, transparent),
-      transparent 72%
-    ),
-    radial-gradient(
-      44% 34% at 52% 10%,
-      color-mix(in srgb, var(--mj-aurora-cyan) 24%, transparent),
-      transparent 72%
-    ),
-    radial-gradient(
-      40% 38% at 90% 14%,
-      color-mix(in srgb, var(--mj-aurora-violet) 30%, transparent),
-      transparent 72%
-    );
-  transition: opacity 1.6s var(--settle);
-}
-.hero-band.gl .sky {
-  opacity: 0.35;
-}
-/* The horizon: one lit hairline where the sky meets the page. */
-.sky::after {
+.hero-band::after {
   content: "";
   position: absolute;
   inset: auto 0 0;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--mj-aurora-green) 18%,
-    var(--mj-aurora-cyan) 50%,
-    var(--mj-aurora-violet) 82%,
-    transparent
-  );
-  opacity: 0.75;
-  box-shadow: 0 0 28px 3px
-    color-mix(in srgb, var(--mj-aurora-cyan) 30%, transparent);
+  background: var(--qa-info);
+  opacity: 0.44;
+}
+.hero-band::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.28;
+  background: color-mix(in srgb, var(--qa-info) 8%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 55%, transparent);
 }
 .hero {
-  padding-top: calc(var(--vp-nav-height) + clamp(48px, 7vw, 104px));
-  padding-bottom: clamp(72px, 9vw, 128px);
+  padding-top: calc(var(--vp-nav-height) + clamp(40px, 4.5vw, 56px));
+  padding-bottom: 24px;
 }
 .title {
-  font-size: clamp(36px, 4.9vw, 64px);
+  font-size: clamp(36px, 4.5vw, 58px);
   font-weight: 500;
   line-height: 1.04;
-  letter-spacing: -0.045em;
+  letter-spacing: 0;
   color: var(--t1);
 }
 .title .line {
   display: block;
 }
+.title .line:not(.was) {
+  color: var(--qa-info);
+}
 .title .was {
-  color: var(--t3);
-  animation: dim 1400ms var(--settle) 1600ms both;
+  color: var(--t1);
 }
 /* Pure CSS and never below 0.15 opacity: the headline is the page's
    largest paint, so it cannot wait on a script or start invisible. */
@@ -1428,20 +1526,12 @@ onBeforeUnmount(() => {
     transform: translateY(0.3em);
   }
 }
-@keyframes dim {
-  from {
-    color: var(--t1);
-  }
-  to {
-    color: var(--t3);
-  }
-}
 .hero-grid {
   display: grid;
   grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
   gap: clamp(32px, 5vw, 64px);
   align-items: start;
-  margin-top: clamp(36px, 5vw, 56px);
+  margin-top: clamp(28px, 3.5vw, 40px);
 }
 .lede {
   max-width: 34ch;
@@ -1451,90 +1541,214 @@ onBeforeUnmount(() => {
 }
 .actions {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
   margin-top: 32px;
 }
+.qa .hero-action {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 6px;
+  background: var(--t1);
+  color: var(--qa-ink-950);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    background-color 180ms var(--settle),
+    transform 180ms var(--settle);
+}
+.qa .hero-action:hover {
+  background: var(--qa-steel);
+  color: var(--qa-ink-950);
+  transform: translateY(-1px);
+}
+.qa .scroll-invite {
+  display: grid;
+  grid-template-columns: auto 18px;
+  width: max-content;
+  margin-top: 34px;
+  color: var(--t3);
+  font-family: var(--vp-font-family-mono);
+  text-decoration: none;
+}
+.scroll-invite span,
+.scroll-invite strong {
+  grid-column: 1;
+}
+.scroll-invite span {
+  font-size: 9px;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.scroll-invite strong {
+  margin-top: 5px;
+  color: var(--t2);
+  font-size: 12px;
+  font-weight: 500;
+}
+.scroll-invite i {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  position: relative;
+  width: 1px;
+  height: 31px;
+  margin-left: 9px;
+  background: var(--line-2);
+  overflow: visible;
+}
+.scroll-invite i::after {
+  content: "";
+  position: absolute;
+  right: -3px;
+  bottom: 1px;
+  width: 7px;
+  height: 7px;
+  border-right: 1px solid var(--qa-info);
+  border-bottom: 1px solid var(--qa-info);
+  transform: rotate(45deg);
+  animation: scroll-cue 1800ms var(--settle) infinite;
+}
+.qa .scroll-invite:hover strong {
+  color: var(--t1);
+}
+@keyframes scroll-cue {
+  0%,
+  100% {
+    opacity: 0.35;
+    translate: 0 -5px;
+  }
+  50% {
+    opacity: 1;
+    translate: 0 1px;
+  }
+}
 
-/* ---- works with: one strip, drifting ---- */
+/* ---- quick start: actionable before the deep product tour ---- */
+.quick-start {
+  display: grid;
+  grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
+  gap: clamp(32px, 7vw, 96px);
+  padding-top: clamp(24px, 2vw, 32px);
+  padding-bottom: clamp(64px, 9vw, 112px);
+  border-bottom: 1px solid var(--line);
+}
+.section-label {
+  margin-bottom: 14px;
+  font-family: var(--vp-font-family-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--qa-info);
+}
+.quick-start header h2 {
+  max-width: 13ch;
+  font-size: clamp(28px, 3.2vw, 42px);
+  font-weight: 500;
+  line-height: 1.08;
+  letter-spacing: 0;
+}
+.quick-start header > p:last-child {
+  max-width: 34ch;
+  margin-top: 18px;
+  color: var(--t2);
+}
+.quick-steps {
+  border-top: 1px solid var(--line);
+}
+.quick-steps li {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 18px;
+  padding: 22px 0 24px;
+  border-bottom: 1px solid var(--line);
+  transition:
+    padding-left 180ms var(--settle),
+    background-color 180ms var(--settle);
+}
+.quick-steps li:hover {
+  padding-left: 12px;
+  background: color-mix(in oklch, var(--qa-steel) 4%, transparent);
+}
+.quick-n {
+  padding-top: 2px;
+  font-family: var(--vp-font-family-mono);
+  font-size: 11px;
+  color: var(--qa-info);
+}
+.quick-steps h3 {
+  font-size: 17px;
+}
+.quick-steps p {
+  max-width: 46ch;
+  margin-top: 4px;
+  margin-bottom: 14px;
+  font-size: 14px;
+  color: var(--t2);
+}
+
+/* ---- works with: compatibility should be visible at a glance ---- */
 .stack {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 32px;
   padding-block: 28px;
   border-bottom: 1px solid var(--line);
 }
-.mj .stack-title {
+.stack-detail {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px;
+  padding: 24px;
+  border: 1px solid var(--qa-glass-default-border);
+  border-radius: var(--qa-radius-panel);
+  background: var(--glass);
+  box-shadow: var(--qa-glass-default-shadow);
+  backdrop-filter: blur(var(--qa-glass-default-blur)) saturate(1.15);
+}
+.stack-group > span {
+  display: block;
+  margin-bottom: 12px;
+  font-family: var(--vp-font-family-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--qa-info);
+}
+.stack-group ul {
+  display: grid;
+  gap: 8px;
+}
+.stack-group li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--t2);
+}
+.stack-group svg {
+  width: 17px;
+  height: 17px;
+  color: var(--qa-steel);
+}
+.stack-group .mono {
+  width: 17px;
+  height: 17px;
+  font-size: 7px;
+}
+.qa .stack-title {
   flex: none;
   width: 10rem;
   font-size: 15px;
   font-weight: 500;
   line-height: 1.4;
   color: var(--t2);
-}
-.marquee {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  mask-image: linear-gradient(
-    90deg,
-    transparent,
-    #000 8%,
-    #000 92%,
-    transparent
-  );
-}
-.mj .track {
-  display: flex;
-  align-items: center;
-  width: max-content;
-  animation: marquee 80s linear infinite;
-}
-.marquee:hover .track {
-  animation-play-state: paused;
-}
-@keyframes marquee {
-  to {
-    transform: translateX(-50%);
-  }
-}
-.group {
-  margin-right: 14px;
-  padding-left: 22px;
-  border-left: 1px solid var(--line-2);
-  font-size: 11.5px;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  color: var(--t3);
-}
-.logo {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  margin-right: 12px;
-  padding: 6px 12px 6px 8px;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  font-size: 14px;
-  white-space: nowrap;
-  color: var(--t3);
-  transition:
-    color 200ms var(--settle),
-    border-color 200ms var(--settle),
-    background-color 200ms var(--settle);
-}
-.logo svg {
-  width: 20px;
-  height: 20px;
-  flex: none;
-  opacity: 0.7;
-  transition:
-    opacity 200ms var(--settle),
-    filter 200ms var(--settle),
-    color 200ms var(--settle);
 }
 .mono {
   display: grid;
@@ -1559,20 +1773,18 @@ onBeforeUnmount(() => {
 }
 .logo:hover svg {
   opacity: 1;
-  color: var(--mj-aurora-bright);
-  filter: drop-shadow(
-    0 0 8px color-mix(in srgb, var(--mj-aurora-bright) 55%, transparent)
-  );
+  color: var(--qa-healthy);
+  filter: none;
 }
 
 /* ---- overview ---- */
 .overview {
   padding-block: clamp(56px, 7vw, 88px) clamp(24px, 3vw, 40px);
 }
-.mj .overview-title {
+.qa .overview-title {
   font-size: clamp(24px, 2.6vw, 30px);
   font-weight: 500;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
 }
 .toc {
   display: grid;
@@ -1587,11 +1799,11 @@ onBeforeUnmount(() => {
     transform 600ms var(--settle);
   transition-delay: calc(var(--i) * 60ms);
 }
-.mj-anim .toc[data-reveal]:not([data-in]) li {
+.qa-anim .toc[data-reveal]:not([data-in]) li {
   opacity: 0;
   transform: translateY(10px);
 }
-.mj .toc a {
+.qa .toc a {
   display: grid;
   grid-template-columns: 3ch minmax(0, 1fr) 16px;
   gap: 16px;
@@ -1628,7 +1840,7 @@ onBeforeUnmount(() => {
     transform 200ms var(--settle),
     color 200ms var(--settle);
 }
-.mj .toc a:hover .toc-go {
+.qa .toc a:hover .toc-go {
   color: var(--ch);
   transform: translateY(3px);
 }
@@ -1686,13 +1898,13 @@ onBeforeUnmount(() => {
   font-weight: 400;
   color: var(--ch);
 }
-.mj :is(.ch-side, .scan-copy) h2 {
+.qa :is(.ch-side, .scan-copy) h2 {
   margin-top: 14px;
   font-size: clamp(24px, 2.5vw, 32px);
   font-weight: 500;
   line-height: 1.16;
-  letter-spacing: -0.03em;
-  color: var(--t1);
+  letter-spacing: 0;
+  color: var(--qa-info);
 }
 .ch-side > p:not(.ch-tag),
 .scan-lede {
@@ -1706,8 +1918,8 @@ onBeforeUnmount(() => {
 .scan-copy .more {
   margin-top: 22px;
 }
-.mj .ch-side .more,
-.mj .scan-copy .more {
+.qa .ch-side .more,
+.qa .scan-copy .more {
   text-decoration-color: color-mix(in srgb, var(--ch) 70%, transparent);
 }
 .ch-main {
@@ -1764,18 +1976,18 @@ onBeforeUnmount(() => {
   font-size: 26px;
   font-weight: 500;
   line-height: 1.1;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
   font-variant-numeric: tabular-nums;
   color: var(--t1);
 }
 .tally .t-err b {
-  color: var(--mj-unworthy);
+  color: var(--qa-critical);
 }
 .tally .t-warn b {
-  color: var(--mj-needswork);
+  color: var(--qa-attention);
 }
 .tally .t-info b {
-  color: var(--mj-info);
+  color: var(--qa-info);
 }
 .found {
   display: grid;
@@ -1790,19 +2002,25 @@ onBeforeUnmount(() => {
   font-size: 13.5px;
   line-height: 1.45;
   color: var(--t2);
-  animation: slide-in 450ms var(--settle) both;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-10px);
+  transition:
+    opacity 360ms var(--settle),
+    transform 360ms var(--settle),
+    visibility 0s linear 360ms;
+}
+.found li.shown {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition-delay: 0s;
 }
 .found a {
   margin-right: 4px;
   font-family: var(--vp-font-family-mono);
   font-size: 12.5px;
   color: var(--t1);
-}
-@keyframes slide-in {
-  from {
-    opacity: 0;
-    transform: translateX(-12px);
-  }
 }
 .sev {
   justify-self: start;
@@ -1814,26 +2032,27 @@ onBeforeUnmount(() => {
   letter-spacing: 0.08em;
 }
 .sev.error {
-  color: var(--mj-unworthy);
-  background: color-mix(in srgb, var(--mj-unworthy) 14%, transparent);
+  color: var(--qa-critical);
+  background: color-mix(in srgb, var(--qa-critical) 14%, transparent);
 }
 .sev.warning {
-  color: var(--mj-needswork);
-  background: color-mix(in srgb, var(--mj-needswork) 14%, transparent);
+  color: var(--qa-attention);
+  background: color-mix(in srgb, var(--qa-attention) 14%, transparent);
 }
 .sev.info {
-  color: var(--mj-info);
-  background: color-mix(in srgb, var(--mj-info) 12%, transparent);
+  color: var(--qa-info);
+  background: color-mix(in srgb, var(--qa-info) 12%, transparent);
 }
 .file {
   position: relative;
   min-width: 0;
-  border: 1px solid var(--line-2);
+  border: 1px solid var(--qa-glass-focus-border);
   border-top: 2px solid var(--ch);
-  border-radius: 10px;
-  background: var(--well);
+  border-radius: var(--qa-radius-focus);
+  background: var(--glass-strong);
+  backdrop-filter: blur(var(--qa-glass-focus-blur)) saturate(1.15);
   overflow: hidden;
-  box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.7);
+  box-shadow: var(--qa-glass-focus-shadow);
 }
 .file-head {
   display: flex;
@@ -1889,35 +2108,31 @@ onBeforeUnmount(() => {
   color: var(--t2);
 }
 .ln.done .k {
-  color: var(--mj-steel);
+  color: var(--qa-steel);
 }
 .ln.hit {
   color: var(--t1);
 }
 .ln.hit.error {
-  background: color-mix(in srgb, var(--mj-unworthy) 13%, transparent);
+  background: color-mix(in srgb, var(--qa-critical) 13%, transparent);
 }
 .ln.hit.error .n {
-  color: var(--mj-unworthy);
+  color: var(--qa-critical);
 }
 .ln.hit.warning {
-  background: color-mix(in srgb, var(--mj-needswork) 11%, transparent);
+  background: color-mix(in srgb, var(--qa-attention) 11%, transparent);
 }
 .ln.hit.warning .n {
-  color: var(--mj-needswork);
+  color: var(--qa-attention);
 }
 .ln.hit.info {
-  background: color-mix(in srgb, var(--mj-info) 9%, transparent);
+  background: color-mix(in srgb, var(--qa-info) 9%, transparent);
 }
 .ln.hit.info .n {
-  color: var(--mj-info);
+  color: var(--qa-info);
 }
 .chip {
   display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 480ms var(--settle);
-}
-.chip.open {
   grid-template-rows: 1fr;
 }
 .chip > div {
@@ -1969,13 +2184,12 @@ onBeforeUnmount(() => {
   background: linear-gradient(
     90deg,
     transparent,
-    var(--mj-aurora-green) 12%,
-    var(--mj-aurora-cyan) 50%,
-    var(--mj-aurora-violet) 88%,
+    var(--qa-info) 12%,
+    var(--qa-steel) 50%,
+    var(--qa-healthy) 88%,
     transparent
   );
-  box-shadow: 0 0 20px 2px
-    color-mix(in srgb, var(--mj-aurora-cyan) 50%, transparent);
+  box-shadow: 0 0 20px 2px color-mix(in srgb, var(--qa-info) 34%, transparent);
   pointer-events: none;
 }
 .beam::before {
@@ -1987,7 +2201,7 @@ onBeforeUnmount(() => {
   height: 64px;
   background: linear-gradient(
     to top,
-    color-mix(in srgb, var(--mj-aurora-cyan) 11%, transparent),
+    color-mix(in srgb, var(--qa-info) 8%, transparent),
     transparent
   );
 }
@@ -2011,7 +2225,7 @@ onBeforeUnmount(() => {
   gap: 8px;
   align-content: start;
 }
-.mj .snip {
+.qa .snip {
   display: block;
   padding: 11px 14px;
   border: 1px solid var(--line);
@@ -2043,9 +2257,11 @@ onBeforeUnmount(() => {
 .card {
   position: relative;
   padding: 22px 22px 24px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--vp-c-bg-alt);
+  border: 1px solid var(--qa-glass-default-border);
+  border-radius: var(--qa-radius-panel);
+  background: var(--glass);
+  box-shadow: var(--qa-glass-default-shadow);
+  backdrop-filter: blur(var(--qa-glass-default-blur)) saturate(1.15);
   overflow: hidden;
   --mx: -600px;
   --my: -600px;
@@ -2059,7 +2275,7 @@ onBeforeUnmount(() => {
   border-radius: inherit;
   background: radial-gradient(
     300px circle at var(--mx) var(--my),
-    color-mix(in srgb, var(--mj-aurora-cyan) 75%, transparent),
+    color-mix(in srgb, var(--qa-info) 62%, transparent),
     transparent 45%
   );
   mask:
@@ -2073,7 +2289,7 @@ onBeforeUnmount(() => {
   inset: 0;
   background: radial-gradient(
     420px circle at var(--mx) var(--my),
-    color-mix(in srgb, var(--mj-aurora-cyan) 7%, transparent),
+    color-mix(in srgb, var(--qa-info) 5%, transparent),
     transparent 55%
   );
   pointer-events: none;
@@ -2087,7 +2303,7 @@ onBeforeUnmount(() => {
   translate: 0 -3px;
 }
 .card.lit {
-  border-color: color-mix(in srgb, var(--mj-aurora-cyan) 45%, transparent);
+  border-color: color-mix(in srgb, var(--qa-info) 38%, transparent);
 }
 .card.wide {
   grid-column: 1 / -1;
@@ -2097,7 +2313,7 @@ onBeforeUnmount(() => {
 .card.wide:hover {
   translate: none;
 }
-.mj .card-k {
+.qa .card-k {
   font-size: 15px;
   font-weight: 500;
 }
@@ -2107,7 +2323,7 @@ onBeforeUnmount(() => {
   line-height: 1.6;
   color: var(--t2);
 }
-.mj .tok {
+.qa .tok {
   display: block;
   width: fit-content;
   max-width: 100%;
@@ -2124,8 +2340,8 @@ onBeforeUnmount(() => {
     background-color 350ms var(--settle);
 }
 .card.lit .tok {
-  border-color: color-mix(in srgb, var(--mj-aurora-cyan) 55%, transparent);
-  background: color-mix(in srgb, var(--mj-aurora-cyan) 10%, transparent);
+  border-color: color-mix(in srgb, var(--qa-info) 45%, transparent);
+  background: color-mix(in srgb, var(--qa-info) 8%, transparent);
 }
 /* A system monospace on purpose: the Geist Mono web subset has no
    box-drawing glyphs, and this card must match the terminal exactly. */
@@ -2155,9 +2371,8 @@ onBeforeUnmount(() => {
     box-shadow 350ms var(--settle);
 }
 .anat-term .lit {
-  background: color-mix(in srgb, var(--mj-aurora-cyan) 16%, transparent);
-  box-shadow: 0 0 0 1px
-    color-mix(in srgb, var(--mj-aurora-cyan) 50%, transparent);
+  background: color-mix(in srgb, var(--qa-info) 12%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--qa-info) 40%, transparent);
 }
 
 /* 03 ---- score ---- */
@@ -2165,31 +2380,16 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: flex-end;
   flex-wrap: wrap;
-  gap: 8px 22px;
+  gap: 6px 18px;
 }
 .odo {
   display: inline-flex;
-  font-size: clamp(96px, 12vw, 168px);
+  font-size: clamp(88px, 10vw, 144px);
   font-weight: 500;
   line-height: 1;
-  letter-spacing: -0.06em;
+  letter-spacing: 0;
   font-variant-numeric: tabular-nums;
   color: var(--t1);
-}
-.odo-d {
-  display: inline-block;
-  height: 1em;
-  overflow: hidden;
-}
-.odo-col {
-  display: block;
-}
-.odo-col.roll {
-  transition: transform 1900ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-.odo-col > span {
-  display: block;
-  height: 1em;
 }
 .score-meta {
   display: grid;
@@ -2208,60 +2408,70 @@ onBeforeUnmount(() => {
 }
 .scale {
   margin-top: 32px;
-  padding: 28px 24px 24px;
-  border: 1px solid var(--line-2);
-  border-top: 2px solid var(--ch);
-  border-radius: 10px;
-  background: var(--well);
+  padding: 24px;
+  border: 1px solid var(--qa-glass-elevated-border);
+  border-radius: var(--qa-radius-panel);
+  background: var(--qa-glass-elevated-bg);
+  box-shadow: var(--qa-glass-elevated-shadow);
+  backdrop-filter: blur(var(--qa-glass-elevated-blur)) saturate(1.15);
+}
+.meter-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  font-family: var(--vp-font-family-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+.meter-head > span:first-child {
+  color: var(--t3);
 }
 .scale-bar {
   position: relative;
-  display: flex;
-  height: 10px;
-  margin-top: 36px;
+  height: 8px;
+  margin-top: 34px;
+  background: color-mix(in srgb, var(--qa-steel) 12%, transparent);
+  box-shadow: inset 0 0 0 1px var(--line);
 }
-.scale-seg {
+.meter-fill {
   display: block;
-  min-width: 6px;
   height: 100%;
-  background: currentColor;
+  background: var(--qa-healthy);
   transform-origin: left;
-  transition: transform 900ms var(--settle);
+  transition: width 900ms var(--settle);
 }
-.scale-seg:nth-child(2) {
-  transition-delay: 120ms;
+.qa-anim .scale[data-reveal]:not([data-in]) .meter-fill {
+  width: 0 !important;
 }
-.scale-seg:nth-child(3) {
-  transition-delay: 240ms;
+.scale-threshold {
+  position: absolute;
+  top: -4px;
+  width: 1px;
+  height: 16px;
+  background: color-mix(in srgb, var(--t1) 48%, transparent);
 }
-.scale-seg:nth-child(4) {
-  transition-delay: 360ms;
+.scale-threshold.at-50 {
+  left: 50%;
 }
-.mj-anim .scale[data-reveal]:not([data-in]) .scale-seg {
-  transform: scaleX(0);
-}
-.scale-seg + .scale-seg {
-  margin-left: 2px;
+.scale-threshold.at-80 {
+  left: 80%;
 }
 .scale-mark {
   position: absolute;
-  bottom: 0;
-  transform: translateX(-50%);
-  transition: left 1500ms var(--spring) 600ms;
-}
-.mj-anim .scale[data-reveal]:not([data-in]) .scale-mark {
-  left: 0 !important;
-}
-.scale-pin {
-  display: block;
-  width: 2px;
-  height: 22px;
-  margin: 0 auto;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border: 3px solid var(--qa-ink-850);
+  border-radius: 50%;
   background: var(--t1);
+  box-shadow: 0 0 0 1px var(--qa-healthy);
+  transform: translateX(-50%);
+  translate: 0 -50%;
 }
 .scale-read {
   position: absolute;
-  bottom: 28px;
+  bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
   font-family: var(--vp-font-family-mono);
@@ -2269,96 +2479,89 @@ onBeforeUnmount(() => {
   white-space: nowrap;
   color: var(--t1);
 }
-.scale-legend {
+.meter-axis {
   position: relative;
-  display: flex;
-  margin-top: 14px;
-}
-.scale-key {
-  display: grid;
-  gap: 2px;
-  min-width: 6px;
-  padding-right: 8px;
-}
-.scale-key + .scale-key {
-  margin-left: 2px;
-}
-.scale-key:last-child {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: auto !important;
-  justify-items: end;
-  padding-right: 0;
-}
-.scale-verdict {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  white-space: nowrap;
-}
-.scale-range {
+  height: 22px;
+  margin-top: 8px;
   font-family: var(--vp-font-family-mono);
-  font-size: 12.5px;
+  font-size: 10px;
   color: var(--t3);
 }
-.math {
-  margin-top: 28px;
+.meter-axis span {
+  position: absolute;
+  transform: translateX(-50%);
 }
-.math-title {
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--t1);
+.meter-axis span:nth-child(1) {
+  left: 0;
+  transform: none;
 }
-.math dl {
+.meter-axis span:nth-child(2) {
+  left: 50%;
+}
+.meter-axis span:nth-child(3) {
+  left: 80%;
+}
+.meter-axis span:nth-child(4) {
+  right: 0;
+  transform: none;
+}
+.scale-legend {
   display: grid;
-  margin-top: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 18px;
+  padding-top: 18px;
   border-top: 1px solid var(--line);
 }
-.math dl > div {
+.scale-key {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  min-width: 0;
+}
+.scale-key i {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.scale-key span {
   display: grid;
-  grid-template-columns: 8rem minmax(0, 1fr);
-  gap: 16px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--line);
+  gap: 3px;
+  min-width: 0;
 }
-.math dt {
-  font-size: 14px;
-  color: var(--t3);
-}
-.math dd {
-  font-family: var(--vp-font-family-mono);
-  font-size: 14px;
-  font-variant-numeric: tabular-nums;
+.scale-key b {
+  font-size: clamp(9px, 1vw, 11px);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  white-space: normal;
+  overflow-wrap: anywhere;
   color: var(--t2);
 }
-.math b {
-  font-weight: 500;
-  color: var(--t1);
+.scale-key small {
+  font-family: var(--vp-font-family-mono);
+  font-size: 11px;
+  color: var(--t3);
 }
-.verdict-inline {
-  margin-left: 10px;
-  font-family: var(--vp-font-family-base);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-}
-
 /* 04 ---- trust ---- */
 .stamps {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 24px;
 }
-.mj .ladder {
+.qa .ladder {
   position: relative;
   display: grid;
   grid-template-columns: repeat(var(--n), minmax(0, 1fr));
   gap: 14px;
   padding: 28px 24px 24px;
-  border: 1px solid var(--line-2);
-  border-radius: 10px;
-  background: var(--well);
+  border: 1px solid var(--qa-glass-elevated-border);
+  border-radius: var(--qa-radius-panel);
+  background: var(--qa-glass-elevated-bg);
+  box-shadow: var(--qa-glass-elevated-shadow);
+  backdrop-filter: blur(var(--qa-glass-elevated-blur)) saturate(1.15);
 }
 .rung {
   display: grid;
@@ -2385,7 +2588,7 @@ onBeforeUnmount(() => {
   transition: transform 900ms var(--settle);
   transition-delay: calc(var(--i) * 110ms + 150ms);
 }
-.mj-anim .ladder[data-reveal]:not([data-in]) .bar {
+.qa-anim .ladder[data-reveal]:not([data-in]) .bar {
   transform: scaleY(0);
 }
 /* One pass of light up the rungs a real run reaches. Once, never looped. */
@@ -2435,7 +2638,7 @@ onBeforeUnmount(() => {
   top: 18px;
   bottom: 18px;
   left: calc(24px + var(--b) * (100% - 48px + 14px) / var(--n) - 7px);
-  border-left: 1px dashed color-mix(in srgb, var(--mj-aurora) 70%, transparent);
+  border-left: 1px dashed color-mix(in srgb, var(--qa-info) 55%, transparent);
 }
 .runline span {
   position: absolute;
@@ -2443,7 +2646,7 @@ onBeforeUnmount(() => {
   left: 10px;
   font-size: 12px;
   white-space: nowrap;
-  color: var(--mj-aurora-bright);
+  color: var(--qa-healthy-bright);
 }
 
 /* 05 ---- runtime: the output streams in ---- */
@@ -2451,7 +2654,7 @@ onBeforeUnmount(() => {
   transition: opacity 320ms var(--settle);
   transition-delay: calc(var(--i) * 35ms);
 }
-.mj-anim .streams[data-reveal]:not([data-in]) :deep(.tl) {
+.qa-anim .streams[data-reveal]:not([data-in]) :deep(.tl) {
   opacity: 0;
 }
 
@@ -2460,7 +2663,7 @@ onBeforeUnmount(() => {
   font-size: clamp(48px, 5.4vw, 72px);
   font-weight: 500;
   line-height: 1;
-  letter-spacing: -0.04em;
+  letter-spacing: 0;
   font-variant-numeric: tabular-nums;
 }
 .big-count span {
@@ -2479,7 +2682,7 @@ onBeforeUnmount(() => {
   margin-top: 32px;
   overflow-x: auto;
 }
-.mj .rules {
+.qa .rules {
   display: table;
   width: 100%;
   min-width: 560px;
@@ -2487,7 +2690,7 @@ onBeforeUnmount(() => {
   border-collapse: collapse;
   font-size: 15px;
 }
-.mj .rules :is(tr, th, td) {
+.qa .rules :is(tr, th, td) {
   border: 0;
   background: none;
 }
@@ -2516,10 +2719,10 @@ onBeforeUnmount(() => {
   vertical-align: middle;
   color: var(--t2);
 }
-.mj .rules tr.row {
+.qa .rules tr.row {
   transition: background-color 160ms var(--settle);
 }
-.mj .rules tr.row:hover {
+.qa .rules tr.row:hover {
   background: var(--vp-c-bg-alt);
 }
 .rules td:first-child {
@@ -2560,17 +2763,17 @@ onBeforeUnmount(() => {
   background: currentColor;
   transition: width 1100ms var(--settle) 300ms;
 }
-.mj-anim .table-wrap[data-reveal]:not([data-in]) .fp-fill {
+.qa-anim .table-wrap[data-reveal]:not([data-in]) .fp-fill {
   width: 0;
 }
 .fp-zero {
   color: var(--t1);
 }
 .fp-mid {
-  color: var(--mj-needswork);
+  color: var(--qa-attention);
 }
 .fp-high {
-  color: var(--mj-unworthy);
+  color: var(--qa-critical);
 }
 .rules td.sample {
   padding-right: 0;
@@ -2628,7 +2831,7 @@ onBeforeUnmount(() => {
     transform 600ms var(--settle);
   transition-delay: calc(var(--i) * 90ms + 150ms);
 }
-.mj-anim .codes[data-reveal]:not([data-in]) > div {
+.qa-anim .codes[data-reveal]:not([data-in]) > div {
   opacity: 0;
   transform: translateY(12px);
 }
@@ -2659,10 +2862,10 @@ onBeforeUnmount(() => {
   right: var(--edge);
   border-top: 1px solid var(--line);
 }
-.mj .limits-box h2 {
+.qa .limits-box h2 {
   font-size: clamp(24px, 2.5vw, 30px);
   font-weight: 500;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
 }
 .limits {
   display: grid;
@@ -2699,17 +2902,17 @@ onBeforeUnmount(() => {
   background:
     radial-gradient(
       38% 70% at 22% 100%,
-      color-mix(in srgb, var(--mj-aurora-green) 30%, transparent),
+      color-mix(in srgb, var(--qa-healthy) 18%, transparent),
       transparent 70%
     ),
     radial-gradient(
       38% 70% at 50% 100%,
-      color-mix(in srgb, var(--mj-aurora-cyan) 26%, transparent),
+      color-mix(in srgb, var(--qa-info) 12%, transparent),
       transparent 70%
     ),
     radial-gradient(
       38% 70% at 78% 100%,
-      color-mix(in srgb, var(--mj-aurora-violet) 30%, transparent),
+      color-mix(in srgb, var(--qa-steel) 10%, transparent),
       transparent 70%
     );
   animation: breathe 14s ease-in-out infinite alternate;
@@ -2724,11 +2927,11 @@ onBeforeUnmount(() => {
     transform: none;
   }
 }
-.mj .huge {
+.qa .huge {
   font-size: clamp(44px, 7.4vw, 104px);
   font-weight: 500;
   line-height: 1;
-  letter-spacing: -0.055em;
+  letter-spacing: 0;
 }
 .close-key {
   margin-top: 40px;
@@ -2747,16 +2950,15 @@ onBeforeUnmount(() => {
   background: linear-gradient(
     90deg,
     transparent,
-    var(--mj-aurora-green) 18%,
-    var(--mj-aurora-cyan) 50%,
-    var(--mj-aurora-violet) 82%,
+    var(--qa-info) 18%,
+    var(--qa-steel) 50%,
+    var(--qa-healthy) 82%,
     transparent
   );
-  box-shadow: 0 0 28px 3px
-    color-mix(in srgb, var(--mj-aurora-cyan) 26%, transparent);
+  box-shadow: 0 0 28px 3px color-mix(in srgb, var(--qa-info) 20%, transparent);
   transition: transform 1600ms var(--settle) 300ms;
 }
-.mj-anim .closing[data-reveal]:not([data-in]) .draw {
+.qa-anim .closing[data-reveal]:not([data-in]) .draw {
   transform: scaleX(0);
 }
 
@@ -2772,7 +2974,7 @@ onBeforeUnmount(() => {
   .masks {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .mj .ladder {
+  .qa .ladder {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     row-gap: 28px;
   }
@@ -2791,7 +2993,7 @@ onBeforeUnmount(() => {
   .scan.live :is(.scan-lede, .found, .more) {
     display: none;
   }
-  .mj .scan.live .scan-copy h2 {
+  .qa .scan.live .scan-copy h2 {
     font-size: 22px;
   }
   .scan.live .tally {
@@ -2825,7 +3027,8 @@ onBeforeUnmount(() => {
   .hero-grid,
   .toc,
   .flows,
-  .limits {
+  .limits,
+  .quick-start {
     grid-template-columns: minmax(0, 1fr);
   }
   .codes {
@@ -2838,39 +3041,47 @@ onBeforeUnmount(() => {
     align-items: flex-start;
     gap: 14px;
   }
-  .mj .stack-title {
+  .qa .stack-title {
     width: auto;
   }
-  .marquee {
+  .stack-detail {
+    display: grid;
     width: 100%;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+    padding: 0 0 20px;
+    border: 0;
+    background: none;
   }
   .anatomy,
   .masks {
     grid-template-columns: minmax(0, 1fr);
   }
-  .mj .ladder {
+  .qa .ladder {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .rung {
     grid-template-rows: 110px auto auto 1fr;
   }
-  .scale-verdict {
+  .scale-key b {
     font-size: 10px;
     letter-spacing: 0.06em;
+  }
+  .scale-legend {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 20px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .mj a,
-  .logo,
-  .logo svg,
+  .qa a,
   .toc-go,
   .card,
   .chip,
   .chip-card,
   .ln,
   .ln .n,
-  .mj .rules tr.row {
+  .qa .rules tr.row {
     transition: none;
   }
   .title .w,
@@ -2880,17 +3091,13 @@ onBeforeUnmount(() => {
   .ladder[data-in] .rung.run .bar::after {
     animation: none;
   }
-  .mj .track {
-    flex-wrap: wrap;
-    width: auto;
-    row-gap: 8px;
+  .boot-ring,
+  .boot-check,
+  .boot-corner,
+  .boot-scan,
+  .boot-wordmark,
+  .scroll-invite i::after {
     animation: none;
-  }
-  .dup {
-    display: none;
-  }
-  .marquee {
-    mask-image: none;
   }
 }
 </style>

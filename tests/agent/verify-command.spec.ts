@@ -18,7 +18,7 @@ let dir: string;
 let origCwd: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-verify-cmd-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-verify-cmd-"));
   origCwd = process.cwd();
   process.chdir(dir);
 });
@@ -77,9 +77,9 @@ describe("runVerifyCommand in-process (P7)", () => {
       join(dir, "ok.spec.ts"),
       "test('y', () => { expect(1).toBe(1); });\n",
     );
-    mkdirSync(join(dir, ".mjolnir"), { recursive: true });
+    mkdirSync(join(dir, ".qa-doctor"), { recursive: true });
     writeFileSync(
-      join(dir, ".mjolnir", "baseline.json"),
+      join(dir, ".qa-doctor", "baseline.json"),
       JSON.stringify({
         schemaVersion: 1,
         capturedAt: "2026-09-09T00:00:00.000Z",
@@ -103,9 +103,9 @@ describe("runVerifyCommand — partial scan, warning callback, gate arms", () =>
       join(dir, "x.spec.ts"),
       "test('y', () => { expect(1).toBe(1); });\n",
     );
-    mkdirSync(join(dir, ".mjolnir"), { recursive: true });
+    mkdirSync(join(dir, ".qa-doctor"), { recursive: true });
     writeFileSync(
-      join(dir, ".mjolnir", "baseline.json"),
+      join(dir, ".qa-doctor", "baseline.json"),
       JSON.stringify({
         schemaVersion: 1,
         capturedAt: "2026-09-09T00:00:00.000Z",
@@ -128,11 +128,11 @@ describe("runVerifyCommand — partial scan, warning callback, gate arms", () =>
       join(dir, "x.spec.ts"),
       "test('y', () => { expect(1).toBe(1); });\n",
     );
-    mkdirSync(join(dir, ".mjolnir"), { recursive: true });
+    mkdirSync(join(dir, ".qa-doctor"), { recursive: true });
     // No schemaVersion → loadBaseline warns through the callback (line
     // 1234's arrow function) and treats it as v1.
     writeFileSync(
-      join(dir, ".mjolnir", "baseline.json"),
+      join(dir, ".qa-doctor", "baseline.json"),
       JSON.stringify({
         capturedAt: "2026-09-09T00:00:00.000Z",
         commit: "abc1234",
@@ -148,13 +148,13 @@ describe("runVerifyCommand — partial scan, warning callback, gate arms", () =>
   });
 
   it("new error findings at the gate → exit 1; clean digest → exit 0", async () => {
-    mkdirSync(join(dir, ".mjolnir"), { recursive: true });
+    mkdirSync(join(dir, ".qa-doctor"), { recursive: true });
     writeFileSync(
       join(dir, "bad.spec.ts"),
       "test('z', () => { page.waitForTimeout(500); });\n",
     );
     writeFileSync(
-      join(dir, ".mjolnir", "baseline.json"),
+      join(dir, ".qa-doctor", "baseline.json"),
       JSON.stringify({
         schemaVersion: 1,
         capturedAt: "2026-09-09T00:00:00.000Z",
@@ -171,7 +171,7 @@ describe("runVerifyCommand — partial scan, warning callback, gate arms", () =>
 describe("the handler catch (exit 20) — audit-red's probe pattern", () => {
   it("an io throw inside the try block is contained: exit 20, not a crash", async () => {
     // The render (io.out) sits inside the try — a throwing out surfaces
-    // the same containment contract every Mjölnir handler carries.
+    // the same containment contract every QA Doctor handler carries.
     writeFileSync(
       join(dir, "x.spec.ts"),
       "test('y', () => { expect(1).toBe(1); });\n",

@@ -56,8 +56,8 @@ const SEEDS = [
     rule: 1,
     what: "a site variable drifts from the token",
     file: p("site", ".vitepress", "theme", "styles", "vars.css"),
-    edit: (s) => s.replace("--mj-gold: #c19a34;", "--mj-gold: #ff0000;"),
-    expect: "--mj-gold — tokens say #c19a34, css has #ff0000",
+    edit: (s) => s.replace("--qa-gold: #c19a34;", "--qa-gold: #ff0000;"),
+    expect: "--qa-gold — tokens say #c19a34, css has #ff0000",
   },
   {
     rule: "1 (retired face)",
@@ -75,8 +75,8 @@ const SEEDS = [
     file: p("src", "reporter", "theme.ts"),
     edit: (s) =>
       s.replace(
-        "export const NORSE = {",
-        'export const NORSE = {\n  seeded: fromHex("#ABCDEF"),',
+        "export const TERMINAL_COLORS = {",
+        'export const TERMINAL_COLORS = {\n  seeded: fromHex("#ABCDEF"),',
       ),
     expect: "src/reporter/theme.ts:",
   },
@@ -187,7 +187,7 @@ function main() {
     console.log(line);
   };
 
-  say("mjolnir brand doctor — failure-first self-test\n");
+  say("qa-doctor brand doctor — failure-first self-test\n");
 
   const before = runDoctor();
   say(`  baseline: exit ${before.code} (expected 0)`);

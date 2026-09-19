@@ -4,11 +4,11 @@
  * Sourced from what the reporter can actually emit, not from a hand-kept
  * list: the committed `assets/readme/demo.svg` is a real `--verbose` scan
  * rendered by `renderTerminal`, and `src/reporter/{art,theme,terminal}.ts`
- * own every glyph the renderer can reach for (hammer states, gauges,
+ * own every glyph the renderer can reach for (score graphic states, gauges,
  * severity tags, box drawing). Anything in that union must resolve in the
  * vendored font stack or `probe-glyphs.ts` fails before a frame is drawn.
  *
- * A missing glyph is not cosmetic here. The hammer, the score gauge and
+ * A missing glyph is not cosmetic here. The score graphic, the score gauge and
  * the severity tags ARE the video — a tofu box in place of `ᚦ` or `█`
  * would misrepresent what the tool prints, which is the one thing these
  * assets exist to avoid.

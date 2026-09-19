@@ -1,19 +1,19 @@
 # Agent integration
 
-Mjölnir is built to sit inside an agent's fix loop — the same loop a
+QA Doctor is built to sit inside an agent's fix loop — the same loop a
 human maintainer runs, made mechanical. One rule governs the surface:
 **the agent gets derived facts, never trust claims.**
 
 ## The loop
 
 ```text
-1. mjolnir baseline        # once — the before-state, committed
+1. qa-doctor baseline        # once — the before-state, committed
 2. (the agent fixes findings)
-3. mjolnir verify          # before/after digest — see below
+3. qa-doctor verify          # before/after digest — see below
 4. repeat 2–3 until clean, then commit
 ```
 
-`mjolnir verify` prints the digest and exits with the frozen contract:
+`qa-doctor verify` prints the digest and exits with the frozen contract:
 `0` clean · `1` new error findings · `2` partial scan or no baseline.
 A partial scan never masquerades as a clean verification — the agent
 re-runs or reports honestly, exactly like CI does.
@@ -37,15 +37,15 @@ re-runs or reports honestly, exactly like CI does.
 The same loop runs over the MCP transport: the `verify` tool is 1:1
 with the verb (scan + baseline diff → the digest as data), under the
 same guardrails as every tool — one scan in flight, parameter size
-caps, filesystem boundary = scan target + `.mjolnir/`, zero network,
-plugin gate unchanged. `mjolnir install` writes the agent instruction
+caps, filesystem boundary = scan target + `.qa-doctor/`, zero network,
+plugin gate unchanged. `qa-doctor install` writes the agent instruction
 surfaces (Claude Code command, agent briefs) with the loop documented
 inline.
 
 ## Boundaries (what the agent loop must never do)
 
 - Suppress a finding to obtain a clean digest — suppressions require a
-  reason, live in `mjolnir.config.json`, and expire after 90 days.
+  reason, live in `qa-doctor.config.json`, and expire after 90 days.
 - Read trust into the digest: a `VERIFIED-RESOLVED` line is a §15
   lifecycle resolution, not a proof of correctness.
 - Treat the score as a reward signal to maximize — it is a measurement

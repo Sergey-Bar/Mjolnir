@@ -7,7 +7,7 @@ name: Release
 # 1. Automated (default): merge to `main` → the `version` job computes
 #    the bump from PR labels (no label = patch; release:major / minor /
 #    skip override), collapses CHANGELOG.md's [Unreleased] sections
-#    under the new version, commits + tags v<X> as mjolnir-release-bot,
+#    under the new version, commits + tags v<X> as qa-doctor-release-bot,
 #    and the `release` job publishes from that tag. Zero manual
 #    commands.
 # 2. Manual: push a version tag (v*) or `gh workflow run release.yml
@@ -137,7 +137,7 @@ jobs:
         env:
           BUMP: ${{ steps.compute.outputs.bump }}
         run: |
-          git config user.name "mjolnir-release-bot"
+          git config user.name "qa-doctor-release-bot"
           git config user.email "bot@users.noreply.github.com"
           NEW_VERSION="$(npm version "$BUMP" --no-git-tag-version)"
           NEW_VERSION="${NEW_VERSION#v}"
@@ -269,12 +269,15 @@ jobs:
       # publish step uploads: audit → publish, never pack twice.
       - name: Pack-audit the exact tarball (SC-6)
         run: |
-          TGZLIST=(release-assets/mjolnir-qa-*.tgz)
+          shopt -s nullglob
+          TGZLIST=(release-assets/qa-doctor-cli-*.tgz)
           if [ "${#TGZLIST[@]}" -ne 1 ]; then
             echo "expected exactly one packed tarball, found ${#TGZLIST[@]}" >&2
             exit 1
           fi
-          node scripts/pack-audit.mjs "${TGZLIST[0]}"
+          TARBALL="$(realpath "${TGZLIST[0]}")"
+          node scripts/pack-audit.mjs "$TARBALL"
+          echo "TARBALL=$TARBALL" >> "$GITHUB_ENV"
 
       # Idempotency. A version already on the registry must not be a hard
       # failure: re-running a release for an existing tag (workflow_dispatch
@@ -284,7 +287,7 @@ jobs:
       - name: Check whether this version is already on npm
         id: registry
         run: |
-          if npm view "mjolnir-qa@${VERSION}" version >/dev/null 2>&1; then
+          if npm view "qa-doctor-cli@${VERSION}" version >/dev/null 2>&1; then
             echo "Already on npm — publish will be skipped."
             echo "published=true" >> "$GITHUB_OUTPUT"
           else
@@ -321,8 +324,8 @@ jobs:
         if: vars.NPM_PUBLISH == 'true' && steps.registry.outputs.published != 'true'
         run: |
           NPM_VERSION="11.19.1"
-          TARBALL="/tmp/npm-${NPM_VERSION}.tgz"
-          export TARBALL
+          NPM_TARBALL="/tmp/npm-${NPM_VERSION}.tgz"
+          export NPM_TARBALL
           npm pack "npm@${NPM_VERSION}" --pack-destination /tmp
           # Verify SHA-512 SRI before install (CodeRabbit security fix)
           EXPECTED_INTEGRITY=$(npm view "npm@${NPM_VERSION}" dist.integrity)
@@ -332,7 +335,7 @@ jobs:
             const fs = require('fs');
             const expected = process.env.EXPECTED_INTEGRITY;
             const hash = crypto.createHash('sha512');
-            hash.update(fs.readFileSync(process.env.TARBALL));
+            hash.update(fs.readFileSync(process.env.NPM_TARBALL));
             const actual = 'sha512-' + hash.digest('base64');
             if (expected !== actual) {
               console.error('Checksum mismatch: expected ' + expected + ', got ' + actual);
@@ -340,7 +343,7 @@ jobs:
             }
             console.log('Checksum verified: ' + actual);
           "
-          npm install -g "$TARBALL" --no-fund --no-audit --ignore-scripts
+          npm install -g "$NPM_TARBALL" --no-fund --no-audit --ignore-scripts
           hash -r
           npm --version | grep -Fx 11.19.1
 
@@ -366,8 +369,8 @@ jobs:
       #
       # `ENEEDAUTH` / "OIDC token exchange error - package not found" here
       # means the trusted-publisher config does NOT match this run's OIDC
-      # claims. Check on npmjs.com → mjolnir-qa → Settings → Publishing
-      # access: repository must be Sergey-Bar/Mjolnir, workflow must be
+      # claims. Check on npmjs.com → qa-doctor-cli → Settings → Publishing
+      # access: repository must be Sergey-Bar/qa-doctor, workflow must be
       # release.yml, and the Environment field must be EMPTY.
       # Bug-audit G5 (pre-publish install gate): the real-registry install
       # proof used to run only in the NIGHTLY release-smoke workflow, so a
@@ -380,6 +383,7 @@ jobs:
         if: vars.NPM_PUBLISH == 'true' && steps.registry.outputs.published != 'true'
         env:
           RUN_REGISTRY_INSTALL_TEST: "1"
+          REGISTRY_INSTALL_TARBALL: ${{ env.TARBALL }}
         run: npx vitest run tests/integrations/registry-install.spec.ts
 
       # M4: rc tags (vX.Y.Z-rc.N) publish under the `next` dist-tag and
@@ -399,7 +403,7 @@ jobs:
 
       - name: Publish to npm (OIDC trusted publishing)
         if: vars.NPM_PUBLISH == 'true' && steps.registry.outputs.published != 'true'
-        run: npm publish --provenance --access public --tag "${{ steps.disttag.outputs.tag }}" --loglevel verbose
+        run: npm publish "$TARBALL" --ignore-scripts --provenance --access public --tag "${{ steps.disttag.outputs.tag }}" --loglevel verbose
 
       # The gate that makes the GitHub Release below honest. Registry reads
       # can lag a publish by a few seconds, so this polls rather than
@@ -412,15 +416,15 @@ jobs:
         run: |
           DIST_TAG="${{ steps.disttag.outputs.tag }}"
           for attempt in 1 2 3 4 5 6; do
-            FOUND="$(npm view "mjolnir-qa@${DIST_TAG}" version 2>/dev/null || true)"
+            FOUND="$(npm view "qa-doctor-cli@${DIST_TAG}" version 2>/dev/null || true)"
             if [ "$FOUND" = "$VERSION" ]; then
-              echo "mjolnir-qa@${VERSION} is live on the registry under dist-tag ${DIST_TAG}."
+              echo "qa-doctor-cli@${VERSION} is live on the registry under dist-tag ${DIST_TAG}."
               exit 0
             fi
             echo "Not resolvable yet (attempt ${attempt}/6) — waiting 10s."
             sleep 10
           done
-          echo "::error::mjolnir-qa@${VERSION} is not resolvable on the registry under dist-tag ${DIST_TAG}. Refusing to create a GitHub Release for a version nobody can install."
+          echo "::error::qa-doctor-cli@${VERSION} is not resolvable on the registry under dist-tag ${DIST_TAG}. Refusing to create a GitHub Release for a version nobody can install."
           exit 1
 
       # Last, and only now: everything above proved the package is real.
@@ -448,7 +452,7 @@ jobs:
       - name: Build the release body with the verdict block
         run: |
           {
-            echo "Install: \`npx mjolnir-qa@${VERSION} .\`"
+            echo "Install: \`npx qa-doctor-cli@${VERSION} .\`"
             echo "Full changelog is auto-generated below from all commits and PRs since the previous release."
             echo ""
             echo '```text'
@@ -470,7 +474,7 @@ jobs:
           body_path: release-body.md
 
   # ── Job 3: action-tags — keep the action's major moving tag honest ──
-  # The root action.yml (P1.1) is consumed as `uses: Sergey-Bar/Mjolnir@v1`.
+  # The root action.yml (P1.1) is consumed as `uses: Sergey-Bar/qa-doctor@v1`.
   # A major moving tag must advance on every STABLE release so consumers
   # pinned to `v1` receive updates, and must NOT move for rc tags (an rc
   # must never become what `@v1` resolves to — the same ruling as npm's

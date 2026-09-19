@@ -12,16 +12,17 @@ import { execFileSync, spawnSync } from "node:child_process";
 /** Where the encoder looks, in order. */
 export function resolveFfmpeg(bin: "ffmpeg" | "ffprobe" = "ffmpeg"): string {
   const override =
-    process.env[bin === "ffmpeg" ? "MJOLNIR_FFMPEG" : "MJOLNIR_FFPROBE"];
+    process.env[bin === "ffmpeg" ? "QA_DOCTOR_FFMPEG" : "QA_DOCTOR_FFPROBE"];
   if (override) return override;
-  const found = spawnSync("which", [bin], { encoding: "utf8" });
-  const path = found.stdout.trim();
+  const finder = process.platform === "win32" ? "where.exe" : "which";
+  const found = spawnSync(finder, [bin], { encoding: "utf8" });
+  const path = (found.stdout ?? "").split(/\r?\n/)[0]?.trim();
   if (path) return path;
   throw new Error(
     `${bin} not found. The demo-video renderer needs an ffmpeg build with ` +
       `libx264 — it is deliberately not a dependency of this repo.\n` +
       `  Debian/Ubuntu: apt-get install -y --no-install-recommends ffmpeg\n` +
-      `  or:            npx ffmpeg-static  (then set MJOLNIR_FFMPEG)\n` +
+      `  or:            npx ffmpeg-static  (then set QA_DOCTOR_FFMPEG)\n` +
       `Playwright's bundled ffmpeg will NOT work: it is built ` +
       `--disable-everything with only VP8/WebM, no H.264 and no MP4 muxer.`,
   );

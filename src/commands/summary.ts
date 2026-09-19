@@ -1,8 +1,8 @@
 /**
- * `mjolnir summary [report.json]` — CI annotations + step summary
+ * `qa-doctor summary [report.json]` — CI annotations + step summary
  * (Terminal + CI UX Overhaul plan, M4).
  *
- * Additive command; default report path `mjolnir.json`. Reads a saved
+ * Additive command; default report path `qa-doctor.json`. Reads a saved
  * ScanResult JSON (the `--json` scan output) and emits:
  *  1. GitHub annotations to stdout, only when GITHUB_ACTIONS=true —
  *     one per finding, via the single github.ts emitter.
@@ -66,7 +66,7 @@ export function renderStepSummary(
   options: SummaryOptions = {},
 ): string {
   const lines: string[] = [];
-  lines.push("### 🔨 Mjölnir — Verification Trust");
+  lines.push("### 🔨 QA Doctor — Verification Trust");
   lines.push("");
 
   if (result.score === null) {
@@ -183,7 +183,7 @@ export function renderStepSummary(
   }
 
   lines.push(
-    "<!-- mjolnir-honesty: scores derive from rules with published evidence levels and measured false-positive rates where available. -->",
+    "<!-- qa-doctor-honesty: scores derive from rules with published evidence levels and measured false-positive rates where available. -->",
   );
   return lines.join("\n");
 }
@@ -248,11 +248,13 @@ export function runSummaryCommand(
       !a.startsWith("-") &&
       (prefixIdx === -1 || i !== prefixIdx + 1),
   );
-  const reportPath = positional[0] ?? "mjolnir.json";
+  const reportPath = positional[0] ?? "qa-doctor.json";
 
   if (!existsSync(reportPath)) {
-    io.err(`mjolnir summary: report file not found: ${reportPath}`);
-    io.err("  Run the scan with --json first: mjolnir --json > mjolnir.json");
+    io.err(`qa-doctor summary: report file not found: ${reportPath}`);
+    io.err(
+      "  Run the scan with --json first: qa-doctor --json > qa-doctor.json",
+    );
     return 10;
   }
 
@@ -260,7 +262,7 @@ export function runSummaryCommand(
   try {
     result = loadValidatedReport(reportPath);
   } catch (err) {
-    io.err(`mjolnir summary: cannot read ${reportPath}: ${errorText(err)}`);
+    io.err(`qa-doctor summary: cannot read ${reportPath}: ${errorText(err)}`);
     return 2;
   }
 
@@ -285,7 +287,7 @@ export function runSummaryCommand(
       appendFileSync(stepSummaryPath, `${summary}\n`);
     } catch (err) {
       io.err(
-        `mjolnir summary: could not write $GITHUB_STEP_SUMMARY (${errorText(err)}); printing to stdout instead.`,
+        `qa-doctor summary: could not write $GITHUB_STEP_SUMMARY (${errorText(err)}); printing to stdout instead.`,
       );
       io.out(summary);
     }

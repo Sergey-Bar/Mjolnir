@@ -30,7 +30,7 @@ let dir: string;
 const createdDirs: string[] = [];
 
 function tmpRepo(): string {
-  const d = mkdtempSync(join(tmpdir(), "mjolnir-cov-gap-"));
+  const d = mkdtempSync(join(tmpdir(), "qa-doctor-cov-gap-"));
   createdDirs.push(d);
   return d;
 }

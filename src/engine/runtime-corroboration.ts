@@ -11,17 +11,9 @@
  *     produced WITH a runtimeCorroboration value — a static-only
  *     finding can never claim L4/L5 (No False Proof).
  *
- * Matching is by FILE + LINE containment against the report's verdicts
- * (the report knows each executed test's file, title, and attempt
- * outcomes — it does not know line ranges, so "test" granularity means
- * the finding's line falls between two matched tests' first lines of
- * the same file; a conservative approximation that prefers claiming
- * LESS: when the report cannot place the line inside a specific test,
- * corroboration stays at file level).
- *
  * Pure functions only — the CLI decides WHEN to call this (a report
  * next to the scan target, the same auto-discovery convention as
- * `mjolnir forensics`: `mjolnir.report.json` / `test-results/`).
+ * `qa-doctor forensics`: `qa-doctor.report.json` / `test-results/`).
  */
 
 import type { Finding, RuntimeCorroboration, TrustLevel } from "../types.js";
@@ -108,9 +100,7 @@ export function stampRuntimeCorroboration(
       f.qaImpact === "FLAKY-RISK" &&
       matched !== undefined &&
       !matched.skipped &&
-      (matched.passedOnRetry ||
-        matched.everFailed ||
-        matched.finalStatus === "timedOut");
+      (matched.passedOnRetry || matched.finalStatus === "timedOut");
     if (flakeCorroborated) corroboration.level = "defect";
 
     f.runtimeCorroboration = corroboration;
@@ -120,29 +110,14 @@ export function stampRuntimeCorroboration(
   return corroborated;
 }
 
-/**
- * The test whose declaration span contains `line`. Playwright JSON
- * verdicts carry the spec's declaration line: the containing test is
- * the one with the greatest declaration line ≤ the finding's line in
- * the same file (specs are flat within a file). When the report cannot
- * place lines (JUnit, or some verdicts lack them) the only HONEST
- * claim is file-level corroboration — plus the unambiguous
- * single-test-file case. Claiming a specific test without range
- * knowledge would fabricate precision the report does not carry.
- */
 function findContainingTest(
   verdicts: TestVerdict[],
   line: number,
 ): TestVerdict | undefined {
-  if (verdicts.length === 1) return verdicts[0];
+  if (!Number.isInteger(line) || line < 1) return undefined;
   if (verdicts.some((v) => v.line === undefined)) return undefined;
-  const sorted = [...verdicts].sort((a, b) => (a.line ?? 0) - (b.line ?? 0));
-  let match: TestVerdict | undefined;
-  for (const v of sorted) {
-    if ((v.line ?? 0) <= line) match = v;
-    else break;
-  }
-  return match;
+  const matches = verdicts.filter((v) => v.line === line);
+  return matches.length === 1 ? matches[0] : undefined;
 }
 
 /**

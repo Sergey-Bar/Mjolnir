@@ -1,13 +1,13 @@
 {
-  "name": "mjolnir-qa",
+  "name": "qa-doctor-cli",
   "version": "2.0.0",
-  "description": "Mjölnir — the Verification Trust Engine for QA. Audits test suites and CI pipelines, reports a worthiness score and prioritized findings.",
+  "description": "QA Doctor — the Verification Trust Engine for QA. Audits test suites and CI pipelines, reports a test health score and prioritized findings.",
   "type": "module",
   "engines": {
     "node": ">=22.18"
   },
   "bin": {
-    "mjolnir": "dist/cli.mjs"
+    "qa-doctor": "dist/cli.mjs"
   },
   "workspaces": [
     "packages/*"
@@ -23,7 +23,7 @@
     "dev": "tsx src/cli.ts",
     "mcp": "node dist/mcp/stdio.mjs",
     "test": "vitest run",
-    "bench:scan": "tsx scripts/bench-scan.ts .mjolnir --files 300",
+    "bench:scan": "tsx scripts/bench-scan.ts .qa-doctor --files 300",
     "test:stress": "vitest run --config vitest.stress.config.ts",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
@@ -86,16 +86,16 @@
     "linter",
     "static-analysis"
   ],
-  "author": "Mjölnir Team",
+  "author": "QA Doctor Team",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Sergey-Bar/Mjolnir.git"
+    "url": "git+https://github.com/Sergey-Bar/qa-doctor.git"
   },
   "bugs": {
-    "url": "https://github.com/Sergey-Bar/Mjolnir/issues"
+    "url": "https://github.com/Sergey-Bar/qa-doctor/issues"
   },
-  "homepage": "https://github.com/Sergey-Bar/Mjolnir#readme",
+  "homepage": "https://github.com/Sergey-Bar/qa-doctor#readme",
   "dependencies": {
     "tree-sitter-wasms": "^0.1.13",
     "ts-morph": "^28.0.0",

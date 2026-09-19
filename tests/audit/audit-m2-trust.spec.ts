@@ -2,7 +2,7 @@
  * M2 acceptance tests — audit-remediation-master-plan.md.
  *
  *  - audit-C2: the plugin trust gate. npm plugins and JS-module rule
- *    sources execute ONLY behind --enable-plugins / MJOLNIR_ENABLE_PLUGINS=1
+ *    sources execute ONLY behind --enable-plugins / QA_DOCTOR_ENABLE_PLUGINS=1
  *    (default OFF). JSON manifests load without the gate (no code by
  *    design). Gate-closed skips are reported loudly on stderr.
  *  - audit-S2: ignore/glob pattern caps reject oversized/hostile patterns.
@@ -38,11 +38,11 @@ afterEach(() => {
     if (d) rmSync(d, { recursive: true, force: true });
   }
   vi.restoreAllMocks();
-  delete process.env["MJOLNIR_ENABLE_PLUGINS"];
+  delete process.env["QA_DOCTOR_ENABLE_PLUGINS"];
 });
 
 function tmpRepo(label: string): string {
-  const d = mkdtempSync(join(tmpdir(), `mjolnir-m2-${label}-`));
+  const d = mkdtempSync(join(tmpdir(), `qa-doctor-m2-${label}-`));
   createdDirs.push(d);
   return d;
 }
@@ -64,21 +64,21 @@ describe("audit-C2: plugin trust gate — npm plugins", () => {
   it("a declared plugin is NOT loaded when the gate is closed (code never runs)", () => {
     const dir = tmpRepo("c2-npm");
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
-      JSON.stringify({ plugins: ["mjolnir-plugin-hostile"] }),
+      join(dir, "qa-doctor.config.json"),
+      JSON.stringify({ plugins: ["qa-doctor-plugin-hostile"] }),
     );
     const result = loadPlugins(dir, false);
     // No plugin loaded, no require attempted, source reported as skipped.
     expect(result.plugins).toHaveLength(0);
     expect(result.errors).toHaveLength(0);
-    expect(result.skipped).toEqual(["mjolnir-plugin-hostile"]);
+    expect(result.skipped).toEqual(["qa-doctor-plugin-hostile"]);
   });
 
   it("gate open (flag) attempts the declared plugin and reports a load error for a missing package", () => {
     const dir = tmpRepo("c2-npm-open");
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
-      JSON.stringify({ plugins: ["mjolnir-plugin-does-not-exist"] }),
+      join(dir, "qa-doctor.config.json"),
+      JSON.stringify({ plugins: ["qa-doctor-plugin-does-not-exist"] }),
     );
     const result = loadPlugins(dir, true);
     expect(result.plugins).toHaveLength(0);
@@ -91,21 +91,21 @@ describe("audit-C2: plugin trust gate — npm plugins", () => {
   it("gate closed (env var unset) never attempts the load", () => {
     const dir = tmpRepo("c2-npm-closed");
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
-      JSON.stringify({ plugins: ["mjolnir-plugin-does-not-exist"] }),
+      join(dir, "qa-doctor.config.json"),
+      JSON.stringify({ plugins: ["qa-doctor-plugin-does-not-exist"] }),
     );
     const result = loadPlugins(dir, false);
     // The same missing package produces NO load error when the gate is
     // closed — the loader never reached require().
     expect(result.errors).toHaveLength(0);
-    expect(result.skipped).toEqual(["mjolnir-plugin-does-not-exist"]);
+    expect(result.skipped).toEqual(["qa-doctor-plugin-does-not-exist"]);
   });
 
   it("gate selection: flag wins, env var applies process-wide, default closed", () => {
     expect(pluginsGateOpen(undefined)).toBe(false);
     expect(pluginsGateOpen(false)).toBe(false);
     expect(pluginsGateOpen(true)).toBe(true);
-    process.env["MJOLNIR_ENABLE_PLUGINS"] = "1";
+    process.env["QA_DOCTOR_ENABLE_PLUGINS"] = "1";
     expect(pluginsGateOpen(undefined)).toBe(true);
     expect(pluginsGateOpen(false)).toBe(true);
   });
@@ -119,38 +119,38 @@ describe("audit-C2: plugin trust gate — npm plugins", () => {
         "describe('d', () => { it('w', () => { expect(1).toBe(1); }); });\n",
     );
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
-      JSON.stringify({ plugins: ["mjolnir-plugin-hostile"] }),
+      join(dir, "qa-doctor.config.json"),
+      JSON.stringify({ plugins: ["qa-doctor-plugin-hostile"] }),
     );
     const cap = capture();
     const code = await runScanCommand([dir, "--json"], cap.io);
     expect(cap.errText()).toContain("plugin code execution is DISABLED");
-    expect(cap.errText()).toContain("mjolnir-plugin-hostile");
+    expect(cap.errText()).toContain("qa-doctor-plugin-hostile");
     expect(code).toBe(0);
   });
 });
 
 describe("audit-C2: plugin trust gate — JS modules vs JSON manifests", () => {
-  it("a JS module in mjolnir-rules/ is NOT imported when the gate is closed", async () => {
+  it("a JS module in qa-doctor-rules/ is NOT imported when the gate is closed", async () => {
     const dir = tmpRepo("c2-js");
-    mkdirSync(join(dir, "mjolnir-rules"), { recursive: true });
+    mkdirSync(join(dir, "qa-doctor-rules"), { recursive: true });
     // If this module were imported, its top-level throw would surface as
     // a load error — the gate must prevent the import from ever happening.
     writeFileSync(
-      join(dir, "mjolnir-rules", "hostile.mjs"),
+      join(dir, "qa-doctor-rules", "hostile.mjs"),
       "throw new Error('MODULE EXECUTED — gate failed');\n",
     );
     const result = await loadLocalRules(dir, false);
     expect(result.rules).toHaveLength(0);
     expect(result.errors.join("\n")).not.toContain("MODULE EXECUTED");
-    expect(result.skipped).toEqual(["mjolnir-rules/hostile.mjs"]);
+    expect(result.skipped).toEqual(["qa-doctor-rules/hostile.mjs"]);
   });
 
   it("the same JS module IS loaded when the gate is open (and its rules accepted)", async () => {
     const dir = tmpRepo("c2-js-open");
-    mkdirSync(join(dir, "mjolnir-rules"), { recursive: true });
+    mkdirSync(join(dir, "qa-doctor-rules"), { recursive: true });
     writeFileSync(
-      join(dir, "mjolnir-rules", "ok.mjs"),
+      join(dir, "qa-doctor-rules", "ok.mjs"),
       "export const rules = [{ id: 'QA-ACME-001', category: 'QA-TEST', title: 't', severity: 'info', confidence: 'medium', findingType: 'heuristic-risk', qaImpact: 'HYGIENE', appliesTo: 'test-files', run: () => [] }];\n",
     );
     const result = await loadLocalRules(dir, true);
@@ -161,9 +161,9 @@ describe("audit-C2: plugin trust gate — JS modules vs JSON manifests", () => {
 
   it("a JSON manifest loads WITHOUT the gate (declarative-safe by design)", async () => {
     const dir = tmpRepo("c2-json");
-    mkdirSync(join(dir, "mjolnir-rules"), { recursive: true });
+    mkdirSync(join(dir, "qa-doctor-rules"), { recursive: true });
     writeFileSync(
-      join(dir, "mjolnir-rules", "acme.json"),
+      join(dir, "qa-doctor-rules", "acme.json"),
       JSON.stringify({
         id: "QA-ACME-002",
         category: "QA-TEST",
@@ -183,13 +183,13 @@ describe("audit-C2: plugin trust gate — JS modules vs JSON manifests", () => {
 
   it("the gate notice names the skipped sources and the enabling instructions", () => {
     const notice = renderGateNotice([
-      { kind: "plugin-package", name: "mjolnir-plugin-x" },
-      { kind: "js-module", name: "mjolnir-rules/x.mjs" },
+      { kind: "plugin-package", name: "qa-doctor-plugin-x" },
+      { kind: "js-module", name: "qa-doctor-rules/x.mjs" },
     ]);
     expect(notice).toContain("--enable-plugins");
-    expect(notice).toContain("MJOLNIR_ENABLE_PLUGINS=1");
-    expect(notice).toContain("mjolnir-plugin-x");
-    expect(notice).toContain("mjolnir-rules/x.mjs");
+    expect(notice).toContain("QA_DOCTOR_ENABLE_PLUGINS=1");
+    expect(notice).toContain("qa-doctor-plugin-x");
+    expect(notice).toContain("qa-doctor-rules/x.mjs");
     expect(notice).toContain("no code");
   });
 });
@@ -201,9 +201,9 @@ describe("audit-C2: shared reserved-prefix law", () => {
     expect(isReservedPrefix("QA-SE-9")).toBe(true);
     expect(isReservedPrefix("QA-ACME-001")).toBe(false);
     const dir = tmpRepo("c2-prefix");
-    mkdirSync(join(dir, "mjolnir-rules"), { recursive: true });
+    mkdirSync(join(dir, "qa-doctor-rules"), { recursive: true });
     writeFileSync(
-      join(dir, "mjolnir-rules", "spoof.json"),
+      join(dir, "qa-doctor-rules", "spoof.json"),
       JSON.stringify({
         id: "QA-CYP-999",
         category: "QA-TEST",
@@ -220,9 +220,9 @@ describe("audit-C2: shared reserved-prefix law", () => {
 
   it("JS-module rules pass the same field validators as JSON rules", async () => {
     const dir = tmpRepo("c2-validate");
-    mkdirSync(join(dir, "mjolnir-rules"), { recursive: true });
+    mkdirSync(join(dir, "qa-doctor-rules"), { recursive: true });
     writeFileSync(
-      join(dir, "mjolnir-rules", "bad.mjs"),
+      join(dir, "qa-doctor-rules", "bad.mjs"),
       "export const rules = [{ id: 'QA-ACME-003', run: () => [], severity: 'catastrophic', category: 'QA-TEST', appliesTo: 'test-files' }];\n",
     );
     const result = await loadLocalRules(dir, true);
@@ -259,7 +259,7 @@ describe("audit-S7: config validation", () => {
   it("ignore[].files with non-string entries is a ConfigValidationError (exit 10)", () => {
     const dir = tmpRepo("s7-files");
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
+      join(dir, "qa-doctor.config.json"),
       JSON.stringify({
         ignore: [{ ruleId: "QA-PW-101", reason: "r", files: [1, 2] }],
       }),
@@ -270,7 +270,7 @@ describe("audit-S7: config validation", () => {
   it("unknown top-level config keys emit warnings, not silence", () => {
     const dir = tmpRepo("s7-keys");
     writeFileSync(
-      join(dir, "mjolnir.config.json"),
+      join(dir, "qa-doctor.config.json"),
       JSON.stringify({ severities: { "QA-PW-101": "error" } }),
     );
     const { warnings } = loadConfig(dir);

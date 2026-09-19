@@ -1,7 +1,7 @@
 /**
  * Tier 2 soak: 20 sequential full scans of FRESH TEMP COPIES of the
  * golden + demo repos (never scanned in place — baseline/stats write
- * .mjolnir/ state into the target and would contaminate later runs).
+ * .qa-doctor/ state into the target and would contaminate later runs).
  * Asserts byte-identical JSON every run and a flat RSS slope.
  */
 
@@ -49,9 +49,9 @@ for (const target of TARGETS) {
   const firstJsonByTarget = new Map();
   for (let run = 1; run <= RUNS; run++) {
     // Fresh temp copy every run.
-    const copy = mkdtempSync(join(tmpdir(), "mjolnir-soak-"));
+    const copy = mkdtempSync(join(tmpdir(), "qa-doctor-soak-"));
     cpSync(target, copy, { recursive: true });
-    rmSync(join(copy, ".mjolnir"), { recursive: true, force: true });
+    rmSync(join(copy, ".qa-doctor"), { recursive: true, force: true });
 
     const rssBefore = process.memoryUsage().rss;
     let json;
@@ -59,7 +59,7 @@ for (const target of TARGETS) {
       json = execFileSync(
         "node",
         [join(ROOT, "dist", "cli.mjs"), copy, "--json"],
-        { encoding: "utf8", env: { ...process.env, MJOLNIR_ASCII: "1" } },
+        { encoding: "utf8", env: { ...process.env, QA_DOCTOR_ASCII: "1" } },
       );
     } catch (err) {
       // Findings exits are fine — recover stdout from the error object.

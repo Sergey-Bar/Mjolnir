@@ -144,7 +144,7 @@ describe("zero-network + non-goal guards (§36 locked)", () => {
     const violations: string[] = [];
     for (const file of tsFilesUnder(SRC)) {
       const text = readFileSync(file, "utf8");
-      if (/MJOLNIR_TELEMETRY|trackEvent|telemetryClient/.test(text)) {
+      if (/QA_DOCTOR_TELEMETRY|trackEvent|telemetryClient/.test(text)) {
         violations.push(rel(file));
       }
     }

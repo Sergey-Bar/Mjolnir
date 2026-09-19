@@ -13,7 +13,7 @@
  * of each external plugin/local rule's `run` function, so a plugin that
  * changes code without bumping its revision still misses.
  *
- * Privacy posture: the cache lives under `<repo>/.mjolnir/cache/`, is
+ * Privacy posture: the cache lives under `<repo>/.qa-doctor/cache/`, is
  * gitignored, never leaves the machine, and this module performs zero
  * network I/O — fs and crypto only (asserted by the privacy spec).
  *
@@ -195,12 +195,12 @@ export const disabledScanCache: ScanCache = {
 };
 
 /**
- * Opens (and lazily creates) `<root>/.mjolnir/cache/scan-v<CACHE_VERSION>.json`. A
+ * Opens (and lazily creates) `<root>/.qa-doctor/cache/scan-v<CACHE_VERSION>.json`. A
  * corrupt, hostile or future-versioned cache file degrades to a cold
  * cache — never fails the scan.
  */
 export function createScanCache(root: string): ScanCache {
-  const dir = join(root, ".mjolnir", "cache");
+  const dir = join(root, ".qa-doctor", "cache");
   const file = join(dir, `scan-v${CACHE_VERSION}.json`);
   let entries: Record<string, CacheEntry> = {};
   let dirty = false;
@@ -294,7 +294,7 @@ export function createScanCache(root: string): ScanCache {
           "utf8",
         );
       } catch {
-        // A read-only or vanished .mjolnir/ must never fail a scan —
+        // A read-only or vanished .qa-doctor/ must never fail a scan —
         // the cache is an optimization, not a source of truth.
       }
     },

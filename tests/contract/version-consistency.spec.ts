@@ -48,7 +48,7 @@ describe("version string consistency", () => {
     expect(
       match?.[1],
       `engine/version.ts hardcodes ENGINE_VERSION "${match?.[1]}" but package.json is at ` +
-        `"${packageJson.version}" — \`mjolnir --version\` would report a ` +
+        `"${packageJson.version}" — \`qa-doctor --version\` would report a ` +
         `stale version to every user until this literal is updated. ` +
         `Run \`node scripts/sync-sarif-version.cjs\`.`,
     ).toBe(packageJson.version);

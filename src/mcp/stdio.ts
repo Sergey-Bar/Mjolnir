@@ -2,7 +2,7 @@
  * The standalone MCP stdio binary (blueprint §21), built to
  * `dist/mcp/stdio.mjs` and run by `npm run mcp`.
  *
- * `mjolnir mcp` reaches the same transport through the CLI and is what
+ * `qa-doctor mcp` reaches the same transport through the CLI and is what
  * the README documents, since it needs no path into node_modules. This
  * entry stays because the packaged binary is addressable without the
  * CLI's arg parsing in front of it, which is what the spawned-binary
@@ -22,7 +22,7 @@ void runStdioTransport(process.stdin, process.stdout)
   .then(() => process.exit(0))
   .catch((err) => {
     process.stderr.write(
-      `mjolnir mcp fatal: ${err instanceof Error ? err.message : err}\n`,
+      `qa-doctor mcp fatal: ${err instanceof Error ? err.message : err}\n`,
     );
     process.exitCode = 20;
   });

@@ -1,6 +1,6 @@
 # How the score works
 
-Mjölnir reports one number — **WORTHINESS**, 0–100 — and it is fully
+QA Doctor reports one number — **TEST HEALTH**, 0–100 — and it is fully
 transparent: a deduction table, a normalization step, and three ceilings.
 No model, no weights you can't see.
 
@@ -58,7 +58,7 @@ stricter: whether anything was ever observed to run.
 The two are related but not the same. A finding can be E2 — deterministic,
 structurally provable — and still sit at L2, because proving a defect
 exists in the source is not the same as watching it happen. Nothing
-Mjölnir derives from source text alone can climb past L2; L3 and above
+QA Doctor derives from source text alone can climb past L2; L3 and above
 need the artifacts of a run that already finished.
 
 ## Three ceilings, applied in order
@@ -73,18 +73,18 @@ need the artifacts of a run that already finished.
 3. **Suite-invalidating override** — a committed `.only` (or a `-k`
    filter) makes the runner skip everything else; the green result is not
    evidence about the rest of the suite. Rules that detect this cap the
-   score at **49** — straight into UNWORTHY — regardless of suite size.
+   score at **49** — straight into CRITICAL — regardless of suite size.
 
 ## Verdict bands
 
-| Score   | Verdict          |
-| ------- | ---------------- |
-| 100     | ⚡ **FORGED**    |
-| ≥ 80    | ✓ **WORTHY**     |
-| 50 – 79 | ⚠ **NEEDS WORK** |
-| < 50    | ✖ **UNWORTHY**   |
+| Score   | Verdict               |
+| ------- | --------------------- |
+| 100     | ⚡ **EXCELLENT**      |
+| ≥ 80    | ✓ **HEALTHY**         |
+| 50 – 79 | ⚠ **NEEDS ATTENTION** |
+| < 50    | ✖ **CRITICAL**        |
 
-An empty repo scores `null`, never a fake 100. `FORGED` is the premium
+An empty repo scores `null`, never a fake 100. `EXCELLENT` is the premium
 100-state — zero deductions, zero findings, the suite is clean.
 
 ## Transparency
@@ -99,5 +99,5 @@ point but is **not yet fitted** against the OSS corpus — that needs the
 corpus audit to persist per-repo declaration counts first. When the fit
 lands, `K` changes and the CHANGELOG records it as a behavioral break.
 The full calibration history and the reasoning behind every constant is
-in [`docs/SCORING.md`](https://github.com/Sergey-Bar/Mjolnir/blob/main/docs/SCORING.md).
+in [`docs/SCORING.md`](https://github.com/Sergey-Bar/qa-doctor/blob/main/docs/SCORING.md).
 :::

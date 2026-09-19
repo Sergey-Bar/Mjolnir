@@ -29,7 +29,7 @@ function git(args: string[]): void {
 
 let dir: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-e2e-baseline-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-e2e-baseline-"));
 });
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
@@ -67,7 +67,7 @@ describe("E2E journey 3: baseline → resolve → diff → stats", () => {
       const base = runCli(["baseline", dir, "--strict"]);
       expect(base.status).toBe(0);
       expect(base.stdout).toContain("Captured 2 findings");
-      expect(existsSync(join(dir, ".mjolnir", "baseline.json"))).toBe(true);
+      expect(existsSync(join(dir, ".qa-doctor", "baseline.json"))).toBe(true);
 
       // Resolve the findings.
       writeSpec("focused.spec.ts", FIXED);

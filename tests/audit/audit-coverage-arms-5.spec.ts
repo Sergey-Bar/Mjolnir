@@ -29,7 +29,7 @@ import { collectEnvironment } from "../../src/bench/schema.js";
 
 const createdDirs: string[] = [];
 function tmpRepo(prefix: string): string {
-  const d = mkdtempSync(join(tmpdir(), `mjolnir-arms5-${prefix}-`));
+  const d = mkdtempSync(join(tmpdir(), `qa-doctor-arms5-${prefix}-`));
   createdDirs.push(d);
   return d;
 }
@@ -80,14 +80,14 @@ describe("create-rule unknown-family guard", () => {
 describe("CLI catch-to-20 containment arms (S8)", () => {
   it("runSuppressions reports a ConfigValidationError as exit 10 with the message", () => {
     const root = tmpRepo("cfgerr");
-    writeFileSync(join(root, "mjolnir.config.json"), "{ not json");
+    writeFileSync(join(root, "qa-doctor.config.json"), "{ not json");
     const prevCwd = process.cwd();
     process.chdir(root);
     try {
       const cap = capture();
       const code = runSuppressions({ out: cap.io.out, err: cap.io.err });
       expect(code).toBe(10);
-      expect(cap.errText()).toContain("Invalid mjolnir config");
+      expect(cap.errText()).toContain("Invalid qa-doctor config");
     } finally {
       process.chdir(prevCwd);
     }
@@ -104,7 +104,7 @@ describe("CLI catch-to-20 containment arms (S8)", () => {
       err: cap.io.err,
     });
     expect(code).toBe(20);
-    expect(cap.errText()).toContain("mjolnir internal error:");
+    expect(cap.errText()).toContain("qa-doctor internal error:");
   });
 });
 
@@ -112,9 +112,9 @@ describe("baseline-aware command arms", () => {
   it("baseline diff with a schemaVersion-2 baseline degrades to no-baseline", async () => {
     const dir = tmpRepo("v2baseline");
     specWithTest(dir);
-    mkdirSync(join(dir, ".mjolnir"), { recursive: true });
+    mkdirSync(join(dir, ".qa-doctor"), { recursive: true });
     writeFileSync(
-      join(dir, ".mjolnir", "baseline.json"),
+      join(dir, ".qa-doctor", "baseline.json"),
       JSON.stringify({ schemaVersion: 2, findings: [] }),
     );
     const cap = capture();
@@ -132,15 +132,15 @@ describe("baseline-aware command arms", () => {
     const cap = capture();
     const code = await runPrCommentCommand([dir], cap.io);
     expect(code).toBe(0);
-    expect(cap.text()).toContain("Mjölnir");
+    expect(cap.text()).toContain("QA Doctor");
   });
 
   it("pr-comment with a v1 baseline folds the diff into the render", async () => {
     const dir = tmpRepo("prcomment2");
     specWithTest(dir);
-    mkdirSync(join(dir, ".mjolnir"), { recursive: true });
+    mkdirSync(join(dir, ".qa-doctor"), { recursive: true });
     writeFileSync(
-      join(dir, ".mjolnir", "baseline.json"),
+      join(dir, ".qa-doctor", "baseline.json"),
       JSON.stringify({ schemaVersion: 1, findings: [] }),
     );
     const cap = capture();
@@ -158,7 +158,7 @@ describe("currentCommit degrade arm (S1 lineage)", () => {
     expect(code).toBe(0);
     // The saved file records commit "unknown" — git was unavailable.
     const saved = JSON.parse(
-      readFileSync(join(dir, ".mjolnir", "baseline.json"), "utf8"),
+      readFileSync(join(dir, ".qa-doctor", "baseline.json"), "utf8"),
     ) as { commit?: string };
     expect(saved.commit).toBe("unknown");
   });
@@ -176,18 +176,18 @@ describe("bench collectEnvironment fallback arm", () => {
     if (process.platform === "win32") return; // POSIX-only arm; skip here
     const dir = tmpRepo("ro-save");
     specWithTest(dir);
-    mkdirSync(join(dir, ".mjolnir"), { recursive: true });
-    chmodSync(join(dir, ".mjolnir"), 0o555);
+    mkdirSync(join(dir, ".qa-doctor"), { recursive: true });
+    chmodSync(join(dir, ".qa-doctor"), 0o555);
     const cap = capture();
     const code = await runBaselineCommand([dir], cap.io);
-    chmodSync(join(dir, ".mjolnir"), 0o755);
+    chmodSync(join(dir, ".qa-doctor"), 0o755);
     expect(code).toBe(1);
     expect(cap.errText() + cap.text()).toContain("FAILED");
   });
 
   it("a scan-target crash OUTSIDE the save (before saveBaseline) still exits 20", async () => {
     // The remaining catch-to-20 arm of runBaselineCommand: a crash in
-    // runScan itself (a Mjölnir-scope failure) is the friendly exit 20.
+    // runScan itself (a QA Doctor-scope failure) is the friendly exit 20.
     const dir = tmpRepo("scan20");
     specWithTest(dir);
     const cap = capture();

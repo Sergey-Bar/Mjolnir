@@ -26,7 +26,7 @@ function comment(id: number, body: string): ExistingComment {
 
 describe("PR_COMMENT_MARKER", () => {
   it("contains the v1 marker", () => {
-    expect(PR_COMMENT_MARKER).toBe("<!-- mjolnir-pr-comment:v1 -->");
+    expect(PR_COMMENT_MARKER).toBe("<!-- qa-doctor-pr-comment:v1 -->");
   });
 });
 
@@ -34,7 +34,7 @@ describe("findExistingComment", () => {
   it("finds comment with the marker", () => {
     const comments = [
       comment(1, "some other comment"),
-      comment(2, `${PR_COMMENT_MARKER}\n## Mjolnir QA`),
+      comment(2, `${PR_COMMENT_MARKER}\n## QA Doctor`),
       comment(3, "another comment"),
     ];
     expect(findExistingComment(comments)).toBe(comments[1]);

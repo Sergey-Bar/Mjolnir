@@ -1,7 +1,7 @@
-# Final Certification — Mjölnir 2.0 Blueprint Execution
+# Final Certification — QA Doctor 2.0 Blueprint Execution
 
 **Date:** 2026-09-06 · **Report:** QA/reports/remediation/final-certification-2026-09-06.md
-**Plan:** `.kilo/plans/1788597687393-mjolnir-2-0-strategic-blueprint.md` (hardened v3)
+**Plan:** `.kilo/plans/1788597687393-qa-doctor-2-0-strategic-blueprint.md` (hardened v3)
 **Machine:** Windows (local execution) · CI: GitHub Actions ubuntu/macos/windows × node 22/24
 
 ---
@@ -36,7 +36,7 @@ Also merged pre-blueprint (this session): PR #38 agent-handoff+reporting (v0.5.4
 - 6,121+ tests green on every merged PR; coverage floor 100% per-file on
   all four axes (istanbul, per-file enforcement) — 0 violations at merge.
 - typecheck · lint · build (dual entry: dist/cli.mjs + dist/mcp/stdio.mjs)
-  · self-scan 99/100 WORTHY · generated-docs-drift green.
+  · self-scan 99/100 HEALTHY · generated-docs-drift green.
 - §25 semantic-integrity suite: identity stability, table-driven
   resolution fixtures (one per disappearance cause), contract parity,
   revision inconclusiveness, epistemic no-upgrade.
@@ -48,7 +48,7 @@ Also merged pre-blueprint (this session): PR #38 agent-handoff+reporting (v0.5.4
 
 **Not applicable to this repository.** The RDS/Oracle authorization
 (`Sergey_local` / BIST) was evaluated and found to belong to a different
-project — this repo (Mjölnir) contains no Oracle/JDBC surface, no
+project — this repo (QA Doctor) contains no Oracle/JDBC surface, no
 datasource configuration, and no database-dependent tests. No database
 operation was executed (the §1/§13 safety rules were applied and the
 mismatch was surfaced before any mutation).
@@ -58,7 +58,7 @@ mismatch was surfaced before any mutation).
 - build-test × 4 platforms × 2 node versions: PASS on every merged PR.
 - generated-docs-drift: PASS (docs/rules/*, capability matrix, machine
   contract doc, count-lock, FP-AUDIT all regenerated and drift-locked).
-- self-scan (the product scanning itself): 99/100 WORTHY, exit 0.
+- self-scan (the product scanning itself): 99/100 HEALTHY, exit 0.
 - security lanes: CodeQL, Socket, OSV, Snyk, workflow-lint: PASS.
 
 ### BLOCKED BY EXTERNAL ENVIRONMENT

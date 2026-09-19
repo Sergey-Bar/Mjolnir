@@ -4,7 +4,7 @@
  * The CI certification job gates on this command: exit 0 = every check
  * pass, exit 1 = any fail OR inconclusive, stdout = exactly one versioned
  * JSON document. Locked here:
- *   - schema versioning (mjolnir.doctor-report@1) and key order;
+ *   - schema versioning (qa-doctor.doctor-report@1) and key order;
  *   - G2: an INCONCLUSIVE check appears with its own status, ok=false,
  *     and healthy=false — never as a pass;
  *   - G5: two runs over the same tree are byte-identical (determinism
@@ -166,7 +166,7 @@ describe("doctor --json machine contract (Phase 5)", () => {
   it("G2: an unhealthy tree exits 1 — with and without --json (exit code is the gate)", () => {
     // Minimal repo-shaped tree: tests/fixtures EXISTS (so the run does not
     // exit 2) but is empty — the fixture firewall fails immediately.
-    const root = mkdtempSync(join(tmpdir(), "mjolnir-doctor-unhealthy-"));
+    const root = mkdtempSync(join(tmpdir(), "qa-doctor-doctor-unhealthy-"));
     tmpDirs.push(root);
     mkdirSync(join(root, "tests", "fixtures"), { recursive: true });
     const jsonOut: string[] = [];
@@ -192,7 +192,7 @@ describe("doctor --json machine contract (Phase 5)", () => {
   });
 
   it("exit 2: a target without tests/fixtures is a distinct usage error", () => {
-    const root = mkdtempSync(join(tmpdir(), "mjolnir-doctor-empty-"));
+    const root = mkdtempSync(join(tmpdir(), "qa-doctor-doctor-empty-"));
     tmpDirs.push(root);
     const sink = { out: () => {}, err: () => {} };
     expect(runDoctorCommand([root], sink)).toBe(2);

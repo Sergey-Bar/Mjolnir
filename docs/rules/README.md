@@ -1,4 +1,4 @@
-# Mjölnir — Rule Reference
+# QA Doctor — Rule Reference
 
 _Generated from the live rule registry — do not edit by hand. Regenerate with `npm run docs:rules`._
 

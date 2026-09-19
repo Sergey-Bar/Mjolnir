@@ -1,9 +1,9 @@
 
-> mjolnir-qa@0.5.31 site:lighthouse
+> qa-doctor-cli@0.5.31 site:lighthouse
 > node site/scripts/lighthouse-run.mjs
 
 
-mjolnir site lighthouse  (local static server, gzip on)
+qa-doctor site lighthouse  (local static server, gzip on)
 
   === desktop ===
   PASS  / (landing)

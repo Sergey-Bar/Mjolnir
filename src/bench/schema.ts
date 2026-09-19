@@ -58,8 +58,8 @@ export interface BenchFixture {
 export interface BenchArtifact {
   schemaVersion: number;
   harnessVersion: string;
-  /** mjolnir-qa package version under measurement. */
-  mjolnirVersion: string;
+  /** qa-doctor-cli package version under measurement. */
+  qaDoctorVersion: string;
   /** Node.js version string (process.version). */
   nodeVersion: string;
   /** process.platform. */

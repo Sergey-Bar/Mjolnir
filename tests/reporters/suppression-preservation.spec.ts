@@ -67,9 +67,9 @@ describe("Preservation: Terminal Output Unchanged for Non-Suppression Cases", ()
    * **Validates: Requirements 3.7**
    *
    * Property: For all score values 0–100, verdictFor returns the correct verdict:
-   *   - WORTHY when score >= 80
-   *   - NEEDS WORK when 50 <= score < 80
-   *   - UNWORTHY when score < 50
+   *   - HEALTHY when score >= 80
+   *   - NEEDS ATTENTION when 50 <= score < 80
+   *   - CRITICAL when score < 50
    */
   it("property: verdicts render correctly for all scores 0-100", () => {
     fc.assert(
@@ -78,15 +78,15 @@ describe("Preservation: Terminal Output Unchanged for Non-Suppression Cases", ()
         const output = renderTerminal(result, { isTTY: false });
 
         if (score >= 80) {
-          expect(output).toContain("WORTHY");
-          expect(output).not.toContain("NEEDS WORK");
-          expect(output).not.toContain("UNWORTHY");
+          expect(output).toContain("HEALTHY");
+          expect(output).not.toContain("NEEDS ATTENTION");
+          expect(output).not.toContain("CRITICAL");
         } else if (score >= 50) {
-          expect(output).toContain("NEEDS WORK");
-          expect(output).not.toContain("UNWORTHY");
+          expect(output).toContain("NEEDS ATTENTION");
+          expect(output).not.toContain("CRITICAL");
         } else {
-          expect(output).toContain("UNWORTHY");
-          expect(output).not.toContain("NEEDS WORK");
+          expect(output).toContain("CRITICAL");
+          expect(output).not.toContain("NEEDS ATTENTION");
         }
       }),
       { numRuns: 100 },
@@ -99,18 +99,18 @@ describe("Preservation: Terminal Output Unchanged for Non-Suppression Cases", ()
    * Property: When score=100, findings=[], and no suppressions, the victory
    * state appears in the output. The render mode is pinned because the
    * victory message is mode-specific (the ASCII contract string survives in
-   * ASCII mode; unicode mode renders the FORGED wordmark block — both
+   * ASCII mode; unicode mode renders the EXCELLENT wordmark block — both
    * test-locked in terminal-render.spec.ts). Relying on shouldUseAscii()
    * made this platform-dependent: win32 defaults to ASCII, Linux CI does not.
    */
-  it("property: FLAWLESS VICTORY appears for score=100 with zero findings and no suppressions", () => {
+  it("property: ALL CLEAR appears for score=100 with zero findings and no suppressions", () => {
     // Test with undefined suppressionCount
     const resultUndefined = makeResult({ score: 100, findings: [] });
     const outputUndefined = renderTerminal(resultUndefined, {
       isTTY: false,
       ascii: true,
     });
-    expect(outputUndefined).toContain("*** FLAWLESS VICTORY ***");
+    expect(outputUndefined).toContain("*** ALL CLEAR ***");
 
     // Test with suppressionCount = 0
     const resultZero = makeResult({
@@ -122,26 +122,26 @@ describe("Preservation: Terminal Output Unchanged for Non-Suppression Cases", ()
       isTTY: false,
       ascii: true,
     });
-    expect(outputZero).toContain("*** FLAWLESS VICTORY ***");
+    expect(outputZero).toContain("*** ALL CLEAR ***");
 
-    // Unicode mode: the FORGED wordmark block replaces the bare line —
+    // Unicode mode: the EXCELLENT wordmark block replaces the bare line —
     // the victory state must appear in BOTH modes.
     const outputUnicode = renderTerminal(resultUndefined, {
       isTTY: false,
       ascii: false,
     });
-    expect(outputUnicode).toContain("F O R G E D");
-    expect(outputUnicode).toContain("FORGED — zero findings");
+    expect(outputUnicode).toContain("E X C E L L E N T");
+    expect(outputUnicode).toContain("EXCELLENT — zero findings");
   });
 
   /**
    * **Validates: Requirements 3.1**
    *
-   * Property: The score section always contains the WORTHINESS label and the
+   * Property: The score section always contains the TEST HEALTH label and the
    * score value in N/100 format for any non-null score, regardless of
    * suppressionCount being 0 or undefined.
    */
-  it("property: score section format is preserved (WORTHINESS N/100)", () => {
+  it("property: score section format is preserved (TEST HEALTH N/100)", () => {
     fc.assert(
       fc.property(
         fc.integer({ min: 0, max: 100 }),
@@ -155,7 +155,7 @@ describe("Preservation: Terminal Output Unchanged for Non-Suppression Cases", ()
           const result = makeResult(overrides);
           const output = renderTerminal(result, { isTTY: false });
 
-          expect(output).toContain("WORTHINESS");
+          expect(output).toContain("TEST HEALTH");
           expect(output).toContain(`${score}/100`);
         },
       ),

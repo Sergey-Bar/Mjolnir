@@ -1,4 +1,4 @@
-# Mjölnir — Certification Policy (Consolidated & Owner-Ratified)
+# QA Doctor — Certification Policy (Consolidated & Owner-Ratified)
 
 > **Status: BINDING.** This document consolidates the certification-audit
 > plan (`.kilo/plans/1788771091931`, Wave-1 execution + owner chat
@@ -80,8 +80,8 @@ answer to "how many rules are measured" — derived from the live
 registry and revision-valid measurements (currently
 <!-- census:census -->74/5/79, 29<!-- /census:census --> quarantine).
 
-**Machine contract:** `mjolnir doctor --json` emits
-`mjolnir.doctor-report@1` — frozen key order
+**Machine contract:** `qa-doctor doctor --json` emits
+`qa-doctor.doctor-report@1` — frozen key order
 (`schema, healthy, summary, checks, measurement`), details truncated
 exactly like the text render, byte-deterministic on the same tree,
 zero absolute paths, `NON_DETERMINISTIC_FIELDS` empty (Law 7).

@@ -4,12 +4,12 @@
  * the sync flow, then blocking (the plan's own ramp).
  *
  * Checks the `packages/playwright-reporter` surface against the root
- * `mjolnir-qa` package:
+ * `qa-doctor-cli` package:
  *   1. the reporter package.json parses and names the published scope
- *      (`mjolnir-qa-playwright-reporter`);
+ *      (`qa-doctor-playwright-reporter`);
  *   2. the reporter's default output filename is exactly the file the
  *      scan pipeline's runtime discovery looks for
- *      (`mjolnir.report.json`) — the ingestion contract (§14: the
+ *      (`qa-doctor.report.json`) — the ingestion contract (§14: the
  *      reporter is the ingestion surface of the Evidence Core);
  *   3. the reporter declares the same minimum Node engine as the root
  *      package (one runtime story);
@@ -60,7 +60,7 @@ const rootPkg = JSON.parse(readFileSync(rootPkgPath, "utf8")) as {
   engines?: { node?: string };
 };
 
-if (reporter.name !== "mjolnir-qa-playwright-reporter") {
+if (reporter.name !== "qa-doctor-playwright-reporter") {
   hardFail(`reporter package name drifted: ${String(reporter.name)}`);
 }
 if (
@@ -74,7 +74,7 @@ if (typeof rootPkg.version !== "string")
 
 // 2. ingestion contract: the reporter's default output file is the file
 // discoverRuntimeReport scans for (engine/evidence-discovery.ts
-// "mjolnir-report" convention).
+// "qa-doctor-report" convention).
 const reporterSrc = join(
   root,
   "packages",
@@ -84,9 +84,9 @@ const reporterSrc = join(
 );
 if (existsSync(reporterSrc)) {
   const src = readFileSync(reporterSrc, "utf8");
-  if (!/mjolnir\.report\.json/.test(src)) {
+  if (!/qa-doctor\.report\.json/.test(src)) {
     hardFail(
-      "reporter default output no longer writes mjolnir.report.json — the ingestion contract with runtime discovery is broken",
+      "reporter default output no longer writes qa-doctor.report.json — the ingestion contract with runtime discovery is broken",
     );
   }
 }

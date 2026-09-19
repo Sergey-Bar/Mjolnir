@@ -280,7 +280,7 @@ describe("Vitest JSON parser (P4)", () => {
   it("HONEST DEGRADATION locked: TRUE-FLAKE cannot fire from Jest/Vitest sources", () => {
     // The one-attempt contract is not an implementation detail — it is
     // the flake-truth guarantee. verify through the full pipeline:
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-p4-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-p4-"));
     try {
       writeFileSync(join(dir, "jest-report.json"), JSON.stringify(JEST_REPORT));
       const { report } = runForensics(join(dir, "jest-report.json"));
@@ -297,7 +297,7 @@ describe("Vitest JSON parser (P4)", () => {
 
 describe("discovery: forensics directory picks the right parser (P4)", () => {
   it("recognizes jest-report.json / vitest-report.json alongside Playwright's", () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-p4-discovery-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-p4-discovery-"));
     try {
       writeFileSync(
         join(dir, "vitest-report.json"),
@@ -318,7 +318,7 @@ describe("discovery: forensics directory picks the right parser (P4)", () => {
   });
 
   it("a corrupt Jest report is contained — zero records, no crash (M3)", () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-p4-corrupt-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-p4-corrupt-"));
     try {
       writeFileSync(
         join(dir, "jest-report.json"),
@@ -335,7 +335,7 @@ describe("discovery: forensics directory picks the right parser (P4)", () => {
     // Not Jest/Vitest-shaped, valid JSON — the Playwright walk is total
     // over arbitrary JSON (M3 guards), so this degrades to zero records
     // on the honest exit-2 path instead of a crash.
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-p4-hostile-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-p4-hostile-"));
     try {
       writeFileSync(join(dir, "report.json"), '{"suites": {"not": "array"}}');
       const { report } = runForensics(dir);
@@ -346,7 +346,7 @@ describe("discovery: forensics directory picks the right parser (P4)", () => {
   });
 
   it("mixed-corrupt directory: valid reports survive corrupt siblings", () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-p4-mixed-"));
+    const dir = mkdtempSync(join(tmpdir(), "qa-doctor-p4-mixed-"));
     try {
       mkdirSync(join(dir, "nested"), { recursive: true });
       writeFileSync(join(dir, "broken.json"), "{ oops");

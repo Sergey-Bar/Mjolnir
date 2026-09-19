@@ -1,16 +1,16 @@
-# Mjölnir — Documentation
+# QA Doctor — Documentation
 
 ## What the product is
 
-One command in CI: `mjolnir --scope changed` — it scans the test files,
+One command in CI: `qa-doctor --scope changed` — it scans the test files,
 Playwright configs and CI workflows a branch touched and exits non-zero on
 new findings. Everything else (`forensics`, `debt`, `handover`, `impact`,
 `baseline`/`diff`, `stats`, `badge`, `--tone blunt`, …) is optional and
 should be read as such.
 
 Honesty surface: <!-- census:measured-of-total -->74 of 79<!-- /census:measured-of-total --> rules carry a false-positive rate measured against
-real OSS code (`docs/FP-AUDIT.md`). The scan footer, `mjolnir rules
---unmeasured`, and every `mjolnir explain` page report which rules are which.
+real OSS code (`docs/FP-AUDIT.md`). The scan footer, `qa-doctor rules
+--unmeasured`, and every `qa-doctor explain` page report which rules are which.
 
 ## Status
 
@@ -23,7 +23,7 @@ they are kept for their audit trail, not as instructions.
 **Every plan in the table below is complete or superseded.** They live
 in `docs/archive/plans/` and are kept for their per-task audit trail,
 not as instructions. `Master-Stabilization-Plan.md`'s sprints 0–9 are
-all done; the "Tempering Mjölnir" plan that followed it (phases 1–8:
+all done; the "Tempering QA Doctor" plan that followed it (phases 1–8:
 string masking, fixture exclusion, the measured FP audit, the tier
 system, score normalization, rule families, executable laws, docs truth
 pass) is also complete — see the
@@ -61,7 +61,7 @@ historical snapshots, not live counts; the
 
 ## Other folders (repo-relative, from this repo's own root)
 
-- `packages/` — workspace member packages (`mjolnir-qa-playwright-reporter`,
+- `packages/` — workspace member packages (`qa-doctor-playwright-reporter`,
   source-only: not published to npm, see its README)
 - `examples/` — the deliberately-imperfect demo repo used in the README hero
 - `scratch/` — scan artifacts (gitignored)

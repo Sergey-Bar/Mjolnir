@@ -110,7 +110,7 @@ export interface RuleMeta {
    * should not be enforced.
    */
   falsePositiveRisk?: "low" | "medium" | "high";
-  /** Whether `mjolnir fix` (or a future autofix) can safely repair it. */
+  /** Whether `qa-doctor fix` (or a future autofix) can safely repair it. */
   autofix?: boolean;
   /**
    * How detection works, as an enforced enum (plan §09.6/§12.1 — D6
@@ -158,7 +158,7 @@ export interface RuleMeta {
    * amount of density normalization should be able to average that away — a
    * two-test repo with `.only` is as compromised as a two-thousand-test one.
    *
-   * Findings marked here cap the score into the UNWORTHY band regardless of
+   * Findings marked here cap the score into the CRITICAL band regardless of
    * exposure. Reserved for mechanisms where the bypass is unambiguous, not for
    * findings that merely weaken a single test.
    */

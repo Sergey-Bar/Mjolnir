@@ -46,7 +46,7 @@ const ruleCount = (rules as unknown[]).length;
   margin: 0;
 }
 h1 {
-  font-family: var(--mj-display);
+  font-family: var(--qa-display);
   font-weight: 600;
   font-size: clamp(1.6rem, 5vw, 2.2rem);
   line-height: 1.2;

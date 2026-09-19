@@ -33,7 +33,7 @@ import {
 
 const createdDirs: string[] = [];
 function tmpRepo(prefix: string): string {
-  const d = mkdtempSync(join(tmpdir(), `mjolnir-arms4-${prefix}-`));
+  const d = mkdtempSync(join(tmpdir(), `qa-doctor-arms4-${prefix}-`));
   createdDirs.push(d);
   return d;
 }
@@ -93,7 +93,7 @@ describe("fs-atomic write-failure fd-close arm", () => {
 describe("local-rules JSON pattern caps (S2)", () => {
   it("rejects an over-long pattern and an over-quantified pattern", async () => {
     const root = tmpRepo("patterncaps");
-    const rulesDir = join(root, "mjolnir-rules");
+    const rulesDir = join(root, "qa-doctor-rules");
     mkdirSync(rulesDir, { recursive: true });
     writeFileSync(
       join(rulesDir, "long-pattern.json"),

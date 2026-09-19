@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "harnessVersion": "bench-harness-pinned",
-  "mjolnirVersion": "pinned-at-cut",
+  "qaDoctorVersion": "pinned-at-cut",
   "nodeVersion": "pinned-at-cut",
   "os": "pinned-at-cut",
   "cpu": "pinned-at-cut",

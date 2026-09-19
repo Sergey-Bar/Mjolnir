@@ -1,10 +1,10 @@
-# Mjölnir — the motion system
+# QA Doctor — the motion system
 
 Motion shows a state changing, or it is the aurora. Nothing else moves.
 
 Before this document, motion was **constrained but never defined**:
 `scripts/video/pacing.ts` pinned the video's timing, `site-doctor`
-Check 5 capped infinite animations, and nothing said what a Mjölnir
+Check 5 capped infinite animations, and nothing said what a QA Doctor
 transition is. Those two mechanisms stay; this writes down the language
 they were already enforcing.
 
@@ -112,7 +112,7 @@ repeatable.
 | final hold             |   90 |  120 |
 | linger                 |   75 |   90 |
 
-`lingerOn` is content-derived: a revealed line containing `WORTHINESS`
+`lingerOn` is content-derived: a revealed line containing `TEST HEALTH`
 earns an extra pause, because the score is the point of the report and
 otherwise scrolls out of view within two seconds. Content-derived means
 deterministic — the same capture pauses in the same places.
@@ -132,7 +132,7 @@ a result the scan did not produce.
 ## 5. Encoding
 
 `npm run docs:video` renders and publishes in one step; the committed
-`assets/video/mjolnir-demo.mp4` is what it produces, and
+`assets/video/qa-doctor-demo.mp4` is what it produces, and
 `video-media.spec.ts` checks the committed file on every checkout. CRF
 is calibrated to the 12 MB budget by measurement — 31.2 MB at 18,
 18.7 MB at 24, 9.9 MB at 32 — not chosen by feel.

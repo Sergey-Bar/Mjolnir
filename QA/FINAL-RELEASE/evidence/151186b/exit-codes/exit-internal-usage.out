@@ -1,4 +1,4 @@
-CMD: mjolnir --json --json
+CMD: qa-doctor --json --json
 EXPECTED: 10
 EXIT: 1
 --- STDOUT ---

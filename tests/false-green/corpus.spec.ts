@@ -219,15 +219,15 @@ describe("adapter-failures — malformed workflow shapes degrade with accounting
 describe("rule-failures — a crashing rule degrades truthfully (RULE CRASH ≠ CLEAN)", () => {
   it("fg-rule-crash-isolated: a throwing local plugin rule surfaces rulesCrashed ≥ 1", async () => {
     const c = caseOr("fg-rule-crash-isolated");
-    // The local-rules convention: <workspace>/mjolnir-rules/*.mjs loaded
+    // The local-rules convention: <workspace>/qa-doctor-rules/*.mjs loaded
     // when the plugins gate is open (--enable-plugins). A rule whose
     // run() throws is isolated by the adapter's onCrash channel and the
     // REPORT carries the honest degradation (rulesCrashed ≥ 1).
     const dir = mkdtempSync(join(tmpdir(), "fg-rule-"));
     try {
-      mkdirSync(join(dir, "mjolnir-rules"), { recursive: true });
+      mkdirSync(join(dir, "qa-doctor-rules"), { recursive: true });
       writeFileSync(
-        join(dir, "mjolnir-rules", "crashy.mjs"),
+        join(dir, "qa-doctor-rules", "crashy.mjs"),
         `export const rules = [{
   id: "QA-ACME-666",
   category: "QA-TEST",

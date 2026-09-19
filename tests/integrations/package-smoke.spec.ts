@@ -3,7 +3,7 @@
  *
  * Every other test in this suite runs against source via tsx/vitest — none
  * of them exercise the actual thing a stranger receives when they run
- * `npx mjolnir-qa@latest`: the built `dist/` output, packed exactly as npm
+ * `npx qa-doctor-cli@latest`: the built `dist/` output, packed exactly as npm
  * would pack it, executed as a real child process with no source tree or
  * test harness underneath it. Bugs in `files`, `bin`, or the built
  * entry-point's own self-invocation guard are invisible to unit tests and
@@ -49,7 +49,7 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
         execSync("npm run build", { cwd: ROOT, stdio: "pipe" });
       }
 
-      workDir = mkdtempSync(join(tmpdir(), "mjolnir-pack-"));
+      workDir = mkdtempSync(join(tmpdir(), "qa-doctor-pack-"));
 
       // `--ignore-scripts`: dist/ is already built above, so the `prepare`
       // (husky) script is not needed — and skipping it keeps npm's lifecycle
@@ -91,12 +91,12 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
       pkgJson = JSON.parse(
         readFileSync(join(pkgDir, "package.json"), "utf8"),
       ) as typeof pkgJson;
-      const binEntry = pkgJson.bin.mjolnir;
-      if (!binEntry) throw new Error("package.json has no mjolnir bin entry");
+      const binEntry = pkgJson.bin["qa-doctor"];
+      if (!binEntry) throw new Error("package.json has no qa-doctor bin entry");
       binPath = join(pkgDir, binEntry);
 
       // Give the packed CLI its runtime dependencies without a network install
-      // (a real `npm install mjolnir-qa` would fetch these from `dependencies`).
+      // (a real `npm install qa-doctor-cli` would fetch these from `dependencies`).
       // We COPY rather than symlink: symlink behavior differs across platforms
       // and CI filesystems (junctions are Windows-only; macOS temp dirs may
       // reject dir symlinks), and a silently-broken link makes the CLI crash
@@ -151,7 +151,7 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
       it("the declared bin entry exists in the tarball", () => {
         expect(
           existsSync(binPath),
-          `package.json "bin" points to "${pkgJson.bin.mjolnir}", which ` +
+          `package.json "bin" points to "${pkgJson.bin["qa-doctor"]}", which ` +
             `is not present in the packed tarball.`,
         ).toBe(true);
       });
@@ -160,7 +160,7 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
         // A real, shipped bug this locks. 0.4.0 was published with no
         // shebang on dist/cli.mjs. On POSIX, npm's bin shim executes the
         // target file directly and the kernel falls back to /bin/sh,
-        // which parses JavaScript as shell — `npx mjolnir-qa@latest` died
+        // which parses JavaScript as shell — `npx qa-doctor-cli@latest` died
         // with "import: not found" on every Linux and macOS machine.
         //
         // It survived local testing because npm generates a .cmd wrapper
@@ -172,7 +172,7 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
         expect(
           firstLine,
           "dist/cli.mjs must begin with `#!/usr/bin/env node`. Without it " +
-            "the npm-installed `mjolnir` command is executed as a shell " +
+            "the npm-installed `qa-doctor` command is executed as a shell " +
             "script on POSIX and fails immediately for every user.",
         ).toBe("#!/usr/bin/env node");
       });
@@ -186,7 +186,7 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
           const out = execFileSync(binPath, ["--version"], {
             encoding: "utf8",
           });
-          expect(out).toContain("mjolnir-qa");
+          expect(out).toContain("qa-doctor-cli");
         },
       );
 
@@ -206,7 +206,7 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
         // (pinned EXACTLY — 0.26.x cannot load these grammar files, see
         // src/engine/tree-sitter-ast.ts's header). Both must ship as
         // `dependencies`, not devDependencies, or a consumer's
-        // `npm install mjolnir-qa` produces a CLI whose parse stage
+        // `npm install qa-doctor-cli` produces a CLI whose parse stage
         // cannot load a grammar at all.
         const deps = pkgJson.dependencies ?? {};
         expect(
@@ -316,16 +316,16 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
         expect(
           out.length,
           "the packed CLI produced no output at all when invoked as a binary " +
-            "— this is what a first-time `npx mjolnir-qa@latest` user would see: " +
+            "— this is what a first-time `npx qa-doctor-cli@latest` user would see: " +
             "nothing.",
         ).toBeGreaterThan(0);
-        expect(out).toContain("mjolnir");
+        expect(out).toContain("qa-doctor");
         expect(out).toContain("Usage:");
       });
 
       it("scanning a real fixture repo produces the documented score banner", () => {
         const fixtureDir = mkdtempSync(
-          join(tmpdir(), "mjolnir-smoke-fixture-"),
+          join(tmpdir(), "qa-doctor-smoke-fixture-"),
         );
         try {
           mkdirSync(join(fixtureDir, "e2e"), { recursive: true });
@@ -350,8 +350,8 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
           }
 
           // WI-5: the default surface is the Trust Report; accept either
-          // the classic WORTHINESS banner or the Trust Report verdict.
-          expect(result).toMatch(/WORTHINESS|TRUST VERDICT|score/);
+          // the classic TEST HEALTH banner or the Trust Report verdict.
+          expect(result).toMatch(/TEST HEALTH|TRUST VERDICT|score/);
         } finally {
           rmSync(fixtureDir, { recursive: true, force: true });
         }

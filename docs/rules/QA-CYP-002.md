@@ -1,6 +1,6 @@
 # QA-CYP-002 — Focused test (.only)
 
-_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+_Generated from the live rule registry and this rule's own committed fixtures by `qa-doctor`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
 | Field                                 | Value                                                                            |
 | ------------------------------------- | -------------------------------------------------------------------------------- |
@@ -47,4 +47,4 @@ Real occurrence counts from `npm run corpus:regression` against actively-maintai
 
 ---
 
-Full catalog: `mjolnir rules --md` · Live explanation: `mjolnir explain QA-CYP-002`
+Full catalog: `qa-doctor rules --md` · Live explanation: `qa-doctor explain QA-CYP-002`

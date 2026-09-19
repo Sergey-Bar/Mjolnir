@@ -69,12 +69,19 @@ describe("TRUST_INVARIANTS registry", () => {
     }
   });
 
-  it("REQUIRED invariants have a quarter", () => {
+  it("CURRENT invariants have no quarter", () => {
     for (const inv of TRUST_INVARIANTS) {
-      if (inv.status === "REQUIRED") {
-        expect(inv.quarter).toBeDefined();
+      if (inv.status === "CURRENT") {
+        expect(inv.quarter).toBeUndefined();
       }
     }
+  });
+
+  it("all 20 invariants are CURRENT (zero REQUIRED)", () => {
+    const required = TRUST_INVARIANTS.filter(
+      (inv) => inv.status === "REQUIRED",
+    );
+    expect(required).toHaveLength(0);
   });
 
   it("TI-001 is CURRENT with scope Scan", () => {
@@ -84,11 +91,11 @@ describe("TRUST_INVARIANTS registry", () => {
     expect(inv?.scope).toBe("Scan");
   });
 
-  it("TI-005 is REQUIRED Q4 in Scan scope", () => {
+  it("TI-005 is CURRENT with scope Scan", () => {
     const inv = getInvariantById("TI-005");
     expect(inv).toBeDefined();
-    expect(inv?.status).toBe("REQUIRED");
-    expect(inv?.quarter).toBe("Q4");
+    expect(inv?.status).toBe("CURRENT");
+    expect(inv?.quarter).toBeUndefined();
     expect(inv?.scope).toBe("Scan");
   });
 });
@@ -108,40 +115,11 @@ describe("getInvariantById", () => {
 });
 
 describe("getRequiredForQuarter", () => {
-  it("Q1 returns TI-013, TI-015, TI-017", () => {
-    const q1 = getRequiredForQuarter("Q1");
-    const ids = q1.map((inv) => inv.id);
-    expect(ids).toContain("TI-013");
-    expect(ids).toContain("TI-015");
-    expect(ids).toContain("TI-017");
-    for (const inv of q1) {
-      expect(inv.status).toBe("REQUIRED");
-      expect(inv.quarter).toBe("Q1");
+  it("all quarters return empty (all invariants are CURRENT)", () => {
+    for (const q of ["Q1", "Q2", "Q3", "Q4"] as const) {
+      const result = getRequiredForQuarter(q);
+      expect(result).toHaveLength(0);
     }
-  });
-
-  it("Q2 returns TI-009, TI-014, TI-018, TI-019", () => {
-    const q2 = getRequiredForQuarter("Q2");
-    const ids = q2.map((inv) => inv.id);
-    expect(ids).toContain("TI-009");
-    expect(ids).toContain("TI-014");
-    expect(ids).toContain("TI-018");
-    expect(ids).toContain("TI-019");
-  });
-
-  it("Q3 returns TI-011, TI-012, TI-016, TI-020", () => {
-    const q3 = getRequiredForQuarter("Q3");
-    const ids = q3.map((inv) => inv.id);
-    expect(ids).toContain("TI-011");
-    expect(ids).toContain("TI-012");
-    expect(ids).toContain("TI-016");
-    expect(ids).toContain("TI-020");
-  });
-
-  it("Q4 returns TI-005 only", () => {
-    const q4 = getRequiredForQuarter("Q4");
-    expect(q4).toHaveLength(1);
-    expect(q4[0]?.id).toBe("TI-005");
   });
 });
 

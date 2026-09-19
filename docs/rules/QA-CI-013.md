@@ -1,6 +1,6 @@
 # QA-CI-013 — Verification gate conditioned so it can never fail the pipeline
 
-_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+_Generated from the live rule registry and this rule's own committed fixtures by `qa-doctor`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
 
 | Field                                 | Value                                                                    |
 | ------------------------------------- | ------------------------------------------------------------------------ |
@@ -43,4 +43,4 @@ UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked b
 
 ---
 
-Full catalog: `mjolnir rules --md` · Live explanation: `mjolnir explain QA-CI-013`
+Full catalog: `qa-doctor rules --md` · Live explanation: `qa-doctor explain QA-CI-013`

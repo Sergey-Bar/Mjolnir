@@ -4,9 +4,9 @@
 # documented amendment to the repo's root contract
 # (tests/contract/repo-hygiene.spec.ts), never a silent one.
 #
-# Consumers pin a major tag (`uses: Sergey-Bar/Mjolnir@v1`); release.yml's
+# Consumers pin a major tag (`uses: Sergey-Bar/qa-doctor@v1`); release.yml's
 # action-tags job keeps that tag moving to every stable release.
-# Scanning runs through the published npm package (`npx mjolnir-qa@…`),
+# Scanning runs through the published npm package (`npx qa-doctor-cli@…`),
 # never an `npm ci` of this repo — the action must work for consumers,
 # not contributors.
 #
@@ -19,7 +19,7 @@
 # Event-data safety (audit S-5, the repo's own QA-CI rule): every input
 # reaches the shell through `env:`, never by interpolation into a `run:`
 # body.
-name: "Mjölnir — verification trust scan"
+name: "QA Doctor — verification trust scan"
 description: >-
   Scan your test suites, Playwright configs, and CI workflows for tests
   that cannot fail and pipelines that cannot go red. Produces a trust
@@ -60,7 +60,7 @@ inputs:
     default: "22"
   version:
     description: >-
-      mjolnir-qa npm spec to run. Default: latest. Pin an exact version
+      qa-doctor-cli npm spec to run. Default: latest. Pin an exact version
       in your workflow for reproducible gates.
     required: false
     default: "latest"
@@ -87,7 +87,7 @@ inputs:
     default: "true"
   trust-artifact:
     description: >-
-      Upload the Trust Report (mjolnir-trust-report.md) and the raw
+      Upload the Trust Report (qa-doctor-trust-report.md) and the raw
       JSON report as workflow artifacts.
     required: false
     default: "true"
@@ -110,7 +110,7 @@ outputs:
     description: "Path of the SARIF report when format is sarif, else empty"
     value: ${{ steps.scan.outputs.sarif-file }}
   trust-report-file:
-    description: "Path of the generated Trust Report (mjolnir-trust-report.md)"
+    description: "Path of the generated Trust Report (qa-doctor-trust-report.md)"
     value: ${{ steps.trust-report.outputs.file }}
 
 runs:
@@ -123,85 +123,86 @@ runs:
     - name: Validate inputs
       shell: bash
       env:
-        MJ_SCOPE: ${{ inputs.scope }}
-        MJ_FAIL_ON: ${{ inputs.fail-on }}
-        MJ_FORMAT: ${{ inputs.format }}
-        MJ_STRICT: ${{ inputs.strict }}
-        MJ_ANNOTATIONS: ${{ inputs.annotations }}
-        MJ_PR_COMMENT: ${{ inputs.pr-comment }}
-        MJ_TRUST_ARTIFACT: ${{ inputs.trust-artifact }}
-        MJ_FAIL_ON_PARTIAL: ${{ inputs.fail-on-partial }}
+        QA_DOCTOR_SCOPE: ${{ inputs.scope }}
+        QA_DOCTOR_FAIL_ON: ${{ inputs.fail-on }}
+        QA_DOCTOR_FORMAT: ${{ inputs.format }}
+        QA_DOCTOR_STRICT: ${{ inputs.strict }}
+        QA_DOCTOR_ANNOTATIONS: ${{ inputs.annotations }}
+        QA_DOCTOR_PR_COMMENT: ${{ inputs.pr-comment }}
+        QA_DOCTOR_TRUST_ARTIFACT: ${{ inputs.trust-artifact }}
+        QA_DOCTOR_FAIL_ON_PARTIAL: ${{ inputs.fail-on-partial }}
       run: |
-        case "$MJ_SCOPE" in
+        case "$QA_DOCTOR_SCOPE" in
           all|changed) ;;
-          *) echo "::error::scope must be 'all' or 'changed', got '$MJ_SCOPE'"; exit 10 ;;
+          *) echo "::error::scope must be 'all' or 'changed', got '$QA_DOCTOR_SCOPE'"; exit 10 ;;
         esac
-        case "$MJ_FAIL_ON" in
+        case "$QA_DOCTOR_FAIL_ON" in
           error|warning|none) ;;
-          *) echo "::error::fail-on must be 'error', 'warning' or 'none', got '$MJ_FAIL_ON'"; exit 10 ;;
+          *) echo "::error::fail-on must be 'error', 'warning' or 'none', got '$QA_DOCTOR_FAIL_ON'"; exit 10 ;;
         esac
-        case "$MJ_FORMAT" in
+        case "$QA_DOCTOR_FORMAT" in
           terminal|json|sarif|codequality|mermaid) ;;
-          *) echo "::error::format must be 'terminal', 'json', 'sarif', 'codequality' or 'mermaid', got '$MJ_FORMAT'"; exit 10 ;;
+          *) echo "::error::format must be 'terminal', 'json', 'sarif', 'codequality' or 'mermaid', got '$QA_DOCTOR_FORMAT'"; exit 10 ;;
         esac
-        case "$MJ_STRICT" in
+        case "$QA_DOCTOR_STRICT" in
           true|false) ;;
-          *) echo "::error::strict must be 'true' or 'false', got '$MJ_STRICT'"; exit 10 ;;
+          *) echo "::error::strict must be 'true' or 'false', got '$QA_DOCTOR_STRICT'"; exit 10 ;;
         esac
-        case "$MJ_ANNOTATIONS" in
+        case "$QA_DOCTOR_ANNOTATIONS" in
           true|false) ;;
-          *) echo "::error::annotations must be 'true' or 'false', got '$MJ_ANNOTATIONS'"; exit 10 ;;
+          *) echo "::error::annotations must be 'true' or 'false', got '$QA_DOCTOR_ANNOTATIONS'"; exit 10 ;;
         esac
-        case "$MJ_PR_COMMENT" in
+        case "$QA_DOCTOR_PR_COMMENT" in
           true|false) ;;
-          *) echo "::error::pr-comment must be 'true' or 'false', got '$MJ_PR_COMMENT'"; exit 10 ;;
+          *) echo "::error::pr-comment must be 'true' or 'false', got '$QA_DOCTOR_PR_COMMENT'"; exit 10 ;;
         esac
-        case "$MJ_TRUST_ARTIFACT" in
+        case "$QA_DOCTOR_TRUST_ARTIFACT" in
           true|false) ;;
-          *) echo "::error::trust-artifact must be 'true' or 'false', got '$MJ_TRUST_ARTIFACT'"; exit 10 ;;
+          *) echo "::error::trust-artifact must be 'true' or 'false', got '$QA_DOCTOR_TRUST_ARTIFACT'"; exit 10 ;;
         esac
-        case "$MJ_FAIL_ON_PARTIAL" in
+        case "$QA_DOCTOR_FAIL_ON_PARTIAL" in
           true|false) ;;
-          *) echo "::error::fail-on-partial must be 'true' or 'false', got '$MJ_FAIL_ON_PARTIAL'"; exit 10 ;;
+          *) echo "::error::fail-on-partial must be 'true' or 'false', got '$QA_DOCTOR_FAIL_ON_PARTIAL'"; exit 10 ;;
         esac
 
     - name: Scan
       id: scan
       shell: bash
       env:
-        MJ_PATH: ${{ inputs.path }}
-        MJ_SCOPE: ${{ inputs.scope }}
-        MJ_STRICT: ${{ inputs.strict }}
-        MJ_FORMAT: ${{ inputs.format }}
-        MJ_FAIL_ON: ${{ inputs.fail-on }}
-        MJ_VERSION: ${{ inputs.version }}
+        QA_DOCTOR_PATH: ${{ inputs.path }}
+        QA_DOCTOR_SCOPE: ${{ inputs.scope }}
+        QA_DOCTOR_STRICT: ${{ inputs.strict }}
+        QA_DOCTOR_FORMAT: ${{ inputs.format }}
+        QA_DOCTOR_FAIL_ON: ${{ inputs.fail-on }}
+        QA_DOCTOR_FAIL_ON_PARTIAL: ${{ inputs.fail-on-partial }}
+        QA_DOCTOR_VERSION: ${{ inputs.version }}
       run: |
-        ARGS=("$MJ_PATH")
-        if [ "$MJ_SCOPE" = "changed" ]; then ARGS+=(--scope changed); fi
-        if [ "$MJ_STRICT" = "true" ]; then ARGS+=(--strict); fi
-        case "$MJ_FORMAT" in
+        ARGS=("$QA_DOCTOR_PATH")
+        if [ "$QA_DOCTOR_SCOPE" = "changed" ]; then ARGS+=(--scope changed); fi
+        if [ "$QA_DOCTOR_STRICT" = "true" ]; then ARGS+=(--strict); fi
+        case "$QA_DOCTOR_FORMAT" in
           json)         ARGS+=(--json) ;;
           sarif)        ARGS+=(--format sarif) ;;
           codequality)  ARGS+=(--format codequality) ;;
           mermaid)      ARGS+=(--format mermaid) ;;
         esac
-        case "$MJ_FAIL_ON" in
+        case "$QA_DOCTOR_FAIL_ON" in
           error)   ARGS+=(--blocking error) ;;
           warning) ARGS+=(--blocking warning) ;;
           none)    ARGS+=(--blocking none) ;;
         esac
-        echo "Running: npx --yes mjolnir-qa@${MJ_VERSION} ${ARGS[*]}"
+        echo "Running: npx --yes qa-doctor-cli@${QA_DOCTOR_VERSION} ${ARGS[*]}"
         set +e
-        if [ "$MJ_FORMAT" = "json" ]; then
-          npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}" > mjolnir.json
-        elif [ "$MJ_FORMAT" = "sarif" ]; then
-          npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}" > mjolnir-report.sarif
-        elif [ "$MJ_FORMAT" = "codequality" ]; then
-          npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}" > mjolnir-codequality.json
-        elif [ "$MJ_FORMAT" = "mermaid" ]; then
-          npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}" > mjolnir-report.mmd
+        if [ "$QA_DOCTOR_FORMAT" = "json" ]; then
+          npx --yes "qa-doctor-cli@${QA_DOCTOR_VERSION}" "${ARGS[@]}" > qa-doctor.json
+        elif [ "$QA_DOCTOR_FORMAT" = "sarif" ]; then
+          npx --yes "qa-doctor-cli@${QA_DOCTOR_VERSION}" "${ARGS[@]}" > qa-doctor-report.sarif
+        elif [ "$QA_DOCTOR_FORMAT" = "codequality" ]; then
+          npx --yes "qa-doctor-cli@${QA_DOCTOR_VERSION}" "${ARGS[@]}" > qa-doctor-codequality.json
+        elif [ "$QA_DOCTOR_FORMAT" = "mermaid" ]; then
+          npx --yes "qa-doctor-cli@${QA_DOCTOR_VERSION}" "${ARGS[@]}" > qa-doctor-report.mmd
         else
-          npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}"
+          npx --yes "qa-doctor-cli@${QA_DOCTOR_VERSION}" "${ARGS[@]}"
         fi
         EXIT=$?
         set -e
@@ -212,23 +213,23 @@ runs:
         # complete scan. Exit 1 (findings at gate) and 10/20 (usage/
         # internal) always fail regardless of this setting.
         if [ "$EXIT" = "2" ]; then
-          echo "::warning::Mjölnir scan was PARTIAL — some files were not analyzed; the gate is not enforced."
-          if [ "$MJ_FAIL_ON_PARTIAL" = "true" ]; then
+          echo "::warning::QA Doctor scan was PARTIAL — some files were not analyzed; the gate is not enforced."
+          if [ "$QA_DOCTOR_FAIL_ON_PARTIAL" = "true" ]; then
             echo "::error::fail-on-partial is enabled — failing the job on partial scan"
             exit 2
           fi
           exit 0
         fi
-        if [ "$MJ_FORMAT" = "sarif" ]; then
-          echo "sarif-file=mjolnir-report.sarif" >> "$GITHUB_OUTPUT"
+        if [ "$QA_DOCTOR_FORMAT" = "sarif" ]; then
+          echo "sarif-file=qa-doctor-report.sarif" >> "$GITHUB_OUTPUT"
         else
           echo "sarif-file=" >> "$GITHUB_OUTPUT"
         fi
-        if [ "$MJ_FORMAT" = "json" ] && [ -s mjolnir.json ]; then
+        if [ "$QA_DOCTOR_FORMAT" = "json" ] && [ -s qa-doctor.json ]; then
           node -e '
             const fs = require("fs");
             try {
-              const r = JSON.parse(fs.readFileSync("mjolnir.json", "utf8"));
+              const r = JSON.parse(fs.readFileSync("qa-doctor.json", "utf8"));
               const findings = Array.isArray(r.findings) ? r.findings.length : 0;
               fs.appendFileSync(process.env.GITHUB_OUTPUT,
                 "findings=" + findings + "\n");
@@ -261,16 +262,16 @@ runs:
       id: capture
       shell: bash
       env:
-        MJ_PATH: ${{ inputs.path }}
-        MJ_SCOPE: ${{ inputs.scope }}
-        MJ_STRICT: ${{ inputs.strict }}
-        MJ_VERSION: ${{ inputs.version }}
+        QA_DOCTOR_PATH: ${{ inputs.path }}
+        QA_DOCTOR_SCOPE: ${{ inputs.scope }}
+        QA_DOCTOR_STRICT: ${{ inputs.strict }}
+        QA_DOCTOR_VERSION: ${{ inputs.version }}
       run: |
-        ARGS=("$MJ_PATH" --json --blocking none)
-        if [ "$MJ_SCOPE" = "changed" ]; then ARGS+=(--scope changed); fi
-        if [ "$MJ_STRICT" = "true" ]; then ARGS+=(--strict); fi
+        ARGS=("$QA_DOCTOR_PATH" --json --blocking none)
+        if [ "$QA_DOCTOR_SCOPE" = "changed" ]; then ARGS+=(--scope changed); fi
+        if [ "$QA_DOCTOR_STRICT" = "true" ]; then ARGS+=(--strict); fi
         set +e
-        npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}" > mjolnir.json
+        npx --yes "qa-doctor-cli@${QA_DOCTOR_VERSION}" "${ARGS[@]}" > qa-doctor.json
         echo "exit=$?" >> "$GITHUB_OUTPUT"
         exit 0
 
@@ -281,25 +282,25 @@ runs:
         inputs.trust-artifact == 'true')
       shell: bash
       env:
-        MJ_VERSION: ${{ inputs.version }}
+        QA_DOCTOR_VERSION: ${{ inputs.version }}
       run: |
         set +e
-        npx --yes "mjolnir-qa@${MJ_VERSION}" trust-report --from mjolnir.json
+        npx --yes "qa-doctor-cli@${QA_DOCTOR_VERSION}" trust-report --from qa-doctor.json
         echo "exit=$?" >> "$GITHUB_OUTPUT"
-        echo "file=mjolnir-trust-report.md" >> "$GITHUB_OUTPUT"
+        echo "file=qa-doctor-trust-report.md" >> "$GITHUB_OUTPUT"
         exit 0
 
     - name: Emit annotations + step summary
       if: inputs.annotations == 'true'
       shell: bash
       env:
-        MJ_VERSION: ${{ inputs.version }}
+        QA_DOCTOR_VERSION: ${{ inputs.version }}
       run: |
         # summary streams findings as GitHub annotations to stdout (when
         # GITHUB_ACTIONS=true) and the step summary to
         # $GITHUB_STEP_SUMMARY — the CLI's own CI surface, zero action-
         # side rendering logic.
-        npx --yes "mjolnir-qa@${MJ_VERSION}" summary mjolnir.json --stdout | tee "${GITHUB_STEP_SUMMARY:-/dev/null}" >/dev/null 2>&1 || true
+        npx --yes "qa-doctor-cli@${QA_DOCTOR_VERSION}" summary qa-doctor.json --stdout | tee "${GITHUB_STEP_SUMMARY:-/dev/null}" >/dev/null 2>&1 || true
 
     - name: Post Trust Report as PR comment
       if: >-
@@ -308,26 +309,26 @@ runs:
       shell: bash
       env:
         GH_TOKEN: ${{ github.token }}
-        MJ_PR_NUMBER: ${{ github.event.pull_request.number }}
-        MJ_REPO: ${{ github.repository }}
+        QA_DOCTOR_PR_NUMBER: ${{ github.event.pull_request.number }}
+        QA_DOCTOR_REPO: ${{ github.repository }}
       run: |
         # Upsert by marker: one Trust Report comment per PR, updated in
         # place on every push (no comment flood). Event data reaches gh
         # through env only (audit S-5).
-        BODY_FILE="mjolnir-trust-report.md"
+        BODY_FILE="qa-doctor-trust-report.md"
         if [ ! -s "$BODY_FILE" ]; then
           echo "::warning::Trust Report body missing — skipping PR comment"
           exit 0
         fi
-        MARKER='<!-- mjolnir-trust-report:v1 -->'
-        COMMENT_ID="$(gh api "repos/${MJ_REPO}/issues/${MJ_PR_NUMBER}/comments" \
+        MARKER='<!-- qa-doctor-trust-report:v1 -->'
+        COMMENT_ID="$(gh api "repos/${QA_DOCTOR_REPO}/issues/${QA_DOCTOR_PR_NUMBER}/comments" \
           --paginate --jq ".[] | select(.body | startswith(\"$MARKER\")) | .id" | head -n1)"
         if [ -n "$COMMENT_ID" ]; then
-          gh api --method PATCH "repos/${MJ_REPO}/issues/comments/${COMMENT_ID}" \
+          gh api --method PATCH "repos/${QA_DOCTOR_REPO}/issues/comments/${COMMENT_ID}" \
             -F body="@${BODY_FILE}" >/dev/null
           echo "Updated Trust Report comment ${COMMENT_ID}"
         else
-          gh api --method POST "repos/${MJ_REPO}/issues/${MJ_PR_NUMBER}/comments" \
+          gh api --method POST "repos/${QA_DOCTOR_REPO}/issues/${QA_DOCTOR_PR_NUMBER}/comments" \
             -F body="@${BODY_FILE}" >/dev/null
           echo "Posted Trust Report comment"
         fi
@@ -336,9 +337,9 @@ runs:
       if: inputs.trust-artifact == 'true'
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
-        name: mjolnir-trust-report
+        name: qa-doctor-trust-report
         path: |
-          mjolnir-trust-report.md
-          mjolnir.json
+          qa-doctor-trust-report.md
+          qa-doctor.json
         if-no-files-found: warn
         retention-days: 30

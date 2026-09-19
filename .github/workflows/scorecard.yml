@@ -5,7 +5,7 @@ name: Scorecard supply-chain security
 # review) against the same practices this repo enforces on the projects
 # it scans. Publishes a public 0-10 score and badge, and a durable SARIF
 # record in the Security tab — distinct from sarif-code-scanning.yml,
-# which is Mjölnir's own self-scan of this codebase, not a supply-chain
+# which is QA Doctor's own self-scan of this codebase, not a supply-chain
 # score.
 
 on:

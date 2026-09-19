@@ -10,7 +10,7 @@
  * second truth: this is a deterministic projection of the same
  * ScanResult the JSON contract carries.
  *
- * Usage: mjolnir --format codequality > gl-code-quality-report.json
+ * Usage: qa-doctor --format codequality > gl-code-quality-report.json
  *
  * Severity map (documented in docs/GITLAB-CI.md):
  *   error   → major   (categorical defects — the gate's core)

@@ -1,4 +1,4 @@
-CMD: mjolnir pw-report C:\Users\User\AppData\Local\Temp\mjolnir-e20b-UvsKdd\junit.bin
+CMD: qa-doctor pw-report C:\Users\User\AppData\Local\Temp\qa-doctor-e20b-UvsKdd\junit.bin
 EXIT: 2
 --- STDOUT ---
 

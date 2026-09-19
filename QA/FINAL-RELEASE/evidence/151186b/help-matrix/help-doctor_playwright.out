@@ -1,8 +1,8 @@
   doctor:playwright — Playwright deep scan + Selector Health report
 
   Usage:
-    mjolnir doctor:playwright [path]
+    qa-doctor doctor:playwright [path]
 
   Examples:
-    $ mjolnir doctor:playwright e2e
+    $ qa-doctor doctor:playwright e2e
 

@@ -105,7 +105,7 @@ export async function buildHeroSvg(): Promise<string> {
   // This asset answers ONE question for its README section: where the
   // points actually went. It is deliberately an excerpt, cut at both ends:
   //
-  //  - The wordmark banner above WORTHINESS is dropped: the window title
+  //  - The wordmark banner above TEST HEALTH is dropped: the window title
   //    and the README around it already name the product.
   //  - Everything from FINDINGS down is dropped. The per-finding detail
   //    lives in "One finding, up close" and in the full --verbose
@@ -116,7 +116,7 @@ export async function buildHeroSvg(): Promise<string> {
   // deduction box and FIX THIS FIRST — is contiguous, unedited reporter
   // output, and it fits a fixed, compact frame.
   const startIndex = renderedLines.findIndex((line) =>
-    stripAnsi(line).includes("WORTHINESS"),
+    stripAnsi(line).includes("TEST HEALTH"),
   );
   const findingsHeaderIndex = renderedLines.findIndex(
     (line) => stripAnsi(line).trim() === "▍ FINDINGS",
@@ -127,13 +127,18 @@ export async function buildHeroSvg(): Promise<string> {
   );
 
   const allLines = [
-    `${PROMPT}\x1b[1mnpx mjolnir-qa@latest\x1b[0m`,
+    `${PROMPT}\x1b[1mnpx qa-doctor-cli@latest\x1b[0m`,
     "",
     ...breakdownLines,
     // The wall-clock duration is real but non-deterministic run-to-run;
     // masked here only, never in the reporter, so regenerating is a
     // no-op diff when the scan itself is unchanged.
-  ].map((line) => line.replace(/· \d+ms$/, "· a few ms"));
+  ].map((line) =>
+    line.replace(
+      /· (?:\d+ms|(?:0\.\d*[1-9]\d*|[1-9]\d*(?:\.\d+)?)s)$/,
+      "· a few ms",
+    ),
+  );
   return renderSvg(allLines);
 }
 

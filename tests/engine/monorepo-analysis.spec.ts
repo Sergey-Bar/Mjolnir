@@ -74,6 +74,24 @@ describe("monorepo-analysis (ECO-003)", () => {
       expect(result.blockerPackage).toBe("bad");
     });
 
+    it("marks an error-bearing package failed even with a high numeric score", () => {
+      const result = analyzeMonorepo(
+        [
+          {
+            packageName: "bad",
+            path: "bad",
+            findings: [makeFinding({ severity: "error" })],
+            score: 95,
+          },
+          { packageName: "clean", path: "clean", findings: [], score: 100 },
+        ],
+        { weightingStrategy: "worst-package" },
+      );
+      expect(result.packages[0]?.verdict).toBe("fail");
+      expect(result.overallVerdict).toBe("fail");
+      expect(result.blockerPackage).toBe("bad");
+    });
+
     it("worst-package strategy picks lowest score", () => {
       const result = analyzeMonorepo(
         [

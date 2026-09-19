@@ -12,17 +12,17 @@ describe("PR_BRAND_CONTRACT", () => {
     expect(result.errors).toHaveLength(0);
   });
 
-  it("has productName Mjolnir and productDescriptor Verification Trust", () => {
-    expect(PR_BRAND_CONTRACT.productName).toBe("Mjolnir");
+  it("has productName QA Doctor and productDescriptor Verification Trust", () => {
+    expect(PR_BRAND_CONTRACT.productName).toBe("QA Doctor");
     expect(PR_BRAND_CONTRACT.productDescriptor).toBe("Verification Trust");
   });
 
   it("has all 5 verdicts labeled", () => {
     const labels = PR_BRAND_CONTRACT.verdictLabels;
-    expect(labels["forged"]).toBe("Forged");
+    expect(labels["excellent"]).toBe("Excellent");
     expect(labels["trusted"]).toBe("Trusted");
-    expect(labels["needsWork"]).toBe("Needs Work");
-    expect(labels["unworthy"]).toBe("Unworthy");
+    expect(labels["needsWork"]).toBe("Needs Attention");
+    expect(labels["critical"]).toBe("Critical");
     expect(labels["unmeasured"]).toBe("Unmeasured");
   });
 
@@ -59,7 +59,7 @@ describe("PR_BRAND_CONTRACT", () => {
   it("logo asset has light, dark, and fallback", () => {
     expect(PR_BRAND_CONTRACT.logoAsset.light).toBeTruthy();
     expect(PR_BRAND_CONTRACT.logoAsset.dark).toBeTruthy();
-    expect(PR_BRAND_CONTRACT.logoAsset.fallback).toBe("Mjolnir");
+    expect(PR_BRAND_CONTRACT.logoAsset.fallback).toBe("QA Doctor");
   });
 });
 
@@ -67,7 +67,7 @@ describe("validateBrandContract", () => {
   it("rejects contract with wrong productName", () => {
     const result = validateBrandContract({
       ...PR_BRAND_CONTRACT,
-      productName: "Wrong" as "Mjolnir",
+      productName: "Wrong" as "QA Doctor",
     });
     expect(result.valid).toBe(false);
     expect(result.errors).toContainEqual(
@@ -76,26 +76,26 @@ describe("validateBrandContract", () => {
   });
 
   it("rejects contract with missing verdict label", () => {
-    const { forged: _removed, ...rest } = PR_BRAND_CONTRACT.verdictLabels;
+    const { excellent: _removed, ...rest } = PR_BRAND_CONTRACT.verdictLabels;
     const result = validateBrandContract({
       ...PR_BRAND_CONTRACT,
       verdictLabels: rest,
     });
     expect(result.valid).toBe(false);
     expect(result.errors).toContainEqual(
-      expect.stringContaining('verdictLabels missing key "forged"'),
+      expect.stringContaining('verdictLabels missing key "excellent"'),
     );
   });
 
   it("rejects contract with missing verdict icon", () => {
-    const { forged: _removed, ...rest } = PR_BRAND_CONTRACT.verdictIcons;
+    const { excellent: _removed, ...rest } = PR_BRAND_CONTRACT.verdictIcons;
     const result = validateBrandContract({
       ...PR_BRAND_CONTRACT,
       verdictIcons: rest,
     });
     expect(result.valid).toBe(false);
     expect(result.errors).toContainEqual(
-      expect.stringContaining('verdictIcons missing key "forged"'),
+      expect.stringContaining('verdictIcons missing key "excellent"'),
     );
   });
 
@@ -179,7 +179,7 @@ describe("validateBrandContract", () => {
   it("collects multiple errors at once", () => {
     const result = validateBrandContract({
       ...PR_BRAND_CONTRACT,
-      productName: "Wrong" as "Mjolnir",
+      productName: "Wrong" as "QA Doctor",
       productDescriptor: "Wrong" as "Verification Trust",
       sectionOrder: [],
       terminology: "wrong" as "trust-engine",

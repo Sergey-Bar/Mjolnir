@@ -2,18 +2,18 @@
 
 Every surface below is additive to the frozen 1.0 contract: JSON
 `schemaVersion: 1`, exit codes `0 · 1 · 2 · 10 · 20`, and the verdict
-vocabulary (`WORTHY` / `NEEDS WORK` / `UNWORTHY`) are unchanged.
+vocabulary (`HEALTHY` / `NEEDS ATTENTION` / `CRITICAL`) are unchanged.
 
 ## Help
 
 ```bash
-mjolnir --help            # grouped overview: Scan · CI & PRs · Forensics · Maintenance · Meta
-mjolnir help <verb>       # per-command page with copy-pasteable examples
-mjolnir <verb> --help     # the same page, from the verb itself
+qa-doctor --help            # grouped overview: Scan · CI & PRs · Forensics · Maintenance · Meta
+qa-doctor help <verb>       # per-command page with copy-pasteable examples
+qa-doctor <verb> --help     # the same page, from the verb itself
 ```
 
-`mjolnir help` is a verb — it never scans. A folder named `help/` is
-still scanned as `mjolnir ./help`.
+`qa-doctor help` is a verb — it never scans. A folder named `help/` is
+still scanned as `qa-doctor ./help`.
 
 ## Usage errors (exit 10 preserved)
 
@@ -22,21 +22,21 @@ up to three nearest real flags (edit distance ≤ 2), and the exact help
 command:
 
 ```text
-mjolnir: unknown flag "--jso"
+qa-doctor: unknown flag "--jso"
   Did you mean: --json
-  Run mjolnir --help for the full flag list.
+  Run qa-doctor --help for the full flag list.
 ```
 
 A crash (exit 20) prints a plain-language note and the stack trace only
 under `--debug`.
 
-## `mjolnir summary [mjolnir.json]`
+## `qa-doctor summary [qa-doctor.json]`
 
 Turns a saved `--json` report into GitHub CI output. One emitter, one
 code path — the scan itself never prints annotations.
 
 ```bash
-mjolnir --json > mjolnir.json && mjolnir summary mjolnir.json
+qa-doctor --json > qa-doctor.json && qa-doctor summary qa-doctor.json
 ```
 
 - **Annotations** (one per finding) go to stdout only when
@@ -72,25 +72,25 @@ stays byte-identical in every mode.
 
 ## The remediation loop (why / handoff / install)
 
-Mjölnir provides evidence and verification. The agent (or human) remains
+QA Doctor provides evidence and verification. The agent (or human) remains
 responsible for every change.
 
 ```
 SCAN → DETECT → EVIDENCE → EXPLAIN → HANDOFF → FIX → RE-SCAN → VERIFY
 ```
 
-### `mjolnir why <file>:<line>`
+### `qa-doctor why <file>:<line>`
 
 Occurrence-level evidence query — informational, NOT a gate. Exact
 file+line match over the report; renders the finding's severity,
 message/why/fix, evidence level (E0–E2), trust level (L0–L5 runtime
 corroboration), measured FP rate (or "ships on assumption"), and the
-suppression contract (`ignore` entries in `mjolnir.config.json`: reason
+suppression contract (`ignore` entries in `qa-doctor.config.json`: reason
 required, 90-day expiry). Saved-report mode (`--json
-<mjolnir.json>`) is authoritative; live scan runs otherwise. Exit 0
+<qa-doctor.json>`) is authoritative; live scan runs otherwise. Exit 0
 match, 1 no match, 10 usage, 2 invalid report.
 
-### `mjolnir handoff [mjolnir.json]`
+### `qa-doctor handoff [qa-doctor.json]`
 
 Turns a saved `--json` report into a deterministic remediation plan:
 per-rule sections (what is wrong / why / evidence boundary / occurrences
@@ -108,16 +108,16 @@ it is never a statement that the entire repository is clean. Exit 0 on
 success (10 missing file, 2 invalid JSON). Zero findings → a clean,
 non-actionable artifact.
 
-### `mjolnir install [--staged-hook] [--dry-run] [--force]`
+### `qa-doctor install [--staged-hook] [--dry-run] [--force]`
 
 Installs the trust-loop brief into detected instruction surfaces
-(`.claude/commands/mjolnir.md`, `.kilo/command/mjolnir.md`,
-`.cursor/rules/mjolnir.mdc`, marker-appended `AGENTS.md`) — version
+(`.claude/commands/qa-doctor.md`, `.kilo/command/qa-doctor.md`,
+`.cursor/rules/qa-doctor.mdc`, marker-appended `AGENTS.md`) — version
 pinned, never @latest. `--staged-hook` adds a NON-BLOCKING pre-commit
-hook (`mjolnir --staged --blocking warning`), reusing `.husky` or
+hook (`qa-doctor --staged --blocking warning`), reusing `.husky` or
 `core.hooksPath` when present. Marker-based idempotency; `--dry-run`
 writes nothing; refuses (exit 10) before overwriting anything not
-Mjölnir-marked.
+QA Doctor-marked.
 
 ### `--score`, `--category`, `--staged`, `--blocking`
 
