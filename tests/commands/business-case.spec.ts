@@ -84,7 +84,6 @@ describe("runBusinessCaseCommand", () => {
       scanResult([
         finding({
           ruleId: "QA-PW-103",
-          measuredFpRate: undefined,
           evidenceLevel: "E0",
         }),
       ]),
