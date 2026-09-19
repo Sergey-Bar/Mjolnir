@@ -409,24 +409,28 @@ describe("renderPrComment — utility exports coverage", () => {
   });
 
   it("evidenceTag renders deterministic E2 findings", () => {
-    const body = evidenceTag({
-      ruleId: "QA-TEST-001",
-      evidenceLevel: "E2",
-      findingType: "deterministic-defect",
-      confidence: "high",
-    });
+    const body = evidenceTag(
+      finding({
+        ruleId: "QA-TEST-001",
+        evidenceLevel: "E2",
+        findingType: "deterministic-defect",
+        confidence: "high",
+      }),
+    );
     expect(body).toContain("E2 · deterministic");
   });
 
   it("evidenceTag renders heuristic E1 findings with measured FP", () => {
-    const body = evidenceTag({
-      ruleId: "QA-PW-102",
-      evidenceLevel: "E1",
-      findingType: "heuristic-risk",
-      confidence: "medium",
-      measuredFpRate: 0.25,
-      measuredFpN: 40,
-    });
+    const body = evidenceTag(
+      finding({
+        ruleId: "QA-PW-102",
+        evidenceLevel: "E1",
+        findingType: "heuristic-risk",
+        confidence: "medium",
+        measuredFpRate: 0.25,
+        measuredFpN: 40,
+      }),
+    );
     expect(body).toContain("E1 · heuristic");
     expect(body).toContain("measured FP 25%");
     expect(body).toContain("n=40");
