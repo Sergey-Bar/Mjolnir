@@ -22,7 +22,8 @@ jobs:
           fetch-depth: 0 # needed for --scope changed merge-base
           persist-credentials: false
       # The action scans with the published mjolnir-qa package. The
-      # composite action is pinned to an exact commit (see above); the
+      # composite action is loaded from this checkout so the PR tests the
+      # exact action.yml being reviewed; the
       # scan package is pinned to the same reviewed release. The fail-on input is the gate: it
       # fails the job on findings at the gate and never on a partial
       # scan (exit 2 downgrades to a warning — the frozen exit-code
@@ -35,7 +36,7 @@ jobs:
         id: mjolnir
         if: always()
         continue-on-error: false
-        uses: Sergey-Bar/Mjolnir@a7f3138773b4b4dd338839acce6171f45e753267
+        uses: ./
         with:
           scope: changed
           format: json

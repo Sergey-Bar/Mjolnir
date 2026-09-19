@@ -99,6 +99,7 @@ describe("mjolnir.yml (the PR feedback loop workflow)", () => {
       s.uses?.startsWith("actions/checkout"),
     );
     expect(checkout?.with?.["persist-credentials"]).toBe(false);
+    expect(wf.jobs.scan?.steps?.some((step) => step.uses === "./")).toBe(true);
   });
 
   it("runs mjolnir pr-comment and actually posts/updates a PR comment via the GitHub API", () => {
