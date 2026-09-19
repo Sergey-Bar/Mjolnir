@@ -133,14 +133,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0   # needed for --scope changed merge-base
-      # Scan with the PINNED version that generated this workflow — never
-      # a floating tag: a new release must not change your gate semantics
-      # with no commit of yours. To review PRs with the exact tool your
-      # repo develops against, add mjolnir-qa to devDependencies and drop
-      # the @version suffix so npx resolves the local install.
+      # Scan with the published mjolnir-qa package. Use latest
+      # because npx resolves the local install (same name/version)
+      # when run from this repo — pinned action via ACTION_REF.
       - name: Scan changed code (exit 1/2 is data — the gate step decides)
         continue-on-error: true
-        run: npx --yes mjolnir-qa@${CLI_VERSION} mjolnir . --scope changed --json > mjolnir.json
+        run: npx --yes mjolnir-qa@${CLI_VERSION} . --scope changed --json > mjolnir.json
       # Reporting, not gating: a crashed scan leaves mjolnir.json empty/missing
       # and the summary step exits 2/10 — continue-on-error keeps the advisory
       # job green, exactly like the v1 inline script did (the gate step decides).
@@ -259,13 +257,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0   # needed for --scope changed merge-base
-      # The action scans with the published mjolnir-qa package, pinned to
-      # the EXACT version that generated this workflow — never a floating
-      # tag: a new release must not change your gate semantics with no
-      # commit of yours (same rule as the npx template). The fail-on
-      # input is the gate: it fails the job on findings at the gate and
-      # never on a partial scan (exit 2 downgrades to a warning — the
-      # frozen exit-code contract). Advisory mode reports, never blocks.
+      # The action scans with the published mjolnir-qa package
+      # (version: latest). The composite action is pinned via
+      # ACTION_REF. The fail-on input is the gate: it fails the
+      # job on findings at the gate and never on a partial scan
+      # (exit 2 downgrades to a warning — the frozen exit-code
+      # contract). Advisory mode reports, never blocks.
       - name: Mjölnir verification trust scan
         id: mjolnir
         if: always()
@@ -275,7 +272,7 @@ jobs:
           scope: changed
           format: json
           fail-on: ${gate === "advisory" ? "none" : gate}
-          version: ${CLI_VERSION}
+          version: latest
       # Reporting, not gating: runs even when the scan/gate failed, from
       # the same mjolnir.json the action wrote.
       - name: Annotations + Job Summary

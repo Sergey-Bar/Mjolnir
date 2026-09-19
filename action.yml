@@ -191,18 +191,18 @@ runs:
           warning) ARGS+=(--blocking warning) ;;
           none)    ARGS+=(--blocking none) ;;
         esac
-        echo "Running: npx --yes mjolnir-qa@${MJ_VERSION} mjolnir ${ARGS[*]}"
+        echo "Running: npx --yes mjolnir-qa@${MJ_VERSION} ${ARGS[*]}"
         set +e
         if [ "$MJ_FORMAT" = "json" ]; then
-          npx --yes "mjolnir-qa@${MJ_VERSION}" mjolnir "${ARGS[@]}" > mjolnir.json
+npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}" > mjolnir.json
         elif [ "$MJ_FORMAT" = "sarif" ]; then
-          npx --yes "mjolnir-qa@${MJ_VERSION}" mjolnir "${ARGS[@]}" > mjolnir-report.sarif
+          npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}" > mjolnir-report.sarif
         elif [ "$MJ_FORMAT" = "codequality" ]; then
-          npx --yes "mjolnir-qa@${MJ_VERSION}" mjolnir "${ARGS[@]}" > mjolnir-codequality.json
+          npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}" > mjolnir-codequality.json
         elif [ "$MJ_FORMAT" = "mermaid" ]; then
-          npx --yes "mjolnir-qa@${MJ_VERSION}" mjolnir "${ARGS[@]}" > mjolnir-report.mmd
+          npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}" > mjolnir-report.mmd
         else
-          npx --yes "mjolnir-qa@${MJ_VERSION}" mjolnir "${ARGS[@]}"
+          npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}"
         fi
         EXIT=$?
         set -e
@@ -271,7 +271,7 @@ runs:
         if [ "$MJ_SCOPE" = "changed" ]; then ARGS+=(--scope changed); fi
         if [ "$MJ_STRICT" = "true" ]; then ARGS+=(--strict); fi
         set +e
-        npx --yes "mjolnir-qa@${MJ_VERSION}" mjolnir "${ARGS[@]}" > mjolnir.json
+          npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}" > mjolnir.json
         echo "exit=$?" >> "$GITHUB_OUTPUT"
         exit 0
 
