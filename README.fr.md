@@ -81,7 +81,7 @@ Mjölnir lit la suite, les workflows CI et, si vous en avez un, le rapport d'une
 Un vrai scan de [`examples/demo-repo`](examples/demo-repo), une petite suite Playwright avec un workflow CI. Voici où sont partis ses points :
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Le détail des déductions de Mjölnir : WORTHINESS 75/100 NEEDS WORK, le score par catégorie, l'encadré des déductions par sévérité et une liste FIX THIS FIRST" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="Le détail des déductions de Mjölnir : WORTHINESS 80/100 WORTHY, le score par catégorie, l'encadré des déductions par sévérité et une liste FIX THIS FIRST" width="520" />
 </p>
 
 <sub>Généré par `npm run docs:hero` à partir d'un vrai scan et verrouillé contre toute dérive en CI. Le rapport `--verbose` complet du même scan est [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
@@ -312,8 +312,8 @@ e2e/login.spec.ts
   role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 
 e2e/checkout.spec.ts
-  [█████████████████░░░]  86 / 100
-  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
+  [██████████████████░░]  88 / 100
+  role/text: 4 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 ```
 
 Cela mesure la **robustesse, pas l'exactitude**. `.btn.btn-primary > div:nth-child(2)` passe aujourd'hui et continue de passer jusqu'à ce que quelqu'un touche au balisage. Un score bas n'affirme jamais que le test est cassé, seulement qu'il dépend d'un balisage que personne n'a promis de conserver.

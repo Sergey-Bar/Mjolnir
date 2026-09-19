@@ -14,6 +14,8 @@
  * `npm run typecheck` fails here before it fails in a user's config.
  */
 
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { defineConfig } from "@playwright/test";
 import { describe, expect, it } from "vitest";
 
@@ -23,6 +25,26 @@ import {
 } from "../../packages/playwright-reporter/src/index.js";
 
 describe("mjolnirReporter satisfies Playwright's real contract", () => {
+  it("advertises the ESM declaration output in both metadata entry points", () => {
+    const pkg = JSON.parse(
+      readFileSync(
+        join(
+          import.meta.dirname,
+          "../../packages/playwright-reporter/package.json",
+        ),
+        "utf8",
+      ),
+    ) as {
+      types: string;
+      main: string;
+      exports: { ".": { types: string; import: string } };
+    };
+    expect(pkg.types).toBe("./dist/index.d.mts");
+    expect(pkg.exports["."].types).toBe(pkg.types);
+    expect(pkg.exports["."].import).toBe(pkg.main);
+    expect(pkg.types).toBe(pkg.main.replace(/\.mjs$/, ".d.mts"));
+  });
+
   it("is accepted by defineConfig's reporter field, not just tuple-shaped", () => {
     // This is a type-level assertion as much as a runtime one: if
     // mjolnirReporter()'s return type ever stops satisfying Playwright's

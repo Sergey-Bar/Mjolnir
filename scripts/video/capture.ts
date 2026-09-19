@@ -56,10 +56,20 @@ const WORKFLOW_REL = join(".github", "workflows", "ci.yml");
  * Masked here — only in these assets, never in the real reporter — so a
  * re-capture is a no-op diff when the scan itself is unchanged. Same
  * treatment as generate-readme-demo.ts.
+ *
+ * The reporter prints either `· Nms` or `· N.Ns`; both are masked, and the
+ * mask is shared with the README hero/demo generators (scripts/generate-
+ * readme-hero.ts, scripts/generate-readme-demo.ts) so the three assets can
+ * never disagree about what a regenerated scan looks like.
  */
-export const NORMALIZATION = ["/· \\d+ms$/ → '· a few ms'"];
+export const NORMALIZATION = [
+  "/· (?:\\d+ms|(?:0\\.\\d*[1-9]\\d*|[1-9]\\d*(?:\\.\\d+)?)s)$/ → '· a few ms'",
+];
 const normalize = (line: string): string =>
-  line.replace(/· \d+ms$/, "· a few ms");
+  line.replace(
+    /· (?:\d+ms|(?:0\.\d*[1-9]\d*|[1-9]\d*(?:\.\d+)?)s)$/,
+    "· a few ms",
+  );
 
 /**
  * A scan beat: the command line shown on screen and the output beneath it

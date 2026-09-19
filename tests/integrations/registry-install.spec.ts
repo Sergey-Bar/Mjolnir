@@ -48,22 +48,28 @@ let entryPath: string;
 
 beforeAll(() => {
   if (!RUN) return;
-  execSync("npm run build", { cwd: ROOT, stdio: "pipe" });
-
-  workDir = mkdtempSync(join(tmpdir(), "mjolnir-registry-pack-"));
-  const packOut = execSync(`npm pack --pack-destination "${workDir}" --json`, {
-    cwd: ROOT,
-  }).toString();
-  // Shape-tolerant: npm ≤ 11 emits an array, npm ≥ 12 an object keyed
-  // by package name (the change that stopped the v0.5.1 publish).
-  const packResult = parseNpmPackJson(packOut);
-  if (!packResult) {
-    throw new Error(
-      `npm pack --json produced no entry with a filename. Raw output:\n${packOut}`,
-    );
+  let tarball = process.env["REGISTRY_INSTALL_TARBALL"];
+  if (tarball) {
+    tarball = resolve(ROOT, tarball);
+    if (!existsSync(tarball))
+      throw new Error(`Tarball does not exist: ${tarball}`);
+  } else {
+    execSync("npm run build", { cwd: ROOT, stdio: "pipe" });
+    workDir = mkdtempSync(join(tmpdir(), "mjolnir-registry-pack-"));
+    const packOut = execSync(
+      `npm pack --pack-destination "${workDir}" --json`,
+      {
+        cwd: ROOT,
+      },
+    ).toString();
+    const packResult = parseNpmPackJson(packOut);
+    if (!packResult) {
+      throw new Error(
+        `npm pack --json produced no entry with a filename. Raw output:\n${packOut}`,
+      );
+    }
+    tarball = join(workDir, packResult.filename);
   }
-  const { filename } = packResult;
-  const tarball = join(workDir, filename);
 
   installDir = mkdtempSync(join(tmpdir(), "mjolnir-registry-install-"));
   mkdirSync(join(installDir, "node_modules"), { recursive: true });

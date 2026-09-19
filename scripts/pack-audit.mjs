@@ -22,7 +22,7 @@ import {
   rmSync,
   statSync,
 } from "node:fs";
-import { join } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 
 const tgz = process.argv[2];
@@ -55,7 +55,13 @@ const CONTENT_PATTERNS = [
   /\/home\/[a-z0-9_-]+\//,
 ];
 
-const listing = execFileSync("tar", ["-tzf", tgz], { encoding: "utf8" })
+const archivePath = resolve(tgz);
+const archiveName = `./${basename(archivePath)}`;
+const archiveDirectory = dirname(archivePath);
+const listing = execFileSync("tar", ["-tzf", archiveName], {
+  cwd: archiveDirectory,
+  encoding: "utf8",
+})
   .split("\n")
   .map((l) => l.trim())
   .filter(Boolean);
@@ -103,7 +109,9 @@ for (const required of [
 // Content audit: extract and scan every file (bounded at 1 MB each).
 const tmp = mkdtempSync(join(tmpdir(), "mjolnir-pack-audit-"));
 try {
-  execFileSync("tar", ["-xzf", tgz, "-C", tmp]);
+  execFileSync("tar", ["-xzf", archiveName, "-C", tmp], {
+    cwd: archiveDirectory,
+  });
   const scan = (dir) => {
     for (const f of readdirSync(dir, { withFileTypes: true })) {
       const full = join(dir, f.name);

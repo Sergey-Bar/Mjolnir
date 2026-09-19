@@ -19,6 +19,7 @@
 import {
   closeSync,
   existsSync,
+  lstatSync,
   mkdirSync,
   openSync,
   readdirSync,
@@ -28,6 +29,10 @@ import {
 } from "node:fs";
 import { dirname, join } from "node:path";
 import { randomBytes } from "node:crypto";
+
+export function atomicTempPath(path: string): string {
+  return `${path}.mjolnir-${process.pid}-${Date.now()}-${randomBytes(4).toString("hex")}.tmp`;
+}
 
 export interface WriteFileAtomicOptions {
   encoding?: BufferEncoding;
@@ -48,7 +53,7 @@ export function writeFileAtomic(
   if (opts.mkdirs !== false && !existsSync(dir)) {
     mkdirSync(dir, { recursive: true });
   }
-  const tmp = `${path}.mjolnir-${Date.now()}-${randomBytes(4).toString("hex")}.tmp`;
+  const tmp = atomicTempPath(path);
   let fd: number | undefined;
   try {
     // wx: exclusive create — two concurrent writers never interleave.
@@ -119,25 +124,42 @@ function renameWithWindowsRetry(from: string, to: string): void {
   }
 }
 
-/**
- * Startup sweep: remove stale `.mjolnir-*.tmp` files left by a crashed
- * writer in `dir` (and its children named like artifacts). Called by the
- * fix command's pre-flight. Never throws — cleanup is advisory.
- */
+const STALE_TEMP_AGE_MS = 24 * 60 * 60 * 1000;
+const TEMP_PID_RE = /^.+\.mjolnir-([1-9]\d{0,9})-(\d{13})-[0-9a-f]{8}\.tmp$/;
+
 export function sweepStaleTempFiles(dir: string): number {
   let swept = 0;
+  let entries: string[];
   try {
-    for (const entry of readdirSync(dir)) {
-      if (!entry.includes(".mjolnir-") || !entry.endsWith(".tmp")) continue;
-      try {
-        unlinkSync(join(dir, entry));
-        swept++;
-      } catch {
-        // a temp currently being renamed over — leave it
-      }
-    }
+    entries = readdirSync(dir);
   } catch {
-    // unreadable dir — nothing to sweep
+    return 0;
+  }
+  const cutoff = Date.now() - STALE_TEMP_AGE_MS;
+  for (const entry of entries) {
+    const match = TEMP_PID_RE.exec(entry);
+    if (!match || Number(match[2]) > cutoff) continue;
+    const path = join(dir, entry);
+    try {
+      const stat = lstatSync(path);
+      if (!stat.isFile() || stat.mtimeMs > cutoff) continue;
+      if (pidAlive(Number(match[1]))) continue;
+      unlinkSync(path);
+      swept++;
+    } catch {
+      continue;
+    }
   }
   return swept;
+}
+
+function pidAlive(pid: number): boolean {
+  if (!Number.isSafeInteger(pid) || pid <= 0 || pid > 2147483647) return true;
+  if (pid === process.pid) return true;
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (err) {
+    return (err as NodeJS.ErrnoException | null)?.code !== "ESRCH";
+  }
 }

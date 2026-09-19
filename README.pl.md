@@ -81,7 +81,7 @@ Mjölnir czyta zestaw testów, workflow CI oraz, jeśli go masz, raport z prawdz
 Prawdziwy skan [`examples/demo-repo`](examples/demo-repo), małego zestawu Playwright z workflow CI. Oto, gdzie poszły jego punkty:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Rozbicie potrąceń Mjölnira: WORTHINESS 75/100 NEEDS WORK, wynik według kategorii, ramka potrąceń według ważności i lista FIX THIS FIRST" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="Rozbicie potrąceń Mjölnira: WORTHINESS 80/100 WORTHY, wynik według kategorii, ramka potrąceń według ważności i lista FIX THIS FIRST" width="520" />
 </p>
 
 <sub>Wygenerowane przez `npm run docs:hero` z prawdziwego skanu i zabezpieczone w CI przed rozjazdem. Pełny raport `--verbose` z tego samego skanu to [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
@@ -312,8 +312,8 @@ e2e/login.spec.ts
   role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 
 e2e/checkout.spec.ts
-  [█████████████████░░░]  86 / 100
-  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
+  [██████████████████░░]  88 / 100
+  role/text: 4 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 ```
 
 To mierzy **odporność, a nie poprawność**. `.btn.btn-primary > div:nth-child(2)` przechodzi dziś i będzie przechodzić, dopóki ktoś nie ruszy znaczników. Niski wynik nigdy nie twierdzi, że test jest zepsuty, tylko że zależy od znaczników, których nikt nie obiecał zachować.

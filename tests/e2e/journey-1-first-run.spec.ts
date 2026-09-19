@@ -117,7 +117,7 @@ function runMjolnir(
 
 describe("E2E journey 1: first run from the packed tarball", () => {
   it(
-    "scans examples/demo-repo: NEEDS WORK verdict, all JSON fields, well-formed findings",
+    "scans examples/demo-repo: WORTHY score band, failing error gate, well-formed findings",
     { timeout: 60_000 },
     () => {
       const { stdout, stderr, status } = runMjolnir([
@@ -143,8 +143,7 @@ describe("E2E journey 1: first run from the packed tarball", () => {
       };
       expect(result.schemaVersion).toBe(1);
       expect(result.partial).toBe(false);
-      expect(result.score).toBeGreaterThanOrEqual(50);
-      expect(result.score).toBeLessThanOrEqual(79); // NEEDS WORK band
+      expect(result.score).toBe(80);
       expect(result.testFileCount).toBeGreaterThan(0);
       expect(result.testDeclarationCount).toBeGreaterThan(0);
       expect(result.rawDeductions).toBeGreaterThan(0);
@@ -179,8 +178,8 @@ describe("E2E journey 1: first run from the packed tarball", () => {
       ]);
       expect(status).toBe(1);
       expect(stdout).toContain("WORTHINESS");
-      expect(stdout).toMatch(/WORTHY|NEEDS WORK|UNWORTHY/);
-      expect(stdout).toContain("NEEDS WORK");
+      expect(stdout).toMatch(/WORTHINESS\s+80\/100\s+WORTHY\b/);
+      expect(stdout).not.toContain("NEEDS WORK");
     },
   );
 

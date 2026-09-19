@@ -1,7 +1,7 @@
 /**
  * CI integration (Sprint-Plan W7): generates .github/workflows/mjolnir.yml
  * from internal templates ONLY — no user-input interpolation (R3 supply-chain).
- * Default gate: advisory (report, never block).
+ * Default gate: error (block releases on error-severity findings).
  *
  * Bug-audit hardening (H2): the previous template shipped the same
  * `github.rest.checks` no-op this repo's own audit removed from mjolnir.yml,
@@ -133,14 +133,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0   # needed for --scope changed merge-base
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 22
-      # Scan with the PINNED version that generated this workflow — never
-      # a floating tag: a new release must not change your gate semantics
-      # with no commit of yours. To review PRs with the exact tool your
-      # repo develops against, add mjolnir-qa to devDependencies and drop
-      # the @version suffix so npx resolves the local install.
+      # Scan with the pinned version. No subcommand: npx resolves
+      # the package bin directly; passing mjolnir as an arg causes
+      # npm 10+ npx to invoke it twice (unknown subcommand).
       - name: Scan changed code (exit 1/2 is data — the gate step decides)
         continue-on-error: true
         run: npx --yes mjolnir-qa@${CLI_VERSION} . --scope changed --json > mjolnir.json
@@ -225,7 +220,8 @@ const GATES: readonly GateLevel[] = ["advisory", "error", "warning"];
  * pins the major, never @latest: a new release must not change gate
  * semantics without a commit of the consumer's.
  */
-export const ACTION_REF = "Sergey-Bar/Mjolnir@v1";
+export const ACTION_REF =
+  "Sergey-Bar/Mjolnir@4a588bc62d517bc85fc44c0eae64c6587d3bf70b";
 
 /**
  * The action-based workflow for one gate level (P1.3): the root
@@ -261,13 +257,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0   # needed for --scope changed merge-base
-      # The action scans with the published mjolnir-qa package, pinned to
-      # the EXACT version that generated this workflow — never a floating
-      # tag: a new release must not change your gate semantics with no
-      # commit of yours (same rule as the npx template). The fail-on
-      # input is the gate: it fails the job on findings at the gate and
-      # never on a partial scan (exit 2 downgrades to a warning — the
-      # frozen exit-code contract). Advisory mode reports, never blocks.
+      # The action scans with the published mjolnir-qa package
+      # (version: latest). The composite action is pinned via
+      # ACTION_REF. The fail-on input is the gate: it fails the
+      # job on findings at the gate and never on a partial scan
+      # (exit 2 downgrades to a warning — the frozen exit-code
+      # contract). Advisory mode reports, never blocks.
       - name: Mjölnir verification trust scan
         id: mjolnir
         if: always()
@@ -379,7 +374,7 @@ function summarizeContentDiff(existing: string, incoming: string): string[] {
 
 export function ciInstall(
   root: string,
-  gate: GateLevel = "advisory",
+  gate: GateLevel = "error",
   options: { force?: boolean; action?: boolean } = {},
 ): CiInstallResult {
   const wfDir = join(root, ".github", "workflows");

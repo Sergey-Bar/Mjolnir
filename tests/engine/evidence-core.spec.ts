@@ -372,8 +372,8 @@ describe("preservation: stamping through the core ≡ pre-core semantics (differ
       ],
     });
     const mk = (): Finding[] => [
-      finding({ file: "e2e/shop.spec.ts", line: 10 }),
-      finding({ file: "e2e/shop.spec.ts", line: 45 }),
+      finding({ file: "e2e/shop.spec.ts", line: 1 }),
+      finding({ file: "e2e/shop.spec.ts", line: 40 }),
       finding({ file: "nowhere/x.ts", line: 2 }),
     ];
     const viaCore = mk();

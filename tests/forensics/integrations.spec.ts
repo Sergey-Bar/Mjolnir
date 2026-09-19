@@ -23,13 +23,15 @@ afterEach(() => {
 
 describe("ciInstall", () => {
   it("creates workflow dir and writes the action-based advisory template", () => {
-    const res = ciInstall(dir);
+    const res = ciInstall(dir, "advisory");
     expect(res.existed).toBe(false);
     expect(existsSync(res.written)).toBe(true);
     const text = readFileSync(res.written, "utf8");
     expect(text).toContain("name: Mjölnir");
     // Action-based by default (P1): the root action.yml, fail-on none.
-    expect(text).toContain("Sergey-Bar/Mjolnir@v1");
+    expect(text).toContain(
+      "Sergey-Bar/Mjolnir@4a588bc62d517bc85fc44c0eae64c6587d3bf70b",
+    );
     expect(text).toContain("fail-on: none");
     expect(text).toContain(
       "Advisory mode — findings reported, never blocking.",
@@ -47,7 +49,9 @@ describe("ciInstall", () => {
     // standalone gate script (defense-in-depth read) is still exercised
     // by generated-artifacts-validity's executed-gate cases.
     expect(text).toContain("fail-on: error");
-    expect(text).toContain("Sergey-Bar/Mjolnir@v1");
+    expect(text).toContain(
+      "Sergey-Bar/Mjolnir@4a588bc62d517bc85fc44c0eae64c6587d3bf70b",
+    );
   });
 
   it("renders warning gate (action template)", () => {

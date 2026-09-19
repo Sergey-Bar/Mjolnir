@@ -174,6 +174,7 @@ runs:
         MJ_STRICT: ${{ inputs.strict }}
         MJ_FORMAT: ${{ inputs.format }}
         MJ_FAIL_ON: ${{ inputs.fail-on }}
+        MJ_FAIL_ON_PARTIAL: ${{ inputs.fail-on-partial }}
         MJ_VERSION: ${{ inputs.version }}
       run: |
         ARGS=("$MJ_PATH")
@@ -283,11 +284,9 @@ runs:
       env:
         MJ_VERSION: ${{ inputs.version }}
       run: |
-        set +e
         npx --yes "mjolnir-qa@${MJ_VERSION}" trust-report --from mjolnir.json
         echo "exit=$?" >> "$GITHUB_OUTPUT"
         echo "file=mjolnir-trust-report.md" >> "$GITHUB_OUTPUT"
-        exit 0
 
     - name: Emit annotations + step summary
       if: inputs.annotations == 'true'
@@ -299,7 +298,7 @@ runs:
         # GITHUB_ACTIONS=true) and the step summary to
         # $GITHUB_STEP_SUMMARY — the CLI's own CI surface, zero action-
         # side rendering logic.
-        npx --yes "mjolnir-qa@${MJ_VERSION}" summary mjolnir.json --stdout | tee "${GITHUB_STEP_SUMMARY:-/dev/null}" >/dev/null 2>&1 || true
+        npx --yes "mjolnir-qa@${MJ_VERSION}" summary mjolnir.json --stdout | tee "${GITHUB_STEP_SUMMARY:-/dev/null}" >/dev/null 2>&1
 
     - name: Post Trust Report as PR comment
       if: >-

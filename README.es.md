@@ -81,7 +81,7 @@ Mjölnir lee la suite, los workflows de CI y, si lo tienes, el informe de una ej
 Un escaneo real de [`examples/demo-repo`](examples/demo-repo), una pequeña suite de Playwright con un workflow de CI. Aquí es adonde fueron sus puntos:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="El desglose de deducciones de Mjölnir: WORTHINESS 75/100 NEEDS WORK, la puntuación por categoría, el cuadro de deducciones por severidad y una lista FIX THIS FIRST" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="El desglose de deducciones de Mjölnir: WORTHINESS 80/100 WORTHY, la puntuación por categoría, el cuadro de deducciones por severidad y una lista FIX THIS FIRST" width="520" />
 </p>
 
 <sub>Generado con `npm run docs:hero` a partir de un escaneo real y bloqueado contra desviaciones en CI. El informe `--verbose` completo del mismo escaneo es [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
@@ -312,8 +312,8 @@ e2e/login.spec.ts
   role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 
 e2e/checkout.spec.ts
-  [█████████████████░░░]  86 / 100
-  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
+  [██████████████████░░]  88 / 100
+  role/text: 4 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 ```
 
 Esto mide **resiliencia, no corrección**. `.btn.btn-primary > div:nth-child(2)` pasa hoy y sigue pasando hasta que alguien toca el marcado. Una puntuación baja nunca afirma que el test esté roto, solo que depende de un marcado que nadie prometió mantener.

@@ -1,5 +1,11 @@
 /** Final rule-arm probes promoted to real assertions. */
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import {
+  mkdtempSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -75,6 +81,93 @@ describe("rule-arm completion", () => {
         'await query("DROP TABLE users")',
     });
     expect(findings).toHaveLength(1);
+  });
+
+  it.each([
+    "../config/fixture-typecheck-gate.spec.ts",
+    "./rule-arm-completion.spec.ts",
+  ])("QA-PW-125: fixture source in %s is not executed", (relativePath) => {
+    const text = readFileSync(new URL(relativePath, import.meta.url), "utf8");
+    const path = "fixture-author.spec.ts";
+    expect(
+      pwGlobalSetupSharedState.run({
+        path,
+        text,
+        codeText: computeCodeText({ path, text }, "typescript"),
+      }),
+    ).toEqual([]);
+  });
+
+  it("QA-PW-125: replays every classified mutation at its recorded location", () => {
+    const verdicts = readFileSync(
+      new URL("../corpus/verdicts/positive-fixtures.jsonl", import.meta.url),
+      "utf8",
+    )
+      .trim()
+      .split("\n")
+      .map(
+        (line) =>
+          JSON.parse(line) as {
+            ruleId: string;
+            file: string;
+            line: number;
+            verdict: string;
+          },
+      )
+      .filter((row) => row.ruleId === "QA-PW-125");
+    expect(verdicts).toHaveLength(10);
+    for (const row of verdicts) {
+      expect(row.verdict).toBe("TP");
+      const text = readFileSync(
+        new URL(`../corpus/positive-fixtures/${row.file}`, import.meta.url),
+        "utf8",
+      );
+      const findings = pwGlobalSetupSharedState.run({
+        path: row.file,
+        text,
+        codeText: computeCodeText({ path: row.file, text }, "typescript"),
+      });
+      expect(findings, row.file).toHaveLength(1);
+      expect(findings[0]).toMatchObject({ file: row.file, line: row.line });
+    }
+  });
+
+  it.each([
+    'await query("DROP TABLE users")',
+    'execSync("npx prisma migrate deploy")',
+    "spawn(`seed shared-db`)",
+  ])(
+    "QA-PW-125: live mutation remains visible with masked arguments: %s",
+    (text) => {
+      const path = "global-setup.ts";
+      const findings = pwGlobalSetupSharedState.run({
+        path,
+        text,
+        codeText: computeCodeText({ path, text }, "typescript"),
+      });
+      expect(findings).toHaveLength(1);
+      expect(findings[0]).toMatchObject({
+        file: path,
+        line: 1,
+        column: text.startsWith("await") ? 7 : 1,
+      });
+    },
+  );
+
+  it.each([
+    '// execSync("npx prisma migrate deploy")',
+    '/* query("DROP TABLE users") */',
+    'const sample = `execSync("npx prisma migrate deploy")`;',
+    "const sample = 'await query(\"DROP TABLE users\")';",
+  ])("QA-PW-125: setup-file prose is not a live call: %s", (text) => {
+    const path = "global-setup.ts";
+    expect(
+      pwGlobalSetupSharedState.run({
+        path,
+        text,
+        codeText: computeCodeText({ path, text }, "typescript"),
+      }),
+    ).toEqual([]);
   });
 
   it("QA-PW-113: frame-locator chains without nesting score zero depth", () => {

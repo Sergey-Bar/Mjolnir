@@ -49,7 +49,7 @@ const SAMPLE = `<?xml version="1.0" encoding="UTF-8"?>
     <text x="22" y="${y(0)}" xml:space="preserve"><tspan fill="rgb(0,255,0)">$ </tspan><tspan fill="#ede6d6">npx mjolnir-qa@latest</tspan></text>
     <text x="22" y="${y(1)}" xml:space="preserve"><tspan fill="#d7d3c8">  &#9556;&#9552;&#9559;</tspan></text>
     <text x="22" y="${y(3)}" xml:space="preserve"><tspan fill="#d7d3c8">  &#5798; [STRAINED]</tspan></text>
-    <text x="22" y="${y(5)}" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,180,67)">WORTHINESS</tspan><tspan fill="#d7d3c8">  75/100  NEEDS WORK</tspan></text>
+    <text x="22" y="${y(5)}" xml:space="preserve"><tspan fill="#d7d3c8">  </tspan><tspan fill="rgb(224,180,67)">WORTHINESS</tspan><tspan fill="#d7d3c8">  80/100  WORTHY</tspan></text>
     <text x="22" y="${y(6)}" xml:space="preserve"><tspan fill="#d7d3c8">  The hammer holds &#8212; but 24 findings weigh it down.</tspan></text>
     <text x="22" y="${y(7)}" xml:space="preserve"><tspan fill="#d7d3c8">  QA-CI    &#9608;&#9608;&#9619;&#9617;  76</tspan></text>
     <text x="22" y="${y(8)}" xml:space="preserve"><tspan fill="#d7d3c8">  &#9474; 4 &#215; error   &#8722; 32                        &#9474;</tspan></text>
@@ -111,9 +111,9 @@ test("svgToLines restores blank lines from the y coordinates", () => {
 
 test("parseSummary reads the verdict off the reporter's own output", () => {
   const s = parseSummary(svgToLines(SAMPLE));
-  assert.equal(s.score, 75);
+  assert.equal(s.score, 80);
   assert.equal(s.outOf, 100);
-  assert.equal(s.verdict, "NEEDS WORK");
+  assert.equal(s.verdict, "WORTHY");
   assert.equal(s.findings, 24);
   assert.deepEqual(s.categories, [{ family: "QA-CI", score: 76 }]);
   assert.deepEqual(s.deductions, [
@@ -313,7 +313,7 @@ test("buildScoring: the real demo report yields the reconciled strip payload", (
     r.scoring,
     "demo report carries rawDeductions — scoring must exist",
   );
-  assert.equal(r.scoring.rawDeductions, 40);
+  assert.equal(r.scoring.rawDeductions, 32);
   assert.equal(r.scoring.declarations, 7);
   // Site-law reconciliation: the formula on the page must reproduce the
   // scan's own score from these generated numbers.

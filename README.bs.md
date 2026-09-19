@@ -81,7 +81,7 @@ Mjölnir čita skup testova, CI workflowe i, ako ga imate, izvještaj stvarnog p
 Stvarno skeniranje [`examples/demo-repo`](examples/demo-repo), malog Playwright skupa testova s CI workflowom. Evo gdje su otišli njegovi bodovi:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Mjölnirov pregled odbitaka: WORTHINESS 75/100 NEEDS WORK, ocjena po kategoriji, okvir odbitaka po ozbiljnosti i lista FIX THIS FIRST" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="Mjölnirov pregled odbitaka: WORTHINESS 80/100 WORTHY, ocjena po kategoriji, okvir odbitaka po ozbiljnosti i lista FIX THIS FIRST" width="520" />
 </p>
 
 <sub>Generisano naredbom `npm run docs:hero` iz stvarnog skeniranja i zaključano protiv odstupanja u CI-ju. Puni `--verbose` izvještaj istog skeniranja je [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
@@ -312,8 +312,8 @@ e2e/login.spec.ts
   role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 
 e2e/checkout.spec.ts
-  [█████████████████░░░]  86 / 100
-  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
+  [██████████████████░░]  88 / 100
+  role/text: 4 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 ```
 
 Ovo mjeri **otpornost, a ne ispravnost**. `.btn.btn-primary > div:nth-child(2)` prolazi danas i nastavlja prolaziti dok neko ne dirne markup. Niska ocjena nikad ne tvrdi da je test pokvaren, samo da zavisi od markupa koji niko nije obećao sačuvati.

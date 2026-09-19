@@ -81,7 +81,7 @@ npx mjolnir-qa@latest
 فحص حقيقي لـ [`examples/demo-repo`](examples/demo-repo)، وهي مجموعة Playwright صغيرة مع workflow لـ CI. هنا ذهبت نقاطها:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="تفصيل الخصومات في Mjölnir: WORTHINESS 75/100 NEEDS WORK، والدرجة حسب الفئة، ومربع الخصومات حسب الخطورة، وقائمة FIX THIS FIRST" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="تفصيل الخصومات في Mjölnir: WORTHINESS 80/100 WORTHY، والدرجة حسب الفئة، ومربع الخصومات حسب الخطورة، وقائمة FIX THIS FIRST" width="520" />
 </p>
 
 <sub>مولَّد بواسطة `npm run docs:hero` من فحص حقيقي ومقفل ضد الانحراف في CI. تقرير `--verbose` الكامل للفحص نفسه هو [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
@@ -312,8 +312,8 @@ e2e/login.spec.ts
   role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 
 e2e/checkout.spec.ts
-  [█████████████████░░░]  86 / 100
-  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
+  [██████████████████░░]  88 / 100
+  role/text: 4 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 ```
 
 هذا يقيس **المتانة، لا الصحة**. ينجح `.btn.btn-primary > div:nth-child(2)` اليوم ويظل ينجح إلى أن يلمس أحدٌ الترميز. الدرجة المنخفضة لا تدّعي أبدًا أن الاختبار معطوب، بل فقط أنه يعتمد على ترميز لم يعد أحد بالحفاظ عليه.

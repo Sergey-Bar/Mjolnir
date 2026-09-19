@@ -28,6 +28,7 @@ import {
   deriveEvidenceLevel,
   type ScanResult,
   type Finding,
+  type ForensicVerdictSummary,
   type TrustSummary,
 } from "../types.js";
 
@@ -121,27 +122,22 @@ export interface MachineContract {
    */
   provenance?: ScanResult["agenticProfile"];
   /**
-   * WI-4 additive extension (plan §6, 1.1.x WI-18): the forensic-verdict
-   * slot. EMPTY in 0.6.x — forensic classifications (likely-real-defect /
+   * Forensic classifications aggregated from the ingested runtime
+   * report (plan §10.4, WAVE 5). Populated when a runtime report was
+   * discovered and produced ≥1 classified verdict (likely-real-defect /
    * environmental-failure / infrastructure-failure / flaky /
-   * retry-dependent / unstable-construction / INCONCLUSIVE) arrive with
-   * the forensic verdict taxonomy work; the slot exists so machine
-   * consumers can opt into that future without a breaking change.
+   * retry-dependent / unstable-construction / inconclusive). Absent when
+   * no runtime evidence was ingested — never fabricated.
    */
   forensicVerdicts?: ForensicVerdictSummary;
 }
 
 /**
- * The forensic-verdict slot's 0.6.x shape: classification counts by
- * verdict label, reserved but unpopulated until WI-18 (1.1.x). Additive
- * evolution only.
+ * The forensic-verdict summary shape. Re-exported from `types.js` —
+ * the canonical definition lives there so the ScanResult producer and
+ * the machine contract share one type. Additive evolution only.
  */
-export interface ForensicVerdictSummary {
-  classifications: number;
-  byVerdict: Record<string, number>;
-  /** INCONCLUSIVE is a first-class outcome — the default when evidence is insufficient. */
-  inconclusive: number;
-}
+export type { ForensicVerdictSummary } from "../types.js";
 
 /** GitHub's hard cap on annotations per check run. */
 export const ANNOTATIONS_LIMIT = 50;
@@ -202,6 +198,7 @@ function isAdvisory(f: Finding): boolean {
 }
 
 function levelFor(f: Finding): AnnotationLevel {
+  if (f.evidenceLevel === "E0") return "notice";
   if (f.severity === "error") return "failure";
   if (f.severity === "warning") return "warning";
   return "notice";
@@ -263,6 +260,9 @@ export function buildMachineContract(result: ScanResult): MachineContract {
       : {}),
     ...(result.agenticProfile !== undefined
       ? { provenance: result.agenticProfile }
+      : {}),
+    ...(result.forensicVerdicts !== undefined
+      ? { forensicVerdicts: result.forensicVerdicts }
       : {}),
   };
 }

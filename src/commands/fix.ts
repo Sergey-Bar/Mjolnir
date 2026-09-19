@@ -31,7 +31,7 @@ import { resolve as resolvePath, sep } from "node:path";
 import type { Finding, ScanResult } from "../types.js";
 import { computeCodeText } from "../engine/code-text.js";
 import { okIcon, sectionHeader, plainContext } from "../reporter/ui.js";
-import { sweepStaleTempFiles } from "../lib/fs-atomic.js";
+import { atomicTempPath, sweepStaleTempFiles } from "../lib/fs-atomic.js";
 
 const ui = plainContext();
 
@@ -436,7 +436,7 @@ export function planAndApplyFixes(
   // Audit (fix.ts): startup sweep of stale `.mjolnir-*.tmp` files left
   // by a crashed writer — the temp dir must not accumulate cruft across
   // runs. Advisory; a busy temp is left alone.
-  sweepStaleTempFiles(rootDir);
+  if (!options.dryRun) sweepStaleTempFiles(rootDir);
 
   const { files, failures } = planFixes(result, rootDir);
   const results: FixResult[] = [...failures];
@@ -517,7 +517,7 @@ export function planAndApplyFixes(
       // user file of that exact name, and two concurrent fixes raced on
       // the same path. Random suffix + O_EXCL (`wx`) makes both
       // impossible.
-      const tmp = `${abs}.mjolnir-${Date.now()}-${Math.random().toString(36).slice(2, 10)}.tmp`;
+      const tmp = atomicTempPath(abs);
       try {
         writeFileSync(tmp, text, { flag: "wx", encoding: "utf8" });
         // Audit R-5: the temp file is created with default mode — restore

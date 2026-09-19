@@ -81,7 +81,7 @@ Mjölnir อ่านชุดเทสต์ CI workflow และรายง�
 การสแกนจริงของ [`examples/demo-repo`](examples/demo-repo) ซึ่งเป็นชุดเทสต์ Playwright ขนาดเล็กที่มี CI workflow คะแนนของมันหายไปตรงนี้:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="รายละเอียดการหักคะแนนของ Mjölnir: WORTHINESS 75/100 NEEDS WORK คะแนนแยกตามหมวดหมู่ กล่องการหักคะแนนตามความรุนแรง และรายการ FIX THIS FIRST" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="รายละเอียดการหักคะแนนของ Mjölnir: WORTHINESS 80/100 WORTHY คะแนนแยกตามหมวดหมู่ กล่องการหักคะแนนตามความรุนแรง และรายการ FIX THIS FIRST" width="520" />
 </p>
 
 <sub>สร้างโดย `npm run docs:hero` จากการสแกนจริง และถูกล็อกไม่ให้คลาดเคลื่อนใน CI รายงาน `--verbose` ฉบับเต็มของการสแกนเดียวกันคือ [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`)</sub>
@@ -312,8 +312,8 @@ e2e/login.spec.ts
   role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 
 e2e/checkout.spec.ts
-  [█████████████████░░░]  86 / 100
-  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
+  [██████████████████░░]  88 / 100
+  role/text: 4 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 ```
 
 สิ่งนี้วัด **ความทนทาน ไม่ใช่ความถูกต้อง** `.btn.btn-primary > div:nth-child(2)` ผ่านในวันนี้ และจะผ่านต่อไปจนกว่าจะมีคนแตะ markup คะแนนต่ำไม่เคยอ้างว่าเทสต์พัง เพียงบอกว่ามันพึ่งพา markup ที่ไม่มีใครสัญญาว่าจะคงไว้

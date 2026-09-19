@@ -81,7 +81,7 @@ Mjölnir leser testsuiten, CI-workflowene og, hvis du har en, rapporten fra en e
 En ekte skanning av [`examples/demo-repo`](examples/demo-repo), en liten Playwright-suite med en CI-workflow. Her er hvor poengene ble av:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Mjölnirs oversikt over trekk: WORTHINESS 75/100 NEEDS WORK, scoren per kategori, trekkboksen per alvorlighetsgrad og en FIX THIS FIRST-liste" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="Mjölnirs oversikt over trekk: WORTHINESS 80/100 WORTHY, scoren per kategori, trekkboksen per alvorlighetsgrad og en FIX THIS FIRST-liste" width="520" />
 </p>
 
 <sub>Generert av `npm run docs:hero` fra en ekte skanning og låst mot avvik i CI. Den fullstendige `--verbose`-rapporten fra samme skanning er [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
@@ -312,8 +312,8 @@ e2e/login.spec.ts
   role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 
 e2e/checkout.spec.ts
-  [█████████████████░░░]  86 / 100
-  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
+  [██████████████████░░]  88 / 100
+  role/text: 4 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 ```
 
 Dette måler **robusthet, ikke korrekthet**. `.btn.btn-primary > div:nth-child(2)` består i dag og fortsetter å bestå til noen rører markupen. En lav score påstår aldri at testen er ødelagt, bare at den avhenger av markup ingen har lovet å beholde.

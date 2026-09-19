@@ -11,10 +11,34 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { assembleScanResult } from "../../src/engine/scan-pipeline.js";
+import {
+  assembleScanResult,
+  summarizeForensicVerdicts,
+} from "../../src/engine/scan-pipeline.js";
 import { DependencyGraph } from "../../src/engine/dependency-graph.js";
 import type { Finding } from "../../src/types.js";
+import type { ForensicsReport } from "../../src/forensics/types.js";
 import { disabledScanCache } from "../../src/engine/scan-cache.js";
+
+function makeForensicsReport(
+  overrides: Partial<ForensicsReport> = {},
+): ForensicsReport {
+  return {
+    forensicsSchemaVersion: 1,
+    source: "playwright-json",
+    totalTests: 0,
+    failed: 0,
+    skipped: 0,
+    retriedTests: 0,
+    flakyTests: 0,
+    totalDurationMs: 0,
+    verdicts: [],
+    analysisComplete: true,
+    skippedReports: 0,
+    incompleteReasons: [],
+    ...overrides,
+  };
+}
 
 function makeFinding(overrides: Partial<Finding> = {}): Finding {
   return {
@@ -85,6 +109,7 @@ function minimalInput(
     suppressionCount: 0,
     frameworks: { frameworks: [], unknown: false },
     runtimeReportPath: undefined,
+    forensicVerdicts: undefined,
     config: {},
     fileProvenance: [],
     started: Date.now() - 100,
@@ -215,16 +240,22 @@ describe("assembleScanResult — standalone module wiring", () => {
       const findings = [
         makeFinding({
           findingId: "f1",
+          ruleId: "QA-PW-102",
           file: "packages/a/src/foo.spec.ts",
         }),
         makeFinding({
           findingId: "f2",
+          ruleId: "QA-PW-102",
           file: "packages/b/src/bar.spec.ts",
         }),
       ];
       const result = assembleScanResult(
         minimalInput({
           findings,
+          declarationsByFile: new Map([
+            ["packages/a/src/foo.spec.ts", 1],
+            ["packages/b/src/bar.spec.ts", 9],
+          ]),
           dependencyGraph: graph,
           args: {
             target: "/test",
@@ -239,10 +270,126 @@ describe("assembleScanResult — standalone module wiring", () => {
       );
       expect(result.monorepoAnalysis).toBeDefined();
       expect(result.monorepoAnalysis?.packages.length).toBe(2);
-      expect(typeof result.monorepoAnalysis?.overallVerdict).toBe("string");
-      expect(["number", "object"]).toContain(
-        typeof result.monorepoAnalysis?.overallScore,
-      );
+      expect(result.monorepoAnalysis?.packages.map((p) => p.score)).toEqual([
+        93, 99,
+      ]);
+      expect(result.monorepoAnalysis?.overallScore).toBe(93);
+      expect(result.monorepoAnalysis?.overallVerdict).toBe("pass");
+    });
+
+    it("keeps clean untested packages unknown and assigns root findings to root", () => {
+      const graph = new DependencyGraph();
+      for (const path of [
+        "/test/pyproject.toml",
+        "/test/packages/a/package.json",
+        "/test/packages/b/package.json",
+      ]) {
+        graph.addNode({ path, dependencies: [] });
+      }
+      const input = minimalInput({
+        dependencyGraph: graph,
+        findings: [
+          makeFinding({ ruleId: "QA-PW-102", file: "tests/root.spec.ts" }),
+        ],
+        declarationsByFile: new Map([
+          ["tests/root.spec.ts", 1],
+          ["packages/a/a.spec.ts", 2],
+          ["packages/b/empty.spec.ts", 0],
+        ]),
+      });
+      input.args.monorepo = true;
+      const result = assembleScanResult(input).monorepoAnalysis;
+      expect(result?.packages.find((p) => p.path === ".")).toMatchObject({
+        findings: 1,
+        score: 93,
+      });
+      expect(
+        result?.packages.find((p) => p.path === "packages/a"),
+      ).toMatchObject({ findings: 0, score: 100 });
+      expect(
+        result?.packages.find((p) => p.path === "packages/b"),
+      ).toMatchObject({ findings: 0, score: null });
+      expect(result?.overallScore).toBeNull();
+      expect(result?.overallVerdict).toBe("fail");
+    });
+
+    it.each([
+      { rulesCrashed: 1 },
+      { skippedFiles: 1 },
+      { discoveryTruncated: true },
+      { rulesPartial: true },
+      { parseFailed: 1 },
+      { scopeIgnored: 1 },
+    ])(
+      "does not publish complete package scores from incomplete analysis %j",
+      (status) => {
+        const graph = new DependencyGraph();
+        graph.addNode({ path: "/test/package.json", dependencies: [] });
+        graph.addNode({
+          path: "/test/packages/a/package.json",
+          dependencies: [],
+        });
+        const input = minimalInput({
+          ...status,
+          dependencyGraph: graph,
+          declarationsByFile: new Map([
+            ["root.spec.ts", 1],
+            ["packages/a/a.spec.ts", 1],
+          ]),
+        });
+        input.args.monorepo = true;
+        expect(
+          assembleScanResult(input).monorepoAnalysis?.packages.map(
+            (p) => p.score,
+          ),
+        ).toEqual([null, null]);
+      },
+    );
+
+    it("keeps changed-scope package scores unknown instead of mixing denominators", () => {
+      const graph = new DependencyGraph();
+      graph.addNode({ path: "/test/package.json", dependencies: [] });
+      graph.addNode({
+        path: "/test/packages/a/package.json",
+        dependencies: [],
+      });
+      const input = minimalInput({ dependencyGraph: graph });
+      input.args.monorepo = true;
+      input.args.scopeChanged = true;
+      expect(
+        assembleScanResult(input).monorepoAnalysis?.packages.every(
+          (p) => p.score === null,
+        ),
+      ).toBe(true);
+    });
+
+    it("applies suite-invalidating scoring within its owning package", () => {
+      const graph = new DependencyGraph();
+      graph.addNode({ path: "/test/package.json", dependencies: [] });
+      graph.addNode({
+        path: "/test/packages/a/package.json",
+        dependencies: [],
+      });
+      const input = minimalInput({
+        dependencyGraph: graph,
+        declarationsByFile: new Map([
+          ["root.spec.ts", 100],
+          ["packages/a/a.spec.ts", 100],
+        ]),
+        findings: [
+          makeFinding({
+            ruleId: "QA-TEST-001",
+            file: "packages/a/a.spec.ts",
+            severity: "error",
+          }),
+        ],
+      });
+      input.args.monorepo = true;
+      const result = assembleScanResult(input).monorepoAnalysis;
+      expect(
+        result?.packages.find((p) => p.path === "packages/a")?.score,
+      ).toBeLessThanOrEqual(49);
+      expect(result?.overallVerdict).toBe("fail");
     });
 
     it("omits monorepoAnalysis when --monorepo is not set", () => {
@@ -279,6 +426,133 @@ describe("assembleScanResult — standalone module wiring", () => {
         }),
       );
       expect(result.monorepoAnalysis).toBeUndefined();
+    });
+  });
+
+  describe("WAVE 5: forensicVerdicts", () => {
+    it("includes forensicVerdicts when provided", () => {
+      const result = assembleScanResult(
+        minimalInput({
+          forensicVerdicts: {
+            classifications: 3,
+            byVerdict: { flaky: 1, inconclusive: 2 },
+            inconclusive: 2,
+          },
+        }),
+      );
+      expect(result.forensicVerdicts).toEqual({
+        classifications: 3,
+        byVerdict: { flaky: 1, inconclusive: 2 },
+        inconclusive: 2,
+      });
+    });
+
+    it("omits forensicVerdicts when undefined", () => {
+      const result = assembleScanResult(minimalInput());
+      expect(result.forensicVerdicts).toBeUndefined();
+    });
+
+    it("does not interfere with scoring or other fields", () => {
+      const result = assembleScanResult(
+        minimalInput({
+          forensicVerdicts: {
+            classifications: 1,
+            byVerdict: { "likely-real-defect": 1 },
+            inconclusive: 0,
+          },
+        }),
+      );
+      expect(result.score).toBeDefined();
+      expect(result.trustSummary).toBeDefined();
+    });
+  });
+
+  describe("summarizeForensicVerdicts", () => {
+    it("returns undefined for an empty report", () => {
+      expect(summarizeForensicVerdicts(makeForensicsReport())).toBeUndefined();
+    });
+
+    it("returns undefined when no verdict carries a classification", () => {
+      const report = makeForensicsReport({
+        verdicts: [
+          {
+            file: "a.spec.ts",
+            title: "t",
+            attempts: 1,
+            finalStatus: "passed",
+            totalDurationMs: 1,
+            passedOnRetry: false,
+            everFailed: false,
+            skipped: false,
+          },
+        ],
+      });
+      expect(summarizeForensicVerdicts(report)).toBeUndefined();
+    });
+
+    it("aggregates classifications and counts inconclusive", () => {
+      const report = makeForensicsReport({
+        verdicts: [
+          {
+            file: "a.spec.ts",
+            title: "a",
+            attempts: 2,
+            finalStatus: "passed",
+            totalDurationMs: 10,
+            passedOnRetry: true,
+            everFailed: true,
+            skipped: false,
+            forensic: {
+              verdict: "flaky",
+              evidenceState: "exists",
+              signals: { environmental: 0, infrastructure: 0, construction: 0 },
+            },
+          },
+          {
+            file: "b.spec.ts",
+            title: "b",
+            attempts: 1,
+            finalStatus: "failed",
+            totalDurationMs: 10,
+            passedOnRetry: false,
+            everFailed: true,
+            skipped: false,
+            forensic: {
+              verdict: "likely-real-defect",
+              evidenceState: "exists",
+              signals: { environmental: 0, infrastructure: 0, construction: 0 },
+            },
+          },
+          {
+            file: "c.spec.ts",
+            title: "c",
+            attempts: 1,
+            finalStatus: "skipped",
+            totalDurationMs: 0,
+            passedOnRetry: false,
+            everFailed: false,
+            skipped: true,
+            forensic: {
+              verdict: "inconclusive",
+              evidenceState: "insufficient",
+              signals: { environmental: 0, infrastructure: 0, construction: 0 },
+            },
+          },
+        ],
+      });
+      const summary = summarizeForensicVerdicts(report);
+      expect(summary).toEqual({
+        classifications: 3,
+        byVerdict: { flaky: 1, "likely-real-defect": 1, inconclusive: 1 },
+        inconclusive: 1,
+      });
+      expect(
+        summarizeForensicVerdicts({
+          ...report,
+          analysisComplete: false,
+          incompleteReasons: ["record-count-limit"],
+        }),
+      ).toBeUndefined();
     });
   });
 

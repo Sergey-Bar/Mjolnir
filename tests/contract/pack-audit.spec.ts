@@ -29,7 +29,7 @@ function makeTar(entries: Record<string, string>): {
     writeFileSync(file, content);
   }
   const tgz = join(dir, "test.tgz");
-  execFileSync("tar", ["-czf", tgz, "-C", dir, "package"]);
+  execFileSync("tar", ["-czf", "./test.tgz", "package"], { cwd: dir });
   return { dir, tgz };
 }
 

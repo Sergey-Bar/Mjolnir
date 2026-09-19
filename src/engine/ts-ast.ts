@@ -150,31 +150,22 @@ export function getCodeOnlyText(file: ParsedFile): string {
   try {
     const text = file.text;
     const ranges: Array<{ start: number; end: number }> = [];
-    for (const d of sf.getDescendantsOfKind(ts.SyntaxKind.StringLiteral)) {
-      const s = d.getStart();
-      ranges.push({ start: s, end: s + d.getWidth() });
-    }
-    // Template literals without substitutions (e.g. `hello world`).
-    for (const d of sf.getDescendantsOfKind(
-      ts.SyntaxKind.NoSubstitutionTemplateLiteral,
-    )) {
-      const s = d.getStart();
-      ranges.push({ start: s, end: s + d.getWidth() });
-    }
-    // Template literal parts (head/middle/tail) — blank the static parts
-    // but NOT the interpolated expressions (those are live code).
-    for (const d of sf.getDescendantsOfKind(ts.SyntaxKind.TemplateHead)) {
-      const s = d.getStart();
-      ranges.push({ start: s, end: s + d.getWidth() });
-    }
-    for (const d of sf.getDescendantsOfKind(ts.SyntaxKind.TemplateMiddle)) {
-      const s = d.getStart();
-      ranges.push({ start: s, end: s + d.getWidth() });
-    }
-    for (const d of sf.getDescendantsOfKind(ts.SyntaxKind.TemplateTail)) {
-      const s = d.getStart();
-      ranges.push({ start: s, end: s + d.getWidth() });
-    }
+    const compiler = sf.compilerNode;
+    const stringAndTemplateKinds: Record<number, true> = {
+      [ts.SyntaxKind.StringLiteral]: true,
+      [ts.SyntaxKind.NoSubstitutionTemplateLiteral]: true,
+      [ts.SyntaxKind.TemplateHead]: true,
+      [ts.SyntaxKind.TemplateMiddle]: true,
+      [ts.SyntaxKind.TemplateTail]: true,
+    };
+    const collect = (node: ts.Node): void => {
+      if (stringAndTemplateKinds[node.kind]) {
+        const s = node.getStart(compiler);
+        ranges.push({ start: s, end: s + node.getWidth() });
+      }
+      ts.forEachChild(node, collect);
+    };
+    ts.forEachChild(compiler, collect);
     // Comments via the scanner (ts-morph has no whole-file comment API).
     // Scanner phantoms (a `/*` inside a template literal scanned as a
     // comment running to EOF) are rejected inside commentAndStringRanges

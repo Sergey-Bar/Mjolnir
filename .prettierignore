@@ -3,6 +3,7 @@ coverage/
 node_modules/
 package-lock.json
 scratch/
+action.yml
 
 # Fixture corpora are DATA (§08 class-B/C exhibits) — deliberately contain
 # anti-patterns; never reformatted.

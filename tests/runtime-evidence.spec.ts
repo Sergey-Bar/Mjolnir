@@ -183,15 +183,15 @@ describe("stampRuntimeCorroboration — matching + L5 defect corroboration", () 
       qaImpact: "HYGIENE",
     });
     stampRuntimeCorroboration([f], report);
-    expect(f.runtimeCorroboration?.level).toBe("test"); // single-verdict file → unambiguous
-    expect(f.trustLevel).toBe("L4");
+    expect(f.runtimeCorroboration?.level).toBe("file");
+    expect(f.trustLevel).toBe("L3");
   });
 
   it("defect-level (L5): FLAKY-RISK finding whose test flaked in the report", () => {
     const f = finding({
       qaImpact: "FLAKY-RISK",
       file: "e2e/shop.spec.ts",
-      line: 12,
+      line: 10,
     });
     stampRuntimeCorroboration([f], report);
     expect(f.runtimeCorroboration?.level).toBe("defect");
@@ -203,14 +203,14 @@ describe("stampRuntimeCorroboration — matching + L5 defect corroboration", () 
     const f = finding({
       qaImpact: "FALSE-GREEN",
       file: "e2e/shop.spec.ts",
-      line: 12,
+      line: 10,
     });
     stampRuntimeCorroboration([f], report);
     expect(f.runtimeCorroboration?.level).toBe("test");
     expect(f.trustLevel).toBe("L4");
   });
 
-  it("multi-verdict file: line-span matching picks the containing test (no fabrication)", () => {
+  it("multi-verdict file: declaration lines do not establish body containment", () => {
     const multi: ForensicsReport = {
       forensicsSchemaVersion: 1,
       source: "playwright-json",
@@ -238,10 +238,10 @@ describe("stampRuntimeCorroboration — matching + L5 defect corroboration", () 
     // Finding at line 25 sits after 20 → "second".
     const inSecond = finding({ qaImpact: "HYGIENE", line: 25 });
     stampRuntimeCorroboration([inFirst, inSecond], multi);
-    expect(inFirst.runtimeCorroboration?.matchedTest?.title).toBe("first");
-    expect(inFirst.trustLevel).toBe("L4");
-    expect(inSecond.runtimeCorroboration?.matchedTest?.title).toBe("second");
-    expect(inSecond.trustLevel).toBe("L4");
+    expect(inFirst.runtimeCorroboration?.matchedTest).toBeUndefined();
+    expect(inFirst.trustLevel).toBe("L3");
+    expect(inSecond.runtimeCorroboration?.matchedTest).toBeUndefined();
+    expect(inSecond.trustLevel).toBe("L3");
   });
 
   it("stays silent when the finding's file never ran (no fabricated corroboration)", () => {
@@ -324,11 +324,9 @@ describe("scan integration — a report next to the target corroborates findings
     });
     const f = result.findings.find((x) => x.ruleId === "QA-PW-101");
     expect(f).toBeDefined();
-    // The finding's line (5) falls inside the test declared at line 3,
-    // which failed once then passed — TRUE-FLAKE corroboration (L5).
-    expect(f!.runtimeCorroboration?.level).toBe("defect");
-    expect(f!.runtimeCorroboration?.matchedTest?.passedOnRetry).toBe(true);
-    expect(f!.trustLevel).toBe("L5");
+    expect(f!.runtimeCorroboration?.level).toBe("file");
+    expect(f!.runtimeCorroboration?.matchedTest).toBeUndefined();
+    expect(f!.trustLevel).toBe("L3");
 
     // Verified-vs-assumed split in the same ScanResult.
     const split = splitByRuntimeEvidence(result.findings);

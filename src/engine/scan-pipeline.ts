@@ -15,12 +15,13 @@
 
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
-import { relative, resolve, sep } from "node:path";
+import { basename, dirname, relative, resolve, sep } from "node:path";
 
 import {
   compareFindings,
   SCHEMA_VERSION,
   type Finding,
+  type ForensicVerdictSummary,
   type RuleCategory,
   type ScanResult,
 } from "../types.js";
@@ -404,26 +405,33 @@ export function pathMatchesGlob(path: string, glob: string): boolean {
  * Plan §16 + WI-11: locate a runtime run report next to the scan
  * target, using the exact conventions the forensics ingestion already
  * accepts. Zero-config search over conventional artifact names at
- * depth ≤ 2 (src/discovery/evidence-discovery.ts); the FIRST parsable
- * candidate wins (priority: mjolnir-report > playwright-json >
- * test-results-dir > junit-file). Validates each candidate by attempting
- * to parse it and checking that it produces at least one test. Returns
- * the parsed report alongside the path to avoid double-parsing.
+ * depth ≤ 2 (src/discovery/evidence-discovery.ts). The FIRST parsable
+ * candidate with `totalTests > 0` is kept as a fallback; the loop
+ * continues and returns a later candidate when one with
+ * `analysisComplete === true` is found. Returns the parsed report
+ * alongside the path to avoid double-parsing.
  */
 export function discoverAndParseRuntimeReport(
   scanRoot: string,
 ):
   | { path: string; report: import("../forensics/types.js").ForensicsReport }
   | undefined {
+  let fallback:
+    | { path: string; report: import("../forensics/types.js").ForensicsReport }
+    | undefined;
   for (const c of discoverEvidenceCandidates(scanRoot)) {
     try {
       const fr = runForensics(c.path, { writeFlakyMd: false });
-      if (fr.report.totalTests > 0) return { path: c.path, report: fr.report };
+      if (fr.report.totalTests <= 0) continue;
+      if (!fallback) fallback = { path: c.path, report: fr.report };
+      if (fr.report.analysisComplete === true) {
+        return { path: c.path, report: fr.report };
+      }
     } catch {
       // corrupt or unparsable → try next candidate
     }
   }
-  return undefined;
+  return fallback;
 }
 
 /**
@@ -597,6 +605,7 @@ export async function runFileAnalysisPhase(
       continue;
     }
     let fileBudgetExceeded = false;
+    let fileRuleFailed = false;
     const relPath = relative(workspace.root, path).replaceAll("\\", "/");
     if (!isCiAdapter) {
       const langMap: Record<
@@ -670,6 +679,7 @@ export async function runFileAnalysisPhase(
         fileForRules,
         (f, ruleId, category) => {
           if (!isValidFindingRecord(f)) {
+            fileRuleFailed = true;
             onRuleCrash?.(
               ruleId,
               relPath,
@@ -682,6 +692,7 @@ export async function runFileAnalysisPhase(
           findings.push({ ...f, ruleId, category } as Finding);
         },
         (ruleId, error) => {
+          fileRuleFailed = true;
           onRuleCrash?.(ruleId, relPath, error);
         },
         {
@@ -694,7 +705,13 @@ export async function runFileAnalysisPhase(
           },
         },
       );
-      cache.store(cacheKey, findings.slice(findingsStart), fileBudgetExceeded);
+      if (!fileRuleFailed) {
+        cache.store(
+          cacheKey,
+          findings.slice(findingsStart),
+          fileBudgetExceeded,
+        );
+      }
     } catch {
       // intentional: parse/analysis failure — counted via skippedFiles/parseFailed, never fatal
       skippedFiles++;
@@ -720,7 +737,33 @@ export interface PostScanResult {
   suppressionCount: number;
   frameworks: ReturnType<typeof detectFrameworks>;
   runtimeReportPath: string | undefined;
+  /** Aggregate forensic classifications from the ingested runtime report. */
+  forensicVerdicts: ForensicVerdictSummary | undefined;
   config: ReturnType<typeof loadConfig>["config"];
+}
+
+/**
+ * Summarize forensic classifications from an ingested runtime report
+ * (plan §10.4, WAVE 5). Returns undefined when no verdict carries a
+ * classification — the machine contract slot stays absent rather than
+ * reporting all-zero counts.
+ */
+export function summarizeForensicVerdicts(
+  report: import("../forensics/types.js").ForensicsReport,
+): ForensicVerdictSummary | undefined {
+  if (report.analysisComplete !== true) return undefined;
+  const byVerdict: Record<string, number> = {};
+  let classifications = 0;
+  let inconclusive = 0;
+  for (const v of report.verdicts) {
+    if (!v.forensic) continue;
+    classifications++;
+    const label = v.forensic.verdict;
+    byVerdict[label] = (byVerdict[label] ?? 0) + 1;
+    if (label === "inconclusive") inconclusive++;
+  }
+  if (classifications === 0) return undefined;
+  return { classifications, byVerdict, inconclusive };
 }
 
 export function applyPostScanProcessing(
@@ -800,7 +843,8 @@ export function applyPostScanProcessing(
   }
   const discoveredReport = discoverAndParseRuntimeReport(scanRoot.root);
   const runtimeReportPath = discoveredReport?.path;
-  if (discoveredReport) {
+  let forensicVerdicts: ForensicVerdictSummary | undefined;
+  if (discoveredReport && discoveredReport.report.analysisComplete === true) {
     try {
       buildEvidenceRecords(discoveredReport.report, discoveredReport.path);
       stampRuntimeCorroboration(
@@ -808,6 +852,7 @@ export function applyPostScanProcessing(
         discoveredReport.report,
         workspace.root,
       );
+      forensicVerdicts = summarizeForensicVerdicts(discoveredReport.report);
     } catch {
       /* corrupt report — no runtime evidence */
     }
@@ -818,6 +863,7 @@ export function applyPostScanProcessing(
     suppressionCount,
     frameworks,
     runtimeReportPath,
+    forensicVerdicts,
     config,
   };
 }
@@ -848,6 +894,7 @@ export interface AssembleScanResultInput {
   suppressionCount: number;
   frameworks: ReturnType<typeof detectFrameworks>;
   runtimeReportPath: string | undefined;
+  forensicVerdicts: ForensicVerdictSummary | undefined;
   config: ReturnType<typeof loadConfig>["config"];
   fileProvenance: Array<{
     path: string;
@@ -868,69 +915,74 @@ function partitionFindingsByPackage(
   findings: readonly Finding[],
   depGraph: import("./dependency-graph.js").DependencyGraph,
   workspaceRoot: string,
+  declarationsByFile: ReadonlyMap<string, number>,
+  analysisComplete: boolean,
 ): Array<{
   packageName: string;
   path: string;
   findings: Finding[];
   score: number | null;
 }> {
-  const packagePaths = depGraph.allPaths;
-  if (packagePaths.length === 0) return [];
-
-  const normalizedRoot = workspaceRoot.replaceAll("\\", "/");
   const packageMap = new Map<
     string,
-    { packageName: string; path: string; findings: Finding[] }
+    {
+      packageName: string;
+      path: string;
+      findings: Finding[];
+      testDeclarations: number;
+      testFileCount: number;
+    }
   >();
-
-  for (const manifestPath of packagePaths) {
-    const normalizedManifest = manifestPath.replaceAll("\\", "/");
-    const relPath = normalizedManifest
-      .replace(normalizedRoot, "")
-      .replace(/^\//, "");
-    const pathSegments = relPath.split("/");
-    const packageName =
-      pathSegments.length > 1 ? (pathSegments[1] ?? "root") : "root";
-    packageMap.set(manifestPath, {
-      packageName,
-      path: relPath
-        .replace("/package.json", "")
-        .replace("/pyproject.toml", "")
-        .replace("/pom.xml", ""),
-      findings: [],
-    });
+  const addPackage = (path: string) => {
+    const entry = {
+      packageName: path === "" ? "root" : basename(path),
+      path: path || ".",
+      findings: [] as Finding[],
+      testDeclarations: 0,
+      testFileCount: 0,
+    };
+    packageMap.set(path, entry);
+    return entry;
+  };
+  for (const manifestPath of depGraph.allPaths) {
+    const path = relative(workspaceRoot, dirname(manifestPath)).replaceAll(
+      "\\",
+      "/",
+    );
+    if (path === ".." || path.startsWith("../")) continue;
+    if (!packageMap.has(path)) addPackage(path);
   }
-
-  for (const f of findings) {
-    const normalizedFile = f.file.replaceAll("\\", "/");
-    let bestMatch: string | undefined;
-    let bestLen = 0;
-    for (const manifestPath of packagePaths) {
-      const normalizedManifest = manifestPath.replaceAll("\\", "/");
-      const manifestDir = normalizedManifest.replace(/[/\\][^/\\]+$/, "");
-      const relToRoot = manifestDir
-        .replace(normalizedRoot, "")
-        .replace(/^\//, "");
-      if (relToRoot && normalizedFile.startsWith(relToRoot + "/")) {
-        if (relToRoot.length > bestLen) {
-          bestLen = relToRoot.length;
-          bestMatch = manifestPath;
-        }
+  const packageForFile = (file: string) => {
+    const normalizedFile = file.replaceAll("\\", "/");
+    let bestPath = "";
+    for (const path of packageMap.keys()) {
+      if (
+        path.length > bestPath.length &&
+        normalizedFile.startsWith(path + "/")
+      ) {
+        bestPath = path;
       }
     }
-    const target = bestMatch
-      ? packageMap.get(bestMatch)
-      : packageMap.values().next().value;
-    if (target) {
-      target.findings.push(f);
-    }
+    return packageMap.get(bestPath) ?? addPackage("");
+  };
+  for (const f of findings) packageForFile(f.file).findings.push(f);
+  for (const [file, declarations] of declarationsByFile) {
+    const target = packageForFile(file);
+    target.testDeclarations += declarations;
+    target.testFileCount++;
   }
-
   return [...packageMap.values()].map((p) => ({
     packageName: p.packageName,
     path: p.path,
     findings: p.findings,
-    score: p.findings.length === 0 ? 100 : null,
+    score:
+      analysisComplete && p.testDeclarations > 0 && p.testFileCount > 0
+        ? computeTotal(computeDimensions(p.findings), p.findings, {
+            testDeclarations: p.testDeclarations,
+            testFileCount: p.testFileCount,
+            suiteInvalidatingRuleIds: SUITE_INVALIDATING_RULE_IDS,
+          })
+        : null,
   }));
 }
 
@@ -1047,6 +1099,9 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
     ...(o.pluginsLoaded.length > 0 ? { plugins: o.pluginsLoaded } : {}),
     ...(suiteInvalidatedBy.length > 0 ? { suiteInvalidatedBy } : {}),
     agenticProfile: computeAgenticProfile(o.fileProvenance, o.findings),
+    ...(o.forensicVerdicts !== undefined
+      ? { forensicVerdicts: o.forensicVerdicts }
+      : {}),
     ...(o.args.cache
       ? {
           cache: {
@@ -1093,6 +1148,8 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
       o.findings,
       o.dependencyGraph,
       o.workspace.root,
+      o.declarationsByFile,
+      !result.partial && scopeReasons.length === 0 && !o.args.scopeChanged,
     );
     if (packages.length > 1) {
       const monorepoResult = analyzeMonorepo(packages, {
@@ -1233,7 +1290,7 @@ export async function runScan(
   // 2. Monorepo analysis (--monorepo mode)
   // 3. Dependency graph metadata in ScanResult
   const depGraph = buildDependencyGraph(workspace.root);
-  const rulesDigest = computeRulesDigest(activeRules);
+  const rulesDigest = `complete-file-v1:${computeRulesDigest(activeRules)}`;
   // ECO-004: When --cache is active, log incremental safety status.
   // The dependency graph's presence signals that dependency-aware
   // invalidation is possible — cache keys already include rulesDigest
@@ -1364,6 +1421,7 @@ export async function runScan(
     suppressionCount: postScan.suppressionCount,
     frameworks: postScan.frameworks,
     runtimeReportPath: postScan.runtimeReportPath,
+    forensicVerdicts: postScan.forensicVerdicts,
     config: postScan.config,
     fileProvenance,
     started,

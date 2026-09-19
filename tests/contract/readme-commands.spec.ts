@@ -40,7 +40,12 @@ function firstSubcommandToken(rest: string): string | null {
   const tokens = rest.split(/\s+/).filter(Boolean);
   // Flags that consume the following token as their value, not a
   // subcommand — keep in sync with parseArgs in src/cli.ts.
-  const flagsWithValues = new Set(["--format", "--scope", "--max-duration"]);
+  const flagsWithValues = new Set([
+    "--format",
+    "--scope",
+    "--max-duration",
+    "--blocking",
+  ]);
   let skipNext = false;
   for (const t of tokens) {
     if (skipNext) {

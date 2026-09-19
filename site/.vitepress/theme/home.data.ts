@@ -397,7 +397,7 @@ export default defineLoader({
       staticCard,
       runtimeCard: card(
         rescanLines,
-        "QA-PW-101",
+        "QA-PW-146",
         find(rescanLines, "▍ FINDINGS"),
       ),
       forensics: sample("forensics-sample.txt"),

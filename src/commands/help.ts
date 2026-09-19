@@ -183,9 +183,15 @@ export const HELP_ENTRIES: HelpEntry[] = [
   },
   {
     verb: "rules",
-    summary: "rule catalog with trust metadata (md/json/unmeasured)",
-    usage: "mjolnir rules [--md] [--unmeasured|--measured] [--external]",
-    examples: ["mjolnir rules --md --unmeasured"],
+    summary:
+      "rule catalog + empirical-measurement stats/health (md/json/stats/health)",
+    usage:
+      "mjolnir rules [--md] [--unmeasured|--measured] [--external] | [--stats] | [--health] [--limit=N]",
+    examples: [
+      "mjolnir rules --md --unmeasured",
+      "mjolnir rules --stats",
+      "mjolnir rules --health --limit=20",
+    ],
   },
   {
     verb: "suppressions",

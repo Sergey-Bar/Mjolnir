@@ -79,6 +79,11 @@ import { runInit, renderInit, tryReadPackageJson } from "./commands/init.js";
 import { renderPwRunSummary, summarizePwRun } from "./commands/pw-report.js";
 import { planAndApplyFixes, renderFixReport } from "./commands/fix.js";
 import { buildCatalog, renderCatalogMd } from "./commands/rules-catalog.js";
+import {
+  buildRuleHealth,
+  renderRuleStats,
+  renderRuleHealth,
+} from "./commands/rule-health.js";
 import { explainRule, renderExplain } from "./commands/explain.js";
 import { loadConfig, ConfigValidationError } from "./config/config.js";
 import { createIgnoreMatcher } from "./discovery/ignores.js";
@@ -829,17 +834,26 @@ export function runForensicsCommand(
     io.out(output);
     if (flakyMdPath) io.out(`\nWrote ${flakyMdPath}`);
     if (!report.analysisComplete) {
+      const skipped =
+        report.skippedReports > 0
+          ? `${report.skippedReports} report(s) skipped; `
+          : "";
       io.err(
-        `forensics: ${report.skippedReports} report(s) skipped (${report.incompleteReasons.join(", ")}) — analysis is partial`,
+        `forensics: ${skipped}${report.incompleteReasons.join(", ")} — analysis is partial`,
       );
     }
     if (report.totalTests === 0) {
       io.err(
-        "No test results recognized. Expected a Playwright JSON report (report.json) or JUnit XML files.",
+        (report.totalNetworkObservations ?? 0) > 0
+          ? "Network observations recognized, but HAR does not establish test outcomes. Test verification is unavailable."
+          : "No test results recognized. Expected a Playwright JSON report (report.json) or JUnit XML files.",
       );
       return EXIT_PARTIAL;
     }
-    return report.flakyTests > 0 || report.failed > 0
+    if (!report.analysisComplete) return EXIT_PARTIAL;
+    return report.flakyTests > 0 ||
+      report.failed > 0 ||
+      (report.failedNetworkObservations ?? 0) > 0
       ? EXIT_FINDINGS
       : EXIT_CLEAN;
   } catch (err) {
@@ -853,6 +867,27 @@ export async function runRulesCommand(
   io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
   const withExternal = argv.includes("--external");
+
+  if (argv.includes("--stats")) {
+    io.out(renderRuleStats(buildRuleHealth()));
+    return EXIT_CLEAN;
+  }
+  if (argv.includes("--health")) {
+    const limitArg = argv.find((a) => a.startsWith("--limit="));
+    if (limitArg !== undefined) {
+      const rawLimit = limitArg.slice("--limit=".length);
+      const parsed = /^\d+$/.test(rawLimit) ? Number(rawLimit) : Number.NaN;
+      if (!Number.isSafeInteger(parsed) || parsed <= 0) {
+        io.err("Usage: mjolnir rules --health [--limit=<positive-integer>]");
+        return EXIT_USAGE;
+      }
+      io.out(renderRuleHealth(buildRuleHealth(), parsed));
+      return EXIT_CLEAN;
+    }
+    io.out(renderRuleHealth(buildRuleHealth()));
+    return EXIT_CLEAN;
+  }
+
   const root = process.cwd();
   const external = withExternal ? await loadLocalRules(root) : undefined;
   let catalog = [
