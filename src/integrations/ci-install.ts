@@ -144,11 +144,11 @@ jobs:
       - name: Annotations + Job Summary
         if: always()
         continue-on-error: true
-        run: npx --yes mjolnir-qa@${CLI_VERSION} mjolnir summary mjolnir.json
+        run: npx --yes mjolnir-qa@${CLI_VERSION} summary mjolnir.json
       - name: Render PR comment
         if: always()
         continue-on-error: true
-        run: npx --yes mjolnir-qa@${CLI_VERSION} mjolnir pr-comment . > mjolnir-comment.md
+        run: npx --yes mjolnir-qa@${CLI_VERSION} pr-comment . > mjolnir-comment.md
       # Best-effort: on a pull_request event from a fork the GITHUB_TOKEN is
       # read-only and this step will 403 for every external contributor. The
       # Job Summary above is the fallback that always renders.
@@ -277,11 +277,11 @@ jobs:
       - name: Annotations + Job Summary
         if: always()
         continue-on-error: true
-        run: npx --yes mjolnir-qa@${CLI_VERSION} mjolnir summary mjolnir.json
+        run: npx --yes mjolnir-qa@${CLI_VERSION} summary mjolnir.json
       - name: Render PR comment
         if: always()
         continue-on-error: true
-        run: npx --yes mjolnir-qa@${CLI_VERSION} mjolnir pr-comment . > mjolnir-comment.md
+        run: npx --yes mjolnir-qa@${CLI_VERSION} pr-comment . > mjolnir-comment.md
       # Best-effort: on a pull_request event from a fork the GITHUB_TOKEN is
       # read-only and this step will 403 for every external contributor. The
       # Job Summary above is the fallback that always renders.

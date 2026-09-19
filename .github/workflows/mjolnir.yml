@@ -29,7 +29,7 @@ jobs:
       - name: Mjölnir diff
         if: always()
         continue-on-error: true
-        run: npx --yes mjolnir-qa@latest mjolnir diff . > mjolnir-diff.md
+        run: npx --yes mjolnir-qa@latest diff . > mjolnir-diff.md
       - name: Mjölnir verification trust scan
         id: mjolnir
         if: always()
@@ -45,11 +45,11 @@ jobs:
       - name: Annotations + Job Summary
         if: always()
         continue-on-error: true
-        run: npx --yes mjolnir-qa@latest mjolnir summary mjolnir.json
+        run: npx --yes mjolnir-qa@latest summary mjolnir.json
       - name: Render PR comment
         if: always()
         continue-on-error: true
-        run: npx --yes mjolnir-qa@latest mjolnir pr-comment . > mjolnir-comment.md
+        run: npx --yes mjolnir-qa@latest pr-comment . > mjolnir-comment.md
       # Best-effort: on a pull_request event from a fork the GITHUB_TOKEN is
       # read-only and this step will 403 for every external contributor. The
       # Job Summary above is the fallback that always renders.
