@@ -626,7 +626,7 @@ export function rule8() {
  * one thing nothing checked.
  *
  * Every colour, typeface and generated asset in this repository resolves
- * to a module and is locked byte-for-byte. The eleven image files the
+ * to a module and is locked byte-for-byte. The twelve image files the
  * brand actually rests on are rendered by `generate-brand-marks.ts`, and
  * a generator with no lock on its own output is just a convention asking
  * people not to re-run it with different numbers — which is what the

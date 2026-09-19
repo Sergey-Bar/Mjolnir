@@ -217,7 +217,6 @@ export default defineConfig({
     },
     socialLinks: [
       { icon: "github", link: "https://github.com/Sergey-Bar/qa-doctor" },
-      { icon: "npm", link: "https://www.npmjs.com/package/qa-doctor-cli" },
     ],
     search: { provider: "local" },
     // A few Reference pages are mostly `@include`d from ../../docs — send

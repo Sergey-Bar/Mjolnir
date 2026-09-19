@@ -33,6 +33,7 @@ reference renders below; everything else is a real surface's own size.
 | `site/public/favicon-32.png` · `favicon-16.png`                             | Q inspection mark, native 32 / 16 px                      | browser tab icon.                                                       |
 | `site/public/apple-touch-icon.png` · `mark-64.png`                          | Q inspection mark, native 180 / 64 px                     | iOS home screen, site nav mark.                                         |
 | `site/public/social-card.jpg`                                               | inspection mark over wordmark on `--qa-ink-950`, 1200×630 | link previews (og:image / twitter:image).                               |
+| `assets/readme/github-social-preview.png`                                   | inspection mark over wordmark on `--qa-ink-950`, 1280×640 | GitHub repository social preview.                                       |
 
 Rendering each size natively, rather than downscaling one raster, is
 deliberate: a score graphic illustration shrunk to 16px loses detail it cannot

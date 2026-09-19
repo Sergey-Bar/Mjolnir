@@ -17,41 +17,40 @@
 
 :root {
   /* ---- navigation: neutral steel, never a verdict colour ---- */
-  --vp-c-brand-1: #abb6c6;
-  --vp-c-brand-2: #c8cbcf;
-  --vp-c-brand-3: #8b939d;
-  --vp-c-brand-soft: color-mix(in oklch, #c8cbcf 12%, transparent);
+  --vp-c-brand-1: #e5e7eb;
+  --vp-c-brand-2: #d1d5db;
+  --vp-c-brand-3: #9ca3af;
+  --vp-c-brand-soft: color-mix(in oklch, #d1d5db 12%, transparent);
 
   /* ---- surface: midnight iron ---- */
-  --vp-c-bg: #0c1420;
-  --vp-c-bg-alt: #111a29;
-  --vp-c-bg-soft: #1a2740;
-  --vp-c-bg-elv: #141f33;
-  --vp-c-text-1: #eaeef5;
-  --vp-c-text-2: #abb6c6;
-  --vp-c-text-3: #8b939d;
-  --vp-c-divider: rgba(198, 204, 214, 0.1);
-  --vp-c-border: rgba(198, 204, 214, 0.14);
-  --vp-c-gutter: rgba(198, 204, 214, 0.06);
+  --vp-c-bg: #07090c;
+  --vp-c-bg-alt: #0d1117;
+  --vp-c-bg-soft: #1b212a;
+  --vp-c-bg-elv: #11151b;
+  --vp-c-text-1: #ffffff;
+  --vp-c-text-2: #e5e7eb;
+  --vp-c-text-3: #9ca3af;
+  --vp-c-divider: rgba(255, 255, 255, 0.1);
+  --vp-c-border: rgba(255, 255, 255, 0.14);
+  --vp-c-gutter: rgba(255, 255, 255, 0.06);
 
   /* ---- type ---- */
   --vp-font-family-base:
-    "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    sans-serif;
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
   --vp-font-family-mono:
-    "Geist Mono", ui-monospace, "SFMono-Regular", "Cascadia Mono", Consolas,
-    monospace;
+    "Menlo", "SFMono-Regular", "Cascadia Mono", Consolas, monospace;
   --qa-display:
-    "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    sans-serif;
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
 
   /* ---- palette ---- */
-  --qa-ink-950: #0a1119; /* deepest background (hero, terminal) */
-  --qa-ink-900: #0c1420; /* page background */
-  --qa-ink-850: #111a29; /* surface */
-  --qa-ink-800: #18243a; /* raised surface */
-  --qa-steel: #c8cbcf; /* neutral bright — headings on ink */
-  --qa-steel-dim: #8b939d; /* muted text on ink */
+  --qa-ink-950: #000000; /* deepest background (hero, terminal) */
+  --qa-ink-900: #07090c; /* page background */
+  --qa-ink-850: #0d1117; /* surface */
+  --qa-ink-800: #161b22; /* raised surface */
+  --qa-steel: #d1d5db; /* neutral bright — headings on ink */
+  --qa-steel-dim: #9ca3af; /* muted text on ink */
   --qa-gold: #c19a34; /* primary brand — scarce */
   --qa-gold-bright: #e6bd57; /* primary on dark */
   --qa-gold-hot: #f4dc9c; /* highlight, excellent */
@@ -63,30 +62,30 @@
    * Trust L0-L2 are static (steel ramp) and L3-L5 require a real run
    * (measured ramp) — the hue break at L2|L3 is the runtime boundary and
    * every surface that draws the ladder must draw it. */
-  --qa-healthy: #5cc4e0; /* healthy test health, score band 80–99 */
-  --qa-healthy-bright: #7fd4ea; /* healthy, hover */
-  --qa-excellent-hot: #f4dc9c; /* score 100 */
+  --qa-healthy: #79b5d8; /* healthy test health, score band 80–99 */
+  --qa-healthy-bright: #9bc8e4; /* healthy, hover */
+  --qa-excellent-hot: #e2e8f0; /* score 100 */
   --qa-attention: #e6bd57; /* needs attention, score band 50–79 */
   --qa-critical: #ec6b66; /* score band 0–49 */
-  --qa-info: #5cc4e0; /* informational */
-  --qa-on-gold: #0a1119; /* ink for text set ON gold */
+  --qa-info: #879fe0; /* informational */
+  --qa-on-gold: #000000; /* ink for text set ON gold */
   --qa-ok: #4fb477; /* non-score success only — never a score colour */
-  --qa-e0: #8b939d; /* observation */
-  --qa-e1: #abb6c6; /* pattern evidence */
-  --qa-e2: #eaeef5; /* deterministic proof */
-  --qa-l0: #8b939d; /* trust L0 — static */
-  --qa-l1: #abb6c6; /* trust L1 — static */
-  --qa-l2: #c8cbcf; /* trust L2 — static ceiling */
-  --qa-l3: #37abbd; /* trust L3 — runtime begins */
-  --qa-l4: #45c1d4; /* trust L4 — runtime */
-  --qa-l5: #5cc4e0; /* trust L5 — runtime verdict */
-  --qa-excellent: linear-gradient(90deg, #f4dc9c, #e6bd57);
+  --qa-e0: #9ca3af; /* observation */
+  --qa-e1: #e5e7eb; /* pattern evidence */
+  --qa-e2: #ffffff; /* deterministic proof */
+  --qa-l0: #9ca3af; /* trust L0 — static */
+  --qa-l1: #e5e7eb; /* trust L1 — static */
+  --qa-l2: #d1d5db; /* trust L2 — static ceiling */
+  --qa-l3: #7e8fe3; /* trust L3 — runtime begins */
+  --qa-l4: #8494ea; /* trust L4 — runtime */
+  --qa-l5: #91a1f5; /* trust L5 — runtime verdict */
+  --qa-excellent: linear-gradient(90deg, #e2e8f0, #e6bd57);
 
   /* ---- hero ---- */
   --qa-hero-ink: #0b1420;
-  --qa-hero-text: #eaeef5;
+  --qa-hero-text: #ffffff;
   --qa-hero-muted: #9aa6b6;
-  --qa-hero-line: rgba(198, 204, 214, 0.14);
+  --qa-hero-line: rgba(255, 255, 255, 0.14);
 
   --vp-home-hero-name-color: transparent;
   --vp-home-hero-name-background: linear-gradient(

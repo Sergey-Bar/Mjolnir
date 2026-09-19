@@ -3,7 +3,7 @@
     "The brand marks, pinned by sha256. `brand-doctor` rule 9 fails if any",
     "of them changes.",
     "",
-    "All eleven files are rendered by `scripts/generate-brand-marks.ts` from",
+    "All twelve files are rendered by `scripts/generate-brand-marks.ts` from",
     "the same two vector sources — the Geist wordmark and the drawn Q inspection mark —",
     "each at its own native resolution, not resized from one bitmap master.",
     "`masters` names the two large reference renders (the full wordmark",
@@ -18,18 +18,19 @@
     "and say why in the commit."
   ],
   "masters": {
-    "assets/brand/logo.png": "bac42c287a631a1ad5790ffa32ad32fae6adc3a49a7be7a535aaa1b760075cbb",
-    "assets/brand/mark.png": "cfe0477da3579d62b73968879ebbca9e7f57a07284da40e280fce3a624bba39a"
+    "assets/brand/logo.png": "51b5048e2b3270f90221c236e062864077a7801380f411de77dc3048212f24fa",
+    "assets/brand/mark.png": "804df530309d2c7297bf06af2bc5dfb61c0ac0050799fde7c1e355f2ec7925e3"
   },
   "derived": {
-    "assets/brand/icon.png": "1a886551263117789958fcb753b1fb2e35792f6f656a4d93534aa1ea83387f0c",
-    "assets/readme/logo.png": "c44c1c2330ee98de1576539a4b2b94c7cd60c5273d27549be576205dbb4f5557",
-    "assets/readme/logo.webp": "47998230b60d2fa226d60089087f1764d45eb876e049594d802082ad173523e4",
-    "site/public/apple-touch-icon.png": "03d54e010360fdb9f1ed56215ae646ae8321c7e6bd2e664a2d8b7724ddcac551",
-    "site/public/favicon-16.png": "fb3a36029ffcee92d116b702f4d022e30ebed4e736e456763e646731af8d0233",
-    "site/public/favicon-32.png": "4448e0ffee26b53ccc0771e2f43d2b27f187e5b0c8142d0af3645d255c04f9f6",
-    "site/public/logo.webp": "47998230b60d2fa226d60089087f1764d45eb876e049594d802082ad173523e4",
-    "site/public/mark-64.png": "11018df0566e4dfe56aa4e292527885d519b40748cdf56447ab3f501bfac32c0",
-    "site/public/social-card.jpg": "eee22610de29b8b82e4083a68072f900e2944c94d57d4defa591e977bbab58d3"
+    "assets/brand/icon.png": "df02e25d32938b49cbdb5d867f2360725232c6a65867d7d11e44e8ec18ba3cae",
+    "assets/readme/logo.png": "6449290b9c906616c29883623f0fb9918f73a6841239fdea809950bfcba7a8ef",
+    "assets/readme/logo.webp": "e34594dcd9e30f5c3a907125f5ebf0753cf8b12721df20c8207cf5847b3f2dc3",
+    "assets/readme/github-social-preview.png": "e42fae9c5eda09f74f3e6b81a82ca81f82200eb3712e4aa41e51898ae9ec4d1c",
+    "site/public/apple-touch-icon.png": "1efeddf151953eabf46169691e203e8bb95c53da10b8a4b15987005c5ff462d1",
+    "site/public/favicon-16.png": "eb02f0c254b7fc13ea141fbfe95f74cb11e03d68bea791a25688436e1f54f603",
+    "site/public/favicon-32.png": "0cd5a96e7f0f692865914d517fdded66c53baaf635c6ec1e4709465b58d94bcd",
+    "site/public/logo.webp": "e34594dcd9e30f5c3a907125f5ebf0753cf8b12721df20c8207cf5847b3f2dc3",
+    "site/public/mark-64.png": "75ec4f92f99ed9fe27dabd6cb029c9deb67a8e176a14db22fd0c10e8ea4a1fd8",
+    "site/public/social-card.jpg": "19f34cf0424fbf2ff137a193f440397e1ce672201a472885637133e7f34ff792"
   }
 }

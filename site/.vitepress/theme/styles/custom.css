@@ -58,7 +58,7 @@ body {
 .vp-doc h3 {
   font-family: var(--qa-display);
   font-weight: 600;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
   text-wrap: balance;
 }
 .vp-doc h1 {
@@ -70,7 +70,7 @@ body {
   border-top: 1px solid var(--vp-c-divider);
 }
 .vp-doc h3 {
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
 }
 
 .vp-doc blockquote {

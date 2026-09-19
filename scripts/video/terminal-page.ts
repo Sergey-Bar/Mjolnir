@@ -59,9 +59,7 @@ const INK_900 = SURFACE.terminal; // terminal body — same tone
 const CHROME = SURFACE.terminalBar; // title bar — the seam is shadow
 const CHROME_DOT = SURFACE.chromeDot;
 const STEEL_DIM = BRAND.steelDim;
-const GREEN = BRAND.auroraGreen;
 const CYAN = BRAND.auroraCyan;
-const VIOLET = BRAND.auroraViolet;
 const HAIRLINE = (a: number) => `rgba(${HAIRLINE_RGB}, ${a})`;
 
 /** CSS px between the frame edge and the window, on every side. Exported
@@ -362,17 +360,13 @@ html,body{width:${vw}px;height:${vh}px;overflow:hidden;background:${INK_950}}
 /* The frame is a designed surface, not a maximised terminal screenshot:
    a soft brand glow behind a floating window, the way a product page
    presents a terminal rather than the way an OS does. */
-#page{position:absolute;inset:0;background:
-  radial-gradient(52% 60% at 14% 0%, ${GREEN}26 0%, transparent 72%),
-  radial-gradient(44% 50% at 52% -6%, ${CYAN}1F 0%, transparent 72%),
-  radial-gradient(40% 56% at 90% 0%, ${VIOLET}26 0%, transparent 72%),
-  ${INK_950}}
+#page{position:absolute;inset:0;background:${INK_950}}
 #win{position:absolute;inset:${inset}px;display:flex;flex-direction:column;
   background:${INK_900};border-radius:${radius}px;overflow:hidden;
   box-shadow:0 0 0 1px ${HAIRLINE(0.14)}, 0 2px 4px #00000040,
     0 18px 48px -12px #00000080, 0 48px 96px -32px #000000A6}
 #win::before{content:"";position:absolute;inset:0 0 auto;height:3px;z-index:1;
-  background:linear-gradient(90deg, ${GREEN}, ${CYAN} 50%, ${VIOLET})}
+  background:${CYAN}}
 #bar{height:${barHeight}px;flex:0 0 ${barHeight}px;background:${CHROME};
   display:flex;align-items:center;padding:0 20px;gap:9px;
   box-shadow:inset 0 -1px 0 ${HAIRLINE(0.1)}}

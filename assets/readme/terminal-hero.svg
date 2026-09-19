@@ -8,47 +8,47 @@
       <rect x="0" y="0" width="473" height="585" rx="10" ry="10"/>
     </clipPath>
     <linearGradient id="aurora" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#5FD6A4"/>
-      <stop offset="0.5" stop-color="#5CBDE0"/>
-      <stop offset="1" stop-color="#9D8CF5"/>
+      <stop offset="0" stop-color="#7C86FF"/>
+      <stop offset="0.5" stop-color="#91A1F5"/>
+      <stop offset="1" stop-color="#A0A8FF"/>
     </linearGradient>
   </defs>
 
   <g clip-path="url(#winClip)">
-    <rect x="0" y="0" width="473" height="585" fill="#0A1119"/>
+    <rect x="0" y="0" width="473" height="585" fill="#0A0D11"/>
     <rect x="0" y="0" width="473" height="2" fill="url(#aurora)"/>
-    <rect x="0" y="36" width="473" height="1" fill="rgb(198, 204, 214)" fill-opacity="0.1"/>
-    <circle cx="20" cy="18" r="5" fill="#18243A"/><circle cx="37" cy="18" r="5" fill="#18243A"/><circle cx="54" cy="18" r="5" fill="#18243A"/>
-    <text x="236.5" y="22" text-anchor="middle" font-size="12" fill="#8B939D">demo-repo</text>
+    <rect x="0" y="36" width="473" height="1" fill="rgb(255, 255, 255)" fill-opacity="0.1"/>
+    <circle cx="20" cy="18" r="5" fill="#1F2937"/><circle cx="37" cy="18" r="5" fill="#1F2937"/><circle cx="54" cy="18" r="5" fill="#1F2937"/>
+    <text x="236.5" y="22" text-anchor="middle" font-size="12" fill="#9CA3AF">demo-repo</text>
 
-    <text x="22" y="54.0" xml:space="preserve"><tspan fill="#8B939D">$</tspan><tspan fill="#ABB6C6"> </tspan><tspan fill="#EAEEF5">npx qa-doctor-cli@latest</tspan></text>
+    <text x="22" y="54.0" xml:space="preserve"><tspan fill="#9CA3AF">$</tspan><tspan fill="#E5E7EB"> </tspan><tspan fill="#FFFFFF">npx qa-doctor-cli@latest</tspan></text>
 
-    <text x="22" y="92.0" xml:space="preserve"><tspan fill="#ABB6C6">  TEST HEALTH  80/100  HEALTHY</tspan></text>
-    <text x="22" y="111.0" xml:space="preserve"><tspan fill="#ABB6C6">  ███████████████████████▓░░░░░░</tspan></text>
-    <text x="22" y="130.0" xml:space="preserve"><tspan fill="#ABB6C6">  Healthy test health: 18 findings remain.</tspan></text>
-    <text x="22" y="149.0" xml:space="preserve"><tspan fill="#ABB6C6">  (32 raw pts / 7 test declarations — normalized)</tspan></text>
-    <text x="22" y="168.0" xml:space="preserve"><tspan fill="#ABB6C6">  (capped: deduction mass 32 pts — absolute ceiling 95)</tspan></text>
+    <text x="22" y="92.0" xml:space="preserve"><tspan fill="#E5E7EB">  TEST HEALTH  80/100  HEALTHY</tspan></text>
+    <text x="22" y="111.0" xml:space="preserve"><tspan fill="#E5E7EB">  ███████████████████████▓░░░░░░</tspan></text>
+    <text x="22" y="130.0" xml:space="preserve"><tspan fill="#E5E7EB">  Healthy test health: 18 findings remain.</tspan></text>
+    <text x="22" y="149.0" xml:space="preserve"><tspan fill="#E5E7EB">  (32 raw pts / 7 test declarations — normalized)</tspan></text>
+    <text x="22" y="168.0" xml:space="preserve"><tspan fill="#E5E7EB">  (capped: deduction mass 32 pts — absolute ceiling 95)</tspan></text>
 
-    <text x="22" y="206.0" xml:space="preserve"><tspan fill="#ABB6C6">  DETECTED [playwright]</tspan></text>
+    <text x="22" y="206.0" xml:space="preserve"><tspan fill="#E5E7EB">  DETECTED [playwright]</tspan></text>
 
-    <text x="22" y="244.0" xml:space="preserve"><tspan fill="#ABB6C6">  ▍ DIAGNOSTICS BY CATEGORY</tspan></text>
-    <text x="22" y="263.0" xml:space="preserve"><tspan fill="#ABB6C6">  QA-CI    ███████████▓░░░░  76</tspan></text>
-    <text x="22" y="282.0" xml:space="preserve"><tspan fill="#ABB6C6">  QA-PW    ██████████████▓░  95</tspan></text>
-    <text x="22" y="301.0" xml:space="preserve"><tspan fill="#ABB6C6">  QA-TEST  ████████████████  97</tspan></text>
+    <text x="22" y="244.0" xml:space="preserve"><tspan fill="#E5E7EB">  ▍ DIAGNOSTICS BY CATEGORY</tspan></text>
+    <text x="22" y="263.0" xml:space="preserve"><tspan fill="#E5E7EB">  QA-CI    ███████████▓░░░░  76</tspan></text>
+    <text x="22" y="282.0" xml:space="preserve"><tspan fill="#E5E7EB">  QA-PW    ██████████████▓░  95</tspan></text>
+    <text x="22" y="301.0" xml:space="preserve"><tspan fill="#E5E7EB">  QA-TEST  ████████████████  97</tspan></text>
 
-    <text x="22" y="339.0" xml:space="preserve"><tspan fill="#ABB6C6">  ▍ WHERE POINTS WERE LOST</tspan></text>
-    <text x="22" y="358.0" xml:space="preserve"><tspan fill="#ABB6C6">  ╭─────────────────────────────────────────╮</tspan></text>
-    <text x="22" y="377.0" xml:space="preserve"><tspan fill="#ABB6C6">  │ 3 × error   − 24                        │</tspan></text>
-    <text x="22" y="396.0" xml:space="preserve"><tspan fill="#ABB6C6">  │ 3 × warning −  7 (evidence-discounted)  │</tspan></text>
-    <text x="22" y="415.0" xml:space="preserve"><tspan fill="#ABB6C6">  │ 12 × info    −  1 (evidence-discounted) │</tspan></text>
-    <text x="22" y="434.0" xml:space="preserve"><tspan fill="#ABB6C6">  ╰─────────────────────────────────────────╯</tspan></text>
+    <text x="22" y="339.0" xml:space="preserve"><tspan fill="#E5E7EB">  ▍ WHERE POINTS WERE LOST</tspan></text>
+    <text x="22" y="358.0" xml:space="preserve"><tspan fill="#E5E7EB">  ╭─────────────────────────────────────────╮</tspan></text>
+    <text x="22" y="377.0" xml:space="preserve"><tspan fill="#E5E7EB">  │ 3 × error   − 24                        │</tspan></text>
+    <text x="22" y="396.0" xml:space="preserve"><tspan fill="#E5E7EB">  │ 3 × warning −  7 (evidence-discounted)  │</tspan></text>
+    <text x="22" y="415.0" xml:space="preserve"><tspan fill="#E5E7EB">  │ 12 × info    −  1 (evidence-discounted) │</tspan></text>
+    <text x="22" y="434.0" xml:space="preserve"><tspan fill="#E5E7EB">  ╰─────────────────────────────────────────╯</tspan></text>
 
-    <text x="22" y="472.0" xml:space="preserve"><tspan fill="#ABB6C6">  ▍ FIX THIS FIRST</tspan></text>
-    <text x="22" y="491.0" xml:space="preserve"><tspan fill="#ABB6C6">  +8 pts  QA-CI-009 · .github/workflows/ci.yml:10</tspan></text>
-    <text x="22" y="510.0" xml:space="preserve"><tspan fill="#ABB6C6">  +8 pts  QA-CI-009 · .github/workflows/ci.yml:10</tspan></text>
-    <text x="22" y="529.0" xml:space="preserve"><tspan fill="#ABB6C6">  +8 pts  QA-CI-009 · .github/workflows/ci.yml:26</tspan></text>
+    <text x="22" y="472.0" xml:space="preserve"><tspan fill="#E5E7EB">  ▍ FIX THIS FIRST</tspan></text>
+    <text x="22" y="491.0" xml:space="preserve"><tspan fill="#E5E7EB">  +8 pts  QA-CI-009 · .github/workflows/ci.yml:10</tspan></text>
+    <text x="22" y="510.0" xml:space="preserve"><tspan fill="#E5E7EB">  +8 pts  QA-CI-009 · .github/workflows/ci.yml:10</tspan></text>
+    <text x="22" y="529.0" xml:space="preserve"><tspan fill="#E5E7EB">  +8 pts  QA-CI-009 · .github/workflows/ci.yml:26</tspan></text>
 
   </g>
 
-  <rect x="0.5" y="0.5" width="472" height="584" rx="9.5" ry="9.5" fill="none" stroke="rgb(198, 204, 214)" stroke-opacity="0.14"/>
+  <rect x="0.5" y="0.5" width="472" height="584" rx="9.5" ry="9.5" fill="none" stroke="rgb(255, 255, 255)" stroke-opacity="0.14"/>
 </svg>

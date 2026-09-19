@@ -127,15 +127,10 @@ export function monogramHtml(w: number, h: number): string {
 
 /** Social card: monogram over wordmark over one line, per the og:image spec. */
 export function socialCardHtml(w: number, h: number): string {
-  const glow = (c: string, a: number) =>
-    `color-mix(in oklch, ${c} ${a}%, transparent)`;
   return page(
     w,
     h,
-    `radial-gradient(60% 70% at 30% 0%, ${glow(BRAND.auroraGreen, 16)}, transparent 70%),
-     radial-gradient(55% 65% at 72% 0%, ${glow(BRAND.auroraViolet, 16)}, transparent 70%),
-     radial-gradient(40% 50% at 50% 0%, ${glow(BRAND.auroraCyan, 14)}, transparent 70%),
-     ${SURFACE.ink950}`,
+    SURFACE.ink950,
     `${monogramSvg(Math.round(h * 0.2), 5)}
      <div class="word" style="font-size:${Math.round(h * 0.1)}px;margin-top:${Math.round(h * 0.075)}px">${WORDMARK_TEXT}</div>
      <div class="line" style="font-size:${Math.round(h * 0.042)}px;margin-top:${Math.round(h * 0.06)}px">Checks whether your tests and CI can be trusted.</div>`,
@@ -185,6 +180,12 @@ const TARGETS: Target[] = [
     w: 1200,
     h: 630,
     jpeg: true,
+  },
+  {
+    file: "assets/readme/github-social-preview.png",
+    html: socialCardHtml,
+    w: 1280,
+    h: 640,
   },
 ];
 

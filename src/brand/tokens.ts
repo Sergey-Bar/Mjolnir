@@ -24,8 +24,9 @@
  * it costs a few hundred bytes and replaces values the package already
  * carried anyway.
  *
- * DERIVATION. The palette is the one derived from the logo in PR #20
- * (brushed steel and forge gold under an aurora, over midnight iron).
+ * DERIVATION. The palette is diagnostic steel and restrained clinical blue
+ * over neutral graphite. Semantic amber and red are reserved for attention
+ * and failure rather than used as brand decoration.
  * Where the terminal disagreed with it, the terminal converges — see
  * `PENDING_TERMINAL` below. Full rationale: `assets/brand/README.md`.
  *
@@ -54,15 +55,15 @@ export const BRAND = {
   goldHot: "#F4DC9C",
   /** Pressed / deepest gold — the only step dark enough to carry white. */
   goldDeep: "#A5811C",
-  aurora: "#37ABBD",
-  auroraBright: "#45C1D4",
-  auroraCyan: "#5CBDE0",
+  aurora: "#7E8FE3",
+  auroraBright: "#8494EA",
+  auroraCyan: "#91A1F5",
   /** The aurora's outer curtains: atmosphere and section identity only,
    * never a verdict or a status. */
-  auroraGreen: "#5FD6A4",
-  auroraViolet: "#9D8CF5",
-  steel: "#C8CBCF",
-  steelDim: "#8B939D",
+  auroraGreen: "#7C86FF",
+  auroraViolet: "#A0A8FF",
+  steel: "#D1D5DB",
+  steelDim: "#9CA3AF",
 } as const;
 
 /* ── Surfaces ────────────────────────────────────────────────── */
@@ -76,20 +77,20 @@ export const BRAND = {
  * `PENDING_TERMINAL.chromeDots` for why they are no longer red/amber/green.
  */
 export const SURFACE = {
-  ink950: "#0A1119",
-  ink900: "#0C1420",
-  ink850: "#111A29",
-  ink800: "#18243A",
+  ink950: "#000000",
+  ink900: "#07090C",
+  ink850: "#0D1117",
+  ink800: "#161B22",
   /** Raised panel (cards, elevated surfaces). */
-  panel: "#141F33",
+  panel: "#11151B",
   /** Soft fill (inline code, quiet chips). */
-  soft: "#1A2740",
+  soft: "#1B212A",
   /** Terminal body — the deepest tone, so a terminal reads as recessed. */
-  terminal: "#0A1119",
+  terminal: "#0A0D11",
   /** Terminal title bar — the same tone; the seam is shadow, not colour. */
-  terminalBar: "#0A1119",
+  terminalBar: "#0A0D11",
   /** The three window dots. One neutral, not a traffic light. */
-  chromeDot: "#18243A",
+  chromeDot: "#1F2937",
 } as const;
 
 /**
@@ -97,16 +98,16 @@ export const SURFACE = {
  * set divider, border and gutter as three alphas of the same colour
  * instead of three unrelated greys.
  */
-export const HAIRLINE_RGB = "198, 204, 214";
+export const HAIRLINE_RGB = "255, 255, 255";
 
 /* ── Text ────────────────────────────────────────────────────── */
 
 export const TEXT = {
-  primary: "#EAEEF5",
-  secondary: "#ABB6C6",
-  muted: "#8B939D",
+  primary: "#FFFFFF",
+  secondary: "#E5E7EB",
+  muted: "#9CA3AF",
   /** Ink for text set ON gold (buttons, the EXCELLENT chip). 7.17:1 on `gold`. */
-  onGold: "#0A1119",
+  onGold: "#000000",
 } as const;
 
 /* ── Status ──────────────────────────────────────────────────── */
@@ -120,7 +121,7 @@ export const TEXT = {
  */
 export const STATUS = {
   ok: "#4FB477",
-  info: "#5CC4E0",
+  info: "#879FE0",
   warning: "#E6BD57",
   error: "#EC6B66",
 } as const;
@@ -140,9 +141,9 @@ export const STATUS = {
 export const SCORE = {
   critical: "#EC6B66",
   warning: "#E6BD57",
-  trusted: "#5CC4E0",
-  excellent: "#F4DC9C",
-  unmeasured: "#8B939D",
+  trusted: "#79B5D8",
+  excellent: "#E2E8F0",
+  unmeasured: "#9CA3AF",
 } as const;
 
 /* ── Evidence levels ─────────────────────────────────────────── */
@@ -163,9 +164,9 @@ export const SCORE = {
  * survives `--ascii`, `NO_COLOR` and monochrome print.
  */
 export const EVIDENCE = {
-  e0: "#8B939D",
-  e1: "#ABB6C6",
-  e2: "#EAEEF5",
+  e0: "#9CA3AF",
+  e1: "#E5E7EB",
+  e2: "#FFFFFF",
 } as const;
 
 /* ── Trust ladder ────────────────────────────────────────────── */
@@ -182,12 +183,12 @@ export const EVIDENCE = {
  * Every surface that draws the ladder must draw that break.
  */
 export const TRUST = {
-  l0: "#8B939D",
-  l1: "#ABB6C6",
-  l2: "#C8CBCF",
-  l3: "#37ABBD",
-  l4: "#45C1D4",
-  l5: "#5CC4E0",
+  l0: "#9CA3AF",
+  l1: "#E5E7EB",
+  l2: "#D1D5DB",
+  l3: "#7E8FE3",
+  l4: "#8494EA",
+  l5: "#91A1F5",
 } as const;
 
 /** Where the ladder stops being static. Rungs at or above this index
@@ -203,36 +204,33 @@ export const TRUST_RUNTIME_BOUNDARY = 3;
  * + Geist Mono — a README asset and a website page shared no letterform
  * at all.
  *
- * Geist and Geist Mono are vendored (`assets/readme/fonts`,
- * `scripts/video/fonts.ts`) and embedded into the SVGs and the video, so
- * the same shapes render with no network at all. Display is not a third
- * face: it is Geist, set large, tight and quiet. Cinzel held that role
- * and was retired — a Roman inscriptional serif was the one letterform
- * that no other surface shared, and it read as costume beside the rest.
+ * The website uses the native system stack and Menlo-style monospace of
+ * serious developer tools: fast, familiar and free of display-font theatre.
+ * Generated media keeps the vendored Geist files as a deterministic fallback
+ * because screenshots and videos cannot depend on the host operating system.
  *
  * Every stack ends in a real system fallback: the layout must stay
  * graceful when no webfont loads.
  */
 export const TYPOGRAPHY = {
   display: {
-    family: "Geist",
+    family: "Segoe UI",
     weights: [500, 600],
-    stack: `"Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`,
-    /** Headlines run tight; the wordmark and labels are caps, tracked out. */
-    letterSpacing: { tight: "-0.02em", wide: "0.18em", widest: "0.3em" },
+    stack: `-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`,
+    letterSpacing: { tight: "0", wide: "0.12em", widest: "0.24em" },
   },
   sans: {
-    family: "Geist",
+    family: "Segoe UI",
     weights: [400, 500, 600],
-    stack: `"Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`,
+    stack: `-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`,
   },
   mono: {
-    family: "Geist Mono",
+    family: "Menlo",
     weights: [400, 500],
     /** `QaDoctorMono` is the embedded @font-face name used inside SVG and
      * the video render page; the web stack names the real family. */
     embeddedFamily: "QaDoctorMono",
-    stack: `"Geist Mono", ui-monospace, "SFMono-Regular", "Cascadia Mono", Consolas, monospace`,
+    stack: `"Menlo", "SFMono-Regular", "Cascadia Mono", Consolas, monospace`,
   },
   /** Indicator glyph fallback only — never a text face. */
   indicators: { family: "FreeMono", embeddedFamily: "QaDoctorSymbols" },
@@ -449,7 +447,7 @@ export const CSS_SEMANTIC: readonly (readonly [
   comment?: string,
 ])[] = [
   ["--qa-healthy", SCORE.trusted, "healthy test health, score band 80–99"],
-  ["--qa-healthy-bright", "#7FD4EA", "healthy, hover"],
+  ["--qa-healthy-bright", "#9BC8E4", "healthy, hover"],
   ["--qa-excellent-hot", SCORE.excellent, "score 100"],
   ["--qa-attention", SCORE.warning, "needs attention, score band 50–79"],
   ["--qa-critical", SCORE.critical, "score band 0–49"],

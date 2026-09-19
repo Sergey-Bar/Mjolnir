@@ -9,24 +9,12 @@ import {
 } from "vue";
 import { withBase } from "vitepress";
 import { TRUST_RUNGS } from "../../../src/brand/symbols";
-import CopyKey from "./CopyKey.vue";
 import DiagnosticGrid from "./DiagnosticGrid.vue";
 import StreamTerm from "./StreamTerm.vue";
 import Term from "./Term.vue";
 import { LOGOS } from "./logos";
 import { data } from "./home.data";
 import { MONOGRAM } from "./stack";
-
-const COMMAND = "npx qa-doctor-cli@latest";
-const CI_COMMAND = `${COMMAND} --scope changed`;
-const MCP_COMMAND =
-  "claude mcp add qa-doctor -- npx -y qa-doctor-cli@latest mcp";
-const ACTION = [
-  "- uses: Sergey-Bar/qa-doctor@v1",
-  "  with:",
-  "    scope: changed",
-  "    fail-on: error",
-].join("\n");
 
 const TITLE = [
   "Tests tell you what passed.",
@@ -191,9 +179,7 @@ const release = () => {
 
 /* ---- 03: the score ---- */
 const s = data.score;
-const span = (b: { min: number; max: number }) =>
-  `${((b.max - b.min + 1) / (s.outOf + 1)) * 100}%`;
-const marker = `${((s.demo.score + 0.5) / (s.outOf + 1)) * 100}%`;
+const marker = `${(s.demo.score / s.outOf) * 100}%`;
 const demoTone =
   s.bands.find((b) => s.demo.score >= b.min && s.demo.score <= b.max)?.tone ??
   "warning";
@@ -507,12 +493,19 @@ onBeforeUnmount(() => {
               go red, then scores how far you can trust the result.
             </p>
             <div class="actions">
-              <CopyKey :command="COMMAND" />
+              <a class="hero-action" href="#ch-ci">Explore the diagnosis</a>
+              <a
+                class="more"
+                href="https://github.com/Sergey-Bar/qa-doctor"
+                target="_blank"
+                rel="noreferrer"
+                >View on GitHub</a
+              >
             </div>
           </div>
           <div>
             <StreamTerm
-              :command="data.stream.command"
+              command="qa-doctor ."
               :lines="data.stream.lines"
               title="demo-repo"
               full
@@ -526,7 +519,7 @@ onBeforeUnmount(() => {
     <section class="quick-start wrap" aria-labelledby="qa-quick-start">
       <header>
         <p class="section-label">QUICK START</p>
-        <h2 id="qa-quick-start">From first command to evidence.</h2>
+        <h2 id="qa-quick-start">From first scan to evidence.</h2>
         <p>
           Start in the repository you already have. QA Doctor explains every
           finding before asking your CI to enforce it.
@@ -538,7 +531,7 @@ onBeforeUnmount(() => {
           <div>
             <h3>Run a baseline</h3>
             <p>Scan the repository and establish its current test health.</p>
-            <CopyKey :command="COMMAND" />
+            <a class="more" href="#ch-ci">Explore the live report</a>
           </div>
         </li>
         <li>
@@ -559,7 +552,9 @@ onBeforeUnmount(() => {
               Scan only changed files and make new high-confidence failures
               block the pull request.
             </p>
-            <CopyKey :command="CI_COMMAND" />
+            <a class="more" :href="withBase('/guide/ci')"
+              >Review the CI workflow</a
+            >
           </div>
         </li>
       </ol>
@@ -670,8 +665,8 @@ onBeforeUnmount(() => {
           <ul class="found">
             <li
               v-for="(f, i) in SCAN.findings"
-              v-show="f.line <= scanned"
               :key="i"
+              :class="{ shown: f.line <= scanned }"
             >
               <span class="sev" :class="f.severity">{{
                 f.severity.toUpperCase()
@@ -851,29 +846,41 @@ onBeforeUnmount(() => {
           </p>
         </div>
         <figure class="scale" data-reveal :style="{ '--i': 1 }">
-          <div class="scale-bar">
-            <span
-              v-for="b in s.bands"
-              :key="b.min"
-              class="scale-seg"
-              :class="`tone-${b.tone}`"
-              :style="{ width: span(b) }"
-            />
+          <div class="meter-head">
+            <span>TEST HEALTH</span>
+            <span :class="`tone-${demoTone}`"
+              >{{ s.demo.verdict }} · {{ s.demo.score }}/{{ s.outOf }}</span
+            >
+          </div>
+          <div
+            class="scale-bar"
+            role="meter"
+            aria-label="Test health score"
+            aria-valuemin="0"
+            :aria-valuemax="s.outOf"
+            :aria-valuenow="s.demo.score"
+          >
+            <span class="meter-fill" :style="{ width: marker }" />
+            <span class="scale-threshold at-50" />
+            <span class="scale-threshold at-80" />
             <span class="scale-mark" :style="{ left: marker }">
-              <span class="scale-pin" />
               <span class="scale-read">{{ s.demo.score }}</span>
             </span>
           </div>
-          <div class="scale-legend">
-            <span v-for="b in s.bands" :key="b.min" class="scale-key">
-              <span class="scale-verdict" :class="`tone-${b.tone}`">{{
-                b.verdict
-              }}</span>
-              <span class="scale-range">{{
-                b.min === b.max ? b.min : `${b.min}–${b.max}`
-              }}</span>
-            </span>
+          <div class="meter-axis" aria-hidden="true">
+            <span>0</span><span>50</span><span>80</span><span>100</span>
           </div>
+          <figcaption class="scale-legend">
+            <span v-for="b in s.bands" :key="b.min" class="scale-key">
+              <i :class="`tone-${b.tone}`" />
+              <span>
+                <b>{{ b.verdict }}</b>
+                <small>{{
+                  b.min === b.max ? b.min : `${b.min}–${b.max}`
+                }}</small>
+              </span>
+            </span>
+          </figcaption>
         </figure>
       </div>
     </section>
@@ -1086,9 +1093,9 @@ onBeforeUnmount(() => {
               With <code class="ic">--scope changed</code> it scans the files
               the branch touched and exits non-zero on new findings.
             </p>
-            <CopyKey :command="CI_COMMAND" />
-            <p class="fine">Or add the GitHub Action:</p>
-            <pre class="snippet"><code>{{ ACTION }}</code></pre>
+            <a class="more" :href="withBase('/guide/ci')"
+              >Review the CI workflow</a
+            >
           </div>
           <div class="flow" data-reveal>
             <h3>With an AI agent</h3>
@@ -1097,7 +1104,9 @@ onBeforeUnmount(() => {
               finding in the handoff says whether it is safe to apply or needs a
               person to confirm.
             </p>
-            <CopyKey :command="MCP_COMMAND" />
+            <a class="more" :href="withBase('/guide/agents')"
+              >Connect an agent</a
+            >
           </div>
         </div>
         <dl class="codes" data-reveal>
@@ -1132,16 +1141,10 @@ onBeforeUnmount(() => {
     <section class="closing" data-reveal aria-labelledby="qa-run">
       <div class="wrap">
         <h2 id="qa-run" class="huge">Run it on your repo.</h2>
-        <CopyKey class="close-key" :command="COMMAND" />
         <div class="close-links">
-          <a class="more" :href="withBase('/guide/getting-started')"
-            >Read the guide</a
-          >
+          <a class="more" href="#ch-ci">Explore the diagnosis</a>
           <a class="more" href="https://github.com/Sergey-Bar/qa-doctor"
             >View on GitHub</a
-          >
-          <a class="more" href="https://www.npmjs.com/package/qa-doctor-cli"
-            >View on npm</a
           >
         </div>
       </div>
@@ -1278,7 +1281,7 @@ onBeforeUnmount(() => {
 .qa h3 {
   font-size: 17px;
   font-weight: 500;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
   color: var(--t1);
 }
 
@@ -1492,7 +1495,7 @@ onBeforeUnmount(() => {
   font-size: clamp(36px, 4.9vw, 64px);
   font-weight: 500;
   line-height: 1.04;
-  letter-spacing: -0.045em;
+  letter-spacing: 0;
   color: var(--t1);
 }
 .title .line {
@@ -1502,8 +1505,7 @@ onBeforeUnmount(() => {
   color: var(--qa-info);
 }
 .title .was {
-  color: var(--t3);
-  animation: dim 1400ms var(--settle) 1600ms both;
+  color: var(--t1);
 }
 /* Pure CSS and never below 0.15 opacity: the headline is the page's
    largest paint, so it cannot wait on a script or start invisible. */
@@ -1517,14 +1519,6 @@ onBeforeUnmount(() => {
     opacity: 0.15;
     filter: blur(12px);
     transform: translateY(0.3em);
-  }
-}
-@keyframes dim {
-  from {
-    color: var(--t1);
-  }
-  to {
-    color: var(--t3);
   }
 }
 .hero-grid {
@@ -1542,10 +1536,30 @@ onBeforeUnmount(() => {
 }
 .actions {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
   margin-top: 32px;
+}
+.qa .hero-action {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 6px;
+  background: var(--t1);
+  color: var(--qa-ink-950);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    background-color 180ms var(--settle),
+    transform 180ms var(--settle);
+}
+.qa .hero-action:hover {
+  background: var(--qa-steel);
+  color: var(--qa-ink-950);
+  transform: translateY(-1px);
 }
 
 /* ---- quick start: actionable before the deep product tour ---- */
@@ -1569,7 +1583,7 @@ onBeforeUnmount(() => {
   font-size: clamp(28px, 3.2vw, 42px);
   font-weight: 500;
   line-height: 1.08;
-  letter-spacing: -0.035em;
+  letter-spacing: 0;
 }
 .quick-start header > p:last-child {
   max-width: 34ch;
@@ -1702,7 +1716,7 @@ onBeforeUnmount(() => {
 .qa .overview-title {
   font-size: clamp(24px, 2.6vw, 30px);
   font-weight: 500;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
 }
 .toc {
   display: grid;
@@ -1821,7 +1835,7 @@ onBeforeUnmount(() => {
   font-size: clamp(24px, 2.5vw, 32px);
   font-weight: 500;
   line-height: 1.16;
-  letter-spacing: -0.03em;
+  letter-spacing: 0;
   color: var(--qa-info);
 }
 .ch-side > p:not(.ch-tag),
@@ -1894,7 +1908,7 @@ onBeforeUnmount(() => {
   font-size: 26px;
   font-weight: 500;
   line-height: 1.1;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
   font-variant-numeric: tabular-nums;
   color: var(--t1);
 }
@@ -1920,19 +1934,25 @@ onBeforeUnmount(() => {
   font-size: 13.5px;
   line-height: 1.45;
   color: var(--t2);
-  animation: slide-in 450ms var(--settle) both;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-10px);
+  transition:
+    opacity 360ms var(--settle),
+    transform 360ms var(--settle),
+    visibility 0s linear 360ms;
+}
+.found li.shown {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition-delay: 0s;
 }
 .found a {
   margin-right: 4px;
   font-family: var(--vp-font-family-mono);
   font-size: 12.5px;
   color: var(--t1);
-}
-@keyframes slide-in {
-  from {
-    opacity: 0;
-    transform: translateX(-12px);
-  }
 }
 .sev {
   justify-self: start;
@@ -2045,10 +2065,6 @@ onBeforeUnmount(() => {
 }
 .chip {
   display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 480ms var(--settle);
-}
-.chip.open {
   grid-template-rows: 1fr;
 }
 .chip > div {
@@ -2296,14 +2312,14 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: flex-end;
   flex-wrap: wrap;
-  gap: 8px 22px;
+  gap: 6px 18px;
 }
 .odo {
   display: inline-flex;
-  font-size: clamp(96px, 12vw, 168px);
+  font-size: clamp(88px, 10vw, 144px);
   font-weight: 500;
   line-height: 1;
-  letter-spacing: -0.06em;
+  letter-spacing: 0;
   font-variant-numeric: tabular-nums;
   color: var(--t1);
 }
@@ -2324,62 +2340,70 @@ onBeforeUnmount(() => {
 }
 .scale {
   margin-top: 32px;
-  padding: 28px 24px 24px;
+  padding: 24px;
   border: 1px solid var(--line-2);
-  border-top: 2px solid var(--ch);
-  border-radius: 10px;
+  border-radius: 8px;
   background: var(--glass);
   box-shadow: inset 0 1px 0 color-mix(in srgb, white 4%, transparent);
   backdrop-filter: blur(18px) saturate(1.15);
 }
+.meter-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  font-family: var(--vp-font-family-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+.meter-head > span:first-child {
+  color: var(--t3);
+}
 .scale-bar {
   position: relative;
-  display: flex;
-  height: 10px;
-  margin-top: 36px;
+  height: 8px;
+  margin-top: 34px;
+  background: color-mix(in srgb, var(--qa-steel) 12%, transparent);
+  box-shadow: inset 0 0 0 1px var(--line);
 }
-.scale-seg {
+.meter-fill {
   display: block;
-  min-width: 6px;
   height: 100%;
-  background: currentColor;
+  background: var(--qa-healthy);
   transform-origin: left;
-  transition: transform 900ms var(--settle);
+  transition: width 900ms var(--settle);
 }
-.scale-seg:nth-child(2) {
-  transition-delay: 120ms;
+.qa-anim .scale[data-reveal]:not([data-in]) .meter-fill {
+  width: 0 !important;
 }
-.scale-seg:nth-child(3) {
-  transition-delay: 240ms;
+.scale-threshold {
+  position: absolute;
+  top: -4px;
+  width: 1px;
+  height: 16px;
+  background: color-mix(in srgb, var(--t1) 48%, transparent);
 }
-.scale-seg:nth-child(4) {
-  transition-delay: 360ms;
+.scale-threshold.at-50 {
+  left: 50%;
 }
-.qa-anim .scale[data-reveal]:not([data-in]) .scale-seg {
-  transform: scaleX(0);
-}
-.scale-seg + .scale-seg {
-  margin-left: 2px;
+.scale-threshold.at-80 {
+  left: 80%;
 }
 .scale-mark {
   position: absolute;
-  bottom: 0;
-  transform: translateX(-50%);
-  transition: left 1500ms var(--spring) 600ms;
-}
-.qa-anim .scale[data-reveal]:not([data-in]) .scale-mark {
-  left: 0 !important;
-}
-.scale-pin {
-  display: block;
-  width: 2px;
-  height: 22px;
-  margin: 0 auto;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border: 3px solid var(--qa-ink-850);
+  border-radius: 50%;
   background: var(--t1);
+  box-shadow: 0 0 0 1px var(--qa-healthy);
+  transform: translateX(-50%);
+  translate: 0 -50%;
 }
 .scale-read {
   position: absolute;
-  bottom: 28px;
+  bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
   font-family: var(--vp-font-family-mono);
@@ -2387,27 +2411,70 @@ onBeforeUnmount(() => {
   white-space: nowrap;
   color: var(--t1);
 }
+.meter-axis {
+  position: relative;
+  height: 22px;
+  margin-top: 8px;
+  font-family: var(--vp-font-family-mono);
+  font-size: 10px;
+  color: var(--t3);
+}
+.meter-axis span {
+  position: absolute;
+  transform: translateX(-50%);
+}
+.meter-axis span:nth-child(1) {
+  left: 0;
+  transform: none;
+}
+.meter-axis span:nth-child(2) {
+  left: 50%;
+}
+.meter-axis span:nth-child(3) {
+  left: 80%;
+}
+.meter-axis span:nth-child(4) {
+  right: 0;
+  transform: none;
+}
 .scale-legend {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 14px;
+  gap: 18px;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
 }
 .scale-key {
-  display: grid;
-  gap: 2px;
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
   min-width: 0;
 }
-.scale-verdict {
-  font-size: clamp(9px, 1vw, 12px);
+.scale-key i {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.scale-key span {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.scale-key b {
+  font-size: clamp(9px, 1vw, 11px);
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.08em;
   white-space: normal;
   overflow-wrap: anywhere;
+  color: var(--t2);
 }
-.scale-range {
+.scale-key small {
   font-family: var(--vp-font-family-mono);
-  font-size: 12.5px;
+  font-size: 11px;
   color: var(--t3);
 }
 /* 04 ---- trust ---- */
@@ -2528,7 +2595,7 @@ onBeforeUnmount(() => {
   font-size: clamp(48px, 5.4vw, 72px);
   font-weight: 500;
   line-height: 1;
-  letter-spacing: -0.04em;
+  letter-spacing: 0;
   font-variant-numeric: tabular-nums;
 }
 .big-count span {
@@ -2730,7 +2797,7 @@ onBeforeUnmount(() => {
 .qa .limits-box h2 {
   font-size: clamp(24px, 2.5vw, 30px);
   font-weight: 500;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
 }
 .limits {
   display: grid;
@@ -2796,7 +2863,7 @@ onBeforeUnmount(() => {
   font-size: clamp(44px, 7.4vw, 104px);
   font-weight: 500;
   line-height: 1;
-  letter-spacing: -0.055em;
+  letter-spacing: 0;
 }
 .close-key {
   margin-top: 40px;
@@ -2928,9 +2995,13 @@ onBeforeUnmount(() => {
   .rung {
     grid-template-rows: 110px auto auto 1fr;
   }
-  .scale-verdict {
+  .scale-key b {
     font-size: 10px;
     letter-spacing: 0.06em;
+  }
+  .scale-legend {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 20px;
   }
 }
 

@@ -3,6 +3,14 @@ import { onBeforeUnmount, onMounted, ref } from "vue";
 
 const canvas = ref<HTMLCanvasElement>();
 let frame = 0;
+let width = 1;
+let height = 1;
+let scale = 1;
+let color = "";
+let visible = true;
+let still = false;
+let resizeObserver: ResizeObserver | undefined;
+let visibilityObserver: IntersectionObserver | undefined;
 
 type Particle = {
   x: number;
@@ -13,27 +21,35 @@ type Particle = {
 };
 let particles: Particle[] = [];
 
-function render(time: number) {
+function resize() {
   const el = canvas.value;
   if (!el) return;
   const rect = el.getBoundingClientRect();
-  const scale = Math.min(devicePixelRatio || 1, 2);
-  const width = Math.max(1, Math.floor(rect.width * scale));
-  const height = Math.max(1, Math.floor(rect.height * scale));
+  scale = Math.min(window.devicePixelRatio || 1, 2);
+  width = Math.max(1, Math.floor(rect.width * scale));
+  height = Math.max(1, Math.floor(rect.height * scale));
+  color = getComputedStyle(el).getPropertyValue("--qa-info").trim();
   if (el.width !== width || el.height !== height) {
     el.width = width;
     el.height = height;
     particles = Array.from(
-      { length: Math.max(260, Math.floor(rect.width / 2.6)) },
+      { length: Math.max(220, Math.floor(rect.width / 3.2)) },
       (_, i) => ({
         x: (i * 71) % width,
         lane: i % 4,
         phase: ((i * 137) % 628) / 100,
         speed: 12 + ((i * 23) % 42),
-        size: i % 11 === 0 ? 1.6 : 0.7,
+        size: i % 11 === 0 ? 1.5 : 0.65,
       }),
     );
   }
+  if (still) render(0);
+}
+
+function render(time: number) {
+  frame = 0;
+  const el = canvas.value;
+  if (!el || !color) return;
   const ctx = el.getContext("2d");
   if (!ctx) return;
   ctx.clearRect(0, 0, width, height);
@@ -50,7 +66,8 @@ function render(time: number) {
       if (x === -20) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
-    ctx.strokeStyle = `rgba(91, 189, 224, ${0.025 + lane * 0.008})`;
+    ctx.strokeStyle = color;
+    ctx.globalAlpha = 0.025 + lane * 0.008;
     ctx.lineWidth = scale;
     ctx.stroke();
   }
@@ -65,23 +82,51 @@ function render(time: number) {
         height *
         0.065 +
       (x / width - 0.5) * height * 0.12;
-    const alpha = 0.09 + (Math.sin(t * 0.9 + particle.phase) + 1) * 0.085;
-    ctx.fillStyle = `rgba(91, 189, 224, ${alpha})`;
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 0.07 + (Math.sin(t * 0.9 + particle.phase) + 1) * 0.065;
     ctx.fillRect(x, y, particle.size * scale, particle.size * scale);
   }
-  frame = requestAnimationFrame(render);
+  ctx.globalAlpha = 1;
+  if (!still && visible && !document.hidden)
+    frame = requestAnimationFrame(render);
+}
+
+function start() {
+  if (!still && visible && !document.hidden && !frame)
+    frame = requestAnimationFrame(render);
+}
+
+function stop() {
+  cancelAnimationFrame(frame);
+  frame = 0;
 }
 
 onMounted(() => {
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  resizeObserver = new ResizeObserver(resize);
+  if (canvas.value) resizeObserver.observe(canvas.value);
+  resize();
+  if (still) {
     render(0);
-    cancelAnimationFrame(frame);
     return;
   }
-  frame = requestAnimationFrame(render);
+  visibilityObserver = new IntersectionObserver((entries) => {
+    visible = entries.some((entry) => entry.isIntersecting);
+    if (visible) start();
+    else stop();
+  });
+  const field = canvas.value?.parentElement;
+  if (field) visibilityObserver.observe(field);
+  document.addEventListener("visibilitychange", start);
+  start();
 });
 
-onBeforeUnmount(() => cancelAnimationFrame(frame));
+onBeforeUnmount(() => {
+  stop();
+  resizeObserver?.disconnect();
+  visibilityObserver?.disconnect();
+  document.removeEventListener("visibilitychange", start);
+});
 </script>
 
 <template>
@@ -97,11 +142,11 @@ onBeforeUnmount(() => cancelAnimationFrame(frame));
   z-index: -1;
   overflow: hidden;
   pointer-events: none;
-  opacity: 0.9;
+  opacity: 0.68;
 }
 canvas {
+  display: block;
   width: 100%;
   height: 100%;
-  display: block;
 }
 </style>

@@ -26,11 +26,11 @@ The two brand hues and the neutral they sit on.
 | `brand.goldBright`   | `#E6BD57` | primary on dark                 |
 | `brand.goldHot`      | `#F4DC9C` | highlight, EXCELLENT            |
 | `brand.goldDeep`     | `#A5811C` | pressed; background only        |
-| `brand.aurora`       | `#37ABBD` | secondary — verification energy |
-| `brand.auroraBright` | `#45C1D4` | secondary on dark               |
-| `brand.auroraCyan`   | `#5CBDE0` | informational                   |
-| `brand.steel`        | `#C8CBCF` | neutral bright                  |
-| `brand.steelDim`     | `#8B939D` | muted                           |
+| `brand.aurora`       | `#7E8FE3` | secondary — verification energy |
+| `brand.auroraBright` | `#8494EA` | secondary on dark               |
+| `brand.auroraCyan`   | `#91A1F5` | informational                   |
+| `brand.steel`        | `#D1D5DB` | neutral bright                  |
+| `brand.steelDim`     | `#9CA3AF` | muted                           |
 
 ### surface
 
@@ -38,15 +38,15 @@ Midnight iron. One ramp, darkest first.
 
 | Token                 | Value     |                              |
 | --------------------- | --------- | ---------------------------- |
-| `surface.ink950`      | `#0A1119` | deepest — hero, terminal     |
-| `surface.ink900`      | `#0C1420` | page                         |
-| `surface.ink850`      | `#111A29` | surface                      |
-| `surface.ink800`      | `#18243A` | raised                       |
-| `surface.panel`       | `#141F33` | card                         |
-| `surface.soft`        | `#1A2740` | inline code, quiet chips     |
-| `surface.terminal`    | `#0A1119` | terminal body                |
-| `surface.terminalBar` | `#0A1119` | title bar — same tone        |
-| `surface.chromeDot`   | `#18243A` | the window dots, one neutral |
+| `surface.ink950`      | `#000000` | deepest — hero, terminal     |
+| `surface.ink900`      | `#07090C` | page                         |
+| `surface.ink850`      | `#0D1117` | surface                      |
+| `surface.ink800`      | `#161B22` | raised                       |
+| `surface.panel`       | `#11151B` | card                         |
+| `surface.soft`        | `#1B212A` | inline code, quiet chips     |
+| `surface.terminal`    | `#0A0D11` | terminal body                |
+| `surface.terminalBar` | `#0A0D11` | title bar — same tone        |
+| `surface.chromeDot`   | `#1F2937` | the window dots, one neutral |
 
 ### text
 
@@ -54,10 +54,10 @@ One text ramp. Every surface uses it.
 
 | Token            | Value     |                          |
 | ---------------- | --------- | ------------------------ |
-| `text.primary`   | `#EAEEF5` |                          |
-| `text.secondary` | `#ABB6C6` |                          |
-| `text.muted`     | `#8B939D` |                          |
-| `text.onGold`    | `#0A1119` | ink for text set ON gold |
+| `text.primary`   | `#FFFFFF` |                          |
+| `text.secondary` | `#E5E7EB` |                          |
+| `text.muted`     | `#9CA3AF` |                          |
+| `text.onGold`    | `#000000` | ink for text set ON gold |
 
 ### status
 
@@ -66,7 +66,7 @@ Non-score status. `ok` is never a score colour.
 | Token            | Value     |                        |
 | ---------------- | --------- | ---------------------- |
 | `status.ok`      | `#4FB477` | non-score success only |
-| `status.info`    | `#5CC4E0` |                        |
+| `status.info`    | `#879FE0` |                        |
 | `status.warning` | `#E6BD57` |                        |
 | `status.error`   | `#EC6B66` |                        |
 
@@ -78,9 +78,9 @@ The ScoreState bands. Thresholds and indicators live in `src/reporter/score-stat
 | ------------------ | --------- | --------------------------- |
 | `score.critical`   | `#EC6B66` | 0–49 · CRITICAL · ᚲ         |
 | `score.warning`    | `#E6BD57` | 50–79 · NEEDS ATTENTION · ᚦ |
-| `score.trusted`    | `#5CC4E0` | 80–99 · HEALTHY · ᛏ         |
-| `score.excellent`  | `#F4DC9C` | 100 · EXCELLENT · ᛟ         |
-| `score.unmeasured` | `#8B939D` | UNKNOWN · ᛁ — never red     |
+| `score.trusted`    | `#79B5D8` | 80–99 · HEALTHY · ᛏ         |
+| `score.excellent`  | `#E2E8F0` | 100 · EXCELLENT · ᛟ         |
+| `score.unmeasured` | `#9CA3AF` | UNKNOWN · ᛁ — never red     |
 
 ### evidence
 
@@ -88,9 +88,9 @@ A hue-free brightness ramp: certainty is not a value judgement.
 
 | Token         | Value     |                                     |
 | ------------- | --------- | ----------------------------------- |
-| `evidence.e0` | `#8B939D` | observation · open ring · no weight |
-| `evidence.e1` | `#ABB6C6` | pattern evidence · half ring · half |
-| `evidence.e2` | `#EAEEF5` | deterministic proof · sealed · full |
+| `evidence.e0` | `#9CA3AF` | observation · open ring · no weight |
+| `evidence.e1` | `#E5E7EB` | pattern evidence · half ring · half |
+| `evidence.e2` | `#FFFFFF` | deterministic proof · sealed · full |
 
 ### trust
 
@@ -98,12 +98,12 @@ Neutral steel below the runtime boundary, aurora above it.
 
 | Token      | Value     |                                           |
 | ---------- | --------- | ----------------------------------------- |
-| `trust.l0` | `#8B939D` | observation only · static                 |
-| `trust.l1` | `#ABB6C6` | heuristic static                          |
-| `trust.l2` | `#C8CBCF` | deterministic static — the static ceiling |
-| `trust.l3` | `#37ABBD` | the finding's file executed · **runtime** |
-| `trust.l4` | `#45C1D4` | the finding's test executed · runtime     |
-| `trust.l5` | `#5CC4E0` | the run verdict corroborates · runtime    |
+| `trust.l0` | `#9CA3AF` | observation only · static                 |
+| `trust.l1` | `#E5E7EB` | heuristic static                          |
+| `trust.l2` | `#D1D5DB` | deterministic static — the static ceiling |
+| `trust.l3` | `#7E8FE3` | the finding's file executed · **runtime** |
+| `trust.l4` | `#8494EA` | the finding's test executed · runtime     |
+| `trust.l5` | `#91A1F5` | the run verdict corroborates · runtime    |
 
 ### tint
 
@@ -129,15 +129,15 @@ shields.io takes hex without the `#`.
 
 ## Typography
 
-| Role                  | Family     | Weights       |
-| --------------------- | ---------- | ------------- |
-| display               | Geist      | 500, 600      |
-| sans                  | Geist      | 400, 500, 600 |
-| mono                  | Geist Mono | 400, 500      |
-| indicators (fallback) | FreeMono   | —             |
+| Role                  | Family   | Weights       |
+| --------------------- | -------- | ------------- |
+| display               | Segoe UI | 500, 600      |
+| sans                  | Segoe UI | 400, 500, 600 |
+| mono                  | Menlo    | 400, 500      |
+| indicators (fallback) | FreeMono | —             |
 
 Body line-height 1.7; display tracking
--0.02em–0.3em.
+0–0.24em.
 
 ## Motion
 

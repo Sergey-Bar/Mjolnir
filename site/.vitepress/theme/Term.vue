@@ -34,14 +34,11 @@ defineProps<{ lines: TermLine[]; title?: string }>();
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* A system monospace on purpose: the Geist Mono web subset has no
-   box-drawing or block glyphs, and mixing faces breaks the columns. */
+/* Menlo leads the shared terminal stack and includes the block glyphs. */
 .term-body {
   margin: 0;
   padding: 18px 20px;
-  font-family:
-    ui-monospace, "SF Mono", "Cascadia Code", "Cascadia Mono", Consolas,
-    "DejaVu Sans Mono", Menlo, monospace;
+  font-family: var(--vp-font-family-mono);
   font-size: clamp(10px, 2.6vw, 13px);
   line-height: 1.55;
   color: var(--vp-c-text-2);
