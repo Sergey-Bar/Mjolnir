@@ -199,7 +199,7 @@ describe("runPrCommentCommand", () => {
     const cap = capture();
     const code = await runPrCommentCommand([dir], cap.io);
     expect(code).toBe(0);
-    expect(cap.text()).toContain("Verification Trust");
+    expect(cap.text()).toContain("Mjölnir Verification Report");
   });
 
   it("scopes the comment to the baseline diff when one exists", async () => {

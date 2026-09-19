@@ -364,7 +364,7 @@ export function runCiInstall(
     io.err("Unknown gate level. Use: advisory | error | warning");
     return EXIT_USAGE;
   }
-  const result = ciInstall(resolve("."), (gateArg as GateLevel) ?? "advisory", {
+  const result = ciInstall(resolve("."), (gateArg as GateLevel) ?? "error", {
     force,
     action: !noAction,
   });
@@ -380,7 +380,7 @@ export function runCiInstall(
   io.out(`${result.existed ? "Updated" : "Created"} ${result.written}`);
   io.out(
     noAction
-      ? "Plain-npx template (—no-action). Default mode: advisory — findings reported, never blocking."
+      ? "Plain-npx template (—no-action). Default mode: blocking — findings at the gate fail the job."
       : "Action-based template: uses Sergey-Bar/Mjolnir@v1 (major moving tag).",
   );
   io.out("Change with: mjolnir ci install --gate error|warning|advisory");
@@ -441,6 +441,7 @@ const SUBCOMMANDS: ReadonlySet<string> = new Set([
   "release-trust",
   "doctor:playwright",
   "mcp",
+  "business-case",
 ]);
 
 // Handler imports — the bulk of verb implementations live in cli-handlers.ts
@@ -500,6 +501,7 @@ import { runHandoffCommand } from "./commands/handoff.js";
 import { runInstallCommand } from "./commands/install-agents.js";
 import { runTrustReportCommand } from "./commands/trust-report.js";
 import { runReleaseTrustCommand } from "./commands/release-trust.js";
+import { runBusinessCaseCommand } from "./commands/business-case.js";
 
 export {
   runDoctorCommand,
@@ -509,6 +511,7 @@ export {
   runInstallCommand,
   runTrustReportCommand,
   runReleaseTrustCommand,
+  runBusinessCaseCommand,
 };
 
 export function printUsage(print: (s: string) => void): void {
@@ -552,6 +555,7 @@ export async function main(
     "trust-report": (a, o) => runTrustReportCommand(a, o),
     debt: (a, o) => runDebtCommand(a, o),
     impact: (a, o) => runImpactCommand(a, o),
+    "business-case": (a, o) => runBusinessCaseCommand(a, o),
     baseline: (a, o) => runBaselineCommand(a, o),
     diff: (a, o) => runDiffCommand(a, o),
     verify: (a, o) => runVerifyCommand(a, o),
@@ -603,6 +607,7 @@ export async function main(
   // argv[0] === "handoff"
   // argv[0] === "install"
   // argv[0] === "mcp"
+  // argv[0] === "business-case"
   // argv[0] === "help"
   const verb = argv[0] ?? "";
   const handler = Object.hasOwn(VERBS, verb) ? VERBS[verb] : undefined;

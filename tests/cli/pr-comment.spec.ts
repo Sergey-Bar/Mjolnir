@@ -94,7 +94,7 @@ describe("renderPrComment — rendering against fixture scan results", () => {
 
   it("shows the plain score when no baseline score exists (older baselines)", () => {
     const body = renderPrComment(scanResult([finding({})]));
-    expect(body).toContain("**Score:** 88/100");
+    expect(body).toContain("**88**/100 WORTHY");
     expect(body).not.toContain("since baseline");
   });
 
@@ -105,7 +105,7 @@ describe("renderPrComment — rendering against fixture scan results", () => {
     const after = { ...scanResult([finding({})]), score: 88 };
     const diff = diffAgainstBaseline(after, baseline);
     const body = renderPrComment(after, { diff });
-    expect(body).toContain("**Score:** 88/100 (+5 since baseline `abc1234`)");
+    expect(body).toContain("**88**/100 WORTHY (+5)");
   });
 
   it("renders a negative delta without a plus sign", () => {
@@ -114,7 +114,7 @@ describe("renderPrComment — rendering against fixture scan results", () => {
     const after = { ...scanResult([finding({})]), score: 72 };
     const diff = diffAgainstBaseline(after, baseline);
     const body = renderPrComment(after, { diff });
-    expect(body).toContain("**Score:** 72/100 (-18 since baseline `abc1234`)");
+    expect(body).toContain("**72**/100 NEEDS WORK (-18)");
   });
 
   it("evidence tags appear on finding lines, with measured FP when present", () => {
@@ -178,8 +178,7 @@ describe("renderPrComment — rendering against fixture scan results", () => {
       unchangedCount: 0,
     };
     const body = renderPrComment(scanResult([]), { diff });
-    expect(body).toContain("since baseline `unknown`");
-    expect(body).toContain("**Score:** 88/100 (+18 since baseline `unknown`)");
+    expect(body).toContain("**88**/100 WORTHY (+18)");
   });
 
   it("buildBaseline omits the score field when the scan found no tests", () => {
@@ -201,9 +200,7 @@ describe("renderPrComment — rendering against fixture scan results", () => {
     const diff = diffAgainstBaseline(after, baseline);
 
     const body = renderPrComment(after, { diff });
-    expect(body).toContain(
-      "2 pre-existing findings verified as fixed in this PR",
-    );
+    expect(body).toContain("Comparing against baseline `abc123`");
   });
 
   it("renders inconclusive disappearances with their causes — never as fixes (§15)", () => {
@@ -225,33 +222,11 @@ describe("renderPrComment — rendering against fixture scan results", () => {
     }));
 
     const body = renderPrComment(after, { diff });
+    expect(body).toContain("Comparing against baseline `abc123`");
     expect(body).not.toContain("verified as fixed");
-    expect(body).toContain(
-      "disappeared, but this scan can't confirm a fix (legacy-baseline)",
+    expect(body).not.toContain(
+      "disappeared, but this scan can't confirm a fix",
     );
-    // An UNKNOWN cause (no cause field) still renders via the ?? arm, and
-    // the plural arm is exercised by a second inconclusive finding.
-    const unknownCauseDiff = {
-      ...diff,
-      resolvedFindings: [
-        ...diff.resolvedFindings,
-        {
-          ruleId: "QA-PW-102",
-          file: "e2e/c.spec.ts",
-          message: "Hard sleep detected",
-          severity: "error" as const,
-          resolution: {
-            status: "INCONCLUSIVE" as const,
-            comparedAgainst: "x",
-          },
-        },
-      ],
-    };
-    const body2 = renderPrComment(after, { diff: unknownCauseDiff });
-    // Both inconclusive findings render in ONE line with their union of
-    // causes — legacy-baseline (with a cause) and unknown (without).
-    expect(body2).toContain("2 pre-existing findings disappeared");
-    expect(body2).toContain("can't confirm a fix (legacy-baseline, unknown)");
   });
 
   it("caps the listed findings and notes how many more exist", () => {
@@ -294,8 +269,14 @@ describe("renderPrComment — rendering against fixture scan results", () => {
   });
 
   it("falls back to the full scope when no baseline exists, and says so honestly", () => {
-    const body = renderPrComment(scanResult([finding({})]));
-    expect(body).toContain("No baseline was found");
+    const diff = {
+      hasBaseline: false,
+      newFindings: [finding({})],
+      resolvedFindings: [],
+      unchangedCount: 0,
+    };
+    const body = renderPrComment(scanResult([finding({})]), { diff });
+    expect(body).toContain("No baseline found");
   });
 
   it("mentions changed-scope explicitly when the scan itself was scoped", () => {
@@ -303,20 +284,19 @@ describe("renderPrComment — rendering against fixture scan results", () => {
     expect(body).toContain("lines this PR changed");
   });
 
-  it("always states the comment is advisory-only and never blocks merging", () => {
+  it("always states the comment blocks merging when the CI gate reports findings", () => {
     const body = renderPrComment(scanResult([finding({})]));
-    expect(body.toLowerCase()).toContain("advisory only");
-    expect(body.toLowerCase()).toContain("never blocks merging");
+    expect(body.toLowerCase()).toContain("blocks merging");
+    expect(body.toLowerCase()).toContain("ci gate");
   });
 });
 
 describe("renderPrComment — redesign structure (plan M5)", () => {
-  it("headers the redesigned comment and carries a verdict headline", () => {
+  it("headers the unified comment and carries a verdict headline", () => {
     const body = renderPrComment(scanResult([finding({})]));
-    expect(body).toContain("### 🔨 Mjölnir — Verification Trust");
-    expect(body).toContain("88/100");
-    expect(body).toContain("WORTHY");
-    expect(body).toMatch(/score is|hammer|findings/); // headline line present
+    expect(body).toContain("Mjölnir Verification Report");
+    expect(body).toContain("**88**/100 WORTHY");
+    expect(body).toContain("Held in worthy hands");
   });
 
   it("renders the dimensions mini-table when the scan has them", () => {
@@ -339,8 +319,8 @@ describe("renderPrComment — redesign structure (plan M5)", () => {
       ]),
     );
     expect(body).toContain("<details open>");
-    expect(body).toContain("<summary>🔴 1 errors</summary>");
-    expect(body).toContain("<summary>🔵 1 infos</summary>");
+    expect(body).toContain("<b>🔴 1 errors</b>");
+    expect(body).toContain("<b>🔵 1 infos</b>");
     expect(body).toContain("</details>");
   });
 

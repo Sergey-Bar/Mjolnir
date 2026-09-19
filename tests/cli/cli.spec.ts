@@ -108,7 +108,7 @@ describe("runCiInstall", () => {
     expect(cap.text()).toContain("Action-based template");
     expect(
       readFileSync(join(dir, ".github", "workflows", "mjolnir.yml"), "utf8"),
-    ).toContain("Sergey-Bar/Mjolnir@v1");
+    ).toContain("Sergey-Bar/Mjolnir@4a588bc62d517bc85fc44c0eae64c6587d3bf70b");
     expect(existsSync(join(dir, ".github", "workflows", "mjolnir.yml"))).toBe(
       true,
     );

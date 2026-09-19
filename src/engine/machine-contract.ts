@@ -198,6 +198,7 @@ function isAdvisory(f: Finding): boolean {
 }
 
 function levelFor(f: Finding): AnnotationLevel {
+  if (f.evidenceLevel === "E0") return "notice";
   if (f.severity === "error") return "failure";
   if (f.severity === "warning") return "warning";
   return "notice";

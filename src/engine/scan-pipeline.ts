@@ -405,26 +405,33 @@ export function pathMatchesGlob(path: string, glob: string): boolean {
  * Plan §16 + WI-11: locate a runtime run report next to the scan
  * target, using the exact conventions the forensics ingestion already
  * accepts. Zero-config search over conventional artifact names at
- * depth ≤ 2 (src/discovery/evidence-discovery.ts); the FIRST parsable
- * candidate wins (priority: mjolnir-report > playwright-json >
- * test-results-dir > junit-file). Validates each candidate by attempting
- * to parse it and checking that it produces at least one test. Returns
- * the parsed report alongside the path to avoid double-parsing.
+ * depth ≤ 2 (src/discovery/evidence-discovery.ts). The FIRST parsable
+ * candidate with `totalTests > 0` is kept as a fallback; the loop
+ * continues and returns a later candidate when one with
+ * `analysisComplete === true` is found. Returns the parsed report
+ * alongside the path to avoid double-parsing.
  */
 export function discoverAndParseRuntimeReport(
   scanRoot: string,
 ):
   | { path: string; report: import("../forensics/types.js").ForensicsReport }
   | undefined {
+  let fallback:
+    | { path: string; report: import("../forensics/types.js").ForensicsReport }
+    | undefined;
   for (const c of discoverEvidenceCandidates(scanRoot)) {
     try {
       const fr = runForensics(c.path, { writeFlakyMd: false });
-      if (fr.report.totalTests > 0) return { path: c.path, report: fr.report };
+      if (fr.report.totalTests <= 0) continue;
+      if (!fallback) fallback = { path: c.path, report: fr.report };
+      if (fr.report.analysisComplete === true) {
+        return { path: c.path, report: fr.report };
+      }
     } catch {
       // corrupt or unparsable → try next candidate
     }
   }
-  return undefined;
+  return fallback;
 }
 
 /**

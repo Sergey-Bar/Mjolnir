@@ -1,7 +1,7 @@
 /**
  * CI integration (Sprint-Plan W7): generates .github/workflows/mjolnir.yml
  * from internal templates ONLY — no user-input interpolation (R3 supply-chain).
- * Default gate: advisory (report, never block).
+ * Default gate: error (block releases on error-severity findings).
  *
  * Bug-audit hardening (H2): the previous template shipped the same
  * `github.rest.checks` no-op this repo's own audit removed from mjolnir.yml,
@@ -133,9 +133,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0   # needed for --scope changed merge-base
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 22
       # Scan with the PINNED version that generated this workflow — never
       # a floating tag: a new release must not change your gate semantics
       # with no commit of yours. To review PRs with the exact tool your
@@ -225,7 +222,8 @@ const GATES: readonly GateLevel[] = ["advisory", "error", "warning"];
  * pins the major, never @latest: a new release must not change gate
  * semantics without a commit of the consumer's.
  */
-export const ACTION_REF = "Sergey-Bar/Mjolnir@v1";
+export const ACTION_REF =
+  "Sergey-Bar/Mjolnir@4a588bc62d517bc85fc44c0eae64c6587d3bf70b";
 
 /**
  * The action-based workflow for one gate level (P1.3): the root
@@ -379,7 +377,7 @@ function summarizeContentDiff(existing: string, incoming: string): string[] {
 
 export function ciInstall(
   root: string,
-  gate: GateLevel = "advisory",
+  gate: GateLevel = "error",
   options: { force?: boolean; action?: boolean } = {},
 ): CiInstallResult {
   const wfDir = join(root, ".github", "workflows");
