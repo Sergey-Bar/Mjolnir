@@ -33,6 +33,7 @@ interface WorkflowStep {
   uses?: string;
   shell?: string;
   with?: Record<string, string>;
+  if?: string;
 }
 
 interface WorkflowJob {
@@ -107,25 +108,28 @@ describe("every GitHub workflow satisfies the repo's own audit conventions", () 
     }
   });
 
-  it("gives each Ubuntu coverage upload a distinct artifact name", () => {
+  it("runs and uploads coverage only for the canonical Ubuntu/Node 22 entry", () => {
     const job = loadWorkflow("ci.yml").jobs?.["build-test"];
     const matrix = job?.strategy?.matrix;
     expect(matrix).toBeDefined();
+    const coverage = job?.steps?.find((s) =>
+      s.name?.startsWith("Run coverage"),
+    );
+    expect(coverage?.if).toBe(
+      "matrix.os == 'ubuntu-latest' && matrix.node == 22",
+    );
     const upload = job?.steps?.find((s) => s.with?.path === "coverage/");
     const name = upload?.with?.name ?? "";
     expect(name).not.toBe("");
-    const names = (matrix?.node ?? [])
-      .filter(
-        (node) =>
-          !matrix?.exclude?.some(
-            (e) => e.os === "ubuntu-latest" && e.node === node,
-          ),
-      )
-      .map((node) =>
-        name.replace(/\$\{\{\s*matrix\.node\s*\}\}/g, String(node)),
-      );
-    expect(names.length).toBeGreaterThan(0);
-    expect(new Set(names).size).toBe(names.length);
+    expect(name).toBe("coverage-report-node-22");
+    expect(upload?.if).toBe(
+      "matrix.os == 'ubuntu-latest' && matrix.node == 22",
+    );
+    expect(
+      matrix?.exclude?.some(
+        (entry) => entry.os === "ubuntu-latest" && entry.node === 22,
+      ),
+    ).toBe(false);
   });
 
   it("deploys Pages when external source and asset inputs change", () => {
