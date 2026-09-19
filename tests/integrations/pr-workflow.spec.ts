@@ -78,7 +78,7 @@ describe("mjolnir.yml (the PR feedback loop workflow)", () => {
     const steps = wf.jobs.scan?.steps ?? [];
     expect(
       steps.some((s) =>
-        /(?:mjolnir-qa@\d+\.\d+\.\d+|dist\/cli\.mjs)\s+diff\b/.test(
+        /(?:mjolnir-qa@\d+\.\d+\.\d+|mjolnir-qa-\d+\.\d+\.\d+\.tgz|dist\/cli\.mjs)\s+diff\b/.test(
           s.run ?? "",
         ),
       ),
@@ -93,7 +93,7 @@ describe("mjolnir.yml (the PR feedback loop workflow)", () => {
     );
     expect(text).not.toContain("mjolnir-qa@latest");
     expect(text).not.toContain("version: latest");
-    expect(text).toContain(`mjolnir-qa@${CLI_VERSION}`);
+    expect(text).toContain(`mjolnir-qa-${CLI_VERSION}.tgz`);
     expect(text).toContain(`version: ${CLI_VERSION}`);
     const checkout = wf.jobs.scan?.steps?.find((s) =>
       s.uses?.startsWith("actions/checkout"),
@@ -133,7 +133,9 @@ describe("mjolnir.yml (the PR feedback loop workflow)", () => {
     const wf = loadPrWorkflow();
     const steps = wf.jobs.scan?.steps ?? [];
     const diffStep = steps.find((s) =>
-      /(?:mjolnir-qa@\d+\.\d+\.\d+|dist\/cli\.mjs)\s+diff\b/.test(s.run ?? ""),
+      /(?:mjolnir-qa@\d+\.\d+\.\d+|mjolnir-qa-\d+\.\d+\.\d+\.tgz|dist\/cli\.mjs)\s+diff\b/.test(
+        s.run ?? "",
+      ),
     );
     // diff's exit code can be 1 on new errors — must be tolerated via
     // continue-on-error on this specific step, never a blanket `|| true`

@@ -191,18 +191,23 @@ runs:
           warning) ARGS+=(--blocking warning) ;;
           none)    ARGS+=(--blocking none) ;;
         esac
-        echo "Running: npx --yes mjolnir-qa@${MJ_VERSION} ${ARGS[*]}"
+        if [ "$MJ_VERSION" = "latest" ]; then
+          MJ_PACKAGE="$(npm view mjolnir-qa@latest dist.tarball)"
+        else
+          MJ_PACKAGE="https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${MJ_VERSION}.tgz"
+        fi
+        echo "Running: npx --yes ${MJ_PACKAGE} ${ARGS[*]}"
         set +e
         if [ "$MJ_FORMAT" = "json" ]; then
-          npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}" > mjolnir.json
+          npx --yes "$MJ_PACKAGE" "${ARGS[@]}" > mjolnir.json
         elif [ "$MJ_FORMAT" = "sarif" ]; then
-          npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}" > mjolnir-report.sarif
+          npx --yes "$MJ_PACKAGE" "${ARGS[@]}" > mjolnir-report.sarif
         elif [ "$MJ_FORMAT" = "codequality" ]; then
-          npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}" > mjolnir-codequality.json
+          npx --yes "$MJ_PACKAGE" "${ARGS[@]}" > mjolnir-codequality.json
         elif [ "$MJ_FORMAT" = "mermaid" ]; then
-          npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}" > mjolnir-report.mmd
+          npx --yes "$MJ_PACKAGE" "${ARGS[@]}" > mjolnir-report.mmd
         else
-          npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}"
+          npx --yes "$MJ_PACKAGE" "${ARGS[@]}"
         fi
         EXIT=$?
         set -e
@@ -284,7 +289,12 @@ runs:
       env:
         MJ_VERSION: ${{ inputs.version }}
       run: |
-        npx --yes "mjolnir-qa@${MJ_VERSION}" trust-report --from mjolnir.json
+        if [ "$MJ_VERSION" = "latest" ]; then
+          MJ_PACKAGE="$(npm view mjolnir-qa@latest dist.tarball)"
+        else
+          MJ_PACKAGE="https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${MJ_VERSION}.tgz"
+        fi
+        npx --yes "$MJ_PACKAGE" trust-report --from mjolnir.json
         echo "exit=$?" >> "$GITHUB_OUTPUT"
         echo "file=mjolnir-trust-report.md" >> "$GITHUB_OUTPUT"
 
@@ -298,7 +308,12 @@ runs:
         # GITHUB_ACTIONS=true) and the step summary to
         # $GITHUB_STEP_SUMMARY — the CLI's own CI surface, zero action-
         # side rendering logic.
-        npx --yes "mjolnir-qa@${MJ_VERSION}" summary mjolnir.json --stdout | tee "${GITHUB_STEP_SUMMARY:-/dev/null}"
+        if [ "$MJ_VERSION" = "latest" ]; then
+          MJ_PACKAGE="$(npm view mjolnir-qa@latest dist.tarball)"
+        else
+          MJ_PACKAGE="https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${MJ_VERSION}.tgz"
+        fi
+        npx --yes "$MJ_PACKAGE" summary mjolnir.json --stdout | tee "${GITHUB_STEP_SUMMARY:-/dev/null}"
 
     - name: Post Trust Report as PR comment
       if: >-

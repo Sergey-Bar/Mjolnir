@@ -140,18 +140,18 @@ jobs:
       # npm 10+ npx to invoke it twice (unknown subcommand).
       - name: Scan changed code (exit 1/2 is data — the gate step decides)
         continue-on-error: true
-        run: npx --yes mjolnir-qa@${CLI_VERSION} . --scope changed --json > mjolnir.json
+        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${CLI_VERSION}.tgz . --scope changed --json > mjolnir.json
       # Reporting, not gating: a crashed scan leaves mjolnir.json empty/missing
       # and the summary step exits 2/10 — continue-on-error keeps the advisory
       # job green, exactly like the v1 inline script did (the gate step decides).
       - name: Annotations + Job Summary
         if: always()
         continue-on-error: true
-        run: npx --yes mjolnir-qa@${CLI_VERSION} summary mjolnir.json
+        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${CLI_VERSION}.tgz summary mjolnir.json
       - name: Render PR comment
         if: always()
         continue-on-error: true
-        run: npx --yes mjolnir-qa@${CLI_VERSION} pr-comment . > mjolnir-comment.md
+        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${CLI_VERSION}.tgz pr-comment . > mjolnir-comment.md
       # Best-effort: on a pull_request event from a fork the GITHUB_TOKEN is
       # read-only and this step will 403 for every external contributor. The
       # Job Summary above is the fallback that always renders.
@@ -281,11 +281,11 @@ jobs:
       - name: Annotations + Job Summary
         if: always()
         continue-on-error: true
-        run: npx --yes mjolnir-qa@${CLI_VERSION} summary mjolnir.json
+        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${CLI_VERSION}.tgz summary mjolnir.json
       - name: Render PR comment
         if: always()
         continue-on-error: true
-        run: npx --yes mjolnir-qa@${CLI_VERSION} pr-comment . > mjolnir-comment.md
+        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${CLI_VERSION}.tgz pr-comment . > mjolnir-comment.md
       # Best-effort: on a pull_request event from a fork the GITHUB_TOKEN is
       # read-only and this step will 403 for every external contributor. The
       # Job Summary above is the fallback that always renders.
