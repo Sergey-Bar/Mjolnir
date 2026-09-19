@@ -1,7 +1,8 @@
 /**
  * CI integration (Sprint-Plan W7): generates .github/workflows/mjolnir.yml
  * from internal templates ONLY — no user-input interpolation (R3 supply-chain).
- * Default gate: error (block releases on error-severity findings).
+ * Default gate: error (block releases on error-severity findings
+ * — enforced by the caller; this function requires gate explicitly).
  *
  * Bug-audit hardening (H2): the previous template shipped the same
  * `github.rest.checks` no-op this repo's own audit removed from mjolnir.yml,
@@ -133,6 +134,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0   # needed for --scope changed merge-base
+          persist-credentials: false
       # Scan with the pinned version. No subcommand: npx resolves
       # the package bin directly; passing mjolnir as an arg causes
       # npm 10+ npx to invoke it twice (unknown subcommand).
@@ -257,8 +259,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0   # needed for --scope changed merge-base
+          persist-credentials: false
       # The action scans with the published mjolnir-qa package
-      # (version: latest). The composite action is pinned via
+      # pinned to this CLI release. The composite action is pinned via
       # ACTION_REF. The fail-on input is the gate: it fails the
       # job on findings at the gate and never on a partial scan
       # (exit 2 downgrades to a warning — the frozen exit-code

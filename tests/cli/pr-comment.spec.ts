@@ -458,4 +458,11 @@ describe("renderPrComment — utility exports coverage", () => {
     });
     expect(body).toContain("https://example.com/repo");
   });
+
+  it("forwards a defined commit to artifact identity rendering", () => {
+    const body = renderPrComment(scanResult([]), {
+      commit: "abc1234",
+    });
+    expect(body).toContain("abc1234");
+  });
 });

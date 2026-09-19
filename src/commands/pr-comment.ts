@@ -85,5 +85,6 @@ export function renderPrComment(
     ...(options.diff ? { diff: options.diff } : {}),
     ...(options.repoUrl ? { repoUrl: options.repoUrl } : {}),
     ...(options.version ? { version: options.version } : {}),
+    ...(options.commit !== undefined ? { commit: options.commit } : {}),
   });
 }

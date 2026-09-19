@@ -183,6 +183,19 @@ describe("Machine Contract", () => {
     expect(annotation.annotation_level).toBe("notice");
   });
 
+  it("derives E0 consistently for unstamped observations", () => {
+    const observation = makeFinding({
+      findingType: "observation",
+      severity: "error",
+    });
+    delete observation.evidenceLevel;
+    const findings = [observation];
+    const contract = buildMachineContract(makeScanResult({ findings }));
+    const annotation = contract.annotations[0] as MachineAnnotation;
+    expect(annotation.advisory).toBe(true);
+    expect(annotation.annotation_level).toBe("notice");
+  });
+
   it("error findings are reported at failure level", () => {
     const findings = [
       makeFinding({ ruleId: "QA-TEST-001", severity: "error" }),

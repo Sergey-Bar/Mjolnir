@@ -298,7 +298,7 @@ runs:
         # GITHUB_ACTIONS=true) and the step summary to
         # $GITHUB_STEP_SUMMARY — the CLI's own CI surface, zero action-
         # side rendering logic.
-        npx --yes "mjolnir-qa@${MJ_VERSION}" summary mjolnir.json --stdout | tee "${GITHUB_STEP_SUMMARY:-/dev/null}" >/dev/null 2>&1
+        npx --yes "mjolnir-qa@${MJ_VERSION}" summary mjolnir.json --stdout | tee "${GITHUB_STEP_SUMMARY:-/dev/null}"
 
     - name: Post Trust Report as PR comment
       if: >-

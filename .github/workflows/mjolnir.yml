@@ -20,16 +20,17 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0 # needed for --scope changed merge-base
+          persist-credentials: false
       # The action scans with the published mjolnir-qa package. The
       # composite action is pinned to an exact commit (see above); the
-      # scan package uses latest. The fail-on input is the gate: it
+      # scan package is pinned to the same reviewed release. The fail-on input is the gate: it
       # fails the job on findings at the gate and never on a partial
       # scan (exit 2 downgrades to a warning — the frozen exit-code
       # contract). Advisory mode reports, never blocks.
       - name: Mjölnir diff
         if: always()
         continue-on-error: true
-        run: npx --yes mjolnir-qa@latest diff . > mjolnir-diff.md
+        run: npx --yes mjolnir-qa@2.0.0 diff . > mjolnir-diff.md
       - name: Mjölnir verification trust scan
         id: mjolnir
         if: always()
@@ -39,17 +40,17 @@ jobs:
           scope: changed
           format: json
           fail-on: error
-          version: latest
+          version: 2.0.0
       # Reporting, not gating: runs even when the scan/gate failed, from
       # the same mjolnir.json the action wrote.
       - name: Annotations + Job Summary
         if: always()
         continue-on-error: true
-        run: npx --yes mjolnir-qa@latest summary mjolnir.json
+        run: npx --yes mjolnir-qa@2.0.0 summary mjolnir.json
       - name: Render PR comment
         if: always()
         continue-on-error: true
-        run: npx --yes mjolnir-qa@latest pr-comment . > mjolnir-comment.md
+        run: npx --yes mjolnir-qa@2.0.0 pr-comment . > mjolnir-comment.md
       # Best-effort: on a pull_request event from a fork the GITHUB_TOKEN is
       # read-only and this step will 403 for every external contributor. The
       # Job Summary above is the fallback that always renders.

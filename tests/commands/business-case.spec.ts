@@ -68,12 +68,16 @@ describe("runBusinessCaseCommand", () => {
       ]),
     );
 
+    const out = vi.fn();
     const result = await runBusinessCaseCommand(["."], {
-      out: vi.fn(),
+      out,
       err: vi.fn(),
     });
 
     expect(result).toBe(0);
+    const output = out.mock.calls.flat().join("\n");
+    expect(output).toContain("| QA-PW-101 | 20% | E2 | $20000 |");
+    expect(output).toContain("| QA-PW-102 | 50% | E1 | $6250 |");
     expect(mockRunScan).toHaveBeenCalledWith(
       expect.objectContaining({ target: "." }),
     );
@@ -92,6 +96,9 @@ describe("runBusinessCaseCommand", () => {
     const out = vi.fn();
     await runBusinessCaseCommand(["."], { out });
     expect(mockRunScan).toHaveBeenCalled();
+    expect(out.mock.calls.flat().join("\n")).toContain(
+      "| QA-PW-103 | unmeasured | E0 | n/a |",
+    );
   });
 
   it("renders E0 with measured FP rate → savings n/a", async () => {
@@ -110,6 +117,16 @@ describe("runBusinessCaseCommand", () => {
     expect(mockRunScan).toHaveBeenCalled();
     const allOutput = out.mock.calls.flat().join("\n");
     expect(allOutput).toContain("n/a");
+  });
+
+  it("passes --strict through to the scan", async () => {
+    mockRunScan.mockResolvedValue(scanResult([]));
+
+    await runBusinessCaseCommand([".", "--strict"], { out: vi.fn() });
+
+    expect(mockRunScan).toHaveBeenCalledWith(
+      expect.objectContaining({ strict: true }),
+    );
   });
 
   it("returns EXIT_INTERNAL on scan failure", async () => {
@@ -134,5 +151,18 @@ describe("runBusinessCaseCommand", () => {
     const allOutput = out.mock.calls.flat().join("\n");
     expect(allOutput).toContain("Business Case");
     expect(allOutput).toContain("$25000");
+  });
+
+  it("defaults to the current directory when no target is provided", async () => {
+    mockRunScan.mockResolvedValue(scanResult([]));
+
+    const out = vi.fn();
+    const result = await runBusinessCaseCommand([], { out });
+
+    expect(result).toBe(0);
+    expect(mockRunScan).toHaveBeenCalledWith(
+      expect.objectContaining({ target: "." }),
+    );
+    expect(out.mock.calls.flat().join("\n")).toContain("Scanning . ...");
   });
 });

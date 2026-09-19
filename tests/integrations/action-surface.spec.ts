@@ -203,6 +203,14 @@ describe("root action.yml (Marketplace surface) is locked", () => {
       ).toBeTruthy();
     }
   });
+
+  it("streams summary output while tee writes the GitHub step summary", () => {
+    const summary = action.runs.steps.find(
+      (s) => s.name === "Emit annotations + step summary",
+    );
+    expect(summary?.run).toContain('tee "${GITHUB_STEP_SUMMARY:-/dev/null}"');
+    expect(summary?.run).not.toContain(">/dev/null 2>&1");
+  });
 });
 
 describe("ci-install action template agrees with the real action.yml", () => {

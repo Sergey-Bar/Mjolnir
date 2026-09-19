@@ -108,7 +108,7 @@ jobs:
           # later step (the ubuntu-only coverage run caught exactly that).
           PYTHONPYCACHEPREFIX: /tmp/mjolnir-pycache
         run: |
-          if find tests/fixtures tests/corpus/positive-fixtures -name "*.py" | grep -q .; then
+          if [ -n "$(find tests/fixtures tests/corpus/positive-fixtures -name "*.py" -print -quit)" ]; then
             python3 -m compileall -q tests/fixtures tests/corpus/positive-fixtures
           else
             echo "no Python fixtures present — nothing to compile"
@@ -131,10 +131,19 @@ jobs:
         env:
           AUDIT_FIRST_OUTCOME: ${{ steps.audit.outcome }}
         run: |
-          if npm audit --audit-level=moderate; then
+          set +e
+          npm audit --audit-level=moderate 2>&1 | tee npm-audit-retry.log
+          audit_status=${PIPESTATUS[0]}
+          set -e
+          if [ "$audit_status" -eq 0 ]; then
             echo "npm audit: first attempt failed, retry passed (registry flake?)" >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "npm audit: first attempt AND retry failed" >> "$GITHUB_STEP_SUMMARY"
+            if grep -Eiq '503 Service Unavailable|currently performing maintenance|audit endpoint returned an error|EAI_AGAIN|ETIMEDOUT|ECONNRESET|ENOTFOUND|fetch failed' npm-audit-retry.log; then
+              echo "::warning::npm audit unavailable after retry; treating registry outage as infrastructure noise, not a vulnerability gate failure"
+              echo "npm audit: retry failed because the npm audit service was unavailable" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            echo "npm audit: first attempt AND retry failed with an actionable audit result" >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
       - name: Record audit result in job summary

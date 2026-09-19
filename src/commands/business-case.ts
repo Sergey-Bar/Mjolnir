@@ -28,7 +28,7 @@ function expectedSavings(
   const confidence =
     evidenceLevel === "E2" ? 1 : evidenceLevel === "E1" ? 0.5 : 0;
   if (confidence === 0) return null;
-  return Math.round(FP_AUDIT_COST_PER_INCIDENT * fpRate * confidence);
+  return Math.round(FP_AUDIT_COST_PER_INCIDENT * (1 - fpRate) * confidence);
 }
 
 /**
@@ -101,6 +101,7 @@ export async function runBusinessCaseCommand(
       maxDurationMs: Number.POSITIVE_INFINITY,
       scopeChanged: false,
       format: "terminal",
+      strict: argv.includes("--strict"),
     });
 
     const savingsPerFinding = result.findings.map((f) => {

@@ -381,7 +381,7 @@ export function runCiInstall(
   io.out(
     noAction
       ? "Plain-npx template (—no-action). Default mode: blocking — findings at the gate fail the job."
-      : "Action-based template: uses Sergey-Bar/Mjolnir@v1 (major moving tag).",
+      : "Action-based template: uses Sergey-Bar/Mjolnir@4a588bc62d517bc85fc44c0eae64c6587d3bf70b0 (immutable pin).",
   );
   io.out("Change with: mjolnir ci install --gate error|warning|advisory");
   if (!noAction) {

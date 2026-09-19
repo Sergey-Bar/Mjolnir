@@ -155,6 +155,16 @@ describe("ci-install template (all gates)", () => {
     }
   });
 
+  it("does not persist checkout credentials into generated scan steps", () => {
+    for (const gate of GATES) {
+      const { wf } = renderParsed(gate);
+      const checkout = wf.jobs.scan?.steps?.find((s) =>
+        s.uses?.startsWith("actions/checkout"),
+      );
+      expect(checkout?.with?.["persist-credentials"]).toBe(false);
+    }
+  });
+
   it("keeps least-privilege permissions (contents read + pull-requests write only)", () => {
     for (const gate of GATES) {
       const { wf } = renderParsed(gate);

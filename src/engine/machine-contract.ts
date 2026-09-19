@@ -190,15 +190,19 @@ function canonicalScanJson(result: ScanResult): string {
 }
 
 /** Advisory when the DERIVED evidence level is E0 (same rule as scoring). */
-function isAdvisory(f: Finding): boolean {
-  return (
-    (f.evidenceLevel ?? deriveEvidenceLevel(f.findingType, f.confidence)) ===
-    "E0"
-  );
+function effectiveEvidenceLevel(f: Finding): Finding["evidenceLevel"] {
+  return f.evidenceLevel ?? deriveEvidenceLevel(f.findingType, f.confidence);
 }
 
-function levelFor(f: Finding): AnnotationLevel {
-  if (f.evidenceLevel === "E0") return "notice";
+function isAdvisory(f: Finding): boolean {
+  return effectiveEvidenceLevel(f) === "E0";
+}
+
+function levelFor(
+  f: Finding,
+  evidenceLevel: Finding["evidenceLevel"] = effectiveEvidenceLevel(f),
+): AnnotationLevel {
+  if (evidenceLevel === "E0") return "notice";
   if (f.severity === "error") return "failure";
   if (f.severity === "warning") return "warning";
   return "notice";
@@ -219,17 +223,20 @@ export function buildMachineContract(result: ScanResult): MachineContract {
   const digest = createHash("sha256")
     .update(canonicalScanJson(result))
     .digest("hex");
-  const annotations: MachineAnnotation[] = result.findings.map((f) => ({
-    path: f.file,
-    start_line: f.line,
-    annotation_level: levelFor(f),
-    message: `${f.ruleId}: ${f.message}`,
-    ruleId: f.ruleId,
-    ...(f.detectorRevision !== undefined
-      ? { detectorRevision: f.detectorRevision }
-      : {}),
-    advisory: isAdvisory(f),
-  }));
+  const annotations: MachineAnnotation[] = result.findings.map((f) => {
+    const evidenceLevel = effectiveEvidenceLevel(f);
+    return {
+      path: f.file,
+      start_line: f.line,
+      annotation_level: levelFor(f, evidenceLevel),
+      message: `${f.ruleId}: ${f.message}`,
+      ruleId: f.ruleId,
+      ...(f.detectorRevision !== undefined
+        ? { detectorRevision: f.detectorRevision }
+        : {}),
+      advisory: evidenceLevel === "E0",
+    };
+  });
   return {
     contractVersion: CONTRACT_VERSION,
     summary: {

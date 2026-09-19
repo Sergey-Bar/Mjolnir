@@ -574,7 +574,7 @@ mjolnir ci install --gate advisory
 In your existing workflow, pin the action and gate on error severity:
 
 ```yaml
-- uses: Sergey-Bar/Mjolnir@v1
+- uses: Sergey-Bar/Mjolnir@4a588bc62d517bc85fc44c0eae64c6587d3bf70b0
   with:
     scope: changed
     fail-on: error

@@ -15,12 +15,12 @@ It does NOT mean tests ran, or could have failed.
 
 Organizations shipping on false-green pay a recurring tax:
 
-| Incident Class                          | Typical Cost | Frequency                   |
-| --------------------------------------- | ------------ | --------------------------- |
-| Production bug from skipped tests       | $15K–$250K+  | 2–4×/yr per team            |
-| Flaky test masking real failures        | $5K–$50K     | Monthly                     |
-| `continue-on-error` hiding broken gates | $10K–$100K   | Quarterly                   |
-| `                                       |              | true` swallowing exit codes | $5K–$25K | Per incident |
+| Incident Class                          | Typical Cost | Frequency        |
+| --------------------------------------- | ------------ | ---------------- |
+| Production bug from skipped tests       | $15K–$250K+  | 2–4×/yr per team |
+| Flaky test masking real failures        | $5K–$50K     | Monthly          |
+| `continue-on-error` hiding broken gates | $10K–$100K   | Quarterly        |
+| `\|\| true` swallowing exit codes       | $5K–$25K     | Per incident     |
 
 **Estimated industry average: $25K–$100K/year per team** in direct incident costs from untrustworthy verification.
 
@@ -39,14 +39,14 @@ It scores the result 0–100 (**Worthiness Score**) and **blocks releases** when
 
 ### Per-Finding Expected Savings
 
-| Rule Category   | Example Finding                         | FP Rate | Evidence                   | Expected Savings |
-| --------------- | --------------------------------------- | ------- | -------------------------- | ---------------- |
-| CI Integrity    | `continue-on-error` on gate job         | 11%     | E2 (deterministic)         | $2,750           |
-| CI Integrity    | `                                       |         | true` swallowing exit code | 8%               | E2  | $2,000 |
-| Test Hygiene    | Committed `.only` (runs 3 of 900 tests) | 22%     | E2                         | $5,500           |
-| Test Quality    | Promise assertion without `await`       | 14%     | E2                         | $3,500           |
-| Playwright      | Locator assertion without `await`       | 9%      | E2                         | $2,250           |
-| Selector Health | Brittle CSS/XPath selector              | 31%     | E1 (pattern)               | $3,875           |
+| Rule Category   | Example Finding                         | FP Rate | Evidence           | Expected Savings |
+| --------------- | --------------------------------------- | ------- | ------------------ | ---------------- |
+| CI Integrity    | `continue-on-error` on gate job         | 11%     | E2 (deterministic) | $22,250          |
+| CI Integrity    | `\|\| true` swallowing exit code        | 8%      | E2                 | $23,000          |
+| Test Hygiene    | Committed `.only` (runs 3 of 900 tests) | 22%     | E2                 | $19,500          |
+| Test Quality    | Promise assertion without `await`       | 14%     | E2                 | $21,500          |
+| Playwright      | Locator assertion without `await`       | 9%      | E2                 | $22,750          |
+| Selector Health | Brittle CSS/XPath selector              | 31%     | E1 (pattern)       | $8,625           |
 
 **Total per scan (typical 10–20 findings): $30K–$100K expected savings**
 
