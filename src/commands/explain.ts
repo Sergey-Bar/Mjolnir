@@ -216,6 +216,8 @@ export function renderExplain(
     lines.push(`Frameworks:  ${r.frameworks.join(", ")}`);
   }
   lines.push("");
+  appendReviewComment(lines, r, result, evidenceLevel, width);
+  lines.push("");
 
   if (result.exampleFinding) {
     const f = result.exampleFinding;
@@ -266,6 +268,47 @@ export function renderExplain(
   lines.push("");
   lines.push(`Docs: mjolnir rules --md   (full catalog, this rule included)`);
   return lines.join("\n");
+}
+
+function appendReviewComment(
+  lines: string[],
+  rule: QADoctorRule,
+  result: ExplainResult,
+  evidenceLevel: ReturnType<typeof deriveEvidenceLevel>,
+  width: number,
+): void {
+  const measured = MEASURED_FP[rule.id];
+  const finding = result.exampleFinding;
+  const pushBody = (text: string): void => {
+    for (const seg of wrapText(text, Math.max(20, width - 2))) {
+      lines.push(`  ${seg}`);
+    }
+  };
+  const fpStatus =
+    measured !== undefined
+      ? `measured FP ${Math.round(measured.fpRate * 100)}% (${measured.n} verdicts)`
+      : "measured FP not available yet; treat as rule-author assumption";
+
+  lines.push("COPY-READY REVIEW COMMENT");
+  pushBody(
+    `Please fix this before merging: ${reviewSentence(finding?.message ?? rule.title)}.`,
+  );
+  pushBody(
+    `Why it weakens verification: ${reviewSentence(finding?.why ?? QA_IMPACT_LABELS[rule.qaImpact])}.`,
+  );
+  pushBody(
+    `Confidence: ${rule.confidence}, evidence ${evidenceLevel}, tier ${effectiveTier(rule)}${isProvisional(rule) ? " (PROVISIONAL)" : ""}; ${fpStatus}.`,
+  );
+  pushBody(
+    `Suggested fix: ${reviewSentence(finding?.fix ?? "apply the rule guidance above")}.`,
+  );
+  pushBody(
+    `Verify with: mjolnir --scope changed, then mjolnir explain ${rule.id} if the finding still appears.`,
+  );
+}
+
+function reviewSentence(text: string): string {
+  return text.trim().replace(/[.。]+$/u, "");
 }
 
 /**
