@@ -108,7 +108,7 @@ export async function runExecReportCommand(
 
     const kpis = [
       {
-        label: "Trust Score",
+        label: "Worthiness Score",
         value: result.score !== null ? `${result.score}/100` : "N/A",
         delta:
           result.score !== null && result.score >= 80
