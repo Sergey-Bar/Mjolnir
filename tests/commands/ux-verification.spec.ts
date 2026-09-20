@@ -198,7 +198,16 @@ describe("QUARANTINE (TL-3)", () => {
         status: "proposed" as const,
         reason: "",
       },
-      { id: "Q-002", ruleId: "QA-TEST-001", file: "a.ts", line: 1, message: "msg", attempts: 3, status: "accepted" as const, reason: "" },
+      {
+        id: "Q-002",
+        ruleId: "QA-TEST-001",
+        file: "a.ts",
+        line: 1,
+        message: "msg",
+        attempts: 3,
+        status: "accepted" as const,
+        reason: "",
+      },
     ];
     const pending = filterByStatus(proposals, "proposed");
     expect(pending).toBeDefined();
@@ -291,7 +300,7 @@ describe("REPORT PLAYWRIGHT (SDET-2)", () => {
       findings: [
         {
           ruleId: "QA-TEST-001",
-      category: "QA-TEST" as const,
+          category: "QA-TEST" as const,
           severity: "error",
           confidence: "high",
           findingType: "deterministic-defect",
