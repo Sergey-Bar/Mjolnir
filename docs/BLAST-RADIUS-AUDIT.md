@@ -7,16 +7,16 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 277 files, 53682 LOC
+## Inventory: 288 files, 55491 LOC
 
 | Area             | Files | LOC   |
 | ---------------- | ----- | ----- |
 | src/rules        | 87    | 11695 |
-| src/commands     | 31    | 9489  |
+| src/commands     | 42    | 11250 |
 | src/engine       | 36    | 8623  |
 | src/reporter     | 15    | 3168  |
 | src/forensics    | 17    | 3063  |
-| src/(root)       | 6     | 2709  |
+| src/(root)       | 6     | 2757  |
 | src/adapters     | 11    | 1677  |
 | src/discovery    | 10    | 1643  |
 | src/integrations | 11    | 1539  |
@@ -42,29 +42,29 @@ codes) must match this document exactly.
 
 | Module                              | Importers |
 | ----------------------------------- | --------- |
-| src/types                           | 122       |
+| src/types                           | 126       |
 | src/rules/rule                      | 81        |
 | src/rules/shared/positions          | 62        |
-| src/reporter/ui                     | 19        |
+| src/reporter/ui                     | 26        |
+| src/cli-io                          | 19        |
 | src/forensics/types                 | 19        |
+| src/exit-codes                      | 15        |
 | src/engine/adapter                  | 14        |
 | src/rules/index                     | 12        |
+| src/engine/scan-pipeline            | 11        |
 | src/engine/ts-ast                   | 10        |
 | src/rules/measured-fp.generated     | 10        |
 | src/discovery/ignores               | 9         |
 | src/discovery/azure-pipeline-parser | 8         |
 | src/engine/code-text                | 8         |
-| src/cli-io                          | 8         |
-| src/reporter/theme                  | 8         |
-| src/forensics/evidence-hygiene      | 8         |
 
 ## External dependency allowlist (containment)
 
 | Dependency         | Files importing it |
 | ------------------ | ------------------ |
-| node:fs            | 56                 |
-| node:path          | 53                 |
-| node:crypto        | 13                 |
+| node:fs            | 67                 |
+| node:path          | 60                 |
+| node:crypto        | 14                 |
 | ts-morph           | 7                  |
 | node:child_process | 5                  |
 | node:url           | 4                  |
