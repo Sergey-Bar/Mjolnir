@@ -110,7 +110,7 @@
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.50.0",
     "@types/node": "^26.4.0",
-    "@vitest/coverage-istanbul": "^4.1.11",
+    "@vitest/coverage-istanbul": "^5.0.1",
     "axe-core": "^4.13.0",
     "eslint": "^10.9.1",
     "eslint-plugin-regexp": "^3.3.0",
@@ -125,7 +125,7 @@
     "tsx": "^4.16.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.68.0",
-    "vitest": "^4.1.11"
+    "vitest": "^5.0.1"
   },
   "lint-staged": {
     "*.{ts,js,mjs}": [
@@ -137,6 +137,6 @@
     ]
   },
   "allowScripts": {
-    "@vitest/coverage-istanbul@4.1.11": true
+    "@vitest/coverage-istanbul@5.0.1": true
   }
 }
