@@ -442,6 +442,7 @@ const SUBCOMMANDS: ReadonlySet<string> = new Set([
   "doctor:playwright",
   "mcp",
   "business-case",
+  "release-report",
 ]);
 
 // Handler imports — the bulk of verb implementations live in cli-handlers.ts
@@ -502,6 +503,7 @@ import { runInstallCommand } from "./commands/install-agents.js";
 import { runTrustReportCommand } from "./commands/trust-report.js";
 import { runReleaseTrustCommand } from "./commands/release-trust.js";
 import { runBusinessCaseCommand } from "./commands/business-case.js";
+import { runReleaseReportCommand } from "./commands/release-report.js";
 
 export {
   runDoctorCommand,
@@ -512,6 +514,7 @@ export {
   runTrustReportCommand,
   runReleaseTrustCommand,
   runBusinessCaseCommand,
+  runReleaseReportCommand,
 };
 
 export function printUsage(print: (s: string) => void): void {
@@ -556,6 +559,7 @@ export async function main(
     debt: (a, o) => runDebtCommand(a, o),
     impact: (a, o) => runImpactCommand(a, o),
     "business-case": (a, o) => runBusinessCaseCommand(a, o),
+    "release-report": (a, o) => runReleaseReportCommand(a, o),
     baseline: (a, o) => runBaselineCommand(a, o),
     diff: (a, o) => runDiffCommand(a, o),
     verify: (a, o) => runVerifyCommand(a, o),
@@ -608,6 +612,7 @@ export async function main(
   // argv[0] === "install"
   // argv[0] === "mcp"
   // argv[0] === "business-case"
+  // argv[0] === "release-report"
   // argv[0] === "help"
   const verb = argv[0] ?? "";
   const handler = Object.hasOwn(VERBS, verb) ? VERBS[verb] : undefined;

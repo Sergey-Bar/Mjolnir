@@ -8,14 +8,48 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 10
+    target-branch: "main"
+    labels:
+      - "dependencies"
+      - "automated"
+    assignees: []
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
     groups:
+      production-dependencies-minor-patch:
+        dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
       dev-dependencies-minor-patch:
         dependency-type: "development"
         update-types:
           - "minor"
           - "patch"
-    # Two upgrade gates, each verified against the ecosystem on 2026-09-01 —
-    # dependabot must not reopen these until the upstream blockers move.
+      types-and-linters-minor-patch:
+        patterns:
+          - "@types/*"
+          - "eslint*"
+          - "prettier*"
+          - "typescript-eslint*"
+        update-types:
+          - "minor"
+          - "patch"
+    allow:
+      - dependency-type: "development"
+        dependency-name: "@types/*"
+        update-type: "version-update:semver-major"
+      - dependency-type: "development"
+        dependency-name: "eslint*"
+        update-type: "version-update:semver-major"
+      - dependency-type: "development"
+        dependency-name: "prettier*"
+        update-type: "version-update:semver-major"
     ignore:
       # web-tree-sitter 0.25.6 -> 0.26.x: the 0.26 runtime cannot load the
       # tree-sitter-wasms grammar WASMs at all (Language.load() throws in
@@ -37,3 +71,27 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "06:30"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    labels:
+      - "github-actions"
+      - "automated"
+    assignees: []
+    commit-message:
+      prefix: "ci(deps)"
+      include: "scope"
+    groups:
+      actions-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      # Pin critical actions to a major line — test before allowing majors.
+      - dependency-name: "actions/checkout"
+        versions: [">=5"]
+      - dependency-name: "actions/setup-node"
+        versions: [">=4"]
+      - dependency-name: "actions/cache"
+        versions: [">=4"]

@@ -21,6 +21,18 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Added
+
+- **`mjolnir release-report`** — release readiness verdict command: scans hygiene, flaky tests, CI integrity, and tech debt; outputs GO / CONDITIONAL GO / NO-GO with `--since` date filtering (TL).
+- **`mjolnir business-case` extensions** — `--industry`, `--history`, `--projected`, `--strict` flags added; dynamic industry cost model (QM).
+- **npm plugin loader** — `loadNpmPlugins()` with schema validation, sandbox restrictions, tier clamping, and reserved-prefix protection (SDET).
+- **`mjolnir triage --interactive`** — terminal TUI for batch triage with arrow-key selection, category filter, evidence toggle, per-finding accept/defer/reject (Q-ENG).
+
+### Fixed
+
+- **`business-case` validation** — `--projected` and `--history` no longer reject the default case when flags are absent; only validates when explicitly provided.
+- **`business-case` cost display** — removed `toLocaleString()` comma formatting from cost/savings to match established output contract.
+
 ## [1.1.1] — 2026-09-16
 
 ### Fixed
