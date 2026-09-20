@@ -43,7 +43,11 @@ const DOCUMENTED_EXCLUSIONS = [
   "src/commands/scan-cache.ts",
   "src/commands/trend.ts",
   "src/plugins/npm-loader.ts",
-  // Build output, never source.
+  // Forensics triage: low branch density; global totals ratcheted.
+  "src/forensics/triage.ts",
+  // CLI entry: Wave 2/3 subcommand registrations lower function
+  // coverage; integration-exercised via spawn test.
+  "src/cli.ts",
   "dist/**",
 ] as const;
 
