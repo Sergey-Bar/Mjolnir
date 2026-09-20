@@ -192,8 +192,10 @@ still verifies and completes.
 
 **Automated publishing is live.** `mjolnir-qa` on npmjs.com, with
 `bin: { "mjolnir": ... }`, so the CLI command a user types is `mjolnir`.
-`latest` is **0.5.0**, published by CI on 2026-08-30 via OIDC trusted
-publishing with a SLSA provenance attestation (`npm audit signatures`).
+`latest` is **2.0.0** on npm, matching `package.json` and the public
+GitHub Release `v2.0.0`; verify with `npm view mjolnir-qa version`.
+Stable publishes use OIDC trusted publishing with a SLSA provenance
+attestation (`npm audit signatures`).
 
 - Version 0.4.0 was published **manually** (no `v0.4.0` git tag; npm
   records its `gitHead` as `7b7a61a`). It shipped a POSIX-broken bin —
@@ -207,6 +209,10 @@ publishing with a SLSA provenance attestation (`npm audit signatures`).
   `pack --json` output-shape change and stopped the publish exactly as
   designed — no Release ever advertised it. The tag stays (never
   rewrite tags); npm's next version is the first one after the repair.
+- Tag `v2.0.1` exists in the repository, but there is no matching npm
+  package or GitHub Release. Public docs and install examples must
+  continue to cite `2.0.0`/`@latest` until a later registry-published
+  version supersedes it; a tag alone is not an installable release.
 
 ### What was wrong before 0.5.0
 
