@@ -15,6 +15,7 @@ export default tseslint.config(
     // anti-patterns the rules detect).
     ignores: [
       "dist/",
+      "package/**",
       "coverage/",
       "tests/coverage/",
       "node_modules/",

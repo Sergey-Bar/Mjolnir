@@ -43,6 +43,17 @@ const ROOT = join(HERE, "..");
 const DEMO_REPO = join(ROOT, "examples", "demo-repo");
 const OUT_PATH = join(ROOT, "assets", "readme", "terminal-hero.svg");
 
+function withForcedColor<T>(render: () => T): T {
+  const previous = process.env["FORCE_COLOR"];
+  process.env["FORCE_COLOR"] = "1";
+  try {
+    return render();
+  } finally {
+    if (previous === undefined) delete process.env["FORCE_COLOR"];
+    else process.env["FORCE_COLOR"] = previous;
+  }
+}
+
 function renderSvg(lines: string[]): string {
   const longest = Math.max(...lines.map((l) => stripAnsi(l).length));
   const width = Math.ceil(PAD_X * 2 + longest * CHAR_W);
@@ -96,10 +107,11 @@ export async function buildHeroSvg(): Promise<string> {
     strict: true,
   });
 
-  // isTTY: true forces real ANSI color codes even though this script's
-  // own stdout is likely piped — the SVG needs colors regardless of
-  // whether THIS process's terminal happens to be interactive.
-  const rendered = renderTerminal(result, { isTTY: true, ascii: false });
+  // isTTY + FORCE_COLOR force real ANSI color codes even when this script
+  // runs under CI/NO_COLOR; the SVG is a visual asset, not terminal log.
+  const rendered = withForcedColor(() =>
+    renderTerminal(result, { isTTY: true, ascii: false }),
+  );
   const renderedLines = rendered.split("\n");
 
   // This asset answers ONE question for its README section: where the
