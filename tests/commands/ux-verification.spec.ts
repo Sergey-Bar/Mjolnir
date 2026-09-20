@@ -15,6 +15,7 @@ import {
   runQuarantineCommand,
   buildQuarantineProposals,
   filterByStatus,
+  type QuarantineProposal,
 } from "../../src/commands/quarantine.js";
 import { runCiAdapterCommand } from "../../src/commands/ci-adapter.js";
 import { runEnterpriseCommand } from "../../src/commands/enterprise.js";
@@ -167,6 +168,7 @@ describe("QUARANTINE (TL-3)", () => {
   it("buildQuarantineProposals assigns correct severity", () => {
     const mockFinding = {
       ruleId: "QA-TEST-001",
+      category: "QA-TEST",
       severity: "error",
       confidence: "high" as const,
       findingType: "deterministic-defect" as const,
@@ -177,23 +179,26 @@ describe("QUARANTINE (TL-3)", () => {
       message: "msg",
       why: "why",
       fix: "fix",
-    };
+    } as const;
     const proposals = buildQuarantineProposals([mockFinding]);
     expect(proposals).toHaveLength(1);
-    expect(proposals[0].id).toBe("Q-001");
-    expect(proposals[0].attempts).toBe(3);
-    expect(proposals[0].status).toBe("proposed");
+    expect(proposals[0]?.id).toBe("Q-001");
+    expect(proposals[0]?.attempts).toBe(3);
+    expect(proposals[0]?.status).toBe("proposed");
   });
   it("filterByStatus filters correctly", () => {
-    const proposals = [
+    const proposals: QuarantineProposal[] = [
       {
-        ...(buildQuarantineProposals([])[0] ?? {
-          id: "Q-001",
-          status: "proposed" as const,
-        }),
         id: "Q-001",
+        ruleId: "QA-TEST-001",
+        file: "a.ts",
+        line: 1,
+        message: "msg",
+        attempts: 3,
+        status: "proposed" as const,
+        reason: "",
       },
-      { id: "Q-002", status: "accepted" as const },
+      { id: "Q-002", ruleId: "QA-TEST-001", file: "a.ts", line: 1, message: "msg", attempts: 3, status: "accepted" as const, reason: "" },
     ];
     const pending = filterByStatus(proposals, "proposed");
     expect(pending).toBeDefined();
@@ -286,7 +291,7 @@ describe("REPORT PLAYWRIGHT (SDET-2)", () => {
       findings: [
         {
           ruleId: "QA-TEST-001",
-          category: "QA-TEST",
+      category: "QA-TEST" as const,
           severity: "error",
           confidence: "high",
           findingType: "deterministic-defect",
