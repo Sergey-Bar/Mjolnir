@@ -48,6 +48,17 @@ const OUT_PATH = join(ROOT, "assets", "readme", "demo.svg");
 const LINE_DELAY_S = 0.05;
 const HOLD_S = 8;
 
+function withForcedColor<T>(render: () => T): T {
+  const previous = process.env["FORCE_COLOR"];
+  process.env["FORCE_COLOR"] = "1";
+  try {
+    return render();
+  } finally {
+    if (previous === undefined) delete process.env["FORCE_COLOR"];
+    else process.env["FORCE_COLOR"] = previous;
+  }
+}
+
 /** Render terminal lines as an SVG with per-line reveal animation. */
 function renderSvg(lines: string[]): string {
   const longest = Math.max(...lines.map((l) => stripAnsi(l).length));
@@ -119,11 +130,13 @@ export async function buildDemoSvg(): Promise<string> {
     format: "terminal",
     strict: true,
   });
-  const rendered = renderTerminal(result, {
-    isTTY: true,
-    verbose: true,
-    ascii: false,
-  });
+  const rendered = withForcedColor(() =>
+    renderTerminal(result, {
+      isTTY: true,
+      verbose: true,
+      ascii: false,
+    }),
+  );
   const lines = [
     `${PROMPT}\x1b[1mnpx mjolnir-qa@latest --verbose\x1b[0m`,
     ...rendered.split("\n"),
