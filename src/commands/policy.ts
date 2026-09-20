@@ -97,9 +97,8 @@ export async function runPolicyCommand(
 
   if (subcommand === "validate") {
     const policyPath =
-      argv.find((a) => !a.startsWith("-")) ??
-      join(target, "mjolnir.policy.json") ??
-      ".";
+      argv.slice(1).find((a) => !a.startsWith("-")) ??
+      join(target, "mjolnir.policy.json");
     if (!existsSync(policyPath)) {
       io.err(`Policy file not found: ${policyPath}`);
       return EXIT_USAGE;
@@ -124,7 +123,7 @@ export async function runPolicyCommand(
   }
 
   if (subcommand === "check") {
-    const scanTarget = argv.find((a) => !a.startsWith("-")) ?? ".";
+    const scanTarget = argv.slice(1).find((a) => !a.startsWith("-")) ?? ".";
     const policyIdx = argv.indexOf("--policy");
     const policyPath =
       policyIdx !== -1
