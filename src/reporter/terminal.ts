@@ -142,6 +142,7 @@ export function renderTerminal(
   if (counts.total === 0 && result.score === 100) {
     appendForgedBlock(lines, p, ascii);
   }
+  appendNextActions(lines, display, result, ui);
   appendFooter(lines, result, ui);
   return lines.join("\n");
 }
@@ -320,6 +321,57 @@ function appendFixThisFirst(
     // filenames) — sanitize before raw interpolation outside the palette.
     const loc = `${sanitizeData(f.ruleId)} · ${sanitizeData(f.file)}:${f.line}`;
     lines.push(`  ${ui.p.bold(gainText)}  ${loc}${autofixTag}`);
+  }
+  lines.push("");
+}
+
+function appendNextActions(
+  lines: string[],
+  display: ScanResult,
+  fullResult: ScanResult,
+  ui: UiContext,
+): void {
+  const partial =
+    fullResult.partial ||
+    fullResult.analysisStatus.discovery === "partial" ||
+    fullResult.analysisStatus.rules === "partial";
+  const findings = display.findings;
+  if (findings.length === 0 && fullResult.score !== 100 && !partial) return;
+
+  lines.push(sectionHeader("NEXT ACTIONS", ui));
+  if (partial) {
+    pushWrapped(
+      lines,
+      ui.p,
+      "Partial scan: do not trust this as a release gate yet. Fix scan coverage or rerun with a larger budget before treating the result as clean.",
+      ui.width,
+    );
+  }
+
+  if (findings.length > 0) {
+    const first = findings[0];
+    if (first === undefined) return;
+    const loc = `${sanitizeData(first.file)}:${first.line}`;
+    lines.push(nextStep(`mjolnir explain ${sanitizeData(first.ruleId)}`, ui));
+    lines.push(nextStep(`mjolnir why ${loc}`, ui));
+    pushWrapped(
+      lines,
+      ui.p,
+      "Existing debt path: capture the current state once, then review only new or worse findings on future changes.",
+      ui.width,
+    );
+    lines.push(nextStep("mjolnir baseline", ui));
+    lines.push(nextStep("mjolnir diff", ui));
+  } else if (fullResult.score === 100) {
+    pushWrapped(
+      lines,
+      ui.p,
+      "Clean path: install the advisory PR workflow so new trust debt is caught before it reaches main.",
+      ui.width,
+    );
+    lines.push(nextStep("mjolnir ci install", ui));
+  } else if (partial) {
+    lines.push(nextStep("mjolnir --verbose", ui));
   }
   lines.push("");
 }
