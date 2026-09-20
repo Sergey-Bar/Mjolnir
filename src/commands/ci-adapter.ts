@@ -87,7 +87,10 @@ export async function runCiAdapterCommand(
   io: { out: Output; err: Output },
 ): Promise<number> {
   const adapter = argv[0] ?? "";
-  const target = argv.find((a) => !a.startsWith("-")) ?? ".";
+  const target =
+    (argv.length >= 2
+      ? argv.slice(1).find((a) => !a.startsWith("-"))
+      : undefined) ?? ".";
 
   if (!["github", "gitlab", "jenkins"].includes(adapter)) {
     io.err("Usage: mjolnir ci-adapter <github|gitlab|jenkins> [target]");

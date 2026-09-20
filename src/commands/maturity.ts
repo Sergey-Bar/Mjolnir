@@ -67,7 +67,7 @@ export function runMaturityCommand(
   io: { out: Output; err: Output },
 ): number {
   const subcommand = argv[0] ?? "assess";
-  const target = argv.find((a) => !a.startsWith("-")) ?? ".";
+  const target = argv.slice(1).find((a) => !a.startsWith("-")) ?? ".";
 
   if (subcommand === "levels") {
     io.out(sectionHeader("MATURITY LEVELS", ui));

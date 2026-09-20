@@ -74,7 +74,7 @@ export async function runTrendCommand(
   io: { out: Output; err: Output },
 ): Promise<number> {
   const subcommand = argv[0] ?? "show";
-  const target = argv.find((a) => !a.startsWith("-")) ?? ".";
+  const target = argv.slice(1).find((a) => !a.startsWith("-")) ?? ".";
 
   if (subcommand === "record") {
     if (!existsSync(target)) {

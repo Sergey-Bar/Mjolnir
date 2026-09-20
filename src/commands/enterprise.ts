@@ -27,7 +27,8 @@ export function runEnterpriseCommand(
   io: { out: Output; err: Output },
 ): number {
   const subcommand = argv[0] ?? "config";
-  const outputDir = argv.find((a) => !a.startsWith("-")) ?? "enterprise-output";
+  const outputDir =
+    argv.slice(1).find((a) => !a.startsWith("-")) ?? "enterprise-output";
 
   if (!existsSync(outputDir)) {
     mkdirSync(outputDir, { recursive: true });

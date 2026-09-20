@@ -77,7 +77,7 @@ export async function runPolicyCommand(
   io: { out: Output; err: Output },
 ): Promise<number> {
   const subcommand = argv[0] ?? "init";
-  const target = argv.find((a) => !a.startsWith("-")) ?? ".mjolnir";
+  const target = argv.slice(1).find((a) => !a.startsWith("-")) ?? ".mjolnir";
 
   if (subcommand === "init") {
     const policyPath = join(target, "mjolnir.policy.json");

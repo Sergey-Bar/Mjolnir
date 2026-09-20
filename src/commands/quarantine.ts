@@ -69,7 +69,7 @@ export async function runQuarantineCommand(
   io: { out: Output; err: Output },
 ): Promise<number> {
   const subcommand = argv[0] ?? "list";
-  const target = argv.find((a) => !a.startsWith("-")) ?? ".";
+  const target = argv.slice(1).find((a) => !a.startsWith("-")) ?? ".";
 
   if (subcommand === "list") {
     const findings = await runScan({
