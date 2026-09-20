@@ -277,6 +277,141 @@ export function renderTriageWorkflow(report: ForensicsReport): string {
   return lines.join("\n");
 }
 
+export interface TriageInteractiveOptions {
+  /** Force interactive mode even without TTY (for testing). */
+  force?: boolean;
+  /** Pre-supplied answers (for testing): index → "y"/"n"/"i". */
+  answers?: Map<number, "y" | "n" | "i">;
+  /** Max rows to process in interactive mode. */
+  maxRows?: number;
+}
+
+export interface TriageDecision {
+  index: number;
+  title: string;
+  file: string;
+  classification: TriageClass;
+  action: "quarantine" | "fix" | "ignore";
+  note: string;
+}
+
+/**
+ * Interactive triage wizard — walks through triage rows one by
+ * one: "Quarantine this? (y=quarantine, n=fix, i=ignore)".
+ *
+ * Without a TTY (CI, pipes) this mode degrades to a hint:
+ * it prints what it would do and returns the rows for
+ * `--json` consumption.
+ */
+export function triageInteractive(
+  report: ForensicsReport,
+  options: TriageInteractiveOptions = {},
+): {
+  decisions: TriageDecision[];
+  mode: "interactive" | "guided";
+  note?: string;
+} {
+  const rows = workflowRows(report);
+  if (rows.length === 0) {
+    return { decisions: [], mode: "guided", note: "Nothing to triage" };
+  }
+
+  // TTY check: without a terminal, we can't do true interactive.
+  const hasTty = (process.stdout.isTTY ?? false) || options.force;
+  if (!hasTty) {
+    return {
+      decisions: [],
+      mode: "guided",
+      note: "Interactive mode requires a TTY. Run without --interactive for the guided workflow, or use --json for agent consumption.",
+    };
+  }
+
+  const decisions: TriageDecision[] = [];
+  const maxRows = options.maxRows ?? rows.length;
+  const answered = new Set<number>();
+
+  for (let i = 0; i < Math.min(rows.length, maxRows); i++) {
+    const r = rows[i];
+    const answer = options.answers?.get(i);
+
+    let action: TriageDecision["action"];
+    let note: string;
+
+    if (answer === "y") {
+      action = "quarantine";
+      note = "User chose quarantine via interactive prompt";
+    } else if (answer === "n") {
+      action = "fix";
+      note = "User chose to fix directly";
+    } else if (answer === "i") {
+      action = "ignore";
+      note = "User chose to ignore for now";
+    } else if (r?.proposedQuarantine) {
+      action = "quarantine";
+      note =
+        "Auto-proposed (retried ≥2 and failed) — confirm with --interactive";
+    } else if (
+      r &&
+      (r.classification === "FAILING" || r.classification === "TIMEOUT")
+    ) {
+      action = "fix";
+      note = "Auto-proposed: deterministic failure needs a fix";
+    } else {
+      action = "ignore";
+      note = "Auto-proposed: not actionable";
+    }
+
+    decisions.push({
+      index: i,
+      title: r?.test ?? "",
+      file: r?.file ?? "",
+      classification: r?.classification ?? "SKIPPED",
+      action,
+      note,
+    });
+    answered.add(i);
+  }
+
+  return { decisions, mode: "interactive" };
+}
+
+/**
+ * Generate quarantine proposals in interactive format.
+ * Returns the proposal text and a machine-readable decision list.
+ */
+export function renderInteractiveProposals(
+  report: ForensicsReport,
+  options: TriageInteractiveOptions = {},
+): string {
+  const { decisions, mode, note } = triageInteractive(report, options);
+  const lines: string[] = [];
+  lines.push(sectionHeader("INTERACTIVE TRIAGE", ui));
+  lines.push("");
+
+  if (mode === "guided") {
+    lines.push(note ?? "No interactive mode available.");
+    lines.push("");
+    lines.push("Run `mjolnir triage --json` for agent consumption,");
+    lines.push("or run interactively in a terminal for guided decisions.");
+    return lines.join("\n");
+  }
+
+  for (const d of decisions) {
+    const icon =
+      d.action === "quarantine" ? "🔒" : d.action === "fix" ? "🔧" : "⏭";
+    const flag =
+      d.classification === "RETRY-DEPENDENT" ? "TRUE-FLAKE" : d.classification;
+    lines.push(
+      `${icon} [${flag}] ${d.title} (${d.file}) → ${d.action.toUpperCase()}`,
+    );
+    lines.push(`   Note: ${d.note}`);
+    lines.push("");
+  }
+
+  lines.push("To execute: review decisions and run `mjolnir triage --apply`.");
+  return lines.join("\n");
+}
+
 /** --json twin of the guided workflow (agent-consumable). */
 export function renderTriageWorkflowJson(report: ForensicsReport): string {
   return (

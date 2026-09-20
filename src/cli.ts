@@ -427,6 +427,14 @@ const SUBCOMMANDS: ReadonlySet<string> = new Set([
   "debt",
   "impact",
   "baseline",
+  "report",
+  "policy",
+  "quarantine",
+  "analyze",
+  "ci-adapter",
+  "dashboard",
+  "enterprise",
+  "maturity",
   "diff",
   "pr-comment",
   "stats",
@@ -442,6 +450,7 @@ const SUBCOMMANDS: ReadonlySet<string> = new Set([
   "doctor:playwright",
   "mcp",
   "business-case",
+  "release-report",
 ]);
 
 // Handler imports — the bulk of verb implementations live in cli-handlers.ts
@@ -502,6 +511,17 @@ import { runInstallCommand } from "./commands/install-agents.js";
 import { runTrustReportCommand } from "./commands/trust-report.js";
 import { runReleaseTrustCommand } from "./commands/release-trust.js";
 import { runBusinessCaseCommand } from "./commands/business-case.js";
+import { runReleaseReportCommand } from "./commands/release-report.js";
+import { runReportPlaywrightCommand } from "./commands/report-playwright.js";
+import { runTrendCommand } from "./commands/trend.js";
+import { runExecReportCommand } from "./commands/exec-report.js";
+import { runPolicyCommand } from "./commands/policy.js";
+import { runQuarantineCommand } from "./commands/quarantine.js";
+import { runAnalyzeCommand } from "./commands/analyze.js";
+import { runCiAdapterCommand } from "./commands/ci-adapter.js";
+import { runDashboardCommand } from "./commands/dashboard.js";
+import { runEnterpriseCommand } from "./commands/enterprise.js";
+import { runMaturityCommand } from "./commands/maturity.js";
 
 export {
   runDoctorCommand,
@@ -512,6 +532,17 @@ export {
   runTrustReportCommand,
   runReleaseTrustCommand,
   runBusinessCaseCommand,
+  runReleaseReportCommand,
+  runReportPlaywrightCommand,
+  runTrendCommand,
+  runExecReportCommand,
+  runPolicyCommand,
+  runQuarantineCommand,
+  runAnalyzeCommand,
+  runCiAdapterCommand,
+  runDashboardCommand,
+  runEnterpriseCommand,
+  runMaturityCommand,
 };
 
 export function printUsage(print: (s: string) => void): void {
@@ -556,6 +587,17 @@ export async function main(
     debt: (a, o) => runDebtCommand(a, o),
     impact: (a, o) => runImpactCommand(a, o),
     "business-case": (a, o) => runBusinessCaseCommand(a, o),
+    "release-report": (a, o) => runReleaseReportCommand(a, o),
+    report: (a, o) => runReportPlaywrightCommand(a, o),
+    trend: (a, o) => runTrendCommand(a, o),
+    "exec-report": (a, o) => runExecReportCommand(a, o),
+    policy: (a, o) => runPolicyCommand(a, o),
+    quarantine: (a, o) => runQuarantineCommand(a, o),
+    analyze: (a, o) => runAnalyzeCommand(a, o),
+    "ci-adapter": (a, o) => runCiAdapterCommand(a, o),
+    dashboard: (a, o) => runDashboardCommand(a, o),
+    enterprise: (a, o) => runEnterpriseCommand(a, o),
+    maturity: (a, o) => runMaturityCommand(a, o),
     baseline: (a, o) => runBaselineCommand(a, o),
     diff: (a, o) => runDiffCommand(a, o),
     verify: (a, o) => runVerifyCommand(a, o),
@@ -608,6 +650,17 @@ export async function main(
   // argv[0] === "install"
   // argv[0] === "mcp"
   // argv[0] === "business-case"
+  // argv[0] === "release-report"
+  // argv[0] === "report"
+  // argv[0] === "trend"
+  // argv[0] === "exec-report"
+  // argv[0] === "policy"
+  // argv[0] === "quarantine"
+  // argv[0] === "analyze"
+  // argv[0] === "ci-adapter"
+  // argv[0] === "dashboard"
+  // argv[0] === "enterprise"
+  // argv[0] === "maturity"
   // argv[0] === "help"
   const verb = argv[0] ?? "";
   const handler = Object.hasOwn(VERBS, verb) ? VERBS[verb] : undefined;

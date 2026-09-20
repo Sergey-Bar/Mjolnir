@@ -68,6 +68,19 @@ describe("`triage` on a nonexistent target directory", () => {
     ).toBe(2);
   });
 
+  it("--interactive renders interactive proposals and exits clean", () => {
+    const out: string[] = [];
+    const code = runTriageCommand(
+      ["./nonexistent-test-results", "--interactive"],
+      {
+        out: (...a) => out.push(a.map(String).join(" ")),
+        err: () => {},
+      },
+    );
+    expect(code).toBe(0);
+    expect(out.join("\n")).toContain("INTERACTIVE TRIAGE");
+  });
+
   it("--no-md skips the write entirely and reaches the graceful exit-2 path", () => {
     const code = runTriageCommand(["./nonexistent-test-results", "--no-md"]);
     expect(

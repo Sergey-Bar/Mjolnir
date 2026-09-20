@@ -37,6 +37,7 @@ import {
   renderTriageMd,
   renderTriageWorkflow,
   renderTriageWorkflowJson,
+  renderInteractiveProposals,
 } from "./forensics/triage.js";
 import {
   parseStrykerJson,
@@ -284,16 +285,21 @@ export function runTriageCommand(
   const targetArg = argv.find((a) => !a.startsWith("-"));
   if (!targetArg) {
     io.err(
-      "Usage: mjolnir triage <test-results-dir-or-report-file> [--no-md] [--json] [--classic]",
+      "Usage: mjolnir triage <test-results-dir-or-report-file> [--no-md] [--json] [--classic] [--interactive]",
     );
     return EXIT_USAGE;
   }
   const jsonMode = argv.includes("--json");
   const classic = argv.includes("--classic");
+  const interactive = argv.includes("--interactive");
   try {
     const { report } = runForensics(resolve(targetArg), {
       writeFlakyMd: false,
     });
+    if (interactive) {
+      io.out(renderInteractiveProposals(report));
+      return EXIT_CLEAN;
+    }
     if (jsonMode) {
       io.out(renderTriageWorkflowJson(report));
     } else if (classic) {

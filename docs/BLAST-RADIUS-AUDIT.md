@@ -7,24 +7,24 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 275 files, 52798 LOC
+## Inventory: 288 files, 55672 LOC
 
 | Area             | Files | LOC   |
 | ---------------- | ----- | ----- |
 | src/rules        | 87    | 11695 |
-| src/commands     | 30    | 9098  |
+| src/commands     | 42    | 11429 |
 | src/engine       | 36    | 8623  |
 | src/reporter     | 15    | 3168  |
-| src/forensics    | 17    | 2928  |
-| src/(root)       | 6     | 2698  |
+| src/forensics    | 17    | 3063  |
+| src/(root)       | 6     | 2757  |
 | src/adapters     | 11    | 1677  |
 | src/discovery    | 10    | 1643  |
 | src/integrations | 11    | 1539  |
 | src/gaps         | 2     | 1390  |
 | src/frameworks   | 4     | 1321  |
+| src/plugins      | 5     | 988   |
 | src/brand        | 3     | 807   |
 | src/mcp          | 3     | 777   |
-| src/plugins      | 4     | 639   |
 | src/release      | 5     | 638   |
 | src/bench        | 4     | 589   |
 | src/config       | 3     | 549   |
@@ -42,29 +42,29 @@ codes) must match this document exactly.
 
 | Module                              | Importers |
 | ----------------------------------- | --------- |
-| src/types                           | 120       |
-| src/rules/rule                      | 80        |
+| src/types                           | 126       |
+| src/rules/rule                      | 81        |
 | src/rules/shared/positions          | 62        |
+| src/reporter/ui                     | 26        |
+| src/cli-io                          | 19        |
 | src/forensics/types                 | 19        |
-| src/reporter/ui                     | 18        |
+| src/exit-codes                      | 15        |
 | src/engine/adapter                  | 14        |
 | src/rules/index                     | 12        |
+| src/engine/scan-pipeline            | 11        |
 | src/engine/ts-ast                   | 10        |
 | src/rules/measured-fp.generated     | 10        |
 | src/discovery/ignores               | 9         |
 | src/discovery/azure-pipeline-parser | 8         |
 | src/engine/code-text                | 8         |
-| src/reporter/theme                  | 8         |
-| src/forensics/evidence-hygiene      | 8         |
-| src/cli-io                          | 7         |
 
 ## External dependency allowlist (containment)
 
 | Dependency         | Files importing it |
 | ------------------ | ------------------ |
-| node:fs            | 54                 |
-| node:path          | 52                 |
-| node:crypto        | 13                 |
+| node:fs            | 67                 |
+| node:path          | 60                 |
+| node:crypto        | 14                 |
 | ts-morph           | 7                  |
 | node:child_process | 5                  |
 | node:url           | 4                  |
