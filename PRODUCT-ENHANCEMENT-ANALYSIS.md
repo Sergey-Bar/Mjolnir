@@ -607,3 +607,31 @@ _All 4 Wave 1 features implemented, TypeScript compiles cleanly, 9999/9999 tests
 ### Regenerated Artifacts
 
 - `docs/BLAST-RADIUS-AUDIT.md` — machine-verified surface manifest regenerated to reflect new file count (src/plugins added, src/brand updated)
+
+---
+
+## XI. WAVE 2+3 IMPLEMENTATION STATUS
+
+_All Wave 2 (6 features) and Wave 3 (6 features, 1 already done) implemented. TypeScript compiles cleanly. 10054/10054 tests passing._
+
+### Wave 2 — Strategic Moats
+
+| Persona     | Feature                                                                                     | Status     | File(s)                             |
+| ----------- | ------------------------------------------------------------------------------------------- | ---------- | ----------------------------------- |
+| **SDET**    | `mjolnir report playwright` — Playwright-compatible JSON report from scan results           | ✅ Shipped | `src/commands/report-playwright.ts` |
+| **SDET**    | Incremental cache infrastructure with content-addressed cache I/O at `.mjolnir/cache/`      | ✅ Shipped | `src/commands/scan-cache.ts`        |
+| **Manager** | `mjolnir trend` — Quality trend tracking with record/show/diff subcommands, JSONL storage   | ✅ Shipped | `src/commands/trend.ts`             |
+| **Manager** | `mjolnir exec-report` — Executive report with KPI grid, risk assessment, recommendations    | ✅ Shipped | `src/commands/exec-report.ts`       |
+| **TL**      | `mjolnir policy` — Policy-as-Code with init/validate/check, team templates, gate validation | ✅ Shipped | `src/commands/policy.ts`            |
+| **TL**      | `mjolnir quarantine` — Quarantine workflow with list/review/stats, deterministic proposals  | ✅ Shipped | `src/commands/quarantine.ts`        |
+
+### Wave 3 — Market Dominance
+
+| Persona     | Feature                                                                                        | Status     | File(s)                      |
+| ----------- | ---------------------------------------------------------------------------------------------- | ---------- | ---------------------------- |
+| **SDET**    | `mjolnir analyze --cross-file` — Cross-file analysis (shared imports, duplicated code)         | ✅ Shipped | `src/commands/analyze.ts`    |
+| **SDET**    | `mjolnir ci-adapter` — CI config generation for GitHub Actions, GitLab CI, Jenkins             | ✅ Shipped | `src/commands/ci-adapter.ts` |
+| **TL**      | `mjolnir dashboard` — HTML team quality dashboard with KPI grid, severity-coded findings       | ✅ Shipped | `src/commands/dashboard.ts`  |
+| **Manager** | `mjolnir enterprise` — Deployment config, SSO guide, compliance templates (SOC2/HIPAA/PCI-DSS) | ✅ Shipped | `src/commands/enterprise.ts` |
+| **Manager** | `mjolnir maturity` — Quality maturity assessment across 4 dimensions                           | ✅ Shipped | `src/commands/maturity.ts`   |
+| **QA Eng**  | Interactive Triage Wizard (from Wave 1 plan) — already implemented                             | ✅ Shipped | `src/forensics/triage.ts`    |
