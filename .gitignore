@@ -41,10 +41,6 @@ examples/demo-repo/test-results/TRIAGE.md
 # Generated build/scan artifacts
 mjolnir-badge.json
 self-scan.json
-qa-check.yml
-.gitlab-ci.yml
-Jenkinsfile
-config/deployment-config.json
 # Soak drift evidence (tests/stress/soak.mjs, uploaded by stress.yml on failure)
 soak-drift/
 
