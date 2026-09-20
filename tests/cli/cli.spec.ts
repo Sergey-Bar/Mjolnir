@@ -106,9 +106,14 @@ describe("runCiInstall", () => {
     expect(code).toBe(0);
     expect(cap.text()).toContain("Created");
     expect(cap.text()).toContain("Action-based template");
+    expect(cap.text()).toContain("Gate: advisory (default)");
+    expect(cap.text()).toContain("Blocking setup is explicit");
     expect(
       readFileSync(join(dir, ".github", "workflows", "mjolnir.yml"), "utf8"),
     ).toContain("Sergey-Bar/Mjolnir@4a588bc62d517bc85fc44c0eae64c6587d3bf70b");
+    expect(
+      readFileSync(join(dir, ".github", "workflows", "mjolnir.yml"), "utf8"),
+    ).toContain("fail-on: none");
     expect(existsSync(join(dir, ".github", "workflows", "mjolnir.yml"))).toBe(
       true,
     );
@@ -119,18 +124,35 @@ describe("runCiInstall", () => {
     const cap = capture();
     expect(runCiInstall(["--no-action"], cap.io)).toBe(0);
     expect(cap.text()).toContain("Plain-npx template");
+    expect(cap.text()).toContain("Gate: advisory (default)");
     expect(
       readFileSync(join(dir, ".github", "workflows", "mjolnir.yml"), "utf8"),
     ).not.toContain("Sergey-Bar/Mjolnir@v1");
+    expect(
+      readFileSync(join(dir, ".github", "workflows", "mjolnir.yml"), "utf8"),
+    ).toContain("Gate (advisory)");
   });
 
   it("--no-action --gate error writes the enforcing npx template", () => {
     process.chdir(dir);
     const cap = capture();
     expect(runCiInstall(["--no-action", "--gate", "error"], cap.io)).toBe(0);
+    expect(cap.text()).toContain("Gate: error");
+    expect(cap.text()).toContain("blocking mode");
     expect(
       readFileSync(join(dir, ".github", "workflows", "mjolnir.yml"), "utf8"),
     ).toContain("Gate (error)");
+  });
+
+  it("--gate warning reports the explicit blocking mode", () => {
+    process.chdir(dir);
+    const cap = capture();
+    expect(runCiInstall(["--gate", "warning"], cap.io)).toBe(0);
+    expect(cap.text()).toContain("Gate: warning");
+    expect(cap.text()).toContain("fails on warning and error findings");
+    expect(
+      readFileSync(join(dir, ".github", "workflows", "mjolnir.yml"), "utf8"),
+    ).toContain("fail-on: warning");
   });
 
   it("reports update on second run", () => {

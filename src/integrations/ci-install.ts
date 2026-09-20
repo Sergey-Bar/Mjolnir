@@ -1,8 +1,8 @@
 /**
  * CI integration (Sprint-Plan W7): generates .github/workflows/mjolnir.yml
  * from internal templates ONLY — no user-input interpolation (R3 supply-chain).
- * Default gate: error (block releases on error-severity findings
- * — enforced by the caller; this function requires gate explicitly).
+ * Default gate: advisory (report findings, never block). Blocking setup is
+ * explicit via `--gate error` or `--gate warning`.
  *
  * Bug-audit hardening (H2): the previous template shipped the same
  * `github.rest.checks` no-op this repo's own audit removed from mjolnir.yml,
@@ -377,7 +377,7 @@ function summarizeContentDiff(existing: string, incoming: string): string[] {
 
 export function ciInstall(
   root: string,
-  gate: GateLevel,
+  gate: GateLevel = "advisory",
   options: { force?: boolean; action?: boolean } = {},
 ): CiInstallResult {
   const wfDir = join(root, ".github", "workflows");

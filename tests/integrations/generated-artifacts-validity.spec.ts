@@ -33,6 +33,18 @@ import type { ScanResult } from "../../src/types.js";
 describe("`ci install` output is valid, parseable YAML", () => {
   const gates: GateLevel[] = ["advisory", "error", "warning"];
 
+  it("omitting the gate generates the advisory workflow", () => {
+    const dir = mkdtempSync(join(tmpdir(), "mjolnir-ci-default-"));
+    try {
+      const { written } = ciInstall(dir);
+      const text = readFileSync(written, "utf8");
+      expect(text).toContain("fail-on: none");
+      expect(text).toContain("Gate (advisory)");
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   for (const gate of gates) {
     it(`gate="${gate}" produces a workflow that parses as YAML`, () => {
       const dir = mkdtempSync(join(tmpdir(), "mjolnir-ci-yaml-"));

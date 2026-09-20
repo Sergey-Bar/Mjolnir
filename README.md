@@ -194,25 +194,26 @@ npx mjolnir-qa@latest
 Three steps to trust your release pipeline:
 
 1. **Scan** — `npx mjolnir-qa@latest` — scans the current directory, prints the Trust Report, exits `1` if findings at the gate
-2. **Block in CI** — `npx mjolnir-qa@latest --scope changed` — scans only changed lines, blocks PRs with error findings
+2. **Adopt in CI** — `mjolnir ci install` — creates an advisory PR workflow first, so mature repos can baseline findings without surprise red builds
 3. **Fix and re-verify** — `mjolnir fix` applies safe auto-fixes, then re-scans to prove each one landed
 
-Add it to your pipeline so it gates releases on error findings:
+Add it to your pipeline in advisory mode first:
 
 ```bash
-npx mjolnir-qa@latest --scope changed --blocking error
+mjolnir ci install
 ```
 
-`mjolnir ci install` writes the GitHub Actions workflow with a blocking gate (error severity), pinned to this version:
+Promote to a blocking GitHub Actions workflow only when you are ready to
+enforce the gate. Blocking setup is explicit:
 
 ```bash
 mjolnir ci install --gate error
 ```
 
-Run advisory mode only when you want to preview findings without blocking:
+For any CI system, the equivalent blocking scan is:
 
 ```bash
-mjolnir ci install --gate advisory
+npx mjolnir-qa@latest --scope changed --blocking error
 ```
 
 | Command                             | What it does                                    |
@@ -220,6 +221,7 @@ mjolnir ci install --gate advisory
 | `mjolnir`                           | Trust Report: verdict, confidence, next action  |
 | `mjolnir --scope changed`           | Only what your branch introduced (CI form)      |
 | `mjolnir --blocking error`          | Exit 1 on error findings — gate releases        |
+| `mjolnir ci install`                | Write the advisory PR workflow (default)        |
 | `mjolnir ci install --gate error`   | Write the blocking PR workflow                  |
 | `mjolnir business-case`             | ROI estimate: projected savings per finding     |
 | `mjolnir explain QA-CI-001`         | What, why and fix, plus the measured FP rate    |
@@ -556,19 +558,22 @@ propagate, always-success steps, reports consumed but never generated, and
 gates skipped on the events that should block. Each finding names the job,
 the step and the line, and carries its own evidence level.
 
-Generate the PR workflow with a blocking gate (error severity) — this is the
-default for a reason: findings that survive your pipeline survive your release.
+Generate the PR workflow in advisory mode first. This is the default because
+mature repos usually need a baseline pass before a new quality gate starts
+blocking merges:
 
 ```bash
-mjolnir ci install --gate error
+mjolnir ci install
 ```
 
 The gate is pinned to this version — a new release must not change your gate
-semantics without a commit of yours. Switch to advisory only when you want
-to preview findings without blocking:
+semantics without a commit of yours. Promote to blocking only after you are
+ready to enforce findings:
 
 ```bash
-mjolnir ci install --gate advisory
+mjolnir ci install --gate error
+# or fail on warnings too:
+mjolnir ci install --gate warning
 ```
 
 In your existing workflow, pin the action and gate on error severity:

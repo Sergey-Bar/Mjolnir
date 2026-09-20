@@ -48,7 +48,8 @@ ref with `--base <ref>`.
 
 `ci install` writes an **advisory** workflow by default: it reports, it never
 blocks. That is the right starting point — a gate that fails on day one gets
-disabled on day two.
+disabled on day two. On mature repos, start advisory, baseline the existing
+findings, and promote to blocking only with an explicit gate.
 
 ```bash
 mjolnir ci install --gate advisory   # report only (default)

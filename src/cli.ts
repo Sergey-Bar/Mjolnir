@@ -364,7 +364,8 @@ export function runCiInstall(
     io.err("Unknown gate level. Use: advisory | error | warning");
     return EXIT_USAGE;
   }
-  const result = ciInstall(resolve("."), (gateArg as GateLevel) ?? "error", {
+  const gate = (gateArg as GateLevel | undefined) ?? "advisory";
+  const result = ciInstall(resolve("."), gate, {
     force,
     action: !noAction,
   });
@@ -380,14 +381,26 @@ export function runCiInstall(
   io.out(`${result.existed ? "Updated" : "Created"} ${result.written}`);
   io.out(
     noAction
-      ? "Plain-npx template (—no-action). Default mode: blocking — findings at the gate fail the job."
+      ? "Plain-npx template (--no-action)."
       : "Action-based template: uses Sergey-Bar/Mjolnir@4a588bc62d517bc85fc44c0eae64c6587d3bf70b0 (immutable pin).",
   );
-  io.out("Change with: mjolnir ci install --gate error|warning|advisory");
+  io.out(ciInstallGateMessage(gate));
+  io.out("Blocking setup is explicit: mjolnir ci install --gate error|warning");
+  io.out("Return to advisory with: mjolnir ci install --gate advisory");
   if (!noAction) {
     io.out("Prefer the plain-npx workflow? Re-run with --no-action.");
   }
   return EXIT_CLEAN;
+}
+
+function ciInstallGateMessage(gate: GateLevel): string {
+  if (gate === "advisory") {
+    return "Gate: advisory (default) — reports findings, never blocks.";
+  }
+  if (gate === "warning") {
+    return "Gate: warning — blocking mode; fails on warning and error findings.";
+  }
+  return "Gate: error — blocking mode; fails on error findings.";
 }
 
 /** Testable `suppressions` handler. */
