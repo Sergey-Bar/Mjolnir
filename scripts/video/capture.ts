@@ -71,6 +71,17 @@ const normalize = (line: string): string =>
     "· a few ms",
   );
 
+function withForcedColor<T>(capture: () => T): T {
+  const previous = process.env["FORCE_COLOR"];
+  process.env["FORCE_COLOR"] = "1";
+  try {
+    return capture();
+  } finally {
+    if (previous === undefined) delete process.env["FORCE_COLOR"];
+    else process.env["FORCE_COLOR"] = previous;
+  }
+}
+
 /**
  * A scan beat: the command line shown on screen and the output beneath it
  * are built from ONE set of flags, so they cannot disagree.
@@ -110,12 +121,14 @@ function renderScan(result: ScanResult, flags: ScanFlags): string[] {
   // capture does not depend on how the generator happened to be invoked;
   // shouldUseAscii() and shouldColorize() are both host/env-dependent and
   // have made committed assets drift before.
-  const rendered = renderTerminal(result, {
-    isTTY: true,
-    verbose: flags.verbose,
-    ascii: false,
-    width: PACING.reporterWidth,
-  });
+  const rendered = withForcedColor(() =>
+    renderTerminal(result, {
+      isTTY: true,
+      verbose: flags.verbose,
+      ascii: false,
+      width: PACING.reporterWidth,
+    }),
+  );
   // No prompt line here: `$ command` is chrome the renderer draws, not
   // something the CLI printed. Keeping it out means every line in a
   // committed script is real CLI output and nothing else.
@@ -142,7 +155,7 @@ function captureOut(
   const sink = (...parts: unknown[]): void => {
     lines.push(parts.map(String).join(" "));
   };
-  run({ out: sink, err: sink });
+  withForcedColor(() => run({ out: sink, err: sink }));
   return lines.flatMap((l) => l.split("\n")).map(normalize);
 }
 

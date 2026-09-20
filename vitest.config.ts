@@ -60,8 +60,10 @@ export default defineConfig({
         "dist/**",
       ],
       thresholds: {
-        // Ratchet: enforced floor, set just below current measured
-        // coverage so any regression trips CI. Raise as coverage climbs.
+        // Per-file floor: low enough for defensive/hostile-input modules
+        // with intentionally rare arms, high enough that no source file can
+        // hide as effectively untested. Global totals are ratcheted by
+        // scripts/check-coverage-ratchet.mjs after the coverage run.
         //
         // Re-baselined 2026-08-29 after the "Tempering Mjölnir" refactor
         // (Phase 1 code-text maskers, Phase 4 tier system, Phase 6 rule
@@ -98,8 +100,11 @@ export default defineConfig({
         // graph, trace forensics, MCP runtime-evidence tools, trust
         // artifact): CI measured 98.12 lines / 98.84 fns / 97.79 stmts
         // / 95.32 branches against a much larger src denominator.
-        // Floors sit ~0.1pt below the measured values per the standing
-        // convention; raise as coverage climbs.
+        //
+        // Re-baselined 2026-09-20: split the coverage contract in two.
+        // Vitest keeps this per-file minimum, while coverage:ratchet gates
+        // the measured global totals at 98.5 stmts / 96.0 branches /
+        // 99.3 funcs / 98.8 lines.
         lines: 80,
         functions: 80,
         branches: 50,
