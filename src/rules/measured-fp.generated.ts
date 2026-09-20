@@ -314,7 +314,7 @@ export const MEASURED_FP: Readonly<Record<string, MeasuredFp>> = {
   "QA-PW-125": {
     fpRate: 0,
     n: 10,
-    detectorRevision: 1,
+    detectorRevision: 2,
     ciLow: 0,
     ciHigh: 0.2775,
   },

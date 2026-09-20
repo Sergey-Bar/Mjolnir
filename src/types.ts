@@ -141,7 +141,8 @@ export interface RuntimeCorroboration {
     | "junit-xml"
     | "jest-json"
     | "vitest-json"
-    | "playwright-trace";
+    | "playwright-trace"
+    | "har";
   /** Number of tests executed in the finding's file (any level). */
   testsExecuted: number;
   /**
@@ -548,6 +549,13 @@ export interface ScanResult {
     findingIds: string[];
   }>;
   /**
+   * Aggregate forensic classifications from the discovered runtime
+   * report (plan §10.4, WAVE 5). Present only when a runtime report was
+   * ingested and produced ≥1 classified verdict — absent otherwise, so
+   * the machine contract's `forensicVerdicts` slot is never fabricated.
+   */
+  forensicVerdicts?: ForensicVerdictSummary;
+  /**
    * Dependency graph metadata (ECO-005). Present when a dependency
    * manifest (package.json, pyproject.toml, pom.xml) was found.
    * Additive within schemaVersion 1.
@@ -601,4 +609,20 @@ export interface TrustSummary {
   confidenceCeiling?: number;
   /** Which incompleteness factors applied (audit trail for the cap). */
   ceilingReasons: string[];
+}
+
+/**
+ * Aggregate forensic classifications from a runtime report (plan §10.4,
+ * WAVE 5). Present on a ScanResult when a runtime report was ingested
+ * and produced at least one classified verdict. `inconclusive` is a
+ * first-class outcome — the default when evidence is insufficient — and
+ * is also counted inside `byVerdict`.
+ */
+export interface ForensicVerdictSummary {
+  /** Total verdicts carrying a forensic classification. */
+  classifications: number;
+  /** Classification count per verdict label. */
+  byVerdict: Record<string, number>;
+  /** INCONCLUSIVE outcome count — a first-class result, not a failure. */
+  inconclusive: number;
 }

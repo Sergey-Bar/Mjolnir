@@ -81,7 +81,7 @@ Mjölnir đọc bộ test, các workflow CI và, nếu bạn có, báo cáo củ
 Một lần quét thật trên [`examples/demo-repo`](examples/demo-repo), một bộ test Playwright nhỏ có workflow CI. Đây là nơi điểm của nó bị trừ:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Bảng phân tích trừ điểm của Mjölnir: WORTHINESS 75/100 NEEDS WORK, điểm theo từng hạng mục, ô trừ điểm theo mức nghiêm trọng và danh sách FIX THIS FIRST" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="Bảng phân tích trừ điểm của Mjölnir: WORTHINESS 80/100 WORTHY, điểm theo từng hạng mục, ô trừ điểm theo mức nghiêm trọng và danh sách FIX THIS FIRST" width="520" />
 </p>
 
 <sub>Được tạo bởi `npm run docs:hero` từ một lần quét thật và được khóa chống sai lệch trong CI. Báo cáo `--verbose` đầy đủ của cùng lần quét là [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
@@ -312,8 +312,8 @@ e2e/login.spec.ts
   role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 
 e2e/checkout.spec.ts
-  [█████████████████░░░]  86 / 100
-  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
+  [██████████████████░░]  88 / 100
+  role/text: 4 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 ```
 
 Điều này đo **độ bền, không phải độ đúng**. `.btn.btn-primary > div:nth-child(2)` qua hôm nay và sẽ tiếp tục qua cho đến khi ai đó động vào markup. Điểm thấp không bao giờ khẳng định test bị hỏng, chỉ nói rằng nó phụ thuộc vào markup mà không ai hứa giữ nguyên.

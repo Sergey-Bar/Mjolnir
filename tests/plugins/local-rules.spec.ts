@@ -89,6 +89,36 @@ describe("loadLocalRules — the folder contract (zero network)", () => {
     expect(findings[0]?.line).toBe(2);
   });
 
+  it("bounds matches across patterns without returning a truncated clean result", async () => {
+    const dir = workspace();
+    writeRule(dir, "bounded.json", { ...VALID_RULE, patterns: ["a", "b"] });
+    const { rules, errors } = await loadLocalRules(dir, true);
+    expect(errors).toEqual([]);
+    const rule = rules[0];
+    if (!rule) throw new Error("expected bounded rule to load");
+    const text = "a".repeat(5_000) + "b".repeat(5_000);
+    expect(rule.run({ path: "bounded.spec.ts", text })).toHaveLength(10_000);
+    expect(() =>
+      rule.run({ path: "bounded.spec.ts", text: text + "b" }),
+    ).toThrow("External rule QA-ACME-001 exceeded its match limit");
+    expect(rule.run({ path: "bounded.spec.ts", text: "ab" })).toHaveLength(2);
+  });
+
+  it("advances past zero-width matches and retains their exact positions", async () => {
+    const dir = workspace();
+    writeRule(dir, "positions.json", { ...VALID_RULE, patterns: ["(?=a)|$"] });
+    const { rules, errors } = await loadLocalRules(dir, true);
+    expect(errors).toEqual([]);
+    const rule = rules[0];
+    if (!rule) throw new Error("expected position rule to load");
+    const findings = rule.run({ path: "positions.spec.ts", text: "a\nba" });
+    expect(findings.map(({ line, column }) => ({ line, column }))).toEqual([
+      { line: 1, column: 1 },
+      { line: 2, column: 2 },
+      { line: 2, column: 3 },
+    ]);
+  });
+
   it("a JS module exporting rules loads like an npm plugin", async () => {
     const dir = workspace();
     mkdirSync(join(dir, "mjolnir-rules"), { recursive: true });

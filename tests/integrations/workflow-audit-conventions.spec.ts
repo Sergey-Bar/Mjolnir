@@ -31,12 +31,23 @@ interface WorkflowStep {
   name?: string;
   run?: string;
   uses?: string;
+  shell?: string;
+  with?: Record<string, string>;
+  if?: string;
 }
 
 interface WorkflowJob {
   steps?: WorkflowStep[];
   uses?: string;
   "timeout-minutes"?: number | string;
+  defaults?: { run?: { shell?: string } };
+  strategy?: {
+    matrix: {
+      os: string[];
+      node: number[];
+      exclude?: { os: string; node: number }[];
+    };
+  };
 }
 
 interface Workflow {
@@ -86,6 +97,62 @@ describe("every GitHub workflow satisfies the repo's own audit conventions", () 
         "codeql.yml",
       ]),
     );
+  });
+
+  it("runs every cross-platform build command with Bash", () => {
+    const job = loadWorkflow("ci.yml").jobs?.["build-test"];
+    expect(job?.strategy?.matrix.os).toContain("windows-latest");
+    for (const step of job?.steps ?? []) {
+      if (step.run)
+        expect(step.shell ?? job?.defaults?.run?.shell).toBe("bash");
+    }
+  });
+
+  it("runs and uploads coverage only for the canonical Ubuntu/Node 22 entry", () => {
+    const job = loadWorkflow("ci.yml").jobs?.["build-test"];
+    const matrix = job?.strategy?.matrix;
+    expect(matrix).toBeDefined();
+    const coverage = job?.steps?.find((s) =>
+      s.name?.startsWith("Run coverage"),
+    );
+    expect(coverage?.if).toBe(
+      "matrix.os == 'ubuntu-latest' && matrix.node == 22",
+    );
+    const upload = job?.steps?.find((s) => s.with?.path === "coverage/");
+    const name = upload?.with?.name ?? "";
+    expect(name).not.toBe("");
+    expect(name).toBe("coverage-report-node-22");
+    expect(upload?.if).toBe(
+      "matrix.os == 'ubuntu-latest' && matrix.node == 22",
+    );
+    expect(
+      matrix?.exclude?.some(
+        (entry) => entry.os === "ubuntu-latest" && entry.node === 22,
+      ),
+    ).toBe(false);
+  });
+
+  it("deploys Pages when external source and asset inputs change", () => {
+    const on = loadWorkflow("pages.yml").on as { push: { paths: string[] } };
+    expect(on.push.paths).toEqual(
+      expect.arrayContaining(["site/**", "docs/**", "assets/**", "src/**"]),
+    );
+  });
+
+  it("documents the actual tested Node and OS combinations", () => {
+    const matrix =
+      loadWorkflow("ci.yml").jobs?.["build-test"]?.strategy?.matrix;
+    expect(matrix).toBeDefined();
+    const doc = readFileSync(join(ROOT, "docs/VERSIONING.md"), "utf8");
+    const rows = [...doc.matchAll(/^\| Node\.js (\d+)\.x\s*\|([^|]+)\|/gm)];
+    expect(rows.map((row) => Number(row[1]))).toEqual(matrix?.node);
+    for (const row of rows) {
+      const node = Number(row[1]);
+      const expected = matrix?.os.filter(
+        (os) => !matrix.exclude?.some((e) => e.os === os && e.node === node),
+      );
+      expect(row[2]?.split(",").map((os) => os.trim())).toEqual(expected);
+    }
   });
 
   for (const file of files) {

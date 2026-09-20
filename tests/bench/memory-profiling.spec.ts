@@ -1,10 +1,15 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   profileMemory,
   checkMemoryRegression,
 } from "../../src/bench/memory-profiling.js";
 
 describe("memory-profiling (ECO-010)", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
   describe("profileMemory", () => {
     it("returns a valid memory profile", async () => {
       const profile = await profileMemory(() => {
@@ -16,9 +21,17 @@ describe("memory-profiling (ECO-010)", () => {
     });
 
     it("handles async functions", async () => {
-      const profile = await profileMemory(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 10));
+      let complete!: () => void;
+      const work = new Promise<void>((resolve) => {
+        complete = resolve;
       });
+      const memoryUsage = vi.spyOn(process, "memoryUsage");
+      const pending = profileMemory(() => work);
+      await Promise.resolve();
+      expect(memoryUsage).toHaveBeenCalledTimes(1);
+      complete();
+      const profile = await pending;
+      expect(memoryUsage).toHaveBeenCalledTimes(2);
       expect(profile.peakRss).toBeGreaterThan(0);
     });
 
@@ -31,12 +44,40 @@ describe("memory-profiling (ECO-010)", () => {
     });
 
     it("captures peak memory via interval sampling", async () => {
-      const profile = await profileMemory(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 150));
-        const _arr = new Array(100_000).fill("y");
+      vi.useFakeTimers();
+      const before = {
+        rss: 100,
+        heapUsed: 50,
+        heapTotal: 80,
+        external: 10,
+        arrayBuffers: 5,
+      };
+      const sampled = { ...before, rss: 300, heapUsed: 150 };
+      const after = { ...before, rss: 200, heapUsed: 75 };
+      const memoryUsage = vi
+        .spyOn(process, "memoryUsage")
+        .mockReturnValueOnce(before)
+        .mockReturnValueOnce(sampled)
+        .mockReturnValue(after);
+      let complete!: () => void;
+      const work = new Promise<void>((resolve) => {
+        complete = resolve;
       });
-      expect(profile.peakRss).toBeGreaterThan(0);
-      expect(profile.heapUsed).toBeGreaterThan(0);
+      const pending = profileMemory(() => work);
+      expect(memoryUsage).toHaveBeenCalledTimes(1);
+      await vi.advanceTimersToNextTimerAsync();
+      expect(memoryUsage).toHaveBeenCalledTimes(2);
+      complete();
+      const profile = await pending;
+      expect(profile).toEqual({
+        peakRss: sampled.rss,
+        heapUsed: after.heapUsed,
+        heapTotal: after.heapTotal,
+        external: after.external,
+        arrayBuffers: after.arrayBuffers,
+      });
+      expect(memoryUsage).toHaveBeenCalledTimes(3);
+      expect(vi.getTimerCount()).toBe(0);
     });
   });
 

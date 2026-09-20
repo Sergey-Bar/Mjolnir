@@ -10,6 +10,11 @@ import {
 } from "../../src/commands/rules-catalog.js";
 import { RULES } from "../../src/rules/index.js";
 import { runRulesCommand } from "../../src/cli.js";
+import {
+  buildRuleHealth,
+  renderRuleHealth,
+  renderRuleStats,
+} from "../../src/commands/rule-health.js";
 
 describe("rules catalog", () => {
   it("covers every registered rule", () => {
@@ -111,6 +116,48 @@ describe("rules catalog", () => {
     const unescapedPipeCount = (line.match(/(?<!\\)\|/g) ?? []).length;
     expect(unescapedPipeCount).toBe(11);
   });
+
+  it.each([
+    ["stats", ["--stats"], () => renderRuleStats(buildRuleHealth())],
+    ["health", ["--health"], () => renderRuleHealth(buildRuleHealth())],
+    [
+      "limited health",
+      ["--health", "--limit=2"],
+      () => renderRuleHealth(buildRuleHealth(), 2),
+    ],
+  ] as const)(
+    "CLI renders %s from the shipped registry",
+    async (_name, args, render) => {
+      const output: string[] = [];
+      const errors: string[] = [];
+      expect(
+        await runRulesCommand([...args], {
+          out: (s) => output.push(String(s)),
+          err: (s) => errors.push(String(s)),
+        }),
+      ).toBe(0);
+      expect(output).toEqual([render()]);
+      expect(errors).toEqual([]);
+    },
+  );
+
+  it.each(["", "0", "-1", "1.5", "abc", "2x", "1e3", "9007199254740992"])(
+    "CLI rejects an invalid health limit %j without emitting a queue",
+    async (limit) => {
+      const output: string[] = [];
+      const errors: string[] = [];
+      expect(
+        await runRulesCommand(["--health", `--limit=${limit}`], {
+          out: (s) => output.push(String(s)),
+          err: (s) => errors.push(String(s)),
+        }),
+      ).toBe(10);
+      expect(output).toEqual([]);
+      expect(errors).toEqual([
+        "Usage: mjolnir rules --health [--limit=<positive-integer>]",
+      ]);
+    },
+  );
 
   it("CLI handler exits 0 and emits JSON by default", async () => {
     let out = "";

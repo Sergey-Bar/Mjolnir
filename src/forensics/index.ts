@@ -23,6 +23,7 @@ export { looksLikeJestJson, parseJestJson } from "./parse-jest-json.js";
 export { parseJunitXml } from "./parse-junit.js";
 export { parsePlaywrightJson } from "./parse-playwright-json.js";
 export { looksLikeVitestJson, parseVitestJson } from "./parse-vitest-json.js";
+export { looksLikeHarJson, parseHar, parseHarJson } from "./parse-har.js";
 export {
   validateForensicsSchema,
   isCompatibleForensicsSchema,
@@ -30,6 +31,7 @@ export {
 export type { SchemaValidationResult } from "./schema-validation.js";
 export type {
   ForensicsReport,
+  NetworkObservation,
   TestRecord,
   TestVerdict,
   Attempt,

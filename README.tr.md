@@ -81,7 +81,7 @@ Mjölnir test paketini, CI workflow'larını ve varsa gerçek bir çalıştırma
 CI workflow'u olan küçük bir Playwright paketi olan [`examples/demo-repo`](examples/demo-repo) üzerinde gerçek bir tarama. Puanlarının nereye gittiği burada:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Mjölnir'in kesinti dökümü: WORTHINESS 75/100 NEEDS WORK, kategoriye göre puan, önem derecesine göre kesinti kutusu ve bir FIX THIS FIRST listesi" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="Mjölnir'in kesinti dökümü: WORTHINESS 80/100 WORTHY, kategoriye göre puan, önem derecesine göre kesinti kutusu ve bir FIX THIS FIRST listesi" width="520" />
 </p>
 
 <sub>`npm run docs:hero` ile gerçek bir taramadan üretilir ve CI'da sapmaya karşı kilitlenir. Aynı taramanın tam `--verbose` raporu [`demo.svg`](assets/readme/demo.svg) dosyasıdır (`npm run docs:demo`).</sub>
@@ -312,8 +312,8 @@ e2e/login.spec.ts
   role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 
 e2e/checkout.spec.ts
-  [█████████████████░░░]  86 / 100
-  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
+  [██████████████████░░]  88 / 100
+  role/text: 4 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 ```
 
 Bu, **doğruluğu değil dayanıklılığı** ölçer. `.btn.btn-primary > div:nth-child(2)` bugün geçer ve biri işaretlemeye dokunana kadar geçmeye devam eder. Düşük bir puan asla testin bozuk olduğunu iddia etmez; yalnızca kimsenin korumayı vaat etmediği işaretlemeye bağlı olduğunu söyler.

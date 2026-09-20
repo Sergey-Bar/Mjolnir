@@ -109,7 +109,7 @@ describe("runtime-corroboration round 3", () => {
         verdict({
           file: "e2e/a.spec.ts",
           finalStatus: "timedOut",
-          line: 1,
+          line: 10,
         }),
       ],
       analysisComplete: true,
@@ -121,7 +121,7 @@ describe("runtime-corroboration round 3", () => {
     expect(f.trustLevel).toBe("L5");
   });
 
-  it("sort comparator equality arm: two tests declared on the SAME line", () => {
+  it("does not select an ambiguous test declaration", () => {
     const f = mk({ file: "e2e/a.spec.ts", line: 50 });
     const report = {
       forensicsSchemaVersion: 1,
@@ -141,10 +141,8 @@ describe("runtime-corroboration round 3", () => {
       incompleteReasons: [] as string[],
     };
     stampRuntimeCorroboration([f], report);
-    // Same declaration line → the sort's equal branch runs; the match
-    // resolves to one of the two tests (the last sorted ≤ line).
-    expect(f.runtimeCorroboration?.matchedTest).toBeDefined();
-    expect(f.trustLevel).toBe("L4");
+    expect(f.runtimeCorroboration?.matchedTest).toBeUndefined();
+    expect(f.trustLevel).toBe("L3");
   });
 
   it("deriveTrustLevel never hits the else-less chain for asserted types", () => {

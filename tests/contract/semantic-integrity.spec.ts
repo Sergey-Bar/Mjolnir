@@ -330,6 +330,19 @@ describe("§25.3 parity — machine contract agrees with the canonical result", 
     expect(contract.summary.findings).toBe(ANNOTATIONS_LIMIT + 5);
   });
 
+  it("preserves forensic summaries without inventing absent evidence", () => {
+    const forensicVerdicts = {
+      classifications: 2,
+      byVerdict: { flaky: 1, inconclusive: 1 },
+      inconclusive: 1,
+    };
+    const contract = buildMachineContract(scan([], { forensicVerdicts }));
+    expect(contract.forensicVerdicts).toEqual(forensicVerdicts);
+    expect(buildMachineContract(scan([]))).not.toHaveProperty(
+      "forensicVerdicts",
+    );
+  });
+
   it("completeness mirrors analysisStatus — no parallel truth", () => {
     const result = scan([], {
       partial: true,

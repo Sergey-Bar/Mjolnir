@@ -29,6 +29,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { main, runScan } from "../../src/cli.js";
+import { typescriptAdapter } from "../../src/adapters/typescript.js";
 import {
   computeRulesDigest,
   createScanCache,
@@ -106,6 +107,49 @@ const baseArgs = {
 };
 
 describe("--cache scan equivalence (a cached scan equals a fresh one)", () => {
+  it.each(["crash", "rejected"])(
+    "does not cache per-file %s results",
+    async (failure) => {
+      const original = typescriptAdapter.runRules.bind(typescriptAdapter);
+      const runRules = vi
+        .spyOn(typescriptAdapter, "runRules")
+        .mockImplementation((rules, file, emit, onCrash, budget) => {
+          original.call(typescriptAdapter, rules, file, emit, onCrash, budget);
+          if (failure === "crash") {
+            onCrash?.("TEST-CRASH", new Error("simulated rule failure"));
+          } else {
+            emit(
+              {
+                file: file.path,
+                line: 0,
+                severity: "warning",
+                message: "invalid",
+              } as never,
+              "TEST-INVALID",
+              "QA-TEST",
+            );
+          }
+        });
+      try {
+        const first = await runScan({ ...baseArgs, cache: true });
+        const second = await runScan({ ...baseArgs, cache: true });
+        expect(first.analysisStatus.rulesCrashed).toBeGreaterThan(0);
+        expect(second.analysisStatus.rulesCrashed).toBe(
+          first.analysisStatus.rulesCrashed,
+        );
+        expect(second.partial).toBe(true);
+        expect(second.cache?.hits).toBe(0);
+        expect(second.findings).toEqual(first.findings);
+        runRules.mockRestore();
+        const recovered = await runScan({ ...baseArgs, cache: true });
+        const cached = await runScan({ ...baseArgs, cache: true });
+        expect(recovered.analysisStatus.rulesCrashed).toBe(0);
+        expect(cached.cache?.hits).toBeGreaterThan(0);
+      } finally {
+        runRules.mockRestore();
+      }
+    },
+  );
   it("two --cache runs produce identical findings, score, and counters", async () => {
     const fresh = await runScan({ ...baseArgs, cache: false });
     const warm = await runScan({ ...baseArgs, cache: true });

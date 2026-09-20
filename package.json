@@ -7,7 +7,8 @@
     "node": ">=22.18"
   },
   "bin": {
-    "mjolnir": "dist/cli.mjs"
+    "mjolnir": "dist/cli.mjs",
+    "mjolnir-qa": "dist/cli.mjs"
   },
   "workspaces": [
     "packages/*"
@@ -30,6 +31,8 @@
     "lint": "eslint . --max-warnings=0 && prettier --check .",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json && tsx scripts/typecheck-fixtures.ts",
+    "certify": "npm run lint && npm run typecheck && npm run test && npx vitest run tests/contract/",
+    "ci-local": "npm run certify && npm run brand:doctor && npm run brand:doctor:selftest && npm run brand:fonts:check",
     "golden:update": "tsx tests/golden/gen.ts",
     "detector-hashes:update": "tsx scripts/generate-detector-hashes.ts",
     "corpus:regression": "tsx tests/corpus/audit.ts",

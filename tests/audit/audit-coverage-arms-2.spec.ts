@@ -266,19 +266,16 @@ describe("tree-sitter parser-retry degradation arms (W3)", () => {
 });
 
 describe("runtime-corroboration guard arms (W8)", () => {
-  it("a single verdict declared after the finding's line still corroborates (single-test file is unambiguous)", () => {
+  it("a single verdict declared after the finding corroborates only its file", () => {
     const finding = mkFinding("tests/a.spec.ts", 5);
     const count = stampRuntimeCorroboration([finding], singleVerdictReport(40));
-    // Single-verdict file: the unambiguous case — file/test-level
-    // corroboration fires regardless of span ordering (W8 honest
-    // ceiling: never claim span containment it cannot know).
     expect(count).toBe(1);
-    expect(finding.runtimeCorroboration?.level).toBe("test");
-    expect(finding.runtimeCorroboration?.matchedTest).toBeDefined();
+    expect(finding.runtimeCorroboration?.level).toBe("file");
+    expect(finding.runtimeCorroboration?.matchedTest).toBeUndefined();
   });
 
-  it("a single verdict declared before the finding's line matches at test level", () => {
-    const finding = mkFinding("tests/a.spec.ts", 9);
+  it("a single verdict on the finding's declaration line matches at test level", () => {
+    const finding = mkFinding("tests/a.spec.ts", 1);
     const count = stampRuntimeCorroboration([finding], singleVerdictReport(1));
     expect(count).toBe(1);
     expect(finding.runtimeCorroboration?.level).toBe("test");

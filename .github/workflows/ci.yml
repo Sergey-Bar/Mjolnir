@@ -32,6 +32,9 @@ jobs:
           - os: macos-latest
             node: 24
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
     # Audit S-7: a hung npm ci or scan must not sit for the 6-hour default.
     timeout-minutes: 20
     # M3: per-job wall-clock minutes go into the job summary. Soft
@@ -88,7 +91,13 @@ jobs:
       # Inter from a third party at runtime, on the page whose whole
       # argument is that you should not trust what you have not verified.
       - run: npm run brand:fonts:check
-      - run: npm test
+      # The coverage run below executes the complete suite on Ubuntu/Node 22.
+      # Keep a plain full-suite run everywhere else so every supported OS and
+      # Node line remains covered without running the same suite twice in the
+      # coverage job.
+      - name: Run test suite (non-coverage matrix entries)
+        if: matrix.os != 'ubuntu-latest' || matrix.node != 22
+        run: npm test
       # Fixture integrity, non-TS tier (certification-audit Phase 2.4):
       # Python fixtures are real code the detectors consume as text —
       # a syntax error in one must not pass silently. Syntax-tier only
@@ -105,7 +114,7 @@ jobs:
           # later step (the ubuntu-only coverage run caught exactly that).
           PYTHONPYCACHEPREFIX: /tmp/mjolnir-pycache
         run: |
-          if find tests/fixtures tests/corpus/positive-fixtures -name "*.py" | grep -q .; then
+          if [ -n "$(find tests/fixtures tests/corpus/positive-fixtures -name "*.py" -print -quit)" ]; then
             python3 -m compileall -q tests/fixtures tests/corpus/positive-fixtures
           else
             echo "no Python fixtures present — nothing to compile"
@@ -128,10 +137,19 @@ jobs:
         env:
           AUDIT_FIRST_OUTCOME: ${{ steps.audit.outcome }}
         run: |
-          if npm audit --audit-level=moderate; then
+          set +e
+          npm audit --audit-level=moderate 2>&1 | tee npm-audit-retry.log
+          audit_status=${PIPESTATUS[0]}
+          set -e
+          if [ "$audit_status" -eq 0 ]; then
             echo "npm audit: first attempt failed, retry passed (registry flake?)" >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "npm audit: first attempt AND retry failed" >> "$GITHUB_STEP_SUMMARY"
+            if grep -Eiq '503 Service Unavailable|currently performing maintenance|audit endpoint returned an error|EAI_AGAIN|ETIMEDOUT|ECONNRESET|ENOTFOUND|fetch failed' npm-audit-retry.log; then
+              echo "::warning::npm audit unavailable after retry; treating registry outage as infrastructure noise, not a vulnerability gate failure"
+              echo "npm audit: retry failed because the npm audit service was unavailable" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            echo "npm audit: first attempt AND retry failed with an actionable audit result" >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
       - name: Record audit result in job summary
@@ -140,11 +158,13 @@ jobs:
           echo "npm audit: first attempt ok" >> "$GITHUB_STEP_SUMMARY"
       # Bug-audit G6: headroom must be measurable — the four percentages
       # go into the job summary (and coverage/ is uploaded below) so the
-      # ratchet floors can be re-raised against measured numbers. Runs
-      # vitest with --coverage directly so the coverage run is visible
-      # as such (QA-CI-005 verifies this pairing on every self-scan).
-      - name: Run coverage (ubuntu only)
-        if: matrix.os == 'ubuntu-latest'
+      # ratchet floors can be re-raised against measured numbers. Coverage
+      # is the full test run for the canonical Ubuntu/Node 22 entry; keeping
+      # it to one matrix entry avoids duplicate instrumented suites while
+      # retaining plain full-suite compatibility runs on every OS/Node line.
+      # QA-CI-005 verifies this producer/upload pairing on every self-scan.
+      - name: Run coverage (canonical Ubuntu/Node 22 entry)
+        if: matrix.os == 'ubuntu-latest' && matrix.node == 22
         # --no-file-parallelism: single-worker coverage merge (the
         # cross-worker v8 merge under-attributes branches for files
         # loaded by several workers); generous timeouts because the
@@ -156,7 +176,7 @@ jobs:
           npx vitest run --coverage --no-file-parallelism
           --testTimeout=120000 --hookTimeout=120000
       - name: Report coverage floors in the job summary
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' && matrix.node == 22
         run: |
           node -e '
           const fs = require("fs");
@@ -167,14 +187,14 @@ jobs:
           console.log(line);
           '
       - name: Upload coverage report as a build artifact
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' && matrix.node == 22
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: coverage-report
+          name: coverage-report-node-22
           path: coverage/
           retention-days: 14
       - name: Upload coverage reports to Codecov
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' && matrix.node == 22
         uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac # v5.5.5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

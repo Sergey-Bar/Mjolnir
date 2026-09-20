@@ -23,22 +23,22 @@
 
     <text x="22" y="54.0" xml:space="preserve"><tspan fill="#8B939D">$</tspan><tspan fill="#ABB6C6"> </tspan><tspan fill="#EAEEF5">npx mjolnir-qa@latest</tspan></text>
 
-    <text x="22" y="92.0" xml:space="preserve"><tspan fill="#ABB6C6">  </tspan><tspan fill="rgb(234,238,245)">WORTHINESS</tspan><tspan fill="#ABB6C6"> </tspan><tspan fill="rgb(234,238,245)"> 75</tspan><tspan fill="rgb(139,147,157)">/100</tspan><tspan fill="#ABB6C6">  </tspan><tspan fill="rgb(230,189,87)">NEEDS WORK</tspan></text>
-    <text x="22" y="111.0" xml:space="preserve"><tspan fill="#ABB6C6">  </tspan><tspan fill="rgb(230,189,87)">██████████████████████</tspan><tspan fill="rgb(230,189,87)">▓</tspan><tspan fill="#ABB6C6">░░░░░░░</tspan></text>
-    <text x="22" y="130.0" xml:space="preserve"><tspan fill="#ABB6C6">  </tspan><tspan fill="rgb(139,147,157)">The hammer holds — but 19 findings weigh it down.</tspan></text>
-    <text x="22" y="149.0" xml:space="preserve"><tspan fill="#ABB6C6">  </tspan><tspan fill="rgb(139,147,157)">(40 raw pts / 7 test declarations — normalized)</tspan></text>
-    <text x="22" y="168.0" xml:space="preserve"><tspan fill="#ABB6C6">  </tspan><tspan fill="rgb(139,147,157)">(capped: deduction mass 40 pts — absolute ceiling 85)</tspan></text>
+    <text x="22" y="92.0" xml:space="preserve"><tspan fill="#ABB6C6">  </tspan><tspan fill="rgb(234,238,245)">WORTHINESS</tspan><tspan fill="#ABB6C6"> </tspan><tspan fill="rgb(234,238,245)"> 80</tspan><tspan fill="rgb(139,147,157)">/100</tspan><tspan fill="#ABB6C6">  </tspan><tspan fill="rgb(92,196,224)">WORTHY</tspan></text>
+    <text x="22" y="111.0" xml:space="preserve"><tspan fill="#ABB6C6">  </tspan><tspan fill="rgb(92,196,224)">███████████████████████</tspan><tspan fill="rgb(92,196,224)">▓</tspan><tspan fill="#ABB6C6">░░░░░░</tspan></text>
+    <text x="22" y="130.0" xml:space="preserve"><tspan fill="#ABB6C6">  </tspan><tspan fill="rgb(139,147,157)">Held in worthy hands — 18 findings remain.</tspan></text>
+    <text x="22" y="149.0" xml:space="preserve"><tspan fill="#ABB6C6">  </tspan><tspan fill="rgb(139,147,157)">(32 raw pts / 7 test declarations — normalized)</tspan></text>
+    <text x="22" y="168.0" xml:space="preserve"><tspan fill="#ABB6C6">  </tspan><tspan fill="rgb(139,147,157)">(capped: deduction mass 32 pts — absolute ceiling 95)</tspan></text>
 
     <text x="22" y="206.0" xml:space="preserve"><tspan fill="#ABB6C6">  </tspan><tspan fill="rgb(139,147,157)">DETECTED</tspan><tspan fill="#ABB6C6"> </tspan><tspan fill="rgb(55,171,189)">[playwright]</tspan></text>
 
     <text x="22" y="244.0" xml:space="preserve"><tspan fill="#ABB6C6">  </tspan><tspan fill="rgb(200,203,207)">▍ DIAGNOSTICS BY CATEGORY</tspan></text>
     <text x="22" y="263.0" xml:space="preserve"><tspan fill="#ABB6C6">  QA-CI    </tspan><tspan fill="rgb(230,189,87)">███████████</tspan><tspan fill="rgb(230,189,87)">▓</tspan><tspan fill="#ABB6C6">░░░░  76</tspan></text>
-    <text x="22" y="282.0" xml:space="preserve"><tspan fill="#ABB6C6">  QA-PW    </tspan><tspan fill="rgb(92,196,224)">█████████████</tspan><tspan fill="rgb(92,196,224)">▓</tspan><tspan fill="#ABB6C6">░░  87</tspan></text>
+    <text x="22" y="282.0" xml:space="preserve"><tspan fill="#ABB6C6">  QA-PW    </tspan><tspan fill="rgb(92,196,224)">██████████████</tspan><tspan fill="rgb(92,196,224)">▓</tspan><tspan fill="#ABB6C6">░  95</tspan></text>
     <text x="22" y="301.0" xml:space="preserve"><tspan fill="#ABB6C6">  QA-TEST  </tspan><tspan fill="rgb(92,196,224)">████████████████</tspan><tspan fill="#ABB6C6">  97</tspan></text>
 
     <text x="22" y="339.0" xml:space="preserve"><tspan fill="#ABB6C6">  </tspan><tspan fill="rgb(200,203,207)">▍ WHERE POINTS WERE LOST</tspan></text>
     <text x="22" y="358.0" xml:space="preserve"><tspan fill="#ABB6C6">  ╭─────────────────────────────────────────╮</tspan></text>
-    <text x="22" y="377.0" xml:space="preserve"><tspan fill="#ABB6C6">  │ 4 × error   − 32                        │</tspan></text>
+    <text x="22" y="377.0" xml:space="preserve"><tspan fill="#ABB6C6">  │ 3 × error   − 24                        │</tspan></text>
     <text x="22" y="396.0" xml:space="preserve"><tspan fill="#ABB6C6">  │ 3 × warning −  7</tspan><tspan fill="rgb(139,147,157)"> (evidence-discounted)</tspan><tspan fill="#ABB6C6">  │</tspan></text>
     <text x="22" y="415.0" xml:space="preserve"><tspan fill="#ABB6C6">  │ 12 × info    −  1</tspan><tspan fill="rgb(139,147,157)"> (evidence-discounted)</tspan><tspan fill="#ABB6C6"> │</tspan></text>
     <text x="22" y="434.0" xml:space="preserve"><tspan fill="#ABB6C6">  ╰─────────────────────────────────────────╯</tspan></text>

@@ -9,6 +9,7 @@
 
 import type {
   ForensicsReport,
+  NetworkObservation,
   RunStatus,
   TestRecord,
   TestVerdict,
@@ -26,6 +27,7 @@ export function analyze(
   source: ForensicsReport["source"],
 ): ForensicsReport {
   const verdicts: TestVerdict[] = [];
+  const networkObservations: NetworkObservation[] = [];
   let failed = 0;
   let skipped = 0;
   let retried = 0;
@@ -37,6 +39,21 @@ export function analyze(
     const last = attempts[attempts.length - 1];
     const finalStatus: RunStatus = last?.status ?? "skipped";
     const totalDurationMs = attempts.reduce((s, a) => s + a.durationMs, 0);
+    if (rec.evidenceKind === "network-observation") {
+      networkObservations.push({
+        file: rec.file,
+        title: rec.title,
+        outcome:
+          finalStatus === "passed"
+            ? "succeeded"
+            : finalStatus === "skipped"
+              ? "unknown"
+              : "failed",
+        durationMs: totalDurationMs,
+        ...(rec.errors !== undefined ? { errors: rec.errors } : {}),
+      });
+      continue;
+    }
     totalDuration += totalDurationMs;
 
     const everFailed = attempts.some(
@@ -93,9 +110,19 @@ export function analyze(
     flakyTests: flaky,
     totalDurationMs: totalDuration,
     verdicts,
-    analysisComplete: true,
+    ...(networkObservations.length > 0
+      ? {
+          totalNetworkObservations: networkObservations.length,
+          failedNetworkObservations: networkObservations.filter(
+            (observation) => observation.outcome === "failed",
+          ).length,
+          networkObservations,
+        }
+      : {}),
+    analysisComplete: records.length <= MAX_RECORDS,
     skippedReports: 0,
-    incompleteReasons: [],
+    incompleteReasons:
+      records.length > MAX_RECORDS ? ["record-count-limit"] : [],
   };
 }
 
@@ -120,6 +147,44 @@ function bar(ms: number, maxMs: number, width = 20): string {
   );
 }
 
+function renderNetworkObservations(report: ForensicsReport): string[] {
+  if (!report.networkObservations?.length) return [];
+  const failures = report.networkObservations.filter(
+    (observation) => observation.outcome === "failed",
+  );
+  return [
+    `${report.networkObservations.length} network observations · ${failures.length} network failures (not test outcomes)`,
+    ...failures
+      .slice(0, 25)
+      .map(
+        (observation) =>
+          `NETWORK FAILURE ${observation.title} · ${(observation.durationMs / 1000).toFixed(1)}s`,
+      ),
+    "",
+  ];
+}
+
+function partialAnalysisMessage(report: ForensicsReport): string {
+  const skippedReasons = report.incompleteReasons.filter(
+    (reason) => reason !== "record-count-limit",
+  );
+  const partialReasons = report.incompleteReasons
+    .filter((reason) => reason === "record-count-limit")
+    .map(() => "record count limit reached");
+  if (report.skippedReports > 0) {
+    const skippedReasonText =
+      skippedReasons.length > 0 ? ` (${skippedReasons.join(", ")})` : "";
+    const suffix =
+      partialReasons.length > 0 ? `; ${partialReasons.join(", ")}.` : ".";
+    return `Analysis is partial — ${report.skippedReports} report(s) skipped${skippedReasonText}${suffix}`;
+  }
+  const reasonText =
+    partialReasons.length > 0
+      ? partialReasons.join(", ")
+      : report.incompleteReasons.join(", ");
+  return `${reasonText}; analysis is partial.`;
+}
+
 export function renderLeaderboard(report: ForensicsReport): string {
   const lines: string[] = [];
   lines.push(sectionHeader("FLAKINESS LEADERBOARD", ui));
@@ -129,13 +194,18 @@ export function renderLeaderboard(report: ForensicsReport): string {
   );
   lines.push("");
 
+  lines.push(...renderNetworkObservations(report));
   const top = leaderboard(report);
   if (top.length === 0) {
-    lines.push("No failures or retries found — nothing suspicious this run.");
+    lines.push(
+      report.totalTests === 0 && (report.totalNetworkObservations ?? 0) > 0
+        ? "No test outcomes available from network observations."
+        : (report.totalNetworkObservations ?? 0) > 0
+          ? "No flaky or failing tests detected; network evidence is listed separately."
+          : "No failures or retries found — nothing suspicious this run.",
+    );
     if (!report.analysisComplete) {
-      lines.push(
-        `⚠ Analysis is partial — ${report.skippedReports} report(s) skipped (${report.incompleteReasons.join(", ")}).`,
-      );
+      lines.push(`⚠ ${partialAnalysisMessage(report)}`);
     }
     return lines.join("\n");
   }
@@ -152,9 +222,7 @@ export function renderLeaderboard(report: ForensicsReport): string {
   }
   if (!report.analysisComplete) {
     lines.push("");
-    lines.push(
-      `⚠ Analysis is partial — ${report.skippedReports} report(s) skipped (${report.incompleteReasons.join(", ")}).`,
-    );
+    lines.push(`⚠ ${partialAnalysisMessage(report)}`);
   }
   return lines.join("\n");
 }
@@ -176,14 +244,17 @@ export function renderFlakyMd(report: ForensicsReport): string {
   );
   lines.push("");
 
+  lines.push(...renderNetworkObservations(report));
   const top = leaderboard(report);
   if (top.length === 0) {
-    lines.push("_No flaky or failing tests detected in this run._");
+    lines.push(
+      report.totalTests === 0 && (report.totalNetworkObservations ?? 0) > 0
+        ? "_No test outcomes available from network observations._"
+        : "_No flaky or failing tests detected in this run._",
+    );
     if (!report.analysisComplete) {
       lines.push("");
-      lines.push(
-        `> ⚠ Analysis is partial — ${report.skippedReports} report(s) skipped (${report.incompleteReasons.join(", ")}).`,
-      );
+      lines.push(`> ⚠ ${partialAnalysisMessage(report)}`);
     }
     return lines.join("\n");
   }
@@ -199,9 +270,7 @@ export function renderFlakyMd(report: ForensicsReport): string {
   }
   if (!report.analysisComplete) {
     lines.push("");
-    lines.push(
-      `> ⚠ Analysis is partial — ${report.skippedReports} report(s) skipped (${report.incompleteReasons.join(", ")}).`,
-    );
+    lines.push(`> ⚠ ${partialAnalysisMessage(report)}`);
   }
   lines.push("");
   return lines.join("\n");

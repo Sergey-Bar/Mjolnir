@@ -81,7 +81,7 @@ Mjölnir читает набор тестов, CI-workflow и, если он е�
 Реальное сканирование [`examples/demo-repo`](examples/demo-repo), небольшого набора тестов Playwright с CI-workflow. Вот куда ушли его баллы:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Разбивка вычетов Mjölnir: WORTHINESS 75/100 NEEDS WORK, оценка по категориям, блок вычетов по серьёзности и список FIX THIS FIRST" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="Разбивка вычетов Mjölnir: WORTHINESS 80/100 WORTHY, оценка по категориям, блок вычетов по серьёзности и список FIX THIS FIRST" width="520" />
 </p>
 
 <sub>Сгенерировано командой `npm run docs:hero` из реального сканирования и защищено от расхождений в CI. Полный отчёт `--verbose` того же сканирования — [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
@@ -312,8 +312,8 @@ e2e/login.spec.ts
   role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 
 e2e/checkout.spec.ts
-  [█████████████████░░░]  86 / 100
-  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
+  [██████████████████░░]  88 / 100
+  role/text: 4 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 ```
 
 Это измеряет **устойчивость, а не корректность**. `.btn.btn-primary > div:nth-child(2)` проходит сегодня и будет проходить, пока кто-нибудь не тронет разметку. Низкая оценка никогда не утверждает, что тест сломан, — только что он зависит от разметки, сохранять которую никто не обещал.

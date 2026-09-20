@@ -81,7 +81,7 @@ Mjölnir קורא את חבילת הבדיקות, את ה-workflows של ה-CI, 
 סריקה אמיתית של [`examples/demo-repo`](examples/demo-repo), חבילת Playwright קטנה עם workflow של CI. לכאן הלכו הנקודות שלה:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="פירוט הניכויים של Mjölnir: WORTHINESS 75/100 NEEDS WORK, הציון לפי קטגוריה, תיבת הניכויים לפי חומרה ורשימת FIX THIS FIRST" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="פירוט הניכויים של Mjölnir: WORTHINESS 80/100 WORTHY, הציון לפי קטגוריה, תיבת הניכויים לפי חומרה ורשימת FIX THIS FIRST" width="520" />
 </p>
 
 <sub>נוצר על ידי `npm run docs:hero` מסריקה אמיתית ונעול מפני סטייה ב-CI. דוח ה-`--verbose` המלא של אותה סריקה הוא [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
@@ -312,8 +312,8 @@ e2e/login.spec.ts
   role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 
 e2e/checkout.spec.ts
-  [█████████████████░░░]  86 / 100
-  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
+  [██████████████████░░]  88 / 100
+  role/text: 4 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 ```
 
 זה מודד **עמידות, לא נכונות**. `.btn.btn-primary > div:nth-child(2)` עובר היום וימשיך לעבור עד שמישהו ייגע ב-markup. ציון נמוך אף פעם לא טוען שהבדיקה שבורה, רק שהיא תלויה ב-markup שאף אחד לא הבטיח לשמור.

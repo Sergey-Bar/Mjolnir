@@ -26,6 +26,9 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { runTriageCommand } from "../../src/cli.js";
+import { runForensicsCommand } from "../../src/cli-handlers.js";
+import { analyze, renderLeaderboard } from "../../src/forensics/analyze.js";
+import type { TestRecord } from "../../src/forensics/types.js";
 import { runForensics } from "../../src/forensics/run.js";
 import { parsePlaywrightJson } from "../../src/forensics/parse-playwright-json.js";
 
@@ -118,6 +121,114 @@ describe("corrupt single-file reports degrade honestly (M3)", () => {
 
     const code = runTriageCommand([corrupt]);
     expect(code).toBe(2);
+  });
+});
+
+describe("forensics completeness regressions", () => {
+  it.each([true, false])(
+    "single traces report FLAKY.md only when written (%s)",
+    (writeFlakyMd) => {
+      const path = join(dir, "single.trace");
+      writeFileSync(
+        path,
+        [
+          JSON.stringify({
+            type: "before",
+            callId: "c1",
+            apiName: "page.goto",
+          }),
+          JSON.stringify({
+            type: "after",
+            callId: "c1",
+            startTime: 1,
+            endTime: 2,
+          }),
+        ].join("\n"),
+      );
+      const result = runForensics(path, { writeFlakyMd });
+      expect(result.report.totalTests).toBe(1);
+      expect(result.output.includes("Full details in FLAKY.md")).toBe(
+        writeFlakyMd,
+      );
+      expect(existsSync(join(dir, "FLAKY.md"))).toBe(writeFlakyMd);
+      expect(result.flakyMdPath).toBe(
+        writeFlakyMd ? join(dir, "FLAKY.md") : undefined,
+      );
+    },
+  );
+
+  it("marks the analysis record cap partial without claiming skipped files", () => {
+    const record: TestRecord = {
+      file: "a.spec.ts",
+      title: "a",
+      attempts: [{ index: 1, status: "passed", durationMs: 0 }],
+    };
+    const report = analyze(
+      Array.from({ length: 100_001 }, () => record),
+      "playwright-json",
+    );
+    expect(report.totalTests).toBe(100_000);
+    expect(report.analysisComplete).toBe(false);
+    expect(report.skippedReports).toBe(0);
+    expect(report.incompleteReasons).toContain("record-count-limit");
+    const output = renderLeaderboard(report);
+    expect(output).toContain("record count limit reached; analysis is partial");
+    expect(output).not.toContain("0 report(s) skipped");
+    expect(analyze([record], "playwright-json").analysisComplete).toBe(true);
+  });
+
+  it.each([
+    ["report.json", "{broken"],
+    ["playwright-report.json", '{"suites":'],
+    ["jest-report.json", '{"testResults":'],
+    ["vitest-report.json", "{broken"],
+    ["custom.json", '{"suites": 5}'],
+    ["custom.json", '{"testResults": "broken"}'],
+  ])(
+    "marks malformed recognized %s partial alongside valid tests",
+    (name, text) => {
+      writeFileSync(join(dir, "valid.xml"), JUNIT);
+      writeFileSync(join(dir, name), text);
+      const { report } = runForensics(dir, { writeFlakyMd: false });
+      expect(report.totalTests).toBe(1);
+      expect(report.analysisComplete).toBe(false);
+      expect(report.skippedReports).toBe(1);
+      expect(report.incompleteReasons).toContain("parse-failure");
+      expect(
+        runForensicsCommand([dir, "--no-flaky-md"], {
+          out: () => {},
+          err: () => {},
+        }),
+      ).toBe(2);
+    },
+  );
+
+  it("preserves record and parse limits together through directory aggregation", () => {
+    const xml =
+      "<testsuite>" + '<testcase name="ok"/>'.repeat(20_000) + "</testsuite>";
+    for (let i = 0; i < 6; i++) writeFileSync(join(dir, `${i}.xml`), xml);
+    writeFileSync(join(dir, "report.json"), "{broken");
+    const { report } = runForensics(dir, { writeFlakyMd: false });
+    expect(report.totalTests).toBe(100_000);
+    expect(report.analysisComplete).toBe(false);
+    expect(report.skippedReports).toBe(1);
+    expect(report.incompleteReasons).toEqual(
+      expect.arrayContaining(["record-count-limit", "parse-failure"]),
+    );
+    const output = renderLeaderboard(report);
+    expect(output).toContain("1 report(s) skipped (parse-failure)");
+    expect(output).toContain("record count limit reached");
+    expect(output).not.toContain(
+      "1 report(s) skipped (record-count-limit, parse-failure)",
+    );
+  });
+
+  it("ignores ordinary JSON configuration alongside valid tests", () => {
+    writeFileSync(join(dir, "valid.xml"), JUNIT);
+    writeFileSync(join(dir, "package.json"), '{"name":"app"}');
+    const { report } = runForensics(dir, { writeFlakyMd: false });
+    expect(report.analysisComplete).toBe(true);
+    expect(report.skippedReports).toBe(0);
   });
 });
 

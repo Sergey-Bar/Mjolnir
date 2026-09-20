@@ -81,7 +81,7 @@ Mjölnir læser testsuiten, CI-workflowene og, hvis du har en, rapporten fra en 
 Et rigtigt scan af [`examples/demo-repo`](examples/demo-repo), en lille Playwright-suite med et CI-workflow. Her er, hvor dens point forsvandt hen:
 
 <p align="center">
-  <img src="assets/readme/terminal-hero.svg" alt="Mjölnirs opgørelse af fradrag: WORTHINESS 75/100 NEEDS WORK, scoren pr. kategori, fradragsboksen pr. alvorlighed og en FIX THIS FIRST-liste" width="520" />
+  <img src="assets/readme/terminal-hero.svg" alt="Mjölnirs opgørelse af fradrag: WORTHINESS 80/100 WORTHY, scoren pr. kategori, fradragsboksen pr. alvorlighed og en FIX THIS FIRST-liste" width="520" />
 </p>
 
 <sub>Genereret af `npm run docs:hero` ud fra et rigtigt scan og låst mod afvigelser i CI. Den fulde `--verbose`-rapport fra samme scan er [`demo.svg`](assets/readme/demo.svg) (`npm run docs:demo`).</sub>
@@ -312,8 +312,8 @@ e2e/login.spec.ts
   role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 
 e2e/checkout.spec.ts
-  [█████████████████░░░]  86 / 100
-  role/text: 3 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
+  [██████████████████░░]  88 / 100
+  role/text: 4 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
 ```
 
 Det måler **robusthed, ikke korrekthed**. `.btn.btn-primary > div:nth-child(2)` består i dag og bliver ved med at bestå, indtil nogen rører ved markuppen. En lav score påstår aldrig, at testen er i stykker, kun at den afhænger af markup, som ingen har lovet at bevare.

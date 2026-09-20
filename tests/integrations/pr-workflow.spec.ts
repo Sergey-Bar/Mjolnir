@@ -14,6 +14,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { parse } from "yaml";
+import { CLI_VERSION } from "../../src/cli.js";
 
 const ROOT = join(import.meta.dirname, "..", "..");
 
@@ -77,9 +78,28 @@ describe("mjolnir.yml (the PR feedback loop workflow)", () => {
     const steps = wf.jobs.scan?.steps ?? [];
     expect(
       steps.some((s) =>
-        /(?:mjolnir-qa@latest|dist\/cli\.mjs)\s+diff\b/.test(s.run ?? ""),
+        /(?:mjolnir-qa@\d+\.\d+\.\d+|mjolnir-qa-\d+\.\d+\.\d+\.tgz|dist\/cli\.mjs)\s+diff\b/.test(
+          s.run ?? "",
+        ),
       ),
     ).toBe(true);
+  });
+
+  it("pins the reviewed mjolnir-qa release instead of floating latest", () => {
+    const wf = loadPrWorkflow();
+    const text = readFileSync(
+      join(ROOT, ".github", "workflows", "mjolnir.yml"),
+      "utf8",
+    );
+    expect(text).not.toContain("mjolnir-qa@latest");
+    expect(text).not.toContain("version: latest");
+    expect(text).toContain(`mjolnir-qa-${CLI_VERSION}.tgz`);
+    expect(text).toContain(`version: ${CLI_VERSION}`);
+    const checkout = wf.jobs.scan?.steps?.find((s) =>
+      s.uses?.startsWith("actions/checkout"),
+    );
+    expect(checkout?.with?.["persist-credentials"]).toBe(false);
+    expect(wf.jobs.scan?.steps?.some((step) => step.uses === "./")).toBe(true);
   });
 
   it("runs mjolnir pr-comment and actually posts/updates a PR comment via the GitHub API", () => {
@@ -114,7 +134,9 @@ describe("mjolnir.yml (the PR feedback loop workflow)", () => {
     const wf = loadPrWorkflow();
     const steps = wf.jobs.scan?.steps ?? [];
     const diffStep = steps.find((s) =>
-      /(?:mjolnir-qa@latest|dist\/cli\.mjs)\s+diff\b/.test(s.run ?? ""),
+      /(?:mjolnir-qa@\d+\.\d+\.\d+|mjolnir-qa-\d+\.\d+\.\d+\.tgz|dist\/cli\.mjs)\s+diff\b/.test(
+        s.run ?? "",
+      ),
     );
     // diff's exit code can be 1 on new errors — must be tolerated via
     // continue-on-error on this specific step, never a blanket `|| true`
