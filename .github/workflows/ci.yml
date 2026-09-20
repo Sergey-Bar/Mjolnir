@@ -175,17 +175,9 @@ jobs:
         run: >-
           npx vitest run --coverage --no-file-parallelism
           --testTimeout=120000 --hookTimeout=120000
-      - name: Report coverage floors in the job summary
+      - name: Enforce coverage ratchet
         if: matrix.os == 'ubuntu-latest' && matrix.node == 22
-        run: |
-          node -e '
-          const fs = require("fs");
-          const s = JSON.parse(fs.readFileSync("coverage/coverage-summary.json", "utf8"));
-          const t = s.total;
-          const line = "Statements " + t.statements.pct + "% · Branches " + t.branches.pct + "% · Functions " + t.functions.pct + "% · Lines " + t.lines.pct + "%";
-          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, "## Coverage floors\n" + line + "\n");
-          console.log(line);
-          '
+        run: npm run coverage:ratchet
       - name: Upload coverage report as a build artifact
         if: matrix.os == 'ubuntu-latest' && matrix.node == 22
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
