@@ -155,11 +155,13 @@ function resolveNpmPackage(
     // Attempt to resolve via Node's package resolution.
     // We resolve from the workspace root so node_modules resolution works.
     const resolved = resolvePath(root, "node_modules", name);
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     if (existsSync(resolved)) {
       return { path: resolved, spec: specifier };
     }
     // Also check from cwd (workspace may have nested node_modules)
     const fromCwd = resolvePath(process.cwd(), "node_modules", name);
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     if (existsSync(fromCwd)) {
       return { path: fromCwd, spec: specifier };
     }
