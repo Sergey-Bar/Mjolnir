@@ -8,7 +8,7 @@ entry condition.
 
 ## Where Mjölnir is now
 
-- **v1.0.x — stable.** Published on npm and GitHub Releases, with
+- **v2.0.0 — current stable.** Published on npm and GitHub Releases, with
   <!-- census:total-rules -->79 rules<!-- /census:total-rules -->,
   <!-- census:measured -->74<!-- /census:measured --> of them carrying a
   false-positive rate measured against real OSS code
@@ -19,12 +19,12 @@ entry condition.
 - The scan core is deterministic and zero-network: the same input
   produces the same verdict, and nothing leaves the machine.
 
-## The trust-engineering train — built, entering release
+## The trust-engineering train — shipped into the 2.x line
 
 An eleven-increment engineering train hardened the product's release
-trust end-to-end. It is **complete and verified on the engineering
-branch**; it lands through the 1.1.x–1.4.0 releases, each gated by the
-new release-trust verdict, ahead of the 2.0 cutover.
+trust end-to-end. It is part of the current 2.x public line; the table
+below remains as the historical release train that led into the 2.0
+cutover.
 
 | Release | Content                                                                                                                                                                                                                                                      |
 | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -42,10 +42,11 @@ new release-trust verdict, ahead of the 2.0 cutover.
 
 ## Next
 
-- **Merge and release the train** through the standing gates — the
+- **Keep the 2.x line honest** through the standing gates — the
   release-trust verdict (not a date) decides when each increment ships.
-- **The 2.0 cutover**, on the breaking-set inventory and migration draft
-  prepared above; [VERSIONING](https://github.com/Sergey-Bar/Mjolnir/blob/main/docs/VERSIONING.md)
+- **Publish only registry-backed claims**: a git tag is not public
+  install guidance until the matching npm version and GitHub Release are
+  live. [VERSIONING](https://github.com/Sergey-Bar/Mjolnir/blob/main/docs/VERSIONING.md)
   remains the contract for what "stable" means.
 
 ## What this roadmap will never contain
