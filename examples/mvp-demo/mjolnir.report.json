@@ -1,0 +1,77 @@
+{
+  "suites": [
+    {
+      "suites": [
+        {
+          "title": "checkout.spec.ts",
+          "specs": [
+            {
+              "title": "charges the card exactly once",
+              "file": "e2e/checkout.spec.ts",
+              "location": { "line": 6, "column": 1 },
+              "tests": [
+                {
+                  "results": [{ "status": "failed", "duration": 2140 }]
+                }
+              ]
+            },
+            {
+              "title": "declines an expired card",
+              "file": "e2e/checkout.spec.ts",
+              "location": { "line": 12, "column": 1 },
+              "tests": [
+                {
+                  "results": [{ "status": "passed", "duration": 830 }]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "login.spec.ts",
+          "specs": [
+            {
+              "title": "signs in after the network hiccup",
+              "file": "e2e/login.spec.ts",
+              "location": { "line": 6, "column": 1 },
+              "tests": [
+                {
+                  "results": [
+                    { "status": "failed", "duration": 5010 },
+                    { "status": "failed", "duration": 5120 },
+                    { "status": "passed", "duration": 1660 }
+                  ]
+                }
+              ]
+            },
+            {
+              "title": "shows the two-factor prompt when enabled",
+              "file": "e2e/login.spec.ts",
+              "location": { "line": 18, "column": 1 },
+              "tests": [
+                {
+                  "results": [{ "status": "timedOut", "duration": 30000 }]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "account.spec.ts",
+          "specs": [
+            {
+              "title": "lists recent orders",
+              "file": "e2e/account.spec.ts",
+              "location": { "line": 11, "column": 1 },
+              "tests": [
+                {
+                  "results": [{ "status": "passed", "duration": 720 }]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

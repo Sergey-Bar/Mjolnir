@@ -1,0 +1,14 @@
+{
+  "selfScanExit": 0,
+  "byteEqual": false,
+  "semEqual": false,
+  "findingsSelfScan": 2,
+  "contractDigest": "sha256:abba9fbfb607cbe15d3bcd2530360710f7f7ad6e20402b0c529db50f6e071136",
+  "digestRecompute": "no-candidate-matched",
+  "sarifValid": "valid",
+  "sarifExit": 0,
+  "sarifStderrEmpty": true,
+  "mermaidFirstLine": "flowchart TD",
+  "mermaidExit": 0,
+  "mermaidStderrEmpty": true
+}

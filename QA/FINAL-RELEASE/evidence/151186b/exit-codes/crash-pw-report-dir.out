@@ -1,0 +1,6 @@
+CMD: mjolnir pw-report C:\Users\User\AppData\Local\Temp\mjolnir-e20b-UvsKdd
+EXIT: 2
+--- STDOUT ---
+
+--- STDERR ---
+No Playwright JSON report found. Add reporter: [['json', { outputFile: 'report.json' }]] to playwright.config.

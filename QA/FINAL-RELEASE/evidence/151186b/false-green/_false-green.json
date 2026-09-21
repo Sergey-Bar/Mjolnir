@@ -1,0 +1,59 @@
+[
+  {
+    "name": "gh-true",
+    "exit": 1,
+    "fired": ["QA-CI-002"],
+    "score": null,
+    "findings": 1
+  },
+  {
+    "name": "gh-coe",
+    "exit": 0,
+    "fired": [],
+    "score": null,
+    "findings": 0
+  },
+  {
+    "name": "only-deselect",
+    "exit": 1,
+    "fired": ["QA-PW-003"],
+    "score": 80,
+    "findings": 1
+  },
+  {
+    "name": "pytest-k",
+    "exit": 0,
+    "fired": [],
+    "score": 100,
+    "findings": 0
+  },
+  {
+    "name": "tautology",
+    "exit": 0,
+    "fired": [],
+    "score": 100,
+    "findings": 0
+  },
+  {
+    "name": "true-assert",
+    "exit": 0,
+    "fired": [],
+    "score": 100,
+    "findings": 0
+  },
+  {
+    "name": "corrupt-diff",
+    "exit": 2,
+    "firstErr": ""
+  },
+  {
+    "name": "corrupt-pr-comment",
+    "exit": 0,
+    "firstErr": ""
+  },
+  {
+    "name": "partial-report-summary",
+    "exit": 1,
+    "firstErr": "file:///C:/Users/User/AppData/Local/Temp/kilo/mjolnir-rc-151186b/dist/cli.mjs:13790\r"
+  }
+]

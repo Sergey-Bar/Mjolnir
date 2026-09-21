@@ -1,0 +1,212 @@
+/**
+ * QA-PY-003 — Test function with no assertions.
+ * Severity: error · Confidence: high · deterministic-defect
+ * A pytest test that never asserts can only fail by raising.
+ */
+
+import { defineRule } from "../rule.js";
+import type { Finding } from "../../types.js";
+import { lineAt, colAt } from "../shared/positions.js";
+
+export const pyNoAssertions = defineRule({
+  id: "QA-PY-003",
+  category: "QA-TEST",
+  title: "Test function with no assertions",
+  severity: "error",
+  confidence: "high",
+  findingType: "deterministic-defect",
+  qaImpact: "FALSE-GREEN",
+  appliesTo: "python",
+  // Trust Metadata
+  languages: ["python"],
+  frameworks: ["pytest"],
+  falsePositiveRisk: "low",
+  autofix: false,
+  detectionStrategy: "LEXICAL",
+  strategyJustification: {
+    reasonCode: "runner-semantic",
+    detail:
+      "assertion-less pytest bodies are runner-outcome semantics (the " +
+      "runner reports a pass that proves nothing); the detector matches " +
+      "the test-def plus body shapes on the code-only text — pytest's " +
+      "pass contract is runner behavior",
+  },
+  introduced: "0.3.0",
+  tier: "quarantine",
+  // Phase 2 retune wave 2 (EVIDENCE-BACKED, detectorRevision 3 — §07):
+  // the rev-2 delta sample (12 FP / 7 TP / 1 UNSURE) splits the FPs:
+  // 7 are helper-name verification (`expect_*`, `wait_for_*` — the
+  // PY-105 cohort), 1 is a nested def (pytest only collects
+  // module-level functions and Test* methods), 3 are pytest doc-example
+  // artifacts (accepted residue), 1 is a callback named test_* (covered
+  // by the nesting skip). Helper-idiom recognition added and collection
+  // scoping narrowed to module-level defs.
+  //
+  // detectorRevision 4 (bug-audit 3.12): pytest ALSO collects `test_*`
+  // METHODS of `Test*` classes — rev-3's blanket "indent > 0 → skip"
+  // skipped those methods, so an assertion-less method in a Test* class
+  // was invisible: exactly a false green this rule exists to catch.
+  // The nesting check now walks the enclosing block headers: a method
+  // whose nearest enclosing def/class chain is `class Test*` is a
+  // collected test and is checked; a def nested inside another def, or
+  // inside a class that is not Test*, stays skipped (callbacks/data).
+  detectorRevision: 4,
+
+  run(ctx) {
+    const text = ctx.codeText ?? ctx.text;
+    const findings: Omit<Finding, "ruleId" | "category">[] = [];
+    // Audit M5 note (revised): identifier regexes were cached per module,
+    // but each `test_*` name is unique per file (fnRe would not match the
+    // same def twice) — the cache never hit. Compiled fresh per function.
+    if (!ctx.path.endsWith(".py")) return findings;
+
+    // Find `def test_*():` bodies and check for assert/pytest.raises.
+    // Indent is line-local ([ \t]* — \s would swallow preceding blank
+    // lines and mis-anchor the match); the capture is the nesting check.
+    const fnRe = /^([ \t]*)def\s+(test_\w+)\s*\([^)]*\)\s*:/gm;
+    let m: RegExpExecArray | null;
+    while ((m = fnRe.exec(text)) !== null) {
+      // Pytest collects module-level functions (and Test* class methods,
+      // which carry self.assert* and are recognized by the vocabulary
+      // below). Nested defs are callbacks/data, never collected tests —
+      // wave-2 delta evidence (a `test_callback` inside call_on_close).
+      // detectorRevision 4: the indent check is now a real nesting
+      // classification — collected iff module-level (indent "") OR the
+      // nearest enclosing header chain is a `class Test*` whose body
+      // contains this def and which is itself not nested inside a def.
+      const indent = m[1] as string;
+      if (indent.length > 0 && !isCollectedTestMethod(text, m.index, indent)) {
+        continue;
+      }
+      const body = extractBlock(text, m.index + m[0].length);
+      if (body === null) continue;
+      const hasCheck =
+        // [ \t] not \s — \s crosses lines, matching asserts outside this block.
+        /^[ \t]*assert\b/m.test(body) ||
+        /pytest\.raises/.test(body) ||
+        // Phase 2 vocabulary: pytest's other verification entrances.
+        /pytest\.(?:warns|deprecated_call|fail\s*\()/.test(body) ||
+        /self\.assert/.test(body) ||
+        /\bexpect\b/.test(body) ||
+        // Wave 2: verification delegated to helpers whose names assert
+        // or wait (the PY-105 cohort — `expect_markdown(app, ...)`,
+        // `wait_for_app_run(app)`, `_expect_no_exception(app)`).
+        /\b_?(?:assert|expect|verify|check)[_A-Z]\w*\s*\(/.test(body) ||
+        /\b_?wait_for_\w+\s*\(/.test(body);
+      if (!hasCheck) {
+        // Phase 2 data-shape skip: a `test_*` function whose NAME is
+        // referenced elsewhere in the file (passed to a runner, stored in
+        // a list, awaited as a coroutine) is test DATA — e.g. pytester
+        // scripts whose collected assertion lives in the parent test.
+        // One word-boundary regex per `test_*` function; names come from
+        // the fnRe capture (identifiers only — no metacharacters).
+        const name = m[2] as string;
+        // eslint-disable-next-line security/detect-non-literal-regexp -- name is a test_\w+ identifier captured by fnRe — no regex metacharacters
+        const refRe = new RegExp(`\\b${name}\\b`, "g");
+        let refs = 0;
+        while (refRe.exec(text) !== null) {
+          refs++;
+          // Two or more occurrences of the name (the def plus any other
+          // mention — runner invocation, list membership, forward ref)
+          // mark the function as referenced test data.
+          if (refs > 1) break;
+        }
+        if (refs > 1) continue;
+        findings.push({
+          severity: "error",
+          confidence: "high",
+          findingType: "deterministic-defect",
+          qaImpact: "FALSE-GREEN",
+          file: ctx.path,
+          line: lineAt(text, m.index),
+          column: colAt(text, m.index),
+          message: `Test \`${m[2]}\` contains no assertions.`,
+          why: "Without an assertion the test can only fail by crashing — it cannot detect behavioral regressions.",
+          fix: "Add an `assert` on the expected outcome, or remove the test.",
+        });
+      }
+    }
+    return findings;
+  },
+});
+
+/**
+ * detectorRevision 4: true when the def at `defAt` (indent `indent`) is
+ * a `test_*` METHOD of a pytest-collectable class — every header between
+ * the def and the file top at a SMALLER indent must be either another
+ * def (the method is nested in a function → not collected) or a
+ * `class Test*` (collected). A class with a non-Test name, or any
+ * non-header line at a smaller indent before a class header, means the
+ * def is data → not collected.
+ */
+function isCollectedTestMethod(
+  text: string,
+  defAt: number,
+  indent: string,
+): boolean {
+  const lines = text.slice(0, defAt).split("\n");
+  // Walk backwards; the FIRST header line at a smaller indent decides.
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const line = lines[i] as string;
+    if (line.trim() === "") continue;
+    const indentMatch = /^[ \t]*/.exec(line);
+    if (!indentMatch) continue;
+    const lineIndent = indentMatch[0];
+    if (lineIndent.length >= indent.length) continue;
+    const classM = /^[ \t]*class\s+(\w+)/.exec(line);
+    if (classM) {
+      if (!/^Test/.test(classM[1] as string)) return false;
+      // pytest skips Test* classes that define __init__ — they are not
+      // collected, so assertion-less methods inside them are not a risk.
+      const classBody = lines.slice(i + 1).join("\n");
+      const classIndent = lineIndent;
+      if (
+        // eslint-disable-next-line security/detect-non-literal-regexp -- classIndent is whitespace extracted from the source
+        new RegExp(
+          `^${classIndent}(?:    |\t)\\s*def\\s+__init__\\s*\\(`,
+          "m",
+        ).test(classBody)
+      ) {
+        return false;
+      }
+      return true;
+    }
+    // Any other smaller-indent line (def, assignment, code) encloses
+    // the method in something that is not a collectable class.
+    return false;
+  }
+  return false;
+}
+
+/** Extract an indented block starting after a `:` line; returns null if empty. */
+function extractBlock(text: string, afterColon: number): string | null {
+  // Normalize CRLF first.
+  const rest = text.slice(afterColon).replace(/\r\n/g, "\n");
+  const firstContent = /\S/.exec(rest);
+  if (!firstContent || firstContent.index === undefined) return null;
+  const firstIdx = firstContent.index;
+  const before = rest.slice(0, firstIdx);
+  if (before.includes("\n")) {
+    // Indented block: content is on a following line.
+    const lines = rest.split("\n").slice(1);
+    const nonBlank = lines.find((l) => l.trim() !== "");
+    if (!nonBlank) return null;
+    const indentMatch = /^[ \t]*/.exec(nonBlank);
+    if (!indentMatch) return null;
+    const indent = indentMatch[0];
+    if (!indent) return null;
+    const collected: string[] = [];
+    for (const line of lines) {
+      if (line.trim() === "") {
+        collected.push(line);
+        continue;
+      }
+      if (line.startsWith(indent)) collected.push(line);
+      else break;
+    }
+    return collected.join("\n");
+  }
+  // True inline body: def test_x(): do_thing()
+  const lineEnd = rest.indexOf("\n", firstIdx);
+  return lineEnd === -1 ? rest : rest.slice(0, lineEnd);
+}

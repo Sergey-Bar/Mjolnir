@@ -1,0 +1,17 @@
+# QA-CI-001 must-not-fire (Azure DevOps) — continueOnError on reporting
+# and artifact tasks is ordinary best-effort engineering: its failure
+# loses information, it does not hide a failed check.
+stages:
+  - stage: CI
+    jobs:
+      - job: Tests
+        steps:
+          - script: npm test
+
+          - task: PublishTestResults@2
+            condition: succeededOrFailed()
+            continueOnError: true
+
+          - task: CopyFiles@2
+            displayName: Collect logs
+            continueOnError: true

@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "partial": false,
+  "score": 93,
+  "frameworks": [],
+  "frameworkDetectionUnknown": true,
+  "dimensions": [
+    {
+      "category": "QA-TEST",
+      "score": 97,
+      "errors": 0,
+      "warnings": 1,
+      "infos": 1
+    }
+  ],
+  "findings": [
+    {
+      "severity": "info",
+      "confidence": "high",
+      "findingType": "deterministic-defect",
+      "qaImpact": "FALSE-GREEN",
+      "file": "login.spec.ts",
+      "line": 2,
+      "column": 1,
+      "message": "Test contains no assertions.",
+      "why": "Without an assertion the test can only fail by crashing — it cannot detect behavioral regressions.",
+      "fix": "Add an assertion on the expected outcome, or remove the test.",
+      "ruleId": "QA-TEST-003",
+      "category": "QA-TEST",
+      "evidenceLevel": "E0",
+      "measuredFpRate": 0.218,
+      "measuredFpN": 78,
+      "detectorRevision": 1,
+      "fixGroupId": "QA-TEST-003"
+    },
+    {
+      "severity": "warning",
+      "confidence": "high",
+      "findingType": "deterministic-defect",
+      "file": "login.spec.ts",
+      "line": 3,
+      "column": 3,
+      "message": "Hard sleep: `await new Promise(r => setTimeout(r, 3000))`.",
+      "why": "Fixed sleeps make tests both slow and flaky — they guess at timing instead of waiting for state.",
+      "fix": "Wait for an explicit condition (element state, promise, or signal) instead of a fixed delay.",
+      "qaImpact": "FLAKY-RISK",
+      "ruleId": "QA-TEST-004",
+      "category": "QA-TEST",
+      "evidenceLevel": "E2",
+      "measuredFpRate": 0.3,
+      "measuredFpN": 20,
+      "detectorRevision": 1,
+      "fixGroupId": "QA-TEST-004"
+    }
+  ],
+  "testFileCount": 1,
+  "testDeclarationCount": 1,
+  "rawDeductions": 3,
+  "suppressionCount": 0,
+  "agenticProfile": {
+    "testFiles": 1,
+    "generatedMarkedFiles": 0,
+    "codegenLikeFiles": 0,
+    "shareMarkedGenerated": 0,
+    "findingsInGeneratedFiles": 0,
+    "findingsInUnmarkedFiles": 2,
+    "note": "Static provenance markers only (generated-file headers, Playwright codegen default titles). Absence of a marker does not prove human authorship; healed and MCP-edited files without markers are indistinguishable from hand-written ones. Provenance never changes scoring or evidence — authorship is metadata, not trust."
+  },
+  "analysisStatus": {
+    "discovery": "complete",
+    "rules": "complete",
+    "skippedFiles": 0,
+    "durationMs": 24,
+    "rulesCrashed": 0
+  },
+  "contract": {
+    "contractVersion": 1,
+    "summary": {
+      "digest": "sha256:533d336562c5eaf4142d81a2c60547ac59c3ba6bf593963e757e8d4479ac73ea",
+      "findings": 2,
+      "score": 93,
+      "errors": 0,
+      "warnings": 1,
+      "infos": 1,
+      "advisory": 1
+    },
+    "annotations": [
+      {
+        "path": "login.spec.ts",
+        "start_line": 2,
+        "annotation_level": "notice",
+        "message": "QA-TEST-003: Test contains no assertions.",
+        "ruleId": "QA-TEST-003",
+        "detectorRevision": 1,
+        "advisory": true
+      },
+      {
+        "path": "login.spec.ts",
+        "start_line": 3,
+        "annotation_level": "warning",
+        "message": "QA-TEST-004: Hard sleep: `await new Promise(r => setTimeout(r, 3000))`.",
+        "ruleId": "QA-TEST-004",
+        "detectorRevision": 1,
+        "advisory": false
+      }
+    ],
+    "annotationsTruncated": false,
+    "completeness": {
+      "partial": false,
+      "discovery": "complete",
+      "rules": "complete",
+      "skippedFiles": 0,
+      "rulesCrashed": 0,
+      "truncationReasons": [],
+      "frameworkDetectionUnknown": true,
+      "durationMs": 24
+    }
+  }
+}

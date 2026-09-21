@@ -1,0 +1,71 @@
+# Renders the demo videos. Manual only.
+#
+# Deliberately NOT part of the standing CI gate: rendering needs Chromium
+# and a full ffmpeg, and takes minutes of frame-by-frame screenshotting.
+# The contracts that matter on every push — that the committed scripts
+# still match what the CLI prints, and that the fix-and-re-run story is
+# true — need neither, and run in ci.yml with the rest of the suite.
+name: demo-video
+
+on:
+  workflow_dispatch:
+    inputs:
+      video:
+        description: "Which video to render"
+        required: false
+        default: "both"
+        type: choice
+        options: [both, demo, tour]
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Playwright's bundled ffmpeg is VP8/WebM only (built
+      # --disable-everything), so it cannot produce the H.264 MP4 we ship.
+      - name: Install ffmpeg with libx264
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+
+      - name: Install Chromium for playwright-core
+        run: npx --yes playwright@latest install --with-deps chromium
+
+      # Fails before any frame is drawn if a required glyph is missing.
+      - run: npm run docs:video:glyphs
+
+      # The evidence contract, before spending minutes rendering evidence
+      # that has already drifted.
+      - run: npx vitest run tests/contract/video-script.spec.ts
+
+      - name: Render
+        run: |
+          if [ "${{ inputs.video }}" = "both" ]; then
+            npm run docs:video:render
+          else
+            npx tsx scripts/video/render.ts "${{ inputs.video }}"
+          fi
+
+      # The media contract runs against what was just built — a contract
+      # that only runs when someone remembers to run it is not a contract.
+      - run: npx vitest run tests/contract/video-media.spec.ts
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
+        with:
+          name: mjolnir-demo-video
+          path: |
+            assets/video/out/*.mp4
+            assets/video/out/*.png
+          if-no-files-found: error
+          retention-days: 14

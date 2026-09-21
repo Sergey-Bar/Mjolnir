@@ -1,0 +1,4178 @@
+> STATUS 2026-08-25: LONG-TERM VISION, ~0% IMPLEMENTED. Kept as the
+> primary long-term reference (over the competing/duplicate vision in
+> `docs/plans/Plan.md` — see that file's status note). None of the
+> Evidence Graph / E0–E4 evidence-level machinery, mutation testing,
+> behavioral coverage, or contract-intelligence concepts described below
+> exist in `qa-doctor/src/` yet. For what's actually shipped, see
+> `docs/plans/Implementation-Master-Plan.txt` and `.planning/STATE.md`.
+
+# QA Doctor 2026
+
+## Quality Intelligence, Evidence & Release Confidence Platform
+
+### The Quality Evidence Engine for Modern Software
+
+---
+
+# Product Vision
+
+QA Doctor is a zero-configuration quality intelligence platform that scans a software repository and answers one fundamental question:
+
+> **What level of software quality can actually be proven for this system — and what evidence supports that claim?**
+
+QA Doctor does **not** primarily answer:
+
+* How many tests exist?
+* How high is line coverage?
+* How many green checks exist in CI?
+* How many QA tools are installed?
+* How many rules passed?
+
+Instead, it answers:
+
+* What behavior is actually proven?
+* What critical behavior remains unproven?
+* How trustworthy are the tests?
+* Can the CI result actually be trusted?
+* What regressions could reach production undetected?
+* What evidence became stale after code changes?
+* What quality level can honestly be claimed?
+* What should the team do next?
+
+---
+
+# The Core Promise
+
+> **QA Doctor does not tell you how much testing you have.**
+
+> **QA Doctor maps software quality claims to observable evidence.**
+
+> **It distinguishes what is detected, inferred, observed, and verified.**
+
+> **It never allows a score to hide a critical evidence gap.**
+
+> **It prefers uncertainty over false proof.**
+
+Ultimately:
+
+> **QA Doctor answers not only whether your tests pass — but what your software quality can honestly prove.**
+
+---
+
+# 1. The One-Command Experience
+
+The first interaction must be almost frictionless.
+
+```bash
+npx qa-doctor@latest
+```
+
+The user should not need to configure:
+
+* Jest
+* Vitest
+* Playwright
+* TypeScript
+* React
+* Next.js
+* Node.js
+* NestJS
+* GraphQL
+* REST
+* GitHub Actions
+* GitLab CI
+* monorepo structure
+
+QA Doctor detects the repository automatically.
+
+## Auto Discovery
+
+```text
+QA Doctor is examining your system...
+
+✓ Monorepo detected
+✓ 3 applications discovered
+
+Frontend
+React 19 + TypeScript
+Vitest + Playwright
+
+Backend
+NestJS + GraphQL
+Jest + Integration Tests
+
+Shared Infrastructure
+GitHub Actions
+Docker
+PostgreSQL
+
+Detected profile:
+Multi-tenant B2B SaaS
+```
+
+The first run should require **zero configuration**.
+
+Advanced configuration is optional.
+
+---
+
+# 2. One Command Does Not Mean One Expensive Operation
+
+The command:
+
+```bash
+npx qa-doctor@latest
+```
+
+must not mean:
+
+```text
+Run every test.
+Run mutation testing.
+Run load testing.
+Run the entire browser suite.
+Start every infrastructure dependency.
+Execute every possible analysis.
+```
+
+Instead, it means:
+
+> **Give the user the best truthful quality verdict available within the current analysis budget.**
+
+The default scan should prioritize:
+
+1. Repository discovery
+2. Deterministic analysis
+3. Existing test and coverage evidence
+4. Existing mutation artifacts
+5. CI integrity
+6. Critical path discovery
+7. Evidence gap detection
+8. Changed-scope relationships where relevant
+
+Expensive verification must be explicit or progressively activated.
+
+---
+
+# 3. The Main Output
+
+The user should understand the result immediately.
+
+```text
+                 QA DOCTOR
+
+          QUALITY EVIDENCE ANALYSIS
+
+                  82 / 100
+
+             QUALITY LEVEL: B
+
+        ████████████████░░░░
+
+             STRONG FOUNDATION
+
+        BUT 3 CRITICAL GAPS REMAIN
+```
+
+Then:
+
+```text
+QUALITY HEALTH
+
+Test Architecture        91
+Test Quality             84
+Behavior Evidence        78
+Coverage Quality         72
+Code Testability         88
+Test Hygiene             93
+Reliability              81
+CI Integrity             67
+Security Evidence        74
+Critical Path Coverage   70
+
+────────────────────────────
+
+EVIDENCE LEVEL
+
+B — STRONG
+
+────────────────────────────
+
+RELEASE CONFIDENCE
+
+CONDITIONAL
+
+3 critical risks remain unproven.
+```
+
+The UI must never overwhelm the user with 500 findings first.
+
+The order should be:
+
+1. Overall verdict
+2. What the verdict means
+3. What is proven
+4. What is partially proven
+5. What is unproven
+6. Critical risks
+7. CI trust
+8. Top 3 highest-impact actions
+9. Full technical evidence
+
+---
+
+# 4. The Three Independent Outputs
+
+QA Doctor must never merge everything into one score.
+
+## A. Quality Health
+
+> How healthy is the overall engineering and quality system?
+
+Example:
+
+```text
+82 / 100
+```
+
+---
+
+## B. Evidence Level
+
+> How much critical behavior can actually be supported by evidence?
+
+Example:
+
+```text
+LEVEL B — STRONG
+```
+
+---
+
+## C. Release Confidence
+
+> Can the current repository state safely move forward according to the available evidence and policy?
+
+Example:
+
+```text
+HIGH
+CONDITIONAL
+BLOCKED
+UNKNOWN
+```
+
+These values are independent.
+
+A repository may have:
+
+```text
+QUALITY HEALTH:
+92 / 100
+
+EVIDENCE LEVEL:
+B
+
+RELEASE CONFIDENCE:
+BLOCKED
+```
+
+if a critical path lacks the required evidence.
+
+---
+
+# 5. Critical Rule: Scores Cannot Hide Critical Failures
+
+This must never happen:
+
+```text
+Code Quality:          100
+Test Hygiene:          100
+Coverage:              100
+
+Authorization:          10
+Tenant Isolation:        0
+
+Overall Score:          85
+Release:                SAFE
+```
+
+Instead:
+
+```text
+QUALITY HEALTH
+
+85 / 100
+
+QUALITY LEVEL
+
+A
+
+BUT
+
+RELEASE CONFIDENCE
+
+BLOCKED
+
+Critical evidence missing:
+
+✗ Cross-tenant isolation
+✗ Privileged authorization testing
+```
+
+A score describes health.
+
+A release verdict describes risk and policy.
+
+The score can never override a critical release gate.
+
+---
+
+# 6. The Most Important Product Principle
+
+## No Quality Claim Without Evidence
+
+QA Doctor must distinguish between:
+
+```text
+TEST EXISTS
+```
+
+and:
+
+```text
+BEHAVIOR VERIFIED
+```
+
+These are not the same thing.
+
+Example:
+
+```ts
+it("saves user", async () => {
+  await saveUser();
+
+  expect(api.saveUser).toHaveBeenCalled();
+});
+```
+
+The test may pass even if the real user-saving behavior is broken.
+
+Therefore QA Doctor must analyze:
+
+* What claim is being made?
+* What system boundary is relevant?
+* What evidence exists?
+* Is the evidence relevant?
+* Was the behavior actually executed?
+* How fresh is the evidence?
+* How confident is QA Doctor in the relationship?
+
+---
+
+# 7. False Proof Is More Dangerous Than a False Negative
+
+QA Doctor must operate conservatively.
+
+The following is acceptable:
+
+```text
+AUTHORIZATION
+
+Status:
+NO SUFFICIENT EVIDENCE
+
+Reason:
+
+A privileged operation was detected,
+but QA Doctor could not confidently prove
+that existing tests verify negative authorization.
+```
+
+The following is dangerous:
+
+```text
+AUTHORIZATION VERIFIED
+```
+
+when the only evidence is:
+
+```ts
+expect(mockGuard).toHaveBeenCalled();
+```
+
+Therefore:
+
+> **False negatives may create additional work. False proof can create production risk.**
+
+QA Doctor must prefer:
+
+```text
+UNKNOWN
+```
+
+over:
+
+```text
+VERIFIED
+```
+
+when the evidence is insufficient.
+
+---
+
+# 8. Four Layers of Truth
+
+Every conclusion must declare its source.
+
+## Layer 1 — Detected
+
+A deterministic fact found through repository analysis.
+
+Examples:
+
+```text
+Focused test committed.
+Skipped test found.
+continue-on-error detected.
+GraphQL mutation exists.
+Authorization guard exists.
+Hard sleep found.
+```
+
+---
+
+## Layer 2 — Inferred
+
+A relationship inferred from code structure or evidence relationships.
+
+Example:
+
+```text
+A privileged operation appears to lack
+negative authorization evidence.
+```
+
+This is not automatically a defect.
+
+It is an:
+
+```text
+EVIDENCE GAP
+```
+
+or:
+
+```text
+HEURISTIC RISK
+```
+
+depending on confidence.
+
+---
+
+## Layer 3 — Observed
+
+A behavior was seen during execution.
+
+Example:
+
+```text
+Non-admin identity invoked deleteUser.
+
+Authorization guard executed.
+
+Request rejected.
+
+No database mutation observed.
+```
+
+This is stronger than static inference.
+
+---
+
+## Layer 4 — Verified
+
+A claim has sufficient relevant, reproducible, and traceable evidence.
+
+Example:
+
+```text
+CLAIM
+
+Non-admin cannot delete users.
+
+VERIFIED EVIDENCE
+
+✓ Relevant operation identified
+✓ Non-admin identity used
+✓ Authorization boundary executed
+✓ Operation rejected
+✓ Protected data unchanged
+✓ Execution captured
+✓ Evidence linked to current commit
+```
+
+Only this level may support:
+
+```text
+VERIFIED
+```
+
+claims.
+
+---
+
+# 9. Evidence Levels
+
+Every important behavior receives an evidence classification.
+
+## E0 — No Evidence
+
+```text
+No relevant automated or runtime evidence exists.
+```
+
+---
+
+## E1 — Weak Evidence
+
+Examples:
+
+```text
+Mock-only verification.
+Implementation-coupled test.
+Indirect evidence.
+Low-confidence structural relationship.
+```
+
+---
+
+## E2 — Partial Evidence
+
+Example:
+
+```text
+Happy path verified.
+
+Negative cases missing.
+```
+
+---
+
+## E3 — Strong Evidence
+
+```text
+Positive and negative behavior verified
+at the relevant system boundary.
+```
+
+---
+
+## E4 — High Confidence
+
+```text
+Behavior verified across:
+
+✓ Relevant boundary
+✓ Positive path
+✓ Negative path
+✓ Authorization where relevant
+✓ Failure handling where relevant
+✓ Data integrity where relevant
+✓ Runtime execution
+✓ CI gate
+```
+
+E4 should not mean "perfect software."
+
+It means:
+
+> **The specific quality claim has strong, multi-dimensional evidence.**
+
+---
+
+# 10. Evidence Must Be Claim-Based
+
+QA Doctor should not fundamentally model:
+
+```text
+FILES
+TESTS
+RULES
+```
+
+Its core model should be:
+
+```text
+CLAIM
+↓
+RISK
+↓
+EXPECTED EVIDENCE
+↓
+OBSERVED EVIDENCE
+↓
+CONFIDENCE
+↓
+VERDICT
+```
+
+Example:
+
+```text
+CLAIM
+
+Tenant A cannot access Tenant B data.
+
+RISK
+
+Cross-tenant data exposure.
+
+EXPECTED EVIDENCE
+
+• Tenant boundary exists
+• Tenant A identity
+• Tenant B resource
+• Boundary enforcement
+• Access rejected
+• No data returned
+
+OBSERVED
+
+Integration execution found.
+
+STATUS
+
+PARTIALLY VERIFIED
+
+MISSING
+
+Explicit cross-tenant negative execution.
+```
+
+The fundamental unit of QA Doctor is:
+
+> **A quality claim and the evidence supporting it.**
+
+---
+
+# 11. The Evidence Graph
+
+QA Doctor should be built around an Evidence Graph.
+
+```text
+                    SYSTEM CLAIM
+                         │
+                         ▼
+                       RISK
+                         │
+                         ▼
+                  SYSTEM BOUNDARY
+                         │
+          ┌──────────────┼──────────────┐
+          │              │              │
+          ▼              ▼              ▼
+
+       SOURCE         POLICY          DATA
+
+          │              │              │
+          └──────────────┼──────────────┘
+                         ▼
+
+                    TEST EVIDENCE
+                         │
+                         ▼
+
+                 RUNTIME EXECUTION
+                         │
+                         ▼
+
+                   CI / GATE PROOF
+                         │
+                         ▼
+
+                  EVIDENCE VERDICT
+```
+
+The Evidence Graph should connect:
+
+* Features
+* Operations
+* Source code
+* Authorization policies
+* Database interactions
+* Tests
+* Coverage
+* Runtime traces
+* Mutation results
+* CI jobs
+* Artifacts
+* Critical paths
+* Quality claims
+
+---
+
+# 12. Evidence Graph Architecture
+
+Conceptually:
+
+```ts
+interface EvidenceNode {
+  id: string;
+
+  type:
+    | "claim"
+    | "risk"
+    | "operation"
+    | "source"
+    | "policy"
+    | "data"
+    | "test"
+    | "runtime"
+    | "ci"
+    | "artifact";
+
+  confidence: "high" | "medium" | "low";
+
+  provenance:
+    | "static"
+    | "runtime"
+    | "imported"
+    | "user-confirmed";
+
+  commit?: string;
+
+  configurationHash?: string;
+
+  toolVersion?: string;
+
+  timestamp?: string;
+}
+```
+
+Relationships should be explicit:
+
+```text
+TEST
+PROVES
+CLAIM
+```
+
+```text
+TEST
+EXECUTES
+OPERATION
+```
+
+```text
+OPERATION
+REQUIRES
+AUTHORIZATION
+```
+
+```text
+OPERATION
+MODIFIES
+DATA
+```
+
+```text
+CI GATE
+EXECUTES
+TEST
+```
+
+```text
+RUNTIME EXECUTION
+OBSERVED
+BOUNDARY
+```
+
+The Evidence Graph becomes the foundation for:
+
+* Evidence scoring
+* Critical path analysis
+* Certification
+* Evidence freshness
+* Regression detection
+* Explainability
+* AI assistance
+* Release confidence
+
+---
+
+# 13. Static Analysis Is a Discovery Engine
+
+AST analysis is essential, but it is not universal proof.
+
+QA Doctor should use static analysis to discover:
+
+* REST endpoints
+* GraphQL queries
+* GraphQL mutations
+* Controllers
+* Resolvers
+* Guards
+* Roles
+* Permissions
+* Tenant identifiers
+* Database operations
+* Transactions
+* Retries
+* External dependencies
+* Tests
+* Assertions
+* Mocks
+* CI workflows
+* Coverage configuration
+
+Static analysis can reliably detect many facts.
+
+However, it cannot always prove:
+
+* Database rollback behavior
+* Transaction leakage
+* Retry exhaustion
+* Race conditions
+* Actual network failure behavior
+* Actual authorization enforcement
+* Cross-service behavior
+* Cache invalidation
+* Queue ordering
+* Runtime side effects
+
+Therefore:
+
+```text
+STATIC ANALYSIS
+        ↓
+DISCOVER
+        ↓
+INFER
+        ↓
+IDENTIFY EVIDENCE GAP
+        ↓
+OBSERVE RUNTIME
+        ↓
+VERIFY
+```
+
+QA Doctor must always disclose which stage produced the conclusion.
+
+---
+
+# 14. Runtime Evidence Layer
+
+QA Doctor should support lightweight runtime instrumentation.
+
+The goal is not to replace:
+
+* OpenTelemetry
+* APM platforms
+* Test runners
+* Coverage tools
+* Database observability
+
+Instead, QA Doctor should consume execution signals.
+
+Possible sources:
+
+```text
+V8 Coverage
+Istanbul Coverage
+Test runner events
+OpenTelemetry traces
+Node diagnostics
+HTTP instrumentation
+GraphQL instrumentation
+Database instrumentation
+Custom QA Doctor probes
+```
+
+Conceptually:
+
+```text
+TEST
+  ↓
+QA Doctor Runtime Collector
+  ↓
+Execution Events
+  ↓
+Evidence Graph
+```
+
+Example:
+
+```text
+Test:
+delete-user.integration.spec.ts
+
+Observed:
+
+GraphQL request
+↓
+deleteUser
+↓
+Non-admin identity
+↓
+Authorization guard
+↓
+Forbidden result
+↓
+No database mutation observed
+
+RESULT
+
+NEGATIVE AUTHORIZATION VERIFIED
+```
+
+---
+
+# 15. Runtime Instrumentation Must Be Lightweight
+
+The default scan must remain fast.
+
+Runtime verification should be progressive.
+
+## Level 1 — Instant Scan
+
+```bash
+qa-doctor scan
+```
+
+Uses:
+
+* Repository discovery
+* AST analysis
+* Existing coverage
+* Existing mutation reports
+* Existing test reports
+* Existing CI artifacts
+* Configuration analysis
+* Git information
+
+Target:
+
+```text
+Small repository:
+< 5 seconds
+
+Medium repository:
+< 20 seconds
+```
+
+---
+
+## Level 2 — Targeted Verification
+
+```bash
+qa-doctor verify
+```
+
+Runs only relevant tests and evidence collection.
+
+Examples:
+
+```bash
+qa-doctor verify authorization
+qa-doctor verify api
+qa-doctor verify tenant-isolation
+```
+
+---
+
+## Level 3 — Deep Verification
+
+```bash
+qa-doctor verify --deep
+```
+
+May include:
+
+* Integration tests
+* Runtime tracing
+* Network boundaries
+* Database interaction
+* Failure paths
+* Transaction behavior
+
+---
+
+## Level 4 — Expensive Analysis
+
+Explicit only:
+
+```bash
+qa-doctor mutation
+```
+
+```bash
+qa-doctor performance
+```
+
+```bash
+qa-doctor resilience
+```
+
+QA Doctor must never claim that these analyses ran during a normal instant scan unless they actually did.
+
+---
+
+# 16. Analysis Budgets
+
+The CLI should support:
+
+```bash
+qa-doctor --max-duration 20
+```
+
+Priority:
+
+```text
+1. Changed files
+2. Critical paths
+3. Deterministic rules
+4. Existing evidence
+5. High-risk inference
+6. Optional deep verification
+```
+
+Example:
+
+```text
+ANALYSIS STATUS
+
+Repository discovery      COMPLETE
+CI integrity              COMPLETE
+Test quality              COMPLETE
+Coverage evidence         COMPLETE
+Authorization inference   COMPLETE
+Runtime verification      NOT RUN
+Mutation analysis         USING LAST REPORT
+
+Total:
+
+18.4 seconds
+```
+
+If the budget expires:
+
+```text
+PARTIAL ANALYSIS
+
+Completed:
+87%
+
+Not analyzed:
+
+• packages/legacy
+• full mutation execution
+• browser runtime verification
+
+The current verdict excludes incomplete dimensions.
+```
+
+Never claim:
+
+```text
+Scan complete
+```
+
+when analysis is incomplete.
+
+---
+
+# 17. Incremental Analysis Is Mandatory
+
+QA Doctor should cache deterministic analysis using:
+
+* File hash
+* Dependency graph
+* Git commit
+* Configuration hash
+* Tool version
+
+For Pull Requests:
+
+```bash
+qa-doctor --scope changed
+```
+
+The engine should analyze:
+
+```text
+Changed files
+Affected dependencies
+Affected tests
+Affected operations
+Affected critical paths
+Relevant CI paths
+```
+
+Instead of rescanning the entire repository unnecessarily.
+
+Example:
+
+```text
+Changed:
+
+src/admin/delete-user.ts
+
+Affected:
+
+GraphQL mutation:
+deleteUser
+
+Authorization policy:
+ADMIN
+
+Tests:
+delete-user.spec.ts
+
+Critical path:
+User Administration
+
+CI gates:
+backend-quality
+authorization-evidence
+```
+
+---
+
+# 18. Evidence Freshness
+
+Evidence is not permanent.
+
+Every evidence artifact should include:
+
+```text
+Commit
+Timestamp
+Tool version
+Configuration hash
+Environment
+Execution type
+```
+
+Example:
+
+```text
+AUTHORIZATION EVIDENCE
+
+Commit:
+8f4c91a
+
+Age:
+2 hours
+
+Environment:
+CI integration
+
+Configuration:
+sha256:xxxx
+
+Status:
+CURRENT
+```
+
+If authorization code changes:
+
+```text
+EVIDENCE STALE
+
+Reason:
+
+Authorization implementation changed
+after this evidence was produced.
+
+Affected claim:
+
+Non-admin cannot delete users.
+```
+
+---
+
+# 19. Evidence Decay
+
+QA Doctor should invalidate only affected evidence.
+
+Example:
+
+```text
+CERTIFIED COMMIT
+
+abc123
+```
+
+New commit:
+
+```text
+def456
+```
+
+Changed:
+
+```text
+src/auth/authorization.service.ts
+```
+
+Evidence Graph traversal:
+
+```text
+Affected claims:
+
+• Non-admin cannot delete users
+• Admin can update roles
+
+Status:
+
+STALE
+```
+
+Unrelated evidence remains:
+
+```text
+Authentication:
+CURRENT
+
+Accessibility:
+CURRENT
+```
+
+A README change should not invalidate authorization evidence.
+
+---
+
+# 20. The Evidence Ledger
+
+QA Doctor should provide a first-class Evidence Ledger.
+
+```bash
+qa-doctor evidence
+```
+
+Example:
+
+```text
+CLAIM
+
+Non-admin cannot delete users.
+
+STATUS
+
+PARTIALLY VERIFIED
+
+────────────────────
+
+EVIDENCE
+
+E-102
+
+Type:
+Integration execution
+
+Status:
+VERIFIED
+
+Commit:
+8f4c91a
+
+────────────────────
+
+E-103
+
+Type:
+Negative authorization test
+
+Status:
+VERIFIED
+
+────────────────────
+
+E-104
+
+Type:
+Cross-tenant negative execution
+
+Status:
+MISSING
+
+────────────────────
+
+E-105
+
+Type:
+CI required gate
+
+Status:
+VERIFIED
+```
+
+Every quality claim should answer:
+
+> What evidence supports this?
+
+And:
+
+> What evidence is missing?
+
+---
+
+# 21. Finding Taxonomy
+
+Every finding must have a primary classification.
+
+## A. Deterministic Defect
+
+A concrete invalid or dangerous pattern was found.
+
+Example:
+
+```text
+continue-on-error masks a failing required test.
+```
+
+---
+
+## B. Evidence Gap
+
+QA Doctor cannot find sufficient evidence for an important claim.
+
+Example:
+
+```text
+Privileged operation lacks negative authorization evidence.
+```
+
+This does **not** necessarily mean authorization is broken.
+
+It means:
+
+> QA Doctor cannot currently prove that the behavior is correct.
+
+---
+
+## C. Heuristic Risk
+
+A probabilistic pattern may reduce quality.
+
+Examples:
+
+```text
+Potential excessive mocking.
+Potential implementation coupling.
+Potential brittle snapshot.
+Potential test ordering dependency.
+```
+
+---
+
+## D. Observation
+
+Informational fact.
+
+Example:
+
+```text
+Mutation report is 14 days old.
+```
+
+The UI, score engine and release policy must treat these categories differently.
+
+---
+
+# 22. Test Architecture
+
+QA Doctor should analyze:
+
+* Unit tests
+* Component tests
+* Integration tests
+* API tests
+* Contract tests
+* E2E tests
+* Visual tests
+* Accessibility tests
+* Performance tests
+* Security tests
+* Chaos tests
+* Mutation tests
+
+Questions:
+
+* Are test types appropriate?
+* Is the system over-dependent on E2E?
+* Are important integration boundaries untested?
+* Are expensive tests replacing deterministic lower-level tests?
+* Are critical services tested only through mocks?
+* Does the test architecture support critical claims?
+
+---
+
+# 23. Test Quality
+
+Analyze tests for:
+
+* No assertions
+* Weak assertions
+* Meaningless assertions
+* Tautological assertions
+* Implementation coupling
+* Mock-only verification
+* Testing the mock instead of the system
+* Excessive snapshot testing
+* Huge brittle snapshots
+* Arbitrary waits
+* Hard sleeps
+* Retry abuse
+* Excessive `waitFor`
+* Global state leakage
+* Test ordering dependency
+* Randomness without deterministic seeds
+* Shared mutable fixtures
+* Missing cleanup
+* Open handles
+* Network dependencies
+* Time dependencies
+* Tests that may pass when critical production logic is removed
+
+Every finding should explain:
+
+```text
+WHAT WAS FOUND
+
+WHY IT REDUCES CONFIDENCE
+
+WHAT TYPE OF FINDING IS THIS?
+
+• Deterministic Defect
+• Evidence Gap
+• Heuristic Risk
+
+WHAT EVIDENCE IS MISSING?
+
+HOW TO IMPROVE IT?
+```
+
+---
+
+# 24. Test Hygiene
+
+Detect:
+
+* Skipped tests
+* Focused tests
+* Duplicate tests
+* Dead tests
+* Unused fixtures
+* Unused mocks
+* Copy-paste tests
+* Duplicate setup
+* God fixtures
+* Huge test files
+* Inconsistent naming
+* Dead test utilities
+* Deprecated APIs
+* Mixed framework problems
+* Unnecessary dependencies
+* Missing cleanup
+* Suppressed failures
+
+Example:
+
+```text
+TEST HYGIENE
+
+93 / 100
+
+Excellent
+
+Issues found:
+
+2 skipped tests
+1 focused test
+4 duplicate test blocks
+
+Estimated maintenance impact:
+LOW
+```
+
+---
+
+# 25. Behavioral Evidence
+
+QA Doctor should attempt to build relationships between:
+
+```text
+CLAIM
+↓
+FEATURE / OPERATION
+↓
+SOURCE CODE
+↓
+POLICY
+↓
+DATA
+↓
+TEST
+↓
+RUNTIME EXECUTION
+↓
+CI GATE
+```
+
+Example:
+
+```text
+OPERATION
+
+DELETE USER
+
+Implementation       VERIFIED
+Positive Evidence     VERIFIED
+Integration           VERIFIED
+Authorization         PARTIAL
+Negative Cases        PARTIAL
+Data Integrity        VERIFIED
+CI Gate               VERIFIED
+
+Evidence Confidence:
+
+E2 — PARTIAL
+```
+
+The user should immediately see the weakest link.
+
+---
+
+# 26. Coverage Intelligence
+
+Support:
+
+* Statement coverage
+* Branch coverage
+* Function coverage
+* Line coverage
+
+But never present these as the complete truth.
+
+Introduce:
+
+# Effective Coverage
+
+Conceptually based on:
+
+```text
+Raw Coverage
++
+Branch Coverage
++
+Mutation Evidence
++
+Critical Path Coverage
++
+Behavioral Evidence
+```
+
+Example:
+
+```text
+RAW COVERAGE
+
+91%
+
+EFFECTIVE COVERAGE
+
+74%
+
+Why?
+
+High coverage exists,
+but critical authorization branches
+have insufficient evidence.
+```
+
+---
+
+# 27. Critical Path Coverage
+
+QA Doctor should automatically discover candidates and optionally allow confirmation.
+
+Examples:
+
+* Authentication
+* Authorization
+* Billing
+* Payments
+* Tenant Isolation
+* Data Deletion
+* User Management
+* File Upload
+* Reporting
+* Notifications
+* Background Jobs
+* Data Migration
+
+Example:
+
+```text
+CRITICAL PATH COVERAGE
+
+Authentication       ██████████  96%
+Authorization        █████░░░░░  51%
+Billing              ███████░░░  72%
+Tenant Isolation     ██░░░░░░░░  22%
+Data Integrity       ████████░░  81%
+```
+
+Automatic discovery may classify paths as:
+
+```text
+AUTO-DISCOVERED
+USER-CONFIRMED
+RUNTIME-OBSERVED
+```
+
+This allows zero configuration without pretending automatic discovery is perfect.
+
+---
+
+# 28. Authorization Evidence
+
+QA Doctor should discover:
+
+* Roles
+* Permissions
+* Guards
+* Middleware
+* Protected routes
+* GraphQL resolvers
+* REST controllers
+* Privileged mutations
+* Administrative actions
+
+Generate:
+
+# Authorization Evidence Matrix
+
+```text
+                    Admin   Manager   User   Negative
+
+Create User           ✓        ✗        ✗       ✓
+Delete User           ✓        ✗        ✗       ✗
+View Reports          ✓        ✓        ✓       ✓
+Change Billing        ✓        ✗        ✗       ✗
+```
+
+Example:
+
+```text
+AUTHORIZATION EVIDENCE
+
+71 / 100
+
+2 privileged operations
+lack negative authorization evidence.
+
+RELEASE RISK:
+HIGH
+```
+
+QA Doctor must distinguish:
+
+```text
+NO TEST FOUND
+```
+
+from:
+
+```text
+NO SUFFICIENT EVIDENCE FOUND
+```
+
+The latter is the more honest default.
+
+---
+
+# 29. Multi-Tenant Isolation
+
+For multi-tenant systems, detect patterns such as:
+
+```text
+tenantId
+organizationId
+workspaceId
+accountId
+companyId
+teamId
+```
+
+Analyze:
+
+* Data queries
+* API operations
+* Authorization logic
+* Database filters
+* Cache keys
+* Background jobs
+* File access
+
+The target claim:
+
+> Tenant A cannot access Tenant B data.
+
+Example:
+
+```text
+MULTI-TENANT ISOLATION
+
+48 / 100
+
+23 tenant-scoped operations discovered.
+
+7 have explicit cross-tenant negative evidence.
+
+16 remain unproven.
+```
+
+Static discovery alone must not mark tenant isolation as verified.
+
+---
+
+# 30. Data Integrity
+
+Analyze evidence for:
+
+* Transactions
+* Rollbacks
+* Partial failure
+* Duplicate requests
+* Idempotency
+* Concurrent updates
+* Lost updates
+* Race conditions
+* Retry behavior
+* Unique constraints
+* Cascading deletion
+* Orphan records
+* Invalid state transitions
+
+Important distinction:
+
+```text
+STATIC TRANSACTION DETECTED
+```
+
+is not the same as:
+
+```text
+ROLLBACK VERIFIED
+```
+
+Deep data integrity claims generally require runtime evidence.
+
+---
+
+# 31. API Quality
+
+Support:
+
+* REST
+* GraphQL
+* gRPC
+* Webhooks
+* Async events
+
+Analyze:
+
+* Schema changes
+* Breaking changes
+* Consumer contracts
+* Producer contracts
+* Negative cases
+* Authorization
+* Validation
+* Error contracts
+* Pagination
+* Rate limiting
+* Idempotency
+* Backward compatibility
+
+---
+
+# 32. Resilience and Failure Evidence
+
+Analyze evidence for:
+
+* Network failure
+* Timeout
+* Service unavailable
+* Partial failure
+* Database unavailable
+* Third-party API failure
+* Retry
+* Retry exhaustion
+* Duplicate event
+* Out-of-order event
+* Slow dependency
+* Queue failure
+* Cache failure
+* Restart recovery
+
+Example:
+
+```text
+RESILIENCE EVIDENCE
+
+63 / 100
+
+Happy path:
+96%
+
+Failure path:
+42%
+
+Your system is strongly tested
+when everything works.
+
+Confidence drops significantly
+when dependencies fail.
+```
+
+---
+
+# 33. Mutation Intelligence
+
+Mutation testing should be treated as evidence, not as a mandatory instant scan.
+
+QA Doctor should import existing reports when available.
+
+Example:
+
+```text
+Stryker report found.
+
+Commit:
+8f4c91a
+
+Age:
+2 days
+
+Mutation score:
+74%
+
+High-risk surviving mutants:
+3
+```
+
+Then:
+
+```text
+MUTATION EVIDENCE
+
+AVAILABLE
+```
+
+If no report exists:
+
+```text
+MUTATION EVIDENCE
+
+NOT AVAILABLE
+
+QA Doctor did not execute mutation testing
+during this scan.
+```
+
+Explicit execution:
+
+```bash
+qa-doctor mutation
+```
+
+High-risk mutants should be explained.
+
+Example:
+
+```text
+CRITICAL
+
+AuthorizationService.ts
+
+Mutation:
+
+Removed authorization condition.
+
+Result:
+
+Relevant test suite did not detect
+the removed authorization check.
+```
+
+---
+
+# 34. Reliability and Flakiness Engine
+
+Inspect:
+
+* Retries hiding failures
+* Flaky tests
+* Intermittent failures
+* Non-deterministic waits
+* Timing dependencies
+* Random data
+* External dependency instability
+* Test ordering dependency
+* Environment leakage
+
+Where execution history exists:
+
+```text
+TEST RELIABILITY
+
+94 / 100
+
+Stable:
+2,814 tests
+
+Suspected flaky:
+12
+
+Confirmed flaky:
+3
+
+Most unstable suite:
+billing.integration.spec.ts
+```
+
+Static suspicion must be separated from confirmed execution history.
+
+---
+
+# 35. CI Integrity
+
+This is a major product pillar.
+
+QA Doctor should inspect:
+
+* `continue-on-error`
+* `|| true`
+* Ignored exit codes
+* Always-green workflows
+* Jobs that never run
+* Missing dependencies
+* Reports read but never generated
+* Tests not connected to required gates
+* Mutation jobs always skipped
+* Security scans not blocking
+* Artifacts not validated
+* Retries masking failures
+* Mutable action versions
+* Missing concurrency
+* Incorrect branch filters
+* Unreachable workflows
+* False-success conditions
+
+The central question:
+
+> **Can I trust the green checkmark?**
+
+Example:
+
+```text
+CI INTEGRITY
+
+67 / 100
+
+CRITICAL:
+
+QA-CI-014
+
+Security scan failure can be ignored.
+
+QA-CI-022
+
+Required workflow may pass without
+executing the expected test report.
+
+QA-CI-041
+
+Mutation gate has not produced evidence
+in the analyzed execution path.
+```
+
+---
+
+# 36. Supply Chain and Dependency Awareness
+
+Analyze:
+
+* Unused dependencies
+* Duplicate dependencies
+* Known vulnerable dependencies
+* Abandoned critical dependencies
+* Unexpected dependency growth
+* Test dependencies shipped to production
+* Lockfile integrity
+* Dependency drift
+* Risky install scripts
+
+QA Doctor should integrate with dedicated security tooling rather than attempt to replace it.
+
+---
+
+# 37. Code Testability
+
+Analyze:
+
+* Dependency injection
+* Pure functions
+* Separation of business logic
+* UI-business logic coupling
+* Tight infrastructure coupling
+* Side-effect isolation
+* Failure simulation
+* Boundary observability
+
+Example:
+
+```text
+CODE TESTABILITY
+
+88 / 100
+
+Strong architecture.
+
+Improvement opportunities:
+
+• BillingService has 14 direct infrastructure dependencies.
+• 3 components contain business logic difficult to isolate.
+```
+
+---
+
+# 38. QA Debt
+
+Introduce:
+
+# QA Debt
+
+Not every problem is a production defect.
+
+Some are accumulated quality liabilities.
+
+Example:
+
+```text
+QA DEBT
+
+MEDIUM
+
+████████░░
+
+Estimated contributors:
+
+34 skipped tests
+12 duplicated suites
+8 brittle snapshots
+17 untested critical branches
+3 flaky tests
+```
+
+Track trends where historical data exists.
+
+---
+
+# 39. Quality Regression Detection
+
+QA Doctor should be highly useful in Pull Requests.
+
+```bash
+npx qa-doctor@latest --scope changed
+```
+
+Example:
+
+```text
+QUALITY REGRESSION DETECTED
+
+Score:
+84 → 81
+
+New evidence gap:
+
+DELETE /organization/:id
+
+Authorization:
+E3 → E1
+
+Reason:
+
+A new privileged path was added,
+but no negative authorization evidence
+was found.
+
+Suggested next action:
+
+Add a test proving that a non-admin
+cannot delete an organization.
+```
+
+Changed-scope analysis should focus on preventing new regressions without requiring legacy repositories to solve their entire backlog.
+
+---
+
+# 40. Hard Release Gates
+
+QA Doctor should support explicit policy.
+
+Example:
+
+```text
+POLICY
+
+Critical authorization operation:
+
+Minimum evidence:
+E3
+
+Observed:
+E1
+
+RESULT:
+
+RELEASE BLOCKED
+```
+
+Even if:
+
+```text
+Overall Quality Score:
+96
+```
+
+the release verdict remains:
+
+```text
+BLOCKED
+```
+
+The policy engine must remain independent from the score engine.
+
+---
+
+# 41. Score Transparency
+
+No black-box score.
+
+Every dimension must answer:
+
+> Why is this number?
+
+Example:
+
+```text
+AUTHORIZATION
+
+62 / 100
+
+Positive contribution:
+
+8 operations:
+Strong negative evidence
+
++32
+
+5 operations:
+Positive evidence only
+
++18
+
+Negative impact:
+
+3 critical operations:
+No evidence
+
+-24
+
+2 privileged operations:
+Mock-only evidence
+
+-12
+
+Detection confidence:
+
+91%
+```
+
+Command:
+
+```bash
+qa-doctor score explain authorization
+```
+
+---
+
+# 42. Detection Confidence vs System Confidence
+
+These are different.
+
+Example:
+
+```text
+Possible missing authorization evidence.
+
+System Evidence:
+LOW
+
+Detection Confidence:
+MEDIUM
+```
+
+Meaning:
+
+> QA Doctor is moderately confident that an evidence gap exists.
+
+It does not mean:
+
+> QA Doctor is moderately confident that the system is broken.
+
+This distinction must be visible.
+
+---
+
+# 43. Score Stability
+
+Scores must not jump randomly.
+
+Example:
+
+```text
+84 → 83
+
+Cause:
+
+1 new high-confidence finding
+in changed code.
+
+Confidence:
+HIGH
+```
+
+If heuristics contribute uncertainty:
+
+```text
+Potential score variance:
+
+±1
+
+Reason:
+
+Dynamic test discovery analysis.
+```
+
+---
+
+# 44. Baselines
+
+Support:
+
+```bash
+qa-doctor baseline create
+```
+
+Example:
+
+```text
+BASELINE
+
+Main branch:
+
+Score: 76
+
+New PR:
+
+Score: 78
+
+New Critical Findings:
+
+0
+
+Quality Regression:
+
+NONE
+```
+
+The objective is progressive adoption.
+
+---
+
+# 45. Historical Quality Intelligence
+
+Track:
+
+* Score
+* Critical evidence gaps
+* Flaky tests
+* QA debt
+* Mutation score
+* CI integrity
+* Release confidence
+* Evidence freshness
+
+Example:
+
+```text
+QUALITY TREND
+
+95 ┤
+90 ┤                 ╭──
+85 ┤           ╭─────╯
+80 ┤      ╭────╯
+75 ┤──────╯
+70 ┤
+   └────────────────────
+
+   Jun   Jul   Aug
+```
+
+---
+
+# 46. Every Score Needs a Visual Explanation
+
+Example:
+
+```text
+AUTHORIZATION
+
+71 / 100
+
+██████████████░░░░░░
+
+Evidence:
+
+Positive paths        ██████████  100%
+Negative paths        ████░░░░░░   42%
+Role coverage         ███████░░░   71%
+Critical operations   ██████░░░░   63%
+```
+
+The user must visually understand:
+
+> What is pulling the score down?
+
+---
+
+# 47. The Biggest UX Feature: What Should I Do Next?
+
+Do not give the user 800 findings first.
+
+Give:
+
+# Top 3 Highest Impact Actions
+
+```text
+1. Add negative authorization evidence
+
+Impact:
+High
+
+Risk reduction:
+CRITICAL → MEDIUM
+
+Affected operations:
+14
+```
+
+```text
+2. Fix CI failure masking
+
+Impact:
+Release confidence
+
+Affected workflow:
+backend-quality
+```
+
+```text
+3. Replace 21 arbitrary waits
+
+Impact:
+Test reliability
+
+Affected suites:
+8
+```
+
+Recommendations must be risk-weighted.
+
+---
+
+# 48. Explain Every Finding
+
+Commands:
+
+```bash
+qa-doctor rules list
+```
+
+```bash
+qa-doctor rules explain QA-SAAS-014
+```
+
+```bash
+qa-doctor why src/auth/user.service.ts:84
+```
+
+Example:
+
+```text
+QA-SAAS-014
+
+Missing negative authorization evidence
+
+TYPE
+
+EVIDENCE GAP
+
+WHY THIS MATTERS
+
+A privileged operation is only partially proven
+if unauthorized access has not been verified.
+
+WHAT QA DOCTOR DETECTED
+
+1 privileged operation
+1 positive test
+0 sufficiently relevant negative executions
+
+CONFIDENCE
+
+HIGH
+
+HOW TO PROVE IT
+
+Execute the operation with:
+
+• authenticated user without permission
+• missing identity
+• cross-tenant identity where applicable
+
+EXPECTED RESULT
+
+The operation must fail without modifying data.
+```
+
+---
+
+# 49. AI Assistant — But Never Fake Evidence
+
+Command:
+
+```bash
+qa-doctor explain
+```
+
+The assistant may answer:
+
+* Why is Authorization only 61?
+* What are my highest production risks?
+* Create a plan to reach Level A.
+* Which tests should I write first?
+* Explain this to a junior developer.
+
+But every AI conclusion must distinguish:
+
+```text
+VERIFIED EVIDENCE
+
+INFERRED RISK
+
+ASSUMPTION
+
+NO EVIDENCE
+```
+
+AI must never:
+
+* Upgrade E1 to E3
+* Mark behavior as verified
+* Invent runtime execution
+* Create fake evidence
+* Change deterministic scores
+
+AI-generated tests begin as:
+
+```text
+GENERATED
+
+NOT EXECUTED
+
+NOT EVIDENCE
+```
+
+Only execution can create observed evidence.
+
+Only validation can create verified evidence.
+
+---
+
+# 50. AI-Assisted Test Suggestions
+
+Example:
+
+```text
+QA Doctor found:
+
+UserService.deleteUser()
+
+Evidence:
+
+✓ Happy path
+✓ Database integration
+
+Missing:
+
+✗ Unauthorized user
+✗ User does not exist
+✗ Cross-tenant request
+✗ Database rollback failure
+```
+
+Command:
+
+```bash
+qa-doctor suggest tests
+```
+
+Output:
+
+```text
+Suggested Test Plan
+
+Priority P0
+
+1. Non-admin cannot delete another user.
+
+2. Tenant A cannot delete a user belonging to Tenant B.
+
+3. Database failure does not partially delete related data.
+```
+
+Generated output must remain:
+
+```text
+GENERATED — NOT YET VERIFIED
+```
+
+until executed.
+
+---
+
+# 51. Coding Agent Integration
+
+QA Doctor should support coding-agent workflows.
+
+```bash
+qa-doctor install
+```
+
+Detect supported agents and install a QA Doctor integration or skill.
+
+Workflow:
+
+```text
+Write Code
+    ↓
+Run Relevant Tests
+    ↓
+Run QA Doctor Changed Scope
+    ↓
+Detect Quality Regression
+    ↓
+Fix
+    ↓
+Re-run
+```
+
+Example:
+
+```bash
+npx qa-doctor@latest --scope changed --verbose
+```
+
+The objective is not merely to generate more tests.
+
+The objective is to prevent coding agents from repeatedly introducing known quality and evidence gaps.
+
+---
+
+# 52. CI Integration
+
+One command:
+
+```bash
+npx qa-doctor@latest ci install
+```
+
+Interactive setup:
+
+```text
+QA Doctor detected:
+
+GitHub Actions
+
+Install:
+
+✓ PR Quality Report
+✓ Changed-file scan
+✓ Inline annotations
+✓ Score regression detection
+✓ Evidence regression detection
+✓ Release evidence report
+
+Blocking level:
+
+○ Critical only
+● Error
+○ Warning
+○ Advisory only
+```
+
+---
+
+# 53. PR Experience
+
+Example:
+
+```text
+QA DOCTOR REPORT
+
+Quality Health
+
+84 → 79 ↓
+
+Quality Level
+
+A → B
+
+NEW FINDINGS
+
+Critical:
+1
+
+High:
+3
+
+Medium:
+7
+
+────────────────────
+
+NEW RISK
+
+A new privileged GraphQL mutation
+has no sufficient negative authorization evidence.
+
+File:
+
+src/admin/admin.resolver.ts
+
+Recommendation:
+
+Add an unauthorized identity test
+before merging.
+
+Merge Gate:
+
+BLOCKED
+```
+
+---
+
+# 54. Monorepo Intelligence
+
+Support:
+
+```text
+Repository
+
+├── apps/
+│   ├── web
+│   ├── admin
+│   └── api
+│
+├── packages/
+│   ├── auth
+│   ├── shared
+│   └── contracts
+```
+
+Output:
+
+```text
+PROJECT HEALTH
+
+web              91  A
+admin            82  B
+api              71  B
+shared           96  S
+
+SYSTEM SCORE
+
+78
+
+Weakest critical dependency:
+
+API authorization layer
+```
+
+Aggregation must be risk-aware.
+
+The system score must not simply average repositories.
+
+---
+
+# 55. Accessibility Evidence
+
+QA Doctor should eventually evaluate evidence for:
+
+* Static accessibility checks
+* Keyboard navigation
+* Focus management
+* Screen reader semantics
+* Color contrast
+* Form errors
+* Modal behavior
+* Responsive behavior
+* Critical flow accessibility
+
+The system should distinguish:
+
+```text
+Accessibility code analysis
+```
+
+from:
+
+```text
+Accessibility behavior evidence
+```
+
+---
+
+# 56. Visual and UI Regression Evidence
+
+Optional but valuable.
+
+Support:
+
+* Playwright screenshots
+* Visual regression engines
+* Storybook
+* Component snapshots
+
+Detect:
+
+* Visual tests that never run
+* Baselines never reviewed
+* Massive snapshot churn
+* Unstable screenshots
+* Critical UI without visual evidence
+
+---
+
+# 57. Performance Evidence
+
+Eventually analyze:
+
+* Performance tests
+* Load tests
+* Stress tests
+* Soak tests
+* API latency budgets
+* Frontend performance budgets
+* Bundle budgets
+* Database performance tests
+* Regression tracking
+
+Example:
+
+```text
+PERFORMANCE EVIDENCE
+
+72 / 100
+
+API performance:
+STRONG
+
+Frontend performance:
+PARTIAL
+
+Load testing:
+NO EVIDENCE
+```
+
+These analyses are not required for the instant MVP scan.
+
+---
+
+# 58. AI Application Quality
+
+For applications using:
+
+* LLM APIs
+* AI agents
+* RAG
+* Embeddings
+* Model routing
+* Prompt templates
+* Tool calling
+
+QA Doctor should eventually activate an AI quality profile.
+
+Analyze evidence for:
+
+* Prompt regression testing
+* Deterministic evaluation datasets
+* Golden datasets
+* Output validation
+* Schema validation
+* Tool-call validation
+* Prompt injection resistance
+* Hallucination evaluation
+* Fallback behavior
+* Model failure behavior
+* Latency
+* Cost regression
+* Model version drift
+* Evaluation reproducibility
+* Human approval gates
+
+Core principle:
+
+> AI output quality must not be measured only by whether the API returned HTTP 200.
+
+This is not an MVP requirement.
+
+---
+
+# 59. SaaS Intelligence Engine
+
+QA Doctor should support quality profiles:
+
+```text
+Generic Application
+SaaS
+B2B SaaS
+Multi-tenant SaaS
+API Platform
+Enterprise System
+Fintech
+Healthcare
+E-commerce
+AI Application
+```
+
+The selected or detected profile changes:
+
+* Risk weights
+* Critical path candidates
+* Required evidence
+* Release policies
+
+---
+
+# 60. Privacy by Default
+
+Default:
+
+```text
+LOCAL ANALYSIS
+```
+
+Repository source code should not need to leave the machine for deterministic analysis.
+
+Cloud features must be opt-in:
+
+```text
+Share report
+AI explanation
+Team dashboard
+Historical analytics
+```
+
+The user must understand what is shared.
+
+---
+
+# 61. QA Evidence Attestation
+
+Avoid making unsupported universal certification claims.
+
+Preferred concept:
+
+# QA Evidence Attestation
+
+Example:
+
+```text
+QA DOCTOR EVIDENCE ATTESTATION
+
+Repository:
+example-platform
+
+Commit:
+8f4c91a
+
+QA Doctor:
+1.0.0
+
+Configuration:
+sha256:xxxx
+
+Analysis:
+
+Static:
+Complete
+
+Runtime:
+Partial
+
+CI:
+Verified
+
+Mutation:
+Current report
+
+────────────────────
+
+Quality Health:
+91 / 100
+
+Evidence Level:
+A
+
+Release Confidence:
+HIGH
+```
+
+The attestation must be:
+
+* Commit-bound
+* Reproducible
+* Tool-version-bound
+* Configuration-bound
+* Time-stamped
+* Evidence-linked
+
+And clearly state:
+
+> This attestation describes the evidence observed for this repository state. It does not guarantee the absence of all defects.
+
+---
+
+# 62. Evidence Attestation Freshness
+
+Example:
+
+```text
+ATTESTATION STATUS
+
+CURRENT
+
+Commit:
+Current
+
+Last Evidence Scan:
+2 hours ago
+```
+
+After relevant changes:
+
+```text
+ATTESTATION STATUS
+
+PARTIALLY STALE
+
+Affected claims:
+
+Authorization
+User deletion
+
+Unaffected claims:
+
+Accessibility
+Documentation
+Frontend layout
+```
+
+This is more precise than invalidating everything.
+
+---
+
+# 63. Quality Badge
+
+Optional:
+
+```text
+QA Doctor
+
+Level A
+
+91/100
+
+Evidence Attested
+```
+
+A badge must link to accessible evidence.
+
+A badge without supporting evidence must not imply certification.
+
+---
+
+# 64. Rule Architecture
+
+Each rule should include:
+
+```ts
+interface QADoctorRule {
+  id: string;
+
+  category: string;
+
+  severity:
+    | "critical"
+    | "high"
+    | "medium"
+    | "low"
+    | "info";
+
+  findingType:
+    | "deterministic-defect"
+    | "evidence-gap"
+    | "heuristic-risk"
+    | "observation";
+
+  confidence: "high" | "medium" | "low";
+
+  evidenceRequired: boolean;
+
+  detect(): Finding[];
+
+  explain(finding): Explanation;
+
+  recommend(finding): Recommendation[];
+
+  scoreImpact(finding): ScoreImpact;
+}
+```
+
+Every rule must declare its epistemic type.
+
+---
+
+# 65. False Positive Protection
+
+Support narrow suppression:
+
+```bash
+qa-doctor ignore QA-TEST-014
+```
+
+Example:
+
+```text
+Before ignoring:
+
+This finding affects:
+
+4 files
+1 critical path
+
+Ignore:
+
+○ This line only
+● This file
+○ This project
+○ Entire repository
+```
+
+Every suppression should be visible:
+
+```bash
+qa-doctor suppressions
+```
+
+Example:
+
+```text
+QUALITY GOVERNANCE
+
+Suppressed findings:
+14
+
+Expired suppressions:
+3
+
+Unreviewed suppressions:
+5
+```
+
+---
+
+# 66. Plugin Architecture
+
+```text
+@qa-doctor/core
+
+@qa-doctor/typescript
+@qa-doctor/javascript
+
+@qa-doctor/jest
+@qa-doctor/vitest
+@qa-doctor/playwright
+@qa-doctor/cypress
+
+@qa-doctor/react
+@qa-doctor/node
+@qa-doctor/nestjs
+
+@qa-doctor/rest
+@qa-doctor/graphql
+@qa-doctor/grpc
+
+@qa-doctor/github-actions
+@qa-doctor/gitlab-ci
+@qa-doctor/jenkins
+@qa-doctor/azure-devops
+
+@qa-doctor/coverage
+@qa-doctor/mutation
+
+@qa-doctor/saas
+@qa-doctor/ai
+```
+
+The core must remain small.
+
+Plugins should expand ecosystem support without turning the core into a monolith.
+
+---
+
+# 67. Recommended Internal Architecture
+
+```text
+                         QA DOCTOR
+                             │
+                             ▼
+                    REPOSITORY DISCOVERY
+                             │
+             ┌───────────────┼───────────────┐
+             │               │               │
+             ▼               ▼               ▼
+
+        STATIC ENGINE    ARTIFACT ENGINE   CI ENGINE
+
+             │               │               │
+             └───────────────┼───────────────┘
+                             ▼
+
+                      EVIDENCE GRAPH
+                             │
+                ┌────────────┼────────────┐
+                │            │            │
+                ▼            ▼            ▼
+
+            CLAIMS        RISKS       CRITICAL PATHS
+
+                │            │            │
+                └────────────┼────────────┘
+                             ▼
+
+                    CONFIDENCE ENGINE
+                             │
+                             ▼
+
+                       POLICY ENGINE
+                             │
+                             ▼
+
+                       SCORE ENGINE
+                             │
+                             ▼
+
+                      VERDICT ENGINE
+                             │
+          ┌──────────────────┼──────────────────┐
+          │                  │                  │
+          ▼                  ▼                  ▼
+
+         CLI                JSON                CI
+```
+
+Optional runtime instrumentation feeds into:
+
+```text
+EVIDENCE GRAPH
+```
+
+not directly into the score.
+
+---
+
+# 68. Recommended Data Flow
+
+```text
+1. Discover repository
+
+2. Build technology profile
+
+3. Parse source and tests
+
+4. Discover operations and boundaries
+
+5. Collect existing evidence
+
+6. Build Evidence Graph
+
+7. Run deterministic rules
+
+8. Infer evidence gaps
+
+9. Optionally collect runtime evidence
+
+10. Validate evidence relevance
+
+11. Apply freshness rules
+
+12. Calculate dimension scores
+
+13. Apply hard release policies
+
+14. Produce verdict
+
+15. Explain top actions
+```
+
+---
+
+# 69. CLI Commands
+
+## Default scan
+
+```bash
+npx qa-doctor@latest
+```
+
+## Explicit scan
+
+```bash
+qa-doctor scan
+```
+
+## Changed files
+
+```bash
+qa-doctor --scope changed
+```
+
+## Only changed lines
+
+```bash
+qa-doctor --scope lines
+```
+
+## Specific project
+
+```bash
+qa-doctor --project api
+```
+
+## Entire monorepo
+
+```bash
+qa-doctor --project "*"
+```
+
+## Only score
+
+```bash
+qa-doctor --score
+```
+
+## JSON
+
+```bash
+qa-doctor --json
+```
+
+## Full evidence report
+
+```bash
+qa-doctor report
+```
+
+## Evidence ledger
+
+```bash
+qa-doctor evidence
+```
+
+## Evidence gaps
+
+```bash
+qa-doctor evidence gaps
+```
+
+## Critical risks
+
+```bash
+qa-doctor risks
+```
+
+## Explain source
+
+```bash
+qa-doctor why src/auth/service.ts:84
+```
+
+## Explain rule
+
+```bash
+qa-doctor rules explain QA-SAAS-014
+```
+
+## Explain score
+
+```bash
+qa-doctor score explain authorization
+```
+
+## Runtime verification
+
+```bash
+qa-doctor verify
+```
+
+## Authorization verification
+
+```bash
+qa-doctor verify authorization
+```
+
+## Deep verification
+
+```bash
+qa-doctor verify --deep
+```
+
+## Mutation testing
+
+```bash
+qa-doctor mutation
+```
+
+## Compare against main
+
+```bash
+qa-doctor compare main
+```
+
+## Baseline
+
+```bash
+qa-doctor baseline create
+```
+
+## Critical paths
+
+```bash
+qa-doctor critical-paths
+```
+
+## Generate improvement plan
+
+```bash
+qa-doctor plan
+```
+
+## AI explanation
+
+```bash
+qa-doctor explain
+```
+
+## Test suggestions
+
+```bash
+qa-doctor suggest tests
+```
+
+## Coding agent integration
+
+```bash
+qa-doctor install
+```
+
+## CI integration
+
+```bash
+qa-doctor ci install
+```
+
+---
+
+# 70. MVP Scope
+
+The first version must be aggressively focused.
+
+## Supported Languages
+
+```text
+JavaScript
+TypeScript
+```
+
+## Supported Application Stack
+
+```text
+Node.js
+React
+NestJS
+```
+
+## Supported Testing
+
+```text
+Jest
+Vitest
+Playwright
+```
+
+## Supported APIs
+
+```text
+REST
+GraphQL
+```
+
+## Supported CI
+
+```text
+GitHub Actions
+```
+
+## Supported Evidence
+
+```text
+V8 Coverage
+Istanbul Coverage
+Existing mutation reports
+Test reports
+GitHub Actions artifacts
+```
+
+---
+
+# 71. Four Core MVP Engines
+
+```text
+                    QA DOCTOR
+                         │
+          ┌──────────────┼──────────────┐
+          │              │              │
+          ▼              ▼              ▼
+
+   TEST QUALITY    EVIDENCE ENGINE   CI INTEGRITY
+
+                         │
+                         ▼
+
+                     RISK ENGINE
+
+                         │
+                         ▼
+
+                   VERDICT ENGINE
+```
+
+---
+
+## Engine 1 — Test Quality
+
+Initial focus:
+
+* Focused tests
+* Skipped tests
+* No meaningful assertions
+* Hard sleeps
+* Arbitrary timeouts
+* Retry abuse
+* Missing cleanup
+* Obvious failure masking
+* Unused mocks
+* Obvious mock-only verification
+* Duplicate test blocks
+* Excessive snapshot patterns
+
+---
+
+## Engine 2 — Evidence Engine
+
+Initial discoverable boundaries:
+
+```text
+REST endpoints
+GraphQL queries
+GraphQL mutations
+NestJS controllers
+NestJS resolvers
+Guards
+Roles
+Permissions
+```
+
+For each operation:
+
+```text
+Operation discovered
+Positive evidence
+Negative evidence
+Authorization evidence
+Integration evidence
+Mock-only evidence
+Runtime evidence
+CI evidence
+```
+
+The first version should prioritize:
+
+> **High-confidence relationships over universal semantic understanding.**
+
+---
+
+## Engine 3 — CI Integrity
+
+Initial rules:
+
+```text
+continue-on-error
+|| true
+Ignored exit codes
+Unreachable workflows
+Invalid branch filters
+Required report not produced
+Report consumed without generation
+Job skipped unexpectedly
+Required gate disconnected from expected test
+Retry masking
+Always-success patterns
+Missing artifact validation
+Mutation job always skipped
+```
+
+---
+
+## Engine 4 — Changed Scope
+
+Primary developer workflow:
+
+```bash
+npx qa-doctor@latest --scope changed
+```
+
+The command must answer:
+
+```text
+WHAT CHANGED?
+
+WHAT QUALITY EVIDENCE WAS AFFECTED?
+
+WHAT NEW RISKS APPEARED?
+
+WHAT EVIDENCE BECAME STALE?
+
+WHAT MUST BE VERIFIED BEFORE MERGE?
+```
+
+---
+
+# 72. The First 50 Rules
+
+The first 50 rules should prioritize quality over quantity.
+
+## Tier A — Deterministic
+
+Examples:
+
+```text
+QA-TEST-001
+Focused test committed
+
+QA-TEST-002
+Skipped test
+
+QA-TEST-003
+No meaningful assertion
+
+QA-TEST-004
+Hard sleep
+
+QA-TEST-005
+Arbitrary timeout
+
+QA-CI-001
+Failure masking
+
+QA-CI-002
+Ignored exit code
+
+QA-CI-003
+Workflow unreachable
+
+QA-CI-004
+Required report not generated
+
+QA-CI-005
+Critical job always skipped
+```
+
+Detection confidence:
+
+```text
+HIGH
+```
+
+---
+
+## Tier B — Strong Evidence Gaps
+
+Examples:
+
+```text
+QA-ARCH-001
+Critical dependency only tested through mocks
+
+QA-ARCH-002
+Integration boundary lacks evidence
+
+QA-COV-001
+High raw coverage but low critical-path evidence
+
+QA-COV-002
+Critical branch uncovered
+
+QA-SAAS-001
+Privileged operation lacks negative evidence
+
+QA-SAAS-002
+Cross-tenant isolation unproven
+
+QA-SAAS-003
+Sensitive mutation lacks authorization evidence
+
+QA-SAAS-004
+Idempotency evidence missing
+```
+
+These are:
+
+```text
+EVIDENCE GAPS
+```
+
+not automatically defects.
+
+---
+
+## Tier C — Heuristic Risks
+
+Examples:
+
+```text
+Potential excessive mocking
+Potential implementation coupling
+Potential brittle snapshot
+Potential test ordering dependency
+```
+
+These must never be presented with the same certainty as deterministic defects.
+
+---
+
+# 73. MVP Roadmap
+
+## Phase 0 — Foundation
+
+Build:
+
+```text
+Repository discovery
+Project graph
+Configuration system
+Plugin architecture
+Evidence Graph schema
+Finding taxonomy
+JSON output
+Deterministic scoring foundation
+```
+
+---
+
+## Phase 1 — High-Confidence Rules
+
+Target:
+
+```text
+20–30 deterministic rules
+```
+
+Focus:
+
+```text
+Test hygiene
+Test quality
+CI failure masking
+Focused/skipped tests
+Assertions
+Timeouts
+Retries
+Workflow reachability
+Report integrity
+```
+
+Primary goal:
+
+> **Extremely low false-positive and false-proof rates.**
+
+---
+
+## Phase 2 — Operation Discovery
+
+Support:
+
+```text
+NestJS
+REST
+GraphQL
+Resolvers
+Controllers
+Guards
+Roles
+Permissions
+```
+
+Build:
+
+```text
+OPERATION INVENTORY
+```
+
+Example:
+
+```text
+127 operations discovered
+
+23 privileged
+
+14 critical
+```
+
+---
+
+## Phase 3 — Evidence Engine
+
+Connect:
+
+```text
+Operations
+Tests
+Coverage
+Runtime artifacts
+CI gates
+```
+
+Introduce:
+
+```text
+E0–E4
+```
+
+with conservative evidence promotion.
+
+---
+
+## Phase 4 — CI Integrity
+
+Build the GitHub Actions engine.
+
+Target:
+
+```text
+Failure masking
+Workflow reachability
+Report validation
+Required execution path
+Skipped critical jobs
+False-green conditions
+```
+
+---
+
+## Phase 5 — Changed Scope
+
+Introduce:
+
+```text
+Baseline
+Evidence regression
+Stale evidence
+New critical paths
+PR verdict
+```
+
+---
+
+## Phase 6 — Runtime Evidence
+
+Start with:
+
+```text
+Test runner events
+V8 / Istanbul correlation
+HTTP boundaries
+GraphQL operations
+Authorization boundaries
+```
+
+Database instrumentation should initially be adapter-based.
+
+---
+
+# 74. Explicit Non-Goals for Version 1
+
+QA Doctor v1 should intentionally not attempt to solve:
+
+```text
+Universal AI evaluation
+Universal performance testing
+Full chaos engineering
+Every programming language
+Every test framework
+Every CI provider
+Universal database tracing
+Complete visual regression
+Full security scanning
+Automatic understanding of all business behavior
+```
+
+These belong to the plugin roadmap.
+
+The objective is:
+
+> **Build the most trustworthy evidence engine possible for one ecosystem before expanding.**
+
+---
+
+# 75. Product Success Criteria
+
+QA Doctor succeeds if users can say:
+
+> "I understand the quality state of my system in less than one minute."
+
+And:
+
+> "I know exactly what I should fix next."
+
+And:
+
+> "If QA Doctor says this critical behavior is verified, I can inspect the evidence behind that claim."
+
+Key metrics:
+
+```text
+False-positive rate
+False-proof rate
+Time to first verdict
+Time to identify next action
+PR adoption
+Evidence regression detection
+Critical findings fixed
+```
+
+The most important quality metric for QA Doctor itself:
+
+```text
+FALSE PROOF RATE
+
+AS CLOSE TO ZERO AS POSSIBLE
+```
+
+---
+
+# 76. Recommended First-Run Experience
+
+```bash
+npx qa-doctor@latest
+```
+
+Output:
+
+```text
+                 QA DOCTOR
+
+        QUALITY EVIDENCE ANALYSIS
+
+Repository:
+star-platform
+
+Analysis:
+18.4 seconds
+
+────────────────────────────
+
+QUALITY HEALTH
+
+82 / 100
+
+LEVEL B — STRONG
+
+────────────────────────────
+
+EVIDENCE LEVEL
+
+B — STRONG
+
+18 critical claims analyzed
+
+✓ 11 strongly verified
+◐ 5 partially verified
+✗ 2 unproven
+
+────────────────────────────
+
+RELEASE CONFIDENCE
+
+CONDITIONAL
+
+────────────────────────────
+
+CRITICAL EVIDENCE GAPS
+
+1. DELETE USER
+
+Privileged operation detected.
+
+Positive evidence:
+FOUND
+
+Negative authorization evidence:
+NOT SUFFICIENTLY PROVEN
+
+2. TENANT DATA ACCESS
+
+Tenant boundary detected.
+
+Explicit cross-tenant runtime evidence:
+NOT FOUND
+
+────────────────────────────
+
+CI INTEGRITY
+
+1 CRITICAL RISK
+
+A required workflow can ignore
+a failing test result.
+
+────────────────────────────
+
+TOP 3 ACTIONS
+
+1. Verify negative authorization
+   for 4 privileged operations.
+
+2. Remove CI failure masking.
+
+3. Add cross-tenant negative evidence.
+
+Run:
+
+qa-doctor why QA-SAAS-001
+```
+
+Within seconds, the user understands:
+
+```text
+Where we are.
+What is proven.
+What is partially proven.
+What is unproven.
+What is dangerous.
+What to do next.
+```
+
+---
+
+# Final Product Definition
+
+## QA Doctor
+
+### The Quality Evidence Engine for Modern Software
+
+```bash
+npx qa-doctor@latest
+```
+
+Then:
+
+```text
+1. Understand the repository.
+
+2. Detect the technology stack.
+
+3. Discover operations and system boundaries.
+
+4. Discover tests and quality infrastructure.
+
+5. Identify critical paths.
+
+6. Build an Evidence Graph.
+
+7. Analyze test quality.
+
+8. Detect weak or misleading tests.
+
+9. Identify evidence gaps.
+
+10. Collect existing coverage and mutation evidence.
+
+11. Optionally collect runtime evidence.
+
+12. Audit CI integrity.
+
+13. Detect false-green risks.
+
+14. Apply risk-aware quality analysis.
+
+15. Calculate transparent deterministic scores.
+
+16. Apply hard release policies.
+
+17. Classify evidence confidence.
+
+18. Detect stale evidence.
+
+19. Detect quality regressions.
+
+20. Produce a human-readable verdict.
+
+21. Show exactly what to improve next.
+```
+
+---
+
+# The Three Questions Every Team Should Be Able to Answer
+
+## Question 1
+
+> **What is actually proven?**
+
+Answer:
+
+```text
+Evidence Ledger
+```
+
+## Question 2
+
+> **What critical behavior cannot currently be proven?**
+
+Answer:
+
+```text
+Critical Evidence Gaps
+```
+
+## Question 3
+
+> **Can the current release process be trusted?**
+
+Answer:
+
+```text
+Release Confidence
+```
+
+---
+
+# The Final Architecture Statement
+
+```text
+STATIC ANALYSIS
+        +
+TEST ANALYSIS
+        +
+RUNTIME EVIDENCE
+        +
+COVERAGE
+        +
+MUTATION ARTIFACTS
+        +
+CI INTEGRITY
+        +
+RISK MODEL
+        +
+EVIDENCE GRAPH
+        +
+POLICY ENGINE
+        =
+QA DOCTOR
+```
+
+---
+
+# The Ultimate Goal
+
+A developer should be able to run:
+
+```bash
+npx qa-doctor@latest
+```
+
+And within seconds understand:
+
+```text
+Your system is Level B.
+
+Your engineering and testing foundation
+is generally strong.
+
+However:
+
+Authorization is only partially proven.
+
+Cross-tenant isolation lacks sufficient evidence.
+
+One CI gate can produce a false-green result.
+
+Do these 3 things to improve release confidence.
+```
+
+That is QA Doctor.
+
+Not another coverage tool.
+
+Not another linter.
+
+Not another test runner.
+
+Not another dashboard.
+
+Not an AI that pretends to understand quality.
+
+# A system that can answer:
+
+> **What quality level can this software honestly claim — what evidence proves it — what remains unproven — and can the current release actually be trusted?**

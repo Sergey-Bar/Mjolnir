@@ -1,0 +1,68 @@
+{
+  "note": "Corpus-only evidence classes (WI-13A): trace.zip, console, network. NOTHING in 0.6.x ingests these — they are committed corpus data that activates when their ingestion lands (WI-17/WI-18, 1.1.x). Shapes mirror Playwright's export conventions so the future parsers meet real data.",
+  "trace": {
+    "format": "playwright-trace (zip of: trace.trace NDJSON events + trace.styled-html + screenshots/)",
+    "committed": false,
+    "reason": "Binary zip, ~40KB generated; regenerated deterministically by tests/contract/mvp-golden/corpus.spec.ts when trace ingestion lands (WI-17). The manifest lists the case class; the harness asserts NO surface claims trace evidence in 0.6.x."
+  },
+  "console": {
+    "format": "playwright-json-attachment (array of {page, type, text, timestamp})",
+    "committed": true,
+    "file": "run-reports/console-evidence.json",
+    "sample": [
+      {
+        "page": "e2e/checkout.spec.ts",
+        "type": "error",
+        "text": "Uncaught (in promise) TypeError: Cannot read properties of undefined (reading 'total')",
+        "timestamp": 1725822720000
+      },
+      {
+        "page": "e2e/login.spec.ts",
+        "type": "warning",
+        "text": "[vite] connection lost. Displaying stale page.",
+        "timestamp": 1725822721000
+      },
+      {
+        "page": "e2e/login.spec.ts",
+        "type": "info",
+        "text": "retrying POST /api/session (attempt 2) after network hiccup",
+        "timestamp": 1725822722000
+      }
+    ]
+  },
+  "network": {
+    "format": "playwright-json-attachment (array of {request: {url, method}, response: {status, durationMs}})",
+    "committed": true,
+    "file": "run-reports/network-evidence.json",
+    "sample": [
+      {
+        "request": {
+          "url": "https://api.shop.example.test/session",
+          "method": "POST"
+        },
+        "response": { "status": 503, "durationMs": 4800 }
+      },
+      {
+        "request": {
+          "url": "https://api.shop.example.test/session",
+          "method": "POST"
+        },
+        "response": { "status": 200, "durationMs": 310 }
+      },
+      {
+        "request": {
+          "url": "https://api.shop.example.test/charge",
+          "method": "POST"
+        },
+        "response": { "status": 200, "durationMs": 1210 }
+      },
+      {
+        "request": {
+          "url": "https://api.shop.example.test/charge",
+          "method": "POST"
+        },
+        "response": { "status": 402, "durationMs": 980 }
+      }
+    ]
+  }
+}

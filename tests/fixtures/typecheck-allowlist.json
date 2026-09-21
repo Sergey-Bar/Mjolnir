@@ -1,0 +1,90 @@
+{
+  "$schema": "./typecheck-allowlist.schema.json",
+  "_contract": "Fixtures exempt from the Layer A structural typecheck (tsconfig.fixtures.json). Every entry carries a one-line justification; the length is snapshot-locked by tests/config/fixture-typecheck-gate.spec.ts and growth requires a conscious test edit. The gate script (scripts/typecheck-fixtures.ts) also fails on STALE entries: fixing a fixture means removing its allowlist row.",
+  "entries": [
+    {
+      "path": "tests/corpus/positive-fixtures/QA-PW-003/wip-debug-a.spec.ts",
+      "reason": "Deliberate debug leftover (0-arg test.only()) — the anti-pattern IS the detector input."
+    },
+    {
+      "path": "tests/corpus/positive-fixtures/QA-PW-115/module-state-b.spec.ts",
+      "reason": "Cross-callback page use-before-assign IS the module-state anti-pattern the rule must detect."
+    },
+    {
+      "path": "tests/corpus/positive-fixtures/QA-PW-115/shared-page.spec.ts",
+      "reason": "Harvested malformed real-world file (bare browser, import-after-code) demonstrating shared-page state."
+    },
+    {
+      "path": "tests/corpus/positive-fixtures/QA-TQUAL-002/tautologies.spec.ts",
+      "reason": "Chai-style toBeTrue absent from vitest's typed expect; the matcher text is the tautology sample."
+    },
+    {
+      "path": "tests/corpus/positive-fixtures/QA-TQUAL-009/unawaited-then.spec.ts",
+      "reason": "Harvested real-world jest-style named imports from @playwright/test; detector input, not rot to repair."
+    },
+    {
+      "path": "tests/fixtures/QA-ENV-001/must-not-fire/code-as-test-data.spec.ts",
+      "reason": "References rule objects (jvHardcodedUrl/envRule) defined outside fixture scope — code-as-data boundary fixture."
+    },
+    {
+      "path": "tests/fixtures/QA-PW-004/must-not-fire/selector-as-argument.spec.ts",
+      "reason": "classifyLocator is the simulated project's own API — test-DATA boundary fixture."
+    },
+    {
+      "path": "tests/fixtures/QA-PW-115/must-fire/shared-page.spec.ts",
+      "reason": "Cross-test page: Page | undefined use — the shared-state anti-pattern itself is the detection target."
+    },
+    {
+      "path": "tests/fixtures/QA-PW-145/must-not-fire/login.spec.ts",
+      "reason": "toHaveNoViolations exists only after axe's expect.extend in the simulated project's setup."
+    },
+    {
+      "path": "tests/fixtures/QA-TEST-003/must-fire/no-assert.spec.ts",
+      "reason": "saveUser/saveUserSync are the simulated app's API — the fixture needs only call expressions."
+    },
+    {
+      "path": "tests/fixtures/QA-TEST-003/must-not-fire/clean.spec.ts",
+      "reason": "saveUser/fetchProfile/loadUser are the simulated app's API."
+    },
+    {
+      "path": "tests/fixtures/QA-TEST-004/must-fire/sleepy.spec.ts",
+      "reason": "sleep() is the simulated app's helper; the wait-for-timeout call is the detector input."
+    },
+    {
+      "path": "tests/fixtures/QA-TEST-010/must-not-fire/clean.spec.ts",
+      "reason": "order/checkout are the simulated app's API."
+    },
+    {
+      "path": "tests/fixtures/QA-TQUAL-001/must-fire/mock-only.spec.ts",
+      "reason": "service is the simulated app's API; mocking it is the anti-pattern under detection."
+    },
+    {
+      "path": "tests/fixtures/QA-TQUAL-001/must-not-fire/clean.spec.ts",
+      "reason": "service is the simulated app's API."
+    },
+    {
+      "path": "tests/fixtures/QA-TQUAL-002/must-not-fire/clean.spec.ts",
+      "reason": "computeTotal/isValid/input are the simulated app's API."
+    },
+    {
+      "path": "tests/fixtures/QA-TQUAL-009/must-fire/unawaited-chain.spec.ts",
+      "reason": "fetchUser is the simulated app's API; callback params inherit its (undeclared) types."
+    },
+    {
+      "path": "tests/fixtures/QA-TQUAL-009/must-not-fire/clean.spec.ts",
+      "reason": "fetchUser is the simulated app's API; callback params inherit its (undeclared) types."
+    },
+    {
+      "path": "tests/fixtures/QA-TQUAL-011/must-fire/commented.spec.ts",
+      "reason": "refund is the simulated app's API."
+    },
+    {
+      "path": "tests/fixtures/QA-TQUAL-011/must-not-fire/clean.spec.ts",
+      "reason": "charge/refund are the simulated app's API."
+    },
+    {
+      "path": "tests/fixtures/QA-TQUAL-011/must-not-fire/prose-mentioning-test.spec.ts",
+      "reason": "pack is the simulated app's API."
+    }
+  ]
+}

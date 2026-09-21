@@ -1,0 +1,1514 @@
+> STATUS 2026-08-25: FROZEN CONTRACT — largely implemented. Scoring,
+> suppressions, exit codes, --scope changed, and crash isolation from this
+> spec are all live in `src/`. Kept as the reference for that "frozen"
+> behavior even though later sections (§32–35) read as a bolted-on second
+> planning pass. For current build status by phase, see
+> `docs/plans/Implementation-Master-Plan.txt`.
+
+# QA Doctor — MVP Plan
+
+## The Linter-Grade Quality Scanner for QA Engineers
+
+> Like React Doctor — but instead of scanning React components,
+> QA Doctor scans your **tests and CI** and tells you what's broken,
+> risky, or fake-green.
+
+---
+
+# 1. The One-Command Experience
+
+```bash
+npx qa-doctor@latest
+```
+
+Zero configuration. QA Doctor detects:
+
+* Test framework (Jest / Vitest / Playwright)
+* Language (JavaScript / TypeScript)
+* CI provider (GitHub Actions)
+* Monorepo structure
+
+And prints a health score plus prioritized findings.
+
+```text
+                 QA DOCTOR
+
+          QUALITY SCAN COMPLETE
+
+             SCORE:  72 / 100
+
+        ███████████████░░░░░░░
+
+   14 issues found (3 errors, 11 warnings)
+
+   TOP ISSUES
+
+   ERROR    continue-on-error masks failing test
+            .github/workflows/ci.yml:34
+
+   ERROR    Focused test committed (fit.only)
+            src/auth/auth.service.spec.ts:12
+
+   WARNING  Hard sleep detected (waitForTimeout)
+            e2e/checkout.spec.ts:88
+
+   Run with --verbose for all findings.
+```
+
+That's it. One command. Seconds to run. Immediate value on any repo.
+
+---
+
+# 2. The Three-Step Quickstart (React Doctor Model)
+
+## Step 1 — Scan
+
+```bash
+npx qa-doctor@latest
+```
+
+Health score + all findings, sorted by severity.
+
+## Step 2 — Fix what you broke
+
+```bash
+npx qa-doctor@latest --scope changed
+```
+
+Compares your branch against its merge base.
+Reports **only new findings introduced by your changes**.
+Fix `error` diagnostics before `warning`.
+
+## Step 3 — Add it to CI
+
+```bash
+npx qa-doctor@latest ci install
+```
+
+Writes `.github/workflows/qa-doctor.yml`.
+Default workflow reports new PR findings without blocking merges.
+Gate level is configurable (`ci config`).
+
+---
+
+# 3. What the MVP Is
+
+A fast, deterministic, static-analysis CLI that audits:
+
+1. **Test quality** — weak, fake, or misleading tests
+2. **Test hygiene** — skipped/focused/duplicate tests
+3. **CI integrity** — failure masking and false-green patterns
+
+It answers one question per repo:
+
+> **Can I trust these green checkmarks — and what looks wrong right now?**
+
+---
+
+# 4. What the MVP Is NOT
+
+Explicitly out of scope for v1 (post-MVP roadmap):
+
+| Feature | Status |
+|---|---|
+| Evidence Graph / E0–E4 classification | Post-MVP |
+| Runtime verification (`qa-doctor verify`) | Post-MVP |
+| Mutation testing integration | Post-MVP |
+| Coverage intelligence | Post-MVP |
+| Authorization / tenant-isolation analysis | Post-MVP |
+| AI assistant & test suggestions | Post-MVP |
+| Baselines, trends, dashboards | Post-MVP |
+| Attestations & badges | Post-MVP |
+| GitLab / Jenkins / Azure CI | Post-MVP |
+| Non-JS languages | Post-MVP |
+
+**Rule of thumb:** if a feature needs execution data, history, or semantic
+inference to be honest, it is not in the MVP.
+
+---
+
+# 5. Supported Stack (v1)
+
+```text
+Languages:      JavaScript, TypeScript
+Frameworks:     Node.js, React, NestJS (detection only)
+Test runners:   Jest, Vitest, Playwright
+CI:             GitHub Actions
+APIs:           REST, GraphQL (operation discovery only — light)
+Monorepos:      Detected; scan each project, report per-project scores
+```
+
+---
+
+# 6. The Rules (First ~30)
+
+Every rule is **deterministic**: same input → same finding, high confidence,
+near-zero false positives. Every rule ships with a positive fixture (must fire)
+and a negative fixture (must not fire).
+
+## Tier A — Test Hygiene (10 rules)
+
+| ID | Rule | Severity |
+|---|---|---|
+| QA-TEST-001 | Focused test committed (`fit`/`fdescribe`/`.only`) | error |
+| QA-TEST-002 | Skipped test (`it.skip`, `xit`, `test.skip`) | warning |
+| QA-TEST-003 | Test with no assertions | error |
+| QA-TEST-004 | Hard sleep (`sleep()`, `waitForTimeout()`) | warning |
+| QA-TEST-005 | Arbitrary timeout instead of condition wait | warning |
+| QA-TEST-006 | Retry abuse (`retries` hiding flakiness) | warning |
+| QA-TEST-007 | Missing cleanup (afterAll without restore) | warning |
+| QA-TEST-008 | Duplicate test blocks (identical bodies) | info |
+| QA-TEST-009 | Unused mock/fixture declarations | info |
+| QA-TEST-010 | Empty test body | error |
+
+## Tier B — Test Quality (8 rules)
+
+| ID | Rule | Severity |
+|---|---|---|
+| QA-TQUAL-001 | Mock-only verification (asserts mock was called) | warning |
+| QA-TQUAL-002 | Tautological assertion (`expect(true).toBe(true)`) | error |
+| QA-TQUAL-003 | Assertion-free async call (fire and forget) | error |
+| QA-TQUAL-004 | Excessive snapshot testing in suite | warning |
+| QA-TQUAL-005 | Huge brittle snapshot (> N lines) | warning |
+| QA-TQUAL-006 | Implementation coupling (asserts internals) | info |
+| QA-TQUAL-007 | Randomness without seed | warning |
+| QA-TQUAL-008 | Network dependency without mock | warning |
+
+## Tier C — CI Integrity (10 rules)
+
+| ID | Rule | Severity |
+|---|---|---|
+| QA-CI-001 | `continue-on-error: true` on required job | error |
+| QA-CI-002 | `\|\| true` swallowing exit codes | error |
+| QA-CI-003 | Ignored exit codes (`set +e` patterns) | error |
+| QA-CI-004 | Workflow unreachable (bad trigger/branch filter) | warning |
+| QA-CI-005 | Required report consumed but never generated | error |
+| QA-CI-006 | Job always skipped via `if: false` patterns | warning |
+| QA-CI-007 | Retry masking test failures | warning |
+| QA-CI-008 | Always-success step at end of job | error |
+| QA-CI-009 | Mutable action versions (`@main`, `@master`) | warning |
+| QA-CI-010 | Missing concurrency (wasted/conflicting runs) | info |
+
+---
+
+# 7. Finding Format
+
+Every finding answers four questions:
+
+```text
+QA-CI-001 · ERROR
+
+continue-on-error masks a failing required test
+
+WHAT WAS FOUND
+  .github/workflows/backend.yml:34
+  Job "security-scan" has continue-on-error: true
+
+WHY IT MATTERS
+  This job can fail every day and CI will still show green.
+  You cannot trust the checkmark on this workflow.
+
+HOW TO FIX
+  Remove continue-on-error, or scope it to non-blocking steps only.
+
+Docs: qa-doctor rules explain QA-CI-001
+Suppress: qa-doctor ignore QA-CI-001 --file .github/workflows/backend.yml
+```
+
+Finding types are declared by every rule:
+
+```text
+deterministic-defect   → certain problem (most of v1)
+heuristic-risk         → probable problem (clearly labeled)
+observation            → informational
+```
+
+No "evidence gap" findings in v1 — those require the Evidence Engine.
+
+---
+
+# 8. Scoring Model (Simple & Transparent)
+
+```text
+score = 100 − Σ(severity deductions)
+
+error    = −8
+warning  = −3
+info     = −1
+
+Floor: 0. Per-project scores in monorepos; system score = min(projects).
+```
+
+Deductions are public constants, versioned with the tool.
+Score changes between versions get a changelog entry.
+
+```text
+SCORE BREAKDOWN
+
+Test Hygiene      −9   (3 warnings, 0 errors)
+Test Quality     −17   (1 error, 3 warnings)
+CI Integrity     −27   (2 errors, 4 warnings)
+─────────────────────────
+TOTAL SCORE       72 / 100
+```
+
+No hidden weights. No black box. `qa-doctor score explain` prints this table.
+
+---
+
+# 9. Output Modes
+
+```bash
+qa-doctor                      # summary + top issues
+qa-doctor --verbose            # all findings, full detail
+qa-doctor --json               # machine-readable (CI, agents)
+qa-doctor --scope changed      # only findings on new/changed lines vs merge-base
+qa-doctor --project api        # single monorepo project
+qa-doctor --max-duration 20    # skip remaining files when budget expires (report partial)
+```
+
+Severity ordering always wins: errors first, then warnings, then info.
+
+---
+
+# 10. CI Integration
+
+```bash
+qa-doctor ci install
+```
+
+Generates `.github/workflows/qa-doctor.yml`:
+
+* Runs on pull requests
+* Default mode: **report only, no blocking**
+* Posts findings as inline annotations
+* `--scope changed` so legacy debt doesn't drown new regressions
+
+```bash
+qa-doctor ci config          # change gate level, scope, reporting
+```
+
+Gate options:
+
+```text
+○ advisory (default)   ○ errors block   ○ warnings block
+```
+
+---
+
+# 11. Coding Agent Integration
+
+```bash
+qa-doctor install
+```
+
+Installs instructions/skill for Copilot / Claude Code / Cursor:
+after touching tests or workflows, run
+`npx qa-doctor@latest --scope changed` and fix new errors before committing.
+
+---
+
+# 12. Suppressions (Governance from Day One)
+
+```bash
+qa-doctor ignore QA-TEST-004            # interactive: line/file/project/repo
+qa-doctor suppressions                  # list all, flag expired/unreviewed
+```
+
+Suppressed findings stay visible. Silent suppression is not allowed.
+
+---
+
+# 13. Architecture (Small Core)
+
+```text
+qa-doctor (CLI)
+├── discovery        # detect projects, frameworks, CI files
+├── parser           # TS/JS AST (ts-morph), YAML (CI workflows)
+├── rules            # pure functions: AST/YAML → Finding[]
+├── scorer           # transparent deduction table
+├── reporter         # terminal / JSON / annotations
+└── integrations     # github-actions workflow generator, agent installer
+```
+
+* No database. No server. No state (except optional cache keyed by file hash).
+* Rules are pure and independently testable.
+* Plugin-ready interfaces from day one, but ship as a single package.
+
+---
+
+# 14. Performance Targets
+
+```text
+Small repo (< 500 files):    < 5 seconds
+Medium repo (< 5k files):    < 20 seconds
+Changed scope:               < 5 seconds
+```
+
+Static analysis only. No test execution. No network calls (local-first).
+
+---
+
+# 15. Success Criteria for MVP
+
+1. `npx qa-doctor@latest` works on any JS/TS repo with zero config.
+2. Verdict in under 20 seconds on medium repos.
+3. False-positive rate low enough that users don't disable rules.
+4. Every finding explains: what, why it matters, how to fix.
+5. `--scope changed` gives clean signal on PRs with legacy debt.
+6. Users can say: *"I found real problems in my CI in under a minute."*
+
+---
+
+# 16. Post-MVP Roadmap (Sequenced)
+
+| Phase | Adds | Depends on |
+|---|---|---|
+| P2 | Operation inventory (REST/GraphQL/NestJS endpoints, guards) | stable core |
+| P3 | Evidence Engine v1: link operations ↔ tests, E0–E2 labels | P2 + design doc |
+| P4 | Coverage intelligence (import existing reports) | P3 |
+| P5 | Baselines, compare, quality regression detection | P3 |
+| P6 | Runtime verification plugin (`verify`) | P3, own MVP gate |
+| P7 | Mutation report import, policy gates, attestations | P3–P5 |
+
+The full vision (Evidence Graph, claim-based model, release confidence)
+lives in `Product.txt` and activates progressively after the MVP proves trust.
+
+---
+
+# 17. Why This Wins
+
+React Doctor proved the model for components.
+ESLint proved it for code style.
+Codecov proved it for coverage numbers.
+
+Nobody has proven it for **the thing QA engineers actually own**:
+test suites and CI pipelines.
+
+QA Doctor v1 is the first tool that tells you —
+
+> *your tests are lying, your CI can go green while broken,
+> and here are the exact lines where it happens.*
+
+---
+
+# 18. Critical Engineering Requirements (Mandatory)
+
+These are hard requirements carried over from the full-vision review.
+They exist to protect the two metrics that decide whether QA Doctor is
+trusted: **false-positive rate** and **false-proof rate**.
+
+## 18.1 Fixture Firewall — Every Rule Ships With Fixtures
+
+No rule merges without:
+
+```text
+rules/QA-TEST-004/
+├── rule.ts
+├── fixtures/
+│   ├── must-fire/          # repo snippet where the rule MUST report
+│   └── must-not-fire/      # repo snippet where the rule MUST stay silent
+└── rule.spec.ts            # asserts both fixtures behave exactly as declared
+```
+
+CI runs every rule against every fixture set. A rule that fires on its
+own negative fixture cannot ship. This is the false-positive firewall.
+
+## 18.2 Scoring Model Is Locked and Versioned
+
+* Deduction constants (`error = −8`, `warning = −3`, `info = −1`) live in
+  one public file: `src/scorer/constants.ts`.
+* Any change to constants requires a changelog entry and a major/minor bump.
+* **Golden test repositories**: 5–10 small frozen repos with expected scores
+  locked as regression tests. Any PR that changes a score on a golden repo
+  must justify it explicitly.
+* Missing data never penalizes: unanalyzed dimensions are excluded from the
+  score and disclosed in output (`ANALYSIS STATUS`), never scored as zero.
+
+## 18.3 Partial Analysis Must Never Say "Complete"
+
+If `--max-duration` expires or file parsing fails partway:
+
+```text
+PARTIAL ANALYSIS — 87% completed
+
+Not analyzed:
+• packages/legacy (budget expired)
+
+Current verdict excludes unanalyzed files.
+```
+
+Never print "scan complete" when analysis is incomplete. The score line
+must carry a `partial: true` flag in JSON output so CI consumers can react.
+
+## 18.4 Rule ID Namespaces Are Public API
+
+IDs appear in suppressions, docs, and CI annotations — they are permanent.
+
+```text
+QA-TEST-*    test hygiene
+QA-TQUAL-*   test quality
+QA-CI-*      CI integrity
+```
+
+Rules:
+* IDs are never reused, even if a rule is removed.
+* Removing a rule → `deprecated` status for one minor version, then removed.
+* New categories require an RFC-style note in the changelog.
+
+## 18.5 Cross-Platform From Day One
+
+* All path handling via `node:path`; no hardcoded `/` separators.
+* Tested on Windows, macOS, Linux in CI (the dev machine being Windows
+  makes this non-optional).
+* Glob patterns normalized; case-insensitive filesystems handled.
+* Symlinked monorepo workspaces (pnpm) must not cause infinite traversal.
+
+## 18.6 Monorepo Edge Cases Are First-Class
+
+* Workspace detection: npm/yarn/pnpm workspaces, Nx, Turborepo, Lerna.
+* A test file belongs to the nearest project root, not the repo root.
+* Per-project rules respect per-project config (a Vitest project and a
+  Jest project in one repo both get correct analysis).
+* Shared CI workflows at repo level are attributed to the system score,
+  not double-counted into every project score.
+
+---
+
+# 19. Required Design Docs Before Post-MVP Phases
+
+Two architectural foundations must be specified in writing before the
+corresponding phases start coding. Retrofitting either is expensive.
+
+## 19.1 `docs/design/evidence-inference.md` — blocks Phase P3
+
+How does QA Doctor decide that a test proves an operation? Written strategy
+with per-signal confidence weights:
+
+| Signal | Confidence contribution |
+|---|---|
+| Naming convention match (`deleteUser` ↔ `delete-user.spec.ts`) | Low — never sufficient alone |
+| Import graph (test imports module under test) | Medium |
+| Coverage correlation (test executes operation's code path) | Medium |
+| Assertion analysis (outcome assertion vs mock-call assertion) | High |
+| Runtime trace (identity + boundary + rejection observed) | Highest |
+
+Core rule: **evidence promotion requires converging signals** — no single
+weak signal can produce a strong claim. Defines E1→E4 promotion criteria
+mechanically.
+
+## 19.2 `docs/design/scoring-model.md` — written in Phase 0 (now)
+
+Formalizes §8: aggregation function, severity weights, confidence
+multipliers for future heuristic findings (low-confidence finding
+contributes ≤25% of nominal weight), missing-data policy, versioning.
+Golden repos (§18.2) are part of this deliverable.
+
+---
+
+# 20. Cold-Start Strategy: The Trust Ramp
+
+First run on any repo will find mostly deterministic issues — that's fine,
+that's the v1 product. But the output should frame what's coming:
+
+```text
+DETERMINISTIC ANALYSIS   COMPLETE (high confidence)
+EVIDENCE ANALYSIS        NOT YET AVAILABLE
+                         Claim-level verification activates in a
+                         later release and strengthens as QA Doctor
+                         observes your test runs and CI executions.
+```
+
+Principle: **QA Doctor earns trust before making stronger claims.**
+This turns "we can't verify behavior yet" from a weakness into the
+product narrative, and keeps v1 honest without overselling.
+
+---
+
+# 21. Competitive Positioning
+
+One table, kept current, drives all messaging:
+
+| Tool | What it measures | What it can't see |
+|---|---|---|
+| ESLint / Biome | Code style & correctness patterns | Test quality, CI integrity |
+| SonarQube / Codacy | Code smells, coverage %, some test smells | Whether tests actually verify behavior; false-green CI |
+| Codecov | Coverage numbers | Test quality, failure masking |
+| React Doctor | React component health | Tests, CI pipelines |
+| **QA Doctor** | **Test quality, test hygiene, CI integrity** | Runtime behavior (post-MVP) |
+
+QA Doctor's wedge: it's the only tool in the list that reads
+`.github/workflows/*.yml` and test suites as first-class analysis targets.
+
+---
+
+# 22. Open Business Decisions (Flagged, Not Blocked)
+
+These don't block the MVP but need answers before GA:
+
+1. **Primary buyer** — individual devs (top-findings UX wins) vs
+   engineering leads (trends/dashboards win). v1 targets devs; revisit
+   before building any dashboard tier.
+2. **Monetization** — local-first suggests: free local scan, paid cloud
+   features (history, dashboards, badge hosting). Decide before P5.
+3. **Rule maintenance budget** — Jest/Vitest/NestJS config variance means
+   ongoing churn. Budget ~30% of engineering time post-launch for rule
+   upkeep driven by user reports.
+4. **Profile expansion** — quality profiles (SaaS, fintech, etc.) change
+   risk weights. Start with at most 2–3 profiles post-MVP; more is
+   tuning hell.
+
+---
+
+# 23. Definition of Done for the MVP
+
+The MVP ships when all of these are true:
+
+- [ ] All Tier A/B/C rules implemented with fixtures (§18.1) passing
+- [ ] Golden repos locked; scoring regression tests green (§18.2)
+- [ ] Zero-config scan works on Windows/macOS/Linux CI (§18.5)
+- [ ] Monorepo detection handles npm/yarn/pnpm/Nx/Turborepo (§18.6)
+- [ ] `--scope changed` produces clean signal against a dirty legacy branch
+- [ ] `ci install` workflow posts annotations, advisory by default
+- [ ] Every finding renders what/why/how-to-fix (§7)
+- [ ] Performance targets met (§14)
+- [ ] `scoring-model.md` written and reviewed (§19.2)
+- [ ] 10 real-world OSS repos scanned manually; findings reviewed for
+      false positives before public launch
+
+---
+
+# 24. Automation Contracts (CI & Agents Depend on These)
+
+## 24.1 Exit Codes
+
+Machine-consumable and stable from v1.0 — changing them is a breaking release.
+
+```text
+0   success, no findings at or above gate level
+1   success, findings at or above gate level exist
+2   partial analysis (budget expired / some files skipped)
+10  usage error (bad flags, unknown project)
+20  internal error (crash — see stderr, report issue)
+```
+
+`ci install` workflows use exit codes, never output parsing.
+
+## 24.2 JSON Output Contract
+
+```bash
+qa-doctor --json
+```
+
+* Top-level `"schemaVersion": 1` field; consumers pin to it.
+* Additive changes within a schema version are allowed; removing or
+  renaming fields requires `schemaVersion` bump.
+* Shape (stable):
+
+```jsonc
+{
+  "schemaVersion": 1,
+  "partial": false,
+  "score": { "total": 72, "dimensions": { "...": 0 } },
+  "findings": [{
+    "ruleId": "QA-CI-001",
+    "severity": "error",
+    "file": ".github/workflows/backend.yml",
+    "line": 34,
+    "message": "...",
+    "fix": "..."
+  }],
+  "analysisStatus": { "discovery": "complete", "rules": "complete" }
+}
+```
+
+This is the interface coding agents and CI annotations build on — treat it
+like a public API with tests.
+
+---
+
+# 25. Crash Safety: One Bad Rule Never Kills the Scan
+
+Rules run in isolation:
+
+* Each rule executes inside a guard (try/catch + soft timeout).
+* A rule that throws is reported, not fatal:
+
+```text
+⚠ Rule QA-TQUAL-006 failed on packages/api (skipped)
+  Report at: https://github.com/.../issues — scan continued.
+```
+
+* Parse failures on individual files are skipped and counted in
+  `analysisStatus`, never silently ignored.
+* A scan must always produce output — degraded if needed, but honest
+  about what was skipped (§18.3).
+
+---
+
+# 26. Privacy, Telemetry & Supply-Chain Hygiene
+
+QA Doctor runs on source code — trust is existential.
+
+## 26.1 Local-First Guarantee
+
+* Default mode performs **zero network calls** during scanning.
+* No source code, file paths, or findings leave the machine by default.
+* This guarantee is stated in the README and enforced by tests
+  (scan runs with network disabled in CI).
+
+## 26.2 Opt-In Telemetry Only
+
+* Off by default. When enabled: anonymous counters only
+  (rule fired counts, duration, version) — never code, paths, or content.
+* `QA_DOCTOR_NO_TELEMETRY=1` env var always wins.
+
+## 26.3 Tool Supply Chain
+
+* Minimal runtime dependencies; every dependency is audited and pinned
+  via lockfile.
+* No post-install scripts in the published package.
+* Published provenance/attestation via npm `--provenance`.
+* Renovate/Dependabot enabled on the tool's own repo — QA Doctor must
+  pass its own scan (`dogfooding` CI job) before every release.
+
+---
+
+# 27. Configuration File (Optional, Zero-Config Preserved)
+
+```bash
+npx qa-doctor@latest          # works with no config file
+```
+
+For teams that want tuning, `qa-doctor.config.json` (or `qa-doctor` key
+in `package.json`):
+
+```jsonc
+{
+  "$schema": "https://qa-doctor.dev/schema/v1.json",
+  "gate": "advisory",              // advisory | error | warning
+  "severityOverrides": { "QA-TEST-008": "warning" },
+  "ignore": [
+    { "ruleId": "QA-TEST-004", "files": ["e2e/legacy/**"],
+      "reason": "known debt", "expires": "2026-12-31" }
+  ],
+  "projects": { "api": { "exclude": ["generated/**"] } }
+}
+```
+
+Rules:
+
+* Config presence never changes detection semantics — only severity,
+  scope, and gating.
+* Suppressions in config require a `reason`; expiring suppressions
+  surface in `qa-doctor suppressions` (§12).
+* Schema validated with a clear error message on invalid config.
+
+---
+
+# 28. Docs & Launch Plan
+
+## 28.1 Minimum Viable Docs (ship with MVP)
+
+Mirroring the React Doctor docs structure:
+
+```text
+docs/
+├── overview/quickstart            # the 3-step quickstart (§2)
+├── getting-started/how-to-fix     # per-rule fix guides
+├── reference/cli-reference        # every command and flag
+├── reference/rules/               # one page per rule ID (public API)
+├── ci-and-prs/github-actions-setup
+├── configuration/config-files
+└── install-for-coding-agents
+```
+
+Every rule page = the finding format from §7 rendered as documentation,
+auto-generated from rule metadata so docs can't drift.
+
+## 28.2 Launch Sequence
+
+1. **Alpha** — dogfood on QA Doctor's own repo + 5 friendly repos;
+   tune false positives (§23 checklist item).
+2. **Beta** — public repo scans, collect false-positive reports via
+   `qa-doctor report-issue` (opens pre-filled GitHub issue with
+   sanitized finding context — user approves before sending).
+3. **GA** — npm publish with provenance, docs live, badge available
+   (badge links to evidence/report — never implies certification it
+   doesn't have).
+
+## 28.3 Post-Launch Feedback Loop
+
+* Every finding output includes a one-line escape hatch:
+  `Wrong? qa-doctor report-issue QA-CI-001`
+* False-positive reports are triaged weekly; repeat offenders get
+  demoted to heuristic-risk or fixed — protecting the core metric:
+  **false-proof rate stays near zero** (§15).
+
+---
+
+# 29. EXECUTION PLAN — Timeline, Effort & Dev Model
+
+> **Correction to the plan:** everything above describes *what* to build.
+> Nothing described *how long*, *with whom*, or *how it's verified*.
+> This section fixes that. Without it, this was a wish list, not a plan.
+
+## 29.1 Scope Cut for Launch (Critical)
+
+28 rules at launch is over-scoped. Split:
+
+```text
+LAUNCH SET (15 rules — the ones that create word-of-mouth):
+  QA-CI-001 continue-on-error        ← flagship finding
+  QA-CI-002 || true
+  QA-CI-005 report consumed, never generated
+  QA-CI-008 always-success step
+  QA-TEST-001 focused test committed
+  QA-TEST-002 skipped test
+  QA-TEST-003 no assertions
+  QA-TEST-004 hard sleep
+  QA-TEST-010 empty test body
+  QA-TQUAL-001 mock-only verification
+  QA-TQUAL-002 tautological assertion
+  QA-TQUAL-003 assertion-free async call
+  QA-TQUAL-005 huge brittle snapshot
+  QA-TEST-006 retry abuse
+  QA-CI-007 retry masking
+
+FAST-FOLLOW (13 rules — shipped within 4 weeks post-launch,
+            announced as "weekly rule drops" → retention hook):
+  remaining QA-TEST-*, QA-TQUAL-*, QA-CI-* rules from §6
+```
+
+Also deferred post-launch: full Nx/Turborepo/Lerna attribution (§18.6).
+Launch supports npm/yarn/pnpm workspaces only. Single-project repos are
+the primary target — that's where the first 1,000 users live.
+
+## 29.2 Timeline — 12 Weeks to Public Launch
+
+Assumes **1 senior developer working AI-assisted full-time**, or
+**2 developers in 7 weeks**. Calendar includes QA gates (§31).
+
+```text
+WEEK 1   Foundation
+         Repo scaffold, ts-morph parser wrapper, project discovery
+         (single project + npm/yarn/pnpm workspaces), CLI skeleton,
+         JSON contract v1 + exit codes (§24), CI for the tool itself.
+         GATE: `qa-doctor` runs and prints "0 rules, 0 findings" on any JS repo.
+
+WEEK 2   Rule Engine + First Rules
+         Rule interface, fixture harness (§18.1), crash isolation (§25),
+         scorer + terminal reporter.
+         Rules: QA-TEST-001..004, 010.
+         GATE: fixture harness runs in CI; golden-repo mechanism exists.
+
+WEEK 3   Test Rules Complete
+         Remaining LAUNCH test rules (002, 003, 006, 010 done; add
+         QA-TQUAL-001..003, 005).
+         GATE: 11 rules green with fixtures.
+
+WEEK 4–5 CI Integrity Engine
+         YAML parser, workflow model (jobs/steps/triggers/matrix),
+         5 LAUNCH CI rules. This is the hardest analysis — budget 2 weeks.
+         GATE: detects continue-on-error + || true on 20 real-world
+         workflows collected from GitHub.
+
+WEEK 6   Changed Scope
+         Merge-base diff, line mapping, findings filtered to changed lines.
+         Edge cases: renames, new files, binary files, detached HEAD.
+         GATE: clean signal on a branch over a dirty legacy repo.
+
+WEEK 7   CI Integration + Config
+         `ci install` workflow generator, PR annotations, gate levels,
+         config file (§27), suppressions (§12).
+         GATE: end-to-end PR annotation on a real test repo.
+
+WEEK 8   Hardening
+         Cross-platform matrix (Win/mac/Linux), perf benchmark harness,
+         partial-analysis honesty (§18.3), fuzzing malformed inputs (§31).
+         GATE: <5s on 500-file repo, <20s on 5k-file repo, all 3 OSes.
+
+WEEK 9   Docs + Alpha
+         Docs site (§28.1, auto-generated rule pages), quickstart,
+         `install` for coding agents. Internal alpha on own repo + 5 friendly.
+         GATE: stranger-completes-quickstart test passes.
+
+WEEK 10–11 Private Beta
+         20–30 beta users (QA communities, Twitter/X, HN "Show HN" draft).
+         Weekly release cadence. False-positive triage every 48h.
+         Instrumentation: anonymous counters only (§26.2).
+         GATE: FP rate < 5% of findings reported wrong; ≥ 10 repos scanned
+         by external users.
+
+WEEK 12  Public Launch
+         npm publish --provenance, Show HN / Reddit r/QA / dev.to post,
+         badge available. Fast-follow rules already queued.
+```
+
+## 29.3 Development Model Per Workstream
+
+| Workstream | Method | AI Usage | Effort (senior-dev days) |
+|---|---|---|---|
+| Parser/discovery infra | Spec-first, hand-built core | AI scaffolds, human reviews hard | 5 |
+| Test rules (AST) | **Fixtures-first TDD**: write must-fire/must-not-fire fixtures before rule code | AI generates rule from fixtures + spec; human validates edge cases | 1 day/rule |
+| CI rules (YAML) | Spec-first + real-world corpus testing | AI drafts, human owns workflow-model design | 2 days/rule |
+| Scorer/reporter | Contract tests | Mostly hand-written (small, critical) | 3 |
+| `--scope changed` | Hand-built, git edge-case checklist | AI for git plumbing research only | 6 |
+| CI generator/config/suppressions | Schema-first | AI-heavy (boilerplate) | 5 |
+| Docs site | Auto-generated from rule metadata | AI-heavy | 4 |
+| Perf/hardening/fuzzing | Benchmark + fuzz harness in CI | Human-led | 5 |
+
+**Total: ≈ 60 focused dev-days** (≈ 12 weeks × 5 days at sustainable pace,
+including the QA gates below).
+
+**Working agreements:**
+* Trunk-based development, Conventional Commits, changesets for versioning.
+* Every PR must state which fixture/golden-repo behavior changed (ties to §18.2).
+* Friday demo to a non-author reviewer scanning an unfamiliar repo —
+  if the output isn't self-explanatory, the week failed.
+* AI-generated code follows the same fixture/spec gates as human code —
+  no exceptions. AI output is treated exactly like the product treats
+  AI test suggestions: GENERATED until VERIFIED.
+
+---
+
+# 30. QA PLAN FOR QA DOCTOR ITSELF
+
+> A quality-audit tool with bugs is dead on arrival. The tool's own QA
+> is a feature, not overhead. Budget: ~25% of total effort (included in §29.2).
+
+## 30.1 Test Pyramid
+
+```text
+E2E (CLI snapshot tests, 3 OS matrix)          ~15 tests
+Integration (golden repos, score locks)        5–10 frozen repos
+Rule fixtures (must-fire / must-not-fire)      2+ per rule — HARD GATE
+Unit (scorer, diff logic, config parser)       standard coverage
+Fuzz/property (malformed TS/YAML never crash)  continuous in CI
+```
+
+## 30.2 Non-Negotiable QA Gates (CI blocks merge on failure)
+
+1. **Fixture gate** — every rule passes both fixture sets (§18.1).
+2. **Golden-repo gate** — scores on frozen repos unchanged, or PR
+   explicitly justifies the delta.
+3. **Crash-proof gate** — fuzz corpus of 500 malformed/bizarre files;
+   scan must always exit 0/1/2, never 20.
+4. **Cross-platform gate** — Windows/macOS/Linux matrix green.
+5. **Perf gate** — benchmark repos stay within §14 targets; regression > 20% fails.
+6. **No-network gate** — default scan runs with network disabled; any
+   outbound call fails the build (enforces §26.1).
+7. **Self-scan gate** — QA Doctor scans its own repo; new errors block.
+
+## 30.3 Pre-Launch Manual QA (cannot be automated)
+
+* [ ] False-positive audit: scan 10 diverse OSS repos (Jest/Vitest/
+      Playwright, monorepo/single, React/NestJS/plain Node); every
+      finding manually reviewed and classified correct/wrong.
+* [ ] Stranger test: 3 developers outside the project complete the
+      quickstart unaided; record where they hesitate.
+* [ ] Windows-first check: full flow performed on Windows by hand
+      (the maintainer's OS is Windows — bugs here ship fastest).
+* [ ] CI annotation rendering verified on a real GitHub PR.
+* [ ] `--json` consumers validated: feed output to a simple annotation
+      script written against §24.2 only (no internals).
+
+## 30.4 Post-Launch Quality Loop
+
+* Opt-in counters track: rules fired, scan duration, crashes (exit 20).
+* `report-issue` false-positive reports triaged within 48h during beta,
+  weekly after GA.
+* Rule health dashboard (internal): fires-per-scan, suppression rate,
+  FP reports per rule. A rule with rising suppressions gets demoted to
+  heuristic-risk or fixed — protecting the north-star metric:
+  **false-proof rate stays near zero**.
+
+---
+
+# 31. Launch Readiness Checklist (Replaces Vague "GA")
+
+- [ ] 15 LAUNCH rules shipped with fixtures + docs pages
+- [ ] All §30.2 gates green on all 3 OSes
+- [ ] §30.3 manual QA signed off
+- [ ] npm name secured (`qa-doctor`), package published with provenance
+- [ ] Docs live; quickstart tested from a clean machine
+- [ ] Exit codes + JSON schema documented and frozen (schemaVersion 1)
+- [ ] Telemetry off-by-default verified by the no-network gate
+- [ ] Fast-follow 13 rules implemented and scheduled for weekly drops
+- [ ] Support channel chosen (GitHub Issues + Discussions) with 48h
+      triage commitment stated publicly
+- [ ] Pricing decision made or explicitly deferred with a date (§22)
+
+---
+
+# 32. What Was Wrong With This Plan Before This Section
+
+Honest ledger of the gaps this execution plan closes — keep it as a
+checklist discipline for future revisions:
+
+1. **No timeline, team model, or effort estimate existed.** A plan you
+   can't schedule is a vision document.
+2. **28 rules at launch was vanity scope.** 15 launch rules + weekly
+   drops ships sooner and creates a retention rhythm.
+3. **`--scope changed` was listed as one bullet.** It's a week of hard
+   git plumbing (merge-base, renames, line mapping) — now budgeted.
+4. **CI YAML analysis was underestimated.** Reusable workflows, matrix
+   jobs, and action composition make it the hardest engine — now given
+   2 dedicated weeks and a real-world corpus requirement.
+5. **Monorepo depth inflated v1.** Cut to workspaces-only at launch.
+6. **No measurable adoption signal.** Now: beta user count, FP rate,
+   repos scanned — reviewed weekly.
+7. **Docs were promised, never tasked.** Now a Week 9 deliverable with
+   a stranger-test gate.
+8. **The tool's own QA had no plan.** A QA auditor with bugs has zero
+   credibility — now 25% of effort with hard CI gates.
+
+---
+
+# 33. RISK-RANKED GAP REGISTER — What Was Still Missing
+
+> Final audit pass. Every remaining hole, ordered **highest → lowest risk**,
+> each with its mitigation and where it lands in the §29.2 timeline.
+
+## TIER 1 — Launch-blockers (would embarrass or break the product)
+
+### R1. Default ignore list is nowhere defined ⚠️ CRITICAL
+Without it, the scanner walks `node_modules`, `.git`, `dist`, `coverage`,
+`fixtures`, and vendored code → 10-minute scans, thousands of garbage
+findings, instant uninstall.
+```text
+DEFAULT IGNORES (always, unless overridden):
+node_modules/**, .git/**, dist/**, build/**, coverage/**,
+.turbo/**, .next/**, *.min.js, __snapshots__/** (except snapshot rules),
+vendor/**, pnpm-lock.yaml, package-lock.json
+```
+* Ignore resolution order: defaults → user config → CLI flags (later wins).
+* `qa-doctor doctor --why-excluded <path>` explains why something was skipped.
+* **Lands:** Week 1 (discovery infra). Test fixture: repo containing
+  node_modules dummy → must be skipped.
+
+### R2. Empty-state UX: repo with zero tests found
+"Score 100/100, 0 findings" on a repo with **no test files at all** is a
+false proof — the worst kind per this document's own principles.
+```text
+NO TESTS DETECTED
+
+No Jest/Vitest/Playwright test files were found.
+A score cannot be calculated honestly.
+
+If your tests live elsewhere:
+qa-doctor --tests-dir custom/path
+```
+Score = null (not 100). JSON: `"score": null, "reason": "no-tests-found" `.
+Exit code stays 0 (nothing wrong with the tool run).
+* **Lands:** Week 2 (reporter). Fixture: empty repo → null score.
+
+### R3. Malicious-repo hardening (the tool scans untrusted code)
+Fuzzing (§30.2) covers *crashes*, not *attacks*. A scanned repo can contain:
+symlink loops (`ln -s . .`), path traversal filenames, YAML bombs
+(billion laughs), prototype-polluting keys, 1GB single-line files.
+Mitigations:
+* Symlink traversal never escapes repo root; loop detection mandatory.
+* File size cap (default 1MB/file — skip + report as observation).
+* Depth cap on directories and AST recursion.
+* YAML parse with alias-count limits (safe loader options).
+* No shell invocation anywhere in the scan path; `ci install` writes
+  workflow files only from internal templates (no user-input interpolation).
+* **Lands:** Week 8 hardening week, but symlink+size caps from Week 1.
+
+### R4. Breaking-change policy for `npx qa-doctor@latest`
+npx means users always run latest — one bad release hits everyone instantly.
+* Exit codes + JSON schema frozen (§24) — extend: **rule IDs frozen too**;
+  severity *changes* to an existing rule require minor bump + changelog note.
+* New rules ship as warnings for their first 2 weeks before they may be
+  errors (soft landing, protects score stability).
+* Publish canary first (`@qa-doctor/canary` tag), promote after 48h smoke.
+* In-CLI update notice when running > 90 days behind latest.
+* **Lands:** Week 7 (release process), enforced from first publish.
+
+### R5. License + trademark decision (legal foundation)
+Undecided license blocks contributions, enterprise adoption, and possibly
+the name itself.
+* Decide Week 9, before alpha exposure: recommended **MIT core CLI +
+  optional paid cloud later** (matches §22 monetization leanings).
+* Trademark search on "QA Doctor" in target markets; if contested,
+  fallback names ready (`qadoctor`, `qa-doctor-cli` package already distinct).
+* CONTRIBUTING.md + DCO/sign-off (no heavy CLA) if accepting PRs.
+* **Owner:** founder decision. **Blocks:** public beta announcement copy.
+
+## TIER 2 — Correctness & trust risks (post-launch credibility)
+
+### R6. Overlapping findings (double-reporting)
+`|| true` inside a step that also has `continue-on-error` → two rules fire
+on the same root cause → noise, trust drops.
+* Dedup pass: same file+line+root-cause cluster → primary finding shown,
+  related rules listed under "related findings".
+* Rule metadata declares overlap groups (`overlapWith: ["QA-CI-002"]`).
+* **Lands:** Week 5 (after both rule families exist).
+
+### R7. Encoding / BOM / CRLF corners (Windows reality)
+UTF-16 test files, UTF-8 BOM, CRLF line endings → wrong line numbers in
+findings = annotations pointing at the wrong line = instant distrust.
+* Normalize on read; preserve original line mapping for reporting.
+* Fixture set includes BOM file, CRLF file, UTF-8 Hebrew comments file.
+* **Lands:** Week 2 fixtures harness (cheap now, expensive later).
+
+### R8. Framework-detection false positives
+Detection must follow config resolution (jest.config extends chains,
+playwright.config testDir), not just dependency presence.
+* Rule scoping follows resolved config, not global assumptions.
+* Undetectable cases → analyze all test-looking files, say so in output.
+* **Lands:** Weeks 3–4 alongside framework-specific rules.
+
+### R9. Score meaning drift across repo sizes
+Add context to every score display:
+```text
+SCORE 72/100 · 214 test files analyzed · 15 rules active
+```
+Prevents "why did my score drop when I added a project?" confusion.
+* **Lands:** Week 2 reporter (one line of output, big trust win).
+
+## TIER 3 — Adoption & operational risks
+
+### R10. Adoption KPIs have no numeric targets
+```text
+Week 4 post-launch:   500 weekly npx installs (npm API counts)
+Week 12 post-launch:  2,000 weekly installs · ≥40 GitHub stars/week organic
+North-star:           % of scans that are repeat users (target > 35%)
+FP rate:              < 5% of findings disputed via report-issue
+```
+Weekly review ritual; if a gate misses 2 weeks consecutively → revisit
+positioning, not just features.
+* **Lands:** Week 12 dashboard setup (anonymous counters already opt-in §26.2).
+
+### R11. Terminal accessibility & environment corners
+* Respect `NO_COLOR` and non-TTY (piped output → plain text, no spinners).
+* Color-blind-safe symbols (✓ ✗ ⚠) alongside color.
+* Works in constrained terminals (CI logs, VS Code terminal).
+* **Lands:** Week 2 reporter.
+
+### R12. Docs/domain/hosting costs & ownership
+* All infrastructure owned by a dedicated GitHub org (not personal account)
+  → bus-factor protection from day one.
+* Domain (~$15/yr), docs on GitHub Pages (free), npm org (free).
+* **Lands:** Week 1 setup (org creation), trivial effort.
+
+### R13. Contributor funnel (post-launch sustainability)
+* `qa-doctor create-rule` scaffold command → community rules feasible.
+* Rule RFC template in CONTRIBUTING; external rules namespaced `QA-COMM-*`.
+* Even if no contributors arrive, the scaffold forces internal consistency.
+* **Lands:** fast-follow, ~Week 4 post-launch.
+
+### R14. The maintainer's own time protection
+Solo-maintainer burnout kills tools. Codify:
+* Support SLA is "48h triage", not "48h fix" — stated publicly (§31).
+* Issues templated (bug / false-positive / rule-request) for fast triage.
+* Stale-bot on issues; "help wanted" labels for community pickup.
+* **Lands:** Week 12.
+
+## TIER 4 — Nice-to-have polish (only after launch metrics justify)
+
+### R15. Shell completion, `--init` flag, man page — standard CLI hygiene.
+### R16. SARIF output format — promoted to Week 7 (see GAP-H, §34).
+### R17. Local HTML report (`--format html`) — shareable single-file report.
+### R18. Watch mode (`qa-doctor --watch`) — low priority.
+
+---
+
+## Gap Register Summary
+
+| # | Gap | Tier | Lands |
+|---|---|---|---|
+| R1 | Default ignore list | 1 – blocker | Week 1 |
+| R2 | Zero-tests empty state (score=null) | 1 – blocker | Week 2 |
+| R3 | Malicious-repo hardening | 1 – blocker | Wk1 caps, Wk8 full |
+| R4 | Breaking-change/npx policy | 1 – blocker | Week 7 |
+| R5 | License + trademark | 1 – blocker | Week 9 |
+| R6 | Finding dedup/overlap groups | 2 | Week 5 |
+| R7 | Encoding/BOM/CRLF fixtures | 2 | Week 2 |
+| R8 | Framework detection via config resolution | 2 | Weeks 3–4 |
+| R9 | Score context line (denominator) | 2 | Week 2 |
+| R10 | Numeric adoption KPIs | 3 | Week 12 |
+| R11 | NO_COLOR/non-TTY/accessibility | 3 | Week 2 |
+| R12 | Org/domain/bus-factor setup | 3 | Week 1 |
+| R13 | Community rule scaffold | 3 | Post-launch Wk4 |
+| R14 | Maintainer sustainability process | 3 | Week 12 |
+| R15–18 | Completions/SARIF/HTML/watch | 4 | Post-launch |
+
+**Net effect on timeline:** R1/R2/R7/R11/R12 fold into existing weeks
+(they're small but fatal if missed). R3 full hardening fits Week 8's
+existing scope. **No timeline change required — but any of Tier 1
+skipped = do not launch.**
+
+---
+
+# 34. COMPETITIVE RESEARCH GAPS — What react.doctor & GitHub Tools Teach Us
+
+> Audit against: react.doctor/performance, eslint-plugin-jest,
+> eslint-plugin-vitest, actionlint, zizmor, knip, BuildPulse, Allure,
+> ReportPortal, dependency-cruiser, Biome.
+> Each gap below = something proven valuable in these tools that this
+> plan was missing.
+
+## GAP-A. The Vacuous-Pass Rule Family ⚠️ HIGHEST VALUE MISSING
+
+eslint-plugin-jest's most-loved rules catch tests that **cannot fail** —
+the exact "fake green" core promise of QA Doctor. The current §6 rule
+list covers only some of these classes:
+
+| New Rule | Catches | Severity |
+|---|---|---|
+| QA-TQUAL-009 | **Unawaited assertion in promise chain** (`valid-expect-in-promise`) — assert runs but result never checked | error |
+| QA-TQUAL-010 | Conditional logic around assertions (`no-conditional-expect`) — test passes vacuously when branch skipped | error |
+| QA-TQUAL-011 | Commented-out tests (`no-commented-out-tests`) — hidden fake-green hygiene | warning |
+| QA-TQUAL-012 | Async test without `expect.assertions(n)` or awaited expect | warning |
+| QA-TQUAL-013 | Assertion Roulette — multiple unlabeled asserts in one test (classic smell, great finding title) | info |
+| QA-TQUAL-014 | Mystery Guest — test depends on external file/DB state not visible in test body | warning |
+
+These six are promoted into the LAUNCH set (§29.1 becomes 18 launch rules;
+fast-follow drops to 10). They are AST-detectable with high confidence —
+exactly our fixture-friendly profile.
+
+## GAP-B. Playwright Rules — The Market Whitespace 🎯
+
+Research confirmed: **nobody covers Playwright-specific smells well.**
+This is QA Doctor's differentiation wedge — add a dedicated family:
+
+| New Rule | Catches |
+|---|---|
+| QA-PW-001 | `page.waitForTimeout()` hard sleep (Playwright-aware, fix hint: `expect(locator).toBeVisible()`) |
+| QA-PW-002 | Missing `await` on locator assertion (`await expect(locator)...`) |
+| QA-PW-003 | Committed `page.pause()` / `test.only()` in e2e specs |
+| QA-PW-004 | Brittle selectors (CSS/XPath chains) vs role-based locators |
+| QA-PW-005 | `page.evaluate()` containing business logic (untestable boundary) |
+
+Marketing headline writes itself: *"The first linter built for your
+Playwright suites."* Lands Weeks 3–4 alongside framework detection.
+
+## GAP-C. CI Security Audits (zizmor categories)
+
+§6's CI rules cover failure masking but miss the security dimension that
+made zizmor popular (6.4k stars). Add as fast-follow family:
+
+```text
+QA-CISEC-001  Script injection via ${{ github.event.* }} in run blocks   error
+QA-CISEC-002  pull-request-target abuse                                  error
+QA-CISEC-003  Over-broad permissions: block missing                      warning
+QA-CISEC-004  Actions pinned to tags, not SHAs (extends QA-CI-009)       warning
+```
+Positioning note: zizmor owns *security* auditing; we frame these as
+*"your CI can be tricked into green"* — trust-of-result framing, not a
+security-scanner clone. Post-launch, ~Week 2–4 after GA.
+
+## GAP-D. Semantic Workflow Checks (actionlint patterns)
+
+Cheap, high-confidence checks actionlint proved users love:
+* `needs:` cycle detection
+* Invalid cron syntax in schedules
+* Branch-filter glob validation
+* Runner label validation against known runners
+* Expression context errors (`steps.x.outputs.y` referencing nonexistent step)
+
+Bundle as one week of work inside Weeks 4–5 (CI engine). These make the
+tool feel *smart*, not just pattern-matching.
+
+## GAP-E. Per-Finding Confidence Field (zizmor model)
+
+Plan has rule-level confidence but findings need it too:
+
+```jsonc
+{ "ruleId": "...", "severity": "warning", "confidence": "high" }
+```
+
+* `confidence: low` findings render dimmer and never gate CI regardless
+  of severity — mechanical enforcement of the false-proof principle.
+* Enables future heuristic rules without breaking trust.
+* Schema change → fold into schemaVersion 1 before freeze (Week 1).
+
+## GAP-F. Exit-Code Policy Per Issue Type (knip's best idea)
+
+§24 defines exit codes by severity only. knip's superior design: each
+rule category is independently configurable for gating:
+
+```jsonc
+{ "gate": { "QA-CI-*": "error", "QA-TQUAL-*": "off", "default": "advisory" } }
+```
+
+Teams adopt incrementally: gate on CI-integrity first, expand later.
+Fold into §27 config schema (still zero-config by default).
+
+## GAP-G. Auto-Fix (`--fix`)
+
+react.doctor markets autofix prominently; plan has none.
+MVP-safe subset (only deterministic, safe transforms):
+* Remove `.only` / `.skip` markers
+* Add `await` to locator assertions
+* Pin mutable action version to latest SHA (fetches SHA — network opt-in!)
+* Replace `waitForTimeout(n)` with suggested snippet printed, not applied
+
+Everything else prints a suggested diff instead. Ships post-launch,
+~Week 3–6 after GA. Note the network nuance: SHA-pinning fix requires
+opt-in network use — must respect §26.1 no-network default.
+
+## GAP-H. Reporter Architecture + Output Caps
+
+Borrowed from knip/Biome:
+* Reporters as plugins: `terminal` (default), `json`, `github` (annotations),
+  `markdown`, `sarif` (promote R16 from Tier-4 polish — GitHub Code
+  Scanning integration is too valuable to defer).
+* `--max-findings=N` cap with "+N more suppressed" line (Biome pattern)
+  so giant legacy repos don't produce unreadable walls.
+* Findings grouped by issue type with counts (knip pattern) in verbose mode.
+* Lands Week 7 (reporter refactor), SARIF same week.
+
+## GAP-I. Behavior Coverage Metric (Serenity × knip framing)
+
+One cheap, killer output none of the linters produce:
+
+```text
+BEHAVIOR COVERAGE
+
+Exported functions across src/:        342
+With at least one importing test:      198  (58%)
+Untested critical modules (auth/billing/payments): 11
+```
+
+Uses import-graph analysis already needed for rules — marginal cost near
+zero, perceived value enormous. Not a coverage % claim (honest framing:
+"has an importing test", not "is verified"). Lands Week 6 using the
+dependency graph built for `--scope changed`.
+
+## GAP-J. Known-Issue Suppression + History Artifact
+
+* Config-level known-issue list (ReportPortal concept): pre-existing
+  findings marked `known: true` — shown separately, never counted in
+  score deltas on PRs. Stronger than ignore: visible, tracked, expiring.
+* `.qa-doctor/history.json` committed artifact (Allure history pattern):
+  last scan's score + finding counts → enables `qa-doctor compare` and
+  PR delta comments without any server. Opt-in file, tiny, git-friendly.
+* Both land post-launch; history.json unlocks the P5 baseline phase early.
+
+## GAP-K. Tested Docs Pages (actionlint docs.md pattern)
+
+§28.1 auto-generates rule pages — upgrade the requirement: every rule doc
+page must contain a **real executed example** (input file + actual CLI
+output), generated from the fixture suite. actionlint proves this is the
+single biggest docs-trust multiplier. No extra timeline cost — fixtures
+already exist (§18.1); this just renders them.
+
+## GAP-L. Finding Titles Use Smell Vocabulary
+
+Classic test-smell names (Assertion Roulette, Mystery Guest, Eager Test,
+Sleepy Test) are established vocabulary QA engineers already know.
+Finding titles should use them where applicable — instant credibility
+with the target audience. Zero cost, Week 2+ copywriting choice.
+
+---
+
+## Research Impact Summary
+
+| Gap | Cost | Timeline impact |
+|---|---|---|
+| A: Vacuous-pass rules (6) | 6 dev-days | Launch set 15→18 rules |
+| B: Playwright family (5) | 4 dev-days | Weeks 3–4 (replaces part of generic rules) |
+| C: CI security family | 3 dev-days | Post-launch |
+| D: Semantic workflow checks | 3 dev-days | Folds into Weeks 4–5 |
+| E: Confidence field | 0.5 day | Week 1 (before schema freeze) |
+| F: Per-category gates | 1 day | Week 7 config |
+| G: Auto-fix | 4 days | Post-launch |
+| H: Reporters + caps + SARIF | 2 days | Week 7 |
+| I: Behavior coverage | 1.5 days | Week 6 |
+| J: Known-issues + history.json | 2 days | Post-launch |
+| K: Tested docs pages | 0 (fixtures reused) | Week 9 |
+| L: Smell vocabulary titles | 0 | Ongoing |
+
+**Net:** +8 dev-days absorbed by trimming fast-follow scope; launch date
+holds at 12 weeks. Priority order if time runs short: **A > B > E > I >
+D > H > rest.**
+
+---
+
+# 35. SECOND-PASS BLIND SPOTS — Things Still Not Thought Through
+
+> Another adversarial pass over the whole plan. Each item below is
+> something the plan still doesn't answer, ranked by impact.
+
+## S1. GitHub Action Wrapper — The Biggest Missing Adoption Lever 🎯
+
+`ci install` generates a workflow — but the lowest-friction adoption path
+is a published composite action:
+
+```yaml
+- uses: qa-doctor/action@v1
+  with:
+    scope: changed
+    gate: advisory
+```
+
+One line in an existing workflow beats generating a new file. Every
+serious dev tool ships one (actionlint, zizmor, knip ecosystems).
+* Composite action wrapping the CLI — ~1 day of work, zero runtime cost.
+* Lands Week 7 alongside `ci install`. Publish to marketplace at GA.
+
+## S2. Node Version Policy + ESM/CJS Packaging Strategy
+
+Nothing in the plan says which Node versions are supported or how the
+package is module-formatted — both are day-one packaging decisions that
+are painful to reverse:
+* **Policy:** support active LTS lines only (currently 20, 22); drop EOL
+  Node in minor releases with changelog notice. `engines` field enforced
+  with a friendly error, not a hard npm failure.
+* **Packaging:** ship dual CJS+ESM or pure ESM with a CJS entry shim;
+  decide Week 1 because tsconfig/tsup config depends on it. Pure ESM is
+  viable for a CLI but breaks consumers who import the JSON contract
+  types — document whichever is chosen.
+* Also verify `bunx qa-doctor` works (users will try it) — best-effort,
+  not guaranteed in docs.
+
+## S3. Deterministic Finding Ordering
+
+`--scope changed` and CI diff mode silently break if output order varies
+between runs (async parsing completion order). Required:
+* Findings sorted canonically: `file → line → column → ruleId`.
+* Same input + same version = byte-identical terminal and JSON output.
+* This also makes golden-repo snapshot tests possible at all.
+* Trivial to implement Week 2, catastrophic to discover missing in Week 6.
+
+## S4. Golden-Repo Maintenance Policy (the gate that fights itself)
+
+§18.2 locks golden-repo scores — but **every newly added rule that fires
+on a golden repo breaks the gate**. Without a policy, either the gate
+gets bypassed or rule development stalls:
+* Golden repos store expected findings **per rule ID**, not just total score.
+* Adding a rule → regenerate expectations in the same PR, diff reviewed
+  as part of review ("here's what the new rule finds on our corpus").
+* Score history kept separately so regressions in *existing* rules stay visible.
+* Decide the mechanics Week 2 when the harness is built.
+
+## S5. Security Disclosure + Publishing Security
+
+QA Doctor parses untrusted input and runs in CI with repo access — it's
+a supply-chain target:
+* `SECURITY.md` with private vulnerability reporting from day one.
+* npm: 2FA mandatory, granular access token, **trusted publishing (OIDC)**
+  instead of long-lived tokens, provenance already planned (§26.3).
+* Release workflow runs from the protected org repo only; no publish from
+  local machines.
+* Dependabot + CodeQL on the tool's own repo (it should pass zizmor too —
+  dogfooding irony otherwise).
+
+## S6. Legal Pages: Terms / Privacy / Data Use
+
+react.doctor ships all three; plan has none. Even local-first tools need:
+* Privacy page describing exactly what opt-in telemetry collects (§26.2)
+  and retention (counters only, 90 days).
+* Terms for the website/badge/docs hosting.
+* License file decision feeds this (R5) — do together in Week 9.
+
+## S7. Debuggability Story (support depends on it)
+
+When a user reports "wrong finding" or "crash", we need diagnostics:
+* `QA_DOCTOR_DEBUG=1` env var or `--debug` flag → structured log file in
+  `.qa-doctor/logs/` (gitignored), never auto-sent anywhere.
+* `qa-doctor doctor` subcommand: prints environment (Node, OS, version,
+  detected frameworks, resolved config, ignore list) — paste-ready for issues.
+* Finding output includes `--explain` pointer already; add rule version
+  to JSON findings so old reports stay interpretable.
+* Lands Week 8 (hardening week) — cheap then, impossible to retrofit.
+
+## S8. Test-File Discovery Heuristics Must Be Specified
+
+R8 covers config resolution, but the fallback discovery glob set is
+undefined — it determines what gets scanned at all:
+```text
+DEFAULT TEST GLOBS:
+**/*.{test,spec}.{js,jsx,ts,tsx,mjs,cjs}
+**/__tests__/**/*.{js,ts}
+**/{tests,test,e2e}/**/*.{js,ts}   (top-level dirs only, depth-limited)
+```
+* Excluded by default: fixture dirs, test-utils, helpers (unless they
+  match above patterns).
+* Document the set publicly — "why wasn't my file scanned?" is a
+  predictable support question.
+
+## S9. Memory & Parallelism Budget (perf targets lack a mechanism)
+
+"<20s on 5k files" is stated but nothing says how:
+* Worker-thread pool (default: cores−1, capped at 4) for AST parsing.
+* Streaming file walk; never materialize full file list of huge repos.
+* Memory ceiling (~512MB) with graceful degradation to sequential mode.
+* Benchmark harness (Week 8) tracks time AND peak RSS, not just duration.
+
+## S10. Sticky PR Comment Management
+
+If CI posts a summary comment per push, PRs drown in duplicate comments:
+* One sticky comment per PR, edited on subsequent pushes (actions/cache
+  or comment-search by marker), or rely on check-run summary instead.
+* Default: use check-run summary (zero state), sticky comment opt-in.
+* Lands Week 7 with the GitHub reporter.
+
+## S11. Score-Gaming Protection
+
+Teams will suppress everything to reach 100. Cheap counter-measures:
+* Score line always shows suppression load: `SCORE 100 · ⚠ 14 suppressed`.
+* Badge alt-text includes suppressed count.
+* Suppression expiry defaults to 90 days when unspecified (§27 has
+  expires field — make a default, not an option).
+
+## S12. Launch Assets Nobody Owns Yet
+
+* **README = npm landing page**: GIF of a real scan, quickstart copy,
+  comparison table (§21). Write it Week 9, not Week 12.
+* **Demo playground repo**: public repo intentionally full of smells,
+  linked from README — "fork and try in 60 seconds". One-time 2h effort,
+  huge conversion value.
+* Logo/ASCII banner + OG image for social sharing of docs links.
+* npm package name verified **Week 1** (moved from §31's Week 12
+  checklist — if `qa-doctor` is taken, everything downstream changes).
+
+## S13. Exit Code 2 × Gate Interaction Undefined
+
+§24 defines exit 2 (partial analysis) but CI gating semantics don't say
+what happens when a partial scan hits the gate:
+* Default: partial scans **never block** (advisory annotation: "scan was
+  partial — verdict may be incomplete"), regardless of gate level.
+* Override allowed in config for teams who prefer fail-closed.
+* Fold into §24.1 documentation and the ci generator template.
+
+## S14. Framework Version Drift Budget
+
+Jest/Vitest/Playwright ship breaking changes constantly (e.g.,
+`jest.retryTimes` deprecation). Rules referencing APIs rot silently:
+* Each framework-dependent rule declares tested-against versions in
+  metadata; docs show it.
+* Quarterly corpus re-run: all rules against refreshed real-world repos
+  (the Week 4–5 corpus becomes a living regression asset).
+* Community FP reports (§28.3) are the drift detector between quarters.
+
+---
+
+## Blind-Spot Summary
+
+| # | Item | Cost | Lands |
+|---|---|---|---|
+| S1 | GitHub Action wrapper | 1d | Week 7 |
+| S2 | Node policy + ESM/CJS | 0.5d decision | Week 1 |
+| S3 | Deterministic ordering | 0.5d | Week 2 |
+| S4 | Golden-repo per-rule expectations | 1d | Week 2 |
+| S5 | Security disclosure + publishing | 0.5d | Week 1 setup |
+| S6 | Legal pages | 0.5d | Week 9 |
+| S7 | Debug/doctor diagnostics | 1.5d | Week 8 |
+| S8 | Test-discovery glob spec | 0.5d | Week 3 |
+| S9 | Workers + memory budget | 2d | Weeks 1+8 |
+| S10 | Sticky PR comments | 0.5d | Week 7 |
+| S11 | Score-gaming counters | 0.5d | Week 2 |
+| S12 | Launch assets + demo repo | 1d | Weeks 1+9 |
+| S13 | Exit 2 × gate semantics | 0.25d | Week 7 |
+| S14 | Version-drift process | process | Quarterly |
+
+**Net:** ≈ +10 dev-days. Absorption: S9 workers make the perf targets
+achievable (already implicit), SARIF/reporter work overlaps GAP-H, and
+the fast-follow buffer shrinks by one week. **Launch moves to 13 weeks**
+— or keep 12 by dropping Behavior Coverage (GAP-I) to post-launch.
+Recommended: take the 13th week; S3/S4/S9 are foundations that cannot be
+retrofitted safely.

@@ -1,0 +1,26 @@
+// QA-CI-008 must-fire (Jenkinsfile) — the master-plan P3c shapes:
+// a gate wrapped in catchError(buildResult: 'SUCCESS') and a failed gate
+// downgraded via unstable() instead of failing the build.
+pipeline {
+  agent any
+  stages {
+    stage('Verify') {
+      steps {
+        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+          sh 'npm test'
+        }
+      }
+    }
+    stage('Smoke') {
+      steps {
+        script {
+          try {
+            sh 'npx playwright test'
+          } catch (err) {
+            unstable('smoke suite failed, shipping anyway')
+          }
+        }
+      }
+    }
+  }
+}

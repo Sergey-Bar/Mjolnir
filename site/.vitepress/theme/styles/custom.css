@@ -1,0 +1,239 @@
+/* ============================================================
+   Mjölnir — global theme polish on top of VitePress defaults
+   ============================================================ */
+
+/* The metrics-matched "Inter Fallback" and "Cinzel Fallback" faces that
+   lived here were declared but named in no stack once both faces were
+   retired: dead weight. CLS is held by the preloaded same-origin Geist
+   instead (config.mts). */
+
+body {
+  margin: 0;
+}
+
+/* ---- landing page: let <Home> go full-bleed ---------------- */
+.mj-landing .VPContent {
+  padding: 0 !important;
+}
+.mj-landing .VPPage {
+  margin: 0;
+  max-width: none;
+  padding: 0;
+}
+.mj-landing .VPPage > div,
+.mj-landing .VPPage .vp-doc {
+  max-width: none;
+  padding: 0;
+  margin: 0;
+}
+.mj-landing .VPFooter {
+  margin-top: 0;
+}
+.mj {
+  width: 100%;
+}
+
+/* ---- brand wordmark in the navbar -------------------------- */
+.VPNavBarTitle .title span {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--vp-c-text-1);
+}
+
+/* ---- selection + focus ------------------------------------- */
+::selection {
+  background: color-mix(in oklch, var(--mj-aurora-cyan) 30%, transparent);
+}
+
+/* ---- doc pages: one type family, quiet structure ----------- */
+/* The same Geist as the landing page, set tight. The Tiwaz rune that
+   used to precede every h2 is gone: BRAND-SYSTEM §5 keeps runes beside
+   a verdict, and a heading is not one. */
+.vp-doc h1,
+.vp-doc h2,
+.vp-doc h3 {
+  font-family: var(--mj-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.vp-doc h1 {
+  font-size: clamp(2rem, 4.2vw, 2.6rem);
+  line-height: 1.12;
+}
+.vp-doc h2 {
+  padding-top: 1.8rem;
+  border-top: 1px solid var(--vp-c-divider);
+}
+.vp-doc h3 {
+  letter-spacing: -0.01em;
+}
+
+.vp-doc blockquote {
+  border-left: 2px solid var(--mj-aurora-cyan);
+  background: color-mix(in oklch, var(--mj-aurora-cyan) 5%, transparent);
+  border-radius: 0 8px 8px 0;
+}
+
+.vp-doc a {
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(
+    in oklch,
+    var(--mj-aurora-cyan) 45%,
+    transparent
+  );
+}
+
+.vp-doc :not(pre) > code {
+  background: var(--vp-c-bg-soft);
+  color: var(--vp-c-text-1);
+}
+.vp-doc a > code {
+  color: inherit;
+}
+
+.vp-doc div[class*="language-"] {
+  border: 1px solid var(--vp-c-border);
+  border-radius: 10px;
+}
+.dark .vp-doc div[class*="language-"] {
+  background: var(--mj-ink-950);
+}
+
+/* ---- docs chrome: the aurora marks where you are ---------- */
+.VPSidebarItem.is-active > .item > .indicator {
+  background: linear-gradient(
+    180deg,
+    var(--mj-aurora-green),
+    var(--mj-aurora-cyan) 50%,
+    var(--mj-aurora-violet)
+  );
+}
+.VPDocAsideOutline .outline-marker {
+  background: var(--mj-aurora-cyan);
+}
+
+/* ---- landing navbar: clear over the aurora, glass once scrolled ---- */
+.mj-landing .VPNavBar {
+  --vp-nav-bg-color: transparent;
+  background-color: color-mix(
+    in srgb,
+    var(--vp-c-bg) 76%,
+    transparent
+  ) !important;
+  backdrop-filter: blur(14px) saturate(1.2);
+  border-bottom: 1px solid var(--vp-c-divider);
+  transition:
+    background-color 300ms cubic-bezier(0.2, 0, 0, 1),
+    border-color 300ms cubic-bezier(0.2, 0, 0, 1);
+}
+.mj-landing .VPNavBar.top {
+  background-color: transparent !important;
+  backdrop-filter: none;
+  border-bottom-color: transparent;
+}
+.mj-landing .VPNavBar .divider-line {
+  background-color: transparent;
+}
+.mj-landing .VPNavBar .VPNavBarMenuLink,
+.mj-landing .VPNavBar .VPNavBarExtraMenu .VPFlyout button,
+.mj-landing .VPNavBar .VPSocialLink {
+  color: var(--vp-c-text-2) !important;
+}
+.mj-landing .VPNavBar .DocSearch-Button {
+  background: var(--vp-c-bg-soft);
+}
+.mj-landing .VPNavBar .DocSearch-Button-Keys,
+.mj-landing .VPNavBar .DocSearch-Button-Placeholder {
+  color: var(--vp-c-text-2) !important;
+}
+.mj-landing .VPNavBar .VPNavBarMenuLink:hover,
+.mj-landing .VPNavBar .VPSocialLink:hover {
+  color: var(--vp-c-text-1) !important;
+}
+
+/* ---- the one filled button: aurora, ink text ------------------ */
+.VPButton.brand {
+  background-color: var(--vp-c-brand-1);
+  color: var(--mj-on-gold);
+}
+
+/* ---- footer ---------------------------------------------- */
+.VPFooter {
+  border-top: 1px solid var(--vp-c-divider);
+  background: var(--vp-c-bg-alt);
+}
+
+/* ---- focus: one visible state, everywhere ------------------------ */
+/* The default theme leaves several controls with only the UA outline,
+   which disappears entirely against the dark hero. Keyboard users get
+   the same affordance on every surface (plan §4, Phase 6). */
+/* NOT :where() — that has zero specificity, so VitePress's own control
+   styles won every time and the catalog's three <select>s and its
+   checkbox drew no ring at all. Caught by the keyboard pass in
+   site/scripts/audit-live.mjs, which is why that pass exists. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--mj-aurora);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* ---- evidence badge (site UX plan G6) ---------------------------- */
+/* ONE primitive for the ONE evidence-level concept. Lives globally so
+   three consumers share it: EvidenceBadge.vue (interactive contexts),
+   Home.vue's evidence cards, and CatalogPreview's per-rule chip. The
+   generated rule pages emit the same classes as plain HTML from
+   gen-rules.mjs — those never mount Vue, so the styles must be here,
+   not scoped to the component. Weights are in the visible text: the
+   level is never color-only. E2 is a deterministic defect (full
+   deduction) so it takes the unworthy red; E1 heuristic (half) takes
+   the needs-work gold; E0 observation (zero, never gates) takes the
+   trusted/info blue. */
+.mj-ev {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4em;
+  font-family: var(--vp-font-family-mono);
+  font-size: 0.72rem;
+  line-height: 1.4;
+  padding: 0.14em 0.55em;
+  border-radius: 5px;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+.mj-ev-lvl {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.mj-ev-name {
+  color: var(--vp-c-text-2);
+}
+.mj-ev-mark {
+  align-self: center;
+  flex: none;
+}
+/* A certainty ramp, not a severity one: brightness rises with how sure
+   the analysis is, and the ring's fill carries the deduction weight.
+   These were the score-band colours (unworthy red / needs-work gold /
+   trusted blue), which made one palette carry two unrelated axes — the
+   same blue meaning WORTHY in the gauge and "observation" here. */
+.mj-ev-e2 {
+  color: var(--mj-e2);
+  background: rgba(234, 238, 245, 0.07);
+}
+.mj-ev-e1 {
+  color: var(--mj-e1);
+  background: rgba(171, 182, 198, 0.07);
+}
+.mj-ev-e0 {
+  color: var(--mj-e0);
+  background: rgba(139, 147, 157, 0.07);
+}

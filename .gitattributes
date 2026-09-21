@@ -1,0 +1,16 @@
+# Normalize line endings: LF in the repo, checked out as-is.
+# Prettier's default endOfLine is "lf"; without this file, Windows
+# checkouts with core.autocrlf=true convert files to CRLF and
+# `prettier --check .` fails on Windows CI while passing on Linux.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.ico binary
+
+# Demo-video assets and the vendored faces that render them. Without
+# these, `* text=auto eol=lf` above would treat them as text and corrupt
+# them on checkout.
+*.mp4 binary
+*.webm binary
+*.ttf binary
+*.woff2 binary

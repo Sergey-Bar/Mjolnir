@@ -1,0 +1,8 @@
+  triage — flaky-triage proposal + TRIAGE.md meeting artifact
+
+  Usage:
+    mjolnir triage <test-results-dir-or-report-file> [--no-md]
+
+  Examples:
+    $ mjolnir triage test-results --no-md
+

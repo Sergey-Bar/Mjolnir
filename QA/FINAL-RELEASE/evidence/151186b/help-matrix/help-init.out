@@ -1,0 +1,8 @@
+  init — detect frameworks + setup checklist (never overwrites)
+
+  Usage:
+    mjolnir init [--interactive]
+
+  Examples:
+    $ mjolnir init
+

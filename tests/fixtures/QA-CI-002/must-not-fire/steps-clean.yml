@@ -1,0 +1,6 @@
+# QA-CI-002 must-not-fire (Azure DevOps) — `|| true` on teardown and
+# best-effort commands is ordinary engineering, not a masked gate.
+steps:
+  - bash: docker compose down --volumes || true
+  - bash: pkill -f dev-server || true
+  - script: npm test

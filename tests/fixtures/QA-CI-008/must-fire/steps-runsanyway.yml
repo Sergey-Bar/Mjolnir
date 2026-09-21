@@ -1,0 +1,14 @@
+# QA-CI-008 must-fire (Azure DevOps) — a verification job conditioned
+# `succeededOrFailed()`: it runs even when its prerequisites failed, so
+# its green verdict cannot certify the guarded pipeline path.
+stages:
+  - stage: CI
+    jobs:
+      - job: Build
+        steps:
+          - script: npm run build
+
+      - job: Tests
+        condition: succeededOrFailed()
+        steps:
+          - script: npm test

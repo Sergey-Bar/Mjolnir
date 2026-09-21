@@ -1,0 +1,15 @@
+// QA-CI-009 must-fire (Jenkinsfile) — `sh returnStatus: true` on a
+// verification gate: the exit code comes back as a value and is dropped.
+pipeline {
+  agent any
+  stages {
+    stage('Verify') {
+      steps {
+        script {
+          def status = sh script: 'npm test', returnStatus: true
+          echo "done: ${status}"
+        }
+      }
+    }
+  }
+}

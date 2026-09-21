@@ -1,0 +1,36 @@
+name: Release Smoke
+
+# Real `npm install` from a packed tarball, over the network, on all
+# three OSes mjolnir claims to support — closes the gap
+# package-smoke.spec.ts (in the main suite) leaves open by design: that
+# test symlinks this repo's own node_modules to stay offline-safe, so it
+# can't catch a broken transitive dependency resolution. This can.
+# Not on every PR (network + ~3x slower): nightly + on-demand.
+on:
+  schedule:
+    - cron: "30 4 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  registry-install:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    # Audit S-7: a hung install must not sit for the 6-hour default.
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx vitest run tests/integrations/registry-install.spec.ts
+        env:
+          RUN_REGISTRY_INSTALL_TEST: "1"

@@ -1,0 +1,90 @@
+EXIT:0
+STDOUT:{
+  "schemaVersion": 1,
+  "partial": false,
+  "score": 93,
+  "frameworks": [],
+  "frameworkDetectionUnknown": true,
+  "dimensions": [
+    {
+      "category": "QA-PW",
+      "score": 97,
+      "errors": 0,
+      "warnings": 1,
+      "infos": 0
+    }
+  ],
+  "findings": [
+    {
+      "ruleId": "QA-PLUGIN-000",
+      "category": "QA-PW",
+      "severity": "warning",
+      "confidence": "high",
+      "findingType": "deterministic-defect",
+      "qaImpact": "HYGIENE",
+      "evidenceLevel": "E2",
+      "file": "mjolnir.config.json",
+      "line": 1,
+      "column": 1,
+      "message": "Plugin problem: plugin \"C:/Users/User/AppData/Local/Temp/mjolnir-plug-xoSd3M/evil-plugin.mjs\" exports no `rules` array — not a mjolnir plugin.",
+      "why": "A configured plugin could not be loaded or declared invalid rules — its checks are silently missing from this scan.",
+      "fix": "Fix or remove the plugin entry in mjolnir.config.json.",
+      "fixGroupId": "QA-PLUGIN-000"
+    }
+  ],
+  "testFileCount": 1,
+  "testDeclarationCount": 1,
+  "rawDeductions": 3,
+  "suppressionCount": 0,
+  "agenticProfile": {
+    "testFiles": 1,
+    "generatedMarkedFiles": 0,
+    "codegenLikeFiles": 0,
+    "shareMarkedGenerated": 0,
+    "findingsInGeneratedFiles": 0,
+    "findingsInUnmarkedFiles": 1,
+    "note": "Static provenance markers only (generated-file headers, Playwright codegen default titles). Absence of a marker does not prove human authorship; healed and MCP-edited files without markers are indistinguishable from hand-written ones. Provenance never changes scoring or evidence — authorship is metadata, not trust."
+  },
+  "analysisStatus": {
+    "discovery": "complete",
+    "rules": "complete",
+    "skippedFiles": 0,
+    "durationMs": 44,
+    "rulesCrashed": 0
+  },
+  "contract": {
+    "contractVersion": 1,
+    "summary": {
+      "digest": "sha256:8cd048f85ffae2505a3fecbcefeccab7d813f12f5487dcd06c952570184aef24",
+      "findings": 1,
+      "score": 93,
+      "errors": 0,
+      "warnings": 1,
+      "infos": 0,
+      "advisory": 0
+    },
+    "annotations": [
+      {
+        "path": "mjolnir.config.json",
+        "start_line": 1,
+        "annotation_level": "warning",
+        "message": "QA-PLUGIN-000: Plugin problem: plugin \"C:/Users/User/AppData/Local/Temp/mjolnir-plug-xoSd3M/evil-plugin.mjs\" exports no `rules` array — not a mjolnir plugin.",
+        "ruleId": "QA-PLUGIN-000",
+        "advisory": false
+      }
+    ],
+    "annotationsTruncated": false,
+    "completeness": {
+      "partial": false,
+      "discovery": "complete",
+      "rules": "complete",
+      "skippedFiles": 0,
+      "rulesCrashed": 0,
+      "truncationReasons": [],
+      "frameworkDetectionUnknown": true,
+      "durationMs": 44
+    }
+  }
+}
+
+STDERR:

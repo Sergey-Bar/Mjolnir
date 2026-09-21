@@ -1,0 +1,16 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "mjolnir-site",
+      "runtimeExecutable": "C:/Work/Mjolnir-QA/Mjolnir-site-wt/site/node_modules/.bin/vitepress.cmd",
+      "runtimeArgs": [
+        "preview",
+        "C:/Work/Mjolnir-QA/Mjolnir-site-wt/site",
+        "--port",
+        "4321"
+      ],
+      "port": 4321
+    }
+  ]
+}

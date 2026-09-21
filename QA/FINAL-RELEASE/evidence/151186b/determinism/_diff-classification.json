@@ -1,0 +1,23 @@
+{
+  "diffCount": 2,
+  "diffs": [
+    {
+      "path": "$.analysisStatus.durationMs",
+      "a": 2921,
+      "b": 2933
+    },
+    {
+      "path": "$.contract.completeness.durationMs",
+      "a": 2921,
+      "b": 2933
+    }
+  ],
+  "findingsIdentityEqual": true,
+  "digestEqual": true,
+  "digestA": "sha256:abba9fbfb607cbe15d3bcd2530360710f7f7ad6e20402b0c529db50f6e071136",
+  "digestB": "sha256:abba9fbfb607cbe15d3bcd2530360710f7f7ad6e20402b0c529db50f6e071136",
+  "scoreA": 99,
+  "scoreB": 99,
+  "partialA": false,
+  "partialB": false
+}

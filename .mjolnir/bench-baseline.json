@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "harnessVersion": "bench-harness-pinned",
+  "mjolnirVersion": "pinned-at-cut",
+  "nodeVersion": "pinned-at-cut",
+  "os": "pinned-at-cut",
+  "cpu": "pinned-at-cut",
+  "measuredAt": "pinned-at-cut",
+  "commit": "pinned-at-cut",
+  "fixture": { "generator": "synthetic-repo", "fileCount": 0, "manifestHash": "pinned-at-cut" },
+  "samples": [
+    { "scenario": "cache-miss", "durationMs": 400, "runs": [], "rssDeltaBytes": 0, "state": { "warm": false, "cache": "miss" } },
+    { "scenario": "cache-hit", "durationMs": 300, "runs": [], "rssDeltaBytes": 0, "state": { "warm": true, "cache": "hit" } },
+    { "scenario": "warm-start", "durationMs": 300, "runs": [], "rssDeltaBytes": 0, "state": { "warm": true, "cache": "miss" } },
+    { "scenario": "startup-overhead", "durationMs": 50, "runs": [], "rssDeltaBytes": 0, "state": { "warm": true, "cache": "miss" } }
+  ]
+}

@@ -1,0 +1,13 @@
+
+  ▚ MJÖLNIR — SELF-AUDIT
+
+✓ fixture-firewall
+✓ registry-sanity
+✓ trust-metadata
+✓ evidence-honesty
+✓ tier-enforcement
+    Ratchet (Law #3): 0/19 core rules lack a measured FP rate — cap is 0 (Phase 1 closed the unmeasured-core hole)
+✓ anti-creep
+    Core tier: 19/65 rules (46 slots available)
+✓ quarantine-enforcement
+

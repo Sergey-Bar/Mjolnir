@@ -1,0 +1,9 @@
+  why — why did Mjölnir flag <file>:<line>? evidence + fix (not a gate)
+
+  Usage:
+    mjolnir why <file>:<line> [path] [--json <mjolnir.json>]
+
+  Examples:
+    $ mjolnir why e2e/a.spec.ts:3
+    $ mjolnir why e2e/a.spec.ts:3 --json mjolnir.json
+

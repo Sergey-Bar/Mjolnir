@@ -1,0 +1,15 @@
+# QA-CI-013 must-not-fire — honest Azure pipelines.
+# 1. Gates that actually run (default succeeded() condition).
+# 2. `condition: failed()` on a NON-gate cleanup step is the legitimate
+#    rescue idiom — its failure hides nothing that blocks release.
+stages:
+  - stage: Verify
+    jobs:
+      - job: Tests
+        steps:
+          - script: npm test
+
+      - job: Cleanup
+        condition: failed() # rescue: only runs to clean up after failures
+        steps:
+          - script: docker compose down --volumes

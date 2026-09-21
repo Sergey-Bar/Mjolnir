@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Mjölnir",
+          "informationUri": "https://github.com/Sergey-Bar/Mjolnir",
+          "version": "0.5.18",
+          "rules": [
+            {
+              "id": "QA-CI-002",
+              "shortDescription": {
+                "text": "Ignored exit code (|| true)"
+              },
+              "properties": {
+                "falsePositiveRisk": "low"
+              }
+            }
+          ]
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "results": [
+        {
+          "ruleId": "QA-CI-002",
+          "level": "error",
+          "message": {
+            "text": "Command exit code is swallowed with `|| true`. — A failing step becomes a passing one — the workflow checkmark no longer reflects reality. Fix: Remove `|| true`. If the step is genuinely optional, mark it clearly and use `continue-on-error` on that step only."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".github/workflows/ci.yml"
+                },
+                "region": {
+                  "startLine": 7,
+                  "startColumn": 23
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "error",
+            "confidence": "high",
+            "qaImpact": "FALSE-GREEN",
+            "evidenceLevel": "E2"
+          }
+        }
+      ]
+    }
+  ]
+}

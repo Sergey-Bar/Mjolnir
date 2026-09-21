@@ -1,0 +1,6 @@
+# QA-CI-002 must-fire (Azure DevOps) — `|| true` swallowing a verification
+# gate's exit code inside a `bash:` step. The lexical detector reads the
+# same defect shape the GitHub run: block carries.
+steps:
+  - script: npm install
+  - bash: npm test || true

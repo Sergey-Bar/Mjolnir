@@ -1,0 +1,65 @@
+  M J Ö L N I R  ·  VERIFICATION TRUST ENGINE
+
+
+     ᛏ  ᚹ  ᛗ  ᚨ
+     ▄▄▄▄▄▄▄▄▄▄▄
+   ~>███████████<~
+     ▀▀▀▀▀▀▀▀▀▀▀
+          ██
+          ██
+          ██
+         ▄██
+  ᛏ [CHARGED]
+
+  WORTHINESS  99/100  WORTHY
+  ██████████████████████████████
+  Held in worthy hands — 2 findings remain.
+  (2 raw pts / 3443 test declarations — normalized)
+  (3 finding(s) suppressed by config)
+
+  DETECTED [vitest] [playwright]
+
+  ▚ DIAGNOSTICS BY CATEGORY
+  QA-PW  ████████████████  98
+
+  ▚ WHERE POINTS WERE LOST
+  ╭────────────────────────────────────────╮
+  │ 2 × warning −  2 (evidence-discounted) │
+  ╰────────────────────────────────────────╯
+
+  ▚ FIX THIS FIRST
+  +1 pt  QA-PW-125 · tests/config/fixture-typecheck-gate.spec.ts:178
+  +1 pt  QA-PW-125 · tests/rules/rule-arm-completion.spec.ts:86
+
+  ▚ FINDINGS
+
+  ⚠ WARN    QA-PW-125 · tests/config/fixture-typecheck-gate.spec.ts:178
+    [E1 · heuristic]
+    Finding Global setup mutates shared state: `execSync("npx prisma migrate
+            deploy"…`.
+    Impact  HYGIENE — Migrations/seeds/deletes against a shared environment
+            break every other pipeline and developer pointing at it — and the
+            damage happens before any test runs.
+    Fix     Target an ephemeral per-run environment (testcontainers, branch
+            DB) instead of shared infrastructure.
+    Verify  Re-run mjolnir after the change — deduction should drop by 1.
+
+  ⚠ WARN    QA-PW-125 · tests/rules/rule-arm-completion.spec.ts:86
+    [E1 · heuristic]
+    Finding Global setup mutates shared state: `query("DROP TABLE users"…`.
+    Impact  HYGIENE — Migrations/seeds/deletes against a shared environment
+            break every other pipeline and developer pointing at it — and the
+            damage happens before any test runs.
+    Fix     Target an ephemeral per-run environment (testcontainers, branch
+            DB) instead of shared infrastructure.
+    Verify  Re-run mjolnir after the change — deduction should drop by 1.
+
+
+──────────────────────────────────────────────────────────
+  Analysis: complete · 2.8s
+  Rule coverage: 0/1 rules that fired here have a measured false-positive rate;
+  the rest are heuristics. `mjolnir rules --unmeasured` lists them.
+  Runtime evidence: not available — no run report (mjolnir.report.json /
+  test-results) next to the scan target; all findings are static-only (L0–L2).
+  Agentic provenance: 1 codegen-like file of 224 test files (static markers only — provenance is metadata, not trust).
+

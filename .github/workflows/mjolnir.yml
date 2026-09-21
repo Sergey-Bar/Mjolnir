@@ -1,0 +1,100 @@
+name: Mjölnir
+
+on:
+  pull_request:
+
+concurrency:
+  group: mjolnir-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    # A hung scan must not sit for the 6-hour default.
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # needed for --scope changed merge-base
+          persist-credentials: false
+      # The action scans with the published mjolnir-qa package. The
+      # composite action is loaded from this checkout so the PR tests the
+      # exact action.yml being reviewed; the
+      # scan package is pinned to the same reviewed release. The fail-on input is the gate: it
+      # fails the job on findings at the gate and never on a partial
+      # scan (exit 2 downgrades to a warning — the frozen exit-code
+      # contract). Advisory mode reports, never blocks.
+      - name: Mjölnir diff
+        if: always()
+        continue-on-error: true
+        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-2.0.0.tgz diff . > mjolnir-diff.md
+      - name: Mjölnir verification trust scan
+        id: mjolnir
+        if: always()
+        continue-on-error: false
+        uses: ./
+        with:
+          scope: changed
+          format: json
+          fail-on: error
+          version: 2.0.0
+      # Reporting, not gating: runs even when the scan/gate failed, from
+      # the same mjolnir.json the action wrote.
+      - name: Annotations + Job Summary
+        if: always()
+        continue-on-error: true
+        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-2.0.0.tgz summary mjolnir.json
+      - name: Render PR comment
+        if: always()
+        continue-on-error: true
+        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-2.0.0.tgz pr-comment . > mjolnir-comment.md
+      # Best-effort: on a pull_request event from a fork the GITHUB_TOKEN is
+      # read-only and this step will 403 for every external contributor. The
+      # Job Summary above is the fallback that always renders.
+      # (pull_request_target would fix the token but is a code-execution
+      # risk — deliberately NOT used.)
+      - name: Post or update PR comment
+        if: always()
+        continue-on-error: true
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const fs = require('fs');
+            let body = '';
+            try { body = fs.readFileSync('mjolnir-comment.md', 'utf8'); } catch (e) {}
+            if (!body.trim()) {
+              console.log('mjolnir-comment.md is empty or missing — nothing to post.');
+              return;
+            }
+            const marker = '<!-- mjolnir-pr-comment -->';
+            const listed = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = listed.data.find((c) => c.body?.startsWith(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+      # Gate enforcement: the action step above IS the gate — fail-on
+      # error exits 1 on findings at the gate and the step is
+      # continue-on-error: false, so its failure fails the job. A partial
+      # scan never blocks (the action downgrades exit 2 to a warning per
+      # the frozen exit-code contract). The reporting steps above ran
+      # first (if: always()), so a red gate never suppresses the report.

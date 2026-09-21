@@ -1,0 +1,13 @@
+# QA-CI-007 must-not-fire (Azure DevOps) — retries on flaky-infrastructure
+# commands (dependency fetch, container pull) and a zero retry count are
+# legitimate; only verification-gate retries mask failures.
+jobs:
+  - job: Setup
+    steps:
+      - task: DockerInstaller@0
+        retryCountOnTaskFailure: 3
+
+      - script: npm ci
+        retryCountOnTaskFailure: 2
+
+      - script: npm test

@@ -1,0 +1,1 @@
+{"ruleId":"QA-CI-001","file":".github/workflows/sync-sdk-docs.yml","line":123,"verdict":"FP","note":"adjudicated 2026-09-02 from source: step is explicitly named (non-blocking) and lints GENERATED SDK doc content in a sync job — documentation hygiene, not a verification gate; failure hides nothing that blocks release"}

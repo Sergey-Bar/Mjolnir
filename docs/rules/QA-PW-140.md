@@ -1,0 +1,50 @@
+# QA-PW-140 — Screenshot without maxDiffPixelRatio
+
+_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+
+| Field                                 | Value                       |
+| ------------------------------------- | --------------------------- |
+| Severity                              | warning                     |
+| Confidence                            | medium                      |
+| Tier                                  | core                        |
+| Measured FP rate                      | 0% (n=10)                   |
+| Evidence level                        | E1                          |
+| QA impact                             | Test hygiene debt (HYGIENE) |
+| False-positive risk (author estimate) | medium                      |
+| Autofix available                     | no                          |
+| Languages                             | typescript, javascript      |
+| Frameworks                            | playwright                  |
+| Detection strategy                    | LEXICAL                     |
+| Introduced in                         | v0.3.0                      |
+
+## Why this fails in production
+
+Pixel-exact snapshots flake on font rasterization and GPU differences between machines, training the team to ignore red builds.
+
+## What gets flagged (real detector output)
+
+```
+`toHaveScreenshot` without a diff tolerance (maxDiffPixelRatio/maxDiffPixels).
+```
+
+Example from this rule's own must-fire fixture: `tests/fixtures/QA-PW-140/must-fire/example.must-fire.ts`
+
+## The fix
+
+Pass `{ maxDiffPixelRatio: 0.02 }` (or maxDiffPixels) so only meaningful visual regressions fail.
+
+## Confirmed NOT to fire on the corresponding clean pattern
+
+Verified against `tests/fixtures/QA-PW-140/must-not-fire/example.must-not-fire.ts` — a legitimate, similar-looking pattern this rule correctly leaves alone.
+
+## Corpus-measured false-positive risk
+
+Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
+
+| Repo              | Occurrences |
+| ----------------- | ----------- |
+| positive-fixtures | 10          |
+
+---
+
+Full catalog: `mjolnir rules --md` · Live explanation: `mjolnir explain QA-PW-140`

@@ -1,0 +1,30 @@
+{
+  "format": "playwright-json-attachment (array of {page, type, text, timestamp})",
+  "note": "CASE: console-evidence (awaiting ingestion — WI-18, 1.1.x). Committed corpus data; nothing in 0.6.x reads this file. The sample mirrors the flake story in mjolnir.report.json: a real JS error on checkout, a stale-page warning, and the session retry that explains the attempt-2 pass.",
+  "entries": [
+    {
+      "page": "e2e/checkout.spec.ts",
+      "type": "error",
+      "text": "Uncaught (in promise) TypeError: Cannot read properties of undefined (reading 'total')",
+      "timestamp": 1725822720000
+    },
+    {
+      "page": "e2e/login.spec.ts",
+      "type": "warning",
+      "text": "[vite] connection lost. Displaying stale page.",
+      "timestamp": 1725822721000
+    },
+    {
+      "page": "e2e/login.spec.ts",
+      "type": "info",
+      "text": "retrying POST /api/session (attempt 2) after network hiccup",
+      "timestamp": 1725822722000
+    },
+    {
+      "page": "e2e/account.spec.ts",
+      "type": "info",
+      "text": "GET /api/orders 200 (12 items)",
+      "timestamp": 1725822723000
+    }
+  ]
+}
