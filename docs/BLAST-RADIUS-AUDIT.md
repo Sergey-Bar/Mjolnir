@@ -7,25 +7,25 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 273 files, 52241 LOC
+## Inventory: 288 files, 55672 LOC
 
 | Area             | Files | LOC   |
 | ---------------- | ----- | ----- |
-| src/rules        | 87    | 11689 |
-| src/commands     | 28    | 8885  |
-| src/engine       | 36    | 8587  |
-| src/reporter     | 15    | 3152  |
-| src/(root)       | 6     | 2634  |
-| src/forensics    | 16    | 2584  |
+| src/rules        | 87    | 11695 |
+| src/commands     | 42    | 11429 |
+| src/engine       | 36    | 8623  |
+| src/reporter     | 15    | 3168  |
+| src/forensics    | 17    | 3063  |
+| src/(root)       | 6     | 2757  |
 | src/adapters     | 11    | 1677  |
 | src/discovery    | 10    | 1643  |
-| src/integrations | 11    | 1541  |
+| src/integrations | 11    | 1539  |
 | src/gaps         | 2     | 1390  |
 | src/frameworks   | 4     | 1321  |
-| src/mcp          | 4     | 927   |
+| src/plugins      | 5     | 988   |
 | src/brand        | 3     | 807   |
+| src/mcp          | 3     | 777   |
 | src/release      | 5     | 638   |
-| src/plugins      | 4     | 635   |
 | src/bench        | 4     | 589   |
 | src/config       | 3     | 549   |
 | src/scorer       | 3     | 533   |
@@ -33,8 +33,8 @@ codes) must match this document exactly.
 | src/traceability | 2     | 441   |
 | src/scope        | 2     | 419   |
 | src/playwright   | 2     | 312   |
-| src/trust        | 2     | 228   |
-| src/lib          | 4     | 221   |
+| src/lib          | 4     | 243   |
+| src/trust        | 2     | 232   |
 | src/benchmark    | 2     | 174   |
 | src/anti-gaming  | 2     | 169   |
 
@@ -42,29 +42,29 @@ codes) must match this document exactly.
 
 | Module                              | Importers |
 | ----------------------------------- | --------- |
-| src/types                           | 120       |
-| src/rules/rule                      | 79        |
+| src/types                           | 126       |
+| src/rules/rule                      | 81        |
 | src/rules/shared/positions          | 62        |
-| src/reporter/ui                     | 18        |
-| src/forensics/types                 | 18        |
+| src/reporter/ui                     | 26        |
+| src/cli-io                          | 19        |
+| src/forensics/types                 | 19        |
+| src/exit-codes                      | 15        |
 | src/engine/adapter                  | 14        |
-| src/rules/index                     | 11        |
+| src/rules/index                     | 12        |
+| src/engine/scan-pipeline            | 11        |
 | src/engine/ts-ast                   | 10        |
+| src/rules/measured-fp.generated     | 10        |
 | src/discovery/ignores               | 9         |
-| src/rules/measured-fp.generated     | 9         |
 | src/discovery/azure-pipeline-parser | 8         |
 | src/engine/code-text                | 8         |
-| src/reporter/theme                  | 8         |
-| src/reporter/score-state            | 7         |
-| src/lib/safe-json                   | 7         |
 
 ## External dependency allowlist (containment)
 
 | Dependency         | Files importing it |
 | ------------------ | ------------------ |
-| node:fs            | 54                 |
-| node:path          | 52                 |
-| node:crypto        | 13                 |
+| node:fs            | 67                 |
+| node:path          | 60                 |
+| node:crypto        | 14                 |
 | ts-morph           | 7                  |
 | node:child_process | 5                  |
 | node:url           | 4                  |
