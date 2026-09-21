@@ -398,6 +398,7 @@ describe("public version and install docs match the current package line", () =>
         `${name} must not keep stale pre-2.0 action pins`,
       ).not.toMatch(/Sergey-Bar\/Mjolnir@v(?:0|1)(?:\b|\.)/);
     }
+    expect(distribution).toContain(`with: version: ${pkg.version}`);
   });
 
   it("roadmap and publishing docs do not present pre-2.0 lines as current public state", () => {
