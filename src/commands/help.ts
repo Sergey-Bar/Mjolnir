@@ -183,15 +183,9 @@ export const HELP_ENTRIES: HelpEntry[] = [
   },
   {
     verb: "rules",
-    summary:
-      "rule catalog + empirical-measurement stats/health (md/json/stats/health)",
-    usage:
-      "mjolnir rules [--md] [--unmeasured|--measured] [--external] | [--stats] | [--health] [--limit=N]",
-    examples: [
-      "mjolnir rules --md --unmeasured",
-      "mjolnir rules --stats",
-      "mjolnir rules --health --limit=20",
-    ],
+    summary: "rule catalog with trust metadata (md/json/unmeasured)",
+    usage: "mjolnir rules [--md] [--unmeasured|--measured] [--external]",
+    examples: ["mjolnir rules --md --unmeasured"],
   },
   {
     verb: "suppressions",
@@ -377,77 +371,6 @@ const SCAN_SUMMARY_LINES: string[] = [
   "mjolnir [path]                 full-repo scan + WORTHINESS score",
 ];
 
-export interface RootHelpOptions {
-  width?: number;
-}
-
-function normalizeHelpWidth(width: number | undefined): number {
-  if (width === undefined || !Number.isFinite(width)) return 88;
-  return Math.max(48, Math.floor(width));
-}
-
-function wrapWords(text: string, width: number): string[] {
-  if (text.length <= width) return [text];
-  const words = text.split(/\s+/).filter(Boolean);
-  const lines: string[] = [];
-  let current = "";
-  for (const word of words) {
-    if (current.length === 0) {
-      current = word;
-      continue;
-    }
-    if (current.length + 1 + word.length <= width) {
-      current += ` ${word}`;
-      continue;
-    }
-    lines.push(current);
-    current = word;
-  }
-  if (current.length > 0) lines.push(current);
-  return lines.length > 0 ? lines : [text];
-}
-
-function pushWrappedIndented(
-  lines: string[],
-  text: string,
-  indent: string,
-  width: number,
-): void {
-  for (const line of wrapWords(text, Math.max(16, width - indent.length))) {
-    lines.push(`${indent}${line}`);
-  }
-}
-
-function pushAlignedHelpRow(
-  lines: string[],
-  label: string,
-  summary: string,
-  options: {
-    width: number;
-    labelWidth: number;
-    indent?: number;
-  },
-): void {
-  const indent = " ".repeat(options.indent ?? 2);
-  const gap = "  ";
-  const summaryIndent = `${indent}${" ".repeat(options.labelWidth)}${gap}`;
-  const summaryWidth = Math.max(16, options.width - summaryIndent.length);
-
-  if (label.length <= options.labelWidth) {
-    const summaryLines = wrapWords(summary, summaryWidth);
-    lines.push(
-      `${indent}${label.padEnd(options.labelWidth)}${gap}${summaryLines[0] ?? ""}`,
-    );
-    for (const line of summaryLines.slice(1)) {
-      lines.push(`${summaryIndent}${line}`);
-    }
-    return;
-  }
-
-  pushWrappedIndented(lines, label, indent, options.width);
-  pushWrappedIndented(lines, summary, `${indent}  `, options.width);
-}
-
 /**
  * The redesigned root help (plan M2): grouped sections, one-line
  * descriptions, copy-pasteable examples, the frozen exit-code table and
@@ -455,11 +378,7 @@ function pushAlignedHelpRow(
  * caller decides (runHelpCommand passes a resolved palette; printUsage
  * stays plain).
  */
-export function renderRootHelp(
-  schemaVersion = 1,
-  options: RootHelpOptions = {},
-): string {
-  const width = normalizeHelpWidth(options.width);
+export function renderRootHelp(schemaVersion = 1): string {
   const byVerb = new Map(HELP_ENTRIES.map((e) => [e.verb, e]));
   const lines: string[] = [];
   lines.push(
@@ -492,34 +411,19 @@ export function renderRootHelp(
   lines.push("");
   lines.push("Options:");
   for (const f of HELP_FLAGS) {
-    pushAlignedHelpRow(lines, f.flag, f.summary, {
-      width,
-      labelWidth: 22,
-    });
+    const pad = f.flag.padEnd(22);
+    lines.push(`  ${pad}${f.summary}`);
   }
-  pushAlignedHelpRow(
-    lines,
-    "-v, --version",
-    "print the installed version and exit",
-    {
-      width,
-      labelWidth: 22,
-    },
-  );
-  pushAlignedHelpRow(lines, "-h, --help", "show this help", {
-    width,
-    labelWidth: 22,
-  });
+  lines.push("  -v, --version         print the installed version and exit");
+  lines.push("  -h, --help            show this help");
   lines.push("");
   for (const g of GROUPS) {
     lines.push(`Subcommands — ${g.title}:`);
     for (const verb of g.verbs) {
       const e = byVerb.get(verb);
       if (!e) continue;
-      pushAlignedHelpRow(lines, e.usage.replace(/^mjolnir /, ""), e.summary, {
-        width,
-        labelWidth: 46,
-      });
+      const usage = e.usage.replace(/^mjolnir /, "").padEnd(46);
+      lines.push(`  ${usage}${e.summary}`);
     }
     lines.push("");
   }
@@ -531,7 +435,7 @@ export function renderRootHelp(
     "  $ mjolnir --scope changed         CI gate: only what the branch touched",
   );
   lines.push("  $ mjolnir ci install              write the PR workflow");
-  lines.push("  $ mjolnir explain <RULE-ID>       copy-ready rule explanation");
+  lines.push("  $ mjolnir forensics test-results  where the flakes hide");
   lines.push("");
   lines.push("Per-command help: mjolnir help <verb>   (e.g. mjolnir help fix)");
   lines.push("");
