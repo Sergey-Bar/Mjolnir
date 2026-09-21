@@ -270,6 +270,15 @@ export function renderExplain(
   return lines.join("\n");
 }
 
+/**
+ * Renders the copy-ready review-comment block. Quarantine-tier findings
+ * are advisory (E0, never gate CI — see whatWouldChangeTheVerdict), so
+ * their lead-in must not read as a merge blocker; every other tier keeps
+ * the blocking wording. The finding's own severity is NOT consulted
+ * here — only the rule's tier, because the gate policy is tier-driven,
+ * not severity-driven (a quarantine rule may carry error severity and
+ * still never block).
+ */
 function appendReviewComment(
   lines: string[],
   rule: QADoctorRule,
@@ -288,10 +297,13 @@ function appendReviewComment(
     measured !== undefined
       ? `measured FP ${Math.round(measured.fpRate * 100)}% (${measured.n} verdicts)`
       : "measured FP not available yet; treat as rule-author assumption";
+  const isQuarantine = effectiveTier(rule) === "quarantine";
 
   lines.push("COPY-READY REVIEW COMMENT");
   pushBody(
-    `Please fix this before merging: ${reviewSentence(finding?.message ?? rule.title)}.`,
+    isQuarantine
+      ? `Advisory finding — this does not block merging: ${reviewSentence(finding?.message ?? rule.title)}.`
+      : `Please fix this before merging: ${reviewSentence(finding?.message ?? rule.title)}.`,
   );
   pushBody(
     `Why it weakens verification: ${reviewSentence(finding?.why ?? QA_IMPACT_LABELS[rule.qaImpact])}.`,
@@ -300,13 +312,44 @@ function appendReviewComment(
     `Confidence: ${rule.confidence}, evidence ${evidenceLevel}, tier ${effectiveTier(rule)}${isProvisional(rule) ? " (PROVISIONAL)" : ""}; ${fpStatus}.`,
   );
   pushBody(
-    `Suggested fix: ${reviewSentence(finding?.fix ?? "apply the rule guidance above")}.`,
+    `Suggested fix: ${reviewSentence(
+      finding?.fix ?? defaultFixGuidance(rule, finding === undefined),
+    )}.`,
   );
   pushBody(
     `Verify with: mjolnir --scope changed, then mjolnir explain ${rule.id} if the finding still appears.`,
   );
 }
 
+/**
+ * Honest fallback for the "Suggested fix" line when the rule produced no
+ * real example finding. There is no `fix` field on RuleMeta — the
+ * guidance above is always derived from a real detector output, so when
+ * that is absent there is nothing to quote. Claiming otherwise ("apply
+ * the rule guidance above") pointed at a section that did not exist.
+ *
+ * Quarantine rules additionally have no merge-blocking fix to suggest;
+ * the honest move is to name the tier and point at the catalog.
+ */
+function defaultFixGuidance(rule: QADoctorRule, noExample: boolean): string {
+  if (noExample) {
+    return (
+      `fixture-derived guidance is unavailable for ${rule.id} — run this ` +
+      "command from a mjolnir checkout (or pass --fixtures-root) so the " +
+      "rule's own must-fire fixture can be shown, or browse the full " +
+      "catalog with `mjolnir rules --md`."
+    );
+  }
+  return `apply the rule guidance above (tier ${effectiveTier(rule)})`;
+}
+
+/**
+ * Strips a trailing run of sentence-ending punctuation from a finding
+ * field so the review comment reads as one clause rather than a
+ * fragment followed by a period. Trims whitespace first so a field like
+ * "fix the thing." becomes "fix the thing" and the renderer's own period
+ * is the only one.
+ */
 function reviewSentence(text: string): string {
   return text.trim().replace(/[.。]+$/u, "");
 }
@@ -368,6 +411,12 @@ function parseScanJson(raw: string): ScanResult | undefined {
   }
 }
 
+/**
+ * Loads a canonical scan result from a JSON file for verdict-mode
+ * explain (`mjolnir explain <scan-result.json>`). The file is treated
+ * as hostile input: parse failure or schema mismatch returns ok:false
+ * with a message naming the contract, never a thrown exception.
+ */
 export function explainVerdict(jsonPath: string): VerdictExplainResult {
   let raw: string;
   try {
@@ -455,6 +504,13 @@ export function verdictWhatWouldChange(scan: ScanResult): string[] {
   return changes;
 }
 
+/**
+ * Renders the verdict-mode explanation (`mjolnir explain <scan-result.json>`):
+ * the saved scan's score, trust level, evidence checklist, correlation,
+ * ceiling reasons, and the honest list of what would change the verdict.
+ * Every line is derived from the parsed scan — nothing is invented, and
+ * a missing trust summary renders as L0 rather than a fabricated score.
+ */
 export function renderVerdictExplain(
   result: VerdictExplainResult,
   width: number = DEFAULT_EXPLAIN_WIDTH,
@@ -530,6 +586,7 @@ export function renderVerdictExplain(
   return lines.join("\n");
 }
 
+/** Formats a trust-summary ratio (0–1) as a whole-percentage string. */
 function pctOf(v: number): string {
   return `${Math.round(v * 100)}%`;
 }

@@ -7,6 +7,7 @@ import { MEASURED_FP } from "../../src/rules/measured-fp.generated.js";
 
 const FIXTURES_ROOT = "tests/fixtures";
 
+/** Extracts the COPY-READY REVIEW COMMENT block from a rendered explain. */
 function reviewBlock(text: string): string {
   const start = text.indexOf("COPY-READY REVIEW COMMENT");
   const end = text.indexOf("\n\nWHAT WAS FOUND", start);
@@ -14,6 +15,7 @@ function reviewBlock(text: string): string {
   return text.slice(start, end < 0 ? undefined : end);
 }
 
+/** Returns the first registered rule matching the predicate, or throws. */
 function firstRuleWhere(
   predicate: (rule: QADoctorRule) => boolean,
 ): QADoctorRule {
@@ -22,6 +24,7 @@ function firstRuleWhere(
   return rule;
 }
 
+/** Renders a rule's explain output at width 100 from the repo fixtures. */
 function renderRule(rule: QADoctorRule): string {
   return renderExplain(explainRule(rule.id, FIXTURES_ROOT), 100);
 }
@@ -58,6 +61,10 @@ describe("explain review-comment language", () => {
     expect(block).toContain("tier quarantine");
     expect(block).toContain("Confidence:");
     expect(block).toContain("Suggested fix:");
+    // Quarantine findings are advisory (E0, never gate CI) — the
+    // copy-ready lead-in must not read as a merge blocker.
+    expect(block).toContain("Advisory finding");
+    expect(block).not.toContain("Please fix this before merging");
   });
 
   it("does not fabricate measured-FP text for an unmeasured synthetic rule", () => {
@@ -92,5 +99,29 @@ describe("explain review-comment language", () => {
     const block = reviewBlock(text);
     expect(block).toMatch(/measured FP not\s+available yet/);
     expect(block).not.toMatch(/measured FP \d+%/);
+  });
+
+  it("advises rather than blocks for a quarantine rule with an example", () => {
+    const rule = firstRuleWhere(
+      (r) =>
+        effectiveTier(r) === "quarantine" && MEASURED_FP[r.id] === undefined,
+    );
+    const block = reviewBlock(renderRule(rule));
+    expect(block).toContain("Advisory finding");
+    expect(block).not.toContain("Please fix this before merging");
+  });
+
+  it("states fixture-derived guidance is unavailable when no example finding exists", () => {
+    const rule = firstRuleWhere(
+      (r) => effectiveTier(r) === "core" && MEASURED_FP[r.id] !== undefined,
+    );
+    // Render the same rule with no example: the review comment must not
+    // claim guidance appears above, and must point at the catalog.
+    const text = renderExplain({ ok: true, rule });
+    const block = reviewBlock(text);
+    expect(block).toContain("COPY-READY REVIEW COMMENT");
+    expect(block).toContain("fixture-derived guidance is unavailable");
+    expect(block).toContain("mjolnir rules --md");
+    expect(block).not.toContain("apply the rule guidance above");
   });
 });
