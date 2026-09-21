@@ -110,7 +110,7 @@ export async function buildHeroSvg(): Promise<string> {
   // isTTY + FORCE_COLOR force real ANSI color codes even when this script
   // runs under CI/NO_COLOR; the SVG is a visual asset, not terminal log.
   const rendered = withForcedColor(() =>
-    renderTerminal(result, { isTTY: true, ascii: false }),
+    renderTerminal(result, { isTTY: true, width: 60, ascii: false }),
   );
   const renderedLines = rendered.split("\n");
 

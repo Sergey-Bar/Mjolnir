@@ -76,6 +76,7 @@ export interface RenderTerminalOpts {
   visibleFindings?: ScanResult["findings"];
 }
 
+/** Renders a scan as a compact terminal report, prioritizing actionable fixes before diagnostics. */
 export function renderTerminal(
   result: ScanResult,
   opts: RenderTerminalOpts,
@@ -161,6 +162,7 @@ export function verdictFor(
   return verdict === "FORGED" ? "WORTHY" : verdict;
 }
 
+/** Appends the score, gauge, verdict, and honesty metadata for the full scan. */
 function appendScoreSection(
   lines: string[],
   result: ScanResult & { score: number },
@@ -312,6 +314,7 @@ function appendDeductions(
   lines.push("");
 }
 
+/** Prepends up to three highest-gain fixes with rationale and a concrete next command. */
 function appendFixThisFirst(
   lines: string[],
   result: ScanResult,
@@ -353,6 +356,7 @@ function appendFixThisFirst(
   lines.push("");
 }
 
+/** Returns the default-report rationale based on scan completeness and finding severity. */
 function fixFirstWhy(result: ScanResult): string {
   const counts = countBySeverity(result);
   if (

@@ -3,6 +3,7 @@ import { renderSarif } from "../../src/reporter/sarif.js";
 import { renderTerminal } from "../../src/reporter/terminal.js";
 import type { Finding, ScanResult } from "../../src/types.js";
 
+/** Creates a representative error finding with optional field overrides. */
 function finding(over: Partial<Finding> = {}): Finding {
   return {
     ruleId: "QA-TEST-001",
@@ -22,6 +23,7 @@ function finding(over: Partial<Finding> = {}): Finding {
   };
 }
 
+/** Creates a representative scan result with optional field overrides. */
 function scan(over: Partial<ScanResult> = {}): ScanResult {
   return {
     schemaVersion: 1,
@@ -43,6 +45,7 @@ function scan(over: Partial<ScanResult> = {}): ScanResult {
   };
 }
 
+/** Extracts report landmarks used to assert section order and state guidance. */
 function reportMilestones(out: string): string[] {
   return out
     .split("\n")
