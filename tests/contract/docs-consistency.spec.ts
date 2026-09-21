@@ -418,6 +418,56 @@ describe("README does not reference the unrelated npm package 'qa-doctor' (unsco
   });
 });
 
+describe("Playwright reporter publication status is explicit", () => {
+  const reporterReadme = readFileSync(
+    join(ROOT, "packages", "playwright-reporter", "README.md"),
+    "utf8",
+  );
+  const architecture = readFileSync(
+    join(ROOT, "docs", "ARCHITECTURE.md"),
+    "utf8",
+  );
+  const certification = readFileSync(
+    join(ROOT, "docs", "CERTIFICATION-0.6.md"),
+    "utf8",
+  );
+  const forensicsGuide = readFileSync(
+    join(ROOT, "site", "guide", "forensics.md"),
+    "utf8",
+  );
+  const publicDocs = [
+    ["packages/playwright-reporter/README.md", reporterReadme],
+    ["docs/ARCHITECTURE.md", architecture],
+    ["docs/CERTIFICATION-0.6.md", certification],
+    ["site/guide/forensics.md", forensicsGuide],
+  ] as const;
+
+  it.each(publicDocs)(
+    "%s states that the reporter is post-MVP unpublished/source-only",
+    (_name, text) => {
+      expect(text).toMatch(/post-MVP unpublished\/source-only/i);
+    },
+  );
+
+  it("forensics public docs keep the MVP path independent of the unpublished reporter", () => {
+    expect(forensicsGuide).toContain("does **not** require");
+    expect(forensicsGuide).toContain("Playwright's built-in JSON reporter");
+  });
+
+  it.each(publicDocs)(
+    "%s does not present npm install as a public reporter setup path",
+    (name, text) => {
+      if (name === "packages/playwright-reporter/README.md") {
+        expect(text).toContain("both fail by design");
+        return;
+      }
+      expect(text).not.toMatch(
+        /npm\s+(?:install|i)\s+(?:-D\s+)?mjolnir-qa-playwright-reporter/i,
+      );
+    },
+  );
+});
+
 describe("every documented `npm run` command actually exists", () => {
   // A real, shipped defect this locks: all 91 generated rule pages told
   // the reader to reproduce corpus counts with a script whose name had

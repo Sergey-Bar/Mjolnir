@@ -40,6 +40,17 @@ Playwright's JSON reporter output, Jest's and Vitest's JSON reports, and
 JUnit XML — so pytest, JUnit, TestNG, NUnit and anything else that emits
 JUnit XML all work.
 
+## Reporter package status
+
+The MVP path does **not** require the Mjölnir Playwright reporter package.
+Use Playwright's built-in JSON reporter, or point `mjolnir forensics` at
+an existing JSON/JUnit report file.
+
+The workspace package at `packages/playwright-reporter` is
+**post-MVP unpublished/source-only**. It documents the future wrapper
+around the same `mjolnir.report.json` ingestion contract, but it is not
+available on npm and public setup docs must not ask users to install it.
+
 **An honest limitation, by design:** Jest's and Vitest's JSON reports
 record each test's final outcome, not its per-attempt history — so
 records from those sources always carry one attempt, and TRUE-FLAKE
