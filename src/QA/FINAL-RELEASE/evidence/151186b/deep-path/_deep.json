@@ -1,0 +1,117 @@
+[
+  {
+    "adapter": "tsjs",
+    "exit": 0,
+    "n": 2,
+    "findings": [
+      {
+        "ruleId": "QA-TEST-003",
+        "file": "login.spec.ts",
+        "line": 2,
+        "evidence": "",
+        "sev": "info"
+      },
+      {
+        "ruleId": "QA-TEST-004",
+        "file": "login.spec.ts",
+        "line": 3,
+        "evidence": "",
+        "sev": "warning"
+      }
+    ],
+    "sarifFindings": 2,
+    "sarifRoot": "null"
+  },
+  {
+    "adapter": "python",
+    "exit": 0,
+    "n": 3,
+    "findings": [
+      {
+        "ruleId": "QA-PY-005",
+        "file": "test_pay.py",
+        "line": 4,
+        "evidence": "",
+        "sev": "warning"
+      },
+      {
+        "ruleId": "QA-PY-004",
+        "file": "test_pay.py",
+        "line": 5,
+        "evidence": "",
+        "sev": "info"
+      },
+      {
+        "ruleId": "QA-PY-012",
+        "file": "test_pay.py",
+        "line": 5,
+        "evidence": "",
+        "sev": "info"
+      }
+    ],
+    "sarifFindings": 3,
+    "sarifRoot": "null"
+  },
+  {
+    "adapter": "java",
+    "exit": 1,
+    "n": 2,
+    "findings": [
+      {
+        "ruleId": "QA-JV-103",
+        "file": "RouteTest.java",
+        "line": 3,
+        "evidence": "",
+        "sev": "error"
+      },
+      {
+        "ruleId": "QA-JV-111",
+        "file": "RouteTest.java",
+        "line": 5,
+        "evidence": "",
+        "sev": "info"
+      }
+    ],
+    "sarifFindings": 2,
+    "sarifRoot": "null"
+  },
+  {
+    "adapter": "csharp",
+    "exit": 1,
+    "n": 2,
+    "findings": [
+      {
+        "ruleId": "QA-CS-103",
+        "file": "RouteTests.cs",
+        "line": 3,
+        "evidence": "",
+        "sev": "error"
+      },
+      {
+        "ruleId": "QA-CS-111",
+        "file": "RouteTests.cs",
+        "line": 5,
+        "evidence": "",
+        "sev": "info"
+      }
+    ],
+    "sarifFindings": 2,
+    "sarifRoot": "null"
+  },
+  {
+    "adapter": "yaml",
+    "exit": 1,
+    "n": 1,
+    "findings": [
+      {
+        "ruleId": "QA-CI-002",
+        "file": ".github/workflows/ci.yml",
+        "line": 7,
+        "evidence": "",
+        "sev": "error"
+      }
+    ],
+    "sarifFindings": 1,
+    "sarifRoot": "null"
+  }
+]

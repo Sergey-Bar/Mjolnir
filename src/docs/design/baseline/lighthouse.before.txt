@@ -1,0 +1,30 @@
+
+> mjolnir-qa@0.5.31 site:lighthouse
+> node site/scripts/lighthouse-run.mjs
+
+
+mjolnir site lighthouse  (local static server, gzip on)
+
+  === desktop ===
+  PASS  / (landing)
+          perf 100 (gate 95) · a11y 100 · best-practices 100 · seo 100
+          LCP 0.8 s · CLS 0 · TBT 0 ms
+  PASS  /guide/getting-started
+          perf 99 (gate 95) · a11y 100 · best-practices 100 · seo 100
+          LCP 0.8 s · CLS 0 · TBT 0 ms
+  PASS  /rules/
+          perf 99 (gate 95) · a11y 100 · best-practices 100 · seo 100
+          LCP 0.8 s · CLS 0 · TBT 0 ms
+  === mobile (slow 4G, 4x CPU) ===
+  note  / (landing)
+          perf 88 · a11y 100 · best-practices 100 · seo 100
+          LCP 3.2 s · CLS 0 · TBT 0 ms
+  ok    /guide/getting-started
+          perf 97 · a11y 100 · best-practices 100 · seo 100
+          LCP 2.3 s · CLS 0 · TBT 20 ms
+  note  /rules/
+          perf 90 · a11y 100 · best-practices 100 · seo 100
+          LCP 2.9 s · CLS 0 · TBT 0 ms
+
+  0 desktop run(s) below the performance gate
+

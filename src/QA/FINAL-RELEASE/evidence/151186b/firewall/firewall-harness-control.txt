@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 C:/Users/User/AppData/Local/Temp/kilo/mjolnir-rc-151186b
+
+
+ Test Files  1 passed (1)
+      Tests  158 passed (158)
+   Start at  21:53:53
+   Duration  1.07s (transform 410ms, setup 0ms, import 694ms, tests 247ms, environment 0ms)
+

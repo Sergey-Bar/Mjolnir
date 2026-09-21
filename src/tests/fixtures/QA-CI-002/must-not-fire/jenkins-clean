@@ -1,0 +1,13 @@
+// QA-CI-002 must-not-fire (Jenkinsfile) — `|| true` on teardown is
+// ordinary engineering, not a masked gate; the gate runs bare.
+pipeline {
+  agent any
+  stages {
+    stage('Verify') {
+      steps {
+        sh 'docker compose down --volumes || true'
+        sh 'npm test'
+      }
+    }
+  }
+}

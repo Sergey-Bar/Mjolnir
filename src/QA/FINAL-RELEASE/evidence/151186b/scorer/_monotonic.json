@@ -1,0 +1,87 @@
+{
+  "rows": [
+    {
+      "n": 1,
+      "score": 93
+    },
+    {
+      "n": 2,
+      "score": 90
+    },
+    {
+      "n": 3,
+      "score": 89
+    },
+    {
+      "n": 5,
+      "score": 88
+    },
+    {
+      "n": 8,
+      "score": 87
+    },
+    {
+      "n": 13,
+      "score": 86
+    },
+    {
+      "n": 21,
+      "score": 86
+    },
+    {
+      "n": 34,
+      "score": 85
+    }
+  ],
+  "ok": true,
+  "checks": [
+    {
+      "n": 1,
+      "score": 93,
+      "expected": 95,
+      "match": false
+    },
+    {
+      "n": 2,
+      "score": 90,
+      "expected": 93,
+      "match": false
+    },
+    {
+      "n": 3,
+      "score": 89,
+      "expected": 91,
+      "match": false
+    },
+    {
+      "n": 5,
+      "score": 88,
+      "expected": 89,
+      "match": false
+    },
+    {
+      "n": 8,
+      "score": 87,
+      "expected": 88,
+      "match": false
+    },
+    {
+      "n": 13,
+      "score": 86,
+      "expected": 87,
+      "match": false
+    },
+    {
+      "n": 21,
+      "score": 86,
+      "expected": 86,
+      "match": true
+    },
+    {
+      "n": 34,
+      "score": 85,
+      "expected": 86,
+      "match": false
+    }
+  ]
+}

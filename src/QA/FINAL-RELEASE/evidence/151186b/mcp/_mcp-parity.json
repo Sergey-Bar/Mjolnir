@@ -1,0 +1,12 @@
+{
+  "protocolResponses": 8,
+  "tools": ["scan", "explain", "diff"],
+  "scanParse": "ok",
+  "mcpFindings": 1,
+  "cliFindings": 1,
+  "findingsParity": true,
+  "badPathHandled": "error",
+  "unknownToolHandled": "error",
+  "survivedGarbage": "yes",
+  "initializeOk": true
+}

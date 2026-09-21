@@ -1,0 +1,541 @@
+/**
+ * Code-only text masking (Phase 1 — Tempering Plan).
+ *
+ * Returns a view of the source with string literals and comments blanked
+ * to spaces, preserving all newlines so line/column indices stay exact.
+ * Regex-based pattern rules run against this view to avoid false
+ * positives on prose inside strings or comments.
+ *
+ * TypeScript/JavaScript: delegates to the proven ts-morph getCodeOnlyText.
+ * Python/Java/C#: lightweight synchronous scanners (no WASM, no async).
+ *
+ * Rules that intentionally scan comments (QA-TQUAL-011, QA-PY-009)
+ * continue to use ctx.text directly.
+ */
+
+import { getCodeOnlyText } from "./ts-ast.js";
+import type { ParsedFile } from "./adapter.js";
+import { ts } from "ts-morph";
+
+// ─── Public API ──────────────────────────────────────────────────────
+
+/**
+ * Compute the code-only text for a parsed file based on its language.
+ * Falls back to raw text if language is unknown or masking fails.
+ */
+export function computeCodeText(
+  file: ParsedFile,
+  language: "typescript" | "python" | "java" | "csharp",
+): string {
+  // Every branch below is total (getCodeOnlyText and the language maskers
+  // catch their own failures), so no outer degradation net is needed.
+  switch (language) {
+    case "typescript":
+      return getCodeOnlyText(file);
+    case "python":
+      return maskPython(file.text);
+    case "java":
+      return maskJava(file.text);
+    case "csharp":
+      return maskCSharp(file.text);
+    default:
+      return file.text;
+  }
+}
+
+// ─── Python masker ───────────────────────────────────────────────────
+
+/**
+ * Blanks Python string literals and comments to spaces, preserving
+ * newlines. Handles:
+ * - Triple-quoted strings (""" and ''')
+ * - Single/double quoted strings (" and ')
+ * - f-strings, b-strings, r-strings (prefix letters before quotes)
+ * - Line comments (#)
+ */
+function maskPython(text: string): string {
+  const chars = text.split("");
+  const len = chars.length;
+  let i = 0;
+
+  while (i < len) {
+    // Skip string prefixes: f, b, r, u, fr, rb, br, etc.
+    const prefixStart = i;
+    while (
+      i < len &&
+      i - prefixStart < 3 &&
+      "fFbBrRuU".includes(chars[i] as string)
+    ) {
+      i++;
+    }
+
+    // Triple-quoted strings
+    if (
+      i < len - 2 &&
+      ((chars[i] === '"' && chars[i + 1] === '"' && chars[i + 2] === '"') ||
+        (chars[i] === "'" && chars[i + 1] === "'" && chars[i + 2] === "'"))
+    ) {
+      // i < len - 2 above guarantees chars[i] is defined here.
+      const quote = chars[i];
+      // Blank from prefix start through the closing triple-quote
+      const start = prefixStart;
+      i += 3; // skip opening triple-quote
+      while (i < len) {
+        if (chars[i] === "\\" && i + 1 < len) {
+          i += 2; // skip escaped char
+          continue;
+        }
+        if (
+          chars[i] === quote &&
+          i + 1 < len &&
+          chars[i + 1] === quote &&
+          i + 2 < len &&
+          chars[i + 2] === quote
+        ) {
+          i += 3; // skip closing triple-quote
+          break;
+        }
+        i++;
+      }
+      blankRange(chars, start, i);
+      continue;
+    }
+
+    // Single/double quoted strings
+    if (i < len && (chars[i] === '"' || chars[i] === "'")) {
+      // The guard above guarantees chars[i] is defined here.
+      const quote = chars[i];
+      const start = prefixStart;
+      i++; // skip opening quote
+      while (i < len && chars[i] !== quote && chars[i] !== "\n") {
+        if (chars[i] === "\\" && i + 1 < len) {
+          i += 2; // skip escaped char
+          continue;
+        }
+        i++;
+      }
+      if (i < len && chars[i] === quote) i++; // skip closing quote
+      blankRange(chars, start, i);
+      continue;
+    }
+
+    // Reset prefix tracking if we didn't find a string
+    if (prefixStart !== i) {
+      // We advanced past prefix chars but found no quote — not a string prefix.
+      // Don't blank anything, continue from current position.
+      continue;
+    }
+
+    // Line comments
+    if (chars[i] === "#") {
+      const start = i;
+      while (i < len && chars[i] !== "\n") i++;
+      blankRange(chars, start, i);
+      continue;
+    }
+
+    i++;
+  }
+
+  return chars.join("");
+}
+
+// ─── Java masker ─────────────────────────────────────────────────────
+
+/**
+ * Blanks Java string literals and comments to spaces, preserving
+ * newlines. Handles:
+ * - Single-line comments (//)
+ * - Multi-line comments (/* ... * /)
+ * - String literals ("...")
+ * - Text blocks (""" ... """) — Java 15+
+ * - Char literals ('.')
+ */
+function maskJava(text: string): string {
+  const chars = text.split("");
+  const len = chars.length;
+  let i = 0;
+
+  while (i < len) {
+    // Single-line comment
+    if (chars[i] === "/" && i + 1 < len && chars[i + 1] === "/") {
+      const start = i;
+      while (i < len && chars[i] !== "\n") i++;
+      blankRange(chars, start, i);
+      continue;
+    }
+
+    // Multi-line comment
+    if (chars[i] === "/" && i + 1 < len && chars[i + 1] === "*") {
+      const start = i;
+      i += 2;
+      // Audit W1: track closure explicitly. The old "last two chars"
+      // heuristic checked whether the COMMENT ENDED at EOF — a comment
+      // that closed mid-text (e.g. `/*x*/y`) landed on i === len - 1
+      // after the break, the heuristic misread the trailing code as an
+      // unclosed tail, and everything after the close — live code — was
+      // blanked to spaces.
+      let closed = false;
+      while (i < len - 1) {
+        if (chars[i] === "*" && chars[i + 1] === "/") {
+          i += 2;
+          closed = true;
+          break;
+        }
+        i++;
+      }
+      if (!closed) i = len; // unclosed comment — blank to end
+      blankRange(chars, start, i);
+      continue;
+    }
+
+    // Text block (Java 15+): """
+    if (
+      chars[i] === '"' &&
+      i + 2 < len &&
+      chars[i + 1] === '"' &&
+      chars[i + 2] === '"'
+    ) {
+      const start = i;
+      i += 3;
+      while (i < len) {
+        if (chars[i] === "\\" && i + 1 < len) {
+          i += 2;
+          continue;
+        }
+        if (
+          chars[i] === '"' &&
+          i + 1 < len &&
+          chars[i + 1] === '"' &&
+          i + 2 < len &&
+          chars[i + 2] === '"'
+        ) {
+          i += 3;
+          break;
+        }
+        i++;
+      }
+      blankRange(chars, start, i);
+      continue;
+    }
+
+    // String literal
+    if (chars[i] === '"') {
+      const start = i;
+      i++;
+      while (i < len && chars[i] !== '"' && chars[i] !== "\n") {
+        if (chars[i] === "\\" && i + 1 < len) {
+          i += 2;
+          continue;
+        }
+        i++;
+      }
+      if (i < len && chars[i] === '"') i++;
+      blankRange(chars, start, i);
+      continue;
+    }
+
+    // Char literal
+    if (chars[i] === "'") {
+      const start = i;
+      i++;
+      if (i < len && chars[i] === "\\" && i + 1 < len) {
+        i += 2; // escaped char
+      } else if (i < len && chars[i] !== "'") {
+        i++; // single char
+      }
+      if (i < len && chars[i] === "'") i++;
+      blankRange(chars, start, i);
+      continue;
+    }
+
+    i++;
+  }
+
+  return chars.join("");
+}
+
+// ─── C# masker ───────────────────────────────────────────────────────
+
+/**
+ * Blanks C# string literals and comments to spaces, preserving
+ * newlines. Handles:
+ * - Single-line comments (//)
+ * - Multi-line comments (/* ... * /)
+ * - Regular string literals ("...")
+ * - Verbatim strings (@"...")
+ * - Interpolated strings ($"..." and $@"..." / @$"...")
+ * - Raw string literals ("""...""" — C# 11+)
+ * - Char literals ('.')
+ */
+function maskCSharp(text: string): string {
+  const chars = text.split("");
+  const len = chars.length;
+  let i = 0;
+
+  while (i < len) {
+    // Single-line comment
+    if (chars[i] === "/" && i + 1 < len && chars[i + 1] === "/") {
+      const start = i;
+      while (i < len && chars[i] !== "\n") i++;
+      blankRange(chars, start, i);
+      continue;
+    }
+
+    // Multi-line comment
+    if (chars[i] === "/" && i + 1 < len && chars[i + 1] === "*") {
+      const start = i;
+      i += 2;
+      // Audit W1: explicit closure flag — see the Java masker. The
+      // last-two-chars heuristic blanked live code after a comment that
+      // closed mid-text.
+      let closed = false;
+      while (i < len - 1) {
+        if (chars[i] === "*" && chars[i + 1] === "/") {
+          i += 2;
+          closed = true;
+          break;
+        }
+        i++;
+      }
+      if (!closed) i = len;
+      blankRange(chars, start, i);
+      continue;
+    }
+
+    // Verbatim / interpolated string prefixes: @, $, $@, @$
+    if ((chars[i] === "@" || chars[i] === "$") && i + 1 < len) {
+      const prefixStart = i;
+      let isVerbatim = false;
+
+      if (chars[i] === "$") {
+        i++;
+        if (i < len && chars[i] === "@") {
+          isVerbatim = true;
+          i++;
+        }
+      } else {
+        // The outer guard established "@" or "$"; "$" was handled above.
+        isVerbatim = true;
+        i++;
+        if (i < len && chars[i] === "$") {
+          // Interpolated-verbatim prefix (@$"…") — consumed; the same
+          // verbatim scan applies as for @"…".
+          i++;
+        }
+      }
+
+      if (i < len && chars[i] === '"') {
+        // The prefix branch above always set one of the flags (the "@"
+        // and "$" cases each set exactly one), so a plain raw-string
+        // check is unreachable here; dispatch on verbatim vs interpolated.
+        if (isVerbatim) {
+          // Verbatim string: @"..." or $@"..." / @$"..."
+          // Escape is "" (doubled quote), no backslash escaping
+          i++; // skip opening "
+          while (i < len) {
+            if (chars[i] === '"') {
+              if (i + 1 < len && chars[i + 1] === '"') {
+                i += 2; // escaped ""
+                continue;
+              }
+              i++; // closing "
+              break;
+            }
+            i++;
+          }
+          blankRange(chars, prefixStart, i);
+          continue;
+        }
+        // Interpolated non-verbatim: $"..."
+        i++; // skip opening "
+        while (i < len && chars[i] !== '"' && chars[i] !== "\n") {
+          if (chars[i] === "\\" && i + 1 < len) {
+            i += 2;
+            continue;
+          }
+          i++;
+        }
+        if (i < len && chars[i] === '"') i++;
+        blankRange(chars, prefixStart, i);
+        continue;
+      }
+      // Not followed by a quote — not a string prefix, reset
+      i = prefixStart + 1;
+      continue;
+    }
+
+    // Raw string literal (C# 11): """...""" (and """"..."""", etc.)
+    if (chars[i] === '"') {
+      let quoteCount = 0;
+      let j = i;
+      while (j < len && chars[j] === '"') {
+        quoteCount++;
+        j++;
+      }
+      if (quoteCount >= 3) {
+        const start = i;
+        i = j;
+        while (i < len) {
+          let closeCount = 0;
+          let k = i;
+          while (k < len && chars[k] === '"') {
+            closeCount++;
+            k++;
+          }
+          if (closeCount === quoteCount) {
+            i = k;
+            break;
+          }
+          if (closeCount > 0) {
+            i = k;
+            continue;
+          }
+          i++;
+        }
+        blankRange(chars, start, i);
+        continue;
+      }
+    }
+
+    // Regular string literal
+    if (chars[i] === '"') {
+      const start = i;
+      i++;
+      while (i < len && chars[i] !== '"' && chars[i] !== "\n") {
+        if (chars[i] === "\\" && i + 1 < len) {
+          i += 2;
+          continue;
+        }
+        i++;
+      }
+      if (i < len && chars[i] === '"') i++;
+      blankRange(chars, start, i);
+      continue;
+    }
+
+    // Char literal
+    if (chars[i] === "'") {
+      const start = i;
+      i++;
+      if (i < len && chars[i] === "\\" && i + 1 < len) {
+        i += 2;
+      } else if (i < len && chars[i] !== "'") {
+        i++;
+      }
+      if (i < len && chars[i] === "'") i++;
+      blankRange(chars, start, i);
+      continue;
+    }
+
+    i++;
+  }
+
+  return chars.join("");
+}
+
+// ─── TypeScript basic masker (scanner-based, no AST) ─────────────────
+
+/**
+ * Blanks TypeScript/JavaScript string literals and comments to spaces
+ * using the TypeScript compiler scanner with `reScanTemplateToken`
+ * tracking for template interpolation boundaries. No AST required.
+ *
+ * This reuses the same pattern as `detector-hash.ts` (walkTokens) which
+ * already solves the exact same template-interpolation problem for hash
+ * computation. The phantom-comment edge case only occurs when
+ * `reScanTemplateToken` is NOT called — calling it closes the gap.
+ */
+export function maskTypeScriptBasic(text: string): string {
+  const chars = text.split("");
+  const scanner = ts.createScanner(
+    ts.ScriptTarget.ES2022,
+    false, // skipTrivia: false — we want trivia positions
+    ts.LanguageVariant.Standard,
+    text,
+  );
+
+  let templateDepth = 0;
+  let tok = scanner.scan();
+
+  while (tok !== ts.SyntaxKind.EndOfFileToken) {
+    // CloseBrace inside template continuation → re-scan as template token
+    if (tok === ts.SyntaxKind.CloseBraceToken && templateDepth > 0) {
+      tok = (
+        scanner as { reScanTemplateToken(isTagged: boolean): ts.SyntaxKind }
+      ).reScanTemplateToken(false);
+    }
+
+    const start = scanner.getTokenPos();
+    const end = scanner.getTextPos();
+
+    // Blank comments and string/template literals
+    if (
+      tok === ts.SyntaxKind.SingleLineCommentTrivia ||
+      tok === ts.SyntaxKind.MultiLineCommentTrivia ||
+      tok === ts.SyntaxKind.StringLiteral ||
+      tok === ts.SyntaxKind.NoSubstitutionTemplateLiteral ||
+      tok === ts.SyntaxKind.TemplateHead ||
+      tok === ts.SyntaxKind.TemplateMiddle ||
+      tok === ts.SyntaxKind.TemplateTail
+    ) {
+      for (let i = start; i < end && i < chars.length; i++) {
+        if (chars[i] !== "\n" && chars[i] !== "\r") chars[i] = " ";
+      }
+    }
+
+    // Template nesting: TemplateHead opens; TemplateMiddle ends an
+    // interpolation but keeps the template open; TemplateTail (LastTemplateToken)
+    // closes.
+    if (tok === ts.SyntaxKind.TemplateHead) {
+      templateDepth++;
+    } else if (tok === ts.SyntaxKind.LastTemplateToken) {
+      templateDepth = Math.max(0, templateDepth - 1);
+    }
+
+    tok = scanner.scan();
+  }
+
+  return chars.join("");
+}
+
+// ─── Code-text dispatcher for declaration counting ──────────────────
+
+/**
+ * Compute the code-only text for counting test declarations. Dispatches
+ * to the appropriate masker per language. Never falls back to raw text —
+ * always produces a masked view with comments/strings blanked.
+ *
+ * Used when `parsedFile.codeText` is not available (e.g., AST parse failed).
+ */
+export function getCodeTextForCounting(
+  text: string,
+  language: "typescript" | "python" | "java" | "csharp",
+): string {
+  switch (language) {
+    case "typescript":
+      return maskTypeScriptBasic(text);
+    case "python":
+      return maskPython(text);
+    case "java":
+      return maskJava(text);
+    case "csharp":
+      return maskCSharp(text);
+    default:
+      return text;
+  }
+}
+
+// ─── Shared helpers ──────────────────────────────────────────────────
+
+/**
+ * Blanks a range of characters to spaces, preserving newlines so
+ * line/column computations remain valid.
+ */
+function blankRange(chars: string[], start: number, end: number): void {
+  for (let i = start; i < end && i < chars.length; i++) {
+    if (chars[i] !== "\n" && chars[i] !== "\r") {
+      chars[i] = " ";
+    }
+  }
+}

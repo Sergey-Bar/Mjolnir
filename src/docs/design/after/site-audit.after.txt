@@ -1,0 +1,18 @@
+
+> mjolnir-qa@0.5.31 site:audit
+> node site/scripts/audit-live.mjs
+
+
+mjolnir site audit  (axe-core + keyboard + web vitals)
+
+  PASS  / (landing)
+          axe: 0 violation(s) · keyboard: 30 stops, 0 without a focus ring · CLS 0 (<=0.05) · LCP 0ms
+  PASS  /guide/getting-started
+          axe: 0 violation(s) · keyboard: 45 stops, 0 without a focus ring · CLS 0 (<=0.05) · LCP 140ms
+  PASS  /guide/scoring
+          axe: 0 violation(s) · keyboard: 52 stops, 0 without a focus ring · CLS 0 (<=0.05) · LCP 156ms
+  PASS  /rules/
+          axe: 0 violation(s) · keyboard: 60 stops, 0 without a focus ring · CLS 0 (<=0.05) · LCP 176ms
+
+  0 of 4 pages failing
+

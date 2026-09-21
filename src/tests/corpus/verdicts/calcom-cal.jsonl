@@ -1,0 +1,7 @@
+{"ruleId":"QA-PW-144","file":"packages/platform/examples/base/playwright.config.ts","line":31,"verdict":"FP","note":"example base config intentionally minimal - single @calcom/base project for example apps is the documented starting point"}
+{"ruleId":"QA-TQUAL-002","file":"packages/features/calendar-subscription/adapters/__tests__/Office365CalendarSubscriptionAdapter.test.ts","line":48,"verdict":"TP","note":"placeholder test named should be a placeholder test - pure false green"}
+{"ruleId":"QA-PW-141","file":"packages/platform/examples/base/playwright.config.ts","line":16,"verdict":"FP","note":"retries: CI?2:0 is the example starter config with html reporter - documentation artifact, not a production gate"}
+{"ruleId":"QA-PW-141","file":"playwright.config.ts","line":96,"verdict":"TP","note":"retries: 3 on CI with no machine-readable reporter or triage reference - flaky passes go uninvestigated"}
+{"ruleId":"QA-CI-002","file":".github/workflows/security-audit.yml","line":17,"verdict":"FP","note":"yarn audit report step followed by a real fail-on-critical step - || true is correct for the report phase"}
+{"ruleId":"QA-TQUAL-011","file":"packages/features/webhooks/lib/WebhookService.test.ts","line":68,"verdict":"TP","note":"genuine commented-out describe block (verified in the live repo)"}
+{"ruleId":"QA-TQUAL-011","file":"packages/features/webhooks/lib/WebhookService.test.ts","line":115,"verdict":"TP","note":"genuine commented-out describe block (verified in the live repo)"}

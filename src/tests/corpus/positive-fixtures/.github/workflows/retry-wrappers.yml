@@ -1,0 +1,28 @@
+name: Tests
+
+on: [push]
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm test
+
+  flaky-suite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: nick-fields/retry@v3
+        with:
+          max_tries: 3
+          command: npx playwright test
+
+  nightly-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: nick-fields/retry@v3
+        with:
+          max_tries: 5
+          command: npm run test:e2e

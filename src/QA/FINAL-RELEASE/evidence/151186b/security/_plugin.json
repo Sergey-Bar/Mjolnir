@@ -1,0 +1,14 @@
+[
+  {
+    "case": "gate-closed",
+    "exit": 0,
+    "pwned1": false,
+    "pwned2": false
+  },
+  {
+    "case": "gate-open",
+    "exit": 0,
+    "pwned1": true,
+    "pwned2": true
+  }
+]

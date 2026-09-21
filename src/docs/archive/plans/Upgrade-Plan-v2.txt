@@ -1,0 +1,267 @@
+# QA DOCTOR — UPGRADE PLAN v2
+## Multi-Language Support + The Ultimate Playwright Toolkit
+
+> Builds on the working MVP (19 rules, changed-scope, CI install, fuzz gate).
+> Two strategic upgrades:
+> 1. **Multi-language** — same evidence philosophy, new ecosystems
+> 2. **Playwright Deep Mode** — from "5 rules" to *the* definitive Playwright quality tool
+
+---
+
+# PART 1 — MULTI-LANGUAGE SUPPORT
+
+## 1.1 The Architecture Change That Makes It Possible
+
+The current engine is regex-based over JS/TS. Multi-language requires one
+structural refactor first — **the Language Adapter interface**:
+
+```ts
+interface LanguageAdapter {
+  id: string;                          // 'typescript' | 'python' | 'java' ...
+  extensions: string[];                // ['.ts', '.py', '.java']
+  /** Parse once, share across rules (tree-sitter or native parser). */
+  parse(text: string): ParsedFile;
+  /** Framework detection per language (pytest.config, pom.xml, ...). */
+  detectFrameworks(root: string): string[];
+  /** Canonical test-file discovery per ecosystem conventions. */
+  isTestFile(path: string): boolean;
+}
+
+interface UniversalRule {
+  meta: RuleMeta;
+  /** Rules declare which adapters they support. */
+  appliesTo: string[];                 // adapter ids
+  run(ctx: { file: string; ast: ParsedFile; text: string }): Finding[];
+}
+```
+
+Key decisions:
+- **Parser: tree-sitter grammars** — one consistent AST API across all
+  languages, incremental, battle-tested (used by GitHub itself).
+  Alternative rejected: per-language native parsers (jest/pytest) = N
+  integrations instead of 1.
+- **Rules become language-aware, not duplicated**: `no-assertions` exists
+  in every ecosystem; `continue-on-error` is GitHub-only; `pytest.raises`
+  misuse is Python-only. The rule registry maps rules → languages.
+- **Scoring unchanged** — deductions are universal; dimensions gain a
+  language axis.
+
+## 1.2 Language Rollout Order (by market pull, not by ease)
+
+| Phase | Language | Test ecosystems | Why this order |
+|---|---|---|---|
+| L0 (done) | TypeScript/JS | Jest, Vitest, Playwright | Core |
+| L1 | **Python** | pytest, unittest, Playwright-Python | Biggest QA community; pytest is the world's most-used test runner |
+| L2 | **Java/Kotlin** | JUnit 5, TestNG, Selenium, Playwright-Java | Enterprise QA stronghold |
+| L3 | **Go** | testing pkg, testify, Ginkgo | Fast-growing; small rule surface = quick win |
+| L4 | **C#/.NET** | xUnit, NUnit, MSTest, Playwright-.NET | Enterprise; large but slower-moving |
+| L5 | **Rust / Ruby** | cargo-test/RSpec | Community demand driven |
+
+Per-language effort estimate: ~3–4 weeks each (adapter + ~15 core rules +
+fixtures + framework detection). Python first.
+
+## 1.3 L1 Deep Dive — Python/pytest (the pilot)
+
+### Adapter
+```text
+parser:      tree-sitter-python
+test files:  test_*.py / *_test.py
+frameworks:  pytest (pytest.ini/pyproject.toml/setup.cfg/conftest.py),
+             unittest (TestCase subclasses), playwright-python
+CI:          same GitHub Actions engine (already language-agnostic!)
+```
+
+### The First 12 Python Rules — ✅ 12/12 SHIPPED
+
+| ID | Rule | Catches | Status |
+|---|---|---|---|
+| QA-PY-001 | Focused test committed (`-k` hardcoded, `@pytest.mark.only` custom) | fake-green subset runs | ✅ SHIPPED — `src/rules/python/qa-py-001-focused-test.ts` |
+| QA-PY-002 | Skipped test (`@pytest.mark.skip`, `xfail` without strict) | hidden debt | ✅ SHIPPED — `src/rules/python/qa-py-002-skipped-test.js` |
+| QA-PY-003 | No assertions (`def test_x(): do_thing()`) | vacuous pass | ✅ SHIPPED — `qa-py-003-no-assertions.js` |
+| QA-PY-004 | Bare `assert` on truthiness of complex object (`assert result`) | weak assertion | ✅ SHIPPED — `qa-py-004-bare-truthiness.ts` |
+| QA-PY-005 | `time.sleep()` in tests | hard sleep | ✅ SHIPPED — `qa-py-005-hard-sleep.js` |
+| QA-PY-006 | Empty test body (`pass`) | vacuous pass | ✅ SHIPPED — `qa-py-006-empty-body.js` |
+| QA-PY-007 | `pytest.raises` without match / wrong scope (catches too much) | false-green error tests | ✅ SHIPPED — `qa-py-007-raises-without-match.ts` |
+| QA-PY-008 | Mock-only verification (`Mock.assert_called_once` only) | wiring ≠ behavior | ✅ SHIPPED — `qa-py-008-mock-only.ts` |
+| QA-PY-009 | Commented-out tests | hidden debt | ✅ SHIPPED — `qa-py-009-commented-out.ts` |
+| QA-PY-010 | Random/time dependence without freeze (`datetime.now()`, `random.*`) | flakiness | ✅ SHIPPED — `qa-py-010-random-time.js` |
+| QA-PY-011 | Fixture abuse: mutable fixture shared across tests | order dependency | ✅ SHIPPED — `qa-py-011-mutable-fixture.ts` |
+| QA-PY-012 | Tautological assertion (`assert True`, `assert x == x`) | vacuous pass | ✅ SHIPPED — `qa-py-012-tautological.js` |
+
+Plus: existing CI rules (QA-CI-001..008) work as-is — YAML is YAML.
+This is the multiplier effect: every new language inherits the entire
+CI-integrity engine for free.
+
+### Python-Specific Hardening
+* `conftest.py` fixture graph analysis (phase 2) — Mystery Guest detection
+  becomes much stronger with real fixture resolution.
+* `pyproject.toml` config resolution replaces jest.config logic.
+
+## 1.4 What Stays Universal vs Per-Language
+
+```text
+UNIVERSAL (write once):
+  scorer · JSON contract · exit codes · --scope changed (git layer)
+  CI integrity engine · suppressions/config · reporters · fuzz harness
+
+PER-LANGUAGE (adapter + rules):
+  parser · test-file discovery · framework detection
+  test-quality rules · hygiene rules · fixtures
+```
+
+## 1.5 Rollout Plan & Timeline
+
+```text
+Weeks 1–2   Refactor to LanguageAdapter + tree-sitter core (JS/TS migrate)
+            GATE: all 50 existing tests green through the new abstraction
+Weeks 3–5   Python adapter + 12 rules + fixtures + framework detection
+            GATE: scans a real pytest repo, FP audit < 5%
+Weeks 6–7   Java/JUnit adapter (L2 start) OR Playwright Deep Mode (Part 2)
+            ← decision point: see §2.3 sequencing
+Weeks 8+    Continue per table §1.2, one language per ~3-week cycle
+```
+
+Marketing framing: *"QA Doctor now speaks pytest"* — each language launch
+is a release event (Show HN, r/Python, r/QualityAssurance).
+
+---
+
+# PART 2 — THE ULTIMATE PLAYWRIGHT TOOLKIT 🎭
+
+> Goal: when a QA engineer thinks "Playwright quality", they think QA Doctor.
+> Nobody owns this space today (research confirmed). We take it.
+
+## 2.1 The Three Layers
+
+```text
+Layer 1 — SPEC QUALITY        Is the test written well?
+Layer 2 — SELECTOR HEALTH     Will it survive UI refactors?
+Layer 3 — RUNTIME EVIDENCE    Does it actually verify behavior? (post-MVP)
+```
+
+## 2.2 Layer 1+2 — Static Analysis (next release, ~4 weeks)
+
+### New Rule Families (25+ rules) — ✅ 22/25 SHIPPED (plus pre-existing QA-PW-002..005)
+
+**A. Wait & Timing Discipline — ⬜ 0/5 shipped**
+| ID | Rule | Status |
+|---|---|---|
+| QA-PW-101 | `waitForTimeout()` anywhere (upgrade existing w/ auto-fix hint) | ✅ SHIPPED — `qa-pw-101-wait-for-timeout.ts` |
+| QA-PW-102 | `waitForEvent('load')` instead of web-first assertion | ✅ SHIPPED — `qa-pw-102-wait-load.ts` |
+| QA-PW-103 | Missing timeout override without reason (magic defaults) | ✅ SHIPPED — `qa-pw-103-missing-timeout.ts` |
+| QA-PW-104 | `{ trial: true }` misuse — check-then-act race | ✅ SHIPPED — `qa-pw-104-trial-click.ts` |
+| QA-PW-105 | `expect.poll` without timeout bound | ✅ SHIPPED — `qa-pw-105-poll-timeout.ts` |
+
+**B. Assertion Completeness — ⬜ 0/5 shipped**
+| ID | Rule | Status |
+|---|---|---|
+| QA-PW-106 | Unawaited locator assertion (existing QA-PW-002, promoted) | ⬜ NOT BUILT (note: QA-PW-002 itself is shipped, pre-dating this plan) |
+| QA-PW-107 | `toBeVisible()` on detached-prone nodes instead of `toBeInViewport` | ⬜ NOT BUILT |
+| QA-PW-108 | Asserting `textContent` when role/text locator should be used | ⬜ NOT BUILT |
+| QA-PW-109 | No negative-path assertion in CRUD flows (created→deleted verified?) | ⬜ NOT BUILT |
+| QA-PW-110 | Screenshot comparison without `maxDiffPixelRatio` bound | ✅ SHIPPED as QA-PW-140 — `qa-pw-140.ts` (registered; ID 140 kept per frozen-ID law) |
+
+**C. Selector Health (upgrades QA-PW-004) — ✅ engine shipped, sub-rules mostly not**
+| ID | Rule | Status |
+|---|---|---|
+| QA-PW-111 | Selector Health Score per spec: % role/text locators vs CSS/XPath | ✅ SHIPPED as engine — `src/playwright/selector-health.ts` (not a discrete rule ID, it's the `doctor:playwright` subcommand) |
+| QA-PW-112 | `data-testid` convention enforcement (configurable pattern) | ✅ SHIPPED — `qa-pw-112-testid-convention.ts` (kebab-case default) |
+| QA-PW-113 | Frame piercing via `frameLocator` chains > 2 deep | ⬜ NOT BUILT |
+| QA-PW-114 | `page.$` / `page.$$` legacy API usage (should be locators) | ✅ SHIPPED — `qa-pw-114-legacy-handles.js` |
+
+**D. Isolation & Hygiene — 🟡 1/6 shipped**
+| ID | Rule | Status |
+|---|---|---|
+| QA-PW-115 | Shared `page` across parallel tests without `test.use` isolation | ✅ SHIPPED — `qa-pw-115-shared-page.ts` |
+| QA-PW-116 | Storage-state reuse without expiry strategy | ✅ SHIPPED — `qa-pw-116-storage-state.ts` |
+| QA-PW-117 | `test.describe.serial` without justification comment | ✅ SHIPPED — `qa-pw-117-serial.ts` |
+| QA-PW-118 | Network idle waits (`waitForLoadState('networkidle')` — flaky by design) | ✅ SHIPPED — `qa-pw-118-network-idle.js` |
+| QA-PW-119 | Test depends on execution order (writes state read by later test) | ✅ SHIPPED — `qa-pw-119-order-dependence.ts` |
+| QA-PW-120 | Missing `test.skip` conditions for known-flaky environments | ✅ SHIPPED — `qa-pw-120-env-guard.ts` |
+
+**E. Config & Project Hygiene — 🟡 1/5 shipped**
+| ID | Rule | Status |
+|---|---|---|
+| QA-PW-121 | `playwright.config`: retries ≥ 3 or workers=0 in CI profile | ✅ SHIPPED — `qa-pw-121-config-retries.ts` |
+| QA-PW-122 | No trace/screenshot/video capture on retry (`use: { trace: 'on-first-retry' }` missing) | ✅ SHIPPED — `qa-pw-122-no-trace.ts` |
+| QA-PW-123 | BaseURL hardcoded instead of env-driven | ✅ SHIPPED — `qa-pw-123-hardcoded-url.js` |
+| QA-PW-124 | Projects defined but no smoke/regression split | ✅ SHIPPED — `qa-pw-124-project-split.ts` |
+| QA-PW-125 | Global setup/teardown mutating shared external state | ✅ SHIPPED — `qa-pw-125-global-setup.ts` |
+
+### Selector Health Score (the headline feature)
+
+```text
+SELECTOR HEALTH — checkout.spec.ts
+
+██████████████████████████░░░░░░  72 / 100
+
+getByRole/getByText     18  ████████████  75%
+data-testid              4  ███           17%
+CSS class chains         2  █             8%   ⚠ refactor these
+XPath                    0                0%
+
+Weakest spec: admin/users.spec.ts (31/100)
+Top fix: replace '.btn.btn-primary' → getByRole('button', { name: 'Buy' })
+```
+
+Per-spec and per-project rollup. This single output justifies adoption.
+
+### Auto-Fix Hints (safe subset only)
+Every wait/selector finding prints a concrete replacement snippet:
+```text
+FIX: await page.waitForTimeout(3000)
+  → await expect(page.getByRole('dialog')).toBeVisible()
+```
+
+## 2.3 Layer 3 — Runtime Evidence (post-static, ~6 weeks)  🟡 PARTIAL — lighter tier than planned
+
+The bridge to Product.txt's Evidence Graph, scoped tightly to Playwright:
+
+1. **Trace-based flakiness evidence** — parse Playwright trace.zip files:
+   which tests retried, network failures during test, console errors.
+   `qa-doctor traces ./test-results/` → reliability report per spec.
+   ⬜ NOT BUILT — `forensics` command parses the Playwright **JSON reporter**
+   output instead, no `trace.zip` parsing code exists.
+2. **Retry forensics** — a test that passes only on retry gets flagged
+   with its trace attached: *this is not a passing test, it's a lucky test.*
+   ✅ SHIPPED, but sourced from JSON reporter retry counts, not the trace itself.
+3. **Coverage of app code during e2e** — consume Playwright's coverage
+   output → "your e2e suite exercises 34% of src/" (honest framing:
+   executed-by, not verified-by). ⬜ NOT BUILT.
+
+Sequencing decision (§1.5): **Playwright Deep Mode BEFORE Java**.
+Rationale: differentiation compounds — owning the Playwright niche drives
+adoption harder than being the 5th JUnit linter. Python stays first
+(bigger community), then Playwright Deep, then Java.
+
+## 2.4 Distribution Strategy for the Playwright Push
+
+1. **`qa-doctor doctor:playwright`** — dedicated subcommand; one command
+   that runs ONLY the PW families. Shareable, screenshot-able output.
+2. **GitHub Action recipe** in Playwright's own docs ecosystem (PR to
+   their examples repo).
+3. **Content engine**: "The Playwright Anti-Pattern Catalog" — one blog
+   post per rule family, each ending with the CLI one-liner that detects it.
+4. **VS Code extension (later)**: inline warnings using the same JSON contract.
+
+---
+
+# EXECUTION SUMMARY
+
+| Phase | Deliverable | Duration | Gate | Status |
+|---|---|---|---|---|
+| R1 | LanguageAdapter refactor (JS/TS through new core) | 2 wk | 50 tests green via abstraction | ✅ DONE |
+| R2 | Python/pytest adapter + 12 rules | 3 wk | FP < 5% on real pytest repos | 🟡 PARTIAL — adapter done, 6/12 rules, no FP audit |
+| R3 | Playwright Deep Mode static (25 rules + Selector Health) | 4 wk | Selector Score ships; demo video | 🟡 PARTIAL — Selector Health ✅, 7/25 rules, no demo video found |
+| R4 | Playwright runtime evidence (traces/retries) | 6 wk | Retry forensics on real traces | 🟡 PARTIAL — retry forensics ✅ on JSON reports, not real traces |
+| R5+ | Java → Go → C# per §1.2 | 3 wk each | per-language FP audits | ⬜ NOT STARTED — no adapter/rule files for any of these languages |
+
+Total to "multi-language + Playwright leader": ~9 weeks for R1–R3,
+~15 weeks including runtime evidence.
+
+# ANTI-CREEP GUARDRAILS (unchanged law)
+
+* Every new rule ships with must-fire/must-not-fire fixtures — no exceptions.
+* Every new language needs a real-world corpus (10+ OSS repos) audited
+  for false positives before GA of that adapter.
+* The deferred ledger absorbs anything not listed above.

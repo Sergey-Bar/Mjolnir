@@ -1,0 +1,2 @@
+{"ruleId":"QA-PW-123","file":"test/src/console.test.ts","line":232,"verdict":"FP","note":"http://domain1.test is a deliberate fake origin served by the puppeteer test server harness - cross-origin navigation IS the subject"}
+{"ruleId":"QA-PW-123","file":"test/src/oopif.test.ts","line":280,"verdict":"FP","note":"fake domain harness for OOPIF testing - the alternative origin is the point of the test"}

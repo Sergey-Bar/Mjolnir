@@ -1,0 +1,94 @@
+EXIT:0
+STDOUT:{
+  "schemaVersion": 1,
+  "partial": false,
+  "score": 93,
+  "frameworks": [],
+  "frameworkDetectionUnknown": true,
+  "dimensions": [
+    {
+      "category": "QA-TEST",
+      "score": 97,
+      "errors": 0,
+      "warnings": 1,
+      "infos": 0
+    }
+  ],
+  "findings": [
+    {
+      "severity": "warning",
+      "confidence": "high",
+      "findingType": "deterministic-defect",
+      "file": "crlf.spec.ts",
+      "line": 3,
+      "column": 3,
+      "message": "Hard sleep: `await new Promise(r => setTimeout(r, 3000))`.",
+      "why": "Fixed sleeps make tests both slow and flaky — they guess at timing instead of waiting for state.",
+      "fix": "Wait for an explicit condition (element state, promise, or signal) instead of a fixed delay.",
+      "qaImpact": "FLAKY-RISK",
+      "ruleId": "QA-TEST-004",
+      "category": "QA-TEST",
+      "evidenceLevel": "E2",
+      "measuredFpRate": 0.3,
+      "measuredFpN": 20,
+      "detectorRevision": 1,
+      "fixGroupId": "QA-TEST-004"
+    }
+  ],
+  "testFileCount": 1,
+  "testDeclarationCount": 1,
+  "rawDeductions": 3,
+  "suppressionCount": 0,
+  "agenticProfile": {
+    "testFiles": 1,
+    "generatedMarkedFiles": 0,
+    "codegenLikeFiles": 0,
+    "shareMarkedGenerated": 0,
+    "findingsInGeneratedFiles": 0,
+    "findingsInUnmarkedFiles": 1,
+    "note": "Static provenance markers only (generated-file headers, Playwright codegen default titles). Absence of a marker does not prove human authorship; healed and MCP-edited files without markers are indistinguishable from hand-written ones. Provenance never changes scoring or evidence — authorship is metadata, not trust."
+  },
+  "analysisStatus": {
+    "discovery": "complete",
+    "rules": "complete",
+    "skippedFiles": 0,
+    "durationMs": 19,
+    "rulesCrashed": 0
+  },
+  "contract": {
+    "contractVersion": 1,
+    "summary": {
+      "digest": "sha256:90fb4b48fcb757f01e818c6905b0669c13c456f52eaa3d39929bb5da3bc60e07",
+      "findings": 1,
+      "score": 93,
+      "errors": 0,
+      "warnings": 1,
+      "infos": 0,
+      "advisory": 0
+    },
+    "annotations": [
+      {
+        "path": "crlf.spec.ts",
+        "start_line": 3,
+        "annotation_level": "warning",
+        "message": "QA-TEST-004: Hard sleep: `await new Promise(r => setTimeout(r, 3000))`.",
+        "ruleId": "QA-TEST-004",
+        "detectorRevision": 1,
+        "advisory": false
+      }
+    ],
+    "annotationsTruncated": false,
+    "completeness": {
+      "partial": false,
+      "discovery": "complete",
+      "rules": "complete",
+      "skippedFiles": 0,
+      "rulesCrashed": 0,
+      "truncationReasons": [],
+      "frameworkDetectionUnknown": true,
+      "durationMs": 19
+    }
+  }
+}
+
+STDERR:

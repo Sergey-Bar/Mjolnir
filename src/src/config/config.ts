@@ -1,0 +1,287 @@
+/**
+ * Config file support (Sprint-Plan W7, Product-MVP §27 + GAP-F).
+ * Zero-config preserved: config presence never changes detection
+ * semantics — only severity, scope, and gating.
+ */
+
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { SEVERITY_ORDER, type Severity } from "../types.js";
+import { parseJsonFile, isRecord } from "../lib/safe-json.js";
+import { validateConfigSchema } from "./config-schema.js";
+
+export interface IgnoreEntry {
+  ruleId: string;
+  files?: string[];
+  reason: string;
+  /** ISO date; defaults to 90 days from creation (S11). */
+  expires?: string;
+}
+
+export interface QADoctorConfig {
+  gate?: "advisory" | "error" | "warning";
+  /** Path globs to skip during discovery (see DEFAULT_IGNORES dialect). */
+  exclude?: string[];
+  severityOverrides?: Record<string, Severity>;
+  ignore?: IgnoreEntry[];
+}
+
+/**
+ * Audit S7: every config key the engine consumes. A top-level key
+ * OUTSIDE this set is a likely typo ("severities", "ingore") — unknown
+ * keys emit a warning (fail-noisy, not fail-silent) and are ignored.
+ */
+const KNOWN_CONFIG_KEYS: ReadonlySet<string> = new Set([
+  "gate",
+  "exclude",
+  "severityOverrides",
+  "ignore",
+  "plugins",
+]);
+
+const CONFIG_NAMES = ["mjolnir.config.json", ".mjolnir.json"] as const;
+
+/**
+ * Returns the absolute path of the first config file found, or null.
+ * Shared by config loader, ignores, and plugin loading so all three
+ * respect the same config file name priority.
+ */
+export function findConfigPath(root: string): string | null {
+  for (const name of CONFIG_NAMES) {
+    const p = join(root, name);
+    // eslint-disable-next-line security/detect-non-literal-fs-filename -- CONFIG_NAMES is a compile-time constant
+    if (existsSync(p)) return p;
+  }
+  return null;
+}
+
+/**
+ * Distinguished from other load failures so the CLI can exit 10 (usage)
+ * instead of 20 (internal): a typo in the user's config is a user error
+ * with a fixable message, not a tool malfunction (bug-audit M4).
+ */
+export class ConfigValidationError extends Error {
+  constructor(message: string, options?: { cause?: unknown }) {
+    super(message, options);
+    this.name = "ConfigValidationError";
+  }
+}
+
+export function loadConfig(
+  root: string,
+  options: { knownRuleIds?: ReadonlySet<string> } = {},
+): {
+  config: QADoctorConfig;
+  path: string | null;
+  /** Non-fatal notes (e.g. unknown rule IDs in severityOverrides). */
+  warnings: string[];
+} {
+  for (const name of CONFIG_NAMES) {
+    // FW-LINT-01 residual: the filename comes from the compile-time
+    // CONFIG_NAMES constant — no untrusted input reaches the fs call.
+
+    const p = join(root, name);
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    if (!existsSync(p)) continue;
+    try {
+      const parsed = parseJsonFile(
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        readFileSync(p, "utf8"),
+        p,
+        (v): v is QADoctorConfig => isRecord(v),
+      );
+      const warnings = validate(parsed, options.knownRuleIds);
+      return { config: parsed, path: p, warnings };
+    } catch (err) {
+      // JSON.parse throws SyntaxError and readFileSync throws Error — the
+      // message is always readable; the cast documents that invariant.
+      const msg = (err as Error).message;
+      throw new ConfigValidationError(
+        `Invalid mjolnir config at ${p}: ${msg}`,
+        {
+          cause: err,
+        },
+      );
+    }
+  }
+  return { config: {}, path: null, warnings: [] };
+}
+
+function validate(
+  cfg: QADoctorConfig,
+  knownRuleIds?: ReadonlySet<string>,
+): string[] {
+  const warnings: string[] = [];
+
+  const schemaResult = validateConfigSchema(cfg);
+  if (!schemaResult.valid) {
+    throw new Error(schemaResult.errors.join("; "));
+  }
+
+  if (cfg.gate && !["advisory", "error", "warning"].includes(cfg.gate)) {
+    throw new Error(`gate must be advisory|error|warning, got "${cfg.gate}"`);
+  }
+  // Bug-audit M4: a typo here ("eror") used to flow through
+  // applySeverityOverrides → DEDUCTIONS[bad] = undefined → NaN score AND
+  // silently un-gate the rule (exitForFindings never matched the bogus
+  // severity). Values are validated at the gate; unknown RULE IDs stay
+  // allowed (plugins, forward refs) but warn.
+  for (const [ruleId, severity] of Object.entries(
+    cfg.severityOverrides ?? {},
+  )) {
+    if (!(SEVERITY_ORDER as readonly string[]).includes(severity)) {
+      throw new Error(
+        `severityOverrides["${ruleId}"] must be one of ${SEVERITY_ORDER.join("|")}, got "${String(severity)}"`,
+      );
+    }
+    if (knownRuleIds && !knownRuleIds.has(ruleId)) {
+      warnings.push(
+        `warning: severityOverrides["${ruleId}"] names no registered rule (typo? plugin rule?) — the entry is kept but currently matches nothing.`,
+      );
+    }
+  }
+  for (const ign of cfg.ignore ?? []) {
+    if (!ign.ruleId) throw new Error("ignore entries require ruleId");
+    if (!ign.reason)
+      throw new Error(`ignore for ${ign.ruleId} requires a "reason" (§27)`);
+    // Audit S7: ignore[].files feeds glob compilation — a non-string
+    // entry (number/object/null) crashed the suppression matcher with a
+    // TypeError (exit 20) instead of a fixable usage error. A user's
+    // config typo is exit 10 (M4 convention).
+    if (ign.files !== undefined) {
+      if (!Array.isArray(ign.files)) {
+        throw new Error(
+          `ignore for ${ign.ruleId}: "files" must be an array of glob strings, got ${typeof ign.files}`,
+        );
+      }
+      for (const g of ign.files) {
+        if (typeof g !== "string") {
+          throw new Error(
+            `ignore for ${ign.ruleId}: "files" entries must be strings, got ${typeof g} (${JSON.stringify(g)})`,
+          );
+        }
+      }
+    }
+    // Bug-audit QA-2026-08-30 QA-5: `new Date(garbage)` is NaN, and NaN
+    // comparisons are always false — an unparseable `expires` silently
+    // degraded to "expired" (or to active, depending on the comparison
+    // direction) with no signal. Reject it at load time with a fixable
+    // message instead.
+    if (
+      ign.expires !== undefined &&
+      Number.isNaN(new Date(ign.expires).getTime())
+    ) {
+      throw new Error(
+        `ignore for ${ign.ruleId}: "expires" must be an ISO date, got "${ign.expires}"`,
+      );
+    }
+    if (
+      ign.expires !== undefined &&
+      !Number.isNaN(new Date(ign.expires).getTime()) &&
+      new Date(ign.expires).getTime() < Date.now()
+    ) {
+      warnings.push(
+        `warning: ignore for ${ign.ruleId} has expired (expires "${ign.expires}") — the entry is kept but currently inactive.`,
+      );
+    }
+  }
+  // Audit S7: unknown top-level keys warn — a typo'd key ("severities",
+  // "ingnore") currently vanishes silently while the operator believes
+  // it took effect. Fail-noisy, not fail-silent.
+  for (const key of Object.keys(cfg)) {
+    if (!KNOWN_CONFIG_KEYS.has(key)) {
+      warnings.push(
+        `warning: mjolnir.config.json has an unknown top-level key "${key}" — ignored (typo? see README §Configuration).`,
+      );
+    }
+  }
+  // Bug-audit QA-2026-08-30 QA-4: `exclude` was never validated, so
+  // `exclude: [1, {}, null]` flowed into pattern compilation and crashed
+  // with a TypeError (exit 20 — "tool malfunction") instead of a fixable
+  // usage error. A user's config typo is exit 10 (M4 convention).
+  if (cfg.exclude !== undefined) {
+    if (!Array.isArray(cfg.exclude)) {
+      throw new Error(
+        `exclude must be an array of strings, got ${typeof cfg.exclude}`,
+      );
+    }
+    for (const p of cfg.exclude) {
+      if (typeof p !== "string") {
+        throw new Error(
+          `exclude entries must be strings, got ${typeof p} (${JSON.stringify(p)})`,
+        );
+      }
+    }
+  }
+  return warnings;
+}
+
+/** Default expiry: 90 days when unspecified (score-gaming counter, S11). */
+/** Default expiry window when no `expires` is set (S11, README §Configuration). */
+export const SUPPRESSION_DEFAULT_DAYS = 90;
+
+/**
+ * Bug-audit QA-2026-08-30 QA-6: the 90-day policy in the README was only
+ * applied at WRITE time by the `ignore` command — a hand-written entry
+ * without `expires` stayed active forever, silently bypassing the
+ * documented window.
+ *
+ * Audit S4 (remediation plan): the config-file MTIME is no longer an
+ * expiry anchor. Anchoring the 90-day default at mtime meant ANY edit to
+ * mjolnir.config.json — a reformat, an unrelated key, a `touch` — reset
+ * the 90-day window for EVERY hand-authored entry: suppressions could be
+ * extended indefinitely without touching their own fields. The expiry is
+ * now the entry's explicit `expires` date alone; an entry without one
+ * stays active and is honestly labeled "(no expiry set)" in the
+ * suppressions report. Hand-authored entries should declare `expires` at
+ * creation (README §Configuration documents the shape).
+ */
+export function isSuppressionActive(
+  ign: IgnoreEntry,
+  now = new Date(),
+): boolean {
+  if (!ign.expires) return true;
+  // Bug-audit 3.9 (timezone sensitivity): the expires value is an ISO
+  // DATE (YYYY-MM-DD — validated as an ISO date at load time), which
+  // JS parses at UTC midnight, while `now` carries the local wall
+  // clock. In a UTC+3 locale, an entry expiring "2026-09-01" stayed
+  // active until 03:00 local on expiry day (Date comparison vs local
+  // now); in UTC-8 it expired at 16:00 the day BEFORE. Both drift
+  // against the documented "expires <date>" contract. Fixed by
+  // normalizing BOTH sides to UTC-day boundaries: the expiry date's
+  // UTC midnight vs the CURRENT UTC date's midnight — a pure calendar
+  // comparison that reads identically in every timezone.
+  return utcMidnight(ign.expires) > utcMidnightOf(now);
+}
+
+/** UTC-midnight timestamp of an ISO date string (YYYY-MM-DD). */
+function utcMidnight(isoDate: string): number {
+  // Require strict YYYY-MM-DD format. Date-time strings like
+  // "2026-09-01T23:59:59Z" would be silently truncated to UTC midnight,
+  // causing the expiry to compare incorrectly against the calendar day.
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return NaN;
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate);
+  if (!m) return NaN;
+  return Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+}
+
+/** UTC-midnight timestamp of a Date (calendar day, timezone-independent). */
+function utcMidnightOf(d: Date): number {
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+}
+
+export function applySeverityOverrides(
+  findings: Array<{ ruleId: string; severity: Severity }>,
+  cfg: QADoctorConfig,
+): void {
+  const overrides = cfg.severityOverrides ?? {};
+  for (const f of findings) {
+    const override = overrides[f.ruleId];
+    // Defense in depth (M4): validate() rejects invalid values at load
+    // time, but a programmatically-built config must not be able to NaN
+    // the score or bypass gating either.
+    if (override && (SEVERITY_ORDER as readonly string[]).includes(override)) {
+      f.severity = override;
+    }
+  }
+}

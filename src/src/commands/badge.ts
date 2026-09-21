@@ -1,0 +1,129 @@
+/**
+ * `mjolnir badge` — evidentiary shields.io endpoint JSON (Tier 1 #5).
+ *
+ * Static JSON, no server. The badge makes falsifiable claims:
+ * score + date + commit. Anyone can click through and verify.
+ */
+
+import { execFileSync } from "node:child_process";
+import { writeFileAtomic } from "../lib/fs-atomic.js";
+import { join } from "node:path";
+
+import { BADGE_BAND } from "../brand/tokens.js";
+import type { ScanResult } from "../types.js";
+import { deriveScoreState } from "../reporter/score-state.js";
+
+export interface BadgeOptions {
+  /** Where to write mjolnir-badge.json. */
+  outDir: string;
+  /**
+   * Audit (badge): HEAD commit of the scanned repo ("unknown" outside a
+   * git checkout) — a badge must be attributable to the code it measured.
+   */
+  commit?: string;
+}
+
+export interface BadgeJson {
+  schemaVersion: 1;
+  label: string;
+  message: string;
+  color: string;
+  namedLogo?: string;
+  style?: string;
+  /**
+   * Audit (badge): HEAD commit of the scanned repo when available
+   * ("unknown" outside a git checkout) — a badge must be attributable
+   * to the code it measured.
+   */
+  commit?: string;
+}
+
+/**
+ * Badge colors follow the SAME ScoreState bands as the terminal
+ * (≥80 trusted / ≥50 warning / <50 critical / 100 forged) — this
+ * retarget fixes the historical threshold drift (the badge used
+ * ≥90/≥75/≥50 with four bands while the reporter used ≥80/≥50).
+ *
+ * They are brand values now, from `BADGE_BAND`, not shields.io's named
+ * colors. That mapping was documented as "trusted → `important`
+ * (blue-family, closest to aurora-cyan)" and was simply untrue:
+ * `important` resolves to #ea7233, which is orange. Every WORTHY badge
+ * rendered the trusted band in a warning colour, and `success` — the
+ * 100 state — rendered green, which is not a score colour here.
+ *
+ * ScoreState remains the truth; the badge is still a peripheral
+ * surface. But peripheral is not the same as unchecked.
+ */
+function colorFor(score: number | null): string {
+  const band = deriveScoreState(score).band;
+  return BADGE_BAND[band];
+}
+
+/** Build the shields.io endpoint payload from a scan result. */
+export function buildBadge(result: ScanResult, commit?: string): BadgeJson {
+  const errors = result.findings.filter((f) => f.severity === "error").length;
+  const score = result.score;
+  const message =
+    score === null
+      ? "no tests found"
+      : score === 100 && errors === 0
+        ? "100/100 · forged"
+        : `${score}/100 · ${errors} error${errors === 1 ? "" : "s"}`;
+  return {
+    schemaVersion: 1,
+    label: "MJÖLNIR",
+    message,
+    color: colorFor(score),
+    ...(commit !== undefined ? { commit } : {}),
+  };
+}
+
+/**
+ * Full README-ready markdown snippet with commit-bound verification line
+ * (the falsifiable claim: "verified at commit X on date Y").
+ */
+export function renderBadgeSnippet(
+  result: ScanResult,
+  repoUrl = "https://github.com/Sergey-Bar/Mjolnir",
+): string {
+  let commit = "unknown";
+  try {
+    commit = execFileSync("git", ["rev-parse", "--short", "HEAD"], {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      // Silence git's own "fatal: not a git repository" on stderr — the
+      // catch below is the honest fallback, no need to leak the noise.
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+  } catch {
+    /* not a git repo or git missing — honest fallback */
+  }
+  const date = new Date().toISOString().slice(0, 10);
+  const errors = result.findings.filter((f) => f.severity === "error").length;
+  const lines = [
+    "```markdown",
+    "[![MJÖLNIR](https://img.shields.io/endpoint?url=<your-badge-json-url>)](" +
+      repoUrl +
+      ")",
+    "<!-- Mjölnir verified at commit " +
+      commit +
+      " on " +
+      date +
+      ": " +
+      (result.score === null ? "no tests found" : result.score + "/100") +
+      ", " +
+      errors +
+      " blocking error(s) -->",
+    "```",
+  ];
+  return lines.join("\n");
+}
+
+export function writeBadge(result: ScanResult, options: BadgeOptions): string {
+  const path = join(options.outDir, "mjolnir-badge.json");
+  writeFileAtomic(
+    path,
+    JSON.stringify(buildBadge(result, options.commit), null, 2),
+  );
+  return path;
+}

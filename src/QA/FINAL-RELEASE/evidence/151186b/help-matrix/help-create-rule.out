@@ -1,0 +1,8 @@
+  create-rule — scaffold a new rule + fixtures (must-fire, must-not-fire)
+
+  Usage:
+    mjolnir create-rule <QA-XXX-nnn> --title "Rule title"
+
+  Examples:
+    $ mjolnir create-rule QA-PW-131 --title "No request waits"
+

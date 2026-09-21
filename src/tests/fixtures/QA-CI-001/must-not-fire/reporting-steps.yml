@@ -1,0 +1,34 @@
+# continue-on-error on REPORTING steps is ordinary engineering, not a
+# false green. These steps produce output; their failure loses information
+# but hides no verification result. Flagging them was a self-scan FP.
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm test
+
+      - name: Generate badge artifact
+        continue-on-error: true
+        run: node dist/cli.mjs badge .
+
+      - name: Advisory diff (may exit 1 on new debt by design)
+        continue-on-error: true
+        run: npx --yes mjolnir-qa@latest diff . > diff.txt
+
+      - name: Upload results
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: results
+          path: diff.txt
+
+      - name: Post PR comment
+        continue-on-error: true
+        uses: actions/github-script@v7
+        with:
+          script: console.log("comment")

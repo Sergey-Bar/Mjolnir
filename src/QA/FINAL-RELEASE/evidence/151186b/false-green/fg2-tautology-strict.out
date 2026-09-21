@@ -1,0 +1,92 @@
+EXIT:0
+{
+  "schemaVersion": 1,
+  "partial": false,
+  "score": 100,
+  "frameworks": [],
+  "frameworkDetectionUnknown": true,
+  "dimensions": [
+    {
+      "category": "QA-TEST",
+      "score": 100,
+      "errors": 0,
+      "warnings": 0,
+      "infos": 1
+    }
+  ],
+  "findings": [
+    {
+      "severity": "info",
+      "confidence": "high",
+      "findingType": "deterministic-defect",
+      "file": "x.spec.ts",
+      "line": 2,
+      "column": 1,
+      "message": "Test has an empty body — it can never fail.",
+      "why": "An empty test inflates pass counts and proves nothing about behavior.",
+      "fix": "Implement the test or remove it.",
+      "qaImpact": "FALSE-GREEN",
+      "ruleId": "QA-TEST-010",
+      "category": "QA-TEST",
+      "evidenceLevel": "E0",
+      "measuredFpRate": 0.581,
+      "measuredFpN": 31,
+      "detectorRevision": 1,
+      "fixGroupId": "QA-TEST-010"
+    }
+  ],
+  "testFileCount": 1,
+  "testDeclarationCount": 1,
+  "rawDeductions": 0,
+  "suppressionCount": 0,
+  "agenticProfile": {
+    "testFiles": 1,
+    "generatedMarkedFiles": 0,
+    "codegenLikeFiles": 0,
+    "shareMarkedGenerated": 0,
+    "findingsInGeneratedFiles": 0,
+    "findingsInUnmarkedFiles": 1,
+    "note": "Static provenance markers only (generated-file headers, Playwright codegen default titles). Absence of a marker does not prove human authorship; healed and MCP-edited files without markers are indistinguishable from hand-written ones. Provenance never changes scoring or evidence — authorship is metadata, not trust."
+  },
+  "analysisStatus": {
+    "discovery": "complete",
+    "rules": "complete",
+    "skippedFiles": 0,
+    "durationMs": 22,
+    "rulesCrashed": 0
+  },
+  "contract": {
+    "contractVersion": 1,
+    "summary": {
+      "digest": "sha256:95794862e6ba05b6fc1912d93d713f05cf3897b4aa6796787aa2848bc474f203",
+      "findings": 1,
+      "score": 100,
+      "errors": 0,
+      "warnings": 0,
+      "infos": 1,
+      "advisory": 1
+    },
+    "annotations": [
+      {
+        "path": "x.spec.ts",
+        "start_line": 2,
+        "annotation_level": "notice",
+        "message": "QA-TEST-010: Test has an empty body — it can never fail.",
+        "ruleId": "QA-TEST-010",
+        "detectorRevision": 1,
+        "advisory": true
+      }
+    ],
+    "annotationsTruncated": false,
+    "completeness": {
+      "partial": false,
+      "discovery": "complete",
+      "rules": "complete",
+      "skippedFiles": 0,
+      "rulesCrashed": 0,
+      "truncationReasons": [],
+      "frameworkDetectionUnknown": true,
+      "durationMs": 22
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{"ruleId":"QA-CYP-001","file":"cypress/e2e/2-advanced-examples/viewport.cy.js","line":30,"verdict":"TP","note":"cy.wait(200) after cy.viewport preset switch — incidental fixed wait in a real interaction flow (the file's subject is viewport, not wait); the unnecessary-waiting anti-pattern Cypress's own docs flag"}
+{"ruleId":"QA-CYP-001","file":"cypress/e2e/2-advanced-examples/viewport.cy.js","line":31,"verdict":"TP","note":"same viewport-switch fixed wait"}
+{"ruleId":"QA-CYP-001","file":"cypress/e2e/2-advanced-examples/viewport.cy.js","line":32,"verdict":"TP","note":"same viewport-switch fixed wait"}
+{"ruleId":"QA-CYP-001","file":"cypress/e2e/2-advanced-examples/viewport.cy.js","line":33,"verdict":"TP","note":"same viewport-switch fixed wait"}
+{"ruleId":"QA-CYP-001","file":"cypress/e2e/2-advanced-examples/viewport.cy.js","line":34,"verdict":"TP","note":"same viewport-switch fixed wait"}
+{"ruleId":"QA-CYP-001","file":"cypress/e2e/2-advanced-examples/viewport.cy.js","line":35,"verdict":"TP","note":"same viewport-switch fixed wait"}
+{"ruleId":"QA-CYP-001","file":"cypress/e2e/2-advanced-examples/viewport.cy.js","line":36,"verdict":"TP","note":"same viewport-switch fixed wait"}
+{"ruleId":"QA-CYP-001","file":"cypress/e2e/2-advanced-examples/viewport.cy.js","line":37,"verdict":"TP","note":"same viewport-switch fixed wait"}
+{"ruleId":"QA-CYP-001","file":"cypress/e2e/2-advanced-examples/viewport.cy.js","line":38,"verdict":"TP","note":"same viewport-switch fixed wait"}
+{"ruleId":"QA-CYP-001","file":"cypress/e2e/2-advanced-examples/viewport.cy.js","line":39,"verdict":"TP","note":"same viewport-switch fixed wait"}
+{"ruleId":"QA-CYP-001","file":"cypress/e2e/2-advanced-examples/viewport.cy.js","line":40,"verdict":"TP","note":"same viewport-switch fixed wait"}
+{"ruleId":"QA-CYP-001","file":"cypress/e2e/2-advanced-examples/viewport.cy.js","line":41,"verdict":"TP","note":"same viewport-switch fixed wait"}
+{"ruleId":"QA-CYP-001","file":"cypress/e2e/2-advanced-examples/waiting.cy.js","line":16,"verdict":"FP","note":"doc-example artifact (QA-PY-003 precedent): the test's SUBJECT is the cy.wait(n) API itself and the file carries eslint-disable cypress/no-unnecessary-waiting — the suite intentionally demonstrates the API"}
+{"ruleId":"QA-CYP-001","file":"cypress/e2e/2-advanced-examples/waiting.cy.js","line":18,"verdict":"FP","note":"doc-example artifact — same demonstration test"}
+{"ruleId":"QA-CYP-001","file":"cypress/e2e/2-advanced-examples/waiting.cy.js","line":20,"verdict":"FP","note":"doc-example artifact — same demonstration test"}

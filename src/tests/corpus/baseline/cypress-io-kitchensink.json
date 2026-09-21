@@ -1,0 +1,11 @@
+{
+  "countsByRule": {
+    "QA-CYP-001": 15,
+    "QA-PW-123": 6,
+    "QA-TEST-003": 9,
+    "QA-TEST-010": 1,
+    "QA-TQUAL-009": 6
+  },
+  "totalFindings": 37,
+  "partial": false
+}

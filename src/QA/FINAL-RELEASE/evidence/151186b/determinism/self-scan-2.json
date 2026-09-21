@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "partial": false,
+  "score": 99,
+  "frameworks": ["vitest", "playwright"],
+  "frameworkDetectionUnknown": false,
+  "dimensions": [
+    {
+      "category": "QA-PW",
+      "score": 98,
+      "errors": 0,
+      "warnings": 2,
+      "infos": 0
+    }
+  ],
+  "findings": [
+    {
+      "severity": "warning",
+      "confidence": "medium",
+      "findingType": "heuristic-risk",
+      "qaImpact": "HYGIENE",
+      "file": "tests/config/fixture-typecheck-gate.spec.ts",
+      "line": 178,
+      "column": 51,
+      "message": "Global setup mutates shared state: `execSync(\"npx prisma migrate deploy\"…`.",
+      "why": "Migrations/seeds/deletes against a shared environment break every other pipeline and developer pointing at it — and the damage happens before any test runs.",
+      "fix": "Target an ephemeral per-run environment (testcontainers, branch DB) instead of shared infrastructure.",
+      "ruleId": "QA-PW-125",
+      "category": "QA-PW",
+      "evidenceLevel": "E1",
+      "detectorRevision": 1,
+      "fixGroupId": "QA-PW-125"
+    },
+    {
+      "severity": "warning",
+      "confidence": "medium",
+      "findingType": "heuristic-risk",
+      "qaImpact": "HYGIENE",
+      "file": "tests/rules/rule-arm-completion.spec.ts",
+      "line": 86,
+      "column": 16,
+      "message": "Global setup mutates shared state: `query(\"DROP TABLE users\"…`.",
+      "why": "Migrations/seeds/deletes against a shared environment break every other pipeline and developer pointing at it — and the damage happens before any test runs.",
+      "fix": "Target an ephemeral per-run environment (testcontainers, branch DB) instead of shared infrastructure.",
+      "ruleId": "QA-PW-125",
+      "category": "QA-PW",
+      "evidenceLevel": "E1",
+      "detectorRevision": 1,
+      "fixGroupId": "QA-PW-125"
+    }
+  ],
+  "testFileCount": 217,
+  "testDeclarationCount": 3357,
+  "rawDeductions": 2,
+  "suppressionCount": 3,
+  "agenticProfile": {
+    "testFiles": 217,
+    "generatedMarkedFiles": 0,
+    "codegenLikeFiles": 1,
+    "shareMarkedGenerated": 0,
+    "findingsInGeneratedFiles": 0,
+    "findingsInUnmarkedFiles": 2,
+    "note": "Static provenance markers only (generated-file headers, Playwright codegen default titles). Absence of a marker does not prove human authorship; healed and MCP-edited files without markers are indistinguishable from hand-written ones. Provenance never changes scoring or evidence — authorship is metadata, not trust."
+  },
+  "analysisStatus": {
+    "discovery": "complete",
+    "rules": "complete",
+    "skippedFiles": 0,
+    "durationMs": 2933,
+    "rulesCrashed": 0
+  },
+  "contract": {
+    "contractVersion": 1,
+    "summary": {
+      "digest": "sha256:abba9fbfb607cbe15d3bcd2530360710f7f7ad6e20402b0c529db50f6e071136",
+      "findings": 2,
+      "score": 99,
+      "errors": 0,
+      "warnings": 2,
+      "infos": 0,
+      "advisory": 0
+    },
+    "annotations": [
+      {
+        "path": "tests/config/fixture-typecheck-gate.spec.ts",
+        "start_line": 178,
+        "annotation_level": "warning",
+        "message": "QA-PW-125: Global setup mutates shared state: `execSync(\"npx prisma migrate deploy\"…`.",
+        "ruleId": "QA-PW-125",
+        "detectorRevision": 1,
+        "advisory": false
+      },
+      {
+        "path": "tests/rules/rule-arm-completion.spec.ts",
+        "start_line": 86,
+        "annotation_level": "warning",
+        "message": "QA-PW-125: Global setup mutates shared state: `query(\"DROP TABLE users\"…`.",
+        "ruleId": "QA-PW-125",
+        "detectorRevision": 1,
+        "advisory": false
+      }
+    ],
+    "annotationsTruncated": false,
+    "completeness": {
+      "partial": false,
+      "discovery": "complete",
+      "rules": "complete",
+      "skippedFiles": 0,
+      "rulesCrashed": 0,
+      "truncationReasons": [],
+      "frameworkDetectionUnknown": false,
+      "durationMs": 2933
+    }
+  }
+}

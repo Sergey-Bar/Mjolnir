@@ -1,0 +1,270 @@
+# Contributing to Mjölnir
+
+Thanks for considering a contribution. This document covers dev setup,
+every quality gate command, the two laws that govern rule changes, how
+to propose a rule or plugin, and what a PR needs before review.
+
+## Dev setup
+
+```bash
+git clone https://github.com/Sergey-Bar/Mjolnir
+cd Mjolnir
+npm ci
+```
+
+Requires Node `>=22.18` (see `engines` in `package.json` — `tsdown`,
+the build tool, requires it; there is no Node 20 path).
+
+## The standing gate
+
+Every one of these must pass before a PR is ready for review. Run them
+in this order — later ones assume earlier ones already passed:
+
+```bash
+npm run typecheck        # tsc, twice: src/ (strict, ships in dist/),
+                          # then tests/+packages/ (tsconfig.test.json)
+npm run lint              # eslint . && prettier --check .
+npm test                  # vitest run — full suite
+npm run test:coverage     # vitest run --coverage — floors enforced
+npx vitest run tests/rules          # one domain slice (path filter)
+npm run build              # tsdown src/cli.ts, then any workspace package
+npm run self-scan          # the tool scans its own repo — must add
+                            # zero NEW error-severity findings
+```
+
+The spec suite is organized by domain, mirroring `src/`. Run one slice
+with a path filter (`npx vitest run tests/cli`); `npm test` always runs
+the whole suite and is what CI gates on:
+
+Newer targeted slices — run the ones your change actually touches:
+
+- `tests/false-green/` — the adversarial corpus; must stay green whenever
+  rules, fixtures, or scoring move (a scanner that can be fooled into a
+  clean verdict is the one bug this repo never ships)
+- `tests/blast-radius/` + `tests/contract/blast-radius.spec.ts` — the
+  machine-verified containment contract (engine, adapter, or scanner
+  surface changes)
+- `tests/contract/boundary-law.spec.ts` and the exit-code mutation proofs
+  (anything near exit codes, scope integrity, or the evidence chain)
+- `tests/**/*arms.spec.ts` — the adversarial arms suites (rule or command
+  behavior changes)
+- `npm run docs:regen` — every generated surface, byte-identical (rule
+  pages, FP-audit, capability matrix, census counts, machine contract,
+  brand tokens, golden lock, README SVGs, detector hashes)
+- `npm --prefix site run doctor` — the site gates, including emitted-HTML
+  link integrity (any `site/` change)
+
+## First five minutes (the quick loop)
+
+```bash
+npx vitest run tests/<your-domain>   # 1. iterate fast on one slice
+npm run self-scan                    # 2. scan your own change
+npm test                             # 3. full gate before the PR
+```
+
+Step 2 is the house specialty: `npm run self-scan` runs the built tool
+against this repo and must add **zero NEW error-severity findings**.
+A rule change that fires on its own codebase shows up here first —
+cheap, immediate, and honest (the same gate CI runs in the `self-scan`
+job). Re-scans during iteration get faster with `--cache`:
+
+```bash
+npm run build && node dist/cli.mjs . --cache --json
+```
+
+The cache is content-addressed (file bytes + rule set) and lives under
+`.mjolnir/cache/` — local-only, gitignored, never leaves the machine.
+
+```text
+tests/
+  cli/          CLI verbs, flags, arg parsing, error paths
+  engine/       adapters, masking, discovery, analysis, scoring
+  rules/        rule behavior, one subdir per family (ci/, playwright/, …)
+  reporters/    terminal/SARIF/mermaid output + score state
+  forensics/    run-data forensics, selector health, runtime evidence
+  integrations/ repo workflow specs, packaging, install
+  config/       config loading + suppressions
+  plugins/      plugin + local-rule loading
+  scope/        changed-scope computation
+  contract/     repo-level guards: docs consistency, hygiene, privacy
+  stress/       scale/perf floors, crash-proof fuzz
+  e2e/          full-CLI journeys (spawn dist/)
+  golden/ corpus/ fixtures/ helpers/   data + shared harness (unchanged)
+```
+
+Additional gates that only apply when your change touches rules or
+scoring:
+
+- **Golden lock** — `tests/golden/` output must stay byte-identical.
+  If your change legitimately shifts a score or a finding count, run
+  `npm run golden:update` and include the diff in your PR description
+  with an explanation. An **unreviewed** score shift is a regression,
+  not an improvement — never run `golden:update` and commit it without
+  reading what changed.
+- **Corpus regression** — `npm run corpus:regression` (networked; clones a small
+  set of real OSS repos) must stay green for any PR that adds or
+  modifies a rule's detection logic. It fails if a rule fires _more_ on
+  real code than the last reviewed baseline — that's a false-positive
+  regression signal, not a crash. If the new findings are legitimate,
+  manually read each one, then `npm run corpus:regression:update` and include
+  what you reviewed in the PR description.
+- **Count-lock docs** — after a reviewed `corpus:regression:update`, regenerate
+  `docs/COUNT-LOCK.md` with `npm run fp-audit:generate` so the committed
+  docs page doesn't drift from the baseline that produced it.
+
+## The two laws
+
+Full context lives in
+[`docs/archive/plans/Master-Stabilization-Plan.md`](docs/archive/plans/Master-Stabilization-Plan.md#2-laws-in-force-unchanged-and-how-this-plan-respects-them) —
+this section is a summary, not the source of truth; read that doc if
+your change is close to either line.
+
+- **Anti-creep law** — every addition to the **launch rule set**
+  requires an equal-size removal. This exists so the tool doesn't
+  become a 300-rule linter nobody can hold in their head. It does
+  **not** apply to new language adapters, new output surfaces, or new
+  non-scoring commands (`explain`, `impact`, etc.) — those are opt-in
+  surface, not launch-set growth. If you're unsure whether your change
+  counts, say so explicitly in the PR rather than assuming an exemption.
+- **Fixture firewall** — no rule ships without **both** a must-fire
+  fixture (proves the rule catches the pattern) and a must-not-fire
+  fixture (proves it doesn't catch adjacent, innocent code). No
+  exceptions, including for "obviously correct" rules — the
+  must-not-fire fixture is what has caught every real false-positive
+  bug in this codebase's history.
+
+## Proposing a new rule
+
+1. Run `mjolnir create-rule <ID> --title "..."` (e.g.
+   `QA-PW-150`). This scaffolds the rule file and both fixture
+   directories.
+2. **The generated rule is deliberately broken.** It returns zero
+   findings on purpose, so `npm test` fails on the must-fire fixture
+   until you implement real detection logic — you cannot ship a stub.
+   This is intentional (anti-creep law §18.1 enforcement at the tooling
+   level), not a bug in the scaffold. If you ran `create-rule` and
+   immediately saw a failing test, that's the scaffold working
+   correctly.
+3. Implement `run()` in the generated rule file, replacing both fixture
+   skeletons with real must-fire/must-not-fire cases (not the
+   placeholder comment the scaffold writes).
+4. Declare Trust Metadata on the rule (`falsePositiveRisk`,
+   `detectionStrategy`, `introduced` — see `src/rules/rule.ts`'s
+   `RuleMeta` for the full field list and `src/rules/playwright/qa-pw-145-no-a11y.ts`
+   for a rule that's honest about being absence-based and high-FP-risk).
+5. Register the rule in `src/rules/index.ts` (the scaffold prints the
+   exact import + array line to add).
+6. Run the standing gate. If your rule detects a pattern likely to
+   appear in real code, run `npm run corpus:regression` and review any new
+   findings before merging.
+
+## Proposing a plugin
+
+Third-party rule packages are declared in a consuming project's
+`mjolnir.config.json` (`"plugins": [...]`) and loaded via
+`src/plugins/load.ts`. Security model: **no sandbox** — a plugin runs
+with the same trust level as an ESLint or Vitest plugin in your own
+project. Core rule-ID prefixes (`QA-TEST`, `QA-TQUAL`, `QA-PW`, `QA-CI`,
+`QA-PY`, `QA-JV`, `QA-CS`, `QA-ENV`, `QA-PLUGIN`) are reserved and
+rejected if a plugin tries to claim them. A plugin that fails to load
+degrades honestly — it emits a `QA-PLUGIN-000` warning and does not
+otherwise affect the scan or exit code.
+
+## Rule lifecycle / deprecation
+
+Retiring or downgrading a shipped rule found conceptually wrong follows
+a distinct policy from the anti-creep law above (that law governs
+_adding_ to the launch set; this governs _removing or weakening_ what's
+already shipped). See
+[`docs/RULE-LIFECYCLE.md`](docs/RULE-LIFECYCLE.md) for the process and
+a worked example.
+
+## Releasing
+
+Maintainers: see [`docs/PUBLISHING.md`](docs/PUBLISHING.md) for the
+release checklist and the npm-provenance publishing runbook.
+
+## Governance
+
+Mjölnir is maintained by a **solo maintainer** — decisions are not made
+by committee, and this section exists so contributors know how decisions
+get made, not who to lobby:
+
+- The maintainer has final say on scope, rules, APIs and roadmap.
+  Agreement with a well-argued PR is the normal path; a "no" is a
+  decision, not an opening bid.
+- **The two laws above govern all rule changes** — a PR that violates
+  either is declined regardless of merit, because the alternative is
+  the tool growing past what one maintainer can keep honest.
+- Decisions with lasting consequences are recorded, not just made:
+  product/strategy decisions live in `.planning/` (machine-local, not
+  committed) and engineering plans in `.kilo/plans/`; completed plans
+  are archived under `docs/archive/plans/` with their per-task audit
+  trail. If you want to know _why_ something is the way it is, the
+  answer is in one of those records or in the relevant spec's failure
+  message.
+- Support expectations, issue routing and the security process live in
+  [`SUPPORT.md`](SUPPORT.md); version/stability commitments live in
+  [`docs/VERSIONING.md`](docs/VERSIONING.md).
+
+**Bus-factor program (P9):** maintenance is deliberately operable beyond
+one person — the roles ladder, entry gates, and the path to
+co-maintainership live in [`docs/MAINTAINERS.md`](docs/MAINTAINERS.md);
+every owner-bound operation is inventoried (runbook or identity-bound,
+nothing silent) in [`docs/OWNER-RUNBOOK.md`](docs/OWNER-RUNBOOK.md); and
+verdict classification — the project's spine — is documented to the
+same standard in [`docs/ADJUDICATION-KIT.md`](docs/ADJUDICATION-KIT.md)
+so a second human adjudicates identically. A4 keeps adjudication human;
+these documents make it _any_ human.
+
+## Issue triage
+
+Every issue form pre-assigns its label — the four labels mirror the
+four issue templates exactly:
+
+| Label              | Template             | What happens next                                                                                                                             |
+| ------------------ | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bug`              | bug-report.yml       | Reproduced, fixed, and regression-locked by a spec                                                                                            |
+| `false-positive`   | false-positive.yml   | Hand-classified into the verdict corpus (`tests/corpus/verdicts/`) — measured FP rates and the FP-AUDIT table come from exactly these reports |
+| `rule-request`     | rule-request.yml     | Evaluated against the anti-creep law (equal-size removal) and the fixture firewall                                                            |
+| `language-request` | language-request.yml | Scoped against the adapter architecture (`src/adapters/`)                                                                                     |
+
+First response to a new issue is targeted within **7 days** — an honest
+solo-maintainer commitment, not an SLA with consequences (also stated
+in [`SUPPORT.md`](SUPPORT.md)).
+
+## Translations
+
+English [`README.md`](README.md) is canonical — the per-language files
+(`README.zh.md`, `README.de.md`, …) are machine-assisted translations
+carrying an explicit staleness marker, never authoritative docs.
+
+- Fix typos and logic in the English README first, then port the change
+  into the translations. A fix that lands only in a translation will be
+  lost at the next sync.
+- Translation PRs are welcome. Keep section order, tables and
+  `<details>` blocks identical to the English file (structure parity is
+  enforced by `tests/readme-translations.spec.ts`); keep rule IDs, code
+  blocks and link targets verbatim; recompute in-page anchors from the
+  translated headings; and bump the marker's `Last synced` date to the
+  date of the `README.md` commit you ported.
+- Run `npm run docs:translations` for an advisory staleness report. It
+  never blocks CI — drift is resolved by porting, not by a red build.
+- Terminology: choose one consistent term per language for the key
+  concepts ("worthiness score", "finding", "rule", "false-positive
+  rate", "flaky") and reuse it throughout the file; mention your
+  choices in the PR so later edits stay consistent.
+
+## PR expectations
+
+- Keep PRs scoped to one concern. A rule addition and an unrelated
+  refactor belong in separate PRs.
+- Include the standing-gate output (or note which gate you couldn't run
+  and why) in the PR description.
+- If your change touches `mjolnir.config.json`'s suppressions, explain
+  what would otherwise have false-positived and why the suppression is
+  scoped correctly (see the existing entries for the expected level of
+  justification).
+- Frozen contracts (`schemaVersion: 1`, exit codes `0`/`1`/`2`/`10`/`20`,
+  rule IDs) are immutable. A PR that would change any of them needs a
+  version bump and a `CHANGELOG.md` entry, not a silent edit.

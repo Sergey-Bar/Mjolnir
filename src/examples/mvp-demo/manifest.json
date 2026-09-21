@@ -1,0 +1,90 @@
+{
+  "artifact": "mvp-demo",
+  "purpose": "Canonical MVP Evidence Corpus (Mega MVP Master Plan v3.1 §26 WI-13A) — one committed corpus covering the 12 canonical evidence case classes. Static findings + run reports + corpus-only evidence in one place; the Golden Product Harness (WI-13B) asserts same-evidence → same-verdict over this manifest.",
+  "caseClasses": [
+    {
+      "id": "real-product-failure",
+      "status": "active",
+      "surfaces": ["scan", "forensics"],
+      "files": ["e2e/checkout.spec.ts", "mjolnir.report.json"],
+      "expectation": "`charges the card exactly once` ends failed in the run report (finalStatus failed); the triage workflow classifies it FAILING."
+    },
+    {
+      "id": "environmental-failure",
+      "status": "active",
+      "surfaces": ["triage"],
+      "files": ["e2e/login.spec.ts", "mjolnir.report.json"],
+      "expectation": "`shows the two-factor prompt when enabled` ends timedOut — environmental slowness vs. real hang not yet distinguished; triage classifies TIMEOUT with a MEDIUM trust verdict and an isolate-and-retime next action."
+    },
+    {
+      "id": "flaky-behavior",
+      "status": "active",
+      "surfaces": ["scan", "forensics", "triage"],
+      "files": ["e2e/login.spec.ts", "mjolnir.report.json"],
+      "expectation": "`signs in after the network hiccup` failed attempts 1-2 and passed attempt 3 — TRUE-FLAKE / RETRY-DEPENDENT."
+    },
+    {
+      "id": "unstable-selector",
+      "status": "active",
+      "surfaces": ["scan"],
+      "files": ["e2e/account.spec.ts"],
+      "expectation": "the absolute-XPath locator is a deterministic static finding (QA-PW-004 family)."
+    },
+    {
+      "id": "retry-dependent-failure",
+      "status": "active",
+      "surfaces": ["forensics", "triage"],
+      "files": ["e2e/login.spec.ts", "mjolnir.report.json"],
+      "expectation": "attempts=3 with passedOnRetry — quarantine proposed (retried ≥2 and failed at least once)."
+    },
+    {
+      "id": "insufficient-evidence",
+      "status": "active",
+      "surfaces": ["scan"],
+      "files": ["e2e/export.spec.ts"],
+      "expectation": "findings in this file carry NO runtimeCorroboration (the file appears in no run report) — trust honestly caps at L2; absence is reported, never fabricated."
+    },
+    {
+      "id": "trace-zip-evidence",
+      "status": "awaiting-ingestion",
+      "activatesAt": "1.1.x (WI-17)",
+      "files": ["run-reports/trace.zip"],
+      "expectation": "committed corpus data; nothing in 0.6.x reads it — no surface may claim trace evidence today."
+    },
+    {
+      "id": "junit-evidence",
+      "status": "active",
+      "surfaces": ["forensics"],
+      "files": ["run-reports/junit-report.xml"],
+      "expectation": "`mjolnir forensics run-reports/junit-report.xml` parses the JUnit XML (source junit-xml); corroboration honestly caps at file level."
+    },
+    {
+      "id": "playwright-json-evidence",
+      "status": "active",
+      "surfaces": ["scan", "forensics"],
+      "files": ["mjolnir.report.json"],
+      "expectation": "the scan pipeline discovers mjolnir.report.json next to the scan target and stamps findings with runtime corroboration (source playwright-json)."
+    },
+    {
+      "id": "console-evidence",
+      "status": "awaiting-ingestion",
+      "activatesAt": "1.1.x (WI-18)",
+      "files": ["run-reports/console-evidence.json"],
+      "expectation": "committed corpus data; console ingestion lands with runtime correlation in 1.1.x."
+    },
+    {
+      "id": "network-evidence",
+      "status": "awaiting-ingestion",
+      "activatesAt": "1.1.x (WI-18)",
+      "files": ["run-reports/network-evidence.json"],
+      "expectation": "committed corpus data; network ingestion lands with runtime correlation in 1.1.x."
+    },
+    {
+      "id": "correlated-runtime-evidence",
+      "status": "active",
+      "surfaces": ["scan"],
+      "files": ["e2e/login.spec.ts", "mjolnir.report.json"],
+      "expectation": "the hard-sleep findings in login.spec.ts are FLAKY-RISK and the matching test flaked in the same report — runtime corroboration level rises to defect/test (L4-L5)."
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+EXIT:0
+{
+  "schemaVersion": 1,
+  "partial": false,
+  "score": 100,
+  "frameworks": [],
+  "frameworkDetectionUnknown": true,
+  "dimensions": [
+    {
+      "category": "QA-TQUAL",
+      "score": 100,
+      "errors": 0,
+      "warnings": 0,
+      "infos": 1
+    }
+  ],
+  "findings": [
+    {
+      "severity": "info",
+      "confidence": "high",
+      "findingType": "deterministic-defect",
+      "file": "y.spec.ts",
+      "line": 2,
+      "column": 22,
+      "message": "Tautological assertion: `expect(true).toBe(true)`.",
+      "why": "Asserting a literal against a literal can never fail — it verifies no system behavior.",
+      "fix": "Assert on actual output of the code under test.",
+      "qaImpact": "FALSE-GREEN",
+      "ruleId": "QA-TQUAL-002",
+      "category": "QA-TQUAL",
+      "evidenceLevel": "E0",
+      "measuredFpRate": 0.531,
+      "measuredFpN": 32,
+      "detectorRevision": 1,
+      "fixGroupId": "QA-TQUAL-002"
+    }
+  ],
+  "testFileCount": 1,
+  "testDeclarationCount": 1,
+  "rawDeductions": 0,
+  "suppressionCount": 0,
+  "agenticProfile": {
+    "testFiles": 1,
+    "generatedMarkedFiles": 0,
+    "codegenLikeFiles": 0,
+    "shareMarkedGenerated": 0,
+    "findingsInGeneratedFiles": 0,
+    "findingsInUnmarkedFiles": 1,
+    "note": "Static provenance markers only (generated-file headers, Playwright codegen default titles). Absence of a marker does not prove human authorship; healed and MCP-edited files without markers are indistinguishable from hand-written ones. Provenance never changes scoring or evidence — authorship is metadata, not trust."
+  },
+  "analysisStatus": {
+    "discovery": "complete",
+    "rules": "complete",
+    "skippedFiles": 0,
+    "durationMs": 21,
+    "rulesCrashed": 0
+  },
+  "contract": {
+    "contractVersion": 1,
+    "summary": {
+      "digest": "sha256:c5149e5f0aace5d80878731f3c4a5df5c8820d1f09624f4b7e63799837b174c1",
+      "findings": 1,
+      "score": 100,
+      "errors": 0,
+      "warnings": 0,
+      "infos": 1,
+      "advisory": 1
+    },
+    "annotations": [
+      {
+        "path": "y.spec.ts",
+        "start_line": 2,
+        "annotation_level": "notice",
+        "message": "QA-TQUAL-002: Tautological assertion: `expect(true).toBe(true)`.",
+        "ruleId": "QA-TQUAL-002",
+        "detectorRevision": 1,
+        "advisory": true
+      }
+    ],
+    "annotationsTruncated": false,
+    "completeness": {
+      "partial": false,
+      "discovery": "complete",
+      "rules": "complete",
+      "skippedFiles": 0,
+      "rulesCrashed": 0,
+      "truncationReasons": [],
+      "frameworkDetectionUnknown": true,
+      "durationMs": 21
+    }
+  }
+}

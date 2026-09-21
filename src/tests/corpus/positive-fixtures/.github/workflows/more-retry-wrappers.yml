@@ -1,0 +1,52 @@
+name: Verification
+
+on: [push]
+
+jobs:
+  flaky-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: nick-fields/retry@v3
+        with:
+          max_tries: 4
+          command: npx playwright test --project=smoke
+
+  regression-retry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: nick-fields/retry@v3
+        with:
+          max_tries: 3
+          command: pytest tests/e2e
+
+  vitest-retry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: nick-fields/retry@v3
+        with:
+          max_tries: 5
+          command: vitest run --reporter=json
+
+  retry-suite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: nick-fields/retry@v3
+        with:
+          max_tries: 3
+          command: go test ./... # flaky e2e suite
+  retry-shard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: nick-fields/retry@v3
+        with:
+          max_tries: 2
+          command: npm run test:e2e
+      - uses: nick-fields/retry@v3
+        with:
+          max_tries: 3
+          command: yarn test:unit

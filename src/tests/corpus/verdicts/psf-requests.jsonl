@@ -1,0 +1,3 @@
+{"ruleId":"QA-PY-005","file":"tests/test_testserver.py","line":74,"verdict":"FP","note":"socket keep-alive across a timed gap IS the subject - the wall-clock gap is the mechanism being tested"}
+{"ruleId":"QA-PY-005","file":"tests/test_testserver.py","line":124,"verdict":"FP","note":"request_timeout expiry test - the elapsed real time is the subject of the socket test"}
+{"ruleId":"QA-PY-005","file":"tests/test_testserver.py","line":138,"verdict":"FP","note":"server block release timing - the wall-clock gap is the mechanism under test"}

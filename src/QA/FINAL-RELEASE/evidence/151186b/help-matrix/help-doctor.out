@@ -1,0 +1,8 @@
+  doctor — self-audit of the rule base (fixture firewall, tiers, caps)
+
+  Usage:
+    mjolnir doctor [repo-root]
+
+  Examples:
+    $ mjolnir doctor
+

@@ -1,0 +1,58 @@
+# QA-PW-112 — data-testid naming convention violation
+
+_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+
+| Field                                 | Value                       |
+| ------------------------------------- | --------------------------- |
+| Severity                              | info                        |
+| Confidence                            | high                        |
+| Tier                                  | quarantine                  |
+| Measured FP rate                      | 100% (n=20)                 |
+| Evidence level                        | E2                          |
+| QA impact                             | Test hygiene debt (HYGIENE) |
+| False-positive risk (author estimate) | high                        |
+| Autofix available                     | no                          |
+| Languages                             | typescript, javascript      |
+| Frameworks                            | playwright                  |
+| Detection strategy                    | LEXICAL                     |
+| Introduced in                         | v0.3.0                      |
+
+## Why this fails in production
+
+Mixed naming conventions in test ids make selector review and grep-based audits unreliable.
+
+## What gets flagged (real detector output)
+
+```
+test id `cartIcon` violates kebab-case convention.
+```
+
+Example from this rule's own must-fire fixture: `tests/fixtures/QA-PW-112/must-fire/bad-ids.spec.ts`
+
+## The fix
+
+Rename to kebab-case (e.g. `carticon`) and update the component.
+
+## Confirmed NOT to fire on the corresponding clean pattern
+
+Verified against `tests/fixtures/QA-PW-112/must-not-fire/clean.spec.ts` — a legitimate, similar-looking pattern this rule correctly leaves alone.
+
+## Corpus-measured false-positive risk
+
+Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
+
+| Repo                                          | Occurrences |
+| --------------------------------------------- | ----------- |
+| apache-airflow                                | 50          |
+| appsmithorg-appsmith                          | 248         |
+| getsentry-sentry                              | 116         |
+| grafana-grafana                               | 230         |
+| keycloak-keycloak                             | 194         |
+| playwright-community-eslint-plugin-playwright | 1           |
+| SeleniumHQ-selenium                           | 22          |
+| streamlit-streamlit                           | 1633        |
+| tanstack-query                                | 125         |
+
+---
+
+Full catalog: `mjolnir rules --md` · Live explanation: `mjolnir explain QA-PW-112`

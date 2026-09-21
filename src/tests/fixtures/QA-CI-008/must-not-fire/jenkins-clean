@@ -1,0 +1,16 @@
+// QA-CI-008 must-not-fire (Jenkinsfile) — catchError around NON-gate
+// work is legitimate best-effort handling, and a catch that rethrows or
+// marks the result keeps the verdict honest.
+pipeline {
+  agent any
+  stages {
+    stage('Verify') {
+      steps {
+        sh 'npm test'
+        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+          sh 'docker compose down --volumes'
+        }
+      }
+    }
+  }
+}
