@@ -60,7 +60,10 @@ function reportMilestones(out: string): string[] {
         line.includes("zero findings") ||
         line.includes("Keep it green") ||
         line.startsWith("Analysis: PARTIAL") ||
-        line.includes("NO TESTS DETECTED"),
+        line.includes("NO TESTS DETECTED") ||
+        line.includes("PARTIAL SCAN") ||
+        line.includes("findings reflect analyzed") ||
+        line.includes("scan did not analyze"),
     );
 }
 
@@ -133,6 +136,7 @@ describe("MVP-005 default terminal report", () => {
     expect(reportMilestones(out)).toMatchInlineSnapshot(`
       [
         "WORTHINESS  72/100  NEEDS WORK",
+        "Partial scan — findings reflect analyzed surface only.",
         "= FIX THIS FIRST",
         "Why it matters: this scan is partial, so fix the visible risks but do not",
         "Next action: fix the highest score-gain item below, then re-run the changed",
@@ -142,6 +146,42 @@ describe("MVP-005 default terminal report", () => {
         "Analysis: PARTIAL — verdict may be incomplete · 9ms",
       ]
     `);
+  });
+
+  it("partial scan with zero findings and score 100 never renders as forged clean", () => {
+    const out = renderTerminal(
+      scan({
+        partial: true,
+        score: 100,
+        findings: [],
+        dimensions: [],
+        analysisStatus: {
+          discovery: "partial",
+          rules: "complete",
+          skippedFiles: 2,
+          durationMs: 9,
+        },
+      }),
+      { isTTY: false, ascii: true },
+    );
+    expect(reportMilestones(out)).toMatchInlineSnapshot(`
+      [
+        "WORTHINESS 100/100  WORTHY",
+        "Partial scan — findings reflect analyzed surface only.",
+        "⚠ PARTIAL SCAN — no findings, but analysis was incomplete",
+        "This scan did not analyze the full test surface. Zero findings here does not",
+        "Next action: fix the cause of the partial scan (timeouts, exclusions, parse",
+        "$ mjolnir --scope changed",
+        "Analysis: PARTIAL — verdict may be incomplete · 9ms",
+      ]
+    `);
+    // Ensure the FORGED block is NOT present
+    expect(out).not.toContain("FLAWLESS VICTORY");
+    expect(out).not.toContain("FORGED — zero findings. The suite is clean.");
+    // Ensure the partial guidance IS present
+    expect(out).toContain(
+      "PARTIAL SCAN — no findings, but analysis was incomplete",
+    );
   });
 
   it("unknown/no-tests state remains beginner-safe", () => {

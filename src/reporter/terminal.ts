@@ -139,8 +139,10 @@ export function renderTerminal(
     lines.push("");
   }
   appendFindings(lines, display, counts, opts.verbose === true, ui, opts.tone);
-  if (counts.total === 0 && result.score === 100) {
+  if (counts.total === 0 && result.score === 100 && !result.partial) {
     appendForgedBlock(lines, ui);
+  } else if (counts.total === 0 && result.score === 100 && result.partial) {
+    appendPartialCleanGuidance(lines, ui);
   }
   appendFooter(lines, result, ui);
   return lines.join("\n");
@@ -181,7 +183,12 @@ function appendScoreSection(
   // narrow window; floors at 10 blocks so the gauge stays legible.
   const gaugeWidth = Math.max(10, Math.min(30, width - 4));
   lines.push(`  ${scoreGauge(result.score, p, gaugeWidth, ascii)}`);
-  lines.push(`  ${p.dim(headlineFor(state, result.findings.length))}`);
+  // Partial scans must never read as clean (MVP-009): override the
+  // forged/trusted headline when analysis was incomplete.
+  const headline = result.partial
+    ? "Partial scan — findings reflect analyzed surface only."
+    : headlineFor(state, result.findings.length);
+  lines.push(`  ${p.dim(headline)}`);
   // Phase 5 transparency: show raw deductions and the actual denominator so
   // the normalization is never opaque.
   if (result.rawDeductions !== undefined && result.testDeclarationCount) {
@@ -668,6 +675,35 @@ function appendForgedBlock(lines: string[], ui: UiContext): void {
     lines,
     p,
     "Keep it green: re-run Mjölnir on changed tests before merging, and keep the CI workflow installed so regressions are caught early.",
+    ui.width,
+  );
+  lines.push(nextStep("mjolnir --scope changed", ui));
+  lines.push("");
+}
+
+/**
+ * Guidance for partial scans with zero findings and score 100.
+ * A partial scan cannot claim a clean suite — the absence of findings
+ * may be due to incomplete analysis, not actual cleanliness.
+ */
+function appendPartialCleanGuidance(lines: string[], ui: UiContext): void {
+  const { p } = ui;
+  lines.push("");
+  lines.push(
+    p.warning("  ⚠ PARTIAL SCAN — no findings, but analysis was incomplete"),
+  );
+  lines.push("");
+  pushWrapped(
+    lines,
+    p,
+    "This scan did not analyze the full test surface. Zero findings here does not mean the suite is clean — it means the scan was cut short.",
+    ui.width,
+  );
+  lines.push("");
+  pushWrapped(
+    lines,
+    p,
+    "Next action: fix the cause of the partial scan (timeouts, exclusions, parse failures), then re-run a complete scan before trusting the gate.",
     ui.width,
   );
   lines.push(nextStep("mjolnir --scope changed", ui));
