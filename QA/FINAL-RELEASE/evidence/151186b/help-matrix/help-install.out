@@ -1,9 +1,0 @@
-  install — install the agent instruction surfaces + optional staged hook
-
-  Usage:
-    mjolnir install [--staged-hook] [--dry-run] [--force]
-
-  Examples:
-    $ mjolnir install --dry-run
-    $ mjolnir install --staged-hook
-

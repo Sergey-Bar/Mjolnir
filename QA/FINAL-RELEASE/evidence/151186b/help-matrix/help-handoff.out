@@ -1,9 +1,0 @@
-  handoff — deterministic fix-handoff artifact from a saved --json report
-
-  Usage:
-    mjolnir handoff [mjolnir.json] [--category <cat>] [--rules <ids>]
-
-  Examples:
-    $ mjolnir --json > mjolnir.json && mjolnir handoff mjolnir.json
-    $ mjolnir handoff mjolnir.json --category QA-PW
-

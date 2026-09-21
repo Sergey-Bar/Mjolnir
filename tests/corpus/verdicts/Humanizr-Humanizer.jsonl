@@ -1,2 +1,0 @@
-{"ruleId":"QA-CS-103","file":"tests/Humanizer.Analyzers.Tests/AnalyzerAssemblyCompatibilityTests.cs","line":8,"verdict":"TP","note":"adjudicated 2026-09-02: early-return + conditional throw of InvalidOperationException — no assertion oracle, only verifies by throwing (rev-2 target class)"}
-{"ruleId":"QA-CS-103","file":"tests/Humanizer.Analyzers.Tests/AnalyzerAssemblyCompatibilityTests.cs","line":20,"verdict":"TP","note":"same conditional-throw shape, System.Collections.Immutable version check"}

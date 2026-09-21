@@ -1,9 +1,0 @@
-  summary — CI annotations + step summary from a saved --json report
-
-  Usage:
-    mjolnir summary [mjolnir.json] [--stdout] [--path-prefix <dir>]
-
-  Examples:
-    $ mjolnir --json > mjolnir.json && mjolnir summary mjolnir.json
-    $ mjolnir summary mjolnir.json --stdout
-

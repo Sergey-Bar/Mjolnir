@@ -1,3 +1,0 @@
-EXIT:2
-
-STDERR:No fixtures directory at C:\Users\User\AppData\Local\Temp\kilo\mjolnir-audit-scratch\env\tests\fixtures. Run from the mjolnir repo root.

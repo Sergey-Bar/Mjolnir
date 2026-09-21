@@ -1,9 +1,0 @@
-  explain — what/why/fix + measured FP rate for one rule
-
-  Usage:
-    mjolnir explain <RULE-ID> [--fixtures-root <dir>]
-
-  Examples:
-    $ mjolnir explain QA-TEST-001
-    $ mjolnir rules --unmeasured
-

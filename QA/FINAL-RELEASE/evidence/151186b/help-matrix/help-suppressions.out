@@ -1,8 +1,0 @@
-  suppressions — list suppressed findings (governance transparency)
-
-  Usage:
-    mjolnir suppressions
-
-  Examples:
-    $ mjolnir suppressions
-

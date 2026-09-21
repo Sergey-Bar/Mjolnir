@@ -1,9 +1,0 @@
-  pr-comment — render a scoped PR comment (Markdown)
-
-  Usage:
-    mjolnir pr-comment [path] [--base <ref>]
-
-  Examples:
-    $ mjolnir pr-comment .
-    $ mjolnir pr-comment . --base origin/main
-
