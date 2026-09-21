@@ -375,6 +375,16 @@ function summarizeContentDiff(existing: string, incoming: string): string[] {
   ];
 }
 
+/**
+ * Writes or updates the Mjolnir GitHub Actions workflow at `.github/workflows/mjolnir.yml`.
+ * The workflow is generated from internal templates only (no user-input interpolation, R3 supply-chain).
+ * Default gate is advisory (reports findings, never blocks). Blocking setup requires explicit
+ * `--gate error` or `--gate warning`.
+ *
+ * Refuses to overwrite a hand-customized workflow unless `options.force` is true.
+ * Returns the path written, whether the file existed, whether the write was refused,
+ * and a human-readable diff summary for the refusal message.
+ */
 export function ciInstall(
   root: string,
   gate: GateLevel = "advisory",

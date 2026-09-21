@@ -393,6 +393,10 @@ export function runCiInstall(
   return EXIT_CLEAN;
 }
 
+/**
+ * Human-readable message describing the selected CI install gate mode.
+ * Used in CLI output to tell the user what the generated workflow will do.
+ */
 function ciInstallGateMessage(gate: GateLevel): string {
   if (gate === "advisory") {
     return "Gate: advisory (default) — reports findings, never blocks.";
