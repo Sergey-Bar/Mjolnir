@@ -11,6 +11,19 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Added
+
+- **Zero-touch PR framework** — Conventional Commits enforcement via
+  `commitlint` + `.husky/commit-msg` (scope is mandatory; WIP/fixup/squash
+  commits are rejected before they reach the object store); pinned-seed
+  property tests (`vitest.property.config.ts`, `tests/scope/property-invariants.spec.ts`
+  with a shared `SEED` constant so failures are reproducible); the
+  `merge-verify` CI job that runs the full gate on the **merge result**,
+  not the PR head, so a green PR that merges into a red `main` is visible
+  before it ships; and `scripts/check-ci-local-parity.mjs`, which keeps
+  `ci.yml`, `merge-verify.yml` and the local gate exercising the same
+  command list. All additive — no frozen surface changed.
+
 ## [2.0.2] — 2026-09-22
 
 ### Fixed

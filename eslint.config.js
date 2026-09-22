@@ -39,6 +39,10 @@ export default tseslint.config(
       // the typed parser see multiple candidate TSConfigRootDirs and fail
       // `npm run lint` on the host repo. Never repo content.
       ".claude/**",
+      // OpenCode plugin state — machine-local (gitignored as .opencode/),
+      // same class as .kilo/ and .claude/ above. Loaded as a server plugin
+      // by the OpenCode harness; not part of this repo's source tree.
+      ".opencode/**",
       // Demo/demo-repo content is exhibit data for the README, linted by
       // nobody's CI and not part of any tsconfig project.
       "examples/**",

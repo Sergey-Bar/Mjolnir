@@ -31,6 +31,11 @@ soak-drift/
 # toolchain and must not be reformatted by the host repo's Prettier pass.
 .claude/
 
+# OpenCode plugin state — machine-local (gitignored as .opencode/), same
+# class as .kilo/ and .claude/ above. Loaded as a server plugin by the
+# OpenCode harness; not part of this repo's source tree.
+.opencode/
+
 # Coverage-patch test scratch — loosely typed, intentionally outside the
 # strict ratchet; not source the formatter should touch.
 tests/coverage/

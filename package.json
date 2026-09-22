@@ -66,6 +66,8 @@
     "changelog:check": "tsx scripts/check-changelog.ts --expect-version $(node -p \"require('./package.json').version\")",
     "reporter:version-check": "tsx scripts/check-reporter-version.ts",
     "self-scan": "node dist/cli.mjs .",
+    "ci-local:parity": "node scripts/check-ci-local-parity.mjs",
+    "test:property": "vitest run --config vitest.property.config.ts",
     "prepare": "husky",
     "prepublishOnly": "npm run build",
     "docs:architecture": "tsx scripts/generate-readme-architecture.ts",
@@ -107,6 +109,8 @@
     "yaml": "^2.5.0"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.50.0",
     "@types/node": "^26.4.0",
