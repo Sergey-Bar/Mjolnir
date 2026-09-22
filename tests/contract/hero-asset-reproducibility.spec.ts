@@ -97,7 +97,7 @@ describe("assets/readme/terminal-hero.svg reproducibility", () => {
       // explain/why/baseline/diff, which is exactly the detail the hero
       // omits by design. This is not drift; it is the cut line moving
       // one section as new output is added after it.
-      .filter((l) => !/^[▍=] (FINDINGS|NEXT ACTIONS)$/.test(l));
+      .filter((l) => !/^[▍=] (?:FINDINGS|NEXT ACTIONS)$/.test(l));
     expect(sectionHeaders.length).toBeGreaterThan(0);
     for (const header of sectionHeaders) {
       const text = header.replace(/^[▍=]\s*/, "");
