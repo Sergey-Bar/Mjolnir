@@ -5,8 +5,10 @@ import { defineConfig } from "vitest/config";
 // fast-check generates random inputs, so a failure here is only meaningful
 // if it is REPRODUCIBLE. Seeds live per-property in the spec file
 // (fast-check's `fc.assert(..., { seed })`) — vitest has no top-level seed
-// — and this config enforces a minimum run count so every CI run
-// exercises the same corpus.
+// — and each property declares its own numRuns. Bump the shared SEED
+// constant deliberately when a legitimate invariant shifts, and record
+// the reason in the CHANGELOG; a silent seed bump is how flaky property
+// tests ship.
 //
 // Runs in its own worker pool (no globalSetup, no coverage) so a
 // property test's timing sensitivity never contends with the 10k-test
@@ -16,16 +18,11 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     include: ["tests/**/property-invariants.spec.ts"],
-    // Floor on top of each spec's own numRuns: a spec that declares
-    // 50 runs in a 200-run config is a spec that has not been thought
-    // about. Enforced by scripts/check-property-runs.mjs.
-    minRuns: 200,
     testTimeout: 60_000,
     hookTimeout: 30_000,
-    // Property tests are pure logic over src/ — no global setup, no
-    // coverage (istanbul's branch instrumentation slows fast-check's
-    // shrink paths and the corpus is small).
+    // Property tests are pure logic over src/ — no global setup. (The
+    // default config's globalSetup builds dist/ so e2e tests can spawn
+    // the CLI; property tests touch no built artifact.)
     globalSetup: [],
-    coverage: { enabled: false },
   },
 });

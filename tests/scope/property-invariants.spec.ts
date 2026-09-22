@@ -284,7 +284,7 @@ describe("property: parseArgs usage-error contract (B4.24)", () => {
         expect(args).not.toBeNull();
         expect(args?.target).toBe(".");
       }),
-      { seed: SEED, numRuns: 50 },
+      { seed: SEED, numRuns: 200 },
     );
   });
 });
