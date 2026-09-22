@@ -402,6 +402,7 @@ const GROUPS: Array<{ title: string; verbs: string[] }> = [
       "baseline",
       "diff",
       "verify",
+      "ci-integrity",
     ],
   },
   {
@@ -428,6 +429,8 @@ const GROUPS: Array<{ title: string; verbs: string[] }> = [
       "contract-verify",
       "trust-trend",
       "evidence-graph",
+      "framework-maturity",
+      "suppression-gate",
     ],
   },
   {

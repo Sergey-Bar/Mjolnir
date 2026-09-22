@@ -190,18 +190,6 @@ HOW TO VERIFY THE FIX
   appear. `mjolnir --scope changed` scopes the check to just what you touched.
 
 Docs: mjolnir rules --md   (full catalog, this rule included)
-  - quarantine findings run only under --strict and are advisory (E0) — they can
-  never gate CI
-
-NEXT ACTION
-  Fix the first occurrence, then re-run: `mjolnir --scope changed`. Every
-  occurrence of this rule is listed in the scan output.
-
-HOW TO VERIFY THE FIX
-  Re-run `mjolnir` on the changed file(s) — this finding should no longer
-  appear. `mjolnir --scope changed` scopes the check to just what you touched.
-
-Docs: mjolnir rules --md   (full catalog, this rule included)
 ```
 
 That is the unit of value: one place where CI reports a pass it did not earn.
