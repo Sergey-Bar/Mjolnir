@@ -200,6 +200,30 @@ export const HELP_ENTRIES: HelpEntry[] = [
     examples: ["mjolnir suppressions"],
   },
   {
+    verb: "ci-integrity",
+    summary: "verify CI workflow integrity and suppression governance",
+    usage: "mjolnir ci-integrity [path] [--json]",
+    examples: ["mjolnir ci-integrity", "mjolnir ci-integrity . --json"],
+    next: "mjolnir suppressions",
+  },
+  {
+    verb: "framework-maturity",
+    summary: "track framework maturity levels, especially Playwright F4→F6",
+    usage: "mjolnir framework-maturity [--framework <name>]",
+    examples: [
+      "mjolnir framework-maturity",
+      "mjolnir framework-maturity --framework playwright",
+    ],
+    next: "mjolnir ci-integrity",
+  },
+  {
+    verb: "suppression-gate",
+    summary: "enforce suppression policy governance gate",
+    usage: "mjolnir suppression-gate [path] [--policy <file>]",
+    examples: ["mjolnir suppression-gate", "mjolnir suppression-gate . --policy mjolnir.policy.json"],
+    next: "mjolnir framework-maturity",
+  },
+  {
     verb: "create-rule",
     summary: "scaffold a new rule + fixtures (must-fire, must-not-fire)",
     usage: 'mjolnir create-rule <QA-XXX-nnn> --title "Rule title"',
