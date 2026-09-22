@@ -184,7 +184,12 @@ export default tseslint.config(
     // and the Node CJS global scope. Task 6 (Master-Stabilization-Plan
     // Sprint 1) brought this directory under lint at all; this override
     // makes that coverage correct instead of just present.
-    files: ["scripts/**/*.cjs"],
+    //
+    // Scoped to ALL *.cjs, not just scripts/**: a root-level config file
+    // (`.commitlintrc.cjs`) is CommonJS too, and leaving it under the ESM
+    // ruleset made `module` an undefined-global error. The pattern is
+    // "CommonJS file → CJS globals", location-independent.
+    files: ["**/*.cjs"],
     languageOptions: {
       sourceType: "commonjs",
       globals: {
