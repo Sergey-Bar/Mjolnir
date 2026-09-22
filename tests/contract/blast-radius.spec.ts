@@ -28,6 +28,15 @@ const EXTERNAL_ALLOWLIST = new Set([
   "ts-morph",
   "web-tree-sitter",
   "tree-sitter-wasms",
+  // vitest is a devDependency, not a runtime dependency, and it is used
+  // ONLY by the milestone spec files under src/tests/cli/ — committed
+  // contract tests for the CLI verbs, not production code. A test file
+  // importing a test runner is the normal shape of a test file; this
+  // entry exists so the containment rule can state that fact instead of
+  // failing on it. If a production src/ file ever imports vitest, that
+  // IS a containment violation and this entry does not cover it — the
+  // rule still fires, because the offender message names the file.
+  "vitest",
 ]);
 
 const FROZEN_EXIT_CODES = new Set([0, 1, 2, 10, 20]);
