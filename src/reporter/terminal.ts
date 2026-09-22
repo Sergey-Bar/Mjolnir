@@ -76,6 +76,7 @@ export interface RenderTerminalOpts {
   visibleFindings?: ScanResult["findings"];
 }
 
+/** Renders a scan as a compact terminal report, prioritizing actionable fixes before diagnostics. */
 export function renderTerminal(
   result: ScanResult,
   opts: RenderTerminalOpts,
@@ -117,8 +118,6 @@ export function renderTerminal(
     );
     lines.push("");
   }
-  appendDimensions(lines, result, ui);
-  appendDeductions(lines, result, counts, ui);
   // --category (agent-handoff plan §5.5): presentation filter. The
   // filtered list drives FIX THIS FIRST + FINDINGS; score/dimensions/
   // deductions above always reflect the full scan. The dim note keeps
@@ -130,6 +129,8 @@ export function renderTerminal(
     ? { ...result, findings: filtered }
     : result;
   appendFixThisFirst(lines, display, ui);
+  appendDimensions(lines, result, ui);
+  appendDeductions(lines, result, counts, ui);
   if (filtering) {
     lines.push(
       ui.p.dim(
@@ -139,8 +140,10 @@ export function renderTerminal(
     lines.push("");
   }
   appendFindings(lines, display, counts, opts.verbose === true, ui, opts.tone);
-  if (counts.total === 0 && result.score === 100) {
-    appendForgedBlock(lines, p, ascii);
+  if (counts.total === 0 && result.score === 100 && !result.partial) {
+    appendForgedBlock(lines, ui);
+  } else if (counts.total === 0 && result.score === 100 && result.partial) {
+    appendPartialCleanGuidance(lines, ui);
   }
   appendFooter(lines, result, ui);
   return lines.join("\n");
@@ -159,6 +162,7 @@ export function verdictFor(
   return verdict === "FORGED" ? "WORTHY" : verdict;
 }
 
+/** Appends the score, gauge, verdict, and honesty metadata for the full scan. */
 function appendScoreSection(
   lines: string[],
   result: ScanResult & { score: number },
@@ -181,7 +185,12 @@ function appendScoreSection(
   // narrow window; floors at 10 blocks so the gauge stays legible.
   const gaugeWidth = Math.max(10, Math.min(30, width - 4));
   lines.push(`  ${scoreGauge(result.score, p, gaugeWidth, ascii)}`);
-  lines.push(`  ${p.dim(headlineFor(state, result.findings.length))}`);
+  // Partial scans must never read as clean (MVP-009): override the
+  // forged/trusted headline when analysis was incomplete.
+  const headline = result.partial
+    ? "Partial scan — findings reflect analyzed surface only."
+    : headlineFor(state, result.findings.length);
+  lines.push(`  ${p.dim(headline)}`);
   // Phase 5 transparency: show raw deductions and the actual denominator so
   // the normalization is never opaque.
   if (result.rawDeductions !== undefined && result.testDeclarationCount) {
@@ -305,14 +314,37 @@ function appendDeductions(
   lines.push("");
 }
 
+/** Prepends up to three highest-gain fixes with rationale and a concrete next command. */
 function appendFixThisFirst(
   lines: string[],
   result: ScanResult,
   ui: UiContext,
 ): void {
   const fixes = topFixes(result.findings, 3);
-  if (fixes.length === 0) return;
+  if (fixes.length === 0 && result.findings.length === 0) return;
+
   lines.push(sectionHeader("FIX THIS FIRST", ui));
+  pushWrapped(lines, ui.p, fixFirstWhy(result), ui.width);
+
+  if (fixes.length === 0) {
+    pushWrapped(
+      lines,
+      ui.p,
+      "Next action: review the advisory findings, then re-run with full detail if you need the evidence trail.",
+      ui.width,
+    );
+    lines.push(nextStep("mjolnir --verbose", ui));
+    lines.push("");
+    return;
+  }
+
+  pushWrapped(
+    lines,
+    ui.p,
+    "Next action: fix the highest score-gain item below, then re-run the changed scope.",
+    ui.width,
+  );
+  lines.push(nextStep("mjolnir --scope changed", ui));
   for (const { finding: f, scoreGain, autofixable } of fixes) {
     const gainText = `+${scoreGain} pt${scoreGain === 1 ? "" : "s"}`;
     const autofixTag = autofixable ? ui.p.ok(" [autofix available]") : "";
@@ -322,6 +354,25 @@ function appendFixThisFirst(
     lines.push(`  ${ui.p.bold(gainText)}  ${loc}${autofixTag}`);
   }
   lines.push("");
+}
+
+/** Returns the default-report rationale based on scan completeness and finding severity. */
+function fixFirstWhy(result: ScanResult): string {
+  const counts = countBySeverity(result);
+  if (
+    result.partial ||
+    result.analysisStatus.discovery === "partial" ||
+    result.analysisStatus.rules === "partial"
+  ) {
+    return "Why it matters: this scan is partial, so fix the visible risks but do not treat missing findings as proof of a clean suite.";
+  }
+  if (counts.error > 0) {
+    return `Why it matters: ${counts.error} error finding${counts.error === 1 ? "" : "s"} can let a false-green or release-blocking test issue survive review.`;
+  }
+  if (counts.warning > 0) {
+    return `Why it matters: ${counts.warning} warning finding${counts.warning === 1 ? "" : "s"} can turn into flaky triage or weak release confidence.`;
+  }
+  return "Why it matters: these advisory findings do not gate CI, but they still mark places where the test signal is weaker than it looks.";
 }
 
 interface FindingCard {
@@ -612,11 +663,8 @@ function maxSeverity(findings: Finding[]): Finding["severity"] {
  * keeps the `*** FLAWLESS VICTORY ***` contract string (test-locked in
  * empty-states/long-tail-arms).
  */
-function appendForgedBlock(
-  lines: string[],
-  p: ReturnType<typeof palette>,
-  ascii: boolean,
-): void {
+function appendForgedBlock(lines: string[], ui: UiContext): void {
+  const { p, ascii } = ui;
   lines.push("");
   if (ascii) {
     lines.push(p.forged("*** FLAWLESS VICTORY ***"));
@@ -626,6 +674,43 @@ function appendForgedBlock(
   lines.push(p.forged("  FORGED — zero findings. The suite is clean."));
   lines.push("");
   lines.push(p.forged(TROPHY));
+  lines.push("");
+  pushWrapped(
+    lines,
+    p,
+    "Keep it green: re-run Mjölnir on changed tests before merging, and keep the CI workflow installed so regressions are caught early.",
+    ui.width,
+  );
+  lines.push(nextStep("mjolnir --scope changed", ui));
+  lines.push("");
+}
+
+/**
+ * Guidance for partial scans with zero findings and score 100.
+ * A partial scan cannot claim a clean suite — the absence of findings
+ * may be due to incomplete analysis, not actual cleanliness.
+ */
+function appendPartialCleanGuidance(lines: string[], ui: UiContext): void {
+  const { p } = ui;
+  lines.push("");
+  lines.push(
+    p.warning("  ⚠ PARTIAL SCAN — no findings, but analysis was incomplete"),
+  );
+  lines.push("");
+  pushWrapped(
+    lines,
+    p,
+    "This scan did not analyze the full test surface. Zero findings here does not mean the suite is clean — it means the scan was cut short.",
+    ui.width,
+  );
+  lines.push("");
+  pushWrapped(
+    lines,
+    p,
+    "Next action: fix the cause of the partial scan (timeouts, exclusions, parse failures), then re-run a complete scan before trusting the gate.",
+    ui.width,
+  );
+  lines.push(nextStep("mjolnir --scope changed", ui));
   lines.push("");
 }
 
