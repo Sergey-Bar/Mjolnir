@@ -57,7 +57,7 @@ const REPO_ROOT = join(import.meta.dirname, "..", "..");
 let dir: string;
 let origCwd: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "qa-doctor-cli-arms-"));
+  dir = mkdtempSync(join(tmpdir(), "mjolnir-qa-arms-"));
   origCwd = process.cwd();
 });
 afterEach(() => {

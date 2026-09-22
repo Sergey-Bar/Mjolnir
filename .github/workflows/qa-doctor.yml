@@ -39,7 +39,7 @@ jobs:
           git fetch origin "$BASE_REF" --depth=1
           git checkout "origin/$BASE_REF" -- .qa-doctor/baseline.json 2>/dev/null || echo "No committed baseline on base branch — diff will report UNKNOWN, not a fabricated zero."
       # Build and run the CLI *from this PR's source*, not `npx
-      # qa-doctor-cli@latest`. Scanning a PR with the last published release
+      # mjolnir-qa@latest`. Scanning a PR with the last published release
       # means the tool never reviews the change under review: a rule fixed
       # in the PR still fires, a rule added in the PR never runs, and the
       # workflow cannot function at all while a published build is broken.

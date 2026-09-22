@@ -90,7 +90,7 @@ function capture() {
 let dir: string;
 let origCwd: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "qa-doctor-cli-"));
+  dir = mkdtempSync(join(tmpdir(), "mjolnir-qa-"));
   origCwd = process.cwd();
 });
 afterEach(() => {

@@ -257,7 +257,7 @@ describe("ci-install action template agrees with the real action.yml", () => {
     }
   });
 
-  it("the enforcing template pins an exact qa-doctor-cli version (never floating)", () => {
+  it("the enforcing template pins an exact mjolnir-qa version (never floating)", () => {
     for (const gate of ["error", "warning"] as GateLevel[]) {
       const text = ACTION_TEMPLATE(gate);
       expect(text).toMatch(/version: \d+\.\d+\.\d+/);

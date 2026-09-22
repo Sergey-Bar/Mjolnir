@@ -66,7 +66,11 @@ const SEEDS = [
     // A fallback entry downloads nothing but it still RENDERS, which is
     // exactly how a page ends up looking like two products on a machine
     // that happens to have Inter installed.
-    edit: (s) => s.replace('"Geist", ui-sans-serif', '"Geist", "Inter"'),
+    edit: (s) =>
+      s.replace(
+        '"Segoe UI", Roboto, "Helvetica Neue"',
+        '"Segoe UI", Roboto, "Inter", "Helvetica Neue"',
+      ),
     expect: 'still names the retired face "Inter"',
   },
   {
@@ -100,7 +104,7 @@ const SEEDS = [
     // directly went stale the moment they were removed and reported
     // itself as a broken seed — which is the self-test doing its job:
     // an anchor that stops matching is a check that stopped checking.
-    edit: (s) => s.replace('r="5" fill="#18243A"', 'r="5" fill="#ABCDEF"'),
+    edit: (s) => s.replace('r="5" fill="#1F2937"', 'r="5" fill="#ABCDEF"'),
     expect: "assets/readme/terminal-hero.svg — colour #abcdef is in no token",
   },
   {
@@ -146,7 +150,7 @@ const SEEDS = [
     file: p("assets", "brand", "tokens.json"),
     // Same luminance family as the surface it must sit on: the ratio
     // collapses and rule 8's arithmetic has to say so.
-    edit: (s) => s.replace('"steel": "#C8CBCF"', '"steel": "#141F33"'),
+    edit: (s) => s.replace('"steel": "#D1D5DB"', '"steel": "#141F33"'),
     expect: "steel #141F33 on",
   },
   {
@@ -187,7 +191,7 @@ function main() {
     console.log(line);
   };
 
-  say("qa-doctor brand doctor — failure-first self-test\n");
+  say("mjolnir brand doctor — failure-first self-test\n");
 
   const before = runDoctor();
   say(`  baseline: exit ${before.code} (expected 0)`);

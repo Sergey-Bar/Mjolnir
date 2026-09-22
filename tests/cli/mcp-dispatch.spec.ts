@@ -83,7 +83,7 @@ describe("qa-doctor mcp (CLI dispatch)", () => {
     expect(reply["error"]).toBeUndefined();
     const result = reply["result"] as Record<string, unknown>;
     expect(result["protocolVersion"]).toEqual(expect.any(String));
-    expect(result["serverInfo"]).toMatchObject({ name: "qa-doctor-cli" });
+    expect(result["serverInfo"]).toMatchObject({ name: "mjolnir-qa" });
   });
 
   it("exposes the full MCP tool catalog through the same route", async () => {

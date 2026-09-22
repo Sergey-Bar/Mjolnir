@@ -57,13 +57,13 @@ describe("pack-audit (SUPPLY-003)", () => {
   describe("computePackageProvenance", () => {
     it("creates provenance from metadata", () => {
       const p = computePackageProvenance({
-        name: "qa-doctor-cli",
+        name: "mjolnir-qa",
         version: "1.0.0",
         integrity: "sha512-abc123",
         resolved:
-          "https://registry.npmjs.org/qa-doctor-cli/-/qa-doctor-cli-1.0.0.tgz",
+          "https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-1.0.0.tgz",
       });
-      expect(p.name).toBe("qa-doctor-cli");
+      expect(p.name).toBe("mjolnir-qa");
       expect(p.version).toBe("1.0.0");
       expect(p.strongIntegrity).toBe(true);
     });

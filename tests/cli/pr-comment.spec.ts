@@ -354,7 +354,7 @@ describe("renderPrComment — redesign structure (plan M5)", () => {
     const body = renderPrComment(scanResult([]), { version: "0.5.0" });
     expect(body).toContain("**What to run next:**");
     expect(body).toContain("```bash");
-    expect(body).toContain("npx qa-doctor-cli@0.5.0 .");
+    expect(body).toContain("npx mjolnir-qa@0.5.0 .");
     expect(body).toContain("--verbose");
     expect(body).not.toContain("@latest");
   });

@@ -15,7 +15,7 @@ import type { ScanResult } from "../../src/types.js";
 
 let dir: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "qa-doctor-cli-scan-arms-"));
+  dir = mkdtempSync(join(tmpdir(), "mjolnir-qa-scan-arms-"));
 });
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });

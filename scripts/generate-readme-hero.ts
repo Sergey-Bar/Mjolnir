@@ -127,7 +127,7 @@ export async function buildHeroSvg(): Promise<string> {
   );
 
   const allLines = [
-    `${PROMPT}\x1b[1mnpx qa-doctor-cli@latest\x1b[0m`,
+    `${PROMPT}\x1b[1mnpx mjolnir-qa@latest\x1b[0m`,
     "",
     ...breakdownLines,
     // The wall-clock duration is real but non-deterministic run-to-run;

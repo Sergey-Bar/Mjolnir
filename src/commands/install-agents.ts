@@ -49,12 +49,12 @@ function agentBrief(surface: string, cwdNote: string): string {
     "",
     `${MARKER_OPEN} v${CLI_VERSION} -->`,
     "",
-    `Run \`${cwdNote}npx qa-doctor-cli@${CLI_VERSION} . --scope changed\` before finishing any task that touched test code.`,
+    `Run \`${cwdNote}npx mjolnir-qa@${CLI_VERSION} . --scope changed\` before finishing any task that touched test code.`,
     "",
     "- Exit 0 = clean. Exit 1 = new findings on changed lines: fix them (smallest behavior-preserving change) or justify them to the user.",
-    `- npx qa-doctor-cli@${CLI_VERSION} why <file>:<line> explains any finding (evidence level, measured FP rate, fix).`,
-    `- npx qa-doctor-cli@${CLI_VERSION} handoff renders a full remediation plan from a saved --json report.`,
-    `- Agent loop: establish the before-state once with npx qa-doctor-cli@${CLI_VERSION} baseline (commits .qa-doctor/baseline.json); after fixing, npx qa-doctor-cli@${CLI_VERSION} verify prints the before/after digest — resolved (per §15 lifecycle) / new / unchanged by ruleId+location, and the score delta. Exit 0 clean, 1 new errors, 2 partial or no baseline.`,
+    `- npx mjolnir-qa@${CLI_VERSION} why <file>:<line> explains any finding (evidence level, measured FP rate, fix).`,
+    `- npx mjolnir-qa@${CLI_VERSION} handoff renders a full remediation plan from a saved --json report.`,
+    `- Agent loop: establish the before-state once with npx mjolnir-qa@${CLI_VERSION} baseline (commits .qa-doctor/baseline.json); after fixing, npx mjolnir-qa@${CLI_VERSION} verify prints the before/after digest — resolved (per §15 lifecycle) / new / unchanged by ruleId+location, and the score delta. Exit 0 clean, 1 new errors, 2 partial or no baseline.`,
     "- NEVER suppress a finding merely to obtain a green scan (suppressions live in qa-doctor.config.json, require a reason, and expire after 90 days).",
     "- After fixing: re-run the scan, report files changed, report checks not run, report unresolved findings honestly.",
     "",
@@ -315,14 +315,14 @@ export function runInstallCommand(
     const hook = planHookInstall(cwd);
     const hookWritten = executeHookInstall(hook);
     io.out(
-      `  ${hook.action}: non-blocking pre-commit hook → ${hook.file} (qa-doctor-cli@${CLI_VERSION} --staged --blocking warning)`,
+      `  ${hook.action}: non-blocking pre-commit hook → ${hook.file} (mjolnir-qa@${CLI_VERSION} --staged --blocking warning)`,
     );
     void hookWritten;
   }
   for (const e of entries) {
     if (e.action !== "refuse" && e.action !== "no-op") {
       io.out(
-        `  ${e.action}: ${e.surface} → ${e.file} (qa-doctor-cli@${CLI_VERSION})`,
+        `  ${e.action}: ${e.surface} → ${e.file} (mjolnir-qa@${CLI_VERSION})`,
       );
     }
   }

@@ -9,8 +9,8 @@
 
 <br />
 
-[![npm](https://img.shields.io/npm/v/qa-doctor-cli.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/qa-doctor-cli)
-[![downloads](https://img.shields.io/npm/dm/qa-doctor-cli.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/qa-doctor-cli)
+[![npm](https://img.shields.io/npm/v/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
+[![downloads](https://img.shields.io/npm/dm/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
 [![ci](https://img.shields.io/github/actions/workflow/status/Sergey-Bar/qa-doctor/ci.yml?branch=main&style=flat-square&label=ci&labelColor=0A1119)](https://github.com/Sergey-Bar/qa-doctor/actions/workflows/ci.yml)
 [![coverage](https://img.shields.io/codecov/c/github/Sergey-Bar/qa-doctor?style=flat-square&color=1F6F7C&labelColor=0A1119&label=coverage)](https://codecov.io/gh/Sergey-Bar/qa-doctor)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Sergey-Bar/qa-doctor/badge)](https://scorecard.dev/viewer/?uri=github.com/Sergey-Bar/qa-doctor)
@@ -18,7 +18,7 @@
 [![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-1F6F7C.svg?style=flat-square&labelColor=0A1119)](https://nodejs.org)
 
 ```bash
-npx qa-doctor-cli@latest
+npx mjolnir-qa@latest
 ```
 
 [شاهده وهو يعمل](#شاهده-وهو-يعمل) · [البدء السريع](#البدء-السريع) · [ما الذي يكتشفه](#ما-الذي-يكتشفه-qa-doctor) · [الدرجة](#درجة-الجدارة) · [الأدلة](#نموذج-الأدلة) · [تحليل التشغيلات](#تحليل-تشغيلات-الاختبار) · [CI](#سلامة-ci) · [الوكلاء](#وكلاء-الذكاء-الاصطناعي) · [الأمان](#الثقة-والأمان) · [الحدود](#ما-لا-يستطيع-qa-doctor-أن-يخبرك-به) · [التوثيق](#التوثيق)
@@ -58,7 +58,7 @@ npx qa-doctor-cli@latest
 
 <sub>كل نتيجة أبلغ عنها فحص العرض لهذا الـ workflow، عند السطر الذي أبلغ عنه. مولَّد بواسطة `npm run docs:readme-brand` من [`demo-report.json`](assets/readme/demo-report.json) ومقفل ضد الانحراف في CI.</sub>
 
-**الوضع الصارم.** الكشف الأكثر عدوانية — `.only`، `continue-on-error`، الاختبارات الفارغة، إساءة إعادة المحاولة — تقع في مستوى الحجر الصحي. تعمل فقط مع `--strict` وتُ限定 بخطورة `info`: تُعلم، لكنها لا تُوقف أبدًا. الفحص الافتراضي (`npx qa-doctor-cli@latest` بدون `--strict`) يغطي القواعد الأساسية والموسعة فقط. أضف `--strict` عندما تريد طبقة الاستشارات أيضًا.
+**الوضع الصارم.** الكشف الأكثر عدوانية — `.only`، `continue-on-error`، الاختبارات الفارغة، إساءة إعادة المحاولة — تقع في مستوى الحجر الصحي. تعمل فقط مع `--strict` وتُ限定 بخطورة `info`: تُعلم، لكنها لا تُوقف أبدًا. الفحص الافتراضي (`npx mjolnir-qa@latest` بدون `--strict`) يغطي القواعد الأساسية والموسعة فقط. أضف `--strict` عندما تريد طبقة الاستشارات أيضًا.
 
 يقرأ QA Doctor مجموعة الاختبارات وملفات workflow الخاصة بـ CI، وتقرير تشغيل حقيقي إن وُجد. لا يشغّل اختباراتك، ولا يثبّت اعتمادياتك، ولا ينفّذ الشيفرة التي يفحصها. وعندما لا يملك دليلًا، يقول ذلك بدل أن يختلق ثقة:
 
@@ -93,7 +93,7 @@ npx qa-doctor-cli@latest
 
 <p align="center">
   <a href="assets/video/qa-doctor-demo.mp4">
-    <img src="assets/video/qa-doctor-demo-poster.png" alt="لقطة من تسجيل العرض: npx qa-doctor-cli@latest يفحص مستودع العرض في نافذة طرفية" width="900" />
+    <img src="assets/video/qa-doctor-demo-poster.png" alt="لقطة من تسجيل العرض: npx mjolnir-qa@latest يفحص مستودع العرض في نافذة طرفية" width="900" />
   </a>
 </p>
 
@@ -162,7 +162,7 @@ Docs: qa-doctor rules --md   (full catalog, this rule included)
 ## البدء السريع
 
 ```bash
-npx qa-doctor-cli@latest
+npx mjolnir-qa@latest
 ```
 
 يفحص الدليل الحالي ويطبع Trust Report: ما الذي وجده، وإلى أي حد يمكنك الوثوق به، ولماذا، وما الخطوة التالية. ويخرج بالرمز `0` عندما لا يُعثر على شيء عند مستوى البوابة أو فوقه.
@@ -170,7 +170,7 @@ npx qa-doctor-cli@latest
 في CI، افحص فقط ما أدخله الفرع، حتى لا تُغرق مجموعة اختبارات قديمة أول pull request لك:
 
 ```bash
-npx qa-doctor-cli@latest --scope changed
+npx mjolnir-qa@latest --scope changed
 ```
 
 يكتب `qa-doctor ci install` ذلك كـ workflow لـ GitHub Actions، باستخدام [الـ action](https://github.com/Sergey-Bar/qa-doctor#readme) المثبّت على الوسم الرئيسي `v1` (أو `npx` عادي مع `--no-action`). ويبقى استشاريًا إلى أن تقرر أنه يجب أن يمنع الدمج.
@@ -223,7 +223,7 @@ npx qa-doctor-cli@latest --scope changed
 
 </details>
 
-يتطلب **Node.js ≥ 22.18** على Windows أو macOS أو Linux. تفضّل التثبيت العام؟ `npm i -g qa-doctor-cli`. يأتي هذا الحد الأدنى من سلسلة أدوات البناء (يستهدفه tsdown ويُجري خط الإصدار اختبارات دخان عليه)؛ ولا تحتاج اعتماديات وقت التشغيل أكثر من ذلك.
+يتطلب **Node.js ≥ 22.18** على Windows أو macOS أو Linux. تفضّل التثبيت العام؟ `npm i -g mjolnir-qa`. يأتي هذا الحد الأدنى من سلسلة أدوات البناء (يستهدفه tsdown ويُجري خط الإصدار اختبارات دخان عليه)؛ ولا تحتاج اعتماديات وقت التشغيل أكثر من ذلك.
 
 <br />
 
@@ -463,7 +463,7 @@ qa-doctor ci install
 لوضع النتائج في GitHub Code Scanning، ارفع SARIF (يتطلب `security-events: write` على مستوى الـ workflow أو الـ job):
 
 ```yaml
-- run: npx qa-doctor-cli@latest --format sarif > qa-doctor.sarif
+- run: npx mjolnir-qa@latest --format sarif > qa-doctor.sarif
   continue-on-error: true
 - uses: github/codeql-action/upload-sarif@v3
   if: ${{ !cancelled() }}
@@ -476,7 +476,7 @@ qa-doctor ci install
 ### إسناد النتائج إلى نطاق التغييرات
 
 ```bash
-npx qa-doctor-cli@latest --scope changed
+npx mjolnir-qa@latest --scope changed
 ```
 
 تُسند النتائج إلى الأسطر التي أضافها فرعك، مقيسةً مقابل **merge-base**. النطاق هو مجموعة الملفات نفسها التي يكتشفها الفحص الكامل (ملفات spec لـ TS/JS وإعدادات المحوّلات، `test_*.py`، `*Test.java`، `*Tests.cs`، `.github/workflows/*.yml`)، إضافة إلى التغييرات غير المُثبتة وغير المتتبَّعة، لذا يعمل قبل أن تُجري commit. يُحدَّد الأساس بالترتيب `main → master → origin/main → origin/master → origin/HEAD`؛ ويمكنك تجاوزه بـ `--base <ref>`.
@@ -504,7 +504,7 @@ SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
 أضفه إلى عميل يأتي مع CLI خاص به:
 
 ```bash
-claude mcp add qa-doctor -- npx -y qa-doctor-cli@latest mcp
+claude mcp add qa-doctor -- npx -y mjolnir-qa@latest mcp
 ```
 
 أو إلى أي عميل يقبل كتلة `mcpServers`:
@@ -514,7 +514,7 @@ claude mcp add qa-doctor -- npx -y qa-doctor-cli@latest mcp
   "mcpServers": {
     "qa-doctor": {
       "command": "npx",
-      "args": ["-y", "qa-doctor-cli@latest", "mcp"]
+      "args": ["-y", "mjolnir-qa@latest", "mcp"]
     }
   }
 }
@@ -606,10 +606,10 @@ qa-doctor create-rule QA-PW-140 --title "Screenshot without diff bound"
 <img src="assets/readme/closing.svg" alt="شغّله على مستودعك." width="100%" />
 
 ```bash
-npx qa-doctor-cli@latest
+npx mjolnir-qa@latest
 ```
 
-[اقرأ الدليل](https://sergey-bar.github.io/qa-doctor/guide/getting-started) · [موقع التوثيق](https://sergey-bar.github.io/qa-doctor/) · [npm](https://www.npmjs.com/package/qa-doctor-cli)
+[اقرأ الدليل](https://sergey-bar.github.io/qa-doctor/guide/getting-started) · [موقع التوثيق](https://sergey-bar.github.io/qa-doctor/) · [npm](https://www.npmjs.com/package/mjolnir-qa)
 
 <br />
 

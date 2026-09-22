@@ -4,7 +4,7 @@
  *
  * - npm ≤ 11: a JSON ARRAY of packuments — `[{ filename, ... }]`.
  * - npm ≥ 12: a JSON OBJECT keyed by package name —
- *   `{ "qa-doctor-cli": { filename, ... } }` (the shape change that broke
+ *   `{ "mjolnir-qa": { filename, ... } }` (the shape change that broke
  *   the release pipeline's fresh-install gate on 2026-09-05 — npm 12
  *   landed via `npm install -g npm@latest` and every `[0]`-style reader
  *   suddenly parsed to undefined).

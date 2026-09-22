@@ -273,7 +273,7 @@ describe("renderHandoff — verification contract (plan §5.3)", () => {
 
   it("pins the verification command version and never @latest", () => {
     const md = renderHandoff(report(), {}, "0.5.4");
-    expect(md).toContain("npx qa-doctor-cli@0.5.4 . --scope changed");
+    expect(md).toContain("npx mjolnir-qa@0.5.4 . --scope changed");
     expect(md).not.toContain("@latest");
   });
 
@@ -329,7 +329,7 @@ describe("handoff copy block (plan §11)", () => {
     expect(block).toContain("What should change:");
     expect(block).toContain("Constraints:");
     expect(block).toContain("Occurrences (validate each):");
-    expect(block).toContain("npx qa-doctor-cli@0.5.4 . --scope changed");
+    expect(block).toContain("npx mjolnir-qa@0.5.4 . --scope changed");
     expect(block).toContain(
       "Do NOT disable the rule or suppress matching code",
     );
@@ -527,7 +527,7 @@ describe("runHandoffCommand — CLI contract", () => {
 describe("verificationBlock (exported for reuse)", () => {
   it("carries all four outcomes + the caveat + the reporting duties", () => {
     const block = verificationBlock("0.5.4").join("\n");
-    expect(block).toContain("npx qa-doctor-cli@0.5.4 . --scope changed");
+    expect(block).toContain("npx mjolnir-qa@0.5.4 . --scope changed");
     expect(block).toContain("TARGET_RESOLVED");
     expect(block).toContain("TARGET_REMAINS");
     expect(block).toContain("NEW_FINDINGS_INTRODUCED");

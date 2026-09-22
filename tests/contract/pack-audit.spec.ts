@@ -33,7 +33,7 @@ function makeTar(entries: Record<string, string>): {
   return { dir, tgz };
 }
 
-const PKG = JSON.stringify({ name: "qa-doctor-cli", version: "0.0.0-test" });
+const PKG = JSON.stringify({ name: "mjolnir-qa", version: "0.0.0-test" });
 const VALID = {
   "package.json": PKG,
   "dist/cli.mjs": "export {};",

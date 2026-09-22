@@ -561,7 +561,7 @@ export async function handleMcpMessage(
         protocolVersion: PROTOCOL_VERSION,
         capabilities: { tools: {} },
         serverInfo: {
-          name: "qa-doctor-cli",
+          name: "mjolnir-qa",
           version: CLI_VERSION,
         },
       },

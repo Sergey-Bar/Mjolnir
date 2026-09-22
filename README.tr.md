@@ -9,8 +9,8 @@ ardından sonuca ne kadar güvenilebileceğini, her puanın kanıtıyla birlikte
 
 <br />
 
-[![npm](https://img.shields.io/npm/v/qa-doctor-cli.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/qa-doctor-cli)
-[![downloads](https://img.shields.io/npm/dm/qa-doctor-cli.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/qa-doctor-cli)
+[![npm](https://img.shields.io/npm/v/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
+[![downloads](https://img.shields.io/npm/dm/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
 [![ci](https://img.shields.io/github/actions/workflow/status/Sergey-Bar/qa-doctor/ci.yml?branch=main&style=flat-square&label=ci&labelColor=0A1119)](https://github.com/Sergey-Bar/qa-doctor/actions/workflows/ci.yml)
 [![coverage](https://img.shields.io/codecov/c/github/Sergey-Bar/qa-doctor?style=flat-square&color=1F6F7C&labelColor=0A1119&label=coverage)](https://codecov.io/gh/Sergey-Bar/qa-doctor)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Sergey-Bar/qa-doctor/badge)](https://scorecard.dev/viewer/?uri=github.com/Sergey-Bar/qa-doctor)
@@ -18,7 +18,7 @@ ardından sonuca ne kadar güvenilebileceğini, her puanın kanıtıyla birlikte
 [![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-1F6F7C.svg?style=flat-square&labelColor=0A1119)](https://nodejs.org)
 
 ```bash
-npx qa-doctor-cli@latest
+npx mjolnir-qa@latest
 ```
 
 [Çalışırken görün](#çalışırken-görün) · [Hızlı başlangıç](#hızlı-başlangıç) · [Neler bulur](#qa-doctor-neler-bulur) · [Puan](#güvenilirlik-puanı) · [Kanıt](#kanıt-modeli) · [Çalıştırma analizi](#test-çalıştırma-analizi) · [CI](#ci-bütünlüğü) · [Ajanlar](#yapay-zekâ-ajanları) · [Güvenlik](#güven-ve-güvenlik) · [Sınırlar](#qa-doctorin-size-söyleyemedikleri) · [Belgeler](#belgeler)
@@ -58,7 +58,7 @@ Hiçbiri pipeline'ı kırmızıya çevirmez ve her biri incelemede kasıtlı gö
 
 <sub>Demo taramasının bu workflow için raporladığı her bulgu, raporlandığı satırda. `npm run docs:readme-brand` ile [`demo-report.json`](assets/readme/demo-report.json) kaynağından üretilir ve CI'da sapmaya karşı kilitlenir.</sub>
 
-**Katı mod.** En agresif tespitler — `.only`, `continue-on-error`, boş testler, tekrar kötüye kullanımı — karantina katında yaşar. Yalnızca `--strict` altında çalışır ve `info` şiddetindedir: işaretlerler, asla engellemezler. Varsayılan tarama (`--strict` olmayan `npx qa-doctor-cli@latest`) yalnızca çekirdek ve genişletilmiş kuralları kapsar. Danışmanlık katmanını da istediğinizde `--strict` ekleyin.
+**Katı mod.** En agresif tespitler — `.only`, `continue-on-error`, boş testler, tekrar kötüye kullanımı — karantina katında yaşar. Yalnızca `--strict` altında çalışır ve `info` şiddetindedir: işaretlerler, asla engellemezler. Varsayılan tarama (`--strict` olmayan `npx mjolnir-qa@latest`) yalnızca çekirdek ve genişletilmiş kuralları kapsar. Danışmanlık katmanını da istediğinizde `--strict` ekleyin.
 
 QA Doctor test paketini, CI workflow'larını ve varsa gerçek bir çalıştırmanın raporunu okur. Testlerinizi çalıştırmaz, bağımlılıklarınızı kurmaz ve taradığı kodu yürütmez. Kanıtı olmadığında da güven uydurmak yerine bunu açıkça söyler:
 
@@ -93,7 +93,7 @@ CI workflow'u olan küçük bir Playwright paketi olan [`examples/demo-repo`](ex
 
 <p align="center">
   <a href="assets/video/qa-doctor-demo.mp4">
-    <img src="assets/video/qa-doctor-demo-poster.png" alt="Demo kaydından bir kare: npx qa-doctor-cli@latest bir terminal penceresinde demo deposunu tarıyor" width="900" />
+    <img src="assets/video/qa-doctor-demo-poster.png" alt="Demo kaydından bir kare: npx mjolnir-qa@latest bir terminal penceresinde demo deposunu tarıyor" width="900" />
   </a>
 </p>
 
@@ -162,7 +162,7 @@ Değer birimi budur: CI'ın hak etmediği bir geçişi raporladığı tek bir ye
 ## Hızlı başlangıç
 
 ```bash
-npx qa-doctor-cli@latest
+npx mjolnir-qa@latest
 ```
 
 Geçerli dizini tarar ve Trust Report'u yazdırır: ne bulduğunu, ne kadar güvenebileceğinizi, nedenini ve sırada ne yapmanız gerektiğini. Kapı düzeyinde ya da üstünde hiçbir şey bulunmazsa `0` ile çıkar.
@@ -170,7 +170,7 @@ Geçerli dizini tarar ve Trust Report'u yazdırır: ne bulduğunu, ne kadar güv
 CI'da yalnızca dalın getirdiklerini tarayın; böylece eski bir test paketi ilk pull request'inizi boğmaz:
 
 ```bash
-npx qa-doctor-cli@latest --scope changed
+npx mjolnir-qa@latest --scope changed
 ```
 
 `qa-doctor ci install` bunu, ana `v1` etiketine sabitlenmiş [action](https://github.com/Sergey-Bar/qa-doctor#readme) ile bir GitHub Actions workflow'u olarak yazar (ya da `--no-action` ile düz `npx`). Siz engellemesi gerektiğine karar verene kadar tavsiye niteliğinde kalır.
@@ -223,7 +223,7 @@ npx qa-doctor-cli@latest --scope changed
 
 </details>
 
-Windows, macOS veya Linux üzerinde **Node.js ≥ 22.18** gerektirir. Global kurulumu mu tercih edersiniz? `npm i -g qa-doctor-cli`. Bu alt sınır derleme araç zincirinden gelir (tsdown onu hedefler ve sürüm pipeline'ı ona karşı duman testi yapar); çalışma zamanı bağımlılıkları bundan fazlasını gerektirmez.
+Windows, macOS veya Linux üzerinde **Node.js ≥ 22.18** gerektirir. Global kurulumu mu tercih edersiniz? `npm i -g mjolnir-qa`. Bu alt sınır derleme araç zincirinden gelir (tsdown onu hedefler ve sürüm pipeline'ı ona karşı duman testi yapar); çalışma zamanı bağımlılıkları bundan fazlasını gerektirmez.
 
 <br />
 
@@ -463,7 +463,7 @@ Ana sürüm hattını izlemek için `@v1`'i, tekrarlanabilir bir kapı için ise
 Bulguları GitHub Code Scanning'e aktarmak için SARIF yükleyin (workflow veya job kapsamında `security-events: write` gerekir):
 
 ```yaml
-- run: npx qa-doctor-cli@latest --format sarif > qa-doctor.sarif
+- run: npx mjolnir-qa@latest --format sarif > qa-doctor.sarif
   continue-on-error: true
 - uses: github/codeql-action/upload-sarif@v3
   if: ${{ !cancelled() }}
@@ -476,7 +476,7 @@ GitLab'de `--format codequality`, MR widget'ının ve diff açıklamalarının o
 ### Değişen kapsamda atıf
 
 ```bash
-npx qa-doctor-cli@latest --scope changed
+npx mjolnir-qa@latest --scope changed
 ```
 
 Bulgular, dalınızın eklediği satırlara **merge-base**'e göre ölçülerek atfedilir. Kapsam, tam bir taramanın keşfettiği dosya kümesinin aynısıdır (TS/JS spec'leri ve adaptör yapılandırmaları, `test_*.py`, `*Test.java`, `*Tests.cs`, `.github/workflows/*.yml`); buna commit edilmemiş ve izlenmeyen değişiklikler de eklenir, böylece commit etmeden önce de çalışır. Taban `main → master → origin/main → origin/master → origin/HEAD` sırasıyla çözülür; `--base <ref>` ile geçersiz kılabilirsiniz.
@@ -504,7 +504,7 @@ SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
 Kendi CLI'ı olan bir istemciye ekleyin:
 
 ```bash
-claude mcp add qa-doctor -- npx -y qa-doctor-cli@latest mcp
+claude mcp add qa-doctor -- npx -y mjolnir-qa@latest mcp
 ```
 
 Ya da `mcpServers` bloğu kabul eden herhangi bir istemciye:
@@ -514,7 +514,7 @@ Ya da `mcpServers` bloğu kabul eden herhangi bir istemciye:
   "mcpServers": {
     "qa-doctor": {
       "command": "npx",
-      "args": ["-y", "qa-doctor-cli@latest", "mcp"]
+      "args": ["-y", "mjolnir-qa@latest", "mcp"]
     }
   }
 }
@@ -606,10 +606,10 @@ Geliştirme ortamı, kalıcı kapı komutları ve anti-creep ile fixture güvenl
 <img src="assets/readme/closing.svg" alt="Deponuzda çalıştırın." width="100%" />
 
 ```bash
-npx qa-doctor-cli@latest
+npx mjolnir-qa@latest
 ```
 
-[Rehberi okuyun](https://sergey-bar.github.io/qa-doctor/guide/getting-started) · [Belge sitesi](https://sergey-bar.github.io/qa-doctor/) · [npm](https://www.npmjs.com/package/qa-doctor-cli)
+[Rehberi okuyun](https://sergey-bar.github.io/qa-doctor/guide/getting-started) · [Belge sitesi](https://sergey-bar.github.io/qa-doctor/) · [npm](https://www.npmjs.com/package/mjolnir-qa)
 
 <br />
 

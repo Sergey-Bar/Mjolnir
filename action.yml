@@ -6,7 +6,7 @@
 #
 # Consumers pin a major tag (`uses: Sergey-Bar/qa-doctor@v1`); release.yml's
 # action-tags job keeps that tag moving to every stable release.
-# Scanning runs through the published npm package (`npx qa-doctor-cli@…`),
+# Scanning runs through the published npm package (`npx mjolnir-qa@…`),
 # never an `npm ci` of this repo — the action must work for consumers,
 # not contributors.
 #
@@ -60,7 +60,7 @@ inputs:
     default: "22"
   version:
     description: >-
-      qa-doctor-cli npm spec to run. Default: latest. Pin an exact version
+      mjolnir-qa npm spec to run. Default: latest. Pin an exact version
       in your workflow for reproducible gates.
     required: false
     default: "latest"
@@ -191,18 +191,18 @@ runs:
           warning) ARGS+=(--blocking warning) ;;
           none)    ARGS+=(--blocking none) ;;
         esac
-        echo "Running: npx --yes qa-doctor-cli@${QA_DOCTOR_VERSION} ${ARGS[*]}"
+        echo "Running: npx --yes mjolnir-qa@${QA_DOCTOR_VERSION} ${ARGS[*]}"
         set +e
         if [ "$QA_DOCTOR_FORMAT" = "json" ]; then
-          npx --yes "qa-doctor-cli@${QA_DOCTOR_VERSION}" "${ARGS[@]}" > qa-doctor.json
+          npx --yes "mjolnir-qa@${QA_DOCTOR_VERSION}" "${ARGS[@]}" > qa-doctor.json
         elif [ "$QA_DOCTOR_FORMAT" = "sarif" ]; then
-          npx --yes "qa-doctor-cli@${QA_DOCTOR_VERSION}" "${ARGS[@]}" > qa-doctor-report.sarif
+          npx --yes "mjolnir-qa@${QA_DOCTOR_VERSION}" "${ARGS[@]}" > qa-doctor-report.sarif
         elif [ "$QA_DOCTOR_FORMAT" = "codequality" ]; then
-          npx --yes "qa-doctor-cli@${QA_DOCTOR_VERSION}" "${ARGS[@]}" > qa-doctor-codequality.json
+          npx --yes "mjolnir-qa@${QA_DOCTOR_VERSION}" "${ARGS[@]}" > qa-doctor-codequality.json
         elif [ "$QA_DOCTOR_FORMAT" = "mermaid" ]; then
-          npx --yes "qa-doctor-cli@${QA_DOCTOR_VERSION}" "${ARGS[@]}" > qa-doctor-report.mmd
+          npx --yes "mjolnir-qa@${QA_DOCTOR_VERSION}" "${ARGS[@]}" > qa-doctor-report.mmd
         else
-          npx --yes "qa-doctor-cli@${QA_DOCTOR_VERSION}" "${ARGS[@]}"
+          npx --yes "mjolnir-qa@${QA_DOCTOR_VERSION}" "${ARGS[@]}"
         fi
         EXIT=$?
         set -e
@@ -271,7 +271,7 @@ runs:
         if [ "$QA_DOCTOR_SCOPE" = "changed" ]; then ARGS+=(--scope changed); fi
         if [ "$QA_DOCTOR_STRICT" = "true" ]; then ARGS+=(--strict); fi
         set +e
-        npx --yes "qa-doctor-cli@${QA_DOCTOR_VERSION}" "${ARGS[@]}" > qa-doctor.json
+        npx --yes "mjolnir-qa@${QA_DOCTOR_VERSION}" "${ARGS[@]}" > qa-doctor.json
         echo "exit=$?" >> "$GITHUB_OUTPUT"
         exit 0
 
@@ -285,7 +285,7 @@ runs:
         QA_DOCTOR_VERSION: ${{ inputs.version }}
       run: |
         set +e
-        npx --yes "qa-doctor-cli@${QA_DOCTOR_VERSION}" trust-report --from qa-doctor.json
+        npx --yes "mjolnir-qa@${QA_DOCTOR_VERSION}" trust-report --from qa-doctor.json
         echo "exit=$?" >> "$GITHUB_OUTPUT"
         echo "file=qa-doctor-trust-report.md" >> "$GITHUB_OUTPUT"
         exit 0
@@ -300,7 +300,7 @@ runs:
         # GITHUB_ACTIONS=true) and the step summary to
         # $GITHUB_STEP_SUMMARY — the CLI's own CI surface, zero action-
         # side rendering logic.
-        npx --yes "qa-doctor-cli@${QA_DOCTOR_VERSION}" summary qa-doctor.json --stdout | tee "${GITHUB_STEP_SUMMARY:-/dev/null}" >/dev/null 2>&1 || true
+        npx --yes "mjolnir-qa@${QA_DOCTOR_VERSION}" summary qa-doctor.json --stdout | tee "${GITHUB_STEP_SUMMARY:-/dev/null}" >/dev/null 2>&1 || true
 
     - name: Post Trust Report as PR comment
       if: >-

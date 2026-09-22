@@ -38,7 +38,7 @@ import { runScanCommand } from "../../src/cli.js";
 let dir: string;
 let origCwd: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "qa-doctor-cli-skip-"));
+  dir = mkdtempSync(join(tmpdir(), "mjolnir-qa-skip-"));
   origCwd = process.cwd();
 });
 afterEach(() => {

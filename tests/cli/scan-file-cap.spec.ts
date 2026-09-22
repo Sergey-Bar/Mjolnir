@@ -23,7 +23,7 @@ import { runScanCommand } from "../../src/cli.js";
 let dir: string;
 let origCwd: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "qa-doctor-cli-cap-"));
+  dir = mkdtempSync(join(tmpdir(), "mjolnir-qa-cap-"));
   origCwd = process.cwd();
 });
 afterEach(() => {

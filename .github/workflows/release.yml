@@ -270,7 +270,7 @@ jobs:
       - name: Pack-audit the exact tarball (SC-6)
         run: |
           shopt -s nullglob
-          TGZLIST=(release-assets/qa-doctor-cli-*.tgz)
+          TGZLIST=(release-assets/mjolnir-qa-*.tgz)
           if [ "${#TGZLIST[@]}" -ne 1 ]; then
             echo "expected exactly one packed tarball, found ${#TGZLIST[@]}" >&2
             exit 1
@@ -287,7 +287,7 @@ jobs:
       - name: Check whether this version is already on npm
         id: registry
         run: |
-          if npm view "qa-doctor-cli@${VERSION}" version >/dev/null 2>&1; then
+          if npm view "mjolnir-qa@${VERSION}" version >/dev/null 2>&1; then
             echo "Already on npm — publish will be skipped."
             echo "published=true" >> "$GITHUB_OUTPUT"
           else
@@ -369,7 +369,7 @@ jobs:
       #
       # `ENEEDAUTH` / "OIDC token exchange error - package not found" here
       # means the trusted-publisher config does NOT match this run's OIDC
-      # claims. Check on npmjs.com → qa-doctor-cli → Settings → Publishing
+      # claims. Check on npmjs.com → mjolnir-qa → Settings → Publishing
       # access: repository must be Sergey-Bar/qa-doctor, workflow must be
       # release.yml, and the Environment field must be EMPTY.
       # Bug-audit G5 (pre-publish install gate): the real-registry install
@@ -416,15 +416,15 @@ jobs:
         run: |
           DIST_TAG="${{ steps.disttag.outputs.tag }}"
           for attempt in 1 2 3 4 5 6; do
-            FOUND="$(npm view "qa-doctor-cli@${DIST_TAG}" version 2>/dev/null || true)"
+            FOUND="$(npm view "mjolnir-qa@${DIST_TAG}" version 2>/dev/null || true)"
             if [ "$FOUND" = "$VERSION" ]; then
-              echo "qa-doctor-cli@${VERSION} is live on the registry under dist-tag ${DIST_TAG}."
+              echo "mjolnir-qa@${VERSION} is live on the registry under dist-tag ${DIST_TAG}."
               exit 0
             fi
             echo "Not resolvable yet (attempt ${attempt}/6) — waiting 10s."
             sleep 10
           done
-          echo "::error::qa-doctor-cli@${VERSION} is not resolvable on the registry under dist-tag ${DIST_TAG}. Refusing to create a GitHub Release for a version nobody can install."
+          echo "::error::mjolnir-qa@${VERSION} is not resolvable on the registry under dist-tag ${DIST_TAG}. Refusing to create a GitHub Release for a version nobody can install."
           exit 1
 
       # Last, and only now: everything above proved the package is real.
@@ -452,7 +452,7 @@ jobs:
       - name: Build the release body with the verdict block
         run: |
           {
-            echo "Install: \`npx qa-doctor-cli@${VERSION} .\`"
+            echo "Install: \`npx mjolnir-qa@${VERSION} .\`"
             echo "Full changelog is auto-generated below from all commits and PRs since the previous release."
             echo ""
             echo '```text'

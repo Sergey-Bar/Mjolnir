@@ -336,10 +336,8 @@ export function renderUnifiedReport(
   const version = options.version ? `@${options.version}` : "";
   lines.push("**What to run next:**");
   lines.push("```bash");
-  lines.push(`npx qa-doctor-cli${version} .            # full scan + score`);
-  lines.push(
-    `npx qa-doctor-cli${version} . --verbose # every finding, uncapped`,
-  );
+  lines.push(`npx mjolnir-qa${version} .            # full scan + score`);
+  lines.push(`npx mjolnir-qa${version} . --verbose # every finding, uncapped`);
   lines.push("```");
   lines.push("");
   lines.push(

@@ -9,8 +9,8 @@ QA Doctor 找出不可能失败的测试和不可能变红的流水线，<br />
 
 <br />
 
-[![npm](https://img.shields.io/npm/v/qa-doctor-cli.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/qa-doctor-cli)
-[![downloads](https://img.shields.io/npm/dm/qa-doctor-cli.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/qa-doctor-cli)
+[![npm](https://img.shields.io/npm/v/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
+[![downloads](https://img.shields.io/npm/dm/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
 [![ci](https://img.shields.io/github/actions/workflow/status/Sergey-Bar/qa-doctor/ci.yml?branch=main&style=flat-square&label=ci&labelColor=0A1119)](https://github.com/Sergey-Bar/qa-doctor/actions/workflows/ci.yml)
 [![coverage](https://img.shields.io/codecov/c/github/Sergey-Bar/qa-doctor?style=flat-square&color=1F6F7C&labelColor=0A1119&label=coverage)](https://codecov.io/gh/Sergey-Bar/qa-doctor)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Sergey-Bar/qa-doctor/badge)](https://scorecard.dev/viewer/?uri=github.com/Sergey-Bar/qa-doctor)
@@ -18,7 +18,7 @@ QA Doctor 找出不可能失败的测试和不可能变红的流水线，<br />
 [![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-1F6F7C.svg?style=flat-square&labelColor=0A1119)](https://nodejs.org)
 
 ```bash
-npx qa-doctor-cli@latest
+npx mjolnir-qa@latest
 ```
 
 [实际效果](#实际效果) · [快速开始](#快速开始) · [能发现什么](#qa-doctor-能发现什么) · [评分](#可信度评分) · [证据](#证据模型) · [运行取证](#运行时取证) · [CI](#ci-完整性) · [智能体](#ai-智能体) · [安全](#信任与安全) · [局限](#qa-doctor-无法告诉你的事) · [文档](#文档)
@@ -58,7 +58,7 @@ npx qa-doctor-cli@latest
 
 <sub>演示扫描为该 workflow 报告的每一条发现，都标在报告的行上。由 `npm run docs:readme-brand` 根据 [`demo-report.json`](assets/readme/demo-report.json) 生成，并在 CI 中锁定以防漂移。</sub>
 
-**严格模式。** 最激进的检测——`.only`、`continue-on-error`、空测试、滥用重试——位于隔离层。它们仅在 `--strict` 下运行，且限定为 `info` 严重级别：只标记，从不拦截。默认扫描（不带 `--strict` 的 `npx qa-doctor-cli@latest`）仅覆盖核心和扩展规则。需要咨询层时，加上 `--strict`。
+**严格模式。** 最激进的检测——`.only`、`continue-on-error`、空测试、滥用重试——位于隔离层。它们仅在 `--strict` 下运行，且限定为 `info` 严重级别：只标记，从不拦截。默认扫描（不带 `--strict` 的 `npx mjolnir-qa@latest`）仅覆盖核心和扩展规则。需要咨询层时，加上 `--strict`。
 
 QA Doctor 读取测试套件、CI workflow，以及（如果有的话）一次真实运行的报告。它不会运行你的测试，不会安装你的依赖，也不会执行它扫描的代码。当它没有证据时，它会直说，而不是编造信心：
 
@@ -93,7 +93,7 @@ QA Doctor 读取测试套件、CI workflow，以及（如果有的话）一次�
 
 <p align="center">
   <a href="assets/video/qa-doctor-demo.mp4">
-    <img src="assets/video/qa-doctor-demo-poster.png" alt="演示录像中的一帧：npx qa-doctor-cli@latest 在终端窗口中扫描演示仓库" width="900" />
+    <img src="assets/video/qa-doctor-demo-poster.png" alt="演示录像中的一帧：npx mjolnir-qa@latest 在终端窗口中扫描演示仓库" width="900" />
   </a>
 </p>
 
@@ -162,7 +162,7 @@ Docs: qa-doctor rules --md   (full catalog, this rule included)
 ## 快速开始
 
 ```bash
-npx qa-doctor-cli@latest
+npx mjolnir-qa@latest
 ```
 
 它扫描当前目录并打印 Trust Report：发现了什么、你能在多大程度上信任它、原因，以及下一步该做什么。当门禁及以上级别没有任何发现时，它以 `0` 退出。
@@ -170,7 +170,7 @@ npx qa-doctor-cli@latest
 在 CI 中，只扫描分支引入的内容，这样遗留的测试套件就不会淹没你的第一个 pull request：
 
 ```bash
-npx qa-doctor-cli@latest --scope changed
+npx mjolnir-qa@latest --scope changed
 ```
 
 `qa-doctor ci install` 会把它写成一个 GitHub Actions workflow，使用固定在 `v1` 主版本标签上的 [action](https://github.com/Sergey-Bar/qa-doctor#readme)（或使用 `--no-action` 改用普通 `npx`）。在你决定让它拦截之前，它始终只是建议性的。
@@ -223,7 +223,7 @@ npx qa-doctor-cli@latest --scope changed
 
 </details>
 
-需要 Windows、macOS 或 Linux 上的 **Node.js ≥ 22.18**。想全局安装？`npm i -g qa-doctor-cli`。这个最低版本来自构建工具链（tsdown 以它为目标，发布流水线也针对它做冒烟测试）；运行时依赖对版本没有更高要求。
+需要 Windows、macOS 或 Linux 上的 **Node.js ≥ 22.18**。想全局安装？`npm i -g mjolnir-qa`。这个最低版本来自构建工具链（tsdown 以它为目标，发布流水线也针对它做冒烟测试）；运行时依赖对版本没有更高要求。
 
 <br />
 
@@ -463,7 +463,7 @@ qa-doctor ci install
 要把发现推送到 GitHub Code Scanning，上传 SARIF（需要在 workflow 或 job 范围内设置 `security-events: write`）：
 
 ```yaml
-- run: npx qa-doctor-cli@latest --format sarif > qa-doctor.sarif
+- run: npx mjolnir-qa@latest --format sarif > qa-doctor.sarif
   continue-on-error: true
 - uses: github/codeql-action/upload-sarif@v3
   if: ${{ !cancelled() }}
@@ -476,7 +476,7 @@ qa-doctor ci install
 ### 变更范围归因
 
 ```bash
-npx qa-doctor-cli@latest --scope changed
+npx mjolnir-qa@latest --scope changed
 ```
 
 发现会归因到你的分支新增的行，以 **merge-base** 为基准计算。范围与完整扫描发现的文件集合相同（TS/JS spec 和适配器配置、`test_*.py`、`*Test.java`、`*Tests.cs`、`.github/workflows/*.yml`），再加上未提交和未跟踪的改动，所以在你提交之前就能使用。基准按 `main → master → origin/main → origin/master → origin/HEAD` 的顺序解析；可以用 `--base <ref>` 覆盖。
@@ -504,7 +504,7 @@ SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
 添加到自带 CLI 的客户端：
 
 ```bash
-claude mcp add qa-doctor -- npx -y qa-doctor-cli@latest mcp
+claude mcp add qa-doctor -- npx -y mjolnir-qa@latest mcp
 ```
 
 或者添加到任何接受 `mcpServers` 配置块的客户端：
@@ -514,7 +514,7 @@ claude mcp add qa-doctor -- npx -y qa-doctor-cli@latest mcp
   "mcpServers": {
     "qa-doctor": {
       "command": "npx",
-      "args": ["-y", "qa-doctor-cli@latest", "mcp"]
+      "args": ["-y", "mjolnir-qa@latest", "mcp"]
     }
   }
 }
@@ -606,10 +606,10 @@ qa-doctor create-rule QA-PW-140 --title "Screenshot without diff bound"
 <img src="assets/readme/closing.svg" alt="在你的仓库上运行它。" width="100%" />
 
 ```bash
-npx qa-doctor-cli@latest
+npx mjolnir-qa@latest
 ```
 
-[阅读指南](https://sergey-bar.github.io/qa-doctor/guide/getting-started) · [文档站点](https://sergey-bar.github.io/qa-doctor/) · [npm](https://www.npmjs.com/package/qa-doctor-cli)
+[阅读指南](https://sergey-bar.github.io/qa-doctor/guide/getting-started) · [文档站点](https://sergey-bar.github.io/qa-doctor/) · [npm](https://www.npmjs.com/package/mjolnir-qa)
 
 <br />
 

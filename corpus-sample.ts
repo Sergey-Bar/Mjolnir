@@ -1,0 +1,375 @@
+/**
+ * Corpus sample generator (Phase 3 — Tempering Plan).
+ *
+ * Draws up to 20 findings per rule from the corpus baselines, reads the
+ * source context (5 lines around each finding), and emits:
+ *
+ * 1. tests/corpus/review/<RULE-ID>.md — human-readable review sheets
+ *    with file, line, context, and an empty `verdict:` field.
+ *
+ * 2. tests/corpus/verdicts/<repo>.jsonl — machine-readable verdict
+ *    storage (one JSON object per line) for hand-classified findings.
+ *
+ * Usage:
+ *   npx tsx scripts/corpus-sample.ts           # generate review sheets
+ *   npx tsx scripts/corpus-sample.ts --update  # re-scan and regenerate
+ *   npx tsx scripts/corpus-sample.ts --update --repo <name> [--repo <n>…]
+ *                                              # resumable: named repos only
+ *   … --budget 300000                          # raise per-repo scan budget
+ *                                              # (chronic truncation remedy)
+ *
+ * The review sheets are the INPUT to the manual classification process.
+ * Once classified, verdicts go into the .jsonl files. The FP-rate
+ * generator reads the verdicts, not the review sheets.
+ */
+
+import { execFileSync } from "node:child_process";
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+import { prettify } from "./lib/prettify.ts";
+
+import { runScan } from "../src/cli.ts";
+// Single source of truth for the corpus — do NOT redefine it here.
+import { CORPUS, type CorpusRepo } from "../tests/corpus/audit.ts";
+import { MEASURED_FP } from "../src/rules/measured-fp.generated.ts";
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const ROOT = join(HERE, "..");
+const CACHE_DIR = join(ROOT, "tests", "corpus", ".cache");
+const REVIEW_DIR = join(ROOT, "tests", "corpus", "review");
+const VERDICTS_DIR = join(ROOT, "tests", "corpus", "verdicts");
+
+const MAX_SAMPLES_PER_RULE = 20;
+const CONTEXT_LINES = 5; // lines above and below the finding
+
+/**
+ * `--unmeasured-only` (plan §11.1 verdict-harvesting loop): sample ONLY
+ * rules without a valid measurement so classification effort goes to the
+ * Phase 1 exit gate (unmeasured ≤ 20) instead of re-sampling rules that
+ * are already measured at their quota.
+ *
+ * `--repo <name>` (repeatable): sample only the named corpus repos —
+ * resumability. The full-corpus run in one process hits V8 heap limits
+ * on the large monorepos (observed: OOM at sveltejs-kit / withastro-astro
+ * even at 12 GB); running repo-by-repo keeps each process small, and the
+ * append-only verdict writer makes partial runs safe to accumulate.
+ *
+ * `--budget <ms>`: override the per-repo scan budget (default 120_000).
+ * audit.ts's own guidance: if truncation is chronic for a repo, raise
+ * the budget rather than record a partial scan.
+ */
+const UNMEASURED_ONLY = process.argv.includes("--unmeasured-only");
+
+const ONLY_REPOS = process.argv
+  .flatMap((a, i) => (a === "--repo" ? [process.argv[i + 1] ?? ""] : []))
+  .filter((n) => n.length > 0);
+const BUDGET_MS = (() => {
+  const idx = process.argv.indexOf("--budget");
+  const v = idx !== -1 ? Number(process.argv[idx + 1]) : NaN;
+  return Number.isFinite(v) && v > 0 ? v : 120_000;
+})();
+
+function ruleIsUnmeasured(ruleId: string): boolean {
+  return MEASURED_FP[ruleId] === undefined;
+}
+
+interface SampledFinding {
+  repo: string;
+  ruleId: string;
+  file: string;
+  line: number;
+  message: string;
+  context: string[];
+}
+
+function cloneRepo(repo: CorpusRepo): string {
+  const dest = join(CACHE_DIR, repo.name);
+  if (existsSync(dest)) return dest; // reuse cached clone
+  mkdirSync(CACHE_DIR, { recursive: true });
+  // `local:` URLs (§08 classes B/C) — copy the committed corpus instead
+  // of cloning; .git never exists for in-repo fixtures.
+  if (repo.url.startsWith("local:")) {
+    const src = join(HERE, "..", repo.url.slice("local:".length));
+    if (!existsSync(src)) {
+      throw new Error(`local corpus missing: ${src}`);
+    }
+    cpSync(src, dest, { recursive: true });
+    return dest;
+  }
+  execFileSync(
+    "git",
+    // core.longpaths: same Windows MAX_PATH rationale as the audit clone.
+    ["-c", "core.longpaths=true", "clone", "--depth", "1", repo.url, dest],
+    {
+      stdio: "pipe",
+    },
+  );
+  rmSync(join(dest, ".git"), { recursive: true, force: true });
+  return dest;
+}
+
+function getContext(filePath: string, line: number): string[] {
+  try {
+    const content = readFileSync(filePath, "utf8");
+    const lines = content.split("\n");
+    const start = Math.max(0, line - CONTEXT_LINES - 1);
+    const end = Math.min(lines.length, line + CONTEXT_LINES);
+    const result: string[] = [];
+    for (let i = start; i < end; i++) {
+      const marker = i === line - 1 ? ">>>" : "   ";
+      result.push(`${marker} ${String(i + 1).padStart(4)}| ${lines[i]}`);
+    }
+    return result;
+  } catch {
+    return ["    (file not readable)"];
+  }
+}
+
+async function scanAndSample(): Promise<Map<string, SampledFinding[]>> {
+  const byRule = new Map<string, SampledFinding[]>();
+
+  for (const repo of CORPUS) {
+    if (ONLY_REPOS.length > 0 && !ONLY_REPOS.includes(repo.name)) continue;
+    console.log(`\n=== Scanning ${repo.name} ===`);
+    let dir: string;
+    try {
+      dir = cloneRepo(repo);
+    } catch (err) {
+      console.error(
+        `  SKIP: could not clone (${err instanceof Error ? err.message : String(err)})`,
+      );
+      continue;
+    }
+
+    const result = await runScan({
+      target: dir,
+      json: true,
+      verbose: true,
+      maxDurationMs: BUDGET_MS,
+      scopeChanged: false,
+      format: "json",
+      // --strict: sample quarantine-tier rules too. Without this, every
+      // re-run silently deletes the review sheets for the ~12 quarantined
+      // rules — the ones we most need to keep watching.
+      strict: true,
+    });
+
+    // D14/§19 discipline (same refusal as tests/corpus/audit.ts): a
+    // deadline-truncated scan is NOT evidence — sampling from it would
+    // record machine-speed-contaminated counts as review material. Fail
+    // the run loudly; re-run on a quiet machine, never classify from a
+    // partial scan.
+    if (result.partial) {
+      console.error(
+        `  FAIL: scan of ${repo.name} was PARTIAL (deadline/budget ` +
+          `truncation) — findings from a partial scan are not evidence. ` +
+          `Re-run on a quiet machine; do NOT classify from a partial scan.`,
+      );
+      process.exitCode = 1;
+      continue;
+    }
+
+    for (const finding of result.findings) {
+      if (UNMEASURED_ONLY && !ruleIsUnmeasured(finding.ruleId)) continue;
+      const samples = byRule.get(finding.ruleId) ?? [];
+      if (samples.length >= MAX_SAMPLES_PER_RULE) continue;
+
+      const filePath = join(dir, finding.file);
+      const context = getContext(filePath, finding.line);
+
+      samples.push({
+        repo: repo.name,
+        ruleId: finding.ruleId,
+        file: finding.file,
+        line: finding.line,
+        message: finding.message,
+        context,
+      });
+      byRule.set(finding.ruleId, samples);
+    }
+  }
+
+  return byRule;
+}
+
+function writeReviewSheets(byRule: Map<string, SampledFinding[]>): void {
+  mkdirSync(REVIEW_DIR, { recursive: true });
+
+  // Clear old review sheets — EXCEPT sheets whose rule was not sampled in
+  // this run. §19 review material is owner work-in-progress (pending
+  // verdict classifications); --repo resumability used to delete every
+  // sheet of a rule the current run did not visit, wiping 25 sheets /
+  // 191 pending classifications on a scoped run. Sheets are regenerated
+  // only when their rule is re-sampled (de-duped against existing
+  // verdict rows), so deleting a not-visited sheet loses owner work for
+  // nothing.
+  const sampledRules = new Set(byRule.keys());
+  for (const f of readdirSync(REVIEW_DIR)) {
+    if (f.endsWith(".md") && !sampledRules.has(f.replace(/\.md$/, ""))) {
+      rmSync(join(REVIEW_DIR, f));
+    }
+  }
+
+  for (const [ruleId, samples] of [...byRule.entries()].sort((a, b) =>
+    a[0].localeCompare(b[0]),
+  )) {
+    const lines: string[] = [
+      `# ${ruleId} — Sample Findings for Classification`,
+      "",
+      `Total sampled: ${samples.length} (max ${MAX_SAMPLES_PER_RULE} per rule)`,
+      "",
+      "Classify each finding as:",
+      "- **TP** (True Positive) — the finding is correct, this IS the anti-pattern",
+      "- **FP** (False Positive) — the finding is wrong, this is legitimate code",
+      "- **UNSURE** — cannot determine without more context",
+      "",
+      "---",
+      "",
+    ];
+
+    for (let i = 0; i < samples.length; i++) {
+      const s = samples[i];
+      if (!s) continue;
+      lines.push(`## ${i + 1}. ${s.repo} — ${s.file}:${s.line}`);
+      lines.push("");
+      lines.push(`**Message:** ${s.message}`);
+      lines.push("");
+      lines.push("```");
+      lines.push(...s.context);
+      lines.push("```");
+      lines.push("");
+      lines.push("**verdict:** ");
+      lines.push("");
+      lines.push("---");
+      lines.push("");
+    }
+
+    writeFileSync(join(REVIEW_DIR, `${ruleId}.md`), lines.join("\n"));
+    console.log(`  Wrote ${ruleId}.md (${samples.length} samples)`);
+  }
+}
+
+function initVerdictFiles(byRule: Map<string, SampledFinding[]>): void {
+  mkdirSync(VERDICTS_DIR, { recursive: true });
+
+  // For each repo, create (or extend) a .jsonl file with empty verdicts.
+  // Appending (bug-audit 2026-08-31): a repo file is created once and the
+  // sampler used to refuse every later run — rules whose samples were not
+  // drawn in the FIRST pass (new rules, raised caps, expanded corpus) then
+  // never produced verdict rows anywhere, no matter how many times they
+  // fired. New findings are appended; rows already present are skipped so
+  // classified verdicts are never duplicated or overwritten.
+  const byRepo = new Map<string, SampledFinding[]>();
+  for (const samples of byRule.values()) {
+    for (const s of samples) {
+      const repoSamples = byRepo.get(s.repo) ?? [];
+      repoSamples.push(s);
+      byRepo.set(s.repo, repoSamples);
+    }
+  }
+
+  for (const [repo, samples] of byRepo.entries()) {
+    const verdictPath = join(VERDICTS_DIR, `${repo}.jsonl`);
+    const existing = new Set<string>();
+    if (existsSync(verdictPath)) {
+      for (const line of readFileSync(verdictPath, "utf8").split("\n")) {
+        if (!line.trim()) continue;
+        try {
+          const o = JSON.parse(line) as {
+            ruleId: string;
+            file: string;
+            line: number;
+          };
+          existing.add(`${o.ruleId}|${o.file}|${o.line}`);
+        } catch {
+          /* preserve malformed rows as-is — never overwrite verdicts */
+        }
+      }
+    } else {
+      mkdirSync(VERDICTS_DIR, { recursive: true });
+    }
+    const fresh = samples.filter(
+      (s) => !existing.has(`${s.ruleId}|${s.file}|${s.line}`),
+    );
+    if (fresh.length === 0) {
+      console.log(`  ${repo}.jsonl already complete — no new findings to add`);
+      continue;
+    }
+    const lines = fresh.map((s) =>
+      JSON.stringify({
+        ruleId: s.ruleId,
+        file: s.file,
+        line: s.line,
+        verdict: "",
+        note: "",
+      }),
+    );
+    if (existsSync(verdictPath)) {
+      const prev = readFileSync(verdictPath, "utf8");
+      writeFileSync(
+        verdictPath,
+        prev.replace(/\n*$/, "\n") + lines.join("\n") + "\n",
+      );
+    } else {
+      writeFileSync(verdictPath, lines.join("\n") + "\n");
+    }
+    console.log(`  Appended ${fresh.length} new entries to ${repo}.jsonl`);
+  }
+}
+
+async function main(): Promise<void> {
+  console.log("Corpus sample generator — Phase 3 (Tempering Plan)");
+  if (UNMEASURED_ONLY) {
+    console.log("Mode: --unmeasured-only — sampling unmeasured rules only.");
+  }
+  console.log(
+    `Drawing up to ${MAX_SAMPLES_PER_RULE} findings per rule from ${CORPUS.length} corpus repos...\n`,
+  );
+
+  const byRule = await scanAndSample();
+
+  console.log(`\n=== Writing review sheets ===`);
+  writeReviewSheets(byRule);
+
+  console.log(`\n=== Initializing verdict files ===`);
+  initVerdictFiles(byRule);
+
+  // Keep the generated review sheets prettier-clean so `npm run lint`
+  // (prettier --check) passes — same discipline as the other generators.
+  // Bug Map M-07, shared helper (scripts/lib/prettify.ts): Prettier Node
+  // API, per output file, no silent skip — a formatting failure
+  // propagates and the process exits non-zero.
+  for (const entry of readdirSync(REVIEW_DIR)) {
+    await prettify(join(REVIEW_DIR, entry));
+  }
+
+  // Cleanup cache — best-effort. On Windows a git pack file can stay
+  // locked briefly after the clone process exits; the dir is gitignored,
+  // so a stale .cache is harmless, not worth crashing a completed run.
+  try {
+    rmSync(CACHE_DIR, { recursive: true, force: true });
+  } catch {
+    console.warn(`(could not remove ${CACHE_DIR} — safe to delete manually)`);
+  }
+
+  const totalRules = byRule.size;
+  const totalSamples = [...byRule.values()].reduce(
+    (sum, s) => sum + s.length,
+    0,
+  );
+  console.log(`\nDone. ${totalSamples} samples across ${totalRules} rules.`);
+  console.log("Next: classify verdicts in tests/corpus/verdicts/*.jsonl, then");
+  console.log("run `npm run fp-audit:generate` to compute FP rates.");
+}
+
+await main();

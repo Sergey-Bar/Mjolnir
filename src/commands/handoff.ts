@@ -102,7 +102,7 @@ export function verificationBlock(version: string): string[] {
     "## Verification procedure",
     "",
     "1. Before editing (recommended): `qa-doctor baseline` captures the pre-fix report.",
-    "2. After the fixes: `npx qa-doctor-cli@" +
+    "2. After the fixes: `npx mjolnir-qa@" +
       version +
       " . --scope changed` re-verifies the targeted surface.",
     "3. Correlate before/after by finding fingerprint (ruleId + file + message — line numbers are occurrence locations, not identity; edits may move lines).",
@@ -160,7 +160,7 @@ export function ruleCopyBlock(
     overflow,
     "",
     "Verification:",
-    `  npx qa-doctor-cli@${version} . --scope changed`,
+    `  npx mjolnir-qa@${version} . --scope changed`,
     "",
     "Expected verification behavior: the fingerprint (ruleId + file + message) of every occurrence above disappears from the post-fix scan, and no NEW fingerprint appears.",
     "",
@@ -348,7 +348,7 @@ export function renderHandoff(
     "- Apply the smallest behavior-preserving fix from the group's instruction.",
   );
   lines.push("- Do NOT suppress findings merely to make the scan green.");
-  lines.push(`- Re-run: npx qa-doctor-cli@${version} . --scope changed`);
+  lines.push(`- Re-run: npx mjolnir-qa@${version} . --scope changed`);
   lines.push(
     "- Correlate before/after by fingerprint (ruleId + file + message).",
   );

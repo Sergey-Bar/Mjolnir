@@ -4,7 +4,7 @@
  * the sync flow, then blocking (the plan's own ramp).
  *
  * Checks the `packages/playwright-reporter` surface against the root
- * `qa-doctor-cli` package:
+ * `mjolnir-qa` package:
  *   1. the reporter package.json parses and names the published scope
  *      (`qa-doctor-playwright-reporter`);
  *   2. the reporter's default output filename is exactly the file the

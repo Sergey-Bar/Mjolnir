@@ -1,4 +1,4 @@
-qa-doctor brand doctor — failure-first self-test
+mjolnir brand doctor — failure-first self-test
 
   baseline: exit 0 (expected 0)
   Rule 1: PROVEN — a site variable drifts from the token

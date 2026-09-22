@@ -9,8 +9,8 @@ e depois pontua até onde o resultado merece confiança, com a evidência de cad
 
 <br />
 
-[![npm](https://img.shields.io/npm/v/qa-doctor-cli.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/qa-doctor-cli)
-[![downloads](https://img.shields.io/npm/dm/qa-doctor-cli.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/qa-doctor-cli)
+[![npm](https://img.shields.io/npm/v/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
+[![downloads](https://img.shields.io/npm/dm/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
 [![ci](https://img.shields.io/github/actions/workflow/status/Sergey-Bar/qa-doctor/ci.yml?branch=main&style=flat-square&label=ci&labelColor=0A1119)](https://github.com/Sergey-Bar/qa-doctor/actions/workflows/ci.yml)
 [![coverage](https://img.shields.io/codecov/c/github/Sergey-Bar/qa-doctor?style=flat-square&color=1F6F7C&labelColor=0A1119&label=coverage)](https://codecov.io/gh/Sergey-Bar/qa-doctor)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Sergey-Bar/qa-doctor/badge)](https://scorecard.dev/viewer/?uri=github.com/Sergey-Bar/qa-doctor)
@@ -18,7 +18,7 @@ e depois pontua até onde o resultado merece confiança, com a evidência de cad
 [![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-1F6F7C.svg?style=flat-square&labelColor=0A1119)](https://nodejs.org)
 
 ```bash
-npx qa-doctor-cli@latest
+npx mjolnir-qa@latest
 ```
 
 [Veja funcionando](#veja-funcionando) · [Início rápido](#início-rápido) · [O que encontra](#o-que-o-qa-doctor-encontra) · [Pontuação](#a-pontuação-de-confiabilidade) · [Evidência](#o-modelo-de-evidência) · [Forense](#forense-de-execução) · [CI](#integridade-de-ci) · [Agentes](#agentes-de-ia) · [Segurança](#confiança-e-segurança) · [Limites](#o-que-o-qa-doctor-não-pode-dizer) · [Docs](#documentação)
@@ -58,7 +58,7 @@ Nenhum deles deixa o pipeline vermelho, e todos parecem intencionais na revisão
 
 <sub>Cada achado que o scan de demonstração reportou para este workflow, na linha reportada. Gerado por `npm run docs:readme-brand` a partir de [`demo-report.json`](assets/readme/demo-report.json) e travado contra desvios na CI.</sub>
 
-**Modo estrito.** As detecções mais agressivas — `.only`, `continue-on-error`, testes vazios, abuso de retry — ficam na quarentena. Só rodam com `--strict` e são limitadas a severidade `info`: elas sinalizam, nunca bloqueiam. O scan padrão (`npx qa-doctor-cli@latest` sem `--strict`) cobre apenas regras core e extended. Adicione `--strict` quando quiser a camada de consultoria também.
+**Modo estrito.** As detecções mais agressivas — `.only`, `continue-on-error`, testes vazios, abuso de retry — ficam na quarentena. Só rodam com `--strict` e são limitadas a severidade `info`: elas sinalizam, nunca bloqueiam. O scan padrão (`npx mjolnir-qa@latest` sem `--strict`) cobre apenas regras core e extended. Adicione `--strict` quando quiser a camada de consultoria também.
 
 O QA Doctor lê a suíte, os workflows de CI e, se você tiver, o relatório de uma execução real. Ele não roda seus testes, não instala suas dependências e não executa o código que analisa. E quando não tem evidência, ele diz isso em vez de inventar confiança:
 
@@ -93,7 +93,7 @@ Um scan real de [`examples/demo-repo`](examples/demo-repo), uma pequena suíte P
 
 <p align="center">
   <a href="assets/video/qa-doctor-demo.mp4">
-    <img src="assets/video/qa-doctor-demo-poster.png" alt="Um quadro da gravação de demonstração: npx qa-doctor-cli@latest analisando o repositório de demonstração em uma janela de terminal" width="900" />
+    <img src="assets/video/qa-doctor-demo-poster.png" alt="Um quadro da gravação de demonstração: npx mjolnir-qa@latest analisando o repositório de demonstração em uma janela de terminal" width="900" />
   </a>
 </p>
 
@@ -162,7 +162,7 @@ Essa é a unidade de valor: um lugar onde a CI reporta uma aprovação que não 
 ## Início rápido
 
 ```bash
-npx qa-doctor-cli@latest
+npx mjolnir-qa@latest
 ```
 
 Ele analisa o diretório atual e imprime o Trust Report: o que encontrou, até onde você pode confiar, por quê e o que fazer em seguida. Sai com `0` quando nada foi encontrado no nível do gate ou acima.
@@ -170,7 +170,7 @@ Ele analisa o diretório atual e imprime o Trust Report: o que encontrou, até o
 Na CI, analise só o que a branch introduziu, para que uma suíte legada não afogue seu primeiro pull request:
 
 ```bash
-npx qa-doctor-cli@latest --scope changed
+npx mjolnir-qa@latest --scope changed
 ```
 
 `qa-doctor ci install` grava isso como um workflow do GitHub Actions, usando a [action](https://github.com/Sergey-Bar/qa-doctor#readme) fixada na tag principal `v1` (ou `npx` puro com `--no-action`). Ele continua consultivo até você decidir que deve bloquear.
@@ -223,7 +223,7 @@ npx qa-doctor-cli@latest --scope changed
 
 </details>
 
-Requer **Node.js ≥ 22.18** no Windows, macOS ou Linux. Prefere uma instalação global? `npm i -g qa-doctor-cli`. O mínimo vem da cadeia de build (o tsdown mira nele e o pipeline de release faz smoke tests contra ele); as dependências de runtime não precisam de mais que isso.
+Requer **Node.js ≥ 22.18** no Windows, macOS ou Linux. Prefere uma instalação global? `npm i -g mjolnir-qa`. O mínimo vem da cadeia de build (o tsdown mira nele e o pipeline de release faz smoke tests contra ele); as dependências de runtime não precisam de mais que isso.
 
 <br />
 
@@ -463,7 +463,7 @@ Fixe `@v1` para acompanhar a linha principal, ou uma tag exata (`@v0.5.32`) para
 Para levar os achados ao GitHub Code Scanning, envie o SARIF (requer `security-events: write` no escopo do workflow ou job):
 
 ```yaml
-- run: npx qa-doctor-cli@latest --format sarif > qa-doctor.sarif
+- run: npx mjolnir-qa@latest --format sarif > qa-doctor.sarif
   continue-on-error: true
 - uses: github/codeql-action/upload-sarif@v3
   if: ${{ !cancelled() }}
@@ -476,7 +476,7 @@ No GitLab, `--format codequality` grava o relatório do Code Quality que o widge
 ### Atribuição no escopo alterado
 
 ```bash
-npx qa-doctor-cli@latest --scope changed
+npx mjolnir-qa@latest --scope changed
 ```
 
 Os achados são atribuídos às linhas que sua branch adicionou, medidas contra a **merge-base**. O escopo é o mesmo conjunto de arquivos que um scan completo descobre (specs TS/JS e configurações de adaptadores, `test_*.py`, `*Test.java`, `*Tests.cs`, `.github/workflows/*.yml`), mais as alterações não commitadas e não rastreadas, então funciona antes do commit. A base é resolvida como `main → master → origin/main → origin/master → origin/HEAD`; substitua com `--base <ref>`.
@@ -504,7 +504,7 @@ SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
 Adicione-o a um cliente que tenha sua própria CLI:
 
 ```bash
-claude mcp add qa-doctor -- npx -y qa-doctor-cli@latest mcp
+claude mcp add qa-doctor -- npx -y mjolnir-qa@latest mcp
 ```
 
 Ou a qualquer cliente que aceite um bloco `mcpServers`:
@@ -514,7 +514,7 @@ Ou a qualquer cliente que aceite um bloco `mcpServers`:
   "mcpServers": {
     "qa-doctor": {
       "command": "npx",
-      "args": ["-y", "qa-doctor-cli@latest", "mcp"]
+      "args": ["-y", "mjolnir-qa@latest", "mcp"]
     }
   }
 }
@@ -606,10 +606,10 @@ O ambiente de desenvolvimento, os comandos dos gates permanentes e as leis anti-
 <img src="assets/readme/closing.svg" alt="Rode no seu repo." width="100%" />
 
 ```bash
-npx qa-doctor-cli@latest
+npx mjolnir-qa@latest
 ```
 
-[Leia o guia](https://sergey-bar.github.io/qa-doctor/guide/getting-started) · [Site de documentação](https://sergey-bar.github.io/qa-doctor/) · [npm](https://www.npmjs.com/package/qa-doctor-cli)
+[Leia o guia](https://sergey-bar.github.io/qa-doctor/guide/getting-started) · [Site de documentação](https://sergey-bar.github.io/qa-doctor/) · [npm](https://www.npmjs.com/package/mjolnir-qa)
 
 <br />
 

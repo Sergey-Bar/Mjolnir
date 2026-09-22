@@ -4,7 +4,7 @@
  *
  * The README's command table is a set of promises: each row implies the
  * command exists and does roughly what its description says. This test
- * extracts every `npx qa-doctor-cli...` invocation from the table and
+ * extracts every `npx mjolnir-qa...` invocation from the table and
  * asserts the subcommand portion is one `main()` actually dispatches —
  * docs cannot promise a command that does not exist.
  */
@@ -18,14 +18,14 @@ const README = readFileSync(join(ROOT, "README.md"), "utf8");
 const CLI_SOURCE = readFileSync(join(ROOT, "src", "cli.ts"), "utf8");
 
 /** Extracts the subcommand token (or none, for the bare scan path) from
- * each `npx qa-doctor-cli...`/`qa-doctor ...` invocation in the
+ * each `npx mjolnir-qa...`/`qa-doctor ...` invocation in the
  * README's command table. */
 function extractReadmeCommands(markdown: string): string[] {
   // FW-RX-07: `(?:[ \t]+(args)|(?=`))` — the arg capture starts at a
   // non-space token so the space-run and the [^`]* scan can never
   // exchange characters; bare `qa-doctor` spans yield an undefined group.
   const re =
-    /`(?:npx qa-doctor-cli(?:@latest)?|qa-doctor)(?:[ \t]+([^\s`][^`]*)|(?=`))/g;
+    /`(?:npx mjolnir-qa(?:@latest)?|qa-doctor)(?:[ \t]+([^\s`][^`]*)|(?=`))/g;
   const commands: string[] = [];
   for (const m of markdown.matchAll(re)) {
     const rest = (m[1] ?? "").trim();

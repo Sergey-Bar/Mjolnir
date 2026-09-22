@@ -4,7 +4,7 @@
  * This is the one test class that has ever caught macOS-only CLI
  * breakage (the isEntryPoint symlink bug produced zero output, exit 0).
  * The tarball invocation is exactly what a stranger gets from
- * `npm install qa-doctor-cli`; every assertion here runs the REAL installed
+ * `npm install mjolnir-qa`; every assertion here runs the REAL installed
  * binary as a child process with UTF-8 decoding and pinned ascii output.
  *
  * The expected score/verdict come from tests/golden (never hardcoded).
@@ -66,13 +66,13 @@ beforeAll(() => {
     });
     const pkg = JSON.parse(
       readFileSync(
-        join(installDir, "node_modules", "qa-doctor-cli", "package.json"),
+        join(installDir, "node_modules", "mjolnir-qa", "package.json"),
         "utf8",
       ),
     ) as { bin: string | Record<string, string> };
     const binRel =
       typeof pkg.bin === "string" ? pkg.bin : (pkg.bin["qa-doctor"] ?? "");
-    entryPath = join(installDir, "node_modules", "qa-doctor-cli", binRel);
+    entryPath = join(installDir, "node_modules", "mjolnir-qa", binRel);
     if (existsSync(entryPath)) break;
     // dist was mid-rebuild during the pack (parallel worker's tsdown
     // clean phase) — discard this attempt and retry with a fresh pack.

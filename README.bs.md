@@ -9,8 +9,8 @@ a zatim ocjenjuje koliko se rezultatu može vjerovati, uz dokaz za svaki bod.
 
 <br />
 
-[![npm](https://img.shields.io/npm/v/qa-doctor-cli.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/qa-doctor-cli)
-[![downloads](https://img.shields.io/npm/dm/qa-doctor-cli.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/qa-doctor-cli)
+[![npm](https://img.shields.io/npm/v/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
+[![downloads](https://img.shields.io/npm/dm/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
 [![ci](https://img.shields.io/github/actions/workflow/status/Sergey-Bar/qa-doctor/ci.yml?branch=main&style=flat-square&label=ci&labelColor=0A1119)](https://github.com/Sergey-Bar/qa-doctor/actions/workflows/ci.yml)
 [![coverage](https://img.shields.io/codecov/c/github/Sergey-Bar/qa-doctor?style=flat-square&color=1F6F7C&labelColor=0A1119&label=coverage)](https://codecov.io/gh/Sergey-Bar/qa-doctor)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Sergey-Bar/qa-doctor/badge)](https://scorecard.dev/viewer/?uri=github.com/Sergey-Bar/qa-doctor)
@@ -18,7 +18,7 @@ a zatim ocjenjuje koliko se rezultatu može vjerovati, uz dokaz za svaki bod.
 [![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-1F6F7C.svg?style=flat-square&labelColor=0A1119)](https://nodejs.org)
 
 ```bash
-npx qa-doctor-cli@latest
+npx mjolnir-qa@latest
 ```
 
 [Pogledajte kako radi](#pogledajte-kako-radi) · [Brzi početak](#brzi-početak) · [Šta pronalazi](#šta-qa-doctor-pronalazi) · [Ocjena](#ocjena-vrijednosti) · [Dokazi](#model-dokaza) · [Analiza pokretanja](#analiza-pokretanja-testova) · [CI](#integritet-ci-ja) · [Agenti](#ai-agenti) · [Sigurnost](#povjerenje-i-sigurnost) · [Ograničenja](#šta-vam-qa-doctor-ne-može-reći) · [Dokumentacija](#dokumentacija)
@@ -58,7 +58,7 @@ Nijedan od njih ne boji pipeline u crveno, a svaki na reviewu izgleda namjerno. 
 
 <sub>Svaki nalaz koji je demo skeniranje prijavilo za ovaj workflow, u redu u kojem je prijavljen. Generisano naredbom `npm run docs:readme-brand` iz [`demo-report.json`](assets/readme/demo-report.json) i zaključano protiv odstupanja u CI-ju.</sub>
 
-**Strogi režim.** Najagresivnija otkrivanja — `.only`, `continue-on-error`, prazni testovi, zloupotreba ponavljanja — žive u karantinskom nivou. Rade samo pod `--strict` i ograničena su na `info` ozbiljnost: označavaju, ali nikada ne blokiraju. Podrazumijevano skeniranje (`npx qa-doctor-cli@latest` bez `--strict`) pokriva samo osnovna i proširena pravila. Dodajte `--strict` kada želite i savjetodavni sloj.
+**Strogi režim.** Najagresivnija otkrivanja — `.only`, `continue-on-error`, prazni testovi, zloupotreba ponavljanja — žive u karantinskom nivou. Rade samo pod `--strict` i ograničena su na `info` ozbiljnost: označavaju, ali nikada ne blokiraju. Podrazumijevano skeniranje (`npx mjolnir-qa@latest` bez `--strict`) pokriva samo osnovna i proširena pravila. Dodajte `--strict` kada želite i savjetodavni sloj.
 
 QA Doctor čita skup testova, CI workflowe i, ako ga imate, izvještaj stvarnog pokretanja. Ne pokreće vaše testove, ne instalira vaše zavisnosti i ne izvršava kod koji skenira. A kada nema dokaza, to i kaže umjesto da izmišlja pouzdanost:
 
@@ -93,7 +93,7 @@ Stvarno skeniranje [`examples/demo-repo`](examples/demo-repo), malog Playwright 
 
 <p align="center">
   <a href="assets/video/qa-doctor-demo.mp4">
-    <img src="assets/video/qa-doctor-demo-poster.png" alt="Kadar demo snimka: npx qa-doctor-cli@latest skenira demo repozitorij u prozoru terminala" width="900" />
+    <img src="assets/video/qa-doctor-demo-poster.png" alt="Kadar demo snimka: npx mjolnir-qa@latest skenira demo repozitorij u prozoru terminala" width="900" />
   </a>
 </p>
 
@@ -162,7 +162,7 @@ To je jedinica vrijednosti: jedno mjesto na kojem CI prijavljuje prolaz koji nij
 ## Brzi početak
 
 ```bash
-npx qa-doctor-cli@latest
+npx mjolnir-qa@latest
 ```
 
 Skenira trenutni direktorij i ispisuje Trust Report: šta je pronašao, koliko mu možete vjerovati, zašto i šta dalje uraditi. Završava s `0` kada ništa na nivou kapije ili iznad nije pronađeno.
@@ -170,7 +170,7 @@ Skenira trenutni direktorij i ispisuje Trust Report: šta je pronašao, koliko m
 U CI-ju skenirajte samo ono što je grana uvela, kako stari skup testova ne bi potopio vaš prvi pull request:
 
 ```bash
-npx qa-doctor-cli@latest --scope changed
+npx mjolnir-qa@latest --scope changed
 ```
 
 `qa-doctor ci install` to zapisuje kao GitHub Actions workflow, koristeći [action](https://github.com/Sergey-Bar/qa-doctor#readme) prikovan za glavni tag `v1` (ili obični `npx` s `--no-action`). Ostaje savjetodavan dok ne odlučite da treba blokirati.
@@ -223,7 +223,7 @@ npx qa-doctor-cli@latest --scope changed
 
 </details>
 
-Zahtijeva **Node.js ≥ 22.18** na Windowsu, macOS-u ili Linuxu. Više volite globalnu instalaciju? `npm i -g qa-doctor-cli`. Minimum dolazi iz lanca alata za build (tsdown cilja na njega, a pipeline izdanja radi smoke testove na njemu); zavisnostima za izvršavanje ne treba više od toga.
+Zahtijeva **Node.js ≥ 22.18** na Windowsu, macOS-u ili Linuxu. Više volite globalnu instalaciju? `npm i -g mjolnir-qa`. Minimum dolazi iz lanca alata za build (tsdown cilja na njega, a pipeline izdanja radi smoke testove na njemu); zavisnostima za izvršavanje ne treba više od toga.
 
 <br />
 
@@ -463,7 +463,7 @@ Prikujte `@v1` da pratite glavnu liniju, ili tačan tag (`@v0.5.32`) za ponovlji
 Da nalaze stavite u GitHub Code Scanning, otpremite SARIF (potrebno `security-events: write` na nivou workflowa ili joba):
 
 ```yaml
-- run: npx qa-doctor-cli@latest --format sarif > qa-doctor.sarif
+- run: npx mjolnir-qa@latest --format sarif > qa-doctor.sarif
   continue-on-error: true
 - uses: github/codeql-action/upload-sarif@v3
   if: ${{ !cancelled() }}
@@ -476,7 +476,7 @@ Na GitLabu, `--format codequality` zapisuje Code Quality izvještaj koji čitaju
 ### Pripisivanje u opsegu promjena
 
 ```bash
-npx qa-doctor-cli@latest --scope changed
+npx mjolnir-qa@latest --scope changed
 ```
 
 Nalazi se pripisuju redovima koje je vaša grana dodala, mjereno u odnosu na **merge-base**. Opseg je isti skup datoteka koji otkriva puno skeniranje (TS/JS specifikacije i konfiguracije adaptera, `test_*.py`, `*Test.java`, `*Tests.cs`, `.github/workflows/*.yml`), plus necommitovane i nepraćene promjene, pa radi i prije commita. Baza se razrješava redom `main → master → origin/main → origin/master → origin/HEAD`; zamijenite je s `--base <ref>`.
@@ -504,7 +504,7 @@ SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
 Dodajte ga klijentu koji ima vlastiti CLI:
 
 ```bash
-claude mcp add qa-doctor -- npx -y qa-doctor-cli@latest mcp
+claude mcp add qa-doctor -- npx -y mjolnir-qa@latest mcp
 ```
 
 Ili bilo kojem klijentu koji prima `mcpServers` blok:
@@ -514,7 +514,7 @@ Ili bilo kojem klijentu koji prima `mcpServers` blok:
   "mcpServers": {
     "qa-doctor": {
       "command": "npx",
-      "args": ["-y", "qa-doctor-cli@latest", "mcp"]
+      "args": ["-y", "mjolnir-qa@latest", "mcp"]
     }
   }
 }
@@ -606,10 +606,10 @@ Razvojno okruženje, naredbe stalnih kapija te zakoni anti-creep i zaštitnog zi
 <img src="assets/readme/closing.svg" alt="Pokrenite ga na svom repozitoriju." width="100%" />
 
 ```bash
-npx qa-doctor-cli@latest
+npx mjolnir-qa@latest
 ```
 
-[Pročitajte vodič](https://sergey-bar.github.io/qa-doctor/guide/getting-started) · [Stranica dokumentacije](https://sergey-bar.github.io/qa-doctor/) · [npm](https://www.npmjs.com/package/qa-doctor-cli)
+[Pročitajte vodič](https://sergey-bar.github.io/qa-doctor/guide/getting-started) · [Stranica dokumentacije](https://sergey-bar.github.io/qa-doctor/) · [npm](https://www.npmjs.com/package/mjolnir-qa)
 
 <br />
 

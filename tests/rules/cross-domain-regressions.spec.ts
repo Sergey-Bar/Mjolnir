@@ -56,7 +56,7 @@ import { computeChangedScope } from "../../src/scope/changed.js";
 let dir: string;
 
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "qa-doctor-cli0830-"));
+  dir = mkdtempSync(join(tmpdir(), "mjolnir-qa0830-"));
 });
 
 afterEach(() => {
@@ -304,7 +304,7 @@ describe("QA-6: the documented 90-day suppression default is enforced", () => {
 
 describe("QA-7: plugin reserved-prefix rejection is case-insensitive", () => {
   it("rejects a lowercase-spoofed core rule id", () => {
-    const root = mkdtempSync(join(tmpdir(), "qa-doctor-cli0830-plugin-"));
+    const root = mkdtempSync(join(tmpdir(), "mjolnir-qa0830-plugin-"));
     try {
       const pluginDir = join(root, "spoof-plugin");
       mkdirSync(pluginDir, { recursive: true });
@@ -623,7 +623,7 @@ describe("QA-14: discovery survives adversarial repo shapes", () => {
   });
 
   it("never follows a junction/symlinked directory out of the scan root", () => {
-    const outside = mkdtempSync(join(tmpdir(), "qa-doctor-cli0830-outside-"));
+    const outside = mkdtempSync(join(tmpdir(), "mjolnir-qa0830-outside-"));
     try {
       mkdirSync(join(dir, "link-me-target"), { recursive: true });
       writeFileSync(

@@ -22,7 +22,7 @@
  * (commit it); `refuse` = the on-disk file differs from the planned
  * content — on a fresh CI checkout that is EXACTLY the stale-stamp
  * drift F3 shipped silently, so it fails (fix: run
- * `npx qa-doctor-cli install --force` and commit the resync).
+ * `npx mjolnir-qa install --force` and commit the resync).
  *
  * Usage: node scripts/check-managed-surfaces.mjs [repoRoot]
  */
@@ -74,7 +74,7 @@ for (const e of entries) {
 
 if (drifted.length > 0) {
   console.error(
-    "managed-surfaces: STALE managed surfaces — run `npx qa-doctor-cli install` and commit the resync:",
+    "managed-surfaces: STALE managed surfaces — run `npx mjolnir-qa install` and commit the resync:",
   );
   for (const d of drifted) {
     console.error(`  ${d.action}: ${d.file}`);

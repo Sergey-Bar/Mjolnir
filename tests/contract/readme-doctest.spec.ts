@@ -10,7 +10,7 @@
  *  1. every `QA-*` rule ID mentioned in the README's rule tables is
  *     actually registered — catches exactly the kind of drift the plan-
  *     file audit found in the planning docs, but for user-facing docs.
- *  2. every `npx qa-doctor-cli ...` command shown in the README actually
+ *  2. every `npx mjolnir-qa ...` command shown in the README actually
  *     runs against a small fixture repo without hitting a usage error
  *     (exit 10) or crashing (exit 20) — a lightweight doctest, not full
  *     output matching.
@@ -99,11 +99,11 @@ function extractReadmeCommands(): string[] {
   const lines = README.split("\n");
   const commands: string[] = [];
   for (const line of lines) {
-    // Only match table-cell commands: `qa-doctor ...` or `npx qa-doctor-cli ...`
+    // Only match table-cell commands: `qa-doctor ...` or `npx mjolnir-qa ...`
     // wrapped in backticks inside a markdown table row (starts with |).
     // FW-RX-07: args start at a non-space token — no \s+/[^`]* exchange.
     const cellMatch =
-      /\|\s*`(?:npx qa-doctor-cli(?:@latest)?|qa-doctor)[ \t]+([^\s`][^`]*)`/.exec(
+      /\|\s*`(?:npx mjolnir-qa(?:@latest)?|qa-doctor)[ \t]+([^\s`][^`]*)`/.exec(
         line,
       );
     if (!cellMatch) continue;
