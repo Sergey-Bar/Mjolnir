@@ -9,7 +9,7 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
-## [Unreleased]
+## [2.0.3] — 2026-09-22
 
 ### Added
 
@@ -162,7 +162,7 @@ Complete implementation of the Mjolnir Master Engineering Roadmap & Product Spec
 - `src/commands/doctor.ts` gains check 11 (rule metadata contract validation).
 - 4 fingerprint implementations consolidated into `src/engine/finding-identity.ts`.
 
-## [Unreleased] — Nordic brand pass
+### Nordic brand pass
 
 ### Changed
 
