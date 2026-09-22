@@ -26,6 +26,15 @@ import { parsePlaywrightJson } from "../../src/forensics/parse-playwright-json.j
 import { parseArgs, exitForFindings } from "../../src/cli.js";
 import type { Finding } from "../../src/types.js";
 
+// Pinned seed. fast-check shrinks toward a minimal counterexample, so a
+// failure is reproducible by re-running with this seed — `npm run
+// test:property -- --seed <n>` reproduces the exact same corpus. A
+// property test that cannot be reproduced is worse than none: it reports
+// a regression nobody can confirm. Bump this deliberately when a
+// legitimate invariant shift occurs, and record the reason in the
+// CHANGELOG (a silent seed bump is how flaky property tests ship).
+const SEED = 1789486901;
+
 const SEGMENT_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789_-.".split("");
 
 /** Arbitrary path of 1–4 slash-separated segments (no meta chars). */
@@ -47,7 +56,7 @@ describe("property: pathMatchesGlob honors gitignore `**` semantics (M5 class)",
       fc.property(arbPath, (p) => {
         expect(pathMatchesGlob(p, "dir/**")).toBe(p.startsWith("dir/"));
       }),
-      { numRuns: 500 },
+      { seed: SEED, numRuns: 500 },
     );
   });
 
@@ -61,7 +70,7 @@ describe("property: pathMatchesGlob honors gitignore `**` semantics (M5 class)",
           expect(pathMatchesGlob(deep, "a/**/*.ts")).toBe(true);
         },
       ),
-      { numRuns: 300 },
+      { seed: SEED, numRuns: 300 },
     );
   });
 
@@ -75,7 +84,7 @@ describe("property: pathMatchesGlob honors gitignore `**` semantics (M5 class)",
           expect(pathMatchesGlob(path, "a/**/*.ts")).toBe(false);
         },
       ),
-      { numRuns: 300 },
+      { seed: SEED, numRuns: 300 },
     );
   });
 
@@ -88,7 +97,7 @@ describe("property: pathMatchesGlob honors gitignore `**` semantics (M5 class)",
           expect(pathMatchesGlob(path, glob)).toBe(path === glob);
         },
       ),
-      { numRuns: 300 },
+      { seed: SEED, numRuns: 300 },
     );
   });
 });
@@ -132,7 +141,7 @@ describe("property: parseChangedLines never advances on non-line input (L2 class
         expect(lines).toEqual(sorted); // set is ordered by construction
         for (const l of lines) expect(l).toBeGreaterThanOrEqual(start);
       }),
-      { numRuns: 300 },
+      { seed: SEED, numRuns: 300 },
     );
   });
 
@@ -163,7 +172,7 @@ describe("property: parseChangedLines never advances on non-line input (L2 class
         const clean = [header, ...body].join("\n");
         expect(parseChangedLines(diff)).toEqual(parseChangedLines(clean));
       }),
-      { numRuns: 200 },
+      { seed: SEED, numRuns: 200 },
     );
   });
 });
@@ -192,7 +201,7 @@ describe("property: JUnit title is attribute-order invariant (H3 class)", () => 
         expect(r1[0]?.file).toBe(classname);
         expect(r2[0]?.file).toBe(classname);
       }),
-      { numRuns: 300 },
+      { seed: SEED, numRuns: 300 },
     );
   });
 });
@@ -227,7 +236,7 @@ describe("property: parsePlaywrightJson is total over arbitrary JSON (M3 class)"
         const recs = parsePlaywrightJson(json);
         expect(Array.isArray(recs)).toBe(true);
       }),
-      { numRuns: 500 },
+      { seed: SEED, numRuns: 500 },
     );
   });
 
@@ -249,7 +258,7 @@ describe("property: parsePlaywrightJson is total over arbitrary JSON (M3 class)"
           }
         }
       }),
-      { numRuns: 300 },
+      { seed: SEED, numRuns: 300 },
     );
   });
 });
@@ -264,7 +273,7 @@ describe("property: parseArgs usage-error contract (B4.24)", () => {
         expect(parseArgs([flag])).toBeNull();
         expect(parseArgs(["src", flag])).toBeNull();
       }),
-      { numRuns: 200 },
+      { seed: SEED, numRuns: 200 },
     );
   });
 
@@ -275,7 +284,7 @@ describe("property: parseArgs usage-error contract (B4.24)", () => {
         expect(args).not.toBeNull();
         expect(args?.target).toBe(".");
       }),
-      { numRuns: 50 },
+      { seed: SEED, numRuns: 200 },
     );
   });
 });
@@ -318,7 +327,7 @@ describe("property: exitForFindings stays in the frozen exit-code set", () => {
           if (gate === "advisory") expect(code).toBe(0);
         },
       ),
-      { numRuns: 300 },
+      { seed: SEED, numRuns: 300 },
     );
   });
 
@@ -334,7 +343,7 @@ describe("property: exitForFindings stays in the frozen exit-code set", () => {
           );
         },
       ),
-      { numRuns: 200 },
+      { seed: SEED, numRuns: 200 },
     );
   });
 });

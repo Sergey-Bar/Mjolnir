@@ -28,13 +28,13 @@ every stable release (rc tags never move it — the same ruling as npm's
 - uses: Sergey-Bar/Mjolnir@v2
 
 # Pin an exact release for a reproducible gate (no surprises on merge):
-- uses: Sergey-Bar/Mjolnir@v2.0.0
+- uses: Sergey-Bar/Mjolnir@v2.0.2
 ```
 
 The scan itself always runs the **published npm package**
 (`npx mjolnir-qa@<version>`), never a build of this repo — the action
 works for consumers, not contributors. Pin the tool exactly in your
-workflow (`with: version: 2.0.0`) when gate reproducibility matters;
+workflow (`with: version: 2.0.2`) when gate reproducibility matters;
 `version: latest` follows the registry.
 
 ## GitHub Actions Marketplace (P1.5)

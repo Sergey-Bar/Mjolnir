@@ -80,16 +80,19 @@ tests/**/tmp-*.mts
 # Machine-local agent-tooling configs (Kilo/agent-manager sessions on this
 # checkout) — environment state, never part of the tree.
 .mcp.json
+opencode.json
 opencode.jsonc
 skills-lock.json
 
 # Machine-local agent-session/tool dirs (same class as .kilo/ above) — never repo content
 .agents/
 .codebuddy/
+.cursor/
 .gemini/
 .kiro/
 .opencode/
 .qoder/
+graphify-out/
 
 # Skill symlinks that point into the gitignored .agents/ tree (leaked in
 # R3, 1044461): on other checkouts they are dangling links, and on CI the

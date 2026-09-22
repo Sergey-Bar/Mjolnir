@@ -39,6 +39,10 @@ export default tseslint.config(
       // the typed parser see multiple candidate TSConfigRootDirs and fail
       // `npm run lint` on the host repo. Never repo content.
       ".claude/**",
+      // OpenCode plugin state — machine-local (gitignored as .opencode/),
+      // same class as .kilo/ and .claude/ above. Loaded as a server plugin
+      // by the OpenCode harness; not part of this repo's source tree.
+      ".opencode/**",
       // Demo/demo-repo content is exhibit data for the README, linted by
       // nobody's CI and not part of any tsconfig project.
       "examples/**",
@@ -180,7 +184,12 @@ export default tseslint.config(
     // and the Node CJS global scope. Task 6 (Master-Stabilization-Plan
     // Sprint 1) brought this directory under lint at all; this override
     // makes that coverage correct instead of just present.
-    files: ["scripts/**/*.cjs"],
+    //
+    // Scoped to ALL *.cjs, not just scripts/**: a root-level config file
+    // (`.commitlintrc.cjs`) is CommonJS too, and leaving it under the ESM
+    // ruleset made `module` an undefined-global error. The pattern is
+    // "CommonJS file → CJS globals", location-independent.
+    files: ["**/*.cjs"],
     languageOptions: {
       sourceType: "commonjs",
       globals: {

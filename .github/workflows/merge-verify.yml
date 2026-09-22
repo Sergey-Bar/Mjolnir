@@ -1,0 +1,92 @@
+name: Merge Verify
+
+# WI-16 (zero-touch PR framework): a green PR that merges into a red
+# main is not a green PR. This job runs the full gate on the MERGE
+# result — the commit that actually lands — not on the PR head.
+#
+# Why this exists: CI runs on the PR head, so a merge conflict or a
+# late-breaking main failure ships silently. Running the gate on the
+# merge commit makes that visible before it reaches main.
+#
+# It is intentionally the SAME commands as ci.yml's build-test job
+# (minus the OS/Node matrix — the canonical ubuntu/Node 22 entry is the
+# proof) plus the self-scan and generated-docs gates. If this job's
+# command list drifts from ci.yml, scripts/check-ci-local-parity.mjs
+# notices — the two must stay in lockstep or "green" means different
+# things in different places.
+#
+# Branch protection on main requires this job plus CI, Mjölnir,
+# certification and generated-docs-drift to pass before merging, and
+# "Require up-to-date branches" so a PR cannot merge while its base is
+# stale.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: merge-verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  merge-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The merge commit is what this job verifies; a shallow clone
+          # would not contain it, and --scope needs the merge-base.
+          fetch-depth: 0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run brand:doctor
+      - run: npm run brand:doctor:selftest
+      - run: npm run brand:fonts:check
+      - name: npm audit (supply-chain gate)
+        run: npm audit --audit-level=moderate
+      - name: Run test suite
+        run: npm test
+      - name: Enforce coverage ratchet
+        run: npm run coverage:ratchet
+      - name: Self-scan (dogfood gate — zero NEW error-severity findings)
+        run: node dist/cli.mjs . --json > merge-verify-scan.json
+      - name: Self-scan honesty gate
+        run: |
+          node -e '
+          const fs = require("fs");
+          const raw = fs.readFileSync("merge-verify-scan.json", "utf8").replace(/^\uFEFF/, "");
+          const r = JSON.parse(raw);
+          if (r.partial === true) { console.error("Self-scan was PARTIAL — a truncated scan must not pass the gate."); process.exit(1); }
+          if ((r.analysisStatus && r.analysisStatus.rulesCrashed || 0) > 0) { console.error("Self-scan had", r.analysisStatus.rulesCrashed, "rule crash(es)."); process.exit(1); }
+          const errs = r.findings.filter((f) => f.severity === "error");
+          if (errs.length) { console.error("Self-scan errors:", errs); process.exit(1); }
+          const warns = r.findings.filter((f) => f.severity === "warning");
+          console.log("Self-scan: 0 errors,", warns.length, "warning(s) — non-blocking");
+          '
+      - name: Generated docs + golden lock must be in sync
+        run: |
+          npm run docs:regen
+          git diff --exit-code
+          untracked="$(git ls-files --others --exclude-standard docs/rules docs/COUNT-LOCK.md docs/FP-AUDIT.md docs/RULE-CAPABILITY-MATRIX.md docs/RULE-CAPABILITY-MATRIX.json tests/golden assets/readme)"
+          if [ -n "$untracked" ]; then
+            echo "Untracked generated artifacts — commit them:"
+            echo "$untracked"
+            exit 1
+          fi
+      - name: Upload self-scan result as a build artifact
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: merge-verify-scan
+          path: merge-verify-scan.json
+          retention-days: 90

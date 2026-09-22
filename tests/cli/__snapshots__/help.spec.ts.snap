@@ -1,0 +1,320 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`root help > snapshots the default root help output 1`] = `
+"🔨 mjölnir — verification trust engine for test suites and CI pipelines
+
+Usage: mjolnir [path] [options] · mjolnir <subcommand> [args] · mjolnir help <verb>
+
+The product is one command in CI:
+
+  mjolnir --scope changed        scan only what the branch touched; exit 1 on
+                                 new findings. \`mjolnir ci install\` writes the
+                                 workflow for you.
+
+Everything else is optional.
+
+  mjolnir [path]                 full-repo scan + WORTHINESS score
+  mjolnir explain <RULE-ID>      what/why/fix + measured FP rate for one rule
+  mjolnir rules --unmeasured     the rules running on assumption, not measurement
+
+Options:
+  --json                  machine-readable output
+  --format sarif          SARIF 2.1 for GitHub Code Scanning
+  --format codequality    GitLab Code Quality report (MR widget artifact)
+  --format mermaid        test-architecture diagram
+  --tone blunt            blunter, pattern-mocking messages
+  --verbose               show all findings
+  --scope changed         only new/changed lines vs merge-base
+  --max-duration <sec>    analysis time budget
+  --width <cols>          override terminal width
+  --ascii / --no-ascii    force glyph mode
+  --strict                include quarantine-tier rules
+  --debug                 print swallowed rule crashes
+  --cache                 reuse local per-file verdicts
+  --no-progress           no live scan-progress line on stderr
+  --score                 print only the numeric score (or \`unknown\`)
+  --category <cat>        presentation filter (repeatable)
+  --staged                scan only git staged files
+  --blocking <level>      exit-status override: error|warning|none
+  --enable-plugins        allow npm/JS-module rules (default OFF)
+  -v, --version           print the installed version and exit
+  -h, --help              show this help
+
+Subcommands — Scan:
+
+Subcommands — CI & PRs:
+  ci install [--gate advisory|error|warning] [--no-action] [--force]
+    generate the PR workflow (action-based by default; scan + annotations + gate)
+  summary [mjolnir.json] [--stdout] [--path-prefix <dir>]
+    CI annotations + step summary from a saved --json report
+  pr-comment [path] [--base <ref>]                render a scoped PR comment (Markdown)
+  badge [path]                                    shields.io endpoint JSON + snippet
+                                                  from a scan
+  trust-report [path]                             deterministic, self-contained Trust
+                                                  Artifact (md + json)
+  impact [path] [--since <ref>]                   what a commit introduced vs resolved,
+                                                  since a prior commit
+  baseline [path]                                 snapshot the current finding set as
+                                                  the comparison point
+  diff [path] [--json] [scan flags]               lifecycle diff vs the committed
+                                                  baseline
+  verify [path] [--json] [scan flags]             agent-loop digest:
+                                                  resolved/new/unchanged vs baseline +
+                                                  score delta
+
+Subcommands — Forensics:
+  forensics <test-results-dir-or-report-file> [--no-flaky-md]
+    runtime evidence from a real run: retries, flakes, durations
+  triage <test-results-dir-or-report-file> [--no-md]
+    flaky-triage proposal + TRIAGE.md meeting artifact
+  pw-report <playwright-report.json | test-results-dir>
+    Playwright run summary (counts, true flakes, slowest tests)
+  doctor:playwright [path]                        Playwright deep scan + Selector Health
+                                                  report
+
+Subcommands — Mutation evidence:
+  mutation <mutation-report> [--scan .]           mutation-evidence reader:
+                                                  survived-mutant leaderboard + E1→E2
+                                                  derivation
+
+Subcommands — Maintenance:
+  fix [path] [--dry-run]                          apply safe auto-fixes with proof
+                                                  (re-scan verifies each)
+  debt [path]                                     test-debt register with an estimated
+                                                  quarterly cost
+  stats                                           all-time local counters of fixes seen
+                                                  via diff
+  suppressions                                    list suppressed findings (governance
+                                                  transparency)
+  handover [path]                                 new-QA onboarding map of the suite
+  init [--interactive]                            detect frameworks + setup checklist
+                                                  (never overwrites)
+  doctor [repo-root]                              self-audit of the rule base (fixture
+                                                  firewall, tiers, caps)
+  release-trust [--json] [repo-root]              Release Trust Verdict over the
+                                                  canonical 12 dimensions
+                                                  (docs/RELEASE-TRUST-CONTRACT.md)
+  create-rule <QA-XXX-nnn> --title "Rule title"   scaffold a new rule + fixtures
+                                                  (must-fire, must-not-fire)
+
+Subcommands — Meta:
+  rules [--md] [--unmeasured|--measured] [--external] | [--stats] | [--health]
+  [--limit=N]
+    rule catalog + empirical-measurement stats/health (md/json/stats/health)
+  explain <RULE-ID> [--fixtures-root <dir>]       what/why/fix + measured FP rate for
+                                                  one rule
+  why <file>:<line> [path] [--json <mjolnir.json>]
+    why did Mjölnir flag <file>:<line>? evidence + fix (not a gate)
+  handoff [mjolnir.json] [--category <cat>] [--rules <ids>]
+    deterministic fix-handoff artifact from a saved --json report
+  install [--staged-hook] [--dry-run] [--force]   install the agent instruction surfaces
+                                                  + optional staged hook
+  mcp                                             run as an MCP server over stdio (scan
+                                                  / explain / diff / verify tools)
+
+Copy-paste starts:
+  $ mjolnir                         score this repo's test suite
+  $ mjolnir --scope changed         CI gate: only what the branch touched
+  $ mjolnir ci install              write the PR workflow
+  $ mjolnir forensics test-results  where the flakes hide
+
+Per-command help: mjolnir help <verb>   (e.g. mjolnir help fix)
+
+Exit codes: 0 · 1 · 2 · 10 · 20
+  0   clean — no findings or the requested artifact was produced
+  1   errors found (or the diff/impact verdict says the PR should not merge)
+  2   partial — the scan ran but was truncated, or input was unreadable
+  10  usage — bad flags or arguments; help is printed
+  20  crash — internal error; rerun with --debug for the stack trace
+
+Docs: https://github.com/Sergey-Bar/Mjolnir#readme   (JSON schemaVersion 1, additive-only)"
+`;
+
+exports[`root help > snapshots the narrow-width root help output 1`] = `
+"🔨 mjölnir — verification trust engine for test suites and CI pipelines
+
+Usage: mjolnir [path] [options] · mjolnir <subcommand> [args] · mjolnir help <verb>
+
+The product is one command in CI:
+
+  mjolnir --scope changed        scan only what the branch touched; exit 1 on
+                                 new findings. \`mjolnir ci install\` writes the
+                                 workflow for you.
+
+Everything else is optional.
+
+  mjolnir [path]                 full-repo scan + WORTHINESS score
+  mjolnir explain <RULE-ID>      what/why/fix + measured FP rate for one rule
+  mjolnir rules --unmeasured     the rules running on assumption, not measurement
+
+Options:
+  --json                  machine-readable output
+  --format sarif          SARIF 2.1 for GitHub Code Scanning
+  --format codequality    GitLab Code Quality report (MR
+                          widget artifact)
+  --format mermaid        test-architecture diagram
+  --tone blunt            blunter, pattern-mocking messages
+  --verbose               show all findings
+  --scope changed         only new/changed lines vs
+                          merge-base
+  --max-duration <sec>    analysis time budget
+  --width <cols>          override terminal width
+  --ascii / --no-ascii    force glyph mode
+  --strict                include quarantine-tier rules
+  --debug                 print swallowed rule crashes
+  --cache                 reuse local per-file verdicts
+  --no-progress           no live scan-progress line on
+                          stderr
+  --score                 print only the numeric score (or
+                          \`unknown\`)
+  --category <cat>        presentation filter (repeatable)
+  --staged                scan only git staged files
+  --blocking <level>      exit-status override:
+                          error|warning|none
+  --enable-plugins        allow npm/JS-module rules (default
+                          OFF)
+  -v, --version           print the installed version and
+                          exit
+  -h, --help              show this help
+
+Subcommands — Scan:
+
+Subcommands — CI & PRs:
+  ci install [--gate advisory|error|warning] [--no-action]
+  [--force]
+    generate the PR workflow (action-based by default; scan
+    + annotations + gate)
+  summary [mjolnir.json] [--stdout] [--path-prefix <dir>]
+    CI annotations + step summary from a saved --json report
+  pr-comment [path] [--base <ref>]                render a scoped
+                                                  PR comment
+                                                  (Markdown)
+  badge [path]                                    shields.io
+                                                  endpoint JSON +
+                                                  snippet from a
+                                                  scan
+  trust-report [path]                             deterministic,
+                                                  self-contained
+                                                  Trust Artifact
+                                                  (md + json)
+  impact [path] [--since <ref>]                   what a commit
+                                                  introduced vs
+                                                  resolved, since
+                                                  a prior commit
+  baseline [path]                                 snapshot the
+                                                  current finding
+                                                  set as the
+                                                  comparison point
+  diff [path] [--json] [scan flags]               lifecycle diff
+                                                  vs the committed
+                                                  baseline
+  verify [path] [--json] [scan flags]             agent-loop
+                                                  digest:
+                                                  resolved/new/unchanged
+                                                  vs baseline +
+                                                  score delta
+
+Subcommands — Forensics:
+  forensics <test-results-dir-or-report-file>
+  [--no-flaky-md]
+    runtime evidence from a real run: retries, flakes,
+    durations
+  triage <test-results-dir-or-report-file> [--no-md]
+    flaky-triage proposal + TRIAGE.md meeting artifact
+  pw-report <playwright-report.json | test-results-dir>
+    Playwright run summary (counts, true flakes, slowest
+    tests)
+  doctor:playwright [path]                        Playwright deep
+                                                  scan + Selector
+                                                  Health report
+
+Subcommands — Mutation evidence:
+  mutation <mutation-report> [--scan .]           mutation-evidence
+                                                  reader:
+                                                  survived-mutant
+                                                  leaderboard +
+                                                  E1→E2 derivation
+
+Subcommands — Maintenance:
+  fix [path] [--dry-run]                          apply safe
+                                                  auto-fixes with
+                                                  proof (re-scan
+                                                  verifies each)
+  debt [path]                                     test-debt
+                                                  register with an
+                                                  estimated
+                                                  quarterly cost
+  stats                                           all-time local
+                                                  counters of
+                                                  fixes seen via
+                                                  diff
+  suppressions                                    list suppressed
+                                                  findings
+                                                  (governance
+                                                  transparency)
+  handover [path]                                 new-QA
+                                                  onboarding map
+                                                  of the suite
+  init [--interactive]                            detect
+                                                  frameworks +
+                                                  setup checklist
+                                                  (never
+                                                  overwrites)
+  doctor [repo-root]                              self-audit of
+                                                  the rule base
+                                                  (fixture
+                                                  firewall, tiers,
+                                                  caps)
+  release-trust [--json] [repo-root]              Release Trust
+                                                  Verdict over the
+                                                  canonical 12
+                                                  dimensions
+                                                  (docs/RELEASE-TRUST-CONTRACT.md)
+  create-rule <QA-XXX-nnn> --title "Rule title"   scaffold a new
+                                                  rule + fixtures
+                                                  (must-fire,
+                                                  must-not-fire)
+
+Subcommands — Meta:
+  rules [--md] [--unmeasured|--measured] [--external] |
+  [--stats] | [--health] [--limit=N]
+    rule catalog + empirical-measurement stats/health
+    (md/json/stats/health)
+  explain <RULE-ID> [--fixtures-root <dir>]       what/why/fix +
+                                                  measured FP rate
+                                                  for one rule
+  why <file>:<line> [path] [--json <mjolnir.json>]
+    why did Mjölnir flag <file>:<line>? evidence + fix (not
+    a gate)
+  handoff [mjolnir.json] [--category <cat>] [--rules <ids>]
+    deterministic fix-handoff artifact from a saved --json
+    report
+  install [--staged-hook] [--dry-run] [--force]   install the
+                                                  agent
+                                                  instruction
+                                                  surfaces +
+                                                  optional staged
+                                                  hook
+  mcp                                             run as an MCP
+                                                  server over
+                                                  stdio (scan /
+                                                  explain / diff /
+                                                  verify tools)
+
+Copy-paste starts:
+  $ mjolnir                         score this repo's test suite
+  $ mjolnir --scope changed         CI gate: only what the branch touched
+  $ mjolnir ci install              write the PR workflow
+  $ mjolnir forensics test-results  where the flakes hide
+
+Per-command help: mjolnir help <verb>   (e.g. mjolnir help fix)
+
+Exit codes: 0 · 1 · 2 · 10 · 20
+  0   clean — no findings or the requested artifact was produced
+  1   errors found (or the diff/impact verdict says the PR should not merge)
+  2   partial — the scan ran but was truncated, or input was unreadable
+  10  usage — bad flags or arguments; help is printed
+  20  crash — internal error; rerun with --debug for the stack trace
+
+Docs: https://github.com/Sergey-Bar/Mjolnir#readme   (JSON schemaVersion 1, additive-only)"
+`;

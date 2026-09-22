@@ -1,0 +1,27 @@
+#!/usr/bin/env sh
+# commit-msg — enforce Conventional Commits before the commit is written.
+#
+# The hook runs commitlint against the message file. A non-conventional
+# commit is rejected here, so the bad message never reaches the object
+# store — it is cheaper to fix at the hook than to rebase later, and the
+# CHANGELOG generator (scripts/check-changelog.ts) keys on type+scope.
+#
+# Skip with: git commit --no-verify (legitimate for amend/rebase
+# bookkeeping, never for a PR-bound commit).
+
+echo ""
+echo "  COMMIT MESSAGE CHECK — validating Conventional Commits..."
+
+npx --no -- commitlint --edit "$1"
+
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "  COMMIT MESSAGE FAILED — format: <type>(<scope>): <subject>"
+  echo "  Examples:  fix(cli): exit 2 must never block a partial scan"
+  echo "            docs(rules): regenerate COUNT-LOCK after corpus update"
+  echo "  See .commitlintrc.json for the full rule set."
+  echo ""
+  exit 1
+fi
+
+echo "  COMMIT MESSAGE OK"
