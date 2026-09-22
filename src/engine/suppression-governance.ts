@@ -69,7 +69,10 @@ export function computeSuppressionGovernanceGate(
     }
   }
 
-  if (policy.maxTotalSuppressions > 0 && suppressions.length > policy.maxTotalSuppressions) {
+  if (
+    policy.maxTotalSuppressions > 0 &&
+    suppressions.length > policy.maxTotalSuppressions
+  ) {
     policyViolations.push(
       `Total suppressions (${suppressions.length}) exceed policy maximum ${policy.maxTotalSuppressions}`,
     );
@@ -109,7 +112,11 @@ export function enforceSuppressionPolicy(
   totalFindings: number,
   policy: SuppressionPolicyConfig = DEFAULT_SUPPRESSION_POLICY,
   knownRuleIds?: ReadonlySet<string>,
-): { allowed: SuppressionEntry[]; blocked: SuppressionEntry[]; violations: string[] } {
+): {
+  allowed: SuppressionEntry[];
+  blocked: SuppressionEntry[];
+  violations: string[];
+} {
   const result = computeSuppressionGovernanceGate(
     suppressions,
     totalFindings,
@@ -125,7 +132,8 @@ export function enforceSuppressionPolicy(
   const allowed: SuppressionEntry[] = [];
 
   for (const s of suppressions) {
-    const isExpired = s.expires !== undefined && new Date(s.expires) <= new Date();
+    const isExpired =
+      s.expires !== undefined && new Date(s.expires) <= new Date();
     const isUnknown = knownRuleIds !== undefined && !knownRuleIds.has(s.ruleId);
 
     if (isExpired || isUnknown) {
@@ -142,13 +150,19 @@ export function enforceSuppressionPolicy(
   };
 }
 
-export function renderSuppressionGovernanceResult(result: SuppressionGovernanceResult): string {
+export function renderSuppressionGovernanceResult(
+  result: SuppressionGovernanceResult,
+): string {
   const lines: string[] = [];
   lines.push(`Suppression Policy Governance Gate`);
   lines.push(`Result: ${result.passed ? "PASSED" : "FAILED"}`);
   lines.push(`Total Suppressions: ${result.totalSuppressions}`);
-  lines.push(`Mass Suppression Ratio: ${result.massSuppression.ratio.toFixed(2)} (threshold: ${result.massSuppression.threshold})`);
-  lines.push(`Expired: ${result.expiredCount}, Unknown Rules: ${result.unknownRuleCount}`);
+  lines.push(
+    `Mass Suppression Ratio: ${result.massSuppression.ratio.toFixed(2)} (threshold: ${result.massSuppression.threshold})`,
+  );
+  lines.push(
+    `Expired: ${result.expiredCount}, Unknown Rules: ${result.unknownRuleCount}`,
+  );
   lines.push(`Fingerprint: ${result.fingerprint}`);
   lines.push("");
 

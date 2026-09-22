@@ -11,7 +11,7 @@
  */
 
 import type { Finding, ScanResult } from "../types.js";
- 
+
 import { classifyProvenance } from "./provenance.js";
 import { buildEvidenceGraph, type EvidenceGraph } from "./run-identity.js";
 import type { AgenticTrustProfile } from "./provenance.js";

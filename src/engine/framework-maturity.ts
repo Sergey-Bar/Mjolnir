@@ -95,14 +95,17 @@ export function getPlaywrightMaturity(): MaturityProgress {
 
   const currentScore = MATURITY_SCORES[pw.maturity] ?? 80;
   const supportScore = SUPPORT_SCORES[pw.supportStatus] ?? 75;
-  const dimensionScore = totalDimensions > 0 ? Math.round((completeDimensions / totalDimensions) * 100) : 0;
-  const maturityScore = Math.round((currentScore * 0.4 + supportScore * 0.3 + dimensionScore * 0.3));
+  const dimensionScore =
+    totalDimensions > 0
+      ? Math.round((completeDimensions / totalDimensions) * 100)
+      : 0;
+  const maturityScore = Math.round(
+    currentScore * 0.4 + supportScore * 0.3 + dimensionScore * 0.3,
+  );
 
   const progressPercentage = Math.min(
     100,
-    Math.round(
-      (maturityScore / 100) * 100,
-    ),
+    Math.round((maturityScore / 100) * 100),
   );
 
   return {
@@ -156,7 +159,9 @@ export function getPlaywrightMaturityReport(): PlaywrightMaturityReport {
   };
 }
 
-export function getFrameworkMaturity(frameworkId: string): MaturityProgress | undefined {
+export function getFrameworkMaturity(
+  frameworkId: string,
+): MaturityProgress | undefined {
   const fw = getFrameworkById(frameworkId);
   if (!fw) return undefined;
 
@@ -175,8 +180,13 @@ export function getFrameworkMaturity(frameworkId: string): MaturityProgress | un
 
   const currentScore = MATURITY_SCORES[fw.maturity] ?? 0;
   const supportScore = SUPPORT_SCORES[fw.supportStatus] ?? 0;
-  const dimensionScore = totalDimensions > 0 ? Math.round((completeDimensions / totalDimensions) * 100) : 0;
-  const maturityScore = Math.round((currentScore * 0.4 + supportScore * 0.3 + dimensionScore * 0.3));
+  const dimensionScore =
+    totalDimensions > 0
+      ? Math.round((completeDimensions / totalDimensions) * 100)
+      : 0;
+  const maturityScore = Math.round(
+    currentScore * 0.4 + supportScore * 0.3 + dimensionScore * 0.3,
+  );
 
   return {
     frameworkId,
@@ -193,16 +203,28 @@ export function getFrameworkMaturity(frameworkId: string): MaturityProgress | un
 }
 
 export function getAllFrameworkMaturity(): MaturityProgress[] {
-  return FRAMEWORK_INVENTORY.map((fw) => getFrameworkMaturity(fw.frameworkId)).filter((m): m is MaturityProgress => m !== undefined);
+  return FRAMEWORK_INVENTORY.map((fw) =>
+    getFrameworkMaturity(fw.frameworkId),
+  ).filter((m): m is MaturityProgress => m !== undefined);
 }
 
-export function renderPlaywrightMaturityReport(report: PlaywrightMaturityReport): string {
+export function renderPlaywrightMaturityReport(
+  report: PlaywrightMaturityReport,
+): string {
   const lines: string[] = [];
   lines.push(`Playwright Framework Maturity Report`);
-  lines.push(`Current: ${report.currentMaturity} → Target: ${report.targetMaturity}`);
-  lines.push(`Support: ${report.currentSupportStatus} → ${report.targetSupportStatus}`);
-  lines.push(`Maturity Score: ${report.maturityScore}/100 (${report.progressPercentage}%)`);
-  lines.push(`Dimensions: ${report.dimensionsComplete}/${report.dimensionsTotal} complete`);
+  lines.push(
+    `Current: ${report.currentMaturity} → Target: ${report.targetMaturity}`,
+  );
+  lines.push(
+    `Support: ${report.currentSupportStatus} → ${report.targetSupportStatus}`,
+  );
+  lines.push(
+    `Maturity Score: ${report.maturityScore}/100 (${report.progressPercentage}%)`,
+  );
+  lines.push(
+    `Dimensions: ${report.dimensionsComplete}/${report.dimensionsTotal} complete`,
+  );
   lines.push("");
 
   if (report.gaps.length > 0) {

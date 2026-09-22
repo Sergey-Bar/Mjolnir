@@ -33,7 +33,12 @@ describe("M6: Suppression Policy Governance Gate", () => {
       { ruleId: "QA-TEST-001", files: ["file1.ts"], reason: "test" },
     ];
     const knownRuleIds = new Set(["QA-TEST-001"]);
-    const result = enforceSuppressionPolicy(suppressions, 10, DEFAULT_SUPPRESSION_POLICY, knownRuleIds);
+    const result = enforceSuppressionPolicy(
+      suppressions,
+      10,
+      DEFAULT_SUPPRESSION_POLICY,
+      knownRuleIds,
+    );
     expect(result.allowed.length).toBe(1);
     expect(result.blocked.length).toBe(0);
   });
@@ -43,7 +48,12 @@ describe("M6: Suppression Policy Governance Gate", () => {
       { ruleId: "UNKNOWN-RULE", files: ["file1.ts"], reason: "test" },
     ];
     const knownRuleIds = new Set(["QA-TEST-001"]);
-    const result = enforceSuppressionPolicy(suppressions, 10, DEFAULT_SUPPRESSION_POLICY, knownRuleIds);
+    const result = enforceSuppressionPolicy(
+      suppressions,
+      10,
+      DEFAULT_SUPPRESSION_POLICY,
+      knownRuleIds,
+    );
     expect(result.blocked.length).toBeGreaterThanOrEqual(0);
   });
 
