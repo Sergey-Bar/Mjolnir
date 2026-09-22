@@ -233,7 +233,7 @@ describe("release.yml", () => {
   const pushTriggers = loadReleaseWorkflow().on?.push as
     { branches?: string[]; tags?: string[] } | undefined;
 
-  it("triggers on main-branch pushes (the auto-release path) as well as v* tags", () => {
+  it("triggers on main-branch pushes and semver release tags, not moving major tags", () => {
     expect(
       pushTriggers?.branches,
       "release.yml must trigger on pushes to main — that is the whole " +
@@ -241,8 +241,13 @@ describe("release.yml", () => {
     ).toContain("main");
     expect(
       pushTriggers?.tags,
-      "the manual rc path (push a v* tag) must keep working",
-    ).toContain("v*");
+      "the manual rc path (push a vX.Y.Z tag) must keep working",
+    ).toContain("v*.*.*");
+    expect(
+      pushTriggers?.tags,
+      "moving major tags such as v2 are action pointers, not publishable " +
+        "releases; they must not trigger release.yml.",
+    ).not.toContain("v*");
   });
 
   it("has a version job with contents: write + pull-requests: read", () => {

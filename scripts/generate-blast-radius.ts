@@ -116,17 +116,21 @@ export function buildManifest(): BlastRadiusManifest {
     cur.loc += f.loc;
     areaMap.set(area, cur);
 
+    const externalDeps = new Set<string>();
     for (const spec of f.imports) {
       const internal = toInternalSpecifier(f, spec);
       if (internal !== undefined) {
-        if (internal.startsWith("..")) continue; // outside src (tests/scripts)
+        if (internal.startsWith("..")) continue;
         const set = fanInMap.get(internal) ?? new Set<string>();
         set.add(f.rel);
         fanInMap.set(internal, set);
       } else {
         const dep = spec.split("/")[0] ?? spec;
-        extMap.set(dep, (extMap.get(dep) ?? 0) + 1);
+        externalDeps.add(dep);
       }
+    }
+    for (const dep of externalDeps) {
+      extMap.set(dep, (extMap.get(dep) ?? 0) + 1);
     }
   }
 

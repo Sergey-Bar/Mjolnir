@@ -4,9 +4,9 @@ Official Playwright reporter for [Mjölnir](https://github.com/Sergey-Bar/Mjolni
 emits the JSON report that `mjolnir forensics`, `triage`, and `pw-report`
 ingest for flake detection, retry analysis, and runtime evidence.
 
-## Install
+## Status and install
 
-> **This package is source-only.** It is _not_ published to npm —
+> **Status: post-MVP unpublished/source-only.** It is _not_ published to npm —
 > `npm install mjolnir-qa-playwright-reporter` and
 > `npm view mjolnir-qa-playwright-reporter` both fail by design. It ships
 > as a workspace member of the Mjölnir repo, and this repo is its only

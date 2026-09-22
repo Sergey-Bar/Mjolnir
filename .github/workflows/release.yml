@@ -30,7 +30,7 @@ on:
       - main
     # Manual rc releases (npm version 1.1.0-rc.1 + push --follow-tags).
     tags:
-      - "v*"
+      - "v*.*.*"
   # Re-run a release for a tag that already exists. Needed whenever a
   # release fails for a reason outside the repo — registry auth, a flaky
   # runner — where the fix is a settings change and the code is fine.

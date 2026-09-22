@@ -356,6 +356,58 @@ describe("README Node version matches package.json engines", () => {
   });
 });
 
+describe("public version and install docs match the current package line", () => {
+  const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")) as {
+    version: string;
+  };
+  const major = pkg.version.split(".")[0];
+  const publishing = readFileSync(join(ROOT, "docs", "PUBLISHING.md"), "utf8");
+  const distribution = readFileSync(
+    join(ROOT, "docs", "DISTRIBUTION-KIT.md"),
+    "utf8",
+  );
+  const gettingStarted = readFileSync(
+    join(ROOT, "site", "guide", "getting-started.md"),
+    "utf8",
+  );
+  const roadmap = readFileSync(
+    join(ROOT, "site", "reference", "roadmap.md"),
+    "utf8",
+  );
+
+  it("docs/PUBLISHING.md current-state latest claim names package.json's version", () => {
+    expect(publishing).toMatch(
+      new RegExp("`?latest`?\\s+is\\s+\\*\\*" + pkg.version + "\\*\\*"),
+    );
+    expect(publishing).not.toMatch(/`?latest`?\s+is\s+\*\*(?:0|1)\./);
+  });
+
+  it("public action examples use the current major tag and exact package version", () => {
+    for (const [name, text] of [
+      ["docs/DISTRIBUTION-KIT.md", distribution],
+      ["site/guide/getting-started.md", gettingStarted],
+    ] as const) {
+      expect(text, `${name} should use the current action major`).toContain(
+        `Sergey-Bar/Mjolnir@v${major}`,
+      );
+      expect(text, `${name} should show the current exact pin`).toContain(
+        `@v${pkg.version}`,
+      );
+      expect(
+        text,
+        `${name} must not keep stale pre-2.0 action pins`,
+      ).not.toMatch(/Sergey-Bar\/Mjolnir@v(?:0|1)(?:\b|\.)/);
+    }
+    expect(distribution).toContain(`with: version: ${pkg.version}`);
+  });
+
+  it("roadmap and publishing docs do not present pre-2.0 lines as current public state", () => {
+    expect(roadmap).toContain(`v${pkg.version} — current stable`);
+    expect(roadmap).not.toMatch(/v1\.0\.x\s+—\s+stable/);
+    expect(publishing).toContain("a tag alone is not an installable release");
+  });
+});
+
 describe("README does not reference the unrelated npm package 'qa-doctor' (unscoped)", () => {
   it("no npmjs.com/package/qa-doctor link (that's someone else's software)", () => {
     expect(README).not.toMatch(/npmjs\.com\/package\/qa-doctor(?!\/)/);
@@ -364,6 +416,56 @@ describe("README does not reference the unrelated npm package 'qa-doctor' (unsco
   it("no shields.io badge querying the unscoped 'qa-doctor' npm package", () => {
     expect(README).not.toMatch(/img\.shields\.io\/npm\/[vd]\/qa-doctor\b/);
   });
+});
+
+describe("Playwright reporter publication status is explicit", () => {
+  const reporterReadme = readFileSync(
+    join(ROOT, "packages", "playwright-reporter", "README.md"),
+    "utf8",
+  );
+  const architecture = readFileSync(
+    join(ROOT, "docs", "ARCHITECTURE.md"),
+    "utf8",
+  );
+  const certification = readFileSync(
+    join(ROOT, "docs", "CERTIFICATION-0.6.md"),
+    "utf8",
+  );
+  const forensicsGuide = readFileSync(
+    join(ROOT, "site", "guide", "forensics.md"),
+    "utf8",
+  );
+  const publicDocs = [
+    ["packages/playwright-reporter/README.md", reporterReadme],
+    ["docs/ARCHITECTURE.md", architecture],
+    ["docs/CERTIFICATION-0.6.md", certification],
+    ["site/guide/forensics.md", forensicsGuide],
+  ] as const;
+
+  it.each(publicDocs)(
+    "%s states that the reporter is post-MVP unpublished/source-only",
+    (_name, text) => {
+      expect(text).toMatch(/post-MVP unpublished\/source-only/i);
+    },
+  );
+
+  it("forensics public docs keep the MVP path independent of the unpublished reporter", () => {
+    expect(forensicsGuide).toContain("does **not** require");
+    expect(forensicsGuide).toContain("Playwright's built-in JSON reporter");
+  });
+
+  it.each(publicDocs)(
+    "%s does not present npm install as a public reporter setup path",
+    (name, text) => {
+      if (name === "packages/playwright-reporter/README.md") {
+        expect(text).toContain("both fail by design");
+        return;
+      }
+      expect(text).not.toMatch(
+        /npm\s+(?:install|i)\s+(?:-D\s+)?mjolnir-qa-playwright-reporter/i,
+      );
+    },
+  );
 });
 
 describe("every documented `npm run` command actually exists", () => {

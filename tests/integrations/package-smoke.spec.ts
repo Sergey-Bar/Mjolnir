@@ -93,6 +93,11 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
       ) as typeof pkgJson;
       const binEntry = pkgJson.bin.mjolnir;
       if (!binEntry) throw new Error("package.json has no mjolnir bin entry");
+      if (pkgJson.bin["mjolnir-qa"] !== binEntry) {
+        throw new Error(
+          'package.json must expose "mjolnir-qa" as a bin alias for npx/package-name installs',
+        );
+      }
       binPath = join(pkgDir, binEntry);
 
       // Give the packed CLI its runtime dependencies without a network install
@@ -154,6 +159,14 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
           `package.json "bin" points to "${pkgJson.bin.mjolnir}", which ` +
             `is not present in the packed tarball.`,
         ).toBe(true);
+      });
+
+      it("exposes the package-name bin alias users invoke with npx", () => {
+        expect(
+          pkgJson.bin["mjolnir-qa"],
+          "`npx mjolnir-qa@latest` resolves the executable by package-name " +
+            'convention, so the published package must expose a "mjolnir-qa" bin.',
+        ).toBe(pkgJson.bin.mjolnir);
       });
 
       it("the packed bin entry starts with a node shebang", () => {

@@ -6,7 +6,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { computeCodeText } from "../../../src/engine/code-text.js";
+import { computeCodeText } from "../../src/engine/code-text.js";
 
 function generatedSource(bytes: number): string {
   // Realistic mix: strings, comments, code — sized to `bytes`.

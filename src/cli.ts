@@ -281,8 +281,24 @@ export function parseArgsOrUsage(
     reported = true;
     io.err(usageErrorMessage(detail));
   });
-  if (!args && !reported) printUsage(io.out);
+  if (!args && !reported) printUsage(io.out, resolveHelpWidth(argv));
   return args;
+}
+
+/**
+ * Resolves the effective terminal width for help rendering. Scans the
+ * raw argv for `--width <cols>` (the help path runs before full arg
+ * parsing, so we read it directly); falls back to the detected TTY
+ * column width, then the default help width of 88.
+ */
+function resolveHelpWidth(argv: string[]): number {
+  for (let i = 0; i < argv.length; i++) {
+    if (argv[i] === "--width") {
+      const v = Number(argv[i + 1]);
+      if (Number.isFinite(v)) return Math.max(1, Math.floor(v));
+    }
+  }
+  return process.stdout.columns ?? 88;
 }
 
 import type { Output } from "./cli-io.js";
@@ -545,8 +561,11 @@ export {
   runMaturityCommand,
 };
 
-export function printUsage(print: (s: string) => void): void {
-  print(renderRootHelp());
+export function printUsage(
+  print: (s: string) => void,
+  width: number = 88,
+): void {
+  print(renderRootHelp(1, { width }));
 }
 
 export async function main(
@@ -672,7 +691,7 @@ export async function main(
   if (argv[0] === "help") return runHelpCommand(argv.slice(1), io);
   if (SUBCOMMANDS.has(argv[0] ?? "")) {
     io.err(`mjolnir: incomplete or unknown subcommand "${argv[0]}".`);
-    printUsage(io.out);
+    printUsage(io.out, resolveHelpWidth(argv));
     return EXIT_USAGE;
   }
   if (
@@ -702,18 +721,19 @@ export function runHelpCommand(
   io: { out: Output; err: Output } = { out, err },
 ): number {
   const tokens = argv.filter((a) => !a.startsWith("-"));
+  const helpWidth = resolveHelpWidth(argv);
   if (tokens.length >= 2) {
     const joined = `${tokens[0]} ${tokens[1]}`;
     if (hasVerbHelp(joined)) {
-      io.out(renderVerbHelp(joined));
+      io.out(renderVerbHelp(joined, { width: helpWidth }));
       return EXIT_CLEAN;
     }
   }
   if (tokens.length > 0) {
-    io.out(renderVerbHelp(tokens[0] as string));
+    io.out(renderVerbHelp(tokens[0] as string, { width: helpWidth }));
     return EXIT_CLEAN;
   }
-  io.out(renderRootHelp(SCHEMA_VERSION));
+  io.out(renderRootHelp(SCHEMA_VERSION, { width: helpWidth }));
   return EXIT_CLEAN;
 }
 

@@ -42,6 +42,7 @@ function capture() {
 describe("root help", () => {
   it("groups every registered verb under its section", () => {
     const text = renderRootHelp();
+    const normalized = text.replace(/\s+/g, " ");
     for (const group of [
       "Scan",
       "CI & PRs",
@@ -53,7 +54,7 @@ describe("root help", () => {
     }
     for (const e of HELP_ENTRIES) {
       expect(text).toContain(e.verb);
-      expect(text).toContain(e.summary);
+      expect(normalized).toContain(e.summary);
     }
   });
 
@@ -71,6 +72,31 @@ describe("root help", () => {
 
   it("shows the frozen exit-code line verbatim", () => {
     expect(renderRootHelp()).toContain("Exit codes: 0 · 1 · 2 · 10 · 20");
+  });
+
+  it("snapshots the default root help output", () => {
+    expect(renderRootHelp()).toMatchSnapshot();
+  });
+
+  it("snapshots the narrow-width root help output", () => {
+    const text = renderRootHelp(1, { width: 60 });
+    expect(text).toContain("ci install [--gate advisory|error|warning]");
+    expect(text).toMatchSnapshot();
+  });
+
+  it("wraps long help rows cleanly at narrow terminal widths", () => {
+    const text = renderRootHelp(1, { width: 60 });
+    expect(text).not.toMatch(/\[--force\]generate the PR workflow/);
+    expect(text).not.toMatch(/\[--path-prefix <dir>\]CI annotations/);
+    expect(text).not.toMatch(/\[--no-flaky-md\]runtime evidence/);
+    expect(text).not.toMatch(/\[--limit=N\]rule catalog/);
+  });
+
+  it("keeps the same content when width changes; only wrapping changes", () => {
+    const normalize = (s: string) => s.replace(/\s+/g, " ").trim();
+    expect(normalize(renderRootHelp())).toBe(
+      normalize(renderRootHelp(1, { width: 60 })),
+    );
   });
 
   it("skips a GROUPS verb missing from the registry (defensive, no crash)", () => {
