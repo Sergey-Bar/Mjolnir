@@ -191,9 +191,11 @@ still verifies and completes.
 ## Current state
 
 **Automated publishing is live.** `mjolnir-qa` on npmjs.com, with
-`bin: { "mjolnir": ... }`, so the CLI command a user types is `mjolnir`.
-`latest` is **2.0.0** on npm, matching `package.json` and the public
-GitHub Release `v2.0.0`; verify with `npm view mjolnir-qa version`.
+`bin: { "mjolnir": ..., "mjolnir-qa": ... }`, so both the stable
+`mjolnir` command and the package-name `npx mjolnir-qa@latest` path
+resolve to the CLI. `latest` is **2.0.2** on npm, matching
+`package.json` and the public GitHub Release `v2.0.2`; verify with
+`npm view mjolnir-qa version`.
 Stable publishes use OIDC trusted publishing with a SLSA provenance
 attestation (`npm audit signatures`).
 
@@ -210,9 +212,8 @@ attestation (`npm audit signatures`).
   designed — no Release ever advertised it. The tag stays (never
   rewrite tags); npm's next version is the first one after the repair.
 - Tag `v2.0.1` exists in the repository, but there is no matching npm
-  package or GitHub Release. Public docs and install examples must
-  continue to cite `2.0.0`/`@latest` until a later registry-published
-  version supersedes it; a tag alone is not an installable release.
+  package or GitHub Release. It is superseded by the registry-published
+  `v2.0.2`; a tag alone is not an installable release.
 
 ### What was wrong before 0.5.0
 

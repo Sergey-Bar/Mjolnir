@@ -36,7 +36,7 @@ The Marketplace action runs the same scan from any workflow:
     fail-on: error
 ```
 
-Pin `@v2` to follow the major line, or an exact tag (`@v2.0.0`) for a
+Pin `@v2` to follow the major line, or an exact tag (`@v2.0.2`) for a
 reproducible gate; `mjolnir ci install` writes a workflow that does
 this for you (plain `npx` instead, with `--no-action`).
 

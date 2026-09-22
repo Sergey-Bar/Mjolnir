@@ -9,6 +9,18 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased]
+
+## [2.0.2] — 2026-09-22
+
+### Fixed
+
+- **NPM executable metadata** — shipped the package-name `mjolnir-qa` bin
+  alias alongside `mjolnir` in the packed tarball, so fresh installs and
+  `npx mjolnir-qa@latest` resolve the CLI consistently. This intentionally
+  keeps the Mjölnir package/CLI identity and does not include the abandoned
+  QA Doctor rebrand.
+
 ## [2.0.0] — 2026-09-17
 
 ### Fixed
@@ -18,8 +30,6 @@ once shipped, so this file is the record of what changed between versions.
 ### Changed
 
 - **Version bump** — bumped package version from 1.1.1 to 2.0.0 across all surfaces (package.json, ENGINE_VERSION, smithery.yaml, rule metadata, docs).
-
-## [Unreleased]
 
 ## [1.1.1] — 2026-09-16
 
