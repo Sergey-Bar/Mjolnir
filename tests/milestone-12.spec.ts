@@ -1,5 +1,6 @@
 /* eslint-disable */
 import { describe, it, expect } from "vitest";
+import type { TrustSummary } from "../src/types.js";
 import {
   computeTrustSnapshot,
   analyzeTrustTrends,
@@ -15,11 +16,13 @@ describe("Milestone 12 — Historical Trust and Trend Analysis", () => {
       config: null,
       engineVersion: "2.0.0",
     });
-    const trustSummary = {
+    const trustSummary: TrustSummary = {
       level: "L2",
       confidence: 0.8,
       evidenceCoverage: 1.0,
       inconclusiveRate: 0,
+      provisionalRuleIds: [],
+      ceilingReasons: [],
     };
     const result = {
       score: 85,
@@ -67,11 +70,13 @@ describe("Milestone 12 — Historical Trust and Trend Analysis", () => {
       config: null,
       engineVersion: "2.0.0",
     });
-    const trustSummary = {
+    const trustSummary: TrustSummary = {
       level: "L2",
       confidence: 0.8,
       evidenceCoverage: 1.0,
       inconclusiveRate: 0,
+      provisionalRuleIds: [],
+      ceilingReasons: [],
     };
     const makeResult = (score: number | null, findings: number) =>
       ({
@@ -123,11 +128,13 @@ describe("Milestone 12 — Historical Trust and Trend Analysis", () => {
       config: null,
       engineVersion: "2.0.0",
     });
-    const trustSummary = {
+    const trustSummary: TrustSummary = {
       level: "L2",
       confidence: 0.8,
       evidenceCoverage: 1.0,
       inconclusiveRate: 0,
+      provisionalRuleIds: [],
+      ceilingReasons: [],
     };
     const makeResult = (
       score: number | null,
@@ -197,11 +204,13 @@ describe("Milestone 12 — Historical Trust and Trend Analysis", () => {
       config: null,
       engineVersion: "2.0.0",
     });
-    const trustSummary = {
+    const trustSummary: TrustSummary = {
       level: "L0",
       confidence: 1,
       evidenceCoverage: 0,
       inconclusiveRate: 0,
+      provisionalRuleIds: [],
+      ceilingReasons: [],
     };
     const result = {
       score: null,

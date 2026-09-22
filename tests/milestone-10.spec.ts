@@ -12,7 +12,9 @@ describe("Milestone 10 — Cross-File Analysis Engine", () => {
     ];
     const result = analyzeCrossFileSignals(files, []);
     expect(result.duplicateTestNames.length).toBeGreaterThan(0);
-    expect(result.duplicateTestNames[0].type).toBe("duplicate-test-name");
+    const firstDuplicate = result.duplicateTestNames[0];
+    if (!firstDuplicate) throw new Error("expected a duplicate");
+    expect(firstDuplicate.type).toBe("duplicate-test-name");
   });
 
   it("should detect shared imports", () => {

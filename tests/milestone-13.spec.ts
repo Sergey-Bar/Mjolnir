@@ -127,7 +127,9 @@ describe("Milestone 13 — Evidence Graph and Provenance", () => {
 
     const findings = queryFindingsByFile(result, "test.spec.ts");
     expect(findings.length).toBe(1);
-    expect(findings[0].file).toBe("test.spec.ts");
+    const firstFinding = findings[0];
+    if (!firstFinding) throw new Error("expected a finding");
+    expect(firstFinding.file).toBe("test.spec.ts");
   });
 
   it("should query findings by rule", () => {
@@ -177,7 +179,9 @@ describe("Milestone 13 — Evidence Graph and Provenance", () => {
 
     const findings = queryFindingsByRule(result, "QA-TEST-001");
     expect(findings.length).toBe(1);
-    expect(findings[0].ruleId).toBe("QA-TEST-001");
+    const firstRuleFinding = findings[0];
+    if (!firstRuleFinding) throw new Error("expected a finding");
+    expect(firstRuleFinding.ruleId).toBe("QA-TEST-001");
   });
 
   it("should compute evidence chain for a finding", () => {
