@@ -61,8 +61,6 @@ Subcommands — CI & PRs:
   verify [path] [--json] [scan flags]             agent-loop digest:
                                                   resolved/new/unchanged vs baseline +
                                                   score delta
-  ci-integrity [path] [--json]                    verify CI workflow integrity and
-                                                  suppression governance
 
 Subcommands — Forensics:
   forensics <test-results-dir-or-report-file> [--no-flaky-md]
@@ -98,19 +96,6 @@ Subcommands — Maintenance:
                                                   (docs/RELEASE-TRUST-CONTRACT.md)
   create-rule <QA-XXX-nnn> --title "Rule title"   scaffold a new rule + fixtures
                                                   (must-fire, must-not-fire)
-  cross-file [path] [--json]                      analyze cross-file signals:
-                                                  duplicates, shared imports, circular
-                                                  deps
-  contract-verify [path] [--json]                 verify machine contract integrity
-                                                  against scan results
-  trust-trend [path] [--json]                     track historical trust trends and
-                                                  detect regressions
-  evidence-graph [path] [--json]                  build and query the verification
-                                                  evidence graph
-  framework-maturity [--framework <name>]         track framework maturity levels,
-                                                  especially Playwright F4→F6
-  suppression-gate [path] [--policy <file>]       enforce suppression policy governance
-                                                  gate
 
 Subcommands — Meta:
   rules [--md] [--unmeasured|--measured] [--external] | [--stats] | [--health]
@@ -228,11 +213,6 @@ Subcommands — CI & PRs:
                                                   resolved/new/unchanged
                                                   vs baseline +
                                                   score delta
-  ci-integrity [path] [--json]                    verify CI
-                                                  workflow
-                                                  integrity and
-                                                  suppression
-                                                  governance
 
 Subcommands — Forensics:
   forensics <test-results-dir-or-report-file>
@@ -294,32 +274,6 @@ Subcommands — Maintenance:
                                                   rule + fixtures
                                                   (must-fire,
                                                   must-not-fire)
-  cross-file [path] [--json]                      analyze
-                                                  cross-file
-                                                  signals:
-                                                  duplicates,
-                                                  shared imports,
-                                                  circular deps
-  contract-verify [path] [--json]                 verify machine
-                                                  contract
-                                                  integrity
-                                                  against scan
-                                                  results
-  trust-trend [path] [--json]                     track historical
-                                                  trust trends and
-                                                  detect
-                                                  regressions
-  evidence-graph [path] [--json]                  build and query
-                                                  the verification
-                                                  evidence graph
-  framework-maturity [--framework <name>]         track framework
-                                                  maturity levels,
-                                                  especially
-                                                  Playwright F4→F6
-  suppression-gate [path] [--policy <file>]       enforce
-                                                  suppression
-                                                  policy
-                                                  governance gate
 
 Subcommands — Meta:
   rules [--md] [--unmeasured|--measured] [--external] |
